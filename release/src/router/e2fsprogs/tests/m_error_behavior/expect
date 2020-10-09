@@ -1,0 +1,24 @@
+error default
+Errors behavior:          Continue
+error continue
+Errors behavior:          Continue
+error panic
+Errors behavior:          Panic
+error remount-ro
+Errors behavior:          Remount read-only
+error garbage
+error default profile continue
+Errors behavior:          Continue
+error default profile panic
+Errors behavior:          Panic
+error default profile remount-ro
+Errors behavior:          Remount read-only
+error default profile broken
+error fs_types profile continue
+Errors behavior:          Continue
+error fs_types profile panic
+Errors behavior:          Panic
+error fs_types profile remount-ro
+Errors behavior:          Remount read-only
+error fs_types profile remount-ro
+Errors behavior:          Panic

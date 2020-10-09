@@ -1,0 +1,62 @@
+test_description="e2undo with mke2fs/tune2fs/resize2fs/e2fsck -z"
+if test -x $RESIZE2FS_EXE -a -x $E2UNDO_EXE; then
+
+TDB_FILE=${TMPDIR:-/tmp}/resize2fs-$(basename $TMPFILE).e2undo
+OUT=$test_name.log
+rm -f $TDB_FILE >/dev/null 2>&1
+
+echo compound e2undo rollback test > $OUT
+
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+crc0=`$CRCSUM $TMPFILE`
+echo $CRCSUM before mke2fs $crc0 >> $OUT
+
+echo mke2fs -q -F -o Linux -T ext4 -O ^metadata_csum,64bit -E lazy_itable_init=1 -b 1024 -z $TDB_FILE.0 $TMPFILE 256 >> $OUT
+$MKE2FS -q -F -o Linux -T ext4 -O ^metadata_csum,64bit -E lazy_itable_init=1 -b 1024 -z $TDB_FILE.0 $TMPFILE 256 >> $OUT 2>&1
+crc1=`$CRCSUM $TMPFILE`
+echo $CRCSUM after mke2fs $crc1 >> $OUT
+
+echo using tune2fs to test e2undo >> $OUT
+$TUNE2FS -O metadata_csum -z $TDB_FILE.1 $TMPFILE >> $OUT 2>&1
+crc2=`$CRCSUM $TMPFILE`
+echo $CRCSUM after tune2fs $crc2 >> $OUT
+
+echo using resize2fs to test e2undo >> $OUT
+$RESIZE2FS -z $TDB_FILE.2 $TMPFILE 512 >> $OUT 2>&1
+crc3=`$CRCSUM $TMPFILE`
+echo $CRCSUM after resize2fs $crc3 >> $OUT
+
+echo using e2fsck to test e2undo >> $OUT
+$FSCK -f -y -D -z $TDB_FILE.3 $TMPFILE >> $OUT 2>&1
+crc4=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2fsck $crc4 >> $OUT
+
+echo roll back mke2fs >> $OUT
+$E2UNDO $TDB_FILE.0 $TMPFILE  >> $OUT 2>&1
+crc0_2=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2undo mke2fs $crc0_2 >> $OUT
+
+echo roll back tune2fs >> $OUT
+$E2UNDO $TDB_FILE.1 $TMPFILE  >> $OUT 2>&1
+crc1_2=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2undo tune2fs $crc1_2 >> $OUT
+
+echo roll back resize2fs >> $OUT
+$E2UNDO $TDB_FILE.2 $TMPFILE  >> $OUT 2>&1
+crc2_2=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2undo resize2fs $crc2_2 >> $OUT
+
+echo roll back e2fsck >> $OUT
+$E2UNDO $TDB_FILE.3 $TMPFILE  >> $OUT 2>&1
+crc3_2=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2undo e2fsck $crc3_2 >> $OUT
+
+if [ $crc4 = $crc0_2 ] && [ $crc4 = $crc1_2 ] && [ $crc4 = $crc2_2 ] && [ $crc3 = $crc3_2 ]; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	ln -f $test_name.log $test_name.failed
+	echo "$test_name: $test_description: failed"
+fi
+rm -f $TDB_FILE.0 $TDB_FILE.1 $TDB_FILE.2 $TDB_FILE.3 $TMPFILE
+fi

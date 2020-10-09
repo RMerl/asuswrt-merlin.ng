@@ -1,0 +1,32 @@
+#!/bin/sh
+
+TDIR=${AUTOPKGTEST_TMP:-/tmp/test_dir}
+LOGDIR=${AUTOPKGTEST_ARTIFACTS:-/tmp/test_dir_log}
+IMG=$TDIR/test-image.img
+
+# some autopkgtest environments may not have /etc/mtab and/or /proc/mounts
+EXT2FS_NO_MTAB_OK=yes
+export EXT2FS_NO_MTAB_OK
+
+mkdir -p $LOGDIR $TDIR
+
+/sbin/mke2fs -q -t ext4 -d e2fsck $IMG 8M
+/sbin/e2label $IMG test
+/sbin/e2fsck -fy $IMG > $LOGDIR/e2fsck.1.log 2>&1
+if test $? -ne 0 ; then
+   echo "First e2fsck failed; see $LOGDIR/e2fsck.1.log"
+   exit 1
+fi
+/sbin/resize2fs $IMG 16M > $LOGDIR/resize2fs.log 2>&1
+if test $? -ne 0 ; then
+   echo "Resize2fs failed; see $LOGDIR/e2fsck.1.log"
+   exit 1
+fi
+/sbin/e2fsck -fy $IMG > $LOGDIR/e2fsck.2.log 2>&1
+if test $? -ne 0 ; then
+   echo "Second e2fsck failed; see $LOGDIR/e2fsck.2.log"
+   exit 1
+fi
+/sbin/debugfs -R "dump pass1.c $TDIR/pass1.c" $IMG > $LOGDIR/debugfs.log 2>&1
+diff $TDIR/pass1.c e2fsck/pass1.c
+

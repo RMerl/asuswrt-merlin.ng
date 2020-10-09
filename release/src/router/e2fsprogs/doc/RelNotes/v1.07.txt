@@ -1,0 +1,122 @@
+E2fsprogs 1.07 (March 9, 1997)
+==============================
+
+E2fsck is now uses much less memory when checking really large
+filesystems (or rather, filesystems with a large number of inodes).
+Previously a filesystem with 1 million inodes required 4 megabytes of
+memory to store inode count statistics; that storage requirement has
+now been reduced to roughly half a megabyte.
+
+E2fsck can now properly deal with bad blocks appearing inside the
+inode table.  Instead of trying to relocate the inode table (which
+often failed because there wasn't enough space), the inodes in the bad
+block are marked as in use.
+
+E2fsck will automatically try to use the backup superblocks if the
+primary superblocks have a bad magic number or have missing meta-data
+blocks (or meta-data blocks which are out of range).
+
+E2fsck's pass 3 has been made more efficient; most noticeable on
+filesystems with a very large number of directories.
+
+Completely revamped e2fsck's system of printing problem reports.  It
+is now table driven, to make them more easily customizable and
+extendable.  Error messages which can be printed out during preen mode
+are now one line long.
+
+Fixed e2fsck's filesystem swapping code so that it won't try to swap
+fast symbolic links or deleted files.
+
+Fixed e2fsck core dumping when fixing a filesystem which has no
+directories (not even a root directory).
+
+Added a check to e2fsck to make sure that the length of every
+directory entry is a multiple of 4 (since the kernel complains if it
+isn't).
+
+Added a check to e2fsck to make sure that a directory entry isn't a
+link to the root directory, since that isn't allowed.
+
+Added a check to e2fsck to now make sure the '.' and '..' directory
+entries are null terminated, since the 2.0 kernel requires it.
+
+Added check to write_bitmaps() to make sure the superblock doesn't get
+trashed if the inode or block bitmap is marked as being block zero.
+
+Added checking of the new feature set fields in the superblock, to
+avoid dealing with new filesystem features that this package wasn't
+set up to handle.
+
+Fixed a fencepost error in ext2fs_new_block() which would occasionally
+try to allocate a block beyond the end of a filesystem.
+
+When the UUID library picks a random IEEE 802 address (because it
+can't find one from a network card), it sets the multicast bit, to
+avoid conflicting with a legitimate IEEE 802 address.
+
+Mke2fs now sets the root directory's owner to be the real uid of the
+user running mke2fs.  If the real uid is non-zero, it also sets
+the group ownership of the root directory to be the real group-id of
+the user running mke2fs.
+
+Mke2fs now has more intelligent error checking when it is given a
+non-existent device.
+
+When badblocks is given the -vv option, it now updates the block that
+it is currently testing on every block.
+
+Fixed a bug in fsck where it wouldn't modify the PATH environment
+currently correctly if PATH wasn't already set.
+
+Shared libraries now built with dependencies.  This allows the shared
+library files to be used with dlopen(); it also makes the transition
+to libc 6 easier, since ld.so can tell which libc a particular shared
+library expects to use.
+
+Programmer's notes:
+-------------------
+
+Added new abstraction (defined in dblist.c) for maintaining a list of
+blocks which belongs to directories.  This is used in e2fsck and other
+programs which need to iterate over all directories.
+
+Added new functions which test to see if a contiguous range of blocks
+(or inodes) are available.  (ext2fs_*_bitmap_range).
+
+Added new function (ext2_inode_has_valid_blocks) which returns true if
+an inode has valid blocks.  (moved from e2fsck code).
+
+Added new function (ext2fs_allocate_tables) which allocates the
+meta-data blocks as part of initializing a filesystem.  (moved from
+mke2fs code).
+
+Added a new I/O manager for testing purposes.  It will either allow a
+program to intercept I/O requests, or print debugging messages to
+trace the activity of a program using the I/O manager.
+
+The badblocks_list functions now store the bad blocks in a sorted
+order, and use a binary search to speed up badblocks_list_test.
+
+The inode scan function ext2fs_get_next_inode() may now return a soft
+error returns: MISSING_INODE_TABLE and BAD_BLOCK_IN_INODE_TABLE in
+those cases where part of an inode table is missing or there is a bad
+block in the inode table.  
+
+Added a new function (ext2fs_block_iterate2) which adds new arguments to
+the callback function to return a pointer (block and offset) to the
+reference of the block.
+
+Added new function (ext2fs_inode_scan_goto_blockgroup) which allows an
+application to jump to a particular block group while doing an inode
+scan.
+
+The badblocks list functions were renamed from badblocks_* to
+ext2fs_badblocks_*.  Backwards compatibility functions are available
+for now, but programs should be modified to use the new interface.
+
+Some of the library functions were reorganized into separate files to
+reduce the size of some programs which statically link against the
+ext2 library.
+
+Put in some miscellaneous fixes for the Alpha platform.
+

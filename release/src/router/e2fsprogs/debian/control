@@ -1,0 +1,216 @@
+Source: e2fsprogs
+Section: admin
+Priority: required
+Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
+Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any] <!pkg.e2fsprogs.no-fuse2fs>, debhelper (>= 12.0), dh-exec, libblkid-dev, uuid-dev, m4, udev [linux-any], systemd [linux-any], cron [linux-any]
+Standards-Version: 4.4.1
+Homepage: http://e2fsprogs.sourceforge.net
+Vcs-Browser: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
+Vcs-Git: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git -b debian/master
+
+Package: fuse2fs
+Build-Profiles: <!pkg.e2fsprogs.no-fuse2fs>
+Priority: optional
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Architecture: linux-any kfreebsd-any
+Description: ext2 / ext3 / ext4 file system driver for FUSE
+ fuse2fs is a FUSE file system client that supports reading and
+ writing from devices or image files containing ext2, ext3, and ext4
+ file systems.
+
+Package: logsave
+Priority: optional
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Replaces: e2fsprogs (<< 1.45.3-1)
+Breaks: e2fsprogs (<< 1.45.3-1)
+Architecture: any
+Multi-Arch: foreign
+Description: save the output of a command in a log file
+ The logsave program will execute cmd_prog with the specified
+ argument(s), and save a copy of its output to logfile.  If the
+ containing directory for logfile does not exist, logsave will
+ accumulate the output in memory until it can be written out.  A copy
+ of the output will also be written to standard output.
+
+Package: e2fsck-static
+Priority: optional
+Depends: ${misc:Depends}
+Recommends: sash | bash-static | zsh-static | busybox-static
+Architecture: any
+Description: statically-linked version of the ext2/ext3/ext4 filesystem checker
+ This may be of some help to you if your filesystem gets corrupted enough
+ to break the shared libraries used by the dynamically linked checker.
+ .
+ This binary takes much more space than its dynamic counterpart located
+ in e2fsprogs, though.
+ .
+ You may want to install a statically-linked shell as well, to be able
+ to run this program if something like your C library gets corrupted.
+
+Package: e2fsprogs-l10n
+Section: localization
+Priority: optional
+Depends: e2fsprogs (>= ${binary:Version}), e2fsprogs (<< ${binary:Version}+c~), ${misc:Depends}
+Replaces: e2fsprogs (<< 1.43.5-1)
+Architecture: all
+Multi-Arch: foreign
+Description: ext2/ext3/ext4 file system utilities - translations
+ The ext2, ext3 and ext4 file systems are successors of the original ext
+ ("extended") file system. They are the main file system types used for
+ hard disks on Debian and other Linux systems.
+ .
+ This package provides translations for messages for programs found in
+ the 'e2fsprogs' package.
+
+Package: libcomerr2
+Depends: libcom-err2, ${misc:Depends}
+Architecture: any
+Multi-Arch: same
+Priority: optional
+Section: oldlibs
+Description: transitional package to libcom-err2
+ This is a transitional package to libcom-err2. It can safely be removed.
+
+Package: libcom-err2
+Section: libs
+Priority: optional
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Replaces: libcomerr2 (<< 1.43.9-1~)
+Breaks: libcomerr2 (<< 1.43.9-1~)
+Provides: libcomerr2 (= ${binary:Version})
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Description: common error description library
+ libcomerr is an attempt to present a common error-handling mechanism to
+ manipulate the most common form of error code in a fashion that does not
+ have the problems identified with mechanisms commonly in use.
+
+Package: comerr-dev
+Section: libdevel
+Priority: optional
+Depends: libc6-dev | libc-dev, libcom-err2 (= ${mainBinary}), ${misc:Depends}
+Suggests: doc-base
+Replaces: e2fslibs-dev (<< 1.33-2), libkrb5-dev (<< 1.3)
+Architecture: any
+Multi-Arch: same
+Description: common error description library - headers and static libraries
+ libcom_err is an attempt to present a common error-handling mechanism to
+ manipulate the most common form of error code in a fashion that does not
+ have the problems identified with mechanisms commonly in use.
+ .
+ This package contains the development environment for the com_err library.
+
+Package: libss2
+Section: libs
+Priority: optional
+Depends: libcom-err2, ${shlibs:Depends}, ${misc:Depends}
+Replaces: e2fsprogs (<< 1.34-1)
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Description: command-line interface parsing library
+ libss provides a simple command-line interface parser which will
+ accept input from the user, parse the command into an argv argument
+ vector, and then dispatch it to a handler function.
+ .
+ It was originally inspired by the Multics SubSystem library.
+
+Package: ss-dev
+Section: libdevel
+Priority: optional
+Depends: libc6-dev | libc-dev, libss2 (= ${mainBinary}), comerr-dev, ${misc:Depends}
+Architecture: any
+Multi-Arch: same
+Description: command-line interface parsing library - headers and static libraries
+ This package includes a tool that parses a command table to generate
+ a simple command-line interface parser, the include files needed to
+ compile and use it, and the static libs.
+ .
+ It was originally inspired by the Multics SubSystem library.
+ .
+ This package contains the development environment for the ss library.
+
+Package: e2fsprogs-udeb
+Package-Type: udeb
+Section: debian-installer
+Priority: optional
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Architecture: any
+Description: stripped-down versions of e2fsprogs, for debian-installer
+ This package is an e2fsprogs package built for a reduced size, so that
+ it can help to save space in debian-installer.
+ .
+ Don't attempt to install this package, it has no support for a couple of
+ features you surely want.  Anyway it should refuse to install.
+
+Package: e2fslibs
+Depends: libext2fs2, ${misc:Depends}
+Architecture: any
+Multi-Arch: same
+Priority: optional
+Section: oldlibs
+Description: transitional package to libext2fs2
+ This is a transitional package to libext2fs2. It can safely be removed.
+
+Package: e2fslibs-dev
+Depends: libext2fs-dev, ${misc:Depends}
+Architecture: all
+Priority: optional
+Section: oldlibs
+Description: transitional package to libext2fs-dev
+ This is a transitional package to libext2fs-dev. It can safely be removed.
+
+Package: libext2fs2
+Section: libs
+Priority: optional
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Replaces: e2fslibs (<< 1.43.9-1~)
+Breaks: e2fslibs (<< 1.43.9-1~)
+Provides: e2fslibs (= ${binary:Version})
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Description: ext2/ext3/ext4 file system libraries
+ The ext2, ext3 and ext4 file systems are successors of the original ext
+ ("extended") file system. They are the main file system types used for
+ hard disks on Debian and other Linux systems.
+ .
+ This package provides the ext2fs and e2p libraries, for userspace software
+ that directly accesses extended file systems. Programs that use libext2fs
+ include e2fsck, mke2fs, and tune2fs. Programs that use libe2p include
+ dumpe2fs, chattr, and lsattr.
+
+Package: libext2fs-dev
+Section: libdevel
+Priority: optional
+Depends: libc6-dev | libc-dev, comerr-dev, libext2fs2 (= ${binary:Version}), ${misc:Depends}
+Replaces: e2fslibs-dev (<< 1.43.9-1~)
+Breaks: e2fslibs-dev (<< 1.43.9-1~)
+Provides: e2fslibs-dev (= ${binary:Version})
+Suggests: doc-base
+Architecture: any
+Description: ext2/ext3/ext4 file system libraries - headers and static libraries
+ The ext2, ext3 and ext4 file systems are successors of the original ext
+ ("extended") file system. They are the main file system types used for
+ hard disks on Debian and other Linux systems.
+ .
+ This package contains the development environment for the ext2fs and e2p
+ libraries.
+
+Package: e2fsprogs
+XB-Important: yes
+Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, libblkid1, libuuid1
+Depends: logsave
+Multi-Arch: foreign
+Suggests: gpart, parted, fuse2fs, e2fsck-static
+Recommends: e2fsprogs-l10n
+Architecture: any
+Description: ext2/ext3/ext4 file system utilities
+ The ext2, ext3 and ext4 file systems are successors of the original ext
+ ("extended") file system. They are the main file system types used for
+ hard disks on Debian and other Linux systems.
+ .
+ This package contains programs for creating, checking, and maintaining
+ ext2/3/4-based file systems.  It also includes the "badblocks" program,
+ which can be used to scan for bad blocks on a disk or other storage device.

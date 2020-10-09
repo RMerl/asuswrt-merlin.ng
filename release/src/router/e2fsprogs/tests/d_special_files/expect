@@ -5,19 +5,19 @@ debugfs -R ''stat foo'' -w test.img
 Inode: 12   Type: symlink    Mode:  0777   Flags: 0x0
 Generation: 0    Version: 0x00000000
 User:     0   Group:     0   Size: 3
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 0
 Fragment:  Address: 0    Number: 0    Size: 0
 ctime: 0x50f560e0 -- Tue Jan 15 14:00:00 2013
 atime: 0x50f560e0 -- Tue Jan 15 14:00:00 2013
 mtime: 0x50f560e0 -- Tue Jan 15 14:00:00 2013
-Fast_link_dest: bar
+Fast link dest: "bar"
 Exit status is 0
 debugfs -R ''stat foo2'' -w test.img
 Inode: 13   Type: symlink    Mode:  0777   Flags: 0x0
 Generation: 0    Version: 0x00000000
 User:     0   Group:     0   Size: 80
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 2
 Fragment:  Address: 0    Number: 0    Size: 0
 ctime: 0x50f560e0 -- Tue Jan 15 14:00:00 2013
@@ -42,7 +42,7 @@ debugfs -R ''stat pipe'' -w test.img
 Inode: 14   Type: FIFO    Mode:  0000   Flags: 0x0
 Generation: 0    Version: 0x00000000
 User:     0   Group:     0   Size: 0
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 0
 Fragment:  Address: 0    Number: 0    Size: 0
 ctime: 0x50f560e0 -- Tue Jan 15 14:00:00 2013
@@ -55,7 +55,7 @@ debugfs -R ''stat sda'' -w test.img
 Inode: 15   Type: block special    Mode:  0000   Flags: 0x0
 Generation: 0    Version: 0x00000000
 User:     0   Group:     0   Size: 0
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 0
 Fragment:  Address: 0    Number: 0    Size: 0
 ctime: 0x50f560e0 -- Tue Jan 15 14:00:00 2013
@@ -67,7 +67,7 @@ debugfs -R ''stat null'' -w test.img
 Inode: 16   Type: character special    Mode:  0000   Flags: 0x0
 Generation: 0    Version: 0x00000000
 User:     0   Group:     0   Size: 0
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 0
 Fragment:  Address: 0    Number: 0    Size: 0
 ctime: 0x50f560e0 -- Tue Jan 15 14:00:00 2013

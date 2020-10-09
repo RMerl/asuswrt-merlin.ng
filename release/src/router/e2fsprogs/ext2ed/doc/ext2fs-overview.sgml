@@ -487,7 +487,7 @@ struct ext2_inode {
 	__u32	i_block[EXT2_N_BLOCKS];/* Pointers to blocks */
 	__u32	i_version;	/* File version (for NFS) */
 	__u32	i_file_acl;	/* File ACL */
-	__u32	i_dir_acl;	/* Directory ACL */
+	__u32	i_size_high;	/* High 32bits of size */
 	__u32	i_faddr;	/* Fragment address */
 	union {
 		struct {
@@ -533,7 +533,7 @@ allocated blocks.
 </Para>
 
 <Para>
-It was found experimently that many of the files in the filesystem are
+It was found experimentally that many of the files in the filesystem are
 actually quite small. To take advantage of this effect, the kernel provides
 storage of up to 12 block numbers in the inode itself. Those blocks are
 called <Literal remap="tt">direct blocks</Literal>. The advantage is that once the kernel has the
@@ -692,7 +692,7 @@ options. They determine the type of the "file" to which the inode belongs:
 <Title>Time and date</Title>
 
 <Para>
-Linux records the last time in which various operations occured with the
+Linux records the last time in which various operations occurred with the
 file. The time and date are saved in the standard C library format - The
 number of seconds which passed since 00:00:00 GMT, January 1, 1970. The
 following times are recorded:
@@ -1087,7 +1087,7 @@ the length of the file name.
 <Para>
 The variable <Literal remap="tt">rec&lowbar;len</Literal> is provided because the directory entries are
 padded with zeroes so that the next entry will be in an offset which is
-a multiplition of 4. The resulting directory entry size is stored in
+a multiplication of 4. The resulting directory entry size is stored in
 <Literal remap="tt">rec&lowbar;len</Literal>. If the directory entry is the last in the block, it is
 padded with zeroes till the end of the block, and rec&lowbar;len is updated
 accordingly.
@@ -1402,7 +1402,7 @@ then zero s&lowbar;mnt&lowbar;count. <Literal remap="tt">s&lowbar;max&lowbar;mnt
 E2fsck also records the last time in which the file system was checked in
 the <Literal remap="tt">s&lowbar;lastcheck</Literal> variable. The user tunable parameter
 <Literal remap="tt">s&lowbar;checkinterval</Literal> will contain the number of seconds which are allowed
-to pass since <Literal remap="tt">s&lowbar;lastcheck</Literal> until a check is reforced. A value of
+to pass since <Literal remap="tt">s&lowbar;lastcheck</Literal> until a check is forced. A value of
 <Literal remap="tt">0</Literal> disables time-based check.
 </Para>
 

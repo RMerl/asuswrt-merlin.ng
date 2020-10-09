@@ -249,7 +249,7 @@ void signal_SIGSEGV_handler (int sig_num);
 
 /* general_com.c */
 
-/* General commands which are aviable always */
+/* General commands which are available always */
 
 extern void help (char *command_line);
 extern void set (char *command_line);
@@ -275,7 +275,7 @@ void detailed_help (char *text);
 
 /* ext2_com.c */
 
-/* Extended2 filesystem genereal commands - Aviable only when editing an
+/* Extended2 filesystem general commands - Available only when editing an
    ext2 filesystem */
 
 extern void type_ext2___super (char *command_line);

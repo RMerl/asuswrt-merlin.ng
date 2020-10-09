@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 /* Because on some systems (e.g. Solaris) we sometimes have to include
    the systems libintl.h as well as this file we have more complex
@@ -84,7 +84,7 @@ extern int _msg_tbl_length;
 #endif
 
 
-/* For automatical extraction of messages sometimes no real
+/* For automatic extraction of messages sometimes no real
    translation is needed.  Instead the string itself is the result.  */
 #define gettext_noop(Str) (Str)
 

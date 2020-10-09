@@ -1,0 +1,61 @@
+// Copyright 2017 The Android Open Source Project
+
+cc_library {
+    name: "libext2_e2p",
+    host_supported: true,
+    ramdisk_available: true,
+    recovery_available: true,
+    unique_host_soname: true,
+    defaults: ["e2fsprogs-defaults"],
+    srcs: [
+        "encoding.c",
+        "feature.c",
+        "fgetflags.c",
+        "fsetflags.c",
+        "fgetproject.c",
+        "fsetproject.c",
+        "fgetversion.c",
+        "fsetversion.c",
+        "getflags.c",
+        "getversion.c",
+        "hashstr.c",
+        "iod.c",
+        "ljs.c",
+        "ls.c",
+        "mntopts.c",
+        "parse_num.c",
+        "pe.c",
+        "pf.c",
+        "ps.c",
+        "setflags.c",
+        "setversion.c",
+        "uuid.c",
+        "ostype.c",
+        "percent.c",
+    ],
+
+    cflags: [
+        "-Wno-error=attributes",
+        "-Wno-unused-parameter",
+    ],
+
+    target: {
+        windows: {
+            include_dirs: [ "external/e2fsprogs/include/mingw" ],
+            enabled: true,
+            cflags: [
+                "-Wno-unused-variable",
+            ],
+            clang_cflags: [
+                "-Wno-error=typedef-redefinition",
+            ],
+            host_ldlibs: [
+                "-lws2_32",
+            ],
+        },
+    },
+
+    header_libs: ["libext2-headers"],
+    export_include_dirs: ["."],
+    export_header_lib_headers: ["libext2-headers"],
+}

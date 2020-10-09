@@ -1,0 +1,23 @@
+debugfs: ex /a
+Level Entries       Logical      Physical Length Flags
+ 0/ 7   1/  1     0 -     0    12              1
+ 1/ 7   1/  1     0 -     0    13              1
+ 2/ 7   1/  1     0 -     0    14              1
+ 3/ 7   1/  1     0 -     0    15              1
+ 4/ 7   1/  1     0 -     0    16              1
+ 5/ 7   1/  1     0 -     0    17              1
+ 6/ 7   1/  1     0 -     0     9              1
+ 7/ 7   1/  1     0 -     0    10 -    10      1 
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12 extent tree could be more shallow (7; could be <= 4)
+Fix? yes
+
+Pass 1E: Optimizing extent trees
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 12/128 files (0.0% non-contiguous), 19/512 blocks
+Exit status is 1

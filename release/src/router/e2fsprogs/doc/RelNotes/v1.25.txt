@@ -1,0 +1,46 @@
+E2fsprogs 1.25 (September 20, 2001)
+===================================
+
+This is primarily a bug-fix release; no new features were added, but
+there are a number of embarrassing bug fixes and cleanups applied.
+
+Fix a bug mke2fs which causes stack garbage to be written to disk when
+zapping disk sectors.  (This bug could cause mke2fs to core dump for
+some kernels, I suspect with security enhancement patches.)
+
+Remove unneeded #include of <linux/config.h> which was breaking
+building e2fsprogs on the Hurd.  (Addresses Debian bug #112414.)
+
+Updated tune2fs man page to reflect the fact that adding or removing a
+journal doesn't require running e2fsck.
+
+Remove use of AC_REQUIRE from autoconf which had been used to prevent
+AC_CANONICAL_HOST from being called twice; unfortunately this causes
+recent autoconf to bomb out since they don't allow AC_REQUIRE to be
+used outside of autoconf macros.  Fortunately, it doesn't seem to be
+necessary any more, anyway.
+
+E2fsck will now not fall back to an alternate superblock if the user
+specifies the superblock location explicitly on the command-line.
+This allows easier recovery from a situation where the primary
+superblock and block groups are slightly corrupted, but the backup
+superblocks are completely broken.  
+
+Fix problem which caused compile_et and mk_cmds to blow up if
+e2fsprogs was in a directory with a pathname that contained spaces.
+
+We are now more paranoid about checking the entry in /etc/mtab to make
+sure the filesystem is really mounted, since some broken distributions
+(read: Slackware) don't initialize /etc/mtab before checking non-root
+filesystems.  (Slackware also doesn't check the root filesystem
+separately, and reboot if the root filesystem had changes applied to
+it, which is dangerous and broken, but there's nothing I can do about
+that.)
+
+Make UUID library C++ friendly by adding appropriate extern "C"
+declarations and using const in the function declarations.
+
+Fix up the com_err texinfo file so that it can product a valid info
+file (previously, it could only be used to generate paper
+documentation using texinfo.tex).
+

@@ -1,0 +1,49 @@
+E2fsprogs 1.04 (May 16, 1996)
+=============================
+
+First "official" (1.03 was a limited release only) to support building
+e2fsprogs under Linux 2.0 kernels (as well as late model 1.3 and 1.99
+kernels).
+
+This package includes a RPM specs file, that it can be built using the
+RedHat Package Manager.
+
+E2fsck now prints a hint that if there are lots of incorrectly located
+inode bitmaps, block bitmaps, and inode table blocks, the user might
+want to try using e2fsck -b 8193 first, to see if that fares any
+better.
+
+For ext2 filesystem written with the hurd, debugfs will now print out
+the translator field when printing an inode structure.
+
+Lots of miscellaneous linking/installation cleanups:
+
+  Libraries are now linked using a relative pathname, instead of
+  relying on -L working correct.  It doesn't, in many cases, including
+  current versions of GNU ld.  This guarantees that the build tree is
+  linking with the right libraries, instead of the ones installed in
+  /usr/lib.
+
+  Header files, man pages, and the et/ss shell scripts are now
+  generated using a custom substitution script, instead of relying on
+  the configure script.  This prevents needless recompilation of
+  files; in addition, the custom substitution script is much faster.
+
+  e2fsck may now be linked dynamically, by using the
+  --enable-dynamic-e2fsck flag to configure.  This is not recommended,
+  since it increases e2fsck's dependence on other files, but some
+  people need to save disk space, and other critical programs on their
+  systems were being linked dynamically anyway.
+
+  Programs such as fsck which didn't need to be linked against
+  libext2fs (or mke2fs which didn't need to be linked against libe2p)
+  only link against libraries they actually need.  Otherwise, those
+  programs would require the presence of libraries that otherwise
+  could be removed from a rescue diskette.
+
+  The ss include files are now installed correctly so they can
+  actually be used by another package.
+
+  If the profiling libraries are built, they are now installed on a
+  "make install-libs".
+

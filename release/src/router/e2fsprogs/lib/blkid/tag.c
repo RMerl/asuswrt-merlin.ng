@@ -261,7 +261,7 @@ errout:
  *
  * These routines do not expose the list.h implementation, which are a
  * contamination of the namespace, and which force us to reveal far, far
- * too much of our internal implemenation.  I'm not convinced I want
+ * too much of our internal implementation.  I'm not convinced I want
  * to keep list.h in the long term, anyway.  It's fine for kernel
  * programming, but performance is not the #1 priority for this
  * library, and I really don't like the tradeoff of type-safety for

@@ -1,0 +1,29 @@
+E2fsprogs 1.43.7 (October 16, 2017)
+===================================
+
+Fix the error handling code in debugfs, fuse2fs and tune2fs so errors
+trying to replay the journal won't accidentally result in a seg fault
+if reopening the file system after the journal replay fails for some
+reason.
+
+Fix resize2fs to avoid it from either failing or corrupting the file
+system image in certain corner cases when doing an off-line resize.
+
+Fix many spelling mistakes in various man pages, code comments, and
+program messages.
+
+Fix e2fsck and debugfs so that maliciously corrupted file systems will
+not cause buffer overflows.  (Addresses Debian Bugs: #873757, #878104)
+
+Update German translation.  (Addresses Debian Bug: #833514)
+
+Fixed various Debian Packaging Issues.  (Addresses Debian Bugs:
+#873812, #873813, #876551)
+
+Programming notes
+-----------------
+
+Test descritions have been shorted to fit in 80 columns.
+
+Fix various tests to avoid leaving temp files in /tmp.
+

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Abort on error.
+set -e
+
+if [ -x /usr/sbin/update-initramfs -a \
+	-e /etc/initramfs-tools/initramfs.conf ]; then
+    update-initramfs -u
+fi
+
+#DEBHELPER#
+
+exit 0

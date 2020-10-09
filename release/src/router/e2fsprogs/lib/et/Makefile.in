@@ -42,11 +42,12 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 #
 .c.o:
 	$(E) "	CC $<"
-	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -c $< -o $@
 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
-@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
+@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -g -pg -o profiled/$*.o -c $<
+@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) -fPIC -shared -o elfshared/$*.o -c $<
+@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 @MAKEFILE_LIBRARY@
 @MAKEFILE_ELF@
@@ -99,8 +100,8 @@ TAGS:	$(SRCS)
 	$(TAGS) $(SRCS)
 
 installdirs::
-	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/et $(datadir)/et $(bindir) $(man1dir) $(man3dir)"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
+	$(E) "	MKDIR_P $(libdir) $(includedir)/et $(datadir)/et $(bindir) $(man1dir) $(man3dir)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/et $(DESTDIR)$(datadir)/et \
 		$(DESTDIR)$(bindir) $(DESTDIR)$(man1dir) \
 		$(DESTDIR)$(man3dir) $(DESTDIR)$(pkgconfigdir)
@@ -136,10 +137,10 @@ uninstall::
 		$(DESTDIR)$(pkgconfigdir)/com_err.pc
 	$(RM) -rf $(DESTDIR)$(includedir)/et $(DESTDIR)$(datadir)/et
 
-check:: compile_et
+fullcheck check:: compile_et
 	for i in $(srcdir)/test_cases/*.et ; do \
 		t=`basename $$i | sed -e 's/.et//'`; \
-		./compile_et --build-tree $$i ; \
+		_ET_DIR_OVERRIDE=$(srcdir) ./compile_et $$i ; \
 		diff -c $(srcdir)/test_cases/$$t.c $$t.c > $$t.failed; \
 		if [ $$? -ne 0 ]; then echo Test case $$t failed; exit 1 ; fi ; \
 		diff -c $(srcdir)/test_cases/$$t.h $$t.h >> $$t.failed; \

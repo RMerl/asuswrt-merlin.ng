@@ -39,7 +39,7 @@ install-shlibs install:: $(BSD_LIB)
 
 install-strip: install
 
-install-shlibs-strip: install-shlibs
+install-shlibs-strip:: install-shlibs
 
 uninstall-shlibs uninstall::
 	$(RM) -f $(DESTDIR)$(BSDLIB_INSTALL_DIR)/$(BSD_LIB)

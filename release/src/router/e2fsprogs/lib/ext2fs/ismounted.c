@@ -9,6 +9,14 @@
  * %End-Header%
  */
 
+/* define BSD_SOURCE to make sure we get the major() macro */
+#ifndef _BSD_SOURCE
+#define _BSD_SOURCE
+#endif
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE	/* since glibc 2.20 _SVID_SOURCE is deprecated */
+#endif
+
 #include "config.h"
 #include <stdio.h>
 #if HAVE_UNISTD_H
@@ -38,10 +46,18 @@
 #endif /* HAVE_GETMNTINFO */
 #include <string.h>
 #include <sys/stat.h>
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_SYSMACROS_H
+#include <sys/sysmacros.h>
+#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
+#include "ext2fsP.h"
 
+#ifdef HAVE_SETMNTENT
 /*
  * Check to see if a regular file is mounted.
  * If /etc/mtab/ is a symlink of /proc/mounts, you will need the following check
@@ -51,7 +67,7 @@ static int check_loop_mounted(const char *mnt_fsname, dev_t mnt_rdev,
 				dev_t file_dev, ino_t file_ino)
 {
 #if defined(HAVE_LINUX_LOOP_H) && defined(HAVE_LINUX_MAJOR_H)
-	struct loop_info64 loopinfo;
+	struct loop_info64 loopinfo = {0, };
 	int loop_fd, ret;
 
 	if (major(mnt_rdev) == LOOP_MAJOR) {
@@ -72,7 +88,6 @@ static int check_loop_mounted(const char *mnt_fsname, dev_t mnt_rdev,
 	return 0;
 }
 
-#ifdef HAVE_SETMNTENT
 /*
  * Helper function which checks a file in /etc/mtab format to see if a
  * filesystem is mounted.  Returns an error if the file doesn't exist
@@ -90,6 +105,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 	int		fd;
 
 	*mount_flags = 0;
+
 	if ((f = setmntent (mtab_file, "r")) == NULL) {
 		if (errno == ENOENT) {
 			if (getenv("EXT2FS_NO_MTAB_OK"))
@@ -100,7 +116,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 		return errno;
 	}
 	if (stat(file, &st_buf) == 0) {
-		if (S_ISBLK(st_buf.st_mode)) {
+		if (ext2fsP_is_disk_device(st_buf.st_mode)) {
 #ifndef __GNU__ /* The GNU hurd is broken with respect to stat devices */
 			file_rdev = st_buf.st_rdev;
 #endif	/* __GNU__ */
@@ -112,10 +128,21 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 	while ((mnt = getmntent (f)) != NULL) {
 		if (mnt->mnt_fsname[0] != '/')
 			continue;
-		if (strcmp(file, mnt->mnt_fsname) == 0)
+		if (stat(mnt->mnt_dir, &st_buf) != 0)
+			continue;
+		if (strcmp(file, mnt->mnt_fsname) == 0) {
+			if (file_rdev && (file_rdev != st_buf.st_dev)) {
+#ifdef DEBUG
+				printf("Bogus entry in %s!  "
+				       "(%s does not exist)\n",
+				       mtab_file, mnt->mnt_dir);
+#endif /* DEBUG */
+				continue;
+			}
 			break;
+		}
 		if (stat(mnt->mnt_fsname, &st_buf) == 0) {
-			if (S_ISBLK(st_buf.st_mode)) {
+			if (ext2fsP_is_disk_device(st_buf.st_mode)) {
 #ifndef __GNU__
 				if (file_rdev && (file_rdev == st_buf.st_rdev))
 					break;
@@ -152,32 +179,6 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 #endif	/* __GNU__ */
 		goto errout;
 	}
-#ifndef __GNU__ /* The GNU hurd is deficient; what else is new? */
-	/* Validate the entry in case /etc/mtab is out of date */
-	/*
-	 * We need to be paranoid, because some broken distributions
-	 * (read: Slackware) don't initialize /etc/mtab before checking
-	 * all of the non-root filesystems on the disk.
-	 */
-	if (stat(mnt->mnt_dir, &st_buf) < 0) {
-		retval = errno;
-		if (retval == ENOENT) {
-#ifdef DEBUG
-			printf("Bogus entry in %s!  (%s does not exist)\n",
-			       mtab_file, mnt->mnt_dir);
-#endif /* DEBUG */
-			retval = 0;
-		}
-		goto errout;
-	}
-	if (file_rdev && (st_buf.st_dev != file_rdev)) {
-#ifdef DEBUG
-		printf("Bogus entry in %s!  (%s not mounted on %s)\n",
-		       mtab_file, file, mnt->mnt_dir);
-#endif /* DEBUG */
-		goto errout;
-	}
-#endif /* __GNU__ */
 	*mount_flags = EXT2_MF_MOUNTED;
 
 #ifdef MNTOPT_RO
@@ -226,7 +227,7 @@ static errcode_t check_mntent(const char *file, int *mount_flags,
 #ifdef __linux__
 	retval = check_mntent_file("/proc/mounts", file, mount_flags,
 				   mtpt, mtlen);
-	if (retval == 0 && (*mount_flags != 0))
+	if (retval == 0)
 		return 0;
 #endif /* __linux__ */
 #if defined(MOUNTED) || defined(_PATH_MOUNTED)
@@ -295,7 +296,7 @@ static int is_swap_device(const char *file)
 	file_dev = 0;
 #ifndef __GNU__ /* The GNU hurd is broken with respect to stat devices */
 	if ((stat(file, &st_buf) == 0) &&
-	    S_ISBLK(st_buf.st_mode))
+	    ext2fsP_is_disk_device(st_buf.st_mode))
 		file_dev = st_buf.st_rdev;
 #endif	/* __GNU__ */
 
@@ -322,7 +323,7 @@ valid_first_line:
 		}
 #ifndef __GNU__
 		if (file_dev && (stat(buf, &st_buf) == 0) &&
-		    S_ISBLK(st_buf.st_mode) &&
+		    ext2fsP_is_disk_device(st_buf.st_mode) &&
 		    file_dev == st_buf.st_rdev) {
 			ret++;
 			break;
@@ -351,6 +352,44 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 				  char *mtpt, int mtlen)
 {
 	errcode_t	retval = 0;
+	int 		busy = 0;
+
+	if (getenv("EXT2FS_PRETEND_RO_MOUNT")) {
+		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_READONLY;
+		if (getenv("EXT2FS_PRETEND_ROOTFS"))
+			*mount_flags = EXT2_MF_ISROOT;
+		return 0;
+	}
+	if (getenv("EXT2FS_PRETEND_RW_MOUNT")) {
+		*mount_flags = EXT2_MF_MOUNTED;
+		if (getenv("EXT2FS_PRETEND_ROOTFS"))
+			*mount_flags = EXT2_MF_ISROOT;
+		return 0;
+	}
+
+#ifdef __linux__ /* This only works on Linux 2.6+ systems */
+	{
+		struct stat st_buf;
+
+		if (stat(device, &st_buf) == 0 &&
+		    ext2fsP_is_disk_device(st_buf.st_mode)) {
+			int fd = open(device, O_RDONLY | O_EXCL);
+
+			if (fd >= 0) {
+				/*
+				 * The device is not busy so it's
+				 * definitelly not mounted. No need to
+				 * to perform any more checks.
+				 */
+				close(fd);
+				*mount_flags = 0;
+				return 0;
+			} else if (errno == EBUSY) {
+				busy = 1;
+			}
+		}
+	}
+#endif
 
 	if (is_swap_device(device)) {
 		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_SWAP;
@@ -372,20 +411,8 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 	if (retval)
 		return retval;
 
-#ifdef __linux__ /* This only works on Linux 2.6+ systems */
-	{
-		struct stat st_buf;
-
-		if (stat(device, &st_buf) == 0 && S_ISBLK(st_buf.st_mode)) {
-			int fd = open(device, O_RDONLY | O_EXCL);
-
-			if (fd >= 0)
-				close(fd);
-			else if (errno == EBUSY)
-				*mount_flags |= EXT2_MF_BUSY;
-		}
-	}
-#endif
+	if (busy)
+		*mount_flags |= EXT2_MF_BUSY;
 
 	return 0;
 }

@@ -18,7 +18,7 @@
 
 #include "e2p.h"
 #include <ext2fs/ext2fs.h>
-#include <ext2fs/jfs_user.h>
+#include <ext2fs/kernel-jbd.h>
 
 struct feature {
 	int		compat;
@@ -45,6 +45,8 @@ static struct feature feature_list[] = {
 			"snapshot_bitmap" },
 	{	E2P_FEATURE_COMPAT, EXT4_FEATURE_COMPAT_SPARSE_SUPER2,
 			"sparse_super2" },
+	{	E2P_FEATURE_COMPAT, EXT4_FEATURE_COMPAT_FAST_COMMIT,
+			"fast_commit" },
 
 	{	E2P_FEATURE_RO_INCOMPAT, EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER,
 			"sparse_super" },
@@ -68,6 +70,14 @@ static struct feature feature_list[] = {
 			"metadata_csum"},
 	{	E2P_FEATURE_RO_INCOMPAT, EXT4_FEATURE_RO_COMPAT_REPLICA,
 			"replica" },
+	{	E2P_FEATURE_RO_INCOMPAT, EXT4_FEATURE_RO_COMPAT_READONLY,
+			"read-only" },
+	{	E2P_FEATURE_RO_INCOMPAT, EXT4_FEATURE_RO_COMPAT_PROJECT,
+			"project"},
+	{	E2P_FEATURE_RO_INCOMPAT, EXT4_FEATURE_RO_COMPAT_SHARED_BLOCKS,
+			"shared_blocks"},
+	{	E2P_FEATURE_RO_INCOMPAT, EXT4_FEATURE_RO_COMPAT_VERITY,
+			"verity"},
 
 	{	E2P_FEATURE_INCOMPAT, EXT2_FEATURE_INCOMPAT_COMPRESSION,
 			"compression" },
@@ -93,10 +103,18 @@ static struct feature feature_list[] = {
 			"ea_inode"},
 	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_DIRDATA,
 			"dirdata"},
+	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_CSUM_SEED,
+			"metadata_csum_seed"},
 	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_LARGEDIR,
 			"large_dir"},
-	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_INLINEDATA,
+	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_INLINE_DATA,
 			"inline_data"},
+	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_ENCRYPT,
+			"encrypt"},
+	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_CASEFOLD,
+			"casefold"},
+	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_CASEFOLD,
+			"fname_encoding"},
 	{	0, 0, 0 },
 };
 
@@ -110,20 +128,27 @@ static struct feature jrnl_feature_list[] = {
                        "journal_64bit" },
        {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_ASYNC_COMMIT,
                        "journal_async_commit" },
+       {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_CSUM_V2,
+                       "journal_checksum_v2" },
+       {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_CSUM_V3,
+                       "journal_checksum_v3" },
        {       0, 0, 0 },
 };
 
-const char *e2p_feature2string(int compat, unsigned int mask)
+void e2p_feature_to_string(int compat, unsigned int mask, char *buf,
+                           size_t buf_len)
 {
 	struct feature  *f;
-	static char buf[20];
 	char	fchar;
 	int	fnum;
 
 	for (f = feature_list; f->string; f++) {
 		if ((compat == f->compat) &&
-		    (mask == f->mask))
-			return f->string;
+		    (mask == f->mask)) {
+			strncpy(buf, f->string, buf_len);
+			buf[buf_len - 1] = 0;
+			return;
+		}
 	}
 	switch (compat) {
 	case  E2P_FEATURE_COMPAT:
@@ -141,6 +166,13 @@ const char *e2p_feature2string(int compat, unsigned int mask)
 	}
 	for (fnum = 0; mask >>= 1; fnum++);
 	sprintf(buf, "FEATURE_%c%d", fchar, fnum);
+}
+
+const char *e2p_feature2string(int compat, unsigned int mask)
+{
+	static char buf[20];
+
+	e2p_feature_to_string(compat, mask, buf, sizeof(buf) / sizeof(buf[0]));
 	return buf;
 }
 
@@ -179,7 +211,7 @@ int e2p_string2feature(char *string, int *compat_type, unsigned int *mask)
 	if (string[9] == 0)
 		return 1;
 	num = strtol(string+9, &eptr, 10);
-	if (num > 32 || num < 0)
+	if (num > 31 || num < 0)
 		return 1;
 	if (*eptr)
 		return 1;
@@ -253,7 +285,7 @@ int e2p_jrnl_string2feature(char *string, int *compat_type, unsigned int *mask)
 	if (string[9] == 0)
 		return 1;
 	num = strtol(string+9, &eptr, 10);
-	if (num > 32 || num < 0)
+	if (num > 31 || num < 0)
 		return 1;
 	if (*eptr)
 		return 1;

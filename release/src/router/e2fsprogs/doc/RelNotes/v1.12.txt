@@ -1,0 +1,153 @@
+E2fsprogs 1.12 (July 9, 1998)
+==================================
+
+E2fsprogs now works with glibc (at least with the version shipped with
+RedHat 5.0).  The ext2fs_llseek() function should now work even with
+i386 ELF shared libraries and if llseek() is not present.  We also
+explicitly do a configure test to see if (a) llseek is in libc, and
+(b) if llseek is declared in the system header files.  (See standard
+complaints about libc developers don't understand the concept of
+compatibility with previous versions of libc.)
+
+The ext2fs library now writes out the block group number in each of
+the superblock copies.  This makes it easier to automatically
+determine the starting block group of the filesystem when the block
+group information is trashed.
+
+Added support for the EXT2_FEATURE_INCOMPAT_FILETYPE feature,
+which means that e2fsprogs will ignore the high 8 bits of the
+directory entry's name_len field, so that it can be used for other
+purposes.
+
+Added support for the EXT2_FEATURE_RO_COMPAT_LARGE_FILE feature.
+E2fsprogs will now support filesystems with 64-bit sized files.
+
+Added support for the EXT2_FEATURE_COMPAT_DIR_PREALLOC feature.
+
+Added new program "e2label", contributed by Andries Brouwer.  E2label
+provides an easy-to-use interface to modify the filesystem label.
+
+Fixed bug so that lsattr -v works instead of producing a core dump.
+
+Fixed a minor bug in mke2fs so that all groups with bad superblock
+backup blocks are printed (not just the first one).
+
+Mke2fs will check the size of the device, and if the user specifies a
+filesystem size larger than the apparent size of the device it will
+print a warning message and ask if the user wants to proceed.
+
+E2fsck has a new option -C, which sends completion information to the
+specified file descriptor.  For the most part, this is intended for
+programs to use, although -C 0 will print a spinning character to the
+stdout device, which may be useful for users who want to see something
+happening while e2fsck goes about its business.
+
+Fixed a bug in e2fsck which could cause a core dump when it needs to
+expand the /lost+found directory, and sometimes the bitmaps haven't
+been merged in.  Also fixed a related bug where ext2fs_write_dir_block
+was used to write out a non-directory block.  (Which would be bad on a
+non-Intel platform with byte swapping going on.)
+
+Fixed bug in e2fsck where it would print a "programming error" message
+instead of correctly identifying where a bad block was in used when
+the bad block was in a non-primary superblock or block group
+descriptor.  Also fixed a related bug when sparse superblocks are in
+use and there is a bad block where a superblock or block group
+descriptor would have been in a group that doesn't include a
+superblock.
+
+Fixed a bug in e2fsck (really in libext2fs's dblist function) where if
+the block group descriptor table is corrupt, it was possible to try to
+allocate a huge array, fail, and then abort e2fsck.
+ext2fs_get_num_dirs() now sanity checks the block group descriptor,
+and substitutes reasonable values if the descriptors are obviously bogus.
+
+If e2fsck finds a device file which has the immutable flag set and the
+i_blocks beyond the normal device number are non-zero, e2fsck will
+offer to remove it, since it's probably caused by garbage in the inode
+table.
+
+When opening a filesystem, e2fsck specially checks for the EROFS error
+code, and prints a specific error message to the user which is more
+user friendly.
+
+If the filesystem revision is too high, change the e2fsck to print
+that this is either because e2fsck is out of date, or because the
+superblock is corrupt.  
+
+E2fsck now checks for directories that have duplicate '.' and '..'
+entries, and fixes this corruption.
+
+E2fsck no longer forces a sync of the filesystem (with attendant sleep
+calls) at all times.  The ext2fs_flush() function now performs a sync
+only if it needed to write data blocks to disk.
+
+Fixed a minor bug in e2fsck's pass1b's file cloning function, where
+certain errors would not be properly reported.
+
+Updated and expanded a few points in the man pages which users
+complained weren't explicit enough.
+
+Added special case byte-swapping code if compiling on the PowerPC, to
+accommodate the strange big-endian variant of the ext2 filesystem that
+was previously used on the PowerPC port.
+
+
+Programmer's notes:
+-------------------
+
+Removed C++ keywords from the ext2fs libraries so that it could be
+compiled with C++.
+
+E2fsck's internal organization has now been massively reorganized so
+that pass*.c don't have any printf statements.  Instead, all problems
+are reported through the fix_problem() abstraction interface.  E2fsck
+has also been revamped so that it can be called as a library from a
+application.
+
+Added new fileio primitives in libext2fs for reading and writing
+files on an unmounted ext2 filesystem.  This interface is now used by
+debugfs.
+
+Added a new libext2fs function for mapping logical block numbers of
+a file to a physical block number.
+
+Added a new libext2fs function, ext2fs_alloc_block(), which allocates
+a block, zeros it, and updates the filesystem accounting records
+appropriately.
+
+Added a new libext2fs function, ext2fs_set_bitmap_padding(), which
+sets the padding of the bitmap to be all one's.  Used by e2fsck pass 5.
+
+The libext2fs functions now use a set of memory allocation wrapper
+functions: ext2fs_get_mem, ext2fs_free_mem, and ext2fs_resize_mem,
+instead of malloc, free, and resize.  This makes it easier for us to
+be ported to strange environments where malloc, et. al. aren't
+necessarily available.
+
+Change the libext2fs function to return ext2-specific error codes
+(EXT2_DIR_EXISTS and EXT2_DB_NOT_FOUND, for example) instead of using
+and depending on the existence of system error codes (such as EEXIST
+and ENOENT).
+
+Renamed io.h to ext2_io.h to avoid collision with other OS's header
+files.
+
+Add protection against ext2_io.h and ext2fs.h being included multiple
+times.
+
+The types used for memory lengths, etc. have been made more portable.
+In general, the code has been made 16-bit safe.  Added Mark
+Habersack's contributed DOS disk i/o routines.
+
+Miscellaneous portability fixes, including not depending on char's
+being signed.
+
+The io_channel structure has a new element, app_data, which is
+initialized by the ext2fs routines to contain a copy of the filesystem
+handle.
+
+ext2fs_check_directory()'s callback function may now return the error
+EXT2_ET_CALLBACK_NOTHANDLED if it wishes ext2fs_check_directory() to
+really do the checking, despite the presence of the callback function.
+

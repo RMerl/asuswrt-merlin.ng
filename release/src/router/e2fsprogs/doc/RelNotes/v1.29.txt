@@ -1,0 +1,31 @@
+E2fsprogs 1.29 (September 24, 2002)
+===================================
+
+Fixed a bug in e2fsck which could corrupt a directory when optimizing
+it (via the -D option) or rebuilding the hash tree index with a 1 in
+512 probability, due to a fence post error.
+
+Fixed a bug in the LVM support code which caused LABEL='xxx' not to
+work correctly.
+
+Mke2fs now enables the directory indexing flag by default.  (Since
+this is a compatible feature flag, it's safe to do so.)
+
+Tune2fs will support setting the directory indexing feature flag.  It
+will automatically set up the default hash algorithm and hash seed
+fields in the superblock.
+
+If the bone-headed user enters the root filesystem twice in
+/etc/fstab, the -R option which skips the root filesystem will skip
+all of them.  (Addresses Debian bug #159423).  Note!  This is not a
+precedent for dealing intelligently with any other kind of doubled
+entry in /etc/fstab!
+
+
+Programmer's notes: 
+-------------------
+
+Removed perror declaration in lib/et/internal.h.  All modern systems
+can be expected to define perror() these days.  Besides, the lib/et
+code wasn't using perror at all anyway.  :-)
+

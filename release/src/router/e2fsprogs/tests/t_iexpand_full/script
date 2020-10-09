@@ -1,0 +1,83 @@
+if ! test -x $RESIZE2FS_EXE -o ! -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs/resize2fs)"
+	return 0
+fi
+
+if [ $(uname -s) = "Darwin" ]; then
+	# creates a 3GB filesystem
+	echo "$test_name: $DESCRIPTION: skipped for HFS+ (no sparse files)"
+	return 0
+fi
+
+FSCK_OPT=-fn
+OUT=$test_name.log
+EXP=$test_dir/expect
+CONF=$TMPFILE.conf
+
+#gzip -d < $EXP.gz > $EXP
+
+cat > $CONF << ENDL
+[fs_types]
+	ext4h = {
+		features = has_journal,extent,huge_file,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,dir_index,ext_attr,^resize_inode,^meta_bg,^flex_bg,metadata_csum,64bit
+		blocksize = 1024
+		inode_size = 256
+		make_hugefiles = true
+		hugefiles_dir = /
+		hugefiles_slack = 12000K
+		hugefiles_name = aaaaa
+		hugefiles_digits = 4
+		hugefiles_size = 117K
+		zero_hugefiles = false
+	}
+ENDL
+
+echo "tune2fs test" > $OUT
+
+MKE2FS_CONFIG=$CONF $MKE2FS -F -T ext4h -I 128 $TMPFILE 786432 >> $OUT 2>&1
+rm -f $CONF
+
+# dump and check
+($DUMPE2FS -h $TMPFILE; $DUMPE2FS -g $TMPFILE) 2>&1 | sed -f $cmd_dir/filter.sed -e '/^Checksum:.*/d' >> $OUT.before 2> /dev/null
+$FSCK $FSCK_OPT -N test_filesys $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+# convert it
+echo "tune2fs -I 256 test.img" >> $OUT
+dd if=/dev/zero of=$TMPFILE conv=notrunc bs=1 count=1 seek=3221225471 2> /dev/null
+$TUNE2FS -I 256 $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+# dump and check
+($DUMPE2FS -h $TMPFILE; $DUMPE2FS -g $TMPFILE) 2>&1 | sed -f $cmd_dir/filter.sed -e '/^Checksum:.*/d' >> $OUT.after 2> /dev/null
+echo "Change in FS metadata:" >> $OUT
+diff -U 0 $OUT.before $OUT.after | sed -e '/^---.*/d' -e '/^+++.*/d' >> $OUT
+$FSCK $FSCK_OPT -N test_filesys $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+rm $TMPFILE
+
+#
+# Do the verification
+#
+
+sed -f $cmd_dir/filter.sed -e 's/test_filesys:.*//g' < $OUT > $OUT.new
+mv $OUT.new $OUT
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+rm $OUT.before $OUT.after
+
+unset IMAGE FSCK_OPT OUT EXP CONF

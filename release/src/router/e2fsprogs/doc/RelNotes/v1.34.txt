@@ -1,0 +1,130 @@
+E2fsprogs 1.34 (July 25, 2003)
+===============================
+
+Fixed a bug introduced in E2fsprogs 1.30 which caused fsck to spin in
+a tight loop while waiting for a child fsck to exit in some cases.
+This burns CPU times which slows down the low-level filesystem check.
+
+Added code to mke2fs to assure that the default block size for a
+filesystem is at least as big as the sector size of the device, if it
+can be determined.
+
+Changed mke2fs and resize2fs to round the default size of a filesystem
+to be an even multiple of the VM pagesize in order to avoid a Linux
+kernel bug introduced when the storage of the buffer cache was moved
+into the page cache.
+
+Mke2fs will warn the user when creating a filesystem with journalling
+and a blocksize greater than 4096.  (Addresses Debian bug #193773)
+
+Fixed a bug in resize2fs which caused it to fail on filesystems with a
+non-empty bad block list.  Resize2fs now discards any blocks on the
+badblock list which are no longer part of the filesystem as the result
+of a filesystem shrink.  (Note: this means that shrinking and then
+enlarging a filesystem is no longer a reversible operation;
+information about bad blocks in the part of the filesystem which is to
+be chopped off will be lost.)
+
+Changed resize2fs so the user can use prefixes to specify the units of
+the new filesystem size (sectors, kilobytes, megabytes, or gigabytes),
+and to make the error and informational messages explicitly display
+the blocksize used by the filesystem, in order to avoid confusion.
+(Addresses Debian bug: #189814)
+
+Added a new debugfs command, dump_unused, which dumps the contents of
+all unused blocks to stdout.  (Useful as an emergency try-to-find
+deleted data command.)
+
+Added a new debugfs command, imap, which prints the location of a
+specified inode in the inode table.
+
+Fixed a bug in the badblocks program which caused it to use one bit of
+randomness in its non-destructive read/write test, instead of using a
+full 8 bits of randomness.
+
+Added a new option (-t) to badblocks, which allows the user to control
+the test pattern(s) used when checking a disk.
+
+The blkid probe function now more correctly detects UDF filesystems.
+
+Fixed a bug in the blkid library which caused it to not update its
+cache if a filesystem changes from having a label to not having a
+label.
+
+Fixed a bug in the blkid library which could avoid an infinite loop
+in blkid_find_dev_with_tag() if /proc is not mounted and there the
+/etc/blkid.tab file has not yet been created.
+
+Fixed the badblocks program so that the destructive read/write test
+honors the -c option, and to use O_DIRECT when possible to avoid
+thrashing the system block buffer cache.
+
+Fixed various NLS issues.
+ - Added Czech and Swedish translations
+ - Removed testing NYC translation
+ - Fixed NLS support for message abbreviations in e2fsck
+ - Remove de-utf.po, since we shouldn't have two versions using different
+	charset encodings.
+ - Used ngettext() (abbreviated with the macro P_(str1, str2, n)) to
+	simplify the statistics reporting in e2fsck.
+
+Changed configure.in so that its defaults for *BSD systems no longer
+build an fsck wrapper, and not to install in /usr/local by default.
+
+Fixed some minor spelling errors/typo's in e2fsck and the configure
+script.
+
+Fixed various Debian packaging issues (see debian/changelog). 
+
+Updated and clarified man pages.  (Addresses Debian Bug #195616)
+
+Programmer's notes: 
+-------------------
+
+Fix gcc -Wall nitpicks.
+
+Updated gettext implementation used by e2fsprogs to 0.11.5, and enable
+NLS support by default.  (Added partial workaround for gettext/Darwin
+incompatibility problems.)
+
+Added full MIT KRB5 and Himdall compatibility support to the com_err
+library and the compile_et program.  (Addresses Debian bug #191900)
+
+Added the blkid_known_fstype() function to the blkid library, which
+returns true if it is passed a filesystem type which is recognized by
+the blkid probing functions.
+
+Improved the documentation for the blkid library.
+
+Added the ext2fs_get_device_sectsize() function the the ext2fs library, which
+returns the hardware sector size of a device, if it is available.
+
+Added a dependency in the blkid library's .so file to the uuid
+library, since the former uses the latter.  (Addresses Debian bug
+#194094)
+
+Added --with-diet-libc and --disable-evms to the configure script.
+
+Fixed a minor memory leak in the badblocks program.
+
+Fixed a portability problem in tune2fs --- not all systems have strptime().
+
+Fixed a portability problem in debugfs with the use of getopt() more
+than once.  Old-style BSD, new-style BSD, and Linux C libraries all do
+things differently.
+
+Add support Windows support to ext2fs_get_device_size().
+
+Added (normally disabled) debugging code to the Unix I/O manager which
+causes it to disable all userspace caching if the NO_IO_CACHE is
+defined.
+
+Changed the test I/O manager so it can always be linked into e2fsck,
+mke2fs, and tune2fs if enabled via --enable-test-io-debug to the
+configure script.  The test I/O manager will only print any debugging
+information if the TEST_IO_FLAGS or TEST_IO_BLOCK environment
+variables are set, which specifies which I/O operations are logged and
+a block number to watch, respectively.  The log messages are sent to
+stderr by default, unless a filename is specified via the
+TEST_IO_LOGFILE environment variable.
+

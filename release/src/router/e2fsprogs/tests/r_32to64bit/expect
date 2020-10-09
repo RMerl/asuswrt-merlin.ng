@@ -1,0 +1,94 @@
+resize2fs test
+Creating filesystem with 524288 1k blocks and 65536 inodes
+Superblock backups stored on blocks: 
+	8193, 24577, 40961, 57345, 73729, 204801, 221185, 401409
+
+Allocating group tables:      done                            
+Writing inode tables:      done                            
+Creating journal (16384 blocks): done
+Creating 477 huge file(s) with 1024 blocks each: done
+Writing superblocks and filesystem accounting information:      done
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+Exit status is 0
+resize2fs test.img -b
+Converting the filesystem to 64-bit.
+The filesystem on test.img is now 524288 (1k) blocks long.
+
+Exit status is 0
+Change in FS metadata:
+@@ -2,7 +2,7 @@
+ Last mounted on:          <not available>
+ Filesystem magic number:  0xEF53
+ Filesystem revision #:    1 (dynamic)
+-Filesystem features:      has_journal ext_attr resize_inode dir_index filetype extent flex_bg sparse_super large_file huge_file uninit_bg dir_nlink extra_isize
++Filesystem features:      has_journal ext_attr resize_inode dir_index filetype extent 64bit flex_bg sparse_super large_file huge_file uninit_bg dir_nlink extra_isize
+ Default mount options:    user_xattr acl
+ Filesystem state:         clean
+ Errors behavior:          Continue
+@@ -15,7 +15,8 @@
+ First block:              1
+ Block size:               1024
+ Fragment size:            1024
+-Reserved GDT blocks:      256
++Group descriptor size:    64
++Reserved GDT blocks:      254
+ Blocks per group:         8192
+ Fragments per group:      8192
+ Inodes per group:         1024
+@@ -40,16 +41,16 @@
+ 
+ 
+ group:block:super:gdt:bbitmap:ibitmap:itable
+-0:1:1:2-3:260:276:292
+-1:8193:8193:8194-8195:261:277:548
++0:1:1:2-5:260:276:292
++1:8193:8193:8194-8197:261:277:548
+ 2:16385:-1:-1:262:278:804
+-3:24577:24577:24578-24579:263:279:1060
++3:24577:24577:24578-24581:263:279:1060
+ 4:32769:-1:-1:264:280:1316
+-5:40961:40961:40962-40963:265:281:1572
++5:40961:40961:40962-40965:265:281:1572
+ 6:49153:-1:-1:266:282:1828
+-7:57345:57345:57346-57347:267:283:2084
++7:57345:57345:57346-57349:267:283:2084
+ 8:65537:-1:-1:268:284:2340
+-9:73729:73729:73730-73731:269:285:2596
++9:73729:73729:73730-73733:269:285:2596
+ 10:81921:-1:-1:270:286:2852
+ 11:90113:-1:-1:271:287:3108
+ 12:98305:-1:-1:272:288:3364
+@@ -65,9 +66,9 @@
+ 22:180225:-1:-1:131079:131095:132641
+ 23:188417:-1:-1:131080:131096:132897
+ 24:196609:-1:-1:131081:131097:133153
+-25:204801:204801:204802-204803:131082:131098:133409
++25:204801:204801:204802-204805:131082:131098:133409
+ 26:212993:-1:-1:131083:131099:133665
+-27:221185:221185:221186-221187:131084:131100:133921
++27:221185:221185:221186-221189:131084:131100:133921
+ 28:229377:-1:-1:131085:131101:134177
+ 29:237569:-1:-1:131086:131102:134433
+ 30:245761:-1:-1:131087:131103:134689
+@@ -89,7 +90,7 @@
+ 46:376833:-1:-1:262159:262175:265761
+ 47:385025:-1:-1:262160:262176:266017
+ 48:393217:-1:-1:393217:393233:393249
+-49:401409:401409:401410-401411:393218:393234:393505
++49:401409:401409:401410-401413:393218:393234:393505
+ 50:409601:-1:-1:393219:393235:393761
+ 51:417793:-1:-1:393220:393236:394017
+ 52:425985:-1:-1:393221:393237:394273
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+Exit status is 0

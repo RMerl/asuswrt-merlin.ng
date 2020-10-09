@@ -1,0 +1,37 @@
+#!/bin/sh
+
+TDIR=${AUTOPKGTEST_TMP:-/tmp/fuse_dir}
+LOGDIR=${AUTOPKGTEST_ARTIFACTS:-/tmp/fuse_dir_log}
+IMG=$TDIR/test-image.img
+MNT=$TDIR/mnt
+
+# some autopkgtest environments may not have /etc/mtab and/or /proc/mounts
+EXT2FS_NO_MTAB_OK=yes
+export EXT2FS_NO_MTAB_OK
+
+mkdir -p $LOGDIR $TDIR $MNT
+
+/sbin/mke2fs -E root_owner -q -t ext4 -d e2fsck $IMG 8M
+/sbin/e2label $IMG test
+fuse2fs $IMG $MNT > $LOGDIR/fuse2fs.log 2>&1
+if test $? -ne 0 ; then
+   echo "fuse2fs failed; see $LOGDIR/fuse2fs.log"
+   exit 1
+fi
+diff e2fsck/pass1.c $MNT/pass1.c
+echo foobar > $MNT/testfile
+fusermount -u $MNT > $LOGDIR/fusermount.log 2>&1
+if test $? -ne 0 ; then
+   echo "fusermount failed; see $LOGDIR/fusermount.log"
+   exit 1
+fi
+/sbin/e2fsck -fy $IMG > $LOGDIR/e2fsck.log 2>&1
+if test $? -ne 0 ; then
+   echo "e2fsck failed; see $LOGDIR/e2fsck.log"
+   exit 1
+fi
+contents=$(/sbin/debugfs -R "cat testfile" $IMG 2> $LOGDIR/debugfs.log)
+if test "$contents" != foobar ; then
+   echo "testfile does not contain expected output"
+   exit 1
+fi

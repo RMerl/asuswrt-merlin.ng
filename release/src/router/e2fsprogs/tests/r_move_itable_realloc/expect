@@ -1,0 +1,58 @@
+mke2fs -q -F -o Linux -b 1024 -i 1024 -O ^resize_inode -t ext4 test.img 1024000
+resize2fs -p test.img 100000000
+Resizing the filesystem on test.img to 100000000 (1k) blocks.
+Begin pass 2 (max = 2061)
+Relocating blocks             ----------------------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+Begin pass 3 (max = 125)
+Scanning inode table          ----------------------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+Begin pass 5 (max = 5)
+Moving inode table            ----------------------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+The filesystem on test.img is now 99999745 (1k) blocks long.
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/99999744 files (0.0% non-contiguous), 25048025/99999745 blocks
+Exit status is 0
+dumpe2fs -h test.img
+Filesystem volume name:   <none>
+Last mounted on:          <not available>
+Filesystem magic number:  0xEF53
+Filesystem revision #:    1 (dynamic)
+Filesystem features:      has_journal ext_attr dir_index filetype extent flex_bg sparse_super huge_file uninit_bg dir_nlink extra_isize
+Default mount options:    (none)
+Filesystem state:         clean
+Errors behavior:          Continue
+Filesystem OS type:       Linux
+Inode count:              99999744
+Block count:              99999745
+Reserved block count:     4999987
+Free blocks:              74951720
+Free inodes:              99999733
+First block:              1
+Block size:               1024
+Fragment size:            1024
+Blocks per group:         8192
+Fragments per group:      8192
+Inodes per group:         8192
+Inode blocks per group:   2048
+Flex block group size:    16
+Mount count:              0
+Check interval:           15552000 (6 months)
+Reserved blocks uid:      0
+Reserved blocks gid:      0
+First inode:              11
+Inode size:	          256
+Required extra isize:     32
+Desired extra isize:      32
+Journal inode:            8
+Default directory hash:   half_md4
+Journal backup:           inode blocks
+Journal features:         (none)
+Journal size:             16M
+Journal length:           16384
+Journal sequence:         0x00000001
+Journal start:            0
+

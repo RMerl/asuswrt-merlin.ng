@@ -1,0 +1,35 @@
+#!/bin/sh
+
+update_svc() {
+	deb-systemd-helper mask "$1" >/dev/null || true
+
+	if deb-systemd-helper --quiet was-enabled "$1"; then
+		# Enables the unit on first installation, creates new
+		# symlinks on upgrades if the unit file has changed.
+		deb-systemd-helper disable "$1" >/dev/null || true
+	fi
+}
+
+if [ "$1" != "upgrade" ]; then
+	# Abort on error.
+	set -e
+
+	if [ -x /usr/sbin/update-initramfs -a \
+		-e /etc/initramfs-tools/initramfs.conf ]; then
+	    update-initramfs -u
+	fi
+
+	#DEBHELPER#
+
+	# debhelper doesn't know what timers are...
+	update_svc e2scrub_all.timer
+	update_svc e2scrub_reap.service
+
+	# Start our new services
+	if [ -d /run/systemd/system ]; then
+		deb-systemd-invoke stop e2scrub_all.timer >/dev/null || true
+	fi
+fi
+
+exit 0
+

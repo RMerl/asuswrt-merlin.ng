@@ -35,7 +35,9 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#if HAVE_FCNTL
 #include <fcntl.h>
+#endif
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -111,6 +113,11 @@ gettextf set_com_err_gettext(gettextf new_proc)
     return x;
 }
 
+#ifdef __GNU__
+#define SYS_ERR_BASE 0x40000000
+#else
+#define SYS_ERR_BASE 0
+#endif
 
 const char * error_message (errcode_t code)
 {
@@ -122,14 +129,14 @@ const char * error_message (errcode_t code)
 
     offset = (int) (code & ((1<<ERRCODE_RANGE)-1));
     table_num = code - offset;
-    if (!table_num) {
+    if (table_num == SYS_ERR_BASE) {
 #ifdef HAS_SYS_ERRLIST
-	if (offset < sys_nerr)
-	    return(sys_errlist[offset]);
+	if (code < sys_nerr)
+	    return(sys_errlist[code]);
 	else
 	    goto oops;
 #else
-	cp = strerror(offset);
+	cp = strerror(code);
 	if (cp)
 	    return(cp);
 	else
@@ -196,8 +203,10 @@ oops:
  */
 static char *safe_getenv(const char *arg)
 {
+#if !defined(_WIN32)
 	if ((getuid() != geteuid()) || (getgid() != getegid()))
 		return NULL;
+#endif
 #if HAVE_PRCTL
 	if (prctl(PR_GET_DUMPABLE, 0, 0, 0, 0) == 0)
 		return NULL;
@@ -249,11 +258,20 @@ static void init_debug(void)
 		debug_f = fopen("/dev/tty", "a");
 	if (debug_f) {
 		fd = fileno(debug_f);
+#if defined(HAVE_FCNTL)
 		if (fd >= 0) {
 			flags = fcntl(fd, F_GETFD);
 			if (flags >= 0)
-				fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
+				flags = fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
+			if (flags < 0) {
+				fprintf(debug_f, "Couldn't set FD_CLOEXEC "
+					"on debug FILE: %s\n", strerror(errno));
+				fclose(debug_f);
+				debug_f = NULL;
+				debug_mask = DEBUG_INIT;
+			}
 		}
+#endif
 	} else
 		debug_mask = DEBUG_INIT;
 

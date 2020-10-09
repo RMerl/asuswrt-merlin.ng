@@ -1,0 +1,39 @@
+E2fsprogs 1.31 (November 8, 2002)
+=================================
+
+Update EVMS ext2fsim plugin with EVMS 1.2.  (We still support
+compiling the fsim plugin with EVMS 1.0 and 1.1.)  Add better error
+handling for child process that die unexpectedly.  Add a hack to force
+mkfs to create filesystems that won't cause problems with hardware
+that has 2k or 4k minimum blocksize requirements.  Read from child
+processes in non-blocking mode, so that the GUI continues to update.
+
+Fix e2fsck so that it returns the appropriate exit code when the root
+filesystem has been changed, so that system's rc scripts will be told that 
+the system needs to be rebooted.
+
+Fix a bug in ext2fs_flush/ext2fs_close; when the MASTER_SB_ONLY flag
+was set, some of the descriptor blocks that should have been written
+out were getting skipped.
+
+Changed e2fsck to force out changes to the backup copies of the
+superblock and block group descriptors when important changes are made
+to those data structures.
+
+Fix a bug where e2fsck could erroneously mark a filesystem as being
+clean if a check of dirty filesystem is interrupted with a ^C.  (Bug
+introduced in e2fsprogs 1.28.)
+
+If journal debugging is enabled using --enable-jbd-debug, the debugging
+level is now set via the E2FSCK_JBD_DEBUG environment variable.
+
+If byteswapping support is disabled using configure --disable-swapfs,
+skip the tests which depend on byte-swapping, so that "make check"
+won't bomb out.
+
+Lsattr will now display the indexed directory flag.  Also, some of
+the more esoteric compression flags are suppressed unless compression
+support has been enabled.
+
+Update man pages.
+

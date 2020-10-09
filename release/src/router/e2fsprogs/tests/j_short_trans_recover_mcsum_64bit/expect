@@ -1,0 +1,44 @@
+Creating filesystem with 131072 4k blocks and 32768 inodes
+Superblock backups stored on blocks: 
+	32768, 98304
+
+Allocating group tables:    done                            
+Writing inode tables:    done                            
+Creating journal (4096 blocks): done
+Writing superblocks and filesystem accounting information:    done
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/32768 files (0.0% non-contiguous), 6353/131072 blocks
+Exit status is 0
+Journal features:         (none)
+debugfs write journal
+Journal features:         journal_incompat_revoke journal_64bit journal_checksum_v3
+debugfs: logdump -c
+Journal starts at block 1, transaction 1
+Found expected sequence 1, type 1 (descriptor block) at block 1
+Found expected sequence 1, type 2 (commit block) at block 11
+Found expected sequence 2, type 5 (revoke table) at block 12
+Found expected sequence 2, type 2 (commit block) at block 13
+No magic number at block 14: end of journal.
+debugfs recover journal
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Block bitmap differences:  +(0--65) +(67--69) +(71--584) +(1097--2126) +(65536--69631) +(98304--98368)
+Fix? yes
+
+Inode bitmap differences:  +(1--11)
+Fix? yes
+
+Padding at end of inode bitmap is not set. Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 11/32768 files (0.0% non-contiguous), 6353/131072 blocks
+Exit status is 1

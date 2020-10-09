@@ -58,22 +58,31 @@ errcode_t ext2fs_sync_device(int fd, int flushb)
 	 * still is a race condition for those kernels, but this
 	 * reduces it greatly.)
 	 */
+#if defined(HAVE_FSYNC)
 	if (fsync (fd) == -1)
 		return errno;
+#endif
 
 	if (flushb) {
+		errcode_t	retval = 0;
 
 #ifdef BLKFLSBUF
 		if (ioctl (fd, BLKFLSBUF, 0) == 0)
 			return 0;
+		retval = errno;
 #elif defined(__linux__)
 #warning BLKFLSBUF not defined
 #endif
 #ifdef FDFLUSH
-		return ioctl(fd, FDFLUSH, 0);   /* In case this is a floppy */
+		/* In case this is a floppy */
+		if (ioctl(fd, FDFLUSH, 0) == 0)
+			return 0;
+		if (retval == 0)
+			retval = errno;
 #elif defined(__linux__)
 #warning FDFLUSH not defined
 #endif
+		return retval;
 	}
 	return 0;
 }

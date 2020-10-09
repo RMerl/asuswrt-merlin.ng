@@ -1,0 +1,53 @@
+E2fsprogs 1.44.2 (May 14, 2018)
+===============================
+
+Updates/Fixes since v1.44.1:
+
+Fixes
+-----
+
+E2fsck now prints a warning message if broken_system_clock is set in
+e2fsck.conf and this causes the check interval to be ignored so it is
+clear to the user.
+
+Fix e2image handling of e2i files on big endian systems
+
+Add sanity checks for inodes containing xattr values to prevent
+maliciously crafted file systems from causing crashes caused by infinite
+recursion from causing e2fsck and debugfs to crash.
+
+Fix e2fsck so that quota usage is adjusted when clearing orphaned
+inodes.
+
+Fix filefrag so that unknown flags returned by FIEMAP won't cause a
+buffer overrun.
+
+Fix mke2fs to print a more useful/correct error message if
+ext2fs_close_free() at the end of the file system creation process.
+
+Improve chattr's man page.
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Demote e2fsprogs in debian packaging from Essential: yes to
+XB-Important: yes (Addresses Debian Bug #474540)
+
+Fix intl/Makefile so it uses @AR@ instead of a hard-coded 'ar' (which
+matters when cross compiling).
+
+Update Polish translation file.
+
+Fix the address of the FSF in various GPL/LGPL copyright licenses.
+
+Clean up the i_bitmaps test so it doesn't leave temporary files behind.
+
+Remove use of /dev/stdin in the regression tests since not all systems
+have /dev/stdin.
+
+Fix the f_bigalloc_badinode and f_bigalloc_orphan_list regression tests
+so they uses mke2fs and ebugfs from the build tree.  They may not exist
+in the users PATH, and if they not or if they are extremely
+old/obsolete, those tests would fail.
+

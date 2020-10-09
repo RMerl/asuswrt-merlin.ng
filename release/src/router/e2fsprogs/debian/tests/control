@@ -1,0 +1,6 @@
+Tests: smoke
+Depends: e2fsprogs
+
+Tests: fuse2fs
+Depends: fuse2fs, fuse3
+Restrictions: isolation-machine

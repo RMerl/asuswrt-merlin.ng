@@ -1,0 +1,33 @@
+debugfs: stat /a
+Inode: 12   Type: regular    Mode:  0644   Flags: 0x0
+Generation: 1573716129    Version: 0x00000000:00000001
+User:     0   Group:     0   Size: 524288
+File ACL: 0
+Links: 1   Blockcount: 1030
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x5457f87a:62ae2980 -- Mon Nov  3 21:49:46 2014
+ atime: 0x5457f87a:61ba0598 -- Mon Nov  3 21:49:46 2014
+ mtime: 0x5457f87a:62ae2980 -- Mon Nov  3 21:49:46 2014
+crtime: 0x5457f87a:61ba0598 -- Mon Nov  3 21:49:46 2014
+Size of extra inode fields: 28
+BLOCKS:
+(0-11):1025-1036, (IND):24, (12-267):1037-1292, (DIND):25, (IND):41, (268-511):1293-1536
+TOTAL: 515
+
+debugfs: ex /zero
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1     0 -     8    28              9
+ 1/ 1   1/  4     0 -     0    27 -    27      1 
+ 1/ 1   2/  4     2 -     2    29 -    29      1 
+ 1/ 1   3/  4     4 -     4    31 -    31      1 
+ 1/ 1   4/  4     6 -     6    33 -    33      1 
+Pass 1: Checking inodes, blocks, and sizes
+Pass 1E: Optimizing extent trees
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 13/128 files (15.4% non-contiguous), 574/2048 blocks
+Exit status is 0

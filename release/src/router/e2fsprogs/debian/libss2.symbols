@@ -1,4 +1,5 @@
 libss.so.2 libss2 #MINVER#
+* Build-Depends-Package: ss-dev
  _ss_pager_name@Base 1.01
  _ss_table@Base 1.01
  et_ss_error_table@Base 1.35

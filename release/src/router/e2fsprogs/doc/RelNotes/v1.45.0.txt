@@ -1,0 +1,40 @@
+E2fsprogs 1.45.0 (March 6, 2019)
+================================
+
+Updates/Fixes since v1.44.6:
+
+UI and Features
+---------------
+
+Tune2fs can now set the file system error bit to force a check at the
+next fsck by using the extended option "force_fsck".
+
+E2fsprogs now has an e2scrub script which will allow e2fsck to be run on
+volumes that are mounted on an LVM device.  The e2scrub_all will find
+all ext* file systems and run them using e2scrub (if possible).
+
+Mke2fs will attempt to use ZERO_RANGE before PUNCH_HOLE so that we don't
+lose allocated blocks in preallocated files.
+
+The fuse2fs command now supports a "fakeroot" option to allow an
+unprivileged user to fuse2fs to modify rootfs images.
+
+Add initial support for setting the character set encoding and case
+folding file system feature.  We don't have support to validate file
+names as being valid for a given character set encoding yet, but this
+will allow compatibility for this feature when the kernel support
+lands.  This includes support in lsattr and chattr to understanding the
+casefold attribute flag.
+
+Debugfs can now set the inode's checksum field to test support for
+inodes with bad inode checksums.
+
+E2image now accepts the -b and -B options to allow the user to specify
+the superblock location when creating a raw or qcow2 image.
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Add support for building e2fsprogs using Link Time Optimization (LTO),
+UBSAN, Address Sanitizer, or Thread Sanitizer.

@@ -31,6 +31,9 @@
 #if HAVE_SYS_MKDEV_H
 #include <sys/mkdev.h>
 #endif
+#ifdef HAVE_SYS_SYSMACROS_H
+#include <sys/sysmacros.h>
+#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
@@ -101,7 +104,8 @@ static int scan_dir(char *dirname, dev_t device, struct dir_list **list,
 			goto skip_to_next;
 		if (S_ISDIR(st.st_mode))
 			add_to_dirlist(path, list);
-		if (S_ISBLK(st.st_mode) && st.st_rdev == device) {
+		if (ext2fsP_is_disk_device(st.st_mode) &&
+		    st.st_rdev == device) {
 			cp = malloc(strlen(path)+1);
 			if (!cp) {
 				closedir(dir);

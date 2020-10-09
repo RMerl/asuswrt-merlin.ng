@@ -150,7 +150,7 @@ errout:
 #ifdef DEBUG
 int main(int argc, char** argv)
 {
-	const char *base;
+	char *base;
 	char  buf[256], *cp;
 
 	while (1) {
@@ -164,6 +164,7 @@ int main(int argc, char** argv)
 			*cp = 0;
 		base = base_device(buf);
 		printf("%s\t%s\n", buf, base ? base : "NONE");
+		free(base);
 	}
 	exit(0);
 }

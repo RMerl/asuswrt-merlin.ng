@@ -1,0 +1,3 @@
+URL: https://www.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v@VER@/e2fsprogs-@FN@.tar.gz
+Version: @FN@
+BugComponent: 95221

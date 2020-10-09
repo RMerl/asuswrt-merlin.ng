@@ -1,0 +1,74 @@
+Resize_inode and meta_bg features are enabled. Those features are
+not compatible. Resize inode should be disabled.  Fix? yes
+
+Resize_inode not enabled, but the resize inode is non-zero.  Clear? yes
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+First entry '' (inode=348) in directory inode 2 (???) should be '.'
+Fix? yes
+
+Setting filetype for entry '.' in ??? (2) to 2.
+Missing '..' in directory inode 2.
+Fix? yes
+
+Setting filetype for entry '..' in ??? (2) to 2.
+Directory inode 2, block #0, offset 860: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (2) has rec_len of 0, should be 12.
+Fix? yes
+
+Directory inode 11, block #0, offset 0: directory corrupted
+Salvage? yes
+
+Missing '.' in directory inode 11.
+Fix? yes
+
+Setting filetype for entry '.' in ??? (11) to 2.
+Missing '..' in directory inode 11.
+Fix? yes
+
+Setting filetype for entry '..' in ??? (11) to 2.
+Directory inode 11, block #1, offset 0: directory corrupted
+Salvage? yes
+
+Directory inode 11, block #2, offset 0: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has a zero-length name.
+Clear? yes
+
+Directory inode 11, block #3, offset 864: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has rec_len of 0, should be 12.
+Fix? yes
+
+Pass 3: Checking directory connectivity
+'..' in / (2) is <The NULL inode> (0), should be / (2).
+Fix? yes
+
+Unconnected directory inode 11 (/???)
+Connect to /lost+found? yes
+
+/lost+found not found.  Create? yes
+
+Pass 3A: Optimizing directories
+Pass 4: Checking reference counts
+Inode 11 ref count is 3, should be 2.  Fix? yes
+
+Pass 5: Checking group summary information
+Block bitmap differences:  -246
+Fix? yes
+
+Free blocks count wrong for group #0 (160, counted=161).
+Fix? yes
+
+Free blocks count wrong (2714, counted=2715).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 12/960 files (0.0% non-contiguous), 1125/3840 blocks
+Exit status is 1

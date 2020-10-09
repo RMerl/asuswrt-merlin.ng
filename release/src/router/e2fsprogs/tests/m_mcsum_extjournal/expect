@@ -1,0 +1,5 @@
+Creating filesystem with 4096 1k blocks and 0 inodes
+Superblock backups stored on blocks: 
+
+Zeroing journal device:          
+Filesystem features:      journal_dev metadata_csum

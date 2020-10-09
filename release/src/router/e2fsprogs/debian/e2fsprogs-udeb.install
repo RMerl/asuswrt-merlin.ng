@@ -1,0 +1,11 @@
+etc/mke2fs.conf
+lib/*/lib*.so.*
+sbin/badblocks
+sbin/e2fsck
+sbin/mke2fs
+sbin/resize2fs
+sbin/tune2fs
+sbin/e2label
+sbin/e2mmpstatus
+sbin/fsck.ext?
+sbin/mkfs.ext?

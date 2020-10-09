@@ -1,0 +1,164 @@
+E2fsprogs 1.26 (February 3, 2002)
+=================================
+
+Dumpe2fs will keep going now if the bad block inode can't be read.
+(Previously it stopped with a fatal error.)
+
+E2fsck will now give an opportunity to run the journal even if the
+recovery flag is not set.  This is the default behaviour if e2fsck is
+using a backup superblock, since the needs_recovery flag will never be
+set in the backup superblock copies.
+
+E2fsck now automatically finds the backup superblock/group descriptors
+even when the primary superblock is completely destroyed for 2k and 4k
+filesystems.  (Previously it just guessed/assumed that we were dealing
+with a 1k filesystem in that case, and users had to manually specify
+the backup superblock number.)
+
+Fixed a bug in e2fsck where it dereferences a null pointer when there
+is a problem opening a filesystem in preen mode.
+
+E2fsck now handles external journals correctly; previously it trashed
+the external journal device if the journal needed to be replayed.
+
+Work around ulimit incompatibility problem caused by recent 2.4
+kernels; the unix IO module will automatically try to set any resource
+limits to be infinite on startup.
+
+Fixed a bug in e2fsck where it wasn't allocating a new block or inode
+bitmap if it wasn't present and the blocksize was 2k or 4k.
+ (Addresses Debian Bug #116975)
+
+E2fsck will check and fix botched ext3 V1 to V2 superblock updates by
+clearing the new V2 fields if they do not make sense or if the ext3
+superblock is version 1 superblock.
+
+E2fsck will automatically relocate the ext3 journal from a visible
+file (i.e., /.journal) to an hidden inode if the filesystem has been
+opened read/write.  This allows the users to add a journal while the
+filesystem is mounted, but the next time the system is rebooted, the
+journal file will disappear.  This avoids problems with backups,
+stupid operators with superuser bits, etc.
+
+Fix a bug in fsck where it would not support a filesystem type of
+"auto" if the device was specified in terms of LABEL=xxx or UUID=xxx.
+
+Fsck now supports fstab entries of the form "ext3,ext2".  It will also
+automatically identify reiserfs filesystems.
+
+The number of processes spawned by fsck can now be limited using the
+FSCK_MAX_INST environment variable.
+
+Fsck now searches the LVM proc hierarchy to find logical volumes which
+should be searched for  UUID and label information.
+
+Work around a bug in 2.4.10+ kernels by trying to unset the filesize
+limit if at all possible, when opening a block device.  (The filesize
+limit shouldn't be applied against writes to a block device.)
+
+In mke2fs and e2fsck, specifying the -c option twice will now do
+a read/write test on the disk.  Update the man pages to encourage
+using the -c option, and to discouraging running badblocks separately,
+since users tend to forget to set the blocksize when running 
+badblocks.
+
+Mke2fs now automatically clears the immutable attribute on a
+pre-existing .journal file left over from a previous failed attempt to
+add a journal to an already-mounted filesystem.
+
+Fixed mke2fs's exit codes to consistently indicate when the mke2fs
+operation failed.
+
+Mke2fs now creates the lost+found directory with permissions of 0700,
+so that files that had previously lived in protected directory are
+safe if they get dropped in lost+found and the system administrator
+doesn't deal with immediately.  (Addresses Debian #bug 118443)
+
+Mke2fs and e2fsck (and all programs that use the
+ext2fs_check_if_mounted function) will now properly identify that a
+device is mounted, even in cases where devfs has confused things with
+multiple devices names with the same identity, or if a dim-witted
+system administrator has done something stupid like creating device
+file aliases in their home directory.  Also now checks for swap devices
+by using /proc/swaps.  (Addresses Debian bug #106622)
+
+Added a new option (-T) to tune2fs which sets the time a filesystem
+was last checked.
+
+Speed up e2image when creating sparse raw image files by optimizing
+away excess lseek() system calls.
+
+Fix support of large (> 2GB) files when used as a filesystem in
+mke2fs, tune2fs, debugfs, and findsuper.
+
+Debugfs's stat and icheck commands now properly deals with large (>
+2GB) files.
+
+Debugfs's set_super_value command now prints out the list of valid
+superblock fields which can be set using the command.
+
+Debugfs's rm and kill_file command now updates the superblock free block
+and inode counts, thus keeping the filesystem consistent.
+
+Debugfs's lsdel command now takes an optional argument which allows
+the user to only see the most recently deleted files.
+
+A new command (undel) was added to debugfs which automates
+undeleting a deleted inode and linking it back to a directory.
+
+Debugfs's ls command now takes a new option, -d, which lists 
+deleted directory entries.
+
+Debugfs's testb, freeb, setb, and find_free_block commands now take an
+optional count argument.
+
+Add support for a new ext2 file attribute, EXT2_NOTAIL_FL, which will
+be used to signal that a particular inode should not be eligible for
+tail-merging --- this is needed for programs like LILO.
+
+The findsuper (an unreleased, uninstalled utility program) has been
+improved to add extra validity checks and to add a progress meter.
+(It is still an unsupported program; the officially supported way to
+recover from a trashed partition table is to use gpart; findsuper is
+for wizards only.  :-)
+
+Debugfs was fixed to compile with "configure --disable-swapfs".
+
+Cleaned up various manual pages.   (Addresses Debian bug #119624, #120171)
+
+Added new translation file for Turkish.
+
+Programmer's notes:
+-------------------
+
+Fix general gcc -Wall complaints.
+
+E2fsprogs (mostly) works with the dietlibc.
+
+The programming texinfo file has been expanded to include description
+of additional libext2fs functions.  (Still not completely done, but a
+lot of the more important functions have been documented.)
+
+Added a umask structure to struct_ext2_filsys, which currently only
+modifies the behaviour of ext2fs_mkdir(), but if we add any file
+creation functions to libext2fs, we should also make sure they respect
+the umask setting.
+
+The build-rpm script was fixed to be a bit more safe.
+
+The tests' Makefile now has a way of automating test case creation 
+for e2fsck, using "make testnew".
+
+Created a new function, ext2fs_dir_iterate2 which passes more
+information to the callback function (identical to the one used by
+ext2fs_dblist_dir_iterate).  The directory iterator functions take a
+new flag, DIRENT_FLAG_INCLUDE_REMOVED, which will return deleted
+directory entries.  If the directory entry is deleted, the callback
+function will be called with the entry parameter set to
+DIRENT_DELETED_FILE.
+  
+Added new functions, ext2fs_inode_alloc_stats and
+ext2fs_block_alloc_stats, which takes updates block/inode allocation
+statistics in the bitmaps, block group descriptors, and superblock
+when inodes or blocks are allocated or deallocated.
+

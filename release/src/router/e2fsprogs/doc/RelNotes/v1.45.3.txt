@@ -1,0 +1,65 @@
+E2fsprogs 1.45.3 (July 14, 2019)
+================================
+
+Updates/Fixes since v1.45.2:
+
+UI and Features
+---------------
+
+Whether or not automatic online scrubs will be run is now controlled by
+a setting in /etc/e2scrub.conf.  To enable automatic online scrubs,
+uncomment out the line containing "periodic_e2scrub=1".
+
+The fuse2fs program is now installed in /usr/bin instead of /usr/sbin,
+since it does not require root privileges.
+
+Fuse2fs now works with if fusermount from FUSE V3 is installed.
+However, in order to provide this compatibility, if you are using a
+fusermount from FUSE v2, and you want to mount on top of a non-empty
+directory, you will need to specify -o nonempty explicitly.  FUSE V3
+always allows mounting on top of non-empty directories, and will fail if
+the user or fuse2fs passes the nonempty option.
+
+
+Fixes
+-----
+
+Fixed a bug which caused e2fsck to improperly handle file systems that
+enabled both the large_dir and inline directories at the same time.
+
+E2scrub_all now correctly handles an encrypted (LUKS) ext[234] file
+system stacked on top of an LVM volume.  (Addresses Debian Bug: #931387)
+
+Fixed a bug in "E2scrub_all -r" where it was incorrectly specifying
+which volume needed to have its e2scrub snapshot cleaned up.  (Addresses
+Debian Bug: #931679)
+
+Fixed the Czech, Dutch, German, and Vietnamese translations which
+improperly used positional markers which broke a few translated e2fsck
+problem descriptions.  (Addresses Debian Bug: #892173)
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Fixed various debian packaging issues.  (Addresses Debian Bug: #931266,
+#923372)
+
+Fixed error checking for calls to posix_{memalign,fadvise}.
+
+Add regression test for checking a file system using fs-verity.
+
+Various regression test cleanups.
+
+Fixed various compiler warnings.
+
+Added xgettext markers to fix incorrectly marked strings in the
+e2fsprogs translations template file as being c-style printf strings
+when in fact they aren't.
+
+Added utility script which generates the release tarfile using git
+archive.
+
+Update the Czech, Dutch, and Portuguese translations from the
+Translation Project.
+

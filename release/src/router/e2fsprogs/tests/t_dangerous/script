@@ -1,0 +1,155 @@
+FSCK_OPT=-fn
+OUT=$test_name.log
+EXP=$test_dir/expect
+CONF=$TMPFILE.conf
+
+cat > $CONF << ENDL
+[fs_types]
+	ext4h = {
+		features = has_journal,extent,huge_file,^flex_bg,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,dir_index,ext_attr,resize_inode,64bit
+		blocksize = 1024
+		inode_size = 256
+		make_hugefiles = true
+		hugefiles_dir = /
+		hugefiles_slack = 32M
+		hugefiles_name = aaaaa
+		hugefiles_digits = 4
+		hugefiles_size = 1M
+		zero_hugefiles = false
+	}
+	ext4m = {
+		features = has_journal,extent,huge_file,^flex_bg,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,dir_index,ext_attr,resize_inode,64bit,metadata_csum
+		blocksize = 1024
+		inode_size = 256
+		make_hugefiles = true
+		hugefiles_dir = /
+		hugefiles_slack = 32M
+		hugefiles_name = aaaaa
+		hugefiles_digits = 4
+		hugefiles_size = 1M
+		zero_hugefiles = false
+	}
+ENDL
+
+echo "tune2fs dangerous prompts test" > $OUT
+
+MKE2FS_CONFIG=$CONF $MKE2FS -F -T ext4h -U 6fc3daa4-180d-4f2b-a6f2-f7a5efb79bcf $TMPFILE 524288 >> $OUT 2>&1
+
+# trigger a filesystem check
+$DEBUGFS -w -R 'ssv mtime now' $TMPFILE > /dev/null 2>&1
+$DEBUGFS -w -R 'ssv lastcheck 20000' $TMPFILE > /dev/null 2>&1
+
+# add mcsum
+echo "tune2fs -O metadata_csum test.img" >> $OUT
+$TUNE2FS -O metadata_csum $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+# check fs
+$FSCK -f -y -N test_filesys $TMPFILE > /dev/null 2>&1
+
+# add mcsum
+echo "tune2fs -O metadata_csum test.img" >> $OUT
+$TUNE2FS -O metadata_csum $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+MKE2FS_CONFIG=$CONF $MKE2FS -F -T ext4h -U 6fc3daa4-180d-4f2b-a6f2-f7a5efb79bcf $TMPFILE 524288 >> $OUT 2>&1
+
+# dump and check
+$DUMPE2FS $TMPFILE 2> /dev/null | grep '^Group 0:' -B99 -A20 | sed -f $cmd_dir/filter.sed > $OUT.before
+$FSCK $FSCK_OPT -f -N test_filesys $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+# add mcsum
+echo "tune2fs -O metadata_csum test.img" >> $OUT
+echo 'n' | TUNE2FS_FORCE_PROMPT=1 $TUNE2FS -O metadata_csum $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+# change inode size
+echo "tune2fs -I 512 test.img" >> $OUT
+echo 'n' | TUNE2FS_FORCE_PROMPT=1 $TUNE2FS -I 512 $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+# check
+$FSCK -yD -N test_filesys $TMPFILE >> $OUT 2>&1
+
+# dump and check
+$DUMPE2FS $TMPFILE 2> /dev/null | grep '^Group 0:' -B99 -A20 | sed -f $cmd_dir/filter.sed > $OUT.after
+echo "Change in FS metadata:" >> $OUT
+diff -u $OUT.before $OUT.after | tail -n +3 >> $OUT
+$FSCK $FSCK_OPT -N test_filesys $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+$DUMPE2FS $TMPFILE 2> /dev/null | egrep '^(Filesystem features:|Filesystem UUID:|Inode size:)' > $OUT.before
+
+# add mcsum
+echo "tune2fs -O metadata_csum test.img" >> $OUT
+echo 'y' | TUNE2FS_FORCE_PROMPT=1 $TUNE2FS -O metadata_csum $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+$FSCK -yD -N test_filesys $TMPFILE >> $OUT 2>&1
+
+# change inode size
+echo "tune2fs -I 512 test.img" >> $OUT
+echo 'y' | TUNE2FS_FORCE_PROMPT=1 $TUNE2FS -I 512 $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+# change uuid
+echo "tune2fs -U f0f0f0f0-f0f0-f0f0-f0f0-f0f0f0f0f0f0 test.img" >> $OUT
+echo 'y' | TUNE2FS_FORCE_PROMPT=1 $TUNE2FS -U f0f0f0f0-f0f0-f0f0-f0f0-f0f0f0f0f0f0 $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+# check
+$FSCK -yD -N test_filesys $TMPFILE >> $OUT 2>&1
+
+# dump and check
+$DUMPE2FS $TMPFILE 2> /dev/null | egrep '^(Filesystem features:|Filesystem UUID:|Inode size:)' > $OUT.after
+echo "Change in FS metadata:" >> $OUT
+diff -u $OUT.before $OUT.after | tail -n +3 >> $OUT
+$FSCK $FSCK_OPT -N test_filesys $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+echo " " >> $OUT
+echo "Testing with metadata checksum enabled" >> $OUT
+
+MKE2FS_CONFIG=$CONF $MKE2FS -F -T ext4m -U 6fc3daa4-180d-4f2b-a6f2-f7a5efb79bcf $TMPFILE 524288 >> $OUT 2>&1
+$DUMPE2FS $TMPFILE 2> /dev/null | grep '^Group 0:' -B99 -A20 | sed -f $cmd_dir/filter.sed > $OUT.before
+$FSCK $FSCK_OPT -f -N test_filesys $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+# change uuid
+echo "tune2fs -U random test.img" >> $OUT
+echo 'n' | TUNE2FS_FORCE_PROMPT=1 $TUNE2FS -U random $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+rm $TMPFILE $OUT.before $OUT.after $CONF
+
+#
+# Do the verification
+#
+
+sed -f $cmd_dir/filter.sed -e 's/test_filesys:.*//g' < $OUT > $OUT.new
+mv $OUT.new $OUT
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset IMAGE FSCK_OPT OUT EXP CONF

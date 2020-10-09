@@ -44,26 +44,26 @@ uuid_generate, uuid_generate_random, uuid_generate_time \- create a new unique U
 The
 .B uuid_generate
 function creates a new universally unique identifier (UUID).  The uuid will
-be generated based on high-quality randomness from 
-.IR /dev/urandom , 
-if available.  If it is not available, then 
-.B uuid_generate 
+be generated based on high-quality randomness from
+.IR /dev/urandom ,
+if available.  If it is not available, then
+.B uuid_generate
 will use an alternative algorithm which uses the current time, the
 local ethernet MAC address (if available), and random data generated
 using a pseudo-random generator.
 .sp
-The 
+The
 .B uuid_generate_random
 function forces the use of the all-random UUID format, even if
-a high-quality random number generator (i.e., 
+a high-quality random number generator (i.e.,
 .IR /dev/urandom )
 is not available, in which case a pseudo-random
-generator will be subsituted.  Note that the use of a pseudo-random
+generator will be substituted.  Note that the use of a pseudo-random
 generator may compromise the uniqueness of UUID's
 generated in this fashion.
 .sp
 The
-.B uuid_generate_time 
+.B uuid_generate_time
 function forces the use of the alternative algorithm which uses the
 current time and the local ethernet MAC address (if available).
 This algorithm used to be the default one used to generate UUID, but
@@ -72,10 +72,10 @@ information about when and where the UUID was generated.  This can cause
 privacy problems in some applications, so the
 .B uuid_generate
 function only uses this algorithm if a high-quality source of
-randomness is not available.  
+randomness is not available.
 .sp
 The UUID is 16 bytes (128 bits) long, which gives approximately 3.4x10^38
-unique values (there are approximately 10^80 elemntary particles in
+unique values (there are approximately 10^80 elementary particles in
 the universe according to Carl Sagan's
 .IR Cosmos ).
 The new UUID can reasonably be considered unique among all UUIDs created

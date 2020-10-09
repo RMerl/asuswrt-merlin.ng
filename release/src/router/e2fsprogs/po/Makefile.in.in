@@ -29,8 +29,7 @@ gettextsrcdir = $(datadir)/gettext/po
 
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
-MKINSTALLDIRS = @MKINSTALLDIRS@
-mkinstalldirs = $(SHELL) $(MKINSTALLDIRS)
+mkinstalldirs = @MKDIR_P@
 
 GMSGFMT = @GMSGFMT@
 MSGFMT = @MSGFMT@
@@ -270,7 +269,7 @@ uninstall-data-yes:
 	  done; \
 	done
 
-check: all
+fullcheck check: all
 
 info dvi ps pdf html tags TAGS ctags CTAGS ID:
 

@@ -24,7 +24,7 @@
 /*
  * For the benefit of those who are trying to port Linux to another
  * architecture, here are some C-language equivalents.  You should
- * recode these in the native assmebly language, if at all possible.
+ * recode these in the native assembly language, if at all possible.
  *
  * C language equivalents written by Theodore Ts'o, 9/26/92.
  * Modified by Pete A. Zaitcev 7/14/95 to be portable to big endian
@@ -138,7 +138,7 @@ unsigned int ext2fs_bitcount(const void *addr, unsigned int nbytes)
 	const __u32 *p;
 	unsigned int res = 0;
 
-	while (((((unsigned long) cp) & 3) != 0) && (nbytes > 0)) {
+	while (((((uintptr_t) cp) & 3) != 0) && (nbytes > 0)) {
 		res += popcount8(*cp++);
 		nbytes--;
 	}

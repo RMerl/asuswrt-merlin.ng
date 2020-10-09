@@ -1,0 +1,100 @@
+test_description="convert 64bit,mcsum and revert undo file"
+if test -x $RESIZE2FS_EXE -a -x $E2UNDO_EXE; then
+
+TDB_FILE=${TMPDIR:-/tmp}/resize2fs-$(basename $TMPFILE).e2undo
+OUT=$test_name.log
+rm -f $TDB_FILE >/dev/null 2>&1
+fail=0
+
+echo convert fs to 64bit,metadata_csum and revert both changes as one undo file > $OUT
+
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+crc0=`$CRCSUM $TMPFILE`
+echo $CRCSUM before mke2fs $crc0 >> $OUT
+
+CONF=$TMPFILE.conf
+cat > $CONF << ENDL
+[fs_types]
+	ext4h = {
+		features = has_journal,extent,huge_file,flex_bg,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,dir_index,ext_attr,resize_inode
+		blocksize = 4096
+		inode_size = 256
+		make_hugefiles = true
+		hugefiles_dir = /
+		hugefiles_slack = 0
+		hugefiles_name = aaaaa
+		hugefiles_digits = 4
+		hugefiles_size = 1M
+		zero_hugefiles = false
+	}
+ENDL
+
+echo mke2fs -q -F -o Linux -T ext4h -O ^metadata_csum,^64bit -E lazy_itable_init=1 -b 4096 -z $TDB_FILE.0 $TMPFILE 524288 >> $OUT
+MKE2FS_CONFIG=$CONF $MKE2FS -q -F -o Linux -T ext4h -O ^metadata_csum,^64bit -E lazy_itable_init=1 -b 4096 -z $TDB_FILE.0 $TMPFILE >> $OUT 2>&1
+crc1=`$CRCSUM $TMPFILE`
+echo $CRCSUM after mke2fs $crc1 >> $OUT
+features="$($DUMPE2FS -h $TMPFILE 2> /dev/null | grep 'Filesystem features:')"
+if [ "$(echo "${features}" | grep "metadata_csum" -c)" -gt 0 ] || [ "$(echo "${features}" | grep 64bit -c)" -gt 0 ]; then
+	echo "FS features: ${features}" >> $OUT
+	echo "Should not have 64bit or metadata_csum set" >> $OUT
+	fail=1
+fi
+$FSCK -f -n $TMPFILE >> $OUT 2>&1 || fail=1
+
+echo using resize2fs to test e2undo >> $OUT
+$RESIZE2FS -z $TDB_FILE.0 -b $TMPFILE >> $OUT 2>&1
+crc2=`$CRCSUM $TMPFILE`
+echo $CRCSUM after resize2fs $crc2 >> $OUT
+features="$($DUMPE2FS -h $TMPFILE 2> /dev/null | grep 'Filesystem features:')"
+if [ "$(echo "${features}" | grep "metadata_csum" -c)" -gt 0 ] || [ "$(echo "${features}" | grep 64bit -c)" -lt 1 ]; then
+	echo "FS features: ${features}" >> $OUT
+	echo "Should have 64bit but not metadata_csum set" >> $OUT
+	fail=1
+fi
+$FSCK -f -n $TMPFILE >> $OUT 2>&1 || fail=1
+
+echo using tune2fs to test e2undo >> $OUT
+$TUNE2FS -O metadata_csum -z $TDB_FILE.0 $TMPFILE >> $OUT 2>&1
+crc3=`$CRCSUM $TMPFILE`
+echo $CRCSUM after tune2fs $crc3 >> $OUT
+features="$($DUMPE2FS -h $TMPFILE 2> /dev/null | grep 'Filesystem features:')"
+if [ "$(echo "${features}" | grep "metadata_csum" -c)" -lt 1 ] || [ "$(echo "${features}" | grep 64bit -c)" -lt 1 ]; then
+	echo "FS features: ${features}" >> $OUT
+	echo "Should have 64bit and metadata_csum set" >> $OUT
+	fail=1
+fi
+$FSCK -f -n $TMPFILE >> $OUT 2>&1 || fail=1
+
+echo using e2fsck to test e2undo >> $OUT
+$FSCK -f -y -D -z $TDB_FILE.0 $TMPFILE >> $OUT 2>&1
+crc4=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2fsck $crc4 >> $OUT
+features="$($DUMPE2FS -h $TMPFILE 2> /dev/null | grep 'Filesystem features:')"
+if [ "$(echo "${features}" | grep "metadata_csum" -c)" -lt 1 ] || [ "$(echo "${features}" | grep 64bit -c)" -lt 1 ]; then
+	echo "FS features: ${features}" >> $OUT
+	echo "Should have 64bit and metadata_csum set" >> $OUT
+	fail=1
+fi
+$FSCK -f -n $TMPFILE >> $OUT 2>&1 || fail=1
+
+echo roll back e2fsck/tune2fs/resize2fs/mke2fs >> $OUT
+$E2UNDO $TDB_FILE.0 $TMPFILE  >> $OUT 2>&1
+crc0_2=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2undo e2fsck/tune2fs/resize2fs/mke2fs $crc1_2 >> $OUT
+features="$($DUMPE2FS -h $TMPFILE 2> /dev/null | grep 'Filesystem features:')"
+if [ -n "${features}" ]; then
+	echo "FS features: ${features}" >> $OUT
+	echo "Should not have any features set" >> $OUT
+	fail=1
+fi
+$FSCK -f -n $TMPFILE >> $OUT 2>&1 && fail=1
+
+if [ $fail -eq 0 ] && [ $crc0 = $crc0_2 ]; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	ln -f $test_name.log $test_name.failed
+	echo "$test_name: $test_description: failed"
+fi
+rm -f $TDB_FILE.0 $TDB_FILE.1 $TMPFILE $CONF
+fi

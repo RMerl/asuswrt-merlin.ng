@@ -1,0 +1,23 @@
+#!/bin/sh
+
+t1="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.  "
+t2="Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.  Bring to the table win-win survival strategies to ensure proactive domination. At the end of the day, going forward, a new normal that has evolved from generation X is on the runway heading towards a streamlined cloud solution. User generated content in real-time will have multiple touchpoints for offshoring.  Capitalize on low hanging fruit to identify a ballpark value added activity to beta test. Override the digital divide with additional clickthroughs from DevOps. Nanotechnology immersion along the information highway will close the loop on focusing solely on the bottom line.  "
+t3="Licensed Product under the copyright owner that is not possible to put the Notice in a manner which does not specify a version number of this document is to say, a work based on the Program (including Contributions) may always be distributed subject to the Licensed Product. Intellectual Property Matters. Third Party Claims. If you develop a new version of the Derivative Works, in at least six (6) months after a subsequent version of this section has the right to acquire, license, develop, have others develop for it, market and/or distribute the Program (or a work based on infringement of intellectual property laws of the Package, in its Contribution, if any, specified by the terms of this Agreement more than your cost of all necessary servicing, repair, or correction. In no event and under no obligation to respond to any patent claims licensable by a copyright notice appear in all copies of it that are distributed by the terms applicable to software that is included in any Digital Font Program, which may be used to render or display fonts. Program shall mean a computer system.  "
+
+export LANG=C
+export LC_ALL=C
+
+t="$t1$t2$t3"
+len=${#t}
+
+c=131072
+
+while test $c -gt 0 ; do
+    if test $c -gt $len ; then
+        echo -n "$t"
+	c=$(($c - $len))
+    else
+	echo -n "$t" | cut -c -$(($c - 1))
+	c=0
+    fi
+done

@@ -1,0 +1,99 @@
+Filesystem volume name:   <none>
+Last mounted on:          <not available>
+Filesystem magic number:  0xEF53
+Filesystem revision #:    1 (dynamic)
+Filesystem features:      has_journal ext_attr resize_inode dir_index filetype extent 64bit flex_bg sparse_super large_file huge_file dir_nlink extra_isize metadata_csum
+Default mount options:    user_xattr acl
+Filesystem state:         clean
+Errors behavior:          Continue
+Filesystem OS type:       Linux
+Inode count:              512
+Block count:              2048
+Reserved block count:     102
+Free blocks:              982
+Free inodes:              501
+First block:              0
+Block size:               4096
+Fragment size:            4096
+Group descriptor size:    64
+Blocks per group:         32768
+Fragments per group:      32768
+Inodes per group:         512
+Inode blocks per group:   32
+Flex block group size:    16
+Mount count:              0
+Check interval:           0 (<none>)
+Reserved blocks uid:      0
+Reserved blocks gid:      0
+First inode:              11
+Inode size:	          256
+Required extra isize:     32
+Desired extra isize:      32
+Journal inode:            8
+Default directory hash:   half_md4
+Journal backup:           inode blocks
+Checksum type:            crc32c
+Journal features:         (none)
+Journal size:             4096k
+Journal length:           1024
+Journal sequence:         0x00000001
+Journal start:            0
+Journal number of users:  9999
+Journal users:            <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+                          <none>
+
+
+Group 0: (Blocks 0-2047)
+  Primary superblock at 0, Group descriptors at 1-1
+  Block bitmap at 2 (+2)
+  Inode bitmap at 18 (+18)
+  Inode table at 34-65 (+34)
+  982 free blocks, 501 free inodes, 2 directories, 501 unused inodes
+  Free blocks: 1066-2047
+  Free inodes: 12-512

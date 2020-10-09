@@ -1,0 +1,180 @@
+E2fsprogs 1.19 (July 13, 2000)
+==============================
+
+Release the resize2fs program since the timeout before it could
+be released under the GPL has finally expired.
+
+Add experimental support needed for the ext2 compression patches.
+This requires compiling e2fsprogs with the --enable-compression flag
+to the configure script.
+
+Added ext3 journalling support.  E2fsck will run the journal (if
+necessary) by temporarily mounting the filesystem.  /sbin/fsck.ext3 is
+installed as a symlink to e2fsck.  Fsck has been taught about ext3,
+and treats it the same as ext2 in terms of the progress bar logic.
+Dumpe2fs will display the superblock journalling information if the
+filesystem has a journal.  The ext2 library will now permit opening an
+ext3 filesystem with the recovery flag set.  This is necessary for
+on-line dump's to work correctly, but there may be issues with this
+working well since ext3 is much less aggressive about syncing blocks to
+the filesystem, since they're safe on the journal.
+
+Tune2fs and e2fsck have been changed to allow the mount_count check to
+be disabled by setting max_mount_count to -1.  (This was already
+supported by the kernel.)
+
+Create a symbolic link for fsck.ext3, since the e2fsprogs utilities
+are used for ext3 as well.
+
+Added internationalization support for e2fsprogs; must be enabled
+by passing --enable-nls to configure.
+
+Always use the provided ext2fs header files to insulate ourselves from
+kernel version changes.  Which include files are used by e2fsprogs
+have also been cleaned up to improve portability.
+
+Limit the number of times that e2fsck updates the progress bar so that
+people who are booting using a 9600 baud console don't get swamped by
+too many updates.
+
+Improved the loop detection algorithm in e2sck's pass #3 so that it is
+much, much faster for large filesystems with a large number of
+directories.
+
+The memory footprint for e2fsck is now slightly smaller than before.
+
+E2fsck now checks if special devices have a non-zero size, and offers
+to clear the size field if it finds such an inode.  
+
+E2fsck now checks if special devices have the append-only flag set,
+and offers to clear the inode.
+
+E2fsck now properly handles some "should never fail" cases during a
+bitmap copy in pass5.
+
+E2fsck now properly prints control characters in filenames as ^A .. ^Z.
+
+E2fsck now calculates the correct location of the backup superblock in
+the case of filesystem blocksizes > 1k.
+
+Fixed a bug in e2fsck's calculation of the number of inodes_per_block
+which normally didn't cause problems under most filesystem parameters,
+but could cause a valid superblock to be rejected in extreme cases.
+Other checks for validating superblock values were made more
+stringent.
+
+Added non-destructive write testing to the badblocks program, courtesy
+of David Beattie.  The badblocks also now has an option to input the
+current set of bad blocks, so that known bad blocks are skipped to
+speed up the badblocks test.  There is also a persistent rescan
+feature which causes badblocks to run until it has completed some
+number of passes without discovering any new bad blocks.
+
+Badblocks now checks to see if the device is mounted and refuses to do
+the tests involving writing to the device if it is mounted.  Also,
+badblocks now allows the number of blocks to be checked to be
+defaulted to the size of the partition.
+
+Fixed a bug in fsck which didn't allow non-root users to be able to
+check filesystems if there were any LABEL= or UUID= entries in
+/etc/fstab.
+
+The Hurd doesn't support the filetype filesystem feature.  The mke2fs
+program now makes sure that for the Hurd, the filetype feature is
+turned off.  E2fsck will check to see if the filetype feature is
+turned on for Hurd filesystems, and offer to turn off the feature.
+
+Mke2fs now has a safety check to make sure the number of blocks do not
+exceed 32 bits even on a 64 bit platform.
+
+Really fixed a bug in fsck to allow "fsck -As" to run interactive
+fsck's.  (For those people who like to do interactive fsck's in the
+/etc/rc scripts!?!)
+
+Debugfs has a few new features: the rdump command, which will do a
+recursive dump of a directory and all of its contents, and the lcd
+command which does a local chdir (much like the ftp command of the
+same name).  In addition, the debugfs program and the open_filesystem
+command now takes three new options: -b and -s, which allows the
+blocksize and superblock location to be specified, and the -c option
+which is used in catastrophic situations where the block group
+descriptors are corrupt.  If the -c option is specified, debugfs will
+skip trying to read in the block and inode bitmaps.
+
+Debugfs's lsdel command was fixed to handle bad blocks in the inode
+table.
+
+A Y2K bug in debugfs's "ls -l" handling was fixed by switching to use
+4 digit years.
+
+General improvements in error messages
+
+  - Mke2fs prints a sane error message if the partition size is zero
+	(usually because the partition table wasn't reread by the
+	kernel due to the partition being busy), instead of "invalid
+	argument passed to ext2 library while initializing superblock".
+
+  - Fsck now prints more self-explanatory message if an invalid UUID=
+	or LABEL= specification is passed to it.
+
+UUID library changed to use the LGPL.
+
+Fixed a bug in the UUID library where very rapid calls to the
+time-based UUID generator could cause duplicate UUID's to be returned.
+This was not a problem for e2fsprogs, but it could be a problem for
+other users of the library.
+
+Make the UUID library more robust in the face of missing or an
+improper /dev/urandom or /dev/random files.
+
+Added some random portability fixes for Solaris.
+
+Some minor man page updates.
+
+Fixed a memory leak in the ss library.
+
+
+Programmer's notes:
+-------------------
+
+We now try to use lseek64 and open64 from the LFS if possible.
+
+The 3rd parameter in e2p's print_flags is now a flags word, instead of
+a boolean option.
+
+The mark and unmark bitmap functions now return the previous state of
+the bit that was being changed, which is useful for some speed
+optimizations.
+
+The following functions have been added to enhance the badblocks list
+handling in libext2fs: ext2fs_write_bb_FILE, ext2fs_read_bb_FILE2, and
+ext2fs_badblocks_equal.
+
+The ext2 header files now have the latest journalling fields to the
+superblock.
+
+The ext2fs_mkdir function in libext2fs now properly backs out of error
+conditions robustly.
+
+Cleaned up makefiles:
+  - to cleanly  compile with the -j flag.
+  - so distclean removes all generated files.
+  - so in case of an error while installing header files, the make aborts.
+
+Fix test_script so that it works correctly when compiling in the
+source directory.
+
+The random UUID generation routine has been made slightly better in
+the case where /dev/random doesn't exist.  (Use of randomly-based UUID
+is still not recommended if /dev/random doesn't exist, however; it's
+better to use the time/ethernet MAC address UUID in this case.)
+
+Clean up the build process so it's more friendly in case of missing
+directories.
+
+The ext2fs header file can now be #include'd into C++ programs.
+
+The e2p.h header file is now installed.
+
+Added workaround to a gawk 3.0.5 bug in lib/ss/mk_cmds.
+

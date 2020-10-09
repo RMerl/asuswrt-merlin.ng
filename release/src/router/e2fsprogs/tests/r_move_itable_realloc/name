@@ -1,0 +1,1 @@
+don't allocate inode table from in-use blocks

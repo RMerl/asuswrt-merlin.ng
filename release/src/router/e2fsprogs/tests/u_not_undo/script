@@ -1,0 +1,28 @@
+test_description="e2undo a non-undo file"
+if test -x $E2UNDO_EXE; then
+
+TDB_FILE=${TMPDIR:-/tmp}/tune2fs-$(basename $TMPFILE).e2undo
+OUT=$test_name.log
+rm -f $TDB_FILE >/dev/null 2>&1
+
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+dd if=/dev/zero of=$TDB_FILE bs=1k count=512 > /dev/null 2>&1
+
+crc0=`$CRCSUM $TMPFILE`
+echo $CRCSUM before e2undo $crc0 > $OUT
+
+od -tx1 -Ad -c < $TDB_FILE >> $OUT
+
+$E2UNDO $TDB_FILE $TMPFILE  >> $OUT 2>&1
+crc3=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2undo $crc3 >> $OUT
+
+if [ $crc3 = $crc0 ]; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	ln -f $test_name.log $test_name.failed
+	echo "$test_name: $test_description: failed"
+fi
+rm -f $TDB_FILE $TMPFILE
+fi

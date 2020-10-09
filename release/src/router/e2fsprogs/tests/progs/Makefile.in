@@ -11,7 +11,7 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
-MK_CMDS=	_SS_DIR_OVERRIDE=../../lib/ss ../../lib/ss/mk_cmds
+MK_CMDS=	_SS_DIR_OVERRIDE=$(srcdir)/../../lib/ss ../../lib/ss/mk_cmds
 
 PROGS=		test_icount crcsum
 
@@ -28,6 +28,7 @@ DEPLIBS= $(LIBEXT2FS) $(DEPLIBSS) $(DEPLIBCOM_ERR)
 	$(E) "	CC $<"
 	$(Q) $(CC) -c $(ALL_CFLAGS) $< -o $@
 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
+	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
 
 all:: $(PROGS)
 
@@ -70,10 +71,12 @@ distclean: clean
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-test_rel.o: $(srcdir)/test_rel.c $(top_srcdir)/lib/et/com_err.h \
+test_rel.o: $(srcdir)/test_rel.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ss/ss.h $(top_builddir)/lib/ss/ss_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/lib/ext2fs/irel.h $(top_srcdir)/lib/ext2fs/brel.h \
- $(srcdir)/test_rel.h
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
+ $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/ext2fs/irel.h \
+ $(top_srcdir)/lib/ext2fs/brel.h $(srcdir)/test_rel.h

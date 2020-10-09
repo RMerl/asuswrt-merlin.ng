@@ -1,0 +1,118 @@
+#!/bin/sh
+
+ANDROID_GENERATED_FILES="lib/ext2fs/ext2_err.c lib/ext2fs/ext2_err.h \
+	lib/ss/ss_err.c lib/ss/ss_err.h lib/support/prof_err.c \
+	lib/support/prof_err.h \
+	lib/blkid/blkid_types.h lib/uuid/uuid_types.h \
+	lib/ext2fs/ext2_types.h lib/config.h lib/blkid/blkid.h \
+	lib/uuid/uuid.h lib/ext2fs/crc32c_table.h misc/default_profile.c \
+	lib/ss/std_rqs.c debugfs/debug_cmds.c debugfs/ro_debug_cmds.c \
+	debugfs/extent_cmds.c debugfs/e2freefrag.c \
+	debugfs/recovery.c debugfs/revoke.c \
+	MODULE_LICENSE_GPL README.version"
+
+SS_DIR=$(pwd)/lib/ss
+MK_CMDS=/tmp/mk_cmds$$.sh
+
+sed -e "s/@AWK@/awk/" < $SS_DIR/mk_cmds.sh.in \
+    | sed -e "s/@SED@/sed/" > $MK_CMDS
+
+sed -e "s/@E2FSPROGS_VERSION@/$(git describe)/" < lib/ext2fs/ext2_err.et.in > lib/ext2fs/ext2_err.et
+
+for i in lib/ss/ss_err lib/support/prof_err lib/ext2fs/ext2_err
+do
+   rm -f $i.c $i.h
+   awk -f lib/et/et_c.awk outfile=$i.c outfn=$(basename $i.c) $i.et
+   awk -f lib/et/et_h.awk outfile=$i.h outfn=$(basename $i.h) $i.et
+done
+
+for i in lib/ss/std_rqs debugfs/debug_cmds debugfs/ro_debug_cmds \
+			debugfs/extent_cmds
+do
+    _SS_DIR_OVERRIDE=lib/ss /bin/sh $MK_CMDS $i.ct
+    mv -f $(basename $i).c $i.c
+done
+
+rm -f $MK_CMDS
+
+cp lib/blkid/blkid.h.in lib/blkid/blkid.h
+cp lib/uuid/uuid.h.in lib/uuid/uuid.h
+
+cp util/android_types.h lib/ext2fs/ext2_types.h
+cp util/android_types.h lib/blkid/blkid_types.h
+cp util/android_types.h lib/uuid/uuid_types.h
+# Copied header files having exactly same content results in debug output
+# differences on RBE. Hence modify the #define's appropriately.
+sed -i 's/#define _LINUX_TYPES_H/#define _BLKID_TYPES_H/g' lib/blkid/blkid_types.h
+sed -i 's/#define _LINUX_TYPES_H/#define _EXT2_TYPES_H/g' lib/ext2fs/ext2_types.h
+sed -i 's/#define _LINUX_TYPES_H/#define _UUID_TYPES_H/g' lib/uuid/uuid_types.h
+
+cp util/android_config.h lib/config.h
+cp misc/e2freefrag.c debugfs/
+cp e2fsck/recovery.c e2fsck/revoke.c debugfs/
+
+gcc -o gen_crc32ctable lib/ext2fs/gen_crc32ctable.c
+./gen_crc32ctable > lib/ext2fs/crc32c_table.h
+
+awk -f misc/profile-to-c.awk < misc/mke2fs.conf.in > misc/default_profile.c
+
+rm -f ./gen_crc32table ./gen_crc32ctable lib/ext2fs/ext2_err.et
+
+touch MODULE_LICENSE_GPL
+
+E2FSPROGS_VERSION=`grep E2FSPROGS_VERSION version.h  \
+	| awk '{print $3}' | tr \" " " | awk '{print $1}'`
+DATE=`grep E2FSPROGS_DATE version.h | awk '{print $3}' \
+	| tr \" " "`
+E2FSPROGS_DAY=$(echo $DATE | awk -F- '{print $1}' | sed -e '/^[1-9]$/s/^/0/')
+MONTH=`echo $DATE | awk -F- '{print $2}'`
+YEAR=`echo $DATE | awk -F- '{print $3}'`
+
+if expr $YEAR ">" 1900 > /dev/null ; then
+	E2FSPROGS_YEAR=$YEAR
+elif expr $YEAR ">" 90 >/dev/null ; then
+	E2FSPROGS_YEAR=19$YEAR
+else
+	E2FSPROGS_YEAR=20$YEAR
+fi
+
+case $MONTH in
+Jan)	MONTH_NUM=01; E2FSPROGS_MONTH="January" ;;
+Feb)	MONTH_NUM=02; E2FSPROGS_MONTH="February" ;;
+Mar)	MONTH_NUM=03; E2FSPROGS_MONTH="March" ;;
+Apr)	MONTH_NUM=04; E2FSPROGS_MONTH="April" ;;
+May)	MONTH_NUM=05; E2FSPROGS_MONTH="May" ;;
+Jun)	MONTH_NUM=06; E2FSPROGS_MONTH="June" ;;
+Jul)	MONTH_NUM=07; E2FSPROGS_MONTH="July" ;;
+Aug)	MONTH_NUM=08; E2FSPROGS_MONTH="August" ;;
+Sep)	MONTH_NUM=09; E2FSPROGS_MONTH="September" ;;
+Oct)	MONTH_NUM=10; E2FSPROGS_MONTH="October" ;;
+Nov)	MONTH_NUM=11; E2FSPROGS_MONTH="November" ;;
+Dec)	MONTH_NUM=12; E2FSPROGS_MONTH="December" ;;
+*)	MONTH_NUM=13; E2FSPROGS_MONTH="UNKNOWN" ;;
+esac
+
+base_ver=`echo $E2FSPROGS_VERSION | \
+	       sed -e 's/-WIP//' -e 's/pre-//' -e 's/-PLUS//'`
+
+date_spec=${E2FSPROGS_YEAR}${MONTH_NUM}${E2FSPROGS_DAY}
+
+case $E2FSPROGS_VERSION in
+*-WIP|pre-*)
+	VER="$base_ver-WIP-$date_spec"
+	FN="$base_ver~WIP.$E2FSPROGS_YEAR.$MONTH_NUM.$E2FSPROGS_DAY"
+	;;
+*)
+	VER="$base_ver"
+	FN="$base_ver"
+	;;
+esac
+
+sed -e "s/@VER@/$VER/g" -e "s/@FN@/$FN/" < util/android-README.version.in > README.version
+
+git add -f $ANDROID_GENERATED_FILES
+if test -f COPYING
+then
+   git mv COPYING NOTICE
+fi
+git commit -m "Update generated files for Android"

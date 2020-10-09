@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\" Copyright 2003 by Theodore Ts'o.  All Rights Reserved.
 .\" This file may be copied under the terms of the GNU Public License.
-.\" 
+.\"
 .TH LOGSAVE 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 logsave \- save the output of a command in a logfile
@@ -15,17 +15,17 @@ logsave \- save the output of a command in a logfile
 The
 .B logsave
 program will execute
-.I cmd_prog 
+.I cmd_prog
 with the specified argument(s), and save a copy of its output to
 .IR logfile .
 If the containing directory for
 .I logfile
-does not exist, 
+does not exist,
 .B logsave
 will accumulate the output in memory until it can be written out.
 A copy of the output will also be written to standard output.
 .PP
-If 
+If
 .I cmd_prog
 is a single hyphen ('-'), then instead of executing a program,
 .B logsave
@@ -33,20 +33,20 @@ will take its input from standard input and save it in
 .I logfile
 .PP
 .B logsave
-is useful for saving the output of initial boot scripts 
-until the /var partition is mounted, so the output can be written to 
+is useful for saving the output of initial boot scripts
+until the /var partition is mounted, so the output can be written to
 /var/log.
 .SH OPTIONS
 .TP
 .B \-a
-This option will cause the output to be appended to 
+This option will cause the output to be appended to
 .IR logfile ,
 instead of replacing its current contents.
 .TP
 .B \-s
-This option will cause 
+This option will cause
 .B logsave
-to skip writing to the log file text which is bracketed with a control-A 
+to skip writing to the log file text which is bracketed with a control-A
 (ASCII 001 or Start of Header) and control-B (ASCII 002 or Start of
 Text).  This allows progress bar information to be visible to the user
 on the console, while not being written to the log file.

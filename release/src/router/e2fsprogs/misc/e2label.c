@@ -33,7 +33,7 @@ extern int optind;
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
-#include "nls-enable.h"
+#include "support/nls-enable.h"
 
 #define EXT2_SUPER_MAGIC 0xEF53
 
@@ -81,7 +81,7 @@ static void print_label (char *dev)
 	char label[VOLNAMSZ+1];
 
 	open_e2fs (dev, O_RDONLY);
-	strncpy(label, sb.s_volume_name, VOLNAMSZ);
+	snprintf(label, sizeof(label), "%.*s", EXT2_LEN_STR(sb.s_volume_name));
 	label[VOLNAMSZ] = 0;
 	printf("%s\n", label);
 }

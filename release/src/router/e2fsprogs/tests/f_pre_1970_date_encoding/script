@@ -1,0 +1,106 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+OUT=$test_name.log
+TIMESTAMPS=$test_name.timestamps.log
+EXP=$test_dir/expect
+FSCK_OPT=-yf
+
+create_file_with_xtime_and_extra() {
+	name=$1
+	time=$2
+	extra=$3
+	{
+		echo "write /dev/null $name"
+		for xtime in atime ctime mtime crtime; do
+			echo "set_inode_field $name $xtime @$time"
+			echo "set_inode_field $name ${xtime}_extra $extra"
+		done
+	} | $DEBUGFS -w $TMPFILE >> $OUT 2>&1
+}
+
+get_file_xtime_and_extra() {
+	name=$1
+	echo "times for $name =" >> $TIMESTAMPS
+	$DEBUGFS -R "stat $name" $TMPFILE 2>&1 | egrep '^( a| c| m|cr)time:' |
+		sed 's/ --.*//' >> $TIMESTAMPS
+}
+
+rm -f $OUT $TIMESTAMPS
+
+# create an empty ext4 filesystem with 256-byte inodes for testing
+> $TMPFILE
+echo mkfs.ext4 -b 1024 -q -I 256 $TMPFILE 5000 >> $OUT
+$MKE2FS -t ext4 -b 1024 -q -I 256 -F $TMPFILE 5000 >> $OUT 2>&1
+
+# this is a pre-1970 file encoded with the old encoding.
+# fsck should repair this
+create_file_with_xtime_and_extra year-1909 -1907928000 3
+
+# these are all already encoded correctly
+create_file_with_xtime_and_extra year-1979   299592000 0
+create_file_with_xtime_and_extra year-2039  2191752000 1
+create_file_with_xtime_and_extra year-2139  5345352000 1
+
+# confirm that the xtime is wrong on the pre-1970 file
+get_file_xtime_and_extra year-1909
+
+# and confirm that it is right on the remaining files
+get_file_xtime_and_extra year-1979
+get_file_xtime_and_extra year-2039
+get_file_xtime_and_extra year-2139
+
+# before we repair the filesystem, save off a copy so that
+# we can use it later
+
+cp -a $TMPFILE $TMPFILE.sav
+
+# repair the filesystem
+E2FSCK_TIME=1386393539 $FSCK $FSCK_OPT $TMPFILE >> $OUT 2>&1
+
+# check that the dates and xtime_extra on the file is now correct
+get_file_xtime_and_extra year-1909
+
+# check that the remaining dates have not been altered
+get_file_xtime_and_extra year-1979
+get_file_xtime_and_extra year-2039
+get_file_xtime_and_extra year-2139
+
+if test $SIZEOF_TIME_T -gt 4
+then
+  # now we need to check that after the year 2242, e2fsck does not
+  # modify dates with extra_xtime=3
+
+  # restore the unrepaired filesystem
+  mv $TMPFILE.sav $TMPFILE
+
+  #retry the repair
+  E2FSCK_TIME=9270393539 $FSCK $FSCK_OPT $TMPFILE >> $OUT 2>&1
+
+  # check that the 1909 file is unaltered (i.e. it has a post-2378 date)
+  get_file_xtime_and_extra year-1909
+else
+  rm -f TMPFILE.sav
+cat << EOF >> $TIMESTAMPS
+times for year-1909 =
+ ctime: 0x8e475440:00000003
+ atime: 0x8e475440:00000003
+ mtime: 0x8e475440:00000003
+crtime: 0x8e475440:00000003
+EOF
+fi
+
+cmp -s $TIMESTAMPS $EXP
+status=$?
+
+if [ "$status" = 0 ]; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $TIMESTAMPS > $test_name.failed
+fi
+
+unset OUT TIMESTAMPS EXP FSCK_OPT

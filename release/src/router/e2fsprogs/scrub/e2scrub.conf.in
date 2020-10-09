@@ -1,0 +1,25 @@
+# e2scrub configuration file
+
+# Uncomment to enable automatic periodic runs of e2scrub_all
+# (either via cron or via a systemd timer)
+# periodic_e2scrub=1
+
+# e-mail destination used by e2scrub_fail when problems are found with
+# the file system.
+# recipient=root
+
+# e-mail sender used by e2scrub_fail when problems are found with
+# the file system.
+# sender=e2scrub@host.domain.name
+
+# Snapshots will be created to run fsck; the snapshot will be of this size.
+# snap_size_mb=256
+
+# Set this to 1 to enable fstrim for everyone.
+# fstrim=0
+
+# Arguments passed into e2fsck.
+# e2fsck_opts="-vtt"
+
+# Set this to 1 to have e2scrub_all scrub all LVs, not just the mounted ones.
+# scrub_all=0

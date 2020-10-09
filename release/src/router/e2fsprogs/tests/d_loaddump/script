@@ -1,4 +1,7 @@
-if test -x $DEBUGFS_EXE; then
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
 
 OUT=$test_name.log
 EXP=$test_dir/expect
@@ -7,47 +10,49 @@ VERIFY_FSCK_OPT=-yf
 TEST_DATA=$test_name.tmp
 VERIFY_DATA=$test_name.ver.tmp
 
-echo "debugfs load/dump test" > $OUT
+echo "debugfs load/dump test" > $OUT.new
 
 dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
 
-echo "mke2fs -Fq -b 1024 test.img 512" >> $OUT
+echo "mke2fs -Fq -b 1024 test.img 512" >> $OUT.new
 
-$MKE2FS -Fq $TMPFILE 512 > /dev/null 2>&1
+$MKE2FS -Fq -b 1024 $TMPFILE 512 > /dev/null 2>&1
 status=$?
-echo Exit status is $status >> $OUT
+echo Exit status is $status >> $OUT.new
 
 dd if=$TEST_BITS of=$TEST_DATA bs=128k count=1 conv=sync > /dev/null 2>&1 
 echo "file fragment odd size" >> $TEST_DATA
 
-echo "debugfs -R ''write $TEST_DATA test_data'' -w test.img" > $OUT.new
+echo "debugfs -R ''write $TEST_DATA test_data'' -w test.img" >> $OUT.new
 $DEBUGFS -R "write $TEST_DATA test_data" -w $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 
-echo e2fsck $VERIFY_FSCK_OPT -N test_filesys > $OUT.new
+echo e2fsck $VERIFY_FSCK_OPT -N test_filesys >> $OUT.new
 $FSCK $VERIFY_FSCK_OPT -N test_filesys $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 
-echo "debugfs -R ''dump test_data $VERIFY_DATA'' test.img" > $OUT.new
+echo "debugfs -R ''dump test_data $VERIFY_DATA'' test.img" >> $OUT.new
 $DEBUGFS -R "dump test_data $VERIFY_DATA" $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 
-echo "cmp $TEST_DATA $VERIFY_DATA" >> $OUT
-cmp $TEST_DATA $VERIFY_DATA >>$OUT
+echo "cmp $TEST_DATA $VERIFY_DATA" >> $OUT.new
+cmp $TEST_DATA $VERIFY_DATA >>$OUT.new
 status=$?
-echo Exit status is $status >> $OUT
+echo Exit status is $status >> $OUT.new
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
 
 #
 # Do the verification
 #
 
-rm -f $VERIFY_DATA $TEST_DATA $TMPFILE $OUT.new
+if [ "$SKIP_UNLINK" != "true" ]; then
+	rm -f $VERIFY_DATA $TEST_DATA $TMPFILE $OUT.new
+else
+	echo "TMPFILE=$TMPFILE"
+fi
 cmp -s $OUT $EXP
 status=$?
 
@@ -60,7 +65,3 @@ else
 fi
 
 unset VERIFY_FSCK_OPT NATIVE_FSCK_OPT OUT EXP TEST_DATA VERIFY_DATA
-
-else #if test -x $DEBUGFS_EXE; then
-	echo "$test_name: $test_description: skipped"
-fi 

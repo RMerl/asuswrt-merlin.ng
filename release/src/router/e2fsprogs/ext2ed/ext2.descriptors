@@ -5,7 +5,7 @@ Most of this file is just copied from the ext2 main include file.
 My parser is very primitive - It only searches for the struct keywords,
 and uses the variables in there. The rest of the file is just ignored.
 
-You will find at the end a few additional types which are not aviable in
+You will find at the end a few additional types which are not available in
 the original include file, such as the types "file" and "dir". They have
 no variables, but are necessary due to the way ext2ed binds C commands
 to specific types.
@@ -102,7 +102,7 @@ struct ext2_inode {
 	__u32  i_block[14]; /* Pointers to blocks */
 	__u32  i_version;	/* File version (for NFS) */
 	__u32  i_file_acl;	/* File ACL */
-	__u32  i_dir_acl;	/* Directory ACL */
+	__u32  i_size_high;	/* High 32bits of size */
 	__u32  i_faddr;		/* Fragment address */
 	__u8   l_i_frag;	/* Fragment number */
 	__u8   l_i_fsize;	/* Fragment size */

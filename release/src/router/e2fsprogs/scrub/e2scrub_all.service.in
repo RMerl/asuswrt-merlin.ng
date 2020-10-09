@@ -1,0 +1,12 @@
+[Unit]
+Description=Online ext4 Metadata Check for All Filesystems
+ConditionACPower=true
+ConditionCapability=CAP_SYS_ADMIN
+ConditionCapability=CAP_SYS_RAWIO
+Documentation=man:e2scrub_all(8)
+
+[Service]
+Type=oneshot
+Environment=SERVICE_MODE=1
+ExecStart=@root_sbindir@/e2scrub_all
+SyslogIdentifier=e2scrub_all

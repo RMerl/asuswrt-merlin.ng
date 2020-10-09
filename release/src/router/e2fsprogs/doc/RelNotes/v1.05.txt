@@ -1,0 +1,104 @@
+E2fsprogs 1.05 (September 7, 1996)
+==================================
+
+Add support for new fields in the ext2 superblock --- volume name,
+volume UUID, and last mounted field.  Dumpe2fs displays these fields,
+tune2fs and mke2fs allows you to set them.  E2fsck will automatically
+generate a UUID for those volumes that don't have them.  
+
+Put in support for e2fsck to recognize HURD specific ext2 features ---
+most notably, the translator block.  The e2fsprogs tools will now use
+the creator_os field in the superblock to correctly handle different
+OS-specific variants of the ext2 filesystem.
+
+E2fsck now fixes inodes which have a the deletion time set, but which
+have a non-zero i_link_count field by offering to clear the deletion
+time.  Previously e2fsck assumed that the inode was deleted (per 0.3c
+ext2 kernel behavior) and offered to unlink the file.
+
+If e2fsck sets the clean bit, but nothing else, set the exit code
+FSCK_NONDESTRUCT.  After all, e2fsck did fix a filesystem error --- it
+set the filesystem valid bit when it was previously cleared.  :-) This
+was needed to make the HURD fsck driver happy.
+
+If the  user  refuses to attach an  unattached  inode, e2fsck  will no
+longer set the inode's link count.  Otherwise, the  inode would end up
+getting marked as unused, which might cause loss of data later.
+
+Make the message issued by e2fsck when the superblock is corrupt less
+confusing for users.  It now mentions that another reason for the
+"corrupt superblock" message might be that the partition might not be
+an ext2 filesystem at all (it might swap, msdos filesystem, ufs, etc.)
+
+Make the libext2 library more robust so that e2fsck won't coredump on
+an illegal superblock where the blocksize is zero.  (f_crashdisk is
+the test case).
+
+By default, create filesystems where the default checkinterval is 6
+months (180 days).  Linux servers can be robust enough that 20 reboots
+can be a long, long time.
+
+Added configure flag --enable-old-bitops, which forces the bitops to
+use the old (native) bitmask operations.  By default on the sparc
+platform, the standard ext2 bit ordering is now used.
+
+Added a new feature to e2fsck to byte-swap filesystems; this can be
+used to convert old m68k filesystems to use the standard byte-order
+storage for the superblock, inodes, and directory blocks.  This
+function is invoked by using the '-s' option to e2fsck.
+
+Debugfs's "dump" command has been enhanced so that it writes out the
+exact size of the file so that the nulls at the end of the file are
+eliminated.  The command also accept a new "-p" option which will
+attempt to preserve the ownership, permissions, and file
+modification/access times.
+
+Debugfs has two new options, -f and -R.  The -R option allows the user
+to execute a single debugfs command from the command line.  The -f
+option allows the user to specify a "command file" containing debugfs
+commands which will get executed.
+
+Dumpe2fs now pretty prints the check interval, instead of just
+printing the check interval as a number of seconds.
+
+Fix bugs in debugfs: the params command when no filesystem is opened
+no longer causes a core dump.  It is now possible to unlink a file
+when a pathname containing a '/' is specified.
+
+Tune2fs has a new -C option which sets the number of times the
+filesystem has been mounted.
+
+Fix the chattr '-v' option so that it actually works.  Chattr was
+being buggy about the -v option parsing.
+
+Programmers' notes:
+-------------------
+
+The directory lib/uuid contains a set of library routines to generate
+DCE compatible UUIDs.  
+
+Extended ext2fs_namei() to handle symbolic links.  Added new function
+ext2fs_nami_follow() which will follow last symbolic link in the case
+where the pathname points to a sym link.
+
+The ext2fs_block_iterate function will now return the HURD translator
+block, if present.  The new flag BLOCK_FLAG_DATA_ONLY will cause the
+iterator to return data blocks only.  The ext2fs.h file now defines
+constants BLOCK_COUNT_IND, BLOCK_COUNT_DIND, BLOCK_COUNT_TIND, and
+BLOCK_COUNT_TRANSLATOR, which are the magic values passed in the block
+count field of the iterator callback function.
+
+The test script driver now takes an optional second argument, which is
+the test case to be run.  This allows you to run a test case without
+needing to run the entire test suite.
+
+On Linux ELF systems, install the .so files in the correct places
+(/usr/lib).  The .so files must be stored in the same directory as the
+.a files.
+
+Fixed miscellaneous HURD compilation issues with header file being
+included in the right order.
+
+Fixed debugfs so that it resets optind to zero, not one, since setting
+optind to zero is more correct.
+

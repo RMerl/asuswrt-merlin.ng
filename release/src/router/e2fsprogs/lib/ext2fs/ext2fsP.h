@@ -9,9 +9,22 @@
  * %End-Header%
  */
 
+#if HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+
 #include "ext2fs.h"
 
 #define EXT2FS_MAX_NESTED_LINKS  8
+
+static inline int ext2fsP_is_disk_device(mode_t mode)
+{
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+	return S_ISBLK(mode) || S_ISCHR(mode);
+#else
+	return S_ISBLK(mode);
+#endif
+}
 
 /*
  * Badblocks list
@@ -50,6 +63,7 @@ struct dir_context {
 	ext2_ino_t		dir;
 	int		flags;
 	char		*buf;
+	unsigned int	buflen;
 	int (*func)(ext2_ino_t	dir,
 		    int	entry,
 		    struct ext2_dir_entry *dirent,
@@ -68,14 +82,28 @@ struct ext2_inode_cache {
 	void *				buffer;
 	blk64_t				buffer_blk;
 	int				cache_last;
-	int				cache_size;
+	unsigned int			cache_size;
 	int				refcount;
 	struct ext2_inode_cache_ent	*cache;
 };
 
 struct ext2_inode_cache_ent {
 	ext2_ino_t		ino;
-	struct ext2_inode	inode;
+	struct ext2_inode	*inode;
+};
+
+/*
+ * NLS defintions
+ */
+struct ext2fs_nls_table {
+	int version;
+	const struct ext2fs_nls_ops *ops;
+};
+
+struct ext2fs_nls_ops {
+	int (*casefold)(const struct ext2fs_nls_table *charset,
+			const unsigned char *str, size_t len,
+			unsigned char *dest, size_t dlen);
 };
 
 /* Function prototypes */
@@ -87,6 +115,12 @@ extern int ext2fs_process_dir_block(ext2_filsys  	fs,
 				    int			ref_offset,
 				    void		*priv_data);
 
+extern errcode_t ext2fs_inline_data_ea_remove(ext2_filsys fs, ext2_ino_t ino);
+extern errcode_t ext2fs_inline_data_expand(ext2_filsys fs, ext2_ino_t ino);
+extern int ext2fs_inline_data_dir_iterate(ext2_filsys fs,
+					  ext2_ino_t ino,
+					  void *priv_data);
+
 /* Generic numeric progress meter */
 
 struct ext2fs_numeric_progress_struct {
@@ -94,6 +128,23 @@ struct ext2fs_numeric_progress_struct {
 	int		log_max;
 	int		skip_progress;
 };
+
+/*
+ * progress callback functions
+ */
+struct ext2fs_progress_ops {
+	void (*init)(ext2_filsys fs,
+		     struct ext2fs_numeric_progress_struct * progress,
+		     const char *label, __u64 max);
+	void (*update)(ext2_filsys fs,
+		       struct ext2fs_numeric_progress_struct * progress,
+		       __u64 val);
+	void (*close)(ext2_filsys fs,
+		      struct ext2fs_numeric_progress_struct * progress,
+		      const char *message);
+};
+
+extern struct ext2fs_progress_ops ext2fs_numeric_progress_ops;
 
 extern void ext2fs_numeric_progress_init(ext2_filsys fs,
 					 struct ext2fs_numeric_progress_struct * progress,
@@ -145,3 +196,10 @@ extern int ext2fs_mem_is_zero(const char *mem, size_t len);
 extern int ext2fs_file_block_offset_too_big(ext2_filsys fs,
 					    struct ext2_inode *inode,
 					    blk64_t offset);
+
+/* atexit support */
+typedef void (*ext2_exit_fn)(void *);
+errcode_t ext2fs_add_exit_fn(ext2_exit_fn fn, void *data);
+errcode_t ext2fs_remove_exit_fn(ext2_exit_fn fn, void *data);
+
+#define EXT2FS_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2*!!(cond)]))

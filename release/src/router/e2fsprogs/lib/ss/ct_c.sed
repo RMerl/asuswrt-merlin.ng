@@ -25,7 +25,7 @@
 # an awk script to parse.
 
 #
-# The first section of this script is just to cannoicalize the file.  
+# The first section of this script is just to canonicalize the file.  
 # It removes comments, and puts each command_table request onto a single
 # line
 #
@@ -41,7 +41,7 @@ bFIRST
 }
 s/, */, /g
 #
-# Now we take care of some syntatic sugar.....
+# Now we take care of some syntactic sugar.....
 #
 /^unimplemented/ {
 	s/^unimplemented [A-Za-z_0-9]*/request ss_unimplemented/

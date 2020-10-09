@@ -25,7 +25,7 @@ image:		$(ELF_LIB)
 $(ELF_LIB): $(OBJS)
 	$(E) "	GEN_ELF_SOLIB $(ELF_LIB)"
 	$(Q) (cd elfshared; $(CC) --shared -o $(ELF_LIB) \
-		-L$(top_builddir)/../lib $(LDFLAGS) \
+		-L$(top_builddir)/../lib $(LDFLAGS_SHLIB) \
 		-Wl,-h,$(ELF_SONAME) $(OBJS) $(ELF_OTHER_LIBS))
 	$(Q) $(MV) elfshared/$(ELF_LIB) .
 	$(Q) $(RM) -f ../$(ELF_LIB) ../$(ELF_IMAGE).so ../$(ELF_SONAME)
@@ -35,7 +35,7 @@ $(ELF_LIB): $(OBJS)
 	$(Q) (cd ..; $(LN) $(LINK_BUILD_FLAGS) $(ELF_LIB) $(ELF_SONAME))
 
 installdirs-elf-lib::
-	$(MKINSTALLDIRS) $(DESTDIR)$(ELF_INSTALL_DIR) \
+	$(MKDIR_P) $(DESTDIR)$(ELF_INSTALL_DIR) \
 		$(DESTDIR)$(libdir)
 
 installdirs:: installdirs-elf-lib
@@ -50,7 +50,7 @@ install-shlibs install:: $(ELF_LIB) installdirs-elf-lib
 install-strip: install
 	$(STRIP) -x $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
 
-install-shlibs-strip: install-shlibs
+install-shlibs-strip:: install-shlibs
 	$(STRIP) -x $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
 
 uninstall-shlibs uninstall::

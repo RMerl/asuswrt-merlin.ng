@@ -1,0 +1,20 @@
+Pass 1: Checking inodes, blocks, and sizes
+Special (device/socket/fifo) file (inode 12) has extents
+or inline-data flag set.  Clear? yes
+
+Special (device/socket/fifo) inode 12 has non-zero size.  Fix? yes
+
+Inode 13 is a named pipe but it looks like it is really a directory.
+Fix? yes
+
+Pass 2: Checking directory structure
+Entry 'moo' in / (2) has an incorrect filetype (was 1, should be 5).
+Fix? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 13/128 files (0.0% non-contiguous), 17/512 blocks
+Exit status is 1

@@ -14,7 +14,7 @@ if [ "$status" != 0 ] ; then
 fi
 
 dd if=/dev/zero of=$TMPFILE.2 bs=1048576 count=1 >> $test_name.log 2>&1
-cat <<- EOF | $DEBUGFS -w -f /dev/stdin $TMPFILE >> $test_name.log 2>&1
+cat <<- EOF | $DEBUGFS -w $TMPFILE >> $test_name.log 2>&1
 	write $TMPFILE.2 file1
 	set_inode_field file1 uid 500
 	set_inode_field file1 gid 500

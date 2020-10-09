@@ -65,6 +65,7 @@ errcode_t ext2fs_dblist_dir_iterate(ext2_dblist dblist,
 static int db_dir_proc(ext2_filsys fs, struct ext2_db_entry2 *db_info,
 		       void *priv_data)
 {
+	struct ext2_inode	inode;
 	struct dir_context	*ctx;
 	int			ret;
 
@@ -72,8 +73,15 @@ static int db_dir_proc(ext2_filsys fs, struct ext2_db_entry2 *db_info,
 	ctx->dir = db_info->ino;
 	ctx->errcode = 0;
 
-	ret = ext2fs_process_dir_block(fs, &db_info->blk,
-				       db_info->blockcnt, 0, 0, priv_data);
+	ctx->errcode = ext2fs_read_inode(fs, ctx->dir, &inode);
+	if (ctx->errcode)
+		return DBLIST_ABORT;
+	if (inode.i_flags & EXT4_INLINE_DATA_FL)
+		ret = ext2fs_inline_data_dir_iterate(fs, ctx->dir, ctx);
+	else
+		ret = ext2fs_process_dir_block(fs, &db_info->blk,
+					       db_info->blockcnt, 0, 0,
+					       priv_data);
 	if ((ret & BLOCK_ABORT) && !ctx->errcode)
 		return DBLIST_ABORT;
 	return 0;

@@ -52,8 +52,8 @@ AllowMountedRead	on
 
 # When ForceExt2 is set to on, the filesystem is assumed to be ext2
 # filesystem, despite the possibly corrupt superblock magic number reading.
-# All the ext2 specific commands will be aviable despite the possible
-# autodetection failture.
+# All the ext2 specific commands will be available despite the possible
+# autodetection failure.
 
 ForceExt2		off
 

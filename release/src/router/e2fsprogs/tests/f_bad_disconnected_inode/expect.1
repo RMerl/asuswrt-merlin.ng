@@ -2,10 +2,19 @@ Pass 1: Checking inodes, blocks, and sizes
 Inode 1 has EXTENTS_FL flag set on filesystem without extents support.
 Clear? yes
 
-Inode 15 has EXTENTS_FL flag set on filesystem without extents support.
+Inode 9 has the casefold flag set but is not a directory.  Clear flag? yes
+
+Inode 14 has the casefold flag set but is not a directory.  Clear flag? yes
+
+Inode 14 has INLINE_DATA_FL flag on filesystem without inline data support.
 Clear? yes
 
-Inode 16 has EXTENTS_FL flag set on filesystem without extents support.
+Inode 15 has INLINE_DATA_FL flag on filesystem without inline data support.
+Clear? yes
+
+Inode 16 has the casefold flag set but is not a directory.  Clear flag? yes
+
+Inode 16 has INLINE_DATA_FL flag on filesystem without inline data support.
 Clear? yes
 
 Pass 2: Checking directory structure
@@ -21,12 +30,6 @@ Clear? yes
 Inode 13 (...) has invalid mode (0117003).
 Clear? yes
 
-i_file_acl for inode 14 (...) is 2892851642, should be zero.
-Clear? yes
-
-Inode 14 (...) has invalid mode (0154247).
-Clear? yes
-
 Pass 5: Checking group summary information
 Block bitmap differences:  -(9--19)
 Fix? yes
@@ -37,13 +40,7 @@ Fix? yes
 Free blocks count wrong (79, counted=91).
 Fix? yes
 
-Free inodes count wrong for group #0 (6, counted=5).
-Fix? yes
-
 Directories count wrong for group #0 (3, counted=2).
-Fix? yes
-
-Free inodes count wrong (6, counted=5).
 Fix? yes
 
 

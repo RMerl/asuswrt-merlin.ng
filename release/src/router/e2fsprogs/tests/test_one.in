@@ -1,6 +1,8 @@
 #!/bin/sh
 # run a single regression test
 
+export DD
+
 LC_ALL=C
 export LC_ALL
 
@@ -13,10 +15,14 @@ case "$1" in
     	export USE_VALGRIND="valgrind --sim-hints=lax-ioctls --leak-check=full --show-reachable=yes --log-file=/tmp/valgrind-%p.log"
 	shift;
 	;;
+    --skip-slow-tests)
+	SKIP_SLOW_TESTS=yes
+	shift;
+	;;
 esac
 
 case "$1" in
-    *.failed|*.new|*.ok|*.log|*.tmp)	exit 0 ;;
+    *.failed|*.new|*.ok|*.log|*.tmp|*.slow)	exit 0 ;;
 esac
 
 test_dir=$1
@@ -29,9 +35,6 @@ fi
 . $TEST_CONFIG
 
 test_name=`echo $test_dir | sed -e 's;.*/;;'`
-
-TMPFILE=$(mktemp ${TMPDIR:-/tmp}/e2fsprogs-tmp-$test_name.XXXXXX)
-trap 'rm -f $TMPFILE ; exit' 1 2 15
 
 if [ -f $test_dir ] ; then
 	exit 0;
@@ -49,9 +52,18 @@ else
 	test_description=
 fi
 
-rm -f $test_name.ok $test_name.failed
+if [ -n "$SKIP_SLOW_TESTS" -a -f $test_dir/is_slow_test ]; then
+    echo "$test_name: $test_description: skipped (slow test)"
+    exit 0
+fi
+
+rm -f $test_name.ok $test_name.failed $test_name.log $test_name.slow
 #echo -e -n "$test_name: $test_description:\r"
 
+TMPFILE=$(mktemp ${TMPDIR:-/tmp}/e2fsprogs-tmp-$test_name.XXXXXX)
+[ "$SKIP_UNLINK" != "true" ] && trap 'rm -f $TMPFILE ; exit' 0 1 2 15
+
+start=$SECONDS
 if [ -f $test_dir/script ]; then
 	. $test_dir/script
 else
@@ -62,7 +74,12 @@ else
 	else
 		echo "$test_name: Missing test script $default_script!"
 	fi
-	[ -f $test_name.failed ] && cat $test_name.failed
+fi
+elapsed=$((SECONDS - start))
+if [ $elapsed -gt 60 -a ! -f $test_dir/is_slow_test ]; then
+	echo "$test_name:  *** took $elapsed seconds to finish ***" |
+		tee $test_name.slow
+	echo "$test_name:  consider adding $test_dir/is_slow_test"
 fi
 
 if [ "$SKIP_UNLINK" != "true" ] ; then

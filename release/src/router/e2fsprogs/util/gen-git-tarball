@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# Generate the e2fsprogs release tar ball
+#
+
+commit=HEAD
+
+if test -n "$1" ; then
+    commit="$1"
+fi
+
+ver=`git show ${commit}:version.h | grep E2FSPROGS_VERSION  \
+	| awk '{print $3}' | tr \" " " | awk '{print $1}'`
+fn=e2fsprogs-${ver}.tar.gz
+
+git archive --prefix=e2fsprogs-${ver}/ ${commit} | gzip -9n > $fn
+echo "Generated $fn"

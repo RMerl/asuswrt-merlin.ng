@@ -1,0 +1,10 @@
+Clearing orphaned inode 12 (uid=0, gid=0, mode=0100644, size=3842048)
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+test_filesystem: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesystem: 11/512 files (9.1% non-contiguous), 1070/2048 blocks
+Exit status is 0

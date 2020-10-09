@@ -37,6 +37,7 @@
  * gcc-wall wall mode
  */
 #define _SVID_SOURCE
+#define _DEFAULT_SOURCE	  /* since glibc 2.20 _SVID_SOURCE is deprecated */
 
 #include "config.h"
 
@@ -59,7 +60,9 @@
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
+#ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
+#endif
 #include <sys/stat.h>
 #ifdef HAVE_SYS_FILE_H
 #include <sys/file.h>
@@ -112,6 +115,7 @@ THREAD_LOCAL unsigned short jrand_seed[3];
 #endif
 
 #ifdef _WIN32
+#ifndef USE_MINGW
 static void gettimeofday (struct timeval *tv, void *dummy)
 {
 	FILETIME	ftime;
@@ -128,11 +132,7 @@ static void gettimeofday (struct timeval *tv, void *dummy)
 	tv->tv_sec = n / 1000000;
 	tv->tv_usec = n % 1000000;
 }
-
-static int getuid (void)
-{
-	return 1;
-}
+#endif
 #endif
 
 static int get_random_fd(void)
@@ -153,7 +153,7 @@ static int get_random_fd(void)
 				fcntl(fd, F_SETFD, i | FD_CLOEXEC);
 		}
 #endif
-		srand((getpid() << 16) ^ getuid() ^ tv.tv_sec ^ tv.tv_usec);
+		srand(((unsigned)getpid() << 16) ^ getuid() ^ tv.tv_sec ^ tv.tv_usec);
 #ifdef DO_JRAND_MIX
 		jrand_seed[0] = getpid() ^ (tv.tv_sec & 0xFFFF);
 		jrand_seed[1] = getppid() ^ (tv.tv_usec & 0xFFFF);
@@ -316,7 +316,9 @@ static int get_clock(uint32_t *clock_high, uint32_t *clock_low,
 	THREAD_LOCAL FILE		*state_f;
 	THREAD_LOCAL uint16_t		clock_seq;
 	struct timeval 			tv;
+#ifndef _WIN32
 	struct flock			fl;
+#endif
 	uint64_t			clock_reg;
 	mode_t				save_umask;
 	int				len;
@@ -334,6 +336,7 @@ static int get_clock(uint32_t *clock_high, uint32_t *clock_low,
 			}
 		}
 	}
+#ifndef _WIN32
 	fl.l_type = F_WRLCK;
 	fl.l_whence = SEEK_SET;
 	fl.l_start = 0;
@@ -349,6 +352,7 @@ static int get_clock(uint32_t *clock_high, uint32_t *clock_low,
 			break;
 		}
 	}
+#endif
 	if (state_fd >= 0) {
 		unsigned int cl;
 		unsigned long tv1, tv2;
@@ -404,19 +408,21 @@ try_again:
 		rewind(state_f);
 		len = fprintf(state_f,
 			      "clock: %04x tv: %016lu %08lu adj: %08d\n",
-			      clock_seq, last.tv_sec, (long)last.tv_usec,
-			      adjustment);
+			      clock_seq, (unsigned long)last.tv_sec,
+			      (unsigned long)last.tv_usec, adjustment);
 		fflush(state_f);
 		if (ftruncate(state_fd, len) < 0) {
 			fprintf(state_f, "                   \n");
 			fflush(state_f);
 		}
 		rewind(state_f);
+#ifndef _WIN32
 		fl.l_type = F_UNLCK;
 		if (fcntl(state_fd, F_SETLK, &fl) < 0) {
 			fclose(state_f);
 			state_fd = -1;
 		}
+#endif
 	}
 
 	*clock_high = clock_reg >> 32;
@@ -425,6 +431,7 @@ try_again:
 	return 0;
 }
 
+#if defined(USE_UUIDD) && defined(HAVE_SYS_UN_H)
 static ssize_t read_all(int fd, char *buf, size_t count)
 {
 	ssize_t ret;
@@ -475,8 +482,14 @@ static void close_all_fds(void)
 			open("/dev/null", O_RDWR);
 	}
 }
+#endif /* defined(USE_UUIDD) && defined(HAVE_SYS_UN_H) */
 
-
+#if __GNUC_PREREQ (4, 6)
+#pragma GCC diagnostic push
+#if !defined(USE_UUIDD) || !defined(HAVE_SYS_UN_H)
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+#endif
 /*
  * Try using the uuidd daemon to generate the UUID
  *
@@ -559,6 +572,9 @@ fail:
 #endif
 	return -1;
 }
+#if __GNUC_PREREQ (4, 6)
+#pragma GCC diagnostic pop
+#endif
 
 void uuid__generate_time(uuid_t out, int *num)
 {

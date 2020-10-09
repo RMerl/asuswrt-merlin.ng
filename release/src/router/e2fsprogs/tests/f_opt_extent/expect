@@ -1,0 +1,55 @@
+tune2fs metadata_csum test
+Creating filesystem with 524288 1k blocks and 65536 inodes
+Superblock backups stored on blocks: 
+	8193, 24577, 40961, 57345, 73729, 204801, 221185, 401409
+
+Allocating group tables:      done                            
+Writing inode tables:      done                            
+Creating journal (16384 blocks): done
+Creating 477 huge file(s) with 1024 blocks each: done
+Writing superblocks and filesystem accounting information:      done
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+Exit status is 0
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 3A: Optimizing directories
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+
+
+Change in FS metadata:
+@@ -10,7 +10,7 @@
+ Inode count:              65536
+ Block count:              524288
+ Reserved block count:     26214
+-Free blocks:              570
++Free blocks:              567
+ Free inodes:              65047
+ First block:              1
+ Block size:               1024
+@@ -47,8 +47,8 @@
+   Block bitmap at 262 (+261)
+   Inode bitmap at 278 (+277)
+   Inode table at 294-549 (+293)
+-  21 free blocks, 535 free inodes, 3 directories, 535 unused inodes
+-  Free blocks: 4414-4434
++  18 free blocks, 535 free inodes, 3 directories, 535 unused inodes
++  Free blocks: 4417-4434
+   Free inodes: 490-1024
+ Group 1: (Blocks 8193-16384) [INODE_UNINIT]
+   Backup superblock at 8193, Group descriptors at 8194-8197
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+Exit status is 0

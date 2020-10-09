@@ -1,0 +1,42 @@
+if ! test -x $RESIZE2FS_EXE -o ! -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs/resize2fs)"
+	return 0
+fi
+
+IMAGE=$test_dir/image.gz
+FSCK_OPT="-yf -E fixes_only"
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+gunzip < $IMAGE > $TMPFILE
+
+echo "resize2fs test" > $OUT.new
+
+echo "resize2fs test.img 8M" >> $OUT.new
+$RESIZE2FS $TMPFILE 8M >> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+
+echo " " >> $OUT.new
+echo fsck $FSCK_OPT -N test_filesys test.img >> $OUT.new
+$FSCK $FSCK_OPT -N test_filesys $TMPFILE >> $OUT.new 2>&1
+echo Exit status is $status >> $OUT.new
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm $TMPFILE $OUT.new
+
+#
+# Do the verification
+#
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset IMAGE FSCK_OPT OUT EXP

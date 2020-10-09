@@ -1,33 +1,60 @@
 # imap_err.et -- Error codes for Cyrus IMAP server programs
 #
-# Copyright 1998 Carnegie Mellon University
-# 
-# No warranties, either expressed or implied, are made regarding the
-# operation, use, or results of the software.
+# Copyright (c) 1994-2008 Carnegie Mellon University.  All rights reserved.
 #
-# Permission to use, copy, modify and distribute this software and its
-# documentation is hereby granted for non-commercial purposes only
-# provided that this copyright notice appears in all copies and in
-# supporting documentation.
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
 #
-# Permission is also granted to Internet Service Providers and others
-# entities to use the software for internal purposes.
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
 #
-# The distribution, modification or sale of a product which uses or is
-# based on the software, in whole or in part, for commercial purposes or
-# benefits requires specific, additional permission from:
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
 #
-#  Office of Technology Transfer
-#  Carnegie Mellon University
-#  5000 Forbes Avenue
-#  Pittsburgh, PA  15213-3890
-#  (412) 268-4387, fax: (412) 268-7395
-#  tech-transfer@andrew.cmu.edu
-# 
+# 3. The name "Carnegie Mellon University" must not be used to
+#    endorse or promote products derived from this software without
+#    prior written permission. For permission or any legal
+#    details, please contact
+#      Carnegie Mellon University
+#      Center for Technology Transfer and Enterprise Creation
+#      4615 Forbes Avenue
+#      Suite 302
+#      Pittsburgh, PA  15213
+#      (412) 268-7393, fax: (412) 268-7395
+#      innovation@andrew.cmu.edu
+#
+# 4. Redistributions of any form whatsoever must retain the following
+#    acknowledgment:
+#    "This product includes software developed by Computing Services
+#     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
+#
+# CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
+# THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
+# FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+# AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+# OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
 error_table imap
+
+ec IMAP_INTERNAL,
+   "Internal Error"
 
 ec IMAP_IOERROR,
    "System I/O error"
+
+ec IMAP_NOTFOUND,
+   "Item does not exist"
+
+ec IMAP_SYS_ERROR,
+   "Operating System Error"
+
+ec IMAP_NOSPACE,
+   "mail system storage has been exceeded"
 
 ec IMAP_PERMISSION_DENIED,
    "Permission denied"
@@ -35,11 +62,23 @@ ec IMAP_PERMISSION_DENIED,
 ec IMAP_QUOTA_EXCEEDED,
    "Over quota"
 
+ec IMAP_MESSAGE_TOO_LARGE,
+   "Message size exceeds fixed limit"
+
 ec IMAP_USERFLAG_EXHAUSTED,
    "Too many user flags in mailbox"
 
+ec IMAP_NAMESPACE_BADPREFIX,
+   "Invalid namespace prefix in configuration file"
+
 ec IMAP_MAILBOX_BADFORMAT,
    "Mailbox has an invalid format"
+
+ec IMAP_SYNC_CHECKSUM,
+   "Replication inconsistency detected"
+
+ec IMAP_MAILBOX_CHECKSUM,
+   "Mailbox format corruption detected"
 
 ec IMAP_MAILBOX_NOTSUPPORTED,
    "Operation is not supported on mailbox"
@@ -53,8 +92,20 @@ ec IMAP_MAILBOX_EXISTS,
 ec IMAP_MAILBOX_BADNAME,
    "Invalid mailbox name"
 
-ec IMAP_MAILBOX_POPLOCKED,
-   "Mailbox is locked by POP server"
+ec IMAP_MAILBOX_BADTYPE,
+   "Invalid mailbox type"
+
+ec IMAP_MAILBOX_MOVED,
+   "Mailbox has been moved to another server"
+
+ec IMAP_MAILBOX_RESERVED,
+   "Mailbox is currently reserved"
+
+ec IMAP_MAILBOX_LOCKED,
+   "Mailbox is locked"
+
+ec IMAP_MAILBOX_DISABLED,
+   "Delivery to mailbox is disabled"
 
 ec IMAP_PARTITION_UNKNOWN,
    "Unknown/invalid partition"
@@ -80,6 +131,46 @@ ec IMAP_MESSAGE_NOBLANKLINE,
 ec IMAP_QUOTAROOT_NONEXISTENT,
    "Quota root does not exist"
 
+ec IMAP_PROTOCOL_ERROR,
+   "Bad protocol"
+
+ec IMAP_PROTOCOL_BAD_PARAMETERS,
+   "Syntax error in parameters"
+
+ec IMAP_ANNOTATION_BADENTRY,
+   "Invalid annotation entry"
+
+ec IMAP_ANNOTATION_BADATTRIB,
+   "Invalid annotation attribute"
+
+ec IMAP_ANNOTATION_BADVALUE,
+   "Invalid annotation value"
+
+ec IMAP_BADURL,
+   "Bad URL"
+
+ec IMAP_ZERO_LENGTH_LITERAL,
+   "Zero-length message literal"
+
+# following used only proxy/db operations
+ec IMAP_BAD_SERVER,
+   "Invalid server requested"
+
+ec IMAP_SERVER_UNAVAILABLE,
+   "Server(s) unavailable to complete operation"
+
+ec IMAP_REMOTE_DENIED,
+   "The remote Server(s) denied the operation"
+
+ec IMAP_AGAIN,
+   "Retry operation"
+
+ec IMAP_NOT_SINGULAR_ROOT,
+   "This mailbox hierarchy does not exist on a single backend server."
+
+ec IMAP_REMOTE_NO_MULTIAPPEND,
+   "The remote server does not support MULTIAPPEND"
+
 # Following only used for internationalization of error messages
 
 ec IMAP_UNRECOGNIZED_CHARSET,
@@ -97,13 +188,24 @@ ec IMAP_ANONYMOUS_NOT_PERMITTED,
 ec IMAP_UNSUPPORTED_QUOTA,
    "Unsupported quota resource"
 
+# Following used only for SASL operations
+
+ec IMAP_SASL_FAIL,
+   "Authentication failed"
+
+ec IMAP_SASL_CANCEL,
+   "Client cancelled authentication"
+
+ec IMAP_SASL_PROTERR,
+   "Protocol error during authentication"
+
 # Following used for internationalization of untagged OK/NO responses
 
 ec IMAP_NO_OVERQUOTA,
-   "Mailbox is over quota"
+   "Mailbox is over %s quota"
 
 ec IMAP_NO_CLOSEQUOTA,
-   "Mailbox is at %d%% of quota"
+   "Mailbox is at %d%% of %s quota"
 
 ec IMAP_NO_MSGGONE,
    "Message %d no longer exists"
@@ -113,6 +215,15 @@ ec IMAP_NO_CHECKSEEN,
 
 ec IMAP_NO_CHECKPRESERVE,
    "Unable to preserve \\Seen state"
+
+ec IMAP_NO_NOSUCHMSG,
+   "No matching messages"
+
+ec IMAP_NO_NOSUCHANNOTATION,
+   "No matching annotations"
+
+ec IMAP_NO_UNKNOWN_CTE,
+   "[UNKNOWN-CTE] Can not process the binary data"
 
 # Following used for internationalization of untagged BYE response
 

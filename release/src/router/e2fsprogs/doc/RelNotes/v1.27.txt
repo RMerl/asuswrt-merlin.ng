@@ -1,0 +1,60 @@
+E2fsprogs 1.27 (March 8, 2002)
+==============================
+
+The warning messages for mke2fs now go to standard error.
+
+Fixed to make sure "make check" runs all of the test programs with
+LD_LIBRARY_PATH set, so that we test the libraries in the build tree.
+
+The mke2fs program checks the boot sector for the BSD disk label, and
+avoids erasing it if it is there.
+
+Fixed a bug in e2fsck which caused it to core dump if the journal
+inode was missing when it was supposed to be there.
+
+E2fsck now prints ranges in pass 5 when printing deltas for the block
+and inode bitmaps.
+
+Debugfs's "ls -l" command now will print out the file type information
+in the directory entry.
+
+Create man pages and hard links for fsck.ext3 and mkfs.ext3.  If
+mke2fs is invoked as mkfs.ext3, create the filesystem with a journal.
+
+Debugfs can now examine the experimental directory indexing
+information.
+
+Fixed bug in debugfs which caused it to core dump if modify_inode is
+called without an open filesystem.
+
+The debugfs lsdel command now runs its output through a pager first.
+
+When installing manual pages, remove the compressed manual pages first.
+
+Synchronized with Debian's packaging information for e2fsprogs-1.26-1.
+
+Fix the 2.4 resource limitation workaround introduced in 1.26 which
+actually broke things on mips32, sparc32, and Alpha platforms.
+
+Updated the I18N code so that calls to setlocate(LC_CTYPE, 0) are made
+(which is required by the newer libintl libraries).
+
+Programmer's notes:
+-------------------
+
+Fixed various gcc -Wall complaints.
+
+Fixed a few memory leaks in the e2fsck journalling code, and in the
+ismounted code checking for a swap device.
+
+Add new inode I/O abstraction interface which exports an inode as
+an I/O object.
+  
+Exported ext2_file_flush as a public interface.
+  
+In ext2_file_write, we now mark the buffer void * argument as a const, since ext2_file_write doesn't modify the buffer.
+
+Lots of small random portability fixes to make e2fsprogs build under
+AIX --- even without the 5L compatibility toolkit, and even using the
+uber-crippled AIX native C compiler.
+

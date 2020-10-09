@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Library General Public
    License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.  */
 
 /* Tell glibc's <string.h> to provide a prototype for stpcpy().
@@ -242,7 +242,7 @@ _nl_make_l10nflist (struct loaded_l10nfile **l10nfile_list,
     }
   if ((mask & (XPG_MODIFIER | CEN_AUDIENCE)) != 0)
     {
-      /* This component can be part of both syntaces but has different
+      /* This component can be part of both syntaxes but has different
 	 leading characters.  For CEN we use `+', else `@'.  */
       *cp++ = (mask & CEN_AUDIENCE) != 0 ? '+' : '@';
       cp = stpcpy (cp, modifier);

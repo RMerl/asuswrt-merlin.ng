@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# Abort on error.
+set -e
+
+if [ -x /usr/sbin/update-initramfs -a \
+	-e /etc/initramfs-tools/initramfs.conf ]; then
+    update-initramfs -u
+fi
+
+#DEBHELPER#
+
+# debhelper doesn't know what timers are...
+update_svc() {
+	deb-systemd-helper unmask "$1" >/dev/null || true
+
+	if deb-systemd-helper --quiet was-enabled "$1"; then
+		deb-systemd-helper enable "$1" >/dev/null || true
+	else
+		deb-systemd-helper update-state "$1" >/dev/null || true
+	fi
+}
+update_svc e2scrub_all.timer
+update_svc e2scrub_reap.service
+
+# Start our new services
+if [ -d /run/systemd/system ]; then
+	systemctl --system daemon-reload >/dev/null || true
+	deb-systemd-invoke start e2scrub_all.timer >/dev/null || true
+fi
+
+exit 0

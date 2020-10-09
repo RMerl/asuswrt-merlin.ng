@@ -20,14 +20,16 @@ struct ext2_ext_attr_header {
 	__u32	h_refcount;	/* reference count */
 	__u32	h_blocks;	/* number of disk blocks used */
 	__u32	h_hash;		/* hash value of all attributes */
-	__u32	h_reserved[4];	/* zero right now */
+	__u32	h_checksum;	/* crc32c(uuid+id+xattrs) */
+				/* id = inum if refcount = 1, else blknum */
+	__u32	h_reserved[3];	/* zero right now */
 };
 
 struct ext2_ext_attr_entry {
 	__u8	e_name_len;	/* length of name */
 	__u8	e_name_index;	/* attribute name index */
 	__u16	e_value_offs;	/* offset in disk block of value */
-	__u32	e_value_block;	/* disk block attribute is stored on (n/i) */
+	__u32	e_value_inum;	/* inode in which the value is stored */
 	__u32	e_value_size;	/* size of attribute value */
 	__u32	e_hash;		/* hash value of name and value */
 #if 0

@@ -17,18 +17,20 @@ INSTALL = @INSTALL@
 all::	e2p.pc
 
 OBJS=		feature.o fgetflags.o fsetflags.o fgetversion.o fsetversion.o \
-		getflags.o getversion.o hashstr.o iod.o ls.o mntopts.o \
+		getflags.o getversion.o hashstr.o iod.o ls.o ljs.o mntopts.o \
 		parse_num.o pe.o pf.o ps.o setflags.o setversion.o uuid.o \
-		ostype.o percent.o
+		ostype.o percent.o crypto_mode.o fgetproject.o fsetproject.o \
+		encoding.o
 
 SRCS=		$(srcdir)/feature.c $(srcdir)/fgetflags.c \
 		$(srcdir)/fsetflags.c $(srcdir)/fgetversion.c \
 		$(srcdir)/fsetversion.c $(srcdir)/getflags.c \
 		$(srcdir)/getversion.c $(srcdir)/hashstr.c $(srcdir)/iod.c \
-		$(srcdir)/ls.c $(srcdir)/mntopts.c $(srcdir)/parse_num.c \
+		$(srcdir)/ls.c $(srcdir)/ljs.c $(srcdir)/mntopts.c $(srcdir)/parse_num.c \
 		$(srcdir)/pe.c $(srcdir)/pf.c $(srcdir)/ps.c \
 		$(srcdir)/setflags.c $(srcdir)/setversion.c $(srcdir)/uuid.c \
-		$(srcdir)/ostype.c $(srcdir)/percent.c
+		$(srcdir)/ostype.c $(srcdir)/percent.c $(srcdir)/crypto_mode.c \
+		$(srcdir)/fgetproject.c $(srcdir)/fsetproject.c $(srcdir)/encoding.c
 HFILES= e2p.h
 
 LIBRARY= libe2p
@@ -53,11 +55,12 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 
 .c.o:
 	$(E) "	CC $<"
-	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -c $< -o $@
 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
-@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
+@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -g -pg -o profiled/$*.o -c $<
+@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) -fPIC -shared -o elfshared/$*.o -c $<
+@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 e2p.pc: $(srcdir)/e2p.pc.in $(top_builddir)/config.status
 	$(E) "	CONFIG.STATUS $@"
@@ -66,20 +69,20 @@ e2p.pc: $(srcdir)/e2p.pc.in $(top_builddir)/config.status
 tst_ostype: $(srcdir)/ostype.c
 	$(E) "	LD $@"
 	$(Q) $(CC) -DTEST_PROGRAM -I$(top_srcdir)/lib -o tst_ostype \
-		$(srcdir)/ostype.c $(ALL_CFLAGS)
+		$(srcdir)/ostype.c $(ALL_CFLAGS) $(ALL_LDFLAGS)
 
 tst_feature: $(srcdir)/feature.c
 	$(E) "	LD $@"
 	$(Q) $(CC) -DTEST_PROGRAM -I$(top_srcdir)/lib -o tst_feature \
-		$(srcdir)/feature.c $(ALL_CFLAGS)
+		$(srcdir)/feature.c $(ALL_CFLAGS) $(ALL_LDFLAGS)
 
-check::	tst_ostype tst_feature
+fullcheck check::	tst_ostype tst_feature
 	./tst_ostype
 	./tst_feature
 
 installdirs::
-	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/e2p"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
+	$(E) "	MKDIR_P $(libdir) $(includedir)/e2p"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/e2p $(DESTDIR)$(pkgconfigdir)
 
 install:: all installdirs 
@@ -101,7 +104,7 @@ uninstall::
 
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/*
-	$(RM) -f ../libe2p.a ../libe2p_p.a tst_ostype tst_feature
+	$(RM) -f ../libe2p.a ../libe2p_p.a tst_ostype tst_feature e2p.pc
 
 mostlyclean:: clean
 distclean:: clean
@@ -121,8 +124,8 @@ feature.o: $(srcdir)/feature.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/lib/ext2fs/jfs_user.h $(top_srcdir)/lib/ext2fs/kernel-jbd.h \
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/ext2fs/kernel-jbd.h \
  $(top_srcdir)/lib/ext2fs/jfs_compat.h $(top_srcdir)/lib/ext2fs/kernel-list.h
 fgetflags.o: $(srcdir)/fgetflags.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/e2p.h \
@@ -150,7 +153,22 @@ iod.o: $(srcdir)/iod.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h
 ls.o: $(srcdir)/ls.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/e2p.h \
- $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
+ $(top_srcdir)/lib/support/quotaio.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/support/dqblk_v2.h \
+ $(top_srcdir)/lib/support/quotaio_tree.h
+ljs.o: $(srcdir)/ljs.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/e2p.h \
+ $(top_srcdir)/lib/ext2fs/kernel-jbd.h $(top_srcdir)/lib/ext2fs/jfs_compat.h \
+ $(top_srcdir)/lib/ext2fs/kernel-list.h
 mntopts.o: $(srcdir)/mntopts.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/e2p.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h
@@ -179,5 +197,19 @@ ostype.o: $(srcdir)/ostype.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/e2p.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h
 percent.o: $(srcdir)/percent.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/e2p.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h
+crypto_mode.o: $(srcdir)/crypto_mode.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/e2p.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h
+fgetproject.o: $(srcdir)/fgetproject.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/project.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
+ $(srcdir)/e2p.h
+fsetproject.o: $(srcdir)/fsetproject.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/project.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
+ $(srcdir)/e2p.h
+encoding.o: $(srcdir)/encoding.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/e2p.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h

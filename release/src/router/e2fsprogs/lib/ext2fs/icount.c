@@ -57,8 +57,11 @@ struct ext2_icount {
 	ext2_ino_t		cursor;
 	struct ext2_icount_el	*list;
 	struct ext2_icount_el	*last_lookup;
+#ifdef CONFIG_TDB
 	char			*tdb_fn;
 	TDB_CONTEXT		*tdb;
+#endif
+	__u16			*fullmap;
 };
 
 /*
@@ -82,12 +85,17 @@ void ext2fs_free_icount(ext2_icount_t icount)
 		ext2fs_free_inode_bitmap(icount->single);
 	if (icount->multiple)
 		ext2fs_free_inode_bitmap(icount->multiple);
+#ifdef CONFIG_TDB
 	if (icount->tdb)
 		tdb_close(icount->tdb);
 	if (icount->tdb_fn) {
-		unlink(icount->tdb_fn);
+		(void) unlink(icount->tdb_fn);
 		free(icount->tdb_fn);
 	}
+#endif
+
+	if (icount->fullmap)
+		ext2fs_free_mem(&icount->fullmap);
 
 	ext2fs_free_mem(&icount);
 }
@@ -103,6 +111,21 @@ static errcode_t alloc_icount(ext2_filsys fs, int flags, ext2_icount_t *ret)
 	if (retval)
 		return retval;
 	memset(icount, 0, sizeof(struct ext2_icount));
+	icount->magic = EXT2_ET_MAGIC_ICOUNT;
+	icount->num_inodes = fs->super->s_inodes_count;
+
+	if ((flags & EXT2_ICOUNT_OPT_FULLMAP) &&
+	    (flags & EXT2_ICOUNT_OPT_INCREMENT)) {
+		unsigned sz = sizeof(*icount->fullmap) * icount->num_inodes;
+
+		retval = ext2fs_get_mem(sz, &icount->fullmap);
+		/* If we can't allocate, fall back */
+		if (!retval) {
+			memset(icount->fullmap, 0, sz);
+			*ret = icount;
+			return 0;
+		}
+	}
 
 	retval = ext2fs_allocate_inode_bitmap(fs, "icount", &icount->single);
 	if (retval)
@@ -116,9 +139,6 @@ static errcode_t alloc_icount(ext2_filsys fs, int flags, ext2_icount_t *ret)
 	} else
 		icount->multiple = 0;
 
-	icount->magic = EXT2_ET_MAGIC_ICOUNT;
-	icount->num_inodes = fs->super->s_inodes_count;
-
 	*ret = icount;
 	return 0;
 
@@ -127,6 +147,7 @@ errout:
 	return(retval);
 }
 
+#ifdef CONFIG_TDB
 struct uuid {
 	__u32	time_low;
 	__u16	time_mid;
@@ -173,10 +194,14 @@ static void uuid_unparse(void *uu, char *out)
 		uuid.node[0], uuid.node[1], uuid.node[2],
 		uuid.node[3], uuid.node[4], uuid.node[5]);
 }
+#endif
 
-errcode_t ext2fs_create_icount_tdb(ext2_filsys fs, char *tdb_dir,
-				   int flags, ext2_icount_t *ret)
+errcode_t ext2fs_create_icount_tdb(ext2_filsys fs EXT2FS_NO_TDB_UNUSED,
+				   char *tdb_dir EXT2FS_NO_TDB_UNUSED,
+				   int flags EXT2FS_NO_TDB_UNUSED,
+				   ext2_icount_t *ret EXT2FS_NO_TDB_UNUSED)
 {
+#ifdef CONFIG_TDB
 	ext2_icount_t	icount;
 	errcode_t	retval;
 	char 		*fn, uuid[40];
@@ -193,13 +218,14 @@ errcode_t ext2fs_create_icount_tdb(ext2_filsys fs, char *tdb_dir,
 		goto errout;
 	uuid_unparse(fs->super->s_uuid, uuid);
 	sprintf(fn, "%s/%s-icount-XXXXXX", tdb_dir, uuid);
-	icount->tdb_fn = fn;
 	save_umask = umask(077);
 	fd = mkstemp(fn);
 	if (fd < 0) {
 		retval = errno;
+		ext2fs_free_mem(&fn);
 		goto errout;
 	}
+	icount->tdb_fn = fn;
 	umask(save_umask);
 	/*
 	 * This is an overestimate of the size that we will need; the
@@ -223,6 +249,9 @@ errcode_t ext2fs_create_icount_tdb(ext2_filsys fs, char *tdb_dir,
 errout:
 	ext2fs_free_icount(icount);
 	return(retval);
+#else
+	return EXT2_ET_UNIMPLEMENTED;
+#endif
 }
 
 errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, unsigned int size,
@@ -242,6 +271,9 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, unsigned int size,
 	retval = alloc_icount(fs, flags, &icount);
 	if (retval)
 		return retval;
+
+	if (icount->fullmap)
+		goto successout;
 
 	if (size) {
 		icount->size = size;
@@ -282,6 +314,7 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, unsigned int size,
 		icount->count = hint->count;
 	}
 
+successout:
 	*ret = icount;
 	return 0;
 
@@ -400,6 +433,7 @@ static errcode_t set_inode_count(ext2_icount_t icount, ext2_ino_t ino,
 				 __u32 count)
 {
 	struct ext2_icount_el 	*el;
+#ifdef CONFIG_TDB
 	TDB_DATA key, data;
 
 	if (icount->tdb) {
@@ -418,6 +452,11 @@ static errcode_t set_inode_count(ext2_icount_t icount, ext2_ino_t ino,
 		}
 		return 0;
 	}
+#endif
+	if (icount->fullmap) {
+		icount->fullmap[ino] = icount_16_xlate(count);
+		return 0;
+	}
 
 	el = get_icount_el(icount, ino, 1);
 	if (!el)
@@ -431,6 +470,7 @@ static errcode_t get_inode_count(ext2_icount_t icount, ext2_ino_t ino,
 				 __u32 *count)
 {
 	struct ext2_icount_el 	*el;
+#ifdef CONFIG_TDB
 	TDB_DATA key, data;
 
 	if (icount->tdb) {
@@ -447,6 +487,12 @@ static errcode_t get_inode_count(ext2_icount_t icount, ext2_ino_t ino,
 		free(data.dptr);
 		return 0;
 	}
+#endif
+	if (icount->fullmap) {
+		*count = icount->fullmap[ino];
+		return 0;
+	}
+
 	el = get_icount_el(icount, ino, 0);
 	if (!el) {
 		*count = 0;
@@ -488,14 +534,16 @@ errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ext2_ino_t ino, __u16 *ret)
 	if (!ino || (ino > icount->num_inodes))
 		return EXT2_ET_INVALID_ARGUMENT;
 
-	if (ext2fs_test_inode_bitmap2(icount->single, ino)) {
-		*ret = 1;
-		return 0;
-	}
-	if (icount->multiple &&
-	    !ext2fs_test_inode_bitmap2(icount->multiple, ino)) {
-		*ret = 0;
-		return 0;
+	if (!icount->fullmap) {
+		if (ext2fs_test_inode_bitmap2(icount->single, ino)) {
+			*ret = 1;
+			return 0;
+		}
+		if (icount->multiple &&
+			!ext2fs_test_inode_bitmap2(icount->multiple, ino)) {
+			*ret = 0;
+			return 0;
+		}
 	}
 	get_inode_count(icount, ino, &val);
 	*ret = icount_16_xlate(val);
@@ -512,7 +560,10 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ext2_ino_t ino,
 	if (!ino || (ino > icount->num_inodes))
 		return EXT2_ET_INVALID_ARGUMENT;
 
-	if (ext2fs_test_inode_bitmap2(icount->single, ino)) {
+	if (icount->fullmap) {
+		curr_value = icount_16_xlate(icount->fullmap[ino] + 1);
+		icount->fullmap[ino] = curr_value;
+	} else if (ext2fs_test_inode_bitmap2(icount->single, ino)) {
 		/*
 		 * If the existing count is 1, then we know there is
 		 * no entry in the list.
@@ -569,6 +620,16 @@ errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ext2_ino_t ino,
 
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
+	if (icount->fullmap) {
+		if (!icount->fullmap[ino])
+			return EXT2_ET_INVALID_ARGUMENT;
+
+		curr_value = --icount->fullmap[ino];
+		if (ret)
+			*ret = icount_16_xlate(curr_value);
+		return 0;
+	}
+
 	if (ext2fs_test_inode_bitmap2(icount->single, ino)) {
 		ext2fs_unmark_inode_bitmap2(icount->single, ino);
 		if (icount->multiple)
@@ -609,6 +670,9 @@ errcode_t ext2fs_icount_store(ext2_icount_t icount, ext2_ino_t ino,
 		return EXT2_ET_INVALID_ARGUMENT;
 
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
+
+	if (icount->fullmap)
+		return set_inode_count(icount, ino, count);
 
 	if (count == 1) {
 		ext2fs_mark_inode_bitmap2(icount->single, ino);
@@ -760,6 +824,7 @@ int run_test(int flags, int size, char *dir, struct test_program *prog)
 	int		problem = 0;
 
 	if (dir) {
+#ifdef CONFIG_TDB
 		retval = ext2fs_create_icount_tdb(test_fs, dir,
 						  flags, &icount);
 		if (retval) {
@@ -767,6 +832,10 @@ int run_test(int flags, int size, char *dir, struct test_program *prog)
 				"while creating icount using tdb");
 			exit(1);
 		}
+#else
+		printf("Skipped\n");
+		return 0;
+#endif
 	} else {
 		retval = ext2fs_create_icount2(test_fs, flags, size, 0,
 					       &icount);

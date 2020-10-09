@@ -14,7 +14,7 @@ static const char * const text[] = {
 	N_("Bad key supplied"),
 	N_("Can't encrypt data"),
 	N_("Cannot encode/decode authentication info"),
-	N_("Principal attemping change is in wrong realm"),
+	N_("Principal attempting change is in wrong realm"),
 	N_("Packet is too large"),
 	N_("Version number is incorrect"),
 	N_("Checksum does not match"),

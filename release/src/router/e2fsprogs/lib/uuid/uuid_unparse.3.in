@@ -46,18 +46,18 @@ The
 function converts the supplied UUID
 .I uu
 from the binary representation into a 36\-byte string (plus tailing '\\0')
-of the form 1b4e28ba\-2fa1\-11d2\-883f\-0016d3cca427 and stores this 
+of the form 1b4e28ba\-2fa1\-11d2\-883f\-0016d3cca427 and stores this
 value in the character string pointed to by
-.IR out .  
-The case of the hex digits returned by 
+.IR out .
+The case of the hex digits returned by
 .B uuid_unparse
 may be upper or lower case, and is
-dependent on the system-dependent local default.  
+dependent on the system-dependent local default.
 .PP
 If the case of the
 hex digits is important then the functions
 .B uuid_unparse_upper
-and 
+and
 .B uuid_unparse_lower
 may be used.
 .SH "CONFORMING TO"

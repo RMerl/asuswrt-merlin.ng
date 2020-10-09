@@ -38,8 +38,7 @@ void ext2fs_inode_alloc_stats2(ext2_filsys fs, ext2_ino_t ino,
 	/* We don't strictly need to be clearing the uninit flag if inuse < 0
 	 * (i.e. freeing inodes) but it also means something is bad. */
 	ext2fs_bg_flags_clear(fs, group, EXT2_BG_INODE_UNINIT);
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+	if (ext2fs_has_group_desc_csum(fs)) {
 		ext2_ino_t first_unused_inode =	fs->super->s_inodes_per_group -
 			ext2fs_bg_itable_unused(fs, group) +
 			group * fs->super->s_inodes_per_group + 1;
@@ -130,7 +129,7 @@ void ext2fs_block_alloc_stats_range(ext2_filsys fs, blk64_t blk,
 	while (num) {
 		int group = ext2fs_group_of_blk2(fs, blk);
 		blk64_t last_blk = ext2fs_group_last_block2(fs, group);
-		blk_t n = num;
+		blk64_t n = num;
 
 		if (blk + num > last_blk)
 			n = last_blk - blk + 1;
@@ -146,4 +145,20 @@ void ext2fs_block_alloc_stats_range(ext2_filsys fs, blk64_t blk,
 	}
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
+	if (fs->block_alloc_stats_range)
+		(fs->block_alloc_stats_range)(fs, blk, num, inuse);
+}
+
+void ext2fs_set_block_alloc_stats_range_callback(ext2_filsys fs,
+	void (*func)(ext2_filsys fs, blk64_t blk,
+				    blk_t num, int inuse),
+	void (**old)(ext2_filsys fs, blk64_t blk,
+				    blk_t num, int inuse))
+{
+	if (!fs || fs->magic != EXT2_ET_MAGIC_EXT2FS_FILSYS)
+		return;
+	if (old)
+		*old = fs->block_alloc_stats_range;
+
+	fs->block_alloc_stats_range = func;
 }

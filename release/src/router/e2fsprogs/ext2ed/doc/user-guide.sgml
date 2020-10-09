@@ -506,8 +506,8 @@ itself the direct blocks, indirect blocks, ..., while still preserving the
 actual view of the exact block usage of the file.
 </Screen>
 
-The point is that the "tour" of the filesystem will now be synchronic rather
-than asynchronic - Each object has the "links" to pass between connected
+The point is that the "tour" of the filesystem will now be synchronous rather
+than asynchronous - Each object has the "links" to pass between connected
 logical structures, and special fine-tuned functions to deal with it.
 </Para>
 
@@ -855,7 +855,7 @@ The <Command>setdevice</Command> command is described at section <XRef LinkEnd="
 Syntax: setoffset [block || type] [+|-]offset
 </Screen>
 
-The <Command>setoffset</Command> command is used to move asynchronically inside the file
+The <Command>setoffset</Command> command is used to move asynchronously inside the file
 system. It is considered a low level command, and usually should not be used
 when editing an ext2 filesystem, simply because movement is better
 utilized through the specific ext2 commands.

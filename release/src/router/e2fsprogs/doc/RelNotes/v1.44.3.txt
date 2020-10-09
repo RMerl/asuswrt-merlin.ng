@@ -1,0 +1,106 @@
+E2fsprogs 1.44.3 (July 10, 2018)
+================================
+
+Updates/Fixes since v1.44.2:
+
+UI and Features
+---------------
+
+The debugfs inode_dump command can now print a hex dump of the i_block
+array and the extra space in the inode, as a convenience to someone
+investigating a corrupted inode.
+
+The debugfs block_dump and inode_dump command can now print low-level
+dump of extended attribute data structures in the block or inode.
+
+The dumpe2fs command can now print out information in the Multi-Mount
+Protection (MMP) block.  This is also available as e2mmpstatus command
+for compatibility with the Lustre utilities.
+
+The debugfs command can now operate on some file systems with
+corrupted superblocks so they can be fixed.  This includes file
+systems with a corrupted inodes count field and file systems where not
+all of the allocation bitmaps have valid locations or are not
+readable.
+
+
+Fixes
+-----
+
+The inode's project ID is now properly byte-swapped on big-endian
+systems.
+
+E2fsprogs now ignores s_desc_size for file systems that do not have
+the 64-bit feature set.  This makes it more consistent with the
+kernel, so it can now operate on file systems that the kernel is
+willing to mount.  
+
+E2fsck now considers device inodes with the extents flag as corrupt
+and offer to clear them.
+
+E2fsck more properly handles cases where s_inodes_count is corrupted.
+
+E2fsck no longer spews large number of errors when the superblock
+badly corrupted (restoring its behavior pre-1.43).
+
+E2fsck will now offer to set the dir_nlink feature if it is not set
+and file system requires the dir_nlink feature because there are too
+many subdirectories in a directory.
+
+E2fsck will no longer loop infinitely due to a maliciously crafted
+file system which has a fully uninitialized inode table in the first
+block group.
+
+E2fsck will no longer hang if the last block in the file system is a
+fixed-metadata block.  (Very rare, but could happen.)
+
+E2fsck no longer allows initialized blocks to exist past i_size.  This
+is something the Linux implementation of ext4 has never done (and should
+never do).
+
+While replaying the journal in e2fsck, certain errors would previously
+cause e2fsck to print a non-sensical error message (e.g., "Unknown code
+____ 251 while recovering journal").  This has been fixed.
+
+In cases where more than 75% of the block group will be used for group
+descriptor table, mke2fs would previously create an invalid file
+system with both the meta_bg and resize_inode features enabled.  It
+will now disable the resize_inode feature.
+
+The mke2fs program now properly creates a file system which is exactly
+1 << 32 blocks.  Previously the s_inodes_count field would overflow,
+and the file system would be created with a minimal number of inodes.
+
+Recent kernels will report errors on a file or block device which
+occurred before the file or block device was opened via fsync() or
+close().  This will cause e2fsck to incorrectly report a failure.  Work
+around this by calling fsync() immediately after the file or block
+device is opened in the unix_io layer, and throwing away the error.
+
+Filefrag will no longer ignore errors returned by fsync.
+
+Debugfs will no longer print spurious checksum errors when failing to
+open a file system for unrelated reasons.
+
+Updated/fixed various man pages.  (Addresses Launchpad Bug: #1743553)
+
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Synchronized changes from Android's AOSP e2fsprogs tree.
+
+Debugfs's mknod command now works correctly on some 32-bit systems where
+previously it had a portability problem caused by some object files
+being compiled with LFS, and some without.  This fixes some regression
+test failures on 32-bit MIPS (for example).
+
+Various clean ups, portability, and performance improvements to
+e2fsprogs's regression test framework.
+
+Fixed Coverity, sparse, gcc -Wall, and clang warnings/nits.
+
+Update Czech, Dutch, Spanish, French, Polish, Swedish, Ukrainian, and
+Vietnamese translations.
+

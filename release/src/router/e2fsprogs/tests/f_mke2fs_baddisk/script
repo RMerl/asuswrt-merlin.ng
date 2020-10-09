@@ -1,0 +1,24 @@
+test_description="mke2fs /dev/mapper/bad_disk should fail"
+
+OUT=$test_name.log
+
+dmsetup create -v bad_disk --table '0 1148681097 error' > $OUT 2>&1
+status=$?
+if [ "$status" != 0 ]; then
+    echo "$test_name: $test_description: skip"
+    touch $test_name.ok
+else
+    echo mke2fs /dev/mapper/bad_disk  >> $OUT
+    $MKE2FS  /dev/mapper/bad_disk  >> $OUT 2>&1
+    status=$?
+    sleep 1
+    dmsetup remove --retry bad_disk >> $OUT 2>&1
+
+    if [ "$status" = 0 ] ; then
+	ln -f $test_name.log $test_name.failed
+	echo "$test_name: $test_description: failed"
+    else
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+    fi
+fi

@@ -40,7 +40,8 @@ Journal start:            0
 Group 0: (Blocks 1-8191) [ITABLE_ZEROED]
   Primary superblock at 1, Group descriptors at 2-2
   Reserved GDT blocks at 3-33
-  Block bitmap at 34 (+33), Inode bitmap at 50 (+49)
+  Block bitmap at 34 (+33)
+  Inode bitmap at 50 (+49)
   Inode table at 66-321 (+65)
   6862 free blocks, 2037 free inodes, 2 directories, 2037 unused inodes
   Free blocks: 1330-8191

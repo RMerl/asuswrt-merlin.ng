@@ -1,0 +1,6 @@
+Creating filesystem with 4096 1k blocks and 0 inodes
+Superblock backups stored on blocks: 
+
+Zeroing journal device:          
+tune2fs external journal
+Cannot modify a journal device.

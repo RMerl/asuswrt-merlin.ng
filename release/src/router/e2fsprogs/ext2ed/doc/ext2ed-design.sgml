@@ -83,7 +83,7 @@ subjects. I can think of two ways in which I could have made my project:
 <Para>
 	The "Engineer" way
 
-Learn the subject throughly before I get to the programming itself.
+Learn the subject thoroughly before I get to the programming itself.
 Then, I could easily see the entire picture and select the best
 course of action, taking all the factors into account.
 </Para>
@@ -94,7 +94,7 @@ course of action, taking all the factors into account.
 	The "Explorer - Progressive" way.
 
 Jump immediately into the cold water - Start programming and
-learning the material parallelly.
+learning the material in parallel.
 </Para>
 </ListItem>
 
@@ -418,7 +418,7 @@ superblock was set exactly to the above value.
 <Para>
 It seems that starting with the <Literal remap="tt">superblock</Literal> was a good bet - Just from
 the list of variables, one can learn a lot. I didn't understand all of them
-at the time, but it seemed that the following keywords were repeating themself
+at the time, but it seemed that the following keywords were repeating themselves
 in various variables:
 
 <ItemizedList>
@@ -710,8 +710,8 @@ int dispatch (char *command_line)
 <Title>Source files in EXT2ED</Title>
 
 <Para>
-The project was getting large enough to be splitted into several source
-files. I splitted the source as much as I could into self-contained
+The project was getting large enough to be split into several source
+files. I split the source as much as I could into self-contained
 source files. The source files consist of the following blocks:
 
 <ItemizedList>
@@ -1156,7 +1156,7 @@ according to the source division outlined above, in inode_com.c) will
 store the necessary information about the inode in a specific structure
 of type struct_file_info which will be available for use by the file_com.c
 functions. Only then it will set the type to file. This is also the reason
-that a direct asynchronic set of the object type to a file through a settype
+that a direct asynchronous set of the object type to a file through a settype
 command will fail - The above data structure will not be initialized
 properly because the user never was at the inode of the file. 
 
@@ -2726,7 +2726,7 @@ struct ext2_inode {
 	__u32	i_block[EXT2_N_BLOCKS];	/* Pointers to blocks */
 	__u32	i_version;		/* File version (for NFS) */
 	__u32	i_file_acl;		/* File ACL */
-	__u32	i_dir_acl;		/* Directory ACL */
+	__u32	i_size_high;		/* High 32bits of size */
 	__u32	i_faddr;		/* Fragment address */
 	union {
 		struct {

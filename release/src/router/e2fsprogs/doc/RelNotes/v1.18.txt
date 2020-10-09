@@ -1,0 +1,46 @@
+E2fsprogs 1.18 (November 10, 1999)
+==================================
+
+Fix a core dumping bug in e2fsck if an imagic inode is present or
+(more rarely) if the filesystem is badly corrupted enough that e2fsck
+has to restart pass 1 processing.  E2fsck now closes the filesystem
+before freeing a large number of its data structures, so in the case
+of future memory faults, at least the fixed filesystem will be fully
+written out.
+
+If a filesystem doesn't support imagic inodes, and e2fsck discovers an
+imagic inode, it will offer to clear the imagic flag.
+
+E2fsck will now offer to clear the immutable flag on special files
+(device/socket/fifos) when running it in non-preen mode.
+
+E2fsck will now set the filetype when creating /lost+found, and when
+connected orphaned inodes to /lost+found.
+
+Debugfs's ncheck and icheck commands now handles the case where there
+are bad blocks in the inode table without bombing out.
+
+The badblocks list processing code has been made more efficiently for
+appending a large number of (ordered) badblocks to the badblocks list.
+
+Some minor man page updates.
+
+Fsck now allows interactive e2fsck's when using fsck -As (not a common
+mode, but some people like to do this in boot scripts for silly reasons).
+
+Programmer's notes:
+-------------------
+
+The internal e2fsck problem code for PR_2_SPLIT_DOT was fixed to meet
+with the problem code convention.
+
+The badblocks list regression test program has been updated to work
+with previously made API name changes.
+
+The ext2fs_free() command now uses the new badblocks API to avoid
+using the compatibility layer.
+
+Added new regression test cases; the run_e2fsck test script now
+supports the ability for a test case to run a preparatory command
+before running e2fsck.
+

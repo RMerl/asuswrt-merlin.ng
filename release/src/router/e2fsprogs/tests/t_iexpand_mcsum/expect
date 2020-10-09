@@ -1,0 +1,56 @@
+tune2fs test
+Creating filesystem with 786432 1k blocks and 98304 inodes
+Superblock backups stored on blocks: 
+	8193, 24577, 40961, 57345, 73729, 204801, 221185, 401409, 663553
+
+Allocating group tables:      done                            
+Writing inode tables:      done                            
+Creating journal (16384 blocks): done
+Creating 6334 huge file(s) with 117 blocks each: done
+Writing superblocks and filesystem accounting information:      done
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+Exit status is 0
+tune2fs -I 256 -O metadata_csum test.img
+Setting inode size 256
+
+This operation requires a freshly checked filesystem.
+
+Please run e2fsck -fD on the filesystem.
+
+Exit status is 0
+Backing up journal inode block information.
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 3A: Optimizing directories
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+
+
+Change in FS metadata:
+@@ -5 +5 @@
+-Filesystem features:      has_journal ext_attr dir_index filetype extent 64bit sparse_super large_file huge_file uninit_bg dir_nlink extra_isize
++Filesystem features:      has_journal ext_attr dir_index filetype extent 64bit sparse_super large_file huge_file dir_nlink extra_isize metadata_csum
+@@ -21 +21 @@
+-Inode blocks per group:   128
++Inode blocks per group:   256
+@@ -27 +27 @@
+-Inode size:	          128
++Inode size:	          256
+@@ -30,0 +31 @@
++Checksum type:            crc32c
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+Exit status is 0

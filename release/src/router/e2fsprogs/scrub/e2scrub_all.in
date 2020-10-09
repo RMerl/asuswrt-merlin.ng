@@ -1,0 +1,185 @@
+#!/bin/bash
+
+#  Copyright (C) 2018 Oracle.  All Rights Reserved.
+#
+#  Author: Darrick J. Wong <darrick.wong@oracle.com>
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it would be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write the Free Software Foundation,
+#  Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+if (( $EUID != 0 )); then
+    echo "e2scrub_all must be run as root"
+    exit 1
+fi
+
+periodic_e2scrub=0
+scrub_all=0
+snap_size_mb=256
+reap=0
+conffile="@root_sysconfdir@/e2scrub.conf"
+
+test -f "${conffile}" && . "${conffile}"
+
+scrub_args=""
+
+print_help() {
+	echo "Usage: $0 [OPTIONS]"
+	echo " -n: Show what commands e2scrub_all would execute."
+	echo " -r: Remove e2scrub snapshots."
+	echo " -A: Scrub all ext[234] filesystems even if not mounted."
+	echo " -V: Print version information and exit."
+}
+
+print_version() {
+	echo "e2scrub_all @E2FSPROGS_VERSION@ (@E2FSPROGS_DATE@)"
+}
+
+exitcode() {
+	ret="$1"
+
+	# If we're being run as a service, the return code must fit the LSB
+	# init script action error guidelines, which is to say that we
+	# compress all errors to 1 ("generic or unspecified error", LSB 5.0
+	# section 22.2) and hope the admin will scan the log for what
+	# actually happened.
+
+	if [ -n "${SERVICE_MODE}" -a "${ret}" -ne 0 ]; then
+		test "${ret}" -ne 0 && ret=1
+	fi
+
+	exit "${ret}"
+}
+
+while getopts "nrAV" opt; do
+	case "${opt}" in
+	"n") DBG="echo Would execute: " ;;
+	"r") scrub_args="${scrub_args} -r"; reap=1;;
+	"A") scrub_all=1;;
+	"V") print_version; exitcode 0;;
+	*) print_help; exitcode 2;;
+	esac
+done
+shift "$((OPTIND - 1))"
+
+# If we're in service mode and the service is not enabled via config file...
+if [ -n "${SERVICE_MODE}" -a "${periodic_e2scrub}" -ne 1 ]; then
+	# ...don't start e2scrub processes.
+	if [ "${reap}" -eq 0 ]; then
+		exitcode 0
+	fi
+
+	# ...and if we don't see any leftover e2scrub snapshots, don't
+	# run the reaping process either, because lvs can be slow.
+	if ! readlink -q -s -e /dev/mapper/*.e2scrub* > /dev/null; then
+		exitcode 0
+	fi
+fi
+
+# close file descriptor 3 (from cron) since it causes lvm to kvetch
+exec 3<&-
+
+# If some prerequisite packages are not installed, exit with a code
+# indicating success to avoid spamming the sysadmin with fail messages
+# when e2scrub_all is run out of cron or a systemd timer.
+
+if ! type mapfile >& /dev/null ; then
+    test -n "${SERVICE_MODE}" && exitcode 0
+    echo "e2scrub_all: can't find mapfile --- is bash 4.xx installed?"
+    exitcode 1
+fi
+
+if ! type lsblk >& /dev/null ; then
+    test -n "${SERVICE_MODE}" && exitcode 0
+    echo "e2scrub_all: can't find lsblk --- is util-linux installed?"
+    exitcode 1
+fi
+
+if ! type lvcreate >& /dev/null ; then
+    test -n "${SERVICE_MODE}" && exitcode 0
+    echo "e2scrub_all: can't find lvcreate --- is lvm2 installed?"
+    exitcode 1
+fi
+
+# Find scrub targets, make sure we only do this once.
+ls_scan_targets() {
+    local devices=$(lvs -o lv_path --noheadings -S "lv_active=active,lv_role=public,lv_role!=snapshot,vg_free>=${snap_size_mb}")
+
+    if [ -z "$devices" ]; then
+	return 0;
+    fi
+    lsblk -o NAME,MOUNTPOINT,FSTYPE,TYPE -P -n -p $devices | \
+	grep FSTYPE=\"ext\[234\]\" | grep TYPE=\"lvm\" | \
+	while read vars ; do
+		eval "${vars}"
+
+		if [ "${scrub_all}" -eq 1 ] || [ -n "${MOUNTPOINT}" ]; then
+		    echo ${MOUNTPOINT:-${NAME}}
+		fi
+	done
+}
+
+# Find leftover scrub snapshots
+ls_reap_targets() {
+    lvs -o lv_path -S lv_role=snapshot -S lv_name=~\(e2scrub$\) \
+	--noheadings | sed -e 's/.e2scrub$//'
+}
+
+# Figure out what we're targeting
+ls_targets() {
+	if [ "${reap}" -eq 1 ]; then
+		ls_reap_targets
+	else
+		ls_scan_targets
+	fi
+}
+
+# systemd doesn't know to do path escaping on the instance variable we pass
+# to the e2scrub service, which breaks things if there is a dash in the path
+# name.  Therefore, do the path escaping ourselves if needed.
+#
+# systemd path escaping also drops the initial slash so we add that back in so
+# that log messages from the service units preserve the full path and users can
+# look up log messages using full paths.  However, for "/" the escaping rules
+# do /not/ drop the initial slash, so we have to special-case that here.
+escape_path_for_systemd() {
+	local path="$1"
+
+	if [ "${path}" != "/" ]; then
+		echo "-$(systemd-escape --path "${path}")"
+	else
+		echo "-"
+	fi
+}
+
+# Scrub any mounted fs on lvm by creating a snapshot and fscking that.
+mapfile -t targets < <(ls_targets)
+for tgt in "${targets[@]}"; do
+	# If we're not reaping and systemd is present, try invoking the
+	# systemd service.
+	if [ "${reap}" -ne 1 ] && type systemctl > /dev/null 2>&1; then
+		tgt_esc="$(escape_path_for_systemd "${tgt}")"
+		${DBG} systemctl start "e2scrub@${tgt_esc}" 2> /dev/null
+		res=$?
+		if [ "${res}" -eq 0 ] || [ "${res}" -eq 1 ]; then
+			continue;
+		fi
+	fi
+
+	# Otherwise use direct invocation
+	${DBG} "@root_sbindir@/e2scrub" ${scrub_args} "${tgt}"
+done
+
+exitcode 0

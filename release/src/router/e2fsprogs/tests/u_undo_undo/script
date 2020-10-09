@@ -1,0 +1,54 @@
+test_description="undo e2undo"
+if test -x $E2UNDO_EXE; then
+
+TDB_FILE=${TMPDIR:-/tmp}/e2fsck-$(basename $TMPFILE).e2undo
+TDB_FILE2=${TMPDIR:-/tmp}/e2undo-$(basename $TMPFILE).e2undo
+OUT=$test_name.log
+rm -f $TDB_FILE $TDB_FILE2 >/dev/null 2>&1
+
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+
+echo mke2fs -q -F -o Linux -T ext4 -O ^metadata_csum,64bit -E lazy_itable_init=1 -b 1024 $TMPFILE  > $OUT
+$MKE2FS -q -F -o Linux -T ext4 -O ^metadata_csum,64bit -E lazy_itable_init=1 -b 1024 $TMPFILE  >> $OUT 2>&1
+crc0=`$CRCSUM $TMPFILE`
+echo $CRCSUM before e2fsck $crc0 >> $OUT
+
+echo using e2fsck to test e2undo >> $OUT
+$FSCK -f -y -D -z $TDB_FILE $TMPFILE >> $OUT 2>&1
+crc1=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2fsck $crc1 >> $OUT
+
+echo e2undo the e2fsck >> $OUT
+$E2UNDO -z $TDB_FILE2 $TDB_FILE $TMPFILE  >> $OUT 2>&1
+crc2=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2undo $crc2 >> $OUT
+
+echo e2undo the e2undo >> $OUT
+$E2UNDO $TDB_FILE2 $TMPFILE  >> $OUT 2>&1
+crc3=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2undo $crc3 >> $OUT
+
+echo e2undo the e2undo the e2undo >> $OUT
+$E2UNDO $TDB_FILE $TMPFILE  >> $OUT 2>&1
+crc4=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2undo $crc4 >> $OUT
+
+$E2UNDO -h $TDB_FILE $TMPFILE >> $OUT 2>&1
+$E2UNDO -h $TDB_FILE2 $TMPFILE >> $OUT 2>&1
+
+$E2UNDO -z $TDB_FILE2 $TDB_FILE2 $TMPFILE >> $OUT 2>&1
+
+crc5=`$CRCSUM $TMPFILE`
+echo $CRCSUM after failed e2undo $crc5 >> $OUT
+
+echo $crc0 $crc1 $crc2 $crc3 $crc4 $crc5 >> $OUT
+
+if [ $crc0 = $crc2 ] && [ $crc2 = $crc4 ] && [ $crc5 = $crc4 ] && [ $crc1 = $crc3 ] && [ $crc1 != $crc2 ]; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	ln -f $test_name.log $test_name.failed
+	echo "$test_name: $test_description: failed"
+fi
+rm -f $TDB_FILE $TDB_FILE2 $TMPFILE
+fi

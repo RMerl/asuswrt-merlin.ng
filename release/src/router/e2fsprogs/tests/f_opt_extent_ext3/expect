@@ -1,0 +1,44 @@
+rebuild extent metadata_csum test
+Creating filesystem with 524288 1k blocks and 65536 inodes
+Superblock backups stored on blocks: 
+	8193, 24577, 40961, 57345, 73729, 204801, 221185, 401409
+
+Allocating group tables:      done                            
+Writing inode tables:      done                            
+Creating journal (16384 blocks): done
+mke2fs: Operation not supported for inodes containing extents while creating huge files
+Writing superblocks and filesystem accounting information:      done
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+Exit status is 0
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 3A: Optimizing directories
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+
+
+Change in FS metadata:
+@@ -2,7 +2,7 @@
+ Last mounted on:          <not available>
+ Filesystem magic number:  0xEF53
+ Filesystem revision #:    1 (dynamic)
+-Filesystem features:      has_journal ext_attr resize_inode dir_index filetype sparse_super large_file huge_file dir_nlink
++Filesystem features:      has_journal ext_attr resize_inode dir_index filetype extent sparse_super large_file huge_file dir_nlink
+ Default mount options:    user_xattr acl
+ Filesystem state:         clean
+ Errors behavior:          Continue
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+Exit status is 0

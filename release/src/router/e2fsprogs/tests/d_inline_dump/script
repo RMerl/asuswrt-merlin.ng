@@ -1,0 +1,43 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+VERIFY_FSCK_OPT=-yf
+
+ZIMAGE=$test_dir/image.gz
+gzip -d < $ZIMAGE > $TMPFILE
+
+echo "*** long file" > $OUT
+$DEBUGFS -R 'stat /file' $TMPFILE 2>&1 | $CLEAN_OUTPUT >> $OUT 2>&1
+echo "*** short file" >> $OUT
+$DEBUGFS -R 'stat /shortfile' $TMPFILE 2>&1 | $CLEAN_OUTPUT >> $OUT 2>&1
+echo >> $OUT
+
+echo "*** long dir" >> $OUT
+$DEBUGFS -R 'stat /dir' $TMPFILE 2>&1 | $CLEAN_OUTPUT >> $OUT 2>&1
+echo "*** short dir" >> $OUT
+$DEBUGFS -R 'stat /shortdir' $TMPFILE 2>&1 | $CLEAN_OUTPUT >> $OUT 2>&1
+echo >> $OUT
+
+echo "*** long link" >> $OUT
+$DEBUGFS -R 'stat /link' $TMPFILE 2>&1 | $CLEAN_OUTPUT >> $OUT 2>&1
+echo "*** short link" >> $OUT
+$DEBUGFS -R 'stat /shortlink' $TMPFILE 2>&1 | $CLEAN_OUTPUT >> $OUT 2>&1
+
+echo "*** end test" >> $OUT
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset VERIFY_FSCK_OPT NATIVE_FSCK_OPT OUT EXP TEST_DATA VERIFY_DATA ZIMAGE

@@ -1,0 +1,120 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+FSCK_OPT=-fy
+OUT=$test_name.log
+if [ -f $test_dir/expect.gz ]; then
+	EXP=$test_name.tmp
+	gunzip < $test_dir/expect.gz > $EXP1
+else
+	EXP=$test_dir/expect
+fi
+
+cat > $TMPFILE.conf << ENDL
+[fs_types]
+ext4 = {
+        base_features = sparse_super,filetype,resize_inode,dir_index,ext_attr,^has_journal,extent,huge_file,flex_bg,uninit_bg,dir_nlink,extra_isize,64bit
+        blocksize = 1024
+        inode_size = 256
+        inode_ratio = 16384
+}
+ENDL
+MKE2FS_CONFIG=$TMPFILE.conf $MKE2FS -F -o Linux -b 1024 -O ^bigalloc -T ext4 $TMPFILE 65536 > $OUT.new 2>&1
+rm -f $TMPFILE.conf
+
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+
+echo "debugfs write files" >> $OUT.new
+make_file() {
+	name="$1"
+	start="$2"
+	flag="$3"
+
+	cat << ENDL
+write /dev/null $name
+fallocate /$name 0 39
+punch /$name 10 10
+punch /$name 13 13
+punch /$name 26 26
+punch /$name 29 29
+ENDL
+}
+
+#Files we create:
+# a: punch a 40k file
+# b*: punch sparse file starting at b*
+# c*: punch spare file ending at c*
+# d: midcluster to midcluster, surrounding sparse
+# e: partial middle cluster alloc
+# f: one big file
+base=5000
+cat > $TMPFILE.cmd << ENDL
+write /dev/null a
+fallocate /a 0 39
+punch /a 0 39
+ENDL
+echo "ex /a" >> $TMPFILE.cmd2
+
+make_file sample $base --uninit >> $TMPFILE.cmd
+echo "ex /sample" >> $TMPFILE.cmd2
+base=10000
+
+for i in 8 9 10 11 12 13 14 15; do
+	make_file b$i $(($base + (40 * ($i - 8)))) --uninit >> $TMPFILE.cmd
+	echo "punch /b$i $i 39" >> $TMPFILE.cmd
+	echo "ex /b$i" >> $TMPFILE.cmd2
+done
+
+for i in 24 25 26 27 28 29 30 31; do
+	make_file c$i $(($base + 320 + (40 * ($i - 24)))) --uninit >> $TMPFILE.cmd
+	echo "punch /c$i 0 $i" >> $TMPFILE.cmd
+	echo "ex /c$i" >> $TMPFILE.cmd2
+done
+
+make_file d $(($base + 640)) --uninit >> $TMPFILE.cmd
+echo "punch /d 4 35" >> $TMPFILE.cmd
+echo "ex /d" >> $TMPFILE.cmd2
+
+make_file e $(($base + 680)) --uninit >> $TMPFILE.cmd
+echo "punch /e 19 20" >> $TMPFILE.cmd
+echo "ex /e" >> $TMPFILE.cmd2
+
+cat >> $TMPFILE.cmd << ENDL
+write /dev/null f
+sif /f size 1024
+eo /f
+set_bmap --uninit 0 9000
+ec
+sif /f blocks 2
+setb 9000
+fallocate /f 0 8999
+punch /f 1 8998
+ENDL
+echo "ex /f" >> $TMPFILE.cmd2
+
+$DEBUGFS -w -f $TMPFILE.cmd $TMPFILE > /dev/null 2>&1
+$DEBUGFS -f $TMPFILE.cmd2 $TMPFILE >> $OUT.new 2>&1
+
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -f $TMPFILE $TMPFILE.cmd $TMPFILE.cmd2 $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+	rm -f $test_name.tmp
+fi
+
+unset IMAGE FSCK_OPT OUT EXP

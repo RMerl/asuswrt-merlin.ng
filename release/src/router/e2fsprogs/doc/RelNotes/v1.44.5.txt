@@ -1,0 +1,77 @@
+E2fsprogs 1.44.5 (December 15, 2018)
+====================================
+
+Updates/Fixes since v1.44.4:
+
+UI and Features
+---------------
+
+When e2fsck notices it could optimize an extent tree, it will now ask
+"Optimize?" instead of "Fix?", which was confusing some users since it
+implied that something was broken.
+
+
+Fixes
+-----
+
+Use 64-bit counters to track the number of files that are defragmented
+using in e4defrag, to avoid overflows when more than 2**32 files are
+defragmented.  (Addresses Debian Bug: #888899)
+
+Correctly translate Posix ACL's.  This was a regression introduced in
+v1.44.   (Addresses Launchpad Bug: #1807288)
+
+Use the online free block counts so e2freefrag's percentages are
+correct.
+
+Fix a false warning that tune2fs will take long time to change a UUID if
+the metadata_csum feature is not enabled.
+
+E2fsck will only offer to set the inline_data feature flag when the
+inline flag is set on the inode, *and* the system.data xattr is present.
+
+E4defrag will handle the case where it is running as root and it can't
+find the file system to open more gracefully.  (Addresses Debian Bug:
+#907634)
+
+Fix a bug where resize2fs was failing to update the extent tree
+checksums in an corner case.  (Addresses Launchpad Bug: #1798562)
+
+Fix fuse2fs's command line parsing when options are specified after the
+target device/image.
+
+Fix a bug which could cause e2fsprogs tools to segfault on a corrupted
+file system where the journal's s_nr_users is impossibly large.
+
+E2image now includes the mmp block (if needed) when creating a
+metadata-only image.
+
+Fix various Verity handling bugs which made it completely unusable in
+e2fsprogs 1.44.4.
+
+Fix a bug in tune2fs where it would dereference of freed memory after
+replaying the journal.
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Synchronized changes from Android's AOSP e2fsprogs tree.
+
+Fix groff formatting nits in various man pages.  (Addresses Debian Bug:
+#916188)
+
+Fixed various debian packaging issues (Addresses Debian Bug: #915942)
+
+Adjusted the copyright license for lib/blkid/version.c to be LGPL (and
+consistent with the rest of files in that directory).
+
+Fix various clang warnings.
+
+Fix "make install" when configure was run with --enable-subset.
+
+Make sure the regression tests clean up their tmpfile if the test script
+exits.
+
+Fix build failures on non-glibc systems.
+

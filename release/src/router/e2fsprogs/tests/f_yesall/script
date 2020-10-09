@@ -1,0 +1,26 @@
+test_description="e2fsck with yes-to-all"
+FSCK_OPT=-f
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+gunzip < $test_dir/image.gz > $TMPFILE
+
+echo "annnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn" | E2FSCK_FORCE_INTERACTIVE=y $FSCK $FSCK_OPT -N test_filesys $TMPFILE > $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -f $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+	rm -f tmp_expect
+fi
+
+unset IMAGE FSCK_OPT OUT EXP

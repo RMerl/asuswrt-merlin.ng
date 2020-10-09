@@ -1,0 +1,21 @@
+dd if=/dev/zero of=$TMPFILE bs=1k count=64 > /dev/null 2>&1
+$MKE2FS -q -b 1024 $TMPFILE
+$DEBUGFS -w -R 'set_super_value creator_os 0xf0000000' $TMPFILE
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+$DUMPE2FS $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed | grep 'Filesystem OS type:' > $OUT
+
+rm -f $TMPFILE
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+        echo "$test_name: $test_description: ok"
+        touch $test_name.ok
+else
+        echo "$test_name: $test_description: failed"
+        diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+        rm -f $test_name.tmp
+fi
+unset OUT EXP

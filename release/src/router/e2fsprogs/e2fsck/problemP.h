@@ -44,3 +44,5 @@ struct latch_descr {
 #define PR_CONFIG	0x080000 /* This problem has been customized
 				    from the config file */
 #define PR_FORCE_NO	0x100000 /* Force the answer to be no */
+#define PR_NOT_A_FIX	0x200000 /* Yes doesn't mean a problem was fixed */
+#define PR_HEADER	0x400000 /* Problem is a header marker */

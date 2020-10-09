@@ -1,0 +1,104 @@
+test_description="e2undo and mke2fs with offset option"
+OUT="$test_name.log"
+TDB_FILE="$TMPFILE.e2undo"
+
+E2UNDO_FEATURE_COMPAT_OFFSET=1
+
+trap "rm -f $TDB_FILE" EXIT INT QUIT
+
+test_e2undo_mke2fs_off() {
+	OFF=$1
+
+	rm -f "$TDB_FILE"
+	echo "testing e2undo and mke2fs with the -E offset=$OFF option" >> "$OUT"
+	# prepare $TMPFILE
+	yes a | $DD of="$TMPFILE" bs="$OFF" count=1 iflag=fullblock \
+		> /dev/null 2>>"$OUT"
+	yes b | $DD bs=1k count=1024 iflag=fullblock >> "$TMPFILE" 2>>"$OUT"
+	yes c | $DD bs=1k count=3 iflag=fullblock >> "$TMPFILE" 2>>"$OUT"
+
+	crc_exp=`$CRCSUM "$TMPFILE"`
+	$MKE2FS -F -z "$TDB_FILE" -b 1024 -E offset="$OFF" "$TMPFILE" 1024 \
+		>> "$OUT" 2>&1
+
+	# supplement test with offset specific data
+	supplement_test_$OFF
+
+	# dump undo header (just to ease debugging in case of a failure)
+	echo "undo header:" >> "$OUT"
+	$E2UNDO -h "$TDB_FILE" "$TMPFILE" >> "$OUT" 2>&1
+
+	# offset is stored in the undo header
+	$E2UNDO "$TDB_FILE" "$TMPFILE" >> "$OUT" 2>&1
+	crc_act=`$CRCSUM "$TMPFILE"`
+
+	# also test the key extension code path: the key for the fs block 960
+	# (tdb block 30) is extended by the fs block 992 (tdb block 31)
+	# => we have exactly 3 key blocks instead of 4
+	num_keys_exp=3
+	num_keys_act=`$E2UNDO -h "$TDB_FILE" "$TMPFILE" | grep "^nr keys:" \
+		| cut -f2`
+
+	offset_exp=$OFF
+	offset_act=`$E2UNDO -h "$TDB_FILE" "$TMPFILE" | grep "^fs offset:" \
+		| cut -f2`
+	compat_exp=$E2UNDO_FEATURE_COMPAT_OFFSET
+	compat_act=`$E2UNDO -h "$TDB_FILE" "$TMPFILE" | grep "^compat:" | cut -f3`
+
+	if [ "$crc_exp" != "$crc_act" -o \
+		 "$num_keys_exp" != "$num_keys_act" -o \
+		 "$offset_exp" != "$offset_act" -o \
+		 $(($compat_act & $E2UNDO_FEATURE_COMPAT_OFFSET)) -ne $compat_exp ]
+		 then
+		echo "mke2fs called with offset: $OFF" >> "$test_name.failed"
+		echo "crc_exp: $crc_exp" >> "$test_name.failed"
+		echo "crc_act: $crc_act" >> "$test_name.failed"
+		echo "num_keys_exp: $num_keys_exp" >> "$test_name.failed"
+		echo "num_keys_act: $num_keys_act" >> "$test_name.failed"
+		echo "offset_exp: $offset_exp" >> "$test_name.failed"
+		echo "offset_act: $offset_act" >> "$test_name.failed"
+		echo "compat_exp: $compat_exp" >> "$test_name.failed"
+		echo "compat_act: $compat_act" >> "$test_name.failed"
+		echo >> "$test_name.failed"
+	fi
+}
+
+supplement_test_2048() {
+	# modify the two subsequent 1k blocks (1026 and 1027) after the fs end:
+	# e2undo will overwrite these modified blocks with the old
+	# data again (this might be considered as a bug (for now,
+	# this testcase just documents this behavior))
+	SEEK_BLOCKS=$(((2048 + 1024 * 1024) / 1024))
+	yes d | $DD of="$TMPFILE" bs=1k count=2 seek="$SEEK_BLOCKS" \
+		iflag=fullblock > /dev/null 2>>"$OUT"
+}
+
+supplement_test_96255() {
+	# nothing to supplement
+	:
+}
+
+# test even offset < tdb_data_size
+# with an offset of 2048 the old code wrote an incorrect undo file,
+# for example, the computations for fs block 0 were wrong:
+# * backing_blk_num was set to ULLONG_MAX - 1 instead of 0
+# * data was read from the beginning of the file instead of offset 2048
+# * data_ptr was set to read_ptr - 2048
+# for details, see the old undo_write_tdb code in undo_io.c
+test_e2undo_mke2fs_off 2048
+
+# test odd offset > tdb_data_size: 32768 * 3 - 2 * 1024 - 1
+# a somewhat arbitrary value, for example, during the backup of
+# fs block 0 such an offset resulted in:
+# * the largest "in fs block offset" (96255 % 1024 == 1023)
+# * a wrong value for data_size (actual bytes read: 31745)
+# * an invalid address for data_ptr
+# for details, see the old undo_write_tdb code in undo_io.c
+test_e2undo_mke2fs_off 96255
+
+if [ -e "$test_name.failed" ]; then
+	echo "$test_name: $test_description: failed"
+else
+	echo "$test_name: $test_description: ok"
+	touch "$test_name.ok"
+fi

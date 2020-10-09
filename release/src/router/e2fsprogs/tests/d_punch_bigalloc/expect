@@ -1,0 +1,175 @@
+
+Warning: the bigalloc feature is still under development
+See https://ext4.wiki.kernel.org/index.php/Bigalloc for more information
+
+Creating filesystem with 65536 1k blocks and 4096 inodes
+
+Allocating group tables:    done                            
+Writing inode tables:    done                            
+Writing superblocks and filesystem accounting information:    done
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/4096 files (9.1% non-contiguous), 1144/65536 blocks
+Exit status is 0
+debugfs write files
+debugfs: ex /a
+Level Entries       Logical      Physical Length Flags
+debugfs: ex /sample
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1     0 - 4294967295  1184              0
+ 1/ 1   1/  5     0 -     9  1144 -  1153     10 Uninit
+ 1/ 1   2/  5    11 -    12  1155 -  1156      2 Uninit
+ 1/ 1   3/  5    14 -    25  1158 -  1169     12 Uninit
+ 1/ 1   4/  5    27 -    28  1171 -  1172      2 Uninit
+ 1/ 1   5/  5    30 -    39  1174 -  1183     10 Uninit
+debugfs: ex /b8
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1     0 - 4294967295  1232              0
+ 1/ 1   1/  1     0 -     7  1192 -  1199      8 Uninit
+debugfs: ex /b9
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1     0 - 4294967295  1248              0
+ 1/ 1   1/  1     0 -     8  1200 -  1208      9 Uninit
+debugfs: ex /b10
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1     0 - 4294967295  1272              0
+ 1/ 1   1/  1     0 -     9  1216 -  1225     10 Uninit
+debugfs: ex /b11
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1     0 - 4294967295  1296              0
+ 1/ 1   1/  2     0 -     7  1240 -  1247      8 Uninit
+ 1/ 1   2/  2     8 -     9  1256 -  1257      2 Uninit
+debugfs: ex /b12
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1     0 - 4294967295  1320              0
+ 1/ 1   1/  3     0 -     7  1264 -  1271      8 Uninit
+ 1/ 1   2/  3     8 -     9  1280 -  1281      2 Uninit
+ 1/ 1   3/  3    11 -    11  1283 -  1283      1 Uninit
+debugfs: ex /b13
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1     0 - 4294967295  1344              0
+ 1/ 1   1/  3     0 -     7  1288 -  1295      8 Uninit
+ 1/ 1   2/  3     8 -     9  1304 -  1305      2 Uninit
+ 1/ 1   3/  3    11 -    12  1307 -  1308      2 Uninit
+debugfs: ex /b14
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1     0 - 4294967295  1368              0
+ 1/ 1   1/  3     0 -     7  1312 -  1319      8 Uninit
+ 1/ 1   2/  3     8 -     9  1328 -  1329      2 Uninit
+ 1/ 1   3/  3    11 -    12  1331 -  1332      2 Uninit
+debugfs: ex /b15
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1     0 - 4294967295  1392              0
+ 1/ 1   1/  4     0 -     7  1336 -  1343      8 Uninit
+ 1/ 1   2/  4     8 -     9  1352 -  1353      2 Uninit
+ 1/ 1   3/  4    11 -    12  1355 -  1356      2 Uninit
+ 1/ 1   4/  4    14 -    14  1358 -  1358      1 Uninit
+debugfs: ex /c24
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1    25 - 4294967295  1416         4294967271
+ 1/ 1   1/  3    25 -    25  1401 -  1401      1 Uninit
+ 1/ 1   2/  3    27 -    28  1403 -  1404      2 Uninit
+ 1/ 1   3/  3    30 -    39  1406 -  1415     10 Uninit
+debugfs: ex /c25
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1    27 - 4294967295  1440         4294967269
+ 1/ 1   1/  2    27 -    28  1427 -  1428      2 Uninit
+ 1/ 1   2/  2    30 -    39  1430 -  1439     10 Uninit
+debugfs: ex /c26
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1    27 - 4294967295  1464         4294967269
+ 1/ 1   1/  2    27 -    28  1451 -  1452      2 Uninit
+ 1/ 1   2/  2    30 -    39  1454 -  1463     10 Uninit
+debugfs: ex /c27
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1    28 - 4294967295  1488         4294967268
+ 1/ 1   1/  2    28 -    28  1476 -  1476      1 Uninit
+ 1/ 1   2/  2    30 -    39  1478 -  1487     10 Uninit
+debugfs: ex /c28
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1    30 - 4294967295  1512         4294967266
+ 1/ 1   1/  1    30 -    39  1502 -  1511     10 Uninit
+debugfs: ex /c29
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1    30 - 4294967295  1536         4294967266
+ 1/ 1   1/  1    30 -    39  1526 -  1535     10 Uninit
+debugfs: ex /c30
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1    31 - 4294967295  1560         4294967265
+ 1/ 1   1/  1    31 -    39  1551 -  1559      9 Uninit
+debugfs: ex /c31
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1    32 - 4294967295  1584         4294967264
+ 1/ 1   1/  1    32 -    39  1576 -  1583      8 Uninit
+debugfs: ex /d
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1     0 - 4294967295  1600              0
+ 1/ 1   1/  2     0 -     3  1360 -  1363      4 Uninit
+ 1/ 1   2/  2    36 -    39  1596 -  1599      4 Uninit
+debugfs: ex /e
+Level Entries       Logical      Physical Length Flags
+ 0/ 1   1/  1     0 - 4294967295  1624              0
+ 1/ 1   1/  8     0 -     9  1376 -  1385     10 Uninit
+ 1/ 1   2/  8    11 -    12  1387 -  1388      2 Uninit
+ 1/ 1   3/  8    14 -    15  1390 -  1391      2 Uninit
+ 1/ 1   4/  8    16 -    18  1568 -  1570      3 Uninit
+ 1/ 1   5/  8    21 -    23  1573 -  1575      3 Uninit
+ 1/ 1   6/  8    24 -    25  1608 -  1609      2 Uninit
+ 1/ 1   7/  8    27 -    28  1611 -  1612      2 Uninit
+ 1/ 1   8/  8    30 -    39  1614 -  1623     10 Uninit
+debugfs: ex /f
+Level Entries       Logical      Physical Length Flags
+ 0/ 0   1/  2     0 -     0  9000 -  9000      1 Uninit
+ 0/ 0   2/  2  8999 -  8999 17999 - 17999      1 Uninit
+Pass 1: Checking inodes, blocks, and sizes
+Inode 14 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 15 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 16 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 17 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 18 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 19 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 20 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 22 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 23 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 24 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 25 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 26 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 27 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 28 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 29 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Inode 30 extent tree (at level 1) could be shorter.  Optimize? yes
+
+Pass 1E: Optimizing extent trees
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Free blocks count wrong for group #0 (8003, counted=8002).
+Fix? yes
+
+Free blocks count wrong (64024, counted=64016).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 32/4096 files (43.8% non-contiguous), 1520/65536 blocks
+Exit status is 1

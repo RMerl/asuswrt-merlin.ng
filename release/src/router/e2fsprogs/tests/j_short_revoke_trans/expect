@@ -1,0 +1,32 @@
+Creating filesystem with 65536 4k blocks and 16384 inodes
+Superblock backups stored on blocks: 
+	32768
+
+Allocating group tables:    done                            
+Writing inode tables:    done                            
+Creating journal (4096 blocks): done
+Writing superblocks and filesystem accounting information:    done
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/16384 files (0.0% non-contiguous), 5164/65536 blocks
+Exit status is 0
+debugfs write journal
+debugfs: logdump -c
+Journal starts at block 1, transaction 1
+Found expected sequence 1, type 1 (descriptor block) at block 1
+Found expected sequence 1, type 2 (commit block) at block 6
+Found expected sequence 2, type 5 (revoke table) at block 7
+Found expected sequence 2, type 2 (commit block) at block 8
+No magic number at block 9: end of journal.
+test_filesys: recovering journal
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/16384 files (0.0% non-contiguous), 5164/65536 blocks
+Exit status is 0

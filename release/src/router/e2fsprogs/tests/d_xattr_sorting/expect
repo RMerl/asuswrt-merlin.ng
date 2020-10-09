@@ -1,0 +1,34 @@
+debugfs sort extended attributes
+mke2fs -Fq -b 1024 test.img 512
+Exit status is 0
+ea_set -f /tmp/b / security.SMEG64
+Exit status is 0
+ea_set -f /tmp/b / security.imb
+Exit status is 0
+ea_set / user.moo cow
+Exit status is 0
+ea_list /
+Extended attributes:
+  user.moo (3) = "cow"
+  security.imb (256)
+  security.SMEG64 (256)
+Exit status is 0
+ea_get / security.imb
+security.imb (256) = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+Exit status is 0
+ea_get / security.SMEG64
+security.SMEG64 (256) = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+Exit status is 0
+ea_get / nosuchea
+ea_get: Extended attribute key not found while getting extended attribute
+Exit status is 0
+e2fsck -yf -N test_filesys
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/64 files (0.0% non-contiguous), 29/512 blocks
+Exit status is 0

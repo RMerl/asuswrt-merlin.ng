@@ -1,0 +1,53 @@
+#!/usr/bin/dh-exec
+sbin/badblocks
+sbin/debugfs
+sbin/dumpe2fs
+sbin/e2fsck
+sbin/e2image
+sbin/e2label
+sbin/e2mmpstatus
+[linux-any] sbin/e2scrub
+[linux-any] sbin/e2scrub_all
+sbin/e2undo
+sbin/fsck.ext?
+sbin/mke2fs
+sbin/mkfs.ext?
+sbin/resize2fs
+sbin/tune2fs
+usr/bin/chattr
+usr/bin/lsattr
+[linux-any] usr/lib/*/e2fsprogs/e2scrub_all_cron
+[linux-any] usr/lib/*/e2fsprogs/e2scrub_fail
+usr/sbin/e2freefrag
+[linux-any] usr/sbin/e4crypt
+[linux-any] usr/sbin/e4defrag
+usr/sbin/filefrag
+usr/sbin/mklost+found
+usr/share/man/man1/chattr.1
+usr/share/man/man1/lsattr.1
+usr/share/man/man5/e2fsck.conf.5
+usr/share/man/man5/ext?.5
+usr/share/man/man5/mke2fs.conf.5
+usr/share/man/man8/badblocks.8
+usr/share/man/man8/debugfs.8
+usr/share/man/man8/dumpe2fs.8
+usr/share/man/man8/e2freefrag.8
+usr/share/man/man8/e2fsck.8
+usr/share/man/man8/e2image.8
+usr/share/man/man8/e2label.8
+usr/share/man/man8/e2mmpstatus.8
+[linux-any] usr/share/man/man8/e2scrub.8
+[linux-any] usr/share/man/man8/e2scrub_all.8
+usr/share/man/man8/e2undo.8
+[linux-any] usr/share/man/man8/e4crypt.8
+[linux-any] usr/share/man/man8/e4defrag.8
+usr/share/man/man8/filefrag.8
+usr/share/man/man8/fsck.ext?.8
+usr/share/man/man8/mke2fs.8
+usr/share/man/man8/mkfs.ext?.8
+usr/share/man/man8/mklost+found.8
+usr/share/man/man8/resize2fs.8
+usr/share/man/man8/tune2fs.8
+etc
+[linux-any] lib/udev/rules.d
+[linux-any] lib/systemd/system

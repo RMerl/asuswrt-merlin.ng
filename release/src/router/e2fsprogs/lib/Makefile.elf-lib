@@ -24,8 +24,8 @@ image:		$(ELF_LIB)
 
 $(ELF_LIB): $(OBJS)
 	$(E) "	GEN_ELF_SOLIB $(ELF_LIB)"
-	$(Q) (cd elfshared; $(CC) --shared -o $(ELF_LIB) \
-		-L$(top_builddir)/../lib $(LDFLAGS) \
+	$(Q) (cd elfshared; $(CC) -o $(ELF_LIB) \
+		-L$(top_builddir)/../lib $(LDFLAGS_SHLIB) -fPIC -shared \
 		-Wl,-soname,$(ELF_SONAME) $(OBJS) $(ELF_OTHER_LIBS))
 	$(Q) $(MV) elfshared/$(ELF_LIB) .
 	$(Q) $(RM) -f ../$(ELF_LIB) ../$(ELF_IMAGE).so ../$(ELF_SONAME)
@@ -35,8 +35,8 @@ $(ELF_LIB): $(OBJS)
 	$(Q) (cd ..; $(LN) $(LINK_BUILD_FLAGS) $(ELF_LIB) $(ELF_SONAME))
 
 installdirs-elf-lib::
-	$(E) "	MKINSTALLDIRS $(ELF_INSTALL_DIR) $(libdir)"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(ELF_INSTALL_DIR) \
+	$(E) "	MKDIR_P $(ELF_INSTALL_DIR) $(libdir)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(ELF_INSTALL_DIR) \
 		$(DESTDIR)$(libdir)
 
 installdirs:: installdirs-elf-lib
@@ -58,7 +58,7 @@ install-strip: install
 	$(Q) $(STRIP) --strip-unneeded --remove-section=.comment \
 		--remove-section=.note $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
 
-install-shlibs-strip: install-shlibs
+install-shlibs-strip:: install-shlibs
 	$(E) "	STRIP-LIB $(ELF_INSTALL_DIR)/$(ELF_LIB)"
 	$(Q) $(STRIP) --strip-unneeded --remove-section=.comment \
 		--remove-section=.note $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)

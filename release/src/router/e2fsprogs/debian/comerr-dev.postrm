@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Abort on error.
+set -e
+
+symlink_match()
+{
+	local SYMLINK="$1"
+	local SYMLINK_TARGET="$2"
+
+	[ "$(readlink "$SYMLINK")" = "$SYMLINK_TARGET" ] || \
+	[ "$(readlink -f "$SYMLINK")" = "$SYMLINK_TARGET" ]
+}
+
+SYMLINK=/usr/share/doc/comerr-dev
+SYMLINK_TARGET=libcomerr2
+SYMLINK_TARGET2=libcom-err2
+
+if [ "$1" = "purge" ] && [ -h "${SYMLINK}.dpkg-backup" ]
+then
+	rm -f "${SYMLINK}.dpkg-backup"
+fi
+if [ "$1" = "abort-install" -o "$1" = "abort-upgrade" ] &&
+   [ -n "$2" ] && [ ! -e "$SYMLINK" ] && [ -h "${SYMLINK}.dpkg-backup" ]
+then
+    if symlink_match "${SYMLINK}.dpkg-backup" "$SYMLINK_TARGET" ||
+       symlink_match "${SYMLINK}.dpkg-backup" "$SYMLINK_TARGET2"
+    then
+	echo "Restoring backup of $SYMLINK ..."
+	mv "${SYMLINK}.dpkg-backup" "$SYMLINK"
+    fi
+fi
+
+#DEBHELPER#
+
+exit 0

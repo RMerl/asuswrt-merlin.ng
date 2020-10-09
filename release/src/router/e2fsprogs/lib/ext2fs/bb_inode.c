@@ -96,7 +96,7 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	 * Now set the bad blocks!
 	 *
 	 * First, mark the bad blocks as used.  This prevents a bad
-	 * block from being used as an indirecto block for the bad
+	 * block from being used as an indirect block for the bad
 	 * block inode (!).
 	 */
 	if (bb_list) {

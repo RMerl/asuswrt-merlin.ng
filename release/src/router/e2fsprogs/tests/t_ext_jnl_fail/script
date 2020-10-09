@@ -1,0 +1,30 @@
+FSCK_OPT=-fy
+OUT=$test_name.log
+if [ -f $test_dir/expect.gz ]; then
+	EXP=$test_name.tmp
+	gunzip < $test_dir/expect.gz > $EXP1
+else
+	EXP=$test_dir/expect
+fi
+
+$MKE2FS -F -o Linux -b 1024 -O journal_dev,metadata_csum -T ext4 $TMPFILE 4096 > $OUT 2>&1
+echo "tune2fs external journal" >> $OUT
+$TUNE2FS -i 0 $TMPFILE >> $OUT 2>&1
+rm -f $TMPFILE
+
+sed -f $cmd_dir/filter.sed < $OUT > $OUT.new
+mv $OUT.new $OUT
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+	rm -f $test_name.tmp
+fi
+
+unset IMAGE FSCK_OPT OUT EXP

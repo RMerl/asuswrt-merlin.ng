@@ -1,0 +1,50 @@
+// Copyright 2017 The Android Open Source Project
+
+cc_library {
+    name: "libext2_blkid",
+    host_supported: true,
+    ramdisk_available: true,
+    recovery_available: true,
+    unique_host_soname: true,
+    defaults: ["e2fsprogs-defaults"],
+    srcs: [
+        "cache.c",
+        "dev.c",
+        "devname.c",
+        "devno.c",
+        "getsize.c",
+        "llseek.c",
+        "probe.c",
+        "read.c",
+        "resolve.c",
+        "save.c",
+        "tag.c",
+        "version.c",
+    ],
+    shared_libs: ["libext2_uuid"],
+
+    target: {
+        windows: {
+            include_dirs: [ "external/e2fsprogs/include/mingw" ],
+            cflags: [
+                "-Wno-pointer-to-int-cast",
+                "-Wno-unused-variable",
+            ],
+            clang_cflags: [
+                "-Wno-error=typedef-redefinition",
+            ],
+            enabled: true
+        },
+    },
+
+    cflags: [
+        "-Wno-error=attributes",
+        "-Wno-error=pointer-sign",
+        "-Wno-unused-parameter",
+        "-fno-strict-aliasing",
+    ],
+
+    header_libs: ["libext2-headers"],
+    export_include_dirs: ["."],
+    export_header_lib_headers: ["libext2-headers"],
+}

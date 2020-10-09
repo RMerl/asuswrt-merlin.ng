@@ -1,0 +1,2 @@
+FSCK_OPT="-y -E unshare_blocks"
+. $cmd_dir/run_e2fsck

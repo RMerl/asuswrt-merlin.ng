@@ -35,7 +35,7 @@ extern int optind;
 #endif
 #include "uuid/uuid.h"
 #include "uuid/uuidd.h"
-#include "nls-enable.h"
+#include "support/nls-enable.h"
 #include "ext2fs/ext2fs.h"
 
 #ifdef __GNUC__

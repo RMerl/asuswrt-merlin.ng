@@ -1,0 +1,4 @@
+#!/bin/sh
+
+ver=$(git describe --always --dirty); echo "e2fsprogs	$ver ($(git log -1 --pretty=%cD))"
+

@@ -1,0 +1,80 @@
+test_description="create fs image from dir, then minimize it"
+if ! test -x $RESIZE2FS_EXE -o ! -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs/resize2fs)"
+	return 0
+fi
+
+MKFS_DIR=$TMPFILE.dir
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+rm -rf $MKFS_DIR
+mkdir -p $MKFS_DIR
+mkdir $MKFS_DIR/dir
+mkdir $MKFS_DIR/emptydir
+dd if=/dev/zero of=$MKFS_DIR/bigzerofile bs=1 count=1 seek=1073741824 2> /dev/null
+echo "M" | dd of=$MKFS_DIR/sparsefile bs=1 count=1 seek=1024 2> /dev/null
+echo "M" | dd of=$MKFS_DIR/sparsefile bs=1 count=1 seek=524288 conv=notrunc 2> /dev/null
+echo "M" | dd of=$MKFS_DIR/sparsefile bs=1 count=1 seek=1048576 conv=notrunc 2> /dev/null
+echo "M" | dd of=$MKFS_DIR/sparsefile bs=1 count=1 seek=536870912 conv=notrunc 2> /dev/null
+echo "M" | dd of=$MKFS_DIR/sparsefile bs=1 count=1 seek=1073741824 conv=notrunc 2> /dev/null
+dd if=/dev/zero bs=1024 count=32 2> /dev/null | tr '\0' 'a' > $MKFS_DIR/bigfile
+touch $MKFS_DIR/emptyfile
+echo "Test me" > $MKFS_DIR/dir/file
+
+echo "create fs" > $OUT
+$MKE2FS -q -F -o Linux -T ext4 -O ^has_journal,metadata_csum,64bit,^resize_inode -E lazy_itable_init=1 -b 1024 -d $MKFS_DIR $TMPFILE 16384 >> $OUT 2>&1
+
+$DUMPE2FS $TMPFILE >> $OUT 2>&1
+cat > $TMPFILE.cmd << ENDL
+stat /emptyfile
+stat /bigfile
+stat /sparsefile
+stat /bigzerofile
+stat /fifo
+stat /emptydir
+stat /dir
+stat /dir/file
+ENDL
+$DEBUGFS -f $TMPFILE.cmd $TMPFILE 2>&1 | egrep "(stat|Size:|Type:)" >> $OUT
+
+cat > $TMPFILE.cmd << ENDL
+ex /emptyfile
+ex /bigfile
+ex /sparsefile
+ex /bigzerofile
+ex /dir
+ex /dir/file
+ENDL
+$DEBUGFS -f $TMPFILE.cmd $TMPFILE >> $OUT 2>&1
+$FSCK -f -n $TMPFILE >> $OUT 2>&1
+
+echo "minify fs" >> $OUT
+$TUNE2FS -m 0 $TMPFILE >> $OUT 2>&1
+$RESIZE2FS -M $TMPFILE >> $OUT 2>&1
+$DUMPE2FS $TMPFILE >> $OUT 2>&1
+$FSCK -f -n $TMPFILE >> $OUT 2>&1
+
+echo "minify fs (2)" >> $OUT
+$TUNE2FS -m 0 $TMPFILE >> $OUT 2>&1
+$RESIZE2FS -M $TMPFILE >> $OUT 2>&1
+$DUMPE2FS $TMPFILE >> $OUT 2>&1
+$FSCK -f -n $TMPFILE >> $OUT 2>&1
+
+sed -f $cmd_dir/filter.sed -f $test_dir/output.sed -e "s;$TMPFILE;test.img;" < $OUT > $OUT.tmp
+mv $OUT.tmp $OUT
+
+# Do the verification
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+        echo "$test_name: $test_description: failed"
+        diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+rm -rf $TMPFILE.cmd $MKFS_DIR
+unset MKFS_DIR OUT EXP

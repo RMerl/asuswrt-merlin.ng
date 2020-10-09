@@ -47,17 +47,17 @@ cp /dev/null $OUT1
 
 eval $PREP_CMD
 
-$FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT1.new 2>&1
+$FSCK $FSCK_OPT  -N test_filesys $TMPFILE >> $OUT1.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT1.new
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT1.new >> $OUT1
+sed -f $cmd_dir/filter.sed $OUT1.new >> $OUT1
 rm -f $OUT1.new
 
 if [ "$ONE_PASS_ONLY" != "true" ]; then
 	$FSCK $SECOND_FSCK_OPT -N test_filesys $TMPFILE > $OUT2.new 2>&1 
 	status=$?
 	echo Exit status is $status >> $OUT2.new
-	sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT2.new > $OUT2
+	sed -f $cmd_dir/filter.sed $OUT2.new > $OUT2
 	rm -f $OUT2.new
 fi
 

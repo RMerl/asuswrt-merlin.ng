@@ -1,12 +1,20 @@
-if test -x $RESIZE2FS_EXE -a -x $DEBUGFS_EXE; then
-
 test_description="very large fs growth using ext4 w/64bit"
+if ! test -x $RESIZE2FS_EXE -o ! -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs/resize2fs)"
+	return 0
+fi
+
 FEATURES="-t ext4 -O 64bit"
 SIZE_1=512M
 SIZE_2=2T
 LOG=$test_name.log
 E2FSCK=../e2fsck/e2fsck
 
+if [ $(uname -s) = "FreeBSD" ]; then
+	# creates a 2TB filesystem
+	echo "$test_name: $DESCRIPTION: skipped for FreeBSD"
+	return 0
+fi
 
 . $cmd_dir/scripts/resize_test
 
@@ -16,7 +24,7 @@ if [ $RC -eq 0 ]; then
 	echo "$test_name: $test_description: ok"
 	touch $test_name.ok
 elif [ $RC -eq 111 ]; then
-	echo "$test_name: $test_description: skipped"
+	echo "$test_name: $test_description: skipped (no large sparse files)"
 	touch $test_name.ok
 else
 	echo "$test_name: $test_description: failed"
@@ -24,8 +32,3 @@ else
 fi
 
 unset FEATURES SIZE_1 SIZE_2 LOG E2FSCK
-
-else #if test -x $RESIZE2FS_EXE -a -x $DEBUGFS_EXE; then
-	echo "$test_name: $test_description: skipped"
-fi 
-

@@ -1,0 +1,60 @@
+E2fsprogs 1.44.4 (August 18, 2018)
+==================================
+
+Updates/Fixes since v1.44.3:
+
+UI and Features
+---------------
+
+Add basic support for the ext4 verity feature (aka fsverity).  It is a
+read-only compatibility feature which uses Merkle trees to add
+functionality much like dm-verity on a per-file basis.  For this release
+we simply allow e2fsck to accept file systems with the verity feature
+enable (no special handling is needed) and mke2fs to create file systems
+with the verity feature.
+
+
+Fixes
+-----
+
+E2fsck will now properly repair a file system that has both the
+resize_inode and meta_bg features enabled simultaneously (which is never
+supposed to happen, but it could happen in versions of mke2fs before
+1.44.3 when it was given parameters where more than 75% of the block
+group was used for group descriptor tables).
+
+Avoid a floating point exception crash when libblkid tries probing a
+maliciously corrupted HFS+ superblock.
+
+Debugfs's ncheck command now properly will handle inodes that have
+multiple hard links.
+
+On platforms that don't supply strdup, the replacement function for
+strdup() had a bug which would cause it to crash if it was used.
+(Fortunately this only happens if the [scratch_files] feature in e2fsck
+is used.)
+
+Fixed support for devices which have non-512 byte block sizes on Apple
+Darwin.
+
+E2fsprogs 1.44.3 would fail to compile on very old versions of gcc.
+This is now fixed.
+
+Update and clarify man pages.  (Addresses Debian Bug: #757831)
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Synchronized changes from Android's AOSP e2fsprogs tree.
+
+Instead of building the subset e2fsprogs-libs tar file, add a new
+configure option, --enable-subset.  This along with other changes (such
+as dropping obsolete files that aren't shipped as part of
+e2fsprogs-X.YY.tar.gz) allows us to be able to build the tarball using
+the "git archive" command.
+
+Fixed various debian packaging issues (Addresses Debian Bug: #905195)
+
+Update Danish, Spanish, and Swedish translations.
+

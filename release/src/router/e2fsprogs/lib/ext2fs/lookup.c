@@ -37,9 +37,9 @@ static int lookup_proc(struct ext2_dir_entry *dirent,
 {
 	struct lookup_struct *ls = (struct lookup_struct *) priv_data;
 
-	if (ls->len != (dirent->name_len & 0xFF))
+	if (ls->len != ext2fs_dirent_name_len(dirent))
 		return 0;
-	if (strncmp(ls->name, dirent->name, (dirent->name_len & 0xFF)))
+	if (strncmp(ls->name, dirent->name, ext2fs_dirent_name_len(dirent)))
 		return 0;
 	*ls->inode = dirent->inode;
 	ls->found++;

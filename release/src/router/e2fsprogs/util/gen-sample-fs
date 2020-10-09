@@ -1,0 +1,40 @@
+#!/bin/bash
+
+MNT=/mnt
+FS=/tmp/foo.img
+
+cp /dev/null $FS
+mke2fs -q -t ext4 -O inline_data,^has_journal -I 256 -b 4096 -N 64 $FS 256
+mount -t ext4 $FS $MNT
+ln -s symlink_data $MNT/symlink
+for i in 30 70 500 1023 1024; do
+	ln -s /$(perl -e "print 'x' x $i;") $MNT/l_$i
+done
+touch $MNT/acl
+setfacl -m u:daemon:r $MNT/acl
+setfacl -m u:bin:rx $MNT/acl
+setfacl -m g:mail:rw $MNT/acl
+setfacl -m g:daemon:r $MNT/acl
+touch $MNT/simple_acl
+setfacl -m u:daemon:r $MNT/simple_acl
+touch $MNT/xattr
+attr -q -s foo -V bar $MNT/xattr
+echo -e "one\n\ttwo" | attr -q -s quux $MNT/xattr
+echo -e "abc\001\002\003" | attr -q -s def $MNT/xattr
+echo file_data > $MNT/small_inline
+a="I am a very model of a modern major general;"
+a="$a I've information vegetable, animal and mineral"
+echo $a > $MNT/big_inline
+mkdir $MNT/sdir
+touch $MNT/sdir/1
+touch $MNT/sdir/2
+touch $MNT/sdir/3
+touch $MNT/sdir/4
+mkdir $MNT/mdir
+touch $MNT/mdir/1
+touch $MNT/mdir/2
+touch $MNT/mdir/3
+touch $MNT/mdir/4
+touch $MNT/mdir/5
+umount $MNT
+e2fsck -fp $FS

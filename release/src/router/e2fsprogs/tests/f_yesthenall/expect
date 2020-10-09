@@ -1,0 +1,53 @@
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12 has an invalid extent
+	(logical block 0, invalid physical block 999999999, len 1)
+Clear<y>? yes
+Inode 12 has an invalid extent
+	(logical block 1, invalid physical block 9999999999, len 1)
+Clear<y>? yes
+Inode 13 is in use, but has dtime set.  Fix<y>? yes
+Inode 13 has an invalid extent
+	(logical block 1, invalid physical block 8888888888888, len 1)
+Clear<y>? yes
+Inode 13 has an invalid extent
+	(logical block 0, invalid physical block 888888888888, len 1)
+Clear<y>? yes
+Inodes that were part of a corrupted orphan linked list found.  Fix<y>? yes
+Inode 14 was part of the orphaned inode list.  FIXED.
+Inode 14 has an invalid extent
+	(logical block 300, invalid physical block 777777777777, len 300)
+Clear<y>? yes
+Inode 14 has an invalid extent
+	(logical block 0, invalid physical block 7777777777, len 1)
+Clear<y>? yes
+Inode 14, i_blocks is 52574694748113, should be 0.  Fix<y>? yes
+Pass 2: Checking directory structure
+Extended attribute block for inode 12 (/a) is invalid (999999).
+Clear ('a' enables 'yes' to all) <y>? yes
+Extended attribute block for inode 13 (/b) is invalid (298954296).
+Clear ('a' enables 'yes' to all) <y>? yes to all
+Extended attribute block for inode 14 (/c) is invalid (388697201).
+Clear? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Inode 12 ref count is 34463, should be 1.  Fix? yes
+
+Inode 13 ref count is 9999, should be 1.  Fix? yes
+
+Inode 14 ref count is 12241, should be 1.  Fix? yes
+
+Pass 5: Checking group summary information
+Block bitmap differences:  -202 -381 -457
+Fix? yes
+
+Free blocks count wrong for group #0 (0, counted=494).
+Fix? yes
+
+Free inodes count wrong for group #0 (4294967293, counted=114).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 14/128 files (0.0% non-contiguous), 18/512 blocks
+Exit status is 1

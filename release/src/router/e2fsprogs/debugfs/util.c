@@ -119,13 +119,18 @@ ext2_ino_t string_to_inode(char *str)
 	 */
 	if ((len > 2) && (str[0] == '<') && (str[len-1] == '>')) {
 		ino = strtoul(str+1, &end, 0);
-		if (*end=='>')
+		if (*end=='>' && (ino <= current_fs->super->s_inodes_count))
 			return ino;
 	}
 
 	retval = ext2fs_namei(current_fs, root, cwd, str, &ino);
 	if (retval) {
 		com_err(str, retval, 0);
+		return 0;
+	}
+	if (ino > current_fs->super->s_inodes_count) {
+		com_err(str, 0, "resolves to an illegal inode number: %u\n",
+			ino);
 		return 0;
 	}
 	return ino;
@@ -186,22 +191,30 @@ int check_fs_bitmaps(char *name)
 	return 0;
 }
 
+char *inode_time_to_string(__u32 xtime, __u32 xtime_extra)
+{
+	__s64 t = (__s32) xtime;
+
+	t += (__s64) (xtime_extra & EXT4_EPOCH_MASK) << 32;
+	return time_to_string(t);
+}
+
 /*
- * This function takes a __u32 time value and converts it to a string,
+ * This function takes a __s64 time value and converts it to a string,
  * using ctime
  */
-char *time_to_string(__u32 cl)
+char *time_to_string(__s64 cl)
 {
 	static int	do_gmt = -1;
 	time_t		t = (time_t) cl;
 	const char	*tz;
 
 	if (do_gmt == -1) {
-		/* The diet libc doesn't respect the TZ environemnt variable */
+		/* The diet libc doesn't respect the TZ environment variable */
 		tz = ss_safe_getenv("TZ");
 		if (!tz)
 			tz = "";
-		do_gmt = !strcmp(tz, "GMT") | !strcmp(tz, "GMT0");
+		do_gmt = !strcmp(tz, "GMT") || !strcmp(tz, "GMT0");
 	}
 
 	return asctime((do_gmt) ? gmtime(&t) : localtime(&t));
@@ -211,10 +224,10 @@ char *time_to_string(__u32 cl)
  * Parse a string as a time.  Return ((time_t)-1) if the string
  * doesn't appear to be a sane time.
  */
-time_t string_to_time(const char *arg)
+extern __s64 string_to_time(const char *arg)
 {
 	struct	tm	ts;
-	time_t		ret;
+	__s64		ret;
 	char *tmp;
 
 	if (strcmp(arg, "now") == 0) {
@@ -224,14 +237,18 @@ time_t string_to_time(const char *arg)
 		/* interpret it as an integer */
 		arg++;
 	fallback:
-		ret = strtoul(arg, &tmp, 0);
+		ret = strtoll(arg, &tmp, 0);
 		if (*tmp)
-			return ((time_t) -1);
+			return -1;
 		return ret;
 	}
 	memset(&ts, 0, sizeof(ts));
 #ifdef HAVE_STRPTIME
 	tmp = strptime(arg, "%Y%m%d%H%M%S", &ts);
+	if (tmp == NULL)
+		tmp = strptime(arg, "%Y%m%d%H%M", &ts);
+	if (tmp == NULL)
+		tmp = strptime(arg, "%Y%m%d", &ts);
 	if (tmp == NULL)
 		goto fallback;
 #else
@@ -240,9 +257,9 @@ time_t string_to_time(const char *arg)
 	ts.tm_year -= 1900;
 	ts.tm_mon -= 1;
 	if (ts.tm_year < 0 || ts.tm_mon < 0 || ts.tm_mon > 11 ||
-	    ts.tm_mday < 0 || ts.tm_mday > 31 || ts.tm_hour > 23 ||
+	    ts.tm_mday <= 0 || ts.tm_mday > 31 || ts.tm_hour > 23 ||
 	    ts.tm_min > 59 || ts.tm_sec > 61)
-		ts.tm_mday = 0;
+		goto fallback;
 #endif
 	ts.tm_isdst = -1;
 	/* strptime() may only update the specified fields, which does not
@@ -260,8 +277,10 @@ time_t string_to_time(const char *arg)
 			((ts.tm_mon - (ts.tm_mon > 7)) / 2) -
 			2 * (ts.tm_mon > 1) + ts.tm_mday - 1;
 	ret = ts.tm_sec + ts.tm_min*60 + ts.tm_hour*3600 + ts.tm_yday*86400 +
-		(ts.tm_year-70)*31536000 + ((ts.tm_year-69)/4)*86400 -
-		((ts.tm_year-1)/100)*86400 + ((ts.tm_year+299)/400)*86400;
+		((__s64) ts.tm_year-70)*31536000 +
+		(((__s64) ts.tm_year-69)/4)*86400 -
+		(((__s64) ts.tm_year-1)/100)*86400 +
+		(((__s64) ts.tm_year+299)/400)*86400;
 	return ret;
 }
 
@@ -390,7 +409,7 @@ int common_block_args_process(int argc, char *argv[],
 		return 1;
 	if (*block == 0) {
 		com_err(argv[0], 0, "Invalid block number 0");
-		err = 1;
+		return 1;
 	}
 
 	if (argc > 2) {
@@ -401,12 +420,12 @@ int common_block_args_process(int argc, char *argv[],
 	return 0;
 }
 
-int debugfs_read_inode_full(ext2_ino_t ino, struct ext2_inode * inode,
-			const char *cmd, int bufsize)
+int debugfs_read_inode2(ext2_ino_t ino, struct ext2_inode * inode,
+			const char *cmd, int bufsize, int flags)
 {
 	int retval;
 
-	retval = ext2fs_read_inode_full(current_fs, ino, inode, bufsize);
+	retval = ext2fs_read_inode2(current_fs, ino, inode, bufsize, flags);
 	if (retval) {
 		com_err(cmd, retval, "while reading inode %u", ino);
 		return 1;
@@ -427,15 +446,14 @@ int debugfs_read_inode(ext2_ino_t ino, struct ext2_inode * inode,
 	return 0;
 }
 
-int debugfs_write_inode_full(ext2_ino_t ino,
-			     struct ext2_inode *inode,
-			     const char *cmd,
-			     int bufsize)
+int debugfs_write_inode2(ext2_ino_t ino,
+			 struct ext2_inode *inode,
+			 const char *cmd,
+			 int bufsize, int flags)
 {
 	int retval;
 
-	retval = ext2fs_write_inode_full(current_fs, ino,
-					 inode, bufsize);
+	retval = ext2fs_write_inode2(current_fs, ino, inode, bufsize, flags);
 	if (retval) {
 		com_err(cmd, retval, "while writing inode %u", ino);
 		return 1;
@@ -496,4 +514,51 @@ int ext2_file_type(unsigned int mode)
 		return EXT2_FT_SOCK;
 
 	return 0;
+}
+
+errcode_t read_list(char *str, blk64_t **list, size_t *len)
+{
+	blk64_t *lst = *list;
+	size_t ln = *len;
+	char *tok, *p = str;
+	errcode_t retval;
+
+	while ((tok = strtok(p, ","))) {
+		blk64_t *l;
+		blk64_t x, y;
+		char *e;
+
+		errno = 0;
+		y = x = strtoull(tok, &e, 0);
+		if (errno)
+			return errno;
+		if (*e == '-') {
+			y = strtoull(e + 1, NULL, 0);
+			if (errno)
+				return errno;
+		} else if (*e != 0) {
+			retval = EINVAL;
+			goto err;
+		}
+		if (y < x) {
+			retval = EINVAL;
+			goto err;
+		}
+		l = realloc(lst, sizeof(blk64_t) * (ln + y - x + 1));
+		if (l == NULL) {
+			retval = ENOMEM;
+			goto err;
+		}
+		lst = l;
+		for (; x <= y; x++)
+			lst[ln++] = x;
+		p = NULL;
+	}
+
+	*list = lst;
+	*len = ln;
+	return 0;
+err:
+	free(lst);
+	return retval;
 }

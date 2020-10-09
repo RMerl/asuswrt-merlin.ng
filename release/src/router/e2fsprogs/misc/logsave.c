@@ -52,7 +52,7 @@ static void usage(char *progname)
 
 /*
  * Helper function that does the right thing if write returns a
- * partial write, or an EGAIN/EINTR error.
+ * partial write, or an EAGAIN/EINTR error.
  */
 static int write_all(int fd, const char *buf, size_t count)
 {
@@ -219,7 +219,7 @@ static int run_program(char **argv)
 			sprintf(buffer, "died with signal %d\n",
 				WTERMSIG(status));
 			send_output(buffer, 0, SEND_BOTH);
-			rc = 1;
+			return 1;
 		}
 		rc = 0;
 	}

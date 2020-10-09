@@ -6,27 +6,27 @@
 .SH NAME
 findfs \- Find a filesystem by label or UUID
 .SH SYNOPSIS
-.B findfs 
+.B findfs
 .BI LABEL= label
 .sp
 .B findfs
 .BI UUID= uuid
 .SH DESCRIPTION
 .B findfs
-will search the disks in the system looking for a filesystem which has 
+will search the disks in the system looking for a filesystem which has
 a label matching
 .I label
-or a UUID equal to 
+or a UUID equal to
 .IR uuid .
 If the filesystem is found, the device name for the filesystem will
 be printed on stdout.
 .PP
 .SH AUTHOR
-.B findfs 
+.B findfs
 was written by Theodore Ts'o (tytso@mit.edu).
 .SH AVAILABILITY
 .B findfs
-is part of the e2fsprogs package and is available from 
+is part of the e2fsprogs package and is available from
 http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR fsck (8)

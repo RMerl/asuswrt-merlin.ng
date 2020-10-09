@@ -44,11 +44,10 @@ empty_dir_info init_empty_dir(e2fsck_t ctx)
 	empty_dir_info	edi;
 	errcode_t	retval;
 
-	edi = malloc(sizeof(struct empty_dir_info_struct));
-	if (!edi)
+	edi = e2fsck_allocate_memzero(ctx, sizeof(struct empty_dir_info_struct),
+				      "empty dir info");
+	if (retval)
 		return NULL;
-
-	memset(edi, 0, sizeof(struct empty_dir_info_struct));
 
 	retval = ext2fs_init_dblist(ctx->fs, &edi->empty_dblist);
 	if (retval)
@@ -83,7 +82,7 @@ void free_empty_dirblock(empty_dir_info edi)
 		ext2fs_free_inode_bitmap(edi->dir_map);
 
 	memset(edi, 0, sizeof(struct empty_dir_info_struct));
-	free(edi);
+	ext2fs_free_mem(&edi);
 }
 
 void add_empty_dirblock(empty_dir_info edi,
@@ -182,13 +181,14 @@ void process_empty_dirblock(e2fsck_t ctx, empty_dir_info edi)
 	if (!edi)
 		return;
 
-	edi->block_buf = malloc(ctx->fs->blocksize * 3);
+	retval = ext2f_get_mem(ctx, ctx->fs->blocksize * 3,
+			       &edi->block_buf);
 
 	if (edi->block_buf) {
 		(void) ext2fs_dblist_iterate2(edi->empty_dblist,
 					      fix_directory, &edi);
 	}
-	free(edi->block_buf);
+	ext2fs_free_mem(&edi->block_buf);
 	free_empty_dirblock(edi);
 }
 

@@ -25,10 +25,28 @@
 extern char *optarg;
 extern int optind;
 #endif
+#if defined(HAVE_EXT2_IOCTLS) && !defined(DEBUGFS)
+# include <sys/ioctl.h>
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <fcntl.h>
+# include <limits.h>
+#endif
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 #include "e2freefrag.h"
+
+#if defined(HAVE_EXT2_IOCTLS) && !defined(DEBUGFS)
+# ifdef HAVE_LINUX_FSMAP_H
+#  include <linux/fsmap.h>
+# endif
+# include "fsmap.h"
+#endif
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 static void usage(const char *prog)
 {
@@ -143,8 +161,102 @@ static void scan_block_bitmap(ext2_filsys fs, struct chunk_info *info)
 		update_chunk_stats(info, last_chunk_size);
 }
 
-static errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info,
-				FILE *f)
+#if defined(HAVE_EXT2_IOCTLS) && !defined(DEBUGFS)
+# define FSMAP_EXTENTS	1024
+static int scan_online(ext2_filsys fs, struct chunk_info *info,
+		       blk64_t *free_blks)
+{
+	struct fsmap_head *fsmap;
+	struct fsmap *extent;
+	struct fsmap *p;
+	char mntpoint[PATH_MAX + 1];
+	errcode_t retval;
+	int mount_flags;
+	int fd;
+	int ret;
+	unsigned int i;
+
+	/* Try to open the mountpoint for a live query. */
+	retval = ext2fs_check_mount_point(fs->device_name, &mount_flags,
+					  mntpoint, PATH_MAX);
+	if (retval) {
+		com_err(fs->device_name, retval, "while checking mount status");
+		return 0;
+	}
+	if (!(mount_flags & EXT2_MF_MOUNTED))
+		return 0;
+	fd = open(mntpoint, O_RDONLY);
+	if (fd < 0) {
+		com_err(mntpoint, errno, "while opening mount point");
+		return 0;
+	}
+
+	fsmap = malloc(fsmap_sizeof(FSMAP_EXTENTS));
+	if (!fsmap) {
+		com_err(fs->device_name, errno, "while allocating memory");
+		return 0;
+	}
+
+	memset(fsmap, 0, sizeof(*fsmap));
+	fsmap->fmh_count = FSMAP_EXTENTS;
+	fsmap->fmh_keys[1].fmr_device = UINT_MAX;
+	fsmap->fmh_keys[1].fmr_physical = ULLONG_MAX;
+	fsmap->fmh_keys[1].fmr_owner = ULLONG_MAX;
+	fsmap->fmh_keys[1].fmr_offset = ULLONG_MAX;
+	fsmap->fmh_keys[1].fmr_flags = UINT_MAX;
+
+	*free_blks = 0;
+	/* Fill the extent histogram with live data */
+	while (1) {
+		ret = ioctl(fd, FS_IOC_GETFSMAP, fsmap);
+		if (ret < 0) {
+			com_err(fs->device_name, errno, "while calling fsmap");
+			free(fsmap);
+			return 0;
+		}
+
+		/* No more extents to map, exit */
+		if (!fsmap->fmh_entries)
+			break;
+
+		for (i = 0, extent = fsmap->fmh_recs;
+		     i < fsmap->fmh_entries;
+		     i++, extent++) {
+			if (!(extent->fmr_flags & FMR_OF_SPECIAL_OWNER) ||
+			    extent->fmr_owner != FMR_OWN_FREE)
+				continue;
+			update_chunk_stats(info,
+					   extent->fmr_length / fs->blocksize);
+			*free_blks += (extent->fmr_length / fs->blocksize);
+		}
+
+		p = &fsmap->fmh_recs[fsmap->fmh_entries - 1];
+		if (p->fmr_flags & FMR_OF_LAST)
+			break;
+		fsmap_advance(fsmap);
+	}
+	free(fsmap);
+	return 1;
+}
+#else
+# define scan_online(fs, info, free_blks)	(0)
+#endif /* HAVE_EXT2_IOCTLS */
+
+static errcode_t scan_offline(ext2_filsys fs, struct chunk_info *info,
+			      blk64_t *free_blks)
+{
+	errcode_t retval;
+
+	*free_blks = ext2fs_free_blocks_count(fs->super);
+	retval = ext2fs_read_block_bitmap(fs);
+	if (retval)
+		return retval;
+	scan_block_bitmap(fs, info);
+	return 0;
+}
+
+static errcode_t dump_chunk_info(ext2_filsys fs, struct chunk_info *info,
+				 FILE *f, blk64_t free_blks)
 {
 	unsigned long total_chunks;
 	const char *unitp = "KMGTPEZY";
@@ -152,11 +264,10 @@ static errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info,
 	unsigned long start = 0, end;
 	int i, retval = 0;
 
-	scan_block_bitmap(fs, info);
-
-	fprintf(f, "Total blocks: %llu\nFree blocks: %u (%0.1f%%)\n",
-		ext2fs_blocks_count(fs->super), fs->super->s_free_blocks_count,
-		(double)fs->super->s_free_blocks_count * 100 /
+	fprintf(f, "Total blocks: %llu\nFree blocks: %llu (%0.1f%%)\n",
+		ext2fs_blocks_count(fs->super),
+		free_blks,
+		(double)free_blks * 100 /
 		ext2fs_blocks_count(fs->super));
 
 	if (info->chunkbytes) {
@@ -200,7 +311,7 @@ static errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info,
 				info->histogram.fc_chunks[i],
 				info->histogram.fc_blocks[i],
 				(double)info->histogram.fc_blocks[i] * 100 /
-				fs->super->s_free_blocks_count);
+				free_blks);
 		}
 		start = end;
 		if (start == 1<<10) {
@@ -224,22 +335,25 @@ static void close_device(char *device_name, ext2_filsys fs)
 static void collect_info(ext2_filsys fs, struct chunk_info *chunk_info, FILE *f)
 {
 	unsigned int retval = 0;
+	blk64_t free_blks = 0;
 
 	fprintf(f, "Device: %s\n", fs->device_name);
 	fprintf(f, "Blocksize: %u bytes\n", fs->blocksize);
 
-	retval = ext2fs_read_block_bitmap(fs);
+	init_chunk_info(fs, chunk_info);
+	if (!scan_online(fs, chunk_info, &free_blks)) {
+		init_chunk_info(fs, chunk_info);
+		retval = scan_offline(fs, chunk_info, &free_blks);
+	}
 	if (retval) {
 		com_err(fs->device_name, retval, "while reading block bitmap");
 		close_device(fs->device_name, fs);
 		exit(1);
 	}
 
-	init_chunk_info(fs, chunk_info);
-
-	retval = get_chunk_info(fs, chunk_info, f);
+	retval = dump_chunk_info(fs, chunk_info, f, free_blks);
 	if (retval) {
-		com_err(fs->device_name, retval, "while collecting chunk info");
+		com_err(fs->device_name, retval, "while dumping chunk info");
                 close_device(fs->device_name, fs);
 		exit(1);
 	}
@@ -263,7 +377,8 @@ static void open_device(char *device_name, ext2_filsys *fs)
 #ifdef DEBUGFS
 #include "debugfs.h"
 
-void do_freefrag(int argc, char **argv)
+void do_freefrag(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		 void *infop EXT2FS_ATTR((unused)))
 #else
 int main(int argc, char *argv[])
 #endif

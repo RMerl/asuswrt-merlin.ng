@@ -334,8 +334,6 @@ static const char *lookup_table_fallback(int num, struct str_table *table)
 static void die_signal_handler(int signum, siginfo_t *siginfo,
 			       void *context EXT2FS_ATTR((unused)))
 {
-       void *stack_syms[32];
-       int frames;
        const char *cp;
 
        fprintf(stderr, "Signal (%d) %s ", signum,
@@ -374,8 +372,13 @@ static void die_signal_handler(int signum, siginfo_t *siginfo,
        fprintf(stderr, "\n");
 
 #if defined(HAVE_BACKTRACE) && !defined(DISABLE_BACKTRACE)
-       frames = backtrace(stack_syms, 32);
-       backtrace_symbols_fd(stack_syms, frames, 2);
+       {
+	       void *stack_syms[32];
+	       int frames;
+
+	       frames = backtrace(stack_syms, 32);
+	       backtrace_symbols_fd(stack_syms, frames, 2);
+       }
 #endif
        exit(FSCK_ERROR);
 }
@@ -392,6 +395,7 @@ void sigcatcher_setup(void)
 	sigaction(SIGILL, &sa, 0);
 	sigaction(SIGBUS, &sa, 0);
 	sigaction(SIGSEGV, &sa, 0);
+	sigaction(SIGABRT, &sa, 0);
 }	
 
 

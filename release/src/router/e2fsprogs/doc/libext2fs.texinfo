@@ -1,7 +1,7 @@
 \input texinfo    @c -*-texinfo-*-
 @c %**start of header
 @setfilename libext2fs.info
-@settitle The EXT2FS Library (version 1.42.13)
+@settitle The EXT2FS Library (version 1.45.6)
 @synindex tp fn
 @comment %**end of header
 
@@ -60,8 +60,8 @@ by the author.
 
 @title The EXT2FS Library
 @subtitle The EXT2FS Library
-@subtitle Version 1.42.13
-@subtitle May 2015
+@subtitle Version 1.45.6
+@subtitle March 2020
 
 @author by Theodore Ts'o
 
@@ -101,7 +101,7 @@ by the Foundation.
 
 @top The EXT2FS Library
 
-This manual documents the EXT2FS Library, version 1.42.13.
+This manual documents the EXT2FS Library, version 1.45.6.
 
 @menu
 * Introduction to the EXT2FS Library::  
@@ -146,7 +146,7 @@ There are two functions which create a filesystem handle,
 @code{ext2fs_open} and @code{ext2fs_initialize}.  
 
 The filesystem can also be closed using @code{ext2fs_close}, and any
-changes to the superblock and group descripts can be written out to disk
+changes to the superblock and group descriptors can be written out to disk
 using @code{ext2fs_flush}.
 
 @menu
@@ -164,7 +164,7 @@ using @code{ext2fs_flush}.
 
 Most libext2fs functions take a filesystem handle of type
 @code{ext2_filsys}.  A filesystem handle is created either by opening
-an existing function using @code{ext2fs_open}, or by initializing a new
+an existing filesystem using @code{ext2fs_open}, or by initializing a new
 filesystem using @code{ext2fs_initialize}.
 
 @deftypefun errcode_t ext2fs_open (const char *@var{name}, int @var{flags}, int @var{superblock}, int @var{block_size}, io_manager @var{manager}, ext2_filsys *@var{ret_fs})
@@ -183,10 +183,10 @@ image.
 
 The @var{block_size} parameter specifies the block size used by the
 filesystem.  Normally this is determined automatically from the
-filesystem uperblock.  If @var{block_size} is non-zero, it must match
+filesystem superblock.  If @var{block_size} is non-zero, it must match
 the block size found in the superblock, or the error
 @code{EXT2_ET_UNEXPECTED_BLOCK_SIZE} will be returned.  The
-@var{block_size} parameter is also used to help fund the superblock when
+@var{block_size} parameter is also used to help find the superblock when
 @var{superblock} is non-zero.
 
 The @var{flags} argument contains a bitmask of flags which control how
@@ -472,7 +472,7 @@ via @var{got}.
 @deftypefun errcode_t ext2fs_file_write (ext2_file_t @var{file}, const void *@var{buf}, unsigned int @var{nbytes}, unsigned int *@var{written})
 Write @var{wanted} bytes of data from the buffer @var{buf} to the
 current file position of @var{file}.  The number of bytes that was 
-actually written is returned via @var{got}.
+actually written is returned via @var{written}.
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -625,7 +625,7 @@ The @var{flags} parameter controls how the iterator will function:
 @table @samp
 
 @item BLOCK_FLAG_HOLE
-This flag indiciates that the interator function should be called on
+This flag indicates that the interator function should be called on
 blocks where the block number is zero (also known as ``holes''.)  It is
 also known as BLOCK_FLAG_APPEND, since it is also used by functions
 such as ext2fs_expand_dir() to add a new block to an inode.
@@ -633,7 +633,7 @@ such as ext2fs_expand_dir() to add a new block to an inode.
 @item BLOCK_FLAG_DEPTH_TRAVERSE
 This flag indicates that the iterator function for the
 indirect, doubly indirect, etc. blocks should be called after all
-of the blocks containined in the indirect blocks are processed.
+of the blocks contained in the indirect blocks are processed.
 This is useful if you are going to be deallocating blocks from an
 inode.
 
@@ -739,20 +739,20 @@ contain valid block entries.
 
 @deftypefun errcode_t ext2fs_read_dir_block (ext2_filsys @var{fs}, blk_t @var{block}, void *@var{buf})
 
-This function reads a directory block, performing any necessary
+This function reads a directory block, performing
 byte swapping if necessary.
 @end deftypefun
 
 @deftypefun errcode_t ext2fs_write_dir_block (ext2_filsys @var{fs}, blk_t @var{block}, void *@var{buf})
 
-This function writes a directory block, performing any necessary
+This function writes a directory block, performing
 byte swapping if necessary.
 @end deftypefun
 
 @deftypefun errcode_t ext2fs_new_dir_block (ext2_filsys @var{fs}, ext2_ino_t @var{dir_ino}, ext2_ino_t @var{parent_ino}, char **@var{block})
 
 This function creates a new directory block in @var{block}.  If
-@var{dir_ino} is non-zero, then @var{dir_info} and @var{parent_ino} is used
+@var{dir_ino} is non-zero, then @var{dir_ino} and @var{parent_ino} are used
 to initialize directory entries for @file{.} and @file{..}, respectively.
 @end deftypefun
 
@@ -1157,7 +1157,7 @@ trying to turn an inode number into a pathname.
 
 @deftypefun errcode_t ext2fs_init_dblist (ext2_filsys @var{fs}, ext2_dblist *@var{ret_dblist})
 
-Creates a dblist data structure and return it in @var{ret_dblist}.
+Creates a dblist data structure and returns it in @var{ret_dblist}.
 @end deftypefun
 
 @deftypefun void ext2fs_free_dblist (ext2_dblist @var{dblist})
@@ -1175,7 +1175,7 @@ in block @var{blk}.
 @deftypefun errcode_t ext2fs_set_dir_block (ext2_dblist @var{dblist}, ext2_ino_t @var{ino}, blk_t @var{blk}, int @var{blockcnt})
 
 Change an entry in the dblist data structure; this changes the location
-of block number @var{blockcnt} of directory indoe @var{ino} to be block
+of block number @var{blockcnt} of directory inode @var{ino} to be block
 @var{blk}. 
 @end deftypefun
 
@@ -1208,12 +1208,12 @@ the inode is referenced according to the inode structure.
 This abstraction is designed to be extremely efficient for storing this
 sort of information, by taking advantage of the following properties of
 inode counts, namely (1) inode counts are very often zero (because
-the inode is currrently not in use), and (2) many files have a inode
+the inode is currently not in use), and (2) many files have a inode
 count of 1 (because they are a file which has no additional hard links).
 
 @deftypefun errcode_t ext2fs_create_icount2 (ext2_filsys @var{fs}, int @var{flags}, int @var{size}, ext2_icount_t @var{hint}, ext2_icount_t *@var{ret})
 
-Creates an icount stucture for a filesystem @var{fs}, with initial space
+Creates an icount structure for a filesystem @var{fs}, with initial space
 for @var{size} inodes whose count is greater than 1.  The @var{flags}
 parameter is either 0 or @code{EXT2_ICOUNT_OPT_INCREMENT}, which
 indicates that icount structure should be able to increment inode counts
@@ -1234,7 +1234,7 @@ Frees an icount structure.
 
 @deftypefun errcode_t ext2fs_icount_fetch (ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 *@var{ret})
 
-Returns in @var{ret} fetches the count for a particular inode @var{ino}.
+Returns in @var{ret} the count for a particular inode @var{ino}.
 @end deftypefun
 
 @deftypefun errcode_t ext2fs_icount_increment (ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 *@var{ret})

@@ -1,4 +1,7 @@
 DESCRIPTION="extent-mapped journal"
 FS_SIZE=65536
+DUMPE2FS_IGNORE_80COL=1
+export DUMPE2FS_IGNORE_80COL
 MKE2FS_OPTS="-O extents -j"
 . $cmd_dir/run_mke2fs
+unset DUMPE2FS_IGNORE_80COL

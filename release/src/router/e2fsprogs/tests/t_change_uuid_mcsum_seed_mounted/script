@@ -1,0 +1,52 @@
+test_description="change meta-csum uuid with mcsum-seed"
+
+trap "rm -f $TMPFILE $TMPFILE.conf" EXIT INT QUIT
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+OUT=$test_name.log
+EXP=$test_dir/expect
+rm -f $OUT
+
+# Test command line option
+echo "create fs with metadata_csum" >> $OUT
+$MKE2FS -O metadata_csum,^metadata_csum_seed -U 6b33f586-a183-4383-921d-30da3fef2e5c -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | egrep '(Checksum seed:|UUID)' >> $OUT
+
+echo "change UUID" >> $OUT
+EXT2FS_PRETEND_RW_MOUNT=1 $TUNE2FS -U a61be2e0-b3b8-4fbc-b2cd-d84b306b9731 $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | egrep '(Checksum seed:|UUID)' >> $OUT
+
+echo "check filesystem" >> $OUT
+$FSCK $FSCK_OPT -fy $TMPFILE > /dev/null 2>&1
+echo "fsck returns $?" >> $OUT
+$DUMPE2FS $TMPFILE 2>&1 | egrep '(Checksum seed:|UUID)' >> $OUT
+
+echo "turn on csum seed" >> $OUT
+EXT2FS_PRETEND_RW_MOUNT=1 $TUNE2FS -O metadata_csuM_seed $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | egrep '(Checksum seed:|UUID)' >> $OUT
+
+echo "check filesystem" >> $OUT
+$FSCK $FSCK_OPT -fy $TMPFILE > /dev/null 2>&1
+echo "fsck returns $?" >> $OUT
+$DUMPE2FS $TMPFILE 2>&1 | egrep '(Checksum seed:|UUID)' >> $OUT
+
+echo "change UUID" >> $OUT
+EXT2FS_PRETEND_RW_MOUNT=1 $TUNE2FS -U a61be2e0-b3b8-4fbc-b2cd-d84b306b9731 $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | egrep '(Checksum seed:|UUID)' >> $OUT
+
+echo "check filesystem" >> $OUT
+$FSCK $FSCK_OPT -fy $TMPFILE > /dev/null 2>&1
+echo "fsck returns $?" >> $OUT
+$DUMPE2FS $TMPFILE 2>&1 | egrep '(Checksum seed:|UUID)' >> $OUT
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+	rm -f $test_name.tmp
+fi
+

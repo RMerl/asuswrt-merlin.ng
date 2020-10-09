@@ -13,13 +13,16 @@ E2IMAGE="$USE_VALGRIND ../misc/e2image"
 E2IMAGE_EXE="../misc/e2image"
 DEBUGFS="$USE_VALGRIND ../debugfs/debugfs"
 DEBUGFS_EXE="../debugfs/debugfs"
-TEST_BITS="../debugfs/debugfs"
+TEST_BITS="test_data.tmp"
 RESIZE2FS_EXE="../resize/resize2fs"
 RESIZE2FS="$USE_VALGRIND $RESIZE2FS_EXE"
 E2UNDO_EXE="../misc/e2undo"
+E2UNDO="$USE_VALGRIND $E2UNDO_EXE"
+E2MMPSTATUS="$USE_VALGRIND ../misc/dumpe2fs -m"
 TEST_REL=../tests/progs/test_rel
 TEST_ICOUNT=../tests/progs/test_icount
 CRCSUM=../tests/progs/crcsum
+CLEAN_OUTPUT="sed -f $cmd_dir/filter.sed"
 LD_LIBRARY_PATH=../lib:../lib/ext2fs:../lib/e2p:../lib/et:../lib/ss:${LD_LIBRARY_PATH}
 DYLD_LIBRARY_PATH=../lib:../lib/ext2fs:../lib/e2p:../lib/et:../lib/ss:${DYLD_LIBRARY_PATH}
 export LD_LIBRARY_PATH
@@ -32,8 +35,14 @@ E2FSCK_CONFIG=/dev/null
 export E2FSCK_CONFIG
 MKE2FS_CONFIG=./mke2fs.conf
 export MKE2FS_CONFIG
+BLKID_FILE=/dev/null
+export BLKID_FILE
 unset MKE2FS_FIRST_META_BG
 E2FSPROGS_SKIP_PROGRESS=yes
 export E2FSPROGS_SKIP_PROGRESS
 EXT2FS_NO_MTAB_OK=yes
 export EXT2FS_NO_MTAB_OK
+RESIZE2FS_FORCE_LAZY_ITABLE_INIT=yes
+export RESIZE2FS_FORCE_LAZY_ITABLE_INIT
+E2FSPROGS_LIBMAGIC_SUPPRESS=yes
+export E2FSPROGS_LIBMAGIC_SUPPRESS

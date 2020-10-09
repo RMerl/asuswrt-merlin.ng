@@ -1,0 +1,106 @@
+Creating filesystem with 262144 1k blocks and 0 inodes
+Superblock backups stored on blocks: 
+
+Zeroing journal device:              
+Creating filesystem with 262144 1k blocks and 16384 inodes
+Superblock backups stored on blocks: 
+	8193, 24577, 40961, 57345, 73729, 204801, 221185
+
+Allocating group tables:      done                            
+Writing inode tables:      done                            
+Writing superblocks and filesystem accounting information:      done
+
+debugfs add journal device/UUID
+debugfs: feature has_journal
+Filesystem features: has_journal ext_attr resize_inode dir_index filetype extent flex_bg sparse_super huge_file uninit_bg dir_nlink extra_isize
+debugfs: ssv journal_dev 0x9999
+debugfs: ssv journal_uuid 1db3f677-6832-4adb-bafc-8e4059c30a34
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/16384 files (0.0% non-contiguous), 6239/262144 blocks
+Exit status is 0
+debugfs write journal
+debugfs: logdump -c
+Ext2 superblock header found.
+Journal starts at block 3, transaction 1
+Found expected sequence 1, type 1 (descriptor block) at block 3
+Found expected sequence 1, type 1 (descriptor block) at block 128
+Found expected sequence 1, type 1 (descriptor block) at block 253
+Found expected sequence 1, type 1 (descriptor block) at block 378
+Found expected sequence 1, type 1 (descriptor block) at block 503
+Found expected sequence 1, type 1 (descriptor block) at block 628
+Found expected sequence 1, type 1 (descriptor block) at block 753
+Found expected sequence 1, type 1 (descriptor block) at block 878
+Found expected sequence 1, type 1 (descriptor block) at block 1003
+Found expected sequence 1, type 1 (descriptor block) at block 1128
+Found expected sequence 1, type 1 (descriptor block) at block 1253
+Found expected sequence 1, type 1 (descriptor block) at block 1378
+Found expected sequence 1, type 1 (descriptor block) at block 1503
+Found expected sequence 1, type 1 (descriptor block) at block 1628
+Found expected sequence 1, type 1 (descriptor block) at block 1753
+Found expected sequence 1, type 1 (descriptor block) at block 1878
+Found expected sequence 1, type 1 (descriptor block) at block 2003
+Found expected sequence 1, type 1 (descriptor block) at block 2128
+Found expected sequence 1, type 1 (descriptor block) at block 2253
+Found expected sequence 1, type 1 (descriptor block) at block 2378
+Found expected sequence 1, type 1 (descriptor block) at block 2503
+Found expected sequence 1, type 1 (descriptor block) at block 2628
+Found expected sequence 1, type 1 (descriptor block) at block 2753
+Found expected sequence 1, type 1 (descriptor block) at block 2878
+Found expected sequence 1, type 1 (descriptor block) at block 3003
+Found expected sequence 1, type 1 (descriptor block) at block 3128
+Found expected sequence 1, type 1 (descriptor block) at block 3253
+Found expected sequence 1, type 1 (descriptor block) at block 3378
+Found expected sequence 1, type 1 (descriptor block) at block 3503
+Found expected sequence 1, type 1 (descriptor block) at block 3628
+Found expected sequence 1, type 1 (descriptor block) at block 3753
+Found expected sequence 1, type 1 (descriptor block) at block 3878
+Found expected sequence 1, type 1 (descriptor block) at block 4003
+Found expected sequence 1, type 1 (descriptor block) at block 4128
+Found expected sequence 1, type 2 (commit block) at block 4135
+No magic number at block 4136: end of journal.
+debugfs fsck
+test_filesys: recovering journal
+Resize inode not valid.  Recreate? yes
+
+Pass 1: Checking inodes, blocks, and sizes
+Root inode is not a directory.  Clear? yes
+
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Root inode not allocated.  Allocate? yes
+
+/lost+found not found.  Create? yes
+
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Block bitmap differences:  +(1--259) +275 +(291--418) +2341
+Fix? yes
+
+Free blocks count wrong for group #0 (5838, counted=5851).
+Fix? yes
+
+Free blocks count wrong (255903, counted=255916).
+Fix? yes
+
+Inode bitmap differences:  +1 +(3--10)
+Fix? yes
+
+Free inodes count wrong for group #0 (500, counted=501).
+Fix? yes
+
+Directories count wrong for group #0 (3, counted=2).
+Fix? yes
+
+Free inodes count wrong (16372, counted=16373).
+Fix? yes
+
+Padding at end of inode bitmap is not set. Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 11/16384 files (0.0% non-contiguous), 6228/262144 blocks
+Exit status is 1

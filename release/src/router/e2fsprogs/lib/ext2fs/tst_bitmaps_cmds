@@ -1,3 +1,4 @@
+setb 12 0
 setb 12
 setb 12
 clearb 12
@@ -37,6 +38,7 @@ setb 15
 testb 12 7
 clearb 15
 testb 12 7
+setb 12 0
 setb 12 7
 dump_bb
 seti 2

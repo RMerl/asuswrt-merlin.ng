@@ -9,8 +9,12 @@
  * %End-Header%
  */
 
+#ifndef _LARGEFILE_SOURCE
 #define _LARGEFILE_SOURCE
+#endif
+#ifndef _LARGEFILE64_SOURCE
 #define _LARGEFILE64_SOURCE
+#endif
 
 #include "config.h"
 #if HAVE_SYS_TYPES_H

@@ -1,0 +1,31 @@
+Pass 1: Checking inodes, blocks, and sizes
+Inode 17 has illegal extended attribute value inode 4008636142.
+Clear? yes
+
+Inode 17, i_blocks is 8, should be 0.  Fix? yes
+
+Inode 18 has illegal extended attribute value inode 19.
+Clear? yes
+
+Inode 18, i_blocks is 8, should be 0.  Fix? yes
+
+Extended attribute in inode 20 has a hash (1145324612) which is invalid
+Clear? yes
+
+Inode 20, i_blocks is 8, should be 0.  Fix? yes
+
+EA inode 19 for parent inode 21 missing EA_INODE flag.
+ Fix? yes
+
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Extended attribute inode 16 ref count is 51, should be 2. Fix? yes
+
+Extended attribute inode 19 ref count is 2, should be 1. Fix? yes
+
+Pass 5: Checking group summary information
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 21/32 files (0.0% non-contiguous), 18/64 blocks
+Exit status is 1

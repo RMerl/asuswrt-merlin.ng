@@ -7,8 +7,6 @@ else
 	EXP=$test_dir/expect
 fi
 
-cp /dev/null $OUT
-
 dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
 
 gzip -d < $test_dir/image.gz > $TMPFILE
@@ -18,18 +16,17 @@ old="$($CRCSUM < $TMPFILE)"
 $FSCK $FSCK_OPT -N test_filesys $TMPFILE > $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
-rm -f $OUT.new
 
 new="$($CRCSUM < $TMPFILE)"
 
 if [ "${old}" != "${new}" ]; then
-	echo "ERROR: crc mismatch!  ${old} ${new}" >> $OUT
+	echo "ERROR: crc mismatch!  ${old} ${new}" >> $OUT.new
 else
-	echo "crc did not change.  ${old}" >> $OUT
+	echo "crc did not change.  ${old}" >> $OUT.new
 fi
 
-rm -f $TMPFILE
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -f $TMPFILE $OUT.new
 
 cmp -s $OUT $EXP
 status=$?

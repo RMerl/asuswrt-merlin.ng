@@ -4,8 +4,8 @@
  * Copyright (C) 2004 Theodore Ts'o.
  *
  * %Begin-Header%
- * This file may be redistributed under the terms of the GNU Public
- * License.
+ * This file may be redistributed under the terms of the
+ * GNU Lesser General Public License.
  * %End-Header%
  */
 

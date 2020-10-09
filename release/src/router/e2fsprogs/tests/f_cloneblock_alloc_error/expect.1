@@ -1,0 +1,36 @@
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12, i_size is 0, should be 2015232.  Fix? yes
+
+
+Running additional passes to resolve blocks claimed by more than one inode...
+Pass 1B: Rescanning for multiply-claimed blocks
+Multiply-claimed block(s) in inode 13: 8
+Multiply-claimed block(s) in inode 14: 8
+Pass 1C: Scanning directories for inodes with multiply-claimed blocks
+Pass 1D: Reconciling multiply-claimed blocks
+(There are 2 inodes containing multiply-claimed blocks.)
+
+File /b (inode #13, mod time Wed Jan 21 03:41:55 2015) 
+  has 1 multiply-claimed block(s), shared with 1 file(s):
+	/c (inode #14, mod time Wed Jan 21 03:42:37 2015)
+Clone multiply-claimed blocks? yes
+
+clone_file: Could not allocate block in ext2 filesystem returned from clone_file_block
+Couldn't clone file: Could not allocate block in ext2 filesystem
+Delete file? yes
+
+File /c (inode #14, mod time Wed Jan 21 03:42:37 2015) 
+  has 1 multiply-claimed block(s), shared with 1 file(s):
+	/b (inode #13, mod time Wed Jan 21 03:41:55 2015)
+Multiply-claimed blocks already reassigned or cloned.
+
+Pass 2: Checking directory structure
+Entry 'b' in / (2) has deleted/unused inode 13.  Clear? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 13/128 files (7.7% non-contiguous), 512/512 blocks
+Exit status is 1

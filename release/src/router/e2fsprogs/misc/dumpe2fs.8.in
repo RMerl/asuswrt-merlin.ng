@@ -8,7 +8,7 @@ dumpe2fs \- dump ext2/ext3/ext4 filesystem information
 .SH SYNOPSIS
 .B dumpe2fs
 [
-.B \-bfhixV
+.B \-bfghixV
 ]
 [
 .B \-o superblock=\fIsuperblock
@@ -35,52 +35,80 @@ print the blocks which are reserved as bad in the filesystem.
 use the block
 .I superblock
 when examining the filesystem.
-This option is not usually needed except by a filesystem wizard who 
+This option is not usually needed except by a filesystem wizard who
 is examining the remains of a very badly corrupted filesystem.
 .TP
 .B \-o blocksize=\fIblocksize
 use blocks of
 .I blocksize
 bytes when examining the filesystem.
-This option is not usually needed except by a filesystem wizard who 
+This option is not usually needed except by a filesystem wizard who
 is examining the remains of a very badly corrupted filesystem.
 .TP
 .B \-f
-force dumpe2fs to display a filesystem even though it may have some 
+force dumpe2fs to display a filesystem even though it may have some
 filesystem feature flags which dumpe2fs may not understand (and which
 can cause some of dumpe2fs's display to be suspect).
-.TP 
+.TP
+.B \-g
+display the group descriptor information in a machine readable colon-separated
+value format.  The fields displayed are the group number; the number of the
+first block in the group; the superblock location (or -1 if not present); the
+range of blocks used by the group descriptors (or -1 if not present); the block
+bitmap location; the inode bitmap location; and the range of blocks used by the
+inode table.
+.TP
 .B \-h
 only display the superblock information and not any of the block
 group descriptor detail information.
 .TP
 .B \-i
-display the filesystem data from an image file created by 
+display the filesystem data from an image file created by
 .BR e2image ,
-using 
+using
 .I device
 as the pathname to the image file.
+.TP
+.B \-m
+If the
+.B mmp
+feature is enabled on the filesystem, check if
+.I device
+is in use by another node, see
+.BR e2mmpstatus (8)
+for full details.  If used together with the
+.B \-i
+option, only the MMP block information is printed.
 .TP
 .B \-x
 print the detailed group information block numbers in hexadecimal format
 .TP
 .B \-V
-print the version number of 
+print the version number of
 .B dumpe2fs
 and exit.
+.SH EXIT CODE
+.B dumpe2fs
+exits with a return code of 0 if the operation completed without errors.
+It will exit with a non-zero return code if there are any errors, such
+as problems reading a valid superblock, bad checksums, or if the device
+is in use by another node and
+.B -m
+is specified.
 .SH BUGS
-You need to know the physical filesystem structure to understand the
+You may need to know the physical filesystem structure to understand the
 output.
 .SH AUTHOR
-.B dumpe2fs 
+.B dumpe2fs
 was written by Remy Card <Remy.Card@linux.org>.  It is currently being
 maintained by Theodore Ts'o <tytso@alum.mit.edu>.
 .SH AVAILABILITY
 .B dumpe2fs
-is part of the e2fsprogs package and is available from 
+is part of the e2fsprogs package and is available from
 http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR e2fsck (8),
+.BR e2mmpstatus (8),
 .BR mke2fs (8),
 .BR tune2fs (8).
 .BR ext4 (5)

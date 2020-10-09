@@ -1,0 +1,27 @@
+E2fsprogs 1.43.3 (September 4, 2016)
+====================================
+
+Fix e2fsck's handling of timestamps on 32-bit systems.
+
+E2fsck will now check, and if necessary repair the extra isize fields
+in the inode and superblock.
+
+Fix crashes on architectures such as sparc64 that are sensitive to
+unaligned pointer dereferences in the journal recovery code when
+journal checksums are enabled.
+
+Programming notes
+-----------------
+
+Support reproducible builds by not capturing the build directory into
+the mk_cmds and compile_et scripts.  Also fix debian build rules to
+ensure build reproducibility.
+
+Fix debian build rules to ensure build reproducibility and to avoid
+hiding the linker flags for e2fsck.static so the build hardening log
+scanner can properly audit the build.
+
+Fix compatibility with FreeBSD's pmake and teach the configure script
+to force the creation of pmake-compatible Makefiles if the
+FORCE_NATIVE_MAKE environment variable is set to a non-empty value.
+

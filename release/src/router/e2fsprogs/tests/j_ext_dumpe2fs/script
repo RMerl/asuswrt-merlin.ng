@@ -1,0 +1,34 @@
+FSCK_OPT=-fy
+OUT=$test_name.log
+if [ -f $test_dir/expect.gz ]; then
+	EXP=$test_name.tmp
+	gunzip < $test_dir/expect.gz > $EXP1
+else
+	EXP=$test_dir/expect
+fi
+
+gunzip < $test_dir/image.gz > $TMPFILE
+
+echo "e2fsck external journal" > $OUT.new
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+
+echo "dumpe2fs external journal" >> $OUT.new
+$DUMPE2FS $TMPFILE >> $OUT.new 2>&1
+sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new > $OUT
+rm -f $TMPFILE $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+	rm -f $test_name.tmp
+fi
+
+unset IMAGE FSCK_OPT OUT EXP

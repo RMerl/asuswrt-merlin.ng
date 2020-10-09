@@ -32,7 +32,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
-#define __force
 #define min(x, y)		((x) > (y) ? (y) : (x))
 #define __ALIGN_KERNEL_MASK(x, mask)	(((x) + (mask)) & ~(mask))
 #define __ALIGN_KERNEL(x, a)	__ALIGN_KERNEL_MASK(x, (__typeof__(x))(a) - 1)
@@ -58,398 +57,187 @@
 #endif
 
 #if CRC_LE_BITS > 8
-# define tole(x) (__force uint32_t) __constant_cpu_to_le32(x)
+# define tole(x) __constant_cpu_to_le32(x)
 #else
 # define tole(x) (x)
 #endif
 
 #if CRC_BE_BITS > 8
-# define tobe(x) (__force uint32_t) __constant_cpu_to_be32(x)
+# define tobe(x) __constant_cpu_to_be32(x)
 #else
 # define tobe(x) (x)
 #endif
 
 #include "crc32c_table.h"
 
-#if CRC_LE_BITS == 32
-/* slice by 4 algorithm */
-static uint32_t crc32c_le_body(uint32_t crc, uint8_t const *buf, size_t len)
+#if CRC_LE_BITS > 8 || CRC_BE_BITS > 8
+
+/* implements slicing-by-4 or slicing-by-8 algorithm */
+static inline uint32_t
+crc32_body(uint32_t crc, unsigned char const *buf, size_t len,
+	   const uint32_t (*tab)[256])
 {
-	const uint8_t *p8;
-	const uint32_t *p32;
-	size_t init_bytes;
-	size_t words;
-	size_t end_bytes;
-	size_t i;
+# ifndef WORDS_BIGENDIAN
+#  define DO_CRC(x) (crc = t0[(crc ^ (x)) & 255] ^ (crc >> 8))
+#  define DO_CRC4 (t3[(q) & 255] ^ t2[(q >> 8) & 255] ^ \
+		   t1[(q >> 16) & 255] ^ t0[(q >> 24) & 255])
+#  define DO_CRC8 (t7[(q) & 255] ^ t6[(q >> 8) & 255] ^ \
+		   t5[(q >> 16) & 255] ^ t4[(q >> 24) & 255])
+# else
+#  define DO_CRC(x) (crc = t0[((crc >> 24) ^ (x)) & 255] ^ (crc << 8))
+#  define DO_CRC4 (t0[(q) & 255] ^ t1[(q >> 8) & 255] ^ \
+		   t2[(q >> 16) & 255] ^ t3[(q >> 24) & 255])
+#  define DO_CRC8 (t4[(q) & 255] ^ t5[(q >> 8) & 255] ^ \
+		   t6[(q >> 16) & 255] ^ t7[(q >> 24) & 255])
+# endif
+	const uint32_t *b;
+	size_t rem_len;
+	const uint32_t *t0 = tab[0], *t1 = tab[1], *t2 = tab[2], *t3 = tab[3];
+	const uint32_t *t4 = tab[4], *t5 = tab[5], *t6 = tab[6], *t7 = tab[7];
 	uint32_t q;
-	uint8_t i0, i1, i2, i3;
 
-	crc = (__force uint32_t) __cpu_to_le32(crc);
-
-	/* unroll loop into 'init_bytes' odd bytes followed by
-	 * 'words' aligned 4 byte words followed by
-	 * 'end_bytes' odd bytes at the end */
-	p8 = buf;
-	p32 = (uint32_t *)PTR_ALIGN(p8, 4);
-	init_bytes = min((uintptr_t)p32 - (uintptr_t)p8, len);
-	words = (len - init_bytes) >> 2;
-	end_bytes = (len - init_bytes) & 3;
-
-	for (i = 0; i < init_bytes; i++) {
-#ifndef WORDS_BIGENDIAN
-		i0 = *p8++ ^ crc;
-		crc = t0_le[i0] ^ (crc >> 8);
-#else
-		i0 = *p8++ ^ (crc >> 24);
-		crc = t0_le[i0] ^ (crc << 8);
-#endif
+	/* Align it */
+	if (unlikely((uintptr_t)buf & 3 && len)) {
+		do {
+			DO_CRC(*buf++);
+		} while ((--len) && ((uintptr_t)buf)&3);
 	}
 
-	/* using pre-increment below slightly faster */
-	p32--;
+# if CRC_LE_BITS == 32
+	rem_len = len & 3;
+	len = len >> 2;
+# else
+	rem_len = len & 7;
+	len = len >> 3;
+# endif
 
-	for (i = 0; i < words; i++) {
-#ifndef WORDS_BIGENDIAN
-		q = *++p32 ^ crc;
-		i3 = q;
-		i2 = q >> 8;
-		i1 = q >> 16;
-		i0 = q >> 24;
-		crc = t3_le[i3] ^ t2_le[i2] ^ t1_le[i1] ^ t0_le[i0];
-#else
-		q = *++p32 ^ crc;
-		i3 = q >> 24;
-		i2 = q >> 16;
-		i1 = q >> 8;
-		i0 = q;
-		crc = t3_le[i3] ^ t2_le[i2] ^ t1_le[i1] ^ t0_le[i0];
-#endif
+	b = (const uint32_t *)buf;
+	for (--b; len; --len) {
+		q = crc ^ *++b; /* use pre increment for speed */
+# if CRC_LE_BITS == 32
+		crc = DO_CRC4;
+# else
+		crc = DO_CRC8;
+		q = *++b;
+		crc ^= DO_CRC4;
+# endif
 	}
-
-	p8 = (uint8_t *)(++p32);
-
-	for (i = 0; i < end_bytes; i++) {
-#ifndef WORDS_BIGENDIAN
-		i0 = *p8++ ^ crc;
-		crc = t0_le[i0] ^ (crc >> 8);
-#else
-		i0 = *p8++ ^ (crc >> 24);
-		crc = t0_le[i0] ^ (crc << 8);
-#endif
+	len = rem_len;
+	/* And the last few bytes */
+	if (len) {
+		const uint8_t *p = (const uint8_t *)(b + 1) - 1;
+		do {
+			DO_CRC(*++p); /* use pre increment for speed */
+		} while (--len);
 	}
-
-	return __le32_to_cpu((__force __le32)crc);
-}
-#endif
-
-#if CRC_BE_BITS == 32
-static uint32_t crc32c_be_body(uint32_t crc, uint8_t const *buf, size_t len)
-{
-	const uint8_t *p8;
-	const uint32_t *p32;
-	size_t init_bytes;
-	size_t words;
-	size_t end_bytes;
-	size_t i;
-	uint32_t q;
-	uint8_t i0, i1, i2, i3;
-
-	crc = (__force uint32_t) __cpu_to_be32(crc);
-
-	p8 = buf;
-	p32 = (uint32_t *)PTR_ALIGN(p8, 4);
-	init_bytes = min((uintptr_t)p32 - (uintptr_t)p8, len);
-	words = (len - init_bytes) >> 2;
-	end_bytes = (len - init_bytes) & 3;
-
-	for (i = 0; i < init_bytes; i++) {
-#ifndef WORDS_BIGENDIAN
-		i0 = *p8++ ^ crc;
-		crc = t0_be[i0] ^ (crc >> 8);
-#else
-		i0 = *p8++ ^ (crc >> 24);
-		crc = t0_be[i0] ^ (crc << 8);
-#endif
-	}
-
-	p32--;
-
-	for (i = 0; i < words; i++) {
-#ifndef WORDS_BIGENDIAN
-		q = *++p32 ^ crc;
-		i3 = q;
-		i2 = q >> 8;
-		i1 = q >> 16;
-		i0 = q >> 24;
-		crc = t3_be[i3] ^ t2_be[i2] ^ t1_be[i1] ^ t0_be[i0];
-#else
-		q = *++p32 ^ crc;
-		i3 = q >> 24;
-		i2 = q >> 16;
-		i1 = q >> 8;
-		i0 = q;
-		crc = t3_be[i3] ^ t2_be[i2] ^ t1_be[i1] ^ t0_be[i0];
-#endif
-	}
-
-	p8 = (uint8_t *)(++p32);
-
-	for (i = 0; i < end_bytes; i++) {
-#ifndef WORDS_BIGENDIAN
-		i0 = *p8++ ^ crc;
-		crc = t0_be[i0] ^ (crc >> 8);
-#else
-		i0 = *p8++ ^ (crc >> 24);
-		crc = t0_be[i0] ^ (crc << 8);
-#endif
-	}
-
-	return __be32_to_cpu((__force __be32)crc);
-}
-#endif
-
-#if CRC_LE_BITS == 64
-/* slice by 8 algorithm */
-static uint32_t crc32c_le_body(uint32_t crc, uint8_t const *buf, size_t len)
-{
-	const uint8_t *p8;
-	const uint32_t *p32;
-	size_t init_bytes;
-	size_t words;
-	size_t end_bytes;
-	size_t i;
-	uint32_t q;
-	uint8_t i0, i1, i2, i3;
-
-	crc = (__force uint32_t) __cpu_to_le32(crc);
-
-	p8 = buf;
-	p32 = (const uint32_t *)PTR_ALIGN(p8, 8);
-	init_bytes = min((uintptr_t)p32 - (uintptr_t)p8, len);
-	words = (len - init_bytes) >> 3;
-	end_bytes = (len - init_bytes) & 7;
-
-	for (i = 0; i < init_bytes; i++) {
-#ifndef WORDS_BIGENDIAN
-		i0 = *p8++ ^ crc;
-		crc = t0_le[i0] ^ (crc >> 8);
-#else
-		i0 = *p8++ ^ (crc >> 24);
-		crc = t0_le[i0] ^ (crc << 8);
-#endif
-	}
-
-	p32--;
-
-	for (i = 0; i < words; i++) {
-#ifndef WORDS_BIGENDIAN
-		q = *++p32 ^ crc;
-		i3 = q;
-		i2 = q >> 8;
-		i1 = q >> 16;
-		i0 = q >> 24;
-		crc = t7_le[i3] ^ t6_le[i2] ^ t5_le[i1] ^ t4_le[i0];
-
-		q = *++p32;
-		i3 = q;
-		i2 = q >> 8;
-		i1 = q >> 16;
-		i0 = q >> 24;
-		crc ^= t3_le[i3] ^ t2_le[i2] ^ t1_le[i1] ^ t0_le[i0];
-#else
-		q = *++p32 ^ crc;
-		i3 = q >> 24;
-		i2 = q >> 16;
-		i1 = q >> 8;
-		i0 = q;
-		crc = t7_le[i3] ^ t6_le[i2] ^ t5_le[i1] ^ t4_le[i0];
-
-		q = *++p32;
-		i3 = q >> 24;
-		i2 = q >> 16;
-		i1 = q >> 8;
-		i0 = q;
-		crc ^= t3_le[i3] ^ t2_le[i2] ^ t1_le[i1] ^ t0_le[i0];
-#endif
-	}
-
-	p8 = (const uint8_t *)(++p32);
-
-	for (i = 0; i < end_bytes; i++) {
-#ifndef WORDS_BIGENDIAN
-		i0 = *p8++ ^ crc;
-		crc = t0_le[i0] ^ (crc >> 8);
-#else
-		i0 = *p8++ ^ (crc >> 24);
-		crc = t0_le[i0] ^ (crc << 8);
-#endif
-	}
-
-	return __le32_to_cpu(crc);
-}
-#endif
-
-#if CRC_BE_BITS == 64
-static uint32_t crc32c_be_body(uint32_t crc, uint8_t const *buf, size_t len)
-{
-	const uint8_t *p8;
-	const uint32_t *p32;
-	size_t init_bytes;
-	size_t words;
-	size_t end_bytes;
-	size_t i;
-	uint32_t q;
-	uint8_t i0, i1, i2, i3;
-
-	crc = (__force uint32_t) __cpu_to_be32(crc);
-
-	p8 = buf;
-	p32 = (const uint32_t *)PTR_ALIGN(p8, 8);
-	init_bytes = min((uintptr_t)p32 - (uintptr_t)p8, len);
-	words = (len - init_bytes) >> 3;
-	end_bytes = (len - init_bytes) & 7;
-
-	for (i = 0; i < init_bytes; i++) {
-#ifndef WORDS_BIGENDIAN
-		i0 = *p8++ ^ crc;
-		crc = t0_be[i0] ^ (crc >> 8);
-#else
-		i0 = *p8++ ^ (crc >> 24);
-		crc = t0_be[i0] ^ (crc << 8);
-#endif
-	}
-
-	p32--;
-
-	for (i = 0; i < words; i++) {
-#ifndef WORDS_BIGENDIAN
-		q = *++p32 ^ crc;
-		i3 = q;
-		i2 = q >> 8;
-		i1 = q >> 16;
-		i0 = q >> 24;
-		crc = t7_be[i3] ^ t6_be[i2] ^ t5_be[i1] ^ t4_be[i0];
-
-		q = *++p32;
-		i3 = q;
-		i2 = q >> 8;
-		i1 = q >> 16;
-		i0 = q >> 24;
-		crc ^= t3_be[i3] ^ t2_be[i2] ^ t1_be[i1] ^ t0_be[i0];
-#else
-		q = *++p32 ^ crc;
-		i3 = q >> 24;
-		i2 = q >> 16;
-		i1 = q >> 8;
-		i0 = q;
-		crc = t7_be[i3] ^ t6_be[i2] ^ t5_be[i1] ^ t4_be[i0];
-
-		q = *++p32;
-		i3 = q >> 24;
-		i2 = q >> 16;
-		i1 = q >> 8;
-		i0 = q;
-		crc ^= t3_be[i3] ^ t2_be[i2] ^ t1_be[i1] ^ t0_be[i0];
-#endif
-	}
-
-	p8 = (const uint8_t *)(++p32);
-
-	for (i = 0; i < end_bytes; i++) {
-#ifndef WORDS_BIGENDIAN
-		i0 = *p8++ ^ crc;
-		crc = t0_be[i0] ^ (crc >> 8);
-#else
-		i0 = *p8++ ^ (crc >> 24);
-		crc = t0_be[i0] ^ (crc << 8);
-#endif
-	}
-
-	return __be32_to_cpu(crc);
+	return crc;
+#undef DO_CRC
+#undef DO_CRC4
+#undef DO_CRC8
 }
 #endif
 
 /**
- * crc32c_le() - Calculate bitwise little-endian CRC32c.
- * @crc: seed value for computation.  ~0 for ext4, sometimes 0 for
- *	other uses, or the previous crc32c value if computing incrementally.
+ * crc32_le() - Calculate bitwise little-endian Ethernet AUTODIN II CRC32
+ * @crc: seed value for computation.  ~0 for Ethernet, sometimes 0 for
+ *	other uses, or the previous crc32 value if computing incrementally.
  * @p: pointer to buffer over which CRC is run
  * @len: length of buffer @p
  */
-uint32_t ext2fs_crc32c_le(uint32_t crc, unsigned char const *p, size_t len)
+static inline uint32_t crc32_le_generic(uint32_t crc, unsigned char const *p,
+					size_t len, const uint32_t (*tab)[256],
+					uint32_t polynomial EXT2FS_ATTR((unused)))
 {
 #if CRC_LE_BITS == 1
 	int i;
 	while (len--) {
 		crc ^= *p++;
 		for (i = 0; i < 8; i++)
-			crc = (crc >> 1) ^ ((crc & 1) ? CRCPOLY_LE : 0);
+			crc = (crc >> 1) ^ ((crc & 1) ? polynomial : 0);
 	}
 # elif CRC_LE_BITS == 2
 	while (len--) {
 		crc ^= *p++;
-		crc = (crc >> 2) ^ t0_le[crc & 0x03];
-		crc = (crc >> 2) ^ t0_le[crc & 0x03];
-		crc = (crc >> 2) ^ t0_le[crc & 0x03];
-		crc = (crc >> 2) ^ t0_le[crc & 0x03];
+		crc = (crc >> 2) ^ tab[0][crc & 3];
+		crc = (crc >> 2) ^ tab[0][crc & 3];
+		crc = (crc >> 2) ^ tab[0][crc & 3];
+		crc = (crc >> 2) ^ tab[0][crc & 3];
 	}
 # elif CRC_LE_BITS == 4
 	while (len--) {
 		crc ^= *p++;
-		crc = (crc >> 4) ^ t0_le[crc & 0x0f];
-		crc = (crc >> 4) ^ t0_le[crc & 0x0f];
+		crc = (crc >> 4) ^ tab[0][crc & 15];
+		crc = (crc >> 4) ^ tab[0][crc & 15];
 	}
 # elif CRC_LE_BITS == 8
+	/* aka Sarwate algorithm */
 	while (len--) {
 		crc ^= *p++;
-		crc = (crc >> 8) ^ t0_le[crc & 0xff];
+		crc = (crc >> 8) ^ tab[0][crc & 255];
 	}
 # else
-	crc = crc32c_le_body(crc, p, len);
-# endif
+	crc = __cpu_to_le32(crc);
+	crc = crc32_body(crc, p, len, tab);
+	crc = __le32_to_cpu(crc);
+#endif
 	return crc;
 }
 
+uint32_t ext2fs_crc32c_le(uint32_t crc, unsigned char const *p, size_t len)
+{
+	return crc32_le_generic(crc, p, len, crc32ctable_le, CRC32C_POLY_LE);
+}
+
 /**
- * crc32c_be() - Calculate bitwise big-endian CRC32c.
- * @crc: seed value for computation.  ~0 for ext4, sometimes 0 for
- *	other uses, or the previous crc32c value if computing incrementally.
+ * crc32_be() - Calculate bitwise big-endian Ethernet AUTODIN II CRC32
+ * @crc: seed value for computation.  ~0 for Ethernet, sometimes 0 for
+ *	other uses, or the previous crc32 value if computing incrementally.
  * @p: pointer to buffer over which CRC is run
  * @len: length of buffer @p
  */
-uint32_t ext2fs_crc32c_be(uint32_t crc, unsigned char const *p, size_t len)
+static inline uint32_t crc32_be_generic(uint32_t crc, unsigned char const *p,
+					size_t len, const uint32_t (*tab)[256],
+					uint32_t polynomial EXT2FS_ATTR((unused)))
 {
 #if CRC_BE_BITS == 1
 	int i;
 	while (len--) {
 		crc ^= *p++ << 24;
 		for (i = 0; i < 8; i++)
-			crc = (crc << 1) ^
-			      ((crc & 0x80000000) ? CRCPOLY_BE : 0);
+			crc =
+			    (crc << 1) ^ ((crc & 0x80000000) ? polynomial :
+					  0);
 	}
 # elif CRC_BE_BITS == 2
 	while (len--) {
 		crc ^= *p++ << 24;
-		crc = (crc << 2) ^ t0_be[crc >> 30];
-		crc = (crc << 2) ^ t0_be[crc >> 30];
-		crc = (crc << 2) ^ t0_be[crc >> 30];
-		crc = (crc << 2) ^ t0_be[crc >> 30];
+		crc = (crc << 2) ^ tab[0][crc >> 30];
+		crc = (crc << 2) ^ tab[0][crc >> 30];
+		crc = (crc << 2) ^ tab[0][crc >> 30];
+		crc = (crc << 2) ^ tab[0][crc >> 30];
 	}
 # elif CRC_BE_BITS == 4
 	while (len--) {
 		crc ^= *p++ << 24;
-		crc = (crc << 4) ^ t0_be[crc >> 28];
-		crc = (crc << 4) ^ t0_be[crc >> 28];
+		crc = (crc << 4) ^ tab[0][crc >> 28];
+		crc = (crc << 4) ^ tab[0][crc >> 28];
 	}
 # elif CRC_BE_BITS == 8
 	while (len--) {
 		crc ^= *p++ << 24;
-		crc = (crc << 8) ^ t0_be[crc >> 24];
+		crc = (crc << 8) ^ tab[0][crc >> 24];
 	}
 # else
-	crc = crc32c_be_body(crc, p, len);
+	crc = __cpu_to_be32(crc);
+	crc = crc32_body(crc, p, len, tab);
+	crc = __be32_to_cpu(crc);
 # endif
 	return crc;
+}
+
+uint32_t ext2fs_crc32_be(uint32_t crc, unsigned char const *p, size_t len)
+{
+	return crc32_be_generic(crc, p, len, crc32table_be, CRCPOLY_BE);
 }
 
 #ifdef UNITTEST
@@ -972,137 +760,137 @@ static struct crc_test {
 	uint32_t crc;		/* random starting crc */
 	uint32_t start;		/* random offset in buf */
 	uint32_t length;	/* random length of test */
-	uint32_t crc_le;	/* expected crc32_le result */
-	uint32_t crc_be;	/* expected crc32_be result */
+	uint32_t crc32c_le;	/* expected crc32c_le result */
+	uint32_t crc32_be;	/* expected crc32_be result */
 } test[] = {
-	{0xffffffff, 0x00000000, 0x00001000, 0x13934bef, 0x14f3b75f},
-	{0xfe7328ea, 0x00000763, 0x00000717, 0xed2c0d70, 0x57531214},
-	{0x4c40684e, 0x00000721, 0x0000011e, 0xd7f46ccc, 0xedf12ec3},
-	{0x6b487f90, 0x00000264, 0x000007bc, 0x759e9939, 0x9af8e387},
-	{0x9f5810db, 0x00000afa, 0x00000255, 0x2685197f, 0x716de6ed},
-	{0xb15c4755, 0x00000d5b, 0x000002a4, 0xd8fadcb5, 0xfc34ae3f},
-	{0x06518253, 0x00000ffb, 0x00000004, 0xabee2433, 0xfa30ac9e},
-	{0xd9e71c55, 0x00000a2a, 0x00000259, 0x96682af2, 0xe5907ea3},
-	{0x0c1ae843, 0x00000ce4, 0x0000031b, 0x7b637c43, 0xe7f71b04},
-	{0xec3cd517, 0x000002ff, 0x00000566, 0x5d719a77, 0xed16e045},
-	{0x77828e95, 0x0000067f, 0x0000038f, 0x43ee5b6c, 0x35999927},
-	{0xec87b4e3, 0x00000d1c, 0x000002e3, 0x2ddd2eee, 0x9452d3f8},
-	{0x412158bb, 0x00000eee, 0x00000111, 0x67b38ba2, 0x177976d0},
-	{0x2e52de3e, 0x00000c4a, 0x000003b5, 0xbcc5d61d, 0xf60fee71},
-	{0x6ddaae8b, 0x00000d99, 0x00000266, 0x8b535544, 0x1dab8596},
-	{0x049b6cb1, 0x000009c5, 0x000000b0, 0xfc22cabc, 0x47ebc954},
-	{0x77d4b954, 0x0000028a, 0x000007fa, 0x71d00923, 0x905585ef},
-	{0x5e192355, 0x00000ac1, 0x000001fa, 0xb966b81a, 0x33c12903},
-	{0x7d80b71d, 0x00000213, 0x000001e0, 0x2bba371a, 0x5f4bd8d9},
-	{0x01f6f1e4, 0x000001d6, 0x00000395, 0xb7e8a647, 0x2a7943a1},
-	{0x1dfabb13, 0x00000e14, 0x000001eb, 0x53917fba, 0x8dee1e5d},
-	{0xb00a4449, 0x00000bf6, 0x00000409, 0xedecb577, 0x628e087d},
-	{0x7ecd3981, 0x0000083f, 0x0000016b, 0xefef62b9, 0xda4f94e6},
-	{0xf8f330d2, 0x000004be, 0x00000757, 0x9357c9f3, 0x8e2d5c2f},
-	{0x03c38af2, 0x00000d23, 0x000002dc, 0x360fa8c0, 0x6294c0d6},
-	{0x687bb79b, 0x00000f3d, 0x000000c2, 0x448d3be2, 0x08f48f3a},
-	{0x6710f550, 0x000009e9, 0x00000603, 0xdbfd1998, 0xc950ac29},
-	{0x873171d1, 0x00000787, 0x000004d5, 0xab7f1b62, 0xe66896ab},
-	{0x373b1314, 0x00000f0f, 0x000000f0, 0x184098ab, 0x4038e674},
-	{0x90fad9cd, 0x00000ead, 0x00000152, 0x23ce52ff, 0x9eff3974},
-	{0x19676fe7, 0x0000007d, 0x0000070d, 0xf8a76f1e, 0xfbc5c8a9},
-	{0x89facd45, 0x000005f3, 0x00000473, 0x4331a006, 0xb8f0f0cc},
-	{0x6f173747, 0x00000fc3, 0x0000003c, 0xb012f08e, 0x5126e378},
-	{0x4b44a106, 0x0000075a, 0x0000008b, 0xf6f7ac38, 0xf9b1781b},
-	{0xb620ad06, 0x00000774, 0x0000017e, 0xd34558e6, 0xb175edd3},
-	{0x976f21e9, 0x000008d7, 0x0000034a, 0xe533aa3a, 0x1e4367b9},
-	{0x687628c0, 0x000006c5, 0x0000061b, 0x3a840b15, 0xfb5989a0},
-	{0xe24ac108, 0x00000cd0, 0x0000032f, 0x51010ae8, 0xcdd8f182},
-	{0x361c44a3, 0x00000304, 0x00000719, 0xfd7bd481, 0x12de540f},
-	{0xd93ff95e, 0x00000db7, 0x0000008e, 0xcfbbc304, 0x42eecd5a},
-	{0xed752d12, 0x00000883, 0x00000091, 0x65a6c868, 0x9ebfa578},
-	{0xb4ff4b54, 0x000003d3, 0x000001c1, 0xf82597e7, 0xa8ad2b19},
-	{0x111b520f, 0x00000708, 0x000000eb, 0xc3e109f3, 0x323ace17},
-	{0x62c806f2, 0x00000ba3, 0x0000045c, 0x874d3a72, 0xaf1a1360},
-	{0x40d97470, 0x000005e1, 0x0000058d, 0x87a9684f, 0x524244a8},
-	{0x4312179c, 0x00000056, 0x0000070e, 0x809a00f5, 0xf9e940b0},
-	{0x13d5f84c, 0x00000a2d, 0x00000104, 0xf3d27578, 0x5d33341c},
-	{0x1f302cb2, 0x00000151, 0x00000014, 0x1e162693, 0x53c3cfc3},
-	{0xe491db24, 0x00000600, 0x000006f6, 0x7ff09615, 0xa300ecf7},
-	{0xf9a98069, 0x000002ba, 0x000002ad, 0x01af7387, 0x31c0911e},
-	{0xe9c477ad, 0x0000015f, 0x00000778, 0x6facf9a0, 0x1993b688},
-	{0x353f32b2, 0x0000087c, 0x00000783, 0x6cc964ea, 0x418db561},
-	{0x78e1b24f, 0x00000650, 0x000006a8, 0xb3bb7c27, 0xf2aad006},
-	{0x61aa400e, 0x00000049, 0x00000254, 0xb8cd1681, 0x79150b15},
-	{0xb84b10b0, 0x00000f73, 0x0000008c, 0x406a6450, 0x0c705222},
-	{0x9fa99c9c, 0x00000a7c, 0x000004d7, 0xfb3d21b4, 0xe4e789df},
-	{0x3fc9ebe3, 0x00000cd9, 0x000000d6, 0x43803f9c, 0x5a152be5},
-	{0x529879cd, 0x000002f2, 0x00000595, 0x78b4c6a6, 0xf7236ec4},
-	{0x3a933019, 0x00000516, 0x00000266, 0xdcb45436, 0x2c7935f5},
-	{0x887b4977, 0x00000227, 0x0000038d, 0xc5f7c3d9, 0x0d6d7df6},
-	{0x770745de, 0x000008c6, 0x00000739, 0xf69145e8, 0x47d5efc9},
-	{0x28be3b47, 0x00000c46, 0x0000032b, 0x764c028f, 0x1eb70d64},
-	{0x5013a050, 0x00000cf6, 0x00000309, 0xea8fe164, 0x186affa4},
-	{0x2ec4c9ba, 0x000006e8, 0x0000078d, 0xa35557a9, 0xb41f49ec},
-	{0xa9f950c9, 0x00000d33, 0x000002cc, 0x41ea8618, 0xab8dfae3},
-	{0x5b520229, 0x000007b2, 0x00000484, 0x44569f1f, 0x607a8052},
-	{0xd8dcbbfc, 0x0000002f, 0x0000048c, 0xdb88ab8b, 0xf1c411f1},
-	{0x25529792, 0x00000d1d, 0x000002e2, 0x20cda404, 0x32683a2d},
-	{0x9f3f6d71, 0x00000238, 0x0000079a, 0x0720443e, 0x4b8ba2ff},
-	{0x64121215, 0x000007ff, 0x0000038f, 0x6aacff2c, 0x3b84233b},
-	{0xfb6cdde0, 0x00000ef8, 0x00000107, 0xbd43a0f1, 0x926624d0},
-	{0x221c9d6f, 0x000007b6, 0x0000014f, 0xb67f834b, 0x2bdedda4},
-	{0x030e1de4, 0x00000836, 0x000004b4, 0x0d67d26a, 0x75a73b73},
-	{0xb56fa6cf, 0x00000c07, 0x000003f8, 0x60601ac1, 0x10a43f35},
-	{0xb55c89f5, 0x0000098e, 0x000001d4, 0x2400efbe, 0x006e28eb},
-	{0x5e90b6d5, 0x0000070b, 0x000003ea, 0x3bb5d6ea, 0xb175fa6b},
-	{0x2a7045ae, 0x00000961, 0x00000633, 0xfca89e4b, 0x962cd6d2},
-	{0x8b374ea9, 0x000006ba, 0x00000780, 0xbce036ed, 0x4dc8279b},
-	{0x8bd90bc9, 0x00000562, 0x00000369, 0xcb26a24b, 0x50dee743},
-	{0x5b1b1762, 0x000000fd, 0x0000051a, 0x33cdda07, 0xee75ff7b},
-	{0xa4153555, 0x0000058f, 0x000005c7, 0xbe50eeca, 0xe73fffcc},
-	{0x0be1f931, 0x00000651, 0x00000672, 0x95a25753, 0x4ad6270f},
-	{0xb7e78618, 0x00000a7f, 0x000002bb, 0xe06bcc1c, 0x1a35ee59},
-	{0x4a9bc41b, 0x00000e51, 0x000001ae, 0x709e8d2c, 0x75080ca8},
-	{0xfc359d13, 0x00000440, 0x000002f8, 0x0a58451f, 0x6fa3cfbf},
-	{0x5aa48619, 0x000006d1, 0x00000284, 0x928ead83, 0xbd600efc},
-	{0xa609afa8, 0x0000053e, 0x00000272, 0xb048c141, 0x184f80bb},
-	{0x3f108afb, 0x00000949, 0x00000150, 0x9a6bb5bc, 0x0ea02be1},
-	{0x79bec2d3, 0x000008ed, 0x00000712, 0x32692d57, 0x2eb13289},
-	{0x9429e067, 0x00000bc3, 0x0000043c, 0x5295ceff, 0x8a9014a7},
-	{0xae58b96a, 0x0000082d, 0x000007d2, 0xc2a681ba, 0x6af94089},
-	{0x95df24be, 0x00000985, 0x000004c1, 0x3a287765, 0x379fcb42},
-	{0x5e94976f, 0x00000596, 0x000004ed, 0xff00c489, 0x991fc1f5},
-	{0xf5e5f1de, 0x00000d31, 0x000002ce, 0x35f28e91, 0x543def1a},
-	{0xa2c219cf, 0x00000a3c, 0x00000374, 0x707d21eb, 0xa6d28bc1},
-	{0xf21b6ceb, 0x00000919, 0x00000135, 0x0847fb8b, 0x224468c2},
-	{0xaa988728, 0x00000787, 0x00000771, 0x885aeaa4, 0x814db00b},
-	{0xaa5dfaac, 0x000003e5, 0x0000051b, 0x52c48ab7, 0x725bef8a},
-	{0x0a053968, 0x00000d2a, 0x000002d5, 0x7a90256d, 0xc53b9402},
-	{0x1421dc20, 0x00000eef, 0x00000110, 0x97d6da24, 0x10846935},
-	{0xb47c2166, 0x00000a6a, 0x00000209, 0xcfd6cc52, 0x46e2797e},
-	{0x77dd1955, 0x000000de, 0x00000266, 0xba74bcaa, 0x4fa3fe9c},
-	{0x68a03cc2, 0x0000082f, 0x000007b0, 0x752bd5d8, 0x4f760c63},
-	{0x0226b0a3, 0x00000a5f, 0x000005a0, 0x82de4970, 0x8ee1310e},
-	{0x637bf3b1, 0x00000d93, 0x0000026c, 0x5c7115cb, 0x9f6a0ced},
-	{0x3b120edf, 0x00000c13, 0x000003ec, 0x80d7d20f, 0x241657d5},
-	{0xe2456780, 0x000002eb, 0x00000641, 0xc0a5d289, 0x74df96b4},
-	{0x9b2e7125, 0x00000c0c, 0x000003f3, 0xcc15f57e, 0x03e290bf},
-	{0x153033ef, 0x00000787, 0x000006b6, 0x3cde443b, 0x7bf1d121},
-	{0x18458b3f, 0x0000066c, 0x00000561, 0x9a2bd8c6, 0x9d564bef},
-	{0x4ff9d4b9, 0x00000c8f, 0x0000033a, 0xd0ee6d6d, 0xee00aa0b},
-	{0xdf84b5d9, 0x00000802, 0x0000029a, 0xdab0d74a, 0xd0cb63dc},
-	{0x81ee15df, 0x000003ce, 0x00000725, 0x9942e2de, 0xe48fb26b},
-	{0x5c768e04, 0x00000afd, 0x00000160, 0x36110831, 0x8dc74483},
-	{0xe5e18094, 0x00000b4b, 0x000000a0, 0xffa3e4a7, 0xc0145e1b},
-	{0xed7263b6, 0x00000d0d, 0x000002f2, 0xb0006a35, 0x5468ae3a},
-	{0x5bfde7d7, 0x000006fb, 0x00000554, 0xa4193b76, 0xb73d34b2},
-	{0x67f4a743, 0x00000b85, 0x0000047a, 0xf05c8d8f, 0x4f843e49},
-	{0xf13bdf22, 0x00000ff7, 0x00000008, 0x816351eb, 0x41f537f6},
-	{0x08ecc608, 0x00000d5d, 0x00000098, 0x90492772, 0xf5172204},
-	{0x296f52ba, 0x000004f9, 0x00000788, 0x5e5a4896, 0xe01d5b46},
-	{0xbe4624c2, 0x00000427, 0x000004ef, 0xcd267b94, 0x7b9069f4},
-	{0x906f7c7c, 0x00000a05, 0x0000003f, 0x03fcfc33, 0x7b6ff563},
-	{0x8f7b323e, 0x00000458, 0x000004c7, 0xcd4969c8, 0xd4c22ada},
-	{0x88d6593d, 0x00000597, 0x000005b5, 0xf199cd3b, 0x5c3e8ca2},
-	{0x978a7768, 0x00000268, 0x000001d3, 0xb28c95bd, 0x49a2cc67},
-	{0x857a621e, 0x000007a7, 0x000003a8, 0xf4bf84ab, 0xde26f369},
-	{0xb0e121ef, 0x000005be, 0x00000644, 0x28747c14, 0x61d4dc6b},
+	{0xffffffff, 0x00000000, 0x00001000, 0x13934bef, 0xd8ddcdc3},
+	{0xfe7328ea, 0x00000763, 0x00000717, 0xed2c0d70, 0xc863aef8},
+	{0x4c40684e, 0x00000721, 0x0000011e, 0xd7f46ccc, 0x173a11c4},
+	{0x6b487f90, 0x00000264, 0x000007bc, 0x759e9939, 0xd6307c56},
+	{0x9f5810db, 0x00000afa, 0x00000255, 0x2685197f, 0x2e5c9201},
+	{0xb15c4755, 0x00000d5b, 0x000002a4, 0xd8fadcb5, 0xf682c4be},
+	{0x06518253, 0x00000ffb, 0x00000004, 0xabee2433, 0x3d8abdf9},
+	{0xd9e71c55, 0x00000a2a, 0x00000259, 0x96682af2, 0x47b4d26c},
+	{0x0c1ae843, 0x00000ce4, 0x0000031b, 0x7b637c43, 0x62b47e8b},
+	{0xec3cd517, 0x000002ff, 0x00000566, 0x5d719a77, 0xff5bc5b7},
+	{0x77828e95, 0x0000067f, 0x0000038f, 0x43ee5b6c, 0x1a0cfacd},
+	{0xec87b4e3, 0x00000d1c, 0x000002e3, 0x2ddd2eee, 0x275118a7},
+	{0x412158bb, 0x00000eee, 0x00000111, 0x67b38ba2, 0xa74ecff5},
+	{0x2e52de3e, 0x00000c4a, 0x000003b5, 0xbcc5d61d, 0xbd800707},
+	{0x6ddaae8b, 0x00000d99, 0x00000266, 0x8b535544, 0xecbde1a1},
+	{0x049b6cb1, 0x000009c5, 0x000000b0, 0xfc22cabc, 0xfb78eb9f},
+	{0x77d4b954, 0x0000028a, 0x000007fa, 0x71d00923, 0x8c116f85},
+	{0x5e192355, 0x00000ac1, 0x000001fa, 0xb966b81a, 0x5aa17bbe},
+	{0x7d80b71d, 0x00000213, 0x000001e0, 0x2bba371a, 0xb5906aa6},
+	{0x01f6f1e4, 0x000001d6, 0x00000395, 0xb7e8a647, 0x3ad112b1},
+	{0x1dfabb13, 0x00000e14, 0x000001eb, 0x53917fba, 0xbaee0339},
+	{0xb00a4449, 0x00000bf6, 0x00000409, 0xedecb577, 0x6f3a3979},
+	{0x7ecd3981, 0x0000083f, 0x0000016b, 0xefef62b9, 0xe3e52eed},
+	{0xf8f330d2, 0x000004be, 0x00000757, 0x9357c9f3, 0x0835bc1b},
+	{0x03c38af2, 0x00000d23, 0x000002dc, 0x360fa8c0, 0x2ca885e6},
+	{0x687bb79b, 0x00000f3d, 0x000000c2, 0x448d3be2, 0x79be2f78},
+	{0x6710f550, 0x000009e9, 0x00000603, 0xdbfd1998, 0x1d25f627},
+	{0x873171d1, 0x00000787, 0x000004d5, 0xab7f1b62, 0xa76a5656},
+	{0x373b1314, 0x00000f0f, 0x000000f0, 0x184098ab, 0xba273974},
+	{0x90fad9cd, 0x00000ead, 0x00000152, 0x23ce52ff, 0xb7bc958c},
+	{0x19676fe7, 0x0000007d, 0x0000070d, 0xf8a76f1e, 0xf882b644},
+	{0x89facd45, 0x000005f3, 0x00000473, 0x4331a006, 0xe9dc1396},
+	{0x6f173747, 0x00000fc3, 0x0000003c, 0xb012f08e, 0xc6b888ee},
+	{0x4b44a106, 0x0000075a, 0x0000008b, 0xf6f7ac38, 0x60cd2b74},
+	{0xb620ad06, 0x00000774, 0x0000017e, 0xd34558e6, 0x3a0a615b},
+	{0x976f21e9, 0x000008d7, 0x0000034a, 0xe533aa3a, 0xa99e60be},
+	{0x687628c0, 0x000006c5, 0x0000061b, 0x3a840b15, 0x9bfcaef2},
+	{0xe24ac108, 0x00000cd0, 0x0000032f, 0x51010ae8, 0x20958672},
+	{0x361c44a3, 0x00000304, 0x00000719, 0xfd7bd481, 0xd70ff2b2},
+	{0xd93ff95e, 0x00000db7, 0x0000008e, 0xcfbbc304, 0xad716acd},
+	{0xed752d12, 0x00000883, 0x00000091, 0x65a6c868, 0x95c71c7b},
+	{0xb4ff4b54, 0x000003d3, 0x000001c1, 0xf82597e7, 0x44b7f99b},
+	{0x111b520f, 0x00000708, 0x000000eb, 0xc3e109f3, 0x71bc01ee},
+	{0x62c806f2, 0x00000ba3, 0x0000045c, 0x874d3a72, 0xc539b753},
+	{0x40d97470, 0x000005e1, 0x0000058d, 0x87a9684f, 0xea6073a5},
+	{0x4312179c, 0x00000056, 0x0000070e, 0x809a00f5, 0x209aea3b},
+	{0x13d5f84c, 0x00000a2d, 0x00000104, 0xf3d27578, 0xe087a8b6},
+	{0x1f302cb2, 0x00000151, 0x00000014, 0x1e162693, 0x95e4b90e},
+	{0xe491db24, 0x00000600, 0x000006f6, 0x7ff09615, 0x77611523},
+	{0xf9a98069, 0x000002ba, 0x000002ad, 0x01af7387, 0xea925faa},
+	{0xe9c477ad, 0x0000015f, 0x00000778, 0x6facf9a0, 0x1130f736},
+	{0x353f32b2, 0x0000087c, 0x00000783, 0x6cc964ea, 0x32459994},
+	{0x78e1b24f, 0x00000650, 0x000006a8, 0xb3bb7c27, 0x5a632f78},
+	{0x61aa400e, 0x00000049, 0x00000254, 0xb8cd1681, 0xdf2652d5},
+	{0xb84b10b0, 0x00000f73, 0x0000008c, 0x406a6450, 0x3619d31b},
+	{0x9fa99c9c, 0x00000a7c, 0x000004d7, 0xfb3d21b4, 0xea31c743},
+	{0x3fc9ebe3, 0x00000cd9, 0x000000d6, 0x43803f9c, 0x1f76a809},
+	{0x529879cd, 0x000002f2, 0x00000595, 0x78b4c6a6, 0x63b9b93f},
+	{0x3a933019, 0x00000516, 0x00000266, 0xdcb45436, 0x8f99c98c},
+	{0x887b4977, 0x00000227, 0x0000038d, 0xc5f7c3d9, 0xaf5e3091},
+	{0x770745de, 0x000008c6, 0x00000739, 0xf69145e8, 0x53d0dce1},
+	{0x28be3b47, 0x00000c46, 0x0000032b, 0x764c028f, 0x106d0905},
+	{0x5013a050, 0x00000cf6, 0x00000309, 0xea8fe164, 0x62180b57},
+	{0x2ec4c9ba, 0x000006e8, 0x0000078d, 0xa35557a9, 0xf44430a4},
+	{0xa9f950c9, 0x00000d33, 0x000002cc, 0x41ea8618, 0x587b4eb3},
+	{0x5b520229, 0x000007b2, 0x00000484, 0x44569f1f, 0x92406c32},
+	{0xd8dcbbfc, 0x0000002f, 0x0000048c, 0xdb88ab8b, 0x13bfe70e},
+	{0x25529792, 0x00000d1d, 0x000002e2, 0x20cda404, 0x19d3b4e4},
+	{0x9f3f6d71, 0x00000238, 0x0000079a, 0x0720443e, 0x3c107021},
+	{0x64121215, 0x000007ff, 0x0000038f, 0x6aacff2c, 0xb82fdc3e},
+	{0xfb6cdde0, 0x00000ef8, 0x00000107, 0xbd43a0f1, 0xab0d3c1d},
+	{0x221c9d6f, 0x000007b6, 0x0000014f, 0xb67f834b, 0x1371ad05},
+	{0x030e1de4, 0x00000836, 0x000004b4, 0x0d67d26a, 0xe2e72df1},
+	{0xb56fa6cf, 0x00000c07, 0x000003f8, 0x60601ac1, 0x039de73e},
+	{0xb55c89f5, 0x0000098e, 0x000001d4, 0x2400efbe, 0xfe39a2bb},
+	{0x5e90b6d5, 0x0000070b, 0x000003ea, 0x3bb5d6ea, 0xf0f794a0},
+	{0x2a7045ae, 0x00000961, 0x00000633, 0xfca89e4b, 0xe66ce41c},
+	{0x8b374ea9, 0x000006ba, 0x00000780, 0xbce036ed, 0x4cb28ef7},
+	{0x8bd90bc9, 0x00000562, 0x00000369, 0xcb26a24b, 0x40236d1d},
+	{0x5b1b1762, 0x000000fd, 0x0000051a, 0x33cdda07, 0xc32e420a},
+	{0xa4153555, 0x0000058f, 0x000005c7, 0xbe50eeca, 0x83a67f35},
+	{0x0be1f931, 0x00000651, 0x00000672, 0x95a25753, 0x88f1aac1},
+	{0xb7e78618, 0x00000a7f, 0x000002bb, 0xe06bcc1c, 0x74274f66},
+	{0x4a9bc41b, 0x00000e51, 0x000001ae, 0x709e8d2c, 0x54eff534},
+	{0xfc359d13, 0x00000440, 0x000002f8, 0x0a58451f, 0x55e9363f},
+	{0x5aa48619, 0x000006d1, 0x00000284, 0x928ead83, 0x31041c06},
+	{0xa609afa8, 0x0000053e, 0x00000272, 0xb048c141, 0x4704efba},
+	{0x3f108afb, 0x00000949, 0x00000150, 0x9a6bb5bc, 0x4e4430c8},
+	{0x79bec2d3, 0x000008ed, 0x00000712, 0x32692d57, 0x11d52a7b},
+	{0x9429e067, 0x00000bc3, 0x0000043c, 0x5295ceff, 0x04640f4d},
+	{0xae58b96a, 0x0000082d, 0x000007d2, 0xc2a681ba, 0xf7ca4a2c},
+	{0x95df24be, 0x00000985, 0x000004c1, 0x3a287765, 0x2c4af003},
+	{0x5e94976f, 0x00000596, 0x000004ed, 0xff00c489, 0x5ae11687},
+	{0xf5e5f1de, 0x00000d31, 0x000002ce, 0x35f28e91, 0x30d47957},
+	{0xa2c219cf, 0x00000a3c, 0x00000374, 0x707d21eb, 0x2a14a255},
+	{0xf21b6ceb, 0x00000919, 0x00000135, 0x0847fb8b, 0xcb8d3b93},
+	{0xaa988728, 0x00000787, 0x00000771, 0x885aeaa4, 0x6531b509},
+	{0xaa5dfaac, 0x000003e5, 0x0000051b, 0x52c48ab7, 0xe43cc5e9},
+	{0x0a053968, 0x00000d2a, 0x000002d5, 0x7a90256d, 0x8004765c},
+	{0x1421dc20, 0x00000eef, 0x00000110, 0x97d6da24, 0x1378f6ff},
+	{0xb47c2166, 0x00000a6a, 0x00000209, 0xcfd6cc52, 0x676e14a5},
+	{0x77dd1955, 0x000000de, 0x00000266, 0xba74bcaa, 0xc71b429c},
+	{0x68a03cc2, 0x0000082f, 0x000007b0, 0x752bd5d8, 0x19ed14aa},
+	{0x0226b0a3, 0x00000a5f, 0x000005a0, 0x82de4970, 0xf654d3ed},
+	{0x637bf3b1, 0x00000d93, 0x0000026c, 0x5c7115cb, 0x3cccb57e},
+	{0x3b120edf, 0x00000c13, 0x000003ec, 0x80d7d20f, 0x92132798},
+	{0xe2456780, 0x000002eb, 0x00000641, 0xc0a5d289, 0x6160c87a},
+	{0x9b2e7125, 0x00000c0c, 0x000003f3, 0xcc15f57e, 0x6f00f637},
+	{0x153033ef, 0x00000787, 0x000006b6, 0x3cde443b, 0xb46caa6e},
+	{0x18458b3f, 0x0000066c, 0x00000561, 0x9a2bd8c6, 0xb6c29121},
+	{0x4ff9d4b9, 0x00000c8f, 0x0000033a, 0xd0ee6d6d, 0xc81cf380},
+	{0xdf84b5d9, 0x00000802, 0x0000029a, 0xdab0d74a, 0xb2464559},
+	{0x81ee15df, 0x000003ce, 0x00000725, 0x9942e2de, 0x4ccf571b},
+	{0x5c768e04, 0x00000afd, 0x00000160, 0x36110831, 0xae0b305a},
+	{0xe5e18094, 0x00000b4b, 0x000000a0, 0xffa3e4a7, 0x6c8a4f09},
+	{0xed7263b6, 0x00000d0d, 0x000002f2, 0xb0006a35, 0x7e04af8c},
+	{0x5bfde7d7, 0x000006fb, 0x00000554, 0xa4193b76, 0xb3a91d12},
+	{0x67f4a743, 0x00000b85, 0x0000047a, 0xf05c8d8f, 0xfb472fdf},
+	{0xf13bdf22, 0x00000ff7, 0x00000008, 0x816351eb, 0xf347f235},
+	{0x08ecc608, 0x00000d5d, 0x00000098, 0x90492772, 0x0b7f1521},
+	{0x296f52ba, 0x000004f9, 0x00000788, 0x5e5a4896, 0x1cc67088},
+	{0xbe4624c2, 0x00000427, 0x000004ef, 0xcd267b94, 0x550caefd},
+	{0x906f7c7c, 0x00000a05, 0x0000003f, 0x03fcfc33, 0x9ed82a02},
+	{0x8f7b323e, 0x00000458, 0x000004c7, 0xcd4969c8, 0x633c38a8},
+	{0x88d6593d, 0x00000597, 0x000005b5, 0xf199cd3b, 0x0491452f},
+	{0x978a7768, 0x00000268, 0x000001d3, 0xb28c95bd, 0x1a42fe61},
+	{0x857a621e, 0x000007a7, 0x000003a8, 0xf4bf84ab, 0xcd0694c6},
+	{0xb0e121ef, 0x000005be, 0x00000644, 0x28747c14, 0xf0510c72},
 	{0, 0, 0, 0, 0},
 };
 
@@ -1114,15 +902,15 @@ static int test_crc32c(void)
 	while (t->length) {
 		uint32_t be, le;
 		le = ext2fs_crc32c_le(t->crc, test_buf + t->start, t->length);
-		be = ext2fs_crc32c_be(t->crc, test_buf + t->start, t->length);
-		if (le != t->crc_le) {
+		be = ext2fs_crc32_be(t->crc, test_buf + t->start, t->length);
+		if (le != t->crc32c_le) {
 			printf("Test %d LE fails, %x != %x\n",
-			       (int) (t - test), le, t->crc_le);
+			       (int) (t - test), le, t->crc32c_le);
 			failures++;
 		}
-		if (be != t->crc_be) {
+		if (be != t->crc32_be) {
 			printf("Test %d BE fails, %x != %x\n",
-			       (int) (t - test), be, t->crc_be);
+			       (int) (t - test), be, t->crc32_be);
 			failures++;
 		}
 		t++;

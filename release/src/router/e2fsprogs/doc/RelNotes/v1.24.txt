@@ -1,0 +1,38 @@
+E2fsprogs 1.24a (September 2, 2001)
+===================================
+
+Fix brown-paper bug in mke2fs which caused it to segfault when
+printing the version string.
+
+
+E2fsprogs 1.24 (August 30, 2001)
+================================
+
+Revert the BLKGETSIZE64 support, since for some distributions, this
+ioctl has been used by an unofficial kernel patch to update the last
+sector on the disk, and this was causing disk corruption problems as a
+result.
+
+Mke2fs is now more careful about zapping swap space signatures and
+other filesystem/raid superblock magic values so that programs like
+mount who try to use heuristics to determine the filesystem type of a
+partition are less likely to be confused.
+
+E2fsck will no longer complain if the the mode of EXT2_RESIZE_INO is a
+regular file (since Andreas Dilger's on-line resizing tools will set
+its mode bits).
+
+Fixed some minor texinfo, man pages nits for spelling errors,
+texinfo warnings, etc.  (Addresses Debian bug #110621.)
+
+E2fsprogs program no longer print the filesystem version number
+(i.e. 0.5b), since it only confuses people and doesn't serve any real
+purpose.
+
+E2fsck will once again compile under libc5, since it will supply its
+own version of strnlen if necessary.
+
+mke2fs and tune2fs will allow the use of UUID= or LABEL= specifiers
+when specifying the external journal device.  tune2fs will also search
+devices looking for the external journal device when removing it.
+

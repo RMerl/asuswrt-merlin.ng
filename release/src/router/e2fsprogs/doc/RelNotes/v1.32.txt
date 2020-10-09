@@ -1,0 +1,14 @@
+E2fsprogs 1.32 (November 9, 2002)
+=================================
+
+Fixed a bug in the Unix I/O routines which caused needless writebacks
+of clean blocks from the unix_io cache (they were erroneously marked
+as being dirty, so they were getting written back to disk before
+getting evicted from the disk cache).  This was harmless, but it
+significantly slowed down e2fsck.
+
+Made some other minor optimizations to the Unix I/O routines to save a
+small amount of CPU time.
+
+Updated internationalization files.
+

@@ -1,0 +1,27 @@
+External journal superblock checksum does not match superblock.  Fix? yes
+
+test_filesys: recovering journal
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Block bitmap differences:  +(1--31) +34 +(50--82)
+Fix? yes
+
+Inode bitmap differences:  +(1--11)
+Fix? yes
+
+Padding at end of inode bitmap is not set. Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 11/128 files (0.0% non-contiguous), 66/2048 blocks
+Exit status is 1
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/128 files (0.0% non-contiguous), 66/2048 blocks
+Exit status is 0

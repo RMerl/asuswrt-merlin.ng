@@ -1,0 +1,32 @@
+test_description="e2undo with mke2fs -z"
+if test -x $E2UNDO_EXE; then
+
+TDB_FILE=${TMPDIR:-/tmp}/mke2fs-$(basename $TMPFILE).e2undo
+OUT=$test_name.log
+rm -f $TDB_FILE >/dev/null 2>&1
+
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+
+echo mke2fs -F -o Linux -I 128 -b 1024 test.img  > $OUT
+$MKE2FS -F -o Linux -I 128 -b 1024 $TMPFILE  >> $OUT 2>&1
+crc0=`$CRCSUM $TMPFILE`
+echo $CRCSUM before mke2fs $crc0 >> $OUT
+
+echo using mke2fs to test e2undo >> $OUT
+$MKE2FS -q -F -o Linux -T ext4 -E lazy_itable_init=1 -b 1024 -z $TDB_FILE $TMPFILE  >> $OUT 2>&1
+crc1=`$CRCSUM $TMPFILE`
+echo $CRCSUM after mke2fs $crc1 >> $OUT
+
+$E2UNDO  $TDB_FILE $TMPFILE  >> $OUT 2>&1
+crc2=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2undo $crc2 >> $OUT
+
+if [ $crc0 = $crc2 ] && [ $crc1 != $crc2 ]; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	ln -f $test_name.log $test_name.failed
+	echo "$test_name: $test_description: failed"
+fi
+rm -f $TDB_FILE $TMPFILE
+fi

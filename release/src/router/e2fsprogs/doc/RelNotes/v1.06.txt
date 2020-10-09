@@ -1,0 +1,51 @@
+E2fsprogs 1.06 (October 7, 1996)
+================================
+
+Fixed serious bug in e2fsck: if the block descriptors are bad, don't
+smash the backup copies in ext2fs_close().  (The problem was that when
+e2fsck -p discovered the problem, while it was closing the filesystem
+and exiting, it was also blowing away the backup superblocks on the
+disk, which was less than friendly.)  We now make it the case that we
+only write out the backup superblock and the back block descriptors if
+the filesystem is completely free from problems.
+
+Fixed a bug in block_interate in the lib/ext2fs library which caused
+e2fsck to fail on GNU Hurd-created filesystems.
+
+Add support for Linux/FT's bootloader, which actually uses
+EXT2_BOOT_LOADER, and sets its mode bits which caused e2fsck to want
+to clear the inode.
+
+Add support for the "A" (no atime update) attribute.  (Note: this
+attribute is not yet in production kernels.)
+
+The test suite is not automatically run when doing a "make all" from
+the top level directory.  Users should manually run "make check" if
+they wish to run the test suite.
+
+Upon a preenhalt(), make the printed message more explicit that
+running e2fsck "MANUALLY" means without the -p or -a options.
+
+In e2fsck, if a disconnected inode is zero-length, offer to clear it
+instead of offering to connect it to lost+found.
+
+In e2fsck, if a filesystem was just unmounted uncleanly, and needs
+e2fsck to be run over it, change e2fsck to explicitly display this
+fact.
+
+For dumpe2fs and e2fsck, cause the -V option to print out which
+version of the ext2fs library is actually getting used.  (This will
+help detect mismatches of using a 1.06 utility with a 1.05 library,
+etc.)
+
+Programmers' notes:
+-------------------
+
+EXT2_SWAP_BYTES was changed to EXT2_FLAG_SWAP_BYTES, which better fits
+the naming convention.
+
+In ext2fs_initialize(), make sure the description for the inode bitmap
+is correctly initialize.
+
+Fixed minor type typo in ext2fs_allocate_generic_bitmap();
+

@@ -215,9 +215,9 @@ static errcode_t inode_read_blk64(io_channel channel,
 	data = (struct inode_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_INODE_IO_CHANNEL);
 
-	if ((retval = ext2fs_file_lseek(data->file,
-					block * channel->block_size,
-					EXT2_SEEK_SET, 0)))
+	if ((retval = ext2fs_file_llseek(data->file,
+				(ext2_off64_t)(block * channel->block_size),
+				EXT2_SEEK_SET, 0)))
 		return retval;
 
 	count = (count < 0) ? -count : (count * channel->block_size);
@@ -241,9 +241,9 @@ static errcode_t inode_write_blk64(io_channel channel,
 	data = (struct inode_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_INODE_IO_CHANNEL);
 
-	if ((retval = ext2fs_file_lseek(data->file,
-					block * channel->block_size,
-					EXT2_SEEK_SET, 0)))
+	if ((retval = ext2fs_file_llseek(data->file,
+				(ext2_off64_t) (block * channel->block_size),
+				EXT2_SEEK_SET, 0)))
 		return retval;
 
 	count = (count < 0) ? -count : (count * channel->block_size);

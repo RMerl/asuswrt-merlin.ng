@@ -1,0 +1,75 @@
+E2fsprogs 1.08 (April 10, 1997)
+===============================
+
+E2fsck 1.07 was very slow when checking very large filesystems with a
+lot of files that had hard links (i.e., news spools).  This was fixed
+by seriously revamping the icount abstraction.  Added a formal test
+suite for the icount abstraction.
+
+Debugfs now has a "-l" option to the "ls" command, which lists the
+inode number, permissions, owner, group, size, and name of the files
+in the directory.
+
+Fix a bug in e2fsck where when a directory had its blocks moved to
+another location during the pass 1b processing, the directory block
+list wasn't updated, so pass 2 wouldn't check (and correct) the
+correct directory block.
+
+E2fsck will now treat inodes which contain blocks which are claimed by
+the filesystem metadata by treating them as multiply claimed blocks.
+This way, the data in those blocks can be copied to a new block during
+the pass 1b--1d processing.
+
+E2fsck will attempt to determine the correct superblock number and
+display it in the diagnostic and warning messages if possible.
+
+Add support for a new (incompatible) feature, "sparse_super".  This
+feature reduces the number of blocks which contain copies of backup
+superblocks and block group descriptors.  (It is only an incompatible
+feature because of a bug in ext2_free_blocks.)  mke2fs and tune2fs now
+support a new -s option; e2fsck will recognize filesystems built with
+this feature turned on.
+
+E2fsck now checks the library to make sure is the correct version,
+using new library functions.  (This helps to diagnose incorrectly
+installed e2fsprogs distributions.)
+
+Dumpe2fs now prints more information; its now prints the the
+filesystem revision number, the filesystem sparse_super feature (if
+present), the block ranges for each block group, and the offset from
+the beginning of the block group.
+
+Mke2fs now distributes the inode and block bitmap blok so that the
+won't be concentrated in one or two disks in RAID/striping setups.
+Also, if the user chooses a 2k or 4k block group, mke2fs will try to
+choose the largest blocks per group that be chosen.  (For 2k blocks,
+you can have up to 16384 blocks/group; for 4k blocks, you can have up
+to 32768 blocks/group.)  Previously mke2fs would not allow
+specification of more than 8192 blocks per group, even if you were
+using a 2k or 4k block group.
+
+Programmer's notes:
+-------------------
+
+Added a new function ext2fs_create_icount2() which takes a "hint"
+argument.  This hint argument presets the icount array with the list
+of inodes which actually need to be in the icount array.  This really
+helps to speed up e2fsck.
+
+Added a new function ext2fs_icount_validate() which checks the rep
+invariant for the icount structure.  This is used mostly for testing.
+
+The error message given when a bad inode number is passed to
+test_generic_bitmap to reflect EXT2FS_TEST_ERROR (instead of
+EXT2FS_UNMARK_ERROR).
+
+Added a new function ext2fs_set_dir_block which sets the block of a
+dblist entry, given the directory inode and blockcnt.
+
+Added a new function ext2fs_get_library_version() which returns the
+current library version, and ext2fs_parse_version_string() which
+returns a version number based on a e2fsprogs version string.
+
+The icount functions will return EINVAL if the passed in inode number
+is out of bounds.
+

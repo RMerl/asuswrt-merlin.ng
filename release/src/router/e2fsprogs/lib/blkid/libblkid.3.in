@@ -47,7 +47,7 @@ so the use of the cache file is
 in this situation.
 .SH AUTHOR
 .B libblkid
-was written by Andreas Dilger for the ext2 filesystem utilties, with input
+was written by Andreas Dilger for the ext2 filesystem utilities, with input
 from Ted Ts'o.  The library was subsequently heavily modified by Ted Ts'o.
 .SH FILES
 .TP

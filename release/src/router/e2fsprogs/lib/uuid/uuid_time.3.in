@@ -43,9 +43,9 @@ The
 .B uuid_time
 function extracts the time at which the supplied time-based UUID
 .I uu
-was created.  Note that the UUID creation time is only encoded within 
-certain types of UUIDs.  This function can only reasonably expect to 
-extract the creation time for UUIDs created with the 
+was created.  Note that the UUID creation time is only encoded within
+certain types of UUIDs.  This function can only reasonably expect to
+extract the creation time for UUIDs created with the
 .BR uuid_generate_time (3)
 function.  It may or may not work with UUIDs created by other mechanisms.
 .SH "RETURN VALUES"

@@ -61,19 +61,20 @@ static int check_zero_block(char *buf, int blocksize)
 
 errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags)
 {
-	unsigned int	group, left, c, d;
+	dgrp_t		group;
+	ssize_t		left, c, d;
 	char		*buf, *cp;
 	blk64_t		blk;
 	ssize_t		actual;
 	errcode_t	retval;
-	off_t		r;
+	loff_t		r;
 
 	buf = malloc(fs->blocksize * BUF_BLOCKS);
 	if (!buf)
 		return ENOMEM;
 
 	for (group = 0; group < fs->group_desc_count; group++) {
-		blk = ext2fs_inode_table_loc(fs, (unsigned)group);
+		blk = ext2fs_inode_table_loc(fs, group);
 		if (!blk) {
 			retval = EXT2_ET_MISSING_INODE_TABLE;
 			goto errout;
@@ -98,7 +99,8 @@ errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags)
 					blk++;
 					left--;
 					cp += fs->blocksize;
-					r = lseek(fd, fs->blocksize, SEEK_CUR);
+					r = ext2fs_llseek(fd, fs->blocksize,
+							  SEEK_CUR);
 					if (r < 0) {
 						retval = errno;
 						goto errout;
@@ -106,23 +108,25 @@ errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags)
 					continue;
 				}
 				/* Find non-zero blocks */
-				for (d=1; d < c; d++) {
-					if (check_zero_block(cp + d*fs->blocksize, fs->blocksize))
+				for (d = 1; d < c; d++) {
+					if (check_zero_block(cp +
+							     d * fs->blocksize,
+							     fs->blocksize))
 						break;
 				}
 			skip_sparse:
-				actual = write(fd, cp, fs->blocksize * d);
+				actual = write(fd, cp, d * fs->blocksize);
 				if (actual == -1) {
 					retval = errno;
 					goto errout;
 				}
-				if (actual != (ssize_t) (fs->blocksize * d)) {
+				if (actual != d * fs->blocksize) {
 					retval = EXT2_ET_SHORT_WRITE;
 					goto errout;
 				}
 				blk += d;
 				left -= d;
-				cp += fs->blocksize * d;
+				cp += d * fs->blocksize;
 				c -= d;
 			}
 		}
@@ -140,7 +144,8 @@ errout:
 errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd,
 				  int flags EXT2FS_ATTR((unused)))
 {
-	unsigned int	group, c, left;
+	dgrp_t		group;
+	ssize_t		c, left;
 	char		*buf;
 	blk64_t		blk;
 	ssize_t		actual;
@@ -151,7 +156,7 @@ errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd,
 		return ENOMEM;
 
 	for (group = 0; group < fs->group_desc_count; group++) {
-		blk = ext2fs_inode_table_loc(fs, (unsigned)group);
+		blk = ext2fs_inode_table_loc(fs, group);
 		if (!blk) {
 			retval = EXT2_ET_MISSING_INODE_TABLE;
 			goto errout;
@@ -166,7 +171,7 @@ errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd,
 				retval = errno;
 				goto errout;
 			}
-			if (actual != (ssize_t) (fs->blocksize * c)) {
+			if (actual != fs->blocksize * c) {
 				retval = EXT2_ET_SHORT_READ;
 				goto errout;
 			}
@@ -194,6 +199,14 @@ errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd,
 	char		*buf, *cp;
 	ssize_t		actual;
 	errcode_t	retval;
+#ifdef WORDS_BIGENDIAN
+	unsigned int	groups_per_block;
+	struct		ext2_group_desc *gdp;
+	int		j;
+#endif
+
+	if (fs->group_desc == NULL)
+		return EXT2_ET_NO_GDESC;
 
 	buf = malloc(fs->blocksize);
 	if (!buf)
@@ -203,7 +216,17 @@ errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd,
 	 * Write out the superblock
 	 */
 	memset(buf, 0, fs->blocksize);
+#ifdef WORDS_BIGENDIAN
+	/*
+	 * We're writing out superblock so let's convert
+	 * it to little endian and then back if needed
+	 */
+	ext2fs_swap_super(fs->super);
 	memcpy(buf, fs->super, SUPERBLOCK_SIZE);
+	ext2fs_swap_super(fs->super);
+#else
+	memcpy(buf, fs->super, SUPERBLOCK_SIZE);
+#endif
 	actual = write(fd, buf, fs->blocksize);
 	if (actual == -1) {
 		retval = errno;
@@ -217,13 +240,39 @@ errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd,
 	/*
 	 * Now write out the block group descriptors
 	 */
+
 	cp = (char *) fs->group_desc;
-	actual = write(fd, cp, fs->blocksize * fs->desc_blocks);
+
+#ifdef WORDS_BIGENDIAN
+	/*
+	 * Convert group descriptors to little endian and back
+	 * if needed
+	 */
+	groups_per_block = EXT2_DESC_PER_BLOCK(fs->super);
+	gdp = (struct ext2_group_desc *) cp;
+	for (j=0; j < groups_per_block*fs->desc_blocks; j++) {
+		gdp = ext2fs_group_desc(fs, fs->group_desc, j);
+		ext2fs_swap_group_desc2(fs, gdp);
+	}
+#endif
+
+	actual = write(fd, cp, (ssize_t)fs->blocksize * fs->desc_blocks);
+
+
+#ifdef WORDS_BIGENDIAN
+	groups_per_block = EXT2_DESC_PER_BLOCK(fs->super);
+	gdp = (struct ext2_group_desc *) cp;
+	for (j=0; j < groups_per_block*fs->desc_blocks; j++) {
+		gdp = ext2fs_group_desc(fs, fs->group_desc, j);
+		ext2fs_swap_group_desc2(fs, gdp);
+	}
+#endif
+
 	if (actual == -1) {
 		retval = errno;
 		goto errout;
 	}
-	if (actual != (ssize_t) (fs->blocksize * fs->desc_blocks)) {
+	if (actual != (ssize_t)fs->blocksize * fs->desc_blocks) {
 		retval = EXT2_ET_SHORT_WRITE;
 		goto errout;
 	}
@@ -245,7 +294,7 @@ errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd,
 	ssize_t		actual, size;
 	errcode_t	retval;
 
-	size = fs->blocksize * (fs->group_desc_count + 1);
+	size = (ssize_t)fs->blocksize * (fs->group_desc_count + 1);
 	buf = malloc(size);
 	if (!buf)
 		return ENOMEM;
@@ -269,7 +318,7 @@ errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd,
 	memcpy(fs->super, buf, SUPERBLOCK_SIZE);
 
 	memcpy(fs->group_desc, buf + fs->blocksize,
-	       fs->blocksize * fs->group_desc_count);
+	       (ssize_t)fs->blocksize * fs->group_desc_count);
 
 	retval = 0;
 
@@ -298,7 +347,8 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 		}
 		bmap = fs->inode_map;
 		itr = 1;
-		cnt = EXT2_INODES_PER_GROUP(fs->super) * fs->group_desc_count;
+		cnt = (__u64)EXT2_INODES_PER_GROUP(fs->super) *
+			fs->group_desc_count;
 		size = (EXT2_INODES_PER_GROUP(fs->super) / 8);
 	} else {
 		if (!fs->block_map) {
@@ -308,8 +358,8 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 		}
 		bmap = fs->block_map;
 		itr = fs->super->s_first_data_block;
-		cnt = EXT2_GROUPS_TO_BLOCKS(fs->super, fs->group_desc_count);
-		size = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
+		cnt = EXT2_GROUPS_TO_CLUSTERS(fs->super, fs->group_desc_count);
+		size = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
 	}
 	total_size = size * fs->group_desc_count;
 
@@ -373,7 +423,8 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 		}
 		bmap = fs->inode_map;
 		itr = 1;
-		cnt = EXT2_INODES_PER_GROUP(fs->super) * fs->group_desc_count;
+		cnt = (__u64)EXT2_INODES_PER_GROUP(fs->super) *
+			fs->group_desc_count;
 		size = (EXT2_INODES_PER_GROUP(fs->super) / 8);
 	} else {
 		if (!fs->block_map) {

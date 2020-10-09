@@ -1,0 +1,82 @@
+E2fsprogs 1.44.0 (March 7, 2018)
+================================
+
+Updates/Fixes since v1.43.9:
+
+UI and Features
+---------------
+
+E2fsprogs now supports the large_dir (INCOMPAT_LARGEDIR) feature.  This
+feature allows larger directories to be created, both with directory
+sizes over 2GB and and a maximum htree depth of 3 instead of the
+current limit of 2.  These features are needed in order to exceed
+the currently limit of approximately 10M entries in a single
+directory for 4KB blocksize (~100k for 1KB).
+
+E2fsprogs now supports the ea_inode (INCOMPAT_EA_INODE) feature, which
+stores large extended attributes in an external inode instead of a
+single data block.  This is backwards compatible with a Lustre file
+system feature, but it has been extended to support deduplicating
+extended attribute values which are used in multiple inodes.
+
+The metadata_csum feature (RO_COMPAT_METADATA_CSUM) is now enabled by
+default by mke2fs.
+
+The resize2fs program will no longer complain about resizing bigalloc
+file systems as being dangerous when doing an on-line resize (since this
+is purely a kernel feature).
+
+Debugfs's ls command will now print the high bits of the inode's mode
+bits.
+
+Fixes
+-----
+
+Fixed some potential buffer overrun bugs in the blkid library and in the
+fsck program.
+
+There were some corner cases which tune2fs wouldn't correctly handle
+when operating on a file system which was not cleanly mounted and thus
+required running the journal because it could be modified.  Tune2fs will
+now run the journal before trying to change the superblock, and if the
+file system needs to be checked after the journal has been replayed, it
+will require it before proceeding.  Also if the file system is busy (for
+example, because it is in use by Lustre), but is not present in the
+/proc/mounts or /etc/mtab, tune2fs will not try to replay the journal,
+since this could do real damage if it the file system is being actively
+modified by the kernel.
+
+The libss library (used by debugfs) now supports the version 7 of the
+libreadline shared library.
+
+The e2freefrag program will use the GETFSMAP ioctl if it is available
+and the file system is mounted, so that the free space statistics will
+be more accurate.
+
+The consistency checks for symlinks (especially for encrypted and inline
+data file sytems) in e2fsck are now much more careful/stringent.  Also
+fixed a bug where creating a symlink using ext2fs_symlink() which was
+exactly 60 bytes long when inline data was enabled would result in a
+missing system.data xattr.
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Mke2fs now uses io_channel_flush() instead of sync() for the sync_kludge
+feature.
+
+E2fsprogs now uses i_size as the primary way of determining whether a
+symlink is a fast symlink.
+
+Fix various compiler and UBSAN warnings.
+
+Long running test are now skipped with "make check" and only run when
+"make fullcheck".  The test runner will warn when potentially long
+running tests are being run via "make check".
+
+E2fsck is now much faster for bigalloc file systems when scanning
+extents for bigalloc file systems.  (Addresses Google Bug #36886699)
+
+Update Czech, Spanish, French, Malay, and Ukrainian translations.
+

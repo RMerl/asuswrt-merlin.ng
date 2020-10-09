@@ -1,0 +1,5 @@
+External journal does not support this filesystem
+
+test_filesys: ********** WARNING: Filesystem still has errors **********
+
+Exit status is 12

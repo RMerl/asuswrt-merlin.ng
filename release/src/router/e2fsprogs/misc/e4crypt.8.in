@@ -1,0 +1,72 @@
+.TH E4CRYPT 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+e4crypt \- ext4 filesystem encryption utility
+.SH SYNOPSIS
+.B e4crypt add_key -S \fR[\fB -k \fIkeyring\fR ] [\fB-v\fR] [\fB-q\fR] \fR[\fB -p \fIpad\fR ] [ \fIpath\fR ... ]
+.br
+.B e4crypt new_session
+.br
+.B e4crypt get_policy \fIpath\fR ...
+.br
+.B e4crypt set_policy \fR[\fB -p \fIpad\fR ] \fIpolicy path\fR ...
+.SH DESCRIPTION
+.B e4crypt
+performs encryption management for ext4 file systems.
+.SH COMMANDS
+.TP
+.B e4crypt add_key \fR[\fB-vq\fR] [\fB-S\fI salt\fR ] [\fB-k \fIkeyring\fR ] [\fB -p \fIpad\fR ] [ \fIpath\fR ... ]
+Prompts the user for a passphrase and inserts it into the specified
+keyring.  If no keyring is specified, e4crypt will use the session
+keyring if it exists or the user session keyring if it does not.
+.IP
+The
+.I salt
+argument is interpreted in a number of different ways, depending on how
+its prefix value.  If the first two characters are "s:", then the rest
+of the argument will be used as an text string and used as the salt
+value.  If the first two characters are "0x", then the rest of the
+argument will be parsed as a hex string as used as the salt.  If the
+first characters are "f:" then the rest of the argument will be
+interpreted as a filename from which the salt value will be read.  If
+the string begins with a '/' character, it will similarly be treated as
+filename.  Finally, if the
+.I salt
+argument can be parsed as a valid UUID, then the UUID value will be used
+as a salt value.
+.IP
+The
+.I keyring
+argument specifies the keyring to which the key should be added.
+.IP
+The
+.I pad
+value specifies the number of bytes of padding will be added to
+directory names for obfuscation purposes.  Valid
+.I pad
+values are 4, 8, 16, and 32.
+.IP
+If one or more directory paths are specified, e4crypt will try to
+set the policy of those directories to use the key just added by the
+.B add_key
+command.
+.TP
+.B e4crypt get_policy \fIpath\fR ...
+Print the policy for the directories specified on the command line.
+.TP
+.B e4crypt new_session
+Give the invoking process (typically a shell) a new session keyring,
+discarding its old session keyring.
+.TP
+.B e4crypt set_policy \fR[\fB -p \fIpad\fR ] \fIpolicy path\fR ...
+Sets the policy for the directories specified on the command line.
+All directories must be empty to set the policy; if the directory
+already has a policy established, e4crypt will validate that the
+policy matches what was specified.  A policy is an encryption key
+identifier consisting of 16 hexadecimal characters.
+.SH AUTHOR
+Written by Michael Halcrow <mhalcrow@google.com>, Ildar Muslukhov
+<muslukhovi@gmail.com>, and Theodore Ts'o <tytso@mit.edu>
+.SH SEE ALSO
+.BR keyctl (1),
+.BR mke2fs (8),
+.BR mount (8).

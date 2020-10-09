@@ -81,6 +81,7 @@ int main(int argc, char **argv)
 	check_field(i_crtime, 4);
 	check_field(i_crtime_extra, 4);
 	check_field(i_version_hi, 4);
+	check_field(i_projid, 4);
 	/* This size will change as new fields are added */
 	do_field("Large inode end", 0, 0, cur_offset, sizeof(inode));
 #endif

@@ -1,0 +1,74 @@
+tune2fs metadata_csum test
+Creating filesystem with 524288 1k blocks and 65536 inodes
+Superblock backups stored on blocks: 
+	8193, 24577, 40961, 57345, 73729, 204801, 221185, 401409
+
+Allocating group tables:      done                            
+Writing inode tables:      done                            
+Creating journal (16384 blocks): done
+mke2fs: Operation not supported for inodes containing extents while creating huge files
+Writing superblocks and filesystem accounting information:      done
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+Exit status is 0
+tune2fs -O metadata_csum test.img
+Extents are not enabled.  The file extent tree can be checksummed, whereas block maps cannot.  Not enabling extents reduces the coverage of metadata checksumming.  Re-run with -O extent to rectify.
+64-bit filesystem support is not enabled.  The larger fields afforded by this feature enable full-strength checksumming.  Run resize2fs -b to rectify.
+Exit status is 0
+
+Change in FS metadata:
+@@ -2,7 +2,7 @@
+ Last mounted on:          <not available>
+ Filesystem magic number:  0xEF53
+ Filesystem revision #:    1 (dynamic)
+-Filesystem features:      has_journal ext_attr resize_inode dir_index filetype sparse_super large_file
++Filesystem features:      has_journal ext_attr resize_inode dir_index filetype sparse_super large_file metadata_csum
+ Default mount options:    user_xattr acl
+ Filesystem state:         clean
+ Errors behavior:          Continue
+@@ -29,6 +29,7 @@
+ Journal inode:            8
+ Default directory hash:   half_md4
+ Journal backup:           inode blocks
++Checksum type:            crc32c
+ Journal features:         (none)
+ Journal size:             16M
+ Journal length:           16384
+@@ -36,7 +37,7 @@
+ Journal start:            0
+ 
+ 
+-Group 0: (Blocks 1-8192)
++Group 0: (Blocks 1-8192) [ITABLE_ZEROED]
+   Primary superblock at 1, Group descriptors at 2-3
+   Reserved GDT blocks at 4-259
+   Block bitmap at 260 (+259)
+@@ -45,7 +46,7 @@
+   0 free blocks, 1013 free inodes, 2 directories
+   Free blocks: 
+   Free inodes: 12-1024
+-Group 1: (Blocks 8193-16384)
++Group 1: (Blocks 8193-16384) [ITABLE_ZEROED]
+   Backup superblock at 8193, Group descriptors at 8194-8195
+   Reserved GDT blocks at 8196-8451
+   Block bitmap at 8452 (+259)
+@@ -54,6 +55,6 @@
+   0 free blocks, 1024 free inodes, 0 directories
+   Free blocks: 
+   Free inodes: 1025-2048
+-Group 2: (Blocks 16385-24576)
++Group 2: (Blocks 16385-24576) [ITABLE_ZEROED]
+   Block bitmap at 16385 (+0)
+   Inode bitmap at 16386 (+1)
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+Exit status is 0

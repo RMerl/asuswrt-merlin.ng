@@ -285,8 +285,9 @@ static FILE *save_output(const char *s0, const char *s1, const char *s2)
 }
 
 #ifndef TEST_PROGRAM
-void set_up_logging(e2fsck_t ctx)
+static FILE *set_up_log_file(e2fsck_t ctx, const char *key, const char *fn)
 {
+	FILE *f = NULL;
 	struct string s, s1, s2;
 	char *s0 = 0, *log_dir = 0, *log_fn = 0;
 	int log_dir_wait = 0;
@@ -295,10 +296,10 @@ void set_up_logging(e2fsck_t ctx)
 
 	profile_get_boolean(ctx->profile, "options", "log_dir_wait", 0, 0,
 			    &log_dir_wait);
-	if (ctx->log_fn)
-		log_fn = string_copy(ctx, ctx->log_fn, 0);
+	if (fn)
+		log_fn = string_copy(ctx, fn, 0);
 	else
-		profile_get_string(ctx->profile, "options", "log_filename",
+		profile_get_string(ctx->profile, "options", key,
 				   0, 0, &log_fn);
 	profile_get_string(ctx->profile, "options", "log_dir", 0, 0, &log_dir);
 
@@ -328,13 +329,13 @@ void set_up_logging(e2fsck_t ctx)
 	}
 
 	if (s0)
-		ctx->logf = fopen(s0, "w");
-	if (!ctx->logf && s1.s)
-		ctx->logf = fopen(s1.s, "w");
-	if (!ctx->logf && s2.s)
-		ctx->logf = fopen(s2.s, "w");
-	if (!ctx->logf && log_dir_wait)
-		ctx->logf = save_output(s0, s1.s, s2.s);
+		f = fopen(s0, "w");
+	if (!f && s1.s)
+		f = fopen(s1.s, "w");
+	if (!f && s2.s)
+		f = fopen(s2.s, "w");
+	if (!f && log_dir_wait)
+		f = save_output(s0, s1.s, s2.s);
 
 out:
 	free(s.s);
@@ -342,10 +343,17 @@ out:
 	free(s2.s);
 	free(log_fn);
 	free(log_dir);
-	return;
+	return f;
+}
+
+void set_up_logging(e2fsck_t ctx)
+{
+	ctx->logf = set_up_log_file(ctx, "log_filename", ctx->log_fn);
+	ctx->problem_logf = set_up_log_file(ctx, "problem_log_filename",
+					    ctx->problem_log_fn);
 }
 #else
-void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
+void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned long size,
 			     const char *description)
 {
 	void *ret;

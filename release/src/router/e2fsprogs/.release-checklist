@@ -11,6 +11,7 @@
 	README
 	RELEASE-NOTES
 	e2fsprogs.lsm
+	e2fsprogs.spec
 	doc/libext2fs.texinfo (three places)
 
 6)  Make source distribution

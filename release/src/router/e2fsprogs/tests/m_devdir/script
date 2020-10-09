@@ -1,0 +1,32 @@
+test_description="create fs image from /dev"
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+MKFS_DIR=/dev
+OUT=$test_name.log
+
+$MKE2FS -q -F -o Linux -T ext4 -O metadata_csum,64bit -E lazy_itable_init=1 -b 1024 -d $MKFS_DIR $TMPFILE 16384 > $OUT 2>&1
+mkfs_status=$?
+
+$DUMPE2FS $TMPFILE >> $OUT 2>&1
+$DEBUGFS -R 'ls /' $TMPFILE >> $OUT 2>&1
+
+$FSCK -f -n $TMPFILE >> $OUT 2>&1
+fsck_status=$?
+
+sed -f $cmd_dir/filter.sed $OUT > $OUT.tmp
+mv $OUT.tmp $OUT
+
+if [ $mkfs_status -ne 0 ]; then
+	echo "$test_name: $test_description: skipped"
+elif [ $mkfs_status -eq 0 ] && [ $fsck_status -eq 0 ]; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+        echo "$test_name: $test_description: failed"
+fi
+
+rm -f $TMPFILE.cmd
+unset MKFS_DIR OUT EXP

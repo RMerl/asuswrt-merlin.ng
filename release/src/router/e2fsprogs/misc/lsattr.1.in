@@ -5,7 +5,7 @@ lsattr \- list file attributes on a Linux second extended file system
 .SH SYNOPSIS
 .B lsattr
 [
-.B \-RVadv
+.B \-RVadlpv
 ]
 [
 .I files...
@@ -28,6 +28,13 @@ List all files in directories, including files that start with `.'.
 .TP
 .B \-d
 List directories like other files, rather than listing their contents.
+.TP
+.B \-l
+Print the options using long names instead of single
+character abbreviations.
+.TP
+.B \-p
+List the file's project number.
 .TP
 .B \-v
 List the file's version/generation number.

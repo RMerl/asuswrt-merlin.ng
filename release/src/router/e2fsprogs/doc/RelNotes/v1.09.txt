@@ -1,0 +1,14 @@
+E2fsprogs 1.09 (April 14, 1997)
+===============================
+
+Fixed bug in mke2fs (really in lib/ext2fs/initialize.c) which was
+accidentally introduced in the 1.08 release.  The overhead calculation
+was accidentally removed, which caused ext2fs_initialize() to not
+notice when the filesystem size needed to be adjusted down because
+there wasn't enough space in the last block group.
+
+Fixed bug in version parsing library routine; it was always parsing
+the library version string, instead of using the passed-in string.
+
+Clarified chattr man page.
+

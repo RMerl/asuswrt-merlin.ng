@@ -30,7 +30,7 @@
  *   findsuper /dev/hda
  *   findsuper /dev/hda 437760 1024   (my disk has cyls of 855*512)
  *
- * I suppose the next step is to figgure out a way to determine if
+ * I suppose the next step is to figure out a way to determine if
  * the block found is the first superblock somehow, and if so, build
  * a partition table from the superblocks found... but this is still
  * useful as is.
@@ -75,7 +75,7 @@
  * For new systems that have a block group number in the superblock it
  * is immediately clear which superblock is the first of a partition.
  * For old systems where no group numbers are given, the first
- * superblock can be recognised by the timestamp: all superblock
+ * superblock can be recognized by the timestamp: all superblock
  * copies have the creation time in s_mtime, except the first, which
  * has the last time e2fsck or tune2fs wrote to the filesystem.
  *
@@ -94,7 +94,7 @@
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
-#include "nls-enable.h"
+#include "support/nls-enable.h"
 
 #undef DEBUG
 
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 	if (print_jnl_copies)
 		printf(_("[*] probably superblock written in the ext3 "
 			 "journal superblock,\n\tso start/end/grp wrong\n"));
-	printf(_("byte_offset  byte_start     byte_end  fs_blocks blksz  grp  last_mount_time           sb_uuid label\n"));
+	printf(_("byte_offset  byte_start     byte_end  fs_blocks blksz  grp  mkfs/mount_time           sb_uuid label\n"));
 	for (; lseek64(fd, sk, SEEK_SET) != -1 &&
 	       read(fd, &ext2, 512) == 512; sk += skiprate) {
 		static unsigned char last_uuid[16] = "blah";
@@ -230,7 +230,10 @@ int main(int argc, char *argv[])
 			WHY("free_inodes_count > inodes_count (%u > %u)\n",
 			    ext2.s_free_inodes_count, ext2.s_inodes_count);
 
-		tm = ext2.s_mtime;
+		if (ext2.s_mkfs_time != 0)
+			tm = ext2.s_mkfs_time;
+		else
+			tm = ext2.s_mtime;
 		s = ctime(&tm);
 		s[24] = 0;
 		bsize = 1 << (ext2.s_log_block_size + 10);
@@ -248,7 +251,7 @@ int main(int argc, char *argv[])
 			sb_offset = 0;
 		if (jnl_copy && !print_jnl_copies)
 			continue;
-		printf("\r%11Lu %11Lu%s %11Lu%s %9u %5Lu %4u%s %s %02x%02x%02x%02x %s\n",
+		printf("\r%11Lu %11Lu%s %11Lu%s %9u %5Lu %4u%s %s %02x%02x%02x%02x %.*s\n",
 		       sk, sk - ext2.s_block_group_nr * grpsize - sb_offset,
 		       jnl_copy ? "*":" ",
 		       sk + ext2fs_blocks_count(&ext2) * bsize -
@@ -256,7 +259,8 @@ int main(int argc, char *argv[])
 		       jnl_copy ? "*" : " ", ext2fs_blocks_count(&ext2), bsize,
 		       ext2.s_block_group_nr, jnl_copy ? "*" : " ", s,
 		       ext2.s_uuid[0], ext2.s_uuid[1],
-		       ext2.s_uuid[2], ext2.s_uuid[3], ext2.s_volume_name);
+		       ext2.s_uuid[2], ext2.s_uuid[3],
+		       EXT2_LEN_STR(ext2.s_volume_name));
 	}
 	printf(_("\n%11Lu: finished with errno %d\n"), sk, errno);
 	close(fd);

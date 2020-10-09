@@ -1,0 +1,88 @@
+E2fsprogs 1.45.5 (January 7, 2020)
+==================================
+
+Updates/Fixes since v1.45.4:
+
+Fixes
+-----
+
+E2fsck will no longer force a full file system check if time-based
+forced checks are disabled and the last mount time or last write time in
+the superblock are in the future.
+
+Fix a potential out of bounds write when checking a maliciously
+corrupted file system.  This is probably not exploitable on 64-bit
+platforms, but may be exploitable on 32-bit binaries depending on how
+the compiler lays out the stack variables.  (Addresses CVE-2019-5188)
+
+Fixed spurious weekly e-mails when e2scrub_all is run via a cron job
+on non-systemd systems.  (Addresses Debian Bug: #944033)
+
+Remove an unnecessary sleep in e2scrub which could add up to an
+additional two second delay during the boot up.  Also, avoid trying
+to reap aborted snapshots if it has been disabled via e2scrub.conf.
+(Addresses Debian Bug: #948193)
+
+If a mischievous system administrator mounts a pseudo-file system such
+as tmpfs with a device name that duplicates another mounted file system,
+this could potentially confuse resize2fs when it needs to find the mount
+point of a mounted file system.  (Who would have guessed?)  Add some
+sanity checking so that we can make libext2fs more robust against such
+insanity, at least on Linux.  (GNU HURD doesn't support st_rdev.)
+
+Tune2fs now prohibits enabling or disabling uninit_bg if the file system
+is mounted, since this could result in the file system getting
+corrupted, and there is an unfortunate AskUbuntu article suggesting this
+as a way to modify a file system's UUID on a live file system.  (Ext4
+now has a way to do this safely, using the metadata_csum_seed feature,
+which was added in the 4.4 Linux kernel.)
+
+Fix potential crash in e2fsck when rebuilding very large directories on
+file systems which have the new large_dir feature enable.
+
+Fix support of 32-bit uid's and gid's in fuse2fs and in mke2fs -d.
+
+Fix mke2fs's setting bad blocks to bigalloc file systems.
+
+Fix a bug where fuse2fs would incorrectly report the i_blocks fields for
+bigalloc file systems.
+
+Resize2fs's minimum size estimates (via resize2fs -M) estimates are now
+more accurate when run on mounted file systems.
+
+Fixed potential memory leak in read_bitmap() in libext2fs.
+
+Fixed various UBsan failures found when fuzzing file system images.
+(Addresses Google Bug: #128130353)
+
+Updated and clarified various man pages.
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Speed up e2fsck on file systems with a very large number of inodes
+caused by repeated calls to gettext().
+
+The inode_io io_manager can now support files which are greater than
+2GB.
+
+The ext2_off_t and ext2_off64_t are now signed types so that
+ext2fs_file_lseek() and ext2fs_file_llseek() can work correctly.
+
+Reserve codepoint for the fast_commit feature.
+
+Fixed various Debian packaging issues.
+
+Fix portability problems for Illumous and on hurd/i386 (Addresses Debian
+Bug: #944649)
+
+Always compile the ext2fs_swap_* functions even on little-endian
+architectures, so that debian/libext2fs.symbols can be consistent across
+architectures.
+
+Synchronized changes from Android's AOSP e2fsprogs tree.
+
+Updated config.guess and config.sub with newer versions from the FSF.
+
+Update the Chinese and Malay translations from the translation project.

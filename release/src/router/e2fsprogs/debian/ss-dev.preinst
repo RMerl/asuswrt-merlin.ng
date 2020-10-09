@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Abort on error.
+set -e
+
+symlink_match()
+{
+	local SYMLINK="$1"
+	local SYMLINK_TARGET="$2"
+
+	[ "$(readlink "$SYMLINK")" = "$SYMLINK_TARGET" ] || \
+	[ "$(readlink -f "$SYMLINK")" = "$SYMLINK_TARGET" ]
+}
+
+SYMLINK=/usr/share/doc/ss-dev
+SYMLINK_TARGET=libss2
+
+if [ "$1" = "install" -o "$1" = "upgrade" ] &&
+   [ -n "$2" ] && [ -h "$SYMLINK" ] &&
+   symlink_match "$SYMLINK" "$SYMLINK_TARGET"
+then
+    mv -f "$SYMLINK" "${SYMLINK}.dpkg-backup"
+fi
+
+#DEBHELPER#
+
+exit 0

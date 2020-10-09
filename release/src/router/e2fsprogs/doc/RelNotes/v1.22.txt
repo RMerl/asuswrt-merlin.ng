@@ -1,0 +1,31 @@
+E2fsprogs 1.22 (June 22, 2001)
+==============================
+
+Fixed a bug in e2fsck's handling of orphan inodes which are special
+files (i.e., block/character device files, named FIFO's, etc.).
+
+Fixed a bug accidentally introduced in e2fsprogs 1.21 which caused
+tune2fs to fail at adding a journal to a mounted filesystem.
+
+Fixed a few big-endian bugs in e2fsprogs
+	* The directory block functions were accidentally reporting
+		some directories as corrupted when they weren't.
+	* If e2fsprogs is compiled --disable-swapfs, the C language 
+		equivalents weren't being included for big-endian platforms.
+		(Fixes Debian bug #101686).
+
+Fixed a Hurd compilation problem.  (Addresses Debian bug #101361)
+
+Programmer's notes:
+-------------------
+
+Use platform independent method of defining the BLKFLSBUF and FDFLUSH
+ioctls, and allow them to be defined for non-i386 platforms.
+
+The uuid.h header file is now protected against multiple inclusions.
+
+E2fsprogs is now being developed using BitKeeper.  Changed the test
+scripts to deal with BK's stripping CR characters from text files,
+and changed the top-level Makefile.in to avoid including BitKeeper
+files when generating the source tarball.
+

@@ -1,5 +1,5 @@
 
-In order to santize e2fsprogs to be DFSG free, the file
+In order to sanitize e2fsprogs to be DFSG free, the file
 draft-leach-uuids-guids-01.txt has been removed.  It can be obtained
 by downloading e2fsprogs from the upstream sources.  It may also be
 available from other sites on the network, if you do a quick web
@@ -16,7 +16,7 @@ the documentation which has been removed for Debian's DFSG license
 purity shouldn't be denied to Ubuntu users.
 
 					Theodore Ts'o
-					Ocotober 3, 2006
+					October 3, 2006
 
 
 

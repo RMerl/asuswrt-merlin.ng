@@ -27,6 +27,10 @@
 #endif
 #include "blkidP.h"
 
+#ifdef _WIN32
+#include "windows.h"
+#endif
+
 static int save_dev(blkid_dev dev, FILE *file)
 {
 	struct list_head *p;
@@ -102,7 +106,11 @@ int blkid_flush_cache(blkid_cache cache)
 				file = fdopen(fd, "w");
 				opened = tmp;
 			}
+#ifndef _WIN32
 			fchmod(fd, 0644);
+#else
+			chmod(tmp, 0644);
+#endif
 		}
 	}
 

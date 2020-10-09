@@ -19,14 +19,25 @@
  */
 
 /*
+ * This is extent tail on-disk structure.
+ * All other extent structures are 12 bytes long.  It turns out that
+ * block_size % 12 >= 4 for at least all powers of 2 greater than 512, which
+ * covers all valid ext4 block sizes.  Therefore, this tail structure can be
+ * crammed into the end of the block without having to rebalance the tree.
+ */
+struct ext3_extent_tail {
+	__le32	et_checksum;	/* crc32c(uuid+inum+extent_block) */
+};
+
+/*
  * this is extent on-disk structure
  * it's used at the bottom of the tree
  */
 struct ext3_extent {
-	__u32	ee_block;	/* first logical block extent covers */
-	__u16	ee_len;		/* number of blocks covered by extent */
-	__u16	ee_start_hi;	/* high 16 bits of physical block */
-	__u32	ee_start;	/* low 32 bigs of physical block */
+	__le32	ee_block;	/* first logical block extent covers */
+	__le16	ee_len;		/* number of blocks covered by extent */
+	__le16	ee_start_hi;	/* high 16 bits of physical block */
+	__le32	ee_start;	/* low 32 bigs of physical block */
 };
 
 /*
@@ -34,22 +45,22 @@ struct ext3_extent {
  * it's used at all the levels, but the bottom
  */
 struct ext3_extent_idx {
-	__u32	ei_block;	/* index covers logical blocks from 'block' */
-	__u32	ei_leaf;	/* pointer to the physical block of the next *
+	__le32	ei_block;	/* index covers logical blocks from 'block' */
+	__le32	ei_leaf;	/* pointer to the physical block of the next *
 				 * level. leaf or next index could bet here */
-	__u16	ei_leaf_hi;	/* high 16 bits of physical block */
-	__u16	ei_unused;
+	__le16	ei_leaf_hi;	/* high 16 bits of physical block */
+	__le16	ei_unused;
 };
 
 /*
  * each block (leaves and indexes), even inode-stored has header
  */
 struct ext3_extent_header {
-	__u16	eh_magic;	/* probably will support different formats */
-	__u16	eh_entries;	/* number of valid entries */
-	__u16	eh_max;		/* capacity of store in entries */
-	__u16	eh_depth;	/* has tree real underlaying blocks? */
-	__u32	eh_generation;	/* generation of the tree */
+	__le16	eh_magic;	/* probably will support different formats */
+	__le16	eh_entries;	/* number of valid entries */
+	__le16	eh_max;		/* capacity of store in entries */
+	__le16	eh_depth;	/* has tree real underlying blocks? */
+	__le32	eh_generation;	/* generation of the tree */
 };
 
 #define EXT3_EXT_MAGIC		0xf30a
@@ -87,6 +98,8 @@ struct ext3_ext_path {
  */
 #define EXT_INIT_MAX_LEN	(1UL << 15)
 #define EXT_UNINIT_MAX_LEN	(EXT_INIT_MAX_LEN - 1)
+#define EXT_MAX_EXTENT_LBLK	(((__u64) 1 << 32) - 1)
+#define EXT_MAX_EXTENT_PBLK	(((__u64) 1 << 48) - 1)
 
 #define EXT_FIRST_EXTENT(__hdr__) \
 	((struct ext3_extent *) (((char *) (__hdr__)) +		\

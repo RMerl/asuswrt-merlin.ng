@@ -45,10 +45,10 @@ function compares the two supplied uuid variables
 .IR uu1 " and " uu2
 to each other.
 .SH RETURN VALUE
-Returns an integer less than, equal to, or greater than zero if 
+Returns an integer less than, equal to, or greater than zero if
 .I uu1
-is found,  respectively, to be lexigraphically less than, equal, or 
-greater than 
+is found,  respectively, to be lexicographical less than, equal, or
+greater than
 .IR uu2 .
 .SH AUTHOR
 Theodore Y. Ts'o

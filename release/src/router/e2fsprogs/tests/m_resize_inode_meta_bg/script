@@ -1,0 +1,7 @@
+DESCRIPTION="resize_inode and meta_bg enabled"
+FS_SIZE=15360
+MKE2FS_DEVICE_SECTSIZE=4096
+export MKE2FS_DEVICE_SECTSIZE
+MKE2FS_OPTS="-T ext4 -g256 -O 64bit"
+. $cmd_dir/run_mke2fs
+unset MKE2FS_DEVICE_SECTSIZE

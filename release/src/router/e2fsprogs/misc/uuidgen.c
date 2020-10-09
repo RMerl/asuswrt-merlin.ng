@@ -22,7 +22,7 @@ extern char *optarg;
 extern int optind;
 #endif
 #include "uuid/uuid.h"
-#include "nls-enable.h"
+#include "support/nls-enable.h"
 
 #define DO_TYPE_TIME	1
 #define DO_TYPE_RANDOM	2

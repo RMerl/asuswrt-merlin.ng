@@ -1,0 +1,48 @@
+E2fsprogs 1.44.1 (March 24, 2018)
+================================
+
+Updates/Fixes since v1.44.0:
+
+Fixes
+-----
+
+E2fsprogs 1.44.0 introduced a regression introduced which caused e2fsck
+to fail to support HTree directories on big-endian systems.  Fix how we
+read block numbers for internal htree nodes.
+
+Removed a potential memory leak from fsck.
+
+E2image now correctly creates e2image files for bigalloc file systems.
+
+Dumpe2fs and debugfs now correctly support e2image files for file
+systems that have the meta_bg option enabled.
+
+E2fsck and debugfs now correctly handle delete inodes (including
+processing the orphaned inode list in the case of e2fsck) for bigalloc
+file systems.  (Addresses Google Bug: #73795618)
+
+Portability fixes for GNU Hurd.  (Addresses Debian Bug: #893590)
+
+Portability fixes for building in some cross-build environments.
+
+Portability fixes for MacOS 10.6.8.
+
+Add clarifications to chattr's man page.  (Addresses Debian Bug:
+#890390)
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Debugfs now reads allocation bitmaps much more efficiently when opening
+a file system.
+
+Update Swedish translation file.
+
+Add Vcs-* fields to debian packaging.  (Addresses Debian Bug: #887512)
+
+Fix some test failures on GNU Hurd caused by a different default block
+size.
+
+Add new regression tests.
+

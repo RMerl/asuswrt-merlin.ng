@@ -1,5 +1,5 @@
 This is the Debian GNU/Linux prepackaged version of the ss
-command-line interface parsing library library. It is currently
+command-line interface parsing library. It is currently
 distributed together with the EXT2 file system utilities, which are
 otherwise packaged as "e2fsprogs".
 

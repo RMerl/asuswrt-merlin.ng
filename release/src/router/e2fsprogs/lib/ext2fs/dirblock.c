@@ -20,43 +20,34 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
-errcode_t ext2fs_read_dir_block3(ext2_filsys fs, blk64_t block,
-				 void *buf, int flags EXT2FS_ATTR((unused)))
+errcode_t ext2fs_read_dir_block4(ext2_filsys fs, blk64_t block,
+				 void *buf, int flags EXT2FS_ATTR((unused)),
+				 ext2_ino_t ino)
 {
 	errcode_t	retval;
-	char		*p, *end;
-	struct ext2_dir_entry *dirent;
-	unsigned int	name_len, rec_len;
-
+	int		corrupt = 0;
 
 	retval = io_channel_read_blk64(fs->io, block, 1, buf);
 	if (retval)
 		return retval;
 
-	p = (char *) buf;
-	end = (char *) buf + fs->blocksize;
-	while (p < end-8) {
-		dirent = (struct ext2_dir_entry *) p;
+	if (!(fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
+	    !ext2fs_dir_block_csum_verify(fs, ino,
+					  (struct ext2_dir_entry *)buf))
+		corrupt = 1;
+
 #ifdef WORDS_BIGENDIAN
-		dirent->inode = ext2fs_swab32(dirent->inode);
-		dirent->rec_len = ext2fs_swab16(dirent->rec_len);
-		dirent->name_len = ext2fs_swab16(dirent->name_len);
+	retval = ext2fs_dirent_swab_in(fs, buf, flags);
 #endif
-		name_len = dirent->name_len;
-#ifdef WORDS_BIGENDIAN
-		if (flags & EXT2_DIRBLOCK_V2_STRUCT)
-			dirent->name_len = ext2fs_swab16(dirent->name_len);
-#endif
-		if ((retval = ext2fs_get_rec_len(fs, dirent, &rec_len)) != 0)
-			return retval;
-		if ((rec_len < 8) || (rec_len % 4)) {
-			rec_len = 8;
-			retval = EXT2_ET_DIR_CORRUPTED;
-		} else if (((name_len & 0xFF) + 8) > rec_len)
-			retval = EXT2_ET_DIR_CORRUPTED;
-		p += rec_len;
-	}
+	if (!retval && corrupt)
+		retval = EXT2_ET_DIR_CSUM_INVALID;
 	return retval;
+}
+
+errcode_t ext2fs_read_dir_block3(ext2_filsys fs, blk64_t block,
+				 void *buf, int flags EXT2FS_ATTR((unused)))
+{
+	return ext2fs_read_dir_block4(fs, block, buf, flags, 0);
 }
 
 errcode_t ext2fs_read_dir_block2(ext2_filsys fs, blk_t block,
@@ -72,45 +63,40 @@ errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 }
 
 
-errcode_t ext2fs_write_dir_block3(ext2_filsys fs, blk64_t block,
-				  void *inbuf, int flags EXT2FS_ATTR((unused)))
+errcode_t ext2fs_write_dir_block4(ext2_filsys fs, blk64_t block,
+				  void *inbuf, int flags EXT2FS_ATTR((unused)),
+				  ext2_ino_t ino)
 {
-#ifdef WORDS_BIGENDIAN
 	errcode_t	retval;
-	char		*p, *end;
-	char		*buf = 0;
-	unsigned int	rec_len;
-	struct ext2_dir_entry *dirent;
+	char		*buf = inbuf;
 
+#ifdef WORDS_BIGENDIAN
 	retval = ext2fs_get_mem(fs->blocksize, &buf);
 	if (retval)
 		return retval;
 	memcpy(buf, inbuf, fs->blocksize);
-	p = buf;
-	end = buf + fs->blocksize;
-	while (p < end) {
-		dirent = (struct ext2_dir_entry *) p;
-		if ((retval = ext2fs_get_rec_len(fs, dirent, &rec_len)) != 0)
-			return retval;
-		if ((rec_len < 8) ||
-		    (rec_len % 4)) {
-			ext2fs_free_mem(&buf);
-			return (EXT2_ET_DIR_CORRUPTED);
-		}
-		p += rec_len;
-		dirent->inode = ext2fs_swab32(dirent->inode);
-		dirent->rec_len = ext2fs_swab16(dirent->rec_len);
-		dirent->name_len = ext2fs_swab16(dirent->name_len);
-
-		if (flags & EXT2_DIRBLOCK_V2_STRUCT)
-			dirent->name_len = ext2fs_swab16(dirent->name_len);
-	}
-	retval = io_channel_write_blk64(fs->io, block, 1, buf);
-	ext2fs_free_mem(&buf);
-	return retval;
-#else
-	return io_channel_write_blk64(fs->io, block, 1, (char *) inbuf);
+	retval = ext2fs_dirent_swab_out(fs, buf, flags);
+	if (retval)
+		return retval;
 #endif
+	retval = ext2fs_dir_block_csum_set(fs, ino,
+					   (struct ext2_dir_entry *)buf);
+	if (retval)
+		goto out;
+
+	retval = io_channel_write_blk64(fs->io, block, 1, buf);
+
+out:
+#ifdef WORDS_BIGENDIAN
+	ext2fs_free_mem(&buf);
+#endif
+	return retval;
+}
+
+errcode_t ext2fs_write_dir_block3(ext2_filsys fs, blk64_t block,
+				  void *inbuf, int flags EXT2FS_ATTR((unused)))
+{
+	return ext2fs_write_dir_block4(fs, block, inbuf, flags, 0);
 }
 
 errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,

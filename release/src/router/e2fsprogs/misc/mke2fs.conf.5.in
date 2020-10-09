@@ -1,26 +1,26 @@
 .\" -*- nroff -*-
 .\" Copyright 2006 by Theodore Ts'o.  All Rights Reserved.
 .\" This file may be copied under the terms of the GNU Public License.
-.\" 
+.\"
 .TH mke2fs.conf 5 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 mke2fs.conf \- Configuration file for mke2fs
 .SH DESCRIPTION
 .I mke2fs.conf
-is the configuration file for 
-.BR mke2fs (8).  
-It controls the default parameters used by 
+is the configuration file for
+.BR mke2fs (8).
+It controls the default parameters used by
 .BR mke2fs (8)
 when it is creating ext2, ext3, or ext4 filesystems.
 .PP
 The
 .I mke2fs.conf
-file uses an INI-style format.  Stanzas, or top-level sections, are 
-delimited by square braces: [ ].  Within each section, each line 
+file uses an INI-style format.  Stanzas, or top-level sections, are
+delimited by square braces: [ ].  Within each section, each line
 defines a relation, which assigns tags to values, or to a subsection,
-which contains further relations or subsections.   
+which contains further relations or subsections.
 .\" Tags can be assigned multiple values
-An example of the INI-style format used by this configuration file 
+An example of the INI-style format used by this configuration file
 follows below:
 .P
 	[section1]
@@ -49,14 +49,14 @@ follows below:
 .br
 	}
 .P
-Comments are delimited by a semicolon (';') or a hash ('#') character 
-at the beginning of the comment, and are terminated by the end of 
+Comments are delimited by a semicolon (';') or a hash ('#') character
+at the beginning of the comment, and are terminated by the end of
 line character.
 .P
 Tags and values must be quoted using double quotes if they contain
-spaces.  Within a quoted string, the standard backslash interpretations 
-apply: "\en" (for the newline character), 
-"\et" (for the tab character), "\eb" (for the backspace character), 
+spaces.  Within a quoted string, the standard backslash interpretations
+apply: "\en" (for the newline character),
+"\et" (for the tab character), "\eb" (for the backspace character),
 and "\e\e" (for the backslash character).
 .P
 Some relations expect a boolean value.  The parser is quite liberal on
@@ -64,7 +64,7 @@ recognizing ``yes'', '`y'', ``true'', ``t'', ``1'', ``on'', etc. as a
 boolean true value, and ``no'', ``n'', ``false'', ``nil'', ``0'',
 ``off'' as a boolean false value.
 .P
-The following stanzas are used in the 
+The following stanzas are used in the
 .I mke2fs.conf
 file.  They will be described in more detail in future sections of this
 document.
@@ -78,72 +78,45 @@ used by
 .BR mke2fs (8).
 In general, these defaults may be overridden by a definition in the
 .B fs_types
-stanza, or by an command-line option provided by the user.
-.TP 
+stanza, or by a command-line option provided by the user.
+.TP
 .I [fs_types]
 Contains relations which define defaults that should be used for specific
-filesystem types.  The filesystem type can be specified explicitly using
-the 
-.B -T
-option to
-.BR mke2fs (8).
+file system and usage types.  The file system type and usage type can be
+specified explicitly using
+the
+.BR \-t and \-T
+options to
+.BR mke2fs (8),
+respectively.
+.TP
+.I [devices]
+Contains relations which define defaults for specific devices.
 .SH THE [options] STANZA
 The following relations are defined in the
 .I [options]
 stanza.
 .TP
 .I proceed_delay
-If this relation is set to a positive integer, then if mke2fs will
-proceed after waiting
+If this relation is set to a positive integer, then mke2fs will
+wait
 .I proceed_delay
-seconds, after asking the user for permission to proceed, even if the
+seconds after asking the user for permission to proceed and
+then continue, even if the
 user has not answered the question.  Defaults to 0, which means to wait
 until the user answers the question one way or another.
+.TP
+.I sync_kludge
+If this relation is set to a positive integer, then while writing the
+inode table, mke2fs will request the operating system flush out pending
+writes to initialize the inode table every
+.I sync_kludge
+block groups.   This is needed to work around buggy kernels that don't
+handle writeback throttling correctly.
 .SH THE [defaults] STANZA
-The following relations are defined in the 
+The following relations are defined in the
 .I [defaults]
 stanza.
-.TP
-.I base_features
-This relation specifies the filesystems features which are enabled in
-newly created filesystems.  It may be overridden by the
-.I base_features
-relation found in the filesystem or usage type subsection of
-the
-.I [fs_types] 
-stanza.
-.TP
-.I default_features
-This relation specifies a set of features that should be added or
-removed to the features listed in the
-.I base_features
-relation.  It may be overridden by the filesystem-specific 
-.I default_features
-in the filesystem or usage type subsection of
-.IR [fs_types] ,
-and by the 
-.B -O
-command-line option
-to 
-.BR mke2fs (8).
-.TP
-.I enable_periodic_fsck
-This boolean relation specifies whether periodic filesystem checks should be
-enforced at boot time.  If set to true, checks will be forced every
-180 days, or after a random number of mounts.  These values may
-be changed later via the
-.B -i
-and
-.B -c
-command-line options to
-.BR tune2fs (8).
-.TP
-.I force_undo
-This boolean relation, if set to a value of true, forces
-.B mke2fs
-to always try to create an undo file, even if the undo file might be
-huge and it might extend the time to create the filesystem image
-because the inode table isn't being initialized lazily.
 .TP
 .I fs_type
 This relation specifies the default filesystem type if the user does not
@@ -155,45 +128,12 @@ is not started using a program name of the form
 .BI mkfs. fs-type\fR.
 If both the user and the
 .B mke2fs.conf
-file does not specify a default filesystem type, mke2fs will use a
+file do not specify a default filesystem type, mke2fs will use a
 default filesystem type of
-.IR ext3
+.I ext3
 if a journal was requested via a command-line option, or
 .I ext2
 if not.
-.TP
-.I blocksize
-This relation specifies the default blocksize if the user does not
-specify a blocksize on the command line, and the filesystem-type
-specific section of the configuration file does not specify a blocksize.
-.TP
-.I hash_alg
-This relation specifies the default hash algorithm used for the
-new filesystems with hashed b-tree directories.  Valid algorithms
-accepted are:
-.IR legacy ,
-.IR half_md4 ,
-and
-.IR tea .
-.TP
-.I inode_ratio
-This relation specifies the default inode ratio if the user does not
-specify one on the command line, and the filesystem-type
-specific section of the configuration file does not specify a default
-inode ratio.
-.TP
-.I inode_size
-This relation specifies the default inode size if the user does not
-specify one on the command line, and the filesystem-type
-specific section of the configuration file does not specify a default
-inode size.
-.TP
-.I reserved_ratio
-This relation specifies the default percentage of filesystem blocks
-reserved for the super-user, if the user does not
-specify one on the command line, and the filesystem-type
-specific section of the configuration file does not specify a default
-reserved ratio. This value can be a floating point number.
 .TP
 .I undo_dir
 This relation specifies the directory where the undo file should be
@@ -203,9 +143,22 @@ environment variable.  If the directory location is set to the value
 .IR none ,
 .B mke2fs
 will not create an undo file.
+.PP
+In addition, any tags that can be specified in a per-file system tags
+subsection as defined below (e.g.,
+.IR blocksize ,
+.IR hash_alg ,
+.IR inode_ratio ,
+.IR inode_size ,
+.IR reserved_ratio ,
+etc.) can also be specified in the
+.I defaults
+stanza to specify the default value to be used if the user does not
+specify one on the command line, and the filesystem-type
+specific section of the configuration file does not specify a default value.
 .SH THE [fs_types] STANZA
 Each tag in the
-.I [fs_types] 
+.I [fs_types]
 stanza names a filesystem type or usage type which can be specified via the
 .B \-t
 or
@@ -292,7 +245,7 @@ will be used, so the filesystem  will have an inode size of 128.
 .P
 The exception to this resolution is the
 .I features
-tag, which is specifies a set of changes to the features used by the
+tag, which specifies a set of changes to the features used by the
 filesystem, and which is cumulative.  So in the above example, first
 the configuration relation defaults.base_features would enable an
 initial feature set with the sparse_super, filetype, resize_inode, and
@@ -301,11 +254,13 @@ fs_types.ext4.features would enable the extents and flex_bg
 features, and finally the configuration relation
 fs_types.floppy.features would remove
 the resize_inode feature, resulting in a filesystem feature set
-consisting of the sparse_super, filetype, resize_inode, dir_index,
+consisting of the sparse_super, filetype, dir_index,
 extents_and flex_bg features.
 .P
-For each filesystem type, the following tags may be used in that 
-fs_type's subsection:
+For each filesystem type, the following tags may be used in that
+fs_type's subsection.   These tags may also be used in the
+.I default
+section:
 .TP
 .I base_features
 This relation specifies the features which are initially enabled for this
@@ -316,6 +271,36 @@ whose subsections define the
 .I base_features
 relation, only the last will be used by
 .BR mke2fs (8).
+.TP
+.I enable_periodic_fsck
+This boolean relation specifies whether periodic filesystem checks should be
+enforced at boot time.  If set to true, checks will be forced every
+180 days, or after a random number of mounts.  These values may
+be changed later via the
+.B -i
+and
+.B -c
+command-line options to
+.BR tune2fs (8).
+.TP
+.I errors
+Change the behavior of the kernel code when errors are detected.
+In all cases, a filesystem error will cause
+.BR e2fsck (8)
+to check the filesystem on the next boot.
+.I errors
+can be one of the following:
+.RS 1.2i
+.TP 1.2i
+.B continue
+Continue normal execution.
+.TP
+.B remount-ro
+Remount filesystem read-only.
+.TP
+.B panic
+Cause a kernel panic.
+.RE
 .TP
 .I features
 This relation specifies a comma-separated list of features edit
@@ -330,8 +315,15 @@ a named feature.  Each
 relation specified in the fs_types list will be applied in the order
 found in the fs_types list.
 .TP
+.I force_undo
+This boolean relation, if set to a value of true, forces
+.B mke2fs
+to always try to create an undo file, even if the undo file might be
+huge and it might extend the time to create the filesystem image
+because the inode table isn't being initialized lazily.
+.TP
 .I default_features
-This relation specifies set of features which should be enabled or 
+This relation specifies set of features which should be enabled or
 disabled after applying the features listed in the
 .I base_features
 and
@@ -361,16 +353,26 @@ This relation specifies the default blocksize if the user does not
 specify a blocksize on the command line.
 .TP
 .I lazy_itable_init
-This boolean relation specifies whether the inode table should 
+This boolean relation specifies whether the inode table should
 be lazily initialized.  It only has meaning if the uninit_bg feature is
 enabled.  If lazy_itable_init is true and the uninit_bg feature is
 enabled,  the inode table will
-not fully initialized by 
+not be fully initialized by
 .BR mke2fs (8).
 This speeds up filesystem
 initialization noticeably, but it requires the kernel to finish
 initializing the filesystem in the background when the filesystem is
 first mounted.
+.TP
+.I lazy_journal_init
+This boolean relation specifies whether the journal inode should be
+lazily initialized. It only has meaning if the has_journal feature is
+enabled. If lazy_journal_init is true, the journal inode will not be
+fully zeroed out by
+.BR mke2fs .
+This speeds up filesystem initialization noticeably, but carries some
+small risk if the system crashes before the journal has been overwritten
+entirely one time.
 .TP
 .I journal_location
 This relation specifies the location of the journal.
@@ -381,7 +383,7 @@ This relation indicates whether file systems with the
 feature enabled should be created with 0, 1, or 2 backup superblocks.
 .TP
 .I packed_meta_blocks
-This boolean relation specifes whether the allocation bitmaps, inode
+This boolean relation specifies whether the allocation bitmaps, inode
 table, and journal should be located at the beginning of the file system.
 .TP
 .I inode_ratio
@@ -438,7 +440,16 @@ command line option to
 .TP
 .I make_hugefiles
 This boolean relation enables the creation of pre-allocated files as
-part of formatting the file system.
+part of formatting the file system.  The extent tree blocks for these
+pre-allocated files will be placed near the beginning of the file
+system, so that if all of the other metadata blocks are also configured
+to be placed near the beginning of the file system (by disabling the
+backup superblocks, using the packed_meta_blocks option, etc.), the data
+blocks of the pre-allocated files will be contiguous.
+.TP
+.I hugefiles_dir
+This relation specifies the directory where huge files are created,
+relative to the filesystem root.
 .TP
 .I hugefiles_uid
 This relation controls the user ownership for all of the files and
@@ -481,10 +492,10 @@ requested alignment.  If this relation is not specified, no alignment
 requirement will be imposed on the huge files.
 .TP
 .I hugefiles_align_disk
-Thie relations specifies whether the alignment should be relative to the
+This relations specifies whether the alignment should be relative to the
 beginning of the hard drive (assuming that the starting offset of the
 partition is available to mke2fs).  The default value is false, which
-if will cause hugefile alignment to be relative to the beginning of the
+will cause hugefile alignment to be relative to the beginning of the
 file system.
 .TP
 .I hugefiles_name
@@ -497,19 +508,30 @@ huge file number.
 .I zero_hugefiles
 This boolean relation specifies whether or not zero blocks will be
 written to the hugefiles while
-.BR mke2fs(8)
+.BR mke2fs (8)
 is creating them.  By default, zero blocks will be written to the huge
 files to avoid stale data from being made available to potentially
 untrusted user programs, unless the device supports a discard/trim
-operation which will take care of zeroing the device blocks.  By
+operation which will take care of zeroing the device blocks.  By setting
 .I zero_hugefiles
 to false, this step will always be skipped, which can be useful if it is
 known that the disk has been previously erased, or if the user programs
 that will have access to the huge files are trusted to not reveal stale
 data.
+.TP
+.I encoding
+This relation defines the file name encoding to be used if the casefold
+feature is enabled.   Currently the only valid encoding is utf8-12.1 or
+utf8, which requests the most recent Unicode version; since 12.1 is the only
+available Unicode version, utf8 and utf8-12.1 have the same result.
+.I encoding_flags
+This relation defines encoding-specific flags.  For utf8 encodings, the
+only available flag is strict, which will cause attempts to create file
+names containing invalid Unicode characters to be rejected by the
+kernel.  Strict mode is not enabled by default.
 .SH THE [devices] STANZA
 Each tag in the
-.I [devices] 
+.I [devices]
 stanza names device name so that per-device defaults can be specified.
 .TP
 .I fs_type
@@ -524,7 +546,7 @@ option, if this option isn't specified on the command line.
 .SH FILES
 .TP
 .I /etc/mke2fs.conf
-The configuration file for 
+The configuration file for
 .BR mke2fs (8).
 .SH SEE ALSO
 .BR mke2fs (8)

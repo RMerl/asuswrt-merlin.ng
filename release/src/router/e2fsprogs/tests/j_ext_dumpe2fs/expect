@@ -1,0 +1,53 @@
+e2fsck external journal
+../e2fsck/e2fsck: Filesystem has unsupported feature(s) while trying to open test.img
+
+The superblock could not be read or does not describe a valid ext2/ext3/ext4
+filesystem.  If the device is valid and it really contains an ext2/ext3/ext4
+filesystem (and not swap or ufs or something else), then the superblock
+is corrupt, and you might try running e2fsck with an alternate superblock:
+    e2fsck -b 8193 <device>
+ or
+    e2fsck -b 32768 <device>
+
+Exit status is 8
+dumpe2fs external journal
+Filesystem volume name:   <none>
+Last mounted on:          <not available>
+Filesystem magic number:  0xEF53
+Filesystem revision #:    1 (dynamic)
+Filesystem features:      journal_dev metadata_csum
+Default mount options:    user_xattr acl block_validity
+Filesystem state:         clean
+Errors behavior:          Continue
+Filesystem OS type:       Linux
+Inode count:              0
+Block count:              2048
+Reserved block count:     0
+Free blocks:              0
+Free inodes:              0
+First block:              1
+Block size:               1024
+Fragment size:            1024
+Blocks per group:         8192
+Fragments per group:      8192
+Inodes per group:         0
+Inode blocks per group:   0
+Mount count:              0
+Check interval:           0 (<none>)
+Reserved blocks uid:      0
+Reserved blocks gid:      0
+First inode:              11
+Inode size:	          256
+Required extra isize:     28
+Desired extra isize:      28
+Default directory hash:   half_md4
+Checksum type:            crc32c
+Journal features:         journal_64bit journal_checksum_v3
+Journal size:             2048k
+Journal length:           2048
+Journal first block:      3
+Journal sequence:         0x00000003
+Journal start:            0
+Journal checksum type:    crc32c
+Journal checksum:         0x661e816f
+Journal users:            117f752e-f27d-4f6f-a652-072586a29b82

@@ -1,0 +1,62 @@
+E2fsprogs 1.45.6 (March 20, 2020)
+==================================
+
+Updates/Fixes since v1.45.5:
+
+UI and Features
+---------------
+
+Debugfs will ignore lines in its command files which start with a
+comment character ("#").
+
+
+Fixes
+-----
+
+Fixed a number of potential out of bounds memory accesses caused by
+fuzzed / malicious file systems.  (Addresses Google Bug: #147849134)
+
+Fix a spurious complaint from e2fsck when a directory which previously
+had more than 32000 subdirectories has the number of subdirectories
+drops below 32000.
+
+Fix an ismounted check when an LVM device is renamed while the device is
+mounted.
+
+Mke2fs -d now correctly sets permission with files where the owner
+permissions are not rwx.
+
+Improve e2fsck's ability to deal with file systems with very large
+number of directories, such that various data structures take more than
+2GiB of memory.  Use better structure packing to improve the memory
+efficiency of these data structures.
+
+Fix debugfs so it correctly prints inode numbers > 2**31.
+
+Filefrag now supports very large files (with > 4 billion blocks), as
+well as block sizes up to 1 GiB.
+
+Updated and clarified various man pages.  (Addresses Debian Bugs:
+#953493, #953494, #951808)
+
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Reserved the error code EXT2_ET_NO_GDESC (which will be used in
+e2fsprogs v1.46+)
+
+Added a thread-safe variant of e2p_feature2string(),
+e2p_feature_to_string() to the libe2p library.
+
+Fixed portability problems caused by gcc 10.
+
+Fixed portability problem in libcom_err with GNU Hurd.
+
+Fixed various Debian packaging issues.  (Addresses-Debian-Bug: #953926)
+
+Synchronized changes from Android's AOSP e2fsprogs tree.
+
+Update the Malay translation from the translation project.
+

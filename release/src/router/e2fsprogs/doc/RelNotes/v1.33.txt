@@ -1,0 +1,142 @@
+E2fsprogs 1.33 (April 21, 2003)
+===============================
+
+Added a new utility program, logsave, which captures the output of a
+command in a log file, even if the containing directory hasn't been
+mounted yet (in which case the it saves the output in memory until it
+can write out the logfile).  This is useful for capturing the
+output of fsck during the boot sequence.
+
+Fixed some portability problems that were causing problems under
+the Cygwin32 environment.
+
+Mke2fs now interprets a negative number to the -b option as a minimum
+block size.
+
+Fixed a bug in mke2fs which was incorrectly checking the argument to
+the -g option if the default block size was used.  (Addresses Debian
+bug #188319)
+
+Fsck now explicitly ignores tmpfs and devpts, and it will complain if
+it can not find filesystem checkers for jfs, reseirfs, and xfs.
+
+E2fsck now updates the global free block and inode counters from the
+block group specific counters quietly.  This is needed for an
+experimental patch which eliminates locking the entire filesystem when
+allocating blocks or inodes; if the filesystem is not unmounted
+cleanly, the global counts may not be accurate.
+
+Imported bug fixes to the EVMS plugin from the EVMS 2.0 tree.  (EVMS
+2.0 is not yet supported; this only pulled in the bug fixes: fixed
+possible hangs caused by bugs in calling waitpid, and not setting the
+pipe to non-blocking mode; also fixed a file descriptor leak; made
+sure all functions call log entry/exit functions.)
+
+Badblocks now flushes its output file as bad blocks are discovered.
+
+The uuid library is now more paranoid about assuming the correctness
+of the /dev/random device; it mixes in a stream of bytes from
+random/srandom, just in case.
+
+Update Debian files to reflect the fact that I am now the Debian
+maintainer of e2fsprogs.  Other various Debian-specific packaging
+cleanups.
+
+Move the source tarball generation functions from the top-level
+makefile to the util/gen-tarball script.  
+
+Updated the Turkish .po translation file.
+
+Added Heimdal and MIT krb5 extensions to the com_err library to make
+it more compatible with com_err libraries from those distributions.
+
+Changed dumpe2fs to always display the superblock fields relating to
+the journalling and/or directory indexing feature even if those
+features are not enabled.
+
+Updated and clarify copyright statement vis-a-vis alpha releases of
+e2fsprogs.
+
+The ss library will now try to dynamically link to the readline
+library and use it if it is present in the system.  This means that
+the debugfs program now has line editing and history features.  The
+SS_READLINE_PATH environment variable is used to find a readline or
+readline-compatible library.
+
+E2fsck now finds most duplicate filenames (all when rebuilding all
+directories via the -D option) and offers to delete or rename
+duplicate filenames/directory entries.  (Addresses Debian Bug #176814).
+
+Fix bug in e2image.  When writing out a raw image file, include data
+blocks from symlinks that do not store the symlink within the inode.
+
+Fix bug in resize2fs which incorrectly moved the block and inode
+bitmaps for sparse superblock filesystems and incorrectly marked
+blocks as in use.  (Addresses Debian bug #174766)
+ 
+Added a new shared library, the blkid library, which efficiently
+allows fsck, mke2fs, e2fsck, and tune2fs to be able to look up LABEL
+and UUID filesystem specifiers without needing to search all of the
+devices in the system.  Instead, the device is looked up in a cache
+file, and then verified to make sure the blkid cache is correct.
+
+Tune2fs and e2label will accept LABEL=xxx and UID=yyy specifiers for
+the device name, using the blkid library.  (Addresses Debian bugs
+#166048, #179671)
+
+Fsck now supports backslash escapes in /etc/fstab so that \040 can be
+used for spaces in device labels.
+
+Removed 32-bit limitations for debugfs's dump command.
+
+If the user specifies a large number of inodes, Mke2fs will
+automatically adjust the number of blocks per group to find a valid
+set of filesystem parameters.
+
+Add workaround to detect broken MD devices where when some of the
+underlying devices are marked read-only, writes to the MD device are
+silently dropped.  E2fsck will detect if there is an attempt to run
+the journal twice, and abort with an error if this is the case.
+(Addresses IBM Bugzilla bug #1226)
+
+E2fsck will print an error if more than one of the -p/-a, -n or -y
+options are specified.
+
+E2fsck will fix HTREE corruptions in preen mode, without stopping the
+boot process.  This is needed because the 2.4 ext2 filesystem
+accidentally had the INDEX_FL backwards compatibility code removed.
+
+Mke2fs no longer creates filesystems with the dir_index flag set by
+default; the user has to specifically request it.
+
+Update and clarified various man pages. (Addresses Debian bugs
+#173612, #175233, #175113, and #170497, #185945, #188318)
+
+Created man page for the mk_cmds program (from the libss library).
+
+Programmer's notes: 
+-------------------
+
+Fix various gcc -Wall nits.
+
+Fixed a lot of portability problems that caused e2fsprogs not to build
+successfully under Solaris and Apple/Darwin.
+
+Fixed a Makefile dependency to allow building e2fsprogs using parallel
+make jobs.
+
+Changes to create a subset distribution which consists only of the
+et, ss, uuid, and blkid libraries.  The configure script and top-level
+makefile were changed to support working with a subset distribution.
+
+Removed EXT2_FEATURE_RO_COMPAT_BTREE_DIR mention of since it's not
+actually used, and might people who are looking for
+EXT2_FEATURE_COMPAT_DIR_INDEX, which is in use.
+
+Updated debian files to fix a number of Lintian warnings.
+
+Updated config.guess and config.sub with newer versions from the FSF.
+
+Removed unnecessary libraries from being linked into the fsck, lsattr, 
+chattr, and blkid executables.
+

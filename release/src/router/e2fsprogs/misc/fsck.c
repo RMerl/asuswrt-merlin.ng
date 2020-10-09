@@ -59,7 +59,7 @@
 #endif
 
 #include "../version.h"
-#include "nls-enable.h"
+#include "support/nls-enable.h"
 #include "fsck.h"
 #include "blkid/blkid.h"
 
@@ -408,8 +408,12 @@ static char *find_fsck(char *type)
   tpl = (strncmp(type, "fsck.", 5) ? "%s/fsck.%s" : "%s/%s");
 
   for(s = strtok(p, ":"); s; s = strtok(NULL, ":")) {
-	sprintf(prog, tpl, s, type);
-	if (stat(prog, &st) == 0) break;
+	  int len = snprintf(prog, sizeof(prog), tpl, s, type);
+
+	  if ((len < 0) || (len >= (int) sizeof(prog)))
+		  continue;
+	  if (stat(prog, &st) == 0)
+		  break;
   }
   free(p);
   return(s ? prog : NULL);
@@ -435,17 +439,20 @@ static int progress_active(NOARGS)
 static int execute(const char *type, const char *device, const char *mntpt,
 		   int interactive)
 {
-	char *s, *argv[80], prog[80];
-	int  argc, i;
+	char *s, *argv[80], prog[256];
+	int  argc, i, len;
 	struct fsck_instance *inst, *p;
 	pid_t	pid;
+
+	len = snprintf(prog, sizeof(prog), "fsck.%s", type);
+	if ((len < 0) || (len >= (int) sizeof(prog)))
+		return EINVAL;
 
 	inst = malloc(sizeof(struct fsck_instance));
 	if (!inst)
 		return ENOMEM;
 	memset(inst, 0, sizeof(struct fsck_instance));
 
-	sprintf(prog, "fsck.%s", type);
 	argv[0] = string_copy(prog);
 	argc = 1;
 
@@ -997,7 +1004,7 @@ static int check_all(NOARGS)
 	}
 	/*
 	 * This is for the bone-headed user who enters the root
-	 * filesystem twice.  Skip root will skep all root entries.
+	 * filesystem twice.  Skip root will skip all root entries.
 	 */
 	if (skip_root)
 		for (fs = filesys_info; fs; fs = fs->next)
@@ -1174,8 +1181,8 @@ static void PRS(int argc, char *argv[])
 						progress_fd = 0;
 					else
 						goto next_arg;
-				} else if ((i+1) < argc &&
-					   !strncmp(argv[i+1], "-", 1) == 0) {
+				} else if (argc > i + 1 &&
+					   argv[i + 1][0] != '-') {
 					progress_fd = string_to_int(argv[i]);
 					if (progress_fd < 0)
 						progress_fd = 0;

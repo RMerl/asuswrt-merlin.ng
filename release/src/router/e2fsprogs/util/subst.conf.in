@@ -1,9 +1,8 @@
 AWK			@AWK@
 SED			@SED@
-ET_DIR			@ET_DIR@
-SS_DIR			@SS_DIR@
 E2FSPROGS_MONTH		@E2FSPROGS_MONTH@
 E2FSPROGS_YEAR		@E2FSPROGS_YEAR@
+E2FSPROGS_DATE		@E2FSPROGS_DATE@
 E2FSPROGS_VERSION	@E2FSPROGS_VERSION@
 SIZEOF_LONG_LONG	@SIZEOF_LONG_LONG@
 SIZEOF_LONG		@SIZEOF_LONG@
@@ -18,5 +17,10 @@ $prefix			@prefix@
 # Enable the documentation for the journal device mke2fs, tune2fs, and
 # e2fsck's man page
 JDEV			
-# Enable documentation for quota feature in mke2fs
-QUOTA_MAN_COMMENT	@QUOTA_MAN_COMMENT@
+# Enable the documentation for the tdb profile in e2fsck.conf's man page
+TDB_MAN_COMMENT		@TDB_MAN_COMMENT@
+root_sbindir		@root_sbindir@
+root_bindir		@root_bindir@
+libdir			@libdir@
+$exec_prefix		@exec_prefix@
+pkglibdir		@libdir@/e2fsprogs

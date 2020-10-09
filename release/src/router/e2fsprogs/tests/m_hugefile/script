@@ -1,0 +1,119 @@
+FSCK_OPT=-fn
+OUT=$test_name.log
+EXP=$test_dir/expect
+CONF=$TMPFILE.conf
+
+if [ $(uname -s) = "Darwin" ]; then
+	# creates a 4TB filesystem
+	echo "$test_name: $DESCRIPTION: skipped for HFS+ (no sparse files)"
+	return 0
+fi
+
+if [ $(uname -s) = "FreeBSD" ]; then
+	# creates a 4TB filesystem
+	echo "$test_name: $DESCRIPTION: skipped for FreeBSD (no sparse files)"
+	return 0
+fi
+
+cat > $CONF << ENDL
+[fs_types]
+	hugefile = {
+		features = extent,huge_file,flex_bg,uninit_bg,dir_nlink,extra_isize,^resize_inode,sparse_super2
+		hash_alg = half_md4
+		num_backup_sb = 0
+		packed_meta_blocks = 1
+		make_hugefiles = 1
+		inode_ratio = 4194304
+		hugefiles_dir = /store
+		hugefiles_name = big-data
+		hugefiles_digits = 0
+		hugefiles_size = 0
+		hugefiles_align = 256M
+		num_hugefiles = 1
+		zero_hugefiles = false
+		flex_bg_size = 262144
+	}
+ENDL
+
+echo "mke2fs -F -T hugefile test.img 4T" > $OUT
+MKE2FS_CONFIG=$CONF $MKE2FS -F -T hugefile $TMPFILE 4T >> $OUT 2>&1
+rm -f $CONF
+
+# check the file system if we get this far, we succeeded...
+$FSCK $FSCK_OPT -N test_filesys $TMPFILE >> $OUT 2>&1
+status=$?
+echo Exit status is $status >> $OUT
+
+echo 'debugfs -R "extents /store/big-data" test.img' >> $OUT
+
+$DEBUGFS -R "extents /store/big-data" $TMPFILE 2>&1 | tr / " " | tr -d - | awk '
+BEGIN {
+	expected_logical_start = 0;
+	expected_physical_start = 0;
+}
+{
+	if (NR != 1) {
+		level = $1;
+		total_levels = $2;
+
+		if (level == total_levels) {
+			logical_start=$5;
+			logical_end=$6;
+			physical_start=$7;
+			physical_end=$8;
+			len = $9;
+
+			if (logical_end + 1 - logical_start != len) {
+				print logical_end + 1 - logical_start, len;
+				print "UNEXPECTED LENGTH for extent", $0;
+			}
+			if (physical_end + 1 - physical_start != len) {
+				print physical_end + 1 - physical_start, len;
+				print "UNEXPECTED LENGTH for extent", $0;
+			}
+
+			if (logical_start != expected_logical_start) {
+				print "UNEXPECTED LOGICAL DISCONTINUITY between extents:";
+				print "\t", prev;
+				print "\t", $0;
+			}
+			if (physical_start != expected_physical_start &&
+				expected_logical_start != 0) {
+				print "PHYSICAL DISCONTINUITY between extents:";
+				print "\t", prev;
+				print "\t", $0;
+			}
+
+			expected_logical_start = logical_end + 1;
+			expected_physical_start = physical_end + 1;
+		}
+	}
+	prev=$0;
+}
+END {
+    print "Last logical block:", expected_logical_start-1;
+    print "Last physical block:", expected_physical_start-1;
+}
+' >> $OUT 2>&1
+
+rm $TMPFILE
+
+#
+# Do the verification
+#
+
+sed -f $cmd_dir/filter.sed $OUT > $OUT.new
+mv $OUT.new $OUT
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset IMAGE FSCK_OPT OUT EXP CONF

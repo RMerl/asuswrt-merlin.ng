@@ -2,10 +2,8 @@
 #
 #
 
-datarootdir=@datarootdir@
 AWK=@AWK@
-DIR="${DIR-@datadir@/et}"
-ET_DIR="${ET_DIR-@ET_DIR@}"
+DIR=@datadir@/et
 
 if test "$1" = "--build-tree" ; then
     shift;
@@ -29,13 +27,13 @@ do
   fi
 done
 
+if test -n "$_ET_DIR_OVERRIDE" ; then
+    DIR="$_ET_DIR_OVERRIDE";
+fi
+
 if test ! -f "$DIR/et_h.awk" || test ! -f "$DIR/et_c.awk" ; then
-    DIR="$ET_DIR"
-#    echo "Falling back to $DIR..."
-    if test ! -f "$DIR/et_h.awk" || test ! -f "$DIR/et_c.awk" ; then
-	echo "compile_et: Couldn't find compile_et's template files."
-	exit 1
-    fi
+    echo "compile_et: Couldn't find compile_et's template files."
+    exit 1
 fi
 
 ROOT=`echo $1 | sed -e s/.et$//`

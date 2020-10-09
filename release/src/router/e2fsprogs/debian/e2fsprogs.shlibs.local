@@ -1,0 +1,2 @@
+libext2fs 2 libext2fs2 (= ${binary:Version})
+libe2p 2 libext2fs2 (= ${binary:Version})

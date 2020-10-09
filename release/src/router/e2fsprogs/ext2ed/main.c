@@ -14,7 +14,7 @@ This file mostly contains:
 2.	The parser, which asks the command line from the user.
 3.	The dispatcher, which analyzes the command line and calls the appropriate handler function.
 4.	A command pattern matcher which is used along with the readline completion feature.
-5.	A function which tells the user that an internal error has occured.
+5.	A function which tells the user that an internal error has occurred.
 
 First written on: March 30 1995
 
@@ -57,7 +57,7 @@ They are initialized below to some logical defaults.
 char Ext2Descriptors [200]="ext2.descriptors";	/* The location of the ext2 filesystem object definition */
 char AlternateDescriptors [200]="";		/* We allow the user to define additional structures */
 char LogFile [200]="ext2ed.log";		/* The location of the log file - Each write will be logged there */
-int LogChanges=1;				/* 1 enables logging, 0 diables logging */
+int LogChanges=1;				/* 1 enables logging, 0 disables logging */
 int AllowChanges=0;				/* When set, the enablewrite command will fail */
 int AllowMountedRead=0;				/* Behavior when trying to open a mounted filesystem read-only */
 int ForceExt2=0;				/* When set, ext2 autodetection is overridden */
@@ -334,7 +334,7 @@ void parser (void)
 
 
 /*
- * This is a very important function. Its task is to recieve a command
+ * This is a very important function. Its task is to receive a command
  * name and link it to a C function.  There are three types of commands:
  *
  * 1.	General commands - Always available and accessed through
@@ -354,7 +354,7 @@ void parser (void)
  *
  * When an handling function is found, it is called along with the
  * command line that was passed to us. The handling function is then
- * free to interpert the arguments in its own style.
+ * free to interpret the arguments in its own style.
  */
 int dispatch (char *command_line)
 {
@@ -480,7 +480,7 @@ char *complete_command (char *text,int state)
 			}
 		}
 
-	/* No, pehaps ext2 specific command then ? */
+	/* No, perhaps ext2 specific command then ? */
 
 	for (i=0;i<=ext2_commands.last_command;i++) {
 		if (strncmp (ext2_commands.names [i],text,len)==0) {

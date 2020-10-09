@@ -4,7 +4,7 @@
  * Copyright (C) 1997, 1998 by Theodore Ts'o and
  * 	PowerQuest, Inc.
  *
- * Copyright (C) 1999, 2000 by Theosore Ts'o
+ * Copyright (C) 1999, 2000 by Theodore Ts'o
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -81,6 +81,9 @@ typedef struct ext2_sim_progress *ext2_sim_progmeter;
 
 #define RESIZE_PERCENT_COMPLETE		0x0100
 #define RESIZE_VERBOSE			0x0200
+
+#define RESIZE_ENABLE_64BIT		0x0400
+#define RESIZE_DISABLE_64BIT		0x0800
 
 /*
  * This structure is used for keeping track of how much resources have

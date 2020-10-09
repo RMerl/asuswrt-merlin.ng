@@ -52,7 +52,7 @@ int ext2fs_reserve_super_and_bgd(ext2_filsys fs,
 	ext2fs_super_and_bgd_loc2(fs, group, &super_blk,
 				  &old_desc_blk, &new_desc_blk, &used_blks);
 
-	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+	if (ext2fs_has_feature_meta_bg(fs->super))
 		old_desc_blocks = fs->super->s_first_meta_bg;
 	else
 		old_desc_blocks =

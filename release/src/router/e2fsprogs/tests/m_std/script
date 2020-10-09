@@ -1,3 +1,6 @@
 DESCRIPTION="standard filesystem options"
+DUMPE2FS_IGNORE_80COL=1
+export DUMPE2FS_IGNORE_80COL
 FS_SIZE=65536
 . $cmd_dir/run_mke2fs
+unset DUMPE2FS_IGNORE_80COL

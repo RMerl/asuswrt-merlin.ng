@@ -1,0 +1,132 @@
+Creating filesystem with 524288 1k blocks and 32768 inodes
+Superblock backups stored on blocks: 
+	8193, 24577, 40961, 57345, 73729, 204801, 221185, 401409
+
+Allocating group tables:      done                            
+Writing inode tables:      done                            
+Creating journal (16384 blocks): done
+Writing superblocks and filesystem accounting information:      done
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/32768 files (0.0% non-contiguous), 27068/524288 blocks
+Exit status is 0
+Journal features:         (none)
+debugfs write journal
+Journal features:         journal_incompat_revoke journal_64bit journal_checksum_v3
+debugfs: logdump -c
+Journal starts at block 1, transaction 1
+Found expected sequence 1, type 1 (descriptor block) at block 1
+Found expected sequence 1, type 1 (descriptor block) at block 64
+Found expected sequence 1, type 1 (descriptor block) at block 127
+Found expected sequence 1, type 1 (descriptor block) at block 190
+Found expected sequence 1, type 1 (descriptor block) at block 253
+Found expected sequence 1, type 1 (descriptor block) at block 316
+Found expected sequence 1, type 1 (descriptor block) at block 379
+Found expected sequence 1, type 1 (descriptor block) at block 442
+Found expected sequence 1, type 1 (descriptor block) at block 505
+Found expected sequence 1, type 1 (descriptor block) at block 568
+Found expected sequence 1, type 1 (descriptor block) at block 631
+Found expected sequence 1, type 1 (descriptor block) at block 694
+Found expected sequence 1, type 1 (descriptor block) at block 757
+Found expected sequence 1, type 1 (descriptor block) at block 820
+Found expected sequence 1, type 1 (descriptor block) at block 883
+Found expected sequence 1, type 1 (descriptor block) at block 946
+Found expected sequence 1, type 1 (descriptor block) at block 1009
+Found expected sequence 1, type 1 (descriptor block) at block 1072
+Found expected sequence 1, type 1 (descriptor block) at block 1135
+Found expected sequence 1, type 1 (descriptor block) at block 1198
+Found expected sequence 1, type 1 (descriptor block) at block 1261
+Found expected sequence 1, type 1 (descriptor block) at block 1324
+Found expected sequence 1, type 1 (descriptor block) at block 1387
+Found expected sequence 1, type 1 (descriptor block) at block 1450
+Found expected sequence 1, type 1 (descriptor block) at block 1513
+Found expected sequence 1, type 1 (descriptor block) at block 1576
+Found expected sequence 1, type 1 (descriptor block) at block 1639
+Found expected sequence 1, type 1 (descriptor block) at block 1702
+Found expected sequence 1, type 1 (descriptor block) at block 1765
+Found expected sequence 1, type 1 (descriptor block) at block 1828
+Found expected sequence 1, type 1 (descriptor block) at block 1891
+Found expected sequence 1, type 1 (descriptor block) at block 1954
+Found expected sequence 1, type 1 (descriptor block) at block 2017
+Found expected sequence 1, type 1 (descriptor block) at block 2080
+Found expected sequence 1, type 1 (descriptor block) at block 2143
+Found expected sequence 1, type 1 (descriptor block) at block 2206
+Found expected sequence 1, type 1 (descriptor block) at block 2269
+Found expected sequence 1, type 1 (descriptor block) at block 2332
+Found expected sequence 1, type 1 (descriptor block) at block 2395
+Found expected sequence 1, type 1 (descriptor block) at block 2458
+Found expected sequence 1, type 1 (descriptor block) at block 2521
+Found expected sequence 1, type 1 (descriptor block) at block 2584
+Found expected sequence 1, type 1 (descriptor block) at block 2647
+Found expected sequence 1, type 1 (descriptor block) at block 2710
+Found expected sequence 1, type 1 (descriptor block) at block 2773
+Found expected sequence 1, type 1 (descriptor block) at block 2836
+Found expected sequence 1, type 1 (descriptor block) at block 2899
+Found expected sequence 1, type 1 (descriptor block) at block 2962
+Found expected sequence 1, type 1 (descriptor block) at block 3025
+Found expected sequence 1, type 1 (descriptor block) at block 3088
+Found expected sequence 1, type 1 (descriptor block) at block 3151
+Found expected sequence 1, type 1 (descriptor block) at block 3214
+Found expected sequence 1, type 1 (descriptor block) at block 3277
+Found expected sequence 1, type 1 (descriptor block) at block 3340
+Found expected sequence 1, type 1 (descriptor block) at block 3403
+Found expected sequence 1, type 1 (descriptor block) at block 3466
+Found expected sequence 1, type 1 (descriptor block) at block 3529
+Found expected sequence 1, type 1 (descriptor block) at block 3592
+Found expected sequence 1, type 1 (descriptor block) at block 3655
+Found expected sequence 1, type 1 (descriptor block) at block 3718
+Found expected sequence 1, type 1 (descriptor block) at block 3781
+Found expected sequence 1, type 1 (descriptor block) at block 3844
+Found expected sequence 1, type 1 (descriptor block) at block 3907
+Found expected sequence 1, type 1 (descriptor block) at block 3970
+Found expected sequence 1, type 1 (descriptor block) at block 4033
+Found expected sequence 1, type 1 (descriptor block) at block 4096
+Found expected sequence 1, type 1 (descriptor block) at block 4159
+Found expected sequence 1, type 2 (commit block) at block 4165
+Found expected sequence 2, type 5 (revoke table) at block 4166
+Found expected sequence 2, type 5 (revoke table) at block 4167
+Found expected sequence 2, type 5 (revoke table) at block 4168
+Found expected sequence 2, type 5 (revoke table) at block 4169
+Found expected sequence 2, type 5 (revoke table) at block 4170
+Found expected sequence 2, type 5 (revoke table) at block 4171
+Found expected sequence 2, type 5 (revoke table) at block 4172
+Found expected sequence 2, type 5 (revoke table) at block 4173
+Found expected sequence 2, type 5 (revoke table) at block 4174
+Found expected sequence 2, type 5 (revoke table) at block 4175
+Found expected sequence 2, type 5 (revoke table) at block 4176
+Found expected sequence 2, type 5 (revoke table) at block 4177
+Found expected sequence 2, type 5 (revoke table) at block 4178
+Found expected sequence 2, type 5 (revoke table) at block 4179
+Found expected sequence 2, type 5 (revoke table) at block 4180
+Found expected sequence 2, type 5 (revoke table) at block 4181
+Found expected sequence 2, type 5 (revoke table) at block 4182
+Found expected sequence 2, type 5 (revoke table) at block 4183
+Found expected sequence 2, type 5 (revoke table) at block 4184
+Found expected sequence 2, type 5 (revoke table) at block 4185
+Found expected sequence 2, type 5 (revoke table) at block 4186
+Found expected sequence 2, type 5 (revoke table) at block 4187
+Found expected sequence 2, type 5 (revoke table) at block 4188
+Found expected sequence 2, type 5 (revoke table) at block 4189
+Found expected sequence 2, type 5 (revoke table) at block 4190
+Found expected sequence 2, type 5 (revoke table) at block 4191
+Found expected sequence 2, type 5 (revoke table) at block 4192
+Found expected sequence 2, type 5 (revoke table) at block 4193
+Found expected sequence 2, type 5 (revoke table) at block 4194
+Found expected sequence 2, type 5 (revoke table) at block 4195
+Found expected sequence 2, type 5 (revoke table) at block 4196
+Found expected sequence 2, type 5 (revoke table) at block 4197
+Found expected sequence 2, type 5 (revoke table) at block 4198
+Found expected sequence 2, type 2 (commit block) at block 4199
+No magic number at block 4200: end of journal.
+test_filesys: recovering journal
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/32768 files (0.0% non-contiguous), 27068/524288 blocks
+Exit status is 0

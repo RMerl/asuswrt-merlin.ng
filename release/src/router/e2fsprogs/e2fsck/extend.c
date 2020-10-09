@@ -31,6 +31,7 @@ int main(int argc, char **argv)
 	int	nblocks, blocksize;
 	int	fd;
 	char	*block;
+	errcode_t retval;
 	int	ret;
 
 	if (argc != 4)
@@ -45,13 +46,12 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	block = malloc(blocksize);
-	if (block == 0) {
+	retval = ext2fs_get_memzero(blocksize, &block);
+	if (retval) {
 		fprintf(stderr, _("Couldn't allocate block buffer (size=%d)\n"),
 			blocksize);
 		exit(1);
 	}
-	memset(block, 0, blocksize);
 
 	fd = open(filename, O_RDWR);
 	if (fd < 0) {
@@ -78,5 +78,6 @@ int main(int argc, char **argv)
 		perror("read");
 		exit(1);
 	}
-	exit(0);
+	ext2fs_free_mem(&block);
+	return(0);
 }

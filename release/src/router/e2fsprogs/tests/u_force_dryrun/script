@@ -1,0 +1,38 @@
+test_description="force dry-run replay of corrupt e2undo block data"
+if test -x $E2UNDO_EXE; then
+
+E2FSPROGS_UNDO_DIR=${TMPDIR:-/tmp}
+export E2FSPROGS_UNDO_DIR
+TDB_FILE=$E2FSPROGS_UNDO_DIR/tune2fs-$(basename $TMPFILE).e2undo
+OUT=$test_name.log
+rm -f $TDB_FILE >/dev/null 2>&1
+
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+
+echo mke2fs -q -F -o Linux -b 1024 $TMPFILE  > $OUT
+$MKE2FS -q -F -o Linux -I 128 -b 1024 $TMPFILE  >> $OUT 2>&1
+crc0=`$CRCSUM $TMPFILE`
+echo $CRCSUM before tune2fs $crc0 >> $OUT
+
+echo using tune2fs to test e2undo >> $OUT
+$TUNE2FS -I 256 $TMPFILE  >> $OUT 2>&1
+crc1=`$CRCSUM $TMPFILE`
+echo $CRCSUM after tune2fs $crc1 >> $OUT
+
+undo_blks=$(( $(stat -c '%s' $TDB_FILE 2>/dev/null || stat -f '%z' $TDB_FILE 2>/dev/null) / 1024 ))
+dd if=/dev/zero of=$TDB_FILE bs=1024 count=1 seek=$((undo_blks - 2)) conv=notrunc > /dev/null 2>&1
+
+$E2UNDO -f -n $TDB_FILE $TMPFILE  >> $OUT 2>&1
+res=$?
+crc2=`$CRCSUM $TMPFILE`
+echo $CRCSUM after e2undo $crc2 >> $OUT
+
+if [ $crc2 = $crc1 ] && [ $crc2 != $crc0 ]; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	ln -f $test_name.log $test_name.failed
+	echo "$test_name: $test_description: failed"
+fi
+rm -f $TDB_FILE $TMPFILE
+fi

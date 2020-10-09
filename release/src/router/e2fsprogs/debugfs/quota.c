@@ -25,7 +25,7 @@ extern char *optarg;
 
 #include "debugfs.h"
 
-const char *quota_type[] = { "user", "group", NULL };
+const char *quota_type[] = { "user", "group", "project", NULL };
 
 static int load_quota_ctx(char *progname)
 {
@@ -34,8 +34,7 @@ static int load_quota_ctx(char *progname)
 	if (check_fs_open(progname))
 		return 1;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(current_fs->super,
-					EXT4_FEATURE_RO_COMPAT_QUOTA)) {
+	if (!ext2fs_has_feature_quota(current_fs->super)) {
 		com_err(progname, 0, "quota feature not enabled");
 		return 1;
 	}
@@ -43,7 +42,7 @@ static int load_quota_ctx(char *progname)
 	if (current_qctx)
 		return 0;
 
-	retval = quota_init_context(&current_qctx, current_fs, -1);
+	retval = quota_init_context(&current_qctx, current_fs, 0);
 	if (retval) {
 		com_err(current_fs->device_name, retval,
 			"while trying to load quota information");
@@ -90,9 +89,10 @@ static int parse_quota_type(const char *cmdname, const char *str)
 }
 
 
-static int list_quota_callback(struct dquot *dq, void *cb_data)
+static int list_quota_callback(struct dquot *dq,
+			       void *cb_data EXT2FS_ATTR((unused)))
 {
-	printf("%8u   %8lld %8lld %8lld    %8lld %8lld %8lld\n",
+	printf("%10u   %8lld %8lld %8lld    %8lld %8lld %8lld\n",
 	       dq->dq_id, (long long)dq->dq_dqb.dqb_curspace,
 	       (long long)dq->dq_dqb.dqb_bsoftlimit,
 	       (long long)dq->dq_dqb.dqb_bhardlimit,
@@ -102,7 +102,8 @@ static int list_quota_callback(struct dquot *dq, void *cb_data)
 	return 0;
 }
 
-void do_list_quota(int argc, char *argv[])
+void do_list_quota(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		   void *infop EXT2FS_ATTR((unused)))
 {
 	errcode_t	retval;
 	int		type;
@@ -120,8 +121,8 @@ void do_list_quota(int argc, char *argv[])
 	if (type < 0)
 		return;
 
-	printf("%8s   %8s %8s %8s    %8s %8s %8s\n",
-	       (type == 0) ? "user id" : "group id",
+	printf("%7s %2s   %8s %8s %8s    %8s %8s %8s\n",
+	       quota_type[type], "id",
 	       "blocks", "quota", "limit", "inodes", "quota", "limit");
 	qh = current_qctx->quota_file[type];
 	retval = qh->qh_ops->scan_dquots(qh, list_quota_callback, NULL);
@@ -131,7 +132,8 @@ void do_list_quota(int argc, char *argv[])
 	}
 }
 
-void do_get_quota(int argc, char *argv[])
+void do_get_quota(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		  void *infop EXT2FS_ATTR((unused)))
 {
 	int		err, type;
 	struct quota_handle *qh;
@@ -154,8 +156,8 @@ void do_get_quota(int argc, char *argv[])
 	if (err)
 		return;
 
-	printf("%8s   %8s %8s %8s    %8s %8s %8s\n",
-	       (type == 0) ? "user id" : "group id",
+	printf("%7s %2s   %8s %8s %8s    %8s %8s %8s\n",
+	       quota_type[type], "id",
 	       "blocks", "quota", "limit", "inodes", "quota", "limit");
 
 	qh = current_qctx->quota_file[type];

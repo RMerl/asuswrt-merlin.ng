@@ -251,7 +251,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 	}
 	check_for_ro_violation_return(ctx, ret);
 	if (!*tind_block || (ret & BLOCK_ABORT)) {
-		ctx->bcount += limit*limit*limit;
+		ctx->bcount += ((unsigned long long) limit)*limit*limit;
 		return ret;
 	}
 	if (*tind_block >= ext2fs_blocks_count(ctx->fs->super) ||
@@ -343,6 +343,13 @@ errcode_t ext2fs_block_iterate3(ext2_filsys fs,
 	ctx.errcode = ext2fs_read_inode(fs, ino, &inode);
 	if (ctx.errcode)
 		return ctx.errcode;
+
+	/*
+	 * An inode with inline data has no blocks over which to
+	 * iterate, so return an error code indicating this fact.
+	 */
+	if (inode.i_flags & EXT4_INLINE_DATA_FL)
+		return EXT2_ET_INLINE_DATA_CANT_ITERATE;
 
 	/*
 	 * Check to see if we need to limit large files

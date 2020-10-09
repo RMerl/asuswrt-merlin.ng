@@ -1884,7 +1884,7 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
     fi
 ])
   dnl Search the library and its dependencies in $additional_libdir and
-  dnl $LDFLAGS. Using breadth-first-seach.
+  dnl $LDFLAGS. Using breadth-first-search.
   LIB[]NAME=
   LTLIB[]NAME=
   INC[]NAME=
@@ -2874,7 +2874,7 @@ AC_DEFUN([AM_NLS],
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # As a special exception to the GNU General Public License, if you
 # distribute this file as part of a program that contains a
@@ -2912,7 +2912,7 @@ fi[]dnl
 # to PKG_CHECK_MODULES(), but does not set variables or print errors.
 #
 # Please remember that m4 expands AC_REQUIRE([PKG_PROG_PKG_CONFIG])
-# only at the first occurence in configure.ac, so if the first place
+# only at the first occurrence in configure.ac, so if the first place
 # it's called might be skipped (such as if it is within an "if", you
 # have to call PKG_CHECK_EXISTS manually
 # --------------------------------------------------------------

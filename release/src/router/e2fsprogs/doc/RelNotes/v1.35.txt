@@ -1,0 +1,166 @@
+E2fsprogs 1.35 (February 28, 2004) 
+==================================
+
+E2fsck has a new -k option, which in conjunction with the -c options,
+preserves the existing badblocks list.
+
+Cleaned up e2fsck's preen-mode messages during the passes 1b, 1c, and 1d.
+
+E2fsprogs will now deal correctly with symlinks that contain
+extended attribute information, which can be created using SE Linux.
+(Addresses Debian Bug #232328)
+                                                                               
+Remove a double longjmp into an invalid stack frame bug in e2fsck.
+(This was during an abort sequence, which normally worked on Linux and
+caused a core dump on other operating systems.)
+
+Fix NLS bug in e2fsck, by avoiding trying to expand an empty string
+(the NLS library will replace "" with the .po header information).
+ 
+Fix a bug in mke2fs which caused -T largefile or -T largefile4 to core
+dump due to a division by zero error.  (Addresses Debian bug #207082)
+
+Fixed a bug in e2fsck which caused it to incorrectly fix a filesystem
+when reconnecting a directory requires creating a lost+found
+directory.  (Addresses Debian bug #219640).
+
+Fixed a bug where e2fsck would bomb out if a journal needed to be
+replayed when using an alternate superblock.
+ 
+E2fsck will give an extra grace period before actually forcing a check
+if the laptop is running on battery.  The next time fsck runs while
+the system is on the AC mains, or after the grace period is exceeded,
+the filesystem will be checked.  (Addresses Debian bug #205177)
+
+E2fsck will inform the user when there are 5 or fewer mounts before a
+filesystem check will be forced.  (Addresses Debian bug #157194)
+
+Fix e2fsck's handling of corrupted indirect blocks in the bad block.
+We now correctly handle the case where there is an overlap between a
+block group descriptor or a superblock and a bad block indirect block.
+In the case where the indirect block is corrupted, we now suggest
+"e2fsck -c".
+
+Fix byte swap bugs in e2fsck that caused the journal backup location 
+in the superblock and symlinks created by SE Linux to be cleared
+by e2fsck on big-endian machines.  (Addresses Debian bug #228723)
+
+E2fsck -c now replaces the current list of bad blocks with the ones
+found by badblocks.
+
+Fix bugs in e2fsck and tune2fs which could cause a core dump if a
+non-existent LABEL or UUID specifier is to e2fsck or tune2fs.
+
+Fix a potential bug in e2fsck which could cause it to core dump when
+trying to print the location of the backup superblock.
+
+Protect against a potential core dump in e2fsck when printing a
+message about backup superblocks.
+
+Add support for backing up the journal inode location in the
+superblock.  E2fsck will automatically save the journal information in
+the superblock if it is not there already, and will use it if the
+journal inode appears to be corrupted.  ext2fs_add_journal_inode()
+will also save the backup information, so that new filesystems created
+by mke2fs and filesystems that have journals added via tune2fs will
+also have journal location written to the superblock as well.
+Debugfs's logdump command has been enhanced so that it can use the
+journal information in the superblock.
+
+E2fsck will now update all superblocks when moving the journal inode.
+  
+Shrink the size of the e2fsck executable by moving some initialized
+variables to the BSS segment.
+
+E2fsck will avoid printing the ^A and ^B characters which bracket the
+progress bar when stdout and stdin are a tty device instead of a pipe
+to another program.  (Addresses Debian bug #204137)
+
+Debugfs's mkdir command will automatically expand the directory if
+necessary.  (Addresses Debian Bug: #217892)
+ 
+Fixed a bug in debugfs so that copying a file from /dev/null uses the
+correct mode bits.  (Addresses Debian Bug: #217456)
+ 
+If the environment variables DEBUFS_PAGER and PAGER are not set,
+debugfs now searches for the appropriate pager to use, beginning with
+/usr/bin/pager, and then falling back to 'more' and 'less'.
+(Addresses Debian bug #221977)
+
+Debugfs will now support 2.6 device numbers where the major or minor
+number may be larger than 255.  (Addresses Sourceforge bug #865289)
+ 
+Fix debugging printf in resize2fs.  (Addresses Debian Bug #271605)
+
+Chattr now stops processing options when it sees '--'.  (Addresses
+Debian bug #225188)
+
+Fix regression tests so they work correctly when e2fsprogs is compiled
+with configure --disable-htree.
+
+Fix bug in uuid library when there is no network card and the library
+is generating a time-based uuid.  The random MAC address was not
+correctly generated to be a multicast address.
+ 
+Add compile_et extensions from Heimdall that were missed the first time
+around.
+
+Fix bug in badblocks when using O_DIRECT; we need to make sure that
+we're reading from an offset which is page aligned.  For read-only and
+read-write tests, we try to recover after an error so that we can
+continue reading on page-aligned boundaries.  (Addresses Debian Bug
+#203713)
+  
+Badblocks now checks 64 blocks at a time instead of 16.  (Addresses
+Debian bug #232240)
+ 
+Updated and clarified various man pages.  (Addresses Debian Bug
+#206845, #222606, #214920, #232406)
+
+Updated and fixed translations.   (Addresses Debian bugs #200086, #214633)
+
+Fixed various Debian packaging issues (see debian/changelog).
+
+Programmer's notes: 
+-------------------
+
+Fixed a build problem so that e2fsprogs would compile with the
+--enable-profile option to configure selected.  (Addresses Sourceforge
+bug #811408)
+ 
+Fixed C++ problems with the ext2fs.h header.  (Addresses Red Hat
+Bugzilla Bug #112448)
+                                                                               
+Centralize code which calculates the location of the superblock
+and block group descriptors so that it is in a single library routine.
+
+Added two new functions, ext2fs_file_open2() and
+ext2fs_inode_io_intern2() which take a pointer to an inode structure.
+
+Fix compile_et to output the correct prototype for
+initialize_xxx_err_table_r() in the header file.  (Addresses Debian
+bug #204332)
+
+In the lib/et makefile, make sure com_err.info is deleted on "make clean".
+  
+Fix 64-bit warnings in e2fsprogs pass1b by using inttypes.h if
+present.  This is for when we try stuffing an int into void * pointer.
+
+Fix type-punning which can cause gcc 3.x to miscompile code by getting
+confused about pointer aliasing.  ext2fs_getmem(), ext2fs_free_mem(),
+and ext2fs_resize_mem() all now take a 'void *' instead of a 'void
+**'.  The EVMS code uses an ugly union approach since we don't want to
+modify the EVMS interfaces. 
+
+Make sure all Makefiles use $(MAKE) rather than hardcoded "make", to
+aid build process on systems can use invoke GNU make as "gmake".
+
+Added regression testing for mke2fs.
+
+Fixed gcc -Wall nitpicks.
+
+Fixed various compiler warnings.
+
+Add portability fixes for FreeBSD and for using fsctl under Darwin to
+support ext2 ioctl's.
+

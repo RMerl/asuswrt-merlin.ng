@@ -64,7 +64,7 @@ NtCurrentTeb(void);
 
 //
 // The only way to get version information from the system is to examine
-// one stored in PEB. But it's pretty dangerouse because this value could
+// one stored in PEB. But it's pretty dangerous because this value could
 // be altered in image header.
 //
 

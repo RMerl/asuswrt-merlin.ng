@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU Library General Public
 # License along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 # USA.
 
 PACKAGE = @PACKAGE@
@@ -40,8 +40,8 @@ subdir = intl
 
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
-MKINSTALLDIRS = @MKINSTALLDIRS@
-mkinstalldirs = $(SHELL) $(MKINSTALLDIRS)
+MKDIR_P = @MKDIR_P@
+mkinstalldirs = $(SHELL) $(MKDIR_P)
 
 @SET_MAKE@
 
@@ -61,21 +61,27 @@ mkinstalldirs = $(SHELL) $(MKINSTALLDIRS)
 
 @ifGNUmake@ CHECK=sparse
 @ifGNUmake@ CHECK_OPTS=-Wsparse-all -Wno-transparent-union -Wno-return-void -Wno-undef -Wno-non-pointer-null
+@ifGNUmake@ CPPCHECK=cppcheck
+@ifGNUmake@ CPPCHECK_OPTS=--force --enable=all --quiet --check-config
 @ifGNUmake@ ifeq ("$(C)", "2")
 @ifGNUmake@   CHECK_CMD=$(CHECK) $(CHECK_OPTS) -Wbitwise -D__CHECK_ENDIAN__
+@ifGNUmake@   CPPCHECK_CMD=$(CPPCHECK) $(CPPCHECK_OPTS)
 @ifGNUmake@ else
 @ifGNUmake@   ifeq ("$(C)", "1")
 @ifGNUmake@     CHECK_CMD=$(CHECK) $(CHECK_OPTS)
+@ifGNUmake@     CPPCHECK_CMD=$(CPPCHECK) $(CPPCHECK_OPTS)
 @ifGNUmake@    else
 @ifGNUmake@     CHECK_CMD=@true
+@ifGNUmake@     CPPCHECK_CMD=@true
 @ifGNUmake@   endif
 @ifGNUmake@ endif
 
 @ifNotGNUmake@ CHECK_CMD=@true
+@ifNotGNUmake@ CPPCHECK_CMD=@true
 
 l = @INTL_LIBTOOL_SUFFIX_PREFIX@
 
-AR = ar
+AR = @AR@
 CC = @CC@
 LIBTOOL = @LIBTOOL@
 RANLIB = @RANLIB@
@@ -206,6 +212,7 @@ LTV_AGE=4
 	$(E) "	CC $<"
 	$(Q) $(COMPILE) $<
 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
+	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
 
 .y.c:
 	$(YACC) $(YFLAGS) --output $@ $<
@@ -286,7 +293,7 @@ charset.alias: $(srcdir)/config.charset
 	$(Q) $(SHELL) $(srcdir)/config.charset '@host@' > t-$@
 	$(Q) mv t-$@ $@
 
-check: all
+fullcheck check: all
 
 # We must not install the libintl.h/libintl.a files if we are on a
 # system which has the GNU gettext() function in its C library or in a

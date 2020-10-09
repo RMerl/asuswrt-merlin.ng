@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <ctype.h>
 #include <errno.h>
 
@@ -72,7 +73,7 @@ int e2p_string2mntopt(char *string, unsigned int *mask)
 	if (string[8] == 0)
 		return 1;
 	num = strtol(string+8, &eptr, 10);
-	if (num > 32 || num < 0)
+	if (num > 31 || num < 0)
 		return 1;
 	if (*eptr)
 		return 1;

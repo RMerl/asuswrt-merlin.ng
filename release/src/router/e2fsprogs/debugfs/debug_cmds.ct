@@ -73,6 +73,9 @@ request do_rm, "Remove a file (unlink and kill_file, if appropriate)",
 request do_kill_file, "Deallocate an inode and its blocks",
 	kill_file;
 
+request do_copy_inode, "Copy the inode structure",
+	copy_inode;
+
 request do_clri, "Clear an inode's contents",
 	clri;
 
@@ -157,6 +160,9 @@ request do_dirsearch, "Search a directory for a particular filename",
 request do_bmap, "Calculate the logical->physical block mapping for an inode",
 	bmap;
 
+request do_fallocate, "Allocate uninitialized blocks to an inode",
+	fallocate;
+
 request do_punch, "Punch (or truncate) blocks from an inode by deallocating them",
 	punch, truncate;
 
@@ -190,6 +196,18 @@ request do_zap_block, "Zap block: fill with 0, pattern, flip bits etc.",
 request do_block_dump, "Dump contents of a block",
 	block_dump, bdump, bd;
 
+request do_list_xattr, "List extended attributes of an inode",
+	ea_list;
+
+request do_get_xattr, "Get an extended attribute of an inode",
+	ea_get;
+
+request do_set_xattr, "Set an extended attribute of an inode",
+	ea_set;
+
+request do_rm_xattr, "Remove an extended attribute of an inode",
+	ea_rm;
+
 request do_list_quota, "List quota",
 	list_quota, lq;
 
@@ -199,6 +217,17 @@ request do_get_quota, "Get quota",
 request do_idump, "Dump the inode structure in hex",
 	inode_dump, idump, id;
 
+request do_journal_open, "Open the journal",
+	journal_open, jo;
+
+request do_journal_close, "Close the journal",
+	journal_close, jc;
+
+request do_journal_write, "Write a transaction to the journal",
+	journal_write, jw;
+
+request do_journal_run, "Recover the journal",
+	journal_run, jr;
 
 end;
 

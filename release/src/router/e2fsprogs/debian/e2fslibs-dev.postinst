@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# Abort on error.
+set -e
+
+symlink_match()
+{
+	local SYMLINK="$1"
+	local SYMLINK_TARGET="$2"
+
+	[ "$(readlink "$SYMLINK")" = "$SYMLINK_TARGET" ] || \
+	[ "$(readlink -f "$SYMLINK")" = "$SYMLINK_TARGET" ]
+}
+
+SYMLINK=/usr/share/doc/e2fslibs-dev
+SYMLINK_TARGET=e2fslibs
+
+if [ "$1" = "configure" ] && [ -h "${SYMLINK}.dpkg-backup" ] &&
+   symlink_match "${SYMLINK}.dpkg-backup" "$SYMLINK_TARGET"
+then
+	rm -f "${SYMLINK}.dpkg-backup"
+fi
+
+#DEBHELPER#
+
+exit 0

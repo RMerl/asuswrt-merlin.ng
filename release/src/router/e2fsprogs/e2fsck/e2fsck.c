@@ -37,7 +37,7 @@ errcode_t e2fsck_allocate_context(e2fsck_t *ret)
 
 	time_env = getenv("E2FSCK_TIME");
 	if (time_env)
-		context->now = strtoul(time_env, NULL, 0);
+		context->now = (time_t) strtoull(time_env, NULL, 0);
 	else {
 		context->now = time(0);
 		if (context->now < 1262322000) /* January 1 2010 */
@@ -89,9 +89,7 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ctx->fs->dblist = 0;
 	}
 	e2fsck_free_dir_info(ctx);
-#ifdef ENABLE_HTREE
 	e2fsck_free_dx_dir_info(ctx);
-#endif
 	if (ctx->refcount) {
 		ea_refcount_free(ctx->refcount);
 		ctx->refcount = 0;
@@ -100,6 +98,18 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ea_refcount_free(ctx->refcount_extra);
 		ctx->refcount_extra = 0;
 	}
+	if (ctx->ea_block_quota_blocks) {
+		ea_refcount_free(ctx->ea_block_quota_blocks);
+		ctx->ea_block_quota_blocks = 0;
+	}
+	if (ctx->ea_block_quota_inodes) {
+		ea_refcount_free(ctx->ea_block_quota_inodes);
+		ctx->ea_block_quota_inodes = 0;
+	}
+	if (ctx->ea_inode_refs) {
+		ea_refcount_free(ctx->ea_inode_refs);
+		ctx->ea_inode_refs = 0;
+	}
 	if (ctx->block_dup_map) {
 		ext2fs_free_block_bitmap(ctx->block_dup_map);
 		ctx->block_dup_map = 0;
@@ -107,6 +117,10 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 	if (ctx->block_ea_map) {
 		ext2fs_free_block_bitmap(ctx->block_ea_map);
 		ctx->block_ea_map = 0;
+	}
+	if (ctx->block_metadata_map) {
+		ext2fs_free_block_bitmap(ctx->block_metadata_map);
+		ctx->block_metadata_map = 0;
 	}
 	if (ctx->inode_bb_map) {
 		ext2fs_free_inode_bitmap(ctx->inode_bb_map);
@@ -139,6 +153,14 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 	if (ctx->invalid_inode_table_flag) {
 		ext2fs_free_mem(&ctx->invalid_inode_table_flag);
 		ctx->invalid_inode_table_flag = 0;
+	}
+	if (ctx->encrypted_dirs) {
+		ext2fs_u32_list_free(ctx->encrypted_dirs);
+		ctx->encrypted_dirs = 0;
+	}
+	if (ctx->inode_count) {
+		ext2fs_free_icount(ctx->inode_count);
+		ctx->inode_count = 0;
 	}
 
 	/* Clear statistic counters */
@@ -190,6 +212,16 @@ void e2fsck_free_context(e2fsck_t ctx)
 	if (ctx->log_fn)
 		free(ctx->log_fn);
 
+	if (ctx->logf)
+		fclose(ctx->logf);
+
+	if (ctx->problem_log_fn)
+		free(ctx->problem_log_fn);
+
+	if (ctx->problem_logf) {
+		fputs("</problem_log>\n", ctx->problem_logf);
+		fclose(ctx->problem_logf);
+	}
 	ext2fs_free_mem(&ctx);
 }
 
@@ -200,10 +232,8 @@ void e2fsck_free_context(e2fsck_t ctx)
 typedef void (*pass_t)(e2fsck_t ctx);
 
 static pass_t e2fsck_passes[] = {
-	e2fsck_pass1, e2fsck_pass2, e2fsck_pass3, e2fsck_pass4,
-	e2fsck_pass5, 0 };
-
-#define E2F_FLAG_RUN_RETURN	(E2F_FLAG_SIGNAL_MASK|E2F_FLAG_RESTART)
+	e2fsck_pass1, e2fsck_pass1e, e2fsck_pass2, e2fsck_pass3,
+	e2fsck_pass4, e2fsck_pass5, 0 };
 
 int e2fsck_run(e2fsck_t ctx)
 {

@@ -1,0 +1,55 @@
+debugfs edit extended attributes
+mke2fs -Fq -b 1024 test.img 512
+Exit status is 0
+ea_set / user.joe smith
+Exit status is 0
+ea_set / user.moo FEE_FIE_FOE_FUMMMMMM
+Exit status is 0
+ea_list /
+Extended attributes:
+  user.joe (5) = "smith"
+  user.moo (20) = "FEE_FIE_FOE_FUMMMMMM"
+Exit status is 0
+ea_get / user.moo
+user.moo (20) = "FEE_FIE_FOE_FUMMMMMM"
+
+Exit status is 0
+ea_get / nosuchea
+ea_get: Extended attribute key not found while getting extended attribute
+Exit status is 0
+ea_rm / user.moo
+Exit status is 0
+ea_rm / nosuchea
+Exit status is 0
+ea_list /
+Extended attributes:
+  user.joe (5) = "smith"
+Exit status is 0
+ea_get / user.moo
+ea_get: Extended attribute key not found while getting extended attribute
+Exit status is 0
+ea_rm / user.joe
+Exit status is 0
+ea_list /
+Exit status is 0
+ea_set -f d_xattr_edits.tmp / user.file_based_xattr
+Exit status is 0
+ea_list /
+Extended attributes:
+  user.file_based_xattr (108)
+Exit status is 0
+ea_get / user.file_based_xattr
+user.file_based_xattr (108) = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567\n"
+
+Exit status is 0
+ea_get -f d_xattr_edits.ver.tmp / user.file_based_xattr
+Exit status is 0
+Compare big attribute
+e2fsck -yf -N test_filesys
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/64 files (0.0% non-contiguous), 29/512 blocks
+Exit status is 0

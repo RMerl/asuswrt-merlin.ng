@@ -23,7 +23,7 @@ The
 program will scan the block bitmap information to check how many free blocks
 are present as contiguous and aligned free space. The percentage of contiguous
 free blocks of size and of alignment
-.IR chunk_kb
+.I chunk_kb
 is reported.  It also displays the minimum/maximum/average free chunk size in
 the filesystem, along with a histogram of all free chunks.  This information
 can be used to gauge the level of free space fragmentation in the filesystem.
@@ -37,7 +37,7 @@ will print how many free chunks of size
 are available in units of kilobytes (Kb).  The chunk size must be a
 power of two and be larger than filesystem block size.
 .TP
-.BI \-h
+.B \-h
 Print the usage of the program.
 .SH EXAMPLE
 # e2freefrag /dev/vgroot/lvhome

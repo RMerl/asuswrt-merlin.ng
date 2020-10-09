@@ -1,0 +1,55 @@
+E2fsprogs 1.37 (March 21, 2005)
+===============================
+
+Add support for checking the validity of Extended Attributes stored in
+inodes to e2fsck.
+
+Add support for dumping the contents of large inodes to debugfs,
+including the extended attributes stored in inodes.
+
+Fix mke2fs, e2fsck, debugfs, and the ext2fs_mkdir function so that
+when we create a new inode we make sure that the extra information in
+the inode (any extra fields in a large inode and any ea-in-inode
+information) is initialized correctly.  This can take place when
+mke2fs creates the root and lost+found directory, when e2fsck creates
+a new root inode or a new lost+found directory, and when the user uses
+the debugfs write, mknod, or mkdir commands.  Otherwise, the newly
+create inode could inherit garbage (or old EA information) from a
+previously deleted inode.
+
+Fixed a bug in e2fsck so it would notice if a file with an extended
+attribute block was exactly 2**32 blocks, such that i_blocks wrapped
+to zero.
+
+Added support to filefrag to detect files which are using the new
+experimental file extents format, and use the non-ext2 algorithm in
+that case.  Fixed a bug to avoid reporting a false discontinuity if
+there is one or more unallocated blocks at the beginning of a file.
+
+Duplicated a check for noticing whether or not the number of blocks
+(given a certain blocksize) is greater than 2**32 when the
+BLKGETSIZE64 ioctl is not available to ext2fs_get_device_size().  This
+allows mke2fs to automatically use a larger blocksize when creating a
+filesystem on a very large device when run on systems that do not
+support BLKGETSIZE64.
+
+Fix the I18N build which was broken in e2fsprogs 1.36 because the
+build system had been switched to treat the .gmo files as shipped
+files (for backwards compatibility with systems that have older GNU
+I18N tools installed), but the gen_tarball.in script was still
+removing the .gmo files from the official source distribution.
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.  (Addresses Debian Bugs ##296769, #299341)
+
+Programmer's notes:
+-------------------
+
+Added new functions to the e2p library which convert between a string
+and os_type: e2p_os2string() and e2p_string2os(), and used them to
+make the generated binaries more compact.
+
+Fixed a compile-time error on Darwin systems.
+
+Cleaned up the lib/ext2fs Makefile slightly.
+

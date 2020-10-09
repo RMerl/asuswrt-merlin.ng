@@ -1,0 +1,117 @@
+Filesystem volume name:   <none>
+Last mounted on:          <not available>
+Filesystem magic number:  0xEF53
+Filesystem revision #:    1 (dynamic)
+Filesystem features:      has_journal ext_attr resize_inode dir_index filetype extent 64bit flex_bg sparse_super huge_file dir_nlink extra_isize metadata_csum
+Default mount options:    (none)
+Filesystem state:         clean
+Errors behavior:          Continue
+Filesystem OS type:       Linux
+Inode count:              1024
+Block count:              16384
+Reserved block count:     819
+Free blocks:              14786
+Free inodes:              1005
+First block:              1
+Block size:               1024
+Fragment size:            1024
+Group descriptor size:    64
+Reserved GDT blocks:      127
+Blocks per group:         8192
+Fragments per group:      8192
+Inodes per group:         512
+Inode blocks per group:   128
+Flex block group size:    16
+Mount count:              0
+Check interval:           15552000 (6 months)
+Reserved blocks uid:      0
+Reserved blocks gid:      0
+First inode:              11
+Inode size:	          256
+Required extra isize:     32
+Desired extra isize:      32
+Journal inode:            8
+Default directory hash:   half_md4
+Journal backup:           inode blocks
+Checksum type:            crc32c
+Journal features:         (none)
+Journal size:             1024k
+Journal length:           1024
+Journal sequence:         0x00000001
+Journal start:            0
+
+
+Group 0: (Blocks 1-8192)
+  Primary superblock at 1, Group descriptors at 2-2
+  Reserved GDT blocks at 3-129
+  Block bitmap at 130 (+129)
+  Inode bitmap at 132 (+131)
+  Inode table at 134-261 (+133)
+  7748 free blocks, 493 free inodes, 4 directories, 493 unused inodes
+  Free blocks: 445-8192
+  Free inodes: 20-512
+Group 1: (Blocks 8193-16383) [INODE_UNINIT]
+  Backup superblock at 8193, Group descriptors at 8194-8194
+  Reserved GDT blocks at 8195-8321
+  Block bitmap at 131 (bg #0 + 130)
+  Inode bitmap at 133 (bg #0 + 132)
+  Inode table at 262-389 (bg #0 + 261)
+  7038 free blocks, 512 free inodes, 0 directories, 512 unused inodes
+  Free blocks: 9346-16383
+  Free inodes: 513-1024
+debugfs: stat /emptyfile
+Inode: III   Type: regular    
+Size: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+debugfs: stat /bigfile
+Inode: III   Type: regular    
+Size: 32768
+Fragment:  Address: 0    Number: 0    Size: 0
+debugfs: stat /sparsefile
+Inode: III   Type: regular    
+Size: 1073741825
+Fragment:  Address: 0    Number: 0    Size: 0
+debugfs: stat /bigzerofile
+Inode: III   Type: regular    
+Size: 1073741825
+Fragment:  Address: 0    Number: 0    Size: 0
+debugfs: stat /fifo
+debugfs: stat /emptydir
+Inode: III   Type: directory    
+Size: 1024
+Fragment:  Address: 0    Number: 0    Size: 0
+debugfs: stat /dir
+Inode: III   Type: directory    
+Size: 1024
+Fragment:  Address: 0    Number: 0    Size: 0
+debugfs: stat /dir/file
+Inode: III   Type: regular    
+Size: 8
+Fragment:  Address: 0    Number: 0    Size: 0
+debugfs: ex /emptyfile
+Level Entries       Logical      Physical Length Flags
+debugfs: ex /bigfile
+Level Entries       Logical      Physical Length Flags
+X 0/0 1/1 0-31 AAA-BBB 32 
+debugfs: ex /sparsefile
+Level Entries           Logical      Physical Length Flags
+Y 0/1 1/1 1-1048576 AAA 1048576
+X 1/1 1/5 1-1 AAA-BBB 1 
+X 1/1 2/5 512-512 AAA-BBB 1 
+X 1/1 3/5 1024-1024 AAA-BBB 1 
+X 1/1 4/5 524288-524288 AAA-BBB 1 
+X 1/1 5/5 1048576-1048576 AAA-BBB 1 
+debugfs: ex /bigzerofile
+Level Entries           Logical      Physical Length Flags
+debugfs: ex /dir
+Level Entries       Logical      Physical Length Flags
+X 0/0 1/1 0-0 AAA-BBB 1 
+debugfs: ex /dir/file
+Level Entries       Logical      Physical Length Flags
+X 0/0 1/1 0-0 AAA-BBB 1 
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test.img: 19/1024 files (0.0% non-contiguous), 1598/16384 blocks

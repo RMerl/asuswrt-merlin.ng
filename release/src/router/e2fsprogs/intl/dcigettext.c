@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Library General Public
    License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.  */
 
 /* Tell glibc's <string.h> to provide a prototype for mempcpy().
@@ -602,7 +602,7 @@ DCIGETTEXT (const char *domainname, const char *msgid1, const char *msgid2,
 	  /* When this is a SUID binary we must not allow accessing files
 	     outside the dedicated directories.  */
 	  if (ENABLE_SECURE && IS_PATH_WITH_DIR (single_locale))
-	    /* Ingore this entry.  */
+	    /* Ignore this entry.  */
 	    continue;
 	}
 

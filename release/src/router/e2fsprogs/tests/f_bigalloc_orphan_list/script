@@ -1,0 +1,28 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+SKIP_GUNZIP="true"
+TEST_DATA="$test_name.tmp"
+
+dd if=$TEST_BITS of=$TEST_DATA bs=28k count=1 > /dev/null 2>&1
+
+touch $TMPFILE
+$MKE2FS -Fq -t ext4 -O bigalloc $TMPFILE 1M > /dev/null 2>&1
+$DEBUGFS -w $TMPFILE << EOF > /dev/null 2>&1
+write $TEST_DATA testfile
+set_inode_field testfile links_count 0
+set_inode_field testfile mode 0100644
+set_inode_field testfile bmap[0] 0
+set_inode_field testfile bmap[2] 0
+set_super_value last_orphan 12
+unlink testfile
+quit
+EOF
+
+. $cmd_dir/run_e2fsck
+
+rm -f $TEST_DATA
+
+unset E2FSCK_TIME TEST_DATA

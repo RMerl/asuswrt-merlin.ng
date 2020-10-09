@@ -1,0 +1,25 @@
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Entry '..' in ??? (12) has invalid inode #: 1752440867.
+Clear? yes
+
+Directory inode 12, block #0, offset 4: directory corrupted
+Salvage? yes
+
+Directory inode 12, block #1, offset 0: directory corrupted
+Salvage? yes
+
+Pass 3: Checking directory connectivity
+'..' in /aoo (12) is ??? (1752440867), should be / (2).
+Fix? yes
+
+Error while adjusting inode count on inode 0
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Directories count wrong for group #0 (2, counted=3).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 12/128 files (0.0% non-contiguous), 17/512 blocks
+Exit status is 1

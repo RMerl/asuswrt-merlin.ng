@@ -50,7 +50,21 @@ static errcode_t follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
 	if (link_count++ >= EXT2FS_MAX_NESTED_LINKS)
 		return EXT2_ET_SYMLINK_LOOP;
 
-	if (ext2fs_inode_data_blocks(fs,&ei)) {
+	if (ext2fs_is_fast_symlink(&ei))
+		pathname = (char *)&(ei.i_block[0]);
+	else if (ei.i_flags & EXT4_INLINE_DATA_FL) {
+		retval = ext2fs_get_memzero(ei.i_size, &buffer);
+		if (retval)
+			return retval;
+
+		retval = ext2fs_inline_data_get(fs, inode,
+						&ei, buffer, NULL);
+		if (retval) {
+			ext2fs_free_mem(&buffer);
+			return retval;
+		}
+		pathname = buffer;
+	} else {
 		retval = ext2fs_bmap2(fs, inode, &ei, NULL, 0, 0, NULL, &blk);
 		if (retval)
 			return retval;
@@ -65,8 +79,8 @@ static errcode_t follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
 			return retval;
 		}
 		pathname = buffer;
-	} else
-		pathname = (char *)&(ei.i_block[0]);
+	}
+
 	retval = open_namei(fs, root, dir, pathname, ei.i_size, 1,
 			    link_count, buf, res_inode);
 	if (buffer)
@@ -128,7 +142,7 @@ static errcode_t open_namei(ext2_filsys fs, ext2_ino_t root, ext2_ino_t base,
 	errcode_t retval;
 
 #ifdef NAMEI_DEBUG
-	printf("open_namei: root=%lu, dir=%lu, path=%*s, lc=%d\n",
+	printf("open_namei: root=%lu, dir=%lu, path=%.*s, lc=%d\n",
 	       root, base, pathlen, pathname, link_count);
 #endif
 	retval = dir_namei(fs, root, base, pathname, pathlen,

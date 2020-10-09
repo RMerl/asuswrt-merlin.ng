@@ -36,6 +36,9 @@
 #if HAVE_SYS_MKDEV_H
 #include <sys/mkdev.h>
 #endif
+#ifdef HAVE_SYS_SYSMACROS_H
+#include <sys/sysmacros.h>
+#endif
 #include <time.h>
 
 #include "blkidP.h"
@@ -123,7 +126,7 @@ static int is_dm_leaf(const char *devname)
 {
 	struct dirent	*de, *d_de;
 	DIR		*dir, *d_dir;
-	char		path[256];
+	char		path[300];
 	int		ret = 1;
 
 	if ((dir = opendir("/sys/block")) == NULL)
@@ -159,7 +162,7 @@ static char *get_dm_name(const char *ptname)
 {
 	FILE	*f;
 	size_t	sz;
-	char	path[256], name[256], *res = NULL;
+	char	path[300], name[256], *res = NULL;
 
 	snprintf(path, sizeof(path), "/sys/block/%s/dm/name", ptname);
 	if ((f = fopen(path, "r")) == NULL)
@@ -228,7 +231,8 @@ static void probe_one(blkid_cache cache, const char *ptname,
 		    dev->bid_devno == devno)
 			goto set_pri;
 
-		if (stat(device, &st) == 0 && S_ISBLK(st.st_mode) &&
+		if (stat(device, &st) == 0 &&
+		    blkidP_is_disk_device(st.st_mode) &&
 		    st.st_rdev == devno) {
 			devname = blkid_strdup(device);
 			goto get_dev;
@@ -394,7 +398,7 @@ static int probe_all(blkid_cache cache, int only_if_new)
 {
 	FILE *proc;
 	char line[1024];
-	char ptname0[128], ptname1[128], *ptname = 0;
+	char ptname0[129], ptname1[129], *ptname = 0;
 	char *ptnames[2];
 	dev_t devs[2];
 	int ma, mi;

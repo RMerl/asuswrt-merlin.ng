@@ -1,0 +1,11 @@
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12 passes checks, but checksum does not match inode.  Fix? no
+
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+test_filesys.bin: ********** WARNING: Filesystem still has errors **********
+
+test_filesys.bin: 12/128 files (0.0% non-contiguous), 19/512 blocks

@@ -30,7 +30,7 @@ char *e2p_os2string(int os_type)
         const char	*os;
 	char 		*ret;
 
-	if (os_type <= EXT2_OS_LITES)
+	if (os_type >= 0 && os_type <= EXT2_OS_LITES)
 		os = os_tab[os_type];
 	else
 		os = "(unknown os)";
@@ -66,6 +66,7 @@ int main(int argc, char **argv)
 		s = e2p_os2string(i);
 		os = e2p_string2os(s);
 		printf("%d: %s (%d)\n", i, s, os);
+		free(s);
 		if (i != os) {
 			fprintf(stderr, "Failure!\n");
 			exit(1);

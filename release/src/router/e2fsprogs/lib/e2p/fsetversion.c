@@ -16,8 +16,12 @@
  * 93/10/30	- Creation
  */
 
+#ifndef _LARGEFILE_SOURCE
 #define _LARGEFILE_SOURCE
+#endif
+#ifndef _LARGEFILE64_SOURCE
 #define _LARGEFILE64_SOURCE
+#endif
 
 #include "config.h"
 #if HAVE_ERRNO_H
@@ -27,7 +31,9 @@
 #include <unistd.h>
 #endif
 #include <fcntl.h>
+#if HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
+#endif
 
 #include "e2p.h"
 

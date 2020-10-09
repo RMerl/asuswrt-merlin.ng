@@ -53,8 +53,7 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 		ext2fs_reserve_super_and_bgd(fs, i, bmap);
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-					       EXT4_FEATURE_INCOMPAT_FLEX_BG)) {
+		if (!ext2fs_has_feature_flex_bg(fs->super)) {
 			first_block = ext2fs_group_first_block2(fs, i);
 			last_block = ext2fs_group_last_block2(fs, i);
 		}

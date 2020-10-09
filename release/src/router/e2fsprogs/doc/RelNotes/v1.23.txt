@@ -1,0 +1,65 @@
+E2fsprogs 1.23 (August 15, 2001)
+================================
+
+Add initial support for extended attributes (EA); e2fsck will
+correctly handle a filesystem with EA's and check the EA blocks for
+corruptions.
+
+E2fsck's symlink sanity checking has been cleaned up.  It now checks
+the i_size value of fast symlinks, and checks for immutable flags
+being set of symlinks, etc.
+
+E2fsck now offers to clear inodes which are special files that have a
+non-zero i_blocks or i_size field.  (The i_size field check was in the
+previous version of the code, but due to a bug it didn't offer to
+clear the inode unless i_size and i_size_high were both non-zero.)
+
+E2image can now create "raw" image files, which only contain the
+filesystem metadata placed in a spare file so that e2fsck, dumpe2fs,
+debugfs, etc., can be run directly on the raw image file.
+
+Add support for the 64-bit block device patches.
+
+Fixed bugs in creating external journals with a 1k blocksize.
+
+Add initial support for external journals (so long as the external
+journal only supports a single filesystem) in e2fsck.
+
+Remove requirement for needing to run fsck on a filesystem after
+removing a journal (either internal or external).
+
+The man pages now document how to create and manage external journals.
+
+Speed up the check of an ext3 filesystems by avoiding a needless flush
+of all of the superblock and block group descriptors.
+
+Speed up creating an internal journal using tune2fs in the case where
+the filesystem has a lot blocks already allocated.
+
+Tune2fs has been fixed to make sure that only error messages go to
+stderr, and normal message go to stdout. (Addresses Debian bug #108555)
+
+Fixed a minor bug in mke2fs; if -O none is passed to mke2fs, it will
+now not set the sparse_super feature.  (Addresses Debian bug #108165)
+
+Add support in fsck for the filesystem type "auto".
+
+Fsck -A will not try to interpret device names for filesystems which
+have a pass number is 0.  (Addresses Debian bug #106696).
+
+Fsck prints a warning message if now valid filesystems are passed to
+it.  (Addresses Debian Bug #107458.)
+
+E2fsck now gives an explicit warning if there filesystem still has
+errors at the end of the run. (Addresses Debian bug #104502)
+
+E2fsck will set the EXT2_ERROR_FS flag if the journal superblock
+reflects an error.  E2fsck will also not run the orphan list if the
+filesystem contains errors, since the orphan list might be corrupted.
+
+E2fsck now prints the number of large files when given the -v option.
+
+Fixed minor memory leaks in e2fsck.
+
+Some minor man pages updates. (Addresses Debian bug #30833, #108174)
+

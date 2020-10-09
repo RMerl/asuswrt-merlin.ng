@@ -1,5 +1,7 @@
 tst_bitmaps 1.0.  Type '?' for a list of commands.
 
+tst_bitmaps: setb 12 0
+Marking blocks 12 to 11
 tst_bitmaps: setb 12
 Setting block 12, was clear before
 tst_bitmaps: setb 12
@@ -79,6 +81,8 @@ tst_bitmaps: clearb 15
 Clearing block 15, was set before
 tst_bitmaps: testb 12 7
 Blocks 12 to 18 are all clear.
+tst_bitmaps: setb 12 0
+Marking blocks 12 to 11
 tst_bitmaps: setb 12 7
 Marking blocks 12 to 18
 tst_bitmaps: dump_bb

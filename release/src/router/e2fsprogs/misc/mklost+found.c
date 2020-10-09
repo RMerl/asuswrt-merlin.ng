@@ -25,14 +25,14 @@
 
 #include "ext2fs/ext2_fs.h"
 #include "../version.h"
-#include "nls-enable.h"
+#include "support/nls-enable.h"
 
 #define LPF "lost+found"
 
 int main (int argc, char ** argv)
 {
-	char name [EXT2_NAME_LEN];
-	char path [sizeof (LPF) + 1 + 256];
+	char name[EXT2_NAME_LEN + 2];
+	char path[sizeof (LPF) + 1 + 256];
 	struct stat st;
 	int i, j;
 	int d;

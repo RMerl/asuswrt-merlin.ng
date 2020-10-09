@@ -1,0 +1,138 @@
+E2fsprogs 1.38 (June 30, 2005)
+==============================
+
+Fix blkid's test programs (built with "make check") compile correctly
+even without "configure --enable-blkid-debug".
+
+Fix ia64 core dump bug caused by e2fsprogs running afoul of C99 strict
+type aliasing rules on newer gcc compilers.  (Addresses Red Hat
+Bugzilla ##161183.)
+
+Fix com_err library to make it more compatible with recent changes
+made to the com_err library in MIT Kerberos V5 version 1.4.
+(Addresses Sourceforge Bug #1150146)
+
+General cleanup of messages printed by e2fsprogs programs for grammar,
+consistency, and to make life easier for translators.  Fixed a few
+strings containing English that had not been marked as needing
+translations.  Removed strings that do not need to be translated, to
+make life easier for translators.
+
+Mke2fs and badblocks will take advantage of a feature in Linux 2.6 to
+test to see if a device appears to be in use instead of just relying
+on /proc/mounts and /etc/mtab.  (Addresses Debian Bug #308594).
+
+Fix portability problem in the filefrag program affecting platforms
+where the size of an integer is smaller than the size of a long.
+(Addresses Debian Bug #309655)
+
+Mke2fs will now use a larger journal by default for filesystems
+greater than 4GB.  (128 MB instead of 32MB).
+
+Mke2fs will refuse to create filesystems greater than 2**31-1 blocks,
+unless forced.  This is to avoid signed vs. unsigned kernel bugs in
+block numbers that still need to be fixed.
+
+The blkid program has a new option which will more efficiently search
+for device when it is known (or expected) that only one matching
+device will be found in the system, such as when doing a lookup by
+UUID.
+
+Debian's e2fsprogs-specific initrd fragment will avoid including
+unnecessary libraries into the initrd ramdisk by unsetting LD_PRELOAD
+and LD_LIBRARY_PATH, and filtering out libraries found in
+/etc/ld.so.preload.  (Addresses Debian Bug: #304003)
+
+Fixed a potential portability issue in the blkid programs for
+architectures where the char type is unsigned.  (Addresses Sourceforge
+Bug: #1180585)
+
+Fix a bug in filefrag so that it doesn't falsely count an extra
+discontinuity when the first block found is an indirect block.
+(Addresses Debian Bug #307607).
+
+Fix blkid's recognition of cramfs filesystems, and enhance it to be
+able to handle cramfs labels.
+
+Fix debugfs's stat command to not core dump when a filesystem is not
+open.
+
+Fix e2fsck's handling of error conditions caused by the resize inode
+claiming blocks that are also used by other inodes, a filesystem
+corruption which was commonly caused by a bug in Fedora Core 3's
+resize2fs program.
+
+Fixed bug in filefrag which caused it to fail on non-ext2/3
+filesystems.  (Addresses Debian Bug: #303509)
+
+If the superblock last mount time indicates that the system clock may
+not be accurate, then e2fsck will omit checking inodes' deletion time
+field for indications of a potential corrupted orphaned inode list.
+(Previously e2fsck only omitted these LOW_DTIME checks when the
+superblock's last write time looked insane.)
+
+Fixed a IA64 core dump bug in the e2p library which affected dumpe2fs.
+(Addresses Debian bug #302200)
+
+Make the blkid library more paranoid about being run from setgid
+programs, and to use __secure_getenv() from libc if it is available.
+
+Fixed spelling mistakes, typos, and otherwise clarified man pages.
+(Addresses Debian Bugs: #304591, #304592, #304594, #304597, #304593
+and Sourceforge Bug: #1189803)
+
+Updated and fixed translations.
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.
+
+Programmer's notes:
+-------------------
+
+Ext2fs_set_bit(), ext2fs_clear_bit(), and ext2fs_test_bit( have been
+changed to take an unsigned int for the bit number.  Negative bit
+numbers were never allowed (and didn't make any sense), so this should
+be a safe change.  This is needed to allow safe use of block numbers
+greater than or equal to 2**31.
+
+The compile_et program will avoid recreating generated foo_err.c and
+foo_err.h files if no changes are necessary.  The compile_et program
+will also atomically replace these files to avoid a potential parallel
+build race problem on SMP systems.  (Addresses Sourceforge Bug:
+#1157933)
+
+Added a new function to the blkid library, blkid_probe_all_new(),
+which only probes newly added disk devices, and change
+blkid_find_dev_with_tag() to use this function so that when a
+requested tag is not found, devices that were previously not checked
+are searched before searching all devices in the system.
+
+Added new functions to the blkid library, blkid_dev_set_search() and
+blkid_dev_has_tag().
+
+E2fsck's problem strings can now use @m and @n as abbreviations for
+"multiply-claimed" and "invalid", respectively.
+
+The e2fsprog.pot file now has an explanation of how the @-expansion
+and %-expansion works, and strings in e2fsck/problem.c which contain @
+characters now have comments in e2fsprogs.pot with the @-expansion to
+make life easier for translators.
+
+Fixed missing return values in the ext2fs library which could cause it
+to return random garbage in certain error conditions.
+
+Allow the current time to be overridden via the E2FSCK_TIME environment
+variable for use in regression tests.
+
+The test script driver program now exits with a non-zero status if
+there any of its test that it ran failed.
+
+Fixed problems with parabuilds on SMP systems.  (Addresses Sourceforge
+Bug: #1157933)
+
+Fixed "make check" so that it compiles correctly even when e2fsprogs'
+header files have not be installed in the system include directories.
+(Addresses Sourceforge Bug: #1180572)
+
+Fixed gcc -Wall nits.
+

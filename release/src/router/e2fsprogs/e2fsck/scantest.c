@@ -76,8 +76,8 @@ static void print_resource_track(struct resource_track *track)
 	gettimeofday(&time_end, 0);
 	getrusage(RUSAGE_SELF, &r);
 
-	printf(_("Memory used: %d, elapsed time: %6.3f/%6.3f/%6.3f\n"),
-	       (int) (((char *) sbrk(0)) - ((char *) track->brk_start)),
+	printf(_("Memory used: %lu, elapsed time: %6.3f/%6.3f/%6.3f\n"),
+	       (unsigned long)((char *)sbrk(0) - (char *)track->brk_start),
 	       timeval_subtract(&time_end, &track->time_start),
 	       timeval_subtract(&r.ru_utime, &track->user_start),
 	       timeval_subtract(&r.ru_stime, &track->system_start));

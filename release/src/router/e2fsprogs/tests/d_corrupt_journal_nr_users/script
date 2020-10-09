@@ -1,0 +1,25 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+IMAGE=$test_dir/image.gz
+EXP=$test_dir/expect
+OUT=$test_name.log
+gunzip < $IMAGE > $TMPFILE
+
+$DUMPE2FS $TMPFILE >> $OUT.new 2>&1
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -f $TMPFILE $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+	rm -f $test_name.tmp
+fi

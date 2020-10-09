@@ -1,0 +1,69 @@
+#!/bin/bash
+
+#  Copyright (C) 2018 Oracle.  All Rights Reserved.
+#
+#  Author: Darrick J. Wong <darrick.wong@oracle.com>
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it would be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write the Free Software Foundation,
+#  Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+
+# Run e2scrub_all from a cronjob if we don't have systemd and we're not
+# running on AC power.
+
+on_ac_power() {
+	local any_known=no
+
+	# try sysfs power class first
+	if [ -d /sys/class/power_supply ]; then
+		for psu in /sys/class/power_supply/*; do
+			if [ -r "$psu/type" ]; then
+				type=$(cat "$psu/type")
+
+				# ignore batteries
+				[ "$type" = "Battery" ] && continue
+
+				online=$(cat "$psu/online")
+
+				[ "$online" = 1 ] && return 0
+				[ "$online" = 0 ] && any_known=yes
+			fi
+		done
+
+		[ "$any_known" = "yes" ] && return 1
+	fi
+
+	# else fall back to AC adapters in /proc
+	if [ -d /proc/acpi/ac_adapter ]; then
+		for ac in /proc/acpi/ac_adapter/*; do
+			if [ -r "$ac/state" ]; then
+				grep -q on-line "$ac/state" && return 0
+				grep -q off-line "$ac/state" && any_known=yes
+			elif [ -r "$ac/status" ]; then
+				grep -q on-line "$ac/status" && return 0
+				grep -q off-line "$ac/status" && any_known=yes
+			fi
+		done
+
+		[ "$any_known" = "yes" ] && return 1
+	fi
+
+	# Can't tell, just assume we're on AC.
+	return 0
+}
+
+test -e @root_sbindir@/e2scrub_all || exit 0
+test -e /run/systemd/system && exit 0
+on_ac_power || exit 0
+
+exec @root_sbindir@/e2scrub_all

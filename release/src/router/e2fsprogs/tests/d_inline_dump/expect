@@ -1,0 +1,95 @@
+*** long file
+Inode: 13   Type: regular    Mode:  0644   Flags: 0x10000000
+Generation: 3289262644    Version: 0x00000000:00000001
+User:     0   Group:     0   Size: 80
+File ACL: 0
+Links: 1   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x53cec6b4:c72e3c00 -- Tue Jul 22 20:16:52 2014
+ atime: 0x53cec3c8:4a3fd000 -- Tue Jul 22 20:04:24 2014
+ mtime: 0x53cec3c8:4c281800 -- Tue Jul 22 20:04:24 2014
+crtime: 0x53cec3c8:4a3fd000 -- Tue Jul 22 20:04:24 2014
+Size of extra inode fields: 28
+Extended attributes:
+  system.data (20)
+  user.a (1) = "b"
+Size of inline data: 80
+*** short file
+Inode: 18   Type: regular    Mode:  0644   Flags: 0x10000000
+Generation: 3842229473    Version: 0x00000000:00000001
+User:     0   Group:     0   Size: 20
+File ACL: 0
+Links: 1   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x53cec6b4:cafecc00 -- Tue Jul 22 20:16:52 2014
+ atime: 0x53cec443:bda4d400 -- Tue Jul 22 20:06:27 2014
+ mtime: 0x53cec443:bf8d1c00 -- Tue Jul 22 20:06:27 2014
+crtime: 0x53cec443:bda4d400 -- Tue Jul 22 20:06:27 2014
+Size of extra inode fields: 28
+Extended attributes:
+  system.data (0)
+  user.a (1) = "b"
+Size of inline data: 60
+
+*** long dir
+Inode: 16   Type: directory    Mode:  0755   Flags: 0x10000000
+Generation: 3842229469    Version: 0x00000000:00000004
+User:     0   Group:     0   Size: 132
+File ACL: 7
+Links: 2   Blockcount: 8
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x53cec6e3:27eac000 -- Tue Jul 22 20:17:39 2014
+ atime: 0x53cec410:ed53dc00 -- Tue Jul 22 20:05:36 2014
+ mtime: 0x53cec42b:241a3000 -- Tue Jul 22 20:06:03 2014
+crtime: 0x53cec3fe:c8226000 -- Tue Jul 22 20:05:18 2014
+Size of extra inode fields: 28
+Extended attributes:
+  system.data (72)
+  user.a (1) = "b"
+Size of inline data: 132
+*** short dir
+Inode: 20   Type: directory    Mode:  0755   Flags: 0x10000000
+Generation: 3710818931    Version: 0x00000000:00000001
+User:     0   Group:     0   Size: 60
+File ACL: 0
+Links: 2   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x53cec6b4:ca0aa800 -- Tue Jul 22 20:16:52 2014
+ atime: 0x53cec477:9a5ba000 -- Tue Jul 22 20:07:19 2014
+ mtime: 0x53cec477:9a5ba000 -- Tue Jul 22 20:07:19 2014
+crtime: 0x53cec477:9a5ba000 -- Tue Jul 22 20:07:19 2014
+Size of extra inode fields: 28
+Extended attributes:
+  system.data (0)
+  user.a (1) = "b"
+Size of inline data: 60
+
+*** long link
+Inode: 12   Type: symlink    Mode:  0777   Flags: 0x10000000
+Generation: 3289262643    Version: 0x00000000:00000001
+User:     0   Group:     0   Size: 80
+File ACL: 0
+Links: 1   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x53cec47f:724db800 -- Tue Jul 22 20:07:27 2014
+ atime: 0x53cec665:27eac000 -- Tue Jul 22 20:15:33 2014
+ mtime: 0x53cec3b6:82841c00 -- Tue Jul 22 20:04:06 2014
+crtime: 0x53cec3b6:82841c00 -- Tue Jul 22 20:04:06 2014
+Size of extra inode fields: 28
+Extended attributes:
+  system.data (20)
+Fast link dest: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+*** short link
+Inode: 19   Type: symlink    Mode:  0777   Flags: 0x0
+Generation: 3842229474    Version: 0x00000000:00000001
+User:     0   Group:     0   Size: 20
+File ACL: 0
+Links: 1   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x53cec44c:a1fcc000 -- Tue Jul 22 20:06:36 2014
+ atime: 0x53cec44d:11fb8400 -- Tue Jul 22 20:06:37 2014
+ mtime: 0x53cec44c:a1fcc000 -- Tue Jul 22 20:06:36 2014
+crtime: 0x53cec44c:a1fcc000 -- Tue Jul 22 20:06:36 2014
+Size of extra inode fields: 28
+Fast link dest: "xxxxxxxxxxxxxxxxxxxx"
+*** end test

@@ -17,11 +17,6 @@
 		features = has_journal,extent,huge_file,flex_bg,uninit_bg,dir_nlink,extra_isize
 		inode_size = 256
 	}
-	ext4dev = {
-		features = has_journal,extent,huge_file,flex_bg,uninit_bg,dir_nlink,extra_isize
-		inode_size = 256
-		options = test_fs=1
-	}
 	small = {
 		blocksize = 1024
 		inode_size = 128

@@ -1,0 +1,32 @@
+E2fsprogs 1.17 (October 26, 1999)
+=================================
+
+Fixed nasty typo in fsck which caused parallelized fsck's to go into an
+infinite loop.
+
+Fixed a bug in fsck where it used strncmp to compare a binary UUID,
+thus potentially causing problems if a binary UUID contained a NULL
+character.
+
+E2fsck now uses stricter checks for directory entries in pass 2:
+zero-length filenames are not allowed; neither are 8 byte long
+directory entries.
+
+The debugfs "dirty" command now clears the filesystem valid bit.
+(Previously this just set the dirty-as-in-needs-writing-out-to-disk
+bit in the in-core superblock image.  The new functionality is more
+what the user expects, and is more useful.)
+
+Added a debugging hook to test parallel fsck; if the environment
+variable FSCK_FORCE_ALL_PARALLEL, then filesystems on the same drive
+will be checked in parallel when they normally would not be.
+
+Programmer's notes:
+-------------------
+
+Fixed some #ifdef's for compilation under the Hurd OS.
+
+Fixed minor W2K compatibility problems.
+
+Fixed some miscellaneous GCC warnings.
+

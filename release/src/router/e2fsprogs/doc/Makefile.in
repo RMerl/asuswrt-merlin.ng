@@ -11,7 +11,7 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
-DVI=texi2dvi
+DVI=texi2dvi --clean
 DVIPS=dvips -o "$@"
 INFO=@MAKEINFO@
 HTML=makeinfo --html --no-split
@@ -21,14 +21,14 @@ all:: libext2fs.info libext2fs.dvi libext2fs.html
 
 install-doc-libs: libext2fs.info libext2fs.dvi
 	$(Q) $(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*
-	$(E) "	MKINSTALLDIRS $(infodir)"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(infodir)
+	$(E) "	MKDIR_P $(infodir)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(infodir)
 	-$(Q) for i in libext2fs.info* ; do \
 		echo "	INSTALL_DATA $(infodir)/$$i" ; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(infodir)/$$i ; \
 	done
 	$(E) "	GZIP $(infodir)/libext2fs.info*"
-	-$(Q) gzip -9 $(DESTDIR)$(infodir)/libext2fs.info*
+	-$(Q) gzip -9n $(DESTDIR)$(infodir)/libext2fs.info*
 
 uninstall-doc-libs:
 	$(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*

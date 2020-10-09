@@ -90,7 +90,7 @@ void help (char *command_line)
 	wprintw (show_pad,"EXT2ED ver %s (%s)\n",E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	wprintw (show_pad,"Copyright (C) 1995 Gadi Oxman\n");
 	wprintw (show_pad,"Reviewed 2001 Christian Bac\n");
-	wprintw (show_pad,"Modified and enchanced by Theodore Ts'o, 2002\n");
+	wprintw (show_pad,"Modified and enhanced by Theodore Ts'o, 2002\n");
 	wprintw (show_pad,"EXT2ED is hereby placed under the terms of the GNU General Public License.\n\n");
 	wprintw (show_pad,"EXT2ED was programmed as a student project in the software laboratory\n");
 	wprintw (show_pad,"of the faculty of electrical engineering in the\n");
@@ -140,7 +140,7 @@ void detailed_help (char *text)
 		refresh_show_pad ();return;
 	}
 
-	wprintw (show_pad,"Error - Command %s not aviable now\n",text);
+	wprintw (show_pad,"Error - Command %s not available now\n",text);
 	refresh_show_pad ();return;
 }
 

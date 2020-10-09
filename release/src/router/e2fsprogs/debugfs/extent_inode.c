@@ -64,7 +64,8 @@ static int common_extent_args_process(int argc, char *argv[], int min_argc,
 
 static char *orig_prompt, *extent_prompt;
 
-void do_extent_open(int argc, char *argv[])
+void do_extent_open(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	ext2_ino_t	inode;
 	int		ret;
@@ -76,7 +77,7 @@ void do_extent_open(int argc, char *argv[])
 
 	if (argc == 1) {
 		if (current_ino)
-			printf("Current inode is %d\n", current_ino);
+			printf("Current inode is %u\n", current_ino);
 		else
 			printf("No current inode\n");
 		return;
@@ -97,18 +98,24 @@ void do_extent_open(int argc, char *argv[])
 
 	orig_prompt = ss_get_prompt(sci_idx);
 	extent_prompt = malloc(strlen(orig_prompt) + 32);
+	if (extent_prompt == NULL) {
+		com_err(argv[1], retval, "out of memory");
+		return;
+	}
+
 	strcpy(extent_prompt, orig_prompt);
 	cp = strchr(extent_prompt, ':');
 	if (cp)
 		*cp = 0;
-	sprintf(extent_prompt + strlen(extent_prompt), " (extent ino %d): ",
+	sprintf(extent_prompt + strlen(extent_prompt), " (extent ino %u): ",
 		current_ino);
 	ss_add_request_table(sci_idx, &extent_cmds, 1, &ret);
 	ss_set_prompt(sci_idx, extent_prompt);
 	return;
 }
 
-void do_extent_close(int argc, char *argv[])
+void do_extent_close(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		     void *infop EXT2FS_ATTR((unused)))
 {
 	int ret;
 
@@ -153,72 +160,86 @@ static void generic_goto_node(const char *my_name, int argc,
 	dbg_print_extent(0, &extent);
 }
 
-void do_current_node(int argc, char *argv[])
+void do_current_node(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		     void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("current_node", argc, argv, EXT2_EXTENT_CURRENT);
 }
 
-void do_root_node(int argc, char *argv[])
+void do_root_node(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		  void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("root_node", argc, argv, EXT2_EXTENT_ROOT);
 }
 
-void do_last_leaf(int argc, char *argv[])
+void do_last_leaf(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		  void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("last_leaf", argc, argv, EXT2_EXTENT_LAST_LEAF);
 }
 
-void do_first_sib(int argc, char *argv[])
+void do_first_sib(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		  void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("first_sib", argc, argv, EXT2_EXTENT_FIRST_SIB);
 }
 
-void do_last_sib(int argc, char *argv[])
+void do_last_sib(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		 void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("next_sib", argc, argv, EXT2_EXTENT_LAST_SIB);
 }
 
-void do_next_sib(int argc, char *argv[])
+void do_next_sib(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		 void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("next_sib", argc, argv, EXT2_EXTENT_NEXT_SIB);
 }
 
-void do_prev_sib(int argc, char *argv[])
+void do_prev_sib(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		 void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("prev_sib", argc, argv, EXT2_EXTENT_PREV_SIB);
 }
 
-void do_next_leaf(int argc, char *argv[])
+void do_next_leaf(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		 void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("next_leaf", argc, argv, EXT2_EXTENT_NEXT_LEAF);
 }
 
-void do_prev_leaf(int argc, char *argv[])
+void do_prev_leaf(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		  void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("prev_leaf", argc, argv, EXT2_EXTENT_PREV_LEAF);
 }
 
-void do_next(int argc, char *argv[])
+void do_next(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+	     void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("next", argc, argv, EXT2_EXTENT_NEXT);
 }
 
-void do_prev(int argc, char *argv[])
+void do_prev(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+	     void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("prev", argc, argv, EXT2_EXTENT_PREV);
 }
 
-void do_up(int argc, char *argv[])
+void do_up(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+	   void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("up", argc, argv, EXT2_EXTENT_UP);
 }
 
-void do_down(int argc, char *argv[])
+void do_down(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+	     void *infop EXT2FS_ATTR((unused)))
 {
 	generic_goto_node("down", argc, argv, EXT2_EXTENT_DOWN);
 }
 
-void do_delete_node(int argc, char *argv[])
+void do_delete_node(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	struct ext2fs_extent extent;
 	errcode_t	retval;
@@ -240,7 +261,8 @@ void do_delete_node(int argc, char *argv[])
 	dbg_print_extent(0, &extent);
 }
 
-void do_replace_node(int argc, char *argv[])
+void do_replace_node(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		     void *infop EXT2FS_ATTR((unused)))
 {
 	const char	*usage = "[--uninit] <lblk> <len> <pblk>";
 	errcode_t	retval;
@@ -284,7 +306,8 @@ void do_replace_node(int argc, char *argv[])
 	generic_goto_node(NULL, argc, argv, EXT2_EXTENT_CURRENT);
 }
 
-void do_split_node(int argc, char *argv[])
+void do_split_node(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		   void *infop EXT2FS_ATTR((unused)))
 {
 	errcode_t	retval;
 
@@ -300,7 +323,8 @@ void do_split_node(int argc, char *argv[])
 	generic_goto_node(NULL, argc, argv, EXT2_EXTENT_CURRENT);
 }
 
-void do_insert_node(int argc, char *argv[])
+void do_insert_node(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	const char	*usage = "[--after] [--uninit] <lblk> <len> <pblk>";
 	errcode_t	retval;
@@ -358,7 +382,8 @@ void do_insert_node(int argc, char *argv[])
 	generic_goto_node(NULL, argc, argv, EXT2_EXTENT_CURRENT);
 }
 
-void do_set_bmap(int argc, char **argv)
+void do_set_bmap(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		 void *infop EXT2FS_ATTR((unused)))
 {
 	const char	*usage = "[--uninit] <lblk> <pblk>";
 	struct ext2fs_extent extent;
@@ -406,7 +431,8 @@ void do_set_bmap(int argc, char **argv)
 	dbg_print_extent(0, &extent);
 }
 
-void do_print_all(int argc, char **argv)
+void do_print_all(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		  void *infop EXT2FS_ATTR((unused)))
 {
 	const char	*usage = "[--leaf-only|--reverse|--reverse-leaf]";
 	struct ext2fs_extent	extent;
@@ -457,7 +483,8 @@ void do_print_all(int argc, char **argv)
 	}
 }
 
-void do_fix_parents(int argc, char **argv)
+void do_fix_parents(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	errcode_t		retval;
 
@@ -472,7 +499,8 @@ void do_fix_parents(int argc, char **argv)
 	}
 }
 
-void do_info(int argc, char **argv)
+void do_info(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+	     void *infop EXT2FS_ATTR((unused)))
 {
 	struct ext2fs_extent	extent;
 	struct ext2_extent_info	info;
@@ -505,7 +533,8 @@ void do_info(int argc, char **argv)
 	       info.max_uninit_len);
 }
 
-void do_goto_block(int argc, char **argv)
+void do_goto_block(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		   void *infop EXT2FS_ATTR((unused)))
 {
 	errcode_t		retval;
 	blk64_t			blk;

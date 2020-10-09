@@ -1,0 +1,48 @@
+E2fsprogs 1.44.6 (March 5, 2019)
+================================
+
+Updates/Fixes since v1.44.5:
+
+Fixes
+-----
+
+If files are created while e4defrag is running, it's quite possible for
+succeed_cnt to be larger than total_count, in which case the number of
+failures (calculated via total_count - succeed_cnt) will overflow and
+become a very large unsigned number.  (Addresses Debian Bug: #888899)
+
+Fix e2fsck so it can correctly handle directories > 2 GiB when the
+largedir feature is enabled.
+
+Fix mke2fs's hugefile creation so that we correctly reserve enough
+metadata blocks for a given file system size.  Otherwise for certain
+unfortunately sized disks/partitions, the hugefile creation would fail.
+(Addresses Google Bug: 123239032)
+
+Fix the libext2fs library to be more robust against invalid block group
+descriptors to prevent e2fsprogs from crashing (or possibly being
+p0wned) by maliciously modified file systems.  (Addresses Google Bugs:
+119171089, 119929050)
+
+Fix mke2fs and debugfs so they can correctly copy in files > 2 GiB.
+
+Fix debugfs so its stat command can correct supportly display directory
+sizes > 2 GiB.
+
+Fix memory leaks in debugfs, mke2fs, and e2freefrag.
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Synchronized changes from Android's AOSP e2fsprogs tree.
+
+Avoid unnecessarily linking badblocks with the libblkid shared library.
+(Addresses Debian Bug: #919958)
+
+Stop depending on the debugfs binary for test data, since depending on
+the compiler, there might be sufficient aligned zero bytes that the
+resulting file(s) created by test cases could have unexpected sparse
+blocks, leading to test failures.   (Addresses Google Bug: #122085761)
+
+Fixed various debian packaging issues.

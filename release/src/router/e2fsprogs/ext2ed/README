@@ -48,10 +48,10 @@ This is version 0.2 of ext2ed - The extended-2 filesystem editor.
 Modifications on Apr 5 2001
 This is minor bug fixes to ext2ed, as of April 2001.
 It supports modern ext2 version that has file type in directory structure
-and fixes the missunderstanding between ncurses and
+and fixes the misunderstanding between ncurses and
 readline.
 
-I first applied patches from Redhat except the one for readline that 
+I first applied patches from Red Hat except the one for readline that 
 rewrote a readline behavior.
 
 Globals diffs between version 0.1 and 0.2 is stored in file :
@@ -114,7 +114,7 @@ that ncurses will be properly installed on your system:
 	set your TERM environment variable to 'linux' or link
 	l/linux to c/console in the terminfo database.
 
-4.	The percompiled binary was linked with ncurses 1.9.4 and will search
+4.	The precompiled binary was linked with ncurses 1.9.4 and will search
 	for the terminfo database on /usr/local/lib/terminfo. If you are
 	using it, and your 1.9.4 compatible terminfo database is not on the
 	directory above, use the TERMINFO environment variable to specify

@@ -1,1 +1,1 @@
-fallocated extents after nonzero i_size and total extents > 4
+fallocate extents w/ nonzero i_size and extents > 4

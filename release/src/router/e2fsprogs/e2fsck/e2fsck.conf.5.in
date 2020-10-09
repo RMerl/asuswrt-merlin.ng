@@ -1,26 +1,26 @@
 .\" -*- nroff -*-
 .\" Copyright 2006 by Theodore Ts'o.  All Rights Reserved.
 .\" This file may be copied under the terms of the GNU Public License.
-.\" 
+.\"
 .TH e2fsck.conf 5 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 e2fsck.conf \- Configuration file for e2fsck
 .SH DESCRIPTION
 .I e2fsck.conf
-is the configuration file for 
-.BR e2fsck (8).  
-It controls the default behavior of 
+is the configuration file for
+.BR e2fsck (8).
+It controls the default behavior of
 .BR e2fsck (8)
 while it is checking ext2, ext3, or ext4 filesystems.
 .PP
 The
 .I e2fsck.conf
-file uses an INI-style format.  Stanzas, or top-level sections, are 
-delimited by square braces: [ ].  Within each section, each line 
+file uses an INI-style format.  Stanzas, or top-level sections, are
+delimited by square braces: [ ].  Within each section, each line
 defines a relation, which assigns tags to values, or to a subsection,
-which contains further relations or subsections.   
+which contains further relations or subsections.
 .\" Tags can be assigned multiple values
-An example of the INI-style format used by this configuration file 
+An example of the INI-style format used by this configuration file
 follows below:
 .P
 	[section1]
@@ -49,40 +49,46 @@ follows below:
 .br
 	}
 .P
-Comments are delimited by a semicolon (';') or a hash ('#') character 
-at the beginning of the comment, and are terminated by the end of 
+Comments are delimited by a semicolon (';') or a hash ('#') character
+at the beginning of the comment, and are terminated by the end of
 line character.
 .P
 Tags and values must be quoted using double quotes if they contain
-spaces.  Within a quoted string, the standard backslash interpretations 
-apply: "\en" (for the newline character), 
-"\et" (for the tab character), "\eb" (for the backspace character), 
+spaces.  Within a quoted string, the standard backslash interpretations
+apply: "\en" (for the newline character),
+"\et" (for the tab character), "\eb" (for the backspace character),
 and "\e\e" (for the backslash character).
 .P
-The following stanzas are used in the 
+The following stanzas are used in the
 .I e2fsck.conf
 file.  They will be described in more detail in future sections of this
 document.
-.TP 
+.TP
 .I [options]
-This stanza contains general configuration parameters for 
+This stanza contains general configuration parameters for
 .BR e2fsck 's
 behavior.
+.TP
+.I [defaults]
+Contains relations which define the default parameters used by
+.BR e2fsck (8).
+In general, these defaults may be overridden by command-line options
+provided by the user.
 .TP
 .I [problems]
 This stanza allows the administrator to reconfigure how e2fsck handles
 various filesystem inconsistencies.
-.TP
-.I [scratch_files]
-This stanza controls when e2fsck will attempt to use scratch files to
-reduce the need for memory.
+@TDB_MAN_COMMENT@.TP
+@TDB_MAN_COMMENT@.I [scratch_files]
+@TDB_MAN_COMMENT@This stanza controls when e2fsck will attempt to use
+@TDB_MAN_COMMENT@scratch files to reduce the need for memory.
 .SH THE [options] STANZA
-The following relations are defined in the 
+The following relations are defined in the
 .I [options]
 stanza.
 .TP
 .I allow_cancellation
-If this relation is set to a boolean value of true, then if the user 
+If this relation is set to a boolean value of true, then if the user
 interrupts e2fsck using ^C, and the filesystem is not explicitly flagged
 as containing errors, e2fsck will exit with an exit status of 0 instead
 of 32.  This setting defaults to false.
@@ -135,16 +141,16 @@ we changed the default, we also renamed this boolean relation to
 .IR accept_time_fudge.
 .TP
 .I clear_test_fs_flag
-This boolean relation controls whether or not 
+This boolean relation controls whether or not
 .BR e2fsck (8)
 will offer to clear
 the test_fs flag if the ext4 filesystem is available on the system.  It
 defaults to true.
-.TP 
+.TP
 .I defer_check_on_battery
-This boolean relation controls whether or not the interval between 
-filesystem checks (either based on time or number of mounts) should 
-be doubled if the system is running on battery.  This setting defaults to 
+This boolean relation controls whether or not the interval between
+filesystem checks (either based on time or number of mounts) should
+be doubled if the system is running on battery.  This setting defaults to
 true.
 .TP
 .I indexed_dir_slack_percentage
@@ -157,10 +163,21 @@ the average fill ratio of directories can be maintained at a
 higher, more efficient level.  This relation defaults to 20
 percent.
 .TP
+.I inode_count_fullmap
+If this boolean relation is true, trade off using memory for speed when
+checking a file system with a large number of hard-linked files.  The
+amount of memory required is proportional to the number of inodes in the
+file system.  For large file systems, this can be gigabytes of memory.
+(For example a 40TB file system with 2.8 billion inodes will consume an
+additional 5.7 GB memory if this optimization is enabled.)  This setting
+defaults to false.
+.TP
 .I log_dir
 If the
 .I log_filename
-relation contains a relative pathname, then the log file will be placed
+or
+.I problem_log_filename
+relations contains a relative pathname, then the log file will be placed
 in the directory named by the
 .I log_dir
 relation.
@@ -169,17 +186,17 @@ relation.
 This relation contains an alternate directory that will be used if the
 directory specified by
 .I log_dir
-is not available or is not writeable.
+is not available or is not writable.
 .TP
 .I log_dir_wait
 If this boolean relation is true, them if the directories specified by
 .I log_dir
 or
 .I log_dir_fallback
-are not available or are not yet writeable, e2fsck will save the output
+are not available or are not yet writable, e2fsck will save the output
 in a memory buffer, and a child process will periodically test to see if
 the log directory has become available after the boot sequence has
-mounted the requiste filesytem for reading/writing.  This implements the
+mounted the requested file system for reading/writing.  This implements the
 functionality provided by
 .BR logsave (8)
 for e2fsck log files.
@@ -205,6 +222,35 @@ of that type are squelched.  This can be useful if the console is slow
 (i.e., connected to a serial port) and so a large amount of output could
 end up delaying the boot process for a long time (potentially hours).
 .TP
+.I no_optimize_extents
+If this boolean relation is true, do not offer to optimize the extent
+tree by reducing the tree's width or depth.  This setting defaults to false.
+.TP
+.I problem_log_filename
+This relation specifies the file name where a log of problem codes
+found by e2fsck be written.  The filename may contain various
+percent-expressions (%D, %T, %N,
+etc.) which will be expanded so that the file name for the log file can
+include things like date, time, device name, and other run-time
+parameters.  See the
+.B LOGGING
+section for more details.
+.TP
+.I readahead_mem_pct
+Use this percentage of memory to try to read in metadata blocks ahead of the
+main e2fsck thread.  This should reduce run times, depending on the speed of
+the underlying storage and the amount of free memory.  There is no default, but
+see
+.B readahead_kb
+for more details.
+.TP
+.I readahead_kb
+Use this amount of memory to read in metadata blocks ahead of the main checking
+thread.  Setting this value to zero disables readahead entirely.  By default,
+this is set the size of two block groups' inode tables (typically 4MiB on a
+regular ext4 filesystem); if this amount is more than 1/50th of total physical
+memory, readahead is disabled.
+.TP
 .I report_features
 If this boolean relation is true, e2fsck will print the file system
 features as part of its verbose reporting (i.e., if the
@@ -222,16 +268,29 @@ If this boolean relation is true, e2fsck will run as if the option
 .B -v
 is always specified.  This will cause e2fsck to print some additional
 information at the end of each full file system check.
+.SH THE [defaults] STANZA
+The following relations are defined in the
+.I [defaults]
+stanza.
+.TP
+.I undo_dir
+This relation specifies the directory where the undo file should be
+stored.  It can be overridden via the
+.B E2FSPROGS_UNDO_DIR
+environment variable.  If the directory location is set to the value
+.IR none ,
+.B e2fsck
+will not create an undo file.
 .SH THE [problems] STANZA
 Each tag in the
-.I [problems] 
+.I [problems]
 stanza names a problem code specified with a leading "0x" followed by
-six hex digits.   
+six hex digits.
 The value of the tag is a subsection where the relations in that
-subsection override the default treatment of that particular problem 
+subsection override the default treatment of that particular problem
 code.
 .P
-Note that inappropriate settings in this stanza may cause 
+Note that inappropriate settings in this stanza may cause
 .B e2fsck
 to behave incorrectly, or even crash.  Most system administrators should
 not be making changes to this section without referring to source code.
@@ -243,13 +302,13 @@ This relation allows the message which is printed when this filesystem
 inconsistency is detected to be overridden.
 .TP
 .I preen_ok
-This boolean relation overrides the default behavior controlling 
+This boolean relation overrides the default behavior controlling
 whether this filesystem problem should be automatically fixed when
 .B e2fsck
 is running in preen mode.
 .TP
 .I max_count
-This integer relation overrides the 
+This integer relation overrides the
 .I max_count_problems
 parameter (set in the options section) for this particular problem.
 .TP
@@ -259,18 +318,18 @@ whether or not the filesystem will be marked as inconsistent if the user
 declines to fix the reported problem.
 .TP
 .I no_default
-This boolean relation overrides whether the default answer for this 
+This boolean relation overrides whether the default answer for this
 problem (or question) should be "no".
-.TP 
+.TP
 .I preen_nomessage
-This boolean relation overrides the default behavior controlling 
+This boolean relation overrides the default behavior controlling
 whether or not the description for this filesystem problem should
 be suppressed when
 .B e2fsck
 is running in preen mode.
 .TP
 .I no_nomsg
-This boolean relation overrides the default behavior controlling 
+This boolean relation overrides the default behavior controlling
 whether or not the description for this filesystem problem should
 be suppressed when a problem forced not to be fixed, either because
 .B e2fsck
@@ -288,29 +347,40 @@ of 'should this problem be fixed?'.  The
 option even overrides the
 .B -y
 option given on the command-line (just for the specific problem, of course).
-.SH THE [scratch_files] STANZA
-The following relations are defined in the 
-.I [scratch_files]
-stanza.
 .TP
-.I directory
-If the directory named by this relation exists and is writeable, then
-e2fsck will attempt to use this directory to store scratch files instead
-of using in-memory data structures.
-.TP
-.I numdirs_threshold
-If this relation is set, then in-memory data structures be used if the
-number of directories in the filesystem are fewer than amount specified.
-.TP
-.I dirinfo
-This relation controls whether or not the scratch file directory is used
-instead of an in-memory data structure for directory information.  It
-defaults to true.
-.TP
-.I icount
-This relation controls whether or not the scratch file directory is used
-instead of an in-memory data structure when tracking inode counts.  It
-defaults to true.
+.I not_a_fix
+This boolean option, it set to true, marks the problem as
+one where if the user gives permission to make the requested change,
+it does not mean that the file system had a problem which has since
+been fixed.  This is used for requests to optimize the file system's
+data structure, such as pruning an extent tree.
+@TDB_MAN_COMMENT@.SH THE [scratch_files] STANZA
+@TDB_MAN_COMMENT@The following relations are defined in the
+@TDB_MAN_COMMENT@.I [scratch_files]
+@TDB_MAN_COMMENT@stanza.
+@TDB_MAN_COMMENT@.TP
+@TDB_MAN_COMMENT@.I directory
+@TDB_MAN_COMMENT@If the directory named by this relation exists and is
+@TDB_MAN_COMMENT@writeable, then e2fsck will attempt to use this
+@TDB_MAN_COMMENT@directory to store scratch files instead of using
+@TDB_MAN_COMMENT@in-memory data structures.
+@TDB_MAN_COMMENT@.TP
+@TDB_MAN_COMMENT@.I numdirs_threshold
+@TDB_MAN_COMMENT@If this relation is set, then in-memory data structures
+@TDB_MAN_COMMENT@will be used if the number of directories in the filesystem
+@TDB_MAN_COMMENT@are fewer than amount specified.
+@TDB_MAN_COMMENT@.TP
+@TDB_MAN_COMMENT@.I dirinfo
+@TDB_MAN_COMMENT@This relation controls whether or not the scratch file
+@TDB_MAN_COMMENT@directory is used instead of an in-memory data
+@TDB_MAN_COMMENT@structure for directory information.  It defaults to
+@TDB_MAN_COMMENT@true.
+@TDB_MAN_COMMENT@.TP
+@TDB_MAN_COMMENT@.I icount
+@TDB_MAN_COMMENT@This relation controls whether or not the scratch file
+@TDB_MAN_COMMENT@directory is used instead of an in-memory data
+@TDB_MAN_COMMENT@structure when tracking inode counts.  It defaults to
+@TDB_MAN_COMMENT@true.
 .SH LOGGING
 E2fsck has the facility to save the information from an e2fsck run in a
 directory so that a system administrator can review its output at their
@@ -374,7 +444,7 @@ The name of the user running e2fsck.
 .B %U
 This percent expression does not expand to anything, but it signals that
 any following date or time expressions should be expressed in UTC time
-instead of the local timzeone.
+instead of the local timezone.
 .TP
 .B %y
 The last two digits of the current year (00..99)
@@ -425,7 +495,7 @@ no more than 16 instances of each type of file system corruption.
 .SH FILES
 .TP
 .I /etc/e2fsck.conf
-The configuration file for 
+The configuration file for
 .BR e2fsck (8).
 .SH SEE ALSO
 .BR e2fsck (8)

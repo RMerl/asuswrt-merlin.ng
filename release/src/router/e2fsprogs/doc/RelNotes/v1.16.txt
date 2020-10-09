@@ -1,0 +1,87 @@
+E2fsprogs 1.16 (October 22, 1999)
+=================================
+
+Fixed a race condition bug in fsck; when printing a progress bar, if
+checking multiple filesystems in parallel, it was possible for fsck to
+send e2fsck a SIGUSR1 signal before e2fsck had installed its signal
+handler, which would cause it to terminate with a signal 10.
+
+E2fsck now properly handles filesystems that have the
+INCOMPAT_FILETYPE feature turned on.  It can be used to convert a
+filesystem into using or not using FILETYPE feature.
+
+E2fsck now properly handles filesystems that have the IMAGIC feature
+turned on (this is used on Linux AFS servers).
+
+The mke2fs program now creates filesystems that have the filetype and
+sparse_superblock features enabled by default, unless it is run on a
+pre-2.2 kernel.  These features are not supported by a pre-2.2 kernel,
+so there is now a new flag -O which allows the user to specify with
+which features she would like to create the filesystem; "mke2fs -O
+none" will create a filesystem compatible with 2.0 kernels.
+
+The tune2fs program now has a -O option which allows the user to set
+and reset "safe" filesystem features.  Currently, the only ones which
+allows to be modified are the filetype and sparse_superblock features.
+Note setting or clearing either feature will require running e2fsck on
+the filesystem afterwards.  (n.b. Clearing the sparse_superblock feature
+requires that there is enough free space on the filesystem for the
+extra superblocks which will be created by e2fsck.)
+
+Debugfs can now set and print filesystem features in the superblock
+using the "features" command.  Dumpe2fs will print out the complete
+set of features when listing the superblock.
+
+Dumpe2fs has new options -f (force) and -h (header-only).
+
+Fixed a bug in e2fsck which could cause the PROGRAMMING ERROR/bonehead
+message to come up.  This could happen when decrementing or
+incrementing a link count could result in an overflow.
+
+Fixed a bug in e2fsck where the block count on the lost+found
+directory would not be properly incremented when the directory was
+expanded to the point where an indirect block needed to be allocated.
+
+E2fsck now makes some additional sanity checks on the superblock to
+avoid crashing or giving a memory allocation error if some of the
+values in the superblock are unreasonable (but the superblock otherwise
+looks valid).
+
+Fixed a bug in e2fsck where a very badly corrupted filesystem might
+require two passes to completely fix the filesystem.  This happened if
+an inode claimed blocks that was part of the filesystem metadata
+(typically, when garbage was written into an inode table or indirect
+block, since this kind of filesystem corruption normally doesn't
+happen otherwise).
+
+On the Alpha, glibc declares st_flags although it isn't actually used;
+the configure script was improved to detect this case so that
+e2fsprogs can avoid using the non-functional stat field.
+
+The manual pages were updated to use a more consistent formatting
+style consistent with standard Unix man pages.  Mke2fs's man page
+added documentation for a few previously undocumented options.
+
+Fixed minor display bugs in tune2fs and mke2fs.
+
+Programmer's notes:
+-------------------
+
+Improved portability of e2fsprogs to non-Unix systems (in particular, NT).
+
+Added features to parse and print feature strings into the e2p library.  
+(e2p_feature2string, e2p_string2feature, e2p_edit_feature).
+
+ext2fs_mkdir() and ext2fs_new_dir_block() now creates directories
+whose directory entries contain proper filetype information if the
+filesystem supports it.
+
+ext2fs_link() now uses the low 3 bits of its flags parameter to pass
+the directory entry filetype information.  This is used to set the
+directory entry filetype information if the filesystem supports it.
+
+Fixed a bug in ext2fs_expand_dir() where the block count in a
+directory's inode would not be properly incremented when the directory
+was expanded to the point where an indirect block needed to be
+allocated.
+

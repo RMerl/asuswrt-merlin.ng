@@ -1,0 +1,56 @@
+E2fsprogs 1.10 (April 24, 1997)
+===============================
+
+Mke2fs once again defaults to creating revision #0 filesystems, since
+people were complaining about breaking compatibility with 1.2 kernels.
+Warning messages were added to the mke2fs and tune2fs man pages that
+the sparse superblock option isn't supported by most kernels yet (1.2
+and 2.0 both don't support parse superblocks.)
+
+Added new flag to mke2fs, -R <raid options>, which allows the user to
+tell mke2fs about the RAID configuration of the filesystem.  Currently
+the only supported raid option is "stride" which specifies the width
+of the RAID stripe.
+
+Fixed bug in e2fsck where pass1b would bomb out if there were any
+blocks marked bad in the inode table.
+
+Fixed rare bug in mke2fs where if the user had a very unlucky number
+of blocks in a filesystem (probability less than .002) the resulting
+filesystem would be corrupt in the last block group.
+
+Fixed bug where if e2fsck tried to allocate a block to fix a
+filesystem corruption problem and the filesystem had no free blocks,
+ext2fs_new_block() would loop forever.
+
+The configure script now checks explicitly to see if "-static" works,
+since that can't be assumed to be true --- RedHat doesn't install
+libc-static by default.
+
+Fixed bug in libext2's block iterator functions where under some
+circumstances, file with holes would cause the bcount parameter to the
+callback function to be incorrect.  This bug didn't affect any of
+e2fsprogs programs, but it was discovered by Paul Mackerras, the
+author of the PPC boot loader.
+
+Removed use of static variables to store the inode cache in libext2fs.
+This caused problems if more than one filesystem was accessed via
+libext2fs (static variables in libraries are generally a bad idea).
+Again, this didn't affect e2fsprogs programs, but it was discovered by
+Paul Mackerras.
+
+Fixed minor bugs and version code drift to assure that e2fsprogs 1.10
+will compile cleanly with 1.2.13 kernels (even with a.out shared
+libraries!)
+
+Programmer's notes:
+-------------------
+
+Added new functions to duplicate an ext2 filesystem handle, and its
+associated substructure.  New functions: ext2fs_dup_handle(),
+ext2fs_copy_dblist(), ext2fs_badblocks_copy(), ext2fs_copy_bitmap().
+Other structures, such as the io_channel and the inode_cache, now have
+a ref count so that they only get freed when they are no longer used
+by any filesystem handle.  (These functions were added as part of the
+development effort for an ext2 resizer).
+

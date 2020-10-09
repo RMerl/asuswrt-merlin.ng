@@ -16,7 +16,7 @@ Upstream Author: Theodore Ts'o <tytso@mit.edu>
 Copyright notice:
 
 This package, the EXT2 filesystem utilities, is protected by the GNU
-Public License.
+General Public License.
 
 	Copyright (c) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
 	2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 by Theodore Ts'o

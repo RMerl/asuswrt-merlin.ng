@@ -1,0 +1,35 @@
+Pass 1: Checking inodes, blocks, and sizes
+Special (device/socket/fifo) file (inode 19) has extents
+or inline-data flag set.  Clear? yes
+
+Inode 20 has extent header but inline data flag is set.
+Fix? yes
+
+Inode 21 has inline data and extent flags set but i_block contains junk.
+Clear inode? yes
+
+Inode 22 seems to have block map but inline data and extent flags set.
+Fix? yes
+
+Inode 23 seems to have inline data but extent flag is set.
+Fix? yes
+
+Pass 2: Checking directory structure
+Entry 'garbage' in /bad (18) has deleted/unused inode 21.  Clear? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Inode bitmap differences:  -21
+Fix? yes
+
+Free inodes count wrong for group #0 (105, counted=106).
+Fix? yes
+
+Free inodes count wrong (105, counted=106).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 22/128 files (0.0% non-contiguous), 21/512 blocks
+Exit status is 1

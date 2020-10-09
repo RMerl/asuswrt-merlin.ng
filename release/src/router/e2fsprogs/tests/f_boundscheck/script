@@ -9,7 +9,6 @@ bzip2 -d < $IMAGE > $TMPFILE
 # Run fsck to fix things?
 EXP1=$test_dir/expect.1
 OUT1=$test_name.1.log
-rm -rf $test_name.failed $test_name.ok
 
 $FSCK $FSCK_OPT $TMPFILE 2>&1 | head -n 1000 | tail -n +2 > $OUT1
 echo "Exit status is $?" >> $OUT1

@@ -1,7 +1,7 @@
 test_description="e2undo with mke2fs"
 if test -x $E2UNDO_EXE; then
 
-E2FSPROGS_UNDO_DIR=/tmp
+E2FSPROGS_UNDO_DIR=${TMPDIR:-/tmp}
 export E2FSPROGS_UNDO_DIR
 TDB_FILE=$E2FSPROGS_UNDO_DIR/mke2fs-$(basename $TMPFILE).e2undo
 OUT=$test_name.log
@@ -19,7 +19,7 @@ $MKE2FS -q -F -o Linux -I 256 -O uninit_bg -E lazy_itable_init=1 -b 1024 $TMPFIL
 new_crc=`$CRCSUM $TMPFILE`
 echo $CRCSUM after mke2fs $new_crc >> $OUT
 
-$E2UNDO_EXE  $TDB_FILE $TMPFILE  >> $OUT 2>&1
+$E2UNDO  $TDB_FILE $TMPFILE  >> $OUT 2>&1
 new_crc=`$CRCSUM $TMPFILE`
 echo $CRCSUM after e2undo $new_crc >> $OUT
 

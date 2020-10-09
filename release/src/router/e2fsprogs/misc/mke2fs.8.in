@@ -18,11 +18,15 @@ mke2fs \- create an ext2/ext3/ext4 filesystem
 .I block-size
 ]
 [
-.B \-D
+.B \-C
+.I cluster-size
 ]
 [
-.B \-f
-.I fragment-size
+.B \-d
+.I root-directory
+]
+[
+.B \-D
 ]
 [
 .B \-g
@@ -108,6 +112,14 @@ mke2fs \- create an ext2/ext3/ext4 filesystem
 ]
 [
 .B \-V
+]
+[
+.B \-e
+.I errors-behavior
+]
+[
+.B \-z
+.I undo_file
 ]
 .I device
 [
@@ -225,11 +237,34 @@ enabled.  (See the
 man page for more details about bigalloc.)   The default cluster size if
 bigalloc is enabled is 16 times the block size.
 .TP
+.BI \-d " root-directory"
+Copy the contents of the given directory into the root directory of the
+filesystem.
+.TP
 .B \-D
 Use direct I/O when writing to the disk.  This avoids mke2fs dirtying a
 lot of buffer cache memory, which may impact other applications running
 on a busy server.  This option will cause mke2fs to run much more
 slowly, however, so there is a tradeoff to using direct I/O.
+.TP
+.BI \-e " error-behavior"
+Change the behavior of the kernel code when errors are detected.
+In all cases, a filesystem error will cause
+.BR e2fsck (8)
+to check the filesystem on the next boot.
+.I error-behavior
+can be one of the following:
+.RS 1.2i
+.TP 1.2i
+.B continue
+Continue normal execution.
+.TP
+.B remount-ro
+Remount filesystem read-only.
+.TP
+.B panic
+Cause a kernel panic.
+.RE
 .TP
 .BI \-E " extended-options"
 Set extended options for the filesystem.  Extended options are comma
@@ -244,6 +279,31 @@ The
 option is still accepted for backwards compatibility, but is deprecated.
 The following extended options are supported:
 .RS 1.2i
+.TP
+.BI encoding= encoding-name
+Enable the
+.I casefold
+feature in the super block and set
+.I encoding-name
+as the encoding to be used.  If
+.I encoding-name
+is not specified, the encoding defined in
+.BR mke2fs.conf (5)
+is used.
+.TP
+.BI encoding_flags= encoding-flags
+Define parameters for file name character encoding operations.  If a
+flag is not changed using this parameter, its default value is used.
+.I encoding-flags
+should be a comma-separated lists of flags to be enabled.  To disable a
+flag, add it to the list with the prefix "no".
+
+The only flag that can be set right now is
+.I strict
+which means that invalid strings should be rejected by the file system.
+In the default configuration, the
+.I strict
+flag is disabled.
 .TP
 .BI mmp_update_interval= interval
 Adjust the initial MMP update interval to
@@ -303,6 +363,15 @@ small risk if the system crashes before the journal has been overwritten
 entirely one time.  If the option value is omitted, it defaults to 1 to
 enable lazy journal inode zeroing.
 .TP
+.B no_copy_xattrs
+Normally
+.B mke2fs
+will copy the extended attributes of the files in the directory
+hierarchy specified via the (optional)
+.B \-d
+option.  This will disable the copy and leaves the files in the newly
+created file system without any extended attributes.
+.TP
 .BI num_backup_sb= <0|1|2>
 If the
 .B sparse_super2
@@ -332,7 +401,7 @@ filesystem to change based on the user running \fBmke2fs\fR.
 Set a flag in the filesystem superblock indicating that it may be
 mounted using experimental kernel code, such as the ext4dev filesystem.
 .TP
-.BI discard
+.B discard
 Attempt to discard blocks at mkfs time (discarding blocks initially is useful
 on solid state devices and sparse / thin-provisioned storage). When the device
 advertises that discard also zeroes data (any subsequent read after the discard
@@ -340,19 +409,19 @@ and before write returns zero), then mark all not-yet-zeroed inode tables as
 zeroed. This significantly speeds up filesystem initialization. This is set
 as default.
 .TP
-.BI nodiscard
+.B nodiscard
 Do not attempt to discard blocks at mkfs time.
-@QUOTA_MAN_COMMENT@.TP
-@QUOTA_MAN_COMMENT@.BI quotatype
-@QUOTA_MAN_COMMENT@Specify which quota type ('usr' or 'grp') is to be
-@QUOTA_MAN_COMMENT@initialized. This option has effect only if the
-@QUOTA_MAN_COMMENT@.B quota
-@QUOTA_MAN_COMMENT@feature is set. Without this extended option, the default
-@QUOTA_MAN_COMMENT@behavior is to initialize both user and group quotas.
-.RE
 .TP
-.BI \-f " fragment-size"
-Specify the size of fragments in bytes.
+.B quotatype
+Specify the which  quota types (usrquota, grpquota, prjquota) which
+should be enabled in the created file system.  The argument of this
+extended option should be a colon separated list.  This option has
+effect only if the
+.B quota
+feature is set.   The default quota types to be initialized if this
+option is not specified is both user and group quotas.  If the project
+feature is enabled that project quotas will be initialized as well.
+.RE
 .TP
 .B \-F
 Force
@@ -386,7 +455,7 @@ Specify the number of block groups that will be packed together to
 create a larger virtual block group (or "flex_bg group") in an
 ext4 filesystem.  This improves meta-data locality and performance
 on meta-data heavy workloads.  The number of groups must be a power
-of 2 and may only be specified if the 
+of 2 and may only be specified if the
 .B flex_bg
 filesystem feature is enabled.
 .TP
@@ -402,7 +471,7 @@ be smaller than the blocksize of the filesystem, since in that case more
 inodes would be made than can ever be used.  Be warned that it is not
 possible to change this ratio on a filesystem after it is created, so be
 careful deciding the correct value for this parameter.  Note that resizing
-a filesystem changes the numer of inodes to maintain this ratio.
+a filesystem changes the number of inodes to maintain this ratio.
 .TP
 .BI \-I " inode-size"
 Specify the size of each inode in bytes.
@@ -415,13 +484,10 @@ space in the filesystem and can also negatively impact performance.
 It is not
 possible to change this value after the filesystem is created.
 .IP
-In kernels after 2.6.10 and some
-earlier vendor kernels it is possible to utilize inodes larger than
-128 bytes to store
-extended attributes for improved performance.
-Extended attributes
-stored in large inodes are not visible with older kernels, and such
-filesystems will not be mountable with 2.4 kernels at all.  
+File systems with an inode size of 128 bytes do not support timestamps
+beyond January 19, 2038.  Inodes which are 256 bytes or larger will
+support extended timestamps, project id's, and the ability to store some
+extended attributes in the inode table for improved performance.
 .IP
 The default inode size is controlled by the
 .BR mke2fs.conf (5)
@@ -619,18 +685,26 @@ kernels only support revision 0 filesystems.  The default is to
 create revision 1 filesystems.
 .TP
 .B \-S
-Write superblock and group descriptors only.  This is useful if all of
+Write superblock and group descriptors only.  This is an extreme
+measure to be taken only in the very unlikely case that all of
 the superblock and backup superblocks are corrupted, and a last-ditch
-recovery method is desired.  It causes
+recovery method is desired by experienced users.  It causes
 .B mke2fs
-to reinitialize the
-superblock and group descriptors, while not touching the inode table
-and the block and inode bitmaps.  The
+to reinitialize the superblock and group descriptors, while not
+touching the inode table and the block and inode bitmaps.  The
 .B e2fsck
 program should be run immediately after this option is used, and there
-is no guarantee that any data will be salvageable.  It is critical to
-specify the correct filesystem blocksize when using this option,
-or there is no chance of recovery.
+is no guarantee that any data will be salvageable.  Due to the wide
+variety of possible options to
+.B mke2fs
+that affect the on-disk layout, it is critical to specify exactly
+the same format options, such as blocksize, fs-type, feature flags, and
+other tunables when using this option, or the filesystem will be further
+corrupted.  In some cases, such as filesystems that have been resized,
+or have had features enabled after format time, it is impossible to
+overwrite all of the superblocks correctly, and at least some filesystem
+corruption will occur.  It is best to run this on a full copy of the
+filesystem so other options can be tried if this doesn't work.
 .\" .TP
 .\" .BI \-t " test"
 .\" Check the device for bad blocks before creating the file system
@@ -699,7 +773,25 @@ will use the default filesystem type
 .IR default .
 .TP
 .BI \-U " UUID"
-Create the filesystem with the specified UUID.
+Set the universally unique identifier (UUID) of the filesystem to
+.IR UUID .
+The format of the UUID is a series of hex digits separated by hyphens,
+like this:
+"c1b9d5a2-f162-11cf-9ece-0020afc76f16".
+The
+.I UUID
+parameter may also be one of the following:
+.RS 1.2i
+.TP
+.I clear
+clear the filesystem UUID
+.TP
+.I random
+generate a new randomly-generated UUID
+.TP
+.I time
+generate a new time-based UUID
+.RE
 .TP
 .B \-v
 Verbose execution.
@@ -708,41 +800,49 @@ Verbose execution.
 Print the version number of
 .B mke2fs
 and exit.
+.TP
+.BI \-z " undo_file"
+Before overwriting a file system block, write the old contents of the block to
+an undo file.  This undo file can be used with e2undo(8) to restore the old
+contents of the file system should something go wrong.  If the empty string is
+passed as the undo_file argument, the undo file will be written to a file named
+mke2fs-\fIdevice\fR.e2undo in the directory specified via the
+\fIE2FSPROGS_UNDO_DIR\fR environment variable or the \fIundo_dir\fR directive
+in the configuration file.
+
+WARNING: The undo file cannot be used to recover from a power or system crash.
 .SH ENVIRONMENT
 .TP
-.BI MKE2FS_SYNC
+.B MKE2FS_SYNC
 If set to non-zero integer value, its value is used to determine how often
 .BR sync (2)
 is called during inode table initialization.
 .TP
-.BI MKE2FS_CONFIG
+.B MKE2FS_CONFIG
 Determines the location of the configuration file (see
 .BR mke2fs.conf (5)).
 .TP
-.BI MKE2FS_FIRST_META_BG
+.B MKE2FS_FIRST_META_BG
 If set to non-zero integer value, its value is used to determine first meta
 block group. This is mostly for debugging purposes.
 .TP
-.BI MKE2FS_DEVICE_SECTSIZE
+.B MKE2FS_DEVICE_SECTSIZE
+If set to non-zero integer value, its value is used to determine logical
+sector size of the
+.IR device .
+.TP
+.B MKE2FS_DEVICE_PHYS_SECTSIZE
 If set to non-zero integer value, its value is used to determine physical
 sector size of the
 .IR device .
 .TP
-.BI MKE2FS_SKIP_CHECK_MSG
+.B MKE2FS_SKIP_CHECK_MSG
 If set, do not show the message of filesystem automatic check caused by
 mount count or check interval.
 .SH AUTHOR
 This version of
 .B mke2fs
 has been written by Theodore Ts'o <tytso@mit.edu>.
-.SH BUGS
-.B mke2fs
-accepts the
-.B \-f
-option but currently ignores it because the second
-extended file system does not support fragments yet.
-.br
-There may be other ones.  Please, report them to the author.
 .SH AVAILABILITY
 .B mke2fs
 is part of the e2fsprogs package and is available from

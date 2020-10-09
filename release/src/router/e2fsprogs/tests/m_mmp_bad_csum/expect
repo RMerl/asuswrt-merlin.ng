@@ -1,0 +1,23 @@
+dumpe2fs: MMP block checksum does not match while trying to open test.img
+dumpe2fs: MMP last updated by 'test_node' on test date
+Exit status is 1
+Superblock MMP block checksum does not match.  Fix? yes
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/128 files (0.0% non-contiguous), 19/512 blocks
+Exit status is 0
+dumpe2fs: it is safe to mount 'test.img', MMP is clean
+Exit status is 0
+MMP_block:
+    mmp_magic: 0x4d4d50
+    mmp_check_interval: 5
+    mmp_sequence: 0xff4d4d50
+    mmp_update_date: test date
+    mmp_update_time: test_time
+    mmp_node_name: test_node
+    mmp_device_name: test.img
+    mmp_block_number: 8

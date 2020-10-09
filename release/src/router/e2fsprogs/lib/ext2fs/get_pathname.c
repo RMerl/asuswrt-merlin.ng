@@ -1,5 +1,5 @@
 /*
- * get_pathname.c --- do directry/inode -> name translation
+ * get_pathname.c --- do directory/inode -> name translation
  *
  * Copyright (C) 1993, 1994, 1995 Theodore Ts'o.
  *
@@ -49,21 +49,20 @@ static int get_pathname_proc(struct ext2_dir_entry *dirent,
 {
 	struct get_pathname_struct	*gp;
 	errcode_t			retval;
+	int name_len = ext2fs_dirent_name_len(dirent);
 
 	gp = (struct get_pathname_struct *) priv_data;
 
-	if (((dirent->name_len & 0xFF) == 2) &&
-	    !strncmp(dirent->name, "..", 2))
+	if ((name_len == 2) && !strncmp(dirent->name, "..", 2))
 		gp->parent = dirent->inode;
 	if (dirent->inode == gp->search_ino) {
-		retval = ext2fs_get_mem((dirent->name_len & 0xFF) + 1,
-					&gp->name);
+		retval = ext2fs_get_mem(name_len + 1, &gp->name);
 		if (retval) {
 			gp->errcode = retval;
 			return DIRENT_ABORT;
 		}
-		strncpy(gp->name, dirent->name, (dirent->name_len & 0xFF));
-		gp->name[dirent->name_len & 0xFF] = '\0';
+		strncpy(gp->name, dirent->name, name_len);
+		gp->name[name_len] = '\0';
 		return DIRENT_ABORT;
 	}
 	return 0;

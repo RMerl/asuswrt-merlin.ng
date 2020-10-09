@@ -8,7 +8,7 @@ resize2fs \- ext2/ext3/ext4 file system resizer
 .SH SYNOPSIS
 .B resize2fs
 [
-.B \-fFpPM
+.B \-fFpPMbs
 ]
 [
 .B \-d
@@ -17,6 +17,10 @@ resize2fs \- ext2/ext3/ext4 file system resizer
 [
 .B \-S
 .I RAID-stride
+]
+[
+.B \-z
+.I undo_file
 ]
 .I device
 [
@@ -42,23 +46,15 @@ If no units are specified, the units of the
 parameter shall be the filesystem blocksize of the filesystem.
 Optionally, the
 .I size
-parameter may be suffixed by one of the following the units
-designators: 's', 'K', 'M', or 'G',
-for 512 byte sectors, kilobytes, megabytes, or gigabytes, respectively.
-The
+parameter may be suffixed by one of the following units
+designators: 'K', 'M', 'G', 'T' (either upper-case or lower-case) or 's'
+for power-of-two kilobytes, megabytes, gigabytes, terabytes or 512 byte
+sectors respectively. The
 .I size
 of the filesystem may never be larger than the size of the partition.
 If
 .I size
 parameter is not specified, it will default to the size of the partition.
-.PP
-Note: when kilobytes is used above, I mean
-.IR real ,
-power-of-2 kilobytes, (i.e., 1024 bytes), which some politically correct
-folks insist should be the stupid-sounding ``kibibytes''.  The same
-holds true for megabytes, also sometimes known as ``mebibytes'', or
-gigabytes, as the amazingly silly ``gibibytes''.  Makes you want to
-gibber, doesn't it?
 .PP
 The
 .B resize2fs
@@ -86,7 +82,20 @@ to shrink the size of filesystem.  Then you may use
 to shrink the size of the partition.  When shrinking the size of
 the partition, make sure you do not make it smaller than the new size
 of the ext2 filesystem!
+.PP
+The
+.B \-b
+and
+.B \-s
+options enable and disable the 64bit feature, respectively.  The resize2fs
+program will, of course, take care of resizing the block group descriptors
+and moving other data blocks out of the way, as needed.  It is not possible
+to resize the filesystem concurrent with changing the 64bit status.
 .SH OPTIONS
+.TP
+.B \-b
+Turns on the 64bit feature, resizes the group descriptors as necessary, and
+moves other metadata out of the way.
 .TP
 .B \-d \fIdebug-flags
 Turns on various resize2fs debugging features, if they have been compiled
@@ -116,7 +125,8 @@ really useful for doing
 time trials.
 .TP
 .B \-M
-Shrink the filesystem to the minimum size.
+Shrink the file system to minimize its size as much as possible,
+given the files stored in the file system.
 .TP
 .B \-p
 Prints out a percentage completion bars for each
@@ -125,7 +135,14 @@ operation during an offline resize, so that the user can keep track
 of what the program is doing.
 .TP
 .B \-P
-Print the minimum size of the filesystem and exit.
+Print an estimate of the number of file system blocks in the file system
+if it is shrunk using
+.BR resize2fs 's
+.B \-M
+option and then exit.
+.TP
+.B \-s
+Turns off the 64bit feature and frees blocks that are no longer in use.
 .TP
 .B \-S \fIRAID-stride
 The
@@ -133,6 +150,16 @@ The
 program will heuristically determine the RAID stride that was specified
 when the filesystem was created.  This option allows the user to
 explicitly specify a RAID stride setting to be used by resize2fs instead.
+.TP
+.BI \-z " undo_file"
+Before overwriting a file system block, write the old contents of the block to
+an undo file.  This undo file can be used with e2undo(8) to restore the old
+contents of the file system should something go wrong.  If the empty string is
+passed as the undo_file argument, the undo file will be written to a file named
+resize2fs-\fIdevice\fR.e2undo in the directory specified via the
+\fIE2FSPROGS_UNDO_DIR\fR environment variable.
+
+WARNING: The undo file cannot be used to recover from a power or system crash.
 .SH KNOWN BUGS
 The minimum size of the filesystem as estimated by resize2fs may be
 incorrect, especially for filesystems with 1k and 2k blocksizes.

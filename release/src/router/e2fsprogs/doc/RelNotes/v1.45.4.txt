@@ -1,0 +1,50 @@
+E2fsprogs 1.45.4 (September 23, 2019)
+=====================================
+
+Updates/Fixes since v1.45.3:
+
+Fixes
+-----
+
+A maliciously corrupted file systems can trigger buffer overruns in the
+quota code used by e2fsck.  (Addresses CVE-2019-5094)
+
+E2fsck now checks to make sure the casefold flag is only set on
+directories, and only when the casefold feature is enabled.
+
+E2fsck will not disable the low dtime checks when using a backup
+superblock where the last mount time is zero.  This fixes a failure in
+xfstests ext4/007.
+
+Fix e2fsck so that when it needs to recreate the root directory, the
+quota counts are correctly updated.
+
+Fix e2scrub_all cron script so it checks to make sure e2scrub_all
+exists, since the crontab and cron script might stick around after the
+e2fsprogs package is removed.  (Addresses Debian Bug: #932622)
+
+Fix e2scrub_all so that it works when the free space is exactly the
+snapshot size.  (Addresses Debian Bug: #935009)
+
+Avoid spurious lvm warnings when e2scrub_all is run out of cron on
+non-systemd systems (Addresses Debian Bug: #940240)
+
+Update the man pages to document the new fsverity feature, and improve
+the documentation for the casefold and encrypt features.
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Fixed various debian packaging issues.  (Addresses Debian Bug: #933247,
+#932874, #932876, #932855, #932859, #932861, #932881, #932888)
+
+Fix false positive test failure in f_pre_1970_date_encoding on 32-bit
+systems with a 64-bit time_t.  (Addresses Debian Bug: #932906)
+
+Fixed various compiler warnings.  (Addresses Google Bug #118836063)
+
+Update the Czech, Dutch, French, German, Malay, Polish, Portuguese,
+Spanish, Swedish, Ukrainian, and Vietnamese translations from the
+Translation Project.
+

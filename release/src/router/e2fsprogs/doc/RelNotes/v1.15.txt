@@ -1,0 +1,122 @@
+E2fsprogs 1.15 (July 18, 1999)
+==============================
+
+Add configuration checks so that e2fsprogs will compile cleanly on
+Linux 2.3 kernels that have renamed i_version to i_generation.
+
+E2fsck now prints a progress/completion bar (and not just a simple
+spinner) if the -C0 option is requested or if it receives a SIGUSR1
+signal.  Fsck will automatically manage the (potentially multiple)
+e2fsck processes to print completion bars if it is given a -C option,
+with the right thing happening if multiple filesystems are being
+checked in parallel.
+
+Mke2fs now has better automatic heuristics to determine the filesystem
+parameters to be used for a particular filesystem.  Added a new option
+-T which allows the user to specify how the filesystem is to be used,
+which helps mke2fs do a better job selecting the filesystem parameters.
+
+Mke2fs now creates revision 1 filesystems by default, and with the
+sparse superblock feature enabled.  The sparse superblock feature is
+not understood by Linux 2.0 kernels, so they will only allow read-only
+mounts of filesystems with this sparse superblocks.
+
+Fix bug where if /dev/null couldn't be opened (should never happen),
+e2fsck would hang in a tight loop.
+
+Make e2fsck handle the case where /lost+found isn't a directory.
+
+E2fsck now uses mallinfo if it exists to get accurate statistics about
+its memory usage.
+
+Fix bug in e2fsck where it wouldn't check to see if a disconnected
+inode had any problems before connecting it to /lost+found.
+
+Add check to e2fsck so it makes sure that total number of inodes in
+the filesystem is a sane number.
+
+Fix fencepost error when clearing an the end of the block bitmap which
+caused the last block in the bitmap not to get cleared.
+
+Cleaned up a number of messages in e2fsck:
+	* The message "Group's #'s copy of the group descriptor..."
+		was fixed so that the correct number would be displayed.
+	* Added missing space in the "disk write-protected" error message
+	* Cleaned up the error message printed when a non-interactive
+		e2fsck needs to abort a check because the filesystem
+		appears to be mounted.
+
+Added a new command-line utility, uuidgen, which will create and print
+a UUID.
+
+Make debugfs's icheck command more robust by checking to make sure an
+inode has valid blocks before iterating over the inode's blocks.
+
+UUID generation now uses a random-based scheme whenever possible to
+prevent potential privacy problems.
+
+Man pages for all of the UUID functions in the library were added.
+
+Fixed bug in fsck so it won't coredump if a filesystem not in
+/etc/fstab is given to it.
+
+Fsck now understands the UUID=xxxx and LABEL=yyyy forms in /etc/fstab
+that most of the other mount utilities understands.
+
+Mke2fs will make a filesystem even if it appears mounted if the force
+option is given.
+
+Dumpe2fs has new command-line options which allow a filesystem expert
+to specify the superblock and blocksize when opening a filesystem.
+This is mainly useful when examining the remains of a toasted
+filesystem.
+
+The badblocks program has been updated to display correctly on disks
+with large block numbers.
+
+The badblocks program no longer gives spurious errors when errors
+occur on non-block boundaries, which is common if the blocksize is
+larger than 1k.
+
+Mke2fs will sync the disk device every MKE2FS_SYNC block groups if the
+MKE2FS_SYNC environment variable is set.  This is to work around a VM
+bug in the 2.0 kernel.  I've heard a report that a RAID user was able
+to trigger it even using a 2.2 kernel, but hopefully it will not be
+needed for most Linux 2.2 users.
+
+Fixed miscellaneous documentation and man pages.
+
+Programmer's notes:
+-------------------
+
+Cleaned up functions such as pass1_get_blocks, pass1_read_inode which
+in e2fsck's pass1.c really should have been static.
+
+The return value of the uuid_compare() function was changed to make it
+match with the conventions used by strcmp, memcmp, and Paul Leach's
+UUID sample document.
+
+The "make depend" process has now been made more automated; it now
+automatically word-wraps the dependencies, and only replaces source
+Makefile.in if there has been a change in the dependencies.  Also, a
+top-level "make depend" now recurses through all the subdirectories
+automatically.
+
+The Makefile in .../util has been changed so that subst is built using
+the native C compiler during a cross-compilation, since the subst
+program is only used during the build process.  Also add an explicit
+rule to build util/subst by cd'ing to the correct directory and
+running Makefile.
+
+The man directories are defined in terms mandir, so that the configure
+script can override the location of the manual pages.
+
+The config files have been updated to recognize new machine types for
+both the i386 and alpha families.
+
+Fsck has been modified so that it will accurately create an
+fsck_instance even when the noexecute flag is set.  This allows for
+accurate debugging of the fsck pass structure.  Also, when the verbose
+flag is given twice, fsck will print debugging information about when
+fsck is waiting for jobs to finish.
+

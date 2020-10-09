@@ -14,6 +14,8 @@
 #ifndef _BLKID_PROBE_H
 #define _BLKID_PROBE_H
 
+#include <stdint.h>
+
 #include <blkid/blkid_types.h>
 
 struct blkid_magic;
@@ -110,6 +112,7 @@ struct ext2_super_block {
 #define EXT4_FEATURE_RO_COMPAT_DIR_NLINK	0x0020
 #define EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE	0x0040
 #define EXT4_FEATURE_RO_COMPAT_QUOTA		0x0100
+#define EXT4_FEATURE_RO_COMPAT_METADATA_CSUM	0x0400
 
 /* for s_feature_incompat */
 #define EXT2_FEATURE_INCOMPAT_FILETYPE		0x0002
@@ -660,7 +663,7 @@ struct btrfs_dev_item {
 
 	/*
 	 * starting byte of this partition on the device,
-	 * to allowr for stripe alignment in the future
+	 * to allow for stripe alignment in the future
 	 */
 	__u64 start_offset;
 
@@ -725,6 +728,82 @@ struct btrfs_super_block {
 	__u64 reserved[32];
 	__u8 sys_chunk_array[BTRFS_SYSTEM_CHUNK_ARRAY_SIZE];
 } __attribute__ ((__packed__));
+
+#define F2FS_MAX_EXTENSION      64  /* # of extension entries */
+
+struct f2fs_super_block {
+    __u32 magic;           /* Magic Number */
+    __u16 major_ver;       /* Major Version */
+    __u16 minor_ver;       /* Minor Version */
+    __u32 log_sectorsize;      /* log2 sector size in bytes */
+    __u32 log_sectors_per_block;   /* log2 # of sectors per block */
+    __u32 log_blocksize;       /* log2 block size in bytes */
+    __u32 log_blocks_per_seg;  /* log2 # of blocks per segment */
+    __u32 segs_per_sec;        /* # of segments per section */
+    __u32 secs_per_zone;       /* # of sections per zone */
+    __u32 checksum_offset;     /* checksum offset inside super block */
+    __u64 block_count;     /* total # of user blocks */
+    __u32 section_count;       /* total # of sections */
+    __u32 segment_count;       /* total # of segments */
+    __u32 segment_count_ckpt;  /* # of segments for checkpoint */
+    __u32 segment_count_sit;   /* # of segments for SIT */
+    __u32 segment_count_nat;   /* # of segments for NAT */
+    __u32 segment_count_ssa;   /* # of segments for SSA */
+    __u32 segment_count_main;  /* # of segments for main area */
+    __u32 segment0_blkaddr;    /* start block address of segment 0 */
+    __u32 cp_blkaddr;      /* start block address of checkpoint */
+    __u32 sit_blkaddr;     /* start block address of SIT */
+    __u32 nat_blkaddr;     /* start block address of NAT */
+    __u32 ssa_blkaddr;     /* start block address of SSA */
+    __u32 main_blkaddr;        /* start block address of main area */
+    __u32 root_ino;        /* root inode number */
+    __u32 node_ino;        /* node inode number */
+    __u32 meta_ino;        /* meta inode number */
+    __u8 uuid[16];          /* 128-bit uuid for volume */
+    __u16 volume_name[512];    /* volume name */
+    __u32 extension_count;     /* # of extensions below */
+    __u8 extension_list[F2FS_MAX_EXTENSION][8]; /* extension array */
+} __attribute__((__packed__));
+
+struct exfat_super_block {
+    uint8_t jump[3];
+    uint8_t oem_name[8];
+    uint8_t __unused1[53];
+    uint64_t block_start;
+    uint64_t block_count;
+    uint32_t fat_block_start;
+    uint32_t fat_block_count;
+    uint32_t cluster_block_start;
+    uint32_t cluster_count;
+    uint32_t rootdir_cluster;
+    uint8_t volume_serial[4];
+    struct {
+        uint8_t vermin;
+        uint8_t vermaj;
+    } version;
+    uint16_t volume_state;
+    uint8_t block_bits;
+    uint8_t bpc_bits;
+    uint8_t fat_count;
+    uint8_t drive_no;
+    uint8_t allocated_percent;
+} __attribute__((__packed__));
+
+struct exfat_entry_label {
+    uint8_t type;
+    uint8_t length;
+    uint8_t name[30];
+} __attribute__((__packed__));
+
+#define BLOCK_SIZE(sb)   (1 << (sb)->block_bits)
+#define CLUSTER_SIZE(sb) (BLOCK_SIZE(sb) << (sb)->bpc_bits)
+
+#define EXFAT_FIRST_DATA_CLUSTER 2
+#define EXFAT_LAST_DATA_CLUSTER  0xffffff6
+#define EXFAT_ENTRY_SIZE         32
+
+#define EXFAT_ENTRY_EOD   0x00
+#define EXFAT_ENTRY_LABEL 0x83
 
 /*
  * Byte swap functions

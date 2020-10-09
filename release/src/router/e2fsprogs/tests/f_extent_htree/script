@@ -1,0 +1,56 @@
+#!/bin/bash
+TMPDIR=${TMPDIR:-"/tmp"}
+OUT=$test_name.log
+
+FSCK_OPT="-fyvD"
+SKIP_GUNZIP="true"
+
+NAMELEN=250
+SRC=$TMPDIR/$test_name.tmp
+SUB=subdir
+BASE=$SRC/$SUB/$(yes | tr -d '\n' | dd bs=$NAMELEN count=1 2> /dev/null)
+TMPFILE=${TMPFILE:-"$TMPDIR/image"}
+BSIZE=1024
+
+> $OUT
+mkdir -p $SRC/$SUB
+# calculate the number of files needed to create the directory extent tree
+# deep enough to exceed the in-inode index and spill into an index block.
+#
+# dirents per block * extents per block * (index blocks > i_blocks)
+NUM=$(((BSIZE / (NAMELEN + 8)) * (BSIZE / 12) * 2))
+# Create source files. Unfortunately hard links will be copied as links,
+# and blocks with only NULs will be turned into holes.
+if [ ! -f $BASE.1 ]; then
+	for N in $(seq $NUM); do
+		echo "foo" > $BASE.$N
+	done >> $OUT
+fi
+
+# make filesystem with enough inodes and blocks to hold all the test files
+> $TMPFILE
+NUM=$((NUM * 5 / 3))
+echo "mke2fs -b $BSIZE -O dir_index,extent -E no_copy_xattrs -d$SRC -N$NUM $TMPFILE $NUM" >> $OUT
+$MKE2FS -b $BSIZE -O dir_index,extent -E no_copy_xattrs -d$SRC -N$NUM $TMPFILE $NUM >> $OUT 2>&1
+rm -r $SRC
+
+# Run e2fsck to convert dir to htree before deleting the files, as mke2fs
+# doesn't do this.  Run second e2fsck to verify there is no corruption yet.
+(
+	EXP1=$test_dir/expect.pre.1
+	EXP2=$test_dir/expect.pre.2
+	OUT1=$test_name.pre.1.log
+	OUT2=$test_name.pre.2.log
+	DESCRIPTION="$(cat $test_dir/name) setup"
+	. $cmd_dir/run_e2fsck
+)
+
+# generate a list of filenames for debugfs to delete, one from each leaf block
+DELETE_LIST=$TMPDIR/delete.$$
+$DEBUGFS -c -R "htree subdir" $TMPFILE 2>> $OUT |
+	grep -A2 "Reading directory block" |
+	awk '/yyyyy/ { print "rm '$SUB'/"$4 }' > $DELETE_LIST
+$DEBUGFS -w -f $DELETE_LIST $TMPFILE >> $OUT 2>&1
+rm $DELETE_LIST
+
+. $cmd_dir/run_e2fsck

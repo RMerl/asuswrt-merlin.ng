@@ -1,0 +1,80 @@
+E2fsprogs 1.43.1 (June 8, 2016)
+===============================
+
+Fixed e2fsck so that it would correctly update the project quota usage
+when deleting a corrupted and inode, and fixed mke2fs so it wouldn't
+dereference memory beyond the small inode structure (which was wrong,
+but worked mostly by accident unless hardening or some security malloc
+was in use).
+
+Fixed a large number of FreeBSD portability problems.  (To build on
+FreeBSD, however, we still need to use GNU Make and redirect dd to use
+GNU dd.)
+
+The configure script now supports --enable-hardening, which enables
+stack protection, fortify, read-only relocation tables, immediate
+dynamic symbol binding, and text segment ASLR (if the kernel has
+userspace ASLR support enabled) by enabling position independent
+executable code.  (Distributions who want to do their own special
+thing can set CFLAGS, CFLAGS_SHLIB, CLFAGS_STLIB, LDFLAGS,
+LDFLAGS_SHLIB and LDFLAGS_STATIC as appropriate.)
+
+The configure script now supports --disable-tdb since on 64-bit
+systems, it's much faster to just enable additional swap space.  The
+scratch_files feature in e2fsck.conf is mostly only useful on 32-bit
+systems.
+
+Fixed the Direct I/O fallback codepath in the Unix I/O manager so that
+read/modify/write worked correctly.  Fortunately in practice (with the
+exception of the Undo handler when running on FreeBSD) used this buggy
+codepath. so file systems weren't getting corrupted.
+
+Mke2fs will now warn if the user provides a label which is too long.
+(Addresses Debian Bug: #791630)
+
+Debugfs's rdump command now works correctly when dumping the root
+directory of a file system.  (Addresses Debian Bug: #766125)
+
+Fixed a bug in debugfs so it would correctly calculate a block group's
+checksum field field on 64-bit systems.
+
+E2fsck now has a much more understandable error message when the
+journal superblock is corrupt and the user declines to fix it.
+(Addresses Debian Bug: #768162)
+
+Fixed support of extended timestamps on 64-bit systems.
+
+Updated/fixed various man pages.  (Addresses Debian Bugs: #766379,
+#761144, #770750, #428361, #766127)
+
+Fixed various Debian Packaging Issues.  (Addresses Debian Bug: #825868)
+
+
+Programming notes
+-----------------
+
+Fixed coverity, sparse, gcc -Wall, and clang warnings/nits.
+
+Fixed Android build makefiles (which was missing a newly added file in
+lib/support).
+
+In general, checks on s_creator_os have been removed in favor of
+feature flag specific checks; if there is something that can't be
+checked via the presence of a feature flag, we will simply check
+whether the creator OS is *not* EXT2_OS_HURD which is the one
+operating system where there has been extensive abuse of the
+s_creator_os flag.
+
+The libmagic library has been suppressed when running the regression
+test suite to avoid false test failures caused by differences between
+versions of libmagic (and/or the magic number database).
+
+The tests/test_script program now accepts the --failed option, which
+will run those tests that had previously failed.
+
+Fixed tests build on those systems which require LDFLAGS to be set.
+
+Fixed the regression test suite so it will properly filter out version
+numbers with two components (such as 1.43) from log files before
+comparing them with the expected golden output.
+

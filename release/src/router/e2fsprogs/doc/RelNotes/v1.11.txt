@@ -1,0 +1,61 @@
+E2fsprogs 1.11 (June 17, 1997)
+==============================
+
+Fixed e2fsck to detect (previously ignored) conflicts between the
+superblock or block group descriptors and block bitmaps, inode
+bitmaps, and inode tables.
+
+Fixed bug in e2fsck so that when the message printed out when a block
+or inode bitmap conflicts with other data, it has the correct group
+number.
+
+Fixed bug in e2fsck and mke2fs where the blocksize wasn't being passed
+to badblocks.  This meant that not all of the filesystem was being
+tested for bad blocks! 
+
+Fixed an array boundary overrun case which cropped up in
+ext2fs_badblocks_list_test when a user tried running "mke2fs -c 
+-b 4096".
+
+Adjusted the number of columns printed by mke2fs when displaying the
+superblock backups to avoid running over 80 columns when making a
+really big filesystem.
+
+Fixed up the man pages for e2fsck, debugfs, badblocks, chattr,
+dumpe2fs, fsck, mke2fs, and tune2fs (typos and other minor grammar
+fixes), thanks to some suggestions from Bill Hawes (whawes@star.net).
+
+Programmer's notes:
+-------------------
+
+Fixed install rule in lib/ss so that ss_err.h is actually getting
+installed.
+
+Fixed bug in ext2fs_copy_bitmap; the destination bitmap wasn't getting
+passed back to the caller.
+
+Fixed bug in ext2fs_inode_scan_goto_blockgroup; it had not been
+setting the current inode number (which meant this function wasn't
+working at all).
+
+Fixed bug in ext2fs_resize_generic_bitmap; it had not be zeroing all
+blocks in the bitmap when increasing the size of the bitmap.
+
+Changed the initial number of blocks allocated by ext2fs_init_dblist()
+to be more realistic.
+
+Added a new function ext2fs_allocate_group_table, which sets up the
+group descriptor information (and allocates inode and block bitmaps,
+and inode tables for a particular group).  The function was created by
+factoring out code form ext2fs_allocate_tables().
+
+Added a new function ext2fs_move_blocks which takes a bitmap of the
+blocks to be moved, and moves them to another location on the
+boardboard.
+
+Make the unix_io channel's io_channel_flush implementation calls sync()
+to to flush the kernel buffers to disk.
+
+Added a new function ext2fs_dblist_count returns the number of
+directory blocks in dblist.
+

@@ -1,0 +1,15 @@
+i_qcow/image1024.orig
+image		2161078647
+raw_image	467277198
+qcow_image	2164212449
+qcow_to_raw	467277198
+i_qcow/image2048.orig
+image		672740642
+raw_image	3688408350
+qcow_image	3821412753
+qcow_to_raw	3688408350
+i_qcow/image4096.orig
+image		4077552412
+raw_image	4159471388
+qcow_image	636354894
+qcow_to_raw	4159471388

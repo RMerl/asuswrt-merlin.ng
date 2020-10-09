@@ -1,0 +1,30 @@
+// Copyright 2017 The Android Open Source Project
+
+cc_library {
+    name: "libext2_com_err",
+    host_supported: true,
+    ramdisk_available: true,
+    recovery_available: true,
+    unique_host_soname: true,
+    defaults: ["e2fsprogs-defaults"],
+    srcs: [
+        "error_message.c",
+        "et_name.c",
+        "init_et.c",
+        "com_err.c",
+        "com_right.c",
+    ],
+
+    target: {
+        windows: {
+            enabled: true,
+            cflags: [
+                "-Wno-unused-variable",
+            ],
+        },
+    },
+
+    header_libs: ["libext2-headers"],
+    export_include_dirs: ["."],
+    export_header_lib_headers: ["libext2-headers"],
+}

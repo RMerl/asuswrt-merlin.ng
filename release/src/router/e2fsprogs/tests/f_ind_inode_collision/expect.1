@@ -1,0 +1,146 @@
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12 block 41 conflicts with critical metadata, skipping block checks.
+Inode 12 block 40 conflicts with critical metadata, skipping block checks.
+Inode 12 block 34 conflicts with critical metadata, skipping block checks.
+Inode 12 block 1 conflicts with critical metadata, skipping block checks.
+Inode 12, i_size is 33, should be 25227264.  Fix? yes
+
+Inode 12, i_blocks is 999, should be 184.  Fix? yes
+
+
+Running additional passes to resolve blocks claimed by more than one inode...
+Pass 1B: Rescanning for multiply-claimed blocks
+Multiply-claimed block(s) in inode 2: 3
+Multiply-claimed block(s) in inode 7: 11
+Multiply-claimed block(s) in inode 11: 4--7
+Multiply-claimed block(s) in inode 12: 41 40Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #16877 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #4096 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #196608 for multiply claimed block map
+ 34 8 3Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #33152 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #4243456 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #65536 for multiply claimed block map
+ 28 8 11 1Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #16832 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #16384 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #131072 for multiply claimed block map
+ 28 4--7Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #33206 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #25227264 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529397 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529397 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529397 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #65536 for multiply claimed block map
+ 28 41Illegal block number passed to ext2fs_test_block_bitmap #1421529397 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #16777215 for multiply claimed block map
+ 28
+Error while iterating over blocks in inode 12 (pass1b): Illegal indirect block found
+Pass 1C: Scanning directories for inodes with multiply-claimed blocks
+Pass 1D: Reconciling multiply-claimed blocks
+(There are 3 inodes containing multiply-claimed blocks.)
+
+File / (inode #2, mod time Sat Jan 17 21:16:16 2015) 
+  has 1 multiply-claimed block(s), shared with 1 file(s):
+	/a (inode #12, mod time Sat Jan 17 21:16:37 2015)
+Clone multiply-claimed blocks? yes
+
+File /lost+found (inode #11, mod time Sat Jan 17 21:16:16 2015) 
+  has 4 multiply-claimed block(s), shared with 1 file(s):
+	/a (inode #12, mod time Sat Jan 17 21:16:37 2015)
+Clone multiply-claimed blocks? yes
+
+File /a (inode #12, mod time Sat Jan 17 21:16:37 2015) 
+  has 17 multiply-claimed block(s), shared with 4 file(s):
+	<filesystem metadata>
+	/lost+found (inode #11, mod time Sat Jan 17 21:16:16 2015)
+	<The group descriptor inode> (inode #7, mod time Sat Jan 17 21:16:16 2015)
+	/ (inode #2, mod time Sat Jan 17 21:16:16 2015)
+Clone multiply-claimed blocks? yes
+
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #16877 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #4096 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #196608 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #33152 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #4243456 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #65536 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #16832 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #16384 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #131072 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529376 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #33206 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #25227264 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529397 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529397 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529397 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #65536 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #1421529397 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #16777215 for multiply claimed block map
+Pass 2: Checking directory structure
+Restarting e2fsck from the beginning...
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12 has illegal block(s).  Clear? yes
+
+Illegal block #1038 (1421529376) in inode 12.  CLEARED.
+Illegal block #1039 (1421529376) in inode 12.  CLEARED.
+Illegal block #1040 (1421529376) in inode 12.  CLEARED.
+Illegal block #1100 (16877) in inode 12.  CLEARED.
+Illegal block #1101 (4096) in inode 12.  CLEARED.
+Illegal block #1102 (1421529376) in inode 12.  CLEARED.
+Illegal block #1103 (1421529376) in inode 12.  CLEARED.
+Illegal block #1104 (1421529376) in inode 12.  CLEARED.
+Illegal block #1106 (196608) in inode 12.  CLEARED.
+Illegal block #1136 (1421529376) in inode 12.  CLEARED.
+Illegal block #1420 (33152) in inode 12.  CLEARED.
+Too many illegal blocks in inode 12.
+Clear inode? yes
+
+Restarting e2fsck from the beginning...
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Entry 'a' in / (2) has deleted/unused inode 12.  Clear? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Block bitmap differences:  -(3--7) -(15--17) -(19--24)
+Fix? yes
+
+Inode bitmap differences:  -12
+Fix? yes
+
+Free inodes count wrong for group #0 (116, counted=117).
+Fix? yes
+
+Free inodes count wrong (116, counted=117).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 11/128 files (9.1% non-contiguous), 18/512 blocks
+Exit status is 1

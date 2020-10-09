@@ -13,31 +13,47 @@ INSTALL = @INSTALL@
 
 all:: @DO_TEST_SUITE@ test_one test_script
 
-test_one: $(srcdir)/test_one.in Makefile mke2fs.conf
+test_one: $(srcdir)/test_one.in Makefile mke2fs.conf test_data.tmp
 	@echo "Creating test_one script..."
+	@[ -f test_one ] && chmod u+w test_one || true
 	@echo "#!/bin/sh" > test_one
-@HTREE_CMT@	@echo "HTREE=y" >> test_one
-@QUOTA_CMT@	@echo "QUOTA=y" >> test_one
+	@echo "HTREE=y" >> test_one
+	@echo "QUOTA=y" >> test_one
 	@echo "SRCDIR=@srcdir@" >> test_one
 	@echo "DIFF_OPTS=@UNI_DIFF_OPTS@" >> test_one
+	@echo "SIZEOF_TIME_T=@SIZEOF_TIME_T@" >> test_one
+	@echo "DD=@DD@" >>test_one
 	@cat $(srcdir)/test_one.in >> test_one
-	@chmod +x test_one
+	@chmod +x-w test_one
 
-test_script: test_one test_script.in Makefile mke2fs.conf
+test_script: test_one test_script.in Makefile mke2fs.conf test_data.tmp
 	@echo "Creating test_script..."
+	@[ -f test_script ] && chmod u+w test_script || true
 	@echo "#!/bin/sh" > test_script
 	@echo "SRCDIR=@srcdir@" >> test_script
 	@cat $(srcdir)/test_script.in >> test_script
-	@chmod +x test_script
+	@chmod +x-w test_script
 
 mke2fs.conf: $(srcdir)/mke2fs.conf.in
 	$(CP) $(srcdir)/mke2fs.conf.in mke2fs.conf
 
+test_data.tmp: $(srcdir)/scripts/gen-test-data
+	$(srcdir)/scripts/gen-test-data > test_data.tmp
+
 .PHONY : test_pre test_post check always_run
 
-TESTS=$(wildcard $(srcdir)/[a-z]_*)
+always_run:
+
+@ifGNUmake@TESTS=$(wildcard $(srcdir)/[a-z]_*)
+@ifNotGNUmake@TESTS != echo $(srcdir)/[a-z]_*
+
+SKIP_SLOW_TESTS=--skip-slow-tests
+
 $(TESTS):: test_one always_run
-	@./test_one $@
+	@./test_one $(SKIP_SLOW_TESTS) $@
+
+foo:
+	echo $(TESTS)
 
 test_pre:
 	@$(RM) -f *.failed
@@ -48,6 +64,9 @@ test_post: test_pre $(TESTS)
 	@$(srcdir)/test_post
 
 check:: test_pre test_post test_script
+
+fullcheck::
+	$(MAKE) SKIP_SLOW_TESTS= check
 
 check-failed: $(basename $(wildcard *.failed))
 	@$(srcdir)/test_post
@@ -79,7 +98,8 @@ testend: test_one ${TDIR}/image
 	@echo "If all is well, edit ${TDIR}/name and rename ${TDIR}."
 
 clean::
-	$(RM) -f *~ *.log *.new *.failed *.ok *.tmp test_one test_script mke2fs.conf
+	$(RM) -f *~ *.log *.new *.failed *.ok *.tmp *.slow
+	$(RM) -f test_one test_script mke2fs.conf test_data.tmp
 
 distclean:: clean
 	$(RM) -f Makefile

@@ -1,7 +1,7 @@
 /*
  * logdump.c --- dump the contents of the journal out to a file
  *
- * Authro: Stephen C. Tweedie, 2001  <sct@redhat.com>
+ * Author: Stephen C. Tweedie, 2001  <sct@redhat.com>
  * Copyright (C) 2001 Red Hat, Inc.
  * Based on portions  Copyright (C) 1994 Theodore Ts'o.
  *
@@ -39,7 +39,7 @@ enum journal_location {JOURNAL_IS_INTERNAL, JOURNAL_IS_EXTERNAL};
 
 #define ANY_BLOCK ((blk64_t) -1)
 
-static int		dump_all, dump_contents, dump_descriptors;
+static int		dump_all, dump_super, dump_old, dump_contents, dump_descriptors;
 static blk64_t		block_to_dump, bitmap_to_dump, inode_block_to_dump;
 static unsigned int	group_to_dump, inode_offset_to_dump;
 static ext2_ino_t	inode_to_dump;
@@ -72,7 +72,8 @@ static void do_hexdump (FILE *, char *, int);
 		blocknr -= (be32_to_cpu((jsb)->s_maxlen) -	\
 			    be32_to_cpu((jsb)->s_first));
 
-void do_logdump(int argc, char **argv)
+void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	int		c;
 	int		retval;
@@ -94,7 +95,9 @@ void do_logdump(int argc, char **argv)
 	journal_source.fd = 0;
 	journal_source.file = 0;
 	dump_all = 0;
+	dump_old = 0;
 	dump_contents = 0;
+	dump_super = 0;
 	dump_descriptors = 1;
 	block_to_dump = ANY_BLOCK;
 	bitmap_to_dump = -1;
@@ -102,7 +105,7 @@ void do_logdump(int argc, char **argv)
 	inode_to_dump = -1;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "ab:ci:f:s")) != EOF) {
+	while ((c = getopt (argc, argv, "ab:ci:f:OsS")) != EOF) {
 		switch (c) {
 		case 'a':
 			dump_all++;
@@ -126,8 +129,14 @@ void do_logdump(int argc, char **argv)
 			inode_spec = optarg;
 			dump_descriptors = 0;
 			break;
+		case 'O':
+			dump_old++;
+			break;
 		case 's':
 			use_sb++;
+			break;
+		case 'S':
+			dump_super++;
 			break;
 		default:
 			goto print_usage;
@@ -267,13 +276,13 @@ errout:
 	return;
 
 print_usage:
-	fprintf(stderr, "%s: Usage: logdump [-acs] [-b<block>] [-i<filespec>]\n\t"
+	fprintf(stderr, "%s: Usage: logdump [-acsOS] [-b<block>] [-i<filespec>]\n\t"
 		"[-f<journal_file>] [output_file]\n", argv[0]);
 }
 
 
 static int read_journal_block(const char *cmd, struct journal_source *source,
-			      off_t offset, char *buf, unsigned int size)
+			      ext2_loff_t offset, char *buf, unsigned int size)
 {
 	int retval;
 	unsigned int got;
@@ -291,8 +300,8 @@ static int read_journal_block(const char *cmd, struct journal_source *source,
 		got = retval;
 		retval = 0;
 	} else {
-		retval = ext2fs_file_lseek(source->file, offset,
-					   EXT2_SEEK_SET, NULL);
+		retval = ext2fs_file_llseek(source->file, offset,
+					    EXT2_SEEK_SET, NULL);
 		if (retval) {
 		seek_err:
 			com_err(cmd, retval, "while seeking in reading journal");
@@ -342,7 +351,6 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	int			retval;
 	__u32			magic, sequence, blocktype;
 	journal_header_t	*header;
-
 	tid_t			transaction;
 	unsigned int		blocknr = 0;
 
@@ -360,7 +368,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 
 	if ((be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) &&
 	    (sb->s_magic == EXT2_SUPER_MAGIC) &&
-	    (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+	    ext2fs_has_feature_journal_dev(sb)) {
 		blocksize = EXT2_BLOCK_SIZE(sb);
 		blocknr = (blocksize == 1024) ? 2 : 1;
 		uuid_unparse(sb->s_uuid, jsb_buffer);
@@ -374,11 +382,17 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	}
 
 	/* Next, read the journal superblock */
-
-	retval = read_journal_block(cmdname, source, blocknr*blocksize,
+	retval = read_journal_block(cmdname, source,
+				    ((ext2_loff_t) blocknr) * blocksize,
 				    jsb_buffer, 1024);
 	if (retval)
 		return;
+
+	if (dump_super) {
+		e2p_list_journal_super(out_file, jsb_buffer,
+				       current_fs->blocksize, 0);
+		fputc('\n', out_file);
+	}
 
 	jsb = (journal_superblock_t *) jsb_buffer;
 	if (be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) {
@@ -393,14 +407,18 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	fprintf(out_file, "Journal starts at block %u, transaction %u\n",
 		blocknr, transaction);
 
-	if (!blocknr)
+	if (!blocknr) {
 		/* Empty journal, nothing to do. */
-		return;
+		if (!dump_old)
+			return;
+		else
+			blocknr = 1;
+	}
 
 	while (1) {
 		retval = read_journal_block(cmdname, source,
-					    blocknr*blocksize, buf,
-					    blocksize);
+				((ext2_loff_t) blocknr) * blocksize,
+				buf, blocksize);
 		if (retval)
 			return;
 
@@ -420,7 +438,8 @@ static void dump_journal(char *cmdname, FILE *out_file,
 			fprintf (out_file, "Found sequence %u (not %u) at "
 				 "block %u: end of journal.\n",
 				 sequence, transaction, blocknr);
-			return;
+			if (!dump_old)
+				return;
 		}
 
 		if (dump_descriptors) {
@@ -459,6 +478,23 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	}
 }
 
+static inline size_t journal_super_tag_bytes(journal_superblock_t *jsb)
+{
+	size_t sz;
+
+	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_CSUM_V3))
+		return sizeof(journal_block_tag3_t);
+
+	sz = sizeof(journal_block_tag_t);
+
+	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_CSUM_V2))
+		sz += sizeof(__u16);
+
+	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_64BIT))
+		return sz;
+
+	return sz - sizeof(__u32);
+}
 
 static void dump_descriptor_block(FILE *out_file,
 				  struct journal_source *source,
@@ -467,18 +503,20 @@ static void dump_descriptor_block(FILE *out_file,
 				  unsigned int *blockp, int blocksize,
 				  tid_t transaction)
 {
-	int			offset, tag_size = JBD_TAG_SIZE32;
+	int			offset, tag_size, csum_size = 0;
 	char			*tagp;
 	journal_block_tag_t	*tag;
 	unsigned int		blocknr;
 	__u32			tag_block;
 	__u32			tag_flags;
 
-	if (be32_to_cpu(jsb->s_feature_incompat) & JFS_FEATURE_INCOMPAT_64BIT)
-		tag_size = JBD_TAG_SIZE64;
-
+	tag_size = journal_super_tag_bytes(jsb);
 	offset = sizeof(journal_header_t);
 	blocknr = *blockp;
+
+	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_CSUM_V3) ||
+	    JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_CSUM_V2))
+		csum_size = sizeof(struct journal_block_tail);
 
 	if (dump_all)
 		fprintf(out_file, "Dumping descriptor block, sequence %u, at "
@@ -496,11 +534,11 @@ static void dump_descriptor_block(FILE *out_file,
 
 		/* ... and if we have gone too far, then we've reached the
 		   end of this block. */
-		if (offset > blocksize)
+		if (offset > blocksize - csum_size)
 			break;
 
 		tag_block = be32_to_cpu(tag->t_blocknr);
-		tag_flags = be32_to_cpu(tag->t_flags);
+		tag_flags = be16_to_cpu(tag->t_flags);
 
 		if (!(tag_flags & JFS_FLAG_SAME_UUID))
 			offset += 16;
@@ -526,28 +564,37 @@ static void dump_revoke_block(FILE *out_file, char *buf,
 {
 	int			offset, max;
 	journal_revoke_header_t *header;
-	unsigned int		*entry, rblock;
+	unsigned long long	rblock;
+	int			tag_size = sizeof(__u32);
 
 	if (dump_all)
 		fprintf(out_file, "Dumping revoke block, sequence %u, at "
 			"block %u:\n", transaction, blocknr);
+
+	if (be32_to_cpu(jsb->s_feature_incompat) & JFS_FEATURE_INCOMPAT_64BIT)
+		tag_size = sizeof(__u64);
 
 	header = (journal_revoke_header_t *) buf;
 	offset = sizeof(journal_revoke_header_t);
 	max = be32_to_cpu(header->r_count);
 
 	while (offset < max) {
-		entry = (unsigned int *) (buf + offset);
-		rblock = be32_to_cpu(*entry);
+		if (tag_size == sizeof(__u32)) {
+			__u32 *entry = (__u32 *) (buf + offset);
+			rblock = be32_to_cpu(*entry);
+		} else {
+			__u64 *entry = (__u64 *) (buf + offset);
+			rblock = ext2fs_be64_to_cpu(*entry);
+		}
 		if (dump_all || rblock == block_to_dump) {
-			fprintf(out_file, "  Revoke FS block %u", rblock);
+			fprintf(out_file, "  Revoke FS block %llu", rblock);
 			if (dump_all)
 				fprintf(out_file, "\n");
 			else
 				fprintf(out_file," at block %u, sequence %u\n",
 					blocknr, transaction);
 		}
-		offset += 4;
+		offset += tag_size;
 	}
 }
 
@@ -609,7 +656,7 @@ static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 		return;
 
 	retval = read_journal_block("logdump", source,
-				    blocksize * log_blocknr,
+				    ((ext2_loff_t) log_blocknr) * blocksize,
 				    buf, blocksize);
 	if (retval)
 		return;

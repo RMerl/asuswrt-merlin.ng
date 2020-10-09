@@ -14,7 +14,7 @@ double check the various permissions and possible errors here.
 The major update which needs to be done here is switching to the use of the llseek system call, so that we will
 be able to support ext2 filesystems up to 4 TB. Currently, due to the standard fseek usage, we can't handle
 filesystems bigger than 4 GB. The limit is actually 2 GB because I used long rather than unsigned long long at too
-many places in the program. To conclude - This upgrade needs to be done carefuly; There are many places to change.
+many places in the program. To conclude - This upgrade needs to be done carefully; There are many places to change.
 
 First written on: April 9 1995
 
@@ -86,7 +86,7 @@ If logging is enabled, we log the change before writing it to the device.
 	char temp [80];
 
 	if (!write_access) {
-		wprintw (command_win,"Error - Write access not aviable (use enablewrite)\n");
+		wprintw (command_win,"Error - Write access not available (use enablewrite)\n");
 		return (0);
 	}
 

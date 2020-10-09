@@ -66,6 +66,16 @@ is a device or a mount point,
 .B e4defrag
 doesn't defragment files in mount point of other device.
 .PP
+It is safe to run e4defrag on a file while it is actively in use by another
+application.  Since the contents of file blocks are copied using the
+page cache, this can result in a performance slowdown to both e4defrag
+and the application due to contention over the system's memory and disk
+bandwidth.
+.PP
+If the file system's free space is fragmented, or if there is
+insufficient free space available, e4defrag may not be able
+to improve the file's fragmentation.
+.PP
 Non-privileged users can execute
 .B e4defrag
 to their own file, but the score is not printed if

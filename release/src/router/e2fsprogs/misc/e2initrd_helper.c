@@ -35,9 +35,9 @@ extern char *optarg;
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 #include "blkid/blkid.h"
+#include "support/nls-enable.h"
 
 #include "../version.h"
-#include "nls-enable.h"
 
 static const char * program_name = "e2initrd_helper";
 static char * device_name;

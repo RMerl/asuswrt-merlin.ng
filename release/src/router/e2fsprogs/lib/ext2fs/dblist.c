@@ -25,34 +25,6 @@ static EXT2_QSORT_TYPE dir_block_cmp2(const void *a, const void *b);
 static EXT2_QSORT_TYPE (*sortfunc32)(const void *a, const void *b);
 
 /*
- * Returns the number of directories in the filesystem as reported by
- * the group descriptors.  Of course, the group descriptors could be
- * wrong!
- */
-errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ext2_ino_t *ret_num_dirs)
-{
-	dgrp_t	i;
-	ext2_ino_t	num_dirs, max_dirs;
-
-	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
-
-	num_dirs = 0;
-	max_dirs = fs->super->s_inodes_per_group;
-	for (i = 0; i < fs->group_desc_count; i++) {
-		if (ext2fs_bg_used_dirs_count(fs, i) > max_dirs)
-			num_dirs += max_dirs / 8;
-		else
-			num_dirs += ext2fs_bg_used_dirs_count(fs, i);
-	}
-	if (num_dirs > fs->super->s_inodes_count)
-		num_dirs = fs->super->s_inodes_count;
-
-	*ret_num_dirs = num_dirs;
-
-	return 0;
-}
-
-/*
  * helper function for making a new directory block list (for
  * initialize and copy).
  */
@@ -222,25 +194,40 @@ void ext2fs_dblist_sort2(ext2_dblist dblist,
 /*
  * This function iterates over the directory block list
  */
+errcode_t ext2fs_dblist_iterate3(ext2_dblist dblist,
+				 int (*func)(ext2_filsys fs,
+					     struct ext2_db_entry2 *db_info,
+					     void	*priv_data),
+				 unsigned long long start,
+				 unsigned long long count,
+				 void *priv_data)
+{
+	unsigned long long	i, end;
+	int		ret;
+
+	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
+
+	end = start + count;
+	if (!dblist->sorted)
+		ext2fs_dblist_sort2(dblist, 0);
+	if (end > dblist->count)
+		end = dblist->count;
+	for (i = start; i < end; i++) {
+		ret = (*func)(dblist->fs, &dblist->list[i], priv_data);
+		if (ret & DBLIST_ABORT)
+			return 0;
+	}
+	return 0;
+}
+
 errcode_t ext2fs_dblist_iterate2(ext2_dblist dblist,
 				 int (*func)(ext2_filsys fs,
 					     struct ext2_db_entry2 *db_info,
 					     void	*priv_data),
 				 void *priv_data)
 {
-	unsigned long long	i;
-	int		ret;
-
-	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
-
-	if (!dblist->sorted)
-		ext2fs_dblist_sort2(dblist, 0);
-	for (i=0; i < dblist->count; i++) {
-		ret = (*func)(dblist->fs, &dblist->list[i], priv_data);
-		if (ret & DBLIST_ABORT)
-			return 0;
-	}
-	return 0;
+	return ext2fs_dblist_iterate3(dblist, func, 0, dblist->count,
+				      priv_data);
 }
 
 static EXT2_QSORT_TYPE dir_block_cmp2(const void *a, const void *b)

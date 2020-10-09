@@ -1,0 +1,76 @@
+.\" -*- nroff -*-
+.\" Copyright 1993, 1994, 1995 by Theodore Ts'o.  All Rights Reserved.
+.\" This file may be copied under the terms of the GNU Public License.
+.\"
+.TH FUSE2FS 1 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+fuse2fs \- FUSE file system client for ext2/ext3/ext4 file systems
+.SH SYNOPSIS
+.B fuse2fs
+[
+.B device/image
+]
+[
+.B mountpoint
+]
+[
+.I options
+]
+.SH DESCRIPTION
+.B fuse2fs
+is a FUSE file system client that supports reading and writing from
+devices or image files containing ext2, ext3, and ext4 file systems.
+.SH OPTIONS
+.SS "general options:"
+.TP
+\fB\-o\fR opt,[opt...]
+mount options
+.TP
+\fB\-h\fR   \fB\-\-help\fR
+print help
+.TP
+\fB\-V\fR   \fB\-\-version\fR
+print version
+.SS "fuse2fs options:"
+.TP
+\fB-o\fR ro
+read-only mount
+.TP
+\fB-o\fR errors=panic
+dump core on error
+.TP
+\fB-o\fR minixdf
+minix-style df
+.TP
+\fB-o\fR fakeroot
+pretend to be root for permission checks
+.TP
+\fB-o\fR no_default_opts
+do not include default fuse options
+.TP
+\fB-o\fR fuse2fs_debug
+enable fuse2fs debugging
+.SS "FUSE options:"
+.TP
+\fB-d -o\fR debug
+enable debug output (implies -f)
+.TP
+\fB-f\fR
+foreground operation
+.TP
+\fB-s\fR
+disable multi-threaded operation
+.P
+For other FUSE options please see
+.BR mount.fuse (8)
+or see the output of
+.I fuse2fs \-\-helpfull
+.SH AVAILABILITY
+.B fuse2fs
+is part of the e2fsprogs package and is available from
+http://e2fsprogs.sourceforge.net.
+.SH SEE ALSO
+.BR ext4 (5)
+.BR e2fsck (8),
+.BR mount.fuse (8)
+

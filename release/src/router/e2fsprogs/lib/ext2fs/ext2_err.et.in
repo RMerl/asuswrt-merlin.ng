@@ -429,7 +429,7 @@ ec	EXT2_ET_MMP_FAILED,
 	"MMP: device currently active"
 
 ec	EXT2_ET_MMP_FSCK_ON,
-	"MMP: fsck being run"
+	"MMP: e2fsck being run"
 
 ec	EXT2_ET_MMP_BAD_BLOCK,
 	"MMP: block number beyond filesystem range"
@@ -471,9 +471,81 @@ ec	EXT2_ET_UNKNOWN_CSUM,
 	"Unknown checksum algorithm"
 
 ec	EXT2_ET_MMP_CSUM_INVALID,
-	"MMP block checksum does not match MMP block"
+	"MMP block checksum does not match"
 
 ec	EXT2_ET_FILE_EXISTS,
 	"Ext2 file already exists"
+
+ec	EXT2_ET_BLOCK_BITMAP_CSUM_INVALID,
+	"Block bitmap checksum does not match bitmap"
+
+ec	EXT2_ET_INLINE_DATA_CANT_ITERATE,
+	"Cannot iterate data blocks of an inode containing inline data"
+
+ec	EXT2_ET_EA_BAD_NAME_LEN,
+	"Extended attribute has an invalid name length"
+
+ec	EXT2_ET_EA_BAD_VALUE_SIZE,
+	"Extended attribute has an invalid value length"
+
+ec	EXT2_ET_BAD_EA_HASH,
+	"Extended attribute has an incorrect hash"
+
+ec	EXT2_ET_BAD_EA_HEADER,
+	"Extended attribute block has a bad header"
+
+ec	EXT2_ET_EA_KEY_NOT_FOUND,
+	"Extended attribute key not found"
+
+ec	EXT2_ET_EA_NO_SPACE,
+	"Insufficient space to store extended attribute data"
+
+ec	EXT2_ET_MISSING_EA_FEATURE,
+	"Filesystem is missing ext_attr or inline_data feature"
+
+ec	EXT2_ET_NO_INLINE_DATA,
+	"Inode doesn't have inline data"
+
+ec	EXT2_ET_INLINE_DATA_NO_BLOCK,
+	"No block for an inode with inline data"
+
+ec	EXT2_ET_INLINE_DATA_NO_SPACE,
+	"No free space in inline data"
+
+ec	EXT2_ET_MAGIC_EA_HANDLE,
+	"Wrong magic number for extended attribute structure"
+
+ec	EXT2_ET_INODE_IS_GARBAGE,
+	"Inode seems to contain garbage"
+
+ec	EXT2_ET_EA_BAD_VALUE_OFFSET,
+	"Extended attribute has an invalid value offset"
+
+ec	EXT2_ET_JOURNAL_FLAGS_WRONG,
+	"Journal flags inconsistent"
+
+ec	EXT2_ET_UNDO_FILE_CORRUPT,
+	"Undo file corrupt"
+
+ec	EXT2_ET_UNDO_FILE_WRONG,
+	"Wrong undo file for this filesystem"
+
+ec	EXT2_ET_FILESYSTEM_CORRUPTED,
+	"File system is corrupted"
+
+ec	EXT2_ET_BAD_CRC,
+	"Bad CRC detected in file system"
+
+ec	EXT2_ET_CORRUPT_JOURNAL_SB,
+	"The journal superblock is corrupt"
+
+ec	EXT2_ET_INODE_CORRUPTED,
+	"Inode is corrupted"
+
+ec	EXT2_ET_EA_INODE_CORRUPTED,
+	"Inode containing extended attribute value is corrupted"
+
+ec	EXT2_ET_NO_GDESC,
+	"Group descriptors not loaded"
 
 	end

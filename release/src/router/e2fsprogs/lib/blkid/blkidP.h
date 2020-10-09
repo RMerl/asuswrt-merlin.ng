@@ -15,6 +15,12 @@
 
 #include <sys/types.h>
 #include <stdio.h>
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#if HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
 
 #include <blkid/blkid.h>
 
@@ -152,12 +158,21 @@ extern void blkid_debug_dump_dev(blkid_dev dev);
 extern void blkid_debug_dump_tag(blkid_tag tag);
 #endif
 
+static inline int blkidP_is_disk_device(mode_t mode)
+{
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+	return S_ISBLK(mode) || S_ISCHR(mode);
+#else
+	return S_ISBLK(mode);
+#endif
+}
+
 /* devno.c */
 struct dir_list {
 	char	*name;
 	struct dir_list *next;
 };
-extern void blkid__scan_dir(char *, dev_t, struct dir_list **, char **);
+extern void blkid__scan_dir(const char *, dev_t, struct dir_list **, char **);
 
 /* lseek.c */
 extern blkid_loff_t blkid_llseek(int fd, blkid_loff_t offset, int whence);

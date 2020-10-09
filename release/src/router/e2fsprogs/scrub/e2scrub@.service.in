@@ -1,0 +1,20 @@
+[Unit]
+Description=Online ext4 Metadata Check for %I
+OnFailure=e2scrub_fail@%i.service
+Documentation=man:e2scrub(8)
+
+[Service]
+Type=oneshot
+WorkingDirectory=/
+PrivateNetwork=true
+ProtectSystem=true
+ProtectHome=read-only
+PrivateTmp=yes
+AmbientCapabilities=CAP_SYS_ADMIN CAP_SYS_RAWIO
+NoNewPrivileges=yes
+User=root
+IOSchedulingClass=idle
+CPUSchedulingPolicy=idle
+Environment=SERVICE_MODE=1
+ExecStart=@root_sbindir@/e2scrub -t %I
+SyslogIdentifier=%N

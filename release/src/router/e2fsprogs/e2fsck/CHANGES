@@ -15,7 +15,7 @@ Deleted inodes from old ext2fs code (inodes with dtime set but
 non-zero link count) are detected, and the user is given the
 opportunity to clear them.
 
-The last bit in the last group of the block bitmap badding was not
+The last bit in the last group of the block bitmap padding was not
 being checked; now fixed.
 
 The free_blocks and free_inodes count in the last group weren't being

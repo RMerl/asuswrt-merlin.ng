@@ -43,7 +43,8 @@ static int print_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
 }
 
 
-void do_block_iterate(int argc, char **argv)
+void do_block_iterate(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		      void *infop EXT2FS_ATTR((unused)))
 {
 	const char	*usage = "block_iterate <file> <flags";
 	ext2_ino_t	ino;

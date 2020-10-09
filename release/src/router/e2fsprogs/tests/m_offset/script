@@ -1,0 +1,34 @@
+test_description="mke2fs with offset option (-E offset=N)"
+OUT="$test_name.log"
+
+echo "testing mke2fs with -E offset=524288 option (no fssize)" > "$OUT"
+yes a | $DD of="$TMPFILE" bs=1k count=2048 iflag=fullblock 2>>"$OUT"
+$MKE2FS -F -b 1024 -E offset=524288 "$TMPFILE" >> "$OUT" 2>&1
+# compute crc of the first 512 1k blocks
+crc_first1=`$DD if="$TMPFILE" bs=1k count=512 2>/dev/null | $CRCSUM`
+
+echo "testing mke2fs with -E offset=524288 option (explicit fssize)" >> "$OUT"
+yes a | $DD of="$TMPFILE" bs=1k count=2048 iflag=fullblock 2>>"$OUT"
+$MKE2FS -F -b 1024 -E offset=524288 "$TMPFILE" 1024 >> "$OUT" 2>&1
+# compute crc of the first and last 512 1k blocks
+crc_first2=`$DD if="$TMPFILE" bs=1k count=512 2>/dev/null | $CRCSUM`
+crc_last2=`$DD if="$TMPFILE" bs=1k count=512 skip=1536 2>/dev/null | $CRCSUM`
+crc_exp=`yes a | $DD bs=1k count=512 2>/dev/null | $CRCSUM`
+# a warning should be only emitted by the first mke2fs call
+warning=`grep -c "offset specified without an explicit file system size." \
+	"$OUT"`
+
+if [ "$warning" -eq 1 -a \
+	 "$crc_first1" = "$crc_first2" -a \
+	 "$crc_first2" = "$crc_last2" -a \
+	 "$crc_first2" = "$crc_exp" ]; then
+	echo "$test_name: $test_description: ok"
+	touch "$test_name.ok"
+else
+	echo "$test_name: $test_description: failed"
+	echo "warning: $warning" > "$test_name.failed"
+	echo "crc_first1: $crc_first1" >> "$test_name.failed"
+	echo "crc_first2: $crc_first2" >> "$test_name.failed"
+	echo "crc_last2: $crc_last2" >> "$test_name.failed"
+	echo "crc_exp: $crc_exp" >> "$test_name.failed"
+fi

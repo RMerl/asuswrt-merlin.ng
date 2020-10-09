@@ -1,0 +1,283 @@
+#!/bin/bash
+
+#  Copyright (C) 2018 Oracle.  All Rights Reserved.
+#
+#  Author: Darrick J. Wong <darrick.wong@oracle.com>
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it would be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write the Free Software Foundation,
+#  Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+
+# Automatically check an LVM-managed filesystem online.
+# We use lvm snapshots to do this, which means that we can only
+# check filesystems in VGs that have at least 256MB (or so) of
+# free space.
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+if (( $EUID != 0 )); then
+    echo "e2scrub must be run as root"
+    exit 1
+fi
+
+snap_size_mb=256
+fstrim=0
+reap=0
+e2fsck_opts=""
+conffile="@root_sysconfdir@/e2scrub.conf"
+
+test -f "${conffile}" && . "${conffile}"
+
+print_help() {
+	echo "Usage: $0 [OPTIONS] mountpoint | device"
+	echo
+	echo "mountpoint must be on an LVM-managed block device"
+	echo "-n: Show what commands e2scrub would execute."
+	echo "-r: Remove e2scrub snapshot and exit, do not check anything."
+	echo "-t: Run fstrim if successful."
+	echo "-V: Print version information and exit."
+}
+
+print_version() {
+	echo "e2scrub @E2FSPROGS_VERSION@ (@E2FSPROGS_DATE@)"
+}
+
+exitcode() {
+	ret="$1"
+
+	# If we're being run as a service, the return code must fit the LSB
+	# init script action error guidelines, which is to say that we
+	# compress all errors to 1 ("generic or unspecified error", LSB 5.0
+	# section 22.2) and hope the admin will scan the log for what
+	# actually happened.
+
+	# We have to sleep 2 seconds here because journald uses the pid to
+	# connect our log messages to the systemd service.  This is critical
+	# for capturing all the log messages if the scrub fails, because the
+	# fail service uses the service name to gather log messages for the
+	# error report.
+	if [ -n "${SERVICE_MODE}" -a "${ret}" -ne 0 ]; then
+		test "${ret}" -ne 0 && ret=1
+		sleep 2
+	fi
+
+	exit "${ret}"
+}
+
+while getopts "nrtV" opt; do
+    case "${opt}" in
+	"n") DBG="echo Would execute: " ;;
+	"r") reap=1;;
+	"t") fstrim=1;;
+	"V") print_version; exitcode 0;;
+	*) print_help; exitcode 2;;
+	esac
+done
+shift "$((OPTIND - 1))"
+
+arg="$1"
+if [ -z "${arg}" ]; then
+	print_help
+	exitcode 1
+fi
+
+if ! type lsblk >& /dev/null ; then
+    echo "e2scrub: can't find lsblk --- is util-linux installed?"
+    exitcode 1
+fi
+
+if ! type lvcreate >& /dev/null ; then
+    echo "e2scrub: can't find lvcreate --- is lvm2 installed?"
+    exitcode 1
+fi
+
+# close file descriptor 3 (from cron) since it causes lvm to kvetch
+exec 3<&-
+
+# Find the device for a given mountpoint
+dev_from_mount() {
+	local mountpt="$(realpath "$1")"
+
+	lsblk -o NAME,FSTYPE,MOUNTPOINT -p -P -n 2> /dev/null | while read vars; do
+		eval "${vars}"
+		if [ "${mountpt}" != "${MOUNTPOINT}" ]; then
+			continue
+		fi
+		case "${FSTYPE}" in
+		ext[234])
+			echo "${NAME}"
+			return 0
+			;;
+		esac
+	done
+	return 1
+}
+
+# Check a device argument
+dev_from_arg() {
+	local dev="$1"
+	local fstype="$(lsblk -o FSTYPE -n "${dev}" 2> /dev/null)"
+
+	case "${fstype}" in
+	ext[234])
+		echo "${dev}"
+		return 0
+		;;
+	esac
+	return 1
+}
+
+mnt_from_dev() {
+	local dev="$1"
+
+	if [ -n "${dev}" ]; then
+		lsblk -o MOUNTPOINT -n "${dev}"
+	fi
+}
+
+# Construct block device path and mountpoint from argument
+if [ -b "${arg}" ]; then
+	dev="$(dev_from_arg "${arg}")"
+	mnt="$(mnt_from_dev "${dev}")"
+else
+	dev="$(dev_from_mount "${arg}")"
+	mnt="${arg}"
+fi
+if [ ! -e "${dev}" ]; then
+	echo "${arg}: Not an ext[234] filesystem."
+	print_help
+	exitcode 16
+fi
+
+# Make sure this is an LVM device we can snapshot
+lvm_vars="$(lvs --nameprefixes -o name,vgname,lv_role --noheadings "${dev}" 2> /dev/null)"
+eval "${lvm_vars}"
+if [ -z "${LVM2_VG_NAME}" ] || [ -z "${LVM2_LV_NAME}" ] ||
+   echo "${LVM2_LV_ROLE}" | grep -q "snapshot"; then
+	echo "${arg}: Not connnected to an LVM logical volume."
+	print_help
+	exitcode 16
+fi
+start_time="$(date +'%Y%m%d%H%M%S')"
+snap="${LVM2_LV_NAME}.e2scrub"
+snap_dev="/dev/${LVM2_VG_NAME}/${snap}"
+
+teardown() {
+	# Remove and wait for removal to succeed.
+	${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}"
+	while [ -e "${snap_dev}" ] && [ "$?" -eq "5" ]; do
+		sleep 0.5
+		${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}"
+	done
+}
+
+check() {
+	# First we recover the journal, then we see if e2fsck tries any
+	# non-optimization repairs.  If either of these two returns a
+	# non-zero status (errors fixed or remaining) then this fs is bad.
+	E2FSCK_FIXES_ONLY=1
+	export E2FSCK_FIXES_ONLY
+	${DBG} "@root_sbindir@/e2fsck" -E journal_only -p ${e2fsck_opts} "${snap_dev}" || return $?
+	${DBG} "@root_sbindir@/e2fsck" -f -y ${e2fsck_opts} "${snap_dev}"
+}
+
+mark_clean() {
+	${DBG} "@root_sbindir@/tune2fs" -C 0 -T "${start_time}" "${dev}"
+}
+
+mark_corrupt() {
+	${DBG} "@root_sbindir@/tune2fs" -E force_fsck "${dev}"
+}
+
+setup() {
+	# Try to remove snapshot for 30s, bail out if we can't remove it.
+	lvremove_deadline="$(( $(date "+%s") + 30))"
+	${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}" 2>/dev/null
+	while [ -e "${snap_dev}" ] && [ "$?" -eq "5" ] &&
+	      [ "$(date "+%s")" -lt "${lvremove_deadline}" ]; do
+		sleep 0.5
+		${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}"
+	done
+	if [ -e "${snap_dev}" ]; then
+		echo "${arg}: e2scrub snapshot is in use, cannot check!"
+		return 1
+	fi
+	# Create the snapshot, wait for device to appear.
+	${DBG} lvcreate -s -L "${snap_size_mb}m" -n "${snap}" "${LVM2_VG_NAME}/${LVM2_LV_NAME}"
+	if [ $? -ne 0 ]; then
+		echo "${arg}: e2scrub snapshot FAILED, will not check!"
+		return 1
+	fi
+	${DBG} udevadm settle 2> /dev/null
+	return 0
+}
+
+if [ "${reap}" -gt 0 ]; then
+	if [ -e "${snap_dev}" ]; then
+		teardown 2> /dev/null
+	fi
+	exit 0
+fi
+if ! setup; then
+	exitcode 8
+fi
+trap "teardown; exit 1" EXIT INT QUIT TERM
+
+# Check and react
+check
+case "$?" in
+"0")
+	# Clean check!
+	echo "${arg}: Scrub succeeded."
+	mark_clean
+	teardown
+	trap '' EXIT
+
+	# Trim the free space, which requires the snapshot be deleted.
+	if [ "${fstrim}" -eq 1 ] && [ -d "${mnt}" ] && type fstrim > /dev/null 2>&1; then
+		echo "${arg}: Trimming free space."
+		fstrim -v "${mnt}"
+	fi
+
+	ret=0
+	;;
+"8")
+	# Operational error, what now?
+	echo "${arg}: e2fsck operational error."
+	teardown
+	trap '' EXIT
+	ret=8
+	;;
+*)
+	# fsck failed.  Check if the snapshot is invalid; if so, make a
+	# note of that at the end of the log.  This isn't necessarily a
+	# failure because the mounted fs could have overflowed the
+	# snapshot with regular disk writes /or/ our repair process
+	# could have done it by repairing too much.
+	#
+	# If it's really corrupt we ought to fsck at next boot.
+	is_invalid="$(lvs -o lv_snapshot_invalid --noheadings "${snap_dev}" | awk '{print $1}')"
+	if [ -n "${is_invalid}" ]; then
+		echo "${arg}: Scrub FAILED due to invalid snapshot."
+		ret=8
+	else
+		echo "${arg}: Scrub FAILED due to corruption!  Unmount and run e2fsck -y."
+		mark_corrupt
+		ret=6
+	fi
+	teardown
+	trap '' EXIT
+	;;
+esac
+
+exitcode "${ret}"

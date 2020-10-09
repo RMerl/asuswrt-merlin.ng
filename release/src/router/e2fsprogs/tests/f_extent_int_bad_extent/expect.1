@@ -1,0 +1,24 @@
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12 has an invalid extent
+	(logical block 0, invalid physical block 4294967295, len 168)
+Clear? yes
+
+Inode 12, i_blocks is 712, should be 542.  Fix? yes
+
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Block bitmap differences:  -(1090--1091) -1093 -1095 -1097 -1099 -1101 -1103 -1105 -1107 -1109 -1111 -1113 -1115 -1117 -1119 -1121 -1123 -1125 -1127 -1129 -1131 -1133 -1135 -1137 -1139 -1141 -1143 -1145 -1147 -1149 -1151 -1153 -1155 -1157 -1159 -1161 -1163 -1165 -1167 -1169 -1171 -1173 -1175 -1177 -1179 -1181 -1183 -1185 -1187 -1189 -1191 -1193 -1195 -1197 -1199 -1201 -1203 -1205 -1207 -1209 -1211 -1213 -1215 -1217 -1219 -1221 -1223 -1225 -1227 -1229 -1231 -1233 -1235 -1237 -1239 -1241 -1243 -1245 -1247 -1249 -1251 -1253 -1255 -1257
+Fix? yes
+
+Free blocks count wrong for group #0 (602, counted=687).
+Fix? yes
+
+Free blocks count wrong (602, counted=687).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 12/128 files (16.7% non-contiguous), 1361/2048 blocks
+Exit status is 1

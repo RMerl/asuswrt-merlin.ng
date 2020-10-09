@@ -36,7 +36,7 @@ maintained by Theodore Ts'o <tytso@alum.mit.edu>.
 There are none :-)
 .SH AVAILABILITY
 .B mklost+found
-is part of the e2fsprogs package and is available from 
+is part of the e2fsprogs package and is available from
 http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR e2fsck (8),

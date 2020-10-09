@@ -1,0 +1,25 @@
+E2fsprogs 1.02 (January 16, 1996)
+=================================
+
+Fix to allow e2fsprogs to be compiled on recent 1.3 (pl45+) kernels.
+
+Change e2fsck to print statistics of how many non-contiguous files are
+on the system.  Note that a file which is larger than 8k blocks, it is
+guaranteed to be non-contiguous.
+
+In mke2fs, print a warning message if a user tries to format a whole
+disk (/dev/hda versus /dev/hda1).  If a user really wants to format a
+whole disk, the -F (force) option forces mke2fs to format a whole disk
+as a filesystem.
+
+Fix a bug in fsck where in some cases it might start checking
+partitions in the next pass before it finishes checking partitions in
+the current pass.  This still won't cause two partitions on the same
+disk will be checked, so it's rarely a problem in real life.
+
+Patch lsattr so that it won't hang when checking a named pipe.
+
+Minor compilation fixes:
+	* Fix the order of libraries that were linked in debugfs.
+	* Allow the sources to be compiled with -ansi turned on.
+

@@ -1,0 +1,26 @@
+Pass 1: Checking inodes, blocks, and sizes
+
+Running additional passes to resolve blocks claimed by more than one inode...
+Pass 1B: Rescanning for multiply-claimed blocks
+Multiply-claimed block(s) in inode 12: 9
+Multiply-claimed block(s) in inode 13: 9
+Pass 1C: Scanning directories for inodes with multiply-claimed blocks
+Pass 1D: Reconciling multiply-claimed blocks
+(There are 2 inodes containing multiply-claimed blocks.)
+
+File /file2.txt (inode #12, mod time Sat Mar  3 02:12:33 2018) 
+  has 1 multiply-claimed block(s), shared with 1 file(s):
+	/file1.txt (inode #13, mod time Sat Mar  3 02:12:15 2018)
+File /file1.txt (inode #13, mod time Sat Mar  3 02:12:15 2018) 
+  has 1 multiply-claimed block(s), shared with 1 file(s):
+	/file2.txt (inode #12, mod time Sat Mar  3 02:12:33 2018)
+Multiply-claimed blocks already reassigned or cloned.
+
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 13/32 files (0.0% non-contiguous), 13/64 blocks
+Exit status is 0

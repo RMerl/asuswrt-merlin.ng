@@ -57,7 +57,7 @@ int init (void)
 
 	general_commands.last_command=-1;	/* No commands whatsoever meanwhile */
 	ext2_commands.last_command=-1;
-	add_general_commands ();		/* Add the general commands, aviable always */
+	add_general_commands ();		/* Add the general commands, available always */
 	device_handle=NULL;			/* Notice that our device is still not set up */
 	device_offset=-1;
 	current_type=NULL;			/* No filesystem specific types yet */
@@ -80,8 +80,8 @@ void add_general_commands (void)
 	add_user_command (&general_commands,"help","EXT2ED help system",help);
 	add_user_command (&general_commands,"set","Changes a variable in the current object",set);
 	add_user_command (&general_commands,"setdevice","Selects the filesystem block device (e.g. /dev/hda1)",set_device);
-	add_user_command (&general_commands,"setoffset","Moves asynchronicly in the filesystem",set_offset);
-	add_user_command (&general_commands,"settype","Tells EXT2ED how to interpert the current object",set_type);
+	add_user_command (&general_commands,"setoffset","Moves asynchronously in the filesystem",set_offset);
+	add_user_command (&general_commands,"settype","Tells EXT2ED how to interpret the current object",set_type);
 	add_user_command (&general_commands,"show","Displays the current object",show);
 	add_user_command (&general_commands,"pgup","Scrolls data one page up",pgup);
 	add_user_command (&general_commands,"pgdn","Scrolls data one page down",pgdn);
@@ -316,7 +316,7 @@ Set specific type user commands.
 	}
 
 	if (strcmp ((ptr->name),"ext2_group_desc")==0) {
-		add_user_command (&ptr->type_commands,"next","Pass to the next block group decriptor",type_ext2_group_desc___next);
+		add_user_command (&ptr->type_commands,"next","Pass to the next block group descriptor",type_ext2_group_desc___next);
 		add_user_command (&ptr->type_commands,"prev","Pass to the previous group descriptor",type_ext2_group_desc___prev);
 		add_user_command (&ptr->type_commands,"entry","Pass to a specific group descriptor",type_ext2_group_desc___entry);
 		add_user_command (&ptr->type_commands,"show","Shows the current group descriptor",type_ext2_group_desc___show);

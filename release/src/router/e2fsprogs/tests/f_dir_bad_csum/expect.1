@@ -1,0 +1,50 @@
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Directory inode 12, block #0: directory passes checks but fails checksum.
+Fix? yes
+
+Directory inode 13, block #0, offset 0: directory has no checksum.
+Fix? yes
+
+Directory inode 14, block #0, offset 0: directory has no checksum.
+Fix? yes
+
+Directory inode 15, block #0, offset 1000: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (15) has rec_len of 0, should be 12.
+Fix? yes
+
+Directory inode 16, block #0, offset 12: directory corrupted
+Salvage? yes
+
+Directory inode 17, block #0, offset 0: directory corrupted
+Salvage? yes
+
+Missing '.' in directory inode 17.
+Fix? yes
+
+Setting filetype for entry '.' in ??? (17) to 2.
+Missing '..' in directory inode 17.
+Fix? yes
+
+Setting filetype for entry '..' in ??? (17) to 2.
+Entry 'file' in ??? (18) has invalid inode #: 4294967295.
+Clear? yes
+
+Pass 3: Checking directory connectivity
+'..' in /6 (17) is <The NULL inode> (0), should be / (2).
+Fix? yes
+
+Pass 3A: Optimizing directories
+Pass 4: Checking reference counts
+Unattached inode 19
+Connect to /lost+found? yes
+
+Inode 19 ref count is 2, should be 1.  Fix? yes
+
+Pass 5: Checking group summary information
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 19/128 files (5.3% non-contiguous), 1098/2048 blocks
+Exit status is 1

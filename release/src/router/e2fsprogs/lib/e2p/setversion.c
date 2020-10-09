@@ -20,7 +20,9 @@
 #if HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#if HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
+#endif
 
 #include "e2p.h"
 

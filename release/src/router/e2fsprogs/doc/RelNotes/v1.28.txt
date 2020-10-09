@@ -1,0 +1,146 @@
+E2fsprogs 1.28 (August 31, 2002)
+================================
+
+Add support for the Hashed-Tree Directory Indexing to e2fsck.  Support
+for setting the htree flag is not included yet, although it can be
+manually turned on via the debugfs program.
+
+Clarified e2fsck error message which is printed when it cannot find
+sufficient contiguous block when relocating filesystem metadata.
+
+Added support for building an EVMS plugin module for ext2/3.  This
+module is substantially the same as the EVMS module shipping with EVMS
+1.1, with one or two bugfixes.  E2fsprogs can also build this plugin
+for use with EVMS 1.0 (which did not include the ext2 plugin module),
+if the configure --enable-old-evms flag is given.
+
+Fsck will search through EVMS volumes when trying to resolve
+filesystem specifications such as LABEL=xxx or UUID=xxx.
+  
+Added a new utility program, /sbin/findfs, which will return
+filesystem specifications such as LABEL=xxx or UUID=xxx, and prints
+the device name.
+
+Update and clarified various man pages. (addresses Debian Bug #145044,
+#146437, #131350, #151990, #144621, #141938)
+
+If there are no filesystems specified on fsck's command line, fsck now
+treat that as if the -As options were given.  Previously it would
+simply do nothing.  (Addresses Debian Bug #153102)
+
+Mke2fs no longer treats a failure to be able to clear the MD signature
+at the end of the filesystem as a fatal error.  (Addresses Debian Bug
+#155007)
+
+The e2p library functions (which are used by lsattr and chattr) now
+double check to make sure the file is a regular file or directory
+before attempting to use the ext2 ioctls.  Some device drivers
+unfortunately respond to the ext2 ioctl's with unknown behaviour.
+(Addresses Debian Bug #152029).
+
+The extended attribute handling has been updated to correspond with
+the latest V2 bestbits ACL code.
+
+Fixed bug in e2fsck which caused it to not clear the dtime field when
+processing truncated inodes on the orphan list.  This could cause data
+loss(!) if a filesystem is rebooted before a truncate has been
+committed.
+
+E2fsck now uses red/black trees in pass1b, which removes some O(n**2)
+algorithms.  This makes e2fsck much faster in the case of severely
+corrupted filesystems where a large number of blocks are claimed by a
+large number of inodes.  (Thanks to the 2.5 IDE device driver for
+inspiring this work.)
+
+Resize2fs has been significantly sped up when shrinking and expanding
+a filesystem by a very small number of blocks (for example, when EVMS
+is converting a partition to be an EVMS legacy volume).
+
+Added a new option to e2fsck, -D, which will optimize or compress all
+of the directories in the filesystem.
+
+E2fsck now catches SIGINT and SIGTERM to make sure it will can
+properly clean up and only exit at safe points.  Fsck will pass
+SIGINT/SIGTERM to its child processes, and wait until they have all
+exited before it exits.
+
+The uuid parsing code in the uuid library now properly complains when
+an illegally formatted uuid is presented to it.  (Addresses Debian bug
+#152891)
+
+Restrict use of the 2.4 setrlimit ABI f*ckup to kernels between 2.4.10
+and 2.4.17, since the workaround can cause problems when using a 2.4
+kernel with an old version of glibc built with the 2.2 headers.
+
+Fixed a bug in mke2fs where it wasn't properly clearing the initial
+superblock used by other filesystems.  (Addresses Debian bug #147256.)
+
+Added support for the synchronous directory feature written by Andrew
+Morton.
+
+The debugfs program can delete directories using the rmdir command.
+
+Add support for 8k and 16k filesystems (for systems with page sizes
+that are greater or equal to 8k or 16k, respectively).  Note that
+these filesystems can not be mounted on x86 systems, or other systems
+with only 4k page sizes, due to limitations in the current Linux VM
+code.
+
+Resize2fs requires that the filesystem state be valid and have no
+errors; otherwise, e2fsck -f must be run first.  (Previously it simply
+required that the last fsck time be greater than the last mount time.)
+
+Configure now defaults the man pages directory to /usr/share/man on
+Linux systems.
+
+E2fsck now offers to truncate inodes which contain too many blocks (so
+that i_blocks would overflow.  Also fixed handling of large sparse
+files.
+
+E2fsck now more completely checks for symlink validity, including
+requiring NULL termination and length checks.
+
+E2fsck will offer to try forcing a disk write to remap a bad block
+after finding a read error when reading a filesystem metadata block.
+
+Fixed a bug in debugfs which caused the -b and -s options to crash
+debugfs, as well as breaking the testb, setb, and clearb functions.
+
+Added a bmap command to debugfs which calculates the logical to
+physical block mapping for a particular inode.
+
+Fixed a bug in code which checked to see if a device was mounted which
+sometimes (rarely) failed in the case of a plain file.
+
+Fixed a bug in resize2fs where when it reported an error, it would
+print a message erroneously indicating that the filesystem had been
+resized before it aborted.
+
+When resizing a plain file which is smaller than the requested size,
+resize2fs will attempt to extended the file so that programs like
+e2fsck will not complain that the file is too small.
+
+Resize2fs will print the actual new size of the filesystem when it is
+finished resizing.
+
+Fixed a bug in debugfs where "ls -l" would report incorrect file type
+information on big-endian systems.
+
+
+Programmer's notes:
+-------------------
+
+Fixed collisions with C++ reserved words.
+
+Added portability fixes for building e2fsprogs on the HURD and AIX.
+
+Added the ext2ed program for creation of test cases.  (ext2ed has many
+limitations and bugs which make it unsuitable for production use.)
+
+The ext2fs_read_dir_block2 and ext2fs_write_dir_block now take a new
+flag, EXT2_DIRBLOCK_V2_STRUCT, which will will reverse when the
+name_len field is byte swapped on big-endian machines, since in the
+V2 structure, name_len is a char field which is doesn't need to be
+byte swapped --- except if an old-style kernel had byte-swapped the
+name_len field as part of the V1 structure.
+  

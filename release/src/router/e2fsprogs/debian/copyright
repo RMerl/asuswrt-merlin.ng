@@ -15,11 +15,11 @@ Upstream Author: Theodore Ts'o <tytso@mit.edu>
 Copyright notice:
 
 This package, the EXT2 filesystem utilities, are made available under
-the GNU Public License version 2, with the exception of the lib/ext2fs
-and lib/e2p libraries, which are made available under the GNU Library
-General Public License Version 2, the lib/uuid library which is made
-available under a BSD-style license and the lib/et and lib/ss
-libraries which are made available under an MIT-style license.
+the GNU General Public License version 2, with the exception of the
+lib/ext2fs and lib/e2p libraries, which are made available under the
+GNU Library General Public License Version 2, the lib/uuid library
+which is made available under a BSD-style license and the lib/et and
+lib/ss libraries which are made available under an MIT-style license.
 
 	Copyright (c) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 
 	2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 by Theodore Ts'o

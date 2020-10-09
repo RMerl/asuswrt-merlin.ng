@@ -1,0 +1,33 @@
+E2fsprogs 1.03 (March 27, 1996)
+===============================
+
+Change the m68k bit numbering for bitmasks to match the bit numbering
+used by all other ext2 implementations.  (This change was requested by
+the m68k kernel development team.)
+
+Support (in-development) filesystem format revision which supports
+(among other things) dynamically sized inodes.
+
+Fixed a bug in the ext2 library so that an intelligent error is
+returned if mke2fs is run with a ridiculously small number of blocks
+for a partition.
+
+Fixed a bug in the ext2 library which required that the device be
+openable in read/write mode in order to determine its size.  This
+caused e2fsck -n to require read/write access when it was not
+previously necessary.
+
+Fixed a bug in e2fsck which caused it to occasionally fail the test
+suite depending on which version of the floating point library it was
+using.
+
+Fixed a bug in e2fsck so that it now halts with a fatal error when
+certain superblock consistency checks fail.  Previously it continued
+running e2fsck, with some potential confusing/damaging consequences.
+
+Added new flag to fsck which allows the root to be checked in parallel
+with other filesystems.  This is not the safest thing in the world to
+do, but some system administrators really wanted it.
+
+Fixed -Wall flames in lib/ss.
+

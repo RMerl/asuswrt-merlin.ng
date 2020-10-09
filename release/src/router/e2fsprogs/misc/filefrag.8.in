@@ -15,11 +15,11 @@ filefrag \- report on file fragmentation
 ]
 .SH DESCRIPTION
 .B filefrag
-reports on how badly fragmented a particular file might be.  It makes 
+reports on how badly fragmented a particular file might be.  It makes
 allowances for indirect blocks for ext2 and ext3 filesystems, but can be
 used on files for any filesystem.
 .PP
-The 
+The
 .B filefrag
 program initially attempts to get the
 extent information using FIEMAP ioctl which is more efficient and faster.
@@ -33,8 +33,8 @@ testing purposes.
 .BI \-b blocksize
 Use
 .I blocksize
-in bytes for output instead of the filesystem blocksize.
-For compatibility with earlier versions of
+in bytes, or with [KMG] suffix, up to 1GB for output instead of the
+filesystem blocksize.  For compatibility with earlier versions of
 .BR filefrag ,
 if
 .I blocksize
@@ -43,7 +43,7 @@ is unspecified it defaults to 1024 bytes.
 .B \-e
 Print output in extent format, even for block-mapped files.
 .TP
-.BI \-k
+.B \-k
 Use 1024\-byte blocksize for output (identical to '\-b 1024').
 .TP
 .B \-s

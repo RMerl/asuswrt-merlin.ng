@@ -1,0 +1,14 @@
+create fs without csum_seed
+Filesystem UUID:          6b33f586-a183-4383-921d-30da3fef2e5c
+turn on csum_seed
+Filesystem UUID:          6b33f586-a183-4383-921d-30da3fef2e5c
+Checksum seed:            0x3ba62721
+check filesystem
+fsck returns 0
+Filesystem UUID:          6b33f586-a183-4383-921d-30da3fef2e5c
+Checksum seed:            0x3ba62721
+turn off csum_seed
+Filesystem UUID:          6b33f586-a183-4383-921d-30da3fef2e5c
+check filesystem
+fsck returns 0
+Filesystem UUID:          6b33f586-a183-4383-921d-30da3fef2e5c

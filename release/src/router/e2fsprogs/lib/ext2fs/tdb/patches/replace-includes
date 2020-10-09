@@ -3,7 +3,7 @@ Index: tdb/tdb.c
 --- tdb.orig/tdb.c
 +++ tdb/tdb.c
 @@ -29,11 +29,82 @@ Last Changed Date: 2007-06-22 13:36:10 -
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
  
 -#include "replace.h"

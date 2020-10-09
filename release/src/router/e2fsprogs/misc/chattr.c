@@ -51,9 +51,9 @@
 
 #include "et/com_err.h"
 #include "e2p/e2p.h"
+#include "support/nls-enable.h"
 
 #include "../version.h"
-#include "nls-enable.h"
 
 static const char * program_name = "chattr";
 
@@ -63,6 +63,9 @@ static int set;
 static int set_version;
 
 static unsigned long version;
+
+static int set_project;
+static unsigned long project;
 
 static int recursive;
 static int verbose;
@@ -83,7 +86,7 @@ static unsigned long sf;
 static void usage(void)
 {
 	fprintf(stderr,
-		_("Usage: %s [-RVf] [-+=aAcCdDeijsStTu] [-v version] files...\n"),
+		_("Usage: %s [-pRVf] [-+=aAcCdDeijPsStTuF] [-v version] files...\n"),
 		program_name);
 	exit(1);
 }
@@ -103,11 +106,13 @@ static const struct flags_char flags_array[] = {
 	{ EXT4_EXTENTS_FL, 'e'},
 	{ EXT2_IMMUTABLE_FL, 'i' },
 	{ EXT3_JOURNAL_DATA_FL, 'j' },
+	{ EXT4_PROJINHERIT_FL, 'P' },
 	{ EXT2_SECRM_FL, 's' },
 	{ EXT2_UNRM_FL, 'u' },
 	{ EXT2_NOTAIL_FL, 't' },
 	{ EXT2_TOPDIR_FL, 'T' },
 	{ FS_NOCOW_FL, 'C' },
+	{ EXT4_CASEFOLD_FL, 'F' },
 	{ 0, 0 }
 };
 
@@ -143,6 +148,20 @@ static int decode_arg (int * i, int argc, char ** argv)
 			}
 			if (*p == 'f') {
 				silent = 1;
+				continue;
+			}
+			if (*p == 'p') {
+				(*i)++;
+				if (*i >= argc)
+					usage ();
+				project = strtol (argv[*i], &tmp, 0);
+				if (*tmp) {
+					com_err (program_name, 0,
+						 _("bad project - %s\n"),
+						 argv[*i]);
+					usage ();
+				}
+				set_project = 1;
 				continue;
 			}
 			if (*p == 'v') {
@@ -248,6 +267,18 @@ static int change_attributes(const char * name)
 			return -1;
 		}
 	}
+	if (set_project) {
+		if (verbose)
+			printf (_("Project of %s set as %lu\n"), name, project);
+		if (fsetproject (name, project) == -1) {
+			if (!silent)
+				com_err (program_name, errno,
+					 _("while setting project on %s"),
+					 name);
+			return -1;
+		}
+
+	}
 	if (S_ISDIR(st.st_mode) && recursive)
 		return iterate_on_dir (name, chattr_dir_proc, NULL);
 	return 0;
@@ -311,7 +342,7 @@ int main (int argc, char ** argv)
 		fputs("Can't both set and unset same flag.\n", stderr);
 		exit (1);
 	}
-	if (!(add || rem || set || set_version)) {
+	if (!(add || rem || set || set_version || set_project )) {
 		fputs(_("Must use '-v', =, - or +\n"), stderr);
 		exit (1);
 	}

@@ -1,0 +1,28 @@
+test_description="e2image bitmap read/write test"
+
+IMAGE=$test_dir/image.bz2
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+bzip2 -d < $IMAGE > $TMPFILE
+$E2IMAGE  $TMPFILE $TMPFILE.e2i > $OUT 2>&1
+$DUMPE2FS $TMPFILE > $TMPFILE.1 2>&1
+$DUMPE2FS -i $TMPFILE.e2i > $TMPFILE.2 2>&1
+diff $TMPFILE.1 $TMPFILE.2 >> $OUT 2>&1
+
+sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test_filesys;" $OUT > $OUT.new
+mv $OUT.new $OUT
+
+cmp -s $OUT $EXP
+status=$?
+if [ "$status" = 0 ] ; then
+        echo "$test_name: $test_description: ok"
+        touch $test_name.ok
+else
+        echo "$test_name: $test_description: failed"
+        diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+        rm -f $test_name.tmp
+fi
+
+rm -rf $TMPFILE $TMPFILE.bin $TMPFILE.1 $TMPFILE.2 $TMPFILE.e2i
+unset IMAGE FSCK_OPT OUT EXP

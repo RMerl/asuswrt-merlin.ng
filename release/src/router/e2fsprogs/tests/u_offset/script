@@ -1,0 +1,138 @@
+test_description="e2undo with the offset option (-o offset)"
+OUT="$test_name.log"
+TMPFILE2="${TMPFILE}_2"
+TDB_FILE="$TMPFILE.e2undo"
+
+E2UNDO_FEATURE_COMPAT_OFFSET=1
+
+trap "rm -f $TMPFILE2 $TDB_FILE" EXIT INT QUIT
+
+read_header_entry() {
+	# $2 is just used as a dummy - it is never used by e2undo
+	# when dumping the header
+	$E2UNDO -h "$1" "$2" | grep "^$3:"
+}
+
+read_header_offset() {
+	read_header_entry "$TDB_FILE" "$TMPFILE" "fs offset" | cut -f2
+}
+
+read_header_compat() {
+	read_header_entry "$TDB_FILE" "$TMPFILE" "compat" | cut -f3
+}
+
+e2undo_offset_assert() {
+	if [ "$crc_exp" != "$crc_act" -o \
+		 "$offset_exp" != "$offset_act" -o \
+		 $(($compat_act & $E2UNDO_FEATURE_COMPAT_OFFSET)) -ne $compat_exp ]
+		then
+		echo "$1" >> "$test_name.failed"
+		echo "crc_exp: $crc_exp" >> "$test_name.failed"
+		echo "crc_act: $crc_act" >> "$test_name.failed"
+		echo "offset_exp: $offset_exp" >> "$test_name.failed"
+		echo "offset_act: $offset_act" >> "$test_name.failed"
+		echo "compat_exp: $compat_exp" >> "$test_name.failed"
+		echo "compat_act: $compat_act" >> "$test_name.failed"
+	fi
+}
+
+init_fs() {
+	echo "#" >> "$OUT"
+	echo "# init fs for $1" >> "$OUT"
+	echo "#" >> "$OUT"
+	rm -f "$TDB_FILE"
+	dd if=/dev/zero of="$TMPFILE" bs=1k count=1024 > /dev/null 2>&1
+	$MKE2FS -F -z "$TDB_FILE" -b 1024 -E offset=524288 "$TMPFILE" 512 \
+		>> "$OUT" 2>&1
+}
+
+#
+# test absence of the "-o N" option
+#
+test_e2undo_offset_no_option() {
+	init_fs "test_e2undo_offset_no_option"
+
+	$E2UNDO "$TDB_FILE" "$TMPFILE" >> "$OUT" 2>&1
+
+	crc_exp=`dd if=/dev/zero bs=1k count=1024 2>/dev/null | $CRCSUM`
+	crc_act=`$CRCSUM "$TMPFILE"`
+	offset_exp=524288
+	offset_act=`read_header_offset`
+	compat_exp=$E2UNDO_FEATURE_COMPAT_OFFSET
+	compat_act=`read_header_compat`
+	e2undo_offset_assert "test_e2undo_offset_no_option"
+}
+
+#
+# test removal of the offset feature in the undo header
+#
+test_e2undo_offset_no_option_remove_offset_header() {
+	init_fs "test_e2undo_offset_no_option_remove_offset_header"
+	dd if="$TMPFILE" of="$TMPFILE2" bs=1k count=512 skip=512 \
+		> /dev/null 2>&1
+	# offset feature will be removed from the undo header
+	$TUNE2FS -z "$TDB_FILE" -C 42 "$TMPFILE2" >> "$OUT" 2>&1
+
+	$E2UNDO "$TDB_FILE" "$TMPFILE2" >> "$OUT" 2>&1
+
+	crc_exp=`dd if=/dev/zero bs=1k count=512 2>/dev/null | $CRCSUM`
+	crc_act=`$CRCSUM "$TMPFILE2"`
+	offset_exp=
+	offset_act=`read_header_offset`
+	compat_exp=0
+	compat_act=`read_header_compat`
+	e2undo_offset_assert "test_e2undo_offset_no_option_remove_offset_header"
+}
+
+#
+# test "-o 4096"
+#
+test_e2undo_offset_4096() {
+	init_fs "test_e2undo_offset_4096"
+	dd if=/dev/zero of="$TMPFILE2" bs=1k count=4 > /dev/null 2>&1
+	dd if="$TMPFILE" of="$TMPFILE2" bs=1k count=512 skip=512 seek=4 \
+		> /dev/null 2>&1
+
+	$E2UNDO -o 4096 "$TDB_FILE" "$TMPFILE2" >> "$OUT" 2>&1
+
+	crc_exp=`dd if=/dev/zero bs=1k count=516 2>/dev/null | $CRCSUM`
+	crc_act=`$CRCSUM "$TMPFILE2"`
+	# the same as in test_e2undo_offset_no_option
+	offset_exp=524288
+	offset_act=`read_header_offset`
+	compat_exp=$E2UNDO_FEATURE_COMPAT_OFFSET
+	compat_act=`read_header_compat`
+	e2undo_offset_assert "test_e2undo_offset_4096"
+}
+
+#
+# test "-o 0"
+#
+test_e2undo_offset_0() {
+	init_fs "test_e2undo_offset_0"
+	dd if="$TMPFILE" of="$TMPFILE2" bs=1k count=512 skip=512 \
+		> /dev/null 2>&1
+
+	$E2UNDO -o 0 "$TDB_FILE" "$TMPFILE2" >> "$OUT" 2>&1
+
+	crc_exp=`dd if=/dev/zero bs=1k count=512 2>/dev/null | $CRCSUM`
+	crc_act=`$CRCSUM "$TMPFILE2"`
+	# the same as in test_e2undo_offset_no_option
+	offset_exp=524288
+	offset_act=`read_header_offset`
+	compat_exp=$E2UNDO_FEATURE_COMPAT_OFFSET
+	compat_act=`read_header_compat`
+	e2undo_offset_assert "test_e2undo_offset_0"
+}
+
+test_e2undo_offset_no_option
+test_e2undo_offset_no_option_remove_offset_header
+test_e2undo_offset_4096
+test_e2undo_offset_0
+
+if [ -e "$test_name.failed" ]; then
+	echo "$test_name: $test_description: failed"
+else
+	echo "$test_name: $test_description: ok"
+	touch "$test_name.ok"
+fi

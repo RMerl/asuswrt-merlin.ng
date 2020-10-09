@@ -1,0 +1,65 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+FSCK_OPT=-fy
+OUT=$test_name.log
+if [ -f $test_dir/expect.gz ]; then
+	EXP=$test_name.tmp
+	gunzip < $test_dir/expect.gz > $EXP1
+else
+	EXP=$test_dir/expect
+fi
+
+JNLFILE=$TMPFILE.jnl
+
+touch $JNLFILE
+$MKE2FS -F -o Linux -b 1024 -O journal_dev -T ext4 -U 1db3f677-6832-4adb-bafc-8e4059c30a34 $JNLFILE 262144 > $OUT.new 2>&1
+$MKE2FS -F -o Linux -b 1024 -O ^has_journal -T ext4 $TMPFILE 262144 >> $OUT.new 2>&1
+
+echo "debugfs add journal device/UUID" >> $OUT.new
+$DEBUGFS -w -f - $TMPFILE <<-EOF >> $OUT.new 2>&1
+	feature has_journal
+	ssv journal_dev 0x9999
+	ssv journal_uuid 1db3f677-6832-4adb-bafc-8e4059c30a34
+EOF
+
+$FSCK -fy -N test_filesys -j $JNLFILE $TMPFILE >> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+
+echo "debugfs write journal" >> $OUT.new
+echo "jo -f $JNLFILE" > $TMPFILE.cmd
+echo "jw -b 259-4356 /dev/zero" >> $TMPFILE.cmd
+echo "jc" >> $TMPFILE.cmd
+echo "jo -f $JNLFILE" >> $TMPFILE.cmd
+echo "jw -r 259-4356 /dev/zero" >> $TMPFILE.cmd
+echo "jc" >> $TMPFILE.cmd
+$DEBUGFS -w -f $TMPFILE.cmd $TMPFILE 2>> $OUT.new > /dev/null
+
+test -d "$JOURNAL_DUMP_DIR" -a -w "$JOURNAL_DUMP_DIR" && cp "$TMPFILE" "$JOURNAL_DUMP_DIR/$test_name.img"
+test -d "$JOURNAL_DUMP_DIR" -a -w "$JOURNAL_DUMP_DIR" && cp "$JNLFILE" "$JOURNAL_DUMP_DIR/$test_name.img.jnl"
+echo "logdump -c -f $JNLFILE" > $TMPFILE.cmd
+$DEBUGFS -f $TMPFILE.cmd $TMPFILE >> $OUT.new 2>&1
+
+echo "debugfs fsck" >> $OUT.new
+$FSCK -fy -N test_filesys -j $JNLFILE $TMPFILE >> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+sed -f $cmd_dir/filter.sed -e 's/logdump -c -f.*/logdump -c/g' $OUT.new > $OUT
+rm -f $TMPFILE $TMPFILE.cmd $JNLFILE $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+	rm -f $test_name.tmp
+fi
+
+unset IMAGE FSCK_OPT OUT EXP JNLFILE

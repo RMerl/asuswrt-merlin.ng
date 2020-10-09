@@ -44,9 +44,9 @@ static int unlink_proc(struct ext2_dir_entry *dirent,
 	ls->prev = dirent;
 
 	if (ls->name) {
-		if ((dirent->name_len & 0xFF) != ls->namelen)
+		if (ext2fs_dirent_name_len(dirent) != ls->namelen)
 			return 0;
-		if (strncmp(ls->name, dirent->name, dirent->name_len & 0xFF))
+		if (strncmp(ls->name, dirent->name, ext2fs_dirent_name_len(dirent)))
 			return 0;
 	}
 	if (ls->inode) {

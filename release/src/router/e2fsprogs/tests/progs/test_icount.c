@@ -61,7 +61,8 @@ static int parse_inode(const char *request, const char *desc,
 	return 0;
 }
 
-void do_create_icount(int argc, char **argv)
+void do_create_icount(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		      void *infop EXT2FS_ATTR((unused)))
 {
 	errcode_t	retval;
 	char		*progname;
@@ -91,8 +92,13 @@ void do_create_icount(int argc, char **argv)
 	}
 }
 
-void do_free_icount(int argc, char **argv)
+void do_free_icount(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
+	if (argc != 1) {
+		printf("Usage: free_icount\n");
+		return;
+	}
 	if (check_icount(argv[0]))
 		return;
 
@@ -100,7 +106,8 @@ void do_free_icount(int argc, char **argv)
 	test_icount = 0;
 }
 
-void do_fetch(int argc, char **argv)
+void do_fetch(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	const char	*usage = "usage: %s inode\n";
 	errcode_t	retval;
@@ -123,7 +130,8 @@ void do_fetch(int argc, char **argv)
 	printf("Count is %u\n", count);
 }
 
-void do_increment(int argc, char **argv)
+void do_increment(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	const char	*usage = "usage: %s inode\n";
 	errcode_t	retval;
@@ -147,7 +155,8 @@ void do_increment(int argc, char **argv)
 	printf("Count is now %u\n", count);
 }
 
-void do_decrement(int argc, char **argv)
+void do_decrement(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	const char	*usage = "usage: %s inode\n";
 	errcode_t	retval;
@@ -171,7 +180,8 @@ void do_decrement(int argc, char **argv)
 	printf("Count is now %u\n", count);
 }
 
-void do_store(int argc, char **argv)
+void do_store(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	const char	*usage = "usage: %s inode count\n";
 	errcode_t	retval;
@@ -200,12 +210,17 @@ void do_store(int argc, char **argv)
 	}
 }
 
-void do_dump(int argc, char **argv)
+void do_dump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	errcode_t	retval;
 	ext2_ino_t	i;
 	__u16		count;
 
+	if (argc != 1) {
+		printf("Usage: dump\n");
+		return;
+	}
 	if (check_icount(argv[0]))
 		return;
 	for (i=1; i <= test_fs->super->s_inodes_count; i++) {
@@ -220,10 +235,15 @@ void do_dump(int argc, char **argv)
 	}
 }
 
-void do_validate(int argc, char **argv)
+void do_validate(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	errcode_t	retval;
 
+	if (argc != 1) {
+		printf("Usage: validate\n");
+		return;
+	}
 	if (check_icount(argv[0]))
 		return;
 	retval = ext2fs_icount_validate(test_icount, stdout);
@@ -234,10 +254,15 @@ void do_validate(int argc, char **argv)
 	printf("Icount structure successfully validated\n");
 }
 
-void do_get_size(int argc, char **argv)
+void do_get_size(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	ext2_ino_t	size;
 
+	if (argc != 1) {
+		printf("Usage: get_size\n");
+		return;
+	}
 	if (check_icount(argv[0]))
 		return;
 	size = ext2fs_get_icount_size(test_icount);

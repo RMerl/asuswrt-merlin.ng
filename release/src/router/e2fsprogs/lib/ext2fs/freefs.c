@@ -17,8 +17,7 @@
 
 #include "ext2_fs.h"
 #include "ext2fsP.h"
-
-static void ext2fs_free_inode_cache(struct ext2_inode_cache *icache);
+#include "hashmap.h"
 
 void ext2fs_free(ext2_filsys fs)
 {
@@ -61,24 +60,13 @@ void ext2fs_free(ext2_filsys fs)
 	if (fs->mmp_cmp)
 		ext2fs_free_mem(&fs->mmp_cmp);
 
+	if (fs->block_sha_map)
+		ext2fs_hashmap_free(fs->block_sha_map);
+
 	fs->magic = 0;
 
+	ext2fs_zero_blocks2(NULL, 0, 0, NULL, NULL);
 	ext2fs_free_mem(&fs);
-}
-
-/*
- * Free the inode cache structure
- */
-static void ext2fs_free_inode_cache(struct ext2_inode_cache *icache)
-{
-	if (--icache->refcount)
-		return;
-	if (icache->buffer)
-		ext2fs_free_mem(&icache->buffer);
-	if (icache->cache)
-		ext2fs_free_mem(&icache->cache);
-	icache->buffer_blk = 0;
-	ext2fs_free_mem(&icache);
 }
 
 /*

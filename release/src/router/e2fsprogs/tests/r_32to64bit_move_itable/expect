@@ -1,0 +1,107 @@
+resize2fs test
+Creating filesystem with 786432 1k blocks and 98304 inodes
+Superblock backups stored on blocks: 
+	8193, 24577, 40961, 57345, 73729, 204801, 221185, 401409, 663553
+
+Allocating group tables:      done                            
+Writing inode tables:      done                            
+Creating journal (16384 blocks): done
+Creating 727 huge file(s) with 1024 blocks each: done
+Writing superblocks and filesystem accounting information:      done
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+Exit status is 0
+resize2fs test.img -b
+Converting the filesystem to 64-bit.
+The filesystem on test.img is now 786432 (1k) blocks long.
+
+Exit status is 0
+Change in FS metadata:
+@@ -2,7 +2,7 @@
+ Last mounted on:          <not available>
+ Filesystem magic number:  0xEF53
+ Filesystem revision #:    1 (dynamic)
+-Filesystem features:      has_journal ext_attr dir_index filetype extent sparse_super large_file huge_file uninit_bg dir_nlink extra_isize
++Filesystem features:      has_journal ext_attr dir_index filetype extent 64bit sparse_super large_file huge_file uninit_bg dir_nlink extra_isize
+ Default mount options:    user_xattr acl
+ Filesystem state:         clean
+ Errors behavior:          Continue
+@@ -10,11 +10,12 @@
+ Inode count:              98304
+ Block count:              786432
+ Reserved block count:     39321
+-Free blocks:              764
++Free blocks:              734
+ Free inodes:              97566
+ First block:              1
+ Block size:               1024
+ Fragment size:            1024
++Group descriptor size:    64
+ Blocks per group:         8192
+ Fragments per group:      8192
+ Inodes per group:         1024
+@@ -38,16 +39,16 @@
+ 
+ 
+ group:block:super:gdt:bbitmap:ibitmap:itable
+-0:1:1:2-4:5:6:7
+-1:8193:8193:8194-8196:8197:8198:8199
++0:1:1:2-7:8:9:10
++1:8193:8193:8194-8199:8200:8201:8202
+ 2:16385:-1:-1:16385:16386:16387
+-3:24577:24577:24578-24580:24581:24582:24583
++3:24577:24577:24578-24583:24584:24585:24586
+ 4:32769:-1:-1:32769:32770:32771
+-5:40961:40961:40962-40964:40965:40966:40967
++5:40961:40961:40962-40967:40968:40969:40970
+ 6:49153:-1:-1:49153:49154:49155
+-7:57345:57345:57346-57348:57349:57350:57351
++7:57345:57345:57346-57351:57352:57353:57354
+ 8:65537:-1:-1:65537:65538:65539
+-9:73729:73729:73730-73732:73733:73734:73735
++9:73729:73729:73730-73735:73736:73737:73738
+ 10:81921:-1:-1:81921:81922:81923
+ 11:90113:-1:-1:90113:90114:90115
+ 12:98305:-1:-1:98305:98306:98307
+@@ -63,9 +64,9 @@
+ 22:180225:-1:-1:180225:180226:180227
+ 23:188417:-1:-1:188417:188418:188419
+ 24:196609:-1:-1:196609:196610:196611
+-25:204801:204801:204802-204804:204805:204806:204807
++25:204801:204801:204802-204807:204808:204809:204810
+ 26:212993:-1:-1:212993:212994:212995
+-27:221185:221185:221186-221188:221189:221190:221191
++27:221185:221185:221186-221191:221192:221193:221194
+ 28:229377:-1:-1:229377:229378:229379
+ 29:237569:-1:-1:237569:237570:237571
+ 30:245761:-1:-1:245761:245762:245763
+@@ -87,7 +88,7 @@
+ 46:376833:-1:-1:376833:376834:376835
+ 47:385025:-1:-1:385025:385026:385027
+ 48:393217:-1:-1:393217:393218:393219
+-49:401409:401409:401410-401412:401413:401414:401415
++49:401409:401409:401410-401415:401416:401417:401418
+ 50:409601:-1:-1:409601:409602:409603
+ 51:417793:-1:-1:417793:417794:417795
+ 52:425985:-1:-1:425985:425986:425987
+@@ -119,7 +120,7 @@
+ 78:638977:-1:-1:638977:638978:638979
+ 79:647169:-1:-1:647169:647170:647171
+ 80:655361:-1:-1:655361:655362:655363
+-81:663553:663553:663554-663556:663557:663558:663559
++81:663553:663553:663554-663559:663560:663561:663562
+ 82:671745:-1:-1:671745:671746:671747
+ 83:679937:-1:-1:679937:679938:679939
+ 84:688129:-1:-1:688129:688130:688131
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+Exit status is 0

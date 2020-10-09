@@ -199,7 +199,7 @@ static int parse_dev(blkid_cache cache, blkid_dev *dev, char **cp)
 	start = skip_over_blank(start + 1);
 	end = skip_over_word(start);
 
-	DBG(DEBUG_READ, printf("device should be %*s\n",
+	DBG(DEBUG_READ, printf("device should be %.*s\n",
 			       (int)(end - start), start));
 
 	if (**cp == '>')

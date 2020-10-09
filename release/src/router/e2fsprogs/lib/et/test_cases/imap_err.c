@@ -8,16 +8,28 @@
 #define N_(a) a
 
 static const char * const text[] = {
+	N_(   "Internal Error"),
 	N_(   "System I/O error"),
+	N_(   "Item does not exist"),
+	N_(   "Operating System Error"),
+	N_(   "mail system storage has been exceeded"),
 	N_(   "Permission denied"),
 	N_(   "Over quota"),
+	N_(   "Message size exceeds fixed limit"),
 	N_(   "Too many user flags in mailbox"),
+	N_(   "Invalid namespace prefix in configuration file"),
 	N_(   "Mailbox has an invalid format"),
+	N_(   "Replication inconsistency detected"),
+	N_(   "Mailbox format corruption detected"),
 	N_(   "Operation is not supported on mailbox"),
 	N_(   "Mailbox does not exist"),
 	N_(   "Mailbox already exists"),
 	N_(   "Invalid mailbox name"),
-	N_(   "Mailbox is locked by POP server"),
+	N_(   "Invalid mailbox type"),
+	N_(   "Mailbox has been moved to another server"),
+	N_(   "Mailbox is currently reserved"),
+	N_(   "Mailbox is locked"),
+	N_(   "Delivery to mailbox is disabled"),
 	N_(   "Unknown/invalid partition"),
 	N_(   "Invalid identifier"),
 	N_(   "Message contains NUL characters"),
@@ -26,16 +38,35 @@ static const char * const text[] = {
 	N_(   "Message contains invalid header"),
 	N_(   "Message has no header/body separator"),
 	N_(   "Quota root does not exist"),
+	N_(   "Bad protocol"),
+	N_(   "Syntax error in parameters"),
+	N_(   "Invalid annotation entry"),
+	N_(   "Invalid annotation attribute"),
+	N_(   "Invalid annotation value"),
+	N_(   "Bad URL"),
+	N_(   "Zero-length message literal"),
+	N_(   "Invalid server requested"),
+	N_(   "Server(s) unavailable to complete operation"),
+	N_(   "The remote Server(s) denied the operation"),
+	N_(   "Retry operation"),
+	N_(   "This mailbox hierarchy does not exist on a single backend server."),
+	N_(   "The remote server does not support MULTIAPPEND"),
 	N_(   "Unrecognized character set"),
 	N_(   "Invalid user"),
 	N_(   "Login incorrect"),
 	N_(   "Anonymous login is not permitted"),
 	N_(   "Unsupported quota resource"),
-	N_(   "Mailbox is over quota"),
-	N_(   "Mailbox is at %d%% of quota"),
+	N_(   "Authentication failed"),
+	N_(   "Client cancelled authentication"),
+	N_(   "Protocol error during authentication"),
+	N_(   "Mailbox is over %s quota"),
+	N_(   "Mailbox is at %d%% of %s quota"),
 	N_(   "Message %d no longer exists"),
 	N_(   "Unable to checkpoint \\Seen state"),
 	N_(   "Unable to preserve \\Seen state"),
+	N_(   "No matching messages"),
+	N_(   "No matching annotations"),
+	N_(   "[UNKNOWN-CTE] Can not process the binary data"),
 	N_(   "LOGOUT received"),
 	N_(   "Completed"),
     0
@@ -52,7 +83,7 @@ struct et_list {
 };
 extern struct et_list *_et_list;
 
-const struct error_table et_imap_error_table = { text, -1904809472L, 30 };
+const struct error_table et_imap_error_table = { text, -1904809472L, 61 };
 
 static struct et_list link = { 0, 0 };
 

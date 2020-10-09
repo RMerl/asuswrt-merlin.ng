@@ -9,79 +9,67 @@ else
 	EXP=$test_dir/expect
 fi
 
-cp /dev/null $OUT
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+
+echo mke2fs -q -F -O resize_inode -o Linux -b 1024 -g 1024 test.img 16384 > $OUT.new
+$MKE2FS -q -F -O resize_inode -o Linux -b 1024 -g 1024 $TMPFILE 16384 >> $OUT.new 2>&1
+
+echo resize2fs test.img 65536 >> $OUT.new
+$RESIZE2FS $TMPFILE 65536 >> $OUT.new 2>&1
+
+$FSCK $FSCK_OPT  -N test_filesys $TMPFILE >> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+
+$DEBUGFS -R "set_super_value lastcheck 0" -w $TMPFILE >/dev/null 2>&1
+$DEBUGFS -R "set_super_value hash_seed null" -w $TMPFILE >/dev/null 2>&1
+$DEBUGFS -R "set_super_value mkfs_time 0" -w $TMPFILE >/dev/null 2>&1
+$TUNE2FS -c 20 -U clear $TMPFILE  >/dev/null 2>&1
+
+echo dumpe2fs test.img >> $OUT.new
+$DUMPE2FS $TMPFILE >> $OUT.new 2>&1
+
+echo "--------------------------------" >> $OUT.new
 
 dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
 
-echo mke2fs -q -F -O resize_inode -o Linux -b 1024 -g 1024 test.img 16384 > $OUT
-$MKE2FS -q -F -O resize_inode -o Linux -b 1024 -g 1024 $TMPFILE 16384 2>&1 |
-	sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" >> $OUT
+echo mke2fs -q -F -O resize_inode -o Linux -b 1024 -g 1024 test.img 65536 >> $OUT.new
+$MKE2FS -q -F -O resize_inode -o Linux -b 1024 -g 1024 $TMPFILE 65536 >> $OUT.new 2>&1
 
-echo resize2fs test.img 65536 >> $OUT
-$RESIZE2FS $TMPFILE 65536 2>&1 |
-	sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" >> $OUT
+echo resize2fs test.img 16384 >> $OUT.new
+$RESIZE2FS $TMPFILE 16384 >> $OUT.new 2>&1
 
-$FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT.new 2>&1
+$FSCK $FSCK_OPT  -N test_filesys $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
-rm -f $OUT.new
 
 $DEBUGFS -R "set_super_value lastcheck 0" -w $TMPFILE >/dev/null 2>&1
 $DEBUGFS -R "set_super_value hash_seed null" -w $TMPFILE >/dev/null 2>&1
 $DEBUGFS -R "set_super_value mkfs_time 0" -w $TMPFILE >/dev/null 2>&1
 $TUNE2FS -c 20 -U clear $TMPFILE  >/dev/null 2>&1
 
-echo dumpe2fs test.img >> $OUT
-$DUMPE2FS $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT
+echo dumpe2fs test.img >> $OUT.new
+$DUMPE2FS $TMPFILE >> $OUT.new 2>&1
 
-echo "--------------------------------" >> $OUT
+echo "--------------------------------" >> $OUT.new
 
-dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+echo resize2fs test.img 165536 >> $OUT.new
+$RESIZE2FS $TMPFILE 165536 >> $OUT.new 2>&1
 
-echo mke2fs -q -F -O resize_inode -o Linux -b 1024 -g 1024 test.img 65536 >> $OUT
-$MKE2FS -q -F -O resize_inode -o Linux -b 1024 -g 1024 $TMPFILE 65536 2>&1 |
-	sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" >> $OUT
-
-echo resize2fs test.img 16384 >> $OUT
-$RESIZE2FS $TMPFILE 16384 2>&1 |
-	sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" >> $OUT
-
-$FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT.new 2>&1
+$FSCK $FSCK_OPT  -N test_filesys $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
-rm -f $OUT.new
 
 $DEBUGFS -R "set_super_value lastcheck 0" -w $TMPFILE >/dev/null 2>&1
 $DEBUGFS -R "set_super_value hash_seed null" -w $TMPFILE >/dev/null 2>&1
 $DEBUGFS -R "set_super_value mkfs_time 0" -w $TMPFILE >/dev/null 2>&1
 $TUNE2FS -c 20 -U clear $TMPFILE  >/dev/null 2>&1
 
-echo dumpe2fs test.img >> $OUT
-$DUMPE2FS $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT
+echo dumpe2fs test.img >> $OUT.new
+$DUMPE2FS $TMPFILE >> $OUT.new 2>&1
+sed -f $cmd_dir/filter.sed -e '/Block bitmap.*$/N;s/\n  Inode bitmap/, Inode bitmap/g' < $OUT.new > $OUT
+rm -f $TMPFILE $OUT.new
 
-echo "--------------------------------" >> $OUT
-
-echo resize2fs test.img 165536 >> $OUT
-$RESIZE2FS $TMPFILE 165536 2>&1 |
-	sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" >> $OUT
-
-$FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT.new 2>&1
-status=$?
-echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
-rm -f $OUT.new
-
-$DEBUGFS -R "set_super_value lastcheck 0" -w $TMPFILE >/dev/null 2>&1
-$DEBUGFS -R "set_super_value hash_seed null" -w $TMPFILE >/dev/null 2>&1
-$DEBUGFS -R "set_super_value mkfs_time 0" -w $TMPFILE >/dev/null 2>&1
-$TUNE2FS -c 20 -U clear $TMPFILE  >/dev/null 2>&1
-
-echo dumpe2fs test.img >> $OUT
-$DUMPE2FS $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT
-
-rm -f $TMPFILE
 cmp -s $OUT $EXP
 status=$?
 

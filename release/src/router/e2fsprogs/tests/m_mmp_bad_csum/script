@@ -1,0 +1,27 @@
+gzip -dc < $test_dir/image.gz > $TMPFILE
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+$E2MMPSTATUS $TMPFILE > $OUT 2>&1
+echo Exit status is $? >> $OUT
+$FSCK -fy $TMPFILE >> $OUT 2>&1
+echo Exit status is $? >> $OUT
+$E2MMPSTATUS $TMPFILE >> $OUT 2>&1
+echo Exit status is $? >> $OUT
+$E2MMPSTATUS -i $TMPFILE >> $OUT 2>&1
+sed -f $cmd_dir/filter.sed $OUT > $OUT.new
+mv $OUT.new $OUT
+
+rm -f $TMPFILE
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+	rm -f $test_name.tmp
+fi
+unset OUT EXP

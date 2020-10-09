@@ -220,12 +220,6 @@ int main(int argc, char **argv)
 	printf("64-bit: ext2fs_clear_bit test succeed.\n");
 
 	/* Do bigarray test */
-	bigarray = malloc(1 << 29);
-	if (!bigarray) {
-		fprintf(stderr, "Failed to allocate scratch memory!\n");
-		exit(1);
-	}
-
         bigarray[BIG_TEST_BIT >> 3] = 0;
 
 	ext2fs_set_bit64(BIG_TEST_BIT, bigarray);
@@ -289,6 +283,6 @@ int main(int argc, char **argv)
 		exit(1);
 
 	printf("64-bit: ext2fs_fast_set_bit big_test successful\n");
-
+	free(bigarray);
 	exit(0);
 }

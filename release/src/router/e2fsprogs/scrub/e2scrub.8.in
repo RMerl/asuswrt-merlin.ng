@@ -1,0 +1,69 @@
+.TH E2SCRUB 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+e2scrub - check the contents of a mounted ext[234] filesystem
+.SH SYNOPSYS
+.B
+e2scrub [OPTION] MOUNTPOINT | DEVICE
+.SH DESCRIPTION
+.B e2scrub
+attempts to check (but not repair) all metadata in a mounted ext[234]
+filesystem if the filesystem resides on an LVM logical volume.
+The block device of the LVM logical volume can also be passed in.
+
+This program snapshots the volume and runs a file system check on the snapshot
+to look for corruption errors.
+The LVM volume group must have at least 256MiB of unallocated space to
+dedicate to the snapshot or the logical volume will be skipped.
+The snapshot will be named
+.IR lvname ".e2scrub"
+and
+.B udev
+will not create symbolic links to it under
+.IR /dev/disk .
+Every attempt will be made to remove the snapshots prior to running
+.BR e2scrub ,
+but in a dire situation it may be necessary to remove the snapshot manually.
+
+If no errors are found,
+.B fstrim
+can be called on the file system if it is mounted.
+If errors are found, the file system will be marked as having errors.
+The filesystem should be taken offline and
+.B e2fsck
+run as soon as possible, because
+.B e2scrub
+does not fix corruptions.
+If the filesystem is not repaired,
+.B e2fsck
+will be run before the next mount.
+.SH OPTIONS
+.TP
+\fB-n\fR
+Print what commands
+.B e2scrub
+would execute to check the file system.  (Note: the commands will not
+actually be executed; however, since
+.B e2scrub
+needs to run some commands to query the system to determine what
+commands would be executed, it still needs to be run as root.)
+.TP
+\fB-r\fR
+Remove the e2scrub snapshot and exit without checking anything.
+.TP
+\fB-t\fR
+Run
+.B
+fstrim(1)
+on the mounted filesystem if no errors are found.
+.TP
+\fB-V\fR
+Print version information and exit.
+.SH EXIT CODE
+The exit codes are the same as in
+.BR e2fsck (8)
+.SH SEE ALSO
+.BR e2fsck (8)
+.SH AUTHOR
+Darrick J. Wong <darrick.wong@oracle.com>
+.SH COPYRIGHT
+Copyright \[co]2018 Oracle.  License is GPLv2+. <http://www.gnu.org/licenses/gpl-2.0.html>

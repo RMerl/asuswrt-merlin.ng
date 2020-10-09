@@ -2,51 +2,66 @@ Pass 1: Checking inodes, blocks, and sizes
 Inode 12 is in extent format, but superblock is missing EXTENTS feature
 Fix? yes
 
-Inode 12 has an invalid extent
-	(logical block 0, invalid physical block 21994527527949, len 17)
-Clear? yes
-
-Inode 12, i_blocks is 34, should be 0.  Fix? yes
-
 Inode 13 missing EXTENT_FL, but is in extents format
 Fix? yes
 
-Inode 17 has an invalid extent
-	(logical block 0, invalid physical block 22011707397135, len 15)
+Inode 16 has a duplicate extent mapping
+	(logical block 3, invalid physical block 4613, len 2)
 Clear? yes
 
-Inode 17, i_blocks is 32, should be 0.  Fix? yes
+Inode 16, i_blocks is 16, should be 12.  Fix? yes
 
-Error while reading over extent tree in inode 18: Corrupt extent header
-Clear inode? yes
+Inode 18 has corrupt extent header.  Clear inode? yes
 
 Inode 18, i_blocks is 2, should be 0.  Fix? yes
+
+
+Running additional passes to resolve blocks claimed by more than one inode...
+Pass 1B: Rescanning for multiply-claimed blocks
+Multiply-claimed block(s) in inode 12: 5133 5124--5125 5129 5132--5133 5142--5145
+Multiply-claimed block(s) in inode 17: 5124--5125 5129 5132 5142--5145
+Pass 1C: Scanning directories for inodes with multiply-claimed blocks
+Pass 1D: Reconciling multiply-claimed blocks
+(There are 2 inodes containing multiply-claimed blocks.)
+
+File /fdup1 (inode #12, mod time Wed Jul  5 21:55:26 2006) 
+  has 10 multiply-claimed block(s), shared with 1 file(s):
+	/fdup2 (inode #17, mod time Wed Jul  5 21:55:27 2006)
+Clone multiply-claimed blocks? yes
+
+File /fdup2 (inode #17, mod time Wed Jul  5 21:55:27 2006) 
+  has 8 multiply-claimed block(s), shared with 1 file(s):
+	/fdup1 (inode #12, mod time Wed Jul  5 21:55:26 2006)
+Multiply-claimed blocks already reassigned or cloned.
 
 Pass 2: Checking directory structure
 Entry 'fbad-flag' in / (2) has deleted/unused inode 18.  Clear? yes
 
+Inode 19 (/fbad-sock) is an illegal FIFO.
+Clear? yes
+
 Pass 3: Checking directory connectivity
 Pass 4: Checking reference counts
 Pass 5: Checking group summary information
-Block bitmap differences:  -1081 +4611 -(5121--5142)
+Block bitmap differences:  +4611 -(4613--4614) -(5121--5122) +(5143--5146)
 Fix? yes
 
-Free blocks count wrong for group #0 (7081, counted=7098).
+Free blocks count wrong for group #0 (7081, counted=7067).
 Fix? yes
 
-Free blocks count wrong (7081, counted=7098).
+Free blocks count wrong (7081, counted=7067).
 Fix? yes
 
 Inode bitmap differences:  -18
 Fix? yes
 
-Free inodes count wrong for group #0 (237, counted=238).
+Free inodes count wrong for group #0 (238, counted=239).
 Fix? yes
 
-Free inodes count wrong (237, counted=238).
+Free inodes count wrong (238, counted=239).
 Fix? yes
 
 
 test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
-test_filesys: 18/256 files (0.0% non-contiguous), 1094/8192 blocks
+test_filesys: 17/256 files (17.6% non-contiguous), 1125/8192 blocks
 Exit status is 1

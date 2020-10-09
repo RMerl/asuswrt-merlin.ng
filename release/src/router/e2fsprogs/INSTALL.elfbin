@@ -35,7 +35,7 @@ frequency, and the fsck pass number, respectively.  The problem with
 this is that the getmntent() library routine interprets those missing
 fields as "0", and a pass number of 0 is documented as meaning that
 fsck should not check that particular filesystem.  If your entries in
-your /etc/fstab file look liks this:
+your /etc/fstab file look like this:
 
 /dev/hda4       /        ext2        defaults
 

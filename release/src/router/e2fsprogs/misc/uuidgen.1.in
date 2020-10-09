@@ -1,15 +1,15 @@
 .\" Copyright 1999 Andreas Dilger (adilger@enel.ucalgary.ca)
 .\"
 .\" This man page was created for libuuid.so.1.1 from e2fsprogs-1.14.
-.\" 
+.\"
 .\" This file may be copied under the terms of the GNU Public License.
-.\" 
+.\"
 .\" Created  Wed Mar 10 17:42:12 1999, Andreas Dilger
 .TH UUIDGEN 1 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 uuidgen \- command\-line utility to create a new UUID value
 .SH SYNOPSIS
-.B uuidgen 
+.B uuidgen
 [
 .B \-r
 |
@@ -18,22 +18,22 @@ uuidgen \- command\-line utility to create a new UUID value
 .SH DESCRIPTION
 The
 .B uuidgen
-program creates (and prints) 
+program creates (and prints)
 a new universally unique identifier (UUID) using the
 .BR libuuid (3)
-library.  The new UUID can reasonably be considered unique among 
-all UUIDs created on the local system, 
+library.  The new UUID can reasonably be considered unique among
+all UUIDs created on the local system,
 and among UUIDs created on other systems in the past
 and in the future.
 .PP
-There are two types of UUID's which 
+There are two types of UUID's which
 .B uuidgen
-can generate: time-based UUID's and random-based UUID's.  By 
-default 
+can generate: time-based UUID's and random-based UUID's.  By
+default
 .B uuidgen
 will generate a random-based UUID if a high-quality random number
-generator is present.  Otherwise, it will chose a time-based UUID.  It 
-is possible to force the generation of one of these two 
+generator is present.  Otherwise, it will chose a time-based UUID.  It
+is possible to force the generation of one of these two
 UUID types by using the
 .B \-r
 or
@@ -48,7 +48,7 @@ quality random number generator, such as
 .IR /dev/random .
 .TP
 .B \-t
-Generate a time-based UUID.  This method creates a UUID based on the system 
+Generate a time-based UUID.  This method creates a UUID based on the system
 clock plus the system's ethernet hardware address, if present.
 .SH "CONFORMING TO"
 OSF DCE 1.1

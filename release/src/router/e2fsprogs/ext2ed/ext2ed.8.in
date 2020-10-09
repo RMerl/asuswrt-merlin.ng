@@ -6,7 +6,7 @@ ext2ed \- ext2 file system editor
 .B ext2ed
 .SH DESCRIPTION
 .B ext2ed
-in an 
+in an
 .B editor
 for the
 .B second extended filesystem.

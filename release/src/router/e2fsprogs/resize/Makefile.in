@@ -8,7 +8,6 @@ VPATH = @srcdir@
 top_builddir = ..
 my_dir = resize
 INSTALL = @INSTALL@
-LDFLAG_STATIC = @LDFLAG_STATIC@
 
 @MCONFIG@
 
@@ -39,6 +38,7 @@ DEPSTATIC_LIBS= $(STATIC_LIBE2P) $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
 	$(E) "	CC $<"
 	$(Q) $(CC) -c $(ALL_CFLAGS) $< -o $@
 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
+	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
 
 all:: $(PROGS) $(TEST_PROGS) $(MANPAGES) 
 
@@ -48,7 +48,7 @@ resize2fs: $(RESIZE_OBJS) $(DEPLIBS)
 
 resize2fs.static: $(RESIZE_OBJS) $(DEPSTATIC_LIBS)
 	$(E) "	LD $@"
-	$(Q) $(LD) $(ALL_LDFLAGS) $(LDFLAG_STATIC) -o resize2fs.static \
+	$(Q) $(LD) $(LDFLAGS_STATIC) -o resize2fs.static \
 		$(RESIZE_OBJS) $(STATIC_LIBS) 
 
 resize2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/resize2fs.8.in
@@ -60,8 +60,8 @@ test_extent: $(TEST_EXTENT_OBJS)
 	$(Q) $(CC) $(ALL_LDFLAGS) -o test_extent $(TEST_EXTENT_OBJS) $(LIBS) 
 
 installdirs:
-	$(E) "	MKINSTALLDIRS $(root_sbindir) $(man8dir)"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
+	$(E) "	MKDIR_P $(root_sbindir) $(man8dir)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(root_sbindir) \
 		$(DESTDIR)$(man8dir)
 
 install: $(PROGS) $(MANPAGES) installdirs
@@ -94,7 +94,7 @@ uninstall:
 test_extent.out: test_extent $(srcdir)/test_extent.in
 	$(TESTENV) ./test_extent < $(srcdir)/test_extent.in > test_extent.out
 
-check:: test_extent.out
+fullcheck check:: test_extent.out
 	$(Q) if cmp -s test_extent.out $(srcdir)/test_extent.in ; then \
 		echo "Test succeeded." ; \
 	else \
@@ -112,35 +112,6 @@ mostlyclean: clean
 distclean: clean
 	$(RM) -f .depend Makefile $(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
-#
-# Kludge to create a "special" e2fsprogs distribution file.
-#
-
-SRCROOT = `echo e2fsprogs-@E2FSPROGS_VERSION@ | sed -e 's/-WIP//' \
-			-e 's/pre-//' -e 's/-PLUS//'`
-TAR=tar
-
-$(top_srcdir)/.exclude-file:
-	a=$(SRCROOT); \
-	(cd $(top_srcdir)/.. ; find e2fsprogs \( -name \*~ -o -name \*.orig \
-		-o -name CVS -o -name \*.rej \) -print) \
-		| sed -e "s/e2fsprogs/$$a/" > $(top_srcdir)/.exclude-file
-	echo "$(SRCROOT)/build" >> $(top_srcdir)/.exclude-file
-	echo "$(SRCROOT)/rpm.log" >> $(top_srcdir)/.exclude-file
-	echo "$(SRCROOT)/powerquest" >> $(top_srcdir)/.exclude-file
-	echo "$(SRCROOT)/.exclude-file" >> $(top_srcdir)/.exclude-file
-	echo $(SRCROOT)/e2fsprogs-@E2FSPROGS_VERSION@.tar.gz \
-		>> $(top_srcdir)/.exclude-file
-	echo $(SRCROOT)/e2fsprogs-ALL-@E2FSPROGS_VERSION@.tar.gz \
-		>> $(top_srcdir)/.exclude-file
-
-source_tar_file: $(top_srcdir)/.exclude-file
-	(cd $(top_srcdir)/..; a=$(SRCROOT); rm -f $$a ; ln -sf e2fsprogs $$a ; \
-		$(TAR) -c -h -v -f - \
-			-X $$a/.exclude-file $$a | \
-		gzip -9 > e2fsprogs-ALL-@E2FSPROGS_VERSION@.tar.gz)
-	rm -f $(top_srcdir)/.exclude-file
-
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in
@@ -152,45 +123,45 @@ extent.o: $(srcdir)/extent.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/lib/e2p/e2p.h
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h
 resize2fs.o: $(srcdir)/resize2fs.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/resize2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/lib/e2p/e2p.h
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h
 main.o: $(srcdir)/main.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/e2p/e2p.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
  $(srcdir)/resize2fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/version.h
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/version.h
 online.o: $(srcdir)/online.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/resize2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/lib/e2p/e2p.h
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h
 resource_track.o: $(srcdir)/resource_track.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/resize2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/lib/e2p/e2p.h
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h
 sim_progress.o: $(srcdir)/sim_progress.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/resize2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/lib/e2p/e2p.h
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h

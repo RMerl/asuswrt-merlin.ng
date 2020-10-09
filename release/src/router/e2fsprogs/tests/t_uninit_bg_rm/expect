@@ -1,0 +1,21 @@
+mke2fs -q -t ext4 -F -o Linux -b 1024 test.img 1G
+tune2fs -f -O ^uninit_bg test.img
+ 
+fsck -yf -N test_filesys test.img
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/65536 files (0.0% non-contiguous), 35910/1048576 blocks
+ 
+mke2fs -q -t ext4 -O bigalloc -F -o Linux -b 1024 -C 8192 test.img 10G
+tune2fs -f -O ^uninit_bg test.img
+ 
+fsck -yf -N test_filesys test.img
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/655360 files (0.0% non-contiguous), 232632/10485760 blocks

@@ -26,6 +26,10 @@ tune2fs \- adjust tunable filesystem parameters on ext2/ext3/ext4 filesystems
 .I interval-between-checks
 ]
 [
+.B \-I
+.I new_inode_size
+]
+[
 .B \-j
 ]
 [
@@ -45,10 +49,6 @@ tune2fs \- adjust tunable filesystem parameters on ext2/ext3/ext4 filesystems
 .I reserved-blocks-count
 ]
 [
-.B \-s
-.I sparse-super-flag
-]
-[
 .B \-u
 .I user
 ]
@@ -66,14 +66,14 @@ tune2fs \- adjust tunable filesystem parameters on ext2/ext3/ext4 filesystems
 ]
 [
 .B \-L
-.I volume-name
+.I volume-label
 ]
 [
 .B \-M
 .I last-mounted-directory
 ]
 [
-.B \-O 
+.B \-O
 .RI [^] feature [,...]
 ]
 [
@@ -88,11 +88,15 @@ tune2fs \- adjust tunable filesystem parameters on ext2/ext3/ext4 filesystems
 .B \-U
 .I UUID
 ]
+[
+.B \-z
+.I undo_file
+]
 device
 .SH DESCRIPTION
-.BI tune2fs
-allows the system administrator to adjust various tunable filesystem 
-parameters on Linux ext2, ext3, or ext4 filesystems.  The current values 
+.B tune2fs
+allows the system administrator to adjust various tunable filesystem
+parameters on Linux ext2, ext3, or ext4 filesystems.  The current values
 of these options can be displayed by using the
 .B -l
 option to
@@ -104,16 +108,16 @@ program.
 The
 .I device
 specifier can either be a filename (i.e., /dev/sda1), or a LABEL or UUID
-specifier: "\fBLABEL=\fIvolume-name\fR" or "\fBUUID=\fIuuid\fR".  (i.e.,
+specifier: "\fBLABEL=\fIvolume-label\fR" or "\fBUUID=\fIuuid\fR".  (i.e.,
 LABEL=home or UUID=e40486c6-84d5-4f2f-b99c-032281799c9d).
 .SH OPTIONS
 .TP
 .BI \-c " max-mount-counts"
-Adjust the number of mounts after which the filesystem will be checked by 
-.BR e2fsck (8).  
+Adjust the number of mounts after which the filesystem will be checked by
+.BR e2fsck (8).
 If
 .I max-mount-counts
-is 0 or \-1, the number of times the filesystem is mounted will be disregarded 
+is 0 or \-1, the number of times the filesystem is mounted will be disregarded
 by
 .BR e2fsck (8)
 and the kernel.
@@ -122,7 +126,9 @@ Staggering the mount-counts at which filesystems are forcibly
 checked will avoid all filesystems being checked at one time
 when using journaled filesystems.
 .sp
-You should strongly consider the consequences of disabling
+Mount-count-dependent checking is disabled by default to avoid
+unanticipated long reboots while e2fsck does its work.  However,
+you may wish to consider the consequences of disabling
 mount-count-dependent checking entirely.  Bad disk drives, cables,
 memory, and kernel bugs could all corrupt a filesystem without
 marking the filesystem dirty or in error.  If you are using
@@ -140,10 +146,10 @@ option for time-dependent checking.
 .BI \-C " mount-count"
 Set the number of times the filesystem has been mounted.
 If set to a greater value than the max-mount-counts parameter
-set by the 
+set by the
 .B \-c
 option,
-.BR e2fsck (8) 
+.BR e2fsck (8)
 will check the filesystem at the next reboot.
 .TP
 .BI \-e " error-behavior"
@@ -232,6 +238,10 @@ program.
 This superblock setting is only honored in 2.6.35+ kernels;
 and not at all by the ext2 and ext3 file system drivers.
 .TP
+.B force_fsck
+Set a flag in the filesystem superblock indicating that errors have been found.
+This will force fsck to run at the next mount.
+.TP
 .B test_fs
 Set a flag in the filesystem superblock indicating that it may be
 mounted using experimental kernel code, such as the ext4dev filesystem.
@@ -242,12 +252,12 @@ using production-level filesystem code.
 .RE
 .TP
 .B \-f
-Force the tune2fs operation to complete even in the face of errors.  This 
-option is useful when removing the 
+Force the tune2fs operation to complete even in the face of errors.  This
+option is useful when removing the
 .B has_journal
-filesystem feature from a filesystem which has 
+filesystem feature from a filesystem which has
 an external journal (or is corrupted
-such that it appears to have an external journal), but that 
+such that it appears to have an external journal), but that
 external journal is not available.   If the filesystem appears to require
 journal replay, the
 .B \-f
@@ -260,13 +270,13 @@ severe data loss and filesystem corruption.
 .TP
 .BI \-g " group"
 Set the group which can use the reserved filesystem blocks.
-The 
+The
 .I group
 parameter can be a numerical gid or a group name.  If a group name is given,
 it is converted to a numerical gid before it is stored in the superblock.
 .TP
 .B \-i " \fIinterval-between-checks\fR[\fBd\fR|\fBm\fR|\fBw\fR]"
-Adjust the maximal time between two filesystem checks. 
+Adjust the maximal time between two filesystem checks.
 No suffix or
 .B d
 will interpret the number
@@ -277,21 +287,31 @@ as months, and
 .B w
 as weeks.  A value of zero will disable the time-dependent checking.
 .sp
-It is strongly recommended that either
+There are pros and cons to disabling these periodic checks; see the
+discussion under the
 .B \-c
-(mount-count-dependent) or
-.B \-i
-(time-dependent) checking be enabled to force periodic full
-.BR e2fsck (8)
-checking of the filesystem.  Failure to do so may lead to filesystem
-corruption (due to bad disks, cables, memory, or kernel bugs) going
-unnoticed, ultimately resulting in data loss or corruption.
+(mount-count-dependent check) option for details.
+.TP
+.B \-I
+Change the inode size used by the file system.   This requires rewriting
+the inode table, so it requires that the file system is checked for
+consistency first using
+.BR e2fsck (8).
+This operation can also take a while and the file system can be
+corrupted and data lost if it is interrupted while in the middle of
+converting the file system.  Backing up the file system before changing
+inode size is recommended.
+.IP
+File systems with an inode size of 128 bytes do not support timestamps
+beyond January 19, 2038.  Inodes which are 256 bytes or larger will
+support extended timestamps, project id's, and the ability to store some
+extended attributes in the inode table for improved performance.
 .TP
 .B \-j
-Add an ext3 journal to the filesystem.  If the 
+Add an ext3 journal to the filesystem.  If the
 .B \-J
 option is not specified, the default journal parameters will be used to create
-an appropriately sized journal (given the size of the filesystem) 
+an appropriately sized journal (given the size of the filesystem)
 stored within the filesystem.  Note that you must be using a kernel
 which has ext3 support in order to actually make use of the journal.
 .IP
@@ -303,9 +323,9 @@ the only safe way to create the journal inode while the filesystem is
 mounted.  While the ext3 journal is visible, it is not safe to
 delete it, or modify it while the filesystem is mounted; for this
 reason the file is marked immutable.
-While checking unmounted filesystems, 
+While checking unmounted filesystems,
 .BR e2fsck (8)
-will automatically move 
+will automatically move
 .B .journal
 files to the invisible, reserved journal inode.  For all filesystems
 except for the root filesystem,  this should happen automatically and
@@ -316,8 +336,8 @@ must be run from a rescue floppy in order to effect this transition.
 .IP
 On some distributions, such as Debian, if an initial ramdisk is used,
 the initrd scripts will automatically convert an ext2 root filesystem
-to ext3 if the  
-.BR /etc/fstab
+to ext3 if the
+.B /etc/fstab
 file specifies the ext3 filesystem for the root filesystem in order to
 avoid requiring the use of a rescue floppy to add an ext3 journal to
 the root filesystem.
@@ -333,7 +353,7 @@ Create a journal stored in the filesystem of size
 .I journal-size
 megabytes.   The size of the journal must be at least 1024 filesystem blocks
 (i.e., 1MB if using 1k blocks, 4MB if using 4k blocks, etc.)
-and may be no more than 102,400 filesystem blocks.
+and may be no more than 10,240,000 filesystem blocks.
 There must be enough free space in the filesystem to create a journal of
 that size.
 .TP
@@ -347,10 +367,10 @@ beginning of the file system.
 @JDEV@.BI device= external-journal
 @JDEV@Attach the filesystem to the journal block device located on
 @JDEV@.IR external-journal .
-@JDEV@The external 
+@JDEV@The external
 @JDEV@journal must have been already created using the command
 @JDEV@.IP
-@JDEV@.B mke2fs -O journal_dev 
+@JDEV@.B mke2fs -O journal_dev
 @JDEV@.I external-journal
 @JDEV@.IP
 @JDEV@Note that
@@ -359,7 +379,7 @@ beginning of the file system.
 @JDEV@size as filesystems which will be using it.
 @JDEV@In addition, while there is support for attaching
 @JDEV@multiple filesystems to a single external journal,
-@JDEV@the Linux kernel and 
+@JDEV@the Linux kernel and
 @JDEV@.BR e2fsck (8)
 @JDEV@do not currently support shared external journals yet.
 @JDEV@.IP
@@ -387,10 +407,10 @@ List the contents of the filesystem superblock, including the current
 values of the parameters that can be set via this program.
 .TP
 .BI \-L " volume-label"
-Set the volume label of the filesystem.  
+Set the volume label of the filesystem.
 Ext2 filesystem labels can be at most 16 characters long; if
-.I volume-label 
-is longer than 16 characters, 
+.I volume-label
+is longer than 16 characters,
 .B tune2fs
 will truncate it and print a warning.  The volume label can be used
 by
@@ -399,19 +419,19 @@ by
 and
 .BR /etc/fstab (5)
 (and possibly others) by specifying
-.BI LABEL= volume_label
+.BI LABEL= volume-label
 instead of a block special device name like
 .BR /dev/hda5 .
 .TP
 .BI \-m " reserved-blocks-percentage"
 Set the percentage of the filesystem which may only be allocated
-by privileged processes.   Reserving some number of filesystem blocks 
-for use by privileged processes is done 
+by privileged processes.   Reserving some number of filesystem blocks
+for use by privileged processes is done
 to avoid filesystem fragmentation, and to allow system
-daemons, such as 
+daemons, such as
 .BR syslogd (8),
-to continue to function correctly after non-privileged processes are 
-prevented from writing to the filesystem.  Normally, the default percentage 
+to continue to function correctly after non-privileged processes are
+prevented from writing to the filesystem.  Normally, the default percentage
 of reserved blocks is 5%.
 .TP
 .BI \-M " last-mounted-directory"
@@ -419,19 +439,19 @@ Set the last-mounted directory for the filesystem.
 .TP
 .BR \-o " [^]\fImount-option\fR[,...]"
 Set or clear the indicated default mount options in the filesystem.
-Default mount options can be overridden by mount options specified 
-either in 
+Default mount options can be overridden by mount options specified
+either in
 .BR /etc/fstab (5)
 or on the command line arguments to
-.BR mount (8).   
+.BR mount (8).
 Older kernels may not support this feature; in particular,
 kernels which predate 2.4.20 will almost certainly ignore the
 default mount options field in the superblock.
 .IP
 More than one mount option can be cleared or set by separating
-features with commas.  Mount options prefixed with a 
-caret character ('^') will be cleared in the filesystem's superblock; 
-mount options without a prefix character or prefixed with a plus 
+features with commas.  Mount options prefixed with a
+caret character ('^') will be cleared in the filesystem's superblock;
+mount options without a prefix character or prefixed with a plus
 character ('+') will be added to the filesystem.
 .IP
 The following mount options can be set or cleared using
@@ -445,8 +465,8 @@ Enable debugging code for this filesystem.
 Emulate BSD behavior when creating new files: they will take the group-id
 of the directory in which they were created.  The standard System V behavior
 is the default, where newly created files take on the fsgid of the current
-process, unless the directory has the setgid bit set, in which case it takes 
-the gid from the parent directory, and also gets the setgid bit set if it is 
+process, unless the directory has the setgid bit set, in which case it takes
+the gid from the parent directory, and also gets the setgid bit set if it is
 a directory itself.
 .TP
 .B user_xattr
@@ -466,7 +486,7 @@ into the main filesystem.
 .TP
 .B journal_data_ordered
 When the filesystem is mounted with journalling enabled, all data is forced
-directly out to the main file system prior to its metadata being committed 
+directly out to the main file system prior to its metadata being committed
 to the journal.
 .TP
 .B journal_data_writeback
@@ -508,9 +528,9 @@ only supported by the ext4 file system driver in 2.6.35+ kernels.)
 .BR \-O " [^]\fIfeature\fR[,...]"
 Set or clear the indicated filesystem features (options) in the filesystem.
 More than one filesystem feature can be cleared or set by separating
-features with commas.  Filesystem features prefixed with a 
-caret character ('^') will be cleared in the filesystem's superblock; 
-filesystem features without a prefix character or prefixed with a plus 
+features with commas.  Filesystem features prefixed with a
+caret character ('^') will be cleared in the filesystem's superblock;
+filesystem features without a prefix character or prefixed with a plus
 character ('+') will be added to the filesystem.  For a detailed
 description of the file system features, please see the man page
 .BR ext4 (5).
@@ -519,14 +539,31 @@ The following filesystem features can be set or cleared using
 .BR tune2fs :
 .RS 1.2i
 .TP
+.B 64bit
+Enable the file system to be larger than 2^32 blocks.
+.TP
 .B dir_index
 Use hashed b-trees to speed up lookups for large directories.
 .TP
 .B dir_nlink
 Allow more than 65000 subdirectories per directory.
 .TP
+.B ea_inode
+Allow the value of each extended attribute to be placed in the data blocks of a
+separate inode if necessary, increasing the limit on the size and number of
+extended attributes per file.
+.B Tune2fs
+currently only supports setting this filesystem feature.
+.TP
+.B encrypt
+Enable support for file system level encryption.
+.B Tune2fs
+currently only supports setting this filesystem feature.
+.TP
 .B extent
 Enable the use of extent trees to store the location of data blocks in inodes.
+.B Tune2fs
+currently only supports setting this filesystem feature.
 .TP
 .B extra_isize
 Enable the extended inode fields used by ext4.
@@ -545,9 +582,14 @@ enabled.
 .TP
 .B has_journal
 Use a journal to ensure filesystem consistency even across unclean shutdowns.
-Setting the filesystem feature is equivalent to using the 
+Setting the filesystem feature is equivalent to using the
 .B \-j
 option.
+.TP
+.B large_dir
+Increase the limit on the number of files per directory.
+.B Tune2fs
+currently only supports setting this filesystem feature.
 .TP
 .B huge_file
 Support files larger than 2 terabytes in size.
@@ -555,56 +597,77 @@ Support files larger than 2 terabytes in size.
 .B large_file
 Filesystem can contain files that are greater than 2GB.
 .TP
-.B resize_inode
-Reserve space so the block group descriptor table may grow in the
-future.
-.B Tune2fs 
-only supports clearing this filesystem feature.
+.B metadata_csum
+Store a checksum to protect the contents in each metadata block.
+.TP
+.B metadata_csum_seed
+Allow the filesystem to store the metadata checksum seed in the
+superblock, enabling the administrator to change the UUID of a filesystem
+using the
+.B metadata_csum
+feature while it is mounted.
 .TP
 .B mmp
 Enable or disable multiple mount protection (MMP) feature.
-@QUOTA_MAN_COMMENT@.TP
-@QUOTA_MAN_COMMENT@.B quota
-@QUOTA_MAN_COMMENT@Enable internal file system quota inodes.
+.TP
+.B project
+Enable project ID tracking.  This is used for project quota tracking.
+.TP
+.B quota
+Enable internal file system quota inodes.
+.TP
+.B read-only
+Force the kernel to mount the file system read-only.
+.TP
+.B resize_inode
+Reserve space so the block group descriptor table may grow in the
+future.
+.B Tune2fs
+only supports clearing this filesystem feature.
 .TP
 .B sparse_super
 Limit the number of backup superblocks to save space on large filesystems.
+.B Tune2fs
+currently only supports setting this filesystem feature.
 .TP
 .B uninit_bg
 Allow the kernel to initialize bitmaps and inode tables lazily, and to
 keep a high watermark for the unused inodes in a filesystem, to reduce
 .BR e2fsck (8)
-time.  This first e2fsck run after enabling this feature will take the
+time.  The first e2fsck run after enabling this feature will take the
 full time, but subsequent e2fsck runs will take only a fraction of the
 original time, depending on how full the file system is.
+.TP
+.B verity
+Enable support for verity protected files.
+.B Tune2fs
+currently only supports setting this filesystem feature.
 .RE
 .IP
-After setting or clearing 
+After setting or clearing
 .BR sparse_super ,
 .BR uninit_bg ,
 .BR filetype ,
 or
 .B resize_inode
 filesystem features,
+the file system may require being checked using
 .BR e2fsck (8)
-must be run on the filesystem to return the filesystem to a consistent state.
+to return the filesystem to a consistent state.
 .B Tune2fs
 will print a message requesting that the system administrator run
 .BR e2fsck (8)
-if necessary.  After setting the 
+if necessary.  After setting the
 .B dir_index
-feature, 
+feature,
 .B e2fsck -D
 can be run to convert existing directories to the hashed B-tree format.
 Enabling certain filesystem features may prevent the filesystem from being
 mounted by kernels which do not support those features.  In particular, the
-.BR uninit_bg
+.B uninit_bg
 and
-.BR flex_bg
+.B flex_bg
 features are only supported by the ext4 filesystem.
-.TP
-.BI \-p " mmp_check_interval"
-Set the desired MMP check interval in seconds. It is 5 seconds by default.
 .TP
 .BI \-r " reserved-blocks-count"
 Set the number of reserved filesystem blocks.
@@ -614,11 +677,14 @@ Sets 'quota' feature on the superblock and works on the quota files for the
 given quota type. Quota options could be one or more of the following:
 .RS 1.2i
 .TP
-.BR [^]usrquota
+.B [^]usrquota
 Sets/clears user quota inode in the superblock.
 .TP
-.BR [^]grpquota
+.B [^]grpquota
 Sets/clears group quota inode in the superblock.
+.TP
+.B [^]prjquota
+Sets/clears project quota inode in the superblock.
 .RE
 .TP
 .BI \-T " time-last-checked"
@@ -626,31 +692,31 @@ Set the time the filesystem was last checked using
 .BR  e2fsck .
 The time is interpreted using the current (local) timezone.
 This can be useful in scripts which use a Logical Volume Manager to make
-a consistent snapshot of a filesystem, and then check the filesystem 
-during off hours to make sure it hasn't been corrupted due to 
-hardware problems, etc.  If the filesystem was clean, then this option can 
-be used to set the last checked time on the original filesystem.  The format 
-of 
+a consistent snapshot of a filesystem, and then check the filesystem
+during off hours to make sure it hasn't been corrupted due to
+hardware problems, etc.  If the filesystem was clean, then this option can
+be used to set the last checked time on the original filesystem.  The format
+of
 .I time-last-checked
 is the international date format, with an optional time specifier, i.e.
-YYYYMMDD[HH[MM[SS]]].   The keyword 
+YYYYMMDD[HH[MM[SS]]].   The keyword
 .B now
-is also accepted, in which case the last checked time will be set to the 
+is also accepted, in which case the last checked time will be set to the
 current time.
 .TP
 .BI \-u " user"
 Set the user who can use the reserved filesystem blocks.
 .I user
-can be a numerical uid or a user name.  If a user name is given, it 
+can be a numerical uid or a user name.  If a user name is given, it
 is converted to a numerical uid before it is stored in the superblock.
 .TP
 .BI \-U " UUID"
 Set the universally unique identifier (UUID) of the filesystem to
 .IR UUID .
-The format of the UUID is a series of hex digits separated by hyphens, 
-like this: 
-"c1b9d5a2-f162-11cf-9ece-0020afc76f16".  
-The 
+The format of the UUID is a series of hex digits separated by hyphens,
+like this:
+"c1b9d5a2-f162-11cf-9ece-0020afc76f16".
+The
 .I UUID
 parameter may also be one of the following:
 .RS 1.2i
@@ -684,10 +750,20 @@ or
 .IR /dev/urandom ,
 .B tune2fs
 will automatically use a time-based UUID instead of a randomly-generated UUID.
+.TP
+.BI \-z " undo_file"
+Before overwriting a file system block, write the old contents of the block to
+an undo file.  This undo file can be used with e2undo(8) to restore the old
+contents of the file system should something go wrong.  If the empty string is
+passed as the undo_file argument, the undo file will be written to a file named
+tune2fs-\fIdevice\fR.e2undo in the directory specified via the
+\fIE2FSPROGS_UNDO_DIR\fR environment variable.
+
+WARNING: The undo file cannot be used to recover from a power or system crash.
 .SH BUGS
 We haven't found any bugs yet.  That doesn't mean there aren't any...
 .SH AUTHOR
-.B tune2fs 
+.B tune2fs
 was written by Remy Card <Remy.Card@linux.org>.  It is currently being
 maintained by Theodore Ts'o <tytso@alum.mit.edu>.
 .B tune2fs
@@ -696,7 +772,7 @@ This manual page was written by Christian Kuhtz <chk@data-hh.Hanse.DE>.
 Time-dependent checking was added by Uwe Ohse <uwe@tirka.gun.de>.
 .SH AVAILABILITY
 .B tune2fs
-is part of the e2fsprogs package and is available from 
+is part of the e2fsprogs package and is available from
 http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR debugfs (8),

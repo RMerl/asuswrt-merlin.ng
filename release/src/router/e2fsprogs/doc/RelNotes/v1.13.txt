@@ -1,0 +1,64 @@
+E2fsprogs 1.13 (December 15, 1998)
+==================================
+
+Fixed a bug in debugfs where an error messages weren't getting printed
+when the ext2 library routines to read inodes returned errors in the
+stat, cmri and rm commands.
+
+Fixed a bug in mke2fs so that if a ridiculous inode ratio parameter is
+provided, it won't create an inode table smaller than the minimum
+number of inodes required for a proper ext2 filesystem.
+
+Fsck now parses the /etc/fstab file directly (instead of using
+getmntent()), so that it can distinguish between a missing pass number
+field and pass number field of zero.  This caused problems for
+diskless workstations where all of the filesystems in /etc/fstab have
+an explicit pass number of zero, and fsck could not distinguish this
+from a /etc/fstab file with missing pass numbers.
+
+E2fsck will create a /lost+found directory if there isn't one in the
+filesystem, since it's safer to create the lost+found directory before
+it's needed.
+
+Fixed e2fsck so that it would detect bogus immutable inodes which
+happen to be sockets and FIFO files, and offer to clear them.
+
+If a filesystem has multiple reasons why it needs to be checked, and
+one of the reasons is that it is uncleanly mounted, e2fsck will print
+that as the reason why the filesystem is being checked.
+
+Cleaned up the output routines of mke2fs so that it doesn't overflow
+an 80 column display when formatting really big filesystems.
+
+Added a sanity check to e2fsck to make sure that file descriptors 0,
+1, 2 are open before opening the hard disk.  This avoids a problem
+where a broken program might exec e2fsck with those file descriptors
+closed, which would cause disastrous results if the kernel returns a
+file descriptor for the block device which is also used by FILE *
+stdout.
+
+Fixed up the e2fsck progress reporting functions so that the values
+reliably reach 100% at the completion of all of the e2fsck passes.
+
+Fixed minor documentation bugs in man pages and usage messages.
+
+Programmer's notes:
+-------------------
+
+Fixed a number of lint warnings in the ext2fs library and potential
+portability problems from other OS's header files that might define
+CPP macros for names like "max" and "min".
+
+ext2fs_badblocks_list_add() has been made more efficient when it needs
+to grow the bad blocks list.
+
+Fixed a bug in e2fsck which caused it to dereference a freed pointer
+just before exiting.
+
+Fixed the substitution process for generating the mk_cmds and compile_et
+scripts so that they will work outside of the build tree.
+
+Add sanity check to e2fsck so that if an internal routine
+(ext2fs_get_dir_info) returns NULL, avoid dereferencing the pointer
+and causing a core dump.  This should never happen, but...
+

@@ -28,16 +28,17 @@ BSDLIB_MYDIR = ss
 BSDLIB_INSTALL_DIR = $(root_libdir)
 
 TAGS=etags
-COMPILE_ET=../et/compile_et --build-tree
-MK_CMDS=_SS_DIR_OVERRIDE=. ./mk_cmds
+MK_CMDS=	_SS_DIR_OVERRIDE=$(srcdir) ./mk_cmds
+COMPILE_ET=	_ET_DIR_OVERRIDE=$(srcdir)/../et ../et/compile_et
 
 .c.o:
 	$(E) "	CC $<"
-	$(Q) $(CC) $(ALL_CFLAGS) -c $<
+	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -c $<
 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
-@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -DSHARED_ELF_LIB -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
+@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -g -pg -o profiled/$*.o -c $<
+@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) -DSHARED_ELF_LIB -fPIC -shared -o elfshared/$*.o -c $<
+@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 # for the library
 
@@ -123,8 +124,8 @@ ss.pc: $(srcdir)/ss.pc.in $(top_builddir)/config.status
 	$(Q) cd $(top_builddir); CONFIG_FILES=lib/ss/ss.pc ./config.status
 
 installdirs::
-	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/ss $(datadir)/ss $(bindir)"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
+	$(E) "	MKDIR_P $(libdir) $(includedir)/ss $(datadir)/ss $(bindir)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/ss $(DESTDIR)$(datadir)/ss \
 		$(DESTDIR)$(bindir) $(DESTDIR)$(pkgconfigdir)
 
@@ -162,7 +163,7 @@ test_ss: test_ss.o test_cmd.o $(DEPLIBSS) $(DEPLIBCOM_ERR)
 	$(Q) $(CC) -o $@ test_ss.o test_cmd.o $(ALL_CFLAGS) $(ALL_LDFLAGS) \
 		$(LIBSS) $(LIBCOM_ERR) $(SYSLIBS)
 
-check:: all test_ss
+fullcheck check:: all test_ss
 	$(E) "	RUN TEST test_ss"
 	-@($(TESTENV) ./test_ss -f $(srcdir)/test_script > test_out 2>&1; exit 0)
 	$(Q) if diff test_out $(srcdir)/test_script_expected > test.diff; then \
@@ -171,7 +172,7 @@ check:: all test_ss
 clean::
 	$(RM) -f ../libss.a libss.a mk_cmds ss_err.h ss_err.c std_rqs.c \
 		tst_cmds.c test_ss test_out test.diff *.o *~ \#* *.bak core \
-		test_cmd.c
+		test_cmd.c ss.pc
 
 mostlyclean:: clean
 distclean:: clean

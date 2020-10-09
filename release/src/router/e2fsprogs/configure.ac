@@ -1,0 +1,1767 @@
+AC_INIT(version.h)
+AC_PREREQ(2.54)
+AC_CONFIG_AUX_DIR(config)
+AC_CONFIG_HEADERS([lib/config.h])
+AH_BOTTOM([#include <dirpaths.h>])
+MCONFIG=./MCONFIG
+AC_SUBST_FILE(MCONFIG)
+BINARY_TYPE=bin
+dnl
+dnl This is to figure out the version number and the date....
+dnl
+E2FSPROGS_VERSION=`grep E2FSPROGS_VERSION ${srcdir}/version.h  \
+	| awk '{print $3}' | tr \" " " | awk '{print $1}'`
+E2FSPROGS_DATE=`grep E2FSPROGS_DATE ${srcdir}/version.h | awk '{print $3}' \
+	| tr \" " " | awk '{print $1}'`
+E2FSPROGS_DAY=$(echo $E2FSPROGS_DATE | awk -F- '{print $1}' | sed -e '/^[[1-9]]$/s/^/0/')
+MONTH=`echo $E2FSPROGS_DATE | awk -F- '{print $2}'`
+YEAR=`echo $E2FSPROGS_DATE | awk -F- '{print $3}'`
+
+if expr $YEAR ">" 1900 > /dev/null ; then
+	E2FSPROGS_YEAR=$YEAR
+elif expr $YEAR ">" 90 >/dev/null ; then
+	E2FSPROGS_YEAR=19$YEAR
+else
+	E2FSPROGS_YEAR=20$YEAR
+fi
+
+case $MONTH in
+Jan)	MONTH_NUM=01; E2FSPROGS_MONTH="January" ;;
+Feb)	MONTH_NUM=02; E2FSPROGS_MONTH="February" ;;
+Mar)	MONTH_NUM=03; E2FSPROGS_MONTH="March" ;;
+Apr)	MONTH_NUM=04; E2FSPROGS_MONTH="April" ;;
+May)	MONTH_NUM=05; E2FSPROGS_MONTH="May" ;;
+Jun)	MONTH_NUM=06; E2FSPROGS_MONTH="June" ;;
+Jul)	MONTH_NUM=07; E2FSPROGS_MONTH="July" ;;
+Aug)	MONTH_NUM=08; E2FSPROGS_MONTH="August" ;;
+Sep)	MONTH_NUM=09; E2FSPROGS_MONTH="September" ;;
+Oct)	MONTH_NUM=10; E2FSPROGS_MONTH="October" ;;
+Nov)	MONTH_NUM=11; E2FSPROGS_MONTH="November" ;;
+Dec)	MONTH_NUM=12; E2FSPROGS_MONTH="December" ;;
+*)	AC_MSG_WARN([Unknown month $MONTH??]) ;;
+esac
+
+base_ver=`echo $E2FSPROGS_VERSION | \
+	       sed -e 's/-WIP//' -e 's/pre-//' -e 's/-PLUS//'`
+
+date_spec=${E2FSPROGS_YEAR}.${MONTH_NUM}.${E2FSPROGS_DAY}
+
+case $E2FSPROGS_VERSION in
+*-WIP|pre-*)
+	E2FSPROGS_PKGVER="$base_ver~WIP.$date_spec"
+	;;
+*)
+	E2FSPROGS_PKGVER="$base_ver"
+	;;
+esac
+
+unset DATE MONTH YEAR base_ver pre_vers date_spec
+AC_MSG_RESULT([Generating configuration file for e2fsprogs version $E2FSPROGS_VERSION])
+AC_MSG_RESULT([Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}])
+AC_SUBST(E2FSPROGS_YEAR)
+AC_SUBST(E2FSPROGS_MONTH)
+AC_SUBST(E2FSPROGS_DAY)
+AC_SUBST(E2FSPROGS_VERSION)
+AC_SUBST(E2FSPROGS_PKGVER)
+AC_SUBST(E2FSPROGS_DATE)
+dnl
+dnl Use diet libc
+dnl 
+WITH_DIET_LIBC=
+AC_ARG_WITH([diet-libc],
+[  --with-diet-libc        use diet libc],
+CC="diet cc -nostdinc"
+WITH_DIET_LIBC=yes
+if test -z "$LIBS"
+then
+	LIBS="-lcompat"
+else
+	LIBS="$LIBS -lcompat"
+fi
+AC_MSG_RESULT(CC=$CC))dnl
+dnl
+AC_CANONICAL_HOST
+dnl
+dnl Check to see if libdl exists for the sake of dlopen
+dnl
+DLOPEN_LIB=''
+AC_CHECK_LIB(dl, dlopen,DLOPEN_LIB=-ldl)
+AC_SUBST(DLOPEN_LIB)
+dnl
+AC_ARG_WITH([cc],
+AC_HELP_STRING([--with-cc],[no longer supported, use CC= instead]),
+AC_MSG_ERROR([--with-cc no longer supported; use CC= instead]))
+dnl
+AC_ARG_WITH([ccopts],
+AC_HELP_STRING([--with-ccopts],[no longer supported, use CFLAGS= instead]),
+AC_MSG_ERROR([--with-ccopts no longer supported; use CFLAGS= instead]))
+dnl
+AC_ARG_WITH([ldopts],
+AC_HELP_STRING([--with-ldopts],[no longer supported, use LDFLAGS= instead]),
+AC_MSG_ERROR([--with-ldopts no longer supported; use LDFLAGS= instead]))
+dnl
+AC_PROG_CC
+if test "$GCC" = yes; then
+   RDYNAMIC="-rdynamic"
+   AC_SUBST(RDYNAMIC)
+fi
+AC_PROG_CPP
+dnl
+dnl Alpha computers use fast and imprecise floating point code that may
+dnl miss exceptions by default. Force sane options if we're using GCC.
+AC_MSG_CHECKING(for additional special compiler flags)
+if test "$GCC" = yes
+then
+    case "$host_cpu" in
+	alpha)		addcflags="-mieee" ;;
+    esac
+fi
+if test "x$addcflags" != x
+then
+    AC_MSG_RESULT($addcflags)
+    CFLAGS="$addcflags $CFLAGS"
+else
+    AC_MSG_RESULT([[(none)]])
+fi
+AC_USE_SYSTEM_EXTENSIONS
+dnl
+dnl Set default values for library extensions.  Will be dealt with after
+dnl parsing configuration options, which may modify these
+dnl
+LIB_EXT=.a
+STATIC_LIB_EXT=.a
+PROFILED_LIB_EXT=.a
+dnl
+dnl Allow separate `root_prefix' to be specified
+dnl
+AC_ARG_WITH([root-prefix],
+[  --with-root-prefix=PREFIX override prefix variable for files to be placed in the root],
+root_prefix=$withval,
+root_prefix=NONE)dnl
+dnl
+dnl handle --enable-maintainer-mode
+dnl
+AC_ARG_ENABLE([maintainer-mode],
+[  --enable-maintainer-mode enable makefile rules useful for maintainers],
+if test "$enableval" = "no"
+then
+	MAINTAINER_CMT=#
+	AC_MSG_RESULT([Disabling maintainer mode])
+else
+	MAINTAINER_CMT=
+	AC_MSG_RESULT([Enabling maintainer mode])
+fi
+,
+MAINTAINER_CMT=#
+AC_MSG_RESULT([Disabling maintainer mode by default])
+)
+AC_SUBST(MAINTAINER_CMT)
+dnl
+dnl handle --enable-symlink-install
+dnl
+AC_ARG_ENABLE([symlink-install],
+[  --enable-symlink-install use symlinks when installing instead of hard links],
+if test "$enableval" = "no"
+then
+	LINK_INSTALL_FLAGS=-f
+	AC_MSG_RESULT([Disabling symlinks for install])
+else
+	LINK_INSTALL_FLAGS=-sf
+	AC_MSG_RESULT([Enabling symlinks for install])
+fi
+,
+LINK_INSTALL_FLAGS=-f
+AC_MSG_RESULT([Disabling symlinks for install by default])
+)
+AC_SUBST(LINK_INSTALL_FLAGS)
+dnl
+dnl handle --enable-relative-symlinks
+dnl
+relative_symlink_defined=
+AC_ARG_ENABLE([relative-symlinks],
+[  --enable-relative-symlinks use relative symlinks when installing],
+if test "$enableval" = "no"
+then
+	SYMLINK_RELATIVE=
+	relative_symlink_defined=yes
+	AC_MSG_RESULT([Disabling relative symlinks for install])
+else
+	SYMLINK_RELATIVE=--relative
+	relative_symlink_defined=yes
+	AC_MSG_RESULT([Enabling relative symlinks for install])
+fi)
+AC_ARG_ENABLE([symlink-relative-symlinks],,
+if test "$enableval" = "no"
+then
+	SYMLINK_RELATIVE=yes
+	AC_MSG_RESULT([Disabling relative symlinks for install])
+else
+	SYMLINK_RELATIVE=--relative
+	AC_MSG_RESULT([Enabling relative symlinks for install])
+fi
+,
+if test -z "$relative_symlink_defined"
+then
+	SYMLINK_RELATIVE=
+AC_MSG_RESULT([Disabling relative symlinks for install by default])
+fi
+)
+AC_SUBST(SYMLINK_RELATIVE)
+dnl
+dnl handle --enable-symlink-build
+dnl
+AC_ARG_ENABLE([symlink-build],
+[  --enable-symlink-build  use symlinks while building instead of hard links],
+if test "$enableval" = "no"
+then
+	LINK_BUILD_FLAGS=
+	AC_MSG_RESULT([Disabling symlinks for build])
+else
+	LINK_BUILD_FLAGS=-s
+	AC_MSG_RESULT([Enabling symlinks for build])
+fi
+,
+LINK_BUILD_FLAGS=
+AC_MSG_RESULT([Disabling symlinks for build by default])
+)
+AC_SUBST(LINK_BUILD_FLAGS)
+dnl
+dnl handle --enable-verbose-makecmds
+dnl
+AC_ARG_ENABLE([verbose-makecmds],
+[  --enable-verbose-makecmds enable verbose make command output],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling verbose make commands])
+	E=@echo
+	ES=echo
+	Q=@
+else
+	AC_MSG_RESULT([Enabling verbose make commands])
+	E=@\\#
+	ES=\\#
+	Q= 
+fi
+,
+AC_MSG_RESULT([Disabling verbose make commands])
+E=@echo
+ES=echo
+Q=@
+)
+AC_SUBST(E)
+AC_SUBST(ES)
+AC_SUBST(Q)
+dnl
+dnl This needs to be before all of the --enable-*-shlibs options
+dnl
+E2_PKG_CONFIG_STATIC=--static
+LDFLAG_DYNAMIC=
+PRIVATE_LIBS_CMT=
+dnl
+dnl handle --enable-elf-shlibs
+dnl
+AC_ARG_ENABLE([elf-shlibs],
+[  --enable-elf-shlibs	  select ELF shared libraries],
+if test "$enableval" = "no"
+then
+	ELF_CMT=#
+	MAKEFILE_ELF=/dev/null
+	AC_MSG_RESULT([Disabling ELF shared libraries])
+else
+	E2_PKG_CONFIG_STATIC=
+	ELF_CMT=
+	MAKEFILE_ELF=$srcdir/lib/Makefile.elf-lib
+	[case "$host_os" in
+	solaris2.*)
+		MAKEFILE_ELF=$srcdir/lib/Makefile.solaris-lib
+	;;
+	esac]
+	BINARY_TYPE=elfbin
+	LIB_EXT=.so
+	PRIVATE_LIBS_CMT=#
+	LDFLAG_DYNAMIC=['-Wl,-rpath-link,$(top_builddir)/lib']
+	AC_MSG_RESULT([Enabling ELF shared libraries])
+fi
+,
+MAKEFILE_ELF=/dev/null
+ELF_CMT=#
+AC_MSG_RESULT([Disabling ELF shared libraries by default])
+)
+AC_SUBST(ELF_CMT)
+AC_SUBST_FILE(MAKEFILE_ELF)
+dnl
+dnl handle --enable-bsd-shlibs
+dnl
+AC_ARG_ENABLE([bsd-shlibs],
+[  --enable-bsd-shlibs	  select BSD shared libraries],
+if test "$enableval" = "no"
+then
+	BSDLIB_CMT=#
+	MAKEFILE_BSDLIB=/dev/null
+	AC_MSG_RESULT([Disabling BSD shared libraries])
+else
+	E2_PKG_CONFIG_STATIC=
+	BSDLIB_CMT=
+	MAKEFILE_BSDLIB=$srcdir/lib/Makefile.bsd-lib
+	LIB_EXT=.so
+	[case "$host_os" in
+	darwin*)
+		MAKEFILE_BSDLIB=$srcdir/lib/Makefile.darwin-lib
+		LIB_EXT=.dylib
+	;;
+	esac]
+	AC_MSG_RESULT([Enabling BSD shared libraries])
+fi
+,
+MAKEFILE_BSDLIB=/dev/null
+BSDLIB_CMT=#
+AC_MSG_RESULT([Disabling BSD shared libraries by default])
+)
+AC_SUBST(BSDLIB_CMT)
+AC_SUBST_FILE(MAKEFILE_BSDLIB)
+dnl
+dnl handle --enable-profile
+dnl
+AC_ARG_ENABLE([profile],
+[  --enable-profile	  build profiling libraries],
+if test "$enableval" = "no"
+then
+	PROFILE_CMT=#
+	MAKEFILE_PROFILE=/dev/null
+	AC_MSG_RESULT([Disabling profiling libraries])
+else
+	PROFILE_CMT=
+	MAKEFILE_PROFILE=$srcdir/lib/Makefile.profile
+	PROFILED_LIB_EXT=_p.a
+	AC_MSG_RESULT([Building profiling libraries])
+fi
+,
+PROFILE_CMT=#
+MAKEFILE_PROFILE=/dev/null
+AC_MSG_RESULT([Disabling profiling libraries by default])
+)
+AC_SUBST(PROFILE_CMT)
+AC_SUBST_FILE(MAKEFILE_PROFILE)
+dnl
+dnl handle --enable-gcov
+dnl
+AC_ARG_ENABLE([gcov],
+[  --enable-gcov	  	  build for coverage testing using gcov],
+if test "$enableval" = "yes"
+then
+	CFLAGS="-g -fprofile-arcs -ftest-coverage"
+	LDFLAGS="-fprofile-arcs -ftest-coverage"
+	AC_MSG_RESULT([Enabling gcov support])
+fi
+)
+dnl
+dnl handle --enable-hardening
+dnl
+CFLAGS_SHLIB="${CFLAGS_SHLIB:-$CFLAGS}"
+CFLAGS_STLIB="${CFLAGS_STLIB:-$CFLAGS}"
+LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
+LDFLAGS_STATIC=${LDFLAGS_STATIC:-$LDFLAGS}
+AC_ARG_ENABLE([hardening],
+[  --enable-hardening	  	  build for coverage testing using gcov],
+if test "$enableval" = "yes"
+then
+	HARDEN_CFLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
+	HARDEN_LDFLAGS=["-Wl,-z,relro -Wl,-z,now"]
+	CFLAGS="$CFLAGS $HARDEN_CFLAGS -fPIE"
+	CFLAGS_SHLIB="$CFLAGS_SHLIB $HARDEN_CFLAGS"
+	CFLAGS_STLIB="$CFLAGS_STLIB $HARDEN_CFLAGS -fPIE"
+	LDFLAGS="$LDFLAGS $HARDEN_LDFLAGS -fPIE -pie"
+	LDFLAGS_STATIC="$LDFLAGS_STATIC $HARDEN_LDFLAGS"
+	LDFLAGS_SHLIB="$LDFLAGS_SHLIB $HARDEN_LDFLAGS"
+	AC_MSG_RESULT([Enabling hardening support])
+fi
+)
+dnl
+dnl Substitute library extensions
+dnl
+AC_SUBST(LIB_EXT)
+AC_SUBST(STATIC_LIB_EXT)
+AC_SUBST(PROFILED_LIB_EXT)
+AC_SUBST(LDFLAG_DYNAMIC)
+AC_SUBST(PRIVATE_LIBS_CMT)
+dnl
+dnl handle --enable-jbd-debug
+dnl
+AC_ARG_ENABLE([jbd-debug],
+[  --enable-jbd-debug  	  enable journal debugging],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling journal debugging])
+else
+	AC_DEFINE(CONFIG_JBD_DEBUG, 1,
+		[Define to 1 if debugging ext3/4 journal code])
+	AC_MSG_RESULT([Enabling journal debugging])
+fi
+,
+AC_MSG_RESULT([Disabling journal debugging by default])
+)
+dnl
+dnl handle --enable-blkid-debug
+dnl
+AC_ARG_ENABLE([blkid-debug],
+[  --enable-blkid-debug    enable blkid debugging],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling blkid debugging])
+else
+	AC_DEFINE(CONFIG_BLKID_DEBUG, 1,
+		[Define to 1 if debugging the blkid library])
+	AC_MSG_RESULT([Enabling blkid debugging])
+fi
+,
+AC_MSG_RESULT([Disabling blkid debugging by default])
+)
+dnl
+dnl handle --enable-testio-debug
+dnl
+AC_ARG_ENABLE([testio-debug],
+[  --disable-testio-debug  disable the use of the test I/O manager for debugging],
+AH_TEMPLATE([CONFIG_TESTIO_DEBUG],
+	[Define to 1 if the testio I/O manager should be enabled])
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling testio debugging])
+	TEST_IO_CMT="#"
+else
+	TEST_IO_CMT=
+	AC_DEFINE(CONFIG_TESTIO_DEBUG, 1)
+	AC_MSG_RESULT([Enabling testio debugging])
+fi
+,
+AC_MSG_RESULT([Enabling testio debugging by default])
+AC_DEFINE(CONFIG_TESTIO_DEBUG, 1)
+TEST_IO_CMT=
+)
+AC_SUBST(TEST_IO_CMT)
+dnl
+dnl handle --disable-libuuid
+dnl
+PKG_PROG_PKG_CONFIG
+LIBUUID=
+DEPLIBUUID=
+STATIC_LIBUUID=
+DEPSTATIC_LIBUUID=
+PROFILED_LIBUUID=
+DEPPROFILED_LIBUUID=
+UUID_CMT=
+AC_ARG_ENABLE([libuuid],
+[  --enable-libuuid	  build and use private uuid library],
+if test "$enableval" = "no"
+then
+	if test -z "$PKG_CONFIG"; then
+		AC_MSG_ERROR([pkg-config not installed; please install it.])
+	fi
+
+	AC_CHECK_LIB(uuid, uuid_generate,
+		[LIBUUID=`$PKG_CONFIG --libs uuid`;
+		 STATIC_LIBUUID=`$PKG_CONFIG --static --libs uuid`],
+		[AC_MSG_ERROR([external uuid library not found])])
+	PROFILED_LIBUUID=$LIBUUID
+	UUID_CMT=#
+	AC_MSG_RESULT([Disabling private uuid library])
+else
+	LIBUUID='$(LIB)/libuuid'$LIB_EXT
+	DEPLIBUUID=$LIBUUID
+	STATIC_LIBUUID='$(LIB)/libuuid'$STATIC_LIB_EXT
+	DEPSTATIC_LIBUUID=$STATIC_LIBUUID
+	PROFILED_LIBUUID='$(LIB)/libuuid'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBUUID=$PROFILED_LIBUUID
+	AC_MSG_RESULT([Enabling private uuid library])
+fi
+,
+if test -n "$PKG_CONFIG"; then
+	AC_CHECK_LIB(uuid, uuid_generate,
+		[LIBUUID=`$PKG_CONFIG --libs uuid`;
+		 STATIC_LIBUUID=`$PKG_CONFIG --static --libs uuid`])
+fi
+if test -n "$LIBUUID"; then
+	PROFILED_LIBUUID=$LIBUUID
+	UUID_CMT=#
+	AC_MSG_RESULT([Using system uuid by default])
+else
+	LIBUUID='$(LIB)/libuuid'$LIB_EXT
+	DEPLIBUUID=$LIBUUID
+	STATIC_LIBUUID='$(LIB)/libuuid'$STATIC_LIB_EXT
+	DEPSTATIC_LIBUUID=$STATIC_LIBUUID
+	PROFILED_LIBUUID='$(LIB)/libuuid'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBUUID=$PROFILED_LIBUUID
+	AC_MSG_RESULT([Enabling private uuid library by default])
+fi
+)
+AC_SUBST(LIBUUID)
+AC_SUBST(DEPLIBUUID)
+AC_SUBST(STATIC_LIBUUID)
+AC_SUBST(DEPSTATIC_LIBUUID)
+AC_SUBST(PROFILED_LIBUUID)
+AC_SUBST(DEPPROFILED_LIBUUID)
+AC_SUBST(UUID_CMT)
+dnl
+dnl handle --disable-libblkid
+dnl
+PKG_PROG_PKG_CONFIG
+LIBBLKID=
+DEPLIBBLKID=
+STATIC_LIBBLKID=
+DEPSTATIC_LIBBLKID=
+PROFILED_LIBBLKID=
+DEPPROFILED_LIBBLKID=
+BLKID_CMT=
+AH_TEMPLATE([CONFIG_BUILD_FINDFS], [Define to 1 to compile findfs])
+AC_ARG_ENABLE([libblkid],
+[  --enable-libblkid	  build and use private blkid library],
+if test "$enableval" = "no"
+then
+	if test -z "$PKG_CONFIG"; then
+		AC_MSG_ERROR([pkg-config not installed; please install it.])
+	fi
+
+	AC_CHECK_LIB(blkid, blkid_get_cache,
+		[LIBBLKID=`$PKG_CONFIG --libs blkid`;
+		 STATIC_LIBBLKID=`$PKG_CONFIG --static --libs blkid`],
+		[AC_MSG_ERROR([external blkid library not found])], -luuid)
+	BLKID_CMT=#
+	PROFILED_LIBBLKID=$LIBBLKID
+	AC_MSG_RESULT([Disabling private blkid library])
+else
+	LIBBLKID='$(LIB)/libblkid'$LIB_EXT
+	DEPLIBBLKID=$LIBBLKID
+	STATIC_LIBBLKID='$(LIB)/libblkid'$STATIC_LIB_EXT
+	DEPSTATIC_LIBBLKID=$STATIC_LIBBLKID
+	PROFILED_LIBBLKID='$(LIB)/libblkid'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBBLKID=$PROFILED_LIBBLKID
+	AC_DEFINE(CONFIG_BUILD_FINDFS, 1)
+	AC_MSG_RESULT([Enabling private blkid library])
+fi
+,
+if test -n "$PKG_CONFIG"; then
+	AC_CHECK_LIB(blkid, blkid_get_cache,
+		[LIBBLKID=`$PKG_CONFIG --libs blkid`;
+		 STATIC_LIBBLKID=`$PKG_CONFIG --static --libs blkid`])
+fi
+if test -n "$LIBBLKID"; then
+	BLKID_CMT=#
+	PROFILED_LIBBLKID=$LIBBLKID
+	AC_MSG_RESULT([Using system blkid library by default])
+else
+	LIBBLKID='$(LIB)/libblkid'$LIB_EXT
+	DEPLIBBLKID=$LIBBLKID
+	STATIC_LIBBLKID='$(LIB)/libblkid'$STATIC_LIB_EXT
+	DEPSTATIC_LIBBLKID=$STATIC_LIBBLKID
+	PROFILED_LIBBLKID='$(LIB)/libblkid'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBBLKID=$PROFILED_LIBBLKID
+	AC_DEFINE(CONFIG_BUILD_FINDFS, 1)
+	AC_MSG_RESULT([Enabling private blkid library by default])
+fi
+)
+AC_SUBST(LIBBLKID)
+AC_SUBST(DEPLIBBLKID)
+AC_SUBST(STATIC_LIBBLKID)
+AC_SUBST(DEPSTATIC_LIBBLKID)
+AC_SUBST(PROFILED_LIBBLKID)
+AC_SUBST(DEPPROFILED_LIBBLKID)
+AC_SUBST(BLKID_CMT)
+dnl
+dnl handle --enable-subset
+dnl
+ALL_CMT=
+SUBSET_CMT=
+AC_ARG_ENABLE([subset],
+[  --enable-subset  	  enable subset-only build],
+if test "$enableval" = "no"
+then
+	SUBSET_CMT=#
+	AC_MSG_RESULT([Disabling subset-only build])
+else
+	ALL_CMT=#
+	AC_MSG_RESULT([Enabling subset-only-build])
+fi
+,)
+AC_SUBST(ALL_CMT)
+AC_SUBST(SUBSET_CMT)
+dnl
+dnl handle --disable-backtrace
+dnl
+AH_TEMPLATE([DISABLE_BACKTRACE], [Define to 1 to disable use of backtrace])
+AC_ARG_ENABLE([backtrace],
+[  --disable-backtrace	  disable use backtrace],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling use of backtrace])
+	AC_DEFINE(DISABLE_BACKTRACE, 1)
+else
+	AC_MSG_RESULT([Enabling use of backtrace])
+fi
+,
+AC_MSG_RESULT([Enabling use of backtrace by default])
+)
+dnl
+dnl handle --enable-debugfs
+dnl
+AC_ARG_ENABLE([debugfs],
+[  --disable-debugfs   	  disable support of debugfs program],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling debugfs support])
+	DEBUGFS_CMT="#"
+else
+	DEBUGFS_CMT=
+	AC_MSG_RESULT([Enabling debugfs support])
+fi
+,
+AC_MSG_RESULT([Enabling debugfs support by default])
+DEBUGFS_CMT=
+)
+AC_SUBST(DEBUGFS_CMT)
+dnl
+dnl handle --enable-imager
+dnl
+AC_ARG_ENABLE([imager],
+[  --disable-imager   	  disable support of e2image program],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling e2image support])
+	IMAGER_CMT="#"
+else
+	IMAGER_CMT=
+	AC_MSG_RESULT([Enabling e2image support])
+fi
+,
+AC_MSG_RESULT([Enabling e2image support by default])
+IMAGER_CMT=
+)
+AC_SUBST(IMAGER_CMT)
+dnl
+dnl handle --enable-resizer
+dnl
+AC_ARG_ENABLE([resizer],
+[  --disable-resizer   	  disable support of e2resize program],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling e2resize support])
+	RESIZER_CMT="#"
+else
+	RESIZER_CMT=
+	AC_MSG_RESULT([Enabling e2resize support])
+fi
+,
+AC_MSG_RESULT([Enabling e2resize support by default])
+RESIZER_CMT=
+)
+AC_SUBST(RESIZER_CMT)
+dnl
+dnl handle --enable-defrag
+dnl
+AC_ARG_ENABLE([defrag],
+[  --disable-defrag   	  disable support of e4defrag program],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling e4defrag support])
+	DEFRAG_CMT="#"
+else
+	DEFRAG_CMT=
+	AC_MSG_RESULT([Enabling e4defrag support])
+fi
+,
+if test -z "$WITH_DIET_LIBC"
+then
+	AC_MSG_RESULT([Enabling e4defrag support by default])
+	DEFRAG_CMT=
+else
+	AC_MSG_RESULT([Disabling e4defrag support by default])
+	DEFRAG_CMT="#"
+fi
+)
+AC_SUBST(DEFRAG_CMT)
+dnl
+dnl See whether to install the `fsck' wrapper program (that calls e2fsck)
+dnl
+AC_ARG_ENABLE([fsck],
+[  --enable-fsck           build fsck wrapper program],
+[if test "$enableval" = "no"
+then
+	FSCK_PROG='' FSCK_MAN=''
+	AC_MSG_RESULT([Not building fsck wrapper])
+else
+	FSCK_PROG=fsck FSCK_MAN=fsck.8
+	AC_MSG_RESULT([Building fsck wrapper])
+fi]
+,
+[case "$host_os" in
+  gnu*)
+    FSCK_PROG='' FSCK_MAN=''
+    AC_MSG_RESULT([Not building fsck wrapper by default])
+    ;;
+  *)
+    FSCK_PROG=fsck FSCK_MAN=fsck.8
+    AC_MSG_RESULT([Building fsck wrapper by default])
+esac]
+)
+AC_SUBST(FSCK_PROG)
+AC_SUBST(FSCK_MAN)
+dnl
+dnl See whether to install the `e2initrd-helper' program
+dnl
+AC_ARG_ENABLE([e2initrd-helper],
+[  --enable-e2initrd-helper build e2initrd-helper program],
+[if test "$enableval" = "no"
+then
+	E2INITRD_PROG='' E2INITRD_MAN=''
+	AC_MSG_RESULT([Not building e2initrd helper])
+else
+	E2INITRD_PROG=e2initrd_helper E2INITRD_MAN=e2initrd_helper.8
+	AC_MSG_RESULT([Building e2initrd helper])
+fi]
+,
+E2INITRD_PROG=e2initrd_helper E2INITRD_MAN=e2initrd_helper.8
+AC_MSG_RESULT([Building e2initrd helper by default])
+)
+AC_SUBST(E2INITRD_PROG)
+AC_SUBST(E2INITRD_MAN)
+dnl
+dnl
+dnl
+AC_ARG_ENABLE([tls],
+[  --disable-tls           disable use of thread local support],
+[if test "$enableval" = "no"
+then
+	try_tls=""
+	AC_MSG_RESULT([Disabling thread local support])
+else
+	try_tls="yes"
+	AC_MSG_RESULT([Enabling thread local support])
+fi]
+,
+if test -n "$WITH_DIET_LIBC"
+then
+	try_tls=""
+	AC_MSG_RESULT([Diet libc does not support thread local support])
+else
+	try_tls="yes"
+	AC_MSG_RESULT([Try using thread local support by default])
+fi
+)
+if test "$try_tls" = "yes"
+then
+AX_TLS
+fi
+dnl
+dnl
+dnl
+AH_TEMPLATE([USE_UUIDD], [Define to 1 to build uuidd])
+AC_ARG_ENABLE([uuidd],
+[  --disable-uuidd         disable building the uuid daemon],
+[if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Not building uuidd])
+	UUIDD_CMT="#"
+else
+	AC_DEFINE(USE_UUIDD, 1)
+	UUIDD_CMT=""
+	AC_MSG_RESULT([Building uuidd])
+fi]
+,
+AC_DEFINE(USE_UUIDD, 1)
+if test -z "$UUID_CMT"
+then
+	UUIDD_CMT=""
+	AC_MSG_RESULT([Building uuidd by default])
+else
+	UUIDD_CMT="#"
+	AC_MSG_RESULT([Disabling uuidd by default])
+fi
+)
+AC_SUBST(UUIDD_CMT)
+dnl
+dnl handle --disable-mmp
+dnl
+AH_TEMPLATE([CONFIG_MMP], [Define to 1 to enable mmp support])
+AC_ARG_ENABLE([mmp],
+[  --disable-mmp           disable support mmp, Multi Mount Protection],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling mmp support])
+else
+	AC_MSG_RESULT([Enabling mmp support])
+	AC_DEFINE(CONFIG_MMP, 1)
+fi
+,
+AC_MSG_RESULT([Enabling mmp support by default])
+AC_DEFINE(CONFIG_MMP, 1)
+)
+dnl
+dnl handle --disable-tdb
+dnl
+AH_TEMPLATE([CONFIG_TDB], [Define to 1 to enable tdb support])
+AC_ARG_ENABLE([tdb],
+[  --disable-tdb           disable tdb support],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling tdb support])
+	TDB_CMT="#"
+	TDB_MAN_COMMENT='.\"'
+else
+	AC_MSG_RESULT([Enabling tdb support])
+	AC_DEFINE(CONFIG_TDB, 1)
+	TDB_CMT=""
+	TDB_MAN_COMMENT=""
+fi
+,
+AC_MSG_RESULT([Enabling mmp support by default])
+AC_DEFINE(CONFIG_TDB, 1)
+TDB_CMT=""
+TDB_MAN_COMMENT=""
+)
+AC_SUBST(TDB_CMT)
+AC_SUBST(TDB_MAN_COMMENT)
+dnl
+dnl handle --disable-bmap-stats
+dnl
+AH_TEMPLATE([ENABLE_BMAP_STATS], [Define to 1 to enable bitmap stats.])
+AC_ARG_ENABLE([bmap-stats],
+[  --disable-bmap-stats    disable collection of bitmap stats.],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling bitmap statistics support])
+else
+	AC_MSG_RESULT([Enabling bitmap statistics support])
+	AC_DEFINE(ENABLE_BMAP_STATS, 1)
+fi
+,
+AC_MSG_RESULT([Enabling bitmap statistics support by default])
+AC_DEFINE(ENABLE_BMAP_STATS, 1)
+)
+dnl
+dnl handle --enable-bmap-stats-ops
+dnl
+AH_TEMPLATE([ENABLE_BMAP_STATS_OPS], [Define to 1 to enable bitmap stats.])
+AC_ARG_ENABLE([bmap-stats-ops],
+[  --enable-bmap-stats-ops enable collection of additional bitmap stats],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling additional bitmap statistics])
+else
+	dnl There has to be a better way!
+	AS_IF([test "x${enable_bmap_stats}" = "xno"],
+	 AC_MSG_FAILURE([Error --enable-bmap-stats-ops requires bmap-stats]))
+
+	AC_MSG_RESULT([Enabling additional bitmap statistics])
+	AC_DEFINE(ENABLE_BMAP_STATS_OPS, 1)
+fi
+,
+AC_MSG_RESULT([Disabling additional bitmap statistics by default])
+)
+dnl
+dnl
+dnl
+MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library
+AC_SUBST_FILE(MAKEFILE_LIBRARY)
+dnl
+dnl Add internationalization support, using gettext.
+dnl
+GETTEXT_PACKAGE=e2fsprogs
+PACKAGE=e2fsprogs
+VERSION="$E2FSPROGS_VERSION"
+VERSION=0.14.1
+AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [package name for gettext])
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [version for gettext])
+AC_SUBST(GETTEXT_PACKAGE)
+AC_SUBST(PACKAGE)
+AC_SUBST(VERSION)
+
+AM_GNU_GETTEXT
+dnl
+dnl End of configuration options
+dnl
+AC_SUBST(BINARY_TYPE)
+AC_PROG_MAKE_SET
+CHECK_GNU_MAKE
+AC_PATH_PROG(LN, ln, ln)
+AC_PROG_MKDIR_P
+AC_PROG_LN_S
+AC_PATH_PROG(MV, mv, mv)
+AC_PATH_PROG(CP, cp, cp)
+AC_PATH_PROG(RM, rm, rm)
+AC_PATH_PROG(CHMOD, chmod, :)
+AC_PROG_AWK
+AC_PROG_EGREP
+AC_PATH_PROG(SED, sed, sed)
+AC_PATH_PROG(PERL, perl, perl)
+AC_PATH_PROG(LDCONFIG, ldconfig, :)
+AC_CHECK_TOOL(AR, ar, ar)
+AC_CHECK_TOOL(RANLIB, ranlib, :)
+AC_CHECK_TOOL(STRIP, strip, :)
+AC_CHECK_PROG(MAKEINFO, makeinfo, makeinfo, )
+if test "_$MAKEINFO" = "_"; then
+    MAKEINFO="echo Makeinfo is missing. Info documentation will not be built."
+else
+    case "$MAKEINFO" in
+      */missing.*)
+        AC_MSG_WARN([
+*** Makeinfo is missing. Info documentation will not be built.])
+        ;;
+      *)
+        ;;
+    esac
+fi
+AC_SUBST(MAKEINFO)
+AC_PROG_INSTALL
+# See if we need a separate native compiler.
+if test $cross_compiling = no; then
+  BUILD_CC="$CC"
+  AC_SUBST(BUILD_CC)
+else
+  AC_CHECK_PROGS(BUILD_CC, gcc cc)
+fi
+AC_CHECK_HEADERS(m4_flatten([
+	dirent.h
+	errno.h
+	execinfo.h
+	getopt.h
+	malloc.h
+	mntent.h
+	paths.h
+	semaphore.h
+	setjmp.h
+	signal.h
+	stdarg.h
+	stdint.h
+	stdlib.h
+	termios.h
+	termio.h
+	unistd.h
+	utime.h
+	attr/xattr.h
+	linux/falloc.h
+	linux/fd.h
+	linux/fsmap.h
+	linux/major.h
+	linux/loop.h
+	linux/types.h
+	net/if_dl.h
+	netinet/in.h
+	sys/acl.h
+	sys/disklabel.h
+	sys/disk.h
+	sys/file.h
+	sys/ioctl.h
+	sys/key.h
+	sys/mkdev.h
+	sys/mman.h
+	sys/mount.h
+	sys/prctl.h
+	sys/resource.h
+	sys/select.h
+	sys/socket.h
+	sys/sockio.h
+	sys/stat.h
+	sys/syscall.h
+	sys/sysctl.h
+	sys/sysmacros.h
+	sys/time.h
+	sys/types.h
+	sys/un.h
+	sys/wait.h
+	sys/xattr.h
+]))
+dnl Check where to find a dd(1) that supports iflag=fullblock
+dnl and oflag=append
+AC_MSG_CHECKING([for a dd(1) program that supports iflag=fullblock])
+DD=
+for i in dd gdd ; do
+	if "$i" if=/dev/null of=/dev/null count=1 bs=10k 2>/dev/null iflag=fullblock oflag=append ; then
+		DD=$i
+		break
+	fi
+done
+if test -n "$DD" ; then
+	AC_MSG_RESULT([$DD])
+else
+	AC_MSG_RESULT([not found, using dd])
+	DD=dd
+	AC_MSG_WARN([No GNU-compatible dd(1) program found, expect some self-test failures.])
+fi
+AC_SUBST([DD])
+
+AC_CHECK_HEADERS(net/if.h,,,
+[[
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#if HAVE_SYS_SOCKET
+#include <sys/socket.h>
+#endif
+]])
+AC_FUNC_VPRINTF
+dnl Check to see if dirent has member d_reclen. On cygwin those d_reclen
+dnl is not declared.
+AC_CHECK_MEMBER(struct dirent.d_reclen,[AC_DEFINE(HAVE_RECLEN_DIRENT, 1,
+		       [Define to 1 if dirent has d_reclen])],,
+		[#include <dirent.h>])
+AC_CHECK_MEMBERS([struct stat.st_atim])
+dnl Check to see if ssize_t was declared
+AC_CHECK_TYPE(ssize_t,[AC_DEFINE(HAVE_TYPE_SSIZE_T, 1,
+		[Define to 1 if ssize_t declared])],,
+	      [#include <sys/types.h>])
+dnl
+dnl Check to see if llseek() is declared in unistd.h.  On some libc's 
+dnl it is, and on others it isn't..... Thank you glibc developers....
+dnl
+AC_CHECK_DECL(llseek,[AC_DEFINE(HAVE_LLSEEK_PROTOTYPE, 1,
+			[Define to 1 if llseek declared in unistd.h])],,
+	      [#include <unistd.h>])
+dnl
+dnl Check to see if lseek64() is declared in unistd.h.  Glibc's header files
+dnl are so convoluted that I can't tell whether it will always be defined,
+dnl and if it isn't defined while lseek64 is defined in the library, 
+dnl disaster will strike.  
+dnl
+dnl Warning!  Use of --enable-gcc-wall may throw off this test.
+dnl
+dnl
+AC_CHECK_DECL(lseek64,[AC_DEFINE(HAVE_LSEEK64_PROTOTYPE, 1,
+			[Define to 1 if lseek64 declared in unistd.h])],,
+		[#define _LARGEFILE_SOURCE
+		 #define _LARGEFILE64_SOURCE
+		 #include <unistd.h>])
+dnl
+dnl Word sizes...
+dnl
+AC_CHECK_SIZEOF(short)
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(long long)
+AC_CHECK_SIZEOF(off_t)
+AC_CHECK_SIZEOF(time_t)
+SIZEOF_SHORT=$ac_cv_sizeof_short
+SIZEOF_INT=$ac_cv_sizeof_int
+SIZEOF_LONG=$ac_cv_sizeof_long
+SIZEOF_LONG_LONG=$ac_cv_sizeof_long_long
+SIZEOF_OFF_T=$ac_cv_sizeof_off_t
+SIZEOF_TIME_T=$ac_cv_sizeof_time_t
+AC_SUBST(SIZEOF_SHORT)
+AC_SUBST(SIZEOF_INT)
+AC_SUBST(SIZEOF_LONG)
+AC_SUBST(SIZEOF_LONG_LONG)
+AC_SUBST(SIZEOF_OFF_T)
+AC_SUBST(SIZEOF_TIME_T)
+AC_C_BIGENDIAN
+if test $cross_compiling = no; then
+  BUILD_CC="$BUILD_CC" CPP="$CPP" /bin/sh $ac_aux_dir/parse-types.sh
+else
+  CROSS_COMPILE="1" BUILD_CC="$BUILD_CC" CPP="$CPP" /bin/sh $ac_aux_dir/parse-types.sh
+fi
+ASM_TYPES_HEADER=./asm_types.h
+AC_SUBST_FILE(ASM_TYPES_HEADER)
+dnl
+dnl Save the configuration #defines needed for the public ext2fs.h
+dnl header file
+dnl
+echo "/* These defines are needed for the public ext2fs.h header file */" \
+     > public_config.h
+if grep HAVE_SYS_TYPES_H confdefs.h > tmp_config.$$; then
+  uniq tmp_config.$$ >> public_config.h
+else
+  echo "#undef HAVE_SYS_TYPES_H" >> public_config.h
+fi
+if grep WORDS_BIGENDIAN confdefs.h > tmp_config.$$; then
+  uniq tmp_config.$$ >> public_config.h
+else
+  echo "#undef WORDS_BIGENDIAN" >> public_config.h
+fi
+rm -f tmp_config.$$
+PUBLIC_CONFIG_HEADER=./public_config.h
+AC_SUBST_FILE(PUBLIC_CONFIG_HEADER)
+dnl
+dnl See if we have inttypes.h and if intptr_t is defined
+dnl
+AC_CHECK_HEADERS([inttypes.h])
+AC_CHECK_TYPES(intptr_t)
+dnl
+dnl See if struct stat has a st_flags field, in which case we can get file
+dnl flags somewhat portably.  Also check for the analogous setter, chflags().
+dnl
+AC_MSG_CHECKING(whether struct stat has a st_flags field)
+AC_CACHE_VAL(e2fsprogs_cv_struct_st_flags,
+	AC_TRY_COMPILE([#include <sys/stat.h>],
+		[struct stat stat; stat.st_flags = 0;],
+		[e2fsprogs_cv_struct_st_flags=yes],
+		[e2fsprogs_cv_struct_st_flags=no]))
+AC_MSG_RESULT($e2fsprogs_cv_struct_st_flags)
+if test "$e2fsprogs_cv_struct_st_flags" = yes; then
+  AC_MSG_CHECKING(whether st_flags field is useful)
+  AC_CACHE_VAL(e2fsprogs_cv_struct_st_flags_immut,
+	AC_TRY_COMPILE([#include <sys/stat.h>],
+		[struct stat stat; stat.st_flags |= UF_IMMUTABLE;],
+		[e2fsprogs_cv_struct_st_flags_immut=yes],
+		[e2fsprogs_cv_struct_st_flags_immut=no]))
+  AC_MSG_RESULT($e2fsprogs_cv_struct_st_flags_immut)
+  if test "$e2fsprogs_cv_struct_st_flags_immut" = yes; then
+	  AC_DEFINE(HAVE_STAT_FLAGS, 1,
+		[Define to 1 if struct stat has st_flags])
+  fi
+fi
+dnl
+dnl Check for the presence of SA_LEN
+dnl
+AC_CHECK_MEMBER(struct sockaddr.sa_len,
+		AC_DEFINE_UNQUOTED(HAVE_SA_LEN,1,
+			[Define to 1 if if struct sockaddr contains sa_len]),,
+	[#include <sys/types.h>
+	 #include <sys/socket.h>])
+dnl
+dnl If we are using the system-provided blkid library, check for
+dnl the functions added after migrating that library to util-linux
+dnl
+if test -n "$BLKID_CMT"; then
+  AC_CHECK_LIB(blkid, blkid_probe_get_topology,
+		      AC_DEFINE(HAVE_BLKID_PROBE_GET_TOPOLOGY, 1,
+				[Define to 1 if blkid has blkid_probe_get_topology]))
+  AC_CHECK_LIB(blkid, blkid_probe_enable_partitions,
+		      AC_DEFINE(HAVE_BLKID_PROBE_ENABLE_PARTITIONS, 1,
+				[Define to 1 if blkid has blkid_probe_enable_partitions]))
+fi
+dnl
+if test -n "$DLOPEN_LIB" ; then
+   ac_cv_func_dlopen=yes
+fi
+AC_CHECK_FUNCS(m4_flatten([
+	__secure_getenv
+	add_key
+	backtrace
+	chflags
+	dlopen
+	fadvise64
+	fallocate
+	fallocate64
+	fchown
+	fcntl
+	fdatasync
+	fstat64
+	fsync
+	ftruncate64
+	futimes
+	getcwd
+	getdtablesize
+	gethostname
+	getmntinfo
+	getpwuid_r
+	getrlimit
+	getrusage
+	jrand48
+	keyctl
+	llistxattr
+	llseek
+	lseek64
+	mallinfo
+	mbstowcs
+	memalign
+	mempcpy
+	mmap
+	msync
+	nanosleep
+	open64
+	pathconf
+	posix_fadvise
+	posix_fadvise64
+	posix_memalign
+	prctl
+	pread
+	pwrite
+	pread64
+	pwrite64
+	secure_getenv
+	setmntent
+	setresgid
+	setresuid
+	snprintf
+	srandom
+	stpcpy
+	strcasecmp
+	strdup
+	strnlen
+	strptime
+	strtoull
+	sync_file_range
+	sysconf
+	usleep
+	utime
+	utimes
+	valloc
+]))
+dnl
+dnl Check to see if -lsocket is required (solaris) to make something
+dnl that uses socket() to compile; this is needed for the UUID library
+dnl
+SOCKET_LIB=''
+AC_CHECK_LIB(socket, socket, [SOCKET_LIB=-lsocket])
+AC_SUBST(SOCKET_LIB)
+dnl
+dnl See if libmagic exists
+dnl
+AC_CHECK_LIB(magic, magic_file, [MAGIC_LIB=-lmagic
+AC_CHECK_HEADERS([magic.h])])
+if test "$ac_cv_func_dlopen" = yes ; then
+   MAGIC_LIB=$DLOPEN_LIB
+fi
+AC_SUBST(MAGIC_LIB)
+dnl
+dnl Check to see if librt is required for clock_gettime() (glibc < 2.17)
+dnl
+AC_CHECK_LIB(rt, clock_gettime, [CLOCK_GETTIME_LIB=-lrt])
+AC_SUBST(CLOCK_GETTIME_LIB)
+dnl
+dnl Check to see if the FUSE library is -lfuse or -losxfuse
+dnl
+FUSE_CMT=
+FUSE_LIB=
+dnl osxfuse.dylib supersedes fuselib.dylib
+AC_ARG_ENABLE([fuse2fs],
+[  --disable-fuse2fs	  do not build fuse2fs],
+if test "$enableval" = "no"
+then
+	FUSE_CMT="#"
+	AC_MSG_RESULT([Disabling fuse2fs])
+else
+	AC_CHECK_HEADERS([pthread.h fuse.h], [],
+[AC_MSG_FAILURE([Cannot find fuse2fs headers.])],
+[#define _FILE_OFFSET_BITS	64
+#define FUSE_USE_VERSION 29])
+
+	AC_PREPROC_IFELSE(
+[AC_LANG_PROGRAM([[#define FUSE_USE_VERSION 29
+#ifdef __linux__
+#include <linux/fs.h>
+#include <linux/falloc.h>
+#include <linux/xattr.h>
+#endif
+]], [])], [], [AC_MSG_FAILURE([Cannot find fuse2fs Linux headers.])])
+
+	AC_CHECK_LIB(osxfuse, fuse_main, [FUSE_LIB=-losxfuse],
+		[AC_CHECK_LIB(fuse, fuse_main, [FUSE_LIB=-lfuse],
+			      [AC_MSG_FAILURE([Cannot find fuse library.])])])
+	AC_MSG_RESULT([Enabling fuse2fs])
+fi
+,
+AC_CHECK_HEADERS([pthread.h fuse.h], [], [FUSE_CMT="#"],
+[#define _FILE_OFFSET_BITS	64
+#define FUSE_USE_VERSION 29
+#ifdef __linux__
+# include <linux/fs.h>
+# include <linux/falloc.h>
+# include <linux/xattr.h>
+#endif])
+if test -z "$FUSE_CMT"
+then
+	AC_CHECK_LIB(osxfuse, fuse_main, [FUSE_LIB=-losxfuse],
+[AC_CHECK_LIB(fuse, fuse_main, [FUSE_LIB=-lfuse], [FUSE_CMT="#"])])
+fi
+if test -z "$FUSE_CMT"
+then
+	AC_MSG_RESULT([Enabling fuse2fs by default.])
+fi
+)
+AC_SUBST(FUSE_LIB)
+AC_SUBST(FUSE_CMT)
+dnl
+dnl See if optreset exists
+dnl
+AC_MSG_CHECKING(for optreset)
+AC_CACHE_VAL(ac_cv_have_optreset,
+[AC_EGREP_HEADER(optreset, unistd.h,
+  ac_cv_have_optreset=yes, ac_cv_have_optreset=no)])dnl
+AC_MSG_RESULT($ac_cv_have_optreset)
+if test $ac_cv_have_optreset = yes; then
+  AC_DEFINE(HAVE_OPTRESET, 1, [Define to 1 if optreset for getopt is present])
+fi
+dnl
+dnl Test for sem_init, and which library it might require:
+dnl
+AH_TEMPLATE([HAVE_SEM_INIT], [Define to 1 if sem_init() exists])
+SEM_INIT_LIB=''
+echo GL_THREADS_API: ${gl_threads_api}
+if test "${gl_threads_api}" != none
+then
+  AC_CHECK_FUNC(sem_init, ,
+    AC_CHECK_LIB(pthread, sem_init,
+  	AC_DEFINE(HAVE_SEM_INIT, 1)
+  	SEM_INIT_LIB=-lpthread,
+    AC_CHECK_LIB(rt, sem_init,
+  	AC_DEFINE(HAVE_SEM_INIT, 1)
+  	SEM_INIT_LIB=-lrt,
+    AC_CHECK_LIB(posix4, sem_init,
+  	AC_DEFINE(HAVE_SEM_INIT, 1)
+  	SEM_INIT_LIB=-lposix4))))dnl
+fi
+AC_SUBST(SEM_INIT_LIB)
+dnl
+dnl Check for unified diff
+dnl
+AC_MSG_CHECKING(for unified diff option)
+if diff -u $0 $0 > /dev/null 2>&1 ; then
+   UNI_DIFF_OPTS=-u
+else
+   UNI_DIFF_OPTS=-c
+fi
+AC_MSG_RESULT($UNI_DIFF_OPTS)
+AC_SUBST(UNI_DIFF_OPTS)
+dnl
+dnl We use the EXT2 ioctls only under Linux
+dnl
+case "$host_os" in
+linux*)
+	AC_DEFINE(HAVE_EXT2_IOCTLS, 1, [Define to 1 if Ext2 ioctls present])
+	;;
+esac
+dnl
+dnl Check the available mount options
+dnl
+AX_CHECK_MOUNT_OPT(nosuid)
+AX_CHECK_MOUNT_OPT(nodev)
+dnl Enable LTO for all packages
+dnl
+AC_ARG_ENABLE([lto],
+[  --enable-lto		  enable link time optimization],,
+enable_lto=no)
+if test "$enable_lto" = "yes" || test "$enable_lto" = "probe"; then
+	AC_MSG_CHECKING([if C compiler supports LTO])
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	LTO_FLAGS="-g -flto -ffat-lto-objects"
+	CFLAGS="$CFLAGS $LTO_FLAGS"
+	LDFLAGS="$LDFLAGS $LTO_FLAGS"
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+		[AC_MSG_RESULT([yes])]
+		[lto_cflags=$LTO_FLAGS]
+		[lto_ldflags=$LTO_FLAGS]
+		[AC_PATH_PROG(gcc_ar, gcc-ar,,)]
+		[AC_PATH_PROG(gcc_ranlib, gcc-ranlib,,)],
+		[AC_MSG_RESULT([no])])
+	if test -x "$gcc_ar" && test -x "$gcc_ranlib"; then
+		have_lto=yes
+		AR="${gcc_ar}"
+		RANLIB="${gcc_ranlib}"
+	fi
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+	AC_SUBST(have_lto)
+	AC_SUBST(lto_cflags)
+	AC_SUBST(lto_ldflags)
+fi
+if test "$enable_lto" = "yes" && test "$have_lto" != "yes"; then
+	AC_MSG_ERROR([LTO not supported by compiler.])
+fi
+dnl
+dnl Enable UBSAN for all packages
+dnl
+AC_ARG_ENABLE([ubsan],
+[  --enable-ubsan	  enable undefined behavior sanitizer],,
+enable_ubsan=no)
+if test "$enable_ubsan" = "yes" || test "$enable_ubsan" = "probe"; then
+	AC_MSG_CHECKING([if C compiler supports UBSAN])
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	UBSAN_FLAGS="-fsanitize=undefined"
+	CFLAGS="$CFLAGS $UBSAN_FLAGS"
+	LDFLAGS="$LDFLAGS $UBSAN_FLAGS"
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+		[AC_MSG_RESULT([yes])]
+		[ubsan_cflags=$UBSAN_FLAGS]
+		[ubsan_ldflags=$UBSAN_FLAGS]
+		[have_ubsan=yes],
+		[AC_MSG_RESULT([no])])
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+	AC_SUBST(have_ubsan)
+	AC_SUBST(ubsan_cflags)
+	AC_SUBST(ubsan_ldflags)
+fi
+if test "$enable_ubsan" = "yes" && test "$have_ubsan" != "yes"; then
+	AC_MSG_ERROR([UBSAN not supported by compiler.])
+fi
+dnl
+dnl Enable ADDRSAN for all packages
+dnl
+AC_ARG_ENABLE([addrsan],
+[  --enable-addrsan	  enable address sanitizer],,
+enable_addrsan=no)
+if test "$enable_addrsan" = "yes" || test "$enable_addrsan" = "probe"; then
+	AC_MSG_CHECKING([if C compiler supports ADDRSAN])
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	ADDRSAN_FLAGS="-fsanitize=address"
+	CFLAGS="$CFLAGS $ADDRSAN_FLAGS"
+	LDFLAGS="$LDFLAGS $ADDRSAN_FLAGS"
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+		[AC_MSG_RESULT([yes])]
+		[addrsan_cflags=$ADDRSAN_FLAGS]
+		[addrsan_ldflags=$ADDRSAN_FLAGS]
+		[have_addrsan=yes],
+		[AC_MSG_RESULT([no])])
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+	AC_SUBST(have_addrsan)
+	AC_SUBST(addrsan_cflags)
+	AC_SUBST(addrsan_ldflags)
+fi
+if test "$enable_addrsan" = "yes" && test "$have_addrsan" != "yes"; then
+	AC_MSG_ERROR([ADDRSAN not supported by compiler.])
+fi
+dnl
+dnl Enable THREADSAN for all packages
+dnl
+AC_ARG_ENABLE([threadsan],
+[  --enable-threadsan	  enable thread sanitizer],,
+enable_threadsan=no)
+if test "$enable_threadsan" = "yes" || test "$enable_threadsan" = "probe"; then
+	AC_MSG_CHECKING([if C compiler supports THREADSAN])
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	THREADSAN_FLAGS="-fsanitize=thread"
+	CFLAGS="$CFLAGS $THREADSAN_FLAGS"
+	LDFLAGS="$LDFLAGS $THREADSAN_FLAGS"
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+		[AC_MSG_RESULT([yes])]
+		[threadsan_cflags=$THREADSAN_FLAGS]
+		[threadsan_ldflags=$THREADSAN_FLAGS]
+		[have_threadsan=yes],
+		[AC_MSG_RESULT([no])])
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+	AC_SUBST(have_threadsan)
+	AC_SUBST(threadsan_cflags)
+	AC_SUBST(threadsan_ldflags)
+fi
+if test "$enable_threadsan" = "yes" && test "$have_threadsan" != "yes"; then
+	AC_MSG_ERROR([THREADSAN not supported by compiler.])
+fi
+if test "$have_threadsan" = "yes" && test "$have_addrsan" = "yes"; then
+	AC_MSG_WARN([ADDRSAN and THREADSAN are not known to work together.])
+fi
+dnl
+dnl OS-specific uncomment control
+dnl
+LINUX_CMT="#"
+CYGWIN_CMT="#"
+UNIX_CMT=
+case "$host_os" in
+linux*)
+	LINUX_CMT=
+	;;
+cygwin)
+	CYGWIN_CMT=
+	UNIX_CMT="#"
+	;;
+esac
+AC_SUBST(LINUX_CMT)
+AC_SUBST(CYGWIN_CMT)
+AC_SUBST(UNIX_CMT)
+dnl
+dnl e2scrub only builds on linux
+dnl
+E2SCRUB_CMT="$LINUX_CMT"
+AC_SUBST(E2SCRUB_CMT)
+dnl
+dnl Linux and Hurd places root files in the / by default
+dnl
+case "$host_os" in
+linux* | gnu* | k*bsd*-gnu)
+	if test "$prefix" = NONE -a "$root_prefix" = NONE ; then
+		root_prefix="";
+		AC_MSG_RESULT([On $host_os systems, root_prefix defaults to ''])
+	fi
+	;;
+esac
+dnl
+dnl On Linux/hurd, force the prefix to be /usr
+dnl
+case "$host_os" in
+linux* | gnu* | k*bsd*-gnu)
+	if test "$prefix" = NONE ; then
+		prefix="/usr";
+		AC_MSG_RESULT([On $host_os systems, prefix defaults to /usr])
+		if test "$mandir" = '${prefix}/man' ; then
+			AC_MSG_RESULT([...and mandir defaults to /usr/share/man])
+			mandir=/usr/share/man
+		fi
+	fi
+;;
+esac
+if test "$root_prefix" = NONE ; then
+	if test "$prefix" = NONE ; then
+		root_prefix="$ac_default_prefix"
+	else
+		root_prefix="$prefix"
+	fi
+	root_bindir=$bindir
+	root_sbindir=$sbindir
+	root_libdir=$libdir
+	root_sysconfdir=$sysconfdir
+else
+	root_bindir='${root_prefix}/bin'
+	root_sbindir='${root_prefix}/sbin'
+	root_libdir='${root_prefix}/lib'
+	root_sysconfdir='${root_prefix}/etc'
+fi
+if test "$bindir" != '${exec_prefix}/bin'; then
+    root_bindir=$bindir
+    AC_MSG_RESULT([Setting root_bindir to $root_bindir])
+fi
+if test "$sbindir" != '${exec_prefix}/sbin'; then
+    root_sbindir=$sbindir
+    AC_MSG_RESULT([Setting root_sbindir to $root_sbindir])
+fi
+if test "$libdir" != '${exec_prefix}/lib'; then
+    root_libdir=$libdir
+    AC_MSG_RESULT([Setting root_libdir to $root_libdir])
+fi
+if test "$sysconfdir" != '${prefix}/etc'; then
+    root_sysconfdir=$sysconfdir
+    AC_MSG_RESULT([Setting root_sysconfdir to $root_sysconfdir])
+fi
+AC_SUBST(root_prefix)
+AC_SUBST(root_bindir)
+AC_SUBST(root_sbindir)
+AC_SUBST(root_libdir)
+AC_SUBST(root_sysconfdir)
+dnl
+dnl Allow specification of the multiarch arch
+dnl
+AC_ARG_WITH([multiarch],
+[  --with-multiarch=ARCH specify the multiarch triplet],
+if test "$withval" = "lib64"; then
+    libdir=/usr/lib64
+    root_libdir=/lib64
+else
+    libdir=$libdir/$withval
+    root_libdir=$root_libdir/$withval
+fi
+)
+dnl
+dnl
+dnl See if -static works.  This could fail if the linker does not
+dnl support -static, or if required external libraries are not available
+dnl in static form.
+dnl
+AC_MSG_CHECKING([whether we can link with -static])
+AC_CACHE_VAL(ac_cv_e2fsprogs_use_static,
+[SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS_STATIC -static"
+AC_TRY_LINK([#include <stdio.h>],[fflush(stdout);],
+ ac_cv_e2fsprogs_use_static=yes, ac_cv_e2fsprogs_use_static=no)
+LDFLAGS=$SAVE_LDFLAGS])
+dnl
+dnl Regardless of how the test turns out, Solaris doesn't handle -static
+dnl This is caused by the socket library requiring the nsl library, which
+dnl requires the -dl library, which only works for dynamically linked 
+dnl programs.  It basically means you can't have statically linked programs
+dnl which use the network under Solaris.  
+dnl
+case "$host_os" in
+solaris2.*)
+	ac_cv_e2fsprogs_use_static=no	
+;;
+esac
+AC_MSG_RESULT($ac_cv_e2fsprogs_use_static)
+if test $ac_cv_e2fsprogs_use_static = yes; then
+	LDFLAGS_STATIC="$LDFLAGS_STATIC -static"
+fi
+AC_SUBST(LDFLAGS_STATIC)
+dnl
+dnl Work around mysterious Darwin / GNU libintl problem
+dnl (__asm__ redirection doesn't work for some mysterious reason.  Looks like
+dnl Apple hacked gcc somehow?)
+dnl
+case "$host_os" in
+darwin*)
+	AC_MSG_RESULT([Using Apple Darwin / GNU libintl workaround])
+	AC_DEFINE(_INTL_REDIRECT_MACROS, 1,
+		[Define to 1 if Apple Darwin libintl workaround is needed])
+	;;
+esac
+dnl
+dnl Only try to run the test suite if we're not cross compiling.
+dnl
+if test "$cross_compiling" = yes ; then
+  DO_TEST_SUITE=
+else
+  DO_TEST_SUITE=check
+fi
+AC_SUBST(DO_TEST_SUITE)
+dnl
+dnl Only include the intl include files if we're building with them
+dnl
+INCLUDES='-I. -I$(top_builddir)/lib -I$(top_srcdir)/lib'
+if test -n "$CPPFLAGS" ; then
+	INCLUDES="$INCLUDES $CPPFLAGS"
+fi
+if test "$USE_INCLUDED_LIBINTL" = "yes" ; then
+	INCLUDES=$INCLUDES' -I$(top_builddir)/intl -I$(top_srcdir)/intl'
+fi
+if test -n "$WITH_DIET_LIBC" ; then
+	INCLUDES="$INCLUDES -D_REENTRANT"
+fi
+AC_SUBST(INCLUDES)
+dnl
+dnl Build CFLAGS
+dnl
+if test $cross_compiling = no; then
+   BUILD_CFLAGS="$CFLAGS $CPPFLAGS $INCLUDES -DHAVE_CONFIG_H"
+   BUILD_LDFLAGS="$LDFLAGS"
+fi
+AC_SUBST(BUILD_CFLAGS)
+AC_SUBST(BUILD_LDFLAGS)
+dnl
+dnl Define CFLAGS and LDFLAGS for shared libraries
+dnl
+CFLAGS_SHLIB=${CFLAGS_SHLIB:-$CFLAGS}
+CFLAGS_STLIB=${CFLAGS_STLIB:-$CFLAGS}
+LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
+AC_SUBST(CFLAGS_SHLIB)
+AC_SUBST(CFLAGS_STLIB)
+AC_SUBST(LDFLAGS_SHLIB)
+
+dnl
+dnl Where do udev rules go?
+dnl
+AC_ARG_WITH([udev_rules_dir],
+  [AS_HELP_STRING([--with-udev-rules-dir@<:@=DIR@:>@],
+	[Install udev rules into DIR.])],
+  [],
+  [with_udev_rules_dir=yes])
+AS_IF([test "x${with_udev_rules_dir}" != "xno"],
+  [
+	AS_IF([test "x${with_udev_rules_dir}" = "xyes"],
+	  [
+		PKG_CHECK_MODULES([udev], [udev],
+		  [
+			with_udev_rules_dir="$($PKG_CONFIG --variable=udevdir udev)/rules.d"
+		  ], [
+			with_udev_rules_dir=""
+		  ])
+	  ])
+	AC_MSG_CHECKING([for udev rules dir])
+	pkg_udev_rules_dir="${with_udev_rules_dir}"
+	AS_IF([test -n "${pkg_udev_rules_dir}"],
+	  [
+		AC_MSG_RESULT(${pkg_udev_rules_dir})
+		have_udev="yes"
+	  ],
+	  [
+		AC_MSG_RESULT(no)
+		have_udev="no"
+	  ])
+  ],
+  [
+	have_udev="disabled"
+  ])
+AC_SUBST(have_udev)
+AC_SUBST(pkg_udev_rules_dir)
+
+dnl
+dnl Where do cron jobs go?
+dnl
+AC_ARG_WITH([crond_dir],
+  [AS_HELP_STRING([--with-crond-dir@<:@=DIR@:>@],
+	[Install system crontabs into DIR.])],
+  [],
+  [with_crond_dir=yes])
+AS_IF([test "x${with_crond_dir}" != "xno"],
+  [
+	AS_IF([test "x${with_crond_dir}" = "xyes"],
+	  [
+		AS_IF([test -d "/etc/cron.d"],
+		  [with_crond_dir="/etc/cron.d"],
+		  [have_crond="no"; with_crond_dir=""])
+	  ])
+	AC_MSG_CHECKING([for system crontab dir])
+	crond_dir="${with_crond_dir}"
+	AS_IF([test -n "${crond_dir}"],
+	  [
+		AC_MSG_RESULT(${crond_dir})
+		have_crond="yes"
+	  ],
+	  [
+		AC_MSG_RESULT(no)
+		have_crond="no"
+	  ])
+  ],
+  [
+	have_crond="disabled"
+  ])
+AC_SUBST(have_crond)
+AC_SUBST(crond_dir)
+
+dnl
+dnl Where do systemd services go?
+dnl
+AC_ARG_WITH([systemd_unit_dir],
+  [AS_HELP_STRING([--with-systemd-unit-dir@<:@=DIR@:>@],
+	[Install systemd system units into DIR.])],
+  [],
+  [with_systemd_unit_dir=yes])
+AS_IF([test "x${with_systemd_unit_dir}" != "xno"],
+  [
+	AS_IF([test "x${with_systemd_unit_dir}" = "xyes"],
+	  [
+		PKG_CHECK_MODULES([systemd], [systemd],
+		  [
+			with_systemd_unit_dir="$($PKG_CONFIG --variable=systemdsystemunitdir systemd)"
+		  ], [
+			with_systemd_unit_dir=""
+		  ])
+		m4_pattern_allow([^PKG_(MAJOR|MINOR|BUILD|REVISION)$])
+	  ])
+	AC_MSG_CHECKING([for systemd system unit dir])
+	systemd_system_unit_dir="${with_systemd_unit_dir}"
+	AS_IF([test -n "${systemd_system_unit_dir}"],
+	  [
+		AC_MSG_RESULT(${systemd_system_unit_dir})
+		have_systemd="yes"
+	  ],
+	  [
+		AC_MSG_RESULT(no)
+		have_systemd="no"
+	  ])
+  ],
+  [
+	have_systemd="disabled"
+  ])
+AC_SUBST(have_systemd)
+AC_SUBST(systemd_system_unit_dir)
+
+dnl
+dnl Make our output files, being sure that we create the some miscellaneous 
+dnl directories
+dnl
+test -d lib || mkdir lib
+test -d include || mkdir include
+test -d include/linux || mkdir include/linux
+test -d include/asm || mkdir include/asm
+if test -z "$UUID_CMT" ; then
+	uuid_out_list="lib/uuid/Makefile lib/uuid/uuid.pc \
+		lib/uuid/uuid_types.h"
+fi
+if test -z "$BLKID_CMT" ; then
+	blkid_out_list="lib/blkid/Makefile lib/blkid/blkid.pc \
+		lib/blkid/blkid_types.h"
+fi
+for i in MCONFIG Makefile \
+	util/Makefile util/subst.conf util/gen-tarball util/install-symlink \
+	lib/et/Makefile lib/ss/Makefile lib/e2p/Makefile \
+	lib/ext2fs/Makefile lib/ext2fs/ext2_types.h \
+	$uuid_out_list $blkid_out_list lib/support/Makefile \
+	lib/ss/ss.pc lib/et/com_err.pc lib/e2p/e2p.pc lib/ext2fs/ext2fs.pc \
+	misc/Makefile ext2ed/Makefile e2fsck/Makefile \
+	debugfs/Makefile tests/Makefile tests/progs/Makefile \
+	resize/Makefile doc/Makefile intl/Makefile \
+	intl/libgnuintl.h po/Makefile.in scrub/Makefile; do
+	if test -d `dirname ${srcdir}/$i` ; then
+		outlist="$outlist $i"
+	fi
+done
+AC_OUTPUT($outlist)
+if test -f util/gen-tarball; then chmod +x util/gen-tarball; fi

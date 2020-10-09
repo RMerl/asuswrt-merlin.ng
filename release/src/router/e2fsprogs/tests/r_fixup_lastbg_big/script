@@ -1,0 +1,40 @@
+test_description="fix up last bg when expanding beyond the last bg"
+if ! test -x $RESIZE2FS_EXE -o ! -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs/resize2fs)"
+	return 0
+fi
+
+EXP=$test_dir/expect
+OUT=$test_name.log
+E2FSCK=../e2fsck/e2fsck
+
+$MKE2FS -T ext4 -b 1024 -F -U 56d3ee50-8532-4f29-8181-d7c6ea4a94a6 $TMPFILE 20000 > $OUT 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep -A10 '^Group 2:' >> $OUT
+$DEBUGFS -R "set_bg 2 itable_unused 0" -w $TMPFILE > /dev/null 2>&1
+$DEBUGFS -R "set_bg 2 flags 0" -w $TMPFILE > /dev/null 2>&1
+$DEBUGFS -R "set_bg 2 checksum 0xd318" -w $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep -A10 '^Group 2:' >> $OUT
+dd if=/dev/zero of=$TMPFILE bs=1 count=1 seek=$((1024 * 40000)) conv=notrunc >> $OUT 2> /dev/null
+(
+RESIZE2FS_FORCE_ITABLE_INIT=1
+export RESIZE2FS_FORCE_ITABLE_INIT
+unset RESIZE2FS_FORCE_LAZY_ITABLE_INIT
+$RESIZE2FS_EXE -f -p $TMPFILE >> $OUT 2>&1
+)
+$DUMPE2FS $TMPFILE 2>&1 | grep -A10 '^Group 2:' >> $OUT
+$E2FSCK -fy $TMPFILE >> $OUT 2>&1
+
+sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" < $OUT > $OUT.new
+mv $OUT.new $OUT
+
+cmp -s $OUT $EXP
+status=$?
+if [ $status -eq 0 ]; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff -u $EXP $OUT > $test_name.failed
+fi
+
+unset EXP OUT E2FSCK

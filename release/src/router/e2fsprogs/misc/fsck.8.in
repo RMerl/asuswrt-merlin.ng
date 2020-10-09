@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .\" Copyright 1993, 1994, 1995 by Theodore Ts'o.  All Rights Reserved.
 .\" This file may be copied under the terms of the GNU Public License.
-.\" 
+.\"
 .TH FSCK 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 fsck \- check and repair a Linux file system
@@ -19,34 +19,34 @@ fsck \- check and repair a Linux file system
 [
 .B \-t
 .I fstype
-] 
+]
 .I [filesys ... ]
 [\-\-] [
 .B fs-specific-options
 ]
 .SH DESCRIPTION
 .B fsck
-is used to check and optionally repair one or more Linux file systems.  
+is used to check and optionally repair one or more Linux file systems.
 .I filesys
 can be a device name (e.g.
 .IR /dev/hdc1 ", " /dev/sdb2 ),
 a mount point (e.g.
 .IR / ", " /usr ", " /home ),
 or an ext2 label or UUID specifier (e.g.
-UUID=8868abf6-88c5-4a83-98b8-bfc24057f7bd or LABEL=root).  
-Normally, the 
-.B fsck 
-program will try to handle filesystems on different physical disk drives 
+UUID=8868abf6-88c5-4a83-98b8-bfc24057f7bd or LABEL=root).
+Normally, the
+.B fsck
+program will try to handle filesystems on different physical disk drives
 in parallel to reduce the total amount of time needed to check all of the
 filesystems.
 .PP
-If no filesystems are specified on the command line, and the 
-.B \-A 
-option is not specified, 
+If no filesystems are specified on the command line, and the
+.B \-A
+option is not specified,
 .B fsck
 will default to checking filesystems in
 .B /etc/fstab
-serially.  This is equivalent to the 
+serially.  This is equivalent to the
 .B \-As
 options.
 .PP
@@ -70,7 +70,7 @@ is the sum of the following conditions:
 .br
 \	128\	\-\ Shared library error
 .br
-The exit code returned when multiple file systems are checked 
+The exit code returned when multiple file systems are checked
 is the bit-wise OR of the exit codes for each
 file system that is checked.
 .PP
@@ -90,37 +90,37 @@ further details.
 .SH OPTIONS
 .TP
 .B \-s
-Serialize 
-.B fsck 
+Serialize
+.B fsck
 operations.  This is a good idea if you are checking multiple
 filesystems and the checkers are in an interactive mode.  (Note:
 .BR e2fsck (8)
-runs in an interactive mode by default.  To make 
+runs in an interactive mode by default.  To make
 .BR e2fsck (8)
 run in a non-interactive mode, you must either specify the
 .B \-p
 or
 .B \-a
-option, if you wish for errors to be corrected automatically, or the 
+option, if you wish for errors to be corrected automatically, or the
 .B \-n
 option if you do not.)
 .TP
 .BI \-t " fslist"
 Specifies the type(s) of file system to be checked.  When the
-.B \-A 
-flag is specified, only filesystems that match 
+.B \-A
+flag is specified, only filesystems that match
 .I fslist
 are checked.  The
 .I fslist
 parameter is a comma-separated list of filesystems and options
 specifiers.  All of the filesystems in this comma-separated list may be
-prefixed by a negation operator 
+prefixed by a negation operator
 .RB ' no '
-or 
+or
 .RB ' ! ',
 which requests that only those filesystems not listed in
 .I fslist
-will be checked.  If all of the filesystems in 
+will be checked.  If all of the filesystems in
 .I fslist
 are not prefixed by a negation operator, then only those filesystems
 listed
@@ -130,18 +130,18 @@ will be checked.
 .sp
 Options specifiers may be included in the comma-separated
 .IR fslist .
-They must have the format 
+They must have the format
 .BI opts= fs-option\fR.
 If an options specifier is present, then only filesystems which contain
 .I fs-option
-in their mount options field of 
+in their mount options field of
 .B /etc/fstab
 will be checked.  If the options specifier is prefixed by a negation
-operator, then only 
+operator, then only
 those filesystems that do not have
 .I fs-option
 in their mount options field of
-.B /etc/fstab 
+.B /etc/fstab
 will be checked.
 .sp
 For example, if
@@ -149,7 +149,7 @@ For example, if
 appears in
 .IR fslist ,
 then only filesystems listed in
-.B /etc/fstab 
+.B /etc/fstab
 with the
 .B ro
 option will be checked.
@@ -169,16 +169,16 @@ option.
 .sp
 Normally, the filesystem type is deduced by searching for
 .I filesys
-in the 
-.I /etc/fstab 
+in the
+.I /etc/fstab
 file and using the corresponding entry.
-If the type can not be deduced, and there is only a single filesystem 
-given as an argument to the 
-.B \-t 
-option, 
+If the type can not be deduced, and there is only a single filesystem
+given as an argument to the
+.B \-t
+option,
 .B fsck
 will use the specified filesystem type.  If this type is not
-available, then the default file system type (currently ext2) is used. 
+available, then the default file system type (currently ext2) is used.
 .TP
 .B \-A
 Walk through the
@@ -191,27 +191,27 @@ a single file system.
 .sp
 The root filesystem will be checked first unless the
 .B \-P
-option is specified (see below).  After that, 
-filesystems will be checked in the order specified by the 
-.I fs_passno 
-(the sixth) field in the 
+option is specified (see below).  After that,
+filesystems will be checked in the order specified by the
+.I fs_passno
+(the sixth) field in the
 .I /etc/fstab
-file.  
-Filesystems with a 
+file.
+Filesystems with a
 .I fs_passno
 value of 0 are skipped and are not checked at all.  Filesystems with a
 .I fs_passno
-value of greater than zero will be checked in order, 
+value of greater than zero will be checked in order,
 with filesystems with the lowest
-.I fs_passno 
+.I fs_passno
 number being checked first.
-If there are multiple filesystems with the same pass number, 
-fsck will attempt to check them in parallel, although it will avoid running 
-multiple filesystem checks on the same physical disk.  
+If there are multiple filesystems with the same pass number,
+fsck will attempt to check them in parallel, although it will avoid running
+multiple filesystem checks on the same physical disk.
 .sp
-Hence, a very common configuration in 
+Hence, a very common configuration in
 .I /etc/fstab
-files is to set the root filesystem to have a 
+files is to set the root filesystem to have a
 .I fs_passno
 value of 1
 and to set all other filesystems to have a
@@ -226,9 +226,9 @@ machine in question is short on memory so that
 excessive paging is a concern.
 .TP
 .B \-C\fR [ \fI "fd" \fR ]
-Display completion/progress bars for those filesystem checkers (currently 
+Display completion/progress bars for those filesystem checkers (currently
 only for ext2 and ext3) which support them.   Fsck will manage the
-filesystem checkers so that only one of them will display  
+filesystem checkers so that only one of them will display
 a progress bar at a time.  GUI front-ends may specify a file descriptor
 .IR fd ,
 in which case the progress bar information will be sent to that file descriptor.
@@ -241,12 +241,12 @@ for mounted filesystems.
 Don't execute, just show what would be done.
 .TP
 .B \-P
-When the 
+When the
 .B \-A
 flag is set, check the root filesystem in parallel with the other filesystems.
 This is not the safest thing in the world to do,
-since if the root filesystem is in doubt things like the 
-.BR e2fsck (8) 
+since if the root filesystem is in doubt things like the
+.BR e2fsck (8)
 executable might be corrupted!  This option is mainly provided
 for those sysadmins who don't want to repartition the root
 filesystem to be small and compact (which is really the right solution).
@@ -264,12 +264,12 @@ Produce verbose output, including all file system-specific commands
 that are executed.
 .TP
 .B fs-specific-options
-Options which are not understood by 
-.B fsck 
+Options which are not understood by
+.B fsck
 are passed to the filesystem-specific checker.  These arguments
 .B must
 not take arguments, as there is no
-way for 
+way for
 .B fsck
 to be able to properly guess which arguments take options and which
 don't.
@@ -282,13 +282,13 @@ file system-specific checker.
 Please note that fsck is not
 designed to pass arbitrarily complicated options to filesystem-specific
 checkers.  If you're doing something complicated, please just
-execute the filesystem-specific checker directly.  If you pass 
+execute the filesystem-specific checker directly.  If you pass
 .B fsck
 some horribly complicated option and arguments, and it doesn't do
-what you expect, 
+what you expect,
 .B don't bother reporting it as a bug.
 You're almost certainly doing something that you shouldn't be doing
-with 
+with
 .BR fsck.
 .PP
 Options to different filesystem-specific fsck's are not standardized.
@@ -298,46 +298,46 @@ by most file system checkers:
 .TP
 .B \-a
 Automatically repair the file system without any questions (use
-this option with caution).  Note that 
+this option with caution).  Note that
 .BR e2fsck (8)
-supports 
+supports
 .B \-a
-for backwards compatibility only.  This option is mapped to 
+for backwards compatibility only.  This option is mapped to
 .BR e2fsck 's
 .B \-p
-option which is safe to use, unlike the 
-.B \-a 
+option which is safe to use, unlike the
+.B \-a
 option that some file system checkers support.
 .TP
 .B \-n
-For some filesystem-specific checkers, the 
+For some filesystem-specific checkers, the
 .B \-n
-option will cause the fs-specific fsck to avoid attempting to repair any 
+option will cause the fs-specific fsck to avoid attempting to repair any
 problems, but simply report such problems to stdout.  This is however
-not true for all filesystem-specific checkers.  In particular, 
+not true for all filesystem-specific checkers.  In particular,
 .BR fsck.reiserfs (8)
 will not report any corruption if given this option.
 .BR fsck.minix (8)
-does not support the 
-.B \-n 
+does not support the
+.B \-n
 option at all.
 .TP
 .B \-r
 Interactively repair the filesystem (ask for confirmations).  Note: It
 is generally a bad idea to use this option if multiple fsck's are being
-run in parallel.  Also note that this is 
+run in parallel.  Also note that this is
 .BR e2fsck 's
 default behavior; it supports this option for backwards compatibility
 reasons only.
 .TP
 .B \-y
-For some filesystem-specific checkers, the 
-.B \-y 
+For some filesystem-specific checkers, the
+.B \-y
 option will cause the fs-specific fsck to always attempt to fix any
 detected filesystem corruption automatically.  Sometimes an expert may
-be able to do better driving the fsck manually.  Note that 
+be able to do better driving the fsck manually.  Note that
 .B not
-all filesystem-specific checkers implement this option.  In particular 
+all filesystem-specific checkers implement this option.  In particular
 .BR fsck.minix (8)
 and
 .BR fsck.cramfs (8)
@@ -354,7 +354,7 @@ The
 program's behavior is affected by the following environment variables:
 .TP
 .B FSCK_FORCE_ALL_PARALLEL
-If this environment variable is set, 
+If this environment variable is set,
 .B fsck
 will attempt to run all of the specified filesystems in parallel,
 regardless of whether the filesystems appear to be on the same
@@ -364,7 +364,7 @@ such as those sold by companies such as IBM or EMC.)
 .B FSCK_MAX_INST
 This environment variable will limit the maximum number of file system
 checkers that can be running at one time.  This allows configurations
-which have a large number of disks to avoid 
+which have a large number of disks to avoid
 .B fsck
 starting too many file system checkers at once, which might overload
 CPU and memory resources available on the system.  If this value is
@@ -375,23 +375,23 @@ may attempt to automatically determine how many file system checks can
 be run based on gathering accounting data from the operating system.
 .TP
 .B PATH
-The 
+The
 .B PATH
 environment variable is used to find file system checkers.  A set of
-system directories are searched first: 
+system directories are searched first:
 .BR /sbin ,
 .BR /sbin/fs.d ,
 .BR  /sbin/fs ,
 .BR /etc/fs ,
-and 
+and
 .BR /etc .
 Then the set of directories found in the
 .B PATH
 environment are searched.
 .TP
 .B FSTAB_FILE
-This environment variable allows the system administrator 
-to override the standard location of the 
+This environment variable allows the system administrator
+to override the standard location of the
 .B /etc/fstab
 file.  It is also useful for developers who are testing
 .BR fsck .

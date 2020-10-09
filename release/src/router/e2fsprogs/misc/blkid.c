@@ -87,7 +87,9 @@ static void safe_print(const char *cp, int len)
 			fputc('^', stdout);
 			ch ^= 0x40; /* ^@, ^A, ^B; ^? for DEL */
 		}
-		fputc(ch, stdout);
+		if (ch != '"') {
+			fputc(ch, stdout);
+		}
 	}
 }
 

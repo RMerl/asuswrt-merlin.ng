@@ -30,6 +30,7 @@ int main(int argc, char **argv)
 {
 	int	lsectsize, psectsize;
 	int	retval;
+	int	fd;
 
 	if (argc < 2) {
 		fprintf(stderr, "Usage: %s device\n", argv[0]);
@@ -50,5 +51,13 @@ int main(int argc, char **argv)
 	}
 	printf("Device %s has logical/physical sector size of %d/%d.\n",
 	       argv[1], lsectsize, psectsize);
+	fd = open(argv[1], O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		exit(1);
+	}
+	printf("The device's DIO alignment is %d\n",
+	       ext2fs_get_dio_alignment(fd));
+	close(fd);
 	exit(0);
 }

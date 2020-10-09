@@ -1,0 +1,22 @@
+$MKE2FS -q -F -o Linux -b 4096 -O mmp -E mmp_update_interval=1 $TMPFILE 100 >> $test_name.log 2>&1
+status=$?
+if [ "$status" != 0 ] ; then
+	echo "mke2fs -O mmp failed" > $test_name.failed
+	echo "$test_name: $test_description: failed"
+	return $status
+fi
+
+if test -x $E2IMAGE_EXE; then
+
+ONE_PASS_ONLY=true
+FSCK_OPT="-n -f"
+IMAGE=$TMPFILE
+SKIP_GUNZIP=true
+PREP_CMD="$E2IMAGE_EXE -r  $TMPFILE $TMPFILE.raw 2>/dev/null; \
+          mv $TMPFILE.raw $TMPFILE"
+
+. $cmd_dir/run_e2fsck
+
+else
+	echo "$test_name: $test_description: skipped"
+fi

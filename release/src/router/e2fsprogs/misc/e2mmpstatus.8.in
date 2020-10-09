@@ -1,0 +1,59 @@
+.\" -*- nroff -*-
+.\" This file may be copied under the terms of the GNU Public License.
+.\"
+.TH E2MMPSTATUS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+e2mmpstatus \- Check MMP status of an ext4 filesystem
+.SH SYNOPSIS
+.BR e2mmpstatus " [" \-i ]
+.RI < filesystem >
+.SH OPTIONS
+.TP
+.B \-i
+prints out the MMP information rather than check it.
+.SH DESCRIPTION
+.B e2mmpstatus
+is used to check Multiple-Mount Protection (MMP) status of an ext4
+filesystem with the
+.B mmp
+feature enabled.  The specified
+.I filesystem
+can be a device name (e.g.
+.IR /dev/hdc1 ", " /dev/sdb2 ),
+or an ext4 filesystem label or UUID, for example
+.B UUID=8868abf6-88c5-4a83-98b8-bfc24057f7bd
+or
+.BR LABEL=root .
+By default, the
+.B e2mmpstatus
+program checks whether it is safe to mount the filesystem without taking
+the risk of mounting it more than once.
+.PP
+MMP (multiple-mount protection) is a feature that adds protection against
+the filesystem being modified simultaneously by more than one node.
+It is NOT safe to mount a filesystem when one of the following conditions
+is true:
+.br
+	1. e2fsck is running on the filesystem.
+.br
+	2. the filesystem is in use by another node.
+.br
+	3. The MMP block is corrupted or cannot be read for some reason.
+.br
+The
+.B e2mmpstatus
+program might wait for some time to see whether the MMP block is being
+updated by any node during this period.  The time taken depends on how
+frequently the MMP block is being written by the other node.
+.SH EXIT CODE
+The exit code returned by
+.B e2mmpstatus
+is 0 when it is safe to mount the filesystem, 1 when the MMP block shows
+the filesystem is in use on another node and it is NOT safe to mount
+the filesystem, and 2 if some other failure occurred that prevents the
+check from properly detecting the current MMP status.
+.SH SEE ALSO
+.BR dumpe2fs (8),
+.BR e2fsck (8),
+.BR fstab (5),
+.BR fsck (8),

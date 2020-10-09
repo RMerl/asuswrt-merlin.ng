@@ -14,12 +14,12 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
   linux/include/linux/rbtree.h
 
   To use rbtrees you'll have to implement your own insert and search cores.
-  This will avoid us to use callbacks and to drop drammatically performances.
+  This will avoid us to use callbacks and to drop dramatically performances.
   I know it's not the cleaner way,  but in C (not in C++) to get
   performances and genericity...
 
@@ -95,6 +95,7 @@ static inline struct page * rb_insert_page_cache(struct inode * inode,
 #define	_LINUX_RBTREE_H
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #undef offsetof
 #ifdef __compiler_offsetof
@@ -109,7 +110,7 @@ static inline struct page * rb_insert_page_cache(struct inode * inode,
 
 struct rb_node
 {
-	unsigned long  rb_parent_color;
+	uintptr_t  rb_parent_color;
 #define	RB_RED		0
 #define	RB_BLACK	1
 	struct rb_node *rb_right;
@@ -132,7 +133,7 @@ struct rb_root
 
 static inline void ext2fs_rb_set_parent(struct rb_node *rb, struct rb_node *p)
 {
-	rb->rb_parent_color = (rb->rb_parent_color & 3) | (unsigned long)p;
+	rb->rb_parent_color = (rb->rb_parent_color & 3) | (uintptr_t)p;
 }
 static inline void ext2fs_rb_set_color(struct rb_node *rb, int color)
 {
@@ -142,9 +143,20 @@ static inline void ext2fs_rb_set_color(struct rb_node *rb, int color)
 #define RB_ROOT	(struct rb_root) { NULL, }
 #define	ext2fs_rb_entry(ptr, type, member) container_of(ptr, type, member)
 
-#define EXT2FS_RB_EMPTY_ROOT(root)	((root)->rb_node == NULL)
-#define EXT2FS_RB_EMPTY_NODE(node)	(ext2fs_rb_parent(node) == node)
-#define EXT2FS_RB_CLEAR_NODE(node)	(ext2fs_rb_set_parent(node, node))
+static inline int ext2fs_rb_empty_root(struct rb_root *root)
+{
+	return root->rb_node == NULL;
+}
+
+static inline int ext2fs_rb_empty_node(struct rb_node *node)
+{
+	return ext2fs_rb_parent(node) == node;
+}
+
+static inline void ext2fs_rb_clear_node(struct rb_node *node)
+{
+	ext2fs_rb_set_parent(node, node);
+}
 
 extern void ext2fs_rb_insert_color(struct rb_node *, struct rb_root *);
 extern void ext2fs_rb_erase(struct rb_node *, struct rb_root *);
@@ -171,7 +183,7 @@ static inline void ext2fs_rb_link_node(struct rb_node * node,
 				     struct rb_node * parent,
 				     struct rb_node ** rb_link)
 {
-	node->rb_parent_color = (unsigned long )parent;
+	node->rb_parent_color = (uintptr_t)parent;
 	node->rb_left = node->rb_right = NULL;
 
 	*rb_link = node;

@@ -1,0 +1,58 @@
+Creating filesystem with 65536 1k blocks and 4096 inodes
+Superblock backups stored on blocks: 
+	8193, 24577, 40961, 57345
+
+Allocating group tables:    done                            
+Writing inode tables:    done                            
+Writing superblocks and filesystem accounting information:    done
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/4096 files (0.0% non-contiguous), 2340/65536 blocks
+Exit status is 0
+debugfs write files
+debugfs: stat /a
+Inode: 12   Type: regular    Mode:  0666   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User:     0   Group:     0   Project:     0   Size: 40960
+File ACL: 0
+Links: 1   Blockcount: 82
+Fragment:  Address: 0    Number: 0    Size: 0
+Size of extra inode fields: 32
+BLOCKS:
+(0-1):1312-1313, (2-11):8000-8009, (IND):8010, (12-39):8011-8038
+TOTAL: 41
+
+debugfs: stat /b
+Inode: 13   Type: regular    Mode:  0666   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User:     0   Group:     0   Project:     0   Size: 10240000
+File ACL: 0
+Links: 1   Blockcount: 20082
+Fragment:  Address: 0    Number: 0    Size: 0
+Size of extra inode fields: 32
+BLOCKS:
+(0-11):10000-10011, (IND):10012, (12-267):10013-10268, (DIND):10269, (IND):10270, (268-523):10271-10526, (IND):10527, (524-779):10528-10783, (IND):10784, (780-1035):10785-11040, (IND):11041, (1036-1291):11042-11297, (IND):11298, (1292-1547):11299-11554, (IND):11555, (1548-1803):11556-11811, (IND):11812, (1804-2059):11813-12068, (IND):12069, (2060-2315):12070-12325, (IND):12326, (2316-2571):12327-12582, (IND):12583, (2572-2827):12584-12839, (IND):12840, (2828-3083):12841-13096, (IND):13097, (3084-3339):13098-13353, (IND):13354, (3340-3595):13355-13610, (IND):13611, (3596-3851):13612-13867, (IND):13868, (3852-4107):13869-14124, (IND):14125, (4108-4363):14126-14381, (IND):14382, (4364-4619):14383-14638, (IND):14639, (4620-4875):14640-14895, (IND):14896, (4876-5131):14897-15152, (IND):15153, (5132-5387):15154-15409, (IND):15410, (5388-5643):15411-15666, (IND):15667, (5644-5899):15668-15923, (IND):15924, (5900-6155):15925-16180, (IND):16181, (6156-6411):16182-16437, (IND):16438, (6412-6667):16439-16694, (IND):16695, (6668-6923):16696-16951, (IND):16952, (6924-7179):16953-17208, (IND):17209, (7180-7435):17210-17465, (IND):17466, (7436-7691):17467-17722, (IND):17723, (7692-7947):17724-17979, (IND):17980, (7948-8203):17981-18236, (IND):18237, (8204-8459):18238-18493, (IND):18494, (8460-8715):18495-18750, (IND):18751, (8716-8971):18752-19007, (IND):19008, (8972-9227):19009-19264, (IND):19265, (9228-9483):19266-19521, (IND):19522, (9484-9739):19523-19778, (IND):19779, (9740-9995):19780-20035, (IND):20036, (9996-9999):20037-20040
+TOTAL: 10041
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Free blocks count wrong for group #0 (6841, counted=6840).
+Fix? yes
+
+Free blocks count wrong for group #1 (1551, counted=1550).
+Fix? yes
+
+Free blocks count wrong (53116, counted=53114).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 13/4096 files (7.7% non-contiguous), 12422/65536 blocks
+Exit status is 1

@@ -1,0 +1,11 @@
+if test -x $E2IMAGE_EXE; then
+
+ONE_PASS_ONLY=true
+FSCK_OPT="-n -b 8193 -f"
+PREP_CMD="$E2IMAGE_EXE -r -b 8193 -B 1024 $TMPFILE $TMPFILE.raw 2>/dev/null; \
+	  mv $TMPFILE.raw $TMPFILE"
+. $cmd_dir/run_e2fsck
+
+else
+	echo "$test_name: $test_description: skipped"
+fi

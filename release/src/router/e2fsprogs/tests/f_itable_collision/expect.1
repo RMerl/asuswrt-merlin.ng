@@ -1,0 +1,93 @@
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12 block 37 conflicts with critical metadata, skipping block checks.
+Illegal block number passed to ext2fs_test_block_bitmap #268435455 for in-use block map
+Illegal block number passed to ext2fs_mark_block_bitmap #268435455 for in-use block map
+Inode 12, i_blocks is 48, should be 56.  Fix? yes
+
+Inode 13 has a bad extended attribute block 34.  Clear? yes
+
+Deleted inode 33 has zero dtime.  Fix? yes
+
+Inodes that were part of a corrupted orphan linked list found.  Fix? yes
+
+Inode 49 was part of the orphaned inode list.  FIXED.
+Inode 14 block 36 conflicts with critical metadata, skipping block checks.
+Inode 14 has illegal block(s).  Clear? yes
+
+Illegal indirect block (4294967295) in inode 14.  CLEARED.
+Illegal indirect block (4294967295) in inode 14.  CLEARED.
+Illegal indirect block (4294967295) in inode 14.  CLEARED.
+Illegal indirect block (4294967295) in inode 14.  CLEARED.
+Illegal indirect block (4294967295) in inode 14.  CLEARED.
+Illegal indirect block (4294967295) in inode 14.  CLEARED.
+Illegal indirect block (4294967295) in inode 14.  CLEARED.
+Too many illegal blocks in inode 14.
+Clear inode? yes
+
+Restarting e2fsck from the beginning...
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12 block 37 conflicts with critical metadata, skipping block checks.
+Illegal block number passed to ext2fs_test_block_bitmap #4294967294 for in-use block map
+Illegal block number passed to ext2fs_mark_block_bitmap #4294967294 for in-use block map
+Illegal block number passed to ext2fs_test_block_bitmap #268435455 for in-use block map
+Illegal block number passed to ext2fs_mark_block_bitmap #268435455 for in-use block map
+
+Running additional passes to resolve blocks claimed by more than one inode...
+Pass 1B: Rescanning for multiply-claimed blocks
+Illegal block number passed to ext2fs_test_block_bitmap #4294967294 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #268435455 for multiply claimed block map
+Multiply-claimed block(s) in inode 12: 37
+Pass 1C: Scanning directories for inodes with multiply-claimed blocks
+Pass 1D: Reconciling multiply-claimed blocks
+(There are 1 inodes containing multiply-claimed blocks.)
+
+File /a (inode #12, mod time Fri Jun 27 18:34:44 2014) 
+  has 1 multiply-claimed block(s), shared with 1 file(s):
+	<filesystem metadata>
+Clone multiply-claimed blocks? yes
+
+Illegal block number passed to ext2fs_test_block_bitmap #4294967294 for multiply claimed block map
+Illegal block number passed to ext2fs_test_block_bitmap #268435455 for multiply claimed block map
+Pass 2: Checking directory structure
+Setting filetype for entry 'bad1' in / (2) to 1.
+Setting filetype for entry 'bad2' in / (2) to 1.
+Restarting e2fsck from the beginning...
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12 has an invalid extent
+	(logical block 0, invalid physical block 4294967294, len 1)
+Clear? yes
+
+Inode 12 has an invalid extent
+	(logical block 5, invalid physical block 268435455, len 1)
+Clear? yes
+
+Inode 12, i_blocks is 56, should be 40.  Fix? yes
+
+Pass 2: Checking directory structure
+Entry 'b' in / (2) has deleted/unused inode 14.  Clear? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Block bitmap differences:  -9 -13 -42
+Fix? yes
+
+Free blocks count wrong for group #0 (485, counted=488).
+Fix? yes
+
+Free blocks count wrong (485, counted=488).
+Fix? yes
+
+Inode bitmap differences:  -14 +34 +50
+Fix? yes
+
+Free inodes count wrong for group #0 (114, counted=113).
+Fix? yes
+
+Free inodes count wrong (114, counted=113).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 15/128 files (6.7% non-contiguous), 24/512 blocks
+Exit status is 0

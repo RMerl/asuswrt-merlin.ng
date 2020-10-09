@@ -14,9 +14,15 @@
 #include "config.h"
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
+#include "ext2fsP.h"
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 /*
  * Keyed 32-bit hash function using TEA in a Davis-Meyer function
@@ -154,8 +160,6 @@ static void str2hashbuf(const char *msg, int len, __u32 *buf, int num,
 	if (len > num*4)
 		len = num * 4;
 	for (i=0; i < len; i++) {
-		if ((i % 4) == 0)
-			val = pad;
 		if (unsigned_flag)
 			c = (int) ucp[i];
 		else
@@ -186,6 +190,11 @@ static void str2hashbuf(const char *msg, int len, __u32 *buf, int num,
  * A particular hash version specifies whether or not the seed is
  * represented, and whether or not the returned hash is 32 bits or 64
  * bits.  32 bit hashes will return 0 for the minor hash.
+ *
+ * This function doesn't do any normalization or casefolding of the
+ * input string.  To take charset encoding into account, use
+ * ext2fs_dirhash2.
+ *
  */
 errcode_t ext2fs_dirhash(int version, const char *name, int len,
 			 const __u32 *seed,
@@ -258,4 +267,41 @@ errcode_t ext2fs_dirhash(int version, const char *name, int len,
 	if (ret_minor_hash)
 		*ret_minor_hash = minor_hash;
 	return 0;
+}
+
+/*
+ * Returns the hash of a filename considering normalization and
+ * casefolding.  This is a wrapper around ext2fs_dirhash with string
+ * encoding support based on the nls_table and the flags. Check
+ * ext2fs_dirhash for documentation on the input and output parameters.
+ */
+errcode_t ext2fs_dirhash2(int version, const char *name, int len,
+			  const struct ext2fs_nls_table *charset,
+			  int hash_flags, const __u32 *seed,
+			  ext2_dirhash_t *ret_hash,
+			  ext2_dirhash_t *ret_minor_hash)
+{
+	errcode_t r;
+	int dlen;
+
+	if (len && charset && (hash_flags & EXT4_CASEFOLD_FL)) {
+		char buff[PATH_MAX];
+
+		dlen = charset->ops->casefold(charset,
+			      (const unsigned char *) name, len,
+			      (unsigned char *) buff, sizeof(buff));
+		if (dlen < 0) {
+			if (dlen == -EINVAL)
+				goto opaque_seq;
+
+			return dlen;
+		}
+		r = ext2fs_dirhash(version, buff, dlen, seed, ret_hash,
+				   ret_minor_hash);
+		return r;
+	}
+
+opaque_seq:
+	return ext2fs_dirhash(version, name, len, seed, ret_hash,
+			      ret_minor_hash);
 }

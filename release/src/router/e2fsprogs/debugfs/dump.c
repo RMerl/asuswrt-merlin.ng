@@ -144,7 +144,8 @@ static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
 	return;
 }
 
-void do_dump(int argc, char **argv)
+void do_dump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+	     void *infop EXT2FS_ATTR((unused)))
 {
 	ext2_ino_t	inode;
 	int		fd;
@@ -208,9 +209,7 @@ static void rdump_symlink(ext2_ino_t ino, struct ext2_inode *inode,
 		goto errout;
 	}
 
-	/* Apparently, this is the right way to detect and handle fast
-	 * symlinks; see do_stat() in debugfs.c. */
-	if (inode->i_blocks == 0)
+	if (ext2fs_is_fast_symlink(inode))
 		strcpy(buf, (char *) inode->i_block);
 	else {
 		unsigned bytes = inode->i_size;
@@ -284,7 +283,7 @@ static void rdump_inode(ext2_ino_t ino, struct ext2_inode *inode,
 		/* Create the directory with 0700 permissions, because we
 		 * expect to have to create entries it.  Then fix its perms
 		 * once we've done the traversal. */
-		if (mkdir(fullname, S_IRWXU) == -1) {
+		if (name[0] && mkdir(fullname, S_IRWXU) == -1) {
 			com_err("rdump", errno, "while making directory %s", fullname);
 			goto errout;
 		}
@@ -312,7 +311,7 @@ static int rdump_dirent(struct ext2_dir_entry *dirent,
 	const char *dumproot = private;
 	struct ext2_inode inode;
 
-	thislen = dirent->name_len & 0xFF;
+	thislen = ext2fs_dirent_name_len(dirent);
 	strncpy(name, dirent->name, thislen);
 	name[thislen] = 0;
 
@@ -324,7 +323,8 @@ static int rdump_dirent(struct ext2_dir_entry *dirent,
 	return 0;
 }
 
-void do_rdump(int argc, char **argv)
+void do_rdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+	      void *infop EXT2FS_ATTR((unused)))
 {
 	struct stat st;
 	char *dest_dir;
@@ -368,7 +368,8 @@ void do_rdump(int argc, char **argv)
 	}
 }
 
-void do_cat(int argc, char **argv)
+void do_cat(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+	    void *infop EXT2FS_ATTR((unused)))
 {
 	ext2_ino_t	inode;
 

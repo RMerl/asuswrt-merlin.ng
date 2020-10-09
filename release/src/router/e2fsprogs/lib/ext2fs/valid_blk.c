@@ -52,6 +52,13 @@ int ext2fs_inode_has_valid_blocks2(ext2_filsys fs, struct ext2_inode *inode)
 			return 0; /* Probably a fast symlink */
 		}
 	}
+
+	/*
+	 * If this inode has inline data, it shouldn't have valid block
+	 * entries.
+	 */
+	if (inode->i_flags & EXT4_INLINE_DATA_FL)
+		return 0;
 	return 1;
 }
 

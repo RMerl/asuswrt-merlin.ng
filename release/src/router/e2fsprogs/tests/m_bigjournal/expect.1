@@ -35,8 +35,8 @@ Reserved blocks uid:      0
 Reserved blocks gid:      0
 First inode:              11
 Inode size:	          256
-Required extra isize:     28
-Desired extra isize:      28
+Required extra isize:     32
+Desired extra isize:      32
 Journal inode:            8
 Default directory hash:   half_md4
 Journal backup:           inode blocks
@@ -52,8 +52,8 @@ Group 0: (Blocks 0-32767)
   Reserved GDT blocks at 2-672
   Block bitmap at 673 (+673), Inode bitmap at 757 (+757)
   Inode table at 841-841 (+841)
-  31836 free blocks, 5 free inodes, 2 directories, 5 unused inodes
-  Free blocks: 932-32767
+  31837 free blocks, 5 free inodes, 2 directories, 5 unused inodes
+  Free blocks: 931-32767
   Free inodes: 12-16
 Group 1: (Blocks 32768-65535) [INODE_UNINIT, BLOCK_UNINIT]
   Backup superblock at 32768, Group descriptors at 32769-32769
@@ -297,11 +297,11 @@ Group 38: (Blocks 1245184-1277951) [INODE_UNINIT, BLOCK_UNINIT]
   32768 free blocks, 16 free inodes, 0 directories, 16 unused inodes
   Free blocks: 1245184-1277951
   Free inodes: 609-624
-Group 39: (Blocks 1277952-1310719) [INODE_UNINIT, BLOCK_UNINIT]
+Group 39: (Blocks 1277952-1310719) [INODE_UNINIT]
   Block bitmap at 712 (bg #0 + 712), Inode bitmap at 796 (bg #0 + 796)
   Inode table at 880-880 (bg #0 + 880)
-  32768 free blocks, 16 free inodes, 0 directories, 16 unused inodes
-  Free blocks: 1277952-1310719
+  32767 free blocks, 16 free inodes, 0 directories, 16 unused inodes
+  Free blocks: 1277952-1310718
   Free inodes: 625-640
 Group 40: (Blocks 1310720-1343487) [INODE_UNINIT]
   Block bitmap at 713 (bg #0 + 713), Inode bitmap at 797 (bg #0 + 797)

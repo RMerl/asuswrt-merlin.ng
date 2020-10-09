@@ -1,0 +1,110 @@
+test_description="mke2fs with error behavior"
+
+conf=$TMPFILE.conf
+write_defaults_conf()
+{
+	errors="$1"
+	cat > $conf << ENDL
+[defaults]
+	errors = $errors
+ENDL
+}
+
+write_section_conf()
+{
+	errors="$1"
+	cat > $conf << ENDL
+[defaults]
+	errors = broken
+
+[fs_types]
+	test_suite = {
+		errors = $errors
+	}
+ENDL
+}
+
+trap "rm -f $TMPFILE $TMPFILE.conf" EXIT INT QUIT
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+OUT=$test_name.log
+EXP=$test_dir/expect
+rm -f $OUT
+
+# Test command line option
+echo "error default" >> $OUT
+$MKE2FS -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+echo "error continue" >> $OUT
+$MKE2FS -e continue -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+echo "error panic" >> $OUT
+$MKE2FS -e panic -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+echo "error remount-ro" >> $OUT
+$MKE2FS -e remount-ro -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+echo "error garbage" >> $OUT
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+$MKE2FS -e broken -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+# Test errors= in default
+echo "error default profile continue" >> $OUT
+write_defaults_conf continue
+MKE2FS_CONFIG=$conf $MKE2FS -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+echo "error default profile panic" >> $OUT
+write_defaults_conf panic
+MKE2FS_CONFIG=$conf $MKE2FS -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+echo "error default profile remount-ro" >> $OUT
+write_defaults_conf remount-ro
+MKE2FS_CONFIG=$conf $MKE2FS -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+echo "error default profile broken" >> $OUT
+write_defaults_conf broken
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+MKE2FS_CONFIG=$conf $MKE2FS -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+# Test errors= in a fs type
+echo "error fs_types profile continue" >> $OUT
+write_section_conf continue
+MKE2FS_CONFIG=$conf $MKE2FS -T test_suite -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+echo "error fs_types profile panic" >> $OUT
+write_section_conf panic
+MKE2FS_CONFIG=$conf $MKE2FS -T test_suite -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+echo "error fs_types profile remount-ro" >> $OUT
+write_section_conf remount-ro
+MKE2FS_CONFIG=$conf $MKE2FS -T test_suite -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+# Test command line override
+echo "error fs_types profile remount-ro" >> $OUT
+write_section_conf remount-ro
+MKE2FS_CONFIG=$conf $MKE2FS -T test_suite -e panic -F $TMPFILE > /dev/null 2>&1
+$DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+	rm -f $test_name.tmp
+fi
+

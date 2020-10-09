@@ -1,0 +1,206 @@
+E2fsprogs 1.20 (May 20, 2001)
+=============================
+
+Add support for replaying the ext3 journal purely in user mode,
+including handling the orphaned inode list.  Used code contributed by
+Andreas Dilger, with bug fixes and the orphaned inode handling done
+by Theodore Ts'o.
+
+The mke2fs and tune2fs programs can create or modify a filesystem to
+include an ext3 journal.  Tune2fs also can be used to remove an ext3
+journal from a filesystem.
+
+E2fsck will now check for the existence of a linked list of orphan
+inodes in the superblock, and clear those inodes before starting the
+rest of the filesystem check (but after the journal playback).
+
+E2fsck now validates the file descriptor passed to the -C option,
+which saves against the completion bar getting written to an
+unexpected location, such as the disk being checked.  (Debian
+bug/wishlist #55220)
+
+E2fsck will now bump the filesystem revision number from zero to one
+if any of the compatibility bits are set.
+
+Fixed a bug where a badly corrupted directory on a big endian system
+could cause e2fsck to die with a bus error.  The
+ext2fs_read_dir_block() and ext2fs_process_dir_block() functions in
+the ext2 library now does alignment sanity checks on the rec_len field
+of the directory entry before using it.
+
+The ext2 library has been enhanced to make tune2fs safe to run on
+mounted filesystems.  (Users could usually get away with using tune2fs
+on mounted filesystems before, but with the advent of ext3 and
+journalling, it became important to make tune2fs was *really* safe for
+use even when the filesystem being modified is mounted.)  E2label is
+now implemented by tune2fs using an argv[0] dispatch, so that e2label
+is also now safe for use on mounted filesystems.
+
+Added a new program, e2image, which creates a backup of critical ext2
+filesystem data structures.  The generated image file can be examined
+using dumpe2fs and debugfs.  In the future, e2fsck will be able to use
+the image file to help recover very badly damaged filesystems.
+
+Fixed a number of LFS bugs in e2fsck; very, very large (> 2**42) files
+no longer cause e2fsck to bomb out.  Also treat files > 2GB as being
+large file when deciding whether or not the filesystem has large files.
+
+Fixed lsattr and chattr so that they work correctly on large files.
+(Fixes Debian bug #72690.)
+
+Removed limitation in get_device_size() which imposed a one terabyte
+filesystem limitation.  (Most 2.2 kernels still have a signed int
+problem which cause 1 TB block device limitation.  Fortunately, the
+kernel patches to fix this are much easier than fixing the 2TB
+limitation in the kernel.  :-)
+
+A max_mount_count of zero is now treated as if no mount count were
+set.  (Previously, no mount count was indicated by using -1, and a
+mount count of zero caused e2fsck to always be run.)
+
+Mke2fs supports two new filesystem types largefile and largefile4.
+
+Mke2fs now adds some randomness in s_max_mount_count so that multiple
+filesystems won't be all checked at the same time under normal
+operations.
+
+Fixed bug in the progress bar printing code which could cause e2fsck
+to core dump on an illegal filesystem.
+
+Fixed bug in fsck which could allow more than one instance of e2fsck
+to be printing a progress bar.  (Debian bug #65267)
+
+Fsck using a UUID or a LABEL specifier will work even if devfs is
+compiled into the kernel and not mounted.  If the pathnames in
+/proc/partitions are incorrect, fsck will search /dev for the correct
+device (using the new ext2fs_find_block_device library function).
+Fsck now also checks the RAID devices first so that they are properly
+found when they are in use.  Support has also been added to support
+additional IDE disks and the DAC 960 device names.  (Debian bug #94159)
+
+Fixed a bug in fsck which caused it not deal properly with 16
+byte long filesystem labels.
+
+Fsck's -t option has been made a lot more flexible.  The semantics for
+what happens if a comma-separated list to fsck has been regularized,
+and it is now possible to filter what filesystems will get checked
+based what is in the filesystem's fstab entry's option field.  (Debian
+bug #89483.)
+
+The dumpe2fs program can now print out the group description
+information in hex, and also prints the location of the superblock and
+block group descriptor for those block groups that have them.
+
+Mke2fs now clears the ext2 superblock before it starts creating a
+filesystem, so that the superblock magic number is only written if the
+filesystem creation process successfully completes.
+
+The debugfs program's stat command now pretty-prints the blocks used
+by an inode so that it's more compact and informative.
+
+The debugfs stats command now uses the same libe2p code (which is used
+by dumpe2fs) to print the superblock header information.  This is more
+complete, and it avoids a bit of code duplication.
+
+Added a new debugfs command, set_super_value (ssv) which allows the
+user to set arbitrary superblock fields.
+
+Debugfs was extended to support inode numbers in hex (by prefixing
+them with 0x), and so that modify_inode can set the inode generation
+number.  Also, there is now a new function command called logdump
+which will dump an ext3 journal.
+
+Fixed a bug in debugfs so that quitting out of the pager doesn't kill
+debugfs.
+
+Debugfs's dump command now stops immediately upon reporting a disk
+read error.  (Fixed a bug in ext2fs_file_read library routine which
+caused debugfs not to stop.)  (Debian bug #79163)
+
+On systems with /proc/mounts (mainly Linux systems), /proc/mounts is
+checked before /etc/mtab is used, since /proc/mounts is more likely to
+be accurate.
+
+Added portability fixes for Solaris and Linux/ia64.
+
+Various manual pages were clarified and cleaned up.  (Fixed debian
+bugs #63442, #67446, and #87216)
+
+
+Programmer's notes:
+-------------------
+
+The e2fsck message printer now supports %Iu and %Ig, which will print
+out the inode's user and group owners, respectively.
+
+E2fsprogs now includes its own version of include/linux/ext2_fs.h, so
+that no longer dependent on the system having the correct version of
+the kernel header files.
+
+Added a new function to libext2, ext2fs_find_block_device(), which
+searches the system (i.e., /dev, /devfs, /devices) for a pathname to a
+device given its device number.
+
+Added a new function to libext2, ext2fs_sync_device, which centralizes
+all of the places which might try to use the BLKFLSBUF or FDFLUSH
+ioctls (and usually failing to define them since the system header
+files don't usually do this for us, and we're trying to avoid usage of
+kernel include files now).
+
+Added new utility programs in tests/progs: random_exercise and
+hold_inode.  They aren't built by default; they're useful for
+exercising ext3 filesystem code.
+
+Added a new ext2 filesystem flag, EXT2_FLAG_SUPER_ONLY, which causes
+the filesystem close functions to only update the superblock, and to
+not touch the block group descriptors.  Needed by tune2fs when
+modifying a mounted filesystem.
+
+Got rid of struct ext2fs_sb and replaced it with the standard struct
+ext2_super_block from include/linux/ext2_fs.h.  Note: this may break
+source (but not binary) compatibility of some users of the ext2
+library.  Those applications should just simply do a global search and
+replace of struct ext2fs_sb with struct ext2_super_block, and include
+the new header file <ext2fs/ext2_fs.h> which defines it.
+
+The ino_t type has been renamed ext2_ino_t to protect applications
+that attempt to compile -D_FILE_OFFSET_BITS=64, since this
+inexplicably changes ino_t(!?).  So we use ext2_ino_t to avoid an
+unexpected ABI change.
+
+The Makefiles have been reworked so that "make check" can be run from
+the top-level Makefile.
+
+Fix general gcc -Wall complaints and removed dead code.
+
+Remove use of NOARGS, because we assume everyone does ANSI C these
+days.
+
+Added build-rpm script from sct.
+
+New functions ext2fs_image_{inode,super,bitmap}_{read,write} added 
+to support e2image.
+
+New function ext2fs_flush_icache which must be called if the
+application program modifies the inode table blocks without going
+through ext2fs_write_inode() interface.
+
+New ext2fs_check_mount_point() function, which will return the mount
+point of a device if mounted.
+
+The io_channel abstraction now has an optional interface,
+io_channel_write_range, which allows specific byte ranges to be
+written.  
+
+The unix_io IO channel now supports write-through caching, so that
+journal creation is more efficient.
+
+Added x86 assembly language routines to support byte swapping, to
+reduce executable size.
+
+Fixed bug in the utility program subst so that it's possible to
+replace a substitution variable with a zero-length string.
+
+Fixed numbering e2fsck pass1 problem numbers; an extra zero had
+slipped into some of the problem number.
+

@@ -1,0 +1,39 @@
+Pass 1: Checking inodes, blocks, and sizes
+
+Running additional passes to resolve blocks claimed by more than one inode...
+Pass 1B: Rescanning for multiply-claimed blocks
+Multiply-claimed block(s) in inode 12: 8129
+Multiply-claimed block(s) in inode 13: 8129
+Pass 1C: Scanning directories for inodes with multiply-claimed blocks
+Pass 1D: Reconciling multiply-claimed blocks
+(There are 2 inodes containing multiply-claimed blocks.)
+
+File /testfile1 (inode #12, mod time Wed May 24 23:10:38 2017) 
+  has 1 multiply-claimed block(s), shared with 1 file(s):
+	/testfile2 (inode #13, mod time Wed May 24 23:10:45 2017)
+Clone multiply-claimed blocks<y>? no
+Delete file<y>? yes
+File /testfile2 (inode #13, mod time Wed May 24 23:10:45 2017) 
+  has 1 multiply-claimed block(s), shared with 1 file(s):
+	/testfile1 (inode #12, mod time Wed May 24 23:10:38 2017)
+Multiply-claimed blocks already reassigned or cloned.
+
+Pass 2: Checking directory structure
+Entry 'testfile1' in / (2) has deleted/unused inode 12.  Clear<y>? yes
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Block bitmap differences:  -1374
+Fix<y>? yes
+Free blocks count wrong for group #0 (6815, counted=6816).
+Fix<y>? yes
+Free blocks count wrong (6815, counted=6816).
+Fix<y>? yes
+[QUOTA WARNING] Usage inconsistent for ID 0:actual (15360, 3) != expected (17408, 4)
+Update quota info for quota type 0<y>? yes
+[QUOTA WARNING] Usage inconsistent for ID 0:actual (15360, 3) != expected (17408, 4)
+Update quota info for quota type 1<y>? yes
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 12/2048 files (33.3% non-contiguous), 1376/8192 blocks
+Exit status is 0

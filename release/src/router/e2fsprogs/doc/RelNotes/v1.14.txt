@@ -1,0 +1,34 @@
+E2fsprogs 1.14 (January 9, 1999)
+================================
+
+Fix the fstab parsing code so that it can handle blank lines and
+comment characters.  Also, missing pass numbers need to be treated as
+zero.
+
+Fixed a bug in e2fsck where under some circumstances (when e2fsck
+needs to restart processing after fixing an egregious inconsistency)
+it would try to access already freed memory.
+
+E2fsck now prints non-printable characters in directory entries and
+pathnames using '^' and 'M-' notation.
+
+Fixed chattr so that it will ignore symbolic links when doing
+recursive descent traversals.  For both chattr and lsattr, no longer
+print the version string unless the -V option is given.
+
+Allow the system administrator to directly specify the number of
+inodes desired in the filesystem, for some special cases where this is
+necessary.
+
+Fix portability problems so that e2fsprogs can be compiled under Linux
+1.2 systems and Solaris systems.
+
+Update the config.guess file with a more recent version that will
+identify newer Linux platforms.
+
+Programmer's notes
+------------------
+
+Ext2fs_read_inode and ext2fs_write_inode will now return an error if
+an inode number of zero is passed to them.
+

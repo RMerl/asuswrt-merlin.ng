@@ -1,0 +1,30 @@
+E2fsprogs 1.45.2 (May 27, 2019)
+===============================
+
+Updates/Fixes since v1.45.1:
+
+Fixes
+-----
+
+Fixed various problems with how e2scrub_all is run from cron, when not
+all of the required packages are installed, or there are no LVM devices
+on the system.  (Addresses Debian Bug: #929186, #929287, #928977)
+
+When mke2fs asks the user if she should proceed, fall back to the
+English 'y' or 'Y' characters since there could be a missing translation
+prompting the use of the English 'y' character.  (Addresses Debian Bug:
+#907034)
+
+Fix spurious complaint of blocks beyond i_size for verity files.
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Fixed various debian packaging issues.
+
+Fixed "make install" failure when the cron.d directory does not exist.
+
+Update the Czech, Malay, Polish, Spanish, Swedish, and Ukarainian
+translations.  Add the new Portuguese translation.
+

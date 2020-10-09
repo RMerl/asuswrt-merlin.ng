@@ -1,0 +1,7 @@
+create fs without metadata_csum
+Filesystem UUID:          6b33f586-a183-4383-921d-30da3fef2e5c
+change UUID
+Filesystem UUID:          a61be2e0-b3b8-4fbc-b2cd-d84b306b9731
+check filesystem
+fsck returns 0
+Filesystem UUID:          a61be2e0-b3b8-4fbc-b2cd-d84b306b9731

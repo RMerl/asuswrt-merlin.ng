@@ -1,0 +1,51 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+FSCK_OPT=-fy
+OUT=$test_name.log
+if [ -f $test_dir/expect.gz ]; then
+	EXP=$test_name.tmp
+	gunzip < $test_dir/expect.gz > $EXP1
+else
+	EXP=$test_dir/expect
+fi
+
+$MKE2FS -F -o Linux -b 4096 -O has_journal -T ext4 $TMPFILE 65536 > $OUT.new 2>&1
+
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+
+bitmaps="$($DUMPE2FS $TMPFILE 2>&1 | grep 'bitmap at' | sed -e 's/^.*bitmap at \([0-9]*\).*$/\1/g' | tr '\n' ',')"
+
+echo "debugfs write journal" >> $OUT.new
+echo "jo" > $TMPFILE.cmd
+echo "jw -b $bitmaps -c /dev/zero" >> $TMPFILE.cmd
+echo "jc" >> $TMPFILE.cmd
+$DEBUGFS -w -f $TMPFILE.cmd $TMPFILE 2>> $OUT.new > /dev/null
+
+test -d "$JOURNAL_DUMP_DIR" -a -w "$JOURNAL_DUMP_DIR" && cp "$TMPFILE" "$JOURNAL_DUMP_DIR/$test_name.img"
+echo "logdump -c" > $TMPFILE.cmd
+$DEBUGFS -f $TMPFILE.cmd $TMPFILE >> $OUT.new 2>&1
+
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -f $TMPFILE $TMPFILE.cmd $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+	rm -f $test_name.tmp
+fi
+
+unset IMAGE FSCK_OPT OUT EXP

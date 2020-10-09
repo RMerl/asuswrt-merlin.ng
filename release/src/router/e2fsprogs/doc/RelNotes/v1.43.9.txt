@@ -1,0 +1,15 @@
+E2fsprogs 1.43.9 (February 8, 2018)
+===================================
+
+Remove the huge file flag from libe2p (and hence from chattr/lsattr),
+since it was never made visible by the kernel.  Remove the description
+of some compression related flags, and add a description of the
+encrypted file flag, and the project hierarchy flag.
+
+Remove a misplaced "MNP is unsupported" message from debugfs.
+
+Fix a build failure in lib/ext2fs/swapfs.c on big-endian systems.
+(Addresses Debian Bug #886119)
+
+Fix various Debian packaging issues.  (Addresses Debian Bug #269569).
+

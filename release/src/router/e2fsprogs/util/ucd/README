@@ -1,0 +1,37 @@
+The files in this directory are part of the Unicode Character Database
+for version 11.0.0 of the Unicode standard.
+
+The full set of UCD files are not distributed with e2fsprogs, since they
+are very large and only needed to regenerate the lib/ext2fs/utf8data.h
+during an Unicode version update.  They can be found in the link below
+and also in the Linux kernel source tree:
+
+  http://www.unicode.org/Public/11.0.0/ucd/
+
+The latest released version of the UCD can be found here:
+
+  http://www.unicode.org/Public/UCD/latest/
+
+The files in this directory are identical, except that they have been
+renamed with a suffix indicating the unicode version.
+
+Individual source links:
+
+  http://www.unicode.org/Public/11.0.0/ucd/CaseFolding.txt
+  http://www.unicode.org/Public/11.0.0/ucd/DerivedAge.txt
+  http://www.unicode.org/Public/11.0.0/ucd/extracted/DerivedCombiningClass.txt
+  http://www.unicode.org/Public/11.0.0/ucd/DerivedCoreProperties.txt
+  http://www.unicode.org/Public/11.0.0/ucd/NormalizationCorrections.txt
+  http://www.unicode.org/Public/11.0.0/ucd/NormalizationTest.txt
+  http://www.unicode.org/Public/11.0.0/ucd/UnicodeData.txt
+
+md5sums
+
+  414436796cf097df55f798e1585448ee  CaseFolding-11.0.0.txt
+  6032a595fbb782694456491d86eecfac  DerivedAge-11.0.0.txt
+  3240997d671297ac754ab0d27577acf7  DerivedCombiningClass-11.0.0.txt
+  d41d8cd98f00b204e9800998ecf8427e  DerivedCombiningClass.txt
+  2a4fe257d9d8184518e036194d2248ec  DerivedCoreProperties-11.0.0.txt
+  4e7d383fa0dd3cd9d49d64e5b7b7c9e0  NormalizationCorrections-11.0.0.txt
+  c9500c5b8b88e584469f056023ecc3f2  NormalizationTest-11.0.0.txt
+  acc291106c3758d2025f8d7bd5518bee  UnicodeData-11.0.0.txt

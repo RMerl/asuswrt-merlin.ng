@@ -25,7 +25,9 @@ extern char *optarg;
 
 #include "debugfs.h"
 
-void do_dump_unused(int argc EXT2FS_ATTR((unused)), char **argv)
+void do_dump_unused(int argc EXT2FS_ATTR((unused)), char **argv,
+		    int sci_idx EXT2FS_ATTR((unused)),
+		    void *infop EXT2FS_ATTR((unused)))
 {
 	blk64_t		blk;
 	unsigned char	buf[EXT2_MAX_BLOCK_SIZE];

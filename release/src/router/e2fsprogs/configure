@@ -625,30 +625,61 @@ gl_use_threads_default=
 ac_func_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+systemd_system_unit_dir
+have_systemd
+systemd_LIBS
+systemd_CFLAGS
+crond_dir
+have_crond
+pkg_udev_rules_dir
+have_udev
+udev_LIBS
+udev_CFLAGS
+LDFLAGS_SHLIB
+CFLAGS_STLIB
+CFLAGS_SHLIB
 BUILD_LDFLAGS
 BUILD_CFLAGS
-MKINSTALLDIRS
 INCLUDES
 DO_TEST_SUITE
-ET_DIR
-SS_DIR
-LDFLAG_STATIC
+LDFLAGS_STATIC
 root_sysconfdir
 root_libdir
 root_sbindir
 root_bindir
 root_prefix
+E2SCRUB_CMT
 UNIX_CMT
 CYGWIN_CMT
 LINUX_CMT
+threadsan_ldflags
+threadsan_cflags
+have_threadsan
+addrsan_ldflags
+addrsan_cflags
+have_addrsan
+ubsan_ldflags
+ubsan_cflags
+have_ubsan
+lto_ldflags
+lto_cflags
+have_lto
+gcc_ranlib
+gcc_ar
 UNI_DIFF_OPTS
 SEM_INIT_LIB
+FUSE_CMT
+FUSE_LIB
+CLOCK_GETTIME_LIB
+MAGIC_LIB
 SOCKET_LIB
+SIZEOF_TIME_T
 SIZEOF_OFF_T
 SIZEOF_LONG_LONG
 SIZEOF_LONG
 SIZEOF_INT
 SIZEOF_SHORT
+DD
 BUILD_CC
 MAKEINFO
 STRIP
@@ -724,6 +755,8 @@ SET_MAKE
 VERSION
 PACKAGE
 GETTEXT_PACKAGE
+TDB_MAN_COMMENT
+TDB_CMT
 UUIDD_CMT
 E2INITRD_MAN
 E2INITRD_PROG
@@ -733,14 +766,8 @@ DEFRAG_CMT
 RESIZER_CMT
 IMAGER_CMT
 DEBUGFS_CMT
-QUOTA_CMT
-DEPPROFILED_LIBQUOTA
-PROFILED_LIBQUOTA
-DEPSTATIC_LIBQUOTA
-STATIC_LIBQUOTA
-DEPLIBQUOTA
-LIBQUOTA
-QUOTA_MAN_COMMENT
+SUBSET_CMT
+ALL_CMT
 BLKID_CMT
 DEPPROFILED_LIBBLKID
 PROFILED_LIBBLKID
@@ -767,7 +794,6 @@ LIB_EXT
 PROFILE_CMT
 BSDLIB_CMT
 ELF_CMT
-HTREE_CMT
 Q
 ES
 E
@@ -795,6 +821,7 @@ build_os
 build_vendor
 build_cpu
 build
+E2FSPROGS_DATE
 E2FSPROGS_PKGVER
 E2FSPROGS_VERSION
 E2FSPROGS_DAY
@@ -819,6 +846,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -858,18 +886,17 @@ enable_relative_symlinks
 enable_symlink_relative_symlinks
 enable_symlink_build
 enable_verbose_makecmds
-enable_compression
-enable_htree
 enable_elf_shlibs
 enable_bsd_shlibs
 enable_profile
 enable_gcov
+enable_hardening
 enable_jbd_debug
 enable_blkid_debug
 enable_testio_debug
 enable_libuuid
 enable_libblkid
-enable_quota
+enable_subset
 enable_backtrace
 enable_debugfs
 enable_imager
@@ -879,6 +906,10 @@ enable_fsck
 enable_e2initrd_helper
 enable_tls
 enable_uuidd
+enable_mmp
+enable_tdb
+enable_bmap_stats
+enable_bmap_stats_ops
 enable_nls
 enable_threads
 with_gnu_ld
@@ -887,7 +918,15 @@ with_libpth_prefix
 with_libiconv_prefix
 with_included_gettext
 with_libintl_prefix
+enable_fuse2fs
+enable_lto
+enable_ubsan
+enable_addrsan
+enable_threadsan
 with_multiarch
+with_udev_rules_dir
+with_crond_dir
+with_systemd_unit_dir
 '
       ac_precious_vars='build_alias
 host_alias
@@ -900,7 +939,11 @@ CPPFLAGS
 CPP
 PKG_CONFIG
 PKG_CONFIG_PATH
-PKG_CONFIG_LIBDIR'
+PKG_CONFIG_LIBDIR
+udev_CFLAGS
+udev_LIBS
+systemd_CFLAGS
+systemd_LIBS'
 
 
 # Initialize some variables set by options.
@@ -939,6 +982,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1191,6 +1235,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1328,7 +1381,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1481,6 +1534,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1518,18 +1572,17 @@ Optional Features:
 
   --enable-symlink-build  use symlinks while building instead of hard links
   --enable-verbose-makecmds enable verbose make command output
-  --enable-compression	  enable EXPERIMENTAL compression support
-  --enable-htree      	  enable EXPERIMENTAL htree directory support
   --enable-elf-shlibs	  select ELF shared libraries
   --enable-bsd-shlibs	  select BSD shared libraries
   --enable-profile	  build profiling libraries
   --enable-gcov	  	  build for coverage testing using gcov
+  --enable-hardening	  	  build for coverage testing using gcov
   --enable-jbd-debug  	  enable journal debugging
   --enable-blkid-debug    enable blkid debugging
   --disable-testio-debug  disable the use of the test I/O manager for debugging
-  --disable-libuuid	  do not build private uuid library
-  --disable-libblkid	  do not build private blkid library
-  --enable-quota	  enable quota support
+  --enable-libuuid	  build and use private uuid library
+  --enable-libblkid	  build and use private blkid library
+  --enable-subset  	  enable subset-only build
   --disable-backtrace	  disable use backtrace
   --disable-debugfs   	  disable support of debugfs program
   --disable-imager   	  disable support of e2image program
@@ -1539,11 +1592,20 @@ Optional Features:
   --enable-e2initrd-helper build e2initrd-helper program
   --disable-tls           disable use of thread local support
   --disable-uuidd         disable building the uuid daemon
+  --disable-mmp           disable support mmp, Multi Mount Protection
+  --disable-tdb           disable tdb support
+  --disable-bmap-stats    disable collection of bitmap stats.
+  --enable-bmap-stats-ops enable collection of additional bitmap stats
   --disable-nls           do not use Native Language Support
   --enable-threads={posix|solaris|pth|windows}
                           specify multithreading API
   --disable-threads       build without multithread safety
   --disable-rpath         do not hardcode runtime library paths
+  --disable-fuse2fs	  do not build fuse2fs
+  --enable-lto		  enable link time optimization
+  --enable-ubsan	  enable undefined behavior sanitizer
+  --enable-addrsan	  enable address sanitizer
+  --enable-threadsan	  enable thread sanitizer
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1562,6 +1624,11 @@ Optional Packages:
   --with-libintl-prefix[=DIR]  search for libintl in DIR/include and DIR/lib
   --without-libintl-prefix     don't search for libintl in includedir and libdir
   --with-multiarch=ARCH specify the multiarch triplet
+  --with-udev-rules-dir[=DIR]
+                          Install udev rules into DIR.
+  --with-crond-dir[=DIR]  Install system crontabs into DIR.
+  --with-systemd-unit-dir[=DIR]
+                          Install systemd system units into DIR.
 
 Some influential environment variables:
   CC          C compiler command
@@ -1577,6 +1644,12 @@ Some influential environment variables:
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
+  udev_CFLAGS C compiler flags for udev, overriding pkg-config
+  udev_LIBS   linker flags for udev, overriding pkg-config
+  systemd_CFLAGS
+              C compiler flags for systemd, overriding pkg-config
+  systemd_LIBS
+              linker flags for systemd, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -2740,11 +2813,11 @@ MCONFIG=./MCONFIG
 BINARY_TYPE=bin
 E2FSPROGS_VERSION=`grep E2FSPROGS_VERSION ${srcdir}/version.h  \
 	| awk '{print $3}' | tr \" " " | awk '{print $1}'`
-DATE=`grep E2FSPROGS_DATE ${srcdir}/version.h | awk '{print $3}' \
-	| tr \" " "`
-E2FSPROGS_DAY=`echo $DATE | awk -F- '{print $1}'`
-MONTH=`echo $DATE | awk -F- '{print $2}'`
-YEAR=`echo $DATE | awk -F- '{print $3}'`
+E2FSPROGS_DATE=`grep E2FSPROGS_DATE ${srcdir}/version.h | awk '{print $3}' \
+	| tr \" " " | awk '{print $1}'`
+E2FSPROGS_DAY=$(echo $E2FSPROGS_DATE | awk -F- '{print $1}' | sed -e '/^[1-9]$/s/^/0/')
+MONTH=`echo $E2FSPROGS_DATE | awk -F- '{print $2}'`
+YEAR=`echo $E2FSPROGS_DATE | awk -F- '{print $3}'`
 
 if expr $YEAR ">" 1900 > /dev/null ; then
 	E2FSPROGS_YEAR=$YEAR
@@ -2778,7 +2851,7 @@ date_spec=${E2FSPROGS_YEAR}.${MONTH_NUM}.${E2FSPROGS_DAY}
 
 case $E2FSPROGS_VERSION in
 *-WIP|pre-*)
-	E2FSPROGS_PKGVER="$base_ver~WIP-$E2FSPROGS_YEAR-$MONTH_NUM-$E2FSPROGS_DAY"
+	E2FSPROGS_PKGVER="$base_ver~WIP.$date_spec"
 	;;
 *)
 	E2FSPROGS_PKGVER="$base_ver"
@@ -2790,6 +2863,7 @@ unset DATE MONTH YEAR base_ver pre_vers date_spec
 $as_echo "Generating configuration file for e2fsprogs version $E2FSPROGS_VERSION" >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}" >&5
 $as_echo "Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}" >&6; }
+
 
 
 
@@ -3710,9 +3784,6 @@ fi
 $as_echo "$ac_cv_lib_dl_dlopen" >&6; }
 if test "x$ac_cv_lib_dl_dlopen" = xyes; then :
   DLOPEN_LIB=-ldl
-
-$as_echo "#define HAVE_DLOPEN 1" >>confdefs.h
-
 fi
 
 
@@ -4895,54 +4966,6 @@ fi
 
 
 
-# Check whether --enable-compression was given.
-if test "${enable_compression+set}" = set; then :
-  enableval=$enable_compression; if test "$enableval" = "no"
-then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling compression support" >&5
-$as_echo "Disabling compression support" >&6; }
-else
-
-$as_echo "#define ENABLE_COMPRESSION 1" >>confdefs.h
-
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling compression support" >&5
-$as_echo "Enabling compression support" >&6; }
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Compression support is experimental" >&5
-$as_echo "$as_me: WARNING: Compression support is experimental" >&2;}
-fi
-
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling compression support by default" >&5
-$as_echo "Disabling compression support by default" >&6; }
-
-fi
-
-
-# Check whether --enable-htree was given.
-if test "${enable_htree+set}" = set; then :
-  enableval=$enable_htree; if test "$enableval" = "no"
-then
-	HTREE_CMT=#
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling htree directory support" >&5
-$as_echo "Disabling htree directory support" >&6; }
-else
-	HTREE_CMT=
-	$as_echo "#define ENABLE_HTREE 1" >>confdefs.h
-
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling htree directory support" >&5
-$as_echo "Enabling htree directory support" >&6; }
-fi
-
-else
-  HTREE_CMT=
-$as_echo "#define ENABLE_HTREE 1" >>confdefs.h
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling htree directory support by default" >&5
-$as_echo "Enabling htree directory support by default" >&6; }
-
-fi
-
-
 E2_PKG_CONFIG_STATIC=--static
 LDFLAG_DYNAMIC=
 PRIVATE_LIBS_CMT=
@@ -5052,6 +5075,27 @@ fi
 
 fi
 
+CFLAGS_SHLIB="${CFLAGS_SHLIB:-$CFLAGS}"
+CFLAGS_STLIB="${CFLAGS_STLIB:-$CFLAGS}"
+LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
+LDFLAGS_STATIC=${LDFLAGS_STATIC:-$LDFLAGS}
+# Check whether --enable-hardening was given.
+if test "${enable_hardening+set}" = set; then :
+  enableval=$enable_hardening; if test "$enableval" = "yes"
+then
+	HARDEN_CFLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
+	HARDEN_LDFLAGS="-Wl,-z,relro -Wl,-z,now"
+	CFLAGS="$CFLAGS $HARDEN_CFLAGS -fPIE"
+	CFLAGS_SHLIB="$CFLAGS_SHLIB $HARDEN_CFLAGS"
+	CFLAGS_STLIB="$CFLAGS_STLIB $HARDEN_CFLAGS -fPIE"
+	LDFLAGS="$LDFLAGS $HARDEN_LDFLAGS -fPIE -pie"
+	LDFLAGS_STATIC="$LDFLAGS_STATIC $HARDEN_LDFLAGS"
+	LDFLAGS_SHLIB="$LDFLAGS_SHLIB $HARDEN_LDFLAGS"
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling hardening support" >&5
+$as_echo "Enabling hardening support" >&6; }
+fi
+
+fi
 
 
 
@@ -5318,14 +5362,64 @@ $as_echo "Enabling private uuid library" >&6; }
 fi
 
 else
-  LIBUUID='$(LIB)/libuuid'$LIB_EXT
-DEPLIBUUID=$LIBUUID
-STATIC_LIBUUID='$(LIB)/libuuid'$STATIC_LIB_EXT
-DEPSTATIC_LIBUUID=$STATIC_LIBUUID
-PROFILED_LIBUUID='$(LIB)/libuuid'$PROFILED_LIB_EXT
-DEPPROFILED_LIBUUID=$PROFILED_LIBUUID
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private uuid library by default" >&5
+  if test -n "$PKG_CONFIG"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for uuid_generate in -luuid" >&5
+$as_echo_n "checking for uuid_generate in -luuid... " >&6; }
+if ${ac_cv_lib_uuid_uuid_generate+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-luuid  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char uuid_generate ();
+int
+main ()
+{
+return uuid_generate ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_uuid_uuid_generate=yes
+else
+  ac_cv_lib_uuid_uuid_generate=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_uuid_uuid_generate" >&5
+$as_echo "$ac_cv_lib_uuid_uuid_generate" >&6; }
+if test "x$ac_cv_lib_uuid_uuid_generate" = xyes; then :
+  LIBUUID=`$PKG_CONFIG --libs uuid`;
+		 STATIC_LIBUUID=`$PKG_CONFIG --static --libs uuid`
+fi
+
+fi
+if test -n "$LIBUUID"; then
+	PROFILED_LIBUUID=$LIBUUID
+	UUID_CMT=#
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Using system uuid by default" >&5
+$as_echo "Using system uuid by default" >&6; }
+else
+	LIBUUID='$(LIB)/libuuid'$LIB_EXT
+	DEPLIBUUID=$LIBUUID
+	STATIC_LIBUUID='$(LIB)/libuuid'$STATIC_LIB_EXT
+	DEPSTATIC_LIBUUID=$STATIC_LIBUUID
+	PROFILED_LIBUUID='$(LIB)/libuuid'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBUUID=$PROFILED_LIBUUID
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private uuid library by default" >&5
 $as_echo "Enabling private uuid library by default" >&6; }
+fi
 
 fi
 
@@ -5533,184 +5627,92 @@ $as_echo "Enabling private blkid library" >&6; }
 fi
 
 else
-  LIBBLKID='$(LIB)/libblkid'$LIB_EXT
-DEPLIBBLKID=$LIBBLKID
-STATIC_LIBBLKID='$(LIB)/libblkid'$STATIC_LIB_EXT
-DEPSTATIC_LIBBLKID=$STATIC_LIBBLKID
-PROFILED_LIBBLKID='$(LIB)/libblkid'$PROFILED_LIB_EXT
-DEPPROFILED_LIBBLKID=$PROFILED_LIBBLKID
-$as_echo "#define CONFIG_BUILD_FINDFS 1" >>confdefs.h
+  if test -n "$PKG_CONFIG"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for blkid_get_cache in -lblkid" >&5
+$as_echo_n "checking for blkid_get_cache in -lblkid... " >&6; }
+if ${ac_cv_lib_blkid_blkid_get_cache+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lblkid  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private blkid library by default" >&5
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char blkid_get_cache ();
+int
+main ()
+{
+return blkid_get_cache ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_blkid_blkid_get_cache=yes
+else
+  ac_cv_lib_blkid_blkid_get_cache=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_blkid_blkid_get_cache" >&5
+$as_echo "$ac_cv_lib_blkid_blkid_get_cache" >&6; }
+if test "x$ac_cv_lib_blkid_blkid_get_cache" = xyes; then :
+  LIBBLKID=`$PKG_CONFIG --libs blkid`;
+		 STATIC_LIBBLKID=`$PKG_CONFIG --static --libs blkid`
+fi
+
+fi
+if test -n "$LIBBLKID"; then
+	BLKID_CMT=#
+	PROFILED_LIBBLKID=$LIBBLKID
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Using system blkid library by default" >&5
+$as_echo "Using system blkid library by default" >&6; }
+else
+	LIBBLKID='$(LIB)/libblkid'$LIB_EXT
+	DEPLIBBLKID=$LIBBLKID
+	STATIC_LIBBLKID='$(LIB)/libblkid'$STATIC_LIB_EXT
+	DEPSTATIC_LIBBLKID=$STATIC_LIBBLKID
+	PROFILED_LIBBLKID='$(LIB)/libblkid'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBBLKID=$PROFILED_LIBBLKID
+	$as_echo "#define CONFIG_BUILD_FINDFS 1" >>confdefs.h
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private blkid library by default" >&5
 $as_echo "Enabling private blkid library by default" >&6; }
-
-fi
-
-
-
-
-
-
-
-
-QUOTA_MAN_COMMENT='.\"'
-QUOTA_CMT=
-
-
-
-
-
-
-
-
-if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
-	if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
-set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_PKG_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-PKG_CONFIG=$ac_cv_path_PKG_CONFIG
-if test -n "$PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
-$as_echo "$PKG_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-fi
-if test -z "$ac_cv_path_PKG_CONFIG"; then
-  ac_pt_PKG_CONFIG=$PKG_CONFIG
-  # Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $ac_pt_PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
-if test -n "$ac_pt_PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
-$as_echo "$ac_pt_PKG_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-  if test "x$ac_pt_PKG_CONFIG" = x; then
-    PKG_CONFIG=""
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    PKG_CONFIG=$ac_pt_PKG_CONFIG
-  fi
-else
-  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
 fi
 
 fi
-if test -n "$PKG_CONFIG"; then
-	_pkg_min_version=0.9.0
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
-$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
-	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	else
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-		PKG_CONFIG=""
-	fi
-fi
 
-# Check whether --enable-quota was given.
-if test "${enable_quota+set}" = set; then :
-  enableval=$enable_quota; if test "$enableval" = "no"
+
+
+
+
+
+
+
+ALL_CMT=
+SUBSET_CMT=
+# Check whether --enable-subset was given.
+if test "${enable_subset+set}" = set; then :
+  enableval=$enable_subset; if test "$enableval" = "no"
 then
-	QUOTA_CMT=#
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling quota support" >&5
-$as_echo "Disabling quota support" >&6; }
+	SUBSET_CMT=#
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling subset-only build" >&5
+$as_echo "Disabling subset-only build" >&6; }
 else
-	QUOTA_CMT=
-	$as_echo "#define CONFIG_QUOTA 1" >>confdefs.h
-
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling quota support" >&5
-$as_echo "Enabling quota support" >&6; }
-	QUOTA_MAN_COMMENT=""
-
+	ALL_CMT=#
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling subset-only-build" >&5
+$as_echo "Enabling subset-only-build" >&6; }
 fi
 
-else
-  QUOTA_CMT=#
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling quota support by default" >&5
-$as_echo "Disabling quota support by default" >&6; }
-
 fi
-
-LIBQUOTA='$(LIB)/libquota'$LIB_EXT
-DEPLIBQUOTA=$LIBQUOTA
-STATIC_LIBQUOTA='$(LIB)/libquota'$STATIC_LIB_EXT
-DEPSTATIC_LIBQUOTA=$STATIC_LIBQUOTA
-PROFILED_LIBQUOTA='$(LIB)/libquota'$PROFILED_LIB_EXT
-DEPPROFILED_LIBQUOTA=$PROFILED_LIBQUOTA
-
-
-
-
 
 
 
@@ -5990,6 +5992,107 @@ fi
 
 fi
 
+
+
+# Check whether --enable-mmp was given.
+if test "${enable_mmp+set}" = set; then :
+  enableval=$enable_mmp; if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling mmp support" >&5
+$as_echo "Disabling mmp support" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling mmp support" >&5
+$as_echo "Enabling mmp support" >&6; }
+	$as_echo "#define CONFIG_MMP 1" >>confdefs.h
+
+fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling mmp support by default" >&5
+$as_echo "Enabling mmp support by default" >&6; }
+$as_echo "#define CONFIG_MMP 1" >>confdefs.h
+
+
+fi
+
+
+# Check whether --enable-tdb was given.
+if test "${enable_tdb+set}" = set; then :
+  enableval=$enable_tdb; if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling tdb support" >&5
+$as_echo "Disabling tdb support" >&6; }
+	TDB_CMT="#"
+	TDB_MAN_COMMENT='.\"'
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling tdb support" >&5
+$as_echo "Enabling tdb support" >&6; }
+	$as_echo "#define CONFIG_TDB 1" >>confdefs.h
+
+	TDB_CMT=""
+	TDB_MAN_COMMENT=""
+fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling mmp support by default" >&5
+$as_echo "Enabling mmp support by default" >&6; }
+$as_echo "#define CONFIG_TDB 1" >>confdefs.h
+
+TDB_CMT=""
+TDB_MAN_COMMENT=""
+
+fi
+
+
+
+
+# Check whether --enable-bmap-stats was given.
+if test "${enable_bmap_stats+set}" = set; then :
+  enableval=$enable_bmap_stats; if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling bitmap statistics support" >&5
+$as_echo "Disabling bitmap statistics support" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling bitmap statistics support" >&5
+$as_echo "Enabling bitmap statistics support" >&6; }
+	$as_echo "#define ENABLE_BMAP_STATS 1" >>confdefs.h
+
+fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling bitmap statistics support by default" >&5
+$as_echo "Enabling bitmap statistics support by default" >&6; }
+$as_echo "#define ENABLE_BMAP_STATS 1" >>confdefs.h
+
+
+fi
+
+
+# Check whether --enable-bmap-stats-ops was given.
+if test "${enable_bmap_stats_ops+set}" = set; then :
+  enableval=$enable_bmap_stats_ops; if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling additional bitmap statistics" >&5
+$as_echo "Disabling additional bitmap statistics" >&6; }
+else
+		if test "x${enable_bmap_stats}" = "xno"; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Error --enable-bmap-stats-ops requires bmap-stats
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling additional bitmap statistics" >&5
+$as_echo "Enabling additional bitmap statistics" >&6; }
+	$as_echo "#define ENABLE_BMAP_STATS_OPS 1" >>confdefs.h
+
+fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling additional bitmap statistics by default" >&5
+$as_echo "Disabling additional bitmap statistics by default" >&6; }
+
+fi
 
 MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library
 
@@ -7208,6 +7311,8 @@ main ()
     if (*(data + i) != *(data3 + i))
       return 14;
   close (fd);
+  free (data);
+  free (data3);
   return 0;
 }
 _ACEOF
@@ -11488,7 +11593,12 @@ if ${_cv_gnu_make_command+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   _cv_gnu_make_command='' ;
-                for a in "$MAKE" make gmake gnumake ; do
+                if test -n "$FORCE_NATIVE_MAKE" ; then
+                   MAKES="make"
+                else
+                   MAKES="make gmake gnumake"
+                fi
+                for a in "$MAKE" $MAKES ; do
                         if test -z "$a" ; then continue ; fi ;
                         if  ( sh -c "$a --version" 2> /dev/null | grep GNU  2>&1 > /dev/null ) ;  then
                                 _cv_gnu_make_command=$a ;
@@ -11550,6 +11660,7 @@ else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
+
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ln -s works" >&5
@@ -12273,7 +12384,7 @@ fi
 
 
 if test "_$MAKEINFO" = "_"; then
-    MAKEINFO="@echo Makeinfo is missing. Info documentation will not be built.;true"
+    MAKEINFO="echo Makeinfo is missing. Info documentation will not be built."
 else
     case "$MAKEINFO" in
       */missing.*)
@@ -12336,7 +12447,7 @@ fi
 done
 
 fi
-for ac_header in  	dirent.h 	errno.h 	execinfo.h 	getopt.h 	malloc.h 	mntent.h 	paths.h 	semaphore.h 	setjmp.h 	signal.h 	stdarg.h 	stdint.h 	stdlib.h 	termios.h 	termio.h 	unistd.h 	utime.h 	linux/falloc.h 	linux/fd.h 	linux/major.h 	linux/loop.h 	net/if_dl.h 	netinet/in.h 	sys/disklabel.h 	sys/disk.h 	sys/file.h 	sys/ioctl.h 	sys/mkdev.h 	sys/mman.h 	sys/mount.h 	sys/prctl.h 	sys/resource.h 	sys/select.h 	sys/socket.h 	sys/sockio.h 	sys/stat.h 	sys/syscall.h 	sys/sysmacros.h 	sys/time.h 	sys/types.h 	sys/un.h 	sys/wait.h
+for ac_header in  	dirent.h 	errno.h 	execinfo.h 	getopt.h 	malloc.h 	mntent.h 	paths.h 	semaphore.h 	setjmp.h 	signal.h 	stdarg.h 	stdint.h 	stdlib.h 	termios.h 	termio.h 	unistd.h 	utime.h 	attr/xattr.h 	linux/falloc.h 	linux/fd.h 	linux/fsmap.h 	linux/major.h 	linux/loop.h 	linux/types.h 	net/if_dl.h 	netinet/in.h 	sys/acl.h 	sys/disklabel.h 	sys/disk.h 	sys/file.h 	sys/ioctl.h 	sys/key.h 	sys/mkdev.h 	sys/mman.h 	sys/mount.h 	sys/prctl.h 	sys/resource.h 	sys/select.h 	sys/socket.h 	sys/sockio.h 	sys/stat.h 	sys/syscall.h 	sys/sysctl.h 	sys/sysmacros.h 	sys/time.h 	sys/types.h 	sys/un.h 	sys/wait.h 	sys/xattr.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -12348,6 +12459,27 @@ _ACEOF
 fi
 
 done
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for a dd(1) program that supports iflag=fullblock" >&5
+$as_echo_n "checking for a dd(1) program that supports iflag=fullblock... " >&6; }
+DD=
+for i in dd gdd ; do
+	if "$i" if=/dev/null of=/dev/null count=1 bs=10k 2>/dev/null iflag=fullblock oflag=append ; then
+		DD=$i
+		break
+	fi
+done
+if test -n "$DD" ; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $DD" >&5
+$as_echo "$DD" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: not found, using dd" >&5
+$as_echo "not found, using dd" >&6; }
+	DD=dd
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: No GNU-compatible dd(1) program found, expect some self-test failures." >&5
+$as_echo "$as_me: WARNING: No GNU-compatible dd(1) program found, expect some self-test failures." >&2;}
+fi
+
 
 for ac_header in net/if.h
 do :
@@ -12597,11 +12729,46 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+# The cast to long int works around a bug in the HP C Compiler
+# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+# This bug is HP SR number 8606223364.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of time_t" >&5
+$as_echo_n "checking size of time_t... " >&6; }
+if ${ac_cv_sizeof_time_t+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (time_t))" "ac_cv_sizeof_time_t"        "$ac_includes_default"; then :
+
+else
+  if test "$ac_cv_type_time_t" = yes; then
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error 77 "cannot compute sizeof (time_t)
+See \`config.log' for more details" "$LINENO" 5; }
+   else
+     ac_cv_sizeof_time_t=0
+   fi
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_time_t" >&5
+$as_echo "$ac_cv_sizeof_time_t" >&6; }
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define SIZEOF_TIME_T $ac_cv_sizeof_time_t
+_ACEOF
+
+
 SIZEOF_SHORT=$ac_cv_sizeof_short
 SIZEOF_INT=$ac_cv_sizeof_int
 SIZEOF_LONG=$ac_cv_sizeof_long
 SIZEOF_LONG_LONG=$ac_cv_sizeof_long_long
 SIZEOF_OFF_T=$ac_cv_sizeof_off_t
+SIZEOF_TIME_T=$ac_cv_sizeof_time_t
+
 
 
 
@@ -12946,12 +13113,13 @@ _ACEOF
 fi
 
 if test -n "$BLKID_CMT"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing blkid_probe_all" >&5
-$as_echo_n "checking for library containing blkid_probe_all... " >&6; }
-if ${ac_cv_search_blkid_probe_all+:} false; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for blkid_probe_get_topology in -lblkid" >&5
+$as_echo_n "checking for blkid_probe_get_topology in -lblkid... " >&6; }
+if ${ac_cv_lib_blkid_blkid_probe_get_topology+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  ac_func_search_save_LIBS=$LIBS
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lblkid  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -12961,49 +13129,79 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char blkid_probe_all ();
+char blkid_probe_get_topology ();
 int
 main ()
 {
-return blkid_probe_all ();
+return blkid_probe_get_topology ();
   ;
   return 0;
 }
 _ACEOF
-for ac_lib in '' blkid; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_blkid_probe_all=$ac_res
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_blkid_blkid_probe_get_topology=yes
+else
+  ac_cv_lib_blkid_blkid_probe_get_topology=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if ${ac_cv_search_blkid_probe_all+:} false; then :
-  break
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
 fi
-done
-if ${ac_cv_search_blkid_probe_all+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_blkid_blkid_probe_get_topology" >&5
+$as_echo "$ac_cv_lib_blkid_blkid_probe_get_topology" >&6; }
+if test "x$ac_cv_lib_blkid_blkid_probe_get_topology" = xyes; then :
 
+$as_echo "#define HAVE_BLKID_PROBE_GET_TOPOLOGY 1" >>confdefs.h
+
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for blkid_probe_enable_partitions in -lblkid" >&5
+$as_echo_n "checking for blkid_probe_enable_partitions in -lblkid... " >&6; }
+if ${ac_cv_lib_blkid_blkid_probe_enable_partitions+:} false; then :
+  $as_echo_n "(cached) " >&6
 else
-  ac_cv_search_blkid_probe_all=no
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lblkid  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char blkid_probe_enable_partitions ();
+int
+main ()
+{
+return blkid_probe_enable_partitions ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_blkid_blkid_probe_enable_partitions=yes
+else
+  ac_cv_lib_blkid_blkid_probe_enable_partitions=no
 fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_blkid_probe_all" >&5
-$as_echo "$ac_cv_search_blkid_probe_all" >&6; }
-ac_res=$ac_cv_search_blkid_probe_all
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_blkid_blkid_probe_enable_partitions" >&5
+$as_echo "$ac_cv_lib_blkid_blkid_probe_enable_partitions" >&6; }
+if test "x$ac_cv_lib_blkid_blkid_probe_enable_partitions" = xyes; then :
+
+$as_echo "#define HAVE_BLKID_PROBE_ENABLE_PARTITIONS 1" >>confdefs.h
 
 fi
 
 fi
-for ac_func in  	__secure_getenv 	backtrace 	blkid_probe_get_topology 	blkid_probe_enable_partitions 	chflags 	fadvise64 	fallocate 	fallocate64 	fchown 	fdatasync 	fstat64 	ftruncate64 	futimes 	getcwd 	getdtablesize 	getmntinfo 	getpwuid_r 	getrlimit 	getrusage 	jrand48 	llseek 	lseek64 	mallinfo 	mbstowcs 	memalign 	mempcpy 	mmap 	msync 	nanosleep 	open64 	pathconf 	posix_fadvise 	posix_fadvise64 	posix_memalign 	prctl 	pread 	pwrite 	pread64 	pwrite64 	secure_getenv 	setmntent 	setresgid 	setresuid 	snprintf 	srandom 	stpcpy 	strcasecmp 	strdup 	strnlen 	strptime 	strtoull 	sync_file_range 	sysconf 	usleep 	utime 	utimes 	valloc
+if test -n "$DLOPEN_LIB" ; then
+   ac_cv_func_dlopen=yes
+fi
+for ac_func in  	__secure_getenv 	add_key 	backtrace 	chflags 	dlopen 	fadvise64 	fallocate 	fallocate64 	fchown 	fcntl 	fdatasync 	fstat64 	fsync 	ftruncate64 	futimes 	getcwd 	getdtablesize 	gethostname 	getmntinfo 	getpwuid_r 	getrlimit 	getrusage 	jrand48 	keyctl 	llistxattr 	llseek 	lseek64 	mallinfo 	mbstowcs 	memalign 	mempcpy 	mmap 	msync 	nanosleep 	open64 	pathconf 	posix_fadvise 	posix_fadvise64 	posix_memalign 	prctl 	pread 	pwrite 	pread64 	pwrite64 	secure_getenv 	setmntent 	setresgid 	setresuid 	snprintf 	srandom 	stpcpy 	strcasecmp 	strdup 	strnlen 	strptime 	strtoull 	sync_file_range 	sysconf 	usleep 	utime 	utimes 	valloc
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -13057,6 +13255,370 @@ if test "x$ac_cv_lib_socket_socket" = xyes; then :
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for magic_file in -lmagic" >&5
+$as_echo_n "checking for magic_file in -lmagic... " >&6; }
+if ${ac_cv_lib_magic_magic_file+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lmagic  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char magic_file ();
+int
+main ()
+{
+return magic_file ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_magic_magic_file=yes
+else
+  ac_cv_lib_magic_magic_file=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_magic_magic_file" >&5
+$as_echo "$ac_cv_lib_magic_magic_file" >&6; }
+if test "x$ac_cv_lib_magic_magic_file" = xyes; then :
+  MAGIC_LIB=-lmagic
+for ac_header in magic.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "magic.h" "ac_cv_header_magic_h" "$ac_includes_default"
+if test "x$ac_cv_header_magic_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MAGIC_H 1
+_ACEOF
+
+fi
+
+done
+
+fi
+
+if test "$ac_cv_func_dlopen" = yes ; then
+   MAGIC_LIB=$DLOPEN_LIB
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_gettime in -lrt" >&5
+$as_echo_n "checking for clock_gettime in -lrt... " >&6; }
+if ${ac_cv_lib_rt_clock_gettime+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lrt  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char clock_gettime ();
+int
+main ()
+{
+return clock_gettime ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_rt_clock_gettime=yes
+else
+  ac_cv_lib_rt_clock_gettime=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_rt_clock_gettime" >&5
+$as_echo "$ac_cv_lib_rt_clock_gettime" >&6; }
+if test "x$ac_cv_lib_rt_clock_gettime" = xyes; then :
+  CLOCK_GETTIME_LIB=-lrt
+fi
+
+
+FUSE_CMT=
+FUSE_LIB=
+# Check whether --enable-fuse2fs was given.
+if test "${enable_fuse2fs+set}" = set; then :
+  enableval=$enable_fuse2fs; if test "$enableval" = "no"
+then
+	FUSE_CMT="#"
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling fuse2fs" >&5
+$as_echo "Disabling fuse2fs" >&6; }
+else
+	for ac_header in pthread.h fuse.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "#define _FILE_OFFSET_BITS	64
+#define FUSE_USE_VERSION 29
+"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Cannot find fuse2fs headers.
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+
+done
+
+
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#define FUSE_USE_VERSION 29
+#ifdef __linux__
+#include <linux/fs.h>
+#include <linux/falloc.h>
+#include <linux/xattr.h>
+#endif
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+
+else
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Cannot find fuse2fs Linux headers.
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for fuse_main in -losxfuse" >&5
+$as_echo_n "checking for fuse_main in -losxfuse... " >&6; }
+if ${ac_cv_lib_osxfuse_fuse_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-losxfuse  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fuse_main ();
+int
+main ()
+{
+return fuse_main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_osxfuse_fuse_main=yes
+else
+  ac_cv_lib_osxfuse_fuse_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_osxfuse_fuse_main" >&5
+$as_echo "$ac_cv_lib_osxfuse_fuse_main" >&6; }
+if test "x$ac_cv_lib_osxfuse_fuse_main" = xyes; then :
+  FUSE_LIB=-losxfuse
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fuse_main in -lfuse" >&5
+$as_echo_n "checking for fuse_main in -lfuse... " >&6; }
+if ${ac_cv_lib_fuse_fuse_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfuse  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fuse_main ();
+int
+main ()
+{
+return fuse_main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_fuse_fuse_main=yes
+else
+  ac_cv_lib_fuse_fuse_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fuse_fuse_main" >&5
+$as_echo "$ac_cv_lib_fuse_fuse_main" >&6; }
+if test "x$ac_cv_lib_fuse_fuse_main" = xyes; then :
+  FUSE_LIB=-lfuse
+else
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Cannot find fuse library.
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+
+fi
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling fuse2fs" >&5
+$as_echo "Enabling fuse2fs" >&6; }
+fi
+
+else
+  for ac_header in pthread.h fuse.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "#define _FILE_OFFSET_BITS	64
+#define FUSE_USE_VERSION 29
+#ifdef __linux__
+# include <linux/fs.h>
+# include <linux/falloc.h>
+# include <linux/xattr.h>
+#endif
+"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  FUSE_CMT="#"
+fi
+
+done
+
+if test -z "$FUSE_CMT"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for fuse_main in -losxfuse" >&5
+$as_echo_n "checking for fuse_main in -losxfuse... " >&6; }
+if ${ac_cv_lib_osxfuse_fuse_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-losxfuse  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fuse_main ();
+int
+main ()
+{
+return fuse_main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_osxfuse_fuse_main=yes
+else
+  ac_cv_lib_osxfuse_fuse_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_osxfuse_fuse_main" >&5
+$as_echo "$ac_cv_lib_osxfuse_fuse_main" >&6; }
+if test "x$ac_cv_lib_osxfuse_fuse_main" = xyes; then :
+  FUSE_LIB=-losxfuse
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fuse_main in -lfuse" >&5
+$as_echo_n "checking for fuse_main in -lfuse... " >&6; }
+if ${ac_cv_lib_fuse_fuse_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfuse  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fuse_main ();
+int
+main ()
+{
+return fuse_main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_fuse_fuse_main=yes
+else
+  ac_cv_lib_fuse_fuse_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fuse_fuse_main" >&5
+$as_echo "$ac_cv_lib_fuse_fuse_main" >&6; }
+if test "x$ac_cv_lib_fuse_fuse_main" = xyes; then :
+  FUSE_LIB=-lfuse
+else
+  FUSE_CMT="#"
+fi
+
+fi
+
+fi
+if test -z "$FUSE_CMT"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling fuse2fs by default." >&5
+$as_echo "Enabling fuse2fs by default." >&6; }
+fi
+
+fi
+
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for optreset" >&5
 $as_echo_n "checking for optreset... " >&6; }
 if ${ac_cv_have_optreset+:} false; then :
@@ -13085,7 +13647,10 @@ $as_echo "#define HAVE_OPTRESET 1" >>confdefs.h
 fi
 
 SEM_INIT_LIB=''
-ac_fn_c_check_func "$LINENO" "sem_init" "ac_cv_func_sem_init"
+echo GL_THREADS_API: ${gl_threads_api}
+if test "${gl_threads_api}" != none
+then
+  ac_fn_c_check_func "$LINENO" "sem_init" "ac_cv_func_sem_init"
 if test "x$ac_cv_func_sem_init" = xyes; then :
 
 else
@@ -13218,6 +13783,7 @@ fi
 fi
 
 fi
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for unified diff option" >&5
 $as_echo_n "checking for unified diff option... " >&6; }
@@ -13236,6 +13802,376 @@ $as_echo "#define HAVE_EXT2_IOCTLS 1" >>confdefs.h
 
 	;;
 esac
+
+    $as_echo_n "checking for mount 'nosuid' option... "
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/mount.h>
+int
+main ()
+{
+void *temp = (void *)(MS_NOSUID); (void) temp;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_MOUNT_NOSUID 1" >>confdefs.h
+
+         ac_cv_mount_nosuid=yes
+         $as_echo "yes"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/mount.h>
+int
+main ()
+{
+void *temp = (void *)(MNT_NOSUID); (void) temp;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_MOUNT_NOSUID 1" >>confdefs.h
+
+             ac_cv_mount_nosuid=yes
+             $as_echo "yes"
+else
+  ac_cv_mount_nosuid=no
+             $as_echo "no"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+
+    $as_echo_n "checking for mount 'nodev' option... "
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/mount.h>
+int
+main ()
+{
+void *temp = (void *)(MS_NODEV); (void) temp;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_MOUNT_NODEV 1" >>confdefs.h
+
+         ac_cv_mount_nodev=yes
+         $as_echo "yes"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/mount.h>
+int
+main ()
+{
+void *temp = (void *)(MNT_NODEV); (void) temp;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_MOUNT_NODEV 1" >>confdefs.h
+
+             ac_cv_mount_nodev=yes
+             $as_echo "yes"
+else
+  ac_cv_mount_nodev=no
+             $as_echo "no"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+# Check whether --enable-lto was given.
+if test "${enable_lto+set}" = set; then :
+  enableval=$enable_lto;
+else
+  enable_lto=no
+fi
+
+if test "$enable_lto" = "yes" || test "$enable_lto" = "probe"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if C compiler supports LTO" >&5
+$as_echo_n "checking if C compiler supports LTO... " >&6; }
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	LTO_FLAGS="-g -flto -ffat-lto-objects"
+	CFLAGS="$CFLAGS $LTO_FLAGS"
+	LDFLAGS="$LDFLAGS $LTO_FLAGS"
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		lto_cflags=$LTO_FLAGS
+		lto_ldflags=$LTO_FLAGS
+		# Extract the first word of "gcc-ar", so it can be a program name with args.
+set dummy gcc-ar; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_gcc_ar+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $gcc_ar in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_gcc_ar="$gcc_ar" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_gcc_ar="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+gcc_ar=$ac_cv_path_gcc_ar
+if test -n "$gcc_ar"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_ar" >&5
+$as_echo "$gcc_ar" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+		# Extract the first word of "gcc-ranlib", so it can be a program name with args.
+set dummy gcc-ranlib; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_gcc_ranlib+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $gcc_ranlib in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_gcc_ranlib="$gcc_ranlib" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_gcc_ranlib="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+gcc_ranlib=$ac_cv_path_gcc_ranlib
+if test -n "$gcc_ranlib"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_ranlib" >&5
+$as_echo "$gcc_ranlib" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	if test -x "$gcc_ar" && test -x "$gcc_ranlib"; then
+		have_lto=yes
+		AR="${gcc_ar}"
+		RANLIB="${gcc_ranlib}"
+	fi
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+
+
+
+fi
+if test "$enable_lto" = "yes" && test "$have_lto" != "yes"; then
+	as_fn_error $? "LTO not supported by compiler." "$LINENO" 5
+fi
+# Check whether --enable-ubsan was given.
+if test "${enable_ubsan+set}" = set; then :
+  enableval=$enable_ubsan;
+else
+  enable_ubsan=no
+fi
+
+if test "$enable_ubsan" = "yes" || test "$enable_ubsan" = "probe"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if C compiler supports UBSAN" >&5
+$as_echo_n "checking if C compiler supports UBSAN... " >&6; }
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	UBSAN_FLAGS="-fsanitize=undefined"
+	CFLAGS="$CFLAGS $UBSAN_FLAGS"
+	LDFLAGS="$LDFLAGS $UBSAN_FLAGS"
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		ubsan_cflags=$UBSAN_FLAGS
+		ubsan_ldflags=$UBSAN_FLAGS
+		have_ubsan=yes
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+
+
+
+fi
+if test "$enable_ubsan" = "yes" && test "$have_ubsan" != "yes"; then
+	as_fn_error $? "UBSAN not supported by compiler." "$LINENO" 5
+fi
+# Check whether --enable-addrsan was given.
+if test "${enable_addrsan+set}" = set; then :
+  enableval=$enable_addrsan;
+else
+  enable_addrsan=no
+fi
+
+if test "$enable_addrsan" = "yes" || test "$enable_addrsan" = "probe"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if C compiler supports ADDRSAN" >&5
+$as_echo_n "checking if C compiler supports ADDRSAN... " >&6; }
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	ADDRSAN_FLAGS="-fsanitize=address"
+	CFLAGS="$CFLAGS $ADDRSAN_FLAGS"
+	LDFLAGS="$LDFLAGS $ADDRSAN_FLAGS"
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		addrsan_cflags=$ADDRSAN_FLAGS
+		addrsan_ldflags=$ADDRSAN_FLAGS
+		have_addrsan=yes
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+
+
+
+fi
+if test "$enable_addrsan" = "yes" && test "$have_addrsan" != "yes"; then
+	as_fn_error $? "ADDRSAN not supported by compiler." "$LINENO" 5
+fi
+# Check whether --enable-threadsan was given.
+if test "${enable_threadsan+set}" = set; then :
+  enableval=$enable_threadsan;
+else
+  enable_threadsan=no
+fi
+
+if test "$enable_threadsan" = "yes" || test "$enable_threadsan" = "probe"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if C compiler supports THREADSAN" >&5
+$as_echo_n "checking if C compiler supports THREADSAN... " >&6; }
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	THREADSAN_FLAGS="-fsanitize=thread"
+	CFLAGS="$CFLAGS $THREADSAN_FLAGS"
+	LDFLAGS="$LDFLAGS $THREADSAN_FLAGS"
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		threadsan_cflags=$THREADSAN_FLAGS
+		threadsan_ldflags=$THREADSAN_FLAGS
+		have_threadsan=yes
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+
+
+
+fi
+if test "$enable_threadsan" = "yes" && test "$have_threadsan" != "yes"; then
+	as_fn_error $? "THREADSAN not supported by compiler." "$LINENO" 5
+fi
+if test "$have_threadsan" = "yes" && test "$have_addrsan" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ADDRSAN and THREADSAN are not known to work together." >&5
+$as_echo "$as_me: WARNING: ADDRSAN and THREADSAN are not known to work together." >&2;}
+fi
 LINUX_CMT="#"
 CYGWIN_CMT="#"
 UNIX_CMT=
@@ -13250,6 +14186,8 @@ cygwin)
 esac
 
 
+
+E2SCRUB_CMT="$LINUX_CMT"
 
 case "$host_os" in
 linux* | gnu* | k*bsd*-gnu)
@@ -13327,12 +14265,13 @@ else
 fi
 
 fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we can link with -static" >&5
 $as_echo_n "checking whether we can link with -static... " >&6; }
 if ${ac_cv_e2fsprogs_use_static+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
+  SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS_STATIC -static"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stdio.h>
@@ -13361,9 +14300,8 @@ solaris2.*)
 esac
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_e2fsprogs_use_static" >&5
 $as_echo "$ac_cv_e2fsprogs_use_static" >&6; }
-LDFLAG_STATIC=
 if test $ac_cv_e2fsprogs_use_static = yes; then
-	LDFLAG_STATIC=-static
+	LDFLAGS_STATIC="$LDFLAGS_STATIC -static"
 fi
 
 case "$host_os" in
@@ -13375,10 +14313,6 @@ $as_echo "#define _INTL_REDIRECT_MACROS 1" >>confdefs.h
 
 	;;
 esac
-SS_DIR=`cd ${srcdir}/lib/ss; pwd`
-ET_DIR=`cd ${srcdir}/lib/et; pwd`
-
-
 if test "$cross_compiling" = yes ; then
   DO_TEST_SUITE=
 else
@@ -13396,41 +14330,318 @@ if test -n "$WITH_DIET_LIBC" ; then
 	INCLUDES="$INCLUDES -D_REENTRANT"
 fi
 
-
-        MKINSTALLDIRS=
-  if test -n "$ac_aux_dir"; then
-    case "$ac_aux_dir" in
-      /*) MKINSTALLDIRS="$ac_aux_dir/mkinstalldirs" ;;
-      *) MKINSTALLDIRS="\$(top_builddir)/$ac_aux_dir/mkinstalldirs" ;;
-    esac
-  fi
-  if test -z "$MKINSTALLDIRS"; then
-    MKINSTALLDIRS="\$(top_srcdir)/mkinstalldirs"
-  fi
-
-
 if test $cross_compiling = no; then
    BUILD_CFLAGS="$CFLAGS $CPPFLAGS $INCLUDES -DHAVE_CONFIG_H"
    BUILD_LDFLAGS="$LDFLAGS"
 fi
 
 
+CFLAGS_SHLIB=${CFLAGS_SHLIB:-$CFLAGS}
+CFLAGS_STLIB=${CFLAGS_STLIB:-$CFLAGS}
+LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
+
+
+
+
+
+# Check whether --with-udev_rules_dir was given.
+if test "${with_udev_rules_dir+set}" = set; then :
+  withval=$with_udev_rules_dir;
+else
+  with_udev_rules_dir=yes
+fi
+
+if test "x${with_udev_rules_dir}" != "xno"; then :
+
+	if test "x${with_udev_rules_dir}" = "xyes"; then :
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for udev" >&5
+$as_echo_n "checking for udev... " >&6; }
+
+if test -n "$udev_CFLAGS"; then
+    pkg_cv_udev_CFLAGS="$udev_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"udev\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "udev") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_udev_CFLAGS=`$PKG_CONFIG --cflags "udev" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$udev_LIBS"; then
+    pkg_cv_udev_LIBS="$udev_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"udev\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "udev") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_udev_LIBS=`$PKG_CONFIG --libs "udev" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        udev_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "udev" 2>&1`
+        else
+	        udev_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "udev" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$udev_PKG_ERRORS" >&5
+
+
+			with_udev_rules_dir=""
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+			with_udev_rules_dir=""
+
+else
+	udev_CFLAGS=$pkg_cv_udev_CFLAGS
+	udev_LIBS=$pkg_cv_udev_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+			with_udev_rules_dir="$($PKG_CONFIG --variable=udevdir udev)/rules.d"
+
+fi
+
+fi
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for udev rules dir" >&5
+$as_echo_n "checking for udev rules dir... " >&6; }
+	pkg_udev_rules_dir="${with_udev_rules_dir}"
+	if test -n "${pkg_udev_rules_dir}"; then :
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${pkg_udev_rules_dir}" >&5
+$as_echo "${pkg_udev_rules_dir}" >&6; }
+		have_udev="yes"
+
+else
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		have_udev="no"
+
+fi
+
+else
+
+	have_udev="disabled"
+
+fi
+
+
+
+
+# Check whether --with-crond_dir was given.
+if test "${with_crond_dir+set}" = set; then :
+  withval=$with_crond_dir;
+else
+  with_crond_dir=yes
+fi
+
+if test "x${with_crond_dir}" != "xno"; then :
+
+	if test "x${with_crond_dir}" = "xyes"; then :
+
+		if test -d "/etc/cron.d"; then :
+  with_crond_dir="/etc/cron.d"
+else
+  have_crond="no"; with_crond_dir=""
+fi
+
+fi
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for system crontab dir" >&5
+$as_echo_n "checking for system crontab dir... " >&6; }
+	crond_dir="${with_crond_dir}"
+	if test -n "${crond_dir}"; then :
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${crond_dir}" >&5
+$as_echo "${crond_dir}" >&6; }
+		have_crond="yes"
+
+else
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		have_crond="no"
+
+fi
+
+else
+
+	have_crond="disabled"
+
+fi
+
+
+
+
+# Check whether --with-systemd_unit_dir was given.
+if test "${with_systemd_unit_dir+set}" = set; then :
+  withval=$with_systemd_unit_dir;
+else
+  with_systemd_unit_dir=yes
+fi
+
+if test "x${with_systemd_unit_dir}" != "xno"; then :
+
+	if test "x${with_systemd_unit_dir}" = "xyes"; then :
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for systemd" >&5
+$as_echo_n "checking for systemd... " >&6; }
+
+if test -n "$systemd_CFLAGS"; then
+    pkg_cv_systemd_CFLAGS="$systemd_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"systemd\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "systemd") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_systemd_CFLAGS=`$PKG_CONFIG --cflags "systemd" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$systemd_LIBS"; then
+    pkg_cv_systemd_LIBS="$systemd_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"systemd\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "systemd") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_systemd_LIBS=`$PKG_CONFIG --libs "systemd" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        systemd_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "systemd" 2>&1`
+        else
+	        systemd_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "systemd" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$systemd_PKG_ERRORS" >&5
+
+
+			with_systemd_unit_dir=""
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+			with_systemd_unit_dir=""
+
+else
+	systemd_CFLAGS=$pkg_cv_systemd_CFLAGS
+	systemd_LIBS=$pkg_cv_systemd_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+			with_systemd_unit_dir="$($PKG_CONFIG --variable=systemdsystemunitdir systemd)"
+
+fi
+
+
+fi
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for systemd system unit dir" >&5
+$as_echo_n "checking for systemd system unit dir... " >&6; }
+	systemd_system_unit_dir="${with_systemd_unit_dir}"
+	if test -n "${systemd_system_unit_dir}"; then :
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${systemd_system_unit_dir}" >&5
+$as_echo "${systemd_system_unit_dir}" >&6; }
+		have_systemd="yes"
+
+else
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		have_systemd="no"
+
+fi
+
+else
+
+	have_systemd="disabled"
+
+fi
+
+
+
 test -d lib || mkdir lib
 test -d include || mkdir include
 test -d include/linux || mkdir include/linux
 test -d include/asm || mkdir include/asm
-for i in MCONFIG Makefile e2fsprogs.spec \
+if test -z "$UUID_CMT" ; then
+	uuid_out_list="lib/uuid/Makefile lib/uuid/uuid.pc \
+		lib/uuid/uuid_types.h"
+fi
+if test -z "$BLKID_CMT" ; then
+	blkid_out_list="lib/blkid/Makefile lib/blkid/blkid.pc \
+		lib/blkid/blkid_types.h"
+fi
+for i in MCONFIG Makefile \
 	util/Makefile util/subst.conf util/gen-tarball util/install-symlink \
 	lib/et/Makefile lib/ss/Makefile lib/e2p/Makefile \
 	lib/ext2fs/Makefile lib/ext2fs/ext2_types.h \
-	lib/uuid/Makefile lib/uuid/uuid_types.h \
-	lib/blkid/Makefile lib/blkid/blkid_types.h lib/quota/Makefile \
-	lib/ss/ss.pc lib/uuid/uuid.pc lib/et/com_err.pc \
-	lib/e2p/e2p.pc lib/blkid/blkid.pc lib/ext2fs/ext2fs.pc \
+	$uuid_out_list $blkid_out_list lib/support/Makefile \
+	lib/ss/ss.pc lib/et/com_err.pc lib/e2p/e2p.pc lib/ext2fs/ext2fs.pc \
 	misc/Makefile ext2ed/Makefile e2fsck/Makefile \
 	debugfs/Makefile tests/Makefile tests/progs/Makefile \
 	resize/Makefile doc/Makefile intl/Makefile \
-	intl/libgnuintl.h po/Makefile.in ; do
+	intl/libgnuintl.h po/Makefile.in scrub/Makefile; do
 	if test -d `dirname ${srcdir}/$i` ; then
 		outlist="$outlist $i"
 	fi

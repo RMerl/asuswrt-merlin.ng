@@ -1,0 +1,119 @@
+E2fsprogs 1.21 (June 15, 2001)
+==============================
+
+Added new configure flags which allow a subset e2fsprogs to be built;
+this is most useful for boot floppies, since the resulting shared
+libraries and programs are slimmed down by removing features that
+aren't necessary for a boot floppy.  The new flags that were added
+are: --disable-swapfs, which removes support for byte swapping old
+legacy PPC/68k filesystems, --disable-debugfs, which removes support
+for debugfs from the libext2fs library, --disable-imager, which
+removes support for the e2image program, and --disable-resizer, which
+removes support for resize2fs.
+
+E2fsck now prints the number of mounts or days elapsed since the last
+check when e2fsck is forced to check an otherwise clean filesystem.
+
+Tune2fs now prints an informative message about how often a filesystem
+will be checked when adding a journal to the filesystem, to remind the
+user that he/she may want to adjust those parameters using tune2fs
+-c/-i.
+
+Worked around hurd brain-damage which causes e2fsck to sometimes
+believe a filesystem is the root filesystem based on device numbers
+(since Hurd doesn't have dev_t's, which is arguably a POSIX.1
+violation).
+
+Fixed a bug introduced in 1.20 which caused e2fsck to abort with an
+erroneous error with the -F option was specified.
+
+Fixed a ext3 recovery bug in the revoke handling; synchronized with
+ext3 0.7a.
+
+Fixed two bugs in e2fsck's handling of dup block handling, dealing
+with relatively uncommon edge cases: a directory with an indirect
+block which is claimed by another file, and when the last inode in the
+filesystem has blocks claimed by another file.
+
+E2fsck now checks to see if the i_size field of a fast symlink is too
+big, and offers to clear the symlink if so.
+
+E2fsck now checks to see if i_size_high of special files is non-zero,
+and offers to clear i_size_high.
+
+Fix e2fsck's handling of incompatible journal flags so that the user
+has chance to abort, and then has the option to clear out the journal
+entirely.  (Addresses Debian bug #98527.)
+
+Fixed a bug in fsck which could cause it to core dump if a mix of
+standard and non-standard device names are used in /etc/fstab.
+(Debian bug #100559)
+
+Fixed a bug in debugfs which caused read errors when copying a file to
+not be noticed.
+
+The debugfs set_super_value command can now modify the s_lastcheck field.
+
+Fixed a bug in lsattr and chattr which was accidentally introduced in
+1.20 to support > 2GB files; both lsattr and chattr wasn't reading
+directories correctly because the change modified the layout of struct
+dirent to be incompatible with the libe2p shared library.
+
+Cleaned up the mke2fs manual page and included a discussion about why
+it's good to periodically check the filesystem even when journalling is
+enabled.
+
+Programmer's notes:
+-------------------
+
+Fix general gcc -Wall complaints.
+
+The types needed by the ext2 header files are now provided by
+lib/ext2fs/ext2_types.h, instead of include/asm/types.h.
+
+Integers are now preferred to longs when trying to find a 32-bit type
+in ext2_types.h.  Also, if linux/types.h has already been defined,
+don't try to redefine the types.
+
+Fixed make depend script so that it automatically corrects the
+pathname cleanups performed by make -M, so I don't have to fix them up
+by hand.
+
+Fixed the d_loaddump test case to be more robust, and not depend on
+bash'isms.
+
+Removed debugfs's dependence on pread(), which was accidentally
+introduced in e2fsprogs 1.20
+
+Fixed a performance bug in the libext2fs's icount routine; the size
+estimate of the icount array was incorrectly being calculated.
+
+Removed use of the badblocks compatibility functions in the e2fsprogs
+programs.
+
+Added paranoia code which protects against strange cases where /etc
+isn't on the root filesystem, or if /etc/mtab doesn't exist.
+
+The header file ext2_types.h is now installed.
+
+Autoconf is used to determine when we are on big-endian machines,
+instead of doing run-time tests, to save a few bytes of code.
+
+The ext2fs_mark_generic_bitmap and ext2fs_unmark_generic_bitmap
+functions are no longer inline functions, which saves space and
+doesn't really cost any real performance.
+
+The ext2fs library no longer depends on the e2p library.  (What need
+there was of it --- namely, fsetflags, was coded in-line).
+
+Fixed the makefile so that lib/ext2fs/ext2_types.h is generated even
+when the user is stupid and tries compiling the package using "make
+install" as root.
+
+Miscellaneous code cleanups:
+	* Added missing files from Makefile.in's SRCS file, so that 
+		their dependencies would be properly calculated.
+	* Removed redundant code
+	* Fixed comments in code
+	* Removed no-longer needed argsused #pragma.
+

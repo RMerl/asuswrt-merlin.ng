@@ -1,0 +1,37 @@
+#!/bin/bash
+
+FSCK_OPT=-fn
+IMAGE=$test_dir/image.bz2
+
+bzip2 -d < $IMAGE > $TMPFILE
+
+# Run fsck to fix things?
+if [ -x $DEBUGFS_EXE ]; then
+	EXP=$test_dir/expect
+else
+	EXP=$test_dir/expect.nodebugfs
+fi
+OUT=$test_name.log
+rm -f $test_name.failed $test_name.ok
+
+echo "*** e2fsck" > $OUT
+$FSCK $FSCK_OPT $TMPFILE >> $OUT 2>&1
+echo "*** debugfs" >> $OUT
+test -x $DEBUGFS_EXE && $DEBUGFS -R 'quit' $TMPFILE >> $OUT 2>&1
+echo "*** tune2fs" >> $OUT
+$TUNE2FS -i 0 $TMPFILE >> $OUT 2>&1
+echo "*** mke2fs" >> $OUT
+$MKE2FS -n -b 1024 $TMPFILE >> $OUT 2>&1
+
+sed -f $cmd_dir/filter.sed < $OUT > $OUT.new
+mv $OUT.new $OUT
+
+# Figure out what happened
+if cmp -s $EXP $OUT; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff -u $EXP $OUT >> $test_name.failed
+fi
+unset EXP OUT FSCK_OPT IMAGE

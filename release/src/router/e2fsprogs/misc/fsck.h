@@ -34,7 +34,7 @@
 #define EXIT_LIBRARY     128
 
 /*
- * Internal structure for mount tabel entries.
+ * Internal structure for mount table entries.
  */
 
 struct fs_info {

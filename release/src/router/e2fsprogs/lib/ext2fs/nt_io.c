@@ -378,7 +378,7 @@ _MapNtStatus(
 
 
 //
-// Helper functions to make things easyer
+// Helper functions to make things easier
 //
 
 static
@@ -398,7 +398,7 @@ _OpenNtName(
 	IO_STATUS_BLOCK IoStatusBlock;
 
 	//
-	// Make Unicode name from inlut string
+	// Make Unicode name from input string
 	//
 
 	UnicodeString.Buffer = &Buffer[0];
@@ -411,7 +411,7 @@ _OpenNtName(
 
 	if(!NT_SUCCESS(Status))
 	{
-		return Status; // Unpappable character?
+		return Status; // Unmappable character?
 	}
 
 	//
@@ -673,7 +673,7 @@ _NormalizeDeviceName(
 	else if('f' == *Device)
 	{
 		//
-		// 3-d letted should be a digit.
+		// 3-d letter should be a digit.
 		//
 
 		if((*(Device + 3) != '\0') ||

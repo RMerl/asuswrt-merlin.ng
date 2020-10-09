@@ -1,6 +1,9 @@
-if test -x $RESIZE2FS_EXE -a -x $DEBUGFS_EXE; then
-
 test_description="ext2 1024 blocksize with small block groups"
+if ! test -x $RESIZE2FS_EXE -o ! -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs/resize2fs)"
+	return 0
+fi
+
 FEATURES="-t ext2 -O ^resize_inode -b 1024 -g 1024"
 SIZE_1=64M
 SIZE_2=2G
@@ -16,7 +19,7 @@ if [ $RC -eq 0 ]; then
 	echo "$test_name: $test_description: ok"
 	touch $test_name.ok
 elif [ $RC -eq 111 ]; then
-	echo "$test_name: $test_description: skipped"
+	echo "$test_name: $test_description: skipped (no large sparse files)"
 	touch $test_name.ok
 else
 	echo "$test_name: $test_description: failed"
@@ -24,8 +27,4 @@ else
 fi
 
 unset FEATURES SIZE_1 SIZE_2 LOG E2FSCK
-
-else #if test -x $RESIZE2FS_EXE -a -x $DEBUGFS_EXE; then
-	echo "$test_name: $test_description: skipped"
-fi 
 

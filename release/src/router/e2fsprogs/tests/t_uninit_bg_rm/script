@@ -1,0 +1,54 @@
+test_description="remove uninit_bg"
+OUT=$test_name.log
+FSCK_OPT=-yf
+EXP=$test_dir/expect
+
+if [ $(uname -s) = "Darwin" ]; then
+	# creates a 10GB filesystem
+	echo "$test_name: $DESCRIPTION: skipped for HFS+ (no sparse files)"
+	return 0
+fi
+
+cp /dev/null $TMPFILE
+
+echo mke2fs -q -t ext4 -F -o Linux -b 1024 test.img 1G > $OUT.new
+$MKE2FS -q -t ext4 -F -o Linux -b 1024 $TMPFILE 1G >> $OUT.new 2>&1
+
+echo "tune2fs -f -O ^uninit_bg test.img" >> $OUT.new
+$TUNE2FS -f -O ^uninit_bg $TMPFILE >> $OUT.new 2>&1
+
+echo " " >> $OUT.new
+echo fsck $FSCK_OPT -N test_filesys test.img >> $OUT.new
+$FSCK $FSCK_OPT -N test_filesys $TMPFILE >> $OUT.new 2>&1
+
+echo " " >> $OUT.new
+cp /dev/null $TMPFILE
+echo mke2fs -q -t ext4 -O bigalloc -F -o Linux -b 1024 -C 8192 test.img 10G >> $OUT.new
+$MKE2FS -q -t ext4 -O bigalloc -F -o Linux -b 1024 -C 8192 $TMPFILE 10G >> $OUT.new 2>&1
+
+echo "tune2fs -f -O ^uninit_bg test.img" >> $OUT.new
+$TUNE2FS -f -O ^uninit_bg $TMPFILE >> $OUT.new 2>&1
+
+echo " " >> $OUT.new
+echo fsck $FSCK_OPT -N test_filesys test.img >> $OUT.new
+$FSCK $FSCK_OPT -N test_filesys $TMPFILE >> $OUT.new 2>&1
+sed -f $cmd_dir/filter.sed < $OUT.new > $OUT
+
+rm -f $TMPFILE $OUT.new
+
+#
+# Do the verification
+#
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset IMAGE FSCK_OPT OUT EXP

@@ -1,5 +1,7 @@
 all:: subdirs $(LIBRARY).a
 
+install-shlibs-strip::
+
 install-shlibs::
 
 uninstall-shlibs::

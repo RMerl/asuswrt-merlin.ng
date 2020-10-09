@@ -1,0 +1,122 @@
+E2fsprogs 1.30 (October 31, 2002)
+=================================
+
+When resizing a filesystem, and inodes need to moved, resize2fs will
+update the inode's ctime field, and the mtime field of the containing
+directories, so that incremental backups using dump/restore will work
+correctly.
+
+In order to avoid spurious errors, e2fsck will check the last
+superblock write time to determine whether or not it can safely use
+the LOW_DTIME checks to determine if there are inodes on the orphan
+inode linked list that had somehow gotten disconnected.  (Addresses
+Sourceforge bug #620980)
+
+Partition in /proc/partitions that being with the string "lvm" are
+considered real partitions even if they do not end with a number.
+
+Fixed a bug in the the uuid generation function, where if /dev/urandom
+is not present, but /dev/random is, and there isn't sufficient
+entropy, the get_random_byte function could spin a loop forever.
+
+E2fsck, mke2fs, etc. will now reliably notice when image files are
+mounted using the loopback interface.  (Addresses Sourceforge bug
+#619119)
+
+When flushing buffers (as is done by badblocks, for example) check to
+see if the BLKFLSBUF ioctl succeeds, and if so, avoid using the
+FDFLUSH ioctl which causes the MD device driver which causes confusing
+syslog messages about obsolete ioctl messages.  (Addresses Sourceforge
+bug #545832).
+
+Debugfs's write command now checks to see if the destination filename
+exists before creating it.  (Addresses Sourceforge bug #478195.)
+
+When installing man pages, search for compressed man pages using all
+commonly used compression extensions (i.e., .Z, .gz, .bz2, etc.)
+
+Fixed a bug in fsck where multiple filesystems specified on the
+command were not being checked in parallel due to a logic bug
+introduced to support the FSCK_MAX_INST environment variable.
+
+We have added a new superblock field, s_mkfs_time, which indicates
+when a filesystem was created.  It is set via mke2fs, and printed out
+by dumpe2fs, but is not actually touched by the kernel.
+
+Dumpe2fs has been made more robust by not aborting if there is an
+error reading the block/inode bitmaps; instead it will still print out
+the location of the block/inode bitmaps and inode table.
+
+Add support for the an alternative block group descriptor layout which
+allows for on-line resizing without needing to prepare the filesystem
+in advance.  (This is the incompat feature flag meta_bg.)
+
+Add support for storing default mount options in the superblock, so
+that the filesystem can be mounted with specific mount options without
+needing to specify them on the mount command line or in the /etc/fstab
+file.
+
+Add support for a new inode flag, which is to be used for indicating
+the top of directory hierarchies for the Orlov block allocator.
+
+Fix e2fsck so that if it creates the lost+found directory, it does so
+with the more appropriate permissions of 0700.  Also change
+mklost+found so that it also creates the directory 0700.
+
+Fixed format bug in e2fsck if NLS is in use.
+  
+Add a German translation for e2fsprogs's NLS support.
+
+Fixed e2fsck so that it more handles BAD_BLOCK_IN_INODE_TABLE even at
+the beginning of the inode table.  This won't matter much, since if
+there is a bad block at the beginning of the inode table, the root
+directory won't be available.  But at least e2fsck won't crash in this
+case.
+
+Fixed endian problems in the htree code for e2fsck and debugfs.
+  
+When byte-swapping a filesystem on a PPC architecture, byte-swap the
+bitmaps since the historical big-endian ext2 variant had byte-swapped
+bitmaps, and the ext2fs library assumes this.  This fixes the
+regression test suite on PPC machines.
+
+Fix e2image so that it handles a bad block in the inode table
+appropriately.
+
+E2fsck now uses a more sophisticated algorithm to salvage corrupted
+directories that recovers more information in the corrupted directory
+block.
+
+E2fsck now performs additional consistency checks on indexed (HTREE)
+directories.
+
+Fix a bug where e2fsck might get confused about whether a completely
+empty directory block is an empty leaf block or an interior htree
+node.  This could cause e2fsck to get confused into think that a valid
+indexed directory was corrupted.
+
+E2fsck no longer creates an empty directory entry at the end of a
+directory block when optimizing a directory.  This would cause some
+earlier versions of the dxdir kernel code to corrupt the directory
+when attempting to split a node containing an empty directory entry.
+
+E2fsck could sometimes in rare circumstances leave the indexed flag
+set after a small directory was optimized by compressing it instead of
+indexing it.  (This should never happen in real life, since
+directories that small wouldn't have been indexed, but better safe
+than sorry.)
+
+E2fsck now only updates the master superblock in all cases.  This
+slightly shortens its run time.
+
+Ext2ed can deal with directory entries of length 0; previously it
+would get stuck in an infinite loop.
+
+Fsck now has support for reiserfs volumes when parsing LABEL= and UUID=
+specifiers.  (Sourceforge patch #613447)
+
+Badblocks will now work correctly on read-only devices such as
+CD-ROM's.  (Sourceforge patch #600451)
+
+Updated and clarified man pages.  (Addresses Debian bug #167108)
+

@@ -1,0 +1,29 @@
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12 has a bad extended attribute block 1074.  Clear? yes
+
+Inode 12, i_blocks is 2, should be 0.  Fix? yes
+
+Extended attribute in inode 13 has a hash (1631637196) which is invalid
+Clear? yes
+
+Inode 13, i_blocks is 2, should be 0.  Fix? yes
+
+Inode 14 extended attribute block 1076 passes checks, but checksum does not match block.  Fix? yes
+
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Block bitmap differences:  -(1074--1075)
+Fix? yes
+
+Free blocks count wrong for group #0 (971, counted=973).
+Fix? yes
+
+Free blocks count wrong (971, counted=973).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 14/128 files (7.1% non-contiguous), 1075/2048 blocks
+Exit status is 1

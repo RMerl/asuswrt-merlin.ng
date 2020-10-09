@@ -18,11 +18,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
  */
 
+#ifndef _LARGEFILE_SOURCE
 #define _LARGEFILE_SOURCE
+#endif
+#ifndef _LARGEFILE64_SOURCE
 #define _LARGEFILE64_SOURCE
+#endif
 
 #include <sys/stat.h>
 #include <sys/syscall.h>
@@ -36,6 +40,8 @@
 // #include <linux/falloc.h>
 #define FALLOC_FL_KEEP_SIZE	0x01
 #define FALLOC_FL_PUNCH_HOLE	0x02 /* de-allocates range */
+#define FALLOC_FL_COLLAPSE_RANGE	0x08
+#define FALLOC_FL_ZERO_RANGE		0x10
 
 void usage(void)
 {
@@ -95,7 +101,7 @@ int main(int argc, char **argv)
 	int	error;
 	int	tflag = 0;
 
-	while ((opt = getopt(argc, argv, "npl:o:t")) != -1) {
+	while ((opt = getopt(argc, argv, "npl:o:tzc")) != -1) {
 		switch(opt) {
 		case 'n':
 			/* do not change filesize */
@@ -104,6 +110,16 @@ int main(int argc, char **argv)
 		case 'p':
 			/* punch mode */
 			falloc_mode = (FALLOC_FL_PUNCH_HOLE |
+				       FALLOC_FL_KEEP_SIZE);
+			break;
+		case 'c':
+			/* collapse range mode */
+			falloc_mode = (FALLOC_FL_COLLAPSE_RANGE |
+				       FALLOC_FL_KEEP_SIZE);
+			break;
+		case 'z':
+			/* zero range mode */
+			falloc_mode = (FALLOC_FL_ZERO_RANGE |
 				       FALLOC_FL_KEEP_SIZE);
 			break;
 		case 'l':

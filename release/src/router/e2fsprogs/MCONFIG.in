@@ -4,6 +4,8 @@ all::
 
 check::
 
+fullcheck::
+
 SHELL = /bin/sh
 
 COMPRESS_EXT = gz bz2 bz Z
@@ -30,6 +32,14 @@ man8dir = $(mandir)/man8
 infodir = @infodir@
 datadir = @datadir@
 pkgconfigdir = $(libdir)/pkgconfig
+pkglibdir = $(libdir)/e2fsprogs
+
+HAVE_UDEV = @have_udev@
+UDEV_RULES_DIR = @pkg_udev_rules_dir@
+HAVE_CROND = @have_crond@
+CROND_DIR = @crond_dir@
+HAVE_SYSTEMD = @have_systemd@
+SYSTEMD_SYSTEM_UNIT_DIR = @systemd_system_unit_dir@
 
 @SET_MAKE@
 
@@ -53,28 +63,42 @@ pkgconfigdir = $(libdir)/pkgconfig
 
 @ifGNUmake@ CHECK=sparse
 @ifGNUmake@ CHECK_OPTS=-Wsparse-all -Wno-transparent-union -Wno-return-void -Wno-undef -Wno-non-pointer-null
+@ifGNUmake@ CPPCHECK=cppcheck
+@ifGNUmake@ CPPCHECK_OPTS=--force --enable=all --quiet
 @ifGNUmake@ ifeq ("$(C)", "2")
 @ifGNUmake@   CHECK_CMD=$(CHECK) $(CHECK_OPTS) -Wbitwise -D__CHECK_ENDIAN__
+@ifGNUmake@   CPPCHECK_CMD=$(CPPCHECK) $(CPPCHECK_OPTS)
 @ifGNUmake@ else
 @ifGNUmake@   ifeq ("$(C)", "1")
 @ifGNUmake@     CHECK_CMD=$(CHECK) $(CHECK_OPTS)
+@ifGNUmake@     CPPCHECK_CMD=$(CPPCHECK) $(CPPCHECK_OPTS)
 @ifGNUmake@    else
 @ifGNUmake@     CHECK_CMD=@true
+@ifGNUmake@     CPPCHECK_CMD=@true
 @ifGNUmake@   endif
 @ifGNUmake@ endif
 
-@ifNotGNUmake@ CHECK_CMD=@true
+@ifNotGNUmake@ CHECK_CMD=true
+@ifNotGNUmake@ CPPCHECK_CMD=true
+
+SANITIZER_CFLAGS = @lto_cflags@ @ubsan_cflags@ @addrsan_cflags@ @threadsan_cflags@
+SANITIZER_LDFLAGS = @lto_ldflags@ @ubsan_ldflags@ @addrsan_ldflags@ @threadsan_ldflags@
 
 CC = @CC@
 BUILD_CC = @BUILD_CC@
-CFLAGS = @CFLAGS@ @DEFS@
+CFLAGS = @CFLAGS@
+CFLAGS_SHLIB = @CFLAGS_SHLIB@
+CFLAGS_STLIB = @CFLAGS_STLIB@
 CPPFLAGS = @INCLUDES@
-ALL_CFLAGS = $(CPPFLAGS) $(CFLAGS)
-LDFLAGS = @LDFLAGS@
+ALL_CFLAGS = $(CPPFLAGS) $(SANITIZER_CFLAGS) $(CFLAGS) $(CFLAGS_WARN) @DEFS@ $(LOCAL_CFLAGS)
+ALL_CFLAGS_SHLIB = $(CPPFLAGS) $(SANITIZER_CFLAGS) $(CFLAGS_SHLIB) $(CFLAGS_WARN) @DEFS@ $(LOCAL_CFLAGS)
+ALL_CFLAGS_STLIB = $(CPPFLAGS) $(SANITIZER_CFLAGS) $(CFLAGS_STLIB) $(CFLAGS_WARN) @DEFS@ $(LOCAL_CFLAGS)
+LDFLAGS = $(SANITIZER_LDFLAGS) @LDFLAGS@
+LDFLAGS_SHLIB = $(SANITIZER_LDFLAGS) @LDFLAGS_SHLIB@
 ALL_LDFLAGS = $(LDFLAGS) @LDFLAG_DYNAMIC@
-LDFLAGS_STATIC = $(LDFLAGS) @LDFLAG_STATIC@
-BUILD_CFLAGS = @BUILD_CFLAGS@
-BUILD_LDFLAGS = @BUILD_LDFLAGS@
+LDFLAGS_STATIC = $(SANITIZER_LDFLAGS) @LDFLAGS_STATIC@
+BUILD_CFLAGS = $(SANITIZER_CFLAGS) @BUILD_CFLAGS@
+BUILD_LDFLAGS = $(SANITIZER_LDFLAGS) @BUILD_LDFLAGS@
 RDYNAMIC = @RDYNAMIC@
 LINK_BUILD_FLAGS = @LINK_BUILD_FLAGS@
 LINK_INSTALL_FLAGS = @LINK_INSTALL_FLAGS@
@@ -97,7 +121,7 @@ LDCONFIG = @LDCONFIG@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
-MKINSTALLDIRS = @MKINSTALLDIRS@
+MKDIR_P = @MKDIR_P@
 
 #
 # Library definitions
@@ -108,14 +132,16 @@ LIBCOM_ERR = $(LIB)/libcom_err@LIB_EXT@ @PRIVATE_LIBS_CMT@ @SEM_INIT_LIB@
 LIBE2P = $(LIB)/libe2p@LIB_EXT@
 LIBEXT2FS = $(LIB)/libext2fs@LIB_EXT@
 LIBUUID = @LIBUUID@ @SOCKET_LIB@
-LIBQUOTA = @STATIC_LIBQUOTA@
+LIBMAGIC = @MAGIC_LIB@
+LIBFUSE = @FUSE_LIB@
+LIBSUPPORT = $(LIBINTL) $(LIB)/libsupport@STATIC_LIB_EXT@
 LIBBLKID = @LIBBLKID@ @PRIVATE_LIBS_CMT@ $(LIBUUID)
 LIBINTL = @LIBINTL@
 SYSLIBS = @LIBS@
 DEPLIBSS = $(LIB)/libss@LIB_EXT@
 DEPLIBCOM_ERR = $(LIB)/libcom_err@LIB_EXT@
 DEPLIBUUID = @DEPLIBUUID@
-DEPLIBQUOTA = @DEPSTATIC_LIBQUOTA@
+DEPLIBSUPPORT = $(LIB)/libsupport@STATIC_LIB_EXT@
 DEPLIBBLKID = @DEPLIBBLKID@ @PRIVATE_LIBS_CMT@ $(DEPLIBUUID)
 TESTENV = LD_LIBRARY_PATH="$(LIB):$${LD_LIBRARY_PATH}" DYLD_LIBRARY_PATH="$(LIB):$${DYLD_LIBRARY_PATH}"
 
@@ -124,12 +150,12 @@ STATIC_LIBCOM_ERR = $(LIB)/libcom_err@STATIC_LIB_EXT@ @SEM_INIT_LIB@
 STATIC_LIBE2P = $(LIB)/libe2p@STATIC_LIB_EXT@
 STATIC_LIBEXT2FS = $(LIB)/libext2fs@STATIC_LIB_EXT@
 STATIC_LIBUUID = @STATIC_LIBUUID@ @SOCKET_LIB@
-STATIC_LIBQUOTA = @STATIC_LIBQUOTA@
+STATIC_LIBSUPPORT = $(LIBINTL) $(LIBSUPPORT)
 STATIC_LIBBLKID = @STATIC_LIBBLKID@ $(STATIC_LIBUUID)
 DEPSTATIC_LIBSS = $(LIB)/libss@STATIC_LIB_EXT@
 DEPSTATIC_LIBCOM_ERR = $(LIB)/libcom_err@STATIC_LIB_EXT@
 DEPSTATIC_LIBUUID = @DEPSTATIC_LIBUUID@
-DEPSTATIC_LIBQUOTA = @DEPSTATIC_LIBQUOTA@
+DEPSTATIC_LIBSUPPORT = $(DEPLIBSUPPORT)
 DEPSTATIC_LIBBLKID = @DEPSTATIC_LIBBLKID@ $(DEPSTATIC_LIBUUID)
 
 PROFILED_LIBSS = $(LIB)/libss@PROFILED_LIB_EXT@ @DLOPEN_LIB@
@@ -137,12 +163,12 @@ PROFILED_LIBCOM_ERR = $(LIB)/libcom_err@PROFILED_LIB_EXT@ @SEM_INIT_LIB@
 PROFILED_LIBE2P = $(LIB)/libe2p@PROFILED_LIB_EXT@
 PROFILED_LIBEXT2FS = $(LIB)/libext2fs@PROFILED_LIB_EXT@
 PROFILED_LIBUUID = @PROFILED_LIBUUID@ @SOCKET_LIB@
-PROFILED_LIBQUOTA = @PROFILED_LIBQUOTA@
+PROFILED_LIBSUPPORT = $(LIBINTL) $(LIB)/libsupport@PROFILED_LIB_EXT@
 PROFILED_LIBBLKID = @PROFILED_LIBBLKID@ $(PROFILED_LIBUUID)
 DEPPROFILED_LIBSS = $(LIB)/libss@PROFILED_LIB_EXT@
 DEPPROFILED_LIBCOM_ERR = $(LIB)/libcom_err@PROFILED_LIB_EXT@
 DEPPROFILED_LIBUUID = @PROFILED_LIBUUID@
-DEPPROFILED_LIBQUOTA = @PROFILED_LIBQUOTA@
+DEPPROFILED_LIBSUPPORT = $(PROFILED_LIBSUPPORT)
 DEPPROFILED_LIBBLKID = @PROFILED_LIBBLKID@ $(DEPPROFILED_LIBUUID)
 
 #
@@ -155,6 +181,14 @@ DEP_SUBSTITUTE= $(top_builddir)/util/subst $(SUBST_CONF)
 
 $(top_builddir)/util/subst:
 	cd $(top_builddir)/util ; $(MAKE) subst
+
+#
+# Script for generating utf8data.h
+#
+MKUTF8DATA=$(top_builddir)/util/mkutf8data
+
+$(top_builddir)/util/mkutf8data:
+	 $(MAKE) -C $(top_builddir)/util mkutf8data
 
 #
 # Script for installing symlinks (for shared libraries)
@@ -179,8 +213,7 @@ DEP_INSTALL_SYMLINK = $(top_builddir)/util/install-symlink \
 # Run make gcc-wall to do a build with warning messages.
 #
 #
-WFLAGS=		-std=c99 -D_XOPEN_SOURCE=600 -D_GNU_SOURCE \
-			-pedantic $(WFLAGS_EXTRA) \
+WFLAGS=		-std=gnu99 -D_XOPEN_SOURCE=600 -D_GNU_SOURCE $(WFLAGS_EXTRA) \
 			-Wall -W -Wwrite-strings -Wpointer-arith \
 			-Wcast-qual -Wcast-align -Wno-variadic-macros \
 			-Wstrict-prototypes -Wmissing-prototypes \
@@ -190,11 +223,18 @@ WFLAGS=		-std=c99 -D_XOPEN_SOURCE=600 -D_GNU_SOURCE \
 			-UENABLE_NLS
 
 gcc-wall-new:
-	(make CFLAGS="@CFLAGS@ $(WFLAGS)" > /dev/null) 2>&1 | sed -f $(top_srcdir)/util/gcc-wall-cleanup 
+	($(MAKE) CFLAGS_WARN="$(WFLAGS)" > /dev/null) 2>&1
 
 gcc-wall:
-	make clean > /dev/null
-	make gcc-wall-new
+	$(MAKE) clean > /dev/null
+	$(MAKE) gcc-wall-new
+
+static-check:
+	($(MAKE) C=1 V=1 CFLAGS="$(ALL_CFLAGS) $(WFLAGS)") 2>&1
+
+static-check-all:
+	$(MAKE) clean > /dev/null
+	$(MAKE) static-check
 
 #
 # Installation user and groups
@@ -249,7 +289,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/MCONFIG \
 		$(DEP_MAKEFILE) $(top_builddir)/config.status
 	cd $(top_builddir); CONFIG_FILES=$(my_dir)/Makefile ./config.status
 
-@MAINTAINER_CMT@$(top_srcdir)/configure: $(top_srcdir)/configure.in
+@MAINTAINER_CMT@$(top_srcdir)/configure: $(top_srcdir)/configure.ac
 @MAINTAINER_CMT@	cd $(top_srcdir) && autoheader && autoconf
 
 coverage.txt: Makefile $(SRCS)

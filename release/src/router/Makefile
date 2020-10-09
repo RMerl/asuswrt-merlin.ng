@@ -5011,7 +5011,7 @@ zlib/stamp-h1:
 	touch $@
 
 zlib: zlib/stamp-h1
-	@$(MAKE) -C zlib CC=$(CC) AR="ar rc" RANLIB=$(RANLIB) LD=$(LD) all && $(MAKE) $@-stage
+	@$(MAKE) -C zlib CC=$(CC) AR="ar" RANLIB=$(RANLIB) LD=$(LD) all && $(MAKE) $@-stage
 
 zlib-clean:
 	-@$(MAKE) -C zlib clean

@@ -5707,7 +5707,7 @@ lz4:
 	$(MAKE) -C $@ && $(MAKE) $@-stage
 
 lz4-stage:
-	$(MAKE) -C lz4 install DESTDIR=$(STAGEDIR) PREFIX=/usr LIBDIR=/usr/lib
+	$(MAKE) -C lz4 install DESTDIR=$(STAGEDIR) PREFIX=/usr LIBDIR=/usr/lib INSTALL_DIR="install -d -m 755"
 
 lz4-install:
 	install -D lz4/lib/liblz4.so.1.9.2 $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.9.2

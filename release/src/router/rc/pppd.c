@@ -371,7 +371,7 @@ start_demand_ppp(int unit, int wait)
 	if (inet_addr_(value) != INADDR_ANY)
 		ping_argv[2] = value;
 
-	_dprintf("%s: %s\n", __FUNCTION__, "trigger the PPP connection via %s", value);
+	_dprintf("%s: trigger the PPP connection via %s\n", __FUNCTION__, value);
 	logmessage("WAN Connection", "trigger the PPP connection via %s", value);
 
 	return _eval(ping_argv, NULL, 0, wait ? NULL : &pid);

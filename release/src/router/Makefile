@@ -5704,10 +5704,7 @@ lzo-install:
 	cd $(INSTALLDIR)/lzo/usr/lib && ln -sf liblzo2.so.2 liblzo2.so
 
 lz4:
-	$(MAKE) -C $@ && $(MAKE) $@-stage
-
-lz4-stage:
-	$(MAKE) -C lz4 install DESTDIR=$(STAGEDIR) PREFIX=/usr LIBDIR=/usr/lib INSTALL_DIR="install -d -m 755"
+	$(MAKE) -C $@ $(PARALLEL_BUILD)
 
 lz4-install:
 	install -D lz4/lib/liblz4.so.1.9.2 $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.9.2

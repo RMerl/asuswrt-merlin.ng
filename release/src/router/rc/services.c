@@ -12887,11 +12887,11 @@ check_ddr_done:
 		}
 	}
 	else if (strcmp(script, "wan_if") == 0) {
-#ifdef RTCONFIG_IPV6
-		int restart_ipv6 = atoi(cmd[1]) == wan_primary_ifunit_ipv6();
-#endif
-		_dprintf("%s: wan_if: %s.\n", __FUNCTION__, cmd[1]);
 		if(cmd[1]) {
+#ifdef RTCONFIG_IPV6
+			int restart_ipv6 = atoi(cmd[1]) == wan_primary_ifunit_ipv6();
+#endif
+			_dprintf("%s: wan_if: %s.\n", __FUNCTION__, cmd[1]);
 			if(action & RC_SERVICE_STOP)
 			{
 				stop_wan_if(atoi(cmd[1]));

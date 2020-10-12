@@ -22,7 +22,6 @@ CFLAGS += -I$(TOP_PLATFORM)/dpsta
 endif
 CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -DDLM -DASUS_DDNS -DASUS_EXT -DBTN_SETUP -DWEB_REDIRECT
-CFLAGS += -DRTCONFIG_CROND
 CFLAGS += -DDEBUG_RCTEST
 
 ifeq ($(RTCONFIG_WPS),y)
@@ -441,6 +440,7 @@ endif
 ifeq ($(RTCONFIG_SNMPD),y)
 OBJS += snmpd.o
 endif
+CFLAGS += -DRTCONFIG_CROND
 ifeq ($(RTCONFIG_OPENVPN),y)
 CFLAGS += -I$(TOP)/libovpn
 LDFLAGS += -L$(TOP)/libovpn -lovpn
@@ -565,10 +565,8 @@ SW_DSLWANLED=y
 endif
 endif
 
-ifneq ($(BUILD_NAME), RT-AC56U)
 ifneq (,$(filter y,$(RTCONFIG_WLAN_LED) $(RTN18U) $(RTCONFIG_FAKE_ETLAN_LED) $(SW_USBLED) $(RTCONFIG_MMC_LED) $(RTCONFIG_BRCM_USBAP) $(RTAC66U) $(BCM4352) $(SW_DSLWANLED) $(RTCONFIG_SW_DEVLED)))
 CFLAGS += -DSW_DEVLED
-endif
 endif
 
 ifeq ($(RTCONFIG_TIMEMACHINE),y)
@@ -576,6 +574,7 @@ OBJS += timemachine.o
 endif
 
 ifeq ($(RTCONFIG_LETSENCRYPT),y)
+#CFLAGS += -DRTCONFIG_CROND
 CFLAGS += -I$(TOP)/libletsencrypt
 LDFLAGS += -L$(TOP)/libletsencrypt -lletsencrypt
 endif

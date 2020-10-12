@@ -4531,9 +4531,9 @@ void timecheck(void)
 #endif
 	}
 
- #ifdef RTCONFIG_REBOOT_SCHEDULE
- 	/* Reboot Schedule */
- 	char reboot_schedule[PATH_MAX];
+#ifdef RTCONFIG_REBOOT_SCHEDULE
+	/* Reboot Schedule */
+	char reboot_schedule[PATH_MAX];
 	if (nvram_match("reboot_schedule_enable", "1"))
 	{
 		if (nvram_match("ntp_ready", "1"))
@@ -6433,6 +6433,10 @@ void dnsmasq_check()
 #endif
 		start_dnsmasq();
 		TRACE_PT("watchdog: dnsmasq died. start dnsmasq...\n");
+
+#if defined(RTL_WTDOG)
+		start_rtl_watchdog();
+#endif
 	}
 #ifdef RTCONFIG_DNSPRIVACY
 	else if (nvram_get_int("dnspriv_enable") && !pids("stubby")) {

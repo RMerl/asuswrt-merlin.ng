@@ -2023,7 +2023,7 @@ extern void stop_nas(void);
 extern void stop_acsd(void);
 extern int start_acsd();
 extern void set_acs_ifnames();
-#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+#ifdef RTCONFIG_PROXYSTA
 extern int stop_psta_monitor();
 extern int start_psta_monitor();
 #endif

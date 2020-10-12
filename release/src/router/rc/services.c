@@ -1266,15 +1266,15 @@ void start_dnsmasq(void)
 				    "ff02::2 ip6-allrouters\n");
 
 			/* lan6 hostname.domain hostname */
- 			value = (char*) ipv6_router_address(NULL);
+			value = (char*) ipv6_router_address(NULL);
 			if (*value) {
 				fprintf(fp, "%s %s.%s %s\n", value,
 					    lan_hostname, nvram_safe_get("lan_domain"),
 					    lan_hostname);
 
-                                /* mdns fallback */
-                                fprintf(fp, "%s %s.local\n", value, lan_hostname);
- 			}
+				/* mdns fallback */
+				fprintf(fp, "%s %s.local\n", value, lan_hostname);
+			}
 		}
 #endif
 		append_custom_config("hosts", fp);
@@ -11928,6 +11928,12 @@ script_allnet:
 			stop_CP();
 			stop_uam_srv();
 #endif
+#if defined(RTCONFIG_WIFI_SON)
+			if(nvram_match("wifison_ready","1"))
+				stop_amas_lib();
+#endif
+
+
 #if defined(RTCONFIG_AMAS)
 #if defined(RTCONFIG_WIFI_SON)
 		        if(nvram_match("wifison_ready","1"))
@@ -11939,12 +11945,6 @@ script_allnet:
 			}
 #endif
 #endif
-#if defined(RTCONFIG_WIFI_SON)
-		        if(nvram_match("wifison_ready","1"))
-                		stop_amas_lib();
-#endif
-
-
 
 
 			// TODO free memory here
@@ -14122,18 +14122,6 @@ check_ddr_done:
 		//  WEVENT_GENERIC_MSG	 "{\""WEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\"}}"
 #endif	// RTCONFIG_CFGSYNC
 	}
-#endif
-	else if (strcmp(script, "logger") == 0)
-	{
-		if(action & RC_SERVICE_STOP) stop_logger();
-		if(action & RC_SERVICE_START) start_logger();
-	}
-#ifdef RTCONFIG_CROND
-	else if (strcmp(script, "crond") == 0)
-	{
-		if(action & RC_SERVICE_STOP) stop_cron();
-		if(action & RC_SERVICE_START) start_cron();
-	}
 	else if (strcmp(script, "oauth_google_drive_gen_token") == 0)
 	{
 		oauth_google_drive_gen_token();
@@ -14161,6 +14149,18 @@ check_ddr_done:
 	else if (strcmp(script, "oauth_google_check_token_status") == 0)
 	{
 		oauth_google_check_token_status();
+	}
+#endif
+	else if (strcmp(script, "logger") == 0)
+	{
+		if(action & RC_SERVICE_STOP) stop_logger();
+		if(action & RC_SERVICE_START) start_logger();
+	}
+#ifdef RTCONFIG_CROND
+	else if (strcmp(script, "crond") == 0)
+	{
+		if(action & RC_SERVICE_STOP) stop_cron();
+		if(action & RC_SERVICE_START) start_cron();
 	}
 #endif
 	else if (strcmp(script, "firewall") == 0)

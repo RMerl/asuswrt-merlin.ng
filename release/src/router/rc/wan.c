@@ -1147,29 +1147,10 @@ start_wan_if(int unit)
 	char tmp2[100], prefix2[32];
 	char env_unit[32];
 #endif
-	struct vlan_ioctl_args ifv;
-
-	TRACE_PT("unit=%d.\n", unit);
-	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-
-	/* variable should exist? */
-	if (nvram_match(strcat_r(prefix, "enable", tmp), "0")) {
-		update_wan_state(prefix, WAN_STATE_DISABLED, 0);
-#ifdef RTCONFIG_WIFI_SON
-		nvram_set_int("link_internet", 0);
-#endif
-		return;
-	}
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-	// had detected the DATA limit before.
-	else if(get_wan_sbstate(unit) == WAN_STOPPED_REASON_DATALIMIT){
-		TRACE_PT("start_wan_if: Data limit was detected and skip the start_wan_if().\n");
-		return;
-	}
-#endif
 #ifdef RTCONFIG_DSL_REMOTE
 	char dsl_prefix[16] = {0};
 #endif
+	struct vlan_ioctl_args ifv;
 
 
 #ifdef RTCONFIG_HND_ROUTER_AX
@@ -1192,6 +1173,25 @@ start_wan_if(int unit)
 				start_wan_if(get_ms_wan_unit(unit, i));
 			}
 		}
+	}
+#endif
+
+	TRACE_PT("unit=%d.\n", unit);
+	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+
+	/* variable should exist? */
+	if (nvram_match(strcat_r(prefix, "enable", tmp), "0")) {
+		update_wan_state(prefix, WAN_STATE_DISABLED, 0);
+#ifdef RTCONFIG_WIFI_SON
+		nvram_set_int("link_internet", 0);
+#endif
+		return;
+	}
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
+	// had detected the DATA limit before.
+	else if(get_wan_sbstate(unit) == WAN_STOPPED_REASON_DATALIMIT){
+		TRACE_PT("start_wan_if: Data limit was detected and skip the start_wan_if().\n");
+		return;
 	}
 #endif
 

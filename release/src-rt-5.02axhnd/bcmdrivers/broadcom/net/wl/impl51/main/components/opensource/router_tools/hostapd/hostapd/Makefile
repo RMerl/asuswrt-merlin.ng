@@ -24,7 +24,6 @@ endif
 CFLAGS += $(EXTRA_CFLAGS)
 CFLAGS += -I$(abspath ../src)
 CFLAGS += -I$(abspath ../src/utils)
-CFLAGS += -I$(TOP)/openssl-1.1/include
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lm -lssl -lpthread -L$(TOP)/libnl/lib/.libs
 
 export BINDIR ?= /usr/local/bin/

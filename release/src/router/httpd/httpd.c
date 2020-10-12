@@ -1000,7 +1000,7 @@ handle_request(void)
 	while ( fgets( cur, line + sizeof(line) - cur, conn_fp ) != (char*) 0 )
 	{
 		//_dprintf("handle_request:cur = %s\n",cur);
-		if ( strcmp( cur, "\n" ) == 0 || strcmp( cur, "\r\n" ) == 0 ) {
+		if ( *cur == '\0' || strcmp( cur, "\n" ) == 0 || strcmp( cur, "\r\n" ) == 0 ) {
 			break;
 		}
 #ifdef TRANSLATE_ON_FLY

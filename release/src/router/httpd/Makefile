@@ -107,7 +107,8 @@ endif
 ifeq ($(RTCONFIG_CAPTCHA),y)
 CFLAGS += -DCAPTCHA
 endif
-OBJS += httpd.o cgi.o ej.o
+
+OBJS = httpd.o cgi.o ej.o
 OBJS += web.o common.o nvram_f.o
 OBJS += aspbw.o initial_web_hook.o
 OBJS += apps.o
@@ -348,10 +349,10 @@ size: httpd
 ifneq ($(wildcard ./prebuild/),)
 ifeq ($(RTCONFIG_HTTPS),y)
 pwenc.o:
-	@-cp -f ./prebuild/pwenc.o pwenc.o
+	@-cp -f ./prebuild/pwenc.o .
 endif
 web_hook.o:
-	@-cp -f ./prebuild/web_hook.o web_hook.o
+	@-cp -f ./prebuild/web_hook.o .
 endif
 
 %.o: %.c .%.depend

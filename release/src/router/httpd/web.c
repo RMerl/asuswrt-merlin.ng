@@ -10693,7 +10693,7 @@ int ej_shown_language_css(int eid, webs_t wp, int argc, char **argv){
 	memset(lang, 0, 4);
 	strcpy(lang, nvram_safe_get("preferred_lang"));
 
-	if(0){
+	if(get_lang_num() == 1){
 		websWrite(wp, "<li style=\"visibility:hidden;\"><dl><a href=\"#\"><dt id=\"selected_lang\"></dt></a>\\n");
 	}
 	else{
@@ -14236,7 +14236,7 @@ deleteOfflineClient(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_
 	int lock;
 
 	i = 0;
-	while((*mac) && (i < 12)) {
+	while(*mac) {
 		if(*mac==':') {
 			mac++;
 			continue;
@@ -20764,28 +20764,28 @@ int ej_UI_cloud_status(int eid, webs_t wp, int argc, char **argv){
 		}
 		else if(strstr(line, "MOUNT_PATH") != NULL){
 			memset(buf, 0, PATH_MAX);
-			substr(dest, line, 11, PATH_MAX-11);
+			substr(dest, line, 11, PATH_MAX);
 			char_to_ascii(buf, dest);
 			strcpy(mounted_path, buf);
 		}
 		else if(strstr(line, "FILENAME") != NULL){
-			substr(dest, line, 9, PATH_MAX-9);
+			substr(dest, line, 9, PATH_MAX);
 			strcpy(target_obj, dest); // support Chinese
 		}
 		else if(strstr(line, "ERR_MSG") != NULL){
-			substr(dest, line, 8, PATH_MAX-8);
+			substr(dest, line, 8, PATH_MAX);
 			strcpy(error_msg, dest);
 		}
 		else if(strstr(line, "TOTAL_SPACE") != NULL){
-			substr(dest, line, 12, PATH_MAX-12);
+			substr(dest, line, 12, PATH_MAX);
 			strcpy(full_capa, dest);
 		}
 		else if(strstr(line, "USED_SPACE") != NULL){
-			substr(dest, line, 11, PATH_MAX-11);
+			substr(dest, line, 11, PATH_MAX);
 			strcpy(used_capa, dest);
 		}
 		else if(strstr(line, "CAPTCHA_URL") != NULL){
-			substr(dest, line, 12, PATH_MAX-12);
+			substr(dest, line, 12, PATH_MAX);
 			strcpy(captcha_url, dest);
 		}
 
@@ -21203,29 +21203,29 @@ int ej_UI_rs_status(int eid, webs_t wp, int argc, char **argv){
 			strncpy(status, convert_cloudsync_status(line), 16);
 		}
 		else if(strstr(line, "RULENUM") != NULL){
-			substr(dest, line, 8, PATH_MAX-8);
+			substr(dest, line, 8, PATH_MAX);
 			strcpy(rulenum, dest);
 		}
 		else if(strstr(line, "MOUNT_PATH") != NULL){
 			memset(buf, 0, PATH_MAX);
-			substr(dest, line, 11, PATH_MAX-11);
+			substr(dest, line, 11, PATH_MAX);
 			char_to_ascii(buf, dest);
 			strcpy(mounted_path, buf);
 		}
 		else if(strstr(line, "FILENAME") != NULL){
-			substr(dest, line, 9, PATH_MAX-9);
+			substr(dest, line, 9, PATH_MAX);
 			strcpy(target_obj, dest); // support Chinese
 		}
 		else if(strstr(line, "ERR_MSG") != NULL){
-			substr(dest, line, 8, PATH_MAX-8);
+			substr(dest, line, 8, PATH_MAX);
 			strcpy(error_msg, dest);
 		}
 		else if(strstr(line, "TOTAL_SPACE") != NULL){
-			substr(dest, line, 12, PATH_MAX-12);
+			substr(dest, line, 12, PATH_MAX);
 			strcpy(full_capa, dest);
 		}
 		else if(strstr(line, "USED_SPACE") != NULL){
-			substr(dest, line, 11, PATH_MAX-11);
+			substr(dest, line, 11, PATH_MAX);
 			strcpy(used_capa, dest);
 		}
 

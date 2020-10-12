@@ -1383,4 +1383,3 @@ int wl_set_mcsindex(char *ifname, int *is_auto, int *idx, char *idx_type, int *s
 	return 0;
 }
 #endif
-

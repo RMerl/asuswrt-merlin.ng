@@ -475,17 +475,6 @@ endif
 prebuild/%.o:
 	#nothing to do...
 
-ifeq ($(RTCONFIG_USB),y)
-vpath %.c $(sort $(dir $(ID_OBJS)))
-
-$(notdir $(ID_OBJS)): %.o: %.c .%.depend
-	@echo " [shared] CC $@"
-	@$(CC) $(CFLAGS) $(ID_CFLAGS) -o $@ -c $<
-
-$(patsubst %.o,.%.depend,$(notdir $(ID_OBJS))): .%.depend: %.c
-	@$(CC) $(CFLAGS) $(ID_CFLAGS) -M $< > $@
-endif
-
 %.o: %.c .%.depend
 	@echo " [shared] CC $@"
 	@$(CC) $(CFLAGS) -o $@ -c $<

@@ -795,6 +795,7 @@ extern double nvram_get_double(const char *key);
 extern int nvram_set_double(const char *key, double value);
 extern int nvram_get_hex(const char *key);
 extern int nvram_set_hex(const char *key, int value);
+extern int nvram_valid_get_int(const char *key, int min, int max, int def);
 #ifdef HND_ROUTER
 extern char *nvram_split_get(const char *key, char *buffer, int maxlen, int maxinst);
 extern int nvram_split_set(const char *key, char *value, int size, int maxinst);
@@ -1195,13 +1196,6 @@ enum led_id {
 #endif
 	LED_ID_MAX,	/* last item */
 };
-
-// Outside of enum to avoid conflicting with Asus's code
-enum led_merlin_id {
-	LED_SWITCH = LED_ID_MAX + 1,
-	LED_5G_FORCED,
-};
-
 
 enum led_fan_mode_id {
 	LED_OFF = 0,

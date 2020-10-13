@@ -2197,9 +2197,11 @@ int add_iQosRules(char *pcWANIF)
 {
 	int status = 0;
 
+#if 0
 	if (IS_AQOS()) {
 		set_codel_patch();
 	}
+#endif
 
 	if (pcWANIF == NULL || nvram_get_int("qos_enable") != 1 || nvram_get_int("qos_type") == 1) return -1;
 	
@@ -2282,6 +2284,7 @@ void ForceDisableWLan_bw(void)
 	QOSDBG("[BWLIT] ALL Guest Netwok of Bandwidth Limiter has been Didabled.\n");
 }
 
+#if 0
 #ifdef RTCONFIG_BCMARM
 void set_codel_patch(void)
 {
@@ -2312,3 +2315,4 @@ void remove_codel_patch(void)
 #endif
 #endif
 
+#endif

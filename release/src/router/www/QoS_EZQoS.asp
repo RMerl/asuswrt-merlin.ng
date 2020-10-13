@@ -438,7 +438,7 @@ function initial(){
 				document.getElementById('settingSelection').style.display = "none";
 			}
 
-			if((codel_support) && (document.getElementById('qos_sched').value != "0")){
+			if((codel_support) && (qos_type != 1) && (document.getElementById('qos_sched').value != "0")){
 				document.getElementById('qos_overhead_tr').style.display = "";
 			}
 
@@ -828,8 +828,9 @@ function change_qos_type(value){
 			document.getElementById('GeForce_type').checked = false;
 		document.getElementById('list_table').style.display = "none";
 		if (codel_support) {
-			document.getElementById('qos_sched_tr').style.display = "";
-			change_scheduler(document.form.qos_sched.value);
+			document.getElementById('qos_sched_tr').style.display = "none";
+			document.getElementById('qos_overhead_tr').style.display = "none";
+//			change_scheduler(document.form.qos_sched.value);
 		}
 		if(document.form.qos_type_orig.value == 1 && document.form.qos_enable_orig.value != 0)
 			document.form.action_script.value = "restart_qos;restart_firewall";

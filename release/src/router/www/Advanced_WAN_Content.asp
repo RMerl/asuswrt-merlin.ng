@@ -1747,7 +1747,7 @@ function pullDNSList(_this) {
 				<!-- server info -->
 				<tr>
 					<td width="27%">
-						<input type="text" <input type="text" style="style="float:left;" class="input_18_table" maxlength="64" id="dnspriv_server_0" name="dnspriv_server_0" onKeyPress="" autocorrect="off" autocapitalize="off">
+						<input type="text" <input type="text" style="float:left;" class="input_18_table" maxlength="64" id="dnspriv_server_0" name="dnspriv_server_0" onKeyPress="" autocorrect="off" autocapitalize="off">
 						<img id="dot_pull_arrow" class="pull_arrow" height="14px;" src="/images/arrow-down.gif" onclick="pullDOTList(this);">
 						<div id="dot_server_list" class="dns_server_list_dropdown"></div>
 					</td>

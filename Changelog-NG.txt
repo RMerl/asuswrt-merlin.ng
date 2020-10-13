@@ -25,6 +25,11 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: Updated to OpenVPN 2.5.0 Beta 3.  Note that OpenVPN
              2.4.0 or newer is now required by the exported
              client config file.
+  - UPDATED: nano to 5.2.
+  - UPDATED: curl to 7.72.0.
+  - UPDATED: zlib to 1.2.11.
+  - UPDATED: lz4 to 1.9.2.
+  - UPDATED: e2fsprogs to 1.45.6.
   - CHANGED: firmware update checks are no longer using the
              server address stored in nvram, for security
              purposes.  Devs who were using that nvram
@@ -42,6 +47,9 @@ Asuswrt-Merlin 386/NG Changelog
              applied for clients set to auto-start with WAN.
   - REMOVED: Option to disable NCP.  The NCP cipher list is
              now used both for NCP and non-NCP endpoints.
+  - REMOVED: fq_codel support for Adaptive QoS.  Due to a change
+             in how Trend Micro configures QoS, it is no longer
+             possible to intercept these to inject fq_codel.
 
 
 384.19 (14-Aug-2020)

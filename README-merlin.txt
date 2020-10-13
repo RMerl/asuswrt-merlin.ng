@@ -172,6 +172,10 @@ wiki:
 
 https://github.com/RMerl/asuswrt-merlin.ng/wiki
 
+There are also support forums hosted at SNBForums.
+
+Firmware support: https://www.snbforums.com/forums/asuswrt-merlin.42/
+AddOns support: https://www.snbforums.com/forums/asuswrt-merlin-addons.60/
 
 
 Source code

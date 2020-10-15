@@ -349,6 +349,15 @@ export IMGNAME := $(BUILD_NAME)_$(SERIALNO)_$(SWPJVER)$(EXTENDNO)$(BUILDREV)$(IS
 endif
 ifeq ($(OPDBG),y)
 export IMGNAME := $(IMGNAME)_OPDBG
+ifeq ($(RTK3)$(ROMCFE),yy)
+	export SUFFIX := _cfe
+else
+	export SUFFIX :=
+endif
+ifeq ($(FAKEID),y)
+export IMGNAME := $(BUILD_NAME)_$(FORCE_SN)_$(SWPJVER)$(FORCE_EN)$(BUILDREV)$(SUFFIX)
+else
+export IMGNAME := $(BUILD_NAME)_$(SERIALNO)_$(SWPJVER)$(EXTENDNO)$(BUILDREV)$(SUFFIX)
 endif
 
 ifeq ($(DSL_REMOTE),y)
@@ -703,8 +712,13 @@ ifeq ($(RTCONFIG_REALTEK),y)
 	@echo "" > $(SRCBASE)/build.log
 endif
 	echo ""
-	echo "Building $(BUILD_NAME)_$(KERNEL_VER).$(FS_VER)_$(SERIALNO).trx"
+	echo "Building $(IMGNAME)"
 	echo ""
+
+ifeq ($(ROMCFE),y)
+	@$(MAKE) -C cfe clean
+	@$(MAKE) -C cfe
+endif
 
 ifeq ($(HND_ROUTER),y)
 	@rm -rf image
@@ -824,7 +838,12 @@ image:
 		exit 1; \
 	fi
 
-	@rm -f image/$(BUILD_NAME)_$(KERNEL_VER).$(FS_VER)_$(SERIALNO).trx
+	@echo "-------- clean old trx --------"
+ifeq ($(FAKEID),y)
+	rm -f image/$(BUILD_NAME)_$(FORCE_SN)_$(SWPJVER)$(FORCE_EN)$(BUILDREV)*.trx
+else
+	rm -f image/$(BUILD_NAME)_$(SERIALNO)_$(SWPJVER)$(EXTENDNO)$(BUILDREV)*.trx
+endif
 ifeq ($(RTCONFIG_REALTEK),y)
 ifeq ($(RTL8198D),y)
 	@rsync -aPq $(PLATFORMDIR)/target/ $(RSDKDIR)/romfs

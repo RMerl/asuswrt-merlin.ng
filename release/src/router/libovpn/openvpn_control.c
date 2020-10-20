@@ -28,11 +28,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #include <shutils.h>
 #include <shared.h>
 #include "openvpn_config.h"
 #include "openvpn_control.h"
+#include "openvpn_setup.h"
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -427,6 +429,250 @@ void _ovpn_run_event_script() {
 			eval("/jffs/scripts/openvpn-event", _safe_getenv("dev"), (type == OVPN_IF_TUN ? _safe_getenv("tun_mtu") : _safe_getenv("tap_mtu")), _safe_getenv("link_mtu"),
 			      _safe_getenv("ifconfig_local"), _safe_getenv("ifconfig_remote"), _safe_getenv("script_context"));
 			logmessage("custom_script", "Running openvpn-event");
+		}
+	}
+}
+
+void ovpn_start_client(int unit) {
+	char buffer[64], buffer2[64];
+	ovpn_cconf_t *cconf;
+
+	sprintf(buffer, "start_vpnclient%d", unit);
+	if (getpid() != 1) {
+		notify_rc(buffer);
+		return;
+	}
+
+	if ( (pidof(&buffer[6])) >= 0 )
+	{
+		logmessage("openvpn", "OpenVPN client %d start attempt - already running.", unit);
+		return;
+	}
+
+	update_ovpn_status(OVPN_TYPE_CLIENT, unit, OVPN_STS_INIT, OVPN_ERRNO_NONE);
+
+	// Retrieve instance configuration
+	cconf = ovpn_get_cconf(unit);
+
+        // Setup directories and symlinks
+	ovpn_setup_dirs(OVPN_TYPE_CLIENT, unit);
+
+	// Setup interface
+	if (ovpn_setup_iface(cconf->if_name, cconf->if_type, cconf->bridge)) {
+		ovpn_stop_client(unit);
+		free(cconf);
+		return;
+	}
+
+	// Write config file
+	ovpn_write_client_config(cconf, unit);
+
+	// Write certificate and key files
+	ovpn_write_client_keys(cconf, unit);
+
+	// Run postconf custom script if it exists
+	sprintf(buffer, "openvpnclient%d", unit);
+	sprintf(buffer2, "/etc/openvpn/client%d/config.ovpn", unit);
+	run_postconf(buffer, buffer2);
+
+	// Setup firewall
+	ovpn_setup_client_fw(cconf, unit);
+
+	free(cconf);
+
+        // Start the VPN client
+	if (ovpn_run_instance(OVPN_TYPE_CLIENT, unit)) {
+		logmessage("openvpn", "Starting OpenVPN client %d failed!", unit);
+		ovpn_stop_client(unit);
+		if (get_ovpn_status(OVPN_TYPE_CLIENT, unit) != OVPN_STS_ERROR)
+			update_ovpn_status(OVPN_TYPE_CLIENT, unit, OVPN_STS_ERROR, OVPN_ERRNO_CONF);
+	}
+}
+
+
+void ovpn_start_server(int unit) {
+	char buffer[256], buffer2[8000];
+	ovpn_sconf_t *sconf;
+
+	sprintf(buffer, "start_vpnserver%d", unit);
+	if (getpid() != 1) {
+		notify_rc(buffer);
+		return;
+	}
+
+	if ((pidof(&buffer[6])) >= 0) {
+		logmessage("openvpn", "OpenVPN client %d start attempt - already running.", unit);
+		return;
+	}
+
+	update_ovpn_status(OVPN_TYPE_SERVER, unit, OVPN_STS_INIT, OVPN_ERRNO_NONE);
+
+	// Retrieve instance configuration
+	sconf = ovpn_get_sconf(unit);
+
+	if(is_intf_up(sconf->if_name) > 0 && sconf->if_type == OVPN_IF_TAP)
+		eval("brctl", "delif", nvram_safe_get("lan_ifname"), sconf->if_name);
+
+	// Setup directories and symlinks
+	ovpn_setup_dirs(OVPN_TYPE_SERVER, unit);
+
+	// Setup interface
+        if (ovpn_setup_iface(sconf->if_name, sconf->if_type, 1)) {
+		ovpn_stop_server(unit);
+		free(sconf);
+		return;
+	}
+
+	// Write config files
+	ovpn_write_server_config(sconf, unit);
+
+	// Write key/certs
+	ovpn_write_server_keys(sconf, unit);
+
+	// Format client file so Windows Notepad can edit it
+	sprintf(buffer, "/etc/openvpn/server%d/client.ovpn", unit);
+	eval("/usr/bin/unix2dos", buffer);
+
+        // Setup firewall
+        ovpn_setup_server_fw(sconf, unit);
+
+	// Run postconf custom script on it if it exists
+	sprintf(buffer, "openvpnserver%d", unit);
+	sprintf(buffer2, "/etc/openvpn/server%d/config.ovpn", unit);
+	run_postconf(buffer, buffer2);
+
+	// Start the VPN server
+	if (ovpn_run_instance(OVPN_TYPE_SERVER, unit)) {
+		logmessage("openvpn", "Starting OpenVPN server %d failed!", unit);
+		ovpn_stop_server(unit);
+		update_ovpn_status(OVPN_TYPE_SERVER, unit, OVPN_STS_ERROR, OVPN_ERRNO_CONF);
+		free(sconf);
+		return;
+	}
+
+	if (sconf->auth_mode == OVPN_AUTH_STATIC)
+		update_ovpn_status(OVPN_TYPE_SERVER, unit, OVPN_STS_RUNNING, OVPN_ERRNO_NONE);
+
+	ovpn_setup_server_watchdog(sconf, unit);
+
+	free(sconf);
+}
+
+
+void ovpn_stop_client(int unit) {
+	char buffer[64];
+
+	sprintf(buffer, "stop_vpnclient%d", unit);
+	if (getpid() != 1) {
+		notify_rc(buffer);
+		return;
+	}
+
+	sprintf(buffer, "vpnclient%d", unit);
+
+	// Are we running?
+	if (pidof(buffer) == -1)
+		return;
+
+	// Stop the VPN client
+	killall_tk_period_wait(buffer, 10);
+
+	ovpn_remove_iface(OVPN_TYPE_CLIENT, unit);
+
+	// Remove firewall rules after VPN exit
+	sprintf(buffer, "/etc/openvpn/client%d/fw.sh", unit);
+	if (!eval("sed", "-i", "s/-A/-D/g;s/-I/-D/g", buffer))
+		eval(buffer);
+
+	// Delete all files for this client
+	sprintf(buffer, "/etc/openvpn/client%d",unit);
+	eval("rm", "-rf", buffer);
+	sprintf(buffer, "/etc/openvpn/vpnclient%d",unit);
+	eval("rm", "-rf", buffer);
+
+	update_ovpn_status(OVPN_TYPE_CLIENT, unit, OVPN_STS_STOP, OVPN_ERRNO_NONE);
+
+//	logmessage("openvpn", "OpenVPN client %d stopped.", unit);
+}
+
+void ovpn_stop_server(int unit) {
+	char buffer[64];
+
+	sprintf(buffer, "stop_vpnserver%d", unit);
+	if (getpid() != 1) {
+		notify_rc(buffer);
+		return;
+	}
+
+	// Remove watchdog
+	sprintf(buffer, "CheckVPNServer%d", unit);
+	eval("cru", "d", buffer);
+
+	// Stop the VPN server
+	sprintf(buffer, "vpnserver%d", unit);
+	killall_tk_period_wait(buffer, 10);
+
+	ovpn_remove_iface(OVPN_TYPE_SERVER, unit);
+
+	// Remove firewall rules
+	sprintf(buffer, "/etc/openvpn/server%d/fw.sh", unit);
+	if (!eval("sed", "-i", "s/-A/-D/g;s/-I/-D/g", buffer))
+		eval(buffer);
+
+	// Delete all files for this server
+	sprintf(buffer, "/etc/openvpn/server%d",unit);
+	eval("rm", "-rf", buffer);
+	sprintf(buffer, "/etc/openvpn/vpnserver%d",unit);
+	eval("rm", "-rf", buffer);
+
+	update_ovpn_status(OVPN_TYPE_SERVER, unit, OVPN_STS_STOP, OVPN_ERRNO_NONE);
+
+//	logmessage("openvpn", "OpenVPN server %d stopped.", unit);
+}
+
+void ovpn_process_eas(int start) {
+	char enabled[32], buffer2[32];
+	char *ptr;
+	int unit;
+
+	// Process servers
+	strlcpy(enabled, nvram_safe_get("vpn_serverx_start"), sizeof(enabled));
+
+	for (ptr = enabled; *ptr != '\0'; ptr++) {
+		if (!isdigit(*ptr))
+			continue;
+
+		unit = atoi(ptr);
+
+		if (unit > 0 && unit <= OVPN_SERVER_MAX) {
+			sprintf(buffer2, "vpnserver%d", unit);
+			if (pidof(buffer2) >= 0)
+				ovpn_stop_server(unit);
+
+			if (start)
+				ovpn_start_server(unit);
+		}
+	}
+
+	// Process clients
+	strlcpy(enabled, nvram_safe_get("vpn_clientx_eas"), sizeof(enabled));
+
+	for (ptr = enabled; *ptr != '\0'; ptr++) {
+		if (!isdigit(*ptr))
+			continue;
+
+		unit = atoi(ptr);
+
+		// Update kill switch states for clients set to auto-start with WAN
+		ovpn_update_routing(unit);
+
+		if (unit > 0 && unit <= OVPN_CLIENT_MAX) {
+			sprintf(buffer2, "vpnclient%d", unit);
+			if (pidof(buffer2) >= 0)
+				ovpn_stop_client(unit);
+
+			if (start)
+				ovpn_start_client(unit);
 		}
 	}
 }

@@ -1849,8 +1849,6 @@ extern int vpnc_set_dev_policy_rule();
 #endif
 
 // ovpn.c
-extern int ovpn_up_main(int argc, char **argv);
-extern int ovpn_down_main(int argc, char **argv);
 extern int ovpn_route_up_main(int argc, char **argv);
 #ifdef RTCONFIG_OPENVPN
 extern void create_ovpn_passwd();
@@ -1858,12 +1856,14 @@ extern void create_ovpn_passwd();
 
 #ifdef RTCONFIG_OPENVPN
 // openvpn.c
-extern void start_ovpn_client(int unit);
-extern void start_ovpn_server(int unit);
-extern void start_ovpn_eas(void);
-extern void stop_ovpn_eas(void);
+extern int ovpn_up_main(int argc, char **argv);
+extern int ovpn_down_main(int argc, char **argv);
+extern void start_ovpn_eas();
+extern void stop_ovpn_eas();
 extern void stop_ovpn_client(int unit);
+extern void start_ovpn_client(int unit);
 extern void stop_ovpn_server(int unit);
+extern void start_ovpn_server(int unit);
 #endif
 
 // wanduck.c

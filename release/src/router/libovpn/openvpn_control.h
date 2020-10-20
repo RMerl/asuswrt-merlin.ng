@@ -17,4 +17,9 @@ extern void ovpn_client_up_handler(int unit);
 void _set_exclusive_dns(FILE *fp, int unit, char *server);
 char *_safe_getenv(const char* name);
 void _ovpn_run_event_script();
+extern void ovpn_process_eas(int start);
+extern void ovpn_start_client(int unit);
+extern void ovpn_start_server(int unit);
+extern void ovpn_stop_client(int unit);
+extern void ovpn_stop_server(int unit);
 #endif

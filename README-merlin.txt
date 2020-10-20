@@ -103,7 +103,7 @@ Networking:
    - Policy routing for the OpenVPN client (based on source or
      destination IPs), sometimes referred to as "selective routing")
    - DNSSEC support
-   - fq_codel queue discipline for QoS
+   - fq_codel queue discipline for Traditional QoS
    - Full cone NAT support (HND devices only)
    - Detailed wireless troubleshooting information (HND devices
      only)

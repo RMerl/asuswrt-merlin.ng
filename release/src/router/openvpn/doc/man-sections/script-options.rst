@@ -157,9 +157,8 @@ SCRIPT HOOKS
   where some of the related client-connect functions returned an error
   status.
 
-  The ``--client-disconnect`` command is passed the same pathname as the
-  corresponding ``--client-connect`` command as its last argument (after
-  any arguments specified in ``cmd``).
+  The ``--client-disconnect`` command is not passed any extra arguments
+  (only those arguments specified in cmd, if any).
 
 --down cmd
   Run command ``cmd`` after TUN/TAP device close (post ``--user`` UID
@@ -710,10 +709,10 @@ instances.
     A set of variables which define each IPv6 route to be added, and are
     set prior to **--up** script execution.
 
-    ``parm`` will be one of :code:`network` or :code:`gateway`
-    (:code:`netmask` is contained as :code:`/nnn` in the
-    ``route_ipv6_network_{n}``, unlike IPv4 where it is passed in a
-    separate environment variable).
+    ``parm`` will be one of :code:`network`, :code:`gateway` or
+    :code:`metric`. ``route_ipv6_network_{n}`` contains :code:`netmask`
+    as :code:`/nnn`, unlike IPv4 where it is passed in a separate environment
+    variable.
 
     ``n`` is the OpenVPN route number, starting from 1.
 

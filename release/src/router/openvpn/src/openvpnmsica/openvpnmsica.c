@@ -248,7 +248,7 @@ cleanup_OpenSCManager:
 }
 
 
-static UINT
+static void
 find_adapters(
     _In_ MSIHANDLE hInstall,
     _In_z_ LPCTSTR szzHardwareIDs,
@@ -262,12 +262,12 @@ find_adapters(
     uiResult = tap_list_adapters(NULL, szzHardwareIDs, &pAdapterList);
     if (uiResult != ERROR_SUCCESS)
     {
-        return uiResult;
+        return;
     }
     else if (pAdapterList == NULL)
     {
         /* No adapters - no fun. */
-        return ERROR_SUCCESS;
+        return;
     }
 
     /* Get IPv4/v6 info for all network adapters. Actually, we're interested in link status only: up/down? */
@@ -394,7 +394,6 @@ cleanup_pAdapterAdresses:
     free(pAdapterAdresses);
 cleanup_pAdapterList:
     tap_free_adapter_list(pAdapterList);
-    return uiResult;
 }
 
 
@@ -1096,12 +1095,9 @@ ProcessDeferredAction(_In_ MSIHANDLE hInstall)
             dwResult = tap_create_adapter(NULL, NULL, szHardwareId, &bRebootRequired, &guidAdapter);
             if (dwResult == ERROR_SUCCESS)
             {
-                /* Set adapter name. */
-                dwResult = tap_set_adapter_name(&guidAdapter, szName);
-                if (dwResult != ERROR_SUCCESS)
-                {
-                    tap_delete_adapter(NULL, &guidAdapter, &bRebootRequired);
-                }
+                /* Set adapter name. May fail on some machines, but that is not critical - use silent
+                   flag to mute messagebox and print error only to log */
+                tap_set_adapter_name(&guidAdapter, szName, TRUE);
             }
         }
         else if (wcsncmp(szArg[i], L"deleteN=", 8) == 0)

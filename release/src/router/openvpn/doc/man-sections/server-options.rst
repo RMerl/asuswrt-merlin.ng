@@ -204,7 +204,8 @@ fast hardware. SSL/TLS authentication must be used in this mode.
      ifconfig-ipv6-pool ipv6addr/bits
 
   The pool starts at ``ipv6addr`` and matches the offset determined from
-  the start of the IPv4 pool.
+  the start of the IPv4 pool.  If the host part of the given IPv6
+  address is ``0``, the pool starts at ``ipv6addr`` +1.
 
 --ifconfig-pool-persist args
   Persist/unpersist ifconfig-pool data to ``file``, at ``seconds``
@@ -530,6 +531,14 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   ``--client-config-dir`` configuration file. This option will ignore
   ``--push`` options at the global config file level.
 
+  *NOTE*: ``--push-reset`` is very thorough: it will remove almost
+  all options from the list of to-be-pushed options.  In many cases,
+  some of these options will need to be re-configured afterwards -
+  specifically, ``--topology subnet`` and ``--route-gateway`` will get
+  lost and this will break client configs in many cases.  Thus, for most
+  purposes, ``--push-remove`` is better suited to selectively remove
+  push options for individual clients.
+
 --server args
   A helper directive designed to simplify the configuration of OpenVPN's
   server mode. This directive will set up an OpenVPN server which will
@@ -631,6 +640,19 @@ fast hardware. SSL/TLS authentication must be used in this mode.
     mode server
     tls-server
 
+--server-ipv6 args
+  Convenience-function to enable a number of IPv6 related options at once,
+  namely ``--ifconfig-ipv6``, ``--ifconfig-ipv6-pool`` and
+  ``--push tun-ipv6``.
+
+  Valid syntax:
+  ::
+
+     server-ipv6 ipv6addr/bits
+
+  Pushing of the ``--tun-ipv6`` directive is done for older clients which
+  require an explicit ``--tun-ipv6`` in their configuration.
+
 --stale-routes-check args
   Remove routes which haven't had activity for ``n`` seconds (i.e. the ageing
   time).  This check is run every ``t`` seconds (i.e. check interval).
@@ -646,9 +668,15 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   ``--max-routes-per-client``
 
 --username-as-common-name
-  For ``--auth-user-pass-verify`` authentication, use the authenticated
-  username as the common name, rather than the common name from the client
-  cert.
+  Use the authenticated username as the common-name, rather than the
+  common-name from the client certificate. Requires that some form of
+  ``--auth-user-pass`` verification is in effect. As the replacement happens
+  after ``--auth-user-pass`` verification, the verification script or
+  plugin will still receive the common-name from the certificate.
+
+  The common_name environment variable passed to scripts and plugins invoked
+  after authentication (e.g, client-connect script) and file names parsed in
+  client-config directory will match the username.
 
 --verify-client-cert mode
   Specify whether the client is required to supply a valid certificate.

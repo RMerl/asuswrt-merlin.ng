@@ -343,6 +343,13 @@ below), then are discarded.
 .sp
 The downside of using \fB\-\-mlock\fP is that it will reduce the amount of
 physical memory available to other applications.
+.sp
+The limit on how much memory can be locked and how that limit
+is enforced are OS\-dependent. On Linux the default limit that an
+unprivileged process may lock (RLIMIT_MEMLOCK) is low, and if
+privileges are dropped later, future memory allocations will very
+likely fail. The limit can be increased using ulimit or systemd
+directives depending on how OpenVPN is started.
 .TP
 .BI \-\-nice \ n
 Change process priority after initialization (\fBn\fP greater than 0 is
@@ -1268,15 +1275,39 @@ next remote succeeds. To silently ignore an option pushed by the server,
 use \fBignore\fP\&.
 .TP
 .BI \-\-remote \ args
-Remote host name or IP address.  It supports two additional optional
-arguments: \fBport\fP and \fBproto\fP\&.  On the client, multiple \fB\-\-remote\fP
-options may be specified for redundancy, each referring to a different
-OpenVPN server. Specifying multiple \fB\-\-remote\fP options for this
-purpose is a special case of the more general connection\-profile
-feature. See the \fB<connection>\fP documentation below.
+Remote host name or IP address, port and protocol.
 .sp
-The OpenVPN client will try to connect to a server at \fBhost:port\fP in
-the order specified by the list of \fB\-\-remote\fP options.
+Valid syntaxes:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+remote host
+remote host port
+remote host port proto
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The \fBport\fP and \fBproto\fP arguments are optional. The OpenVPN client
+will try to connect to a server at \fBhost:port\fP\&.  The \fBproto\fP argument
+indicates the protocol to use when connecting with the remote, and may be
+\fBtcp\fP or \fBudp\fP\&.  To enforce IPv4 or IPv6 connections add a
+\fB4\fP or \fB6\fP suffix; like \fBudp4\fP / \fBudp6\fP
+/ \fBtcp4\fP / \fBtcp6\fP\&.
+.sp
+On the client, multiple \fB\-\-remote\fP options may be specified for
+redundancy, each referring to a different OpenVPN server, in the order
+specified by the list of \fB\-\-remote\fP options. Specifying multiple
+\fB\-\-remote\fP options for this purpose is a special case of the more
+general connection\-profile feature. See the \fB<connection>\fP
+documentation below.
+.sp
+The client will move on to the next host in the list, in the event of
+connection failure. Note that at any given time, the OpenVPN client will
+at most be connected to one server.
 .sp
 Examples:
 .INDENT 7.0
@@ -1284,34 +1315,27 @@ Examples:
 .sp
 .nf
 .ft C
-remote server.example.net
-remote server.example.net 1194
-remote server.example.net tcp
+remote server1.example.net
+remote server1.example.net 1194
+remote server2.example.net 1194 tcp
 .ft P
 .fi
 .UNINDENT
 .UNINDENT
-.sp
-\fBproto\fP indicates the protocol to use when connecting with the remote,
-and may be \fBtcp\fP or \fBudp\fP\&.
-.sp
-For forcing IPv4 or IPv6 connection suffix tcp or udp with 4/6 like
-udp4/udp6/tcp4/tcp6.
-.sp
-The client will move on to the next host in the list, in the event of
-connection failure. Note that at any given time, the OpenVPN client will
-at most be connected to one server.
-.sp
-Note that since UDP is connectionless, connection failure is defined by
+.INDENT 7.0
+.TP
+.B \fINote:\fP
+Since UDP is connectionless, connection failure is defined by
 the \fB\-\-ping\fP and \fB\-\-ping\-restart\fP options.
 .sp
-Note the following corner case: If you use multiple \fB\-\-remote\fP
-options, AND you are dropping root privileges on the client with
-\fB\-\-user\fP and/or \fB\-\-group\fP AND the client is running a non\-Windows
-OS, if the client needs to switch to a different server, and that server
-pushes back different TUN/TAP or route settings, the client may lack the
-necessary privileges to close and reopen the TUN/TAP interface. This
-could cause the client to exit with a fatal error.
+Also, if you use multiple \fB\-\-remote\fP options, AND you are dropping
+root privileges on the client with \fB\-\-user\fP and/or \fB\-\-group\fP AND
+the client is running a non\-Windows OS, if the client needs to switch
+to a different server, and that server pushes back different TUN/TAP
+or route settings, the client may lack the necessary privileges to
+close and reopen the TUN/TAP interface. This could cause the client
+to exit with a fatal error.
+.UNINDENT
 .sp
 If \fB\-\-remote\fP is unspecified, OpenVPN will listen for packets from any
 IP address, but will not act on those packets unless they pass all
@@ -1709,7 +1733,8 @@ ifconfig\-ipv6\-pool ipv6addr/bits
 .UNINDENT
 .sp
 The pool starts at \fBipv6addr\fP and matches the offset determined from
-the start of the IPv4 pool.
+the start of the IPv4 pool.  If the host part of the given IPv6
+address is \fB0\fP, the pool starts at \fBipv6addr\fP +1.
 .TP
 .BI \-\-ifconfig\-pool\-persist \ args
 Persist/unpersist ifconfig\-pool data to \fBfile\fP, at \fBseconds\fP
@@ -2098,6 +2123,14 @@ Don\(aqt inherit the global push list for a specific client instance.
 Specify this option in a client\-specific context such as with a
 \fB\-\-client\-config\-dir\fP configuration file. This option will ignore
 \fB\-\-push\fP options at the global config file level.
+.sp
+\fINOTE\fP: \fB\-\-push\-reset\fP is very thorough: it will remove almost
+all options from the list of to\-be\-pushed options.  In many cases,
+some of these options will need to be re\-configured afterwards \-
+specifically, \fB\-\-topology subnet\fP and \fB\-\-route\-gateway\fP will get
+lost and this will break client configs in many cases.  Thus, for most
+purposes, \fB\-\-push\-remove\fP is better suited to selectively remove
+push options for individual clients.
 .TP
 .BI \-\-server \ args
 A helper directive designed to simplify the configuration of OpenVPN\(aqs
@@ -2242,6 +2275,26 @@ tls\-server
 .UNINDENT
 .UNINDENT
 .TP
+.BI \-\-server\-ipv6 \ args
+Convenience\-function to enable a number of IPv6 related options at once,
+namely \fB\-\-ifconfig\-ipv6\fP, \fB\-\-ifconfig\-ipv6\-pool\fP and
+\fB\-\-push tun\-ipv6\fP\&.
+.sp
+Valid syntax:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+server\-ipv6 ipv6addr/bits
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Pushing of the \fB\-\-tun\-ipv6\fP directive is done for older clients which
+require an explicit \fB\-\-tun\-ipv6\fP in their configuration.
+.TP
 .BI \-\-stale\-routes\-check \ args
 Remove routes which haven\(aqt had activity for \fBn\fP seconds (i.e. the ageing
 time).  This check is run every \fBt\fP seconds (i.e. check interval).
@@ -2264,9 +2317,15 @@ This option helps to keep the dynamic routing table small. See also
 \fB\-\-max\-routes\-per\-client\fP
 .TP
 .B \-\-username\-as\-common\-name
-For \fB\-\-auth\-user\-pass\-verify\fP authentication, use the authenticated
-username as the common name, rather than the common name from the client
-cert.
+Use the authenticated username as the common\-name, rather than the
+common\-name from the client certificate. Requires that some form of
+\fB\-\-auth\-user\-pass\fP verification is in effect. As the replacement happens
+after \fB\-\-auth\-user\-pass\fP verification, the verification script or
+plugin will still receive the common\-name from the certificate.
+.sp
+The common_name environment variable passed to scripts and plugins invoked
+after authentication (e.g, client\-connect script) and file names parsed in
+client\-config directory will match the username.
 .TP
 .BI \-\-verify\-client\-cert \ mode
 Specify whether the client is required to supply a valid certificate.
@@ -4271,6 +4330,10 @@ dhcp\-options type [parm]
 .B \fBDOMAIN\fP \fBname\fP
 Set Connection\-specific DNS Suffix to \fBname\fP\&.
 .TP
+.B \fBADAPTER_DOMAIN_SUFFIX\fP \fBname\fP
+Alias to \fBDOMAIN\fP\&. This is a compatibility option, it
+should not be used in new deployments.
+.TP
 .B \fBDOMAIN\-SEARCH\fP \fBname\fP
 Add \fBname\fP to the domain search list.
 Repeat this option to add more entries. Up to
@@ -5020,9 +5083,8 @@ plugins will be called on client instance object deletion, even in cases
 where some of the related client\-connect functions returned an error
 status.
 .sp
-The \fB\-\-client\-disconnect\fP command is passed the same pathname as the
-corresponding \fB\-\-client\-connect\fP command as its last argument (after
-any arguments specified in \fBcmd\fP).
+The \fB\-\-client\-disconnect\fP command is not passed any extra arguments
+(only those arguments specified in cmd, if any).
 .TP
 .BI \-\-down \ cmd
 Run command \fBcmd\fP after TUN/TAP device close (post \fB\-\-user\fP UID
@@ -5632,10 +5694,10 @@ command line or configuration file.
 A set of variables which define each IPv6 route to be added, and are
 set prior to \fB\-\-up\fP script execution.
 .sp
-\fBparm\fP will be one of \fBnetwork\fP or \fBgateway\fP
-(\fBnetmask\fP is contained as \fB/nnn\fP in the
-\fBroute_ipv6_network_{n}\fP, unlike IPv4 where it is passed in a
-separate environment variable).
+\fBparm\fP will be one of \fBnetwork\fP, \fBgateway\fP or
+\fBmetric\fP\&. \fBroute_ipv6_network_{n}\fP contains \fBnetmask\fP
+as \fB/nnn\fP, unlike IPv4 where it is passed in a separate environment
+variable.
 .sp
 \fBn\fP is the OpenVPN route number, starting from 1.
 .sp
@@ -6283,8 +6345,11 @@ Valid syntax:
 .UNINDENT
 .UNINDENT
 .sp
-If an IPv6 target address is passed as argument, the IPv6 route for this
-host is reported.
+For IPv6 this queries the route towards ::/128, or the specified IPv6
+target address if passed as argument.
+For IPv4 on Linux, Windows, MacOS and BSD it looks for a 0.0.0.0/0 route.
+If there are more specific routes, the result will not always be matching
+the route of the IPv4 packets to the VPN gateway.
 .UNINDENT
 .SS Advanced Expert Options
 .sp

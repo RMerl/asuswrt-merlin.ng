@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.14: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.15.2: http://docutils.sourceforge.net/" />
 <title>openvpn</title>
 <style type="text/css">
 
@@ -634,8 +634,14 @@ was able to crack the box running OpenVPN, he would not be able to scan
 the system swap file to recover previously used ephemeral keys, which
 are used for a period of time governed by the <tt class="docutils literal"><span class="pre">--reneg</span></tt> options (see
 below), then are discarded.</p>
-<p class="last">The downside of using <tt class="docutils literal"><span class="pre">--mlock</span></tt> is that it will reduce the amount of
+<p>The downside of using <tt class="docutils literal"><span class="pre">--mlock</span></tt> is that it will reduce the amount of
 physical memory available to other applications.</p>
+<p class="last">The limit on how much memory can be locked and how that limit
+is enforced are OS-dependent. On Linux the default limit that an
+unprivileged process may lock (RLIMIT_MEMLOCK) is low, and if
+privileges are dropped later, future memory allocations will very
+likely fail. The limit can be increased using ulimit or systemd
+directives depending on how OpenVPN is started.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--nice <var>n</var></span></kbd></td>
@@ -1423,36 +1429,47 @@ use <code>ignore</code>.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--remote <var>args</var></span></kbd></td>
-<td><p class="first">Remote host name or IP address.  It supports two additional optional
-arguments: <tt class="docutils literal">port</tt> and <tt class="docutils literal">proto</tt>.  On the client, multiple <tt class="docutils literal"><span class="pre">--remote</span></tt>
-options may be specified for redundancy, each referring to a different
-OpenVPN server. Specifying multiple <tt class="docutils literal"><span class="pre">--remote</span></tt> options for this
-purpose is a special case of the more general connection-profile
-feature. See the <tt class="docutils literal">&lt;connection&gt;</tt> documentation below.</p>
-<p>The OpenVPN client will try to connect to a server at <tt class="docutils literal">host:port</tt> in
-the order specified by the list of <tt class="docutils literal"><span class="pre">--remote</span></tt> options.</p>
-<p>Examples:</p>
+<td><p class="first">Remote host name or IP address, port and protocol.</p>
+<p>Valid syntaxes:</p>
 <pre class="literal-block">
-remote server.example.net
-remote server.example.net 1194
-remote server.example.net tcp
+remote host
+remote host port
+remote host port proto
 </pre>
-<p><tt class="docutils literal">proto</tt> indicates the protocol to use when connecting with the remote,
-and may be <code>tcp</code> or <code>udp</code>.</p>
-<p>For forcing IPv4 or IPv6 connection suffix tcp or udp with 4/6 like
-udp4/udp6/tcp4/tcp6.</p>
+<p>The <tt class="docutils literal">port</tt> and <tt class="docutils literal">proto</tt> arguments are optional. The OpenVPN client
+will try to connect to a server at <tt class="docutils literal">host:port</tt>.  The <tt class="docutils literal">proto</tt> argument
+indicates the protocol to use when connecting with the remote, and may be
+<code>tcp</code> or <code>udp</code>.  To enforce IPv4 or IPv6 connections add a
+<code>4</code> or <code>6</code> suffix; like <code>udp4</code> / <code>udp6</code>
+/ <code>tcp4</code> / <code>tcp6</code>.</p>
+<p>On the client, multiple <tt class="docutils literal"><span class="pre">--remote</span></tt> options may be specified for
+redundancy, each referring to a different OpenVPN server, in the order
+specified by the list of <tt class="docutils literal"><span class="pre">--remote</span></tt> options. Specifying multiple
+<tt class="docutils literal"><span class="pre">--remote</span></tt> options for this purpose is a special case of the more
+general connection-profile feature. See the <tt class="docutils literal">&lt;connection&gt;</tt>
+documentation below.</p>
 <p>The client will move on to the next host in the list, in the event of
 connection failure. Note that at any given time, the OpenVPN client will
 at most be connected to one server.</p>
-<p>Note that since UDP is connectionless, connection failure is defined by
+<p>Examples:</p>
+<pre class="literal-block">
+remote server1.example.net
+remote server1.example.net 1194
+remote server2.example.net 1194 tcp
+</pre>
+<dl class="docutils">
+<dt><em>Note:</em></dt>
+<dd><p class="first">Since UDP is connectionless, connection failure is defined by
 the <tt class="docutils literal"><span class="pre">--ping</span></tt> and <tt class="docutils literal"><span class="pre">--ping-restart</span></tt> options.</p>
-<p>Note the following corner case: If you use multiple <tt class="docutils literal"><span class="pre">--remote</span></tt>
-options, AND you are dropping root privileges on the client with
-<tt class="docutils literal"><span class="pre">--user</span></tt> and/or <tt class="docutils literal"><span class="pre">--group</span></tt> AND the client is running a non-Windows
-OS, if the client needs to switch to a different server, and that server
-pushes back different TUN/TAP or route settings, the client may lack the
-necessary privileges to close and reopen the TUN/TAP interface. This
-could cause the client to exit with a fatal error.</p>
+<p class="last">Also, if you use multiple <tt class="docutils literal"><span class="pre">--remote</span></tt> options, AND you are dropping
+root privileges on the client with <tt class="docutils literal"><span class="pre">--user</span></tt> and/or <tt class="docutils literal"><span class="pre">--group</span></tt> AND
+the client is running a non-Windows OS, if the client needs to switch
+to a different server, and that server pushes back different TUN/TAP
+or route settings, the client may lack the necessary privileges to
+close and reopen the TUN/TAP interface. This could cause the client
+to exit with a fatal error.</p>
+</dd>
+</dl>
 <p>If <tt class="docutils literal"><span class="pre">--remote</span></tt> is unspecified, OpenVPN will listen for packets from any
 IP address, but will not act on those packets unless they pass all
 authentication tests. This requirement for authentication is binding on
@@ -1794,7 +1811,8 @@ optional <tt class="docutils literal">netmask</tt> parameter will also be pushed
 ifconfig-ipv6-pool ipv6addr/bits
 </pre>
 <p class="last">The pool starts at <tt class="docutils literal">ipv6addr</tt> and matches the offset determined from
-the start of the IPv4 pool.</p>
+the start of the IPv4 pool.  If the host part of the given IPv6
+address is <tt class="docutils literal">0</tt>, the pool starts at <tt class="docutils literal">ipv6addr</tt> +1.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--ifconfig-pool-persist <var>args</var></span></kbd></td>
@@ -2102,10 +2120,18 @@ the IPv4/IPv6 address argument is possible.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--push-reset</span></kbd></td>
-<td>Don't inherit the global push list for a specific client instance.
+<td><p class="first">Don't inherit the global push list for a specific client instance.
 Specify this option in a client-specific context such as with a
 <tt class="docutils literal"><span class="pre">--client-config-dir</span></tt> configuration file. This option will ignore
-<tt class="docutils literal"><span class="pre">--push</span></tt> options at the global config file level.</td></tr>
+<tt class="docutils literal"><span class="pre">--push</span></tt> options at the global config file level.</p>
+<p class="last"><em>NOTE</em>: <tt class="docutils literal"><span class="pre">--push-reset</span></tt> is very thorough: it will remove almost
+all options from the list of to-be-pushed options.  In many cases,
+some of these options will need to be re-configured afterwards -
+specifically, <tt class="docutils literal"><span class="pre">--topology</span> subnet</tt> and <tt class="docutils literal"><span class="pre">--route-gateway</span></tt> will get
+lost and this will break client configs in many cases.  Thus, for most
+purposes, <tt class="docutils literal"><span class="pre">--push-remove</span></tt> is better suited to selectively remove
+push options for individual clients.</p>
+</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--server <var>args</var></span></kbd></td>
 <td><p class="first">A helper directive designed to simplify the configuration of OpenVPN's
@@ -2200,6 +2226,19 @@ tls-server
 </pre>
 </td></tr>
 <tr><td class="option-group" colspan="2">
+<kbd><span class="option">--server-ipv6 <var>args</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td><p class="first">Convenience-function to enable a number of IPv6 related options at once,
+namely <tt class="docutils literal"><span class="pre">--ifconfig-ipv6</span></tt>, <tt class="docutils literal"><span class="pre">--ifconfig-ipv6-pool</span></tt> and
+<tt class="docutils literal"><span class="pre">--push</span> <span class="pre">tun-ipv6</span></tt>.</p>
+<p>Valid syntax:</p>
+<pre class="literal-block">
+server-ipv6 ipv6addr/bits
+</pre>
+<p class="last">Pushing of the <tt class="docutils literal"><span class="pre">--tun-ipv6</span></tt> directive is done for older clients which
+require an explicit <tt class="docutils literal"><span class="pre">--tun-ipv6</span></tt> in their configuration.</p>
+</td></tr>
+<tr><td class="option-group" colspan="2">
 <kbd><span class="option">--stale-routes-check <var>args</var></span></kbd></td>
 </tr>
 <tr><td>&nbsp;</td><td><p class="first">Remove routes which haven't had activity for <tt class="docutils literal">n</tt> seconds (i.e. the ageing
@@ -2215,9 +2254,15 @@ stale-routes-check n [t]
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--username-as-common-name</span></kbd></td>
 </tr>
-<tr><td>&nbsp;</td><td>For <tt class="docutils literal"><span class="pre">--auth-user-pass-verify</span></tt> authentication, use the authenticated
-username as the common name, rather than the common name from the client
-cert.</td></tr>
+<tr><td>&nbsp;</td><td><p class="first">Use the authenticated username as the common-name, rather than the
+common-name from the client certificate. Requires that some form of
+<tt class="docutils literal"><span class="pre">--auth-user-pass</span></tt> verification is in effect. As the replacement happens
+after <tt class="docutils literal"><span class="pre">--auth-user-pass</span></tt> verification, the verification script or
+plugin will still receive the common-name from the certificate.</p>
+<p class="last">The common_name environment variable passed to scripts and plugins invoked
+after authentication (e.g, client-connect script) and file names parsed in
+client-config directory will match the username.</p>
+</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--verify-client-cert <var>mode</var></span></kbd></td>
 </tr>
@@ -3830,6 +3875,9 @@ dhcp-options type [parm]
 <dl class="last docutils">
 <dt><code>DOMAIN</code> <tt class="docutils literal">name</tt></dt>
 <dd>Set Connection-specific DNS Suffix to <code>name</code>.</dd>
+<dt><code>ADAPTER_DOMAIN_SUFFIX</code> <tt class="docutils literal">name</tt></dt>
+<dd>Alias to <code>DOMAIN</code>. This is a compatibility option, it
+should not be used in new deployments.</dd>
 <dt><code>DOMAIN-SEARCH</code> <tt class="docutils literal">name</tt></dt>
 <dd>Add <code>name</code> to the domain search list.
 Repeat this option to add more entries. Up to
@@ -4449,9 +4497,8 @@ succeeded, then ALL of the client-disconnect functions for scripts and
 plugins will be called on client instance object deletion, even in cases
 where some of the related client-connect functions returned an error
 status.</p>
-<p class="last">The <tt class="docutils literal"><span class="pre">--client-disconnect</span></tt> command is passed the same pathname as the
-corresponding <tt class="docutils literal"><span class="pre">--client-connect</span></tt> command as its last argument (after
-any arguments specified in <tt class="docutils literal">cmd</tt>).</p>
+<p class="last">The <tt class="docutils literal"><span class="pre">--client-disconnect</span></tt> command is not passed any extra arguments
+(only those arguments specified in cmd, if any).</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--down <var>cmd</var></span></kbd></td>
@@ -4927,10 +4974,10 @@ command line or configuration file.</p>
 <dt><code>route_ipv6_{parm}_{n}</code></dt>
 <dd><p class="first">A set of variables which define each IPv6 route to be added, and are
 set prior to <strong>--up</strong> script execution.</p>
-<p><tt class="docutils literal">parm</tt> will be one of <code>network</code> or <code>gateway</code>
-(<code>netmask</code> is contained as <code>/nnn</code> in the
-<tt class="docutils literal">route_ipv6_network_{n}</tt>, unlike IPv4 where it is passed in a
-separate environment variable).</p>
+<p><tt class="docutils literal">parm</tt> will be one of <code>network</code>, <code>gateway</code> or
+<code>metric</code>. <tt class="docutils literal">route_ipv6_network_{n}</tt> contains <code>netmask</code>
+as <code>/nnn</code>, unlike IPv4 where it is passed in a separate environment
+variable.</p>
 <p><tt class="docutils literal">n</tt> is the OpenVPN route number, starting from 1.</p>
 <p class="last">If the network or gateway are resolvable DNS names, their IP address
 translations will be recorded rather than their names as denoted on the
@@ -5508,8 +5555,11 @@ towards the gateway (if the protocol in question is enabled).</p>
 --show-gateway
 --show-gateway IPv6-target
 </pre>
-<p class="last">If an IPv6 target address is passed as argument, the IPv6 route for this
-host is reported.</p>
+<p class="last">For IPv6 this queries the route towards ::/128, or the specified IPv6
+target address if passed as argument.
+For IPv4 on Linux, Windows, MacOS and BSD it looks for a 0.0.0.0/0 route.
+If there are more specific routes, the result will not always be matching
+the route of the IPv4 packets to the VPN gateway.</p>
 </td></tr>
 </tbody>
 </table>

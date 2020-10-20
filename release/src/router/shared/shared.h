@@ -907,6 +907,7 @@ extern pid_t* find_pid_by_name(const char *);
 extern char *psname(int pid, char *buffer, int maxlen);
 extern int pidof(const char *name);
 extern int killall(const char *name, int sig);
+extern void killall_tk_period_wait(const char *name, int wait);
 extern int process_exists(pid_t pid);
 extern int module_loaded(const char *module);
 extern int ppid(int pid);

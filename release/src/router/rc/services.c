@@ -10876,6 +10876,7 @@ static void QOS_CONTROL()
 #ifdef RTCONFIG_LANTIQ
 	char ppa_cmd[255] = {0};
 #endif
+	char dev_wan[16];
 
 	add_iQosRules(get_wan_ifname(wan_primary_ifunit()));
 #if defined(RTCONFIG_BWDPI)
@@ -10892,6 +10893,10 @@ static void QOS_CONTROL()
 		_dprintf("%s : add ppa wan interface: %s\n", __FUNCTION__, ppa_cmd);
 	}
 #endif
+
+	// add workaround to make IPoE protocol works
+	strlcpy(dev_wan, get_wan_ifname(wan_primary_ifunit()), sizeof(dev_wan));
+	eval("iptables", "-t", "mangle", "-D", "BWDPI_FILTER", "-i", dev_wan, "-p", "udp", "--sport", "67", "--dport", "68", "-j", "DROP");
 }
 
 void check_services(void)
@@ -14010,7 +14015,6 @@ check_ddr_done:
 		(defined(RTCONFIG_RALINK) && !defined(RTCONFIG_DSL) && !defined(RTN13U))
 			reinit_hwnat(-1);
 #endif
-// TODO: check if I must reapply my codel patch differently since 18991?
 			QOS_CONTROL();
 		}
 		nvram_set("restart_qo", "0");
@@ -14018,8 +14022,14 @@ check_ddr_done:
 #if defined(RTCONFIG_BWDPI)
 	else if (strcmp(script, "wrs") == 0)
 	{
+		char dev_wan[16];
+
 		if(action & RC_SERVICE_STOP) stop_dpi_engine_service(0);
 		if(action & RC_SERVICE_START) start_dpi_engine_service();
+
+		// add workaround to make IPoE protocol works
+		strlcpy(dev_wan, get_wan_ifname(wan_primary_ifunit()), sizeof(dev_wan));
+		eval("iptables", "-t", "mangle", "-D", "BWDPI_FILTER", "-i", dev_wan, "-p", "udp", "--sport", "67", "--dport", "68", "-j", "DROP");
 	}
 	else if (strcmp(script, "wrs_force") == 0)
 	{
@@ -14029,6 +14039,7 @@ check_ddr_done:
 	{
 		if(action & RC_SERVICE_START){
 			char *sig_update_argv[] = {"sig_update.sh", NULL};
+			char dev_wan[16];
 			_eval(sig_update_argv, NULL, 0, NULL);
 			if(nvram_get_int("sig_state_flag")){
 				char *sig_upgrade_argv[] = {"sig_upgrade.sh", NULL};
@@ -14036,6 +14047,9 @@ check_ddr_done:
 			}
 			stop_dpi_engine_service(0);
 			start_dpi_engine_service();
+
+			// add workaround to make IPoE protocol works
+			eval("iptables", "-t", "mangle", "-D", "BWDPI_FILTER", "-i", dev_wan, "-p", "udp", "--sport", "67", "--dport", "68", "-j", "DROP");
 		}
 	}
 	else if (strcmp(script, "dpi_disable") == 0)

@@ -461,10 +461,12 @@ add_option (char *p[], int line, int unit)
 			nvram_pf_set(prefix, "comp", "no");
 		}
 	}
+#if 0
 	else if (streq (p[0], "cipher") && p[1])
 	{
 		nvram_pf_set(prefix, "cipher", p[1]);
 	}
+#endif
 	else if (streq (p[0], "auth") && p[1])
 	{
 		nvram_pf_set(prefix, "digest", p[1]);

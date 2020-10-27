@@ -827,7 +827,16 @@ endif
 	ln -sf user/user8.asp $(INSTALLDIR)/www/user8.asp
 	ln -sf user/user9.asp $(INSTALLDIR)/www/user9.asp
 	ln -sf user/user10.asp $(INSTALLDIR)/www/user10.asp
-
+	ln -sf user/user11.asp $(INSTALLDIR)/www/user11.asp
+	ln -sf user/user12.asp $(INSTALLDIR)/www/user12.asp
+	ln -sf user/user13.asp $(INSTALLDIR)/www/user13.asp
+	ln -sf user/user14.asp $(INSTALLDIR)/www/user14.asp
+	ln -sf user/user15.asp $(INSTALLDIR)/www/user15.asp
+	ln -sf user/user16.asp $(INSTALLDIR)/www/user16.asp
+	ln -sf user/user17.asp $(INSTALLDIR)/www/user17.asp
+	ln -sf user/user18.asp $(INSTALLDIR)/www/user18.asp
+	ln -sf user/user19.asp $(INSTALLDIR)/www/user19.asp
+	ln -sf user/user20.asp $(INSTALLDIR)/www/user20.asp
 	rm -rf $(INSTALLDIR)/www/Advanced_Feedback.asp
 
 ifeq ($(REMOVE_ROUTER_UI), y)

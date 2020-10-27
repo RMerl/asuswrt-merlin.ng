@@ -47,7 +47,7 @@ pc_delete() {
 am_get_webui_page() {
         am_webui_page="none"
         # look for a match first in case the page is already there
-        for i in 1 2 3 4 5 6 7 8 9 10; do
+        for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
                 page="/www/user/user$i.asp"
                 if [ -f "$page" ] && [ "$(md5sum < "$1")" = "$(md5sum < "$page")" ]; then
                         am_webui_page="user$i.asp"

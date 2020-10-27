@@ -2,12 +2,13 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 
-int bit_count(uint32_t i)
+int bit_count(in_addr_t i)
 {
 	int c = 0;
 	unsigned int seen_one = 0;
 
-	while (i > 0) {
+	// Be sure to check all octets
+	for (int b = 0; i > 0 || b < 25; ++b, i >>= 1) {
 		if (i & 1) {
 			seen_one = 1;
 			c++;
@@ -16,7 +17,6 @@ int bit_count(uint32_t i)
 				return -1;
 			}
 		}
-		i >>= 1;
 	}
 
 	return c;
@@ -24,7 +24,7 @@ int bit_count(uint32_t i)
 
 int convert_subnet_mask_to_cidr(const char *mask)
 {
-	unsigned long n;
+	in_addr_t n;
 	
 	if(!mask)
 		return -1;
@@ -32,7 +32,7 @@ int convert_subnet_mask_to_cidr(const char *mask)
 	if(inet_pton(AF_INET, mask, &n) != 1)
 		return -1;
 
-	return bit_count(n);
+	return bit_count(ntohl(n));
 }
 
 

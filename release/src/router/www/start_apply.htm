@@ -251,7 +251,17 @@ function showWlHint(){
 			}
 			else if(wl_nband_array[j] == '1'){
 				band5g_count++;
-				wl_nband_title.push("5 GHz-" + band5g_count);
+				if(parent.band6g_support){
+					if(band5g_count == '1'){
+						wl_nband_title.push("5 GHz");
+					}
+					else{
+						wl_nband_title.push("6 GHz");
+					}
+				}
+				else{					
+					wl_nband_title.push("5 GHz-" + band5g_count);
+				}
 			}
 		}
 		if(wl_nband_title.indexOf("2.4 GHz-2") == -1) wl_nband_title[wl_nband_title.indexOf("2.4 GHz-1")] = "2.4 GHz";
@@ -696,6 +706,10 @@ function initial(){
 	}
 	else if(getflag == "apply_routersync"){
 		parent.show_block();
+	}
+	else if(action_script.indexOf("ipsec_") != -1 && (current_page.indexOf("Advanced_VPN_IPSec") != -1) && parent.based_modelid != "BRT-AC828"){
+		parent.showLoading(restart_time, "waiting");
+		setTimeout(getXMLAndRedirect, restart_time*1000);
 	}
 	else if(page_modified == 1){
 		if(amesh_support && current_page == "device-map/amesh.asp") {

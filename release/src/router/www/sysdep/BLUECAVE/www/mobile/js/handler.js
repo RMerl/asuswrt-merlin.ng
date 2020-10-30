@@ -751,7 +751,12 @@ apply.wireless = function(){
 	var wirelessValidator = function(band){
 		if(hasBlank([$("#wireless_ssid_" + band), $("#wireless_key_" + band)])) return false;
 		if(!validator.stringSSID(document.getElementById("wireless_ssid_" + band))) return false;
-		if(!validator.psk(document.getElementById("wireless_key_" + band))) return false;	
+		if(!validator.psk(document.getElementById("wireless_key_" + band))) return false;
+		
+		if(isSku("KR")){
+			if(!validator.psk_KR(document.getElementById("wireless_key_" + band))) return false;
+		}
+
 		if(isWeakString($("#wireless_key_" + band).val(), "wpa_key")){
 			if(!confirm("<#JS_common_passwd#>")){
 				$("#wireless_key_" + band).showTextHint("<#AiProtection_scan_note11#>"); 
@@ -769,10 +774,6 @@ apply.wireless = function(){
 		qisPostData.wl0_wpa_psk = $("#wireless_key_0").val();
 		qisPostData.wl0_auth_mode_x = "psk2";
 		qisPostData.wl0_crypto = "aes";
-		/*if(isSupport('WPA3Support')){
-			qisPostData.wl0_auth_mode_x = "psk2sae";
-			qisPostData.wl0_mfp = "1";
-		}*/
 	}
 
 	if(qisPostData.hasOwnProperty("wl1_ssid")){
@@ -782,10 +783,6 @@ apply.wireless = function(){
 		qisPostData.wl1_wpa_psk = ($("#wireless_key_1").length) ? $("#wireless_key_1").val() : qisPostData.wl0_wpa_psk;
 		qisPostData.wl1_auth_mode_x = "psk2";
 		qisPostData.wl1_crypto = "aes";
-		/*if(isSupport('WPA3Support')){
-			qisPostData.wl1_auth_mode_x = "psk2sae";
-			qisPostData.wl1_mfp = "1";
-		}*/
 	}
 
 	if(qisPostData.hasOwnProperty("wl2_ssid")){
@@ -795,10 +792,6 @@ apply.wireless = function(){
 		qisPostData.wl2_wpa_psk = ($("#wireless_key_2").length) ? $("#wireless_key_2").val() : qisPostData.wl0_wpa_psk;
 		qisPostData.wl2_auth_mode_x = "psk2";
 		qisPostData.wl2_crypto = "aes";
-		/*if(isSupport('WPA3Support')){
-			qisPostData.wl2_auth_mode_x = "psk2sae";
-			qisPostData.wl2_mfp = "1";
-		}*/
 	}
 
 	if(qisPostData.hasOwnProperty("wl3_ssid")){
@@ -2530,6 +2523,13 @@ goTo.wlcKey = function(){
 	goTo.loadPage("wlcKey_setting", false);
 };
 goTo.wlcManual = function(){
+	if(isSupport('wpa3')){
+		$("#wlc_auth_mode_manual").append($('<option>', {
+			"value": "sae",
+			"text": "WPA3-Personal"
+		}))
+	}
+
 	systemVariable.selectedAP = [];
 	$(".manual_pap_setup").show();
 	genWLBandOption();
@@ -3352,10 +3352,15 @@ goTo.amasearch = function(){
 
 					if(systemVariable.modelCloudIcon[nodeInfo.name] == undefined){
 						systemVariable.modelCloudIcon[nodeInfo.name] = false;
-						httpApi.checkCloudModelIcon(nodeInfo.name, function(src){
-							systemVariable.modelCloudIcon[nodeInfo.name] = src;
-							$('#onboardinglist').find('[model_name="' + nodeInfo.name + '"]').css("background-image", "url(" + src + ")");
-						});
+						httpApi.checkCloudModelIcon(
+							nodeInfo.name,
+							function(src){
+								systemVariable.modelCloudIcon[nodeInfo.name] = src;
+								$('#onboardinglist').find('[model_name="' + nodeInfo.name + '"]').css("background-image", "url(" + src + ")");
+							},
+							function(){},
+							nodeInfo.tcode
+						);
 					}
 					else if(systemVariable.modelCloudIcon[nodeInfo.name])
 						$('#onboardinglist').find('[model_name="' + nodeInfo.name + '"]').css("background-image", "url(" + systemVariable.modelCloudIcon[nodeInfo.name] + ")");

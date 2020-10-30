@@ -758,7 +758,7 @@ int check_user_agent(char* user_agent){
 void add_ifttt_flag(void){
 
 	memset(user_agent, 0, sizeof(user_agent));
-	sprintf(user_agent, "%s",IFTTTUSERAGENT);
+	snprintf(user_agent, sizeof(user_agent), "%s",IFTTTUSERAGENT);
 	return;
 }
 #endif
@@ -875,7 +875,7 @@ void set_referer_host(void)
 			memset(referer_host, 0, sizeof(referer_host));
 			snprintf(referer_host,sizeof(referer_host),"%s:%d",lan_ipaddr, port);
 		}
-#ifdef RTAC68U
+#if defined(RTAC68U) || defined(RPAX56)
 	} else if (is_dpsta_repeater() && nvram_get_int("re_mode") == 0
 		&& !strncmp("repeater.asus.com", host_name, strlen("repeater.asus.com")) && *(host_name + strlen("repeater.asus.com")) == ':' && (port = atoi(host_name + strlen("repeater.asus.com") + 1)) > 0 && port < 65536){//transfer https domain to ip
 		if(port == 80)
@@ -887,7 +887,7 @@ void set_referer_host(void)
 #endif
 	}else if(!strcmp(DUT_DOMAIN_NAME, host_name))	//transfer http domain to ip
 		strlcpy(referer_host, lan_ipaddr, sizeof(referer_host));
-#ifdef RTAC68U
+#if defined(RTAC68U) || defined(RPAX56)
 	else if (is_dpsta_repeater() && nvram_get_int("re_mode") == 0
 		&& !strcmp("repeater.asus.com", host_name))   //transfer http domain to ip
 		strlcpy(referer_host, lan_ipaddr, sizeof(referer_host));
@@ -1102,11 +1102,11 @@ handle_request(void)
 			sethost(cp);
 			cur = cp + strlen(cp) + 1;
 #ifdef RTCONFIG_FINDASUS
-			sprintf(prouduct_id, "%s",get_productid());
+			snprintf(prouduct_id, sizeof(prouduct_id), "%s",get_productid());
 			for(i = 0 ; i < strlen(prouduct_id) ; i++ ){
 				prouduct_id[i] = tolower(prouduct_id[i]) ;
 			}
-			sprintf(id_local, "%s.local",prouduct_id);
+			snprintf(id_local, sizeof(id_local), "%s.local",prouduct_id);
 			if(!strncmp(cp, "findasus", 8) || !strncmp(cp, id_local,strlen(id_local)))
 				isDeviceDiscovery = 1;
 			else
@@ -1192,7 +1192,7 @@ handle_request(void)
 	if(useragent != NULL)
 		strncpy(user_agent, useragent, sizeof(user_agent)-1);
 	else
-		strcpy(user_agent, "");
+		strlcpy(user_agent, "", sizeof(user_agent));
 
 	fromapp = check_user_agent(useragent);
 
@@ -1434,6 +1434,10 @@ handle_request(void)
 #ifdef RTCONFIG_CAPTCHA
 					&& !strstr(file, "captcha.gif")
 #endif
+#ifdef RTCONFIG_IPSEC
+					&& !strstr(file, "renew_ikev2_cert_mobile.pem") && !strstr(file, "ikev2_cert_mobile.pem")
+					&& !strstr(file, "renew_ikev2_cert_windows.der") && !strstr(file, "ikev2_cert_windows.der")
+#endif
 					){
 				send_error( 404, "Not Found", (char*) 0, "File not found." );
 				return;
@@ -1503,11 +1507,11 @@ void http_login(unsigned int ip, char *url) {
 	login_timestamp = uptime();
 
 	memset(login_ipstr, 0, 32);
-	sprintf(login_ipstr, "%u", login_ip);
+	snprintf(login_ipstr, sizeof(login_ipstr), "%u", login_ip);
 	nvram_set("login_ip", login_ipstr);
 
 	memset(login_timestampstr, 0, 32);
-	sprintf(login_timestampstr, "%lu", login_timestamp);
+	snprintf(login_timestampstr, sizeof(login_timestampstr), "%lu", login_timestamp);
 	nvram_set("login_timestamp", login_timestampstr);
 }
 
@@ -1617,7 +1621,7 @@ char *config_model_name(char *source, char *find,  char *rep){
    if(result == NULL)
    	return NULL;
    else
-   	strcpy(result, source);
+	strlcpy(result, source, length);
 
    char *former=source;
    char *location= strstr(former, find);
@@ -1740,7 +1744,7 @@ load_dictionary (char *lang, pkw_t pkw)
 	if(dyn_dict_buf_new){
 		dict_size = sizeof(char) * strlen(dyn_dict_buf_new);
 		pkw->buf = (unsigned char *) (q = malloc (dict_size));
-		strcpy(pkw->buf, dyn_dict_buf_new);
+		strlcpy(pkw->buf, dyn_dict_buf_new, dict_size);
 		free(dyn_dict_buf_new);
 	}
 #else
@@ -2122,9 +2126,9 @@ int main(int argc, char **argv)
 
 	FILE *pid_fp;
 	if (http_port == SERVER_PORT)
-		strcpy(pidfile, "/var/run/httpd.pid");
+		strlcpy(pidfile, "/var/run/httpd.pid", sizeof(pidfile));
 	else
-		sprintf(pidfile, "/var/run/httpd-%d.pid", http_port);
+		snprintf(pidfile, sizeof(pidfile), "/var/run/httpd-%d.pid", http_port);
 	if (!(pid_fp = fopen(pidfile, "w"))) {
 		perror(pidfile);
 		return errno;
@@ -2336,14 +2340,20 @@ void start_ssl(int http_port)
 	while (1) {
 		save = nvram_match("https_crt_save", "1");
 
-		if ((!f_exists("/etc/cert.pem")) || (!f_exists("/etc/key.pem"))) {
+		/* check key/cert pairs */
+		if ((!f_exists("/etc/cert.pem")) || (!f_exists("/etc/key.pem")) || !mssl_cert_key_match("/etc/cert.pem", "/etc/key.pem")) {
 			ok = 0;
 			if (save) {
 				logmessage("httpd", "Save SSL certificate...%d", http_port);
 					if (eval("tar", "-xzf", HTTPS_CA_JFFS, "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
 						system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
 						system("cp /etc/cert.pem /etc/cert.crt"); // openssl self-signed certificate for router.asus.com LAN access
-						ok = 1;
+
+						// check key and cert pair, if they are mismatched, regenerate key and cert
+						if (mssl_cert_key_match("/etc/cert.pem", "/etc/key.pem")) {
+							logmessage("httpd", "mssl_cert_key_match : PASS");
+							ok = 1;
+						}
 					}
 
 					int save_intermediate_crt = nvram_match("https_intermediate_crt_save", "1");
@@ -2357,7 +2367,7 @@ void start_ssl(int http_port)
 				// browsers seems to like this when the ip address moves...	-- zzz
 				f_read("/dev/urandom", &sn, sizeof(sn));
 
-				sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
+				snprintf(t, sizeof(t), "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
 				eval("gencert.sh", t);
 			}
 		}

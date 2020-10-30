@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlioctl.h 784670 2020-03-04 03:56:56Z $
+ * $Id: wlioctl.h 787840 2020-06-12 22:59:01Z $
  */
 
 #ifndef _wlioctl_h_
@@ -9807,12 +9807,22 @@ typedef struct txdelay_stats {
 	scb_total_delay_stats_t scb_delay_stats[1];
 } txdelay_stats_t;
 
-#define WL_PKTQ_STATUS_VERSION 1
+#define WL_PKTQ_STATUS_VERSION 2
+#define WL_PKTQ_HIST_NBINS     8
 typedef struct scb_pktq_status {
 	uint16  ver; /* structure  version */
+	uint16  size;  /* pad for 4 byte struct alignment */
 	struct  ether_addr ea;
-	uint8   pad[2];
+	uint8   enable_delay_stat;
+	uint8   pad;
 } scb_pktq_status_t;
+
+typedef struct pktq_delay_stats {
+	uint32 delay_min;	/**< minimum packet latency observed */
+	uint32 delay_max;	/**< maximum packet latency observed */
+	uint32 delay_hist[WL_PKTQ_HIST_NBINS];	/**< delay histogram */
+	uint32 delay_count;	/**< number of packet delay events generated */
+} pktq_delay_stats_t;
 
 #define WL_TXDELAY_STATS_FIXED_SIZE \
 	(sizeof(txdelay_stats_t)+(MAX_TXDELAY_STATS_SCBS-1)*sizeof(scb_total_delay_stats_t))
@@ -18287,6 +18297,7 @@ typedef enum wl_dtpc_iov_v1 {
 	WL_DTPC_CMD_ALPHA =       0x3,  /**< mv alpha */
 	WL_DTPC_CMD_TRIGINT =     0x4,  /**< pwr prob trigger interval */
 	WL_DTPC_CMD_HEADROOM =    0x5,  /**< power headroom */
+	WL_DTPC_CMD_CLMOVR =      0x6,  /**< clm validation */
 	WL_DTPC_CMD_TOTAL
 } wl_dtpc_iov_v1_t;
 

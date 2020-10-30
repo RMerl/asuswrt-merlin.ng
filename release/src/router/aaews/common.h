@@ -30,11 +30,9 @@
 #define PERMISSION 		"1"
 #define NAT_JSON		"{\"nattype\":\"%d\"}"
 #define	ASUS_DEVICE_NAME	"ASUS-Router"
-#ifdef RTCONFIG_ACCOUNT_LINKING
-#define ASUS_DEVICE_SERVICE	"1004"
-#else
 #define ASUS_DEVICE_SERVICE	"1001"
-#endif
+#define ASUS_DEVICE_ACCOUNT_BINDING_SERVICE	"1004"
+
 //#define AICLOID_LEAST_VER	"2.1.0.0"
 //#define AIHOME_LEAST_VER	"1.0.0.2.29"
 #define ASUS_DEVICE_DESC	"{\"public\":\"0\", \"name\":\"%s\", \"tnlver\":\"%s\", \"AiHOMEAPILevel\":\"%d\", \"aae_enable\":\"%d\", \"fwver\":\"%s\", \"modelname\":\"%s\"}"

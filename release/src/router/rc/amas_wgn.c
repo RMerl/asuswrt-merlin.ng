@@ -63,7 +63,7 @@
 #define IS_ROUTER_MODE() 		( (sw_mode() == SW_MODE_ROUTER) )
 #define IS_CAP_MODE() 			( (sw_mode() == SW_MODE_ROUTER || access_point_mode()) )
 #define WGN_WLIFU_MAX_NO_BRIDGE	WLIFU_MAX_NO_BRIDGE
-#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX82_XD6)
+#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 #define WGN_ETH_IFNAME			"eth4"
 #else
 #define WGN_ETH_IFNAME			"eth0"
@@ -1466,14 +1466,14 @@ void wgn_hotplug_net(
 		memset(vid, 0, sizeof(vid));
 		snprintf(vid, sizeof(vid)-1, "%d", p_vlan_rule->vid);
 
-#if defined(HND_ROUTER)
+#if defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710))
 		memset(vif0, 0, sizeof(vif0));
 		snprintf(vif0, sizeof(vif0)-1, "%s.0", interface);
-#endif	/* HND_ROUTER */		
+#endif	/* HND_ROUTER && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 
 		if (action == 1)	// add
 		{
-#if defined(HND_ROUTER)
+#if defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710))
 			//if (find_br0_ifnames_by_ifname(interface)) exec_cmd("brctl", "delif", "br0", interface);	
 			exec_cmd("brctl", "delif", "br0", interface);		
 			// vlanctl --mcast --if-create-name eth6 eth6.0 --if eth6 --set-if-mode-rg;
@@ -1501,7 +1501,7 @@ void wgn_hotplug_net(
 			exec_cmd("brctl", "addif", "br0", vif0);
 			//if (find_br0_ifnames_by_ifname(interface)) exec_cmd("brctl", "addif", "br0", interface);
 			exec_cmd("brctl", "addif", brif_list[i].br_name, vif);
-#else	/* HND_ROUTER */
+#else	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 			exec_cmd("vconfig", "set_name_type", "DEV_PLUS_VID_NO_PAD");
 			// vconfig add interface vid
 			exec_cmd("vconfig", "add", interface, vid);
@@ -1510,16 +1510,16 @@ void wgn_hotplug_net(
 			// brctl addif brX vifname
 			exec_cmd("brctl", "addif", brif_list[i].br_name, vif);
 			exec_cmd("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");			
-#endif	/* HND_ROUTER */
+#endif	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 		}
 		else	// del
 		{
-#if defined(HND_ROUTER)
+#if defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710))
 			exec_cmd("vlanctl", "--if-delete", vif);
 			exec_cmd("vlanctl", "--if-delete", vif0);
-#else	/* HND_ROUTER */
+#else	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 			exec_cmd("vconfig", "rem", vif);
-#endif	/* HND_ROUTER */			
+#endif	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 		}
 	}
 
@@ -1698,25 +1698,25 @@ void destory_vlan(
 		memset(s, 0, sizeof(s));
 		snprintf(s, sizeof(s), "wgn_br%d_wl_ifnames", i);
 		foreach(word, nvram_safe_get(s), next)
-#if defined(HND_ROUTER)
+#if defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710))
 			exec_cmd("vlanctl", "--if-delete", word);
-#else	/* HND_ROUTER */		
+#else	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 			exec_cmd("vconfig", "rem", word);
-#endif	/* HND_ROUTER */			
+#endif	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 		nvram_unset(s);
 
 		memset(s, 0, sizeof(s));
 		snprintf(s, sizeof(s), "wgn_br%d_sta_ifnames", i);
 		foreach(word, nvram_safe_get(s), next)
-#if defined(HND_ROUTER)
+#if defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710))
 			exec_cmd("vlanctl", "--if-delete", word);
-#else	/* HND_ROUTER */		
+#else	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 			exec_cmd("vconfig", "rem", word);
-#endif	/* HND_ROUTER */			
+#endif	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 		nvram_unset(s);
 	}
 
-#if defined(HND_ROUTER)
+#if defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710))
 	memset(wl_bh_ifnames, 0, sizeof(wl_bh_ifnames));
 	if ((bh_ifnames = get_wl_bh_ifnames(wl_bh_ifnames, sizeof(wl_bh_ifnames))))
 	{
@@ -1738,7 +1738,7 @@ void destory_vlan(
 			exec_cmd("vlanctl", "--if-delete", vif0);
 		}
 	}
-#endif	/* HND_ROUTER */		
+#endif	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 	return;
 }
 
@@ -1797,7 +1797,7 @@ char *create_vlan(
 	memset(vid, 0, sizeof(vid));
 	snprintf(vid, sizeof(vid)-1, "%d", vlan_id);
 
-#if defined(HND_ROUTER)
+#if defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710))
 	if (type != 0)	// wl & sta
 	{
 		foreach (word, bh_ifnames, next)
@@ -1871,7 +1871,7 @@ char *create_vlan(
 		}
 		exec_cmd("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");	
 	}
-#else	/* HND_ROUTER */
+#else	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 
 	foreach (word, bh_ifnames, next)
 	{
@@ -1898,7 +1898,7 @@ char *create_vlan(
         ifconfig(vif, IFUP | IFF_ALLMULTI | IFF_MULTICAST, NULL, NULL);
 	}
 	exec_cmd("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
-#endif	/* HND_ROUTER */
+#endif	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 
 	if (strlen(ret_ifnames) > 0)
 		ret_ifnames[strlen(ret_ifnames)-1] = '\0';

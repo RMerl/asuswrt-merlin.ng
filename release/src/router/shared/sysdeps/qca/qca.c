@@ -23,9 +23,6 @@
 #include <shutils.h>
 #include <shared.h>
 #include <qca.h>
-#ifdef RTCONFIG_AMAS
-#include <amas_path.h>
-#endif
 extern int get_ap_mac(const char *ifname, struct iwreq *pwrq);
 extern int diff_current_bssid(int unit, char bssid_str[]);
 
@@ -757,7 +754,7 @@ void add_beacon_vsie_by_unit(int unit, int subunit, char *hexdata)
 	//_dprintf("%s: ifname=%s\n", __func__, ifname);
 
 	if (ifname && strlen(ifname)) {
-		snprintf(cmd, sizeof(cmd), "hostapd_cli set_vsie -i%s %d DD%02X%02X%02X%02X%s",
+		snprintf(cmd, sizeof(cmd), "hostapd_cli -i%s set_vsie %d DD%02X%02X%02X%02X%s",
 			ifname, pktflag, (uint8_t)len, (uint8_t)OUI_ASUS[0], (uint8_t)OUI_ASUS[1], (uint8_t)OUI_ASUS[2], hexdata);
 		_dprintf("%s: cmd=%s\n", __func__, cmd);
 		system(cmd);
@@ -887,7 +884,7 @@ void del_beacon_vsie_by_unit(int unit, int subunit, char *hexdata)
 	//_dprintf("%s: ifname=%s\n", __func__, ifname);
 
 	if (ifname && strlen(ifname)) {
-		snprintf(cmd, sizeof(cmd), "hostapd_cli del_vsie -i%s %d DD%02X%02X%02X%02X%s",
+		snprintf(cmd, sizeof(cmd), "hostapd_cli -i%s del_vsie %d DD%02X%02X%02X%02X%s",
 			ifname, pktflag, (uint8_t)len, (uint8_t)OUI_ASUS[0], (uint8_t)OUI_ASUS[1], (uint8_t)OUI_ASUS[2], hexdata);
 		_dprintf("%s: cmd=%s\n", __func__, cmd);
 		system(cmd);
@@ -1001,6 +998,31 @@ void Pty_stop_wlc_connect(int band)
 }
 
 #ifdef RTCONFIG_BHCOST_OPT
+#if defined(RTAX89U)
+#define PORT_UNITS 11
+#elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
+#define PORT_UNITS 6
+#else
+#define PORT_UNITS 6
+#endif
+
+//Aimesh RE: vport to eth name
+static const char *query_ifname[PORT_UNITS] = { //Aimesh RE
+#if defined(RTAX89U)
+//	P0	P1	P2	P3	P4	P5	P6	P7	P8	P9	P10
+	"eth2", "eth1", "eth0", "eth0", "eth0", "eth0", "eth0", "eth0", "eth3", "eth5", "eth4"
+#elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
+//	P0	P1	P2	P3	P4	P5
+	NULL,   "vlan1",NULL,   NULL,   "vlan4",NULL
+#elif defined(PLAX56_XP4)
+//	P0	P1	P2	P3	P4	P5
+	"eth2",	"eth3",	"eth1",	NULL,	"eth4",	NULL
+#else
+//	P0	P1	P2	P3	P4	P5
+	NULL,   NULL,   NULL,   NULL,   NULL,   NULL
+#endif
+};
+
 void Pty_start_wlc_connect(int band, char *bssid)
 {
 	char *sta;
@@ -1034,28 +1056,27 @@ int amas_dfs_status(int band)
 }
 
 #ifdef RTCONFIG_AMAS_ETHDETECT
-#if defined(RTAX89U)
-#define PORT_UNITS 11
-#elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
-#define PORT_UNITS 6
-#else
-#define PORT_UNITS 6
-#endif
+unsigned int get_uplinkports_linkrate(char *ifname)
+{
+	unsigned int link_rate = 0;
+	int vport = 0;
 
-//Aimesh RE: vport to eth name
-static const char *query_ifname[PORT_UNITS] = { //Aimesh RE
-#if defined(RTAX89U)
-//	P0	P1	P2	P3	P4	P5	P6	P7	P8	P9	P10
-	"eth2", "eth1", "eth0", "eth0", "eth0", "eth0", "eth0", "eth0", "eth3", "eth5", "eth4"
-#elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
-//	P0	P1	P2	P3	P4	P5
-	NULL,   "vlan1",NULL,   NULL,   "vlan4",NULL
-#else
-//	P0	P1	P2	P3	P4	P5
-	NULL,   NULL,   NULL,   NULL,   NULL,   NULL
-#endif
-};
-
+	for (vport = 0; vport < PORT_UNITS; vport++) {
+		if (vport >= ARRAY_SIZE(query_ifname)) {
+			dbg("%s: don't know vport %d\n", __func__, vport);
+			return 0;
+		}
+		if (query_ifname[vport] != NULL && strstr(query_ifname[vport],ifname)) {
+			if (rtkswitch_Port_phyStatus(1 << vport)) //connect
+			{	
+				link_rate = rtkswitch_Port_phyLinkRate(1 << vport);
+				break;
+			}
+		}
+	}
+	
+	return link_rate;
+}
 /**
  * @brief Get the uplinkports status
  *
@@ -1079,28 +1100,6 @@ int get_uplinkports_status(char *ifname)
 	}
 	return 0;
 }
-
-unsigned int get_uplinkports_linkrate(char *ifname)
-{
-	unsigned int link_rate = 0;
-	int vport = 0;
-
-	for (vport = 0; vport < PORT_UNITS; vport++) {
-		if (vport >= ARRAY_SIZE(query_ifname)) {
-			dbg("%s: don't know vport %d\n", __func__, vport);
-			return 0;
-		}
-		if (query_ifname[vport] != NULL && strstr(query_ifname[vport],ifname)) {
-			if (rtkswitch_Port_phyStatus(1 << vport)) //connect
-			{	
-				link_rate = rtkswitch_Port_phyLinkRate(1 << vport);
-				break;
-			}
-		}
-	}
-	
-	return link_rate;
-}
 #else
 /**
  * @brief Get the uplinkports status
@@ -1114,6 +1113,18 @@ int get_uplinkports_status(char *ifname)
 
 	return get_wanports_status(wan_unit);
 }
+
+unsigned int get_uplinkports_linkrate(char *ifname)
+{
+	int speed;
+	char *eth=NULL;
+	speed=0;
+	eth=nvram_safe_get("eth_ifnames");
+	if(eth && strstr(eth,ifname))
+		speed=rtkswitch_WanPort_phySpeed();
+	return speed;
+}	
+
 #endif
 #else
 void Pty_start_wlc_connect(int band)
@@ -1162,20 +1173,30 @@ int Pty_get_upstream_rssi(int band)
 int get_wlan_service_status(int bssidx, int vifidx)
 {
 	int ret;
-	char athfix[8];
+	char athfix[8],ifname[20];
 	if (nvram_get_int("wlready") == 0)
 		return -1;
 	if(bssidx < 0 || bssidx >= MAX_NR_WL_IF || vifidx < 0 || vifidx >= MAX_NO_MSSID)
 		return -1;
+
 	if(sw_mode() == SW_MODE_AP && nvram_match("re_mode", "1")) {
-		if(vifidx == 0)
+		if(vifidx == 0) //sta
 			strcpy(athfix, get_staifname(swap_5g_band(bssidx)));
-		else
+		else if(vifidx == 1) //main ap
 			__get_wlifname(swap_5g_band(bssidx), 0, athfix);
+		else //guestnetwork or vif
+		{	
+			snprintf(ifname,sizeof(ifname), "wl%d.%d_ifname", swap_5g_band(bssidx), vifidx);
+			if(strlen(nvram_safe_get(ifname)))
+				strcpy(athfix,nvram_get(ifname));
+			else
+				return -1;
+		}			
 	}
 	else {
 		__get_wlifname(swap_5g_band(bssidx), vifidx, athfix);
 	}
+
 	ret = is_intf_up(athfix);
 	return ret;
 }
@@ -1189,13 +1210,15 @@ void set_wlan_service_status(int bssidx, int vifidx, int enabled)
                 return;
 	if(bssidx < 0 || bssidx >= MAX_NR_WL_IF || vifidx < 0 || vifidx >= MAX_NO_MSSID)
 		return;
+
 	if(sw_mode() == SW_MODE_AP && nvram_match("re_mode", "1")) {
-		if(vifidx <= 0) {
+		if(vifidx <= 0) {  //for sta
 			strcpy(athfix, get_staifname(swap_5g_band(bssidx)));
 			doSystem("ifconfig %s %s", athfix, enabled?"up":"down");
 			return;
 		}
-		vifidx--;
+		if(vifidx==1)
+			vifidx--;
 	}
 	cfg_stat = nvram_get_int("cfg_alive");
 
@@ -1214,79 +1237,7 @@ void set_wlan_service_status(int bssidx, int vifidx, int enabled)
 			}	
 		}	
 	}
-	
 	set_radio(enabled, swap_5g_band(bssidx), vifidx);
-}
-
-/*
- * pre_addif_bridge()
- * post_addif_bridge()
- *
- * The two function is called before and after adding a interface to brdige.
- * For handling some parameters or procrss of the interface.
- *
- */
-void pre_addif_bridge(int iftype)
-{
-	//monitor amas_ifaces for guestnetwork
-
-}
-
-void post_addif_bridge(int iftype)
-{
-#if defined(RTCONFIG_AMAS_WGN)
-       char br_name[64], *br_next = NULL;
-       char if_name[64], *if_next = NULL;
-       char s[64];
-       int eth_bh = 0;
-
-#if defined(RTCONFIG_BHCOST_OPT)
-       eth_bh = (iftype >= ETH1_U && iftype <= ETH_MAX_BASE) ? 1 : 0;
-#else
-       eth_bh = (iftype==ETH) ? 1 : 0;
-#endif
-
-
-       if (nvram_get_int("re_mode") == 1 && nvram_get_int("wgn_enabled") == 1)
-       {
-               // delif
-               foreach (br_name, nvram_safe_get("wgn_ifnames"), br_next)
-               {
-                       memset(s, 0, sizeof(s));
-		       snprintf(s, sizeof(s), "wgn_%s_%s_ifnames", br_name, (eth_bh==1) ? "sta" : "lan"); //ethernet?
-                       foreach (if_name, nvram_safe_get(s), if_next)
-                               eval("brctl", "delif", br_name, if_name);
-               }
-
-               // addif
-               foreach (br_name, nvram_safe_get("wgn_ifnames"), br_next)
-               {
-                       memset(s, 0, sizeof(s));
-		       snprintf(s, sizeof(s), "wgn_%s_%s_ifnames", br_name, (eth_bh==1) ? "lan" : "sta"); //ethernet?
-                       foreach (if_name, nvram_safe_get(s), if_next)
-                               eval("brctl", "addif", br_name, if_name);
-               }
-       }
-#endif /* RTCONFIG_AMAS_WGN */
-       return;
-}
-
-/*
- * pre_delif_bridge()
- * post_delif_bridge()
- *
- * The two function is called before and after delete a interface to brdige.
- * For handling some parameters or procrss of the interface.
- *
- */
-void pre_delif_bridge(int iftype)
-{
-
-}
-
-void post_delif_bridge(int iftype)
-{
-
 }
 
 /*
@@ -1434,7 +1385,11 @@ void update_macfilter_relist(void)
 #ifdef RTCONFIG_WIFI_SON
 		if (nvram_match("wifison_ready", "1"))
 			sec = "_sec";
-#endif // WIFI_SON
+#endif
+#ifdef RTCONFIG_QCA_LBD
+		if (nvram_match("smart_connect_x", "1"))
+			sec = "_sec";
+#endif
 		sprintf(qca_mac, "%s%s", QCA_ADDMAC, sec);
 
 		foreach (word, nvram_safe_get("wl_ifnames"), next) {
@@ -1617,7 +1572,7 @@ static char *get_lbd_data(int sfd, int *rlen, char *terminate)
 }
 
 /* nosteer */
-char *set_steer(char *mac,int val)
+char *set_steer(const char *mac,int val)
 {
 	int sock;
 	char outbuf[100];

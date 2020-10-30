@@ -874,7 +874,12 @@ static int get_album_cover_image(sqlite3 *sql_minidlna, sqlite_int64 plAlbumArt,
 		//Cdbg(DBE, "get_album_cover_image, album cover path=%s", result2[1]);
 
 		char* album_cover_file = result2[1];
-									
+
+		if(!string_starts_with(album_cover_file, "/mnt") ){
+			sqlite3_free_table(result2);
+			return 0;
+		}
+
 		FILE* fp = fopen(album_cover_file, "rb");
 		
 		if(fp!=NULL){
@@ -2005,6 +2010,11 @@ URIHANDLER_FUNC(mod_webdav_subrequest_handler) {
 			return HANDLER_FINISHED;
 		}
 	}
+
+	if(string_starts_with(con->url.path->ptr, "/smb/") && con->request.http_method!=HTTP_METHOD_GET){
+		con->http_status = 403;
+		return HANDLER_FINISHED;
+	}
 #endif
 
 
@@ -2872,6 +2882,11 @@ URIHANDLER_FUNC(mod_webdav_subrequest_handler) {
 			buffer_append_string_buffer(p->physical.path, p->physical.rel_path);
 		}
 
+		if(!string_starts_with(p->physical.path->ptr, "/mnt") ){
+			con->http_status = 403;
+			return HANDLER_FINISHED;
+		}
+		
 		/* let's see if the source is a directory
 		 * if yes, we fail with 501 */
 

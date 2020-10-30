@@ -1344,12 +1344,13 @@ int get_wan_proto(char *prefix)
 #endif
 		{ NULL }
 	};
-	char tmp[100], *value;
+	char tmp[100];
+	char proto[8] = { 0 };
 	int i;
 
-	value = nvram_safe_get(strcat_r(prefix, "proto", tmp));
+	strlcpy(proto, nvram_safe_get(strcat_r(prefix, "proto", tmp)), sizeof(proto));
 	for (i = 0; services[i].name; i++) {
-		if (strcmp(value, services[i].name) == 0)
+		if (strcmp(proto, services[i].name) == 0)
 			return services[i].service;
 	}
 	return IPV4_DISABLED;
@@ -2648,6 +2649,7 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 	char modelvlan[32];
 	int i, j, model, unit;
 	const struct dummy_ifaces_s *p;
+	char wl_ifnames[32] = { 0 };
 
 	strcpy(ifname_desc2, "");
 
@@ -2714,7 +2716,8 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 	{
 		// find Wireless interface
 		i=0;
-		foreach(word, nvram_safe_get("wl_ifnames"), next) {
+		strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+		foreach(word, wl_ifnames, next) {
 			SKIP_ABSENT_BAND_AND_INC_UNIT(i);
 			if(strcmp(word, ifname)==0) {
 				sprintf(ifname_desc, "WIRELESS%d", i);
@@ -3029,9 +3032,11 @@ int is_dpsta(int unit)
 {
 	char ifname[80], name[80], *next;
 	int idx = 0;
+	char wl_ifnames[32] = { 0 };
 
 	if (dpsta_mode()) {
-		foreach (ifname, nvram_safe_get("wl_ifnames"), next) {
+		strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+		foreach (ifname, wl_ifnames, next) {
 			if (idx == unit) break;
 			idx++;
 		}
@@ -3104,8 +3109,10 @@ int psta_exist(void)
 {
 	char word[256], *next;
 	int idx = 0;
+	char wl_ifnames[32] = { 0 };
 
-	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach (word, wl_ifnames, next) {
 		if (is_psta(idx)) return 1;
 		idx++;
 	}
@@ -3117,9 +3124,12 @@ int psta_exist_except(int unit)
 {
 	char word[256], *next;
 	int idx = 0;
+	char wl_ifnames[32] = { 0 };
 
 	if (unit < 0) return 0;
-	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach (word, wl_ifnames, next) {
 		if (idx == unit) goto END;
 		if (is_psta(idx)) return 1;
 END:
@@ -3133,8 +3143,10 @@ int psr_exist(void)
 {
 	char word[256], *next;
 	int idx = 0;
+	char wl_ifnames[32] = { 0 };
 
-	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach (word, wl_ifnames, next) {
 		if (is_psr(idx)) return 1;
 		idx++;
 	}
@@ -3146,9 +3158,12 @@ int psr_exist_except(int unit)
 {
 	char word[256], *next;
 	int idx = 0;
+	char wl_ifnames[32] = { 0 };
 
 	if (unit < 0) return 0;
-	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach (word, wl_ifnames, next) {
 		if (idx == unit) goto END;
 		if (is_psr(idx)) return 1;
 END:
@@ -3308,14 +3323,20 @@ int get_wifi_unit(char *wif)
 {
 	int i;
 	char word[256], *next, *ifn, nv[20];
+	char wl_ifnames[32] = { 0 };
 
 	if (!wif || *wif == '\0')
 		return -1;
-	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach (word, wl_ifnames, next) {
 		SKIP_ABSENT_FAKE_IFACE(word);
 		if (strncmp(word, wif, strlen(word)))
 			continue;
-
+#if defined(RTCONFIG_AMAS_WGN) && defined(RTCONFIG_QCA) 
+		if (strlen(word)!=strlen(wif))
+			continue;
+#endif
 		for (i = 0; i <= MAX_NR_WL_IF; ++i) {
 			SKIP_ABSENT_BAND(i);
 			sprintf(nv, "wl%d_ifname", i);
@@ -4311,7 +4332,8 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 	int unit = 0;
 	int subunit = 0;
 	int max_mssid = 0;
-	char *ifname = NULL;
+	char wl_ifnames[32] = { 0 };
+	char ifname[IFNAMSIZ] = { 0 };
 	int found = 0;
 
 	if (!strncmp(name, "2G", 2) || !strncmp(name, "5G", 2)) {
@@ -4319,12 +4341,13 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 		return alias;
 	}
 
-        foreach (word, nvram_safe_get("wl_ifnames"), next) {
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach (word, wl_ifnames, next) {
 		SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
 		max_mssid = num_of_mssid_support(unit);
 		memset(prefix, 0, sizeof(prefix));
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-		ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+		strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(ifname));
 		subunit = 0;
 
 		if (!strcmp(ifname, name)) {
@@ -4341,7 +4364,7 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 		for (subunit = 1; subunit < max_mssid+1; subunit++) {
 			memset(prefix, 0, sizeof(prefix));
                         snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
-			ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+			strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(ifname));
 
 			if (!strcmp(ifname, name)) {
 #if defined(CONFIG_BCMWL5) || defined(RTCONFIG_BCMARM)
@@ -4847,7 +4870,9 @@ int get_discovery_ssid(char *ssid_g, int size)
 		if (dpsta_mode() && nvram_get_int("re_mode") == 0)
 		{
 			connected = 0;
-			foreach(word, nvram_safe_get("dpsta_ifnames"), next) {
+			char dpsta_ifnames[32] = { 0 };
+			strlcpy(dpsta_ifnames, nvram_safe_get("dpsta_ifnames"), sizeof(dpsta_ifnames));
+			foreach(word, dpsta_ifnames, next) {
 				wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
 				snprintf(prefix, sizeof(prefix), "wlc%d_", unit == 0 ? 0 : 1);
 				if (nvram_get_int(strcat_r(prefix, "state", tmp)) == 2) {

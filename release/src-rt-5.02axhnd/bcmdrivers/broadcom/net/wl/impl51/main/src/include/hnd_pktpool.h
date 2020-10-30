@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnd_pktpool.h 707075 2017-06-24 08:39:35Z $
+ * $Id: hnd_pktpool.h 787796 2020-06-11 23:04:24Z $
  */
 
 #ifndef _hnd_pktpool_h_
@@ -256,6 +256,11 @@ extern pktpool_t *pktpool_shared_lfrag;
 /** PCIe SPLITRX related */
 #define SHARED_RXFRAG_POOL	(pktpool_shared_rxlfrag)
 extern pktpool_t *pktpool_shared_rxlfrag;
+
+#define SHARED_UTXD_POOL	(pktpool_shared_utxd)
+extern pktpool_t *pktpool_shared_utxd;
+#define	PKTUTXDSZ	(192) /**< per utxd sz, in [bytes] */
+#define PKTUTXDLEN	(256) /**< 64 utxd */
 
 #if defined(BCM_DHDHDR) && defined(DONGLEBUILD)
 #define D3_LFRAG_BUF_POOL	(d3_lfrag_buf_pool)

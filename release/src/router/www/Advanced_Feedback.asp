@@ -18,6 +18,7 @@
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/oauth.js"></script>
 <script type="text/javascript" src="js/httpApi.js"></script>
@@ -46,13 +47,13 @@ var default_provider = '<% get_parameter("provider"); %>';
 var reload_data = parseInt('<% get_parameter("reload"); %>');
 var dblog_trans_id = '<% generate_trans_id(); %>';
 var fb_total_size;
+var is_CN_sku = in_territory_code("CN");
+
 function initial(){
 	show_menu();
 	if(dsl_support){
 		change_dsl_diag_enable(0);
 		document.getElementById("fb_desc1").style.display = "";
-		inputCtrl(document.form.fb_ptype, 0);
-		inputCtrl(document.form.fb_pdesc, 0);
 		
 	}
 	else{
@@ -70,9 +71,17 @@ function initial(){
 		inputCtrl(document.form.dslx_diag_duration, 0);
 		inputCtrl(document.form.fb_availability, 0);
 		
-		gen_ptype_list(orig_page);
-		Reload_pdesc(document.form.fb_ptype,orig_page);
-	}		
+	}
+
+	gen_ptype_list(orig_page);
+	Reload_pdesc(document.form.fb_ptype,orig_page);
+
+	if(is_CN_sku && support_site_modelid == "RT-AX89X"){
+		inputCtrl(document.form.fb_phone, 1);
+	}
+	else{
+		inputCtrl(document.form.fb_phone, 0);
+	}
 
 	if(!modem_support || nomodem_support){
 		document.form.attach_modemlog.checked = false;
@@ -170,6 +179,8 @@ function check_wan_state(){
 		document.form.attach_cfgfile.disabled = "true";
 		document.form.attach_modemlog.disabled = "true";
 		document.form.attach_wlanlog.disabled = "true";
+		document.form.fb_ptype.disabled = "true";
+		document.form.fb_pdesc.disabled = "true";
 		document.form.fb_comment.disabled = "true";
 		document.form.btn_send.disabled = "true";
 		if(dsl_support){
@@ -182,10 +193,7 @@ function check_wan_state(){
 			document.form.fb_availability.disabled = "true";
 			
 		}
-		else{
-			document.form.fb_ptype.disabled = "true";
-			document.form.fb_pdesc.disabled = "true";
-		}		
+
 	}
 	else{
 		document.getElementById("fb_desc_disconnect").style.display = "none";
@@ -196,6 +204,8 @@ function check_wan_state(){
 		document.form.attach_modemlog.disabled = "";
 		document.form.attach_wlanlog.disabled = "";
 		document.form.attach_cfgfile.disabled = "";
+		document.form.fb_ptype.disabled = "";
+		document.form.fb_pdesc.disabled = "";
 		document.form.fb_comment.disabled = "";
 		document.form.btn_send.disabled = "";
 		if(dsl_support){
@@ -208,10 +218,6 @@ function check_wan_state(){
 			document.form.fb_availability.disabled = "";
 			
 		}
-		else{
-			document.form.fb_ptype.disabled = "";
-			document.form.fb_pdesc.disabled = "";
-		}
 	}		
 		
 	setTimeout("check_wan_state();", 3000);
@@ -221,9 +227,10 @@ function gen_ptype_list(url){
 	ptypelist = new Array();
 	ptypelist.push(["<#Select_menu_default#> ...", "No_selected"]);
 	ptypelist.push(["<#feedback_setting_problem#>", "Setting_Problem"]);	
-	ptypelist.push(["<#feedback_conn_problem#> ", "Connection_or_Speed_Problem"]);
+	ptypelist.push(["<#feedback_conn_problem#>", "Connection_or_Speed_Problem"]);
 	ptypelist.push(["<#feedback_compat_problem#>", "Compatibility_Problem"]);
 	ptypelist.push(["<#feedback_suggestion#>", "Suggestion"]);
+	ptypelist.push(["<#feedback_tech_support#>", "Technical_Support"]);
 	ptypelist.push(["<#Adaptive_Others#>", "Other_Problem"]);
 	free_options(document.form.fb_ptype);
 	document.form.fb_ptype.options.length = ptypelist.length;
@@ -359,6 +366,14 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#feedback_suggestion_cf#>","Current Feature"]);
 		desclist.push(["<#feedback_suggestion_nfr#>","New Feature Request"]);
 	}
+	else if(ptype == "Technical_Support"){
+		
+		desclist.splice(0,1);
+		desclist.push(["<#feedback_tech_asus#>","tech_ASUS"]);
+		desclist.push(["<#feedback_tech_amazon#>","tech_Amazon"]);
+		desclist.push(["<#feedback_tech_iOS#>","tech_iOS"]);
+		desclist.push(["<#feedback_tech_Android#>","tech_Android"]);		
+	}
 	else{	//Other_Problem
 		
 		desclist.splice(0,1);		
@@ -381,6 +396,25 @@ function Reload_pdesc(obj, url){
 		for(var i = 0; i < desclist.length; i++){
 			document.form.fb_pdesc.options[i] = new Option(desclist[i][0], desclist[i][1]);
 		}	
+	}
+
+	Change_pdesc(document.form.fb_pdesc);
+}
+
+function Change_pdesc(obj){
+	if(obj.value == "tech_ASUS"){
+		inputCtrl(document.form.fb_serviceno, 1);
+		inputCtrl(document.form.fb_tech_account, 0);
+
+	}
+	else if(obj.value == "tech_Amazon" || obj.value == "tech_iOS" || obj.value == "tech_Android"){
+		inputCtrl(document.form.fb_serviceno, 0);
+		inputCtrl(document.form.fb_tech_account, 1);
+
+	}
+	else{
+		inputCtrl(document.form.fb_serviceno, 0);
+		inputCtrl(document.form.fb_tech_account, 0);
 	}
 }
 
@@ -413,18 +447,22 @@ function applyRule(){
 			document.form.fb_attach_syslog.value = 1;
 		else
 			document.form.fb_attach_syslog.value = 0;
+
 		if(document.form.attach_cfgfile.checked == true)
 			document.form.fb_attach_cfgfile.value = 1;
 		else
 			document.form.fb_attach_cfgfile.value = 0;
+
 		if(document.form.attach_modemlog.checked == true)
 			document.form.fb_attach_modemlog.value = 1;
 		else
 			document.form.fb_attach_modemlog.value = 0;
+
 		if(document.form.attach_wlanlog.checked == true)
 			document.form.fb_attach_wlanlog.value = 1;
 		else
 			document.form.fb_attach_wlanlog.value = 0;
+
 		if(dsl_support){
 			if(document.form.attach_iptables.checked == true)
 				document.form.fb_attach_iptables.value = 1;
@@ -446,22 +484,56 @@ function applyRule(){
 			}
 		}
 		
-		var re_asus = new RegExp("^[a-zA-Z][0-9]{8,11}","gi");
-		var re_crs = new RegExp("^[0-9]{5}","gi");
-		var re_valid = 0;
-		if(document.form.fb_serviceno.value != ""){
-			if(!re_asus.test(document.form.fb_serviceno.value)){
-				re_valid++;				
-			}
-			if(document.form.fb_serviceno.value.length != 5 || !re_crs.test(document.form.fb_serviceno.value)){
-				re_valid++;				
-			}
+		//validate phone
+		if(document.form.fb_phone.value.length > 0 && (document.form.fb_phone.value.length < 9 || !validator.integer(document.form.fb_phone.value)) ){
+			alert("<#feedback_phone_alert#>");		
+			document.form.fb_phone.focus();
+			return false;
+		}
 
-			if(re_valid == 2){
-				alert("<#JS_validchar#>");
+		if(document.form.fb_pdesc.value == "tech_ASUS"){
+
+			var re_asus = new RegExp("^[a-zA-Z][0-9]{8,11}","gi");
+			var re_crs = new RegExp("^[0-9]{5}","gi");
+			var re_valid = 0;
+			document.form.fb_tech_account.disabled = "";
+			document.form.fb_tech_account.value = "";
+			if(document.form.fb_serviceno.value == "" || document.form.fb_serviceno.value.length == 0){
+				alert("<#JS_fieldblank#>");
 				document.form.fb_serviceno.focus();
 				return false;
 			}
+			if(document.form.fb_serviceno.value != ""){
+				if(!re_asus.test(document.form.fb_serviceno.value)){
+					re_valid++;				
+				}
+				if(document.form.fb_serviceno.value.length != 5 || !re_crs.test(document.form.fb_serviceno.value)){
+					re_valid++;				
+				}
+
+				if(re_valid == 2){
+					alert("<#JS_validchar#>");
+					document.form.fb_serviceno.focus();
+					return false;
+				}
+			}
+		}
+		else if(document.form.fb_pdesc.value == "tech_Amazon" || document.form.fb_pdesc.value == "tech_iOS" || document.form.fb_pdesc.value == "tech_Android"){
+
+			document.form.fb_serviceno.disabled = "";
+			document.form.fb_serviceno.value = "";
+			if(document.form.fb_tech_account.value == "" || document.form.fb_tech_account.value.length == 0){
+				alert("<#JS_fieldblank#>");
+				document.form.fb_tech_account.focus();
+				return false;
+			}
+
+		}
+		else{
+			document.form.fb_serviceno.disabled = "";
+			document.form.fb_serviceno.value = "";
+			document.form.fb_tech_account.disabled = "";
+                        document.form.fb_tech_account.value = "";
 		}
 		
 		if(fb_trans_id != "")
@@ -991,13 +1063,11 @@ function CheckFBSize(){
 </td>
 </tr>
 
-<tr>
-<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(34,2);"><#ASUS_Service_No#></a></th>
+<th><#feedback_phone#></th>
 <td>
-	<input type="text" name="fb_serviceno" maxlength="11" class="input_15_table" value="" autocorrect="off" autocapitalize="off">
+	<input type="text" name="fb_phone" maxlength="12" class="input_15_table" onKeyPress="return validator.isNumber(this,event);" value="" autocorrect="off" autocapitalize="off">	
 </td>
 </tr>
-
 <tr>
 <th><#feedback_extra_info#> *</th>
 <td>
@@ -1097,9 +1167,23 @@ function CheckFBSize(){
 <tr>
 <th><#feedback_problem_desc#></th>
 <td>
-	<select class="input_option" name="fb_pdesc">
+	<select class="input_option" name="fb_pdesc" onChange="Change_pdesc(this);">
 		
 	</select>
+</td>
+</tr>
+
+<tr style="display:none;">
+<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(34,2);"><#ASUS_Service_No#></a></th>
+<td>
+	<input type="text" name="fb_serviceno" maxlength="11" class="input_15_table" value="" autocorrect="off" autocapitalize="off">
+</td>
+</tr>
+
+<tr style="display:none;">
+<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(34,3);"><#feedback_tech_account_id#></a></th>
+<td>
+	<input type="text" name="fb_tech_account" maxlength="64" class="input_32_table" value="" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 

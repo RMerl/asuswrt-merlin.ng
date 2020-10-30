@@ -65,7 +65,11 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stream.h>
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <sys/errno.h>
+#else
+#include <errno.h>
+#endif
 
 #ifdef SVR4
 #include <sys/conf.h>

@@ -9,7 +9,6 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <link rel="apple-touch-icon" href="/smb/css/appicon.png">
 <link rel="apple-touch-startup-image" href="/smb/css/startup.png">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>AiCloud</title>
 <style>
 html{
@@ -121,7 +120,7 @@ $("document").ready(function() {
 	
 	$('label#username').text(m.getString('title_username2'));
 	$('label#password').text(m.getString('title_password2'));
-	$('label#captcha').text(m.getString('title_captcha'));
+	// $('label#captcha').text(m.getString('title_captcha'));
 	
 	this_url = $("input.urlInfo").attr("value");
 	
@@ -151,9 +150,8 @@ $("document").ready(function() {
 		return;
 	}
 	
-	$(".captcha").css("display","none");	
-	
-	generateCaptcha();
+	// $(".captcha").css("display","none");
+	// generateCaptcha();
 	
 	adjustUI();
 	
@@ -215,7 +213,7 @@ function adjustUI(){
 }
 
 function doOK(e) {
-	var captcha = $('input#captcha').val();
+	var captcha = "";//$('input#captcha').val();
 	var user = "";
 	var pass = "";
 	var auth = "";
@@ -370,7 +368,8 @@ function onKeyHandler(e){
 					            			<input id="password" name="password" type="password" maxlength="16" onkeydown="return onKeyHandler(event)">
 					            		</td>
 					          		</tr>
-					           		<tr style="height:10px"></tr>
+									<tr style="height:10px"></tr>
+									<!--
 					          		<tr class="captcha" style="display:none">
 										<td>
 											<font color="white" size="4">
@@ -385,12 +384,13 @@ function onKeyHandler(e){
 					          			</td>
 					          		</tr>
 					          		<tr class="captcha" height="5px" style="display:none"></tr>
-					          		<tr class="captcha" style="display:none">
+					          		 <tr class="captcha" style="display:none">
 					          			<td>
 					          				<div id="captcha_pattern" class="unselectable" name="captcha_pattern" style="width:220px;height:40px;float:left" onclick="generateCaptcha()"></div>
 					          			</td>
-					          		</tr>
-					          		<tr style="height:10px"></tr>
+					          		</tr> 
+									<tr style="height:10px"></tr>
+									-->
 					          		<tr> 
 					          			<td colspan="2" align="center"><div id="ok" onClick="doOK();"></div></td>
 					        		</tr>

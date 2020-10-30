@@ -115,7 +115,7 @@ static const char *vport_to_iface[MAX_WANLAN_PORT] = {
 };
 #elif defined(PLAX56_XP4)
 static const char *vport_to_iface[MAX_WANLAN_PORT] = {
-	"eth2", "eth3", "eth1", NULL,		/* LAN1~4 */
+	"eth2", "eth3", "eth1"/*PLC*/, NULL,	/* LAN1~4 */
 	"eth4" 					/* WAN1 */
 };
 #else
@@ -645,12 +645,15 @@ static void config_ipq60xx_LANWANPartition(int type)
 		get_wan_base_if(), __get_upstream_wan_unit());
 }
 
-static void get_ipq60xx_WAN_Speed(unsigned int *speed)
+static void get_ipq60xx_Port_Speed(unsigned int port_mask, unsigned int *speed)
 {
 	int i, v = -1, t;
 	unsigned int m;
 
-	m = (get_wan_port_mask(0) | get_wan_port_mask(1)) & wanlanports_mask;
+	if(speed == NULL)
+		return;
+
+	m = port_mask & wanlanports_mask;
 	for (i = 0; m; ++i, m >>= 1) {
 		if (!(m & 1))
 			continue;
@@ -674,6 +677,11 @@ static void get_ipq60xx_WAN_Speed(unsigned int *speed)
 	default:
 		_dprintf("%s: invalid speed!\n", __func__);
 	}
+}
+
+static void get_ipq60xx_WAN_Speed(unsigned int *speed)
+{
+	get_ipq60xx_Port_Speed(get_wan_port_mask(0) | get_wan_port_mask(1), speed);
 }
 
 /**
@@ -917,6 +925,64 @@ int config_rtkswitch(int argc, char *argv[])
 }
 
 unsigned int
+rtkswitch_Port_phyStatus(unsigned int port_mask)
+{
+        unsigned int status = 0;
+
+	get_ipq60xx_phy_linkStatus(port_mask, &status);
+
+#if defined(PLAX56_XP4)
+	if (port_mask == 1U << LAN3_PORT) { /*PLC*/
+		if (status) {
+			/* CHECK PLC member ship here!! */
+			// TBD.
+			// TBD.
+			// TBD.
+			// TBD.
+			// TBD.
+			// TBD.
+		}
+		///// temporarily disable PLC
+		if (!nvram_match("useplc", "1"))
+			return 0;
+		if (nvram_get_int("shell_timeout") == 0)
+			return 0;
+		///// end of temporarily disable PLC
+	}
+#endif
+        return status;
+}
+
+unsigned int
+rtkswitch_Port_phyLinkRate(unsigned int port_mask)
+{
+	unsigned int speed = 0;
+
+	get_ipq60xx_Port_Speed(port_mask, &speed);
+#if defined(PLAX56_XP4)
+	if (port_mask == 1U << LAN3_PORT) { /*PLC*/
+		if (speed == 1000) {
+			/* CHECK PLC speed here!! */
+			// TBD.
+			// TBD.
+			// TBD.
+			// TBD.
+			// TBD.
+			// TBD.
+		}
+		///// temporarily disable PLC
+		if (!nvram_match("useplc", "1"))
+			return 0;
+		if (nvram_get_int("shell_timeout") == 0)
+			return 0;
+		///// end of temporarily disable PLC
+	}
+#endif
+
+	return speed;
+}
+
+unsigned int
 rtkswitch_wanPort_phyStatus(int wan_unit)
 {
 	unsigned int status = 0;
@@ -1000,7 +1066,7 @@ rtkswitch_Reset_Storm_Control(void)
 	return 0;
 }
 
-void ATE_port_status(void)
+void ATE_port_status(phy_info_list *list)
 {
 	int i, len;
 	char buf[50];

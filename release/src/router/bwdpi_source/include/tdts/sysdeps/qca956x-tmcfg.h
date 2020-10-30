@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Aug  6 14:37:19 2018
+ * Date: Tue Jul 21 15:06:29 2020
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "map-ac1750"
+#define TMCFG_MODEL "rt-ac59_cd6r"
 
 /*
  * Target device information
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 1 // y
 #define TMCFG_CPU_LITTLE_ENDIAN 0 // n
-#define TMCFG_KERN_DIR "/opt/ASUS/asusmap_AC1750_GPL_382_20208/release/src-qca/linux/linux-3.3.x.mesh/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC59_CD6R_GPL_386_38523/release/src-qca/linux/linux-3.3.x.mesh"
 #define TMCFG_KERN_ARCH "mips"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n
@@ -95,7 +95,7 @@
  */
 #define TMCFG_E_EXTRA_CFLAGS ""
 #define TMCFG_E_KMOD_NAME "tdts"
-#define TMCFG_E_KMOD_IOCTL_DEV_NAME "detector"
+#define TMCFG_E_KMOD_IOCTL_DEV_NAME "idp"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
 #define TMCFG_E_KMOD_IOCTL_DEV_MIN 0
 #define TMCFG_E_KMOD_IOCTL_DEV_MAGIC 190

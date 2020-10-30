@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Aug 13 17:36:06 2018
+ * Date: Tue Jul 14 14:05:56 2020
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "gt-ax6000"
+#define TMCFG_MODEL "rt-ax89x"
 
 /*
  * Target device information
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX6000_GPL_382_24226/asuswrt/release/src-qca-ipq806x/linux/linux-4.4.x/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX89X_GPL_386_21790/release/src-qca-ipq806x/linux/linux-4.4.x/"
 #define TMCFG_KERN_ARCH "arm"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n
@@ -95,7 +95,7 @@
  */
 #define TMCFG_E_EXTRA_CFLAGS ""
 #define TMCFG_E_KMOD_NAME "tdts"
-#define TMCFG_E_KMOD_IOCTL_DEV_NAME "detector"
+#define TMCFG_E_KMOD_IOCTL_DEV_NAME "idp"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
 #define TMCFG_E_KMOD_IOCTL_DEV_MIN 0
 #define TMCFG_E_KMOD_IOCTL_DEV_MAGIC 190
@@ -106,7 +106,7 @@
 #define TMCFG_E_MAJ_VER 2
 #define TMCFG_E_MID_VER 0
 #define TMCFG_E_MIN_VER 1
-#define TMCFG_E_LOCAL_VER "r3660736"
+#define TMCFG_E_LOCAL_VER "r4031774"
 
 /*
  * Engine core
@@ -239,7 +239,7 @@
  * Kernel
  */
 #define TMCFG_APP_K_EXTRA_CFLAGS ""
-#define TMCFG_APP_K_TDTS_NFFW 0 // n
+#define TMCFG_APP_K_TDTS_NFFW 1 // y
 #define TMCFG_APP_K_TDTS_NFFW_INTERNAL 0 // n
 #define TMCFG_APP_K_TEMPLATE 0 // n
 
@@ -250,7 +250,7 @@
 /*
  * Userspace toolchain
  */
-#define TMCFG_APP_U_TC_PFX "$(TMCFG_TC_PFX)"
+#define TMCFG_APP_U_TC_PFX "/opt/openwrt-gcc463.arm/bin/arm-openwrt-linux-uclibcgnueabi-"
 #define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
 #define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
 #define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"

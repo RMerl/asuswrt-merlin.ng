@@ -73,7 +73,11 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <sys/errno.h>
+#else
+#include <errno.h>
+#endif
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
@@ -122,7 +126,6 @@
 #include <linux/ppp_defs.h>
 #include <linux/if_ppp.h>
 
-#include <rtconfig.h>
 #include "pppd.h"
 #include "fsm.h"
 #include "ipcp.h"
@@ -147,8 +150,8 @@
 #endif
 
 #ifdef INET6
-#if defined(RTCONFIG_MUSL_LIBC)
-#include <linux/ipv6_route.h>			//musl struct in6_rtmsg
+#if !defined(__GLIBC__) && !defined(__UCLIBC__) /* musl */
+#include <linux/ipv6_route.h>	//struct in6_rtmsg
 #endif
 #ifndef _LINUX_IN6_H
 /*

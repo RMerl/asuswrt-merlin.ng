@@ -83,20 +83,32 @@ var htmlEnDeCode = (function() {
 })();
 
 function getAllWlArray(){
-	var wlArrayRet = [{"title":"2.4GHz", "ifname":"0", "suffix": ""}];
+	var wlArrayRet = [{"title":"2.4 GHz", "ifname":"0", "suffix": ""}];
 	var amas_bdlkey = httpApi.nvramGet(["amas_bdlkey"]).amas_bdlkey;
 	
 	if(isSupport("triband")){
-		wlArrayRet.push({"title":"5GHz-1", "ifname":"1", "suffix": "_5G-1"});
-		if(amas_bdlkey.length == 0 || (!isSwMode("RT") && !isSwMode("AP")))
-			wlArrayRet.push({"title":"5GHz-2", "ifname":"2", "suffix": "_5G-2"});
+		if(isSupport('wifi6e')){			
+			wlArrayRet.push({"title":"5 GHz", "ifname":"1", "suffix": "_5G"});
+		}
+		else{
+			wlArrayRet.push({"title":"5 GHz-1", "ifname":"1", "suffix": "_5G-1"});
+		}
+		
+		if(amas_bdlkey.length == 0 || (!isSwMode("RT") && !isSwMode("AP"))){
+			if(isSupport('wifi6e')){			
+				wlArrayRet.push({"title":"6 GHz", "ifname":"2", "suffix": "_6G"});
+			}
+			else{
+				wlArrayRet.push({"title":"5 GHz-2", "ifname":"2", "suffix": "_5G-2"});
+			}
+		}			
 	}
 	else if(isSupport("dualband") || isSupport('5G')){
-		wlArrayRet.push({"title":"5GHz", "ifname":"1", "suffix": "_5G"})
+		wlArrayRet.push({"title":"5 GHz", "ifname":"1", "suffix": "_5G"})
 	}
 
 	if(isSupport('wigig')){
-		wlArrayRet.push({"title":"60GHz", "ifname":"3", "suffix": "_60G"});
+		wlArrayRet.push({"title":"60 GHz", "ifname":"3", "suffix": "_60G"});
 	}
 
 	return wlArrayRet;
@@ -168,6 +180,7 @@ function getAiMeshOnboardinglist(_onboardingList){
 		this.mac = "";
 		this.pap_mac = "";
 		this.id = "";
+		this.tcode = "";
 	};
 	var convRSSI = function(val) {
 		var result = 1;
@@ -195,6 +208,7 @@ function getAiMeshOnboardinglist(_onboardingList){
 			node_info.mac = newReMac;
 			node_info.pap_mac = papMac;
 			node_info.id = newReMac.replace(/:/g, "");
+			node_info.tcode = newReMacArray[newReMac].tcode;
 			jsonArray.push(node_info);
 		});
 	});
@@ -610,7 +624,7 @@ function handleSysDep(){
 			$("#product_location").attr("src", "/images/product_location_3pack.png")
 	}
 
-	if(isSku("GD") && !$('.GD-head').length){
+	if(isGundam() && !$('.GD-head').length){
 		$('head').append('<link rel="stylesheet" type="text/css" href="/css/gundam.css">');
 		$("#summary_page").append($("<div>").attr({"id": "gdContainer", "class": "gundam-footer-field"}).hide())
 		$("#gdContainer").append($("<div>").attr({"class": "GD-head"}))
@@ -1029,11 +1043,11 @@ var isPage = function(page){
 
 var isSupport = function(_ptn){
 	var ui_support = JSON.parse(JSON.stringify(httpApi.hookGet("get_ui_support")));
-	var modelInfo = httpApi.nvramGet(["productid"]);
+	var modelInfo = httpApi.nvramGet(["productid", "odmpid"]);
 	var based_modelid = modelInfo.productid;
+	var odmpid = modelInfo.odmpid;
 	var matchingResult = false;
 	var amas_bdlkey = httpApi.nvramGet(["amas_bdlkey"]).amas_bdlkey;
-	var odmpid = httpApi.nvramGet(["odmpid"]).odmpid;
 
 	if(ui_support["triband"] && ui_support["concurrep"] && (isSwMode("RP") || isSwMode("MB"))){
 		/* setup as dualband models, will copy wlc1 to wlc2 in apply.submitQIS */
@@ -1053,25 +1067,22 @@ var isSupport = function(_ptn){
 			matchingResult = false;
 			break;
 		case "VPNCLIENT":
-			matchingResult = (isSku("US") || isSku("CA") || isSku("TW") || isSku("CN") || isSku("CT") || isSku("GD")) ? false : true;
+			matchingResult = (isSku("US") || isSku("CA") || isSku("TW") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC")) ? false : true;
 			break;
 		case "IPTV":
-			matchingResult = (isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("CA")) ? false : true;
+			matchingResult = (isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC") || isSku("CA")) ? false : true;
 			break;
 		case "SMARTCONNECT":
 			matchingResult = (ui_support["smart_connect"] == 1 || ui_support["bandstr"] == 1) ? true : false;
 			break;
 		case "GUNDAM_UI":
-			matchingResult = (isSku("GD") && $(".desktop_left_field").is(":visible")) ? true : false;
-			break;
-		case "WPA3Support":
-			matchingResult = (based_modelid == 'RT-AX88U' || based_modelid == 'RT-AX92U'  || based_modelid == 'RT-AX95Q' || based_modelid == 'RT-AX56_XD4' || based_modelid == 'RT-AX58U' || based_modelid == "TUF-AX3000" ||  based_modelid == "DSL-AX82U" ||based_modelid == "RT-AX82U" || based_modelid == 'RT-AX56U' || based_modelid == 'GT-AX11000' || based_modelid == 'GT-AXE11000') ? true : false;
+			matchingResult = (isGundam() && $(".desktop_left_field").is(":visible")) ? true : false;
 			break;
 		case "amas_bdl":
 			matchingResult = (ui_support["amas_bdl"] == 1 && amas_bdlkey.length == 0) ? true : false;
 			break;
 		case "MB_mode_concurrep":
-			if(isSwMode("MB") && isSupport("concurrep") && odmpid != "RP-AC1900")
+			if(isSwMode("MB") && isSupport("concurrep") && odmpid != "RP-AC1900" && based_modelid != 'RP-AX56')
 				matchingResult = true;
 			else
 				matchingResult = false;
@@ -1082,6 +1093,10 @@ var isSupport = function(_ptn){
 	}
 
 	return matchingResult;
+}
+
+var isGundam = function(){
+	return (isSku("GD") || systemVariable.CoBrand == "1");
 }
 
 var isSku = function(_ptn){
@@ -1344,6 +1359,7 @@ var handleWirelessClientSSID = function(_wlArray, _autoStr){
 					break;
 			}
 		}
+
 		$("#wireless_ssid_" + wl.ifname).val(ssid_tmp);
 		if(wpa_psk_tmp != "")
 			$("#wireless_key_" + wl.ifname).val(wpa_psk_tmp);
@@ -1445,6 +1461,11 @@ var handleWLAuthModeItem = function(){
 		$("#manual_pap_setup-key").show();
 		if(crypto == "tkip")
 			$("#manual_pap_setup-nmode_hint").show();
+	}
+	else if(auth_mode == "sae"){
+		$("#manual_pap_setup-crypto").show();
+		$("#manual_pap_setup-key").show();
+		$("#wlc_crypto_manual option[value='tkip']").remove();
 	}
 };
 

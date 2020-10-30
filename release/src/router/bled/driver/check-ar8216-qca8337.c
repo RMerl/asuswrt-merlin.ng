@@ -27,14 +27,19 @@
 #include <linux/version.h>
 #include <linux/phy.h>
 #include <linux/time.h>
-#if defined(CONFIG_ARCH_IPQ807x)
+
+#if defined(CONFIG_ARCH_IPQ807x) || defined(CONFIG_ARM64)
+#define NONEED_AG71XX
+#endif
+
+#ifdef NONEED_AG71XX
 #else
 #include <../drivers/net/ethernet/atheros/ag71xx/ag71xx.h>	/* struct ag71xx */
 #endif
 #include "../bled_defs.h"
 #include "check.h"
 
-#if defined(CONFIG_ARCH_IPQ807x)
+#if defined(NONEED_AG71XX)
 /* copy from nss_dp_dev.h */
 struct nss_dp_dev {
 	uint32_t macid;			/* Sequence# of Mac on the platform */
@@ -127,7 +132,7 @@ unsigned int swports_check_traffic(struct bled_priv *bp)
 	unsigned int b = 0, m;
 	unsigned long diff, rx_bytes, tx_bytes;
 	struct net_device *dev = dev_get_by_name(&init_net, "eth0");
-#if defined(CONFIG_ARCH_IPQ807x)
+#if defined(NONEED_AG71XX)
 	struct nss_dp_dev *dp_priv;
 #else
 	struct ag71xx *ag;
@@ -143,7 +148,7 @@ unsigned int swports_check_traffic(struct bled_priv *bp)
 		return -1;
 	}
 
-#if defined(CONFIG_ARCH_IPQ807x)
+#if defined(NONEED_AG71XX)
 	dp_priv = (struct nss_dp_dev *)netdev_priv(dev);
 	bus = dp_priv->miibus;
 #else

@@ -26,6 +26,8 @@
 #endif
 #include <linux_gpio.h>
 
+#include "flash_mtd.h"		//FRead()
+
 typedef uint32_t __u32;
 
 /////// copy from qca-wifi
@@ -371,10 +373,15 @@ void set_radio(int on, int unit, int subunit)
 		return;
 	}
 
-	strlcpy(wds_iface, get_wififname(unit), sizeof(wds_iface));
+#if defined(RTCONFIG_SOC_IPQ8074)
+	if(sub)
+	{
+		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, sub);
+		strcpy(wds_iface, nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+	}	
+	else	
+		strlcpy(wds_iface, get_wififname(unit), sizeof(wds_iface));
 
-#if defined(RTCONFIG_WIGIG)
-	if (unit == WL_60G_BAND) {
 #if defined(RTCONFIG_SINGLE_HOSTAPD)
 		if (on) {
 			char bss_cfg[sizeof("bss_config=") + IFNAMSIZ + sizeof(":/etc/Wireless/conf/hostapd_XXX.conf") + IFNAMSIZ];
@@ -398,9 +405,7 @@ void set_radio(int on, int unit, int subunit)
 			kill_pidfile(pid_path);
 		}
 #endif
-	}
-#endif	/* RTCONFIG_WIGIG */
-
+#endif
 	do {
 		if (sub > 0)
 			snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, sub);
@@ -1264,8 +1269,8 @@ static void set_nss_power_save_mode(void)
 		nss_max_freq = 800 * 1000000;	/* IPQ8065 */
 	}
 #elif defined(RTCONFIG_SOC_IPQ8074)
-	nss_min_freq = 187200000;
-	nss_max_freq = nss_min_freq * 8;
+	nss_min_freq = 748800000;
+	nss_max_freq = 1689600000;
 #else
 #error Unknown NSS frequency.
 #endif
@@ -1390,7 +1395,11 @@ char *get_5g_hwaddr(void)
 
 char *get_label_mac()
 {
+#if defined(PLAX56_XP4) // Label MAC is lan_hwaddr
+	return nvram_safe_get(get_lan_mac_name()); // same as get_lan_hwaddr()
+#else
 	return get_2g_hwaddr();
+#endif
 }
 
 char *get_lan_hwaddr(void)
@@ -1976,18 +1985,17 @@ int create_vap(char *ifname, int unit, char *mode)
 	if (!ifname || !mode || unit < 0 || unit >= MAX_NR_WL_IF)
 		return -1;
 
-#if defined(RTCONFIG_CFG80211)
 	if (!strcmp(mode, "ap")) {
+#if defined(RTCONFIG_CFG80211)
 	       strlcpy(iwmode, "__ap", sizeof(iwmode));
+#endif
 	} else if (!strcmp(mode, "sta")) {
+#if defined(RTCONFIG_CFG80211)
 		strlcpy(iwmode, "managed", sizeof(iwmode));
+#endif
 		*v++ = "nosbeacon";
 	} else
 		return -1;
-#else
-	if (strcmp(mode, "ap") && strcmp(mode, "sta"))
-		return -1;
-#endif
 
 	strlcpy(vphy, get_vphyifname(unit), sizeof(vphy));
 #if defined(RTCONFIG_CFG80211)
@@ -2391,6 +2399,7 @@ void set_wpa_cli_cmd(int band, const char *cmd, int chk_reply)
 	char fcmd[128];
 	char reply[WPA_CLI_REPLY_SIZE];
 	int timeout = QUERY_WPA_CLI_REPLY_TIMEOUT;
+	int scan_and_with_scan_events = 0;
 
 	if(band < 0 || band >= MAX_NR_WL_IF || cmd == NULL || cmd[0] == '\0')
 		return;
@@ -2398,8 +2407,16 @@ void set_wpa_cli_cmd(int band, const char *cmd, int chk_reply)
 	get_wpa_ctrl_sk(band, ctrl_sk, sizeof(ctrl_sk));
 	sta = get_staifname(band);
 	if (chk_reply) {
-#if defined(RTCONFIG_QCN550X) // now only qca95xx.mesh/qca-hostap implement scan_events
-		if (strcmp(cmd, "scan") == 0) {
+#if defined(RTCONFIG_QCN550X) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_SOC_IPQ8074) // newer QCA platform with AMAS capability
+		if (strcmp(cmd, "scan") == 0) { // check if scan_events is supported
+			char *rpt;
+			snprintf(fcmd, sizeof(fcmd), "/usr/bin/wpa_cli -p %s -i %s scan_events", ctrl_sk, sta);
+			rpt = wpa_cli_reply(fcmd, reply);
+			if ((strcmp(rpt, "YES")==0) || (strcmp(rpt, "NO")==0))
+				scan_and_with_scan_events = 1;
+		}
+#endif
+		if (scan_and_with_scan_events) {
 			eval("/usr/bin/wpa_cli", "-p", ctrl_sk, "-i", sta, (char*) cmd); // just issue scan command & wait scan_events
 			snprintf(fcmd, sizeof(fcmd), "/usr/bin/wpa_cli -p %s -i %s scan_events", ctrl_sk, sta);
 			timeout = QUERY_WPA_STATE_TIMEOUT;
@@ -2407,29 +2424,22 @@ void set_wpa_cli_cmd(int band, const char *cmd, int chk_reply)
 				//dbg("%s(%d): reply [%s] ...(%d/%d)\n", __func__, band, reply, timeout, QUERY_WPA_STATE_TIMEOUT);
 				sleep(1);
 			};
-		} else { // original code
+		} else { // non-scan cmd or no scan_events supported
 			snprintf(fcmd, sizeof(fcmd), "/usr/bin/wpa_cli -p %s -i %s %s", ctrl_sk, sta, cmd);
 			while (strcmp(wpa_cli_reply(fcmd, reply), "OK") && timeout--) {
 				//dbg("%s(%d): reply [%s] ...(%d/%d)\n", __func__, band, reply, timeout, QUERY_WPA_CLI_REPLY_TIMEOUT);
 				sleep(1);
 			};
-		}
-#else
-		snprintf(fcmd, sizeof(fcmd), "/usr/bin/wpa_cli -p %s -i %s %s", ctrl_sk, sta, cmd);
-		while (strcmp(wpa_cli_reply(fcmd, reply), "OK") && timeout--) {
-			//dbg("%s(%d): reply [%s] ...(%d/%d)\n", __func__, band, reply, timeout, QUERY_WPA_CLI_REPLY_TIMEOUT);
-			sleep(1);
-		};
 
-		if (strcmp(cmd, "scan") == 0) {
-			snprintf(fcmd, sizeof(fcmd), "/usr/bin/wpa_cli -p %s -i %s status | grep wpa_state=", ctrl_sk, sta);
-			timeout = QUERY_WPA_STATE_TIMEOUT;
-			while (!strcmp(wpa_cli_reply(fcmd, reply), "wpa_state=SCANNING") && timeout--) {
-				//dbg("%s(%d): reply [%s] ...(%d/%d)\n", __func__, band, reply, timeout, QUERY_WPA_STATE_TIMEOUT);
-				sleep(1);
-			};
+			if (strcmp(cmd, "scan") == 0) {
+				snprintf(fcmd, sizeof(fcmd), "/usr/bin/wpa_cli -p %s -i %s status | grep wpa_state=", ctrl_sk, sta);
+				timeout = QUERY_WPA_STATE_TIMEOUT;
+				while (!strcmp(wpa_cli_reply(fcmd, reply), "wpa_state=SCANNING") && timeout--) {
+					//dbg("%s(%d): reply [%s] ...(%d/%d)\n", __func__, band, reply, timeout, QUERY_WPA_STATE_TIMEOUT);
+					sleep(1);
+				};
+			}
 		}
-#endif
 	}
 	else
 		eval("/usr/bin/wpa_cli", "-p", ctrl_sk, "-i", sta, (char*) cmd);
@@ -2646,3 +2656,169 @@ int get_wifi_temperature(enum wl_band_id band)
 
 	return t;
 }
+
+#if defined(RTCONFIG_BT_CONN_UART)
+#if defined(RTCONFIG_SOC_IPQ40XX)
+#define BTDEV "/dev/ttyQHS0"
+#elif defined(RTCONFIG_SOC_IPQ60XX)
+#define BTDEV "/dev/ttyMSM1"
+#else
+#error "Defined the bt device!!"
+#endif
+#define BT_BSCP_CONF_PATH "/etc/bt_bscp_conf.psr"
+
+#if !defined(PLAX56_XP4)
+#define BT_ACTIVE "0001 0001"
+#define BT_STATUS "0004 0001"
+#define BT_WLAN_DENY "0009 0001"
+#endif
+extern int FRead(const unsigned char *buf, int addr, int count);
+
+static int generate_bt_bscp_conf()
+{
+	FILE *fp;
+	int plus = 0;
+	unsigned char buf[6];
+	char bt_cal[16], bt_mac[32];
+
+	if (f_exists(BT_BSCP_CONF_PATH))
+		return 1;
+
+	if (!(fp = fopen(BT_BSCP_CONF_PATH, "w+")))
+		return 0;
+
+	// Set BT cal
+#if defined(RTCONFIG_CSR8811)
+	memset(buf, 0, sizeof(buf));
+	if ((FRead(buf, OFFSET_CSR8811_CAL, 1) < 0)	// Fread Out of scope.
+		|| (buf[0]==0xff || buf[0]==0)	// Invalid cal
+	) {
+		snprintf(bt_cal, sizeof(bt_cal), "00%02x", 0x1d);	// Def cal val.
+	}
+	else {
+		snprintf(bt_cal, sizeof(bt_cal), "00%02x", buf[0]);
+	}
+#else
+		snprintf(bt_cal, sizeof(bt_cal), "00%02x", 0x1d);
+#endif
+	_dprintf("BT cal(%s)\n", bt_cal);
+
+	// Set BT Mac
+	memset(buf, 0, sizeof(buf));
+	if ((FRead(buf, OFFSET_MAC_ADDR_2G, 6) < 0)	// ET0/WAN is same as 2.4G, Fread Out of scope.
+		|| (buf[0]==0xff || (buf[0]==0 && buf[1]==0 && buf[2]==0 && buf[3]==0 && buf[4]==0 && buf[5]==0))	// Invalid mac.
+	) {
+		snprintf(bt_mac, sizeof(bt_mac), "00%x %x%x 00%x %x%x\n", 0x44, 0x55, 0x66, 0x33, 0x22, 0x11);	// Def mac addr.
+	}
+	else {
+		plus = 2;
+		buf[5] += plus;
+
+		snprintf(bt_mac, sizeof(bt_mac), "00%x %x%x 00%x %x%x\n", buf[3], buf[4], buf[5], buf[2], buf[0], buf[1]);
+	}
+	_dprintf("BT mac(%02x:%02x:%02x:%02x:%02x:%02x)\n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
+
+	// BT BSCP CONF
+	fprintf(fp, "// # explicit, PSKEY_HCI_LMP_LOCAL_VERSION (0x010d, 269), 1 words\n");
+	fprintf(fp, "&010d = 0808\n");
+	fprintf(fp, "// # explicit, PSKEY_LMP_REMOTE_VERSION (0x010e, 270), 1 words\n");
+	fprintf(fp, "&010e = 0008\n");
+
+	fprintf(fp, "// ===================================\n");
+	fprintf(fp, "// # patch_hardware_0, PSKEY_PATCH50 (0x212c, 8492), 56 words\n");
+	fprintf(fp, "&212c = 0000 f001 0617 0513 0118 ff2b ff0e 1a00 2818 009e 081b f100 8888 24f0 f925 f821 0a17 0184 0cf0 0117 0013 0009 02a4 fb25 fa21 f915 f811 fb55 fa61 09e0 ff84 10f0 0117 0013 0009 02a4 f935 f841 f925 f821 0f1b 0712 10a4 0494 0712 e151 0722 f915 f811 0018 ff2b ff0e f000 0518 00e2 5a79\n");
+	fprintf(fp, "// # patch_hardware_1, PSKEY_PATCH51 (0x212d, 8493), 21 words\n");
+	fprintf(fp, "&212d = 0002 968a 0863 f925 f821 0757 0663 e099 02ec 05e0 f915 0727 f815 0627 0218 ff2b ff0e 9700 8d18 00e2 7e34\n");
+	fprintf(fp, "// # patch_hardware_2, PSKEY_PATCH52 (0x212e, 8494), 16 words\n");
+	fprintf(fp, "&212e = 0002 0b5a 0100 7834 0040 0327 0223 f815 e311 0218 ff2b ff0e 0b00 5e18 00e2 59c1\n");
+	fprintf(fp, "// # patch_hardware_3, PSKEY_PATCH53 (0x212f, 8495), 17 words\n");
+	fprintf(fp, "&212f = 0000 7315 0084 04f0 0800 0014 03e0 f800 1215 0b27 0018 ff2b ff0e 7300 1818 00e2 0549\n");
+	fprintf(fp, "// # patch_hardware_4, PSKEY_PATCH54 (0x2130, 8496), 21 words\n");
+	fprintf(fp, "&2130 = 0001 53f8 0817 0e27 0c00 6384 07f0 0118 ff2b ff0e 5400 0918 00e2 0917 0118 ff2b ff0e 5400 fb18 00e2 91f6\n");
+	fprintf(fp, "// # patch_hardware_5, PSKEY_PATCH55 (0x2131, 8497), 49 words\n");
+	fprintf(fp, "&2131 = 0002 c0d5 0423 05f4 031b 0012 0280 1df0 021b 0916 1000 00c4 1ef0 0916 03c4 1bf4 031b 0012 0280 17f4 0380 15f4 0480 13f4 0580 11f4 0680 0ff4 0b80 0df4 0d80 0bf4 019c fb00 6719 0d9e 0218 ff2b ff0e c200 8c18 00e2 0218 ff2b ff0e c100 de18 00e2 c5cf\n");
+	fprintf(fp, "// # patch_hardware_6, PSKEY_PATCH56 (0x2132, 8498), 42 words\n");
+	fprintf(fp, "&2132 = 0003 243f f40b 0827 0923 e019 0916 01b4 0926 0318 ff2b ff0e 2400 4218 00e2 fa0b 3d14 0327 0114 0227 0014 0127 0027 081b 0816 0218 ff2b ff0e f700 fd18 009e e111 081b 0816 0218 ff2b ff0e 3300 ff18 009e fa0f 40f2\n");
+	fprintf(fp, "// # patch_hardware_7, PSKEY_PATCH57 (0x2133, 8499), 23 words\n");
+	fprintf(fp, "&2133 = 0003 254e 02c0 0916 1000 00c4 02f4 02b0 0916 fec4 e1b1 0922 0816 0318 ff2b ff0e 2500 5218 8000 00c0 08f2 00e2 e402\n");
+	fprintf(fp, "// # patch_hardware_8, PSKEY_PATCH58 (0x2134, 8500), 16 words\n");
+	fprintf(fp, "&2134 = 0003 21ca fa0b 0227 0323 e019 0916 01b4 0926 0318 ff2b ff0e 2200 cd18 00e2 22dc\n");
+	fprintf(fp, "// # patch_hardware_9, PSKEY_PATCH59 (0x2135, 8501), 18 words\n");
+	fprintf(fp, "&2135 = 0000 55e2 09f4 0218 ff2b ff0e 2c00 a718 009e 0314 fc0f 0018 ff2b ff0e 5600 0118 00e2 a008\n");
+	fprintf(fp, "// # patch_hardware_10, PSKEY_PATCH60 (0x2136, 8502), 30 words\n");
+	fprintf(fp, "&2136 = 0004 0d80 1aa4 0418 ff2b ff0e 1d00 ba18 009e 0184 0d2c 0013 8f00 89d0 0117 bf00 d6d4 0318 ff2b ff0e 2700 4218 009e 0418 ff2b ff0e 0e00 8418 00e2 6855\n");
+	fprintf(fp, "// patch_hardware_11, PSKEY_PATCH61 (0x2137, 8503), 22 words\n");
+	fprintf(fp, "&2137 = 0002 4da5 0118 ff2b ff0e 6200 c518 009e 031b 2b22 fcc4 2c26 0114 e700 f025 0218 ff2b ff0e 4e00 a818 00e2 8dfc\n");
+	fprintf(fp, "// patch_hardware_12, PSKEY_PATCH62 (0x2138, 8504), 19 words\n");
+	fprintf(fp, "&2138 = 0002 0f22 0310 081b 0100 8022 0100 b012 04f4 0114 e019 0426 0218 ff2b ff0e 0f00 2618 00e2 bc41\n");
+	fprintf(fp, "// patch_hardware_13, PSKEY_PATCH63 (0x2139, 8505), 12 words\n");
+	fprintf(fp, "&2139 = 0002 0d95 0513 0100 b022 0218 ff2b ff0e 0f00 db18 00e2 7a40\n");
+	fprintf(fp, "// patch_fsm_shared_patchpoint, PSKEY_PATCH121 (0x2209, 8713), 36 words\n");
+	fprintf(fp, "&2209 = fc0b 0b13 0717 1d00 c184 1df0 081b 0016 6384 05f0 1380 17f0 0114 13e0 6084 13f0 0100 da80 0df0 0d1b 5d9a 0af4 b900 f014 0127 0214 0027 e315 0010 000e 019f 0014 0d1b 5d26 fc0f a1a6\n");
+	fprintf(fp, "// patch_sched_get_or_peek_message, PSKEY_PATCH123 (0x220b, 8715), 49 words\n");
+	fprintf(fp, "&220b = fa0b 0717 0484 2cf0 0617 0690 e119 0c00 d438 041a 001a 022b 23f4 0116 0184 20f0 0216 0327 1df4 e119 0016 0784 19f0 e500 ab15 8000 0054 0100 c018 ff2b fe27 0317 ff0e fe9f e199 0cf4 7d00 f214 0127 0014 0027 0317 000e 019f 0014 021b 0226 fa0f 8392\n");
+	fprintf(fp, "// patch_spare1, PSKEY_PATCH155 (0x222b, 8747), 60 words\n");
+	fprintf(fp, "&222b = e70b 1627 a100 8514 0227 0214 0127 6b00 d814 0427 0214 0327 0417 fe27 0317 ff27 1613 0230 0814 0027 e415 0534 ff0e fe9f 0513 0009 01a4 e015 7fc4 7f84 1bf0 0617 1584 18f0 161b 0116 010e 029f e119 049a 11f4 0116 4184 0ef0 e500 ac11 8000 0050 0100 c014 ff27 fe23 0816 ff0e fe9f 0114 02e0 0014 e70f 4d65\n");
+	fprintf(fp, "// patch_spare2, PSKEY_PATCH156 (0x222c, 8748), 40 words\n");
+	fprintf(fp, "&222c = f40b 0927 2900 d414 0427 0314 0327 3500 ea14 0627 0314 0527 2900 9614 0827 0414 0727 0917 0110 070e 089f 0917 030e 049f 0617 fe27 0517 ff27 7f14 0027 1514 0127 2a14 0227 0114 0913 ff0e fe9f f40f 3478\n");
+	fprintf(fp, "// ===================================\n");
+
+	fprintf(fp, "// # PSKEY_HOST_INTERFACE UART link running H4 for BLE test\n");
+	fprintf(fp, "// #&01f9 0003\n");
+	fprintf(fp, "// #&01C0 08a8\n");
+	fprintf(fp, "// sleep 500\n");
+
+	fprintf(fp, "// # PSKEY_HOST_INTERFACE UART link running BCSP\n");
+	fprintf(fp, "&01f9 = 0001\n");
+	fprintf(fp, "// # PSKEY_UART_BITRATE 115200 - 0001 c200, 921600 - 000e 1000, 3Mbps - 002d c6c0\n");
+	fprintf(fp, "&01ea = 0001 c200\n");
+	fprintf(fp, "// # BT_ADDR\n");
+	fprintf(fp, "&0001 = %s\n", bt_mac);
+	fprintf(fp, "// # set PSKEY_ANA_FREQ Xtal frequency 26MHz\n");
+	fprintf(fp, "&01fe = 6590\n");
+	fprintf(fp, "// # Set PSKEY_ANA_FTRIM for fine tunning Xtal frequency.\n");
+	fprintf(fp, "&01f6 = %s\n", bt_cal);
+
+#if !defined(PLAX56_XP4)
+	fprintf(fp, "## Configure co-existence\n");
+	fprintf(fp, "# PSKEY_COEX_SCHEME(0x2480) set to 5 for Unity 3+; set to 9 for Unity-3e+\n");
+	fprintf(fp, "#PSKEY_COEX_SCHEME(0x2480) Unity-3 (standard 3 wire co-existence)\n");
+	fprintf(fp, "&2480 = 0003\n");
+	fprintf(fp, "#PSKEY_COEX_PIO_UNITY_3_BT_ACTIVE_PIO1, Active High\n");
+	fprintf(fp, "&2483 = %s\n", BT_ACTIVE);
+	fprintf(fp, "#PSKEY_COEX_PIO_UNITY_3_BT_STATUS_PIO4, Active High\n");
+	fprintf(fp, "&2484 = %s\n", BT_STATUS);
+	fprintf(fp, "#PSKEY_COEX_PIO_UNITY_3_WLAN_DENY_PIO9, Active High\n");
+	fprintf(fp, "&2485 = %s\n", BT_WLAN_DENY);
+	fprintf(fp, "#COEX_UNITY_3_TIMINGS_T1 and T2 timings\n");
+	fprintf(fp, "&2489 = 0096 0011\n");
+#endif
+
+	fprintf(fp, "# #PSKEY_LC_DEFAULT_TX_POWER\n");
+	fprintf(fp, "#psset 0x0021 0x0014\n");
+	fprintf(fp, "#psset 0x00ef 0xffff 0xfe8f 0xffdb 0x875b\n");
+	fclose(fp);
+
+	return 1;
+}
+void execute_bt_bscp()
+{
+	char *hciattach_argv[] = { "/usr/bin/hciattach", "-s", "115200", BTDEV, "bcsp", "115200", NULL };
+
+	if (nvram_get_int("x_Setting")==1)
+		return;
+
+	if (pids("hciattach")) {
+		eval("killall", "hciattach");
+		sleep(1);
+	}
+
+	if (generate_bt_bscp_conf()) {
+		doSystem("bccmd -t bcsp -b 115200 -d %s psload %s", BTDEV, BT_BSCP_CONF_PATH);
+		sleep(1);
+		_eval(hciattach_argv, NULL, 0, NULL);
+	}
+	else 
+		_dprintf("%s, Generate bt_bscp_conf fail.\n", __func__);
+}
+#endif

@@ -737,17 +737,18 @@ int get_packets_of_net_dev(const char *net_dev, unsigned long *rx_packets, unsig
 
 char *organize_tcpcheck_cmd(char *dns_list, char *cmd, int size){
 	char buf[256], *next;
+	int len;
 
 	if(cmd == NULL || size <= 0)
 		return NULL;
 
-	snprintf(cmd, sizeof(cmd), "/sbin/tcpcheck %d", TCPCHECK_TIMEOUT);
+	len = snprintf(cmd, size, "/sbin/tcpcheck %d", TCPCHECK_TIMEOUT);
 
 	foreach(buf, dns_list, next){
-		snprintf(cmd+strlen(cmd), sizeof(cmd)-strlen(cmd), " %s:53", buf);
+		len += snprintf(cmd+len, size-len, " %s:53", buf);
 	}
 
-	snprintf(cmd, sizeof(cmd), "%s >>%s", cmd, DETECT_FILE);
+	len += snprintf(cmd+len, size-len, " >>%s", DETECT_FILE);
 
 	return cmd;
 }
@@ -1828,13 +1829,13 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 		link_wan_nvname(wan_unit, wired_link_nvram, sizeof(wired_link_nvram));
 		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != atoi(ptr)){
 			if(link_wan[wan_unit]){
-_dprintf("# wanduck(%d): set %s=%d.\n", wan_unit, wired_link_nvram, CONNED);
+//_dprintf("# wanduck(%d): set %s=%d.\n", wan_unit, wired_link_nvram, CONNED);
 				nvram_set_int(wired_link_nvram, CONNED);
 
 				record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NONE);
 			}
 			else{
-_dprintf("# wanduck(%d): set %s=%d.\n", wan_unit, wired_link_nvram, DISCONN);
+//_dprintf("# wanduck(%d): set %s=%d.\n", wan_unit, wired_link_nvram, DISCONN);
 				nvram_set_int(wired_link_nvram, DISCONN);
 
 				record_wan_state_nvram(wan_unit, WAN_STATE_DISCONNECTED, -1, WAN_AUXSTATE_NOPHY);
@@ -3265,6 +3266,7 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 		{
 #ifdef RTCONFIG_REDIRECT_DNAME
 			if(cross_state == DISCONN){
+				int evalRet;
 				_dprintf("\n# AP mode: Enable direct rule(DISCONN)\n");
 				eval("ebtables", "-t", "broute", "-F");
 				eval("ebtables", "-t", "filter", "-F");
@@ -3274,7 +3276,8 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 				eval("rmmod", "ebtables");
 #endif
 				redirect_setting();
-				eval("iptables-restore", REDIRECT_RULES);
+				evalRet = eval("iptables-restore", REDIRECT_RULES);
+				rule_apply_checking("wanduck", __LINE__, REDIRECT_RULES, evalRet);
 				// nat_rules = NAT_STATE_REDIRECT;
 			}
 #ifdef RTCONFIG_WIFI_SON
@@ -3290,6 +3293,7 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 				; // do nothing.
 #endif
 			else if(cross_state == CONNED){
+				int evalRet;
 				_dprintf("\n# AP mode: Disable direct rule(CONNED)\n");
 				eval("ebtables", "-t", "broute", "-F");
 				eval("ebtables", "-t", "filter", "-F");
@@ -3309,7 +3313,8 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
                                 }
 #endif
 				redirect_nat_setting();
-				eval("iptables-restore", NAT_RULES);
+				evalRet = eval("iptables-restore", NAT_RULES);
+				rule_apply_checking("wanduck", __LINE__, NAT_RULES, evalRet);
 				// nat_rules = NAT_STATE_NORMAL;
 			}
 
@@ -3572,6 +3577,11 @@ _dprintf("wanduck(%d): decide start_wan_if or stop_wan_if...\n", wan_unit);
 #endif
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
 						if(disconn_case[wan_unit] == CASE_DATALIMIT)
+							set_disconn_count(wan_unit, max_disconn_count[wan_unit]);
+						else
+#endif
+#ifdef RTCONFIG_DSL ///TODO: apply to all ?
+						if (wan_unit == WAN_UNIT_FIRST && !link_wan[wan_unit])
 							set_disconn_count(wan_unit, max_disconn_count[wan_unit]);
 						else
 #endif
@@ -4198,6 +4208,15 @@ _dprintf("wanduck(%d)(change): state %d, state_old %d, changed %d, wan_state %d.
 			current_wan_unit = WAN_UNIT_FIRST;
 			conn_state[current_wan_unit] = if_wan_phyconnected(current_wan_unit);
 
+#if defined(RTCONFIG_DSL)
+			if(conn_state[current_wan_unit] == CONNED){
+				if (delay_dns_response(current_wan_unit) > 0)
+					set_link_internet(current_wan_unit, 2);
+				else
+					set_link_internet(current_wan_unit, 1);
+			}
+#endif
+
 			if(conn_state[current_wan_unit] == DISCONN){
 				if(conn_state_old[current_wan_unit] == CONNED)
 					conn_changed_state[current_wan_unit] = C2D;
@@ -4387,11 +4406,13 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 		{
 #ifdef RTCONFIG_REDIRECT_DNAME
 			if (conn_changed_state[current_wan_unit] == C2D) {
+				int evalRet;
 				_dprintf("\n# AP mode: Enable direct rule(C2D)\n");
 				eval("ebtables", "-t", "broute", "-F");
 				eval("ebtables", "-t", "filter", "-F");
 				redirect_setting();
-				eval("iptables-restore", REDIRECT_RULES);
+				evalRet = eval("iptables-restore", REDIRECT_RULES);
+				rule_apply_checking("wanduck", __LINE__, REDIRECT_RULES, evalRet);
 				// nat_rules = NAT_STATE_REDIRECT;
 			}
 #ifdef RTCONFIG_WIFI_SON
@@ -4399,6 +4420,7 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 				; // do nothing.
 #endif
 			else if (conn_changed_state[current_wan_unit] == D2C) {
+				int evalRet;
 				_dprintf("\n# AP mode: Disable direct rule(D2C)\n");
 				eval("ebtables", "-t", "broute", "-F");
 				eval("ebtables", "-t", "filter", "-F");
@@ -4418,7 +4440,8 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
                                 }
 #endif
 				redirect_nat_setting();
-				eval("iptables-restore", NAT_RULES);
+				evalRet = eval("iptables-restore", NAT_RULES);
+				rule_apply_checking("wanduck", __LINE__, NAT_RULES, evalRet);
 				// nat_rules = NAT_STATE_NORMAL;
 			}
 #else
@@ -4660,6 +4683,11 @@ _dprintf("nat_rule: stop_nat_rules 7.\n");
 			else if(conn_state[other_wan_unit] == PHY_RECONN){
 				_dprintf("\n# wanduck(fail-back): Try to prepare the backup line.\n");
 				snprintf(cmd, sizeof(cmd), "restart_wan_if %d", other_wan_unit);
+#ifdef RTCONFIG_DSL_BCM
+				if(get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_DSL) {
+					snprintf(cmd, sizeof(cmd), "restart_dslwan_if %d", other_wan_unit);
+				}
+#endif
 				notify_rc(cmd);
 			}
 		}

@@ -245,12 +245,10 @@ function overHint(itemNum){
 		statusmenu ="<span><#Adaptive_Custom_desc#></span>";
 	}
 	else if(itemNum == 86){
-		//statusmenu ="<span><#Adaptive_Game_desc#><br><#Adaptive_Category1#></span>";
-		statusmenu ="<span>For optimize online gaming process bandwidth including  Diablo, WOW, Steam games and XBOX, ect.<br><#Adaptive_Category1#></span>";		/* untranslated */
+		statusmenu ="<span><#Adaptive_Game_desc#><br><#Adaptive_Category1#></span>";
 	}
 	else if(itemNum == 87){
-		//statusmenu ="<span><#Adaptive_Stream_desc#><br><#Adaptive_Category2#></span>";
-		statusmenu ="<span>For faster video streaming experience including Youtube, Netflix and Spotify, ect.<br><#Adaptive_Category2#></span>";	/* untranslated */
+		statusmenu ="<span><#Adaptive_Stream_desc#><br><#Adaptive_Category2#></span>";
 	}
 	else if(itemNum == 88){
 		statusmenu ="<span><#Adaptive_WebSurf_desc#><br><#Adaptive_Category4#></span>";
@@ -637,7 +635,13 @@ function overHint(itemNum){
 			for(var i=0; i<gn_array_5g_2.length; i++){
 				if(gn_array_5g_2[i][0] == 1){
 					if(title5_2 == 0){
-						statusmenu += "<div class='StatusHint' style='margin-top:15px;'>5GHz-2 Network:</div>";				
+						if(band6g_support){
+							statusmenu += "<div class='StatusHint' style='margin-top:15px;'>6 GHz Network:</div>";
+						}
+						else{
+							statusmenu += "<div class='StatusHint' style='margin-top:15px;'>5 GHz-2 Network:</div>";
+						}
+						
 						title5_2 = 1;
 					}
 	

@@ -83,12 +83,22 @@
 	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#333333')";
 	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#333333');
 }
+.renewLoadingIcon {
+	background-image: url(/images/InternetScan.gif);
+	width: 125px;
+	height: 33px;
+	background-repeat: no-repeat;
+	background-position: 50%;
+	display: none;
+}
+.faq_link {
+	margin-right: 10px;
+}
 </style>
 <script>
 <% wanlink(); %>
 var ipsec_profile_1 = decodeURIComponent('<% nvram_char_to_ascii("","ipsec_profile_1"); %>');
-var ipsec_client_list_1 = decodeURIComponent('<% nvram_char_to_ascii("","ipsec_client_list_1"); %>');
-var ipsec_client_list_array = ipsec_client_list_1;
+var ipsec_client_list_json = "";
 var ipsec_server_enable = '<% nvram_get("ipsec_server_enable"); %>';
 var ipsec_connect_status_array = new Array();
 var ddns_enable_x = '<% nvram_get("ddns_enable_x"); %>';
@@ -98,7 +108,6 @@ function initial(){
 	show_menu();
 
 	document.getElementById("ipsec_profile_1").value = ipsec_profile_1;
-	document.getElementById("ipsec_client_list_1").value = ipsec_client_list_1;
 
 	var vpn_server_array = { "PPTP" : ["PPTP", "Advanced_VPN_PPTP.asp"], "OpenVPN" : ["OpenVPN", "Advanced_VPN_OpenVPN.asp"], "IPSEC" : ["IPSec VPN", "Advanced_VPN_IPSec.asp"]};
 	if(!pptpd_support) {
@@ -163,8 +172,33 @@ function initial(){
 	changeAdvDeadPeerDetection(document.form.ipsec_dead_peer_detection);
 	setClientsEnd();
 
-	showipsec_clientlist();
+	httpApi.get_ipsec_clientlist(function(response){
+		ipsec_client_list_json = response;
+		showipsec_clientlist();
+	});
 
+	$("#cert_status").html("<#Authenticated_non#>");
+	httpApi.get_ipsec_cert_info(function(response){
+		if(response != "") {
+			if(response.issueTo != "" && response.issueTo != undefined)
+				$("#cert_issueTo").html(response.issueTo);
+			if(response.issueBy != "" && response.issueBy != undefined)
+				$("#cert_issueBy").html(response.issueBy);
+			if(response.expire != "" && response.expire != undefined)
+				$("#cert_expire").html(response.expire);
+			if($("#cert_issueTo").html() != "" && $("#cert_issueBy").html() != "" && $("#cert_expire").html() != ""){
+				$("#cert_status").html("<#Authenticated#>");
+				$(".ipsec_inactive").hide();
+				$(".button_gen_dis.ipsec_active").removeClass("button_gen_dis").addClass("button_gen");
+				$(".button_gen.ipsec_active.export").unbind("click");
+				$(".button_gen.ipsec_active.export").click(function(e){export_cert("0");});
+				$(".button_gen.ipsec_active.renew").unbind("click");
+				$(".button_gen.ipsec_active.renew").click(function(e){export_cert("1");});
+				if(response.update_state == "1")
+					$(".ipsec_inactive.renew_hint").show().html("<br><#vpn_ipsec_need_re_cert_hint#>");
+			}
+		}
+	});
 	if('<% nvram_get("ipsec_server_enable"); %>' == "1")
 		update_connect_status();
 
@@ -172,8 +206,8 @@ function initial(){
 	setTimeout("show_warning_message();", 1000);
 
 	//set FAQ URL
-	//	https://www.asus.com/support/FAQ/1033576
-	httpApi.faqURL("1033576", function(url){document.getElementById("faq_windows").href=url;});
+	//	https://www.asus.com/support/FAQ/1044397
+	httpApi.faqURL("1044397", function(url){document.getElementById("faq_windows").href=url;});
 	//	https://www.asus.com/support/FAQ/1033575
 	httpApi.faqURL("1033575", function(url){document.getElementById("faq_macOS").href=url;});
 	//	https://www.asus.com/support/FAQ/1033574
@@ -205,7 +239,7 @@ function show_warning_message(){
 					$(".general_server_addr").html(ddns_hostname_x);
 				}
 				else {
-					$(".general_server_addr").html(wanlink_ipaddr() + ', ' + '<a href="../Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">please click here to set the DDNS.</a>');/*untranslated*/
+					$(".general_server_addr").html(wanlink_ipaddr() + ', ' + '<a href="../Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration: underline; font-family:Lucida Console;"><#vpn_ipsec_set_DDNS#></a>');
 				}
 			}
 		}
@@ -222,7 +256,7 @@ function show_warning_message(){
 					$(".general_server_addr").html(ddns_hostname_x);
 				}
 				else {
-					$(".general_server_addr").html(wanlink_ipaddr() + ', ' + '<a href="../Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">please click here to set the DDNS.</a>');/*untranslated*/
+					$(".general_server_addr").html(wanlink_ipaddr() + ', ' + '<a href="../Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration: underline; font-family:Lucida Console;"><#vpn_ipsec_set_DDNS#></a>');
 				}
 			}
 		}
@@ -239,7 +273,7 @@ function show_warning_message(){
 			$(".general_server_addr").html(ddns_hostname_x);
 		}
 		else {
-			$(".general_server_addr").html(wanlink_ipaddr() + ', ' + '<a href="../Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">please click here to set the DDNS.</a>');/*untranslated*/
+			$(".general_server_addr").html(wanlink_ipaddr() + ', ' + '<a href="../Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration: underline; font-family:Lucida Console;"><#vpn_ipsec_set_DDNS#></a>');
 		}
 	}
 }
@@ -267,58 +301,51 @@ function ipsecShowAndHide(server_enable) {
 	}
 
 	document.form.ipsec_server_enable.value = ipsec_server_enable;
-	if(ipsec_server_enable == "1") {
-		showhide("tr_general_server_addr", 1);
-		showhide("tr_general_connection_status", 1);
-		showhide("tr_general_log", 1);
-		$("#ipsec_main_setting").css("display", "");
-	}
-	else{
-		showhide("tr_general_server_addr", 0);
-		showhide("tr_general_connection_status", 0);
-		showhide("tr_general_log", 0);
-		$("#ipsec_main_setting").css("display", "none");
-	}
+	if(ipsec_server_enable == "1")
+		$(".ipsec_setting_content").show();
+	else
+		$(".ipsec_setting_content").hide();
 }
 function switchSettingsMode(mode){
 	if(mode == "1") {
-		$(".tr_general").css("display", "");
-		$(".tr_advanced").css("display", "none");
+		$(".setting_general").css("display", "");
+		$(".setting_adv").css("display", "none");
 	}	
 	else {
-		$(".tr_general").css("display", "none");
-		$(".tr_advanced").css("display", "");
+		$(".setting_general").css("display", "none");
+		$(".setting_adv").css("display", "");
 	}
 }
 function showipsec_clientlist() {
-	var ipsec_client_list_row = ipsec_client_list_array.split('<');
 	var code = "";
 	var ipsec_user_name = "";
 	var ipsec_user_pwd = "";
 
 	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="ipsec_client_list_table">';
-	if(ipsec_client_list_row.length == 1)
+	if(Object.keys(ipsec_client_list_json).length == 0)
 		code +='<tr><td style="color:#FFCC00;" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
-		for(var i = 1; i < ipsec_client_list_row.length; i++){
-			code +='<tr>';
-			var ipsec_client_list_col = ipsec_client_list_row[i].split('>');
-			for(var j = 0; j < ipsec_client_list_col.length; j++) {
-				if(j == 0) {
-					if(ipsec_client_list_col[0].length > 28) {
-						ipsec_user_name = ipsec_client_list_col[0].substring(0, 26) + "...";
-						code +='<td width="45%" title="' + ipsec_client_list_col[0] + '">'+ ipsec_user_name +'</td>';
-					}
-					else
-						code +='<td width="45%" title="' + ipsec_client_list_col[0] + '">' + ipsec_client_list_col[0] + '</td>';
+		for(var username in ipsec_client_list_json) {
+			if(ipsec_client_list_json.hasOwnProperty(username)) {
+				var passwd = ipsec_client_list_json[username]["passwd"];
+				var ver = ipsec_client_list_json[username]["ver"];
+				if(ver != "3")
+					ver = "V" + ver;
+				else
+					ver = "Both";
+				code +='<tr>';
+				if(username.length > 28) {
+					ipsec_user_name = username.substring(0, 26) + "...";
+					code +='<td width="30%" title="' + htmlEnDeCode.htmlEncode(username) + '">'+ htmlEnDeCode.htmlEncode(ipsec_user_name) +'</td>';
 				}
-				else if(j == 1)
-					code +='<td width="45%" title="' + ipsec_client_list_col[1] + '" style="pointer-events:none;">-</td>';
+				else
+					code +='<td width="30%" title="' + htmlEnDeCode.htmlEncode(username) + '">' + htmlEnDeCode.htmlEncode(username) + '</td>';
+				code +='<td width="30%" title="' + passwd + '" style="pointer-events:none;">-</td>';
+				code +='<td width="30%">' + ver + '</td>';
+				code +='<td width="10%">';
+				code +='<input class="remove_btn" onclick="del_Row(this);" value=""/></td>';
+				code +='</tr>';
 			}
-			
-			code +='<td width="10%">';
-			code +='<input class="remove_btn" onclick="del_Row(this);" value=""/></td>';
-			code +='</tr>';
 		}
 	}
 	
@@ -328,6 +355,7 @@ function showipsec_clientlist() {
 function addRow_Group(upper) {
 	var username_obj = document.form.ipsec_client_list_username;
 	var	password_obj = document.form.ipsec_client_list_password;
+	var	ike_obj = document.form.ipsec_client_list_ike;
 
 	var rule_num = document.getElementById("ipsec_client_list_table").rows.length;
 	var item_num = document.getElementById("ipsec_client_list_table").rows[0].cells.length;		
@@ -366,7 +394,7 @@ function addRow_Group(upper) {
 		//confirm common string combination	#JS_common_passwd#
 		var is_common_string = check_common_string(valid_password.value, "httpd_password");
 		if(valid_password.value.length > 0 && is_common_string){
-			if(!confirm("<#JS_common_passwd#>")){
+			if(!confirm("<#HSDPAConfig_Password_itemname#> : <#JS_common_passwd#>")){
 				valid_password.focus();
 				valid_password.select();
 				return false;
@@ -380,7 +408,7 @@ function addRow_Group(upper) {
 	if(validAccount()) {
 		if(item_num >= 2) {
 			for(var i = 0; i < rule_num; i +=1 ) {
-				if(username_obj.value == document.getElementById("ipsec_client_list_table").rows[i].cells[0].title) {
+				if(ipsec_client_list_json.hasOwnProperty(username_obj.value)) {
 					alert("<#JS_duplicate#>");
 					username_obj.focus();
 					username_obj.select();
@@ -389,42 +417,20 @@ function addRow_Group(upper) {
 			}
 		}
 		
-		var addRow = function(obj, head) {
-			if(head == 1)
-				ipsec_client_list_array += "<" /*&#60*/
-			else	
-				ipsec_client_list_array += ">" /*&#62*/
-					
-			ipsec_client_list_array += obj.value;
-			obj.value = "";
-		}
-
-		addRow(username_obj ,1);
-		addRow(password_obj, 0);
+		ipsec_client_list_json[username_obj.value] = {"passwd":password_obj.value, "ver":ike_obj.value};
+		var username_obj = document.form.ipsec_client_list_username;
+		username_obj.value = "";
+		password_obj.value = "";
+		ike_obj.value = "2"
 		showipsec_clientlist();
 	}
 }
 function del_Row(rowdata) {
+	var del_username = $(rowdata).parent().siblings(":first").attr("title");
 	var i = rowdata.parentNode.parentNode.rowIndex;
 	document.getElementById("ipsec_client_list_table").deleteRow(i);
-	var ipsec_client_list_value = "";
-	var rowLength = document.getElementById("ipsec_client_list_table").rows.length;
-	
-	for(var k = 0; k < rowLength; k += 1) {
-		for(var j = 0; j < document.getElementById("ipsec_client_list_table").rows[k].cells.length - 1; j += 1) {
-			if(j == 0)
-				ipsec_client_list_value += "<";
-			else {
-				ipsec_client_list_value += document.getElementById("ipsec_client_list_table").rows[k].cells[0].title;
-				ipsec_client_list_value += ">";
-				ipsec_client_list_value += document.getElementById("ipsec_client_list_table").rows[k].cells[1].title;
-			}
-		}
-	}
-
-	ipsec_client_list_array = ipsec_client_list_value;
-
-	if(ipsec_client_list_array == "")
+	delete ipsec_client_list_json[del_username];
+	if(Object.keys(ipsec_client_list_json).length == 0)
 		showipsec_clientlist();
 }
 function changeAdvDeadPeerDetection (obj) {
@@ -471,7 +477,7 @@ function validForm() {
 		//confirm common string combination	#JS_common_passwd#
 		var is_common_string = check_common_string(document.form.ipsec_preshared_key.value, "wpa_key");
 		if(is_common_string){
-			if(!confirm("<#JS_common_passwd#>")){
+			if(!confirm("<#vpn_ipsec_PreShared_Key#> : <#JS_common_passwd#>")){
 				document.form.ipsec_preshared_key.focus();
 				document.form.ipsec_preshared_key.select();
 				return false;
@@ -535,6 +541,10 @@ function validForm() {
 }
 function applyRule() {
 	if(validForm()) {
+		var confirmFlag = confirm("<#vpn_ipsec_clients_reconnect_hint#>");
+		if(!confirmFlag)
+			return false;
+
 		/* data structure
 		1 vpn_type, profilename, remote_gateway_method, remote_gateway, 
 		5 local_public_interface, local_public_ip, auth_method, auth_method_value, 
@@ -565,40 +575,63 @@ function applyRule() {
 			"", "", "eap-md5", "1",
 			"500", "4500", ipsec_dpd, ipsec_dead_peer_detection,
 			"null", "null", "null", "null",
-			samba_list, ipsec_server_enable
+			samba_list, "1"
 		];
 
 		var result = "";
-		for(var i = 1; i < profile_array.length; i += 1) {
+		for(var i = 1; i < profile_array.length; i += 1)
 			result += profile_array[i] + ">";
-		}
 		result = result.slice(0, -1);
 
-		
-		if(ipsec_server_enable == "1") {
+		if(ipsec_server_enable == "1"){
 			document.form.ipsec_profile_1.value = result;
+			var cert_address = "";
+			var ddns_hostname = '<% nvram_get("ddns_hostname_x"); %>';
+			var wan0_ipaddr = "<% nvram_get("wan0_ipaddr"); %>";
+			if(ddns_hostname != "")
+				cert_address = "@" + ddns_hostname;
+			else
+				cert_address = wan0_ipaddr;
+
+			document.form.ipsec_profile_2.disabled = false;
 			document.form.ipsec_client_list_1.disabled = false;
-			document.form.ipsec_client_list_1.value = ipsec_client_list_array;
+			document.form.ipsec_client_list_2.disabled = false;
+			document.form.ipsec_profile_2.value = "4>Host-to-Netv2>null>null>wan>>0>null>null>null>null>null>null>1>10.10.10>null>2>null>null>0>"+cert_address+">null>null>0>>>eap-mschapv2>1>500>4500>10>1>null>null>null>null><<<<>1>pubkey>svrCert.pem>always>svrKey.pem>%identity";
+
+			var ipsec_client_list_1 = "";
+			var ipsec_client_list_2 = "";
+			for(var username in ipsec_client_list_json) {
+				if(ipsec_client_list_json.hasOwnProperty(username)) {
+					var passwd = ipsec_client_list_json[username]["passwd"];
+					var ver = parseInt(ipsec_client_list_json[username]["ver"]);
+					if(ver & 1)
+						ipsec_client_list_1 += "<" + username + ">" + passwd;
+					if(ver & 2)
+						ipsec_client_list_2 += "<" + username + ">" + passwd;
+				}
+			}
+			document.form.ipsec_client_list_1.value = ipsec_client_list_1;
+			document.form.ipsec_client_list_2.value = ipsec_client_list_2;
 		}
 		else {
 			if(document.form.ipsec_profile_1.value != "") {
 				document.form.ipsec_profile_1.disabled = false;
-				var orgProfile = document.form.ipsec_profile_1.value;
-				var tempProfile = orgProfile.substring(0, (orgProfile.length - 2)) + ">0";
-				document.form.ipsec_profile_1.value = tempProfile;
 			}
 			else {
 				document.form.ipsec_profile_1.disabled = true;
 			}
+			document.form.ipsec_profile_2.disabled = true;
 			document.form.ipsec_client_list_1.disabled = true;
+			document.form.ipsec_client_list_2.disabled = true;
 		}
 
 		document.form.ipsec_server_enable.value = ipsec_server_enable;
 		var actionScript = "ipsec_stop";
-		if(ipsec_server_enable == "1") {
+		if(ipsec_server_enable == "1")
 			actionScript = "ipsec_start";
-		}
+
 		document.form.action_script.value = actionScript;
+		showLoading();
 		document.form.submit();
 	}
 }
@@ -610,8 +643,9 @@ function cancel_viewLog() {
 	$("#ipsec_view_log_panel").fadeOut(300);
 }
 function clear_viewLog() {
-	document.clearLog.submit();
-	document.getElementById("textarea").innerHTML = "";
+	httpApi.clean_ipsec_log(function(){
+		$("textarea#textarea").html("");
+	});
 }
 function save_viewLog() {
 	location.href = "ipsec.log";
@@ -630,8 +664,8 @@ function update_ipsec_log() {
 
 		success: function(xml) {
 			var ipsecXML = xml.getElementsByTagName("ipsec");
-			var ipsec_log = ipsecXML[0].firstChild.nodeValue;
-			document.getElementById("textarea").innerHTML = ipsec_log;
+			var ipsec_log = ipsecXML[0].firstChild.nodeValue.trim();
+			$("textarea#textarea").html(ipsec_log);
 		}
 	});	
 }
@@ -646,35 +680,41 @@ function setClientsEnd() {
 }
 
 function update_connect_status() {
-	$.ajax({
-		url: '/ajax_ipsec.asp',
-		dataType: 'script',
-		timeout: 1500,
-		error: function(xhr){
-			setTimeout("update_connect_status();",1000);
-		},	
-		success: function() {
-			ipsec_connect_status_array = [];
-			for(var i = 0; i < ipsec_connect_status.length; i += 1) {
-				ipsec_connect_status_array["Host-to-Net"] = ipsec_connect_status[i][1];
-			}
-			if(ipsec_connect_status_array["Host-to-Net"] != undefined) {
-				var connected_count = (ipsec_connect_status_array["Host-to-Net"].split("<").length - 1);
-				if(connected_count > 0) {
-					var code = "";
-					code +='<a class="hintstyle2" href="javascript:void(0);" onClick="showIPSecClients(\'Host-to-Net\', event);">';
-					code +='<#btn_Enabled#>(' + connected_count + ')</a>';
-					$(".general_connection_status").html(code);
+	var get_ipsec_conn = httpApi.hookGet("get_ipsec_conn", true);
+	var parseArray = [];
+	ipsec_connect_status_array["Host-to-Net"] = [];
+	get_ipsec_conn.forEach(function(item, index, array){
+		if(item[0] != undefined && item[0] == "Host-to-Net" && item[1] != undefined){
+			var itemRow = item[1].split('<');
+			for(var i = 0; i < itemRow.length; i += 1) {
+				if(itemRow[i] != "") {
+					var itemCol = itemRow[i].split('>');
+					var eachRuleArray = new Array();
+					if(itemCol[6] == "IPSEC"){
+						eachRuleArray.push(itemCol[0]);//ipaddr
+						eachRuleArray.push(itemCol[1]);//conn_status
+						eachRuleArray.push(itemCol[2]);//conn_period
+						eachRuleArray.push(itemCol[3]);//account or device name
+						eachRuleArray.push(itemCol[4]);//psk_reauth_time
+						parseArray.push(eachRuleArray);
+					}
 				}
-				else
-					$(".general_connection_status").html("-");
 			}
-			else {
-				$(".general_connection_status").html("-");
-			}
-			setTimeout("update_connect_status();",3000);
 		}
 	});
+
+	ipsec_connect_status_array["Host-to-Net"] = parseArray;
+	var connected_count = ipsec_connect_status_array["Host-to-Net"].length;
+	if(connected_count > 0) {
+		var code = "";
+		code +='<a class="hintstyle2" href="javascript:void(0);" onClick="showIPSecClients(\'Host-to-Net\', event);">';
+		code +='<#btn_Enabled#>(' + connected_count + ')</a>';
+		$(".general_connection_status").html(code);
+	}
+	else
+		$(".general_connection_status").html("-");
+
+	setTimeout("update_connect_status();",3000);
 }
 function close_connect_status() {
 	$("#connection_ipsec_profile_panel").fadeOut(300);
@@ -696,22 +736,56 @@ function showIPSecClients(profileName, e) {
 	html += "</div>";
 	html += "<div style='clear:both;'></div>";
 
-	var statusText = [[""], ["<#Connected#>"], ["<#Connecting_str#>"], ["<#Connecting_str#>"]]
-	var profileName_array = ipsec_connect_status_array[profileName].split("<");
-	for (i = 0; i < profileName_array.length; i += 1) {
-		if(profileName_array[i] != "") {
-			var profileName_col = profileName_array[i].split(">");
+	var statusText = [[""], ["<#Connected#>"], ["<#Connecting_str#>"], ["<#Connecting_str#>"]];
+	ipsec_connect_status_array[profileName].forEach(function(item, index, array){
+		if(item != "") {
 			html += "<div class='ipsec_connect_status_content_bg'>";
-			html += "<div class='ipsec_connect_status_content' style='width:240px;word-wrap:break-word;word-break:break-all;'>" + profileName_col[0] + "</div>";
-			html += "<div class='ipsec_connect_status_content'>" + statusText[profileName_col[1]] + "</div>";
-			html += "<div class='ipsec_connect_status_content'>" + profileName_col[2] + "</div>";
-			html += "<div class='ipsec_connect_status_content'>" + profileName_col[3] + "</div>";
-			html += "<div class='ipsec_connect_status_content'>" + profileName_col[4] + "</div>";
+			html += "<div class='ipsec_connect_status_content' style='width:240px;word-wrap:break-word;word-break:break-all;'>" + item[0] + "</div>";
+			html += "<div class='ipsec_connect_status_content'>" + statusText[item[1]] + "</div>";
+			html += "<div class='ipsec_connect_status_content'>" + item[2] + "</div>";
+			html += "<div class='ipsec_connect_status_content'>" + item[3] + "</div>";
+			html += "<div class='ipsec_connect_status_content'>" + item[4] + "</div>";
 			html += "</div>";
 			html += "<div style='clear:both;'></div>";
-		}	
-	}
+		}
+	});
 	$("#connection_ipsec_profile_panel").html(html);
+}
+function export_cert(_mode) {
+	var type = $("input[name=ipsec_export_cert]:checked").val();//0:Windows, 1:Mobile
+	if(_mode == "0") {//download
+		if(type == "0")
+			location.href = "ikev2_cert_windows.der";
+		else if(type == "1")
+			location.href = "ikev2_cert_mobile.pem";
+	}
+	else if(_mode == "1") {//renew
+		$(".button_gen.ipsec_active.renew").hide();
+		$(".ipsec_inactive.renew_hint").hide();
+		$(".renewLoadingIcon").show();
+		httpApi.renew_ikev2_cert_key(function(){
+			var count = 0;
+			var timer = 15;
+			var interval_check = setInterval(function(){
+				var ikev2_cert_state = httpApi.nvramGet(["ikev2_cert_state"], true).ikev2_cert_state;
+				if(ikev2_cert_state == "3"){
+					clearInterval(interval_check);
+					$(".button_gen.ipsec_active.renew").show();
+					$(".renewLoadingIcon").hide();
+					alert("<#vpn_ipsec_update_cert_success#>");
+				}
+				else{
+					count++;
+					if(count >= timer){
+						clearInterval(interval_check);
+						$(".button_gen.ipsec_active.renew").show();
+						$(".renewLoadingIcon").hide();
+						alert("<#vpn_ipsec_update_cert_fail#>");
+					}
+				}
+			}, 1000);
+		});
+	}
 }
 </script>
 </head>
@@ -728,11 +802,13 @@ function showIPSecClients(profileName, e) {
 <input type="hidden" name="modified" value="0">
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="saveNvram">
-<input type="hidden" name="action_wait" value="30">
+<input type="hidden" name="action_wait" value="5">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="ipsec_server_enable" value="<% nvram_get("ipsec_server_enable"); %>">
 <input type="hidden" name="ipsec_profile_1" id="ipsec_profile_1" value="">
+<input type="hidden" name="ipsec_profile_2" id="ipsec_profile_2" value="">
 <input type="hidden" name="ipsec_client_list_1" id="ipsec_client_list_1" value="">
+<input type="hidden" name="ipsec_client_list_2" id="ipsec_client_list_2" value="">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
@@ -797,64 +873,53 @@ function showIPSecClients(profileName, e) {
 											</script>
 											</td>
 										</tr>
-										<tr id="tr_general_server_addr">
+										<tr class="ipsec_setting_content">
 											<th><#WLANAuthentication11a_ExAuthDBIPAddr_itemname#></th>
 											<td class="general_server_addr">-</td>
 										</tr>
-										<tr id="tr_general_connection_status">
+										<tr class="ipsec_setting_content">
 											<th><#PPPConnection_x_WANLink_itemname#></th>
 											<td class="general_connection_status">-</td>
 										</tr>
-										<tr id="tr_general_log">
+										<tr class="ipsec_setting_content">
 											<th><#System_Log#></th>
 											<td>
 												<input class="button_gen" onclick="viewLog()" type="button" value="<#CTL_check_log#>"/>
 											</td>
 										</tr>
+										<tr class="ipsec_setting_content">
+											<th><#vpn_Adv#></th>
+											<td>
+												<select id="selSwitchMode" onchange="switchSettingsMode(this.options[this.selectedIndex].value)" class="input_option" style="margin-left:2px;">
+													<option value="1" selected><#menu5_1_1#></option>
+													<option value="2"><#menu5#></option>
+												</select>
+											</td>
+										</tr>
+										<tr class="ipsec_setting_content">
+											<th><#vpn_ipsec_PreShared_Key#></th>
+											<td>
+												<input id="ipsec_preshared_key" name="ipsec_preshared_key" type="password" autocapitalization="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);" class="input_25_table" maxlength="32" placeholder="<#vpn_preshared_key_hint#>" autocomplete="off" autocorrect="off" autocapitalize="off">
+											</td>
+										</tr>
 									</table>
 
-									<div id="ipsec_main_setting">
-										<div class="formfontdesc" style="margin-top:8px;">
-											<#vpn_ipsec_setup#>
-											<br>
-											<ol>
-												<li><a id="faq_windows" href="" target="_blank" style="text-decoration:underline;">Windows</a></li>
-												<li><a id="faq_macOS" href="" target="_blank" style="text-decoration:underline;">Mac OS</a></li>
-												<li><a id="faq_iPhone" href="" target="_blank" style="text-decoration:underline;">iOS</a></li>
-												<li><a id="faq_android" href="" target="_blank" style="text-decoration:underline;">Android</a></li>
-											<ol>
-										</div>
-										<!-- Quick Select table start-->
-										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:15px;">
+									<div class="ipsec_setting_content">
+										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable setting_adv" style="margin-top:15px;">
 											<thead>
 											<tr>
-												<td colspan="2"><#vpn_ipsec_Quick_Select#></td>
+												<td colspan="2"><#menu5#></td>
 											</tr>
 											</thead>
-											<tr id="tr_SettingsMode">
-												<th><#vpn_Adv#></th>
-												<td>
-													<select id="selSwitchMode" onchange="switchSettingsMode(this.options[this.selectedIndex].value)" class="input_option" style="margin-left:2px;">
-														<option value="1" selected><#menu5_1_1#></option>
-														<option value="2"><#menu5#></option>
-													</select>
-												</td>
-											</tr>
-											<tr class="tr_general">
-												<th><#vpn_ipsec_PreShared_Key#></th>
-												<td>
-													<input id="ipsec_preshared_key" name="ipsec_preshared_key" type="password" autocapitalization="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);" class="input_25_table" maxlength="32" placeholder="<#vpn_preshared_key_hint#>" autocomplete="off" autocorrect="off" autocapitalize="off">
-												</td>
-											</tr>
-											<tr class="tr_advanced">
+											<tr>
 												<th><#vpn_ipsec_IKE_ISAKMP_Port#></th>
 												<td>500</td>
 											</tr>
-											<tr class="tr_advanced">
+											<tr>
 												<th><#vpn_ipsec_IKE_ISAKMP_NAT_Port#></th>
 												<td>4500</td>
 											</tr>
-											<tr class="tr_advanced">
+											<tr>
 												<th><#vpn_client_ip#></th>
 												<td>
 													<input type="text" maxlength="11" class="input_12_table" name="ipsec_clients_start" onBlur="setClientsEnd();" value="10.10.10" autocomplete="off" autocorrect="off" autocapitalize="off"/>
@@ -862,28 +927,28 @@ function showIPSecClients(profileName, e) {
 													<span id="ipsec_clients_end" style="font-family: Lucida Console;color: #FFF;">10.10.10.254</span>
 												</td>
 											</tr>
-											<tr class="tr_advanced">
+											<tr>
 												<th><#IPConnection_x_DNSServer1_itemname#></th>
 												<td>
 													<input type="text" maxlength="15" class="input_15_table" name="ipsec_dns1" onkeypress="return validator.isIPAddr(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 													<span style="color:#FC0"><#feedback_optional#></span>
 												</td>
 											</tr>
-											<tr class="tr_advanced">
+											<tr>
 												<th><#IPConnection_x_DNSServer2_itemname#></th>
 												<td>
 													<input type="text" maxlength="15" class="input_15_table" name="ipsec_dns2" onkeypress="return validator.isIPAddr(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 													<span style="color:#FC0"><#feedback_optional#></span>
 												</td>
 											</tr>
-											<tr class="tr_advanced">
+											<tr>
 												<th><#IPConnection_x_WINSServer1_itemname#></th>
 												<td>
 													<input type="text" maxlength="15" class="input_15_table" name="ipsec_wins1" onkeypress="return validator.isIPAddr(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 													<span style="color:#FC0"><#feedback_optional#></span>
 												</td>
 											</tr>
-											<tr class="tr_advanced">
+											<tr>
 												<th><#IPConnection_x_WINSServer2_itemname#></th>
 												<td>
 													<input type="text" maxlength="15" class="input_15_table" name="ipsec_wins2" onkeypress="return validator.isIPAddr(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
@@ -897,45 +962,14 @@ function showIPSecClients(profileName, e) {
 												</td>
 											</tr>
 										</table>
-										<!-- User table start-->
-										<table id="tbAccountList" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table tr_general" style="margin-top:15px;">
-											<thead>
-											<tr>
-												<td colspan="3"><#Username_Pwd#>&nbsp;(<#List_limit#>&nbsp;8)</td>
-											</tr>
-											</thead>
-											<tr>
-												<th><#Username#></th>
-												<th><#HSDPAConfig_Password_itemname#></th>
-												<th><#list_add_delete#></th>
-											</tr>
-											<tr>
-												<td width="45%">
-													<input type="text" class="input_25_table" maxlength="32" name="ipsec_client_list_username" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-												</td>
-												<td width="45%">
-													<input type="text" class="input_25_table" maxlength="32" name="ipsec_client_list_password" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-												</td>
-												<td width="10%">
-													<div><input type="button" class="add_btn" onClick="addRow_Group(8);" value=""></div>
-												</td>
-											</tr>
-										</table>
-										<div id="ipsec_client_list_Block" class="tr_general"></div>
-										<!-- User table end-->
-										<!-- Quick Select table end-->
-										<!-- Advanced Settings table start-->
-										<div id="ipsec_advanced_settings" class="tr_advanced">
+
+										<div id="ipsec_advanced_settings" class="setting_general">
 											<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:15px;">
 												<thead>
 												<tr>
-													<td colspan="2"><#menu5#> - <#vpn_ipsec_Phase_1_Negotiations#></td>
+													<td colspan="2">IKEv1 Config</td><!-- untranslated -->
 												</tr>
 												</thead>
-												<tr id="tr_adv_ike_version">
-													<th><#vpn_ipsec_IKE_Version#></th>
-													<td>v1</td>
-												</tr>
 												<tr id="tr_adv_exchange_mode">
 													<th><#vpn_ipsec_Exchange_Mode#></th>
 													<td><#vpn_ipsec_Main_Mode#></td>
@@ -957,12 +991,84 @@ function showIPSecClients(profileName, e) {
 													</td>
 												</tr>
 											</table>
+
+											<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable " style="margin-top:15px;">
+												<thead>
+												<tr>
+													<td colspan="2">IKEv2 Config</td><!-- untranslated -->
+												</tr>
+												</thead>
+												<tr>
+													<th><#vpn_export_cert#></th>
+													<td>
+														<div><#Status_Str#> : <span id="cert_status"></span></div>
+														<div>Issue to : <span id="cert_issueTo"></span></div><!-- untranslated -->
+														<div>Issue from : <span id="cert_issueBy"></span></div><!-- untranslated -->
+														<div><#vpn_openvpn_KC_expire#> : <span id="cert_expire"></span></div>
+														<div>
+															<input class="button_gen_dis ipsec_active export" type="button" value="<#btn_Export#>">
+															<span class="ipsec_inactive"><#Status_Inactive#></span>
+															<input type="radio" name="ipsec_export_cert" id="ipsec_export_cert_windows" class="input" value="0" checked>
+															<label for="ipsec_export_cert_windows"><#vpn_ipsec_windows#></label>
+															<input type="radio" name="ipsec_export_cert" id="ipsec_export_cert_mobile" class="input" value="1">
+															<label for="ipsec_export_cert_mobile"><#vpn_ipsec_mobile#></label>
+														</div>
+													</td>
+												</tr>
+												<tr>
+													<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(33,2);"><#vpn_ipsec_re_cert#></a></th>
+													<td style="position:relative;">
+														<input class="button_gen_dis ipsec_active renew" type="button" value="Renew"><!-- untranslated -->
+														<span class="ipsec_inactive renew_hint"><#Status_Inactive#></span>
+														<div class="renewLoadingIcon"></div>
+													</td>
+												</tr>
+											</table>
+											<div class="formfontdesc" style="margin-top:8px;">
+												<#vpn_ipsec_setup#> :
+													<span class="faq_link">1. <a id="faq_windows" href="" target="_blank" style="text-decoration:underline;">Windows</a></span>
+													<span class="faq_link">2. <a id="faq_macOS" href="" target="_blank" style="text-decoration:underline;">Mac OS</a></span>
+													<span class="faq_link">3. <a id="faq_iPhone" href="" target="_blank" style="text-decoration:underline;">iOS</a></span>
+													<span class="faq_link">4. <a id="faq_android" href="" target="_blank" style="text-decoration:underline;">Android</a></span>
+											</div>
+											<!-- User table start-->
+											<table id="tbAccountList" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:15px;">
+												<thead>
+												<tr>
+													<td colspan="4"><#Username_Pwd#>&nbsp;(<#List_limit#>&nbsp;8)</td>
+												</tr>
+												</thead>
+												<tr>
+													<th><#Username#></th>
+													<th><#HSDPAConfig_Password_itemname#></th>
+													<th><#vpn_ipsec_IKE_ver#></th>
+													<th><#list_add_delete#></th>
+												</tr>
+												<tr>
+													<td width="30%">
+														<input type="text" class="input_22_table" maxlength="32" name="ipsec_client_list_username" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
+													</td>
+													<td width="30%">
+														<input type="text" class="input_22_table" maxlength="32" name="ipsec_client_list_password" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
+													</td>
+													<td width="30%">
+														<select name="ipsec_client_list_ike" onchange="" class="input_option">
+															<option value="1">V1</option>
+															<option value="2" selected="selected">V2</option>
+															<option value="3">Both</option><!-- untranslated -->
+														</select>
+													</td>
+													<td width="10%">
+														<div><input type="button" class="add_btn" onClick="addRow_Group(8);" value=""></div>
+													</td>
+												</tr>
+											</table>
+											<div id="ipsec_client_list_Block"></div>
+											<!-- User table end-->
 										</div>
-										<!-- Advanced Settings table end-->
 									</div>
 
 									<div id="ipsec_apply" class="apply_gen">
-										
 										<input class="button_gen" onclick="applyRule()" type="button" value="<#CTL_apply#>"/>
 									</div>
 								</td>
@@ -978,19 +1084,6 @@ function showIPSecClients(profileName, e) {
 	</tr>
 </table>
 <div id="connection_ipsec_profile_panel" class="ipsec_connect_status_panel"></div> 
-</form>
-<form method="post" name="clearLog" action="clear_file.cgi" target="hidden_frame">
-<input type="hidden" name="current_page" value="Advanced_VPN_IPSec.asp">
-<input type="hidden" name="next_page" value="Advanced_VPN_IPSec.asp">
-<input type="hidden" name="group_id" value="">
-<input type="hidden" name="modified" value="0">
-<input type="hidden" name="action_mode" value="">
-<input type="hidden" name="action_wait" value="">
-<input type="hidden" name="first_time" value="">
-<input type="hidden" name="action_script" value="">
-<input type="hidden" name="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
-<input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
-<input type="hidden" name="clear_file_name" value="ipsec">
 </form>
 <div id="footer"></div>
 </body>

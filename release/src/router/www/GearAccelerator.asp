@@ -7,7 +7,7 @@
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
-<link rel="icon" href="images/favicon.png"><title><#Web_Title#> - Gear Accelerator</title>
+<link rel="icon" href="images/favicon.png"><title><#Web_Title#> - <#Gear_Accelerator#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="usp_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
@@ -149,7 +149,7 @@ var gameList = '<% nvram_get("rog_clientlist"); %>'.replace(/&#60/g, "<");;
 function genGameList(){
 	var list_array = gameList.split('<');
 	var code = '';
-	code += '<thead><tr><td colspan="4">Game Device List&nbsp;(<#List_limit#>&nbsp;64)</td></tr></thead>';
+	code += '<thead><tr><td colspan="4"><#Gear_Accelerator_List#>&nbsp;(<#List_limit#>&nbsp;64)</td></tr></thead>';
 	code += '<tr>';
 	code += '<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</a></th>';
 	code += '<th><#list_add_delete#></th>';
@@ -199,7 +199,7 @@ function addGameList(){
 	var list_array = gameList.split('<');
 	var maximum = '64';
 	if(mac == ''){
-		alert('client can not be empty!');
+		alert("<#JS_fieldblank#>");
 		return false;
 	}
 
@@ -211,7 +211,7 @@ function addGameList(){
 	// check mac is whether in the list
 	for(i=1; i<list_array.length; i++){
 		if(list_array[i] == mac){
-			alert('Already is the list');
+			alert("<#JS_duplicate#>");
 			return false;
 		}
 	}
@@ -372,10 +372,10 @@ function applyRule(){
 			<table>
 				<tr>
 					<td style="width:200px">
-						<div style="padding: 5px 0;font-size:20px;">Gear Accelerator</div>
+						<div style="padding: 5px 0;font-size:20px;"><#Gear_Accelerator#></div>
 					</td>
 					<td colspan="2">
-						<div style="padding: 5px 10px;font-size:20px;color:#FFCC66">Game Device Prioritizing</div>
+						<div style="padding: 5px 10px;font-size:20px;color:#FFCC66"><#Gear_Accelerator_desc#></div>
 					</td>
 				</tr>
 				<tr>
@@ -388,7 +388,7 @@ function applyRule(){
 						<div style="width:85px;height: 85px;background-image: url('images/New_ui/GameBoost_gamePriority.svg');background-size: 100%;"></div>													
 					</td>
 					<td style="width:400px;height:120px;">
-						<div style="font-size:16px;color:#949393;padding-left:10px;">Prioritizing your game devices for the best gaming experience.</div>
+						<div style="font-size:16px;color:#949393;padding-left:10px;"><#Gear_Accelerator_desc1#></div>
 						<div onclick="showGameListField();" class="btn" style="margin: 12px 0;width:100px;height:40px;line-height: 40px;text-align: center;border-radius: 5px;font-size:18px;"><#CTL_add#></div>
 					</td>
 					<td>

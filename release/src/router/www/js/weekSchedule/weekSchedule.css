@@ -5,18 +5,28 @@
 	margin-left: 18px;
 	margin-bottom: 20px;
 }
+.offtime_schedule_text_bg{
+	position: relative;
+	margin-left: 78px;
+	margin-top: 15px;
+	height: 20px;
+}
 .offtime_schedule_text{
 	position: relative;
-	margin-left: 95px;
-	margin-top: 15px;
+	float: left;
+	margin-right: 20px;
 }
 .offtime_schedule_text:before{
 	content: "";
 	position: absolute;
 	left: -25px;
+	top: 1px;
 	width: 18px;
 	height: 18px;
 	background-color: #F79800;
+}
+.offtime_schedule_text.dis:before{
+	background-color: #717f84;
 }
 .overview_a_week_bg .weekday_bg{
 	margin-bottom: 10px;
@@ -54,12 +64,16 @@
 	background-color: #4D595D;
 	position: absolute;
 	height: 100%;
-	z-index: 3;
+	z-index: 4;
 }
 .overview_a_week_bg .weekday_bg .offtime_bg{
 	background-color: #F79800;
 	position: absolute;
 	height: 100%;
+	z-index: 3;
+}
+.overview_a_week_bg .weekday_bg .offtime_bg.dis{
+	background-color: #717f84;
 	z-index: 2;
 }
 .overview_time_title_bg{
@@ -282,6 +296,7 @@
 .popup_edit_weekSchedule .all_day_checkbox.clicked{
 	background-color: #33ACFF;
 	border: 1px solid #33ACFF;
+	box-shadow: initial;
 }
 .popup_edit_weekSchedule .all_day_checkbox.clicked:before{
 	position: absolute;
@@ -341,6 +356,7 @@
 	background-color: #F79800;
 	color: #000000;
 	font-weight: bolder;
+	box-shadow: initial;
 }
 .popup_edit_weekSchedule .routine_schedule_bg > div.current_weekday:before{
 	position: absolute;
@@ -390,7 +406,7 @@
 	float: left;
 	text-align: center;
 }
-.each_period_bg .period_switch{
+.each_period_bg .period_switch, .PC_SCHED .grid_period_content .period_switch{
 	background: #2B353C;
 	border-radius: 50px;
 	width: 60px;
@@ -402,7 +418,7 @@
 	cursor: pointer;
 	top: 25px;
 }
-.each_period_bg .period_switch:before{
+.each_period_bg .period_switch:before, .PC_SCHED .grid_period_content .period_switch:before{
 	border-radius: 83px;
 	display: block;
 	position: absolute;
@@ -416,16 +432,16 @@
 	-webkit-transition-delay: 0.01s;
 	transition-delay: 0.01s;
 }
-.each_period_bg .period_switch.off:before{
+.each_period_bg .period_switch.off:before, .PC_SCHED .grid_period_content .period_switch.off:before{
 	background: #A4B7C3;
 }
-.each_period_bg .period_switch.on:before{
+.each_period_bg .period_switch.on:before, .PC_SCHED .grid_period_content .period_switch.on:before{
 	-webkit-transform: translateX(30px);
 	-ms-transform: translateX(30px);
 	transform: translateX(30px);
 	background: #1EA2FF;
 }
-.each_period_bg .period_trash_icon{
+.each_period_bg .period_trash_icon, .PC_SCHED .grid_period_content .period_trash_icon{
 	background-image: url(/images/New_ui/delete_hover.svg);
 	width: 30px;
 	height: 30px;
@@ -478,7 +494,6 @@
 	right: 10px;
 }
 .popup_hint_component.popup_hint_bg{
-
 	z-index: 300;
 }
 .popup_hint_bg .action_bg{
@@ -498,4 +513,175 @@
 	z-index: 200;
 	background: #424D52;
 	opacity: .94;
+}
+.PC_SCHED .grid_period_content .period_text_bg{
+	width: 80%;
+	float: left;
+	text-align: center;
+	position: relative;
+	color: rgba(158,158,158,0.5);
+}
+.PC_SCHED .grid_period_content .period_text_bg:before{
+	position: absolute;
+	content: "";
+	right: 10%;
+	height: 60%;
+	top: 20%;
+	border-left: 1px solid rgba(158,158,158,0.5);
+}
+.PC_SCHED .grid_period_content .period_text_bg > div{
+	float: left;
+	height: 70px;
+	letter-spacing: 1px;
+	font-size: 30px;
+	height: 70px;
+	position: relative;
+	text-align: center;
+}
+.PC_SCHED .grid_period_content .period_text_bg .start_time, .PC_SCHED .grid_period_content .period_text_bg .end_time{
+	margin-left: 25px;
+	width: 110px;
+	padding-top: 10px;
+}
+.PC_SCHED .grid_period_content .period_text_bg .start_time:before, .PC_SCHED .grid_period_content .period_text_bg .end_time:before{
+	content: attr(title);
+	position: absolute;
+	height: 100%;
+	font-size: 14px;
+	top: -15px;
+	letter-spacing: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	width: 130px;
+	text-align: left;
+	left: 18px;
+}
+.PC_SCHED .grid_period_content .period_text_bg .dash:before{
+	content: "";
+	position: absolute;
+	left: 5px;
+	bottom: 20px;
+	width: 14px;
+	border-bottom: 2px solid rgba(158,158,158,0.5);
+}
+.PC_SCHED .grid_period_content.on .period_text_bg{
+	color: #FFF;
+}
+.PC_SCHED .grid_period_content.on .period_text_bg .dash:before{
+	border-bottom: 2px solid #FFF;
+}
+.PC_SCHED .level_demarcation_line{
+	background: #32393B;
+	background: -webkit-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+	background: -o-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+	background: linear-gradient(#32393B 0%, #32393B 20%, #667881 80%,#667881 100%);
+	height: 2px;
+	width: 99%;
+	margin: 10px 0 10px 1%;
+}
+.PC_SCHED .offtime_schedule_header{
+	position: relative;
+	height: 30px;
+	line-height: 30px;
+}
+.PC_SCHED .offtime_schedule_header > div{
+	position: absolute;
+}
+.PC_SCHED .offtime_schedule_header .title{
+	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif, "Microsoft JhengHei";
+	font-size: 14px;
+	color: #FFF;
+	margin-left: 10px;
+}
+.PC_SCHED .offtime_schedule_header .btn_icon_bg{
+	background-repeat: no-repeat;
+	background-size: cover;
+	cursor: pointer;
+	width: 30px;
+	height: 30px;
+}
+.PC_SCHED .offtime_schedule_header .btn_icon_bg.add_icon{
+	background-image: url(/images/New_ui/weekSchedule/add.png);
+	right: 60px;
+}
+.PC_SCHED .offtime_schedule_header .add_icon:hover{
+	background-image: url(/images/New_ui/weekSchedule/add-hover.png);
+}
+.PC_SCHED .offtime_schedule_header .overview_icon{
+	background-image: url(/images/New_ui/weekSchedule/over-view.png);
+	right: 10px;
+}
+.PC_SCHED .offtime_schedule_header .overview_icon:hover{
+	background-image: url(/images/New_ui/weekSchedule/over-view-hover.png);
+}
+.PC_SCHED .offtime_schedule_header .gridview_icon{
+	background-image: url(/images/New_ui/weekSchedule/grid-view.png);
+	right: 10px;
+}
+.PC_SCHED .offtime_schedule_header .gridview_icon:hover{
+	background-image: url(/images/New_ui/weekSchedule/grid-view-hover.png);
+}
+.PC_SCHED .action_btn_bg{
+	position: relative;
+	margin-bottom: 60px;
+}
+.PC_SCHED .action_btn_bg > div{
+	width: 122px;
+	text-align: center;
+	line-height: 33px;
+	position: absolute;
+	margin: auto;
+	left: 0;
+	right: 0;
+}
+.PC_SCHED .action_btn_bg div:nth-of-type(1){
+	right: 160px;
+}
+.PC_SCHED .action_btn_bg div:nth-of-type(2){
+	left: 160px;
+}
+.PC_SCHED .no_data_bg{
+	height: 200px;
+}
+.PC_SCHED .no_data_bg > div{
+	margin: auto;
+	text-align: center;
+	top: 40px;
+	position: relative;
+}
+.PC_SCHED .no_data_bg .no_data_icon{
+	background-image: url(/images/New_ui/weekSchedule/over-view.png);
+	width: 80px;
+	height: 80px;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.PC_SCHED .no_data_bg .no_data_text{
+	margin-top: 20px;
+	font-size: 14px;
+}
+.PC_SCHED .grid_period_title{
+	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif, "Microsoft JhengHei";
+	font-size: 20px;
+	margin-left: 10px;
+	margin-top: 10px;
+	font-weight: bolder;
+}
+.PC_SCHED .grid_period_content{
+	height: 80px;
+	margin: 10px;
+	line-height: 80px;
+	font-size: 26px;
+	background-color: #3E494C;
+	border-radius: 4px;
+	cursor: pointer;
+	position: relative;
+}
+.PC_SCHED .grid_period_content:hover{
+	background-color: #5C6C71;
+	box-shadow: 0 0 0 2px #979797;
+}
+.PC_SCHED .offtime_overview_content_bg{
+	margin-top: 20px;
 }

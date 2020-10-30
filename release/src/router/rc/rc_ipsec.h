@@ -5,7 +5,7 @@
 
 #define SZ_MAX    4096
 #define SZ_TMP    512
-#define SZ_BUF    256
+#define SZ_BUF    512
 #define SZ_128BUF 128
 #define SZ_64BUF  64
 #define SZ_4BUF   4
@@ -24,6 +24,13 @@
 #define FILE_PATH_CA_ETC      "/jffs/ca_files/"
 #define FILE_PATH_CA_PKI_TEMP "/jffs/ca_files/pki_tmp.txt"
 #define FILE_PATH_CA_TEMP     "/jffs/ca_files/ca_idx_tmp.txt"
+
+#define FILE_NAME_CA_PRIVATE_KEY 	"ca.pem"
+#define FILE_NAME_CERT_PEM 			"asusCert.pem"
+#define FILE_NAME_CERT_DER 			"asusCert.der"
+#define FILE_NAME_SVR_PRIVATE_KEY 	"svrKey.pem"
+#define FILE_NAME_SVR_CERT_PEM	 	"svrCert.pem"
+
 
 #define CA_MANUAL_GEN   1
 #define CA_IMPORT       2
@@ -168,13 +175,13 @@ typedef struct ipsec_prof_s{
     uint8_t encryption_p1;
     uint8_t hash_p1;
     uint8_t exchange;
-    char local_id[SZ_MIN];
-    char remote_id[SZ_MIN];
+    char local_id[SZ_128BUF];
+    char remote_id[SZ_128BUF];
     uint32_t keylife_p1;         /*IKE default:28800 seconds , 8hr*/
     uint8_t xauth;          /*0:disable,1:server,2:client*/
     char xauth_account[SZ_MIN+1];
     char xauth_password[SZ_MIN+1];
-    char auth2meth[SZ_MIN];  /*auth2 methon -- xauth_server_type*/
+    char rightauth2_method[SZ_MIN];
     uint16_t traversal;
     uint16_t ike_isakmp_port;
     uint16_t ike_isakmp_nat_port;
@@ -186,6 +193,11 @@ typedef struct ipsec_prof_s{
     uint16_t keyingtries;
 	char samba_settings[SZ_64BUF];
     uint8_t ipsec_conn_en;  /*1: up ; 0:down*/
+    char leftauth_method[SZ_MIN];
+    char leftcert[SZ_128BUF];
+    char leftsendcert[SZ_128BUF];
+    char leftkey[SZ_128BUF];
+    char eap_identity[SZ_128BUF];
 	uint16_t encryption_p1_ext;
 	uint16_t hash_p1_ext;
 	uint16_t dh_group;
@@ -224,3 +236,5 @@ extern void rc_ipsec_ca_export(char *verify_pwd);
 extern int rc_ipsec_ca_gen();
 extern void rc_ipsec_pki_gen_exec(uint32_t idx);
 extern int rc_ipsec_ca_txt_parse();
+extern void rc_ipsec_gen_cert(int skip_checking);
+

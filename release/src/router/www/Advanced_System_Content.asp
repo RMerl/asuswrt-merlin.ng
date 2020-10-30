@@ -86,6 +86,50 @@
 	background: #78535b;
     border: 1px solid #f06767;
 }
+#NTPList_Block_PC{
+	border:1px outset #999;
+	background-color:#576D73;
+	position:absolute;
+	*margin-top:26px;	
+	margin-left:2px;
+	*margin-left:-353px;
+	width:346px;
+	text-align:left;	
+	height:auto;
+	overflow-y:auto;
+	z-index:200;
+	padding: 1px;
+	display:none;
+}
+#NTPList_Block_PC div{
+	background-color:#576D73;
+	height:auto;
+	*height:20px;
+	line-height:20px;
+	text-decoration:none;
+	font-family: Lucida Console;
+	padding-left:2px;
+}
+
+#NTPList_Block_PC a{
+	background-color:#EFEFEF;
+	color:#FFF;
+	font-size:12px;
+	font-family:Arial, Helvetica, sans-serif;
+	text-decoration:none;	
+}
+#NTPList_Block_PC div:hover{
+	background-color:#3366FF;
+	color:#FFFFFF;
+	cursor:default;
+}
+#ntp_pull_arrow{
+        float:left;
+        cursor:pointer;
+        border:2px outset #EFEFEF;
+        background-color:#CCC;
+        padding:3px 2px 4px 0px;
+}
 </style>
 <script>
 time_day = uptimeStr.substring(5,7);//Mon, 01 Aug 2011 16:25:44 +0800(1467 secs since boot....
@@ -132,10 +176,12 @@ var uploaded_cert = false;
 
 var le_enable = '<% nvram_get("le_enable"); %>';
 var orig_http_enable = '<% nvram_get("http_enable"); %>';
-
 var captcha_support = isSupport("captcha");
 
-function initial(){
+var tz_table = {}
+$.getJSON("http://nw-dlcdnet.asus.com/plugin/js/tz_db.json", function(data){tz_table = data;})
+
+function initial(){	
 	//parse nvram to array
 	var parseNvramToArray = function(oriNvram) {
 		var parseArray = [];
@@ -159,6 +205,10 @@ function initial(){
 	httpApi.faqURL("1034294", function(url){document.getElementById("faq").href=url;});
 	httpApi.faqURL("1037370", function(url){document.getElementById("ntp_faq").href=url;});
 	show_http_clientlist();
+	showNTPList();
+	if(odmpid == "DSL-AX5400"){
+		document.getElementById("ntp_pull_arrow").style.display = "";
+	}
 	display_spec_IP(document.form.http_client.value);
 
 	if(reboot_schedule_support){
@@ -182,7 +232,7 @@ function initial(){
 
 	setInterval("corrected_timezone();", 5000);
 	load_timezones();
-	parse_dstoffset();
+	parse_dstoffset(dstoffset);
 	document.form.http_passwd2.value = "";
 	
 	if(svc_ready == "0")
@@ -293,15 +343,6 @@ function initial(){
 
 	// load shell_timeout_x
 	document.form.shell_timeout_x.value = orig_shell_timeout_x;
-	if(based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U"){
-		var pwrsave_desc = new Array();
-		var pwrsave_value = new Array();
-		pwrsave_desc = [ "<#Auto#>", "<#usb_Power_Save#>" ];
-		pwrsave_value = [1,2];
-		if(document.form.pwrsave_mode.value != '1' && document.form.pwrsave_mode.value != '2')
-			document.form.pwrsave_mode.value = '1';
-		add_options_x2(document.form.pwrsave_mode, pwrsave_desc, pwrsave_value, document.form.pwrsave_mode.value);
-	}
 
 	if(pwrsave_support){
 		document.getElementById("pwrsave_tr").style.display = "";
@@ -347,7 +388,7 @@ function initial(){
 		showhide("ntpd_redir_tr", 0);
 	}
 
-	$("#https_download_cert").css("display", (le_enable == "0" && orig_http_enable != "0")? "": "none");
+	$("#https_download_cert").css("display", (le_enable != "1" && orig_http_enable != "0")? "": "none");
 
 	$("#login_captcha_tr").css("display", captcha_support? "": "none");
 }
@@ -1060,9 +1101,9 @@ var dst_hour = new Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
 var dstoff_start_m,dstoff_start_w,dstoff_start_d,dstoff_start_h;
 var dstoff_end_m,dstoff_end_w,dstoff_end_d,dstoff_end_h;
 
-function parse_dstoffset(){     //Mm.w.d/h,Mm.w.d/h
-	if(dstoffset){
-		var dstoffset_startend = dstoffset.split(",");
+function parse_dstoffset(_dstoffset){     //Mm.w.d/h,Mm.w.d/h
+	if(_dstoffset){
+		var dstoffset_startend = _dstoffset.split(",");
 			
 		if(dstoffset_startend[0] != "" && dstoffset_startend[0] != undefined){
 			var dstoffset_start = trim(dstoffset_startend[0]);
@@ -1150,7 +1191,7 @@ function hide_https_lanport(_value){
 	}
 
 
-	if(le_enable == "0" && _value != "0"){
+	if(le_enable != "1" && _value != "0"){
 		$("#https_download_cert").css("display", "");
 		if(orig_http_enable == "0"){
 			$("#download_cert_btn").css("display", "none");
@@ -1453,6 +1494,13 @@ function select_time_zone(){
 			document.getElementById("dst_start").style.display="none";
 			document.getElementById("dst_end").style.display="none";
 	}
+
+	var getTimeZoneOffset = function(tz){
+		return tz_table[tz] ? tz_table[tz] : "M3.2.0/2,M11.1.0/2";
+	}
+
+	var dstOffset = getTimeZoneOffset(document.form.time_zone_select.value)
+	parse_dstoffset(dstOffset);
 }
 
 function clean_scorebar(obj){
@@ -1715,8 +1763,7 @@ function appendMonitorOption(obj){
 
 var isPingListOpen = 0;
 function showPingTargetList(){
-	var ttc = httpApi.nvramGet(["territory_code"]).territory_code;
-	if(ttc.search("CN") >= 0 || ttc.search("GD") >= 0 || ttc.search("CT") >= 0){
+	if(is_CN){
 		var APPListArray = [
 			["Baidu", "www.baidu.com"], ["QQ", "www.qq.com"], ["Taobao", "www.taobao.com"]
 		];
@@ -1814,6 +1861,46 @@ function myisPortConflict(_val, service){
 
 function save_cert_key(){
 	location.href = "cert.tar";
+}
+
+var NTPListArray = [
+		["time01.syd.optusnet.com.au", "time01.syd.optusnet.com.au"], ["time01.mel.optusnet.com.au", "time01.mel.optusnet.com.au"], 
+		["time02.mel.optusnet.com.au", "time02.mel.optusnet.com.au"], ["au.pool.ntp.org", "au.pool.ntp.org"],	["time.nist.gov", "time.nist.gov"],
+		["pool.ntp.org","pool.ntp.org"]
+	];
+
+function showNTPList(){
+	var code = "";
+	for(var i = 0; i < NTPListArray.length; i++){
+		code += '<a><div onmouseover="over_var=1;" onmouseout="over_var=0;" onclick="setNTP(\''+NTPListArray[i][1]+'\');"><strong>'+NTPListArray[i][0]+'</strong></div></a>';
+	}
+	code +='<!--[if lte IE 6.5]><iframe class="hackiframe2"></iframe><![endif]-->';	
+	document.getElementById("NTPList_Block_PC").innerHTML = code;
+}
+
+function setNTP(ntp_url){
+	document.form.ntp_server0.value = ntp_url;
+	hideNTP_Block();
+	over_var = 0;
+}
+
+var over_var = 0;
+var isMenuopen = 0;
+function hideNTP_Block(){
+	document.getElementById("ntp_pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById('NTPList_Block_PC').style.display='none';
+	isMenuopen = 0;
+}
+
+function pullNTPList(obj){
+	if(isMenuopen == 0){		
+		obj.src = "/images/arrow-top.gif"
+		document.getElementById("NTPList_Block_PC").style.display = 'block';		
+		document.form.ntp_server0.focus();		
+		isMenuopen = 1;
+	}
+	else
+		hideNTP_Block();
 }
 </script>
 </head>
@@ -2093,6 +2180,10 @@ function save_cert_key(){
 					<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,3)"><#LANHostConfig_x_NTPServer_itemname#></a></th>
 					<td>
 						<input type="text" maxlength="255" class="input_32_table" name="ntp_server0" value="<% nvram_get("ntp_server0"); %>" onKeyPress="return validator.isString(this, event);" autocorrect="off" autocapitalize="off">
+						<img id="ntp_pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;display:none;" onclick="pullNTPList(this);" title="<#LANHostConfig_x_NTPServer_itemname#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
+						<div id="NTPList_Block_PC" class="NTPList_Block_PC"></div>
+						<br>
+
 						<a href="javascript:openLink('x_NTPServer1')"  name="x_NTPServer1_link" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_NTPServer1_linkname#></a>
 						<div id="svc_hint_div" style="display:none;">
 							<span style="color:#FFCC00;"><#General_x_SystemTime_syncNTP#></span>
@@ -2308,10 +2399,10 @@ function save_cert_key(){
 				</tr>
 
 				<tr id="https_download_cert" style="display: none;">
-					<th>Download Certificate</th>
+					<th><#Local_access_certificate_download#></th>
 					<td>
 						<input id="download_cert_btn" class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
-						<span id="download_cert_desc">Download and install SSL certificate on your browser to trust accessing your local domain “router.asus.com” with HTTPS protocol. To export certificate after applying setting.</span><a href="https://www.asus.com/support/FAQ/1034294" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
+						<span id="download_cert_desc"><#Local_access_certificate_desc#></span><a href="https://www.asus.com/support/FAQ/1034294" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
 					</td>
 				</tr>
 			</table>

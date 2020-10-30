@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hndpmu.h 742769 2018-01-23 15:23:27Z $
+ * $Id: hndpmu.h 788587 2020-07-06 01:46:22Z $
  */
 
 #ifndef _hndpmu_h_
@@ -202,6 +202,7 @@ extern bool si_pmu_fast_lpo_enable_pcie(si_t *sih);
 extern bool si_pmu_fast_lpo_enable_pmu(si_t *sih);
 extern void si_pmu_chipcontrol_xtal_settings_4369(si_t *sih);
 extern uint32 si_cur_pmu_time(si_t *sih);
+extern void si_pmu_set_resetcontrol(si_t *sih, uint32 value);
 #ifdef BCMPMU_STATS
 extern void si_pmustatstimer_init(si_t *sih);
 extern void si_pmustatstimer_dump(si_t *sih);

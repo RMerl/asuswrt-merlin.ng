@@ -31,32 +31,6 @@
 <script type="text/javascript" src="/calendar/jquery-ui.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<style>
-.aimesh_tab{
-	font-family: Roboto-Regular, "Microsoft JhengHei";
-	font-size: 16px;
-	color: #FFFFFF;
-	height: 24px;
-}
-.aimesh_tab > span{
-	margin-left: 5px;
-	margin-right: 24px;
-	cursor: pointer;
-	position: relative;
-}
-.aimesh_tab > span.clicked:before{
-	content: "";
-	position: absolute;
-	left: 0;
-	bottom: -10px;
-	width: 100%;
-	border-bottom: 2px solid #00BFFF;
-}
-.aimesh_tab_content{
-	width: 100%;
-	display: none;
-}
-</style>
 <script>
 function initial(){
 	show_menu();
@@ -114,7 +88,7 @@ function change_tab(_index){
 											<span onclick="change_tab(2);"><#AiMesh_System_Settings#></span>
 											<span style="display:none;" onclick="change_tab(3);"><#AiMesh_Statistics#></span>
 										</div>
-										<div style="margin:5px;" class="splitLine"></div>
+										<div class="splitLine"></div>
 										<div id="AiMesh_Topology" class="aimesh_tab_content idx1"></div>
 										<div id="AiMesh_System_Settings" class="aimesh_tab_content idx2"></div>
 										<script>

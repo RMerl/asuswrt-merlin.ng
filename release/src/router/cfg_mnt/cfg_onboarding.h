@@ -85,7 +85,11 @@ enum vsieType {
     VSIE_TYPE_AP_LAST_BYTE = 18,
     VSIE_TYPE_CAP_ROLE = 19,
 	VSIE_TYPE_BUNDLE_KEY = 20,
-	VSIE_TYPE_INF_TYPE = 21
+	VSIE_TYPE_INF_TYPE = 21,
+	VSIE_TYPE_TCODE = 22,
+#if defined(RTCONFIG_AMAS_QCA_WDS) && defined(RTCONFIG_BHCOST_OPT)
+	VSIE_TYPE_WDS =23
+#endif		
 };
 
 enum prelinkStage {

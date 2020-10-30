@@ -302,7 +302,6 @@ static int local_network_addr(struct upnp_wps_device_sm *sm,
 		(sm->ip_addr & sm->netmask.s_addr);
 }
 
-
 /* subscr_addr_add_url -- add address(es) for one url to subscription */
 static void subscr_addr_add_url(struct subscription *s, const char *url,
 				size_t url_len)
@@ -1049,9 +1048,9 @@ static int upnp_wps_device_start(struct upnp_wps_device_sm *sm, char *net_if)
 #endif	/* CONFIG_DRIVER_BRCM */
 	}
 	wpa_printf(MSG_DEBUG, "WPS UPnP: Local IP address %s netmask %s hwaddr "
-		MACSTR,
-		sm->ip_addr_text, inet_ntoa(sm->netmask),
-		MAC2STR(sm->mac_addr));
+		   MACSTR,
+		   sm->ip_addr_text, inet_ntoa(sm->netmask),
+		   MAC2STR(sm->mac_addr));
 
 	/* Listen for incoming TCP connections so that others
 	 * can fetch our "xml files" from us.

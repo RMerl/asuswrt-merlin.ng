@@ -9,9 +9,11 @@ void config_blocking_redirect(FILE *fp){
 	char *lan_if = nvram_safe_get("lan_ifname");
 	char *lan_ip = nvram_safe_get("lan_ipaddr");
 	char *lan_mask = nvram_safe_get("lan_netmask");
+#ifndef RTCONFIG_PC_SCHED_V3
 	char *datestr[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-	char *fftype;
 	int i;
+#endif
+	char *fftype;
 
 	fftype = "PCREDIRECT";
 
@@ -46,6 +48,34 @@ void config_blocking_redirect(FILE *fp){
 		if (!strcmp(follow_pc->mac, "")) continue;
 #endif
 
+#ifdef RTCONFIG_PC_SCHED_V3
+		for(follow_e = follow_pc->events; follow_e != NULL; follow_e = follow_e->next){
+			int s_min = (follow_e->start_hour*60) + follow_e->start_min;
+			int e_min = (follow_e->end_hour*60) + follow_e->end_min;
+			char date_buf[64];
+			if(s_min >= e_min){  // over one day
+				if(!(follow_e->start_hour == 24 && follow_e->start_min == 0)) {
+					fprintf(fp, "-A PREROUTING -i %s -m time", lan_if);
+					if(follow_e->start_hour > 0 || follow_e->start_min > 0)
+						fprintf(fp, " --timestart %d:%d", follow_e->start_hour, follow_e->start_min);
+					fprintf(fp, "%s %s %s %s -j %s\n", DAYS_PARAM, get_pc_date_str(follow_e->day_of_week, 0, date_buf, sizeof(date_buf)), chk_type, follow_addr, fftype);
+				}
+				fprintf(fp, "-A PREROUTING -i %s -m time", lan_if);
+				if(!(follow_e->end_hour == 24 && follow_e->end_min == 0))
+					if(follow_e->end_hour > 0 || follow_e->end_min > 0)
+						fprintf(fp, " --timestop %d:%d", follow_e->end_hour, follow_e->end_min);
+				fprintf(fp, "%s %s %s %s -j %s\n", DAYS_PARAM, get_pc_date_str(follow_e->day_of_week, 1, date_buf, sizeof(date_buf)), chk_type, follow_addr, fftype);
+			} else {
+				fprintf(fp, "-A PREROUTING -i %s -m time", lan_if);
+				if(follow_e->start_hour > 0 || follow_e->start_min > 0)
+					fprintf(fp, " --timestart %d:%d", follow_e->start_hour, follow_e->start_min);
+				if(!(follow_e->end_hour == 24 && follow_e->end_min == 0))
+					if(follow_e->end_hour > 0 || follow_e->end_min > 0)
+						fprintf(fp, " --timestop %d:%d", follow_e->end_hour, follow_e->end_min);
+				fprintf(fp, "%s %s %s %s -j %s\n", DAYS_PARAM, get_pc_date_str(follow_e->day_of_week, 0, date_buf, sizeof(date_buf)), chk_type, follow_addr, fftype);
+			}
+		}
+#else
 		fprintf(fp, "-A PREROUTING -i %s %s %s -j %s\n", lan_if, chk_type, follow_addr, fftype);
 
 		for(follow_e = follow_pc->events; follow_e != NULL; follow_e = follow_e->next){
@@ -100,6 +130,7 @@ void config_blocking_redirect(FILE *fp){
 			else
 				; // Don't care "start_day > end_day".
 		}
+#endif
 
 		// MAC address in list and not in time period -> Redirect to blocking page.
 		fprintf(fp, "-A %s -i %s ! -d %s/%s -p tcp --dport 80 %s %s -j DNAT --to-destination %s:%s\n", fftype, lan_if,lan_ip, lan_mask, chk_type, follow_addr, lan_ip, DFT_SERV_PORT);

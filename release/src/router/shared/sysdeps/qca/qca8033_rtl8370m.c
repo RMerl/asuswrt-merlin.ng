@@ -399,7 +399,7 @@ static char conv_speed(unsigned int link, unsigned int speed)
 
 	return ret;
 }
-void ATE_port_status(void)
+void ATE_port_status(phy_info_list *list)
 {
 	int i, fd;
 	char buf[64];

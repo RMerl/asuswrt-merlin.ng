@@ -18,6 +18,8 @@ const char* login_template =
 "<login>\r\n"
 "<userid>%s</userid>\r\n"
 "<passwd>%s</passwd>\r\n"
+"<cusid>%s</cusid>\r\n"
+"<userticket>%s</userticket>\r\n"
 "<devicemd5mac>%s</devicemd5mac>\r\n"
 "<devicename>%s</devicename>\r\n"
 "<deviceservice>%s</deviceservice>\r\n"
@@ -130,6 +132,22 @@ const char* pns_sendmsg_template =
 "<todeviceid>%s</todeviceid>\r\n"
 "<message>%s</message>\r\n"
 "</pns_sendmsg>\r\n\r\n"
+;
+
+const char* getuserticketbyrefresh_template = 
+"<getuserticketbyrefresh>\r\n"
+"<cusid>%s</cusid>\r\n"
+"<userrefreshticket>%s</userrefreshticket>\r\n"
+"</getuserticketbyrefresh>\r\n\r\n"
+;
+
+const char* psr_sendmsg_template = 
+"<psr_sendmsg>\r\n"
+"<cusid>%s</cusid>\r\n"
+"<deviceid>%s</deviceid>\r\n"
+"<deviceticket>%s</deviceticket>\r\n"
+"<psr_payload>%s</psr_payload>\r\n"
+"</psr_sendmsg>\r\n\r\n"
 ;
 
 const char* ifttt_notification_template = 

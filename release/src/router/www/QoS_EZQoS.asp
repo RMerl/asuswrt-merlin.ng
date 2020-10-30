@@ -273,6 +273,8 @@ var dsl_DataRateUp = parseInt("<% nvram_get("dsllog_datarateup"); %>");
 var fc_disable_orig = '<% nvram_get("fc_disable"); %>';
 var runner_disable_orig = '<% nvram_get("runner_disable"); %>';
 
+var qos_xobw_orig = parseInt(httpApi.nvramGet(["qos_xobw"], true).qos_xobw);
+var qos_xobw1_orig = parseInt(httpApi.nvramGet(["qos_xobw1"], true).qos_xobw1);
 
 var bwdpi_app_rulelist = "<% nvram_get("bwdpi_app_rulelist"); %>".replace(/&#60/g, "<");
 var category_title = ["", "<#Adaptive_Game#>", "<#Adaptive_Stream#>", "<#Adaptive_Message#>", "<#Adaptive_WebSurf#>","<#Adaptive_FileTransfer#>", "<#Adaptive_Others#>", "<#Adaptive_eLearning#>"];
@@ -645,11 +647,28 @@ function validForm(){
 				document.form.ibw.value = 0;
 			}
 
+			if(qos_xobw_orig > 0){
+				if((qos_xobw_orig/1024).toFixed(2) < document.form.obw.value){
+					alert("<#value_lower_than#> "+ (qos_xobw_orig/1024).toFixed(2));
+					document.form.obw.focus();
+					document.form.obw.select();
+					return false;
+				}
+			}
 			document.form.qos_obw.disabled = false;
 			document.form.qos_ibw.disabled = false;
 			document.form.qos_obw.value = document.form.obw.value*1024;
 			document.form.qos_ibw.value = document.form.ibw.value*1024;
 			if(mtwancfg_support) {
+
+				if(qos_xobw1_orig > 0){
+					if((qos_xobw1_orig/1024).toFixed(2) < document.form.obw1.value){
+						alert("<#value_lower_than#> "+(qos_xobw1_orig/1024).toFixed(2));
+						document.form.obw1.focus();
+						document.form.obw1.select();
+						return false;
+					}
+				}
 				document.form.qos_obw1.disabled = false;
 				document.form.qos_ibw1.disabled = false;
 				document.form.qos_obw1.value = document.form.obw1.value*1024;
@@ -1731,7 +1750,7 @@ function change_scheduler(value){
 								<td valign="top">
 									<table style="margin-left:3px;" width="95%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 										<tr id="GeForce_upnp" style="display: none;">
-											<th>Enable GeForce NOW QoS UPnP control</th>
+											<th><#GeForce_NOW_itemname#></th>
 											<td colspan="2">
 												<input type="radio" name="nvgfn_enable" class="input" value="1" <% nvram_match("nvgfn_enable", "1", "checked"); %>><#checkbox_Yes#>
 												<input type="radio" name="nvgfn_enable" class="input" value="0" <% nvram_match("nvgfn_enable", "0", "checked"); %>><#checkbox_No#>

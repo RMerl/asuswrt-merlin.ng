@@ -23,6 +23,19 @@ var scheme_item_post = {
 	},
 	"Mode" : 6
 }
+var gradient_color = {
+	"id1": {"color" :[128,0,0,128,15,0,128,30,0,128,45,0],"left":0},
+	"id2": {"color" :[128,35,0,128,50,0,128,63,0,128,75,0],"left":26},
+	"id3": {"color" :[128,100,0,128,110,0,128,120,0,100,125,0],"left":51},
+	"id4": {"color" :[0,128,30,0,128,60,0,128,100,0,60,128],"left":76},
+	"id5": {"color" :[0,60,128,0,128,100,0,128,60,0,128,30],"left":106},
+	"id6": {"color" :[0,100,128,0,80,128,0,30,128,0,0,128],"left":141},
+	"id7": {"color" :[0,100,128,0,50,128,0,0,128,30,0,128],"left":171},
+	"id8": {"color" :[0,0,128,20,0,128,40,0,128,60,0,128],"left":191},
+	"id9": {"color" :[55,0,128,70,0,128,80,0,128,100,0,128],"left":211},
+	"id10":{"color" :[128,0,128,128,0,100,128,0,60,128,0,30],"left":231},
+	"id11":{"color" :[128,0,50,128,0,40,128,0,20,128,0,10],"left":251}
+};
 function initial_led_control() {
 	var set_scheme_item_post = function(_ledg_rgb) {
 		var ledg_rgb_array = _ledg_rgb.split(",");
@@ -114,15 +127,6 @@ function initial_led_control() {
 			}
 
 			var postData = {"ledg_scheme": scheme_item_post.Mode};
-			if(scheme_item_post.Mode == "2" || scheme_item_post.Mode == "3" || scheme_item_post.Mode == "7") {
-				var ledg_rgb_post = [];
-				Object.keys(scheme_item_post["LED_Set"]).forEach(function(led_group) {
-					ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][led_group]["R"] / 2));
-					ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][led_group]["G"] / 2));
-					ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][led_group]["B"] / 2));
-				});
-				postData["ledg_rgb"] = ledg_rgb_post.join(',');
-			}
 			httpApi.set_ledg(postData);
 		});
 	});
@@ -139,18 +143,16 @@ function initial_led_control() {
 		var ledg_rgb = httpApi.nvramGet(["ledg_rgb" + mode + ""], true)["ledg_rgb" + mode + ""];
 		if(mode == "6")
 			ledg_rgb = "0,0,128,0,0,128,0,0,128,0,0,128";
-		else if(mode == "1")
-			ledg_rgb = "0,100,128,0,50,128,0,0,128,30,0,128";
 
 		set_scheme_item_post(ledg_rgb);
 		set_scheme_mode(mode, scheme_item_post["LED_Set"]);
 		var postData = {"ledg_scheme": scheme_item_post.Mode};
-		if(scheme_item_post.Mode == "2" || scheme_item_post.Mode == "3" || scheme_item_post.Mode == "7") {
+		if(scheme_item_post.Mode == "1" || scheme_item_post.Mode == "2" || scheme_item_post.Mode == "3" || scheme_item_post.Mode == "7") {
 			var ledg_rgb_post = [];
-			Object.keys(scheme_item_post["LED_Set"]).forEach(function(led_group) {
-				ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][led_group]["R"] / 2));
-				ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][led_group]["G"] / 2));
-				ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][led_group]["B"] / 2));
+			Object.keys(scheme_item_post["LED_Set"]).forEach(function(group_idx) {
+				ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["R"] / 2));
+				ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["G"] / 2));
+				ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["B"] / 2));
 			});
 			postData["ledg_rgb"] = ledg_rgb_post.join(',');
 		}
@@ -251,14 +253,27 @@ function set_scheme_mode(_type, _LED_Set_Obj){
 			scheme_item_post.Mode = "7";//marquee
 			break;
 		case "1" :
-			var group_1 = group_rgb[1]["R"] + ", " + group_rgb[1]["G"] + ", " + group_rgb[1]["B"];
-			var group_2 = group_rgb[2]["R"] + ", " + group_rgb[2]["G"] + ", " + group_rgb[2]["B"];
-			var group_3 = group_rgb[3]["R"] + ", " + group_rgb[3]["G"] + ", " + group_rgb[3]["B"];
-			var group_4 = group_rgb[4]["R"] + ", " + group_rgb[4]["G"] + ", " + group_rgb[4]["B"];
-			hue_slider_rgb = [group_rgb[4]["R"],group_rgb[4]["G"],group_rgb[4]["B"]];
-			rgbToLeft(hue_slider_rgb);
+			var gradient_current_rgb = [];
+			var gradient_display_rgb = [];
+			Object.keys(scheme_item_post["LED_Set"]).forEach(function(group_idx) {
+				gradient_current_rgb.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["R"] / 2));
+				gradient_current_rgb.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["G"] / 2));
+				gradient_current_rgb.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["B"] / 2));
+				gradient_display_rgb.push(scheme_item_post["LED_Set"][group_idx]["R"] + ", " + scheme_item_post["LED_Set"][group_idx]["G"] + ", " + scheme_item_post["LED_Set"][group_idx]["B"]);
+			});
+			var left = 0;
+			$.each(gradient_color, function(key, value) {
+				var gradient_group_color = gradient_color[key]["color"];
+				if(JSON.stringify(gradient_group_color) == JSON.stringify(gradient_current_rgb)) {
+					left = gradient_color[key]["left"];
+					return false;
+				}
+			});
+			$hue_slider.css("left", left);
+			hsl.h = Math.round(parseInt($hue_slider.css("left")) / get_offset($hue_bar).width * 360);
+			$hue_slider.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
 			$light_effect_bg.css("background",
-				"linear-gradient(to right, rgb("+group_1+") 50%, rgb("+group_2+") 60%, rgb("+group_3+") 70%, rgb("+group_4+") 80%)");
+				"linear-gradient(to right, rgb("+gradient_display_rgb[0]+") 50%, rgb("+gradient_display_rgb[1]+") 60%, rgb("+gradient_display_rgb[2]+") 70%, rgb("+gradient_display_rgb[3]+") 80%)");
 			$(".setting_hue").fadeTo(0, 1);
 			scheme_item_post.Mode = "1";//gradient
 			break;
@@ -377,20 +392,6 @@ function get_offset(element) {
 	var width = parseInt(element[0].offsetWidth);
 	return {"x": x, "y": y, "height": height, "width": width};
 }
-
-var gradient_color = {
-	"id1": {"color" :[128,0,0,128,5,0,128,10,0,128,20,0],"left":7},
-	"id2": {"color" :[128,10,0,128,20,0,128,30,0,128,50,0],"left":18},
-	"id3": {"color" :[128,70,0,128,80,0,128,90,0,100,128,0],"left":56},
-	"id4": {"color" :[30,128,0,0,128,5,0,128,10,0,128,30],"left":102},
-	"id5": {"color" :[0,60,128,0,128,100,0,128,60,0,128,30],"left":102},
-	"id6": {"color" :[0,100,128,0,80,128,0,30,128,0,0,128],"left":183},
-	"id7": {"color" :[0,100,128,0,50,128,0,0,128,30,0,128],"left":192},
-	"id8": {"color" :[0,0,128,10,0,128,30,0,128,50,0,128],"left":200},
-	"id9": {"color" :[30,0,128,40,0,128,50,0,128,100,0,128],"left":218},
-	"id10":{"color" :[128,0,128,128,0,100,128,0,60,128,0,30],"left":263},
-	"id11":{"color" :[128,0,40,128,0,30,128,0,20,128,0,10],"left":270}
-};
 function set_hue_value(e) {
 	var x = 0;
 	var left = 0;
@@ -399,7 +400,6 @@ function set_hue_value(e) {
 	else
 		x = e.pageX - get_offset($hue_bar).x;
 	left = Math.max(Math.min(x, get_offset($hue_bar).width),0);
-	console.log("left: " + left);
 	$hue_slider.css("left", left);
 	$hue_slider.addClass("active");
 	hsl.h = Math.round(parseInt($hue_slider.css("left")) / get_offset($hue_bar).width * 360);
@@ -407,45 +407,34 @@ function set_hue_value(e) {
 		hsl.h = 359;//avoid slider same as 255,0,0
 	$hue_slider.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
 	if(scheme_item_post.Mode == "1") {
-		//$hue_slider.css("width", "40");
-		var select_id = 1;
-		$.each(gradient_color, function(key, value) { 
+		var select_id = "id1";
+		$.each(gradient_color, function(key, value) {
 			var gradient_left = gradient_color[key]["left"];
 			if(left > gradient_left)
 				select_id = key;
-			else if(left <= 7) {
+			else if(left < gradient_color["id2"]["left"]) {
 				select_id = "id1";
 				return false;
 			}
 			else
 				return false;
 		});
-
-var set_scheme_item_post = function(_ledg_rgb) {
-	//console.log(_ledg_rgb);
-		var ledg_rgb_array = _ledg_rgb.split(",");
-		if(ledg_rgb_array.length == 12) {
-			for(var i = 0; i < ledg_rgb_array.length; i += 3) {
+		var gradient_current_rgb = gradient_color[select_id].color.join().split(",");
+		var gradient_display_rgb = [];
+		if(gradient_current_rgb.length == 12) {
+			for(var i = 0; i < gradient_current_rgb.length; i += 3) {
 				var group_idx = (Math.floor(i / 3)) + 1;
-				scheme_item_post["LED_Set"][group_idx]["R"] = multiply_rgb(parseInt(ledg_rgb_array[i]));
-				scheme_item_post["LED_Set"][group_idx]["G"] = multiply_rgb(parseInt(ledg_rgb_array[i+1]));
-				scheme_item_post["LED_Set"][group_idx]["B"] = multiply_rgb(parseInt(ledg_rgb_array[i+2]));
+				scheme_item_post["LED_Set"][group_idx]["R"] = multiply_rgb(parseInt(gradient_current_rgb[i]));
+				scheme_item_post["LED_Set"][group_idx]["G"] = multiply_rgb(parseInt(gradient_current_rgb[i+1]));
+				scheme_item_post["LED_Set"][group_idx]["B"] = multiply_rgb(parseInt(gradient_current_rgb[i+2]));
+				gradient_display_rgb.push(scheme_item_post["LED_Set"][group_idx]["R"] + ", " + scheme_item_post["LED_Set"][group_idx]["G"] + ", " + scheme_item_post["LED_Set"][group_idx]["B"]);
 			}
 		}
-	};
-		set_scheme_item_post(gradient_color[select_id].color.toString());
-		var group_rgb = scheme_item_post["LED_Set"];
-		var group_1 = group_rgb[1]["R"] + ", " + group_rgb[1]["G"] + ", " + group_rgb[1]["B"];
-			var group_2 = group_rgb[2]["R"] + ", " + group_rgb[2]["G"] + ", " + group_rgb[2]["B"];
-			var group_3 = group_rgb[3]["R"] + ", " + group_rgb[3]["G"] + ", " + group_rgb[3]["B"];
-			var group_4 = group_rgb[4]["R"] + ", " + group_rgb[4]["G"] + ", " + group_rgb[4]["B"];
-			$light_effect_bg.css("background",
-				"linear-gradient(to right, rgb("+group_1+") 50%, rgb("+group_2+") 60%, rgb("+group_3+") 70%, rgb("+group_4+") 80%)");
-		console.log("select_id:" + select_id);
+		$light_effect_bg.css("background",
+			"linear-gradient(to right, rgb("+gradient_display_rgb[0]+") 50%, rgb("+gradient_display_rgb[1]+") 60%, rgb("+gradient_display_rgb[2]+") 70%, rgb("+gradient_display_rgb[3]+") 80%)");
 	}
 	else
 		$light_effect_bg.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
-
 }
 function set_light_effect() {
 	var select_rgb = $(".hue_slider").css("background-color").replace('rgb(', '').replace(')','' ).split(',').map(Number);
@@ -468,29 +457,19 @@ function set_light_effect() {
 	}
 
 	var postData = {"ledg_scheme": scheme_item_post.Mode};
-	if(scheme_item_post.Mode == "2" || scheme_item_post.Mode == "3" || scheme_item_post.Mode == "7") {
-		scheme_item_post["LED_Set"]["1"]["R"] = select_rgb[0];
-		scheme_item_post["LED_Set"]["1"]["G"] = select_rgb[1];
-		scheme_item_post["LED_Set"]["1"]["B"] = select_rgb[2];
+	if(scheme_item_post.Mode == "1" || scheme_item_post.Mode == "2" || scheme_item_post.Mode == "3" || scheme_item_post.Mode == "7") {
+		if(scheme_item_post.Mode != "1") {
+			Object.keys(scheme_item_post["LED_Set"]).forEach(function(group_idx) {
+				scheme_item_post["LED_Set"][group_idx]["R"] = select_rgb[0];
+				scheme_item_post["LED_Set"][group_idx]["G"] = select_rgb[1];
+				scheme_item_post["LED_Set"][group_idx]["B"] = select_rgb[2];
+			});
+		}
+		var ledg_rgb_post = [];
 		Object.keys(scheme_item_post["LED_Set"]).forEach(function(group_idx) {
-			scheme_item_post["LED_Set"][group_idx]["R"] = select_rgb[0];
-			scheme_item_post["LED_Set"][group_idx]["G"] = select_rgb[1];
-			scheme_item_post["LED_Set"][group_idx]["B"] = select_rgb[2];
-		});
-		var ledg_rgb_post = [];
-		Object.keys(scheme_item_post["LED_Set"]).forEach(function(led_group) {
-			ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][led_group]["R"] / 2));
-			ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][led_group]["G"] / 2));
-			ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][led_group]["B"] / 2));
-		});
-		postData["ledg_rgb"] = ledg_rgb_post.join(',');
-	}
-	else if(scheme_item_post.Mode == "1") {
-		var ledg_rgb_post = [];
-		Object.keys(scheme_item_post["LED_Set"]).forEach(function(led_group) {
-			ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][led_group]["R"] / 2));
-			ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][led_group]["G"] / 2));
-			ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][led_group]["B"] / 2));
+			ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["R"] / 2));
+			ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["G"] / 2));
+			ledg_rgb_post.push(Math.ceil(scheme_item_post["LED_Set"][group_idx]["B"] / 2));
 		});
 		postData["ledg_rgb"] = ledg_rgb_post.join(',');
 	}

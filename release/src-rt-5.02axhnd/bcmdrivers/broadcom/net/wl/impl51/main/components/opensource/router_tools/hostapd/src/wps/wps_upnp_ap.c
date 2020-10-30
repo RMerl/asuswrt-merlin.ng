@@ -73,8 +73,14 @@ int upnp_er_set_selected_registrar(struct wps_registrar *reg,
 void upnp_er_remove_notification(struct wps_registrar *reg,
 				 struct subscription *s)
 {
+#ifndef CONFIG_DRIVER_BRCM
+	bool was_sel_reg = s->selected_registrar;
+#else
+	u8 was_sel_reg = s->selected_registrar;
+#endif /* CONFIG_DRIVER_BRCM */
+
 	s->selected_registrar = 0;
 	eloop_cancel_timeout(upnp_er_set_selected_timeout, s, reg);
-	if (reg)
+	if (reg && was_sel_reg)
 		wps_registrar_selected_registrar_changed(reg, 0);
 }

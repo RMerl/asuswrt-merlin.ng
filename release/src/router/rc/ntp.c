@@ -65,10 +65,13 @@ static void ntp_service()
 	if (first_sync) {
 		first_sync = 0;
 
+		setup_timezone();
+
 		nvram_set("reload_svc_radio", "1");
 		nvram_set("svc_ready", "1");
-
-		setup_timezone();
+#ifndef RTCONFIG_QCA
+		timecheck();
+#endif
 
 #ifdef RTCONFIG_DNSPRIVACY
 		if (nvram_get_int("dnspriv_enable"))

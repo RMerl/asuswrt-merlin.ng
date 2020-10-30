@@ -879,7 +879,7 @@ var tableApi = {
 				tableApi.genTable_frame(tableApi._attr)
 					// thead
 					.append(
-						tableApi.genThead_frame(tableApi._attr.title, tableApi._privateAttr.header_item_num)
+						((tableApi._attr.capability.add) ? "" : tableApi.genThead_frame(tableApi._attr.title, tableApi._privateAttr.header_item_num))
 					)
 					// title
 					.append(

@@ -441,6 +441,10 @@ function saveMode(){
 			}
 
 			if(wl_info.band5g_2_support){
+				if(band6g_support){
+					document.getElementById("5g2_title").innerHTML = '6 GHz - <#Security#>';
+				}
+				
 				document.getElementById("wl_unit_field_4").style.display = "";
 				document.getElementById("wl_unit_field_5").style.display = "";
 				document.getElementById("wl_unit_field_6").style.display = "";	
@@ -890,7 +894,7 @@ function change_smart_con(v){
 			</td>
 		</tr>
 		<tr id="wl_unit_field_4" style="display:none;">
-			<th width="180">5 GHz-2 - <#Security#> </th>
+			<th id="5g2_title" width="180">5 GHz-2 - <#Security#> </th>
 			<td class="QISformtd" id="wl_unit_field_4_2">
 				<input type="checkbox" id="sync_with_5ghz" name="sync_with_5ghz" tabindex="8" class="input" onclick="setTimeout('Sync_5ghz(2);',0);" checked="checked"><span id="syncCheckbox_5_2"><#qis_ssid_desc#></span>
 			</td>

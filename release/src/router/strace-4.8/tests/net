@@ -1,0 +1,47 @@
+#!/bin/sh
+
+# Check how network syscalls are traced.
+
+. "${srcdir=.}/init.sh"
+
+check_strace
+check_timeout
+check_prog grep
+check_prog rm
+
+rm -f check.log.*
+
+$TIMEOUT ./net-accept-connect ||
+	fail_ 'net-accept-connect failed'
+
+args='-tt -ff -o check.log -enetwork ./net-accept-connect'
+$TIMEOUT $STRACE $args ||
+	fail_ "strace $args failed"
+
+"$srcdir"/../strace-log-merge check.log > check.log || {
+	cat check.log
+	fail_ 'strace-log-merge failed'
+}
+
+rm -f check.log.*
+
+grep_log()
+{
+	local syscall="$1"; shift
+	local prefix='[1-9][0-9]* +[0-9]+:[0-9]+:[0-9]+\.[0-9]+ +'
+
+	LC_ALL=C grep -E -x "$prefix$syscall$@" check.log > /dev/null || {
+		cat check.log
+		fail_ "strace -enetwork failed to trace \"$syscall\" properly"
+	}
+}
+
+grep_log socket '\(PF_(LOCAL|UNIX|FILE), SOCK_STREAM, 0\) += 0'
+grep_log socket '\(PF_(LOCAL|UNIX|FILE), SOCK_STREAM, 0\) += 1'
+grep_log bind '\(0, \{sa_family=AF_(LOCAL|UNIX|FILE), sun_path="local-stream"\}, 15\) += 0'
+grep_log listen '\(0, 5\) += 0'
+grep_log getsockname '\(0, \{sa_family=AF_(LOCAL|UNIX|FILE), sun_path="local-stream"\}, \[15\]\) += 0'
+grep_log accept '\(0, \{sa_family=AF_(LOCAL|UNIX|FILE), NULL\}, \[2\]\) += 1'
+grep_log connect '\(1, \{sa_family=AF_(LOCAL|UNIX|FILE), sun_path="local-stream"\}, 15\) += 0'
+
+exit 0

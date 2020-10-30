@@ -16,6 +16,7 @@
 	<script src="../state.js" type="text/javascript"></script>
 	<script src="../js/device.js" type="text/javascript"></script>
 	<script src="/validator.js" type="text/javascript"></script>
+	<script src="../switcherplugin/jquery.iphone-switch.js"></script>
 </head>
 <body>
 <script>
@@ -28,10 +29,18 @@
 	};
 	if(parent.amesh_support && (parent.isSwMode("rt") || parent.isSwMode("ap")))
 		dynamic_include_js('/require/modules/amesh.js');
-	if(parent.smart_connect_support && (parent.isSwMode("rt") || parent.isSwMode("ap")))
-		dynamic_include_js('/switcherplugin/jquery.iphone-switch.js');
 	if(parent.lantiq_support)
 		dynamic_include_js('/calendar/jquery-ui.js');
+})();
+var wlc_band = httpApi.nvramGet(['wlc_band']).wlc_band;
+var assassinMode_enable = (function(){
+	if(system.modelName == 'TUF-AX3000' 
+	&& system.territoryCode.includes('CN') 
+	&& httpApi.nvramGet(['location_code']).location_code == 'XX'){
+		return true
+	}
+	
+	return false;
 })();
 $(document).ready(function(){
 	if(system.INTELplatform || system.modelName == 'RT-AC87U'){
@@ -47,9 +56,13 @@ $(document).ready(function(){
 
 var nvram = new Object();
 var variable = new Object();
-function getVariable(){
+function getVariable(){	
 	var _array = new Array('sw_mode', 'wps_enable');
 	var _ssid = new Array();
+
+	if(system.modelName == 'TUF-AX3000' && system.territoryCode.includes('CN')){
+		_array.push('location_code');
+	}
 
 	if(system.smartConnectSupport){
 		_array.push('smart_connect_x');
@@ -57,22 +70,49 @@ function getVariable(){
 
 	if(system.band2gSupport){
 		var _element = new Array();
-		_element = ['wl0_nmode_x', 'wl0_auth_mode_x', 'wl0_crypto', 'wl0_wpa_psk', 'wl0_mfp', 'wl0_wep_x', 'wl0_key', 'wl0_key1', 'wl0_key2', 'wl0_key3', 'wl0_key4'];
-		_ssid.push('wl0_ssid');
+		if(isSwMode('re') && (concurrep_support || wlc_band == '0')){
+			_element = ['wl0.1_nmode_x', 'wl0.1_auth_mode_x', 'wl0.1_crypto', 'wl0.1_wpa_psk', 'wl0.1_mfp', 'wl0.1_wep_x', 'wl0.1_key', 'wl0.1_key1', 'wl0.1_key2', 'wl0.1_key3', 'wl0.1_key4'];
+			_ssid.push('wl0.1_ssid');
+			_ssid.push('wl0.1_wpa_psk');
+		}
+		else{
+			_element = ['wl0_nmode_x', 'wl0_auth_mode_x', 'wl0_crypto', 'wl0_wpa_psk', 'wl0_mfp', 'wl0_wep_x', 'wl0_key', 'wl0_key1', 'wl0_key2', 'wl0_key3', 'wl0_key4'];
+			_ssid.push('wl0_ssid');
+			_ssid.push('wl0_wpa_psk');
+		}	
+		
 		_array.push.apply(_array, _element);
 	}
 
 	if(system.band5gSupport){
 		var _element = new Array();
-		_element = ['wl1_nmode_x', 'wl1_auth_mode_x', 'wl1_crypto', 'wl1_wpa_psk', 'wl1_mfp', 'wl1_wep_x', 'wl1_key', 'wl1_key1', 'wl1_key2', 'wl1_key3', 'wl1_key4'];
-		_ssid.push('wl1_ssid');
+		if(isSwMode('re') && (concurrep_support || wlc_band == '1')){
+			_element = ['wl1.1_nmode_x', 'wl1.1_auth_mode_x', 'wl1.1_crypto', 'wl1.1_wpa_psk', 'wl1.1_mfp', 'wl1.1_wep_x', 'wl1.1_key', 'wl1.1_key1', 'wl1.1_key2', 'wl1.1_key3', 'wl1.1_key4'];
+			_ssid.push('wl1.1_ssid');
+			_ssid.push('wl1.1_wpa_psk');
+		}
+		else{
+			_element = ['wl1_nmode_x', 'wl1_auth_mode_x', 'wl1_crypto', 'wl1_wpa_psk', 'wl1_mfp', 'wl1_wep_x', 'wl1_key', 'wl1_key1', 'wl1_key2', 'wl1_key3', 'wl1_key4'];
+			_ssid.push('wl1_ssid');
+			_ssid.push('wl1_wpa_psk');
+		}
+
 		_array.push.apply(_array, _element);
 	}
 
 	if(system.band5g2Support){
 		var _element = new Array();
-		_element = ['wl2_nmode_x', 'wl2_auth_mode_x', 'wl2_crypto', 'wl2_wpa_psk', 'wl2_mfp', 'wl2_wep_x', 'wl2_key', 'wl2_key1', 'wl2_key2', 'wl2_key3', 'wl2_key4'];
-		_ssid.push('wl2_ssid');
+		if(isSwMode('re') && (concurrep_support || wlc_band == '2')){
+			_element = ['wl2.1_nmode_x', 'wl2.1_auth_mode_x', 'wl2.1_crypto', 'wl2.1_wpa_psk', 'wl2.1_mfp', 'wl2.1_wep_x', 'wl2.1_key', 'wl2.1_key1', 'wl2.1_key2', 'wl2.1_key3', 'wl2.1_key4'];
+			_ssid.push('wl2.1_ssid');
+			_ssid.push('wl2.1_wpa_psk');
+		}
+		else{
+			_element = ['wl2_nmode_x', 'wl2_auth_mode_x', 'wl2_crypto', 'wl2_wpa_psk', 'wl2_mfp', 'wl2_wep_x', 'wl2_key', 'wl2_key1', 'wl2_key2', 'wl2_key3', 'wl2_key4'];
+			_ssid.push('wl2_ssid');
+			_ssid.push('wl2_wpa_psk');
+		}
+		
 		_array.push.apply(_array, _element);
 	}
 
@@ -91,22 +131,29 @@ function getInterface(){
 	wlInterface = [];	// initialize
 	var _temp = new Array();
 	var typeObj = {
-		'triBandSmartConnect': [['0', 'Tri-Band Smart Connect']],
-		'dualBandSmartConnect': [['0', 'Dual-Band Smart Connect']],
-		'triBand5GHzSmartConnect': [['0', '2.4 GHz'], ['1', '5GHz Smart Connect']],
-		'triBandMeshSmartConnect': [['0', 'Dual-Band Smart Connect'], ['2', '5 GHz-2']],
-		'lyraHide': [['0', 'Wireless']],
-		'2.4G':  [['0', '2.4 GHz']],
-		'5GDualBand': [['1', '5 GHz']],
-		'5GTriBand': [['1', '5 GHz-1'], ['2', '5 GHz-2']],
-		'60G': [['3', '60 GHz']]
+		'triBandSmartConnect': [['0', 'Tri-Band Smart Connect', '0']],
+		'dualBandSmartConnect': [['0', 'Dual-Band Smart Connect', '0']],
+		'triBand5GHzSmartConnect': [['0', '2.4 GHz', '0'], ['1', '5GHz Smart Connect', '1']],
+		'triBandMeshSmartConnect': [['0', 'Dual-Band Smart Connect', '0'], ['2', '5 GHz-2', '2']],
+		'triBand6GHzMeshSmartConnect': [['0', 'Dual-Band Smart Connect', '0'], ['2', '6 GHz', '2']],
+		'lyraHide': [['0', 'Wireless', '0']],
+		'2.4G':  [['0', '2.4 GHz', '0']],
+		'5GDualBand': [['1', '5 GHz', '1']],
+		'5GTriBand': [['1', '5 GHz-1', '1'], ['2', '5 GHz-2', '2']],
+		'6GTriBand': [['1', '5 GHz', '1'], ['2', '6 GHz', '2']],
+		'60G': [['3', '60 GHz','3']]
 	}
 
 	if(system.smartConnectSupport && variable.smart_connect_x != '0'){		// Smart Connect
 		if(variable.smart_connect_x == '1'){	// Tri/Dual-Band Smart Connect		
 			if(system.band5g2Support){
 				if(dwb_info.mode == '1'){
-					_temp = typeObj['triBandMeshSmartConnect'];
+					if(system.band6gSupport){
+						_temp = typeObj['triBand6GHzMeshSmartConnect'];
+					}
+					else{
+						_temp = typeObj['triBandMeshSmartConnect'];
+					}
 				}
 				else{
 					_temp = typeObj['triBandSmartConnect'];
@@ -130,7 +177,12 @@ function getInterface(){
 
 		if(system.band5gSupport){
 			if(system.band5g2Support){
-				_temp = _temp.concat(typeObj['5GTriBand']);			
+				if(system.band6gSupport){
+					_temp = _temp.concat(typeObj['6GTriBand']);
+				}
+				else{
+					_temp = _temp.concat(typeObj['5GTriBand']);
+				}			
 			}
 			else{
 				_temp = _temp.concat(typeObj['5GDualBand']);
@@ -143,22 +195,37 @@ function getInterface(){
 	}
 
 	wlInterface.push.apply(wlInterface, _temp);
+	if(isSwMode('re')){
+		if(concurrep_support){
+			wlInterface.forEach(function(element){
+				element[2] = element[0] + '.1';
+			});
+		}
+		else{
+			wlInterface[wlc_band][2] = wlc_band + '.1';
+		}
+	}
+
 	genElement();
-	setOptions()
+	setOptions();
 }
 
 function genElement(){
 	var code = '';
 	var _temp = '';
-
-	if(sw_mode == '4'){
-		code += '<div class="info-block">';
+	if(isSwMode('mb')){
+		code += '<div class="unit-block">';
 		code += '<div class="info-title"><#APSurvey_action_search_again_hint2#></div>';
 		code += '<div class="button-right"><input type="button" class="button_gen" value="<#QIS_rescan#>" onclick="gotoSiteSurvey();"></div>';
 		code += '</div>';
 		$('#wl_settings_field').html(code);
 		$('#apply_button').hide();
 		return true;
+	}
+
+	// part for Assassin mode
+	if(system.modelName == 'TUF-AX3000' && system.territoryCode.includes('CN')){
+		document.getElementById('assassin_mode').style.display= '';
 	}
 
 	// part of Smart Connect
@@ -182,13 +249,14 @@ function genElement(){
 	}
 
 	for(var i=0; i<wlInterface.length; i++){	
-		var unit = wlInterface[i][0];
+		var unit = wlInterface[i][2];
+		var UNIT = wlInterface[i][0];
 
 		// Mesh, description of dedicated backhaul
 		code += '<div class="unit-block"><div class="division-block">'+ wlInterface[i][1] +'</div>';
-		if(dwb_info.mode == '1' && (dwb_info.band == unit)){
-			code += '<div class="dwb_hint">5 GHz-2 is now used as dedicated WiFi backhaul under AiMesh mode.</div>';
-			code += '<div class="dwb_hint">If you want to change wireless settings, please go to <span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">here</span>.</div>';
+		if(dwb_info.mode == '1' && (dwb_info.band == UNIT)){
+			code += '<div class="dwb_hint"><#AiMesh_backhaul_band_5GHz-2_desc1#></div>';
+			code += '<div class="dwb_hint"><#AiMesh_backhaul_band_5GHz-2_desc2#></div>';
 			break;
 		}
 
@@ -200,7 +268,7 @@ function genElement(){
 
 		// Authentication method
 		if(!system.lyraHideSupport){
-			code += '<div class="info-block">';
+			code += '<div class="info-block">';                                                                                                                                               
 			code += '<div class="info-title"><#WLANConfig11b_AuthenticationMethod_itemname#></div>';
 			code += '<div><select id="wl'+ unit +'_auth_mode_x" class="input_option" onchange="updateVariable(this.id, value)">'+ _temp +'</select></div>';
 			code += '</div>';
@@ -291,15 +359,22 @@ function genSmartConnect(){
 }
 
 function setOptions(){
+	if(isSwMode('mb')){
+		return true;
+	}
+
 	for(var i=0; i<wlInterface.length; i++){
-		var _unit = wlInterface[i][0];
-		getSSID(_unit, 'wl'+ _unit + '_ssid', variable['wl'+ _unit + '_ssid']);
+		var _unit = wlInterface[i][2];
+		var _UNIT = wlInterface[i][0];
+		getSSID(_UNIT, 'wl'+ _unit + '_ssid', variable['wl'+ _unit + '_ssid']);
 		genAuthMethod(_unit, 'wl'+ _unit + '_auth_mode_x', variable['wl'+ _unit + '_nmode_x'], variable['wl'+ _unit + '_auth_mode_x']);
 	}
 }
 
 function getSSID(unit, id, ssid){
-	$('#'+ id).val(ssid);
+	if(document.getElementById(id)){
+		document.getElementById(id).value = ssid;
+	}
 }
 
 function genAuthMethod(unit, id, nmode_x, auth_mode_x){
@@ -320,7 +395,7 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 
 	if(sw_mode == '2' || (system.modelName == 'RT-AC87U' && unit == '1')){
 		if(system.wpa3Support){
-
+			auth_array = authObj['repeaterWithWPA3'];
 		}
 		else{
 			auth_array = authObj['repeater'];
@@ -369,8 +444,10 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 		code += '<option value="'+ auth_array[i][1] +'">'+ auth_array[i][0] +'</option>'
 	}
 
-	$('#'+ id).html(code);
-	$('#'+ id).val(auth_mode_x);
+	if(document.getElementById(id)){
+		document.getElementById(id).innerHTML = code;
+		document.getElementById(id).value = auth_mode_x;
+	}
 	
 	if(auth_mode_x == 'sae'){
 		var get_capability_support = function(_node_info, _type){
@@ -427,8 +504,8 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 				getWEPKey(unit, 'wl'+ unit +'_wep_key', variable['wl'+ unit +'_key']);
 			}
 			else{
-				$('#wl'+ unit +'_wep_x').hide();
-				$('#wl'+ unit +'_key').hide();
+				document.getElementById('wl'+ unit +'_wep_x').style.display = 'none';
+				document.getElementById('wl'+ unit +'k_keyey').style.display = 'none';				
 			}
 		}
 	}
@@ -466,12 +543,16 @@ function genWPAEncryption(unit, id, auth_mode_x){
 		code += '<option value="'+ wpaEncryptArray[i][1] +'" '+ selected +'>'+ wpaEncryptArray[i][0] +'</option>';
 	}
 
-	$('#' + id).html(code);
-	variable['wl'+ unit +'_crypto'] = $('#' + id).val();
+	if(document.getElementById(id)){
+		document.getElementById(id).innerHTML = code;
+		variable['wl'+ unit +'_crypto'] = document.getElementById(id).value;
+	}
 }
 
 function getWPAKey(unit, id, key){
-	$('#' + id).val(key);
+	if(document.getElementById(id)){
+		document.getElementById(id).value = key;
+	}
 }
 
 function genWEPEncryption(unit, id, auth_mode){
@@ -497,8 +578,8 @@ function genWEPEncryption(unit, id, auth_mode){
 		code += '<option value="'+ wepEncryptionArray[i][1] +'" '+ selected +'>'+ wepEncryptionArray[i][0] +'</option>';
 	}
 
-	$('#' + id).html(code);
-	variable['wl'+ unit +'_wep_x'] = $('#' + id).val();
+	document.getElementById(id).innerHTML = code;
+	variable['wl'+ unit +'_wep_x'] = document.getElementById(id).value;
 }
 
 function genWEPKeyIndex(unit, id){
@@ -518,22 +599,26 @@ function getWEPKey(unit, id, keyIndex){
 	$('#wl'+ unit +'_wep_key').val(wepKey);
 }
 
-function apply(){
+function apply(rc_flag){
 	var postObj = new Object();
-
+	var rc_time = httpApi.hookGet('get_default_reboot_time', true);
+	if(!rc_flag){
+		rc_flag = 'restart_wireless';
+		rc_time = 10;
+	}
 	// handle data wants to post
 	postObj = {
 		'action_mode': 'apply',
-		'rc_service': 'restart_wireless'
+		'rc_service': rc_flag
 	}
 
 	if(validateInput()){
 		postObj = Object.assign(postObj, variable);
 		httpApi.nvramSet(postObj, function(){
-			parent.showLoading(10);
+			parent.showLoading(rc_time);
 			setTimeout(function(){
 				location.href = location.href;
-			}, 10000);
+			}, rc_time*1000);
 		});
 	}
 }
@@ -685,9 +770,9 @@ function validateInput(){
 		}
 
 		if(system.AMESHSupport && (parent.isSwMode("rt") || parent.isSwMode("ap"))){
-			id = prefix + '_auth_mode_x option:selected';
+			id = prefix + '_auth_mode_x';
 			var auth_mode = variable[id];
-			if(!check_wl_auth_support(auth_mode, $('#'+ id)))
+			if(!check_wl_auth_support(auth_mode, $('#'+ id + ' option:selected')))
 				return false;
 			else {
 				var wl_parameter = {
@@ -715,6 +800,32 @@ function validateInput(){
 			<div id="wireless_tab" class="tab-block tab-click" onclick="switchTab(this.id)"><#menu5_1#></div>
 			<div id="status_tab" class="tab-block" onclick="switchTab(this.id)"><#Status_Str#></div>
 			<div id="light_effect_tab" class="tab-block"style="display:none;" onclick="switchTab(this.id)">Aura RGB</div><!-- untranslated -->
+		</div>
+		<div id="assassin_mode" class="unit-block" style="display:none;">
+			<div class="display-flex flex-a-center flex-j-spaceB">
+				<div>刺客模式</div>
+				<div>
+					<div class="left" style="width:94px; " id="assassin_mode_enable"></div>
+					<div class="clear"></div>
+					<script type="text/javascript">
+						$('#assassin_mode_enable').iphoneSwitch(assassinMode_enable,
+								function() {
+									variable.location_code = 'XX';
+									apply('reboot');
+									
+									//document.internetForm.submit();
+									return true;
+								},
+								function() {
+									variable.location_code = 'CN';
+									apply('reboot');
+									//document.internetForm.submit();
+									return true;
+								}
+						);
+					</script>
+				</div>
+			</div>
 		</div>
 		<div id="smart_connect_field" class="unit-block" style="display:none;"></div>
 		<div id="wl_settings_field"></div>

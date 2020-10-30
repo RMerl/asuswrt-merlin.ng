@@ -44,7 +44,11 @@
 #include <sys/stat.h>
 #include <sys/stream.h>
 #include <sys/stropts.h>
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <sys/errno.h>
+#else
+#include <errno.h>
+#endif
 #ifdef __osf__
 #include <sys/ioctl.h>
 #include <sys/cmn_err.h>

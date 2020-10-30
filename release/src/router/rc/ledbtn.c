@@ -88,7 +88,8 @@ static void ledbtn(int sig)
 			if ((ledg_scheme >= LEDG_SCHEME_BLINKING) || (ledg_scheme == LEDG_SCHEME_OFF)) {
 				if (ledg_scheme == LEDG_SCHEME_OFF)
 					LED_status = 1;
-				ledg_scheme = LEDG_SCHEME_WATER_FLOW;
+				if (nvram_default_get("ledg_scheme"))
+					nvram_set("ledg_scheme", nvram_default_get("ledg_scheme"));
 			} else {
 				ledg_scheme = (ledg_scheme + 1) % (LEDG_SCHEME_MAX - 2);
 				if (ledg_scheme == LEDG_SCHEME_OFF)

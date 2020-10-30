@@ -788,7 +788,7 @@ function change_wan_type(wan_type, flag){
 		inputCtrl(document.form.wan_pppoe_service, 1);
 		inputCtrl(document.form.wan_pppoe_ac, 1);
 		inputCtrl(document.form.wan_pppoe_hostuniq, 1);
-		inputCtrl(document.form.dhcpc_mode, 0);
+		inputCtrl(document.form.wan_dhcp_qry, 0);
 		inputCtrl(document.form.wan_mtu, 0);
 		
 		// 2008.03 James. patch for Oleg's patch. {
@@ -820,7 +820,7 @@ function change_wan_type(wan_type, flag){
 		inputCtrl(document.form.wan_pppoe_service, 0);
 		inputCtrl(document.form.wan_pppoe_ac, 0);
 		inputCtrl(document.form.wan_pppoe_hostuniq, 0);
-		inputCtrl(document.form.dhcpc_mode, 0);
+		inputCtrl(document.form.wan_dhcp_qry, 0);
 		inputCtrl(document.form.wan_mtu, 0);
 		
 		// 2008.03 James. patch for Oleg's patch. {
@@ -852,7 +852,7 @@ function change_wan_type(wan_type, flag){
 		inputCtrl(document.form.wan_pppoe_service, 0);
 		inputCtrl(document.form.wan_pppoe_ac, 0);
 		inputCtrl(document.form.wan_pppoe_hostuniq, 0);
-		inputCtrl(document.form.dhcpc_mode, 0);
+		inputCtrl(document.form.wan_dhcp_qry, 0);
 		inputCtrl(document.form.wan_mtu, 0);
 		
 		// 2008.03 James. patch for Oleg's patch. {
@@ -884,7 +884,7 @@ function change_wan_type(wan_type, flag){
 		inputCtrl(document.form.wan_pppoe_service, 0);
 		inputCtrl(document.form.wan_pppoe_ac, 0);
 		inputCtrl(document.form.wan_pppoe_hostuniq, 0);
-		inputCtrl(document.form.dhcpc_mode, 0);
+		inputCtrl(document.form.wan_dhcp_qry, 0);
 		inputCtrl(document.form.wan_mtu, 1);
 		
 		// 2008.03 James. patch for Oleg's patch. {
@@ -933,7 +933,7 @@ function change_wan_type(wan_type, flag){
 		inputCtrl(document.form.wan_pppoe_service, 0);
 		inputCtrl(document.form.wan_pppoe_ac, 0);
 		inputCtrl(document.form.wan_pppoe_hostuniq, 0);
-		inputCtrl(document.form.dhcpc_mode, 1);
+		inputCtrl(document.form.wan_dhcp_qry, 1);
 		inputCtrl(document.form.wan_mtu, 1);
 		
 		// 2008.03 James. patch for Oleg's patch. {
@@ -1901,10 +1901,10 @@ function pullDNSList(_this) {
         <tr>
 		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,30);"><#DHCP_query_freq#></a></th>
 		<td>
-		<select name="dhcpc_mode" class="input_option">
-			<option value="0" <% nvram_match(" dhcpc_mode", "0","selected"); %>><#DHCPnormal#></option>
-			<option value="1" <% nvram_match(" dhcpc_mode", "1","selected"); %>><#DHCPaggressive#></option>
-			<option value="2" <% nvram_match(" dhcpc_mode", "2","selected"); %>><#Continuous_Mode#></option>
+		<select name="wan_dhcp_qry" class="input_option">
+			<option value="0" <% nvram_match(" wan_dhcp_qry", "0","selected"); %>><#DHCPnormal#></option>
+			<option value="1" <% nvram_match(" wan_dhcp_qry", "1","selected"); %>><#DHCPaggressive#></option>
+			<option value="2" <% nvram_match(" wan_dhcp_qry", "2","selected"); %>><#Continuous_Mode#></option>
 		</select>
 		</td>
 		</tr>

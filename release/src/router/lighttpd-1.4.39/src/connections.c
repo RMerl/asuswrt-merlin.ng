@@ -695,7 +695,11 @@ static int parser_share_link(server *srv, connection *con){
 		buffer_copy_string_len(filename, con->request.uri->ptr+y+1, con->request.uri->used-y);
 		buffer_urldecode_path(filename);
 		Cdbg(DBE, "filename=%s", filename->ptr);
-				
+
+		if(strstr(filename->ptr, "..") != NULL) {                      
+			return -1;
+		}
+	
 		buffer* sharepath = buffer_init();
 		buffer_copy_string_len(sharepath, con->request.uri->ptr+1, y-1);
 		Cdbg(DBE, "sharepath=%s", sharepath->ptr );

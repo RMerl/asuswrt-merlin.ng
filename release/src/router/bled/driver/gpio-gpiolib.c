@@ -24,7 +24,7 @@
  *
  */
 
-#include <asm/gpio.h>
+#include <linux/gpio.h>
 #include "../bled_defs.h"
 #include "gpio_api.h"
 #ifdef CONFIG_4GAC53U

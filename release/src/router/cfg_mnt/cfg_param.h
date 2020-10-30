@@ -36,6 +36,9 @@
 #ifdef RTCONFIG_DWB
 #define FT_DWBCTRL	BIT(17) /* DWB feature */
 #endif
+#ifdef RTCONFIG_BHCOST_OPT
+#define	FT_PREFERAP	BIT(18)  /* Prefer AP feature */
+#endif
 
 /* service */
 #define RESTART_WIRELESS		"restart_wireless"
@@ -58,6 +61,7 @@
 #if defined(RTCONFIG_STA_AP_BAND_BIND)
 #define UPDATE_STA_BINDING	"update_sta_binding"
 #endif
+#define TRIGGER_OPT		"trigger_opt"
 
 struct feature_mapping_s {
 	char *name;
@@ -92,6 +96,9 @@ struct feature_mapping_s feature_mapping_list[] = {
 #endif
 #ifdef RTCONFIG_DWB
 	{ "dwbctrl", FT_DWBCTRL, RESTART_WIRELESS },
+#endif
+#ifdef RTCONFIG_BHCOST_OPT
+	{ "prefer_ap", FT_PREFERAP, TRIGGER_OPT },
 #endif
 	{ NULL, 0, NULL }
 };
@@ -151,6 +158,9 @@ enum {
 	SUBFT_ADVANCED_5G1_G1,
 	SUBFT_ADVANCED_5G1_G2,
 	SUBFT_ADVANCED_5G1_G3,
+	SUBFT_RADIO_2G,
+	SUBFT_RADIO_5G,
+	SUBFT_RADIO_5G1,
 
 	/* sub feature for administration */
 	SUBFT_ROUTER_LOGIN,
@@ -304,7 +314,7 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "timesched_2g", 	SUBFT_TIMESCHED_2G,	FT_WIRELESS },
 	{ "timesched_5g", 	SUBFT_TIMESCHED_5G,	FT_WIRELESS },
 	{ "timesched_5g1",	SUBFT_TIMESCHED_5G1,	FT_WIRELESS },
-#ifdef RTCONFIG_SCHED_V2
+#ifdef RTCONFIG_WL_SCHED_V2
 	{ "timeschedv2_2g", 	SUBFT_TIMESCHEDV2_2G,	FT_MISC },
 	{ "timeschedv2_5g", 	SUBFT_TIMESCHEDV2_5G,	FT_MISC },
 	{ "timeschedv2_5g1",	SUBFT_TIMESCHEDV2_5G1,	FT_MISC },
@@ -339,6 +349,10 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "advanced_5g1_g1", 	SUBFT_ADVANCED_5G1_G1, 	FT_WIRELESS },
 	{ "advanced_5g1_g2", 	SUBFT_ADVANCED_5G1_G2, 	FT_WIRELESS },
 	{ "advanced_5g1_g3", 	SUBFT_ADVANCED_5G1_G3, 	FT_WIRELESS },
+	{ "radio_2g",	SUBFT_RADIO_2G,		FT_WIRELESS },
+	{ "radio_5g",	SUBFT_RADIO_5G,		FT_WIRELESS },
+	{ "radio_5g1",		SUBFT_RADIO_5G1,	FT_WIRELESS },
+
 	/* administration */
 	{ "router_login", 	SUBFT_ROUTER_LOGIN,	FT_LOGIN },
 	{ "time_zone",		SUBFT_TIMEZONE,		FT_TIME },
@@ -445,7 +459,7 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "rssi_method", SUBFT_RSSI_METHOD, FT_WIRELESS },
 #endif
 #ifdef RTCONFIG_BHCOST_OPT
-	{ "force_topology", SUBFT_FORCE_TOPOLOGY, FT_WIRELESS},
+	{ "force_topology", SUBFT_FORCE_TOPOLOGY, FT_PREFERAP},
 #endif
 	/* link aggregation */
 	{ "link_aggregation", SUBFT_LINK_AGGREGATION, FT_LINK_AGGREGATION},
@@ -497,7 +511,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_2G},
 	{ "wl0_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_2G},
 	{ "wl0_timesched", 	FT_WIRELESS,		SUBFT_TIMESCHED_2G},
-#ifdef RTCONFIG_SCHED_V2
+#ifdef RTCONFIG_WL_SCHED_V2
 	{ "wl0_sched_v2",		FT_MISC,		SUBFT_TIMESCHEDV2_2G},
 #else
 	{ "wl0_sched",		FT_WIRELESS,		SUBFT_TIMESCHED_2G},
@@ -505,6 +519,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0_radius_ipaddr",	FT_WIRELESS,		SUBFT_RADIUS_2G},
 	{ "wl0_radius_key",	FT_WIRELESS,		SUBFT_RADIUS_2G},
 	{ "wl0_radius_port",	FT_WIRELESS,		SUBFT_RADIUS_2G},
+	{ "wl0_radio",	FT_WIRELESS,		SUBFT_RADIO_2G},
 	{ "wl1_ssid", 		FT_WIRELESS,		SUBFT_BASIC_5G},
 	{ "wl1_closed", 	FT_WIRELESS, 		SUBFT_BASIC_5G},
 	{ "wl1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G},
@@ -526,7 +541,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl1_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_5G},
 	{ "wl1_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G},
 	{ "wl1_timesched", 	FT_WIRELESS,		SUBFT_TIMESCHED_5G},
-#ifdef RTCONFIG_SCHED_V2
+#ifdef RTCONFIG_WL_SCHED_V2
 	{ "wl1_sched_v2",		FT_MISC,		SUBFT_TIMESCHEDV2_5G},
 #else
 	{ "wl1_sched",		FT_WIRELESS,		SUBFT_TIMESCHED_5G},
@@ -534,6 +549,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl1_radius_ipaddr",	FT_WIRELESS,		SUBFT_RADIUS_5G},
 	{ "wl1_radius_key",	FT_WIRELESS,		SUBFT_RADIUS_5G},
 	{ "wl1_radius_port",	FT_WIRELESS,		SUBFT_RADIUS_5G},
+	{ "wl1_radio",		FT_WIRELESS,		SUBFT_RADIO_5G},
 	{ "wl2_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1},
 	{ "wl2_closed",	 	FT_WIRELESS, 		SUBFT_BASIC_5G1},
 	{ "wl2_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1},
@@ -555,7 +571,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl2_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1},
 	{ "wl2_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1},
 	{ "wl2_timesched",	FT_WIRELESS,		SUBFT_TIMESCHED_5G1},
-#ifdef RTCONFIG_SCHED_V2
+#ifdef RTCONFIG_WL_SCHED_V2
 	{ "wl2_sched_v2",	FT_MISC,		SUBFT_TIMESCHEDV2_5G1},
 #else
 	{ "wl2_sched",	FT_WIRELESS,		SUBFT_TIMESCHED_5G1},
@@ -563,6 +579,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl2_radius_ipaddr",	FT_WIRELESS,		SUBFT_RADIUS_5G1},
 	{ "wl2_radius_key",	FT_WIRELESS,		SUBFT_RADIUS_5G1},
 	{ "wl2_radius_port",	FT_WIRELESS,		SUBFT_RADIUS_5G1},
+	{ "wl2_radio",	FT_WIRELESS,		SUBFT_RADIO_5G1},
 	/* guest network */
 	{ "wl0.1_ssid", 	FT_WIRELESS, 		SUBFT_BASIC_2G_G1},
 	{ "wl0.1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
@@ -698,11 +715,11 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "oauth_google_user_email", FT_FEEDBACK, SUBFT_FEEDBACK },
 	{ "fb_email_provider", FT_FEEDBACK, SUBFT_FEEDBACK },
 	/* diagnostic */
-	{ "dblog_enable", 		FT_DIAGNOSTIC,		SUBFT_DIAGNOSTIC},
-	{ "dblog_tousb", 		FT_DIAGNOSTIC,		SUBFT_DIAGNOSTIC},
-	{ "dblog_service", 		FT_DIAGNOSTIC,		SUBFT_DIAGNOSTIC},
-	{ "dblog_duration", 	FT_DIAGNOSTIC,		SUBFT_DIAGNOSTIC},
-	{ "dblog_transid", 		FT_DIAGNOSTIC,		SUBFT_DIAGNOSTIC},
+	{ "dblog_enable", 		FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "dblog_tousb", 		FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "dblog_service", 		FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "dblog_duration", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "dblog_transid", 		FT_FEEDBACK,		SUBFT_FEEDBACK},
 	/* backhaul ctrl */
 	{ "amas_ethernet", 	FT_BACKHAULCTRL,	SUBFT_BACKHAULCTRL},
 #ifdef RTCONFIG_BHCOST_OPT
@@ -859,9 +876,10 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "rssi_method", FT_WIRELESS, SUBFT_RSSI_METHOD },
 #endif
 #ifdef RTCONFIG_BHCOST_OPT
-	{ "amas_wlc0_target_bssid", FT_WIRELESS, SUBFT_FORCE_TOPOLOGY},
-	{ "amas_wlc1_target_bssid", FT_WIRELESS, SUBFT_FORCE_TOPOLOGY},
-	{ "amas_wlc2_target_bssid", FT_WIRELESS, SUBFT_FORCE_TOPOLOGY},
+	{ "amas_wlc_target_bssid", FT_PREFERAP, SUBFT_FORCE_TOPOLOGY},
+	{ "amas_wlc0_target_bssid", FT_PREFERAP, SUBFT_FORCE_TOPOLOGY},
+	{ "amas_wlc1_target_bssid", FT_PREFERAP, SUBFT_FORCE_TOPOLOGY},
+	{ "amas_wlc2_target_bssid", FT_PREFERAP, SUBFT_FORCE_TOPOLOGY},
 #endif
 	/* link aggregation */
 	{ "lacp_enabled", FT_LINK_AGGREGATION, SUBFT_LINK_AGGREGATION },

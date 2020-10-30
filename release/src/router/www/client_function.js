@@ -132,6 +132,7 @@ var setClientAttr = function(){
 	this.rssi = "";
 	this.ssid = "";
 	this.isWL = 0; // 0: wired, 1: 2.4GHz, 2: 5GHz/5GHz-1 3:5GHz-2.
+	this.isGN = "";
 	this.qosLevel = "";
 	this.curTx = "";
 	this.curRx = "";
@@ -218,6 +219,8 @@ function genClientList(){
 			clientList[thisClientMacAddr].vendor = thisClient.vendor;
 			clientList[thisClientMacAddr].rssi = parseInt(thisClient.rssi);
 			clientList[thisClientMacAddr].isWL = parseInt(thisClient.isWL);
+			if(isSupport("amas"))
+				clientList[thisClientMacAddr].isGN = ((thisClient.isGN != "") ? parseInt(thisClient.isGN) : "");
 			if(amesh_support && isSupport("dualband") && clientList[thisClientMacAddr].isWL == 3)
 				clientList[thisClientMacAddr].isWL = 2;
 			if(clientList[thisClientMacAddr].isOnline) {
@@ -469,7 +472,12 @@ var card_client_variable = {
 	"MULTIFILTER_ENABLE" : decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_ENABLE"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<"),
 	"MULTIFILTER_MAC" : decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_MAC"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<"),
 	"MULTIFILTER_DEVICENAME" : decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_DEVICENAME"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<"),
-	"MULTIFILTER_MACFILTER_DAYTIME" : decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_MACFILTER_DAYTIME"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<")
+	"MULTIFILTER_MACFILTER_DAYTIME" : (function(){
+		if(isSupport("PC_SCHED_V3"))
+			return decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_MACFILTER_DAYTIME_V2"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<")
+		else
+			return decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_MACFILTER_DAYTIME"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<")
+	})()
 };
 function popClientListEditTable(event) {
 	var mac = event.data.mac;
@@ -771,10 +779,13 @@ function popClientListEditTable(event) {
 		}
 
 		if(sw_mode != 4){
-			clientIconHtml += '<div class="radioIcon radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
+			var radioIcon_css = "radioIcon";
+			if(clientInfo.isGN != "" && clientInfo.isGN != undefined)
+				radioIcon_css += " GN";
+			clientIconHtml += '<div class="' + radioIcon_css + ' radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
 			if(clientInfo.isWL != 0) {
 				var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
-				clientIconHtml += '<div class="band_block"><span class="' + bandClass + '" style="color:#000000;">' + wl_nband_title[clientInfo.isWL-1].replace("Hz", "") + '</span></div>';
+				clientIconHtml += '<div class="band_block"><span class="' + bandClass + '" style="color:#000000;">' + wl_nband_title[clientInfo.isWL-1].replace("Hz", "").replace(/\s*/g,"") + '</span></div>';
 			}
 			document.getElementById('card_client_interface').innerHTML = clientIconHtml;
 			document.getElementById("card_client_interface").title = connectModeTip;
@@ -1058,7 +1069,10 @@ function popClientListEditTable(event) {
 		formHTML += '<input type="hidden" name="MULTIFILTER_ENABLE" value="" disabled>';
 		formHTML += '<input type="hidden" name="MULTIFILTER_MAC" value="" disabled>';
 		formHTML += '<input type="hidden" name="MULTIFILTER_DEVICENAME" value="" disabled>';
-		formHTML += '<input type="hidden" name="MULTIFILTER_MACFILTER_DAYTIME" value="" disabled>';
+		if(isSupport("PC_SCHED_V3"))
+			formHTML += '<input type="hidden" name="MULTIFILTER_MACFILTER_DAYTIME_V2" value="" disabled>';
+		else
+			formHTML += '<input type="hidden" name="MULTIFILTER_MACFILTER_DAYTIME" value="" disabled>';
 	}
 
 	formObj.innerHTML = formHTML;
@@ -1291,7 +1305,10 @@ function card_confirm(event) {
 			document.card_clientlist_form.MULTIFILTER_ENABLE.value = card_client_variable.MULTIFILTER_ENABLE;
 			document.card_clientlist_form.MULTIFILTER_MAC.value = card_client_variable.MULTIFILTER_MAC;
 			document.card_clientlist_form.MULTIFILTER_DEVICENAME.value = card_client_variable.MULTIFILTER_DEVICENAME;
-			document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.value = card_client_variable.MULTIFILTER_MACFILTER_DAYTIME;
+			if(isSupport("PC_SCHED_V3"))
+				document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value = card_client_variable.MULTIFILTER_MACFILTER_DAYTIME;
+			else
+				document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.value = card_client_variable.MULTIFILTER_MACFILTER_DAYTIME;
 
 			if(document.card_clientlist_form.MULTIFILTER_MAC.value.indexOf(clientMac) == -1){//new rule
 				if(card_client_variable.timeSchedulingFlag || card_client_variable.blockInternetFlag) {
@@ -1302,7 +1319,10 @@ function card_confirm(event) {
 							document.card_clientlist_form.MULTIFILTER_ENABLE.value += "2";
 						document.card_clientlist_form.MULTIFILTER_MAC.value += clientMac;
 						document.card_clientlist_form.MULTIFILTER_DEVICENAME.value += clientName;
-						document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.value += "<";
+						if(isSupport("PC_SCHED_V3"))
+							document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value += "W03E21000700<W04122000800";
+						else
+							document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.value += "<";
 					}
 					else {
 						document.card_clientlist_form.MULTIFILTER_ENABLE.value += ">";
@@ -1314,7 +1334,10 @@ function card_confirm(event) {
 						document.card_clientlist_form.MULTIFILTER_MAC.value += clientMac;
 						document.card_clientlist_form.MULTIFILTER_DEVICENAME.value += ">";
 						document.card_clientlist_form.MULTIFILTER_DEVICENAME.value += clientName;
-						document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.value += "><";
+						if(isSupport("PC_SCHED_V3"))
+							document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value += ">W03E21000700<W04122000800";
+						else
+							document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.value += "><";
 					}
 				}
 			}
@@ -1344,7 +1367,10 @@ function card_confirm(event) {
 				document.card_clientlist_form.MULTIFILTER_ENABLE.disabled = true;
 				document.card_clientlist_form.MULTIFILTER_MAC.disabled = true;
 				document.card_clientlist_form.MULTIFILTER_DEVICENAME.disabled = true;
-				document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.disabled = true;
+				if(isSupport("PC_SCHED_V3"))
+					document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME_V2.disabled = true;
+				else
+					document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.disabled = true;
 			}
 			else {
 				document.card_clientlist_form.flag.value = "";
@@ -1362,12 +1388,18 @@ function card_confirm(event) {
 				document.card_clientlist_form.MULTIFILTER_ENABLE.disabled = false;
 				document.card_clientlist_form.MULTIFILTER_MAC.disabled = false;
 				document.card_clientlist_form.MULTIFILTER_DEVICENAME.disabled = false;
-				document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.disabled = false;
+				if(isSupport("PC_SCHED_V3"))
+					document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME_V2.disabled = false;
+				else
+					document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.disabled = false;
 			}
 			card_client_variable.MULTIFILTER_ENABLE = document.card_clientlist_form.MULTIFILTER_ENABLE.value;
 			card_client_variable.MULTIFILTER_MAC = document.card_clientlist_form.MULTIFILTER_MAC.value;
 			card_client_variable.MULTIFILTER_DEVICENAME = document.card_clientlist_form.MULTIFILTER_DEVICENAME.value;
-			card_client_variable.MULTIFILTER_MACFILTER_DAYTIME = document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.value;
+			if(isSupport("PC_SCHED_V3"))
+				card_client_variable.MULTIFILTER_MACFILTER_DAYTIME = document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value;
+			else
+				card_client_variable.MULTIFILTER_MACFILTER_DAYTIME = document.card_clientlist_form.MULTIFILTER_MACFILTER_DAYTIME.value;
 		}
 
 		// handle user image
@@ -1932,6 +1964,11 @@ var sorter = {
 				sorter.sortingMethod_wl3 = (sorter.sortingMethod_wl3 == "increase") ? "decrease" : "increase";
 				break;	
 		}
+		if(isSupport("amas") && clickItem.substr(0,2) == "gn"){
+			sorterLastIndex = sorter[""+clickItem+"_index"];
+			sorter[""+clickItem+"_index"] = sorterClickIndex;
+			sorter["sortingMethod_"+clickItem+""] = (sorter["sortingMethod_"+clickItem+""] == "increase") ? "decrease" : "increase";
+		}
 		obj.parentNode.childNodes[sorterLastIndex].style.borderTop = '1px solid #222';
 		obj.parentNode.childNodes[sorterLastIndex].style.borderBottom = '1px solid #222';	
 	},
@@ -1960,6 +1997,10 @@ var sorter = {
 				clickIndex = sorter.wl3_index;
 				clickSortingMethod = sorter.sortingMethod_wl3;
 				break;
+		}
+		if(isSupport("amas") && _arrayName.substr(0,2) == "gn"){
+			clickIndex = sorter[""+_arrayName.substr(0,3)+"_index"];
+			clickSortingMethod = sorter["sortingMethod_"+_arrayName.substr(0,3)+""];
 		}
 		var borderTopCss = "";
 		var borderBottomCss = "";
@@ -2007,9 +2048,22 @@ var sorter = {
 					eval(""+_arrayName+".sort(sorter."+_Method+"_"+sorter.sortingMethod_wl3+");");
 					break;
 			}
+			if(isSupport("amas") && _arrayName.substr(0,2) == "gn"){
+				eval("gn_list['"+_arrayName.substr(0,3)+"'].sort(sorter."+_Method+"_"+sorter["sortingMethod_"+_arrayName.substr(0,3)+""]+");");
+			}
 		}
 		drawClientListBlock(_arrayName);
 		sorter.drawBorder(_arrayName);
+	}
+}
+
+if(isSupport("amas")){
+	var gn_list = [];
+	for(var i=1; i<multissid_count+1; i++){
+		gn_list["gn" + i + ""] = new Array();
+		sorter["gn" + i + "_index"] = 3;
+		sorter["gn" + i + "_display"] = true;
+		sorter["sortingMethod_gn" + i + ""] = "increase";
 	}
 }
 
@@ -2047,6 +2101,10 @@ function changeClientListViewMode() {
 	sorter.wl1_display = true;
 	sorter.wl2_display = true;
 	sorter.wl3_display = true;
+	if(isSupport("amas")){
+		for(var i=1; i<multissid_count+1; i++)
+			sorter["gn" + i + "_display"] = true;
+	}
 }
 
 var interval_clientlist_listview_update = null;
@@ -2114,7 +2172,16 @@ function exportClientListLog() {
 			tempArray[4] = ipStateExport[clientList[array[i][4]].ipMethod];
 			tempArray[5] = array[i][4];
 			if(!(isSwMode('mb') || isSwMode('ew'))) {
-				tempArray[6] = (array[i][9] == 0) ? "Wired" : wl_nband_title[array[i][9] - 1];
+				var if_name = "";
+				if(array[i][9] == 0)
+					if_name = "Wired";
+				else{
+					if(isSupport("amas") && array[i][13] != "")
+						if_name =  wl_nband_title[array[i][9] - 1] + " Guest Network - " +  array[i][13];
+					else
+						if_name = wl_nband_title[array[i][9] - 1];
+				}
+				tempArray[6] = if_name;
 				tempArray[7] = (array[i][6] == "") ? "-" : array[i][6];
 				tempArray[8] = (array[i][7] == "") ? "-" : array[i][7];
 				tempArray[9] = (array[i][9] == 0) ? "-" : array[i][8];
@@ -2137,6 +2204,10 @@ function exportClientListLog() {
 			setArray(wl1_list);
 			setArray(wl2_list);
 			setArray(wl3_list);
+			if(isSupport("amas")){
+				for(var i=1; i<multissid_count+1; i++)
+					setArray(gn_list["gn"+i+""]);
+			}
 			break;
 	}
 	var csvContent = '';
@@ -2192,6 +2263,10 @@ function sorterClientList() {
 				sorter.doSorter(sorter.wl2_index, indexMapType[sorter.wl2_index], 'wl2_list');
 			if(wl_info.band5g_2_support)
 				sorter.doSorter(sorter.wl3_index, indexMapType[sorter.wl3_index], 'wl3_list');
+			if(isSupport("amas")){
+				for(var i=1; i<multissid_count+1; i++)
+					sorter.doSorter(sorter["gn"+i+"_index"], indexMapType[sorter["gn"+i+"_index"]], 'gn'+i+'_list');
+			}
 			break;
 	}
 }
@@ -2202,6 +2277,10 @@ function create_clientlist_listview() {
 	wl1_list = [];
 	wl2_list = [];
 	wl3_list = [];
+	if(isSupport("amas")){
+		for(var i=1; i<multissid_count+1; i++)
+			gn_list["gn"+i+""] = [];
+	}
 
 	if(document.getElementById("clientlist_viewlist_block") != null) {
 		removeElement(document.getElementById("clientlist_viewlist_block"));
@@ -2292,7 +2371,7 @@ function create_clientlist_listview() {
 			code += "</table>";
 			code += "<div id='clientlist_wired_list_Block'></div>";
 	
-			var wl_map = {"2.4 GHz": "1",  "5 GHz": "2", "5 GHz-1": "2", "5 GHz-2": "3"};
+			var wl_map = {"2.4 GHz": "1",  "5 GHz": "2", "5 GHz-1": "2", "5 GHz-2": "3", "6 GHz": "3"};
 			obj_width = stainfo_support ? obj_width_map[2] : obj_width_map[1];
 			for(var i = 0; i < wl_nband_title.length; i += 1) {
 				code += "<table width='100%' border='1' align='center' cellpadding='0' cellspacing='0' class='FormTable_table' style='margin-top:15px;'>";
@@ -2315,6 +2394,30 @@ function create_clientlist_listview() {
 				code += "</tr>";
 				code += "</table>";
 				code += "<div id='clientlist_wl" + wl_map[wl_nband_title[i]] + "_list_Block'></div>";
+			}
+			if(isSupport("amas")){
+				for(var i=1; i<multissid_count+1; i++){
+					code += "<table width='100%' border='1' align='center' cellpadding='0' cellspacing='0' class='FormTable_table' style='margin-top:15px;'>";
+					code += "<thead><tr height='23px'><td colspan='" + wl_colspan + "'><#Guest_Network#> - " + i;
+					code += "<a id='gn" + i + "_expander' class='clientlist_expander' onclick='showHideContent(\"clientlist_gn" + i + "_list_Block\", this);'>[ <#Clientlist_Hide#> ]</a>";
+					code += "</td></tr></thead>";
+					code += "<tr id='tr_gn" + i + "_title' height='40px'>";
+					code += "<th class='IE8HACK' width=" + obj_width[0] + "><#Internet#></th>";
+					code += "<th class='IE8HACK' width=" + obj_width[1] + "><#Client_Icon#></th>";
+					code += "<th width=" + obj_width[2] + " onclick='sorter.addBorder(this);sorter.doSorter(2, \"str\", \"gn"+i+"_list\");' style='cursor:pointer;'><#ParentalCtrl_username#></th>";
+					code += "<th width=" + obj_width[3] + " onclick='sorter.addBorder(this);sorter.doSorter(3, \"num\", \"gn"+i+"_list\");' style='cursor:pointer;'><#vpn_client_ip#></th>";
+					code += "<th width=" + obj_width[4] + " onclick='sorter.addBorder(this);sorter.doSorter(4, \"str\", \"gn"+i+"_list\");' style='cursor:pointer;'><#ParentalCtrl_hwaddr#></th>";
+					if(!(isSwMode('mb') || isSwMode('ew')))
+						code += "<th width=" + obj_width[5] + " onclick='sorter.addBorder(this);sorter.doSorter(5, \"num\", \"gn"+i+"_list\");' style='cursor:pointer;'><#wan_interface#></th>";
+					if(stainfo_support && !(isSwMode('mb') || isSwMode('ew'))) {
+						code += "<th width=" + obj_width[6] + " onclick='sorter.addBorder(this);sorter.doSorter(6, \"num\", \"gn"+i+"_list\");' style='cursor:pointer;' title='The transmission rates of your wireless device'>Tx Rate (Mbps)</th>";/*untranslated*/
+						code += "<th width=" + obj_width[7] + " onclick='sorter.addBorder(this);sorter.doSorter(7, \"num\", \"gn"+i+"_list\");' style='cursor:pointer;' title='The receive rates of your wireless device'>Rx Rate (Mbps)</th>";/*untranslated*/
+						code += "<th width=" + obj_width[8] + " onclick='sorter.addBorder(this);sorter.doSorter(8, \"str\", \"gn"+i+"_list\");' style='cursor:pointer;'><#Access_Time#></th>";
+					}
+					code += "</tr>";
+					code += "</table>";
+					code += "<div id='clientlist_gn" + i + "_list_Block'></div>";
+				}
 			}
 			break;
 	}
@@ -2355,25 +2458,29 @@ function create_clientlist_listview() {
 			var tempArray = [clientList[clientList[i]].internetState, deviceTypeName, clientName, clientList[clientList[i]].ip, 
 							clientList[clientList[i]].mac, clientList[clientList[i]].rssi, clientList[clientList[i]].curTx, clientList[clientList[i]].curRx, 
 							clientList[clientList[i]].wlConnectTime, clientList[clientList[i]].isWL, clientList[clientList[i]].vendor, clientList[clientList[i]].type, 
-							clientList[clientList[i]].macRepeat];
+							clientList[clientList[i]].macRepeat, clientList[clientList[i]].isGN];
 			switch (clienlistViewMode) {
 				case "All" :
 					all_list.push(tempArray);
 					break;
 				case "ByInterface" :
-					switch (clientList[clientList[i]].isWL) {
-						case 0:
-							wired_list.push(tempArray);
-							break;
-						case 1:
-							wl1_list.push(tempArray);
-							break;
-						case 2:
-							wl2_list.push(tempArray);
-							break;
-						case 3:
-							wl3_list.push(tempArray);
-							break;
+					if(isSupport("amas") && clientList[clientList[i]].isWL != 0 && clientList[clientList[i]].isGN != "")
+						gn_list["gn"+clientList[clientList[i]].isGN+""].push(tempArray);
+					else{
+						switch (clientList[clientList[i]].isWL) {
+							case 0:
+								wired_list.push(tempArray);
+								break;
+							case 1:
+								wl1_list.push(tempArray);
+								break;
+							case 2:
+								wl2_list.push(tempArray);
+								break;
+							case 3:
+								wl3_list.push(tempArray);
+								break;
+						}
 					}
 					break;
 			}
@@ -2403,6 +2510,14 @@ function create_clientlist_listview() {
 			document.getElementById("clientlist_wl3_list_Block").style.display = "none";
 			document.getElementById("wl3_expander").innerHTML = "[ <#Clientlist_Show#> ]";
 		}
+		if(isSupport("amas")){
+			for(var i=1; i<multissid_count+1; i++){
+				if(!sorter["gn"+i+"_display"]){
+					document.getElementById("clientlist_gn"+i+"_list_Block").style.display = "none";
+					document.getElementById("gn"+i+"_expander").innerHTML = "[ <#Clientlist_Show#> ]";
+				}
+			}
+		}
 	}
 }
 
@@ -2424,12 +2539,15 @@ function drawClientListBlock(objID) {
 			break;	
 		case "wl3_list" :
 			sortArray = wl3_list;
-			break;	
-
+			break;
+	}
+	if(sortArray == "" && isSupport("amas")){
+		if(objID.substr(0,2) == "gn")
+			sortArray = gn_list[objID.substr(0,3)];
 	}
 	var listViewProfile = function(_profile) {
 		if(_profile == null)
-			_profile = ["", "", "", "", "", "", "", "", "", "", "", "", ""];
+			_profile = ["", "", "", "", "", "", "", "", "", "", "", "", "", ""];
 		
 		this.internetState = _profile[0];
 		this.deviceTypeName = _profile[1];
@@ -2444,6 +2562,7 @@ function drawClientListBlock(objID) {
 		this.vender = _profile[10];
 		this.type = _profile[11];
 		this.macRepeat = _profile[12];
+		this.isGN = _profile[13];
 	}
 
 	if(document.getElementById("clientlist_" + objID + "_Block") != null) {
@@ -2550,7 +2669,7 @@ function drawClientListBlock(objID) {
 				if('<% nvram_get("sw_mode"); %>' == "1") {
 					clientListCode += '<span style="float:right;margin-top:-3px;margin-right:5px;" class="ipMethodTag" onmouseover="return overlib(\''
 					clientListCode += ipState[clientList[clientlist_sort[j].mac].ipMethod];
-					clientListCode += '\')" onmouseout="nd();">'
+					clientListCode += '\')" onmouseout="nd();">';
 					clientListCode += clientList[clientlist_sort[j].mac].ipMethod + '</span>';
 				}
 
@@ -2562,10 +2681,13 @@ function drawClientListBlock(objID) {
 						rssi_t = "wired";
 					else
 						rssi_t = client_convRSSI(clientlist_sort[j].rssi);
-					clientListCode += "<td width='" + obj_width[5] + "' align='center'><div style='height:28px;width:28px'><div class='radioIcon radio_" + rssi_t + "'></div>";
+					var radioIcon_css = "radioIcon";
+					if(clientlist_sort[j].isGN != "" && clientlist_sort[j].isGN != undefined)
+						radioIcon_css += " GN";
+					clientListCode += "<td width='" + obj_width[5] + "' align='center'><div style='height:28px;width:28px'><div class='" +  radioIcon_css + " radio_" + rssi_t + "'></div>";
 					if(clientlist_sort[j].isWL != 0) {
 						var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
-						clientListCode += "<div class='band_block'><span class='" + bandClass + "'>" + wl_nband_title[clientlist_sort[j].isWL-1].replace("Hz", "") + "</span></div>";
+						clientListCode += "<div class='band_block'><span class='" + bandClass + "'>" + wl_nband_title[clientlist_sort[j].isWL-1].replace("Hz", "").replace(/\s*/g,"") + "</span></div>";
 					}
 					clientListCode += "</div></td>";
 				}

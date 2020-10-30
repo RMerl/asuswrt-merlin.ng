@@ -306,7 +306,11 @@ LPRng requires ANSI Standard C compiler
 #include <sys/stat.h>
 #include <pwd.h>
 #if defined(HAVE_SYS_SIGNAL_H)
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #  include <sys/signal.h>
+#else
+#  include <signal.h>
+#endif
 #endif
 #include <signal.h>
 #include <sys/wait.h>
@@ -411,7 +415,11 @@ typedef struct dirent plp_dir_t;
 #endif
 
 #ifdef HAVE_SYS_FCNTL_H
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 # include <sys/fcntl.h>
+#else
+# include <fcntl.h>
+#endif
 #endif
 #ifdef HAVE_FCNTL_H
 #  include <fcntl.h>

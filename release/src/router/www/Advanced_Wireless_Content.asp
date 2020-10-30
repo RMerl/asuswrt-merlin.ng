@@ -34,10 +34,12 @@ $(function () {
 wl_channel_list_2g = '<% channel_list_2g(); %>';
 wl_channel_list_5g = '<% channel_list_5g(); %>';
 wl_channel_list_5g_2 = '<% channel_list_5g_2(); %>';
+wl_channel_list_60g = '<% channel_list_60g(); %>';
 var wl_unit_value = '<% nvram_get("wl_unit"); %>';
 var wl_subunit_value = '<% nvram_get("wl_subunit"); %>';
 var wlc_band_value = '<% nvram_get("wlc_band"); %>';
 var cur_control_channel = [<% wl_control_channel(); %>][0];
+var cur_edmg_channel = [<% wl_edmg_channel(); %>][0];
 var wlc0_ssid = '<% nvram_get("wlc0_ssid"); %>';
 var wlc1_ssid = '<% nvram_get("wlc1_ssid"); %>';
 var wifison_ready = httpApi.nvramGet(["wifison_ready"]).wifison_ready;
@@ -94,7 +96,7 @@ function initial(){
 		document.form.wl_nmode_x.remove(3); //remove "N/AC Mixed" for NON-AC router and NOT in 5G
 	}
 
-	if(vht160_support && wl_unit_value != '0'){
+	if(vht160_support && wl_unit_value != '0' && wl_unit_value != '3'){
 		document.getElementById('enable_160_field').style.display = "";
 	}
 
@@ -132,6 +134,8 @@ function initial(){
 	document.form.wl_key4.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl_key4"); %>');
 	document.form.wl_phrase_x.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl_phrase_x"); %>');
 	document.form.wl_channel.value = document.form.wl_channel_orig.value;
+	if (band60g_support && document.form.wl_unit.value == '3')
+		document.form.wl_edmg_channel.value = document.form.wl_edmg_channel_orig.value;
 	
 	if(document.form.wl_wpa_psk.value.length <= 0)
 		document.form.wl_wpa_psk.value = "<#wireless_psk_fillin#>";
@@ -166,14 +170,23 @@ function initial(){
 		document.getElementById('WPS_hideSSID_hint').style.display = "";	
 	}
 
-	if(band60g_support && wl_unit_value == '3'){//60G, remove unsupported items
+	if(band60g_support && wl_unit_value == '3'){//60G, remove unsupported items and show wigig items
 		document.getElementById("wl_closed_field").style.display = "none";
 		inputCtrl(document.form.wl_nmode_x, 0);
-		inputCtrl(document.form.wl_bw, 0);
 		inputCtrl(document.form.wl_nctrlsb, 0);
 		if(he_frame_support){
 			$("#he_mode_field").hide();
 		}	
+
+		document.getElementById("wl_edmg_field").style.display = "";
+
+		if (document.form.wl_edmg_channel.value == '0' && cur_edmg_channel && cur_edmg_channel[wl_unit_value] != '0'){
+			ajax_wl_edmg_channel();
+			document.getElementById("auto_edmg_channel").style.display = "";
+			document.getElementById("auto_edmg_channel").innerHTML = "Current EDMG channel: " + cur_edmg_channel[wl_unit_value];
+		}
+	}else{
+		document.getElementById("wl_edmg_field").style.display = "none";
 	}
 	
 	if(document.form.wl_channel.value == '0' && cur_control_channel){
@@ -293,6 +306,32 @@ function genBWTable(_unit){
 
 		document.getElementById("wl_bw_field").style.display = "";
 	}
+	else if (band60g_support && _unit == 3){
+		var ary = [], auto = [1], autoDesc = ["2.16"];
+		var bws = [6], bwsDesc = ["2.16 GHz"];
+		var ch_list = eval('<% channel_list_60g(); %>');
+
+		/* Generate all possible bandwidth */
+		for (var i = 7; i <= max_band60g_wl_bw; ++i) {
+			if ((wigig_bw = wl_bw_to_wigig_bw(i)) <= 2160)
+				continue;
+			ary = filter_60g_edmg_channel_by_bw(ch_list, wigig_bw);
+			if (!ary.length)
+				continue;
+			bws.push(i);
+			bwsDesc.push((wigig_bw / 1000) + " GHz");
+			autoDesc[0] = autoDesc[0] + "/" + (wigig_bw / 1000);
+		}
+		autoDesc[0] += " GHz";
+		if (bws.length > 1) {
+			bws = auto.concat(bws);
+			bwsDesc = autoDesc.concat(bwsDesc);
+		}
+
+		if (bws.indexOf(parseInt(cur)) == -1)
+			cur = bws[0];
+		document.getElementById("wl_bw_field").style.display = "";
+	}
 	else{
 		if(based_modelid == "BLUECAVE"){
 			bws = [0, 1, 2, 3];
@@ -332,6 +371,8 @@ function genBWTable(_unit){
 	}
 
 	add_options_x2(document.form.wl_bw, bwsDesc, bws, cur);
+	if (band60g_support && _unit == 3)
+		insertChannelOption_60g();
 }
 
 function check_channel_2g(){
@@ -406,23 +447,6 @@ function check_channel_2g(){
 	else{
 		inputCtrl(document.form.wl_nctrlsb, 0);
 	}
-}
-
-function insertChannelOption_60g(){
-	var CurrentCh = document.form.wl_channel_orig.value;
-	wl_channel_list_60g = eval('<% channel_list_60g(); %>');
-	if (wl_channel_list_60g[0] != "<#Auto#>")
-		wl_channel_list_60g.splice(0, 0, "0");
-
-	var ch_v2 = new Array();
-	for (var i = 0; i < wl_channel_list_60g.length; i++) {
-		ch_v2[i] = wl_channel_list_60g[i];
-	}
-
-	if (ch_v2[0] == "0")
-		wl_channel_list_60g[0] = "<#Auto#>";
-
-	add_options_x2(document.form.wl_channel, wl_channel_list_60g, ch_v2, CurrentCh);
 }
 
 function mbss_display_ctrl(){
@@ -1032,6 +1056,20 @@ function ajax_wl_channel(){
 		}
 	});
 }
+
+function ajax_wl_edmg_channel(){
+	$.ajax({
+		url: '/ajax_wl_edmg_channel.asp',
+		dataType: 'script',	
+		error: function(xhr) {
+			setTimeout("ajax_wl_edmg_channel();", 1000);
+		},
+		success: function(response){
+			$("#auto_edmg_channel").html("Current EDMG Channel: " + cur_edmg_channel[wl_unit]); /* untranslated */
+			setTimeout("ajax_wl_edmg_channel();", 5000);
+		}
+	});
+}
 </script>
 </head>
 
@@ -1090,6 +1128,7 @@ function ajax_wl_channel(){
 <input type="hidden" name="wl_nctrlsb_old" value="<% nvram_get("wl_nctrlsb"); %>">
 <input type="hidden" name="wl_key_type" value='<% nvram_get("wl_key_type"); %>'> <!--Lock Add 2009.03.10 for ralink platform-->
 <input type="hidden" name="wl_channel_orig" value='<% nvram_get("wl_channel"); %>'>
+<input type="hidden" name="wl_edmg_channel_orig" value='<% nvram_get("wl_edmg_channel"); %>' disabled>
 <input type="hidden" name="AUTO_CHANNEL" value='<% nvram_get("AUTO_CHANNEL"); %>'>
 <input type="hidden" name="wl_wep_x_orig" value='<% nvram_get("wl_wep_x"); %>'>
 <input type="hidden" name="wl_optimizexbox" value='<% nvram_get("wl_optimizexbox"); %>'>
@@ -1278,6 +1317,16 @@ function ajax_wl_channel(){
 						</div>
 					</td>
 			  </tr>			 
+
+				<tr id="wl_edmg_field" style="display:none">
+					<th><a id="wl_edmg_select" class="hintstyle" href="javascript:void(0);">EDMG channel</a></th>
+					<td>
+						<select name="wl_edmg_channel" class="input_option">
+							<option class="content_input_fd" value="0" <% nvram_match("wl_edmg_channel", "0","selected"); %>><#Auto#></option>
+						</select>
+						<span id="auto_edmg_channel" style="display:none;margin-left:10px;"></span><br>
+					</td>
+				</tr>
 
 			  <tr id="wl_nctrlsb_field">
 			  	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 15);"><#WLANConfig11b_EChannel_itemname#></a></th>

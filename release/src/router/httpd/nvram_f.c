@@ -108,7 +108,7 @@ char *nvram_get_list_x(const char *sid, const char *name, int index)
 {   
     char new_name[MAX_LINE_SIZE];
     
-    sprintf(new_name, "%s%d", name, index);
+    snprintf(new_name, sizeof(new_name), "%s%d", name, index);
     
     return (nvram_get_f(sid, new_name));	 
 }
@@ -126,7 +126,7 @@ int nvram_add_lists_x(const char *sid, const char *name, const char *value, int 
   
   if (name[0]!='\0')
     {	
-	sprintf(name2, "%s%d", name1, count);
+	snprintf(name2, sizeof(name2), "%s%d", name1, count);
     	nvram_set(name2, value);
     }	
     return (0);		
@@ -154,8 +154,8 @@ int nvram_del_lists_x(const char *sid, const char *name, int *delMap)
 	di=0;
 	while (1)
 	{
-		sprintf(oname, "%s%d", names, oi);		
-		sprintf(nname, "%s%d", names, ni);
+		snprintf(oname, sizeof(oname), "%s%d", names, oi);
+		snprintf(nname, sizeof(nname), "%s%d", names, ni);
 
 		oval = nvram_get(oname);
 

@@ -20,6 +20,9 @@ body{
 .flex-a-center{
 	align-items: center;
 }
+.flex-j-spaceB{
+    justify-content: space-between;
+}
 .main-block{
 	margin: 4px 8px;
 }

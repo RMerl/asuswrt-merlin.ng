@@ -19,6 +19,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <string.h>
 #include <linux/types.h>
 #include <linux/netlink.h>
 #include <poll.h>

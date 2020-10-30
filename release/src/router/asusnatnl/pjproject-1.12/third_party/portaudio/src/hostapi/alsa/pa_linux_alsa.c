@@ -53,7 +53,11 @@
 #undef ALSA_PCM_NEW_HW_PARAMS_API
 #undef ALSA_PCM_NEW_SW_PARAMS_API
 
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <sys/poll.h>
+#else
+#include <poll.h>
+#endif
 #include <string.h> /* strlen() */
 #include <limits.h>
 #include <math.h>

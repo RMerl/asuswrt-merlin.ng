@@ -18,9 +18,6 @@ endif
 ifeq ($(origin HND_ROUTER_AX_675X), undefined)
 export HND_ROUTER_AX_675X := $(if $(shell pwd | grep -e 'src-rt-[^/]*axhnd.675x'),y,)
 endif
-ifeq ($(origin BRCM_SDK_502L07p1), undefined)
-export BRCM_SDK_502L07p1 := $(if $(shell pwd | grep -e 'src-rt-[^/]*p1axhnd.675x'),y,)
-endif
 
 ifeq ($(HND_ROUTER_AX_675X),y)
 ifeq ($(CUR_CHIP_PROFILE),)
@@ -61,6 +58,7 @@ export ALLSRCBASE= $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP)
 export WLSRCBASE= $(ALLSRCBASE)/main/src
 export WLCFGDIR = $(ALLSRCBASE)/main/src/wl/config
 export WLMAIN = main/src
+export BUILD_WLAN_TESTBED_AP
 ifeq ($(HND_ROUTER_AX),y)
 include $(SRCBASE)/makefiles/WLAN_Common.mk
 WLAN_ComponentsInUse := avs awd bcmcrypto bcmdrv bcmwifi clm clm-api ppr math
@@ -202,7 +200,7 @@ export BCMEX :=
 export DHD_MONITOR := debug_monitor
 export LIBNL_PLT := arm
 export LIBNL_BUILD := i386-pc-linux-gnu
-ifeq (55,$(BCM_WLIMPL))
+ifeq (67,$(BCM_WLIMPL))
 export DONGLE_SRC := main
 else
 export DONGLE_SRC := 43684
@@ -369,7 +367,16 @@ PCIEFD_EMBED_HEADER	:= $(SRCBASE_DHD)/shared/rtecdc_router.h
 obj-pciefd		:= $(patsubst %,%-obj,$(PCIEFD_TARGETS_LIST))
 install-pciefd		:= $(patsubst %,%-install,$(PCIEFD_TARGETS_LIST))
 endif	# 7114
+else	# RTCONFIG_DHDAP
+ifeq ($(HND_ROUTER_AX),y)
+export SRCBASE_SYS := $(SRCBASE)/../../sys/src
+export CONFIG_MBO_AP=y
+ifeq ($(BRCM_CHIP),4908)
+export CONFIG_CSIMOND := y
 endif
+include Makefile.fw.ax
+endif	# HND_ROUTER_AX
+endif	# RTCONFIG_DHDAP
 
 ifeq ($(HND_ROUTER),y)
 ifeq ($(RTCONFIG_VISUALIZATION),y)
@@ -576,9 +583,11 @@ endif
 ifeq ($(RTCONFIG_QCA),y)
 ifneq ($(PLATFORM_ROUTER),)
 HOSTAPD_PKG:=$(PLATFORM_ROUTER)/qca-hostap
+QCA_HOSTAPD_DIR:=$(SRCBASE)/$(HOSTAPD_PKG)
 endif
 else
 HOSTAPD_PKG:=hostapd-2.6
+QCA_HOSTAPD_DIR:=$(TOP)/$(HOSTAPD_PKG)
 endif
 
 #
@@ -714,9 +723,10 @@ obj-$(RTCONFIG_SOC_IPQ8074) += taskset
 
 # IPQ4019 ILQ 1.1
 obj-$(RTCONFIG_SOC_IPQ40XX) += ethtool-3.7
-obj-$(RTCONFIG_SOC_IPQ40XX) += stress-1.x
+obj-$(or $(RTCONFIG_SOC_IPQ40XX),$(RTCONFIG_SOC_IPQ8074)) += stress-1.x
 
 obj-$(PLC_UTILS) += plc-utils
+obj-$(QCA_PLC2)  += plc-utils
 
 ifeq ($(ART2),y)
 obj-y += LinuxART2
@@ -1359,7 +1369,11 @@ ifneq ($(or $(RTN56U),$(DSLN55U)),y)
 obj-y += phddns
 endif
 
+ifeq ($(RTCONFIG_MUSL_LIBC),y)
+obj-$(RTCONFIG_STRACE) += strace-4.8
+else
 obj-$(RTCONFIG_STRACE) += strace
+endif
 
 obj-n += lsof
 obj-$(RTCONFIG_IPERF) += iperf
@@ -1480,9 +1494,10 @@ obj-$(HND_ROUTER) += wlan
 ifeq ($(HND_ROUTER_AX_675X),y)
 obj-$(HND_ROUTER) += sys_util
 obj-$(HND_ROUTER) += gen_util
-obj-$(BRCM_SDK_502L07p1) += archer_lib
-#obj-y += archer_lib
+ifneq ($(BRCM_CHIP),4908)
+obj-$(HND_ROUTER) += archer_lib
 obj-$(HND_ROUTER) += archerctl
+endif
 endif
 obj-$(HND_ROUTER) += bcm_util
 #obj-$(HND_ROUTER) += cms_msg
@@ -1552,8 +1567,19 @@ obj-$(DSL_BCM) += atmctl_lib
 obj-$(DSL_BCM) += atmctl
 obj-$(DSL_BCM) += xdslctl_lib
 obj-$(DSL_BCM) += xdslctl
+obj-$(DSL_BCM) += dsldiagd
 ifeq ($(CONFIG_CSIMOND),y)
 obj-y += csimond
+endif
+ifeq ($(HND_ROUTER_AX_675X),y)
+obj-$(RTCONFIG_BCM_OAM) += tmsctl
+endif
+ifeq ($(RTCONFIG_HND_ROUTER_AX_6710),y)
+obj-y += blogctl_lib
+obj-y += blogctl
+obj-y += iqctl_lib
+obj-y += iqctl
+obj-y += ponsys_lib
 endif
 
 # ALPINE compile package
@@ -1618,13 +1644,15 @@ endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 ifneq ($(RTCONFIG_HND_ROUTER_AX_6710),y)
+ifneq ($(RTCONFIG_HND_ROUTER_AX_675X),y)
 version: $(SRCBASE)/include/epivers.h
 	$(SEP)
+endif
 endif
 
 EPIVERS_OPTION =
 
-ifeq ($(RTCONFIG_HND_ROUTER_AX_6710),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX_6710)$(RTCONFIG_HND_ROUTER_AX_675X),y)
 version:  $(SRCBASE)/include/epivers.h
 	$(MAKE) -C $(SRCBASE)/include $(EPIVERS_OPTION) REUSE_VERSION=1
 ifeq ($(RTCONFIG_DHDAP),y)
@@ -2126,7 +2154,7 @@ else
 endif
 endif
 	@chmod 0555 $(TARGETDIR)/lib/*.so*
-	@chmod 0555 $(TARGETDIR)/usr/lib/*.so*
+	@find $(TARGETDIR)/usr/lib/ -type f -a -name "*.so*" | xargs chmod 0555
 
 ifeq ($(RTCONFIG_QCA),y)
 ifeq ($(RPAC51),y)
@@ -2649,7 +2677,7 @@ infosvr-install:
 
 #libdisk: shared nvram$(BCMEX)$(EX7)
 
-httpd: shared nvram$(BCMEX)$(EX7) libdisk $(if $(RTCONFIG_HTTPS),mssl) $(if $(RTCONFIG_BWDPI),bwdpi_source) json-c $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG)) libpasswd
+httpd: shared nvram$(BCMEX)$(EX7) rc libdisk $(if $(RTCONFIG_HTTPS),mssl) $(if $(RTCONFIG_BWDPI),bwdpi_source) json-c $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG)) libpasswd
 	@$(SEP)
 ifeq ($(HND_ROUTER),y)
 ifeq ($(HND_ROUTER_AX),y)
@@ -2863,9 +2891,14 @@ endif
 	-mkdir -p $(INSTALL_DIR)/usr/lib
 	-mkdir -p $(INSTALL_DIR)/usr/sbin
 	-mkdir -p $(INSTALL_DIR)/var
+ifeq ($(RTCONFIG_USB),y)
 	-mkdir -p $(INSTALL_DIR)/tmp/mnt
 	-rm -rf $(INSTALL_DIR)/mnt
 	-cd $(INSTALL_DIR) && ln -sf tmp/mnt mnt
+else
+	-mkdir -p $(INSTALL_DIR)/mnt
+	-chmod 0777 $(INSTALL_DIR)/mnt
+endif
 	-mkdir -p $(INSTALL_DIR)/tmp/etc
 	-mkdir -p $(INSTALL_DIR)/www
 	#-cp $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/lib/libgcc_s* $(INSTALL_DIR)/lib/public
@@ -4089,7 +4122,7 @@ ifeq ($(HND_ROUTER),y)
 	ac_cv_pluginpath=$(TOOLCHAIN)/include
 	touch $@
 else
-	cd rp-pppoe/src && CFLAGS="-g -O2 $(EXTRACFLAGS) $(if $(RTCONFIG_MUSL_LIBC), -I$(TOP)/pppd/include) -idirafter $(KDIR)/include -I$(TOP)/shared" \
+	cd rp-pppoe/src && CFLAGS="-g -O2 $(EXTRACFLAGS) $(if $(RTCONFIG_MUSL_LIBC), -I$(TOP)/pppd/include) -idirafter $(KDIR)/include" \
 	$(CONFIGURE) --prefix=/usr --enable-plugin=$(TOP)/pppd \
 	ac_cv_linux_kernel_pppoe=yes rpppoe_cv_pack_bitfields=rev --disable-debugging
 	touch $@
@@ -4168,7 +4201,7 @@ pppd/stamp-h1: kernel_header
 pppd: pppd/stamp-h1
 	@$(SEP)
 	@$(MAKE) -C pppd MFLAGS='$(if $(RTCONFIG_IPV6),HAVE_INET6=y,) \
-	EXTRACFLAGS="$(EXTRACFLAGS) -idirafter $(KDIR)/include -I$(TOP)/shared"'
+	EXTRACFLAGS="$(EXTRACFLAGS) -idirafter $(KDIR)/include"'
 
 pppd-clean:
 	-@$(MAKE) -C pppd clean
@@ -4341,7 +4374,11 @@ tr069-install: tr069
 	install -D tr069/test/udpclient $(INSTALLDIR)/tr069/sbin/udpclient
 ifeq ($(RTCONFIG_TR181),y)
 ifeq ($(RTCONFIG_DSL),y)
+ifeq ($(BUILD_NAME),DSL-AX82U)
+	install -D tr069/conf/ASUSWRT/tr_181.xml.dsl.optus $(INSTALLDIR)/tr069/usr/tr/tr.xml
+else
 	install -D tr069/conf/ASUSWRT/tr_181.xml.dsl $(INSTALLDIR)/tr069/usr/tr/tr.xml
+endif
 else
 	install -D tr069/conf/ASUSWRT/tr_181.xml $(INSTALLDIR)/tr069/usr/tr/tr.xml
 endif
@@ -4562,6 +4599,10 @@ libbcm:
 libbcm-install:
 	install -D libbcm/libbcm.so $(INSTALLDIR)/libbcm/usr/lib/libbcm.so
 	$(STRIP) $(INSTALLDIR)/libbcm/usr/lib/libbcm.so
+
+strace-4.8-install:
+	install -D strace-4.8/strace $(INSTALLDIR)/strace-4.8/usr/sbin/strace
+	$(STRIP) $(INSTALLDIR)/strace-4.8/usr/sbin/strace
 
 iperf: iperf/Makefile
 	@$(SEP)
@@ -5253,7 +5294,7 @@ else
 	@true
 endif
 
-sysstate:
+sysstate: json-c
 	@$(SEP)
 	echo "build sysstate"
 	echo $(BCMEX)
@@ -7367,6 +7408,8 @@ endif
 ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	install -D bluez-5.41/btconfig_1.16 $(INSTALLDIR)/bluez-5.41/usr/bin/btconfig
 	install -D bluez-5.41/btchk.sh $(INSTALLDIR)/bluez-5.41/usr/bin/btchk.sh
+else ifeq ($(RTCONFIG_BT_CONN_UART),y)
+	install -D bluez-5.41/btchk_uart.sh $(INSTALLDIR)/bluez-5.41/usr/bin/btchk_uart.sh
 else ifeq ($(or $(QCA953X),$(QCA955X),$(QCA956X)),y)
 	install -D bluez-5.41/btconfig_4.02 $(INSTALLDIR)/bluez-5.41/usr/bin/btconfig
 else ifeq ($(RTCONFIG_LANTIQ),y)
@@ -7375,7 +7418,6 @@ endif
 	install -D bluez-5.41/lib/.libs/libbluetooth.so.$(LIBBLUETOOTH_VER) $(TARGETDIR)/usr/lib/libbluetooth.so.$(LIBBLUETOOTH_VER)
 	install -D bluez-5.41/src/bluetoothd $(INSTALLDIR)/bluez-5.41/usr/bin/bluetoothd
 	install -D bluez-5.41/attrib/gatttool $(INSTALLDIR)/bluez-5.41/usr/bin/gatttool
-	install -D bluez-5.41/3000000.psr $(TARGETDIR)/rom/etc/3000000.psr
 	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/bccmd
 	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/bluemoon
 	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/btmgmt
@@ -8012,7 +8054,9 @@ PMS_DBapis-install:PMS_DBapis
 
 wlceventd: $(if $(RTCONFIG_NOTIFICATION_CENTER),nt_center sqlite,)
 
-hapdevent: $(if $(RTCONFIG_NOTIFICATION_CENTER),nt_center sqlite,) $(HOSTAPD_PKG)
+hapdevent: $(if $(HOSTAPD_PKG), $(HOSTAPD_PKG))
+#$(if $(RTCONFIG_NOTIFICATION_CENTER),nt_center sqlite,) $(HOSTAPD_PKG)
+	$(MAKE) -C $@ $(if $(QCA_HOSTAPD_DIR),QCA_HOSTAPD_DIR=$(QCA_HOSTAPD_DIR))
 
 iwevent: $(if $(RTCONFIG_NOTIFICATION_CENTER),nt_center sqlite,)
 
@@ -8470,7 +8514,7 @@ vpmstats:
 
 .PHONY : vpmstats
 
-bcm_boot_launche:
+bcm_boot_launcher:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
 	$(MAKE) -C $(TOPX_DIR)
 
@@ -8591,11 +8635,7 @@ httpdshared:
 
 mdk:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
-ifeq ($(HND_ROUTER_AX_675X),y)
-	$(MAKE) -C $(TOPX_DIR) all
-else
-	$(MAKE) -C $(TOPX_DIR)
-endif
+	$(MAKE) -C $(TOPX_DIR) $(if $(HND_ROUTER_AX_675X),$(if $(RTCONFIG_HND_ROUTER_AX_6710),,all),)
 
 .PHONY : mdk
 
@@ -8673,6 +8713,77 @@ xdslctl:
 xdslctl-install:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/xdslctl) $(wildcard xdslctl)))
 	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/xdslctl install
+
+dsldiagd:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+dsldiagd-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/dsldiagd) $(wildcard dsldiagd)))
+	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/dsldiagd install
+
+tmsctl:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+tmsctl-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/tmsctl) $(wildcard tmsctl)))
+	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/tmsctl install
+
+blogctl_lib:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+blogctl_lib-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/blogctl_lib) $(wildcard blogctl_lib)))
+	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/blogctl_lib install
+
+blogctl_lib-clean:
+	$(MAKE) -C $(TOP_PLATFORM)/blogctl_lib clean
+
+blogctl:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+blogctl-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/blogctl) $(wildcard blogctl)))
+	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/blogctl install
+
+blogctl-clean:
+	$(MAKE) -C $(TOP_PLATFORM)/blogctl clean
+
+iqctl:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+iqctl-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/iqctl) $(wildcard iqctl)))
+	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/iqctl install
+
+iqctl-clean:
+	$(MAKE) -C $(TOP_PLATFORM)/iqctl clean
+
+iqctl_lib:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+iqctl_lib-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/iqctl_lib) $(wildcard iqctl_lib)))
+	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/iqctl_lib install
+
+iqctl_lib-clean:
+	$(MAKE) -C $(TOP_PLATFORM)/iqctl_lib clean
+
+ponsys_lib:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+ponsys_lib-install:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/ponsys_lib) $(wildcard ponsys_lib)))
+	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/ponsys_lib install
+
+ponsys_lib-clean:
+	$(MAKE) -C $(TOP_PLATFORM)/ponsys_lib clean
 
 libestr-configure:
 	( cd $(TOP)/libestr && \

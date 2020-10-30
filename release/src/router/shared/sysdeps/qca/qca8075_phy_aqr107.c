@@ -779,7 +779,7 @@ rtkswitch_Reset_Storm_Control(void)
 	return 0;
 }
 
-void ATE_port_status(void)
+void ATE_port_status(phy_info_list *list)
 {
 	int i;
 	char buf[512];

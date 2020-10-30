@@ -97,6 +97,7 @@ static void _convert_old_dslx()
 		"pppoe_username", "pppoe_passwd", "pppoe_auth", "pppoe_idletime",
 		"pppoe_mtu", "pppoe_mru", "pppoe_service", "pppoe_ac",
 		"pppoe_hostuniq", "pppoe_options",
+		"dhcp_clientid_type", "dhcp_clientid", "dhcp_vendorid", "dhcp_hostname",
 		"hwaddr"
 		, NULL };
 	int i = 0;
@@ -110,11 +111,10 @@ static void _convert_old_dslx()
 
 	while(attr[i])
 	{
-		if (nvram_pf_get(dslx_prefix, attr[i]))
-		{
-			nvram_pf_set(dsl_prefix, attr[i], nvram_pf_safe_get(dslx_prefix, attr[i]));
-			nvram_unset(strcat_r(dslx_prefix, attr[i], tmp));
-		}
+		strlcpy(tmp, nvram_pf_safe_get(dslx_prefix, attr[i]), sizeof(tmp));
+		if (strlen(tmp))
+			nvram_pf_set(dsl_prefix, attr[i], tmp);
+		nvram_unset(strcat_r(dslx_prefix, attr[i], tmp));
 		i++;
 	}
 
@@ -162,14 +162,40 @@ static void convert_dsl_wan()
 				snprintf(dsl_prefix, sizeof(dsl_prefix), "dsl0_");
 		}
 
-		//skip if disable to save nvram usage
-		if (nvram_pf_get_int(dsl_prefix, "enable"))
-			nvram_pf_set(wan_prefix, "enable", "1");
-		else {
+		if (nvram_pf_get_int(dsl_prefix, "enable") == 0)
+		{
 			nvram_pf_set(wan_prefix, "enable", "0");
+			//unset to reduce nvram usage
+			nvram_pf_unset(wan_prefix, "nat_x");
+			nvram_pf_unset(wan_prefix, "upnp_enable");
+			nvram_pf_unset(wan_prefix, "dhcpenable_x");
+			nvram_pf_unset(wan_prefix, "ipaddr_x");
+			nvram_pf_unset(wan_prefix, "netmask_x");
+			nvram_pf_unset(wan_prefix, "gateway_x");
+			nvram_pf_unset(wan_prefix, "dnsenable_x");
+			nvram_pf_unset(wan_prefix, "dns1_x");
+			nvram_pf_unset(wan_prefix, "dns2_x");
+			nvram_pf_unset(wan_prefix, "pppoe_username");
+			nvram_pf_unset(wan_prefix, "pppoe_passwd");
+			nvram_pf_unset(wan_prefix, "pppoe_auth");
+			nvram_pf_unset(wan_prefix, "pppoe_idletime");
+			nvram_pf_unset(wan_prefix, "pppoe_mtu");
+			nvram_pf_unset(wan_prefix, "pppoe_mru");
+			nvram_pf_unset(wan_prefix, "pppoe_service");
+			nvram_pf_unset(wan_prefix, "pppoe_ac");
+			nvram_pf_unset(wan_prefix, "pppoe_hostuniq");
+			nvram_pf_unset(wan_prefix, "pppoe_options_x");
+			nvram_pf_unset(wan_prefix, "hwaddr_x");
+			nvram_pf_unset(wan_prefix, "mtu");
+			nvram_pf_unset(wan_prefix, "dhcp_qry");
+			nvram_pf_unset(wan_prefix, "clientid_type");
+			nvram_pf_unset(wan_prefix, "clientid");
+			nvram_pf_unset(wan_prefix, "vendorid");
+			nvram_pf_unset(wan_prefix, "hostname");
 			continue;
 		}
 
+		nvram_pf_set(wan_prefix, "enable", "1");
 		nvram_pf_set(wan_prefix, "nat_x", nvram_pf_safe_get(dsl_prefix, "nat"));
 		nvram_pf_set(wan_prefix, "upnp_enable", nvram_pf_safe_get(dsl_prefix, "upnp_enable"));
 		nvram_pf_set(wan_prefix, "dhcpenable_x", nvram_pf_safe_get(dsl_prefix, "DHCPClient"));
@@ -188,9 +214,14 @@ static void convert_dsl_wan()
 		nvram_pf_set(wan_prefix, "pppoe_service", nvram_pf_safe_get(dsl_prefix, "pppoe_service"));
 		nvram_pf_set(wan_prefix, "pppoe_ac", nvram_pf_safe_get(dsl_prefix, "pppoe_ac"));
 		nvram_pf_set(wan_prefix, "pppoe_hostuniq", nvram_pf_safe_get(dsl_prefix, "pppoe_hostuniq"));
-		nvram_pf_set(wan_prefix, "pppoe_options", nvram_pf_safe_get(dsl_prefix, "pppoe_options"));
-		nvram_pf_set(wan_prefix, "hwaddr", nvram_pf_safe_get(dsl_prefix, "hwaddr"));
+		nvram_pf_set(wan_prefix, "pppoe_options_x", nvram_pf_safe_get(dsl_prefix, "pppoe_options"));
+		nvram_pf_set(wan_prefix, "hwaddr_x", nvram_pf_safe_get(dsl_prefix, "hwaddr"));
 		nvram_pf_set(wan_prefix, "mtu", nvram_pf_safe_get(dsl_prefix, "mtu"));
+		nvram_pf_set(wan_prefix, "dhcp_qry", nvram_pf_safe_get(dsl_prefix, "dhcp_qry"));
+		nvram_pf_set(wan_prefix, "clientid_type", nvram_pf_safe_get(dsl_prefix, "dhcp_clientid_type"));
+		nvram_pf_set(wan_prefix, "clientid", nvram_pf_safe_get(dsl_prefix, "dhcp_clientid"));
+		nvram_pf_set(wan_prefix, "vendorid", nvram_pf_safe_get(dsl_prefix, "dhcp_vendorid"));
+		nvram_pf_set(wan_prefix, "hostname", nvram_pf_safe_get(dsl_prefix, "dhcp_hostname"));
 
 		snprintf(dsl_proto, sizeof(dsl_proto), "%s", nvram_pf_safe_get(dsl_prefix, "proto"));
 		if (!strcmp(dsl_proto, "pppoe") || !strcmp(dsl_proto, "pppoa"))
@@ -856,6 +887,11 @@ void config_xtm()
 	mparam.base_wan_unit = WAN_UNIT_FIRST;
 #endif
 
+#ifdef RTCONFIG_BCM_OAM
+	if (mparam.base_wan_unit == WAN_UNIT_FIRST)
+		stop_oam();
+#endif
+
 	clean_mswan_vitf(mparam.base_wan_unit);
 
 	// check mr_mswan_idx is enabled.
@@ -974,6 +1010,10 @@ void config_xtm()
 			nvram_set("wan_ifnames", wan_ifnames);
 		}
 	}
+#ifdef RTCONFIG_BCM_OAM
+	if (mparam.base_wan_unit == WAN_UNIT_FIRST)
+		start_oam();
+#endif
 #endif //RTCONFIG_DSL_BCM
 #endif
 }
@@ -1012,6 +1052,14 @@ void config_stb_bridge()
 	{
 		case MODEL_DSLAX82U:
 		{
+			eval("brctl", "delif", br_ifname, "eth0");
+			eval("brctl", "delif", br_ifname, "eth1");
+			eval("brctl", "delif", br_ifname, "eth2");
+			eval("brctl", "delif", br_ifname, "eth3");
+			eval("brctl", "addif", lan_ifname, "eth0");
+			eval("brctl", "addif", lan_ifname, "eth1");
+			eval("brctl", "addif", lan_ifname, "eth2");
+			eval("brctl", "addif", lan_ifname, "eth3");
 			switch(stbport)
 			{
 			case 1:
@@ -1041,16 +1089,6 @@ void config_stb_bridge()
 				eval("brctl", "addif", br_ifname, "eth1");
 				eval("brctl", "delif", lan_ifname, "eth0");
 				eval("brctl", "addif", br_ifname, "eth0");
-				break;
-			default:
-				eval("brctl", "delif", br_ifname, "eth0");
-				eval("brctl", "delif", br_ifname, "eth1");
-				eval("brctl", "delif", br_ifname, "eth2");
-				eval("brctl", "delif", br_ifname, "eth3");
-				eval("brctl", "addif", lan_ifname, "eth0");
-				eval("brctl", "addif", lan_ifname, "eth1");
-				eval("brctl", "addif", lan_ifname, "eth2");
-				eval("brctl", "addif", lan_ifname, "eth3");
 				break;
 			}
 			break;

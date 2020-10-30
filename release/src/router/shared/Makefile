@@ -304,7 +304,7 @@ ifeq ($(RTCONFIG_SAVEJFFS),y)
 OBJS	+= $(if $(wildcard jffs_cfgs.c),jffs_cfgs.o,prebuild/jffs_cfgs.o)
 endif
 
-ifeq ($(RTCONFIG_QCA_PLC_UTILS),y)
+ifeq ($(or $(RTCONFIG_QCA_PLC_UTILS),$(RTCONFIG_QCA_PLC2)),y)
 OBJS	+= $(if $(wildcard plc_utils.c),plc_utils.o,prebuild/plc_utils.o)
 endif
 
@@ -362,6 +362,10 @@ endif
 vpath %.c sysdeps/amas
 endif
 
+ifeq ($(RTCONFIG_SCHED_V2),y)
+OBJS += sched_v2.o
+endif
+
 vpath %.c sysdeps $(SRCBASE)/shared/ $(WLAN_ComponentSrcDirs)
 ifeq ($(RTCONFIG_REALTEK),y)
 ifeq ($(RPAC92),y)
@@ -413,6 +417,10 @@ ifeq ($(RTCONFIG_BRCM_HOSTAPD),y)
 OBJS += common_utils.o
 endif
 
+ifeq ($(or $(RTCONFIG_JFFS_NVRAM),$(RTCONFIG_VAR_NVRAM)),y)
+OBJS += nvpriv.o
+endif
+
 all: libshared.so libshared.a
 
 
@@ -454,6 +462,11 @@ endif
 hw_auth.o:
 ifeq ($(wildcard $(SRCBASE)/router/sw-hw-auth/*.c),)
 	cp -f $(TOP)/sw-hw-auth/prebuild/$(BUILD_NAME)/hw_auth.o ./
+endif
+
+nvpriv.o:
+ifneq ($(wildcard ./prebuild/nvpriv.o),)
+	@-cp -f ./prebuild/nvpriv.o .
 endif
 
 ifeq ($(RTCONFIG_USB),y)

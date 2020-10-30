@@ -15,7 +15,6 @@
 *
 ***********************************************************************/
 
-#include <rtconfig.h>
 #include "config.h"
 
 extern int IsSetID;
@@ -143,7 +142,7 @@ typedef unsigned long UINT32_t;
 #include <sys/socket.h>
 #endif
 #ifndef HAVE_SYS_DLPI_H
-#if !defined(RTCONFIG_MUSL_LIBC)
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <netinet/if_ether.h>
 #endif
 #endif

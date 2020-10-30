@@ -15,6 +15,7 @@
 #define AMAS_ADTBW_BW_SWITCH_SUCCESS 0
 #define AMAS_ADTBW_BW_SWITCH_FAILURE 1
 #define AMAS_ADTBW_BW_SWITCH_RADAR_DET 2
+#define AMAS_ADTBW_BW_SWITCH_RADAR_NOT_DET 0
 
 #define AMAS_ADTBW_SKU_UNSUPPORT 0
 #define AMAS_ADTBW_SKU_US 1
@@ -23,6 +24,10 @@
 #define AMAS_ADTBW_DEBUG "/tmp/AMAS_ADTBW_DEBUG"
 #define MACF_UP "%02X:%02X:%02X:%02X:%02X:%02X"
 #define LOG_TITLE_AMAS_ADTBW "amas_adtbw"
+
+#define AMAS_ADTBW_SYSLOG(fmt, arg...) \
+	do { logmessage(LOG_TITLE_AMAS_ADTBW, fmt, ##arg); \
+	} while (0)
 
 #define AMAS_ADTBW_DBG(fmt, arg...) \
 	do { if (f_exists(AMAS_ADTBW_DEBUG) || amas_adtbw_dbg) \

@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnd_pktpool.c 771187 2019-01-17 18:59:07Z $
+ * $Id: hnd_pktpool.c 787796 2020-06-11 23:04:24Z $
  */
 
 #include <typedefs.h>
@@ -1691,6 +1691,10 @@ struct resv_info *resv_pool_info = NULL;
 
 pktpool_t *pktpool_shared_rxlfrag = NULL;
 
+#ifdef UTXD_POOL
+pktpool_t *pktpool_shared_utxd = NULL;
+#endif // endif
+
 static osl_t *pktpool_osh = NULL;
 
 /**
@@ -1760,6 +1764,15 @@ BCMATTACHFN(hnd_pktpool_init)(osl_t *osh)
 		err = BCME_NOMEM;
 		goto error3;
 	}
+#endif /* BCMRXFRAGPOOL */
+
+#ifdef UTXD_POOL
+		pktpool_shared_utxd = MALLOCZ(osh, sizeof(pktpool_t));
+		if (pktpool_shared_utxd == NULL) {
+			ASSERT(0);
+			err = BCME_NOMEM;
+			goto error3a;
+		}
 #endif /* BCMRXFRAGPOOL */
 
 	/*
@@ -1845,6 +1858,17 @@ BCMATTACHFN(hnd_pktpool_init)(osl_t *osh)
 	pktpool_setmaxlen(pktpool_shared_rxlfrag, SHARED_RXFRAG_POOL_LEN);
 #endif /* BCMRXFRAGPOOL */
 
+#ifdef UTXD_POOL
+	n = 1;
+	if ((err = pktpool_init(osh, pktpool_shared_utxd, &n,
+		PKTUTXDSZ,
+		TRUE, lbuf_basic)) != BCME_OK) {
+		ASSERT(0);
+		goto error6a;
+	}
+	pktpool_setmaxlen(pktpool_shared_utxd, PKTUTXDLEN);
+#endif /* BCMRXFRAGPOOL */
+
 #if defined(BCMFRWDPOOLREORG) && !defined(BCMFRWDPOOLREORG_DISABLED)
 	/* Attach poolreorg module */
 	if ((frwd_poolreorg_info = poolreorg_attach(osh,
@@ -1855,6 +1879,11 @@ BCMATTACHFN(hnd_pktpool_init)(osl_t *osh)
 #endif // endif
 #if defined(BCMRXFRAGPOOL) && !defined(BCMRXFRAGPOOL_DISABLED)
 			pktpool_shared_rxlfrag,
+#else
+			NULL,
+#endif // endif
+#ifdef UTXD_POOL
+			pktpool_shared_utxd,
 #else
 			NULL,
 #endif // endif
@@ -1874,6 +1903,11 @@ BCMATTACHFN(hnd_pktpool_init)(osl_t *osh)
 	poolreorg_detach(frwd_poolreorg_info);
 error7:
 #endif /* defined(BCMFRWDPOOLREORG) && !defined(BCMFRWDPOOLREORG_DISABLED) */
+
+#ifdef UTXD_POOL
+	pktpool_deinit(osh, pktpool_shared_utxd);
+error6a:
+#endif // endif
 
 #if defined(BCMRXFRAGPOOL) && !defined(BCMRXFRAGPOOL_DISABLED)
 	pktpool_deinit(osh, pktpool_shared_rxlfrag);
@@ -1900,6 +1934,12 @@ error5:
 #endif // endif
 
 error4:
+#ifdef UTXD_POOL
+		hnd_free(pktpool_shared_utxd);
+		pktpool_shared_utxd = (pktpool_t *)NULL;
+	error3a:
+#endif /* UTXD_POOL */
+
 #if defined(BCMRXFRAGPOOL) && !defined(BCMRXFRAGPOOL_DISABLED)
 	hnd_free(pktpool_shared_rxlfrag);
 	pktpool_shared_rxlfrag = (pktpool_t *)NULL;
@@ -1993,6 +2033,13 @@ hnd_pktpool_refill(bool minimal)
 		pktpool_fill(pktpool_osh, pktpool_shared_rxlfrag, minimal);
 	}
 #endif // endif
+
+#ifdef UTXD_POOL
+	if (POOL_ENAB(pktpool_shared_utxd)) {
+		pktpool_fill(pktpool_osh, pktpool_shared_utxd, minimal);
+	}
+#endif // endif
+
 #if defined(BCMFRAGPOOL) && defined(BCMRESVFRAGPOOL)
 	if (POOL_ENAB(pktpool_resv_lfrag)) {
 		int resv_size = (PKTFRAGSZ + LBUFFRAGSZ)*RESV_FRAG_POOL_LEN;

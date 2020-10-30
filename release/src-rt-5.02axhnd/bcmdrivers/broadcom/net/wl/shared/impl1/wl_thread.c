@@ -97,13 +97,17 @@ wl_worker_thread_func(void *data)
 			wl_start_txqwork(&wl->txq_task);
 
 #if defined(PKTC_TBL)
+		WL_LOCK(wl);
 		p = wl->if_list;
 		while (p != NULL) {
 			if (p->pktci && p->pktci->_txq_txchain_dispatched) {
+				WL_UNLOCK(wl);
 				wl_start_txchain_txqwork(p->pktci);
+				WL_LOCK(wl);
 			}
 			p = p->next;
 		}
+		WL_UNLOCK(wl);
 #endif
 
 		/*

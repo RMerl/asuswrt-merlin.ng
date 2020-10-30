@@ -270,6 +270,10 @@ function initial(){
 			update_all_dns(first_wandns, first_wanxdns, 0);
 		}
 		else if(unit == 1){
+			if(dsl_support && wans_dualwan.split(" ")[1] == "dsl" 
+			&& (productid != "DSL-N55U" || productid != "DSL-N55U-B")){
+				document.getElementById("divSwitchMenu").style.display = "";    
+			}
 			update_all_ip(secondary_wanip, secondary_wannetmask, secondary_wangateway, 1);
 			update_all_xip(secondary_wanxip, secondary_wanxnetmask, secondary_wanxgateway, 1);
 			update_all_dns(secondary_wandns, secondary_wanxdns, 1);
@@ -705,7 +709,6 @@ function manualSetup(){
 <input type="hidden" name="wan_enable" value="<% nvram_get("wan_enable"); %>">
 <input type="hidden" name="wans_dualwan" value="<% nvram_get("wans_dualwan"); %>">
 <input type="hidden" name="wan_unit" value="<% get_wan_unit(); %>">
-<input type="hidden" name="dslx_link_enable" value="" disabled>
 <input type="hidden" name="wans_mode" value='<% nvram_get("wans_mode"); %>'>
 <input type="hidden" name="bond_wan" value='<% nvram_get("bond_wan"); %>' disabled>
 <table border="0" cellpadding="0" cellspacing="0">
@@ -748,12 +751,7 @@ function manualSetup(){
 						$('#radio_wan_enable').iphoneSwitch(wan_enable_orig,
 							 function() {
 								document.internetForm.wan_enable.value = "1";
-								if (dsl_support && wans_dualwan.split(" ")[wan_unit] == "dsl") {
-									document.internetForm.dslx_link_enable.value = "1";
-									document.internetForm.dslx_link_enable.disabled = false;
-									document.internetForm.action_script.value = "start_dslwan_if 0";
-								}
-								else if(parent.wans_flag){
+								if(parent.wans_flag){
 									document.internetForm.wan_unit.value = parent.document.form.dual_wan_flag.value;
 								}
 								document.internetForm.submit();
@@ -761,12 +759,7 @@ function manualSetup(){
 							 },
 							 function() {
 								document.internetForm.wan_enable.value = "0";
-								if (dsl_support && wans_dualwan.split(" ")[wan_unit] == "dsl") {
-									document.internetForm.dslx_link_enable.value = "0";
-									document.internetForm.dslx_link_enable.disabled = false;
-									document.internetForm.action_script.value = "stop_dslwan_if 0";
-								}
-								else if(parent.wans_flag){
+								if(parent.wans_flag){
 									document.internetForm.wan_unit.value = parent.document.form.dual_wan_flag.value;
 								}
 								document.internetForm.submit();
@@ -1096,8 +1089,8 @@ function manualSetup(){
 <tr id="sitesurvey_tr" style="display:none">
   <td height="50" style="padding:10px 15px 0px 15px;">
   	<p class="formfonttitle_nwm" style="float:left;"><#APSurvey_action_search_again_hint2#></p>
-		<br />
-  	<input type="button" class="button_gen" onclick="gotoSiteSurvey();" value="<#QIS_rescan#>" style="float:right;">
+	<div class="line_horizontal"></div>     
+	<input type="button" class="button_gen" onclick="gotoSiteSurvey();" value="<#QIS_rescan#>" style="float:right;margin: 5px 0;">
   </td>
 </tr>
 

@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <sys/file.h>
+#include <sys/stat.h>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -30,8 +32,6 @@
 #include <openssl/crypto.h>
 #include <openssl/x509.h>
 #include <openssl/pem.h>
-
-#include <rtconfig.h>
 
 #define _dprintf(args...)	while (0) {}
 
@@ -45,7 +45,14 @@
 #define CLIENT_CIPHERS "ALL:!EXPORT:!EXPORT40:!EXPORT56:!aNULL:!LOW:!RC4:@STRENGTH"
 #endif
 
-#if defined(RTCONFIG_MUSL_LIBC)
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#define X509_getm_notBefore X509_get_notBefore
+#define X509_getm_notAfter X509_get_notAfter
+#define RSA_get0_n(d) ((d)->n)
+#define DSA_get0_pub_key(d) ((d)->pub_key)
+#endif
+
+#if !defined(__GLIBC__) && !defined(__UCLIBC__) /* musl */
 // introduce musl fopencookie patch & copy some musl definition here (musl-1.1.16)
 typedef ssize_t (cookie_read_function_t)(void *, char *, size_t);
 typedef ssize_t (cookie_write_function_t)(void *, const char *, size_t);
@@ -230,7 +237,7 @@ FILE *fopencookie(void *cookie, const char *mode, cookie_io_functions_t iofuncs)
 	/* Add new FILE to open file list */
 	return __ofl_add(&f->f);
 }
-#endif // RTCONFIG_MUSL_LIBC
+#endif
 
 typedef struct {
 	SSL* ssl;
@@ -568,4 +575,167 @@ int mssl_init(char *cert, char *priv)
 void mssl_ctx_free()
 {
 	mssl_cleanup(0);
+}
+
+static int mssl_f_exists(const char *path)
+{
+	struct stat st;
+	return (stat(path, &st) == 0) && (!S_ISDIR(st.st_mode));
+}
+
+/*
+ * compare the modulus of public key and private key
+ */
+int mssl_cert_key_match(const char *cert_path, const char *key_path)
+{
+	FILE *fp;
+	X509 *x509data = NULL;
+	EVP_PKEY *pkey = NULL;
+	RSA *rsa_pub = NULL;
+	RSA *rsa_pri = NULL;
+	DSA *dsa_pub = NULL;
+	DSA *dsa_pri = NULL;
+	int pem = 1;
+	int ret = 0;
+
+	if(!mssl_f_exists(cert_path) || !mssl_f_exists(key_path))
+	{
+		return 0;
+	}
+
+	//get x509 from cert file
+	fp = fopen(cert_path, "r");
+	if(!fp)
+	{
+		return 0;
+	}
+	if(!PEM_read_X509(fp, &x509data, NULL, NULL))
+	{
+		_dprintf("[mssl] Try to read DER format certificate\n");
+		pem = 0;
+		fseek(fp, 0, SEEK_SET);
+		d2i_X509_fp(fp, &x509data);
+	}
+	else
+	{
+		_dprintf("[mssl] PEM format certificate\n");
+	}
+
+	fclose(fp);
+	if(x509data == NULL)
+	{
+		_dprintf("[mssl] Load certificate failed\n");
+		ret = 0;
+		goto end;
+	}
+
+	//get pubic key from x509
+	pkey = X509_get_pubkey(x509data);
+	if(pkey == NULL)
+	{
+		ret = 0;
+		goto end;
+	}
+	X509_free(x509data);
+	x509data = NULL;
+
+	if(EVP_PKEY_id(pkey) == EVP_PKEY_RSA)
+	{
+		//_dprintf("RSA public key\n");
+		rsa_pub = EVP_PKEY_get1_RSA(pkey);
+	}
+	else if(EVP_PKEY_id(pkey) == EVP_PKEY_DSA)
+	{
+		//_dprintf("DSA public key\n");
+		dsa_pub = EVP_PKEY_get1_DSA(pkey);
+	}
+	EVP_PKEY_free(pkey);
+	pkey = NULL;
+
+	//get private key from key file
+	fp = fopen(key_path, "r");
+	if(!fp)
+	{
+		ret = 0;
+		goto end;
+	}
+	if(pem)
+	{
+		//_dprintf("PEM format private key\n");
+		pkey = PEM_read_PrivateKey(fp, NULL, NULL, NULL);
+	}
+	else
+	{
+		//_dprintf("DER format private key\n");
+		pkey = d2i_PrivateKey_fp(fp, NULL);
+	}
+	fclose(fp);
+
+	if(pkey == NULL)
+	{
+		_dprintf("[mssl] Load private key failed\n");
+		ret = 0;
+		goto end;
+	}
+
+	if(EVP_PKEY_id(pkey) == EVP_PKEY_RSA)
+	{
+		//_dprintf("RSA private key\n");
+		rsa_pri = EVP_PKEY_get1_RSA(pkey);
+	}
+	else if(EVP_PKEY_id(pkey) == EVP_PKEY_DSA)
+	{
+		//_dprintf("DSA private key\n");
+		dsa_pri = EVP_PKEY_get1_DSA(pkey);
+	}
+	EVP_PKEY_free(pkey);
+	pkey = NULL;
+
+	//compare modulus
+	if(rsa_pub && rsa_pri)
+	{
+		if(BN_cmp(RSA_get0_n(rsa_pub), RSA_get0_n(rsa_pri)))
+		{
+			_dprintf("[mssl] rsa n not match\n");
+			ret = 0;
+		}
+		else
+		{
+			_dprintf("[mssl] rsa n match\n");
+			ret = 1;
+		}
+	}
+	else if(dsa_pub && dsa_pri)
+	{
+		if(BN_cmp(DSA_get0_pub_key(dsa_pub), DSA_get0_pub_key(dsa_pri)))
+		{
+			_dprintf("[mssl] dsa modulus not match\n");
+			ret = 0;
+		}
+		else
+		{
+			_dprintf("[mssl] dsa modulus match\n");
+			ret = 1;
+		}
+	}
+	else
+	{
+		_dprintf("[mssl] compare failed");
+	}
+
+end:
+	if(x509data)
+		X509_free(x509data);
+	if(pkey)
+		EVP_PKEY_free(pkey);
+	if(rsa_pub)
+		RSA_free(rsa_pub);
+	if(dsa_pub)
+		DSA_free(dsa_pub);
+	if(rsa_pri)
+		RSA_free(rsa_pri);
+	if(dsa_pri)
+		DSA_free(dsa_pri);
+
+	return ret;
 }

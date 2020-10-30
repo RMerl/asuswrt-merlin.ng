@@ -1581,7 +1581,7 @@ function callback_upload_cert(_flag) {
 												<td>
 													<input type="radio" name="vpn_server_igncrt" class="input" value="1" onchange="enable_server_igncrt(this.value);" <% nvram_match_x("", "vpn_server_igncrt", "1", "checked"); %>><#checkbox_Yes#>
 													<input type="radio" name="vpn_server_igncrt" class="input" value="0" onchange="enable_server_igncrt(this.value);" <% nvram_match_x("", "vpn_server_igncrt", "0", "checked"); %>><#checkbox_No#>
-													<span id="Hint_fixed_tls_crypto" style="display:none;">Authorization Mode fixes on TLS</span><!--untranslated-->
+													<span id="Hint_fixed_tls_crypto" style="display:none;"><#vpn_openvpn_AuthOnly_hint#></span>
 												</td>
 											</tr>
 											<tr id="server_authhmac">
@@ -1721,8 +1721,8 @@ function callback_upload_cert(_flag) {
 												</td>
 												<td width="12%">
 													<select name="vpn_clientlist_push_0" class="input_option">
-														<option value="0" selected>No</option>
-														<option value="1">Yes</option>
+														<option value="0" selected><#checkbox_No#></option>
+														<option value="1"><#checkbox_Yes#></option>
 													</select>
 												</td>
 												<td width="12%">

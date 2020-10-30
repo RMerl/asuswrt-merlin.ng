@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: 802.11ax.h 779751 2019-10-07 04:45:29Z $
+ * $Id: 802.11ax.h 787811 2020-06-12 08:11:34Z $
  */
 
 #ifndef _802_11ax_h_
@@ -269,19 +269,7 @@ typedef uint8 he_phy_cap_t[HE_PHY_CAP_INFO_SIZE];
 						 * MRQ and if the STA provides unsolicited HE MFB.
 						 */
 
-/* b27-b28: Max. AMPDU Length HE Exponent */
-/* Use Max AMPDU length exponent from VHT or HT */
-#define HE_MAC_MAX_AMPDU_EXP_ADOPT_VHT	0
-/* Max. AMPDU length =
- * 2^(20 + MAX_AMPDU_LEN_HE_EXPO_1) -1 (if this value in VHT CAP is 7) or
- * 2^(16 + MAX_AMPDU_LEN_HE_EXPO_1) -1 (if this value in HT CAP is 7).
- */
-#define HE_MAC_MAX_AMPDU_EXP_HE_1	1
-/* Max. AMPDU length =
- * 2^(20 + MAX_AMPDU_LEN_HE_EXPO_2) -1 (if this value in VHT CAP is 7) or
- * 2^(16 + MAX_AMPDU_LEN_HE_EXPO_2) -1 (if this value in HT CAP is 7).
- */
-#define HE_MAC_MAX_AMPDU_EXP_HE_2	2
+#define HE_MAC_AMPDU_MAX_LEN		6500631 /* ref 26.6.1 of 802.11axD6.0 */
 
 /* HE PHY Capabilities values */
 /* b1-b7: Channel Width Support field */

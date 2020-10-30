@@ -100,6 +100,9 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 		If you are using Fedora 31+, you may need to install packages listed below.
 			python2
 
+		If you are using Fedora 33+, you may need to install packages listed below.
+			perl-FindBin
+
    2. prepare source to, ex, $HOME/asuswrt
 
 	cd $HOME

@@ -36,7 +36,6 @@
 void netdev_stats64_to_stats(struct net_device_stats *netdev_stats, const struct rtnl_link_stats64 *stats64)
 {
 #if BITS_PER_LONG == 64
-#error //eric++
 	BUILD_BUG_ON(sizeof(*stats64) != sizeof(*netdev_stats));
 	memcpy(netdev_stats, stats64, sizeof(*netdev_stats));
 #else

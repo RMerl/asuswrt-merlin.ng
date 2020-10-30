@@ -653,7 +653,7 @@ void setup_ct_timeout(int connflag)
 			v[1] = read_ct_timeout("icmp", NULL);
 
 			snprintf(buf, sizeof(buf), "%u %u", v[0], v[1]);
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
 		if(strcmp(buf, "0 0") != 0)
 #endif
 			nvram_set("ct_timeout", buf);
@@ -686,7 +686,7 @@ void setup_conntrack(void)
 	snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_tcp_timeout"));
 	if (sscanf(p, "%u%u%u%u%u%u%u%u%u%u",
 		&v[0], &v[1], &v[2], &v[3], &v[4], &v[5], &v[6], &v[7], &v[8], &v[9]) == 10) {	// lightly verify
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
 		fprintf(stderr, "ct_tcp_timeout:[%s]\n", p);
 #endif
 		write_tcp_timeout("established", v[1]);
@@ -709,7 +709,7 @@ void setup_conntrack(void)
 		v[8] = read_tcp_timeout("last_ack");
 		snprintf(buf, sizeof(buf), "0 %u %u %u %u %u %u %u %u 0",
 			v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]);
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
 		if(strcmp(buf, "0 0 0 0 0 0 0 0 0 0") != 0)
 #endif
 			nvram_set("ct_tcp_timeout", buf);
@@ -719,7 +719,7 @@ void setup_conntrack(void)
 
 	snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_timeout"));
 	if (sscanf(p, "%u%u", &v[0], &v[1]) == 2) {
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
 		fprintf(stderr, "ct_timeout:[%s]\n", p);
 #endif
 //		write_ct_timeout("generic", NULL, v[0]);
@@ -729,7 +729,7 @@ void setup_conntrack(void)
 		v[0] = read_ct_timeout("generic", NULL);
 		v[1] = read_ct_timeout("icmp", NULL);
 		snprintf(buf, sizeof(buf), "%u %u", v[0], v[1]);
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
 		if(strcmp(buf, "0 0") != 0)
 #endif
 		nvram_set("ct_timeout", buf);

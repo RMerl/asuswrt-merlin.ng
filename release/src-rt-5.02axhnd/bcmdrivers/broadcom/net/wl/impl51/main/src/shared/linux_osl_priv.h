@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_osl_priv.h 778301 2019-08-29 01:08:49Z $
+ * $Id: linux_osl_priv.h 785666 2020-04-02 13:56:26Z $
  */
 
 #ifndef _LINUX_OSL_PRIV_H_
@@ -176,6 +176,7 @@ struct osl_info {
 	phys_addr_t  contig_base_alloc;
 	void *contig_base_alloc_va;
 	phys_addr_t contig_base_coherent_pa;
+	phys_addr_t contig_base_sts_phyrx_pa;
 	void *contig_base_coherent_va;
 	void *contig_base_txbuf_va;
 #ifdef BCMDONGLEHOST
@@ -184,6 +185,7 @@ struct osl_info {
 	void *contig_base_rxbufctl_va;
 #endif /* BCMDONGLEHOST */
 	void *contig_base_rxbuf_va;
+	void *contig_base_sts_phyrx_va;
 	void *contig_delta_va_pa;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 89)
 	struct page *contig_base_cma_page;

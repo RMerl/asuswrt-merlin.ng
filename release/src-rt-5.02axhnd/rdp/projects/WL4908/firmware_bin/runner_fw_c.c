@@ -27,7 +27,7 @@
 :>
 */
 
-/* Firmware version: 2.5.0.283304 */
+/* Firmware version: 2.5.0.282805 */
 
 
 uint32_t firmware_binary_C[] = {
@@ -701,7 +701,7 @@ uint32_t firmware_binary_C[] = {
     0xFC000000,
     0x20C24003,
     0x8A032803,
-    0x02004082,
+    0x02004083,
     0xFC000000,
     0xFC000000,
     0x228A7CA0,
@@ -745,7 +745,7 @@ uint32_t firmware_binary_C[] = {
     0xFC000000,
     0x2A1A7CA0,
     0xA4204270,
-    0x07A30089,
+    0x07A3008A,
     0xA1230960,
     0xA0830730,
     0xA13303B0,
@@ -756,7 +756,7 @@ uint32_t firmware_binary_C[] = {
     0x06709803,
     0xBCAA7304,
     0xBCA75B84,
-    0x0200104E,
+    0x0200104F,
     0x2AA2C025,
     0x06708438,
     0xA0A35C00,
@@ -828,7 +828,8 @@ uint32_t firmware_binary_C[] = {
     0x2E8F64A0,
     0x20824002,
     0x8A022803,
-    0x02004003,
+    0x02004004,
+    0x2A0A7CA0,
     0xBC800024,
     0xC2021702,
     0x1800A707,
@@ -875,7 +876,7 @@ uint32_t firmware_binary_C[] = {
     0xA544C360,
     0x10000555,
     0xA544A000,
-    0xBD00D340,
+    0xBD00D380,
     0x2282C035,
     0xFC000000,
     0xFC000000,
@@ -892,13 +893,12 @@ uint32_t firmware_binary_C[] = {
     0x82822080,
     0x8A822029,
     0x2A8A7A61,
-    0x020023B5,
+    0x020023B4,
     0xBC802114,
     0xC2021702,
     0xBCAA3004,
     0xFC000000,
     0xFC000000,
-    0x2A0A7CA0,
     0x22828155,
     0x020023B9,
     0x82822010,
@@ -2700,7 +2700,7 @@ uint32_t firmware_binary_C[] = {
     0xBCBA5D84,
     0x2AA38166,
     0xBCF00004,
-    0x10000323,
+    0x10000324,
     0xA4C043A0,
     0xA4C25800,
     0xBCC00004,
@@ -3808,8 +3808,8 @@ uint32_t firmware_binary_C[] = {
     0xA522C8E0,
     0xA5230740,
     0x22C24754,
-    0x22B24774,
     0xA14389A0,
+    0xA0B388A0,
     0xA1139400,
     0xA0E384E0,
     0x8163A0B2,
@@ -8224,4 +8224,4 @@ uint32_t firmware_binary_C[] = {
     0xFC000000,
     0xFC000000,
 };
-char *rdpa_version_fw_c = "$Change: 283380 $";
+char *rdpa_version_fw_c = "$Change: 286581 $";

@@ -30,12 +30,10 @@ int rotate_log_file(const char* log_file, int log_file_size, int log_rotate_numb
 		return -1;
 
 	int i = 0;
-        size_t size = 0;
-        char buf[1024] = {0};
-
-        struct stat tmp_log_stat;
-        int tmp_stat = stat(log_file, &tmp_log_stat);
-        size = tmp_log_stat.st_size;
+	size_t size = 0;
+	struct stat tmp_log_stat;
+	stat(log_file, &tmp_log_stat);
+	size = tmp_log_stat.st_size;
 
         if( size > log_file_size ){
                 for(i=log_rotate_number; i>=0; i--){
@@ -99,8 +97,7 @@ int compile_pattern(const char *pat) {
 	if(pat==NULL) return -1;
 	int flags = REG_NOSUB;
 	int ret;
-	#define MSGBUFSIZE 512
-	char error[MSGBUFSIZE];
+
 	if (ignore_case)
 		flags |= REG_ICASE;
 	if (extended)
@@ -111,9 +108,9 @@ int compile_pattern(const char *pat) {
 
 int main(int argc, char **argv){
 
-	int i = 0, opt;
+	int opt;
 	int log_file_size = 10240;//524288;
-        int log_rotate_number = 5;
+	int log_rotate_number = 5;
 	size_t size = 0;
 	char log_file[20] = {0};
 

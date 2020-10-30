@@ -311,7 +311,7 @@ netlink_parse_link(struct nlmsghdr *msg,
 		}
 	}
 	if (!iff->name || !iff->address) {
-		log_info("netlink", "interface %d does not have a name or an address, skip",
+		log_debug("netlink", "interface %d does not have a name or an address, skip",
 		    iff->index);
 		return -1;
 	}

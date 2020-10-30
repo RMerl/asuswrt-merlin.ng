@@ -16,6 +16,9 @@ extern char *datestr[];
 typedef struct pc_event pc_event_s;
 struct pc_event{
 	char e_name[32];
+#ifdef RTCONFIG_SCHED_V2
+	int day_of_week;
+#endif
 	int start_day;
 	int end_day;
 	int start_hour;
@@ -44,6 +47,11 @@ struct pc{
 	unsigned long long timestamp;
 	pc_s *next;
 };
+
+#ifdef RTCONFIG_SCHED_V2
+char *get_pc_date_str(int day_of_week, int over_one_day, char *buf, int buf_size);
+pc_event_s *get_event_list_by_sched_v2(pc_event_s **target_list, char *sched_v2_str);
+#endif
 
 extern pc_s *get_all_pc_list(pc_s **pc_list);
 extern pc_s *get_all_pc_tmp_list(pc_s **pc_list);

@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Thu Nov  8 10:09:26 2018
+ * Date: Tue Jul 14 16:11:45 2020
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -50,7 +50,6 @@
 #undef TMCFG_APP_U_TC_AR
 #undef TMCFG_APP_U_TC_PFX
 #undef TMCFG_APP_U_TC_CC
-#undef TMCFG_TC_PFX
 #undef TMCFG_APP_U_TC_PFX
 #undef TMCFG_APP_K_TEMPLATE
 #undef TMCFG_APP_K_TDTS_NFFW
@@ -94,8 +93,8 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_GT_AX6000 1 // y
-#define TMCFG_MODEL "gt-ax6000"
+#define TMCFG_MODEL_RT_AX89X 1 // y
+#define TMCFG_MODEL "rt-ax89x"
 #define TMCFG_OEM_SRC 1 // y
 #define TMCFG_OEM_SRC_QUALCOMM 1 // y
 
@@ -110,7 +109,7 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX6000_GPL_382_24226/asuswrt/release/src-qca-ipq806x/linux/linux-4.4.x/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX89X_GPL_386_21790/release/src-qca-ipq806x/linux/linux-4.4.x"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
@@ -154,7 +153,7 @@
 #define TMCFG_E_UDB_CORE_MAJ_VER 0
 #define TMCFG_E_UDB_CORE_MIN_VER 2
 #define TMCFG_E_UDB_CORE_REV_VER 18
-#define TMCFG_E_UDB_CORE_SHN_REV_NUM 3508378
+#define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
 #define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
 #define TMCFG_E_UDB_CORE_CONN_EXTRA 1 // y
@@ -213,7 +212,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "4ee6b60"
+#define TMCFG_E_REL_PKG_LOCAL_VER "4b635f32"
 
 /*
  * Accompany applications or modules
@@ -286,10 +285,10 @@
 #define TMCFG_APP_U_TDTS_WRED_THREAD_POOL 1 // y
 #define TMCFG_APP_U_TDTS_WRED_PROG_CTRL 1 // y
 #define TMCFG_APP_U_WRS_LOCAL_CACHE 0x7D000
-#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10"
+#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10-ASUS-HRU77VWJ"
 #define TMCFG_APP_U_WRED_TMUFE_VENDOR_ID "ASUS"
-#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-en.url.trendmicro.com"
-#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 0 // n
+#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-asus-en.url.trendmicro.com"
+#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 1 // y
 #define TMCFG_APP_U_TDTS_WRED_TMUFE21 0 // n
 #define TMCFG_APP_U_WBL 1 // y
 

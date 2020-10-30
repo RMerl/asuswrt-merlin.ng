@@ -171,6 +171,10 @@ CFLAGS += -DMSSID_PRELINK
 COMMON_OBJS += cfg_prelink.o
 endif
 
+ifeq ($(RTCONFIG_NBR_RPT),y)
+COMMON_OBJS += cfg_nbr_rpt.o
+endif
+
 ifeq ($(RTCONFIG_LANTIQ),y)
 # LDFLAGS += -L$(TOP)/fapi_wlan_common-1.0.0.1 -lfapiwlancommon -ldl -L$(TOP)/libhelper-1.4.0.2 -lhelper -lrt
 LDFLAGS += -L$(TOP)/fapi_wlan_common-05.04.00.131 -lfapiwlancommon -ldl -L$(TOP)/libhelper-1.4.0.2 -lhelper -L$(TOP)/libfapi-0.1 -lfapi

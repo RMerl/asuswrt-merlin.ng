@@ -145,6 +145,41 @@ int config_rtkswitch(int argc, char *argv[])
 	return rtkswitch_ioctl(val, val2, val3);
 }
 
+int ext_rtk_phy_mib(int port, rtk_stat_port_cntr_t *pPort_cntrs) {
+	int fd;
+	int *p = NULL;
+	rtk_stat_port_cntr_t Port_cntrs;
+
+	if ((port < 0) || !pPort_cntrs)
+		return -1;
+
+	fd = open("/dev/rtkswitch", O_RDONLY);
+	if (fd < 0) {
+		perror("/dev/rtkswitch");
+	} else {
+		memset(&Port_cntrs, 0, sizeof(Port_cntrs));
+		p = (int *) &Port_cntrs;
+		*p = port;
+		if (ioctl(fd, GET_PORT_STAT, &Port_cntrs) < 0) {
+			perror("rtkswitch ioctl");
+			close(fd);
+			return -1;
+		} else {
+			/*fprintf(stderr, "pPort_cntrs=%p, tx_bytes=%llu, rx_bytes=%llu, tx_packets=%u rx_packets=%u, crc_errors=%u, "
+				"sizeof(Port_cntrs)=%d, sizeof(rtk_stat_port_cntr_t)=%d\n", 
+				pPort_cntrs, Port_cntrs.ifOutOctets, Port_cntrs.ifInOctets,
+				Port_cntrs.ifOutUcastPkts + Port_cntrs.ifOutMulticastPkts + Port_cntrs.ifOutBrocastPkts,
+				Port_cntrs.ifInUcastPkts + Port_cntrs.ifInMulticastPkts + Port_cntrs.ifInBroadcastPkts,
+				Port_cntrs.dot3StatsFCSErrors, sizeof(Port_cntrs), sizeof(rtk_stat_port_cntr_t));*/
+			memcpy(pPort_cntrs, &Port_cntrs, sizeof(Port_cntrs));
+		}
+
+		close(fd);
+	}
+
+	return 0;
+}
+
 #if defined(RTCONFIG_EXT_RTL8370MB)
 #define MAX_RTL_PORTS 8
 #else
@@ -153,13 +188,16 @@ int config_rtkswitch(int argc, char *argv[])
 typedef struct {
 	unsigned int link[MAX_RTL_PORTS];
 	unsigned int speed[MAX_RTL_PORTS];
+	unsigned int duplex[MAX_RTL_PORTS];
 } phyState;
 
-int ext_rtk_phyState(int verbose, char* BCMPorts)
+int  ext_rtk_phyState(int verbose, char* BCMPorts, phy_info_list *list)
 {
 	int model;
 	char buf[64];
-	int *o;
+#ifdef RTCONFIG_NEW_PHYMAP
+	char cap_buf[64] = {0};
+#endif
 #if defined(RTCONFIG_EXT_RTL8370MB)
 	const char *portMark = "P0=%C;P1=%C;P2=%C;P3=%C;P4=%C;P5=%C;P6=%C;P7=%C;";
 #else
@@ -175,9 +213,21 @@ int ext_rtk_phyState(int verbose, char* BCMPorts)
 
 	phyState pS;
 
+#ifdef RTCONFIG_NEW_PHYMAP
+	phy_port_mapping port_mapping = get_phy_port_mapping();
+	int o[port_mapping.extsw_count];
+	for (i = 0; i < port_mapping.extsw_count; i++) {
+		pS.link[i] = 0;
+		pS.speed[i] = 0;
+		pS.duplex[i] = 0;
+		o[i] = port_mapping.port[1+i+port_mapping.extsw_count].phy_port_id - S_RTL8365MB;
+	}
+#else
+	int *o;
 	for(i = 0 ; i < MAX_RTL_PORTS ; i++){
 		pS.link[i] = 0;
 		pS.speed[i] = 0;
+		pS.duplex[i] = 0;
 	}
 
         switch(model = get_model()) {
@@ -188,10 +238,10 @@ int ext_rtk_phyState(int verbose, char* BCMPorts)
 		/* L8 L7 L6 L5 L4 L3 L2 L1 W0 */
 		
 #if defined(RTCONFIG_EXT_RTL8370MB)
-		const int porder[MAX_RTL_PORTS] = {2,3,4,0,1,5,6,7};
+		static const int porder[MAX_RTL_PORTS] = {2,3,4,0,1,5,6,7};
 		o = (int *)porder;
 #else
-		const int porder[MAX_RTL_PORTS] = {3,2,1,0};
+		static const int porder[MAX_RTL_PORTS] = {3,2,1,0};
 		o = (int *)porder;
 #endif
 
@@ -203,19 +253,20 @@ int ext_rtk_phyState(int verbose, char* BCMPorts)
 		/* R3 R2 R1 R0 B3 B2 B1 B0 B4 */
 		/* L8 L7 L6 L5 L4 L3 L2 L1 W0 */
 		
-		const int porder[4] = {0,1,2,3};
+		static const int porder[4] = {0,1,2,3};
 		o = (int *)porder;
 
 		break;
 		}
 	default:
 		{	
-		const int porder[4] = {0,1,2,3};
+		static const int porder[4] = {0,1,2,3};
 		o = (int *)porder;
 
 		break;
 		}
 	}
+#endif
 
 	if (ioctl(fd, GET_RTK_PHYSTATES, &pS) < 0) {
 		perror("rtkswitch ioctl");
@@ -246,6 +297,47 @@ int ext_rtk_phyState(int verbose, char* BCMPorts)
 
 	if(verbose)
 		printf("%s\n", buf);
+
+	// prepare the phy_info list.
+	if (list) {
+		rtk_stat_port_cntr_t Port_cntrs;
+#ifdef RTCONFIG_NEW_PHYMAP
+		for(i = 0; i < port_mapping.extsw_count; i++) {
+			list->phy_info[list->count].phy_port_id = port_mapping.port[list->count].phy_port_id;
+			snprintf(list->phy_info[list->count].label_name, sizeof(list->phy_info[list->count].label_name), "%s", 
+				port_mapping.port[1+i+port_mapping.extsw_count].label_name);
+			snprintf(list->phy_info[list->count].cap_name, sizeof(list->phy_info[list->count].cap_name), "%s",
+				get_phy_port_cap_name(port_mapping.port[1+i+port_mapping.extsw_count].cap, cap_buf, sizeof(cap_buf)));
+#else
+		for(i = 0; i < MAX_RTL_PORTS; i++) {
+			list->phy_info[list->count].phy_port_id = o[i];
+			snprintf(list->phy_info[list->count].label_name, sizeof(list->phy_info[list->count].label_name), "L%d", 
+				list->count);
+			snprintf(list->phy_info[list->count].cap_name, sizeof(list->phy_info[list->count].cap_name), "lan");
+#endif
+
+			snprintf(list->phy_info[list->count].state, sizeof(list->phy_info[list->count].state), "%s", 
+				(pS.link[o[i]] == 1) ? "up" : "down");
+
+			/*fprintf(stderr, "%p, o[%d]=%d, count=%d, phy_port=%d, cap_name=%s, state=%s\n", 
+				&Port_cntrs, i, o[i], list->count, list->phy_info[list->count].phy_port, list->phy_info[list->count].cap_name, list->phy_info[list->count].state);*/
+			if (pS.link[o[i]] == 1) {
+				list->phy_info[list->count].link_rate = ((pS.speed[o[i]] == 0) ? 10 : ((pS.speed[o[i]] == 1) ? 100 : 1000));
+				snprintf(list->phy_info[list->count].duplex, sizeof(list->phy_info[list->count].duplex), "%s", 
+					pS.duplex ? "full" : "half");
+				if(!ext_rtk_phy_mib(o[i], &Port_cntrs)) { 
+					list->phy_info[list->count].tx_bytes = Port_cntrs.ifOutOctets;
+					list->phy_info[list->count].rx_bytes = Port_cntrs.ifInOctets;
+					list->phy_info[list->count].tx_packets = Port_cntrs.ifOutUcastPkts + Port_cntrs.ifOutMulticastPkts + Port_cntrs.ifOutBrocastPkts;
+					list->phy_info[list->count].rx_packets = Port_cntrs.ifInUcastPkts + Port_cntrs.ifInMulticastPkts + Port_cntrs.ifInBroadcastPkts;
+					list->phy_info[list->count].crc_errors = Port_cntrs.dot3StatsFCSErrors;
+				}
+			} else {
+				snprintf(list->phy_info[list->count].duplex, sizeof(list->phy_info[list->count].duplex), "none");
+			}
+			list->count++;
+		}
+	}
 
 	ret = 0;
 	for(i = 0; i < MAX_RTL_PORTS; i++){

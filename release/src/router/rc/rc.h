@@ -369,6 +369,12 @@ typedef enum { IPT_TABLE_NAT, IPT_TABLE_FILTER, IPT_TABLE_MANGLE } ipt_table_t;
 #define	IPT_ANY_AF	(IPT_V4 | IPT_V6)
 #define	IPT_AF_IS_EMPTY(f)	((f & IPT_ANY_AF) == 0)
 
+typedef struct {
+	int min_rate; //minimum bit rate in kbps
+	int max_rate; //peak bit rate in kbps
+	int burst; //maximum burst size in bytes
+} QOS_Q_PARAM;
+
 extern struct nvram_tuple router_defaults[];
 extern struct nvram_tuple router_state_defaults[];
 
@@ -433,6 +439,8 @@ extern int getFanSpeed(void);
 static inline void setFanOnOff(const int onoff) { }
 #endif
 #endif
+extern int cpu_temperature(int *t, long arg);
+extern int aqr_temperature(int *t, long arg);
 extern void ate_temperature_record(void);
 #if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
 extern int stress_pktgen_main(int argc, char *argv[]);
@@ -496,10 +504,10 @@ extern int ResetDefault(void);
 extern int getBootVer(void);
 extern int getMAC_2G(void);
 extern int getMAC_5G(void);
-extern int GetPhyStatus(int verbose);
+extern int GetPhyStatus(int verbose, phy_info_list *list);
 #ifdef CONFIG_BCMWL5
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_BHCOST_OPT) && defined(RTCONFIG_AMAS_ETHDETECT)
-extern int get_uplinkports_linkrate(char *ifname);
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_BHCOST_OPT)
+extern unsigned int get_uplinkports_linkrate(char *ifname);
 #endif
 #endif
 extern int Get_ChannelList_2G(void);
@@ -632,6 +640,7 @@ extern void hyfi_process(void);
 #endif
 #if defined(RTCONFIG_SOC_IPQ8074)
 extern void beacon_counter_monitor(void);
+extern void thermal_monitor(void);
 #endif
 extern void gen_qca_wifi_cfgs(void);
 extern void set_wlpara_qca(const char* wif, int band);
@@ -670,6 +679,16 @@ extern int start_thermald(void);
 #endif
 #if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
 extern void Set_Ftm(const char *value);
+#endif
+#if defined(RTCONFIG_SOC_IPQ8074)
+extern void Get_VoltUp(void);
+extern void Set_VoltUp(const char *value);
+extern void Get_L2Ceiling(void);
+extern void Set_L2Ceiling(const char *value);
+extern void Get_PwrCycleCnt(void);
+extern void Set_PwrCycleCnt(const char *value);
+extern void Get_AvgUptime(void);
+extern void Set_AvgUptime(const char *value);
 #endif
 extern int country_to_code(char *ctry, int band, char *code_str, size_t len);
 extern void acs_ch_weight_param(void);
@@ -791,7 +810,7 @@ extern void wlconf_post(const char *ifname);
 extern void wlconf_pre();
 extern void init_wl_compact(void);
 extern void check_afterburner(void);
-extern int set_wltxpower();
+extern int wl_get_band(char* wlif);
 #ifdef RTCONFIG_BCMWL6
 extern void led_bh_prep(int post);
 extern int wl_check_chanspec();
@@ -799,6 +818,9 @@ extern void wl_check_5g_band_group();
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 extern void reset_psr_hwaddr();
 #endif
+extern int set_cb_flag(int flag);
+extern int unset_cb_flag(void);
+extern int get_cb_flag(void);
 #endif
 #ifdef RTCONFIG_BCM_7114
 extern void ldo_patch();
@@ -816,7 +838,6 @@ extern int dummy_alert_led_pwr(void);
 #ifdef RTAX88U
 extern void pcie_probe_check(void);
 #endif
-extern void wl_dfs_radarthrs_config(char *ifname, int unit);
 #if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
 extern int wlcscan_core_escan(char *ofile, char *wif);
 #endif
@@ -835,11 +856,6 @@ extern int getCountryCode_5G(void);
 extern int getRegrev_2G(void);
 extern int getRegrev_5G(void);
 extern int getSSID(int unit);
-extern void check_wl_country();
-extern int wl_dfs_support(int unit);
-#if defined(RTAC3200) || defined(RTAC68U) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
-extern void wl_disband5grp();
-#endif
 #ifdef RTCONFIG_BCMARM
 extern int setWanLedMode1(void);
 extern int setWanLedMode2(void);
@@ -868,7 +884,7 @@ extern void bsd_defaults(void);
 #ifdef GTAC2900
 extern void update_cfe_ac2900();
 #endif
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
 extern void update_cfe_675x();
 #endif
 #if defined(RTAX58U) || defined(TUFAX3000)
@@ -905,7 +921,27 @@ extern int wait_to_forward_state(char *ifname);
 extern void wl_fail_db(int unit, int state, int count);
 #endif
 #ifdef RTCONFIG_BCMWL6
+#ifdef RTCONFIG_TCODE
 extern int hw_vht_cap();
+extern int hw_he_cap();
+extern void check_wl_country();
+extern int wl_dfs_support(int unit);
+extern void wl_dfs_radarthrs_config(char *ifname, int unit);
+extern int set_wltxpower();
+#if defined(RTAC3200) || defined(RTAC68U) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+extern void wl_disband5grp();
+#endif
+#else
+static INLINE int hw_vht_cap() { return 0; }
+static INLINE int hw_he_cap() { return 0; }
+static INLINE void check_wl_country() { return; };
+static INLINE int wl_dfs_support(int unit) { return 0; };
+static INLINE void wl_dfs_radarthrs_config(char *ifname, int unit) { return; };
+static INLINE int set_wltxpower() { return 0; }
+#if defined(RTAC3200) || defined(RTAC68U) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+static INLINE void wl_disband5grp() { return; };
+#endif
+#endif
 #endif
 extern int wl_control_channel(int unit);
 #ifdef RTCONFIG_DPSTA
@@ -927,6 +963,9 @@ extern void hnd_set_hwstp(void);
 #ifdef RTCONFIG_BCMARM
 extern void config_mssid_isolate(char *ifname, int vif);
 #endif
+#ifdef HND_ROUTER
+extern void config_queue();
+#endif
 #endif
 
 #if defined(RTCONFIG_MULTISERVICE_WAN)
@@ -941,6 +980,7 @@ typedef struct {
 	char base_ifname[8];
 	int base_wan_unit;
 	int mcast;
+	int dscp;
 } MSWAN_PARAM;
 extern void config_mswan(int wan_unit);
 extern void clean_mswan_vitf(int wan_unit);
@@ -1130,6 +1170,7 @@ extern int get_xdsl_bits_ds(uint8_t *data, size_t *num);
 extern void set_vendor_id(const char* vendor_id);
 extern void set_version(const char* version);
 extern void set_serial_no(const char* serial_no);
+extern void config_ptm_queue(int qid, QOS_Q_PARAM *p);
 #endif
 
 #endif /* RTCONFIG_DSL_HOST */
@@ -1284,7 +1325,7 @@ extern void lan_down(char *lan_ifname);
 extern void stop_lan_wl(void);
 extern void start_lan_wl(void);
 extern void restart_wl(void);
-extern void lanaccess_mssid_ban(const char *ifname_in);
+extern void lanaccess_mssid(const char *ifname_in, int mode);
 extern void lanaccess_wl(void);
 #ifdef RTCONFIG_FBWIFI
 extern void stop_fbwifi_check();
@@ -1365,6 +1406,7 @@ extern void write_extra_filter(FILE *fp);
 #ifdef RTCONFIG_IPV6
 extern void write_extra_filter6(FILE *fp);
 #endif
+extern void rule_apply_checking(char *caller, int line, char *rule_path, int ret);
 
 /* pc.c */
 #ifdef RTCONFIG_PARENTALCTRL
@@ -1979,11 +2021,11 @@ extern void restart_dnsmasq_ipv6();
 #endif
 #endif
 extern int wps_band_radio_off(int wps_band);
+#ifdef CONFIG_BCMWL5
 #ifdef RTCONFIG_FANCTRL
 extern int stop_phy_tempsense(void);
 extern int start_phy_tempsense(void);
 #endif
-#ifdef CONFIG_BCMWL5
 #ifdef RTCONFIG_WLCEVENTD
 extern int start_wlceventd(void);
 extern void stop_wlceventd(void);
@@ -2268,7 +2310,7 @@ extern int mkdir_if_none(const char *path);
 #endif
 extern void start_snooper(void);
 extern void stop_snooper(void);
-#ifdef RTCONFIG_DUALWAN
+#if defined(CONFIG_BCMWL5) && !defined(HND_ROUTER) && defined(RTCONFIG_DUALWAN)
 extern int restart_dualwan(void);
 #endif
 #ifdef __CONFIG_NORTON__
@@ -2381,11 +2423,18 @@ extern int restart_coovachilli_if_conflicts(char *wan_ip, char *wan_mask);
 extern void PMS_Init_Database();
 #endif
 #if defined (RTCONFIG_BT_CONN)
+extern void BT_chip_reset(int stage);
 extern void start_bluetooth_service(void);
 extern void stop_bluetooth_service(void);
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PRELINK)
 extern void ble_rename_ssid(void);
 extern int check_bluetooth_device(const char *bt_dev);
+#endif
+#if defined(RTCONFIG_CSR8811)
+extern int setMAC_BT(const char *mac);
+extern int getMAC_BT(unsigned char *mac, const size_t len);
+extern int setCal_BT(const char *cal);
+extern int getCal_BT(unsigned char *cal);
 #endif
 #endif	/* RTCONFIG_BT_CONN */
 #if defined (RTCONFIG_DETWAN)
@@ -2407,8 +2456,15 @@ extern int getDisableWifiDrv(void);
 #endif
 #endif
 #ifdef RTCONFIG_NOTIFICATION_CENTER
+typedef struct __nt_conf__t_
+{
+	int    eID;
+	int    eAct;
+	int    eType;
+}NC_SETTING_T;
 extern int start_wlc_nt(void);
 extern void stop_wlc_nt(void);
+extern void sync_nc_conf(void);
 extern int stop_notification_center(void);
 #endif
 #ifdef RTCONFIG_PROTECTION_SERVER
@@ -2423,7 +2479,9 @@ extern void stop_netool(void);
 extern int start_bsd(void);
 extern void stop_bsd(void);
 #endif
-
+#if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
+extern int restart_plc_main(int argc, char *argv[]);
+#endif
 
 //wireless.c
 extern int wlcscan_main(void);
@@ -2545,7 +2603,7 @@ extern void vlan_subnet_filter_forward(FILE *fp, char *wan_if);
 extern int check_exist_subnet_access_rule(int index, int subnet_group_tmp);
 extern void vlan_subnet_deny_input(FILE *fp);
 extern void vlan_subnet_deny_forward(FILE *fp);
-extern void vlan_lanaccess_mssid_ban(const char *limited_ifname, char *ip, char *netmask);
+extern void vlan_lanaccess_mssid(const char *limited_ifname, char *ip, char *netmask, int mode);
 extern void vlan_lanaccess_wl(void);
 extern int get_vlan_info_by_lanX(char *lan_prefix, int *vid, int *prio, int *portlist);
 extern void vlan_if_allow_list_set(unsigned int wan_allow_list, unsigned int lan_allow_list, unsigned int wl_allow_list);
@@ -2717,7 +2775,6 @@ extern int start_hapdevent(void);
 extern void stop_hapdevent(void);
 #endif
 
-#if defined(RTCONFIG_TCODE) && defined(CONFIG_BCMWL5)
 extern char *cfe_nvram_get(const char *name);
 static INLINE int
 cfe_nvram_match(char *name, char *match) {
@@ -2730,6 +2787,7 @@ extern char *cfe_nvram_safe_get_raw(const char *name);
 extern int cfe_nvram_set(const char *name);
 extern int refresh_cfe_nvram();
 extern int factory_debug();
+#if defined(RTCONFIG_TCODE) && defined(CONFIG_BCMWL5)
 #ifdef RTCONFIG_BCMARM
 extern char *ATE_BRCM_PREFIX(void);
 extern int ATE_BRCM_SET(const char *name, const char *value);
@@ -2953,6 +3011,45 @@ extern void add_GN_WBL_ForwardRule(FILE *fp);
 #ifdef RTCONFIG_LANTIQ
 extern void GN_WBL_restart();
 #endif
+#endif
+
+#ifdef RTCONFIG_BCM_OAM
+// oam
+enum {
+	OAM_MODE_1AG = 0,
+	OAM_MODE_1731,
+	OAM_MODE_1AG_2,
+	OAM_MODE_1731_2,
+	OAM_MODE_MAX
+};
+
+typedef struct {
+	char ifname[16];
+	//3ah
+	int oam_3ah_enable;
+	int id_3ah;
+	int auto_event;
+	int variable_retrieval;
+	int link_event;
+	int remote_loopback;
+	int active_mode;
+	//y.1731, 1ag
+	int srv_enable[OAM_MODE_MAX];
+	int mode[OAM_MODE_MAX];
+	int level[OAM_MODE_MAX];
+	char md_name[OAM_MODE_MAX][48];
+	char id[OAM_MODE_MAX][48];
+	int local_mep_id[OAM_MODE_MAX];
+	int local_mep_vid[OAM_MODE_MAX];
+	int remote_mep_id[OAM_MODE_MAX];
+	int ccm_interval[OAM_MODE_MAX];
+} oam_srv_t;
+
+extern void start_oam();
+extern void stop_oam();
+// sysdeps
+extern void start_oam_service(oam_srv_t* param);
+extern void stop_oam_service();
 #endif
 
 #endif	/* __RC_H__ */

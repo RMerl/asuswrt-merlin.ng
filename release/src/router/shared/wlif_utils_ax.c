@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlif_utils.c 778128 2019-08-23 04:08:44Z $
+ * $Id: wlif_utils.c 790839 2020-09-04 11:22:55Z $
  */
 
 #include <typedefs.h>
@@ -41,6 +41,7 @@
 #include <nvparse.h>
 #include <shutils.h>
 #include <wlutils.h>
+#include <common_utils.h>
 #include <wlif_utils.h>
 
 #include <stdarg.h>   // for va_list
@@ -1400,7 +1401,7 @@ get_bridge_by_ifname(char* ifname, char** brname)
 	}
 
 	/* Search in GUEST networks */
-	for (i = 1 ; i < WLIFU_MAX_NO_BRIDGE ; i++) {
+	for (i = 1; i < WLIFU_MAX_NO_BRIDGE; i++) {
 		snprintf(nv_name, 16, "lan%d_ifnames", i);
 		br_ifnames = nvram_safe_get(nv_name);
 		foreach(name, br_ifnames, next) {
@@ -1580,6 +1581,8 @@ typedef struct wlif_bh_creds_hapd_clicmd_data {
 static void wl_wlif_update_hapd_bh_creds(char *wps_ifname, char *bh_ifname);
 static int wl_wlif_fill_bh_creds_from_nvram(char *nvifname, wlif_bh_creds_hapd_clicmd_data_t *cmd);
 #endif	/* MULTIAP */
+
+static void wl_wlif_wpa_supplicant_update_ap_scan(char *ifname, char *nvifname, int val);
 
 // WPS Status id and code value pairs
 typedef struct wlif_wps_status {
@@ -1809,7 +1812,7 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 			nvram_set(strcat_r(prefix2, "_ssid", tmp), creds->ssid);
 		}
 
-		if (nvram_get_int("amesh_wps_enr")) {
+		if (nvram_get_int("amesh_wps_enr") || nvram_get_int("rpx_wps_enr")) {
 			nvram_set(strcat_r(pfcred, "ssid", tmp), creds->ssid);
 			nvram_set(strcat_r(pfcred0, "ssid", tmp), creds->ssid);
 			nvram_set(strcat_r(pfcred1, "ssid", tmp), creds->ssid);
@@ -1869,7 +1872,7 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 
 		switch (creds->akm) {
 			case WLIF_WPA_AKM_PSK:
-				if (nvram_get_int("amesh_wps_enr")) {
+				if (nvram_get_int("amesh_wps_enr") || nvram_get_int("rpx_wps_enr")) {
 					nvram_set(strcat_r(pfcred, "auth_mode", tmp), "psk");
 					nvram_set(strcat_r(pfcred0, "auth_mode", tmp), "psk");
 					nvram_set(strcat_r(pfcred1, "auth_mode", tmp), "psk");
@@ -1886,7 +1889,7 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 				}
 			break;
 			case WLIF_WPA_AKM_PSK2:
-				if (nvram_get_int("amesh_wps_enr")) {
+				if (nvram_get_int("amesh_wps_enr") || nvram_get_int("rpx_wps_enr")) {
 					nvram_set(strcat_r(pfcred, "auth_mode", tmp), "psk2");
 					nvram_set(strcat_r(pfcred0, "auth_mode", tmp), "psk2");
 					nvram_set(strcat_r(pfcred1, "auth_mode", tmp), "psk2");
@@ -1903,7 +1906,7 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 				}
 			break;
 			case (WLIF_WPA_AKM_PSK | WLIF_WPA_AKM_PSK2):
-				if (nvram_get_int("amesh_wps_enr")) {
+				if (nvram_get_int("amesh_wps_enr") || nvram_get_int("rpx_wps_enr")) {
 					nvram_set(strcat_r(pfcred, "auth_mode", tmp), "psk2");
 					nvram_set(strcat_r(pfcred0, "auth_mode", tmp), "psk2");
 					nvram_set(strcat_r(pfcred1, "auth_mode", tmp), "psk2");
@@ -1920,7 +1923,7 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 				}
 			break;
 			default:
-				if (nvram_get_int("amesh_wps_enr")) {
+				if (nvram_get_int("amesh_wps_enr") || nvram_get_int("rpx_wps_enr")) {
 					nvram_set(strcat_r(pfcred, "auth_mode", tmp), "open");
 					nvram_set(strcat_r(pfcred0, "auth_mode", tmp), "open");
 					nvram_set(strcat_r(pfcred1, "auth_mode", tmp), "open");
@@ -1939,7 +1942,7 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 		}
 
 		nvram_set(strcat_r(prefix, "_wep", tmp), "0");
-		if (nvram_get_int("amesh_wps_enr")) {
+		if (nvram_get_int("amesh_wps_enr") || nvram_get_int("rpx_wps_enr")) {
 			nvram_set(strcat_r(pfcred, "wep", tmp), "0");
 			nvram_set(strcat_r(pfcred0, "wep", tmp), "0");
 			nvram_set(strcat_r(pfcred1, "wep", tmp), "0");
@@ -1992,7 +1995,7 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 			nvram_set(strcat_r(prefix2, "_crypto", tmp), val);
 		}
 
-		if (nvram_get_int("amesh_wps_enr")) {
+		if (nvram_get_int("amesh_wps_enr") || nvram_get_int("rpx_wps_enr")) {
 			if (creds->encr == (WLIF_WPA_ENCR_TKIP | WLIF_WPA_ENCR_AES))
 				val = "aes";
 
@@ -2017,7 +2020,7 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 			nvram_set(strcat_r(prefix2, "_wpa_psk", tmp), creds->nw_key);
 		}
 
-		if (nvram_get_int("amesh_wps_enr")) {
+		if (nvram_get_int("amesh_wps_enr") || nvram_get_int("rpx_wps_enr")) {
 			nvram_set(strcat_r(pfcred, "wpa_psk", tmp), creds->nw_key);
 			nvram_set(strcat_r(pfcred0, "wpa_psk", tmp), creds->nw_key);
 			nvram_set(strcat_r(pfcred1, "wpa_psk", tmp), creds->nw_key);
@@ -2033,7 +2036,7 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 		}
 
 #ifdef RTCONFIG_HND_ROUTER_AX
-		if (nvram_get_int("amesh_wps_enr"))
+		if (nvram_get_int("amesh_wps_enr") || nvram_get_int("rpx_wps_enr"))
 #endif
 		{
 			if (nvram_get_int("wps_enr_hw") == 1)
@@ -2044,6 +2047,14 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 		}
 		nvram_commit();
 	}
+
+#ifdef RTCONFIG_HND_ROUTER_AX
+	if (nvram_get_int("rpx_wps_enr") && !nvram_match("chk_wpsnv", "1")) {
+		_dprintf("rp wps setting applied, reboot...\n");
+		sleep(1);
+		kill(1, SIGTERM);
+	}
+#endif
 
 	return ret;
 }
@@ -2288,6 +2299,9 @@ wl_wlif_wps_pbc_hdlr(char *wps_ifname, char *bh_ifname)
 			WLIF_HAPD_DIR, wps_ifname);
 		status_code = WLIF_WPS_UI_FINDING_PBC_STA;
 	} else {
+		/* Before starting WPS set ap_scan parameter to 1 in supplicant */
+		wl_wlif_wpa_supplicant_update_ap_scan(wps_ifname, nvifname, 1);
+
 		snprintf(cmd, sizeof(cmd), "%s -p /var/run/"
 			"%s_wpa_supplicant -i %s wps_pbc", WPA_CLI_APP, nvifname, wps_ifname);
 		status_code = WLIF_WPS_UI_FIND_PBC_AP;
@@ -2340,6 +2354,23 @@ wl_wlif_wps_stop_session(char *wps_ifname)
 	wl_wlif_update_wps_ui(WLIF_WPS_UI_INIT);
 end:
 	return ret;
+}
+
+// Update the ap_scan parameter for wpa-supplicant
+static void
+wl_wlif_wpa_supplicant_update_ap_scan(char *ifname, char *nvifname, int val)
+{
+	char cmd[WLIF_MIN_BUF] = {0};
+
+	if (val < 0 || val > 2) {
+		cprintf("Err: %s invalid value %d is provided for ap scan parameter\n",
+			__func__, val);
+		return;
+	}
+
+	snprintf(cmd, sizeof(cmd), "%s -p /var/run/%s_wpa_supplicant -i %s ap_scan %d",
+		WPA_CLI_APP, nvifname, ifname, val);
+	system(cmd);
 }
 
 #ifdef MULTIAP
@@ -2584,23 +2615,6 @@ wl_wlif_scan(char *ifname, char *ssid)
 	return ret;
 }
 
-// Update the ap_scan parameter for wpa-supplicant
-static void
-wl_wlif_wpa_supplicant_update_ap_scan(char *ifname, char *nvifname, int val)
-{
-	char cmd[WLIF_MIN_BUF] = {0};
-
-	if (val < 0 || val > 2) {
-		cprintf("Err: %s invalid value %d is provided for ap scan parameter\n",
-			__func__, val);
-		return;
-	}
-
-	snprintf(cmd, sizeof(cmd), "wpa_cli -p /var/run/%s_wpa_supplicant -i %s ap_scan %d",
-		nvifname, ifname, val);
-	system(cmd);
-}
-
 /* Selects the backhaul sta interface from bss list.
  * 1: For each interface scan the backhaul ssid.
  * 2: Fetch the channel from the scanresults.
@@ -2612,20 +2626,43 @@ wl_wlif_select_bhsta_from_bsslist(wlif_bss_list_t *bss_list, char *bh_ssid,
 {
 	int idx = 0;
 	uint8 channel = 0;
+	int val;
 
 	for (idx = 0; idx < bss_list->count; idx++) {
 		int count = 0;
+		val = 0;
 		wlif_bss_t *bss = &bss_list->bss[idx];
-		/*
-		 * Before doing wl scan set ap_scan parameter to 0 in supplicant. So that the
-		 * Supplicant avoids performing join-scan.
-		 */
-		wl_wlif_wpa_supplicant_update_ap_scan(bss->ifname, bss->nvifname, 0);
+
+		wl_ioctl(bss->ifname, WLC_GET_BAND, &val, sizeof(val));
+
 		while (count++ < WLIF_SCAN_TRY_COUNT) {
+			char cmd[WLIF_MIN_BUF] = {0};
+			/*
+			 * Before doing wl scan set ap_scan parameter to 0 in supplicant. So that
+			 * supplicant avoids performing join-scan.Additionally call abort_scan and
+			 * disconnect to cancel any ongoing join-scan.
+			 */
+			wl_wlif_wpa_supplicant_update_ap_scan(bss->ifname, bss->nvifname, 0);
+			snprintf(cmd, sizeof(cmd), "wpa_cli -p /var/run/%s_wpa_supplicant -i %s "
+				"abort_scan", bss->nvifname, bss->ifname);
+			system(cmd);
+			snprintf(cmd, sizeof(cmd), "wpa_cli -p /var/run/%s_wpa_supplicant -i %s "
+				"disconnect", bss->nvifname, bss->ifname);
+			system(cmd);
+
 			if (wl_wlif_scan(bss->ifname, bh_ssid)) {
+				sleep(4);
 				continue;
 			}
-			sleep(3);	// sleep for 3 seconds before fetching the scanresults
+
+			if (val == WLC_BAND_6G) {
+				/* full scan on 6G's 59 channels...
+				 * TODO: explore RNR option for directed scan
+				 */
+				sleep(10);
+			} else {
+				sleep(3);
+			}
 			channel = wl_wlif_get_channel_from_scanresults(bss->ifname, bh_ssid);
 			if (channel > 0) {
 				break;
@@ -2709,6 +2746,7 @@ wl_wlif_apply_map_backhaul_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 	char nv_name[WLIF_MIN_BUF] = {0};
 	char *val = "", *prefix;
 	bool wps_v2 = FALSE, sae_transition_mode = FALSE;
+	char bh_sta_list[NVRAM_MAX_VALUE_LEN] = {0};
 
 	prefix = bss->nvifname;
 
@@ -2781,6 +2819,16 @@ wl_wlif_apply_map_backhaul_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 	/* wpa-psk */
 	snprintf(nv_name, sizeof(nv_name), "%s_wpa_psk", prefix);
 	nvram_set(nv_name, creds->nw_key);
+
+	/* Add ifname to map_bhsta_ifnames, if not already */
+	val = nvram_safe_get("map_bhsta_ifnames");
+	if (!find_in_list(val, bss->ifname)) {
+		strncpy_n(bh_sta_list, val, sizeof(bh_sta_list));
+		/* If add_to_list is sucessfull set the NVRAM */
+		if (add_to_list(bss->ifname, bh_sta_list, sizeof(bh_sta_list)) == 0) {
+			nvram_set("map_bhsta_ifnames", bh_sta_list);
+		}
+	}
 
 	nvram_commit();
 }

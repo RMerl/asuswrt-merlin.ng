@@ -13,8 +13,9 @@
 #include <fcntl.h>
 #ifdef RTCONFIG_BROOP
 #include <linux/netlink.h>
-#include <limits.h>
+#include <rtstate.h>
 #endif
+#include <limits.h>	//PATH_MAX
 
 static char *wantype_str[] = {
 	[WANS_DUALWAN_IF_LAN] = "lan",
@@ -1169,7 +1170,7 @@ char *get_default_ssid(int unit, int subunit)
 	unsigned char mac_binary[6];
 	const char *post_5g __attribute__((unused)) = "-1", *post_5g2 __attribute__((unused))= "-2", *post_guest = "_Guest";	/* postfix for RTCONFIG_NEWSSID_REV2 case */
 
-#if defined(RTCONFIG_NEWSSID_REV2) || defined(RTCONFIG_NEWSSID_REV4)
+#if defined(RTCONFIG_NEWSSID_REV2) || defined(RTCONFIG_NEWSSID_REV4) || defined(RTCONFIG_NEWSSID_REV6)
 	rev3 = 1;
 #endif
 
@@ -1179,9 +1180,12 @@ char *get_default_ssid(int unit, int subunit)
 	}
 
 	/* Adjust postfix for different conditions. */
-#if defined(GTAC5300) || defined(GTAX11000) || defined(GTAXE11000)
+#if defined(GTAC5300) || defined(GTAX11000)
 	post_5g = "";
 	post_5g2 = "_Gaming";
+#elif defined(RTCONFIG_NEWSSID_REV6)
+	post_5g = "";
+	post_5g2 = "";
 #elif !defined(RTCONFIG_NEWSSID_REV2) && !defined(RTCONFIG_NEWSSID_REV4) && !defined(RTCONFIG_SINGLE_SSID)
 	post_5g = "";
 #endif
@@ -1189,7 +1193,6 @@ char *get_default_ssid(int unit, int subunit)
 #if defined(RTCONFIG_SINGLE_SSID) && defined(RTCONFIG_SSID_AMAPS)
 	post_guest = "_AMAPS_Guest";
 #endif
-
 
 	memset(ssid, 0x0, sizeof(ssid));
 
@@ -1227,6 +1230,11 @@ char *get_default_ssid(int unit, int subunit)
 			sprintf((char *)ssidbase, "%s_RP_%02X", SSID_PREFIX, mac_binary[5]);
 		else
 #endif
+#if defined(DSL_AX82U) && !defined(RTCONFIG_BCM_MFG)
+		if (is_ax5400_i1())
+			sprintf((char *)ssidbase, "OPTUSGR%02x%02x%02x", mac_binary[3], mac_binary[4], mac_binary[5]);
+		else
+#endif
 			sprintf((char *)ssidbase, "%s_%02X", SSID_PREFIX, mac_binary[5]);
 	} else {
 		macp = get_lan_hwaddr();
@@ -1245,6 +1253,11 @@ char *get_default_ssid(int unit, int subunit)
 		if (strncmp(nvram_safe_get("territory_code"), "CX", 2))
 #elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
 		strlcat(ssid, "_CD6", sizeof(ssid));
+#elif defined(PLAX56_XP4)
+		strlcat(ssid, "_XP4", sizeof(ssid));
+#elif defined(DSL_AX82U) && !defined(RTCONFIG_BCM_MFG)
+		if (is_ax5400_i1() && unit == WL_5G_BAND)
+			strlcat(ssid, "_5G", sizeof(ssid));
 #endif
 		return ssid;
 	}
@@ -1260,18 +1273,25 @@ char *get_default_ssid(int unit, int subunit)
 #endif
 		)
 #endif
+#if !defined(RTCONFIG_NEWSSID_REV6)
 			strlcat(ssid, "_2G", sizeof(ssid));
+#endif
 		break;
 	case WL_5G_BAND:
+#if !defined(RTCONFIG_NEWSSID_REV6)
 		strlcat(ssid, "_5G", sizeof(ssid));
+#endif
 		if (band_num > 2 &&
 		    nvram_get(wl_nvname("nband", WL_5G_2_BAND, 0)) != NULL)
 		{
 			strlcat(ssid, post_5g, sizeof(ssid));
 		}
+
 		break;
 	case WL_5G_2_BAND:
+#if !defined(RTCONFIG_NEWSSID_REV6)
 		strlcat(ssid, "_5G", sizeof(ssid));
+#endif
 		strlcat(ssid, post_5g2, sizeof(ssid));
 		break;
 	case WL_60G_BAND:
@@ -1298,6 +1318,21 @@ char *get_default_ssid(int unit, int subunit)
 	else
 		strlcat(ssid, post_guest, sizeof(ssid));
 #else
+#if defined(RTCONFIG_NEWSSID_REV6)
+	switch (unit) {
+		case WL_2G_BAND:
+			strlcat(ssid, "_2G", sizeof(ssid));
+			break;
+		case WL_5G_BAND:
+			strlcat(ssid, "_5G", sizeof(ssid));
+			break;
+		case WL_5G_2_BAND:
+#if defined(RTCONFIG_WIFI6E)
+			strlcat(ssid, "_6G", sizeof(ssid));
+#endif
+			break;
+	}
+#endif
 		strlcat(ssid, post_guest, sizeof(ssid));
 #endif
 		if (subunit > 1) {
@@ -1429,6 +1464,11 @@ end:
 	close(sock_fd);
 	return brs;
 }
+
+enum {
+	BROOP_IDLE,
+	BROOP_DETECT
+};
 
 int detect_broop()
 {

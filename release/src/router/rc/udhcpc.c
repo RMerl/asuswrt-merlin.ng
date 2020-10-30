@@ -736,6 +736,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 		NULL };
 	int index = 7;		/* first NULL */
 	int len, dr_enable;
+	int dhcp_qry;
 
 	/* Use unit */
 	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
@@ -748,8 +749,13 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 	    nvram_match(strcat_r(prefix, "vpndhcp", tmp), "0"))
 		return start_zcip(wan_ifname, unit, ppid);
 
-	int dhcpc_mode = nvram_get_int("dhcpc_mode");	// default = Aggressive mode
-	if (dhcpc_mode == 0) {	// Normal mode
+	/* DHCP query frequency */
+	value = nvram_get(strcat_r(prefix, "dhcp_qry", tmp)); // new nvram with wan index
+	if (value && strlen(value))
+		dhcp_qry = atoi(value);
+	else
+		dhcp_qry = nvram_get_int("dhcpc_mode");	// default = Aggressive mode
+	if (dhcp_qry == 0) {	// Normal mode
 		/* 2 discover packets max (default 3 discover packets) */
 		dhcp_argv[index++] = "-t2";
 		/* 5 seconds between packets (default 3 seconds) */
@@ -758,7 +764,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 		/* set to 160 to accomodate new timings enforced by Charter cable */
 		dhcp_argv[index++] = "-A160";
 	}
-	else if(dhcpc_mode == 2){	// Continuous mode
+	else if(dhcp_qry == 2){	// Continuous mode
 		dhcp_argv[index++] = "-t1";
 		dhcp_argv[index++] = "-T5";
 		dhcp_argv[index++] = "-A0";

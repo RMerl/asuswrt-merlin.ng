@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_pkt.c 779324 2019-09-25 09:48:29Z $
+ * $Id: linux_pkt.c 786233 2020-04-22 03:45:56Z $
  */
 
 #include <typedefs.h>
@@ -744,14 +744,15 @@ linux_pktfree(osl_t *osh, void *p, bool send)
 		if (OSH_PUB(osh).rx_fn) {
 			OSH_PUB(osh).rx_fn(OSH_PUB(osh).rx_ctx, p);
 		}
-	}
 #if defined(STS_FIFO_RXEN) || defined(WLC_OFFLOADS_RXSTS)
-	for (nskb = skb; nskb; nskb = PKTNEXT(osh, nskb)) {
-		if (OSH_PUB(osh).stsbuf_free_cb_fn) {
-			OSH_PUB(osh).stsbuf_free_cb_fn(OSH_PUB(osh).stsbuf_free_cb_ctx, nskb);
+		for (nskb = skb; nskb; nskb = PKTNEXT(osh, nskb)) {
+			if (OSH_PUB(osh).stsbuf_free_cb_fn) {
+				OSH_PUB(osh).stsbuf_free_cb_fn(
+				    OSH_PUB(osh).stsbuf_free_cb_ctx, nskb);
+			}
 		}
-	}
 #endif /* STS_FIFO_RXEN || WLC_OFFLOADS_RXSTS */
+	}
 
 	PKTDBG_TRACE(osh, (void *) skb, PKTLIST_PKTFREE);
 

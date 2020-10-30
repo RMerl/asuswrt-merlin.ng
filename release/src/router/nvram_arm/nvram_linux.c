@@ -173,6 +173,20 @@ nvram_get(const char *name)
 		return ret;
 	}
 #endif
+#ifdef RTCONFIG_VAR_NVRAM
+	if (is_var_nvram(name)) {
+		char *ret = NULL;
+
+		if (!_nvram_lock())
+			return NULL;
+
+		ret = var_nvram_get(name);
+
+		_nvram_unlock();
+
+		return ret;
+	}
+#endif
 	return dev_nvram_get(name);
 }
 
@@ -219,6 +233,10 @@ nvram_getall(char *buf, int count)
 		return -1;
 
 	len = jffs_nvram_getall(len, buf, count);
+
+#ifdef RTCONFIG_VAR_NVRAM
+	len += var_nvram_getall(buf + len, count - len);
+#endif
 
 	_nvram_unlock();
 
@@ -318,12 +336,44 @@ fail_set:
 		return ret;
 	}
 #endif
+#ifdef RTCONFIG_VAR_NVRAM
+	if (is_var_nvram(name)) {
+		int ret = 0;
+		if (!_nvram_lock()) {
+			ret = -1;
+			goto fail_var_set;
+		}
+
+		ret = var_nvram_set(name, value);
+
+fail_var_set:
+		_nvram_unlock();
+
+		return ret;
+	}
+#endif
 	return dev_nvram_set(name, value);
 }
 
 int
 nvram_unset(const char *name)
 {
+#ifdef RTCONFIG_VAR_NVRAM
+	if (is_var_nvram(name)) {
+		int ret = 0;
+		if (!_nvram_lock()) {
+			ret = -1;
+			goto fail_var_unset;
+		}
+
+		ret = var_nvram_unset(name);
+
+fail_var_unset:
+		_nvram_unlock();
+
+		return ret;
+	}
+#endif
 	return dev_nvram_set(name, NULL);
 }
 

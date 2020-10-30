@@ -394,7 +394,7 @@ static void update_params()
 	nvram_safe_get_r("serial_no", serial_no, sizeof(serial_no));
 	strlcat(serial_no, " ", sizeof(serial_no));
 
-	nvram_safe_get_r("productid", model, sizeof(model));
+	strlcpy(model, get_productid(), sizeof(model));
 	trim_char(model, '-');
 	strlcat(serial_no, model, sizeof(serial_no));
 	strlcat(serial_no, " ", sizeof(serial_no));

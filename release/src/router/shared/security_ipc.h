@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: security_ipc.h 788123 2020-06-22 10:44:39Z $
+ * $Id: security_ipc.h 789955 2020-08-12 10:21:09Z $
  */
 
 #ifndef __SECURITY_IPC_H__

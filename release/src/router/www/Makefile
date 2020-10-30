@@ -107,10 +107,15 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), $(MODELS_QIS_SLIDER)))
 	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
 endif
 
-ifeq ($(RTCONFIG_SCHED_V2), y)
-	cp $(TOP)/www/sysdep/FUNCTION/SCHED_V2/Advanced_WAdvanced_Content.asp $(INSTALLDIR)/www/Advanced_WAdvanced_Content.asp
-else
+ifeq ($(RTCONFIG_WL_SCHED_V2), y)
+	cp $(TOP)/www/sysdep/FUNCTION/WL_SCHED_V2/Advanced_WAdvanced_Content.asp $(INSTALLDIR)/www/Advanced_WAdvanced_Content.asp
+endif
+ifeq ($(RTCONFIG_PC_SCHED_V3), y)
+	cp $(TOP)/www/sysdep/FUNCTION/PC_SCHED_V3/ParentalControl.asp $(INSTALLDIR)/www/ParentalControl.asp
+endif
+ifneq ($(or $(RTCONFIG_WL_SCHED_V2),$(RTCONFIG_PC_SCHED_V3)),y)
 	rm -rf $(INSTALLDIR)/www/js/weekSchedule
+	rm -rf $(INSTALLDIR)/www/images/New_ui/weekSchedule
 endif
 
 	chmod -x `find $(INSTALLDIR)/www/ -name "*.asp"`
@@ -497,7 +502,7 @@ ifneq ($(RTCONFIG_SNMPD), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_SNMP_Content.asp
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC3200 RT-AC5300 GT-AC5300 GT-AC9600 RT-AC86U GT-AC2900 RT-AC88U RT-AX88U RT-AC3100 GT-AX11000 RT-AX92U RT-AX95Q RT-AX56_XD4 RT-AX58U TUF-AX3000 DSL-AX82U RT-AX82U RT-AX56U RT-AX86U RT-AX5700 RT-AX68U GT-AXE11000 RT-AX55))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC3200 RT-AC5300 GT-AC5300 GT-AC9600 RT-AC86U GT-AC2900 RT-AC88U RT-AX88U RT-AC3100 GT-AX11000 RT-AX92U RT-AX95Q RT-AX56_XD4 RT-AX58U TUF-AX3000 DSL-AX82U RT-AX82U RT-AX56U RP-AX56 RT-AX86U RT-AX5700 RT-AX68U GT-AXE11000 RT-AX55))
 	rm -rf $(INSTALLDIR)/www/Advanced_Smart_Connect.asp
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smart_connect.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smart_connect_concept.gif
@@ -603,12 +608,7 @@ ifneq ($(RTCONFIG_IPSEC), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_VPN_IPSec.asp
 	rm -rf $(INSTALLDIR)/www/ajax_ipsec.asp
 	rm -rf $(INSTALLDIR)/www/ajax_ipsec_log.xml
-endif
-
-ifneq ($(RTCONFIG_IPSEC), y)
-	rm -rf $(INSTALLDIR)/www/Advanced_VPN_IPSec.asp
-	rm -rf $(INSTALLDIR)/www/ajax_ipsec.asp
-	rm -rf $(INSTALLDIR)/www/ajax_ipsec_log.xml
+	rm -rf $(INSTALLDIR)/www/Advanced_Instant_Guard.asp
 endif
 
 ifneq ($(RTCONFIG_CAPTIVE_PORTAL), y)
@@ -760,7 +760,6 @@ ifneq ($(RTCONFIG_AMAS), y)
 	rm -rf $(INSTALLDIR)/www/message.htm
 	rm -rf $(INSTALLDIR)/www/AiMesh_Node_FirmwareUpgrade.asp
 	rm -rf $(INSTALLDIR)/www/Advanced_Roaming_Block_Content.asp
-	rm -rf $(INSTALLDIR)/www/fonts/Roboto-Light.ttf
 	rm -rf $(INSTALLDIR)/www/js/jstree/jstree.js
 	rm -rf $(INSTALLDIR)/www/AiMesh.asp
 	rm -rf $(INSTALLDIR)/www/aimesh
@@ -915,13 +914,17 @@ endif
 	rm -rf $(INSTALLDIR)/www/images/New_ui/amesh/location
 	rm -rf $(INSTALLDIR)/www/images/New_ui/new_qis
 endif
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC2900 GT-AC5300 GT-AX11000 GT-AXE11000 GT-AXY16000 RT-AX82U))
+
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC2900 GT-AC5300 GT-AX11000 GT-AXE11000 GT-AXY16000 RT-AX82U DSL-AX82U))
+ifneq ($(RTCONFIG_AMAS),y)
 	rm -rf $(INSTALLDIR)/www/fonts
 endif
+endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U DSL-AX82U GT-AXE11000))
 	rm -rf $(INSTALLDIR)/www/light_effect
 	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect
+	rm -rf $(INSTALLDIR)/www/device-map/router_light_effect.asp
 endif
 
 ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U RT-AX86U))
@@ -933,3 +936,15 @@ ifeq ($(RTCONFIG_ROG_UI),y)
 	rm -rf $(INSTALLDIR)/www/css/ROG
 endif
 
+ifneq ($(RTCONFIG_BCM_OAM), y)
+	rm -rf $(INSTALLDIR)/www/Advanced_OAM_Content.asp
+endif
+
+ifneq ($(RTCONFIG_OUTFOX), y)
+	rm -rf $(INSTALLDIR)/www/images/outfox_dark.png
+endif
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), TUF-AX3000))
+	cp -rf $(INSTALLDIR)/www/css/TUF/* $(INSTALLDIR)/www/css/
+	rm -rf $(INSTALLDIR)/www/css/TUF
+endif

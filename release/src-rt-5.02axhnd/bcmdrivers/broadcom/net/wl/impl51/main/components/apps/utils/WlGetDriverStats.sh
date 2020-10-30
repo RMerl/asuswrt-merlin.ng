@@ -129,8 +129,8 @@ driver_init () {
 	echo -e "Interface $IFNAME is not up"
 	exit 0
     fi
-    $WLCMD -i $IFNAME bs_data > /dev/NULL 2>&1
-    $WLCMD -i $IFNAME pktq_stats c: a:// p:// > /dev/NULL 2>&1
+    $WLCMD -i $IFNAME bs_data -noreset > /dev/NULL 2>&1
+    $WLCMD -i $IFNAME pktq_stats c:// a: m: p: n: b: > /dev/NULL 2>&1
     $WLCMD -i $IFNAME rx_report -noidle > /dev/NULL 2>&1
 }
 
@@ -169,6 +169,7 @@ wl_stats () {
     done
     display_cmd_op "AUTH STA LIST: wl -i $IFNAME authe_sta_list" "$WLCMD -i $IFNAME authe_sta_list"
     display_cmd_op "SMFSTATS: wl -i $IFNAME smfstats" "$WLCMD -i $IFNAME smfstats"
+    display_cmd_op "6G RATE: wl -i $IFNAME 6g_rate" "$WLCMD -i $IFNAME 6g_rate"
     display_cmd_op "5G RATE: wl -i $IFNAME 5g_rate" "$WLCMD -i $IFNAME 5g_rate"
     display_cmd_op "2G RATE: wl -i $IFNAME 2g_rate" "$WLCMD -i $IFNAME 2g_rate"
     display_cmd_op "NRATE: wl -i $IFNAME nrate" "$WLCMD -i $IFNAME nrate"
@@ -178,9 +179,11 @@ wl_stats () {
     display_cmd_op "CHANIMSTATS: wl -i $IFNAME chanim_stats" "$WLCMD -i $IFNAME chanim_stats"
     display_cmd_op "INTERFERENCE: wl -i $IFNAME interference" "$WLCMD -i $IFNAME interference"
     display_cmd_op "INTERFERENCE_OVR: wl -i $IFNAME interference_override" "$WLCMD -i $IFNAME interference_override"
-    display_cmd_op "BSDATA: wl -i $IFNAME bs_data" "$WLCMD -i $IFNAME bs_data"
-    display_cmd_op "PKTQSTATS: wl -i $IFNAME pktq_stats" "$WLCMD -i $IFNAME pktq_stats c: a:// p://"
+    display_cmd_op "BSDATA: wl -i $IFNAME bs_data -noreset" "$WLCMD -i $IFNAME bs_data -noreset"
+    display_cmd_op "PKTQSTATS: wl -i $IFNAME pktq_stats" "$WLCMD -i $IFNAME pktq_stats c:// a: m: p: n: b:"
     display_cmd_op "RXREPORT: wl -i $IFNAME rx_report" "$WLCMD -i $IFNAME rx_report -noidle"
+    display_cmd_op "TAF ATOS DUMP: wl -i $IFNAME dump taf -atos" "$WLCMD -i $IFNAME dump taf -atos"
+    display_cmd_op "TXFIFO DUMP: wl -i $IFNAME dump txfifo" "$WLCMD -i $IFNAME dump txfifo"
     display_cmd_op "TXQ DUMP: wl -i $IFNAME dump txq" "$WLCMD -i $IFNAME dump txq"
     display_cmd_op "PERFSTATS DUMP: wl -i $IFNAME dump perf_stats" "$WLCMD -i $IFNAME dump perf_stats"
     display_cmd_op "AMPDU DUMP: wl -i $IFNAME dump ampdu" "$WLCMD -i $IFNAME dump ampdu"
@@ -216,6 +219,7 @@ wl_stats () {
     display_cmd_op "PHYACI DUMP: wl -i $IFNAME dump phyaci" "$WLCMD -i $IFNAME dump phyaci"
     display_cmd_op "MACMODE DUMP: wl -i $IFNAME macmode" "$WLCMD -i $IFNAME macmode"
     display_cmd_op "MAC DUMP: wl -i $IFNAME mac" "$WLCMD -i $IFNAME mac"
+    display_cmd_op "LAST ADJ EST POWER: wl -i $IFNAME txpwr_adj_est" "$WLCMD -i $IFNAME txpwr_adj_est"
 }
 
 dhd_stats () {
@@ -308,18 +312,23 @@ ceventc_dump() {
 	echo "CEVENT DUMP for $IFNAME"
 	echo "================================="
 	display_cmd_op "CEVENTCDUMP: ceventc -i $IFNAME dump" "$CEVENTCCMD -i $IFNAME dump"
+	## Flush ceventc log
+	ceventc -i $IFNAME flush > /dev/NULL 2>&1
 }
 
 #driver_init
 driver_info
 #display_cmd_op "IFCONFIG: ifconfig -a" "ifconfig -a"
+$WLCMD -i $IFNAME cevent 1 > /dev/NULL 2>&1
 echo "================================="
 echo "Statistics for $IFNAME first run"
 echo "================================="
 
 wl_stats
 if [[ $MODE == "dhd" ]]; then
+    $DHDCMD -i $IFNAME dconpoll 250
     dhd_stats "${SOCRAMDUMPFILE}_${NR_RUNS}"
+    dmesg -c
 fi
 ceventc_dump
 

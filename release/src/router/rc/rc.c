@@ -21,6 +21,7 @@
 
 #ifdef RTCONFIG_QCA
 #include <qca.h>
+#include <sys/mman.h>
 #endif
 
 #if defined(RTCONFIG_LP5523)
@@ -30,6 +31,7 @@
 #if defined(RTCONFIG_SOC_IPQ8074)
 #include <sys/vfs.h>
 #include <inttypes.h>
+#include <sys/reboot.h>
 #endif
 
 #ifndef ARRAYSIZE
@@ -287,13 +289,13 @@ static int rctest_main(int argc, char *argv[])
 	}
 #endif
 	else if (strcmp(argv[1], "GetPhyStatus")==0) {
-		printf("Get Phy status:%d\n", GetPhyStatus(0));
+		printf("Get Phy status:%d\n", GetPhyStatus(0, NULL));
 	}
 	else if (strcmp(argv[1], "GetExtPhyStatus")==0) {
-		printf("Get Ext Phy status:%d\n", GetPhyStatus(atoi(argv[2])));
+		printf("Get Ext Phy status:%d\n", GetPhyStatus(atoi(argv[2]), NULL));
 	}
 #ifdef CONFIG_BCMWL5
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_BHCOST_OPT) && defined(RTCONFIG_AMAS_ETHDETECT)
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_BHCOST_OPT)
 	else if (strcmp(argv[1], "linkrate")==0) {
 		if(argv[2]) {
 			int rate = 0;
@@ -384,6 +386,30 @@ static int rctest_main(int argc, char *argv[])
 		}
 		_dprintf("\n");
 	}
+	else if (strcmp(argv[1], "phy_info")==0) {
+		phy_info_list phy_list = {0};
+		int /*ret,*/ i;
+
+		//if ((ret = GetPhyStatus(1, &phy_list)) == 1) {
+			GetPhyStatus(1, &phy_list);
+			for(i=0;i<phy_list.count;i++) {
+				fprintf(stderr, " phy_port_id=%d, label_name=%s, cap_name=%s, state=%s, link_rate=%d, duplex=%s, tx_packets=%u, rx_packets=%u, tx_bytes=%llu, rx_bytes=%llu, crc_errors=%u\n", 
+					phy_list.phy_info[i].phy_port_id,
+					phy_list.phy_info[i].label_name,
+					phy_list.phy_info[i].cap_name,
+					phy_list.phy_info[i].state,
+					phy_list.phy_info[i].link_rate,
+					phy_list.phy_info[i].duplex,
+					phy_list.phy_info[i].tx_packets,
+					phy_list.phy_info[i].rx_packets,
+					phy_list.phy_info[i].tx_bytes,
+					phy_list.phy_info[i].rx_bytes,
+					phy_list.phy_info[i].crc_errors);
+			}
+		//} else
+		//	_dprintf("GetPhyStatus failed (%d): ", ret);
+		_dprintf("\n");
+	}
 	else {
 		on = atoi(argv[2]);
 		_dprintf("%s %d\n", argv[1], on);
@@ -442,7 +468,7 @@ static int rctest_main(int argc, char *argv[])
 			else stop_wdg_monitor();
 		}
 #endif
-#ifdef RTCONFIG_FANCTRL
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_FANCTRL)
 		else if (strcmp(argv[1], "phy_tempsense") == 0) {
 			if (on) start_phy_tempsense();
 			else stop_phy_tempsense();
@@ -807,6 +833,90 @@ static int del_q6mem(const char *basedir, const struct dirent *de, void *arg)
 	return 0;
 }
 
+/* Splite specified /PATH/TO/q6mem_xxx.gz as 10MB files, store them in @outdir, and then remove original one.
+ * @argv[1]:	path and filename to a Q6 crashdump, e.g., /tmp/q6mem_202008041020.gz
+ * @argv[2]:	output directory. q6mem_202008041020.gz is splited as q6mem_202008041020.gz.1, q6mem_202008041020.gz.2, etc.
+ * @return:
+ *  0:		successful
+ *  otherwise:	error
+ */
+int split_q6mem_main(int argc, char *argv[])
+{
+	int r = 0, c, ifd, ofd;
+	off_t tlen;
+	size_t map_size;
+	ssize_t len, l;
+	char *p, *q6mem_fn, *outdir;
+	char fn[sizeof("q6mem_YYYYMMDD_HHMMSS.gzXXX")];
+	char out_path[128];
+	unsigned char *ptr = NULL;
+
+	if (argc < 3)
+		return -1;
+
+	q6mem_fn = argv[1];
+	outdir = argv[2];
+	if (!q6mem_fn || *q6mem_fn == '\0' || !outdir || *outdir == '\0')
+		return -1;
+
+	if (!(p = strstr(q6mem_fn, "q6mem_")))
+		return - 2;
+
+	strlcpy(fn, p, sizeof(fn));
+	if (!(ifd = open(q6mem_fn, O_RDONLY)))
+		return -3;
+
+	if ((tlen = lseek(ifd, 0, SEEK_END)) < 0) {
+		r = -4;
+		goto exit_split_q6mem_main_1;
+	}
+
+	map_size = tlen;
+	ptr = (unsigned char *)mmap(0, map_size, PROT_READ, MAP_SHARED, ifd, 0);
+	if (ptr == (unsigned char *)MAP_FAILED) {
+		dbg("%s: Can't map %s. (%s)\n", __func__, q6mem_fn, strerror(errno));
+		r = -5;
+		goto exit_split_q6mem_main_1;
+	}
+
+	for (c = 1, len = 0; !r && tlen > 0; ++c) {
+		len = (tlen > (10L * 1048576))? 10L * 1048576 : tlen;
+		snprintf(out_path, sizeof(out_path), "%s/%s.%d", outdir, fn, c);
+		if ((ofd = creat(out_path, 0777)) == -1) {
+			dbg("%s: Can't create %s. (%s)\n", __func__, out_path, strerror(errno));
+			r = -6;
+			break;
+		}
+
+		while (len > 0) {
+			l = write(ofd, ptr, len);
+			if (l <= 0) {
+				dbg("%s: Can't write to %s, %ld remains. (%s)\n", __func__, out_path, len, strerror(errno));
+				r = -7;
+				break;
+			}
+
+			tlen -= l;
+			len -= l;
+			ptr += l;
+		}
+		close(ofd);
+		sync();
+	}
+
+	if (ptr != NULL)
+		munmap(ptr, map_size);
+
+ exit_split_q6mem_main_1:
+	close(ifd);
+
+	if (!r) {
+		unlink(q6mem_fn);
+	}
+
+	return r;
+}
+
 static int __hotplug_dump_q6mem(void)
 {
 	int ret = EINVAL;
@@ -818,7 +928,7 @@ static int __hotplug_dump_q6mem(void)
 	char path[128], ts[sizeof("YYYYMMDD_HHMMSSXXX")];
 	char gz_cmd[sizeof("gzip -c /dev/q6mem > /jffs/q6mem_XXXXXX.gz") + sizeof(ts)];
 	char dmesg_cmd[sizeof("dmesg > /jffs/dmesg_XXXXXX.txt") + sizeof(ts)];
-	char cp_cmd[sizeof("sleep 30 ; cp -f /tmp/dmesg_XXX.txt /tmp/q6mem_XXX.gz /jffs &") + 2 * sizeof(ts)];
+	char cp_cmd[sizeof("sleep 30 ; cp -f /tmp/dmesg_XXX.txt /jffs ; split_q6mem /tmp/q6mem_XXX.gz /jffs &") + 2 * sizeof(ts)];
 
 	action = getenv("ACTION");
 	devicename = getenv("DEVICENAME");
@@ -861,10 +971,24 @@ static int __hotplug_dump_q6mem(void)
 	snprintf(gz_cmd, sizeof(gz_cmd), "gzip -c /dev/%s > %s", devicename, path);
 	dbg("%s: gzip /dev/%s to %s ...\n", __func__, devicename, path);
 	system(gz_cmd);
-	system("restart_wireless &");
-	dbg("%s: gzip /dev/%s to %s done, copy it to /jffs and restart_wireless\n", __func__, devicename, path);
-	snprintf(cp_cmd, sizeof(cp_cmd), "sleep 30 ; cp -f /tmp/dmesg_%s.txt /tmp/q6mem_%s.gz /jffs &", ts, ts);
-	system(cp_cmd);
+
+	if (nvram_match("Ate_power_on_off_enable", "2")) {
+		/* move dmesg* to /jffs, splite /tmp/q6mem_*.gz as several 10MB files to /jffs then remove original one,
+		 * then, reboot DUT.
+		 */
+		snprintf(cp_cmd, sizeof(cp_cmd), "cp -f /tmp/dmesg_%s.txt /jffs ; split_q6mem /tmp/q6mem_%s.gz /jffs", ts, ts);
+		system(cp_cmd);
+		sync();
+		dbg("%s: Got Q6 crashdump in run-in mode, reboot instead!\n", __func__);
+		reboot(RB_AUTOBOOT);
+	} else {
+		system("restart_wireless &");
+		dbg("%s: gzip /dev/%s to %s done, copy it to /jffs and restart_wireless\n", __func__, devicename, path);
+
+		/* sleep 30 seconds, move dmesg* to /jffs, splite /tmp/q6mem_*.gz as several 10MB files to /jffs and then remove original one. */
+		snprintf(cp_cmd, sizeof(cp_cmd), "sleep 30 ; cp -f /tmp/dmesg_%s.txt /jffs ; split_q6mem /tmp/q6mem_%s.gz /jffs &", ts, ts);
+		system(cp_cmd);
+	}
 
 	return 0;
 }
@@ -1250,6 +1374,7 @@ static const applets_t applets[] = {
 #endif
 #if defined(RTCONFIG_SOC_IPQ8074)
 	{ "test_blu",			test_bl_updater_main		},
+	{ "split_q6mem",		split_q6mem_main		},
 #endif
 #ifdef RTCONFIG_HTTPS
 	{ "rsasign_check",		rsasign_check_main		},
@@ -1313,6 +1438,9 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_DSL_HOST
 	{ "dsld",				dsld_main				},
 #endif	
+#if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
+	{ "restart_plc",		restart_plc_main				},
+#endif
 	{NULL, NULL}
 };
 
@@ -2441,6 +2569,12 @@ int main(int argc, char **argv)
 		start_bluetooth_service();
 		return 0;
 	}
+#if defined(RTCONFIG_BT_CONN_UART)
+	else if (!strcmp(base, "execute_bt_bscp")) {
+		execute_bt_bscp();
+		return 0;
+	}
+#endif
 #endif	/* RTCONFIG_BT_CONN */
 #if defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA)
 	else if (!strcmp(base, "dump_powertable")) {

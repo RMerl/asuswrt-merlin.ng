@@ -27,7 +27,7 @@
 #include "config.h"
 
 #include <sys/types.h>
-#ifdef HAVE_SYS_UIO_h
+#ifdef HAVE_SYS_UIO_H
 #include <sys/uio.h> /* writev(2) */
 #endif
 #ifdef HAVE_SYS_TIME_H
@@ -39,7 +39,11 @@
 #endif
 
 #ifdef NE_USE_POLL
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <sys/poll.h>
+#else
+#include <poll.h>
+#endif
 #elif defined(HAVE_SYS_SELECT_H)
 #include <sys/select.h>
 #endif

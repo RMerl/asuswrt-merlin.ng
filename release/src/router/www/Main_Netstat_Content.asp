@@ -282,8 +282,8 @@ function validForm(){
 											<th width="20%"><#NetworkTools_ResolveName#></th>
 											<td>
 												<select id="ResolveName" class="input_option" name="ResolveName">
-													<option value="0">No</option>
-													<option value="1">Yes</option>
+													<option value="0"><#checkbox_No#></option>
+													<option value="1"><#checkbox_Yes#></option>
 												</select>
 											</td>
 										</tr>

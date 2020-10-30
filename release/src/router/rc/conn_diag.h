@@ -59,6 +59,7 @@ enum {
 	DIAGMODE_STAINFO = 32,
 	DIAGMODE_NET_DETECT = 64,
 	DIAGMODE_ETH_DETECT = 128,
+	DIAGMODE_PORTINFO = 256,
 	DIAGMODE_MAX
 };
 
@@ -71,13 +72,13 @@ typedef struct _if_stats {
 	time_t ts;
 } _if_stats;
 
-#define DIAG_EVENT_SYS "SYS" // DIAG_EVENT_SYS>node type>IP>MAC>FW version>t-code>AiProtection>USB mode>CTF or Runner/FC disable>got_previous_oops
+#define DIAG_EVENT_SYS "SYS" // DIAG_EVENT_SYS>node type>IP>MAC>FW version>t-code>AiProtection>USB mode>CTF or Runner/FC disable
 #define DIAG_EVENT_SYS2 "SYS2" // DIAG_EVENT_SYS2>node type>IP>MAC>CPU freq>MemFree>CPU temperature>2G's temperature>5G's temperature
 #define DIAG_EVENT_WIFISYS "WIFISYS" // DIAG_EVENT_WIFISYS>node type>IP>MAC>2G's ifname,2G's chip,2G's country/rev>5G's ifname,5G's chip,5G's country/rev
 #ifdef RTCONFIG_BCMARM
-#define DIAG_EVENT_WIFISYS2 "WIFISYS2" // DIAG_EVENT_WIFISYS2>node type>IP>MAC>band>band's ifname>band's MAC>band's noise>band's MCS>band's capability>band's subif_count>band's subif_ssid>band's chanim>band's tx rate>band's rx rate>band's tx byte>band's rx byte
+#define DIAG_EVENT_WIFISYS2 "WIFISYS2" // DIAG_EVENT_WIFISYS2>node type>IP>MAC>band>band's ifname>band's MAC>band's noise>band's MCS>band's capability>band's subif_count>base64encode(band's subif_ssid)>band's chanim>band's tx rate>band's rx rate>band's tx byte>band's rx byte
 #else
-#define DIAG_EVENT_WIFISYS2 "WIFISYS2" // DIAG_EVENT_WIFISYS2>node type>IP>MAC>band>band's ifname>band's MAC>band's noise>band's MCS>band's capability>band's subif_count>band's subif_ssid>band's tx rate>band's rx rate>band's tx byte>band's rx byte
+#define DIAG_EVENT_WIFISYS2 "WIFISYS2" // DIAG_EVENT_WIFISYS2>node type>IP>MAC>band>band's ifname>band's MAC>band's noise>band's MCS>band's capability>band's subif_count>base64encode(band's subif_ssid)>band's tx rate>band's rx rate>band's tx byte>band's rx byte
 #endif
 #define DIAG_EVENT_STAINFO "STAINFO" // DIAG_EVENT_STAINFO>node type>IP>MAC>STA's MAC>STA's Band>STA's RSSI>active>STA's Tx>STA's Rx>STA's Tx byte>STA's Rx byte
 #define DIAG_EVENT_WLCE "WLCEVENT" // DIAG_EVENT_WLCE>node type>IP>MAC>STA's MAC>STA's Band>last_act>count_auth>count_deauth>count_assoc>count_disassoc>count_reassoc
@@ -88,6 +89,7 @@ typedef struct _if_stats {
 #define DIAG_EVENT_TG_BSD "TG_BSD" // DIAG_EVENT_TG_BSD>node type>IP>MAC>STA's MAC>timestamp>from_chanspec>to_chanspec>reason
 #endif
 #define DIAG_EVENT_ETHINFO "ETHINFO" // DIAG_EVENT_ETHONFO>node type>type(BH or FH)>infame>IP>MAC>tx rate>rx rate>tx byte>rx byte
+#define DIAG_EVENT_PORTINFO "PORTINFO"// DIAG_EVENT_PORTINFO>node type>IP>MAC>>label name>lan or wan>up or down>link rate>duplex>tx packets>rx packets>tx bytes>rx bytes>crc errors
 
 extern int get_hw_acceleration(char *output, int size);
 extern int get_sys_clk(char *output, int size);

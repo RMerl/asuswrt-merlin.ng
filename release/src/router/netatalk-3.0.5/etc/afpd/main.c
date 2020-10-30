@@ -15,7 +15,11 @@
 #include <sys/uio.h>
 #include <sys/time.h>
 #include <sys/socket.h>
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <sys/poll.h>
+#else
+#include <poll.h>
+#endif
 #include <errno.h>
 #include <sys/wait.h>
 #include <sys/resource.h>

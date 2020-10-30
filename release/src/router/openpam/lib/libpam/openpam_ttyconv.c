@@ -40,7 +40,11 @@
 #endif
 
 #include <sys/types.h>
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <sys/poll.h>
+#else
+#include <poll.h>
+#endif
 #include <sys/time.h>
 
 #include <errno.h>

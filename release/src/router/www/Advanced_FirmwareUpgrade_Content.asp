@@ -164,6 +164,7 @@ function initial(){
 		html += '</div>';
 		html += '<div id="check_states">';
 		html += '<span id="update_states"></span>';
+		html += '<span id="info_fail_faq" style="display:none;"><a id="faq" href="" target="_blank" style="margin-left: 5px; color:#FFCC00; text-decoration: underline;">FAQ</a></span>';
 		html += '<img id="update_scan" style="display:none;" src="images/InternetScan.gif" />';
 		html += '</div>';
 		html += "</td>";
@@ -372,6 +373,8 @@ function initial(){
 		$("div").remove("#amesh_manual_upload_fw")
 		$("tr").remove("#manually_upgrade_tr")
 	}
+
+	httpApi.faqURL("1008000", function(url){document.getElementById("faq").href=url;});
 }
 
 var dead = 0;
@@ -387,6 +390,7 @@ function detect_firmware(flag){
 			else{
   				document.getElementById('update_scan').style.display="none";
   				document.getElementById('update_states').innerHTML="<#info_failed#>";
+  				document.getElementById('info_fail_faq').style.display="";
 				document.getElementById('update').disabled = false;
 			}
 		},
@@ -400,11 +404,13 @@ function detect_firmware(flag){
 					if(cfg_check == "2" || cfg_check == "3"){
 						document.getElementById('update_scan').style.display="none";
 						document.getElementById('update_states').innerHTML="<#info_failed#>";
+						document.getElementById('info_fail_faq').style.display="";
 						document.getElementById('update').disabled = false;
 					}
 					else if(cfg_check == "7" || cfg_check == "9"){
 						document.getElementById('update_scan').style.display="none";
 						document.getElementById('update_states').innerHTML="";
+						document.getElementById('info_fail_faq').style.display="none";
 						document.getElementById('update').disabled = false;
 						var check_webs_state_info = webs_state_info;						
 						note_display=0;
@@ -424,17 +430,20 @@ function detect_firmware(flag){
 					if(webs_state_error == "1"){	//1:wget fail
 						document.getElementById('update_scan').style.display="none";
 						document.getElementById('update_states').innerHTML="<#info_failed#>";
+						document.getElementById('info_fail_faq').style.display="";
 						document.getElementById('update').disabled = false;
 					}
 					else if(webs_state_error == "3"){	//3: FW check/RSA check fail
 						document.getElementById('update_scan').style.display="none";
 						document.getElementById('update_states').innerHTML="<#FIRM_fail_desc#><br><#FW_desc1#>";
+						document.getElementById('info_fail_faq').style.display="none";
 						document.getElementById('update').disabled = false;
 
 					}
 					else{
 						document.getElementById('update_scan').style.display="none";
 						document.getElementById('update_states').innerHTML="";
+						document.getElementById('info_fail_faq').style.display="none";
 						document.getElementById('update').disabled = false;
 						var check_webs_state_info = webs_state_info;
 						note_display=0;
@@ -451,7 +460,8 @@ function do_show_confirm(flag){
 
 					if(flag==1 || flag==2){
 						document.getElementById('update_scan').style.display="none";
-						document.getElementById('update_states').style.display="none";													
+						document.getElementById('update_states').style.display="none";
+						document.getElementById('info_fail_faq').style.display="none";										
 						
 						confirm_asus({
          					title: "New Firmware Available",
@@ -484,6 +494,7 @@ function do_show_confirm(flag){
 						document.getElementById('update_scan').style.display="none";
 						document.getElementById('update_states').style.display="";
 						document.getElementById('update_states').innerHTML="<#is_latest#>";
+						document.getElementById('info_fail_faq').style.display="none";
 					}
 
 }
@@ -529,6 +540,7 @@ function detect_update(){
 		}
 		document.getElementById('update_states').style.display="";
 		document.getElementById('update_states').innerHTML="Contacting the update server...";
+		document.getElementById('info_fail_faq').style.display="none";
 		document.getElementById('update_scan').style.display="";
 		document.getElementById('update').disabled = true;
 	}
@@ -538,6 +550,7 @@ function detect_update(){
 		document.start_update.action_mode.value="apply";
 		document.start_update.webs_update_trigger.value="AFC.asp";
 		document.start_update.action_script.value="start_webs_update";
+		document.getElementById('info_fail_faq').style.display="none";
 		document.getElementById('update_states').style.display="";
 		document.getElementById('update_states').innerHTML="Contacting the update server...";
 		document.getElementById('update_scan').style.display="";
@@ -548,6 +561,7 @@ function detect_update(){
 		document.getElementById('update_scan').style.display="none";
 		document.getElementById('update_states').style.display="";
 		document.getElementById('update_states').innerHTML="Unable to connect to the update server.";
+		document.getElementById('info_fail_faq').style.display="none";
 		return false;	
 	}
 }
@@ -1003,6 +1017,7 @@ function show_amas_fw_result() {
 		success: function() {
 			document.getElementById('update_states').style.display = "none";
 			document.getElementById('update_states').innerHTML = "";
+			document.getElementById('info_fail_faq').style.display="none";
 			document.getElementById('update_scan').style.display = "none";
 			for (var idx in get_cfg_clientlist) {
 				if(get_cfg_clientlist.hasOwnProperty(idx)) {
@@ -1310,6 +1325,9 @@ function toggle_fw_check(state) {
 					</div>
 					<div id="check_states">
 						<span id="update_states"></span>
+						<span id="info_fail_faq" style="display:none;">
+							<a id="faq" href="" target="_blank" style="margin-left: 5px; color:#FFCC00; text-decoration: underline;">FAQ</a>
+						</span>
 						<img id="update_scan" style="display:none;" src="images/InternetScan.gif" />
 					</div>
 				</td>

@@ -44,7 +44,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <sys/poll.h>
+#else
+#include <poll.h>
+#endif
 #include <netdb.h>
 
 #include "tivo_beacon.h"

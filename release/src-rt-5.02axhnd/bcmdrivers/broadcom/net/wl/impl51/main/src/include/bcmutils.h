@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmutils.h 780490 2019-10-28 17:07:24Z $
+ * $Id: bcmutils.h 786823 2020-05-10 08:13:02Z $
  */
 
 #ifndef	_bcmutils_h_
@@ -241,6 +241,8 @@ extern int bcmdumplogent(char *buf, uint idx);
 #define	bcmdumplog(buf, size)	*buf = '\0'
 #define	bcmdumplogent(buf, idx)	-1
 #endif /* BCMPERFSTATS */
+
+#define US_PER_SECOND		1000000 /* 1 sec = 1000000 us */
 
 #define TSF_TICKS_PER_MS	1000
 #define TS_ENTER		0xdeadbeef	/* Timestamp profiling enter */
@@ -746,6 +748,18 @@ DECLARE_MAP_API(8, 2, 3, 3U, 0x00FF) /* setbit8() and getbit8() */
 #define CRC32_GOOD_VALUE 0xdebb20e3	/* Good final CRC32 checksum value */
 
 /* use for direct output of MAC address in printf etc */
+#ifdef DONGLEBUILD
+
+extern char *bcm_macf_buffer(const void *ea);
+#define MACF				"%s"
+#define CONST_ETHERP_TO_MACF(ea)	(char*)bcm_macf_buffer((const void *)(ea))
+#define ETHERP_TO_MACF(ea)		CONST_ETHERP_TO_MACF(ea)
+#define ETHER_TO_MACF(ea)		(char*)bcm_macf_buffer((const void *)&ea)
+#define MACDBG				MACF
+#define MAC2STRDBG(ea)			CONST_ETHERP_TO_MACF(ea)
+
+#else /* DONGLEBUILD */
+
 #define MACF				"%02x:%02x:%02x:%02x:%02x:%02x"
 #define ETHERP_TO_MACF(ea)		((struct ether_addr *) (ea))->octet[0], \
 					((struct ether_addr *) (ea))->octet[1], \
@@ -768,6 +782,8 @@ DECLARE_MAP_API(8, 2, 3, 3U, 0x00FF) /* setbit8() and getbit8() */
 
 #define MACDBG				MACF
 #define MAC2STRDBG(ea)			CONST_ETHERP_TO_MACF(ea)
+
+#endif /* DONGLEBUILD */
 
 /* bcm_format_flags() bit description structure */
 typedef struct bcm_bit_desc {

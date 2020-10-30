@@ -824,6 +824,10 @@ config RTCONFIG_NEWSSID_REV4
 	bool "RT-V4 SSID rule"
 	default n
 
+config RTCONFIG_NEWSSID_REV6
+	bool "RT-V6 SSID rule"
+	default n
+
 config RTCONFIG_RP_NEWSSID_REV3
 	bool "RP-V3 SSID rule"
 	default n
@@ -1079,6 +1083,10 @@ config CONFIG_LIBBCM
 
 config CONFIG_LIBUPNP
 	bool "BCM UPnP library"
+	default n
+
+config RTCONFIG_MFP
+	bool "Protected Management Frame Support"
 	default n
 
 config RTCONFIG_WPS
@@ -1940,6 +1948,10 @@ config RTCONFIG_NBR_RPT
 	bool "enable 802.11k neighbor report"
 	default n
 
+config RTCONFIG_ADTBW_AFTER_RADARDETECTED
+	bool "enable adtbw after radar detected"
+	default n
+
 config RTCONFIG_BTM_11V
 	bool "enable 802.11v BTM request/report for roaming"
 	default n
@@ -1978,6 +1990,18 @@ config RTCONFIG_VISUALIZATION
 
 config RTCONFIG_BT_CONN
 	bool "Have Bluetooth for connection setup via APP"
+	default n
+
+config RTCONFIG_BT_CONN_USB
+	bool "USB of BT"
+	default n
+
+config RTCONFIG_BT_CONN_UART
+	bool "UART of BT"
+	default n
+
+config RTCONFIG_CSR8811
+	bool "Use CSR8811 Bluetooth module"
 	default n
 
 config RTCONFIG_RGBLED
@@ -2148,6 +2172,10 @@ config RTCONFIG_QCA_LBD
 	bool "qca lbd support"
 	default n
 
+config RTCONFIG_AMAS_QCA_WDS
+	bool "qca amas wds support"
+	default n
+
 config RTCONFIG_GEFORCENOW
 	bool "GeForceNow QoS feature (includes UPnP QoS)"
 	default n
@@ -2284,8 +2312,8 @@ config RTCONFIG_AMAS_UNIQUE_MAC
 	bool "Use unique mac for identification"
 	default n
 
-config RTCONFIG_ACCOUNT_LINKING
-	bool "Account linking"
+config RTCONFIG_ACCOUNT_BINDING
+	bool "Account binding"
 	default n
 
 config RTCONFIG_AMAS_SYNC_2G_BW
@@ -2300,8 +2328,28 @@ config RTCONFIG_TAIL_INFO
 	bool "A tail info appended to FW"
 	default n
 
+config RTCONFIG_WL_SCHED_V2
+	bool "WiFi Scheduler format version 2"
+	default n
+
+config RTCONFIG_PC_SCHED_V2
+	bool "Parental Control Scheduler format version 2"
+	default n
+
 config RTCONFIG_SCHED_V2
 	bool "Scheduler format version 2"
+	default n
+
+config RTCONFIG_WL_SCHED_V3
+	bool "WiFi Scheduler format version 3"
+	default n
+
+config RTCONFIG_PC_SCHED_V3
+	bool "Parental Control Scheduler format version 3"
+	default n
+
+config RTCONFIG_SCHED_V3
+	bool "Scheduler format version 3"
 	default n
 
 config RTCONFIG_MULTIFW
@@ -2324,10 +2372,46 @@ config RTCONFIG_VIF_ONBOARDING
 	bool "onboarding via virtual interface"
 	default n
 
+config RTCONFIG_OUTFOX
+	bool "Outfox game acceleration support"
+	default n
+
 config RTCONFIG_CAPTCHA
 	bool "Web UI supports captcha"
 	default n
 
 config RTCONFIG_WIFI6E
 	bool "WiFi 6E"
+	default n
+
+config RTCONFIG_VAR_NVRAM
+	bool "save some nvram under /var"
+	default n
+
+config RTCONFIG_BCM_OAM
+	bool "Broadcom OAM"
+	default n
+
+config RTCONFIG_QCA_PLC2
+	bool "QCA PLC2"
+	default n
+
+config RTCONFIG_NEW_PHYMAP
+	bool "New phy port mapping system dependent function"
+	default n
+
+config RTCONFIG_INSTANT_GUARD
+	bool "IPSEC VPN INSTANT GUARD support"
+	default n
+
+config RTCONFIG_GAME_MODE
+	bool "GAME mode support"
+	default n
+
+config RTCONFIG_BHSWITCH_RE_SELFOPT
+	bool "Notify RE do self optimization when backhaul switch"
+	default n
+
+config RTCONFIG_PREFERAP_RE_SELFOPT
+	bool "Notify RE do self optimization based on prefer ap condition"
 	default n

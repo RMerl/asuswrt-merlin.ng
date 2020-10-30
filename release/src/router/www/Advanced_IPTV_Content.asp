@@ -1614,7 +1614,7 @@ function change_switch_stb(switch_stb_x){
 				<span id="mr_hint" style="display:none;">( <#RouterConfig_GWMulticastEnable_hint#> )</span>
 				<div id="mr_disable" style="display:none;">
 					<span style="color:#FFF;"><#WLANConfig11b_WirelessCtrl_buttonname#></span>
-					<span style="margin-left: 5px;">(Due to hardware limitation, IGMP proxy cannot co-exist with IPTV function.)</span><!--untranslated-->
+					<span style="margin-left: 5px;"><#RouterConfig_GWMulticastEnable_hint2#></span>
 				</div>
 			</td>
 		</tr>

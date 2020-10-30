@@ -73,7 +73,7 @@ function applyRule(){
 		if (document.form.tr_discovery.value != tr_discovery) {
 			if (document.form.tr_discovery.value != '0')
 				document.form.tr_acs_url.value = "";
-			document.form.action_script.value += ";restart_wan_if";
+			document.form.action_script.value += ";restart_wan_if 0";
 		}
 
 		showLoading();

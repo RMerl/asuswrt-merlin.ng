@@ -9,7 +9,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <sys/errno.h>
+#else
+#include <errno.h>
+#endif
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

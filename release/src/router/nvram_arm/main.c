@@ -875,6 +875,12 @@ main(int argc, char **argv)
 			for ( ; *name; name += strlen(name) + 1)
 				puts(name);
 #endif
+#ifdef RTCONFIG_VAR_NVRAM
+			memset(buf, 0, sizeof(buf));
+			var_nvram_getall(buf, sizeof(buf));
+			for (name = buf; *name; name += strlen(name) + 1)
+				puts(name);
+#endif
 		} else
 			usage();
 	}

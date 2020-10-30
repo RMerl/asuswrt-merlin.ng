@@ -49,8 +49,9 @@ enum capabilityType {
 #endif
 	RESET_DEFAULT = 20,
 #ifdef RTCONFIG_BHCOST_OPT
-	CONN_ETH_TYPE = 21,
+	CONN_UPLINK_PORTS = 21,
 #endif
+	WIFI_RADIO_CTL = 22,
 #ifdef RTCONFIG_BHCOST_OPT
 	CONN_EAP_MODE = 23,
 #endif
@@ -77,7 +78,9 @@ enum capabilityType {
 #define GUEST_NETWORK		BIT(1)
 #define WPA3			BIT(2)
 #define VIF_ONBOARDING			BIT(3)
-#define SCHED_V2		BIT(4)
+#define WL_SCHED_V2		BIT(4)
+#define WIFI_RADIO		BIT(5)
+#define WL_SCHED_V3		BIT(6)
 
 /* for LINK_AGGREGATION */
 #define LACP_ENABLE                    BIT(0)
@@ -119,6 +122,11 @@ enum capabilityType {
 /* for reset to default */
 #define MANUAL_RESET_DEFAULT		BIT(0)
 
+/* for WIFI_RADIO_NO */
+#define WIFI_RADIO_2G		BIT(0)
+#define WIFI_RADIO_5G		BIT(1)
+#define WIFI_RADIO_5GH		BIT(2)
+
 /* Capability support on role */
 #define CAP_SUPPORT		BIT(0)
 #define RE_SUPPORT		BIT(1)
@@ -127,7 +135,6 @@ enum capabilityType {
 static capability_s capability_list[] __attribute__ ((unused)) = {
 #ifdef RTCONFIG_BHCOST_OPT
 	{ FORCE_TOPOLOGY_CTL, GENERAL_MODE, RE_SUPPORT |CAP_SUPPORT},
-	{ CONN_EAP_MODE, GENERAL_MODE, RE_SUPPORT | CAP_SUPPORT},
 #endif
 	{ REBOOT_CTL, MANUAL_REBOOT, RE_SUPPORT | CAP_SUPPORT},
 #if defined(RTCONFIG_LACP)

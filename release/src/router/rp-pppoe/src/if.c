@@ -31,7 +31,7 @@ static char const RCSID[] =
 #endif
 
 #ifdef HAVE_NET_ETHERNET_H
-#if !defined(RTCONFIG_MUSL_LIBC)
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <net/ethernet.h>
 #endif
 #endif

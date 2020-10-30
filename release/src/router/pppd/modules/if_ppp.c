@@ -45,7 +45,11 @@
 
 #include <sys/types.h>
 #include <sys/param.h>
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <sys/errno.h>
+#else
+#include <errno.h>
+#endif
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <net/if.h>

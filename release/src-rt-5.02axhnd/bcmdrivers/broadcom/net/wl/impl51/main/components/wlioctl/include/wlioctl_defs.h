@@ -21,7 +21,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlioctl_defs.h 783115 2020-01-14 10:24:55Z $
+ * $Id: wlioctl_defs.h 786447 2020-04-28 03:36:57Z $
  */
 
 #ifndef wlioctl_defs_h
@@ -178,8 +178,6 @@
 #define WL_STA_DWDS		0x02000000	/* DWDS active */
 #endif /* LINUX_POSTMOGRIFY_REMOVAL */
 #define WL_WDS_LINKUP		WL_STA_WDS_LINKUP	/* deprecated */
-#define WL_STA_RRM_CAP		0x10000000      /* RRM CAP */
-#define WL_STA_RRM_BCN_PASSIVE_CAP 0x20000000   /* Beacon Passive Measurement CAP */
 
 /* STA HT cap fields */
 #define WL_STA_CAP_LDPC_CODING		0x0001	/* Support for rx of LDPC coded pkts */
@@ -583,7 +581,7 @@
 #define	MAXPMKID		16
 
 /* SROM12 changes */
-#define	WLC_IOCTL_MAXLEN		8192	/* max length ioctl buffer required */
+#define	WLC_IOCTL_MAXLEN		16384	/* max length ioctl buffer required */
 
 #define	WLC_IOCTL_SMLEN			256	/* "small" length ioctl buffer required */
 #define WLC_IOCTL_MEDLEN		1536    /* "med" length ioctl buffer required */
@@ -1353,7 +1351,8 @@
 #define WL_CSA_VAL		0x00080000	/* Reusing REGULATORY_VAL due to lackof bits */
 #define WL_TAF_VAL		0x00100000
 #define WL_RADAR_VAL		0x00000000	/* retired in TOT on 6/10/2009 */
-#define WL_WDI_VAL		0x00200000	/* Using retired WL_RADAR_VAL VAL */
+#define WL_WDI_VAL		0x00000000	/* retired in tot on 11/13/2019 */
+#define WL_ULMU_VAL		0x00200000	/* Using WL_WDI_VAL VAL */
 #define WL_MPC_VAL		0x00400000
 #define WL_APSTA_VAL		0x00800000
 #define WL_DFS_VAL		0x01000000

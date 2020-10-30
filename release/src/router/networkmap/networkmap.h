@@ -55,6 +55,11 @@
 #define SHMKEY_FREEWIFI	1011
 #define SHMKEY_CP	1012
 #endif
+#ifdef RTCONFIG_AMAS_WGN
+#define AMAS_WGN_BR_1	"br2"
+#define AMAS_WGN_BR_2	"br3"
+#define AMAS_WGN_BR_3	"br4"
+#endif
 
 //for Notification Center trigger flag
 #ifdef RTCONFIG_NOTIFICATION_CENTER

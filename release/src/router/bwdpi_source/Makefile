@@ -24,6 +24,10 @@ else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 	@cp include/tdts/sysdeps/qca956x-tmcfg.h include/tdts/tmcfg.h -f                     # qca956x / qnc550x
 	@cp include/udb/sysdeps/qca956x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # qca956x / qnc550x
 	@cp bin/qca956x/* bin/ -rf                                                           # qca956x / qnc550x
+else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
+	@cp include/tdts/sysdeps/ipq60xx-tmcfg.h include/tdts/tmcfg.h -f                     # ipq60xx
+	@cp include/udb/sysdeps/ipq60xx-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # ipq60xx
+	@cp bin/ipq60xx/* bin/ -rf                                                           # ipq60xx
 else ifeq ($(RTCONFIG_RALINK),y)
 	@cp include/tdts/sysdeps/mtk-tmcfg.h include/tdts/tmcfg.h -f                         # mtk
 	@cp include/udb/sysdeps/mtk-tmcfg_udb.h include/udb/tmcfg_udb.h -f                   # mtk
@@ -96,6 +100,9 @@ else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 else ifeq ($(RTCONFIG_QCN550X),y)
 	@cp include/tdts/sysdeps/qcn550x-tmcfg.h include/tdts/tmcfg.h -f                     # qcn550x
 	@cp include/udb/sysdeps/qcn550x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # qcn550x
+else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
+	@cp include/tdts/sysdeps/ipq60xx-tmcfg.h include/tdts/tmcfg.h -f                     # ipq60xx
+	@cp include/udb/sysdeps/ipq60xx-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # ipq60xx
 else ifeq ($(RTCONFIG_RALINK),y)
 	@cp include/tdts/sysdeps/mtk-tmcfg.h include/tdts/tmcfg.h -f                         # mtk
 	@cp include/udb/sysdeps/mtk-tmcfg_udb.h include/udb/tmcfg_udb.h -f                   # mtk
@@ -180,6 +187,8 @@ else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 	@cp -f modules/qca956x/* RC_INDEP/
 	@cp -f bin/wrs/rule.trf RC_INDEP/ # wrs / lite version
+else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
+	@cp -f modules/ipq60xx/* RC_INDEP/
 else ifeq ($(RTCONFIG_RALINK),y)
 	@cp -f modules/mtk/* RC_INDEP/
 	@cp -f bin/partial/rule.trf RC_INDEP/

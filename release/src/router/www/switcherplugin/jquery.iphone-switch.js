@@ -55,7 +55,8 @@ jQuery.fn.iphoneSwitch = function(start_state, switched_on_callback, switched_of
 				this.id == "radio_fbwifi_enable" ||   //Guest_network_fbwifi
 				this.id == "vlan_enable" ||  //Advanced_TagBasedVLAN_Content
 				this.id == "ad_radio_dualwan_enable" ||
-				this.id == "tencent_qmacc_enable") && typeof(curState) != "undefined"){
+				this.id == "tencent_qmacc_enable" ||
+				this.id == "radio_IG_enable") && typeof(curState) != "undefined"){
 					state = curState;
 			}
 			else if(this.id.length > 18 && this.id.substr(0, 18) == "wtfast_rule_enable"){

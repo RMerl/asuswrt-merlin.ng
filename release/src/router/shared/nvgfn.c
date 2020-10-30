@@ -210,8 +210,10 @@ static void nvgfn_StopWifiScan(int value)
 	char wl[16] = {0};
 	char *next = NULL;
 	int i = 0;
+	char wl_ifnames[32] = { 0 };
 
-	foreach(wl, nvram_safe_get("wl_ifnames"), next)
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach(wl, wl_ifnames, next)
 	{
 		wl_set_wifiscan(wl, value);
 		i++;
@@ -417,6 +419,7 @@ int nvgfn_SetMcsIndex(NVGFN_MCS_INDEX_T *input)
 	char buf[128] = {0};
 	char wl[16] = {0};
 	char *next = NULL;
+	char wl_ifnames[32] = { 0 };
 
 	is_auto = input->McsIndexAuto;
 	idx = input->McsIndex;
@@ -427,7 +430,8 @@ int nvgfn_SetMcsIndex(NVGFN_MCS_INDEX_T *input)
 	NVGFN_DBG("is_auto/idx/idx_type/stream = %d/%d/%s/%d\n", is_auto, idx, idx_type, stream);
 
 	/* command line part */
-	foreach(wl, nvram_safe_get("wl_ifnames"), next)
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach(wl, wl_ifnames, next)
 	{
 		wl_set_mcsindex(wl, &is_auto, &idx, idx_type, &stream);
 	}

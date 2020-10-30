@@ -80,11 +80,12 @@ extern char *__progname;
 #define AMASLIB_DBG_SYSLOG(fmt,args...) {}
 #endif
 
-#define AMASLIB_DBG(fmt,args...) \
+#define AMASLIB_DBG(fmt,args...) do { \
 	if(f_exists(AMASLIB_DEBUG) > 0) { \
 		_dprintf("[AMASLIB][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
 	} \
-	AMASLIB_DBG_SYSLOG(fmt,##args)
+	AMASLIB_DBG_SYSLOG(fmt,##args) \
+} while(0)
 
 extern int AMAS_EVENT_TRIGGER(char *sta2g, char *sta5g, int flag);
 extern int is_amaslib_enabled();

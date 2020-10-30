@@ -71,7 +71,9 @@ var weekScheduleApi = {
 			});
 			$("#" + weekScheduleApi.obj_id + "").prepend(weekScheduleApi.overview_time_title_component(demarcation_hour_array, $all_weekday_bg.width()));//time title text
 		}
-		$("#" + weekScheduleApi.obj_id + "").append(weekScheduleApi.get_offtime_schedule_text());
+		var $offtime_schedule_text_bg = $("<div>").addClass("offtime_schedule_text_bg");
+		$offtime_schedule_text_bg.append(weekScheduleApi.get_offtime_schedule_text()).append(weekScheduleApi.get_offtime_schedule_dis_text());
+		$("#" + weekScheduleApi.obj_id + "").append($offtime_schedule_text_bg);
 		$("#" + weekScheduleApi.obj_id + "").append(weekScheduleApi.get_action_btn());
 
 		Object.keys(weekScheduleApi.data).forEach(function(key) {
@@ -80,8 +82,7 @@ var weekScheduleApi = {
 			var weekday_obj = weekScheduleApi.data[weekday];
 			$.each(weekday_obj, function( index, value ) {
 				var offtime_obj = value
-				if(offtime_obj.enable == 1)
-					weekScheduleApi.set_offtime(offtime_obj);
+				weekScheduleApi.set_offtime(offtime_obj);
 			});
 		});
 
@@ -114,7 +115,7 @@ var weekScheduleApi = {
 		if($all_weekday_bg.length > 0)
 			$all_weekday_bg.eq(_parmObj.weekday).append(weekScheduleApi.overview_offtime_component(_parmObj, $all_weekday_bg.width()));
 	},
-	"overview_a_week_component" : function() {
+	"overview_a_week_component" : function(_controlMode) {
 		var $overview_a_week_bg = $("<div>");
 		$overview_a_week_bg.addClass("overview_a_week_bg");
 		$.each(weekScheduleApi.weekday_mapping, function( index, value ) {
@@ -131,44 +132,48 @@ var weekScheduleApi = {
 			$weekday_time_bg.appendTo($weekday_bg);
 			$weekday_time_bg.addClass("weekday_time_bg");
 			$weekday_time_bg.attr("id", "w_" + weekday_obj.bitwise + "");
-			$weekday_time_bg.unbind("click");
-			$weekday_time_bg.click(function(e){
-				e = e || event;
-				e.stopPropagation();
-				var weekday = $(this).attr("id").replace("w_", "");
-				$("#popup_edit_weekSchedule").empty();
-				if(weekScheduleApi.data[$(this).attr("id")].length == 0){
-					var offtime_obj = new weekScheduleApi.offtime_attr();
-					offtime_obj.weekday = parseInt(weekday);
-					var click_hour = Math.floor(((e.offsetX/$(this).width())*(60*24))/60);
-					var start_hour = 0;
-					var end_hour = 24;
-					if(click_hour == 24)//click 24:00 border
-						click_hour = 20;
-					if(click_hour != 0){
-						start_hour = (Math.floor(click_hour/weekScheduleApi.demarcation_hour))*weekScheduleApi.demarcation_hour;
-						end_hour = start_hour + weekScheduleApi.demarcation_hour;
-					}
-					else{//click demarcation border, when click_hour = 0
-						start_hour = 0;
-						end_hour = 24;
-					}
-					offtime_obj.start_hour = start_hour;
-					offtime_obj.end_hour = end_hour;
-					$("#popup_edit_weekSchedule").append(weekScheduleApi.edit_time_setting_component("new", offtime_obj));
-				}
-				else
-					$("#popup_edit_weekSchedule").append(weekScheduleApi.edit_time_period_list_component(weekday, weekScheduleApi.data[$(this).attr("id")]));
-
-				$("#popup_edit_weekSchedule").fadeIn();
-				adjust_panel_block_top("popup_edit_weekSchedule", 100);
-				$("#popup_edit_weekSchedule").unbind("click");
-				$("#popup_edit_weekSchedule").click(function(e){
+			if(_controlMode == undefined || _controlMode != "view"){
+				$weekday_time_bg.unbind("click");
+				$weekday_time_bg.click(function(e){
 					e = e || event;
 					e.stopPropagation();
-					weekScheduleApi.reset_custom_select_status();
+					var weekday = $(this).attr("id").replace("w_", "");
+					$("#popup_edit_weekSchedule").empty();
+					if(weekScheduleApi.data[$(this).attr("id")].length == 0){
+						var offtime_obj = new weekScheduleApi.offtime_attr();
+						offtime_obj.weekday = parseInt(weekday);
+						var click_hour = Math.floor(((e.offsetX/$(this).width())*(60*24))/60);
+						var start_hour = 0;
+						var end_hour = 24;
+						if(click_hour == 24)//click 24:00 border
+							click_hour = 20;
+						if(click_hour != 0){
+							start_hour = (Math.floor(click_hour/weekScheduleApi.demarcation_hour))*weekScheduleApi.demarcation_hour;
+							end_hour = start_hour + weekScheduleApi.demarcation_hour;
+						}
+						else{//click demarcation border, when click_hour = 0
+							start_hour = 0;
+							end_hour = 24;
+						}
+						offtime_obj.start_hour = start_hour;
+						offtime_obj.end_hour = end_hour;
+						$("#popup_edit_weekSchedule").append(weekScheduleApi.edit_time_setting_component("new", offtime_obj));
+					}
+					else
+						$("#popup_edit_weekSchedule").append(weekScheduleApi.edit_time_period_list_component(weekday, weekScheduleApi.data[$(this).attr("id")]));
+
+					$("#popup_edit_weekSchedule").fadeIn();
+					adjust_panel_block_top("popup_edit_weekSchedule", 100);
+					$("#popup_edit_weekSchedule").unbind("click");
+					$("#popup_edit_weekSchedule").click(function(e){
+						e = e || event;
+						e.stopPropagation();
+						weekScheduleApi.reset_custom_select_status();
+					});
 				});
-			});
+			}
+			else
+				$weekday_time_bg.css("cursor", "initial");
 		});
 
 		return $overview_a_week_bg;
@@ -228,10 +233,12 @@ var weekScheduleApi = {
 			width = 2;
 		var $offtime_bg = $("<div>");
 		$offtime_bg.addClass("offtime_bg");
+		if(_parmObj.enable == "0")
+			$offtime_bg.addClass("dis");
 		$offtime_bg.css({"left":start, "width":width});
 		return $offtime_bg;
 	},
-	"edit_time_setting_component" : function(_editMode, _parmObj){
+	"edit_time_setting_component" : function(_editMode, _parmObj, _sche_type){
 		var $content_bg = $("<div>");
 
 		var $edit_offtime_title = $("<div>");
@@ -251,10 +258,12 @@ var weekScheduleApi = {
 
 		$content_bg.append("<br>");
 
-		var $selected_weekday_title = $("<div>");
-		$selected_weekday_title.appendTo($content_bg);
-		$selected_weekday_title.addClass("selected_weekday_title");
-		$selected_weekday_title.html(weekScheduleApi.weekday_mapping[_parmObj.weekday].text);
+		if(_sche_type != "PC"){
+			var $selected_weekday_title = $("<div>");
+			$selected_weekday_title.appendTo($content_bg);
+			$selected_weekday_title.addClass("selected_weekday_title");
+			$selected_weekday_title.html(weekScheduleApi.weekday_mapping[_parmObj.weekday].text);
+		}
 
 		var $edit_hour_minute_bg = $("<div>");
 		$edit_hour_minute_bg.appendTo($content_bg);
@@ -439,7 +448,7 @@ var weekScheduleApi = {
 		var $routine_schedule_title = $("<div>");
 		$routine_schedule_title.appendTo($edit_hour_minute_bg);
 		$routine_schedule_title.html("<#weekSche_Schedule#>");
-		if(_editMode == "edit")
+		if(_editMode == "edit" && _sche_type != "PC")
 			$routine_schedule_title.hide();
 
 		var $routine_schedule_bg = $("<div>");
@@ -452,13 +461,20 @@ var weekScheduleApi = {
 			$edit_schedule_week.appendTo($routine_schedule_bg);
 			 $edit_schedule_week.attr("weekday", index);
 			$edit_schedule_week.html(abbreviation_weekday);
-			if(index == _parmObj.weekday){
-				$edit_schedule_week.addClass("clicked");
-				$edit_schedule_week.addClass("current_weekday");
-				$edit_schedule_week.css("cursor", "initial");
+			if(_sche_type != "PC"){
+				if(index == _parmObj.weekday){
+					$edit_schedule_week.addClass("clicked");
+					$edit_schedule_week.addClass("current_weekday");
+					$edit_schedule_week.css("cursor", "initial");
+				}
+			}
+			else{
+				var weekNum = parseInt(_parmObj.weekday);
+				if(weekNum >> weekday_obj.bitwise & 1)
+					$edit_schedule_week.addClass("clicked");
 			}
 
-			if(index != _parmObj.weekday){
+			if(index != _parmObj.weekday || _sche_type == "PC"){
 				$edit_schedule_week.unbind("click");
 				$edit_schedule_week.click(function(e){
 					e = e || event;
@@ -469,7 +485,7 @@ var weekScheduleApi = {
 			}
 		});
 
-		if(_editMode == "edit")
+		if(_editMode == "edit" && _sche_type != "PC")
 			$routine_schedule_bg.hide().children("div").unbind("click");
 
 		$edit_done_btn = $("<div>");
@@ -489,57 +505,136 @@ var weekScheduleApi = {
 			if(isNaN(start_hour) || isNaN(start_min) || isNaN(end_hour) || isNaN(end_min))
 				legal_flag = false;
 
-			var start_num = start_hour*60 + start_min;
-			var end_num = end_hour*60 + end_min;
-			if(start_num >= end_num)
-				legal_flag = false;
-			if(end_num > 1440)//24:00
-				legal_flag = false;
+			if(_sche_type != "PC"){
+				var start_num = start_hour*60 + start_min;
+				var end_num = end_hour*60 + end_min;
+				if(start_num >= end_num)
+					legal_flag = false;
+				if(end_num > 1440)//24:00
+					legal_flag = false;
+			}
 
 			if(legal_flag){
 				var click_weekday_list = $(this).parents(".edit_hour_minute_bg").find(".routine_schedule_bg > div.clicked");
 				if(_editMode == "new"){
-					var current_data_num = 0;
-					Object.keys(weekScheduleApi.data).forEach(function(key) {
-						var weekday = key;
-						var weekday_obj = weekScheduleApi.data[weekday];
-						current_data_num += weekday_obj.length;
+					if(_sche_type != "PC"){
+						var current_data_num = 0;
+						Object.keys(weekScheduleApi.data).forEach(function(key) {
+							var weekday = key;
+							var weekday_obj = weekScheduleApi.data[weekday];
+							current_data_num += weekday_obj.length;
+						});
+						if(current_data_num + click_weekday_list.length > weekScheduleApi.data_max){
+							popupHint.init();
+							var hint = "<#weekSche_MAX_Num#>".replace("#MAXNUM", weekScheduleApi.data_max);
+							hint += "<br>";
+							hint += "<#weekSche_MAX_Del_Hint#>";
+							popupHint.set_text(hint);
+							popupHint.set_btn_ok();
+							popupHint.hide_btn("cancel");
+							return;
+						}
+					}
+				}
+				if(_sche_type != "PC"){
+					click_weekday_list.each(function(i, obj) {
+						var weekday = $(obj).attr("weekday");
+						var offtime_obj = new weekScheduleApi.offtime_attr();
+						offtime_obj.enable = 1;
+						offtime_obj.weekday = parseInt(weekday);
+						offtime_obj.start_hour = start_hour;
+						offtime_obj.start_min = start_min;
+						offtime_obj.end_hour = end_hour;
+						offtime_obj.end_min = end_min;
+
+						if(_editMode == "edit")
+							weekScheduleApi.data["w_" + weekday][_parmObj.idx] = JSON.parse(JSON.stringify(offtime_obj));
+						else
+							weekScheduleApi.data["w_" + weekday].push(JSON.parse(JSON.stringify(offtime_obj)));
+
+						$("#" + weekScheduleApi.obj_id + "").find("#w_" + weekday).find(".offtime_bg").remove();
+						var weekday_obj = weekScheduleApi.data["w_" + weekday];
+						$.each(weekday_obj, function( index, value ) {
+							var offtime_obj = value
+							weekScheduleApi.set_offtime(offtime_obj);
+						});
+						$(this).parents(".popup_edit_weekSchedule").fadeOut();
 					});
-					if(current_data_num + click_weekday_list.length > weekScheduleApi.data_max){
+				}
+				else{
+					var total_weekday = 0;
+					click_weekday_list.each(function(i, obj) {
+						total_weekday += Math.pow(2, parseInt($(obj).attr("weekday")));
+					});
+					if(total_weekday == 0){
 						popupHint.init();
-						var hint = "<#weekSche_MAX_Num#>".replace("#MAXNUM", weekScheduleApi.data_max);
-						hint += "<br>";
-						hint += "<#weekSche_MAX_Del_Hint#>";
+						var hint = "Week field is blank.";
 						popupHint.set_text(hint);
 						popupHint.set_btn_ok();
 						popupHint.hide_btn("cancel");
 						return;
 					}
-				}
-				click_weekday_list.each(function(i, obj) {
-					var weekday = $(obj).attr("weekday");
-					var offtime_obj = new weekScheduleApi.offtime_attr();
-					offtime_obj.enable = 1;
-					offtime_obj.weekday = parseInt(weekday);
-					offtime_obj.start_hour = start_hour;
-					offtime_obj.start_min = start_min;
-					offtime_obj.end_hour = end_hour;
-					offtime_obj.end_min = end_min;
+					var ori_enable = _parmObj.enable;
+					var ori_id = _parmObj.id;
+					var ori_weekday = _parmObj.weekday;
+					var PC_offtime_attr = new weekScheduleApi.PC_offtime_attr();
+					PC_offtime_attr.weekday = total_weekday;
+					PC_offtime_attr.start_hour = start_hour;
+					PC_offtime_attr.start_min = start_min;
+					PC_offtime_attr.end_hour = end_hour;
+					PC_offtime_attr.end_min = end_min;
+					if(_editMode == "edit"){
+						PC_offtime_attr.enable = ori_enable;
+						PC_offtime_attr.id = ori_id;
+					}
+					else{
+						PC_offtime_attr.enable = 1;
+						var id = weekScheduleApi.PC_current_id.toString() + weekScheduleApi.add_left_pad(((parseInt(total_weekday)).toString(16).toUpperCase()), 2) +
+						weekScheduleApi.add_left_pad(start_hour, 2) + weekScheduleApi.add_left_pad(start_min, 2) +
+						weekScheduleApi.add_left_pad(end_hour, 2) + weekScheduleApi.add_left_pad(end_min, 2);
+						PC_offtime_attr.id = id;
+						weekScheduleApi.PC_current_id++;
+					}
+					if(_editMode == "edit"){
+						switch(ori_weekday){
+							case 127 ://Daily
+								weekScheduleApi.PC_remove_offtime(weekScheduleApi.PC_data["Daily"], "id", ori_id);
+								break;
+							case 62 ://Weekdays
+								weekScheduleApi.PC_remove_offtime(weekScheduleApi.PC_data["Weekdays"], "id", ori_id);
+								break;
+							case 65 ://Weekend
+								weekScheduleApi.PC_remove_offtime(weekScheduleApi.PC_data["Weekend"], "id", ori_id);
+								break;
+							default ://Other
+								weekScheduleApi.PC_remove_offtime(weekScheduleApi.PC_data["Other"], "id", ori_id);
+								break;
+						}
+					}
 
-					if(_editMode == "edit")
-						weekScheduleApi.data["w_" + weekday][_parmObj.idx] = JSON.parse(JSON.stringify(offtime_obj));
-					else
-						weekScheduleApi.data["w_" + weekday].push(JSON.parse(JSON.stringify(offtime_obj)));
-
-					$("#" + weekScheduleApi.obj_id + "").find("#w_" + weekday).find(".offtime_bg").remove();
-					var weekday_obj = weekScheduleApi.data["w_" + weekday];
-					$.each(weekday_obj, function( index, value ) {
-						var offtime_obj = value
-						if(offtime_obj.enable == 1)
-							weekScheduleApi.set_offtime(offtime_obj);
-					});
+					switch(total_weekday){
+						case 127 ://Daily
+							if(_editMode == "edit")
+							PC_offtime_attr.title = "Daily";
+							weekScheduleApi.PC_data["Daily"].push(JSON.parse(JSON.stringify(PC_offtime_attr)));
+							break;
+						case 62 ://Weekdays
+							PC_offtime_attr.title = "Weekdays";
+							weekScheduleApi.PC_data["Weekdays"].push(JSON.parse(JSON.stringify(PC_offtime_attr)));
+							break;
+						case 65 ://Weekend
+							PC_offtime_attr.title = "Weekend";
+							weekScheduleApi.PC_data["Weekend"].push(JSON.parse(JSON.stringify(PC_offtime_attr)));
+							break;
+						default ://Other
+							PC_offtime_attr.title = weekScheduleApi.PC_get_week_title(total_weekday);
+							weekScheduleApi.PC_data["Other"].push(JSON.parse(JSON.stringify(PC_offtime_attr)));
+							break;
+					}
+					$("#" + weekScheduleApi.obj_id + " .offtime_schedule_content_bg").empty();
+					$("#" + weekScheduleApi.obj_id + " .offtime_schedule_content_bg").append(weekScheduleApi.PC_get_grid_period_component());
 					$(this).parents(".popup_edit_weekSchedule").fadeOut();
-				});
+				}
 			}
 			else{
 				popupHint.init();
@@ -634,8 +729,7 @@ var weekScheduleApi = {
 				var weekday_obj = weekScheduleApi.data["w_" + _weekday];
 				$.each(weekday_obj, function( index, value ) {
 					var offtime_obj = value
-					if(offtime_obj.enable == 1)
-						weekScheduleApi.set_offtime(offtime_obj);
+					weekScheduleApi.set_offtime(offtime_obj);
 				});
 			});
 
@@ -653,8 +747,7 @@ var weekScheduleApi = {
 				var weekday_obj = weekScheduleApi.data["w_" + _weekday];
 				$.each(weekday_obj, function( index, value ) {
 					var offtime_obj = value
-					if(offtime_obj.enable == 1)
-						weekScheduleApi.set_offtime(offtime_obj);
+					weekScheduleApi.set_offtime(offtime_obj);
 				});
 				if(weekScheduleApi.data["w_" + _weekday].length == 0){
 					$("#popup_edit_weekSchedule").empty();
@@ -700,6 +793,9 @@ var weekScheduleApi = {
 	},
 	"get_offtime_schedule_text" : function(){
 		return $("<div>").addClass("offtime_schedule_text").html("<#weekSche_Offtime_Sche#>");
+	},
+	"get_offtime_schedule_dis_text" : function(){
+		return $("<div>").addClass("offtime_schedule_text dis").html("<#btn_Disabled#> <#weekSche_Offtime_Sche#>");
 	},
 	"get_action_btn" : function(){
 		var $action_btn_bg = $("<div>");
@@ -748,6 +844,503 @@ var weekScheduleApi = {
 		});
 
 		return $action_btn_bg;
+	},
+	"PC_data" : [],
+	"PC_current_id" : 0,
+	"PC_offtime_attr" : function(){
+		this.id = "";
+		this.enable = 1;
+		this.weekday = 0;
+		this.start_hour = 0;
+		this.start_min = 0;
+		this.end_hour = 24;
+		this.end_min = 0;
+		this.title = "";
+	},
+	"PC_init_data" : function(_dataString){
+		weekScheduleApi.PC_data = [];
+		weekScheduleApi.PC_data["Daily"] = [];
+		weekScheduleApi.PC_data["Weekdays"] = [];
+		weekScheduleApi.PC_data["Weekend"] = [];
+		weekScheduleApi.PC_data["Other"] = [];
+		var id = 100;
+		if(_dataString != ""){
+			var splitData = _dataString.split("<");
+			$.each(splitData, function( index, value ) {
+				if(value.length == 12){
+					var enable = parseInt(value.substr(1,1));
+					var weekday =  parseInt(value.substr(2,2), 16);
+					var start_hour = parseInt(value.substr(4,2));
+					var start_min = parseInt(value.substr(6,2));
+					var end_hour = parseInt(value.substr(8,2));
+					var end_min = parseInt(value.substr(10,2));
+					var PC_offtime_attr = new weekScheduleApi.PC_offtime_attr();
+					PC_offtime_attr.id = id.toString() + value.substr(2,10);//100 + index + weekday + start_time + end_time
+					id++;
+					PC_offtime_attr.enable = enable;
+					PC_offtime_attr.weekday = weekday;
+					PC_offtime_attr.start_hour = start_hour;
+					PC_offtime_attr.start_min = start_min;
+					PC_offtime_attr.end_hour = end_hour;
+					PC_offtime_attr.end_min = end_min;
+					switch(weekday){
+						case 127 ://Daily
+							PC_offtime_attr.title = "Daily";
+							weekScheduleApi.PC_data["Daily"].push(JSON.parse(JSON.stringify(PC_offtime_attr)));
+							break;
+						case 62 ://Weekdays
+							PC_offtime_attr.title = "Weekdays";
+							weekScheduleApi.PC_data["Weekdays"].push(JSON.parse(JSON.stringify(PC_offtime_attr)));
+							break;
+						case 65 ://Weekend
+							PC_offtime_attr.title = "Weekend";
+							weekScheduleApi.PC_data["Weekend"].push(JSON.parse(JSON.stringify(PC_offtime_attr)));
+							break;
+						default ://Other
+							PC_offtime_attr.title = weekScheduleApi.PC_get_week_title(weekday);
+							weekScheduleApi.PC_data["Other"].push(JSON.parse(JSON.stringify(PC_offtime_attr)));
+							break;
+					}
+				}
+			});
+		}
+		weekScheduleApi.PC_current_id = id;
+	},
+	"PC_init_layout" : function(_objID){
+		weekScheduleApi.obj_id = _objID;
+		$("#" + weekScheduleApi.obj_id + "").empty();
+		$("#" + weekScheduleApi.obj_id + "").addClass("PC_SCHED");
+		$("#" + weekScheduleApi.obj_id + "").append(weekScheduleApi.PC_get_level_demarcation_line());
+		$("#" + weekScheduleApi.obj_id + "").append(weekScheduleApi.PC_get_header_bg());
+
+		var offtime_count = 0;
+		Object.keys(weekScheduleApi.PC_data).forEach(function(key) {
+			offtime_count += weekScheduleApi.PC_data[key].length;
+		});
+		$("#" + weekScheduleApi.obj_id + "").append($("<div>").addClass("offtime_schedule_content_bg gridview_mode"));
+		$("#" + weekScheduleApi.obj_id + "").append($("<div>").addClass("offtime_overview_content_bg overview_mode"));
+		if(offtime_count == 0)
+			$("#" + weekScheduleApi.obj_id + " .offtime_schedule_content_bg").append(weekScheduleApi.PC_get_no_data_component());
+		else
+			$("#" + weekScheduleApi.obj_id + " .offtime_schedule_content_bg").append(weekScheduleApi.PC_get_grid_period_component());
+
+		$("#" + weekScheduleApi.obj_id + "").append(weekScheduleApi.PC_get_level_demarcation_line("gridview_mode"));
+		$("#" + weekScheduleApi.obj_id + "").append(weekScheduleApi.PC_get_action_btn());
+
+		var $popup_edit_weekSchedule = $("<div>");
+		$popup_edit_weekSchedule.addClass("popup_edit_weekSchedule");
+		$popup_edit_weekSchedule.attr({"id": "popup_edit_weekSchedule", "onselectstart":false});
+		$("#" + weekScheduleApi.obj_id + "").append($popup_edit_weekSchedule);
+		$("#" + weekScheduleApi.obj_id + "").find(".overview_mode").hide();
+	},
+	"PC_get_level_demarcation_line" : function(_class){
+		var $demarcation_line = $("<div>");
+		$demarcation_line.addClass("level_demarcation_line");
+		if(_class)
+			$demarcation_line.addClass(_class);
+		return $demarcation_line;
+	},
+	"PC_get_header_bg" : function(){
+		var $header_bg = $("<div>").addClass("offtime_schedule_header");
+		var $title = $("<div>").addClass("title").html("<#weekSche_Offtime_Sche#>");
+		$title.appendTo($header_bg);
+		var $add_icon = $("<div>").addClass("btn_icon_bg add_icon gridview_mode");
+		$add_icon.appendTo($header_bg);
+		$add_icon.unbind("click");
+		$add_icon.click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			var current_data_num = 0;
+			Object.keys(weekScheduleApi.PC_data).forEach(function(key) {
+				current_data_num += weekScheduleApi.PC_data[key].length;
+			});
+			if(current_data_num + 1 > weekScheduleApi.data_max){
+				popupHint.init();
+				var hint = "<#weekSche_MAX_Num#>".replace("#MAXNUM", weekScheduleApi.data_max);
+				hint += "<br>";
+				hint += "<#weekSche_MAX_Del_Hint#>";
+				popupHint.set_text(hint);
+				popupHint.set_btn_ok();
+				popupHint.hide_btn("cancel");
+				return;
+			}
+
+			$("#popup_edit_weekSchedule").empty();
+			var abbreviation_weekday = JS_timeObj.toString().substring(0,3).toUpperCase();
+			var specific_weekday = weekScheduleApi.weekday_mapping.filter(function(item, index, _array){
+				return (item.text.substr(0,3).toUpperCase() == abbreviation_weekday);
+			})[0];
+			var PC_offtime_attr = new weekScheduleApi.PC_offtime_attr();
+			var weekday = Math.pow(2, parseInt(specific_weekday.bitwise));
+			var start_hour = 8;
+			var start_min = 0;
+			var end_hour = 12;
+			var end_min = 0;
+			PC_offtime_attr.weekday = weekday;
+			PC_offtime_attr.start_hour = start_hour;
+			PC_offtime_attr.start_min = start_min;
+			PC_offtime_attr.end_hour = end_hour;
+			PC_offtime_attr.end_min = end_min;
+			$("#popup_edit_weekSchedule").append(weekScheduleApi.edit_time_setting_component("new", PC_offtime_attr, "PC"));
+			$("#popup_edit_weekSchedule").fadeIn();
+			adjust_panel_block_top("popup_edit_weekSchedule", 100);
+			$("#popup_edit_weekSchedule").unbind("click");
+			$("#popup_edit_weekSchedule").click(function(e){
+				e = e || event;
+				e.stopPropagation();
+				weekScheduleApi.reset_custom_select_status();
+			});
+		});
+
+		var $overview_icon = $("<div>").addClass("btn_icon_bg overview_icon gridview_mode");
+		$overview_icon.appendTo($header_bg);
+		$overview_icon.unbind("click");
+		$overview_icon.click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			$("#popup_edit_weekSchedule").hide();
+			$("#" + weekScheduleApi.obj_id + "").find(".gridview_mode").hide();
+			$("#" + weekScheduleApi.obj_id + "").find(".overview_mode").show();
+
+			var overview_data = [];
+			$.each(weekScheduleApi.weekday_mapping, function( index, value ) {
+				var weekday_obj = value;
+				overview_data["w_" + weekday_obj.bitwise] = [];//initial data obj
+			});
+			Object.keys(weekScheduleApi.PC_data).forEach(function(key) {
+				$.each(weekScheduleApi.PC_data[key], function( index, value ) {
+					var PC_offtime_obj = value;
+					var weekNum = PC_offtime_obj.weekday;
+					var offtime_obj = new weekScheduleApi.offtime_attr();
+					var offtime_cross_days_obj = "";
+					offtime_obj.enable = PC_offtime_obj.enable;
+					offtime_obj.start_hour = PC_offtime_obj.start_hour
+					offtime_obj.start_min = PC_offtime_obj.start_min;
+					offtime_obj.end_hour = PC_offtime_obj.end_hour;
+					offtime_obj.end_min = PC_offtime_obj.end_min;
+					var start_num = offtime_obj.start_hour*60 + offtime_obj.start_min;
+					var end_num = offtime_obj.end_hour*60 + offtime_obj.end_min;
+					if(start_num >= end_num){
+						offtime_cross_days_obj = JSON.parse(JSON.stringify(offtime_obj));
+						offtime_cross_days_obj.start_hour = 0;
+						offtime_cross_days_obj.start_min = 0;
+						offtime_cross_days_obj.end_hour = offtime_obj.end_hour;
+						offtime_cross_days_obj.end_min = offtime_obj.end_min;
+						offtime_obj.end_hour = 24;
+						offtime_obj.end_min = 0;
+					}
+					$.each(weekScheduleApi.weekday_mapping, function( index, value ) {
+						var weekday_obj = value;
+						if(weekNum >> weekday_obj.bitwise & 1){
+							offtime_obj.weekday = parseInt(weekday_obj.bitwise);
+							overview_data["w_" + offtime_obj.weekday + ""].push(JSON.parse(JSON.stringify(offtime_obj)));
+							if(typeof offtime_cross_days_obj == "object"){
+								var cross_days_weekday = ( ((offtime_obj.weekday + 1) > 6) ? 0 : (offtime_obj.weekday + 1));
+								offtime_cross_days_obj.weekday = cross_days_weekday;
+								overview_data["w_" + cross_days_weekday + ""].push(JSON.parse(JSON.stringify(offtime_cross_days_obj)));
+							}
+						}
+					});
+				});
+			});
+
+			$(".offtime_overview_content_bg").empty();
+			$(".offtime_overview_content_bg").append(weekScheduleApi.overview_a_week_component("view"));
+			var abbreviation_weekday = JS_timeObj.toString().substring(0,3).toUpperCase();
+			var specific_weekday = weekScheduleApi.weekday_mapping.filter(function(item, index, _array){
+				return (item.text.substr(0,3).toUpperCase() == abbreviation_weekday);
+			})[0];
+			var current_weekday_index = specific_weekday.bitwise;
+			$(".offtime_overview_content_bg").find(".weekday_title").eq(current_weekday_index).addClass("current_weekday");
+
+			var demarcation_hour_array = [];
+			for(var i = weekScheduleApi.demarcation_hour; i < 24; i += weekScheduleApi.demarcation_hour)
+				demarcation_hour_array.push(i);
+			var $all_weekday_bg = $(".offtime_overview_content_bg").find(".overview_a_week_bg .weekday_time_bg");
+			if($all_weekday_bg.length > 0){
+				$.each(demarcation_hour_array, function( index, value ) {
+					$all_weekday_bg.append(weekScheduleApi.overview_demarcation_line_component(value, $all_weekday_bg.width()));//demarcation_line
+				});
+				$(".offtime_overview_content_bg").prepend(weekScheduleApi.overview_time_title_component(demarcation_hour_array, $all_weekday_bg.width()));//time title text
+			}
+			var $offtime_schedule_text_bg = $("<div>").addClass("offtime_schedule_text_bg");
+			$offtime_schedule_text_bg.append(weekScheduleApi.get_offtime_schedule_text()).append(weekScheduleApi.get_offtime_schedule_dis_text());
+			$(".offtime_overview_content_bg").append($offtime_schedule_text_bg);
+
+			Object.keys(overview_data).forEach(function(key) {
+				var weekday = key;
+				$(".offtime_overview_content_bg").find("#" + weekday).find(".offtime_bg").remove();
+				var weekday_obj = overview_data[weekday];
+				$.each(weekday_obj, function( index, value ) {
+					var offtime_obj = value
+					weekScheduleApi.set_offtime(offtime_obj);
+				});
+			});
+		});
+
+		var $gridview_icon = $("<div>").addClass("btn_icon_bg gridview_icon overview_mode");
+		$gridview_icon.appendTo($header_bg);
+		$gridview_icon.unbind("click");
+		$gridview_icon.click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			$("#" + weekScheduleApi.obj_id + "").find(".gridview_mode").show();
+			$("#" + weekScheduleApi.obj_id + "").find(".overview_mode").hide();
+		});
+
+		return $header_bg;
+	},
+	"PC_get_action_btn" : function(){
+		var $action_btn_bg = $("<div>");
+		$action_btn_bg.addClass("action_btn_bg gridview_mode");
+
+		var $cancel_btn = $("<div>");
+		$cancel_btn.appendTo($action_btn_bg);
+		$cancel_btn.addClass("button_gen");
+		$cancel_btn.html("<#CTL_Cancel#>");
+		$cancel_btn.unbind("click");
+		$cancel_btn.click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			if(typeof weekScheduleApi.callback_btn_cancel == "function")
+				weekScheduleApi.callback_btn_cancel();
+		});
+
+		var $apply_btn = $("<div>");
+		$apply_btn.appendTo($action_btn_bg);
+		$apply_btn.addClass("button_gen");
+		$apply_btn.html("<#CTL_apply#>");
+		$apply_btn.unbind("click");
+		$apply_btn.click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			if(typeof weekScheduleApi.callback_btn_apply == "function")
+				weekScheduleApi.callback_btn_apply();
+		});
+
+		return $action_btn_bg;
+	},
+	"PC_get_no_data_component" : function(){
+		var $no_data_bg = $("<div>").addClass("no_data_bg ");
+		$no_data_bg.append($("<div>").addClass("no_data_icon"));
+		$no_data_bg.append($("<div>").addClass("no_data_text").html("<#IPConnection_VSList_Norule#>"));
+		return $no_data_bg;
+	},
+	"PC_get_week_title" : function(_weekNum){
+		var weekNum = parseInt(_weekNum);
+		var weekTitle = "";
+		$.each(weekScheduleApi.weekday_mapping, function( index, value ) {
+			var weekday_obj = value;
+			if(weekNum >> weekday_obj.bitwise & 1){
+				if(weekTitle != "")
+					weekTitle += " / "
+				weekTitle += weekday_obj.text.substr(0,3).toUpperCase();
+			}
+		});
+		return weekTitle
+	},
+	"PC_get_grid_period_component" : function(){
+		weekScheduleApi.PC_sort_data();
+		var $grid_period_component = $("<div>");
+		Object.keys(weekScheduleApi.PC_data).forEach(function(key) {
+			var week_group = key;
+			var $grid_period_group_bg = $("<div>");
+			$grid_period_group_bg.appendTo($grid_period_component);
+			$grid_period_group_bg.attr("id", "grid_period_" + week_group + "");
+			$.each(weekScheduleApi.PC_data[week_group], function( index, value ) {
+				var PC_offtime_obj = value;
+				var $grid_period_bg = $("<div>").appendTo($grid_period_group_bg);
+				$grid_period_bg.attr({"id":PC_offtime_obj.id, "week_group":week_group});
+				$grid_period_bg.addClass("grid_period_bg");
+
+				var $grid_period_title = $("<div>");
+				$grid_period_title.appendTo($grid_period_bg);
+				$grid_period_title.addClass("grid_period_title");
+				var display_title = "";
+				if(week_group == "Other")
+					display_title = value.title
+						.replace("MON", "<#date_Mon_itemdesc#>").replace("TUE", "<#date_Tue_itemdesc#>").replace("WED", "<#date_Wed_itemdesc#>")
+						.replace("THU", "<#date_Thu_itemdesc#>").replace("FRI", "<#date_Fri_itemdesc#>").replace("SAT", "<#date_Sat_itemdesc#>")
+						.replace("SUN", "<#date_Sun_itemdesc#>");
+				else
+					display_title = week_group.replace("Daily", "<#weekSche_Everyday#>").replace("Weekdays", "<#weekSche_Weekdays#>").replace("Weekend", "<#weekSche_Weekend#>");
+
+				$grid_period_title.html(display_title);
+
+				var $grid_period_content = $("<div>");
+				$grid_period_content.appendTo($grid_period_bg);
+				$grid_period_content.addClass("grid_period_content");
+
+				if(PC_offtime_obj.enable)
+					$grid_period_content.addClass("on");
+				else
+					$grid_period_content.addClass("off");
+
+				$grid_period_content.hover(
+					function(){$(this).children(".period_trash_icon").show();},
+					function(){$(this).children(".period_trash_icon").hide();}
+				);
+				$grid_period_content.unbind("click");
+				$grid_period_content.click(function(e){
+					e = e || event;
+					e.stopPropagation();
+					$("#popup_edit_weekSchedule").empty();
+					$("#popup_edit_weekSchedule").append(weekScheduleApi.edit_time_setting_component("edit", PC_offtime_obj, "PC"));
+					$("#popup_edit_weekSchedule").fadeIn();
+					adjust_panel_block_top("popup_edit_weekSchedule", 100);
+					$("#popup_edit_weekSchedule").unbind("click");
+					$("#popup_edit_weekSchedule").click(function(e){
+						e = e || event;
+						e.stopPropagation();
+						weekScheduleApi.reset_custom_select_status();
+					});
+				});
+				var $period_text_bg = $("<div>");
+				$period_text_bg.appendTo($grid_period_content);
+				$period_text_bg.addClass("period_text_bg");
+				var $start_time = $("<div>");
+				$start_time.addClass("start_time");
+				$start_time.attr("title", "<#weekSche_Start_Time#>");
+				$start_time.appendTo($period_text_bg);
+				$start_time.html(weekScheduleApi.add_left_pad(PC_offtime_obj.start_hour, 2) + ":" + weekScheduleApi.add_left_pad(PC_offtime_obj.start_min, 2));
+
+				var $dash = $("<div>");
+				$dash.addClass("dash");
+				$dash.appendTo($period_text_bg);
+
+				var $end_time = $("<div>");
+				$end_time.addClass("end_time");
+				$end_time.attr("title", "<#weekSche_End_Time#>");
+				$end_time.appendTo($period_text_bg);
+				$end_time.html(weekScheduleApi.add_left_pad(PC_offtime_obj.end_hour, 2) + ":" + weekScheduleApi.add_left_pad(PC_offtime_obj.end_min, 2));
+
+				var $period_switch = $("<div>");
+				$period_switch.appendTo($grid_period_content);
+				$period_switch.addClass("period_switch");
+				if(PC_offtime_obj.enable)
+					$period_switch.addClass("on");
+				else
+					$period_switch.addClass("off");
+				$period_switch.unbind("click");
+				$period_switch.click(function(e){
+					e = e || event;
+					e.stopPropagation();
+					$(this).toggleClass("off  on");
+					$grid_period_content.toggleClass("off  on");
+					if($(this).hasClass("period_switch on"))
+						PC_offtime_obj.enable = 1;
+					else
+						PC_offtime_obj.enable = 0;
+				});
+
+				var $period_trash_icon = $("<div>");
+				$period_trash_icon.appendTo($grid_period_content);
+				$period_trash_icon.addClass("period_trash_icon");
+				$period_trash_icon.unbind("click");
+				$period_trash_icon.click(function(e){
+					e = e || event;
+					e.stopPropagation();
+					var delete_id = $(this).parents(".grid_period_bg").attr("id");
+					var delete_week_group = $(this).parents(".grid_period_bg").attr("week_group");
+					$(this).parents(".grid_period_bg").remove();
+					weekScheduleApi.PC_remove_offtime(weekScheduleApi.PC_data[delete_week_group], "id", delete_id);
+					if(week_group != "Other")
+						$grid_period_group_bg.children(".grid_period_bg").children(".grid_period_title").hide().eq(0).show();
+					else{
+						$grid_period_group_bg.children(".grid_period_bg").children(".grid_period_title").show();
+						var pre_title = "";
+						$.each($grid_period_group_bg.children(".grid_period_bg").children(".grid_period_title"), function( index, element ) {
+							var current_title = $(element).html();
+							if(pre_title == current_title)
+								$(element).hide();
+							pre_title = current_title;
+						});
+					}
+					if(weekScheduleApi.PC_data[delete_week_group].length == 0 && delete_week_group != "Other")
+						$("#grid_period_" + delete_week_group + "").hide();
+
+					var offtime_count = 0;
+					Object.keys(weekScheduleApi.PC_data).forEach(function(key) {
+						offtime_count += weekScheduleApi.PC_data[key].length;
+					});
+					if(offtime_count == 0){
+						$("#" + weekScheduleApi.obj_id + " .offtime_schedule_content_bg").empty();
+						$("#" + weekScheduleApi.obj_id + " .offtime_schedule_content_bg").append(weekScheduleApi.PC_get_no_data_component());
+					}
+				});
+				$period_trash_icon.hide();
+			});
+			if(week_group != "Other")
+				$grid_period_group_bg.children(".grid_period_bg").children(".grid_period_title").hide().eq(0).show();
+			else{
+				var pre_title = "";
+				$.each($grid_period_group_bg.children(".grid_period_bg").children(".grid_period_title"), function( index, element ) {
+					var current_title = $(element).html();
+					if(pre_title == current_title)
+						$(element).hide();
+					pre_title = current_title;
+				});
+			}
+		});
+		return $grid_period_component;
+	},
+	"PC_remove_offtime" : function(array, property, value){
+		$.each(array, function( index, element ) {
+			if(element[property] == value){
+				array.splice(index, 1);
+				return false;
+			}
+		});
+	},
+	"PC_transform_offtime_json_to_string" : function(){
+		var result = "";
+		Object.keys(weekScheduleApi.PC_data).forEach(function(key) {
+			var week_group = key;
+			$.each(weekScheduleApi.PC_data[week_group], function( index, value ) {
+				var PC_offtime_obj = value;
+				var enable = PC_offtime_obj.enable;
+				var weekday = weekScheduleApi.add_left_pad(((parseInt(PC_offtime_obj.weekday)).toString(16).toUpperCase()), 2);
+				var start_hour = weekScheduleApi.add_left_pad(PC_offtime_obj.start_hour, 2);
+				var start_min = weekScheduleApi.add_left_pad(PC_offtime_obj.start_min, 2);
+				var end_hour = weekScheduleApi.add_left_pad(PC_offtime_obj.end_hour, 2);
+				var end_min = weekScheduleApi.add_left_pad(PC_offtime_obj.end_min, 2);
+				if(result != "")
+					result += "<";
+				result += "W";
+				result += enable;
+				result += weekday;
+				result += start_hour;
+				result += start_min;
+				result += end_hour;
+				result += end_min;
+			});
+		});
+		return result;
+	},
+	"PC_sort_data" : function(){
+		var sortWeekdayAndTime = function(a,b){
+			var w1 = parseInt(a.weekday);
+			var w2 = parseInt(b.weekday);
+			var s1 = a.start_hour*60 + a.start_min;
+			var s2 = b.start_hour*60 + b.start_min;
+			var e1 = a.end_hour*60 + a.end_min;
+			var e2 = b.end_hour*60 + b.end_min;
+			if (w1 < w2) return -1;
+			if (w1 > w2) return 1;
+			if (s1 < s2) return -1;
+			if (s1 > s2) return 1;
+			if (e1 < e2) return -1;
+			if (e1 > e2) return 1;
+			return 0;
+		};
+		if(weekScheduleApi.PC_data["Daily"].length > 0)
+			weekScheduleApi.PC_data["Daily"].sort(sortWeekdayAndTime);
+		if(weekScheduleApi.PC_data["Weekdays"].length > 0)
+			weekScheduleApi.PC_data["Weekdays"].sort(sortWeekdayAndTime);
+		if(weekScheduleApi.PC_data["Weekend"].length > 0)
+			weekScheduleApi.PC_data["Weekend"].sort(sortWeekdayAndTime);
+		if(weekScheduleApi.PC_data["Other"].length > 0)
+			weekScheduleApi.PC_data["Other"].sort(sortWeekdayAndTime);
 	}
 }
 var popupHint = {

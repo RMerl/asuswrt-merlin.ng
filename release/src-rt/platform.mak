@@ -128,6 +128,10 @@ define platformRouterOptions
 		sed -i "/RTCONFIG_HAS_5G_2/d" $(1); \
 		echo "RTCONFIG_HAS_5G_2=y" >>$(1); \
 	fi; \
+	if [ "$(BCM_OAM)" = "y" ]; then \
+		sed -i "/RTCONFIG_BCM_OAM/d" $(1); \
+		echo "RTCONFIG_BCM_OAM=y" >>$(1); \
+	fi; \
 	)
 endef
 
@@ -434,7 +438,11 @@ define platformKernelConfig
 				(cd rdp/projects/WL4908/target/rdpa_gpl; rm -rf include; ln -sf ../../../../../rdp/drivers/rdpa_gpl/include include); \
 				(cd rdp/projects/WL4908/target/bdmf; rm -rf framework; ln -sf ../../../../../rdp/drivers/bdmf/framework framework); \
 				(cd rdp/projects/WL4908/target/bdmf; rm -rf system; ln -sf ../../../../../rdp/drivers/bdmf/system system); \
-				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_enet.o $(HND_SRC)/bcmdrivers/opensource/net/enet/impl5/bcm_enet$(PRBM_EXT).o ; \
+				if [ "$(HND_ROUTER_AX)" = "y" ]; then \
+					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_enet.o $(HND_SRC)/bcmdrivers/opensource/net/enet/impl7/bcm_enet$(PRBM_EXT).o ; \
+				else \
+					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_enet.o $(HND_SRC)/bcmdrivers/opensource/net/enet/impl5/bcm_enet$(PRBM_EXT).o ; \
+				fi; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/wfd.o $(HND_SRC)/bcmdrivers/opensource/net/wfd/impl1/wfd$(PRBM_EXT).o ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcmpdc.o $(HND_SRC)/bcmdrivers/opensource/char/pdc/impl1/bcmpdc$(PRBM_EXT).o ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcmspu.o $(HND_SRC)/bcmdrivers/opensource/char/spudd/impl4/bcmspu$(PRBM_EXT).o ; \

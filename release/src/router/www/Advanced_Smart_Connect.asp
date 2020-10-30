@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">X
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <html xmlns:v>
 <head>
@@ -217,6 +217,13 @@ var wl0_names = ['5GHz-1','5GHz-2','none'];
 var wl1_names = ['5GHz-2','2.4GHz','none'];
 var wl2_names = ['5GHz-1','2.4GHz','none'];
 var wl_name = ['2.4GHz','5GHz-1','5GHz-2'];
+if(band6g_support){
+	wl0_names = ['5 GHz','6 GHz','none'];
+	wl1_names = ['6 GHz','2.4 GHz','none'];
+	wl2_names = ['5 GHz','2.4 GHz','none'];
+	wl_name = ['2.4 GHz','5 GHz','6 GHz'];
+}
+
 var wl_names = [wl0_names,wl1_names,wl2_names];
 
 var wl_ifnames = '<% nvram_get("wl_ifnames"); %>'.split(" ");
@@ -366,12 +373,26 @@ function gen_bsd_steering_div(flag){
 	code +='<table cellspacing="0" cellpadding="4" bordercolor="#6b8fa3" border="1" align="center" width="100%" class="FormTable" id="MainTable1">';
 	code +='<thead><tr><td colspan="4"><#smart_connect_Steering#></td></tr></thead>';
 	code +='<tr id="band_text"><th width="20%"><#Interface#></th>';
-	if(start_band_idx == '1')
-		code +='<td width="40%" align="center" >5GHz-1</td><td width="40%" align="center" >5GHz-2</td>';
+	if(start_band_idx == '1'){
+		if(band6g_support){
+			code +='<td width="40%" align="center" >5 GHz</td><td width="40%" align="center" >6 GHz</td>';
+		}
+		else{
+			code +='<td width="40%" align="center" >5GHz-1</td><td width="40%" align="center" >5GHz-2</td>';
+		}
+	}
 	else if(!wl_info.band5g_2_support)
 		code +='<td width="40%" align="center" >2.4GHz</td><td width="40%" align="center" >5GHz</td>';
-	else
-		code +='<td width="27%" align="center" >2.4GHz</td><td width="27%" align="center" >5GHz-1</td><td width="27%" align="center" >5GHz-2</td>';
+	else{
+		if(band6g_support){
+			code +='<td width="27%" align="center" >2.4 GHz</td><td width="27%" align="center" >5 GHz</td><td width="27%" align="center" >6 GHz</td>';
+		}
+		else{
+			code +='<td width="27%" align="center" >2.4GHz</td><td width="27%" align="center" >5GHz-1</td><td width="27%" align="center" >5GHz-2</td>';
+		}		
+	}
+		
+
 	code +='</tr>';
 
 	code +='<tr><th><#enable_Load_Balance#></th>';
@@ -536,15 +557,35 @@ function gen_bsd_if_select_div(){
 		code +='<select class="input_option" name="wl'+i+'_bsd_if_select_policy_first" onChange="change_bsd_if_select(this);">';
 		code +='<option selected="" value="0" class="content_input_fd">';
 		if(i == 0){
-			code +='5GHz-1';
+			if(band6g_support){
+				code +='5 GHz';
+			}
+			else{
+				code +='5GHz-1';
+			}		
 		}else if(i == 1){
-			code +='5GHz-2';
+			if(band6g_support){
+				code +='6 GHz';
+			}
+			else{
+				code +='5GHz-2';
+			}
 		}else{
-			code +='5GHz-1';
+			if(band6g_support){
+				code +='5 GHz';
+			}
+			else{
+				code +='5GHz-1';
+			}
 		}
 		code +='</option><option value="1" class="content_input_fd">';
 		if(i == 0){
-			code +='5GHz-2';
+			if(band6g_support){
+				code +='6 GHz';
+			}
+			else{
+				code +='5GHz-2';
+			}
 		}else if(i == 1){
 			code +='2.4GHz';
 		}else{
@@ -557,16 +598,31 @@ function gen_bsd_if_select_div(){
 		code +='<select class="input_option" name="wl'+i+'_bsd_if_select_policy_second" onChange="change_bsd_if_select(this);">';
 		code +='<option selected="" value="0" class="content_input_fd">';
 		if(i == 0){
-			code +='5GHz-1';
+			if(band6g_support){
+				code +='5 GHz';
+			}
+			else{
+				code +='5GHz-1';
+			}
 		}else if(i == 1){
 			code +='2.4GHz';
 		}else{
-			code +='5GHz-1';
+			if(band6g_support){
+				code +='5 GHz';
+			}
+			else{
+				code +='5GHz-1';
+			}
 		}	
 		code +='</option>';
 		code +='<option value="1" class="content_input_fd">';
 		if(i == 0){
-			code +='5GHz-2';
+			if(band6g_support){
+				code +='6 GHz';
+			}
+			else{
+				code +='5GHz-2';
+			}
 		}else if(i == 1){
 			code +='2.4GHz';
 		}else{
@@ -580,8 +636,14 @@ function gen_bsd_if_select_div(){
 	}
      }else if(!wl_info.band5g_2_support){
 		code +='<td width="40%">5GHz</td><td width="40%">2.4GHz</td>'
-	}else
-		code +='<td width="40%">5GHz-2</td><td width="40%">5GHz-1</td>'
+	}else{
+		if(band6g_support){
+			code +='<td width="40%">6 GHz</td><td width="40%">5 GHz</td>';
+		}
+		else{
+			code +='<td width="40%">5GHz-2</td><td width="40%">5GHz-1</td>';
+		}
+	}		
 	code +='</tr>';
 
 	code +='<tr><th><#smart_connect_Bandwidth#></th>';
@@ -727,17 +789,35 @@ function change_bsd_if_select(obj){
 	var bwsDesc = new Array();
 	bws = [0, 1, 2];
 	if(obj == document.form.wl0_bsd_if_select_policy_first){
-		bwsDesc = ['5GHz-1','5GHz-2','none'];
+		if(band6g_support){
+			bwsDesc = ['5 GHz','6 GHz','none'];
+		}
+		else{
+			bwsDesc = ['5GHz-1','5GHz-2','none'];
+		}
+		
 		bws.splice(obj.value, 1);
 		bwsDesc.splice(obj.value, 1);
 		add_options_x2(document.form.wl0_bsd_if_select_policy_second, bwsDesc, bws, document.form.wl0_bsd_if_select_policy_second.value);
 	}else if(obj == document.form.wl1_bsd_if_select_policy_first){
-		bwsDesc = ['5GHz-2','2.4GHz','none'];
+		if(band6g_support){
+			bwsDesc = ['6 GHz','2.4 GHz','none'];
+		}
+		else{
+			bwsDesc = ['5GHz-2','2.4GHz','none'];
+		}
+			
 		bws.splice(obj.value, 1);
 		bwsDesc.splice(obj.value, 1);
 		add_options_x2(document.form.wl1_bsd_if_select_policy_second, bwsDesc, bws, document.form.wl1_bsd_if_select_policy_second.value);		
 	}else if(obj == document.form.wl2_bsd_if_select_policy_first){
-		bwsDesc = ['5GHz-1','2.4GHz','none'];
+		if(band6g_support){
+			bwsDesc = ['5 GHz','2.4 GHz','none'];
+		}
+		else{
+			bwsDesc = ['5GHz-1','2.4GHz','none'];
+		}
+		
 		bws.splice(obj.value, 1);
 		bwsDesc.splice(obj.value, 1);
 		add_options_x2(document.form.wl2_bsd_if_select_policy_second, bwsDesc, bws, document.form.wl2_bsd_if_select_policy_second.value);		

@@ -102,6 +102,7 @@ var external_ip = -1;
 var AAE_MAX_RETRY_NUM = 3;
 var flag = '<% get_parameter("flag"); %>';
 var realip_state = "";
+var oauth_auth_status = httpApi.nvramGet(["oauth_auth_status"],true).oauth_auth_status;
 
 var StatusList = {
 	"NoInetrnet": "<#Alexa_Status_Disconnect#>",
@@ -170,6 +171,11 @@ function initial(){
 	$("#alexa_ex1").html("<#Alexa_Example1#>".replace("ASUS ROUTER", "MY ROUTER"));
 	$("#alexa_ex2").html("<#Alexa_Example2#>".replace("ASUS ROUTER", "MY ROUTER"));
 	$("#alexa_ex3").html("<#Alexa_Example3#>".replace("ASUS ROUTER", "MY ROUTER"));
+
+	if(oauth_auth_status == "2")
+		$("#guideline_2").css("display", "");
+	else
+		$("#guideline_1").css("display", "");
 }
 
 function create_AmazonRegion_select(){
@@ -185,6 +191,12 @@ function create_AmazonRegion_select(){
 				selected = true;
 			else
 				selected = false;
+			if(is_OP_sku) {
+				if (Amazon_URLs[i].Region == "<#Alexa_Region_au#>")
+					selected = true;
+				else
+					selected = false;
+			}
 
 			var option = new Option(text, Amazon_URLs[i].WebSite, false, selected);
 			select.options.add(option);
@@ -464,7 +476,7 @@ function show_account_state(){
 													<div id="acc_link_status" style="text-align:center;padding-top:10px;font-size:15px;color:#FFCC00;font-weight:bolder; height:20px;"></div>
 													<div class="div_img">
 														<table style="width:99%">
-															<div class="div_td" style="padding-top:20px; width:45%">
+															<div id="guideline_1" class="div_td" style="padding-top:20px; width:45%; display: none;">
 																<div class="div_tr">
 																	<div class="div_td">
 																		<div class="title_num">1</div>
@@ -496,6 +508,28 @@ function show_account_state(){
 																	</div>
 																	<div class="div_td step_div">
 																		In order to use Amazon Alexa Skill, Lyra Voice needs to bind with Amazon account first. Please setup/sign-in to Amazon via <span id="app_span" style="text-decoration: underline;cursor:pointer;">ASUS Router app</span>
+																	</div>
+																</div>
+															</div>
+															<div id="guideline_2" class="div_td" style="padding-top:20px; width:45%; display: none;">
+																<div class="div_tr">
+																	<div class="div_td title_num_div">
+																		<div class="title_num">1</div>
+																	</div>
+																	<div class="div_td step_div">
+																		<div>Open ASUS Router App and go to “Settings.”</div>
+																		<div style="color: #FFCC00; margin-top: 10px; display: flex">
+																			<div>*</div>
+																			<div style="margin-left: 3px; font-size: 15px;">Please make sure your device connect to ASUS router’s Wi-Fi SSID.</div>
+																		</div>
+																	</div>
+																</div>
+																<div class="div_tr">
+																	<div class="div_td title_num_div">
+																		<div class="title_num">2</div>
+																	</div>
+																	<div class="div_td step_div">
+																		 Click “Connect with Alexa” and enable Alexa Skill.
 																	</div>
 																</div>
 															</div>

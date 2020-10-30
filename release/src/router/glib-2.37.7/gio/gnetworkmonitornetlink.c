@@ -24,6 +24,7 @@
 #include "config.h"
 #include <errno.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "gnetworkmonitornetlink.h"
 #include "gcredentials.h"

@@ -809,6 +809,27 @@ ProcessHTTPPOST_upnphttp(struct upnphttp * h)
 }
 
 static int
+is_vaild_ip(struct upnphttp *h) {
+	int i = 0, ret = 0;
+	const char *p;
+	char addrstr[16];
+	unsigned char ip[4];
+
+	memset(addrstr, 0, sizeof(addrstr));
+	p = h->req_Callback;
+	p += 7;	/* http:// */
+	while(*p != '/' && *p != ':' && i < (sizeof(addrstr)-1) && i < h->req_CallbackLen-7)
+		addrstr[i++] = *(p++);
+	addrstr[i] = '\0';
+
+	ret = inet_aton(addrstr, (struct in_addr *)ip);
+
+	if(ret && ((ip[0] == 10) || (ip[0] == 172 && ip[1] >= 16 && ip[1] <= 31) || (ip[0] == 192 && ip[1] == 168)))
+		return 1;// intranet ip
+
+	return 0;
+}
+static int
 check_event(struct upnphttp *h)
 {
 	enum event_type type;
@@ -822,12 +843,18 @@ check_event(struct upnphttp *h)
 			type = E_INVALID;
 		}
 		else if (strncmp(h->req_Callback, "http://", 7) != 0 ||
-		         strncmp(h->req_NT, "upnp:event", h->req_NTLen) != 0)
+		         strncmp(h->req_NT, "upnp:event", h->req_NTLen) != 0 || h->req_CallbackLen > 256)
 		{
 			/* Missing or invalid CALLBACK : 412 Precondition Failed.
 			 * If CALLBACK header is missing or does not contain a valid HTTP URL,
 			 * the publisher must respond with HTTP error 412 Precondition Failed*/
 			BuildResp2_upnphttp(h, 412, "Precondition Failed", 0, 0);
+			type = E_INVALID;
+		}
+		else if(!is_vaild_ip(h))
+		{
+			BuildResp2_upnphttp(h, 400, "Bad Request",
+							"<html><body>Bad request</body></html>", 37);
 			type = E_INVALID;
 		}
 		else

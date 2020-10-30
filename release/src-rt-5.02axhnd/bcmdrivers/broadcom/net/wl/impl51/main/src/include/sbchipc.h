@@ -5,7 +5,7 @@
  * JTAG, 0/1/2 UARTs, clock frequency control, a watchdog interrupt timer,
  * GPIO interface, extbus, and support for serial and parallel flashes.
  *
- * $Id: sbchipc.h 778211 2019-08-27 07:56:59Z $
+ * $Id: sbchipc.h 788587 2020-07-06 01:46:22Z $
  *
  * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
@@ -1244,6 +1244,10 @@ typedef volatile struct {
 #define	PCTL_XTALFREQ_SHIFT	2
 #define	PCTL_ILP_DIV_EN		0x00000002
 #define	PCTL_LPO_SEL		0x00000001
+#define	PCTL_RESETCTL_MASK	0x00006000 /**< at least rev 35 */
+#define	PCTL_RESETCTL_BP_ONLY	0x00000000 /* Reset backplane, PMU state untouched */
+#define	PCTL_RESETCTL_PU	0x00002000 /* Reset backplane, PMU to Power Up state */
+#define	PCTL_RESETCTL_RSRC	0x00004000 /* Reset backplane, PMU reload resource masks */
 
 /* Fields in pmucontrol_ext */
 #define PCTL_EXT_USE_LHL_TIMER	0x00000010

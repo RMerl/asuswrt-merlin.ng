@@ -88,6 +88,7 @@ start_vpnc(void)
 	/* shut down previous instance if any */
 	stop_vpnc();
 
+#if !defined(DSL_AX82U) ///TODO: !defined(RTCONFIG_HND_ROUTER_AX_675X)
 #ifdef HND_ROUTER
 	/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled */
 	if (nvram_match("fc_disable", "0") &&
@@ -97,6 +98,7 @@ start_vpnc(void)
 		dbg("[%s, %d] Flow Cache Learning of GRE flows Tunnel: DISABLED, PassThru: ENABLED\n", __FUNCTION__, __LINE__);
 		eval("fc", "config", "--gre", "0");
 	}
+#endif
 #endif
 
 	/* unset vpnc_dut_disc */
@@ -315,9 +317,11 @@ stop_vpnc(void)
 		kill_pidfile_tk(pidfile);
 	}
 
+#if !defined(DSL_AX82U) ///TODO: !defined(RTCONFIG_HND_ROUTER_AX_675X)
 #ifdef HND_ROUTER
 	/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled */
 	if (nvram_match("fc_disable", "0")) eval("fc", "config", "--gre", "1");
+#endif
 #endif
 }
 

@@ -1125,7 +1125,7 @@ void sig_remove(int sig)
 int closesocket(int sockfd)
 {
     //shutdown(sockfd,SHUT_RDWR);
-    close(sockfd);
+	return close(sockfd);
 }
 
 /************************************/
@@ -1182,6 +1182,7 @@ int check_par_usb_prn()//JY: 20031104 change to int from void
     g_useUsb = TRUE;
     return(g_useUsb);
 #else
+    g_useUsb = FALSE;
     fp=fopen("/proc/sys/dev/parport/parport0/devices/lp/deviceid","r");
 
     if( fp != NULL)
@@ -1211,16 +1212,13 @@ int check_par_usb_prn()//JY: 20031104 change to int from void
                     g_useUsb = FALSE;
 //printf("PARALLEL\n");//JY1112: delete               
                 }
-			return(g_useUsb);//JY: 1104
                 break;
             }
-            
         }
-        
         fclose(fp);
     }
 #endif
-    
+    return(g_useUsb);//JY: 1104
 }
 
 /*1110test status

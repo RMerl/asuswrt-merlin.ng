@@ -227,7 +227,7 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port)
 //		case NET_CMD_ID_GETINFO:
 		     _dprintf("NET CMD GETINFO_MANU\n");	// tmp test
 		     ginfo=(PKT_GET_INFO *)(pdubuf_res+sizeof(IBOX_COMM_PKT_RES));
-		     memset(ginfo, 0, sizeof(ginfo));
+		     memset(ginfo, 0, sizeof(*ginfo));
 #if 0
 #ifdef PRNINFO
 		     readPrnID(ginfo->PrinterInfo);
@@ -278,7 +278,7 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port)
 		case NET_CMD_ID_GETINFO:
 			//_dprintf("NET CMD GETINFO\n");
 		     ginfo=(PKT_GET_INFO *)(pdubuf_res+sizeof(IBOX_COMM_PKT_RES));
-		     memset(ginfo, 0, sizeof(ginfo));
+		     memset(ginfo, 0, sizeof(*ginfo));
 #if 0
 #ifdef PRNINFO
     		     readPrnID(ginfo->PrinterInfo);
@@ -348,7 +348,7 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port)
 		case NET_CMD_ID_GETINFO_EX2:
 		     _dprintf("\n we got case GETINFO_EX2\n");	// tmp test
 		     ginfo=(PKT_GET_INFO *)(pdubuf_res+sizeof(IBOX_COMM_PKT_RES));
-		     memset(ginfo, 0, sizeof(ginfo));
+		     memset(ginfo, 0, sizeof(*ginfo));
 		     memset(ginfo->PrinterInfo, 0, sizeof(ginfo->PrinterInfo));
 
 		     /* get disk type */

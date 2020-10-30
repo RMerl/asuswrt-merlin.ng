@@ -59,7 +59,11 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <sys/poll.h>
+#else
+#include <poll.h>
+#endif
 #include <limits.h>
 #include <semaphore.h>
 

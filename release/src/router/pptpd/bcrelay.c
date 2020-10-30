@@ -662,7 +662,7 @@ static void mainloop(int argc, char **argv)
                  * there is no need to concern about the physical/link layer header because it is
                  * filled in automatically (based on the contents of sa).
                  */
-                if ((nrsent = sendto(cur_ifsnr[j].sock_nr, ipp_p, rlen, MSG_DONTWAIT|MSG_TRYHARD, (struct sockaddr *)&sa, salen)) < 0)
+                if ((nrsent = sendto(cur_ifsnr[j].sock_nr, ipp_p, rlen, MSG_DONTWAIT|MSG_DONTROUTE, (struct sockaddr *)&sa, salen)) < 0)
                 {
 		  if (errno == ENETDOWN) {
 		    syslog(LOG_NOTICE, "ignored ENETDOWN from sendto(), a network interface was going down?");

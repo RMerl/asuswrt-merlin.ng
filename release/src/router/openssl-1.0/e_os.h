@@ -607,7 +607,11 @@ struct servent *PASCAL getservbyname(const char *, const char *);
 #   endif
 
 #   if defined(NeXT) || defined(_NEXT_SOURCE)
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #    include <sys/fcntl.h>
+#else
+#    include <fcntl.h>
+#endif
 #    include <sys/types.h>
 #   endif
 

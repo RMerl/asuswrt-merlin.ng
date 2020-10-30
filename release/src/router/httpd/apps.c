@@ -135,7 +135,7 @@ _dprintf("httpd: get the Zero size of the ASUS APP list.\n");
 			memset(buf, 0, sizeof(buf));
 			pkg_tail = pkg_head = buf;
 			do{
-				sprintf(pkg_tail, "%s", line);
+				snprintf(pkg_tail, sizeof(buf), "%s", line);
 				pkg_tail += strlen(line);
 
 				memset(line, 0, sizeof(line));
@@ -213,7 +213,7 @@ _dprintf("httpd: get the Zero size of the third-party APP list.\n");
 			memset(buf, 0, sizeof(buf));
 			pkg_tail = pkg_head = buf;
 			do{
-				sprintf(pkg_tail, "%s", line);
+				snprintf(pkg_tail, sizeof(buf), "%s", line);
 				pkg_tail += strlen(line);
 
 				memset(line, 0, sizeof(line));
@@ -291,7 +291,7 @@ _dprintf("httpd: get the Zero size of the third-party APP list.\n");
 			memset(buf, 0, sizeof(buf));
 			pkg_tail = pkg_head = buf;
 			do{
-				sprintf(pkg_tail, "%s", line);
+				snprintf(pkg_tail, sizeof(buf), "%s", line);
 				pkg_tail += strlen(line);
 
 				memset(line, 0, sizeof(line));
@@ -358,7 +358,7 @@ _dprintf("httpd: get the Zero size of the third-party APP list.\n");
 		memset(buf, 0, sizeof(buf));
 		pkg_tail = pkg_head = buf;
 		do{
-			sprintf(pkg_tail, "%s", line);
+			snprintf(pkg_tail, sizeof(buf), "%s", line);
 			pkg_tail += strlen(line);
 
 			memset(line, 0, sizeof(line));
@@ -413,7 +413,7 @@ _dprintf("httpd: get the Zero size of the third-party APP list.\n");
 	while(follow_apps_info != NULL){
 		// Get the source, description and depends of the installed packages from the control in APPS_INFO.
 		memset(info_name, 0, sizeof(info_name));
-		sprintf(info_name, "%s/%s.control", APPS_INFO, follow_apps_info->name);
+		snprintf(info_name, sizeof(info_name), "%s/%s.control", APPS_INFO, follow_apps_info->name);
 		apps_info = read_whole_file(info_name);
 		if(apps_info != NULL){
 			if((tmp_apps_name = get_status_field(apps_info, FIELD_ENABLED)) != NULL){

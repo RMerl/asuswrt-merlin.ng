@@ -250,6 +250,7 @@ int _eval(char *const argv[], const char *path, int timeout, int *ppid)
 	int status = 0;
 	int fd, flags, sig, n;
 	char s[256], *p;
+	int debug_logeval = nvram_get_int("debug_logeval");
 #if 0
 	char *cpu = "0";
 	char *cpu_argv[32] = { "taskset", "-c", cpu, NULL};
@@ -347,7 +348,7 @@ EXIT:
 			if (fd > STDERR_FILENO)
 				close(fd);
 		}
-	} else if (nvram_get_int("debug_logeval")) {
+	} else if (debug_logeval) {
 		pid = getpid();
 
 		if ((fd = open("/dev/console", O_RDWR | O_NONBLOCK)) < 0) {
@@ -671,6 +672,30 @@ char *ether_etoa2(const unsigned char *e, char *a)
 {
 	sprintf(a, "%02X%02X%02X%02X%02X%02X", e[0], e[1], e[2], e[3], e[4], e[5]);
 	return a;
+}
+
+/*
+ * Increase Ethernet address e with n
+ */
+int ether_inc(unsigned char *e, const unsigned char n)
+{
+	int c = 0;
+	int ret = 0;
+
+	c = (e[5] >= (0xff - n + 1)) ? 1 : 0;
+	e[5] += n;
+
+	if (c) {
+		c = (e[4] >= 0xff) ? 1 : 0;
+		e[4] += 1;
+
+		if (c) {
+			ret = (e[3] >= 0xff) ? -1 : 0;
+			e[3] += 1;
+		}
+	}
+
+	return (ret);
 }
 
 #ifdef GTAC5300
@@ -2024,7 +2049,7 @@ int generate_wireless_key(unsigned char *key)
 	unsigned char ea[ETHER_ADDR_LEN];
 	char *mac = nvram_safe_get("et1macaddr");
 
-	memset(key, sizeof(key), 32);
+	memset(key, 0, 32);
 	ether_atoe(mac, ea);
 
 	sprintf((char *) key, "%x%x%x%x%x%x%x%x",
@@ -2069,7 +2094,7 @@ int generate_wireless_key(unsigned char *key)
 		}
 	}
 
-	printf("key:  %s (%d)\n", key, strlen((const char *) key));
+	printf("key:  %s (%d)\n", (char *)key, (int)strlen((const char *) key));
 
 	return 0;
 }
@@ -2124,6 +2149,31 @@ char *trimNL(char *str)
 	}
 	str[len] = '\0';
 	return str;
+}
+
+/**
+** get_char_count()
+** return the number of occurrence of character 'ch' in the C string 'str'.
+** The terminating null-character is considered part of the C string.
+** Therefore, it can also be located in order to retrieve a pointer to the end of a string.
+**/
+int get_char_count(char *str, int ch)
+{
+	int count = 0;
+	char *pch = NULL;
+
+	if(!str)
+	{
+		return 0;
+	}
+
+	pch = strchr(str, ch);
+	while(pch != NULL)
+	{
+		count++;
+		pch = strchr(pch+1, ch);
+	}
+	return count;
 }
 
 char *get_process_name_by_pid(const int pid)
@@ -2294,8 +2344,10 @@ int num_of_wl_if()
 {
 	char word[256], *next;
 	int count = 0;
+	char wl_ifnames[32] = { 0 };
 
-	foreach (word, nvram_safe_get("wl_ifnames"), next)
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach (word, wl_ifnames, next)
 		count++;
 
 	return count;

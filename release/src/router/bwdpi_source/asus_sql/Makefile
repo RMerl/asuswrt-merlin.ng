@@ -58,6 +58,8 @@ else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	# ipq40xx
 else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 	# qca956x / qcn550x
+else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
+CFLAGS += -DPGCONTROL3
 else ifeq ($(RTCONFIG_RALINK),y)
 	# mtk
 else ifeq ($(RTCONFIG_LANTIQ),y)
@@ -80,6 +82,7 @@ else ifeq ($(RTCONFIG_BCM_7114),y)
 else
 ifeq ($(RTCONFIG_BCMSMP),y)
 	# bcm6_smp
+CFLAGS += -DPGCONTROL3
 else
 	# bcm6_up
 endif

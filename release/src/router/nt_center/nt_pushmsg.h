@@ -5,7 +5,7 @@ struct pnsInfo
 	int      event;
 	int      argNum;
 	char    *title;
-	char    *ifttthook;
+	char    *iftttMsg;
 };
 	
 struct pnsInfo mapPushInfo[] =
@@ -105,6 +105,21 @@ struct pnsInfo mapPushInfo[] =
 	{USB_DISK_EJECTED_FAIL_EVENT                 ,0  ,"External Device Not Ejected Properly"                    ,"" },
 	{USB_DISK_PARTITION_FULL_EVENT               ,0  ,"USB Partition Full <1%>"                                 ,"" },
 	{USB_DISK_FULL_EVENT                         ,0  ,"USB Disk Full <1%>"                                      ,"" },
+	/* ------------------------------
+	    ### General Event  ###
+	---------------------------------*/
+	/* General EVENT */
+	{GENERAL_WIFI_DEV_ONLINE                     ,0  ,""                                                        ,"" },
+	{GENERAL_WIFI_DEV_OFFLINE                    ,0  ,""                                                        ,"" },
+	{GENERAL_ETH_DEV_ONLINE                      ,0  ,""                                                        ,"" },
+	{GENERAL_ETH_DEV_OFFLINE                     ,0  ,""                                                        ,"" },
+	{GENERAL_ETH_DEV_REFUSED                     ,0  ,""                                                        ,"" },
+	{GENERAL_SYS_STATES                          ,0  ,""                                                        ,"" },
+	{GENERAL_DEV_UPDATE                          ,0  ,"DeviceAddOrUpdate"                                       ,"" },
+	{GENERAL_DEV_DELETED                         ,0  ,"DeviceDelete"                                            ,"" },
+	{GENERAL_DEV_ACCESS_CHANGE                   ,0  ,"DeviceNetworkAccessChange"                               ,"" },
+	{GENERAL_QOS_UPDATE                          ,0  ,"QosModeUpdate"                                           ,"" },
+	{GENERAL_TOGGLE_STATES_UPDATE                ,0  ,"ToggleStateUpdate"                                       ,"" },
 	/* ------------------------------
 	   ### Hint Item ###
 	---------------------------------*/

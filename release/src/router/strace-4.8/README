@@ -1,0 +1,17 @@
+This is strace, a system call tracer for Linux.
+
+strace is released under a Berkeley-style license at the request
+of Paul Kranenburg; see the file COPYING for details.
+
+See the file CREDITS for a list of authors and other contributors.
+
+See the file INSTALL for compilation and installation instructions.
+
+See the file NEWS for information on what has changed in recent
+versions.
+
+You can get the latest version of strace from its homepage at
+http://sourceforge.net/projects/strace/ .
+
+Please send bug reports and enhancements to the strace
+mailinglist at strace-devel@lists.sourceforge.net.

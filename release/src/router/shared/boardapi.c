@@ -31,6 +31,9 @@
 #ifdef HND_ROUTER
 #include "ethswctl.h"
 #include "ethctl.h"
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+#include "bcmnet.h"
+#endif
 #endif
 
 int led_control(int which, int mode);
@@ -194,7 +197,7 @@ static const struct led_btn_table_s {
 	{ "led_blue_gpio",	&led_gpio_table[LED_BLUE] },
 	{ "led_green_gpio",	&led_gpio_table[LED_GREEN] },
 	{ "led_red_gpio",	&led_gpio_table[LED_RED] },
-#if defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
+#if defined(RTAC59_CD6R) || defined(RTAC59_CD6N) || defined(PLAX56_XP4)
 	{ "led_white_gpio",	&led_gpio_table[LED_WHITE] },
 #endif
 #endif
@@ -261,6 +264,14 @@ static const struct led_btn_table_s {
 	{ "led_sig2_gpio",		&led_gpio_table[LED_SIG2] },
 	{ "led_purple_gpio",		&led_gpio_table[LED_PURPLE] },
 #endif		
+#ifdef RPAX56
+	{ "led_red_gpio",       &led_gpio_table[LED_RED_GPIO] },
+	{ "led_green_gpio",     &led_gpio_table[LED_GREEN_GPIO] },
+	{ "led_blue_gpio",      &led_gpio_table[LED_BLUE_GPIO] },
+	{ "led_white_gpio",     &led_gpio_table[LED_WHITE_GPIO] },
+	{ "led_yellow_gpio",    &led_gpio_table[LED_YELLOW_GPIO] },
+	{ "led_purple_gpio",    &led_gpio_table[LED_PURPLE_GPIO] },
+#endif
 #if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX82_XD6)
 	{ "bt_rst_gpio",        &led_gpio_table[BT_RESET] },
 	{ "bt_disable_gpio",    &led_gpio_table[BT_DISABLE] },
@@ -397,7 +408,7 @@ int init_gpio(void)
 		, "led_5g_green_gpio", "led_5g_orange_gpio", "led_5g_red_gpio"
 #elif defined(RTCONFIG_FIXED_BRIGHTNESS_RGBLED)
 		, "led_blue_gpio", "led_green_gpio", "led_red_gpio"
-#if defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
+#if defined(RTAC59_CD6R) || defined(RTAC59_CD6N) || defined(PLAX56_XP4)
 		, "led_white_gpio"
 #endif
 #endif
@@ -424,6 +435,9 @@ int init_gpio(void)
 #ifdef RPAC92
 		, "led_pwr_red_gpio"
 		, "led_wifi_gpio", "led_sig1_gpio", "led_sig2_gpio", "led_purple_gpio"
+#endif
+#ifdef RPAX56
+		, "led_red_gpio", "led_green_gpio", "led_blue_gpio", "led_white_gpio", "led_yellow_gpio", "led_purple_gpio"
 #endif
 #ifdef BLUECAVE
 		, "led_ctl_sig1_gpio", "led_ctl_sig2_gpio", "led_ctl_sig3_gpio"
@@ -529,7 +543,7 @@ int init_gpio(void)
 	if((gpio_pin = (use_gpio = nvram_get_int("led_pwr_red_gpio")) & 0xff) != 0xff)
 #elif defined(MAPAC1750)
 	if((gpio_pin = (use_gpio = nvram_get_int("led_blue_gpio")) & 0xff) != 0xff)
-#elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
+#elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N) || defined(PLAX56_XP4)
 	if((gpio_pin = (use_gpio = nvram_get_int("led_green_gpio")) & 0xff) != 0xff)
 #else
 	if((gpio_pin = (use_gpio = nvram_get_int("led_pwr_gpio")) & 0xff) != 0xff)
@@ -1090,8 +1104,42 @@ int wanport_speed(void)
 	return get_phy_speed(mask);
 }
 
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+int ethctl_set_phy(char *ifname, int ctrl)
+{
+	struct ifreq ifr;
+	struct ethctl_data ethctl;
+	int skfd;
+	int ret = 0;
+
+	if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+		fprintf(stderr, "socket open error\n");
+		return -1;
+	}
+
+	strcpy(ifr.ifr_name, ifname);
+
+	memset(&ethctl, 0, sizeof(ethctl));
+	ifr.ifr_data = &ethctl;
+	ethctl.op = ctrl==1?ETHSETPHYPWRON:ctrl==0?ETHSETPHYPWROFF:ETHGETPHYPWR;
+	ethctl.sub_port = -1;   // when no port specified
+	ethctl.phy_addr = 0;
+
+	ret = ioctl(skfd, SIOCETHCTLOPS, &ifr);
+	if (ret) {
+		fprintf(stderr, "command error, op=%d ret=%d\n", ethctl.op, ret);
+		return ret;
+	}
+
+	return 0;
+}
+#endif
+
 int wanport_ctrl(int ctrl)
 {
+#ifdef RPAX56
+	return ethctl_set_phy("eth0", ctrl);
+#endif
 #ifdef RTCONFIG_RALINK
 
 #ifdef RTCONFIG_DSL
@@ -1185,6 +1233,9 @@ int lanport_speed(void)
 
 int lanport_ctrl(int ctrl)
 {
+#ifdef RPAX56
+	return ethctl_set_phy("eth0", ctrl);
+#endif
 	// no general way for ralink platform, so individual api for each kind of switch are used
 #ifdef RTCONFIG_RALINK
 
@@ -1251,6 +1302,15 @@ int lanport_ctrl(int ctrl)
 	else
 		rtkswitch_LanPort_linkDown();
 	return 1;
+#elif defined(DSL_AX82U)
+	char word[32] = {0};
+	char *next = NULL;
+	char cmd[64];
+	foreach(word, nvram_safe_get("wired_ifnames"), next) {
+		snprintf(cmd, sizeof(cmd), "ethctl %s phy-power %s"
+			, word, ctrl ? "up" : "down");
+		system(cmd);
+	}
 #else
 	char word[100], *next;
 	int mask = 0;

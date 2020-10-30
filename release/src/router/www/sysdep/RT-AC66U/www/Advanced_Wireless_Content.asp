@@ -14,16 +14,20 @@
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="usp_style.css">
 <link href="other.css"  rel="stylesheet" type="text/css">
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
+<script type="text/javascript" src="/js/device.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/chanspec.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
+
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
+
+
 <script>
 <% wl_get_parameter(); %>
 $(function () {
@@ -72,9 +76,12 @@ function initial(){
 	}
 
 	genBWTable(wl_unit);
-	if((sw_mode == 2 || sw_mode == 4) && wl_unit == '<% nvram_get("wlc_band"); %>' && '<% nvram_get("wl_subunit"); %>' != '1'){
-		_change_wl_unit(wl_unit);
+	if(concurrent_pap){
+		if((sw_mode == 2 || sw_mode == 4)  && '<% nvram_get("wl_subunit"); %>' != '1')
+			_change_wl_unit(wl_unit);
 	}
+	else if((sw_mode == 2 || sw_mode == 4) && wl_unit == '<% nvram_get("wlc_band"); %>' && '<% nvram_get("wl_subunit"); %>' != '1')
+		_change_wl_unit(wl_unit);
 
 	//Change wireless mode help desc
 	if(band5g_support && band5g_11ac_support && document.form.wl_unit[1].selected == true){ //AC 5G
@@ -139,9 +146,13 @@ function initial(){
 	if(!band5g_support)	
 		document.getElementById("wl_unit_field").style.display = "none";
 
-	if(sw_mode == 2 || sw_mode == 4)
-		document.form.wl_subunit.value = (wl_unit == '<% nvram_get("wlc_band"); %>') ? 1 : -1;
-				
+	if(sw_mode == 2 || sw_mode == 4){
+		if(concurrent_pap)
+			document.form.wl_subunit.value = 1;
+		else
+			document.form.wl_subunit.value = (wl_unit == '<% nvram_get("wlc_band"); %>') ? 1 : -1;
+	}
+
 	change_wl_nmode(document.form.wl_nmode_x);
 
 	var is_RU_sku = ('<% nvram_get("location_code"); %>'.indexOf("RU") != -1);
@@ -182,6 +193,15 @@ function initial(){
 		}
 	}
 
+	if(wl_unit == '2' && band5g2_support){
+		if(document.form.acs_band3.value == '1'){
+			document.form.acs_dfs_checkbox.checked = true;
+		}
+		else{
+			document.form.acs_dfs_checkbox.checked = false;
+		}
+	}
+
 	if(wl_info[wl_unit].dfs_support){
 		if(document.form.wl_channel.value  == '0'){
 			document.getElementById('dfs_checkbox').style.display = "";
@@ -189,18 +209,9 @@ function initial(){
 		}
 	}
 	else if((is_UA_sku || is_RU_sku) && !Qcawifi_support && !Rawifi_support && !sdk_5){
-
 		if(document.form.wl_channel.value  == '0' && wl_unit == '1'){
 			document.getElementById('acs_band3_checkbox').style.display = "";
 		}		
-	}
-	else if(wl_unit == '2' && band5g2_support){
-		if(document.form.acs_band3.value == '1'){
-			document.form.acs_dfs_checkbox.checked = true;
-		}
-		else{
-			document.form.acs_dfs_checkbox.checked = false;
-		}
 	}
 	else if(country == "US" || country == "SG"){		//display checkbox of band1 channel under 5GHz
 		if(based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "4G-AC68U" || based_modelid == "DSL-AC68U"
@@ -747,11 +758,23 @@ function applyRule(){
 				document.form.wl1_bw.value = document.form.band1_bw.value;
 				document.form.wl1_chanspec.value = document.form.band1_channel.value;
 				if($('#band1_acsDFS').is(':visible')){
-					if($('#band1_acsDFS_checkbox').is(':checked')){
-						document.form.acs_dfs.value = 1;
+					if(band6g_support){
+						if($('#band1_acsDFS_checkbox').is(':checked')){
+							document.form.acs_dfs.value = 1;
+							document.form.acs_band3.value = 1;
+						}
+						else{
+							document.form.acs_dfs.value = 0;
+							document.form.acs_band3.value = 0;
+						}
 					}
 					else{
-						document.form.acs_dfs.value = 0;
+						if($('#band1_acsDFS_checkbox').is(':checked')){
+							document.form.acs_dfs.value = 1;
+						}
+						else{
+							document.form.acs_dfs.value = 0;
+						}
 					}
 				}
 
@@ -828,6 +851,16 @@ function applyRule(){
 					document.form.acs_band3.value = "1";
 				}
 				else{
+					document.form.acs_band3.value = "0";
+				}
+			}
+			else if(wl_unit == '1' && band6g_support){
+				if(document.form.acs_dfs_checkbox.checked){
+					document.form.acs_dfs.value = "1";
+					document.form.acs_band3.value = "1";
+				}
+				else{
+					document.form.acs_dfs.value = "0";
 					document.form.acs_band3.value = "0";
 				}
 			}
@@ -929,9 +962,13 @@ function disableAdvFn(){
 }
 
 function _change_wl_unit(val){
-	if(sw_mode == 2 || sw_mode == 4)
-		document.form.wl_subunit.value = (val == '<% nvram_get("wlc_band"); %>') ? 1 : -1;
-	
+	if(sw_mode == 2 || sw_mode == 4){
+		if(concurrent_pap)
+			document.form.wl_subunit.value = 1;
+		else
+			document.form.wl_subunit.value = (val == '<% nvram_get("wlc_band"); %>') ? 1 : -1;
+	}
+
 	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap")))
 		document.form.current_page.value = "Advanced_Wireless_Content.asp?flag=" + document.form.smart_connect_x.value;
 
@@ -945,20 +982,36 @@ function _change_smart_connect(val){
 	var band_value = new Array();
 	if(val == 0){
 		band_value = [0, 1, 2];
-		band_desc = ['2.4GHz', '5GHz-1', '5GHz-2'];
+		if(band6g_support){
+			band_desc = ['2.4 GHz', '5 GHz', '6 GHz'];
+		}else{
+			band_desc = ['2.4 GHz', '5 GHz-1', '5 GHz-2'];
+		}		
 	}else if(val == 1){
 		if(dwb_info.mode) {
 			band_value = [0, 2];
-			band_desc = ['2.4GHz, 5GHz-1', '5GHz-2'];
+			if(band6g_support){
+				band_desc = ['2.4 GHz, 5 GHz', '6 GHz'];
+			}else{
+				band_desc = ['2.4 GHz, 5 GHz-1', '5 GHz-2'];
+			}				
 		}
 		else {
 			document.getElementById("wl_unit_field").style.display = "none";
 			band_value = [0];
-			band_desc = ['2.4GHz, 5GHz-1 and 5GHz-2'];
+			if(band6g_support){
+				band_desc = ['2.4 GHz, 5 GHz and 6 GHz'];
+			}else{
+				band_desc = ['2.4 GHz, 5 GHz-1 and 5 GHz-2'];
+			}
 		}
 	}else if(val == 2){
 		band_value = [0, 1];
-		band_desc = ['2.4GHz', '5GHz-1 and 5GHz-2'];
+		if(band6g_support){
+			band_desc = ['2.4 GHz', '5 GHz and 6 GHz'];
+		}else{
+			band_desc = ['2.4 GHz', '5 GHz-1 and 5 GHz-2'];
+		}	
 	}
 	add_options_x2(document.form.wl_unit, band_desc, band_value, current_band);
 }
@@ -1117,16 +1170,22 @@ function enableSmartCon(val){
 	var desc = new Array();
 
 	if(isSupport("triband") && dwb_info.mode) {
-		desc = ["Dual-Band Smart Connect (2.4GHz and 5GHz)"];
+		desc = ["Dual-Band Smart Connect (2.4 GHz and 5 GHz)"];
 		value = ["1"];
 	}
 	else {
 		if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support){
-			desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)", "5GHz Smart Connect (5GHz-1 and 5GHz-2)"];
+			if(band6g_support){
+				desc = ["Tri-Band Smart Connect (2.4 GHz, 5 GHz and 6 GHz)", "5 GHz Smart Connect (5 GHz and 6 GHz)"];
+			}
+			else{
+				desc = ["Tri-Band Smart Connect (2.4 GHz, 5 GHz-1 and 5 GHz-2)", "5 GHz Smart Connect (5 GHz-1 and 5 GHz-2)"];
+			}
+			
 			value = ["1", "2"];
 		}
 		else if(wl_info.band2g_support && wl_info.band5g_support){
-			desc = ["Dual-Band Smart Connect (2.4GHz and 5GHz)"];
+			desc = ["Dual-Band Smart Connect (2.4 GHz and 5 GHz)"];
 			value = ["1"];
 		}
 	}
@@ -1271,7 +1330,13 @@ function enableSmartCon(val){
 			document.form.wl1_bw_160.disabled = false;
 			document.form.wl2_bw_160.disabled = false;
 			if(wl_info.band5g_2_support){
-				$('#5ghz_title').html('5 GHz-1');
+				if(band6g_support){
+					$('#5ghz_title').html('5 GHz');
+				}
+				else{
+					$('#5ghz_title').html('5 GHz-1');
+				}
+
 				if(dwb_info.mode){
 					$('#band2_title_field').hide();
 					$('#band2_bandwidth_field').hide();
@@ -1293,6 +1358,10 @@ function enableSmartCon(val){
 					}
 				}
 				else{
+					if(band6g_support){
+						$('#5g2_title').html('6 GHz');
+					}
+
 					$('#band2_title_field').show();
 					$('#band2_bandwidth_field').show();
 					$('#band2_channel_field').show();
@@ -1369,6 +1438,10 @@ function enableSmartCon(val){
 				$('#band1_bandwidth_field').show();
 				$('#band1_channel_field').show();
 				$('#band1_extChannel_field').show();
+				if(band6g_support){
+					$('#5g2_title').html('6 GHz');
+				}
+
 				$('#band2_title_field').show();
 				$('#band2_bandwidth_field').show();
 				$('#band2_channel_field').show();
@@ -1725,7 +1798,13 @@ function separateGenChannel(unit, channel, bandwidth){
 				if (band2_enable_bw_160 == '1') {
 					for (j = 0; j < wl2.channel_160m.length; j++) {
 						if (wl2.channel_160m[j].indexOf(_cur_channel) != -1) {
-							channel_5g_2_val[i] = _cur_channel + "/160";
+							if(band6g_support){
+								channel_5g_2_val[i] = "6g" + _cur_channel + "/160";
+							}
+							else{
+								channel_5g_2_val[i] = _cur_channel + "/160";
+							}
+							
 							continue loop_auto;
 						}
 					}
@@ -1733,21 +1812,39 @@ function separateGenChannel(unit, channel, bandwidth){
 
 				for (j = 0; j < wl2.channel_80m.length; j++) {
 					if (wl2.channel_80m[j].indexOf(_cur_channel) != -1) {
-						channel_5g_2_val[i] = _cur_channel + "/80";
+						if(band6g_support){
+							channel_5g_2_val[i] = "6g" + _cur_channel + "/80";
+						}
+						else{
+							channel_5g_2_val[i] = _cur_channel + "/80";
+						}
+						
 						continue loop_auto;
 					}
 				}
 
 				for (j = 0; j < wl2.channel_40m.length; j++) {
 					if (wl2.channel_40m[j].indexOf(_cur_channel) != -1) {
-						channel_5g_2_val[i] = wlextchannel_fourty(_cur_channel);
+						if(band6g_support){
+							channel_5g_2_val[i] = "6g" + _cur_channel + "/40";
+						}
+						else{
+							channel_5g_2_val[i] = wlextchannel_fourty(_cur_channel);
+						}
+						
 						continue loop_auto;
 					}
 				}
 
 				for (j = 0; j < wl2.channel_20m.length; j++) {
 					if (wl2.channel_20m[j].indexOf(_cur_channel) != -1) {
-						channel_5g_2_val[i] = _cur_channel.toString();
+						if(band6g_support){
+							channel_5g_2_val[i] = "6g" + _cur_channel.toString();
+						}
+						else{
+							channel_5g_2_val[i] = _cur_channel.toString();
+						}
+						
 						continue loop_auto;
 					}
 				}
@@ -1758,12 +1855,20 @@ function separateGenChannel(unit, channel, bandwidth){
 			var _wl_channel = new Array();
 			for (i = 0; i < channel_5g_2.length; i++) {
 				var _cur_channel = parseInt(channel_5g_2[i]);
-				var _reg = new RegExp("^" + _cur_channel);
+				var _reg = new RegExp("^" + _cur_channel);					
 				for (j = 0; j < wl2.channel_160m.length; j++) {
-					if (wl2.channel_160m[j].match(_reg) != null) {
-						_wl_channel.push(_cur_channel);
-						channel_5g_2_val.push(_cur_channel + "/160");
+					if(band6g_support){
+						if (wl2.channel_160m[j].includes('6g' + _cur_channel + '/160')) {
+							_wl_channel.push(_cur_channel);		
+							channel_5g_2_val.push("6g" + _cur_channel + "/160");											
+						}
 					}
+					else{
+						if (wl2.channel_160m[j].match(_reg) != null) {
+							_wl_channel.push(_cur_channel);		
+							channel_5g_2_val.push(_cur_channel + "/160");											
+						}	
+					}													
 				}
 			}
 
@@ -1776,10 +1881,18 @@ function separateGenChannel(unit, channel, bandwidth){
 				var _cur_channel = parseInt(channel_5g_2[i]);
 				var _reg = new RegExp("^" + _cur_channel);
 				for (j = 0; j < wl2.channel_80m.length; j++) {
-					if (wl2.channel_80m[j].match(_reg) != null) {
-						_wl_channel.push(_cur_channel);
-						channel_5g_2_val.push(_cur_channel + "/80");
+					if(band6g_support){
+						if (wl2.channel_80m[j].includes('6g' + _cur_channel + '/80')) {
+							_wl_channel.push(_cur_channel);		
+							channel_5g_2_val.push("6g" + _cur_channel + "/80");
+						}						
 					}
+					else{
+						if (wl2.channel_80m[j].match(_reg) != null) {
+							_wl_channel.push(_cur_channel);					
+							channel_5g_2_val.push(_cur_channel + "/80");											
+						}
+					}					
 				}
 			}
 
@@ -1792,10 +1905,18 @@ function separateGenChannel(unit, channel, bandwidth){
 				var _cur_channel = parseInt(channel_5g_2[i]);
 				var _reg = new RegExp("^" + _cur_channel);
 				for (j = 0; j < wl2.channel_40m.length; j++) {
-					if (wl2.channel_40m[j].match(_reg) != null) {
-						_wl_channel.push(_cur_channel);
-						channel_5g_2_val.push(wlextchannel_fourty(_cur_channel));
+					if(band6g_support){
+						if (wl2.channel_40m[j].includes('6g' + _cur_channel + '/40')) {
+							_wl_channel.push(_cur_channel);		
+							channel_5g_2_val.push("6g" + _cur_channel + "/40");
+						}						
 					}
+					else{
+						if (wl2.channel_40m[j].match(_reg) != null) {
+							_wl_channel.push(_cur_channel);		
+							channel_5g_2_val.push(wlextchannel_fourty(_cur_channel));												
+						}
+					}				
 				}
 			}
 
@@ -1807,7 +1928,12 @@ function separateGenChannel(unit, channel, bandwidth){
 			for (i = 0; i < channel_5g_2.length; i++) {
 				var _cur_channel = parseInt(channel_5g_2[i]);
 				_wl_channel.push(_cur_channel);
-				channel_5g_2_val.push(_cur_channel);;
+				if(band6g_support){
+					channel_5g_2_val.push("6g" + _cur_channel);
+				}
+				else{
+					channel_5g_2_val.push(_cur_channel);
+				}				
 			}
 		}
 		
@@ -2133,8 +2259,8 @@ function handleMFP(){
 					<th><#smart_connect#></th>                                            
 					<td id="smart_connect_switch">
 					<select name="smart_connect_t" class="input_option" onChange="enableSmartCon(this.value);">
-						<option class="content_input_fd" value="1" >Tri-band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)</optio>
-						<option class="content_input_fd" value="2">5GHz Smart Connect (5GHz-1 and 5GHz-2)</option>
+						<option class="content_input_fd" value="1" >Tri-band Smart Connect (2.4 GHz, 5 GHz-1 and 5 GHz-2)</optio>
+						<option class="content_input_fd" value="2">5 GHz Smart Connect (5 GHz-1 and 5 GHz-2)</option>
 					</select>                       
 					</td>
 				</tr>
@@ -2142,9 +2268,9 @@ function handleMFP(){
 					<th><#Interface#></th>
 					<td>
 						<select name="wl_unit" class="input_option" onChange="_change_wl_unit(this.value);">
-							<option class="content_input_fd" value="0" <% nvram_match("wl_unit", "0","selected"); %>>2.4GHz</option>
-							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "1","selected"); %>>5GHz</option>
-							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "2","selected"); %>>5GHz-2</option>
+							<option class="content_input_fd" value="0" <% nvram_match("wl_unit", "0","selected"); %>>2.4 GHz</option>
+							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "1","selected"); %>>5 GHz</option>
+							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "2","selected"); %>>5 GHz-2</option>
 						</select>			
 					</td>
 		  	</tr>
@@ -2451,7 +2577,7 @@ function handleMFP(){
 				
 				<thead>
 					<tr>
-						<td id="5ghz_title"colspan="2">5 GHz</td>
+						<td id="5ghz_title" colspan="2">5 GHz</td>
 					</tr>
 				</thead>
 				<tr>
@@ -2488,7 +2614,7 @@ function handleMFP(){
 
 				<thead>
 					<tr id="band2_title_field" style="display:none">
-						<td colspan="2">5 GHz-2</td>
+						<td id="5g2_title" colspan="2">5 GHz-2</td>
 					</tr>
 				</thead>
 				<tr id="band2_bandwidth_field" style="display:none">

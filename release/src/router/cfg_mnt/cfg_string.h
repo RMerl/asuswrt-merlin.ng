@@ -137,4 +137,17 @@
 #define CFG_STR_VIF_STATUS		"vif_status"
 #define CFG_STR_OB_VIA_VIF		"ob_via_vif"
 #endif
+#define CFG_STR_LEVEL		"level"
+#define CFG_STR_MAXLEVEL		"maxlevel"
+#define CFG_STR_TCODE		"tcode"
+#ifdef RTCONFIG_NBR_RPT
+#define CFG_STR_NBR_DATA		"nbr_data"
+#define CFG_STR_NBR_LIST		"nbr_list"
+#define CFG_STR_NBR_VERSION	"nbr_version"
+#endif
+#define CFG_STR_PREFER_AP		"prefer_ap"
+#define CFG_STR_WLC_TARGET_BSSID	"amas_wlc_target_bssid"
+#define CFG_STR_WLC0_TARGET_BSSID	"amas_wlc0_target_bssid"
+#define CFG_STR_WLC1_TARGET_BSSID	"amas_wlc1_target_bssid"
+#define CFG_STR_WLC2_TARGET_BSSID	"amas_wlc2_target_bssid"
 #endif /* __CFG_STRING_H__ */

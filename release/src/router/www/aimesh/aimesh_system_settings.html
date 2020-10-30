@@ -1,4 +1,12 @@
 ﻿<script>
+jQuery.fn.showTextHint = function(hintStr){
+	this.parent().children().remove(".fields_hint");
+	$("<div>")
+		.html(hintStr)
+		.addClass("fields_hint")
+		.appendTo(this.parent());
+}
+
 function initial_system_settings() {
 	popupHint.init();
 
@@ -13,43 +21,9 @@ function initial_system_settings() {
 		$(".system_settings_bg.eap .switch").click(function(e){
 			e = e || event;
 			e.stopPropagation();
-
-			$(".system_settings_bg.eap .switch").toggleClass("off on").promise().done(function(){
-				var switch_status = $(".system_settings_bg.eap .switch").hasClass("on");
-				if(switch_status){
-					popupHint.show_hint();
-					var hint = "";
-					hint += $("<span>").css("color", "#FC0").html("<#AiMesh_Ethernet_Backhaul_Mode_Confirm#>")[0].outerHTML;
-					hint += "<br>";
-					hint += "<#AiMesh_Ethernet_Backhaul_Mode_Confirm01#>";
-					hint += "<br><br>";
-					hint += "* <#AiMesh_Ethernet_Backhaul_Mode_Confirm02#>";
-					var not_support_list = check_not_support_nodes("general_mode");
-					if(not_support_list != "") {
-						hint += "<br><br>";
-						var model_list_hint = "* <#AiMesh_System_Not_Support_Feature_Nodes#><br>#MODELLIST<br><#AiMesh_Modellist_Not_Support_Feature02#> <#AiMesh_Modellist_Not_Support_Feature03#> ".replace("#MODELLIST", not_support_list);
-							hint += $("<span>").css("color", "#FC0").html(model_list_hint)[0].outerHTML;
-					}
-					popupHint.set_text(hint);
-					popupHint.set_btn_ok(function(){
-						showLoading(15);
-						httpApi.nvramSet({
-							"amas_eap_bhmode" : "3100",
-							"action_mode" : "apply",
-							"rc_service" : "restart_wireless"
-						}, function(){
-							setTimeout(function(){
-								if(typeof jstree_refresh == "function")
-									jstree_refresh();
-							},1000);
-						}());
-						$("#AiMesh_Topology #manage_block").find(".manage_conn_priority #conn_priority_select").attr("disabled", true);
-					});
-					popupHint.set_btn_cancel(function(){
-						$(".system_settings_bg.eap .switch").toggleClass("off on");
-					});
-				}
-				else{
+			var switch_status = $(".system_settings_bg.eap .switch").hasClass("on");
+			if(switch_status){// on to off
+				$(".system_settings_bg.eap .switch").toggleClass("off on").promise().done(function(){
 					showLoading(15);
 					httpApi.nvramSet({
 						"amas_eap_bhmode" : "0",
@@ -62,8 +36,369 @@ function initial_system_settings() {
 						},1000);
 					}());
 					$("#AiMesh_Topology #manage_block").find(".manage_conn_priority #conn_priority_select").attr("disabled", false);
+				});
+			}
+			else{//off to on
+				var wifi_backhaul_node_list = check_wifi_backhaul_node();
+				if(wifi_backhaul_node_list != ""){
+					var hint = "";
+					hint += "<#AiMesh_EAP_WiFi_Node01#>"
+					hint += "<br><br>";
+					var model_list_hint = "* <#AiMesh_EAP_WiFi_Node02#><br>#MODELLIST".replace("#MODELLIST", wifi_backhaul_node_list);
+					hint += $("<span>").css("color", "#FC0").html(model_list_hint)[0].outerHTML;
+					hint += "<br><br>";
+					var $eap_faq = $("<span>").attr("id", "eap_faq").html("* <#AiMesh_confirm_msg12#>");
+					$eap_faq.find("#wpa3FaqLink").attr("target", "_blank").css({"color": "#1EA2FF", "text-decoration": "underline"});
+					hint += $eap_faq[0].outerHTML;
+					popupHint.show_hint();
+					popupHint.set_text(hint);
+					popupHint.set_btn_ok();
+					popupHint.hide_btn("cancel");
 				}
-			});
+				else{
+					var getAllWlArray = function(){
+						var wlArrayRet = [{"title":"2.4 GHz", "ifname":"0", "suffix": ""}];
+
+						if(isSupport("triband")){
+							if(isSupport('wifi6e')){
+								wlArrayRet.push({"title":"5 GHz", "ifname":"1", "suffix": "_5G"});
+								wlArrayRet.push({"title":"6 GHz", "ifname":"2", "suffix": "_6G"});
+							}
+							else{
+								wlArrayRet.push({"title":"5 GHz-1", "ifname":"1", "suffix": "_5G-1"});
+								wlArrayRet.push({"title":"5 GHz-2", "ifname":"2", "suffix": "_5G-2"});
+							}
+						}
+						else if(isSupport("dualband") || isSupport('5G')){
+							wlArrayRet.push({"title":"5 GHz", "ifname":"1", "suffix": "_5G"})
+						}
+
+						if(isSupport('wigig'))
+							wlArrayRet.push({"title":"60 GHz", "ifname":"3", "suffix": "_60G"});
+
+						return wlArrayRet;
+					};
+					var Get_Component_WirelessInput = function(wlArray){
+						var container = $("<div>");
+
+						wlArray.forEach(function(wl, idx){
+							var wirelessAP = httpApi.nvramCharToAscii(["wl" + wl.ifname + "_ssid", "wl" + wl.ifname + "_wpa_psk", "wl" + wl.ifname + "_auth_mode_x"]);
+							var __container = $("<div>").addClass("wirelessBand");
+
+							$("<div>")
+								.addClass("inputTitleContainer")
+								.append($("<div>").addClass("inputTitle").html(wl.title + " <#QIS_finish_wireless_item1#>"))
+								.appendTo(__container);
+
+							$("<div>")
+								.addClass("inputContainer")
+								.append($("<input>")
+									.attr({
+										"id": "wireless_ssid_" + wl.ifname,
+										"type": "text",
+										"maxlength": "32",
+										"class": "textInput wlInput ssid",
+										"autocomplete": "off",
+										"autocorrect": "off",
+										"autocapitalize": "off",
+										"spellcheck": "false",
+										"data-role": "none",
+										"data-clear-btn": "true"
+									})
+									.keyup(function(e){
+										if(e.keyCode == 13)
+											$(".wlInput")[idx*2+1].focus();
+									})
+									.val(decodeURIComponent(wirelessAP["wl" + wl.ifname + "_ssid"]))
+								)
+								.appendTo(__container);
+
+							$("<div>")
+								.addClass("inputTitleContainer")
+								.append($("<div>").addClass("inputTitle").html(wl.title + " <#QIS_finish_wireless_item2#>"))
+								.append(
+									$("<div>").addClass("secureInput icon_eye close").attr({"for":"wireless_key_" + wl.ifname}).unbind("click").click(function(){
+										var targetObj = $(this);
+										targetObj.toggleClass("close").toggleClass("open");
+
+										$.each(targetObj.attr("for").split(" "), function(i, val){
+											$("#"+val).prop("type", (function(){return targetObj.hasClass("icon_eye close") ? "password" : "text";}()));
+										});
+									})
+								)
+								.appendTo(__container);
+
+							$("<div>")
+								.addClass("inputContainer")
+								.append($("<input>")
+									.attr({
+										"id": "wireless_key_" + wl.ifname,
+										"type": "password",
+										"maxlength": "64",
+										"class": "textInput wlInput psk",
+										"autocomplete": "new-password",
+										"autocorrect": "off",
+										"autocapitalize": "off",
+										"spellcheck": "false",
+										"data-role": "none",
+										"data-clear-btn": "true"
+									})
+									.keyup(function(e){
+										if(e.keyCode == 13){
+											try{
+												$(".wlInput")[idx*2+2].focus();
+											}
+											catch(e){
+												apply.wireless();
+											}
+										}
+									})
+									.val(decodeURIComponent(wirelessAP["wl" + wl.ifname + "_wpa_psk"]))
+								)
+								.appendTo(__container);
+
+							container.append(__container);
+						})
+
+						container.find(".wlInput").keyup(function(e){
+							var nvramName = this.id.split("_")[1];
+							var referenceVal = this.value;
+
+							if(this.id.indexOf("_0") !== -1){
+								var wlArray = getAllWlArray();
+
+								for(var idx=1; idx<wlArray.length; idx++){
+									container.find("#wireless_" + nvramName + "_" + wlArray[idx].ifname).val(referenceVal + ((nvramName == "ssid" && referenceVal.length < 27) ? wlArray[idx].suffix : ""));
+								}
+							}
+						});
+
+						return container;
+					};
+
+					popupHint.show_hint(10);
+					var $hint_bg = $("<div>");
+					$hint_bg.append($("<div>").addClass("yellow_text").html("<#AiMesh_Ethernet_Backhaul_Mode_Confirm#>"));
+					$hint_bg.append($("<div>").html("<#AiMesh_Ethernet_Backhaul_Mode_Confirm01#>"));
+					$hint_bg.append("<br>");
+					$hint_bg.append($("<div>").html("* <#AiMesh_Ethernet_Backhaul_Mode_Confirm02#>"));
+					$hint_bg.append("<br>");
+					var not_support_list = check_not_support_nodes("ethernet_backhaul_mode");
+					if(not_support_list != "") {
+						var model_list_hint = "* <#AiMesh_System_Not_Support_Feature_Nodes#><br>#MODELLIST<br><#AiMesh_Modellist_Not_Support_Feature02#> <#AiMesh_Modellist_Not_Support_Feature03#> ".replace("#MODELLIST", not_support_list);
+						$hint_bg.append($("<div>").addClass("yellow_text").html(model_list_hint));
+						$hint_bg.append("<br>");
+					}
+					var $eap_faq = $("<span>").attr("id", "eap_faq").html("* <#AiMesh_confirm_msg12#>");
+					$eap_faq.find("#wpa3FaqLink").attr("target", "_blank").css({"color": "#1EA2FF", "text-decoration": "underline"});
+					$hint_bg.append($eap_faq);
+					$hint_bg.append($("<div>").addClass("divide_line"));
+					$hint_bg.append($("<div>").html("<#AiMesh_EAP_WiFi_Settings_Confirm#>"));
+					$hint_bg.append($("<div>").addClass("height_space"));
+
+					var sc_status = "0";
+					if(isSupport("smart_connect")){
+						var $sc_switch_bg = $("<div>").addClass("switch_ctl_bg");
+						$sc_switch_bg.appendTo($hint_bg);
+						$sc_switch_bg.append($("<div>").addClass("title_text").html("<#smart_connect_enable#>"));
+						var $sc_switch = $("<div>").addClass("switch");
+						sc_status = httpApi.nvramGet(["smart_connect_x"]).smart_connect_x;
+						$sc_switch.addClass(((sc_status == "0") ? "off" : "on"));
+						$sc_switch.appendTo($sc_switch_bg);
+						$sc_switch.unbind("click");
+						$sc_switch.click(function(e){
+							e = e || event;
+							e.stopPropagation();
+							$(this).toggleClass("off on").promise().done(function(){
+								if($(this).hasClass("on")){
+									var wlArray = [{"title":"", "ifname":"0"}];
+									$(".popup_hint_component #wlInputField").html(Get_Component_WirelessInput(wlArray));
+									$(".popup_hint_component .sc_item_list_bg").show();
+									$(".popup_hint_component .sc_item_list_bg .custom_radio_label").removeClass("checked").eq(0).addClass("checked");
+								}
+								else{
+									var wlArray = getAllWlArray();
+
+									$(".popup_hint_component #wlInputField").html(Get_Component_WirelessInput(wlArray));
+									$(".popup_hint_component .sc_item_list_bg").hide();
+								}
+							});
+						});
+						var sc_array = [];
+						if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support){
+							if(isSupport("wifi6e")){
+								sc_array.push({"text":"Tri-Band Smart Connect (2.4 GHz, 5 GHz and 6 GHz)", "value":"1"});
+								sc_array.push({"text":"5 GHz Smart Connect (5 GHz and 6 GHz)", "value":"2"});
+							}
+							else{
+								sc_array.push({"text":"Tri-Band Smart Connect (2.4 GHz, 5 GHz-1 and 5 GHz-2)", "value":"1"});
+								sc_array.push({"text":"5 GHz Smart Connect (5 GHz-1 and 5 GHz-2)", "value":"2"});
+							}
+						}
+						else if(wl_info.band2g_support && wl_info.band5g_support)
+							sc_array.push({"text":"Dual-Band Smart Connect (2.4 GHz and 5 GHz)", "value":"1"});
+
+						var $sc_item_list_bg = $("<div>").addClass("sc_item_list_bg");
+						$sc_item_list_bg.appendTo($hint_bg);
+						sc_array.forEach(function(item, index, array){
+							var $sc_item_bg = $("<div>").addClass("custom_radio_text_bg");
+							$sc_item_bg.appendTo($sc_item_list_bg);
+							var $sc_item_check = $("<div>").addClass("custom_radio_bg").append($("<span>").addClass("custom_radio_label"));
+							if(index == "0")
+								$sc_item_check.find(".custom_radio_label").addClass("checked");
+							$sc_item_check.find(".custom_radio_label").attr({"sc_mode":item.value});
+							$sc_item_check.appendTo($sc_item_bg);
+							var $sc_item_text = $("<div>").addClass("custom_text").html(item.text);
+							$sc_item_text.appendTo($sc_item_bg);
+							$sc_item_bg.unbind("click");
+							$sc_item_bg.click(function(e){
+								e = e || event;
+								e.stopPropagation();
+								$(this).parent(".sc_item_list_bg").find(".custom_radio_label").removeClass("checked");
+								$(this).find(".custom_radio_label").addClass("checked");
+								var sc_mode = $(this).find(".custom_radio_label").attr("sc_mode");
+								var wlArray = getAllWlArray();
+								if(sc_mode == "1")
+									wlArray = [{"title":"", "ifname":"0"}];
+								else if(sc_mode == "2"){
+									if(isSupport("wifi6e"))
+										wlArray = [{"title":"2.4 GHz", "ifname":"0"}, {"title":"5 GHz and 6 GHz", "ifname":"1"}];
+									else
+										wlArray = [{"title":"2.4 GHz", "ifname":"0"}, {"title":"5 GHz-1 and 5 GHz-2", "ifname":"1"}];
+								}
+								$(this).closest(".hint_text").find("#wlInputField").html(Get_Component_WirelessInput(wlArray));
+							});
+						});
+
+						if(sc_status == "0")
+							$sc_item_list_bg.hide();
+						else
+							$sc_item_list_bg.show();
+						$hint_bg.append($("<div>").addClass("divide_line"));
+					}
+
+					var $wlInputField = $("<div>").attr({"id":"wlInputField"});
+					var wlArray = ((sc_status == "0") ? getAllWlArray() : [{"title":"", "ifname":"0"}]);
+					$wlInputField.html(Get_Component_WirelessInput(wlArray));
+					$wlInputField.appendTo($hint_bg);
+					popupHint.append_text_component($hint_bg);
+
+					popupHint.set_btn_ok(function(){
+						var wirelessValidator = function(band, type, $obj){
+							var hasBlank = function(objArray){
+								$wlInputField.find(".fields_hint").remove();
+								$.each(objArray, function(idx, $obj){
+									if($obj.val() == "")
+										$obj.showTextHint("<#JS_fieldblank#>");
+								})
+								if($wlInputField.find(".fields_hint").length > 0) return true;
+							};
+							var isWeakString = function(pwd, flag){
+								String.prototype.repeat = function(times){return (new Array(times + 1)).join(this);};
+								String.prototype.strReverse = function() {
+									var newstring = "";
+									for (var s=0; s<this.length; s++)
+										newstring = this.charAt(s) + newstring;
+									return newstring;
+								};
+
+								//Sequential
+								var termAlphas = "abcdefghijklmnopqrstuvwxyz";
+								var termNumerics = "01234567890";
+								var termSymbols = "~!@#$%^&*()_+";
+								var termKeyboards1 = "qwertyuiop";
+								var termKeyboards2 = "asdfghjkl";
+								var termCommon8 = ["adminpassword","loginpassword","passw0rd","password","useradmin","userpassword"];
+								var nSeqString = 0;
+
+								if(termAlphas.toLowerCase().indexOf(pwd) != -1 || termAlphas.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+								if(termNumerics.toLowerCase().indexOf(pwd) != -1 || termNumerics.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+								if(termSymbols.toLowerCase().indexOf(pwd) != -1 || termSymbols.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+								if(termKeyboards1.toLowerCase().indexOf(pwd) != -1 || termKeyboards1.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+								if(termKeyboards2.toLowerCase().indexOf(pwd) != -1 || termKeyboards2.strReverse().toLowerCase().indexOf(pwd) != -1) { nSeqString++; }
+								for(var s=0;s<termCommon8.length;s++)
+									if(pwd == termCommon8[s]){ nSeqString++; }
+
+								//pure repeat character string
+								if(pwd == pwd.charAt(0).repeat(pwd.length)) { nSeqString++; }
+
+								if(nSeqString > 0)
+									return true;
+								else
+									return false;
+							};
+							if(hasBlank([$obj])) return false;
+							if(type == "ssid")
+								if(!validator.stringSSID($obj[0])) return false;
+							if(type == "key")
+								if(!validator.psk($obj[0])) return false;
+							if(type == "key" && is_KR_sku){
+								if(!validator.psk_KR($obj[0])) return false;
+							}
+							if(type == "key" && isWeakString($obj.val())){
+								if(!confirm("<#JS_common_passwd#>")){
+									$obj.showTextHint("<#AiProtection_scan_note11#>");
+									return false;
+								}
+							}
+							return true;
+						};
+
+						var valid_pass = true;
+						var wl_post_data = {};
+						$wlInputField.find(".wlInput").each(function(index){
+							var wl_obj_id = $(this).attr("id");
+							var type = wl_obj_id.split("_")[1];
+							var band = wl_obj_id.split("_")[2];
+							var handle_post_type = function(){
+								var str  = "";
+								str += "wl";
+								str += band;
+								if(type == "ssid")
+									str += "_ssid";
+								else if(type == "key")
+									str += "_wpa_psk";
+								return str;
+							};
+							if(band != undefined){
+								if(!wirelessValidator(band, type, $(this))){
+									valid_pass = false;
+									return false;
+								}
+								var post_type = handle_post_type();
+								if(post_type != "")
+									wl_post_data[post_type] = $(this).val();
+							}
+						});
+
+						if(!valid_pass)
+							return false;
+
+						$(".system_settings_bg.eap .switch").toggleClass("off on").promise().done(function(){
+							showLoading(15);
+							var nvramSet_obj = {"amas_eap_bhmode": "3100", "action_mode" : "apply", "rc_service" : "restart_wireless"};
+							$.extend(true, nvramSet_obj, wl_post_data);
+							if(isSupport("smart_connect")){
+								var sc_enable = $sc_switch.hasClass("on");
+								var sc_mode = "0";
+								if(sc_enable)
+									sc_mode = $sc_item_list_bg.find(".custom_radio_label.checked").attr("sc_mode");
+								nvramSet_obj.smart_connect_x = sc_mode;
+							}
+							httpApi.nvramSet(nvramSet_obj, function(){
+								setTimeout(function(){
+									if(typeof jstree_refresh == "function")
+										jstree_refresh();
+								},1000);
+							}());
+							$("#AiMesh_Topology #manage_block").find(".manage_conn_priority #conn_priority_select").attr("disabled", true);
+							$(".popup_hint_component").fadeOut();
+						});
+					}, false);
+					popupHint.set_btn_cancel();
+				}
+				httpApi.faqURL("1044184", function(url){$(".popup_hint_component #eap_faq").find("#wpa3FaqLink").attr("href", url);});
+			}
 		});
 	}
 	else
@@ -169,14 +504,21 @@ var popupHint = {
 		var $action_ok = $("<input/>").attr({"id":"action_ok", "type":"button", "value":"<#CTL_ok#>"}).addClass("button_gen");
 		$action_bg.append($action_cancel).append($action_ok);
 	},
-	"show_hint" : function(){
+	"show_hint" : function(_top){
 		$(".popup_hint_component").fadeIn();
-		adjust_panel_block_top("popup_hint_bg", 100);
+		var top = 100;
+		if(_top != undefined && _top != "")
+			top = _top;
+		adjust_panel_block_top("popup_hint_bg", top);
 	},
 	"set_text" : function(_text){
 		$(".popup_hint_component .hint_text").html(_text);
 	},
-	set_btn_ok : function(_fun){
+	"append_text_component" : function(_component){
+		$(".popup_hint_component .hint_text").empty();
+		$(".popup_hint_component .hint_text").append(_component);
+	},
+	set_btn_ok : function(_fun, _hide){
 		$(".popup_hint_component .action_bg #action_ok").show();
 		$(".popup_hint_component .action_bg #action_ok").unbind("click");
 		$(".popup_hint_component .action_bg #action_ok").click(function(e){
@@ -184,7 +526,8 @@ var popupHint = {
 			e.stopPropagation();
 			if(_fun)
 				_fun();
-			$(".popup_hint_component").fadeOut();
+			if(_hide == undefined || _hide == true)
+				$(".popup_hint_component").fadeOut();
 		});
 	},
 	set_btn_cancel : function(_fun){
@@ -203,45 +546,6 @@ var popupHint = {
 	}
 };
 function check_not_support_nodes(_feature) {
-	var transform_location = function(_node_info, _isReNode){
-		var location_array = [
-		{value:"Home",text:"<#AiMesh_NodeLocation01#>"}, {value:"Living Room",text:"<#AiMesh_NodeLocation02#>"}, {value:"Dining Room",text:"<#AiMesh_NodeLocation03#>"},
-		{value:"Bedroom",text:"<#AiMesh_NodeLocation04#>"}, {value:"Office",text:"<#AiMesh_NodeLocation05#>"}, {value:"Stairwell",text:"<#AiMesh_NodeLocation06#>"},
-		{value:"Hall",text:"<#AiMesh_NodeLocation07#>"}, {value:"Kitchen",text:"<#AiMesh_NodeLocation08#>"}, {value:"Attic",text:"<#AiMesh_NodeLocation09#>"},
-		{value:"Basement",text:"<#AiMesh_NodeLocation10#>"}, {value:"Yard",text:"<#AiMesh_NodeLocation11#>"}, {value:"Master Bedroom",text:"<#AiMesh_NodeLocation12#>"},
-		{value:"Guest Room",text:"<#AiMesh_NodeLocation13#>"}, {value:"Kids Room",text:"<#AiMesh_NodeLocation14#>"}, {value:"Study Room",text:"<#AiMesh_NodeLocation15#>"},
-		{value:"Hallway",text:"<#AiMesh_NodeLocation16#>"}, {value:"Walk-in Closet",text:"<#AiMesh_NodeLocation17#>"}, {value:"Bathroom",text:"<#AiMesh_NodeLocation18#>"},
-		{value:"Second Floor",text:"<#AiMesh_NodeLocation19#>"}, {value:"Third Floor",text:"<#AiMesh_NodeLocation20#>"}, {value:"Storage",text:"<#AiMesh_NodeLocation21#>"},
-		{value:"Balcony",text:"<#AiMesh_NodeLocation22#>"}, {value:"Meeting Room",text:"<#AiMesh_NodeLocation23#>"}, {value:"Garage",text:"<#AiMesh_NodeLocation25#>"},
-		{value:"Custom",text:"<#AiMesh_NodeLocation24#>"}];
-		var result = "<#AiMesh_NodeLocation01#>";
-		var location = "Home";
-		if(_isReNode){
-			if("config" in _node_info) {
-				if("misc" in _node_info.config) {
-					if("cfg_alias" in _node_info.config.misc) {
-						if(_node_info.config.misc.cfg_alias != "")
-							location = _node_info.config.misc.cfg_alias;
-					}
-				}
-			}
-		}
-		else{
-			var alias = _node_info.alias;
-			if(alias != _node_info.mac)
-				location = alias;
-		}
-		var specific_location = location_array.filter(function(item, index, _array){
-			return (item.value == location);
-		})[0];
-		if(specific_location != undefined){
-			result = specific_location.text;
-		}
-		else{
-			result = location;
-		}
-		return result;
-	};
 	var not_support_list = "";
 	var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
 	get_cfg_clientlist.forEach(function(item, index, array){
@@ -254,11 +558,28 @@ function check_not_support_nodes(_feature) {
 				not_support_list += item.model_name;
 			else
 				not_support_list += item.ui_model_name;
-			not_support_list += " (" + transform_location(item, isReNode) + ")";
+			not_support_list += " (" + node_location_translate(item, isReNode) + ")";
 		}
 	});
 	return not_support_list;
 };
+function check_wifi_backhaul_node() {
+	var wifi_backhaul_list = "";
+	var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
+	get_cfg_clientlist.forEach(function(item, index, array){
+		var isReNode = (index == 0) ? false : true;
+		if(isReNode && item.online == "1" && (item.re_path != "1" && item.re_path != "16" && item.re_path != "32" && item.re_path != "64")){
+			if(wifi_backhaul_list != "")
+				wifi_backhaul_list += ", ";
+			if(item.ui_model_name == undefined || item.ui_model_name == "")
+				wifi_backhaul_list += item.model_name;
+			else
+				wifi_backhaul_list += item.ui_model_name;
+			wifi_backhaul_list += " (" + node_location_translate(item, isReNode) + ")";
+		}
+	});
+	return wifi_backhaul_list;
+}
 function recovery_eap_status() {
 	if(isSupport("amas_eap")){
 		var amas_eap_bhmode = httpApi.nvramGet(["amas_eap_bhmode"]).amas_eap_bhmode;
@@ -266,6 +587,45 @@ function recovery_eap_status() {
 		if(amas_eap_bhmode == "0" && switch_status)
 			$(".system_settings_bg.eap .switch").toggleClass("off on");
 	}
+}
+function node_location_translate(_node_info, _isReNode){
+	var location_array = [
+	{value:"Home",text:"<#AiMesh_NodeLocation01#>"}, {value:"Living Room",text:"<#AiMesh_NodeLocation02#>"}, {value:"Dining Room",text:"<#AiMesh_NodeLocation03#>"},
+	{value:"Bedroom",text:"<#AiMesh_NodeLocation04#>"}, {value:"Office",text:"<#AiMesh_NodeLocation05#>"}, {value:"Stairwell",text:"<#AiMesh_NodeLocation06#>"},
+	{value:"Hall",text:"<#AiMesh_NodeLocation07#>"}, {value:"Kitchen",text:"<#AiMesh_NodeLocation08#>"}, {value:"Attic",text:"<#AiMesh_NodeLocation09#>"},
+	{value:"Basement",text:"<#AiMesh_NodeLocation10#>"}, {value:"Yard",text:"<#AiMesh_NodeLocation11#>"}, {value:"Master Bedroom",text:"<#AiMesh_NodeLocation12#>"},
+	{value:"Guest Room",text:"<#AiMesh_NodeLocation13#>"}, {value:"Kids Room",text:"<#AiMesh_NodeLocation14#>"}, {value:"Study Room",text:"<#AiMesh_NodeLocation15#>"},
+	{value:"Hallway",text:"<#AiMesh_NodeLocation16#>"}, {value:"Walk-in Closet",text:"<#AiMesh_NodeLocation17#>"}, {value:"Bathroom",text:"<#AiMesh_NodeLocation18#>"},
+	{value:"Second Floor",text:"<#AiMesh_NodeLocation19#>"}, {value:"Third Floor",text:"<#AiMesh_NodeLocation20#>"}, {value:"Storage",text:"<#AiMesh_NodeLocation21#>"},
+	{value:"Balcony",text:"<#AiMesh_NodeLocation22#>"}, {value:"Meeting Room",text:"<#AiMesh_NodeLocation23#>"}, {value:"Garage",text:"<#AiMesh_NodeLocation25#>"},
+	{value:"Custom",text:"<#AiMesh_NodeLocation24#>"}];
+	var result = "<#AiMesh_NodeLocation01#>";
+	var location = "Home";
+	if(_isReNode){
+		if("config" in _node_info) {
+			if("misc" in _node_info.config) {
+				if("cfg_alias" in _node_info.config.misc) {
+					if(_node_info.config.misc.cfg_alias != "")
+						location = _node_info.config.misc.cfg_alias;
+				}
+			}
+		}
+	}
+	else{
+		var alias = _node_info.alias;
+		if(alias != _node_info.mac)
+			location = alias;
+	}
+	var specific_location = location_array.filter(function(item, index, _array){
+		return (item.value == location);
+	})[0];
+	if(specific_location != undefined){
+		result = specific_location.text;
+	}
+	else{
+		result = location;
+	}
+	return result;
 }
 $(document).ready(initial_system_settings);
 </script>
@@ -286,7 +646,7 @@ $(document).ready(initial_system_settings);
 
 <div class="system_settings_bg led">
 	<div class="system_icon"></div>
-	<div class="system_text"><span>System LED control</span></div><!-- untranslated -->
+	<div class="system_text"><span><#AiMesh_System_LED_Control#></span></div>
 	<div class="switch"></div>
 </div>
 

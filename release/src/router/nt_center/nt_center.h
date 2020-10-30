@@ -34,6 +34,7 @@ typedef struct __push_msg_conf__t_
 {
 	char            status[MAX_STATUS_LEN];
 	char            server[MAX_URL_LEN];
+	char            psr_server[MAX_URL_LEN];
 	char            cusid[MAX_CUSID_LEN];
 	char            deviceid[MAX_DEVICEID_LEN];
 	char            deviceticket[MAX_DEVTICKET_LEN];

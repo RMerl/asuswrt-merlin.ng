@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Aug  6 16:42:23 2018
+ * Date: Wed Jul 29 10:30:29 2020
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -93,9 +93,10 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_MAP_AC1750 1 // y
-#define TMCFG_MODEL "map-ac1750"
-#define TMCFG_OEM_SRC 0 // n
+#define TMCFG_MODEL_RT_AC59_CD6R 1 // y
+#define TMCFG_MODEL "rt-ac59_cd6r"
+#define TMCFG_OEM_SRC 1 // y
+#define TMCFG_OEM_SRC_QUALCOMM_SFE 1 // y
 
 /*
  * Target device information
@@ -108,7 +109,7 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 1 // y
 #define TMCFG_CPU_LITTLE_ENDIAN 0 // n
-#define TMCFG_KERN_DIR "/opt/ASUS/asusmap_AC1750_GPL_382_20208/release/src-qca/linux/linux-3.3.x.mesh/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC59_CD6R_GPL_386_38523/release/src-qca/linux/linux-3.3.x.mesh/"
 #define TMCFG_KERN_ARCH "mips"
 
 /*
@@ -160,7 +161,6 @@
 #define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
-#define TMCFG_E_UDB_CORE_APP_WBL 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
 #define TMCFG_E_UDB_CORE_WBL_MIN_VER 2
@@ -176,10 +176,13 @@
 #define TMCFG_E_UDB_CORE_WBL_URL_NUM 1024
 #define TMCFG_E_UDB_CORE_WEB_FUNC 1 // y
 #define TMCFG_E_UDB_CORE_DC 1 // y
-#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 1 // y
+#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 0 // n
 #define TMCFG_E_UDB_CORE_ANOMALY_PREVENT 0 // n
 #define TMCFG_E_UDB_CORE_VIRTUAL_PATCH 0 // n
+#define TMCFG_E_UDB_CORE_SWNAT 1 // y
 #define TMCFG_E_UDB_CORE_IQOS_SUPPORT 0 // n
+#define TMCFG_E_UDB_CORE_HWNAT 0 // n
+#define TMCFG_E_UDB_CORE_HWQOS 0 // n
 #define TMCFG_E_UDB_CORE_APP_PATROL 0 // n
 #define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 0 // n
 #define TMCFG_E_UDB_CORE_APP_REDIRECT_URL 0 // n
@@ -187,7 +190,7 @@
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_NONE 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V1 0 // n
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V2 0 // n
-#define TMCFG_E_UDB_CORE_WPR_PAGE 1 // y
+#define TMCFG_E_UDB_CORE_WPR_PAGE 0 // n
 #define TMCFG_E_UDB_CORE_TMDBG 0 // n
 #define TMCFG_E_UDB_CORE_MEMTRACK 0 // n
 #define TMCFG_E_UDB_CORE_HTTP_REFER 0 // n
@@ -204,7 +207,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "890c91d"
+#define TMCFG_E_REL_PKG_LOCAL_VER "71d019e0"
 
 /*
  * Accompany applications or modules
@@ -213,10 +216,12 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS ""
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC59_CD6R_GPL_386_38523/release/src-qca/router/shortcut-fe.ipq40xx/source/shortcut-fe/"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
+#define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""
 #define TMCFG_APP_K_TDTS_UDBFW_CT_NOTIF 1 // y
+#define TMCFG_APP_K_TDTS_UDBFW_FAST_PATH 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_META_EXTRACT 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_WRS_NETLINK_ID 2
 #define TMCFG_APP_K_TEMPLATE 0 // n
@@ -273,10 +278,10 @@
 #define TMCFG_APP_U_TDTS_WRED_THREAD_POOL 1 // y
 #define TMCFG_APP_U_TDTS_WRED_PROG_CTRL 1 // y
 #define TMCFG_APP_U_WRS_LOCAL_CACHE 0x7D000
-#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10"
+#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10-ASUS-HRU77VWJ"
 #define TMCFG_APP_U_WRED_TMUFE_VENDOR_ID "ASUS"
-#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-en.url.trendmicro.com"
-#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 0 // n
+#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-asus-en.url.trendmicro.com"
+#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 1 // y
 #define TMCFG_APP_U_TDTS_WRED_TMUFE21 0 // n
 #define TMCFG_APP_U_WBL 1 // y
 

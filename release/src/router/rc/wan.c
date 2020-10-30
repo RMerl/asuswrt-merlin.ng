@@ -53,7 +53,7 @@
 #include <stdarg.h>
 
 #include <linux/types.h>
-#if defined(RTCONFIG_MUSL_LIBC)
+#if !defined(__GLIBC__) && !defined(__UCLIBC__) /* musl */
 #include <netinet/if_ether.h>		//have to in front of <linux/ethtool.h> to avoid redefinition of 'struct ethhdr'
 #endif
 #include <linux/ethtool.h>
@@ -1911,12 +1911,6 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			dbG("start auth:%d\n", unit);
 			start_auth(unit, 0);
 
-#ifdef RTCONFIG_DSL
-			nvram_set(strcat_r(prefix, "clientid_type", tmp), nvram_safe_get("dslx_dhcp_clientid_type"));
-			nvram_set(strcat_r(prefix, "clientid", tmp), nvram_safe_get("dslx_dhcp_clientid"));
-			nvram_set(strcat_r(prefix, "vendorid", tmp), nvram_safe_get("dslx_dhcp_vendorid"));
-			nvram_set(strcat_r(prefix, "hostname", tmp), nvram_safe_get("dslx_dhcp_hostname"));
-#endif
 			/* Start dhcp daemon */
 			dbG("start udhcpc:%s, %d\n", wan_ifname, unit);
 			start_udhcpc(wan_ifname, unit, &pid);
@@ -2012,7 +2006,11 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 	_dprintf("%s(): End.\n", __FUNCTION__);
 
 #ifdef RTCONFIG_IPSEC
-	if (nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")) {
+	if (nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")
+#ifdef RTCONFIG_INSTANT_GUARD
+		 || nvram_get_int("ipsec_ig_enable")
+#endif
+		) {
 		rc_ipsec_config_init();
 		start_dnsmasq();
 	}
@@ -3039,6 +3037,22 @@ wan_up(const char *pwan_ifname)
 			stop_ddns();
 			start_ddns();
 		}
+#ifdef RTCONFIG_TR069
+		if(wan_unit == 0 ){
+			if(!pids("tr069")){
+				if(nvram_get_int("link_wan")){
+		                        start_tr();
+				}
+			}
+		}
+		else if(wan_unit == 1 ){
+			if(!pids("tr069")){
+                                if(nvram_get_int("link_wan1")){
+                                        start_tr();
+                                }
+                        }
+		}
+#endif
 		return;
 	}
 #endif
@@ -3077,7 +3091,11 @@ wan_up(const char *pwan_ifname)
 #endif
 
 #ifdef RTCONFIG_IPSEC
-	if (nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")) {
+	if (nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")
+#ifdef RTCONFIG_INSTANT_GUARD
+		 || nvram_get_int("ipsec_ig_enable")
+#endif
+		) {
 		rc_ipsec_config_init();
 		start_dnsmasq();
 	}
@@ -3203,12 +3221,22 @@ wan_up(const char *pwan_ifname)
 			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
 			start_iQos();
 		}
+#ifdef DSL_AX82U
+		else if (is_ax5400_i1()) {
+			start_iQos();
+		}
+#endif
 	}
 	else{
 		if(IS_NON_AQOS()){
 			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
 			start_iQos();
 		}
+#ifdef DSL_AX82U
+		else if (is_ax5400_i1()) {
+			start_iQos();
+		}
+#endif
 	}
 #else
 	start_iQos();
@@ -3985,6 +4013,32 @@ void convert_wan_nvram(char *prefix, int unit)
 	}
 #endif
 
+#if defined(RTCONFIG_MULTISERVICE_WAN) && defined(RTCONFIG_DUALWAN)
+	if (!mac_clone) {
+		int base_unit = get_ms_base_unit(unit);
+		int ms_idx = get_ms_idx_by_wan_unit(unit);
+		unsigned char eabuf[ETHER_ADDR_LEN] = {0};
+#ifdef DSL_AX82U
+		if (is_ax5400_i1()) {
+			if (get_dualwan_by_unit(base_unit) == WANS_DUALWAN_IF_WAN)
+				ether_atoe(nvram_safe_get("wl1_hwaddr"), eabuf);
+			else
+				ether_atoe(nvram_safe_get("wl0_hwaddr"), eabuf);
+		}
+		else
+#endif
+		{
+			if (base_unit)
+				ether_atoe(nvram_safe_get("wl1_hwaddr"), eabuf);
+			else
+				ether_atoe(nvram_safe_get("wl0_hwaddr"), eabuf);
+		}
+		ether_inc(eabuf, ms_idx);
+		ether_etoa(eabuf, macbuf);
+		nvram_set(strcat_r(prefix, "hwaddr", tmp), macbuf);
+	}
+#endif
+
 #ifdef RTCONFIG_MULTICAST_IPTV
 	if (nvram_get_int("switch_stb_x") > 6 &&
 	    unit > 9) {
@@ -4048,14 +4102,14 @@ void dumparptable()
 #define PLCTOOL_M	"/tmp/plctool-m"
 int autodet_plc_main(int argc, char *argv[]){
 	FILE *fd;
-	char buf[64], *ptr1, *ptr2;
+	char buf[100], *ptr1, *ptr2;
 	char ifname[8], plc_mac[18], resp_mac[18];
 	int found = 0, idx = 0, chk = 0, cnt = 0;
 
-	strlcpy(ifname, nvram_safe_get("lan_ifname"), sizeof(ifname));
+	get_plc_ifname(ifname);
 	strlcpy(plc_mac, nvram_safe_get("plc_macaddr"), sizeof(plc_mac));
 
-	snprintf(buf, sizeof(buf), "/usr/local/bin/plctool -i %s -m -e > %s", ifname, PLCTOOL_M);
+	snprintf(buf, sizeof(buf), "/usr/local/bin/plctool -i %s -m -e %s > %s", ifname, plc_mac, PLCTOOL_M);
 	system(buf);
 
 	if (!(fd = fopen(PLCTOOL_M, "r"))) {

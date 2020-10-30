@@ -257,7 +257,6 @@ void wait_connection_finished(char* ifname) {
 }
 
 #ifdef RTCONFIG_BHCOST_OPT
-#ifdef RTCONFIG_AMAS_ETHDETECT
 unsigned int get_uplinkports_linkrate(char *ifname)
 {
 	unsigned int link_rate = 1000;
@@ -266,7 +265,6 @@ unsigned int get_uplinkports_linkrate(char *ifname)
 
 	return link_rate;
 }
-#endif	/* RTCONFIG_AMAS_ETHDETECT */
 #endif	/* RTCONFIG_BHCOST_OPT */
 #endif
 #ifdef RTCONFIG_CFGSYNC
@@ -412,3 +410,33 @@ int get_wlan_status(int band) {
 void set_wlan_status(int band, int enable) {
 	doSystem("iwpriv %s set_mib func_off=%d", get_wififname(band), enable?0:1);
 }
+
+#ifdef RTCONFIG_NEW_PHYMAP
+/* phy port related start */
+phy_port_mapping get_phy_port_mapping(void)
+{
+	static const phy_port_mapping port_mapping = {
+#if 0
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(SHAC1300) /* for Lyra */
+		.count = 2, 
+		.port[0] = { .phy_port_id = WAN_PORT, .cap = PHY_PORT_CAP_WAN, .max_rate = 1000 }, 
+		.port[1] = { .phy_port_id = LAN4_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }
+#elif defined(RTAC95U)
+		.count = 4, 
+		.port[0] = { .phy_port_id = WAN_PORT, .cap = PHY_PORT_CAP_WAN, .max_rate = 1000 }, 
+		.port[1] = { .phy_port_id = LAN1_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }, 
+		.port[2] = { .phy_port_id = LAN2_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }, 
+		.port[3] = { .phy_port_id = LAN3_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }
+#else
+		.count = 5, 
+		.port[0] = { .phy_port_id = WAN_PORT, .cap = PHY_PORT_CAP_WAN, .max_rate = 1000 }, 
+		.port[1] = { .phy_port_id = LAN1_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }, 
+		.port[2] = { .phy_port_id = LAN2_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }, 
+		.port[3] = { .phy_port_id = LAN3_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }, 
+		.port[4] = { .phy_port_id = LAN4_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }
+#endif
+#endif
+	};
+	return port_mapping;
+}
+#endif

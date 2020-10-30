@@ -172,13 +172,13 @@ char *get_pap_bssid(int unit, char bssid_str[])
 	unsigned char bssid[6];
 	unsigned char bssid_null[6] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
-	char *name;
+	char ifname[IFNAMSIZ] = { 0 };
 
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+	strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(ifname));
 
 	memset(bssid_str, 0, 18);
-	if (!wl_ioctl(name, WLC_GET_BSSID, bssid, sizeof(bssid))
+	if (!wl_ioctl(ifname, WLC_GET_BSSID, bssid, sizeof(bssid))
 		&& memcmp(bssid, bssid_null, ETHER_ADDR_LEN))
 		ether_etoa((const unsigned char *) &bssid, bssid_str);
 
@@ -228,7 +228,7 @@ sta_info_t *wl_sta_info(char *ifname, struct ether_addr *ea)
 int get_psta_status(int unit)
 {
 	char tmp[NVRAM_BUFSIZE], tmp2[NVRAM_BUFSIZE], prefix[] = "wlXXXXXXXXXX_";
-	char *name = NULL;
+	char ifname[IFNAMSIZ] = { 0 };
 	struct maclist *mac_list = NULL;
 	int mac_list_size;
 	struct ether_addr bssid;
@@ -243,14 +243,12 @@ int get_psta_status(int unit)
 
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
-	if (!nvram_match(strcat_r(prefix, "mode", tmp), "psta") &&
-	    !nvram_match(strcat_r(prefix, "mode", tmp2), "psr") &&
-	    !nvram_match(strcat_r(prefix, "mode", tmp2), "wet"))
+	if (!is_psta(unit) && !is_psr(unit))
 		goto PSTA_ERR;
 
-	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+	strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(ifname));
 
-	if (wl_ioctl(name, WLC_GET_BSSID, &bssid, ETHER_ADDR_LEN) != 0)
+	if (wl_ioctl(ifname, WLC_GET_BSSID, &bssid, ETHER_ADDR_LEN) != 0)
 		goto PSTA_ERR;
 	else if (!memcmp(&bssid, bssid_null, 6))
 		goto PSTA_ERR;
@@ -273,7 +271,7 @@ int get_psta_status(int unit)
 		ret = 1;
 
 		strcpy((char*)mac_list, "autho_sta_list");
-		if (wl_ioctl(name, WLC_GET_VAR, mac_list, mac_list_size)) {
+		if (wl_ioctl(ifname, WLC_GET_VAR, mac_list, mac_list_size)) {
 			free(mac_list);
 			goto PSTA_ERR;
 		}
@@ -290,7 +288,7 @@ PSTA_ERR:
 		if (debug) dbg("[wlc] authorized\n");
 		ether_etoa((const unsigned char *) &bssid, macaddr);
 		if (debug) dbg("psta send keepalive nulldata to %s\n", macaddr);
-		eval("wl", "-i", name, "send_nulldata", macaddr);
+		eval("wl", "-i", ifname, "send_nulldata", macaddr);
 #endif
 	}
 	else if (ret == 1) {
@@ -369,8 +367,10 @@ void add_beacon_vsie_guest(char *hexdata)
 {
     int unit = 0, subunit = 0;
     char word[100], *next;
+    char wl_ifnames[32] = { 0 };
 
-    foreach (word, nvram_safe_get("wl_ifnames"), next) {
+    strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+    foreach (word, wl_ifnames, next) {
         if (nvram_get_int("re_mode") == 1)  // RE
             subunit = 3;
         else  // CAP/Router
@@ -394,13 +394,15 @@ void add_beacon_vsie(char *hexdata)
 #ifdef RTCONFIG_BHCOST_OPT
 	int unit = 0;
 	char word[100], *next;
+	char wl_ifnames[32] = { 0 };
 #endif
 
 	len = DOT11_OUI_LEN + strlen(hexdata)/2;
 
 	if (string2hex(hexdata, value, strlen(hexdata))) {
 #ifdef RTCONFIG_BHCOST_OPT
-		foreach (word, nvram_safe_get("wl_ifnames"), next) {
+		strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+		foreach (word, wl_ifnames, next) {
 			wl_add_ie(unit, 0, pktflag, len, (uchar *) OUI_ASUS, value);
 			unit++;
 		}
@@ -431,8 +433,10 @@ void del_beacon_vsie_guest(char *hexdata)
 {
     int unit = 0, subunit = 0;
     char word[100], *next;
+    char wl_ifnames[32] = { 0 };
 
-    foreach (word, nvram_safe_get("wl_ifnames"), next) {
+    strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+    foreach (word, wl_ifnames, next) {
         if (nvram_get_int("re_mode") == 1)  // RE
             subunit = 3;
         else  // CAP/Router
@@ -453,8 +457,10 @@ void del_beacon_vsie(char *hexdata)
 #ifdef RTCONFIG_BHCOST_OPT
 	int unit = 0;
 	char word[100], *next;
+	char wl_ifnames[32] = { 0 };
 
-	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach (word, wl_ifnames, next) {
 		wl_del_ie_with_oui(unit, 0, (uchar *) OUI_ASUS);
 		unit++;
 	}
@@ -532,7 +538,7 @@ int need_to_start_acsd()
 int get_wlan_service_status(int bssidx, int vifidx)
 {
 	char tmp[128] = {0}, prefix[] = "wlXXXXXXXXXX_";
-	char *ifname = NULL;
+	char ifname[IFNAMSIZ] = { 0 };
 	int ret = 0;
 	int result = 0;
 	int bsscfg_idx = 0;
@@ -546,7 +552,7 @@ int get_wlan_service_status(int bssidx, int vifidx)
 	else
 		snprintf(prefix, sizeof(prefix), "wl%d", bssidx);
 
-	ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+	strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(ifname));
 
 	bsscfg_idx = htod32(vifidx);
 
@@ -569,7 +575,7 @@ void set_wlan_service_status(int bssidx, int vifidx, int enabled)
 {
 
 	char tmp[128]={0}, prefix[] = "wlXXXXXXXXXX_";
-	char *ifname = NULL;
+	char ifname[IFNAMSIZ] = { 0 };
 	int val, ret;
 	struct ether_addr addr = {{255, 255, 255, 255, 255, 255}};
 	struct {int bsscfg_idx; int enable;} setbuf;
@@ -586,11 +592,9 @@ void set_wlan_service_status(int bssidx, int vifidx, int enabled)
 	else
 		snprintf(prefix, sizeof(prefix), "wl%d_", bssidx);
 
-	ifname = strdup(nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+	strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(ifname));
 	if (ifname == NULL || strlen(ifname) == 0) {
 		_dprintf("Getting bssidx(%d) vifidx(%d) ifname fail.\n", bssidx, vifidx);
-		if (ifname)
-			free(ifname);
 		return;
 	}
 
@@ -685,11 +689,9 @@ void set_wlan_service_status(int bssidx, int vifidx, int enabled)
 		}
 	}
 #endif
-	free(ifname);
 }
 
 #ifdef RTCONFIG_BHCOST_OPT
-#ifdef RTCONFIG_AMAS_ETHDETECT
 unsigned int test_get_uplinkports_linkrate(char *ifname)
 {
 	unsigned int link_rate = 1000;
@@ -705,13 +707,12 @@ unsigned int test_get_uplinkports_linkrate(char *ifname)
 #define MAX_RTL_PORTS 4
 #endif
 
-int
+unsigned int
 get_uplinkports_linkrate(char *ifname)
 {
 	int i, ret;
 	char out_buf[64];
 	int lret=0;
-
 #if defined(RTCONFIG_HND_ROUTER_AX_6710)
 	// MODEL_RTAX86U, MODEL_RTAX68U
 #if defined(RTCONFIG_EXTPHY_BCM84880)
@@ -723,22 +724,78 @@ get_uplinkports_linkrate(char *ifname)
 	// eth0 eth4 eth3 eth2 eth1
 	int lan_ports = 4;
 #endif
+	int lrate[lan_ports+1];
+	char pif[lan_ports+1][8];
 	char word[256], *next;
+#if defined(GTAXE11000)
+        char lanports_seq[64] = {"eth1 eth4 eth2 eth3 eth5"};   /* L1 L2 L3 L4 L5 */
+#endif
+
+	for (i=0; i<lan_ports+1; i++) {
+		lrate[i] = 0;
+		sprintf(pif[i], "%s", "X");
+	}
+
+        int model = get_model();
+        switch(model) {
+	case MODEL_RTAX86U:
+		if(nvram_get_int("wans_extwan")) {
+			sprintf(pif[0], "%s", "eth0");
+			sprintf(pif[1], "%s", "eth5");
+		} else {
+			sprintf(pif[0], "%s", "eth5");
+			sprintf(pif[1], "%s", "eth0");
+		}
+		sprintf(pif[2], "%s", "eth4");
+		sprintf(pif[3], "%s", "eth3");
+		sprintf(pif[4], "%s", "eth2");
+		sprintf(pif[5], "%s", "eth1");
+
+		break;
+	case MODEL_RTAX68U:
+		sprintf(pif[0], "%s", "eth0");
+		sprintf(pif[1], "%s", "eth4");
+		sprintf(pif[2], "%s", "eth3");
+		sprintf(pif[3], "%s", "eth2");
+		sprintf(pif[4], "%s", "eth1");
+
+		break;
+	case MODEL_GTAXE11000:
+		if(nvram_get_int("wans_extwan")) {
+			sprintf(pif[0], "%s", "eth0");
+			sprintf(pif[1], "%s", "eth5");
+		} else {
+			sprintf(pif[0], "%s", "eth5");
+			sprintf(pif[1], "%s", "eth0");
+		}
+		sprintf(pif[2], "%s", "eth1");
+		sprintf(pif[3], "%s", "eth4");
+		sprintf(pif[4], "%s", "eth2");
+		sprintf(pif[5], "%s", "eth3");
+
+		break;
+	default:
+		sprintf(pif[0], "%s", "eth0");
+		break;
+
+	}
 
 	hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0);
 	hnd_ethswctl(REGACCESS, 0x0104, 4, 0, 0);
 
 	foreach(word, nvram_safe_get("wan_ifname"), next){
 		ret = hnd_get_phy_status(word);
-		if(ret == 0)
+		if(ret == 0) {
 			sprintf(out_buf, "W0=X;");
-		else{
+			lrate[0] = 0;
+		} else {
 			ret = hnd_get_phy_speed(word);
 			sprintf(out_buf, "W0=%s;",
 #ifdef RTCONFIG_EXTPHY_BCM84880
 					(ret == 2500)? "Q" :
 #endif
 							(ret == 1000) ? "G" : "M");
+			lrate[0] = (ret == 2500)? 2500 : (ret == 1000) ? 1000 : 100;
 			lret |= 1;
 		}
 
@@ -746,11 +803,16 @@ get_uplinkports_linkrate(char *ifname)
 	}
 
 	i = 1;
+#if defined(GTAXE11000)
+	foreach(word, lanports_seq, next){
+#else
 	foreach(word, nvram_safe_get("lan_ifnames"), next){
+#endif
 		ret = hnd_get_phy_status(word);
-		if(ret == 0)
+		if(ret == 0) {
 			sprintf(out_buf, "%sL%d=X;", out_buf, i);
-		else{
+			lrate[i] = 0;
+		} else{
 			ret = hnd_get_phy_speed(word);
 			sprintf(out_buf, "%sL%d=%s;", out_buf, i,
 #ifdef RTCONFIG_EXTPHY_BCM84880
@@ -758,13 +820,14 @@ get_uplinkports_linkrate(char *ifname)
 #endif
 							(ret == 1000) ? "G" : "M");
 			lret |= 1 << i;
+			lrate[i] = (ret == 2500)? 2500 : (ret == 1000) ? 1000 : 100;
 		}
 
 		++i;
 		if(i > lan_ports) break;
 	}
 
-	return lret;
+	//return lret > 0 ? lret : 0;
 #else // RTCONFIG_HND_ROUTER_AX_6710
 #if defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX_675X)
 	unsigned int regv=0, pmdv=0, regv2=0, pmdv2=0;
@@ -782,7 +845,11 @@ get_uplinkports_linkrate(char *ifname)
 #elif defined(RTCONFIG_EXTPHY_BCM84880)
 	int lan_ports=5;
 #else
+#ifdef RTAX82_XD6
+	int lan_ports=3;
+#else
 	int lan_ports=4;
+#endif
 #endif
 
 #if defined(RTAX56_XD4)
@@ -800,19 +867,18 @@ get_uplinkports_linkrate(char *ifname)
 	int exrate[MAX_RTL_PORTS];
 	char ex_pif[MAX_RTL_PORTS][8];
 #endif
-	int ext_lret=0, model, mask;
-	int extra_p0=0;
-
 	for (i=0; i<lan_ports+1; i++) {
-		lrate[i] = -1;
+		lrate[i] = 0;
 		sprintf(pif[i], "%s", "X");
 	}
 #if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
 	for (i=0; i<MAX_RTL_PORTS; i++) {
-		exrate[i] = -1;
+		exrate[i] = 0;
 		sprintf(ex_pif[i], "%s", "X");
 	}
 #endif
+	int ext_lret=0, model, mask;
+	int extra_p0=0;
 
 	model = get_model();
 	switch(model) {
@@ -820,6 +886,7 @@ get_uplinkports_linkrate(char *ifname)
 	case MODEL_RTN14UHP:
 		/* WAN L1 L2 L3 L4 */
 		ports[0]=4; ports[1]=0; ports[2]=1, ports[3]=2; ports[4]=3;
+		sprintf(pif[0], "%s", "eth0");
 		break;
 	case MODEL_RTN53:
 	case MODEL_RTN15U:
@@ -836,11 +903,13 @@ get_uplinkports_linkrate(char *ifname)
 	case MODEL_RTN10PV2:
 		/* WAN L1 L2 L3 L4 */
 		ports[0]=4; ports[1]=3; ports[2]=2, ports[3]=1; ports[4]=0;
+		sprintf(pif[0], "%s", "eth0");
 		break;
 	case MODEL_RTN16:
 	case MODEL_RTN10U:
 		/* WAN L1 L2 L3 L4 */
 		ports[0]=0; ports[1]=4; ports[2]=3, ports[3]=2; ports[4]=1;
+		sprintf(pif[0], "%s", "eth0");
 		break;
 	case MODEL_RTAC88U:
 	case MODEL_RTAC3100:
@@ -849,16 +918,19 @@ get_uplinkports_linkrate(char *ifname)
 #if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
 		ext = 1;
 #endif
+		sprintf(pif[0], "%s", "eth0");
 		break;
 	case MODEL_RTAC56S:
 	case MODEL_RTAC56U:
 		/* WAN L1 L2 L3 L4 */
 		ports[0]=4; ports[1]=0; ports[2]=1; ports[3]=2; ports[4]=3;
+		sprintf(pif[0], "%s", "eth0");
 		break;
 
 	case MODEL_RTAC87U:
 		/* WAN L1 L2 L3 L4 */
 		ports[0]=0; ports[1]=5; ports[2]=3; ports[3]=2; ports[4]=1;
+		sprintf(pif[0], "%s", "eth0");
 		break;
 
 	case MODEL_DSLAC68U:
@@ -872,6 +944,11 @@ get_uplinkports_linkrate(char *ifname)
 	case MODEL_RTAC1200GP:
 		/* WAN L1 L2 L3 L4 */
 		ports[0]=0; ports[1]=1; ports[2]=2; ports[3]=3; ports[4]=4;
+		sprintf(pif[0], "%s", "vlan2");
+		sprintf(pif[1], "%s", "");
+		sprintf(pif[2], "%s", "");
+		sprintf(pif[3], "%s", "");
+		sprintf(pif[4], "%s", "");
 		break;
 	case MODEL_RTAC5300:
 		/* WAN L1 L2 L3 L4 */
@@ -879,6 +956,11 @@ get_uplinkports_linkrate(char *ifname)
 #ifdef RTCONFIG_EXT_RTL8365MB
 		ext = 1;
 #endif
+		sprintf(pif[0], "%s", "vlan2");
+		sprintf(pif[1], "%s", "");
+		sprintf(pif[2], "%s", "");
+		sprintf(pif[3], "%s", "");
+		sprintf(pif[4], "%s", "");
 		break;
 #else
 #ifndef RTCONFIG_HND_ROUTER_AX_675X
@@ -945,12 +1027,17 @@ get_uplinkports_linkrate(char *ifname)
 #ifdef RTCONFIG_EXT_BCM53134
 		pmdv2 = hnd_ethswctl(PMDIOACCESS, 0x0104, 4, 0, 0);
 #endif
-		sprintf(pif[0], "%s", "eth0");
+		if(nvram_get_int("wans_extwan")) {
+			sprintf(pif[0], "%s", "eth0");
+			sprintf(pif[5], "%s", "eth5");
+		} else {
+			sprintf(pif[0], "%s", "eth5");
+			sprintf(pif[5], "%s", "eth0");
+		}
 		sprintf(pif[1], "%s", "eth4");
 		sprintf(pif[2], "%s", "eth3");
 		sprintf(pif[3], "%s", "eth2");
 		sprintf(pif[4], "%s", "eth1");
-		sprintf(pif[5], "%s", "eth5");
 		break;
 	case MODEL_RTAX88U:
 		/*
@@ -990,7 +1077,7 @@ get_uplinkports_linkrate(char *ifname)
 		sprintf(pif[3], "%s", "eth2");
 		sprintf(pif[4], "%s", "eth1");
 		break;
-#else
+#else	// RTCONFIG_HND_ROUTER_AX_675X
 	case MODEL_RTAX95Q:
 		/*
 			0 1 2 3 W0 L1 L2 L3
@@ -1007,29 +1094,62 @@ get_uplinkports_linkrate(char *ifname)
  		 */
 		if(nvram_match("HwId", "A") || nvram_match("HwId", "C")){
 			ports[0]=0; ports[1]=1;
-			sprintf(pif[0], "%s", "eth0");
-			sprintf(pif[1], "%s", "eth1");
 		} else {
 			ports[0]=0;;
-			sprintf(pif[0], "%s", "eth0");
 		}
+		sprintf(pif[0], "%s", "eth0");
 		break;
 	case MODEL_DSLAX82U:
 		/* WAN L4 L3 L2 L1 */
 		ports[0]=4; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+		sprintf(pif[0], "%s", "eth4");
+		sprintf(pif[1], "%s", "eth3");
+		sprintf(pif[2], "%s", "eth2");
+		sprintf(pif[3], "%s", "eth1");
+		sprintf(pif[4], "%s", "eth0");
 		break;
 	case MODEL_RTAX58U:
 		/* WAN L4 L3 L2 L1 */
 		ports[0]=4; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+#ifdef RTAX82_XD6
+                /* WAN L1 L2 L3 */
+		ports[0]=4; ports[1]=2; ports[2]=1; ports[3]=0;
+
+		sprintf(pif[0], "%s", "eth4");
+		sprintf(pif[1], "%s", "eth3");
+		sprintf(pif[2], "%s", "eth2");
+		sprintf(pif[3], "%s", "eth1");
+#else
+                /* WAN L1 L2 L3 L4 */
+		ports[0]=4; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+
+		sprintf(pif[0], "%s", "eth4");
+		sprintf(pif[1], "%s", "eth3");
+		sprintf(pif[2], "%s", "eth2");
+		sprintf(pif[3], "%s", "eth1");
+		sprintf(pif[4], "%s", "eth0");
+#endif
 		break;
 	case MODEL_RTAX55:
-		/* WAN L4 L3 L2 L1 */
-		ports[0]=0; ports[1]=1; ports[2]=2; ports[3]=3; ports[4]=4;
+#ifdef RTAX1800
+                /* WAN L4 L3 L2 L1 */
+                ports[0]=0; ports[1]=1; ports[2]=2; ports[3]=3; ports[4]=4;
+
 		sprintf(pif[0], "%s", "eth0");
 		sprintf(pif[1], "%s", "eth1");
 		sprintf(pif[2], "%s", "eth2");
 		sprintf(pif[3], "%s", "eth3");
 		sprintf(pif[4], "%s", "eth4");
+#else
+                /* WAN L1 L2 L3 L4 */
+                ports[0]=0; ports[1]=4; ports[2]=3; ports[3]=2; ports[4]=1;
+
+		sprintf(pif[0], "%s", "eth0");
+		sprintf(pif[1], "%s", "eth4");
+		sprintf(pif[2], "%s", "eth3");
+		sprintf(pif[3], "%s", "eth2");
+		sprintf(pif[4], "%s", "eth1");
+#endif
 		break;
 	case MODEL_RTAX56U:
 		/* WAN L4 L3 L2 L1 */
@@ -1040,8 +1160,11 @@ get_uplinkports_linkrate(char *ifname)
 		sprintf(pif[3], "%s", "eth2");
 		sprintf(pif[4], "%s", "eth1");
 		break;
-#endif
-#endif
+#endif	// RTCONFIG_HND_ROUTER_AX_675X
+#endif	// HND_ROUTER
+	default:
+		sprintf(pif[0], "%s", "eth0");
+		break;
 	}
 
 	memset(out_buf, 0, 64);
@@ -1127,6 +1250,8 @@ get_uplinkports_linkrate(char *ifname)
 	}
 #endif
 
+#endif // RTCONFIG_HND_ROUTER_AX_6710
+
 	if(nvram_match("verbose", "1")) {
 		for( i=0; i<lan_ports+1; ++i)
 			printf("[%d] portif=%s, lrate=%d\n", i, pif[i], lrate[i]);
@@ -1149,10 +1274,8 @@ get_uplinkports_linkrate(char *ifname)
 	}
 #endif
 
-	return -2;
-#endif // RTCONFIG_HND_ROUTER_AX_6710
+	return 0;
 }
-#endif	/* RTCONFIG_AMAS_ETHDETECT */
 #endif	/* RTCONFIG_BHCOST_OPT */
 #endif  /* RTCONFIG_AMAS */
 
@@ -1165,7 +1288,7 @@ void update_macfilter_relist()
 	char word[256], *next;
 	char mac2g[32], mac5g[32], *next_mac;
 	int unit = 0;
-	char *wlif_name = NULL;
+	char wlif_name[IFNAMSIZ] = { 0 };
 	struct ether_addr *ea;
 	unsigned char sta_ea[6] = {0};
 	int ret = 0;
@@ -1173,6 +1296,7 @@ void update_macfilter_relist()
 	char *reMac, *maclist2g, *maclist5g, *timestamp;
 	char stamac2g[18] = {0};
 	char stamac5g[18] = {0};
+	char wl_ifnames[32] = { 0 };
 
 	if (nvram_get("cfg_relist"))
 	{
@@ -1203,7 +1327,8 @@ void update_macfilter_relist()
 		}
 #endif
 
-		foreach (word, nvram_safe_get("wl_ifnames"), next) {
+		strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+		foreach (word, wl_ifnames, next) {
 			SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
 
 #ifdef RTCONFIG_AMAS
@@ -1213,7 +1338,7 @@ void update_macfilter_relist()
 #endif
 				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
-			wlif_name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+			strlcpy(wlif_name, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(wlif_name));
 			maclist = (struct maclist *)maclist_buf;
 			memset(maclist_buf, 0, sizeof(maclist_buf));
 			ea = &(maclist->ea[0]);
@@ -1383,3 +1508,278 @@ int wl_set_mcsindex(char *ifname, int *is_auto, int *idx, char *idx_type, int *s
 	return 0;
 }
 #endif
+
+#ifdef RTCONFIG_NEW_PHYMAP
+/* phy port related start */
+phy_port_mapping get_phy_port_mapping(void)
+{
+	static phy_port_mapping port_mapping = {
+#if defined(RTCONFIG_HND_ROUTER_AX_6710)
+#if defined(RTCONFIG_EXTPHY_BCM84880)
+		.count = 6,
+		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 3, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth4" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[3] = { .phy_port_id = 1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[4] = { .phy_port_id = 0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[5] = { .phy_port_id = 7, .label_name = "L5", .cap = PHY_PORT_CAP_LAN, .max_rate = 2500, .ifname = "eth5" }
+#else
+		.count = 5,
+		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 3, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth4" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[3] = { .phy_port_id = 1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[4] = { .phy_port_id = 0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" }
+#endif // #if defined(RTCONFIG_EXTPHY_BCM84880)
+#else // #if defined(RTCONFIG_HND_ROUTER_AX_6710)
+#ifndef HND_ROUTER
+#if defined(RTN14UHP)
+		.count = 5,
+		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 100, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 0, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 100, .ifname = NULL },
+		.port[2] = { .phy_port_id = 1, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 100, .ifname = NULL },
+		.port[3] = { .phy_port_id = 2, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 100, .ifname = NULL },
+		.port[4] = { .phy_port_id = 3, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 100, .ifname = NULL }
+#elif defined(RTN53) || defined(RTN15U) || defined(RTN12) || defined(RTN12B1) || defined(RTN12C1) || \
+		defined(RTN12D1) || defined(RTN12VP) || defined(RTN12HP) || defined(RTN12HP_B1) || defined(APN12HP) || \
+		defined(RTN10P) || defined(RTN10D1) || defined(RTN10PV2)
+		.count = 5,
+		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 100, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 3, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 100, .ifname = NULL },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 100, .ifname = NULL },
+		.port[3] = { .phy_port_id = 1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 100, .ifname = NULL },
+		.port[4] = { .phy_port_id = 0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 100, .ifname = NULL }
+#elif defined(RTN16) || defined(RTN10U)
+		.count = 5,
+		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 4, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[2] = { .phy_port_id = 3, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[3] = { .phy_port_id = 2, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[4] = { .phy_port_id = 1, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL }
+#elif defined(RTAC88U) || defined(RTAC3100)
+#if defined(RTCONFIG_EXT_RTL8365MB)
+		.count = 9,
+		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 3, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[3] = { .phy_port_id = 1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[4] = { .phy_port_id = 0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[5] = { .phy_port_id = S_RTL8365MB+0, .label_name = "L5", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[6] = { .phy_port_id = S_RTL8365MB+1, .label_name = "L6", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[7] = { .phy_port_id = S_RTL8365MB+2, .label_name = "L7", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[8] = { .phy_port_id = S_RTL8365MB+3, .label_name = "L8", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" }
+#elif RTCONFIG_EXT_RTL8370MB
+		.count = 9,
+		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = S_RTL8365MB+2, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[2] = { .phy_port_id = S_RTL8365MB+3, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[3] = { .phy_port_id = S_RTL8365MB+4, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[4] = { .phy_port_id = S_RTL8365MB+0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[5] = { .phy_port_id = S_RTL8365MB+1, .label_name = "L5", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[6] = { .phy_port_id = S_RTL8365MB+5, .label_name = "L6", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[7] = { .phy_port_id = S_RTL8365MB+6, .label_name = "L7", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[8] = { .phy_port_id = S_RTL8365MB+7, .label_name = "L8", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" }
+#else
+		.count = 5,
+		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 3, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[3] = { .phy_port_id = 1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[4] = { .phy_port_id = 0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" }
+#endif
+#elif defined(RTAC56S) || defined(RTAC56U)
+		.count = 5,
+		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 0, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[2] = { .phy_port_id = 1, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[3] = { .phy_port_id = 2, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[4] = { .phy_port_id = 3, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL }
+#elif defined(RTAC87U)
+		.count = 5,
+		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 5, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[2] = { .phy_port_id = 3, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[3] = { .phy_port_id = 2, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[4] = { .phy_port_id = 1, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL }
+#elif defined(DSLAC68U) || defined(RTAC68U) || defined(RTN18U) || defined(RTAC53U) || defined(RTN66U) || \
+		defined(RTAC66U) || defined(RTAC1200G) || defined(RTAC1200GP)
+		.count = 5,
+		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 100, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 100, .ifname = "vlan1" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 100, .ifname = "vlan1" },
+		.port[3] = { .phy_port_id = 3, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 100, .ifname = "vlan1" },
+		.port[4] = { .phy_port_id = 4, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 100, .ifname = "vlan1" }
+#elif defined(RTAC3200)
+		.count = 5,
+		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 4, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[2] = { .phy_port_id = 3, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[3] = { .phy_port_id = 2, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[4] = { .phy_port_id = 1, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL }
+#elif defined(RTAC5300)
+#ifdef RTCONFIG_EXT_RTL8365MB
+		.count = 9,
+		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[3] = { .phy_port_id = 3, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[4] = { .phy_port_id = 4, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[5] = { .phy_port_id = S_RTL8365MB+3, .label_name = "L5", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[6] = { .phy_port_id = S_RTL8365MB+2, .label_name = "L6", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[7] = { .phy_port_id = S_RTL8365MB+1, .label_name = "L7", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[8] = { .phy_port_id = S_RTL8365MB+0, .label_name = "L8", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL }
+#else
+		.count = 5,
+		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[3] = { .phy_port_id = 3, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[4] = { .phy_port_id = 4, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" }
+#endif
+#endif
+#else //#ifndef HND_ROUTER
+#ifndef RTCONFIG_HND_ROUTER_AX_675X
+#if defined(RTAC86U) || defined(GTAC2900)
+		.count = 5,
+		.port[0] = { .phy_port_id = 7, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 3, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth4" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[3] = { .phy_port_id = 1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[4] = { .phy_port_id = 0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" }
+#elif defined(GTAC5300)
+		.count = 9,
+		.port[0] = { .phy_port_id = 7, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[2] = { .phy_port_id = 0, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[3] = { .phy_port_id = S_53134+3, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth5" },
+		.port[4] = { .phy_port_id = S_53134+2, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth5" },
+		.port[5] = { .phy_port_id = 3, .label_name = "L5", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth4" },
+		.port[6] = { .phy_port_id = 2, .label_name = "L6", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[7] = { .phy_port_id = S_53134+1, .label_name = "L7", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth5" },
+		.port[8] = { .phy_port_id = S_53134, .label_name = "L8", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth5" }
+#elif defined(GTAX11000)
+#ifdef RTCONFIG_EXT_BCM53134
+		.count = 9,
+		.port[0] = { .phy_port_id = 7, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[2] = { .phy_port_id = 0, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[3] = { .phy_port_id = S_53134+3, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[4] = { .phy_port_id = S_53134+2, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[5] = { .phy_port_id = 3, .label_name = "L5", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[6] = { .phy_port_id = 2, .label_name = "L6", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[7] = { .phy_port_id = S_53134+1, .label_name = "L7", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[8] = { .phy_port_id = S_53134, .label_name = "L8", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL }
+#elif defined(RTCONFIG_EXTPHY_BCM84880)
+		.count = 6,
+		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 3, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth4" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[3] = { .phy_port_id = 1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[4] = { .phy_port_id = 0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[5] = { .phy_port_id = 7, .label_name = "L5", .cap = PHY_PORT_CAP_LAN, .max_rate = 2500, .ifname = "eth5" }
+#endif
+#elif defined(GTAXE11000)
+		.count = 6,
+		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 0, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[2] = { .phy_port_id = 3, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth4" },
+		.port[3] = { .phy_port_id = 1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[4] = { .phy_port_id = 2, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[5] = { .phy_port_id = 7, .label_name = "L5", .cap = PHY_PORT_CAP_LAN, .max_rate = 2500, .ifname = "eth5" }
+#elif defined(RTAX88U)
+		.count = 9,
+		.port[0] = { .phy_port_id = 7, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 3, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth4" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[3] = { .phy_port_id = 1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[4] = { .phy_port_id = 0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[5] = { .phy_port_id = S_53134+3, .label_name = "L5", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth5" },
+		.port[6] = { .phy_port_id = S_53134+2, .label_name = "L6", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth5" },
+		.port[7] = { .phy_port_id = S_53134+1, .label_name = "L7", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth5" },
+		.port[8] = { .phy_port_id = S_53134, .label_name = "L8", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth5" }
+#elif defined(RTAX92U)
+		.count = 5,
+		.port[0] = { .phy_port_id = 7, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 3, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth4" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[3] = { .phy_port_id = 1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[4] = { .phy_port_id = 0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" }
+#endif
+#else //#ifndef RTCONFIG_HND_ROUTER_AX_675X
+#if defined(RTAX95Q)
+		.count = 4,
+		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 2500, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[3] = { .phy_port_id = 3, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" }
+#elif defined(RTAX56_XD4)
+		.count = 1,
+		.port[0] = { .phy_port_id = 0, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+#elif defined(DSLAX82U) || defined(RTAX82U)
+		.count = 5,
+		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth4" },
+		.port[1] = { .phy_port_id = 3, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[3] = { .phy_port_id = 1, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[4] = { .phy_port_id = 0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth0" }
+#elif defined(RTAX82_XD6)
+		.count = 4,
+		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth4" },
+		.port[1] = { .phy_port_id = 2, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[2] = { .phy_port_id = 1, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[3] = { .phy_port_id = 0, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+#elif defined(RTAX58U) || defined(TUFAX3000)
+		.count = 5,
+		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth4" },
+		.port[1] = { .phy_port_id = 3, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[3] = { .phy_port_id = 1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[4] = { .phy_port_id = 0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" }
+#elif defined(RTAX1800)
+		.count = 5,
+		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[2] = { .phy_port_id = 2, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[3] = { .phy_port_id = 3, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[4] = { .phy_port_id = 4, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" }
+#elif defined(RTAX55)
+		.count = 5,
+		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 4, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[2] = { .phy_port_id = 3, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[3] = { .phy_port_id = 2, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" },
+		.port[4] = { .phy_port_id = 1, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" }
+#elif defined(RTAX56U)
+		.count = 5,
+		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 4, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth4" },
+		.port[2] = { .phy_port_id = 3, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },
+		.port[3] = { .phy_port_id = 2, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth2" },
+		.port[4] = { .phy_port_id = 1, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" }
+#endif
+#endif //#ifndef HND_ROUTER
+#endif //#ifndef RTCONFIG_HND_ROUTER_AX_675X
+#endif // #if defined(RTCONFIG_HND_ROUTER_AX_6710)
+	};
+
+	port_mapping.extsw_count = 0;
+#if defined(RTCONFIG_EXT_RTL8365MB) 
+	port_mapping.extsw_count = 4;
+#elif defined(RTCONFIG_EXT_RTL8370MB)
+	port_mapping.extsw_count = 8;
+#endif
+
+#if defined(RTAX56_XD4)
+	if(nvram_match("HwId", "A") || nvram_match("HwId", "C")) {
+		phy_port port_0 = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" };
+		phy_port port_1 = { .phy_port_id = 1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" };
+		port_mapping.count = 2;
+		port_mapping.port[0] = port_0;
+		port_mapping.port[1] = port_1;
+	}
+#endif
+	return port_mapping;
+}
+#endif
+/* phy port related end.*/
+

@@ -6,7 +6,7 @@ MAKE = make
 CFLAGS = -Wall -O2 -g  $(EXTRACFLAGS)
 CFLAGS += -I$(SRCBASE) -I$(SRCBASE)/include -I. -I$(TOP)/nt_center/lib/
 CFLAGS += -I$(TOP)/sqlite 
-CFLAGS += -I$(TOP)/shared #Just For rtconfig.h , do not include share library.
+CFLAGS += -I$(TOP)/shared
 CFLAGS += -I$(TOP)/json-c
 CFLAGS += -DASUSWRT_SDK
 
@@ -15,9 +15,15 @@ ifeq ($(CONFIG_KERNEL_PTHREAD_ONE),y)
 CFLAGS += -DCONFIG_LINUX3X_OR_4X
 endif
 
+ifeq ($(RTCONFIG_BCMARM),y)
+CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
+endif
+
 LDFLAGS = -L$(TOP)/nt_center/lib/ -lnt
 LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3 -lm
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
+LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 
 LIBS = -lpthread -lgcc_s
 
@@ -31,6 +37,16 @@ CFLAGS  += -DSUPPORT_PUSH_MSG #Support Push Notification Message to iOS/Android 
 CFLAGS  += -I$(CURL_DIR)/include -I$(OPENSSL_DIR)/include -I$(XML2_DIR)/include -I$(WB_DIR) -I$(WB_DIR)/ws_src
 LDFLAGS += -L$(OPENSSL_DIR) -L$(CURL_DIR)/lib/.libs -L$(XML2_DIR)/.libs -L$(WB_DIR) -L$(WB_DIR)/output
 LIBS    += -lcurl -lssl -lcrypto -lxml2 -lws
+endif
+
+ifeq ($(RTCONFIG_CHINATEL_GUANGDONG),y)
+CFLAGS  += -I$(TOP)/chinatel/guangdong/Plugin_SDK
+LDFLAGS += -L$(TOP)/chinatel/guangdong/Plugin_SDK -lgdlib
+endif
+
+ifeq ($(RTCONFIG_CHINATEL_EOS),y)
+CFLAGS  += -I$(TOP)/json-c -I$(TOP)/libubox -I$(TOP)/ubus
+LDFLAGS += -L$(TOP)/libubox -lubox -lblobmsg_json -L$(TOP)/ubus -lubus
 endif
 
 MDIRS = lib actMail

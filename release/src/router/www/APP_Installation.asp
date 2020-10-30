@@ -716,7 +716,7 @@ function show_apps(){
 					(sw_mode == 3 || link_internet == "2"))
 				htmlcode += '</div><div style="color:#FC0;margin-top:10px;"><span class="app_action" onclick="apps_form(\'upgrade\',\''+ apps_array[i][0] +'\',\'\');"><#update_available#></span>\n';	
 			else if(cookie.get("apps_last") == apps_array[i][0])
-				htmlcode += "</div><div style=\"color:#FC0;margin-top:10px;margin-left:10px;\"><span class=\"app_no_action\" onclick=\"\">The version is up-to-date.</span>\n";	/* untranslated */				                   
+				htmlcode += "</div><div style=\"color:#FC0;margin-top:10px;margin-left:10px;\"><span class=\"app_no_action\" onclick=\"\"><#liveupdate_up2date#></span>\n";
 
 		}
 		else{

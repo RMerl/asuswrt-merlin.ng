@@ -417,3 +417,71 @@ void file_unlock(int lockfd)
 	if (_file_unlock(lockfd) < 0)
 		syslog(LOG_DEBUG, "Error unlocking %d: %d %s", lockfd, errno, strerror(errno));
 }
+
+long file_copy_offset(const char *src_name, long src_offset, const char *dst_name, long dst_offset)
+{
+	int fsrc = -1, fdst = -1;
+	int readSize, writeSize;
+	unsigned char buff[(1 * 1024)];
+	long retval = -2;
+	int mode;
+
+	if(!src_name || !dst_name)
+		goto END;
+
+	if(src_offset < 0)
+		src_offset = 0;
+	fsrc = open(src_name, O_RDONLY);
+	if(fsrc < 0)
+		goto END;
+
+	mode = O_CREAT | O_WRONLY;
+	if(dst_offset <= 0) {
+		dst_offset = 0;
+		mode |= O_TRUNC;
+	}
+	fdst = open(dst_name, mode);
+	if(fdst < 0)
+		goto END;
+
+	lseek(fsrc, src_offset, SEEK_SET);
+	lseek(fdst, dst_offset, SEEK_SET);
+
+	retval = 0;
+	do
+	{
+		readSize = read(fsrc, buff, sizeof(buff));
+		writeSize = write(fdst, buff, readSize);
+
+		if (writeSize != readSize) {
+			retval = -1;
+			break;
+		}
+		retval += readSize;
+
+	} while (readSize == sizeof(buff));
+
+END:
+	if(fsrc >= 0)
+		close(fsrc);
+	if(fdst >= 0)
+		close(fdst);
+
+	return retval;
+}
+
+long file_copy(const char *src_file, const char *dst_file)
+{
+	return file_copy_offset(src_file, 0, dst_file, 0);
+}
+
+long file_append(const char *src_file, const char *dst_file)
+{
+	unsigned long fileSize;
+
+	if ((fileSize = f_size(dst_file)) == (unsigned long) -1)
+		fileSize = 0;	//new file
+
+	return file_copy_offset(src_file, 0, dst_file, fileSize);
+}
+

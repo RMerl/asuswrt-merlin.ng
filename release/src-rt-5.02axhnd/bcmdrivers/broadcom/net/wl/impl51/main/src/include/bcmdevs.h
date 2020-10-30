@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmdevs.h 780777 2019-11-04 01:58:29Z $
+ * $Id: bcmdevs.h 787019 2020-05-14 03:53:09Z $
  */
 
 #ifndef	_BCMDEVS_H
@@ -624,13 +624,14 @@
 					case BCM47622_CHIP_ID
 
 #define BCM6710_CHIP_ID		0x6710		/* 6710 chipcommon chipid */
-#define BCM43692_CHIP_ID	0xaaac		/* 43692 chipcommon chipid, 6710 2x2 variant */
-#define BCM43693_CHIP_ID	0xaaad		/* 43693 chipid, 6710 enterprise version */
+#define BCM6705_CHIP_ID		0xaaac		/* 6705 chipid (same as 43692), 6710 2x2 variant */
+#define BCM43692_CHIP_ID	0xaaac		/* 43692 chipid, 6710 EAP 2x2 variant */
+#define BCM43693_CHIP_ID	0xaaad		/* 43693 chipid, 6710 EAP 3x3 version */
 #define BCM6710_CHIP(chipid)	((CHIPID(chipid) == BCM6710_CHIP_ID) || \
 				(CHIPID(chipid) == BCM43692_CHIP_ID) || \
 				(CHIPID(chipid) == BCM43693_CHIP_ID))
 #define CASE_BCM6710_CHIP	case BCM6710_CHIP_ID: /* fallthrough */ \
-				case BCM43692_CHIP_ID: /* fallthrough */ \
+				case BCM43692_CHIP_ID: /* also for BCM6705, fallthrough */ \
 				case BCM43693_CHIP_ID
 
 #define BCM6715_CHIP_ID		0x6715		/* 6715 chipcommon chipid */

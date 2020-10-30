@@ -103,7 +103,9 @@ unsigned int get_root_type(void)
 		case MODEL_RTAX58U:
 		case MODEL_RTAX55:
 		case MODEL_RTAX56U:
+		case MODEL_RPAX56:
 		case MODEL_GTAXE11000:
+		
 			return 0x24051905;      /* ubifs */
 		case MODEL_DSLAX82U:
 		{

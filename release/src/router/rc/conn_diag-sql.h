@@ -48,7 +48,7 @@ int diag_dbg;
 int diag_syslog;
 int diag_max_db_size;
 int diag_max_db_count;
-static pthread_mutex_t diag_db_save_lock = PTHREAD_MUTEX_INITIALIZER;
+int diag_portinfo;
 
 #define LOG_TITLE_CHK "CHKSTA"
 #define LOG_TITLE_DIAG "CONNDIAG"

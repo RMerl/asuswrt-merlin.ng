@@ -314,6 +314,7 @@ var bwdpi_app_rulelist = "<% nvram_get("bwdpi_app_rulelist"); %>".replace(/&#60/
 var qos_type_flag = "<% nvram_get("qos_type"); %>";
 var exist_firmver="<% nvram_get("firmver"); %>";
 var exist_extendno = '<% nvram_get("extendno"); %>';
+var CoBrand_flag = '<% nvram_get("CoBrand"); %>';
 
 //territory_code sku
 function in_territory_code(_ptn){
@@ -321,12 +322,14 @@ function in_territory_code(_ptn){
 }
 var ttc = '<% nvram_get("territory_code"); %>';
 var is_KR_sku = in_territory_code("KR");
-var is_CN = (in_territory_code("CN") || in_territory_code("CT") || in_territory_code("GD"));
+var is_CN = (in_territory_code("CN") || in_territory_code("CT") || in_territory_code("GD") || in_territory_code("TC"));
 var is_TW_sku = in_territory_code("TW");
 var is_US_sku = in_territory_code("US");
 var is_UA_sku = in_territory_code("UA");
-var is_GD_sku = in_territory_code("GD");
-if(is_GD_sku){
+var is_OP_sku = in_territory_code("OP");
+
+var isGundam = in_territory_code("GD") || CoBrand_flag == 1;
+if(isGundam){
 	document.write('<link rel="stylesheet" type="text/css" href="/css/gundam.css"></link>');
 }
 
@@ -353,13 +356,19 @@ for (var j=0; j<wl_nband_array.length; j++) {
 	}
 	else if(wl_nband_array[j] == '1'){
 		band5g_count++;
-		wl_nband_title.push("5 GHz" + ((band5g_count > 1) ? ("-" + band5g_count) : ""));
+		if(isSupport('wifi6e') && band5g_count > 1){
+			wl_nband_title.push('6 GHz');
+		}
+		else{
+			wl_nband_title.push("5 GHz" + ((band5g_count > 1) ? ("-" + band5g_count) : ""));
+		}	
 	}
 	else if(wl_nband_array[j] == '6'){
 		band60g_count++;
 		wl_nband_title.push("60 GHz" + ((band60g_count > 1) ? ("-" + band60g_count) : ""));
 	}
 }
+
 if(wl_nband_title.indexOf("2.4 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("2.4 GHz")] = "2.4 GHz-1";
 if(wl_nband_title.indexOf("5 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("5 GHz")] = "5 GHz-1";
 if(wl_nband_title.indexOf("60 GHz-2") > 0) wl_nband_title[wl_nband_title.indexOf("60 GHz")] = "60 GHz-1";
@@ -421,7 +430,12 @@ var new_wifi_cert_support = isSupport("wifi2017");
 var band2g_support = isSupport("2.4G"); 
 var band5g_support = isSupport("5G");
 var band5g2_support = isSupport("5G-2");
+var band6g_support = isSupport("wifi6e");
 var band60g_support = isSupport("wigig");
+var max_band60g_wl_bw = 6;	// 2.16 GHz
+if (based_modelid == "GT-AXY16000") {
+	max_band60g_wl_bw = 7; // 4.32 GHz
+}
 var live_update_support = isSupport("update"); 
 var no_update_support = isSupport("noupdate");
 var cooler_support = isSupport("fanctrl");
@@ -582,6 +596,7 @@ var wpa3_support = isSupport('wpa3');
 var uu_support = isSupport('uu_accel');
 var internetSpeed_support = isSupport("ookla");
 var gameMode_support = isSupport('gameMode');
+var oam_support = isSupport('oam');
 var QISWIZARD = "QIS_wizard.htm";
 
 var wl_version = "<% nvram_get("wl_version"); %>";
@@ -606,6 +621,7 @@ var mbo_support = (function(){
 var nt_center_support = isSupport("nt_center");
 var dblog_support = isSupport("dblog");
 var wan_bonding_support = isSupport("wanbonding");
+var MaxRule_parentctrl = isSupport("MaxRule_parentctrl");
 // return enum bs_port_id
 function wanAggr_p2_num(wanports_bond){
 	var p2_port = "4";
@@ -651,6 +667,7 @@ var conndiag_support = (function(){
 	return (isSupport("conndiag") && ('<% nvram_get("enable_diag"); %>' == "2"));
 })();
 var tencent_qmacc_support = isSupport("tencent_qmacc");
+var outfox_support = isSupport("outfox");
 
 var amazon_wss_support = isSupport("amazon_wss");
 
@@ -1218,7 +1235,7 @@ function show_menu(){
 	show_selected_language();
 	autoFocus('<% get_parameter("af"); %>');
 
-	if(is_GD_sku){
+	if(isGundam){
 		calGDpostion(); 
 		if(window.top === window.self){
 			var banner = document.getElementsByClassName('banner1')[0];
@@ -1356,7 +1373,11 @@ function showMenuTree(menuList, menuExclude){
 						}
 						//-------Fine tune Menu icon end----------
 
-						menu_code += '" onclick="goToPage('; 
+						menu_code += '"';
+						if(curMenu.index == "menu_QIS" && odmpid == "DSL-AX5400"){
+							menu_code += ' style="display:none;"';
+						}
+						menu_code += ' onclick="goToPage(';
 						menu_code += i; 
 						menu_code += ', '
 						menu_code += firstEntry;
@@ -1400,8 +1421,8 @@ function showMenuTree(menuList, menuExclude){
 				tab_code += '<td><div class="';
 	
 				//-----Fine tune tab icon start-----------				
-				if( dsl_support && (current_url.indexOf("Advanced_DSL_Content") == 0 || current_url.indexOf("Advanced_VDSL_Content") == 0 || current_url.indexOf("Advanced_WAN_Content") == 0)){
-					tab_code += (j == 1) ? 'tabClicked' : 'tab';	//show 1st tab css as class 'tabClicked'
+				if( dsl_support && (current_url.indexOf("Advanced_DSL_Content") == 0 || current_url.indexOf("Advanced_VDSL_Content") == 0 || current_url.indexOf("Advanced_WAN_Content") == 0 || current_url.indexOf("Advanced_Modem_Content") == 0)){
+					tab_code += (j == 1 || j == 3) ? 'tabClicked' : 'tab';	//show 1st tab css as class 'tabClicked'
 				}
 				else if((based_modelid != "RT-AC65U" && based_modelid != "BRT-AC828") && (current_url.indexOf("AiProtection_WebProtector") == 0 || current_url.indexOf("ParentalControl") == 0)){
 					//Should remove these MODELDEP issue after we have dpi_support supported to display bwdpi related pages.
@@ -1911,7 +1932,13 @@ function show_top_status(){
 		else{
 			document.getElementById('elliptic_ssid_5g_2').innerHTML = ssid_status_5g_2;
 		}
-		document.getElementById('elliptic_ssid_5g_2').title = "5 GHz-2: \n"+ htmlEnDeCode.htmlDecode(ssid_status_5g_2);
+
+		if(band6g_support){
+			document.getElementById('elliptic_ssid_5g_2').title = "6 GHz: \n"+ htmlEnDeCode.htmlDecode(ssid_status_5g_2);
+		}
+		else{
+			document.getElementById('elliptic_ssid_5g_2').title = "5 GHz-2: \n"+ htmlEnDeCode.htmlDecode(ssid_status_5g_2);
+		}		
 	}
 
 	if(smart_connect_support){
@@ -2971,7 +2998,7 @@ function refreshStatus(xhr){
 					document.getElementById('rssi_info_primary').style.display = "none";
 					document.getElementById('primary_line').className = "primary_wan_disconnected";					
 				}
-				if (_wlc1_state == "wlc1_state=2" || _wlc2_state == "wlc2_state=2") {
+				if (_wlc1_state == "wlc1_state=2" || (isSupport("triband") && _wlc2_state == "wlc2_state=2")) {
 					document.getElementById('speed_info_secondary').style.display = "";
 					document.getElementById('rssi_info_secondary').style.display = "";
 					document.getElementById('secondary_line').className = "secondary_wan_connected";
@@ -3772,21 +3799,28 @@ function regen_band(obj_name){
 	current_band = '<% nvram_get("wl_unit"); %>';
 	for(i=1;i<wl_info.band2g_total+1;i++){
 		if(wl_info.band2g_total == 1)
-			band_desc.push("2.4GHz");
+			band_desc.push("2.4 GHz");
 		else
-			band_desc.push("2.4GHz-"+i);
+			band_desc.push("2.4 GHz-"+i);
 	}
 	for(i=1;i<wl_info.band5g_total+1;i++){
 		if(wl_info.band5g_total == 1)
-			band_desc.push("5GHz");
-		else
-			band_desc.push("5GHz-"+i);	
+			band_desc.push("5 GHz");
+		else{
+			if(band6g_support){			
+				band_desc.push.apply(band_desc, ['5 GHz', '6 GHz']);
+				break;
+			}
+			else{
+				band_desc.push("5 GHz-"+i);
+			}
+		}			
 	}
 	for(i=1;i<wl_info.band60g_total+1;i++){
 		if(wl_info.band60g_total == 1)
-			band_desc.push("60GHz");
+			band_desc.push("60 GHz");
 		else
-			band_desc.push("60GHz-"+i);
+			band_desc.push("60 GHz-"+i);
 	}
 	for(i=0;i<wl_nband_array.length;i++){
 		if (wl_nband_array[i] != 2 && wl_nband_array[i] != 1 && wl_nband_array[i] != 6)
@@ -3993,7 +4027,7 @@ function calGDpostion(){
 	}
 }
 
-if(is_GD_sku){
+if(isGundam){
 	window.addEventListener('resize', function(event){
 		calGDpostion();	
 	});

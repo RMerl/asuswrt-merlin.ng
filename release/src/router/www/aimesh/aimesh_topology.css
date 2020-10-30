@@ -196,7 +196,7 @@
 	background-image: url("/images/New_ui/amesh/location/Second_Floor.png");
 }
 .translucent_bg.Attic{
-	background-image: url("/images/New_ui/amesh/location/Kitchen.png");
+	background-image: url("/images/New_ui/amesh/location/Attic.png");
 }
 .translucent_bg.Basement{
 	background-image: url("/images/New_ui/amesh/location/Basement.png");
@@ -1124,11 +1124,10 @@
 	height: 0% !important;
 	float: initial !important;
 }
-.manage_switch_led .switch{
-	background: #2B353C;
+.manage_switch_led .switch, .manage_switch_wifi .switch{
 	box-shadow: inset 0 1px 0 0 rgba(0,0,0,0.10);
 	border-radius: 83px;
-	width: 48px;
+	width: 40px;
 	height: 24px;
 	position: relative;
 	display: inline-block;
@@ -1136,7 +1135,13 @@
 	transition: all 0.6s;
 	cursor: pointer;
 }
-.manage_switch_led .switch:before{
+.manage_switch_led .switch.off, .manage_switch_wifi .switch.off{
+	background: rgb(255 255 255 / 0.3);
+}
+.manage_switch_led .switch.on, .manage_switch_wifi .switch.on{
+	background: #1EA2FF;
+}
+.manage_switch_led .switch:before, .manage_switch_wifi .switch:before{
 	border-radius: 83px;
 	display: block;
 	position: absolute;
@@ -1149,15 +1154,12 @@
 	transition: all 0.6s;
 	-webkit-transition-delay: 0.01s;
 	transition-delay: 0.01s;
+	background: #f7f7f7;
 }
-.manage_switch_led .switch.off:before{
-	background: #A4B7C3;
-}
-.manage_switch_led .switch.on:before{
-	-webkit-transform: translateX(24px);
-	-ms-transform: translateX(24px);
-	transform: translateX(24px);
-	background: #1EA2FF;
+.manage_switch_led .switch.on:before, .manage_switch_wifi .switch.on:before{
+	-webkit-transform: translateX(16px);
+	-ms-transform: translateX(16px);
+	transform: translateX(16px);
 }
 .manage_switch_led, .manage_remove_node, .manage_slider_led, .manage_reboot_node{
 	height: 56px !important
@@ -1213,6 +1215,56 @@
 	position: relative;
 	top: 7px;
 }
+.manage_settings_bg .sub_item_bg{
+	height: auto;
+	padding: 10px 0px 4px 0px;
+}
+.manage_settings_bg .sub_item_bg > div{
+	margin-left: 22px;
+	position: relative;
+}
+.manage_sub_item_bg .manage_common_title .wifi_title{
+	position: relative;
+}
+.manage_sub_item_bg .manage_common_title .wifi_title.loading:after{
+	content: "";
+	position: absolute;
+	top: -4px;
+	right: -30px;
+	width: 24px;
+	height: 24px;
+	background-image: url(/images/InternetScan.gif);
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg.loading:after{
+	content: "";
+	position: absolute;
+	bottom: 0;
+	top: 0;
+	left: 0;
+	right: 0;
+	width: 90%;
+	margin: auto;
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div{
+	height: 36px;
+	position: relative;
+	margin-top: 8px;
+	line-height: 36px;
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div .manage_common_title{
+	color: #A4B7C3;
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div:before{
+	content: "";
+	position: absolute;
+	left: 5%;
+	top: -4px;
+	height: 1px;
+	width: 90%;
+	border-top: 1px solid #3E4E59;
+}
 .manage_btn{
 	background-image: linear-gradient(-180deg, #6A7C83 0%, #364249 62%, #222D32 100%);
 	border: 1px solid #425057;
@@ -1222,17 +1274,28 @@
 	cursor: pointer;
 }
 .manage_disconnected{
-	text-align: center;
+	text-align: left;
 	color: #FC0;
 	font-size: 14px;
 	height: auto !important;
+	margin-bottom: 10px;
+	padding: 0px 18px 0px 22px;
+}
+.manage_disconnected:before{
+	content: "";
+	position: absolute;
+	left: 5%;
+	bottom: -10px;
+	height: 1px;
+	width: 90%;
+	border-bottom: 1px solid #3E4E59;
 }
 .backhaul_bg .bubble_icon, .fronthaul_bg .bubble_icon{
 	position: absolute;
 	top: -2px;
 }
 .custom_radio_label{
-	margin-right: 24px;
+	margin-right: 12px !important;
 	cursor: pointer;
 	position: relative;
 }
@@ -1242,20 +1305,23 @@
 	vertical-align: middle;
 	width: 18px;
 	height: 18px;
-	margin-right: 12px;
-	background: #2B353C;
-	box-shadow: inset 0 1px 0 0 rgba(0,0,0,0.10);
 	border-radius: 50%;
+	border-color: rgb(30 162 255 / 0.7);
+	border-width: 2px;
+	border-style: solid;
 }
 .custom_radio_label.checked:after{
 	content: '';
-	width: 12px;
-	height: 12px;
+	width: 8px;
+	height: 8px;
 	background: #1EA2FF;
 	border-radius: 50%;
 	position: absolute;
-	left: 3px;
-	top: 5px;
+	top: 2px;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
 }
 .custom_radio_label > .custom_radio{
 	display: none;
@@ -1275,6 +1341,19 @@
 }
 .managment_icon.reboot_icon{
 	background-position: 2px -96px;
+}
+.managment_icon.preferable_backhaul_icon{
+	background-position: 2px -206px;
+}
+.managment_icon.preferable_backhaul_icon.float_right{
+	float: right;
+}
+.preferable_backhaul_text{
+	color: #A4B7C3;
+	font-size: 12px;
+	float: left;
+	margin-top: 3px;
+	margin-right: 6px;
 }
 .arrow_right_icon{
 	position: relative;
@@ -1369,7 +1448,7 @@
 .client_list_bg .client_icon_bg{
 	height: 42px;
 	width: 42px;
-	margin: 0px 12px 0px 18px;
+	margin: 0px 10px 0px 18px;
 	float: left;
 	position: relative;
 }
@@ -1384,7 +1463,7 @@
 	background-image: url(/images/New_ui/networkmap/vender-list.png);
 	background-repeat: no-repeat;
 	background-size: 180%;
-	top: -1px;
+	top: 1px;
 }
 .client_list_bg .client_icon_bg.user_icon{
 	background-size: cover;
@@ -1470,6 +1549,7 @@
 	font-size: 13px;
 	color: #B9CFDE;
 	height: 40%;
+	display: inline-flex;
 }
 .client_list_bg .client_content_bg > .client_content_mac_ip div{
 	position: relative;
@@ -1477,13 +1557,13 @@
 }
 .client_list_bg .client_content_bg > .client_content_mac_ip div:not(:first-child){
 	float: left;
-	padding-left: 12px;
+	padding-left: 10px;
 }
 .client_list_bg .client_content_bg > .client_content_mac_ip > div:not(:first-child):before{
 	position: absolute;
 	content: "";
-	left: 7px;
-	height: 90%;
+	left: 5px;
+	height: 110%;
 	border-left: 1px solid #7F8FA4;
 	top: 1px;
 }
@@ -1509,6 +1589,7 @@
 	font-size: 16px;
 	left: 12%;
 	z-index: 500;
+	margin-bottom: 30px;
 }
 .popup_hint_bg .action_bg{
 	margin-top: 18px;
@@ -1551,11 +1632,26 @@
 .popup_hint_bg .model_info{
 	margin-left: 15px;
 }
+.popup_hint_bg .model_info.no_location{
+	display: inline-block;
+	height: 30px;
+	line-height: 30px;
+}
+.popup_hint_bg .model_info.offline{
+	color: #64737c;
+	font-size: 13px;
+	margin-left: 3px;
+	position: relative;
+	top: -2px;
+}
 .popup_hint_bg .custom_radio_bg{
 	position: absolute;
 	top: 12px;
 	right: 0;
 	margin-right: 0px;
+}
+.popup_hint_bg .custom_radio_bg.no_location{
+	top: 6px;
 }
 .popup_hint_bg .custom_radio_bg > span{
 	margin-right: initial;
@@ -2280,6 +2376,30 @@
 .connect_type_status_bg.backhaul .spacing{
 	margin-top: 12px !important;
 }
+.aimesh_tab{
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 16px;
+	color: #FFFFFF;
+	height: 24px;
+}
+.aimesh_tab > span{
+	margin-left: 5px;
+	margin-right: 24px;
+	cursor: pointer;
+	position: relative;
+}
+.aimesh_tab > span.clicked:before{
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: -10px;
+	width: 100%;
+	border-bottom: 2px solid #00BFFF;
+}
+.aimesh_tab_content{
+	width: 100%;
+	display: none;
+}
 .client_reconnect_loading_icon{
 	background-image: url(/images/InternetScan.gif);
 	width: 60px;
@@ -2425,4 +2545,7 @@
 	right: 0;
 	bottom: 0;
 	margin: auto;
+}
+.splitLine{
+	margin: 5px;
 }

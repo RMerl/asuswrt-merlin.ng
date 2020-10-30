@@ -171,3 +171,6 @@ extern void get_traffic_hook(char *mode, char *name, char *dura, char *date, int
 extern void get_device_stat();
 extern int bwdpi_client_info(char *MAC, char *ipaddr, bwdpi_device *device);
 extern void redirect_page_status(int cat_id, int *retval, webs_t wp);
+
+//iqos.c
+extern void AppRuleModify(char *in, int key, char *out);

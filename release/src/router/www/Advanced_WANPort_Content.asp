@@ -101,7 +101,7 @@ var wans_mode_orig = '<% nvram_get("wans_mode"); %>';
 var wans_standby_orig = '<% nvram_get("wans_standby"); %>';
 var min_detect_interval = 2;
 var min_fo_detect_count = 5;
-
+var dns_probe_timeout_threshold = (httpApi.nvramGet(["dns_probe_timeout"], true).dns_probe_timeout > 0)? parseInt(httpApi.nvramGet(["dns_probe_timeout"], true).dns_probe_timeout)+1 : 1;
 
 
 var country = new Array("None", "China");
@@ -310,7 +310,7 @@ function form_show(v){
 		appendLANoption1(document.form.wans_primary);
 		appendLANoption2(document.form.wans_second);
 
-		var replace_html = '<input type="text" name="wandog_interval" class="input_3_table" maxlength="1" value="<% nvram_get("wandog_interval"); %>" onblur="update_consume_bytes();" onKeyPress="return validator.isNumber(this, event);" placeholder="5" autocorrect="off" autocapitalize="off">';
+		var replace_html = '<input type="text" name="wandog_interval" class="input_3_table" maxlength="2" value="<% nvram_get("wandog_interval"); %>" onblur="update_consume_bytes();" onKeyPress="return validator.isNumber(this, event);" placeholder="5" autocorrect="off" autocapitalize="off">';
 		var new_html_str = document.getElementById("retry_intervale_setting").innerHTML.replace("$INPUT_INTERVAL", replace_html);
 		document.getElementById("retry_intervale_setting").innerHTML = new_html_str;
 
@@ -466,7 +466,7 @@ function applyRule(){
 			else
 				document.form.dns_probe.value = "0";
 
-			if(!validator.range(document.form.wandog_interval, 1, 9))
+			if(!validator.range(document.form.wandog_interval, dns_probe_timeout_threshold, 99))
 				return false;
 		}
 	}
@@ -595,13 +595,6 @@ function applyRule(){
 
 function addWANOption(obj, wanscapItem){
 	free_options(obj);
-	if(dsl_support && obj.name == "wans_second"){
-		for(i=0; i<wanscapItem.length; i++){
-			if(wanscapItem[i] == "dsl"){
-				wanscapItem.splice(i,1);
-			}
-		}
-	}
 
 	if( wanscapItem.indexOf("wan") >= 0 && wanscapItem.indexOf("wan2") == -1 &&
 		wans_dualwan_array[1] == "none" && obj.name == "wans_primary" && curState == "0" ){
@@ -664,7 +657,9 @@ function changeWANProto(obj){
 						document.form.wans_second.value = "lan";
 				}
 				else if(obj.value == "wan"){
-					if(wans_caps.search("wan2") >= 0)
+					if(wans_caps.search("dsl") >= 0)
+						document.form.wans_second.value = "dsl";
+					else if(wans_caps.search("wan2") >= 0)
 						document.form.wans_second.value = "wan2";
 					else if(wans_caps.search("sfp+") >= 0)
 						document.form.wans_second.value = "sfp+";
@@ -674,7 +669,9 @@ function changeWANProto(obj){
 						document.form.wans_second.value = "lan";
 				}
 				else if(obj.value == "wan2"){
-					if(wans_caps.search("wan") >= 0)
+					if(wans_caps.search("dsl") >= 0)
+						document.form.wans_second.value = "dsl";
+					else if(wans_caps.search("wan") >= 0)
 						document.form.wans_second.value = "wan";
 					else if(wans_caps.search("sfp+") >= 0)
 						document.form.wans_second.value = "sfp+";
@@ -684,7 +681,9 @@ function changeWANProto(obj){
 						document.form.wans_second.value = "lan";
 				}
 				else if(obj.value == "sfp+"){
-					if(wans_caps.search("wan") >= 0)
+					if(wans_caps.search("dsl") >= 0)
+						document.form.wans_second.value = "dsl";
+					else if(wans_caps.search("wan") >= 0)
 						document.form.wans_second.value = "wan";
 					else if(wans_caps.search("wan2") >= 0)
 						document.form.wans_second.value = "wan2";
@@ -694,7 +693,9 @@ function changeWANProto(obj){
 						document.form.wans_second.value = "lan";
 				}
 				else if(obj.value == "usb"){
-					if(wans_caps.search("wan") >= 0)
+					if(wans_caps.search("dsl") >= 0)
+						document.form.wans_second.value = "dsl";
+					else if(wans_caps.search("wan") >= 0)
 						document.form.wans_second.value = "wan";
 					else if(wans_caps.search("wan2") >= 0)
 						document.form.wans_second.value = "wan2";
@@ -708,7 +709,9 @@ function changeWANProto(obj){
 						document.form.wans_second.value = "usb";
 				}
 				else{
-					if(wans_caps.search("wan") >= 0)
+					if(wans_caps.search("dsl") >= 0)
+						document.form.wans_second.value = "dsl";
+					else if(wans_caps.search("wan") >= 0)
 						document.form.wans_second.value = "wan";
 					else if(wans_caps.search("wan2") >= 0)
 						document.form.wans_second.value = "wan2";
@@ -719,7 +722,19 @@ function changeWANProto(obj){
 				}
 			}
 			else if(obj.name == "wans_second"){
-				if(obj.value == "wan"){
+				if (obj.value == "dsl"){
+					if(wans_caps.search("wan") >= 0)
+						document.form.wans_primary.value = "wan";
+					else if(wans_caps.search("wan2") >= 0)
+						document.form.wans_primary.value = "wan2";
+					else if(wans_caps.search("sfp+") >= 0)
+						document.form.wans_primary.value = "sfp+";
+					else if(wans_caps.search("usb") >= 0)
+						document.form.wans_primary.value = "usb";
+					else
+						document.form.wans_primary.value = "lan";
+                                }
+				else if(obj.value == "wan"){
 					if(wans_caps.search("dsl") >= 0)
 						document.form.wans_primary.value = "dsl";
 					else if(wans_caps.search("wan2") >= 0)
@@ -1462,24 +1477,24 @@ function remain_origins(){
 			          			<th><#dualwan_isp_rules#></th>
 			          			<td>
 			          				<input type="radio" value="0" name="wans_isp_unit" class="content_input_fd" onClick="change_isp_unit(this.value);">None
-				  									<input type="radio" value="1" name="wans_isp_unit" class="content_input_fd" onClick="change_isp_unit(this.value);"><#dualwan_primary#>
-				  									<input type="radio" value="2" name="wans_isp_unit" class="content_input_fd" onClick="change_isp_unit(this.value);"><#dualwan_secondary#>
+									<input type="radio" value="1" name="wans_isp_unit" class="content_input_fd" onClick="change_isp_unit(this.value);"><#dualwan_primary#>
+									<input type="radio" value="2" name="wans_isp_unit" class="content_input_fd" onClick="change_isp_unit(this.value);"><#dualwan_secondary#>
 			          			</td>	
 			          		</tr>	
 			          		
 			          		<tr class="ISPProfile">
 			          			<th><#dualwan_isp_primary#></th>
 			          			<td>
-			          					<select name="wan0_isp_country" class="input_option" onchange="appendcountry(this);" value=""></select>
-															<select name="wan0_isp_list" class="input_option" style="display:none;"value=""></select>
+			          				<select name="wan0_isp_country" class="input_option" onchange="appendcountry(this);" value=""></select>
+									<select name="wan0_isp_list" class="input_option" style="display:none;"value=""></select>
 			          			</td>	
 			          		</tr>
 			          		
 			          		<tr class="ISPProfile">
 			          			<th><#dualwan_isp_secondary#></th>
 			          			<td>
-			          					<select name="wan1_isp_country" class="input_option" onchange="appendcountry(this);" value=""></select>
-															<select name="wan1_isp_list" class="input_option" style="display:none;"value=""></select>
+			          				<select name="wan1_isp_country" class="input_option" onchange="appendcountry(this);" value=""></select>
+									<select name="wan1_isp_list" class="input_option" style="display:none;"value=""></select>
 			          			</td>	
 			          		</tr>			          		
 			          		

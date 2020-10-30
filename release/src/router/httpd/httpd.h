@@ -193,6 +193,7 @@ enum {
 	HTTP_RULE_ADD_SUCCESS = 2001,
 	HTTP_RULE_DEL_SUCCESS,
 	HTTP_NORULE_DEL,
+        HTTP_RULE_MODIFY_SUCCESS,
 	HTTP_OVER_MAX_RULE_LIMIT = 4000,
 	HTTP_INVALID_ACTION,
 	HTTP_INVALID_MAC,
@@ -511,7 +512,7 @@ extern void do_set_fw_path_cgi(char *url, FILE *stream);
 #if defined(RTCONFIG_AMAZON_WSS)
 extern void amazon_wss_enable(char *wss_enable, char *do_rc);
 #endif
-#ifdef RTCONFIG_ACCOUNT_LINKING
+#ifdef RTCONFIG_ACCOUNT_BINDING
 extern void do_get_eptoken_cgi(char *url, FILE *stream);
 #endif
 #ifdef RTCONFIG_CAPTCHA
@@ -521,4 +522,6 @@ extern int is_captcha_match(char *catpch);
 #if defined(RTAX82U) || defined(DSL_AX82U)
 extern void switch_ledg(int action);
 #endif
+extern int get_external_ip(void);
+extern int get_rtinfo();
 #endif /* _httpd_h_ */

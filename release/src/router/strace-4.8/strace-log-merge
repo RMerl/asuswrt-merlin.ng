@@ -1,0 +1,43 @@
+#!/bin/sh
+
+show_usage()
+{
+	cat <<__EOF__
+Usage: ${0##*/} STRACE_LOG
+
+Finds all STRACE_LOG.PID files, adds PID prefix to every line,
+then combines and sorts them, and prints result to standard output.
+
+It is assumed that STRACE_LOGs were produced by strace with -tt[t]
+option which prints timestamps (otherwise sorting won't do any good).
+__EOF__
+}
+
+if [ $# -ne 1 ]; then
+	show_usage >&2
+	exit 1
+elif [ "$1" = '--help' ]; then
+	show_usage
+	exit 0
+fi
+
+logfile=$1
+
+for file in "$logfile".*; do
+	[ -f "$file" ] || continue
+	suffix=${file#"$logfile".}
+	[ "$suffix" -gt 0 ] 2> /dev/null ||
+		continue
+	pid=$(printf "%-5s" $suffix)
+	# Some strace logs have last line which is not '\n' terminated,
+	# so add extra newline to every file.
+	# grep -v '^$' removes empty lines which may result.
+	sed "s/^/$pid /" < "$file"
+	echo
+done \
+| sort -s -k2,2 | grep -v '^$'
+
+rc=$?
+[ $rc -eq 1 ] &&
+	echo >&2 "${0##*/}: $logfile: strace output not found"
+exit $rc

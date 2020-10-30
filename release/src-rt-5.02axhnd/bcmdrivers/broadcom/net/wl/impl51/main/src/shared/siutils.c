@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: siutils.c 784078 2020-02-18 22:14:43Z $
+ * $Id: siutils.c 787019 2020-05-14 03:53:09Z $
  */
 
 #include <bcm_cfg.h>
@@ -2262,7 +2262,7 @@ BCMATTACHFN(si_chipid_fixup)(si_t *sih)
 			sii->chipnew = sih->chip; /* save it */
 			sii->pub.chip = BCM43602_CHIP_ID; /* chip class */
 		break;
-		case BCM43692_CHIP_ID:
+		case BCM43692_CHIP_ID: /* also for BCM6705 */
 		case BCM43693_CHIP_ID:
 			sii->chipnew = sih->chip; /* save it */
 			sii->pub.chip = BCM6710_CHIP_ID; /* chip class */

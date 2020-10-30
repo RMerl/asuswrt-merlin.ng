@@ -1153,12 +1153,18 @@ left: 40px;
 }
 
 #table_login{
-	padding:0 5px 0 5px;
+padding:0 5px 0 5px;
 }
 #table_login #main {  
 font-family:Verdana, Arial, Helvetica, sans-serif;  
-font-size:14px;
+font-size:12px;
 padding: 0 10px 0 10px;
+}
+#table_login #main label{
+font-size: 0.9em;  
+}
+#table_login .table_block_footer button{  
+margin: 5px;  
 }
 /*--------------------------------------*/
 

@@ -1,13 +1,15 @@
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include <stdlib.h>
-#define _GNU_SOURCE	//strcasestr()
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>	//isalpha(), isdigit()
-#include <ctype.h>	//tolower()
+#include <ctype.h>	//isalpha(), isdigit(), tolower()
 
 #include "err.h"
 #include "query.h"

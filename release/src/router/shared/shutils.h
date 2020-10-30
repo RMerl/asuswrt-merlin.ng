@@ -200,10 +200,11 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 	_cpu_eval(ppid, argv); \
 })
 
-/* Copy each token in wordlist delimited by space into word */
 /* CMWIFI */
 #ifndef foreach
 #define _FOREACH_MACRO_
+
+/* Copy each token in wordlist delimited by space into word */
 #define foreach(word, wordlist, next) \
 		for (next = &wordlist[strspn(wordlist, " ")], \
 				strncpy(word, next, sizeof(word)), \
@@ -301,6 +302,118 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 				word[strcspn(word, "|")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
 				next = strchr(next, '|'))
+
+/* Copy each token in wordlist delimited by space into word and keep empty string */
+#define foreach_keep_empty_string(count, word, wordlist, next) \
+		for (count = get_char_count(wordlist, ' '), \
+				next = strchr(wordlist, ' '), \
+				strncpy(word, wordlist, sizeof(word)), \
+				word[strcspn(word, " ")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = next ? strchr(next, ' ') : ""; \
+				count >= 0; \
+				next = next ? &next[strcspn(next, " ")+1] : "", \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, " ")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, ' '), \
+				count--)
+
+/* Copy each token in wordlist delimited by ascii_44 into word and keep empty string */
+#define foreach_44_keep_empty_string(count, word, wordlist, next) \
+		for (count = get_char_count(wordlist, ','), \
+				next = strchr(wordlist, ','), \
+				strncpy(word, wordlist, sizeof(word)), \
+				word[strcspn(word, ",")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = next ? strchr(next, ',') : ""; \
+				count >= 0; \
+				next = next ? &next[strcspn(next, ",")+1] : "", \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, ",")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, ','), \
+				count--)
+
+/* Copy each token in wordlist delimited by ascii_58 into word and keep empty string */
+#define foreach_58_keep_empty_string(count, word, wordlist, next) \
+		for (count = get_char_count(wordlist, ':'), \
+				next = strchr(wordlist, ':'), \
+				strncpy(word, wordlist, sizeof(word)), \
+				word[strcspn(word, ":")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = next ? strchr(next, ':') : ""; \
+				count >= 0; \
+				next = next ? &next[strcspn(next, ":")+1] : "", \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, ":")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, ':'), \
+				count--)
+
+/* Copy each token in wordlist delimited by ascii_59 into word and keep empty string */
+#define foreach_59_keep_empty_string(count, word, wordlist, next) \
+		for (count = get_char_count(wordlist, ';'), \
+				next = strchr(wordlist, ';'), \
+				strncpy(word, wordlist, sizeof(word)), \
+				word[strcspn(word, ";")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = next ? strchr(next, ';') : ""; \
+				count >= 0; \
+				next = next ? &next[strcspn(next, ";")+1] : "", \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, ";")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, ';'), \
+				count--)
+
+/* Copy each token in wordlist delimited by ascii_60 into word and keep empty string */
+#define foreach_60_keep_empty_string(count, word, wordlist, next) \
+		for (count = get_char_count(wordlist, '<'), \
+				next = strchr(wordlist, '<'), \
+				strncpy(word, wordlist, sizeof(word)), \
+				word[strcspn(word, "<")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = next ? strchr(next, '<') : ""; \
+				count >= 0; \
+				next = next ? &next[strcspn(next, "<")+1] : "", \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, "<")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, '<'), \
+				count--)
+
+/* Copy each token in wordlist delimited by ascii_62 into word and keep empty string */
+#define foreach_62_keep_empty_string(count, word, wordlist, next) \
+		for (count = get_char_count(wordlist, '>'), \
+				next = strchr(wordlist, '>'), \
+				strncpy(word, wordlist, sizeof(word)), \
+				word[strcspn(word, ">")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = next ? strchr(next, '>') : ""; \
+				count >= 0; \
+				next = next ? &next[strcspn(next, ">")+1] : "", \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, ">")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, '>'), \
+				count--)
+
+/* Copy each token in wordlist delimited by ascii_124 into word and keep empty string */
+#define foreach_124_keep_empty_string(count, word, wordlist, next) \
+		for (count = get_char_count(wordlist, '|'), \
+				next = strchr(wordlist, '|'), \
+				strncpy(word, wordlist, sizeof(word)), \
+				word[strcspn(word, "|")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = next ? strchr(next, '|') : ""; \
+				count >= 0; \
+				next = next ? &next[strcspn(next, "|")+1] : "", \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, "|")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, '|'), \
+				count--)
 
 /* Return NUL instead of NULL if undefined */
 #define safe_getenv(s) (getenv(s) ? : "")
@@ -450,6 +563,7 @@ extern int generate_wireless_key(unsigned char *key);
 
 extern int strArgs(int argc, char **argv, char *fmt, ...);
 extern char *trimNL(char *str);
+extern int get_char_count(char *str, int ch);
 extern pid_t get_pid_by_name(char *name);
 extern pid_t get_pid_by_thrd_name(char *name);
 extern char *get_process_name_by_pid(const int pid);
@@ -459,5 +573,6 @@ extern char *ATE_UPGRADE_MODE_STR();
 extern int hex2str(unsigned char *hex, char *str, int hex_len);
 extern void reset_stacksize(int new_stacksize);
 extern int arpcache(char *tgmac, char *tgip);
+extern int ether_inc(unsigned char *e, const unsigned char n);
 
 #endif /* _shutils_h_ */

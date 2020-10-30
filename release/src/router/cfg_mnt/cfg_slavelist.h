@@ -81,9 +81,9 @@ extern int cm_isSlaveOnline(time_t startTime);
 extern void cm_handleAPListUpdate(unsigned char *decodeMsg);
 extern int cm_prepareAPListMsg(char *msg, int msgLen);
 #endif
-extern void cm_updateTribandReList(char *newReMac, int bandNum, char *modelName, int action, int commit);
+extern void cm_updateTribandReList(const char *newReMac, int bandNum, char *modelName, int action, int commit);
 #ifdef RTCONFIG_BHCOST_OPT
-extern json_object *cm_recordReListArray(CM_CLIENT_TABLE *clientTbl, char *reMac, char *sta2g, char *sta5g);
+extern json_object *cm_recordReListArray(CM_CLIENT_TABLE *clientTbl, char *reMac);
 #endif
 extern void cm_setReOffline(time_t *startTime);
 extern int cm_getReMacByIp(CM_CLIENT_TABLE *clientTbl, char *reIp, char *reMac, int macLen);

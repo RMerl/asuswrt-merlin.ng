@@ -765,32 +765,37 @@ var httpApi ={
 		return specified_profile;
 	},
 
-	"checkCloudModelIcon": function(modelName, callBackSuccess, callBackError){
-		var getCloudModelIconSrc = function(modelName){
-			var handle_cloud_icon_model_name = function(_modelName) {
-				var transformName = _modelName;
-				if(transformName == "RT-AC66U_B1" || transformName == "RT-AC1750_B1" || transformName == "RT-N66U_C1" || transformName == "RT-AC1900U" || transformName == "RT-AC67U")
-					transformName = "RT-AC66U_V2";
-				else if(transformName == "BLUE_CAVE")
-					transformName = "BLUECAVE";
-				else if(transformName == "Lyra")
-					transformName = "MAP-AC2200";
-				else if(transformName == "Lyra_Mini" || transformName == "LyraMini")
-					transformName = "MAP-AC1300";
-				else if(transformName == "Lyra_Trio")
-					transformName = "MAP-AC1750";
-				else if(transformName == "LYRA_VOICE")
-					transformName = "MAP-AC2200V";
-				return transformName;
-			};
+	"checkCloudModelIcon": function(modelName, callBackSuccess, callBackError, tcode){
+		var getCloudModelIconSrc = function(_modelName, _tcode){
+			var transformName = _modelName;
+			if(transformName == "RT-AC66U_B1" || transformName == "RT-AC1750_B1" || transformName == "RT-N66U_C1" || transformName == "RT-AC1900U" || transformName == "RT-AC67U")
+				transformName = "RT-AC66U_V2";
+			else if(transformName == "BLUE_CAVE")
+				transformName = "BLUECAVE";
+			else if(transformName == "Lyra")
+				transformName = "MAP-AC2200";
+			else if(transformName == "Lyra_Mini" || transformName == "LyraMini")
+				transformName = "MAP-AC1300";
+			else if(transformName == "Lyra_Trio")
+				transformName = "MAP-AC1750";
+			else if(transformName == "LYRA_VOICE")
+				transformName = "MAP-AC2200V";
+
+			if(tcode != undefined && tcode != ""){
+				if(transformName == "RT-AX86U" && tcode == "GD/01")
+					transformName = "RT-AX86U_GD01";
+				else if(transformName == "RT-AX82U" && tcode == "GD/01")
+					transformName = "RT-AX82U_GD01";
+			}
+
 			var server = "http://nw-dlcdnet.asus.com";
-			var fileName = "/plugin/productIcons/" + handle_cloud_icon_model_name(modelName) + ".png";
+			var fileName = "/plugin/productIcons/" + transformName + ".png";
 
 			return server + fileName;
 		};
 
 		$("<img>")
-			.attr('src', getCloudModelIconSrc(modelName))
+			.attr('src', getCloudModelIconSrc(modelName, tcode))
 			.on("load", function(e){
 				if(callBackSuccess) callBackSuccess($(this).attr("src"));
 				$(this).remove();
@@ -1050,6 +1055,20 @@ var httpApi ={
 			.appendTo("body").submit().remove();
 	},
 
+	"set_ledg" : function(postData, parmData){
+		var asyncDefault = true;
+		$.ajax({
+			url: '/set_ledg.cgi',
+			dataType: 'json',
+			data: postData,
+			async: asyncDefault,
+			error: function(){},
+			success: function(response){
+				if(parmData != undefined && parmData.callBack) parmData.callBack.call(response);
+			}
+		});
+	},
+
 	"get_wl_sched": function(wl_unit, callBack){
 		var _wl_unit = "all";
 		if(wl_unit != undefined && wl_unit.toString() != "")
@@ -1077,21 +1096,6 @@ var httpApi ={
 			success: function(response){}
 		});
 	},
-
-	"set_ledg" : function(postData, parmData){
-		var asyncDefault = true;
-		$.ajax({
-			url: '/set_ledg.cgi',
-			dataType: 'json',
-			data: postData,
-			async: asyncDefault,
-			error: function(){},
-			success: function(response){
-				if(parmData != undefined && parmData.callBack) parmData.callBack.call(response);
-			}
-		});
-	},
-
 	"aimesh_get_node_capability" : function(_node_info){
 		var node_capability_list = {
 			"led_control" : {
@@ -1108,6 +1112,12 @@ var httpApi ={
 				"value" : 2,
 				"def" : {
 					"manual_reboot" : {"bit" : 0}
+				}
+			},
+			"force_topology_ctl" : {
+				"value" : 3,
+				"def" : {
+					"preferable_backhaul" : {"bit" : 0}
 				}
 			},
 			"rc_support" : {
@@ -1157,10 +1167,18 @@ var httpApi ={
 					"manual_reset_default" : {"bit" : 0}
 				}
 			},
+			"wifi_radio_ctl" : {
+				"value" : 22,
+				"def" : {
+					"wifi_radio_0" : {"bit" : 0},
+					"wifi_radio_1" : {"bit" : 1},
+					"wifi_radio_2" : {"bit" : 2}
+				}
+			},
 			"conn_eap_mode" : {
 				"value" : 23,
 				"def" : {
-					"general_mode" : {"bit" : 0}
+					"ethernet_backhaul_mode" : {"bit" : 0}
 				}
 			}
 		};
@@ -1186,5 +1204,98 @@ var httpApi ={
 			}
 		}
 		return node_capability_status;
+	},
+	"get_ipsec_cert_info": function(callBack){
+		$.ajax({
+			url: "/ipsec_cert_info.cgi",
+			dataType: 'json',
+			async: true,
+			error: function(){},
+			success: function(response){
+				if(callBack)
+					callBack(response);
+			}
+		});
+	},
+	"get_ipsec_clientlist": function(callBack){
+		$.ajax({
+			url: "/get_ipsec_clientlist.cgi",
+			dataType: 'json',
+			data: {"get_json":"1"},
+			async: true,
+			error: function(){},
+			success: function(response){
+				if(callBack)
+					callBack(response);
+			}
+		});
+	},
+	"set_ipsec_clientlist": function(postData){
+		$.ajax({
+			url: "/set_ipsec_clientlist.cgi",
+			type: "POST",
+			dataType: 'json',
+			data: JSON.stringify(postData),
+			async: true,
+			error: function(){},
+			success: function(response){}
+		});
+	},
+	"renew_ikev2_cert_key": function(callBack){
+		$.ajax({
+			url: "/renew_ikev2_cert_key.cgi",
+			async: true,
+			error: function(){},
+			success: function(response){
+				if(callBack)
+					callBack(response);
+			}
+		});
+	},
+	"get_ipsec_conn": function(callBack){
+		$.ajax({
+			url: "/appGet.cgi",
+			async: true,
+			error: function(){},
+			success: function(response){
+				if(callBack)
+					callBack(response);
+			}
+		});
+	},
+	"clean_ipsec_log": function(callBack) {
+		$.ajax({
+			url: '/clear_file.cgi?clear_file_name=ipsec',
+			dataType: 'script',
+			error: function(xhr) {
+				alert("Clean error!");/*untranslated*/
+			},
+			success: function(response) {
+				if(callBack)
+					callBack(response);
+			}
+		});
+	},
+	"set_ig_config": function(postData){
+		$.ajax({
+			url: "/set_ig_config.cgi",
+			type: "POST",
+			dataType: 'json',
+			data: JSON.stringify(postData),
+			async: true,
+			error: function(){},
+			success: function(response){}
+		});
+	},
+	"get_ig_config": function(callBack){
+		$.ajax({
+			url: "/get_ig_config.cgi",
+			async: true,
+			error: function(){},
+			success: function(response){
+				if(callBack)
+					callBack(response);
+			}
+		});
 	}
 }

@@ -263,6 +263,10 @@ void add_usb_host_module(void)
 	if (!hw_usb_cap())
 		return;
 #endif
+#if defined(PLAX56_XP4)
+	if (!nvram_get_int("usb_enable"))
+		return;
+#endif
 
 #if defined(RTAX89U) || defined(GTAXY16000)
 	if (!module_loaded(USB30_MOD)) {
@@ -741,13 +745,10 @@ void start_usb(int mode)
 #ifdef LINUX26
 			modprobe(SCSI_WAIT_MOD);
 #endif
-			MODPROBE__UAS;
 			modprobe(SD_MOD);
 			modprobe(SG_MOD);
 			modprobe(USBSTORAGE_MOD);
-#ifdef RTCONFIG_HND_ROUTER_AX
-			modprobe(UAS_MOD);
-#endif
+			MODPROBE__UAS;
 
 			if (nvram_get_int("usb_fs_ext3")) {
 #ifdef LINUX26
@@ -841,10 +842,10 @@ void start_usb(int mode)
 			modprobe(USBPRINTER_MOD);
 		}
 #endif
-#if defined(RTCONFIG_BT_CONN)
+#if defined(RTCONFIG_BT_CONN_USB)
 		modprobe("btusb");
 		modprobe("ath3k");
-#endif	/* RTCONFIG_BT_CONN */
+#endif	/* RTCONFIG_BT_CONN_USB */
 #ifdef RTCONFIG_HND_ROUTER
 		modprobe("btusbdrv");
 #endif
@@ -958,13 +959,10 @@ void remove_usb_storage_module(void)
 	modprobe_r("nls_cp950");
 #endif
 #endif
-#ifdef RTCONFIG_HND_ROUTER_AX
-	modprobe_r(UAS_MOD);
-#endif
+	MODPROBE_R__UAS;
 	modprobe_r(USBSTORAGE_MOD);
 	modprobe_r(SG_MOD);
 	modprobe_r(SD_MOD);
-	MODPROBE_R__UAS;
 #ifdef LINUX26
 	modprobe_r(SCSI_WAIT_MOD);
 #endif
@@ -986,7 +984,7 @@ void remove_usb_host_module(void)
 	modprobe_r(USBOHCI_MOD);
 	modprobe_r(USBUHCI_MOD);
 	modprobe_r(USB20_MOD);
-#if defined(RTCONFIG_BT_CONN)
+#if defined(RTCONFIG_BT_CONN_USB)
 	modprobe_r("ath3k");
 	modprobe_r("btusb");
 #endif
@@ -1163,10 +1161,10 @@ void stop_usb(int f_force)
 		modprobe_r(USBOHCI_MOD);
 		modprobe_r(USBUHCI_MOD);
 		modprobe_r(USB20_MOD);
-#if defined(RTCONFIG_BT_CONN)
+#if defined(RTCONFIG_BT_CONN_USB)
 		modprobe_r("ath3k");
 		modprobe_r("btusb");
-#endif	/* RTCONFIG_BT_CONN */
+#endif	/* RTCONFIG_BT_CONN_USB */
 #if defined(RTCONFIG_USB_XHCI) && !defined(RTCONFIG_HND_ROUTER)
 #if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
 		modprobe_r("dwc3-ipq");
@@ -4538,6 +4536,9 @@ int sd_partition_num()
 				count++;
 		}
 	}
+
+	if(procpt)
+		fclose(procpt);
 
 	return count;
 }

@@ -70,7 +70,7 @@ function initial(){
 	showbootTime();
 	showDST();
 	document.getElementById('textarea').scrollTop = 9999999;//make Scroll_y bottom
-	setTimeout("get_log_data();", 5000);
+	setTimeout("get_log_data();", 100);
 }
 
 function applySettings(){
@@ -126,7 +126,7 @@ function get_log_data(){
     	success: function(response){
     		h = $("#textarea").scrollTop();
 			if((document.getElementById("auto_refresh").checked) && !(height > 0 && h < height)){
-				document.getElementById("textarea").innerHTML = logString;
+				document.getElementById("textarea").innerHTML = htmlEnDeCode.htmlEncode(logString);
 				$("#textarea").animate({ scrollTop: 9999999 }, "slow");
 				setTimeout('height = $("#textarea").scrollTop();', 500);
 			}
@@ -200,10 +200,10 @@ function get_log_data(){
 													</td>
 												</tr>
 												<tr>
-													<th>Remote Log Server Port</th>
+													<th><#LANHostConfig_x_ServerLogPort_itemname#></th>
 													<td>
 														<input type="text" class="input_6_table" maxlength="5" name="log_port" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" value='<% nvram_get("log_port"); %>'>
-														<div style="color: #FFCC00;">* The default port is 514. If you reconfigured the port number, please make sure that the remote log server or IoT devices’ settings match your current configuration.</div>
+													  <div style="color: #FFCC00;"><#LANHostConfig_x_ServerLogPort_itemhint#></div>
 												</td>
 											</tr>
 											<tr>
@@ -241,7 +241,7 @@ function get_log_data(){
 									<div style="margin-top: 5px; text-align: center;"><input class="button_gen" onclick="applySettings();" type="button" value="<#CTL_apply#>" /></div>
 									<div style="color:#FFCC00;"><input type="checkbox" checked id="auto_refresh">Auto refresh</div>
 									<div style="margin-top:8px">
-										<textarea cols="63" rows="27" wrap="off" readonly="readonly" id="textarea" class="textarea_ssh_table" style="width:99%; font-family:'Courier New', Courier, mono; font-size:11px;"><% nvram_dump("syslog.log",""); %></textarea>
+										<textarea cols="63" rows="27" wrap="off" readonly="readonly" id="textarea" class="textarea_ssh_table" style="width:99%; font-family:'Courier New', Courier, mono; font-size:11px;"></textarea>
 									</div>
 									<div>
 									<table class="apply_gen">

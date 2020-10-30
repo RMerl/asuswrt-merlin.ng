@@ -276,6 +276,9 @@ start_pppd(int unit)
 
 	/* shut down previous instance if any */
 	stop_pppd(unit);
+#if defined(RTCONFIG_SOC_IPQ8074)
+	sleep(2);
+#endif
 
 	if (nvram_match(strcat_r(prefix, "proto", tmp), "l2tp"))
 	{

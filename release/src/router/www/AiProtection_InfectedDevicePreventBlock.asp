@@ -95,9 +95,6 @@ window.onresize = function() {
 		cal_panel_block("erase_confirm", 0.25);
 	}
 }
-<% get_AiDisk_status(); %>
-var AM_to_cifs = get_share_management_status("cifs");  // Account Management for Network-Neighborhood
-var AM_to_ftp = get_share_management_status("ftp");  // Account Management for FTP
 
 var ctf_disable = '<% nvram_get("ctf_disable"); %>';
 var ctf_fa_mode = '<% nvram_get("ctf_fa_mode"); %>';
@@ -519,6 +516,12 @@ function recountHover(flag){
 function eraseDatabase(){
 	document.form.action_script.value = 'reset_cc_db';
 	document.form.action_wait.value = "1";
+
+	/* update current timestamp when delete database */
+	var t = new Date();
+	var timestamp = t.getTime();
+	document.form.wrs_cc_t.value = timestamp.toString().substring(0, 10);
+
 	applyRule();
 }
 

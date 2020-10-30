@@ -239,7 +239,7 @@ static int do_ping(void *rInfo)
 				}
 				
 			} else {
-				ErrorMsg("fp = %d\n", (int) fp); 
+				ErrorMsg("fp = %p\n", fp); 
 				perror(cmd);
 			}
 			loop--;
@@ -536,7 +536,7 @@ static int do_traceroute(void *rInfo)
 			}
 			MyDBG("Lastping:%s\n", lastpingbuf);
 		} else {
-			ErrorMsg("fp = %d\n", (int) fp); 
+			ErrorMsg("fp = %p\n", fp); 
 			perror(cmd);
 		}
 		if (fp)

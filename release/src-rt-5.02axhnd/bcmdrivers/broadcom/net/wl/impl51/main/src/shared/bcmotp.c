@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmotp.c 777734 2019-08-08 01:00:16Z $
+ * $Id: bcmotp.c 788953 2020-07-15 07:52:39Z $
  */
 
 #include <bcm_cfg.h>
@@ -4428,8 +4428,17 @@ BCMSROMCISDUMPATTACHFN(otp_init)(si_t *sih)
 		si_otp_power(sih, FALSE, &min_res_mask);
 
 	/* 43684 specific OTP info */
-	if (BCM43684_CHIP(sih->chip))
-		oi->sih->otpflag = otp_read_bit(ret, OTP_BIT_500);
+	if (BCM43684_CHIP(sih->chip)) {
+		uint i;
+		uint16 tmp;
+		oi->sih->otpflag = 0;
+		for (i = 0; i < 11; i++) {
+			/* read HW config options */
+			tmp = otp_read_bit(ret, OTP_BIT_500 + i);
+			oi->sih->otpflag |= (tmp << i);
+		}
+		oi->sih->otpflag |= (1 << i); /* always set bit 11 to mark driver has this loop */
+	}
 #endif /* !BCMDONGLEHOST */
 
 	return ret;

@@ -221,7 +221,7 @@ int main(int argc, char *argv[]) {
 	if (fp==NULL) return -1;
 	
 	/* Load modules */
-	fprintf(fp, "server.modules+=(\"mod_aicloud_invite\")\n");
+	// fprintf(fp, "server.modules+=(\"mod_aicloud_invite\")\n");
 	fprintf(fp, "server.modules+=(\"mod_aicloud_auth\")\n");
 #ifndef APP_IPKG
 	fprintf(fp, "server.modules+=(\"mod_alias\")\n");

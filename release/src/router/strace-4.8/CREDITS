@@ -1,0 +1,130 @@
+The primary authors of strace were:
+
+	Paul Kranenburg <pk@cs.few.eur.nl>
+	Branko Lankester <branko@hacktic.nl>
+	Rick Sladkey <jrs@world.std.com>
+
+These people have contributed to strace.  Some have reported problems, others
+have contributed improvements to the documentation, actual code, provided
+information, provided resources, or helped to port strace to new systems.
+Those contributions are described in the version control logs and ChangeLog-CVS
+file.  If your name has been left out, if you'd rather not be listed, or if
+you'd prefer a different address be used, please send a note to the
+strace-devel@lists.sourceforge.net mailing list.
+
+	Aaron Ucko <ucko@vax1.rockhurst.edu>
+	Adrien Kunysz <adrien@kunysz.be>
+	Andi Kleen <ak@linux.intel.com>
+	Andreas Schwab <schwab@linux-m68k.org>
+	Anton Blanchard <anton@samba.org>
+	Arkadiusz Miskiewicz <misiek@pld.org.pl>
+	Bai Weidong <baiwd@cn.fujitsu.com>
+	Ben Noordhuis <info@bnoordhuis.nl>
+	Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
+	Bo Kullmar <bk@kullmar.se>
+	Cai Fei <caifei@cn.fujitsu.com>
+	Carlos O'Donell <carlos@systemhalted.org>
+	Carmelo AMOROSO <carmelo.amoroso@st.com>
+	Chris Metcalf <cmetcalf@tilera.com>
+	Chris Zankel <chris@zankel.net>
+	Christian Svensson <blue@cmd.nu>
+	D.J. Barrow <djbarrow@de.ibm.com>
+	Damir Shayhutdinov <damir@altlinux.ru>
+	Daniel P. Berrange <berrange@redhat.com>
+	David Daney <ddaney@caviumnetworks.com>
+	David Mosberger-Tang <davidm@hpl.hp.com>
+	David S. Miller <davem@caip.rutgers.edu>
+	David Wilder <wilder@us.ibm.com>
+	David Woodhouse <dwmw2@redhat.com>
+	Denys Vlasenko <vda.linux@googlemail.com>
+	Dmitry V. Levin <ldv@altlinux.org>
+	Douglas Mencken <dougmencken@gmail.com>
+	Edgar E. Iglesias <edgar.iglesias@gmail.com>
+	Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+	Florian Lohoff <flo@rfc822.org>
+	Frederik Schüler <fs@debian.org>
+	Gabor Gombas <gombasg@sztaki.hu>
+	Ganesan Rajagopal <rganesan@myrealbox.com>
+	Gaël Roualland <gael.roualland@iname.com>
+	Grant Edwards <grant.b.edwards@gmail.com>
+	Greg Banks <gbanks@pocketpenguins.com>
+	H.J. Lu <hongjiu.lu@intel.com>
+	Heiko Carstens <heiko.carstens@de.ibm.com>
+	Henrik Storner <storner@osiris.ping.dk>
+	Holger Hans Peter Freyther <holger@freyther.de>
+	Jakub Bogusz <qboosh@pld-linux.org>
+	Jakub Jelinek <jj@ultra.linux.cz>
+	James Hogan <james.hogan@imgtec.com>
+	Jan Kratochvil <jan.kratochvil@redhat.com>
+	Jeff Mahoney <jeffm@suse.com>
+	Joe Ilacqua <spike@world.std.com>
+	Johannes Stezenbach <js@sig21.net>
+	John Hughes <john@Calva.COM>
+	John Spencer <maillist-strace@barfooze.de>
+	Ju"rgen Fluk <louis@marco.de>
+	Juergen Weigert <jnweiger@immd4.informatik.uni-erlangen.de>
+	Keith Thompson <kst@alsys.com>
+	Kirill A. Shutemov <kirill@shutemov.name>
+	Kyle McMartin <kyle@mcmartin.ca>
+	Lai JiangShan <laijs@cn.fujitsu.com>
+	Leonard N. Zubkoff <lnz@dandelion.com>
+	Linus Torvalds <Linus.Torvalds@cs.helsinki.fi>
+	Lupe Christoph <lupe@alanya.isar.muc.de>
+	Mark Wielaard <mjw@redhat.com>
+	Marty Leisner <leisner@sdsp.mc.xerox.com>
+	Matt Day <mday@artisoft.com>
+	Matthias Pfaller <leo@dachau.marco.de>
+	Maxim Shchetynin <maxim@de.ibm.com>
+	Maxin B. John <maxin.john@enea.com>
+	Michael E Chastain <mec@duracef.shout.net>
+	Michael Holzheu <holzheu@de.ibm.com>
+	Michail Litvak <mci@owl.openwall.com>
+	Michal Ludvig <mludvig@suse.cz>
+	Mike Frysinger <vapier@gentoo.org>
+	Mike Stroyan <mike.stroyan@hp.com>
+	Muttley Meen <muttley.meen@gmail.com>
+	Namhyung Kim <namhyung.kim@lge.com>
+	Nate Eldredge <nate@cartsys.com>
+	Nate Sammons <nate@users.sourceforge.net>
+	Neil Campbell <lists@thebatcave.org.uk>
+	Paolo Bonzini <pbonzini@redhat.com>
+	Paul Mundt <lethal@linux-sh.org>
+	Pavel Machek <pavel@ucw.cz>
+	Peter Jones <pjones@redhat.com>
+	Pádraig Brady <P@draigBrady.com>
+	Rajeev V. Pillai <rajeevvp@gmail.com>
+	Ralf Baechle <ralf@linux-mips.org>
+	Randolph Chung <tausq@debian.org>
+	Reuben Sumner <rasumner@undergrad.math.uwaterloo.ca>
+	Richard Braakman <dark@xs4all.nl>
+	Richard Henderson <richard@twiddle.tamu.edu>
+	Richard Hirst <rhirst@linuxcare.com>
+	Roland Borde <bo@uebemc.siemens.de>
+	Roland McGrath <roland@redhat.com>
+	Sami Farin <safari@u.safari.iki.fi>
+	Scott Tsai <scottt958@yahoo.com.tw>
+	Sebastian Pipping <sebastian@pipping.org>
+	Sergei Trofimovich <slyfox@gentoo.org>
+	Simon Murray <simon@transitive.com>
+	Solar Designer <solar@openwall.com>
+	Srinivasa Ds <srinivasa@in.ibm.com>
+	Stanislav Brabec <sbrabec@suse.cz>
+	Steve Bennett <steveb@workware.net.au>
+	Steve McIntyre <steve.mcintyre@linaro.org>
+	Thanh Ma <tma@encore.com>
+	Thiemo Seufer <ths@networkno.de>
+	Thomas Bogendoerfer <tsbogend@bigbug.franken.de>
+	Tim Yamin <plasmaroo@gentoo.org>
+	Timo Lindfors <timo.lindfors@iki.fi>
+	Tom Dyas <tdyas@eden.rutgers.edu>
+	Tommi Rantala <ext-tommi.1.rantala@nokia.com>
+	Topi Miettinen <Topi.Miettinen@nic.fi>
+	Ulrich Drepper <drepper@redhat.com>
+	Wang Chao <wang.chao@cn.fujitsu.com>
+	Wichert Akkerman <wichert@deephackmode.org>
+	Xiaoning Ding <dingxn@gmail.com>
+	Yang Zhiguo <yzgcsu@cn.fujitsu.com>
+	Zach Brown <zach.brown@oracle.com>
+	Zev Weiss <zev@bewilderbeest.net>
+	Zhang Le <zhilg@users.sourceforge.net>
+	Марк Коренберг <socketpair@gmail.com>

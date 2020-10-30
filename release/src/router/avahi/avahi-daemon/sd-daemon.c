@@ -32,7 +32,11 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 #include <sys/fcntl.h>
+#else
+#include <fcntl.h>
+#endif
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <errno.h>

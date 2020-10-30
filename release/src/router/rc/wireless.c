@@ -169,6 +169,8 @@ int wlcscan_main(void)
 	char word[256]={0}, *next = NULL;
 #if defined(RTCONFIG_CONCURRENTREPEATER) && defined(RTCONFIG_MTK_REP)		
 	char wl_ifs[256]={0};
+#else
+	char wl_ifnames[32] = { 0 };
 #endif
 	int i = 0;
 #ifdef RTCONFIG_QSR10G
@@ -216,7 +218,8 @@ int wlcscan_main(void)
 		strncpy(wl_ifs,nvram_safe_get("wl_ifnames"), sizeof(wl_ifs));
 	foreach (word, wl_ifs, next)
 #else
-	foreach (word, nvram_safe_get("wl_ifnames"), next)
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach (word, wl_ifnames, next)
 #endif
 	{	
 		SKIP_ABSENT_BAND_AND_INC_UNIT(i);

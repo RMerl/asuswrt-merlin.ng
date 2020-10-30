@@ -818,15 +818,143 @@ function filter_5g_channel_by_bw(ch_ary, bw){
 	return ary;
 }
 
+function filter_60g_control_channel_by_bw(ctrl_ch_ary, edmg_ch_ary, bw){
+	var edmg_sch_mask = [ [], [], [], [], [], [], [], [], [],	// ch  0 ~  8, not EDMG channel or N/A.
+		[ 0x06 ], [ 0x0c ], [ 0x18 ], [ 0x30 ], [ 0x60 ],	// ch  9 ~ 13, BW 4.32GHz EDMG channel.
+		[], [], [],						// ch 14 ~ 16, N/A
+		[ 0x0e ], [ 0x1c ], [ 0x38 ], [ 0x70 ],			// ch 17 ~ 20, BW 6.48GHz EDMG channel.
+		[], [], [], [],						// ch 21 ~ 24, N/A
+		[ 0x1e ], [ 0x3c ], [ 0x78 ] ];				// ch 25 ~ 27, BW 8.64GHz EDMG channel.
+	var new_ctrl_ch_ary = [];
+	for (var i = 0; i < ctrl_ch_ary.length; ++i) {
+		for (var j = 0; j < edmg_ch_ary.length; ++j) {
+			if (!edmg_sch_mask[edmg_ch_ar[j]]
+			 || !((1 << ctrl_ch_ary[i]) & edmg_sch_mask[edmg_ch_ar[j]]))
+				continue;
+
+			new_ctrl_ch_ary.push(ctrl_ch_ary[i]);
+			break;
+		}
+	}
+	return new_ctrl_ch_ary;
+}
+
+function filter_60g_edmg_channel_by_bw(ctrl_ch_ary, bw){
+	var CurrentCtrlCh = parseInt(document.form.wl_channel.value);
+	var edmg_ch_ary = [];
+	var all_ch_mask = 0;
+	if (bw == 4320) {
+		var start_ch = 9;
+		var edmg_sch_mask = [ [ 0x06 ], [ 0x0c ], [ 0x18 ], [ 0x30 ], [ 0x60 ] ];	// ch 1,2; 2,3; 3,4; 4,5; 5,6
+	} else if (bw == 6480) {
+		var start_ch = 17;
+		var edmg_sch_mask = [ [ 0x0e ], [ 0x1c ], [ 0x38 ], [ 0x70 ] ];			// ch 1,2,3; 2,3,4; 3,4,5; 4,5,6
+	} else if (bw == 8640) {
+		var start_ch = 25;
+		var edmg_sch_mask = [ [ 0x1e ], [ 0x3c ], [ 0x78 ] ];				// ch 1,2,3,4; 2,3,4,5, 3,4,5,6
+	} else {
+		return edmg_ch_ary;								// No EDMG channel if bandwidth is 2.16GHz
+	}
+
+	for (var i = 0; i < ctrl_ch_ary.length; ++i) {
+		if (ctrl_ch_ary[i] < 1 || ctrl_ch_ary[i] > 6)
+			continue;
+		all_ch_mask |= 1 << ctrl_ch_ary[i];
+	}
+
+	// Add a EDMG channel if all sub-channel of it are supported.
+	for (var i = 0, ch = start_ch; i < edmg_sch_mask.length; ++i, ++ch) {
+		if ((edmg_sch_mask[i] & all_ch_mask) != edmg_sch_mask[i])
+			continue;
+		if (CurrentCtrlCh && !(edmg_sch_mask[i] & (1 << CurrentCtrlCh)))
+			continue;
+
+		edmg_ch_ary.push(ch);
+	}
+
+	return edmg_ch_ary;
+}
+
 function insertExtChannelOption(){
 	var wl_unit = '<% nvram_get("wl_unit"); %>';
 	if(wl_unit == '0'){
 		insertExtChannelOption_2g();
 	}else if (wl_unit == '3'){
-		//nothing to do
+		insertChannelOption_60g();
 	}else{
 		insertExtChannelOption_5g();
 	}
+}
+
+function wl_bw_to_wigig_bw(wl_bw){
+	/* WL_BW_2160 ~ WL_BW_8640 */
+	if (wl_bw == 6)
+		return 2160;
+	else if (wl_bw == 7)
+		return 4320;
+	else if (wl_bw == 8)
+		return 6480;
+	else if (wl_bw == 9)
+		return 8640;
+	else
+		return 0;
+}
+
+function insertChannelOption_60g(){
+	if (!band60g_support || document.form.wl_unit.value != 3)
+		return;
+
+	var CurrentCtrlCh = document.form.wl_channel.value;
+	var CurrentEdmgCh = document.form.wl_edmg_channel.value;
+	var edma_ch_ary = [], ary = [], ch_v = [];
+
+	if (document.form.wl_bw.value == 6) {
+		// 2.16GHz, hide EDMA channel.
+		document.getElementById("wl_edmg_field").style.display = "none";
+	} else {
+		if (document.form.wl_bw.value == 1) {
+			// auto-bandwidth, list channels of all possible bandwidth
+			max_wl_bw = max_band60g_wl_bw;
+			for (var i = 7; i <= max_wl_bw; ++i) {
+				if (wl_bw_to_wigig_bw(i) <= 2160)
+					continue;
+				ary = filter_60g_edmg_channel_by_bw(wl_channel_list_60g, wl_bw_to_wigig_bw(i));
+				edma_ch_ary = edma_ch_ary.concat(ary);
+			}
+		} else {
+			// list channels of specific bandwidth
+			if (wl_bw_to_wigig_bw(document.form.wl_bw.value) > 2160) {
+				ary = filter_60g_edmg_channel_by_bw(wl_channel_list_60g, wl_bw_to_wigig_bw(document.form.wl_bw.value));
+				edma_ch_ary = edma_ch_ary.concat(ary);
+			}
+		}
+
+		if (CurrentCtrlCh == "0") {
+			// EDMG channel can't be selected if control-channel is auto.
+			edma_ch_ary = [ [0] ];
+			ch_v = [ ["<#Auto#>"] ];
+		} else {
+			if (edma_ch_ary.length > 1 && edma_ch_ary[0] != 0)
+				edma_ch_ary.splice(0,0,0);
+			for (var i = 0, ch_v = []; i < edma_ch_ary.length; ++i)
+				ch_v[i] = edma_ch_ary[i];
+			if (ch_v.length > 1 && ch_v[0] == 0)
+				ch_v[0] = "<#Auto#>";
+		}
+		add_options_x2(document.form.wl_edmg_channel, ch_v, edma_ch_ary, CurrentEdmgCh);
+
+		document.getElementById("wl_edmg_field").style.display = "";
+	}
+
+	wl_channel_list_60g = eval('<% channel_list_60g(); %>');
+	if (wl_channel_list_60g[0] != 0)
+		wl_channel_list_60g.splice(0, 0, 0);
+	for (var i = 0, ch_v = []; i < wl_channel_list_60g.length; ++i)
+		ch_v[i] = wl_channel_list_60g[i];
+	if (ch_v[0] == 0)
+		ch_v[0] = "<#Auto#>";
+
+	add_options_x2(document.form.wl_channel, ch_v, wl_channel_list_60g, CurrentCtrlCh);
 }
 
 function insertExtChannelOption_5g(){

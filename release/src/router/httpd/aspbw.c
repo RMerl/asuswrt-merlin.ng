@@ -170,7 +170,7 @@ char *psname(int pid, char *buffer, int maxlen)
 
 	if (maxlen <= 0) return NULL;
 	*buffer = 0;
-	sprintf(path, "/proc/%d/stat", pid);
+	snprintf(path, sizeof(path), "/proc/%d/stat", pid);
 	if ((f_read_string(path, buf, sizeof(buf)) > 4) && ((p = strrchr(buf, ')')) != NULL)) {
 		*p = 0;
 		if (((p = strchr(buf, '(')) != NULL) && (atoi(buf) == pid)) {

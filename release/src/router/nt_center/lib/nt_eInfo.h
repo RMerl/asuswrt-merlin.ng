@@ -146,6 +146,40 @@ struct eInfo mapInfo[] =
 	{"USB_DISK_PARTITION_FULL_EVENT"             ,USB_DISK_PARTITION_FULL_EVENT               ,TYPE_OF_TIPS       ,ACT(AIHOME)    ,ACTION_NOTIFY_WEBUI | ACTION_NOTIFY_EMAIL },
 	{"USB_DISK_FULL_EVENT"                       ,USB_DISK_FULL_EVENT                         ,TYPE_OF_TIPS       ,ACT(AIHOME)    ,ACTION_NOTIFY_WEBUI | ACTION_NOTIFY_EMAIL },
 	/* ------------------------------
+	   ### GENERAL Event ###
+	---------------------------------*/
+	{"GENERAL_WIFI_DEV_ONLINE"                   ,GENERAL_WIFI_DEV_ONLINE                     ,TYPE_OF_TURN_OFF   ,-1             ,ACTION_NOTIFY_GENERAL },
+	{"GENERAL_WIFI_DEV_OFFLINE"                  ,GENERAL_WIFI_DEV_OFFLINE                    ,TYPE_OF_TURN_OFF   ,-1             ,ACTION_NOTIFY_GENERAL },
+	{"GENERAL_ETH_DEV_ONLINE"                    ,GENERAL_ETH_DEV_ONLINE                      ,TYPE_OF_TURN_OFF   ,-1             ,ACTION_NOTIFY_GENERAL },
+	{"GENERAL_ETH_DEV_OFFLINE"                   ,GENERAL_ETH_DEV_OFFLINE                     ,TYPE_OF_TURN_OFF   ,-1             ,ACTION_NOTIFY_GENERAL },
+	{"GENERAL_ETH_DEV_REFUSED"                   ,GENERAL_ETH_DEV_REFUSED                     ,TYPE_OF_TURN_OFF   ,-1             ,ACTION_NOTIFY_GENERAL },
+	{"GENERAL_SYS_STATES"                        ,GENERAL_SYS_STATES                          ,TYPE_OF_TURN_OFF   ,-1             ,ACTION_NOTIFY_GENERAL },
+	{"GENERAL_DEV_UPDATE"                        ,GENERAL_DEV_UPDATE                          ,TYPE_OF_TURN_OFF   ,-1             ,ACTION_NOTIFY_GENERAL
+	#if defined(RTCONFIG_ALEXA)
+                                                                                                                                      |ACTION_NOTIFY_ALEXA
+	#endif
+	},
+	{"GENERAL_DEV_DELETED"                       ,GENERAL_DEV_DELETED                         ,TYPE_OF_TURN_OFF   ,-1             ,ACTION_NOTIFY_GENERAL
+	#if defined(RTCONFIG_ALEXA)
+                                                                                                                                      |ACTION_NOTIFY_ALEXA
+	#endif
+	},
+	{"GENERAL_DEV_ACCESS_CHANGE"                 ,GENERAL_DEV_ACCESS_CHANGE                   ,TYPE_OF_TURN_OFF   ,-1             ,ACTION_NOTIFY_GENERAL
+	#if defined(RTCONFIG_ALEXA)
+                                                                                                                                      |ACTION_NOTIFY_ALEXA
+	#endif
+	},
+	{"GENERAL_QOS_UPDATE"                        ,GENERAL_QOS_UPDATE                          ,TYPE_OF_TURN_OFF   ,-1             ,ACTION_NOTIFY_GENERAL
+	#if defined(RTCONFIG_ALEXA)
+                                                                                                                                      |ACTION_NOTIFY_ALEXA
+	#endif
+	},
+	{"GENERAL_TOGGLE_STATES_UPDATE"              ,GENERAL_TOGGLE_STATES_UPDATE                ,TYPE_OF_TURN_OFF   ,-1             ,ACTION_NOTIFY_GENERAL
+	#if defined(RTCONFIG_ALEXA)
+                                                                                                                                      |ACTION_NOTIFY_ALEXA
+	#endif
+	},
+	/* ------------------------------
 	   ### Hint Item ###
 	---------------------------------*/
 	/* HINT EVENT */

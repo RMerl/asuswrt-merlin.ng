@@ -33,8 +33,8 @@
 #endif
 
 /* timer ID */
-typedef unsigned int bcm_timer_module_id;
-typedef unsigned int bcm_timer_id;
+typedef unsigned long bcm_timer_module_id;
+typedef unsigned long bcm_timer_id;
 
 /* timer callback */
 typedef void (*bcm_timer_cb)(bcm_timer_id id, unsigned int data);

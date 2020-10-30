@@ -271,12 +271,12 @@ function showPermissionTitle(){
 	if(PROTOCOL == "cifs"){
 		code += '<td width="34%" align="center">R/W</td>';
 		code += '<td width="28%" align="center">R</td>';
-		code += '<td width="38%" align="center">No</td>';
+		code += '<td width="38%" align="center"><#checkbox_No#></td>';
 	}else if(PROTOCOL == "ftp"){
 		code += '<td width="28%" align="center">R/W</td>';
 		code += '<td width="22%" align="center">W</td>';
 		code += '<td width="22%" align="center">R</td>';
-		code += '<td width="28%" align="center">No</td>';
+		code += '<td width="28%" align="center"><#checkbox_No#></td>';
 	}
 	
 	code += '</tr></table>';

@@ -83,7 +83,13 @@ function initial(){
 		document.getElementById("guest_table5").style.display = "none";
 	
 	if(wl_info.band5g_2_support){
-		document.getElementById("wl_opt1").innerHTML = "5GHz-1";
+		if(band6g_support){
+			document.getElementById("wl_opt1").innerHTML = "5 GHz";
+		}
+		else{
+			document.getElementById("wl_opt1").innerHTML = "5 GHz-1";
+		}
+		
 		document.getElementById("wl_opt2").style.display = "";
 		document.getElementById("guest_table5_2").style.display = "";
 	}
@@ -479,7 +485,7 @@ function gen_gntable(){
 
 	if(gn_array_2g_tmp.length > 0){
 		htmlcode += '<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_2g">';
-		htmlcode += '<tr id="2g_title"><td align="left" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;"><span>2.4GHz</span>';
+		htmlcode += '<tr id="2g_title"><td align="left" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;"><span>2.4 GHz</span>';
 		htmlcode += '<span id="2g_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(0);"><#btn_go#></a></span></td></tr>';
 		while(gn_array_2g_tmp.length > 4){
 			htmlcode += '<tr><td>';
@@ -500,10 +506,16 @@ function gen_gntable(){
 	if(gn_array_5g_tmp.length > 0){
 		htmlcode5 += '<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g">';
 		htmlcode5 += '<tr id="5g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;">';
-		if(wl_info.band5g_2_support)
-			htmlcode5 += '<span>5GHz-1</span>';
+		if(wl_info.band5g_2_support){
+			if(band6g_support){
+				htmlcode5 += '<span>5 GHz</span>';
+			}
+			else{
+				htmlcode5 += '<span>5 GHz-1</span>';
+			}
+		}			
 		else
-			htmlcode5 += '<span>5GHz</span>';
+			htmlcode5 += '<span>5 GHz</span>';
 		htmlcode5 += '<span id="5g_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(1);"><#btn_go#></a></span></td></tr>';
 
 		while(gn_array_5g_tmp.length > 4){
@@ -524,7 +536,13 @@ function gen_gntable(){
 
   	if(wl_info.band5g_2_support && gn_array_5g_2_tmp.length > 0){
 		htmlcode5_2 += '<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g_2">';
-		htmlcode5_2 += '<tr id="5g_2_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>5GHz-2</span>';
+		if(band6g_support){
+			htmlcode5_2 += '<tr id="5g_2_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>6 GHz</span>';
+		}
+		else{
+			htmlcode5_2 += '<tr id="5g_2_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>5 GHz-2</span>';
+		}
+		
 		htmlcode5_2 += '<span id="5g_2_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(1);"><#btn_go#></a></span></td></tr>';
 		while(gn_array_5g_2_tmp.length > 4){
 			htmlcode5_2 += '<tr><td >';
@@ -544,7 +562,7 @@ function gen_gntable(){
 
 	if(wl_info.band60g_support) {
 		htmlcode60 += '<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_60g">';
-		htmlcode60 += '<tr id="60g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>60GHz</span></td></tr>';
+		htmlcode60 += '<tr id="60g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>60 GHz</span></td></tr>';
 		htmlcode60 += '<tr><td><span style="font-size: 14px;color:#FC0;"><#CTL_nonsupported#></span></td></tr>';
 		htmlcode60 += '</table>';
 		document.getElementById("guest_table60").innerHTML = htmlcode60;
@@ -1284,10 +1302,10 @@ function show_bandwidth(flag){
 		}
 
 		if(QoS_enable_orig == "0"){
-			show_hint_content += "<br>QoS function of traffic manager will be enable and set as Bandwidth Limiter mode by default.";	/* untranslated */
+			show_hint_content += "<br><#Bandwidth_Limiter_NAT_hint#>";
 		}
 		else if(QoS_type_orig != "2"){
-			show_hint_content += "<br>QoS function of traffic manager will set as Bandwidth Limiter mode.";	/* untranslated */
+			show_hint_content += "<br><#Bandwidth_Limiter_set_hint#>";
 		}
 
 		if(show_hint_content.length <= 0){
@@ -1571,11 +1589,11 @@ function apply_amazon_wss(){
 								<th><#Interface#></th>
 								<td>
 									<select name="wl_unit" class="input_option" onChange="change_wl_unit();" style="display:none">
-										<option id="wl_opt0" class="content_input_fd" value="0" <% nvram_match("wl_unit", "0","selected"); %>>2.4GHz</option>
-										<option id="wl_opt1" class="content_input_fd" value="1" <% nvram_match("wl_unit", "1","selected"); %>>5GHz</option>
-										<option id="wl_opt2" class="content_input_fd" value="2" <% nvram_match("wl_unit", "2","selected"); %>>5GHz-2</option>
+										<option id="wl_opt0" class="content_input_fd" value="0" <% nvram_match("wl_unit", "0","selected"); %>>2.4 GHz</option>
+										<option id="wl_opt1" class="content_input_fd" value="1" <% nvram_match("wl_unit", "1","selected"); %>>5 GHz</option>
+										<option id="wl_opt2" class="content_input_fd" value="2" <% nvram_match("wl_unit", "2","selected"); %>>5 GHz-2</option>
 									</select>			
-									<p id="wl_ifname">2.4GHz</p>
+									<p id="wl_ifname">2.4 GHz</p>
 								</td>
 							</tr>
 							<tr style="display:none">

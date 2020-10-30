@@ -90,7 +90,7 @@ enum gpio_api {
 #define BLED_UDEF_PATTERN_MIN_INTERVAL	(50)	/* unit: ms */
 #define BLED_UDEF_PATTERN_MAX_INTERVAL	(3000)	/* unit: ms */
 
-#define BLED_MAX_NR_GPIO_PER_BLED	(3)	/* for RGB LED */
+#define BLED_MAX_NR_GPIO_PER_BLED	(4)	/* for RGBW LED */
 
 struct bled_common {
 	unsigned int gpio_nr;		/* Primary GPIO number that is used to search bled. */

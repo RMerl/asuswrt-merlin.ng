@@ -17,6 +17,7 @@
  * Boston, MA  02110-1301  USA
  */
 
+#include <stdint.h>
 #include <sys/types.h>
 #include <limits.h>
 #include <mtd/mtd-user.h>

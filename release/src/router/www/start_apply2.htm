@@ -208,7 +208,17 @@ function showWlHint(updateFlag){
 			}
 			else if(wl_nband_array[j] == '1'){
 				band5g_count++;
-				wl_nband_title.push("5 GHz-" + band5g_count);
+				if(parent.band6g_support){
+					if(band5g_count == '1'){
+						wl_nband_title.push("5 GHz");
+					}
+					else{
+						wl_nband_title.push("6 GHz");
+					}
+				}
+				else{					
+					wl_nband_title.push("5 GHz-" + band5g_count);
+				}				
 			}
 		}
 		if(wl_nband_title.indexOf("2.4 GHz-2") == -1) wl_nband_title[wl_nband_title.indexOf("2.4 GHz-1")] = "2.4 GHz";

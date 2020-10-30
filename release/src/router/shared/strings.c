@@ -317,15 +317,11 @@ int remove_word(char *buffer, const char *word)
 	return 1;
 }
 
-int replace_char(char *str, const char from, const char to)
-{
-	char *p = str;
-	while (*p) {
-		if (*p == from)
-			*p = to;
-		p++;
-	}
-	return 1;
+void replace_char(char *str, char find, char replace) {
+	char *p;
+
+	for(p = str; *p != '\0'; p++)
+		if(*p == find) *p = replace;
 }
 
 /* Escape characters that could break a Javascript array */

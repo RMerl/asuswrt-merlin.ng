@@ -1147,7 +1147,7 @@ void restart_vlan_wl(void)
 	_dprintf("%s %d\n", __FUNCTION__, __LINE__);
 }
 
-void vlan_lanaccess_mssid_ban(const char *limited_ifname, char *ip, char *netmask)
+void vlan_lanaccess_mssid(const char *limited_ifname, char *ip, char *netmask, int mode)
 {
 	char lan_subnet[32];
 
@@ -1155,12 +1155,12 @@ void vlan_lanaccess_mssid_ban(const char *limited_ifname, char *ip, char *netmas
 
 	if (!is_router_mode()) return;
 
-	eval("ebtables", "-A", "FORWARD", "-i", (char*)limited_ifname, "-j", "DROP"); //ebtables FORWARD: "for frames being forwarded by the bridge"
-	eval("ebtables", "-A", "FORWARD", "-o", (char*)limited_ifname, "-j", "DROP"); // so that traffic via host and nat is passed
+	eval("ebtables", mode ? "-A" : "-D", "FORWARD", "-i", (char*)limited_ifname, "-j", "DROP"); //ebtables FORWARD: "for frames being forwarded by the bridge"
+	eval("ebtables", mode ? "-A" : "-D", "FORWARD", "-o", (char*)limited_ifname, "-j", "DROP"); // so that traffic via host and nat is passed
 
 	if (strcmp(ip, "0.0.0.0") && strcmp(netmask, "0.0.0.0")) {
 		snprintf(lan_subnet, sizeof(lan_subnet), "%s/%s", ip, netmask);
-		eval("ebtables", "-t", "broute", "-A", "BROUTING", "-i", (char*)limited_ifname, "--ip-dst", lan_subnet, "--ip-proto", "tcp", "-j", "DROP");
+		eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "--ip-dst", lan_subnet, "--ip-proto", "tcp", "-j", "DROP");
 	}
 }
 
@@ -1218,13 +1218,11 @@ void vlan_lanaccess_wl(void)
 #endif
 				memset(nv, 0x0, sizeof(nv));
 				snprintf(nv, sizeof(nv) - 1, "%s_lanaccess", wif_to_vif(ifname));
-				if (!strcmp(nvram_safe_get(nv), "off")) {
-					char *lan_subnet, ip[32], mask[32];
-					memset(nv, 0x0, sizeof(nv));
-					snprintf(nv, sizeof(nv), "lan%d_subnet", i);
-					lan_subnet = nvram_safe_get(nv);
-					vlan_lanaccess_mssid_ban(ifname, get_info_by_subnet(lan_subnet, SUBNET_IP, ip), get_info_by_subnet(lan_subnet, SUBNET_MASK, mask));
-				}
+				char *lan_subnet, ip[32], mask[32];
+				memset(nv, 0x0, sizeof(nv));
+				snprintf(nv, sizeof(nv), "lan%d_subnet", i);
+				lan_subnet = nvram_safe_get(nv);
+				vlan_lanaccess_mssid(ifname, get_info_by_subnet(lan_subnet, SUBNET_IP, ip), get_info_by_subnet(lan_subnet, SUBNET_MASK, mask), !strcmp(nvram_safe_get(nv), "off"));
 			}
 			free(wl_ifnames);
 		}

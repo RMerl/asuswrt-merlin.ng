@@ -167,3 +167,5 @@ install: all
 	$(STRIP) $(foreach file,$(UTILS),$(INSTALLDIR)/usr/sbin/$(file))
 	install -m 755 $(APPS_UTILS_DIR)/WlGetDriverCfg.sh $(INSTALLDIR)/usr/sbin
 	install -m 755 $(APPS_UTILS_DIR)/WlGetDriverStats.sh $(INSTALLDIR)/usr/sbin
+	install -m 755 $(APPS_UTILS_DIR)/debug_loop_acs_dfs.sh $(INSTALLDIR)/usr/sbin
+	install -m 755 $(APPS_UTILS_DIR)/mapgetcfg.sh $(INSTALLDIR)/usr/sbin

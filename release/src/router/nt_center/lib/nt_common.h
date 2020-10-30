@@ -74,9 +74,10 @@
 #define ACTION_NOTIFY_EMAIL     0x02
 #define ACTION_NOTIFY_APP       0x04
 #define ACTION_NOTIFY_IFTTT     0x08
-#define ACTION_NOTIFY_WEEKLY    0x10
+#define ACTION_NOTIFY_ALEXA     0x10
+#define ACTION_NOTIFY_GENERAL   0x20
 
-#define ACTION_MULTI_ALL        ACTION_NOTIFY_WEBUI | ACTION_NOTIFY_APP | ACTION_NOTIFY_EMAIL | ACTION_NOTIFY_IFTTT | ACTION_NOTIFY_WEEKLY
+#define ACTION_MULTI_ALL        ACTION_NOTIFY_WEBUI | ACTION_NOTIFY_APP | ACTION_NOTIFY_EMAIL | ACTION_NOTIFY_IFTTT | ACTION_NOTIFY_ALEXA | ACTION_NOTIFY_GENERAL
 #define ACTION_MULTI_UIAPP      ACTION_NOTIFY_WEBUI | ACTION_NOTIFY_APP
 
 /* ACTION BIT OPERATION */
@@ -84,7 +85,8 @@
 #define NC_ACT_EMAIL_BIT        1
 #define NC_ACT_APP_BIT          2
 #define NC_ACT_IFTTT_BIT        3
-#define NC_ACT_WEEKLY_BIT       4
+#define NC_ACT_ALEXA_BIT        4
+#define NC_ACT_GENERAL_BIT      5
 
 #define NC_ACTION_SET(value,x) ( (value) |=  (0x1 << x))
 #define NC_ACTION_CLR(value,x) ( (value) &= ~(0x1 << x))
@@ -189,7 +191,22 @@
 #define USB_DISK_EJECTED_FAIL_EVENT                0x60003
 #define USB_DISK_PARTITION_FULL_EVENT              0x60004
 #define USB_DISK_FULL_EVENT                        0x60005
-
+/* ------------------------------
+    ### General Event  ###
+---------------------------------*/
+/* General EVENT */
+#define GENERAL_EVENT_PREFIX                       0x70000
+#define GENERAL_WIFI_DEV_ONLINE                    0x70001
+#define GENERAL_WIFI_DEV_OFFLINE                   0x70002
+#define GENERAL_ETH_DEV_ONLINE                     0x70003
+#define GENERAL_ETH_DEV_OFFLINE                    0x70004
+#define GENERAL_ETH_DEV_REFUSED                    0x70005
+#define GENERAL_SYS_STATES                         0x70006
+#define GENERAL_DEV_UPDATE                         0x70007
+#define GENERAL_DEV_DELETED                        0x70008
+#define GENERAL_DEV_ACCESS_CHANGE                  0x70009
+#define GENERAL_QOS_UPDATE                         0x7000A
+#define GENERAL_TOGGLE_STATES_UPDATE               0x7000B
 /* ------------------------------
     ### Hint Item ###
 ---------------------------------*/

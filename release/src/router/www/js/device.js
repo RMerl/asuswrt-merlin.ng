@@ -7,13 +7,15 @@ var system = new Object();
     system.RTKplatform = isSupport("rtkwifi") ? true : false;
     system.INTELplatform = isSupport("lantiq") ? true : false;
     system.modelName = httpApi.nvramGet(["productid"]).productid;
+    system.territoryCode = httpApi.nvramGet(["territory_code"]).territory_code;
 
     system.band2gSupport = isSupport('2.4G') ? true : false;
     system.band5gSupport = isSupport('5G') ? true : false;
     system.band5g2Support = isSupport('5G-2') ? true : false;
+    system.band6gSupport = isSupport('wifi6e') ? true : false;
     system.band60gSupport = isSupport('wigig') ? true : false;
     system.dualBandSupport = isSupport('dualband') ? true : false;
-	system.triBandSupport = isSupport('triband') ? true : false;
+    system.triBandSupport = isSupport('triband') ? true : false;
     system.AMESHSupport = isSupport("amas") ? true : false;
     system.smartConnectSupport = (isSupport("smart_connect") || isSupport("bandstr")) ? true : false;
     system.wpa3Support = isSupport('wpa3') ? true : false;

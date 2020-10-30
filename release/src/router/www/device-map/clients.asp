@@ -242,10 +242,13 @@ function drawClientList(tab){
 
 		if(parent.sw_mode != 4) {
 			clientHtmlTd += '<div style="height:28px;width:28px;float:right;margin-right:5px;margin-bottom:-20px;">';
-			clientHtmlTd += '<div class="radioIcon radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
+			var radioIcon_css = "radioIcon";
+			if(clientObj.isGN != "" && clientObj.isGN != undefined)
+				radioIcon_css += " GN";
+			clientHtmlTd += '<div class="' + radioIcon_css + ' radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
 			if(clientObj.isWL != 0) {
 				var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
-				clientHtmlTd += '<div class="band_block"><span class='+bandClass+'>' + wl_nband_title[clientObj.isWL-1].replace("Hz", "") + '</span></div>';
+				clientHtmlTd += '<div class="band_block"><span class='+bandClass+'>' + wl_nband_title[clientObj.isWL-1].replace("Hz", "").replace(/\s*/g,"") + '</span></div>';
 			}
 			clientHtmlTd += '</div>';
 		}

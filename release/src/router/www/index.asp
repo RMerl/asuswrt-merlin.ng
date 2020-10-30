@@ -150,6 +150,8 @@ var MULTIFILTER_ENABLE_orig = decodeURIComponent('<% nvram_char_to_ascii("", "MU
 var MULTIFILTER_MAC_orig = decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_MAC"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<");
 var MULTIFILTER_DEVICENAME_orig = decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_DEVICENAME"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<");
 var MULTIFILTER_MACFILTER_DAYTIME_orig = decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_MACFILTER_DAYTIME"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<");
+if(isSupport("PC_SCHED_V3"))
+	MULTIFILTER_MACFILTER_DAYTIME_orig = decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_MACFILTER_DAYTIME_V2"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<");
 var MULTIFILTER_num = (MULTIFILTER_MAC_orig == "") ? 0 : MULTIFILTER_ENABLE_orig.split(">").length;
 var wanlink_status = wanlink_statusstr();
 var wanlink_ipaddr = wanlink_ipaddr();
@@ -365,7 +367,11 @@ function initial(){
 	document.list_form.MULTIFILTER_ENABLE.value = MULTIFILTER_ENABLE_orig;
 	document.list_form.MULTIFILTER_MAC.value = MULTIFILTER_MAC_orig;
 	document.list_form.MULTIFILTER_DEVICENAME.value = MULTIFILTER_DEVICENAME_orig;
-	document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value = MULTIFILTER_MACFILTER_DAYTIME_orig;
+	if(isSupport("PC_SCHED_V3"))
+		document.list_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value = MULTIFILTER_MACFILTER_DAYTIME_orig;
+	else
+		document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value = MULTIFILTER_MACFILTER_DAYTIME_orig;
+
 	updateClientsCount();
 
 	if(isSwMode("mb")){
@@ -1226,7 +1232,10 @@ function edit_confirm(){
 			document.list_form.MULTIFILTER_ENABLE.disabled = true;
 			document.list_form.MULTIFILTER_MAC.disabled = true;
 			document.list_form.MULTIFILTER_DEVICENAME.disabled = true;
-			document.list_form.MULTIFILTER_MACFILTER_DAYTIME.disabled = true;
+			if(isSupport("PC_SCHED_V3"))
+				document.list_form.MULTIFILTER_MACFILTER_DAYTIME_V2.disabled = true;
+			else
+				document.list_form.MULTIFILTER_MACFILTER_DAYTIME.disabled = true;
 		}
 		else {
 			document.list_form.flag.value = "";
@@ -1245,12 +1254,18 @@ function edit_confirm(){
 			document.list_form.MULTIFILTER_ENABLE.disabled = false;
 			document.list_form.MULTIFILTER_MAC.disabled = false;
 			document.list_form.MULTIFILTER_DEVICENAME.disabled = false;
-			document.list_form.MULTIFILTER_MACFILTER_DAYTIME.disabled = false;
+			if(isSupport("PC_SCHED_V3"))
+				document.list_form.MULTIFILTER_MACFILTER_DAYTIME_V2.disabled = false;
+			else
+				document.list_form.MULTIFILTER_MACFILTER_DAYTIME.disabled = false;
 		}
 		MULTIFILTER_ENABLE_orig = document.list_form.MULTIFILTER_ENABLE.value;
 		MULTIFILTER_MAC_orig = document.list_form.MULTIFILTER_MAC.value;
 		MULTIFILTER_DEVICENAME_orig = document.list_form.MULTIFILTER_DEVICENAME.value;
-		MULTIFILTER_MACFILTER_DAYTIME_orig = document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value;
+		if(isSupport("PC_SCHED_V3"))
+			MULTIFILTER_MACFILTER_DAYTIME_orig = document.list_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value;
+		else
+			MULTIFILTER_MACFILTER_DAYTIME_orig = document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value;
 
 		// handle user image
 		document.list_form.custom_usericon.disabled = true;
@@ -1452,7 +1467,10 @@ function popupEditBlock(clientObj){
 		document.list_form.MULTIFILTER_ENABLE.value = MULTIFILTER_ENABLE_orig;
 		document.list_form.MULTIFILTER_MAC.value = MULTIFILTER_MAC_orig;
 		document.list_form.MULTIFILTER_DEVICENAME.value = MULTIFILTER_DEVICENAME_orig;
-		document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value = MULTIFILTER_MACFILTER_DAYTIME_orig;
+		if(isSupport("PC_SCHED_V3"))
+			document.list_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value = MULTIFILTER_MACFILTER_DAYTIME_orig;
+		else
+			document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value = MULTIFILTER_MACFILTER_DAYTIME_orig;
 		document.getElementById("divDropClientImage").ondrop = null;
 		document.getElementById("internetTimeScheduling").style.display = "none";
 		if(sw_mode == "1" && !clientObj.amesh_isRe) {
@@ -1497,13 +1515,16 @@ function popupEditBlock(clientObj){
 		}
 
 		if(sw_mode != 4){
-			clientIconHtml += '<div class="radioIcon radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
+			var radioIcon_css = "radioIcon";
+			if(clientObj.isGN != "" && clientObj.isGN != undefined)
+				radioIcon_css += " GN";
+			clientIconHtml += '<div class="' + radioIcon_css + ' radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
 			if(clientObj.isWL != 0) {
 				var bandClass = "band_txt";
 				if(navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)){
 					bandClass = "band_txt_chrome";
 				}
-				clientIconHtml += '<div class="band_block"><span class="' + bandClass + '">' + wl_nband_title[clientObj.isWL-1].replace("Hz", "") + '</span></div>';
+				clientIconHtml += '<div class="band_block"><span class="' + bandClass + '">' + wl_nband_title[clientObj.isWL-1].replace("Hz", "").replace(/\s*/g,"") + '</span></div>';
 			}
 			document.getElementById('client_interface').innerHTML = clientIconHtml;
 			document.getElementById('client_interface').title = connectModeTip;
@@ -1803,7 +1824,10 @@ function addToBlockMacList(macAddr){
 					document.list_form.MULTIFILTER_ENABLE.value += "2";
 				document.list_form.MULTIFILTER_MAC.value += macAddr;
 				document.list_form.MULTIFILTER_DEVICENAME.value += document.getElementById("client_name").value.trim();
-				document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += "<";
+				if(isSupport("PC_SCHED_V3"))
+					document.list_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value += "W03E21000700<W04122000800";
+				else
+					document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += "<";
 			}
 			else {
 				document.list_form.MULTIFILTER_ENABLE.value += ">";
@@ -1815,7 +1839,10 @@ function addToBlockMacList(macAddr){
 				document.list_form.MULTIFILTER_MAC.value += macAddr;
 				document.list_form.MULTIFILTER_DEVICENAME.value += ">";
 				document.list_form.MULTIFILTER_DEVICENAME.value += document.getElementById("client_name").value.trim();
-				document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += "><";
+				if(isSupport("PC_SCHED_V3"))
+					document.list_form.MULTIFILTER_MACFILTER_DAYTIME_V2.value += ">W03E21000700<W04122000800";
+				else
+					document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += "><";
 			}
 		}
 	}
@@ -2094,6 +2121,7 @@ function notice_apply(){
 	<input type="hidden" name="MULTIFILTER_MAC" value="" disabled>
 	<input type="hidden" name="MULTIFILTER_DEVICENAME" value="" disabled>
 	<input type="hidden" name="MULTIFILTER_MACFILTER_DAYTIME" value="" disabled>
+	<input type="hidden" name="MULTIFILTER_MACFILTER_DAYTIME_V2" value="" disabled>
 </form>
 
 <form method="post" name="maclist_form" id="maclist_form" action="/start_apply2.htm" target="hidden_frame">

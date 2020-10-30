@@ -160,4 +160,26 @@ typedef struct wps_1905_message {
 	int              status;
 } WPS_1905_MESSAGE;
 
+typedef struct wps_1905_m_message_info {
+	char             id[5];
+	int              mtype;
+	int              rfband;
+} WPS_1905_M_MESSAGE_INFO;
+
+typedef enum  {
+	WPS_1905_CONF_NOCHANGE_UNCONFIGURED,
+	WPS_1905_CONF_NOCHANGE_CONFIGURED,
+	WPS_1905_CONF_TO_UNCONF,
+	WPS_1905_UNCONF_TO_CONF
+} wps_1905_config_status_change;
+
+typedef struct wps_1905_notify_message {
+	char          ifName[32];
+	unsigned char credentialChanged;
+	unsigned char confStatus;
+} WPS_1905_NOTIFY_MESSAGE;
+
+#define WPS1905MSG_DATAPTR(pMessage) ((char *)(((void *)pMessage)+sizeof(WPS_1905_MESSAGE)))
+#define WPS1905CMD_PTR(pMessage) (&(pMessage->cmd))
+
 #endif /* __WPSDEFS_H__ */

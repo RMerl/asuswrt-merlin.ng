@@ -3,15 +3,20 @@
 
 #define TRANSFER_TYPE		"https://"
 
-#ifdef RTCONFIG_ACCOUNT_LINKING
+// #ifdef RTCONFIG_ACCOUNT_BINDING
 //- for test
 #define SERVER 				"aae-spweb.asuscomm.com"
-#else
-#define SERVER 				"aae-spweb-vx.asuscloud.com"
-#endif
+// #else
+// #define SERVER 				"aae-spweb-vx.asuscloud.com"
+// #endif
 
 //#define SERVER 				"54.179.149.151"
+// #ifdef RTCONFIG_ACCOUNT_BINDING
+//- for test
+// #define LOGIN_SERVER 		"54.169.254.181"
+// #else
 #define LOGIN_SERVER 		"aae-sgweb001-1.asuscomm.com"
+// #endif
 #define GET_SERVICE_AREA	"/aae/getservicearea"
 #define LOGIN				"/aae/login"
 #define QUERY_FRIEND		"/aae/queryfriend"
@@ -26,14 +31,16 @@
 #define KEEP_ALIVE			"/aae/keepalive"
 #define PUSH_SENDMSG		"/aae/wlpush_sendmsg"
 #define PNS_SENDMSG			"/aae/pns_sendmsg"
-
+#define PSR_SENDMSG			"/aae/psr_sendmsg"
+#define GET_USER_TICKET_BY_REFRESH	"/aae/getuserticketbyrefresh"
 
 #define MAX_STATUS_LEN 	32
 #define MAX_URL_LEN		128
 #define MAX_TIME_LEN	64
 #define MAX_USER_LEVEL_LEN 	64
-#define MAX_CUSID_LEN		64	
+#define MAX_CUSID_LEN		65
 #define MAX_TICKET_LEN		64
+#define MAX_REFRESH_TICKET_LEN 512
 #define MAX_NICKNAME_LEN	64
 #define MAX_DEVICEID_LEN	64
 #define MAX_DEVTICKET_LEN	64
@@ -76,6 +83,7 @@ typedef struct _Login{
 	char	usersvclevel[MAX_USER_LEVEL_LEN];
 	char	cusid[MAX_CUSID_LEN];
 	char	userticket[MAX_TICKET_LEN]; 
+	char    userrefreshticket[MAX_REFRESH_TICKET_LEN]; 
 	char	usernickname[MAX_NICKNAME_LEN];
 	char	ssoflag[2];
 	char	deviceid[MAX_DEVICEID_LEN];
@@ -88,6 +96,7 @@ typedef struct _Login{
 	pSrvInfo	stuninfoList;
 	pSrvInfo	turninfoList;
 	pSrvInfo	pnsinfoList;
+	pSrvInfo	psrinfoList;
 	char	deviceticketexpiretime[MAX_DEV_TICKET_EXP_LEN];
 	char 	time[MAX_TIME_LEN];
 } Login, *pLogin;
@@ -191,6 +200,21 @@ typedef struct _IftttNotification
 	char	message[MAX_DEVICEID_LEN];
 } IftttNotification, *pIftttNotification;
 
+typedef struct _GetUserTicketByRefresh
+{
+	char 	status[MAX_STATUS_LEN];
+	char	userticket[MAX_DEVTICKET_LEN];
+	char	time[MAX_TIME_LEN];
+}GetUserTicketByRefresh, *pGetUserTicketByRefresh;
+
+typedef struct _PsrSendMsg
+{
+	char 	status[MAX_STATUS_LEN];
+	char 	result_httpcode[MAX_STATUS_LEN];
+	char 	result_content[MAX_DESC_LEN];
+	char	time[MAX_TIME_LEN];
+} PsrSendMsg, *pPsrSendMsg;
+
 typedef enum _ws_status_code
 {
 	Success,
@@ -233,6 +257,8 @@ int send_login_req(
 	const char* server,
 	const char* userid, 
 	const char* passwd,
+	const char*	cusid,
+	const char*	userticket,
 	const char* devicemd5mac,
 	const char*	devicename,
 	const char*	deviceservice,
@@ -350,6 +376,32 @@ int send_ifttt_notification_req(
 	const char *trigger,
 	const char *msg,
 	IftttNotification *pIftttnotification
+);
+
+int send_getuserticketbyrefresh_req(
+	const char* server, 
+	const char* serviceid, 
+	const char* cusid, 
+	const char* refresh_ticket,
+	const char* devicetype, 
+	const char* fwver, 
+	const int apilevel,
+	const char* modelname,
+	GetUserTicketByRefresh* pGSA
+);
+
+int send_psr_sendmsg_req(
+	const char *server,
+	const char *cusid,
+	const char *deviceid,
+	const char *deviceticket,
+    const char *appids,
+	const char* devicetype, 
+	const char* fwver, 
+	const char* apilevel,
+	const char* modelname,
+	const char *msg,
+	PsrSendMsg *pPsm
 );
 
 char *get_curl_status_string(int error);

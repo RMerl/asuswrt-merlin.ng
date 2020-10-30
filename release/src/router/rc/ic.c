@@ -358,7 +358,7 @@ ic_s *cp_ic(ic_s **dest, const ic_s *src){
 ic_s *get_all_ic_list(ic_s **ic_list){
 	char word[1024], *next_word;
 	ic_s *follow_ic, **follow_ic_list;
-	int i;
+	int i, count;
 	char buf[4096];
 
 
@@ -367,7 +367,7 @@ ic_s *get_all_ic_list(ic_s **ic_list){
 
 	follow_ic_list = ic_list;
 	snprintf(buf, sizeof(buf), "%s", nvram_safe_get("ICFILTER_MAC"));
-	foreach_62(word, buf, next_word){
+	foreach_62_keep_empty_string(count, word, buf, next_word){
 		if(initial_ic(follow_ic_list) == NULL){
 			_dprintf("No memory!!(follow_ic_list)\n");
 			continue;
@@ -383,7 +383,7 @@ ic_s *get_all_ic_list(ic_s **ic_list){
 	follow_ic = *ic_list;
 	i = 0;
 	snprintf(buf, sizeof(buf), "%s", nvram_safe_get("ICFILTER_MACFILTER_DAYTIME"));
-	foreach_62(word, buf, next_word){
+	foreach_62_keep_empty_string(count, word, buf, next_word){
 		++i;
 		if(follow_ic == NULL){
 			_dprintf("*** %3dth Internet Control rule(DAYTIME) had something wrong!\n", i);

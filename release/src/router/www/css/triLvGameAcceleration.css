@@ -129,6 +129,9 @@
 .Game-wtfast-image{
     background-image: url('../images/triLvGameAcceleration/triLv3_wtfast.png');
 }
+.Game-outfox-image{
+    background-image: url('../images/outfox_dark.png');
+}
 .Game-uu-image{
     background-image: url('../images/uu_accelerator.png');
 }

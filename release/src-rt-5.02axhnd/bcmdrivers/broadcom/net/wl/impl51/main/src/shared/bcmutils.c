@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmutils.c 779309 2019-09-25 03:15:04Z $
+ * $Id: bcmutils.c 786018 2020-04-14 09:45:17Z $
  */
 
 #include <bcm_cfg.h>
@@ -5541,3 +5541,16 @@ bcm_tlv_buffer_advance_past(const bcm_tlv_t *elt, const uint8 **buffer, uint *bu
 
 	return;
 }
+
+#ifdef DONGLEBUILD
+char *bcm_macf_buffer(const void *ea)
+{
+#define TOTAL_MACF_BUF 8
+	static char macf_buf[TOTAL_MACF_BUF][sizeof("00:00:00:00:00:00")];
+	static int idx = 0;
+
+	idx = MODINC_POW2(idx, TOTAL_MACF_BUF);
+	bcm_ether_ntoa((const struct ether_addr *)ea, macf_buf[idx]);
+	return (macf_buf[idx]);
+}
+#endif // endif

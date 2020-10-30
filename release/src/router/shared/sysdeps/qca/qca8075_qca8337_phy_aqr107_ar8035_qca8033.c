@@ -1172,7 +1172,6 @@ static void create_Vlan(int bitmask)
 	qca8075_8337_8035_8033_aqr107_vlan_set(vtype, upstream_if, vid, prio, mbr_qca, untag_qca);
 }
 
-
 int qca8075_8337_8035_8033_aqr107_ioctl(int val, int val2)
 {
 	unsigned int value2 = 0;
@@ -1426,7 +1425,7 @@ static char conv_speed(unsigned int link, unsigned int speed)
 	return ret;
 }
 
-void ATE_port_status(void)
+void ATE_port_status(phy_info_list *list)
 {
 	int i;
 	char buf[6 * 11], wbuf[6 * 3], lbuf[6 * 8];
@@ -1842,5 +1841,37 @@ void set_jumbo_frame(void)
 			continue;
 		strlcpy(ifname, p, sizeof(ifname));
 		_eval(ifconfig_argv, NULL, 0, NULL);
+	}
+}
+
+/* Platform-specific function of wgn_sysdep_swtich_unset()
+ * Unconfigure VLAN settings that is used to connect AiMesh guest network.
+ * @vid:	VLAN ID
+ */
+void __wgn_sysdep_swtich_unset(int vid)
+{
+	char vid_str[6];
+	char *delete_vlan[] = { "ssdk_sh", SWID_QCA8337, "vlan", "entry", "del", vid_str, NULL };
+
+	snprintf(vid_str, sizeof(vid_str), "%d", vid);
+	_eval(delete_vlan, DBGOUT, 0, NULL);
+}
+
+/* Platform-specific function of wgn_sysdep_swtich_set()
+ * Unconfigure VLAN settings that is used to connect AiMesh guest network.
+ * @vid:	VLAN ID
+ */
+void __wgn_sysdep_swtich_set(int vid)
+{
+	int i;
+	char port_str[4], vid_str[6];
+	char *create_vlan[] = { "ssdk_sh", SWID_QCA8337, "vlan", "entry", "create", vid_str, NULL };
+	char *vmbr_add[] = { "ssdk_sh", SWID_QCA8337, "vlan", "member", "add", vid_str, port_str, "unmodified", NULL };
+
+	snprintf(vid_str, sizeof(vid_str), "%d", vid);
+	_eval(create_vlan, DBGOUT, 0, NULL);
+	for (i = 0; i <= 6; ++i) {
+		snprintf(port_str, sizeof(port_str), "%d", i);
+		_eval(vmbr_add, DBGOUT, 0, NULL);
 	}
 }

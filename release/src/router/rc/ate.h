@@ -65,5 +65,12 @@ struct FAIL_LOG
 extern void Get_fail_log(char *buf, int size, unsigned int offset);
 extern void Gen_fail_log(const char *logStr, int max, struct FAIL_LOG *log);
 
+#ifdef RTCONFIG_OUTFOX
+extern int getOutfoxCode(void);
+extern int setOutfoxCode(const char *outfox_code);
+#else
+static inline int getOutfoxCode(void) { return -1; }
+static inline int setOutfoxCode(const char *outfox_code) { return -1; }
+#endif
 
 #endif

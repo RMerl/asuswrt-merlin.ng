@@ -86,6 +86,7 @@ void start_pptpd(void)
 		return;
 	}
 
+#if !defined(DSL_AX82U) ///TODO: !defined(RTCONFIG_HND_ROUTER_AX_675X)
 #ifdef HND_ROUTER
 	char tmp[100], prefix[] = "wanXXXXXXXXXX_";
 	char wan_proto[16];
@@ -103,6 +104,7 @@ void start_pptpd(void)
 		dbg("[%s, %d] Flow Cache Learning of GRE flows Tunnel: DISABLED, PassThru: ENABLED\n", __FUNCTION__, __LINE__);
 		eval("fc", "config", "--gre", "0");
 	}
+#endif
 #endif
 
 	// cprintf("stop vpn modules\n");
@@ -312,7 +314,9 @@ void stop_pptpd(void)
 	killall_tk("pptpd");
 	killall_tk("bcrelay");
 
+#if !defined(DSL_AX82U) ///TODO: !defined(RTCONFIG_HND_ROUTER_AX_675X)
 #ifdef HND_ROUTER
 	if (nvram_match("fc_disable", "0")) eval("fc", "config", "--gre", "1");
+#endif
 #endif
 }

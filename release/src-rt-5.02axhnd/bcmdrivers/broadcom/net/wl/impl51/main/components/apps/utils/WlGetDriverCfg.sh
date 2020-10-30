@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# WlGetDriverCfg.sh <WiFi interface name> <Band: 2|5> <Driver mode: nic|dhd>
+# WlGetDriverCfg.sh <WiFi interface name> <Band: 2|5|6> <Driver mode: nic|dhd>
 #
 # Copyright (C) 2020, Broadcom. All Rights Reserved.
 #
@@ -22,7 +22,7 @@
 #
 IFS=
 show_help () {
-	echo "Syntax: $0 <WiFi interface name> <Band: 2|5> <Driver mode: auto|nic|dhd>"
+	echo "Syntax: $0 <WiFi interface name> <Band: 2|5|6> <Driver mode: auto|nic|dhd>"
 	echo "Example 1: $0 wl1  2 auto"
 	echo "Example 2: $0 eth5 2 nic"
 	echo "Example 3: $0 eth5 5 dhd"
@@ -48,7 +48,7 @@ ifname=$1
 
 # Argument 2 is band
 band=$2
-if [[ $band != "2" ]] && [[ $band != "5" ]]; then
+if [[ $band != "2" ]] && [[ $band != "5" ]] && [[ $band != "6" ]] ; then
 echo "Invalid band!"
 show_help
 exit 0
@@ -252,6 +252,11 @@ echo -n wpa_auth=; echo $(wl -i $ifname wpa_auth)
 echo -n wpa_cap=; echo $(wl -i $ifname wpa_cap)
 echo -n wsec=; echo $(wl -i $ifname wsec)
 echo -n wsec_restrict=; echo $(wl -i $ifname wsec_restrict)
+
+if [[ $band == "6" ]]; then
+echo -n 6g_mrate=; echo $(wl -i $ifname 6g_mrate)
+echo -n 6g_rate=; echo $(wl -i $ifname 6g_rate)
+fi
 
 if [[ $band == "5" ]]; then
 echo -n 5g_mrate=; echo $(wl -i $ifname 5g_mrate)

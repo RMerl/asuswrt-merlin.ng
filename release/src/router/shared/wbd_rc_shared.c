@@ -1157,7 +1157,7 @@ wbd_is_fbt_possible(char *prefix)
 	/* Check if the akm contains psk2 or not */
 	nvval = wbd_nvram_prefix_safe_get(prefix, NVRAM_AKM);
 
-	if ((find_in_list(nvval, "psk2") == NULL) &&  (find_in_list(nvval, "sae") == NULL)) {
+	if ((find_in_list(nvval, "psk2") == NULL) && (find_in_list(nvval, "sae") == NULL)) {
 		WBD_RC_PRINT("%s%s[%s]. Not psk2 or sae. So no FBT\n", prefix, NVRAM_AKM, nvval);
 		return 0;
 	}
@@ -1496,4 +1496,45 @@ end:
 	}
 
 	return isweak;
+}
+
+int
+disable_map_bh_bss(char *name, char *ifname, int bsscfg_idx)
+{
+	int map, map_mode, macmode, mac_filter = 1;
+	char prefix[IFNAMSIZ];
+	char maclist_buf[WLC_IOCTL_MAXLEN];
+	maclist_t *maclist = NULL;
+
+	map_mode = wbd_nvram_safe_get_int(NULL, NVRAM_MAP_MODE, MAP_MODE_FLAG_DISABLED);
+	if (MAP_IS_CONTROLLER(map_mode)) {
+		/* Do not disable backhaul BSS of controller */
+		return 0;
+	}
+
+	wbd_get_prefix(ifname, prefix, sizeof(prefix));
+	map = wbd_nvram_safe_get_int(prefix, NVRAM_MAP, 0);
+	if (!I5_IS_BSS_BACKHAUL(map)) {
+		/* Do not disable if this is not a MAP backhaul BSS */
+		return 0;
+	}
+
+	WBD_RC_PRINT("MAC Block MAP backhaul BSS (%s) till controller is detected\n", ifname);
+	macmode = htod32(WLC_MACMODE_ALLOW);
+	if (wl_ioctl(ifname, WLC_SET_MACMODE, &macmode, sizeof(macmode)) != 0) {
+		WBD_RC_PRINT("%s: WLC_SET_MACMODE failed to set to WLC_MACMODE_ALLOW\n", ifname);
+	}
+
+	memset(maclist_buf, 0, WLC_IOCTL_MAXLEN);
+	maclist = (maclist_t *)maclist_buf;
+	maclist->count = 0;
+	maclist->count = htod32(maclist->count);
+	if (wl_ioctl(ifname, WLC_SET_MACLIST, maclist,
+		(ETHER_ADDR_LEN * maclist->count + sizeof(uint32))) != 0) {
+		WBD_RC_PRINT("%s: WLC_SET_MACLIST failed to set to MACLIST NONE\n", ifname);
+	}
+
+	wl_iovar_setint(ifname, "probresp_mac_filter", mac_filter);
+
+	return 0;
 }

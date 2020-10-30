@@ -89,7 +89,7 @@ get_cgi(char *name)
 	if (!htab.__tab)
 #else
 	if (!htab.table)
-#endif		
+#endif
 		return NULL;
 
 	e.key = name;
@@ -146,7 +146,7 @@ set_cgi(char *name, char *value)
 	if (!htab.__tab)
 #else
 	if (!htab.table)
-#endif		
+#endif
 		return;
 
 	e.key = name;

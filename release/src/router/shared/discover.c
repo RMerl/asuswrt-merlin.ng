@@ -668,7 +668,7 @@ eprintf("--- get_raw_packet: couldn't read on raw listening socket! ---\n");
 
 	if (bytes < (int) (sizeof(struct iphdr) + sizeof(struct udphdr))) {
 		//DEBUG(LOG_INFO, "message too short, ignoring");
-eprintf("--- get_raw_packet: message too short! bytes(%d) header size(%d)---\n", bytes, (sizeof(struct iphdr) + sizeof(struct udphdr)));
+eprintf("--- get_raw_packet: message too short! bytes(%d) header size(%d)---\n", bytes, (int)(sizeof(struct iphdr) + sizeof(struct udphdr)));
 		return -2;
 	}
 

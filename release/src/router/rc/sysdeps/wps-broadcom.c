@@ -468,6 +468,8 @@ int is_wps_stopped(void)
 	if ((is_router_mode()
 #if defined(RTCONFIG_DPSTA) && defined(RTAC68U)
 		|| (is_dpsta_repeater() && dpsta_mode() && nvram_get_int("re_mode") == 0)
+#elif defined(RPAX56)
+		|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
 		) && !nvram_get_int("obd_Setting") && nvram_match("amesh_led", "1"))
 		return 0;

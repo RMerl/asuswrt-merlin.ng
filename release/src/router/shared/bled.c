@@ -984,7 +984,7 @@ void set_wifiled(int mode)
 #define ARRAY_SIZE(ary) (sizeof(ary) / sizeof((ary)[0]))
 #endif
 
-unsigned int rgbled_udef_mode = 0;
+static unsigned int rgbled_udef_mode = 0;
 
 void set_rgbled(unsigned int mode)
 {
@@ -1004,14 +1004,14 @@ void set_rgbled(unsigned int mode)
 	};
 	int uidx = 0;
 	char *led_color[] = {
-		"0 0 0",		/* off: B G R */
-		"1 0 0",		/* RGBLED_BLUE */
-		"0 1 0",		/* RGBLED_GREEN */
-		"0 0 1",		/* RGBLED_RED */
-		"1 1 0",		/* RGBLED_NIAGARA_BLUE */
-		"0 1 1",		/* RGBLED_YELLOW */
-		"1 0 1",		/* RGBLED_PURPLE */
-		"1 1 1"			/* RGBLED_WHITE */
+		"0 0 0 0",		/* off: B G R W */
+		"1 0 0 0",		/* RGBLED_BLUE */
+		"0 1 0 0",		/* RGBLED_GREEN */
+		"0 0 1 0",		/* RGBLED_RED */
+		"1 1 0 0",		/* RGBLED_NIAGARA_BLUE */
+		"0 1 1 0",		/* RGBLED_YELLOW */
+		"1 0 1 0",		/* RGBLED_PURPLE */
+		"1 1 1 1"		/* RGBLED_WHITE */
 	};
 	char *udef_trigger = led_color[0];
 #ifdef RTCONFIG_SW_CTRL_ALLLED
@@ -1022,6 +1022,8 @@ void set_rgbled(unsigned int mode)
 		led_control(LED_BLUE, LED_ON);
 		led_control(LED_GREEN, LED_ON);
 		led_control(LED_RED, LED_ON);
+		if (RGBLED_WHITE & RGBLED_WLED)
+			led_control(LED_WHITE, LED_ON);
 		rgbled_udef_mode = 1;
 	}
 

@@ -244,7 +244,7 @@ int qca8337_vlan_set(int vid, int prio, int mbr, int untag)
  *     -1:	invalid parameter
  *  otherwise:	fail
  */
-static int get_qca8337_port_info(unsigned int port, unsigned int *link, unsigned int *speed)
+static int get_qca8337_port_info(unsigned int port, unsigned int *link, unsigned int *speed, phy_info *info)
 {
         FILE *fp;
 	size_t rlen;
@@ -295,12 +295,114 @@ static int get_qca8337_port_info(unsigned int port, unsigned int *link, unsigned
 			s = 2;
 		else
 			s = 1;
+
+		if (info) {
+			snprintf(info->state, sizeof(info->state), "up");
+			info->link_rate = strtol(pt, NULL, 10);
+
+			sprintf(buf, "ssdk_sh port duplex get %d", port);
+			if ((fp = popen(buf, "r")) == NULL) {
+				_dprintf("%s: Run [%s] fail!\n", __func__, buf);
+				return -5;
+			}
+			rlen = fread(buf, 1, sizeof(buf), fp);
+			pclose(fp);
+			if (rlen <= 1)
+				return -6;
+
+			buf[rlen-1] = '\0';
+			if ((pt = strstr(buf, "[duplex]:")) == NULL)
+				return -7;
+
+			pt += 9; // strlen of "[duplex]:"
+			if (!strncmp(pt, "FULL", 4))
+				snprintf(info->duplex, sizeof(info->duplex), "full");
+			else
+				snprintf(info->duplex, sizeof(info->duplex), "half");
+		}
+	} else {
+		if (info) {
+			snprintf(info->state, sizeof(info->state), "down");
+			snprintf(info->duplex, sizeof(info->duplex), "none");
+		}
 	}
 
 	if (link)
 		*link = l;
 	if (speed)
 		*speed = s;
+
+	return 0;
+}
+
+/*define structure for software with 64bit*/
+static int get_qca8337_port_mib(unsigned int port, phy_info *info)
+{
+	FILE *fp;
+	char buf[512];
+	unsigned long long llu_val;
+
+	if (!info)
+		return -1;
+
+	sprintf(buf, "swconfig dev switch0 port %d get mib", port);
+	if ((fp = popen(buf, "r")) == NULL) {
+		fprintf(stderr, "%s: Run [%s] fail!\n", __func__, buf);
+		return -2;
+	}
+	//fprintf(stderr, "%s\n", buf);
+
+	memset(buf, 0, sizeof(buf));
+	info->tx_packets = 0;
+	info->rx_packets = 0;
+	info->tx_bytes = 0;
+	info->rx_bytes = 0;
+	info->crc_errors = 0;
+	while(fgets(buf, sizeof(buf), fp) != NULL) {
+		if ((strstr(buf, "TxBroad") || strstr(buf, "TxMulti") || strstr(buf, "TxUnicast")) &&
+				sscanf(buf, "%*s : %llu", &llu_val) == 1)
+			info->tx_packets += llu_val;
+		else if ((strstr(buf, "RxBroad") || strstr(buf, "RxMulti") || strstr(buf, "RxUnicast")) &&
+				sscanf(buf, "%*s : %llu", &llu_val) == 1)
+			info->rx_packets += llu_val;
+		else if (strstr(buf, "RxFcsErr") && sscanf(buf, "%*s : %llu", &llu_val) == 1)
+			info->crc_errors += llu_val;
+#if defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
+		else if (strstr(buf, "TxByte") && sscanf(buf, "%*s : %llu", &llu_val) == 1)
+			info->tx_bytes += llu_val;
+		else if (strstr(buf, "RxGoodByte") && sscanf(buf, "%*s : %llu", &llu_val) == 1)
+			info->rx_bytes += llu_val;
+#else
+		else if (strstr(buf, "Tx") && sscanf(buf, "%*s : %llu", &llu_val) == 1) {
+			if (strstr(buf, "Tx64Byte"))
+				info->tx_bytes += (llu_val*64);
+			else if (strstr(buf, "Tx128Byte"))
+				info->tx_bytes += (llu_val*128);
+			else if (strstr(buf, "Tx256Byte"))
+				info->tx_bytes += (llu_val*256);
+			else if (strstr(buf, "Tx512Byte"))
+				info->tx_bytes += (llu_val*512);
+			else if (strstr(buf, "Tx1024Byte"))
+				info->tx_bytes += (llu_val*1024);
+			else if (strstr(buf, "Tx1518Byte"))
+				info->tx_bytes += (llu_val*1518);
+		} else if (strstr(buf, "Rx") && sscanf(buf, "%*s : %llu", &llu_val) == 1) {
+			if (strstr(buf, "Rx64Byte"))
+				info->rx_bytes += (llu_val*64);
+			else if (strstr(buf, "Rx128Byte"))
+				info->rx_bytes += (llu_val*128);
+			else if (strstr(buf, "Rx256Byte"))
+				info->rx_bytes += (llu_val*256);
+			else if (strstr(buf, "Rx512Byte"))
+				info->rx_bytes += (llu_val*512);
+			else if (strstr(buf, "Rx1024Byte"))
+				info->rx_bytes += (llu_val*1024);
+			else if (strstr(buf, "Rx1518Byte"))
+				info->rx_bytes += (llu_val*1518);
+		}
+#endif
+	}
+	pclose(fp);
 
 	return 0;
 }
@@ -322,7 +424,7 @@ static void get_qca8337_phy_linkStatus(unsigned int mask, unsigned int *linkStat
 		if (!(m & 1))
 			continue;
 
-		get_qca8337_port_info(i, &value, NULL);
+		get_qca8337_port_info(i, &value, NULL, NULL);
 		value &= 0x1;
 	}
 	*linkStatus = value;
@@ -455,7 +557,7 @@ static void get_qca8337_Port_Speed(unsigned int port_mask, unsigned int *speed)
 		if (!(m & 1))
 			continue;
 
-		get_qca8337_port_info(i, NULL, (unsigned int*) &t);
+		get_qca8337_port_info(i, NULL, (unsigned int*) &t, NULL);
 		t &= 0x3;
 		if (t > v)
 			v = t;
@@ -880,16 +982,68 @@ rtkswitch_Reset_Storm_Control(void)
 	return 0;
 }
 
-void ATE_port_status(void)
+void ATE_port_status(phy_info_list *list)
 {
 	int i;
-	char buf[32];
+	char buf[32] = {0};
+#ifdef RTCONFIG_NEW_PHYMAP
+	char cap_buf[64] = {0};
+#endif
 	phyState pS;
 
-	for (i = 0; i < NR_WANLAN_PORT; i++) {
+	if (list)
+		list->count = 0;
+
+#ifdef RTCONFIG_NEW_PHYMAP
+	phy_port_mapping port_mapping = get_phy_port_mapping();
+
+	for (i = 0; i < port_mapping.count; i++) {
 		pS.link[i] = 0;
 		pS.speed[i] = 0;
-		get_qca8337_port_info(lan_id_to_port_nr(i), &pS.link[i], &pS.speed[i]);
+		get_qca8337_port_info(port_mapping.port[i].phy_port_id, &pS.link[i], &pS.speed[i], list ? &list->phy_info[i] : NULL);
+		if (list) {
+			list->phy_info[i].phy_port_id = port_mapping.port[i].phy_port_id;
+			snprintf(list->phy_info[i].label_name, sizeof(list->phy_info[i].label_name), "%s", 
+				port_mapping.port[i].label_name);
+			snprintf(list->phy_info[i].cap_name, sizeof(list->phy_info[i].cap_name), "%s", 
+				get_phy_port_cap_name(port_mapping.port[i].cap, cap_buf, sizeof(cap_buf)));
+			if (pS.link[i] == 1)
+				get_qca8337_port_mib(port_mapping.port[i].phy_port_id, &list->phy_info[i]);
+
+			list->count++;
+		}
+		sprintf(buf, "%s%s=%C;", buf, port_mapping.port[i].label_name,
+			(pS.link[i] == 1) ? (pS.speed[i] == 2) ? 'G' : 'M': 'X');
+	}
+
+#else
+	int num_wanlan_port = NR_WANLAN_PORT;
+#if defined(RTAC59_CD6R)
+	num_wanlan_port = 4;
+#elif defined(RTAC59_CD6N)
+	num_wanlan_port = 2;
+#endif
+	for (i = 0; i < num_wanlan_port; i++) {
+		pS.link[i] = 0;
+		pS.speed[i] = 0;
+		get_qca8337_port_info(lan_id_to_port_nr(i), &pS.link[i], &pS.speed[i], list ? &list->phy_info[i] : NULL);
+
+		if (list) {
+			list->phy_info[list->count].phy_port_id = lan_id_to_port_nr(i);
+			if (!list->count) {
+				snprintf(list->phy_info[list->count].cap_name, sizeof(list->phy_info[i].cap_name), "wan");
+				snprintf(list->phy_info[list->count].label_name, sizeof(list->phy_info[list->count].label_name), "W0");
+			}
+			else {
+				snprintf(list->phy_info[list->count].cap_name, sizeof(list->phy_info[i].cap_name), "lan");
+				snprintf(list->phy_info[list->count].label_name, sizeof(list->phy_info[list->count].label_name), "L%d", 
+					list->count);
+			}
+			if (pS.link[i] == 1)
+				get_qca8337_port_mib(lan_id_to_port_nr(i), &list->phy_info[i]);
+
+			list->count++;
+		}
 	}
 
 #if defined(RTAC59_CD6R)
@@ -910,6 +1064,7 @@ void ATE_port_status(void)
 		(pS.link[3] == 1) ? (pS.speed[3] == 2) ? 'G' : 'M': 'X',
 		(pS.link[4] == 1) ? (pS.speed[4] == 2) ? 'G' : 'M': 'X');
 #endif
+#endif // #ifdef RTCONFIG_NEW_PHYMAP
 	puts(buf);
 }
 
@@ -943,6 +1098,35 @@ int led_ctrl(void)
 	return 1;
 }
 #endif	/* LAN4WAN_LED*/
+
+#ifdef RTCONFIG_NEW_PHYMAP
+/* phy port related start */
+phy_port_mapping get_phy_port_mapping(void)
+{
+	static const phy_port_mapping port_mapping = {
+#if defined(RTAC59_CD6R)
+		.count = 4,
+		.port[0] = { .phy_port_id = WAN_PORT, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = NULL },
+		.port[1] = { .phy_port_id = LAN1_PORT, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[2] = { .phy_port_id = LAN2_PORT, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[3] = { .phy_port_id = LAN3_PORT, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL }
+#elif defined(RTAC59_CD6N)
+		.count = 2,
+		.port[0] = { .phy_port_id = WAN_PORT, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = LAN2_PORT, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" }
+#else
+		.count = 5,
+		.port[0] = { .phy_port_id = WAN_PORT, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = NULL },
+		.port[1] = { .phy_port_id = LAN1_PORT, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[2] = { .phy_port_id = LAN2_PORT, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[3] = { .phy_port_id = LAN3_PORT, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[4] = { .phy_port_id = LAN4_PORT, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL }
+#endif
+	};
+	return port_mapping;
+}
+/* phy port related end.*/
+#endif
 
 #if 0
 void usage(char *cmd)

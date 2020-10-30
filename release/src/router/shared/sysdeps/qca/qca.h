@@ -125,7 +125,7 @@ typedef struct _WLANCONFIG_LIST {
 
 #if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || \
     defined(RTCONFIG_WIFI_QCA9994_QCA9994) || \
-    defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+    (defined(RTCONFIG_WIFI_QCN5024_QCN5054) && !defined(RTCONFIG_SOC_IPQ60XX))
 #define MAX_STA_NUM 512
 #else
 #define MAX_STA_NUM 256
@@ -379,7 +379,7 @@ enum ASUS_IOCTL_SUBCMD {
 #define ETH2_MAC_OFFSET			0x9006	/* 5G2 EEPROM */
 #endif
 
-#elif defined(RTCONFIG_WIFI_QCN5024_QCN5054) || defined(RTCONFIG_SOC_IPQ60XX)
+#elif defined(RTCONFIG_WIFI_QCN5024_QCN5054)
 #define ETH0_MAC_OFFSET			0x1014	/* 2G+5G EEPROM, second set of MAC address. */
 #define ETH1_MAC_OFFSET			0x100E	/* 2G+5G EEPROM, first set of MAC address. */
 
@@ -399,9 +399,9 @@ enum ASUS_IOCTL_SUBCMD {
  */
 #if defined(RTCONFIG_SOC_IPQ60XX)
 #define FTRY_PARM_SHIFT			(0xF000)
-#else // IPQ60XX
+#else // @RTCONFIG_SOC_IPQ60XX
 #define FTRY_PARM_SHIFT			(0x40000)
-#endif // IPQ60XX
+#endif // @RTCONFIG_SOC_IPQ60XX
 #else
 #define FTRY_PARM_SHIFT			(0)
 #endif
@@ -457,7 +457,7 @@ enum ASUS_IOCTL_SUBCMD {
 #define	QC98XX_EEPROM_SIZE_LARGEST	12064 // sync with driver
 #define	QC98XX_EEPROM_MAC_OFFSET	(OFFSET_MAC_ADDR & 0xFFF) // 6
 
-#elif defined(RTCONFIG_WIFI_QCN5024_QCN5054) || defined(RTCONFIG_SOC_IPQ60XX)
+#elif defined(RTCONFIG_WIFI_QCN5024_QCN5054)
 /* Because 2G and 5G share same EEPROM, only one MAC address is defined in EEPROM,
  * and ath0 of GT-AXY16000 is 5G.  Save 2G MAC address at GMAC0 MAC address space, out
  * of EEPROM, and assume MAC address in EEPROM as 5G MAC address.  2G MAC address
@@ -467,7 +467,7 @@ enum ASUS_IOCTL_SUBCMD {
 #define OFFSET_MAC_ADDR			(MTD_FACTORY_BASE_ADDRESS + ETH1_MAC_OFFSET)	/* MAC address in 2G+5G EEPROM */
 #if defined(RTCONFIG_SOC_IPQ60XX)
 #define	QCN50X4_EEPROM_SIZE		65536
-#else
+#else // @RTCONFIG_SOC_IPQ60XX
 #define	QCN50X4_EEPROM_SIZE		131072
 #endif
 
@@ -516,6 +516,13 @@ enum ASUS_IOCTL_SUBCMD {
 #define OFFSET_SPEAKER_VER		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D208)	// 1 byte
 #define OFFSET_CERT_PEM			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0A200)    // 4096 byte
 #define OFFSET_CERT_KEY			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0B200)	// 4096 byte
+#endif
+
+#if defined(RTCONFIG_SOC_IPQ8074)
+#define OFFSET_VOLTUP			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D300)	// 8 byte, uint64_t, little-endian
+#define OFFSET_L2CEILING		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D308)	// 4 byte, uint32_t, little-endian
+#define OFFSET_PWRCYCLECNT		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D30C)	// 4 byte, uint32_t, little-endian
+#define OFFSET_AVGUPTIME		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D310)	// 4 byte, uint32_t, little-endian
 #endif
 
 #define OFFSET_IPADDR_LAN               (MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FEF0)
@@ -651,7 +658,11 @@ typedef struct {
 #elif defined(RTCONFIG_WIFI_QCN5024_QCN5054)
 /* 2G and 5G share same boarddata. */
 #define BD_2G_PREFIX	"bdwlan"
+#if defined(RTCONFIG_SOC_IPQ60XX)
+#define BD_2G_CHIP_DIR	"IPQ6018"
+#else // @RTCONFIG_SOC_IPQ60XX
 #define BD_2G_CHIP_DIR	"IPQ8074"
+#endif
 #define BD_2G_HW_DIR	"."
 #define BD_5G_PREFIX	BD_2G_PREFIX
 #define BD_5G_CHIP_DIR	BD_2G_CHIP_DIR

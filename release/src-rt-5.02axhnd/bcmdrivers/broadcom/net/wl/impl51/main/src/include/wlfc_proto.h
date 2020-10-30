@@ -16,7 +16,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlfc_proto.h 782690 2020-01-02 03:28:16Z $
+ * $Id: wlfc_proto.h 785583 2020-03-31 12:57:41Z $
  *
  */
 
@@ -140,6 +140,7 @@ typedef enum {
 /* Reset the flags set for the corresponding flowring of the SCB which is de-inited */
 /* FLOW_RING_FLAG_LAST_TIM | FLOW_RING_FLAG_INFORM_PKTPEND | FLOW_RING_FLAG_PKT_REQ */
 #define WLFC_RESET_ALL_FLAGS			0
+#define WLFC_SET_FLAG_INFORM_PKTPEND		(1 << 1)
 #define WLFC_CTL_VALUE_LEN_FLAGS		7	/** flags, MAC */
 
 /* free the data stored to be used for suppressed packets in future */

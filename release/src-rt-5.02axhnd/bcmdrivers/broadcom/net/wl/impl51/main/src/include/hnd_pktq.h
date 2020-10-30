@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnd_pktq.h 782623 2019-12-29 13:29:13Z $
+ * $Id: hnd_pktq.h 786143 2020-04-17 20:29:02Z $
  */
 
 #ifndef _hnd_pktq_h_
@@ -59,8 +59,6 @@ typedef struct pktq_prec {
 	void *head;     /**< first packet to dequeue */
 	void *tail;     /**< last packet to dequeue */
 	uint16 n_pkts;       /**< number of queued packets */
-	uint16 v_pkts;       /**< number of virtual packets */
-	uint16 v2r_pkts;     /**< number of packets pending release after a v2r conversion */
 	uint16 max_pkts;     /**< maximum number of queued packets */
 	uint16 stall_count;    /**< # seconds since no packets are dequeued  */
 	uint16 dequeue_count;  /**< # of packets dequeued in last 1 second */

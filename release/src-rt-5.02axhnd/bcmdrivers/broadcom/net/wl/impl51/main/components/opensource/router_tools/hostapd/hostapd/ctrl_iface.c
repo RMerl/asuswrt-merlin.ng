@@ -434,6 +434,10 @@ static int hostapd_ctrl_iface_wps_map_bh_creds(struct hostapd_data *hapd, char *
 	char *pos;
 	char *ssid, *auth = NULL, *encr = NULL, *key = NULL;
 	int ret = -1;
+
+	if (!hapd->wps)
+		return -1;
+
 	ssid = txt;
 	pos = os_strchr(txt, ' ');
 	if (!pos)

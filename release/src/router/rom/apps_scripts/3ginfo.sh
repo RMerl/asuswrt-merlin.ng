@@ -168,3 +168,8 @@ brctl show
 echo ">"
 echo "ATE Get_WanLanStatus >"
 /sbin/ATE Get_WanLanStatus
+
+echo ">"
+echo "dmesg >"
+dmesg -c
+

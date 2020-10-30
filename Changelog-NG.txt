@@ -18,11 +18,9 @@ Asuswrt-Merlin 386/NG Changelog
          considered deprecated, and will be removed most likely
          in OpenVPN 2.6, for security reasons.
   - NEW: Added tls-crypt-v2 support to OpenVPN clients.
-  - UPDATED: Merged GPL 386_39179 (beta GPL from Asus).
-  - UPDATED: Merged 386_39179 binary blobs for RT-AC86U,
-             RT-AC68U, RT-AC5300 and RT-AX88U.
+  - UPDATED: Merged GPL 386_40577 (beta GPL from Asus).
   - UPDATED: Openssl to 1.1.1h.
-  - UPDATED: Updated to OpenVPN 2.5.0 RC3.  Note that OpenVPN
+  - UPDATED: Updated to OpenVPN 2.5.0.  Note that OpenVPN
              2.4.0 or newer is now required by the exported
              client config file.
   - UPDATED: nano to 5.2.
@@ -45,6 +43,8 @@ Asuswrt-Merlin 386/NG Changelog
              (non US-based service) to the DNSPrivacy presets.
   - CHANGED: At boot time, OpenVPN killswitch will only be
              applied for clients set to auto-start with WAN.
+  - CHANGED: Increased number of available mount points for addon
+             webpages to 20.
   - FIXED: DHCP could fail to renew its lease with some ISPs when
            Trend Micro engine was enabled (workaround provided
            by Asus)

@@ -565,7 +565,7 @@ void BCMFASTPATH_HOST br_fdb_update(struct net_bridge *br, struct net_bridge_por
 			broop = 1;
 #endif
 			if (net_ratelimit())
-				br_info(br, "received packet on %s with "
+				br_warn(br, "received packet on %s with "
 					"own address as source address\n",
 					source->dev->name);
 		} else {

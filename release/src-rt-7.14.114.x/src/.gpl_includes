@@ -1,4 +1,4 @@
 release/src-rt-6.x.4708/toolchains
-release/src-rt/router/nvram_arm
+release/src/router/nvram_arm
 release/src/router/utils/etc53xx.h
 release/src/router/utils/robocfg.c

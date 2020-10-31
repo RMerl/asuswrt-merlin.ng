@@ -41,9 +41,6 @@
 #include <linux/notifier.h>
 
 #include <asm/uaccess.h>
-#ifdef CONFIG_DUMP_PREV_OOPS_MSG
-#include <linux/ctype.h>
-#endif
 
 /*
  * for_each_console() allows you to iterate on each console
@@ -169,129 +166,6 @@ void log_buf_kexec_setup(void)
 	VMCOREINFO_SYMBOL(logged_chars);
 }
 #endif
-
-#ifdef CONFIG_DUMP_PREV_OOPS_MSG
-extern int oops_mem;
-
-struct oopsbuf_s {
-	char sig[8];
-	uint32_t len;
-	char buf[0];
-};
-
-#define OOPSBUF_SIG	"OopsBuf"
-#define MAX_PREV_OOPS_MSG_LEN   (CONFIG_DUMP_PREV_OOPS_MSG_BUF_LEN - sizeof(struct oopsbuf_s))
-static struct oopsbuf_s *oopsbuf = NULL;
-static int save_oopsmsg = 0;
-
-void enable_oopsbuf(int onoff)
-{
-	save_oopsmsg = !!onoff;
-}
-
-static inline void copy_char_to_oopsbuf(char c)
-{
-	if (!oopsbuf)
-		return;
-	else if (likely(!save_oopsmsg))
-		return;
-	else if (unlikely((oopsbuf->len + 1) >= MAX_PREV_OOPS_MSG_LEN))
-		return;
-
-	oopsbuf->buf[oopsbuf->len++] = c;
-}
-
-static char local_buf[CONFIG_DUMP_PREV_OOPS_MSG_BUF_LEN];
-static int local_buf_len = 0;
-static int got_previous_oops = 0;
-module_param(got_previous_oops, int, S_IRUGO);
-MODULE_PARM_DESC(got_previous_oops, "See if there is the previous OOPS");
-
-int prepare_and_dump_previous_oops(void)
-{
-#if 0
-	int len;
-#endif
-	unsigned char *u;
-#if 0
-	char *p, *q, log_prefix[] = "<?>>>>XXXXXX";
-#endif
-//	printk("* KERNEL: prepare_and_dump_oops: %08x::%d\n", CONFIG_DUMP_PREV_OOPS_MSG_BUF_ADDR, MAX_PREV_OOPS_MSG_LEN);
-
-	if (oops_mem)
-		oopsbuf = (struct oopsbuf_s *) (CONFIG_DUMP_PREV_OOPS_MSG_BUF_ADDR);
-	else
-		return 0;
-
-	if (strncmp(oopsbuf->sig, OOPSBUF_SIG, strlen(OOPSBUF_SIG))) {
-		u = oopsbuf->sig;
-		printk("* Invalid signature of oopsbuf: %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X (len %u)\n",
-			u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7],
-			oopsbuf->len);
-	}
-	if (oopsbuf->len > 32 && oopsbuf->len < MAX_PREV_OOPS_MSG_LEN) {
-		memset(local_buf, 0, sizeof(local_buf));
-		memcpy(local_buf, oopsbuf->buf, oopsbuf->len);
-		local_buf_len = oopsbuf->len;
-		got_previous_oops = 1;
-#if 0
-		/* Fix-up oops message.
-		 * If message is broken by NULL character, use space character instead.
-		 * If character is not printable, use the '.' character instead.
-		 */
-		for (p = oopsbuf->buf, len = oopsbuf->len; len > 0; len--, p++) {
-			if (*p == '\0')
-				*p = ' ';
-			else if (!isprint(*p) && *p != '\n')
-				*p = '.';
-		}
-		*p = '\0';
-
-		p = oopsbuf->buf;
-		printk("_ Reboot message ... _______________________________________________________\n");
-		while ((q = strsep(&p, "\n"))) {
-			if (q[0] == '<' && q[2] == '>' && q[1] >= '0' && q[1] <= '9') {
-				strncpy(log_prefix, q, 3);
-				log_prefix[3] = '\0';
-				q += 3;
-			} else {
-				log_prefix[0] = '\0';
-			}
-			printk("%s>>> %s\n", log_prefix, q);
-		}
-		printk("____________________________________________________________________________\n");
-#endif
-	}
-
-	/* Initialize oopsbuf */
-	strcpy(oopsbuf->sig, OOPSBUF_SIG);
-	oopsbuf->len = 0;
-	memset(oopsbuf->buf, 0, MAX_PREV_OOPS_MSG_LEN);
-	return 0;
-}
-
-void dump_previous_oops(void)
-{
-	int i;
-
-	if(oopsbuf && local_buf_len) {
-		printk("\n\n[dump prev ops] from %x, local len(%d)\n", (unsigned int) oopsbuf, local_buf_len);
-	} else {
-		return;	// oopsbuf failed !!
-	}
-
-	if (local_buf_len) {
-		printk("_ Reboot message ... _______________________________________________________\n");
-		for (i = 0; i < local_buf_len; i++)
-			printk("%c", local_buf[i]);
-		printk("\n____________________________________________________________________________\n");
-
-		memset(local_buf, 0, oopsbuf->len);
-		local_buf_len = 0;
-	}
-}
-EXPORT_SYMBOL(dump_previous_oops);
-#endif //End of CONFIG_DUMP_PREV_OOPS_MSG
 
 static int __init log_buf_len_setup(char *str)
 {
@@ -662,9 +536,6 @@ static void emit_log_char(char c)
 		con_start = log_end - log_buf_len;
 	if (logged_chars < log_buf_len)
 		logged_chars++;
-#ifdef CONFIG_DUMP_PREV_OOPS_MSG
-	copy_char_to_oopsbuf(c);
-#endif
 }
 
 /*

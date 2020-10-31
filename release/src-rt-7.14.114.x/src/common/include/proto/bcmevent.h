@@ -350,6 +350,8 @@ typedef struct wl_event_data_if {
 #define WLC_E_IF_ADD		1	/* bsscfg add */
 #define WLC_E_IF_DEL		2	/* bsscfg delete */
 #define WLC_E_IF_CHANGE		3	/* bsscfg role change */
+#define WLC_E_IF_BSSCFG_UP	4	/* bsscfg up */
+#define WLC_E_IF_BSSCFG_DOWN	5	/* bsscfg down */
 
 /* I/F role code in WLC_E_IF event */
 #define WLC_E_IF_ROLE_STA		0	/* Infra STA */

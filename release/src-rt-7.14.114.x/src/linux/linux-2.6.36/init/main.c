@@ -68,6 +68,9 @@
 #include <linux/sfi.h>
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
+#ifdef CONFIG_DUMP_PREV_OOPS_MSG
+#include <linux/kmsg_dump.h>
+#endif
 
 #include <asm/io.h>
 #include <asm/bugs.h>
@@ -531,6 +534,122 @@ static void __init mm_init(void)
 	pgtable_cache_init();
 	vmalloc_init();
 }
+
+#ifdef CONFIG_DUMP_PREV_OOPS_MSG
+extern int oops_mem;
+
+struct oopsbuf_s {
+	char sig[8];
+	uint32_t len;
+	char buf[0];
+};
+
+#define OOPSBUF_SIG	"OopsBuf"
+#define MAX_PREV_OOPS_MSG_LEN	(CONFIG_DUMP_PREV_OOPS_MSG_BUF_LEN - sizeof(struct oopsbuf_s))
+static struct oopsbuf_s *oopsbuf = NULL;
+
+static char local_buf[CONFIG_DUMP_PREV_OOPS_MSG_BUF_LEN] = { 0 };
+static uint32_t local_buf_len = 0;
+static int got_previous_oops = 0;
+module_param(got_previous_oops, int, S_IRUGO);
+MODULE_PARM_DESC(got_previous_oops, "See if there is previous OOPS");
+
+static struct kmsg_dumper oops_dump;
+
+static void oops_do_dump(struct kmsg_dumper *dumper,
+		enum kmsg_dump_reason reason, const char *s1, unsigned long l1,
+		const char *s2, unsigned long l2)
+{
+	unsigned long s1_start, s2_start;
+	unsigned long l1_cpy, l2_cpy;
+	char *dst;
+
+	if (!oopsbuf)
+		return;
+
+	dst = oopsbuf->buf;
+	l2_cpy = min(l2, MAX_PREV_OOPS_MSG_LEN);
+	l1_cpy = min(l1, MAX_PREV_OOPS_MSG_LEN - l2_cpy);
+
+	s2_start = l2 - l2_cpy;
+	s1_start = l1 - l1_cpy;
+
+	memcpy(dst, s1 + s1_start, l1_cpy);
+	memcpy(dst + l1_cpy, s2 + s2_start, l2_cpy);
+
+	oopsbuf->len = l1_cpy + l2_cpy;
+}
+
+static void oops_notify_register(void)
+{
+	int err;
+
+	if (oops_dump.registered)
+		return;
+
+	oops_dump.dump = oops_do_dump;
+	err = kmsg_dump_register(&oops_dump);
+
+	if (err)
+		printk("arch setup: registering kmsg dumper failed, error %d\n", err);
+}
+
+int prepare_and_dump_previous_oops(void)
+{
+	unsigned char *u;
+#if 0
+	int len;
+	char *p, *q, log_prefix[] = "<?>>>>XXXXXX";
+
+	printk("* KERNEL: prepare_and_dump_oops: %08x::%d\n", CONFIG_DUMP_PREV_OOPS_MSG_BUF_ADDR, MAX_PREV_OOPS_MSG_LEN);
+#endif
+	int i;
+
+	if (oops_mem)
+		oopsbuf = (struct oopsbuf_s *) (CONFIG_DUMP_PREV_OOPS_MSG_BUF_ADDR);
+	else
+		return 0;
+
+	if (strncmp(oopsbuf->sig, OOPSBUF_SIG, strlen(OOPSBUF_SIG))) {
+		u = oopsbuf->sig;
+		printk("* Invalid signature of oopsbuf: %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X (len %u)\n",
+			u[0], u[1], u[2], u[3], u[4], u[5], u[6], u[7],
+			oopsbuf->len);
+	}
+
+	if (oopsbuf->len > 32 && oopsbuf->len <= MAX_PREV_OOPS_MSG_LEN) {
+		memcpy(local_buf, oopsbuf->buf, oopsbuf->len);
+		local_buf_len = oopsbuf->len;
+		got_previous_oops = 1;
+	}
+
+	/* Initialize oopsbuf */
+	strcpy(oopsbuf->sig, OOPSBUF_SIG);
+	oopsbuf->len = 0;
+	memset(oopsbuf->buf, 0, MAX_PREV_OOPS_MSG_LEN);
+
+	memset(&oops_dump, 0, sizeof(struct kmsg_dumper));
+	oops_notify_register();
+
+	return 0;
+}
+
+void dump_previous_oops(void)
+{
+	int i;
+
+	if (local_buf_len) {
+		printk("_ Start of Reboot message (%d) ... _______________________________________________________\n", local_buf_len);
+		for (i = 0; i < local_buf_len; i++)
+			printk("%c", local_buf[i]);
+		printk("\n_ End of Reboot message (%d) ... _______________________________________________________\n", local_buf_len);
+
+		memset(local_buf, 0, sizeof(local_buf));
+		local_buf_len = 0;
+	}
+}
+EXPORT_SYMBOL(dump_previous_oops);
+#endif // CONFIG_DUMP_PREV_OOPS_MSG
 
 asmlinkage void __init start_kernel(void)
 {

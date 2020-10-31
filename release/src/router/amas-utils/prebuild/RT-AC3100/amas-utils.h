@@ -16,6 +16,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 typedef enum
 {
+#ifdef RTCONFIG_VIF_ONBOARDING
+	AMAS_RESULT_GEN_ONBOARDING_VIF_WIFI_SECURITY_FAILED		= -23,
+#endif
+#ifdef RTCONFIG_PRELINK
+	AMAS_RESULT_GET_DEF_HASH_BUNDLE_KEY_FAILED          = -22,
+	AMAS_RESULT_GEN_DEF_BACKHAUL_WIFI_SECURITY_FAILED		= -21,
+	AMAS_RESULT_VERIFY_HASH_BUNDLE_KEY_FAILED		= -20,
+	AMAS_RESULT_SET_HASH_BUNDLE_KEY_FAILED		= -19,
+	AMAS_RESULT_GEN_HASH_BUNDLE_KEY_FAILED		= -18,
+#endif
 	AMAS_RESULT_FILE_LOCK_ERROR			= -17,
 	AMAS_RESULT_NBR_DATA_IS_EMPTY		= -16,
 	AMAS_RESULT_NBR_SYSDESCR_NO_SEACH 	= -15,
@@ -55,6 +65,7 @@ typedef enum
 typedef struct _ob_status{
 	unsigned char neighmac[7];
 	unsigned char modelname[64];
+	unsigned char tcode[16];
 	int obstatus; 		//1 (OB_OFF),  2 (OB_Available), 3 (OB_REQ), 4 (OB_LOCKED), 5 (OB_SUCCESS)
 	int timestamp;
 	int reboottime;
@@ -85,6 +96,7 @@ typedef struct _data_exchange{
 	unsigned char peermac[7];
 	unsigned char data[MAX_VERSION_TEXT_LENGTH+1];
 	unsigned int  datalen;
+	char ifname[8];
 }data_exchange,*ptr_dataexchange;
 
 
@@ -100,9 +112,22 @@ typedef struct _id_info{
 	unsigned char id[MAX_VERSION_TEXT_LENGTH+1];
 	unsigned int  idlen;
 	unsigned char modelname[64];
+	unsigned char tcode[16];
 	int obstatus; 		//1 (OB_OFF),  2 (OB_Available), 3 (OB_REQ), 4 (OB_LOCKED), 5 (OB_SUCCESS)
 	int timestamp;
+	unsigned char bundlekey[MAX_VERSION_TEXT_LENGTH+1];
+	unsigned int  bundlekeylen;
 }id_info,*ptr_idinfo;
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//	data structure for AMAS_SUBTYPE_ID
+//
+////////////////////////////////////////////////////////////////////////////////
+typedef struct _bundle_key{
+	unsigned char bundlekey[MAX_VERSION_TEXT_LENGTH+1];
+	unsigned int  bundlekeylen;
+}bundle_key,*ptr_bundle_key;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -134,5 +159,24 @@ AMAS_FUNC AMAS_RESULT   AMAS_API amas_get_wifisec(char *type, unsigned char *val
 AMAS_FUNC AMAS_RESULT   AMAS_API amas_get_obdinfo(id_info **P_idinfo, int *len);
 AMAS_FUNC AMAS_RESULT   AMAS_API amas_set_group(unsigned char *group);
 AMAS_FUNC AMAS_RESULT   AMAS_API amas_get_group(unsigned char *group, int *len);
-AMAS_FUNC void   AMAS_API amas_set_timeout(int rtime, int ctimeout, int ttimeout);
+AMAS_FUNC AMAS_RESULT	AMAS_API amas_get_rssi_score(char *ifname, int bandindex, int capability5g, char *ifmac, int *rssi_score);
+AMAS_FUNC AMAS_RESULT	AMAS_API amas_set_rssi_score(int rssi_score);
+AMAS_FUNC void  AMAS_API amas_set_timeout(int rtime, int ctimeout, int ttimeout);
+AMAS_FUNC AMAS_RESULT	AMAS_API amas_get_wifi_lastbyte(char *ifname, int bandindex, int capability5g, char *ifmac, char *wifi_lastbyte, int wifi_lastbyte_len);
+AMAS_FUNC AMAS_RESULT	AMAS_API amas_set_wifi_lastbyte(unsigned char *input_wifi_lastbyte);
+#if defined(RTCONFIG_PRELINK)
+AMAS_FUNC AMAS_RESULT AMAS_API amas_get_bundle_key(bundle_key **P_bundlekey, int *len);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_gen_hash_bundle_key(unsigned char *key);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_verify_hash_bundle_key(unsigned char *key, int *result);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_set_hash_bundle_key(int reset);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_gen_default_backhaul_security(char *ssid, int ssid_len, char *psk, int psk_len);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_verify_default_backhaul_security(char *ssid, char *psk, int *result);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_get_default_hash_bundle_key(unsigned char *hash_key, int hash_key_len);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_prelink_band_sync_bypass(int unit, int *result);
+#endif	/* RTCONFIG_PRELINK */
+#ifdef RTCONFIG_VIF_ONBOARDING
+AMAS_FUNC AMAS_RESULT AMAS_API amas_gen_onboarding_vif_security(char *ssid, int ssid_len, char *psk, int psk_len);
+#endif	/* RTCONFIG_VIF_ONBOARDING */
+AMAS_FUNC AMAS_RESULT AMAS_API amas_set_eth_role(char *input_eth_role);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_get_dest_eth_role(char *ifname, int *eth_role);
 #endif /* !__AMASUTILSH__ */

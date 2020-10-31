@@ -4,11 +4,11 @@
 
 int bit_count(in_addr_t i)
 {
-	int c = 0;
+	int c = 0, b;
 	unsigned int seen_one = 0;
 
 	// Be sure to check all octets
-	for (int b = 0; i > 0 || b < 25; ++b, i >>= 1) {
+	for (b = 0; i > 0 || b < 25; ++b, i >>= 1) {
 		if (i & 1) {
 			seen_one = 1;
 			c++;

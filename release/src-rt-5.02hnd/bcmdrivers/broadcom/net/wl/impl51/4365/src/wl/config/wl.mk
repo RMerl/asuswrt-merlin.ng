@@ -1106,6 +1106,10 @@ ifeq ($(WET),1)
 endif
 #endif
 
+ifeq ($(WET_DONGLE),1)
+	WLFLAGS += -DWET_DONGLE
+endif
+
 #ifdef RXCHAIN_PWRSAVE
 ifeq ($(RXCHAIN_PWRSAVE), 1)
 	WLFLAGS += -DRXCHAIN_PWRSAVE

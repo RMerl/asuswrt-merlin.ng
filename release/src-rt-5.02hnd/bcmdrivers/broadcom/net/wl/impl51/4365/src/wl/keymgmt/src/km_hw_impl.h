@@ -29,7 +29,7 @@ typedef uint16	hwktab_addr_t;
 
 #define KM_HW_MAX_DATA_LEN 32
 
-typedef wlc_keymgmt_t	keymgmt_t;
+
 typedef wlc_key_algo_t	key_algo_t;
 typedef wlc_key_hw_algo_t hw_algo_t;
 

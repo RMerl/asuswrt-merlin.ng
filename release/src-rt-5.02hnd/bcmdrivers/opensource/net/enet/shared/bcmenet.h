@@ -28,6 +28,8 @@
 #ifndef _BCMENET_H_
 #define _BCMENET_H_
 
+#define CONFIG_BCM_ENERGY_EFFICIENT_ETHERNET_DISABLED	1
+
 #if defined(CONFIG_BCM_ENET_4908_GMAC)
 #include "bcmPktDma_structs.h"
 typedef struct BcmEnet_RxDma {

@@ -5,6 +5,7 @@
  */
 
 #include "km_pvt.h"
+#include "km_hw_impl.h"
 
 #ifdef WLOFFLD
 #include <wlc_offloads.h>
@@ -91,6 +92,7 @@ km_bsscfg_init_internal(wlc_keymgmt_t *km, wlc_bsscfg_t *bsscfg)
 	bss_km->flags |= (bsscfg->wsec & WSEC_SWFLAG) ? KM_BSSCFG_FLAG_SWKEYS : 0;
 	bss_km->algo = CRYPTO_ALGO_NONE;
 	bss_km->amt_idx = KM_HW_AMT_IDX_INVALID;
+	bss_km->cfg_amt_idx = KM_HW_AMT_IDX_INVALID;
 	bss_km->tkip_cm_detected = -(WPA_TKIP_CM_DETECT + 1);
 
 	/* initialize key indicies so bailing on errors is safe */
@@ -331,6 +333,10 @@ km_bsscfg_sync_bssid(keymgmt_t *km, wlc_bsscfg_t *bsscfg)
 		goto done;
 	}
 
+	/* Need to clear amt first to prevent double linking CFP flow ID */
+	if (isset(km->hw->used, bss_km->amt_idx)) {
+		wlc_clear_addrmatch(km->wlc, bss_km->amt_idx);
+	}
 	/* set A3 to indicate bssid. km_hw only sets A2 as required */
 	wlc_set_addrmatch(km->wlc, bss_km->amt_idx, &bsscfg->BSSID,
 		AMT_ATTR_VALID | AMT_ATTR_A3 | AMT_ATTR_A2);
@@ -380,7 +386,7 @@ km_bsscfg_wowl(keymgmt_t *km, wlc_bsscfg_t *bsscfg, bool going_down)
 km_amt_idx_t
 km_bsscfg_get_amt_idx(keymgmt_t *km, const wlc_bsscfg_t *bsscfg)
 {
-	const km_bsscfg_t *bss_km;
+	km_bsscfg_t *bss_km;
 	km_amt_idx_t amt_idx;
 
 	KM_DBG_ASSERT(KM_VALID(km) && bsscfg != NULL);
@@ -419,23 +425,27 @@ km_bsscfg_get_amt_idx(keymgmt_t *km, const wlc_bsscfg_t *bsscfg)
 		}
 	}
 #endif /* PSTA */
-#ifdef WET
+
+	bss_km = KM_BSSCFG(km, bsscfg);
+#if defined(WET) || defined(WET_DONGLE)
 	/* amt reservation support for wet */
-	if (WET_ENAB(km->wlc)) {
+	if (WET_ENAB(km->wlc) || WET_DONGLE_ENAB(km->wlc)) {
 		km_hw_amt_reserve(km->hw, WET_TA_STRT_INDX, WET_RA_PRIM_INDX, TRUE);
 		km_hw_amt_reserve(km->hw, WET_RA_PRIM_INDX, 1, TRUE);
-		/* wet only create one interface, so use the first index.
-		* If wet will create more than one interface, need to allocate rcmta_idx like psta
-		*/
-		amt_idx =  WET_RA_STRT_INDX;
+		/* To support URE_MBSS, need more amt_idx for other bsscfg,
+		 * not just only WET_RA_STRT_INDX
+		 */
+		if (bss_km->cfg_amt_idx == KM_HW_AMT_IDX_INVALID)
+			bss_km->cfg_amt_idx = km_hw_amt_find_and_resrv(km->hw);
+
+		amt_idx = bss_km->cfg_amt_idx;
+
 		if (km_hw_amt_idx_valid(km->hw, amt_idx)) {
-			km_hw_amt_reserve(km->hw, amt_idx, 1, TRUE);
 			goto done;
 		}
 	}
-#endif /* WET */
+#endif /* WET || WET_DONGLE */
 
-	bss_km = KM_CONST_BSSCFG(km, bsscfg);
 	amt_idx = bss_km->amt_idx;
 
 done:

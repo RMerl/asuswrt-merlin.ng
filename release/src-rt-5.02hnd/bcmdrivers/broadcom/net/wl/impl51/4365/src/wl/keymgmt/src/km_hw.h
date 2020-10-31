@@ -16,6 +16,8 @@ typedef struct km_hw km_hw_t;
 
 #define KM_HW_AMT_IDX_INVALID 0xff
 
+typedef wlc_keymgmt_t keymgmt_t;
+
 km_hw_t *km_hw_attach(wlc_info_t *wlc, wlc_keymgmt_t *km);
 void km_hw_detach(km_hw_t **hw);
 void km_hw_init(km_hw_t *hw);

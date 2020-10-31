@@ -459,6 +459,8 @@ typedef struct sbpcieregs {
 #define PCIE_CAP_DEVCTRL_MPS_256B	1	/* 256 Byte */
 #define PCIE_CAP_DEVCTRL_MPS_512B	2	/* 512 Byte */
 #define PCIE_CAP_DEVCTRL_MPS_1024B	3	/* 1024 Byte */
+#define PCIE_CAP_DEVCTRL_MPS_2048B	4	/* 2048 Byte */
+#define PCIE_CAP_DEVCTRL_MPS_4096B	5	/* 4096 Byte */
 
 #define PCIE_ASPM_ENAB			3	/* ASPM L0s & L1 in linkctrl */
 #define PCIE_ASPM_L1_ENAB		2	/* ASPM L0s & L1 in linkctrl */

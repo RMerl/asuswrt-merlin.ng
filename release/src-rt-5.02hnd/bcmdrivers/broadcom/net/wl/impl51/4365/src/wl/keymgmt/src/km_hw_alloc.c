@@ -5,6 +5,7 @@
  */
 
 #include "km_hw_pvt.h"
+#include "km_pvt.h"
 
 /* functions exported to km */
 void
@@ -174,6 +175,8 @@ hw_idx_alloc(km_hw_t *hw, size_t count, km_alloc_key_info_t *alloc_info)
 	skl_idx_t skl_idx;
 	amt_idx_t amt_idx;
 	scb_t *scb;
+	wlc_bsscfg_t *bsscfg;
+	km_bsscfg_t *bss_km;
 	bool at_end;
 
 	KM_HW_LOG(("wl%d: %s: req count %lu\n", KM_HW_UNIT(hw),
@@ -228,6 +231,15 @@ hw_idx_alloc(km_hw_t *hw, size_t count, km_alloc_key_info_t *alloc_info)
 	scb = alloc_info->scb_info.scb;
 	KM_ASSERT(scb != NULL);
 	amt_idx = km_scb_amt_alloc(KM_HW_KM(hw), scb);
+
+	bsscfg = alloc_info->bss_info.bsscfg;
+	if (BSSCFG_STA(bsscfg) && !KM_HW_IS_DEFAULT_BSSCFG(hw, bsscfg)) {
+		bss_km = KM_BSSCFG(KM_HW_KM(hw), bsscfg);
+
+		if (bss_km->amt_idx != KM_HW_AMT_IDX_INVALID)
+			amt_idx = bss_km->amt_idx;
+	}
+
 	if (!KM_HW_AMT_IDX_VALID(hw, amt_idx)) {
 		hw_idx = WLC_KEY_INDEX_INVALID;
 		goto done;

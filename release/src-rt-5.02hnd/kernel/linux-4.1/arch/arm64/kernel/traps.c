@@ -228,9 +228,6 @@ void die(const char *str, struct pt_regs *regs, int err)
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG
 	enable_oopsbuf(1);
 #endif
-#ifdef CRASHLOG
-	crashlog_enable = 1;
-#endif
 	oops_enter();
 
 	raw_spin_lock_irq(&die_lock);

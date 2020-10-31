@@ -7179,4 +7179,10 @@ typedef struct wlc_fbt_action_resp {
 						*/
 } wlc_fbt_action_resp_t;
 
+/* WET host ip and mac parameter configuration */
+typedef struct wet_host {
+	uint8 buf[6]; /* ip or mac*/
+	uint8 bssidx;
+} wet_host_t;
+
 #endif /* _wlioctl_h_ */

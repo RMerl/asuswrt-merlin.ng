@@ -5,6 +5,8 @@
 
 #include <net/netfilter/nf_conntrack.h>
 
+#define CATHY_DEBUG_NAT_EXT
+
 enum nf_ct_ext_id {
 	NF_CT_EXT_HELPER,
 #if defined(CONFIG_NF_NAT) || defined(CONFIG_NF_NAT_MODULE)
@@ -47,10 +49,17 @@ enum nf_ct_ext_id {
 /* Extensions: optional stuff which isn't permanently in struct. */
 struct nf_ct_ext {
 	struct rcu_head rcu;
+#ifdef CATHY_DEBUG_NAT_EXT
+	u32 magic;
+#endif /* CATHY_DEBUG_NAT_EXT */
 	u16 offset[NF_CT_EXT_NUM];
 	u16 len;
 	char data[0];
 };
+
+#ifdef CATHY_DEBUG_NAT_EXT
+extern int get_tot_size_all_ext_types(void);
+#endif /* CATHY_DEBUG_NAT_EXT */
 
 static inline bool __nf_ct_ext_exist(const struct nf_ct_ext *ext, u8 id)
 {

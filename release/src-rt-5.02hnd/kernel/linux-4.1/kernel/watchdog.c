@@ -400,9 +400,6 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG
 		enable_oopsbuf(1);
 #endif
-#ifdef CRASHLOG
-		crashlog_enable = 1;
-#endif
 		pr_emerg("BUG: soft lockup - CPU#%d stuck for %us! [%s:%d]\n",
 			smp_processor_id(), duration,
 			current->comm, task_pid_nr(current));

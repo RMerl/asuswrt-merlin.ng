@@ -1278,24 +1278,6 @@ static irqreturn_t brcmnand_dma_irq(int irq, void *data)
 	return IRQ_HANDLED;
 }
 
-static void brcmnand_send_cmd(struct brcmnand_host *host, int cmd)
-{
-	struct brcmnand_controller *ctrl = host->ctrl;
-	u32 intfc;
-
-	dev_dbg(ctrl->dev, "send native cmd %d addr_lo 0x%x\n", cmd,
-		brcmnand_read_reg(ctrl, BRCMNAND_CMD_ADDRESS));
-	BUG_ON(ctrl->cmd_pending != 0);
-	ctrl->cmd_pending = cmd;
-
-	intfc = brcmnand_read_reg(ctrl, BRCMNAND_INTFC_STATUS);
-	BUG_ON(!(intfc & INTFC_CTLR_READY));
-
-	mb(); /* flush previous writes */
-	brcmnand_write_reg(ctrl, BRCMNAND_CMD_START,
-			   cmd << brcmnand_cmd_shift(ctrl));
-}
-
 #if defined(CONFIG_BCM_KF_MTD_BCMNAND)
 static int brcmnand_wait_cmd(struct brcmnand_host *host, int timeout)
 {
@@ -1323,6 +1305,42 @@ static int brcmnand_wait_cmd(struct brcmnand_host *host, int timeout)
 	return ret;
 }
 #endif
+
+static void brcmnand_send_cmd(struct brcmnand_host *host, int cmd)
+{
+	struct brcmnand_controller *ctrl = host->ctrl;
+	u32 intfc;
+
+	dev_dbg(ctrl->dev, "send native cmd %d addr_lo 0x%x\n", cmd,
+		brcmnand_read_reg(ctrl, BRCMNAND_CMD_ADDRESS));
+#if defined(CONFIG_BCM_KF_MTD_BCMNAND)
+	/*
+	 * If we came here through _panic_write and there is a pending
+	 * command, give it 5ms to complete. If it doesn't, rather than
+	 * hitting BUG_ON, just return so we don't crash while crashing.
+	 */
+	if (oops_in_progress) {
+		if (ctrl->cmd_pending && brcmnand_wait_cmd(host, 5))
+			return;
+	} else
+#endif
+	BUG_ON(ctrl->cmd_pending != 0);
+	ctrl->cmd_pending = cmd;
+
+	intfc = brcmnand_read_reg(ctrl, BRCMNAND_INTFC_STATUS);
+#if defined(CONFIG_BCM_KF_MTD_BCMNAND)
+	/* same as above for cmd_pending check */
+	if (oops_in_progress) {
+		if ((!(intfc & INTFC_CTLR_READY)) && brcmnand_wait_cmd(host, 5))
+			return;
+	} else
+#endif
+	BUG_ON(!(intfc & INTFC_CTLR_READY));
+
+	mb(); /* flush previous writes */
+	brcmnand_write_reg(ctrl, BRCMNAND_CMD_START,
+			   cmd << brcmnand_cmd_shift(ctrl));
+}
 
 /***********************************************************************
  * NAND MTD API: read/program/erase

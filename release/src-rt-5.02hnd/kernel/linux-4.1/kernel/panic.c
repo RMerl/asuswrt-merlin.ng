@@ -39,12 +39,6 @@ int panic_on_warn __read_mostly;
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
 EXPORT_SYMBOL_GPL(panic_timeout);
 
-#ifdef CRASHLOG
-int crashlog_enable = 0;
-char crashlog_filename[SYSCTL_CRASHLOG_FILENAME_LEN] = {0};
-char crashlog_mtd[SYSCTL_CRASHLOG_MTD_LEN] = {0};
-#endif
-
 ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
 
 EXPORT_SYMBOL(panic_notifier_list);
@@ -86,9 +80,6 @@ void panic(const char *fmt, ...)
 	va_list args;
 	long i, i_next = 0;
 	int state = 0;
-#ifdef CRASHLOG
-	crashlog_enable = 1;
-#endif
 
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG
 	enable_oopsbuf(1);
@@ -179,10 +170,6 @@ void panic(const char *fmt, ...)
 	console_flush_on_panic();
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG
 	enable_oopsbuf(0);
-#endif
-#ifdef CRASHLOG
-	crashlog_enable = 0;
-	crashLogCommit();
 #endif
 	if (!panic_blink)
 		panic_blink = no_blink;
@@ -418,9 +405,6 @@ void oops_enter(void)
 	do_oops_enter_exit();
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG
 	enable_oopsbuf(1);
-#endif
-#ifdef CRASHLOG
-	crashlog_enable = 1;
 #endif
 }
 

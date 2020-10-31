@@ -39,9 +39,9 @@
 #ifdef PSTA
 #include <wlc_psta.h>
 #endif /* PSTA */
-#ifdef WET
+#if defined(WET) || defined(WET_DONGLE)
 #include <wlc_wet.h>
-#endif /* WET */
+#endif /* WET || WET_DONGLE */
 #ifdef BCMCCX
 #include <wlc_rm.h>
 #include <wlc_ccx.h>

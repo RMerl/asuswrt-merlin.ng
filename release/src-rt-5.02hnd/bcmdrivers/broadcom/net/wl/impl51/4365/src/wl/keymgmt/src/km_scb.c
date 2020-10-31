@@ -648,8 +648,8 @@ km_scb_amt_alloc(keymgmt_t *km, scb_t *scb)
 	if (BSSCFG_STA(bsscfg) && PSTA_ENAB(KM_PUB(km)))
 		ea = &bsscfg->cur_etheraddr; /* PSTA uses A1 match */
 #endif
-#ifdef WET
-	if (BSSCFG_STA(bsscfg) && WET_ENAB(km->wlc)) {
+#if defined(WET) || defined(WET_DONGLE)
+	if (BSSCFG_STA(bsscfg) && (WET_ENAB(km->wlc) || WET_DONGLE_ENAB(km->wlc))) {
 		ea = &bsscfg->cur_etheraddr; /* WET uses A1 match */
 	}
 #endif

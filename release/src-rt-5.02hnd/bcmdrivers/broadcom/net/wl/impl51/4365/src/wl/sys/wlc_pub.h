@@ -1484,10 +1484,25 @@ wlc_pkttag_bsscfg_get(void *p)
 #define	PSTA_IS_PROXY(wlc)	(0)
 #define	PSTA_IS_REPEATER(wlc)	(0)
 #endif /* PSTA */
+
+#if defined(WET) && defined(WET_DONGLE)
+#error "Don't use WET and WET_DONGLE in the same build"
+#endif
+
+#if defined(DONGLEBUILD) && defined(WET)
+#error "Use WET_DONGLE iso WET for donglebuilds"
+#endif
+
 #ifdef WET
-#define WET_ENAB(wlc)	(wlc->wet_enab)
+#define WET_ENAB(wlc)		(wlc->wet)
 #else
-#define WET_ENAB(wlc)	(0)
+#define WET_ENAB(wlc)		(0)
+#endif
+
+#ifdef WET_DONGLE
+#define WET_DONGLE_ENAB(wlc)	(wlc->wet_dongle)
+#else
+#define WET_DONGLE_ENAB(wlc)	(0)
 #endif
 
 #if defined(PKTC) || defined(PKTC_DONGLE)

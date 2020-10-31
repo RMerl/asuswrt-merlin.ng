@@ -1517,11 +1517,6 @@ static void call_console_drivers(int level, const char *text, size_t len)
 
 	trace_console(text, len);
 
-#ifdef CRASHLOG
-	if (crashlog_enable)
-		crashLogText(text, len);
-#endif
-
 	if (level >= console_loglevel && !ignore_loglevel)
 		return;
 	if (!console_drivers)

@@ -183,6 +183,71 @@ same_src(const struct nf_conn *ct,
 		t->src.u.all == tuple->src.u.all);
 }
 
+#ifdef CATHY_DEBUG_NAT_EXT
+#define DUMP_PKT_NAT(data, len) \
+{ \
+	unsigned int ii; \
+	printk("%s %d data %p, len %d ", __func__, __LINE__, (data), (len)); \
+	for (ii = 0; ii < (len); ii++) { \
+		if (!(ii & 0xf)) \
+			printk("\n"); \
+		printk("%02x ", ((unsigned char *)(data))[ii]); \
+	} \
+	printk("\n\n"); \
+}
+
+void print_nat_table_by_hash(struct net *net, unsigned int h)
+{
+	struct nf_conn_nat *nat, *prev_nat = NULL;
+	int tot_size = get_tot_size_all_ext_types();
+	unsigned char *data;
+
+	printk("%s: h %d htable sz %d init_net %p net %p nat_bysource first %p\n",
+		__FUNCTION__, h, net->ct.nat_htable_size, &init_net, net,
+		hlist_first_rcu(&net->ct.nat_bysource[h]));
+
+	hlist_for_each_entry_rcu(nat, &net->ct.nat_bysource[h], bysource) {
+		if (!virt_addr_valid(nat)) {
+			printk("%s: nat is invalid %p prev_nat %p next %p\n",
+				__FUNCTION__, nat,
+				prev_nat, prev_nat ? hlist_next_rcu(&prev_nat->bysource) : NULL);
+			break;
+		}
+		else if (!virt_addr_valid(nat->ct)) {
+			printk("%s: nat->ct is invalid %p nat %p next %p prev_nat %p next %p\n",
+				__FUNCTION__, nat->ct, nat, hlist_next_rcu(&nat->bysource),
+				prev_nat, prev_nat ? hlist_next_rcu(&prev_nat->bysource) : NULL);
+			break;
+		}
+		else {
+			printk("%s: nat %p ct %p nfct_nat %p next %p prev_nat %p next %p\n",
+				__FUNCTION__, nat, nat->ct, nfct_nat(nat->ct),
+				hlist_next_rcu(&nat->bysource),
+				prev_nat, prev_nat ? hlist_next_rcu(&prev_nat->bysource) : NULL);
+		}
+		prev_nat = nat;
+	}
+
+	if (virt_addr_valid(prev_nat)) {
+		printk("%s: print prev_nat %p ct %p\n", __FUNCTION__, prev_nat, prev_nat->ct);
+		if (virt_addr_valid(prev_nat->ct) && virt_addr_valid(prev_nat->ct->ext))
+			DUMP_PKT_NAT(prev_nat->ct->ext, (prev_nat->ct->ext->len + 64));
+		data = (unsigned char *)prev_nat;
+		DUMP_PKT_NAT((data - tot_size), (tot_size * 2));
+		printk("%s: ==============\n", __FUNCTION__);
+	}
+
+	if (virt_addr_valid(nat)) {
+		printk("%s: print nat %p ct %p\n", __FUNCTION__, nat, nat->ct);
+		if (virt_addr_valid(nat->ct) && virt_addr_valid(nat->ct->ext))
+			DUMP_PKT_NAT(nat->ct->ext, (nat->ct->ext->len + 64));
+		data = (unsigned char *)nat;
+		DUMP_PKT_NAT((data - tot_size), (tot_size * 2));
+		printk("%s: ==============\n", __FUNCTION__);
+	}
+}
+#endif /* CATHY_DEBUG_NAT_EXT */
+
 /* Only called for SRC manip */
 static int
 find_appropriate_src(struct net *net, u16 zone,
@@ -195,8 +260,21 @@ find_appropriate_src(struct net *net, u16 zone,
 	unsigned int h = hash_by_src(net, zone, tuple);
 	const struct nf_conn_nat *nat;
 	const struct nf_conn *ct;
+#ifdef CATHY_DEBUG_NAT_EXT
+	int loop_cnt = 0;
+#endif /* CATHY_DEBUG_NAT_EXT */
 
 	hlist_for_each_entry_rcu(nat, &net->ct.nat_bysource[h], bysource) {
+#ifdef CATHY_DEBUG_NAT_EXT
+		if (!virt_addr_valid(nat) || !virt_addr_valid(nat->ct)) {
+			printk("%s %d: loop_cnt %d h %d htable sz %d init_net %p net %p\n",
+				__FUNCTION__, __LINE__, loop_cnt, h, net->ct.nat_htable_size,
+				&init_net, net);
+			print_nat_table_by_hash(net, h);
+			break;
+		}
+		loop_cnt++;
+#endif /* CATHY_DEBUG_NAT_EXT */
 		ct = nat->ct;
 		if (same_src(ct, tuple) && nf_ct_zone(ct) == zone) {
 			/* Copy source part from reply tuple. */

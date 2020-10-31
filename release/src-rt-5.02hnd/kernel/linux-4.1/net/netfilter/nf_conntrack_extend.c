@@ -19,6 +19,30 @@
 static struct nf_ct_ext_type __rcu *nf_ct_ext_types[NF_CT_EXT_NUM];
 static DEFINE_MUTEX(nf_ct_ext_type_mutex);
 
+#ifdef CATHY_DEBUG_NAT_EXT
+int get_tot_size_all_ext_types(void)
+{
+	struct nf_ct_ext_type *t;
+	int i;
+	int tot_size = 0;
+
+	rcu_read_lock();
+	for (i = 0; i < NF_CT_EXT_NUM; i++) {
+		t = rcu_dereference(nf_ct_ext_types[i]);
+		if (t) {
+			printk("%s: type %d len %d align %d alloc_size %d destroy %pS move %pS\n",
+				__FUNCTION__, i, t->len, t->align, t->alloc_size,
+				t->destroy, t->move);
+			tot_size += t->alloc_size;
+		}
+	}
+	rcu_read_unlock();
+
+	return tot_size;
+}
+EXPORT_SYMBOL(get_tot_size_all_ext_types);
+#endif /* CATHY_DEBUG_NAT_EXT */
+
 void __nf_ct_ext_destroy(struct nf_conn *ct)
 {
 	unsigned int i;
@@ -40,6 +64,9 @@ void __nf_ct_ext_destroy(struct nf_conn *ct)
 			t->destroy(ct);
 		rcu_read_unlock();
 	}
+#ifdef CATHY_DEBUG_NAT_EXT
+	ext->magic = 0xdead5678;
+#endif /* CATHY_DEBUG_NAT_EXT */
 }
 EXPORT_SYMBOL(__nf_ct_ext_destroy);
 
@@ -62,7 +89,9 @@ nf_ct_ext_create(struct nf_ct_ext **ext, enum nf_ct_ext_id id,
 	*ext = kzalloc(alloc_size, gfp);
 	if (!*ext)
 		return NULL;
-
+#ifdef CATHY_DEBUG_NAT_EXT
+	(*ext)->magic = 0xdead1234;
+#endif /* CATHY_DEBUG_NAT_EXT */
 	(*ext)->offset[id] = off;
 	(*ext)->len = len;
 

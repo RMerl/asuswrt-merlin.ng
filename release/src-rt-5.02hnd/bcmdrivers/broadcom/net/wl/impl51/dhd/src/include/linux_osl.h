@@ -120,6 +120,9 @@ extern uint osl_pcie_domain(osl_t *osh);
 extern uint osl_pcie_bus(osl_t *osh);
 extern struct pci_dev *osl_pci_device(osl_t *osh);
 
+#define OSL_PCIE_MPS_LIMIT(osh, devctl_offset, mps)    osl_pcie_mps_limit(osh, devctl_offset, mps)
+extern void osl_pcie_mps_limit(osl_t *osh, uint devctl_offset, uint mps);
+
 #define OSL_ACP_COHERENCE		(1<<1L)
 #define OSL_FWDERBUF			(1<<2L)
 

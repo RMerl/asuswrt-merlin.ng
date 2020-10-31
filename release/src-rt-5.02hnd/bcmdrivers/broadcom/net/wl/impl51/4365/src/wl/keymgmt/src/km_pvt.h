@@ -115,7 +115,6 @@ struct wlc_keymgmt {
 #endif /* BCM_OL_DEV */
 
 /* convenience typedefs */
-typedef wlc_keymgmt_t keymgmt_t;
 typedef wlc_keymgmt_time_t km_time_t;
 
 /* cubby note: B4M4 keys are for STA only; igtk keys are for MFP only.
@@ -157,6 +156,7 @@ struct km_bsscfg {
 	wlc_key_algo_t		algo;			/* multicast cipher for the BSS */
 	wlc_key_index_t		scb_key_idx;	/* STA group key support */
 	km_amt_idx_t		amt_idx;		/* amt allocated for bssid */
+	km_amt_idx_t        cfg_amt_idx;	/* amt allocated for bsscfg */
 };
 
 enum {

@@ -98,9 +98,6 @@ static void __do_kernel_fault(struct mm_struct *mm, unsigned long addr,
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG
 	enable_oopsbuf(1);
 #endif
-#ifdef CRASHLOG
-	crashlog_enable = 1;
-#endif
 	pr_alert("Unable to handle kernel %s at virtual address %08lx\n",
 		 (addr < PAGE_SIZE) ? "NULL pointer dereference" :
 		 "paging request", addr);
@@ -469,9 +466,6 @@ asmlinkage void __exception do_mem_abort(unsigned long addr, unsigned int esr,
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG
 	enable_oopsbuf(1);
 #endif
-#ifdef CRASHLOG
-	crashlog_enable = 1;
-#endif
 	pr_alert("Unhandled fault: %s (0x%08x) at 0x%016lx\n",
 		 inf->name, esr, addr);
 
@@ -492,9 +486,6 @@ asmlinkage void __exception do_sp_pc_abort(unsigned long addr,
 	struct siginfo info;
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG
 	enable_oopsbuf(1);
-#endif
-#ifdef CRASHLOG
-	crashlog_enable = 1;
 #endif
 	info.si_signo = SIGBUS;
 	info.si_errno = 0;
@@ -537,9 +528,6 @@ asmlinkage int __exception do_debug_exception(unsigned long addr,
 		return 1;
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG
 	enable_oopsbuf(1);
-#endif
-#ifdef CRASHLOG
-	crashlog_enable = 1;
 #endif
 	pr_alert("Unhandled debug exception: %s (0x%08x) at 0x%016lx\n",
 		 inf->name, esr, addr);

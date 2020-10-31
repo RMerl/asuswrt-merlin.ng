@@ -7004,4 +7004,10 @@ typedef struct mupkteng_tx {
 #define WL_MUPKTENG_PER_TX_START		0x10
 #define WL_MUPKTENG_PER_TX_STOP		        0x20
 
+/* WET host ip and mac parameter configuration */
+typedef struct wet_host {
+	uint8 buf[6]; /* ip or mac*/
+	uint8 bssidx;
+} wet_host_t;
+
 #endif /* _wlioctl_h_ */

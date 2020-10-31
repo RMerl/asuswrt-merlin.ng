@@ -15,6 +15,9 @@
 #include <linux/types.h>
 #include <linux/netfilter/x_tables.h>
 #include <linux/netfilter/xt_time.h>
+#ifdef  HNDCTF
+#include <net/netfilter/nf_conntrack.h>
+#endif
 
 struct xtm {
 	u_int8_t month;    /* (1-12) */
@@ -236,6 +239,13 @@ time_mt(const struct sk_buff *skb, struct xt_action_param *par)
 			return false;
 	}
 #endif /* CONFIG_BCM947XX */
+#ifdef  HNDCTF
+	{
+		enum ip_conntrack_info ctinfo;
+		struct nf_conn *ct = nf_ct_get(skb, &ctinfo);
+		if (ct) ct->ctf_flags |= CTF_FLAGS_EXCLUDED;
+	}
+#endif  /* HNDCTF */
 
 	return true;
 }

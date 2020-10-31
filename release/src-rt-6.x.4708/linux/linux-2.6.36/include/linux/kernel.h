@@ -273,7 +273,6 @@ extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
 
 extern int printk_delay_msec;
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG 
-extern void enable_oopsbuf(int onoff);
 extern int prepare_and_dump_previous_oops(void);
 #endif
 

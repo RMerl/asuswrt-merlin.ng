@@ -6199,4 +6199,10 @@ typedef struct cma_meminfo {
 cma_meminfo_t;
 #endif /* BCM_SECURE_DMA */
 
+/* WET host ip and mac parameter configuration */
+typedef struct wet_host {
+	uint8 buf[6]; /* ip or mac*/
+	uint8 bssidx;
+} wet_host_t;
+
 #endif /* _wlioctl_h_ */

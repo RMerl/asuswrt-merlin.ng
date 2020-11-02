@@ -6443,7 +6443,8 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_WAN_TX_SERVICE_QUEUE_SCHEDULER_TABLE_DTS;
 typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved0                         	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved0                         	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	hdr_type                          	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	ptm_bonding                       	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	traffic_class_to_queue_table_index	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	wan_channel_id                    	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -6457,11 +6458,16 @@ typedef struct
 	uint32_t	wan_channel_id                    	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	traffic_class_to_queue_table_index	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	ptm_bonding                       	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved0                         	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	hdr_type                          	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved0                         	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #endif
 }
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_WAN_FLOW_ENTRY_DTS;
 
+#define RDD_US_WAN_FLOW_ENTRY_HDR_TYPE_READ_G(r, g, addr, idx)                              GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_US_WAN_FLOW_ENTRY_DTS)), 2, 3, r)
+#define RDD_US_WAN_FLOW_ENTRY_HDR_TYPE_WRITE_G(v, g, addr, idx)                             GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_US_WAN_FLOW_ENTRY_DTS)), 2, 3, v)
+#define RDD_US_WAN_FLOW_ENTRY_HDR_TYPE_READ(r, p)                                           FIELD_MREAD_8((uint8_t *)p, 2, 3, r)
+#define RDD_US_WAN_FLOW_ENTRY_HDR_TYPE_WRITE(v, p)                                          FIELD_MWRITE_8((uint8_t *)p, 2, 3, v)
 #define RDD_US_WAN_FLOW_ENTRY_PTM_BONDING_READ_G(r, g, addr, idx)                           GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_US_WAN_FLOW_ENTRY_DTS)), 1, 1, r)
 #define RDD_US_WAN_FLOW_ENTRY_PTM_BONDING_WRITE_G(v, g, addr, idx)                          GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_US_WAN_FLOW_ENTRY_DTS)), 1, 1, v)
 #define RDD_US_WAN_FLOW_ENTRY_PTM_BONDING_READ(r, p)                                        FIELD_MREAD_8((uint8_t *)p, 1, 1, r)
@@ -13710,12 +13716,13 @@ typedef enum
 } rdd_fpm_alloc;
 typedef enum
 {
-	ACTION_FIRST =     0,
-	ACTION_FORWARD      = 0,
-	ACTION_TRAP         = 1,
-	ACTION_DROP         = 2,
-	ACTION_MULTICAST    = 3,
-	ACTION_LAST =      3
+	ACTION_FIRST =        0,
+	ACTION_FORWARD         = 0,
+	ACTION_TRAP            = 1,
+	ACTION_DROP            = 2,
+	ACTION_MULTICAST       = 3,
+	ACTION_DROP_LOW_PRI    = 4,
+	ACTION_LAST =         4
 } rdd_action;
 typedef enum
 {

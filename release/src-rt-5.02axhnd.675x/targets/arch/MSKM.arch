@@ -1,0 +1,10 @@
+<PUBLISH>
+@@ -560,7 +560,7 @@
+ # BUILD_BRCM_HOSTAPD is not set
+ # BRCM_REASON_TO_SKB_MARK is not set
+ # BRCM_DW_CXC_DATA_MODE is not set
+-# BUILD_MACSECKEYMGMT is not set
++BUILD_MACSECKEYMGMT=y
+ 
+ #
+ # Management Protocols and User Interface Selection

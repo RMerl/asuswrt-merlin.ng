@@ -312,6 +312,53 @@ static bp_elem_t g_bcm968460rgw[] = {
   {bp_last}
 };
 
-bp_elem_t * g_BoardParms[] = {g_bcm968460sv, g_bcm968460ref, g_bcm968460refp, g_bcm968461prw, g_bcm968462ref, g_bcm968462spw, g_bcm968462xsv, g_bcm968460rgw, 0};
+static bp_elem_t g_bcm968462egr[] = {
+  {bp_cpBoardId,               .u.cp = "968462EGR"},
+  {bp_ucPhyType0,              .u.uc = BP_ENET_INTERNAL_PHY},
+  {bp_ucPhyAddress,            .u.uc = 0x0},
+  {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP},
+  {bp_ulPortMap,               .u.ul = 0x0f},
+  {bp_ulPhyId0,                .u.ul = 0x01 | MAC_IF_GMII},
+  {bp_usNetLed0,               .u.us = BP_GPIO_52_AL},
+  {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_ulPhyId1,                .u.ul = 0x02 | MAC_IF_GMII},
+  {bp_usNetLed0,               .u.us = BP_GPIO_53_AL},
+  {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_ulPhyId2,                .u.ul = 0x03 | MAC_IF_GMII},
+  {bp_usNetLed0,               .u.us = BP_GPIO_49_AL},
+  {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_ulPhyId3,                .u.ul = 0x04 | MAC_IF_GMII},
+  {bp_usNetLed0,               .u.us = BP_GPIO_44_AL},
+  {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_InvSerdesRxPol,          .u.us = pmd_polarity_invert},
+  {bp_InvSerdesTxPol,          .u.us = pmd_polarity_invert}, 
+  {bp_usPmdMACEwakeEn,         .u.us = BP_GPIO_4_AH},
+  {bp_usExtIntrPmdAlarm,       .u.us = BP_EXT_INTR_2 | BP_EXT_INTR_TYPE_IRQ_HIGH_LEVEL | BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_14_AH},
+  {bp_usGpioPmdReset,          .u.us = BP_GPIO_40_AL},
+  {bp_pmdFunc,                 .u.us = BP_PMD_APD_REG_DISABLED | BP_PMD_APD_TYPE_BOOST},
+  {bp_usPcmSdin,                .u.us = BP_GPIO_0_AH},
+  {bp_usPcmSdout,               .u.us = BP_GPIO_1_AH},
+  {bp_usPcmClk,                 .u.us = BP_GPIO_2_AH},
+  {bp_usPcmFs,                  .u.us = BP_GPIO_3_AH},
+  {bp_ulMemoryConfig,           .u.ul = BP_DDR_SPEED_800_11_11_11 | BP_DDR_TOTAL_SIZE_128MB| BP_DDR_DEVICE_WIDTH_8 | BP_DDR_TOTAL_WIDTH_8BIT | BP_DDR_PCB_2LAYER},
+  {bp_usExtIntrResetToDefault, .u.us = BP_EXT_INTR_1 | BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL | BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_45_AL},
+  {bp_usGpioI2cScl,            .u.us = BP_GPIO_68_AH},
+  {bp_usGpioI2cSda,            .u.us = BP_GPIO_69_AH},
+  {bp_usUsbPwrFlt1,            .u.us = BP_GPIO_76_AL},
+  {bp_usUsbPwrOn1,             .u.us = BP_GPIO_77_AL},
+  {bp_usGpioLedUSB2,           .u.us = BP_SERIAL_GPIO_15_AL},
+  {bp_usGpioVoip1Led,          .u.us = BP_SERIAL_GPIO_11_AL},
+  {bp_ucDspType0,              .u.uc = BP_VOIP_DSP},
+  {bp_ucDspAddress,            .u.uc = 0},
+  {bp_last}
+};
+
+bp_elem_t * g_BoardParms[] = {g_bcm968460sv, g_bcm968460ref, g_bcm968460refp, g_bcm968461prw, g_bcm968462ref, g_bcm968462spw, g_bcm968462xsv, g_bcm968460rgw, g_bcm968462egr, 0};
 
 

@@ -61,9 +61,9 @@ static phy_mii_type_t bp_parse_mii_type(const EMAC_PORT_INFO *port_info)
     case MAC_IF_GMII:
         mii_type = PHY_MII_TYPE_GMII;
         break;
-    case MAC_IF_RGMII_3P3V:
     case MAC_IF_RGMII_1P8V:
-    case MAC_IF_RGMII:
+    case MAC_IF_RGMII_2P5V:
+    case MAC_IF_RGMII_3P3V:
         mii_type = PHY_MII_TYPE_RGMII;
         break;
     case MAC_IF_SGMII:

@@ -133,12 +133,13 @@ typedef enum
 /** Forwarding action */
 typedef enum
 {
-    rdpa_forward_action_none    = 0,    /** ACL */
-    rdpa_forward_action_forward = 1,    /**< Forward */
-    rdpa_forward_action_host    = 2,    /**< Trap to the host */
-    rdpa_forward_action_drop    = 4,    /**< Discard */
-    rdpa_forward_action_flood   = 8,    /**< Flood, for DA lookup only */
-    rdpa_forward_action_skip   = 16     /**< Skip - used for generic filter for increment counter action only \ XRDP limited */
+    rdpa_forward_action_none          = 0,    /** ACL */
+    rdpa_forward_action_forward       = 1,    /**< Forward */
+    rdpa_forward_action_host          = 2,    /**< Trap to the host */
+    rdpa_forward_action_drop          = 4,    /**< Discard */
+    rdpa_forward_action_flood         = 8,    /**< Flood, for DA lookup only */
+    rdpa_forward_action_skip          = 16,   /**< Skip - used for generic filter for increment counter action only \XRDP_LIMITED */
+    rdpa_forward_action_drop_low_pri  = 32    /**< drop_low_pri - drop only if ingress filters pass \XRDP_LIMITED */
 } rdpa_forward_action;
 
 /** Filtering action */
@@ -225,6 +226,13 @@ typedef struct
     uint32_t packets;           /**< Packets */
     uint32_t bytes;             /**< Bytes */
 } rdpa_stat_t;
+
+/** Stat type */
+typedef enum
+{
+    rdpa_stat_packets_only = 0, /* default */
+    rdpa_stat_packets_and_bytes = 1,
+} rdpa_stat_type;
 
 /** Generic 1-way statistics */
 typedef struct

@@ -51,6 +51,7 @@ typedef struct igmp_grp_entry
 {
    struct hlist_node  hlist;
    struct net_device *dst_dev;
+   struct net_device *to_accel_dev;
    struct in_addr     rxGrp;
    struct in_addr     txGrp;
    struct list_head   rep_list;
@@ -81,6 +82,7 @@ int bcm_mcast_igmp_add(struct net_device *from_dev,
                            int wan_ops,
                            bcm_mcast_ifdata *pif, 
                            struct net_device *dst_dev, 
+                           struct net_device *to_accel_dev, 
                            struct in_addr *rxGrp, 
                            struct in_addr *txGrp, 
                            struct in_addr *rep,

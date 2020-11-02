@@ -2,16 +2,12 @@ menu "ASUSWRT"
 
 choice
 	prompt "Choose Product"
-	depends on BT
+	depends on ATM
 	help
 	   Choose product
 
-config RTAX95Q
-	bool "RTAX95Q"
-	default n
-
-config RTAX56_XD4
-	bool "RTAX56_XD4"
+config DSLAX82U
+	bool "DSLAX82U"
 	default n
 
 endchoice

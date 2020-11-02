@@ -211,6 +211,12 @@ typedef void (*RecycleFuncP)(void *nbuff_p, unsigned long context, uint32_t flag
 /* Indicates whether a sk_buf or a data buffer is in BPM pristine state */
 #define SKB_BPM_PRISTINE        (1 << 5)
 
+/* UDP Speed Test flags */
+#define SKB_RNR_UDPSPDT_BASIC   (1 << 6) 
+#define SKB_RNR_UDPSPDT_IPERF3  (1 << 7)
+
+#define SKB_RNR_FLAGS           (SKB_RNR_FLOOD | SKB_RNR_UDPSPDT_BASIC | SKB_RNR_UDPSPDT_IPERF3)
+
 #define SKB_BPM_TAINTED(skb)                                                   \
 ({                                                                             \
     ((struct sk_buff *)skb)->recycle_flags &= ~SKB_BPM_PRISTINE;               \
@@ -1063,6 +1069,8 @@ struct sk_buff {
 #define IPT_TARGET_TTL		(1 << 24)
 #define IPT_TARGET_CHECK	(1 << 25)
 #endif
+	/* Physical device where this pkt is received */
+	struct net_device	*in_dev;
 #endif
 	/* These elements must be at the end, see alloc_skb() for details.  */
 	sk_buff_data_t		tail;

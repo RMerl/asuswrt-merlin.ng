@@ -83,6 +83,14 @@ static bp_elem_t g_bcm968781ref_4gphy[] = {
   {bp_pmdFunc,                 .u.us = BP_PMD_APD_TYPE_BOOST | BP_PMD_APD_REG_DISABLED},
   {bp_usUsbPwrFlt0,            .u.us = BP_GPIO_66_AL},
   {bp_usUsbPwrOn0,             .u.us = BP_GPIO_67_AL},
+  {bp_ucDspType0,              .u.uc = BP_VOIP_DSP},
+  {bp_ucDspAddress,            .u.uc = 0},
+  {bp_last}
+};
+
+static bp_elem_t g_bcm968781href[] = {
+  {bp_cpBoardId,               .u.cp = "968781HREF"},
+  {bp_elemTemplate,            .u.bp_elemp = g_bcm968781ref_4gphy},
   {bp_last}
 };
 
@@ -227,6 +235,7 @@ static bp_elem_t g_bcm968782gref[] = {
   {bp_usPcmFs,                  .u.us = BP_GPIO_3_AH},
   {bp_usSerialLedData,          .u.us = BP_GPIO_9_AH},
   {bp_usSerialLedClk,           .u.us = BP_GPIO_8_AH},
+  {bp_usSerialLedMask,          .u.us = BP_GPIO_7_AH},
   {bp_usMiiMdc,                 .u.us = BP_GPIO_52_AH},
   {bp_usMiiMdio,                .u.us = BP_GPIO_53_AH},
   {bp_usGpioI2cScl,             .u.us = BP_GPIO_62_AH},
@@ -265,7 +274,7 @@ static bp_elem_t g_bcm968782gref[] = {
   {bp_usPmdMACEwakeEn,         .u.us = BP_GPIO_4_AH},
   {bp_usExtIntrPmdAlarm,       .u.us = BP_EXT_INTR_1 | BP_EXT_INTR_TYPE_IRQ_HIGH_LEVEL | BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE},
   {bp_usGpio_Intr,             .u.us = BP_GPIO_13_AH},
-  {bp_usGpioPmdReset,          .u.us = BP_GPIO_7_AL},
+  {bp_usGpioPmdReset,          .u.us = BP_GPIO_10_AL},
   {bp_pmdFunc,                 .u.us = BP_PMD_APD_TYPE_BOOST | BP_PMD_APD_REG_DISABLED},
   {bp_usPonLbe,                .u.us = BP_GPIO_61_AH},
   {bp_usUsbPwrFlt0,            .u.us = BP_GPIO_66_AL},
@@ -274,6 +283,24 @@ static bp_elem_t g_bcm968782gref[] = {
   {bp_usUsbPwrOn1,             .u.us = BP_GPIO_69_AL},
   {bp_ucDspType0,              .u.uc = BP_VOIP_DSP},
   {bp_ucDspAddress,            .u.uc = 0},
+  {bp_usGpioLedReserved,       .u.us = BP_SERIAL_GPIO_16_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_SERIAL_GPIO_17_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_SERIAL_GPIO_18_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_SERIAL_GPIO_19_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_SERIAL_GPIO_20_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_SERIAL_GPIO_21_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_SERIAL_GPIO_22_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_SERIAL_GPIO_23_AL},
+  {bp_last}
+};
+
+static bp_elem_t g_bcm968782gfm[] = {
+  {bp_cpBoardId,               .u.cp = "968782GFM"},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_16_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_17_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_22_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_23_AH},
+  {bp_elemTemplate,            .u.bp_elemp = g_bcm968782gref},
   {bp_last}
 };
 
@@ -292,7 +319,7 @@ static bp_elem_t g_bcm968782xsv[] = {
   {bp_ucPhyType0,              .u.uc = BP_ENET_INTERNAL_PHY},
   {bp_ucPhyAddress,            .u.uc = 0x0},
   {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP},
-  {bp_ulPortMap,               .u.ul = 0x0f},
+  {bp_ulPortMap,               .u.ul = 0x1f},
   {bp_usGpioLedAggregateAct,   .u.us = BP_SERIAL_GPIO_6_AL},
   {bp_usGpioLedAggregateLnk,   .u.us = BP_SERIAL_GPIO_7_AL},
   {bp_ulPhyId0,                .u.ul = 0x01 | MAC_IF_GMII},
@@ -315,6 +342,8 @@ static bp_elem_t g_bcm968782xsv[] = {
   {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
   {bp_usNetLed1,               .u.us = BP_SERIAL_GPIO_15_AL},
   {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_ulPhyId4,                .u.ul = 0x07 | MAC_IF_RGMII | PHY_EXTERNAL | PHY_INTEGRATED_VALID},
+  {bp_ulPortFlags,             .u.ul = PORT_FLAG_TX_INTERNAL_DELAY},
   {bp_usGpioLedReserved,       .u.us = BP_SERIAL_GPIO_0_AL},
   {bp_usGpioLedReserved,       .u.us = BP_SERIAL_GPIO_1_AL},
   {bp_usGpioLedReserved,       .u.us = BP_SERIAL_GPIO_2_AL},
@@ -403,6 +432,6 @@ static bp_elem_t g_bcm968780rfdvt[] = {
   {bp_last}
 };
 
-bp_elem_t * g_BoardParms[] = {g_bcm968781ref, g_bcm968781ref_4gphy, g_bcm968781xsv, g_bcm968781refs, g_bcm968782ref, g_bcm968782xsv,g_bcm968780rfdvt, g_bcm968782gref, g_bcm968782ref2, 0};
+bp_elem_t * g_BoardParms[] = {g_bcm968781ref, g_bcm968781ref_4gphy, g_bcm968781href, g_bcm968781xsv, g_bcm968781refs, g_bcm968782ref, g_bcm968782xsv,g_bcm968780rfdvt, g_bcm968782gref, g_bcm968782ref2, g_bcm968782gfm, 0};
 
 

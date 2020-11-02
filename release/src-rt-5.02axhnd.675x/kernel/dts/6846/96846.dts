@@ -107,7 +107,7 @@
 
 	/* increase coherent_pool size */
 	chosen {
-		bootargs = "coherent_pool=2M cpuidle_sysfs_switch pci=pcie_bus_safe cma=0M";
+		bootargs = "coherent_pool=2M cpuidle_sysfs_switch pci=pcie_bus_safe";
 	};
 
 	memory@00000000 {

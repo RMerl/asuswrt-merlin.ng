@@ -270,6 +270,7 @@ typedef struct
     uint32_t num_llid; /**< Number of llids */
     uint32_t num_ds_gems; /**< Number of downstream gems */
     uint32_t num_us_gems; /**< Number of upstream gems */
+    uint32_t fpm_token_size; /**< Fpm token size */
 #endif
 #if !defined(XRDP) 
     uint32_t num_ds_policers; /**< Number ds of policers */

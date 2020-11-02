@@ -403,9 +403,6 @@ bool 'Enable Spectre Patch' BRCM_SPECTRE_PATCH_ENABLE
 
 bool 'Enable Board Parameter Physical Interface Configuration' BP_PHYS_INTF
 
-if [ "$BRCM_63158" = "y" -o "$BRCM_6846" = "y" -o "$BRCM_6856" = "y" -o "$BRCM_6858" = "y" -o "$BRCM_47622" = "y" -o "$BRCM_63178" = "y" ]; then
-bool 'Enable Global Hardware Cache Coherency' BCM_GLB_COHERENCY
-fi
 
 bool 'Enable Linux CMA based memory reservation' BRCM_CMA_RSVMEM
 
@@ -440,9 +437,11 @@ if [ "$KERNEL_ARCH" = "arm" -o "$KERNEL_ARCH" = "aarch64" ]; then
    dep_bool '  Use PCI MSI Interrupts (EXPERIMENTAL)' BRCM_DRIVER_PCI_MSI $BRCM_DRIVER_PCI
 fi
 
-if [ "$BRCM_6838" = "y" -o "$BRCM_6848" = "y" -o "$BRCM_63138" = "y" -o "$BRCM_63148" = "y" -o "$BRCM_6858" = "y" -o "$BRCM_4908" = "y" -o "$BRCM_6856" = "y" -o "$BRCM_63158" = "y" -o "$BRCM_6846" = "y" -o "$BRCM_47622" = "y"  -o "$BRCM_6878" = "y" ]; then
+if [ "$BRCM_6838" = "y" -o "$BRCM_6848" = "y" -o "$BRCM_63138" = "y" -o "$BRCM_63148" = "y" -o "$BRCM_6858" = "y" -o "$BRCM_4908" = "y" -o "$BRCM_6856" = "y" -o "$BRCM_63158" = "y" -o "$BRCM_6846" = "y" -o "$BRCM_47622" = "y"  -o "$BRCM_6878" = "y" -o "$BRCM_63178" = "y" ]; then
    tristate 'I2C' BRCM_DRIVER_I2C
-   tristate 'Optical WAN detect' BRCM_DRIVER_OPTICALDET
+   if [ "$BRCM_63178" != "y" ]; then
+      tristate 'Optical WAN detect' BRCM_DRIVER_OPTICALDET
+   fi
 fi
 
 if [ "$BRCM_6858" = "y" -o "$BRCM_6856" = "y" -o "$BRCM_6846" = "y" -o "$BRCM_6878" = "y" ]; then
@@ -520,16 +519,14 @@ if [ "$BUILD_BRCM_CMS" = "y" ]; then
        dep_tristate ' Firewall support extension' BRCM_KERNEL_NF_FIREWALL_EXT
    fi
     bool 'consoled' BUILD_CONSOLED
-   if [ "$BRCM_47622" = "y" -a "$LINUX_4_1_0" = "y" ]; then
-       bool 'Build HND Broadstream iQos' BUILD_BSTREAM_IQOS
-   fi
 elif [ "$BUILD_BRCM_HNDROUTER" = "y" ]; then
    comment 'Build HND Router'
-   bool '   Build HND Broadstream iQos' BUILD_BSTREAM_IQOS
 else
    bool 'Build Generic Config tools' BUILD_GENCFG_TOOLS
    bool 'Build Internal Boardtest Config tools' BUILD_BTEST_TOOLS
 fi
+
+bool '   Build HND Broadstream iQos' BUILD_BSTREAM_IQOS
 
 tristate2 'Busybox' BUILD_BUSYBOX
 if  [ "$BUILD_BUSYBOX" = "dynamic" -o "$BUILD_BUSYBOX" = "static" ]; then
@@ -739,6 +736,7 @@ if [ "$BRCM_6838" = "y" -o "$BRCM_6848" = "y" -o "$BRCM_6858" = "y" -o "$BRCM_68
 
            if [ "$BRCM_6858" = "y" -o "$BRCM_6856" = "y" -o "$BRCM_63158" = "y" ]; then
                bool 'XGPON1/XGS/NGPON2 support' BUILD_NGPON
+               bool '989.3AMD2 / 9807.1AMD1 support' BUILD_NGPON_AMD2
            fi
        fi
 
@@ -1120,6 +1118,9 @@ if [ "$BRCM_DRIVER_WIRELESS" = "y" -o "$BRCM_DRIVER_WIRELESS" = "m" ]; then
   bool 'Build CPE-specific Packet Chaining' BUILD_BCM_CPEPKTC
 
   bool 'Build Packet Forwarder Handoff' BUILD_BCM_PKTFWD
+  if [ "$BUILD_BCM_PKTFWD" = "y" ]; then
+    bool '  Build credit based Host Flow Control' BUILD_BCM_PKTFWD_FLCTL
+  fi
 
   if [ "$BRCM_4908" = "y" -o "$BRCM_47622" = "y" -o "$BRCM_6858" = "y" ]; then
       tristate 'Build EAP Forwarder' BRCM_DRIVER_EAPFWD
@@ -1131,6 +1132,7 @@ if [ "$BRCM_DRIVER_WIRELESS" = "y" -o "$BRCM_DRIVER_WIRELESS" = "m" ]; then
   bool 'Build EAP image' BUILD_HND_EAP
   bool 'Build EAP AP1 image' BUILD_HND_EAP_AP1
 
+  bool 'Build Wireless Deep Power Down control' BUILD_BCM_WLAN_DPDCTL
 fi
 if [ "$LINUX_DRIVER_USB_HOST" = "y" -o "$LINUX_DRIVER_USB_HOST" = "m" ]; then
     dep_tristate '    USB Dongle Wireless'  BRCM_DRIVER_WIRELESS_USBAP $LINUX_KERNEL_USB_DEVICEFS
@@ -2428,6 +2430,11 @@ fi
 if [ "$BRCM_6838" = "y" -o "$BRCM_6848" = "y" -o "$BRCM_6858" = "y" -o "$BRCM_6856" = "y" -o "$BRCM_6846" = "y" -o "$BRCM_6878" = "y" ]; then
   bool 'Dragonware CXC Data Mode Support' BRCM_DW_CXC_DATA_MODE
 fi
+
+if [ "$BRCM_6858" = "y" ]; then
+  bool 'MACsec Key Managment' BUILD_MACSECKEYMGMT
+fi
+
 endmenu
 
 ##########################################################################
@@ -2792,5 +2799,8 @@ if [ "$BUILD_MTD_OOPS" = "y" ]; then
     string '  Oops Log Partition Name' OOPSLOG_PARTITION_NAME 'mtdoops'
 fi
 
+if [ "$KERNEL_ARCH" = "arm" ]; then
+    bool 'Enable ARM_MODULE_PLTS to allow large modules' BUILD_ARM_PLTS
+fi
 endmenu
 

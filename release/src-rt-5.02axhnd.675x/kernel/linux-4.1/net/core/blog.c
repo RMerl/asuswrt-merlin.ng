@@ -318,6 +318,13 @@ void blog_support_l2tp(int config)
 }
 
 /*
+ * blog_support_4o6_frag_g 
+ * Exported blog_support_4o6_frag() may be used to set blog_support_4o6_frag_g.
+ */
+int blog_support_4o6_frag_g = BLOG_4O6_FRAG_ENABLE;
+void blog_support_4o6_frag(int config) { blog_support_4o6_frag_g = config; }
+
+/*
  * Traffic flow generator, keep conntrack alive during idle traffic periods
  * by refreshing the conntrack. 
  * Netfilter may not be statically loaded.
@@ -411,7 +418,6 @@ const char * strBlogRequest[BLOG_REQUEST_MAX] =
     BLOG_ARY_INIT(FLOWTRACK_KEY_GET)
     BLOG_ARY_INIT(FLOWTRACK_DSCP_GET)
     BLOG_ARY_INIT(FLOWTRACK_CONFIRMED)
-    BLOG_ARY_INIT(FLOWTRACK_ASSURED)
     BLOG_ARY_INIT(FLOWTRACK_ALG_HELPER)
     BLOG_ARY_INIT(FLOWTRACK_EXCLUDE)
     BLOG_ARY_INIT(FLOWTRACK_TIME_SET)
@@ -426,6 +432,7 @@ const char * strBlogRequest[BLOG_REQUEST_MAX] =
     BLOG_ARY_INIT(BRIDGEFDB_KEY_SET)
     BLOG_ARY_INIT(BRIDGEFDB_KEY_GET)
     BLOG_ARY_INIT(BRIDGEFDB_TIME_SET)
+    BLOG_ARY_INIT(BRIDGEFDB_IFIDX_GET)
     BLOG_ARY_INIT(SYS_TIME_GET) 
     BLOG_ARY_INIT(GRE_TUNL_XMIT)
     BLOG_ARY_INIT(GRE6_TUNL_XMIT)
@@ -1019,6 +1026,7 @@ static inline void blog_clr( Blog_t * blog_p )
 {
     blog_assertv( ((blog_p != BLOG_NULL) && (_IS_BPTR_(blog_p))) );
     BLOG_DBG( memset( (void*)blog_p, 0, sizeof(Blog_t) ); );
+
     _fast_memset( (void*)blog_p, 0, sizeof(Blog_t) );
 
     /* clear phyHdr, count, bmap, and channel */
@@ -1032,6 +1040,42 @@ static inline void blog_clr( Blog_t * blog_p )
     blog_print( "blog<%p>", blog_p );
 }
 
+void blog_ct_get(Blog_t * blog_p)
+{
+#if defined(BLOG_NF_CONNTRACK)
+    int i;
+    for(i=0; i<BLOG_CT_MAX; i++)
+    {
+        if(blog_p->ct_p[i])
+            nf_conntrack_get(&((struct nf_conn *)blog_p->ct_p[i])->ct_general);
+    }
+    blog_p->nf_ct_skip_ref_dec=0;
+#endif
+}
+EXPORT_SYMBOL(blog_ct_get);
+
+void blog_ct_put(Blog_t * blog_p)
+{
+#if defined(BLOG_NF_CONNTRACK)
+    if(!blog_p->nf_ct_skip_ref_dec)
+    {
+        int i;
+
+        blog_p->nf_ct_skip_ref_dec=1;
+        /*decrement refcnt of any associated conntrack's */
+        for(i=0; i<BLOG_CT_MAX; i++)
+        {
+            if(blog_p->ct_p[i])
+            {
+                nf_conntrack_put(&((struct nf_conn *)blog_p->ct_p[i])->ct_general);
+                blog_p->ct_p[i] = NULL;
+            }
+        }
+
+    }
+#endif
+}
+EXPORT_SYMBOL(blog_ct_put);
 /*
  *------------------------------------------------------------------------------
  * Function     : blog_get
@@ -1107,6 +1151,8 @@ void blog_put( Blog_t * blog_p )
     unsigned long lock_flags;
 
     blog_assertv( ((blog_p != BLOG_NULL) && (_IS_BPTR_(blog_p))) );
+
+    blog_ct_put(blog_p);
 
 #if defined(CONFIG_XFRM)
     if (TX_ESP(blog_p))
@@ -1244,6 +1290,7 @@ inline void _blog_free( struct sk_buff * skb_p )
         blog_put( blog_p );         /* Recycle blog_p into free list */
 }
 
+
 /*
  *------------------------------------------------------------------------------
  * Function     : blog_free
@@ -1256,6 +1303,7 @@ inline void _blog_free( struct sk_buff * skb_p )
 void blog_free( struct sk_buff * skb_p, blog_skip_reason_t reason )
 {
     blog_assertv( (skb_p != (struct sk_buff *)NULL) );
+
     if ( likely(skb_p->blog_p != BLOG_NULL) )
         blog_ctx_p->blog_free_stats_table[reason]++; 
 
@@ -1363,6 +1411,19 @@ void blog_clone( struct sk_buff * skb_p, const struct blog_t * prev_p )
             CPY(vtag_num);
             CPY(tupleV6);
             CPY(tuple_offset);
+            CPY(mega_p);
+            CPY(map_p);
+
+            if(!prev_p->nf_ct_skip_ref_dec)
+            {
+                for(i=0; i<BLOG_CT_MAX; i++)
+                {
+                    blog_p->ct_p[i] = prev_p->ct_p[i];
+                }
+
+                /*increment refcnt of ct's */
+                blog_ct_get(blog_p);
+            }
 
             for(i=0; i<MAX_VIRT_DEV; i++)
             {
@@ -1396,8 +1457,14 @@ void blog_copy(struct blog_t * new_p, const struct blog_t * prev_p)
 
     if ( likely(prev_p != BLOG_NULL) )
     {
-       blog_ctx_p->info_stats.blog_copy++;
-       memcpy( new_p, prev_p, sizeof(Blog_t) );
+        blog_ctx_p->info_stats.blog_copy++;
+        memcpy( new_p, prev_p, sizeof(Blog_t) );
+
+        if(!prev_p->nf_ct_skip_ref_dec)
+        {
+            /*increment refcnt of ct's */
+            blog_ct_get(new_p);
+        }
     }
 }
 
@@ -1435,7 +1502,7 @@ int blog_iq( const struct sk_buff * skb_p )
  *  none        :
  *------------------------------------------------------------------------------
  */
-inline int blog_fc_enabled( void )
+int blog_fc_enabled( void )
 {
     if ( likely(blog_rx_hook_g != (BlogDevRxHook_t)NULL) )
         return 1;
@@ -1571,8 +1638,19 @@ void blog_link( BlogNetEntity_t entity_type, Blog_t * blog_p,
                     return;
             }
 
-            /* param2 indicates the ct_p belongs to IPv4 or IPv6 */
+            if(blog_p->ct_p[idx])
+            {
+                /*ct already exists decrement it's ref count */
+                nf_conntrack_put(&((struct nf_conn *)blog_p->ct_p[idx])->ct_general);
+                printk(KERN_WARNING "blog_link: overwriting ct_p=%px, new_ct=%px at idx=%d\n",
+                        blog_p->ct_p[idx], net_p, idx);
+            }
+
             blog_p->ct_p[idx] = net_p; /* Pointer to conntrack */
+            /*increment refcount of ct, till flow is learned */
+            nf_conntrack_get(&((struct nf_conn *)net_p)->ct_general);
+
+            /* param2 indicates the ct_p belongs to IPv4 or IPv6 */
             blog_p->ct_ver[idx] = (param2 == BLOG_PARAM2_GRE_IPV4) ?
                                                 BLOG_PARAM2_IPV4 : param2;
             /* 
@@ -2060,11 +2138,6 @@ unsigned long blog_request( BlogRequest_t request, void * net_p,
                             &((struct nf_conn *)net_p)->status );
             break;
 
-        case FLOWTRACK_ASSURED:      /* E.g. TCP connection confirmed */
-            ret = test_bit( IPS_ASSURED_BIT,
-                            &((struct nf_conn *)net_p)->status );
-            break;
-
         case FLOWTRACK_ALG_HELPER:
         {
             struct nf_conn * nfct_p;
@@ -2136,6 +2209,16 @@ unsigned long blog_request( BlogRequest_t request, void * net_p,
         case BRIDGEFDB_TIME_SET:
             ((struct net_bridge_fdb_entry *)net_p)->updated = param2;
             return 0;
+
+        case BRIDGEFDB_IFIDX_GET:
+        {
+            struct net_bridge_fdb_entry *fdb_p = (struct net_bridge_fdb_entry *)net_p;
+            if (fdb_p && fdb_p->dst && fdb_p->dst->dev)
+                ret = fdb_p->dst->dev->ifindex;
+            else
+                ret = 0;
+            break;
+        }
 
         case NETIF_PUT_STATS:
         {
@@ -2754,7 +2837,6 @@ BlogAction_t _blog_emit( void * nbuff_p, void * dev_p,
 
     if ( likely(blog_tx_hook_g != (BlogDevTxHook_t)NULL) )
     {
-        blog_lock();
 
         blog_p->tx_dev_p = (void *)dev_p;           /* Log device info */
         /* Log TX dev delta  (tx.pktlen has the original RX pktlen) */
@@ -2775,10 +2857,9 @@ BlogAction_t _blog_emit( void * nbuff_p, void * dev_p,
             rfc2684HdrLength[BLOG_GET_PHYLEN(phyHdr)],
             blogHash.match );
 
+        /* blog lock/unlock is done inside tx_hook */
         action = blog_tx_hook_g( skb_p, (void*)skb_p->dev,
                                  encap, blogHash.match );
-
-        blog_unlock();
     }
     blog_free( skb_p, blog_free_reason_blog_emit );   /* Dis-associate w/ skb */
 
@@ -2844,6 +2925,10 @@ BlogActivateKey_t *blog_activate( Blog_t * blog_p, BlogTraffic_t traffic,
     blog_lock();
     key_p = blog_sc_hook_g[client]( blog_p, traffic );
     blog_unlock();
+
+    /* on sucess blog_p is transferred to flow, decrement refcnt's of ct's */
+    if(key_p)
+        blog_ct_put(blog_p);
 
 bypass:
     return key_p;
@@ -4805,6 +4890,10 @@ int blog_l2tp_tunnel_accelerated_g = BLOG_L2TP_DISABLE;
 int blog_support_l2tp_g = BLOG_L2TP_DISABLE; /* = CC_BLOG_SUPPORT_l2TP; */
 void blog_support_l2tp(int enable) {blog_support_l2tp_g = BLOG_L2TP_DISABLE;}
 
+int blog_support_4o6_frag_g = BLOG_4O6_FRAG_DISABLE;
+void blog_support_4o6_frag(int enable) {blog_support_4o6_frag_g = BLOG_4O6_FRAG_DISABLE;}
+
+
 /* Stub functions for Blog APIs that may be used by modules */
 Blog_t * blog_get( void ) { return BLOG_NULL; }
 void     blog_put( Blog_t * blog_p ) { return; }
@@ -4940,6 +5029,8 @@ EXPORT_SYMBOL(blog_cttime_update_fn);
 EXPORT_SYMBOL(blog_gre_tunnel_accelerated_g);
 EXPORT_SYMBOL(blog_support_gre_g);
 EXPORT_SYMBOL(blog_support_gre);
+EXPORT_SYMBOL(blog_support_4o6_frag_g);
+EXPORT_SYMBOL(blog_support_4o6_frag);
 #if defined(CONFIG_NET_IPGRE) || defined(CONFIG_NET_IPGRE_MODULE)
 EXPORT_SYMBOL(blog_gre_rcv_check_fn);
 EXPORT_SYMBOL(blog_gre_xmit_update_fn);

@@ -113,19 +113,6 @@ static int port_lport_cfg_get(mac_dev_t *mac_dev, mac_cfg_t *mac_cfg)
     return 0;
 }
 
-static int throttle_required(mac_dev_t *mac_dev)
-{
-    uint32_t port_id = mac_dev->mac_id;
-
-    if (!(port_id == 0 || port_id == 4))
-        return 0;
-
-    if (!(LPORT_IS_XFI_PORT(lport_init.prt_mux_sel[0]) || LPORT_IS_XFI_PORT(lport_init.prt_mux_sel[4])))
-        return 0;
-
-    return 1;
-}
-
 static int port_lport_cfg_set(mac_dev_t *mac_dev, mac_cfg_t *mac_cfg)
 {
     uint32_t port_id = mac_dev->mac_id;
@@ -153,20 +140,11 @@ static int port_lport_cfg_set(mac_dev_t *mac_dev, mac_cfg_t *mac_cfg)
     port_cfg.throt_num = 0x00;
     port_cfg.throt_denom = 0x00;
 
-    if (throttle_required(mac_dev))
+    if (mac_cfg->speed == MAC_SPEED_5000)
     {
-        if (mac_cfg->speed == MAC_SPEED_2500)
-        {
-            port_cfg.throt_num = 0x3f;
-            port_cfg.throt_denom = 0x15;
-            port_cfg.speed = LPORT_RATE_10G;
-        }
-        else if (mac_cfg->speed == MAC_SPEED_5000)
-        {
-            port_cfg.throt_num = 0x3f;
-            port_cfg.throt_denom = 0x3f;
-            port_cfg.speed = LPORT_RATE_10G;
-        }
+        port_cfg.throt_num = 0x3f;
+        port_cfg.throt_denom = 0x3f;
+        port_cfg.speed = LPORT_RATE_10G;
     }
 
     if (lport_set_port_configuration(port_id, &port_cfg))

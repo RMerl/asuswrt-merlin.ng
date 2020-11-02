@@ -1,0 +1,115 @@
+# Whitelist for PHY_TWIG_17_100_121, used with KUDU_TWIG_17_10_121
+# 
+# Please add new items at the bottom.
+#
+# **Gain approval from you manager before editing this file.**
+#
+# <<Broadcom-WL-IPTag/Open:>>
+#
+# format:
+# JIRA:BCAWLAN-xxxxxx <description>
+JIRA:BCAWLAN-212802 43684 improve FCC-4 radar detection rate on BW160 CH50
+JIRA:BCAWLAN-212933 43684 use radarFIFO from one of ANT0/1 instead of forcing radarFIFO to ANT0 for FCC-5 detection
+JIRA:BCAWLAN-213066 43684 fix incorrect FIFO data for FCC-5 detection
+JIRA:BCAWLAN-213489 Add PHY API to switch and restore BBPLL post-divider for BCM6710
+JIRA:BCAWLAN-208168 AVS function caused STA unable to associate in 5G 80MHz for BCM6710
+JIRA:BCAWLAN-212455 [43684C0] update radio tuning tables per tcl rev 845002
+JIRA:BCAWLAN-213137 [43684C0] change the tx5g_idac_mx_bbdc for C0 and above, TCL r844802
+JIRA:BCAWLAN-213194 [43684C0] txgain table rev3, TCL r844804
+JIRA:BCAWLAN-212428 6755TBRHX P305, 2G RX throughput RSSI see drop in RX power -40~-50dBm after 17.10.118 image
+JIRA:BCAWLAN-212735 Have 63178/47622 also turn dac clks on before dccal when c2csync is enabled
+JIRA:BCAWLAN-212999 [47622][63178][6878] BBPLL - use spur avoidance mode always - phy code (2/2)
+JIRA:BCAWLAN-212823 [47622] DC runaway after multiple DC cals
+JIRA:BCAWLAN-211307 [63178][47622] Channel 6 BW40 ANT1 sensitivity worse than other channels
+JIRA:BCAWLAN-213447 [6710] Increase 5g w1 radio threshold to 13 (from 11)
+JIRA:BCAWLAN-213555 Don't desense crsmin hi/md/lo when mclip is used
+JIRA:BCAWLAN-213658 3step dccal for 6710
+JIRA:BCAWLAN-213629 Add API to keep PAD on/off for 6710 SW
+JIRA:BCAWLAN-213800 [43684] HWOBSS setting update
+JIRA:BCAWLAN-213742 Fix IOVAR phy_skippapd for 6710
+JIRA:BCAWLAN-213895 Add PAPD dump in wl dump phycal for internal and wltest builds for 6710
+JIRA:BCAWLAN-213914 Temporarily disable WD-triggered PAPD cal for 6710
+JIRA:BCAWLAN-213964 Fix of curpower, command txpwr1 doesn't take effect on RU rate.
+JIRA:BCAWLAN-213993 Changing 6710 2G IPA txidx for the Tx IQLO cal.
+JIRA:BCAWLAN-213291 Enable CQI and rualloc for 6710
+JIRA:BCAWLAN-214104 WAR for 3step dccal papd issue
+JIRA:BCAWLAN-213328 43684 Dynamic BW switch APUT fails to upgrade to 160 MHZ from 80mhz
+JIRA:BCAWLAN-213595 [EAP] 17.10 Country CA exhibiting VERY LOW TX power on 5GHz
+JIRA:BCAWLAN-214012 [6710] Reduce gain Variation threshold
+JIRA:BCAWLAN-213992 [6710] radio tuning table extension for UNII band 4 support
+JIRA:BCAWLAN-213684 [63178][47622] U-NII-4 PHY support
+JIRA:BCAWLAN-212430 [47622A1] SS split board #1 RX sensitivity degraded for 5GHz ANT0 CH149 at -40degC/high voltage
+JIRA:BCAWLAN-213540 [63178/47622] Enabling subband power control
+JIRA:BCAWLAN-213982 UTF : 63178 2G : High PER and rate drop is observed
+JIRA:BCAWLAN-213725 [63178] TxEVM 2GHz core1 linear power lagging core0 for nss2
+JIRA:BCAWLAN-212511 [63178][47622] Changes to TXIQ cal to fix auxiliary cal instability
+JIRA:BCAWLAN-214300 [63178][47622] Band related registers setup - remove nested FOREACH_CORE 
+JIRA:BCAWLAN-214465 [43684, 63178, 6710] fix the IQEst fine resolution issue: difference between wl phy_rxiqest -r 0/1
+JIRA:BCAWLAN-214317 [6710] Improving DCCAL for PAPD
+JIRA:BCAWLAN-214373 UTF: 43684 2.4g range reduction - 10db drop in upstream RSSI
+JIRA:BCAWLAN-214550 [6710] 5G PAPD optimization
+JIRA:BCAWLAN-214223 [43684] fix incorrect radio settings when downgrading to 3+1 mode or upgrading to 4x4 mode
+JIRA:BCAWLAN-212874 [6710] Fix IOVAR papdcomp_disable bug
+JIRA:BCAWLAN-214620 [6710] Port TOB r780500 changes to twig121
+JIRA:BCAWLAN-214534 [43684] reset min/max_detected_fc_bin5 values when number of detected radar pulses is greater than threshold
+JIRA:BCAWLAN-214689 [6710] Revert r782197 (TOB) and r782240 (TWIG121) to add PAPD dump in internal and wltest builds
+JIRA:BCAWLAN-214596 [6710] 4908 board will reboot when running 6710MC BW80 Tx pkteng NSS3
+JIRA:BCAWLAN-214196 4360 txpower control would be diverged when txchain is off
+JIRA:BCAWLAN-214712 [6710] Fix rxchain crash bug due to keeping PAD online (Part 1)
+JIRA:BCAWLAN-214713 [6710] Fix rxchain crash bug due to keeping PAD online (Part 2), TWIG121
+JIRA:BCAWLAN-214714 [6710] Fix rxchain crash bug due to keeping PAD online (Part 3)
+JIRA:BCAWLAN-214648 [63178,47622, 6878] Channel Manager fix for incorrect FC for determining CCK filter sett...
+JIRA:BCAWLAN-214441 [63178] Fix spread in residual DC offset;
+JIRA:BCAWLAN-211842 [6878] Fix BPHY humps by making clip2 less agressive and enabling clip3 (also for 63178)
+JIRA:BCAWLAN-214876 [63178] Fix spread in residual DC offset (2)
+JIRA:BCAWLAN-215047 [6710] Bug fix where lna1 can go to index 5 for elna case
+JIRA:BCAWLAN-215221 [6710] Disable HWOBSS during tempsense
+JIRA:BCAWLAN-214851 [6710] Move save/restore regular DCcal to main PAPD function (multiphase cal instability fix)
+JIRA:BCAWLAN-215351 Replacement for 210721, which can't be used for merge
+JIRA:BCAWLAN-210398 Test FIPS on 47622
+JIRA:BCAWLAN-214585 [proxd] [phy] Merge GD Compensation from LEMUR
+JIRA:BCAWLAN-215506 2nd Replacement for 210721, which can't be used for merge
+JIRA:BCAWLAN-215514 [6710] Bring up PAPR (2G iPA default ON) and add IOVARs phy_papr_en and phy_papr_gamma, TWIG121
+JIRA:BCAWLAN-215094 [EAP] [proxd] 43694: LESI mode is affecting FTM distance measurements
+JIRA:BCAWLAN-212488 [EAP] [proxd] fix k value on 36/80 for Pixel and Intel fitlet2
+JIRA:BCAWLAN-213269 [EAP] [proxd] update k values for new clock factor
+JIRA:BCAWLAN-214410 [EAP] [proxd] [phy] Change some proxd phy vars from 16 bits to 32 bits
+JIRA:BCAWLAN-215444 [6710] Modifying gain vs temp slope
+JIRA:BCAWLAN-215117 [43684] PHY 242 tone capabilities
+JIRA:BCAWLAN-214998 [63178] Further reduce DC offset spread; 
+JIRA:BCAWLAN-214604 force_tr2t: wl command to force the T/R switch to T for debug purposes
+JIRA:BCAWLAN-213974 [63178] Enable FDIQ
+JIRA:BCAWLAN-214898 [6710] porting r783433 for 6710
+JIRA:BCAWLAN-215745 [6710] 2G iPA: Disable PAPR for HE TB and MU PPDU
+JIRA:BCAWLAN-212818 [63178] Fix IQ measurement timed outs in FDIQI by having 63178 follow 43684/6710
+JIRA:BCAWLAN-215963 [6710] DCOE output is invalid for the first index
+JIRA:BCAWLAN-214991 43684 JPN radar detection improvement
+JIRA:BCAWLAN-215040 Staggered radar false trigger improvement in KUDU
+JIRA:BCAWLAN-215893 43684 fix incorrect sub-band results for ZWDFS
+JIRA:BCAWLAN-216028 [43684C0] update radio tuning tables per tcl rev 861659
+JIRA:BCAWLAN-216023 [6710] high rate PAPR gamma tuning for EVM floor regression
+JIRA:BCAWLAN-215935 [6710] Changes to improve low-RSSI ACI thruput improvement
+JIRA:BCAWLAN-216229 [6710] Do not follow rev51 DC calibration method
+JIRA:BCAWLAN-212901 [EAP ONLY] TPC issues due to WL_EAP_RXTX_UTILIZATION feature
+JIRA:BCAWLAN-212916 txpower_percent IOVAR
+JIRA:BCAWLAN-215286 [phy] fix phy_utils_chanspec_firstch() for 5G band
+JIRA:BCAWLAN-215939 [Fix] Update phyreg list for 43684 and 6710, for fix dump phyreg hang on FD driver
+JIRA:BCAWLAN-216514 [6710] 6710MC 5G PVT: saw 5GHz BW80 throughput random dips from -20 to -45 dBm at 25C and 85C
+JIRA:BCAWLAN-216385 [6710] See 2G 20in40 have around 13% per hump in -81dBm
+JIRA:BCAWLAN-216616 Add IOVAR phy_papd_dump to show/not show PAPD cal info in dump phycal
+JIRA:BCAWLAN-216497 EAP: Noise floor is -101 on scanned channels
+JIRA:BCAWLAN-215091 [phy] Fix phy_lesi_ovrd GET IOVAR
+JIRA:BCAWLAN-216183 EAP: 17.10: Make noise bias IOVARs nvramable
+JIRA:BCAWLAN-216115 [driver] 63178 and 6710: dump ru allocation related svmp memories
+JIRA:BCAWLAN-217029 [KUDU] [PHY] make sure MAC is suspended during chanspec update
+JIRA:BCAWLAN-217351 [6710] Reduce bphyTarget Var to 0x19f to make sure there are no PER humps
+JIRA:BCAWLAN-216795 [43684] Reduce DFS Emissions before CAC expiration
+JIRA:BCAWLAN-217342 [43684] remove unnecessary phyreg toggling to avoid thpt drop in dwds mode
+JIRA:BCAWLAN-218009 [EAP] Set default OLPC threshold to 10dBm
+JIRA:BCAWLAN-216005 [AirIQ] 3+1 mode Airiq scanning when the 3x3 is in 5G band
+JIRA:BCAWLAN-212970 ULOFDMA - disable MAC-aided mode (fixes/WAR PSM WD during IntelAX200 ULOFDMA test)
+JIRA:BCAWLAN-217879 [6750] First packet transmit exceeds JPN regulatory power in 2G
+JIRA:BCAWLAN-218558 [63178] Disable HWOBSS during tempsense voltage measurement
+JIRA:BCAWLAN-218826 Add resetcca after low-pwr-tssi settings are changed to make sure core0/80mhz TSSI is non-zero
+JIRA:BCAWLAN-215212 [43684] Disable HWOBSS during tempsense
+JIRA:BCAWLAN-219223 [43684] Re-arrange chanmgr code to make sure tdcs works without any issues.

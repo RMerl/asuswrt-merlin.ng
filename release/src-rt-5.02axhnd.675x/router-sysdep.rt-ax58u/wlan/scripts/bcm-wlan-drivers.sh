@@ -17,11 +17,23 @@ HNDROUTER=_set_by_buildFS_
 CPEROUTER=_set_by_buildFS_
 WLAN_BTEST=_set_by_buildFS_
 PROD_FW_PATH=_set_by_buildFS_
+CONFIG_WLDPDCTL=_set_by_buildFS_
+BRCM_CHIP=_set_by_buildFS_
+WLAN_REMOVE_INTERNAL_DEBUG=_set_by_buildFS_
+if [ ! -z $WLAN_REMOVE_INTERNAL_DEBUG ]; then
+    dhd_console_ms=250
+else
+    dhd_console_ms=250
+fi
 if [ ! -z $PROD_FW_PATH ]; then
     MFG_FW_PATH=$PROD_FW_PATH"/mfg"
 else
     MFG_FW_PATH="/rom/etc/wlan/dhd/mfg"
 fi
+
+WLDPDCTL=0
+#unit (radio) index list - max (3)
+UNITLIST="0 1 2"
 
 # PCIe Wireless Card Status - bad card detection
 pwlcs_preload()
@@ -106,25 +118,75 @@ pwlcs_postload()
 }
 
 # to get instance base mixed with dhd and wl
-get_instance_base()
+get_unit()
 {
-     unit=0
-     ifstr="$(ifconfig -a | grep wl)"
-     for wlx in $ifstr
-     do
-         case "$wlx" in
-             wl0)
-                 unit=1
-                 ;;
-             wl1)
-                 unit=2
-                 ;;
-             wl2)
-                 unit=3
-                 ;;
-         esac
-     done
-     echo "instance_base=$unit"
+#   selection method - first available unit
+
+    for unit in $UNITLIST; do
+        wlx=`cat /proc/net/dev |grep wl$unit`
+        if [ ${#wlx[@]} == 0 ]; then
+            break
+        fi
+    done
+
+     echo "$unit"
+}
+
+# create dummy network interfaces for power down units
+wldpdctl_init()
+{
+  if [ ! -z $CPEROUTER ]; then
+    if [ ! -z $CONFIG_WLDPDCTL ]; then
+      WLDPDCTL=$(nvram kget wl_dpdctl_enable)
+    fi
+  fi
+
+  if [ -z $WLDPDCTL ]; then
+    WLDPDCTL=0
+  fi
+
+  if [ $WLDPDCTL = 1 ]; then
+    for unit in $UNITLIST; do
+      pwrdn=`nvram kget wl${unit}_dpd`
+      if [[ -z "$pwrdn" ]]; then
+        pwrdn="0"
+      fi
+      if [ "$pwrdn" = "1" ]; then
+        ip link add wl$unit type dummy
+        echo "Created dummy network interface wl$unit"
+      fi
+    done
+  fi
+}
+
+# remove dummy network interfaces for power down units
+wldpdctl_deinit()
+{
+  if [ ! -z $CPEROUTER ]; then
+    if [ ! -z $CONFIG_WLDPDCTL ]; then
+      WLDPDCTL=$(nvram kget wl_dpdctl_enable)
+    fi
+  fi
+
+  if [ -z $WLDPDCTL ]; then
+    WLDPDCTL=0
+  fi
+
+  if [ $WLDPDCTL = 1 ]; then
+    intfl=`cat /proc/net/dev | grep " wl" | cut -d ":" -f1`
+    for intf in $intfl; do
+      noarp=`ifconfig $intf | grep NOARP`
+      if [[ -z "$noarp" ]]; then
+        dummy="0"
+      else
+        dummy="1"
+      fi
+      if [ "$dummy" = "1" ]; then
+        ip link delete $intf
+        echo "Deleted dummy network interface $intf"
+      fi
+    done
+  fi
 }
 
 # Load given WLAN drivers
@@ -137,7 +199,13 @@ load_modules()
         # set the module parameters based on hnd (cperouter) or wlemf (legacy)
         if [ ! -z $CPEROUTER ]; then
             #CPE Router
-            dhd_module_params="iface_name=wl dhd_console_ms=0"
+            dhd_module_params="iface_name=wl dhd_console_ms=$dhd_console_ms"
+
+            # For 47189 ,it only has single core CPU. Use kthread for dhd_dpc task.
+            if [ "$BRCM_CHIP" == "47189" ]; then
+                dhd_module_params="${dhd_module_params} dhd_dpc_prio=5"
+            fi
+
             wl_module_params="intf_name=wl%d"
             wl_mfgtest_module="wl_mfgtest"
             hnd_mfgtest_module="hnd_mfgtest"
@@ -145,7 +213,7 @@ load_modules()
                 is_mfg=`cat /proc/nvram/wl_nand_manufacturer`
                 case $is_mfg in
                     2|3|6|7)
-                        dhd_module_params="iface_name=wl dhd_console_ms=0 firmware_path=$MFG_FW_PATH"
+                        dhd_module_params=$dhd_module_params" firmware_path=$MFG_FW_PATH"
                         if [ -f /lib/modules/$KERNELVER/extra/$wl_mfgtest_module.ko ]; then
                             modules_list=${modules_list/wl/$wl_mfgtest_module}
                         fi
@@ -163,11 +231,18 @@ load_modules()
             wl_module_params="intf_name=wl%d"
         fi
 
+        wldpdctl_init
+
         echo "loading WLAN kernel modules ... $modules_list"
 
         for module in $modules_list
         do
             case "$module" in
+                firmware_class)
+                    if [ -f /lib/modules/$KERNELVER/kernel/drivers/base/firmware_loader/firmware_class.ko ]; then
+                       insmod /lib/modules/$KERNELVER/kernel/drivers/base/firmware_loader/firmware_class.ko 
+                    fi
+                    ;;
                 cfg80211)
                     echo "insmod /lib/modules/$KERNELVER/kernel/net/wireless/$module.ko"
                     ;;
@@ -188,7 +263,8 @@ load_modules()
             esac
 
             if [ "$module" == "dhd" ] || [ "$module" == "wl" ] || [ "$module" == "wl_mfgtest" ]; then
-                instance_base=`get_instance_base`
+                idx=`get_unit`
+                instance_base="instance_base=$idx"
                 module_params=$module_params" "$instance_base
             fi
 
@@ -198,7 +274,13 @@ load_modules()
                     echo "insmod /lib/modules/$KERNELVER/extra/$module.ko $module_params"
                     pwlcs_postload
                 else
-                    echo "insmod /lib/modules/$KERNELVER/extra/$module.ko $module_params"
+                    nic_nvram=`nvram kget wl_path`
+                    if [ "$module" == "wl" ] && [ -f "$nic_nvram" ] ; then
+                        echo "*** wl$idx Using alternate nic driver from $nic_nvram"
+                        echo "insmod $nic_nvram $module_params"
+                    else
+                        echo "insmod /lib/modules/$KERNELVER/extra/$module.ko $module_params"
+                    fi
                 fi
             fi
         done
@@ -218,6 +300,8 @@ unload_modules()
 	echo unload $module
         echo "rmmod $module.ko"
     done
+
+    wldpdctl_deinit
 }
 
 
@@ -260,6 +344,15 @@ if [ "$WLAN_BTEST" == "y" ]; then
     exit 0
 fi
 
+# For 47189 Host CPU, Check nvram "forcegen1rc" and set default vaule if not exist.
+# the part must before dhd.ko insmod.
+if [ "$BRCM_CHIP" == "47189" ]; then
+    forcegen1rc_val=`nvram kget forcegen1rc`
+    if [ -z "$forcegen1rc_val" ]; then
+        `nvram kset forcegen1rc=1 ; nvram kcommit`
+    fi
+fi
+
 # Sanity check for drivers directory
 if [ ! -d /lib/modules/$KERNELVER/extra ]; then
     echo "ERROR: wlan-drivers.sh: /lib/modules/$KERNELVER/extra does not exist" 1>&2
@@ -274,7 +367,7 @@ if [ ! -z "$2" ]; then
 else
     if [ ! -z $CPEROUTER ]; then
         if [ -f /lib/modules/$KERNELVER/kernel/net/wireless/cfg80211.ko ]; then
-            all_wlan_modules="cfg80211 hnd emf igs dpsta dhd wl"
+            all_wlan_modules="firmware_class cfg80211 hnd emf igs dpsta dhd wl"
         else
             all_wlan_modules="hnd emf igs wl"
         fi

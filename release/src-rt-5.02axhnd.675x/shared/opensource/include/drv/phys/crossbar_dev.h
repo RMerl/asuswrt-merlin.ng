@@ -78,6 +78,7 @@ static inline int crossbar_phy_del(phy_dev_t *phy_dev_crossbar, phy_dev_t *phy_d
 }
 
 phy_dev_t *crossbar_phy_dev_active(phy_dev_t *phy_dev_crossbar);
+int crossbar_current_status(phy_dev_t *phy_crossbar, int *internal_endpoint, int *external_endpoint);
 
 #define phy_is_crossbar(phy)    ((phy) && (phy)->phy_drv->phy_type == PHY_TYPE_CROSSBAR)
 #define get_active_phy(phy)     (phy_is_crossbar(phy)? crossbar_phy_dev_active(phy):(phy)? cascade_phy_get_last_active(phy):phy)

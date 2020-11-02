@@ -344,6 +344,7 @@ typedef struct port_ops_t
 #if defined(CONFIG_NET_SWITCHDEV)
     struct switchdev_ops switchdev_ops;
 #endif
+    int (*mib_dump_us)(enetx_port_t *self, void *e);   /* ETHSWMIBDUMP */  // add by Andrew
 } port_ops_t;
 
 typedef struct sw_ops_t
@@ -622,6 +623,23 @@ static inline int port_mib_dump(enetx_port_t *self, int all)
     
     return -1;
 }
+
+// add by Andrew
+static inline int port_mib_dump_us(enetx_port_t *self, void *e)
+{
+	int ret;
+
+    if (!(self->port_class & (PORT_CLASS_PORT)))
+        return -1;
+
+    if (self->p.ops->mib_dump) {
+		ret = self->p.ops->mib_dump_us(self, e);
+        return ret;
+	}
+    
+    return -1;
+}
+// end of add
 
 static inline void port_mib_clear(enetx_port_t *self)
 {

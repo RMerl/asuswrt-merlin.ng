@@ -333,7 +333,6 @@ int bcm_timer_construct(void)
         return ret;
     }
 
-#if 0
     ret = ext_timer_set_affinity(bcm_timer_g.ext_timer_number, BCM_TIMER_CPU_ID, false);
     if(ret)
     {
@@ -341,7 +340,6 @@ int bcm_timer_construct(void)
 
         return ret;
     }
-#endif
 
     __print("Broadcom Timer Initialized\n");
 

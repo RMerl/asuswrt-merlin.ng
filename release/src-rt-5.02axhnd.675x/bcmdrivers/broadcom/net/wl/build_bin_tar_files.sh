@@ -127,14 +127,14 @@ if  [ $cus == "1" ]; then
 
   # Not keep image when using BRAND profiles
   if [ "$brand" != "" ]; then
-    tar -zcvf wlan-bin-all-$ver.tgz bcmdrivers userspace $exclude
+    tar -zcvf wlan-bin-all-$ver.tgz $exclude bcmdrivers userspace
   else
-    tar -zcvf wlan-bin-all-$ver.tgz bcmdrivers userspace images $exclude
+    tar -zcvf wlan-bin-all-$ver.tgz $exclude bcmdrivers userspace images
   fi
   rm -rf images
   rm -rf bcmdrivers userspace
 else
-  tar -zcvf wlan-bin-all-$ver.tgz makefile.wlan.src makefile.dhd.src $imp_org $exclude
+  tar -zcvf wlan-bin-all-$ver.tgz $exclude makefile.wlan.src makefile.dhd.src $imp_org
 fi
 
 if  [ $use_shared == "y" ]; then

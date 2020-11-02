@@ -1135,10 +1135,62 @@ static bp_elem_t g_rt_ax56u[] = {
     {bp_last}
 };
 
+static bp_elem_t g_rp_ax56[] = {
+    {bp_cpBoardId,               .u.cp = "RP-AX56"},
+    {bp_ulCompatChipId,          .u.ul = 0x6755},
+
+    {bp_ulInterfaceEnable,       .u.ul = BP_PINMUX_FNTYPE_NAND},
+    /* Button */
+    {bp_usButtonIdx,             .u.us = 0},
+    {bp_usButtonExtIntr,         .u.us = BP_EXT_INTR_0|BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE|BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL},
+    {bp_usGpio_Intr,             .u.us = BP_GPIO_9_AL},	/* reset btn */
+#if defined(_CFE_)
+    {bp_usButtonAction,          .u.us = BP_BTN_ACTION_PRINT | BP_BTN_TRIG_PRESS },
+    {bp_ulButtonActionParm,      .u.ptr = (void*)"Button Press -- Hold for 5s to do restore to default" },
+    {bp_usButtonAction,          .u.us = BP_BTN_ACTION_RESET | BP_BTN_TRIG_RELEASE | BP_BTN_TRIG_0S  },
+    {bp_usButtonAction,          .u.us = BP_BTN_ACTION_RESTORE_DEFAULTS | BP_BTN_TRIG_HOLD | BP_BTN_TRIG_5S},
+#endif
+    {bp_usButtonIdx,             .u.us = 1},
+    {bp_usButtonExtIntr,         .u.us = BP_EXT_INTR_1|BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE|BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL},
+    {bp_usGpio_Intr,             .u.us = BP_GPIO_4_AL},	/* wps btn */
+#if defined(_CFE_)
+    {bp_usButtonAction,          .u.us = BP_BTN_ACTION_SES | BP_BTN_TRIG_PRESS  },
+    {bp_usCfeResetToDefaultBtnIdx, .u.us = 0},
+#endif
+
+    //{bp_usGpioLedWL1Act,         .u.us = BP_GPIO_11_AL | BP_LED_USE_GPIO},	/* WLAN_5G_ACT */
+    //{bp_usGpioLedWL0Act,         .u.us = BP_GPIO_15_AL | BP_LED_USE_GPIO},	/* WLAN_2G_ACT, must use BP_LED_USE_GPIO */
+
+    {bp_usGphyBaseAddress,       .u.us = BCM947622_PHY_BASE},
+    {bp_ucPhyType0,              .u.uc = BP_ENET_NO_PHY},
+    {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP}, // Cross bar switch
+    {bp_ulPortMap,               .u.ul = 0x1},
+    {bp_ulPhyId0,                .u.ul = (BCM947622_PHY_BASE + 0x00) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+
+    /* WAN_LNKACT */
+    {bp_usIntfId,                .u.us = 0},
+    {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
+    {bp_usPortNum,               .u.us = 0},
+    //{bp_usNetLed3,               .u.us = BP_GPIO_12_AL},
+    //{bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},
+    {bp_usIntfEnd},
+
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_5_AL},		/* red LED */
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_7_AL},		/* green LED */
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_11_AL},	/* blue LED */
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_14_AL},	/* yellow LED */
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_15_AL},	/* purple led */
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_12_AH},	/* white led */
+
+    {bp_ulMemoryConfig,          .u.ul = BP_DDR_SPEED_800_11_11_11 | BP_DDR_TOTAL_SIZE_256MB| BP_DDR_DEVICE_WIDTH_16 | BP_DDR_TOTAL_WIDTH_16BIT | BP_DDR_SSC_CONFIG_1},
+    {bp_last}
+};
+
 bp_elem_t * g_BoardParms[] = {g_bcm947622sv, g_bcm947622rfdvt, g_bcm947622rfdvt2, g_bcm947622ref1, g_bcm96755ref1, g_bcm947622eap, g_bcm947622eap2, g_bcm947622eaps, g_bcm947622sv_serdes, g_bcm947622ref1_sg, g_bcm96755ref1_sg, g_bcm96755tbrhx, \
     g_bcm947622ref1_p250, g_bcm947622ref1_sg_p250, g_bcm96755ref1_p200, g_bcm96755ref1_sg_p200, g_bcm96755ref2,
 	g_bcm96755map_ax6600,
 	g_rt_ax56u,
+	g_rp_ax56,
 	g_xd4, g_xd4_slave, g_xd4_256m, g_xd4_slave_256m,
 	g_rtax55,
 	0};

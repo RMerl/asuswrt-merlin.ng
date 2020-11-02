@@ -56,6 +56,7 @@
 
 
 <object name="InternetGatewayDevice.LANDevice.{i}.WLANConfiguration.{i}.X_BROADCOM_COM_WlanAdapter.WlMimoCfg." />
+  <parameter name="WlNBwCap" nvram="bw_cap"/>
   <parameter name="WlNCtrlsb" nvram="nctrlsb", ntype="string", vmapper="wlctrlsb"/>
   <parameter name="WlNBand" nvram="nband"/>
   <parameter name="WlNMcsidx" nvram="nmcsidx"/>

@@ -95,17 +95,64 @@ static void mdio_trans_done_isr(const lport_intr_info_s *info, void *priv)
     complete(mdio_done_isr);
 }
 
+static uint32_t mdio_set_and_wait_polling(lport_mdio_control *control)
+{
+    int rc = LPORT_ERR_OK;
+    uint32_t retries = LPORT_ACCESS_MDIO_TRANSACTION_RETRY;
+
+    /* Poll for transaction end & not error */
+    do
+    {
+        UDELAY(10);
+        rc = ag_drv_lport_mdio_control_get(control);
+    } while ((!rc) && retries-- && control->start_busy && (!control->fail));
+
+    if (!retries)
+    {
+        pr_err( "%s(%d):LPORT MDIO write transaction passed too many retries rc=%d, fail=%d, busy=%d\n",
+            __FUNCTION__, __LINE__, rc, control->fail, control->start_busy);
+        return LPORT_ERR_IO;
+    }
+    else if (control->fail || control->start_busy || rc)
+    {
+        pr_err( "%s(%d):LPORT MDIO write transaction failed or busy rc=%d,fail=%d, busy=%d\n",
+            __FUNCTION__, __LINE__, rc, control->fail, control->start_busy);
+        return LPORT_ERR_IO;
+    }
+
+    return rc;
+}
+
 static uint32_t mdio_set_and_wait(lport_mdio_control *control)
 {
     int rc = LPORT_ERR_OK;
+    int rv = 0;
 
-    //First Arm the mdio interrupt
+    reinit_completion(&mdio_done);
+
+    /* First Arm the mdio interrupt */
     lport_mdio_intr_clear(LPORT_MDIO_DONE);
-    lport_mdio_intr_enable(LPORT_MDIO_DONE,1);
+    lport_mdio_intr_enable(LPORT_MDIO_DONE, 1);
 
     ag_drv_lport_mdio_control_set(control);
 
-    if (!wait_for_completion_interruptible_timeout(&mdio_done,mdio_timeout))
+    rv = wait_for_completion_interruptible_timeout(&mdio_done, mdio_timeout);
+    if (rv == -ERESTARTSYS)
+    {
+        /* Try to wait again as polling on this time, Wake up by unexpected interrupt signal from kernel. */
+        pr_err("%s(%d):LPORT MDIO Received -ERESTARTSYS, Try to wait again as polling on this time, rc=%d\n",
+            __FUNCTION__, __LINE__, rc);
+
+        rc = mdio_set_and_wait_polling(control);
+        if (rc || control->fail || control->start_busy)
+        {
+            pr_err("%s(%d):LPORT MDIO interface is not ready rc=%d, fail=%d, busy=%d\n",
+                __FUNCTION__, __LINE__, rc, control->fail, control->start_busy);
+            rc =  LPORT_ERR_IO;
+        }
+        goto done;
+    }
+    else if (rv == 0)
     {
         rc =  LPORT_ERR_IO;
         goto done;
@@ -115,14 +162,13 @@ static uint32_t mdio_set_and_wait(lport_mdio_control *control)
     if (rc || control->fail || control->start_busy)
     {
         pr_err("%s(%d):LPORT MDIO interface is not ready rc=%d, fail=%d, busy=%d\n",
-            __FUNCTION__,__LINE__, rc, control->fail, control->start_busy);
+            __FUNCTION__, __LINE__, rc, control->fail, control->start_busy);
         rc =  LPORT_ERR_IO;
     }
 
 done:
     return rc;
 }
-
 #else
 static uint32_t mdio_set_and_wait(lport_mdio_control *control)
 {
@@ -133,7 +179,7 @@ static uint32_t mdio_set_and_wait(lport_mdio_control *control)
     if (rc)
     {
         pr_err("%s(%d):LPORT MDIO interface is not ready, fail=%d, busy=%d\n",
-            __FUNCTION__,__LINE__, control->fail, control->start_busy);
+            __FUNCTION__, __LINE__, control->fail, control->start_busy);
         return LPORT_ERR_IO;
 
     }

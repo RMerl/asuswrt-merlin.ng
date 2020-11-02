@@ -142,10 +142,15 @@ module_param(pcie_boot_order, int, S_IRUGO);
  *     0 - Power Down PCIe core if no Link (default)
  *     1 - Keep PCIe core Powered up even if there is no Link
  *     2 - Keep PCIe core Powered Off even if there is Link
+ *     3 - Keep PCIe core Powered Off with domain even if there is Link
  *
  *     Each 4bit's corresponds to a PCIe core id
  *     [31-28] [27-24][23-20] [19-16] [15-12] [11-08] [07-04] [03-00]
  *                                    [core4] [core3] [core2] [core1]
+ *
+ *     For Virtual Core the nibble is divided as below
+ *     [03-02] [01-00]
+ *     [dev2]  [dev1]
  */
 u32 pcie_apon = 0x0000;
 module_param(pcie_apon, int, S_IRUGO);

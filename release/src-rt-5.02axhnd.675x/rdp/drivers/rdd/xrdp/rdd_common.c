@@ -31,6 +31,9 @@
 #include "rdd.h"
 #include "rdd_common.h"
 #include "rdp_drv_proj_cntr.h"
+#ifdef CONFIG_MCAST_TASK_LIMIT
+#include "rdp_drv_cnpl.h"
+#endif
 #include "rdd_runner_proj_defs.h"
 #ifndef _CFE_
 #include "rdd_tcam_ic.h"
@@ -346,6 +349,14 @@ void rdd_loopback_queue_set(rdd_rdd_vport vport, uint32_t queue_id)
     RDD_BTRACE("vport = %d, queue = %d\n", vport, queue_id);
 
     GROUP_MWRITE_8(RDD_LOOPBACK_QUEUE_TABLE_ADDRESS_ARR, vport, queue_id);
+}
+
+void rdd_loopback_wan_flow_set(uint32_t flow)
+{
+    RDD_BTRACE("wan_flow = %d\n", flow);
+#if !defined(BCM_DSL_XRDP)
+    GROUP_MWRITE_8(RDD_LOOPBACK_WAN_FLOW_TABLE_ADDRESS_ARR, 0, flow);
+#endif    
 }
 
 void rdd_ingress_qos_drop_miss_ratio_set(uint32_t drop_miss_ratio)
@@ -686,3 +697,20 @@ bdmf_boolean rdd_system_congestion_ctrl_get(void)
     return 1;
 #endif
 }
+
+#ifdef CONFIG_MCAST_TASK_LIMIT
+void rdd_mcast_max_tasks_limit_cfg(uint16_t xi_mcast_max_tasks_limit)
+{
+    RDD_BYTES_2_BITS_WRITE_G(xi_mcast_max_tasks_limit, RDD_MCAST_BBH_OVERRUN_MAX_TASKS_LIMIT_ADDRESS_ARR, 0);
+#ifndef RDP_SIM
+    drv_cnpl_counter_set(CNPL_GROUP_TWO_BYTE_CNTR, COUNTER_IPTV_PROCESSING_TASKS_LIMIT, xi_mcast_max_tasks_limit);
+#endif
+}
+
+void rdd_mcast_min_tasks_limit_cfg(uint16_t xi_mcast_min_tasks_limit)
+{
+    /* both values min/max are written to the data SRAM, but the CNPL which contain single value for task limit */
+    /* will be set with the max value */
+    RDD_BYTES_2_BITS_WRITE_G(xi_mcast_min_tasks_limit, RDD_MCAST_BBH_OVERRUN_MIN_TASKS_LIMIT_ADDRESS_ARR, 0);
+}
+#endif

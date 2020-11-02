@@ -236,7 +236,7 @@ export WLAN_SHARED_IMPL = 1
 export BCM_NBUFF_COMMON = 1
 export WLAN_SHARED_DIR  := $(BRCMDRIVERS_DIR)/broadcom/net/wl/shared/impl$(WLAN_SHARED_IMPL)
 
-ifeq ($(strip $(CONFIG_BCM_WLAN_IMPL)),$(filter $(strip $(CONFIG_BCM_WLAN_IMPL)),24 26 27 29 30 32))
+ifeq ($(strip $(CONFIG_BCM_WLAN_IMPL)),$(filter $(strip $(CONFIG_BCM_WLAN_IMPL)),24 25 26 27 29 30 32))
 export USE_WLAN_SHARED = 1
 endif
 
@@ -252,7 +252,7 @@ $(eval $(call LN_RULE_DEP, $(CONFIG_BCM_WLAN), broadcom/net/wl/$(LN_NAME)/$(HNDD
 
 ifneq (,$(firstword $(wildcard ./broadcom/net/wl/$(LN_NAME)/$(HNDDRIVER_BASE)/hnd_dpsta \
    $(src)/broadcom/net/wl/$(LN_NAME)/$(HNDDRIVER_BASE)/hnd_dpsta)))
-$(eval $(call LN_RULE, $(CONFIG_BCM_WLAN), broadcom/net/wl/$(LN_NAME)/$(HNDDRIVER_BASE)/hnd_dpsta,,))
+$(eval $(call LN_RULE_DEP, $(CONFIG_BCM_WLAN), broadcom/net/wl/$(LN_NAME)/$(HNDDRIVER_BASE)/hnd_dpsta,,, $(WLLINK)))
 endif
 
 ifeq ($(strip $(BUILD_HND_NIC)),)

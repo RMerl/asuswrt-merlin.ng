@@ -11,9 +11,6 @@ EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PRIV_PATH)/$(BRCM_BOARD) -I$(INC_BRCMBOARDPAR
 
 EXTRA_CFLAGS += -Werror -Wfatal-errors 
 
-%.o:
-	cp $(obj)/prebuilt/*.o $(obj)/
-
 clean:
 	rm -f core *.ko *.o *.a *.s
 

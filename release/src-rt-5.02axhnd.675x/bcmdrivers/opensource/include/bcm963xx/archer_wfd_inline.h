@@ -794,6 +794,7 @@ static inline uint32_t _wfd_bulk_cpu_queue_get(uint32_t qid, uint32_t budget,
                 /* Fetch the 3b WLAN prio, by skipping the 1b IQPRIO */
                 pktlist_prio = GET_WLAN_PRIORITY(skb_p->wl.ucast.nic.wl_prio);
 
+                PKTFWD_ASSERT(pktlist_prio == LINUX_GET_PRIO_MARK(skb_p->mark));
                 PKTFWD_ASSERT(pktlist_dest <= PKTLIST_MCAST_ELEM);
                 PKTFWD_ASSERT(pktlist_prio <  PKTLIST_PRIO_MAX);
 

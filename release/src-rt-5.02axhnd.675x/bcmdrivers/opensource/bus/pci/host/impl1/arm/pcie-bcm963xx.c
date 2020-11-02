@@ -47,6 +47,7 @@ written consent.
 #endif /* !CONFIG_BRCM_IKOS && !CONFIG_BCM_PCIE_PMC_BRD_STUBS */
 #include <shared_utils.h>
 
+#include <pcie_hcd.h>
 #include <pcie_common.h>
 #include <pcie-bcm963xx.h>
 #include <pcie-vcore.h>
@@ -1076,8 +1077,10 @@ static void __iomem *bcm963xx_pcie_map_bus(struct pci_bus *bus,
 	HCD_INFO("bus [0x%px] bus_no [%d] dev [%d] func [%d] where [%d]\r\n",
 	    bus, bus_no, dev_no, func_no, where);
 
-	/* RC config space is regisers not memory, allow only valid bus/dev combinations */
-	if (bus_no <= (BCM963XX_ROOT_BUSNUM+1)) {
+	/* RC config space is registers not memory, allow only valid bus/dev combinations */
+	if (pdrv->hc_cfg.apon == HCD_APON_OFF_WITH_DOMAIN) {
+	    valid = FALSE;
+	} else if (bus_no <= (BCM963XX_ROOT_BUSNUM+1)) {
 	    /* Root Conplex bridge, first device or switch */
 	    /* Allow only configuration space (dev#0) */
 	    valid = (dev_no == 0);
@@ -1469,6 +1472,9 @@ static int bcm963xx_pcie_phy_config_pwrmode(struct bcm963xx_pcie_hcd *pdrv)
 	}
 
 	if (pdrv->hc_cfg.phypwrmode == 1) {
+	    int   lane;
+	    uint16 block_addr;
+
 	    /* Setting received from hardware team for  *** 63138B1 ***
 	     * For other platforms the values might need tuning
 	     *
@@ -1477,14 +1483,19 @@ static int bcm963xx_pcie_phy_config_pwrmode(struct bcm963xx_pcie_hcd *pdrv)
 	     *      pcieserdesreg 0x820, 0x17 0x05b7
 	     *      pcieserdesreg 0x801, 0x1a 0x4028
 	     */
-	     bcm963xx_pcie_mdio_write(pdrv, 0, 0x001f, 0x4000);
-	     bcm963xx_pcie_mdio_write(pdrv, 0, 0x0001, 0x000b);
-	     bcm963xx_pcie_mdio_write(pdrv, 0, 0x0000, 0x0e20);
-	     bcm963xx_pcie_mdio_write(pdrv, 0, 0x001f, 0x5000);
-	     bcm963xx_pcie_mdio_write(pdrv, 0, 0x000d, 0x00f0);
+	    for (lane = 0; lane < pdrv->resources.link_width; lane++) {
+	        block_addr = SERDES_TX_CTR1_LN0_OFFSET + lane * SERDES_TX_CTR1_LN_SIZE;
+	        bcm963xx_pcie_mdio_write(pdrv, 0, 0x001f, block_addr);
+	        bcm963xx_pcie_mdio_write(pdrv, 0, 0x0001, 0x000b);
+	        bcm963xx_pcie_mdio_write(pdrv, 0, 0x0000, 0x0e20);
 
-	    /* Required to settle the power mode setting */
-	    mdelay(10);
+	        block_addr = SERDES_TX_DFE0_LN0_OFFSET + lane * SERDES_TX_DFE0_LN_SIZE;
+	        bcm963xx_pcie_mdio_write(pdrv, 0, 0x001f, block_addr);
+	        bcm963xx_pcie_mdio_write(pdrv, 0, 0x000d, 0x00f0);
+
+	       /* Required to settle the power mode setting */
+	       mdelay(10);
+	    }
 
 	    HCD_LOG("Core [%d] phy power mode set to [%d]\n", pdrv->core_id,
 	        pdrv->hc_cfg.phypwrmode);
@@ -2891,7 +2902,7 @@ static int bcm963xx_pcie_parse_dt(struct bcm963xx_pcie_hcd *pdrv)
 	        /* PCIe force power on setting */
 	        err = of_property_read_u8(np, "brcm,apon", &dt_val);
 	        if (err == 0) {
-	            pdrv->hc_cfg.apon = (dt_val > HCD_APON_OFF) ? HCD_APON_DEFAULT : dt_val;
+	            pdrv->hc_cfg.apon = (dt_val > HCD_APON_LAST) ? HCD_APON_DEFAULT : dt_val;
 	        }
 	        HCD_WARN_ON_DT_ERROR("brcm,apon", err);
 	    }
@@ -3026,7 +3037,6 @@ static int bcm963xx_pcie_init_res(struct bcm963xx_pcie_hcd *pdrv)
 	return 0;
 }
 
-
 /*
  *
  * Function bcm963xx_pcie_probe (pdrv)
@@ -3092,6 +3102,7 @@ static int bcm963xx_pcie_probe(struct platform_device *pdev)
 	    pdrv->core_id = core;
 	    pdrv->pdev = pdev;
 	    platform_set_drvdata(pdev, pdrv);
+	    pcie_hcd_procfs_init(pdrv);
 
 	    /* Initialize  core resource element values for no device tree based
 	     * legacy drivers
@@ -3183,6 +3194,17 @@ static int bcm963xx_pcie_probe(struct platform_device *pdev)
 	    /* store the bus for proper remove */
 	    pdrv->bus = bus;
 
+	    /* if Configured, skip device enumeration and power off the port */
+	    if (pdrv->hc_cfg.apon == HCD_APON_OFF_WITH_DOMAIN) {
+	        HCD_LOG("Skip core [%d] initialization due to apon setting [%d]\r\n",
+	            core, pdrv->hc_cfg.apon);
+
+	        /* Force power off port */
+	        pcie_hcd_pmc_power_down(pdev->id);
+	        HCD_LOG("core [%d] powered down\r\n", pdrv->core_id);
+	        goto done;
+	    }
+
 	    /* Now initialize the PCIe core error logging */
 	    if (pdrv->hc_cfg.errlog) {
 	        err = bcm963xx_pcie_errlog_enable(pdrv);
@@ -3216,7 +3238,7 @@ static int bcm963xx_pcie_probe(struct platform_device *pdev)
 	        bridge->map_irq = bcm963xx_pcie_map_irq;
 	        bridge->swizzle_irq = pci_common_swizzle;
 	    }
-#endif
+#endif /* LINUX_VERSION >= 4.13.0 */
 
 	    pci_scan_child_bus(bus);
 
@@ -3249,6 +3271,7 @@ error:
 
 	pci_free_resource_list(&res);
 
+done:
 	HCD_FN_EXT();
 
 	return err;
@@ -3299,6 +3322,8 @@ static int  bcm963xx_pcie_remove(struct platform_device *pdev)
 	        pcie_hcd_pmc_power_down(core);
 	        HCD_LOG("core [%d] powered down\r\n", pdrv->core_id);
 	    }
+
+	    pcie_hcd_procfs_deinit(pdrv);
 
 	    kfree(pdrv);
 	}

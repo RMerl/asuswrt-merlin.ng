@@ -45,7 +45,7 @@ mknod /dev/bcm c            331 0
 mknod /dev/bcmatm0 c        332 0
 mknod /dev/bcmadsl0 c       333 0
 mknod /dev/bcmadsl1 c       333 1
-mknod /dev/detector c       334 0 
+#mknod /dev/detector c      334 0 is created by dpiinit.sh
 #node /dev/bcmrdpa c        337 0 is created by rdpa_cmd.ko
 mknod /dev/blog c           338 0
 mknod /dev/archer c         339 0

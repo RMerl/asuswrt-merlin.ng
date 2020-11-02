@@ -632,6 +632,7 @@ typedef struct
 {
    UINT8 pppState;       /**< pppoe states */
    char ip[BUFLEN_32];   /**< New IP address, if pppState==BCM_PPPOE_CLIENT_STATE_UP */
+   char ifname[BUFLEN_32];   /**< ppp interface name, if pppState==BCM_PPPOE_CLIENT_STATE_UP */
    char mask[BUFLEN_32]; /**< New netmask, if pppState==BCM_PPPOE_CLIENT_STATE_UP */
    char gateway[BUFLEN_32];    /**< New gateway, if pppState==BCM_PPPOE_CLIENT_STATE_UP */
    char nameserver[BUFLEN_64]; /**< New nameserver, if pppState==BCM_PPPOE_CLIENT_STATE_UP */

@@ -320,6 +320,7 @@ static int bcm_mcast_netlink_process_igmp_snoop_entry(struct nlmsghdr *nlh, unsi
    t_BCM_MCAST_IGMP_SNOOP_ENTRY *snoop_entry;
    struct net_device            *from_dev = NULL;
    struct net_device            *to_dev = NULL;
+   struct net_device            *to_accel_dev = NULL;
    int                           idx = 0;
    uint32_t                      info = 0;
    int                           filter_mode;
@@ -363,6 +364,18 @@ static int bcm_mcast_netlink_process_igmp_snoop_entry(struct nlmsghdr *nlh, unsi
       dev_put(to_dev);
       rcu_read_unlock();
       return -EINVAL;
+   }
+
+   if (snoop_entry->to_acceldev_ifi != -1) 
+   {
+       to_accel_dev = dev_get_by_index(&init_net, snoop_entry->to_acceldev_ifi);
+       if (NULL == to_accel_dev)
+       {
+          __logError("to_accel device %d could not be found", snoop_entry->to_acceldev_ifi);
+          dev_put(to_dev);
+          rcu_read_unlock();
+          return -EINVAL;
+       }
    }
 
 #if defined(CONFIG_BLOG)
@@ -411,6 +424,7 @@ static int bcm_mcast_netlink_process_igmp_snoop_entry(struct nlmsghdr *nlh, unsi
                                   snoop_entry->wan_info[idx].if_ops,
                                   pif, 
                                   to_dev, 
+                                  to_accel_dev, 
                                   &snoop_entry->rxGrp,
                                   &snoop_entry->txGrp,
                                   &snoop_entry->rep,
@@ -456,6 +470,7 @@ static int bcm_mcast_netlink_process_igmp_snoop_entry(struct nlmsghdr *nlh, unsi
                                   BCM_MCAST_IF_BRIDGED, 
                                   pif,
                                   to_dev, 
+                                  to_accel_dev, 
                                   &snoop_entry->txGrp, 
                                   &snoop_entry->txGrp, 
                                   &snoop_entry->rep,
@@ -472,6 +487,10 @@ static int bcm_mcast_netlink_process_igmp_snoop_entry(struct nlmsghdr *nlh, unsi
    }
 
    dev_put(to_dev);
+   if (to_accel_dev)
+   {
+       dev_put(to_accel_dev);
+   }
    rcu_read_unlock();
 #endif
    return 0;
@@ -484,6 +503,7 @@ static int bcm_mcast_netlink_process_mld_snoop_entry(struct nlmsghdr *nlh, unsig
    t_BCM_MCAST_MLD_SNOOP_ENTRY *snoop_entry;
    struct net_device           *from_dev= NULL;
    struct net_device           *to_dev= NULL;
+   struct net_device           *to_accel_dev= NULL;
    int                          idx = 0;
    uint32_t                     info = 0;
    int                          filter_mode;
@@ -527,6 +547,18 @@ static int bcm_mcast_netlink_process_mld_snoop_entry(struct nlmsghdr *nlh, unsig
        __logError("invalid device %d for snooping entry", snoop_entry->dstdev_ifi);
        dev_put(to_dev);
        return -EINVAL;
+   }
+
+   if (snoop_entry->to_acceldev_ifi != -1) 
+   {
+       to_accel_dev = dev_get_by_index(&init_net, snoop_entry->to_acceldev_ifi);
+       if (NULL == to_accel_dev)
+       {
+          __logError("to_accel device %d could not be found", snoop_entry->to_acceldev_ifi);
+          dev_put(to_dev);
+          rcu_read_unlock();
+          return -EINVAL;
+       }
    }
 
 #if defined(CONFIG_BLOG)
@@ -574,6 +606,7 @@ static int bcm_mcast_netlink_process_mld_snoop_entry(struct nlmsghdr *nlh, unsig
                                  snoop_entry->wan_info[idx].if_ops,
                                  pif, 
                                  to_dev, 
+                                 to_accel_dev, 
                                  &snoop_entry->grp, 
                                  &snoop_entry->rep,
                                  snoop_entry->repMac,
@@ -613,6 +646,7 @@ static int bcm_mcast_netlink_process_mld_snoop_entry(struct nlmsghdr *nlh, unsig
                              BCM_MCAST_IF_BRIDGED,
                              pif,
                              to_dev, 
+                             to_accel_dev, 
                              &snoop_entry->grp, 
                              &snoop_entry->rep,
                              snoop_entry->repMac,
@@ -625,6 +659,10 @@ static int bcm_mcast_netlink_process_mld_snoop_entry(struct nlmsghdr *nlh, unsig
        }
    }
    dev_put(to_dev);
+   if (to_accel_dev) 
+   {
+       dev_put(to_accel_dev);
+   }
    rcu_read_unlock();
 #endif
    return 0;

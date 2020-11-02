@@ -39,7 +39,6 @@
  *  - BPM buffers i.o skb's
  *  - Statistics update (for fast path) ?
  *  - rxbound for slow path packets
- *  - NIC driver
  *
  * =============================================================================
  */
@@ -120,13 +119,6 @@
  * Pre-processor flags, (few in dhd_awl.h)
  */
 /*
- * Enable this flag for lite rx processing (default disabled)
- * - ETHER_TYPE_BRCM/BRCM_AIRIQ filtered for archer and will go through dhd_rx_frame
- * - Archer flow miss will directly call blog_sinit and netif_rx (in archer context)
- */
-//#define DHD_AWL_RX_LITE
-
-/*
  * Enable this flag for debug message control with-in this file
  * default disabled
  */
@@ -171,7 +163,11 @@
 #define DHD_AWL_RX_MODE_FULL         2
 
 /* Packet bound */
+#if defined(ARCHER_WLAN_RX_BUDGET)
+#define DHD_AWL_RX_PKT_BOUND         ARCHER_WLAN_RX_BUDGET
+#else /* !ARCHER_WLAN_RX_BUDGET */
 #define DHD_AWL_RX_PKT_BOUND         32   /* 64 */
+#endif /* !ARCHER_WLAN_RX_BUDGET */
 
 #if defined(DHD_AWL_SKB_AUDIT)
 /* Check for non-null skb->prev, log and set to null */
@@ -193,6 +189,16 @@
 #define DHD_AWL_SKB_PREV_AUDIT(skb)   do { } while (0)
 #define DHD_AWL_SKB_NEXT_AUDIT(skb)   do { } while (0)
 #endif /* !DHD_AWL_SKB_AUDIT */
+
+#if defined(ARCHER_WLAN_MISS_PKTLIST)
+#define dhd_awl_rx_flow_miss_handler_dhd_dpc dhd_awl_rx_flow_miss_handler_dhd_dpc_sll
+#define dhd_awl_rx_flow_miss_handler_archer  dhd_awl_rx_flow_miss_handler_archer_sll
+#define dhd_awl_rx_flow_miss_handler_archer_dhd dhd_awl_rx_flow_miss_handler_archer_dhd_sll
+#else /* !ARCHER_WLAN_MISS_PKTLIST */
+#define dhd_awl_rx_flow_miss_handler_dhd_dpc dhd_awl_rx_flow_miss_handler_dhd_dpc_skb
+#define dhd_awl_rx_flow_miss_handler_archer  dhd_awl_rx_flow_miss_handler_archer_skb
+#define dhd_awl_rx_flow_miss_handler_archer_dhd dhd_awl_rx_flow_miss_handler_archer_dhd_skb
+#endif /* !ARCHER_WLAN_MISS_PKTLIST */
 
 /**
  * -----------------------------------------------------------------------------
@@ -234,6 +240,8 @@ typedef struct dhd_awl_rx {
 	unsigned long a2w_flt_packets;
 	unsigned long a2w_fwd_packets;
 	unsigned long a2w_fwd_calls;
+	unsigned long a2w_chn_packets;
+	unsigned long a2w_max_chn;
 } dhd_awl_rx_t;
 
 /**
@@ -259,6 +267,13 @@ typedef struct dhd_awl {
 	struct dhd_awl_rx rx;
 	struct dhd_awl_tx tx;
 } dhd_awl_t;
+
+/**
+ * =============================================================================
+ * Section: External function declerations
+ * =============================================================================
+ */
+extern int  fcacheStatus(void);
 
 /**
  * =============================================================================
@@ -306,6 +321,25 @@ dhd_awl_upstream(dhd_awl_t *awl, pktlist_t *pktlist)
 
 /**
  * -----------------------------------------------------------------------------
+ * Function : Add skb to Archer SLL
+ *
+ * -----------------------------------------------------------------------------
+ */
+void
+dhd_awl_pktlist_add(pktlist_t *pktlist, struct sk_buff *skb)
+{
+	if (likely(pktlist->len != 0)) {
+	    /* pend to tail */
+	    PKTLIST_PKT_SET_SLL(pktlist->tail, skb, SKBUFF_PTR);
+	    pktlist->tail = skb;
+	} else {
+	    pktlist->head = pktlist->tail = skb;
+	}
+	++pktlist->len;
+}
+
+/**
+ * -----------------------------------------------------------------------------
  * Function : Callback function from Archer CPU for flow-miss
  *            completely handled with-in Archer context
  *            Might miss some features (dump, wmf, wet, spdsvc .... etc) otherwise
@@ -313,52 +347,89 @@ dhd_awl_upstream(dhd_awl_t *awl, pktlist_t *pktlist)
  * -----------------------------------------------------------------------------
  */
 void
-dhd_awl_rx_flow_miss_handler_archer(void *ctxt, struct sk_buff *skb)
+dhd_awl_rx_flow_miss_handler_archer_sll(void *ctxt, pktlist_t *misspktl)
 {
 	dhd_pub_t *dhdp = (dhd_pub_t*)ctxt;
 	uint8_t *eth;
 	unsigned int len;
 	BlogAction_t blog_action;
 	dhd_awl_t *awl;
+	struct sk_buff *skb;
+	int npkts;
 
-	if (dhdp == NULL) {
-	    DHD_AWL_ERROR("dhd_awl_rx_flow_miss_handler(0x%p) with NULL dhdp\n",
-	        skb);
+	/* Get the DHD public control block */
+	if ((dhdp == NULL) || (misspktl == NULL)) {
+	    DHD_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
+	        __FUNCTION__, dhdp, misspktl);
 	    return;
 	}
-
 
 	awl = DHD_AWL_CB(dhdp);
-	awl->rx.a2w_rx_packets++;
 
-	/* Copied essential parts from dhd_rx_frame() */
-	/* This code executes under Archer context,
-	   To move this to DHD, need to put this in a queue and wakeup DHD thread
-	   and let DHD thread process it
-	 */
-	blog_action = blog_sinit(skb, skb->dev, TYPE_ETH, 0, BLOG_WLANPHY);
+	skb = misspktl->head;
+	npkts = misspktl->len;
+	PKTLIST_RESET(misspktl);
 
-	if (PKT_DONE == blog_action) {
-		awl->rx.a2w_flt_packets++;
+	awl->rx.a2w_chn_packets = npkts;
+	if (awl->rx.a2w_chn_packets > awl->rx.a2w_max_chn)
+	    awl->rx.a2w_max_chn = awl->rx.a2w_chn_packets;
+
+	while (npkts--) {
+	    struct sk_buff* nskb = skb->prev;
+
+	    skb->next = skb->prev = NULL;
+
+	    awl->rx.a2w_rx_packets++;
+
+	    /* Copied essential parts from dhd_rx_frame() */
+	    /* This code executes under Archer context,
+	       To move this to DHD, need to put this in a queue and wakeup DHD thread
+	       and let DHD thread process it
+	     */
+	    blog_action = blog_sinit(skb, skb->dev, TYPE_ETH, 0, BLOG_WLANPHY);
+
+	    if (PKT_DONE == blog_action) {
+	        awl->rx.a2w_flt_packets++;
+	        return;
+	    }
+
+	    eth = skb->data;
+	    len = skb->len;
+	    skb->protocol = eth_type_trans(skb, skb->dev);
+	    skb->data = eth;
+	    skb->len = len;
+
+	    /* Strip header, count, deliver upward */
+	    skb_pull(skb, ETH_HLEN);
+
+	    netif_receive_skb(skb);
+
+	    /* update stats */
+	    awl->rx.a2w_fwd_packets++;
+	    awl->rx.a2w_fwd_calls++;
+
+	    skb = nskb;
+	}
+
+	return;
+}
+
+void
+dhd_awl_rx_flow_miss_handler_archer_skb(void *ctxt, struct sk_buff *skb)
+{
+	dhd_pub_t *dhdp = (dhd_pub_t*)ctxt;
+	pktlist_t misspktl;
+
+	if ((dhdp == NULL) || (skb == NULL)) {
+	    DHD_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
+	        __FUNCTION__, dhdp, skb);
 	    return;
 	}
 
-	eth = skb->data;
-	len = skb->len;
-	skb->protocol = eth_type_trans(skb, skb->dev);
-	skb->data = eth;
-	skb->len = len;
+	PKTLIST_RESET(&misspktl);
+	dhd_awl_pktlist_add(&misspktl, skb);
 
-	/* Strip header, count, deliver upward */
-	skb_pull(skb, ETH_HLEN);
-
-	netif_receive_skb(skb);
-
-	/* update stats */
-	awl->rx.a2w_fwd_packets++;
-	awl->rx.a2w_fwd_calls++;
-
-	return;
+	return dhd_awl_rx_flow_miss_handler_archer_sll(ctxt, &misspktl);
 }
 
 /**
@@ -371,33 +442,75 @@ dhd_awl_rx_flow_miss_handler_archer(void *ctxt, struct sk_buff *skb)
  * -----------------------------------------------------------------------------
  */
 void
-dhd_awl_rx_flow_miss_handler_archer_dhd(void *ctxt, struct sk_buff *skb)
+dhd_awl_rx_flow_miss_handler_archer_dhd_sll(void *ctxt, pktlist_t *misspktl)
 {
 	dhd_pub_t *dhdp = (dhd_pub_t*)ctxt;
 	dhd_awl_t *awl;
+	struct sk_buff *skb;
+	int npkts;
 
 	/* Get the DHD public control block */
-	if (dhdp == NULL) {
-	    DHD_AWL_ERROR("dhd_awl_rx_flow_miss_handler(0x%p) with NULL dhdp\n",
-	        skb);
+	if ((dhdp == NULL) || (misspktl == NULL)) {
+	    DHD_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
+	        __FUNCTION__, dhdp, misspktl);
 	    return;
 	}
 
-	/* Call DHD Rx handler */
-	skb->prev = NULL;
-	DHD_PERIM_LOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
-
-	dhd_bus_rx_frame(dhdp->bus, skb, ARCHER_WLAN_INTF_IDX(skb), 1);
-
-	DHD_PERIM_UNLOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
-
-	/* Update stats */
 	awl = DHD_AWL_CB(dhdp);
-	awl->rx.a2w_rx_packets++;
-	awl->rx.a2w_fwd_packets++;
-	awl->rx.a2w_fwd_calls++;
+
+	/* De-link packets from the SLL */
+	skb = misspktl->head;
+	npkts = misspktl->len;
+	PKTLIST_RESET(misspktl);
+
+	/* update chain packet status */
+	awl->rx.a2w_chn_packets = npkts;
+	if (awl->rx.a2w_chn_packets > awl->rx.a2w_max_chn)
+	    awl->rx.a2w_max_chn = awl->rx.a2w_chn_packets;
+
+	/* Process each packet */
+	while (npkts--) {
+	    struct sk_buff* nskb = skb->prev;
+
+	    skb->next = skb->prev = NULL;
+
+	    awl->rx.a2w_rx_packets++;
+
+	    /* Call DHD Rx handler */
+	    DHD_PERIM_LOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+
+	    dhd_bus_rx_frame(dhdp->bus, skb, ARCHER_WLAN_INTF_IDX(skb), 1);
+
+	    DHD_PERIM_UNLOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+
+	    /* Update stats */
+	    awl = DHD_AWL_CB(dhdp);
+	    awl->rx.a2w_rx_packets++;
+	    awl->rx.a2w_fwd_packets++;
+	    awl->rx.a2w_fwd_calls++;
+
+	    skb = nskb;
+	}
 
 	return;
+}
+
+void
+dhd_awl_rx_flow_miss_handler_archer_dhd_skb(void *ctxt, struct sk_buff *skb)
+{
+	dhd_pub_t *dhdp = (dhd_pub_t*)ctxt;
+	pktlist_t misspktl;
+
+	if ((dhdp == NULL) || (skb == NULL)) {
+	    DHD_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
+	        __FUNCTION__, dhdp, skb);
+	    return;
+	}
+
+	PKTLIST_RESET(&misspktl);
+	dhd_awl_pktlist_add(&misspktl, skb);
+
+	return dhd_awl_rx_flow_miss_handler_archer_dhd_sll(ctxt, &misspktl);
 }
 
 /**
@@ -409,16 +522,22 @@ dhd_awl_rx_flow_miss_handler_archer_dhd(void *ctxt, struct sk_buff *skb)
  * -----------------------------------------------------------------------------
  */
 void
-dhd_awl_rx_flow_miss_handler_dhd_dpc(void *ctxt, struct sk_buff *skb)
+dhd_awl_rx_flow_miss_handler_dhd_dpc_sll(void *ctxt, pktlist_t *misspktl)
 {
 	dhd_pub_t *dhdp = (dhd_pub_t*)ctxt;
 	dhd_awl_t *awl;
 	pktlist_t *pktlist;
+	int npkts;
 
 	/* Get the DHD public control block */
-	if (dhdp == NULL) {
-	    DHD_AWL_ERROR("dhd_awl_rx_flow_miss_handler(0x%p) with NULL dhdp\n",
-	        skb);
+	if ((dhdp == NULL) || (misspktl == NULL)) {
+	    DHD_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
+	        __FUNCTION__, dhdp, misspktl);
+	    return;
+	}
+
+	if ((npkts = misspktl->len) == 0) {
+	    /* No patckets in the list */
 	    return;
 	}
 
@@ -430,21 +549,46 @@ dhd_awl_rx_flow_miss_handler_dhd_dpc(void *ctxt, struct sk_buff *skb)
 
 	/* Question: SLL with skb->next i.o skb->prev ? as dhd_linux uses skb->next ? */
 	if (likely(pktlist->len == 0)) {
-	    pktlist->head = pktlist->tail = skb;
+	    pktlist->head = misspktl->head;
 	} else {
 	    /* Append to tail */
-	    PKTLIST_PKT_SET_SLL(pktlist->tail, skb, SKBUFF_PTR);
-	    pktlist->tail = skb;
+	    PKTLIST_PKT_SET_SLL(pktlist->tail, misspktl->head, SKBUFF_PTR);
 	}
-	++pktlist->len;
-	awl->rx.a2w_rx_packets++;
+	pktlist->tail = misspktl->tail;
+	pktlist->len += npkts;
 
 	DHD_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
+
+	PKTLIST_RESET(misspktl);
+
+	awl->rx.a2w_rx_packets += npkts;
+	awl->rx.a2w_chn_packets = npkts;
+	if (awl->rx.a2w_chn_packets > awl->rx.a2w_max_chn)
+	    awl->rx.a2w_max_chn = awl->rx.a2w_chn_packets;
 
 	/* Wakeup DPC thread or run DPC tasklet */
 	dhd_sched_dpc(dhdp);
 
 	return;
+}
+
+void
+dhd_awl_rx_flow_miss_handler_dhd_dpc_skb(void *ctxt, struct sk_buff *skb)
+{
+	dhd_pub_t *dhdp = (dhd_pub_t*)ctxt;
+	pktlist_t misspktl;
+
+	/* Get the WL public control block */
+	if ((dhdp == NULL) || (skb == NULL)) {
+	    DHD_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
+	        __FUNCTION__, dhdp, skb);
+	    return;
+	}
+
+	PKTLIST_RESET(&misspktl);
+	dhd_awl_pktlist_add(&misspktl, skb);
+
+	return dhd_awl_rx_flow_miss_handler_dhd_dpc_sll(ctxt, &misspktl);
 }
 
 /**
@@ -473,7 +617,7 @@ dhd_awl_process_slowpath_rxpkts(dhd_pub_t *dhdp, int rxbound)
 	bool more = FALSE;
 	dhd_awl_t *awl;
 	pktlist_t *pktlist;
-	int pkts;
+	int npkts, ppkts = 0;
 	struct sk_buff *skb = NULL;
 
 	awl = DHD_AWL_CB(dhdp);
@@ -487,30 +631,47 @@ dhd_awl_process_slowpath_rxpkts(dhd_pub_t *dhdp, int rxbound)
 
 	DHD_AWL_PKTLIST_LOCK(awl->rx.a2w_pktl_lock);
 
-	pkts = pktlist->len;
-	if (pkts == 0) {
+	npkts = pktlist->len;
+	if (npkts == 0) {
 	    DHD_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
 	    return more;
 	}
 
 	skb = (struct sk_buff*)pktlist->head;
-	PKTLIST_RESET(pktlist);
+	if (npkts > rxbound) {
+	    struct sk_buff* nskb = skb;
+	    ppkts = npkts = rxbound;
+
+	    /* Unlink first npkts from the SLL */
+	    do {
+	        nskb = nskb->prev;
+	    } while (--ppkts);
+
+	    pktlist->head = nskb;
+	    pktlist->len -= npkts;
+	} else {
+	    PKTLIST_RESET(pktlist);
+	}
 
 	DHD_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
 
 	/* Let dhd_bus process the packets */
 	DHD_PERIM_LOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
 
-	while (pkts--) {
+	do {
 	    struct sk_buff* nskb = skb->prev;
 	    skb->next = skb->prev = NULL;
 	    dhd_bus_rx_frame(dhdp->bus, skb, ARCHER_WLAN_INTF_IDX(skb), 1);
 	    awl->rx.a2w_fwd_packets++;
 	    awl->rx.a2w_fwd_calls++;
 	    skb = nskb;
-	}
+	} while (--npkts);
 
 	DHD_PERIM_UNLOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+
+	if (pktlist->len != 0) {
+	    more = true;
+	}
 
 	return more;
 }
@@ -552,8 +713,14 @@ dhd_awl_upstream_add(dhd_pub_t *dhdp, void *pkt, uint ifidx)
 
 	awl->rx.w2a_rx_packets++;
 
-#if defined(DHD_AWL_RX_LITE)
-	{
+	/* pass through mode or flow cache disabled, process within wlan thread */
+	if ((awl->rx.mode == DHD_AWL_RX_MODE_PT) || fcacheStatus() == 0) {
+	    dhd_bus_rx_frame(dhdp->bus, pkt, ifidx, 1);
+	    awl->rx.w2a_flt_packets++;
+	    return BCME_OK;
+	}
+
+	if (awl->rx.mode == DHD_AWL_RX_MODE_LITE) {
 	    struct ether_header *eh;
 	    uint16 eth_type;
 	    /*
@@ -577,7 +744,6 @@ dhd_awl_upstream_add(dhd_pub_t *dhdp, void *pkt, uint ifidx)
 	        return BCME_OK;
 	    }
 	}
-#endif /* DHD_AWL_RX_LITE */
 
 	/* Prepare SKB for forwarding to Archer */
 	skb = PKTTONATIVE(dhdp->osh, pkt);
@@ -627,9 +793,10 @@ dhd_awl_dump(dhd_pub_t *dhdp, struct bcmstrbuf *b)
 	    awl->rx.w2a_rx_packets, awl->rx.w2a_flt_packets,
 	    awl->rx.w2a_fwd_packets, awl->rx.w2a_fwd_calls,
 	    awl->rx.w2a_chn_packets, awl->rx.w2a_max_chn);
-	bcm_bprintf(b, " A2W List [rxd %lu drp %lu fwd %lu cls %lu]\n",
+	bcm_bprintf(b, " A2W List [rxd %lu drp %lu fwd %lu cls %lu chn %lu/%lu]\n",
 	    awl->rx.a2w_rx_packets, awl->rx.a2w_flt_packets,
-	    awl->rx.a2w_fwd_packets, awl->rx.a2w_fwd_calls);
+	    awl->rx.a2w_fwd_packets, awl->rx.a2w_fwd_calls,
+	    awl->rx.a2w_chn_packets, awl->rx.a2w_max_chn);
 }
 
 /**
@@ -642,22 +809,31 @@ dhd_awl_attach(dhd_pub_t *dhdp, uint unit)
 {
 	dhd_awl_t *awl = DHD_AWL_CB(dhdp);
 	archer_wlan_rx_miss_handler_t a2w_flow_miss_handler = dhd_awl_rx_flow_miss_handler_dhd_dpc;
+	int rxmode = DHD_AWL_RX_MODE_PT;
 
 	DHD_AWL_PTRACE("dhd%d_awl: dhdp 0x%p", unit, dhdp);
 
-
 	memset(awl, 0, sizeof(dhd_awl_t));
 	awl->tx.mode = 1;
+
 #if defined(DHD_AWL_RX)
-#if defined(DHD_AWL_RX_LITE)
-	awl->rx.mode = DHD_AWL_RX_MODE_LITE;
-	a2w_flow_miss_handler = dhd_awl_rx_flow_miss_handler_archer;
-#else /* DHD_AWL_RX_LITE */
-	awl->rx.mode = DHD_AWL_RX_MODE_FULL;
-#endif /* DHD_AWL_RX_LITE */
-#else /* !DHD_AWL_RX */
-	awl->rx.mode = DHD_AWL_RX_MODE_PT;
-#endif /* !DHD_AWL_RX */
+	{
+	    char varname[] = "wlXX_awl_rxmode";
+	    char *var;
+	    rxmode = DHD_AWL_RX_MODE_FULL;
+
+	    snprintf(varname, sizeof(varname), "wl%d_awl_rxmode", unit);
+	    var = getvar(NULL, varname);
+	    if (var) {
+	        rxmode =  bcm_strtoul(var, NULL, 0);
+	    }
+	}
+#endif /* DHD_AWL_RX */
+
+	if (rxmode == DHD_AWL_RX_MODE_LITE) {
+	    a2w_flow_miss_handler = dhd_awl_rx_flow_miss_handler_archer;
+	}
+	awl->rx.mode = rxmode;
 
 	awl->rx.bound = DHD_AWL_RX_PKT_BOUND;
 

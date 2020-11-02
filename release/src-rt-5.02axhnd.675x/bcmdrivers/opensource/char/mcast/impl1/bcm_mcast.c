@@ -44,6 +44,7 @@ written consent.
 #include <linux/ppp_defs.h>
 #include <linux/list.h>
 #include <linux/ipv6.h>
+#include <linux/blog.h>
 #include <net/ip6_checksum.h>
 #include <skb_defines.h>
 
@@ -96,109 +97,6 @@ int bcm_mcast_control_filter(void *grp, int proto)
 }
 EXPORT_SYMBOL(bcm_mcast_control_filter);
 
-int bcm_mcast_snoop_update_entry(int                proto,
-                                 struct net_device *parent_dev,
-                                 struct net_device *dst_dev,
-                                 struct net_device *from_dev,
-                                 int                wan_ops,
-                                 void              *rxGrp, 
-                                 void              *txGrp,
-                                 void              *src,
-                                 void              *rep,
-                                 unsigned char     *repMac,
-                                 unsigned char      rep_proto_ver,
-                                 uint32_t           rep_info,
-                                 int                mode, 
-                                 uint16_t           tci, 
-                                 int                lanppp,
-                                 int                excludePort,
-                                 char               enRtpSeqCheck)
-{
-   bcm_mcast_ifdata *pif;
-   int               rv = -1;
-
-   rcu_read_lock();
-   pif = bcm_mcast_if_lookup(parent_dev->ifindex);
-   if (NULL == pif)
-   {
-      rcu_read_unlock();
-      __logNotice("Unable to find parent interface %s", parent_dev->name);
-      return rv;
-   }
-
-   do
-   {
-#if defined(CONFIG_BR_IGMP_SNOOP)
-      if ( BCM_MCAST_PROTO_IPV4 == proto )
-      {
-         rv = bcm_mcast_igmp_add(from_dev, wan_ops, pif, dst_dev, rxGrp, txGrp, 
-                                 rep, repMac, rep_proto_ver, mode, tci, src, 
-                                 lanppp, excludePort, enRtpSeqCheck, rep_info);
-         break;
-      }
-#endif
-#if defined(CONFIG_BR_MLD_SNOOP)
-      if ( BCM_MCAST_PROTO_IPV6 == proto )
-      {
-         rv = bcm_mcast_mld_add(from_dev, wan_ops, pif, dst_dev, rxGrp, rep,
-                                repMac, rep_proto_ver, mode, tci, src, lanppp, 
-                                rep_info);
-         break;
-      }
-#endif
-   } while (0);
-   rcu_read_unlock();
-   return rv;
-}
-EXPORT_SYMBOL(bcm_mcast_snoop_update_entry);
-
-int bcm_mcast_snoop_remove_entry(int                proto,
-                                 struct net_device *parent_dev,
-                                 struct net_device *dst_dev,
-                                 struct net_device *from_dev,
-                                 void              *rxGrp, 
-                                 void              *txGrp,
-                                 void              *src,
-                                 void              *rep,
-                                 uint32_t           rep_info,
-                                 int                mode)
-{
-   bcm_mcast_ifdata *pif;
-   int               rv = -1;
-
-   rcu_read_lock();
-   pif = bcm_mcast_if_lookup(parent_dev->ifindex);
-   if (NULL == pif)
-   {
-      rcu_read_unlock();
-      __logNotice("Unable to find parent interface %s", parent_dev->name);
-      return rv;
-   }
-
-   do
-   {
-#if defined(CONFIG_BR_IGMP_SNOOP)
-      if ( BCM_MCAST_PROTO_IPV4 == proto )
-      {
-         rv = bcm_mcast_igmp_remove(from_dev, pif, dst_dev, rxGrp, txGrp, rep, 
-                                    mode, src, rep_info);
-         break;
-      }
-#endif
-#if defined(CONFIG_BR_MLD_SNOOP)
-      if ( BCM_MCAST_PROTO_IPV6 == proto )
-      {
-         rv = bcm_mcast_mld_remove(from_dev, pif, dst_dev, rxGrp, rep, mode, 
-                                   src, rep_info);
-         break;
-      }
-#endif
-   } while (0);
-   rcu_read_unlock();
-   return rv;
-}
-EXPORT_SYMBOL(bcm_mcast_snoop_remove_entry);
-
 #if defined(CONFIG_BLOG) && (defined(CONFIG_BCM_WLAN) || defined(CONFIG_BCM_WLAN_MODULE))
 int bcm_mcast_wlan_client_disconnect_notifier(struct net_device *dev, char *mac)
 {
@@ -208,11 +106,18 @@ int bcm_mcast_wlan_client_disconnect_notifier(struct net_device *dev, char *mac)
 EXPORT_SYMBOL(bcm_mcast_wlan_client_disconnect_notifier);
 #endif
 
-static int bcm_mcast_fill_pkt_info(bcm_mcast_ifdata *pif, struct sk_buff *skb, void *pipvx, int proto, int len, t_BCM_MCAST_PKT_INFO *pinfo, int flags)
+static int bcm_mcast_fill_pkt_info(bcm_mcast_ifdata *pif, 
+                                   struct sk_buff *skb, 
+                                   void *pipvx, 
+                                   int proto, 
+                                   int len, 
+                                   t_BCM_MCAST_PKT_INFO *pinfo, 
+                                   int flags)
 {
    int queued = 0;
 
    memcpy(pinfo->repMac, skb_mac_header(skb)+ ETH_ALEN, ETH_ALEN);
+   pinfo->to_acceldev_ifi = skb->in_dev->ifindex;
    pinfo->rxdev_ifi = skb->dev->ifindex;
    pinfo->parent_ifi = pif->ifindex;
    pinfo->data_len = len;
@@ -511,12 +416,16 @@ static int bcm_mcast_receive_igmp_filter(bcm_mcast_ifdata *pif, struct igmphdr *
    return 0;
 }
 
-static int bcm_mcast_receive_igmp(bcm_mcast_ifdata *pif, struct sk_buff *skb_org, int iph_offset, int flags)
+static int bcm_mcast_receive_igmp(bcm_mcast_ifdata *pif, 
+                                  struct sk_buff *skb_org, 
+                                  int iph_offset, 
+                                  int flags)
 {
    struct iphdr   *pip;
    struct igmphdr *pigmp;
    int             len;
    int             rv;
+   unsigned int    grpaddr=0;
 
    pip = (struct iphdr *)(skb_network_header(skb_org) + iph_offset);
 
@@ -525,10 +434,26 @@ static int bcm_mcast_receive_igmp(bcm_mcast_ifdata *pif, struct sk_buff *skb_org
    if ( len > skb_headlen(skb_org) )
    {
       /* non-linear skb - stop processing */
+       __logError("non-linear skb - stop processing");
       return 0;
    }
 
    pigmp = (struct igmphdr *)(skb_network_header(skb_org) + iph_offset + (pip->ihl * 4));
+
+   if (pigmp->type == IGMPV2_HOST_MEMBERSHIP_REPORT) 
+   {
+       grpaddr = ntohl(pigmp->group);
+   }
+   else if (pigmp->type == IGMPV3_HOST_MEMBERSHIP_REPORT) 
+   {
+       struct igmpv3_report *pigmpv3rep = (struct igmpv3_report *)pigmp;
+       grpaddr = ntohl(pigmpv3rep->grec[0].grec_mca);
+   }
+
+   __logDebug("Received IGMP %s in_dev %s dstip 0x%x srcip 0x%x", 
+              IGMP_TYPE_STR(pigmp->type), skb_org->in_dev->name, 
+              ntohl(pip->daddr), ntohl(pip->saddr));
+
    switch (pigmp->type)
    {
       case IGMP_HOST_MEMBERSHIP_QUERY:
@@ -590,7 +515,13 @@ static int bcm_mcast_receive_igmp(bcm_mcast_ifdata *pif, struct sk_buff *skb_org
          if ( NULL != skb2 )
          {
             pinfo = (t_BCM_MCAST_PKT_INFO *)skb2->data;
-            rv = bcm_mcast_fill_pkt_info(pif, skb_org, pip, BCM_MCAST_PROTO_IPV4, len, pinfo, flags);
+            rv = bcm_mcast_fill_pkt_info(pif, 
+                                         skb_org, 
+                                         pip, 
+                                         BCM_MCAST_PROTO_IPV4, 
+                                         len, 
+                                         pinfo, 
+                                         flags);
             skb_copy_bits(skb_org, iph_offset + (pip->ihl * 4), &pinfo->pkt[0], len);
             bcm_mcast_netlink_send_skb(skb2, BCM_MCAST_MSG_IGMP_PKT);
          }
@@ -606,7 +537,11 @@ static int bcm_mcast_receive_icmp_filter(bcm_mcast_ifdata *pif, struct icmp6hdr 
    return 0;
 }
 
-static int bcm_mcast_receive_icmp(bcm_mcast_ifdata *pif, struct sk_buff *skb_org, int iph_offset, int icmpv6_offset, int flags)
+static int bcm_mcast_receive_icmp(bcm_mcast_ifdata *pif,
+                                  struct sk_buff *skb_org,
+                                  int iph_offset,
+                                  int icmpv6_offset,
+                                  int flags)
 {
    struct ipv6hdr  *pipv6;
    struct icmp6hdr *picmpv6;
@@ -619,6 +554,7 @@ static int bcm_mcast_receive_icmp(bcm_mcast_ifdata *pif, struct sk_buff *skb_org
    if ( len > skb_headlen(skb_org) )
    {
       /* non-linear skb - stop processing */
+       __logError("non-linear skb - stop processing");
       return 0;
    }
 
@@ -626,11 +562,18 @@ static int bcm_mcast_receive_icmp(bcm_mcast_ifdata *pif, struct sk_buff *skb_org
    {
        /* Error, IPV6 payload length < OPT header length + ICMP header length
           icmpv6_offset - sizeof(*pipv6) provides the OPT header length */
+       __logError("IPV6 payload length < OPT header length + ICMP header length");
        return -1;
    }
 
    /* verify that we can read the ICMP header */
    picmpv6 = (struct icmp6hdr *)(skb_network_header(skb_org) + icmpv6_offset);
+
+   __logDebug("Received MLD %s rxdev %s dstip %x...%x srcip %x...%x", 
+              MLD_TYPE_STR(picmpv6->icmp6_type),
+              skb_org->in_dev->name, 
+              ntohs(pipv6->daddr.s6_addr16[0]), pipv6->daddr.s6_addr[15],
+              ntohs(pipv6->saddr.s6_addr16[0]), pipv6->saddr.s6_addr[15]);
 
    switch (picmpv6->icmp6_type)
    {
@@ -687,7 +630,13 @@ static int bcm_mcast_receive_icmp(bcm_mcast_ifdata *pif, struct sk_buff *skb_org
          if ( NULL != skb2 )
          {
             pinfo = (t_BCM_MCAST_PKT_INFO *)skb2->data;
-            rv = bcm_mcast_fill_pkt_info(pif, skb_org, pipv6, BCM_MCAST_PROTO_IPV6, len, pinfo, flags);
+            rv = bcm_mcast_fill_pkt_info(pif,
+                                         skb_org,
+                                         pipv6,
+                                         BCM_MCAST_PROTO_IPV6,
+                                         len,
+                                         pinfo,
+                                         flags);
             skb_copy_bits(skb_org, icmpv6_offset, &pinfo->pkt[0], len);
             bcm_mcast_netlink_send_skb(skb2, BCM_MCAST_MSG_MLD_PKT);
          }
@@ -727,6 +676,14 @@ static int bcm_mcast_receive(int ifindex, struct sk_buff *skb, int is_routed)
          return rv;
       }
 
+      if ( !skb->in_dev ) 
+      {
+          __logError("skb->in_dev NULL quit processing, skb->dev %s", skb->dev->name);
+          return rv;
+      }
+
+      __logInfo("Mcast pkt received from indev %s ifindex %d protocol 0x%x\n", 
+                skb->in_dev->name, skb->in_dev->ifindex, htons(proto));
       do
       {
          if (proto == htons(ETH_P_IP) )
@@ -780,7 +737,7 @@ static int bcm_mcast_receive(int ifindex, struct sk_buff *skb, int is_routed)
 
             if (pip->protocol == IPPROTO_IGMP)
             {
-               rv = bcm_mcast_receive_igmp(pif, skb, iph_offset, flags);
+                rv = bcm_mcast_receive_igmp(pif, skb, iph_offset, flags);
             }
          }
 #if defined(CONFIG_BR_MLD_SNOOP)
@@ -842,9 +799,13 @@ static int bcm_mcast_receive(int ifindex, struct sk_buff *skb, int is_routed)
                }
 
                if (opt_hdr->nexthdr == IPPROTO_ICMPV6)
-               {               
+               {
                   int icmpv6_offset = iph_offset + sizeof(*pipv6) + ipv6_optlen(opt_hdr);
-                  rv = bcm_mcast_receive_icmp(pif, skb, iph_offset, icmpv6_offset, flags);
+                  rv = bcm_mcast_receive_icmp(pif,
+                                              skb,
+                                              iph_offset,
+                                              icmpv6_offset,
+                                              flags);
                }
             }
          }
@@ -914,7 +875,7 @@ int bcm_mcast_should_deliver(int ifindex, const struct sk_buff *skb, struct net_
                   /* do not forward queries to a WAN interface */
                   if (pigmp->type == IGMP_HOST_MEMBERSHIP_QUERY) 
                   {
-                     __logDebug("discard IGMP report from WAN");
+                     __logDebug("discard IGMP query destined to WAN dev %s", dst_dev->name);
                      rv = 0;
                   }
                }
@@ -929,7 +890,8 @@ int bcm_mcast_should_deliver(int ifindex, const struct sk_buff *skb, struct net_
                       (pigmp->type != IGMP_HOST_MEMBERSHIP_QUERY) && 
                       (((NULL == destLowerPort) || (0 == destLowerPort->querying_port)) && !dst_mrouter) )
                   {
-                     __logDebug("discard IGMP report from LAN");
+                     __logDebug("do not forward IGMP %s to dev %s dstip 0x%x", 
+                                IGMP_TYPE_STR(pigmp->type), dst_dev->name, ntohl(pip->daddr));
                      rv = 0;
                   }
                   spin_unlock_bh(&pif->config_lock);
@@ -995,7 +957,7 @@ int bcm_mcast_should_deliver(int ifindex, const struct sk_buff *skb, struct net_
                      /* do not forward queries to a WAN interface */
                      if (picmp->icmp6_type == ICMPV6_MGM_QUERY) 
                      {
-                        __logDebug("discard MLD report from WAN");
+                        __logDebug("discard MLD query destined to WAN dev %s", dst_dev->name);
                         rv = 0;
                      }
                   }
@@ -1007,7 +969,6 @@ int bcm_mcast_should_deliver(int ifindex, const struct sk_buff *skb, struct net_
                      if ( pif->mld_snooping && (picmp->icmp6_type != ICMPV6_MGM_QUERY) && 
                          (((NULL == destLowerPort) || (0 == destLowerPort->mld_querying_port)) && !dst_mrouter) )
                      {
-                        __logDebug("discard MLD report from LAN");
                         rv = 0;
                      }
                      spin_unlock_bh(&pif->config_lock);

@@ -42,6 +42,7 @@ written consent.
 #include <pmc_drv.h>
 #include <shared_utils.h>
 
+#include <pcie_hcd.h>
 #include <pcie_common.h>
 #include <pcie-bcm963xx.h>
 #include <pcie-vcore.h>
@@ -96,6 +97,7 @@ struct pcie_vdev {
 	struct resource      owin;
 	bool                 owin_inited;
 	bool                 enabled;
+	int                  apon;
 	int                  irq;
 };
 
@@ -330,14 +332,14 @@ static int pcie_vcore_config_write(struct pci_bus *bus, unsigned int devfn,
 	if (pcie_vcore_access_valid(pvcore, bus->number, slot, PCI_FUNC(devfn), &devidx) == FALSE) {
 	    HCD_LOG("%s: invalid access bus %d, slot %d, func %d where %d\r\n",
 	        __FUNCTION__, bus->number, slot, PCI_FUNC(devfn), where);
-		goto done;
+	    goto done;
 	}
 
 	if (where >= PCI_CFG_REGS_SIZE) {
 	    HCD_ERROR("%s: offset [%d] exceeds config space size [%d]\r\n",
 	        __FUNCTION__, where, PCI_CFG_REGS_SIZE);
 	    ret = PCIBIOS_BAD_REGISTER_NUMBER;
-		goto done;
+	    goto done;
 	}
 
 	addr =  (uint8*)(&pvcore->dev[devidx].cfg) + where;
@@ -392,6 +394,9 @@ static int pcie_vcore_setup_res(struct pcie_vcore *pvcore,
 
 	for (idx = 0; idx < pvcore->num_dev; idx++) {
 	    pvdev = &pvcore->dev[idx];
+	    if (pvdev->enabled == FALSE) {
+	        continue;
+	    }
 	    err =  devm_request_resource(dev, &iomem_resource, &pvdev->owin);
 	    if (err) {
 	        HCD_ERROR("vcore [%d] dev [%d] pcie failed to create owin resource: [%d]\r\n",
@@ -510,7 +515,7 @@ static int pcie_vcore_parse_dt(struct pcie_vcore *pvcore)
 	            /* PCIe force power on setting */
 	            err = of_property_read_u8(np, "brcm,apon", &dt_val);
 	            if (err == 0) {
-	                pdrv->hc_cfg.apon = (dt_val > HCD_APON_OFF) ? HCD_APON_DEFAULT : dt_val;
+	                pdrv->hc_cfg.apon = dt_val;
 	            }
 	            if (err) {
 	                HCD_WARN("No DT entry for apon, using defaults\n");
@@ -741,6 +746,8 @@ int pcie_vcore_probe(struct platform_device *pdev)
 	struct device_node *np = pdev->dev.of_node;
 	uint32 core = (uint32)pdev->id;
 	int	err = 0;
+	int devidx;
+	bool apon_off = TRUE;
 	struct pci_bus *bus;
 	LIST_HEAD(res);
 
@@ -783,6 +790,7 @@ int pcie_vcore_probe(struct platform_device *pdev)
 	/* Use the platform device id as core_id */
 	pdrv->core_id = pdev->id;
 	bcm963xx_pcie_init_hc_cfg(&pvcore->drv);
+	pcie_hcd_procfs_init(&pvcore->drv);
 
 	/* Initialize  hcd elements */
 	pdrv->core_id = core;
@@ -804,10 +812,31 @@ int pcie_vcore_probe(struct platform_device *pdev)
 	}
 
 	/* if Configured, skip port enumeration and power off the port */
-	if (pvcore->drv.hc_cfg.apon == HCD_APON_OFF) {
-	    HCD_LOG("Skip vcore [%d] due to apon setting [%d]\r\n", core, pvcore->drv.hc_cfg.apon);
+	for (devidx = 0; devidx < pvcore->num_dev; devidx++) {
+	    pvcore->dev[devidx].apon = pvcore->drv.hc_cfg.apon;
+	    pvcore->dev[devidx].apon >>= (devidx * HCD_APON_SHIFT);
+	    pvcore->dev[devidx].apon &= HCD_APON_MASK;
+	    if (pvcore->dev[devidx].apon != HCD_APON_OFF)
+	        apon_off = FALSE;
+	}
+
+	if (apon_off == TRUE) {
+	    HCD_LOG("Skip vcore [%d] due to apon setting [0x%x]\r\n",
+	        core, pvcore->drv.hc_cfg.apon);
 	    err = -ENODEV;
 	    goto error;
+	}
+
+	/* if Configured, skip device enumeration and power off the port */
+	/* Force power off the internal WiFi devices */
+	for (devidx = 0; devidx < pvcore->num_dev; devidx++) {
+	    if ((pvcore->dev[devidx].enabled == TRUE) &&
+	        (pvcore->dev[devidx].apon >= HCD_APON_OFF)) {
+	         /* OFF, OFF_WITH_DOMAIN */
+	         pcie_vcore_pwrdn_dev(pvcore, devidx);
+	         HCD_LOG("vcore [%d] vdev [%d] powered down due to apon setting [0x%x]\r\n",
+	            core, devidx, pvcore->drv.hc_cfg.apon);
+	    }
 	}
 
 	/* Setup PCIe core memory window */
@@ -840,7 +869,7 @@ int pcie_vcore_probe(struct platform_device *pdev)
 
 	pci_scan_child_bus(bus);
 
-	 pci_assign_unassigned_bus_resources(bus);
+	pci_assign_unassigned_bus_resources(bus);
 
 	pci_bus_add_devices(bus);
 
@@ -900,6 +929,10 @@ int  pcie_vcore_remove(struct platform_device *pdev)
 	        pcie_vcore_pwrdn_dev(pvcore, devidx);
 	    }
 	}
+
+	/* Put back the global core id */
+	pvcore->drv.core_id = pvcore->drv.pdev->id;
+	pcie_hcd_procfs_deinit(&pvcore->drv);
 
 	/* Free the control block */
 	kfree(pvcore);

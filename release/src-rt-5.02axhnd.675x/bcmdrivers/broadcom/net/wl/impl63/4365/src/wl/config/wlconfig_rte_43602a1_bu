@@ -1,0 +1,144 @@
+# Broadcom 802.11ac Networking Device Driver Configuration file
+#
+# Copyright 2020 Broadcom
+#
+# This program is the proprietary software of Broadcom and/or
+# its licensors, and may only be used, duplicated, modified or distributed
+# pursuant to the terms and conditions of a separate, written license
+# agreement executed between you and Broadcom (an "Authorized License").
+# Except as set forth in an Authorized License, Broadcom grants no license
+# (express or implied), right to use, or waiver of any kind with respect to
+# the Software, and Broadcom expressly reserves all rights in and to the
+# Software and all intellectual property rights therein.  IF YOU HAVE NO
+# AUTHORIZED LICENSE, THEN YOU HAVE NO RIGHT TO USE THIS SOFTWARE IN ANY
+# WAY, AND SHOULD IMMEDIATELY NOTIFY BROADCOM AND DISCONTINUE ALL USE OF
+# THE SOFTWARE.
+#
+# Except as expressly set forth in the Authorized License,
+#
+# 1. This program, including its structure, sequence and organization,
+# constitutes the valuable trade secrets of Broadcom, and you shall use
+# all reasonable efforts to protect the confidentiality thereof, and to
+# use this information only in connection with your use of Broadcom
+# integrated circuit products.
+#
+# 2. TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED
+# "AS IS" AND WITH ALL FAULTS AND BROADCOM MAKES NO PROMISES,
+# REPRESENTATIONS OR WARRANTIES, EITHER EXPRESS, IMPLIED, STATUTORY, OR
+# OTHERWISE, WITH RESPECT TO THE SOFTWARE.  BROADCOM SPECIFICALLY
+# DISCLAIMS ANY AND ALL IMPLIED WARRANTIES OF TITLE, MERCHANTABILITY,
+# NONINFRINGEMENT, FITNESS FOR A PARTICULAR PURPOSE, LACK OF VIRUSES,
+# ACCURACY OR COMPLETENESS, QUIET ENJOYMENT, QUIET POSSESSION OR
+# CORRESPONDENCE TO DESCRIPTION. YOU ASSUME THE ENTIRE RISK ARISING
+# OUT OF USE OR PERFORMANCE OF THE SOFTWARE.
+#
+# 3. TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL
+# BROADCOM OR ITS LICENSORS BE LIABLE FOR (i) CONSEQUENTIAL, INCIDENTAL,
+# SPECIAL, INDIRECT, OR EXEMPLARY DAMAGES WHATSOEVER ARISING OUT OF OR
+# IN ANY WAY RELATING TO YOUR USE OF OR INABILITY TO USE THE SOFTWARE EVEN
+# IF BROADCOM HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES; OR (ii)
+# ANY AMOUNT IN EXCESS OF THE AMOUNT ACTUALLY PAID FOR THE SOFTWARE ITSELF
+# OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS SHALL APPLY
+# NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
+#
+# $Id: wlconfig_rte_43602a1_bu $
+#
+# NOTE:
+# This file is for the 43602a1 RAM.
+#
+
+# basic common code
+WL=1
+
+# Basic modes
+STA=1
+#AP=1
+#APSTA=1
+
+# Extensible STA
+#EXT_STA_DONGLE=0
+#WL_ASSOC_RECREATE=0
+#DHDOID=0
+
+# WAPI features
+#BCMWAPI_WPI=1
+#BCMWAPI_WAI=1
+
+# PLT
+#WLPLT=1
+
+# promisc mode
+PROMISC=0
+WL_MONITOR=0
+
+# ndis for XP and Winmob 6.0 support, OIDs are handled in Host
+#WL_OIDS=0
+ADV_PS_POLL=1
+
+# coex stuff
+#BCMECICOEX=1
+#WLCOEX=1
+
+# bus
+SOCI_AI=1
+BCMIPXOTP=1
+
+#BCMAUTH_PSK=0
+#BCMSUP_PSK=0
+
+WL11D=0
+WL11N=1
+WL11K=0
+WLCNT=1
+WME=1
+#BCMCCX=1
+#WLCAC=1
+WLAMPDU=1
+# AQM replaces the following two
+WLAMPDU_UCODE=0
+WLAMPDU_HW=0
+WLAMPDU_AQM=1
+WLAMSDU=1
+#WLP2P=1
+# This is by default enabled for APSTA/BTAMP, need not explicitly enable.
+APCS=0
+WLRM=1
+WIFI_ACT_FRAME=0
+PACKET_FILTER=1
+RECEIVE_THROTTLE=0
+DELTASTATS=0
+WLCNTSCB=0
+BCMOTP=1
+KEEP_ALIVE=1
+NO_BCMINTERNAL=1
+#ap power save feature
+RADIO_PWRSAVE=0
+
+#PNO=1
+#WLPFN=1
+#MBSS=1
+#WLBTAMP=1
+
+# ????
+#TOE=1
+
+#ARPOE=1
+WLCQ=0
+WDS=0
+WLFBT=0
+
+WL11AC=1
+
+#BCMNVRAMW=0
+#BCMNVRAMR=1
+
+PKTC=1
+PKTC_DONGLE=1
+BCMPHYCORENUM=2
+WLNON_CLEARING_RESTRICTED_CHANNEL_BEHAVIOR=0
+
+BCMPHYCORENUM=3
+
+BCMRADIOREV=0x7
+BCMRADIOVER=0x0
+BCMRADIOID=0x2069

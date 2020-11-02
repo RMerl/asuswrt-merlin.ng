@@ -89,6 +89,8 @@ extra/bcm_enet.ko
 extra/bcm_enet_sysport.ko
 # moving pktrunner after bcm_enet to get better FlowCache ICache performance
 extra/pktrunner.ko
+extra/nciLservices.ko
+extra/nciexLinuxETH.ko
 extra/nciTMSkmod.ko
 extra/bcmsw.ko && ifconfig bcmsw up
 extra/bcm_usb_dev.ko

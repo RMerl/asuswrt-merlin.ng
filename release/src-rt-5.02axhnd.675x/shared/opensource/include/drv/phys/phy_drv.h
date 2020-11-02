@@ -136,6 +136,7 @@ typedef struct phy_dev_s
     int reset_gpio;
     int reset_gpio_active_hi;
     int idle_stuffing;
+    void *macsec_dev;
     /* For cascaded PHY */
     void *sw_port;
     struct phy_dev_s *cascade_next;
@@ -191,6 +192,7 @@ typedef struct phy_drv_s
     int (*cable_diag_get) (phy_dev_t *phy_dev, int *enable);
     int (*auto_mdix_set) (phy_dev_t *phy_dev, int enable);
     int (*auto_mdix_get) (phy_dev_t *phy_dev, int *enable);
+    int (*macsec_oper) (phy_dev_t *phy_dev, void *data);
 } phy_drv_t;
 
 typedef struct
@@ -462,13 +464,13 @@ static inline int phy_dev_read_status(phy_dev_t *phy_dev)
     if (phy_dev->speed == speed)
         goto Exit;
 
-    if (!phy_dev->cascade_next)
+    if (!phy_dev->cascade_prev)
         goto Exit;
 
-    if (!phy_dev->cascade_next->phy_drv->speed_set)
+    if (!phy_dev->cascade_prev->phy_drv->speed_set)
         goto Exit;
 
-    if ((ret = phy_dev->cascade_next->phy_drv->speed_set(phy_dev->cascade_next, phy_dev->speed, phy_dev->duplex)))
+    if ((ret = phy_dev->cascade_prev->phy_drv->speed_set(phy_dev->cascade_prev, phy_dev->speed, phy_dev->duplex)))
         goto Exit;
 #endif
 
@@ -581,12 +583,18 @@ static inline phy_speed_t phy_caps_to_max_speed(uint32_t caps)
 
 static inline uint32_t phy_speed_to_caps(phy_speed_t speed, phy_duplex_t duplex)
 {
-    static uint32_t caps[] = {PHY_CAP_AUTONEG, PHY_CAP_10_FULL, PHY_CAP_100_FULL,
-        PHY_CAP_1000_FULL, PHY_CAP_2500, PHY_CAP_5000, PHY_CAP_10000};
+    static uint32_t caps[] = {
+        [PHY_SPEED_AUTO] = PHY_CAP_AUTONEG, 
+        [PHY_SPEED_10] = PHY_CAP_10_FULL, 
+        [PHY_SPEED_100] = PHY_CAP_100_FULL,
+        [PHY_SPEED_1000] = PHY_CAP_1000_FULL, 
+        [PHY_SPEED_2500] = PHY_CAP_2500, 
+        [PHY_SPEED_5000] = PHY_CAP_5000, 
+        [PHY_SPEED_10000] = PHY_CAP_10000};
     uint32_t cap;
 
     cap = caps[speed];
-    if (speed < PHY_SPEED_1000 && duplex != PHY_DUPLEX_FULL)
+    if (speed <= PHY_SPEED_1000 && speed != PHY_SPEED_AUTO && duplex != PHY_DUPLEX_FULL)
         cap >>= 1;
     return cap;
 }
@@ -904,6 +912,14 @@ static inline char *phy_get_speed_string(phy_speed_t speed)
 {
     static char *speedStr[] = {"Auto", "10M", "100M", "1G", "2.5G", "5G", "10G"};
     return speedStr[speed];
+}
+
+static inline int phy_dev_macsec_oper(phy_dev_t *phy_dev, void *data)
+{
+    if (!phy_dev->phy_drv->macsec_oper)
+        return 0;
+
+    return phy_dev->phy_drv->macsec_oper(phy_dev, data);
 }
 
 #endif

@@ -22,3 +22,5 @@ endmenu
 config BCM_IN_KERNEL
 	bool
 	default y
+
+source "Kconfig.asus"

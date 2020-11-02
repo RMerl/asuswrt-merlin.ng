@@ -148,6 +148,8 @@ typedef void  (* gbpm_add_ref_hook_t) ( void *, int );
     GBPM_DECL(alloc_buf)                    \
     GBPM_DECL(free_buf)                     \
     /* --- BPM SKB POOL --- */              \
+    GBPM_DECL(total_skb)                    \
+    GBPM_DECL(avail_skb)                    \
     GBPM_DECL(attach_skb)                   \
     GBPM_DECL(alloc_skb)                    \
     GBPM_DECL(alloc_buf_skb_attach)         \
@@ -205,6 +207,8 @@ typedef void     (* gbpm_free_buf_hook_t)(void *);
 typedef void     (* gbpm_recycle_pNBuff_hook_t)(void *, unsigned long, uint32_t);
 
 /* --- BPM SKB POOL --- */
+typedef uint32_t (* gbpm_total_skb_hook_t)(void);
+typedef uint32_t (* gbpm_avail_skb_hook_t)(void);
 typedef void     (* gbpm_attach_skb_hook_t)(void *, void *, uint32_t);
 typedef void *   (* gbpm_alloc_skb_hook_t)(void);
 typedef void *   (* gbpm_alloc_buf_skb_attach_hook_t)(uint32_t);
@@ -286,6 +290,10 @@ static inline void gbpm_free_buf(void * buf_p)
         { return gbpm_g.free_buf(buf_p); }
 
 /* --- BPM SKB --- */
+static inline uint32_t gbpm_total_skb(void)
+        { return gbpm_g.total_skb(); }
+static inline uint32_t gbpm_avail_skb(void)
+        { return gbpm_g.avail_skb(); }
 static inline void gbpm_attach_skb(void *skbp, void *data, uint32_t datalen)
         { gbpm_g.attach_skb(skbp, data, datalen); }
 static inline void * gbpm_alloc_skb(void)

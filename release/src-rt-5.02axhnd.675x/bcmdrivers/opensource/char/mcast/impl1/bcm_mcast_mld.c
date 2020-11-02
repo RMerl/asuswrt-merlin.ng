@@ -764,6 +764,7 @@ int bcm_mcast_mld_add(struct net_device *from_dev,
                            int wan_ops,
                            bcm_mcast_ifdata *pif, 
                            struct net_device *dst_dev, 
+                           struct net_device *to_accel_dev, 
                            struct in6_addr *grp, 
                            struct in6_addr *rep,
                            unsigned char *repMac,
@@ -817,6 +818,7 @@ int bcm_mcast_mld_add(struct net_device *from_dev,
    BCM_IN6_ASSIGN_ADDR(&mc_fdb->src_entry, src);
    mc_fdb->src_entry.filt_mode = mode;
    mc_fdb->dst_dev = dst_dev;
+   mc_fdb->to_accel_dev = to_accel_dev;
    mc_fdb->lan_tci = tci;
    mc_fdb->wan_tci = 0;
    mc_fdb->num_tags = 0;
@@ -940,11 +942,15 @@ int bcm_mcast_mld_should_deliver(bcm_mcast_ifdata *pif,
    int                should_deliver;
    int                is_routed;
 
-   __logDebug("source device %s, dst device %s", src_dev->name, dst_dev->name);
-
    if (0 == bcm_mcast_mld_control_filter(&pipv6->daddr))
    {
       /* accept packet */
+      /*__logDebug("MLD Control filter Accept pkt: src %s, dst %s "
+                 "dstip6 %08x:%08x:%08x:%08x", src_dev->name, dst_dev->name, 
+                 ntohl(pipv6->daddr.in6_u.u6_addr32[0]), 
+                 ntohl(pipv6->daddr.in6_u.u6_addr32[1]), 
+                 ntohl(pipv6->daddr.in6_u.u6_addr32[2]), 
+                 ntohl(pipv6->daddr.in6_u.u6_addr32[3]));*/
       return 1;
    }
 
@@ -1030,6 +1036,10 @@ int bcm_mcast_mld_should_deliver(bcm_mcast_ifdata *pif,
       }
    }
    spin_unlock_bh(&pif->mc_mld_lock);
+   __logDebug("source device %s, dst device %s dstip %08x:%08x:%08x:%08x forward: %s", 
+              src_dev->name, dst_dev->name, ntohl(pipv6->daddr.in6_u.u6_addr32[0]), 
+              ntohl(pipv6->daddr.in6_u.u6_addr32[1]), ntohl(pipv6->daddr.in6_u.u6_addr32[2]), 
+              ntohl(pipv6->daddr.in6_u.u6_addr32[3]), should_deliver ? "Yes":"No");
    return should_deliver;
 }
 
@@ -1041,9 +1051,10 @@ static void bcm_mcast_mld_display_entry(struct seq_file *seq,
    int               first;
    int               tstamp;
 
-   seq_printf(seq, "%-6s %-6s %-7s %02d    0x%04x   0x%04x%04x", 
+   seq_printf(seq, "%-6s %-6s %-6s %-7s %02d    0x%04x   0x%04x%04x", 
               pif->dev->name, 
               dst->dst_dev->name, 
+              dst->to_accel_dev->name, 
               dst->from_dev->name, 
               dst->num_tags,
               ntohs(dst->lan_tci),
@@ -1134,7 +1145,7 @@ int bcm_mcast_mld_display(struct seq_file *seq, bcm_mcast_ifdata *pif)
          dev_put(lowerDev);
       }
    }
-   seq_printf(seq, "bridge device src-dev #tags lan-tci  wan-tci");
+   seq_printf(seq, "bridge dstdev dstaccdev src-dev #tags lan-tci  wan-tci");
    seq_printf(seq, "    group                               mode source");
 #if defined(CONFIG_BLOG)
    seq_printf(seq, "                              timeout reporter");

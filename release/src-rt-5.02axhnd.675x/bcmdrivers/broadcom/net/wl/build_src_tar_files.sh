@@ -126,10 +126,10 @@ if  [ $cus == "1" ]; then
   tar -czf - ${comengine}bcmdrivers/broadcom/net/wl/$imp_org | tar zxf -
   tar -czf - ${comengine}bcmdrivers/broadcom/net/wl/makefile.* | tar zxf -
   tar -czf - ${comengine}userspace/private/apps/wlan | tar zxf -
-  tar -zcvf wlan-all-src-$ver.tgz bcmdrivers userspace --exclude=$imp/wapi --exclude=$imp/router/wapi $exclude
+  tar -zcvf wlan-all-src-$ver.tgz --exclude=$imp/wapi --exclude=$imp/router/wapi $exclude bcmdrivers userspace
   rm -rf bcmdrivers userspace
 else
-  tar -zcvf wlan-all-src-$ver.tgz makefile.wlan.src makefile.dhd.src $imp_org --exclude=$imp/wapi --exclude=$imp/router/wapi $exclude
+  tar -zcvf wlan-all-src-$ver.tgz --exclude=$imp/wapi --exclude=$imp/router/wapi $exclude makefile.wlan.src makefile.dhd.src $imp_org
 fi
 
 if  [ $use_shared == "y" ]; then
@@ -144,24 +144,24 @@ fi
 
 if [ -d $imp/router ]; then
   tar -zcvf upnp-src-$ver.tgz \
+    $exclude \
     $imp/router/libupnp \
     $h_share \
     $h_crypt \
-    $h_wps \
-    $exclude
+    $h_wps
   tar -zcvf eapd-src-$ver.tgz \
+    $exclude \
     $imp/router/eapd \
     $h_share \
     $h_proto \
-    $h_nas \
-    $exclude
+    $h_nas
   tar -zcvf nas-src-$ver.tgz \
+    $exclude \
     $imp/router/nas \
     $h_share \
     $h_crypt \
     $h_proto \
-    $h_eapd \
-    $exclude
+    $h_eapd
   tar -zcvf bsd-src-$ver.tgz \
     $imp/router/bsd \
     $h_share
@@ -172,14 +172,15 @@ if [ -d $imp/router ]; then
   tar -zcvf wbd2-src-$ver.tgz \
     $imp_org/main/components/apps/wbd2
   tar -zcvf wps-src-$ver.tgz \
+    $exclude \
     $imp/wps \
     $h_share \
     $h_crypt \
     $h_proto \
     $h_eapd \
-    $h_upnp \
-    $exclude
+    $h_upnp
   tar -zcvf wl-src-$ver.tgz \
+    $exclude \
     makefile.wlan.src \
     makefile.dhd.src \
     $imp/dslcpe_wlan_minor_version \
@@ -196,8 +197,7 @@ if [ -d $imp/router ]; then
     $imp/wl \
     $imp/dhd \
     $imp/dhd/dongle \
-    $imp/common \
-    $exclude
+    $imp/common
     if  [ $use_shared == "y" ]; then
       echo Add shared directory to wl-src-$ver.tgz
       gunzip wl-src-$ver.tgz
@@ -209,12 +209,13 @@ if [ -d $imp/router ]; then
     fi
   if [ -d $imp/router/wapi ]; then
     echo Add WAPI Files to wl-wapi-$ver.tgz
-    tar -czvf wlan-wapi-$ver.tgz $imp/wapi $imp/router/wapi $exclude
+    tar -czvf wlan-wapi-$ver.tgz $exclude $imp/wapi $imp/router/wapi
   fi
 else
-  tar -zcvf nas-src-$ver.tgz  $imp/nas $exclude
-  tar -zcvf wsc-src-$ver.tgz  $imp/wsc $exclude
+  tar -zcvf nas-src-$ver.tgz  $exclude $imp/nas
+  tar -zcvf wsc-src-$ver.tgz  $exclude $imp/wsc
   tar -zcvf wl-src-$ver.tgz \
+    $exclude \
     makefile.wlan.src \
     makefile.dhd.src \
     $imp/dslcpe_wlan_minor_version \
@@ -225,8 +226,7 @@ else
     $imp/wl \
     $imp/dhd \
     $imp/dhd/dongle \
-    $imp/common \
-    $exclude
+    $imp/common
   if  [ $use_shared == "y" ]; then
     echo Add shared directory to wl-src-$ver.tgz
     gunzip wl-src-$ver.tgz

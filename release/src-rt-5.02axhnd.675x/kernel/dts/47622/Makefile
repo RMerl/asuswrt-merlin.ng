@@ -6,4 +6,5 @@ dtb-$(CONFIG_OF) += \
 dtb-$(CONFIG_BCM_HND_EAP) += 947622EAP.dtb
 dtb-$(CONFIG_BCM_HND_EAP) += 947622EAPS.dtb
 dtb-$(CONFIG_BCM_HND_EAP) += 947622EAP2.dtb
+dtb-$(CONFIG_BCM_HND_EAP) += 947622LEAP.dtb
 include $(DTS_DIR)/dts/make.dtbs

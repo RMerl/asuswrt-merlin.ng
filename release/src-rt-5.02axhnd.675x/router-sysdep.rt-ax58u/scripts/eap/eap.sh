@@ -56,7 +56,27 @@ disable_accelerators() {
 	fi
 }
 
+# If we are on a 47622, and we are running an EAP profile
+# (which we are, that's the only way this file gets included)
+# then archer traffic management is:
+# - enabled if we detect a switch
+# - disabled if we don't.
+# This is due to head-of-line blocking issue when transmitting
+# to Ethernet ports with different speeds or congestion levels.
+configure_tm() {
+	if ! type archerctl > /dev/null 2>&1 ; then
+		return
+	fi
+
+	if ethswctl -c switchinfo -v 1 > /dev/null 2>&1; then
+		archerctl sysport_tm enable
+	else
+		archerctl sysport_tm disable
+	fi
+}
+
 disable_accelerators
+configure_tm
 
 radio=0
 while [ $radio -lt $NUM_WL_INTF ];

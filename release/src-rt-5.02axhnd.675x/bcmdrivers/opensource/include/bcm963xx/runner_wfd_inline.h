@@ -1038,12 +1038,37 @@ wfd_bulk_fkb_get(unsigned long qid, unsigned long budget, void *priv)
     return rx_pktcnt;
 }
 
+#ifdef WFD_FLCTL
+/* FlowControl over-subscription */
+static inline bool ucast_should_drop_skb(wfd_object_t *wfd_p,
+        uint32_t avail_skb, uint16_t pkt_prio, uint16_t pkt_dest, unsigned long qid)
+{
+	if (avail_skb <= wfd_p->skb_exhaustion_hi) return true; // drop ALL
+    if ((avail_skb <= wfd_p->skb_exhaustion_lo) &&
+        (pkt_prio < wfd_p->pkt_prio_favor))    return true; // drop low prio
+
+#if defined(BCM_PKTFWD_FLCTL)
+    if ((wfd_p->pktlist_context_p->fctable != PKTLIST_FCTABLE_NULL) &&
+        (pkt_prio < wfd_p->pkt_prio_favor))
+    {
+        int32_t credits;
+        credits = __pktlist_fctable_get_credits(wfd_p->pktlist_context_p,
+                                                pkt_prio, pkt_dest);
+
+        if (credits <= 0) return true;      // drop BE/BK if no credits avail
+    }
+#endif /* BCM_PKTFWD_FLCTL */
+
+    return false;
+}
+#endif
+
 static inline uint32_t _wfd_bulk_skb_get(unsigned long qid,
         unsigned long budget, wfd_object_t *wfd_p, void **rx_pkts)
 {
     WFD_RING_S *pDescriptor = &wfd_rings[qid - first_pci_queue];
     volatile CPU_RX_DESCRIPTOR *pTravel;
-    CPU_RX_DESCRIPTOR rxDesc;
+    CPU_RX_DESCRIPTOR rxDesc; /* uncached pTravel copy into stack rxDesc */
     struct sk_buff *skb_p;
     uint8_t *data;
     uint32_t len;
@@ -1051,7 +1076,11 @@ static inline uint32_t _wfd_bulk_skb_get(unsigned long qid,
     unsigned int rx_pktcnt;
     uint16_t wl_key;
 #if defined(BCM_PKTFWD) && defined(BCM_PKTLIST)
-    uint16_t pktlist_prio, pktlist_dest;
+#ifdef WFD_FLCTL
+    unsigned long drop_credits = 0;
+    uint32_t avail_skb = gbpm_avail_skb(); /* BPM free skb availability */
+#endif
+    uint16_t pkt_prio, pkt_dest;
     pktlist_context_t *pktlist_context = wfd_p->pktlist_context_p;
 #endif
 
@@ -1065,16 +1094,44 @@ static inline uint32_t _wfd_bulk_skb_get(unsigned long qid,
     {
         pTravel = pDescriptor->head;
 
-        rxDesc.word2 = pTravel->word2; /* use ARM ldmia to read 4 words ? */
-        rxDesc.word2 = swap4bytes(rxDesc.word2);
+        rxDesc.word2 = swap4bytes(pTravel->word2); /* ownership, data */
 
         if (likely(rxDesc.ownership == OWNERSHIP_HOST))
         {
-            /* Perform all uncached memory accesses */
-            rxDesc.word0 = swap4bytes(pTravel->word0); /* packet len, ... */
+            rxDesc.ownership = 0; /* word2: clear the ownership bit */
 
-            rxDesc.ownership = 0; /* clear the ownership bit in word2 */
+            rxDesc.word3 = swap4bytes(pTravel->word3); /* wl_metadata, ... */
+
             data = (uint8_t *)phys_to_virt((phys_addr_t)rxDesc.word2);
+            wl_key = rxDesc.wl_metadata & PKTC_CHAIN_IDX_MASK; /* word3 */
+
+#if defined(BCM_PKTFWD) && defined(BCM_PKTLIST)
+            /* Fetch the 3b WLAN prio, Can IQPRIO be leveraged? */
+            pkt_prio = GET_WLAN_PRIORITY(rxDesc.wl_tx_prio); /* word3 */
+
+            if (rxDesc.is_ucast) /* word3 */
+            {
+                pkt_dest = PKTLIST_DEST(wl_key);
+
+#if defined(WFD_FLCTL)
+                if (ucast_should_drop_skb(wfd_p, avail_skb, pkt_prio, pkt_dest, qid))
+                {
+                    reset_current_descriptor(pDescriptor, data);
+
+                    if (++drop_credits >= WFD_FLCTL_DROP_CREDITS)
+                        --budget;
+                    gs_count_flctl_pkts[qid - first_pci_queue]++;
+
+                    continue;
+                }
+#endif /* WFD_FLCTL */
+
+            } else {
+                pkt_dest = PKTLIST_MCAST_ELEM; /* last col in 2d pktlist */
+            }
+#endif /* BCM_PKTFWD && BCM_PKTLIST */
+
+            rxDesc.word0 = swap4bytes(pTravel->word0); /* packet len, ... */
             len = (uint32_t)rxDesc.packet_length; /* word0 */
 
 #ifdef CONFIG_BCM_WFD_RATE_LIMITER
@@ -1107,8 +1164,6 @@ static inline uint32_t _wfd_bulk_skb_get(unsigned long qid,
             if (unlikely(skb_p == (struct sk_buff*)NULL))
                 goto bail_out_no_skb;
 
-            rxDesc.word3 = pTravel->word3; /* wl_metadata, ... */
-
             /* Post new buffer, and work on local stack rxDesc */
             reset_current_descriptor(pDescriptor, pNewBuf);
 
@@ -1119,15 +1174,10 @@ static inline uint32_t _wfd_bulk_skb_get(unsigned long qid,
 
             // bcm_prefetch(&skb_p->wl); repack sk_buff and delete this
 
-            rxDesc.word3 = swap4bytes(rxDesc.word3);
-
-            len = (uint32_t)rxDesc.packet_length; /* word0 */
-
 #if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
             /* Ensure not in cache, before processing */
             cache_invalidate_len_outer_first(data, len);
 #endif
-
             /* initialize the skb, and attach the data buffer of len */
             /* sets up dirty_p and initiates a bcm_prefetch(data) */
             wfd_skb_headerinit(skb_p, data, len); /* cb, wl_cb not zeroed */
@@ -1135,11 +1185,7 @@ static inline uint32_t _wfd_bulk_skb_get(unsigned long qid,
             skb_p->wl.ucast.nic.is_ucast = rxDesc.is_ucast;
             if (skb_p->wl.ucast.nic.is_ucast)
             {
-                wl_key = rxDesc.wl_metadata & PKTC_CHAIN_IDX_MASK;
                 skb_p->wl.ucast.nic.wl_chainidx = wl_key;
-#if defined(BCM_PKTFWD) && defined(BCM_PKTLIST)
-                pktlist_dest = PKTLIST_DEST(wl_key);
-#endif
 #if defined(CONFIG_BCM96838) || defined(CONFIG_BCM96848) || defined(CONFIG_BCM96858)
                 if (qid == first_pci_queue + WFD_BRIDGED_QUEUE_IDX)
                     skb_p->wl.ucast.nic.ssid_dst = rxDesc.ssid_vector; /* For bridged traffic only */
@@ -1148,23 +1194,27 @@ static inline uint32_t _wfd_bulk_skb_get(unsigned long qid,
             else
             {
                 skb_p->wl.mcast.ssid_vector = rxDesc.ssid_vector;
-#if defined(BCM_PKTFWD) && defined(BCM_PKTLIST)
-                pktlist_dest = PKTLIST_MCAST_ELEM; /* last col in 2d pktlist */ 
-#endif
             }
             DECODE_WLAN_PRIORITY_MARK(rxDesc.wl_tx_prio, skb_p->mark);
 
 #if defined(BCM_PKTFWD) && defined(BCM_PKTLIST)
             {
-                /* Fetch the 3b WLAN prio, by skipping the 1b IQPRIO */
-                pktlist_prio = GET_WLAN_PRIORITY(rxDesc.wl_tx_prio);
-
-                PKTFWD_ASSERT(pktlist_dest <= PKTLIST_MCAST_ELEM);
-                PKTFWD_ASSERT(pktlist_prio <  PKTLIST_PRIO_MAX);
+                PKTFWD_ASSERT(pkt_dest <= PKTLIST_MCAST_ELEM);
+                PKTFWD_ASSERT(pkt_prio <  PKTLIST_PRIO_MAX);
 
                 /* add to local pktlist */
-                __pktlist_add_pkt(pktlist_context, pktlist_prio, pktlist_dest,
+                __pktlist_add_pkt(pktlist_context, pkt_prio, pkt_dest,
                                   wl_key, (pktlist_pkt_t *)skb_p, SKBUFF_PTR);
+
+#if defined(BCM_PKTFWD_FLCTL)
+                if (pktlist_context->fctable != PKTLIST_FCTABLE_NULL)
+                {
+                    /* Decreament avail credits for pktlist */
+                    __pktlist_fctable_dec_credits(pktlist_context,
+                                                  pkt_prio, pkt_dest);
+                }
+#endif /* BCM_PKTFWD_FLCTL */
+
             }
 #else  /* ! (BCM_PKTFWD && BCM_PKTLIST) */
             rx_pkts[rx_pktcnt] = (void *)skb_p;

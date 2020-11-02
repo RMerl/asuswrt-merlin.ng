@@ -72,7 +72,7 @@
  *
  */
 #if !defined(CONFIG_BCM963268) && !defined(CONFIG_BCM96838) && !defined(CONFIG_BCM96848) && !defined(CONFIG_BCM963381)
-#define MDM_SHM_WLAN_EXTRA        (328 * 1024)
+#define MDM_SHM_WLAN_EXTRA        (448 * 1024)
 #else
 #define MDM_SHM_WLAN_EXTRA        (128 * 1024)
 #endif

@@ -199,11 +199,16 @@ void mac_hwapi_set_configuration(rdpa_emac emacNum,rdpa_emac_cfg_t *emac_cfg)
 
     UNIMAC_WRITE32_REG(emacNum,CMD,mCfgReg);
 
-    /*release the sw_reset bit*/
-    UNIMAC_WRITE_FIELD(emacNum,CMD,sw_reset,0);
 
     /* set the preamble length */
     UNIMAC_WRITE_FIELD(emacNum,TX_IPG_LEN,tx_ipg_len,emac_cfg->preamble_length);
+
+    /* when link up at 10M, hold unimac reset longer per ASIC team */
+    if (emac_cfg->rate == rdpa_emac_rate_10m)
+        udelay(1000);
+
+    /*release the sw_reset bit*/
+    UNIMAC_WRITE_FIELD(emacNum,CMD,sw_reset,0);
 }
 EXPORT_SYMBOL(mac_hwapi_set_configuration);
 
@@ -1671,7 +1676,7 @@ void mac_hwapi_set_eee(rdpa_emac emacNum, int32_t enable)
     UNIMAC_WRITE32_REG(emacNum, EEE_CTRL, eee_ctrl);
     UNIMAC_WRITE32_REG(emacNum, EEE_REF_COUNT, eee_ref_count);
 
-#if defined(CONFIG_BCM96856)
+#if defined(CONFIG_BCM96856) || defined(CONFIG_BCM947622)
     if (mac_mode.mac_speed == rdpa_emac_rate_100m)
     {
         UNIMAC_WRITE32_REG(emacNum, EEE_MII_LPI_TIMER, eee_lpi_timer);

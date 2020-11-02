@@ -51,7 +51,7 @@
 
 	/* increase coherent_pool size for ARM-based chip */
 	chosen {
-		bootargs = "console=ttyS0,115200 debug irqaffinity=0 coherent_pool=1M pci=pcie_bus_safe cma=0M";
+		bootargs = "console=ttyS0,115200 debug irqaffinity=0 coherent_pool=1M pci=pcie_bus_safe";
 	};
 
 	gic: interrupt-controller@80031000 {

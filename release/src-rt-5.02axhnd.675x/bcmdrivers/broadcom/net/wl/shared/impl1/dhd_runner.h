@@ -182,6 +182,7 @@ typedef struct dhd_helper_feat {
 	uint32 bkupq:1;                   /* Runner backup queues */
 	uint32 hwawkup:1;                 /* ARM-HWA format to wake up dongle */
 	uint32 ffrd:1;                    /* fast flow ring delete support */
+	uint32 npm:1;                     /* Partial Tx offload mode (N+M) */
 } dhd_helper_feat_t;
 
 /* buffer structure used for DHD_RNR_IOVAR_RNR_STATUS */

@@ -68,13 +68,13 @@
 
   <parameter name="WpsModelname" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Broadcom" />
 
-  <parameter name="WpsModelnum" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="123456" />
+  <parameter name="WpsModelnum" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="123456" />
 
-  <parameter name="WpsBoardnum" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1234" />
+  <parameter name="WpsBoardnum" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1234" />
 
-  <parameter name="WpsDevicePin" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="12345670" />
+  <parameter name="WpsDevicePin" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="12345670" />
 
-  <parameter name="WpsStaPin" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00000000" />
+  <parameter name="WpsStaPin" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00000000" />
 
   <parameter name="WpsWerMode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="allow" />
 
@@ -244,7 +244,7 @@
   <parameter name="CurrentOperatingChannelBandwidth" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
     <description source="TRx">The channel bandwidth currently in use. </description>
  
-  <parameter name="ExtensionChannel" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="BelowControlChannel" validValuesArray="WiFiExtensionControlValues" />
+  <parameter name="ExtensionChannel" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="Auto" validValuesArray="WiFiExtensionControlValues" />
     <description source="TRx">The secondary extension channel position, applicable when operating in wide channel mode (i.e. when {{param|OperatingChannelBandwidth}} is set to {{enum|40MHz|OperatingChannelBandwidth}} or {{enum|Auto|OperatingChannelBandwidth}}).</description>
 
   <parameter name="GuardInterval" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="Auto" validValuesArray="WiFiGuardIntervalValues" />
@@ -1430,6 +1430,7 @@
 <validstringarray name="WiFiFrequencyBandValues" />
   <element>2.4GHz</element>
   <element>5GHz</element>
+  <element>6GHz</element>
 
 <validstringarray name="WiFiGuardIntervalValues" />
   <element>400nsec</element>

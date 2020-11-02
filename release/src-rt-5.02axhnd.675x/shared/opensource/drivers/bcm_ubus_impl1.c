@@ -1540,6 +1540,9 @@ void bcm_ubus_config(void)
 #if defined(_BCM96858_)
     ubus_master_rte_cfg();
 #endif
+#if defined(CONFIG_BCM96878)
+    ubus_master_set_token_credits(UBUS_PORT_ID_PCIE0, UBUS_PORT_ID_VPB, 1);
+#endif
 #ifdef CONFIG_BCM_UBUS_DECODE_REMAP
     remap_ubus_masters_biu();
 #if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622)

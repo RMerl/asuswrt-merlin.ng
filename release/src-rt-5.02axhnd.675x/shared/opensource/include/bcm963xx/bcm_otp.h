@@ -67,12 +67,16 @@ int bcm_otp_fuse_row(int row, unsigned int val);
 int bcm_otp_fuse_row_ecc(int row, unsigned int val, unsigned int ecc);
 #endif
 
+#if defined(_BCM947622_) || defined(CONFIG_BCM947622)
+int bcm_otp_is_pcie_port_disabled(unsigned int pcie_port_num, unsigned int* val);
+#endif
+
 #if defined (CONFIG_BCM96848) || defined(_BCM96848_)
 int bcm_otp_get_revId(void);
 int bcm_otp_get_max_clksel(void);
 #endif
 
-#if defined(_BCM94908_) || defined(CONFIG_BCM94908)
+#if defined(_BCM94908_) || defined(CONFIG_BCM94908) || defined(_BCM947622_) || defined(CONFIG_BCM947622)
 int bcm_otp_is_sgmii_disabled(unsigned int* val);
 #endif
 
@@ -83,7 +87,8 @@ int bcm_otp_get_chipid(unsigned int* val);
 #if defined(CONFIG_BCM96858) || defined(_BCM96858_) || \
     defined(CONFIG_BCM96846) || defined(_BCM96846_) || \
     defined(CONFIG_BCM96878) || defined(_BCM96878_) || \
-    defined(CONFIG_BCM96856) || defined(_BCM96856_)
+    defined(CONFIG_BCM96856) || defined(_BCM96856_) || \
+    defined(CONFIG_BCM947622) || defined(_BCM947622_)
 int bcm_otp_get_cpu_clk(unsigned int* val);
 #endif
 
@@ -96,7 +101,7 @@ int bcm_otp_get_cpu_clk(unsigned int* val);
     defined(CONFIG_BCM963178) || defined(_BCM963178_) || \
     defined(CONFIG_BCM947622) || defined(_BCM947622_)
 
-#if !defined(_BCM96878_) && !defined(CONFIG_BCM96878)
+#if defined(_BCM96858_) || defined(CONFIG_BCM96858)
 int bcm_otp_get_pmc_boot_sts(unsigned int* val);
 #endif
 int bcm_otp_get_nr_cpus(unsigned int* val);
@@ -107,6 +112,7 @@ int bcm_otp_is_sata_disabled(unsigned int* val);
 #endif
 #endif
 
+int bcm_otp_is_usb3_disabled(unsigned int* val);
 #if defined (CONFIG_BCM96858) || defined(_BCM96858_)
 int bcm_otp_get_usb_port_disabled(int port, unsigned int* val);
 #endif

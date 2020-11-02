@@ -69,9 +69,10 @@ static unsigned int ebt_ftos_tg(struct sk_buff *skb, const struct xt_action_para
          ipv6h = (struct ipv6hdr *)(skb_network_header(skb) + VLAN_HLEN);
    }
    else if (skb->protocol == __constant_htons(ETH_P_PPP_SES)) {
-      if (*(unsigned short *)(skb_network_header(skb) + PPPOE_HLEN) == PPP_TYPE_IPV4)
+      if (*(unsigned short *)(skb_network_header(skb) + PPPOE_HLEN) == __constant_htons(PPP_TYPE_IPV4))
+
          iph = (struct iphdr *)(skb_network_header(skb) + PPPOE_HLEN + 2);
-      else if (*(unsigned short *)(skb_network_header(skb) + PPPOE_HLEN) == PPP_TYPE_IPV6)
+      else if (*(unsigned short *)(skb_network_header(skb) + PPPOE_HLEN) == __constant_htons(PPP_TYPE_IPV6))
          ipv6h = (struct ipv6hdr *)(skb_network_header(skb) + PPPOE_HLEN + 2);
    }
    /* if not IP header, do nothing. */

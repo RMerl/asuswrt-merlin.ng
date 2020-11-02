@@ -61,6 +61,8 @@ static int pmc_mode = PMC_MODE_DQM;
 #include <bcm_intr.h>
 #include <linux/interrupt.h>
 #include <linux/reboot.h>
+#include "pmc_dsl.h"
+#include "board.h"
 static DEFINE_SPINLOCK(pmc_lock);
 #endif
 
@@ -422,8 +424,16 @@ int GetAvsDisableState(int island, int *state)
 
 static void _devices_power_down_init(void) {
   // Power down certain blocks by default and let driver power them up
+#if !defined( CONFIG_BRCM_IKOS)
 #if defined(PMB_ADDR_CRYPTO)
   pmc_spu_power_down();
+#endif
+#if defined(NO_DSL) && (defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178))
+  pmc_dsl_power_down();
+#elif defined(CONFIG_BCM963178)
+  if (!kerSysGetDslPhyEnable())
+    pmc_dsl_power_down();
+#endif
 #endif
 }
 #endif // #ifndef _CFE_

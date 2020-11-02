@@ -61,5 +61,6 @@ extern int opticaldet_get_i2c_bus_num(unsigned short intf_type, int intf_idx, in
 #endif
 extern int opticaldet_get_xpon_i2c_bus_num(int* bus);
 extern int opticaldet_get_sgmii_i2c_bus_num(int* bus);
+extern int opticaldet_is_xpon_sfp_present(void);
 
 #endif /* DETECT_H_INCLUDED */

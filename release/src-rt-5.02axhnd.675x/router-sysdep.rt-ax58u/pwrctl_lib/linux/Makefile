@@ -25,6 +25,11 @@ ifneq ($(strip $(BRCM_VOICE_SUPPORT)),)
 include $(BUILD_DIR)/make.voice
 endif
 
+ifneq ($(strip $(BCA_CPEROUTER)),)
+ifneq ($(strip $(BUILD_BCM_WLAN_DPDCTL)),)
+CFLAGS += -DBUILD_BCM_WLAN_DPDCTL
+endif
+endif
 
 
 #

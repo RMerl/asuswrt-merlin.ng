@@ -22,8 +22,8 @@ dynamic: $(PROGRAM_NAME) install
 
 static: $(PROGRAM_NAME).a
 
-$(PROGRAM_NAME):
-	@cp prebuilt/$(PROGRAM_NAME) $(PROGRAM_NAME)
+$(PROGRAM_NAME): $(PROGRAM_NAME).o
+	$(CC) $(LDFLAGS) -o $(PROGRAM_NAME)  $(PROGRAM_NAME).o
 
 $(PROGRAM_NAME).a: $(PROGRAM_NAME).o
 	$(AR) rcs $(PROGRAM_NAME).a  $(PROGRAM_NAME).o

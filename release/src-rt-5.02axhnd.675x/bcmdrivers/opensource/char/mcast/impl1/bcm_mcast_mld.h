@@ -97,6 +97,7 @@ typedef struct mld_grp_entry
 {
    struct hlist_node  hlist;
    struct net_device *dst_dev;
+   struct net_device *to_accel_dev;
    struct in6_addr    grp;
    struct list_head   rep_list;
    t_mld_src_entry   src_entry;
@@ -124,6 +125,7 @@ int bcm_mcast_mld_add(struct net_device *from_dev,
                            int wan_ops,
                            bcm_mcast_ifdata *pif, 
                            struct net_device *dst_dev, 
+                           struct net_device *to_accel_dev, 
                            struct in6_addr *grp, 
                            struct in6_addr *rep,
                            unsigned char *repMac,

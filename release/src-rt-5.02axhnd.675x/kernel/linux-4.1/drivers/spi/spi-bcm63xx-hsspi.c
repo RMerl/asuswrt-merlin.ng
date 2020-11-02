@@ -306,6 +306,9 @@ static int bcm63xx_hsspi_transfer_one(struct spi_master *master,
 	int status = -EINVAL;
 	int dummy_cs;
 	u32 reg;
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+	bool restore_polarity = true;
+#endif
 
 	/* This controller does not support keeping CS active during idle.
 	 * To work around this, we use the following ugly hack:
@@ -334,16 +337,49 @@ static int bcm63xx_hsspi_transfer_one(struct spi_master *master,
 		if (t->delay_usecs)
 			udelay(t->delay_usecs);
 
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+		/*
+		 * cs_change rules:
+		 * (1) cs_change = 0 && last_xfer = 0:
+		 * 	Do not touch the CS. On to the next xfer.
+		 * (2) cs_change = 1 && last_xfer = 0:
+		 * 	Set cs = false before the next xfer.
+		 * (3) cs_change = 0 && last_xfer = 1:
+		 * 	We want CS to be deactivated. So do NOT set cs = false,
+		 * 	instead just restore the original polarity. This has the
+		 * 	same effect of deactivating the CS.
+		 * (4) cs_change = 1 && last_xfer = 1:
+		 * 	We want to keep CS active. So do NOT set cs = false, and
+		 * 	make sure we do NOT reverse polarity.
+		 */
+		if (t->cs_change && !list_is_last(&t->transfer_list, &msg->transfers))
+#else
 		if (t->cs_change)
+#endif
 			bcm63xx_hsspi_set_cs(bs, spi->chip_select, false);
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+
+		restore_polarity = !t->cs_change;
+#endif
 	}
 
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+	if (restore_polarity) {
+		mutex_lock(&bs->bus_mutex);
+		reg = __raw_readl(bs->regs + HSSPI_GLOBAL_CTRL_REG);
+		reg &= ~GLOBAL_CTRL_CS_POLARITY_MASK;
+		reg |= bs->cs_polarity;
+		__raw_writel(reg, bs->regs + HSSPI_GLOBAL_CTRL_REG);
+		mutex_unlock(&bs->bus_mutex);
+	}
+#else
 	mutex_lock(&bs->bus_mutex);
 	reg = __raw_readl(bs->regs + HSSPI_GLOBAL_CTRL_REG);
 	reg &= ~GLOBAL_CTRL_CS_POLARITY_MASK;
 	reg |= bs->cs_polarity;
 	__raw_writel(reg, bs->regs + HSSPI_GLOBAL_CTRL_REG);
 	mutex_unlock(&bs->bus_mutex);
+#endif
 
 	msg->status = status;
 	spi_finalize_current_message(master);

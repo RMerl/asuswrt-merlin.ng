@@ -1,0 +1,14 @@
+<PUBLISH>
+--- 96856GWO.old	2018-03-23 16:21:09.009373593 -0700
++++ 96856GWO	2018-03-26 08:43:58.367550216 -0700
+@@ -525,7 +525,9 @@
+ BCM_SPEEDYGET=y
+ # BUILD_OPENVSWITCH is not set
+ # BUILD_BRCM_AIRIQ is not set
+-# BUILD_BCM_ASOC_AUDIO is not set
++BUILD_BCM_ASOC_AUDIO=y
++# SND_SOC_CS4345 is not set
++# SND_SOC_PCM5100 is not set
+ 
+ #
+ # Management Protocols and User Interface Selection

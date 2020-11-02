@@ -661,7 +661,9 @@ retry:
 		if (r == &nonblocking_pool) {
 			prandom_reseed_late();
 			wake_up_interruptible(&urandom_init_wait);
+#if !defined(CONFIG_BCM_KF_SUPPRESS_DEBUG) 
 			pr_notice("random: %s pool is initialized\n", r->name);
+#endif
 		}
 	}
 

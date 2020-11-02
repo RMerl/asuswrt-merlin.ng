@@ -4861,6 +4861,11 @@ typedef struct Jtag_Otp {
 #define OTP_SEC_CHIPVAR_SHIFT           24
 #define OTP_SEC_CHIPVAR_MASK            (0xf << OTP_SEC_CHIPVAR_SHIFT)
 
+/* row 14 */
+#define OTP_SGMII_DISABLE_ROW			14
+#define OTP_SGMII_DISABLE_SHIFT			5
+#define OTP_SGMII_DISABLE_MASK			(0x1 << OTP_SGMII_DISABLE_SHIFT) 
+
 /* row 9 */
 #define OTP_CPU_CLOCK_FREQ_ROW          9
 #define OTP_CPU_CLOCK_FREQ_SHIFT        0
@@ -4874,6 +4879,14 @@ typedef struct Jtag_Otp {
 #define OTP_PCM_DISABLE_ROW             14
 #define OTP_PCM_DISABLE_SHIFT           13
 #define OTP_PCM_DISABLE_MASK            (0x1 << OTP_PCM_DISABLE_SHIFT)
+
+#define OTP_USB3_DISABLE_ROW           14
+#define OTP_USB3_DISABLE_SHIFT         2
+#define OTP_USB3_DISABLE_MASK          (0x1 << OTP_USB3_DISABLE_SHIFT)
+
+#define OTP_PCIE_PORT_DISABLE_ROW       14
+#define OTP_PCIE_PORT_DISABLE_SHIFT     8
+#define OTP_PCIE_PORT_DISABLE_MASK      (0x7 << OTP_PCIE_PORT_DISABLE_SHIFT)
 
 /* row 17 */
 #define OTP_BRCM_BTRM_BOOT_ENABLE_ROW           17

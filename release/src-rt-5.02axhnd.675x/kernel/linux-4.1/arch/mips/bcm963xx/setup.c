@@ -891,7 +891,6 @@ static int __init bcm6838_hw_init(void)
 #define CAP_TYPE_OHCI       0x01 
 #define CAP_TYPE_XHCI       0x02 
 
-static struct platform_device *xhci_dev;
 
 static void bcm63381_manual_usb_ldo_start(void)
 {
@@ -929,6 +928,9 @@ static void usb2_eye_fix(void)
     usb_mdio_write((void *)&USBH_CTRL->mdio, 0x1f, 0x80a0, MDIO_USB2);
     usb_mdio_write((void *)&USBH_CTRL->mdio, 0x0a, 0xc6a0, MDIO_USB2);
 }
+
+#if IS_ENABLED(CONFIG_USB_XHCI_PLATFORM)
+static struct platform_device *xhci_dev;
 
 static void usb3_pll_fix(void)
 {
@@ -1003,6 +1005,7 @@ static void bcm63381_usb30_init(void)
     xhci_dev = bcm_add_usb_host(CAP_TYPE_XHCI, 0, USB_XHCI_BASE, 0x1000,
                                 INTERRUPT_ID_USBH30, "xhci-hcd", NULL); 
 }
+#endif/*IS_ENABLED(CONFIG_USB_XHCI_PLATFORM)*/
 
 #endif
 
@@ -1048,7 +1051,7 @@ static int __init bcm63381_hw_init(void)
     }
 
     usb2_eye_fix();
-
+#if IS_ENABLED(CONFIG_USB_XHCI_PLATFORM)
     if(kerSysGetUsb30HostEnable())
     {
         if(pmc_usb_power_up(PMC_USB_HOST_30))
@@ -1059,6 +1062,8 @@ static int __init bcm63381_hw_init(void)
         mdelay(10);
         bcm63381_usb30_init();
     }
+#endif/*IS_ENABLED(CONFIG_USB_XHCI_PLATFORM)*/
+
 #endif
 	return 0;
 }

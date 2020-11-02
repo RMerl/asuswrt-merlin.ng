@@ -421,7 +421,7 @@ endif
 
       .PHONY : dhd_build_library 
       dhd_build_library: $(addprefix $(obj)/, $(dhd_lib_objects))
-	$(LD) $(ld_flags) $(LDFLAGS_MODULE) -r -o $(obj)/dhddrvlib.o  $^
+	$(LD) $(ld_flags) -r -o $(obj)/dhddrvlib.o  $^
 	cp -f $(obj)/dhddrvlib.o $(DHDSRCBASE)/$(notdir $(obj))-$(BRCM_CHIP)-$(BCMARCH).o_save
 	install -m 755 $(obj)/$(DONGLE)/43602a1/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/43602a1/
 	install -m 755 $(obj)/$(DONGLE)/43602a3/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/43602a3/

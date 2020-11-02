@@ -1946,12 +1946,19 @@ int setup_mtd_parts(struct mtd_info* mtd)
 
 #ifdef CRASHLOG
     /* Ares hack to adjust partition. misc2 is 48 MB, misc3 0 MB, --> modify to misc2 47MB, misc3 1 MB */
+#if defined(RTAX55) || defined(RTAX1800)
+    if (nvram.part_info[1].size == 16 && nvram.part_info[2].size == 0) {
+        nvram.part_info[1].size = 15;
+        nvram.part_info[2].size = 1;
+    }
+#else
     if (nvram.part_info[1].size == 48 && nvram.part_info[2].size == 0) {
         nvram.part_info[1].size = 47;
         nvram.part_info[2].size = 1;
     }
-
 #endif
+#endif
+
     // skip DATA partition
     for (i = BCM_MAX_EXTRA_PARTITIONS - 2; i >= 0; i--) {
 	printk("setup_mtd_parts: misc indx %d name %s nvram configured size %d \n"

@@ -64,10 +64,11 @@ void spdt_uninit(uint8_t stream_idx);
  * in an internal context per stream only, for further connection, as UDP is stateless.
  * Args:
  *   stream_idx
+ *   dir - direction rx/tx.
  *   conn_params - remote connection information (address + proto + destination port)
  * Return: 0 - on success, other on failure
  * */
-int spdt_connect(uint8_t stream_idx, spdt_conn_params_t *conn_params);
+int spdt_connect(uint8_t stream_idx, spdt_stream_dir_t dir, spdt_conn_params_t *conn_params);
 
 /* Close a connection.
  * Args:

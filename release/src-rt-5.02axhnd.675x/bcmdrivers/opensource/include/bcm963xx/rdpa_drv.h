@@ -219,6 +219,7 @@ typedef enum {
    RDPA_IOCTL_TM_CMD_SVC_Q_ENABLE_SET  = 26,
    RDPA_IOCTL_TM_CMD_GET_BEST_EFFORT_TM_ID = 27,
    RDPA_IOCTL_TM_CMD_GET_TM_SUBSIDIARY = 28,
+   RDPA_IOCTL_TM_CMD_GET_TM_MEMORY_INFO = 29,
    RDPA_IOCTL_TM_CMD_MAX
 } rdpa_drv_ioctl_tm_cmd_t;
 
@@ -254,6 +255,7 @@ typedef struct {
    uint32_t priority_mask_0;
    uint32_t priority_mask_1;
    uint32_t cfg_flags;
+   uint32_t fpm_pool_memory_size;
    BOOL     port_shaper;      /* port tm setting */
    BOOL     queue_shaper;     /* port tm setting */
    BOOL     orl_linked;

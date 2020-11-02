@@ -1237,12 +1237,13 @@ static int write_oob_to_regs(struct brcmnand_controller *ctrl, int i,
 		tbytes = max(0, tbytes - (int)ctrl->max_oob);
 	tbytes = min_t(int, tbytes, ctrl->max_oob);
 
-	for (j = 0; j < tbytes; j += 4)
+	for (j = 0; (j + 3) < tbytes; j += 4)
 		oob_reg_write(ctrl, j,
-				(oob[j + 0] << 24) |
-				(oob[j + 1] << 16) |
-				(oob[j + 2] <<  8) |
-				(oob[j + 3] <<  0));
+			(((j < tbytes ) ? oob[j] : 0xff) << 24) |
+			(((j + 1 < tbytes ) ? oob[j + 1] : 0xff) << 16) |
+			(((j + 2 < tbytes ) ? oob[j + 2] : 0xff) << 8) |
+			((j + 3 < tbytes ) ? oob[j + 3] : 0xff));
+
 	return tbytes;
 }
 

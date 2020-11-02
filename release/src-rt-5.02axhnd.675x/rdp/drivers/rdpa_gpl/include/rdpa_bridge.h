@@ -36,12 +36,12 @@
  * L2 bridge functionality:
  * - All bridge objects share the same MAC table (named FDB=forwarding DataBase)
  *	 - Use ::rdpa_bridge_mac_set to add/delete MAC entry to/from the FDB
- * - Each bridge object is compounded of interfaces of the folowing type:
+ * - Each bridge object is compounded of interfaces of the following type:
  *   - Port object  bridge interface without VLAN configuration
  *   - VLAN object - bridge interface with VLAN configuration
  *   - Use ::bdmf_link to associate an interface (Port/VLAN) to the bridge
- * - The port forwording matrix is updated each time a new interface is added to the bridge object:
- * - The new interface (Port/VLAN) can forword packets to all interfaces under the same bridge
+ * - The port forwarding matrix is updated each time a new interface is added to the bridge object:
+ * - The new interface (Port/VLAN) can forward packets to all interfaces under the same bridge
  * 
  * @{
  */
@@ -55,7 +55,7 @@ typedef enum {
 /** Bridge learning mode */
 typedef enum {
     rdpa_bridge_learn_svl, /**< Subset VLAN learning mode - Shared VLAN Learning - forwarding decision is MAC based */
-    rdpa_bridge_learn_ivl /**< Subset VLAN learning mode - Indepndent VLAN Learning - forwarding decision is based on MAC+ingress vid  */
+    rdpa_bridge_learn_ivl /**< Subset VLAN learning mode - Independent VLAN Learning - forwarding decision is based on MAC+ingress VID  */
 } rdpa_bridge_learning_mode;
 
 /** Bridge configuration */
@@ -91,7 +91,7 @@ typedef struct
 typedef struct {
     int16_t vid; /**< Input parameter: VLAN ID or ignored in case of bridge type ::rdpa_bridge_802_1d */
     bdmf_mac_t mac; /**< Input parameter: MAC address */
-    uint16_t entry; /**< Output parameter: Entry handle that is recieved after adding new MAC to the FDB. Can be used
+    uint16_t entry; /**< Output parameter: Entry handle that is received after adding new MAC to the FDB. Can be used
                       for optimizations */
 } rdpa_fdb_key_t;
 

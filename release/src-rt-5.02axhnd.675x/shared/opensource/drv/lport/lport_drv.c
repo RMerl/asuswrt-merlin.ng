@@ -941,7 +941,9 @@ int lport_set_port_configuration(uint32_t portid, lport_port_cfg_s *port_conf)
         LPORT_PORT_MUX_SELECT new_mux = curr_mux;
 
         if (port_conf->speed == LPORT_RATE_UNKNOWN)
+#ifdef LPORT_SERDES_LINK_POWER_DOWN
             new_mux = PORT_UNAVAIL;
+#endif
         if (port_conf->speed == LPORT_RATE_100MB)
             new_mux = PORT_SGMII;
         if (port_conf->speed == LPORT_RATE_1000MB)
@@ -952,6 +954,10 @@ int lport_set_port_configuration(uint32_t portid, lport_port_cfg_s *port_conf)
             new_mux = PORT_XFI;
 
         rc = rc ? rc : lport_set_port_mux(portid, new_mux);
+#ifndef LPORT_SERDES_LINK_POWER_DOWN
+        if (port_conf->speed == LPORT_RATE_UNKNOWN)
+            return 0;
+#endif
 
         if (port_conf->speed == LPORT_RATE_100MB)
             rc = rc ? : lport_serdes_speed_set(portid, port_conf->speed);

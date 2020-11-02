@@ -52,7 +52,8 @@ endif
 export CFLAGS
 
 
-BUILD_SET = build_mkfs build_cmplzma build_lz4cmp build_imageutil build_secbtutils perlmods scons build_cms2bbf build_beep_tools
+BUILD_SET = build_mkfs build_cmplzma build_lz4cmp build_imageutil build_secbtutils perlmods scons build_cms2bbf build_beep_tools \
+	    build_mlibtool
 
 # EMBED_BALOO_BGN
 ifeq ($(strip $(BUILD_BALOO)),y)
@@ -70,12 +71,16 @@ build_baloo:
 endif
 # EMBED_BALOO_END
 
-build_imageutil: bcmImageBuilder version addvtoken BcmFsTag gencrc32 nvram_files
+build_imageutil: bcmImageBuilder version addvtoken BcmFsTag gencrc32 nvram_files bcmComboMaker
+
+bcmComboMaker:
+	$(CC) $(CFLAGS) -o bcmComboMaker bcmComboMaker.c
 
 bcmImageBuilder: bcmImageBuilder.c
 	$(CC) $(CFLAGS) -o bcmImageBuilder bcmImageBuilder.c
 version:
 	cp -f ../router/shared/version.h .
+	cp -f ../router/shared/rtconfig.h .
 ifneq ($(wildcard ./prebuilt/$(BUILD_NAME)/addvtoken),)
 addvtoken:
 	@-cp -f ./prebuilt/$(BUILD_NAME)/addvtoken .
@@ -273,6 +278,8 @@ build_doxygen: doxygen
 # if we want to generate documentation for the unittests 
 #sed -i 's,\(INPUT[ \t]*=\),\1 $(BUILD_DIR)/unittests,' Doxyfile; 
 
+build_mlibtool:
+	$(MAKE) -C mlibtool
 ######################################################################
 #
 # Cleaning rules
@@ -280,7 +287,9 @@ build_doxygen: doxygen
 ######################################################################
 
 clean:
-	rm -f bcmImageBuilder addvtoken version.h mksquashfs mkcramfs mkfs.jffs2 lzmacmd cmplzma $(HOST_GENKEY) BcmFsTag gencrc32 nvram.h nvram_defaults.h
+	rm -f bcmImageBuilder addvtoken version.h mksquashfs mkcramfs mkfs.jffs2 lzmacmd \
+		cmplzma $(HOST_GENKEY) BcmFsTag gencrc32 nvram.h nvram_defaults.h \
+		bcmComboMaker
 	rm -fr *.o core
 	rm -fr $(GENKEY_DIR)/*.o
 	$(MAKE) -C $(SQUASHFS_DIR) clean
@@ -299,6 +308,7 @@ clean:
 	if [ -e libelf ]; then rm -rf libelf ; fi
 	if [ -e prelink ]; then rm -rf prelink; fi
 	if [ -e beep ]; then $(MAKE) -C beep clean; fi
+	$(MAKE) -C mlibtool clean
 clean_doxygen:
 	rm -fr doxygen
 

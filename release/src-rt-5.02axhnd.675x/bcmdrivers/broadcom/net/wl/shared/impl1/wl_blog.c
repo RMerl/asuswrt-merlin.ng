@@ -196,6 +196,7 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
 			blog_lock();
 			blog_notify(FLUSH, dev, (unsigned long)&params, 0);
 			blog_unlock();
+
 #if defined(PKTC_TBL)
 			/* mark as STA disassoc */
 			WL_ERROR(("%s: mark as DIS-associated. addr=%02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -207,8 +208,11 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
             wl_pktc_req(PKTC_TBL_SET_STA_ASSOC, (unsigned long)e->event.addr.octet,
                         0, e->event.event_type);
 
-            if (wl_pktc_del_hook != NULL)
-			    wl_pktc_del_hook((unsigned long)e->event.addr.octet, dev);
+            if (wl_pktc_del_hook != NULL) {
+                blog_lock(); /* blog_notify is called inside del_hook */
+                wl_pktc_del_hook((unsigned long)e->event.addr.octet, dev);
+                blog_unlock();
+            }
 #endif /* PKTC_TBL */
 			break;
 
@@ -223,7 +227,7 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
 			params.flush_dstmac = 1;
 			params.flush_srcmac = 1;
 			memcpy(&params.mac[0], &e->event.addr.octet[0], sizeof(e->event.addr.octet));
-			blog_lock();	
+			blog_lock();
 			blog_notify(FLUSH, dev, (unsigned long)&params, 0);
 			blog_unlock();
 #if defined(PKTC_TBL)

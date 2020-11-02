@@ -64,7 +64,7 @@ typedef struct _enetx_channel {
     struct _enetx_channel *next;
     /*event queue for thread*/
     wait_queue_head_t rxq_wqh;
-    int rxq_cond;
+    volatile unsigned long rxq_cond;
     /*thread handler*/
     struct task_struct *rx_thread;
 

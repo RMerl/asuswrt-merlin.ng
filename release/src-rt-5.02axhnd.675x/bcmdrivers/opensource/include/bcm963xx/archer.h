@@ -56,6 +56,8 @@ written consent.
 #define ARCHER_DONT_CARE        ~0
 #define ARCHER_IS_DONT_CARE(_x) ( ((_x) == (typeof(_x))(ARCHER_DONT_CARE)) )
 
+#define ARCHER_IFNAMSIZ  16
+
 /*
  *------------------------------------------------------------------------------
  * Common defines for ARCHER layers.
@@ -89,8 +91,17 @@ typedef enum {
     ARCHER_DECL(ARCHER_IOC_MPDCFG)
     ARCHER_DECL(ARCHER_IOC_WOL)
     ARCHER_DECL(ARCHER_IOC_DPI)
+    ARCHER_DECL(ARCHER_IOC_SYSPORT_TM)
+    ARCHER_DECL(ARCHER_IOC_ENETDROPALG_SET)
+    ARCHER_DECL(ARCHER_IOC_ENETDROPALG_GET)
+    ARCHER_DECL(ARCHER_IOC_ENETTXQSIZE_GET)
     ARCHER_DECL(ARCHER_IOC_XTMDROPALG_SET)
     ARCHER_DECL(ARCHER_IOC_XTMDROPALG_GET)
+    ARCHER_DECL(ARCHER_IOC_XTMTXQSIZE_GET)
+    ARCHER_DECL(ARCHER_IOC_ENETTXQSTATS_GET)
+    ARCHER_DECL(ARCHER_IOC_XTMTXQSTATS_GET)
+    ARCHER_DECL(ARCHER_IOC_WLFLCTLCFG_SET)
+    ARCHER_DECL(ARCHER_IOC_WLFLCTLCFG_GET)
     ARCHER_DECL(ARCHER_IOC_MAX)
 } archer_ioctl_cmd_t;
 
@@ -120,38 +131,115 @@ typedef enum {
 } archer_dpi_cmd_t;
 
 typedef enum {
+    SYSPORT_TM_CMD_ENABLE,
+    SYSPORT_TM_CMD_DISABLE,
+    SYSPORT_TM_CMD_STATS,
+    SYSPORT_TM_CMD_STATS_GET,
+    SYSPORT_TM_CMD_QUEUE_SET,
+    SYSPORT_TM_CMD_QUEUE_GET,
+    SYSPORT_TM_CMD_PORT_SET,
+    SYSPORT_TM_CMD_PORT_GET,
+    SYSPORT_TM_CMD_ARBITER_SET,
+    SYSPORT_TM_CMD_ARBITER_GET,
+    SYSPORT_TM_CMD_MODE_SET,
+    SYSPORT_TM_CMD_MODE_GET,
+    SYSPORT_TM_CMD_MAX
+} sysport_tm_cmd_t;
 
-    ARCHER_DROPALG_DT = 0,
-    ARCHER_DROPALG_RED,
-    ARCHER_DROPALG_WRED,
+typedef enum {
+    SYSPORT_TM_ARBITER_SP,
+    SYSPORT_TM_ARBITER_WFQ,
+    SYSPORT_TM_ARBITER_MAX
+} sysport_tm_arbiter_t;
 
-} archer_dropalg_alg_t;
+typedef enum {
+    SYSPORT_TM_MODE_AUTO,
+    SYSPORT_TM_MODE_MANUAL,
+    SYSPORT_TM_MODE_MAX
+} sysport_tm_mode_t;
+
+typedef struct
+{
+    uint32_t txPackets;
+    uint32_t txBytes;
+    uint32_t droppedPackets;
+    uint32_t droppedBytes;
+} sysport_tm_txq_stats_t;
 
 typedef struct {
+    sysport_tm_cmd_t cmd;
+    char if_name[ARCHER_IFNAMSIZ];
+    int queue_index;
+    int min_kbps;
+    int min_mbs;
+    int max_kbps;
+    int max_mbs;
+    sysport_tm_arbiter_t arbiter;
+    sysport_tm_mode_t mode;
+    sysport_tm_txq_stats_t stats;
+} sysport_tm_arg_t;
 
+typedef enum {
+    ARCHER_DROP_PROFILE_LOW = 0,
+    ARCHER_DROP_PROFILE_HIGH,
+    ARCHER_DROP_PROFILE_MAX
+} archer_drop_profile_index_t;
+
+typedef enum {
+    ARCHER_DROP_ALGORITHM_DT = 0,
+    ARCHER_DROP_ALGORITHM_RED,
+    ARCHER_DROP_ALGORITHM_WRED,
+    ARCHER_DROP_ALGORITHM_MAX
+} archer_drop_algorithm_t;
+
+typedef struct {
     uint32_t dropProb;
     uint32_t minThres;
     uint32_t maxThres;
-
-} archer_dropalg_thres_t;
-
+} archer_drop_profile_t;
 
 typedef struct {
-
-    uint32_t tx_idx;
-    archer_dropalg_alg_t   alg;
-    archer_dropalg_thres_t thres_lo;
-    archer_dropalg_thres_t thres_hi;
-
+    archer_drop_algorithm_t algorithm;
+    archer_drop_profile_t profile[ARCHER_DROP_PROFILE_MAX];
     uint32_t priorityMask_0;
     uint32_t priorityMask_1;
+} archer_drop_config_t;
 
-} archer_dropalg_config_t;
+typedef struct {
+    char if_name[ARCHER_IFNAMSIZ];
+    int queue_id;
+    archer_drop_config_t config;
+} archer_drop_ioctl_t;
 
 typedef enum {
     ARCHER_SYSPORT_CMD_REG_DUMP,
     ARCHER_SYSPORT_CMD_PORT_DUMP,
     ARCHER_SYSPORT_CMD_MAX
 } archer_sysport_cmd_t;
+
+typedef struct
+{
+    uint32_t txPackets;
+    uint32_t txBytes;
+    uint32_t droppedPackets;
+    uint32_t droppedBytes;
+} archer_txq_stats_t;
+
+typedef struct
+{
+    char if_name[ARCHER_IFNAMSIZ];
+    int queue_id;
+    archer_txq_stats_t stats;
+} archer_txq_stats_ioctl_t;
+
+typedef struct {
+
+    uint32_t radio_idx;
+    uint32_t skb_exhaustion_lo;
+    uint32_t skb_exhaustion_hi;
+    uint32_t pkt_prio_favor;
+
+} archer_wlflctl_config_t;
+
 
 #endif  /* __ARCHER_H_INCLUDED__ */

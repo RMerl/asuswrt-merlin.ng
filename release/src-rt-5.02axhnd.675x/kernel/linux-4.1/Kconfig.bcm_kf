@@ -255,6 +255,10 @@ config BCM_KF_EXTRA_DEBUG
 	bool
 	default y
 
+config BCM_KF_SUPPRESS_DEBUG
+	bool
+	default y
+
 config BCM_KF_SPI
 	bool
 	default y
@@ -555,10 +559,6 @@ config BCM_KF_CFG80211_BACKPORT
 	bool
 	default y
 
-config BCM_KF_BYPASS_STP_FOR_LOCAL
-	bool
-	default y
-
 config BCM_KF_OVS
 	bool
 	default y
@@ -572,6 +572,14 @@ config BCM_KF_HWRNG
 	default y
 
 config BCM_KF_VETH_IPV6_DISABLE
+	bool
+	default y
+
+config BCM_KF_WL_HOSTAPD
+	bool
+	default y
+
+config BCM_KF_NL80211_6G_BAND_SUPPORT
 	bool
 	default y
 

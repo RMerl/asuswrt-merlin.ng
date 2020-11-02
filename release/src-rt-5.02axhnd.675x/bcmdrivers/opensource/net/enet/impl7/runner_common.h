@@ -42,6 +42,7 @@ void port_runner_print_status(enetx_port_t *self);
 void port_runner_port_stats_get(enetx_port_t *self, struct rtnl_link_stats64 *net_stats);
 void port_runner_port_stats_clear(enetx_port_t *self);
 int port_runner_mib_dump(enetx_port_t *self, int all);
+int port_runner_mib_dump_us(enetx_port_t *self, void *e); // add by Andrew
 char *port_runner_print_priv(enetx_port_t *self);
 bdmf_object_handle create_rdpa_port(rdpa_if rdpaif, rdpa_emac emac, bdmf_object_handle owner, rdpa_if control_sid);
 int port_runner_sw_init(enetx_port_t *self);

@@ -158,14 +158,13 @@ extern "C" {
 //#define SAVE_CRATESRA_MSG
 //#define CO_G994_NSIF
 //#define SUPPORT_24HR_CNT_STAT
+//#define NOTIFY_INTERMEDIATE_LINKSTATUS_CHANGE
+
+/* Per sub-carrier data (suchas HLOGpsus, HLOGpsds) implementation */
+#define PSDATA_IMPL_VERSION		2
 
 #ifndef CONFIG_VDSL_SUPPORTED
-#if defined(CONFIG_BCM963268) || defined(CHIP_63268) || defined(CONFIG_BCM963138) || defined(CHIP_63138) ||  \
-	  defined(CONFIG_BCM963148) || defined(CHIP_63148) || defined(CONFIG_BCM963381) || defined(CHIP_63381) || \
-	  defined(CONFIG_BCM963158) || defined(CHIP_63158) || defined(CONFIG_BCM963178) || defined(CHIP_63178) || \
-	  defined(DMP_VDSL2WAN_1)
 #define CONFIG_VDSL_SUPPORTED
-#endif
 #endif
 
 #if defined(CONFIG_VDSL_SUPPORTED)
@@ -177,9 +176,9 @@ extern "C" {
 #endif
 #endif
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178)
+#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM963146)
 #ifndef CONFIG_VDSLBRCMPRIV1_SUPPORT
-#define CONFIG_VDSLBRCMPRIV1_SUPPORT
+#define CONFIG_VDSLBRCMPRIV1_SUPPORT	/* Support VDSL2 profile 35b */
 #endif
 #ifdef CONFIG_BCM963158
 #ifndef CONFIG_VDSLBRCMPRIV2_SUPPORT
@@ -189,20 +188,16 @@ extern "C" {
 #endif /* defined(CONFIG_BCM963138) || defined(CONFIG_BCM963158) */
 
 #ifndef CONFIG_TOD_SUPPORTED
-#if defined(CONFIG_BCM963138) || defined(CHIP_63138) || defined(CONFIG_BCM963148) || defined(CHIP_63148) || \
-	defined(CONFIG_BCM963381) || defined(CHIP_63381) || defined(CONFIG_BCM963158) || defined(CHIP_63158) || \
-	defined(CONFIG_BCM963178) || defined(CHIP_63178)
 #define CONFIG_TOD_SUPPORTED
-#endif
 #endif
 
 #ifndef CONFIG_RNC_SUPPORT
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963158)
+#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963146)
 #define CONFIG_RNC_SUPPORT
 #endif
 #endif
 
-#if defined(CONFIG_BCM963158)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963146)
 #ifndef SECONDARY_AFEID_FN
 #define SECONDARY_AFEID_FN	"/data/afeid_override"
 #endif
@@ -221,13 +216,14 @@ extern "C" {
 **
 */
 
-#define kAdslCfgModMask                     (0x00000007 | 0x0000F000)
+#define kAdslCfgModMask                     (0x0000000F | 0x0000F000)
 #define kAdslCfgModAny                      0x00000000
 
 #define kAdslCfgModGdmtOnly                 0x00000001
 #define kAdslCfgModGliteOnly                0x00000002
 #define kAdslCfgModT1413Only                0x00000004
 #define kAdslCfgModAnnexIOnly               0x00000004
+#define kDslCfgModVdsl2LROnly               0x00000008
 #define kAdslCfgModAdsl2Only                0x00001000
 #define kAdslCfgModAdsl2pOnly               0x00002000
 #define kDslCfgModVdsl2Only                 0x00004000
@@ -367,6 +363,7 @@ extern "C" {
 #define		kVdslProfile17a		0x00000040
 #define		kVdslProfile30a		0x00000080
 #define		kVdslProfileBrcmPriv1		0x00000100
+#define		kVdslProfile35b		kVdslProfileBrcmPriv1
 #define		kVdslProfileBrcmPriv2		0x00000200
 
 #define		kGfastProfile106a		0x00001000
@@ -383,7 +380,7 @@ extern "C" {
 #define		kVdslProfileMask	(kVdslProfile8a | kVdslProfile8b | kVdslProfile8c |kVdslProfile8d |\
 								kVdslProfile12a | kVdslProfile12b | kVdslProfile17a)
 #define		kVdslProfileMask1	(kVdslProfileMask | kVdslProfile30a)
-#define		kVdslProfileMask2	(kVdslProfileMask1 | kVdslProfileBrcmPriv1)
+#define		kVdslProfileMask2	(kVdslProfileMask1 | kVdslProfile35b)
 #define		kVdslProfileMask3	(kVdslProfileMask2 | kVdslProfileBrcmPriv2)
 
 #define		kGfastProfileMask	(kGfastProfile106aDisable | kGfastProfile106bDisable)
@@ -516,6 +513,7 @@ typedef struct _adslVersionInfo {
 #define kOidMaxObjLen                       80
 
 #define kOidAdsl                            94
+#define kOidAdslDiagdSkb                    123
 #define kOidAdslInterleave                  124
 #define kOidAdslFast                        125
 #define kOidAtm                             37
@@ -1305,7 +1303,7 @@ typedef struct _xdslFramingInfo {
 
     unsigned char           rtxMode;        /* 0 - none, 1 - phyR, 2-16 (reserved fro phyR); 17 - Ginp modes */
     union {
-    unsigned char           rxQueue;       /* length of the retransmission queue in Rx direction */
+    unsigned char           rxQueueOld;       /* length of the retransmission queue in Rx direction */
     unsigned char           ackWindowShift; /*Gfast */
     };
     unsigned char           txQueue;       /* length of the retransmission queue in Tx direction */
@@ -1327,6 +1325,7 @@ typedef struct _xdslFramingInfo {
     unsigned int            ETRminEoc;
     unsigned short          Ldr;
 #endif
+    unsigned short          rxQueue;       /* length of the retransmission queue in Rx direction */
 } xdslFramingInfo;
 
 // ADSL.K = B[0] + B[1] + 1
@@ -1549,14 +1548,8 @@ typedef struct dslNtrData {
     unsigned int   lcoCntAtNtr;
     unsigned int   ncoCntAtDmt;
     unsigned int   ncoCntAtNtr;
-    /* 6362/6328 */
-#if defined(CONFIG_BCM963268) || defined(CHIP_63268) ||\
-    defined(CONFIG_BCM963138) || defined(CHIP_63138) || defined(CONFIG_BCM963381) || defined(CHIP_63381) ||\
-    defined(CONFIG_BCM963148) || defined(CHIP_63148) || defined(CONFIG_BCM963158) || defined(CHIP_63158) ||\
-    defined(CONFIG_BCM963178) || defined(CHIP_63178)
     int    phaseError;       /* 32.0 format */
     int    VCOAdjInfo;
-#endif
 } dslNtrData;
 
 #ifndef VDSLTONEGROUP
@@ -2085,7 +2078,7 @@ typedef struct _adslMibInfo {
 	unsigned int maxBondingDelay;
 	gFactorsEntry			physGfactors;
 	unsigned char			fastRetrainActive;
-#if defined(CONFIG_BCM963158)
+#if defined(SECONDARY_AFEID_FN)
 	unsigned int			xdslSecondaryAfeId[2];
 #endif
 #if defined(SUPPORT_DSL_GFAST) || defined(CONFIG_BCM_DSL_GFAST)

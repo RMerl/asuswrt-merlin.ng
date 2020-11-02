@@ -149,6 +149,7 @@ BUILD_DM_PURE181=y
 # DESKTOP_LINUX is not set
 # BUILD_CUSTOMER is not set
 BUILD_CONSOLED=y
+# BUILD_BSTREAM_IQOS is not set
 BUILD_BUSYBOX=dynamic
 
 #
@@ -255,6 +256,7 @@ BUILD_WSC=dynamic
 # BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG is not set
 # BUILD_HND_EAP is not set
 # BUILD_HND_EAP_AP1 is not set
+# BUILD_BCM_WLAN_DPDCTL is not set
 # BRCM_DRIVER_WIRELESS_USBAP is not set
 
 #
@@ -449,7 +451,7 @@ BRCM_SSP_LEVEL_MIN=y
 #
 # BUILD_OPENVSWITCH is not set
 # BRCM_OVS_SUPPORT is not set
-# BUILD_BRCM_HOSTAPD is not set
+BUILD_BRCM_HOSTAPD=y
 
 #
 # Management Protocols and User Interface Selection
@@ -563,3 +565,4 @@ BRCM_MEMORY_RESTRICTION_OFF=y
 # BUILD_WEB_SOCKETS_TEST is not set
 # BUILD_FPING is not set
 # BUILD_MTD_OOPS is not set
+# BUILD_ARM_PLTS is not set

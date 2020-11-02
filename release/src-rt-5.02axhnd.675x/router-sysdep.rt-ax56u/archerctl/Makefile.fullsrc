@@ -5,6 +5,7 @@
 #
 EXE = archerctl
 OBJS = archer_ctl.o
+LIBS = -larcher
 
 PROGRAM_NAME_ALT:=archer
 
@@ -63,13 +64,8 @@ ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
 # Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
 # See Section 10.2 of Gnu Make manual
 #
-ifeq ($(wildcard $(SRCBASE)/router-sysdep/archerctl/*.c),)
-archerctl:
-	-cp -f $(SRCBASE)/router-sysdep/archerctl/prebuilt/archerctl archerctl
-else
-archerctl: $(OBJS)
+$(EXE): $(OBJS)
 	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
-endif
 
 #
 # Include the rule for making dependency files.

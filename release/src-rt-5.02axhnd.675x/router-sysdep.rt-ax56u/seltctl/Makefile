@@ -153,9 +153,8 @@ endif
 # Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
 # See Section 10.2 of Gnu Make manual
 # 
-$(EXE):
-	echo "Copying $@"
-	-cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/prebuilt/$@ ./
+$(EXE): $(OBJS)
+	$(CC) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
 
 #
 # Include the rule for making dependency files.

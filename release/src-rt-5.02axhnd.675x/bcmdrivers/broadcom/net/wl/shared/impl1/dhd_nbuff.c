@@ -402,7 +402,7 @@ dhd_fkb_pool_clone2unicast(osl_t *osh,FkBuff_t *fkb_p,void *mac) {
         memcpy(clone_fkb_p,fkbm_p,(fkbm_p->data+fkbm_p->len-(uint8_t *)fkbm_p));
         clone_fkb_p->recycle_hook = dhd_fkb_pool_put;
         clone_fkb_p->recycle_context = (unsigned long)clone_fkb_p;
-        atomic_set(&clone_fkb_p->users,1);
+        fkb_set_ref(clone_fkb_p, 1);
         clone_fkb_p->data= (uint8_t *)clone_fkb_p+((uintptr_t)fkbm_p->data -(uintptr_t)fkbm_p);
         clone_fkb_p->dirty_p=_to_dptr_from_kptr_(clone_fkb_p->data+clone_fkb_p->len);
         /* if the master has DHDHDR already moved */

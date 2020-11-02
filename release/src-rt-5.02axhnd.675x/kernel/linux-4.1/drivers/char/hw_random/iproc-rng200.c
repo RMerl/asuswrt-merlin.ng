@@ -143,9 +143,12 @@ static int iproc_rng200_read(struct hwrng *rng, void *buf, size_t max,
 			if (!wait)
 				/* Cannot wait, return immediately */
 				return max - num_remaining;
-
+#if defined(CONFIG_BCM_KF_HWRNG)
+			udelay(20);
+#else			
 			/* Can wait, give others chance to run */
 			usleep_range(min(num_remaining * 10, 500U), 500);
+#endif			
 		}
 	}
 
@@ -207,7 +210,7 @@ static int iproc_rng200_probe(struct platform_device *pdev)
 	priv->rng.init = iproc_rng200_init,
 	priv->rng.cleanup = iproc_rng200_cleanup,
 #if defined(CONFIG_BCM_KF_HWRNG)
-	priv->rng.quality = 1000,
+	priv->rng.quality = 1024,
 #endif /* BCM_KF_HWRNG */
 
 	/* Register driver */

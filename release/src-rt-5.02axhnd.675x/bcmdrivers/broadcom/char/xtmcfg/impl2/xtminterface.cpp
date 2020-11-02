@@ -111,10 +111,9 @@ void XTM_INTERFACE::PreInit ( void )
     m_Cfg.ulIfAdminStatus = ADMSTS_DOWN;
     m_ulXTMLinkMode      = XTM_LINK_MODE_UNKNOWN;
 
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178)
+#if defined(XTM_PORT_SHAPING)
     m_ulEnableShaping    = 0;
     m_ulShapeRate        = 0;
-    m_ulMinBitRate       = 0;
     m_usMbs              = 0;
     m_ulPortShapingRatio = 0;
 #endif
@@ -142,7 +141,7 @@ XTM_INTERFACE::~XTM_INTERFACE( void )
  * Returns      : XTMSTS_SUCCESS if successful or error status.
  ***************************************************************************/
 BCMXTM_STATUS XTM_INTERFACE::Initialize( UINT32 ulPort, UINT32 ulInternalPort, UINT32 ulBondingPort,
-                                         UINT32 autoSenseATM)
+                                         UINT32 autoSenseATM, FN_XTMRT_REQ pfnXtmrtReq)
 {
     BCMXTM_STATUS bxStatus = XTMSTS_SUCCESS;
     //XtmOsPrintf("%s:Enter\n",__FUNCTION__); 
@@ -154,6 +153,7 @@ BCMXTM_STATUS XTM_INTERFACE::Initialize( UINT32 ulPort, UINT32 ulInternalPort, U
         m_ulPhysBondingPort = ulBondingPort;
         m_ulIfInPacketsPtm = 0;
         m_ulAutoSenseATM = autoSenseATM ;
+        m_pfnXtmrtReq = pfnXtmrtReq;
 
         XP_REGS->ulTxSarCfg |= (1 << (m_ulPhysPort + TXSARA_CRC10_EN_SHIFT));
 #if !defined(CONFIG_BCM963158)
@@ -288,8 +288,9 @@ BCMXTM_STATUS XTM_INTERFACE::SetRxUtopiaLinkInfo ( UINT32 ulLinkState )
    //XtmOsPrintf("%s:Enter\n",__FUNCTION__); 
    UINT32 ulRxPortEnShift = 0, ulRxSlaveIntPortEnShift = 32 ;
 
-   if( m_ulInternalPort )
+   if( m_ulInternalPort ) {
       ulRxPortEnShift = RXUTO_INT_PORT_EN_SHIFT;
+   }
 #if defined(CONFIG_BCM963268)
    else {
       if ((GPIO->GPIOBaseMode & GPIO_BASE_UTOPIA_OVERRIDE) != 0) {
@@ -319,7 +320,7 @@ BCMXTM_STATUS XTM_INTERFACE::SetRxUtopiaLinkInfo ( UINT32 ulLinkState )
 } /* SetRxUtopiaLinkInfo */
 
 
-#if defined(CONFIG_BCM963158)
+#if defined(XTM_PORT_SHAPING)
 
 /***************************************************************************
  * Function Name: ConfigureMaxUTPortShaping
@@ -729,6 +730,7 @@ BCMXTM_STATUS XTM_INTERFACE::Uninitialize( void )
     if(m_bInitialized)
         SetRxUtopiaLinkInfo (LINK_DOWN) ;
 
+    m_pfnXtmrtReq = NULL ;
     // Log the sucessful uninitialization
     m_bInitialized = false;
 
@@ -808,36 +810,25 @@ BCMXTM_STATUS XTM_INTERFACE::SetCfg( PXTM_INTERFACE_CFG pCfg )
 {
     MapXtmOsPrintf("%s:Enter\n",__FUNCTION__); 
     m_Cfg.ulIfAdminStatus = pCfg->ulIfAdminStatus;
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) 
+#if defined(XTM_PORT_SHAPING)
     //Port Shaping
-    if((pCfg->ulMinBitRate != 0) && (pCfg->ulShapeRate != 0) && (pCfg->usMbs != 0) && (pCfg->ulPortShaping == PORT_Q_SHAPING_ON))
+    if((pCfg->ulShapeRate != 0) && (pCfg->usMbs != 0) && (pCfg->ulPortShaping == PORT_Q_SHAPING_ON))
     {
        m_ulEnableShaping = PORT_Q_SHAPING_ON;
-       m_ulMinBitRate = pCfg->ulMinBitRate;
        m_ulShapeRate  = pCfg->ulShapeRate;
        m_usMbs        = pCfg->usMbs;
-       MapXtmOsPrintf("%s:m_ulMinBitRate[%u] m_ulShapeRate[%u] m_usMbs[%u]\n",__FUNCTION__
-                                                                          ,m_ulMinBitRate
-                                                                          ,m_ulShapeRate
-                                                                          ,m_usMbs);
-       if(((m_ulXTMLinkMode == XTM_LINK_MODE_VDSL) || (m_ulXTMLinkMode == XTM_LINK_MODE_VDSL_RTX)))
-       {
-          ConfigureTxPortShaping (m_LinkInfo.ulLinkTrafficType) ;
-       }
+       MapXtmOsPrintf("%s:m_ulShapeRate[%u bits] m_usMbs[%u bits]\n",__FUNCTION__, m_ulShapeRate, m_usMbs);
+       ConfigureTxPortShaping (m_LinkInfo.ulLinkTrafficType) ;
     }
     else if(pCfg->ulPortShaping == PORT_Q_SHAPING_OFF)
     {
        m_ulEnableShaping = PORT_Q_SHAPING_OFF;
-       m_ulMinBitRate = 0;
        m_ulShapeRate  = 0;
        m_usMbs        = 0;
        DisableTxPortShaping();
     }
     else {
-       XtmOsPrintf("%s:m_ulMinBitRate[%u] m_ulShapeRate[%u] m_usMbs[%u]\n",__FUNCTION__
-                                                                          ,m_ulMinBitRate
-                                                                          ,m_ulShapeRate
-                                                                          ,m_usMbs); 
+       XtmOsPrintf("%s:m_ulShapeRate[%u bits] m_usMbs[%u]\n",__FUNCTION__, m_ulShapeRate, m_usMbs);
        return XTMSTS_PARAMETER_ERROR;
     }
 
@@ -846,14 +837,29 @@ BCMXTM_STATUS XTM_INTERFACE::SetCfg( PXTM_INTERFACE_CFG pCfg )
 } /* SetCfg */
 
 
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178)
+#if defined(XTM_PORT_SHAPING)
+
+void XTM_INTERFACE::ResetHWTxPortShaping (void)
+{
+   volatile UINT32 *pulUtoPortScr = &XP_REGS->ulSsteUtoPortScr[m_ulPhysPort][0];
+   volatile UINT32 *pulUtoPortPcr = &XP_REGS->ulSsteUtoPortPcr[m_ulPhysPort][0];
+   volatile UINT32 *pulUtoPortGts = &XP_REGS->ulSsteUtoGtsCfg[m_ulPhysPort];
+   pulUtoPortScr[0] = 0;
+   pulUtoPortScr[1] = 0;
+   pulUtoPortScr[2] = 0;
+   pulUtoPortPcr[0] = 0;
+   pulUtoPortPcr[1] = 0;
+   pulUtoPortPcr[2] = 0;
+   *pulUtoPortGts = 0;
+   return;
+}
 
 #define  GFAST_SCHED_DIV_FACTOR        1333
 
 UINT32 XTM_INTERFACE::ConfigureTxPortShaping( UINT32 ulTrafficType)
 {
+#if !defined(CONFIG_BCM_XRDP)
    UINT16 usMbs;
-   UINT32 ulMinBitRate;
    UINT32 ulShapeRate;
    //UINT32 ulMbs;
    volatile UINT32 *pulUtoPortScr = &XP_REGS->ulSsteUtoPortScr[m_ulPhysPort][0];
@@ -862,18 +868,35 @@ UINT32 XTM_INTERFACE::ConfigureTxPortShaping( UINT32 ulTrafficType)
    UINT32 ulScr = 0;
    UINT32 ulGts = 0;
    UINT32 ulScrSitLmt = 0;
+#else
+   XTMRT_PORT_SHAPER_INFO   portShaperInfo ;
+#endif
    if((m_ulEnableShaping == 0)) {
       //No Shaping
       return PORT_Q_SHAPING_OFF;
    }
+
+#if defined(CONFIG_BCM_XRDP)
+   /* Send a message to XTMRT to control port shaping to enable mode across
+   ** all the xtm channels corresponding to the port.
+   ** First let us disable at SAR end to be sure.
+   */
+   ResetHWTxPortShaping() ;
+   portShaperInfo.ulShapingRate      = m_ulShapeRate ;
+   portShaperInfo.usShapingBurstSize = m_usMbs ;
+   if (m_pfnXtmrtReq != NULL) {
+      (*m_pfnXtmrtReq)(NULL, XTMRT_CMD_SET_TX_PORT_SHAPER_INFO, &portShaperInfo);
+   }
+   else {
+      XtmOsPrintf("ConfigureTxPortShaping: Reference XTMRT Null \n") ;
+   }
+#else
    //Now apply the port shaping ratio.
    //First divide the value by 100 and then multiply by the factor so that we
    //may not overflow. 
-   ulMinBitRate = (m_ulMinBitRate / XTM_PORT_SHAPING_RATIO_FULL) * m_ulPortShapingRatio;
    ulShapeRate  = (m_ulShapeRate  / XTM_PORT_SHAPING_RATIO_FULL) * m_ulPortShapingRatio;
-   XtmOsPrintf("m_ulPortShapingRatio[%u] PhysPort[%u] MinBitRate[%u] ShapeRate[%u] Mbs[%u]\n",m_ulPortShapingRatio,
+   XtmOsPrintf("m_ulPortShapingRatio[%u] PhysPort[%u] ShapeRate[%u bits] Mbs[%u] \n",m_ulPortShapingRatio,
                                                                     m_ulPhysPort,
-                                                                    ulMinBitRate,
                                                                     ulShapeRate,
                                                                     m_usMbs);
    
@@ -925,7 +948,7 @@ UINT32 XTM_INTERFACE::ConfigureTxPortShaping( UINT32 ulTrafficType)
       if (m_ulXTMLinkMode == XTM_LINK_MODE_GFAST) {
          /* new Mbs = (minrate)/8/(10^9/750000). Explanation that this is suitable
           ** for asymmetric Gfast is in SWBCACPE-23733 */
-         usMbs = (ulMinBitRate/8)/GFAST_SCHED_DIV_FACTOR ;
+         usMbs = (ulShapeRate/8)/GFAST_SCHED_DIV_FACTOR ;
       }
       else {
          usMbs = m_usMbs ;
@@ -977,65 +1000,37 @@ UINT32 XTM_INTERFACE::ConfigureTxPortShaping( UINT32 ulTrafficType)
          pulUtoPortScr[1]  = (usMbs << SSTE_SCR_ACCLMT_SHIFT);
          pulUtoPortScr[2]  = (ulScrSitLmt << SSTE_SCR_SITLMT_SHIFT);
       }
-      if (ulMinBitRate && usMbs)
-      {
-         /* Calculate PCR.
-         * ulPcr is the number of token bucket refills per second to support the
-         * the shaping rate in bytes per second.  ulShapeRate is in bits per sec.
-         * The number of tokens per refill is PTM_TOKEN_BUCKET_INCREMENT and is
-         * set to PCR_INCR.
-         */ 
 
-         /* Calculate SITLMT for PCR.
-         * SITLMT is the number of SIT pulses between token bucket refills.
-         */
-         UINT32 ulPcrSitLmt = (ulSitsPerSec * PTM_TOKEN_BUCKET_INCREMENT / ulMinBitRate) * 8;
-
-         if (ulPcrSitLmt == 0)
-         {
-            XtmOsPrintf("ConfigurePtmQueueShaper: PCR_SITLMT=0x0 is invalid. No shaping.\n");
-            return PORT_Q_SHAPING_OFF;
-         }
-         else if (ulPcrSitLmt > 0x7FFF)
-         {
-            /* Try using SIT_LO_CNT */
-            ulPcrSitLmt = (ulSitsPerSecLo * PTM_TOKEN_BUCKET_INCREMENT / ulMinBitRate) * 8;
-            if (ulPcrSitLmt == 0 || ulPcrSitLmt > 0x7FFF)
-            {
-               XtmOsPrintf("ConfigurePtmQueueShaper: PCR_SITLMT=0x%x is invalid. No shaping.\n",
-                          ulPcrSitLmt);
-               return PORT_Q_SHAPING_OFF;
-            }
-            ulGts |= SST_GTS_SITLO_PCR_EN | SST_GTS_PCR_PRI_LEVEL_EN | SST_GTS_PKT_MODE_SHAPING_EN;
-         }
-         else
-         {
-            ulGts |= SST_GTS_PCR_PRI_LEVEL_EN | SST_GTS_PKT_MODE_SHAPING_EN;
-         }
-        
-         pulUtoPortPcr[0] = (PTM_TOKEN_BUCKET_INCREMENT << SSTE_PCR_INCR_SHIFT) |
-                    (MCR_PRIORITY << SSTE_PCR_PLVLWT_SHIFT);
-         pulUtoPortPcr[1] = (usMbs << SSTE_PCR_ACCLMT_SHIFT);
-         pulUtoPortPcr[2] = (ulPcrSitLmt << SSTE_PCR_SITLMT_SHIFT);
-      }
       *pulUtoPortGts = ulGts;
    }
    MapXtmOsPrintf("pUtoPortScr[%08x] pUtoPortScr[%08x] \n",pulUtoPortScr[0],pulUtoPortScr[1]);
    MapXtmOsPrintf("pUtoPortScr[%08x] pUtoPortGts[%08x] \n",pulUtoPortScr[2],*pulUtoPortGts);
+#endif
    return PORT_Q_SHAPING_ON;
 }
 
 void XTM_INTERFACE::DisableTxPortShaping()
 {
-   volatile UINT32 *pulUtoPortScr = &XP_REGS->ulSsteUtoPortScr[m_ulPhysPort][0];
-   volatile UINT32 *pulUtoPortPcr = &XP_REGS->ulSsteUtoPortPcr[m_ulPhysPort][0];
-   volatile UINT32 *pulUtoPortGts = &XP_REGS->ulSsteUtoGtsCfg[m_ulPhysPort];
-   pulUtoPortScr[0] = 0;
-   pulUtoPortScr[1] = 0;
-   pulUtoPortScr[2] = 0;
-   pulUtoPortPcr[0] = 0;
-   pulUtoPortPcr[1] = 0;
-   pulUtoPortPcr[2] = 0;
-   *pulUtoPortGts = 0;
+#if defined(CONFIG_BCM_XRDP)
+   XTMRT_PORT_SHAPER_INFO   portShaperInfo ;
+#endif
+
+   ResetHWTxPortShaping() ;
+
+#if defined(CONFIG_BCM_XRDP)
+   /* Send a message to XTMRT to control port shaping to disable mode across
+   ** all the xtm channels corresponding to the port.
+   ** The above lines are to make sure it is controlled at the SAR end.
+   ** Values of shaping should be 0 set in previous routines.
+   */
+   portShaperInfo.ulShapingRate      = m_ulShapeRate ;
+   portShaperInfo.usShapingBurstSize = m_usMbs ;
+   if (m_pfnXtmrtReq != NULL) {
+      (*m_pfnXtmrtReq)(NULL, XTMRT_CMD_SET_TX_PORT_SHAPER_INFO, &portShaperInfo);
+   }
+   else {
+      XtmOsPrintf("ConfigureTxPortShaping: Reference XTMRT Null \n") ;
+   }
+#endif
 }
 #endif

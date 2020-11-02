@@ -71,6 +71,12 @@ static int rdd_miss_cache_enable(bdmf_session_handle session, const bdmfmon_cmd_
 static int rdd_ae_pause_frame_ignore(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 #endif
 static int _rdd_ingress_qos_drop_miss_ratio_set(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+#if defined BCM6858 || defined BCM6856
+static int rdd_multicast_limit_cfg(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+#endif
+#ifdef G9991
+static int rdd_g9991_flow_control_print_debug(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+#endif
 
 extern uintptr_t rdp_runner_core_addr[GROUPED_EN_SEGMENTS_NUM];
 uint32_t g_rdd_trace = 0;
@@ -157,6 +163,15 @@ int rdd_make_shell_commands(void)
 #endif
     MAKE_BDMF_SHELL_CMD(rdd_directory, "iqdmr",   "Ingress qos drop miss ratio", _rdd_ingress_qos_drop_miss_ratio_set,
         BDMFMON_MAKE_PARM("drop miss ratio", "Drop miss ratio", BDMFMON_PARM_NUMBER, 0));
+
+#if defined BCM6858 || defined BCM6856
+    MAKE_BDMF_SHELL_CMD(rdd_directory, "mlc",   "multicast limit config", rdd_multicast_limit_cfg,
+        BDMFMON_MAKE_PARM("max", "max number of multicast tasks", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("min", "min number of multicast tasks", BDMFMON_PARM_NUMBER, 0));
+#endif
+#ifdef G9991
+    MAKE_BDMF_SHELL_CMD_NOPARM(rdd_directory, "fcs", "flow_control status", rdd_g9991_flow_control_print_debug);
+#endif
 
 #ifdef CONFIG_DHD_RUNNER
     rdd_dhd_helper_shell_cmds_init(rdd_directory);
@@ -453,13 +468,13 @@ static int32_t rdd_set_runner_prints(bdmf_session_handle session, const bdmfmon_
     max_prints_per_period = parm[0].value.number;
     period = parm[1].value.unumber;
     priority = parm[2].value.unumber;
-    
+
     if (period == 0 || period > 10000)
     {
         bdmf_session_print(session, "Bad argument %d (expected 1-10000)\n", period);
         return BDMF_ERR_PARM;
     }
-    
+
     if (priority > 3)
     {
         bdmf_session_print(session, "Bad argument %d (expected 0-3)\n", period);
@@ -467,7 +482,7 @@ static int32_t rdd_set_runner_prints(bdmf_session_handle session, const bdmfmon_
     }
 
     rdd_debug_prints_update_params(max_prints_per_period, period, priority);
-    
+
     return 0;
 }
 #endif
@@ -532,7 +547,7 @@ static int rdd_cso_stat(bdmf_session_handle session, const bdmfmon_cmd_parm_t pa
     RDD_CSO_CONTEXT_ENTRY_NO_CSO_SUPPORT_PACKETS_READ_G(no_cso_support_packets, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0);
     RDD_CSO_CONTEXT_ENTRY_BAD_IPV4_HDR_CSUM_PACKETS_READ_G(bad_ipv4_hdr_csum_packets, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0);
     RDD_CSO_CONTEXT_ENTRY_BAD_TCP_UDP_CSUM_PACKETS_READ_G(bad_tcp_udp_csum_packets, RDD_CSO_CONTEXT_TABLE_ADDRESS_ARR, 0);
-    
+
     bdmf_session_print(session, "\n\nCSO statistics\n");
     bdmf_session_print(session, "------------------------------------------------------\n");
 
@@ -540,7 +555,7 @@ static int rdd_cso_stat(bdmf_session_handle session, const bdmfmon_cmd_parm_t pa
     bdmf_session_print(session, "\tNo CSO support packets           = %d\n", no_cso_support_packets);
     bdmf_session_print(session, "\tBad IPV4 hdr checksum packets    = %d\n", bad_ipv4_hdr_csum_packets);
     bdmf_session_print(session, "\tBad TCP/UDP checksum packets     = %d\n", bad_tcp_udp_csum_packets);
-        
+
     return 0;
 }
 #endif
@@ -630,3 +645,65 @@ static int _rdd_ingress_qos_drop_miss_ratio_set(bdmf_session_handle session, con
     return 0;
 }
 
+#if defined BCM6858 || defined BCM6856
+static int rdd_multicast_limit_cfg(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    uint8_t mcast_max = parm[0].value.unumber;
+    uint8_t mcast_min = parm[1].value.unumber;
+
+    rdd_mcast_max_tasks_limit_cfg(mcast_max);
+    rdd_mcast_min_tasks_limit_cfg(mcast_min);
+
+    return 0;
+}
+#endif
+
+#ifdef G9991
+static int rdd_g9991_flow_control_print_debug(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    uint32_t flow_control_vector_0_1, flow_control_vector_2_3;
+    uint32_t sid_to_phy_port_mask[RDD_G9991_SID_TO_PHYSICAL_PORT_MASK_SIZE];
+    uint32_t sid_flow_control_status;
+    uint32_t i, j;
+
+    bdmf_session_print(session, "\n\nFlow control Vector\n");
+    bdmf_session_print(session, "-------------------\n");
+
+    RDD_BYTES_4_BITS_READ(flow_control_vector_0_1, (RDD_BYTES_4_DTS *)RDD_G9991_FLOW_CONTROL_VECTOR_PTR(DS_TM_CORE_BBH_0_1));
+    RDD_BYTES_4_BITS_READ(flow_control_vector_2_3, (RDD_BYTES_4_DTS *)RDD_G9991_FLOW_CONTROL_VECTOR_PTR(DS_TM_CORE_BBH_2_3));
+
+    RDD_BYTES_4_BITS_READ(sid_to_phy_port_mask[0], (RDD_BYTES_4_DTS *)RDD_G9991_SID_TO_PHYSICAL_PORT_MASK_PTR(DS_TM_CORE_BBH_0_1) + 0);
+    RDD_BYTES_4_BITS_READ(sid_to_phy_port_mask[1], (RDD_BYTES_4_DTS *)RDD_G9991_SID_TO_PHYSICAL_PORT_MASK_PTR(DS_TM_CORE_BBH_0_1) + 4);
+    RDD_BYTES_4_BITS_READ(sid_to_phy_port_mask[2], (RDD_BYTES_4_DTS *)RDD_G9991_SID_TO_PHYSICAL_PORT_MASK_PTR(DS_TM_CORE_BBH_2_3) + 8);
+    RDD_BYTES_4_BITS_READ(sid_to_phy_port_mask[3], (RDD_BYTES_4_DTS *)RDD_G9991_SID_TO_PHYSICAL_PORT_MASK_PTR(DS_TM_CORE_BBH_2_3) + 12);
+
+    bdmf_session_print(session, "sid   status\n");
+    bdmf_session_print(session, "------------\n");
+
+    for (i = 0; i < 32; i++) {
+        bdmf_session_print(session, " %02i: ", i);
+
+        /* find to which hsgmii the currenet sid is belong */
+        for (j = 0; j < RDD_G9991_SID_TO_PHYSICAL_PORT_MASK_SIZE; j++)
+            if (sid_to_phy_port_mask[j] & 1 << i)
+               break;
+
+        if (j == RDD_G9991_SID_TO_PHYSICAL_PORT_MASK_SIZE) {
+            bdmf_session_print(session, "not configured\n");
+            continue;
+        }
+
+        if (j == 0 || j == 1)
+            sid_flow_control_status = flow_control_vector_0_1 & (1 << i);
+        else
+            sid_flow_control_status = flow_control_vector_2_3 & (1 << i);
+
+        if (sid_flow_control_status)
+            bdmf_session_print(session, "enabled\n");
+        else
+            bdmf_session_print(session, "blocked\n");
+    }
+
+    return 0;
+}
+#endif

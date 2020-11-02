@@ -178,7 +178,8 @@
   <parameter name="X_BROADCOM_COM_TunnelName" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
     <description source="BROADCOM">Tunnel name</description>
 
-
+  <parameter name="X_BROADCOM_COM_SPI" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">SPI</description>
 
 
 <object name="InternetGatewayDevice.Device.IPsec.Profile.{i}." shortObjectName="Dev2IpsecProfileObject" specSource="TR181" profile="Device2_IPsec:1" requirements="PC" supportLevel="DynamicInstances" />

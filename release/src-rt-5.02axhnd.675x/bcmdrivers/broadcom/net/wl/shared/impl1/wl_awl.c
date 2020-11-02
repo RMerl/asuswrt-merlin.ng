@@ -37,7 +37,6 @@
  *
  * TODO
  *  - Statistics update (for fast path) ?
- *  - rxbound for slow path packets
  *
  * =============================================================================
  */
@@ -63,10 +62,10 @@
  *       wlc_ampdu_recvdata()
  *        wlc_recvdata_ordered()
  *         wl_sendup()
- *          *wl_awl_upstream_send_chained()     => unchain, add to SLL, send
+ *          *wl_awl_upstream_send_chain()     => unchain, add to SLL, send
  *       wlc_sendup_chain()
  *        wl_sendup()
- *         *wl_awl_upstream_send_chained()     => unchain, add to SLL, send
+ *         *wl_awl_upstream_send_chain()     => unchain, add to SLL, send
  *     ....
  *    ....
  *   ....
@@ -115,6 +114,7 @@
 #include <bcmendian.h>
 #include <wlc_cfp.h>
 #if defined(BCM_BLOG)
+#include <fcache.h>
 #include <wl_blog.h>
 #endif /* BCM_BLOG */
 #if !defined(WL_EAP_AP)
@@ -148,24 +148,22 @@
  * Pre-processor flags, (few in wl_awl.h)
  */
 /*
- * Enable this flag for lite rx processing (default disabled)
- * - ETHER_TYPE_BRCM/BRCM_AIRIQ filtered for archer and will go through wl_rx_frame
- * - Archer flow miss will directly call blog_sinit and netif_rx (in archer context)
- */
-//#define WL_AWL_RX_LITE
-
-/*
  * Enable this flag for debug message control with-in this file
  * default disabled
  */
 //#define WL_AWL_DEBUG
 
+
+#if defined(WL_PKTFWD_INTRABSS)
+
+#include <wlc_scb.h>
 /*
- * Enable this flag if Intrabss frames to be filtered before sending to Archer
- *
- * Note: All packets will go through the D3LUT lookup
+ * Intrabss packets will be sent to Archer for forwarding.
+ * for flow-miss packets, a blog will be attached and sent to WLAN driver.
  */
-#define WL_AWL_FILTER_INTRABSS
+#define WL_AWL_INTRABSS
+
+#endif /* WL_PKTFWD_INTRABSS */
 
 /*
  * Enable this flag for checking skb link pointers
@@ -206,7 +204,11 @@
 #define WL_AWL_RX_MODE_FULL         2
 
 /* Packet bound */
+#if defined(ARCHER_WLAN_RX_BUDGET)
+#define WL_AWL_RX_PKT_BOUND         ARCHER_WLAN_RX_BUDGET
+#else /* !ARCHER_WLAN_RX_BUDGET */
 #define WL_AWL_RX_PKT_BOUND         32   /* 64 */
+#endif /* !ARCHER_WLAN_RX_BUDGET */
 
 #if defined(WL_AWL_SKB_AUDIT)
 /* Check for non-null skb->prev, log and set to null */
@@ -228,6 +230,14 @@
 #define WL_AWL_SKB_PREV_AUDIT(skb)   do { } while (0)
 #define WL_AWL_SKB_NEXT_AUDIT(skb)   do { } while (0)
 #endif /* !WL_AWL_SKB_AUDIT */
+
+#if defined(ARCHER_WLAN_MISS_PKTLIST)
+#define wl_awl_rx_flow_miss_handler_wl_dpc wl_awl_rx_flow_miss_handler_wl_dpc_sll
+#define wl_awl_rx_flow_miss_handler_archer wl_awl_rx_flow_miss_handler_archer_sll
+#else /* !ARCHER_WLAN_MISS_PKTLIST */
+#define wl_awl_rx_flow_miss_handler_wl_dpc wl_awl_rx_flow_miss_handler_wl_dpc_skb
+#define wl_awl_rx_flow_miss_handler_archer wl_awl_rx_flow_miss_handler_archer_skb
+#endif /* !ARCHER_WLAN_MISS_PKTLIST */
 
 /**
  * -----------------------------------------------------------------------------
@@ -269,7 +279,8 @@ typedef struct wl_awl_rx {
 	unsigned long a2w_flt_packets;
 	unsigned long a2w_fwd_packets;
 	unsigned long a2w_fwd_calls;
-	unsigned long a2w_drp_packets;
+	unsigned long a2w_chn_packets;
+	unsigned long a2w_max_chn;
 } wl_awl_rx_t;
 
 /**
@@ -320,7 +331,12 @@ extern void BCMFASTPATH wl_sendup(wl_info_t *wl, wl_if_t *wlif, void *p, int num
  * Section: WL_AWL local function declerations
  * =============================================================================
  */
-int wl_awl_rx_process_intrabss(struct wl_info *wl, struct sk_buff *skb);
+
+#if defined(WL_AWL_INTRABSS)
+static inline int wl_awl_rx_process_intrabss(struct wl_info *wl,
+                                             struct sk_buff *skb);
+typedef int (*xmit_fn_t)(struct sk_buff *skb, struct net_device *dev);
+#endif /* WL_AWL_INTRABSS */
 
 /**
  * =============================================================================
@@ -433,26 +449,20 @@ wl_awl_rx_sendup(struct wl_info *wl, struct sk_buff *skb)
 #endif /* BCM_BLOG */
 	PKTCLRFCDONE(skb);
 
-#if !defined(WL_AWL_FILTER_INTRABSS)
-	/* process intra-bss packets as they are not handled in bridge or wl_linux */
+#if defined(WL_AWL_INTRABSS)
+	/* Process intra-bss packets as they are not handled in bridge or wl_linux */
 	if (wl_awl_rx_process_intrabss(wl, skb) == BCME_OK) {
 	    return PKT_DONE;
 	}
-#endif /* !WL_AWL_FILTER_INTRABSS */
+#endif /* WL_AWL_INTRABSS */
 
 	if (!skb->dev)
 		return -1;
 
 	if (skb->dev->reg_state != NETREG_REGISTERED) {
 		printk("%s: invalid dev(%s) reg_state %d\n", __FUNCTION__, skb->dev->name,
-			skb->dev->reg_state);
-		return -1;
-	}
-
-	if (skb->dev->reg_state != NETREG_REGISTERED) {
-		printk("%s: invalid dev(%s) reg_state %d\n", __FUNCTION__, skb->dev->name,
-			skb->dev->reg_state);
-		return -1;
+	        skb->dev->reg_state);
+	        return -1;
 	}
 
 	skb->protocol = eth_type_trans(skb, skb->dev);
@@ -464,7 +474,10 @@ wl_awl_rx_sendup(struct wl_info *wl, struct sk_buff *skb)
 #ifdef NAPI_POLL
 	netif_receive_skb(skb);
 #else /* NAPI_POLL */
-	netif_rx(skb);
+	if (in_interrupt())
+	    netif_rx(skb);
+	else
+	    netif_rx_ni(skb);
 #endif /* NAPI_POLL */
 
 	return PKT_NORM;
@@ -479,53 +492,99 @@ wl_awl_rx_sendup(struct wl_info *wl, struct sk_buff *skb)
  * -----------------------------------------------------------------------------
  */
 void
-wl_awl_rx_flow_miss_handler_archer(void *ctxt, struct sk_buff *skb)
+wl_awl_rx_flow_miss_handler_archer_sll(void *ctxt, pktlist_t *misspktl)
 {
 	struct wl_info *wl = (struct wl_info*)ctxt;
+	struct sk_buff *skb;
 	wl_awl_t *awl;
-	int rc;
+	int npkts;
 
-	if ((wl == NULL) || (skb == NULL)) {
-	    WL_AWL_ERROR("%s (0x%p, 0x%p) with NULL parameters\n",
-	        __FUNCTION__, wl, skb);
+	if ((wl == NULL) || (misspktl == NULL)) {
+	    WL_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
+	        __FUNCTION__, wl, misspktl);
 	    return;
 	}
 
 	awl = WL_AWL_CB(wl);
-	awl->rx.a2w_rx_packets++;
 
-	/* Process the flow-miss packets */
-	rc = wl_awl_rx_sendup(wl, skb);
+	/* De-link packets from the SLL */
+	skb = misspktl->head;
+	npkts = misspktl->len;
+	PKTLIST_RESET(misspktl);
 
-	if (rc == 0) {
-	    awl->rx.a2w_fwd_packets++;
-	    awl->rx.a2w_fwd_calls++;
-	} else {
-		awl->rx.a2w_flt_packets++;
+	/* update chain packet status */
+	awl->rx.a2w_chn_packets = npkts;
+	if (awl->rx.a2w_chn_packets > awl->rx.a2w_max_chn)
+	    awl->rx.a2w_max_chn = awl->rx.a2w_chn_packets;
+
+	/* Process each packet */
+	while (npkts--) {
+	    struct sk_buff* nskb = skb->prev;
+	    int rc;
+
+	    skb->next = skb->prev = NULL;
+
+	    awl->rx.a2w_rx_packets++;
+
+	    /* Process the flow-miss packets */
+	    rc = wl_awl_rx_sendup(wl, skb);
+
+	    if (rc == 0) {
+	        awl->rx.a2w_fwd_packets++;
+	        awl->rx.a2w_fwd_calls++;
+	    } else {
+	        awl->rx.a2w_flt_packets++;
+	    }
+
+	    skb = nskb;
 	}
 
 	return;
+}
+
+void
+wl_awl_rx_flow_miss_handler_archer_skb(void *ctxt, struct sk_buff *skb)
+{
+	struct wl_info *wl = (struct wl_info*)ctxt;
+	pktlist_t misspktl;
+
+	if ((wl == NULL) || (skb == NULL)) {
+	    WL_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
+	        __FUNCTION__, wl, skb);
+	    return;
+	}
+
+	PKTLIST_RESET(&misspktl);
+	wl_awl_pktlist_add(&misspktl, skb);
+
+	return wl_awl_rx_flow_miss_handler_archer_sll(ctxt, &misspktl);
 }
 
 /**
  * -----------------------------------------------------------------------------
  * Function : Callback function from Archer CPU for flow-miss
  *
- *   adds packets to SLL and invokes WL dpc
+ *   appends flow-miss packet list to WLAN SLL and invokes WL dpc
  *   minimum processing in Archer context
  * -----------------------------------------------------------------------------
  */
 void
-wl_awl_rx_flow_miss_handler_wl_dpc(void *ctxt, struct sk_buff *skb)
+wl_awl_rx_flow_miss_handler_wl_dpc_sll(void *ctxt, pktlist_t *misspktl)
 {
 	struct wl_info *wl = (struct wl_info*)ctxt;
 	wl_awl_t *awl;
 	pktlist_t *pktlist;
+	int npkts;
 
 	/* Get the WL public control block */
-	if ((wl == NULL) || (skb == NULL)) {
-	    WL_AWL_ERROR("%s (0x%p, 0x%p) with NULL parameters\n",
-	        __FUNCTION__, wl, skb);
+	if ((wl == NULL) || (misspktl == NULL)) {
+	    WL_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
+	        __FUNCTION__, wl, misspktl);
+	    return;
+	}
+
+	if ((npkts = misspktl->len) == 0) {
+	    /* No patckets in the list */
 	    return;
 	}
 
@@ -535,64 +594,142 @@ wl_awl_rx_flow_miss_handler_wl_dpc(void *ctxt, struct sk_buff *skb)
 
 	WL_AWL_PKTLIST_LOCK(awl->rx.a2w_pktl_lock);
 
-	/* Add to the SLL */
-	wl_awl_pktlist_add(pktlist, skb);
-	awl->rx.a2w_rx_packets++;
+	/* Apend to the a2w SLL */
+	if (likely(pktlist->len != 0)) {
+	    /* pend to tail */
+	    PKTLIST_PKT_SET_SLL(pktlist->tail, misspktl->head, SKBUFF_PTR);
+	} else {
+	    pktlist->head = misspktl->head;
+	}
+	pktlist->tail = misspktl->tail;
+	pktlist->len += npkts;
+
+	/* Wakeup DPC thread or run DPC tasklet */
+	atomic_add(npkts, &wl->callbacks);
+#ifdef WL_ALL_PASSIVE
+	wl->awl_sp_rxq_dispatched = true;
+#endif /* WL_ALL_PASSIVE */
 
 	WL_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
 
-	/* Wakeup DPC thread or run DPC tasklet */
-	atomic_inc(&wl->callbacks);
+	PKTLIST_RESET(misspktl);
+
+	awl->rx.a2w_rx_packets += npkts;
+	awl->rx.a2w_chn_packets = npkts;
+	if (awl->rx.a2w_chn_packets > awl->rx.a2w_max_chn)
+	    awl->rx.a2w_max_chn = awl->rx.a2w_chn_packets;
+
 #ifdef WL_ALL_PASSIVE
-	wl->awl_sp_rxq_dispatched = true;
 	wake_up_interruptible(&wl->kthread_wqh);
 #endif /* WL_ALL_PASSIVE */
 
 	return;
 }
 
+void
+wl_awl_rx_flow_miss_handler_wl_dpc_skb(void *ctxt, struct sk_buff *skb)
+{
+	struct wl_info *wl = (struct wl_info*)ctxt;
+	pktlist_t misspktl;
+
+	/* Get the WL public control block */
+	if ((wl == NULL) || (skb == NULL)) {
+	    WL_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
+	        __FUNCTION__, wl, skb);
+	    return;
+	}
+
+	PKTLIST_RESET(&misspktl);
+	wl_awl_pktlist_add(&misspktl, skb);
+
+	return wl_awl_rx_flow_miss_handler_wl_dpc_sll(ctxt, &misspktl);
+}
+
+#if defined(WL_AWL_INTRABSS)
 /**
  * -----------------------------------------------------------------------------
- * Function : Process Intra BSS packets as they are not handled in the bridge
- *            and wl_linux
+ * Function : For Archer flow-miss packets process Intra BSS as they are not
+ *            handled in the bridge.
  *
- *   Check if the packet is destined to the same domain using D3LUT
- *   if intrabss, find the station and tx the packet back to NIC driver
+ *            Check if the packet is destined to the same interface using
+ *            SCB lookup. If intrabss, attach a blog, 16bit PKTFWD key and
+ *            send it to WLAN driver.
+ *            Flowcache will learn about this flow and the following packets
+ *            will be offloaded to Archer.
  * -----------------------------------------------------------------------------
  */
 int
 wl_awl_rx_process_intrabss(struct wl_info *wl, struct sk_buff *skb)
 {
-	d3lut_t       * d3lut = wl_pktfwd_lut();
-	uint8_t       * d3_addr;
-	d3lut_elem_t  * d3lut_elem;
-	bool          intrabss = FALSE;
-	wl_if_t       * wlif;
+    uint8_t               * d3_addr;
+    wlc_if_t              * wlcif;
+    struct net_device     * net_device;
+    wlc_bsscfg_t          * bsscfg;
+    bool                    intrabss = false;
 
-	d3_addr = (uint8_t *) PKTDATA(wl->osh, skb);
-	wlif = WL_DEV_IF(skb->dev);
+    d3_addr = (uint8_t *) PKTDATA(wl->osh, skb);
+    net_device  = skb->dev;
 
-	if (ETHER_ISMULTI(d3_addr)) /* Only unicast packets are bridged via LUT */ {
-	    return BCME_UNSUPPORTED;
-	}
+    if (ETHER_ISMULTI(d3_addr) ||
+        (WL_DEV_IF(net_device)->if_type == WL_IFTYPE_WDS))
+    {
+        /* WDS and Multicast packets are not supported */
+        return BCME_UNSUPPORTED;
+    }
 
-	d3lut_elem = d3lut_lkup(d3lut, d3_addr, D3LUT_LKUP_GLOBAL_POOL);
+    wlcif       = WL_DEV_IF(net_device)->wlcif;
+    bsscfg      = wlc_bsscfg_find_by_wlcif(wl->wlc, wlcif);
 
-	if (likely(d3lut_elem != D3LUT_ELEM_NULL)) {
-	    if ((d3lut_elem->key.domain == wl->unit) && (d3lut_elem->ext.ssid == wlif->subunit)) {
-	        intrabss = TRUE;
-	    }
-	}
+    /* Forward packets destined within the BSS */
+    if (BSSCFG_AP(bsscfg) && !bsscfg->ap_isolate) {
+        struct scb * scb;
 
-	if (intrabss == TRUE) {
-	    if (wl_intrabss_forward(wl, skb->dev, skb) == FALSE) {
-	        wl_sendup(wl, wlif, skb, 1);
-	    }
-	    return BCME_OK;
-	}
+        if ((eacmp(d3_addr, wl->pub->cur_etheraddr.octet) != 0) &&
+            (scb = wlc_scbfind(wl->wlc, bsscfg, (struct ether_addr *) d3_addr)))
+        {
+            /* Check that the dst is associated to same BSS
+             * before forwarding within the BSS. */
+            if (SCB_ASSOCIATED(scb))
+                intrabss = true;
+        }
+    }
 
-	return BCME_ERROR;
-}
+    if (intrabss == true)
+    {
+        xmit_fn_t netdev_ops_xmit;
+
+#if defined(BCM_BLOG)
+        /* Attach a blog and PKTFWD 16bit key */
+        if (skb->blog_p != NULL)
+        {
+            uint32_t chain_idx = PKTC_INVALID_CHAIN_IDX;
+
+            chain_idx = wl_pktc_req(PKTC_TBL_UPDATE, (unsigned long) d3_addr,
+                                    (unsigned long) net_device, 0);
+
+            if (chain_idx != PKTC_INVALID_CHAIN_IDX)
+            {
+                /* Update chain_idx in blog */
+                skb->blog_p->wfd.nic_ucast.is_tx_hw_acc_en  = 1;
+                skb->blog_p->wfd.nic_ucast.is_chain         = 1;
+                skb->blog_p->wfd.nic_ucast.chain_idx        = chain_idx;
+                skb->blog_p->wfd.nic_ucast.wfd_idx          =
+                    ((chain_idx & PKTC_WFD_IDX_BITMASK) >> PKTC_WFD_IDX_BITPOS);
+            }
+        }
+#endif /* BCM_BLOG */
+
+        /* Send it WLAN driver wl_start() */
+        netdev_ops_xmit = (xmit_fn_t)(net_device->netdev_ops->ndo_start_xmit);
+        netdev_ops_xmit(skb, net_device);
+
+        return BCME_OK;
+    }
+
+    return BCME_ERROR;
+}   /* wl_awl_rx_process_intrabss() */
+
+#endif /* WL_AWL_INTRABSS */
 
 /**
  * =============================================================================
@@ -622,69 +759,68 @@ wl_awl_process_slowpath_rxpkts(struct wl_info *wl)
 	pktlist_t *pktlist;
 	int npkts, ppkts = 0;
 	struct sk_buff *skb = NULL;
-	wl_if_t *if_list;
-	bool dev_matched;
 
 	awl = WL_AWL_CB(wl);
+
+	/* Get the pending packets list */
+	pktlist = WL_AWL_RX_A2W_PKTL(awl);
 
 	/* Nothing to do if mode is not WL DPC */
 	if (awl->rx.mode != WL_AWL_RX_MODE_FULL)
 	    goto done;
 
-	/* Get the pending packets list */
-	pktlist = WL_AWL_RX_A2W_PKTL(awl);
-
 	WL_AWL_PKTLIST_LOCK(awl->rx.a2w_pktl_lock);
 
-	ppkts = npkts = pktlist->len;
+	npkts = pktlist->len;
 	if (npkts == 0) {
 	    WL_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
 	    goto done;
 	}
 
 	skb = (struct sk_buff*)pktlist->head;
-	PKTLIST_RESET(pktlist);
+	if (npkts > awl->rx.bound) {
+	    struct sk_buff* nskb = skb;
+	    ppkts = npkts = awl->rx.bound;
+
+	    /* Unlink first npkts from the SLL */
+	    do {
+	        nskb = nskb->prev;
+	    } while (--ppkts);
+
+	    pktlist->head = nskb;
+	    pktlist->len -= npkts;
+	} else {
+	    PKTLIST_RESET(pktlist);
+	}
+
+	if (pktlist->len == 0) {
+#ifdef WL_ALL_PASSIVE
+	    wl->awl_sp_rxq_dispatched = FALSE;
+#endif /* WL_ALL_PASSIVE */
+	} else {
+	    more = true;
+	}
+	atomic_sub(npkts, &wl->callbacks);
 
 	WL_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
 
 	/* Let wl process the packets */
 	WL_LOCK(wl);
-	while (npkts--) {
+
+	do {
 	    struct sk_buff* nskb = skb->prev;
 	    skb->next = skb->prev = NULL;
-	    /* Audit the wlif */
-	    if_list = wl->if_list;
-	    dev_matched = FALSE;
-	    while (if_list) {
-	        if (skb->dev == if_list->dev) {
-	            dev_matched = TRUE;
-	            break;
-	        }
-	        if_list = if_list->next;
-	    }
-	    if (!dev_matched) {
-	        WL_AWL_ERROR("%s: wl%d: drop packets skb->dev %s\n", __FUNCTION__,
-	            wl->unit, skb->dev ? skb->dev->name : "NULL");
-	        PKTFREE(wl->pub->osh, skb, FALSE);
-	        awl->rx.a2w_drp_packets++;
-	    }
-	    else {
-	        /* Process the flow-miss packets */
-	        wl_awl_rx_sendup(wl, skb);
-	        awl->rx.a2w_fwd_packets++;
-	    }
+	    /* Process the flow-miss packets */
+	    wl_awl_rx_sendup(wl, skb);
+	    awl->rx.a2w_fwd_packets++;
 	    awl->rx.a2w_fwd_calls++;
 	    skb = nskb;
-	}
+	    ppkts++;
+	} while (--npkts);
+
 	WL_UNLOCK(wl);
 
 done:
-	if (!more) {
-#ifdef WL_ALL_PASSIVE
-	    wl->awl_sp_rxq_dispatched = FALSE;
-#endif /* WL_ALL_PASSIVE */
-	    atomic_sub(ppkts, &wl->callbacks);
-	}
 
 	return more;
 }
@@ -731,6 +867,33 @@ wl_awl_upstream_add_pkt(struct wl_info * wl, struct net_device * net_device,
 	awl->rx.w2a_rx_packets++;
 
 	skb = (struct sk_buff *)pkt;
+
+#if !defined WL_AWL_INTRABSS
+    /* For packets from CFP Rx path, check that the dst is not associated to
+     * same BSS before forwarding packet to Network stack.
+     * For Non-CFP packets, it is already taken care.
+     */
+    if ((flowid != ID16_INVALID) &&
+        (wl_intrabss_forward(wl, net_device, skb) == true))
+    {
+        awl->rx.w2a_flt_packets++;
+        return;
+    }
+#endif /* ! WL_AWL_INTRABSS */
+
+	/* pass through mode or flow cache disabled, process within wlan thread */
+	if ((awl->rx.mode == WL_AWL_RX_MODE_PT) || fcacheStatus() == 0)
+    {
+#if defined(WL_AWL_INTRABSS)
+	    if (wl_intrabss_forward(wl, net_device, skb) == FALSE)
+#endif /* WL_AWL_INTRABSS */
+	    {
+	        wl_sendup(wl, WL_DEV_IF(net_device), skb, 1);
+	    }
+	    awl->rx.w2a_flt_packets++;
+	    return;
+	}
+
 	skb_cb_zero(skb); /* explicitly zero cb[], wl_cb[] */
 	skb->dev = net_device;
 
@@ -738,14 +901,6 @@ wl_awl_upstream_add_pkt(struct wl_info * wl, struct net_device * net_device,
 	    printk("0x%p <- 0x%p ->  0x%p\n", skb->prev, skb, skb->next);
 	    skb->prev = NULL;
 	}
-
-#if defined(WL_AWL_FILTER_INTRABSS)
-	/* Filter out intra BSS packets and forward back to NIC without sending to Archer */
-	if (wl_awl_rx_process_intrabss(wl, skb) == BCME_OK) {
-	    awl->rx.w2a_flt_packets++;
-	    return;
-	}
-#endif /* WL_AWL_FILTER_INTRABSS */
 
 	wlif = WL_DEV_IF(net_device);
 	ARCHER_WLAN_RADIO_IDX(skb) = wl->unit;
@@ -779,6 +934,22 @@ wl_awl_upstream_send_chain(struct wl_info * wl, struct sk_buff * skb)
 	void *nskb = NULL;
 
 	WL_AWL_PTRACE("wl%d skb 0x%p 0x%p %d", wl->unit, skb, skb->data, skb->len);
+
+	/* pass through mode or flow cache disabled, process within wlan thread */
+	if ((awl->rx.mode == WL_AWL_RX_MODE_PT) || fcacheStatus() == 0) {
+#if defined(WL_AWL_INTRABSS)
+	    uint8_t * d3_addr = (uint8_t *) PKTDATA(wl->osh, skb);
+
+	    if (!ETHER_ISMULTI(d3_addr) && wl_intrabss_forward(wl, net, skb))
+	    {
+	        return BCME_OK;
+	    }
+	    else
+#endif /* WL_AWL_INTRABSS */
+	    {
+	        return BCME_ERROR;
+	    }
+	}
 
 	/* Go through all the packets in the chain */
 	FOREACH_CHAINED_PKT(skb, nskb) {
@@ -839,10 +1010,10 @@ wl_awl_dump(struct wl_info *wl, struct bcmstrbuf *b)
 	    awl->rx.w2a_rx_packets, awl->rx.w2a_flt_packets,
 	    awl->rx.w2a_fwd_packets, awl->rx.w2a_fwd_calls,
 	    awl->rx.w2a_chn_packets, awl->rx.w2a_max_chn);
-	bcm_bprintf(b, " A2W List [rxd %lu flt %lu fwd %lu cls %lu drp %lu ]\n",
+	bcm_bprintf(b, " A2W List [rxd %lu drp %lu fwd %lu cls %lu chn %lu/%lu]\n",
 	    awl->rx.a2w_rx_packets, awl->rx.a2w_flt_packets,
 	    awl->rx.a2w_fwd_packets, awl->rx.a2w_fwd_calls,
-	    awl->rx.a2w_drp_packets);
+	    awl->rx.a2w_chn_packets, awl->rx.a2w_max_chn);
 }
 
 /**
@@ -867,7 +1038,6 @@ wl_awl_clr_stats(struct wl_info * wl)
 	awl->rx.a2w_flt_packets = 0;
 	awl->rx.a2w_fwd_packets = 0;
 	awl->rx.a2w_fwd_calls = 0;
-	awl->rx.a2w_drp_packets = 0;
 
 	return;
 }
@@ -883,21 +1053,31 @@ wl_awl_attach(struct wl_info *wl, uint unit)
 {
 	wl_awl_t *awl = WL_AWL_CB(wl);
 	archer_wlan_rx_miss_handler_t a2w_flow_miss_handler = wl_awl_rx_flow_miss_handler_wl_dpc;
+	int rxmode = WL_AWL_RX_MODE_PT;
 
 	WL_AWL_PTRACE("wl%d_awl: wl 0x%p", unit, wl);
 
 	memset(awl, 0, sizeof(wl_awl_t));
 	awl->tx.mode = 1;
+
 #if defined(WL_AWL_RX)
-#if defined(WL_AWL_RX_LITE)
-	awl->rx.mode = WL_AWL_RX_MODE_LITE;
-	a2w_flow_miss_handler = wl_awl_rx_flow_miss_handler_archer;
-#else /* WL_AWL_RX_LITE */
-	awl->rx.mode = WL_AWL_RX_MODE_FULL;
-#endif /* WL_AWL_RX_LITE */
-#else /* !WL_AWL_RX */
-	awl->rx.mode = WL_AWL_RX_MODE_PT;
-#endif /* !WL_AWL_RX */
+	{
+	    char varname[] = "wlXX_awl_rxmode";
+	    char *var;
+	    rxmode = WL_AWL_RX_MODE_FULL;
+
+	    snprintf(varname, sizeof(varname), "wl%d_awl_rxmode", unit);
+	    var = getvar(NULL, varname);
+	    if (var) {
+	        rxmode =  bcm_strtoul(var, NULL, 0);
+	    }
+	}
+#endif /* WL_AWL_RX */
+
+	if (rxmode == WL_AWL_RX_MODE_LITE) {
+	    a2w_flow_miss_handler = wl_awl_rx_flow_miss_handler_archer;
+	}
+	awl->rx.mode = rxmode;
 
 	awl->rx.bound = WL_AWL_RX_PKT_BOUND;
 
@@ -943,16 +1123,24 @@ void
 wl_awl_detach(struct wl_info *wl, void *ctxt)
 {
 	wl_awl_t *awl = WL_AWL_CB(wl);
+	pktlist_t *pktlist;
+	int npkts;
 
 	WL_AWL_PTRACE("wl%d_awl: wl 0x%p, awl 0x%p", wl->unit, wl, awl);
 
 	/* De-register with Archer call back functions for Rx */
 	archer_wlan_rx_register(wl->unit, NULL, NULL);
 
-	/* Free A2W packet SLL under lock */
-	WL_AWL_PKTLIST_LOCK(awl->rx.a2w_pktl_lock);
-	wl_awl_pktlist_free(wl, WL_AWL_RX_A2W_PKTL(awl));
-	WL_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
+	pktlist = WL_AWL_RX_A2W_PKTL(awl);
+	npkts = pktlist->len;
+
+	if (npkts) {
+	    /* Free A2W packet SLL under lock */
+	    WL_AWL_PKTLIST_LOCK(awl->rx.a2w_pktl_lock);
+	    wl_awl_pktlist_free(wl, pktlist);
+	    WL_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
+	    atomic_sub(npkts, &wl->callbacks);
+	}
 
 	/* Free Lock-less W2A packet SLL */
 	wl_awl_pktlist_free(wl, WL_AWL_RX_W2A_PKTL(awl));

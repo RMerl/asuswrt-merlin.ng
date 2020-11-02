@@ -31,6 +31,8 @@ int wl_eap_bind(void * wl, struct net_device * wl_dev, int _radio_idx,
                 d3lut_t * lut, pktlist_context_t * wl_pktlist_context,
                 HOOKP wl_pktfwd_xfer_hook);
 
+int wl_eap_unbind(int _radio_idx);
+
 extern void (*eap_receive_skb_hook)(struct sk_buff * skb);
 extern void (*eap_xmit_schedule_hook)(void);
 

@@ -63,6 +63,7 @@
 #define SLICSLAC_LIST_ZSI_NOFXO         &g_voiceBoard_LE88536_ZSI,        \
                                         &g_voiceBoard_LE9641_ZSI_BB,      \
                                         &g_voiceBoard_LE9642_ZSI_BB,      \
+                                        &g_voiceBoard_LE9642_ZSI_IB,   \
                                         &g_voiceBoard_LE9652_ZSI_IB,      \
                                         &g_voiceBoard_LE9643_ZSI_IB,      \
                                         &g_voiceBoard_LE9661_ZSI,         \
@@ -79,6 +80,7 @@
                                         &g_voiceBoard_LE89116,            \
                                         &g_voiceBoard_LE88506,            \
                                         &g_voiceBoard_LE9653_IB,          \
+                                        &g_voiceBoard_LE9622_IB,          \
                                         &g_voiceBoard_ZL88601,            \
                                         &g_voiceBoard_ZL88601x2,          \
                                         &g_voiceBoard_SI32176,            \
@@ -1242,6 +1244,59 @@ VOICE_DAUGHTER_BOARD_PARMS g_voiceBoard_LE9653_IB =
    BP_VD_INVBOOST,
    /* General-purpose flags */
    ( BP_FLAG_DSP_PCMHAL_ENABLE )
+};
+
+VOICE_DAUGHTER_BOARD_PARMS g_voiceBoard_LE9622_IB =
+{
+   VOICECFG_LE9622_IB_STR,   /* szBoardId */
+   {
+      {
+         /* Device Type */
+         BP_VD_ZARLINK_9622_IB,
+         BP_VDTYPE_PCM,
+         BP_SPI_SS_B1,  /* Device uses SPI_SS_B1 pin. Pin on base board depends on base board parameters. */
+         BP_RESET_FXS1, /* Device uses FXS1 reset pin. Pin on base board depends on base board parameters. */
+
+         /* Channel Description */
+         {
+            BP_CHAN_PCM( BP_VC_ACTIVE, BP_VCTYPE_SLIC, BP_VC_COMP_LINEAR, BP_VC_8KHZ, TS(0, 1) ),
+            BP_CHAN_PCM( BP_VC_ACTIVE, BP_VCTYPE_SLIC, BP_VC_COMP_LINEAR, BP_VC_8KHZ, TS(2, 3) ),
+         }
+      },
+
+      /* Always end device list with this macro. */
+      BP_NULL_DEVICE_MACRO,
+   },
+   /* SLIC Device Profile */
+   BP_VD_INVBOOST,
+   /* General-purpose flags */
+   ( BP_FLAG_DSP_PCMHAL_ENABLE )
+};
+
+VOICE_DAUGHTER_BOARD_PARMS g_voiceBoard_LE9642_ZSI_IB =
+{
+   VOICECFG_LE9642_ZSI_IB_STR,   /* szBoardId */
+   {
+      {
+         /* Device Type */
+         BP_VD_ZARLINK_9642_ZSI_IB,
+         BP_VDTYPE_PCM,
+         BP_SPI_SS_NOT_REQUIRED,  /* ZSI SPI CS handled internally. It is mapped using the zsiMapList */
+         BP_RESET_FXS1, /* Device uses FXS1 reset pin. Pin on base board depends on base board parameters. */
+         /* Channel Description */
+         {
+            BP_CHAN_PCM( BP_VC_ACTIVE, BP_VCTYPE_SLIC, BP_VC_COMP_LINEAR, BP_VC_8KHZ, TS(0, 1) ),
+            BP_CHAN_PCM( BP_VC_ACTIVE, BP_VCTYPE_SLIC, BP_VC_COMP_LINEAR, BP_VC_8KHZ, TS(2, 3) ),
+         }
+      },
+
+      /* Always end device list with this macro. */
+      BP_NULL_DEVICE_MACRO,
+   },
+   /* SLIC Device Profile */
+   BP_VD_INVBOOST,
+   /* General-purpose flags */
+   ( BP_FLAG_ZSI_SUPPORT | BP_FLAG_DSP_PCMHAL_ENABLE )
 };
 
 VOICE_DAUGHTER_BOARD_PARMS g_voiceBoard_LE89116 =
@@ -2930,6 +2985,7 @@ static bp_elem_t g_voice_bcm963158ref1[] = {
 
 static bp_elem_t g_voice_bcm963158ref1d[] = {
    {bp_cpBoardId,               .u.cp = "963158REF1D"},
+   {bp_usGpioVoipRelayCtrl1,    .u.us = BP_GPIO_13_AH},  
    {bp_elemTemplate,            .u.bp_elemp = g_voice_bcm963158ref1},
    {bp_last}
 };
@@ -3182,6 +3238,8 @@ static bp_elem_t g_voice_bcm968781xsv[] = {
    {bp_daughterCardList,        .u.ptr = g_96878_dCardList},
    {bp_last}
 };
+/* The following boards use ZSI interface which is multiplexed internally with PCM */
+/* They do not need SPI pins */
 static bp_elem_t g_voice_bcm968781ref[] = {
    {bp_cpBoardId,               .u.cp = "968781REF"},
    {bp_daughterCardList,        .u.ptr = g_968781REF_dCardList},
@@ -3197,6 +3255,21 @@ static bp_elem_t g_voice_bcm968782ref[] = {
    {bp_daughterCardList,        .u.ptr = g_968781REF_dCardList},
    {bp_last}
 };
+static bp_elem_t g_voice_bcm968782ref2[] = {
+   {bp_cpBoardId,               .u.cp = "968782REF2"},
+   {bp_daughterCardList,        .u.ptr = g_968781REF_dCardList},
+   {bp_last}
+};
+static bp_elem_t g_voice_bcm968781HREF[] = {
+   {bp_cpBoardId,               .u.cp = "968781HREF"},
+   {bp_daughterCardList,        .u.ptr = g_968781REF_dCardList},
+   {bp_last}
+};
+static bp_elem_t g_voice_bcm968781REF_4GPHY[] = {
+   {bp_cpBoardId,               .u.cp = "968781REF_4GPHY"},
+   {bp_daughterCardList,        .u.ptr = g_968781REF_dCardList},
+   {bp_last}
+};
 static bp_elem_t g_voice_bcm968782gref[] = {
    {bp_cpBoardId,               .u.cp = "968782GREF"},
    {bp_daughterCardList,        .u.ptr = g_968782GREF_dCardList},
@@ -3207,13 +3280,22 @@ static bp_elem_t g_voice_bcm968782xsv[] = {
    {bp_elemTemplate,            .u.bp_elemp = g_voice_bcm968781xsv},
    {bp_last}
 };
+static bp_elem_t g_voice_bcm968782gfm[] = {
+   {bp_cpBoardId,               .u.cp = "968782GFM"},
+   {bp_daughterCardList,        .u.ptr = g_968782GREF_dCardList},
+   {bp_last}
+};
 static bp_elem_t * g_VoiceBoardParms[] = {
    g_voice_bcm968781xsv,
    g_voice_bcm968781ref,
    g_voice_bcm968781refs,
    g_voice_bcm968782ref,
+   g_voice_bcm968782ref2,
+   g_voice_bcm968781HREF,
+   g_voice_bcm968781REF_4GPHY,
    g_voice_bcm968782gref,
    g_voice_bcm968782xsv,
+   g_voice_bcm968782gfm,
    0
 };
 

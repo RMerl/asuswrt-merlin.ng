@@ -1,4 +1,4 @@
-# Toploevel makefile to build hnd dongle
+# Toplevel makefile to build hnd dongle
 #
 #
 #
@@ -18,9 +18,13 @@ DONGLE_FW_PATH = $(ALLSRCBASE)/sys/src/dongle
 ENVRAM_PATH = $(ALLSRCBASE)/main/components/router/envram
 
 -include $(KERNEL_DIR)/.config
+-include $(PROFILE_FILE)
+
 EXT_CPU_ARCH_NAME := $(subst \",,$(CONFIG_BCM_CPU_ARCH_NAME))
 export EXT_CPU_ARCH_NAME
 prebuilt_files = $(shell find . -name *$(BRCM_CHIP)-$(ORIG_PROFILE_ARCH) -print)
+
+export BUILD_WLAN_TESTBED_AP
 
 .PHONY: oldconfig version pciefd clean version_info loadscript bcm_headers_install
 

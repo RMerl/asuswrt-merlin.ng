@@ -120,6 +120,7 @@ enum {
     ETHPORTCREATE,
     ETHPORTDELETE,
     ETHPORTMCASTGEMSET,
+    ETHPHYMACSEC,
 };
 
 struct ethctl_data {

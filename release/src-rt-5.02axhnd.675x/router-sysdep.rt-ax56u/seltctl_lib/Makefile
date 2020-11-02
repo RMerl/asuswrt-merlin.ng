@@ -93,9 +93,8 @@ ALLOWED_INCLUDE_PATHS := -I.\
 # Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
 # See Section 10.2 of Gnu Make manual
 # 
-$(LIB): generic_oaldir
-	echo "Copying $@"
-	-cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/prebuilt/$@ ./
+$(LIB): generic_oaldir $(OBJS)
+	$(CC) -shared -Wl,--whole-archive,-soname,$(notdir $@) -o $@ $(OBJS) $(OALDIR)/oal.a -Wl,--no-whole-archive
 
 
 #

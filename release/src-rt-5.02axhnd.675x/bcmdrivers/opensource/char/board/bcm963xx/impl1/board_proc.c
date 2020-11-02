@@ -250,10 +250,21 @@ static ssize_t __proc_set_param(struct file *f, const char *buf, unsigned long c
 ssize_t __proc_get_param_string(char *page, int cnt, void *data)
 {
     int r = 0;
+    char *value;
 
     if (data == NULL)
         return 0;
-    r=envram_get_locked((char*)data, page + r, cnt);
+
+    value = (unsigned char *)kmalloc(cnt, GFP_KERNEL);
+    if(value != NULL)
+    {
+        r=envram_get_locked((char*)data, value, cnt);
+        if(copy_to_user(page, value, r > cnt ? cnt:r))
+        {
+            r=-EFAULT;
+        }
+        kfree(value);
+    }
     return (r < cnt && r > 0)? r: 0;
 }
 static ssize_t __proc_set_led(struct file *f, const char *buf, unsigned long cnt, void *data)

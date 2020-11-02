@@ -146,12 +146,18 @@ typedef struct
 /* ---- Function Prototypes ----------------------------------------------- */
 
 UBOOL8 img_util_get_incflash_mode(void);
+
 int img_util_get_flash_info(IMGUTIL_HANDLE h, imgutil_flash_info_t *flashInfoP);
+
 IMGUTIL_HANDLE img_util_open(imgutil_open_parms_t *openParmsP);
+
 int img_util_write(IMGUTIL_HANDLE h, UINT8 *dataP, int len);
+
 int img_util_close(IMGUTIL_HANDLE h, imgutil_img_info_t *imgInfoInP,
   imgutil_img_info_t *imgInfoOutP);
+
 int img_util_abort(IMGUTIL_HANDLE h);
+
 int img_util_get_imginfo(IMGUTIL_HANDLE h, imgutil_info_src_e src,
   UINT32 bitmask, imgutil_img_info_t *imgInfoP);
 

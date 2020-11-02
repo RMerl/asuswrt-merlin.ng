@@ -16,6 +16,7 @@ ifeq ($(filter y,$(CONFIG_ARM) $(CONFIG_ARM64)),)
 else
 EXTRA_CFLAGS += -I$(PCIE_HCD_PATH)/arm
 MODULE_OBJS += arm/pcie-bcm963xx.o
+MODULE_OBJS += arm/pcie_hcd.o
 ifeq ("$(CONFIG_BCM_PCIE_VCD)","y")
 MODULE_OBJS += arm/pcie-vcore.o
 endif

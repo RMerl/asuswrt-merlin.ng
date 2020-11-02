@@ -22,6 +22,9 @@
   <parameter name="X_BROADCOM_COM_Enable" type="boolean" specSource="BROADCOM" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" hideParameterFromAcs="true" />
     <description source="BROADCOM">Enables or disables all QoS operations. </description>
 
+  <parameter name="X_BROADCOM_COM_EnableStateChanged" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="false" neverWriteToConfigFile="true" hideParameterFromAcs="true" />
+    <description source="BROADCOM">Indicated the QoS enable has been changed.</description>
+
   <parameter name="MaxClassificationEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
     <description source="TRx">The maximum number of entries available in the Classification table. </description>
 

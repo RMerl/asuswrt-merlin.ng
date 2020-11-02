@@ -44,9 +44,22 @@
 #endif /* BCM_AWL */
 
 #define WL_PKTFWD_VERSION           (1)
-#define WL_PKTFWD_RELEASE           (0)
+#define WL_PKTFWD_RELEASE           (1)
 #define WL_PKTFWD_PATCH             (0)
 #define WL_PKTFWD_VERSIONCODE       PKTFWD_VERSIONCODE(WL_PKTFWD)
+
+#if WL_PKTFWD_VERSIONCODE >= PKTFWD_VERSION(1, 1, 0)
+/**
+ * On trigger to AMPDU evalutate, appends PKTFWD Ingress pktlist to tail of
+ * SCB's AMPDU queue.
+ * */
+//#define WL_PKTFWD_TXEVAL
+
+#if defined(WLATF)
+/** In classic ATF, bound number of pktlists transmitted per wl_thread loop */
+#define WL_PKTFWD_RUNQ              (16) /* budget in units of pktlists */
+#endif
+#endif /* WL_PKTFWD_VERSION >= 1.1.0 */
 
 #define WL_PKTFWD_FAILURE           (-1)
 #define WL_PKTFWD_SUCCESS           (0)
@@ -78,6 +91,9 @@ typedef struct wl_pktfwd_stats          /* Global System Statistics */
     uint32_t        tot_stations;       /* Total associated STAs */
     uint32_t        pkts_dropped;       /* Total packets dropped */
     uint32_t        ops_failures;       /* Total request failures */
+    uint32_t        pktlist_xmit;       /* Total pktlists xmits */
+    uint32_t        xmit_preempt;       /* Total wlif no-credits preempts */
+    uint32_t        txeval_xmit;        /* Total pktlists xmits in txeval */
 } wl_pktfwd_stats_t;
 
 extern wl_pktfwd_stats_t * wl_pktfwd_stats_gp;
@@ -123,6 +139,7 @@ extern void   wl_pktfwd_wlif_dbg(struct wl_if * wlif); /* LOCKLESS */
 extern void * wl_pktfwd_radio_ins(struct wl_info * wl);
 extern void   wl_pktfwd_radio_del(struct wl_info * wl);
 extern void   wl_pktfwd_radio_dbg(struct wl_info * wl, struct bcmstrbuf * b);
+extern pktlist_context_t * wl_pktfwd_pktlist_context(int domain); // debug ONLY
 
 #if defined(BCM_WFD)
 extern void   wl_pktfwd_wfd_ins(struct wl_info * wl, int wfd_idx);
@@ -150,7 +167,15 @@ extern void   wl_pktfwd_pktlist_xmit(struct net_device * net_device,
                  wl_pktfwd_pktlist_t * wl_pktfwd_pktlist);
 
 /** WLAN Transmit (downstream) packet forwarding */
-extern void   wl_pktfwd_dnstream(struct wl_info *wl, d3fwd_wlif_t * d3fwd_wlif);
+extern void   wl_pktfwd_dnstream(struct wl_info *wl);
+
+extern void   wl_pktfwd_dnqueued(struct wl_info *wl, d3fwd_wlif_t * d3fwd_wlif,
+                 uint32_t * ucast_pkts);
+
+#if defined(WL_PKTFWD_TXEVAL)
+extern void   wl_pktfwd_dispatch_pktlist(struct wl_info * wl,
+    struct wl_if * wlif, uint8_t * d3addr, uint16_t cfp_flowid, uint16_t prio);
+#endif /* WL_PKTFWD_TXEVAL */
 
 
 /** WLAN Receive (upstream) packet forwarding */
@@ -179,11 +204,16 @@ extern uint16_t wl_pktfwd_get_cfp_flowid(struct wl_info * wl, uint8_t * d3addr);
 
 /** bins packet to domain specific pktqueue */
 extern void   wl_pktfwd_pktqueue_add_pkt(struct wl_info * wl,
-                                         struct net_device * net_device,
+                                         struct net_device * rx_net_device,
                                          void * pkt, uint16_t flowid);
 /* Callback to flush pktqueues */
 extern void   wl_pktfwd_flush_pktqueues(struct wl_info * wl);
 
 #endif /*  !BCM_AWL || !WL_AWL_RX */
+
+#if defined(BCM_PKTFWD_FLCTL)
+extern void   wl_pktfwd_update_link_credits(struct wl_info * wl, uint16_t cfp_flowid,
+    uint8_t * d3addr, uint32_t prio, int32_t credits, bool add);
+#endif /* BCM_PKTFWD_FLCTL */
 
 #endif /* __wl_pktfwd_h_included__ */

@@ -64,7 +64,7 @@ static inline void decode_rnr_src(CPU_RX_DESCRIPTOR *rx_desc, rdpa_cpu_rx_info_t
 static inline rdpa_if rdpa_cpu_rx_srcport_to_rdpa_if(uint16_t rdd_srcport, int flow_id)
 {
 #ifndef BRCM_FTTDP
-    /* Special case for wifi packets: if src_port is PCI then need to set
+    /* Special case for Wi-Fi packets: if src_port is PCI then need to set.
      * SSID */
     return (rdd_srcport == RUNNER_SOURCE_PORT_PCI) ? rdpa_if_ssid0 +
         flow_id : map_rdd_to_rdpa_if[rdd_srcport];
@@ -109,10 +109,10 @@ typedef struct
 
 #if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158)
 
-/** Translates raw packet to formated rdpa_cpu_rx_info_t structure.
+/** Translates raw packet to formatted rdpa_cpu_rx_info_t structure.
  *
  * \param[in]   raw_desc           Raw packet descriptor.
- * \param[out]  rx_pd              Formated packet descriptor.
+ * \param[out]  rx_pd              Formatted packet descriptor.
  * \return BDMF_ERR_NO_MORE if packet descriptor owned by runner subsystem.
  */
 inline int rdpa_cpu_rx_pd_get(void *raw_desc, rdpa_cpu_rx_info_t *rx_pd)
@@ -164,10 +164,10 @@ inline int rdpa_cpu_rx_pd_get(void *raw_desc, rdpa_cpu_rx_info_t *rx_pd)
  */
 inline void rdpa_cpu_ring_rest_desc(volatile void *__restrict__ raw_desc, void *__restrict__ data)
 {
-    /* in XRDP address is 48 bits, using 64bit register to store the descriptor at once */
+    /* In XRDP address is 48 bits, using 64-bit register to store the descriptor at once */
     uint64_t *word0 = (uint64_t *)raw_desc;
 
-    /* set 48bit address and clean ownership to runner */
+    /* Set 48-bit address and clean ownership to runner */
     *word0 = swap4bytes64((uint64_t)data & 0x1FFFFFFFFFFFF);
 }
 
@@ -213,8 +213,8 @@ static inline int rdpa_cpu_rx_pd_get(void *raw_desc, rdpa_cpu_rx_info_t *rx_pd)
     CPU_RX_DESCRIPTOR *p_desc = (CPU_RX_DESCRIPTOR *)raw_desc;
 #endif
 
-    /* p_desc is in uncached mem so reading 32bits at a time into
-     cached mem improves performance will be change to BurstBank read later*/
+    /* p_desc is in uncached memory, so reading 32bits at a time into
+     cached memory improves performance. Is changed to BurstBank read later*/
 #if defined(__ARMEL__)
     rx_desc.word2 = swap4bytes(w2);
 #elif defined(__AARCH64EL__)
@@ -489,7 +489,7 @@ static inline int rdpa_cpu_rx_create_ring(RING_DESCRIPTOR_S *p_ring, uint32_t si
     /*set the ring header to the first entry*/
     p_ring->head = p_ring->base;
 
-    /*using pointer arithmetics calculate the end of the ring*/
+    /*using pointer arithmetic calculate the end of the ring*/
     p_ring->end  = p_ring->base + size;
 
     *ring_base = (uint32_t *)(uintptr_t)phy_addr;
@@ -501,9 +501,9 @@ static inline int rdpa_cpu_rx_create_ring(RING_DESCRIPTOR_S *p_ring, uint32_t si
 
 /** Get packet from ring.
  *
- * \param[in]   p_ring           Ring Descriptor ptr.
+ * \param[in]   p_ring           Ring Descriptor pointer.
  * \param[out]  p_fkb            Allocated fkb.
- * \param[out]  info             Recieved packet metadata.
+ * \param[out]  info             Received packet metadata.
  * \return 0 - Success, Error otherwise.
  */
 static inline int rdpa_cpu_get_pkt_from_ring(RING_DESCRIPTOR_S *__restrict__ p_ring,

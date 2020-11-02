@@ -42,10 +42,6 @@
 #include "serdes_access.h"
 #include "lport_drv.h"
 
-#if !defined(_CFE_) && !defined(G9991)
-#define SERDES_SPEED_DETECT
-#endif
-
 static uint32_t enabled_ports = 0xffffffff;
 
 static int _phy_power_get(phy_dev_t *phy_dev, int *enable)
@@ -106,11 +102,11 @@ static int _get_serdes_speed(uint32_t port, phy_speed_t *speed)
     lport_port_status_s port_status;
     int ret;
 
-    if ((ret = lport_get_port_status(port, &port_status)))
+    if ((ret = lport_serdes_get_status(port, &port_status)))
         return ret;
 
     if (!port_status.port_up)
-        return ret;
+        return 1;
 
     if (port_status.rate == LPORT_RATE_10G)
         *speed = PHY_SPEED_10000;
@@ -126,7 +122,7 @@ static int _get_serdes_speed(uint32_t port, phy_speed_t *speed)
     return 0;
 }
 
-#ifdef SERDES_SPEED_DETECT
+#if defined(LPORT_SERDES_SPEED_DETECT)
 static LPORT_PORT_MUX_SELECT _get_next_mux(phy_dev_t *phy_dev, LPORT_PORT_MUX_SELECT mux)
 {
     if (mux != PORT_UNAVAIL)
@@ -157,7 +153,7 @@ static int _set_next_mux(uint32_t port, phy_dev_t *phy_dev)
 
     return 0;
 }
-#else
+#elif defined(LPORT_SERDES_EXTERNAL_SIGNAL_DETECT)
 static int _get_phy_speed(phy_dev_t *phy_dev, phy_speed_t *speed)
 {
     if (phy_dev->mii_type == PHY_MII_TYPE_XFI)
@@ -186,23 +182,25 @@ static int _phy_read_status(phy_dev_t *phy_dev)
     if ((ret = _get_serdes_link(port, &sig, &lnk)))
         return ret;
 
+#if defined(LPORT_SERDES_EXTERNAL_SIGNAL_DETECT)
     if (!sig)
         return 0;
+#endif
 
     if (lnk)
     {
-        phy_dev->link = 1;
-        phy_dev->duplex = PHY_DUPLEX_FULL;
-
         if ((ret = _get_serdes_speed(port, &phy_dev->speed)))
             return ret;
+
+        phy_dev->link = 1;
+        phy_dev->duplex = PHY_DUPLEX_FULL;
     }
     else
     {
-#ifdef SERDES_SPEED_DETECT
+#if defined(LPORT_SERDES_SPEED_DETECT)
         if ((ret = _set_next_mux(port, phy_dev)))
             return ret;
-#else
+#elif defined(LPORT_SERDES_EXTERNAL_SIGNAL_DETECT)
         phy_dev->link = 1;
         phy_dev->duplex = PHY_DUPLEX_FULL;
 

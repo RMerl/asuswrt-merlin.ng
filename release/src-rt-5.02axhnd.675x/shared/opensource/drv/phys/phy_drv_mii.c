@@ -163,12 +163,16 @@ int mii_caps_get(phy_dev_t *phy_dev, int caps_type,  uint32_t *pcaps)
                 goto Exit;
         }
         
+        if (bmsr & BMSR_ANEGCAPABLE)        caps |= PHY_CAP_AUTONEG;
         if (bmsr & BMSR_10HALF)             caps |= PHY_CAP_10_HALF;
         if (bmsr & BMSR_10FULL)             caps |= PHY_CAP_10_FULL;
         if (bmsr & BMSR_100HALF)            caps |= PHY_CAP_100_HALF;
         if (bmsr & BMSR_100FULL)            caps |= PHY_CAP_100_FULL;
         if (estatus & ESTATUS_1000_THALF)   caps |=  PHY_CAP_1000_HALF;
         if (estatus & ESTATUS_1000_TFULL)   caps |=  PHY_CAP_1000_FULL;
+
+        if (phy_dev->disable_hd)
+            caps &= ~(PHY_CAP_10_HALF | PHY_CAP_100_HALF | PHY_CAP_1000_HALF);
     }
     else if (caps_type == CAPS_TYPE_LP_ADVERTISED)
     {
@@ -221,6 +225,17 @@ int mii_caps_set(phy_dev_t *phy_dev, uint32_t caps)
     if (phy_dev->disable_hd)
         caps &= ~(PHY_CAP_10_HALF | PHY_CAP_100_HALF | PHY_CAP_1000_HALF);
 
+    if (caps & (PHY_CAP_1000_HALF | PHY_CAP_1000_FULL))
+        bmcr |= BMCR_SPEED1000;
+    else if (caps & (PHY_CAP_100_HALF | PHY_CAP_100_FULL))
+        bmcr |= BMCR_SPEED100;
+
+    if (caps & (PHY_CAP_10_FULL | PHY_CAP_100_FULL | PHY_CAP_1000_FULL))
+        bmcr |= BMCR_FULLDPLX;
+
+    if (caps & (PHY_CAP_1000_HALF | PHY_CAP_1000_FULL))
+        caps |= PHY_CAP_AUTONEG;
+
     if (caps & PHY_CAP_AUTONEG)
     {
         bmcr |= BMCR_ANENABLE | BMCR_ANRESTART;
@@ -251,17 +266,6 @@ int mii_caps_set(phy_dev_t *phy_dev, uint32_t caps)
 
         if (caps & PHY_CAP_REPEATER)
             ctrl1000 |= ADVERTISE_REPEATER;
-    }
-    else
-    {
-        if (caps & PHY_CAP_100_HALF || caps & PHY_CAP_100_FULL)
-            bmcr |= BMCR_SPEED100;
-
-        if (caps & PHY_CAP_1000_HALF || caps & PHY_CAP_1000_FULL)
-            bmcr |= BMCR_SPEED1000;
-
-        if (caps & PHY_CAP_10_FULL || caps & PHY_CAP_100_FULL || caps & PHY_CAP_1000_FULL)
-            bmcr |= BMCR_FULLDPLX;
     }
 
     if ((ret = phy_bus_write(phy_dev, MII_ADVERTISE, adv)))

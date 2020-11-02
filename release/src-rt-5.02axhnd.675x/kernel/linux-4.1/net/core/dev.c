@@ -171,21 +171,36 @@ enet_fwdcb_register(enet_fwdcb_t fwdcb)
 }
 EXPORT_SYMBOL(enet_fwdcb_register);
 #else /* IQOS_DUMMY_FN */
+#if defined(CONFIG_BCM_KF_SW_GSO) && defined(CONFIG_BCM_SW_GSO)
+static void bcm_sw_gso_recycle_func(void *pNBuff, unsigned long context, uint32_t flags);
+#endif
 struct sk_buff *
 bcm_iqoshdl_wrapper(struct net_device *dev, void *pNBuff)
 {
 	struct sk_buff *skb = NULL;
 	FkBuff_t * pFkb = NULL;
 
-	pFkb = PNBUFF_2_FKBUFF((pNBuff_t)pNBuff);
-	if ( !pFkb)
-	    return (NULL);
+	if (!pNBuff) {
+		return NULL;
+	}
 
-	/*allocate skb & initialize it using fkb */
+	if (IS_FKBUFF_PTR(pNBuff)) {
+		pFkb = PNBUFF_2_FKBUFF(pNBuff);
+#if defined(CONFIG_BCM_KF_SW_GSO) && defined(CONFIG_BCM_SW_GSO)
+		if (pFkb->recycle_hook == bcm_sw_gso_recycle_func) {
+			return FKB_FRM_GSO;
+		}
+#endif
+	        skb = nbuff_xlate((pNBuff_t )pNBuff);
 
-	skb = skb_xlate_dp(pFkb, NULL);
-	if (!skb)
-		return (NULL);
+		if (skb == NULL) {
+			return NULL;
+		}
+	} else {
+		skb = PNBUFF_2_SKBUFF(pNBuff);
+		return skb;
+	}
+
 	skb->fkb_mark = pFkb->mark;
 	skb->priority = pFkb->priority;
 	skb->dev = dev;
@@ -4135,7 +4150,7 @@ EXPORT_SYMBOL(bcm_mcast_def_pri_queue_hook);
 #endif
 #if defined(CONFIG_BCM_KF_TMS) && defined(CONFIG_BCM_TMS_MODULE)
 int (*bcm_1ag_handle_frame_check_hook)(struct sk_buff *) = NULL;
-int (*bcm_3ah_handle_frame_check_hook)(struct sk_buff *, struct net_device *) = NULL;
+int (*bcm_3ah_handle_frame_check_hook)(void *dev, unsigned short protocol, unsigned char *datPtr) = NULL;
 #endif
 
 /**
@@ -4218,6 +4233,9 @@ static int __netif_receive_skb_core(struct sk_buff *skb, bool pfmemalloc)
 #if (defined(CONFIG_BCM_MCAST) || defined(CONFIG_BCM_MCAST_MODULE)) && defined(CONFIG_BCM_KF_MCAST)
 	if (bcm_mcast_def_pri_queue_hook != NULL)
 		bcm_mcast_def_pri_queue_hook(skb);
+    if (!skb->in_dev) {
+        skb->in_dev = orig_dev;
+    }
 #endif
 
 #if defined(CONFIG_BCM_KF_VLAN) && (defined(CONFIG_BCM_VLAN) || defined(CONFIG_BCM_VLAN_MODULE))
@@ -4232,7 +4250,7 @@ static int __netif_receive_skb_core(struct sk_buff *skb, bool pfmemalloc)
 	if (bcm_3ah_handle_frame_check_hook) {
 		/* We want to skip vlanctl for 3ah packet, or for any packet
 		 * when 3ah loopback was enabled. */
-		if ((bcm_3ah_handle_frame_check_hook(skb, skb->dev)))
+		if ((bcm_3ah_handle_frame_check_hook(skb->dev, ntohs(skb->protocol), skb->data)))
 			goto skip_vlanctl;
 	}
 #endif /* #if defined(CONFIG_BCM_TMS_MODULE) */

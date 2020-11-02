@@ -71,13 +71,9 @@ ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
 # Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
 # See Section 10.2 of Gnu Make manual
 # 
-ifeq ($(wildcard $(SRCBASE)/router-sysdep/$(EXE)/*.c),)
-$(EXE):
-	-cp -f $(SRCBASE)/router-sysdep/$(EXE)/prebuilt/$(EXE) $(EXE)
-else
 $(EXE): $(OBJS)
 	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
-endif
+
 
 CFLAGS += -include stdint.h
 #

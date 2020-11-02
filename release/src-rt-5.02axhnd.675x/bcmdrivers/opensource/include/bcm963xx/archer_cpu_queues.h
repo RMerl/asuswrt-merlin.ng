@@ -69,8 +69,7 @@ typedef void (*TX_NOTIFIER)(void);
 
 typedef struct {
     archer_host_type_t host_type;
-    int (* tx_queue_handler_register)(int q_id, TX_NOTIFIER tx_notifier);
-    int (* tx_queue_notify_host)(int q_id);
+    int (* tx_queue_notifier_register)(int q_id, TX_NOTIFIER tx_notifier);
     int (* tx_queue_read)(int q_id, pNBuff_t *ppNBuff, int *param_p, int *egress_queue_p);
     int (* tx_queue_not_empty)(int q_id);
     int (* rx_queue_write)(int q_id, uint8_t **pData, int data_len, int ingress_port, int param);
@@ -95,12 +94,13 @@ typedef struct {
 
 /* function API exported by XTM driver */
 typedef struct {
-    int (* deviceDetails)(uint32_t devId, uint32_t bufStatus, uint32_t headerLen, uint32_t trailerLen);
+    int (* deviceDetails)(uint32_t devId, uint32_t encap, uint32_t traffic_type, uint32_t bufStatus, uint32_t headerLen, uint32_t trailerLen);
     int (* xtmLinkUp)(uint32_t devId, uint32_t matchId, uint8_t txVcid);
     int (* reInitDma)(void);
     int (* txdmaEnable)(uint32_t dmaIndex, uint32_t txVcid);
     int (* txdmaDisable)(uint32_t dmaIndex);
-    int (* setTxChanDropAlg)(archer_dropalg_config_t *cfg);
+    int (* setTxChanDropAlg)(int queue_id, archer_drop_config_t *cfg);
+    uint32_t (* txdmaGetQSize)(void);
 } archer_xtm_hooks_t;
 
 #endif /* __ARCHER_CPU_QUEUES_H_INCLUDED__ */

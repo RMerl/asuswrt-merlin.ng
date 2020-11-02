@@ -39,6 +39,11 @@ static int jffs2_rtime_compress(unsigned char *data_in,
 
 	memset(positions,0,sizeof(positions));
 
+#if defined (CONFIG_BCM_KF_JFFS)
+	if (*dstlen < 2)
+		return -1;
+
+#endif
 	while (pos < (*sourcelen) && outpos <= (*dstlen)-2) {
 		int backpos, runlen=0;
 		unsigned char value;

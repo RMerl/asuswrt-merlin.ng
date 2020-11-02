@@ -50,7 +50,7 @@ void rdpa_dhd_helper_complete_wakeup(uint32_t radio_idx, bdmf_boolean is_tx_comp
  */
 int rdpa_dhd_helper_send_packet_to_dongle(void *data, uint32_t length, const rdpa_dhd_tx_post_info_t *info);
 
-/** Clear dooorbell interrupt, to be invoked from ISR */
+/** Clear doorbell interrupt, to be invoked from ISR */
 void rdpa_dhd_helper_doorbell_interrupt_clear(uint32_t radio_idx);
 
 /** Return Runner wakeup information */

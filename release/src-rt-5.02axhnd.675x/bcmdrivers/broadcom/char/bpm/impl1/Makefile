@@ -6,9 +6,14 @@
 bcm_bpm-objs   := bpm.o
 obj-$(CONFIG_BCM_BPM) += bcm_bpm.o
 
-clean:
-	rm -f core *.o *.a *.s
+EXTRA_CFLAGS += -I. -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD) -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMSHARED_PRIV_PATH)/$(BRCM_BOARD) -I$(INC_BRCMBOARDPARMS_PATH)/$(BRCM_BOARD)
 
-%.o:
-	@echo "Using bpm.$(CONFIG_BCM_CHIP_NUMBER)_impl${CONFIG_BCM_WLAN_IMPL}.o_saved"
-	$(Q)cp $(obj)/bpm.$(CONFIG_BCM_CHIP_NUMBER)_impl$(CONFIG_BCM_WLAN_IMPL).o_saved $(obj)/bpm.o
+EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/opensource/net/enet/shared
+
+EXTRA_CFLAGS += -Werror -Wfatal-errors 
+
+clean:
+	rm -f core *.ko *.o *.a *.s
+
+
+

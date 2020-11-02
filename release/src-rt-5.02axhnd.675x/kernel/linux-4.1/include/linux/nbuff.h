@@ -185,6 +185,8 @@ extern int nbuff_dbg;
 #include <asm/r4kcache.h>
 #endif  /* CONFIG_MIPS */
 
+extern void cache_flush_data_len(void *addr, int len);
+
 /*
  * Macros to round down and up, an address to a cachealigned address
  */
@@ -760,7 +762,7 @@ struct fkbuff
     union {
         FkBuff_t  * list;           /* SLL of free FKBs for cloning           */
         FkBuff_t  * master_p;       /* Clone FKB to point to master FKB       */
-        atomic_t  users;            /* (private) # of references to FKB       */
+        atomic_long_t  users;       /* (private) # of references to FKB       */
     };
     union {                         /* Use _is_kptr_ to determine if ptr      */
         union {
@@ -1188,7 +1190,7 @@ extern void fkbM_return(FkBuff_t * fkbM_p);
  */
 static inline void _fkb_set_ref(FkBuff_t * fkb_p, const int count)
 {
-    atomic_set(&fkb_p->users, count);
+    atomic_long_set(&fkb_p->users, count);
 }
 FKB_FN( fkb_set_ref,
         void fkb_set_ref(FkBuff_t * fkb_p, const int count),
@@ -1200,7 +1202,7 @@ FKB_FN( fkb_set_ref,
  */
 static inline void _fkb_inc_ref(FkBuff_t * fkb_p)
 {
-    atomic_inc(&fkb_p->users);
+    atomic_long_inc(&fkb_p->users);
 }
 FKB_FN( fkb_inc_ref,
         void fkb_inc_ref(FkBuff_t * fkb_p),
@@ -1212,7 +1214,7 @@ FKB_FN( fkb_inc_ref,
  */
 static inline void _fkb_dec_ref(FkBuff_t * fkb_p)
 {
-    atomic_dec(&fkb_p->users);
+    atomic_long_dec(&fkb_p->users);
     /* For debug, may want to assert that users does not become negative */
 }
 FKB_FN( fkb_dec_ref,
@@ -1472,54 +1474,7 @@ FKB_FN( fkb_clone,
         FkBuff_t * fkb_clone(FkBuff_t * fkbM_p),
         return _fkb_clone(fkbM_p) )
 
-/*
- * Function   : fkb_flush
- * Description: Flush a FKB from current data or received packet data upto
- * the dirty_p. When Flush Optimization is disabled, the entire length.
- */
-static inline void _fkb_flush(FkBuff_t * fkb_p, uint8_t * data_p, int len, 
-    int cache_op)
-{
-    uint8_t * fkb_data_p;
-
-    if ( _is_fkb_cloned_pool_(fkb_p) )
-        fkb_data_p = PFKBUFF_TO_PDATA(fkb_p->master_p, BCM_PKT_HEADROOM);
-    else
-        fkb_data_p = PFKBUFF_TO_PDATA(fkb_p, BCM_PKT_HEADROOM);
-
-    /* headers may have been popped */
-    if ( (uintptr_t)data_p < (uintptr_t)fkb_data_p )
-        fkb_data_p = data_p;
-
-    {
-#if defined(CC_NBUFF_FLUSH_OPTIMIZATION)
-    uint8_t * dirty_p;  /* Flush only L1 dirty cache lines */
-    dirty_p = _to_kptr_from_dptr_(fkb_p->dirty_p);  /* extract kernel pointer */
-
-    fkb_dbg(1, "fkb_p<%p> fkb_data<%p> dirty_p<%p> len<%d>",
-            fkb_p, fkb_data_p, dirty_p, len);
-
-    if (cache_op == FKB_CACHE_FLUSH)
-        cache_flush_region(fkb_data_p, dirty_p);
-    else
-        cache_invalidate_region(fkb_data_p, dirty_p);
-#else
-    uint32_t data_offset;
-    data_offset = (uintptr_t)data_p - (uintptr_t)fkb_data_p;
-
-    fkb_dbg(1, "fkb_p<%p> fkb_data<%p> data_offset<%d> len<%d>",
-            fkb_p, fkb_data_p, data_offset, len);
-
-    if (cache_op == FKB_CACHE_FLUSH)
-        cache_flush_len(fkb_data_p, data_offset + len);
-    else
-        cache_invalidate_len(fkb_data_p, data_offset + len);
-#endif
-    }
-}
-FKB_FN( fkb_flush,
-        void fkb_flush(FkBuff_t * fkb_p, uint8_t * data, int len, int cache_op),
-        _fkb_flush(fkb_p, data, len, cache_op) )
+extern void fkb_flush(FkBuff_t * fkb_p, uint8_t * data_p, int len, int cache_op);
 
 /*
  *------------------------------------------------------------------------------
@@ -1725,43 +1680,9 @@ static inline uint8_t * nbuff_put(pNBuff_t pNBuff, uint32_t len)
     return tail;
 }
 
-/*
- * Function   : nbuff_free
- * Description: Free/recycle a network buffer and associated data
- *
- * Freeing may involve a recyling of the network buffer into its respective
- * pool (per network device driver pool, kernel cache or FKB pool). Likewise
- * the associated buffer may be recycled if there are no other network buffers
- * referencing it.
- */
-
 extern void dev_kfree_skb_thread(struct sk_buff *skb);
-
-static inline void nbuff_free_ex(pNBuff_t pNBuff, int in_thread)
-{
-    void * pBuf = PNBUFF_2_PBUF(pNBuff);
-    fkb_dbg(1, "pNBuff<%p> pBuf<%p>", pNBuff, pBuf);
-    if ( IS_SKBUFF_PTR(pNBuff) )
-    {
-        if(!in_thread)
-            dev_kfree_skb_any((struct sk_buff *)pBuf);
-        else
-            dev_kfree_skb_thread((struct sk_buff *)pBuf);
-    }
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */
-    else
-        fkb_free(pBuf);
-    fkb_dbg(2, "<<");
-}
-
-static inline void nbuff_free(pNBuff_t pNBuff)
-{
-#if defined(CONFIG_BCM_PON) || defined(CONFIG_BCM_HNDROUTER) || defined(CONFIG_BCM947189)
-    nbuff_free_ex(pNBuff, 0);
-#else
-    nbuff_free_ex(pNBuff, 1);
-#endif
-}
+extern void nbuff_free_ex(pNBuff_t pNBuff, int in_thread);
+extern void nbuff_free(pNBuff_t pNBuff);
 
 /*
  * Function   : nbuff_unshare
@@ -1829,80 +1750,8 @@ static inline void nbuff_invalidate_headroom(pNBuff_t pNBuff, uint8_t * data)
     fkb_dbg(2, "<<");
 }
 
-/*
- * Function   : nbuff_flush
- * Description: Flush (Hit_Writeback_Inv_D) a network buffer's packet data.
- */
-static inline void nbuff_flush(pNBuff_t pNBuff, uint8_t * data, int len)
-{
-    fkb_dbg(1, "pNBuff<%p> data<%p> len<%d>",
-            pNBuff, data, len);
-    if ( IS_SKBUFF_PTR(pNBuff) )
-    {
-#if !defined(CONFIG_BCM_GLB_COHERENCY)
-/* Optimized flush for BPM buffers */
-#if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
-        struct sk_buff *skb = (struct sk_buff *)pNBuff;
-        /* Use the  dirty pointer cache flush optimization when the BPM is in
-           PRISTINE state which means the BPM is allocated by WFD/WLAN */
-        if (skb->recycle_flags & SKB_BPM_PRISTINE) {
-            uint8_t *dirty_p = (uint8_t*)skb_shinfo(skb)->dirty_p;
-            if ((dirty_p != NULL) && (dirty_p > (uint8_t *)data))
-            {
-                len = (uint8_t *)(dirty_p) - (uint8_t *)data;
-                len = len > BCM_MAX_PKT_LEN ? BCM_MAX_PKT_LEN : len;
-            }
-        }
-#endif /* CONFIG_BCM_BPM || CONFIG_BCM_BPM_MODULE */
-        if (len > 0) {
-            cache_flush_len(data, len);
-        }
-#endif /* !CONFIG_BCM_GLB_COHERENCY */
-    }
-    else
-    {
-        FkBuff_t * fkb_p = (FkBuff_t *)PNBUFF_2_PBUF(pNBuff);
-        fkb_flush(fkb_p, data, len, FKB_CACHE_FLUSH); 
-    }
-    fkb_dbg(2, "<<");
-}
-
-/*
- * Function   : nbuff_flushfree
- * Description: Flush (Hit_Writeback_Inv_D) and free/recycle a network buffer.
- * If the data buffer was referenced by a single network buffer, then the data
- * buffer will also be freed/recycled. 
- */
-static inline void nbuff_flushfree_ex(pNBuff_t pNBuff, int in_thread)
-{
-    void * pBuf = PNBUFF_2_PBUF(pNBuff);
-    fkb_dbg(1, "pNBuff<%p> pBuf<%p>", pNBuff, pBuf);
-    if ( IS_SKBUFF_PTR(pNBuff) )
-    {
-        cache_flush_len(((struct sk_buff *)pBuf)->data, ((struct sk_buff *)pBuf)->len);
-        if(!in_thread)
-            dev_kfree_skb_irq((struct sk_buff *)pBuf);
-        else
-            dev_kfree_skb_thread((struct sk_buff *)pBuf);
-    }
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */
-    else
-    {
-        FkBuff_t * fkb_p = (FkBuff_t *)pBuf;
-        fkb_flush(fkb_p, fkb_p->data, fkb_p->len, FKB_CACHE_FLUSH);
-        fkb_free(fkb_p);
-    }
-    fkb_dbg(2, "<<");
-}
-
-static inline void nbuff_flushfree(pNBuff_t pNBuff)
-{
-#if defined(CONFIG_BCM_PON) || defined(CONFIG_BCM_HNDROUTER) || defined(CONFIG_BCM947189)
-    nbuff_flushfree_ex(pNBuff, 0);
-#else
-    nbuff_flushfree_ex(pNBuff, 1);
-#endif
-}
+extern void nbuff_flush(pNBuff_t pNBuff, uint8_t * data, int len);
+extern void nbuff_flushfree(pNBuff_t pNBuff);
 
 /*
  * Function   : nbuff_xlate
@@ -1967,7 +1816,7 @@ static inline int nbuff_pad(pNBuff_t pNBuff, int padLen)
 {
     if ( IS_SKBUFF_PTR(pNBuff) )
     {
-        skb_pad((struct sk_buff *)pNBuff, padLen);
+        return skb_pad((struct sk_buff *)pNBuff, padLen);
     }
     else
     {

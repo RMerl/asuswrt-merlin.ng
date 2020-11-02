@@ -390,7 +390,6 @@ typedef struct XtmInterfaceCfg
     UINT32 ulAtmInterfaceConfVccs;    /* read only */
 #if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178)
     UINT32 ulPortShaping;             /* Port Shaping enable/disable */
-    UINT32 ulMinBitRate;              /* Port Shaping */
     UINT32 ulShapeRate;               /* Port Shaping */
     UINT16 usMbs;                     /* Port Shaping */
 #endif

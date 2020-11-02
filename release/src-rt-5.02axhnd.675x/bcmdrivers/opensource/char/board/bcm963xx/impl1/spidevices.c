@@ -623,7 +623,7 @@ static int kerSysBcmSpiSlaveRead_rev2(int dev, unsigned int addr, unsigned int *
     prependcnt = rev2_add_command_and_address_to_buffer(buf, SPI_READ, addr);
 
     mutex_lock(&bcmSpiSlaveMutex);
-    status = BcmSpiSyncTrans(&buf[0], &buf[0], prependcnt, 4, spiInfo.bus, spiInfo.id[dev]);
+    status = BcmSpiSyncTrans(&buf[0], &buf[0], prependcnt, len+prependcnt, spiInfo.bus, spiInfo.id[dev]);
     mutex_unlock(&bcmSpiSlaveMutex);
 
     if ( SPI_STATUS_OK != status )
@@ -632,7 +632,7 @@ static int kerSysBcmSpiSlaveRead_rev2(int dev, unsigned int addr, unsigned int *
         return SPI_STATUS_ERR;
     }
 
-    *data = (uint32_t)le32_to_cpu(buf[0]);
+    *data = (uint32_t) le32_to_cpu(*((uint32 *)buf));
 
     return SPI_STATUS_OK;
 }
@@ -653,17 +653,21 @@ static int kerSysBcmSpiSlaveWriteBuf_rev2(int dev, unsigned int addr, unsigned i
 {
     uint8_t buf[7] = {0, 0, 0, 0, 0, 0, 0};
     int status;
+    uint32_t le32_data = cpu_to_le32(*data);
+    int prependcnt = rev2_add_command_and_address_to_buffer(buf, SPI_WRITE, addr);
 
     if (!rev2_is_dev_in_range(dev)) return SPI_STATUS_ERR;
 
-    rev2_add_command_and_address_to_buffer(buf, SPI_WRITE, addr);
-    buf[3] = (uint8_t) (cpu_to_le32(*data) & 0xff);  // single byte write for now
+    buf[prependcnt+0] = (uint8_t) ((le32_data >>  0) & 0xff);
+    buf[prependcnt+1] = (uint8_t) ((le32_data >>  8) & 0xff);
+    buf[prependcnt+2] = (uint8_t) ((le32_data >> 16) & 0xff);
+    buf[prependcnt+3] = (uint8_t) ((le32_data >> 24) & 0xff);
 
     mutex_lock(&bcmSpiSlaveMutex);
     status = BcmSpiSyncTrans(&buf[0], /* txBuf */
                              NULL, /* rxBuf */
                              0, /* prependcnt */
-                             4, /* nbytes */
+                             len+prependcnt, /* nbytes */
                              spiInfo.bus, /* busNum */
                              spiInfo.id[dev]); /* slaveId */
     mutex_unlock(&bcmSpiSlaveMutex);

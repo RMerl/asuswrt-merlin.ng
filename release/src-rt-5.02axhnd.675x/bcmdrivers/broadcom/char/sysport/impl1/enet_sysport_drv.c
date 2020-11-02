@@ -544,8 +544,24 @@ static int enet_sysport_xmit(pNBuff_t pNBuff, struct net_device *dev)
 
     if ( data_len < ETH_ZLEN )
     {
-        nbuff_pad(pNBuff, ETH_ZLEN - data_len);
-        data_len = ETH_ZLEN;
+        if (nbuff_pad(pNBuff, ETH_ZLEN - data_len))
+        {
+            /* if skb can't pad, skb is freed on error */
+            g_pDevCtrl->stats.tx_dropped++;
+            return 0;
+        }
+        /*
+         * nbuff_pad might call pskb_expand_head() which can
+         * create an identical copy of the sk_buff. &sk_buff itself is not
+         * changed but any pointers pointing to the skb header may change
+         * and must be reloaded after the call. So we do that here.
+         */
+        if (nbuff_get_params_ext(pNBuff, &p_data, &data_len,
+                                 &skb_mark, &priority, &rflags) == NULL)
+        {
+            g_pDevCtrl->stats.tx_dropped++;
+            return 0;
+        }
     }
 
     /* First reclaim already transmitted buffers */

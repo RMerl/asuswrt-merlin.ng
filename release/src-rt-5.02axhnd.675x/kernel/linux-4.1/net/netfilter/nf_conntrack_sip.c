@@ -955,9 +955,17 @@ static int set_expected_rtp_rtcp(struct sk_buff *skb, unsigned int protoff,
 		    (!nf_inet_addr_cmp(&exp->saved_addr, &exp->tuple.dst.u3) ||
 		     exp->saved_proto.udp.port != exp->tuple.dst.u.udp.port) &&
 		    ct->status & IPS_NAT_MASK) {
+#if defined(CONFIG_BCM_KF_NETFILTER_SIP)			
+		   if (exp->saved_addr.ip != 0) {      
+    			*daddr			= exp->saved_addr;
+    			tuple.dst.u3		= exp->saved_addr;
+    			tuple.dst.u.udp.port	= exp->saved_proto.udp.port;
+		   }			
+#else			
 			*daddr			= exp->saved_addr;
 			tuple.dst.u3		= exp->saved_addr;
 			tuple.dst.u.udp.port	= exp->saved_proto.udp.port;
+#endif			
 			direct_rtp = 1;
 		} else
 #endif

@@ -513,7 +513,8 @@ BCMXTM_STATUS XTM_CONNECTION::SetLinkInfo( UINT32 ulLinkMask,
                   i < m_Cfg.ulTransmitQParmsSize && bxStatus == XTMSTS_SUCCESS;
                   i++, pTxQParms++ )
             {
-               bxStatus = ReserveOneTxQueue(pTxQParms);
+               if (pTxQParms->usSize != 0)
+                  bxStatus = ReserveOneTxQueue(pTxQParms);
                if (bxStatus != XTMSTS_SUCCESS)
                   break ;
             }
@@ -2302,7 +2303,8 @@ void XTM_CONNECTION::CheckTransmitQueues( void )
               * Before setting up the transmit entities/DMA, we need to
               * ensure SAR Tx is configured.
               */
-             bxStatus = ReserveOneTxQueue(pTxQParms);
+             if (pTxQParms->usSize != 0)
+                bxStatus = ReserveOneTxQueue(pTxQParms);
 
              for (k=0x7ffff; k>0; k--)
                 asm ("nop") ; 

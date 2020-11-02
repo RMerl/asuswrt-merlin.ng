@@ -53,7 +53,8 @@ typedef enum {
     rdpa_vlan_attr_protocol_filters = 4, /* protocol_filters : RW : enum_mask : Protocol Filters define allowed traffic type */
     rdpa_vlan_attr_discard_prty = 5, /* discard_prty : RW : enum : Discard priority */
     rdpa_vlan_attr_options = 6, /* options : RW : number : reserved */
-    rdpa_vlan_attr_stat = 7, /* stat : RW : aggregate rdpa_stat_tx_rx_valid(rdpa_stat_tx_rx_valid_t) : vlan statistics */
+    rdpa_vlan_attr_is_default = 7, /* is_default : RI : bool : VLAN default vid flag */
+    rdpa_vlan_attr_stat = 8, /* stat : RW : aggregate rdpa_stat_tx_rx_valid(rdpa_stat_tx_rx_valid_t) : vlan statistics */
 } rdpa_vlan_attr_types;
 
 extern int (*f_rdpa_vlan_get)(const char * name_, bdmf_object_handle *pmo);
@@ -299,6 +300,38 @@ static inline int rdpa_vlan_options_get(bdmf_object_handle mo_, bdmf_number *opt
 static inline int rdpa_vlan_options_set(bdmf_object_handle mo_, bdmf_number options_)
 {
     return bdmf_attr_set_as_num(mo_, rdpa_vlan_attr_options, options_);
+}
+
+
+/** Get vlan/is_default attribute.
+ *
+ * Get VLAN default vid flag.
+ * \param[in]   mo_ vlan object handle or mattr transaction handle
+ * \param[out]  is_default_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task and softirq contexts.
+ */
+static inline int rdpa_vlan_is_default_get(bdmf_object_handle mo_, bdmf_boolean *is_default_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_vlan_attr_is_default, &_nn_);
+    *is_default_ = (bdmf_boolean)_nn_;
+    return _rc_;
+}
+
+
+/** Set vlan/is_default attribute.
+ *
+ * Set VLAN default vid flag.
+ * \param[in]   mo_ vlan object handle or mattr transaction handle
+ * \param[in]   is_default_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task and softirq contexts.
+ */
+static inline int rdpa_vlan_is_default_set(bdmf_object_handle mo_, bdmf_boolean is_default_)
+{
+    return bdmf_attr_set_as_num(mo_, rdpa_vlan_attr_is_default, is_default_);
 }
 
 

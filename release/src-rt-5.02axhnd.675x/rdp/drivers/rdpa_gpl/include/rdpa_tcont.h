@@ -36,11 +36,7 @@
  * @{
  */
 #if defined(XRDP) && !defined(BCM63158)
-#if defined(BCM6878) && defined(DQM_SW_WORKAROUND) && !defined(RDP_SIM)
-#define RDPA_MAX_TCONT  9       /**< Max number of T-CONTs in dqm workaround - relevant only for 6878_A0*/
-#else
 #define RDPA_MAX_TCONT  33      /**< Max number of T-CONTs*/
-#endif
 #else
 #define RDPA_MAX_TCONT  32      /**< Max number of T-CONTs */
 #endif

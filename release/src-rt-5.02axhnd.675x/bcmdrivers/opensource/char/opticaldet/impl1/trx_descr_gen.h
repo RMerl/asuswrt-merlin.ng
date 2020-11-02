@@ -388,7 +388,7 @@ static TRX_DESCRIPTOR trx_lst[] = {
     .tx_sd_polarity        = TRX_ACTIVE_HIGH,
     .tx_pwr_down_polarity  = TRX_ACTIVE_LOW,
     .tx_pwr_down_cfg_req   = false,
-    .tx_sd_supported       = TRX_SIGNAL_NOT_SUPPORTED,
+    .tx_sd_supported       = TRX_SIGNAL_SUPPORTED,
     .activation_func       = (f_activation) NULL,
     .wan_types_bitmap      = SUPPORTED_WAN_TYPES_BIT_GPON
   },
@@ -453,6 +453,32 @@ static TRX_DESCRIPTOR trx_lst[] = {
     .wan_types_bitmap      = SUPPORTED_WAN_TYPES_BIT_GPON | SUPPORTED_WAN_TYPES_BIT_EPON_1_1 | SUPPORTED_WAN_TYPES_BIT_TURBO_EPON_2_1,
     .rx_wavlen             = 1490,
     .power_budget          = TRX_PB_PR20
+  },
+  {
+    .form_factor           = TRX_SFP,      
+    .type                  = TRX_TYPE_XPON,        
+    .vendor_name           = "Hisense",
+    .vendor_pn             = "LTE3468-BHG1",
+    .lbe_polarity          = TRX_ACTIVE_HIGH,
+    .tx_sd_polarity        = TRX_ACTIVE_HIGH,
+    .tx_pwr_down_polarity  = TRX_ACTIVE_LOW,
+    .tx_pwr_down_cfg_req   = false,
+    .tx_sd_supported       = TRX_SIGNAL_SUPPORTED,
+    .activation_func       = (f_activation) NULL,
+    .wan_types_bitmap      = SUPPORTED_WAN_TYPES_BIT_GPON
+  },
+  {
+    .form_factor           = TRX_SFP,      
+    .type                  = TRX_TYPE_XPON,        
+    .vendor_name           = "Hisense",
+    .vendor_pn             = "LTE3468L-BHG2",
+    .lbe_polarity          = TRX_ACTIVE_LOW,
+    .tx_sd_polarity        = TRX_ACTIVE_HIGH,
+    .tx_pwr_down_polarity  = TRX_ACTIVE_LOW,
+    .tx_pwr_down_cfg_req   = false,
+    .tx_sd_supported       = TRX_SIGNAL_SUPPORTED,
+    .activation_func       = (f_activation) NULL,
+    .wan_types_bitmap      = SUPPORTED_WAN_TYPES_BIT_GPON
   },
   {
     .form_factor           = TRX_SFP,      

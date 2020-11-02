@@ -946,6 +946,28 @@ int bcm_i2c_optics_rx_control(int enable)
 }
 EXPORT_SYMBOL(bcm_i2c_optics_rx_control);
 
+int bcm_i2c_optics_tx_control_get(int *enable)
+{
+    unsigned short gpio;
+    int rc;
+
+    rc = BpGetPonTxEnGpio(&gpio);
+    if (rc != BP_SUCCESS)
+    {
+        BCM_I2C_LOG("Transceiver TX get failed: GpioPontxEn is not defined\n");
+        return -1;
+    }
+
+    if (gpio == BP_GPIO_NONE)
+        return -1;
+
+    kerSysSetGpioDir(gpio);
+    *enable = (kerSysGetGpioValue(gpio) == kGpioActive)? BCM_I2C_OPTICS_ENABLE : BCM_I2C_OPTICS_DISABLE;
+
+    return 0;
+}
+EXPORT_SYMBOL(bcm_i2c_optics_tx_control_get);
+
 int bcm_i2c_optics_tx_control(int enable)
 {
     return _optics_en(enable, 1);

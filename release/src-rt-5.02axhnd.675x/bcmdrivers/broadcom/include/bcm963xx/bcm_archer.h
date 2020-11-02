@@ -72,6 +72,11 @@ typedef enum {
     ARCHER_WLAN_RADIO_MODE_MAX
 } archer_wlan_radio_mode_t;
 
+
+/* WLAN flow-miss using pktlist instead of single skb */
+#define ARCHER_WLAN_MISS_PKTLIST
+#define ARCHER_WLAN_RX_BUDGET              64
+
 extern int archer_wlan_bind(struct net_device *dev_p,
                             struct pktlist_context *wl_pktlist_context,
                             archer_wlan_radio_mode_t mode,
@@ -80,7 +85,7 @@ extern int archer_wlan_bind(struct net_device *dev_p,
 
 extern int archer_wlan_unbind(int radio_index);
 
-typedef void (* archer_wlan_rx_miss_handler_t)(void *context, struct sk_buff *skb_p);
+typedef void (* archer_wlan_rx_miss_handler_t)(void *context, pktlist_t *pktl_p);
 
 extern int archer_wlan_rx_register(int radio_index, archer_wlan_rx_miss_handler_t handler, void *context);
 

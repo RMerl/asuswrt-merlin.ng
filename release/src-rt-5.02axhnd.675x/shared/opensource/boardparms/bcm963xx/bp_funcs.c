@@ -1133,16 +1133,12 @@ int BpSetBoardId(const char *pszBoardId )
 ***************************************************************************/
 int BpGetBoardId( char *pszBoardId )
 {
-    int i;
-
     if (g_pCurrentBp == 0) {
         return -1;
     }
 
-    for (i = 0; i < BP_BOARD_ID_LEN; i++) {
-        pszBoardId[i] = g_pCurrentBp[0].u.cp[i];
-    }
-
+    strncpy(pszBoardId, g_pCurrentBp[0].u.cp, BP_BOARD_ID_LEN);
+    pszBoardId[BP_BOARD_ID_LEN - 1] = '\0';
     return 0;
 }
 
@@ -4525,7 +4521,8 @@ int BpGetNumFePorts( unsigned int *pulValue )
             switch(mac_type)
             {
                 case MAC_IF_GMII:
-                case MAC_IF_RGMII:
+                case MAC_IF_RGMII_1P8V:
+                case MAC_IF_RGMII_2P5V:
                 case MAC_IF_RGMII_3P3V:
                 case MAC_IF_QSGMII:
                 case MAC_IF_SGMII:    
@@ -4572,7 +4569,8 @@ int BpGetNumGePorts( unsigned int *pulValue )
             switch(mac_type)
             {
                 case MAC_IF_GMII:
-                case MAC_IF_RGMII:
+                case MAC_IF_RGMII_1P8V:
+                case MAC_IF_RGMII_2P5V:
                 case MAC_IF_RGMII_3P3V:
                 case MAC_IF_QSGMII:
                 case MAC_IF_SGMII:    
@@ -5532,7 +5530,7 @@ int BpGetAllPinmux(int maxnum, int *outcnt, int *errcnt, unsigned short *pusFunc
                  // printf("switch %d port %d\n",i,j);
                      u = j;
 #if defined(CONFIG_BCM96858) || defined(_BCM96858_) || defined(CONFIG_BCM96846) || defined(_BCM96846_) || defined(CONFIG_BCM96856) || defined(_BCM96856_) || defined(CONFIG_BCM96878) || defined(_BCM96878_)
-                 if ((Enet[i].sw.phy_id[j] & MAC_IFACE) == MAC_IF_RGMII) {
+                 if (IsRGMII(Enet[i].sw.phy_id[j])) {
 #else
                  if (Enet[i].sw.phy_id[j] & MAC_IFACE) {
 #endif

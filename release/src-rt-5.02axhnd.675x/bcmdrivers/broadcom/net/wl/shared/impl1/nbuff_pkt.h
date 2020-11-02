@@ -38,6 +38,7 @@
 #include <linux/gbpm.h>
 #endif
 
+#if !defined(BCM_EAPFWD)
 extern void *nbuff_pktdup(osl_t *osh, void *pkt);
 extern void *nbuff_pktdup_cpy(osl_t *osh, void *pkt);
 extern void nbuff_pktfree(osl_t *osh, void *pkt, bool send);
@@ -61,7 +62,7 @@ extern void *nbuff_pkt_get_tag(void *pkt);
 extern int nbuff_pkttag_attach(void *osh, void *pkt);
 extern uint nbuff_pktflowid(void *pkt);
 extern void nbuff_pktsetflowid(void *pkt, uint x);
-
+#endif /* !BCM_EAPFWD */
 /* packet primitives */
 
 #if defined(BCMDONGLEHOST)

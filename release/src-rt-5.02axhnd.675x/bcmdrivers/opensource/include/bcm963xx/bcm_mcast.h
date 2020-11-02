@@ -110,6 +110,7 @@ typedef struct bcm_mcast_pkt_info
 {
     int                       parent_ifi;
     int                       rxdev_ifi;
+    int                       to_acceldev_ifi;
     int                       data_len;
     int                       lanppp;
     int                       packetIndex;
@@ -194,6 +195,7 @@ typedef struct bcm_mcast_igmp_snoop_entry
    int                       parent_ifi;
    int                       dstdev_ifi;
    /* Internal, ignore endianness */
+   int                       to_acceldev_ifi;
    unsigned int              mode;
    unsigned int              code;
    unsigned short            tci;/* vlan id */
@@ -229,6 +231,7 @@ typedef struct bcm_mcast_mld_snoop_entry
    int                       parent_ifi;
    int                       dstdev_ifi;
    /* Internal, ignore endianness */
+   int                       to_acceldev_ifi;
    unsigned int              mode;
    unsigned int              code;
    unsigned short            tci;
@@ -367,34 +370,6 @@ int bcm_mcast_is_snooping_enabled(struct net_device *dev, int proto);
 int bcm_mcast_control_filter(void *grp, int proto);
 int bcm_mcast_notify_register(struct notifier_block *nb);
 int bcm_mcast_notify_unregister(struct notifier_block *nb);
-int bcm_mcast_snoop_update_entry(int                proto,
-                                 struct net_device *parent_dev,
-                                 struct net_device *dst_dev,
-                                 struct net_device *from_dev,
-                                 int                wan_ops,
-                                 void              *rxGrp, 
-                                 void              *txGrp,
-                                 void              *src,
-                                 void              *rep,
-                                 unsigned char     *repMac,
-                                 unsigned char      rep_proto_ver,
-                                 uint32_t           rep_info,
-                                 int                mode, 
-                                 uint16_t           tci, 
-                                 int                lanppp,
-                                 int                excludePort,
-                                 char               enRtpSeqCheck);
-int bcm_mcast_snoop_remove_entry(int                proto,
-                                 struct net_device *parent_dev,
-                                 struct net_device *dst_dev,
-                                 struct net_device *from_dev,
-                                 void              *rxGrp, 
-                                 void              *txGrp,
-                                 void              *src,
-                                 void              *rep,
-                                 uint32_t           rep_info,
-                                 int                mode);
-
 #if defined(CONFIG_BLOG) && (defined(CONFIG_BCM_WLAN) || defined(CONFIG_BCM_WLAN_MODULE))
 int bcm_mcast_wlan_client_disconnect_notifier(struct net_device *dev, char *mac);
 #endif
@@ -404,37 +379,17 @@ static inline int bcm_mcast_is_snooping_enabled(struct net_device *dev, int prot
 static inline int bcm_mcast_control_filter(void *grp, int proto) { return 1; }
 static inline int bcm_mcast_notify_register(struct notifier_block *nb) { return 0; }
 static inline int bcm_mcast_notify_unregister(struct notifier_block *nb) { return 0; }
-static inline int bcm_mcast_snoop_update_entry(int proto,
-                                               struct net_device *parent_dev,
-                                               struct net_device *dst_dev,
-                                               struct net_device *from_dev,
-                                               int                wan_ops,
-                                               void              *rxGrp, 
-                                               void              *txGrp,
-                                               void              *src,
-                                               void              *rep,
-                                               unsigned char     *repMac,
-                                               unsigned char      rep_proto_ver,
-                                               uint32_t           rep_info,
-                                               int                mode, 
-                                               uint16_t           tci, 
-                                               int                lanppp,
-                                               int                excludePort,
-                                               char               enRtpSeqCheck) { return 0; }
-static inline int bcm_mcast_snoop_remove_entry(int                proto,
-                                               struct net_device *parent_dev,
-                                               struct net_device *dst_dev,
-                                               struct net_device *from_dev,
-                                               void              *rxGrp, 
-                                               void              *txGrp,
-                                               void              *src,
-                                               void              *rep,
-                                               uint32_t           rep_info,
-                                               int                mode) { return 0; }
-
 static inline int bcm_mcast_wlan_client_disconnect_notifier(struct net_device *dev, char *mac) { return 0; }
 
 #endif /* CONFIG_BR_MLD_SNOOP || CONFIG_BR_IGMP_SNOOP */
 #endif /* __KERNEL__ */
+
+#define IGMP_TYPE_STR(type) \
+        ((type == 0x12 || type == 0x16 || type == 0x22) ? "REPORT":\
+         ((type == 0x11) ? "QUERY":((type == 0x17) ? "LEAVE":"UNKNOWN")))
+
+#define MLD_TYPE_STR(type) \
+        ((type == 131 || type == 143) ? "REPORT":\
+         ((type == 130) ? "QUERY":((type == 132) ? "DONE":"UNKNOWN")))
 
 #endif /* _BCM_MCAST_H_ */

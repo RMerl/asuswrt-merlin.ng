@@ -85,4 +85,11 @@ enum ComboParsingStates {combo_init, get_header_tag, buffering_complete_header,
     in_image, rolling, fail, not_combo, combo_done};
 
 
+typedef struct {
+    uint8_t accept_ranges; /* true means server accepts range */
+    unsigned long int range_begin;  /* start of indivitual image in the combo stream */ 
+    unsigned long int range_end;    /* end of individual image in the combo stream */
+    uint8_t stage; /* stage 0 - HTTP GET combo. stage 1 - HTTP GET individual image */
+} imgutil_accept_range_ctx_t;
+
 #endif /*__BCM_IMGUTIL_DEF_H__ */

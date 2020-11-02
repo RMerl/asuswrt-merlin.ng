@@ -559,14 +559,16 @@ static int help(struct sk_buff *skb, unsigned int protoff,
 			tplen = msghdrlen - (tpoff - msgoff);
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-		/* Check for a server reply containing interleaved transport */
-		if (dir && memmem(tcpdata+tpoff, msghdrlen-(tpoff - msgoff),
-				"interleaved=", 12) >= 0) {
-				pr_debug("Found RTSP interleaved transport: make it accelerated\n");
-				RCU_INIT_POINTER(hlp->helper, NULL);
-				set_bit(IPS_BLOG_BIT, &ct->status);
-				goto end;
-		}
+        if (!test_bit(IPS_SEQ_ADJUST_BIT, &ct->status)) {
+            /* Check for a server reply containing interleaved transport */
+            if (dir && memmem(tcpdata+tpoff, msghdrlen-(tpoff - msgoff),
+                    "interleaved=", 12) >= 0) {
+                    pr_debug("Found RTSP interleaved transport: make it accelerated\n");
+                    RCU_INIT_POINTER(hlp->helper, NULL);
+                    set_bit(IPS_BLOG_BIT, &ct->status);
+                    goto end;
+            }
+        }
 #endif
 
 		/* There maybe more than one client_port parameter in this

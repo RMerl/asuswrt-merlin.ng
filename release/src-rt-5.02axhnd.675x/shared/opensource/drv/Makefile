@@ -60,10 +60,18 @@ ifeq ($(strip ${BRCM_CHIP}),6858)
     DRV_OBJS += phys/phy_drv_ext1.o
     DRV_OBJS += phys/phy_drv_ext2.o
     DRV_OBJS += phys/phy_drv_ext3.o
+    DRV_OBJS += phys/phy_mac_sec.o
+    DRV_OBJS += phys/phy_mac_sec_list.o
+    DRV_OBJS += phys/sha256.o
     DRV_OBJS += phys/phy_drv_lport_serdes.o
     EXTRA_CFLAGS += -DMAC_LPORT
     EXTRA_CFLAGS += -DPHY_6858_EGPHY -DPHY_EXT1 -DPHY_EXT2 -DPHY_EXT3 -DPHY_LPORT_SERDES
     EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_
+    EXTRA_CFLAGS += -DLPORT_SERDES_POWER_SAVING
+ifeq ($(strip $(CONFIG_BCM_FTTDP_G9991)),)
+    EXTRA_CFLAGS += -DLPORT_SERDES_LINK_POWER_DOWN -DLPORT_SERDES_SPEED_DETECT -DLPORT_SERDES_EXTERNAL_SIGNAL_DETECT
+endif
+
 endif
 ifeq ($(strip ${BRCM_CHIP}),6856)
     DRV_OBJS += mdio/mdio_drv_common.o
@@ -77,6 +85,9 @@ ifeq ($(strip ${BRCM_CHIP}),6856)
     DRV_OBJS += phys/phy_drv_sgmii_plus2.o
     DRV_OBJS += phys/phy_drv_ext1.o
     DRV_OBJS += phys/phy_drv_ext3.o
+    DRV_OBJS += phys/phy_mac_sec.o
+    DRV_OBJS += phys/phy_mac_sec_list.o
+    DRV_OBJS += phys/sha256.o
     EXTRA_CFLAGS += -DMAC_UNIMAC
     EXTRA_CFLAGS += -DPHY_6846_EGPHY -DPHY_6856_SGMII -DPHY_EXT1 -DPHY_EXT3 
     EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_
@@ -155,6 +166,9 @@ ifeq ($(strip ${BRCM_CHIP}),63158)
     DRV_OBJS += xport/impl1/xport_drv.o
     DRV_OBJS += xport/impl1/xport_stats.o
     DRV_OBJS += xport/impl1/xport_proc.o
+    DRV_OBJS += phys/phy_mac_sec.o
+    DRV_OBJS += phys/phy_mac_sec_list.o
+    DRV_OBJS += phys/sha256.o
 
     EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2 -DPHY_SF2 -DPHY_SF2_SERDES -DPHY_M2M -DDSL_DEVICES
     EXTRA_CFLAGS += -DMAC_XPORT
@@ -177,6 +191,9 @@ ifeq ($(strip ${BRCM_CHIP}),4908)
     DRV_OBJS += phys/phy_bp_parsing_4908.o
     DRV_OBJS += phys/phy_drv_sf2.o
     DRV_OBJS += phys/phy_drv_ext3.o
+    DRV_OBJS += phys/phy_mac_sec.o
+    DRV_OBJS += phys/phy_mac_sec_list.o
+    DRV_OBJS += phys/sha256.o
     DRV_OBJS += ../drivers/bcm_ethsw_impl1.o
     EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2 -DPHY_SF2 -DPHY_SF2_SERDES -DPHY_M2M -DDSL_DEVICES
     EXTRA_CFLAGS += -DPHY_SERDES_2P5G_CAPABLE -DPHY_EXT3
@@ -204,6 +221,9 @@ ifeq ($(strip ${BRCM_CHIP}),47622)
     DRV_OBJS += phys/phy_bp_parsing_47622.o
     DRV_OBJS += phys/phy_drv_sf2.o
     DRV_OBJS += phys/phy_drv_ext3.o
+    DRV_OBJS += phys/phy_mac_sec.o
+    DRV_OBJS += phys/phy_mac_sec_list.o
+    DRV_OBJS += phys/sha256.o
     DRV_OBJS += ../drivers/bcm_ethsw_impl1.o
     EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2_EXTERNAL -DPHY_SF2 -DPHY_SF2_SERDES -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES
     EXTRA_CFLAGS += -DPHY_SERDES_2P5G_CAPABLE -DPHY_EXT3

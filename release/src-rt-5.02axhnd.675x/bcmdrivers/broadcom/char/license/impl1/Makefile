@@ -14,11 +14,14 @@ endif
 EXTRA_CFLAGS += $(INC_RDP_FLAGS)
 EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
 EXTRA_CFLAGS += -Werror -Wfatal-errors -DBRCM_RELEASETAG=\"$(BRCM_RELEASETAG)\"
+EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD)
 
 -include $(TOPDIR)/Rules.make
 
 $(obj)/license.o: install
 
+# Changed loading rc script to S45bcm-c-license
+# so that license module receives license file early enough to serve other kernel modules.
 install:
 	mkdir -p $(INSTALL_DIR)/etc/init.d
 	mkdir -p $(INSTALL_DIR)/etc/rc3.d
@@ -26,7 +29,8 @@ install:
 	mkdir -p $(INSTALL_DIR)/data/licenses
 	if [ -a $(src)/scripts/license.txt ]; then install $(src)/scripts/license.txt $(INSTALL_DIR)/etc/licenses; fi;
 	install $(src)/scripts/license_init.sh $(INSTALL_DIR)/etc/init.d
-	(cd $(INSTALL_DIR)/etc/rc3.d; rm -f S71license_init; ln -s ../init.d/license_init.sh S71license_init)
+	(cd $(INSTALL_DIR)/etc/rc3.d; rm -f S45bcm-c-license; ln -s ../init.d/license_init.sh S45bcm-c-license)
+
 
 clean:
 	rm -f core *.ko *.o *.a *.s

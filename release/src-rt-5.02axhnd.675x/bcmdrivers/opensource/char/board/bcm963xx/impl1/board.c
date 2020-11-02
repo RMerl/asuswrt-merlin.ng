@@ -307,9 +307,7 @@ EXPORT_SYMBOL(kerSysGetGponPassword);
 EXPORT_SYMBOL(kerSysFsFileGet);
 EXPORT_SYMBOL(kerSysFsFileSet);
 EXPORT_SYMBOL(kerSysGetSdramSize);
-#if !defined(CONFIG_BCM960333) && !defined(CONFIG_BCM947189)
 EXPORT_SYMBOL(kerSysGetDslPhyEnable);
-#endif
 EXPORT_SYMBOL(kerSysSetOpticalPowerValues);
 EXPORT_SYMBOL(kerSysGetOpticalPowerValues);
 EXPORT_SYMBOL(kerSysLedCtrl);

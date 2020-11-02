@@ -18,13 +18,8 @@ dynamic: all install
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
-ifeq ($(wildcard $(SRCBASE)/router-sysdep/dnsspoof/*.c),)
-dnsspoof:
-	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/prebuilt/$@ ./
-else
 dnsspoof: dnsspoof.o
 	$(CC) $(CFLAGS) -o dnsspoof dnsspoof.o
-endif
 
 clean:
 	-rm -f dnsspoof *.o

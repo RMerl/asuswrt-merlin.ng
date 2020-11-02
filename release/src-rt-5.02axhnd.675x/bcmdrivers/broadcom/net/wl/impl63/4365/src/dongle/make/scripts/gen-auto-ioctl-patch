@@ -1,0 +1,2097 @@
+#!/usr/bin/perl
+#
+# This script automatically generates the ROM patch handler functions for IOCTLs and IOVARs
+# for ROM offload builds.
+#
+# It leverages the same concepts/framework as ROM auto abandon. The basic concept is that every
+# case-statement of the IOCTL/IOVAR handler is treated as its own function and has an associated
+# checksum. The checksums from the latest code are compared against the ROM checksums, and this
+# info is used to generate the patch handler.
+#
+# Refer to: http://hwnbu-twiki.sj.broadcom.com/bin/view/Mwgroup/ROMAutoIoctlIovarPatching
+#
+# Usage: See 'usage' subroutine below.
+
+use strict;
+use warnings;
+use File::Basename;
+use Getopt::Std;
+use Log;
+
+
+# Display usage info.
+#
+# Params: None.
+#
+# Returns: Nothing.
+my $g_script = basename($0);
+sub usage {
+	print STDERR "\nUsage (checksum): $g_script    <file_in_pp> <file_in> <config>\n";
+	print STDERR "                                 <romtable> <config_err> <file_out>\n";
+	print STDERR "\nUsage (final):    $g_script -f <file_in_pp> <file_in> <config>\n";
+	print STDERR "                                 <romtable> <config_err> <file_out> <rom_md5> <ram_md5>\n";
+	print STDERR "   <file_in_pp>: IN  Preprocessed C source file containing IOCTL/IOVAR handler.\n";
+	print STDERR "   <file_in>:    IN  C source file containing IOCTL/IOVAR handler.\n";
+	print STDERR "   <config>:     IN  Auto patch config file.\n";
+	print STDERR "   <romtable>:   IN  ROM table (romtable.S).\n";
+	print STDERR "   <config-err>: IN  1 to error on config file verification, else 0 to ignore.";
+	print STDERR "   <file_out>:   OUT Generated C file containing patch handler.\n";
+	print STDERR "   <rom-md5>:    IN  ROM MD5 signature file.\n";
+	print STDERR "   <ram-md5>:    IN  RAM MD5 signature file.\n";
+	exit 1;
+}
+
+
+# Set to '1' to enable debug logging.
+use constant LOG_DEBUG_ENABLE => 1;
+
+# Constants for symbol comparison states between ROM and RAM.
+use constant {
+	# ROM and RAM IOCTL/IOVAR match.
+	SYM_MATCH     => 0,
+	# ROM and RAM IOCTL/IOVAR do NOT match.
+	SYM_MISMATCH  => 1,
+	# New IOCTL/IOVAR added to latest code.
+	SYM_ADDED     => 2,
+	# IOCTL/IOVAR removed from latest code. (Or may be unsupported based upon #ifdef's).
+	SYM_REMOVED   => 3
+};
+my @g_sym_compare_strs = ("MATCH", "MISMATCH", "ADDED", "REMOVED");
+
+# Handler function types.
+use constant {
+	IOCTL  => 0,
+	IOVAR  => 1
+};
+
+# Symbol types.
+use constant {
+	RODATA => 0,
+	FUNC   => 1
+};
+
+
+# Script command line args.
+my $g_fname_C_src_pp;	# Pre-processed C file.
+my $g_fname_C_src;
+my $g_fname_config;
+my $g_fname_romtable;
+my $g_fname_out;
+my $g_fname_rom_md5sign;
+my $g_fname_ram_md5sign;
+my $g_config_err;
+
+# Regular expression search strings.
+my $g_sym_regexp       = '[\w$]+';
+
+
+# Indicates if the "final" patch handler should be generated. (As opposed to the "checksum"
+# single-case patch handlers used for checksum comparison).
+my $g_gen_final_patch_handler;
+
+# Parse optional command line options.
+our($opt_f);
+getopts('f');
+if ($opt_f) {
+	$g_gen_final_patch_handler = 1;
+}
+
+
+# Parse command line arguments.
+usage() if ($g_gen_final_patch_handler  && (@ARGV != 8));
+usage() if (!$g_gen_final_patch_handler && (@ARGV != 6));
+($g_fname_C_src_pp  = shift @ARGV);
+($g_fname_C_src     = shift @ARGV);
+($g_fname_config    = shift @ARGV);
+($g_fname_romtable  = shift @ARGV);
+($g_config_err      = shift @ARGV);
+($g_fname_out       = shift @ARGV);
+if ($g_gen_final_patch_handler) {
+	($g_fname_rom_md5sign = shift @ARGV);
+	($g_fname_ram_md5sign = shift @ARGV);
+}
+
+# Hash table indexed by "checksum symbol", that maps to MD5 signatures for each ROM symbol.
+my %g_rom_md5signs;
+
+# Hash table indexed by "checksum symbol", that maps to MD5 signatures for each RAM symbol.
+my %g_ram_md5signs;
+
+# Hash table indexed by "checksum symbol" that maps to the symbol comparison state between
+# ROM and RAM.
+my %g_sym_compare_states;
+
+# Hash table of symbols from input romtable.S. Value is '1' for each symbol.
+my %g_romtable_syms;
+
+# Log file to store debug info.
+my ($g_debug_fd, $g_debug_fname);
+
+# Hash of IOCTL/IOVAR handlers to type (either IOCTL or IOVAR).
+my %g_handler_types;
+
+# Hash of IOCTL/IOVAR handlers to table (may be 'nil').
+my %g_handler_tables;
+
+# Name of main IOCTL handler in wlc.c
+my $g_primary_ioctl_func = "_wlc_ioctl";
+
+# Strings used to mangle and demangle "checksum symbols"
+my $g_get_iovar_tag  = "_IOV_GVAL";
+my $g_set_iovar_tag  = "_IOV_SVAL";
+my $g_auto_patch_tag = "auto_patch";
+
+# Special empty case-statement validation handler. This is used to ensure that the preamble/postamble
+# does NOT change between ROM and RAM since this would cause the disassembly of all case statements
+# to change, and therefore force all case statements to be unnecessarily patched!
+my $g_validation_case_id       = "_CASE_VALIDATION_";
+my $g_iovar_validation_enum    = $g_validation_case_id;
+my $g_iovar_validation_str     = "validation";
+
+# IOCTL #define delimiters.
+my $g_first_ioctl = "WLC_GET_MAGIC";
+my $g_last_ioctl  = "WLC_LAST";
+
+
+# Utility function to strip prefix added by "globalizer" for static symbols
+# e.g. wlc$_wlc_ioctl() ==> wlc_ioctl().
+#
+# Params:  sym IN  Globalized symbol name.
+#
+# Returns: Un-globalized symbol name.
+sub unglobalize {
+	my ($sym) = @_;
+	$sym =~ s/\w+\$//;
+
+	return ($sym);
+}
+
+
+# Helper function that "mangles" together a checksum symbol name, e.g.
+#   'wlc_doiovar__auto_patch__IOV_2G_MRATE_IOV_GVAL__2g_mrate'
+#
+# Params:  sym:       IN  Name of IOVAR table (e.g. 'wlc_iovars') or IOCTL/IOVAR handler
+#                         (e.g. 'wlc_doiovars').
+#          tag:       IN  IOVAR enum for tables (e.g. IOV_2G_MRATE). "case-id" for IOCTL/IOVAR
+#                         handlers (e.g. IOV_2G_MRATE_IOV_GVAL).
+#          iovar_str: IN  IOVAR string. (undef for IOCTLs).
+#
+# Returns: Mangled checksum symbol name.
+sub _mangle_checksum_sym {
+	my ($sym, $tag, $iovar_str) = @_;
+	my $checksum_sym;
+	my $delimit = "__";
+
+	if (defined($iovar_str)) {
+		$checksum_sym = join($delimit, $sym, $g_auto_patch_tag, $tag, $iovar_str);
+	}
+	else {
+		$checksum_sym = join($delimit, $sym, $g_auto_patch_tag, $tag);
+	}
+
+	return ($checksum_sym);
+}
+
+
+# Helper function that "demangles" apart a checksum symbol name, e.g.
+#   'wlc_doiovar__auto_patch__IOV_2G_MRATE_IOV_GVAL__2g_mrate'
+#
+# Params:  checksum_sym: IN  Mangled checksum symbol name.
+#          sym:          OUT Name of IOVAR table (e.g. 'wlc_iovars') or IOCTL/IOVAR handler
+#                            (e.g. 'wlc_doiovars').
+#          tag:          OUT IOVAR enum for tables (e.g. IOV_2G_MRATE). "case-id" for IOCTL/IOVAR
+#                            handlers (e.g. IOV_2G_MRATE_IOV_GVAL).
+#          iovar_str:    OUT IOVAR string. (undef for IOCTLs).
+#
+# Returns: Nothing
+sub _demangle_checksum_sym {
+	my ($checksum_sym, $sym, $tag, $iovar_str) = @_;
+	my $delimit = "__";
+
+	my @list = split($delimit, $checksum_sym);
+	${$sym}       = $list[0] if defined($sym);
+	${$tag}       = $list[2] if defined($tag);
+	${$iovar_str} = $list[3] if defined($iovar_str);
+}
+
+
+# Helper function that generates the "checksum symbol" for a function, e.g.
+#    - '_wlc_ioctl__auto_patch__WLC_CURRENT_PWR'                   (IOCTL handler)
+#    - 'wlc_doiovar__auto_patch__IOV_2G_MRATE_IOV_GVAL__2g_mrate'  (IOVAR handler)
+#
+# Params:  func:      IN  Name of IOCTL/IOVAR handler (e.g. wlc_doiovar).
+#          case_id:   IN  Name of case statement identifier.
+#          iovar_str: IN  IOVAR string. Ignored for IOCTLs.
+#
+# Returns: Checksum symbol function name.
+sub make_func_checksum_sym {
+	my ($func, $case_id, $iovar_str) = @_;
+	my $checksum_sym;
+
+	$checksum_sym = _mangle_checksum_sym($func, $case_id, $iovar_str);
+	return ($checksum_sym);
+}
+
+
+# Helper function that generates the "checksum symbol" for tables, e.g.
+#    'wlc_iovars__auto_patch__IOV_2G_MRATE__2g_mrate'
+#
+# Params:  func:      IN  Name of IOCTL/IOVAR handler (e.g. wlc_doiovar).
+#          iovar:     IN  IOVAR enum.
+#          iovar_str: IN  IOVAR string.
+#
+# Returns: Checksum symbol function name.
+sub make_table_checksum_sym {
+	my ($table, $iovar, $iovar_str) = @_;
+	my $checksum_sym;
+
+	$checksum_sym = _mangle_checksum_sym($table, $iovar, $iovar_str);
+	return ($checksum_sym);
+}
+
+
+# Helper function that maps a "checksum symbol" to function name, e.g.
+#    'wlc_doiovar__auto_patch__IOV_2G_MRATE_IOV_GVAL__2g_mrate' ==> 'wlc_doiovar'
+#
+# Params:  checksum_sym IN  Checksum symbol name.
+#
+# Returns: Function name.
+sub get_func_from_checksum_sym {
+	my ($checksum_sym) = @_;
+	my $func;
+
+	_demangle_checksum_sym($checksum_sym, \$func, undef, undef);
+	return ($func);
+}
+
+# Helper function that maps a "checksum symbol" to table name, e.g.
+#    'wlc_iovars__auto_patch__IOV_2G_MRATE__2g_mrate' ==> 'wlc_iovars'
+#
+# Params:  checksum_sym IN  Checksum symbol name.
+#
+# Returns: Table name.
+sub get_table_from_checksum_sym {
+	my ($checksum_sym) = @_;
+	my $table;
+
+	_demangle_checksum_sym($checksum_sym, \$table, undef, undef);
+	return ($table);
+}
+
+# Helper function that maps a "checksum symbol" to IOVAR string, e.g.
+#    'wlc_doiovar__auto_patch__IOV_2G_MRATE_IOV_GVAL__2g_mrate' ==> '2g_mrate'
+#
+# Params:  checksum_sym IN  Checksum symbol name.
+#
+# Returns: IOVAR string.
+sub get_iovar_str_from_checksum_sym {
+	my ($checksum_sym) = @_;
+	my $str;
+
+	_demangle_checksum_sym($checksum_sym, undef, undef, \$str);
+	return ($str);
+}
+
+
+# Helper function that maps a "checksum symbol" to "case id", e.g.
+#    'wlc_doiovar__auto_patch__IOV_2G_MRATE_IOV_GVAL__2g_mrate' ==> 'IOV_2G_MRATE_IOV_GVAL'
+#
+# Params:  checksum_sym IN  Checksum symbol name.
+#
+# Returns: Case id.
+sub get_case_id_from_checksum_sym {
+	my ($checksum_sym) = @_;
+	my $case_id;
+
+	_demangle_checksum_sym($checksum_sym, undef, \$case_id, undef);
+	return ($case_id);
+}
+
+# Helper function that maps a "checksum symbol" to IOVAR enum, e.g.
+#    'wlc_iovars__auto_patch__IOV_2G_MRATE__2g_mrate' ==> 'IOV_2G_MRATE'
+#
+# Params:  checksum_sym IN  Checksum symbol name.
+#
+# Returns: Case id.
+sub get_iovar_from_checksum_sym {
+	my ($checksum_sym) = @_;
+	my $case_id;
+
+	_demangle_checksum_sym($checksum_sym, undef, \$case_id, undef);
+	return ($case_id);
+}
+
+
+# Helper function that maps from a table "checksum sym" to a GET function "checksum sym", e.g.
+#    'wlc_iovars__auto_patch__IOV_BTC_PARAMS__btc_params ==>
+#     wlc_doiovar__auto_patch__IOV_BTC_PARAMS_IOV_GVAL__btc_params'
+#
+# Params:  checksum_sym IN  Checksum symbol table name.
+#          func:        IN  Name of IOVAR handler function.
+#          table_name:  IN  Name of IOVAR table.
+#
+# Returns: Checksum symbol function name.
+sub checksum_sym_table_to_get_func {
+	my ($checksum_sym, $func, $table) = @_;
+	my ($case_id, $iovar_str);
+
+	_demangle_checksum_sym($checksum_sym, \$table, \$case_id, \$iovar_str);
+	$case_id .= $g_get_iovar_tag;
+	$checksum_sym = _mangle_checksum_sym($func, $case_id, $iovar_str);
+	return ($checksum_sym);
+}
+
+# Helper function that maps from a table "checksum sym" to a SET function "checksum sym", e.g.
+#    'wlc_iovars__auto_patch__IOV_BTC_PARAMS__btc_params ==>
+#     wlc_doiovar__auto_patch__IOV_BTC_PARAMS_IOV_SVAL__btc_params'
+#
+# Params:  checksum_sym IN  Checksum symbol table name.
+#          func:        IN  Name of IOVAR handler function.
+#          table_name:  IN  Name of IOVAR table.
+#
+# Returns: Checksum symbol function name.
+sub checksum_sym_table_to_set_func {
+	my ($checksum_sym, $func, $table) = @_;
+	my ($case_id, $iovar_str);
+
+	_demangle_checksum_sym($checksum_sym, \$table, \$case_id, \$iovar_str);
+	$case_id .= $g_set_iovar_tag;
+	$checksum_sym = _mangle_checksum_sym($func, $case_id, $iovar_str);
+	return ($checksum_sym);
+}
+
+# Helper function that maps from a function "checksum sym" to a table "checksum sym", e.g.
+#    'wlc_doiovar__auto_patch__IOV_BTC_PARAMS_IOV_SVAL__btc_params ==>
+#     wlc_iovars__auto_patch__IOV_BTC_PARAMS__btc_params'
+#
+# Params:  checksum_sym IN  Checksum symbol function name.
+#          func:        IN  Name of IOVAR handler function.
+#          table_name:  IN  Name of IOVAR table.
+#
+# Returns: Checksum symbol table name.
+sub checksum_sym_func_to_table {
+	my ($checksum_sym, $func, $table) = @_;
+	my ($case_id, $iovar, $iovar_str);
+
+	_demangle_checksum_sym($checksum_sym, \$func, \$case_id, \$iovar_str);
+	$iovar = get_iovar_from_case_id($case_id);
+	$checksum_sym = _mangle_checksum_sym($table, $iovar, $iovar_str);
+	return ($checksum_sym);
+}
+
+# Helper function that maps from a GET to SET function "checksum sym" or vs versa, e.g.
+#    'wlc_doiovar__auto_patch__IOV_BTC_PARAMS_IOV_SVAL__btc_params ==>
+#     wlc_doiovar__auto_patch__IOV_BTC_PARAMS_IOV_GVAL__btc_params'
+#
+# Params:  checksum_sym IN  Checksum symbol function name.
+#
+# Returns: Checksum symbol function name.
+sub checksum_sym_func_swap {
+	my ($checksum_sym) = @_;
+	my ($func, $case_id, $iovar_str);
+
+	_demangle_checksum_sym($checksum_sym, \$func, \$case_id, \$iovar_str);
+	if ($case_id =~ /$g_get_iovar_tag/) {
+		$case_id =~ s/$g_get_iovar_tag/$g_set_iovar_tag/;
+	}
+	else {
+		$case_id =~ s/$g_set_iovar_tag/$g_get_iovar_tag/;
+	}
+	$checksum_sym = _mangle_checksum_sym($func, $case_id, $iovar_str);
+	return ($checksum_sym);
+}
+
+
+# Helper function that parses a case statement line and returns the case-id.
+#   For IOCTLs, the case-id is the same as the case expression (e.g. WLC_CURRENT_PWR).
+#   For IOVARs, the case-id is the case expression with a GET/SET suffix (e.g. IOV_WME_IOV_IOV_GVAL).
+#
+# Params: line: IN  Input line to parse.
+#         func: IN  Name of IOCTL/IOVAR handler (e.g. wlc_doiovar). (Only for debugging purposes).
+#
+# Returns: Case id.
+sub parse_case_id {
+	my ($line, $func) = @_;
+	my $case_id;
+
+	# IOVARs use the following macros:
+	#    #define IOV_GET 0 /* Get an iovar */
+	#    #define IOV_SET 1 /* Set an iovar */
+	#    #define IOV_GVAL(id)  ((id) * 2)
+	#    #define IOV_SVAL(id)  ((id) * 2 + IOV_SET)
+	#
+	# Pre-processed IOVAR case statements look like this:
+	#    case ((IOV_PM_DUR) * 2):
+	#    case ((IOV_PM_DUR) * 2 + 1):
+	my $case_getvar_regexp = qr/^\s+case\s+\(\((\w+)\)\s+\*\s+2\)\s*:/;
+	my $case_setvar_regexp = qr/^\s+case\s+\(\((\w+)\)\s+\*\s+2\s+\+\s+1\)\s*:/;
+	my $case_ioctl_regexp  = qr/^\s+case\s+\(?\s*(\w+)\s*\)?\s*:/;
+	my $default_regexp     = qr/^\s+(default)\s*:/;
+
+	# For IOVARs, the case-id is the case expression with a GET/SET suffix
+	# (e.g. IOV_WME_IOV_GVAL).
+	if ($line =~ /$case_getvar_regexp/) {
+		$case_id = $1 . $g_get_iovar_tag;
+	}
+	elsif ($line =~ /$case_setvar_regexp/) {
+		$case_id = $1 . $g_set_iovar_tag;
+	}
+	# For IOCTLs, the case-id is the same as the case expression (e.g. WLC_CURRENT_PWR).
+	elsif (($line =~ /$case_ioctl_regexp/) || ($line =~ /$default_regexp/)) {
+		$case_id = $1;
+	}
+	else {
+		log_error("Unknown case statement syntax '$line' in '$func()'\n");
+		exit 1;
+	}
+
+	return ($case_id);
+}
+
+# Helper function that maps a "case id" to IOVAR, e.g.
+#
+# Params:  case_id: IN  Name of case statement identifier.
+#
+# Returns: IOVAR.
+sub get_iovar_from_case_id {
+	my ($case_id) = @_;
+
+	my $iovar = $case_id;
+	$iovar =~ s/$g_get_iovar_tag//;
+	$iovar =~ s/$g_set_iovar_tag//;
+	return ($iovar);
+}
+
+# Parse auto patch configuration file. The format of the input file is:
+#
+#  IOCTL  wlc.c     wlc_ioctl    nil
+#  IOVAR  wlc.c     wlc_doiovar  wlc_iovars
+#  ...
+#
+# Params:  fname_config: IN  Input config filename.
+#          fname_C:      IN  Input C source filename (e.g. 'wlc.c').
+#          handlers:     OUT Hash of handler functions in 'fname_C'. Hash value is IOCTL/IOVAR.
+#          tables:       OUT Hash indexed by handler functions in 'fname_C' that map to table names.
+#
+# Returns: Nothing.
+sub parse_config_file {
+	my ($fname_config, $fname_C, $handlers, $tables) = @_;
+	my ($fd, $line, $type, $fname_cfg, $handler, $table);
+
+	# Open the config file.
+	open($fd, "<$fname_config") or
+		die "Could not open $fname_config for reading: $!\n";
+
+	# Parse config file.
+	foreach $line (<$fd>) {
+		chomp($line);
+
+		if ($line =~ /^(IOCTL|IOVAR)\s+(\w+\.c)\s+($g_sym_regexp)\s+($g_sym_regexp)\s*$/) {
+			$type      = $1;
+			$fname_cfg = $2;
+			$handler   = $3;
+			$table     = $4;
+			if ($fname_C eq $fname_cfg) {
+				if ($type eq "IOCTL") {
+					$handlers->{$handler} = IOCTL;
+				}
+				elsif ($1 eq "IOVAR") {
+					$handlers->{$handler} = IOVAR;
+				}
+				$tables->{$handler} = $table;
+
+				# Debug.
+				log_debug("Parse config file '$type' '$handler' '$table'\n");
+			}
+		}
+	}
+
+	# Clean up.
+	close $fd;
+}
+
+
+# Parse symbols and md5 checksum values. The format of the input file is:
+#
+# b54ffd5c9428ad34435bf3f88b9e2a4f  wlc_scan_ioctl__auto_patch__WLC_GET_PASSIVE_SCAN.wlc_scan.func.S
+# 53b7a013d4e9971fceb2d5640002d69e  wlc_scan_ioctl__auto_patch__WLC_GET_SCANSUPPRESS.wlc_scan.func.S
+# ...
+#
+# Params:  fname:     IN  Input filename.
+#          md5signs:  OUT Symbol hash table used to store md5 signatures.
+#          debug_str: IN  Debug string.
+#
+# Returns: Nothing.
+sub parse_md5sign_file {
+	my ($fname, $md5signs, $debug_str) = @_;
+	my ($fd, $line, $sign, $sym, $file, $id, $tmp);
+
+	# Open md5 checksum file.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# Parse symbols and md5 checksum values.
+	foreach $line (<$fd>) {
+		chomp($line);
+
+		# Skip comments.
+		if ($line =~ /^#/) {
+			next;
+		}
+
+		# Syntax of md5 signature and symbols is as follows:
+		#
+                # b54ffd5c9428ad34435bf3f88b9e2a4f  wlc_ioctl__auto_patch__WLC_GET_FOO.wlc.func.S
+		($sign, $tmp) = split("  ", $line);
+		($sym, $file, $id) = split(/\./, $tmp);
+
+		# Store md5 signature in symbol hash table.
+		$md5signs->{$file}{$sym} = $sign;
+
+		# Debug.
+		log_debug("$debug_str: $sym [$sign]\n");
+	}
+
+	# Clean up.
+	close $fd;
+}
+
+
+# Parse ROM symbols from input romtable.
+#
+# Params:  fname:     IN  Input filename.
+#          rom_syms:  OUT Hash table of all symbols in ROM (from input romtable.S).
+#
+# Returns: Nothing.
+sub parse_romtable_file {
+	my ($fname, $rom_syms) = @_;
+	my ($fd, $line);
+
+	# Open romtable input file.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# Parse symbols.
+	foreach $line (<$fd>) {
+
+		# Parse all ROM symbols. The syntax is:
+		#
+		#   .extern bcm_mp_alloc
+		if ($line =~ /^\s*\.extern\s+($g_sym_regexp)\b/) {
+			$rom_syms->{$1} = 1;
+		}
+	}
+
+	# Clean up.
+	close $fd;
+}
+
+
+# Parse the IOCTL/IOVAR table and handler from the specified C source file. Store the "preamble",
+# "postamble", IOVAR table and handler case statements in data structures.
+#
+# Params:  fname:              IN  C source filename.
+#          func:               IN  Name of IOCTL/IOVAR handler function.
+#          table_name:         IN  Name of IOCTL/IOVAR table.
+#          in_rom:             IN  1 if the IOCTL/IOVAR handler/table are in ROM, else 0.
+#          is_ioctl:           IN  1 if 'func' is an IOCTL handler, 0 if IOVAR handler.
+#          iovar_table:        OUT Hash indexed by IOVAR enum, whose values are an array of lines
+#                                  corresponding to the IOVAR table entry.
+#          iovar_enum_to_str:  OUT Hash indexed by IOVAR enum that maps to IOVAR string.
+#          preamble:           OUT Array of "preamble" lines. This consists of everything from the
+#                                  start of the IOCTL/IOVAR function up to (but not including) the
+#                                  first case statement.
+#          postamble:          OUT Array of "postamble" lines. This consists of everything from the
+#                                  end of the switch statement (including the closing '}') to the
+#                                  end of the function.
+#          case_statements:    OUT Hash indexed by case ids, whose values are an array of lines
+#                                  corresponding to each case block.
+#          case_list:          OUT Array of case ids. The order represents the order of the case
+#                                  statements within the switch statement.
+#          fall_throughs:      OUT Hash indexed by fall-through case ids, whose values are an array
+#                                  of case ids that it falls through upon.
+#
+# Returns: Nothing.
+sub parse_C_file {
+	my ($fname, $func, $table_name, $in_rom, $is_ioctl, $iovar_table, @more_args) = @_;
+	my ($iovar_enum_to_str, $preamble, $postamble, @more_args2) = @more_args;
+	my ($case_statements, $case_list, $fall_throughs) = @more_args2;
+
+	my ($fd, $line, $state, %ioctl_names, @fall_through_list);
+	my $case_id      = "nil";
+	my $partial_line = "nil";
+	my $brace_count   = 0;
+	my $found_switch  = 0;
+	my $found_break   = 0;
+	my $found_enum    = 0;
+	my $nested_switch = 0;
+	my $table_brace_count = 0;
+	my $nested_switch_brace_count = 0;
+	my $switch_regexp  = qr/^\s+switch\b/;
+	my $case_regexp    = qr/^\s+case\b/;
+	my $default_regexp = qr/^\s+(default)\s*:/;
+	my $iovar_table_regexp       = qr/bcm_iovar_t\s+$table_name/;
+	my $iovar_table_entry_regexp = qr/\s*\{\s*"(\w+)",\s*(IOV_\w+),/;
+
+	log_debug("Parse $fname ($func)\n");
+
+	# Skip parsing of C file if handler function is not in ROM.
+	if (!$in_rom) {
+		log_debug("Skip parsing, '$func()' not in ROM.\n");
+		return;
+	}
+
+	# Some IOCTL/IOVAR handlers contain a switch statement in the preamble.
+	# XXX This should perhaps be specified via the config file.
+	my %switch_in_preamble = (
+		_wlc_ioctl        => 1,
+		wlc_mchan_doiovar => 1,
+		wlc_p2p_doiovar   => 1,
+		wlc_mcnx_doiovar  => 1
+	);
+
+	# Ignore switch statements contained in the "preamble".
+	my $skip_first_switch = 0;
+	if ($switch_in_preamble{$func}) {
+		$skip_first_switch = 1;
+	}
+
+	# Handler function parsing state.
+	use constant {
+		FIND_IOCTLS       => 0,
+		PARSE_IOCTLS      => 1,
+		FIND_IOVAR_TABLE  => 2,
+		PARSE_IOVAR_TABLE => 3,
+		FIND_FUNC         => 4,
+		PARSE_PREAMBLE    => 5,
+		PARSE_CASE        => 6,
+		PARSE_POSTAMBLE   => 7,
+		DONE              => 8
+	};
+
+
+	# Set initial parsing state. If this is an IOCTL handler, then parse the IOCTL macro defines
+	# (e.g. #define WLC_GET_MAGIC 0). This allows the preprocessor values to be mapped to
+	# IOCTL names for increased readability of patch files.
+	#
+	# IOVARs use enums, so no need to parse macro defines. Start by parsing the IOVAR table.
+	$state = FIND_IOVAR_TABLE;
+	if ($is_ioctl) {
+		$state = FIND_IOCTLS;
+	}
+
+
+	# Open input C file.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# Parse C file.
+	foreach $line (<$fd>) {
+
+		# Merge statements split over multiple lines to simplify parsing.
+		# (Only merge selective lines associated with the function handler).
+		if ($partial_line ne "nil") {
+			chomp($partial_line);
+			$line = $partial_line . $line;
+			$partial_line = "nil";
+		}
+		# Function return types are often declared on their own line.
+		# (IOCTL/IOVAR handlers return 'int').
+		elsif ($line =~ /^(static\s+)?int$/) {
+			chomp($line);
+			$partial_line = $line . " ";
+			next;
+		}
+
+
+		# Search for start of IOCTL macro defines. The preprocessed C file contains
+		# a list of #defines, e.g.
+		#	#define WLC_GET_MAGIC 0
+		#	#define WLC_GET_VERSION 1
+		#	...
+		if ($state == FIND_IOCTLS) {
+			if ($line =~ /#define\s+$g_first_ioctl\s+0/) {
+				$state = PARSE_IOCTLS;
+
+				log_debug("Found start of IOCTL macro #defines\n");
+				redo;
+			}
+		}
+
+		# Parse IOCTL macro defines. Search for end (e.g. #define WLC_LAST xxx).
+		elsif ($state == PARSE_IOCTLS) {
+			if ($line =~ /#define\s+(WLC_\w+)\s+(\d+)/) {
+				$ioctl_names{$2} = $1;
+
+				log_debug("Found IOCTL macro #define '$1' = $2\n");
+			}
+			else {
+				log_error("Unknown IOCTL syntax '$line'\n");
+				exit 1;
+			}
+
+			if ($1 eq $g_last_ioctl) {
+				$state = FIND_FUNC;
+
+				log_debug("Found last IOCTL ($g_last_ioctl)\n");
+			}
+		}
+
+		# Search for the start of IOVAR table that maps IOVAR strings to enums, e.g.
+		#    static const bcm_iovar_t wlc_iovars[] = {
+		if ($state == FIND_IOVAR_TABLE) {
+			if ($line =~ /$iovar_table_regexp/) {
+				# Merge the definition if it's split over multiple lines. Make sure
+				# it's not the declaration (no ';' at the end of line).
+				if ($line =~ /;\s*$/) {
+					# Found the declaration. Keep searching for the actual table.
+				}
+				elsif ($line =~ /{\s*$/) {
+					$state = PARSE_IOVAR_TABLE;
+					log_debug("Found start of IOVAR table '$table_name'\n");
+				}
+				else {
+					$partial_line = $line;
+				}
+			}
+		}
+
+		# Parse IOVAR table that maps IOVAR strings to enums, e.g.
+		#    {"auth", IOV_D11_AUTH,
+		#    (1<<14), 6, 0
+		#    },
+		elsif ($state == PARSE_IOVAR_TABLE) {
+			# The IOVAR table is an array of structs. Count curly braces to find the
+			# end of each array element.
+			$table_brace_count = ($line =~ tr/{//);
+			$table_brace_count -= ($line =~ tr/}//);
+			if ($table_brace_count == 0) {
+				if ($line =~ /$iovar_table_entry_regexp/) {
+					my $iovar_str  = $1;
+					my $iovar_enum = $2;
+
+					# Error check to ensure 1-to-1 mapping between IOVAR
+					# enums and strings.
+					if (defined($iovar_enum_to_str->{$iovar_enum})) {
+						log_error("Multiple entries for '%s' in IOVAR table. " .
+						          "Use unique IOVAR enum for '%s'\n",
+							  $iovar_enum, $iovar_str);
+						exit 1;
+					}
+
+					# Store IOVAR table entry.
+					$iovar_enum_to_str->{$iovar_enum} = $iovar_str;
+					push(@{$iovar_table->{$iovar_enum}}, $line);
+					log_debug("Found IOVAR table entry '$iovar_enum'\n");
+				}
+				elsif ($line !~ /\s*\{\s*0,\s*0,/) {
+					log_error("Unknown IOVAR table syntax '$line'");
+					exit 1;
+				}
+			}
+			# Find end of array.
+			elsif ($line =~ /^\s*};\s*$/) {
+				$state = FIND_FUNC;
+				log_debug("Found end of IOVAR table '$table_name'\n");
+			}
+			# Merge the IOVAR table entry if it's split over multiple lines.
+			else {
+				$partial_line = $line;
+			}
+		}
+
+		# Search for the function definition.
+		elsif ($state == FIND_FUNC) {
+			if ($line =~ /^(static\s+)?int\s+$func/) {
+				# Merge the function definition if it's split over multiple lines.
+				if ($line !~ /\);*$/) {
+					$partial_line = $line;
+					next;
+				}
+				# Search for the function definition. Make sure it's not the
+				# prototype declaration (no ';' at the end of line).
+				elsif ($line =~ /^(static\s+)?int\s+$func\(.*\)$/) {
+					$state = PARSE_PREAMBLE;
+
+					log_debug("Found handler function ($func)\n");
+					redo;
+				}
+			}
+		}
+
+		# Parse the function "preamble". This consists of everything from the start of
+		# the function up to (but not including) the first case statement.
+		elsif ($state == PARSE_PREAMBLE) {
+			# Search for the switch statement.
+			if ($line =~ /$switch_regexp/) {
+				if (!$skip_first_switch) {
+					$found_switch = 1;
+
+					log_debug("Found switch '$line'\n");
+				}
+				$skip_first_switch = 0;
+			}
+			# Search for the first case statement.
+			elsif ($found_switch && ($line =~ /$case_regexp|$default_regexp/)) {
+				$state = PARSE_CASE;
+
+				log_debug("Found first case '$line'\n");
+				redo;
+			}
+
+			push(@{$preamble}, $line);
+		}
+
+		# Parse case statements. Create a hash indexed by case ids, whose values are
+		# an array of lines corresponding to each case block.
+		elsif ($state == PARSE_CASE) {
+			# Handle cases statements that contain switch statements.
+			if ($nested_switch) {
+				# Find the end of nested switch statement by counting curly braces.
+				$nested_switch_brace_count += ($line =~ tr/}//);
+				$nested_switch_brace_count -= ($line =~ tr/{//);
+				if ($nested_switch_brace_count == 0) {
+					$nested_switch = 0;
+					log_debug("Found end of nested switch\n");
+				}
+
+				push(@{$case_statements->{$case_id}}, $line);
+			}
+			# Search for next case statement.
+			elsif ($line =~ /$case_regexp|$default_regexp/) {
+				my $prev_case_id = $case_id;
+				$case_id = parse_case_id($line, $func);
+
+				# Map from #define value to #define IOCTL name for
+				# improved readability of patch files.
+				if ($is_ioctl && ($case_id ne "default")) {
+					if (defined($ioctl_names{$case_id})) {
+						$line =~ s/$case_id/$ioctl_names{$case_id}/;
+						$case_id = $ioctl_names{$case_id};
+					}
+					else {
+						log_error("No IOCTL name for '$case_id'\n");
+						exit 1;
+					}
+				}
+
+
+				log_debug("Found case statement '$case_id'\n");
+				push(@{$case_statements->{$case_id}}, $line);
+				push(@{$case_list}, $case_id);
+
+
+				# Handle (simple) case fall-throughs.
+				#
+				# Almost all fall-throughs have empty case statements, e.g.
+				#    case WLC_DOWN:
+				#    case WLC_REBOOT:
+				#       do_something();
+				#       break;
+				#
+				# In very few instances, there is a non-empty case statement, e.g.
+				#    case WLC_SCB_DEAUTHENTICATE:
+				#       /* Supply a reason in val */
+				#       val = DOT11_RC_INACTIVITY;
+				#    case WLC_SCB_DEAUTHENTICATE_FOR_REASON:
+				#       do_something();
+				#       break;
+				#
+				#
+				# More complex fall-throughs (which do not occur in practice) are
+				# not supported. For example:
+				#  - case statements with *conditional* breaks, that may fall-through.
+				if (($prev_case_id ne "nil") && !$found_break) {
+
+					# No 'break' statement was found for the previous case
+					# statement. Add it to the local list of fall-throughs.
+					push(@fall_through_list, $prev_case_id);
+
+					log_debug("No break statement found for '$prev_case_id'\n");
+				}
+				else {
+					# A 'break' statement was found for the previous case
+					# statement. Update the user provided fall-through map.
+					push(@fall_through_list, $prev_case_id);
+					for (my $i = 0; $i < (@fall_through_list-1); $i++) {
+						my $fall_thru_case = $fall_through_list[$i];
+						@{$fall_throughs->{$fall_thru_case}} =
+						   @fall_through_list[$i+1 .. @fall_through_list-1];
+					}
+
+					@fall_through_list = ();
+				}
+				$found_break = 0;
+
+
+				# Init 'brace_count' value used to find the end of the switch
+				# statement.
+				if ($case_id eq "default") {
+					$brace_count = -($line =~ tr/{//);
+				}
+			}
+
+			# Parse/save 'default' case statement.
+			elsif ($case_id eq "default") {
+
+				# Find the end of the switch statement by counting curly braces.
+				# (Note that the default case statement may be missing the 'break'
+				# statement. Therfore, searching for 'break' is not reliable).
+				$brace_count += ($line =~ tr/}//);
+				$brace_count -= ($line =~ tr/{//);
+				if ($brace_count == 1) {
+
+					# Handle case statements that fall-through to 'default:'
+					push(@fall_through_list, $case_id);
+					for (my $i = 0; $i < (@fall_through_list-1); $i++) {
+						my $fall_thru_case = $fall_through_list[$i];
+						@{$fall_throughs->{$fall_thru_case}} =
+						   @fall_through_list[$i+1 .. @fall_through_list-1];
+					}
+
+
+
+					log_debug("Found end of switch statement.\n");
+					$state = PARSE_POSTAMBLE;
+					redo;
+				}
+				else {
+					push(@{$case_statements->{$case_id}}, $line);
+				}
+			}
+
+			# Parse/save regular case statements.
+			elsif ($case_id ne "nil") {
+				push(@{$case_statements->{$case_id}}, $line);
+
+				if ($line =~ /^\s+break;$/) {
+					$found_break = 1;
+				}
+
+				# Check for nested switch statements.
+				if ($line =~ /$switch_regexp/) {
+					$nested_switch = 1;
+					$nested_switch_brace_count = -($line =~ tr/{//);
+					log_debug("Found nested switch: '$line'\n");
+				}
+			}
+		}
+
+		# Parse the function "postamble". This consists of everything from the end of
+		# the switch statement (including the closing '}') to the end of the function.
+		elsif ($state == PARSE_POSTAMBLE) {
+			push(@{$postamble}, $line);
+
+			# Search for end of function.
+			if ($line =~ /^\}$/) {
+				log_debug("Found end of function.\n");
+				$state = DONE;
+				last;
+			}
+		}
+	}
+
+
+	# Error check - ensure entire function was parsed.
+	if ($state != DONE) {
+		log_error("Parsing state($state) != DONE\n");
+		exit 1;
+	}
+
+	# More error checks.
+	if (@{$case_list} != (scalar(keys %{$case_statements}))) {
+		log_error("Unequal number of case statements in list(%d) and hash(%d)\n",
+		          scalar(@{$case_list}), scalar(keys %{$case_statements}));
+		exit 1;
+	}
+
+	# Add a special empty case-statement validation handler. This is used to ensure that
+	# the preamble/postamble does NOT change between ROM and RAM since this would cause
+	# the disassembly of all case statements to change, and therefore force all case
+	# statements to be unnecessarily patched!
+	push(@{$case_statements->{$g_validation_case_id}}, ";\n");
+	$iovar_enum_to_str->{$g_iovar_validation_enum} = $g_iovar_validation_str;
+
+
+	# Clean up.
+	close $fd;
+}
+
+
+# Compare ROM and RAM md5 signatures, and generate a hash table indicating whether the
+# signatures match.
+#
+# Params:  rom_md5signs:       IN  ROM symbol hash table used to store md5 signatures.
+#          ram_md5signs:       IN  RAM symbol hash table used to store md5 signatures.
+#          fname:              IN  Name C file that contains IOCTL/IOVAR handler.
+#          func:               IN  Name of IOCTL/IOVAR handler function.
+#          table_name:         IN  Name of IOCTL/IOVAR table.
+#          in_rom:             IN  1 if the IOCTL/IOVAR handler/table are in ROM, else 0.
+#          is_ioctl:           IN  1 if 'func' is an IOCTL handler, 0 if IOVAR handler.
+#          iovar_enum_to_str:  IN  Hash indexed by IOVAR enum that maps to IOVAR string.
+#          fall_throughs:      IN  Hash indexed by fall-through case ids, whose values are an array
+#                                  of case ids that it falls through upon.
+#          compare_states:     OUT Hash table of symbol comparison states between ROM and RAM.
+#
+# Returns: Nothing.
+sub compare_md5_signatures {
+	my ($rom_md5signs, $ram_md5signs, $fname, $func, $table_name, $in_rom, @more_args) = @_;
+	my ($is_ioctl, $iovar_enum_to_str, $fall_throughs, $compare_states) = @more_args;
+	my ($ram_cnt, $rom_cnt);
+
+	# Skip comparison if handler function is not in ROM.
+	if (!$in_rom) {
+		log_debug("Skip parsing, '$func()' not in ROM.\n");
+		return;
+	}
+
+	# Strip filename suffix to match MD5 checksum file syntax.
+	$fname =~ s/\.c//;
+
+	# For each RAM symbol, determine if ROM MD5 checksum matches.
+	$ram_cnt = 0;
+	foreach my $checksum_sym (keys %{$ram_md5signs->{$fname}}) {
+		my $func_sym  = get_func_from_checksum_sym($checksum_sym);
+		my $table_sym = get_table_from_checksum_sym($checksum_sym);
+
+		if (($func_sym eq $func) || ($table_sym eq $table_name)) {
+			my $sym_type = +RODATA;
+			if ($func_sym eq $func) {
+				$sym_type = +FUNC;
+			}
+
+			if (!defined($rom_md5signs->{$fname}{$checksum_sym})) {
+				# New case statement added to latest code.
+				$compare_states->{$sym_type}{$checksum_sym} = SYM_ADDED;
+			}
+			elsif ($rom_md5signs->{$fname}{$checksum_sym} eq
+			       $ram_md5signs->{$fname}{$checksum_sym}) {
+				# Contents match.
+				$compare_states->{$sym_type}{$checksum_sym} = SYM_MATCH;
+			}
+			else {
+				# Contents do NOT match.
+				$compare_states->{$sym_type}{$checksum_sym} = SYM_MISMATCH;
+			}
+
+			log_debug("MD5 $checksum_sym [%s]\n",
+			          $g_sym_compare_strs[$compare_states->{$sym_type}{$checksum_sym}]);
+			$ram_cnt++;
+		}
+	}
+
+
+	# Case statements removed from latest code. (Or may be unsupported based upon #ifdef's).
+	$rom_cnt = 0;
+	foreach my $checksum_sym (keys %{$rom_md5signs->{$fname}}) {
+		my $func_sym  = get_func_from_checksum_sym($checksum_sym);
+		my $table_sym = get_table_from_checksum_sym($checksum_sym);
+
+		if (($func_sym eq $func) || ($table_sym eq $table_name)) {
+			if (!defined($ram_md5signs->{$fname}{$checksum_sym})) {
+
+				my $sym_type = +RODATA;
+				if ($func_sym eq $func) {
+					$sym_type = +FUNC;
+				}
+
+				$compare_states->{$sym_type}{$checksum_sym} = SYM_REMOVED;
+				log_debug("MD5 $checksum_sym [%s]\n",
+				          $g_sym_compare_strs[$compare_states->{$sym_type}{$checksum_sym}]);
+			}
+			$rom_cnt++;
+		}
+	}
+
+	# Error check.
+	if ($ram_cnt == 0) {
+		log_error("'$func' in ROM; however, RAM checksums missing. " .
+		           "$fname.c may be missing '#include <wlc_patch.h>'\n");
+		exit 1;
+	}
+
+	if ($rom_cnt == 0) {
+		log_error("'$func' in ROM; however ROM checksums missing\n");
+		exit 1;
+	}
+
+	# Ensure that the preamble/postamble does NOT change between ROM and RAM since this
+	# would cause the disassembly of all case statements to change, and therefore force all
+	# case statements to be unnecessarily patched!
+	my $validation_checksum_sym = make_func_checksum_sym($func, $g_validation_case_id,
+	                                                     $g_iovar_validation_str);
+	if ($compare_states->{+FUNC}{$validation_checksum_sym} != SYM_MATCH) {
+		log_error("Changes before or after switch statement in '$func' are incompatible " .
+		          "with auto patching mechanism! Refer to:\n" .
+			  "http://hwnbu-twiki.sj.broadcom.com/bin/view/Mwgroup/ROMAutoIoctlIovarPatching#PreamblePostambleMods\n\n");
+		exit 1;
+	}
+
+
+	# Update case statement fall-through comparison states.
+	compare_case_fall_throughs($func, $fall_throughs, $iovar_enum_to_str, $compare_states);
+
+	# Synchronize the IOVAR table and case statement handler comparison states.
+	if (!$is_ioctl) {
+		compare_table_and_handler($func, $table_name, $compare_states);
+	}
+}
+
+
+# Update case statement fall-through comparison states. If a case statement will be included in
+# the patch handler, and it falls through to a second case statement, then ensure that the second
+# case statement is also included in the patch handler.
+#
+# Params:  func:               IN  Name of IOCTL/IOVAR handler function.
+#          fall_throughs:      IN  Hash indexed by fall-through case ids, whose values are an array
+#                                  of case ids that it falls through upon.
+#          iovar_enum_to_str:  IN  Hash indexed by IOVAR enum that maps to IOVAR string.
+#          compare_states:     MOD Hash table of symbol comparison states between ROM and RAM.
+#
+# Returns: Nothing.
+sub compare_case_fall_throughs {
+	my ($func, $fall_throughs, $iovar_enum_to_str, $compare_states) = @_;
+
+	# If a case statement will be included in the patch handler, and it falls through to a
+	# second case statement, then ensure that the second case statement is also included in
+	# the patch handler.
+	foreach my $case_id (keys %{$fall_throughs}) {
+		my $iovar = get_iovar_from_case_id($case_id);
+		my $check_sym = make_func_checksum_sym($func, $case_id, $iovar_enum_to_str->{$iovar});
+		my $compare_state = $compare_states->{+FUNC}{$check_sym};
+
+		foreach my $fall_thru_case_id (@{$fall_throughs->{$case_id}}) {
+
+			$iovar = get_iovar_from_case_id($fall_thru_case_id);
+			my $checksum_sym_fall_through = make_func_checksum_sym($func,
+									       $fall_thru_case_id,
+									       $iovar_enum_to_str->{$iovar});
+			my $compare_state_fall_through = $compare_states->{+FUNC}{$checksum_sym_fall_through};
+
+			# Default is always included in the patch handler.
+			next if ($fall_thru_case_id eq "default");
+
+			# Error check.
+			if (!defined($compare_state_fall_through)) {
+				log_error("Comparison state for '%s' NOT defined!\n",
+				          $fall_thru_case_id);
+				exit 1;
+			}
+
+			# Override fall-through case comparison state.
+			if (($compare_state == SYM_MISMATCH) || ($compare_state == SYM_ADDED)) {
+				if ($compare_state_fall_through == SYM_MATCH) {
+					log_debug("IOVAR '%s' MISMATCH, override fall-through '%s' to MISMATCH.\n",
+						  $case_id, $fall_thru_case_id);
+					$compare_states->{+FUNC}{$checksum_sym_fall_through} = SYM_MISMATCH;
+				}
+			}
+		}
+	}
+}
+
+
+# Update the IOVAR table and case statement handler comparison states. For example, the
+# table entry may have been updated (since ROM tape-out), but the case statements may be unchanged.
+# Or vs versa. Or the GET IOVAR case statement may have changed, but the SET is unchanged.
+# The IOVAR table entry, GET and SET IOVAR case statements must be treated as a unit. If any of
+# them need to be included in the patch, then all of them must be included in the patch.
+#
+# Params:  compare_states: MOD Hash table of symbol comparison states between ROM and RAM.
+#
+# Returns: Nothing.
+sub compare_table_and_handler {
+	my ($func, $table, $compare_states) = @_;
+
+	# Iterate mismatched table entries. Override case statements to also be mismatched.
+	foreach my $table_checksum_sym (keys %{$compare_states->{+RODATA}}) {
+
+		# Iterate MISMATCHed table entries. (If a table entry is REMOVED, the corresponding
+		# case statement handlers will implicitly be REMOVED. Checksum handlers are only
+		# created if a table entry exists. If a table entry is ADDED, the corresponding
+		# case statement handlers will also be ADDED).
+		next if ($compare_states->{+RODATA}{$table_checksum_sym} != SYM_MISMATCH);
+
+		# Override IOVAR GET comparison state.
+		my $func_checksum_sym = checksum_sym_table_to_get_func($table_checksum_sym,
+		                                                       $func, $table);
+		if (defined($compare_states->{+FUNC}{$func_checksum_sym})) {
+			if ($compare_states->{+FUNC}{$func_checksum_sym} == SYM_MATCH) {
+				$compare_states->{+FUNC}{$func_checksum_sym} = SYM_MISMATCH;
+				log_debug("IOVAR table '%s' MISMATCH, override '%s' to MISMATCH.\n",
+				          $table_checksum_sym, $func_checksum_sym);
+			}
+		}
+
+
+		# Override IOVAR SET comparison state.
+		$func_checksum_sym = checksum_sym_table_to_set_func($table_checksum_sym,
+		                                                       $func, $table);
+		if (defined($compare_states->{+FUNC}{$func_checksum_sym})) {
+			if ($compare_states->{+FUNC}{$func_checksum_sym} == SYM_MATCH) {
+				$compare_states->{+FUNC}{$func_checksum_sym} = SYM_MISMATCH;
+				log_debug("IOVAR table '%s' MISMATCH, override '%s' to MISMATCH.\n",
+				          $table_checksum_sym, $func_checksum_sym);
+			}
+		}
+	}
+
+
+	# Iterate mismatched case statements. Override table entry comparison states.
+	foreach my $func_checksum_sym (keys %{$compare_states->{+FUNC}}) {
+		next if ($compare_states->{+FUNC}{$func_checksum_sym} == SYM_MATCH);
+
+		my $table_checksum_sym = checksum_sym_func_to_table($func_checksum_sym,
+		                                                    $func, $table);
+
+		# Error check.
+		if (!defined($compare_states->{+RODATA}{$table_checksum_sym})) {
+			log_error("IOVAR table entry missing for '$table_checksum_sym'!\n");
+			exit 1;
+		}
+
+		# Override IOVAR table comparison state.
+		if ($compare_states->{+RODATA}{$table_checksum_sym} == SYM_MATCH) {
+			$compare_states->{+RODATA}{$table_checksum_sym} = SYM_MISMATCH;
+			log_debug("IOVAR '%s' MISMATCH, override table '%s' to MISMATCH.\n",
+			          $func_checksum_sym, $table_checksum_sym);
+		}
+
+
+		# Override IOVAR GET/SET comparison state.
+		my $func_checksum_sym_orig = $func_checksum_sym;
+		my $func_checksum_sym = checksum_sym_func_swap($func_checksum_sym);
+		if (defined($compare_states->{+FUNC}{$func_checksum_sym})) {
+			if ($compare_states->{+FUNC}{$func_checksum_sym} == SYM_MATCH) {
+				$compare_states->{+FUNC}{$func_checksum_sym} = SYM_MISMATCH;
+				log_debug("IOVAR '%s' MISMATCH, override '%s' to MISMATCH.\n",
+				          $func_checksum_sym_orig, $func_checksum_sym);
+			}
+		}
+	}
+}
+
+
+# Helper function to create C file header.
+#
+# Params:  fd: IN  File descriptor.
+#
+# Returns: Nothing.
+sub generate_C_file_header {
+	my ($fd) = @_;
+
+	# Create C file header
+	print $fd "/*\n";
+	print $fd " * File generated by $g_script\n";
+	print $fd " *\n";
+	print $fd " * Copyright (C) Broadcom Corporation\n";
+	print $fd " * All Rights Reserved.\n";
+	print $fd " * \n";
+	print $fd " * This is UNPUBLISHED PROPRIETARY SOURCE CODE of Broadcom Corporation;\n";
+	print $fd " * the contents of this file may not be disclosed to third parties, copied\n";
+	print $fd " * or duplicated in any form, in whole or in part, without the prior\n";
+	print $fd " * written permission of Broadcom Corporation.\n";
+	print $fd " */\n\n\n";
+
+	# GCC version.
+	print $fd "#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + ".
+	          "__GNUC_PATCHLEVEL__)\n\n";
+
+	# Use GCC-specific pragmas to avoid benign compiler warnings in generated functions.
+	print $fd "/* Avoid unused variable and label compiler warnings in generated functions. */\n";
+	print $fd "#pragma GCC diagnostic ignored \"-Wunused-variable\"\n";
+	print $fd "#pragma GCC diagnostic ignored \"-Wunused-label\"\n";
+	print $fd "#if GCC_VERSION >= 40601\n";
+	print $fd "\t#pragma GCC diagnostic ignored \"-Wunused-but-set-variable\"\n";
+	print $fd "#endif\n";
+	print $fd "\n\n";
+}
+
+
+# Helper function to create C file footer.
+#
+# Params:  fd: IN  File descriptor.
+#
+# Returns: Nothing.
+sub generate_C_file_footer {
+	my ($fd) = @_;
+
+	# Use GCC-specific pragmas to avoid benign compiler warnings in generated functions.
+	print $fd "\n\n";
+	print $fd "/* Avoid unused variable and label compiler warnings in generated functions. */\n";
+	print $fd "#pragma GCC diagnostic error \"-Wunused-variable\"\n";
+	print $fd "#pragma GCC diagnostic error \"-Wunused-label\"\n";
+	print $fd "#if GCC_VERSION >= 40601\n";
+	print $fd "\t#pragma GCC diagnostic error \"-Wunused-but-set-variable\"\n";
+	print $fd "#endif\n";
+}
+
+
+# Helper function to create a stub patch table.
+#
+# Params:  fd:          IN  File descriptor.
+#          patch_table: IN  Name of patch table.
+#
+# Returns: Nothing.
+sub generate_patch_table_stub {
+	my ($fd, $patch_table) = @_;
+
+	print $fd "#define $patch_table NULL\n\n";
+}
+
+
+# Helper function to create a stub patch handler.
+#
+# Params:  fd:          IN  File descriptor.
+#          patch_func:  IN  Name of patch function.
+#          is_ioctl:    IN  1 if 'func' is an IOCTL handler, 0 if IOVAR handler.
+#
+# Returns: Nothing.
+sub generate_patch_handler_stub {
+	my ($fd, $func, $is_ioctl) = @_;
+
+	# This maps from the patch IOCTL handler name to its first arg type.
+	#
+	# XXX This can be removed on trunk, which has a proper IOCTL registration mechanism.
+	my %ioctl_patch_args_map = (
+		"wlc_ioctl_patchmod"      => "void",
+		"wlc_ap_ioctl_patchmod"   => "wlc_ap_info_t",
+		"wlc_scan_ioctl_patchmod" => "wlc_scan_info_t"
+	);
+
+	# IOCTL
+	if ($is_ioctl) {
+		my $arg_type = $ioctl_patch_args_map{$func};
+		if (!defined($arg_type)) {
+			log_error("Unknown patch arg type for $func\n");
+			exit 1;
+		}
+
+		# Stub patch handler function.
+		print $fd "int $func($arg_type *wlc, int cmd, void *arg, int len, struct wlc_if *wlcif)\n";
+		print $fd "{\n";
+		print $fd " return (BCME_IOCTL_PATCH_UNSUPPORTED);\n";
+		print $fd "}\n";
+	}
+	# IOVAR
+	else {
+		print $fd "#define $func NULL\n\n";
+	}
+
+	log_debug("Created patch handler '$func()' (stub)\n");
+}
+
+
+# Helper function to create a patch handler "postamble". This consists of everything from the
+# end of the switch statement (including the closing '}') to the end of the function.
+#
+# Params:  fd:        IN  File descriptor.
+#          func:      IN  Name of IOCTL/IOVAR handler function.
+#          postamble: IN  Array of "postamble" lines.
+#
+# Returns: Nothing.
+sub generate_patch_handler_postamble {
+	my ($fd, $func, $postamble) = @_;
+
+	# Special case for the main IOCTL handler in wlc.c. It contains logic after the switch
+	# statement that is unwanted for the patch handler.
+	if ($func eq $g_primary_ioctl_func) {
+		print $fd " }\n\n";
+		print $fd " /* Avoid compiler error 'label defined but not used' */\n";
+		print $fd " goto done;\n";
+		print $fd "done:\n";
+		print $fd " return bcmerror;\n";
+		print $fd "}\n";
+	}
+	else {
+		print $fd @{$postamble};
+		print $fd "\n";
+	}
+}
+
+
+# Generate C source patch tables and functions for the specified IOCTL/IOVAR table/handler.
+# Create a single table for every array element in the IOVAR table. And create a *single-case*
+# function for every case-statement in the IOCTL/IOVAR handler. This is only used for checksum
+# comparison purposes, e.g.
+#
+# Params:  func:               IN  Name of IOCTL/IOVAR handler function.
+#          table_name:         IN  Name of IOCTL/IOVAR table.
+#          is_ioctl:           IN  1 if 'func' is an IOCTL handler, 0 if IOVAR handler.
+#          in_rom:             IN  1 if the IOCTL/IOVAR handler/table are in ROM, else 0.
+#          iovar_table:        IN  Hash indexed by IOVAR enum, whose values are an array of lines
+#                                  corresponding to the IOVAR table entry.
+#          iovar_enum_to_str:  IN  Hash indexed by IOVAR enum that maps to IOVAR string.
+#          preamble:           IN  Array of "preamble" lines. This consists of everything from the
+#                                  start of the IOCTL/IOVAR function up to (but not including) the
+#                                  first case statement.
+#          postamble:          IN  Array of "postamble" lines. This consists of everything from the
+#                                  end of the switch statement (including the closing '}') to the
+#                                  end of the function.
+#          case_statements:    IN  Hash indexed by case ids, whose values are an array of lines
+#                                  corresponding to each case block.
+#          fall_throughs:      IN  Hash indexed by fall-through case ids, whose values are an array
+#                                  of case ids that it falls through upon.
+#          fd:                 IN  File descriptor for output file.
+#
+# Returns: Nothing.
+sub generate_checksum_patch {
+	my ($func, $table_name, $is_ioctl, $in_rom, $iovar_table, @more_args) = @_;
+	my ($iovar_enum_to_str, $preamble, $postamble, $case_statements, @more_args2) = @more_args;
+	my ($fall_throughs, $fd) = @more_args2;
+
+	# Create empty file if handler function not in ROM.
+	if (!$in_rom) {
+		log_debug("Skip generation of patch handlers, '$func()' not in ROM.\n");
+		return;
+	}
+
+	# Generate patch tables for the specified IOVAR table.
+	generate_checksum_patch_tables($table_name, $iovar_table, $iovar_enum_to_str, $fd);
+
+	# Generate patch functions for the specified IOCTL/IOVAR handler.
+	generate_checksum_patch_handlers($func, $is_ioctl, $iovar_enum_to_str, $preamble, $postamble,
+	                                 $case_statements, $fall_throughs, $fd);
+}
+
+
+# Generate C source patch tables for the specified IOVAR table. Create a single table
+# for every array element in the IOVAR table. This is only used for checksum comparison
+# purposes, e.g.
+#
+#    const bcm_iovar_t wlc_iovars__auto_patch__IOV_2G_MRATE__2g_mrate [] = {
+#     {"2g_mrate", IOV_2G_MRATE, ((1<<14)), 7, 0 },
+#    };
+#
+#    const bcm_iovar_t wlc_iovars__auto_patch__IOV_2G_RATE__2g_rate [] = {
+#     {"2g_rate", IOV_2G_RATE, ((1<<14)), 7, 0 },
+#    };
+#
+# Params:  table_name:         IN  Name of IOCTL/IOVAR table.
+#          iovar_table:        IN  Hash indexed by IOVAR enum, whose values are an array of lines
+#                                  corresponding to the IOVAR table entry.
+#          iovar_enum_to_str:  IN  Hash indexed by IOVAR enum that maps to IOVAR string.
+#          fd:                 IN  File descriptor for output file.
+#
+# Returns: Nothing.
+sub generate_checksum_patch_tables {
+	my ($table_name, $iovar_table, $iovar_enum_to_str, $fd) = @_;
+
+	# Create a single table for every array element in the IOVAR table.
+	foreach my $iovar (sort keys %{$iovar_table}) {
+		my $iovar_str = $iovar_enum_to_str->{$iovar};
+		my $checksum_sym = make_table_checksum_sym($table_name, $iovar, $iovar_str);
+
+		print $fd "const bcm_iovar_t $checksum_sym [] = {\n";
+
+		# Comment out the IOVAR enum to avoid false mismatches when comparing ROM and RAM.
+		# This may occur if new enums are added in the middle of the list, instead of at
+		# the end of the enum. For patching, the value of enums do NOT need to match
+		# between ROM and RAM.
+		s/$iovar/\/\* $iovar \*\/ 0/ for @{$iovar_table->{$iovar}};
+
+		print $fd @{$iovar_table->{$iovar}};
+		print $fd "};\n";
+	}
+}
+
+
+# Generate C source patch functions for the specified IOCTL/IOVAR handler. Create a *single-case*
+# function for every case-statement in the IOCTL/IOVAR handler. This is only used for checksum
+# comparison purposes, e.g.
+#
+#    int wlc_ioctl_auto_patch_WLC_CURRENT_PWR(…)
+#    {
+#       <preamble statements>
+#
+#       switch (cmd) {
+#          case WLC_CURRENT_PWR:
+#             do_something();
+#          break;
+#       }
+#    }
+#
+#    int wlc_ioctl_auto_patch_WLC_DISASSOC(…)
+#    {
+#       <preamble statements>
+#
+#       switch (cmd) {
+#          case WLC_DISASSOC:
+#             do_something_else();
+#          break;
+#       }
+#    }
+#
+# Params:  func:               IN  Name of IOCTL/IOVAR handler function.
+#          is_ioctl:           IN  1 if 'func' is an IOCTL handler, 0 if IOVAR handler.
+#          iovar_enum_to_str:  IN  Hash indexed by IOVAR enum that maps to IOVAR string.
+#          preamble:           IN  Array of "preamble" lines. This consists of everything from the
+#                                  start of the IOCTL/IOVAR function up to (but not including) the
+#                                  first case statement.
+#          postamble:          IN  Array of "postamble" lines. This consists of everything from the
+#                                  end of the switch statement (including the closing '}') to the
+#                                  end of the function.
+#          case_statements:    IN  Hash indexed by case ids, whose values are an array of lines
+#                                  corresponding to each case block.
+#          fall_throughs:      IN  Hash indexed by fall-through case ids, whose values are an array
+#                                  of case ids that it falls through upon.
+#          fd:                 IN  File descriptor for output file.
+#
+# Returns: Nothing.
+sub generate_checksum_patch_handlers {
+	my ($func, $is_ioctl, $iovar_enum_to_str, $preamble, $postamble, @more_args) = @_;
+	my ($case_statements, $fall_throughs, $fd) = @more_args;
+
+	# Strip 'static' function modifier to avoid 'defined but not used' compiler errors.
+	$preamble->[0] =~ s/static //;
+
+	# Create a single-case function for every case-statement in the latest IOCTL/IOVAR
+	# handler. This is only used for checksum comparison purposes.
+	foreach my $case_id (sort keys %{$case_statements}) {
+
+		# Skip default case. The patch handler uses a custom default case, so no need
+		# to generate a checksum for this.
+		next if ($case_id eq "default");
+
+		my $iovar = get_iovar_from_case_id($case_id);
+
+		# Skip IOVAR case statements that do not have a corresponding IOVAR table entry.
+		if ((!$is_ioctl) && (!defined($iovar_enum_to_str->{$iovar}))) {
+			log_debug("Skipping checksum handler '$case_id', no table entry\n");
+			next;
+		}
+
+		# Generate single-case function name.
+		my $checksum_sym = make_func_checksum_sym($func, $case_id, $iovar_enum_to_str->{$iovar});
+		$preamble->[0] =~ s/$func/$checksum_sym/;
+
+		log_debug("Generate patch handler '$checksum_sym for '$case_id'\n");
+
+		# Create function prototype to avoid compiler warnings.
+		my $declaration = $preamble->[0];
+		$declaration =~ s/\n/;\n/;
+		print $fd $declaration;
+
+		# Output function preamble.
+		print $fd @{$preamble};
+
+		# Comment out the IOVAR enum to avoid false mismatches when comparing ROM and RAM.
+		# This may occur if new enums are added in the middle of the list, instead of at
+		# the end of the enum. For patching, the value of enums do NOT need to match
+		# between ROM and RAM.
+		if (!$is_ioctl) {
+			s/\b$iovar\b/\/\* $iovar \*\/ 0/ for @{$case_statements->{$case_id}};
+		}
+
+		# Output the single case statement.
+		print $fd @{$case_statements->{$case_id}};
+
+		# If this is a fall-through case statement, add the fall-through block.
+		foreach my $fall_thru_case_id (@{$fall_throughs->{$case_id}}) {
+			my $fall_through_case = $case_statements->{$fall_thru_case_id};
+			if ($fall_through_case->[0] =~ /{$/) {
+				print $fd "{\n";
+			}
+
+			print $fd @{$fall_through_case}[1..@{$fall_through_case} - 1];
+			log_debug("Add fall through case ($case_id, $fall_thru_case_id)\n");
+		}
+
+
+		# Output function postamble.
+		generate_patch_handler_postamble($fd, $func, $postamble);
+
+		$preamble->[0] =~ s/$checksum_sym/$func/;
+	}
+
+
+	# Debug. (Subtract 1 from # of case statements to remove "validation" case statement
+	# added by this script).
+	log_debug("Case statements found in '$func()': %d\n", scalar(keys %{$case_statements})-1);
+}
+
+
+# Generate a C source patch table and handler for the specified IOCTL/IOVAR table/handler. This
+# gets linked into the final dongle image.
+#
+# Params:  func:               IN  Name of IOCTL/IOVAR handler function.
+#          table_name:         IN  Name of IOCTL/IOVAR table.
+#          is_ioctl:           IN  1 if 'func' is an IOCTL handler, 0 if IOVAR handler.
+#          in_rom:             IN  1 if the IOCTL/IOVAR handler/table are in ROM, else 0.
+#          iovar_table:        IN  Hash indexed by IOVAR enum, whose values are an array of lines
+#                                  corresponding to the IOVAR table entry.
+#          iovar_enum_to_str:  IN  Hash indexed by IOVAR enum that maps to IOVAR string.
+#          preamble:           IN  Array of "preamble" lines. This consists of everything from the
+#                                  start of the IOCTL/IOVAR function up to (but not including) the
+#                                  first case statement.
+#          postamble:          IN  Array of "postamble" lines. This consists of everything from the
+#                                  end of the switch statement (including the closing '}') to the
+#                                  end of the function.
+#          case_statements:    IN  Hash indexed by case ids, whose values are an array of lines
+#                                  corresponding to each case block.
+#          case_list:          IN  Array of case ids. The order represents the order of the case
+#                                  statements within the switch statement.
+#          compare_states:     IN Hash table of symbol comparison states between ROM and RAM.
+#          fd:                 IN  File descriptor for output file.
+#
+# Returns: Nothing.
+sub generate_patch {
+	my ($func, $table_name, $is_ioctl, $in_rom, $iovar_table, @more_args) = @_;
+	my ($iovar_enum_to_str, $preamble, $postamble, $case_statements, @more_arg2) = @more_args;
+	my ($case_list, $compare_states, $fd) = @more_arg2;
+
+	# Generate patch table for the specified IOVAR handler.
+	if ($table_name ne "nil") {
+		generate_patch_table($table_name, $in_rom, $iovar_table, $compare_states, $fd);
+	}
+
+	# Generate patch function for the specified IOCTL/IOVAR handler.
+	generate_patch_handler($func, $is_ioctl, $in_rom, $preamble, $postamble, $case_statements,
+	                       $case_list, $compare_states, $iovar_enum_to_str, $fd);
+}
+
+
+# Generate a C source patch table for the specified IOVAR handler. Create a single table entry
+# for every IOVAR that has changed or been added since the ROM tape-out. This gets linked
+# into the final dongle image. e.g.
+#
+#    const bcm_iovar_t wlc_iovars_patch[] = {
+#       {"bg_mrate", IOV_2G_MRATE, ((1<<14)), 7, 0 },
+#       {"bg_rate",  IOV_2G_RATE,  ((1<<14)), 7, 0 },
+#    };
+#
+# Params:  table_name:     IN  Name of IOCTL/IOVAR table.
+#          in_rom:         IN  1 if the IOCTL/IOVAR handler/table are in ROM, else 0.
+#          iovar_table:    IN  Hash indexed by IOVAR enum, whose values are an array of lines
+#                              corresponding to the IOVAR table entry.
+#          compare_states: IN  Hash table of symbol comparison states between ROM and RAM.
+#          fd:             IN  File descriptor for output file.
+#
+# Returns: Nothing.
+sub generate_patch_table {
+	my ($table_name, $in_rom, $iovar_table, $compare_states, $fd) = @_;
+	my $patch_table;
+	my $num_matched    = 0;
+	my $num_mismatched = 0;
+	my $num_added      = 0;
+	my $num_removed    = 0;
+
+	# Stats.
+	map {
+		$num_matched    += 1 if ($_ == SYM_MATCH);
+		$num_mismatched += 1 if ($_ == SYM_MISMATCH);
+		$num_added      += 1 if ($_ == SYM_ADDED);
+		$num_removed    += 1 if ($_ == SYM_REMOVED);
+	} values %{$compare_states->{+RODATA}};
+
+
+	$patch_table = $table_name . "_patch";
+	log_debug("Generate patch handler table '$patch_table'\n");
+
+	# The IOVAR patch table defaults to NULL in wlc_pub.h (to support IOVAR tables/handlers
+	# that are not in ROM and to support IOVAR patch tables/handlers that have been been
+	# disabled via the auto patch config). Override the NULL default and set the patch
+	# table name.
+	print $fd "#undef  ROM_AUTO_IOCTL_PATCH_IOVARS\n";
+	print $fd "#define ROM_AUTO_IOCTL_PATCH_IOVARS $patch_table\n";
+
+	# If ROM and RAM exactly match, OR if handler function is not in ROM, then create a
+	# stub patch handler.
+	if ((($num_mismatched == 0) && ($num_added == 0) && ($num_removed == 0)) || !$in_rom) {
+		generate_patch_table_stub($fd, $patch_table);
+		return;
+	}
+
+	# Patch IOVAR table definition.
+	print $fd "const bcm_iovar_t $patch_table [] = {\n";
+
+	# Add table entries for new or changed IOVARs since ROM tape-out.
+	foreach my $checksum_sym (sort keys %{$compare_states->{+RODATA}}) {
+		my $compare_state = $compare_states->{+RODATA}{$checksum_sym};
+		my $iovar = get_iovar_from_checksum_sym($checksum_sym);
+
+		if (($compare_state == SYM_ADDED) || ($compare_state == SYM_MISMATCH)) {
+			print $fd @{$iovar_table->{$iovar}};
+		}
+	}
+
+	# Add table entries for removed IOVARs. (Use flag 'IOVF_REMOVED' to indicate that
+	# the IOVAR has been removed). This prevents removed IOVARs from executing from
+	# ROM.
+	#
+	# Place the removed entries at the end of the table. This handles the situation where
+	# the name of an IOVAR enum is renamed (but the IOVAR string is kept the same). The renamed
+	# enum will be found in the table before the "removed" (i.e. originally named) enum.
+	foreach my $checksum_sym (sort keys %{$compare_states->{+RODATA}}) {
+		my $compare_state = $compare_states->{+RODATA}{$checksum_sym};
+		my $iovar = get_iovar_from_checksum_sym($checksum_sym);
+		my $iovar_str = get_iovar_str_from_checksum_sym($checksum_sym);
+
+		if ($compare_state == SYM_REMOVED) {
+			# Comment out the actual IOVAR enum in the table since the enum member
+			# may not exist in the latest code, or may be #ifdef'ed out.
+			print $fd " {\"$iovar_str\", /* $iovar */ 0, IOVF_REMOVED, 0, 0 },\n";
+		}
+	}
+
+	# NULL list termination.
+	print $fd " {NULL, 0, 0, 0, 0 }\n";
+	print $fd "};\n\n";
+}
+
+
+# Generate a C source patch function for the specified IOCTL/IOVAR handler. Create a single
+# function with a case-statement for every IOCTL/IOVAR that has changed or been added since
+# the ROM tape-out. This gets linked into the final dongle image. e.g.
+#
+#    int wlc_ioctl_patchmod(wlc_info_t *wlc, int cmd, void *arg, int len, struct wlc_if *wlcif)
+#    {
+#       switch (cmd) {
+#          case WLC_CURRENT_PWR:
+#             do_something();
+#          break;
+#
+#          case WLC_DISASSOC:
+#             do_something_else();
+#          break;
+#          ...
+#    }
+#
+# Params:  func:               IN  Name of IOCTL/IOVAR handler function.
+#          is_ioctl:           IN  1 if 'func' is an IOCTL handler, 0 if IOVAR handler.
+#          in_rom:             IN  1 if the IOCTL/IOVAR handler/table are in ROM, else 0.
+#          preamble:           IN  Array of "preamble" lines. This consists of everything from the
+#                                  start of the IOCTL/IOVAR function up to (but not including) the
+#                                  first case statement.
+#          postamble:          IN  Array of "postamble" lines. This consists of everything from the
+#                                  end of the switch statement (including the closing '}') to the
+#                                  end of the function.
+#          case_statements:    IN  Hash indexed by case ids, whose values are an array of lines
+#                                  corresponding to each case block.
+#          case_list:          IN  Array of case ids. The order represents the order of the case
+#                                  statements within the switch statement.
+#          compare_states:     IN  Hash table of symbol comparison states between ROM and RAM.
+#          iovar_enum_to_str:  IN  Hash indexed by IOVAR enum that maps to IOVAR string.
+#          fd:                 IN  File descriptor for output file.
+#
+# Returns: Nothing.
+sub generate_patch_handler {
+	my ($func, $is_ioctl, $in_rom, $preamble, $postamble, $case_statements, @more_args) = @_;
+	my ($case_list, $compare_states, $iovar_enum_to_str, $fd) = @more_args;
+	my ($declaration, $patch_func);
+	my $num_matched    = 0;
+	my $num_mismatched = 0;
+	my $num_added      = 0;
+	my $num_removed    = 0;
+	my $case_id;
+	my $default_ret_val;
+
+	# Stats.
+	map {
+		$num_matched    += 1 if ($_ == SYM_MATCH);
+		$num_mismatched += 1 if ($_ == SYM_MISMATCH);
+		$num_added      += 1 if ($_ == SYM_ADDED);
+		$num_removed    += 1 if ($_ == SYM_REMOVED);
+	} values %{$compare_states->{+FUNC}};
+
+
+	# This maps from the IOCTL handler name to its patch handler name.
+	#
+	# XXX This can be removed on trunk, which has a proper IOCTL registration mechanism.
+	my %patch_handler_map = (
+		"_wlc_ioctl"     => "wlc_ioctl_patchmod",
+		"wlc_ap_ioctl"   => "wlc_ap_ioctl_patchmod",
+		"wlc_scan_ioctl" => "wlc_scan_ioctl_patchmod",
+	);
+
+	if ($is_ioctl) {
+		$patch_func = $patch_handler_map{$func};
+		$default_ret_val = "BCME_IOCTL_PATCH_UNSUPPORTED";
+		if (!defined($patch_func)) {
+			log_error("Unknown patch handler name for $func\n");
+			exit 1;
+		}
+
+		# The IOCTL patch handler defaults to a stub function in the source code (to support
+		# IOCTL handlers that are not in ROM and to support IOCTL handlers that have been
+		# been disabled via the auto patch config). Override the default stub.
+		print $fd "#define WLC_IOCTL_PATCHMOD_INCLUDED\n";
+	}
+	else {
+		$patch_func = $func . "_patch";
+		$default_ret_val = "BCME_UNSUPPORTED";
+
+		# The IOVAR patch handler defaults to NULL in wlc_pub.h (to support IOVAR
+		# tables/handlers that are not in ROM and to support IOVAR patch tables/handlers
+		# that have been been disabled via the auto patch config). Override the NULL
+		# default and set the patch handler name.
+		print $fd "#undef  ROM_AUTO_IOCTL_PATCH_DOIOVAR\n";
+		print $fd "#define ROM_AUTO_IOCTL_PATCH_DOIOVAR $patch_func\n";
+	}
+	log_debug("Generate patch handler function '$patch_func'\n");
+
+
+	# If ROM and RAM exactly match, OR if handler function is not in ROM, then create a
+	# stub patch handler.
+	if ((($num_mismatched == 0) && ($num_added == 0) && ($num_removed == 0)) || !$in_rom) {
+		generate_patch_handler_stub($fd, $patch_func, $is_ioctl);
+		return;
+	}
+
+
+	# Strip 'static' function modifier to avoid 'defined but not used' compiler errors.
+	if ($is_ioctl) {
+		$preamble->[0] =~ s/static //;
+	}
+
+
+	# Create function prototype to avoid compiler warnings.
+	$preamble->[0] =~ s/$func/$patch_func/;
+	$declaration = $preamble->[0];
+	$declaration =~ s/\n/;\n/;
+	print $fd $declaration;
+
+
+	# Output function preamble.
+	print $fd @{$preamble};
+
+
+	# Create main switch statement, with one case statement for every IOCTL/IOVAR that has
+	# changed or been added since ROM tape-out. Use the same order for case statements
+	# in the patch function as in the real handler. This ensures that fall-through case
+	# statements are ordered correctly.
+	foreach $case_id (@{$case_list}) {
+		my $iovar = get_iovar_from_case_id($case_id);
+
+		# Skip IOVAR case statements that do not have a corresponding IOVAR table entry.
+		if ((!$is_ioctl) && (!defined($iovar_enum_to_str->{$iovar}))) {
+			log_debug("Skipping case '$case_id', no table entry\n");
+			next;
+		}
+
+		my $checksum_sym = make_func_checksum_sym($func, $case_id, $iovar_enum_to_str->{$iovar});
+		my $compare_state = $compare_states->{+FUNC}{$checksum_sym};
+
+		# Skip WLC_LAST, default case.
+		next if ($case_id eq "$g_last_ioctl");
+		next if ($case_id eq "default");
+
+		# Add case statement for IOCTL/IOVARs that have changed or been added since
+		# ROM tape-out.
+		if (($compare_state == SYM_ADDED) || ($compare_state == SYM_MISMATCH)) {
+			# Output case statement.
+			print $fd @{$case_statements->{$case_id}};
+
+			log_debug("Add case '$case_id' [%s]\n",
+			          $g_sym_compare_strs[$compare_state]);
+		}
+	}
+
+	# Return BCME_UNSUPPORTED for all IOCTLs that are not supported by this build.
+	# They may have been removed from the latest code, or they may not be supported
+	# based upon feature #ifdefs. The internal error code BCME_IOCTL_PATCH_UNSUPPORTED
+	# is used as an indication to try other IOCTL handlers, including those in ROM.
+	#
+	# For IOVARs, nothing needs to be done for removed IOVAR case statements. If the
+	# corresponding table entry is also removed, it will be tagged as IOVF_REMOVED (and the
+	# handler will never get invoked). If the table entry exists, but the case statements
+	# are removed, the handler will fall-through to the default case and return
+	# BCME_UNSUPPORTED to the user.
+	if (($num_removed) && ($is_ioctl)) {
+		print $fd " /* Return error for IOCTL not supported by this build. */\n";
+		foreach my $checksum_sym (sort keys %{$compare_states->{+FUNC}}) {
+			my $compare_state = $compare_states->{+FUNC}{$checksum_sym};
+
+			if ($compare_state == SYM_REMOVED) {
+				$case_id = get_case_id_from_checksum_sym($checksum_sym);
+				print $fd " case ($case_id):\n";
+
+				log_debug("Add unsupported case '$case_id'\n");
+			}
+		}
+		print $fd "  return (BCME_UNSUPPORTED);\n";
+		print $fd "  break;\n\n";
+	}
+
+	# Output default case, and end of patch function.
+	print $fd " default:\n";
+	print $fd "  return ($default_ret_val);\n";
+	print $fd "  break;\n";
+	generate_patch_handler_postamble($fd, $func, $postamble);
+
+
+	# Stats.
+	log_debug("Created patch handler '$patch_func()'\n");
+	log_debug("  Case statements: Match (%d) Mismatch (%d) Added (%d) Removed (%d)\n",
+	             $num_matched, $num_mismatched, $num_added, $num_removed);
+}
+
+
+##############################################################################
+# Run...
+#
+
+# Setup logging.
+$g_debug_fname = fileparse($g_fname_out) . ".debug.txt";
+open($g_debug_fd, ">$g_debug_fname") or
+	die "Could not open $g_debug_fname for writing: $!\n";
+log_set_debug_fd($g_debug_fd);
+
+# Parse auto patch config file.
+parse_config_file($g_fname_config, $g_fname_C_src, \%g_handler_types, \%g_handler_tables);
+
+# Parse ROM table.
+parse_romtable_file($g_fname_romtable, \%g_romtable_syms);
+
+# Parse ROM/RAM MD5 checksums, if generating final patch handlers.
+if ($g_gen_final_patch_handler) {
+	# Parse ROM MD5 signature file.
+	parse_md5sign_file($g_fname_rom_md5sign,
+                           \%g_rom_md5signs,
+                           "ROM");
+
+	# Parse RAM MD5 signature file.
+	parse_md5sign_file($g_fname_ram_md5sign, \%g_ram_md5signs, "RAM");
+}
+
+# Open output file for writing.
+my $g_fd_output;
+open($g_fd_output, ">$g_fname_out") or
+	die "Could not open $g_fname_out for writing: $!\n";
+
+# Add file header.
+generate_C_file_header($g_fd_output);
+
+
+# Parse IOCTL/IOVAR handlers and generate patch handlers.
+foreach my $global_func (keys %g_handler_types) {
+	# Array of IOCTL/IOVAR handler function "preamble" lines. This consists of everything
+	# from the start of the function up to (but not including) the first case statement.
+	my @preamble = ();
+
+	# Array of IOCTL/IOVAR handler function "postamble" lines. This consists of everything
+	# from the end of the switch statement (including the closing '}') to the end of the
+	# function.
+	my @postamble = ();
+
+	# Hash indexed by case names, whose values are an array of lines corresponding to each
+	# case block.
+	my %case_statements = ();
+
+	# Array of "case ids". The order represents the order of the case statements within the
+	# switch statement.
+	my @case_list = ();
+
+	# Hash indexed by fall-through case ids, whose values are an array of case ids that it
+	# falls through upon.
+	my %fall_throughs = ();
+
+	# Hash indexed by IOVAR enum, whose values are an array of lines corresponding to the IOVAR
+	# table entry.
+	my %iovar_table = ();
+
+	# Hash indexed by IOVAR enums that map to IOVAR strings.
+	my %iovar_enum_to_str = ();
+
+	# Strip prefix added by globalizer for static symbols (e.g. wlc$_wlc_ioctl()).
+	my $func  = unglobalize($global_func);
+	my $table = unglobalize($g_handler_tables{$global_func});
+
+	my $in_rom_func  = (defined($g_romtable_syms{$global_func}));
+	my $in_rom_table = (defined($g_romtable_syms{$g_handler_tables{$global_func}}));
+	my $in_rom = $in_rom_func;
+	my $is_ioctl = ($g_handler_types{$global_func} == IOCTL);
+
+	# Error check to ensure that both table and handler are in ROM, or neither are in ROM.
+	if (!$is_ioctl) {
+		if ($in_rom_func != $in_rom_table) {
+			# The default behaviour is to error if either the handler or table is
+			# missing from ROM (which is indicative of an error in the config file).
+			# However, provide an override to ignore missing symbols and to skip
+			# patching for that specific IOVAR.
+			if ($g_config_err) {
+				log_error("Table and handler must both be in ROM: '$global_func'\n");
+				exit 1;
+			}
+			else {
+				log_print("$g_script: Table and handler must both be in ROM. "
+				          . "Skipping '$global_func'\n");
+				$in_rom = 0;
+			}
+		}
+	}
+
+	# Parse IOCTL/IOVAR handler from C source file.
+	parse_C_file($g_fname_C_src_pp,
+		     $func,
+		     $table,
+		     $in_rom,
+		     $is_ioctl,
+		     \%iovar_table,
+		     \%iovar_enum_to_str,
+		     \@preamble,
+		     \@postamble,
+		     \%case_statements,
+		     \@case_list,
+		     \%fall_throughs);
+
+
+	# Generate patch handlers.
+	if ($g_gen_final_patch_handler) {
+
+		# Compare ROM/RAM MD5 checksums.
+		%g_sym_compare_states = ();
+		compare_md5_signatures(\%g_rom_md5signs,
+		                       \%g_ram_md5signs,
+		                       $g_fname_C_src,
+		                       $func,
+		                       $table,
+		                       $in_rom,
+		                       $is_ioctl,
+		                       \%iovar_enum_to_str,
+		                       \%fall_throughs,
+		                       \%g_sym_compare_states);
+
+
+		# Generate patch. This is linked into the final image.
+		generate_patch($func,
+		               $table,
+		               $is_ioctl,
+		               $in_rom,
+		               \%iovar_table,
+		               \%iovar_enum_to_str,
+		               \@preamble,
+		               \@postamble,
+		               \%case_statements,
+		               \@case_list,
+		               \%g_sym_compare_states,
+		               $g_fd_output);
+	}
+	else {
+		# Generate patch. This is for checksum comparison purposes only.
+		generate_checksum_patch($func,
+		                        $table,
+		                        $is_ioctl,
+		                        $in_rom,
+		                        \%iovar_table,
+		                        \%iovar_enum_to_str,
+		                        \@preamble,
+		                        \@postamble,
+		                        \%case_statements,
+		                        \%fall_throughs,
+		                        $g_fd_output);
+	}
+}
+
+
+# Add file footer.
+generate_C_file_footer($g_fd_output);
+
+##############################################################################
+# Clean up.
+close($g_fd_output) or
+	die "Could not close $g_fd_output: $!\n";
+
+close($g_debug_fd) or
+	die "Could not close $g_debug_fd: $!\n";
+

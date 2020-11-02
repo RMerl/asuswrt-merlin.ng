@@ -656,6 +656,78 @@ static inline int rdpa_vlan_options_set(bdmf_object_handle mo_, bdmf_number opti
 }
 
 
+/** Get vlan/is_default attribute.
+ *
+ * Get VLAN default vid flag.
+ * \param[in]   mo_ vlan object handle or mattr transaction handle
+ * \param[out]  is_default_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task and softirq contexts.
+ */
+static inline int rdpa_vlan_is_default_get(bdmf_object_handle mo_, bdmf_boolean *is_default_)
+{
+	rdpa_ioctl_cmd_t pa = {0};
+	int fd, ret;
+
+	pa.mo = mo_;
+	pa.ptr = (bdmf_ptr)(unsigned long)is_default_;
+	pa.cmd = RDPA_VLAN_IS_DEFAULT_GET;
+
+	fd = open(RDPA_USR_DEV_NAME, O_RDWR);
+	if (fd < 0)
+	{
+		rdpa_usr_error("%s: %s\n", RDPA_USR_DEV_NAME, strerror(errno));
+		return -EINVAL;
+	}
+	ret = ioctl(fd, RDPA_VLAN_IOCTL, &pa);
+	if (ret)
+	{
+		rdpa_usr_error("ioctl failed, ret=%d\n", ret);
+		close(fd);
+		return ret;
+	}
+
+	close(fd);
+	return pa.ret;
+}
+
+
+/** Set vlan/is_default attribute.
+ *
+ * Set VLAN default vid flag.
+ * \param[in]   mo_ vlan object handle or mattr transaction handle
+ * \param[in]   is_default_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task and softirq contexts.
+ */
+static inline int rdpa_vlan_is_default_set(bdmf_object_handle mo_, bdmf_boolean is_default_)
+{
+	rdpa_ioctl_cmd_t pa = {0};
+	int fd, ret;
+
+	pa.mo = mo_;
+	pa.parm = (uint64_t)(long)is_default_;
+	pa.cmd = RDPA_VLAN_IS_DEFAULT_SET;
+
+	fd = open(RDPA_USR_DEV_NAME, O_RDWR);
+	if (fd < 0)
+	{
+		rdpa_usr_error("%s: %s\n", RDPA_USR_DEV_NAME, strerror(errno));
+		return -EINVAL;
+	}
+	ret = ioctl(fd, RDPA_VLAN_IOCTL, &pa);
+	if (ret)
+	{
+		rdpa_usr_error("ioctl failed, ret=%d\n", ret);
+		close(fd);
+		return ret;
+	}
+
+	close(fd);
+	return pa.ret;
+}
+
+
 /** Get vlan/stat attribute.
  *
  * Get vlan statistics.

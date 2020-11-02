@@ -42,7 +42,7 @@
 	#size-cells = <1>;
 
 	chosen {
-		bootargs = "console=ttyAMA0 earlyprintk debug irqaffinity=0 cma=0M";
+		bootargs = "console=ttyAMA0 earlyprintk debug irqaffinity=0 pci=pcie_bus_safe";
 	}; 
 
 	cpus {

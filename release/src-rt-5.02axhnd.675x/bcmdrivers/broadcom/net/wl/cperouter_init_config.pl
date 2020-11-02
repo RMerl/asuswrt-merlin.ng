@@ -13,7 +13,7 @@ if ( $num_args != 6 ) {
 }
 
 #These are items CPEROUTER does not want to have from HNDROUTER source
-my @cpe_disable_items = ( "EZC","UDHCPD","RC","IPTABLES", "IGD","SAMBA","NVRAMD");
+my @cpe_disable_items = ( "EZC","UDHCPD","RC","IPTABLES", "IGD","SAMBA","NVRAMD","TREND_IQOS");
 #profile related changes, change configurtion by profile configurtion. 
 my %config_to_change = (
     "BUILD_WLVISUALIZATION", "VISUALIZATION",
@@ -28,6 +28,7 @@ my $config_file =  $ARGV[3];
 my $dot_config = catfile($router_dir,'.config');
 my $wladjust_pl = catfile($wl_dir,'wlconf_adjust.pl');
 my $brcm_lib_dir = catfile($build_dir,'hostTools','PerlLib');
+my $chip = $p->get('BRCM_CHIP');
 
 foreach my $n (@cpe_disable_items) {
 	system($wladjust_pl,$router_dir,$config_file,$n,'disable');
@@ -38,6 +39,14 @@ if (( $p->get("BUILD_BRCM_CPEROUTER")) &&  ( $p->get("BUILD_BRCM_HOSTAPD"))) {
 	system($wladjust_pl,$router_dir,$config_file,'RC','enable');
 } else {
 	system($wladjust_pl,$router_dir,$config_file,'RC','disable');
+}
+
+if ( $chip =~ /^(4908|47622|63178)$/ ) {
+	if ( $p->get("BUILD_BRCM_CPEROUTER") && ( $p->get("BUILD_BSTREAM_IQOS"))) {
+		system($wladjust_pl,$router_dir,$config_file,'TREND_IQOS','enable');
+	} else {
+		system($wladjust_pl,$router_dir,$config_file,'TREND_IQOS','disable');
+	}
 }
 
 my @p_conf_items = keys %config_to_change;

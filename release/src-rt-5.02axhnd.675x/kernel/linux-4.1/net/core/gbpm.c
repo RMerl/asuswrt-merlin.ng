@@ -132,6 +132,10 @@ void     gbpm_free_buf_stub(void *buf_p)
             { return; }
 
 /* --- BPM SKB POOL --- */
+uint32_t gbpm_total_skb_stub(void)
+            { return 0U; }
+uint32_t gbpm_avail_skb_stub(void)
+            { return 0U; }
 void     gbpm_attach_skb_stub(void *skbp, void *data, uint32_t len)
             { return; }
 void *   gbpm_alloc_skb_stub(void)

@@ -670,7 +670,6 @@ struct net_device *bcmfc_br_fdbdev_get(void *br,
 	rcu_read_unlock();
 	return NULL;
 }
-
 #if IS_ENABLED(CONFIG_ATM_LANE)
 /* Interface used by ATM LANE hook to test
  * if an addr is on some other bridge port */

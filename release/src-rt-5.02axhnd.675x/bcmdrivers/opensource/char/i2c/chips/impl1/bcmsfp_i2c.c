@@ -727,7 +727,7 @@ int bcmsfp_write_byte(u8 bus_num, u8 client_num, u8 offset, u8 val)
     char buf[2];
     struct i2c_client *client = NULL;
 
-    BCM_LOG_DEBUG(BCM_LOG_ID_I2C, "Entering the function %s \n", __FUNCTION__);
+    BCM_LOG_INFO(BCM_LOG_ID_I2C, "Entering function %s(%02x, %02x, %02x, %02x)", __FUNCTION__, bus_num, client_num, offset, val);
 
     if(get_client(bus_num, client_num, &client))
     {

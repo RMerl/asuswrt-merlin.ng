@@ -4,12 +4,7 @@
 #
 
 obj-$(CONFIG_BCM_VLAN) += bcmvlan.o
-
-ifneq ($(PREBUILT_EXTRAMOD),1)
 bcmvlan-objs += bcm_vlan.o bcm_vlan_local.o bcm_vlan_user.o bcm_vlan_dev.o bcm_vlan_rule.o bcm_vlan_test.o bcm_vlan_flows.o bcm_vlan_dp.o
-else
-bcmvlan-objs := bcmvlan$(PRBM_EXT).o
-endif
 
 EXTRA_CFLAGS += -I$(obj)
 EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)

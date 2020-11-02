@@ -80,6 +80,19 @@ static void wakeup_softirqd(void)
 		wake_up_process(tsk);
 }
 
+#if defined(CONFIG_BCM_KF_ARM_BCM963XX) && defined(CONFIG_BCM947189)
+/*
+ * If ksoftirqd is scheduled, we do not want to process pending softirqs
+ * right now. Let ksoftirqd handle this at its own rate, to get fairness.
+ */
+static bool ksoftirqd_running(void)
+{
+	struct task_struct *tsk = __this_cpu_read(ksoftirqd);
+
+	return tsk && (tsk->state == TASK_RUNNING);
+}
+#endif
+
 /*
  * preempt_count and SOFTIRQ_OFFSET usage:
  * - preempt_count is changed by SOFTIRQ_OFFSET on entering or leaving
@@ -321,8 +334,11 @@ asmlinkage __visible void do_softirq(void)
 	local_irq_save(flags);
 
 	pending = local_softirq_pending();
-
+#if defined(CONFIG_BCM_KF_ARM_BCM963XX) && defined(CONFIG_BCM947189)
+	if (pending && !ksoftirqd_running())
+#else
 	if (pending)
+#endif
 		do_softirq_own_stack();
 
 	local_irq_restore(flags);
@@ -349,6 +365,10 @@ void irq_enter(void)
 
 static inline void invoke_softirq(void)
 {
+#if defined(CONFIG_BCM_KF_ARM_BCM963XX) && defined(CONFIG_BCM947189)
+	if (ksoftirqd_running())
+		return;
+#endif
 	if (!force_irqthreads) {
 #ifdef CONFIG_HAVE_IRQ_EXIT_ON_IRQ_STACK
 		/*

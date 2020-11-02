@@ -11,18 +11,9 @@ LD_LIBRARY_PATH = /tools/oss/packages/x86_64-rhel6/gcc/4.8.2/lib64/
 
 ifeq ("$(USE_LLVM_SRC)", "y")
 	LLVM_TOOLS_DEP = llvm_tools
-
-ifeq ("$(LLVM_VER)", "8")
-	CLANG_EXE = $$(TOOLS_DIR)/bin/llvm/clang8
-	LLC_EXE = $$(TOOLS_DIR)/bin/llvm/llc8
-else
 	CLANG_EXE = $$(TOOLS_DIR)/bin/llvm/clang_link
-	LLC_EXE = $$(TOOLS_DIR)/bin/llvm/llc_link
-endif
-
 else
-	CLANG_EXE = $$(TOOLS_DIR)/bin/llvm/clang
-	LLC_EXE = $$(TOOLS_DIR)/bin/llvm/llc
+	CLANG_EXE ?= /projects/firepath/tools/releases/fp_llvm/dev-runner-4/x86_64-rhel6/bin/clang
 endif
 
 ifeq ("$(ENABLE_FW_OPT)", "y")
@@ -31,7 +22,7 @@ ifeq ("$(ENABLE_FW_OPT)", "y")
 endif
 
 ifeq ("$(RUNNER_SUPPORT_64_BIT_LD_ST)", "y")
-    LLVM_LLC_EXTRA_OPTS += -runner-support-64bit-ldst
+    CLANG_EXTRA_PARAMS += -mllvm -runner-support-64bit-ldst
 endif    
 
 define build_runner_fw_3G
@@ -97,8 +88,7 @@ endef
 define build_runner_c_fw
 $(RUNNER_C_FW)_$(1): $(LLVM_TOOLS_DEP)
 	@echo "Building C FW for Runner" $(1)
-	$(CLANG_EXE) $(PROJ_DEFS) $(FW_PROJ_DEFS) -I$(COMMON_INCLUDE_FLAGS) -I$(PROJ_FW_TARGET) -fno-delete-null-pointer-checks -target runner$(RGEN)g -O3 -gline-tables-only -Wall -emit-llvm -S $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).c -o $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).ll
-	$(LLC_EXE) $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).ll -march runner$(RGEN)g $(LLVM_LLC_EXTRA_OPTS) -o $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).s 
+	$(CLANG_EXE) $(PROJ_DEFS) $(FW_PROJ_DEFS) -I$(COMMON_INCLUDE_FLAGS) -I$(PROJ_FW_TARGET) -fno-delete-null-pointer-checks --target=runner$(RGEN)g $(CLANG_EXTRA_PARAMS) -O3 -Wall -S $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).c -o $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).s 
 	gawk -f $(TOOLS_DIR)/bin/llvm/llvm_pp.awk -v runner_version=$(RGEN) $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).s > $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).uc
 endef
 

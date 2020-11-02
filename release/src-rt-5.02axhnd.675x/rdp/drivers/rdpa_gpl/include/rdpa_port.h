@@ -75,6 +75,7 @@ typedef struct
     bdmf_boolean ls_fc_enable; /**< Local switching via flow cache enable */
     rdpa_if control_sid; /**< Control SID on LAG iface (relevent for G9991 only) */
     bdmf_boolean ae_enable; /**< Indicates active ethernet port */
+    uint8_t min_packet_size; /**< Minimum packet size \XRDP_LIMITED */
 } rdpa_port_dp_cfg_t;
 
 
@@ -129,6 +130,7 @@ typedef struct {
     uint32_t tx_valid_bytes;             /**< FTTdp only: Sent valid bytes */
     uint32_t tx_multicast_pkt;           /**< FTTdp only: Sent multicast Packets */    
     uint32_t tx_broadcast_pkt;           /**< FTTdp only: Sent broadcast Packets */
+    uint32_t rx_frag_discard;            /**< FTTdp only: G.9991 RX fragments reassembly drop counter */
 } rdpa_port_stat_t;
 
 typedef struct {
@@ -181,7 +183,8 @@ typedef enum
 {
     RDPA_RATE_LIMIT_BROADCAST,
     RDPA_RATE_LIMIT_MULTICAST,
-    RDPA_RATE_LIMIT_UNKNOWN_DA
+    RDPA_RATE_LIMIT_UNKNOWN_DA,
+	RDPA_RATE_LIMIT_ALL_TRAFFIC
 } rdpa_rl_traffic_value;
 
 /** Type of traffic to be rate limited */
@@ -190,6 +193,7 @@ typedef enum
     RDPA_RATE_LIMIT_MASK_BROADCAST = (1 << RDPA_RATE_LIMIT_BROADCAST), /**< In this mode, broadcast packets are rate limited */
     RDPA_RATE_LIMIT_MASK_MULTICAST = (1 << RDPA_RATE_LIMIT_MULTICAST), /**< In this mode, multicast packets are rate limited */
     RDPA_RATE_LIMIT_MASK_UNKNOWN_DA = (1 << RDPA_RATE_LIMIT_UNKNOWN_DA), /**< In this mode, unknown_da packets are rate limited */
+	RDPA_RATE_LIMIT_MASK_ALL_TRAFFIC = (1 << RDPA_RATE_LIMIT_ALL_TRAFFIC), /**< In this mode, all traffic are rate limited */
 } rdpa_rl_traffic_fields;
 
 /** Port mirroring configuration parameters */

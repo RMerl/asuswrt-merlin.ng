@@ -180,6 +180,7 @@ int bcm_i2c_pon_optics_sd_get(unsigned char *sig_det);
 
 int bcm_i2c_optics_rx_control(int enable);
 int bcm_i2c_optics_tx_control(int enable);
+int bcm_i2c_optics_tx_control_get(int *enable);
 #define BCM_I2C_OPTICS_ENABLE 1
 #define BCM_I2C_OPTICS_DISABLE 0
 

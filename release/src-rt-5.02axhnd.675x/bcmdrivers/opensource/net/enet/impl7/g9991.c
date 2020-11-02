@@ -38,6 +38,7 @@
 #include <rdpa_api.h>
 #include "enet_dbg.h"
 #include "runner_common.h"
+#include <bcmnet.h>
 
 #define INBAND_FILTER_ETYPE 0x888A
 #define INBAND_FILTER_RDPA_INDEX RDPA_FILTER_ETYPE_UDEF_INDX_MIN
@@ -46,7 +47,7 @@
 
 static enetx_port_t *dsp_es;
 
-bdmf_object_handle _create_rdpa_port(rdpa_if rdpaif, rdpa_emac emac, bdmf_object_handle owner, rdpa_if high_prio_sid, int create_egress_tm);
+bdmf_object_handle _create_rdpa_port(rdpa_if rdpaif, rdpa_emac emac, bdmf_object_handle owner, rdpa_if high_prio_sid, int create_egress_tm, int enable_set);
 extern int link_pbit_tc_to_q_to_rdpa_lan_port(bdmf_object_handle port_obj);
 
 static int tr_g9991_high_prio(enetx_port_t *port, void *_ctx)
@@ -73,8 +74,13 @@ rdpa_if get_first_high_priority_sid_from_sw(enetx_port_t *sw)
 
 static int _phy_read_status(phy_dev_t *phy_dev)
 {
-    phy_dev->link = (long)phy_dev->priv;
+    phy_dev_t *parent_phy_dev = (phy_dev_t *)((unsigned long)phy_dev->priv & ~0x3);
+    phy_dev->link = (unsigned long)phy_dev->priv & 0x3;
     phy_dev->speed = PHY_SPEED_1000;
+
+    if (parent_phy_dev)
+        phy_dev->link &= parent_phy_dev->link;
+
     return 0;
 }
 
@@ -103,7 +109,7 @@ static int create_rdpa_g9991_port(enetx_port_t *self, rdpa_if rdpaif, int create
         goto Exit;
     }
 
-    if (!(self->priv = port_obj = _create_rdpa_port(rdpaif, rdpa_emac0 + physical_port, switch_port_obj, rdpa_if_none, create_egress_tm)))
+    if (!(self->priv = port_obj = _create_rdpa_port(rdpaif, rdpa_emac0 + physical_port, switch_port_obj, rdpa_if_none, create_egress_tm, 1)))
     {
         enet_err("Failed to create RDPA port %d ret=%d\n", rdpaif, (rc = -1));
         goto Exit;
@@ -169,12 +175,14 @@ static int port_g9991_port_init(enetx_port_t *self)
 {
     bdmf_error_t rc;
     rdpa_if rdpaif = self->p.port_id;
+    void *priv;
 
-    if (self->p.port_cap != PORT_CAP_MGMT)
-    {
-        if (!(self->p.phy = phy_dev_add(PHY_TYPE_G9991, rdpaif - rdpa_if_lan0, NULL)))
-            return -1;
-    }
+    priv = (void *)(unsigned long)self->p.parent_sw->s.parent_port->p.phy;
+    if (self->p.port_cap == PORT_CAP_MGMT)
+        priv = (void *)((unsigned long)priv | 0x1);
+
+    if (!(self->p.phy = phy_dev_add(PHY_TYPE_G9991, rdpaif - rdpa_if_lan0, priv)))
+        return -1;
 
     self->n.port_netdev_role = PORT_NETDEV_ROLE_LAN;
 
@@ -231,36 +239,11 @@ static enetx_port_t *create_port(int port_id, char *devname, char *errorname, en
     return p;
 }
 
-#ifdef CONFIG_BCM_XRDP
-extern int _configure_tc_hi_lo(bdmf_object_handle system_obj);
-extern int rdpa_cpu_tc_high;
-
-static int set_udef_tc(void)
-{
-    int rc = 0;
-#ifndef TEST_INGRESS
-    bdmf_object_handle system_obj = NULL;
-
-    rdpa_system_get(&system_obj);
-
-    _configure_tc_hi_lo(system_obj);
-
-    if ((rc = rdpa_system_cpu_reason_to_tc_set(system_obj, rdpa_cpu_rx_reason_etype_udef_0, rdpa_cpu_tc_high)))
-        enet_err("Failed to set priority %d for udef %d rc=%d\n", rdpa_cpu_tc_high, rdpa_cpu_rx_reason_udef_0, rc);
-
-    if (system_obj)
-        bdmf_put(system_obj);
-
-#endif
-    return rc;
-}
-#endif
-
 static int port_g9991_sw_init(enetx_port_t *self)
 {
     bdmf_object_handle filter_obj;
     int rc = 0;
-    
+
     /* A single error sample port created for the system, shared among DPU's. SID mapping will be set by mux_set_rx_index() in port_init() */
     if (!dsp_es)
     {
@@ -275,13 +258,12 @@ static int port_g9991_sw_init(enetx_port_t *self)
             enet_err("Failed to set udef filter %d. rc=%d\n", INBAND_FILTER_RDPA_INDEX, rc);
             goto Exit;
         }
-#ifdef CONFIG_BCM_XRDP
-        if ((rc = set_udef_tc()))
-            goto Exit;
-#endif
+
+        /* Mapping rdpa_cpu_rx_reason_etype_udef_0 to rdpa_cpu_tc_high will be done from shared
+         * _rdpa_reason_set_tc_and_queue() */
 
         bdmf_put(filter_obj);
-    
+
         /* Since this block runs only once, reuse it to register phy driver */
         phy_driver_set(&phy_drv_g9991);
     }
@@ -306,6 +288,13 @@ static int port_g9991_sw_uninit(enetx_port_t *self)
 
 #ifdef CONFIG_BCM_XRDP
 extern int port_runner_dispatch_pkt_lan(dispatch_info_t *dispatch_info);
+static int dispatch_pkt_lan_bridge(dispatch_info_t *dispatch_info)
+{
+    if (dispatch_info->port->p.port_cap == PORT_CAP_MGMT)
+        dispatch_info->drop_eligible = rdpa_discard_prty_high;
+
+    return port_runner_dispatch_pkt_lan(dispatch_info);
+}
 #else
 static int dispatch_pkt_lan_bridge(dispatch_info_t *dispatch_info)
 {
@@ -392,11 +381,8 @@ port_ops_t port_g9991_port =
 {
     .init = port_g9991_port_init,
     .uninit = port_g9991_port_uninit,
-#ifdef CONFIG_BCM_XRDP
-    .dispatch_pkt = port_runner_dispatch_pkt_lan,
-#else
+
     .dispatch_pkt = dispatch_pkt_lan_bridge,
-#endif
     .stats_get = port_g9991_port_stats_get,
     .stats_clear = port_g9991_port_stats_clear,
     .mtu_set = port_g9991_mtu_set,

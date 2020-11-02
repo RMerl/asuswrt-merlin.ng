@@ -142,6 +142,7 @@ port_ops_t port_sf2_port =
         .switchdev_port_attr_set = sf2_switchdev_port_attr_set, 
     }
 #endif
+    .mib_dump_us = port_sf2_mib_dump_us,  // add by Andrew
 };
 
 port_ops_t port_sf2_port_mac =
@@ -153,6 +154,7 @@ port_ops_t port_sf2_port_mac =
     .mtu_set = port_generic_mtu_set,
     .mib_dump = port_sf2_mib_dump,
     .print_status = port_sf2_print_status,
+    .mib_dump_us = port_sf2_mib_dump_us,  // add by Andrew
 };
 
 int enetxapi_post_config(void)

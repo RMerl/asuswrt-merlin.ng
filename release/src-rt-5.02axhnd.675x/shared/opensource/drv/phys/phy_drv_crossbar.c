@@ -184,6 +184,21 @@ int crossbar_info_by_phy(phy_dev_t *phy_dev, int *crossbar_id, int *internal_end
 }
 EXPORT_SYMBOL(crossbar_info_by_phy);
 
+int crossbar_current_status(phy_dev_t *phy_crossbar, int *internal_endpoint, int *external_endpoint)
+{
+    int i, j;
+
+    if ((i = crossbar_get_index(phy_crossbar)) == -1)
+        return -1;
+
+    if (internal_endpoint)
+        *internal_endpoint = crossbars[i].internal_endpoint;
+
+    j = crossbar_external_endpoint(crossbars[i].connected_phy);
+    if (external_endpoint)
+        *external_endpoint = j;
+    return 0;
+} EXPORT_SYMBOL(crossbar_current_status); 
 /*
  * When the active phy's link is up/down, power down/up all other phys in group.
  */
@@ -220,13 +235,13 @@ static void crossbar_link_change_cb(void *ctx)
     phy_dev_crossbar->duplex = active_phy->duplex;
     phy_dev_crossbar->pause_rx = active_phy->pause_rx;
     phy_dev_crossbar->pause_tx = active_phy->pause_tx;
+    phy_dev_crossbar->addr = active_phy->addr;
+    phy_dev_crossbar->meta_id = active_phy->meta_id;
 
     if (crossbar->select && first_phy != crossbar->connected_phy)
     {
         crossbar->select(crossbar->crossbar_id, crossbar->internal_endpoint, crossbar_external_endpoint(first_phy), first_phy);
         crossbar->connected_phy = first_phy;     /* in case connected_phy is end_phy */
-        phy_dev_crossbar->addr = first_phy->addr;
-        phy_dev_crossbar->meta_id = first_phy->meta_id;
     }
 
     if (phy_dev_crossbar->flag & PHY_FLAG_POWER_SET_ENABLED)

@@ -238,16 +238,15 @@ void wl_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long skb_p, unsigned lo
 	if (!wl->txq_dispatched) {
 		int32 err = 0;
 
+		atomic_inc(&wl->callbacks);
 		wl->txq_dispatched = TRUE;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 4, 0))
 		wake_up_interruptible(&wl->kthread_wqh);
 #else
 		err = (int32)(schedule_work(&wl->txq_task.work) == 0);
 #endif
-
-		if (!err) {
-			atomic_inc(&wl->callbacks);
-		} else {
+		if (err) {
+			atomic_dec(&wl->callbacks);
 			wl->txq_dispatched = FALSE;
 			WL_ERROR(("wl%d: wl_start/schedule_work failed\n", wl->pub->unit));
 		}

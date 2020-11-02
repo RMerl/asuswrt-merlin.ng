@@ -60,6 +60,10 @@ CFLAGS+= -DDSLCPE_WLCONF_CMD -DBCA_CPEROUTER
 ifneq ($(strip $(BUILD_BRCM_HOSTAPD)),)
 CFLAGS += -DCONFIG_HOSTAPD  
 LIBS += -lbcmcrypto -lnv2hapdcfg -L$(INSTALL_DIR)/usr/lib
+EXE += wlhostapd
+endif
+ifneq ($(strip $(BUILD_BCM_WLAN_DPDCTL)),)
+CFLAGS += -DBUILD_BCM_WLAN_DPDCTL
 endif
 endif
 
@@ -67,6 +71,11 @@ ifeq ($(CONFIG_AIRIQ),y)
 CFLAGS += -DWL_AIR_IQ
 endif
 
+ifneq ($(strip $(BUILD_BSTREAM_IQOS)),)
+ifneq ($(wildcard $(WIRELESS_DRIVER_PATH)/../components/vendor/trend/iqos),)
+CFLAGS += -DWL_BSTREAM_IQOS
+endif
+endif
 
 all dynamic: $(EXE) 
 
@@ -110,6 +119,7 @@ ALLOWED_INCLUDE_PATHS := -I.\
                          -I../wlmngr  \
                          -I$(BUILD_DIR)/userspace/public/include  \
                          -I$(BUILD_DIR)/userspace/public/include/$(OALDIR) \
+                         -I$(BCM_FSBUILD_DIR)/public/include \
                          -I$(BUILD_DIR)/userspace/private/include  \
                          -I$(BUILD_DIR)/userspace/private/include/$(OALDIR) \
                          -I$(BUILD_DIR)/userspace/private/libs/cms_core \
@@ -130,6 +140,7 @@ ALLOWED_INCLUDE_PATHS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)  \
                          -I$(WIRELESS_DRIVER_PATH)/shared/bcmwifi/include
 
 LIBS += -lwlcsm -lwlcsm_dm 
+LIBS += -lbcm_flashutil -lbcm_boardctl -lgen_util -lbcm_util -lsys_util
 
 ifeq ($(CONFIG_WBD),y)
 CFLAGS += -DBCM_WBD -DMULTIAP
@@ -253,6 +264,10 @@ wlmngr2: $(OBJS) wldaemon.o
 	$(CC) -o $@ wldaemon.o $(OBJS) -s -Os -fomit-frame-pointer $(CMS_LIB_PATH) $(LIBS) -L$(LIBDIR) -L$(EXTRALIBDIR) -lc -lgcc_s 
 	#$(CC) -o $@ wldaemon.o $(OBJS) -fomit-frame-pointer $(CMS_LIB_PATH) $(LIBS) -L$(LIBDIR) -L$(EXTRALIBDIR) -lc -lgcc_s 
 
+ifneq ($(strip $(BUILD_BRCM_HOSTAPD)),)
+wlhostapd: wlhostapd.o wlsyscall.o
+	$(CC) -o $@ wlhostapd.o wlsyscall.o -s -Os -fomit-frame-pointer $(CMS_LIB_PATH) $(LIBS) -L$(LIBDIR) -L$(EXTRALIBDIR) -lc -lgcc_s 
+endif
 
 wlevt2: wlevt.o
 ifneq ($(strip $(BUILD_BRCM_CMS)),)

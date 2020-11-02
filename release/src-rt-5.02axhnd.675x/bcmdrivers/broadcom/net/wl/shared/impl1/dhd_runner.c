@@ -180,6 +180,11 @@ extern char * nvram_get(const char *name);
 #define DHD_RNR_COHERENT_MEM_POOL_SIZE      32*1024  /* 32 KB */
 #define DHD_RNR_COHERENT_MEM_POOL_ALIGN_MASK 0x3FF
 
+#define TX_DOR_MODE_M                       0  /* Offload:0, n+m: disabled */
+#define TX_DOR_MODE_N_DEF                   1  /* Offload:1, n+m: default */
+#define TX_DOR_MODE_N_ONLY                  2  /* Offlaod:1, n+m: disabled */
+#define TX_DOR_MODE_NPM                     3  /* Offload:1, n+m: enabled */
+
 /* When a per AC profile with -1 weight is used, use a two pass with a budget
  * for the first pass.
  */
@@ -209,11 +214,21 @@ extern char * nvram_get(const char *name);
  * +---------------------------------------------------------------------
 */
 #if defined(BCA_HNDROUTER) && !defined(BCA_CPEROUTER)
+/* N+M feature default, enabled for HND */
+#define DOR_NPM_DEFAULT                     1
+
 #define DHD_RNR_PROC_CPUQ_IN_DPC            FALSE            /* Disable */
+#if DOR_NPM_DEFAULT == 1
 #define DHD_RNR_BCMC_TXOFFL_PRIORITY        0                /* Force Off */
+#else /* !DOR_NPM_DEFAULT */
+#define DHD_RNR_BCMC_TXOFFL_PRIORITY        1                /* Normal */
+#endif /* !DOR_NPM_DEFAULT */
 #define DHD_RNR_INIT_PERIM_UNLOCK(dhdp)     DHD_PERIM_UNLOCK(dhdp)
 #define DHD_RNR_INIT_PERIM_LOCK(dhdp)       DHD_PERIM_LOCK(dhdp)
 #else /* !BCA_HNDROUTER */
+/* N+M feature default, disabled from REL_5.04L.01 and REL_5.02L.07P1 */
+#define DOR_NPM_DEFAULT                     0
+
 #if defined(CONFIG_BCM_PON_RDP)
 #define DHD_RNR_PROC_CPUQ_IN_DPC            FALSE            /* Disable */
 #else /* !CONFIG_BCM_PON_RDP */
@@ -293,6 +308,7 @@ typedef enum dhd_wme_ac {
 
 /* flow ring profile setting maintained per radio */
 typedef struct dhd_flowring_profile {
+	bool npm;                   /* only N+M profile */
 	int id;                     /* Profile id, 0 - DHD_RNR_FLOWRING_PROFILES-1 */
 	int weight[wme_ac_max + 1]; /* -1 weight implies use rsvd memory */
 	int items[wme_ac_max + 1];  /* flow ring max items (size) */
@@ -413,15 +429,16 @@ char dhd_runner_key_fmt_str[DHD_RNR_MAX_KEYS][DHD_RNR_KEY_STR_LEN] = {
 /* flowring profiles id vs profile */
 dhd_flowring_profile_t dhd_rnr_profiles[DHD_RNR_FLOWRING_PROFILES] =
 {
-	{ 0, { 1, -1, -1, -1, 1 },  DHD_RNR_TXPOST_MAX_ITEM_LIST },
-	{ 1, { 1, -1, -1, -1, 1 },  DHD_RNR_TXPOST_MAX_ITEM_LIST },
-	{ 2, { 1, -1, -1, -1, 1 },  DHD_RNR_TXPOST_MAX_ITEM_LIST },
-	{ 3, { 1, -1, -1, -1, DHD_RNR_BCMC_TXOFFL_PRIORITY },  DHD_RNR_TXPOST_MAX_ITEM_LIST },
-	{ 4, { -1, -1, -1, -1, 1 }, DHD_RNR_TXPOST_MAX_ITEM_LIST },
-	{ 5, { 1, 1, 1, 1, 1 },     DHD_RNR_TXPOST_MAX_ITEM_LIST },
-	{ 6, { 1, 2, 4, 8, 1 },      DHD_RNR_TXPOST_MAX_ITEM_LIST },
+	{ false, 0, { 1, -1, -1, -1, 1 },  DHD_RNR_TXPOST_MAX_ITEM_LIST },
+	{ false, 1, { 1, -1, -1, -1, 1 },  DHD_RNR_TXPOST_MAX_ITEM_LIST },
+	{ false, 2, { 1, -1, -1, -1, 1 },  DHD_RNR_TXPOST_MAX_ITEM_LIST },
+	{ false, 3, { 1, -1, -1, -1, DHD_RNR_BCMC_TXOFFL_PRIORITY },
+	    DHD_RNR_TXPOST_MAX_ITEM_LIST },
+	{ true, 4, { -1, -1, -1, -1, 1 }, DHD_RNR_TXPOST_MAX_ITEM_LIST },
+	{ true, 5, { 1, 1, 1, 1, 1 },   DHD_RNR_TXPOST_MAX_ITEM_LIST },
+	{ true, 6, { 1, 2, 4, 8, 1 },   DHD_RNR_TXPOST_MAX_ITEM_LIST },
 
-	{ 7, { 1, 1, 1, 1, 1 },
+	{ false, 7, { 1, 1, 1, 1, 1 },
 	    { DHD_RNR_TXPOST_MAX_ITEM, DHD_RNR_TXPOST_MAX_ITEM,
 	    DHD_RNR_TXPOST_MAX_ITEM, DHD_RNR_TXPOST_MAX_ITEM,
 	    DHD_RNR_TXPOST_MAX_ITEM } }
@@ -489,6 +506,9 @@ typedef struct dhd_runner_flowmgr
 /*
  * Runner's DHD helper supported features
  */
+#if defined(RDPA_DHD_HELPER_FEATURE_NPLUSM)
+#define RNR_DHD_HLPR_NPM
+#endif /* RDPA_DHD_HELPER_FEATURE_NPLUSM */
 #if defined(RDPA_DHD_HELPER_FEATURE_TXCOMPL_SUPPORT)
 #define RNR_DHD_HLPR_TXCMPL2HOST
 #endif /* RDPA_DHD_HELPER_FEATURE_TXCOMPL_SUPPORT */
@@ -2176,6 +2196,11 @@ dhd_helper_attach(dhd_runner_hlp_t *dhd_hlp, void *dhd)
 	dhd_hlp->rnr_sup_feat.lbraggr = 1;
 #endif /* RNR_DHD_HLPR_LBRAGGR */
 
+	dhd_hlp->rnr_sup_feat.npm = DOR_NPM_DEFAULT;
+#if defined(RNR_DHD_HLPR_NPM)
+	dhd_hlp->rnr_sup_feat.npm = 1;
+#endif /* RNR_DHD_HLPR_NPM */
+
 	/* Enable legacy type for all rings MSGBUF_WI_WI64 */
 	dhd_hlp->txpost_ring_cfg.sup_types = 0x1;
 	dhd_hlp->rxpost_ring_cfg.sup_types = 0x1;
@@ -2598,14 +2623,16 @@ dhd_runner_flowring_alloc(dhd_runner_flowmgr_t *flowmgr, dhd_wme_ac_t wme_ac,
 
 	if ((flowmgr->hw_mem_size >= ring_sz) && (force_dhd == FALSE)) {
 	    /* Runner managed txpost ring */
-	    rdpa_cache->base_addr_low = (uint32)(RDD_RSV_VIRT_TO_PHYS(flowmgr->hw_mem_virt_base_addr, flowmgr->hw_mem_phys_base_addr, flowmgr->hw_mem_addr));
+	    rdpa_cache->base_addr_low = (uint32)(RDD_RSV_VIRT_TO_PHYS(
+	        flowmgr->hw_mem_virt_base_addr, flowmgr->hw_mem_phys_base_addr,
+	        flowmgr->hw_mem_addr));
 	    dhd_cache->base_va = (void*)flowmgr->hw_mem_addr;
 	    flags |= DHD_RNR_FLRING_IN_RUNNER_FLAG | DHD_RNR_FLRING_DISABLED_FLAG;
 	    flowmgr->hw_mem_size -= ring_sz;
 	    flowmgr->hw_mem_addr += ring_sz;
 	    flowmgr->hw_ring_cnt[wme_ac]++;
 	    id16_map_hndl = flowmgr->hw_id16_map[wme_ac];
-	} else {
+	} else if (!(flowmgr->dhd_hlp->rnr_en_feat.txoffl ^ flowmgr->dhd_hlp->rnr_en_feat.npm)) {
 	    /* DHD managed txpost ring */
 	    dhd_dma_buf_t dma_buf;
 
@@ -2623,6 +2650,10 @@ dhd_runner_flowring_alloc(dhd_runner_flowmgr_t *flowmgr, dhd_wme_ac_t wme_ac,
 	    dhd_cache->base_va = dma_buf.va;
 	    flowmgr->sw_ring_cnt[wme_ac]++;
 	    id16_map_hndl = flowmgr->sw_id16_map[wme_ac];
+	} else {
+	    DHD_ERROR(("dor%d: Not enough Reserved memory", flowmgr->dhd_hlp->dhd->unit));
+	    DHD_ERROR(("dor%d: Not enough Reserved memory\n", flowmgr->dhd_hlp->dhd->unit));
+	    return BCME_ERROR;
 	}
 
 #if defined(RNR_DHD_HLPR_BKUPQUEUE)
@@ -2727,7 +2758,6 @@ dhd_runner_flowmgr_init(dhd_runner_hlp_t *dhd_hlp, int max_h2d_rings,
 	flowmgr->policy = dhd_runner_policy_init(dhd_hlp);
 	ASSERT(flowmgr->policy != NULL);
 
-
 	/* Populate the flowids that will be used from 2..max */
 	total_ids = flowmgr->max_h2d_rings - FLOW_RING_COMMON;
 	flowmgr->flow_ids_map = id16_map_init(dhdp->osh, total_ids, FLOWID_RESERVED);
@@ -2744,9 +2774,42 @@ dhd_runner_flowmgr_init(dhd_runner_hlp_t *dhd_hlp, int max_h2d_rings,
 	    flowmgr->sw_id16_map[ac] =
 	        id16_map_init(dhdp->osh, flowmgr->max_uc_rings, ID16_INVALID);
 	}
-
 	/* id16 map allocators for BCMC rings (one per BSS) */
 	rings_to_allocate[wme_ac_bcmc] = flowmgr->max_bss;
+
+	/* Check if full dor memory available if n+m is not enabled */
+	if (dhd_hlp->rnr_en_feat.txoffl == 1) {
+	    uint32 ring_sz = 0;
+	    uint32 full_dor_sz = 0;
+	    bool force_m = FALSE;
+
+	    for (ac = wme_ac_bk; ac <= wme_ac_max; ac++) {
+	        ring_sz = flowmgr->phy_items[ac] * dhd_hlp->txpost_ring_cfg.size;
+	        full_dor_sz += ring_sz * rings_to_allocate[ac];
+	        if (flowmgr->profile->weight[ac] == 0) force_m = TRUE;
+	    }
+
+	    if (dhd_hlp->rnr_en_feat.npm == 0) {
+	        if (flowmgr->hw_mem_size < full_dor_sz) {
+	            RLOG(CLRerr "\n========================================================");
+	            RLOG("dor%d Reserved memory [%d] < full offload [%d], aborting",
+	                dhd_hlp->dhd->unit, flowmgr->hw_mem_size, full_dor_sz);
+	            RLOG("========================================================" CLRnl);
+	            goto error_rtn;
+	        }
+	        if (force_m == TRUE) {
+	            RLOG(CLRerr "\n========================================================");
+	            RLOG("dor%d profile N+M settings not supported, aborting",
+	                dhd_hlp->dhd->unit);
+	            RLOG("========================================================" CLRnl);
+	            goto error_rtn;
+	        }
+	    } else if (flowmgr->hw_mem_size >= full_dor_sz) {
+	    } else if ((flowmgr->hw_mem_size >= full_dor_sz) && (force_m == FALSE)) {
+	        dhd_hlp->rnr_en_feat.npm = 0;
+	    }
+	}
+
 	flowmgr->hw_id16_map[wme_ac_bcmc] =
 	    id16_map_init(dhdp->osh, flowmgr->max_bss, ID16_INVALID);
 	flowmgr->sw_id16_map[wme_ac_bcmc] =
@@ -3403,6 +3466,7 @@ dhd_runner_notify(struct dhd_runner_hlp *dhd_hlp,
 	                if (DHD_RNR_TXSTS_OFFLOAD(dhd_hlp)) {
 	                    DHD_ERROR(("Force disabling Runner Offload for TX\n"));
 	                    dhd_hlp->rnr_en_feat.txoffl = 0;
+	                    dhd_hlp->rnr_en_feat.npm = 0;
 	                    dhd_hlp->txsts_ring_cfg.offload = 0;
 	                    dhd_hlp->txpost_ring_cfg.offload = 0;
 	                    dhd_hlp->flowmgr.hw_mem_addr = (void*)NULL;
@@ -3705,8 +3769,22 @@ dhd_runner_profile_init(struct dhd_runner_hlp *dhd_hlp)
 	        ac = wme_ac_bk;
 	        token = bcmstrtok(&profilestr, " ", NULL);
 	        while (token && (ac <= wme_ac_max)) {
-	            sscanf(token, "%d:%d", &dhd_rnr_profiles[radio_idx].weight[ac],
-	                &dhd_rnr_profiles[radio_idx].items[ac]);
+	            if (dhd_hlp->rnr_sup_feat.npm) {
+	                sscanf(token, "%d:%d", &dhd_rnr_profiles[radio_idx].weight[ac],
+	                    &dhd_rnr_profiles[radio_idx].items[ac]);
+	            } else {
+	                int val;
+	                char *token1;
+
+	                sscanf(token, "%d", &val);
+	                token1  = bcmstrstr(token, ":");
+	                if (token1) {
+	                    /* Old format with wieight. Discard weight as it is not used */
+	                    sscanf(token1, ":%d", &dhd_rnr_profiles[radio_idx].items[ac]);
+	                } else {
+	                    dhd_rnr_profiles[radio_idx].items[ac] = val;
+	                }
+	            }
 	            token = bcmstrtok(&profilestr, " ", NULL);
 	            ac++;
 	        }
@@ -3728,6 +3806,12 @@ dhd_runner_profile_init(struct dhd_runner_hlp *dhd_hlp)
 	profilestr = buff;
 	token = bcmstrtok(&profilestr, " ", NULL);
 	sscanf(buff, "%d", &profile_id);
+
+	if ((!dhd_hlp->rnr_sup_feat.npm) && dhd_rnr_profiles[profile_id].npm) {
+	    RLOG("profile id %d key is not supported, using built-in profile id %d",
+	        profile_id, DHD_RNR_FLOWRING_DEFAULT_PROFILE_ID);
+	    profile_id = DHD_RNR_FLOWRING_DEFAULT_PROFILE_ID;
+	}
 
 	if (profile_id >= DHD_RNR_FLOWRING_PROFILES) {
 	    RLOG("profile id %d key is not valid, using built-in profile id %d",
@@ -3777,14 +3861,25 @@ bkupq:
 		}
 	}
 
-	RLOG("%s: N+M profile = %1d %02d:%04d/%04d %02d:%04d/%04d"
-	    " %02d:%04d/%04d %02d:%04d/%04d %02d:%04d/%04d",
-	    __FUNCTION__, profile_id,
-	    profile->weight[0], profile->items[0], flowmgr->phy_items[0],
-	    profile->weight[1], profile->items[1], flowmgr->phy_items[1],
-	    profile->weight[2], profile->items[2], flowmgr->phy_items[2],
-	    profile->weight[3], profile->items[3], flowmgr->phy_items[3],
-	    profile->weight[4], profile->items[4], flowmgr->phy_items[4]);
+	if (dhd_hlp->rnr_sup_feat.npm) {
+	    RLOG("%s: N+M profile = %1d %02d:%04d/%04d %02d:%04d/%04d"
+	        " %02d:%04d/%04d %02d:%04d/%04d %02d:%04d/%04d",
+	        __FUNCTION__, profile_id,
+	        profile->weight[0], profile->items[0], flowmgr->phy_items[0],
+	        profile->weight[1], profile->items[1], flowmgr->phy_items[1],
+	        profile->weight[2], profile->items[2], flowmgr->phy_items[2],
+	        profile->weight[3], profile->items[3], flowmgr->phy_items[3],
+	        profile->weight[4], profile->items[4], flowmgr->phy_items[4]);
+	} else {
+	    RLOG("%s: profile = %1d %04d/%04d %04d/%04d"
+	        " %04d/%04d %04d/%04d %04d/%04d",
+	        __FUNCTION__, profile_id,
+	        profile->items[0], flowmgr->phy_items[0],
+	        profile->items[1], flowmgr->phy_items[1],
+	        profile->items[2], flowmgr->phy_items[2],
+	        profile->items[3], flowmgr->phy_items[3],
+	        profile->items[4], flowmgr->phy_items[4]);
+	}
 
 	return &dhd_rnr_profiles[profile_id];
 }
@@ -3905,6 +4000,11 @@ dhd_runner_policy_init(struct dhd_runner_hlp *dhd_hlp)
 
 	policy = &dhd_rnr_policies[dhd_hlp->dhd->unit];
 
+	if (!dhd_hlp->rnr_sup_feat.npm) {
+	    /* N+M disabled, policy has no effect */
+	    return policy;
+	}
+
 	/* Fetch the Policy information of the radio, if present */
 	memset(buff, 0, sizeof(buff));
 	length = dhd_runner_key_get(dhd_hlp->dhd->unit, DHD_RNR_KEY_POLICY, buff,
@@ -4013,7 +4113,7 @@ dhd_runner_policy_init(struct dhd_runner_hlp *dhd_hlp)
 done:
 	buff[0] = '\0';
 	dhd_runner_get_policy_str(policy, buff, sizeof(buff));
-	RLOG("%s: N+M Policy = %d %s", __FUNCTION__, policy->id, buff);
+	RLOG("%s:  N+M Policy = %d %s", __FUNCTION__, policy->id, buff);
 
 	return policy;
 }
@@ -4134,7 +4234,22 @@ dhd_runner_txoffl_init(struct dhd_runner_hlp *dhd_hlp,
 	}
 
 	/* If offload is enabled, nvram setting can be used to force disable offload */
-	if ((DHD_RNR_IS_TX_OFFL_SUPPORTED(dhd_hlp)) && (offload > 0)) {
+	if ((DHD_RNR_IS_TX_OFFL_SUPPORTED(dhd_hlp)) && (offload > TX_DOR_MODE_M)) {
+	    /*
+	     * Offload    0   - Disable offload, N+M
+	     *            1   - Enable offload, default N+M
+	     *            2   - Enable offload, disable N+M
+	     *            3   - Enable offload, enable N+M
+	     *            *   - Same as 1
+	     */
+	    if (offload == TX_DOR_MODE_NPM) {
+	        dhd_hlp->rnr_en_feat.npm = 1;
+	    } else if (offload == TX_DOR_MODE_N_ONLY) {
+	        dhd_hlp->rnr_en_feat.npm = 0;
+	    } else {
+	        /* TX_DOR_MODE_N_DEF */
+	        dhd_hlp->rnr_en_feat.npm = DOR_NPM_DEFAULT;
+	    }
 	    goto done;
 	}
 
@@ -4143,6 +4258,8 @@ disable:
 	ring_cfg->offload = 0;
 	flowmgr->hw_mem_addr = (void*)NULL;
 	flowmgr->hw_mem_size = 0;
+	dhd_hlp->rnr_en_feat.txoffl = 0;
+	dhd_hlp->rnr_en_feat.npm = 0;
 
 done:
 	return 0;
@@ -4181,14 +4298,23 @@ dhd_runner_iovar_get_profile(dhd_runner_hlp_t *dhd_hlp, char *buf,
 	bcm_bprintf(strbuf, "[id] [ ac_bk ] [ ac_be ] [ ac_vi ] [ ac_vo ] [ bc_mc ]\n");
 	for (id = 0; id < DHD_RNR_FLOWRING_PROFILES; id++) {
 	    profile = &dhd_rnr_profiles[id];
+	    if ((!dhd_hlp->rnr_sup_feat.npm) && profile->npm) {
+	        continue;
+	    }
+
 	    if (profile == dhd_hlp->flowmgr.profile)
 	        bcm_bprintf(strbuf, " *%d ", profile->id);
 	    else
 	        bcm_bprintf(strbuf, "  %d ", profile->id);
 
-	    for (ac = wme_ac_bk; ac <= wme_ac_max; ac++)
-	        bcm_bprintf(strbuf, "  %02d:%04d ", profile->weight[ac],
-	            profile->items[ac]);
+	    for (ac = wme_ac_bk; ac <= wme_ac_max; ac++) {
+	        if (dhd_hlp->rnr_sup_feat.npm) {
+	            bcm_bprintf(strbuf, "  %02d:%04d ", profile->weight[ac],
+	                profile->items[ac]);
+	        } else {
+	            bcm_bprintf(strbuf, "    %04d  ", profile->items[ac]);
+	        }
+	    }
 
 	    bcm_bprintf(strbuf, "\n");
 	}
@@ -4349,6 +4475,11 @@ dhd_runner_iovar_get_policy(dhd_runner_hlp_t *dhd_hlp, char *buf,
 
 	DHD_TRACE(("%s: dhd_hlp=<0x%p>, buff=<0x%p>, bufflen=<%d>\r\n",
 	    __FUNCTION__, dhd_hlp, buf, buflen));
+
+	if (!dhd_hlp->rnr_sup_feat.npm) {
+	    DHD_ERROR(("    N+M Not Supported\r\n"));
+	    return BCME_UNSUPPORTED;
+	}
 
 	dhdp = dhd_hlp->dhd;
 
@@ -4665,7 +4796,7 @@ dhd_runner_iovar_dump(dhd_runner_hlp_t *dhd_hlp, char *buff,
 
 	/* Status */
 	bcm_bprintf(b, "\nDHD Runner: \n");
-	bcm_bprintf(b, "  Status     : %s %s %s %s %s %s %s %s %s\n",
+	bcm_bprintf(b, "  Status     : %s %s %s %s %s %s %s %s %s %s\n",
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, txoffl),
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, rxoffl),
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, txcmpl2host),
@@ -4674,30 +4805,40 @@ dhd_runner_iovar_dump(dhd_runner_hlp_t *dhd_hlp, char *buff,
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, msgringformat),
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, bkupq),
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, hwawkup),
-	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, ffrd));
+	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, ffrd),
+	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, npm));
 	bcm_bprintf(b, "             : cpuqdpc %d\n", dhd_hlp->proc_cpuq_in_dpc);
 
-	/* Profile */
-	bcm_bprintf(b, "  Profile    : prfl_id %d id_valu", flowmgr->profile->id);
-	for (wme_ac = wme_ac_bk; wme_ac <= wme_ac_max; wme_ac++)
-	    bcm_bprintf(b, "  %02d:%04d/%04d ", flowmgr->profile->weight[wme_ac],
-	        flowmgr->profile->items[wme_ac], flowmgr->phy_items[wme_ac]);
-	bcm_bprintf(b, "\n");
+	if (dhd_hlp->rnr_sup_feat.npm) {
+	    /* Profile */
+	    bcm_bprintf(b, "  Profile    : prfl_id %d id_valu", flowmgr->profile->id);
+	    for (wme_ac = wme_ac_bk; wme_ac <= wme_ac_max; wme_ac++)
+	        bcm_bprintf(b, "  %02d:%04d/%04d ", flowmgr->profile->weight[wme_ac],
+	            flowmgr->profile->items[wme_ac], flowmgr->phy_items[wme_ac]);
+	    bcm_bprintf(b, "\n");
 
-	/* Policy */
-	policy_str[0] = '\0';
-	dhd_runner_get_policy_str(&dhd_rnr_policies[dhd_hlp->dhd->unit], policy_str,
-	    sizeof(policy_str));
-	bcm_bprintf(b, "  Policy     : plcy_id %d id_valu %s\n",
-	    dhd_rnr_policies[dhd_hlp->dhd->unit].id, policy_str);
+	    /* Policy */
+	    policy_str[0] = '\0';
+	    dhd_runner_get_policy_str(&dhd_rnr_policies[dhd_hlp->dhd->unit], policy_str,
+	        sizeof(policy_str));
+	    bcm_bprintf(b, "  Policy     : plcy_id %d id_valu %s\n",
+	        dhd_rnr_policies[dhd_hlp->dhd->unit].id, policy_str);
 
 
-	/* TX flowrings */
-	bcm_bprintf(b, "  tx_flowring:", flowmgr->profile->id);
-	for (wme_ac = wme_ac_bk; wme_ac <= wme_ac_max; wme_ac++)
-	    bcm_bprintf(b, " [%s] sw %d hw %d", dhd_wme_ac_str[wme_ac],
-	        dhd_hlp->flowmgr.sw_ring_cnt[wme_ac], dhd_hlp->flowmgr.hw_ring_cnt[wme_ac]);
-	bcm_bprintf(b, "\n");
+	    /* TX flowrings */
+	    bcm_bprintf(b, "  tx_flowring:", flowmgr->profile->id);
+	    for (wme_ac = wme_ac_bk; wme_ac <= wme_ac_max; wme_ac++)
+	        bcm_bprintf(b, " [%s] sw %d hw %d", dhd_wme_ac_str[wme_ac],
+	            dhd_hlp->flowmgr.sw_ring_cnt[wme_ac], dhd_hlp->flowmgr.hw_ring_cnt[wme_ac]);
+	    bcm_bprintf(b, "\n");
+	} else {
+	    /* Profile */
+	    bcm_bprintf(b, "  Profile    : prfl_id %d id_valu", flowmgr->profile->id);
+	    for (wme_ac = wme_ac_bk; wme_ac <= wme_ac_max; wme_ac++)
+	        bcm_bprintf(b, "  %04d/%04d ", flowmgr->profile->items[wme_ac],
+	            flowmgr->phy_items[wme_ac]);
+	    bcm_bprintf(b, "\n");
+	}
 
 
 	/*

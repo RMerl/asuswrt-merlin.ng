@@ -55,6 +55,8 @@ extern int bus_sf2_ethsw_c22_write(uint32_t addr, uint16_t reg, uint16_t val);
 #define MDIO_WR  bus_sf2_ethsw_c22_write
 static DEFINE_SPINLOCK(sf2_reg_access);
 static DEFINE_SPINLOCK(sf2_stat_access);
+DEFINE_SPINLOCK(sf2_reg_config);
+EXPORT_SYMBOL(sf2_reg_config);
 
 void sf2_pseudo_mdio_switch_read(int page, int reg, void *data_out, int len)   //mdio
 {
@@ -277,10 +279,12 @@ static int port_sf2mac_init(mac_dev_t *mac_dev)
     if (p_priv->priv_flags & SF2MAC_DRV_PRIV_FLAG_SHRINK_IPG)
     {
         uint32_t val32;
+        spin_lock_bh(&sf2_reg_config);
         sf2_rreg(PAGE_MANAGEMENT, REG_IPG_SHRNK_CTRL, &val32, 4);
         val32 &= ~IPG_SHRNK_MASK(mac_dev->mac_id);
         val32 |= IPG_SHRNK_VAL(mac_dev->mac_id, IPG_4BYTE_SHRNK);
         sf2_wreg(PAGE_MANAGEMENT, REG_IPG_SHRNK_CTRL, &val32, 4);
+        spin_unlock_bh(&sf2_reg_config);
     }
 
     return 0;
@@ -294,9 +298,11 @@ static int port_sf2mac_enable(mac_dev_t *mac_dev)
     /* Clear MIB counters */
     port_sf2mac_stats_clear(mac_dev);
 
+    spin_lock_bh(&sf2_reg_config);
     sf2_rreg(PAGE_CONTROL, REG_PORT_CTRL + mac_dev->mac_id, &v8, 1);
     v8 &= ~REG_PORT_CTRL_DISABLE;
     sf2_wreg(PAGE_CONTROL, REG_PORT_CTRL + mac_dev->mac_id, &v8, 1);
+    spin_unlock_bh(&sf2_reg_config);
 
     return 0;
 }
@@ -306,9 +312,11 @@ static int port_sf2mac_disable(mac_dev_t *mac_dev)
     // based on impl5\bcmsw.c:bcmsw_mac_rxtx_op()
     uint8_t v8;
     
+    spin_lock_bh(&sf2_reg_config);
     sf2_rreg(PAGE_CONTROL, REG_PORT_CTRL + mac_dev->mac_id, &v8, 1);
     v8 |= REG_PORT_CTRL_DISABLE;
     sf2_wreg(PAGE_CONTROL, REG_PORT_CTRL + mac_dev->mac_id, &v8, 1);
+    spin_unlock_bh(&sf2_reg_config);
     return 0;
 }
 
@@ -338,6 +346,7 @@ static int port_sf2mac_pause_set(mac_dev_t *mac_dev, int rx_enable, int tx_enabl
 {
     uint32_t val;
 
+    spin_lock_bh(&sf2_reg_config);
     // if PAUSE_CAP_REG REG_PAUSE_CAPBILITY_OVERRIDE is enabled, set in this register
     // else if PORT_OVERIDE_REG REG_PORT_STATE_OVERRIDE is enabled, set in this register
     // otherwise, just set phy only
@@ -347,6 +356,7 @@ static int port_sf2mac_pause_set(mac_dev_t *mac_dev, int rx_enable, int tx_enabl
         if (tx_enable) val |= 1 << mac_dev->mac_id;
         if (rx_enable) val |= 1 << (mac_dev->mac_id + TOTAL_SWITCH_PORTS);
         sf2_wreg(PAUSE_CAP_PAGE, PAUSE_CAP_REG, (uint8_t *)&val, 4);
+        spin_unlock_bh(&sf2_reg_config);
         return 0;
     }
 
@@ -356,8 +366,10 @@ static int port_sf2mac_pause_set(mac_dev_t *mac_dev, int rx_enable, int tx_enabl
         if (tx_enable) val |= REG_PORT_STATE_TX_FLOWCTL;
         if (rx_enable) val |= REG_PORT_STATE_RX_FLOWCTL;
         sf2_wreg(PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(mac_dev->mac_id), (uint8_t *)&val, 4);
+        spin_unlock_bh(&sf2_reg_config);
         return 0;
     }
+    spin_unlock_bh(&sf2_reg_config);
 
     return 0;
 }
@@ -387,6 +399,7 @@ static int port_sf2mac_cfg_set(mac_dev_t *mac_dev, mac_cfg_t *mac_cfg)
     // based on impl5\bcmsw.c:bcmsw_set_mac_port_state()
     uint8_t v8;
     
+    spin_lock_bh(&sf2_reg_config);
     sf2_rreg(PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(mac_dev->mac_id), &v8, 1);
     v8 &= (REG_PORT_STATE_TX_FLOWCTL | REG_PORT_STATE_RX_FLOWCTL);  // save FC
 
@@ -403,6 +416,7 @@ static int port_sf2mac_cfg_set(mac_dev_t *mac_dev, mac_cfg_t *mac_cfg)
           ((mac_cfg->duplex == MAC_DUPLEX_FULL)? REG_PORT_STATE_FDX : 0);
     
     sf2_wreg(PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(mac_dev->mac_id), &v8, 1);
+    spin_unlock_bh(&sf2_reg_config);
     return 0;
 }
 
@@ -571,6 +585,7 @@ static int port_sf2mac_stats_clear(mac_dev_t *mac_dev)
     uint32_t global_cfg, rst_mib_en;
     sf2_mac_dev_priv_data_t *p_priv = (sf2_mac_dev_priv_data_t*)mac_dev->priv;
 
+    spin_lock_bh(&sf2_reg_config);
     // read reset mib enable mask
     sf2_rreg(PAGE_MANAGEMENT, REG_RST_MIB_CNT_EN, (uint8_t*)&rst_mib_en, 4);
     rst_mib_en = (rst_mib_en & ~REG_RST_MIB_CNT_EN_PORT_M) | 1 << mac_dev->mac_id;
@@ -583,6 +598,7 @@ static int port_sf2mac_stats_clear(mac_dev_t *mac_dev)
     sf2_wreg(PAGE_MANAGEMENT, REG_GLOBAL_CONFIG, (uint8_t*)&global_cfg, 4);
     global_cfg &= ~GLOBAL_CFG_RESET_MIB;
     sf2_wreg(PAGE_MANAGEMENT, REG_GLOBAL_CONFIG, (uint8_t*)&global_cfg, 4);
+    spin_unlock_bh(&sf2_reg_config);
 
     udelay(50);  // hw need time to clear mibs
     memset(&p_priv->mac_stats, 0, sizeof(p_priv->mac_stats));
@@ -607,6 +623,7 @@ static int port_sf2mac_mtu_set(mac_dev_t *mac_dev, int mtu)
     max &= 0x3fff;
 #endif
 
+    spin_lock_bh(&sf2_reg_config);
     sf2_rreg(PAGE_JUMBO, REG_JUMBO_PORT_MASK, (uint8_t *)&mask, 4);
     if (mtu > max)
         mask |= 1<<mac_dev->mac_id;
@@ -614,6 +631,7 @@ static int port_sf2mac_mtu_set(mac_dev_t *mac_dev, int mtu)
         mask &= ~(1<<mac_dev->mac_id);
     
     sf2_wreg(PAGE_JUMBO, REG_JUMBO_PORT_MASK, (uint8_t *)&mask, 4);
+    spin_unlock_bh(&sf2_reg_config);
     return 0;
 }
 
@@ -621,6 +639,7 @@ static int port_sf2mac_eee_set(mac_dev_t *mac_dev, int enable)
 {
     uint16 v16;
 
+    spin_lock_bh(&sf2_reg_config);
     sf2_rreg (PAGE_EEE, REG_EEE_EN_CTRL, (uint8_t *)&v16, 2);
 
     /* enable / disable the corresponding port */
@@ -630,6 +649,7 @@ static int port_sf2mac_eee_set(mac_dev_t *mac_dev, int enable)
         v16 &= ~(1 << mac_dev->mac_id);
 
     sf2_wreg (PAGE_EEE, REG_EEE_EN_CTRL, (uint8_t*)&v16, 2);
+    spin_unlock_bh(&sf2_reg_config);
    
     return 0;
 }

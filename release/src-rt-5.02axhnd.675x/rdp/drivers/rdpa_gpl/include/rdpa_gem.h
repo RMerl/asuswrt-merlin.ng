@@ -53,13 +53,13 @@
 #endif
 #endif
 
-/** GEM flow type */
+/** GEM Flow Type */
 typedef enum {
     rdpa_gem_flow_ethernet, /**< Ethernet flow. MAC calculates Ethernet FCS */
-    rdpa_gem_flow_omci /**< OMCI flow */
+    rdpa_gem_flow_omci /**< OMCI Flow */
 } rdpa_gem_flow_type;
 
-/** GEM flow US configuration.
+/** GEM Flow Upstream Configuration
  * Underlying type for gem_us_cfg aggregate
  */
 typedef struct 
@@ -68,7 +68,7 @@ typedef struct
     bdmf_boolean enc; /**< Encryption - used for XGPON */
 } rdpa_gem_flow_us_cfg_t;
 
-/** GEM flow DS configuration.
+/** GEM Flow Downstream Configuration
  * Underlying type for gem_flow_ds_cfg_t aggregate
  */
 typedef struct 
@@ -77,7 +77,7 @@ typedef struct
     rdpa_flow_destination destination; /**< Flow destination */
 } rdpa_gem_flow_ds_cfg_t;
 
-/** GEM flow statistics 
+/** GEM Flow Statistics 
  * Underlying type for gem_stat aggregate
  */
 typedef struct 
@@ -90,7 +90,7 @@ typedef struct
     uint32_t tx_packets_discard; /**< Tx Packet discard */ 
 } rdpa_gem_stat_t;
 
-/** gem def flow per port action */
+/** GEM def flow per port action */
 typedef struct
 {
     bdmf_object_handle vlan_action; /**< VLAN action object */

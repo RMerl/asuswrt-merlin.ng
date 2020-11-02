@@ -2857,8 +2857,8 @@ sub output_mdmParams
     print $fileRef "/** buffer length for a single fullpath reference (256+null byte) */\n";
     print $fileRef "#define MDM_SINGLE_FULLPATH_BUFLEN    257\n\n";
     
-    print $fileRef "/** buffer length for multiple fullpath references (1024+null byte) */\n";
-    print $fileRef "#define MDM_MULTI_FULLPATH_BUFLEN    1025\n\n\n";
+    print $fileRef "/** buffer length for multiple fullpath references (2048+null byte) */\n";
+    print $fileRef "#define MDM_MULTI_FULLPATH_BUFLEN    2049\n\n\n";
     
     print $fileRef "#endif /* __MDM_PARAMS_H__ */\n";
 

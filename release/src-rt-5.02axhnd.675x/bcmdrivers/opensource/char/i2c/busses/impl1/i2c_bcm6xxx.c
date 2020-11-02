@@ -461,13 +461,13 @@ static int i2c_write_then_read(struct bcm63000_i2c_dev* i2c_dev, struct i2c_msg 
         int num_dwords = ((p->len) + 3)/4;
         for (j = 0; j < num_dwords; j++) 
         {
-#ifdef __LITTLE_ENDIAN
+            int data = 0;
+            data |= ((j * 4 + 3) < p->len ? p->buf[j * 4 + 3] : 0) << 24;
+            data |= ((j * 4 + 2) < p->len ? p->buf[j * 4 + 2] : 0) << 16;
+            data |= ((j * 4 + 1) < p->len ? p->buf[j * 4 + 1] : 0) << 8;
+            data |= p->buf[j * 4];
             reg_write((uint32 *)&i2c_dev->reg_base->DataIn0 + j, 
-                      *((int *)&p->buf[j*4]));
-#else
-            reg_write((uint32 *)&i2c_dev->reg_base->DataIn0 + j, 
-                      swab32(*((int *)&p->buf[j*4])));
-#endif
+                      data);
         }
     }
 

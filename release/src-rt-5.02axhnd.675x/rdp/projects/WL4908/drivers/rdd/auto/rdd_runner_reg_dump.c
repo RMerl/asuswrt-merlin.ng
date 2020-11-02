@@ -3786,8 +3786,12 @@ void dump_RDD_US_WAN_FLOW_ENTRY(bdmf_session_handle session, unsigned char *p)
 	unsigned int r;
 	bdmf_session_print(session, "  Register US_WAN_FLOW_ENTRY\n");
 
-	FIELD_MREAD_8((uint8_t *)p, 2, 6, r);
+	FIELD_MREAD_8((uint8_t *)p, 5, 3, r);
 	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)p, 2, 3, r);
+	bdmf_session_print(session, "\thdr_type                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	FIELD_MREAD_8((uint8_t *)p, 1, 1, r);

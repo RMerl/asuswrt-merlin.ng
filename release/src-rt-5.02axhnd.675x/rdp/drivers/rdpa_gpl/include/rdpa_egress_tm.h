@@ -36,7 +36,7 @@
  * The RDPA egress traffic manager controls a number of egress-TM elements, whereas
  * egress TM element is either a transmit queue or a next-level egress-TM. Then total 
  * number of supported egress-TM elements and transmit queues is platform dependent retrieved via system object. 
- * The RDPA egress traffic manager has the following capabilites:
+ * The RDPA egress traffic manager has the following capabilities:
  *  - Egress TM element can be configured to support either rate limiter or scheduler or both.
  *  - Up to 3-level hierarchical egress-TM.
  *  - The transmit queues support different drop policies ::rdpa_tm_drop_alg.
@@ -61,7 +61,7 @@
 #define RDPA_DFT_NUM_EGRESS_QUEUES 8    /**< Default number of egress queues per egress-TM element */
 #define RDPA_MAX_WEIGHT 63
 #define RDPA_MIN_WEIGHT 1
-#define RDPA_MAX_WRED_PROFILE_PER_DIRECTION 8  /**< Max number of wred profilers */
+#define RDPA_MAX_WRED_PROFILE_PER_DIRECTION 8  /**< Max number of WRED profilers */
 #define RDPA_WRED_MAX_DROP_PROBABILITY     100
 #ifdef XRDP
 #define RDPA_ETH_TX_PRIORITY_QUEUE_THRESHOLD  0xFFFFFFF
@@ -130,8 +130,8 @@ typedef struct {
 /** Egress-TM enable configuration.\n
  */
 typedef struct {
-    bdmf_boolean enable;                  /**< enable or disable egress tm */
-    bdmf_boolean flush;                   /**< flush to be done as part of enable \ disable */
+    bdmf_boolean enable;                  /**< Enable or disable egress TM */
+    bdmf_boolean flush;                   /**< Flush to be done as part of enable \ disable */
 } rdpa_tm_enable_cfg_t;
 
 /** Drop policy algorithm type
@@ -140,7 +140,7 @@ typedef enum {
     rdpa_tm_drop_alg_dt,                /**< Drop tail */
     rdpa_tm_drop_alg_red,               /**< RED (random early detection)*/
     rdpa_tm_drop_alg_wred,              /**< WRED (weighted RED) */
-    rdpa_tm_drop_alg_reserved,          /**< queues with this profile work as flow control */
+    rdpa_tm_drop_alg_reserved,          /**< Queues with this profile work as flow control */
     rdpa_tm_drop_alg__num_of            /* Number of drop algorithms */
 } rdpa_tm_drop_alg;
 
@@ -148,9 +148,9 @@ typedef enum {
  */
 typedef struct
 {
-    uint32_t min_threshold;             /**< min threshold for priority class used by WRED algorithm */
-    uint32_t max_threshold;             /**< max threshold for priority class used by WRED algorithm */
-    uint32_t max_drop_probability;      /**< max drop probability for WRED algorithm (allowed values are 1-100, matching to corresponding percents) \XRDP_LIMITED */
+    uint32_t min_threshold;             /**< Min threshold for priority class used by WRED algorithm. */
+    uint32_t max_threshold;             /**< Max threshold for priority class used by WRED algorithm. */
+    uint32_t max_drop_probability;      /**< Max drop probability for WRED algorithm (allowed values are 1-100, matching to corresponding percent. ) \XRDP_LIMITED */
 } rdpa_tm_priority_class_t;
 
 /** Egress queue parameters configuration.\n
@@ -160,14 +160,17 @@ typedef struct {
     uint32_t drop_threshold;     /**< Drop threshold (queue size) */
     uint32_t weight;             /**< Weight in WFQ/WRR/DWRR Egress-TM group */
     rdpa_tm_drop_alg drop_alg;   /**< Drop algorithm */
-    rdpa_tm_priority_class_t high_class;/**< high class thresholds (min and max) used by WRED algorithm */
-    rdpa_tm_priority_class_t low_class; /**< low class thresholds (min and max) used by WRED algorithm */
+    rdpa_tm_priority_class_t high_class;/**< High class thresholds (min and max) used by WRED algorithm */
+    rdpa_tm_priority_class_t low_class; /**< Low class thresholds (min and max) used by WRED algorithm */
     uint32_t reserved_packet_buffers; /**< Top priority packet buffer number. 0 - no reservation \XRDP_LIMITED */
     rdpa_tm_rl_cfg_t rl_cfg;     /**< \XRDP_LIMITED */
     uint32_t priority_mask_0;    /**< \DSLRDP_LIMITED */
     uint32_t priority_mask_1;    /**< \DSLRDP_LIMITED */
     bdmf_boolean stat_enable;    /**< Enable queue statistics */
     bdmf_boolean best_effort;    /**< Best effort queue */
+#ifdef XRDP
+    bdmf_boolean exclusive;      /**< high priority queue */
+#endif
 } rdpa_tm_queue_cfg_t;
 
 /** Queue index for flush[] and queue_stat[] attributes
@@ -196,11 +199,11 @@ extern bdmf_attr_enum_table_t orl_prty_enum_table;
 extern bdmf_attr_enum_table_t tm_drop_policy_enum_table;
 #endif
 
-/*call back pointer to register epon stack gobal rate limter funtion */
+/* Callback pointer to register EPON stack global rate limiter function */
 typedef unsigned char (*epon_global_shaper_cb_t)(uint32_t);
 extern epon_global_shaper_cb_t global_shaper_cb;
 
-/*call back pointer to register epon stack link rate limter funtion */
+/* Callback pointer to register EPON stack link rate limiter function */
 typedef unsigned char (*epon_link_shaper_cb_t)(uint8_t, uint32_t, uint16_t);
 extern epon_link_shaper_cb_t epon_link_shaper_cb;
 

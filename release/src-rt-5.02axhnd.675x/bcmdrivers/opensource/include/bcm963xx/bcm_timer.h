@@ -41,6 +41,14 @@
 #define BCM_TIMER_PERIOD_uSEC   50 // usec
 #define BCM_TIMER_HZ            (1000000 / BCM_TIMER_PERIOD_uSEC)
 
+#if defined(CONFIG_BCM963178)
+#define BCM_TIMER_CPU_ID        2
+#elif defined(CONFIG_BCM947622)
+#define BCM_TIMER_CPU_ID        3
+#else
+#define BCM_TIMER_CPU_ID        0
+#endif
+
 typedef enum {
     BCM_TIMER_MODE_ONESHOT,
     BCM_TIMER_MODE_PERIODIC,

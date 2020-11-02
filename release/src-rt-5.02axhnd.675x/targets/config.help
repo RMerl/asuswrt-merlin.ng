@@ -164,6 +164,10 @@ BUILD_BCM_PKTFWD
    Packet Forwarder Handoff library.
 END
 
+BUILD_BCM_PKTFWD_FLCTL
+   Credit based Host Flow Control.
+END
+
 BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG
    Build image without BCMINTERNAL or BCMDBG defined ("external-ish").
 END
@@ -335,6 +339,10 @@ END
 
 BUILD_HND_NIC
    Do not build wireless dongle firmware, build only NIC Wireless driver
+END
+
+BUILD_BCM_WLAN_DPDCTL
+   Build an image with wlan interface deep power down control.
 END
 
 BUILD_EPON_DPOE_SSD
@@ -570,4 +578,10 @@ BRCM_ALT_AARCH64_TOOLCHAIN_SYSROOT_DIR
 		TOOLCHAIN_PREFIX = arm-linux-gnueabi
 		TOOLCHAIN_SYSROOT_DIR = libc
 		TOOLCHAIN_VER = 7.x
+END
+BUILD_ARM_PLTS
+  The range of the 'bl' instruction in armv7 is 24 bits which limits the overall
+  size of the collection of modules that can be loaded to 16MB. This
+  configuration enables the indirect PLT feature which allows modules beyond
+  this size to be relocated in the vmalloc area.
 END

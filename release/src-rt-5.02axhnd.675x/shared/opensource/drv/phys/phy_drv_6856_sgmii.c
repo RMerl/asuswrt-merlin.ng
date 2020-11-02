@@ -202,6 +202,18 @@ static int _phy_drv_init(phy_drv_t *phy_drv)
     return 0;
 }
 
+static int _phy_caps_get(phy_dev_t *phy_dev, int caps_type,  uint32_t *pcaps)
+{
+    *pcaps = PHY_CAP_AUTONEG | PHY_CAP_10_FULL | PHY_CAP_100_FULL | PHY_CAP_1000_FULL | PHY_CAP_2500;
+
+    return 0;
+}
+
+static int _phy_caps_set(phy_dev_t *phy_dev, uint32_t caps)
+{
+    return 0;
+}
+
 phy_drv_t phy_drv_6856_sgmii =
 {
     .phy_type = PHY_TYPE_6856_SGMII,
@@ -212,6 +224,8 @@ phy_drv_t phy_drv_6856_sgmii =
     .power_set = mii_power_set,
     .read_status = sgmii_read_status,
     .speed_set = _phy_speed_set,
+    .caps_get = _phy_caps_get,
+    .caps_set = _phy_caps_set,
     .phyid_get = mii_phyid_get,
     .init = _phy_init,
     .dev_add = _phy_dev_add,

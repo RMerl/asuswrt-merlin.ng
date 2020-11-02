@@ -1079,22 +1079,20 @@ int kerSysGetChipId() {
         return(r);
 }
 
-#if !defined(CONFIG_BCM960333) && !defined(CONFIG_BCM947189)
 /***************************************************************************
  * Function Name: kerSysGetDslPhyEnable
  * Description  : returns true if device should permit Phy to load
  * Returns      : true/false
  ***************************************************************************/
 int kerSysGetDslPhyEnable() {
-        int id;
-        int r = 1;
-        id = (int) ((PERF->RevID & CHIP_ID_MASK) >> CHIP_ID_SHIFT);
-        if ((id == 0x63169) || (id == 0x63269)) {
-            r = 0;
-        }
-        return(r);
-}
+#if IS_ENABLED(CONFIG_BCM_ADSL)
+    uint32 id = ((PERF->RevID & CHIP_ID_MASK) >> CHIP_ID_SHIFT);
+
+    if ((id != 0x63169) && (id != 0x63269) && ((id & 0xffff0) != 0x6750))
+        return 1;
 #endif
+    return 0;
+}
 
 /***************************************************************************
  * Function Name: kerSysGetChipName
@@ -1109,6 +1107,12 @@ int kerSysGetPciePortEnable(int port)
 {
     int ret = 1, dual_lane;
     unsigned short pci_dis = 0;
+#if defined( CONFIG_BCM947622 ) 
+    unsigned int otp_value = 0;
+    if( bcm_otp_is_pcie_port_disabled(port, &otp_value) == 0 && otp_value )
+        return 0;
+#endif
+		    
 #if defined (CONFIG_BCM96838)
     unsigned int chipId = (PERF->RevID & CHIP_ID_MASK) >> CHIP_ID_SHIFT;
 
@@ -1163,6 +1167,7 @@ int kerSysGetPciePortEnable(int port)
         case 8:     // 62119
         case 9:     // 68580XP
         case 10:    // 62119P
+        case 13:    // 68580XF
             if ((port == 0) || (port == 1) || ((port == 2) && (MISC->miscStrapBus & MISC_STRAP_BUS_PCIE_SATA_MASK)))
                 ret = 1;
             else            
@@ -1213,10 +1218,8 @@ int kerSysGetPciePortEnable(int port)
                 ret = 0;
             break;
         case 0x68462:
-            if (port==0)
-                ret = 1;
-            else
-                ret = 0;
+        case 0x68463:    // 6846U
+            ret = 0;
             break;
         default:
             ret = 0;
@@ -1230,6 +1233,7 @@ int kerSysGetPciePortEnable(int port)
         case 0x68780:    // 68780
         case 0x68782:    // 68782
         case 0x6878A:    // 68782G
+        case 0x6878C:    // 687789
         case 0x6878E:    // 68782N
             if (port==0)
                 ret = 1;
@@ -1379,6 +1383,7 @@ int kerSysGetUsbHostPortEnable(int port)
         case 8:    // 62119
         case 9:    // 68580XP
         case 10:   // 62119P
+        case 13:   // 68580XF
             ret = 1;
             break;
         case 2:    // 55040
@@ -1402,6 +1407,7 @@ int kerSysGetUsbHostPortEnable(int port)
     {
         case 0x68460:
         case 0x68461:
+        case 0x68463:    // 6846U
             if ((port==0) || (port==1))
                 ret = 1;
             else
@@ -1425,6 +1431,7 @@ int kerSysGetUsbHostPortEnable(int port)
         case 0x68780:    // 68780
         case 0x68782:    // 68782
         case 0x6878A:    // 68782G
+        case 0x6878C:    // 68789
         case 0x6878E:    // 68782H
         case 0x6878D:    // 68781G
             if ((port==0) || (port==1))
@@ -1470,11 +1477,16 @@ EXPORT_SYMBOL(kerSysGetUsbDeviceEnable);
 
 int kerSysGetUsb30HostEnable(void)
 {
-    int ret = 0;
+    int ret = 1;
     
-#if defined(CONFIG_BCM963138)|| defined(CONFIG_BCM963148)
-    ret = 1;
-#endif    
+#if defined(CONFIG_BCM947622)
+	{
+		unsigned int usb3_disable = 0;
+		bcm_otp_is_usb3_disabled(&usb3_disable);
+		if(usb3_disable)
+			ret = 0;
+	}
+#endif
 
     return ret;
 }

@@ -821,7 +821,7 @@ static phy_serdes_t serdes[MAX_SERDES_NUMBER] = {
 #endif
 };
 
-#if defined(CONFIG_I2C)
+#if defined(CONFIG_I2C) && defined(CONFIG_BCM_OPTICALDET)
 static phy_i2c_priv_t phy_i2c_priv[MAX_SERDES_NUMBER];
 static int phy_i2c_num;
 #endif
@@ -832,7 +832,7 @@ int sf2_serdes_init(phy_dev_t *phy_dev)
     static int i;
     phy_serdes_t *phy_serdes;
     int ret = 0;
-#if defined(CONFIG_I2C)
+#if defined(CONFIG_I2C) && defined(CONFIG_BCM_OPTICALDET)
     phy_dev_t *i2c_phy;
     int bus_num = -1;
 #endif
@@ -874,19 +874,19 @@ int sf2_serdes_init(phy_dev_t *phy_dev)
 
     sf2_serdes_sfp_lbe_op(phy_dev, LASER_OFF); /* Notify no SFP to turn off laser in the beginning, just in case hardware set on */
 
-#if defined(_BCM94908_) || defined(CONFIG_BCM94908)
+#if defined(_BCM94908_) || defined(CONFIG_BCM94908) || defined(_BCM947622_) || defined(CONFIG_BCM947622)
     {
         int val;
         bcm_otp_is_sgmii_disabled(&val);
         if(val)
         {
             printk("****** Error: Invalid Serdes PHY defiend in board parameter - this chip does not support Serdes.\n");
-            BUG();
+            return -1;
         }
     }
 #endif
 
-#if defined(CONFIG_I2C)
+#if defined(CONFIG_I2C) && defined(CONFIG_BCM_OPTICALDET)
     if ((phy_dev->cascade_next == NULL))
     {
         phy_driver_set(&phy_drv_i2c_phy);
@@ -960,7 +960,7 @@ int sf2_serdes_init(phy_dev_t *phy_dev)
             kerSysSetGpioDirInput(phy_serdes->sfp_module_detect_gpio);
         }
         else {
-            if (!phy_dev->cascade_next || (phy_dev->cascade_next->flag & PHY_FLAG_NOT_PRESENTED)) /* SFP(No Copper PHY) case */
+            if (!phy_dev->cascade_next || (phy_dev->cascade_next->flag & PHY_FLAG_NOT_PRESENTED)) {/* SFP(No Copper PHY) case */
 /* old 63138 and 63148 have invalid board parameters defined; skp this checking */
 #if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
                 printk("Warning: ***** No GPIO Pin defined for %s Serdes addr %d SFP module insertion.\n",
@@ -971,6 +971,7 @@ int sf2_serdes_init(phy_dev_t *phy_dev)
                 printk("              Wrong board parameters or wrong board design.\n");
                 bug = 1;
 #endif
+            }
         }
 
         /* Validate LOS GPIO Definition */
@@ -1131,10 +1132,14 @@ static int ethsw_phy_enable_an(phy_dev_t *phy_dev)
     u16 val16 = 0;
 
     phy_bus_read(phy_dev, MII_CONTROL, &val16);
+
+    if (val16 & MII_CONTROL_AN_ENABLE)
+        return 0;
+
     val16 |= MII_CONTROL_AN_ENABLE|MII_CONTROL_RESTART_AUTONEG;
     phy_bus_write(phy_dev, MII_CONTROL, val16);
     msleep(50);
-    return 0;
+    return 1;
 }
 
 static void ethsw_config_serdes_1kx(phy_dev_t *phy_dev)
@@ -1197,13 +1202,19 @@ static void ethsw_serdes_speed_detect(phy_dev_t *phy_dev)
 {
     static int retry = 0;
     phy_serdes_t *phy_serdes = phy_dev->priv;
-    int speed_caps;
-    phy_speed_t highest_speed;
+    u16 rnd;
+    phy_speed_t speed;
+    u32 speed_cap;
     
-    cascade_phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &speed_caps);
-    highest_speed = phy_caps_to_max_speed(speed_caps);
     if (phy_serdes->config_speed != PHY_SPEED_AUTO)
         return;
+
+    /* Introduce random phase shift to get bigger chanse to link up on back to back connection */
+    if (retry == 0)
+    {
+        get_random_bytes(&rnd, sizeof(rnd));
+        msleep(1000 * (rnd%100) / 100);
+    }
 
     if (retry == 0)
     {
@@ -1211,87 +1222,35 @@ static void ethsw_serdes_speed_detect(phy_dev_t *phy_dev)
         if (phy_dev->link) goto end;
     }
 
-    if (speed_caps & PHY_CAP_10000)
+    for (speed = phy_serdes->highest_speed; speed != PHY_SPEED_AUTO; speed--)
     {
-        phy_serdes->speed_set(phy_dev, PHY_SPEED_10000, PHY_DUPLEX_FULL);
-        msleep(SERDES_AUTO_DETECT_INT_MS);
-        phy_serdes->link_stats(phy_dev);
-        if (phy_dev->link) goto end;
+        speed_cap = phy_speed_to_caps(speed, PHY_DUPLEX_FULL);
+        if (!(phy_serdes->speed_caps & speed_cap))
+            continue;
 
-        if((speed_caps & PHY_CAP_AUTONEG) && phy_serdes->enable_an)
-        {
-            phy_serdes->enable_an(phy_dev);
-            phy_serdes->link_stats(phy_dev);
-            if (phy_dev->link) goto end;
-        }
-    }
-
-    if (speed_caps & PHY_CAP_2500)
-    {
-        phy_serdes->speed_set(phy_dev, PHY_SPEED_2500, PHY_DUPLEX_FULL);
+        phy_serdes->speed_set(phy_dev, speed, PHY_DUPLEX_FULL);
         msleep(SERDES_AUTO_DETECT_INT_MS);
         phy_serdes->link_stats(phy_dev);
         if (phy_dev->link)
-        {
-            if (IS_PHY_HIGHEST_SPEED_CAP(speed_caps, PHY_CAP_2500))
-                goto end;
-            else
-                goto LinkUp;
-        }
+            goto LinkUp;
 
-        if((speed_caps & PHY_CAP_AUTONEG) && phy_serdes->enable_an)
+        if((phy_serdes->speed_caps & PHY_CAP_AUTONEG) && phy_serdes->enable_an)
         {
-            phy_serdes->enable_an(phy_dev);
-            phy_serdes->link_stats(phy_dev);
-            if (phy_dev->link) goto end;
-        }
-    }
-
-    if (speed_caps & PHY_CAP_1000_FULL)
-    {
-        phy_serdes->speed_set(phy_dev, PHY_SPEED_1000, PHY_DUPLEX_FULL);
-        msleep(SERDES_AUTO_DETECT_INT_MS);
-        phy_serdes->link_stats(phy_dev);
-        if (phy_dev->link)
-        {
-            if (IS_PHY_HIGHEST_SPEED_CAP(speed_caps, PHY_CAP_1000_FULL))
-                goto end;
-            else
-                goto LinkUp;
-        }
-
-        if((speed_caps & PHY_CAP_AUTONEG) && phy_serdes->enable_an)
-        {
-            phy_serdes->enable_an(phy_dev);
-            phy_serdes->link_stats(phy_dev);
-            if (phy_dev->link) goto end;
-        }
-    }
-
-    if (speed_caps & PHY_CAP_100_FULL)
-    {
-        phy_serdes->speed_set(phy_dev, PHY_SPEED_100, PHY_DUPLEX_FULL);
-        msleep(SERDES_AUTO_DETECT_INT_MS);
-        phy_serdes->link_stats(phy_dev);
-        if (phy_dev->link)
-        {
-            if (IS_PHY_HIGHEST_SPEED_CAP(speed_caps, PHY_CAP_100_FULL))
-                goto end;
-            else
-                goto LinkUp;
-        }
-
-        if((speed_caps & PHY_CAP_AUTONEG) && phy_serdes->enable_an)
-        {
-            phy_serdes->enable_an(phy_dev);
-            phy_serdes->link_stats(phy_dev);
-            if (phy_dev->link) goto end;
+            if(phy_serdes->enable_an(phy_dev))
+            {
+                phy_serdes->link_stats(phy_dev);
+                if (phy_dev->link)
+                    goto LinkUp;
+            }
         }
     }
 
     goto NoLinkUp;
 
 LinkUp:
+    if (phy_dev->speed == phy_serdes->highest_speed)
+        goto end;
+
     if (retry) goto end; /* If we retried already, return; */
 
     /* Otherwise, take a sleep to let fibre settle down, then retry higher speed */
@@ -1306,7 +1265,7 @@ NoLinkUp:
         Set speed to highest when in NO_POWER_SAVING_MODE until next detection
     */
     if( phy_serdes->power_mode == SERDES_NO_POWER_SAVING)
-        phy_serdes->speed_set(phy_dev, highest_speed, PHY_DUPLEX_FULL);
+        phy_serdes->speed_set(phy_dev, phy_serdes->highest_speed, PHY_DUPLEX_FULL);
 end:
     retry = 0;
 }
@@ -1597,7 +1556,7 @@ static int ethsw_conf_copper_sfp(phy_dev_t *phy_dev, phy_speed_t speed, phy_dupl
 static uint32_t ethsw_get_sfp_module_caps(phy_dev_t *phy_dev)
 {
     uint32_t speed_caps = PHY_CAP_AUTONEG;
-#if defined(CONFIG_I2C)
+#if defined(CONFIG_I2C) && defined(CONFIG_BCM_OPTICALDET)
     uint8_t val;
 
     bcmsfp_read_byte(phy_dev->addr, SFP_CLIENT_EEPROM, 3, &val);
@@ -1623,7 +1582,7 @@ static int sfp_i2c_module_detect(phy_dev_t *phy_dev)
 
     if (phy_i2c == NULL) return 0;
 
-#if defined(CONFIG_I2C)
+#if defined(CONFIG_I2C) && defined(CONFIG_BCM_OPTICALDET)
     /* check if SFP i2c driver is fully initialized first */
     if( bcm_i2c_sfp_get_status(phy_i2c->addr) != SFP_STATUS_INSERTED ) {
         /* sfp module is detected but bcmsfp driver is not finished initializing yet.
@@ -1701,7 +1660,7 @@ static int ethsw_sfp_module_detect(phy_dev_t *phy_dev)
         return 0;
 
     sfp_module_detected = ethsw_sfp_module_detected(phy_dev);
-#if defined(CONFIG_I2C)
+#if defined(CONFIG_I2C) && defined(CONFIG_BCM_OPTICALDET)
     if (sfp_module_detected && phy_serdes->sfp_module_type == SFP_NO_MODULE)
         msleep(100);    /* Let I2C driver prepare data */
 

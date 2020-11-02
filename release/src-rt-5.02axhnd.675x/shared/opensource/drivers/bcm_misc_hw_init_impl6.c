@@ -248,30 +248,49 @@ static void bcm_misc_hw_xmii_pads_init(void)
 #endif
 
 #if defined(CONFIG_BCM96858) || defined(_BCM96858_)
-static void rgmii_port_pad_init(uint32_t port)
+
+#pragma pack(push,1)
+typedef struct
 {
-    uint32_t val;
+    uint32_t GMII_PAD_SEL:3;
+    uint32_t GMII_PAD_AMP_EN:1;
+    uint32_t GMII_PAD_SEL_GMII:1;
+    uint32_t GMII_PAD_IND:1;
+    uint32_t GMII_PAD_MODEHV:1;
+    uint32_t Reserved:25;
+} pad_ctrl_t;
+#pragma pack(pop)
+
+static void rgmii_port_pad_init(uint32_t port, int is_1p8v)
+{
     uint32_t pad_sel = 6; /* 14mA */
+    volatile pad_ctrl_t *pad_ctrl;
 
     if (port == 4)
-        val= MISC->miscRGMII1PadCtrl;
+        pad_ctrl = (pad_ctrl_t *)&MISC->miscRGMII3PadCtrl;
     else if (port == 5)
-        val= MISC->miscRGMII2PadCtrl;
+        pad_ctrl = (pad_ctrl_t *)&MISC->miscRGMII1PadCtrl;
     else if (port == 6)
-        val= MISC->miscRGMII3PadCtrl;
+        pad_ctrl = (pad_ctrl_t *)&MISC->miscRGMII2PadCtrl;
+    else
+        return;
 
-    val |= (1 << 6); /* GMII_PAD_MODEHV = 1*/
-    val &= ~(1 << 5); /* GMII_PAD_IND = 0 */
-    val &= ~(1 << 4); /* GMII_PAD_SEL_GMII = 0 */
-    val &= ~(1 << 3); /* GMII_PAD_AMP_EN = 0 */
-    val |= (pad_sel << 0); /* GMII_PAD_SEL = pad_sel */
-
-    if (port == 4)
-        MISC->miscRGMII1PadCtrl = val;
-    else if (port == 5)
-        MISC->miscRGMII2PadCtrl = val;
-    else if (port == 6)
-        MISC->miscRGMII3PadCtrl = val;
+    if (is_1p8v)
+    {
+        pad_ctrl->GMII_PAD_MODEHV = 0;
+        pad_ctrl->GMII_PAD_SEL_GMII = 0;
+        pad_ctrl->GMII_PAD_AMP_EN = 1;
+        pad_ctrl->GMII_PAD_IND = 0;
+        pad_ctrl->GMII_PAD_SEL = pad_sel;
+    }
+    else
+    {
+        pad_ctrl->GMII_PAD_MODEHV = 1;
+        pad_ctrl->GMII_PAD_SEL_GMII = 0;
+        pad_ctrl->GMII_PAD_AMP_EN = 0;
+        pad_ctrl->GMII_PAD_IND = 0;
+        pad_ctrl->GMII_PAD_SEL = pad_sel;
+    }
 }
 
 static void bcm_misc_hw_xmii_pads_init(void)
@@ -284,13 +303,8 @@ static void bcm_misc_hw_xmii_pads_init(void)
 
     for (i = 0; i < BP_MAX_SWITCH_PORTS; i++)
     {
-        if (!(emac_info->sw.port_map & (1 << i)))
-            continue;
-
-        if (!IsRGMII(emac_info->sw.phy_id[i]))
-            continue;
-
-        rgmii_port_pad_init(i);
+        if ((emac_info->sw.port_map & (1 << i)) && IsRGMII(emac_info->sw.phy_id[i]))
+            rgmii_port_pad_init(i, IsRGMII_1P8V(emac_info->sw.phy_id[i]));
     }
 }
 #endif

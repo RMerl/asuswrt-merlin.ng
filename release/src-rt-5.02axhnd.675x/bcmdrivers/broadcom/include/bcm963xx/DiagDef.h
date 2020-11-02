@@ -198,6 +198,7 @@ extern "C" {
 #define	DIAG_DATA_LOG_TIME			0x08
 #define DIAG_DATA_GUI_ID			0x10
 #define DIAG_DATA_GDB_ID			0x20
+#define DIAG_DATA_TCP_ID			DIAG_PARTY_ID_MASK // <-- this flag is used when running LOG_CMD_COMMAND. Reusing DIAG_PARTY_ID_MASK bit which is not expected to be in use
 #define DIAG_LOCK_SESSION			0x40
 #define DIAG_FORCE_DISCONNECT		0x80
 #define	DIAG_DATA_EX				0x80
@@ -248,6 +249,7 @@ typedef struct _LogProtoHeader {
 #define	LOG_FILE_PORT			5100
 #define	LOG_FILE_PORT2			5099
 #define	GDB_PORT				5098
+#define	GDB_PORT_TCP			5097
 #define	LOG_MAX_BUF_SIZE		1400
 #define	LOG_MAX_DATA_SIZE		(LOG_MAX_BUF_SIZE - sizeof(LogProtoHeader))
 
@@ -255,6 +257,23 @@ typedef struct {
 	LogProtoHeader	diagHdr;
 	unsigned char	diagData[LOG_MAX_DATA_SIZE];
 } DiagProtoFrame;
+
+// These are for SkbDiagFrameData.target field
+#define DIAG_SKB_REROUTE_DATA 0
+#define GDB_SKB_REROUTE_DATA 1
+#define GUI_SKB_REROUTE_DATA 2
+typedef struct {
+    /* At the moment, we are restricted to have 4 bytes only, */
+    /* effectively, we are overwriting part of udpHdr. */
+    /* check usage in BcmAdslDiagLinux.c */
+    
+    /* Order of frameLen and target fields matters */
+    /* ie. expecting frameLen to coincide with udpHdr.Lenght */
+    /*     and target to coincide with udpHdr.Checksum */
+    unsigned short frameLen;
+    unsigned short target; // 0 - diag, 1 - gdb, 2 - gui
+    DiagProtoFrame diagFrame;
+} SkbDiagFrameData;
 
 #define	DIAG_PROXY_TERMINATE				1
 #define	DIAG_PROXY_SET_FILTER				2
@@ -418,7 +437,7 @@ typedef struct {
 #define VA_ARG_N(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,N,...)    N 
 
 #ifdef CONFIG_ARM64
-#define ARG2(lo,hi)  ((long)(hi) << 32) | (lo)
+#define ARG2(lo,hi)  ((long)(hi) << 32) | (unsigned int)(lo)
 
 #define DiagStrPrintf(lId,clType,fmt,...) do {						                    \
 	static const char fmt_str[] = fmt;									                \

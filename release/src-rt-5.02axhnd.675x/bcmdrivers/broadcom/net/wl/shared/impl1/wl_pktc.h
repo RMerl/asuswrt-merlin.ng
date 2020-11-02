@@ -33,6 +33,8 @@
 #include <typedefs.h>
 #include <osl.h>
 
+#include <dhd_nic_common.h>
+
 #if !defined(BCM_PKTFWD)
 
 #include <linux/netdevice.h>

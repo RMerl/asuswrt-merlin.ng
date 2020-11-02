@@ -580,7 +580,7 @@ static int bcm_usb_host_hw_init_4908(void)
 #endif/* defined(CONFIG_USB_XHCI_PLATFORM) */
     {
         mdelay(300);
-        USBH_CTRL->usb30_ctl1 &= ~XHC_SOFT_RESETB;
+        USBH_CTRL->usb_pm &= ~XHC_SOFT_RESETB;
     }
 
     /*adjust the default AFE settings for better eye diagrams */
@@ -671,7 +671,7 @@ static int bcm_usb_host_hw_init_6858(void)
 #endif/* defined(CONFIG_USB_XHCI_PLATFORM) */
     {
         mdelay(300);
-        USBH_CTRL->usb30_ctl1 &= ~XHC_SOFT_RESETB;
+        USBH_CTRL->usb_pm &= ~XHC_SOFT_RESETB;
     }
 
     /*adjust the default AFE settings for better eye diagrams */
@@ -759,7 +759,7 @@ static int bcm_usb_host_hw_init_6856(void)
 #endif/* defined(CONFIG_USB_XHCI_PLATFORM) */
     {
         mdelay(300);
-        USBH_CTRL->usb30_ctl1 &= ~XHC_SOFT_RESETB;
+        USBH_CTRL->usb_pm  &= ~XHC_SOFT_RESETB;
     }
 
     /*adjust the default AFE settings for better eye diagrams */
@@ -826,6 +826,7 @@ static int bcm_usb_host_hw_init_6846(void)
         }
     }
 
+    USBH_CTRL->utmi_ctl_1 |= (1 << 8) | (1 << 24);
     /*initialize XHCI settings*/
     mdelay(10);
     USBH_CTRL->usb_pm &= ~(USB_PWRDWN);
@@ -887,6 +888,7 @@ static int bcm_usb_host_hw_init_6878(void)
         }
     }
 
+    USBH_CTRL->utmi_ctl_1 |= (1 << 8) | (1 << 24); 
     /*initialize XHCI settings*/
     mdelay(10);
     USBH_CTRL->usb_pm &= ~(USB_PWRDWN);
@@ -984,7 +986,7 @@ static int bcm_usb_host_hw_init_63158(void)
 #endif/* defined(CONFIG_USB_XHCI_PLATFORM) */
     {
         mdelay(300);
-        USBH_CTRL->usb30_ctl1 &= ~XHC_SOFT_RESETB;
+        USBH_CTRL->usb_pm &= ~XHC_SOFT_RESETB;
     }
 
     /*adjust the default AFE settings for better eye diagrams */
@@ -1079,7 +1081,7 @@ static int bcm_usb_host_hw_init_47622(void)
 #endif/* defined(CONFIG_USB_XHCI_PLATFORM) */
     {
         mdelay(300);
-        USBH_CTRL->usb30_ctl1 &= ~XHC_SOFT_RESETB;
+        USBH_CTRL->usb_pm &= ~XHC_SOFT_RESETB;
     }
 
     /*adjust the default AFE settings for better eye diagrams */
@@ -1299,13 +1301,19 @@ static __init int bcm_add_usb_hosts(void)
          return -ENODEV;
      }
 
+#if defined(CONFIG_USB_XHCI_PLATFORM) || defined(CONFIG_USB_XHCI_PLATFORM_MODULE)
+	 /*overide user choice when usb3 is disabled at OTP level */
+
+	 if(!kerSysGetUsb30HostEnable())
+		 usb3_enable=0;
+#endif
+
      err = BCM_USB_HOST_HW_INIT(CONFIG_BCM_CHIP_NUMBER);
      if(err < 0)
      {
          printk(KERN_ERR "++++ USB Host HW initialization failed \n");
          return err;
      }
-
 
 #if defined(CONFIG_USB_XHCI_PLATFORM) || defined(CONFIG_USB_XHCI_PLATFORM_MODULE)
      if(usb3_enable)

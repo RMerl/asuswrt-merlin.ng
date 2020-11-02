@@ -276,6 +276,61 @@ Error:
     return 0;
 }
 
+int enet_get_next_port(enetx_port_t *port, enetx_port_t **next_port);
+static ssize_t proc_get_crossbar_status(struct file *file, char *buff, size_t len, loff_t *offset)
+{
+#if defined(CONFIG_BCM963158)
+    static const char *intPortName[] = {"Switch Port 4", "Switch Port 6", "WAN Port"};
+    static const char *extPortName[]= {"AE", "GPHY4", "RGMII1", "RGMII0"};
+#endif
+#if defined(CONFIG_BCM963138)
+    static const char *intPortName[] = {"Switch Port 3", "Switch Port 4", "WAN Port"};
+    static const char *extPortName[]= {"AE", "GPHY4", "RGMII3", "xMII", "GPHY3"};
+#endif
+#if defined(CONFIG_BCM963148)
+    static const char *intPortName[] = {"Switch Port 4", "WAN Port"};
+    static const char *extPortName[]= {"AE", "GPHY4", "RGMII3", "xMII"};
+#endif
+#if defined(CONFIG_BCM94908)
+    static const char *intPortName[] = {"Switch Port 7", "WAN Port"};
+    static const char *extPortName[]= {"AE", "GPHY4", "xMII"};
+#endif
+
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
+    phy_dev_t *phy_crossbar;
+    int extPort, intPort;
+    enetx_port_t *port;
+
+    if (*offset)
+        return 0;
+
+    for (enet_get_next_port(NULL, &port); port; enet_get_next_port(port, &port))
+    {
+        phy_crossbar = port->p.phy;
+        if (!phy_is_crossbar(phy_crossbar))
+            continue;
+        crossbar_current_status(phy_crossbar, &intPort, &extPort);
+        *offset += sprintf(buff + *offset, "%s is connected to: %s at Port %d\n", 
+            intPortName[intPort], extPortName[extPort], 
+            extPort+BP_CROSSBAR_PORT_BASE);
+
+    }
+    return *offset;
+#else
+    if (*offset)
+        return 0;
+
+    *offset += sprintf(buff, "Not Supported\n");
+    return *offset;
+#endif
+}
+
+#define PROC_ETHERNET_DIR           "ethernet"
+#define PROC_CROSSBAR_STATUS        "crossbar_status"
+static const struct file_operations crossbar_status_fops = {
+    .read  = proc_get_crossbar_status,
+};
+
 static int port_proc_cmd_net_port(int argc, char *argv[])
 {
     int i;
@@ -368,7 +423,10 @@ int __init enet_proc_init(void)
     g_debug_mode_pckt_rx = 0;
     do_gettimeofday(&g_start_time);
 #endif
-
+    proc_dir = proc_mkdir(PROC_ETHERNET_DIR, NULL);
+    if (!proc_create(PROC_CROSSBAR_STATUS, 0644, proc_dir, &crossbar_status_fops))
+		goto error;
+  
     return 0;
 
 error:

@@ -163,6 +163,8 @@ extern unsigned int g_board_size_power_of_2;
 #define UBUS_PORT_ID_DMA0        13
 #define UBUS_PORT_ID_RQ0         14
 
+#define UBUS_PORT_ID_VPB         9
+
 #elif defined (CONFIG_BCM963178) || defined(_BCM963178_)
 #define UBUS_MAX_PORT_NUM        11
 #define UBUS_NUM_OF_MST_PORTS    9
@@ -276,7 +278,7 @@ typedef struct
    DecodeCfgMstWndRegs window[4];
 } DecodeCfgRegs;
 
-#if defined(CONFIG_BCM963178) || defined(_BCM963178_) || defined(CONFIG_BCM947622) || defined(_BCM947622_)
+#if defined(CONFIG_BCM963178) || defined(_BCM963178_) || defined(CONFIG_BCM947622) || defined(_BCM947622_) || defined(CONFIG_BCM96878) || defined(_BCM96878_)
 #define ROUTE_ADDR_SIZE        0x100
 #define TOKEN_SIZE             0x100
 #else

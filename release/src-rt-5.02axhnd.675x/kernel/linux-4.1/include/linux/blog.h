@@ -614,7 +614,6 @@ typedef enum {
         BLOG_DECL(FLOWTRACK_KEY_GET)    /* Get Client key into Flowtracker    */
         BLOG_DECL(FLOWTRACK_DSCP_GET)   /* Get DSCP from Flow tracker:DYNDSCP */
         BLOG_DECL(FLOWTRACK_CONFIRMED)  /* Test whether session is confirmed  */
-        BLOG_DECL(FLOWTRACK_ASSURED)    /* Test whether session is assured    */
         BLOG_DECL(FLOWTRACK_ALG_HELPER) /* Test whether flow has an ALG       */
         BLOG_DECL(FLOWTRACK_EXCLUDE)    /* Clear flow candidacy by Client     */
         BLOG_DECL(FLOWTRACK_TIME_SET)   /* Set time in a flow tracker         */
@@ -629,6 +628,7 @@ typedef enum {
         BLOG_DECL(BRIDGEFDB_KEY_SET)    /* Set Client key into bridge FDB     */
         BLOG_DECL(BRIDGEFDB_KEY_GET)    /* Get Client key into bridge FDB     */
         BLOG_DECL(BRIDGEFDB_TIME_SET)   /* Refresh bridge FDB time            */
+        BLOG_DECL(BRIDGEFDB_IFIDX_GET)  /* Get bridge FDB's device ifindex    */
         BLOG_DECL(SYS_TIME_GET)         /* Get the system time in jiffies     */
         BLOG_DECL(GRE_TUNL_XMIT)        /* GRE Tunnel tx                      */
         BLOG_DECL(GRE6_TUNL_XMIT)       /* GRE6 Tunnel tx                      */
@@ -936,8 +936,9 @@ extern void blog_support_mcast(int enable);
  */
 
 /* Multicast Learning Support Enable/Disable Control */
-#define BLOG_MCAST_LEARN_DISABLE          0
-#define BLOG_MCAST_LEARN_ENABLE           1
+#define BLOG_MCAST_LEARN_DISABLE            0
+#define BLOG_MCAST_LEARN_ENABLE             1
+#define BLOG_MCAST_LEARN_ENABLE_1ST_CLIENT  2
 
 /* If BRCM MCAST OVS Support is enabled, enable multicast learning
    by default to allow learning OVS slowpath actions */
@@ -1027,6 +1028,16 @@ extern void blog_support_l2tp(int enable);
 #define CC_BLOG_SUPPORT_ESP        BLOG_ESP_DISABLE
 #endif
 
+/*
+ * -----------------------------------------------------------------------------
+ * Support 4o6 fragmentation enable/disable
+ * -----------------------------------------------------------------------------
+ */
+#define BLOG_4O6_FRAG_DISABLE           0
+#define BLOG_4O6_FRAG_ENABLE            1
+
+extern int blog_support_4o6_frag_g;
+extern void blog_support_4o6_frag(int enable);
 
 /* blog notify processing mode */
 typedef enum {
@@ -1707,6 +1718,11 @@ typedef struct blogTuple_t BlogTuple_t;
 
 #define TX_IPV6_MAPE(b)       ((b)->tx.info.bmap.MAPE)
 
+#define RX_PPPOE(b)       ((b)->rx.info.bmap.PPPoE_2516)
+#define TX_PPPOE(b)       ((b)->tx.info.bmap.PPPoE_2516)
+#define PT_PPPOE(b)       (RX_PPPOE(b) && TX_PPPOE(b))
+
+
 #define PKT_IPV6_GET_TOS_WORD(word)       \
    ((ntohl(word) & 0x0FF00000) >> 20)
 
@@ -2205,7 +2221,8 @@ struct blog_t {
         uint32_t        flags;
         struct {
         BE_DECL(
-            uint32_t    unused:      4;
+            uint32_t    unused:      2;
+            uint32_t    is_routed:   1;
             uint32_t    fc_hybrid:   1;  /* hybrid flow accelarate in HW and SW */
             uint32_t    l2_mode:     1;
             uint32_t    is_ssm:      1;
@@ -2227,6 +2244,7 @@ struct blog_t {
 
             uint32_t    nf_dir_pld:  1;
             uint32_t    nf_dir_del:  1;
+            uint32_t    nf_ct_skip_ref_dec:  1; /* when set don't decrement ct refcnt */
             uint32_t    pop_pppoa:   1;
             uint32_t    insert_eth:  1;
             uint32_t    iq_prio:     1;
@@ -2241,6 +2259,7 @@ struct blog_t {
             uint32_t    iq_prio:     1;
             uint32_t    insert_eth:  1;
             uint32_t    pop_pppoa:   1;
+            uint32_t    nf_ct_skip_ref_dec:  1; /* when set don't decrement ct refcnt */
             uint32_t    nf_dir_del:  1;
             uint32_t    nf_dir_pld:  1;
 
@@ -2262,7 +2281,8 @@ struct blog_t {
             uint32_t    is_ssm:      1;
             uint32_t    l2_mode:     1;
             uint32_t    fc_hybrid:   1;  /* hybrid flow accelarate in HW and SW */
-            uint32_t    unused:      4;
+            uint32_t    is_routed:   1;
+            uint32_t    unused:      2;
         )
         };
     };
@@ -2450,7 +2470,7 @@ struct blog_t {void * blogRule_p;};
 
 /* Allocate or deallocate a Blog_t */
 Blog_t * blog_get(void);
-void     blog_put(Blog_t * blog_p);
+void blog_put(Blog_t * blog_p);
 
 /* Allocate a Blog_t and associate with sk_buff or fkbuff */
 extern Blog_t * blog_skb(struct sk_buff  * skb_p);
@@ -2462,6 +2482,10 @@ extern Blog_t * blog_fnull(struct fkbuff  * fkb_p);
 
 /* Clear association of Blog_t with sk_buff and free Blog_t object */
 extern void blog_free( struct sk_buff * skb_p, blog_skip_reason_t reason );
+/* increment refcount of ct's associated with blog */
+extern void blog_ct_get(Blog_t * blog_p);
+/* decrement refcount of ct's associated with blog */
+extern void blog_ct_put(Blog_t * blog_p);
 
 /* Disable further logging. Dis-associate with skb and free Blog object */
 extern void blog_skip(struct sk_buff * skb_p, blog_skip_reason_t reason);

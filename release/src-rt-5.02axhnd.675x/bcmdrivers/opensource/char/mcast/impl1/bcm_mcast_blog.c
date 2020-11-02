@@ -53,12 +53,17 @@ int bcm_mcast_blog_get_rep_info(struct net_device *repDev, unsigned char *repMac
    wlan_client_info_t wlInfo = { 0 };
    int                rc;
    uint32_t           phyType = netdev_path_get_hw_port_type(repDev);
+   /* Get root reporting device since wlan_client_get_info hook is only registered
+      on the root device. Any VLANCtl interfaces created on top of the root
+      devices do not have this function pointer set. */
+   struct net_device *rootRepDev = netdev_path_get_root(repDev);
 
    *info = 0;
+
    if( (BLOG_WLANPHY == BLOG_GET_PHYTYPE(phyType) || (BLOG_NETXLPHY == BLOG_GET_PHYTYPE(phyType))) &&
-       (repDev->wlan_client_get_info != NULL) )
+       (rootRepDev->wlan_client_get_info != NULL) )
    {
-      rc = repDev->wlan_client_get_info(repDev, repMac, mcast_ctrl->mcastPriQueue, &wlInfo);
+      rc = rootRepDev->wlan_client_get_info(rootRepDev, repMac, mcast_ctrl->mcastPriQueue, &wlInfo);
       if ( rc != 0 )
       {
           return -1;
@@ -278,6 +283,7 @@ static void bcm_mcast_blog_process_lan(blogRule_t         *rule_p,
                                        struct net_device **lan_vlan_dev_pp)
 {
    struct net_device *dev_p = NULL;
+   struct net_device *to_accel_devp = NULL;
 #if defined(CONFIG_BR_IGMP_SNOOP)
    t_igmp_grp_entry *igmp_fdb = NULL;
 #endif
@@ -300,6 +306,7 @@ static void bcm_mcast_blog_process_lan(blogRule_t         *rule_p,
        {
            igmp_fdb = (t_igmp_grp_entry *)mc_fdb;
            dev_p = igmp_fdb->dst_dev;
+           to_accel_devp = igmp_fdb->to_accel_dev;
            break;
        }
 #endif
@@ -308,6 +315,7 @@ static void bcm_mcast_blog_process_lan(blogRule_t         *rule_p,
        {
            mld_fdb = (t_mld_grp_entry *)mc_fdb;
            dev_p = mld_fdb->dst_dev;
+           to_accel_devp = mld_fdb->to_accel_dev;
            break;
        }
 #endif
@@ -332,6 +340,11 @@ static void bcm_mcast_blog_process_lan(blogRule_t         *rule_p,
         }
 
         dev_p = netdev_path_next_dev(dev_p);
+    }
+
+    if (to_accel_devp) 
+    {
+        *lan_dev_pp = to_accel_devp;
     }
 
 #if (defined(CONFIG_BCM_WLAN) || defined(CONFIG_BCM_WLAN_MODULE))
@@ -456,7 +469,6 @@ static void bcm_mcast_blog_link_devices(bcm_mcast_ifdata  *pif,
         blog_lock();
         blog_link(IF_DEVICE_MCAST, blog_p, rxPath[i], DIR_RX, delta);
         blog_unlock();
-        dev_p = netdev_path_next_dev(dev_p);
     }
 
     /* include Ethernet header in virtual TX stats */
@@ -980,9 +992,10 @@ int bcm_mcast_blog_process(bcm_mcast_ifdata *pif, void *mc_fdb, int proto, struc
    blog_p->rx.multicast = 1;
    blog_p->tx_dev_p = lan_dev_p;
 
-   if ((mcast_ctrl->mcastPriQueue != -1) && (phyType != BLOG_XTMPHY))
+   if (phyType != BLOG_XTMPHY)
    {
-      int mcastDefTxPriorityQ = mcast_ctrl->mcastPriQueue;
+      // if mcast precedence is diabled(-1), set to default queue 0
+      int mcastDefTxPriorityQ = (mcast_ctrl->mcastPriQueue == -1) ? 0 :mcast_ctrl->mcastPriQueue;
       if(blog_p->tx.info.phyHdrType == BLOG_ENETPHY)
       {
          bcmEnet_QueueReMap_t queRemap;

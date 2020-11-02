@@ -257,6 +257,7 @@ typedef enum
 #define IPOE_PROTO_STR        "IPoE"
 #define PPPOE_PROTO_STR       "PPPoE"
 #define PPPOA_PROTO_STR       "PPPoA"
+#define PPPOL2TP_PROTO_STR    "PPPoL2tp"
 #define IPOW_PROTO_STR        "IPoW"
 
 #define DSL_IFC_STR           "dsl"

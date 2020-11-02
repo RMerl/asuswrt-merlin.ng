@@ -53,6 +53,7 @@ uint32_t port_sf2_tx_q_remap(enetx_port_t *port, uint32_t txq);
 uint16_t port_sf2_tx_lb_imp(enetx_port_t *port, uint16_t port_id, void* pHdr);
 void port_sf2_print_status(enetx_port_t *p);
 int port_sf2_mib_dump(enetx_port_t *self, int all);
+int port_sf2_mib_dump_us(enetx_port_t *self, void *e); // add by Andrew
 int port_sf2_port_role_set(enetx_port_t *self, port_netdev_role_t role);
 int port_sf2_port_stp_set(enetx_port_t *self, int mode, int state);
 void port_sf2_fast_age(enetx_port_t *port);

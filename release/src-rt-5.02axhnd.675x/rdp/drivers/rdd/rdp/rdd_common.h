@@ -63,7 +63,7 @@ int rdd_ds_wan_flow_cfg(uint32_t wan_flow, rdpa_cpu_reason cpu_reason, bdmf_bool
     uint8_t ingress_flow);
 void rdd_prop_tag_vport_cfg(rdd_runner_group_t *group, rdpa_traffic_dir dir, uint32_t vector);
 #endif /*DSL*/
-void rdd_us_wan_flow_cfg(uint32_t wan_flow, rdd_wan_channel_id_t wan_channel, uint32_t wan_port,
+void rdd_us_wan_flow_cfg(uint32_t wan_flow, rdd_wan_channel_id_t wan_channel, uint32_t hdr_type, uint32_t wan_port,
     bdmf_boolean crc_calc_en, bdmf_boolean ptm_bonding_enabled, uint8_t pbits_to_queue_table_idx,
     uint8_t tc_to_queue_table_idx);
 void rdd_us_wan_flow_get(uint32_t wan_flow, rdd_wan_channel_id_t *wan_channel, uint32_t *wan_port,

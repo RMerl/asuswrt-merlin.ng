@@ -137,13 +137,16 @@ static int get_wan_stb_lan_port_mask(int wan_stb_x, unsigned int *wan_pmsk, unsi
 
 void vlan_accept_none(void)
 {
+	rtk_int32 ret_t;
 	unsigned int port, mask;
 
 	if (rtk_vlan_init() != RT_ERR_OK)
 		printk("VLAN Initial Failed!!!\n");
 
 	ENUM_PORT_BEGIN(port, mask, LAN_PORTS_MASK, 1)
-		rtk_vlan_portAcceptFrameType_set(port, ACCEPT_FRAME_TYPE_UNTAG_ONLY);
+		ret_t = rtk_vlan_portAcceptFrameType_set(port, ACCEPT_FRAME_TYPE_UNTAG_ONLY);
+		if(ret_t != RT_ERR_OK)
+			printk("%s() ERROR port:%d errono:%d\n", __func__, port, ret_t);
 	ENUM_PORT_END
 }
 
@@ -151,6 +154,7 @@ unsigned int is_singtel_mio = 0;
 
 int vlan_accept_adv(int wan_stb_x)
 {
+	rtk_int32 ret_t;
 	unsigned int port, mask;
 	unsigned int lan_port_mask = 0, wan_port_mask = 0, stb_port_mask = 0;
 
@@ -159,14 +163,18 @@ int vlan_accept_adv(int wan_stb_x)
 
 	if (is_singtel_mio) {
 		ENUM_PORT_BEGIN(port, mask, LAN_PORTS_MASK, 1)
-			rtk_vlan_portAcceptFrameType_set(port, ACCEPT_FRAME_TYPE_ALL);
+			ret_t = rtk_vlan_portAcceptFrameType_set(port, ACCEPT_FRAME_TYPE_ALL);
+			if(ret_t != RT_ERR_OK)
+				printk("%s() ERROR port:%d errono:%d\n", __func__, port, ret_t);
 		ENUM_PORT_END
 	} else {
 		if (get_wan_stb_lan_port_mask(wan_stb_x, &wan_port_mask, &stb_port_mask, &lan_port_mask, 0))
 			return -EINVAL;
 
 		ENUM_PORT_BEGIN(port, mask, wan_port_mask, 1)
-			rtk_vlan_portAcceptFrameType_set(port, ACCEPT_FRAME_TYPE_ALL);
+			ret_t = rtk_vlan_portAcceptFrameType_set(port, ACCEPT_FRAME_TYPE_ALL);
+			if(ret_t != RT_ERR_OK)
+				printk("%s() ERROR port:%d errono:%d\n", __func__, port, ret_t);
 		ENUM_PORT_END
 	}
 
@@ -179,6 +187,7 @@ static int __LANWANPartition(int wan_stb_x)
 	unsigned int port, mask;
 	unsigned int lan_port_mask = 0, wan_port_mask = 0, stb_port_mask = 0;
 
+	/* add CPU port fwd */
 	if (get_wan_stb_lan_port_mask(wan_stb_x, &wan_port_mask, &stb_port_mask, &lan_port_mask, 1))
 		return -EINVAL;
 
@@ -209,9 +218,51 @@ void LANWANPartition(void)
 
 static int wan_stb_g = 0;
 
+/* Do not use this function cause there is no WAN on current chipset. */
 void LANWANPartition_adv(int wan_stb_x)
 {
 	__LANWANPartition(wan_stb_x);
+}
+
+static rtk_vlan_t vlan_vid = 0;
+static rtk_vlan_t vlan_prio = 0;
+
+void initialVlan(u32 portinfo)/* Initalize VLAN. */
+{
+	rtk_int32 ret_t;
+	unsigned int port, mask;
+
+	/* set VLAN filtering for each LAN port and CPU port */
+	ENUM_PORT_BEGIN(port, mask, LAN_ALL_PORTS_MASK, 1)
+		ret_t = rtk_vlan_portIgrFilterEnable_set(port, ENABLED);
+		if(ret_t != RT_ERR_OK)
+			printk("%s() ERROR port:%d errono:%d\n", __func__, port, ret_t);
+	ENUM_PORT_END
+}
+
+/* portInfo:	bit0-bit15 : member mask
+		bit16-bit31 :  untag mask */
+void createVlan(u32 portinfo)
+{
+	rtk_int32 ret_t;
+	rtk_vlan_cfg_t vlan_t;
+	unsigned int port, mask;
+	u32 laninfo = 0;
+
+	memset(&vlan_t, 0x00, sizeof(rtk_vlan_cfg_t));
+	vlan_t.mbr.bits[0] = (portinfo & 0x0000FFFF) | 0x00020000; //add CPU port to member
+	laninfo = (portinfo & 0x0000FFFF) | 0x00020000; //add CPU port to portPvid set
+	vlan_t.untag.bits[0] = portinfo >> 16; // CPU port leave tag
+	printk("createVlan - vid = %d prio = %d mbrmsk = 0x%X untagmsk = 0x%X\n", vlan_vid, vlan_prio, vlan_t.mbr.bits[0], vlan_t.untag.bits[0]);	
+	ret_t = rtk_vlan_set(vlan_vid, &vlan_t);
+	if(ret_t != RT_ERR_OK)
+		printk("%s() ERROR vid:%d errono:%d\n", __func__, vlan_vid, ret_t);
+
+	ENUM_PORT_BEGIN(port, mask, laninfo, 1)
+		ret_t = rtk_vlan_portPvid_set(port, vlan_vid, vlan_prio);
+		if(ret_t != RT_ERR_OK)
+			printk("%s() ERROR port:%d errono:%d\n", __func__, port, ret_t);
+	ENUM_PORT_END
 }
 
 static int rtkswitch_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
@@ -231,6 +282,7 @@ static int rtkswitch_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 	int count = 0;
 	rtk_l2_ucastAddr_t l2_data;
 	int wan_stb_x = 0;
+	u32 portInfo;
 
 	switch(cmd) {
 	case 0:	// Get LAN phy status of all LAN ports
@@ -376,6 +428,30 @@ static int rtkswitch_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 		LANWANPartition_adv(wan_stb_x);
 
 		break;
+	case 36:/* Set Vlan VID. */
+		copy_from_user(&vlan_vid, (int __user *)arg, sizeof(int));		
+
+		break;
+	case 37:/* Set Vlan PRIO. */
+		copy_from_user(&vlan_prio, (int __user *)arg, sizeof(int));
+
+		break;
+	case 38:/* Initialize VLAN */
+		copy_from_user(&portInfo, (int __user *)arg, sizeof(int));
+		initialVlan((u32) portInfo);
+		vlan_accept_adv(wan_stb_x);
+
+		break;
+	case 39:/* Create VLAN. */
+		copy_from_user(&portInfo, (int __user *)arg, sizeof(int));
+		createVlan((u32) portInfo);
+
+		break;
+	case 40:
+		copy_from_user(&is_singtel_mio, (unsigned int __user *)arg, sizeof(unsigned int));
+
+		break;
+
 	default:
 		return -EINVAL;
 	}

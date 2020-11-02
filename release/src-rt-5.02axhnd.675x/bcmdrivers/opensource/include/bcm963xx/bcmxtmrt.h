@@ -60,26 +60,27 @@ written consent.
 #define CELL_HDLR_OAM                       1
 #define CELL_HDLR_ASM                       2
 
-#define XTMRT_CMD_GLOBAL_INITIALIZATION     1
-#define XTMRT_CMD_CREATE_DEVICE             2
-#define XTMRT_CMD_GET_DEVICE_STATE          3
-#define XTMRT_CMD_SET_ADMIN_STATUS          4
-#define XTMRT_CMD_REGISTER_CELL_HANDLER     5
-#define XTMRT_CMD_UNREGISTER_CELL_HANDLER   6
-#define XTMRT_CMD_LINK_STATUS_CHANGED       7
-#define XTMRT_CMD_SEND_CELL                 8
-#define XTMRT_CMD_DELETE_DEVICE             9
-#define XTMRT_CMD_SET_TX_QUEUE              10
-#define XTMRT_CMD_UNSET_TX_QUEUE            11
-#define XTMRT_CMD_GET_NETDEV_TXCHANNEL      12
-#define XTMRT_CMD_GLOBAL_UNINITIALIZATION   13
-#define XTMRT_CMD_TOGGLE_PORT_DATA_STATUS_CHANGE	  14
-#define XTMRT_CMD_SET_TEQ_DEVCTX            15
-#define XTMRT_CMD_SET_DS_SEQ_DEVIATION 	  16
-#define XTMRT_CMD_GLOBAL_REINITIALIZATION   17
-#define XTMRT_CMD_SET_ATMBOND_SID_MODE      18
-#define XTMRT_CMD_STOP_ALL_TX_QUEUE         19
-#define XTMRT_CMD_START_ALL_TX_QUEUE        20
+#define XTMRT_CMD_GLOBAL_INITIALIZATION            1
+#define XTMRT_CMD_CREATE_DEVICE                    2
+#define XTMRT_CMD_GET_DEVICE_STATE                 3
+#define XTMRT_CMD_SET_ADMIN_STATUS                 4
+#define XTMRT_CMD_REGISTER_CELL_HANDLER            5
+#define XTMRT_CMD_UNREGISTER_CELL_HANDLER          6
+#define XTMRT_CMD_LINK_STATUS_CHANGED              7
+#define XTMRT_CMD_SEND_CELL                        8
+#define XTMRT_CMD_DELETE_DEVICE                    9
+#define XTMRT_CMD_SET_TX_QUEUE                     10
+#define XTMRT_CMD_UNSET_TX_QUEUE                   11
+#define XTMRT_CMD_GET_NETDEV_TXCHANNEL             12
+#define XTMRT_CMD_GLOBAL_UNINITIALIZATION          13
+#define XTMRT_CMD_TOGGLE_PORT_DATA_STATUS_CHANGE   14
+#define XTMRT_CMD_SET_TEQ_DEVCTX                   15
+#define XTMRT_CMD_SET_DS_SEQ_DEVIATION 	           16
+#define XTMRT_CMD_GLOBAL_REINITIALIZATION          17
+#define XTMRT_CMD_SET_ATMBOND_SID_MODE             18
+#define XTMRT_CMD_STOP_ALL_TX_QUEUE                19
+#define XTMRT_CMD_START_ALL_TX_QUEUE               20
+#define XTMRT_CMD_SET_TX_PORT_SHAPER_INFO          21
 
 #define XTMRT_CMD_PORT_DATA_STATUS_DISABLED  0
 #define XTMRT_CMD_PORT_DATA_STATUS_ENABLED   1
@@ -135,6 +136,12 @@ typedef struct XtmrtCellHdlr
     XTMRT_CALLBACK pfnCellHandler;
     void *pContext;
 } XTMRT_CELL_HDLR, *PXTMRT_CELL_HDLR;
+
+typedef struct XtmrtPortShaperInfo
+{
+    UINT32 ulShapingRate;        /* 0 indicates no shaping */
+    UINT16 usShapingBurstSize;
+} XTMRT_PORT_SHAPER_INFO, *PXTMRT_PORT_SHAPER_INFO;
 
 #define XTM_HIGH_SUB_PRIORITY       MAX_SUB_PRIORITIES-1
 #define XTM_LOW_SUB_PRIORITY        0

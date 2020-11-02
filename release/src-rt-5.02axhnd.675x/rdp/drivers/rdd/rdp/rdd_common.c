@@ -340,7 +340,7 @@ void rdd_prop_tag_vport_cfg(rdd_runner_group_t *group, rdpa_traffic_dir dir, uin
 }
 #endif /*DSL*/
 
-void rdd_us_wan_flow_cfg(uint32_t wan_flow, rdd_wan_channel_id_t wan_channel, uint32_t wan_port,
+void rdd_us_wan_flow_cfg(uint32_t wan_flow, rdd_wan_channel_id_t wan_channel, uint32_t hdr_type, uint32_t wan_port,
     bdmf_boolean crc_calc_en, bdmf_boolean ptm_bonding_enabled, uint8_t pbits_to_queue_table_idx,
     uint8_t tc_to_queue_table_idx)
 {
@@ -350,6 +350,7 @@ void rdd_us_wan_flow_cfg(uint32_t wan_flow, rdd_wan_channel_id_t wan_channel, ui
     wan_flow_table = RDD_US_WAN_FLOW_TABLE_PTR();
     wan_flow_entry = &(wan_flow_table->entry[wan_flow]);
 
+    RDD_US_WAN_FLOW_ENTRY_HDR_TYPE_WRITE(hdr_type, wan_flow_entry);
     RDD_US_WAN_FLOW_ENTRY_WAN_PORT_ID_WRITE(wan_port, wan_flow_entry);
     RDD_US_WAN_FLOW_ENTRY_CRC_CALC_WRITE(crc_calc_en, wan_flow_entry);
     RDD_US_WAN_FLOW_ENTRY_WAN_CHANNEL_ID_WRITE(wan_channel, wan_flow_entry);

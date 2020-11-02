@@ -584,10 +584,10 @@ int _port_role_set(enetx_port_t *self, port_netdev_role_t role)
         }
     }
 
+    self->n.port_netdev_role = role;
+
     if (self->p.ops->role_set && self->p.ops->role_set(self, role))
         return -EFAULT;
-
-    self->n.port_netdev_role = role;
 
     return 0;
 }
@@ -753,6 +753,7 @@ void port_generic_stats_get(enetx_port_t *self, struct rtnl_link_stats64 *net_st
     net_stats->rx_dropped += mac_stats.rx_dropped;
     net_stats->rx_crc_errors += mac_stats.rx_fcs_error;
     net_stats->rx_errors += mac_stats.rx_alignment_error +
+        mac_stats.rx_fcs_error +
         mac_stats.rx_code_error +
         mac_stats.rx_frame_length_error +
         mac_stats.rx_fifo_errors;

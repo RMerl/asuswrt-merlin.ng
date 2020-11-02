@@ -119,13 +119,9 @@ CUSTOM_CFLAGS += -Werror -Wfatal-errors
 # Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
 # See Section 10.2 of Gnu Make manual
 # 
-ifeq ($(wildcard $(SRCBASE)/router-sysdep/mcpctl/*.c),)
-mcpctl:
-	-cp -f $(SRCBASE)/router-sysdep/mcpctl/prebuilt/mcpctl mcpctl
-else
 mcpctl: $(OBJS)
 	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
-endif
+
 #
 # Include the rule for making dependency files.
 # The '-' in front of the second include suppresses

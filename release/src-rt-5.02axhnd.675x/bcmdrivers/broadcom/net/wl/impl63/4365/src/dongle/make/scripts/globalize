@@ -1,0 +1,164 @@
+#!/usr/bin/perl
+#
+# Usage:
+#	globalize <file.S>
+#
+# Reprocesses <file.S> which contains assembly text (gcc compiler output).
+#
+# Static symbols (in any section type) are renamed to filename$symbol and made global.
+
+use strict;
+use warnings;
+use Getopt::Std;
+
+sub usage {
+    print STDERR "Usage: globalize [-m] <file.S> <prefix>\n";
+    print STDERR "   -m       MIPS (default ARM)\n";
+    exit 1;
+}
+
+# Identifier string match
+my $idre = '([\w$]+)';
+
+my %opt;
+getopts("m", \%opt) || &usage;
+
+my $fname = shift @ARGV or &usage;
+# Quoted version of filename that can be used in identifiers
+my $prefix = shift @ARGV or &usage;
+shift @ARGV and &usage;
+
+# Read the entire input file
+open(my $fh, $fname) or
+    die "Could not open $fname for reading: $!\n";
+my @asm_in = <$fh>;
+close $fh;
+
+##############################################################################
+# This unfortunate hack is completely unrelated to globalizer, but it's
+# quite convenient to put it here to avoid the need for a separate utility,
+# more makefile rules, and an additional load/save of the assembly text.
+# The asm() statements used in bcmstdlib.c to implement memcpy generate ldmia
+# instructions with wrong register order, causing the assembler to complain.
+# This stub finds those and sorts the register list to avoid that.  For example,
+#	Before:
+#		ldmia.w	r3!, {r8, sl, r9, r7, r6, r5, ip, r4}
+#	After:
+#		ldmia.w	r3!, {r4, r5, r6, r7, r8, r9, sl, ip}
+if ($fname =~ /\bbcmstdlib\.S$/) {
+    map {
+	if (/\b(ld|st)mia.w\tr\d+!, \{([\w, ]+)}/) {
+	    my @regorder = qw(r0  r1  r2  r3  r4  r5  r6  r7  r8  r9
+			      r10 sl  r11 fp  r12 ip  r13 sp  r14 lr  r15 pc);
+	    my $reglist_old = $2;
+	    my $reglist_new = join ', ',
+	        sort {
+		    my ($idx_a) = grep { $regorder[$_] eq $a } 0..$#regorder;
+		    my ($idx_b) = grep { $regorder[$_] eq $b } 0..$#regorder;
+		    ($idx_a - $idx_b);
+		} split /, /, $reglist_old;
+	    s/{$reglist_old}/{$reglist_new}/;
+	}
+    } @asm_in;
+}
+##############################################################################
+
+my ($globl, $ok2replace);
+if ($opt{m}) {
+    $globl = "globl";
+    $ok2replace = \&ok2replace_mips;
+} else {
+    $globl = "global";
+    $ok2replace = \&ok2replace_arm;
+}
+
+# Determine all the symbols in the file that are already marked with .global
+my %globals = ();
+map { $globals{$1} = 1 if /^\t\.(?:${globl}|weak)\t${idre}$/; } @asm_in;
+
+# Copy from input to output, locating static functions and adding .global
+my %renames = ();	# Indexed by symbol name
+
+my $asm_line = 0;
+my @asm_out = ();
+
+while ($asm_line < @asm_in) {
+    $_ = $asm_in[$asm_line++];
+    push @asm_out, $_;
+    if (/^\t\.section\t\.(text|text_ram|data|bss|rodata|textini[123]|dataini[123])\.${idre},/) {
+	my $section = $1;
+	my $sym = $2;
+	my $label = undef;
+	while ($asm_line < @asm_in) {
+	    $_ = $asm_in[$asm_line++];
+
+	    # Search for symbol label. Note that for reclaimed local static variables, the section
+	    # name does not include the compiler appended random number, whereas the symbol
+	    # label does, e.g.
+	    #
+	    #    .section    .dataini2.write_phy_reg_table,"a",%progbits
+	    # ...
+	    # write_phy_reg_table.20085:
+	    $label = $1 if (/^${idre}:$/ || (($section =~ /dataini[123]/) && (/^(\w+\.\d+):$/)));
+
+	    last if $label;
+	    push @asm_out, $_;
+	}
+	$label or die "Label for symbol-section ${sym} not found\n";
+	# If it's a static symbol, globalize it and arrange to rename it in second pass.
+	# Skip internal symbols where the label doesn't match the section name.
+	if ($label eq $sym && !defined $globals{$sym}) {
+	    $renames{$sym} = "${prefix}${sym}";
+	    push @asm_out, "\t.${globl}\t${sym}\n";
+	}
+	push @asm_out, "${label}:\n";
+    }
+}
+
+# Rename the static symbols in the output.
+# There are 211,000 lines in wlc.S and 224 symbols to replace.
+# A naive algorithm will take several minutes.
+# For both speed and safety, replacement is limited to lines matching
+# a specific list of patterns where symbols are known to appear.
+
+# Function that returns true if a line is a candidate for replacement of symbol(s)
+sub ok2replace_arm {
+    return (/^\t\.(section|type|global|set|size|thumb|word|4byte)/ ||		# dot keywords
+            /^${idre}:/ ||						# labels
+            /^\tbl\t/   ||						# branch targets
+            /^\tb\t/	||						# branch targets
+            /^\tmovw\t/	||						# function pointers
+            /^\tmovt\t/							# function pointers
+            );
+}
+
+sub ok2replace_mips {
+    return (/^\t\.(section|globl|ent|end|type|size|word|4byte)/ ||	# dot keywords
+	    /^${idre}:/ ||						# labels
+	    /^\tjal\t/ ||						# branch targets
+	    /\%(lo|hi)\(/						# addr construction
+	    );
+}
+
+# Place delimiters around every identifier on each candidate line
+my $delim = chr(1);
+map {
+    s/${idre}/$delim$1$delim/g if &$ok2replace($_);
+} @asm_out;
+
+# Combine all the lines into a giant string for 10-15x faster replacement
+my $asm = join '', @asm_out;
+
+# Globally replace each delimited identifier that matches
+map {
+    $asm =~ s/\Q$delim$_$delim\E/$renames{$_}/gm;
+} keys %renames;
+
+# Remove all remaining delimiters
+$asm =~ s/$delim//gm;
+
+# Overwrite the input file with the output
+open($fh, ">$fname") or
+    die "Could not open $fname for writing: $!\n";
+print $fh $asm;
+close $fh;

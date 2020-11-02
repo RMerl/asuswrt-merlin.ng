@@ -1,0 +1,4 @@
+GUID=96de1067-57dc-417d-8e13-6d53452e0dbe
+BUILD_ID=1
+JENKINS_HOME=/projects/bca_jenkins/hndjenkins/jenkins_runtime
+JOB_NAME=GOLD__KUDU_REL_17_10_121_37__LINUX_4.1.0_ROUTER_DHDAP__ExtractorProd

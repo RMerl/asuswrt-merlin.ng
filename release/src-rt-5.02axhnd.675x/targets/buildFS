@@ -417,7 +417,7 @@ $BUSYBOX_DIR/examples/depmod.pl -k $LINUXDIR/vmlinux -b $INSTALL_DIR/../fs/lib/m
 mkdir -p ${TARGET_FS}/rom/etc/wlan/dhd/43684b0
 cp ${HND_SRC}/bcmdrivers/broadcom/net/wl/impl${BCM_WLIMPL}/sys/src/dongle/bin/43684b0/rtecdc.bin ${TARGET_FS}/rom/etc/wlan/dhd/43684b0
 
-if [ "$BUILD_NAME" == "RT-AX55" ]; then
+if [ "$BUILD_NAME" == "RT-AX55" ] || [ "$BUILD_NAME" == "RT-AX1800" ]; then
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/extra/bcm_usb.ko
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/extra/dhd.ko
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/cdrom

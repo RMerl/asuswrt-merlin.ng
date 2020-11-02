@@ -18,10 +18,6 @@ ifeq  ($(strip $(CONFIG_BCM_FHW)),y)
 pktflow-objs   += fcachehw.o
 endif
 
-ifeq  ($(strip $(CONFIG_BCM_OVS)),y)
-pktflow-objs   += fcache_options.o
-endif
-
 obj-$(CONFIG_BCM_PKTFLOW) += pktflow.o
 
 EXTRA_CFLAGS += -I. -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD) -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMSHARED_PRIV_PATH)/$(BRCM_BOARD) -I$(INC_BRCMBOARDPARMS_PATH)/$(BRCM_BOARD) $()

@@ -279,13 +279,15 @@ void __init kerSysInitDyingGaspHandler( void )
     GPIO->dg_control |= (1 << DG_EN_SHIFT);    
 #elif defined(CONFIG_BCM96848)
     MISC_REG->DgSensePadCtrl |= (1 << DG_EN_SHIFT); 
-#elif defined(CONFIG_BCM94908) || defined(CONFIG_BCM96858) || (defined(CONFIG_BCM963158) && (CONFIG_BRCM_CHIP_REV==0x63158A0))
+#elif defined(CONFIG_BCM96858) || (defined(CONFIG_BCM963158) && (CONFIG_BRCM_CHIP_REV==0x63158A0))
     MISC->miscDgSensePadCtrl |= (1 << DG_EN_SHIFT);
 #elif defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178)
     /* Set BgBias and Afe regs via BPCM */
     pmc_dgasp_init();
 #elif defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878)
     TOP->DgSensePadCtl |= (1 << DG_EN_SHIFT);
+#elif defined(CONFIG_BCM94908) 
+    TOPCTRL->DgSensePadCtrl |= (1 << DG_EN_SHIFT);
 #else
     {
 #if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963381)

@@ -17,6 +17,7 @@
 <object name="WLBAND." shortObjectName="WLBAND" requirements="P"  />
   <parameter name="2.4GHz"   defaultValue="BAND_B" />
   <parameter name="5GHz"   defaultValue="BAND_A" />
+  <parameter name="6GHz"   defaultValue="BAND_6G" />
 
 
 <object name="WLNBWCAP." shortObjectName="WLBWCAP" requirements="P" supportLevel="Present"  />
@@ -30,6 +31,7 @@
   <parameter name="off"   defaultValue="REG_MODE_OFF" />
   <parameter name="h"   defaultValue="REG_MODE_H" />
   <parameter name="d"   defaultValue="REG_MODE_D" />
+  <parameter name="strict_h"   defaultValue="4" />
 
 <object name="ONOFFAUTO." shortObjectName="ONOFFAUTO" requirements="P" supportLevel="Present"  />
  <parameter name="off"  defaultValue="0"  />

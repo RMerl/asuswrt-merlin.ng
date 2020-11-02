@@ -643,6 +643,9 @@
   <parameter name="Enable" type="boolean" specSource="TR98" profile="QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="true" />
     <description source="TRx">Enables or disables all queuing operation.</description>
 
+  <parameter name="X_BROADCOM_COM_EnableStateChanged" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" denyActiveNotification="true" neverWriteToConfigFile="true" hideParameterFromAcs="true" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Indicated the QoS enable has been changed.</description>
+
   <parameter name="MaxQueues" type="unsignedInt" specSource="TR98" profile="QoS:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="24" />
     <description source="TRx">The maximum number of queues supported by the &#10;CPE. Calculated as the sum of the number of &#10;different queues pointed to by Classification table. &#10;For each entry in the Classification table, the &#10;count includes a queue for each egress interface &#10;to which the corresponding classified traffic could &#10;reach. </description>
 
@@ -1605,6 +1608,13 @@
   <parameter name="ValidLifeTime" type="int" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="ReadWrite" defaultValue="-1" />
 
 
+<object name="InternetGatewayDevice.LANDevice.{i}.X_BROADCOM_COM_IPv6LANHostConfigManagement.RadvdConfigManagement.RadvdOtherInfo." shortObjectName="RadvdOtherInfoObject" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="Present" />
+
+  <parameter name="RecursiveDns" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Recursive DNS server.</description>
+
+  <parameter name="DnssSearchList" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">DNS Search List.</description>
 
 
 <object name="InternetGatewayDevice.LANDevice.{i}.X_BROADCOM_COM_IPv6LANHostConfigManagement.RadvdConfigManagement.PrefixInformation.{i}." shortObjectName="PrefixInfoObject" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="MultipleInstances" pruneWriteToConfigFile="true" />
@@ -2606,7 +2616,7 @@
 
   <parameter name="Wsc_config_state" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" maxLength="4" />
 
-  <parameter name="Wsc_mode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="disabled" maxLength="12" />
+  <parameter name="Wsc_mode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="enabled" maxLength="12" />
 
 
 
@@ -4726,7 +4736,7 @@
 
 
 
-<object name="InternetGatewayDevice.WANDevice.{i}.X_BROADCOM_COM_EponInterfaceConfig." shortObjectName="WanEponIntfObject" specSource="Broadcom" profile="X_BROADCOM_COM_EponWAN:1" requirements="P" supportLevel="Present" lockZone="9" />
+<object name="InternetGatewayDevice.WANDevice.{i}.X_BROADCOM_COM_EponInterfaceConfig." shortObjectName="WanEponIntfObject" specSource="Broadcom" profile="X_BROADCOM_COM_EponWAN:1" requirements="P" supportLevel="Present" lockZone="0" />
   <description source="TRx">This object models physical layer properties &#10;specific to a single Epon physical connection &#10;used for Internet access on a CPE. This object is &#10;intended for a CPE with an Epon WAN &#10;interface, and is exclusive of any other &#10;WAN</description>
 
   <parameter name="Enable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_EponWAN:1" requirements="W" supportLevel="ReadWrite" />
@@ -4780,7 +4790,7 @@
 
 
 
-<object name="InternetGatewayDevice.WANDevice.{i}.X_BROADCOM_COM_L2tpAcIntfConfig." shortObjectName="L2tpAcIntfConfigObject" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="Present" lockZone="0" />
+<object name="InternetGatewayDevice.WANDevice.{i}.X_BROADCOM_COM_L2tpAcIntfConfig.{i}." shortObjectName="L2tpAcIntfConfigObject" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="Present" lockZone="0" />
   <description source="BROADCOM">This object contains per tunnel L2TP Access Concentrator (LAC) config settings.  Individual sessions in this tunnel are&#10;configured in the L2TP AC Link Config object.</description>
 
   <parameter name="Enable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="ReadWrite" defaultValue="false" />
@@ -4801,7 +4811,7 @@
 
 
 
-<object name="InternetGatewayDevice.WANDevice.{i}.X_BROADCOM_COM_WANPonInterfaceConfig." shortObjectName="WanPonIntfObject" specSource="Broadcom" profile="X_BROADCOM_COM_PonWAN:1" supportLevel="Present" lockZone="9" />
+<object name="InternetGatewayDevice.WANDevice.{i}.X_BROADCOM_COM_WANPonInterfaceConfig." shortObjectName="WanPonIntfObject" specSource="Broadcom" profile="X_BROADCOM_COM_PonWAN:1" supportLevel="Present" lockZone="0" />
   <description source="BROADCOM">This object is the physical layer properties specific to PON used for WAN port on a CPE.  </description>
 
   <parameter name="Enable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_PonWAN:1" supportLevel="ReadWrite" defaultValue="false" />
@@ -5565,7 +5575,7 @@
     <description source="BROADCOM">Is this session enabled.</description>
 
   <parameter name="SessionName" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="ReadWrite" defaultValue="" />
-    <description source="BROADCOM">User friendly name for this tunnel session.  This can be anything the user chooses.&#10;It is only used by the UI to identify this tunnel.  It is not used internally.</description>
+    <description source="BROADCOM">User friendly name for this tunnel session.  This can be anything the user chooses.&#10;It is only used by the UI to identify this session.  It is not used internally.</description>
 
   <parameter name="ConnectionMode" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="ReadWrite" defaultValue="DefaultMode" validValuesArray="ConnectionModeValues" />
     <description source="BROADCOM">DefaultMode:  Only one WAN service can be on this layer2 interface.&#10;VlanMuxMode: for multiple vlan interface base on this layer2 interface.&#10;MultipleService Mode:  for multiple service over this layer2 connection.&#10;For now, only DefaultMode is supported.  We put this parameter here to&#10;make this object similar to the DSLLinkConfig object.</description>
@@ -5574,13 +5584,13 @@
     <description source="BROADCOM">Indicates the state of the L2TP session.&#10;</description>
 
   <parameter name="SessionId" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="ReadOnly" defaultValue="0" />
-    <description source="BROADCOM">This is an id that is created when the tunnel is created.  It must be passed to&#10;ppp when it tries to run over the tunnel.  The l2tp LAC userspace daemon sends&#10;this info to ssk.  ssk writes it into this param.  Therefore, it is read-only.</description>
+    <description source="BROADCOM">This is an id that is created when the session is created.  It must be passed to&#10;ppp when it tries to run over the tunnel.  The l2tp LAC userspace daemon sends&#10;this info to ssk.  ssk writes it into this param.  Therefore, it is read-only.</description>
 
-  <parameter name="IfName" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="ReadOnly" defaultValue="l2tp0" maxLength="32" />
+  <parameter name="IfName" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="ReadWrite" defaultValue="" maxLength="32" />
     <description source="BROADCOM">Even though Linux does not create an interface for the l2tp tunnel, it is &#10;convenient for the CMS code to have an ifName to identify this object.&#10;That makes it consistent with the other link objects in the system.&#10;For now, the ifName will always be l2tp0.</description>
 
-
-
+  <parameter name="TunnelName" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="ReadWrite" defaultValue="" maxLength="32" />
+    <description source="BROADCOM">which l2tp tunnel this session is created on.&#10;support multi session on single tunnel and multi session on multi tunnel.</description>
 
 <object name="InternetGatewayDevice.WANDevice.{i}.WANConnectionDevice.{i}.WANPOTSLinkConfig." shortObjectName="WanPotsCfgObject" specSource="TR98" profile="POTSWAN:1" requirements="P" supportLevel="NotSupported" />
   <description source="TRx">This object models the POTS link layer properties &#10;specific to a single physical connection used for &#10;Internet access on a CPE. This object is intended &#10;for a CPE with a POTS WAN interface, and is &#10;exclusive of any other WAN</description>
@@ -5853,6 +5863,9 @@
 
   <parameter name="X_BROADCOM_COM_LFlag" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="ReadOnly" defaultValue="false" />
     <description source="BROADCOM">LFlag from Router Advertisement</description>
+
+  <parameter name="X_BROADCOM_COM_IPv6RaPrefix" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="ReadWrite" />
+    <description source="BROADCOM">IPv6 Prefix from Router Advertisement.</description>
 
   <parameter name="X_BROADCOM_COM_Dhcp6cPid" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="65535" />
     <description source="BROADCOM">The process id the dhcpv6 client launched for this connection. &#10;A pid of 0 indicates that no dhcp6c is running.</description>
@@ -6128,7 +6141,7 @@
   <parameter name="AutoDisconnectTime" type="unsignedInt" specSource="TR98" profile="Unspecified" requirements="W" supportLevel="NotSupported" />
     <description source="TRx">The time in seconds since the establishment of &#10;the connection after which connection termination &#10;is automatically initiated by the CPE. This occurs &#10;irrespective of whether the connection is being &#10;used or not. A value of 0 (zero) indicates that the &#10;connection is not to be shut down automatically. </description>
 
-  <parameter name="IdleDisconnectTime" type="unsignedInt" specSource="TR98" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+  <parameter name="IdleDisconnectTime" type="unsignedInt" specSource="TR98" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="30" />
     <description source="TRx">The time in seconds that if the connection remains &#10;idle, the CPE automatically terminates the &#10;connection. A value of 0 (zero) indicates that the &#10;connection is not to be shut down automatically. </description>
 
   <parameter name="WarnDisconnectDelay" type="unsignedInt" specSource="TR98" profile="Unspecified" requirements="W" supportLevel="NotSupported" />
@@ -6256,7 +6269,7 @@
     <description source="TRx">PPPoE Service Name.</description>
     <description source="BROADCOM">PSI name: BcmCfm_PppCfg.svcName</description>
 
-  <parameter name="ConnectionTrigger" type="string" specSource="TR98" profile="Baseline:1" requirements="W" supportLevel="ReadWrite" validValuesArray="ConnectionTriggerValues" />
+  <parameter name="ConnectionTrigger" type="string" specSource="TR98" profile="Baseline:1" requirements="W" supportLevel="ReadWrite" defaultValue="AlwaysOn" validValuesArray="ConnectionTriggerValues" />
     <description source="TRx">Trigger used to establish the IP connection. &#10;Enumeration of: &#10;&quot;OnDemand&quot; &#10;&quot;AlwaysOn&quot; &#10;&quot;Manual&quot; </description>
 
   <parameter name="RouteProtocolRx" type="string" specSource="TR98" profile="Baseline:1" requirements="W" supportLevel="ReadWrite" defaultValue="Off" validValuesArray="RouteProtocolRxValues" />
@@ -6349,6 +6362,9 @@
 
   <parameter name="X_BROADCOM_COM_LFlag" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="ReadOnly" defaultValue="false" />
     <description source="BROADCOM">LFlag from Router Advertisement</description>
+
+  <parameter name="X_BROADCOM_COM_IPv6RaPrefix" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="ReadWrite" />
+    <description source="BROADCOM">IPv6 Prefix from Router Advertisement.</description>
 
   <parameter name="X_BROADCOM_COM_Dhcp6cPid" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="65535" />
     <description source="BROADCOM">The process id the dhcpv6 client launched for this connection. &#10;A pid of 0 indicates that no dhcp6c is running.</description>

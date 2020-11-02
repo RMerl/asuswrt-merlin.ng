@@ -98,6 +98,13 @@
 #endif
 
 /*****************************************************************************/
+/**  DWELL_TIMER Timeout                                                    **/
+/*****************************************************************************/
+#ifndef RDPA_DWELL_TIMER_TIMEOUT
+#define RDPA_DWELL_TIMER_TIMEOUT 10000
+#endif
+
+/*****************************************************************************/
 /**  TO6 Timeout                                                            **/
 /*****************************************************************************/
 #ifndef RDPA_TO6_TIMEOUT
@@ -199,7 +206,7 @@
 #endif
 
 /*****************************************************************************/
-/** Power calibration size (bytes) - muliply of 4 bytes, up to 508 bytes    **/
+/** Power calibration size (bytes) - multiple of 4 bytes, up to 508 bytes    **/
 /*****************************************************************************/
 #ifndef RDPA_POWER_CALIBRATION_SIZE
 #define RDPA_POWER_CALIBRATION_SIZE 72

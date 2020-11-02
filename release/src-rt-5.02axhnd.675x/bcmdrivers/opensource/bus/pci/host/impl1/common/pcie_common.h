@@ -101,6 +101,10 @@ extern "C" {
 #define HCD_APON_DEFAULT                           0
 #define HCD_APON_ON                                1
 #define HCD_APON_OFF                               2
+#define HCD_APON_OFF_WITH_DOMAIN                   3
+#define HCD_APON_LAST                              (HCD_APON_OFF_WITH_DOMAIN)
+#define HCD_APON_MASK                              3
+#define HCD_APON_SHIFT                             2 /* 2 bits */
 
 /*
  *  Structures

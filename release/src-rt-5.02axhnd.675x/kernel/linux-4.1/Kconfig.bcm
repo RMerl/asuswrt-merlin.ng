@@ -56,7 +56,6 @@ config BCM96846
 	bool "96846"
 	depends on ARM
 	depends on BCM_KF_ARM_BCM963XX
-	select EARLY_PRINTK
 	select MACH_BCM96846
 	select ARCH_REQUIRE_GPIOLIB
 
@@ -216,7 +215,6 @@ config DEBUG_UART_ADDR
 	default 0xfffe8600 if (BCM963138) || (BCM963148)
 	default 0xff800640 if (BCM96846)
 	default 0xff812000 if (BCM947622) || (BCM963178) || (BCM96878)
-	depends on EARLY_PRINTK
 	depends on BCM_KF_ARM_BCM963XX
 	depends on ARM
 	help
@@ -646,6 +644,11 @@ config BCM_PON_WAN_TYPE_AUTO_DETECT
     depends on BCM_WANTYPEDET && (BCM96858 || BCM96856 || BCM96846 || BCM96878)
     default y
 
+config BCM_BUILD_NGPON_AMD2
+    bool "989.3AMD2 / 9807.1AMD1 support"
+    depends on (BCM96858 || BCM96856 || BCM963158)
+    default y
+
 config BCM_SFP
 	tristate "Support for SFP"
 
@@ -778,6 +781,12 @@ config BCM_CPEROUTER
 	bool "Enable BCA CPEROUTER"
 	default  n
 	depends on BCM_WLAN
+
+config BCM_WLAN_DPDCTL
+	bool "Power down with dummy interface for Wireless LAN"
+	default n
+	select DUMMY
+	depends on BCM_CPEROUTER
 
 config BCM_WLAN_WLVISUALIZATION
 	bool "Enable wlan Visualization"
@@ -1477,6 +1486,11 @@ config BCM_CPEPKTC
 config BCM_PKTFWD
 	bool "Build Packet Forwarder Handoff"
 	depends on BCM_WLAN_16BIT_STATION_CHAIN_IDX_SUPPORT
+	default n
+
+config BCM_PKTFWD_FLCTL
+	bool "Build Credit based Host Flow Control"
+	depends on BCM_PKTFWD
 	default n
 
 config BCM_WLAN_REMOVE_INTERNAL_DEBUG

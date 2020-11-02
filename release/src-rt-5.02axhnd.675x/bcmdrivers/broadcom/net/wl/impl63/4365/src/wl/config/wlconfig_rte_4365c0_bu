@@ -1,0 +1,270 @@
+#
+# Broadcom 802.11ac Networking Device Driver Configuration file
+#
+# Copyright 2020 Broadcom
+#
+# This program is the proprietary software of Broadcom and/or
+# its licensors, and may only be used, duplicated, modified or distributed
+# pursuant to the terms and conditions of a separate, written license
+# agreement executed between you and Broadcom (an "Authorized License").
+# Except as set forth in an Authorized License, Broadcom grants no license
+# (express or implied), right to use, or waiver of any kind with respect to
+# the Software, and Broadcom expressly reserves all rights in and to the
+# Software and all intellectual property rights therein.  IF YOU HAVE NO
+# AUTHORIZED LICENSE, THEN YOU HAVE NO RIGHT TO USE THIS SOFTWARE IN ANY
+# WAY, AND SHOULD IMMEDIATELY NOTIFY BROADCOM AND DISCONTINUE ALL USE OF
+# THE SOFTWARE.
+#
+# Except as expressly set forth in the Authorized License,
+#
+# 1. This program, including its structure, sequence and organization,
+# constitutes the valuable trade secrets of Broadcom, and you shall use
+# all reasonable efforts to protect the confidentiality thereof, and to
+# use this information only in connection with your use of Broadcom
+# integrated circuit products.
+#
+# 2. TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED
+# "AS IS" AND WITH ALL FAULTS AND BROADCOM MAKES NO PROMISES,
+# REPRESENTATIONS OR WARRANTIES, EITHER EXPRESS, IMPLIED, STATUTORY, OR
+# OTHERWISE, WITH RESPECT TO THE SOFTWARE.  BROADCOM SPECIFICALLY
+# DISCLAIMS ANY AND ALL IMPLIED WARRANTIES OF TITLE, MERCHANTABILITY,
+# NONINFRINGEMENT, FITNESS FOR A PARTICULAR PURPOSE, LACK OF VIRUSES,
+# ACCURACY OR COMPLETENESS, QUIET ENJOYMENT, QUIET POSSESSION OR
+# CORRESPONDENCE TO DESCRIPTION. YOU ASSUME THE ENTIRE RISK ARISING
+# OUT OF USE OR PERFORMANCE OF THE SOFTWARE.
+#
+# 3. TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL
+# BROADCOM OR ITS LICENSORS BE LIABLE FOR (i) CONSEQUENTIAL, INCIDENTAL,
+# SPECIAL, INDIRECT, OR EXEMPLARY DAMAGES WHATSOEVER ARISING OUT OF OR
+# IN ANY WAY RELATING TO YOUR USE OF OR INABILITY TO USE THE SOFTWARE EVEN
+# IF BROADCOM HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES; OR (ii)
+# ANY AMOUNT IN EXCESS OF THE AMOUNT ACTUALLY PAID FOR THE SOFTWARE ITSELF
+# OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS SHALL APPLY
+# NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
+#
+# $Id: wlconfig_rte_4365c0_bu $
+#
+# NOTE: This file is for the 4365c0 RAM
+#
+
+# basic common code
+WL=1
+
+# Basic modes
+STA=1
+AP=1
+#APSTA=1
+
+# WAPI features
+#BCMWAPI_WPI=1
+#BCMWAPI_WAI=1
+
+# promisc mode
+PROMISC=0
+WL_MONITOR=0
+
+# Bluetooth coex stuff
+#BCMECICOEX=1
+#WLCOEX=1
+# 2 wire coex interface to BT chip
+BTC2WIRE=0
+
+# bus : AXI backplane
+SOCI_AI=1
+BCMIPXOTP=1
+
+BCMAUTH_PSK=1
+BCMSUP_PSK=1
+
+# regulatory domains
+WL11D=1
+WL11N=1
+# tallies for debug
+WLCNT=1
+WME=1
+#BCMCCX=1
+# Call Admission Control, QoS / 802.11e related
+#WLCAC=1
+
+WLAMPDU=1
+# AQM replace this
+WLAMPDU_UCODE=0
+# AQM replace this
+WLAMPDU_HW=0
+WLAMPDU_AQM=1
+
+#WLAMSDU=1
+#WLAMSDU_TX=1
+#WLP2P=1
+
+# This is by default enabled for APSTA/BTAMP, need not explicitly enable.
+# AP channel selection
+#APCS=1
+#WLRM=1
+
+# radio measurements
+#WIFI_ACT_FRAME=1
+#PACKET_FILTER=1
+#PACKET_FILTER2=1
+
+# avoid chip overheating by entering sleep mode on (too) high throughput.
+#RECEIVE_THROTTLE=1
+DELTASTATS=1
+
+# debug tallies
+WLCNTSCB=1
+BCMOTP=1
+KEEP_ALIVE=1
+NO_BCMINTERNAL=1
+
+#ap power save feature
+#RADIO_PWRSAVE=1
+
+# preferred network offloading
+#WLPFN=1
+# multi BSS (AP feature)
+#MBSS=1
+# Tcp/Ip Offload Engine
+#TOE=1
+# Neighbor Advertisement Offload
+#WLNDOE=1
+# Tunnel Direct Link Setup
+#WLTDLS=1
+# ARP offload
+#ARPOE=1
+# channel quality measurements
+#WLCQ=1
+# wireless distribution service, AP feature.
+#WDS=1
+# Direct Packet Transfer between 2 STAs, obsolete feature
+WL11AC=1
+WL11AC_160=0
+# transmit beam forming
+WLTXBF=1
+# tx power per rate
+PPR_API=1
+
+# For Voice Enterprise(VE)
+# radio resource management
+WL11K=1
+WL11K_AP=1
+# driver resident supplicant / fast roaming / 802.11r
+WLFBT=1
+# 11v wireless radio management info
+WLWNM=1
+WLSCANCACHE=1
+
+# radar avoidance
+WL11H=1
+
+ifeq ($(MFGTEST),1)
+BCMNVRAMW=1
+BCMNVRAMR=0
+else
+BCMNVRAMW=0
+BCMNVRAMR=1
+endif
+
+# e.g. P2P support. Enables 'VSDB/MCXN'.
+#WLMCHAN=1
+
+#PROP_TXSTATUS=1 cannot enable for msgbuf
+AMPDU_HOSTREORDER=1
+
+# security / initialization vector related
+#BRCMAPIVTW=1
+# throttle tx on rx fifo overflow
+#WLRXOV=1
+# Reliable multicast
+#WL_RELMCAST=1
+
+# AMPDU related
+# rx throughput improvement
+#WL_RXEARLYRC=1
+# proximity detection service
+#WL_PROXDETECT=1
+# improve interworking with external networks
+#WL11U=1
+# peer to peer offloading
+#P2PO=1
+# 802.11u ANQP offload / hot spot
+#ANQPO=1
+L2_FILTER=1
+# packet chaining to reduce per-packet overhead
+PKTC_DONGLE=1
+PKTC_TX_DONGLE=1
+# Link Power Control
+#WL_LPC=1
+# external supplicant to handle fast-roaming properly. Opportunistic Key Caching.
+WL_OKC=1
+
+# 11w (increase security of management frames)
+BCMCCMP=1
+MFP=1
+
+BCMSROM=1
+
+# PCIe Latency Tolerance Reporting (LTR)
+#WL_LTR=1 changed after ROM release. WL_LTR should be disabled for firmware builds.
+
+#4365c0 (20693) settings
+BCMPHYCORENUM=4
+BCMRADIOREV=0x21
+BCMRADIOVER=0x0
+BCMRADIOID=0x3eb
+
+EVDATA_BSSINFO=1
+
+WLFMC=1
+WLRCC=1
+
+# router options: high ROM priority
+#WET=1
+#WET_TUNNEL=1
+#DWDS=1
+#PSTA=1
+#WLPROBRESP_SW=1
+#TRAFFIC_MGMT=1
+#TRAFFIC_MGMT_DWM=1
+#TRAFFIC_MGMT_RSSI_POLICY=1
+PKTQ_LOG=1
+
+# router options: medium ROM priority
+#BCM_DCS=1
+#WLLED=1
+#WLNAR=1
+WL_AP_TPC=1
+WLWNM_AP=1
+WLCHANIM=1
+
+# router options: lower ROM priority
+WLSTAPRIO=1
+#WL_STA_MONITOR=1
+
+# router options: lowest ROM priority
+IGMP_UCQUERY=1
+UCAST_UPNP=1
+MCAST_REGEN=1
+#RXCHAIN_PWRSAVE=1
+SMF_STATS=1
+
+#New since a0
+#PSPRETEND=1
+SCB_BS_DATA=1
+#WLINTFERSTAT=1
+
+#4365b0 Additional features
+#MU MIMO feature
+WL_MU_TX=1
+#BCMLTECOEX=1
+#D3HOT_SUPPORT=1
+WLBSSLOAD=1
+WLOSEN=1
+WLPROBRESP_MAC_FILTER=1
+BCMSPLITRX=1
+#WLTAF=1
+#WLATF=1
+#BCMQT=1
+
+BCM_DMA_INDIRECT=1
+BCM_DMA_CT=1

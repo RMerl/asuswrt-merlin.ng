@@ -29,7 +29,7 @@ ifneq ($(strip $(CONFIG_MTD_NAND)),)
 	EXTRA_CFLAGS += -DBUILD_NAND
 endif
 
-ifneq ($(strip $(CONFIG_BRCM_DRIVER_SERIAL)),)
+ifneq ($(strip $(CONFIG_BCM_SERIAL_CONSOLE)),)
 	EXTRA_CFLAGS += -DBRCM_SERIAL_CONSOLE
 endif
 

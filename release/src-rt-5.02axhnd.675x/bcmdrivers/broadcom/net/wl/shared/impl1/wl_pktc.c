@@ -831,6 +831,9 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 		return pktc_tx_enabled;
 
 	case PKTC_TBL_UPDATE:
+	{
+		bool is_wlan;
+
 		if (!g_pktc_tbl || !g_pktc_tbl[0].g_stats)
 			return 0;
 
@@ -850,20 +853,27 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 		if ((pt == NULL) || (pt->idx >= CHAIN_ENTRY_NUM))
 			return PKTC_INVALID_CHAIN_IDX;
 
+		is_wlan = is_netdev_wlan((struct net_device *)param1);
+
 #if defined(CONFIG_BCM_FC_BASED_WFD)
-		/* For CONFIG_BCM_FC_BASED_WFD , TXCHAIN will go through FCACHE, so it's ok for enable CHAIN for wl to wl ... */
-		if (pt->tx_dev == NULL) {
-			/* remove this chain entry */
-			PKTC_TBL_FN_CLEAR(g_pktc_tbl, (uint8 *)param0);
+		/* For CONFIG_BCM_FC_BASED_WFD , TXCHAIN will go through FCACHE, so it's ok for enable CHAIN for wl to wl.
+                   If wl_handle is NULL and device is_wlan, which means pkt is going to dhd drv ,create chain entry for RX Chain.
+                   But report INVALID_CHAIN_IDX for avoid update blog that send to DHD
+		*/
+		if ((pt->tx_dev == NULL) || (((pktc_info_t *)pt->wl_handle == NULL || (pktc_handle_t *)param2 == NULL) &&
+			(is_wlan || (!strncmp(pt->tx_dev->name, "wds", 3))))) {
+			/* remove this chain entry only when tx_dev == NULL */
+			if (pt->tx_dev == NULL) 
+			      PKTC_TBL_FN_CLEAR(g_pktc_tbl, (uint8 *)param0);
 			return PKTC_INVALID_CHAIN_IDX;
 		}
 #else
-		/* if wl_handle is NULL and device is IFF_BCM_WLANDEV, which means pkt is going to dhd drv,
+		/* if wl_handle is NULL and device is wlan, which means pkt is going to dhd drv,
 		 * we should not create the chain entry for it, hence pkt won't be chained and sent
 		 * to tx_dev directly but fcache. Same as wds.
 		 */
-		if ((pt->tx_dev == NULL) || (((pktc_info_t *)pt->wl_handle == NULL) &&
-			((pt->tx_dev->priv_flags & IFF_BCM_WLANDEV) || (!strncmp(pt->tx_dev->name, "wds", 3))))) {
+		if ((pt->tx_dev == NULL) || (((pktc_info_t *)pt->wl_handle == NULL || (pktc_handle_t *)param2 == NULL) &&
+			(is_wlan || (!strncmp(pt->tx_dev->name, "wds", 3))))) {
 			/* remove this chain entry */
 			PKTC_TBL_FN_CLEAR(g_pktc_tbl, (uint8 *)param0);
 			return PKTC_INVALID_CHAIN_IDX;
@@ -887,6 +897,7 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 #else
 		return pt->idx; /* return chain index */
 #endif /* BCM_WFD */
+	}
 
 	case PKTC_TBL_DELETE:
 		if (!g_pktc_tbl || !g_pktc_tbl[0].g_stats)

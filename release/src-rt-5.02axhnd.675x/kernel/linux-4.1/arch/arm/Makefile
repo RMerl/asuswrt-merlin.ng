@@ -19,6 +19,12 @@ LDFLAGS_vmlinux	+= --be8
 LDFLAGS_MODULE	+= --be8
 endif
 
+ifdef BCM_KF # defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+ifeq ($(CONFIG_ARM_MODULE_PLTS),y)
+LDFLAGS_MODULE	+= -T $(srctree)/arch/arm/kernel/module.lds
+endif
+
+endif # BCM_KF # defined(CONFIG_BCM_KF_MISC_BACKPORTS)
 OBJCOPYFLAGS	:=-O binary -R .comment -S
 GZFLAGS		:=-9
 #KBUILD_CFLAGS	+=-pipe

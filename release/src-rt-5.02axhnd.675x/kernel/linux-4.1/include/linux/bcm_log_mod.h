@@ -154,6 +154,8 @@ typedef enum {
     BCM_FUN_ID_ENET_SYSPORT_CONFIG,
     BCM_FUN_ID_ENET_SYSPORT_QUEUE_MAP,
     BCM_FUN_ID_ENET_REMAP_TX_QUEUE,
+    BCM_FUN_ID_ENET_PHY_SPEED_SET,
+    BCM_FUN_ID_ENET_TM_EN_SET,
     /* The arguments of the BCM TM functions are defined by bcmTmDrv_arg_t */
     BCM_FUN_ID_TM_REGISTER,
     BCM_FUN_ID_TM_PORT_CONFIG,
@@ -258,8 +260,8 @@ typedef struct {
 } BCM_runnerPrepend_t;
 
 typedef struct {
-    unsigned int sw_num;
-    unsigned int mac_id;
+    unsigned int sysport;
+    unsigned int port;
     unsigned int is_wan;
 } BCM_EnetPortRole_t;
 
@@ -282,6 +284,7 @@ typedef struct {
     struct net_device *dev;
     int sysport;
     int port;
+    int nbr_of_queues;
 } bcmSysport_BlogChnl_t;
 
 typedef struct {
@@ -294,6 +297,7 @@ typedef struct {
 #define BCM_ENET_SYSPORT_QUEUE_MAP_PRIORITY_MAX  8
 
 typedef struct {
+    int blog_chnl;
     uint8_t priority_to_switch_queue[BCM_ENET_SYSPORT_QUEUE_MAP_PRIORITY_MAX];
 } bcmSysport_QueueMap_t;
 
@@ -307,6 +311,11 @@ typedef struct {
     uint8_t tx_queue;
     void *dev;
 } bcmEnet_QueueReMap_t;
+
+typedef struct {
+    struct net_device *dev;
+    int kbps;
+} bcmSysport_PhySpeed_t;
 
 #endif /* _BCM_LOG_MODULES_ */
 

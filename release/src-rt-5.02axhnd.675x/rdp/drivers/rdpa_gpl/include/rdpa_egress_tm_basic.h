@@ -33,8 +33,8 @@
 
 /** Priority for overall rate limiting */
 typedef enum {
-    rdpa_tm_orl_prty_low,       /**< Packets are counted. Excess packets are discarded */
-    rdpa_tm_orl_prty_high,      /**< Packets are counted. Excess packets are transmitted */
+    rdpa_tm_orl_prty_low,       /**< Packets are counted. Excess packets are discarded. */
+    rdpa_tm_orl_prty_high,      /**< Packets are counted. Excess packets are transmitted. */
 } rdpa_tm_orl_prty;
 
 #endif /* _RDPA_EGRESS_TM_H_ */

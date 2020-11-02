@@ -187,6 +187,9 @@ static inline void _rdpa_reason_set_tc_and_queue(rdpa_cpu_reason reason, uint8_t
     case rdpa_cpu_rx_reason_hit_trap_high:
     case rdpa_cpu_rx_reason_ingqos:
 #endif
+#if defined(XRDP) && defined(CONFIG_BCM_FTTDP_G9991)
+    case rdpa_cpu_rx_reason_etype_udef_0: /* udef index: INBAND_FILTER_RDPA_INDEX */
+#endif
         *queue = RDPA_CPU_QUEUE_HI;
         *tc = rdpa_cpu_tc_high;
         break;
@@ -708,10 +711,15 @@ void enet_spdtest_test_connect(bdmf_sysb sysb, rdpa_cpu_tx_info_t *info)
     {
         struct sk_buff *skb = PNBUFF_2_SKBUFF((pNBuff_t)sysb);
 
-        if (skb->sk && ((skb->sk->sk_mark & RDPA_UDPSPDTEST_SO_MARK_PREFIX) == RDPA_UDPSPDTEST_SO_MARK_PREFIX))
+        if (skb->recycle_and_rnr_flags & SKB_RNR_UDPSPDT_BASIC)
         {
             info->bits.is_spdsvc_setup_packet = 1;
-            info->spdt_so_mark = skb->sk->sk_mark;
+            info->spdt_so_mark = RDPA_UDPSPDTEST_SO_MARK_BASIC;
+        }
+        else if (skb->recycle_and_rnr_flags & SKB_RNR_UDPSPDT_IPERF3)
+        {
+            info->bits.is_spdsvc_setup_packet = 1;
+            info->spdt_so_mark = RDPA_UDPSPDTEST_SO_MARK_IPERF3;
         }
     }
     else if (IS_FKBUFF_PTR((pNBuff_t)sysb))
@@ -755,7 +763,6 @@ inline int _rdpa_cpu_send_sysb(bdmf_sysb sysb, rdpa_cpu_tx_info_t *info)
 #endif
 
 #if (defined(CONFIG_BCM_SPDTEST) || defined(CONFIG_BCM_SPDTEST_MODULE))
-    info->spdt_so_mark = 0;
 #ifdef XRDP
     /* XXX: Temporary solution - like for Speed Service */
     enet_spdtest_test_connect(sysb, info);
@@ -866,7 +873,25 @@ Exit:
     return rc;
 }
 
-bdmf_object_handle _create_rdpa_port(rdpa_if rdpaif, rdpa_emac emac, bdmf_object_handle owner, rdpa_if control_sid, int create_egress_tm)
+#if defined(CONFIG_BCM_DSL_XRDP)
+int default_filter_init(bdmf_object_handle port_obj)
+{
+    rdpa_filter_ctrl_t filter_ctrl;
+    int rc;
+
+    filter_ctrl.enabled = TRUE;
+    filter_ctrl.action = rdpa_forward_action_host;
+
+    /* adding default entry to always trap IP_FRAG packet */
+    rc = rdpa_port_ingress_filter_set(port_obj, RDPA_FILTER_IP_FRAG, &filter_ctrl);
+    enet_dbg("Adding filter '%u' for port %s, rc=%d\n", RDPA_FILTER_IP_FRAG,
+             bdmf_object_name(port_obj), rc);
+               
+    return rc;
+}
+#endif
+
+bdmf_object_handle _create_rdpa_port(rdpa_if rdpaif, rdpa_emac emac, bdmf_object_handle owner, rdpa_if control_sid, int create_egress_tm, int enable_set)
 {
     bdmf_error_t rc;
     BDMF_MATTR(rdpa_port_attrs, rdpa_port_drv());
@@ -876,7 +901,7 @@ bdmf_object_handle _create_rdpa_port(rdpa_if rdpaif, rdpa_emac emac, bdmf_object
 
     enet_dbgv("(if=%x, emac=%x, owner=%px)\n", rdpaif, emac, (void *)owner);
     if ((rc = rdpa_port_index_set(rdpa_port_attrs, rdpaif)))
-    {
+     {
         enet_err("Failed to set RDPA port index %d. rc=%d\n", rdpaif, rc);
         return NULL;
     }
@@ -930,6 +955,9 @@ bdmf_object_handle _create_rdpa_port(rdpa_if rdpaif, rdpa_emac emac, bdmf_object
     }
 
 skip_emac:
+    if (enable_set)
+        rdpa_port_enable_set(rdpa_port_attrs, 0);
+
     if ((rc = bdmf_new_and_set(rdpa_port_drv(), owner, rdpa_port_attrs, &port_obj)))
     {
         enet_err("Failed to create RDPA port %d. rc=%d\n", rdpaif, rc);
@@ -954,6 +982,14 @@ skip_emac:
     rc = 0;
 #endif
 
+#if defined(CONFIG_BCM_DSL_XRDP)
+    if ((rc = default_filter_init(port_obj)))
+    {
+        enet_err("Failed to set up default filter for RDPA port %d. rc=%d\n", rdpaif, rc);
+        goto Exit;
+    }
+#endif
+
     enet_dbg("Created RDPA port: %s\n", bdmf_object_name(port_obj));
 
 Exit:
@@ -970,7 +1006,7 @@ Exit:
 
 bdmf_object_handle create_rdpa_port(rdpa_if rdpaif, rdpa_emac emac, bdmf_object_handle owner, rdpa_if control_sid)
 {
-    return _create_rdpa_port(rdpaif, emac, owner, control_sid, 1);
+    return _create_rdpa_port(rdpaif, emac, owner, control_sid, 1, 0);
 }
 
 int port_runner_port_uninit(enetx_port_t *self)
@@ -1224,6 +1260,35 @@ int port_runner_mib_dump(enetx_port_t *self, int all)
     return 0;
 }
 
+// add by Andrew
+/* mib dump for ports on internal runner switch */
+int port_runner_mib_dump_us(enetx_port_t *self, void *ethswctl)
+{
+    /* based on impl5\bcmsw_runner.c bcmeapi_ethsw_dump_mib() */
+    mac_stats_t         mac_stats;
+    struct ethswctl_data *e = (struct ethswctl_data *)ethswctl;
+
+    mac_dev_stats_get(self->p.mac, &mac_stats);
+
+    /* Calculate Tx statistics */
+    e->port_stats.txPackets = mac_stats.tx_unicast_packet + 
+                              mac_stats.tx_multicast_packet + 
+                              mac_stats.tx_broadcast_packet;
+    e->port_stats.txDrops = mac_stats.tx_error;
+    e->port_stats.txBytes = mac_stats.tx_byte;
+
+    /* Calculate Rx statistics */
+    e->port_stats.rxPackets = mac_stats.rx_unicast_packet + 
+                              mac_stats.rx_multicast_packet + 
+                              mac_stats.rx_broadcast_packet;
+    e->port_stats.rxBytes = mac_stats.rx_byte;
+    e->port_stats.rxDrops = 0;
+    e->port_stats.rxDiscards = 0;
+
+    return 0;
+}
+// end of add
+
 int port_runner_sw_port_id_on_sw(port_info_t *port_info, int *port_id, port_type_t *port_type)
 {
     int rc;
@@ -1376,6 +1441,10 @@ static void port_runner_gpon_stats(enetx_port_t *self, struct rtnl_link_stats64 
    bdmf_object_handle gem = NULL;
    rdpa_iptv_stat_t iptv_stat;
    bdmf_object_handle iptv = NULL;
+#ifdef CONFIG_BCM_FTTDP_G9991   
+   rdpa_port_stat_t   wan_port_stat;
+#endif
+   
    int rc;
 
     while ((gem = bdmf_get_next(rdpa_gem_drv(), gem, NULL)))
@@ -1405,6 +1474,23 @@ gem_exit:
         goto iptv_exit;
 
     net_stats->multicast = iptv_stat.rx_valid_pkt;
+#ifdef CONFIG_BCM_KF_EXTSTATS
+    net_stats->rx_multicast_bytes = iptv_stat.rx_valid_bytes;
+#endif
+
+#ifdef CONFIG_BCM_FTTDP_G9991
+    rc = rdpa_port_stat_get(self->priv, &wan_port_stat);
+    if (rc)
+        goto iptv_exit;
+
+    net_stats->multicast = wan_port_stat.rx_multicast_pkt;
+#ifdef CONFIG_BCM_KF_EXTSTATS
+    net_stats->rx_broadcast_packets = wan_port_stat.rx_broadcast_pkt;
+    net_stats->tx_multicast_packets = wan_port_stat.tx_multicast_pkt;
+    net_stats->tx_broadcast_packets = wan_port_stat.tx_broadcast_pkt;
+#endif /* CONFIG_BCM_KF_EXTSTATS */    
+
+#endif /* CONFIG_BCM_FTTDP_G9991 */
 
 iptv_exit:
     if (iptv)
@@ -1473,7 +1559,7 @@ static int port_runner_gpon_uninit(enetx_port_t *self)
 static int dispatch_pkt_gpon(dispatch_info_t *dispatch_info)
 {
     int rc;
-    rdpa_cpu_tx_info_t info;
+    rdpa_cpu_tx_info_t info = {};
 
     info.method = rdpa_cpu_tx_port;
     info.port = rdpa_wan_type_to_if(rdpa_wan_gpon);
@@ -1531,6 +1617,7 @@ port_ops_t port_runner_gpon =
     .mib_dump = port_runner_mib_dump,
     .print_status = port_runner_print_status,
     .print_priv = port_runner_print_priv,
+    .mib_dump_us = port_runner_mib_dump_us, // add by Andrew
 };
 #endif /* GPON */
 
@@ -1542,6 +1629,7 @@ port_ops_t port_runner_port_mac =
     .pause_set = port_generic_pause_set,
     .mtu_set = port_runner_mtu_set,
     .mib_dump = port_runner_mib_dump,
+    .mib_dump_us = port_runner_mib_dump_us, // add by Andrew
 };
 
 #ifdef EPON
@@ -1743,6 +1831,7 @@ port_ops_t port_runner_epon =
     .print_status = port_runner_print_status,
     .print_priv = port_runner_print_priv,
     .link_change = port_runner_link_change,
+    .mib_dump_us = port_runner_mib_dump_us, // add by Andrew
 };
 #endif /* EPON */
 

@@ -27,11 +27,14 @@
 
   <parameter name="IgmpAdmission" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
     <description source="BROADCOM">IGMP admission flag. </description>
+
   <parameter name="JoinForceForward" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
 
   <parameter name="UpstreamIgmpRate" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
     <description source="BROADCOM">This attribute limits the maximum rate of upstream IGMP traffic.</description>
 
+  <parameter name="IgmpMcastIfNames" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="128" />
+    <description source="BROADCOM">Blank delimited list of multicast interfaces which can be IGMP multicast sources.</description>
 
 
 

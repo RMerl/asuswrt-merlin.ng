@@ -251,6 +251,7 @@ static int merlin_direct_lane_init(E_MERLIN_LANE lane_id, LPORT_PORT_MUX_SELECT 
     lane_config_t lane_conf = {};
 
     /* Change Speed */
+    MERLIN_WRITE_REG(0x1, lane_id, 0xd082, MASK_BITS_BETWEEN(0, 15), 0, 0x0000);
     MERLIN_WRITE_REG(0x3, lane_id, 0x0000, MASK_BIT(15), 15, 0x1); /* lane reset */
     MERLIN_WRITE_REG(0x1, lane_id, 0xd081, MASK_BIT(1), 1, 0x0); /* ln_dp_s_rstb */
     MERLIN_WRITE_REG(0x1, lane_id, 0xd0e3, MASK_BIT(1), 1, 0x1); /* byppass pmd tx oversampling */
@@ -305,7 +306,12 @@ static int merlin_direct_lane_init(E_MERLIN_LANE lane_id, LPORT_PORT_MUX_SELECT 
         MERLIN_WRITE_REG(0x3, lane_id, 0xc30b, MASK_BITS_BETWEEN(0, 5), 0, 0xf); /* SW_actual_speed */
         break;
     default:
-        return -1;
+        MERLIN_WRITE_REG(0x3, lane_id, 0xc457, MASK_BITS_BETWEEN(0, 15), 0, 0x0000);
+        MERLIN_WRITE_REG(0x3, lane_id, 0xc30b, MASK_BITS_BETWEEN(0, 15), 0, 0x1002);
+        MERLIN_WRITE_REG(0x3, lane_id, 0xc433, MASK_BITS_BETWEEN(0, 15), 0, 0x01c8);
+        MERLIN_WRITE_REG(0x1, lane_id, 0xd081, MASK_BITS_BETWEEN(0, 15), 0, 0x0001);
+        MERLIN_WRITE_REG(0x1, lane_id, 0xd082, MASK_BITS_BETWEEN(0, 15), 0, 0x0033);
+        return 0;
     }
 
     MERLIN_WRITE_REG(0x3, lane_id, 0xc457, MASK_BIT(0), 0, 0x1); /* rx_rstb_lane */

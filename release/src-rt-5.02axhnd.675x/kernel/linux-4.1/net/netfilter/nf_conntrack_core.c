@@ -1233,11 +1233,7 @@ void init_nf_conntrack_hash_rnd(void)
 void
 ip_conntrack_fc_resume(struct sk_buff *skb, struct nf_conn *ct, u_int8_t isv4)
 {
-	unsigned long mark = 0;
-	mark = ct->mark;
-	if (ct->mark != 0) 	{
-		B_IQOS_LOG_SKBMARK(skb, ct, skb->mark);
-	}
+	B_IQOS_LOG_SKBMARK(skb, ct, skb->mark);
 	return;
 }
 EXPORT_SYMBOL(ip_conntrack_fc_resume);

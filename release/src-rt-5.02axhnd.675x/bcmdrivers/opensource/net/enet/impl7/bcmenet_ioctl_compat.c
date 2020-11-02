@@ -58,6 +58,7 @@
 #include "bcmenet_common.h"
 #include "crossbar_dev.h"
 #include "phy_drv.h"
+#include "phy_macsec_common.h"
 
 extern int apd_enabled;
 extern int eee_enabled;
@@ -1114,7 +1115,7 @@ static int tr_get_next_port(enetx_port_t *port, void *ctx)
     return 0;
 }
 
-static int enet_get_next_port(enetx_port_t *port, enetx_port_t **next_port)
+int enet_get_next_port(enetx_port_t *port, enetx_port_t **next_port)
 {
     int rc;
 
@@ -1233,7 +1234,7 @@ int eth_get_gpon_sfp_info(sfp_type_t *sfp_type)
         return 0;
     }
 
-#if defined(CONFIG_I2C) && !defined(CONFIG_I2C_GPIO)
+#if defined(CONFIG_I2C) && !defined(CONFIG_I2C_GPIO) && defined(CONFIG_BCM_OPTICALDET)
     rc = trx_get_type(phy_dev->cascade_next->addr, &trx_type);
     switch(rc) {
         case OPTICALDET_NOSFP:
@@ -1301,6 +1302,9 @@ int enet_ioctl_compat_ethctl(struct net_device *dev, struct ifreq *rq, int cmd)
             return -EINVAL;
 
         phy_dev = enet_dev_get_phy_dev(dev, ethctl->sub_port);
+        if(!phy_dev)
+            return -EFAULT;
+
         if (phy_dev->phy_drv->phy_type == PHY_TYPE_MAC2MAC)
             return -EINVAL;
 
@@ -1360,6 +1364,8 @@ mapFail:
             }
 
             phy_dev = enet_dev_get_phy_dev(dev, ethctl->sub_port);
+            if(!phy_dev)
+                return -EFAULT;
             phy_dev = cascade_phy_get_last(phy_dev);
             ethctl->phy_addr = phy_dev->addr;
 
@@ -1399,6 +1405,9 @@ cd_end:
             phy_dev_t *phy_dev;
 
             phy_dev = phy_dev_get(PHY_TYPE_UNKNOWN, ethctl->phy_addr);
+            if(!phy_dev)
+                return -EFAULT;
+
             if (ethctl->flags == ETHCTL_FLAG_ACCESS_I2C_PHY)
             {
                 phy_dev = phy_dev_get_by_i2c(ethctl->phy_addr);
@@ -1645,7 +1654,7 @@ cd_end:
             if (port->port_type != PORT_TYPE_G9991_PORT)
                 return -EFAULT;
 
-            port->p.phy->priv = (void *)(long)(ethctl->op == ETHG9991CARRIERON);
+            port->p.phy->priv = (void *)((((unsigned long)port->p.phy->priv) & ~0x3) | (ethctl->op == ETHG9991CARRIERON)); /* Reuse and reset 2 LSB for state */
             phy_dev_link_change_notify(port->p.phy);
             return 0;
         }
@@ -1654,6 +1663,14 @@ cd_end:
         eth_get_gpon_sfp_info((sfp_type_t *)&ethctl->ret_val);
         return copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)) ? -EFAULT : 0;
 
+    case ETHPHYMACSEC:
+    {
+        macsec_api_data data = {};
+        copy_from_user(&data, rq->ifr_data + sizeof(struct ethctl_data), sizeof(macsec_api_data));
+        port = ((enetx_netdev *)netdev_priv(dev))->port;
+        phy_dev_macsec_oper(port->p.phy, &data);
+        return copy_to_user(rq->ifr_data + sizeof(struct ethctl_data), &data, sizeof(macsec_api_data)) ? -EFAULT : 0;
+    }
     default:
         return -EOPNOTSUPP;
     }
@@ -1967,6 +1984,25 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
             if (!ret && copy_to_user(rq->ifr_data , ethswctl, sizeof(struct ethswctl_data)))
                 return -EFAULT;
             return ret;
+
+// add by Andrew
+        case ETHSWARLDUMP:
+            if (!sf2_sw) return -(EOPNOTSUPP);
+            ret = ioctl_extsw_arl_dump(ethswctl);
+            if (!ret && copy_to_user(rq->ifr_data , ethswctl, sizeof(struct ethswctl_data)))
+                return -EFAULT;
+            return ret;
+
+        case ETHSWMIBDUMP:
+            if (!sf2_sw) return -(EOPNOTSUPP);
+            if (!(port = _compat_port_object_from_unit_port(ethswctl->unit, ethswctl->port)))
+                return -EFAULT;
+            ret = port_mib_dump_us(port, ethswctl);
+            if (!ret && copy_to_user(rq->ifr_data , ethswctl, sizeof(struct ethswctl_data))) 
+                return -EFAULT;
+           return ret;
+// end of add
+
         case ETHSWCOSPRIORITYMETHOD:
             if (ethswctl->unit != SF2_ETHSWCTL_UNIT  || !sf2_sw) {
                 enet_err("runner COS priority method config not supported yet.\n");    //TODO_DSL?
@@ -2936,6 +2972,8 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
     
     case ETHSWPHYMODE:
         {
+            uint32_t supported_caps = 0;
+
             if (ethswctl->addressing_flag & ETHSW_ADDRESSING_DEV)
                 port = ((enetx_netdev *)netdev_priv(dev))->port;
             else
@@ -2967,9 +3005,15 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                 return -EFAULT;
             }
 
+            /* Get PHY supported speed capability */
+            if (cascade_phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &supported_caps))
+                return -EFAULT;
+
             if (ethswctl->type == TYPE_SET)
             {
                 phy_speed_t speed;
+                phy_duplex_t duplex = ethswctl->duplex ? PHY_DUPLEX_FULL : PHY_DUPLEX_HALF;
+                uint32_t cap = 0, adCaps = 0;
 
                 if (ethswctl->speed == 10)
                     speed = PHY_SPEED_10;
@@ -2988,17 +3032,35 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                 else
                     speed = PHY_SPEED_UNKNOWN;
 
-                return cascade_phy_dev_speed_set(phy_dev, speed,
-                    ethswctl->duplex ? PHY_DUPLEX_FULL : PHY_DUPLEX_HALF) ? -EFAULT : 0;
+                cap = phy_speed_to_caps(speed, duplex);
+                if ((cap & supported_caps) == 0)
+                {
+                    printk("Not Supported Speed %dmbps attempted\n", ethswctl->speed);
+                    return -EFAULT;
+                }
+
+                if (ethswctl->addressing_flag == 0)
+                    return cascade_phy_dev_speed_set(phy_dev, speed, duplex) ? -EFAULT : 0;
+
+                adCaps = supported_caps;
+
+                if (speed != PHY_SPEED_AUTO)
+                {
+                    adCaps &= ~(PHY_CAP_AUTONEG |
+                        PHY_CAP_10_HALF | PHY_CAP_10_FULL |
+                        PHY_CAP_100_HALF | PHY_CAP_100_FULL |
+                        PHY_CAP_1000_HALF | PHY_CAP_1000_FULL |
+                        PHY_CAP_2500 | PHY_CAP_5000 | PHY_CAP_10000);
+                    adCaps |= cap;
+                }
+
+                return phy_dev_caps_set(phy_dev, adCaps) ? -EFAULT : 0;
+
             }
             else if (ethswctl->type == TYPE_GET)
             {
-                uint32_t caps = 0;
                 phy_speed_t speed;
                 phy_duplex_t duplex;
-
-                if (cascade_phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &caps))
-                    return -EFAULT;
 
                 if (phy_dev->phy_drv->config_speed_get)
                 {
@@ -3011,22 +3073,22 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                     if (phy_dev_caps_get(port->p.phy, CAPS_TYPE_ADVERTISE, &caps))
                         return -EFAULT;
                     speed = (caps&PHY_CAP_AUTONEG)? PHY_SPEED_AUTO :
-                            (caps&PHY_CAP_10000)? PHY_SPEED_10000 :
-                            (caps&PHY_CAP_5000)? PHY_SPEED_5000 :
-                            (caps&PHY_CAP_2500)? PHY_SPEED_2500 :
-                            (caps&(PHY_CAP_1000_FULL|PHY_CAP_1000_HALF))? PHY_SPEED_1000 :
-                            (caps&(PHY_CAP_100_FULL|PHY_CAP_100_HALF))? PHY_SPEED_100 :
-                            (caps&(PHY_CAP_10_FULL|PHY_CAP_10_HALF))? PHY_SPEED_10 : PHY_SPEED_UNKNOWN;
+                        (caps&PHY_CAP_10000)? PHY_SPEED_10000 :
+                        (caps&PHY_CAP_5000)? PHY_SPEED_5000 :
+                        (caps&PHY_CAP_2500)? PHY_SPEED_2500 :
+                        (caps&(PHY_CAP_1000_FULL|PHY_CAP_1000_HALF))? PHY_SPEED_1000 :
+                        (caps&(PHY_CAP_100_FULL|PHY_CAP_100_HALF))? PHY_SPEED_100 :
+                        (caps&(PHY_CAP_10_FULL|PHY_CAP_10_HALF))? PHY_SPEED_10 : PHY_SPEED_UNKNOWN;
                     duplex = (caps&PHY_CAP_AUTONEG)? PHY_DUPLEX_FULL :
-                            (caps&PHY_CAP_10000)? PHY_DUPLEX_FULL :
-                            (caps&PHY_CAP_5000)? PHY_DUPLEX_FULL :
-                            (caps&PHY_CAP_2500)? PHY_DUPLEX_FULL :
-                            (caps&PHY_CAP_1000_FULL)? PHY_DUPLEX_FULL :
-                            (caps&PHY_CAP_1000_HALF)? PHY_DUPLEX_HALF :
-                            (caps&PHY_CAP_100_FULL)? PHY_DUPLEX_FULL :
-                            (caps&PHY_CAP_100_HALF)? PHY_DUPLEX_HALF :
-                            (caps&PHY_CAP_10_FULL)? PHY_DUPLEX_FULL :
-                            (caps&PHY_CAP_10_HALF)? PHY_DUPLEX_HALF : PHY_DUPLEX_UNKNOWN;
+                        (caps&PHY_CAP_10000)? PHY_DUPLEX_FULL :
+                        (caps&PHY_CAP_5000)? PHY_DUPLEX_FULL :
+                        (caps&PHY_CAP_2500)? PHY_DUPLEX_FULL :
+                        (caps&PHY_CAP_1000_FULL)? PHY_DUPLEX_FULL :
+                        (caps&PHY_CAP_1000_HALF)? PHY_DUPLEX_HALF :
+                        (caps&PHY_CAP_100_FULL)? PHY_DUPLEX_FULL :
+                        (caps&PHY_CAP_100_HALF)? PHY_DUPLEX_HALF :
+                        (caps&PHY_CAP_10_FULL)? PHY_DUPLEX_FULL :
+                        (caps&PHY_CAP_10_HALF)? PHY_DUPLEX_HALF : PHY_DUPLEX_UNKNOWN;
                 }
                 else
                     return -EFAULT;
@@ -3062,19 +3124,18 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                 else
                     ethswctl->cfgDuplex = 0;
 
-                /* Get PHY supported speed capability */
-                cascade_phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &caps);
+
                 ethswctl->phyCap = 0;
-                ethswctl->phyCap |= (caps & PHY_CAP_AUTONEG) ? PHY_CFG_AUTO_NEGO : 0;
-                ethswctl->phyCap |= (caps & PHY_CAP_10_HALF) ? PHY_CFG_10HD : 0;
-                ethswctl->phyCap |= (caps & PHY_CAP_10_FULL) ? PHY_CFG_10FD : 0;
-                ethswctl->phyCap |= (caps & PHY_CAP_100_HALF) ? PHY_CFG_100HD : 0;
-                ethswctl->phyCap |= (caps & PHY_CAP_100_FULL) ? PHY_CFG_100FD : 0;
-                ethswctl->phyCap |= (caps & PHY_CAP_1000_HALF) ? PHY_CFG_1000HD : 0;
-                ethswctl->phyCap |= (caps & PHY_CAP_1000_FULL) ? PHY_CFG_1000FD : 0;
-                ethswctl->phyCap |= (caps & PHY_CAP_2500) ? PHY_CFG_2500FD : 0;
-                ethswctl->phyCap |= (caps & PHY_CAP_5000) ? PHY_CFG_5000FD : 0;
-                ethswctl->phyCap |= (caps & PHY_CAP_10000) ? PHY_CFG_10000FD : 0;
+                ethswctl->phyCap |= (supported_caps & PHY_CAP_AUTONEG) ? PHY_CFG_AUTO_NEGO : 0;
+                ethswctl->phyCap |= (supported_caps & PHY_CAP_10_HALF) ? PHY_CFG_10HD : 0;
+                ethswctl->phyCap |= (supported_caps & PHY_CAP_10_FULL) ? PHY_CFG_10FD : 0;
+                ethswctl->phyCap |= (supported_caps & PHY_CAP_100_HALF) ? PHY_CFG_100HD : 0;
+                ethswctl->phyCap |= (supported_caps & PHY_CAP_100_FULL) ? PHY_CFG_100FD : 0;
+                ethswctl->phyCap |= (supported_caps & PHY_CAP_1000_HALF) ? PHY_CFG_1000HD : 0;
+                ethswctl->phyCap |= (supported_caps & PHY_CAP_1000_FULL) ? PHY_CFG_1000FD : 0;
+                ethswctl->phyCap |= (supported_caps & PHY_CAP_2500) ? PHY_CFG_2500FD : 0;
+                ethswctl->phyCap |= (supported_caps & PHY_CAP_5000) ? PHY_CFG_5000FD : 0;
+                ethswctl->phyCap |= (supported_caps & PHY_CAP_10000) ? PHY_CFG_10000FD : 0;
 
                 if (phy_dev->link)
                 {

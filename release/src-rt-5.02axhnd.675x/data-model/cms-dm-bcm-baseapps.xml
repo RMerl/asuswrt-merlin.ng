@@ -184,7 +184,18 @@
     <description source="BROADCOM">Where does the CMS log message go.  Enumeration of:&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;</description>
 
 
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.L2tpAcClientCfg." shortObjectName="L2tpAcClientCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="Present" />
+  <description source="BROADCOM">L2tpAc Client object</description>
 
+  <parameter name="Enable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="ReadWrite" defaultValue="false" />
+
+  <parameter name="NumberOfClient" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="ReadOnly" />
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this app.&#10;Enumeration of:&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_L2tpAc:1" supportLevel="ReadWrite" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Where does the CMS log message go.  Enumeration of:&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;</description>
 
 <object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.DectdCfg." shortObjectName="DectdCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_DECTd:1" supportLevel="Present" />
   <description source="BROADCOM">This objects contains config parameters for the dect daemon.</description>

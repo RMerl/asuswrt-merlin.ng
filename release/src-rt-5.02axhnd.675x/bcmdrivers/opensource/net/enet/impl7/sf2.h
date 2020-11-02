@@ -60,6 +60,7 @@ int ioctl_extsw_pmdioaccess(struct ethswctl_data *e);
 int ioctl_extsw_info(struct ethswctl_data *e);
 int ioctl_extsw_vlan(struct ethswctl_data *e);
 int ioctl_extsw_arl_access(struct ethswctl_data *e);
+int ioctl_extsw_arl_dump(struct ethswctl_data *e);  // add by Andrew
 int ioctl_extsw_regaccess(struct ethswctl_data *e, enetx_port_t *port);
 int ioctl_extsw_cfg_acb(struct ethswctl_data *e);
 int ioctl_extsw_port_mirror_ops(struct ethswctl_data *e);

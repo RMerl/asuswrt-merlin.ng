@@ -65,8 +65,6 @@ static int archer_enet_host_bind(void);
 
 //#define CC_ARCHER_ENET_DEBUG
 
-#define ARCHER_ENET_PREFETCH_MAX  4
-
 #define ARCHER_ENET_RECYCLE_BUDGET 128
 
 #define DEFAULT_NAPI_WEIGHT 32
@@ -97,10 +95,6 @@ typedef struct cpu_queue_recycle_info_t
 
 static int cpu_queues_init (cpu_queues_t * cpu_queues);
 static int cpu_queues_free (cpu_queues_t * cpu_queues);
-_STATIC_INLINE_ void archer_enet_cache_prefetch(void *p_pkt, int lines)
-{
-    bcm_prefetch_multiple(p_pkt, lines);
-}
 
 /*------------ Implementation of enetxapi ------------------ */
 void enetxapi_queue_int_enable (enetx_channel *chan, int q_id)
@@ -310,33 +304,6 @@ _STATIC_INLINE_ void enet_recycle_handler(pNBuff_t pNBuff, unsigned long context
     }
 }
 
-_STATIC_INLINE_ void enet_cpu_queue_rx_prefetch(bcm_async_queue_t *queue_p)
-{
-    if(unlikely(!queue_p->prefetch.count))
-    {
-        int prefetch_count = bcm_async_queue_prefetch_avail_entries (queue_p);
-
-        if(prefetch_count > ARCHER_ENET_PREFETCH_MAX)
-        {
-            prefetch_count = ARCHER_ENET_PREFETCH_MAX;
-        }
-
-        queue_p->prefetch.count = prefetch_count;
-
-        while(likely(prefetch_count--))
-        {
-            cpu_queue_rx_info_t *cpu_rxinfo = (cpu_queue_rx_info_t *)
-                bcm_async_queue_prefetch_entry_read (queue_p);
-            uint8_t *pData = READ_ONCE(cpu_rxinfo->pData);
-
-            archer_enet_cache_prefetch ((void *)PDATA_TO_PFKBUFF(pData, BCM_PKT_HEADROOM), 1);
-            archer_enet_cache_prefetch ((void *)pData, 1);
-
-            bcm_async_queue_prefetch_entry_dequeue (queue_p);
-        }
-    }
-}
-
 int enetxapi_rx_pkt (int q_id, FkBuff_t **fkb, enetx_rx_info_t *rx_info)
 {
     bcm_async_queue_t *queue_p = &enet_cpu_queues->rxq[q_id];
@@ -346,17 +313,13 @@ int enetxapi_rx_pkt (int q_id, FkBuff_t **fkb, enetx_rx_info_t *rx_info)
         enet_cpu_queues->rx_notify_enable = 0;
     }
 
-    enet_cpu_queue_rx_prefetch (queue_p);
-
-    if(likely(queue_p->prefetch.count))
+    if(likely(bcm_async_queue_not_empty(queue_p)))
     {
         cpu_queue_rx_info_t *cpu_rxinfo;
         uint8_t *pData;
         int data_len;
         int ingress_port;
         int rx_csum_verified;
-
-        queue_p->prefetch.count--;
 
         ENET_CPU_STATS_UPDATE(queue_p->stats.reads);
 
@@ -368,6 +331,15 @@ int enetxapi_rx_pkt (int q_id, FkBuff_t **fkb, enetx_rx_info_t *rx_info)
         rx_csum_verified = READ_ONCE(cpu_rxinfo->rx_csum_verified);
 
         bcm_async_queue_entry_dequeue (queue_p);
+
+        if(likely(bcm_async_queue_not_empty(queue_p)))
+        {
+            cpu_queue_rx_info_t *next_cpu_rxinfo =
+                (cpu_queue_rx_info_t *)bcm_async_queue_entry_read (queue_p);
+            uint8_t *next_pData = READ_ONCE(next_cpu_rxinfo->pData);
+
+            bcm_prefetch(next_pData);
+        }
 
         *fkb = fkb_init (pData, BCM_PKT_HEADROOM, pData, data_len);
         (*fkb)->recycle_hook = (RecycleFuncP)enet_recycle_handler;
@@ -449,14 +421,11 @@ int cpu_queues_tx_send (int tx_type, dispatch_info_t *dispatch_info)
 #endif
             ENET_CPU_STATS_UPDATE(enet_cpu_queues->txq[tx_type].stats.discards);
         }
-        /* notify send thread regardless if the queue is full or not to make sure send can proceed */
-        if (enet_cpu_queues->tx_notify_enable[tx_type])
-        {
-            enet_cpu_queues->tx_notify_enable[tx_type] = 0;
-            enet_cpu_queues->tx_notifier[tx_type]();
-        }
 
         spin_unlock_bh (&enet_cpu_queues->tx_lock[tx_type]);
+
+        /* notify Archer regardless if the queue is full or not to make sure send can proceed */
+        enet_cpu_queues->tx_notifier[tx_type]();
     }
 
     return rc;
@@ -508,7 +477,7 @@ static int enet_recycle_thread (void *arg)
         }
         else
         {
-            cpu_queues->recycle_work_avail = 0;
+            clear_bit(0, &cpu_queues->recycle_work_avail);
         }
     }
     return 0;
@@ -661,23 +630,15 @@ void archer_enet_cpu_queue_stats(void)
 
     enet_cpu_queue_dump(&enet_cpu_queues->recycleq, "ENET RCQ", 0);
 
-    printk("rx notify 0x%x (pending %d) tx notify 0x%x, chan->work_avail %d\n",
-        enet_cpu_queues->rx_notify_enable, enet_cpu_queues->rx_notify_pending_disable,
-        enet_cpu_queues->tx_notify_enable[1],
-        enet_cpu_queues->chanp->rxq_cond);
+    printk("rx notify 0x%x (pending %d) chan->work_avail %lu\n",
+           enet_cpu_queues->rx_notify_enable, enet_cpu_queues->rx_notify_pending_disable,
+           enet_cpu_queues->chanp->rxq_cond);
 }
 
 /* API exposed for other modules to access the CPU queues (like archer) */
-int archer_enet_tx_queue_handler_register (int q_id, TX_NOTIFIER tx_notifier)
+int archer_enet_tx_queue_notifier_register (int q_id, TX_NOTIFIER tx_notifier)
 {
     enet_cpu_queues->tx_notifier[q_id] = tx_notifier;
-    return 0;
-}
-
-
-int archer_enet_tx_queue_notify_host (int q_id)
-{
-    enet_cpu_queues->tx_notify_enable[q_id] = 1;
     return 0;
 }
 
@@ -726,16 +687,6 @@ int archer_enet_rx_queue_write (int q_id, uint8_t **pData, int data_len, int ing
         bcm_async_queue_entry_enqueue (&enet_cpu_queues->rxq[q_id]);
 
         ENET_CPU_STATS_UPDATE(enet_cpu_queues->rxq[q_id].stats.writes);
-
-        if (enet_cpu_queues->rx_notify_enable)
-        {
-            /* wake up enet rx thread */
-            enetx_rx_isr (enet_cpu_queues->chanp);
-        }
-        else if (enet_cpu_queues->rx_notify_pending_disable)
-        {
-            enet_cpu_queues->rx_notify_pending_disable = 0;
-        }
     }
     else
     {
@@ -743,13 +694,21 @@ int archer_enet_rx_queue_write (int q_id, uint8_t **pData, int data_len, int ing
 
         rc = -1;
     }
-
+    if (enet_cpu_queues->rx_notify_enable)
+    {
+        /* wake up enet rx thread */
+        enetx_rx_isr (enet_cpu_queues->chanp);
+    }
+    else if (enet_cpu_queues->rx_notify_pending_disable)
+    {
+        enet_cpu_queues->rx_notify_pending_disable = 0;
+    }
     return rc;
 }
 
 #define ENET_CPU_QUEUE_WAKEUP_RECYCLE_WORKER(x) do {                    \
         if ((x)->recycle_work_avail == 0) {                             \
-            (x)->recycle_work_avail = 1;                                \
+            set_bit(0, &(x)->recycle_work_avail);                       \
             wake_up_interruptible(&((x)->recycle_thread_wqh)); }} while (0)
 
 void archer_enet_recycle_queue_write(pNBuff_t pNBuff)
@@ -764,8 +723,6 @@ void archer_enet_recycle_queue_write(pNBuff_t pNBuff)
         bcm_async_queue_entry_enqueue (&enet_cpu_queues->recycleq);
 
         ENET_CPU_STATS_UPDATE(enet_cpu_queues->recycleq.stats.writes);
-
-        ENET_CPU_QUEUE_WAKEUP_RECYCLE_WORKER(enet_cpu_queues);
     }
     else
     {
@@ -776,6 +733,7 @@ void archer_enet_recycle_queue_write(pNBuff_t pNBuff)
 #endif
         ENET_CPU_STATS_UPDATE(enet_cpu_queues->recycleq.stats.discards);
     }
+    ENET_CPU_QUEUE_WAKEUP_RECYCLE_WORKER(enet_cpu_queues);
 }
 
 static int archer_enet_host_bind(void)
@@ -792,8 +750,7 @@ static int archer_enet_host_bind(void)
     }
 
     hooks.host_type = ARCHER_HOST_TYPE_ENET;
-    hooks.tx_queue_handler_register = archer_enet_tx_queue_handler_register;
-    hooks.tx_queue_notify_host = archer_enet_tx_queue_notify_host;
+    hooks.tx_queue_notifier_register = archer_enet_tx_queue_notifier_register;
     hooks.tx_queue_read = archer_enet_tx_queue_read;
     hooks.tx_queue_not_empty = archer_enet_tx_queue_not_empty;
     hooks.rx_queue_write = archer_enet_rx_queue_write;
@@ -825,8 +782,8 @@ int cpu_queue_proc_print (int tick)
     printk("\n CPU TX queues\n");
     for (i=0; i < NUM_TX_QUEUES; i++)
     {
-        printk ("txq %d read 0x%x write 0x%x notify enable %d\n", i, 
-            enet_cpu_queues->txq[i].read, enet_cpu_queues->txq[i].write, enet_cpu_queues->tx_notify_enable[i]);
+        printk ("txq %d read 0x%x write 0x%x\n", i, 
+                enet_cpu_queues->txq[i].read, enet_cpu_queues->txq[i].write);
     }
 
     return 0;

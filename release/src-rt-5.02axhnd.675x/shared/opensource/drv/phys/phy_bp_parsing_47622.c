@@ -69,7 +69,7 @@ phy_type_t bp_parse_phy_type(const EMAC_PORT_INFO *port_info)
     intf = phy_id & MAC_IFACE;
 
     // no phy connection
-    if (IsRgmiiDirect(phy_id)) return PHY_TYPE_MAC2MAC;
+    if (IsRgmiiDirect(phy_id)  || IsRgmiiDirect_3P3V(phy_id)) return PHY_TYPE_MAC2MAC;
 
     if (phy_id == BP_PHY_ID_NOT_SPECIFIED) return PHY_TYPE_UNKNOWN;
 

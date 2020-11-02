@@ -1,0 +1,115 @@
+#
+# <:copyright-BRCM:2013:DUAL/GPL:standard
+# 
+#    Copyright (c) 2013 Broadcom 
+#    All Rights Reserved
+# 
+# Unless you and Broadcom execute a separate written software license
+# agreement governing use of this software, this software is licensed
+# to you under the terms of the GNU General Public License version 2
+# (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+# with the following added to such license:
+# 
+#    As a special exception, the copyright holders of this software give
+#    you permission to link this software with independent modules, and
+#    to copy and distribute the resulting executable under terms of your
+#    choice, provided that you also meet, for each linked independent
+#    module, the terms and conditions of the license of that module.
+#    An independent module is a module which is not derived from this
+#    software.  The special exception does not apply to any modifications
+#    of the software.
+# 
+# Not withstanding the above, under no circumstances may you combine
+# this software in any way with any other Broadcom software provided
+# under a license other than the GPL, without Broadcom's express prior
+# written consent.
+# 
+# :> 
+
+# RDPA test
+# - gpon mode
+# - SP_WRR_Schedule diagram
+# +overall rate limiter
+#
+# tcont1 - egress_tm1(level=group, mode=sp)
+#	egress_tm2(level=queue,mode=sp)
+#		queue[0]=128
+#		queue[1]=128
+#		queue[2]=128
+#		queue[3]=128
+#	egress_tm3(level=group,mode=wrr)
+#		egress_tm4(level=queue,mode=disable,w=10)
+#			queue[0]=128
+#		egress_tm5(level=queue,mode=disable,w=20)
+#			queue[0]=128
+#		egress_tm6(level=queue,mode=disable,w=30)
+#			queue[0]=128
+#		egress_tm7(level=queue,mode=disable,w=40)
+#			queue[0]=128
+#
+
+/bdmf
+trace debug egress_tm
+new system/init_cfg=<wan_type=gpon>
+
+new gpon
+new tcont/index=1,alloc_id=260
+
+# Create egress_tm owned by tcont object. In this case
+# egress_tm gets connected to tcont automatically
+new egress_tm/dir=us,index=1,level=egress_tm,mode=sp  tcont/index=1
+new egress_tm/dir=us,index=2,level=queue,mode=sp
+new egress_tm/dir=us,index=3,level=egress_tm,mode=wrr
+
+new egress_tm/dir=us,index=4,level=queue,mode=disable,weight=10
+conf egress_tm/dir=us,index=4 queue_cfg[0]={drop_threshold=128}
+
+new egress_tm/dir=us,index=5,level=queue,mode=disable,weight=20
+conf egress_tm/dir=us,index=5 queue_cfg[0]={drop_threshold=128}
+
+new egress_tm/dir=us,index=6,level=queue,mode=disable,weight=30
+conf egress_tm/dir=us,index=6 queue_cfg[0]={drop_threshold=128}
+
+new egress_tm/dir=us,index=7,level=queue,mode=disable,weight=40,queue_cfg[0]={drop_threshold=128}
+
+conf egress_tm/dir=us,index=1 subsidiary[0]={egress_tm/dir=us,index=2}
+conf egress_tm/dir=us,index=1 subsidiary[1]={egress_tm/dir=us,index=3}
+
+conf egress_tm/dir=us,index=3 subsidiary[0]={egress_tm/dir=us,index=4}
+conf egress_tm/dir=us,index=3 subsidiary[1]={egress_tm/dir=us,index=5}
+conf egress_tm/dir=us,index=3 subsidiary[2]={egress_tm/dir=us,index=6}
+conf egress_tm/dir=us,index=3 subsidiary[3]={egress_tm/dir=us,index=7}
+
+#
+# At this point configuration is complete
+# The rest of this script demonstrates dynamic re-configuration
+#
+
+# Create alternative sub-tree
+new egress_tm/dir=us,index=8,level=egress_tm,mode=wrr
+new egress_tm/dir=us,index=9,level=queue,mode=disable,weight=10
+conf egress_tm/dir=us,index=9 queue_cfg[0]={drop_threshold=128}
+
+new egress_tm/dir=us,index=10,level=queue,mode=disable,weight=20
+conf egress_tm/dir=us,index=10 queue_cfg[0]={drop_threshold=128}
+
+new egress_tm/dir=us,index=11,level=queue,mode=disable,weight=30
+conf egress_tm/dir=us,index=11 queue_cfg[0]={drop_threshold=128}
+
+new egress_tm/dir=us,index=12,level=queue,mode=disable,weight=40
+conf egress_tm/dir=us,index=12 queue_cfg[0]={drop_threshold=128}
+
+conf egress_tm/dir=us,index=8 subsidiary[0]={egress_tm/dir=us,index=9}
+conf egress_tm/dir=us,index=8 subsidiary[1]={egress_tm/dir=us,index=10}
+conf egress_tm/dir=us,index=8 subsidiary[2]={egress_tm/dir=us,index=11}
+conf egress_tm/dir=us,index=8 subsidiary[3]={egress_tm/dir=us,index=12}
+
+# Replace TM1->TM3 subtree with TM1->TM8
+conf egress_tm/dir=us,index=1 subsidiary[1]={egress_tm/dir=us,index=8}
+
+# Configure overall RL
+new egress_tm/dir=us,index=20,level=egress_tm,mode=disable,overall_rl=true
+conf egress_tm/dir=us,index=20 rl={af=1000}
+
+link tcont/index=1 egress_tm/dir=us,index=20
+/quit

@@ -10,7 +10,7 @@
 
 	/* disable system default cma */
 	chosen {
-		bootargs = "console=ttyS0,115200 debug irqaffinity=0 rootwait cma=0M";
+		bootargs = "console=ttyS0,115200 debug irqaffinity=0 rootwait";
 	};
 
 	memory {

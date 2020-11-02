@@ -437,10 +437,12 @@ BCMXTM_STATUS XTM_PROCESSOR::Initialize( PXTM_INITIALIZATION_PARMS pInitParms,
          if (m_InitParms.bondConfig.sConfig.dualLat == BC_DUAL_LATENCY_ENABLE) {
             if (i < PHY_PORTID_2)
                m_Interfaces[i].Initialize(i, ucInternalPort[i], i+PHY_PORTID_2, 
-                                          m_InitParms.bondConfig.sConfig.autoSenseAtm);
+                                          m_InitParms.bondConfig.sConfig.autoSenseAtm,
+                                          m_pfnXtmrtReq);
             else
                m_Interfaces[i].Initialize(i, ucInternalPort[i], i-PHY_PORTID_2,
-                                          m_InitParms.bondConfig.sConfig.autoSenseAtm);
+                                          m_InitParms.bondConfig.sConfig.autoSenseAtm,
+                                          m_pfnXtmrtReq);
          }
          else {
             /* No dual latency. Hard code it for the interfaces as per chip
@@ -459,12 +461,13 @@ BCMXTM_STATUS XTM_PROCESSOR::Initialize( PXTM_INITIALIZATION_PARMS pInitParms,
                   break ;
             }
             m_Interfaces[i].Initialize(i, ucInternalPort[i], ulBondingPort,
-                                          m_InitParms.bondConfig.sConfig.autoSenseAtm);
+                                          m_InitParms.bondConfig.sConfig.autoSenseAtm,
+                                          m_pfnXtmrtReq);
          }
       }
       else {
          m_Interfaces[i].Initialize(i, ucInternalPort[i], MAX_INTERFACES,
-                                          m_InitParms.bondConfig.sConfig.autoSenseAtm);
+                                          m_InitParms.bondConfig.sConfig.autoSenseAtm, m_pfnXtmrtReq);
       }
    } /* for (i, MAX_INTERFACES) */
    if(pInitParms != NULL && pfnXtmrtReq != NULL)
@@ -1581,7 +1584,7 @@ BCMXTM_STATUS XTM_PROCESSOR::SetInterfaceCfg( UINT32 ulPortId,
        ulBondingPort = m_Interfaces[ulPort].GetBondingPortNum () ;
        if (ulBondingPort != MAX_INTERFACES)
           bxStatus = m_Interfaces[ulBondingPort].SetCfg( pInterfaceCfg );
-#if defined(CONFIG_BCM963158)
+#if defined(XTM_PORT_SHAPING)
        if(bxStatus == XTMSTS_SUCCESS)
        {
           m_ulPortShapingConfig = pInterfaceCfg->ulPortShaping;
@@ -2039,7 +2042,7 @@ BCMXTM_STATUS XTM_PROCESSOR::SetConnCfg( PXTM_ADDR pConnAddr,
       m_ulQShapingConfig = (bShapers == TRUE) ? PORT_Q_SHAPING_ON : PORT_Q_SHAPING_OFF ;
     } //if(pConnCfg)
 
-#if defined(CONFIG_BCM963158)
+#if defined(XTM_PORT_SHAPING)
     if(((m_ulTrafficType == TRAFFIC_TYPE_PTM) || (m_ulTrafficType == TRAFFIC_TYPE_PTM_RAW) 
              || (m_ulTrafficType == TRAFFIC_TYPE_PTM_BONDED)) &&
           (m_ulXTMLinkMode != XTM_LINK_MODE_GFAST))
@@ -2468,7 +2471,7 @@ void XTM_PROCESSOR::SetupWanDataLed (PXTM_INTERFACE_LINK_INFO pLinkInfo, PXTM_IN
 }
 #endif
 
-#if defined(CONFIG_BCM963158)
+#if defined(XTM_PORT_SHAPING)
 void XTM_PROCESSOR::UpdateSitSlr(UINT32 ulPort)
 {
 
@@ -2488,9 +2491,7 @@ void XTM_PROCESSOR::UpdateSitSlr(UINT32 ulPort)
       XP_REGS->ulSstSitValue     = XTMCFG_SST_SIT_VALUE ;
    }
 }
-#endif
 
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178)
 void XTM_PROCESSOR::ConfigureTxPortShapingRatios(UINT32 ulPhysPort, UINT32 ulTrafficType)
 {
    UINT32 shapedPort;
@@ -2813,7 +2814,7 @@ BCMXTM_STATUS XTM_PROCESSOR::SetInterfaceLinkInfo( UINT32 ulPortId,
 
             /* Save SIT_CNT and SIT_LO_CNT */
             XTM_CONNECTION::SetSitUt( ulSitCnt, ulSitLoCnt );
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178)
+#if defined(XTM_PORT_SHAPING)
             m_Interfaces[ulPhysPort].SetSitUt( ulSitCnt, ulSitLoCnt );
 #endif
 
@@ -2971,7 +2972,7 @@ BCMXTM_STATUS XTM_PROCESSOR::SetInterfaceLinkInfo( UINT32 ulPortId,
                if (m_InitParms.bondConfig.sConfig.atmBond == BC_ATM_BONDING_ENABLE)
                   m_AsmHandler.LinkStateNotify(ulPhysPort) ;
 
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178)
+#if defined(XTM_PORT_SHAPING)
                MapXtmOsPrintf("%s:Calling Port Shaping \n",__FUNCTION__);
                ConfigureTxPortShapingRatios(ulPhysPort,ulTrafficType);
 #endif
@@ -3004,7 +3005,7 @@ BCMXTM_STATUS XTM_PROCESSOR::SetInterfaceLinkInfo( UINT32 ulPortId,
                   }
                } /* (if Link is DOWN) */
 
-#if defined(CONFIG_BCM963158)
+#if defined(XTM_PORT_SHAPING)
                /* UT port shaping at the highest SIT configuration is to be
                ** enabled only under the following circumstances, as it
                ** interferes with the Port rate limit/Q shaping features.

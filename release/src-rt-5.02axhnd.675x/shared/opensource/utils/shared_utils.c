@@ -250,6 +250,9 @@ char *UtilGetChipName(char *buf, int len) {
     case(0xC):
         mktname = "55040M";
         break;
+    case(0xD):
+        mktname = "68580XF";
+        break;
     default:
         mktname = NULL;
     }
@@ -261,11 +264,22 @@ char *UtilGetChipName(char *buf, int len) {
     case(0x68789):
         mktname = "68781H";
         break;
+    case(0x6878C):
+        mktname = "68789";
+        break;
     case(0x6878E):
         mktname = "68782N";
         break;
     case(0x6878D):
         mktname = "68781G";
+        break;
+    default:
+        mktname = NULL;
+    }
+#elif defined (CONFIG_BCM96846) || defined (_BCM96846_)
+    switch (chipId) {
+    case(0x68463):
+        mktname = "68460U";
         break;
     default:
         mktname = NULL;

@@ -174,10 +174,10 @@ typedef enum
  */
 typedef struct
 {
-    bdmf_ip_t                   src_ip;           /**< Source ipv4/ipv6 ip */
-    bdmf_ip_t                   src_ip_mask;      /**< Source ipv4/ipv6 ip mask \XRDP_LIMITED */
-    bdmf_ip_t                   dst_ip;           /**< Destination ipv4/ipv6 ip */
-    bdmf_ip_t                   dst_ip_mask;      /**< Destination ipv4/ipv6 ip mask \XRDP_LIMITED */
+    bdmf_ip_t                   src_ip;           /**< Source ipv4/ipv6 IP */
+    bdmf_ip_t                   src_ip_mask;      /**< Source ipv4/ipv6 IP mask \XRDP_LIMITED */
+    bdmf_ip_t                   dst_ip;           /**< Destination ipv4/ipv6 IP */
+    bdmf_ip_t                   dst_ip_mask;      /**< Destination ipv4/ipv6 IP mask \XRDP_LIMITED */
     uint16_t                    src_port;         /**< Source port */
     uint16_t                    src_port_mask;    /**< Source port mask \XRDP_LIMITED */
     uint16_t                    dst_port;         /**< Destination port */
@@ -193,7 +193,7 @@ typedef struct
     uint8_t                     tos;              /**< TOS val \XRDP_LIMITED */
     uint8_t                     tos_mask;         /**< TOS val mask \XRDP_LIMITED */
     uint8_t                     dscp;             /*   DSCP val */
-    uint8_t                     ssid;             /**< Wifi SSID */
+    uint8_t                     ssid;             /**< Wi-Fi SSID */
     rdpa_if                     ingress_port;     /**< US - ingress port index */
     uint8_t                     outer_pbits;      /**< Outer PBIT */
     uint8_t                     outer_pbits_mask; /**< Outer PBIT mask \XRDP_LIMITED */
@@ -207,9 +207,9 @@ typedef struct
     uint32_t                    generic_key_1;    /**< Key for first generic field matching ::rdpa_ic_gen_rule_cfg_t */
     uint32_t                    generic_key_2;    /**< Key for second generic field matching ::rdpa_ic_gen_rule_cfg_t */
     uint8_t                     gem_flow;         /**< DS- GEM or LLID index */
-    uint32_t                    generic_mask;     /**< mask per flow for generic key 1 \XRDP_LIMITED */
-    uint32_t                    generic_mask_2;   /**< mask per flow for generic key 2 \XRDP_LIMITED */
-    rdpa_network_layer_type_t   network_layer;    /**< run generic on l3 or l2 \XRDP_LIMITED */
+    uint32_t                    generic_mask;     /**< Mask per flow for generic key 1 \XRDP_LIMITED */
+    uint32_t                    generic_mask_2;   /**< Mask per flow for generic key 2 \XRDP_LIMITED */
+    rdpa_network_layer_type_t   network_layer;    /**< Run generic on l3 or l2 \XRDP_LIMITED */
 } rdpa_ic_key_t;
 
 /** Actions of the optional actions vector */
@@ -232,12 +232,12 @@ typedef struct
     uint8_t wan_flow;  /**< WAN flow : Gem Flow or LLID */
     rdpa_forward_action  action; /**< forward/drop/cpu */
     bdmf_object_handle policer; /**< Policer object */
-    rdpa_forwarding_mode forw_mode;  /**< flow/pkt based */
+    rdpa_forwarding_mode forw_mode;  /**< flow/packet based */
     rdpa_if egress_port; /**< Egress port */
-    uint8_t ssid; /**< SSID, in use when egress port is wlan */
-    uint32_t queue_id; /**< Egress queue ID if forwarding is flow based. Traffic class if forwarding is pkt based */
+    uint8_t ssid; /**< SSID, in use when egress port is WLAN */
+    uint32_t queue_id; /**< Egress queue ID if forwarding is flow based. Traffic class if forwarding is packet based */
     bdmf_object_handle vlan_action; /**< VLAN action, can be overwritten by VLAN action per egress port */
-    bdmf_boolean opbit_remark; /**< Enable outer pbit remark */
+    bdmf_boolean opbit_remark; /**< Enable outer PBIT remark */
     rdpa_pbit opbit_val;	/**< Outer PBIT remark value */
     bdmf_boolean ipbit_remark; /**< Enable inner PBIT remark */
     rdpa_pbit ipbit_val; /**< Inner PBIT remark value */
@@ -246,12 +246,13 @@ typedef struct
     uint8_t ecn_val;
     bdmf_object_handle pbit_to_gem_table; /**< pBit to GEM Mapping table handle. Set null for flow based mapping */
     rdpa_ic_action_vec_t action_vec; /**< Enabled action to be performed on the matched flow. */
-    bdmf_index service_q_id; /**< Service queue id, for none: service_q_id=-1 */
+    bdmf_index service_q_id; /**< Service queue ID, for none: service_q_id=-1 */
     rdpa_ic_dei_command dei_command; /**< Set the DEI bits modification **/
     rdpa_cpu_reason trap_reason; /**< Trap reason */
     bdmf_boolean include_mcast; /**< Include mcast flow flag */
     bdmf_boolean loopback; /**< Enable WAN loopback \XRDP_LIMITED */
     bdmf_boolean disable_stat; /**< Disable stat - true/false  \XRDP_LIMITED */
+    rdpa_stat_type stat_type; /**< in case disable_stat==0, select packets only or packets + bytes  \XRDP_LIMITED */
 } rdpa_ic_result_t;
 
 /** @} end of ingress_classification Doxygen group. */

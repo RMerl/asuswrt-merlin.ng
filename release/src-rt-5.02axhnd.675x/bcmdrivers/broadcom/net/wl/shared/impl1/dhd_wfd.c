@@ -433,6 +433,7 @@ dhd_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long fkb, unsigned long p_s
 
 	uint32_t wl_if_index;
 	void *fkb_cloned = NULL;
+	int orig_packet_used =0;
 	uint16_t ssid_vector=*(uint16_t *)p_ssid_vector;
 
 	/* clear fkb dhdhdr,all fkb is master fkb here */
@@ -455,15 +456,19 @@ dhd_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long fkb, unsigned long p_s
 			if (fkb_cloned == (FkBuff_t *) NULL)
 			{
 				printk("%s %s: Failed to clone fkb\n", __FILE__, __FUNCTION__);
-				nbuff_free(FKBUFF_2_PNBUFF(fkb));
-				return;
+				break;
 			}
 		}
 		else
 		{
+			orig_packet_used = 1;
 			fkb_cloned =(void *)fkb;
 		}
 		_dhd_wfd_mcasthandler(wl_radio_idx, wl_if_index, FKBUFF_2_PNBUFF(fkb_cloned));
+	}
+
+	if(!orig_packet_used) {
+		nbuff_free(FKBUFF_2_PNBUFF(fkb));
 	}
 }
 

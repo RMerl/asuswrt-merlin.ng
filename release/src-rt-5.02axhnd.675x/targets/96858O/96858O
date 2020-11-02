@@ -121,7 +121,6 @@ BCM_KERNEL_CMDLINE="console=ttyS0,115200 earlyprintk debug irqaffinity=0"
 BRCM_RUNNER_FLOODING=y
 # BRCM_SPECTRE_PATCH_ENABLE is not set
 # BP_PHYS_INTF is not set
-# BCM_GLB_COHERENCY is not set
 # BRCM_CMA_RSVMEM is not set
 
 #
@@ -169,6 +168,7 @@ BUILD_DM_LEGACY98=y
 # DESKTOP_LINUX is not set
 # BUILD_CUSTOMER is not set
 BUILD_CONSOLED=y
+# BUILD_BSTREAM_IQOS is not set
 BUILD_BUSYBOX=dynamic
 
 #
@@ -204,6 +204,7 @@ BUILD_GPON=y
 BRCM_GPON=y
 BRCM_OMCI=y
 BUILD_NGPON=y
+# BUILD_NGPON_AMD2 is not set
 BUILD_OMCI=y
 BUILD_BCMIPC=y
 # BUILD_OMCI_AUTH is not set
@@ -325,7 +326,7 @@ BUILD_WANVLANMUX=y
 BRCM_KERNEL_NETFILTER=m
 BRCM_KERNEL_NF_FIREWALL=m
 BRCM_KERNEL_NF_MANGLE=m
-# BRCM_KERNEL_NF_NAT is not set
+BRCM_KERNEL_NF_NAT=m
 # BRCM_KERNEL_NF_DYNDSCP is not set
 # BRCM_KERNEL_NF_LAYER7_FILTER is not set
 # BRCM_KERNEL_NF_NAT_ALG_FTP is not set
@@ -565,6 +566,7 @@ BRCM_SSP_LEVEL_MIN=y
 # BUILD_BRCM_HOSTAPD is not set
 # BRCM_REASON_TO_SKB_MARK is not set
 # BRCM_DW_CXC_DATA_MODE is not set
+# BUILD_MACSECKEYMGMT is not set
 
 #
 # Management Protocols and User Interface Selection

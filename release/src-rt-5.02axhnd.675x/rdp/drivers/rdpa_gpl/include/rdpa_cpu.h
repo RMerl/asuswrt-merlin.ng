@@ -174,7 +174,7 @@ typedef struct
                                      For Wi-Fi port it contains source SSID index in 16 MSB and destination SSID vector in 16 LSB
                                      It can contain other reason-specific info (such as OAM info, etc.).
                                 */
-    void *data;        /**<data pointer or FPM/BPM hw token*/
+    void *data;        /**<data pointer or FPM/BPM hardware token*/
     uint32_t size;        /**<data size */
     uint32_t data_offset;    /**<data offset inside pointer */
     struct {
@@ -182,13 +182,14 @@ typedef struct
         uint32_t reserved:31;
     };
     uint32_t dest_ssid;   /** <when traffic is to be forward to WFD */
-    uint32_t wl_metadata; /** wlan metadata */
+    uint32_t wl_metadata; /** WLAN metadata */
     uint16_t ptp_index; /**< index of ptp RX entry */
-    uint8_t mcast_tx_prio; /**< TX priority (0-7) for multicast traffic \XRDP limited */
+    uint8_t mcast_tx_prio; /**< TX priority (0-7) for multicast traffic \XRDP_LIMITED */
     uint8_t color;
     uint8_t is_exception;
     uint8_t is_rx_offload;
     uint8_t is_ucast;
+    uint8_t omci_encrypted_key_index; /**< encryption key-index in NGPON modes */
 } rdpa_cpu_rx_info_t;
 
 /* Extended CPU info (debugging) */
@@ -215,7 +216,7 @@ typedef struct {
                              */
 #define RDPA_CPU_IC_MAX_TIMEOUT_IN_US 1023
     uint16_t ic_timeout_us;  /**< The hardware timer period is configured to
-                                  100 us. This means that the timeout period
+                                  100 us. The timeout period
                                   will round up to the next 100 us.
                                   For example, if the timeout is 201 us,
                                   a timeout will not be identified until 300us.
@@ -326,7 +327,7 @@ int rdpa_cpu_packet_get_redirected(rdpa_cpu_port port, bdmf_index queue,
  * \param[out]  info            Array of packet info structures, sizeof of array is CPU_RX_PACKETS_BULK_SIZE
  * \param[in]   max_count       Maximal number of packets to read, up to CPU_RX_PACKETS_BULK_SIZE
  * \param[out]  count           Number of packets actually read
- * \return =0:no errors occured, <0:int error code\n
+ * \return =0:no errors occurred, <0:int error code\n
  */
 int rdpa_cpu_packets_bulk_get(rdpa_cpu_port port, bdmf_index queue, rdpa_cpu_rx_info_t *info, int max_count, int *count);
 
@@ -358,7 +359,7 @@ int rdpa_cpu_wfd_bulk_fkb_get(bdmf_index queue_id, unsigned int budget, void **r
 
 /** Pull a bulk of received SKB packets from host queue.
  * This function pulls a bulk of packets from the host queue.
- * Buffers will be provided with tghe SKB envelope.
+ * Buffers will be provided with the SKB envelope.
  * Up to the maximum number of buffers specified via the budget parameter will be returned
  * to the caller.
  * \param[in]   queue_id            CPU RX Queue ID
@@ -414,7 +415,7 @@ typedef struct
 
 /** Send system buffer
  *
- * \param[in]   sysb        System buffer. Released regardless on the function outcome
+ * \param[in]   sysb        System buffer. Released regardless on the function outcome.
  * \param[in]   info        Tx info
  * \return 0=OK or int error code\n
  */
@@ -422,7 +423,7 @@ int rdpa_cpu_send_sysb(bdmf_sysb sysb, const rdpa_cpu_tx_info_t *info);
 
 /** Send system buffer allocated from FPM
  *
- * \param[in] sysb System buffer. Released regardless on the function outcome
+ * \param[in] sysb System buffer. Released regardless on the function outcome.
  * \param[in] info Tx info
  * \return 0=OK or int error code\n
  */
@@ -433,7 +434,7 @@ int rdpa_cpu_send_wfd_to_bridge(bdmf_sysb sysb, const rdpa_cpu_tx_info_t *info, 
 #if defined(BCM_DSL_RDP) || defined(BCM63158)
 /** Send system buffer to Ethernet/DSL WAN Interface
  *
- * \param[in]   sysb          System buffer. Released regardless on the function outcome
+ * \param[in]   sysb          System buffer. Released regardless on the function outcome.
  * \param[in]   egress_queue  Ethernet Egress Queue
  * \return 0=OK or int error code\n
  */
@@ -442,7 +443,7 @@ int rdpa_cpu_tx_port_enet_or_dsl_wan(bdmf_sysb sysb, uint32_t egress_queue, rdpa
 
 /** Send system buffer to Ethernet LAN Interface
  *
- * \param[in]   sysb          System buffer. Released regardless on the function outcome
+ * \param[in]   sysb          System buffer. Released regardless on the function outcome.
  * \param[in]   egress_queue  Ethernet Egress Queue
  * \param[in]   phys_port     Ethernet LAN physical port
  * \return 0=OK or int error code\n
@@ -452,9 +453,9 @@ int rdpa_cpu_tx_port_enet_lan(bdmf_sysb sysb, uint32_t egress_queue,
 
 /** Send system buffer to Flow Cache Offload
  *
- * \param[in] sysb: System buffer. Released regardless on the function outcome
- * \param[in] cpu_rx_queue: CPU Rx Queue index, in case of Runner Flow miss
- * \param[in] dirty: Indicates whether a packet flush from D$ is required
+ * \param[in] sysb: System buffer. Released regardless on the function outcome.
+ * \param[in] cpu_rx_queue: CPU Rx Queue index, in case of Runner Flow miss.
+ * \param[in] dirty: Indicates whether a packet flush from D$ is required.
  * \return 0=OK or int error code\n
  */
 int rdpa_cpu_tx_flow_cache_offload(bdmf_sysb sysb, uint32_t cpu_rx_queue, int dirty);
@@ -467,7 +468,7 @@ int rdpa_cpu_tx_flow_cache_offload(bdmf_sysb sysb, uint32_t cpu_rx_queue, int di
  */
 bdmf_sysb rdpa_cpu_return_free_index(uint16_t free_index);
 
-/** Receive a system buffer (FKB type) from an Ethernet Interface
+/** Receive a system buffer (FKB type) from an Ethernet Interface.
  *
  * \param[in]   queue         CPU RX Queue ID
  * \param[in]   sysb          System buffer
@@ -487,7 +488,7 @@ void rdpa_cpu_tx_reclaim(void);
  * \param[in] esphdr_offset: ESP header byte offset into the packet.
  * \param[in] sa_index: Entry index of the ddr SA descriptor table.
  * \param[in] sa_update: 0- sa_index entry of the ddr sa descriptor table is new.
- *                       1- sa_index entry of the ddr sa descriptor table has been updated..
+ *                       1- sa_index entry of the ddr sa descriptor table has been updated.
  * \param[in] cpu_qid:  Runner - HostCPU queue id
  * \return 0=OK or int error code\n
  */
@@ -534,7 +535,7 @@ int rdpa_cpu_ptp_1588_get_tod(uint16_t ptp_index, uint32_t *tod_h,
 
 /** Send ptp-1588 system buffer
 *
-* \param[in]   sysb        System buffer. Released regardless on the function outcome
+* \param[in]   sysb        System buffer. Released regardless on the function outcome.
 * \param[in]   info        Tx info
 * \return 0=OK or int error code\n
 */
@@ -543,14 +544,14 @@ int rdpa_cpu_send_sysb_ptp(bdmf_sysb sysb, const rdpa_cpu_tx_info_t *info);
 /** Send system buffer - Special function to send EPON Dying
  *  Gasp:
  *
- * \param[in]   sysb        System buffer. Released regardless on the function outcome
+ * \param[in]   sysb        System buffer. Released regardless on the function outcome.
  * \param[in]   info        Tx info
  * \return 0=OK or int error code\n
  *
  *  */
 int rdpa_cpu_send_epon_dying_gasp(bdmf_sysb sysb, const rdpa_cpu_tx_info_t *info);
 
-/** Check if the reason is supported by port metering
+/** Check if the reason is supported by port metering.
  * \param[in]   reason        reason to test
  * \return 0=OK or int error code\n
  */

@@ -82,7 +82,7 @@ static int _phy_leds_init_5321(phy_dev_t *phy_dev)
 }
 
 /* The LEDS in 51F1 revision of the PHY are shifted LED0 -> LED1, LED1->LED2 */
-static int _phy_leds_init_51F1(phy_dev_t *phy_dev)
+static int _phy_leds_init_51F1(phy_dev_t *phy_dev, uint16_t base_addr)
 {
     int ret = 0;
     int j;
@@ -100,8 +100,8 @@ static int _phy_leds_init_51F1(phy_dev_t *phy_dev)
 
     for (j = 0; j < MAX_LEDS_PER_PORT; j++)
     {
-        uint32_t led_mux = led_info.ledInfo[phy_dev->addr-1].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
-        uint32_t led_activity = led_info.ledInfo[phy_dev->addr-1].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
+        uint32_t led_mux = led_info.ledInfo[phy_dev->addr - base_addr].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
+        uint32_t led_activity = led_info.ledInfo[phy_dev->addr - base_addr].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
         uint32_t val = 0;
 
         if (led_mux == led_activity)
@@ -143,8 +143,8 @@ static int _phy_leds_init_51F1(phy_dev_t *phy_dev)
     for (j = 0; j < MAX_LEDS_PER_PORT_51F1; j++)
     {
         uint16_t led_sel = 0;
-        uint32_t led_mux = led_info.ledInfo[phy_dev->addr-1].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
-        uint32_t led_activity = led_info.ledInfo[phy_dev->addr-1].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
+        uint32_t led_mux = led_info.ledInfo[phy_dev->addr - base_addr].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
+        uint32_t led_activity = led_info.ledInfo[phy_dev->addr - base_addr].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
         uint16_t val, val2;
 
         if (led_mux == led_activity)
@@ -231,7 +231,7 @@ Exit:
     return ret;
 }
 
-static int _phy_leds_init_51E1(phy_dev_t *phy_dev)
+static int _phy_leds_init_51E1(phy_dev_t *phy_dev, uint16_t base_addr)
 {
     int ret = 0;
     int j;
@@ -249,8 +249,8 @@ static int _phy_leds_init_51E1(phy_dev_t *phy_dev)
 
     for (j = 0; j < MAX_LEDS_PER_PORT; j++)
     {
-        uint32_t led_mux = led_info.ledInfo[phy_dev->addr-1].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
-        uint32_t led_activity = led_info.ledInfo[phy_dev->addr-1].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
+        uint32_t led_mux = led_info.ledInfo[phy_dev->addr - base_addr].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
+        uint32_t led_activity = led_info.ledInfo[phy_dev->addr - base_addr].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
         uint32_t val = 0;
 
         if (led_mux == led_activity)
@@ -292,8 +292,8 @@ static int _phy_leds_init_51E1(phy_dev_t *phy_dev)
     for (j = 0; j < MAX_LEDS_PER_PORT; j++)
     {
         uint16_t led_sel = 0;
-        uint32_t led_mux = led_info.ledInfo[phy_dev->addr-1].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
-        uint32_t led_activity = led_info.ledInfo[phy_dev->addr-1].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
+        uint32_t led_mux = led_info.ledInfo[phy_dev->addr - base_addr].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
+        uint32_t led_activity = led_info.ledInfo[phy_dev->addr - base_addr].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
         uint16_t val, val2;
 
         if (led_mux == led_activity)
@@ -383,16 +383,21 @@ Exit:
 
 static int _phy_leds_init(phy_dev_t *phy_dev)
 {
-    uint32_t phyid = 0;
+    uint32_t phyid = 0;    
+    qegphy_ctrl_t qegphy_ctrl;
+    uint16_t base_addr;
+    
+    READ_32(QEGPHY_CTRL_REG, qegphy_ctrl);
+    base_addr = qegphy_ctrl.PHY_PHYAD;
 
     mii_phyid_get(phy_dev, &phyid);
 
     if ((phyid & PHY_ID_5321_MASK) == PHY_ID_5321_MASK)
         return _phy_leds_init_5321(phy_dev);
     else if ((phyid & PHY_ID_51F1_MASK) == PHY_ID_51F1_MASK)
-        return _phy_leds_init_51F1(phy_dev);
+        return _phy_leds_init_51F1(phy_dev, base_addr);
     else
-        return _phy_leds_init_51E1(phy_dev);
+        return _phy_leds_init_51E1(phy_dev, base_addr);
 }
 
 #define CORE_SHD18_000          0x0028 /* Auxiliary Control Register */

@@ -42,6 +42,9 @@
 #include "proc_cmd.h"
 #endif
 
+#include "phy_macsec_api.h"
+#include "phy_macsec_common.h"
+
 #define MAX_PHY_DEVS 31     /* value should be < 32 */ 
 
 extern phy_drv_t phy_drv_6848_ephy;
@@ -792,6 +795,393 @@ Error:
     return 0;
 }
 
+static int phy_proc_cmd_read_indirect(int argc, char *argv[])
+{
+    int id;
+    uint16_t temp=0;
+    uint32_t reg, val;
+    phy_dev_t *phy_dev;
+
+    if (argc < 3)
+        goto Error;
+
+    if (kstrtos32(argv[1], 10, &id) || id < 0 || id >= MAX_PHY_DEVS)
+        goto Error;
+
+    if (kstrtou32(argv[2], 16, &reg))
+        goto Error;
+
+    phy_dev = &phy_devices[id];
+    if (phy_dev->phy_drv == NULL)
+        goto Error;
+
+
+    temp = (uint16_t)(reg & 0xffff);
+    if (phy_bus_c45_write(phy_dev, 0x01, 0xa819, temp))
+        goto Error;
+
+    temp = (uint16_t)(reg >> 16);
+    if (phy_bus_c45_write(phy_dev, 0x01, 0xa81a, temp))
+        goto Error;
+
+    if (phy_bus_c45_write(phy_dev, 0x01, 0xa817, 0x000a))
+        goto Error;
+
+    if (phy_bus_c45_read(phy_dev, 0x01, 0xa81b, (uint16_t*)(&val)))
+        goto Error;
+
+    if (phy_bus_c45_read(phy_dev, 0x01, 0xa81c, &temp))
+        goto Error;
+
+    val |= (uint32_t)(temp<<16);
+
+    printk("Read32 register 0x%08x=0x%08x\n", reg, val);
+
+    return 0;
+
+Error:
+    printk("Usage: read32 <id> <reg>\n");
+    return 0;
+}
+
+static int phy_proc_cmd_write_indirect(int argc, char *argv[])
+{
+    int id;
+    uint32_t reg, val;
+    uint16_t temp=0;
+    phy_dev_t *phy_dev;
+
+    if (argc < 4)
+        goto Error;
+
+    if (kstrtos32(argv[1], 10, &id) || id < 0 || id >= MAX_PHY_DEVS)
+        goto Error;
+
+    if (kstrtou32(argv[2], 16, &reg))
+        goto Error;
+
+    if (kstrtou32(argv[3], 16, &val))
+        goto Error;
+
+    phy_dev = &phy_devices[id];
+    if (phy_dev->phy_drv == NULL)
+        goto Error;
+
+
+    temp = (uint16_t)(reg & 0xffff);
+    if (phy_bus_c45_write(phy_dev, 0x01, 0xa819, temp))
+        goto Error;
+
+    temp = (uint16_t)(reg >> 16);
+    if (phy_bus_c45_write(phy_dev, 0x01, 0xa81a, temp))
+        goto Error;
+
+    temp = (uint16_t)(val & 0xffff);
+    if (phy_bus_c45_write(phy_dev, 0x01, 0xa81b, temp))
+        goto Error;
+
+    temp = (uint16_t)(val >> 16);
+    if (phy_bus_c45_write(phy_dev, 0x01, 0xa81c, temp))
+        goto Error;
+
+    if (phy_bus_c45_write(phy_dev, 0x01, 0xa817, 0x0009))
+        goto Error;
+
+    return 0;
+
+Error:
+    printk("Usage: write32 <id> <reg> <val>\n");
+    return 0;
+}
+
+static int phy_proc_macsec_enable64(int argc, char *argv[])
+{
+    int id, ret, enable;
+    phy_dev_t *phy_dev;
+    macsec_api_data macsec_data = {};
+    macsec_api_settings_t settings = {0,0,0,0,0,0,0,0,1,0,0,0,1};
+    macsec_api_sa_t sa_egress = {{0xde, 0xad, 0xbe, 0xef, 0xa5, 0x5a, 0x00, 0x01}, {0x7A, 0x30, 0xC1, 0x18}, {0xE6, 0x30, 0xE8, 0x1A, 0x48, 0xDE, 0x86, 0xA2, 0x1C, 0x66, 0xFA, 0x6D},
+                                 {0xad, 0x7a, 0x2b, 0xd0, 0x3e, 0xac, 0x83, 0x5a, 0x6f, 0x62, 0x0f, 0xdc, 0xb5, 0x06, 0xb3, 0x45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+                                 {0x73, 0xa2, 0x3d, 0x80, 0x12, 0x1d, 0xe2, 0xd5, 0xa8, 0x50, 0x25, 0x3f, 0xcf, 0x43, 0x12, 0x0e}, 
+                                 16, 1, {{0,1,1,0,0,0,1,1,1}}, MACSEC_SA_ACTION_EGRESS};
+    macsec_api_sa_t sa_ingress = {{0xde, 0xad, 0xbe, 0xef, 0xa5, 0x5a, 0x00, 0x01}, {0x7A, 0x30, 0xC1, 0x18}, {0xE6, 0x30, 0xE8, 0x1A, 0x48, 0xDE, 0x86, 0xA2, 0x1C, 0x66, 0xFA, 0x6D},
+                                 {0xad, 0x7a, 0x2b, 0xd0, 0x3e, 0xac, 0x83, 0x5a, 0x6f, 0x62, 0x0f, 0xdc, 0xb5, 0x06, 0xb3, 0x45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+                                 {0x73, 0xa2, 0x3d, 0x80, 0x12, 0x1d, 0xe2, 0xd5, 0xa8, 0x50, 0x25, 0x3f, 0xcf, 0x43, 0x12, 0x0e}, 
+                                 16, 1, {{0,0,MACSEC_FRAME_VALIDATE_STRICT,0,1,0,0,0}}, MACSEC_SA_ACTION_INGRESS};
+
+    if (argc < 3)
+        goto Error;
+
+    if (kstrtos32(argv[1], 10, &id) || id < 0 || id >= MAX_PHY_DEVS)
+        goto Error;
+
+    if (kstrtou32(argv[2], 10, &enable))
+        goto Error;
+
+    phy_dev = &phy_devices[id];
+    if (phy_dev->phy_drv == NULL)
+        goto Error;
+
+    if (phy_dev->phy_drv->macsec_oper == NULL)
+        goto Error;
+
+    macsec_data.op = MACSEC_OPER_INIT;
+    memcpy(&macsec_data.ext_data.secy_conf, &settings, sizeof(macsec_api_settings_t));
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    /* Egress */
+    macsec_data.direction = 0;
+
+    macsec_data.op = MACSEC_OPER_VPORT_ADD;
+    macsec_data.index1 = 0;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    macsec_data.op = MACSEC_OPER_SA_ADD;
+    macsec_data.index1 = 0;
+    macsec_data.index2 = 0;
+    memcpy(&macsec_data.ext_data.sa_conf, &sa_egress, sizeof(macsec_api_sa_t));
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    macsec_data.op = MACSEC_OPER_RULE_ADD;
+    macsec_data.index1 = 0;
+    macsec_data.index2 = 0;
+    macsec_data.ext_data.rule_conf.num_tags = 1;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    macsec_data.op = MACSEC_OPER_RULE_ENABLE;
+    macsec_data.index1 = 0;
+    macsec_data.data1 = 1;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    /* Ingress */
+    macsec_data.direction = 1;
+
+    macsec_data.op = MACSEC_OPER_VPORT_ADD;
+    macsec_data.index1 = 0;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    macsec_data.op = MACSEC_OPER_SA_ADD;
+    macsec_data.index1 = 0;
+    macsec_data.index2 = 0;
+    memcpy(&macsec_data.ext_data.sa_conf, &sa_ingress, sizeof(macsec_api_sa_t));
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    macsec_data.op = MACSEC_OPER_RULE_ADD;
+    macsec_data.index1 = 0;
+    macsec_data.index2 = 0;
+    macsec_data.ext_data.rule_conf.num_tags = 1;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    macsec_data.op = MACSEC_OPER_RULE_ENABLE;
+    macsec_data.index1 = 0;
+    macsec_data.data1 = 1;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+Error:
+    printk("Usage: macsecenable64 <id> <1/0>\n");
+    return 0;
+}
+
+static int phy_proc_macsec_enable(int argc, char *argv[])
+{
+    int id, ret, enable;
+    phy_dev_t *phy_dev;
+    macsec_api_data macsec_data = {};
+    macsec_api_settings_t settings = {0,0,0,0,0,0,0,0,1,0,0,0,1};
+    macsec_api_sa_t sa_egress = {{0xde, 0xad, 0xbe, 0xef, 0xa5, 0x5a, 0x00, 0x01}, {}, {},
+                                 {0xad, 0x7a, 0x2b, 0xd0, 0x3e, 0xac, 0x83, 0x5a, 0x6f, 0x62, 0x0f, 0xdc, 0xb5, 0x06, 0xb3, 0x45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+                                 {0x73, 0xa2, 0x3d, 0x80, 0x12, 0x1d, 0xe2, 0xd5, 0xa8, 0x50, 0x25, 0x3f, 0xcf, 0x43, 0x12, 0x0e}, 
+                                 16, 0, {{0,1,1,0,0,0,1,1,0}}, MACSEC_SA_ACTION_EGRESS};
+    macsec_api_sa_t sa_ingress = {{0xde, 0xad, 0xbe, 0xef, 0xa5, 0x5a, 0x00, 0x01}, {}, {},
+                                 {0xad, 0x7a, 0x2b, 0xd0, 0x3e, 0xac, 0x83, 0x5a, 0x6f, 0x62, 0x0f, 0xdc, 0xb5, 0x06, 0xb3, 0x45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+                                 {0x73, 0xa2, 0x3d, 0x80, 0x12, 0x1d, 0xe2, 0xd5, 0xa8, 0x50, 0x25, 0x3f, 0xcf, 0x43, 0x12, 0x0e}, 
+                                 16, 0, {{0,0,MACSEC_FRAME_VALIDATE_STRICT,0,1,0,0,1}}, MACSEC_SA_ACTION_INGRESS};
+
+    if (argc < 3)
+        goto Error;
+
+    if (kstrtos32(argv[1], 10, &id) || id < 0 || id >= MAX_PHY_DEVS)
+        goto Error;
+
+    if (kstrtou32(argv[2], 10, &enable))
+        goto Error;
+
+    phy_dev = &phy_devices[id];
+    if (phy_dev->phy_drv == NULL)
+        goto Error;
+
+    if (phy_dev->phy_drv->macsec_oper == NULL)
+        goto Error;
+
+    macsec_data.op = MACSEC_OPER_INIT;
+    memcpy(&macsec_data.ext_data.secy_conf, &settings, sizeof(macsec_api_settings_t));
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    /* Egress */
+    macsec_data.direction = 0;
+
+    macsec_data.op = MACSEC_OPER_VPORT_ADD;
+    macsec_data.index1 = 0;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    macsec_data.op = MACSEC_OPER_SA_ADD;
+    macsec_data.index1 = 0;
+    macsec_data.index2 = 0;
+    memcpy(&macsec_data.ext_data.sa_conf, &sa_egress, sizeof(macsec_api_sa_t));
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    macsec_data.op = MACSEC_OPER_RULE_ADD;
+    macsec_data.index1 = 0;
+    macsec_data.index2 = 0;
+    macsec_data.ext_data.rule_conf.num_tags = 1;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    macsec_data.op = MACSEC_OPER_RULE_ENABLE;
+    macsec_data.index1 = 0;
+    macsec_data.data1 = 1;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    /* Ingress */
+    macsec_data.direction = 1;
+
+    macsec_data.op = MACSEC_OPER_VPORT_ADD;
+    macsec_data.index1 = 0;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    macsec_data.op = MACSEC_OPER_SA_ADD;
+    macsec_data.index1 = 0;
+    macsec_data.index2 = 0;
+    memcpy(&macsec_data.ext_data.sa_conf, &sa_ingress, sizeof(macsec_api_sa_t));
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    macsec_data.op = MACSEC_OPER_RULE_ADD;
+    macsec_data.index1 = 0;
+    macsec_data.index2 = 0;
+    macsec_data.ext_data.rule_conf.num_tags = 1;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    macsec_data.op = MACSEC_OPER_RULE_ENABLE;
+    macsec_data.index1 = 0;
+    macsec_data.data1 = 1;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+Error:
+    printk("Usage: macsecenable <id> <1/0>\n");
+    return 0;
+}
+
+static int phy_proc_macsec_enablebp(int argc, char *argv[])
+{
+    int id, ret, enable;
+    phy_dev_t *phy_dev;
+    macsec_api_data macsec_data = {};
+    macsec_api_settings_t settings = {0,0,0,0,0,0,0,0,1,0,0,0,1};
+    macsec_api_sa_bd_t sa_bp = {};
+
+    if (argc < 3)
+        goto Error;
+
+    if (kstrtos32(argv[1], 10, &id) || id < 0 || id >= MAX_PHY_DEVS)
+        goto Error;
+
+    if (kstrtou32(argv[2], 10, &enable))
+        goto Error;
+
+    phy_dev = &phy_devices[id];
+    if (phy_dev->phy_drv == NULL)
+        goto Error;
+
+    if (phy_dev->phy_drv->macsec_oper == NULL)
+        goto Error;
+
+    macsec_data.op = MACSEC_OPER_INIT;
+    memcpy(&macsec_data.ext_data.secy_conf, &settings, sizeof(macsec_api_settings_t));
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    /* Egress */
+    macsec_data.direction = 0;
+
+    macsec_data.op = MACSEC_OPER_VPORT_ADD;
+    macsec_data.index1 = 0;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    macsec_data.op = MACSEC_OPER_SA_ADD;
+    macsec_data.index1 = 0;
+    macsec_data.index2 = 0;
+    memcpy(&macsec_data.ext_data.sa_conf, &sa_bp, sizeof(macsec_api_sa_t));
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    macsec_data.op = MACSEC_OPER_RULE_ADD;
+    macsec_data.index1 = 0;
+    macsec_data.index2 = 0;
+    macsec_data.ext_data.rule_conf.num_tags = 1;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    macsec_data.op = MACSEC_OPER_RULE_ENABLE;
+    macsec_data.index1 = 0;
+    macsec_data.data1 = 1;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    /* Ingress */
+    macsec_data.direction = 1;
+
+    macsec_data.op = MACSEC_OPER_VPORT_ADD;
+    macsec_data.index1 = 0;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    macsec_data.op = MACSEC_OPER_SA_ADD;
+    macsec_data.index1 = 0;
+    macsec_data.index2 = 0;
+    memcpy(&macsec_data.ext_data.sa_conf, &sa_bp, sizeof(macsec_api_sa_t));
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    macsec_data.op = MACSEC_OPER_RULE_ADD;
+    macsec_data.index1 = 0;
+    macsec_data.index2 = 0;
+    macsec_data.ext_data.rule_conf.num_tags = 1;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+    memset(&macsec_data.ext_data, 0, sizeof(macsec_api_ext_data));
+
+    macsec_data.op = MACSEC_OPER_RULE_ENABLE;
+    macsec_data.index1 = 0;
+    macsec_data.data1 = 1;
+    ret = phy_dev->phy_drv->macsec_oper(phy_dev, &macsec_data);
+
+Error:
+    printk("Usage: macsecenable <id> <1/0>\n");
+    return 0;
+}
+
+
 #if defined(PHY_SF2_SERDES)
 extern void phy_drv_sfp_group_list(void);
 static int phy_proc_cmd_sfp_list(int argc, char *argv[])
@@ -819,8 +1209,12 @@ static struct proc_cmd_ops command_entries[] = {
     { .name = "read", .do_command	= phy_proc_cmd_read},
     { .name = "write", .do_command	= phy_proc_cmd_write},
     { .name = "read45", .do_command	= phy_proc_cmd_read45},
-    { .name = "write45", .do_command	= phy_proc_cmd_write45},
-    { .name = "write45", .do_command	= phy_proc_cmd_write45},
+    { .name = "write45", .do_command = phy_proc_cmd_write45},
+    { .name = "read32", .do_command	= phy_proc_cmd_read_indirect},
+    { .name = "write32", .do_command = phy_proc_cmd_write_indirect},
+    { .name = "macsecenable", .do_command = phy_proc_macsec_enable},
+    { .name = "macsecenable64", .do_command = phy_proc_macsec_enable64},
+    { .name = "macsecenablebp", .do_command = phy_proc_macsec_enablebp},
 #ifdef PHY_CROSSBAR
     { .name = "crossbars", .do_command = phy_proc_cmd_crossbar_list},
 #endif

@@ -48,7 +48,9 @@ static bus_type_t bp_parse_bus_type(const EMAC_PORT_INFO *port_info)
     {
     case MAC_IF_MII:
     case MAC_IF_GMII:
-    case MAC_IF_RGMII:
+    case MAC_IF_RGMII_1P8V:
+    case MAC_IF_RGMII_2P5V:
+    case MAC_IF_RGMII_3P3V:
     {
         bus_type = BUS_TYPE_6858_LPORT;
         break;
@@ -98,7 +100,9 @@ phy_type_t bp_parse_phy_type(const EMAC_PORT_INFO *port_info)
         phy_type = PHY_TYPE_6858_EGPHY;
         break;
     }
-    case MAC_IF_RGMII:
+    case MAC_IF_RGMII_1P8V:
+    case MAC_IF_RGMII_2P5V:
+    case MAC_IF_RGMII_3P3V:
     {
         if (phy_id & PHY_EXTERNAL)
         {
@@ -158,7 +162,9 @@ void *bp_parse_mac_priv(const ETHERNET_MAC_INFO *emac_info, uint32_t port)
         mux_sel = PORT_GPHY;
         break;
     }
-    case MAC_IF_RGMII:
+    case MAC_IF_RGMII_1P8V:
+    case MAC_IF_RGMII_2P5V:
+    case MAC_IF_RGMII_3P3V:
     {
         mux_sel = PORT_RGMII;
         break;
@@ -168,7 +174,11 @@ void *bp_parse_mac_priv(const ETHERNET_MAC_INFO *emac_info, uint32_t port)
         if (phy_id & PHY_EXTERNAL)
             mux_sel = PORT_SGMII_AN_SLAVE;
         else
+#ifndef CONFIG_BCM_FTTDP_G9991
             mux_sel = PORT_SGMII_AN_IEEE_CL37;
+#else
+            mux_sel = PORT_SGMII;
+#endif
 
         break;
     }

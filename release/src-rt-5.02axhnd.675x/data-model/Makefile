@@ -88,7 +88,9 @@ endif
 
 # Choose the right TR181 wifi file to use.
 DMFILE_TR181_WIFI := cms-dm-tr181-wifi.xml
-ifneq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
+ifeq ($(BUILD_HND_EAP),y)
+    $(shell cp -pf cms-dm-tr181-wifi-eap.xml $(DMFILE_TR181_WIFI))
+else ifneq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
     $(shell cp -pf cms-dm-tr181-wifi-unfwlcfg.xml $(DMFILE_TR181_WIFI))
 else
     $(shell cp -pf cms-dm-tr181-wifi-generic.xml $(DMFILE_TR181_WIFI))

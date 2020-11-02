@@ -283,18 +283,12 @@ typedef union pktfwd_key                /* pktfwd_key_t */
 #define PKTFWD_P(VRP)               ((uint8_t)  ((VRP) >>  0))
 
 #define PKTFWD_VERSION(version, release, patch) \
-    (((uint16_t)(version) << 16) + \
-     ((uint8_t) (release) <<  8) + \
-     ((uint8_t) (patch)   <<  0))
+    (((version) << 16) + ((release) << 8) + ((patch) << 0))
 
 #define PKTFWD_VERSIONCODE(ADT) \
-({ \
-    uint32_t vcode; \
-    vcode = PKTFWD_VERSION(ADT ##_VERSION, ADT ##_RELEASE, ADT ##_PATCH); \
-    vcode; \
-})
+    PKTFWD_VERSION(ADT ##_VERSION, ADT ##_RELEASE, ADT ##_PATCH)
 
-#define PKTFWD_VERSION_NONE         ((uint32_t)(0))
+#define PKTFWD_VERSION_NONE         (0)
 
 /** Version Release Patch: Dot Notation Form */
 #define PKTFWD_VRP_FMT              " \033[1m\033[34m%s[%u.%u.%u]\033[0m"
@@ -307,7 +301,7 @@ typedef union pktfwd_key                /* pktfwd_key_t */
 
 #if defined(BCM_PKTLIST)
 #define PKTLIST_VERSION             (1)
-#define PKTLIST_RELEASE             (0)
+#define PKTLIST_RELEASE             (1)
 #define PKTLIST_PATCH               (0)
 #define PKTLIST_VERSIONCODE         PKTFWD_VERSIONCODE(PKTLIST)
 #else
@@ -792,6 +786,58 @@ typedef struct  pktlist_context     pktlist_context_t;
     ((pktlist_elem_t *)&(((pktlist_table_t *)(tbl))->elem[prio][dest]))
 
 
+#if defined(BCM_PKTFWD_FLCTL)
+
+/**
+ * -----------------------------------------------------------------------------
+ * Section: PKTFWD_FLCTL Namespaces: Objects forward declarations and definitions
+ * -----------------------------------------------------------------------------
+ */
+
+struct  pktlist_fctable_t;          /* 2-d array of packet admission credits */
+
+typedef atomic_t                    pktlist_credits_t;
+typedef struct  pktlist_fctable     pktlist_fctable_t;
+
+#define PKTLIST_FCTABLE_NULL        ((pktlist_fctable_t *) NULL)
+
+
+/** PKTFWD_FLCTL conversion/accessor macros to locate a pktlist_credits_t */
+#define PKTLIST_CTX_CREDITS(ctx, prio, dest) \
+    ((pktlist_credits_t *)&(((pktlist_context_t *)(ctx))->fctable->credits[prio][dest]))
+
+#define PKTLIST_FCTBL_CREDITS(fctbl, prio, dest) \
+    ((pktlist_credits_t *)&(((pktlist_table_t *)(fctbl))->credits[prio][dest]))
+
+
+/**
+ * -----------------------------------------------------------------------------
+ * pktlist_fctable_t
+ * Table of station credits maintained as a two-dimensional array for indexed
+ * access to a pktlist_credits_t (given a <prio,dest>)
+ *
+ * During init, consumer (WLAN) driver instantiate a pktlist_fctable in its
+ * pktlist_context_t and the fctable is shared with the producer (WFD) driver.
+ * When registering a station with PKTFWD, WLAN configures the corresponding
+ * station credits with the station queue length value (SCB prec queue length).
+ * Based on credit availability, WFD driver will either admit the packet to
+ * pktlist and decrement credit or drop the packet.
+ * WLAN driver will increment the credits when a packet is released from
+ * precedence queues.
+ *
+ * NOTE: Used only for WLAN NIC radio
+ * -----------------------------------------------------------------------------
+ */
+
+struct pktlist_fctable               /* pktlist_fctable_t */
+{
+    pktlist_credits_t   credits[PKTLIST_PRIO_MAX][PKTLIST_DEST_MAX];
+    uint32_t            pkt_prio_favor; /* favor pkt prio; defalut VI, VO */
+};
+
+#endif /* BCM_PKTFWD_FLCTL */
+
+
 /**
  * -----------------------------------------------------------------------------
  * Section: PKTLIST Modules and registration of exported functions
@@ -951,7 +997,11 @@ struct pktlist_context              /* pktlist_context_t */
     dll_t               free;       /* list of free pktlist_elem::nodes */
     dll_t               mcast;      /* list of mcast pktlist_elem::nodes */
     dll_t               ucast[PKTLIST_PRIO_MAX]; /* ucast lists by prio */
-
+#if defined(BCM_PKTFWD_FLCTL)
+    pktlist_fctable_t * fctable;    /* table of per pktlist credits */
+#else /* ! BCM_PKTFWD_FLCTL */
+    void              * fctable;
+#endif /* ! BCM_PKTFWD_FLCTL */
     /* Peer consumer's pktlist context for daisy chaining (xfer lists) */
     pktlist_context_t * peer;       /* peer driver pktlist_context */
     pktlist_context_xfer_fn_t xfer_fn;  /* Transfer to peer hander */
@@ -1260,6 +1310,155 @@ __pktlist_add_pkt(pktlist_context_t * pktlist_context,
     ++pktlist->len;
 
 }   /* __pktlist_add_pkt() */
+
+
+#if defined(BCM_PKTFWD_FLCTL)
+
+/**
+ * =============================================================================
+ * Section: PKTFWD_FLCTL Functional Interface
+ * =============================================================================
+ */
+
+
+/*
+ * -----------------------------------------------------------------------------
+ * Function : Set credits of a pktlist identified by the prio and dest.
+ * -----------------------------------------------------------------------------
+ */
+
+static inline void
+__pktlist_fctable_set_credits(pktlist_context_t * pktlist_context,
+                              uint32_t prio, uint32_t dest, uint32_t credits)
+{
+    pktlist_credits_t * pktlist_credits;
+
+    /* Locate the pktlist credit */
+    pktlist_credits = PKTLIST_CTX_CREDITS(pktlist_context, prio, dest);
+
+    atomic_set(pktlist_credits, credits);
+
+}   /* __pktlist_fctable_set_credits() */
+
+
+/*
+ * -----------------------------------------------------------------------------
+ * Function : Get credits of a pktlist identified by the prio and dest.
+ * -----------------------------------------------------------------------------
+ */
+
+static inline int32_t
+__pktlist_fctable_get_credits(pktlist_context_t * pktlist_context,
+                              uint32_t prio, uint32_t dest)
+{
+    pktlist_credits_t * pktlist_credits;
+
+    /* Locate the pktlist credit */
+    pktlist_credits = PKTLIST_CTX_CREDITS(pktlist_context, prio, dest);
+
+    return (atomic_read(pktlist_credits));
+
+}   /* __pktlist_fctable_get_credits() */
+
+
+/*
+ * -----------------------------------------------------------------------------
+ * Function : Increament credits of a pktlist identified by the prio and dest.
+ * -----------------------------------------------------------------------------
+ */
+
+static inline void
+__pktlist_fctable_inc_credits(pktlist_context_t * pktlist_context,
+                              uint32_t prio, uint32_t dest)
+{
+    pktlist_credits_t * pktlist_credits;
+
+    /* Dont update credits for favored prio */
+    if (prio >= pktlist_context->fctable->pkt_prio_favor)
+        return;
+
+    /* Locate the pktlist credit */
+    pktlist_credits = PKTLIST_CTX_CREDITS(pktlist_context, prio, dest);
+
+    atomic_inc(pktlist_credits);
+
+    PKTLIST_ASSERT(atomic_read(pktlist_credits) > 8192);
+
+}   /* __pktlist_fctable_inc_credits() */
+
+
+/*
+ * -----------------------------------------------------------------------------
+ * Function : Decreament credits of a pktlist identified by the prio and dest.
+ * -----------------------------------------------------------------------------
+ */
+
+static inline void
+__pktlist_fctable_dec_credits(pktlist_context_t * pktlist_context,
+                              uint32_t prio, uint32_t dest)
+{
+    pktlist_credits_t * pktlist_credits;
+
+    /* Dont update credits for favored prio */
+    if (prio >= pktlist_context->fctable->pkt_prio_favor)
+        return;
+
+    /* Locate the pktlist credit */
+    pktlist_credits = PKTLIST_CTX_CREDITS(pktlist_context, prio, dest);
+
+    atomic_dec(pktlist_credits);
+
+}   /* __pktlist_fctable_dec_credits() */
+
+
+/*
+ * -----------------------------------------------------------------------------
+ * Function : Add credits to a pktlist identified by the prio and dest.
+ * -----------------------------------------------------------------------------
+ */
+
+static inline void
+__pktlist_fctable_add_credits(pktlist_context_t * pktlist_context,
+                              uint32_t prio, uint32_t dest, uint32_t credits)
+{
+    pktlist_credits_t * pktlist_credits;
+
+    /* Dont update credits for favored prio */
+    if (prio >= pktlist_context->fctable->pkt_prio_favor)
+        return;
+
+    /* Locate the pktlist credit */
+    pktlist_credits = PKTLIST_CTX_CREDITS(pktlist_context, prio, dest);
+
+    atomic_add(credits, pktlist_credits);
+
+}   /* __pktlist_fctable_add_credits() */
+
+
+/*
+ * -----------------------------------------------------------------------------
+ * Function : Subtract credits of a pktlist identified by the prio and dest.
+ * -----------------------------------------------------------------------------
+ */
+
+static inline void
+__pktlist_fctable_sub_credits(pktlist_context_t * pktlist_context,
+                              uint32_t prio, uint32_t dest, uint32_t credits)
+{
+    pktlist_credits_t * pktlist_credits;
+
+    /* Dont update credits for favored prio */
+    if (prio >= pktlist_context->fctable->pkt_prio_favor)
+        return;
+
+    /* Locate the pktlist credit */
+    pktlist_credits = PKTLIST_CTX_CREDITS(pktlist_context, prio, dest);
+
+    atomic_sub(credits, pktlist_credits);
+
+}   /* __pktlist_fctable_sub_crediti() */
+
+#endif /* BCM_PKTFWD_FLCTL */
 
 
 #endif /* BCM_PKTLIST */
@@ -1816,6 +2015,7 @@ struct d3fwd_wlif                       /* d3fwd_wlif_t */
     struct osl_info   * osh;
     struct wl_if      * wlif;           /* 1:1 wl_if extension */
     struct net_device * net_device;     /* net_device of wl_if */
+    struct d3lut_elem * wds_d3lut_elem; /* d3lut_elem used for WDS */
 
     uint8_t             wl_schedule;    /* wlan thread schedule state */
     struct {
@@ -1832,6 +2032,9 @@ struct d3fwd_wlif                       /* d3fwd_wlif_t */
     D3FWD_STATS_EXPR(
     d3fwd_wlif_stats_t  stats[D3FWD_PRIO_MAX]; /* wlif stats */
     )
+
+    /* flags for each netdevice/wlif */
+    uint32_t            flags;
 
 };
 
@@ -2475,8 +2678,6 @@ extern void             d3lut_stats_clr(d3lut_t * d3lut);
 
 #endif /* BCM_D3LUT */
 
-/** Fetch a WLAN radio's pktlist_context */
-extern pktlist_context_t * wl_pktfwd_pktlist_context(uint32_t domain);
 #endif /* BCM_PKTFWD */
 
 #endif /* __bcm_pktfwd_h_included__ */

@@ -508,7 +508,7 @@ endif
 
       .PHONY : build_library 
       build_library: $(addprefix $(obj)/, $(wl_lib_objects)) $(ARCHIVE_FILE)
-	$(LD) $(ld_flags) $(LDFLAGS_MODULE) -r -o $(obj)/wldrvlib.o  $^
+	$(LD) $(ld_flags) -r -o $(obj)/wldrvlib.o  $^
 	cp -f $(obj)/wldrvlib.o $(WLSRCBASE)/$(notdir $(obj))-$(BRCM_CHIP)-$(BCMARCH).o_save
 
       $(call info_out, WLFILES = $(sort $(WLFILES)))

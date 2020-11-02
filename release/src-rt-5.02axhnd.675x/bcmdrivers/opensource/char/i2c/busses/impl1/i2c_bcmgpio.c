@@ -110,7 +110,8 @@ static struct platform_device *bcm_i2c_devices[] __initdata = {
 
 static int __init i2c_bcm_gpio_init(void)
 {
-	unsigned short bpGpio_scl, bpGpio_sda;
+    unsigned short bpGpio_scl, bpGpio_sda;
+    int ret;
 
     BpGetBitbangSclGpio(&bpGpio_scl);
     BpGetBitbangSdaGpio(&bpGpio_sda);
@@ -118,17 +119,21 @@ static int __init i2c_bcm_gpio_init(void)
     if (bpGpio_scl != BP_NOT_DEFINED &&
         bpGpio_sda != BP_NOT_DEFINED ) {
 
-    /* Note : The scl/sda pins for BCM49408REF board are reversed
+        /* Note : The scl/sda pins for BCM49408REF board are reversed
            because the temperature sensor is wired backwards. This needs
-               to be addressed in the boardparams for this board */
-    bcm_i2c_gpio_data.scl_pin = bpGpio_scl;
-    bcm_i2c_gpio_data.sda_pin = bpGpio_sda;
+           to be addressed in the boardparams for this board */
+        bcm_i2c_gpio_data.scl_pin = bpGpio_scl & BP_GPIO_NUM_MASK;
+        bcm_i2c_gpio_data.sda_pin = bpGpio_sda & BP_GPIO_NUM_MASK;
 
-	printk("i2c_bcm_gpio_init: SDA = %d and SCL =%d GPIOs\n",
-			bcm_i2c_gpio_data.sda_pin, bcm_i2c_gpio_data.scl_pin);
+        printk("i2c_bcm_gpio_init: SDA = %d and SCL =%d GPIOs\n",
+                bcm_i2c_gpio_data.sda_pin, bcm_i2c_gpio_data.scl_pin);
 
-	gpiochip_add(&bcm_gpio_chip);
-    platform_add_devices(bcm_i2c_devices, ARRAY_SIZE(bcm_i2c_devices));
+        ret = gpiochip_add(&bcm_gpio_chip);
+        if (ret)
+            printk("%s: gpiochip_add failed ret=%d\n", __FUNCTION__, ret);
+        ret = platform_add_devices(bcm_i2c_devices, ARRAY_SIZE(bcm_i2c_devices));
+        if (ret)
+            printk("%s: platform_add_device failed ret=%d\n", __FUNCTION__, ret);
     }
     else
     {

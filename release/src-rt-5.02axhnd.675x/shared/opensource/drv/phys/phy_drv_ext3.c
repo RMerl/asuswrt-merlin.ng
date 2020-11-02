@@ -39,6 +39,9 @@
 #include "phy_drv.h"
 #include "phy_drv_mii.h"
 #include "bcm_gpio.h"
+#ifndef _CFE_
+#include "phy_macsec_api.h"
+#endif
 
 typedef struct firmware_s firmware_t;
 typedef struct phy_desc_s phy_desc_t;
@@ -49,6 +52,7 @@ struct firmware_s {
     uint32_t size;
     int (*load)(firmware_t *firmware);
     uint32_t map;
+    uint8_t macsec_capable;
 };
 
 struct phy_desc_s {
@@ -70,27 +74,27 @@ static int load_blackfin(firmware_t *firmware);
 
 #ifdef _MAKO_A0_
 #include "mako_a0_firmware.h"
-firmware_t mako_a0 = { mako_a0_version, mako_a0_firmware, sizeof(mako_a0_firmware), &load_mako };
+firmware_t mako_a0 = { mako_a0_version, mako_a0_firmware, sizeof(mako_a0_firmware), &load_mako, 0, 0 };
 #endif
 #ifdef _ORCA_A0_
 #include "orca_a0_firmware.h"
-firmware_t orca_a0 = { orca_a0_version, orca_a0_firmware, sizeof(orca_a0_firmware), &load_orca };
+firmware_t orca_a0 = { orca_a0_version, orca_a0_firmware, sizeof(orca_a0_firmware), &load_orca, 0, 0 };
 #endif
 #ifdef _ORCA_B0_
 #include "orca_b0_firmware.h"
-firmware_t orca_b0 = { orca_b0_version, orca_b0_firmware, sizeof(orca_b0_firmware), &load_orca };
+firmware_t orca_b0 = { orca_b0_version, orca_b0_firmware, sizeof(orca_b0_firmware), &load_orca, 0, 0 };
 #endif
 #ifdef _BLACKFIN_A0_ 
 #include "blackfin_a0_firmware.h"
-firmware_t blackfin_a0 = { blackfin_a0_version, blackfin_a0_firmware, sizeof(blackfin_a0_firmware), &load_blackfin };
+firmware_t blackfin_a0 = { blackfin_a0_version, blackfin_a0_firmware, sizeof(blackfin_a0_firmware), &load_blackfin, 0, 0 };
 #endif
 #ifdef _BLACKFIN_B0_ 
 #include "blackfin_b0_firmware.h"
-firmware_t blackfin_b0 = { blackfin_b0_version, blackfin_b0_firmware, sizeof(blackfin_b0_firmware), &load_blackfin };
+firmware_t blackfin_b0 = { blackfin_b0_version, blackfin_b0_firmware, sizeof(blackfin_b0_firmware), &load_blackfin, 0, 0 };
 #endif
 #ifdef _LONGFIN_A0_
 #include "longfin_a0_firmware.h"
-firmware_t longfin_a0 = { longfin_a0_version, longfin_a0_firmware, sizeof(longfin_a0_firmware), &load_blackfin };
+firmware_t longfin_a0 = { longfin_a0_version, longfin_a0_firmware, sizeof(longfin_a0_firmware), &load_blackfin, 0, 1 };
 #endif
 
 static firmware_t *firmware_list[] = {
@@ -494,12 +498,25 @@ static int _phy_idle_stuffing_mode_set(phy_dev_t *phy_dev, int enable)
 {
     int ret;
     uint16_t val = enable ? 0 : 1;
+    uint16_t const_disabled = 1;
 
     /* Set idle stuffing mode in 2.5GBASE-T and 5GBASE-T modes */
-    if ((ret = cmd_handler(phy_dev, CMD_SET_XFI_2P5G_5G_MODE, &val, &val, NULL, NULL, NULL)))
+    if ((ret = cmd_handler(phy_dev, CMD_SET_XFI_2P5G_5G_MODE, &const_disabled, &val, NULL, NULL, NULL)))
         goto Exit;
 
 Exit:
+    return ret;
+}
+static int _phy_led_control_mode_set(phy_dev_t *phy_dev, int user_control)
+{
+    int ret = 0;
+    /* uint16_t val = user_control ? 1 : 0; */
+
+    /* Set led control to user or firmware */
+    /*if ((ret = cmd_handler(phy_dev, CMD_SET_LED_TYPE, &val, NULL, NULL, NULL, NULL)))
+        goto Exit;
+
+Exit:*/
     return ret;
 }
 
@@ -805,6 +822,29 @@ int _phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *pcaps)
         && (caps_type != CAPS_TYPE_SUPPORTED))
         goto Exit;
 
+    if (caps_type == CAPS_TYPE_SUPPORTED)
+    {
+        caps |= PHY_CAP_AUTONEG | PHY_CAP_PAUSE | PHY_CAP_PAUSE_ASYM | PHY_CAP_REPEATER;
+        caps |= PHY_CAP_100_HALF | PHY_CAP_100_FULL;
+        caps |= PHY_CAP_1000_HALF | PHY_CAP_1000_FULL;
+        caps |= PHY_CAP_2500 | PHY_CAP_5000  | PHY_CAP_10000;
+
+        /* Don't advertise 5G/10G speeds when the mac in HSGMII mode */
+        if (phy_dev->mii_type == PHY_MII_TYPE_HSGMII)
+            caps &= ~(PHY_CAP_5000 | PHY_CAP_10000);
+
+        /* Don't advertise 2.5G/5G/10G speeds when the mac in SGMII mode */
+        if (phy_dev->mii_type == PHY_MII_TYPE_SGMII)
+            caps &= ~(PHY_CAP_2500 | PHY_CAP_5000 | PHY_CAP_10000);
+
+        if (phy_dev->disable_hd)
+            caps &= ~(PHY_CAP_100_HALF | PHY_CAP_1000_HALF);
+
+        *pcaps = caps;
+
+        return 0;
+    }
+
     /* 1000Base-T/100Base-TX MII control */
     PHY_READ(phy_dev, 0x07, 0xffe0, &val);
 
@@ -851,6 +891,7 @@ int _phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *pcaps)
         caps |= PHY_CAP_10000;
 
     *pcaps = caps;
+
 Exit:
     return ret;
 }
@@ -859,6 +900,8 @@ int _phy_caps_set(phy_dev_t *phy_dev, uint32_t caps)
 {
     int ret;
     uint16_t val, mode;
+
+    caps |= PHY_CAP_AUTONEG;
 
     /* Don't advertise 5G/10G speeds when the mac in HSGMII mode */
     if (phy_dev->mii_type == PHY_MII_TYPE_HSGMII)
@@ -968,8 +1011,6 @@ static int _phy_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t du
     caps &= ~(PHY_CAP_100_HALF | PHY_CAP_100_FULL |
         PHY_CAP_1000_HALF | PHY_CAP_1000_FULL |
         PHY_CAP_2500 | PHY_CAP_5000 | PHY_CAP_10000);
-
-    caps |= PHY_CAP_AUTONEG;
 
     switch (speed)
     {
@@ -1163,6 +1204,11 @@ static int _phy_init(phy_dev_t *phy_dev)
     if ((ret = _phy_caps_set(phy_dev, PHY_CAP_PAUSE | PHY_CAP_REPEATER)))
         goto Exit;
 
+    /* Set led control type */
+    if ((ret = _phy_led_control_mode_set(phy_dev, 0)))
+        goto Exit;
+
+    
     switch (phy_dev->mii_type)
     {
     case PHY_MII_TYPE_SGMII:
@@ -1182,6 +1228,21 @@ static int _phy_init(phy_dev_t *phy_dev)
     if ((ret = _phy_speed_set(phy_dev, speed, PHY_DUPLEX_FULL)))
         goto Exit;
 
+#ifndef _CFE_
+    {
+        uint32_t phyid;
+        _phy_phyid_get(phy_dev, &phyid);
+        for (i = 0; i < sizeof(phy_desc)/sizeof(phy_desc[0]); i++)
+        {
+            if ((((phyid >> 16) & 0xffff) == phy_desc[i].phyid1) && ((phyid & 0xffff) == phy_desc[i].phyid2) && phy_desc[i].firmware->macsec_capable)
+            {
+                printk("phy %s is macsec capable, initializing macsec module\n", phy_desc[i].name);
+                ret = phy_macsec_pu_init(phy_dev);
+                break;
+            }
+        }
+    }
+#endif    
 Exit:
     return ret;
 }
@@ -1828,4 +1889,7 @@ phy_drv_t phy_drv_ext3 =
     .pair_swap_set = _phy_pair_swap_set,
     .isolate_phy = _phy_isolate,
     .super_isolate_phy = _phy_super_isolate,
+#ifndef _CFE_
+    .macsec_oper = phy_macsec_oper,
+#endif    
 };

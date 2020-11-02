@@ -499,6 +499,8 @@ typedef struct {
         #define DEV_ID_BCM53134_A0                        0x5035
         #define DEV_ID_BCM53134_B0_B1                     0x5075
 
+#define KNOWN_SWITCH(sw)    ((sw)==0x53125 || (sw)==DEV_ID_BCM53134_A0 || (sw)==DEV_ID_BCM53134_B0_B1)
+
     #define REG_RST_MIB_CNT_EN                            0x54
 
         #define REG_RST_MIB_CNT_EN_PORT_M                 0x1FF
@@ -994,6 +996,7 @@ typedef struct {
 
 #define PAGE_EEE                                          0x92
     #define REG_EEE_EN_CTRL                               0x00
+    #define REG_EEE_LPI_SYM_TX_DISABLE                    0x08
     #define REG_EEE_SLEEP_TIMER_G                         0x10
     #define REG_EEE_SLEEP_TIMER_FE                        0x34
     #define REG_EEE_WAKE_TIMER_G                          0xA0

@@ -10325,7 +10325,7 @@ typedef struct Jtag_Otp {
    uint32 status0;         /* 0x18 */
    uint32 status0_hi;      /* 0x1c */
    uint32 status1;         /* 0x20 */
-#define JTAG_OTP_STATUS_1_PROG_OK       (1 << 2) 
+#define JTAG_OTP_STATUS_1_PROG_OK       (1 << 2)
 #define JTAG_OTP_STATUS_1_CMD_DONE      (1 << 1)
 } Jtag_Otp;
 
@@ -10333,29 +10333,25 @@ typedef struct Jtag_Otp {
 
 #define BTRM_OTP_READ_TIMEOUT_CNT               0x10000
 
-/* row 10 */
-#define OTP_SATA_DISABLE_ROW			10
-#define OTP_SATA_DISABLE_SHIFT			24
-#define OTP_SATA_DISABLE_MASK			(0x1 << OTP_SATA_DISABLE_SHIFT)
+/* row 8 */
+#define OTP_CPU_CORE_CFG_ROW                    8
+#define OTP_CPU_CORE_CFG_SHIFT                  28
+#define OTP_CPU_CORE_CFG_MASK                   (0x3 << OTP_CPU_CORE_CFG_SHIFT)
 
-/* row 11 */
-#define OTP_PMC_BOOT_ROW			11
-#define OTP_PMC_BOOT_SHIFT			25
-#define OTP_PMC_BOOT_MASK			(0x1 << OTP_PMC_BOOT_SHIFT)
-
-/* row 12 */
-#define OTP_PCM_DISABLE_ROW			12
-#define OTP_PCM_DISABLE_SHIFT			12
-#define OTP_PCM_DISABLE_MASK			(0x1 << OTP_PCM_DISABLE_SHIFT)
+/* row 9 */
+#define OTP_CPU_CLOCK_FREQ_ROW                  9
+#define OTP_CPU_CLOCK_FREQ_SHIFT                0
+#define OTP_CPU_CLOCK_FREQ_MASK                 (0x7 << OTP_CPU_CLOCK_FREQ_SHIFT)
 
 /* row 14 */
-#define OTP_CPU_CLOCK_FREQ_ROW			14
-#define OTP_CPU_CLOCK_FREQ_SHIFT		9
-#define OTP_CPU_CLOCK_FREQ_MASK			(0x7 << OTP_CPU_CLOCK_FREQ_SHIFT)
+#define OTP_PCM_DISABLE_ROW                     14
+#define OTP_PCM_DISABLE_SHIFT                   13
+#define OTP_PCM_DISABLE_MASK                    (0x1 << OTP_PCM_DISABLE_SHIFT)
 
-#define OTP_CPU_CORE_CFG_ROW			14
-#define OTP_CPU_CORE_CFG_SHIFT			14
-#define OTP_CPU_CORE_CFG_MASK			(0x3 << OTP_CPU_CORE_CFG_SHIFT)
+/* row 14 */
+#define OTP_SATA_DISABLE_ROW                    14
+#define OTP_SATA_DISABLE_SHIFT                  28
+#define OTP_SATA_DISABLE_MASK                   (0x1 << OTP_SATA_DISABLE_SHIFT)
 
 /* row 17 */
 #define OTP_BRCM_BTRM_BOOT_ENABLE_ROW           17
@@ -10367,9 +10363,9 @@ typedef struct Jtag_Otp {
 #define OTP_CUST_BTRM_BOOT_ENABLE_SHIFT         15
 #define OTP_CUST_BTRM_BOOT_ENABLE_MASK          (7 << OTP_CUST_BTRM_BOOT_ENABLE_SHIFT)
 
-/* row 19 */
-#define OTP_CUST_BTRM_UART_DISABLE_ROW          19
-#define OTP_CUST_BTRM_UART_DISABLE_SHIFT        29
+/* row 18 */
+#define OTP_CUST_BTRM_UART_DISABLE_ROW          18
+#define OTP_CUST_BTRM_UART_DISABLE_SHIFT        18
 #define OTP_CUST_BTRM_UART_DISABLE_MASK         (1 << OTP_CUST_BTRM_UART_DISABLE_SHIFT)
 
 /* row 23 */
@@ -10379,17 +10375,17 @@ typedef struct Jtag_Otp {
 
 
 /* row 26 */
-#define OTP_BOOT_SW_ENET_BOOT_DIS_ROW       	26
-#define OTP_BOOT_SW_ENET_BOOT_DIS_SHIFT      	0
-#define OTP_BOOT_SW_ENET_BOOT_DIS_MASK      	(7 << OTP_BOOT_SW_ENET_BOOT_DIS_SHIFT)
+#define OTP_BOOT_SW_ENET_BOOT_DIS_ROW           26
+#define OTP_BOOT_SW_ENET_BOOT_DIS_SHIFT         0
+#define OTP_BOOT_SW_ENET_BOOT_DIS_MASK          (7 << OTP_BOOT_SW_ENET_BOOT_DIS_SHIFT)
 
 
 #define OTP_BOOT_SW_ENET_BOOT_FALLBACK_SHIFT    3
 #define OTP_BOOT_SW_ENET_BOOT_FALLBACK_MASK     (7 << OTP_BOOT_SW_ENET_BOOT_FALLBACK_SHIFT)
 
 
-#define OTP_BOOT_SW_ENET_RGMII_SHIFT		6
-#define OTP_BOOT_SW_ENET_RGMII_MASK  		(7 << OTP_BOOT_SW_ENET_RGMII_SHIFT)
+#define OTP_BOOT_SW_ENET_RGMII_SHIFT            6
+#define OTP_BOOT_SW_ENET_RGMII_MASK             (7 << OTP_BOOT_SW_ENET_RGMII_SHIFT)
 
 /* SOTP defs */
 #define SOTP_OTP_REGION_RD_LOCK                 0x3c

@@ -86,7 +86,7 @@ typedef struct
     rdpa_mcast_group_t mcast_group; /**< Multicast Group Address Can be either L2 or L3 */
     uint16_t vid;                   /**< VID used for multicast stream (channel). */
 #if defined(CONFIG_RUNNER_IPTV_LKUP_KEY_INCLUDE_SRC_PORT)
-    rdpa_if rx_if;                  /**< Received Interface */
+    rdpa_if rx_if;                  /**< Received Interface (For Multi Wan only)*/
 #endif
 #if defined(BCM63158)
     uint16_t inner_vid;

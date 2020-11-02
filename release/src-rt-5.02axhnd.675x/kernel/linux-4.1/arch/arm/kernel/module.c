@@ -40,7 +40,23 @@
 #ifdef CONFIG_MMU
 void *module_alloc(unsigned long size)
 {
+#ifdef CONFIG_BCM_KF_MISC_BACKPORTS
+	gfp_t gfp_mask = GFP_KERNEL;
+	void *p;
+
+	/* Silence the initial allocation */
+	if (IS_ENABLED(CONFIG_ARM_MODULE_PLTS))
+		gfp_mask |= __GFP_NOWARN;
+
+	p = __vmalloc_node_range(size, 1, MODULES_VADDR, MODULES_END,
+				gfp_mask, PAGE_KERNEL_EXEC, 0, NUMA_NO_NODE,
+				__builtin_return_address(0));
+	if (!IS_ENABLED(CONFIG_ARM_MODULE_PLTS) || p)
+		return p;
+	return __vmalloc_node_range(size, 1,  VMALLOC_START, VMALLOC_END,
+#else
 	return __vmalloc_node_range(size, 1, MODULES_VADDR, MODULES_END,
+#endif
 				GFP_KERNEL, PAGE_KERNEL_EXEC, 0, NUMA_NO_NODE,
 				__builtin_return_address(0));
 }
@@ -110,6 +126,22 @@ apply_relocate(Elf32_Shdr *sechdrs, const char *strtab, unsigned int symindex,
 				offset -= 0x04000000;
 
 			offset += sym->st_value - loc;
+#ifdef CONFIG_BCM_KF_MISC_BACKPORTS
+
+			/*
+			 * Route through a PLT entry if 'offset' exceeds the
+			 * supported range. Note that 'offset + loc + 8'
+			 * contains the absolute jump target, i.e.,
+			 * @sym + addend, corrected for the +8 PC bias.
+			 */
+			if (IS_ENABLED(CONFIG_ARM_MODULE_PLTS) &&
+			    (offset <= (s32)0xfe000000 ||
+			     offset >= (s32)0x02000000))
+				offset = get_module_plt(module, loc,
+							offset + loc + 8)
+					 - loc - 8;
+
+#endif
 			if (offset <= (s32)0xfe000000 ||
 			    offset >= (s32)0x02000000) {
 				pr_err("%s: section %u reloc %u sym '%s': relocation %u out of range (%#lx -> %#x)\n",
@@ -203,6 +235,19 @@ apply_relocate(Elf32_Shdr *sechdrs, const char *strtab, unsigned int symindex,
 				offset -= 0x02000000;
 			offset += sym->st_value - loc;
 
+#ifdef CONFIG_BCM_KF_MISC_BACKPORTS
+			/*
+			 * Route through a PLT entry if 'offset' exceeds the
+			 * supported range.
+			 */
+			if (IS_ENABLED(CONFIG_ARM_MODULE_PLTS) &&
+			    (offset <= (s32)0xff000000 ||
+			     offset >= (s32)0x01000000))
+				offset = get_module_plt(module, loc,
+							offset + loc + 4)
+					 - loc - 4;
+
+#endif
 			if (offset <= (s32)0xff000000 ||
 			    offset >= (s32)0x01000000) {
 				pr_err("%s: section %u reloc %u sym '%s': relocation %u out of range (%#lx -> %#x)\n",

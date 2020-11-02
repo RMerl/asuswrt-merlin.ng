@@ -106,25 +106,20 @@ wl_worker_thread_func(void *data)
 #endif /* BCM_AWL && WL_AWL_RX */
 
 #if defined(PKTC_TBL)
+#if defined(BCM_PKTFWD)
+        wl_pktfwd_dnstream(wl); /* independent of txq_txchain_dispatched */
+#else  /* ! BCM_PKTFWD */
         {
 	        struct wl_if * wlif;
 		    wlif  = wl->if_list;
 		    while (wlif != NULL) {
-
-#if defined(BCM_PKTFWD)
-                d3fwd_wlif_t * d3fwd_wlif;
-                d3fwd_wlif = (d3fwd_wlif_t *) wlif->d3fwd_wlif;
-                if ((d3fwd_wlif != D3FWD_WLIF_NULL) && (d3fwd_wlif->wl_schedule))
-                    wl_pktfwd_dnstream(wl, d3fwd_wlif); /* no txsbnd */
-#else  /* ! BCM_PKTFWD */
                 if (wlif->pktci && wlif->pktci->_txq_txchain_dispatched) {
                     wl_start_txchain_txqwork(wlif->pktci);
     			}
-#endif /* ! BCM_PKTFWD */
-
     			wlif = wlif->next;
     		}
         }
+#endif /* ! BCM_PKTFWD */
 #endif /* PKTC_TBL */
 
 		/*

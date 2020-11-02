@@ -4,6 +4,10 @@
 
 ifneq ($(strip $(CONFIG_BCM_PKTFWD)),)
     EXTRA_CFLAGS += -DBCM_PKTFWD
+	# Enable credit based Host Flow Control
+	ifneq ($(strip $(CONFIG_BCM_PKTFWD_FLCTL)),)
+		EXTRA_CFLAGS += -DBCM_PKTFWD_FLCTL
+	endif
 endif # CONFIG_BCM_PKTFWD
 
 bcmlibs-objs   := bcmlibs_module.o bit_pool_util.o

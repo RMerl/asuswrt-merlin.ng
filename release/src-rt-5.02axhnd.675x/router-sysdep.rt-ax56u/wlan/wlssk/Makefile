@@ -42,6 +42,9 @@ else
  endif
 endif
 
+ifneq ($(strip $(BUILD_HND_EAP)),)
+CFLAGS += -DBUILD_HND_EAP
+endif
 
 ifeq ($(strip $(BCA_CPEROUTER)),)
 LIBS += -lwlctl -lnvram -lm  -lwlbcmshared
@@ -53,6 +56,7 @@ CFLAGS += -DCONFIG_HOSTAPD
 LIBS += -lbcmcrypto -lnv2hapdcfg -L$(INSTALL_DIR)/usr/lib
 endif
 endif
+LIBS += -lbcm_flashutil -lbcm_boardctl -lgen_util -lbcm_util -lsys_util
 
 
 all dynamic: $(EXE)
@@ -182,7 +186,9 @@ endif
 
 
 ifneq ($(strip $(BUILD_BSTREAM_IQOS)),)
+ifneq ($(wildcard $(WIRELESS_DRIVER_PATH)/../components/vendor/trend/iqos),)
 CFLAGS += -DWL_BSTREAM_IQOS
+endif
 endif
 
 LIB_RPATH = $(INSTALL_DIR)$(subst :,:$(INSTALL_DIR),$(ALLOWED_LIB_DIRS))

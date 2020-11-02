@@ -414,6 +414,13 @@ int dhd_nbuff_attach(void);
 #if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
 #if !defined(BCM_AWL)
 #define BCM_NBUFF_PKT_BPM /* Packet data buffers, are from BPM pool */
+
+#if defined(BCA_CPEROUTER) && defined(CONFIG_BCM947189)
+#ifndef BCM_NBUFF_PKT_BPM_SKB
+#define BCM_NBUFF_PKT_BPM_SKB /* Packet buffers are from BPM SKB pool */
+#endif
+#endif
+
 #include <linux/gbpm.h>
 #else /* BCM_AWL */
 #include <bpm.h>

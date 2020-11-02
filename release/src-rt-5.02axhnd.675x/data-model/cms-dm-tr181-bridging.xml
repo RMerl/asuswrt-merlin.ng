@@ -100,7 +100,7 @@
   <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
     <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
 
-  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Device2_Bridge:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="1024" notifySskLowerLayersChanged="true" />
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Device2_Bridge:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="2048" notifySskLowerLayersChanged="true" />
     <description source="TRx">{{list}} {{reference|an interface object that is stacked immediately below this interface object}} See {{bibref|TR-181i2|Section 4.2.1}}. When {{param|ManagementPort}} is set to {{true}} the CPE MUST set {{param}} to reference all non-management bridge ports that are within the same {{object|##.Bridge}} instance (and update {{param}} when subsequent non-management bridge ports are added or deleted on that ''Bridge''). The ACS SHOULD NOT set {{param}} in this case.</description>
 
   <parameter name="ManagementPort" type="boolean" specSource="TR181" profile="Device2_Bridge:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />

@@ -16,6 +16,10 @@ ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_63268_63138_63381_63148_63158_63178_
 EXTRA_CFLAGS += -DCONFIG_VDSL_SUPPORTED
 endif
 
+ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_),_$(strip $(BRCM_CHIP))_)
+EXTRA_CFLAGS += -DXTM_PORT_SHAPING
+endif
+
 EXTRA_CFLAGS += ${BUILD_DSL_FLAGS}
 
 # no-rtti is not applicable to c files

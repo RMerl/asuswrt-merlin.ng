@@ -257,10 +257,11 @@ bdmf_type_handle rdpa_xtmflow_drv(void);
 /* xtmflow: Attribute types */
 typedef enum {
     rdpa_xtmflow_attr_index = 0, /* index : KRI : number : xtmflow index */
-    rdpa_xtmflow_attr_fstat = 1, /* fstat : MRI : number : xtmflow fstat */
-    rdpa_xtmflow_attr_us_cfg = 2, /* us_cfg : RW : aggregate xtmflow_us_cfg(rdpa_xtmflow_us_cfg_t) : US configuration */
-    rdpa_xtmflow_attr_stat = 3, /* stat : RW : aggregate xtmflow_stat(rdpa_xtmflow_stat_t) : xtmflow statistics */
-    rdpa_xtmflow_attr_ptmBonding = 4, /* ptmBonding : MRI : number : xtmflow ptmBonding */
+    rdpa_xtmflow_attr_hdr_type = 1, /* hdr_type : MRI : number : xtmflow hdr_type */
+    rdpa_xtmflow_attr_fstat = 2, /* fstat : MRI : number : xtmflow fstat */
+    rdpa_xtmflow_attr_us_cfg = 3, /* us_cfg : RW : aggregate xtmflow_us_cfg(rdpa_xtmflow_us_cfg_t) : US configuration */
+    rdpa_xtmflow_attr_stat = 4, /* stat : RW : aggregate xtmflow_stat(rdpa_xtmflow_stat_t) : xtmflow statistics */
+    rdpa_xtmflow_attr_ptmBonding = 5, /* ptmBonding : MRI : number : xtmflow ptmBonding */
 } rdpa_xtmflow_attr_types;
 
 extern int (*f_rdpa_xtmflow_get)(bdmf_number index_, bdmf_object_handle *pmo);
@@ -303,6 +304,38 @@ static inline int rdpa_xtmflow_index_get(bdmf_object_handle mo_, bdmf_number *in
 static inline int rdpa_xtmflow_index_set(bdmf_object_handle mo_, bdmf_number index_)
 {
     return bdmf_attr_set_as_num(mo_, rdpa_xtmflow_attr_index, index_);
+}
+
+
+/** Get xtmflow/hdr_type attribute.
+ *
+ * Get xtmflow hdr_type.
+ * \param[in]   mo_ xtmflow object handle or mattr transaction handle
+ * \param[out]  hdr_type_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task and softirq contexts.
+ */
+static inline int rdpa_xtmflow_hdr_type_get(bdmf_object_handle mo_, bdmf_number *hdr_type_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_xtmflow_attr_hdr_type, &_nn_);
+    *hdr_type_ = (bdmf_number)_nn_;
+    return _rc_;
+}
+
+
+/** Set xtmflow/hdr_type attribute.
+ *
+ * Set xtmflow hdr_type.
+ * \param[in]   mo_ xtmflow object handle or mattr transaction handle
+ * \param[in]   hdr_type_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task and softirq contexts.
+ */
+static inline int rdpa_xtmflow_hdr_type_set(bdmf_object_handle mo_, bdmf_number hdr_type_)
+{
+    return bdmf_attr_set_as_num(mo_, rdpa_xtmflow_attr_hdr_type, hdr_type_);
 }
 
 

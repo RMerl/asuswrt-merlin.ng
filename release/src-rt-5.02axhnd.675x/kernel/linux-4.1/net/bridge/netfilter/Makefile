@@ -48,6 +48,7 @@ obj-$(CONFIG_BRIDGE_EBT_FTOS_T) += ebt_ftos.o
 obj-$(CONFIG_BRIDGE_EBT_SKIPLOG_T) += ebt_skiplog.o
 obj-$(CONFIG_BRIDGE_EBT_WMM_MARK) += ebt_wmm_mark.o
 obj-$(CONFIG_BRIDGE_EBT_QOS_MAP) += ebt_qos_map.o
+obj-$(CONFIG_BRIDGE_EBT_REJECT) += ebt_reject.o
 endif # BCM_KF # CONFIG_BCM_KF_NETFILTER
 
 # watchers

@@ -88,6 +88,14 @@ int ieee80211_channel_to_frequency(int chan, enum ieee80211_band band)
 		if (chan < 5)
 			return 56160 + chan * 2160;
 		break;
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+	case IEEE80211_BAND_6GHZ:
+		if (chan == 2)
+			return 5935;
+		else if (chan >= 1 && chan <= 233)
+			return 5950 + chan * 5;
+		break;
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 	default:
 		;
 	}
@@ -104,6 +112,12 @@ int ieee80211_frequency_to_channel(int freq)
 		return (freq - 2407) / 5;
 	else if (freq >= 4910 && freq <= 4980)
 		return (freq - 4000) / 5;
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+	else if (freq == 5935)
+		return 2;
+	else if (freq >= 5955 && freq <= 7125)
+		return (freq - 5950) / 5;
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 	else if (freq <= 45000) /* DMG band lower limit */
 		return (freq - 5000) / 5;
 	else if (freq >= 58320 && freq <= 64800)
@@ -142,6 +156,9 @@ static void set_mandatory_flags_band(struct ieee80211_supported_band *sband,
 	int i, want;
 
 	switch (band) {
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+	case IEEE80211_BAND_6GHZ:
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 	case IEEE80211_BAND_5GHZ:
 		want = 3;
 		for (i = 0; i < sband->n_bitrates; i++) {
@@ -218,7 +235,11 @@ int cfg80211_validate_key_settings(struct cfg80211_registered_device *rdev,
 				   struct key_params *params, int key_idx,
 				   bool pairwise, const u8 *mac_addr)
 {
+#ifndef CONFIG_BCM_KF_CFG80211_BACKPORT
 	if (key_idx > 5)
+#else
+	if (key_idx > 7)
+#endif /* CONFIG_BCM_KF_CFG80211_BACKPORT */
 		return -EINVAL;
 
 	if (!pairwise && mac_addr && !(rdev->wiphy.flags & WIPHY_FLAG_IBSS_RSN))

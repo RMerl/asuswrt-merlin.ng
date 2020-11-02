@@ -257,7 +257,7 @@ EXPORT_SYMBOL_GPL(br_deliver);
 /* called with rcu_read_lock */
 void br_forward(const struct net_bridge_port *to, struct sk_buff *skb, struct sk_buff *skb0)
 {
-	if (should_deliver(to, skb)) {
+	if (should_deliver(to, skb) && !(to->flags & BR_ISOLATE_MODE)) {
 		if (skb0)
 			deliver_clone(to, skb, __br_forward);
 		else
@@ -319,7 +319,7 @@ static void br_flood(struct net_bridge *br, struct sk_buff *skb,
 		     struct sk_buff *skb0,
 		     void (*__packet_hook)(const struct net_bridge_port *p,
 					   struct sk_buff *skb),
-		     bool unicast)
+		     bool unicast, bool forward)
 {
 	struct net_bridge_port *p;
 	struct net_bridge_port *prev;
@@ -341,6 +341,8 @@ static void br_flood(struct net_bridge *br, struct sk_buff *skb,
 	prev = NULL;
 
 	list_for_each_entry_rcu(p, &br->port_list, list) {
+		if (forward && (p->flags & BR_ISOLATE_MODE))
+			continue;
 		/* Do not flood unicast traffic to ports that turn it off */
 		if (unicast && !(p->flags & BR_FLOOD))
 			continue;
@@ -375,14 +377,14 @@ out:
 /* called with rcu_read_lock */
 void br_flood_deliver(struct net_bridge *br, struct sk_buff *skb, bool unicast)
 {
-	br_flood(br, skb, NULL, __br_deliver, unicast);
+	br_flood(br, skb, NULL, __br_deliver, unicast, false);
 }
 
 /* called under bridge lock */
 void br_flood_forward(struct net_bridge *br, struct sk_buff *skb,
 		      struct sk_buff *skb2, bool unicast)
 {
-	br_flood(br, skb, skb2, __br_forward, unicast);
+	br_flood(br, skb, skb2, __br_forward, unicast, true);
 }
 
 #ifdef CONFIG_BRIDGE_IGMP_SNOOPING

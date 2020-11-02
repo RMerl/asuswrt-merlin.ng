@@ -442,16 +442,7 @@ int bcm_otp_fld_secure_rows(void)
     defined(_BCM947622_) || defined(CONFIG_BCM947622)
     return !sotp_sec89_both_readlocked();
 #elif defined(_BCM96878_) || defined(CONFIG_BCM96878)
-    {
-        unsigned int val = 0;
-        if ( bcm_otp_get_row(OTP_SKO0_CTL_ROW, &val) ) {
-             return -1;
-        }
-        if (!val) {
-             return -1;
-        }
-        return 0;
-    }
+    return !((*(volatile uint32_t*)(SEC_KEY_OBJ_BASE+SEC_KEY_OBJ_KEY0_STATUS_OFFSET) >> SEC_KEY_OBJ_KEY0_STATUS_SHIFT) & SEC_KEY_OBJ_KEY0_STATUS_MASK );
 #else
     return -1;
 #endif 
@@ -643,7 +634,7 @@ int bcm_otp_get_max_clksel(void)
 }
 #endif
 
-#if defined(_BCM94908_) || defined(CONFIG_BCM94908)
+#if defined(_BCM94908_) || defined(CONFIG_BCM94908) || defined(_BCM947622_) || defined(CONFIG_BCM947622)
 int bcm_otp_is_sgmii_disabled(unsigned int* val)
 {
     unsigned int row;
@@ -655,7 +646,8 @@ int bcm_otp_is_sgmii_disabled(unsigned int* val)
 #endif
 
 #if defined(_BCM96858_) || defined(CONFIG_BCM96858) || defined(_BCM96878_) || defined(CONFIG_BCM96878) || \
-    defined(_BCM96846_) || defined(CONFIG_BCM96846) || defined(_BCM96856_) || defined(CONFIG_BCM96856)
+    defined(_BCM96846_) || defined(CONFIG_BCM96846) || defined(_BCM96856_) || defined(CONFIG_BCM96856) || \
+    defined(_BCM947622_) || defined(CONFIG_BCM947622)
 int bcm_otp_get_cpu_clk(unsigned int* val)
 {
     unsigned int row;
@@ -665,6 +657,24 @@ int bcm_otp_get_cpu_clk(unsigned int* val)
     return rval;
 }
 #endif
+
+int bcm_otp_is_usb3_disabled(unsigned int* val)
+{
+    int rval = 0; 
+#if defined(_BCM947622_) || defined(CONFIG_BCM947622)
+    unsigned int row;
+    rval = bcm_otp_get_row(OTP_USB3_DISABLE_ROW, &row);
+
+    if(row & OTP_USB3_DISABLE_MASK)
+        *val = 1;
+    else
+        *val = 0;
+#else
+    *val = 0;
+#endif
+
+    return rval;
+}
 
 #if defined(_BCM96858_) || defined(CONFIG_BCM96858)
 int bcm_otp_get_chipid(unsigned int* val)
@@ -735,8 +745,7 @@ int bcm_otp_get_nr_cpus(unsigned int* val)
     return rval;
 }
 
-#if !defined(_BCM96846_) && !defined(CONFIG_BCM96846) && !defined(_BCM96856_) && !defined(CONFIG_BCM96856) && \
-    !defined(_BCM963178_) && !defined(CONFIG_BCM963178) && !defined(_BCM947622_) && !defined(CONFIG_BCM947622) && !defined(_BCM96878_) && !defined(CONFIG_BCM96878)
+#if defined(_BCM96858_) || defined(CONFIG_BCM96858)
 int bcm_otp_get_pmc_boot_sts(unsigned int* val)
 {
     unsigned int row;
@@ -745,7 +754,11 @@ int bcm_otp_get_pmc_boot_sts(unsigned int* val)
 
     return rval;
 }
+#endif
 
+#if !defined(_BCM96846_) && !defined(CONFIG_BCM96846) && !defined(_BCM96856_) && !defined(CONFIG_BCM96856) && \
+    !defined(_BCM963178_) && !defined(CONFIG_BCM963178) && !defined(_BCM947622_) && !defined(CONFIG_BCM947622) && \
+    !defined(_BCM96878_) && !defined(CONFIG_BCM96878)
 int bcm_otp_is_sata_disabled(unsigned int* val)
 {
     unsigned int row;
@@ -761,6 +774,18 @@ int bcm_otp_is_pcm_disabled(unsigned int* val)
     int rval = bcm_otp_get_row(OTP_PCM_DISABLE_ROW, &row);
     *val = (row & OTP_PCM_DISABLE_MASK) >> OTP_PCM_DISABLE_SHIFT;
 
+    return rval;
+}
+#endif
+
+#if defined(_BCM947622_) || defined(CONFIG_BCM947622)
+int bcm_otp_is_pcie_port_disabled(unsigned int pcie_port_num, unsigned int* val)
+{
+    unsigned int row;
+    int rval = bcm_otp_get_row(OTP_PCIE_PORT_DISABLE_ROW, &row);
+    row &= (OTP_PCIE_PORT_DISABLE_MASK);
+    row = row >> OTP_PCIE_PORT_DISABLE_SHIFT;
+    *val = row & (1 << pcie_port_num);
     return rval;
 }
 #endif
@@ -803,20 +828,23 @@ EXPORT_SYMBOL(bcm_otp_get_nr_cpus);
 EXPORT_SYMBOL(bcm_otp_is_boot_mfg_secure);
 EXPORT_SYMBOL(bcm_otp_is_pcm_disabled);
 
-#if defined(_BCM94908_) || defined(CONFIG_BCM94908)
+#if defined(_BCM94908_) || defined(CONFIG_BCM94908) || defined(_BCM947622_) || defined(CONFIG_BCM947622)
 EXPORT_SYMBOL(bcm_otp_is_sgmii_disabled);
 #endif
 
-#if defined (CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856)
+#if defined (CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM947622)
 EXPORT_SYMBOL(bcm_otp_get_cpu_clk);
 #endif
 
-#if defined(_BCM96858_) || defined(CONFIG_BCM96858)
+EXPORT_SYMBOL(bcm_otp_is_usb3_disabled);
+
+#if defined(CONFIG_BCM96858)
 EXPORT_SYMBOL(bcm_otp_get_usb_port_disabled);
+EXPORT_SYMBOL(bcm_otp_get_pmc_boot_sts);
 #endif
 
-#if !defined(CONFIG_BCM96846) && !defined(CONFIG_BCM96856) && !defined(CONFIG_BCM96878)
-EXPORT_SYMBOL(bcm_otp_get_pmc_boot_sts);
+#if !defined(CONFIG_BCM96846) && !defined(CONFIG_BCM96856) && !defined(CONFIG_BCM96878) && !defined(CONFIG_BCM963178) && \
+    !defined(CONFIG_BCM947622)
 EXPORT_SYMBOL(bcm_otp_is_sata_disabled);
 #endif
 

@@ -26,6 +26,11 @@ ifeq ($(strip $(BRCM_IKOS)),)
 obj-y += bcm_extirq.o
 endif
 
+ifneq ($(strip $(CONFIG_BCM_WLAN)),)
+EXTRA_CFLAGS += -I. -I$(INC_BRCMDRIVER_PUB_PATH)/../char/board/$(BRCM_BOARD)/impl1
+EXTRA_CFLAGS += -DWIRELESS
+endif
+
 ifeq ($(filter-out 47622 63178 6878,${BRCM_CHIP}),)
 obj-$(CONFIG_ARM) += bcm_arm_smp.o bcm-ca9mp-headsmp.o bcm_arm_hotplug.o 
 endif

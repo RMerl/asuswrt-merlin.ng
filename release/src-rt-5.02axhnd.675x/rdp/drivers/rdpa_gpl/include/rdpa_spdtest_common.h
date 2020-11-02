@@ -41,8 +41,14 @@
  */
 typedef struct
 {
-    uint16_t size;         /**< Reference packet size */
-    void *data;            /**< Reference packet pointer */
+    uint16_t size;           /**< Reference packet size */
+    void *data;              /**< Reference packet pointer */
+    union {
+        struct {
+            uint16_t payload_offset; /**< Reference packet payload offset */
+        } udp;
+        uint16_t h;
+    };
 } rdpa_spdtest_ref_pkt_t;
 
 #endif /* _RDPA_SPDTEST_H_ */

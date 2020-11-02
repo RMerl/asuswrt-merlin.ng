@@ -1052,6 +1052,11 @@ static int spi_nand_read_page(unsigned long page_addr, unsigned int page_offset,
             spi_nand_set_feat(FEATURE_DIE_SEL, (pchip->chip_die_sel & page_addr) ? FEAT_OPT_EN : FEAT_DISABLE);
     }
 
+    if (len != 1 || (page_offset != pchip->chip_page_size))
+        spi_nand_set_feat(FEATURE_FEAT_ADDR, FEAT_ECC_EN); // not reading from bad block marker, enable ECC and even if there's a failure should still fill buffer
+    else
+        spi_nand_set_feat(FEATURE_FEAT_ADDR, FEAT_DISABLE); // else reading bad block marker so don't enable ECC
+
     /* The PAGE READ (13h) command transfers the data from the NAND Flash array to the
      * cache register.  The PAGE READ command requires a 24-bit address consisting of
      * 8 dummy bits followed by a 16-bit block/page address.

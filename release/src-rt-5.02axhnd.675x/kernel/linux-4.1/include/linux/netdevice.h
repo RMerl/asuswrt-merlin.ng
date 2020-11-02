@@ -79,8 +79,6 @@ extern struct sk_buff *bcm_iqoshdl_wrapper(struct net_device *dev, void *pNBuff)
 #define BROADSTREAM_IQOS_SET_ENABLE(x) \
 	(bcm_iqos_enable_g = x)
 
-
-//#define B_IQOS_CTMARK_SHIFT		32
 #define B_IQOS_LOG_SKBMARK(skb, ct, skbm) \
 	do {((struct nf_conn *)(ct))->cb.skb_mark = (skbm); \
 	*(unsigned long *)&(skbm) = (unsigned long)(ct);} while (0)
@@ -89,6 +87,7 @@ extern struct sk_buff *bcm_iqoshdl_wrapper(struct net_device *dev, void *pNBuff)
 	do {(ct) = ((struct nf_conn *)(*(unsigned long *)&(skb)->mark)); \
 		(skb)->mark = ((struct nf_conn *)(ct))->cb.skb_mark;} while (0)
 
+#define FKB_FRM_GSO	((void *)-1)
 #define DEVQXMIT  (1 << 15)
 #define PKTDEVQXMIT(skb) \
     ({ \
@@ -115,20 +114,6 @@ extern struct sk_buff *bcm_iqoshdl_wrapper(struct net_device *dev, void *pNBuff)
 #define PKTCLRFCDONE(skb)  \
    ({ \
     (((struct sk_buff*)(skb))->pktc_flags &= (~FC_PKTDONE)); \
-    })
-
-#define FKBTOQMIT (1 << 13)
-#define PKTISFKBTOQMIT(skb) \
-    ({ \
-        (((struct sk_buff*)(skb))->pktc_flags & FKBTOQMIT); \
-    })
-#define PKTSETFKBTOQMIT(skb)  \
-   ({ \
-    (((struct sk_buff*)(skb))->pktc_flags |= FKBTOQMIT); \
-    })
-#define PKTCLRFKBTOQMIT(skb)  \
-   ({ \
-    (((struct sk_buff*)(skb))->pktc_flags &= (~FKBTOQMIT)); \
     })
 
 void netdev_set_default_ethtool_ops(struct net_device *dev,

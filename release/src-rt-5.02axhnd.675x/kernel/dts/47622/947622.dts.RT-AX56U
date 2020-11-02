@@ -42,7 +42,7 @@
 	#size-cells = <1>;
 
 	chosen {
-		bootargs = "console=ttyAMA0 earlyprintk debug irqaffinity=0 cma=0M";
+		bootargs = "console=ttyAMA0 earlyprintk debug irqaffinity=0 pci=pcie_bus_safe";
 	}; 
 
 	cpus {
@@ -132,9 +132,13 @@
 	pmu {
 		compatible = "arm,cortex-a7-pmu";
 		interrupts = <GIC_SPI PMU_CORE0_SPI IRQ_TYPE_LEVEL_HIGH>,
-			     <GIC_SPI PMU_CORE1_SPI IRQ_TYPE_LEVEL_HIGH>;
+			     <GIC_SPI PMU_CORE1_SPI IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI PMU_CORE2_SPI IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI PMU_CORE3_SPI IRQ_TYPE_LEVEL_HIGH>;
 		interrupt-affinity = <&CA7_0>,
-				     <&CA7_1>;
+				     <&CA7_1>,
+				     <&CA7_2>,
+				     <&CA7_3>;
 	};
 	
 	uartclk: uartclk {

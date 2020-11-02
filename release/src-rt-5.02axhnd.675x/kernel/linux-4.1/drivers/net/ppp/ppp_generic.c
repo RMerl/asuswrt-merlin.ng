@@ -3007,6 +3007,9 @@ ppp_create_interface(struct net *net, int unit, int *retp)
 	ppp->file.index = unit;
 
 #if defined(CONFIG_BCM_KF_PPP)
+#if defined(DSLAX82U) //skip BCM change dev name
+	sprintf(dev->name, "ppp%d", unit);
+#else
    if (unit >= 0)
    {
       unsigned num[3]={0,0,0};
@@ -3039,6 +3042,7 @@ ppp_create_interface(struct net *net, int unit, int *retp)
          sprintf(dev->name, "pppoa%d", num[0]);
       }
    }
+#endif
 #else
 	sprintf(dev->name, "ppp%d", unit);
 #endif

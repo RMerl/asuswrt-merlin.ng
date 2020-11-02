@@ -28,9 +28,8 @@ build:
 	@echo "skipping $@ (not configured)"
 endif
 
-$(EXE):
-	echo "Copying $@"
-	-cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/prebuilt/$@ ./
+$(EXE): $(OBJS)
+	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) $(LIBS)
 
 clean: generic_clean
 	rm -f $(INSTALL_DIR)/bin/$(EXE)

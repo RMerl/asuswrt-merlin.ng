@@ -137,8 +137,13 @@ CFLAGS += -DBCM_WLCEVENTD
 
 all: eapd
 
+ifneq ($(PREBUILT_BCMBIN),1)
+eapd: $(OBJS)
+	$(CC) -o $@ $^ $(LDFLAGS)
+else
 eapd:
-	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/prebuilt/$@ ./
+	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/$(PRBM_DIR)/$@ ./
+endif
 
 
 install: all

@@ -146,6 +146,7 @@ typedef struct
  * should not create new clones. 
  */
 int bcm_printk(const char *fmt, ...);
+#define bcm_print(fmt, ...)  bcm_printk(fmt, ##__VA_ARGS__)
 #endif
 
 /**

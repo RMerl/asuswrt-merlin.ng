@@ -79,6 +79,10 @@ typedef union {
     uint32_t word;
 } wl_metadata_nic_t;
 
+static struct proc_dir_entry *proc_wfd_rx_fastpath;   /* /proc/wfd/rx_fastpath */
+
+#define WFD_PLATFORM_PROC
+
 #define WFD_WLAN_QUEUE_MAX_SIZE (RDPA_CPU_WLAN_QUEUE_MAX_SIZE)
 #define WFD_NIC_WLAN_PRIORITY_START_IN_WORD (21) 
 
@@ -355,7 +359,10 @@ static inline int exception_packet_handle(struct sk_buff *skb, rdpa_cpu_rx_info_
         skb->blog_p->rnr.is_rx_hw_acc_en = 1;
 
     skb->protocol = eth_type_trans(skb, skb->dev);
-    skb_shinfo(skb)->dirty_p = skb->data;
+	/* leave dirty_p as NULL for packets to Linux stack, 
+	** so that _rdpa_cpu_sysb_flush can perform full flush.
+	*/
+    skb_shinfo(skb)->dirty_p = NULL;
 
     local_bh_disable();
     netif_receive_skb(skb);
@@ -395,6 +402,8 @@ _wfd_bulk_fkb_get(uint32_t qid, uint32_t budget, wfd_object_t *wfd_p, void **uca
             if (unlikely(!skb))
             {
                 gs_count_no_skbs[qid]++;
+                /* Free data buffer in case of failure to allocate skb */
+                bdmf_sysb_databuf_free((uint8_t *)info.data, 0);
                 continue;
             }
 
@@ -462,6 +471,14 @@ _wfd_bulk_fkb_get(uint32_t qid, uint32_t budget, wfd_object_t *wfd_p, void **uca
             /* add to local pktlist */
             __pktlist_add_pkt(wfd_pktlist_context, pktlist_prio, pktlist_dest,
                               pktfwd_key, FKBUFF_2_PNBUFF(fkb), FKBUFF_PTR);
+#if defined(BCM_PKTFWD_FLCTL)
+        if (wfd_pktlist_context->fctable != PKTLIST_FCTABLE_NULL)
+        {
+            /* Decreament avail credits for pktlist */
+            __pktlist_fctable_dec_credits(wfd_pktlist_context,
+                pktlist_prio, pktlist_dest);
+        }
+#endif /* BCM_PKTFWD_FLCTL */
 #endif  /* ! (BCM_PKTFWD) */
     }
 
@@ -507,7 +524,49 @@ wfd_bulk_fkb_get(unsigned long qid, unsigned long budget, void *priv)
     return ucast_count + mcast_count;
 }
 
-static inline struct sk_buff *single_packet_read_and_handle(uint32_t qid, wfd_object_t *wfd_p, uint16_t *tx_prio, int *rc)
+#if defined(BCM_PKTFWD)
+typedef struct {
+    wfd_object_t *wfd_p;
+    long budget;
+    unsigned long qid;
+    uint32_t ucast_count;
+    uint32_t mcast_count;
+#ifdef WFD_FLCTL
+    unsigned long drop_credits;
+#if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
+    uint32_t avail_skb; /* BPM free skb availability */
+#endif /* CONFIG_BCM_BPM || CONFIG_BCM_BPM_MODULE */
+#endif /* WFD_FLCTL */
+} wfd_ctx_t;
+
+#ifdef WFD_FLCTL
+/* FlowControl over-subscription */
+static inline bool ucast_should_drop_skb(wfd_ctx_t *wfd_ctx, uint16_t pkt_prio, uint16_t pkt_dest)
+{
+#if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
+	if (wfd_ctx->avail_skb <= wfd_ctx->wfd_p->skb_exhaustion_hi)
+        return true; /* drop ALL */
+    if ((wfd_ctx->avail_skb <= wfd_ctx->wfd_p->skb_exhaustion_lo) &&
+        (pkt_prio < wfd_ctx->wfd_p->pkt_prio_favor))
+    {
+        return true; /* drop low prio */
+    }
+#endif
+
+#if defined(BCM_PKTFWD_FLCTL)
+    if (likely(wfd_ctx->wfd_p->pktlist_context_p->fctable != PKTLIST_FCTABLE_NULL) &&
+        (pkt_prio < wfd_ctx->wfd_p->pkt_prio_favor))
+    {
+        if (__pktlist_fctable_get_credits(wfd_ctx->wfd_p->pktlist_context_p, pkt_prio, pkt_dest) <= 0)
+            return true;      /* drop BE/BK if no credits avail */
+    }
+#endif /* BCM_PKTFWD_FLCTL */
+
+    return false;
+}
+#endif
+
+static inline struct sk_buff *single_packet_read_and_handle(wfd_ctx_t *wfd_ctx, uint16_t *tx_prio, uint16_t *tx_dest, int *rc)
 {
     rdpa_cpu_rx_info_t info = {};
     wl_metadata_nic_t wl_nic;
@@ -515,7 +574,7 @@ static inline struct sk_buff *single_packet_read_and_handle(uint32_t qid, wfd_ob
     struct sk_buff *skb;
 
     *rc = BDMF_ERR_OK;
-    if (unlikely(*rc = rdpa_cpu_packet_get(rdpa_cpu_wlan0 + wfd_p->wl_radio_idx, qid, &info)))
+    if (unlikely(*rc = rdpa_cpu_packet_get(rdpa_cpu_wlan0 + wfd_ctx->wfd_p->wl_radio_idx, wfd_ctx->qid, &info)))
        return NULL;
 
     if (info.is_exception)
@@ -523,43 +582,66 @@ static inline struct sk_buff *single_packet_read_and_handle(uint32_t qid, wfd_ob
         skb = __skb_alloc(&info);
         if (unlikely(!skb)) /* skb: kmem */
         {
-            gs_count_no_skbs[qid]++;
-            return NULL;
+            gs_count_no_skbs[wfd_ctx->qid]++;
+            goto err;
         }
-        if (exception_packet_handle(skb, &info, wfd_p) == BDMF_ERR_NODEV)
-            gs_count_rx_no_wifi_interface[qid]++;
+        if (exception_packet_handle(skb, &info, wfd_ctx->wfd_p) == BDMF_ERR_NODEV)
+            gs_count_rx_no_wifi_interface[wfd_ctx->qid]++;
         return NULL;
+    }
+    wl_nic.word = info.wl_metadata;
+
+    if (info.is_ucast)
+    {
+        *tx_prio = wl_nic.tx_prio;                  /* No IQPRIO */
+        *tx_dest = PKTLIST_DEST(wl_nic.chain_id);
+#ifdef WFD_FLCTL
+       if (ucast_should_drop_skb(wfd_ctx, wl_nic.tx_prio, *tx_dest))
+       {
+           if (++wfd_ctx->drop_credits >= WFD_FLCTL_DROP_CREDITS)
+               --wfd_ctx->budget;
+           gs_count_flctl_pkts[wfd_ctx->qid]++;
+           *rc = BDMF_ERR_NORES;
+           goto err;
+       }
+#endif
+    }
+    else
+    {
+        *tx_prio = GET_WLAN_PRIORITY(info.mcast_tx_prio);
+        *tx_dest = PKTLIST_MCAST_ELEM; /* last col in 2d pktlist */
     }
 
     skb = skb_alloc(&info); /* skb: bpm or kmem */
     if (unlikely(!skb))
     {
-        gs_count_no_skbs[qid]++;
+        gs_count_no_skbs[wfd_ctx->qid]++;
         *rc = BDMF_ERR_NOMEM;
-        return NULL;
+        goto err;
     }
-
-    wl_nic.word = info.wl_metadata;
 
     if ((skb->wl.ucast.nic.is_ucast = info.is_ucast))
     {
         skb->wl.ucast.nic.wl_chainidx = wl_nic.chain_id;
-        *tx_prio = wl_nic.tx_prio;                  /* No IQPRIO */
         encode_val = wl_nic.word >> WFD_NIC_WLAN_PRIORITY_START_IN_WORD;
         DECODE_WLAN_PRIORITY_MARK(encode_val, skb->mark);
+        wfd_ctx->ucast_count++;
     }
     else
     {
         skb->wl.mcast.ssid_vector = wl_nic.ssid_vector;
-        *tx_prio = GET_WLAN_PRIORITY(info.mcast_tx_prio);
         // this parameter always 0 - in MCAST  update priority
         DECODE_WLAN_PRIORITY_MARK(info.mcast_tx_prio, skb->mark);
+        wfd_ctx->mcast_count++;
     }
 
     return skb;
+err:
+    /* Free data buffer in case of failure to allocate skb or flow control decision */
+    bdmf_sysb_databuf_free((uint8_t *)info.data, 0);
+    return NULL;
 }
 
-#if defined(BCM_PKTFWD)
 /* Dispatch all pending pktlists to peer's pktlist_context, and wake peer */
 static inline void
 wfd_pktfwd_xfer(pktlist_context_t *wfd_pktlist_context,
@@ -598,56 +680,114 @@ wfd_pktfwd_xfer(pktlist_context_t *wfd_pktlist_context,
 
 static uint32_t wfd_bulk_skb_get(unsigned long qid, unsigned long budget, void *priv)
 {
-    wfd_object_t *wfd_p = (wfd_object_t *)priv;
-    uint32_t ucast_count = 0, mcast_count = 0;
-    pktlist_context_t *pktlist_context = wfd_p->pktlist_context_p;
+    wfd_ctx_t ctx = {
+        .wfd_p = (wfd_object_t *)priv,
+        .qid = qid,
+        .budget = budget,
+        .ucast_count = 0,
+        .mcast_count = 0,
+ #ifdef WFD_FLCTL
+        .drop_credits = 0,
+#if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
+        .avail_skb = gbpm_avail_skb(), /* BPM free skb availability */
+#endif
+#endif
+    };
 
-    while (budget)
+    while (ctx.budget > 0)
     {
         struct sk_buff *skb;
         uint16_t pktlist_prio, pktlist_dest;
-        uint16_t chain_id;
         int rc;
 
-        budget--;
-        if (!(skb = single_packet_read_and_handle(qid, wfd_p, &pktlist_prio, &rc)))
+        ctx.budget--;
+        if (!(skb = single_packet_read_and_handle(&ctx, &pktlist_prio, &pktlist_dest, &rc)))
         {
             if (BDMF_ERR_NO_MORE == rc)
                 break;
             continue; // exception handled or allocation failure
         }
 
-        chain_id = skb->wl.ucast.nic.wl_chainidx;
-        if (skb->wl.ucast.nic.is_ucast)
-        {
-            pktlist_dest = PKTLIST_DEST(chain_id);
-            ucast_count++;
-        }
-        else
-        {
-            pktlist_dest = PKTLIST_MCAST_ELEM; /* last col in 2d pktlist */
-            mcast_count++;
-        }
-
         PKTFWD_ASSERT(pktlist_prio == LINUX_GET_PRIO_MARK(skb->mark));
         PKTFWD_ASSERT(pktlist_dest <= PKTLIST_MCAST_ELEM);
         PKTFWD_ASSERT(pktlist_prio <  PKTLIST_PRIO_MAX);
 
-        __pktlist_add_pkt(pktlist_context, /* add to local pktlist */
+        __pktlist_add_pkt(ctx.wfd_p->pktlist_context_p, /* add to local pktlist */
                 pktlist_prio, pktlist_dest,
-                chain_id, skb, SKBUFF_PTR); /* mcast chain_id audit? */
+                skb->wl.ucast.nic.wl_chainidx, skb, SKBUFF_PTR); /* mcast chain_id audit? */
         // FGOMES FIXME pass is_ucast and remove chain_id audit ...
+#if defined(BCM_PKTFWD_FLCTL)
+        if (likely(ctx.wfd_p->pktlist_context_p->fctable != PKTLIST_FCTABLE_NULL))
+        {
+            /* Decreament avail credits for pktlist */
+            __pktlist_fctable_dec_credits(ctx.wfd_p->pktlist_context_p,
+                pktlist_prio, pktlist_dest);
+        }
+#endif /* BCM_PKTFWD_FLCTL */
     }
 
-    wfd_pktfwd_xfer(wfd_p->pktlist_context_p, SKBUFF_PTR);
+    wfd_pktfwd_xfer(ctx.wfd_p->pktlist_context_p, SKBUFF_PTR);
 
-    wfd_p->wl_chained_packets += ucast_count;
-    wfd_p->count_rx_queue_packets += ucast_count;
+    ctx.wfd_p->wl_chained_packets += ctx.ucast_count;
+    ctx.wfd_p->count_rx_queue_packets += ctx.ucast_count;
 
-    return ucast_count + mcast_count;
+    return ctx.ucast_count + ctx.mcast_count;
 }
 
 #else /* BCM_PKTFWD */
+
+static inline struct sk_buff *single_packet_read_and_handle(wfd_object_t *wfd_p, unsigned long qid, int *rc)
+{
+    rdpa_cpu_rx_info_t info = {};
+    wl_metadata_nic_t wl_nic;
+    uint32_t encode_val = 0;
+    struct sk_buff *skb;
+
+    *rc = BDMF_ERR_OK;
+    if (unlikely(*rc = rdpa_cpu_packet_get(rdpa_cpu_wlan0 + wfd_p->wl_radio_idx, qid, &info)))
+       return NULL;
+
+    if (info.is_exception)
+    {
+        skb = __skb_alloc(&info);
+        if (unlikely(!skb)) /* skb: kmem */
+        {
+            gs_count_no_skbs[qid]++;
+            goto err;
+        }
+        if (exception_packet_handle(skb, &info, wfd_p) == BDMF_ERR_NODEV)
+            gs_count_rx_no_wifi_interface[qid]++;
+        return NULL;
+    }
+
+    skb = skb_alloc(&info); /* skb: bpm or kmem */
+    if (unlikely(!skb))
+    {
+        gs_count_no_skbs[qid]++;
+        *rc = BDMF_ERR_NOMEM;
+        goto err;
+    }
+
+    wl_nic.word = info.wl_metadata;
+
+    if ((skb->wl.ucast.nic.is_ucast = info.is_ucast))
+    {
+        skb->wl.ucast.nic.wl_chainidx = wl_nic.chain_id;
+        encode_val = wl_nic.word >> WFD_NIC_WLAN_PRIORITY_START_IN_WORD;
+        DECODE_WLAN_PRIORITY_MARK(encode_val, skb->mark);
+    }
+    else
+    {
+        skb->wl.mcast.ssid_vector = wl_nic.ssid_vector;
+        // this parameter always 0 - in MCAST  update priority
+        DECODE_WLAN_PRIORITY_MARK(info.mcast_tx_prio, skb->mark);
+    }
+    return skb;
+err:
+    /* Free data buffer in case of failure */
+    bdmf_sysb_databuf_free((uint8_t *)info.data, 0);
+    return NULL;
+}
 
 /*
  * Note that budget >= NUM_PACKETS_TO_READ_MAX
@@ -662,11 +802,10 @@ static uint32_t wfd_bulk_skb_get(unsigned long qid, unsigned long budget, void *
     while (budget)
     {
         struct sk_buff *skb;
-        uint16_t dummy;
         int rc;
 
         budget--;
-        if (!(skb = single_packet_read_and_handle(qid, wfd_p, &dummy, &rc)))
+        if (!(skb = single_packet_read_and_handle(wfd_p, qid, &rc)))
         {
             if (BDMF_ERR_NO_MORE == rc)
                 break;
@@ -685,7 +824,7 @@ static uint32_t wfd_bulk_skb_get(unsigned long qid, unsigned long budget, void *
     if (!ucast_count)
         return mcast_count;
 
-    (void) wfd_p->wfd_fwdHook(ucast_count, (unsigned long)ucast_packets, wfd_p->wl_radio_idx, 0);
+    (void)wfd_p->wfd_fwdHook(ucast_count, (unsigned long)ucast_packets, wfd_p->wl_radio_idx, 0);
     wfd_p->wl_chained_packets += ucast_count;
     wfd_p->count_rx_queue_packets += ucast_count;
 
@@ -696,6 +835,22 @@ static uint32_t wfd_bulk_skb_get(unsigned long qid, unsigned long budget, void *
 static int wfd_accelerator_init(void)
 {
     return 0;
+}
+
+static void inject_to_fastpath_set(uint32_t allow)
+{
+    if (allow)
+    {
+        send_packet_to_upper_layer = wfd_runner_tx;
+        send_packet_to_upper_layer_napi = wfd_runner_tx;
+        inject_to_fastpath = 1;
+    }
+    else
+    {
+        send_packet_to_upper_layer = netif_rx;
+        send_packet_to_upper_layer_napi = netif_receive_skb;
+        inject_to_fastpath = 0;
+    }
 }
 
 static int wfd_rdpa_init(int wl_radio_idx)
@@ -745,9 +900,7 @@ static int wfd_rdpa_init(int wl_radio_idx)
         return -1;
     }
 
-    send_packet_to_upper_layer = wfd_runner_tx;
-    send_packet_to_upper_layer_napi = wfd_runner_tx;
-    inject_to_fastpath = 1;
+    inject_to_fastpath_set(1);
 
     return 0;
 }
@@ -756,9 +909,7 @@ static void wfd_rdpa_uninit(int wl_radio_idx)
 {
     bdmf_object_handle rdpa_cpu_obj, rdpa_port_obj;
 
-    send_packet_to_upper_layer = netif_rx;
-    send_packet_to_upper_layer_napi = netif_receive_skb;
-    inject_to_fastpath = 0;
+    inject_to_fastpath_set(0);
 
     if (!rdpa_port_get(rdpa_if_wlan0 + wl_radio_idx, &rdpa_port_obj))
     {
@@ -818,5 +969,50 @@ static int wfd_runner_tx(struct sk_buff *skb)
 
     gs_count_tx_packets[radio]++;
     return rdpa_cpu_send_sysb(skb, &info);
+}
+
+static ssize_t wfd_rx_fastpath_read_proc(struct file *file, char *buff, size_t len, loff_t *offset)
+{
+    if (*offset)
+        return 0;
+
+    *offset += sprintf(buff + *offset, "%u\n", inject_to_fastpath);
+
+    return *offset;
+}
+
+static ssize_t wfd_rx_fastpath_write_proc(struct file *file, const char *buff, size_t len, loff_t *offset)
+{
+    char input[2];
+    uint32_t allow;
+
+    if (copy_from_user(input, buff, sizeof(input)) != 0)
+        return -EFAULT;
+
+    if (sscanf(input, "%u", &allow) < 1)
+        return EFAULT;
+
+    inject_to_fastpath_set(allow);
+
+    printk("WLAN Rx fastpath is %s\n", inject_to_fastpath ? "enabled" : "disabled");
+    return len;
+}
+
+static const struct file_operations rx_fastpath_fops = {
+    .owner  = THIS_MODULE,
+    .read   = wfd_rx_fastpath_read_proc,
+    .write  = wfd_rx_fastpath_write_proc,
+};
+
+static int wfd_plat_proc_init(void)
+{
+   if (!(proc_wfd_rx_fastpath = proc_create("wfd/wlan_rx_fastpath", 0644, NULL, &rx_fastpath_fops)))
+       return -1;
+   return 0;
+}
+
+static void wfd_plat_proc_uninit(struct proc_dir_entry *dir)
+{
+    remove_proc_entry("wlan_rx_fastpath", dir);
 }
 #endif /* __XRDP_WFD_INLINE_H_INCLUDED__ */

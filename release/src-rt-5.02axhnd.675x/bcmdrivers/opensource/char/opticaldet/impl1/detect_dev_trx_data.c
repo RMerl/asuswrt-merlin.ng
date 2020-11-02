@@ -135,6 +135,7 @@ static TRX_DESCRIPTOR default_pluggable_trx = {
     .vendor_pn             = "Default",
     .lbe_polarity          = TRX_ACTIVE_LOW,
     .tx_sd_polarity        = TRX_ACTIVE_HIGH,
+    .tx_sd_supported       = TRX_SIGNAL_NOT_SUPPORTED,
     .tx_pwr_down_polarity  = TRX_ACTIVE_LOW,
     .tx_pwr_down_cfg_req   = false
 } ;
@@ -147,6 +148,7 @@ static TRX_DESCRIPTOR default_on_board_trx = {
     .vendor_pn             = "Default",
     .lbe_polarity          = TRX_ACTIVE_HIGH,
     .tx_sd_polarity        = TRX_ACTIVE_HIGH,
+    .tx_sd_supported       = TRX_SIGNAL_NOT_SUPPORTED,
     .tx_pwr_down_polarity  = TRX_ACTIVE_LOW,
     .tx_pwr_down_cfg_req   = false
 } ;
@@ -158,6 +160,7 @@ static TRX_DESCRIPTOR default_pmd_trx = {
     .vendor_pn             = "689xx",
     .lbe_polarity          = TRX_ACTIVE_HIGH,
     .tx_sd_polarity        = TRX_ACTIVE_HIGH,
+    .tx_sd_supported       = TRX_SIGNAL_NOT_SUPPORTED,
     .tx_pwr_down_polarity  = TRX_ACTIVE_LOW,
     .tx_pwr_down_cfg_req   = false,
     .wan_types_bitmap      = SUPPORTED_WAN_TYPES_BIT_GPON | SUPPORTED_WAN_TYPES_BIT_EPON_1_1 | SUPPORTED_WAN_TYPES_BIT_TURBO_EPON_2_1 \
@@ -319,7 +322,29 @@ static int get_bus_from_descriptor(TRX_TYPE type, TRX_FORM_FACTOR *form_factor)
     return (-1);
 }
 #endif
-            
+
+static void (*rogue_onu_trx_insert_cb)(struct work_struct *dummy) = NULL;
+
+void opticaldet_rogue_onu_trx_insert_set_cb(void (*rogue_onu_trx_insert_ptr)(struct work_struct *dummy))
+{
+    rogue_onu_trx_insert_cb = rogue_onu_trx_insert_ptr;
+}
+EXPORT_SYMBOL(opticaldet_rogue_onu_trx_insert_set_cb);
+
+static void opticaldet_rogue_onu_trx_insert(struct work_struct *dummy)
+{
+    if (rogue_onu_trx_insert_cb == NULL)
+    {
+        printk(KERN_ALERT "%s.%s: rogue_onu_trx_insert_cb == NULL\n", __FILE__, __FUNCTION__);
+    }
+    else
+    {
+        (*rogue_onu_trx_insert_cb)(dummy);
+    }
+}
+DECLARE_WORK(opticaldet_rogue_onu_trx_insert_work, opticaldet_rogue_onu_trx_insert);
+
+
 static void trx_find_descriptor(int bus, uint8_t trx_ff, uint8_t *eeprom)
 {
    int trx_gen_size ;
@@ -394,6 +419,11 @@ static void trx_find_descriptor(int bus, uint8_t trx_ff, uint8_t *eeprom)
    }
 
    set_trx_desc_init_state(bus, 1);
+
+   if (known == 1) {
+       schedule_work(&opticaldet_rogue_onu_trx_insert_work);
+       /* will fail upon opticaldet init b/c cb not ready, but will be done in gpon_post_init and upon insert */
+   }
 }
 
 static int i2c_read_sff_sfp_data(int bus, uint8_t trx_ff)
@@ -772,4 +802,20 @@ int trx_get_full_info(int bus, TRX_INFOMATION *trx_info)
     }
 }
 
+int opticaldet_is_xpon_sfp_present(void)
+    {
+    int bus = -1;
+    int rc;
 
+    rc = opticaldet_get_xpon_i2c_bus_num(&bus);
+    if (rc != OPTICALDET_SUCCESS)
+        {
+        printk("*** Can't get optical device i2c bus number! ***\n");
+        return FALSE;
+        }
+    else
+        {
+            return get_trx_desc_init_state(bus);
+        }
+    }
+EXPORT_SYMBOL(opticaldet_is_xpon_sfp_present);

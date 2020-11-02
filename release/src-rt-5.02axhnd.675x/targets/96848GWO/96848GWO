@@ -149,6 +149,7 @@ BUILD_DM_LEGACY98=y
 # DESKTOP_LINUX is not set
 # BUILD_CUSTOMER is not set
 BUILD_CONSOLED=y
+# BUILD_BSTREAM_IQOS is not set
 BUILD_BUSYBOX=dynamic
 
 #
@@ -312,6 +313,7 @@ BUILD_WSC=dynamic
 # BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG is not set
 # BUILD_HND_EAP is not set
 # BUILD_HND_EAP_AP1 is not set
+# BUILD_BCM_WLAN_DPDCTL is not set
 # BRCM_DRIVER_WIRELESS_USBAP is not set
 
 #

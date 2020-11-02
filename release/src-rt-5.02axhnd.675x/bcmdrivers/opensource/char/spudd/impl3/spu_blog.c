@@ -273,6 +273,7 @@ static void spu_blog_fc_crypt_done_us(struct spu_trans_req *pTransReq)
       {
          SPU_TRACE(("spu_blog_fc_crypt_done_us: blog_finit action drop\n"));
          spuinfo->stats.encDrops++;
+         cache_invalidate_len(pData, len);
          nbuff_free(pTransReq->pNBuf);
          return;
       }
@@ -385,6 +386,7 @@ static void spu_blog_fc_crypt_done_ds(struct spu_trans_req *pTransReq)
       {
          SPU_TRACE(("spu_blog_fc_crypt_done_ds: blog_finit action drop\n"));
          spuinfo->stats.decDrops++;
+         cache_invalidate_len(pData, pktlen);
          nbuff_free(pTransReq->pNBuf);
          return;
       }
@@ -491,6 +493,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
    {
       SPU_TRACE(("spu_blog_lookup_ctx failed: ipsa %x, ipda %x, spi %x\n", htonl(ipsa), htonl(ipda), htonl(spi)));
       spuinfo->stats.encErrors++;
+      cache_invalidate_len(pdata, nbuflen);
       nbuff_free(pNBuf);
       return 0;
    }
@@ -501,6 +504,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
    {
       SPU_TRACE(("spu_blog_lookup_ctx failed: ipsa %x, ipda %x, spi %x\n", htonl(ipsa), htonl(ipda), htonl(spi)));
       spuinfo->stats.encDrops++;
+      cache_invalidate_len(pdata, nbuflen);
       nbuff_free(pNBuf);
       return -1;
    }
@@ -515,6 +519,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
    {
       spuinfo->stats.encErrors++;
       spu_free_trans_req(pTransReq);
+      cache_invalidate_len(pdata, nbuflen);
       nbuff_free(pTransReq->pNBuf);
       return 0;
    }
@@ -542,6 +547,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
       if (ret)
       {
          XFRM_INC_STATS(net, LINUX_MIB_XFRMOUTSTATEEXPIRED);
+         cache_invalidate_len(pdata, nbuflen);
          nbuff_free(pTransReq->pNBuf);
          break;
       }
@@ -561,6 +567,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
          skb_reset_network_header(skb);
          xfrm->repl->overflow(xfrm, skb);
          XFRM_INC_STATS(net, LINUX_MIB_XFRMOUTSTATESEQERROR);
+         cache_invalidate_len(pdata, nbuflen);
          kfree_skb(skb);
          break;
       }
@@ -599,6 +606,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
       spu_free_trans_req(pTransReq);
       SPU_TRACE(("spu_blog_xmit_us: spu_runner_process_ipsec returned error %d\n", ret));
       spuinfo->stats.encDrops++;
+      cache_invalidate_len(pdata, nbuflen);
       nbuff_free(pNBuf);
    }   
    
@@ -622,6 +630,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
    struct sec_path      *secpath;
    unsigned char        *pdata;
    struct sk_buff       *skb;
+   int                   nbuflen;
 
    spuinfo->stats.decIngress++;
    if ( IS_SKBUFF_PTR(pNBuf) )
@@ -631,6 +640,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
       /* blog is owned by fc so void reference */
       skb->blog_p = NULL;
       pdata = skb->data;
+      nbuflen = skb->len;
       /* make sure dirty_p is NULL */
       skb_shinfo(skb)->dirty_p = NULL;
    }
@@ -642,6 +652,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
       /* blog is owned by fc so void reference */
       fkb->blog_p = NULL;
       pdata = fkb->data;
+      nbuflen = fkb->len;
       skb = NULL;
    }
 
@@ -665,6 +676,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
    if ( NULL == xfrm )
    {
       spuinfo->stats.decErrors++;
+      cache_invalidate_len(pdata, nbuflen);
       nbuff_free(pNBuf);
       return -1;
    }
@@ -713,6 +725,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
    {
       SPU_TRACE(("spu_blog_xmit_ds failed to alloacte transfer request\n"));
       spuinfo->stats.decDrops++;
+      cache_invalidate_len(pdata, nbuflen);
       nbuff_free(pNBuf);
       return -1;
    }
@@ -727,14 +740,14 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
       something went wrong and the packet has to be sent back to kernel */
    pTransReq->dev        = blog_p->rx_dev_p;
 
-   /* no data written in ds path
-      cache is invalidated in return path */
+   cache_flush_len(pdata, nbuflen);
    ret = spu_runner_process_ipsec(pTransReq, pNBuf, BLOG_IPV4_HDR_LEN);
    if (ret != 0)
    {
       spu_free_trans_req(pTransReq);
       SPU_TRACE(("spu_blog_xmit_ds: spu_runner_process_ipsec returned error %d\n", ret));
       spuinfo->stats.decDrops++;
+      cache_invalidate_len(pdata, nbuflen);
       nbuff_free(pNBuf);
    } 
    

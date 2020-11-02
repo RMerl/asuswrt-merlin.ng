@@ -101,6 +101,11 @@ typedef enum
 
 #define ANY_VID                          0xFFFF
 #define DUMMY_MAX_PKT_LEN                0x3FFF
+#ifdef CONFIG_MCAST_TASK_LIMIT
+#define MULTICAST_TASKS_LIMIT_MAX        28
+#define MULTICAST_TASKS_LIMIT_MIN        8
+#endif
+
 
 typedef struct
 {
@@ -122,6 +127,7 @@ void rdd_rx_mirroring_cfg(rdd_rdd_vport vport, bdmf_boolean control);
 void rdd_rx_mirroring_direct_cfg(bdmf_boolean control);
 void rdd_loopback_cfg(rdd_rdd_vport vport, bdmf_boolean control);
 void rdd_loopback_queue_set(rdd_rdd_vport vport, uint32_t queue_id);
+void rdd_loopback_wan_flow_set(uint32_t flow);
 void rdd_ingress_qos_drop_miss_ratio_set(uint32_t drop_miss_ratio);
 void rdd_ingress_qos_wan_untagged_priority_set(bdmf_boolean wan_untagged_priority);
 
@@ -154,5 +160,9 @@ void rdd_qm_queue_to_tx_flow_tbl_cfg(uint16_t qm_queue, rdpa_traffic_dir dir, rd
 
 void rdd_system_congestion_ctrl_enable(bdmf_boolean enable);
 bdmf_boolean rdd_system_congestion_ctrl_get(void);
+#ifdef CONFIG_MCAST_TASK_LIMIT
+void rdd_mcast_max_tasks_limit_cfg(uint16_t xi_mcast_max_tasks_limit);
+void rdd_mcast_min_tasks_limit_cfg(uint16_t xi_mcast_min_tasks_limit);
+#endif
 
 #endif /* _RDD_COMMON_H */

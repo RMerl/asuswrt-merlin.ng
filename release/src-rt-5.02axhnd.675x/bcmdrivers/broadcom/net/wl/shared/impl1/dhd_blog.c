@@ -368,7 +368,9 @@ dhd_handle_blog_disconnect_event(struct dhd_pub *dhdp, wl_event_msg_t *event)
 #if defined(PKTC_TBL) || defined(BCM_PKTFWD)
 	/* destroy pktc entry */
 	if (dhd_pktc_del_hook) {
+		blog_lock(); /* blog_notify is called inside del_hook */
 		dhd_pktc_del_hook((unsigned long)(event->addr.octet), dev);
+		blog_unlock();
 	}
 #endif /* PKTC_TBL || BCM_PKTFWD */
 

@@ -52,7 +52,6 @@ extern "C"
 #define FPM_BUF_SIZE_2K                     2048
 #define FPM_BUF_MAX_BASE_BUFFS              8
 #define TOTAL_FPM_TOKENS                    ((64*1024) - 1)
-#define FPM_DDR_BASE_ADDRESS                0x0f000000
 #define FPM_DDR_BUFFER_SIZE                 512
 
 /** Boolean value */

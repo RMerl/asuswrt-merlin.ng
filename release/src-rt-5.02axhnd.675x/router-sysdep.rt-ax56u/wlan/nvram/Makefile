@@ -117,11 +117,18 @@ OBJS = nvram_shared.o main.o brcm_generic_lock.o
 endif
 
 
+ifeq ($(strip $(WLCSM_DEBUG)),1)
+all:  libnvram nvram  wlcsmdbg wldbg wltest $(KERNEL_NVRAM_FILE_NAME)
+else
+ifeq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
 ifneq ($(PREBUILT_BCMBIN),1)
 all:  libnvram nvram 
 else
 all:
-	@cp prebuilt/* .
+endif
+else
+all:
+endif
 endif
 	mkdir -p $(INSTALL_DIR)/rom/rom/etc/init.d
 	mkdir -p $(INSTALL_DIR)/rom/rom/etc/rc3.d
@@ -133,7 +140,6 @@ ifeq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
 endif
 	install -m 755 ./scripts/hndnvram.sh $(INSTALL_DIR)/rom/rom/etc/init.d
 	install -m 755 ./scripts/hnddm.sh $(INSTALL_DIR)/usr/sbin
-	install -m 755 ./scripts/wifi.sh $(INSTALL_DIR)/rom/rom/etc/init.d
 	sed -e s/KERNEL_NVRAM_FILE_NAME/$(KERNEL_NVRAM_FILE_NAME)/g ./scripts/hndnvram.sh > $(INSTALL_DIR)/rom/rom/etc/init.d/hndnvram.sh
 ifeq ($(strip $(BUILD_BRCM_UNFWLCFG)_$(BUILD_BRCM_CMS)),y_)
 # fill in the content of "user_nvram_file" in hndnvram.sh for UNFWLCFG+NOCMS builds
@@ -176,17 +182,47 @@ install:
 
 dynamic: all
 
-libnvram: $(WLCSM_LIB)
-	@cp prebuilt/libnvram.so .
+ifeq ($(wildcard ./*.c),)
+libnvram:
+	cp -f ./prebuilt/libnvram.so .
+else
+libnvram: nvram_shared.o brcm_generic_lock.o $(WLCSM_LIB)
+	$(LD) -shared -soname libnvram.so -o libnvram.so nvram_shared.o brcm_generic_lock.o  -L$(LIBDIR) $(WLCSM_LIB) -lc -lpthread
 	install -m 755 libnvram.so $(INSTALL_DIR)/lib
+endif
 
-nvram: libnvram $(WLCSM_LIB)
-	@cp prebuilt/nvram .
+ifeq ($(wildcard ./*.c),)
+nvram:
+	cp -f ./prebuilt/nvram .
+else
+nvram: libnvram main.o $(WLCSM_LIB)
+ifneq ($(strip $(BUILD_BRCM_CMS)),)
+	$(CC) -o $@ main.o -s -Os -fomit-frame-pointer $(CMS_LIB_PATH) -L$(LIBDIR) -L$(EXTRALIBDIR) -lc -lgcc_s -lpthread $(LIBS)
+else
+	$(CC) -o $@ main.o -s -Os -fomit-frame-pointer -L$(LIBDIR) -L$(EXTRALIBDIR) -lc -lgcc_s -lpthread $(LIBS) $(WLCSM_LIB)
+endif
+endif
 
 clean:
 	-rm -f *.o
 	-rm -f libnvram.so nvram $(OBJS)
 
+ifeq ($(strip $(WLCSM_DEBUG)),1)
+
+wlcsmdbg:  wlcsmdbg.o
+	$(CC) -o $@ wlcsmdbg.o -fomit-frame-pointer -L$(INSTALL_DIR)/lib -lwlcsm -lc -lgcc_s 
+	install -m 755 wlcsmdbg $(INSTALL_DIR)/bin
+
+wldbg:  wldbg.o
+	$(CC) -o $@ wldbg.o -fomit-frame-pointer -L$(INSTALL_DIR)/lib -lwlcsm -lc -lgcc_s 
+	install -m 755 wldbg $(INSTALL_DIR)/bin
+
+wltest:  wltest.o
+	$(CC) -o $@ wltest.o -fomit-frame-pointer -L$(INSTALL_DIR)/lib -lwlcsm -lc -lgcc_s 
+	install -m 755 wltest $(INSTALL_DIR)/bin
+endif
+
+#
 # Include the rule for making dependency files.
 # The '-' in front of the second include suppresses
 # error messages when make cannot find the .d files.

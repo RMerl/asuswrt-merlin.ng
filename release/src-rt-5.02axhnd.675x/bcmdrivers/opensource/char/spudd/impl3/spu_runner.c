@@ -317,8 +317,6 @@ static int spu_runner_rxq_thread(void *arg)
     pNBuff_t              pNBuf;
     struct spu_trans_req *pTransReq;
     int                   count;
-    unsigned char        *pdata;
-    int                   nbuflen;
 
     /* Main task loop */
     while (1)
@@ -348,17 +346,6 @@ static int spu_runner_rxq_thread(void *arg)
 
             if ( (rc == 0) && (NULL != pNBuf) && (info.reason == rdpa_cpu_rx_reason_ipsec) )
             {
-                /* data has been modified by IPSec engine, invalidate its cache lines */
-                if ( IS_SKBUFF_PTR(pNBuf) ) {
-                      struct sk_buff *skb = (struct sk_buff *)PNBUFF_2_PBUF(pNBuf);
-                      pdata = skb->data;
-                      nbuflen = skb->len;
-                } else {
-                      FkBuff_t *fkb = (FkBuff_t *)PNBUFF_2_PBUF(pNBuf);
-                      pdata = fkb->data;
-                      nbuflen = fkb->len;
-                }
-                cache_invalidate_len(pdata, nbuflen);
 
                 pTransReq = spu_runner_recycle_restore(pNBuf);
                 if ( IPSEC_ERROR(info.reason_data) )
@@ -644,7 +631,6 @@ __init int spu_runner_init(void)
    if (rc)
    {
       printk("spu_runner_init: Error(%d) cfg IPSEC offload rx queue\n", rc);
-      bdmf_unlock();
       return -EFAULT;
    }
 

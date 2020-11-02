@@ -48,7 +48,8 @@ static struct xt_match mac_mt_reg __read_mostly = {
 	.match     = mac_mt,
 	.matchsize = sizeof(struct xt_mac_info),
 	.hooks     = (1 << NF_INET_PRE_ROUTING) | (1 << NF_INET_LOCAL_IN) |
-	             (1 << NF_INET_FORWARD),
+	             (1 << NF_INET_FORWARD) | (1 << NF_INET_POST_ROUTING) |
+	             (1 << NF_INET_LOCAL_OUT),
 	.me        = THIS_MODULE,
 };
 

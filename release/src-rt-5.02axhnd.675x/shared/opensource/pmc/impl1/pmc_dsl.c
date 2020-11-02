@@ -56,8 +56,10 @@ written consent.
 int pmc_dsl_power_up(void)
 {
 	int ret = 0;
+#if !defined(_BCM963178_) && !defined(CONFIG_BCM963178)
 	PLL_CTRL_REG pll_ctrl;
 	PLL_LOOP1_REG pll_loop1;
+#endif
 #if defined(_BCM963381_) || defined(CONFIG_BCM963381)
 	PLL_LOOP0_REG pll_loop0;
 	PLL_CFG0_REG pll_cfg0;
@@ -307,6 +309,8 @@ int pmc_dsl_power_down(void)
 	ret |= PowerOffDevice(PMB_ADDR_VDSL3_PMD, 0);
 	ret |= PowerOffDevice(PMB_ADDR_VDSL3_CORE, 0);
 	ret |= PowerOffDevice(PMB_ADDR_VDSL3_MIPS, 0);
+#elif defined(CONFIG_BCM963178)
+	ret |= PowerOffDevice(PMB_ADDR_VDSL3_CORE, 0);
 #endif
 	return ret;
 }

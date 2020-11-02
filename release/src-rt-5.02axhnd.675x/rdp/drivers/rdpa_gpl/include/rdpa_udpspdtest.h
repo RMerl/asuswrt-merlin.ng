@@ -71,6 +71,7 @@ typedef struct {
     uint32_t rx_time_usec;     /**< Receive Time in microseconds */
     uint64_t tx_packets;       /**< Number of packets transmitted by the Generator */
     uint32_t tx_discards;      /**< Number of packets discarded by the Generator */
+    uint32_t tx_time_usec;     /**< Transmit Time in microseconds */
 } rdpa_udpspdtest_basic_stat_t;
 
 /** Iperf3 extention Statistics (per-stream).\n
@@ -80,6 +81,8 @@ typedef struct
     uint64_t out_of_order_pkts; /**< Out-of-order packets */ 
     uint64_t error_cnt_pkts;    /**< Number of errors */
     uint32_t jitter;            /**< Detected Jitter */
+    uint32_t tx_time_sec;       /**< TX time: seconds */
+    uint32_t tx_time_usec;      /**< TX time: microseconds */
 } rdpa_udpspdtest_iperf3_ext_stat_t;
 
 /** UDP Speed Test Statistics.\n
@@ -107,6 +110,7 @@ typedef struct {
     uint32_t kbps;           /**< Transmit Rate (Kbps) */
     uint32_t mbs;            /**< Maximum Burst Size (bytes) */
     uint64_t total_packets_to_send; /**< Total number of packets to send (optional) */
+    bdmf_boolean iperf3_64bit_counters; /**< Iperf3 configuration: use 64-bit counters in UDP test packets */
 } rdpa_udpspdtest_tx_params_t;
 
 /** @} end of udpspdtest Doxygen group. */

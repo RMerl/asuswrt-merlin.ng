@@ -67,20 +67,23 @@ static bus_type_t bp_parse_bus_type(const EMAC_PORT_INFO *port_info)
 
 void bp_parse_phy_ext(const EMAC_PORT_INFO *port_info, phy_dev_t *phy_dev)
 {
-    phy_dev_t *phy_next;
+    phy_dev_t *phy_sgmii;
     uint32_t phy_id = port_info->phy_id;
     uint32_t intf = phy_id & MAC_IFACE;
 
     if ((port_info->switch_port == 5) && (phy_id & PHY_EXTERNAL) && (intf == MAC_IF_SGMII || intf == MAC_IF_HSGMII))
     {
-        phy_next = phy_dev_add(PHY_TYPE_6856_SGMII, 6, NULL);
-        phy_next->phy_drv->bus_drv = bus_drv_get(BUS_TYPE_6846_INT);
-        phy_next->mii_type = intf == MAC_IF_SGMII ? PHY_MII_TYPE_SGMII : PHY_MII_TYPE_HSGMII;
-        phy_drv_init(phy_next->phy_drv);
-        phy_dev_init(phy_next);
-        phy_dev->cascade_next = phy_next;
-        phy_next->cascade_prev = phy_dev;
+        phy_sgmii = phy_dev_add(PHY_TYPE_6856_SGMII, 6, NULL);
+        phy_sgmii->phy_drv->bus_drv = bus_drv_get(BUS_TYPE_6846_INT);
+        phy_sgmii->mii_type = intf == MAC_IF_SGMII ? PHY_MII_TYPE_SGMII : PHY_MII_TYPE_HSGMII;
+        phy_drv_dev_add(phy_sgmii);
+        phy_drv_init(phy_sgmii->phy_drv);
+        phy_dev->cascade_prev = phy_sgmii;
+        phy_sgmii->cascade_next = phy_dev;
     }
+
+    if (port_info->switch_port == 8)
+        phy_dev->disable_hd = 1;
 }
 
 void bp_parse_phy_driver(const EMAC_PORT_INFO *port_info, phy_drv_t *phy_drv)

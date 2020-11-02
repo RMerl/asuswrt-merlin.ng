@@ -57,6 +57,9 @@ typedef uint32_t rdpa_dhd_ssid_tx_dropped_t[DHD_MAX_SSID_NUM];
 #else
 #define DHD_MAX_SSID_NUM 8
 #endif
+/* Not supported any more
+#define RDPA_DHD_HELPER_FEATURE_NPLUSM
+*/
 
 #ifndef BDMF_SYSTEM_SIM
 #if defined(BCM_DSL_RDP)
@@ -145,6 +148,7 @@ typedef struct
     uint32_t dhd_tx_fpm_used; /**< DHD TX FPM used */
     uint32_t dhd_tx_total_fpm_used; /**< DHD TX FPM used */
     uint32_t dhd_tx_fpm_drop; /**< DHD TX FPM drop */
+    uint32_t dhd_tx_high_prio_fpm_drop; /**< DHD TX high priority and mcast FPM drop */
     uint32_t dhd_mcast_sbpm_drop;  /**< DHD MCAST SBPM drop */
     uint32_t dhd_tx_fr_ac_bk_full; /**< DHD TX feeder ring AC BK is full*/
     uint32_t dhd_tx_fr_ac_be_full; /**< DHD TX feeder ring AC BE is full*/
@@ -182,7 +186,7 @@ typedef struct rdpa_dhd_flring_cache
     uint16_t backup_num_entries;
     uint16_t phy_ring_size;  /* Number of descriptors in physical flow ring */
 #else
-    uint32_t reserved;       /* maintain the structure for platforms without backup queues feature */
+    uint32_t reserved;       /* Maintain the structure for platforms without backup queues feature */
 #endif
 } rdpa_dhd_flring_cache_t;
 

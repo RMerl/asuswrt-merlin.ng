@@ -1,0 +1,370 @@
+#!/usr/bin/perl
+# 
+# This script takes as input ld --cref -Map input and produces
+# romtable.S to STDOUT
+#
+# $Id: gen-romtbl,v 1.7 2010-12-02 19:42:02 lut Exp $
+#
+
+if (@ARGV != 3) {
+	die "Usage: perl gen-romtbl <romctl.txt> <ldmap.cref> <nm.map>\n";
+}
+
+my $idre = '([\w$]+)';
+my $fnre = '([\w.-]+)';
+
+# Input Args
+my $fnromctl = $ARGV[0];
+my $fhromctl;
+
+# Globals
+my %g_unresolves = ();
+my %g_flist = ();
+my %g_symsfile = ();
+my %g_ldmap_syms = ();
+my %g_externsyms = ();
+my %g_rcinit = ();
+my %g_rcattach = ();
+my %g_ram_sym = ();
+my %g_file_excludes = ();
+my %g_sym_excludes = ();
+my %g_sym_share = ();
+my %g_sym_noesc = ();
+my %g_sym_includes = ();
+my %g_sym_includes_rodata = ();
+
+# Read ROM control file
+open($fhromctl, "<$fnromctl") or die "Unable to open file $fnromctl: $!\n";
+map {
+    $g_file_excludes{$1} = 1 if /^${fnre}\s.*\bexclude_file\b/;
+    $g_sym_excludes{$1} = 1 if /^${idre}\s.*\bexclude_sym\b/;
+    $g_sym_share{$1} = 1 if /^${idre}\s.*\bshare_sym\b/;
+    $g_sym_noesc{$1} = 1 if /^${idre}\s.*\bno_esc\b/;
+    $g_sym_includes{$1} = 1 if /^${idre}\s.*\binclude_sym\b/;
+    $g_sym_includes_rodata{$1} = 1 if /^${idre}\s.*\binclude_sym\b/;
+} <$fhromctl>;
+close($fhromctl);
+
+my $fnmpcref = $ARGV[1];
+my $fhmpcref;
+open($fhmpcref, "<$fnmpcref") or die "Unable to open file $fnmpcref: $!\n";
+my @g_declare = <$fhmpcref>;
+close($fhmpcref);
+
+my $fnmpnm = $ARGV[2];
+my $fhmpnm;
+open($fhmpnm, "<$fnmpnm") or die "Unable to open file $fnmpnm: $!\n";
+my @g_nm = <$fhmpnm>;
+close($fhmpnm);
+
+# Whether to rom init or attach code
+my $g_rcinit_dontrom = 1;
+my $g_rcattach_dontrom = 1;
+my $romshare = scalar keys %g_sym_share;
+
+# Constants
+my $g_text_sect = qr/\.text\.|\.rodata\./;
+my $g_rodata_sect = qr/\.rodata/;
+my $g_rcinit_sect = qr/\.textini1\.|\.dataini1\./;
+my $g_rcattach_sect = qr/\.textini[2-3]\.|\.dataini[2-3]\./;
+my $g_ram_sect = qr/\.text_ram\./;
+
+# Linker script labels
+my @g_special_syms = qw(
+	_ftext
+	text_start
+	_etext
+	text_end
+	_fdata
+	data_start
+	_edata
+	data_end
+	_fbss
+	bss_start
+	bss_end
+	_rstart1
+	_rend1
+	_rstart2
+	_rend2
+	_rstart3
+	_rend3
+	_end
+	esc_start
+	esc_end
+	shdat_start
+	shdat_end
+	extra_start
+	extra_end
+	ramfnptr_start
+	ramfnptr_end
+	jmptblrom_start
+	jmptblrom_end
+	datblrom_start
+	datblrom_end
+	rodata_end
+	rodata_start
+	);
+my %g_special_label = ();
+map {
+	$g_special_label{$_} = 1;
+} @g_special_syms;
+
+# Reformat map input
+for (my $d = 0; $d < @g_declare; $d++) {
+	my $line = $g_declare[$d];
+	chomp($line);
+	$line =~ s/^\s+//;
+	$line =~ s/\s+$//;
+
+	if ($line =~ /^Cross Reference Table\b/) {
+		for (my $k = $d; $k < @g_declare; $k++) {
+			$line = $g_declare[$k];
+			chomp($line);
+			$line =~ s/^\s+//;
+			$line =~ s/\s+$//;
+
+			if ($line =~ /^${idre}\s/) {
+				my($sym) = split(/\s/, $line);
+				$g_externsyms{$sym} = $line;
+			}
+		}
+		last;
+	}
+
+	if ($line =~ /($g_text_sect|$g_rcinit_sect|$g_rcattach_sect|$g_ram_sect)/) {
+		next if ($line =~ /\)$/); # skip name with paren
+
+		if ($line =~ /($g_rcinit_sect)/) {
+			my($a, $sect, $sym) = split(/\./, $line);
+			$g_rcinit{$sym} = 1;
+		} elsif ($line =~ /($g_rcattach_sect)/) {
+			my($a, $sect, $sym) = split(/\./, $line);
+			$g_rcattach{$sym} = 1;
+		} elsif ($line =~ /($g_ram_sect)/) {
+			my($a, $sect, $sym) = split(/\./, $line);
+			$g_ram_sym{$sym} = 1;
+		}
+
+		if ($line =~ /\b0x[0-9a-fA-F]{8}\b/) {
+			my $origline = $line;
+			$line =~ s/($g_text_sect|$g_rcinit_sect|$g_rcattach_sect|$g_ram_sect)//g;
+
+			my($sym) = split(/\s/, $line);
+			$g_ldmap_syms{$sym} = $origline;
+		} elsif (!($line =~ /\b0x[0-9a-fA-F]{8}\b/)) {
+			$d++;
+			my $line2 = $g_declare[$d];
+			chomp($line2);
+			$line2 =~ s/^\s+//;
+			$line2 =~ s/\s+$//;
+
+			$origline = "$line $line2";
+			$line =~ s/($g_text_sect|$g_rcinit_sect|$g_rcattach_sect|$g_ram_sect)//g;
+
+			my($sym) = split(/\s/, $line);
+			$g_ldmap_syms{$sym} = $origline;
+		}
+	}
+}
+
+
+# Format and include forced symbols here
+# so they can be organized by file as well
+foreach my $line (sort keys %g_sym_includes) {
+	push(@g_nm, "00000000 T $line");
+}
+
+foreach my $line (sort keys %g_sym_includes_rodata) {
+	push(@g_nm, "00000000 D $line");
+}
+
+# Loop through nm output
+foreach my $line (@g_nm) {
+	chomp($line);
+	my($nm_addr, $attr, $sym) = split(/ /, $line);
+
+	# Skip data and bss
+	if ($attr =~ /[Dd]/) {
+		next;
+	} elsif ($attr =~ /[Bb]/) {
+		next;
+	}
+
+	if ($sym =~ /C\.[0-9]+/) {
+		next;
+	} elsif ($sym =~ /\.[0-9]+/) {
+		# Local static
+		next;
+	}
+
+	my @modstr = ();
+	my $is_label = 0;
+	my @found_sym = ();
+	my $symstr = "";
+	$symstr = $g_ldmap_syms{$sym};
+
+	@found_sym = $symstr if ($symstr ne "");
+	if ($#found_sym == -1) {
+		# Skip special labels
+		next if ($g_special_label{$sym});
+
+		# If not found in map output and not special label,
+		# look in cross reference table because it could
+		# be a label in assembly
+		$symstr = $g_externsyms{$sym};
+		@found_sym = $symstr;
+
+		if ($symstr) {
+			$is_label = 1;
+			push(@modstr, "label");
+		} else {
+			$g_unresolves{$sym} = 1;
+			next;
+		}
+	}
+
+	my $file = "";
+	my $fullsym = "";
+	my $sect = "";
+	my $map_addr = "";
+
+	if ($is_label == 0) {
+		my $mfound = 0;
+
+		if ($#found_sym > 0) {
+			# For static symbols, check the addr and file
+			foreach my $mline (@found_sym) {
+				($fullsym, $map_addr, $size, $file) = split(/\s+/, $mline);
+
+				if (hex($nm_addr) == hex($map_addr)) {
+					$mfound = 1;
+					last;
+				}
+			}
+
+			if ($mfound == 0) {
+				printf("# ERROR: static not found: %s\n", $sym);
+			}
+		} else {
+			($fullsym, $map_addr, $size, $file) = split(/\s+/, $found_sym[0]);
+		}
+	} else {
+		($fullsym, $file) = split(/\s+/, $found_sym[0]);
+	}
+
+	$g_flist{$file} = 1;
+
+	my $romit = 1;
+	if ($g_rcinit{$sym}) {
+		if ($g_rcinit_dontrom == 1) {
+			$romit = 0;
+		}
+
+	} elsif ($g_rcattach{$sym}) {
+		if ($g_rcattach_dontrom == 1) {
+			$romit = 0;
+		}
+	} elsif ($g_ram_sym{$sym}) {
+		$romit = 0;
+	}
+
+	if ($romit == 1) {
+		if ($is_label == 0) {
+			($t1, $sect, $t2) = split(/\./, $fullsym);
+		}
+
+		if ($sect =~ /rodata/) {
+			push(@modstr, ".rodata");
+		}
+
+		if (!$g_externsyms{$sym}) {
+		 	push(@modstr, "static");
+		}
+
+		if ($g_sym_noesc{$sym}) {
+			push(@modstr, ".no_esc");
+			$g_sym_noesc{$sym} = 0;
+		} elsif ($g_sym_share{$sym}) {
+			# share_sym implies no_esc
+			push(@modstr, ".no_esc");
+		}
+
+		$str = $sym . ":" . $file . ":" . join(" ", @modstr);
+		push(@{$g_symsfile{$file}}, $str);
+	}
+}
+
+# no_esc symbols not found in map file
+foreach my $line (sort keys %g_sym_noesc) {
+	if ($g_sym_noesc{$line}) {
+		printf STDERR ("   Warning: romctl no_esc $line not found!\n");
+	}
+}
+
+# Output header
+printf("# \n");
+printf("# Generated File From Script gen-romtbl\n");
+printf("# \n");
+printf("# \$%s \$\n", "Copyright (C) Broadcom Corporation");
+printf("# \n");
+printf("# \$%s \$\n", "Id:");
+printf("# \n");
+printf("\n");
+
+if ($romshare > 0) {
+	my $fnrmtbl_sh = "romtable_share.S";
+	open(FNSHARE,">$fnrmtbl_sh") or die "Unable to open file $fnrmtbl_sh: $!\n";
+
+	printf FNSHARE ("# \n");
+	printf FNSHARE ("# Generated File From Script gen-romtbl\n");
+	printf FNSHARE ("# \n");
+	printf FNSHARE ("# \$%s \$\n", "Copyright (C) Broadcom Corporation");
+	printf FNSHARE ("# \n");
+	printf FNSHARE ("# \$%s \$\n", "Id:");
+	printf FNSHARE ("# \n");
+	printf FNSHARE ("\n");
+}
+
+
+# Output the rest
+foreach my $file (sort keys %g_flist) {
+	my @fsyms = sort @{$g_symsfile{$file}};
+
+	if ($#fsyms >= 0) {
+		my $found_sym = 0;
+		my $is_share = 0;
+		my $out = "";
+		my $out_sh = "";
+
+		$out_sh = $out = "${out}\t# $file\n";
+		foreach my $line (@fsyms) {
+			my($sym, $f2, $modstr) = split(/:/, $line);
+
+			next if $g_sym_excludes{$sym};
+
+			# File excludes are processed here in order that include_sym
+			# may take higher priority.
+			# XXX currently included symbols each appear twice
+			next if $g_file_excludes{$file} && !$g_sym_includes{$sym};
+
+			$modstr = "\t\t # ${modstr}" if ($modstr ne "");
+
+			if ($g_sym_share{$sym}) {
+				$out_sh = "${out_sh}\t.extern $sym$modstr\n";
+				$is_share = 1;
+				next;
+			}
+
+			$out = "${out}\t.extern $sym$modstr\n";
+
+			# Found ROM table symbol for this file.
+			$found_sym = 1;
+		}
+
+		# Output results
+		printf "${out}\n" if ($found_sym == 1);
+		printf FNSHARE "${out_sh}\n" if ($is_share == 1);
+	}
+}
+
+close(FNSHARE) if ($romshare > 0);

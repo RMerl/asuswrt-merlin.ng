@@ -164,7 +164,6 @@ static int extsw_bus_contention(int operation, int retries)
    return 0;
 }
 
-
 /* This code keeps the APD compatibility bit set (register 1c, shadow 0xa, bit 8)
    when the internal 8051 on the 53125 chip clears it. If the 8051 is disabled,
    then this code does not need to run. */
@@ -175,7 +174,7 @@ void extsw_apd_set_compatibility_mode(void)
    static int port = 0;
    static int contention_req = 0;
 
-   if (pVnetDev0_g->extSwitch->switch_id != 0x53125)
+   if (!KNOWN_SWITCH(pVnetDev0_g->extSwitch->switch_id))
       return;
 
    down(&bcm_ethlock_switch_config);
@@ -873,6 +872,7 @@ static void ethsw_eee_extra_phy_init(int phy_id)
 static void ethsw_eee_compatibility_set(int log_port, int enable)
 {
    uint16 v16, apdv16;
+   uint16 r18s0;
    int apd_disabled = 0;
 
    /* Disable APD if it was set */
@@ -881,12 +881,17 @@ static void ethsw_eee_compatibility_set(int log_port, int enable)
    ethsw_phyport_rreg(log_port, MII_REGISTER_1C, &apdv16);
    if (apdv16 & MII_1C_AUTO_POWER_DOWN) {
       apdv16 &= ~MII_1C_AUTO_POWER_DOWN;
+	  apdv16 |= MII_1C_WRITE_ENABLE;
       ethsw_phyport_wreg(log_port, MII_REGISTER_1C, &apdv16);
       apd_disabled = 1;
    }
 
    /* Write a sequence specific for these GPHYs */
-   v16 = 0x0C00;
+   v16 = 0x0007;
+   ethsw_phyport_wreg(log_port, 0x18, &v16);
+   ethsw_phyport_rreg(log_port, 0x18, &r18s0);
+
+   v16 = r18s0 | 0x0800;
    ethsw_phyport_wreg(log_port, 0x18, &v16);
    v16 = 0x001A;
    ethsw_phyport_wreg(log_port, 0x17, &v16);
@@ -896,7 +901,7 @@ static void ethsw_eee_compatibility_set(int log_port, int enable)
       v16 = 0x0007;
    }
    ethsw_phyport_wreg(log_port, 0x15, &v16);
-   v16 = 0x0400;
+   v16 = r18s0 & ~0x0800;
    ethsw_phyport_wreg(log_port, 0x18, &v16);
 
    /* Re-enable APD if it was disabled by this code */
@@ -952,9 +957,14 @@ void extsw_eee_init(void)
 
    down(&bcm_ethlock_switch_config);
    /* EEE requires initialization on 53125 */
-   if (pVnetDev0_g->extSwitch->switch_id == 0x53125) {
+   if (KNOWN_SWITCH(pVnetDev0_g->extSwitch->switch_id)) {
+      uint16 v16;
       extsw_bus_contention(1,5);
 
+      extsw_rreg_wrap(PAGE_EEE, REG_EEE_LPI_SYM_TX_DISABLE, (uint8 *)&v16, 2);
+      v16 |= 0x0f; // disable port 0 to 3
+      extsw_wreg_wrap(PAGE_EEE, REG_EEE_LPI_SYM_TX_DISABLE, (uint8 *)&v16, 2);
+        
       /* Change default settings */
       for (i=0; i<6; ++i) {
          /* Change the Giga EEE Sleep Timer default value from 4 uS to 400 uS */
@@ -1060,7 +1070,7 @@ void ethsw_eee_port_enable(int log_port, int enable, int linkstate)
 #if defined(CONFIG_BCM_EXT_SWITCH)
    if (unit == 1) {
       /* External switch GPHYs */
-      if (pVnetDev0_g->extSwitch->switch_id == 0x53125) {
+      if (KNOWN_SWITCH(pVnetDev0_g->extSwitch->switch_id)) {
          uint16 v16;
          static int eee_strap = -1;
 

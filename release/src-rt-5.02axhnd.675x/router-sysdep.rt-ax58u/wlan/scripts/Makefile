@@ -20,6 +20,7 @@ WLDRV=$(strip $(shell cat $(BUILD_DIR)/targets/fs.src/etc/init.d/bcm-base-driver
 ifeq ($(WLDRV),)
 DRV_RC3 += S45bcm-wlan-drivers
 BIN += wlaffinity
+SCRIPTS += wifi.sh
 endif
 
 FDIMGPATH=$(strip $(shell echo $(BCM_EXTFDIMAGE_PATH) | sed -e 's=\/=\\\/=g'))
@@ -48,6 +49,9 @@ drv-rc3-install:
 	    | sed -e 's/CPEROUTER=_set_by_buildFS_/CPEROUTER=$(BUILD_BRCM_CPEROUTER)/'  \
 	    | sed -e 's,PROD_FW_PATH=_set_by_buildFS_,PROD_FW_PATH="${FDIMGPATH}",'  \
 	    | sed -e 's/WLAN_BTEST=_set_by_buildFS_/WLAN_BTEST=$(BUILD_BTEST_TOOLS)/'  \
+	    | sed -e 's/CONFIG_WLDPDCTL=_set_by_buildFS_/CONFIG_WLDPDCTL=$(BUILD_BCM_WLAN_DPDCTL)/'  \
+	    | sed -e 's/BRCM_CHIP=_set_by_buildFS_/BRCM_CHIP=$(BRCM_CHIP)/'  \
+	    | sed -e 's/WLAN_REMOVE_INTERNAL_DEBUG=_set_by_buildFS_/WLAN_REMOVE_INTERNAL_DEBUG=$(BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG)/'  \
 	    > ${INSTALL_DIR}/etc/init.d/$${f:3} ; \
 	  chmod +x ${INSTALL_DIR}/etc/init.d/$${f:3} ;  ln -fs ../init.d/$${f:3} ${INSTALL_DIR}/etc/rc3.d/$$s; \
 	done
@@ -62,8 +66,14 @@ bin-clean: ${BIN}
 
 scripts-install: ${SCRIPTS}
 	@echo "wlan scripts-install: ${SCRIPTS}"    
-	@test -z "${SCRIPTS}" || install -Dp ${SCRIPTS} ${INSTALL_DIR}/opt/scripts
+	@for s in ${SCRIPTS}; do \
+	  cat $${s} | \
+	    sed -e 's/CPEROUTER=_set_by_buildFS_/CPEROUTER=$(BUILD_BRCM_CPEROUTER)/'  \
+	    | sed -e 's/CONFIG_WLDPDCTL=_set_by_buildFS_/CONFIG_WLDPDCTL=$(BUILD_BCM_WLAN_DPDCTL)/'  \
+	    > ${INSTALL_DIR}/etc/init.d/$${s} ; \
+	  chmod +x ${INSTALL_DIR}/etc/init.d/$${s} ; \
+	done
 scripts-clean: 
-	for f in ${SCRIPTS}; do rm -f ${INSTALL_DIR}/opt/scripts/$$f; done
+	for s in ${SCRIPTS}; do rm -f ${INSTALL_DIR}/etc/init.d/$${s}; done
 
 .PHONY: build dynamic install clean bin-install init-install rc3-install scripts-install bin-clean init-clean rc3-clean scripts-clean

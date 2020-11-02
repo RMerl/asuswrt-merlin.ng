@@ -63,7 +63,7 @@
   <parameter name="AutoChannelRefreshPeriod" nvram="acs_cs_scan_timer"/>
   <parameter name="SupportedChannelBandwidth" nvram="bw_cap", ntype="int", vmapper="wlbwcap"/>
   <parameter name="OperatingChannelBandwidth" nvram="bw", ntype="int", vmapper="wlbwcap"/>
-  <parameter name="ExtensionChannel" nvram="nctrlsb", ntype="string", vmapper="wlctrlsb"/>
+  <parameter name="ExtensionChannel" nvram="mdmsideband", ntype="string", vmapper="wlctrlsb"/>
   <parameter name="MCS" nvram="nmcsidx"/>
   <parameter name="BeaconPeriod" nvram="bcn"/>
   <parameter name="DTIMPeriod" nvram="dtim"/>

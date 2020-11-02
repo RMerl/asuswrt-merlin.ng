@@ -102,17 +102,9 @@ int pcie_vcore_map_irq(const struct pci_dev *pcidev, u8 slot, u8 pin);
 #define PCIE_VCORE_DEV_NAME                "pcie-vcore"
 #define PCIE_VCORE_DRV_NAME                PCIE_VCORE_DEV_NAME
 
-inline int pcie_vcore_probe(struct platform_device *pdev) {
-	return -ENODEV;
-}
-
-inline int pcie_vcore_remove(struct platform_device *pdev) {
-	return 0;
-}
-
-inline int pcie_vcore_map_irq(const struct pci_dev *pcidev, u8 slot, u8 pin) {
-	return -1;
-}
+#define pcie_vcore_probe                   NULL
+#define pcie_vcore_remove                  NULL
+#define pcie_vcore_map_irq(pcidev, slot, pin) (-1)
 
 #endif /* !CONFIG_BCM_PCIE_VCD */
 

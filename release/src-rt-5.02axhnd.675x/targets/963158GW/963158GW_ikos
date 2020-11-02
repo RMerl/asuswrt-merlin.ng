@@ -105,7 +105,6 @@ BRCM_SCHED_RT_RUNTIME=1000000
 # BRCM_KERNEL_BONDING is not set
 # BRCM_RUNNER_FLOODING is not set
 # BP_PHYS_INTF is not set
-# BCM_GLB_COHERENCY is not set
 
 #
 # Kernel Cryptographic selection

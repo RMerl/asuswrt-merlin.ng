@@ -674,6 +674,7 @@ void wan_prbs_gen(uint32_t enable, int enable_host_tracking, int mode, serdes_wa
     uint32_t prbs_chk_mode_sel;
     uint16_t    transceiver;
     uint32_t errors;
+    onu2g_pmd_lane_ctrl_t onu2g_pmd_lane_ctrl;
 
     bcm_i2c_optics_tx_control(BCM_I2C_OPTICS_ENABLE);
 
@@ -712,6 +713,15 @@ void wan_prbs_gen(uint32_t enable, int enable_host_tracking, int mode, serdes_wa
                 pmd_prbs_callback((uint16_t)enable, 1);
         }   
 
+        /* recover to init value, onu2g_init, in order to resync to OLT after prbs test */
+        if ((wan_type == SERDES_WAN_TYPE_EPON_1G) ||
+            (wan_type == SERDES_WAN_TYPE_AE))
+        {
+            READ_32(WAN_MISC_WAN_TOP_WAN_MISC_ONU2G_PMD_LANE_CTRL, onu2g_pmd_lane_ctrl);
+            onu2g_pmd_lane_ctrl.pmd_rx_osr_mode = 0x1;
+            onu2g_pmd_lane_ctrl.pmd_tx_osr_mode = 0x1;
+            WRITE_32(WAN_MISC_WAN_TOP_WAN_MISC_ONU2G_PMD_LANE_CTRL, onu2g_pmd_lane_ctrl);
+        }
         return;
     }
 

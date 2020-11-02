@@ -15,6 +15,7 @@
 <mapper name="WLBAND." shortObjectName="WLBAND" requirements="P"  />
   <value param="2.4GHz" nvram=2 enum="BAND_B" />
   <value param="5GHz"   nvram=1 enum="BAND_A" />
+  <value param="6GHz"   nvram=4 enum="BAND_6G" />
 
 <mapper name="WLNBWCAP." shortObjectName="WLBWCAP" requirements="P" supportLevel="Present"  />
   <value param="20MHz"   nvram=1 />

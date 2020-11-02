@@ -91,6 +91,7 @@ typedef struct
 
             void *data_buf; /*< Data buffer to be transmitted. If not set, emtpy data buffer will be allocated according to data_buf_len */
             uint64_t total_bytes_to_send; /*< Total number of bytes to be sent. Optional, when not set, trasmit should be stopped explicitly */
+            uint8_t iperf3_64bit_counters; /*< Iperf3 configuration: use 64-bit counters in UDP test packets */
         } udp;
     } proto;
 } __attribute__ ((packed)) spdt_tx_params_t;
@@ -168,6 +169,7 @@ typedef struct
         uint64_t bytes; 
     } tx;
     uint64_t rx_usec;
+    uint64_t tx_usec;
 } __attribute__ ((packed)) udp_spdt_basic_stat_t;
 
 typedef struct
@@ -179,6 +181,23 @@ typedef struct
         tcp_spdt_rep_t tcp_speed_rep;
     } proto_ext;
 } __attribute__ ((packed)) spdt_stat_t;
+
+typedef enum
+{
+    SPDT_DIR_NONE,
+    SPDT_DIR_TX,
+    SPDT_DIR_RX
+} spdt_stream_dir_t;
+
+typedef struct
+{
+    spdt_proto_t protocol;
+    spdt_conn_params_t conn_params;
+    int sock_fd;
+    int is_v6;
+    spdt_stream_dir_t dir;
+    uint32_t tx_data_buf_len; /* Data buffer length for TX, used to calculate UDP statistics */
+} __attribute__ ((packed)) spdt_stream_params_t;
 
 #endif /* __SPDT_DEFS_H__ */
 

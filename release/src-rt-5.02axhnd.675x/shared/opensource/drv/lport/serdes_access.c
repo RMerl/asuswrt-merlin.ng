@@ -204,14 +204,12 @@ static int merlin_core_init(E_MERLIN_ID core_id, E_MERLIN_VCO vco)
     if (core_vco[core_id] == vco)
         return LPORT_ERR_OK;
 
-    /* Check Merlin Driver registration */
-    if (!merlin_callbacks.merlin_core_init)
-    {
-        pr_err("Merlin driver not registered, Failed to init SERDES \n");
-        return LPORT_ERR_STATE;
-    }
-
     disable = vco == MERLIN_VCO_UNKNOWN;
+
+#ifndef LPORT_SERDES_POWER_SAVING
+    if (disable)
+        return LPORT_ERR_OK;
+#endif
 
     /* check if we need to reset core */
     if (core_id == MERLIN_ID_0)
@@ -263,6 +261,13 @@ static int merlin_core_init(E_MERLIN_ID core_id, E_MERLIN_VCO vco)
     {
         core_vco[core_id] = MERLIN_VCO_UNKNOWN;
         return LPORT_ERR_OK;
+    }
+
+    /* Check Merlin Driver registration */
+    if (!merlin_callbacks.merlin_core_init)
+    {
+        pr_err("Merlin driver not registered, Failed to init SERDES \n");
+        return LPORT_ERR_STATE;
     }
 
     if (merlin_callbacks.merlin_core_init(core_id, vco))
@@ -398,40 +403,6 @@ static void lane_tx_enable(E_MERLIN_LANE lane_id, int enable)
     }
 }
 
-static LPORT_PORT_MUX_SELECT lane_mux[4] = {};
-
-static int merlin_lane_init(E_MERLIN_LANE lane_id, LPORT_PORT_MUX_SELECT prt_mux_sel)
-{
-    if (lane_mux[lane_id] == prt_mux_sel)
-        return LPORT_ERR_OK;
-
-    if (!LPORT_IS_SERDES_PORT(prt_mux_sel))
-    {
-        lane_mux[lane_id] = PORT_UNAVAIL;
-        return LPORT_ERR_OK;
-    }
-
-    /* Check Merlin Driver registration */
-    if (!merlin_callbacks.merlin_lane_init)
-    {
-        pr_err("Merlin driver not registered, Failed to init SERDES \n");
-        return LPORT_ERR_STATE;
-    }
-
-    if (merlin_callbacks.merlin_lane_init(lane_id, prt_mux_sel))
-    {
-        pr_err("%s(%d):merlin_lane_init lane_id=%d failed\n", __FUNCTION__,
-            __LINE__, lane_id);
-        return LPORT_ERR_IO;
-    }
-
-    lane_mux[lane_id] = prt_mux_sel;
-
-    lane_tx_enable(lane_id, prt_mux_sel != PORT_UNAVAIL);
-
-    return LPORT_ERR_OK;
-}
-
 /* Ports 0,7 maps to Merlin Core 0 Lane 0
  * Ports 1,4 maps to Merlin Core 0 Lane 1
  * Ports 2,5 maps to Merlin Core 1 Lane 0
@@ -460,6 +431,49 @@ static E_MERLIN_ID port_to_core[] = {
     MERLIN_ID_1,
     MERLIN_ID_0,
 };
+
+static E_MERLIN_ID lane_to_core[] = {
+    MERLIN_ID_0,
+    MERLIN_ID_0,
+    MERLIN_ID_1,
+    MERLIN_ID_1,
+};
+
+static LPORT_PORT_MUX_SELECT lane_mux[4] = {};
+
+static int merlin_lane_init(E_MERLIN_LANE lane_id, LPORT_PORT_MUX_SELECT prt_mux_sel)
+{
+    E_MERLIN_ID core = lane_to_core[lane_id];
+
+    if (lane_mux[lane_id] == prt_mux_sel)
+        return LPORT_ERR_OK;
+
+    if (core_vco[core] == MERLIN_VCO_UNKNOWN)
+    {
+        lane_mux[lane_id] = PORT_UNAVAIL;
+        return LPORT_ERR_OK;
+    }
+
+    /* Check Merlin Driver registration */
+    if (!merlin_callbacks.merlin_lane_init)
+    {
+        pr_err("Merlin driver not registered, Failed to init SERDES \n");
+        return LPORT_ERR_STATE;
+    }
+
+    if (merlin_callbacks.merlin_lane_init(lane_id, prt_mux_sel))
+    {
+        pr_err("%s(%d):merlin_lane_init lane_id=%d failed\n", __FUNCTION__,
+            __LINE__, lane_id);
+        return LPORT_ERR_IO;
+    }
+
+    lane_mux[lane_id] = prt_mux_sel;
+
+    lane_tx_enable(lane_id, prt_mux_sel != PORT_UNAVAIL);
+
+    return LPORT_ERR_OK;
+}
 
 int port_write_tx_dis_state(uint32_t port, uint32_t state)
 {

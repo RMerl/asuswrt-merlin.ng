@@ -74,6 +74,10 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 	{
 		if (IS_FKBUFF_PTR(skb)){
 			skb = bcm_iqoshdl_wrapper(dev, skb);
+			if (skb == FKB_FRM_GSO) {
+				goto lock_return;
+			}
+
 			if (skb == NULL) {
 				return NETDEV_TX_OK;
 			}

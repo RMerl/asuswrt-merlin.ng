@@ -45,8 +45,8 @@ typedef struct {
 
 #define BITS_PER_NODE       (sizeof(uint32_t)*8)
 
-typedef void* (*alloc_func_t)(size_t size); /* void* func ptr with size_t arg */
-typedef void  (*free_func_t)(void *p);      /* void func ptr with void* arg */
+typedef void* (*alloc_func_t)(size_t size); /* void* function pointer with size_t arg */
+typedef void  (*free_func_t)(void *p);      /* void function pointer with void* arg */
 
 static int inline idx_pool_init(IdxPool_t *pPool, const uint32_t pool_size, alloc_func_t p_alloc_func)
 {

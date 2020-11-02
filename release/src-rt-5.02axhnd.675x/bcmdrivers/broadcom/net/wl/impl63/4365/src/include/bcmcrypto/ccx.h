@@ -1,0 +1,77 @@
+#ifdef BCMCCX
+
+/*
+ * ccx.h.c
+ * Header file for CCX crypto functions
+ *
+ * Copyright 2020 Broadcom
+ *
+ * This program is the proprietary software of Broadcom and/or
+ * its licensors, and may only be used, duplicated, modified or distributed
+ * pursuant to the terms and conditions of a separate, written license
+ * agreement executed between you and Broadcom (an "Authorized License").
+ * Except as set forth in an Authorized License, Broadcom grants no license
+ * (express or implied), right to use, or waiver of any kind with respect to
+ * the Software, and Broadcom expressly reserves all rights in and to the
+ * Software and all intellectual property rights therein.  IF YOU HAVE NO
+ * AUTHORIZED LICENSE, THEN YOU HAVE NO RIGHT TO USE THIS SOFTWARE IN ANY
+ * WAY, AND SHOULD IMMEDIATELY NOTIFY BROADCOM AND DISCONTINUE ALL USE OF
+ * THE SOFTWARE.
+ *
+ * Except as expressly set forth in the Authorized License,
+ *
+ * 1. This program, including its structure, sequence and organization,
+ * constitutes the valuable trade secrets of Broadcom, and you shall use
+ * all reasonable efforts to protect the confidentiality thereof, and to
+ * use this information only in connection with your use of Broadcom
+ * integrated circuit products.
+ *
+ * 2. TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED
+ * "AS IS" AND WITH ALL FAULTS AND BROADCOM MAKES NO PROMISES,
+ * REPRESENTATIONS OR WARRANTIES, EITHER EXPRESS, IMPLIED, STATUTORY, OR
+ * OTHERWISE, WITH RESPECT TO THE SOFTWARE.  BROADCOM SPECIFICALLY
+ * DISCLAIMS ANY AND ALL IMPLIED WARRANTIES OF TITLE, MERCHANTABILITY,
+ * NONINFRINGEMENT, FITNESS FOR A PARTICULAR PURPOSE, LACK OF VIRUSES,
+ * ACCURACY OR COMPLETENESS, QUIET ENJOYMENT, QUIET POSSESSION OR
+ * CORRESPONDENCE TO DESCRIPTION. YOU ASSUME THE ENTIRE RISK ARISING
+ * OUT OF USE OR PERFORMANCE OF THE SOFTWARE.
+ *
+ * 3. TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL
+ * BROADCOM OR ITS LICENSORS BE LIABLE FOR (i) CONSEQUENTIAL, INCIDENTAL,
+ * SPECIAL, INDIRECT, OR EXEMPLARY DAMAGES WHATSOEVER ARISING OUT OF OR
+ * IN ANY WAY RELATING TO YOUR USE OF OR INABILITY TO USE THE SOFTWARE EVEN
+ * IF BROADCOM HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES; OR (ii)
+ * ANY AMOUNT IN EXCESS OF THE AMOUNT ACTUALLY PAID FOR THE SOFTWARE ITSELF
+ * OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS SHALL APPLY
+ * NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
+ *
+ * $Id: ccx.h 451682 2014-01-27 20:30:17Z $
+ */
+
+#ifndef _CCX_H_
+#define _CCX_H_
+
+extern void CKIP_key_permute(uint8 *PK,		/* output permuted key */
+				       const uint8 *CK,		/* input CKIP key */
+				       uint8 toDsFromDs,	/* input toDs/FromDs bits */
+				       const uint8 *piv);	/* input pointer to IV */
+
+extern int wsec_ckip_mic_compute(const uint8 *CK, const uint8 *pDA, const uint8 *pSA,
+                                           const uint8 *pSEQ, const uint8 *payload, int payloadlen,
+                                           const uint8 *p2, int len2, uint8 pMIC[]);
+extern int wsec_ckip_mic_check(const uint8 *CK, const uint8 *pDA, const uint8 *pSA,
+                                         const uint8 *payload, int payloadlen, uint8 mic[]);
+
+/* CCX v2 */
+
+/* Key lengths in bytes */
+#define CCKM_GK_LEN	48
+#define CCKM_KRK_LEN	16
+#define CCKM_BTK_LEN	32
+#define CCKM_TKIP_PTK_LEN	64
+#define CCKM_CKIP_PTK_LEN	CCKM_TKIP_PTK_LEN
+#define CCKM_CCMP_PTK_LEN	48
+
+#endif /* _CCX_H_ */
+
+#endif /* BCMCCX */

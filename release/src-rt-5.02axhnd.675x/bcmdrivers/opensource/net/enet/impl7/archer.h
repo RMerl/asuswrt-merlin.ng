@@ -36,7 +36,7 @@
 #include <archer_cpu_queues.h>
 #include "enet.h"
 
-#define ENET_CPU_RX_QUEUE_SIZE  512    // chosen to match the interface queue size
+#define ENET_CPU_RX_QUEUE_SIZE  2048    // chosen to match the interface queue size
 #if ((ENET_CPU_RX_QUEUE_SIZE & (ENET_CPU_RX_QUEUE_SIZE-1)) != 0)
 #error "ENET_CPU_RX_QUEUE_SIZE is not power of 2"
 #endif
@@ -80,12 +80,11 @@ typedef struct cpu_queues_t
 
     int rx_notify_enable;
     int rx_notify_pending_disable;
-    int tx_notify_enable[NUM_TX_QUEUES];
 
     enetx_channel * chanp;
 
     /* Buffer Recycling Thread */
-    int recycle_work_avail;
+    volatile unsigned long recycle_work_avail;
     wait_queue_head_t recycle_thread_wqh;
     struct task_struct *recycle_thread;
     bcm_async_queue_t recycleq;

@@ -1654,17 +1654,17 @@ EPIVERS_OPTION =
 
 ifeq ($(RTCONFIG_HND_ROUTER_AX_6710)$(RTCONFIG_HND_ROUTER_AX_675X),y)
 version:  $(SRCBASE)/include/epivers.h
-	$(MAKE) -C $(SRCBASE)/include $(EPIVERS_OPTION) REUSE_VERSION=1
+#	$(MAKE) -C $(SRCBASE)/include $(EPIVERS_OPTION) REUSE_VERSION=1
 ifeq ($(RTCONFIG_DHDAP),y)
 	$(MAKE) pciefd-version
 endif
 endif
 
 $(SRCBASE)/include/epivers.h:
-	$(MAKE) -C $(SRCBASE)/include $(EPIVERS_OPTION)
+#	$(MAKE) -C $(SRCBASE)/include $(EPIVERS_OPTION)
 ifeq ($(RTCONFIG_DHDAP),y)
-	$(MAKE) -C $(SRCBASE_DHD)/include
-	$(MAKE) -C $(SRCBASE_FW)/include
+#	$(MAKE) -C $(SRCBASE_DHD)/include
+#	$(MAKE) -C $(SRCBASE_FW)/include
 endif
 endif
 

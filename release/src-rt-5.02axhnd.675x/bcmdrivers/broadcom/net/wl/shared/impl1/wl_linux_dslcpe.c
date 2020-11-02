@@ -582,6 +582,8 @@ wl_module_init(void)
 #ifdef CONFIG_GBPM_API_HAS_GET_TOTAL_BUFS
 	norm_wmark_tot = pktc_wmark_tot = (int) (gbpm_get_max_dyn_bufs()*65/100);
 #endif /* CONFIG_BPM_API_HAS_GET_TOTAL_BUFS */
+#elif defined(CONFIG_BCM_FEED_RING_DYNAMIC)
+	norm_wmark_tot = pktc_wmark_tot = CONFIG_BCM_FEED_RING_MAX_ALLOCATIONS;
 #endif /* CONFIG_BCM_BPM || CONFIG_BCM_BPM_MODULE */
 	printk("wl: norm_wmark_tot=%d, pktc_wmark_tot=%d\n", norm_wmark_tot, pktc_wmark_tot);
 #endif /* DSLCPE_PREALLOC_SKB */

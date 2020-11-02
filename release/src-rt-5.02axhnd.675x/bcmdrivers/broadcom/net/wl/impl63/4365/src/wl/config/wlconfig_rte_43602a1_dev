@@ -1,0 +1,245 @@
+# Broadcom 802.11 Networking Device Driver Configuration file
+#
+# Copyright (C) 2013, Broadcom Corporation
+# All Rights Reserved.
+#
+# This is UNPUBLISHED PROPRIETARY SOURCE CODE of Broadcom Corporation;
+# the contents of this file may not be disclosed to third parties, copied
+# or duplicated in any form, in whole or in part, without the prior
+# written permission of Broadcom Corporation.
+#
+# $Id: wlconfig_rte_43602a1_dev$
+
+####################################################################################################
+# This file defines wireless subsystem related ROM features, and is commonly referred to as the
+# 'wlconfig'. It is to remain unchanged after tape out. This file is used both for ROM and ROM
+# offload builds.
+####################################################################################################
+
+####################################################################################################
+# 43602 is a 3x3 AC chip. No BT core, but supports BT-COEX. Contains two ARM
+# CPUs and a byte copy engine. PCIe only. More details on 43602 Software ROM Confluence page.
+####################################################################################################
+
+# basic common code
+WL=1
+
+# Basic modes
+STA=1
+AP=1
+APSTA=1
+
+# Microsoft Extensible STA for Dongle
+EXT_STA_DONGLE=1
+WL_ASSOC_RECREATE=1
+DHDOID=1
+
+# WAPI features
+BCMWAPI_WPI=1
+BCMWAPI_WAI=1
+
+# PLT production line testing, nobody is using this anymore
+WLPLT=0
+
+# promisc mode
+PROMISC=1
+WL_MONITOR=1
+
+# ndis for XP and Winmob 6.0 support, OIDs are handled in Host
+# send pspoll after TX, NDIS related
+ADV_PS_POLL=1
+
+# Bluetooth coex stuff
+BCMECICOEX=1
+WLCOEX=1
+# 2 wire coex interface to BT chip
+BTC2WIRE=0
+
+# bus : AXI backplane
+SOCI_AI=1
+
+BCMIPXOTP=1
+
+BCMAUTH_PSK=1
+BCMSUP_PSK=1
+
+# regulatory domains
+WL11D=1
+WL11N=1
+# tallies for debug
+WLCNT=1
+WME=1
+BCMCCX=1
+# Call Admission Control, QoS / 802.11e related
+WLCAC=1
+
+WLAMPDU=1
+# AQM replace this
+WLAMPDU_UCODE=0
+# AQM replace this
+WLAMPDU_HW=0
+WLAMPDU_AQM=1
+
+WLAMSDU=1
+WLAMSDU_TX=1
+WLP2P=1
+
+# This is by default enabled for APSTA/BTAMP, need not explicitly enable.
+# AP channel selection
+APCS=1
+WLRM=1
+
+# radio measurements
+WIFI_ACT_FRAME=1
+PACKET_FILTER=1
+PACKET_FILTER2=1
+
+# avoid chip overheating by entering sleep mode on (too) high throughput.
+RECEIVE_THROTTLE=1
+DELTASTATS=1
+
+# debug tallies
+WLCNTSCB=1
+BCMOTP=1
+KEEP_ALIVE=1
+NO_BCMINTERNAL=1
+
+#ap power save feature
+RADIO_PWRSAVE=1
+
+# preferred network offloading
+WLPFN=1
+# multi BSS (AP feature)
+MBSS=1
+#WLBTAMP=0 feature is not used by any customer
+# Tcp/Ip Offload Engine
+TOE=1
+# Neighbor Advertisement Offload
+WLNDOE=1
+# Tunnel Direct Link Setup
+WLTDLS=1
+# ARP offload
+ARPOE=1
+# channel quality measurements
+WLCQ=1
+# wireless distribution service, AP feature.
+WDS=1
+# Direct Packet Transfer between 2 STAs, obsolete feature
+WL11AC=1
+# transmit beam forming
+WLTXBF=1
+# network offload engine, Bonjour offload (Olympic)
+NWOE=1
+# tx power per rate
+PPR_API=1
+
+# For Voice Enterprise(VE)
+# radio resource management
+WL11K=1
+# driver resident supplicant / fast roaming / 802.11r
+WLFBT=1
+# 11v wireless radio management info
+WLWNM=1
+WLSCANCACHE=1
+
+# radar avoidance
+WL11H=1
+
+BCMNVRAMW=1
+BCMNVRAMR=0
+
+# e.g. P2P support. Enables 'VSDB/MCXN'.
+WLMCHAN=1
+
+#PROP_TXSTATUS=1 cannot enable for msgbuf
+#AMPDU_HOSTREORDER=1
+
+# security / initialization vector related
+BRCMAPIVTW=1
+# throttle tx on rx fifo overflow
+WLRXOV=1
+# Reliable multicast
+WL_RELMCAST=1
+SAVERESTORE=1
+# AMPDU related
+TINY_PKTJOIN=1
+# rx throughput improvement
+WL_RXEARLYRC=1
+# proximity detection service
+WL_PROXDETECT=1
+# improve interworking with external networks
+WL11U=1
+# peer to peer offloading
+P2PO=1
+# 802.11u ANQP offload / hot spot
+ANQPO=1
+L2_FILTER=1
+# packet chaining to reduce per-packet overhead
+PKTC_DONGLE=1
+PKTC_TX_DONGLE=1
+# Link Power Control
+WL_LPC=1
+# external supplicant to handle fast-roaming properly. Opportunistic Key Caching.
+WL_OKC=1
+
+# 11w (increase security of management frames)
+BCMCCMP=1
+MFP=1
+
+BCMSROM=1
+
+# PCIe Latency Tolerance Reporting (LTR)
+#WL_LTR=1 changed after ROM release. WL_LTR should be disabled for firmware builds.
+
+# WOWL (ucode variant)
+#WOWL=1  #error "MFP not currently supported with WOWL"
+
+BCMPHYCORENUM=3
+
+BCMRADIOREV=0xA
+BCMRADIOVER=0x0
+BCMRADIOID=0x2069
+
+EVDATA_BSSINFO=1
+
+WLFMC=1
+WLRCC=1
+
+# router options: high ROM priority
+WET=1
+WET_TUNNEL=1
+DWDS=1
+PSTA=1
+#WMF=1 build errors wrt emfc_init() etc
+WLPROBRESP_SW=1
+TRAFFIC_MGMT=1
+TRAFFIC_MGMT_DWM=1
+TRAFFIC_MGMT_RSSI_POLICY=1
+WLOLPC=1
+PKTQ_LOG=1
+
+# router options: medium ROM priority
+BCM_DCS=1
+WLLED=1
+WLNAR=1
+WL_AP_TPC=1
+WLWNM_AP=1
+WLCHANIM=1
+CCA_STATS=1
+ISID_STATS=1
+
+# router options: lower ROM priority
+WLSTAPRIO=1
+WL_STA_MONITOR=1
+
+# router options: lowest ROM priority
+IGMP_UCQUERY=1
+UCAST_UPNP=1
+MCAST_REGEN=1
+RXCHAIN_PWRSAVE=1
+SMF_STATS=1
+
+#New since a0
+PSPRETEND=1
+SCB_BS_DATA=1
+WLINTFERSTAT=1

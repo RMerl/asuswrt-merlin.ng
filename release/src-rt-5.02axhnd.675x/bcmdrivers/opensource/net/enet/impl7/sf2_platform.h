@@ -281,7 +281,20 @@ static int port_imp_emac_map[BP_MAX_SWITCH_PORTS] = {[0 ... (BP_MAX_SWITCH_PORTS
 #endif //CONFIG_BCM_ENET_MULTI_IMP_SUPPORT
 
 // ============================================================================
-#elif defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622)
+#elif defined(CONFIG_BCM963178)
+    #define DEFAULT_IMP_PBMAP       (PBMAP_MIPS)
+    
+    // In 63178, there are 28 tx queues given max 6 outward facing ports 5px4q+1px8q=28q
+    // one port can have 8 tx queues, most likely this is WAN port.
+    // Port to queue assignment can only be configured during init and can't be changed.
+    // Following compile time define will set specified port to use 8Qs so no remapping.
+    // Adjust this port number to match WAN port port number.
+#if !defined(CONFIG_BCM_HND_EAP)
+    #define PORT_WITH_8TXQ          4
+#endif
+
+// ============================================================================
+#elif defined(CONFIG_BCM947622)
     #define DEFAULT_IMP_PBMAP       (PBMAP_MIPS)
 #endif
 

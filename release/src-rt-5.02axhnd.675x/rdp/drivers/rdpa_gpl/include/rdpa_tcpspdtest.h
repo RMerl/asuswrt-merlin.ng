@@ -41,7 +41,7 @@
 /** Minimum transmitted packet size for padding */
 #define RDPA_TCPSPDTEST_MIN_TX_PD_LEN  RDPA_SPDTEST_MIN_TX_PD_LEN
 
-#define RDD_TCPSPDTEST_ENGINE_REF_PKT_HDR_HDR_NUMBER 120
+#define RDD_SPDTEST_ENGINE_REF_PKT_HDR_HDR_NUMBER 120
 
 /** Tcp Speed Test Engine Global Information.\n
  * Contains the Global Information for Tcp Speed Test Engine. \n
@@ -73,6 +73,7 @@ typedef struct {
     uint16_t  up_tx_max_pd_len;         /**< Upload tcp max pd len */
     uint16_t  up_pppoe_hdr_ofs;         /**< Upload tcp pppoe header offset */
     uint8_t  up_peer_rx_scale;          /**< Upload tcp peer rx window scale */
+    uint8_t   sack_permitted;           /**< is selective ack permitted */
 } rdpa_tcpspdtest_engine_conn_info_t;
 
 /** Tcp Speed Test Engine TCB.\n
@@ -97,17 +98,18 @@ typedef struct {
     uint16_t up_timeout_cnt;            /**< Upload number of timeouts - no server response */
 } rdpa_tcpspdtest_engine_tcb_t;
 
-/** Tcp Speed Test Engine Reference Packet Header.\n
- * Contains the Acknowledge Refernce Packet for Tcp Speed Test Engine \n
- * required by the Runner Tcp Speed Test Engine.\n
+/** Tcp/Udp Speed Test Engine Reference Packet Header.\n
+ * Contains the Acknowledge Refernce Packet for Tcp/Udp Speed Test Engine \n
+ * required by the Runner Tcp/Udp Speed Test Engine.\n
  */
 typedef struct
 {
-    uint16_t size;                                              /**< Reference packet header size */
-    uint16_t offset;                                            /**< Packet offset for l3 8 bytes align */
-    uint8_t  hdr[RDD_TCPSPDTEST_ENGINE_REF_PKT_HDR_HDR_NUMBER]; /**< Reference packet header ptr */
-} rdpa_tcpspdtest_engine_ref_pkt_hdr_t;
+    uint16_t size;                                           /**< Reference packet header size */
+    uint16_t offset;                                         /**< Packet offset for l3 8 bytes align */
+    uint8_t  hdr[RDD_SPDTEST_ENGINE_REF_PKT_HDR_HDR_NUMBER]; /**< Reference packet header ptr */
+} rdpa_spdtest_engine_ref_pkt_hdr_t;
 
+typedef rdpa_spdtest_engine_ref_pkt_hdr_t rdpa_tcpspdtest_engine_ref_pkt_hdr_t;
 
 /** Tcp Speed Test Engine Reference Packet, includes both packet header and payload.\n
  * required by the Runner Tcp Speed Test Engine for Upload test.\n

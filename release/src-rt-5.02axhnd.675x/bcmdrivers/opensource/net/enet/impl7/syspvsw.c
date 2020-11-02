@@ -72,13 +72,19 @@ int port_sysp_port_init(enetx_port_t *self)
     return 0;
 }
 
+extern void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int duplex);
+extern int speed_macro_2_mbps(phy_speed_t spd);
+
 void port_sysp_port_open(enetx_port_t *self)
 {
     // if connect to external switch, set link up and enable mac
     if (self->p.phy && self->p.phy->phy_drv->phy_type == PHY_TYPE_MAC2MAC)
     {
         self->p.phy->link = 1;
-        mac_dev_enable(self->p.mac);
+       if (IsPortConnectedToExternalSwitch(self->p.phy->meta_id))
+            mac_dev_enable(self->p.mac);
+        else
+            link_change_handler(self, self->p.phy->link, speed_macro_2_mbps(self->p.phy->speed), self->p.phy->duplex == PHY_DUPLEX_FULL);
     }
     else if (self->p.phy && IsPortConnectedToExternalSwitch(self->p.phy->meta_id))
     {
@@ -197,6 +203,35 @@ int port_sysp_mib_dump(enetx_port_t *self, int all)
     return 0;
 }
 
+// add by Andrew
+int port_sysp_mib_dump_us(enetx_port_t *self, void *ethswctl)
+{
+    /* based on impl5\bcmsw_runner.c bcmeapi_ethsw_dump_mib() */
+    struct ethswctl_data *e = (struct ethswctl_data *)ethswctl;
+    mac_stats_t         mac_stats;
+    //int                 port = self->p.mac->mac_id;
+
+    mac_dev_stats_get(self->p.mac, &mac_stats);
+
+    /* Calculate Tx statistics */
+    e->port_stats.txPackets = mac_stats.tx_unicast_packet + 
+                              mac_stats.tx_multicast_packet + 
+                              mac_stats.tx_broadcast_packet;
+    e->port_stats.txDrops = mac_stats.tx_error;
+    e->port_stats.txBytes = mac_stats.tx_byte;
+
+    /* Calculate Rx statistics */
+    e->port_stats.rxPackets = mac_stats.rx_unicast_packet + 
+                              mac_stats.rx_multicast_packet + 
+                              mac_stats.rx_broadcast_packet;
+    e->port_stats.rxBytes = mac_stats.rx_byte;
+    e->port_stats.rxDrops = 0;
+    e->port_stats.rxDiscards = 0;
+
+    return 0;
+}
+// end of add
+
 int port_sysp_port_role_set(enetx_port_t *self, port_netdev_role_t role)
 {
     bcmFun_t *enet_port_role_notify = bcmFun_get(BCM_FUN_ID_ENET_PORT_ROLE_NOTIFY);
@@ -206,8 +241,8 @@ int port_sysp_port_role_set(enetx_port_t *self, port_netdev_role_t role)
     {
         BCM_EnetPortRole_t port_role;
 
-        port_role.sw_num = self->p.mac->mac_id;
-        port_role.mac_id = 0;
+        port_role.sysport = self->p.mac->mac_id;
+        port_role.port = 0;
         port_role.is_wan = (role == PORT_NETDEV_ROLE_WAN);
 
         enet_port_role_notify(&port_role);
@@ -244,4 +279,5 @@ port_ops_t port_sysp_port_mac =
     .pause_set = port_generic_pause_set,
     .mtu_set = port_generic_mtu_set,
     .mib_dump = port_sysp_mib_dump,
+    .mib_dump_us = port_sysp_mib_dump_us, // add by Andrew
 };

@@ -91,7 +91,6 @@ struct nf_conn_help {
 typedef struct biqos_cb {
 	u_int32_t skb_mark;
 } biqos_cb_t;
-
 struct nf_conn {
 	/* Usage count in here is 1 for hash table/destruct timer, 1 per skb,
 	 * plus 1 for any connection(s) we are `master' for

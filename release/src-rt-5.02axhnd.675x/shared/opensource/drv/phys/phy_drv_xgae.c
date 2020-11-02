@@ -472,10 +472,14 @@ int ethsw_xgae_enable_an(phy_dev_t *phy_dev)
     uint32_t rd_data;
 
     rd_data = rd_xgae_serdes_reg(SERDES_1, (DEVID_0 | LANE_BRDCST | MII_CONTROL));
+
+    if ((rd_data & MII_CONTROL_AN_ENABLE))
+        return 0;
+    
     rd_data |= MII_CONTROL_AN_ENABLE|MII_CONTROL_RESTART_AUTONEG;
     wr_xgae_serdes_reg(SERDES_1, (DEVID_0 | LANE_BRDCST | MII_CONTROL), rd_data, ~(0xffff));
     msleep(50);
-    return 0;
+    return 1;
 }
 
 int _ethsw_xgae_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex, int force)

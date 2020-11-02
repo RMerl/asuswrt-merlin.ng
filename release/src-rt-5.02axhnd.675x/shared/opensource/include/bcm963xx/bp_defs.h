@@ -415,11 +415,12 @@ enum bp_id {
   bp_usGpioWireless0Disable, // Dual PCIE 0/1 Wireless Disable GPIO used for power management
   bp_usGpioWireless2Disable,  // Dual PCIE 2 Wireless Disable GPIO used for power management
   bp_usGpioWireless3Disable, // Dual PCIE 3 Wireless Disable GPIO used for power management
-  bp_usGpioWlanReserved,
+  bp_usGpioWlanReserved,	// WLAN 0
   bp_ulLedChannelId,
   bp_usGpioInitState,
   bp_usGpioLedWL0Act,
   bp_usGpioLedWL1Act,
+  bp_usGpioWlanReserved1, 	// WLAN 1
   bp_last
 };
 

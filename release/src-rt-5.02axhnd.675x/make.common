@@ -623,6 +623,7 @@ export PERL5LIB
 # unexport conficting perl switches that Centos 7 adds by default
 unexport PERL_MB_OPT PERL_LOCAL_LIB_ROOT PERL_MM_OPT
 
+MLIBTOOL=$(HOSTTOOLS_DIR)/mlibtool/mlibtool
 
 ifdef FORCE
 COND_FAIL:=(echo "NOT FAILING DUE TO FORCE=$(FORCE)";true)
@@ -1273,7 +1274,7 @@ export BUILD_DSL
 export BUILD_XDSLCTL
 
 # Compile flags module or application that use ADSL MIBS
-BUILD_DSL_FLAGS := -DNONE
+BUILD_DSL_FLAGS := -DDSL_NONE
 
 BUILD_DSL_FLAGS += -DLINUX_FW_EXTRAVERSION=$(BRCM_VERSION)$(BRCM_RELEASE)$(shell echo $(BRCM_EXTRAVERSION) | head -c 2)
 
@@ -1337,7 +1338,7 @@ CMS_DMP_FLAGS += -DSUPPORT_ANNEXAB_COMBO
 export BRCM_ANNEXAB_COMBO=y
 endif
 
-DSL_GINP_RTX_DRIVER_DEFINES := -DNONE
+DSL_GINP_RTX_DRIVER_DEFINES := -DDSL_NONE
 
 ifeq ($(strip $(BRCM_PHY_GINP_RTX)),y)
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63268_63138_63148_63158_),)
@@ -1348,7 +1349,7 @@ endif
 endif
 export DSL_GINP_RTX_DRIVER_DEFINES
 
-DSL_EXT_BONDING_DRIVER_DEFINES := -DNONE
+DSL_EXT_BONDING_DRIVER_DEFINES := -DDSL_NONE
 
 ifeq ($(strip $(BRCM_EXT_PHY_BONDING)),y)
 CMS_DMP_FLAGS += -DSUPPORT_DSL_BONDING
@@ -1382,7 +1383,7 @@ endif
 
 
 # G.FAST flags
-DSL_GFAST_DEFINES := -DNONE
+DSL_GFAST_DEFINES := -DDSL_NONE
 
 ifeq ($(strip $(BRCM_PHY_GFAST)),y)
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63158_),)
@@ -1543,8 +1544,8 @@ CMS_DMP_FLAGS += -DDMP_ETHERNETWAN_1
 endif
 # TR181 does not have a separate Data Model define for ethwan
 
-# 63158 cannot support EthLAG WAN and is LAN EthLAG bonding only. 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_),)
+# 63158 and 63178 cannot support EthLAG WAN and is LAN EthLAG bonding only. 
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_63178_),)
 CMS_DMP_FLAGS += -DSUPPORT_ETHLAG_LAN_ONLY
 endif
 
@@ -1589,6 +1590,7 @@ CMS_CORE_LIBS += -lrdpactl -lbdmf
 endif
 
 ifneq ($(strip $(BUILD_ARCHERCTL)),)
+CMS_CORE_LIBS += -larcher
 CMS_DMP_FLAGS += -DSUPPORT_ARCHERCTL
 endif
 
@@ -2517,6 +2519,14 @@ endif
 # netfilter modules
 #
 
+ifneq ($(strip $(BRCM_KERNEL_NF_NAT)),)
+	CMS_DMP_FLAGS += -DSUPPORT_NF_NAT
+endif
+
+ifneq ($(strip $(BRCM_KERNEL_NF_FIREWALL)),)
+	CMS_DMP_FLAGS += -DSUPPORT_NF_FIREWALL
+endif
+
 ifneq ($(strip $(BRCM_KERNEL_NF_NAT_ALG_IPSEC)),)
 	CMS_DMP_FLAGS += -DSUPPORT_IPSEC_PASSTHROUGH
 endif
@@ -2794,16 +2804,10 @@ CMS_CORE_LIBS +=  -lwlsysutil
 ifneq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
 BUILD_LIBJSONC=y
 CMN_WLAN_FLAGS += -DBUILD_BRCM_UNFWLCFG
-ifneq ($(strip $(BUILD_BRCM_CMS)),)
-UNFWLCFG_LDFLAGS=$(CMS_COMMON_LIBS) $(CMS_CORE_LIBS) -lcms_msg -lwlmdm -lstaged -ljson-c -lpthread
-else
-UNFWLCFG_LDFLAGS= -lstaged -ljson-c -lpthread -lbcm_util -lsys_util
-endif
-EXTRA_LDFLAGS += $(UNFWLCFG_LDFLAGS)
 else
 CMS_CORE_LIBS +=  -lwlcsm
-CMN_WLAN_FLAGS += -I$(BUILD_DIR)/userspace/private/libs/wlcsm/include
 endif
+CMN_WLAN_FLAGS += -I$(BUILD_DIR)/userspace/private/libs/wlcsm/include
 
 ifeq ($(strip $(ARCH_ENDIAN)),big)
 CMN_WLAN_FLAGS += -DIL_BIGENDIAN

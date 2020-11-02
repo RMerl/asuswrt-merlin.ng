@@ -304,6 +304,19 @@ extern "C" {
 #define G3_PLL_PLL_SSC_STEP_VCOGAIN_SSC_STEP_MASK  (0xFFFF)
 #define G3_PLL_PLL_SSC_STEP_VCOGAIN_SSC_STEP(s)    ((s) & 0xFFFF)
 
+/*
+ * +-----------------------------------------------------
+ * SERDES: GEN2 Registers
+ * +-----------------------------------------------------
+ */
+#define SERDES_TX_AFE_BLOCK_OFFSET                 (0x4000)
+#define SERDES_TX_CTR1_LN0_OFFSET                  (SERDES_TX_AFE_BLOCK_OFFSET + 0x0000)
+#define SERDES_TX_CTR1_LN_SIZE                     0x0010
+#define SERDES_TX_DFE_BLOCK_OFFSET                 (0x5000)
+#define SERDES_TX_DFE0_LN0_OFFSET                  (SERDES_TX_DFE_BLOCK_OFFSET + 0x0000)
+#define SERDES_TX_DFE0_LN_SIZE                     0x0010
+
+
 #if defined(PCIE0_PHYS_BASE) && defined(PCIE1_PHYS_BASE) && defined(PCIE2_PHYS_BASE) && \
 	defined(PCIE3_PHYS_BASE)
 #define NUM_CORE                    4
@@ -380,6 +393,9 @@ struct bcm963xx_pcie_msi {
  * +-----------------------------------------------------
  */
 
+/* Forward decleration */
+struct pcie_hcd_procfs;
+
 /*
  * BCM963xx PCIe Host Controller device resources
  * @base: PCIe core registers Physical address
@@ -433,6 +449,7 @@ struct bcm963xx_pcie_hcd_war
  * @cfg: hc configuration parameters
  * @msi: msi control block
  * @errlog_inited: error log configuration status
+ * @pfs: pointer to pcie hcd proc file system control block
  */
 struct bcm963xx_pcie_hcd
 {
@@ -456,6 +473,7 @@ struct bcm963xx_pcie_hcd
 	struct bcm963xx_pcie_msi *msi;
 	struct pci_bus  *bus;
 	bool errlog_inited;
+	struct pcie_hcd_procfs *pfs;
 };
 
 

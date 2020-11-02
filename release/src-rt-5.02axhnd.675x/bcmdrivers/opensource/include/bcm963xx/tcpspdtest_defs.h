@@ -67,11 +67,23 @@ typedef enum
     TCPSPDTEST_GENL_CMD_UPLOAD,
     TCPSPDTEST_GENL_CMD_STATS,
     TCPSPDTEST_GENL_CMD_SPEED_REPORT,
-    TCPSPDTEST_GENL_CMD_SOCK_ADDR,
     TCPSPDTEST_GENL_CMD_OOB_SEND,
+    TCPSPDTEST_GENL_CMD_STREAM_IDX,
+    TCPSPDTEST_GENL_CMD_PROTOCOL,
+    TCPSPDTEST_GENL_CMD_STREAM_PARAMS,
+    TCPSPDTEST_GENL_CMD_NUM_STREAMS,
     UDPSPDTEST_GENL_CMD_INIT,
     UDPSPDTEST_GENL_CMD_UNINIT,
 } spdtest_genl_cmd_t;
+
+typedef enum
+{
+    /* Commad parameter */
+    TCPSPDTEST_GENL_CMD_PARAM_SET,
+    TCPSPDTEST_GENL_CMD_PARAM_GET,
+    TCPSPDTEST_GENL_CMD_PARAM_ALLOC,
+    TCPSPDTEST_GENL_CMD_PARAM_FREE
+} tcpspdtest_genl_cmd_param_t;
 
 typedef spdtest_genl_cmd_t tcpspdtest_genl_cmd_t;
 
@@ -100,22 +112,24 @@ typedef enum
 
 typedef struct
 {
-    uint8_t                    stream_idx;
-    tcpspdtest_genl_cmd_t      cmd;
-    spdt_proto_t protocol;
-    spdt_conn_params_t params;
-    uint64_t                   dn_up_size;
-    char                       file_name[TCPSPDTEST_GENL_MAX_FILE_NAME_LEN];
+    uint8_t                      stream_idx;
+    tcpspdtest_genl_cmd_t        cmd;
+    tcpspdtest_genl_cmd_param_t  cmd_param;
+    spdt_stream_params_t         stream_params;
+    uint64_t                     dn_up_size;
+    char                         file_name[TCPSPDTEST_GENL_MAX_FILE_NAME_LEN];
 } __attribute__ ((packed)) tcpspdtest_genl_req_msg_t;
 
 typedef struct
 {
-    uint8_t               stream_idx;
-    tcpspdtest_genl_cmd_t cmd;
+    uint8_t                      stream_idx;
+    uint8_t                      num_streams;
+    uint8_t                      num_udp_streams;
+    tcpspdtest_genl_cmd_t        cmd;
     union
     {
-        tcp_spdt_rep_t spd_report;
-        spdt_conn_params_t conn_addr;
+        tcp_spdt_rep_t           spd_report;
+        spdt_stream_params_t     stream_params;
     } msg;
     tcpspdtest_genl_cmd_status_t status;
 }  __attribute__ ((packed)) tcpspdtest_genl_resp_msg_t;

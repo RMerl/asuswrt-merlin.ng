@@ -188,7 +188,7 @@ typedef enum
 #define RDD_DDR_SOP_OFFSET1 88 /* this headroom required to TCP Speed Test and it limited up to 128-32 */
 
 #if !defined(BCM63158)
-#define RDD_FLOW_CACHE_L2_HEADER_BYTE_SIZE 32
+#define RDD_FLOW_CACHE_L2_HEADER_BYTE_SIZE 30
 typedef struct
 {
     bdmf_index conn_index;
@@ -438,6 +438,8 @@ typedef struct
 #else
     uint32_t cntr_id;
     uint32_t cntr_disable;
+    uint32_t bytes_cntr_disable;
+    uint32_t bytes_cntr_id;
     uint8_t trap_reason;
     bdmf_index policer;              /**< Policer ID */
     bdmf_boolean is_vlan_action;

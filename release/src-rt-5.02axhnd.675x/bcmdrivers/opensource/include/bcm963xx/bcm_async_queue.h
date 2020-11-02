@@ -37,23 +37,18 @@ written consent.
 #ifndef __BCM_ASYNC_QUEUE_H_INCLUDED__
 #define __BCM_ASYNC_QUEUE_H_INCLUDED__
 
-
-typedef struct {
-    uint16_t read;
-    int count;
-} bcm_async_queue_prefetch_t;
-
 typedef struct {
     int writes;
+    int write_bytes;
     int reads;
     int discards;
+    int discard_bytes;
 } bcm_async_queue_stats_t;
 
 typedef struct {
     volatile uint8_t *alloc_p;
     volatile uint16_t write;
     volatile uint16_t read;
-    bcm_async_queue_prefetch_t prefetch;
     int depth;
     int entry_size;
     bcm_async_queue_stats_t stats;
@@ -70,11 +65,6 @@ typedef struct {
 #define bcm_async_queue_not_full(_queue_p) bcm_async_queue_free_entries(_queue_p)
 #define bcm_async_queue_not_empty(_queue_p) !bcm_async_queue_empty(_queue_p)
 #define bcm_async_queue_empty(_queue_p) ( (_queue_p)->write == (_queue_p)->read )
-
-_STATIC_INLINE_ uint16_t bcm_async_queue_prefetch_avail_entries(bcm_async_queue_t *queue_p)
-{
-    return (queue_p->write - queue_p->prefetch.read);
-}
 
 _STATIC_INLINE_ uint16_t bcm_async_queue_avail_entries(bcm_async_queue_t *queue_p)
 {
@@ -95,26 +85,12 @@ _STATIC_INLINE_ volatile uint8_t *bcm_async_queue_entry_read(bcm_async_queue_t *
     return read_p;
 }
 
-_STATIC_INLINE_ volatile uint8_t *bcm_async_queue_prefetch_entry_read(bcm_async_queue_t *queue_p)
-{
-    int read_index = queue_p->prefetch.read & (queue_p->depth - 1);
-    int read_offset = read_index * queue_p->entry_size;
-    volatile uint8_t *read_p = &queue_p->alloc_p[read_offset];
-
-    return read_p;
-}
-
 _STATIC_INLINE_ void bcm_async_queue_entry_dequeue(bcm_async_queue_t *queue_p)
 {
 #if !defined(CC_BCM_ASYNC_QUEUE_NO_BARRIER)
     smp_rmb();
 #endif
     queue_p->read++;
-}
-
-_STATIC_INLINE_ void bcm_async_queue_prefetch_entry_dequeue(bcm_async_queue_t *queue_p)
-{
-    queue_p->prefetch.read++;
 }
 
 _STATIC_INLINE_ volatile uint8_t *bcm_async_queue_entry_write(bcm_async_queue_t *queue_p)

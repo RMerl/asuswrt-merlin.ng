@@ -1756,17 +1756,17 @@ define RouterOptions
 		sed -i "/RTCONFIG_PUSH_EMAIL/d" $(1); \
 		echo "RTCONFIG_PUSH_EMAIL=y" >>$(1); \
 	fi; \
-	if [ "$(AHS)" = "n" ]; then \
+	if [ "$(AHS)" = "y" ]; then \
 		sed -i "/RTCONFIG_AHS/d" $(1); \
-		echo "# RTCONFIG_AHS is not set" >>$(1); \
+		echo "RTCONFIG_AHS=y" >>$(1); \
 		sed -i "/RTCONFIG_LIBASC/d" $(1); \
-		echo "# RTCONFIG_LIBASC is not set" >>$(1); \
+		echo "RTCONFIG_LIBASC=y" >>$(1); \
 	fi; \
-	if [ "$(ASD)" = "n" ]; then \
+	if [ "$(ASD)" = "y" ]; then \
 		sed -i "/RTCONFIG_ASD/d" $(1); \
-		echo "# RTCONFIG_ASD is not set" >>$(1); \
+		echo "RTCONFIG_ASD=y" >>$(1); \
 		sed -i "/RTCONFIG_LIBASC/d" $(1); \
-		echo "# RTCONFIG_LIBASC is not set" >>$(1); \
+		echo "RTCONFIG_LIBASC=y" >>$(1); \
 	fi; \
 	if [ "$(RSYSLOGD)" = "y" ]; then \
 		sed -i "/RTCONFIG_RSYSLOGD/d" $(1); \

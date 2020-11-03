@@ -14380,7 +14380,7 @@ static void sysinit(void)
 #endif
 
 #ifdef RTCONFIG_ASD
-	nvram_set("3rd-party", "");
+	nvram_set("3rd-party", "merlin");
 #endif
 
 }

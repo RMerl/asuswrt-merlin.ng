@@ -9195,6 +9195,15 @@ void auto_firmware_check_merlin()
 			rand_hr = rand_seed_by_time() % 4;
 			rand_min = rand_seed_by_time() % 60;
 		}
+
+#ifdef RTCONFIG_ASD
+		//notify asd to download version file
+		if (pids("asd"))
+		{
+			killall("asd", SIGUSR1);
+		}
+#endif
+
 		initial_state = nvram_get_int("webs_state_flag");
 
 		if(!nvram_contains_word("rc_support", "noupdate")){

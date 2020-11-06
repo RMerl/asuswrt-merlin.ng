@@ -13,6 +13,7 @@
 
 #include "../config.h"
 #include "../getifstats.h"
+#include "../upnputils.h"
 
 #ifdef GET_WIRELESS_STATS
 #include <unistd.h>
@@ -142,6 +143,7 @@ getifstats(const char * ifname, struct ifdata * data)
 	}
 	fclose(f);
 	/* get interface speed */
+	/* NB! some interfaces, like ppp, don't support speed queries */
 	snprintf(fname, sizeof(fname), "/sys/class/net/%s/speed", ifname);
 	f = fopen(fname, "r");
 	if(f) {

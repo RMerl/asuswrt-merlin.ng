@@ -468,7 +468,7 @@ ProcessIncomingHTTP(int shttpl, const char * protocol)
 		if(get_lan_for_peer((struct sockaddr *)&clientname) == NULL)
 		{
 			/* The peer is not a LAN ! */
-			syslog(LOG_WARNING,
+			syslog(LOG_INFO,
 			       "%s peer %s is not from a LAN, closing the connection",
 			       protocol, addr_str);
 			close(shttp);
@@ -1332,6 +1332,26 @@ init(int argc, char * * argv, struct runtime_vars * v)
 					/*enablenatpmp = atoi(ary_options[i].value);*/
 				break;
 #endif	/* ENABLE_NATPMP */
+#ifdef ENABLE_AURASYNC
+			case UPNPENABLEAURASYNC:
+				if(strcmp(ary_options[i].value, "yes") == 0)
+					SETFLAG(ENABLEAURASYNCMASK);	/*enableaurasync = 1;*/
+				else if(strcmp(ary_options[i].value, "standalone") == 0) {
+					SETFLAG(ENABLEAURASYNCMASK);
+					aura_standalone = 1;
+				}
+				break;
+#endif	/* ENABLE_AURASYNC */
+#ifdef ENABLE_NVGFN
+			case UPNPENABLENVGFN:
+				if(strcmp(ary_options[i].value, "yes") == 0)
+					SETFLAG(ENABLENVGFNMASK);	/*enablenvgfn = 1;*/
+				else if(strcmp(ary_options[i].value, "gfn_only") == 0) {
+					SETFLAG(ENABLENVGFNMASK);
+					gfn_only = 1;
+				}
+				break;
+#endif	/* ENABLE_NVGFN */
 #ifdef ENABLE_PCP
 			case UPNPPCPMINLIFETIME:
 					min_lifetime = atoi(ary_options[i].value);
@@ -2015,6 +2035,9 @@ main(int argc, char * * argv)
 #endif
 
 	if(
+#ifdef ENABLE_AURASYNC
+        !GETFLAG(ENABLEAURASYNCMASK) &&
+#endif
 #ifdef ENABLE_NATPMP
 	   !GETFLAG(ENABLENATPMPMASK) && !GETFLAG(ENABLEUPNPMASK)
 #else

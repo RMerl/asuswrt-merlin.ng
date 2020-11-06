@@ -226,7 +226,9 @@ depend:	config.h
 	testssdppktgen.c
 
 miniupnpd: config.h $(ALLOBJS)
+	echo "######################"
 	$(CC) $(LDFLAGS) -o $@ $(ALLOBJS) $(LIBS)
+	echo "######################"
 
 # BSDmake :
 #	$(CC) $(LDFLAGS) -o $@ $> $(LIBS)

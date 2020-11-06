@@ -320,7 +320,7 @@ void ProcessIncomingNATPMPPacket(int s, unsigned char *msg_buff, int len,
 								resp[3] = 2;	/* Not Authorized/Refused */
 								break;
 							} else {
-								syslog(LOG_INFO, "NAT-PMP %s port %hu mapping removed",
+								syslog(LOG_DEBUG, "NAT-PMP %s port %hu mapping removed",
 								       proto2==IPPROTO_TCP?"TCP":"UDP", eport2);
 								index--;
 							}

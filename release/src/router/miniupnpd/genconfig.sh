@@ -32,6 +32,8 @@ case "$argv" in
 			exit 1
 		fi ;;
 	--disable-pppconn) DISABLEPPPCONN=1 ;;
+	--aurasync) AURASYNC=1 ;;
+	--nvgfn) NVGFN=1 ;;
 	--help|-h)
 		echo "Usage : $0 [options]"
 		echo " --ipv6      enable IPv6"
@@ -347,6 +349,8 @@ case $OS_NAME in
 		FW=netfilter
 		;;
 	AsusWRT)
+                OS_URL=http://www.asus.com/ # ASUS
+                cat ../shared/version.h >> ${CONFIGFILE} # ASUS
 		echo "#define USE_NETFILTER 1" >> ${CONFIGFILE}
 		echo "" >> ${CONFIGFILE}
 		echo "#ifdef LINUX26" >> ${CONFIGFILE}
@@ -355,9 +359,10 @@ case $OS_NAME in
 #		echo "#ifdef RTCONFIG_IPV6" >> ${CONFIGFILE}
 #		echo "#define ENABLE_IPV6" >> ${CONFIGFILE}
 #		echo "#endif" >> ${CONFIGFILE}
-		echo "#define LIB_UUID" >> ${CONFIGFILE}
-		HAVE_IP_MREQN=1
-		echo "#define LEASEFILE_USE_REMAINING_TIME 1" >> ${CONFIGFILE}
+		echo "#define LIB_UUID" >> ${CONFIGFILE} #Merlin
+		HAVE_IP_MREQN=1 #Merlin
+		echo "#define LEASEFILE_USE_REMAINING_TIME 1" >> ${CONFIGFILE} #Merlin
+                echo "#define USE_GETIFADDRS 1" >> ${CONFIGFILE} # ASUS
 		FW=netfilter
 		;;
 	Darwin)
@@ -443,6 +448,16 @@ echo "" >> ${CONFIGFILE}
 echo "/* Comment the following line to disable NAT-PMP operations */" >> ${CONFIGFILE}
 echo "#define ENABLE_NATPMP" >> ${CONFIGFILE}
 echo "" >> ${CONFIGFILE}
+
+if [ "$AURASYNC" = "y" ]; then
+	echo "#define ENABLE_AURASYNC" >> ${CONFIGFILE}
+	echo "" >> ${CONFIGFILE}
+fi
+
+if [ -n "$NVGFN" ]; then
+	echo "#define ENABLE_NVGFN" >> ${CONFIGFILE}
+	echo "" >> ${CONFIGFILE}
+fi
 
 echo "/* Comment the following line to disable PCP operations */" >> ${CONFIGFILE}
 echo "#define ENABLE_PCP" >> ${CONFIGFILE}
@@ -634,7 +649,7 @@ EOF
 cat >> ${CONFIGFILE} <<EOF
 /* Uncomment the following line if your device does not have a proper clock
  * BOOTID.UPNP.ORG can be set with command line */
-#define USE_TIME_AS_BOOTID
+/*#define USE_TIME_AS_BOOTID*/
 
 EOF
 

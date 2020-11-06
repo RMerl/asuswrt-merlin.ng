@@ -29,7 +29,7 @@ char modelnumber[] = "1";
 char presentationurl[] = "http://192.168.0.1:8080/";
 /*char presentationurl[] = "";*/
 #ifdef ENABLE_MANUFACTURER_INFO_CONFIGURATION
-char friendly_name[] = OS_NAME " router";
+char friendly_name[] = ROOTDEV_FRIENDLYNAME;
 char manufacturer_name[] = ROOTDEV_MANUFACTURER;
 char manufacturer_url[] = ROOTDEV_MANUFACTURERURL;
 char model_name[] = ROOTDEV_MODELNAME;
@@ -223,6 +223,18 @@ main(int argc, char * * argv)
 		xml_pretty_print(s, l, f);
 		fclose(f);
 	}
+	free(s);
+	printf("\n-------------\n");
+#endif
+#ifdef ENABLE_AURASYNC
+	s = getVarsAS(&l);
+	xml_pretty_print(s, l, stdout);
+	free(s);
+	printf("\n-------------\n");
+#endif
+#ifdef ENABLE_NVGFN
+	s = getVarsNVGFN(&l);
+	xml_pretty_print(s, l, stdout);
 	free(s);
 	printf("\n-------------\n");
 #endif

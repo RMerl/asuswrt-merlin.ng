@@ -110,7 +110,7 @@ lease_file_add(unsigned short eport,
 	}
 
 	/* convert our time to unix time
-     * if LEASEFILE_USE_REMAINING_TIME is defined, only the remaining time is stored */
+	 * if LEASEFILE_USE_REMAINING_TIME is defined, only the remaining time is stored */
 	if (timestamp != 0) {
 		timestamp -= upnp_time();
 #ifndef LEASEFILE_USE_REMAINING_TIME
@@ -676,7 +676,7 @@ get_upnp_rules_state_list(int max_rules_number_target)
 	{
 		if(tmp->to_remove)
 		{
-			syslog(LOG_NOTICE, "remove port mapping %hu %s because it has expired",
+			syslog(LOG_DEBUG, "remove port mapping %hu %s because it has expired",
 			       tmp->eport, proto_itoa(tmp->proto));
 			_upnp_delete_redir(tmp->eport, tmp->proto);
 			*p = tmp->next;
@@ -722,8 +722,8 @@ remove_unused_rules(struct rule_state * list)
 				       "%" PRIu64 "packets %" PRIu64 "bytes",
 				       list->eport, proto_itoa(list->proto),
 				       packets, bytes);
-				_upnp_delete_redir(list->eport, list->proto);
-				n++;
+				if(_upnp_delete_redir(list->eport, list->proto) >= 0)
+					n++;
 			}
 		}
 		tmp = list;
@@ -731,7 +731,7 @@ remove_unused_rules(struct rule_state * list)
 		free(tmp);
 	}
 	if(n>0)
-		syslog(LOG_NOTICE, "removed %d unused rules", n);
+		syslog(LOG_DEBUG, "removed %d unused rules", n);
 }
 
 /* upnp_get_portmappings_in_range()

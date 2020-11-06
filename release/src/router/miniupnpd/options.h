@@ -72,6 +72,12 @@ enum upnpconfigoptions {
 #ifdef ENABLE_LEASEFILE
 	UPNPLEASEFILE,			/* lease_file */
 #endif
+#ifdef ENABLE_AURASYNC
+	UPNPENABLEAURASYNC,
+#endif
+#ifdef ENABLE_NVGFN
+	UPNPENABLENVGFN,
+#endif
 	UPNPMINISSDPDSOCKET,	/* minissdpdsocket */
 #ifdef IGD_V2
 	UPNPFORCEIGDDESCV1,

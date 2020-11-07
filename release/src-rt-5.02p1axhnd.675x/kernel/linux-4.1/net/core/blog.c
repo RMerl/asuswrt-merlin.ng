@@ -2858,7 +2858,7 @@ BlogAction_t _blog_emit( void * nbuff_p, void * dev_p,
             blogHash.match );
 
         if (skb_p->priority)
-            printk(KERN_INFO "%s, blogp = 0x%x\n", __FUNCTION__, blog_p->priority);
+            printk(KERN_DEBUG "%s, blogp = 0x%x\n", __FUNCTION__, blog_p->priority);
 
         /* blog lock/unlock is done inside tx_hook */
         action = blog_tx_hook_g( skb_p, (void*)skb_p->dev,

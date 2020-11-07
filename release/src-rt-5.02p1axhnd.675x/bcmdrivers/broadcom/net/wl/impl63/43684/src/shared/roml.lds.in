@@ -1,0 +1,77 @@
+OUTPUT_ARCH(TARGET_ARCH)
+SECTIONS {
+	DEL_MAP
+
+	/* Code/Readonly data section */
+	. = TEXT_START;
+	text_start = .;
+	.text : {
+		/* ROM functions/data listed in romtable.S */
+		KEEP_MAP
+		. = ALIGN(4);
+	}
+	/* Code section */
+	.extra : {
+		/* Functions referenced from functions in above section */
+		extra_start = .;
+		*(.textrom.*)
+		*(.text)
+		*(.text_ram.*)
+		*(.text.*)
+		*(.glue_7)
+		*(.glue_7t)
+		. = ALIGN(4);
+		extra_end = .;
+	}
+	text_end = .;
+
+	.rodata : {
+		rodata_start = .;
+		/* Data referenced from above functions */
+		*(.datarom.*)
+		/* Readonly data referenced by above functions */
+		*(.rdata)
+		*(.rdata.*)
+		*(.rodata)
+		*(.rodata.*)
+		rodata_end = .;
+	}
+
+	/* Data sections */
+	. = DATA_START;
+
+	/* Data section shared by RAM and ROM */
+	shdat_start = .;
+	.data : {
+		ramfnptr_start = .;
+		*(.ramfnptr.*)
+		ramfnptr_end = .;
+		jmptblrom_start = .;
+		*(.romfnptr.*)
+		jmptblrom_end = .;
+		datblrom_start = .;
+		*(.romdptr.*)
+		datblrom_end = .;
+		*(.data)
+		*(.data.*)
+		*(.sdata)
+	}
+	.bss : {
+		*(.bss)
+		*(.bss.*)
+		*(.sbss)
+		*(.scommon)
+		*(COMMON)
+	}
+	shdat_end = .;
+
+	.romlognums 0 (OVERLAY) : {
+		 KEEP(*(.lognums))
+	}
+
+	.romlogstrs 0 (OVERLAY) : {
+		 KEEP(*(.logstrs))
+		 logstrs_size = .;
+	}
+
+}

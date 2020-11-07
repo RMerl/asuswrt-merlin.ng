@@ -1,0 +1,109 @@
+Bpm_m.BpmM_.C_.ESwtch_y.FGpon_.FGso_y.FGsoLpBk_y.FL2_.Fap_m.FapI_1.FapM_.GinpRtx_.Gmac_.IntExtSw_y.Ipv6_y.Jumbo_.L1CShft_4.PktDma_y.PktDmaI_1.Qos_m.QosM_.RxBds_.RxDmaChans_2.RxSplit_.TxBds_.TxDmaChans_2.TxSplit_.Xtm_m.XtmI_5.XtmM_
+
+# FAP 4ke release settings
+#
+# This file contains all of the configurations which should be released.  The 
+# first line shows the default setting.  All lines below refer to releases which
+# are different from the default.  
+
+# The names below are translated using the metafilename.pl script (located in
+# the hosttools/scripts directory).  
+
+# Comments and blank lines are allowed, as long as first line is the default settings
+
+#my %dictionary = (
+#  C => 		'BRCM_CHIP',
+#  Fap => 		'CONFIG_BCM_FAP',
+#  FapM => 		'CONFIG_BCM_FAP_MODULE',
+#  FapI => 		'CONFIG_BCM_FAP_IMPL',
+#  PktDma => 	'CONFIG_BCM_PKTDMA',
+#  PktDmaI =>   'CONFIG_BCM_PKTDMA_IMPL',
+#  L1CShft => 	'CONFIG_MIPS_L1_CACHE_SHIFT',
+#  TxBds => 	'CONFIG_BCM_NR_TX_BDS',
+#  RxBds => 	'CONFIG_BCM_NR_RX_BDS',
+#  Qos => 		'CONFIG_BCM_INGQOS',
+#  QosM => 		'CONFIG_BCM_INGQOS_MODULE',
+#  Bpm => 		'CONFIG_BCM_BPM',
+#  BpmM => 		'CONFIG_BCM_BPM_MODULE',
+#  Ipv6 => 		'CONFIG_BCM_FAP_IPV6',
+#  ESwtch => 	'CONFIG_BCM_EXT_SWITCH',
+#  RxSplit => 	'CONFIG_BCM_PKTDMA_RX_SPLITTING',
+#  TxSplit => 	'CONFIG_BCM_PKTDMA_TX_SPLITTING',
+#  RxDmaChans => 'CONFIG_BCM_DEF_NR_RX_DMA_CHANNELS',
+#  TxDmaChans => 'CONFIG_BCM_DEF_NR_TX_DMA_CHANNELS',
+#  Xtm => 		'CONFIG_BCM_XTMCFG',
+#  XtmM => 		'CONFIG_BCM_XTMCFG_MODULE',
+#  XtmI =>      'CONFIG_BCM_XTMRT_IMPL',
+#  FL2 =>		'CONFIG_BCM_FAP_LAYER2',
+#  FGpon =>     'CONFIG_BCM_FAP_GPON', 
+#  FGso =>      'CONFIG_BCM_FAP_GSO',
+#  FGsoLpBk =>  'CONFIG_BCM_FAP_GSO_LOOPBACK',
+#  Gmac =>      'CONFIG_BCM_GMAC',
+#  GinpRtx =>   'CONFIG_BCM_DSL_GINP_RTX', 
+#  T =>			'TEST_VAR'
+#  Jumbo =>     'CONFIG_BCM_JUMBO_FRAME'
+#  IntExtSw =>  'CONFIG_BCM_PORTS_ON_INT_EXT_SW'
+#);
+
+######## 63268 binaries  ########
+
+C_63268
+C_63268.Ipv6_
+C_63268.ESwtch_.IntExtSw_
+C_63268.ESwtch_.IntExtSw_.Ipv6_
+# Jumbo Frame Support
+C_63268.Jumbo_y
+C_63268.Ipv6_.Jumbo_y
+C_63268.ESwtch_.IntExtSw_.Jumbo_y
+C_63268.ESwtch_.IntExtSw_.Ipv6_.Jumbo_y
+
+C_63268.GinpRtx_y
+C_63268.GinpRtx_y.Ipv6_
+C_63268.ESwtch_.GinpRtx_y.IntExtSw_
+C_63268.ESwtch_.GinpRtx_y.IntExtSw_.Ipv6_
+# Jumbo Frame Support
+C_63268.GinpRtx_y.Jumbo_y
+C_63268.GinpRtx_y.Ipv6_.Jumbo_y
+C_63268.ESwtch_.GinpRtx_y.IntExtSw_.Jumbo_y
+C_63268.ESwtch_.GinpRtx_y.IntExtSw_.Ipv6_.Jumbo_y
+
+C_63268.Xtm_
+C_63268.Ipv6_.Xtm_
+C_63268.ESwtch_.IntExtSw_.Xtm_
+C_63268.ESwtch_.IntExtSw_.Ipv6_.Xtm_
+# Jumbo Frame Support
+C_63268.Jumbo_y.Xtm_
+C_63268.Ipv6_.Jumbo_y.Xtm_
+C_63268.ESwtch_.IntExtSw_.Jumbo_y.Xtm_
+C_63268.ESwtch_.IntExtSw_.Ipv6_.Jumbo_y.Xtm_
+
+C_63268.Gmac_y
+C_63268.Gmac_y.Ipv6_
+C_63268.ESwtch_.Gmac_y.IntExtSw_
+C_63268.ESwtch_.Gmac_y.IntExtSw_.Ipv6_
+# Jumbo Frame Support
+C_63268.Gmac_y.Jumbo_y
+C_63268.Gmac_y.Ipv6_.Jumbo_y
+C_63268.ESwtch_.Gmac_y.IntExtSw_.Jumbo_y
+C_63268.ESwtch_.Gmac_y.IntExtSw_.Ipv6_.Jumbo_y
+
+C_63268.GinpRtx_y.Gmac_y
+C_63268.GinpRtx_y.Gmac_y.Ipv6_
+C_63268.ESwtch_.GinpRtx_y.Gmac_y.IntExtSw_
+C_63268.ESwtch_.GinpRtx_y.Gmac_y.IntExtSw_.Ipv6_
+# Jumbo Frame Support
+C_63268.GinpRtx_y.Gmac_y.Jumbo_y
+C_63268.GinpRtx_y.Gmac_y.Ipv6_.Jumbo_y
+C_63268.ESwtch_.GinpRtx_y.Gmac_y.IntExtSw_.Jumbo_y
+C_63268.ESwtch_.GinpRtx_y.Gmac_y.IntExtSw_.Ipv6_.Jumbo_y
+
+C_63268.Gmac_y.Xtm_.XtmI_
+C_63268.Gmac_y.Ipv6_.Xtm_.XtmI_
+C_63268.ESwtch_.Gmac_y.IntExtSw_.Xtm_.XtmI_
+C_63268.ESwtch_.Gmac_y.IntExtSw_.Ipv6_.Xtm_.XtmI_
+# Jumbo Frame Support
+C_63268.Gmac_y.Jumbo_y.Xtm_.XtmI_
+C_63268.Gmac_y.Ipv6_.Jumbo_y.Xtm_.XtmI_
+C_63268.ESwtch_.Gmac_y.IntExtSw_.Jumbo_y.Xtm_.XtmI_
+C_63268.ESwtch_.Gmac_y.IntExtSw_.Ipv6_.Jumbo_y.Xtm_.XtmI_
+

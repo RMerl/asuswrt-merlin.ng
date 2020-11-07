@@ -1,0 +1,1466 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2013" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL." shortObjectName="Dev2DslObject" specSource="TR181" profile="Device2_ADSL:1" requirements="P" supportLevel="Present" oid="1061" />
+  <description source="TRx">This object models DSL lines, DSL channels, DSL bonding, and DSL diagnostics. The specific interface objects defined here are Line, Channel, and BondingGroup. Each Line models a layer 1 DSL Line interface, and each Channel models a layer 1 DSL Channel interface where multiple channels can run over a DSL line. In the case where bonding is configured, it is expected that BondingGroup is stacked above the Channel instances within its group. </description>
+  <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="LineNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in Line Table</description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="ChannelNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in Channel Table </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="BondingGroupNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in Bonding Table </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Line.{i}." shortObjectName="Dev2DslLineObject" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">DSL Line table (a stackable interface object as described in TR-181i2,Section 4.2).  This table models physical DSL lines. </description>
+  <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_ADSL:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables the DSL line. This parameter is based on ''ifAdminStatus'' from RFC2863. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="ReadOnly" defaultValue="Unknown" validValuesArray="ifOperStatusValues" />
+    <description source="TRx"> When Enable is changed to true then Status SHOULD change to Up if and only if the interface is able to transmit and receive network traffic; it SHOULD change to Dormant if and only if the interface is operable but is waiting for external actions before it can transmit and receive network traffic (and subsequently change to Up if still operable when the expected actions have completed); it SHOULD change to LowerLayerDown if and only if the interface is prevented from entering the Up state because one or more of the interfaces beneath it is down; it SHOULD remain in the Error state if there is an error or other fault condition detected on the interface; it SHOULD remain in the NotPresent state if the interface has missing (typically hardware) components; it SHOULD change to Unknown if the state of the interface can not be determined for some reason. This parameter is based on ''ifOperStatus'' from RFC2863. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_ADSL:1" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-dslline" maxLength="64" autoGenerateAlias="true" notifySskAliasChanged="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. An initial unique value MUST be assigned when the CPE creates an instance of this object. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="ReadOnly" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The textual name of the DSL line as assigned by the CPE. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in sedonds since the DSL line entered its current operational state. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="1024" notifySskLowerLayersChanged="true" />
+    <description source="TRx">Comma seperated list (maximum length 1024). Each list item must be the be the path name of an interface object that is stacked immediately below this interface object.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  See Section 4.2.1 of TR-181i2. </description>
+
+  <parameter name="Upstream" type="boolean" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="ReadOnly" defaultValue="false" alwaysWriteToConfigFile="true" />
+    <description source="TRx"> * For a standalone WiFi Access Point that is connected via Ethernet to an Internet Gateway Device, Upstream will be true for the Ethernet interface and false for the WiFi Radio interface. * For an End Device, Upsteam will be true for all interfaces. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="FirmwareVersion" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">A string identifying the version of the modem firmware currently installed for this interface. This is applicable only when the modem firmware is separable from the overall CPE software. </description>
+
+  <parameter name="LinkStatus" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="dslIntfStatusValues" />
+    <description source="TRx">Status of the DSL physical link. When LinkStatus is Up, Status is expected to be Up. When LinkStatus is Initializing or EstablishingLink or NoSignal or Disabled, Status is expected to be Down. The Error value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="StandardsSupported" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="G.992.1_Annex_A, G.992.1_Annex_B, G.992.1_Annex_C, T1.413, G.992, G.992.3_Annex_A, G.992.3_Annex_B, G.992.3_Annex_C, G.993.1, G.993.1_Annex_A, G.993.2_Annex_B, G.993_Annex_C" />
+    <description source="TRx">Comma loist of separated string. List items indicate which DSL standards and recommendations are supported by the object instance.  Note: In G.997.1, this parameter is called &quot;xDSL Transmission system capabilities&quot;. See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="StandardUsed" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="T1.413" validValuesArray="dslStandardValues" />
+    <description source="TRx">Indicates the standard that the Line instance is using for the connection. Note: In G.997.1, this parameter is called &quot;xDSL Transmission system&quot;. See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="LineEncoding" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="dslLineEncodingValues" />
+    <description source="TRx">The line encoding method used in&#10;    establishing the Layer 1 DSL connection between the CPE and the&#10;    DSLAM.  Enumeration of DMT, CAP, 2B1Q, 43BT, PAM, QAM. Note: Generally speaking, this variable does not change after provisioning. </description>
+
+  <parameter name="AllowedProfiles" type="string" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="8a, 8b, 8c, 8d, 12a, 12b, 17a, 30a, BrcmPriv1, BrcmPriv2" />
+    <description source="TRx"> Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, its value MUST be empty. </description>
+
+  <parameter name="CurrentProfile" type="string" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="8a" validValuesArray="dslProfileValues" />
+    <description source="TRx">Indicates which VDSL2 profile is currently in use on the line. Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, its value MUST be empty. </description>
+
+  <parameter name="PowerManagementState" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="dslPowerManagementStateValues" />
+    <description source="TRx">The power management state of the line. Enumeration of L0, L1, L2, L3, L4. Note: See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="SuccessFailureCause" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" minValue="0" maxValue="5" />
+    <description source="TRx">The success failure cause of the initialization. An enumeration of the following integer values: * 0: Successful * 1: Configuration error.  This error occurs with inconsistencies in configuration parameters, e.g. when the line is initialized in  an xDSL Transmission system where an xTU does not support the configured Maximum Delay or the configured Minimum or Maximum Data Rate  for one or more bearer channels. * 2: Configuration not feasible on the line.  This error occurs if the Minimum Data Rate cannot be reached on the line with the  Minimum Noise Margin, Maximum PSD level, Maximum Delay and Maximum Bit Error Ratio for one or more bearer channels. * 3: Communication problem.  This error occurs, for example, due to corrupted messages or bad syntax messages or if no common mode  can be selected in the G.994.1 handshaking procedure or due to a timeout. * 4: No peer xTU detected.  This error occurs if the peer xTU is not powered or not connected or if the line is too long to allow  detection of a peer xTU. * 5: Any other or unknown Initialization Failure cause. Note: In G.997.1, this parameter is called &quot;Initialization success/failure cause&quot;. See ITU-T Recommendation G.997.1.</description>
+
+  <parameter name="LastStateTransmittedDownstream" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx"> This parameter is available only when, after a failed full initialization, the line diagnostics procedures are activated on the  line. Note: See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="LastStateTransmittedUpstream" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx"> Note: See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="UPBOKLE" type="unsignedInt" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="1280" />
+    <description source="TRx">This parameter contains the estimated electrical loop length expressed in 0.1db at 1MHz (see O-UPDATE  in section 12.2.4.2.1.2/G.993.2).  The value SHALL be coded as an unsigned 16 bit number in the range 0 (coded as 0) to 128 dB (coded  as 1280) in steps of 0.1 dB. Note: See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="MREFPSDds" type="base64" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" maxLength="145" minLength="0" />
+    <description source="TRx">This parameter SHALL contain the set of breakpoints exchanged in the MREFPSDds fields of the O-PRM message of  G.993.2. Base64 encoded of the binary representation defined in Table 12-19/G.993.2 (maximum length is 145 octets, which requires 196  bytes for Base64 encoding). Note: See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="MREFPSDus" type="base64" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" maxLength="145" minLength="0" />
+    <description source="TRx">This parameter SHALL contain the set of breakpoints exchanged in the MREFPSDus fields of the R-PRM message of  G.993.2. Base64 encoded of the binary representation defined in Table 12-19/G.993.2 (maximum length is 145 octets, which requires 196  bytes for Base64 encoding). Note: See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="LIMITMASK" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx"> Note: See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="US0MASK" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx"> Note: See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="TRELLISds" type="int" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Reports whether trellis coding is enabled in the downstream direction.  A value of 1 indicates that trellis  coding is in use, and a value of 0 indicates that the trellis is disabled. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to -1. </description>
+
+  <parameter name="TRELLISus" type="int" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Reports whether trellis coding is enabled in the upstream direction.  A value of 1 indicates that trellis coding  is in use, and a value of 0 indicates that the trellis is disabled. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to -1. </description>
+
+  <parameter name="ACTSNRMODEds" type="unsignedInt" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Reports whether the OPTIONAL virtual noise mechanism is in use in the downstream direction.  A value of 1  indicates the virtual noise mechanism is not in use, and a value of 2 indicates the virtual noise mechanism is in use.   Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+
+  <parameter name="ACTSNRMODEus" type="unsignedInt" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Reports whether the OPTIONAL virtual noise mechanism is in use in the upstream direction.  A value of 1  indicates the virtual noise mechanism is not in use, and a value of 2 indicates the virtual noise mechanism is in use.  Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+
+  <parameter name="VirtualNoisePSDds" type="base64" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" maxLength="97" minLength="0" />
+    <description source="TRx">Reports the virtual noise PSD for the downstream direction. Base64 encoded of the binary representation defined  in G.997.1 by the parameter called TXREFVNds (maximum length is 97 octets, which requires 132 bytes for Base64 encoding). See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value of  this parameter SHOULD be set to empty. </description>
+
+  <parameter name="VirtualNoisePSDus" type="base64" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" maxLength="49" minLength="0" />
+    <description source="TRx">Reports the virtual noise PSD for the upstream direction. Base64 encoded of the binary representation defined in  G.997.1by the parameter called TXREFVNus (maximum length is 49 octets, which requires 68 bytes for Base64 encoding). See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value of  this parameter SHOULD be set to NULL. </description>
+
+  <parameter name="ACTUALCE" type="unsignedInt" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Reports the actual cyclic extension, as the value of m, in use for the connection.   Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 99. </description>
+
+  <parameter name="LineNumber" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="1" minValue="1" />
+    <description source="TRx">Signifies the line pair that the modem is using to connection.  LineNumber = 1 is the innermost  pair. </description>
+
+  <parameter name="UpstreamMaxBitRate" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The current maximum attainable data rate upstream (expressed in Kbps). Note:  This parameter is related to the G.997.1 parameter ATTNDRus, which is measured in bits/s.  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="DownstreamMaxBitRate" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The current maximum attainable data rate downstream (expressed in Kbps). Note:  This parameter is related to the G.997.1 parameter ATTNDRds, which is measured in bits/s.  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="UpstreamNoiseMargin" type="int" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The current signal-to-noise ratio margin (expressed in 0.1dB) in the upstream direction. Note:  In G.997.1, this parameter is called SNRMus.  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="DownstreamNoiseMargin" type="int" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The current signal-to-noise ratio margin (expressed in 0.1dB) in the downstream direction. Note:  In G.997.1, this parameter is called SNRMds.  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="SNRMpbus" type="string" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="24" />
+    <description source="TRx">Comma-separated list (maximum length 24) of strings. Indicates the current signal-to-noise ratio margin of each upstream band.  Interpretation of the values is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="SNRMpbds" type="string" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="24" />
+    <description source="TRx">Comma-separated list (maximum length 24) of strings. Indicates the current signal-to-noise ratio margin of each band.  Interpretation of the values is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="INMIATOds" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" defaultValue="3" minValue="3" maxValue="511" />
+    <description source="TRx">The Impulse Noise Monitoring (INM) Inter Arrival Time (IAT) Offset, measured in DMT symbols, that the xTU  receiver uses to determine in which bin of the IAT histogram the IAT is reported. Note:  In G.997.1, this parameter is called INMIATO.  See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="INMIATSds" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" defaultValue="0" minValue="0" maxValue="7" />
+    <description source="TRx">The Impulse Noise Monitoring (INM)  Inter Arrival Time (IAT) Step that the xTU receiver uses to determine in  which bin of the IAT histogram the IAT is reported. Note:  In G.997.1, this parameter is called INMIATS.  See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="INMCCds" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" defaultValue="0" minValue="0" maxValue="64" />
+    <description source="TRx">The Impulse Noise Monitoring (INM) Cluster Continuation value, measured in DMT symbols, that the xTU receiver  uses in the cluster indication process. Note:  In G.997.1, this parameter is called INMCC.  See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="INMINPEQMODEds" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" defaultValue="0" minValue="0" maxValue="3" />
+    <description source="TRx">The Impulse Noise Monitoring (INM) Equivalent Impulse Noise Protection (INP) Mode that the xTU receiver uses in  the computation of the Equivalent INP. Note:  In G.997.1, this parameter is called INM_INPEQ_MODE.  See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="UpstreamAttenuation" type="int" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The current upstream signal loss (expressed in 0.1dB). </description>
+
+  <parameter name="DownstreamAttenuation" type="int" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The current downstream signal loss (expressed in 0.1dB). </description>
+
+  <parameter name="UpstreamPower" type="int" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The current output power at the CPE's DSL line (expressed in 0.1dBmV). </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="DownstreamPower" type="int" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The current received power at the CPE's DSL line (expressed in 0.1dBmV). </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="XTURVendor" type="hexBinary" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="ReadOnly" maxLength="4" minLength="4" />
+    <description source="TRx"> Note: In G.997.1, this parameter is called &quot;xTU-R G.994.1 Vendor ID&quot;. See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="XTURCountry" type="hexBinary" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="ReadOnly" maxLength="2" minLength="2" />
+    <description source="TRx"> Note: In G.997.1, this parameter is called &quot;xTU-R G.994.1 Vendor ID&quot;. See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="XTURANSIStd" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">xTU-R T1.413 Revision Number as defined in T1.413 Issue 2. When T1.413 modulation is not in use, the parameter value SHOULD be 0. </description>
+
+  <parameter name="XTURANSIRev" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">xTU-R Vendor Revision Number as defined in T1.413 Issue 2. When T1.413 modulation is not in use, the parameter value SHOULD be 0. </description>
+
+  <parameter name="XTUCVendor" type="hexBinary" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="ReadOnly" maxLength="4" minLength="4" />
+    <description source="TRx">xTU-C vendor identifier as defined in G.994.1 and T1.413.  In the case of G.994.1 this corresponds to the four-octet provider code, which MUST be represented as eight hexadecimal digits. Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, it MUST have the value &quot;00000000&quot;. </description>
+
+  <parameter name="XTUCCountry" type="hexBinary" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="ReadOnly" maxLength="2" minLength="2" />
+    <description source="TRx">T.35 country code of the xTU-C vendor as defined in G.994.1, where the two-octet value defined in G.994.1 MUST be represented as four hexadecimal digits. Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, it MUST have the value &quot;0000&quot;. </description>
+
+  <parameter name="XTUCANSIStd" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">xTU-C T1.413 Revision Number as defined in T1.413 Issue 2. When T1.413 modulation is not in use, the parameter value SHOULD be 0. </description>
+
+  <parameter name="XTUCANSIRev" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">xTU-C Vendor Revision Number as defined in T1.413 Issue 2. When T1.413 modulation is not in use, the parameter value SHOULD be 0. </description>
+
+  <parameter name="X_BROADCOM_COM_BondingLineNumber" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="1" />
+    <description source="BROADCOM">Indicates the line number for bonding.  Only 0 or 1 is allowed because we&#10;only bond 2 lines.&#10;This param should be read-only.  But I marked it ReadWrite so line 1 will&#10;get written out to the config file. This is another case where we need an&#10;attribute which is for read-only params, something like&#10;&quot;writeToConfigFileIfNotDefault&quot;&#10; This parameter is kept here for purpose of using the existing DSL API.  Line 0 is for the physical line 0, and the other is the second DSL line. </description>
+
+  <parameter name="X_BROADCOM_COM_AdslVersion" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadOnly" />
+    <description source="TRx">Internal ADSL driver and PHY versions.  For instance, A2pB019b8.d19a.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_AdslIfcCfg</description>
+
+  <parameter name="X_BROADCOM_COM_AdslModulationCfg" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadWrite" defaultValue="ADSL_Modulation_All" />
+    <description source="BROADCOM">Modulation Configuration.   Multiple modulation mode can be configured by concatenating the ADSL Modulation string (seperated by ',') specified for WANDSLInterfaceConfig.ModulationType.  The current Broadcom supported modulation types are:&#10;&quot;ADSL_G.dmt&quot;, &quot;ADSL_G.lite&quot;, &quot;ADSL_G.dmt.bis&quot;, &quot;ADSL_re-adsl&quot;, &quot;ADSL_2plus&quot;, &quot;ADSL_ANSI_T1.413&quot;&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_AnnexA" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="NotSupported" defaultValue="false" />
+    <description source="BROADCOM">adslConfig bit ANNEX_A_MODE_ADSL2&#10;As of 12/17/08, (for the4.02L.03 release), this parameter is no longer supported.  This bit actually means VDSL2, so it has been folded into X_BROADCOM_COM_AdslModulationCfg.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_AnnexM" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">ADSL2 parameter: AnnexM enabled.  True for enabled, False for disabled.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_PhoneLinePair" type="string" specSource="BROADCOM" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadWrite" defaultValue="Inner Pair" validValuesArray="X_BROADCOM_COM_PhoneLinePairValues" />
+    <description source="TRx">Inner Pair or Outter Pair. &#10;Enumeration of: &#10;&quot;Inner Pair&quot; &#10;&quot;Outer Pair&quot; </description>
+    <description source="BROADCOM">Same as standard LineNumber parameter; but this is configurable parameter.</description>
+
+  <parameter name="X_BROADCOM_COM_Bitswap" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadWrite" defaultValue="On" validValuesArray="onOffValues" />
+    <description source="TRx">Enumeration of: &#10;&quot;on&quot; &#10;&quot;off&quot; </description>
+    <description source="BROADCOM">PSI name: BcmCfm_AdslIfcCfg.bitswap</description>
+
+  <parameter name="X_BROADCOM_COM_SRA" type="string" specSource="BROADCOM" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadWrite" defaultValue="off" validValuesArray="onOffValues" />
+    <description source="TRx">Enumeration of: &#10;&quot;on&quot; &#10;&quot;off&quot; </description>
+    <description source="BROADCOM">PSI name: BcmCfm_AdslIfcCfg.sra</description>
+
+  <parameter name="X_BROADCOM_COM_TrellisD" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadWrite" defaultValue="On" validValuesArray="onOffValues" />
+    <description source="TRx">Enumeration of: &#10;&quot;on&quot; &#10;&quot;off&quot; </description>
+
+  <parameter name="X_BROADCOM_COM_TrellisU" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadWrite" defaultValue="On" validValuesArray="onOffValues" />
+    <description source="TRx">Enumeration of: &#10;&quot;on&quot; &#10;&quot;off&quot; </description>
+
+  <parameter name="X_BROADCOM_COM_SNR" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="TRx">snrQ4</description>
+
+  <parameter name="X_BROADCOM_COM_Bitmap" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="Bmode_D" validValuesArray="X_BROADCOM_COM_BitmapValues" />
+    <description source="TRx">Enumeration of: &#10;&quot;Bmode_D&quot; &#10;&quot;Bmode_F&quot; </description>
+    <description source="BROADCOM">PSI name: BcmCfmAdslIfcCfg.bitmap</description>
+
+  <parameter name="X_BROADCOM_COM_QueueSize" type="unsignedInt" specSource="BROADCOM" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="125" />
+    <description source="TRx">ATM Queue size</description>
+
+  <parameter name="X_BROADCOM_COM_NumTxQueues" type="unsignedInt" specSource="BROADCOM" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">ATM number of transmit queues</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamS" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Applicable for all except ADSL2 and ADSL2+.   RS code word size in DMT frame.</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamS" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Applicable for all except ADSL2 and ADSL2+.   RS code word size in DMT frame.</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamR" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Applicable for all except ADSL2 and ADSL2+.   Number of checked bytes in RS code word.</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamR" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Applicable for all except ADSL2 and ADSL2+.   Number of checked bytes in RS code word.</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamK" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Applicable for all except ADSL2 and ADSL2+.   Number of bytes in DMT frame.</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamK" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Applicable for all except ADSL2 and ADSL2+.   Number of bytes in DMT frame.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamDelay" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Delay in msec.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamDelay_2" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Delay in msec.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamDelay" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Delay in msec.</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamDelay_2" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Delay in msec.</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamINP" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">INP (DMT symbol)</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamINP_2" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">INP (DMT symbol)</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamINP" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">INP (DMT symbol)</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamINP_2" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">INP (DMT symbol)</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamD" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Interleaver depth.</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamD_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Interleaver depth.</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamD" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Interleaver depth.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamD_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Interleaver depth.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamMSGc" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  It is the number of bytes in overhead channel message.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamMSGc_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  It is the number of bytes in overhead channel message.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamMSGc" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  It is the number of bytes in overhead channel message.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamMSGc_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  It is the number of bytes in overhead channel message.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamB" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of bytes in Mux Data Frame.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamB_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of bytes in Mux Data Frame.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamB" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of bytes in Mux Data Frame.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamB_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of bytes in Mux Data Frame.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamM" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of Mux Data Frames in FEC Data Frame.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamM_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of Mux Data Frames in FEC Data Frame.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamM" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of Mux Data Frames in FEC Data Frame.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamM_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of Mux Data Frames in FEC Data Frame.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamT" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.    Mux Data Frames over sync bytes.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamT_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.    Mux Data Frames over sync bytes.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamT" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.    Mux Data Frames over sync bytes.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamT_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.    Mux Data Frames over sync bytes.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamR" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of check bytes in FEC Data Frame.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamR_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of check bytes in FEC Data Frame.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamR" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of check bytes in FEC Data Frame.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamR_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of check bytes in FEC Data Frame.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamS" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0.0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Ratio of FEC over PMD Data Frame length.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamS_2" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0.0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Ratio of FEC over PMD Data Frame length.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamS" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0.0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Ratio of FEC over PMD Data Frame length.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamS_2" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0.0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Ratio of FEC over PMD Data Frame length.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamL" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of bits in PMD Data Frame.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_UpstreamL_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of bits in PMD Data Frame.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamL" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of bits in PMD Data Frame.</description>
+
+  <parameter name="X_BROADCOM_COM_ADSL2_DownstreamL_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ADSL2 or ADSL2+ parameter.  Number of bits in PMD Data Frame.</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_8a" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit VDSL_PROFILE_8a&#10;This Broadcom proprietary parameter allows users to configure which VDSL profile &quot;8a&quot; is allowed on the line.  The read only parameter of allowed profiles for the line is AllowedProfiles which is defined in TR98 Amendmend 2 specification.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_8b" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit VDSL_PROFILE_8b&#10;This Broadcom proprietary parameter allows users to configure which VDSL profile &quot;8b&quot; is allowed on the line.  The read only parameter of allowed profiles for the line is AllowedProfiles which is defined in TR98 Amendmend 2 specification.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_8c" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit VDSL_PROFILE_8c&#10;This Broadcom proprietary parameter allows users to configure which VDSL profile &quot;8c&quot; is allowed on the line.  The read only parameter of allowed profiles for the line is AllowedProfiles which is defined in TR98 Amendmend 2 specification.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_8d" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit VDSL_PROFILE_8d&#10;This Broadcom proprietary parameter allows users to configure which VDSL profile &quot;8d&quot; is allowed on the line.  The read only parameter of allowed profiles for the line is AllowedProfiles which is defined in TR98 Amendmend 2 specification.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_12a" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit VDSL_PROFILE_12a&#10;This Broadcom proprietary parameter allows users to configure which VDSL profile &quot;12a&quot; is allowed on the line.  The read only parameter of allowed profiles for the line is AllowedProfiles which is defined in TR98 Amendmend 2 specification.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_12b" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit VDSL_PROFILE_12b&#10;This Broadcom proprietary parameter allows users to configure which VDSL profile &quot;12b&quot; is allowed on the line.  The read only parameter of allowed profiles for the line is AllowedProfiles which is defined in TR98 Amendmend 2 specification.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_17a" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit VDSL_PROFILE_17a&#10;This Broadcom proprietary parameter allows users to configure which VDSL profile &quot;17a&quot; is allowed on the line.  The read only parameter of allowed profiles for the line is AllowedProfiles which is defined in TR98 Amendmend 2 specification.&#10;&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_30a" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit VDSL_PROFILE_30a&#10;This Broadcom proprietary parameter allows users to configure which VDSL profile &quot;30a&quot; is allowed on the line.  The read only parameter of allowed profiles for the line is AllowedProfiles which is defined in TR98 Amendmend 2 specification.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_BrcmPriv1" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">dslConfig bit VDSL_PROFILE_BrcmPriv1&#10;This Broadcom proprietary parameter allows users to configure which VDSL profile &quot;BrcmPriv1&quot; is allowed on the line.  The read only parameter of allowed profiles for the line is AllowedProfiles which is defined in TR98 Amendmend 2 specification.</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_BrcmPriv2" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">dslConfig bit VDSL_PROFILE_BrcmPriv2&#10;This Broadcom proprietary parameter allows users to configure which VDSL profile &quot;BrcmPriv2&quot; is allowed on the line.  The read only parameter of allowed profiles for the line is AllowedProfiles which is defined in TR98 Amendmend 2 specification.</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_US0_8a" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit VDSL_US0_8a&#10;This Broadcom proprietary parameter will soon be turned into the standard parameter US0MASK, which is a version 1.3 (WT-107) parameter.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_UpstreamI" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">I (interleaver block size in bytes) for VDSL2 only.</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_UpstreamI_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">I (interleaver block size in bytes) for VDSL2 only.</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_DownstreamI" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">I (interleaver block size in bytes) for VDSL2 only.</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_DownstreamI_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">I (interleaver block size in bytes) for VDSL2 only.</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_UpstreamN" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">N (RS codeword size) for VDSL2 only.</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_UpstreamN_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">N (RS codeword size) for VDSL2 only.</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_DownstreamN" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">N (RS codeword size) for VDSL2 only.</description>
+
+  <parameter name="X_BROADCOM_COM_VDSL_DownstreamN_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_VDSL2WAN:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">N (RS codeword size) for VDSL2 only.</description>
+
+  <parameter name="X_BROADCOM_COM_LinkPowerState" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="L3" validValuesArray="ADSLLinkPowerState" />
+    <description source="BROADCOM">Indicate current link power state.  Enumeration of:&#10;L0 Full On&#10;L2 Low Power&#10;L3 Idle</description>
+
+  <parameter name="X_BROADCOM_COM_DslCfgParam" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="2432" />
+    <description source="BROADCOM">adslCfgProfile: adslAnnexAParam/adslAnnexCParam </description>
+
+  <parameter name="X_BROADCOM_COM_DslTrainingMarginQ4" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" />
+    <description source="BROADCOM">adslCfgProfile: adslTrainingMarginQ4</description>
+
+  <parameter name="X_BROADCOM_COM_DslShowtimeMarginQ4" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" />
+    <description source="BROADCOM">adslCfgProfile: adslShowtimeMarginQ4</description>
+
+  <parameter name="X_BROADCOM_COM_DslLOMTimeThldSec" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" />
+    <description source="BROADCOM">adslCfgProfile: adslLOMTimeThldSec</description>
+
+  <parameter name="X_BROADCOM_COM_DslPwmSyncClockFreq" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">adslCfgProfile: adslPwmSyncClockFreq</description>
+
+  <parameter name="X_BROADCOM_COM_DslHsModeSwitchTime" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">adslCfgProfile: adslHsModeSwitchTime</description>
+
+  <parameter name="X_BROADCOM_COM_DslParam" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">adsl2Param</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg1Mask" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="9454714" />
+    <description source="BROADCOM">adslCfgProfiole: adsldemodCapMask(default 0x0090447a)</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg1Value" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1066106" />
+    <description source="BROADCOM">adslCfgProfile: adslDemodCapValue(default 0x0010447a)</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg2Mask" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="5242880" />
+    <description source="BROADCOM">adslCfgProfile: adslDemodCap2Mask(default 0x00500000)</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg2Value" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="5242880" />
+    <description source="BROADCOM">adslCfgProfile: adslDemodCap2Value(default 0x00500000)</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg3Mask" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="3" />
+    <description source="BROADCOM">adslCfgProfile: xdslAuxFeaturesMask</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg3Value" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="3" />
+    <description source="BROADCOM">adslCfgProfile: xdslAuxFeaturesValue</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg4Mask" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">adslCfgProfile: vdslCfgFlagsMask</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg4Value" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">adslCfgProfile: vdslCfgFlagsValue</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg5Mask" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">DslPhyCfg5Mask</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg5Value" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">DslPhyCfg5Value</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg6Mask" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">X_BROADCOM_COM_DslPhyCfg6Mask</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg6Value" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">DslPhyCfg6Value</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg7Mask" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">DslPhyCfg7Mask</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg7Value" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">DslPhyCfg7Value</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg8Mask" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">DslPhyCfg8Mask</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyCfg8Value" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">DslPhyCfg8Value</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyUsDataRateKbps" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">maxUsDataRateKbps</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyDsDataRateKbps" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">maxDsDataRateKbps</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyAggrDataRateKbps" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">maxAggrDataRateKbps</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyMiscCfgParam" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">xdslMiscCfgParam</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Line.{i}.X_BROADCOM_COM_BertTest." shortObjectName="Dev2DslLineBertTestObject" specSource="BROADCOM" profile="X_BROADCOM_COM_DSL:1" supportLevel="Present" />
+  <description source="TRx">DSL BERT test.</description>
+
+  <parameter name="BertTestMode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Stop" validValuesArray="bertTestModeValues" />
+    <description source="TRx">Enumeration of: &#10;&quot;Start&quot; &#10;&quot;Stop&quot;  </description>
+
+  <parameter name="BertTestDuration" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="TRx">Duration of BERT test in seconds.</description>
+
+  <parameter name="BertTestStatus" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadOnly" validValuesArray="bertTestStatusValues" />
+    <description source="TRx">Enumeration of: &#10;&quot;Running&quot; &#10;&quot;Not Running&quot;  &quot;Stopped&quot;</description>
+
+  <parameter name="TotalTime" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of seconds BERT test has run.</description>
+
+  <parameter name="ElapsedTime" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadOnly" />
+    <description source="TRx">The number of elapsed seconds BERT test has run.</description>
+
+  <parameter name="BitsTestedCntHigh" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of bits tested.</description>
+    <description source="BROADCOM">BitsTested is a 64-bit counters.   BitsTested are represented by 2 parameters in this object.   BitsTestedCntHigh and BitsTestedCntLow are the high and low 32-bit counters of the total bits tested.&#10;</description>
+
+  <parameter name="BitsTestedCntLow" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">BitsTested is a 64-bit counters.   BitsTested are represented by 2 parameters in this object.   BitsTestedCntHigh and BitsTestedCntLow are the high and low 32-bit counters of the total bits tested.&#10;</description>
+
+  <parameter name="ErrBitsCntHigh" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of error bits encountered running BERT test.</description>
+    <description source="BROADCOM">ErrorBits is a 64-bit counter.   ErrorBits is represented by 2 parameters in this object.   ErrorBitsCntHigh and ErrorBitsCntLow are the high and low 32-bit counters of the total error bits found in the test.</description>
+
+  <parameter name="ErrBitsCntLow" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">ErrorBits is a 64-bit counter.   ErrorBits is represented by 2 parameters in this object.   ErrorBitsCntHigh and ErrorBitsCntLow are the high and low 32-bit counters of the total error bits found in the test.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Line.{i}.Stats." shortObjectName="Dev2DslLineStatsObject" specSource="TR181" profile="Device2_ADSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Throughput statistics for this interface. The CPE MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's Status parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's Enable parameter transitions from false to true). Administrative and operational interface status is discussed in TR-181i2,section 4.2.2. </description>
+  <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted out of the interface, including framing characters.  </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received on the interface, including framing characters.  </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets transmitted out of the interface. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received on the interface. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets that could not be transmitted because of errors.  </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="ErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets that contained errors preventing them from being delivered to a higher-layer protocol.  </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="DiscardPacketsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space.  </description>
+
+  <parameter name="DiscardPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets which were chosen to be discarded even though no errors had been detected to prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space.  </description>
+
+  <parameter name="TotalStart" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx"> Note: TotalStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="ShowtimeStart" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx"> Note: ShowtimeStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="LastShowtimeStart" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx"> Note: LastShowTimeStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="CurrentDayStart" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx"> Statistics SHOULD continue to be accumulated across CPE reboots, though this might not always be possible. Note: CurrentDayStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="QuarterHourStart" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx"> Statistics SHOULD continue to be accumulated across CPE reboots, though this might not always be possible. Note: QuarterHourStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Line.{i}.Stats.Total." shortObjectName="Dev2DslLineStatsTotalObject" specSource="TR181" profile="Device2_ADSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains DSL line total statistics. See G.997.1,Chapter 7.2.6. Note: The Stats.Total. parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="ErroredSecs" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of errored seconds (ES-L as defined in ITU-T Rec. G.997.1). Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="SeverelyErroredSecs" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of severely errored seconds (SES-L as defined in ITU-T Rec. G.997.1). Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamUas" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Upstream UAS counter.</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamUas" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Downstream UAS count.</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamEs" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Upstream error seconds.</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamSes" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Upstream severve error seconds counter.&#10;</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Line.{i}.Stats.Showtime." shortObjectName="Dev2DslLineStatsShowtimeObject" specSource="TR181" profile="Device2_ADSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains DSL line statistics accumulated since the most recent DSL Showtime. See G.997.1,Chapter 7.2.6. Note: This object's parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="ErroredSecs" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of errored seconds since the most recent DSL Showtime (ES-L as defined in ITU-T Rec. G.997.1). Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="SeverelyErroredSecs" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of severely errored seconds since the most recent DSL Showtime (SES-L as defined in ITU-T Rec. G.997.1). Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Line.{i}.Stats.LastShowtime." shortObjectName="Dev2DslLineStatsLastShowtimeObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">This object contains DSL line statistics accumulated since the second most recent DSL Showtime. See G.997.1,Chapter 7.2.6. Note: The LastShowtime. parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="ErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of errored seconds since the second most recent DSL Showtime (ES-L as defined in ITU-T Rec. G.997.1). Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="SeverelyErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of severely errored seconds since the second most recent DSL Showtime (SES-L as defined in ITU-T Rec.  G.997.1).  Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Line.{i}.Stats.CurrentDay." shortObjectName="Dev2DslLineStatsCurrentDayObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains DSL line statistics accumulated during the current day. See G.997.1,Chapter 7.2.6. Note: The CurrentDay. parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="ErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of errored seconds since the second most recent DSL Showtime (ES-L as defined in ITU-T Rec. G.997.1). Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="SeverelyErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of severely errored seconds since the second most recent DSL Showtime (SES-L as defined in ITU-T Rec.  G.997.1).  Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Line.{i}.Stats.QuarterHour." shortObjectName="Dev2DslLineStatsQuarterHourObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains DSL line statistics accumulated during the current quarter hour. See G.997.1,Chapter 7.2.6. Note: The QuarterHour parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="ErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of errored seconds since the second most recent DSL Showtime (ES-L as defined in ITU-T Rec. G.997.1). Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="SeverelyErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of severely errored seconds since the second most recent DSL Showtime (SES-L as defined in ITU-T Rec.  G.997.1).  Note: This parameter is OPTIONAL at the G and S/T interfaces in G.997.1 Amendment 1.  If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Line.{i}.TestParams." shortObjectName="Dev2DslLineTestParamsObject" specSource="TR181" profile="Device2_ADSL2:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains the DSL line test parameters that are available during the L0 (i.e., Showtime)  state. </description>
+  <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="HLOGGds" type="unsignedInt" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the downstream direction for HLOGpsds.  Valid values  are 1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+
+  <parameter name="HLOGGus" type="unsignedInt" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the upstream direction for HLOGpsus.  Valid values are  1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+
+  <parameter name="HLOGpsds" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="2559" />
+    <description source="TRx"> Note: HLOGpsds is measured during initialization and is not updated during Showtime. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="HLOGpsus" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="2559" />
+    <description source="TRx"> Note: HLOGpsus is measured during initialization and is not updated during Showtime. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="HLOGMTds" type="unsignedInt" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the number of symbols over which HLOGpsds was measured. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="HLOGMTus" type="unsignedInt" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the number of symbols over which HLOGpsus was measured. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="QLNGds" type="unsignedInt" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the downstream direction for QLNpsds.  Valid values  are 1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+
+  <parameter name="QLNGus" type="unsignedInt" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the upstream direction for QLNpsus.  Valid values are  1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+
+  <parameter name="QLNpsds" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="2047" />
+    <description source="TRx"> Note: This parameter is measured during initialization and is not updated during Showtime. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="QLNpsus" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="2047" />
+    <description source="TRx"> Note: This parameter is measured during initialization and is not updated during Showtime. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="QLNMTds" type="unsignedInt" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the number of symbols over which QLNpsds was measured. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="QLNMTus" type="unsignedInt" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the number of symbols over which QLNpsus was measured. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="SNRGds" type="unsignedInt" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the downstream direction for SNRpsds.  Valid values  are 1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+
+  <parameter name="SNRGus" type="unsignedInt" specSource="TR181" profile="Device2_VDSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx"> Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+
+  <parameter name="SNRpsds" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="2047" />
+    <description source="TRx"> Note: This parameter is first measured during initialization and is updated during Showtime. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="SNRpsus" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="2047" />
+    <description source="TRx"> Note: This parameter is first measured during initialization and is updated during Showtime. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="SNRMTds" type="unsignedInt" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the number of symbols over which SNRpsds was measured. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="SNRMTus" type="unsignedInt" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the number of symbols over which SNRpsus was measured. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="LATNds" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="24" />
+    <description source="TRx">Comma-seperated list of values. Indicates the downstream line attenuation per usable band, as computed during initialization.  Number  of elements is dependent on the number of downstream bands but will exceed one only for G.993.2. Interpretation of This parameter is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="LATNus" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="24" />
+    <description source="TRx">Comma-seperated list of values. Indicates the upstream line attenuation per usable band, as computed during initialization.  Number of  elements is dependent on the number of upstream bands but will exceed one only for G.993.2.  Interpretation of This parameter is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="SATNds" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="24" />
+    <description source="TRx">Comma-seperated list of values. Indicates the downstream signal attenuation per usable band, as computed during the L0 (i.e., Showtime)  state.  Number of elements is dependent on the number of downstream bands but will exceed one only for G.993.2.  Interpretation of  This parameter is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="SATNus" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="24" />
+    <description source="TRx">Comma-seperated list of values. Indicates the upstream signal attenuation per usable band, as computed during the L0 (i.e., Showtime) state.  Number of elements is dependent on the number of downstream bands but will exceed one only for G.993.2.  Interpretation of This parameter is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Channel.{i}." shortObjectName="Dev2DslChannelObject" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">DSL Channel table (a stackable interface object as described in TR-181i2,Section 4.2).  This table models DSL channel(s) on top of physical DSL lines. </description>
+  <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_ADSL:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables the channel. This parameter is based on ''ifAdminStatus'' from RFC2863. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="ReadOnly" validValuesArray="ifOperStatusValues" />
+    <description source="TRx"> When Enable is changed to true then This parameter SHOULD change to Up if and only if the interface is able to transmit and receive network traffic; it SHOULD change to Dormant if and only if the interface is operable but is waiting for external actions before it can transmit and receive network traffic (and subsequently change to Up if still operable when the expected actions have completed); it SHOULD change to LowerLayerDown if and only if the interface is prevented from entering the Up state because one or more of the interfaces beneath it is down; it SHOULD remain in the Error state if there is an error or other fault condition detected on the interface; it SHOULD remain in the NotPresent state if the interface has missing (typically hardware) components; it SHOULD change to Unknown if the state of the interface can not be determined for some reason. This parameter is based on ''ifOperStatus'' from RFC2863. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_ADSL:1" requirements="W" supportLevel="ReadWrite" maxLength="64" notifySskAliasChanged="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. This parameter provides a mechanism for an ACS to label this instance for future reference. An initial unique value MUST be assigned when the CPE creates an instance of this object. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_ADSL:1" requirements="R" supportLevel="ReadOnly" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The textual name of the channel as assigned by the CPE. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in seconds since the channel entered its current operational state. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="1024" notifySskLowerLayersChanged="true" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Comma-seperated list of values. An interface object that is stacked immediately below this interface object  See TR-181i2,Section 4.2.1. </description>
+
+  <parameter name="LinkEncapsulationSupported" type="string" specSource="TR181" profile="Device2_ADSL2:1" requirements="R" supportLevel="ReadOnly" defaultValue="G.992.3_Annex_K_ATM, G.992.3_Annex_K_PTM, G.993.2_Annex_K_ATM, G.993.2_Annex_K_PTM, Multiple" />
+    <description source="TRx">Comma-seperated list of values. List items indicate which link encapsulation standards and recommendations are supported by this object instance. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="LinkEncapsulationUsed" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="dslLinkEncapsulationUseValues" alwaysWriteToConfigFile="true" />
+    <description source="TRx"> When PTM encapsulation is identified then an upper-layer .PTM.Link interface MUST be used. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2:1, VDSL2:1</description>
+
+  <parameter name="LPATH" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxValue="3" />
+    <description source="TRx">Reports the index of the latency path supporting the bearer channel. Note:  See ITU-T Recommendation G.997.1,Section 7.5.2.7. </description>
+
+  <parameter name="INTLVDEPTH" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Reports the interleaver depth D for the latency path indicated in LPATH.  Note:  See ITU-T Recommendation G.997.1.  For a multimode device operating in a mode in which this parameter does not apply, the value of this parameter SHOULD be set to 0. </description>
+
+  <parameter name="INTLVBLOCK" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Reports the interleaver block length in use on the latency path indicated in LPATH.   Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to -1. </description>
+
+  <parameter name="ActualInterleavingDelay" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Reports the actual delay, in milliseconds, of the latency path due to interleaving.  Note:  In G.997.1, this parameter is called &quot;Actual Interleaving Delay.&quot; See ITU-T Recommendation G.997.1. </description>
+
+  <parameter name="ACTINP" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Reports the actual impulse noise protection (INP) provided by the latency path indicated in LPATH.  The value is  the actual INP in the L0 (i.e., Showtime) state. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to -1. </description>
+
+  <parameter name="INPREPORT" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Reports whether the value reported in ACTINP was computed assuming the receiver does not use erasure decoding.   Valid values are 0 (computed per the formula assuming no erasure decoding) and 1 (computed by taking into account erasure decoding  capabilities of receiver). Note:  See ITU-T Recommendation G.997.1.  For a multimode device operating in a mode in which this parameter does not apply, the  value of this parameter SHOULD be set to false. </description>
+
+  <parameter name="NFEC" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Reports the size, in octets, of the Reed-Solomon codeword in use on the latency path indicated in LPATH. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to -1. </description>
+
+  <parameter name="RFEC" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Reports the number of redundancy bytes per Reed-Solomon codeword on the latency path indicated in LPATH. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to -1. </description>
+
+  <parameter name="LSYMB" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Reports the number of bits per symbol assigned to the latency path indicated in LPATH.  This value does not  include overhead due to trellis coding. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to -1. </description>
+
+  <parameter name="UpstreamCurrRate" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The current physical layer aggregate data rate (expressed in Kbps) of the upstream DSL connection. Note: If the parameter is implemented but no value is  available, it MUST have the value 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="DownstreamCurrRate" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The current physical layer aggregate data rate (expressed in Kpbs) of the downstream DSL connection. Note: If the parameter is implemented but no value is  available, it MUST have the value 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamCurrRate_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The current payload bandwidth (expressed in &#10;Kbps) of the upstream DSL channel. </description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamCurrRate_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The current payload bandwidth (expressed in &#10;Kbps) of the downstream DSL channel. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Channel.{i}.Stats." shortObjectName="Dev2DslChannelStatsObject" specSource="TR181" profile="Device2_ADSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Throughput statistics for this interface. The CPE MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's .Status parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's .Enable parameter transitions from false to true). Administrative and operational interface status is discussed in TR-181i2,section 4.2.2. </description>
+  <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted out of the interface, including framing characters.  </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received on the interface, including framing characters.  </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets transmitted out of the interface. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received on the interface. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets that could not be transmitted because of errors.  </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="ErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets that contained errors preventing them from being delivered to a higher-layer protocol.  </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="DiscardPacketsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space.  </description>
+
+  <parameter name="DiscardPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets which were chosen to be discarded even though no errors had been detected to prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space.  </description>
+
+  <parameter name="TotalStart" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx"> Note: TotalStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="ShowtimeStart" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx"> Note: ShowtimeStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="LastShowtimeStart" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx"> Note: LastShowTimeStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="CurrentDayStart" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx"> Statistics SHOULD continue to be accumulated across CPE reboots, though this might not always be possible. Note: CurrentDayStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="QuarterHourStart" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx"> Statistics SHOULD continue to be accumulated across CPE reboots, though this might not always be possible. Note: QuarterHourStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Channel.{i}.Stats.Total." shortObjectName="Dev2DslChannelStatsTotalObject" specSource="TR181" profile="Device2_ADSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains DSL channel total statistics G.997.1. Note: The Stats.Total parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="XTURFECErrors" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of FEC errors detected (FEC-C as defined in ITU-T Rec. G.997.1). Note: If the parameter is implemented but no value is available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCFECErrors" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of FEC errors detected by the ATU-C (FEC-CFE as defined in ITU-T Rec. G.997.1). Note: If the parameter is implemented but no value is available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTURHECErrors" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of HEC errors detected (HEC-P as defined in ITU-T Rec. G.997.1). Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCHECErrors" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of HEC errors detected by the ATU-C (HEC-PFE as defined in ITU-T Rec. G.997.1). Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTURCRCErrors" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of CRC errors detected (CV-C as defined in ITU-T Rec. G.997.1). Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCCRCErrors" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of CRC errors detected by the ATU-C (CV-CFE as defined in ITU-T Rec. G.997.1). Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="X_BROADCOM_COM_RxRsCorrectable" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total RS Correctable Errors.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_RxRsCorrectable_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total RS Correctable Errors.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_TxRsCorrectable" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total RS Correctable Errors.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_TxRsCorrectable_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total RS Correctable Errors.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_TxRsUncorrectable" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total Uncorrectable RS Errors.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_TxRsUncorrectable_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total Uncorrectable RS Errors.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_RxRsUncorrectable" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total RS Uncorrectable Error&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_RxRsUncorrectable_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total RS Uncorrectable Error&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_TxRsWords" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total transmit RS Words.</description>
+
+  <parameter name="X_BROADCOM_COM_TxRsWords_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total transmit RS Words.</description>
+
+  <parameter name="X_BROADCOM_COM_RxRsWords" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total receive RS Words.</description>
+
+  <parameter name="X_BROADCOM_COM_RxRsWords_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total receive RS Words.</description>
+
+  <parameter name="X_BROADCOM_COM_ReceiveBlocks" type="unsignedInt" specSource="TR98" profile="X_BROADCOM_COM_DSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of successfully received blocks.</description>
+
+  <parameter name="X_BROADCOM_COM_ReceiveBlocks_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Total number of successfully received blocks.</description>
+
+  <parameter name="X_BROADCOM_COM_TransmitBlocks" type="unsignedInt" specSource="TR98" profile="X_BROADCOM_COM_DSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of successfully transmitted blocks.</description>
+
+  <parameter name="X_BROADCOM_COM_TransmitBlocks_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Total number of successfully transmitted blocks.</description>
+
+  <parameter name="X_BROADCOM_COM_XTURFECErrors_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Total number of FEC errors detected (FEC-C as &#10;defined in ITU-T Rec. G.997.1). </description>
+
+  <parameter name="X_BROADCOM_COM_XTUCFECErrors_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Total number of FEC errors detected by the &#10;ATU-C (FEC-CFE as defined in ITU-T Rec. &#10;G.997.1). </description>
+
+  <parameter name="X_BROADCOM_COM_XTURHECErrors_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Total number of HEC errors detected (HEC-P as &#10;defined in ITU-T Rec. G.997.1). </description>
+
+  <parameter name="X_BROADCOM_COM_XTUCHECErrors_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Total number of HEC errors detected by the &#10;ATU-C (HEC-PFE as defined in ITU-T Rec. &#10;G.997.1). </description>
+
+  <parameter name="X_BROADCOM_COM_XTURCRCErrors_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Total number of CRC errors detected (CV-C as &#10;defined in ITU-T Rec. G.997.1). </description>
+
+  <parameter name="X_BROADCOM_COM_XTUCCRCErrors_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Total number of CRC errors detected by the &#10;ATU-C (CV-CFE as defined in ITU-T Rec. &#10;G.997.1). </description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamBitErrors" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Bit errors (upstream)</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamBitErrors_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Bit errors (upstream)</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamBitErrors" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Bit errors (downstream).</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamBitErrors_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Bit errors (downstream).</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamDataCells" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Data cells (upstream).</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamDataCells_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Data cells (upstream).</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamDataCells" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total Data cells (downstream)</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamDataCells_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total Data cells (downstream)</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamTotalCells" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total cells (upstream).</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamTotalCells_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total cells (upstream).</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamTotalCells" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total Cells (downstream).</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamTotalCells_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total Cells (downstream).</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamLCD" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Upstream LCD</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamLCD_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Upstream LCD</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamLCD" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Downstream LCD</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamLCD_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Downstream LCD</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamOCD" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Upstream OCD</description>
+
+  <parameter name="X_BROADCOM_COM_UpstreamOCD_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Upstream OCD</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamOCD" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Downstream OCD</description>
+
+  <parameter name="X_BROADCOM_COM_DownstreamOCD_2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Downstream OCD</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Channel.{i}.Stats.Showtime." shortObjectName="Dev2DslChannelStatsShowtimeObject" specSource="TR181" profile="Device2_ADSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains DSL channel statistics accumulated since the most recent DSL Showtime G.997.1. Note: The Stats.ShowTime. parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="XTURFECErrors" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of FEC errors detected since the most recent DSL Showtime (FEC-C as defined in ITU-T Rec. G.997.1). Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCFECErrors" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of FEC errors detected by the ATU-C since the most recent DSL Showtime (FEC-CFE as defined in ITU-T Rec.  G.997.1). Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTURHECErrors" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of HEC errors detected since the most recent DSL Showtime (HEC-P as defined in ITU-T Rec. G.997.1). Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCHECErrors" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of HEC errors detected by the ATU-C since the most recent DSL Showtime (HEC-PFE as defined in ITU-T Rec.  G.997.1). Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTURCRCErrors" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of CRC errors detected since the most recent DSL Showtime (CV-C as defined in ITU-T Rec. G.997.1). Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCCRCErrors" type="unsignedInt" specSource="TR181" profile="Device2_ADSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of CRC errors detected by the ATU-C since the most recent DSL Showtime (CV-CFE as defined in ITU-T Rec.  G.997.1). Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Channel.{i}.Stats.LastShowtime." shortObjectName="Dev2DslChannelStatsLastShowtimeObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains DSL channel statistics accumulated since the second most recent DSL Showtime G.997.1. Note: The LastShowTime. parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="XTURFECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of FEC errors detected since the second most recent DSL Showtime (FEC-C as defined in ITU-T Rec.  G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCFECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of FEC errors detected by the ATU-C since the second most recent DSL Showtime (FEC-CFE as defined in  ITU-T Rec. G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTURHECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of HEC errors detected since the second most recent DSL Showtime (HEC-P as defined in ITU-T Rec.  G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCHECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of HEC errors detected by the ATU-C since the second most recent DSL Showtime (HEC-PFE as defined in  ITU-T Rec. G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTURCRCErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of CRC errors detected since the second most recent DSL Showtime (CV-C as defined in ITU-T Rec. G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCCRCErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of CRC errors detected by the ATU-C since the second most recent DSL Showtime (CV-CFE as defined in ITU-T  Rec. G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Channel.{i}.Stats.CurrentDay." shortObjectName="Dev2DslChannelStatsCurrentDayObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx"> Note: The CurrentDay. parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="XTURFECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of FEC errors detected since the second most recent DSL Showtime (FEC-C as defined in ITU-T Rec.  G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCFECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of FEC errors detected by the ATU-C since the second most recent DSL Showtime (FEC-CFE as defined in  ITU-T Rec. G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTURHECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of HEC errors detected since the second most recent DSL Showtime (HEC-P as defined in ITU-T Rec.  G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCHECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of HEC errors detected by the ATU-C since the second most recent DSL Showtime (HEC-PFE as defined in  ITU-T Rec. G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTURCRCErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of CRC errors detected since the second most recent DSL Showtime (CV-C as defined in ITU-T Rec. G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCCRCErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of CRC errors detected by the ATU-C since the second most recent DSL Showtime (CV-CFE as defined in ITU-T  Rec. G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Channel.{i}.Stats.QuarterHour." shortObjectName="Dev2DslChannelStatsQuarterHourObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains DSL channel statistics accumulated during the current quarter hour G.997.1. Note: The QuarterHour parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="XTURFECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of FEC errors detected since the second most recent DSL Showtime (FEC-C as defined in ITU-T Rec.  G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCFECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of FEC errors detected by the ATU-C since the second most recent DSL Showtime (FEC-CFE as defined in  ITU-T Rec. G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTURHECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of HEC errors detected since the second most recent DSL Showtime (HEC-P as defined in ITU-T Rec.  G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCHECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of HEC errors detected by the ATU-C since the second most recent DSL Showtime (HEC-PFE as defined in  ITU-T Rec. G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTURCRCErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of CRC errors detected since the second most recent DSL Showtime (CV-C as defined in ITU-T Rec. G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+  <parameter name="XTUCCRCErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of CRC errors detected by the ATU-C since the second most recent DSL Showtime (CV-CFE as defined in ITU-T  Rec. G.997.1).  Note: If the parameter is implemented but no value is  available, its value MUST be 4294967295 (the maximum for its data type). </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Diagnostics." shortObjectName="Dev2DslDiagnosticsObject" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">The DSL Diagnostics object. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.Diagnostics.ADSLLineTest." shortObjectName="Dev2DslDiagnosticsADSLLineTestObject" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object is to provide diagnostic information for a CPE with an ADSL2 or ADSL2+ modem WAN interface, but MAY also be used for ADSL. </description>
+  <description source="BROADCOM">REPORT_PROFILE: DSLDiagnostics:1, ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="DiagnosticsState" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="W" supportLevel="ReadWrite" validValuesArray="dslDiagnosticsStateValues" />
+    <description source="TRx">Indicates availability of diagnostic data.  If the ACS sets the value of this parameter to Requested, the CPE MUST initiate the corresponding diagnostic test, which  brings down the DSL connection while the test is operating.  When writing, the only allowed value is Requested. When requested, the CPE SHOULD wait until after completion of the communication session with the ACS before starting the diagnostic. When the test is completed, the value of this parameter MUST be either Complete (if the test completed successfully), or one  of the ''Error'' values listed above. If the value of this parameter is anything other than Complete, the values of the results parameters for this test are  indeterminate. When the diagnostic initiated by the ACS is completed, the CPE MUST establish a new connection to the ACS to allow the ACS to view  the results, indicating the corresponding reason in the Inform message. After the diagnostic is complete, the value of all result parameters (all read-only parameters in this object instance) MUST be  retained by the CPE until either this diagnostic is run again, or the CPE reboots.  After a reboot, if the CPE has not retained the  result parameters from the most recent test, it MUST set the value of this parameter to None. </description>
+    <description source="BROADCOM">REPORT_PROFILE: DSLDiagnostics:1, ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="Interface" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">This is the interface over which the test is to be performed. </description>
+    <description source="BROADCOM">REPORT_PROFILE: DSLDiagnostics:1, ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="ACTPSDds" type="int" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Downstream actual power spectral density.  Interpretation of the value is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: DSLDiagnostics:1, ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="ACTPSDus" type="int" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Upstream actual power spectral density.  Interpretation of the value is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: DSLDiagnostics:1, ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="ACTATPds" type="int" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Downstream actual aggregate transmitter power.  Interpretation of the value is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: DSLDiagnostics:1, ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="ACTATPus" type="int" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Upstream actual aggregate transmitter power.  Interpretation of the value is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: DSLDiagnostics:1, ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="HLINSCds" type="int" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Downstream linear representation scale.  Interpretation of the value is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: DSLDiagnostics:1, ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="HLINSCus" type="int" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Scaling used to represent the upstream linear channel characteristics.  Interpretation of the value is as  defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="HLINGds" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the downstream direction for HLINpsds.  Valid values  are 1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: VDSL2Diagnostics:1</description>
+
+  <parameter name="HLINGus" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the downstream direction for HLINpsus.  Valid values  are 1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: VDSL2Diagnostics:1</description>
+
+  <parameter name="HLOGGds" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the downstream direction for HLOGpsds.  Valid values  are 1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: VDSL2Diagnostics:1</description>
+
+  <parameter name="HLOGGus" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the upstream direction for HLOGpsus.  Valid values are  1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: VDSL2Diagnostics:1</description>
+
+  <parameter name="HLOGpsds" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="2559" />
+    <description source="TRx"> Note: This parameter is measured during initialization and is not updated during Showtime. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="HLOGpsus" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="2559" />
+    <description source="TRx"> Note: This parameter is measured during initialization and is not updated during Showtime. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="HLOGMTds" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the number of symbols over which HLOGpsds was measured. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="HLOGMTus" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the number of symbols over which HLOGpsus was measured. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="LATNpbds" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="24" />
+    <description source="TRx">Comma-seperated list of values. List items represent downstream line attenuation per usable band, as computed during initialization.  Number of elements is dependent on the number of downstream bands but will exceed one only for G.993.2. Interpretation of This parameter is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="LATNpbus" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="24" />
+    <description source="TRx">Comma-seperated list of values. List items represent upstream line attenuation per usable band, as computed during initialization.  Number of elements is dependent on the number of upstream bands but will exceed one only for G.993.2.  Interpretation of This parameter is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="SATNds" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="24" />
+    <description source="TRx">Comma-seperated list of values. List items represent downstream signal attenuation per usable band, as computed during the L0 (i.e., Showtime) state.  Number of elements is dependent on the number of downstream bands but will exceed one only for G.993.2.  Interpretation of This parameter is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="SATNus" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="24" />
+    <description source="TRx">Comma-seperated list of values. List items represent upstream signal attenuation per usable band, as computed during the L0 (i.e., Showtime) state.  Number of elements is dependent on the number of downstream bands but will exceed one only for G.993.2.  Interpretation of This parameter is as defined in ITU-T Rec. G.997.1. Note:  See ITU-T Recommendation G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="HLINpsds" type="int" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxValue="61430" />
+    <description source="TRx"> Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to ''None''. </description>
+    <description source="BROADCOM">REPORT_PROFILE: DSLDiagnostics:1, ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="HLINpsus" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="61430" />
+    <description source="TRx"> Note:  HLIN is not applicable in PLOAM for G.992.1 or G.992.2.   Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to ''None''. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="QLNGds" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the downstream direction for QLNpsds.  Valid values  are 1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: VDSL2Diagnostics:1</description>
+
+  <parameter name="QLNGus" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the upstream direction for QLNpsus.  Valid values are  1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: VDSL2Diagnostics:1</description>
+
+  <parameter name="QLNpsds" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="61430" />
+    <description source="TRx"> Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to ''None''. </description>
+    <description source="BROADCOM">REPORT_PROFILE: DSLDiagnostics:1, ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="QLNpsus" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="61430" />
+    <description source="TRx"> Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to ''None''. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="QLNMTds" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the number of symbols over which QLNpsds was measured. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="QLNMTus" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the number of symbols over which QLNpsus was measured. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="SNRGds" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the downstream direction for SNRpsds.  Valid values  are 1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: VDSL2Diagnostics:1</description>
+
+  <parameter name="SNRGus" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Number of sub-carriers per sub-carrier group in the upstream direction for SNRpsus.  Valid values are  1, 2, 4, and 8. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: VDSL2Diagnostics:1</description>
+
+  <parameter name="SNRpsds" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="61430" />
+    <description source="TRx"> Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to ''None''. </description>
+    <description source="BROADCOM">REPORT_PROFILE: DSLDiagnostics:1, ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="SNRpsus" type="string" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="61430" />
+    <description source="TRx"> Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to ''None''. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="SNRMTds" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the number of symbols over which SNRpsds was measured. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="SNRMTus" type="unsignedInt" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the number of symbols over which SNRpsus was measured. Note:  See ITU-T Recommendation G.997.1. For a multimode device operating in a mode in which this parameter does not apply, the value  of this parameter SHOULD be set to 0. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL2Diagnostics:1, VDSL2Diagnostics:1</description>
+
+  <parameter name="BITSpsds" type="int" specSource="TR181" profile="Device2_DSLDiagnostics:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxValue="61430" />
+    <description source="TRx">Comma-seperated list of values. List items represent downstream bit allocation per subcarrier group.  Maximum number of elements is 256 for G.992.3, 512 for G.992.5.  Interpretation of the value is as defined in ITU-T Rec. G.997.1. </description>
+    <description source="BROADCOM">REPORT_PROFILE: DSLDiagnostics:1</description>
+
+  <parameter name="BITSpsus" type="string" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="61430" />
+    <description source="TRx">Comma-seperated list of values. List items represent upstream bit allocation per subcarrier group.  Maximum number of elements is 256 for G.992.3, 512 for G.992.5.  Interpretation of the value is as defined in ITU-T Rec. G.997.1. </description>
+
+<vsaInfo>
+
+<validstringarray name="ADSLLinkPowerState" />
+  <element>L3</element>
+  <element>L2</element>
+  <element>L0</element>
+
+<validstringarray name="X_BROADCOM_COM_BitmapValues" />
+  <element>Bmode_D</element>
+  <element>Bmode_F</element>
+
+<validstringarray name="X_BROADCOM_COM_PhoneLinePairValues" />
+  <element>Inner Pair</element>
+  <element>Outer Pair</element>
+
+<validstringarray name="bertTestModeValues" />
+  <element>Start</element>
+  <element>Stop</element>
+
+<validstringarray name="bertTestStatusValues" />
+  <element>Running</element>
+  <element>Not Running</element>
+
+<validstringarray name="dslDiagnosticsStateValues" />
+  <element>None</element>
+  <element>Requested</element>
+  <element>Complete</element>
+  <element>Error_Internal</element>
+  <element>Error_Other</element>
+
+<validstringarray name="dslIntfStatusValues" />
+  <element>Up</element>
+  <element>Initializing</element>
+  <element>EstablishingLink</element>
+  <element>NoSignal</element>
+  <element>Disabled</element>
+  <element>Error</element>
+
+<validstringarray name="dslLineEncodingValues" />
+  <element>DMT</element>
+  <element>CAP</element>
+  <element>2B1Q</element>
+  <element>43BT</element>
+  <element>PAM</element>
+  <element>QAM</element>
+
+<validstringarray name="dslLinkEncapsulationSupportValues" />
+  <element>G.992.3_Annex_K_ATM</element>
+  <element>G.992.3_Annex_K_PTM</element>
+  <element>G.993.2_Annex_K_ATM</element>
+  <element>G.993.2_Annex_K_PTM</element>
+  <element>G.994.1</element>
+
+<validstringarray name="dslLinkEncapsulationUseValues" />
+  <element>G.992.3_Annex_K_ATM</element>
+  <element>G.992.3_Annex_K_PTM</element>
+  <element>G.993.2_Annex_K_ATM</element>
+  <element>G.993.2_Annex_K_PTM</element>
+  <element>G.994.1</element>
+
+<validstringarray name="dslPowerManagementStateValues" />
+  <element>L0</element>
+  <element>L1</element>
+  <element>L2</element>
+  <element>L3</element>
+  <element>L4</element>
+
+<validstringarray name="dslProfileValues" />
+  <element>8a</element>
+  <element>8b</element>
+  <element>8c</element>
+  <element>8d</element>
+  <element>12a</element>
+  <element>12b</element>
+  <element>17a</element>
+  <element>17b</element>
+  <element>30a</element>
+  <element>BrcmPriv1</element>
+  <element>BrcmPriv2</element>
+
+<validstringarray name="dslStandardValues" />
+  <element>G.992.1_Annex_A</element>
+  <element>G.992.1_Annex_B</element>
+  <element>G.992.1_Annex_C</element>
+  <element>T1.413</element>
+  <element>T1.413i2</element>
+  <element>ETSI_101_388</element>
+  <element>G.992.2</element>
+  <element>G.992.3_Annex_A</element>
+  <element>G.992.3_Annex_B</element>
+  <element>G.992.3_Annex_C</element>
+  <element>G.992.3_Annex_I</element>
+  <element>G.992.3_Annex_I</element>
+  <element>G.992.3_Annex_J</element>
+  <element>G.992.3_Annex_L</element>
+  <element>G.992.3_Annex_M</element>
+  <element>G.992.4</element>
+  <element>G.992.5_Annex_A</element>
+  <element>G.992.5_Annex_B</element>
+  <element>G.992.5_Annex_C</element>
+  <element>G.992.5_Annex_I</element>
+  <element>G.992.5_Annex_J</element>
+  <element>G.992.5_Annex_M</element>
+  <element>G.993.1</element>
+  <element>G.993.1_Annex_A</element>
+  <element>G.993.2_Annex_A</element>
+  <element>G.993.2_Annex_B</element>
+  <element>G.993.2_Annex_C</element>
+  <element>G.9701</element>
+
+<validstringarray name="ifOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+<validstringarray name="onOffValues" />
+  <element>On</element>
+  <element>Off</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_ADSL:1" /> 
+<profile name="Device2_ADSL2:1" /> 
+<profile name="Device2_VDSL2:1" /> 
+<profile name="Unspecified" /> 
+<profile name="X_BROADCOM_COM_DSL:1" /> 
+<profile name="Device2_DSLDiagnostics:1" /> 
+<profile name="Device2_BondedDSL:1" /> 
+<profile name="X_BROADCOM_COM_VDSL2WAN:1" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

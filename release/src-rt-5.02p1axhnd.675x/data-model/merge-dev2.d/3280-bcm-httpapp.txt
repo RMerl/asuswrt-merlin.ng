@@ -1,0 +1,9 @@
+#
+# Add the object in cms-dm-httpapp.xml as the first child 
+# of Device.X_BROADCOM_COM_AppCfg. 
+#
+# See 0000-README.txt for more details
+#
+
+addFirstChildObjToObj cms-dm-httpapp.xml Device.X_BROADCOM_COM_AppCfg.
+

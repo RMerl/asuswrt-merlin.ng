@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2013" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Firewall." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Firewall.X_BROADCOM_COM_FirewallException.{i}." shortObjectName="Dev2FirewallExceptionObject" specSource="Broadcom" profile="Unspecified" supportLevel="DynamicInstances" oid="3250" />
+  <description source="BROADCOM">If firewall is enabled on IP Interface, this table lists the exceptions for TR181</description>
+
+  <parameter name="IPInterface" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="BROADCOM">&gt;{{object}} criterion. {{reference}} This specifies the interface associated with the entry. It MAY be a layer 1, 2 or 3 interface, however, the types of interfaces for which Rules can be instantiated is a local matter to the CPE.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Firewall.X_BROADCOM_COM_FirewallException.{i}.Rule.{i}." shortObjectName="Dev2FirewallExceptionRuleObject" specSource="Broadcom" profile="Unspecified" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">If firewall is enabled on IP Interface, this table lists the exceptions for TR181</description>
+
+  <parameter name="Enable" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Enable/disable of this filtering configuration entry.</description>
+
+  <parameter name="FilterName" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">Name of this filtering configuration.</description>
+
+  <parameter name="IPVersion" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="4" validValuesArray="ipVersionValues" />
+    <description source="BROADCOM">IP version.</description>
+
+  <parameter name="Protocol" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="None" validValuesArray="ipProtocol5Values" />
+    <description source="BROADCOM">Enumeration of: &#10;&quot;TCP&quot; &#10;&quot;UDP&quot; &#10;&quot;TCP or UDP&quot; &#10;&quot;ICMP&quot; &#10;&quot;ICMPv6&quot; &#10;&quot;None&quot;</description>
+
+  <parameter name="SourcePortStart" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">Source port start.</description>
+
+  <parameter name="SourcePortEnd" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">Source port end.</description>
+
+  <parameter name="DestinationPortStart" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">Destination port start.</description>
+
+  <parameter name="DestinationPortEnd" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">Destination port end.</description>
+
+  <parameter name="SourceIPAddress" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">Source IPv4 or IPv6 Address. IPv6 address may include subnet prefix length in CIDR notation.</description>
+
+  <parameter name="SourceNetMask" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">Source IPv4 netmask.</description>
+
+  <parameter name="DestinationIPAddress" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">Destination IPv4 or IPv6 Address. IPv6 address may include subnet prefix length in CIDR notation.</description>
+
+  <parameter name="DestinationNetMask" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">Destination IPv4 netmask.</description>
+
+  <parameter name="Target" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Drop" validValuesArray="FirewallExceptionRuleObjectTargetValues" />
+    <description source="BROADCOM">Action for this rule </description>
+
+	
+<vsaInfo>
+
+<validstringarray name="ipProtocol5Values" />
+  <element>TCP</element>
+  <element>UDP</element>
+  <element>TCP or UDP</element>
+  <element>ICMP</element>
+  <element>ICMPv6</element>
+  <element>None</element>
+
+<validstringarray name="ipVersionValues" />
+  <element>4</element>
+  <element>6</element>
+
+<validstringarray name="FirewallExceptionRuleObjectTargetValues" />
+  <element>Drop</element>
+  <element>Accept</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

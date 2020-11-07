@@ -1,0 +1,443 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_SecDmzHostCfg." shortObjectName="SecDmzHostCfgObject" specSource="BROADCOM" profile="X_BROADCOM_COM_Security:1" supportLevel="Present" oid="3000" />
+  <description source="TRx">DMZ configuration.</description>
+
+  <parameter name="IPAddress" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">IP address of DMZ host.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SecDmzHostCfg</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AccessTimeRestriction.{i}." shortObjectName="AccessTimeRestrictionObject" specSource="BROADCOM" profile="X_BROADCOM_COM_AccessTimeRestriction:1" supportLevel="DynamicInstances" />
+  <description source="TRx">Access Time Restriction configuration</description>
+
+  <parameter name="Enable" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enable/disable of this access time restriction configuration entry</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SecParentalControlCfg.status</description>
+
+  <parameter name="Username" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">User name of this configuration entry</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SecParentalControlCfg.username</description>
+
+  <parameter name="StartTime" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Time expressed in hh:mm.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SecParentalControlCfg.startTime</description>
+
+  <parameter name="EndTime" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Time expressed in hh:mm.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SecParentalControlCfg.endTime</description>
+
+  <parameter name="Days" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">A list of abbreviated days of the week in the form of: MonTueWedThuFriSatSun</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SecParentalControlCfg.days</description>
+
+  <parameter name="MACAddress" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">User name of this configuration entry</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SecParentalControlCfg.mac</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_UrlFilterCfg." shortObjectName="UrlFilterCfgObject" specSource="Broadcom" profile="Unspecified" supportLevel="Present" />
+  <description source="BROADCOM">Object for Url filter feature</description>
+
+  <parameter name="Enable" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+
+  <parameter name="ExcludeMode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="16" />
+    <description source="BROADCOM">Black list or white list</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_UrlFilterCfg.X_BROADCOM_COM_UrlFilterListCfgObj.{i}." shortObjectName="UrlFilterListObject" specSource="Broadcom" profile="Unspecified" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">object for information of Url filter entry</description>
+
+  <parameter name="Enable" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+
+  <parameter name="UrlAddress" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="128" />
+    <description source="BROADCOM">Url address of the website</description>
+
+  <parameter name="PortNumber" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">port number of the server with the url address</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_DDnsCfg.{i}." shortObjectName="DDnsCfgObject" specSource="BROADCOM" profile="X_BROADCOM_COM_DynamicDNS:1" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">DDNS configuration.  Was in BcmCfm_DDnsCfg in the old PSI model.</description>
+
+  <parameter name="Enable" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Enable/disable of this configuration entry.</description>
+
+  <parameter name="FullyQualifiedDomainName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">Technically there should be a dot at the very end of the domain name. For user convenience, we support FQDN both with dot and without dot.</description>
+
+  <parameter name="UserName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">User name for the DDNS service.</description>
+
+  <parameter name="Password" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" isTr69Password="true" isConfigPassword="true" />
+    <description source="BROADCOM">Password for the DDNS service.</description>
+
+  <parameter name="IfName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">WAN interface to monitor for changes to the IP address.</description>
+
+  <parameter name="ProviderName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="tzo" validValuesArray="ProviderNameValues" />
+    <description source="BROADCOM">Only two DDNS services are supported right now: &#10;&quot;tzo&quot; &#10;&quot;dyndns&quot;</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_IPPCfg." shortObjectName="IppCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_IpPrinting:1" supportLevel="Present" />
+  <description source="TRx">Printer Configuration</description>
+
+  <parameter name="Enable" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enable/disable of this configuration entry</description>
+    <description source="BROADCOM">PSI name: BcmCfm_IppCfg</description>
+
+  <parameter name="Make" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Make model of printer</description>
+    <description source="BROADCOM">PSI name: BcmCfm_IppCfg</description>
+
+  <parameter name="Device" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="/dev/printer0" />
+    <description source="TRx">Printer location.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_IppCfg</description>
+
+  <parameter name="Name" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Printer name</description>
+    <description source="BROADCOM">PSI name: BcmCfm_IppCfg</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_DebugPortMirroringCfg.{i}." shortObjectName="WanDebugPortMirroringCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_Debug:1" supportLevel="DynamicInstances" hideObjectFromAcs="true" />
+  <description source="TRx">WAN port traffic debug tool.   Traffic are mirrored on LAN port.</description>
+
+  <parameter name="MonitorInterface" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="32" />
+
+  <parameter name="MirrorInterface" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="eth0" maxLength="32" />
+
+  <parameter name="Direction" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="TRx">Out / In</description>
+
+  <parameter name="Status" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enable/disable.</description>
+
+  <parameter name="GemPortMaskArray" type="hexBinary" specSource="Broadcom" profile="X_ITU_ORG_Gpon:1" supportLevel="ReadWrite" defaultValue="00000000000000000000000000000000" maxLength="32" />
+    <description source="BROADCOM">Gem port bit mask to monitor</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_NetworkConfig." shortObjectName="NetworkConfigObject" specSource="Broadcom" profile="Unspecified" supportLevel="Present" />
+  <description source="BROADCOM">System network configuration object containing default gateway  info (a routed wan device name) and dns info (wan interface name or static ip addresses). </description>
+
+  <parameter name="DNSIfName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">This string variable allows mutiple layer 3 short linux interface names seperated by comma and the first entry has the highest priority and the last one has the lowest priority.</description>
+
+  <parameter name="DNSServers" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Static DNS server for the system.  2 entries with coma as the seperator.</description>
+
+  <parameter name="ActiveDNSServers" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0.0.0.0,0.0.0.0" />
+    <description source="BROADCOM">This string variable holds a list of dns ip addresses currently uesed in the system(same ip addresses as in resolv.conf). The default value &quot;0.0.0.0,0.0.0.0&quot; means no active dns in the system.</description>
+
+  <parameter name="EnableAdvancedDMZ" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">This boolean flag for Advanced DMZ is global and once it is TRUE after one pvc is created (currently only in PPPoX and MER), No more pvc can be added to the system.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_InterfaceControl." shortObjectName="InterfaceControlObject" specSource="Broadcom" profile="Unspecified" supportLevel="Present" hideObjectFromAcs="true" />
+  <description source="BROADCOM">This object is to configure multiple EthWan interfaces.</description>
+
+  <parameter name="IfName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">This parameter indicates the name of the interface to be configured for EthWan</description>
+
+  <parameter name="MoveToWANSide" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">This parameter indicates that the interface belongs to WAN.</description>
+
+  <parameter name="MoveToLANSide" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">This parameter indicates that the interface belongs to LAN.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_EthernetOam." shortObjectName="EthernetOamObject" specSource="Broadcom" profile="X_BROADCOM_COM_EthernetOam:1" supportLevel="Present" />
+  <description source="BROADCOM">Ethernet Oam object</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_EthernetOam.Ieee8023ahCfg." shortObjectName="Ieee8023ahCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_EthernetOam:1" supportLevel="Present" />
+  <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="Enabled" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="IfName" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="OamId" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="1" minValue="1" maxValue="2147483647" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="AutoEventEnabled" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="VariableRetrievalEnabled" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="LinkEventsEnabled" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="RemoteLoopbackEnabled" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="ActiveModeEnabled" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="Tmsctl3ahPid" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="65535" hideParameterFromAcs="true" />
+    <description source="BROADCOM">The pid of the tmsctl running 802.3ah mode. A pid of 0 indicates that no tmsctl running 802.3ah mode.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_EthernetOam.Ieee8021agCfg." shortObjectName="Ieee8021agCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_EthernetOam:1" supportLevel="Present" />
+  <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="Enabled" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="Y1731Enabled" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="MdId" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="Broadcom" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="MdLevel" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="7" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="MaId" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="BRCM" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="CcmInterval" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="4" minValue="1" maxValue="7" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="Tmsctl1agPid" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="65535" hideParameterFromAcs="true" />
+    <description source="BROADCOM">The pid of the tmsctl running 802.1ag mode. A pid of 0 indicates that no tmsctl running 802.1ag mode.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_EthernetOam.Ieee8021agCfg.LocalMep.{i}." shortObjectName="LocalMepObject" specSource="Broadcom" profile="X_BROADCOM_COM_EthernetOam:1" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="IfName" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="MepId" type="int" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="1" minValue="-1" maxValue="8191" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="VlanId" type="int" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="4094" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="CcmEnabled" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_EthernetOam.Ieee8021agCfg.RemoteMep.{i}." shortObjectName="RemoteMepObject" specSource="Broadcom" profile="X_BROADCOM_COM_EthernetOam:1" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="MepId" type="int" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="8191" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_EthernetOam.Ieee8021agCfg.LoopbackDiagnostics." shortObjectName="Eoam1agLoopbackDiagObject" specSource="Broadcom" profile="X_BROADCOM_COM_EthernetOam:1" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="DiagnosticsState" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="None" validValuesArray="EthernetOamDiagStateValues" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="LocalMepId" type="int" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="1" minValue="-1" maxValue="8191" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="TargetMacAddress" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="NumberOfRepetitions" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="1" minValue="1" maxValue="4294967295" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="SuccessCount" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="FailureCount" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_EthernetOam.Ieee8021agCfg.LinktraceDiagnostics." shortObjectName="Eoam1agLinktraceDiagObject" specSource="Broadcom" profile="X_BROADCOM_COM_EthernetOam:1" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="DiagnosticsState" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="None" validValuesArray="EthernetOamDiagStateValues" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="LocalMepId" type="int" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="1" minValue="-1" maxValue="8191" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="TargetMacAddress" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="MaxHopCount" type="int" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="255" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+  <parameter name="MepList" type="string" specSource="Broadcom" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="BROADCOM">Ethernet Oam object</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_IPTunnel.{i}." shortObjectName="IPTunnelObject" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">Layer 3 tunnel object</description>
+
+  <parameter name="Activated" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Live status of the tunnel</description>
+
+  <parameter name="TunnelName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="TunnelCounter" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Number of tunnels associated with the pair of WAN/LAN interfaces</description>
+
+  <parameter name="Mode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Ipv6InIpv4" validValuesArray="X_BROADCOM_COM_TunnelMode" />
+    <description source="BROADCOM">Mode of 6in4, 4in6, 4in4, or 6in6</description>
+
+  <parameter name="AssociatedWanIfName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">The WAN interface that the tunnel is attached to.</description>
+
+  <parameter name="AssociatedLanIfName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">The LAN interface that the tunnel attached to.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_IPTunnel.{i}.V4inV6Tunnel.{i}." shortObjectName="Ipv4inIpv6TunnelObject" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="DynamicInstances" />
+
+  <parameter name="ConnStatus" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Disconnected" validValuesArray="ipTunnelConnectionStatusValues" />
+    <description source="BROADCOM">Connection status of the tunnel.</description>
+
+  <parameter name="Mechanism" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="DualStackLite" validValuesArray="X_BROADCOM_COM_TunnelMechanism" />
+
+  <parameter name="Dynamic" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Indicate if the tunnel is static configuration.</description>
+
+  <parameter name="RemoteIpv6Address" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+
+  <parameter name="CurrentAftrName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">This parameter is to save AFTR NAME from DHCPv6 message.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_IPTunnel.{i}.V6inV4Tunnel.{i}." shortObjectName="Ipv6inIpv4TunnelObject" specSource="Broadcom" profile="X_BROADCOM_COM_IPv6:1" supportLevel="DynamicInstances" />
+
+  <parameter name="ConnStatus" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Disconnected" validValuesArray="ipTunnelConnectionStatusValues" />
+    <description source="BROADCOM">Connection status of the tunnel.</description>
+
+  <parameter name="Mechanism" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Ipv6RapidDeployment" validValuesArray="X_BROADCOM_COM_TunnelMechanism" />
+
+  <parameter name="Dynamic" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Indicate if the tunnel is static configuration.</description>
+
+  <parameter name="Ipv4MaskLen" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="32" />
+    <description source="BROADCOM">Common bit number of IPv4 address for 6rd tunnel configuration.</description>
+
+  <parameter name="Prefix" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">6rd prefix assigned by the ISP for 6rd tunnel configuration.</description>
+
+  <parameter name="BorderRelayAddress" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">Border relay address for 6rd tunnel configuration.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_WlanNvram." shortObjectName="WlanNvramObject" specSource="Broadcom" profile="X_BROADCOM_COM_WiFiLAN:1" supportLevel="Present" lockZone="4" />
+  <description source="BROADCOM">wlan nvram parameters</description>
+
+  <parameter name="WlanNvram" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">nvram string: format:name=string|name=string|...</description>
+
+ <parameter name="WlanUnsetNvram" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">nvram string: format:name=string|name=string|...</description>
+
+<vsaInfo>
+
+<validstringarray name="EthernetOamDiagStateValues" />
+  <element>None</element>
+  <element>Requested</element>
+  <element>Complete</element>
+  <element>Error</element>
+  <element>InProgress</element>
+
+<validstringarray name="ProviderNameValues" />
+  <element>dyndns</element>
+  <element>tzo</element>
+  <element>noip</element>
+
+<validstringarray name="X_BROADCOM_COM_TunnelMechanism" />
+  <element>Ipv6RapidDeployment</element>
+  <element>ISATAP</element>
+  <element>Teredo</element>
+  <element>6to4</element>
+  <element>DualStackLite</element>
+
+<validstringarray name="X_BROADCOM_COM_TunnelMode" />
+  <element>Ipv6InIpv4</element>
+  <element>Ipv4InIpv6</element>
+  <element>Ipv4InIpv4</element>
+  <element>Ipv6InIpv6</element>
+
+<validstringarray name="enabledDisabledStatusValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+
+<validstringarray name="ipTunnelConnectionStatusValues" />
+  <element>Disconnected</element>
+  <element>Connected</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Baseline:1" /> 
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="X_BROADCOM_COM_IpPrinting:1" /> 
+<profile name="X_BROADCOM_COM_IGMP:1" /> 
+<profile name="X_BROADCOM_COM_MLD:1" /> 
+<profile name="X_BROADCOM_COM_WiFiLAN:1" /> 
+<profile name="X_BROADCOM_COM_AccessTimeRestriction:1" /> 
+<profile name="X_BROADCOM_COM_DynamicDNS:1" /> 
+<profile name="X_BROADCOM_COM_Security:1" /> 
+<profile name="X_BROADCOM_COM_Debug:1" /> 
+<profile name="X_ITU_ORG_Gpon:1" /> 
+<profile name="X_BROADCOM_COM_EthernetOam:1" /> 
+<profile name="X_BROADCOM_COM_IPv6:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

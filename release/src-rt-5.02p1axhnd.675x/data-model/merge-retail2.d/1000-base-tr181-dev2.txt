@@ -1,0 +1,11 @@
+#
+# The first file in the merge directory must have the "base" command.
+# This data model becomes the root of the data model, in this case,
+# the root will be Device.
+#
+# See 0000-README.txt for more details
+#
+
+base cms-dm-tr181-beginrealroot.xml
+
+

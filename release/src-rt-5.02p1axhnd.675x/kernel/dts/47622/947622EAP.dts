@@ -1,0 +1,84 @@
+#include "947622.dts"
+#define HS_SPIM_SPI			36
+
+/ {
+	aliases {
+		spi1 = &hsspi; /* 0 = legacy, 1 = high speed */
+	};
+
+	/* this is actually the PLL but we have no clock framework */
+	hsspi_pll: hsspi-pll {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <200000000>;
+	};
+
+	ubus@ff800000 {
+		/* actual count 108 GPIOs */
+		gpio3: gpio-controller@0xff80050c {
+			compatible = "brcm,bcm6345-gpio";
+			reg-names = "dirout", "dat";
+			reg = <0x50c 0x4>, <0x52c 0x4>;
+			ngpios = <32>;
+
+			#gpio-cells = <2>;
+			gpio-controller;
+		};
+		gpio2: gpio-controller@0xff800508 {
+			compatible = "brcm,bcm6345-gpio";
+			reg-names = "dirout", "dat";
+			reg = <0x508 0x4>, <0x528 0x4>;
+			ngpios = <32>;
+
+			#gpio-cells = <2>;
+			gpio-controller;
+		};
+		gpio1: gpio-controller@0xff800504 {
+			compatible = "brcm,bcm6345-gpio";
+			reg-names = "dirout", "dat";
+			reg = <0x504 0x4>, <0x524 0x4>;
+			ngpios = <32>;
+
+			#gpio-cells = <2>;
+			gpio-controller;
+		};
+		gpio0: gpio-controller@0xff800500 {
+			compatible = "brcm,bcm6345-gpio";
+			reg-names = "dirout", "dat";
+			reg = <0x500 0x4>, <0x520 0x4>;
+			ngpios = <32>;
+
+			#gpio-cells = <2>;
+			gpio-controller;
+		};
+		hsspi: spi@0xff801000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,bcm6328-hsspi";
+			reg = <0x1000 0x600>;
+			clocks = <&hsspi_pll>, <&hsspi_pll>;
+			clock-names = "hsspi", "pll";
+			spi-max-frequency = <67000000>;
+			num-cs = <8>;
+			cs-gpios = <0>, <0>;
+			interrupts = <GIC_SPI HS_SPIM_SPI IRQ_TYPE_LEVEL_HIGH>;
+			status = "okay";
+			flash: m25p80@0 {
+				status = "okay";
+				compatible = "jedec,spi-nor";
+				reg = <0>; /* chip select 0 */
+				spi-max-frequency = <60000000>;
+				#address-cells = <1>;
+				#size-cells = <1>;
+				partition@0 {
+					label = "bootloader";
+					reg = <0x0 0x0100000>;
+				};
+				partition@1 {
+					label = "mtdoops";
+					reg = <0x0100000 0x0020000>;
+				};
+			 };
+		 };
+	};
+};

@@ -1,0 +1,1873 @@
+if (BCM_KF_MISC_MAKEFILE)
+
+config BRCM_IKOS
+	bool "IKOS"
+
+config BCM_CHIP_NUMBER
+	int "numerical value of chipid"
+
+config BRCM_CHIP_REV
+	hex "numerical value of chipid and revision"
+
+config BCM_KERNEL_CUSTOM
+	bool "Build kernel with Broadcom custom changes"
+	default y
+	help
+	   This should always be selected for Broadcom
+	   Internal builds
+
+config BCM_CA7_MPCORE
+	bool "ARM Cortex A7 MPCORE architecture support"
+	select CPU_V7
+	select ARM_GIC
+	select ARM_L1_CACHE_SHIFT_6
+	select HAVE_CLK
+	select CLKDEV_LOOKUP
+	select HAVE_ARM_ARCH_TIMER
+	select SPARSE_IRQ
+	help
+		Support for ARM A7 MPCORE subsystem
+	  
+config BCM_CA7_SMP
+	bool "Enable SMP on ARM Cortex A7 MPCORE"
+	select HAVE_SMP
+	select SMP
+	select SMP_ON_UP
+    select HOTPLUG_CPU
+	select HAVE_ARM_SCU
+	select BCM_CA7_MPCORE
+	help 
+		 Support for ARM A7 SMP
+
+choice
+	prompt "Broadcom Commengine board type"
+	default BCM963268
+	depends on (BCM_KF_MIPS_BCM963XX || BCM_KF_ARM_BCM963XX)
+	help
+	  Select different Broadcom ADSL board
+
+config BCM947189
+	bool "947189"
+	depends on ARM
+	select EMBEDDED
+	select CPU_V7
+
+config BCM96846
+	bool "96846"
+	depends on ARM
+	depends on BCM_KF_ARM_BCM963XX
+	select MACH_BCM96846
+	select ARCH_REQUIRE_GPIOLIB
+
+config BCM96878
+    bool "96878"
+    depends on ARM
+    depends on BCM_KF_ARM_BCM963XX
+    select ARM_AMBA
+    select ARCH_MULTIPLATFORM
+    select EMBEDDED
+    select COMMON_CLK
+    select BCM_CA7_SMP
+
+config BCM947622
+	bool "947622"
+	depends on ARM
+	depends on BCM_KF_ARM_BCM963XX
+	select ARM_AMBA
+	select ARCH_MULTIPLATFORM
+	select EMBEDDED
+	select COMMON_CLK
+	select BCM_CA7_SMP
+
+config BCM963178
+	bool "963178"
+	depends on ARM
+	depends on BCM_KF_ARM_BCM963XX
+	select ARM_AMBA
+	select ARCH_MULTIPLATFORM
+	select EMBEDDED
+	select COMMON_CLK
+	select BCM_CA7_SMP
+
+
+config BCM963148
+	bool "63148"
+	depends on BCM_KF_ARM_BCM963XX
+	depends on ARM
+	select EMBEDDED
+	select MACH_BCM963148
+
+config BCM963138
+	bool "63138"
+	depends on BCM_KF_ARM_BCM963XX
+	depends on ARM
+	select EMBEDDED
+	select MACH_BCM963138
+
+config BCM963158
+	bool "63158"
+	depends on BCM_KF_ARM64_BCM963XX
+	depends on ARM64
+
+config BCM960333
+	bool "960333"
+	depends on BCM_KF_MIPS_BCM963XX
+	depends on MIPS_BCM963XX
+	select DMA_NONCOHERENT
+
+config BCM963268
+	bool "963268 VDSL board"
+	depends on BCM_KF_MIPS_BCM963XX
+	depends on MIPS_BCM963XX
+	select DMA_NONCOHERENT
+	select SYS_SUPPORTS_SMP
+	select NR_CPUS_DEFAULT_2
+
+config BCM96838
+	bool "96838 GPON/EPON board"
+	depends on BCM_KF_MIPS_BCM963XX
+	depends on MIPS_BCM963XX
+	select DMA_NONCOHERENT
+	select SYS_SUPPORTS_SMP
+	select NR_CPUS_DEFAULT_2
+
+config BCM963381
+	bool "963381 VDSL board"
+	depends on BCM_KF_MIPS_BCM963XX
+	depends on MIPS_BCM963XX
+	select DMA_NONCOHERENT
+	select SYS_SUPPORTS_SMP
+	select NR_CPUS_DEFAULT_2
+
+config BCM96848
+	bool "96848 GPON/EPON board"
+	depends on BCM_KF_MIPS_BCM963XX
+	depends on MIPS_BCM963XX
+	select DMA_NONCOHERENT
+	select SYS_SUPPORTS_SMP
+	select NR_CPUS_DEFAULT_2
+
+config BCM96858
+	bool "6858 GPON/EPON"
+	depends on BCM_KF_ARM64_BCM963XX
+	depends on ARM64
+
+config BCM94908
+	bool "4908 Wireless Router board"
+	depends on BCM_KF_ARM64_BCM963XX
+	depends on ARM64
+
+config BCM96856
+	bool "6856 GPON/EPON"
+	depends on BCM_KF_ARM64_BCM963XX
+	depends on ARM64
+
+endchoice
+
+config MACH_BCM963148
+	bool "BCM963148 board"
+	select EMBEDDED
+	select PLAT_B15_CORE
+	select PLAT_BCM63148
+	default y
+
+config MACH_BCM963138
+	bool "BCM963138 board"
+	select EMBEDDED
+	select PLAT_CA9_MPCORE
+	select PLAT_BCM63138
+	default y
+
+config MACH_BCM96846
+	bool "BCM96846 board"
+	select EMBEDDED
+	select PLAT_CA7_MPCORE
+	select PLAT_BCM6846
+	default y
+
+config BOARD_ZRELADDR
+	hex
+	default 0x00018000
+	depends on BCM_KF_ARM_BCM963XX
+	depends on ARM
+	help
+	  Must be consistent with the definition of "textaddr-y" in
+	  arch/arm/Makefile;
+	  BOARD_ZRELADDR == virt_to_phys(TEXTADDR)
+
+config ARCH_BCM947XXX
+	bool "BCM947189 board" if ARCH_MULTI_V7
+	select ARM_AMBA
+	select ARM_GIC
+	select HAVE_ARM_ARCH_TIMER
+	default n
+
+config BOARD_PARAMS_PHYS
+	hex
+	depends on BCM_KF_ARM_BCM963XX
+	depends on ARM
+	default 0x00000000
+	help
+	  Board_PARAMS_PHYS must be within 4MB of ZRELADDR
+
+config DEBUG_UART_ADDR
+	hex
+	default 0xfffe8600 if (BCM963138) || (BCM963148)
+	default 0xff800640 if (BCM96846)
+	default 0xff812000 if (BCM947622) || (BCM963178) || (BCM96878)
+	depends on BCM_KF_ARM_BCM963XX
+	depends on ARM
+	help
+	  Physical address of the UART used in early kernel debugging.
+
+config BCM63148_SIM
+	bool "63148 SIM"
+	default n
+	depends on BCM963148
+	help
+	  BCM63148 for simulation
+
+config BCM63138_SIM
+	bool "63138 SIM"
+	default n
+	depends on BCM963138
+	help
+	  BCM63138 for simulation
+
+config BCM6846_SIM
+	bool "6846 SIM"
+	default n
+	depends on BCM96846
+	help
+	  BCM6846 for simulation
+
+config BCM6878_SIM
+    bool "6878 SIM"
+    default n
+    depends on BCM96878
+    help
+      BCM6878 for simulation
+
+config BCM47622_SIM
+	bool "47622 SIM"
+	default n
+	depends on BCM947622
+	help
+	  BCM47622 for simulation
+
+config BCM63178_SIM
+	bool "63178 SIM"
+	default n
+	depends on BCM963178
+	help
+	  BCM63178 for simulation
+
+config BCM6858_SIM
+	bool "6858 SIM"
+	default n
+	depends on BCM96858
+	help
+	  BCM6858 for simulation
+
+config BCM6856_SIM
+	bool "6856 SIM"
+	default n
+	depends on BCM96856
+	help
+	  BCM6856 for simulation
+
+config BCM_SCHED_RT_PERIOD
+	int "Period over which RT task cpu usage is measured (in us)"
+	range 0 1000000
+
+config BCM_SCHED_RT_RUNTIME
+	int "Portion of the period that RT tasks are allowed to run (in us)"
+	range 0 1000000
+
+config BCM_SCHED_RT_SHARE
+	bool "Allow RT threads to take time from other cores"
+
+config BCM_PROC_CPU_AFFINITY_HINT
+	bool "Allow process to recover its cpu affinity mask when feasible"
+
+config BCM_BOARD
+	bool "Support for Broadcom Board"
+	select CRC32
+
+config BCM_CHIPINFO
+	tristate "Support for Broadcom chipinfo"
+
+
+config BCM_PLATFORM
+	tristate "Support for Broadcom platform"
+
+config BCM_OTP
+	tristate "Secure boot support for Broadcom otp"
+
+config BCM_SOTP
+	tristate "Secure boot support for Broadcom Secure otp"
+
+config BCM_SERIAL
+	tristate "Support for Serial Port"
+	select SERIAL_CORE
+
+config BCM_SERIAL_CONSOLE
+	bool "Console on BCM63XX serial port"
+	depends on BCM_SERIAL=y
+	select SERIAL_CORE_CONSOLE
+
+config BCM_EXT_TIMER
+	bool "Support for external timer"
+	default n
+
+config BCM_WATCHDOG_TIMER
+	bool "Support for watchdog timer"
+	default n
+
+config BCM_FAILSAFE_BOOT
+	depends on WATCHDOG 
+	bool "Support for failsafe boot"
+	default n
+
+config BCM_TIMER
+	bool "Support for Broadcom Timer"
+
+config L2TP
+	tristate "Support for L2TP"
+
+config ACCEL_PPTP
+	tristate "Support for ACCEL_PPTP"
+
+config BCM_PKTFLOW
+	tristate "Support for Broadcom Packet Flow Cache"
+
+config BCM_PKTFLOW_MAX_FLOWS
+	int "Max number of Flow-cache flows Entries"
+	depends on BCM_PKTFLOW
+
+config BCM_PKTFLOW_MAX_FDB
+	int "Max number of Flow-cache FDB Entries"
+	depends on BCM_PKTFLOW
+
+config BCM_PKTFLOW_MAX_HOST_DEV
+	int "Max number of Flow-cache Host Device Entries"
+	depends on BCM_PKTFLOW
+
+config BCM_PKTFLOW_MAX_HOST_MAC
+	int "Max number of Flow-cache Host MAC Entries"
+	depends on BCM_PKTFLOW
+
+config BCM_FHW
+	tristate "Support for HW Accelerator"
+
+config BCM_PKTCMF
+	tristate "Support for Packet CMF"
+
+config BCM_PKTRUNNER
+	tristate "Support for Packet runner"
+
+config BCM_PKTRUNNER_GSO
+	bool "Runner GSO Support "
+
+config BCM_SW_GSO
+	bool "Software GSO Support "
+	depends on BCM_KF_SW_GSO && BCM_KF_NBUFF
+
+config BCM_CSO
+	bool "CHECKSUM OFFLOAD Support "
+
+config BCM_CAPWAP
+	bool "CAPWAP Support "
+
+config BCM_PKTRUNNER_WAR_SKIP_TUN
+	bool "Runner workaround to skip TUN device"
+
+config BCM_CMDLIST
+	tristate "Support for Command List Driver"
+
+config BCM_CMDLIST_SIM
+	bool "Command List Simulation"
+
+config BCM_ARCHER
+	tristate "Support for Archer Driver"
+
+config BCM_ARCHER_WLAN
+	bool "Archer WLAN Interface"
+
+config BCM_ARCHER_GSO
+	bool "Archer Generic Segmentation Offload (GSO)"
+
+config BCM_ARCHER_SIM
+	bool "Archer Simulation"
+
+config BCM_LTE
+	tristate "BCM LTE WAN support"
+	depends on BCM963138 || BCM963381
+
+config BCM_LTE_IMPL
+	int "Implementation index for Broadcom LTE"
+	depends on BCM_LTE
+
+config BCM_LTE_PCI
+	tristate "LTE on PCI"
+	depends on (BCM_LTE && BCM_PCI)
+
+config BCM_LTE_PCI_MODEM_BOOT
+	bool "Modem Boot device node"
+	depends on BCM_LTE_PCI
+
+config BCM_LTE_USB
+	tristate "LTE on USB"
+	depends on (BCM_LTE && BCM_USB)
+
+config BCM_UBUSCAP
+	tristate "Support for Broadcom UBUS capture driver"
+
+config BCM_UBUSCAP_IMPL
+	int "UBUS capture char driver"
+	depends on BCM_UBUSCAP
+
+config BCM_MEMCCAP
+	tristate "Support for Broadcom MEMC capture driver"
+
+config BCM_MEMCCAP_IMPL
+	int "MEMC capture char driver"
+	depends on BCM_MEMCCAP
+	
+config BCM_INGQOS
+	tristate "Support for Ingress QoS"
+
+config BCM_BPM
+	tristate "Support for Buffer Pool Manager"
+
+config BCM_TM
+	tristate "Support for Traffic Manager"
+
+config BCM_LICENSE
+	tristate "Broadcom License"
+	default n
+	select GLOB
+	help
+		This option enables the Broadcom Licensing module
+
+config BCM_SPDSVC
+	tristate "Speed Service Support"
+	default n
+	help
+	  This option enables the Broadcom Speed Service feature.
+
+config BCM_SPDTEST
+	tristate "TCP/UDP Speed Test Support"
+	depends on BCM_LICENSE
+	default n
+	help
+	  This option enables the Broadcom TCP/UDP Speed Test feature.
+
+config BCM_BPM_BUF_MEM_PRCNT
+	int "Buffer Memory as % of Total Memory"
+	range 1 100
+	default 15
+	depends on BCM_BPM
+
+config BCM_BPM_BUF_TRACKING
+	bool "Buffer Tracking Enabled"
+	depends on BCM_BPM
+
+config BCM_FEED_RING_DYNAMIC
+    bool "Enable Feed Ring dynamic allocations"
+
+config BCM_FEED_RING_SIZE
+    int "Feed Ring Size"
+	range 1024 16384
+	default 2048
+	depends on BCM_FEED_RING_DYNAMIC
+
+config BCM_FEED_RING_ALLOC_START
+    int "Feed Allocation Start"
+    range 256 16384
+    default 1536
+	depends on BCM_FEED_RING_DYNAMIC
+
+config BCM_FEED_RING_ALLOC_BATCH
+    int "Feed Allocation Batch"
+    range 16 256
+    default 32
+	depends on BCM_FEED_RING_DYNAMIC
+
+config BCM_FEED_RING_REFILL_EVERY
+    int "Feed Check Refill Every"
+    range 128 16384
+    default 1024
+	depends on BCM_FEED_RING_DYNAMIC
+
+config BCM_FEED_RING_MAX_ALLOCATIONS
+    int "Feed Max Allocations"
+    range 2048 16384
+    default 16384
+	depends on BCM_FEED_RING_DYNAMIC
+
+config BCM_FAP
+	tristate "Support for Forward Assist Processor (FAP)"
+	depends on MIPS
+	depends on BCM_KF_FAP
+
+config BCM_FAP_GSO
+	bool "Support GSO in FAP"
+	depends on MIPS
+	depends on BCM_KF_FAP && BCM_FAP
+
+config BCM_FAP_GSO_LOOPBACK
+	bool "FAP GSO LOOPBACK Support "
+	depends on MIPS
+	depends on BCM_KF_FAP && BCM_FAP_GSO
+
+config BCM_FAP_LAYER2
+	bool "FAP Layer 2 Bridge"
+	depends on MIPS
+	depends on BCM_KF_FAP && BCM_FAP
+
+config BCM_FAP_IPV6
+	bool "Support for IPV6 in FAP"
+	depends on BCM_FAP && BCM_PKTFLOW
+	depends on BCM_KF_FAP
+	depends on MIPS
+
+config BCM_PKTDMA
+	tristate "Support for Packet DMA"
+	depends on (MIPS || BCM963138 || BCM_ENET_4908_GMAC || BCM947189)
+
+config BCM_IUDMA
+	bool "Support for Iudma"
+	depends on MIPS
+
+config BCM_RDPA_BRIDGE
+	tristate "Support for Runner bridge"
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878
+	depends on BCM_RDPA
+
+config BCM_RDPA_MCAST
+	bool "Support for Runner Multicast"
+	depends on BCM963138 || BCM963148 || BCM94908 || BCM963158
+	depends on BCM_RDPA
+
+config BCM_ENET
+	tristate "Support for Ethernet"
+
+config BCM_ENET_SYSPORT
+	tristate "Support for Ethernet System Port"
+
+config BCM_DEF_NR_RX_DMA_CHANNELS
+	int "Number of RX DMA Channels"
+	range 1 4
+
+config BCM_DEF_NR_TX_DMA_CHANNELS
+	int "Number of TX DMA Channels"
+	range 1 4
+
+config BCM_PKTDMA_RX_SPLITTING
+	bool "PktDma Iudma Rx Splitting"
+	depends on BCM_PKTDMA && BCM_FAP
+
+config BCM_PKTDMA_TX_SPLITTING
+	bool "PktDma Iudma Tx Splitting"
+	depends on BCM_PKTDMA && BCM_FAP
+
+config BCM_GMAC
+	bool "Support for GMAC"
+	depends on (MIPS || BCM_ENET_4908_GMAC)
+
+config EPON_SDK
+	tristate "Support for EPON"
+
+config EPON_SDK_VOICE_OAM
+	tristate "Support for EPON Voice OAM"
+	depends on EPON_SDK
+
+config GPON_SFU
+	bool "Support for GPON"
+	depends on BCM_GPON
+
+config GPON_HGU
+	bool "Support for GPON"
+	depends on BCM_GPON
+
+config EPON_SFU
+	bool "Support for EPON"
+	depends on EPON_SDK
+
+config EPON_SBU
+	bool "Support for EPON"
+	depends on EPON_SDK
+
+config EPON_HGU
+	bool "Support for EPON"
+	depends on EPON_SDK
+
+config EPON_UNI_UNI_ENABLED
+	tristate "Support for EPON SFU/SBU UNI to UNI Forwarding"
+	depends on EPON_SDK
+
+config EPON_DS_DLF_FORWARD
+	tristate "Support for EPON Downstream DLF Forward"
+	depends on EPON_SDK
+
+config BCM_GPON
+	tristate "Support for GPON"
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM963158 || BCM96846 || BCM96856 || BCM96878
+
+config  BCM_WLCLED
+	bool "Support for WLAN LED"
+
+config BCM_NGPON
+	tristate "Support for XGPON1/XGS/NGPON2 stack"
+	depends on BCM96858 || BCM96856 || BCM963158
+
+config BCM_OPTICALDET
+	tristate "Support for optical device detection"
+	depends on BCM_I2C_CHIP
+	default m
+
+config BCM_OPTICALDET_IMPL
+	int "Implementation index for BRCM optical device detection"
+	depends on BCM_OPTICALDET
+	default 1
+
+config BCM_WANTYPEDET
+    tristate "Support for WAN type auto-detection"
+    depends on BCM_I2C_CHIP && BCM_GPON
+    default m
+
+config BCM_WANTYPEDET_IMPL
+    int "Implementation index for BRCM WAN type auto-detection"
+    depends on BCM_WANTYPEDET
+    default 1
+
+config BCM_PON_WAN_TYPE_AUTO_DETECT
+    bool "Enable WAN type auto-detection on BCM96858, BCM96856, BCM96846, BCM96878"
+    depends on BCM_WANTYPEDET && (BCM96858 || BCM96856 || BCM96846 || BCM96878)
+    default y
+
+config BCM_BUILD_NGPON_AMD2
+    bool "989.3AMD2 / 9807.1AMD1 support"
+    depends on (BCM96858 || BCM96856 || BCM963158)
+    default y
+
+config BCM_SFP
+	tristate "Support for SFP"
+
+config BCM_SFP_IMPL
+	int "Implementation index for external SFP module"
+	depends on BCM_SFP
+
+config BCM_I2C_BUS_IMPL
+	int "Implementation index for I2C Bus module"
+	depends on BCM_I2C_BUS
+
+config BCM_I2C_CHIP_IMPL
+	int "Implementation index for I2C Bus module"
+	depends on BCM_I2C_CHIP
+
+config BCM_I2S_IMPL
+	int "Implementation index for I2S module"
+	depends on BCM_I2S
+
+config BCM_LASER
+	tristate "Support for LASER"
+
+config BCM_MAX_GEM_PORTS
+	int "Number of Gem Ports"
+	range 32 256 if BCM96838 || BCM96848 || BCM96858 || BCM963158 || BCM96846 || BCM96878
+	default 32
+
+config BCM_MoCA
+	tristate "Support for MoCA"
+
+config BCM_6802_MoCA
+	bool "Support for 6802 MoCA"	 
+	depends on BCM_MoCA
+	help
+		Select 'M' to include support for Broadcom MoCA Solution.
+		No Support For Static Build Model.
+
+config BCM_MoCA_AVS
+	bool "Support for AVS on BCM MoCA chip"
+	depends on BCM_6802_MoCA
+	default y
+
+config BCM_HS_UART
+	tristate "Support for High Speed UART"
+		
+config BCM_TSTAMP
+	bool
+
+config BCM_LOG
+	tristate "Support for BCM LOG"
+
+config BCM_COLORIZE_PRINTS
+	bool "Color code various prints"
+
+config BCM_ASSERTS
+	bool "Compile in assert code"
+
+config BCM_FATAL_ASSERTS
+		bool "Generate a fatal error when assert fails"
+
+config BCM_I2C_BUS
+	tristate "Support for I2C Bus Drivers"
+
+config BCM_I2C_GPIO
+	bool "Support for I2C GPIO Driver"
+	default n
+
+config BCM_I2C_CHIP
+	tristate "Support for I2C Chip Drivers"
+
+config BCM_I2S
+	tristate "Support for I2S Drivers"
+
+config BCM_VLAN
+	tristate "Support for BCM VLAN"
+
+config BCM_EPON
+	tristate "Support for EPON LUE"
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM963158
+
+config BCM_EPON_STACK
+	tristate "Support for EPON STACK"
+	help
+		Include it as m to enable EPON stack
+
+config BCM_USB
+	tristate "Support for USB"
+	depends on MIPS
+
+config BCM_USBNET_ACCELERATION
+	bool "Support for USBNET/LTE ACCELERATION in FCACHE"
+	depends on BCM_PKTFLOW
+
+config BCM_USBNET_THREAD
+	bool "Run USBNET in kernel thread"
+
+config BCM_SATA_TEST
+	tristate "Support for SATA compliance tests"
+
+config BCM_M2M_DMA
+	bool "Support for M2M DMA"
+	depends on BCM_KF_M2M_DMA
+	depends on BCM963138
+
+config BCM_SPEEDYGET
+	bool "Support for wget speed test"
+
+config BCM_REASON_TO_SKB_MARK
+	bool "Support for trap reason to skb mark"
+    default y
+	depends on BCM96858 || BCM96846 || BCM96856 || BCM96878
+
+config BCM_DW_CXC_DATA_MODE
+	bool "Support for CXC data mode"
+    default y
+	depends on BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM96838 || BCM96848
+
+config BCM_ISDN
+	tristate "Support for ISDN"
+	depends on MIPS
+
+config BCM_WLAN
+	tristate "Support for Wireless"
+
+config BCM_WAPI
+	bool "Support for Wireless WAPI"
+	depends on BCM_WLAN
+
+config BCM_CPEROUTER
+	bool "Enable BCA CPEROUTER"
+	default  n
+	depends on BCM_WLAN
+
+config BCM_WLAN_DPDCTL
+	bool "Power down with dummy interface for Wireless LAN"
+	default n
+	select DUMMY
+	depends on BCM_CPEROUTER
+
+config BCM_WLAN_WLVISUALIZATION
+	bool "Enable wlan Visualization"
+	default  n
+	depends on BCM_WLAN
+
+config BCM_WLAN_WBD
+	bool "Enable wlan wifi blanket"
+	default  n
+	depends on BCM_WLAN
+
+config BCM_WLALTBLD
+	string "Wireless Alternate Build"
+	depends on BCM_WLAN
+
+config BCM_WLAN_IMPL
+	int "Wireless Implementation Selection"
+	depends on BCM_WLAN
+
+config JFFS_NVRAM
+	bool "NVRAM on JFFS support"
+	default n
+	depends on BCM_WLAN
+
+config BCM_PCI
+	bool "Support for PCI"
+	select PCI
+	select PCI_DOMAINS
+	select PCI_QUIRKS
+
+# NOTE: the select PCI_DOMAINS line will cause problems with old kernel, but removing it
+#	will cause PCI_DOMAINS to be removed from the .config file for some unknown reason...
+
+config BCM_PCIE_HCD
+	tristate "PCIe host controller driver from bcmdriver"
+	depends on BCM_PCI
+	default  y if PCI_MSI
+	default  m
+
+config BCM_PCIE_HCD_IMPL
+	int "PCIe host controller driver implementation selection"
+	depends on BCM_PCIE_HCD
+	default 1
+
+config BCM_PCIE_VCD
+	bool "Support for PCIe Virtual Core Device for internal WiFi devices"
+	depends on BCM_PCIE_HCD && BCM_WLAN
+	depends on BCM963178 || BCM947622 || BCM96878
+	default y
+
+config BCM_PCIE_PMC_BRD_STUBS
+	bool "Support for PCIe PMC and Board API Stubs for Virtual Core Device bring up"
+	depends on BCM_PCIE_VCD
+	default n
+
+config BCM_PCIE_PMC_BRD_STUBS
+	bool "Stubs for external PMC, board, shared utils during vcd bringup"
+	depends on BCM_PCIE_VCD
+	depends on BRCM_IKOS
+	default y
+
+config BCM_PCIE_GEPD
+	tristate "PCIe Generic End Point driver from bcmdriver"
+	default  n
+
+config BCM_PCIE_GEPD_IMPL
+	int "PCIe Generic End Point driver implementation selection"
+	depends on BCM_PCIE_GEPD
+	default 1
+
+config BCM_NVRAM
+	tristate "Kernel NVRAM driver"
+	default  m
+
+config BCM_NVRAM_IMPL
+	int "Kernel NVRAM driver implementation selection"
+	depends on BCM_NVRAM
+	default 1
+
+config BCM_WLAN_USBAP
+	bool "Support for Wireless USBAP"
+
+config BCM_XTMCFG
+	tristate "Support for XTM"
+
+config BCM_XTMRT
+	tristate "Support for XTM"
+
+config BCM_ADSL
+	tristate "Support for ADSL"
+
+config BCM_DSL_GINP_RTX
+	tristate "Support for DSL_GINP_RTX"
+
+config BCM_EXT_BONDING
+	tristate "Support for EXT_BONDING"
+	depends on MIPS
+
+config BCM_DSL_GFAST
+	tristate "Support for DSL_GFAST"
+	depends on BCM963138 || BCM963158
+
+config BCM_DSL_GFASTCOMBO
+	tristate "Support for DSL_GFASTCOMBO"
+	depends on (BCM963138 || BCM963158) && BCM_DSL_GFAST
+
+config BCM_DSL_CO
+	tristate "Support for DSL_CO"
+	depends on BCM963158
+
+config BCM_FTTDP
+	bool "Support for FTTDP DPU"
+	depends on BCM96838 || BCM96858
+
+config BCM_FTTDP_G9991
+	bool "Support for FTTDP DPU with G.999.1"
+	depends on BCM_FTTDP
+
+config BCM_55153_DPU
+	bool "Support for 55153 DPU"
+	depends on BCM_DSL_CO && BCM963158
+   default n
+
+config BCM_VOICE_SUPPORT
+	bool "Support for voice"
+
+config BCM_SLICSLAC
+	tristate "Support for VoIP SLIC/SLAC"
+	depends on BCM_VOICE_SUPPORT
+
+config BCM_DSPHAL
+	tristate "Support for VoIP DSP"
+	depends on BCM_VOICE_SUPPORT
+
+config BCM_DSP_ALSA_BRIDGE
+	bool "Support for DSP-ALSA bridge sound device"
+	depends on BCM_DSPHAL
+
+config BCM_DECT_SUPPORT
+	bool "Support for DECT"
+
+config BCM_DECT
+	tristate "Support for DECT"
+	depends on BCM_DECT_SUPPORT
+
+config BCM_BCMPROF
+	tristate "Support for profiling"
+	depends on MIPS
+
+config BCM_PWRMNGT
+	tristate "Support for Power Management"
+	depends on m
+	
+config BCM_ETH_PWRSAVE
+	bool "Support for Ethernet Auto Power Down and Sleep"
+
+config BCM_ENERGY_EFFICIENT_ETHERNET
+	bool "Support for Energy Efficient Ethernet"
+
+config BCM_ETH_DEEP_GREEN_MODE
+	bool "Support for Ethernet Deep Green Mode"
+
+config BCM_ETH_HWAPD_PWRSAVE
+	bool "Support for Ethernet HW Auto Power Down for external PHYs"
+
+config BCM_HOSTMIPS_PWRSAVE
+	bool "Support for PWRMNGT MIPS clock divider"
+	depends on MIPS
+
+config BCM_HOSTMIPS_PWRSAVE_TIMERS
+	bool "Hostmips Power Save Timers"
+	depends on MIPS
+
+config BCM_CPUIDLE_CLK_DIVIDER
+	bool "Support for CPU Clock Divider in CPUIDLE"
+
+config BCM_DDR_SELF_REFRESH_PWRSAVE
+	bool "Support for DRAM Self Refresh mode"
+
+config BCM_AVS_PWRSAVE
+	bool "Support for Automatic Voltage Scaling"
+
+config BCM_1V2REG_AUTO_SHUTDOWN
+	bool "Support for Automatically Shutting down Internal 1.2V Regulator"
+	depends on MIPS
+
+config BCM_1V2REG_ALWAYS_SHUTDOWN
+	bool "Support for Overriding Automatically Shutting down Internal 1.2V Regulator"
+	depends on MIPS
+
+config BCM_1V2REG_NEVER_SHUTDOWN
+	bool "Support for Overriding Automatically Shutting down Internal 1.2V Regulator"
+	depends on MIPS
+
+config BCM_CPLD1
+	bool "Support for CPLD standby timer"
+	depends on MIPS
+
+config BCM_PROCFS
+	tristate "Support for PROCFS"
+
+config BCM_TRNG
+	tristate "BCM HW Random Number Generator support"
+#	---help---
+#	  This driver provides kernel-side support for the Random Number
+#	  Generator hardware found on bcm.
+#
+#	  To compile this driver as a module, choose M here: the
+#	  module will be called intel-rng.
+#
+#	  If unsure, say Y.
+
+config BCM_ARL
+	tristate "Support for ARL Table Management"
+	depends on MIPS
+
+config BCM_TMS
+	tristate "TMS support (802.3ah, 802.1ag, Y.1731)"
+
+config BCM_PMC
+	bool "PMC"
+	depends on BCM96838 || BCM963138 || BCM963148 || BCM963381 || BCM96848 || BCM94908 || BCM96858 || BCM963158 || BCM96846 || BCM96856 || BCM947622 || BCM963178 || BCM96878
+
+config BCM_PLC_BOOT
+	tristate "PLC boot support"
+
+config BCM_IEEE1905
+	tristate "IEEE1905 support"
+
+config BCM_BMU
+	bool "Battery Management Unit"
+
+config BCM_DPI
+	tristate "Support for Deep Packet Inspection"
+
+config BCM_DPI_TEST
+	bool "DPI Classification Testing"
+	depends on BCM_DPI
+
+config BCM_DPI_QOS
+	bool "DPI QoS"
+	depends on BCM_DPI
+	depends on BCM_RDPA || BCM_DPI_QOS_CPU || BCM_ARCHER
+
+config BCM_DPI_WLAN_QOS
+	bool "DPI WLAN QoS"
+	depends on BCM_DPI_QOS
+
+config BCM_DPI_QOS_CPU
+	bool "DPI Software Path"
+	depends on BCM_DPI
+
+config BCM_MAP
+	tristate "Support for MAP-T MAP-E"
+
+config BCM_BOARD_IMPL
+	int "Implementation index for Board"
+	depends on BCM_BOARD
+
+config BCM_CHIPINFO_IMPL
+	int "Implementation index for Chipinfo module"
+	depends on BCM_CHIPINFO
+
+
+config BCM_PLATFORM_IMPL
+	int "Implementation index for BCM platform"
+	depends on BCM_PLATFORM
+
+config BCM_OTP_IMPL
+	int "Implementation index for otp module"
+	depends on BCM_OTP
+
+config BCM_SOTP_IMPL
+	int "Implementation index for secure otp module"
+	depends on BCM_SOTP
+
+config BCM_SERIAL_IMPL
+	int "Implementation index for Serial"
+	depends on BCM_SERIAL
+
+config BCM_EXT_TIMER_IMPL
+	int "Implementation index for external timer"
+	depends on BCM_EXT_TIMER
+
+config BCM_TRNG_IMPL
+	int "Implementation index for TRNG "
+	depends on BCM_TRNG
+
+config BCM_PKTFLOW_IMPL
+	int "Implementation index for Broadcom Flow Cache"
+	depends on BCM_PKTFLOW
+
+config BCM_PKTCMF_IMPL
+	int "Implementation index for Packet CMF"
+	depends on BCM_PKTCMF
+
+config BCM_PKTRUNNER_IMPL
+	int "Implementation index for Broadcom packet runner"
+	depends on BCM_PKTRUNNER
+
+config BCM_CMDLIST_IMPL
+	int "Implementation index for Broadcom Command List Driver"
+	depends on BCM_CMDLIST
+
+config BCM_ARCHER_IMPL
+	int "Implementation index for Broadcom Archer Driver"
+	depends on BCM_ARCHER
+
+config BCM_INGQOS_IMPL
+	int "Implementation index for Ingress QoS"
+	depends on BCM_INGQOS
+
+config BCM_BPM_IMPL
+	int "Implementation index for BPM"
+	depends on BCM_BPM
+
+config BCM_TM_IMPL
+	int "Implementation index for TM"
+	depends on BCM_TM
+
+config BCM_LICENSE_IMPL
+	int "Implementation index for LICENSE"
+	depends on BCM_LICENSE
+
+config BCM_SPDSVC_IMPL
+	int "Implementation index for SPDSVC"
+	depends on BCM_SPDSVC
+
+config BCM_SPDTEST_IMPL
+	int "Implementation index for TCP/UDP Speed Test"
+	depends on BCM_SPDTEST
+
+config BCM_FAP_IMPL
+	int "Implementation index for FAP"
+	depends on BCM_FAP
+	depends on MIPS
+
+config BCM_PKTDMA_IMPL
+	int "Implementation index for Packet DMA"
+	depends on BCM_PKTDMA
+
+config BCM_RDPA_BRIDGE_IMPL
+	int "Implementation index for Runner bridge"
+	depends on BCM_RDPA_BRIDGE
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878
+
+config BCM_ENET_IMPL
+	int "Implementation index for Ethernet"
+	depends on BCM_ENET
+
+config BCM_ENET_SYSPORT_IMPL
+	int "Implementation index for Ethernet System Port"
+	depends on BCM_ENET_SYSPORT
+
+config BCM_GPON_IMPL
+	int "Implementation index for GPON"
+	depends on BCM_GPON
+
+config BCM_LASER_IMPL
+	int "Implementation index for LASER"
+	depends on BCM_LASER
+		
+config BCM_MoCA_IMPL
+	int "Implementation index for MoCA"
+	depends on BCM_MoCA
+
+config BCM_HS_UART_IMPL
+	int "Implementation index for High Speed UART"
+	depends on BCM_HS_UART
+	
+config BCM_LOG_IMPL
+	int "Implementation index for BCM LOG"
+	depends on BCM_LOG
+
+config BCM_I2C_BUS_IMPL
+	int "Implementation index for I2C Bus"
+	depends on BCM_I2C_BUS
+
+config BCM_I2C_CHIP_IMPL
+	int "Implementation index for I2C Chip"
+	depends on BCM_I2C_CHIP
+
+config BCM_VLAN_IMPL
+	int "Implementation index for BCM VLAN"
+	depends on BCM_VLAN
+
+config BCM_EPON_IMPL
+	int "Implementation index for BCM EPON"
+	depends on BCM_EPON
+
+config BCM_USB_IMPL
+	int "Implementation index for USB"
+	depends on BCM_USB
+
+config BCM_ISDN_IMPL
+	int "Implementation index for ISDN"
+	depends on BCM_ISDN
+
+config BCM_XTMCFG_IMPL
+	int "Implementation index for XTMCFG"
+	depends on BCM_XTMCFG
+
+config BCM_XTMRT_IMPL
+	int "Implementation index for XTMRT"
+	depends on BCM_XTMRT
+
+config BCM_ADSL_IMPL
+	int "Implementation index for ADSL"
+	depends on BCM_ADSL
+
+config BCM_EXT_BONDING_IMPL
+	int "Implementation index for EXT_BONDING"
+	depends on BCM_EXT_BONDING
+
+config BCM_DECT_IMPL
+	int "Implementation index for DECT"
+	depends on BCM_DECT
+
+config BCM_SLICSLAC_IMPL
+	int "Implementation index for VoIP SLIC/SLAC"
+	depends on BCM_SLICSLAC
+
+config BCM_DSPHAL_IMPL
+	int "Implementation index for VoIP DSP HAL"
+	depends on BCM_DSPHAL
+
+config BCM_BCMPROF_IMPL
+	int "Implementation index for PROFILING"
+	depends on BCM_BCMPROF
+
+config BCM_PROCFS_IMPL
+	int "Implementation index for PROCFS"
+	depends on BCM_PROCFS
+
+config BCM_PWRMNGT_IMPL
+	int "Implementation index for PWRMNGT"
+	depends on BCM_PWRMNGT
+
+config BCM_ARL_IMPL
+	int "Implementation index for ARL"
+	depends on BCM_ARL
+
+config BCM_PMC_IMPL
+	int "Implementation index for PMC"
+	depends on BCM_PMC
+
+config BCM_TMS_IMPL
+	int "Implementation index for TMS"
+	depends on BCM_TMS
+
+config BCM_DPI_IMPL
+	int "Implementation index for Deep Packet Inspection"
+	depends on BCM_DPI
+
+config BCM_MAP_IMPL
+	int "Implementation index for MAP-T MAP-E"
+	depends on BCM_MAP
+
+config BCM_PORTS_ON_INT_EXT_SW
+	bool "Ports on both Internal and External Switch"
+	default n
+	help
+	  This option enables the feature where ports can be on Internal switch and External switch.
+
+config BCM_VLAN_ROUTED_WAN_USES_ROOT_DEV_MAC
+	bool "Assign Same MAC address to Routed WAN Interface as root"
+	default n
+	help
+	  This option enables the feature where Routed VLANCTL WAN Interfaces are assigned the same MAC as root device.
+
+config ROOT_FLASHFS
+	string "flash partition"
+	help
+	  This is the root file system partition on flash memory
+
+config BRCM_KTOOLS
+	bool "BRCM_KTOOLS"
+	default n
+	help
+		Enables the build of BRCM MIPS Kernel Tools Support for PMON, BOUNCE
+
+config BCM_EXT_SWITCH
+	bool "External Switch present"
+	default n
+	help
+	  This option enables the external switch support.
+
+config BCM_EXT_SWITCH_TYPE
+	int "External Switch Type/Number"
+	default 0
+
+config BCM_JUMBO_FRAME
+	bool "Jumbo Frame Support (for Enet/Xtm/GPON only)"
+	default n
+
+config BCM_MAX_MTU_SIZE
+	int "Support for Maximum Payload Size"
+	depends on BCM_JUMBO_FRAME
+	range 64 10000
+	default 2044 if (BCM963138 || BCM963148 || BCM94908 || BCM963158 || BCM947622 || BCM963178)
+	default 2048 if (BCM963268 || BCM963381)
+	default 1998 if (BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878) 
+
+config BCM_USER_DEFINED_DEFAULT_MTU
+	bool "User Defined Default Linux Device Interface MTU"
+	depends on BCM_JUMBO_FRAME
+	default n
+
+config BCM_IGNORE_BRIDGE_MTU
+	bool "Ignore Bridge MTU while forwarding in accelerated path"
+	depends on BCM_JUMBO_FRAME
+	default n
+
+config BCM_USER_DEFINED_DEFAULT_MTU_SIZE
+	int "User Defined Default Linux Device Interface MTU size"
+	depends on BCM_USER_DEFINED_DEFAULT_MTU
+
+choice
+	prompt "Restrict memory used (testing)"
+	depends on BCM_KF_MIPS_BCM963XX && MIPS_BCM963XX
+
+config BRCM_MEMORY_RESTRICTION_OFF
+	bool "Use all available"
+
+config BRCM_MEMORY_RESTRICTION_16M
+	bool "Use 16M"
+
+config BRCM_MEMORY_RESTRICTION_32M
+	bool "Use 32M"
+
+config BRCM_MEMORY_RESTRICTION_64M
+	bool "Use 64M"
+
+endchoice
+
+config AUXFS_JFFS2
+	bool "JFFS2"
+	default n
+	help
+	  Say Y here to enable support for an auxillary file system on flash.
+
+config BRCM_OLT_FPGA_RESTORE
+	bool "BRCM_OLT_FPGA_RESTORE"
+	default n
+	help
+	  Enables /proc/brcm/olt_fpga_restore
+
+config PCI_DOMAINS
+	bool
+	default y
+
+config BCM_DCACHE_SHARED
+	bool "Share Dcache between TPs"
+
+config BCM_CPU_ARCH_NAME
+	string "Name of CPU Architecture"
+
+config BCM_CPU_ARCH_ABI_NAME
+	string "Name of CPU ABI Architecture"
+
+config BCM_PRINTK_INT_ENABLED
+	bool "printk with interrupt enabled"
+
+config BCM_BDMF
+	tristate 'Support for Broadcom Device Management Framework'
+	help
+		Say 'M' to include support for BDMF.
+		Static compile not supported.
+
+config BCM_PON
+	bool
+	depends on ( BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878) && !BRCM_IKOS
+	default y
+
+config BCM_PON_XRDP
+	bool
+	depends on ( BCM96858 || BCM96846 || BCM96856 || BCM96878) && !BRCM_IKOS
+	default y
+
+config BCM_DSL_XRDP
+	bool
+	depends on BCM963158
+	default y
+
+config BCM_PON_RDP
+	bool
+	depends on BCM96838 || BCM96848
+	default y
+
+config BCM_DSL_RDP
+	bool
+	depends on BCM963138 || BCM963148 || BCM94908
+	default y
+
+config BCM_XRDP
+	bool
+	depends on ( BCM96858 || BCM963158 || BCM96846 || BCM96856 || BCM96878) && !BRCM_IKOS
+	default y
+
+config BCM_RDP
+	bool
+	depends on BCM96838 || BCM96848 || BCM963138 || BCM963148 || BCM94908
+	default y
+
+config BCM_RDPA
+	tristate 'Support for Runner Data Path API Driver'
+	depends on BCM_BDMF && (BCM_RDP || BCM_XRDP)
+	help
+		Say 'M' to include support for RDPA.
+		Static compile not supported.
+
+config BCM_SIM_CARD
+	tristate 'Support for Sim Card Driver'
+	help
+		Say 'M' to include support for Sim Card.
+		Static compile not supported.
+
+config BCM_PMD
+	tristate 'Support for PMD'
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM963158 || BCM96846 || BCM96856 || BCM947622 || BCM963178 || BCM96878
+	help
+		Say 'M' to include support for PMD.
+		Static compile not supported.
+
+config BCM_RDPA_GPL
+	tristate 'Support for Runner Data Path API GPL Driver'
+	depends on BCM_RDPA
+
+config BCM_RDPA_USR
+	tristate 'Support for Runner Data Path API USR Driver'
+	depends on BCM_RDPA
+
+config BCM_RDPA_GPL_EXT
+	tristate 'Support for Runner Data Path API GPL EXT Driver'
+	depends on BCM_RDPA
+
+config BCM_GPON_STACK
+	tristate 'Support for GPON Stack Driver'
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM963158 || BCM96846 || BCM96878
+	help
+		Say 'M' to include support for GPON Stack driver.
+		Static compile not supported.
+
+		
+config BCM_RDPA_MW
+	tristate 'Support for Runner Data Path API MW Driver'
+	depends on BCM_RDPA
+
+config BCM_RDPA_DRV
+	tristate 'Support for Runner Command Driver'
+	depends on BCM_RDPA
+
+config BCM_FPM
+	tristate "Support for Broadcom Frame Pool Manager"
+	depends on BCM_RDP && BCM94908
+	help
+		Say 'M' to include support for FPM.
+		Static compile not supported.
+
+config BCM_RUNNER_MAX_FLOWS
+	int "Number of runner accelerated flows"
+	depends on BCM_RDPA
+	range 1024 131072
+	
+config BCM_FPM_POOL_NUM
+	int "Number of FPM Pools"
+	depends on BCM_FPM
+	default 1
+
+config BCM_FPM_DT
+	bool "Support device tree for FPM"
+	depends on BCM_FPM
+	default n
+
+config BCM_WIFI_FORWARDING_DRV
+	tristate 'Support for Wifi forwarding driver'
+	depends on BCM_WLAN
+	help
+		Say 'M' to include support for Wifi forwarding driver.
+		Static compile not supported.
+
+config BCM_WFD_RATE_LIMITER
+    bool 'Support rate limiter for Wifi forwarding driver'
+    depends on BCM_WIFI_FORWARDING_DRV
+    default n
+
+config BCM_WLAN_16BIT_STATION_CHAIN_IDX_SUPPORT
+	bool "16bit Station Chain Index support"
+	depends on BCM_WLAN
+	default n
+
+config BCM_CPEPKTC
+	bool "Build CPE-specific Packet Chaining"
+	depends on BCM_WLAN_16BIT_STATION_CHAIN_IDX_SUPPORT
+	default n
+
+config BCM_PKTFWD
+	bool "Build Packet Forwarder Handoff"
+	depends on BCM_WLAN_16BIT_STATION_CHAIN_IDX_SUPPORT
+	default n
+
+config BCM_PKTFWD_FLCTL
+	bool "Build Credit based Host Flow Control"
+	depends on BCM_PKTFWD
+	default n
+
+config BCM_WLAN_REMOVE_INTERNAL_DEBUG
+	bool "Build Image without WLAN Internal/Bcmdbg"
+	depends on BCM_WLAN
+	default n
+
+config BCM_NETXL
+	tristate 'Support for NetXL forwarding driver'
+	help
+		Say 'M' to include support for NetXL forwarding driver.
+		Static compile not supported.
+
+config BCM_NETXL_IMPL
+	int "Implementation index for NetXL Forwarding Driver"
+	depends on BCM_NETXL
+
+config BCM_DHD_RUNNER
+	depends on BCM_WLAN
+	bool 'Support for DHD acceleration using Runner'
+	help
+		Say 'M' to include support DHD acceleration using Runner
+		Static compile not supported.
+
+config BCM_PMD_IMPL
+	int "Implementation index for PMD"
+	depends on BCM_PMD
+
+config BCM_SIM_CARD_IMPL
+	int "Implementation index for Sim Card"
+	depends on BCM_SIM_CARD
+
+config BCM_RDPA_GPL_EXT_IMPL
+	int "Implementation index for RDPA GPL EXT"
+	depends on BCM_RDPA_GPL_EXT
+
+config BCM_WIFI_FORWARDING_DRV_IMPL
+	int "Implementation index for Wifi Forwarding Driver"
+	depends on BCM_WIFI_FORWARDING_DRV
+
+config BCM_RDPA_MW_IMPL
+	int "Implementation index for RDPA MW"
+	depends on BCM_RDPA_MW
+
+config BCM_RDPA_DRV_IMPL
+	int "Implementation index for RDPA DRV"
+	depends on BCM_RDPA_DRV
+
+config BCM_FPM_IMPL
+	int "Implementation index for FPM"
+	depends on BCM_FPM
+
+config BCM_SATA_TEST_IMPL
+	int "Implementation index for SATA test module"
+	depends on BCM_SATA_TEST
+
+
+config BCM_EPON_STACK_IMPL
+	int "Implementation index for EPON STACK"
+	depends on BCM_EPON_STACK
+
+config EPON_CLOCK_TRANSPORT
+	bool "Epon clock transport support"
+	depends on BCM_EPON_STACK
+
+config EPON_10G_SUPPORT
+	bool "EPON Rate 10G support"
+	depends on BCM_EPON_STACK
+
+# Time Synchronization: Feature
+config BCM_TIME_SYNC
+	tristate 'Support for Time Synchronization'
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM963158
+	help
+		Say 'M' to include support for Time Synchronization driver.
+		Static compile not supported.
+
+# Time Synchronization: Implementation
+config BCM_TIME_SYNC_IMPL
+	int "Implementation index for Time Synchronization"
+	depends on BCM_TIME_SYNC
+
+# GPON ToDD
+config BCM_GPON_TODD
+	bool "Support GPON ToDD"
+	depends on BCM_TIME_SYNC
+
+# PTP 1588
+config BCM_PTP_1588
+	bool "Support PTP 1588"
+	depends on BCM_TIME_SYNC
+
+# Sync Clock: 8KHz
+config BCM_TIME_SYNC_8KHZ
+	bool "Support Sync Clock: 8KHz"
+	depends on BCM_TIME_SYNC
+
+# Sync Signal: 1PPS
+config BCM_TIME_SYNC_1PPS
+	bool "Support Sync Signal: 1PPS"
+	depends on BCM_TIME_SYNC
+
+# Sync Signal: PON Unstable
+config BCM_TIME_SYNC_PON_UNSTABLE
+	bool "Support Sync Signal: PON Unstable"
+	depends on BCM_TIME_SYNC
+
+config BCM_BRIDGE_MAC_FDB_LIMIT
+	bool "Support MAC limit in kernel"
+
+config BCM_ZONE_ACP
+	bool "ACP Support"
+	depends on BCM963138
+
+config BCM_ACP_MEM_SIZE
+	int "Reserved Memory Size for ACP Purpose, unit in MB"
+	default 16
+	depends on BCM_ZONE_ACP
+
+config MTD_BCM_SPI_NAND
+	tristate "Broadcom 63xx SPI NAND MTD support"
+	depends on BCM_KF_MTD_BCMNAND
+	help
+	  Broadcom 963xx SPI NAND MTD support
+
+config BCM_ENET_4908_GMAC
+	bool "4908 Ethernet traffic using GMAC (No RDP)"
+	depends on (BCM963268 || BCM94908)
+
+config BCM_ETHWAN
+	bool "Ethernet WAN Support enabled"
+	default false
+
+config BCM_ENET_MULTI_IMP_SUPPORT
+	bool "Multiple IMP Ports towards Runner"
+	depends on (BCM94908 || BCM963158)
+
+config BCM_WAN_2_WAN_FWD_ENABLED
+	bool "Enable Packet Forwarding between two WAN Interfaces"
+	default false
+	depends on BCM_KF_WANDEV
+
+config BCM_ETHTOOL
+	bool "Enable ethtool command"
+	default true
+
+config BCM_SWMDK
+	bool "Enable swmdk"
+	default false
+
+config BCM_KERNEL_BONDING
+	bool "Enable Kernel Bonding Driver"
+	default false
+
+config BCM_SWITCH_SCHED_SP
+	bool "Set switch scheduling SP mode"
+	default false
+
+config BCM_SWITCH_SCHED_WRR
+	bool "Set switch schedule WRR mode"
+	default false
+
+config BCM_RUNNER_FLOODING
+	bool "Enable Runner Flooding to LAN ports"
+	default true
+	depends on BCM_RDPA_BRIDGE
+	depends on BCM_XRDP
+
+config BCM_OCF
+	tristate "Linux OCF module"
+
+config BCM_OCF_IMPL
+	int "Linux OCF implementation"
+	depends on BCM_OCF
+
+config BCM_BLUETOOTH_USB
+	tristate "Enable BRCM Bluetooth USB Driver"
+	default false
+
+config BCM_BLUETOOTH_USB_IMPL
+	int "Implementation index for BRCM BLUETOOTH USB dongle"
+	depends on BCM_BLUETOOTH_USB
+
+config BCM_NFC_I2C
+	tristate "Enable BRCM NFC I2C Driver"
+	default n
+
+config BCM_NFC_I2C_IMPL
+	int "Implementation index for BRCM NFC I2C"
+	depends on BCM_NFC_I2C
+
+config BRCM_MINIGW
+	bool "Minimal DDR GW"
+
+config ARCH_SPARSEMEM_ENABLE
+	bool "Enable Ssparsemem"
+	depends on ARM64 && BRCM_IKOS
+
+config BCM_512MB_DDR
+	bool "Support for 512MB DDR"
+	select SYS_SUPPORTS_HIGHMEM
+	select HIGHMEM
+
+config BCM_CFE_XARGS
+	tristate "Support for Broadcom CFE Extra Arguments"
+
+config BCM_ROOTFS_SQUASHFS_HASH
+	tristate "Support for Broadcom ROOTFS SQUASHFS hash check"
+
+config BCM_CFE_XARGS_EARLY
+	bool "CFE (Bootloader) extended parameters support - early processing"
+	default y if (BCM_CFE_XARGS) 
+	help
+		If selected CFE extended parameters will be processed before major services are ready (such as slab).
+		In this case memory for parameter buffer is statically defined at compile time.
+		Useful if there is an intention to tweak functionality for debug or other purposes. 
+ 
+config BCM_CFE_XARGS_EARLY_SIZE
+	hex
+	depends on BCM_CFE_XARGS_EARLY
+	default 0x00000400 if (BCM_CFE_XARGS_EARLY)
+	help
+		Size of static buffer if memory subsystime is unavailable. 
+
+config BCM_HNDROUTER
+	bool "4908 Wireless Router board"
+	depends on BCM_KF_HNDROUTER
+
+config BCM_HND_EAP 
+	bool "4908 Enterprise AP"
+	default n
+
+config BCM_ARM_CPUIDLE
+	bool "Cpuidle driver for BCM ARM and ARM64 chips"
+	depends on CPU_IDLE
+
+config BCM_DHD_RUNNER_GSO
+	bool "GSO support for DHD on Runner"
+
+config BCM_THERMAL
+	tristate "Support for Broadcom Thermal Protection"
+
+config BCM_CPUOFF
+	tristate "Support for auto idle cpu power-down"
+
+config BCM_INTF_BRG_ENABLED
+	bool "Interface-based bridginge"
+	default n
+
+config BCM_MPTCP
+	bool "MultiPath TCP support"
+	default n
+	
+config BCM_COHERENT_OUTER_SHARED
+	bool "Coherent Memory as outer shareable"
+	depends on BCM96858 || BCM96846 || BCM947622 || BCM963178
+
+config BCM_OVERLAYFS_BACKPORTS
+	bool "backporting of overlay fs fixes."
+	default n
+	depends on OVERLAY_FS
+
+config BCM_JFFS2_OVERLAY
+	bool "implementing RENAME_WHITEOUT and RENAME_EXCHANGE in jffs2."
+	default n
+	depends on JFFS2_FS
+	depends on OVERLAY_FS
+
+config BCM_UBIFS_OVERLAY_BACKPORTS
+	bool "implementing RENAME_WHITEOUT and RENAME_EXCHANGE in ubifs."
+	default n
+	depends on UBIFS_FS
+	depends on OVERLAY_FS
+
+config BP_PHYS_INTF
+	bool "Board Parameter Physical Interface Configuration"
+	default n
+	depends on BCM963158 || BCM963178 || BCM947622
+
+config BCM_GLB_COHERENCY
+	bool "Global Hardware Cache Coherency"
+	default n
+	depends on BCM963158 || BCM96846 || BCM96858 || BCM96856 || BCM963178 || BCM947622
+
+config BCM_CMA_RSVMEM
+	bool "Linux CMA based memory reservation"
+	depends on ARM || ARM64
+	default n
+
+config BCM_FPM_COHERENCY_EXCLUDE
+	bool "Keep FPM pool memory area non-coherent"
+	default n
+	depends on (BCM_GLB_COHERENCY && BCM96858)
+
+config BCM_UBUS_DECODE_REMAP
+	bool "Remap UBUS decode window"
+	default n
+	depends on BCM963158 || BCM96846 || BCM96858 || BCM96856 || BCM963178 || BCM947622
+
+config BCM_UBUS4_DCM
+	bool "UBUS4 Dynamic Clock Management"
+	default n
+	depends on BCM963158 || BCM96858 || BCM96846 || BCM96856 || BCM963178 || BCM947622
+
+config BCM_RNR_CPU_RX_DYN_METER
+    bool "Runner CPU Rx dynamic meter management"
+    default n
+	depends on BCM_RDPA
+
+config BCM_FCACHE_CLASSIFICATION_BYPASS
+    bool "Enable Sw Flow bypass"
+	depends on BCM96858 || BCM96846 || BCM96856 || BCM963158 || BCM963138 || BCM963148 || BCM94908 || BCM96878
+
+
+config BCM_XRDP_AUTOGATE
+	bool "XRDP Dynamic Clock Management/Gating"
+	default n
+	depends on BCM963158 || BCM96846 || BCM96856 || BCM96858 || BCM96878
+
+config BCM_WLCSM_DEBUG
+	bool "enable WLCSM Ddebug"
+	default n
+	depends on BCM_WLAN
+
+config BCM_AIRIQ
+	bool "AirIQ support"
+	default n
+
+config BCM_HOSTAPD
+	bool "HOSTAPD support"
+	default n
+
+config BCM_SPECTRE_PATCH_ENABLE
+	bool "Enable Spectre Patch"
+	default n
+
+config BCM_NETFILTER_REGARDLESS_DROP_ORDER
+	int "Netfilter Regardless Connection drop order"
+	default 1
+
+config BCM_EAPFWD
+	tristate "EAP Forwarder"
+	default n
+	depends on BCM_PKTFWD 
+
+config BCM_EAPFWD_IMPL
+	int "EAP Forwarder"
+	depends on BCM_EAPFWD
+
+config BCM_DISABLE_NOR_RAW_PARTITION
+	bool "Disable NOR flash raw partition"
+	depends on BCM963178 || BCM947622
+	default n
+
+config BCM_IMAGE_OFFSET_ZERO
+	bool "Set image offset to 0"
+	depends on BCM963178 || BCM947622
+	default n
+
+config BCM_OVS
+	bool "OVS Broadcom Support"
+	default n
+
+config BCM_KERNEL_CODE_PROTECTION
+	bool "Enable Kernel Code Protection"
+
+config BCM_OVS_MCAST
+	bool "OVS Broadcom Multicast Support"
+	depends on BCM_OVS
+	default n
+
+menu "Autodetected Drivers"
+source "../../bcmdrivers/Kconfig.autogen"
+endmenu
+
+endif
+

@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="TR98" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="TR181" profile="Device2_Baseline:1" supportLevel="Present" />
+  <description source="TRx">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.UserInterface." shortObjectName="UserInterfaceObject" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" oid="1050" />
+  <description source="TRx">This object contains parameters relating to the user interface of the CPE</description>
+
+  <parameter name="PasswordRequired" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Present only if the CPE provides a password-protected LAN-side user interface.&#10;&#10;Indicates whether or not the local user interface MUST require a password to be chosen by the user.  If false, the choice of whether or not a password is sued is left to the user.</description>
+
+  <parameter name="PasswordUserSelectable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Present only if the CPE provides a password-protected LAN-side user interface and supports LAN-side  Auto-Configuration. Indicates whether or not a password to protect the local user interface of the CPE MAY be selected by the user directly (i.e. {{param|.Users.User.{i}.Password}}), or MUST be equal to the password used by the LAN-side Auto-Configuration protocol (i.e. {{param|.LANConfigSecurity.ConfigPassword}}). </description>
+
+  <parameter name="PasswordReset" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Present only if the CPE provides a password-protected LAN-side user interface and supports LAN-side Auto-Configuration.  When set to true, resets {{param|.LANConfigSecurity.ConfigPassword}} to its factory value. </description>
+
+  <parameter name="UpgradeAvailable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Indicates that a CPE upgrade is available, allowing the CPE to display this information to the  user. </description>
+
+  <parameter name="WarrantyDate" type="dateTime" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Indicates the date and time in UTC that the warranty associated with the CPE is to expire. </description>
+
+  <parameter name="ISPName" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">The name of the customer's ISP. </description>
+
+  <parameter name="ISPHelpDesk" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="32" />
+    <description source="TRx">The help desk phone number of the ISP. </description>
+
+  <parameter name="ISPHomePage" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">The URL of the ISP's home page. </description>
+
+  <parameter name="ISPHelpPage" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">The URL of the ISP's on-line support page. </description>
+
+  <parameter name="ISPLogo" type="base64" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="4095" minLength="0" />
+    <description source="TRx">Base64 encoded GIF or JPEG image. The binary image is constrained to 4095 bytes or less. </description>
+
+  <parameter name="ISPLogoSize" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" minValue="0" maxValue="4095" />
+    <description source="TRx">Un-encoded binary image size in bytes. If ISPLogoSize input value is 0 then the ISPLogo is cleared.ISPLogoSize can also be used as a check to verify correct transfer and conversion of Base64 string to image size. </description>
+
+  <parameter name="ISPMailServer" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">The URL of the ISP's mail server. </description>
+
+  <parameter name="ISPNewsServer" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">The URL of the ISP's news server. </description>
+
+  <parameter name="TextColor" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="3" minLength="3" />
+    <description source="TRx">The color of text on the GUI screens in RGB hexadecimal notation (e.g., FF0088). </description>
+
+  <parameter name="BackgroundColor" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="3" minLength="3" />
+    <description source="TRx">The color of the GUI screen backgrounds in RGB hexadecimal notation (e.g., FF0088). </description>
+
+  <parameter name="ButtonColor" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="3" minLength="3" />
+    <description source="TRx">The color of buttons on the GUI screens in RGB hexadecimal notation (e.g., FF0088). </description>
+
+  <parameter name="ButtonTextColor" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="3" minLength="3" />
+    <description source="TRx">The color of text on buttons on the GUI screens in RGB hexadecimal notation (e.g., FF0088). </description>
+
+  <parameter name="AutoUpdateServer" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">The server the CPE can check to see if an update is available for direct download to it.  This MUST NOT be used  by the CPE if the {{param|.ManagementServer.UpgradesManaged}} parameter is {{true}}. </description>
+
+  <parameter name="UserUpdateServer" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">The server where a user can check via a web browser if an update is available for download to a PC.  This MUST  NOT be used by the CPE if the {{param|.ManagementServer.UpgradesManaged}} parameter is {{true}}. </description>
+
+  <parameter name="AvailableLanguages" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Comma separated list (maximum length 256) of srings.  List items represent user-interface languages that are available, where each language is specified according to {{bibref|RFC3066}}. </description>
+
+  <parameter name="CurrentLanguage" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="16" />
+    <description source="TRx">Current user-interface language, specified according to {{bibref|RFC3066}}. The value MUST be a member of the list reported by the {{param|AvailableLanguages}} parameter. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.UserInterface.RemoteAccess." shortObjectName="UiRemoteAccessObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">This object contains parameters relating to remotely accessing the CPE's user interface. Remote access is defined as any entity not of a local subnet attempting to connect to the CPE.Remote access requires user authentication.  To provide remote access authentication the CPE MUST support a &quot;User&quot; table with at least one instance that has &quot;RemoteAccessCapable&quot; set to {{true}}. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables/Disables remotely accessing the CPE's user interface. </description>
+
+  <parameter name="Port" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="65535" />
+    <description source="TRx">Destination TCP port required for remote access connection. </description>
+
+  <parameter name="SupportedProtocols" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="HTTP" validValuesArray="uiRemoteAccessProtocolValues" />
+    <description source="TRx">{{list}} Indicates the protocols that are supported by the CPE for the purpose of remotely accessing the user interface. </description>
+
+  <parameter name="Protocol" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="HTTP" validValuesArray="uiRemoteAccessProtocolValues" />
+    <description source="TRx">This is the protocol currently being used for remote access. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.UserInterface.LocalDisplay." shortObjectName="UiLocalDisplayObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">This object describes how to remotely manage the initial positioning of a user interface on a device's local display. </description>
+
+  <parameter name="Movable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Controls whether the user is allowed to change the GUI window position on the local CPE's display. </description>
+
+  <parameter name="Resizable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Controls whether the user is allowed to resize the GUI window on the local CPE's display. </description>
+
+  <parameter name="PosX" type="int" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">The horizontal position of the User Interface's top left corner within the local CPE's display measured from the top left corner, expressed in pixels. </description>
+
+  <parameter name="PosY" type="int" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">The vertical position of the User Interface's top left corner within the local CPE's display measured from the top left corner, expressed in pixels. </description>
+
+  <parameter name="Width" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" />
+    <description source="TRx">The width of the user interface within the local CPE's display, expressed in pixels. </description>
+
+  <parameter name="Height" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" />
+    <description source="TRx">The height of the user interface within the local CPE's display, expressed in pixels. </description>
+
+  <parameter name="DisplayWidth" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The width of the local CPE's display, expressed in pixels. </description>
+
+  <parameter name="DisplayHeight" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The height of the local CPE's display, expressed in pixels. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="uiRemoteAccessProtocolValues" />
+  <element>HTTP</element>
+  <element>HTTPS</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Baseline:1" /> 
+<profile name="Device2_Baseline:2" /> 
+<profile name="Device2_Baseline:3" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

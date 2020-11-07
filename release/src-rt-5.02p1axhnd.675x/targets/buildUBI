@@ -1,0 +1,192 @@
+#!/bin/bash
+
+# script to generate files required for pureUBI
+
+# options available to pass this script:
+#   -u UBI .ini file[name] to generate
+#   -m metadata file[name] to generate (two copies of metadata information, defined in this script, each their own UBI volume, size should be small [flags, options etc])
+#   -f binary blob file[name] to generate (your own UBI volume, user defined files are added to this, size may be large)
+#   -t files to add to the binary blob, may be a directory
+#   -y rootfs filesystem
+#   -s [optional] squash flag to be added to metadata
+#
+# for example:
+# $PROFILE_DIR/../buildUBI -u $PROFILE_DIR/ubi_full.ini -m $TARGET_FS/../metadata.bin -f $PROFILE_DIR/filestruct.bin -t $TARGET_BOOTFS -y $PROFILE_DIR/rootfs.ubifs -s 1
+# note: passing directory/* for some reason passes each file into $1, $2 etc.
+
+# This is a sequence of records which may be aligned with padding, each contains the following in this order:
+# 1. 32-bit offset within volume to next record, big endian, referenced from byte following this pointer (points to #10)
+# 2. 32-bit offset to entry data, big endian, referenced from byte following this pointer (points to #7)
+# 3. 32-bit entry data length (length of #7) big endian
+# 4. 32-bit CRC of the above header (#1 - #3)
+# 5. Filename - null terminated
+# 6. Padding (if desired to align data)
+# 7. Data (8-byte aligned if desired)
+# 8. 32-bit CRC of the entry (covers items #5 - #7)
+# 9. Padding (to next record if desired for alignment)
+# 10. Next entry (same as item 1)
+# 11. (Same as #2)
+# 12. (etc.)
+
+# volume IDs
+####################################################
+#define VOLID_METADATA      1
+#define VOLID_METADATA_COPY 2
+# UBIFILES are CFERAM and/or VMLINUX in blob format
+#define VOLID_UBIFILES      10
+#define VOLID_UBIFS         0
+
+
+# subroutines
+
+append_file_struct() # push TEMP file plus CRC into blob, and TEMP2 file plus CRC into blob
+{ # $1 if the first passed parameter
+PUSHFILE=$1
+
+SIZE=`stat -c%s "$PROFILE_DIR/TEMP2"`+12+4 # pointer to next entry, file size plus header (minus this pointer itself) + CRC
+FILEPOINT=`echo $SIZE | bc`
+printf "%.8x" $FILEPOINT | xxd -r -p > $PROFILE_DIR/TEMP3 # put pointer to data first
+cat $PROFILE_DIR/TEMP >> $PROFILE_DIR/TEMP3            # rest of header next
+CRC32=`$HOSTTOOLS_DIR/gencrc32 $PROFILE_DIR/TEMP3`     # calculate CRC on whole header
+printf "%.8x" $CRC32 | xxd -r -p >> $PROFILE_DIR/TEMP3 # append CRC
+cat $PROFILE_DIR/TEMP3 >> $PUSHFILE
+
+CRC32=`$HOSTTOOLS_DIR/gencrc32 $PROFILE_DIR/TEMP2`     # calculate CRC on entry
+printf "%.8x" $CRC32 | xxd -r -p >> $PROFILE_DIR/TEMP2 # append CRC
+cat $PROFILE_DIR/TEMP2 >> $PUSHFILE
+};
+
+
+# start, grab input parameters
+
+while getopts "u:m:f:t:y:s:" opt; do
+   case "$opt" in
+      u)
+         UBI_INI=$OPTARG
+         ;;
+
+      m)
+         METADATA=$OPTARG
+         ;;
+
+      f)
+         FILESTRUCT=$OPTARG
+         ;;
+
+      t)
+         TARGET_DIR=$OPTARG
+         ;;
+
+      y)
+         FILESYSTEM=$OPTARG
+         ;;
+
+      s)
+         SQUASH=$OPTARG
+         ;;
+   esac
+done
+
+
+if [ -z "$METADATA" ] || [ -z "$FILESTRUCT" ]  || [ -z "$TARGET_DIR" ]; then
+   @echo "ERROR!!! Missing input parameters"
+   exit 1
+fi
+
+######## generate metadata file
+
+if [ ! -z "$METADATA" ]; then
+                                   > $METADATA
+
+   printf "%.8x" 18 | xxd -r -p > $PROFILE_DIR/TEMP # pointer to data after header and CRC
+   printf "%.8x" 1 | xxd -r -p >> $PROFILE_DIR/TEMP # size of data
+
+   printf "committed\0" > $PROFILE_DIR/TEMP2
+   printf "0" >> $PROFILE_DIR/TEMP2
+   append_file_struct $METADATA;
+
+   printf "%.8x" 19 | xxd -r -p > $PROFILE_DIR/TEMP # pointer to data after header and CRC
+   printf "%.8x" 3 | xxd -r -p >> $PROFILE_DIR/TEMP # size of data
+
+   printf "cferam.000\0" > $PROFILE_DIR/TEMP2 # NAND_CFE_RAM_NAME
+   printf "998" >> $PROFILE_DIR/TEMP2
+   append_file_struct $METADATA;
+
+   if [ ! -z "$SQUASH" ]; then
+      printf "%.8x" 15 | xxd -r -p > $PROFILE_DIR/TEMP # pointer to data after header and CRC
+      printf "%.8x" 1 | xxd -r -p >> $PROFILE_DIR/TEMP # size of data
+
+      printf "squash\0" > $PROFILE_DIR/TEMP2 # NAND_CFE_RAM_NAME
+      printf $SQUASH >> $PROFILE_DIR/TEMP2
+      append_file_struct $METADATA;
+   fi
+   printf "%.8x" 0 | xxd -r -p >> $METADATA # metadata terminator
+fi
+
+# generate blob
+if [ ! -z "$FILESTRUCT" ]; then
+                                   > $FILESTRUCT
+   for FILENAME in $TARGET_DIR/* $TARGET_DIR/**/*
+   do
+      if [ -f $FILENAME ]; then
+         BASENAME=`basename "$FILENAME"`
+         SIZE=`echo ${#BASENAME}+1+4+4 | bc` # pointer to data after entry name plus size of data plus CRC
+         printf "%.8x" $SIZE | xxd -r -p > $PROFILE_DIR/TEMP
+         SIZE=`stat -c%s $FILENAME` # size of data
+         printf "%.8x" $SIZE | xxd -r -p >> $PROFILE_DIR/TEMP
+   
+         printf "$BASENAME\0" > $PROFILE_DIR/TEMP2
+         cat $FILENAME >> $PROFILE_DIR/TEMP2
+         append_file_struct $FILESTRUCT;
+      fi
+   done
+   printf "%.8x" 0 | xxd -r -p >> $FILESTRUCT
+   BLOBNAME=`basename "$FILESTRUCT"`
+fi
+
+# erase file
+if [ ! -z "$UBI_INI" ]; then
+                                  > $UBI_INI
+   # add files cferam and possibly vmlinux
+   echo -e "[ubi2]"                 >> $UBI_INI
+   echo -e "mode=ubi"               >> $UBI_INI
+   echo -e "vol_type=static"        >> $UBI_INI
+   echo -e "image=$FILESTRUCT"      >> $UBI_INI
+   echo -e "vol_id=10"              >> $UBI_INI
+   echo -e "vol_name=$BLOBNAME"     >> $UBI_INI
+
+   # metadata
+   echo -e "[ubi0]"                 >> $UBI_INI
+   echo -e "mode=ubi"               >> $UBI_INI
+   # setting as dynamic, size and CRC will both be zero, changing these causes kernel panic
+   echo -e "vol_type=dynamic"       >> $UBI_INI
+   echo -e "image=$METADATA"        >> $UBI_INI
+   echo -e "vol_id=1"               >> $UBI_INI
+   echo -e "vol_name=METADATA"      >> $UBI_INI
+    
+   # metadata copy
+   echo -e "[ubi1]"                 >> $UBI_INI
+   echo -e "mode=ubi"               >> $UBI_INI
+   echo -e "vol_type=dynamic"       >> $UBI_INI
+   echo -e "image=$METADATA"        >> $UBI_INI
+   echo -e "vol_id=2"               >> $UBI_INI
+   echo -e "vol_name=METADATACOPY"  >> $UBI_INI
+
+   # if vmlinux, also add filesystem
+   if [ ! -z "$FILESYSTEM" ]; then
+   
+      echo -e "[ubi3]"                 >> $UBI_INI
+      echo -e "mode=ubi"               >> $UBI_INI
+      echo -e "vol_type=dynamic"       >> $UBI_INI
+      echo -e "image=$FILESYSTEM"      >> $UBI_INI
+      echo -e "vol_id=0"               >> $UBI_INI
+      echo -e "vol_name=rootfs_ubifs"  >> $UBI_INI
+      echo -e "vol_flags=autoresize"   >> $UBI_INI
+   
+      fi
+fi
+
+rm -f $PROFILE_DIR/TEMP
+rm -f $PROFILE_DIR/TEMP2
+rm -f $PROFILE_DIR/TEMP3
+

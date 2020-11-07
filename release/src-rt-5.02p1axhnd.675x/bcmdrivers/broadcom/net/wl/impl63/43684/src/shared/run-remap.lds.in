@@ -1,0 +1,133 @@
+OUTPUT_ARCH(TARGET_ARCH)
+ENTRY(startup)
+SECTIONS {
+	. = TEXT_START;
+
+	.setup : {
+		_setup_start = .;
+		*(.text.startup)
+		*(.text.debugptr)
+		*(.text.setup)
+		_setup_end = .;
+	}
+
+	.textrc1 : {
+		_rstart1 = .;
+		*(.textini1.*)
+	}
+
+	.datarc1 : {
+		*(.rodataini1.*)
+		*(.dataini1.*)
+		_rend1 = .;
+	}
+
+	/* Reclaim region 5 for BCMPOSTATTACHDATA/BCMPOSTATTACHFN */
+	.textrc5 : {
+		. = ALIGN(4);
+		_rstart5 = .;
+		*(.textini5.*)
+	}
+	.datarc5 : {
+		*(.rodataini5.*)
+		*(.dataini5.*)
+		. = ALIGN(4);
+		_rend5 = .;
+	}
+
+	.textrc2 : {
+		_rstart2 = .;
+		*(.textini2.*)
+	}
+
+	.datarc2 : {
+		*(.rodataini2.*)
+		*(.dataini2.*)
+		_rend2 = .;
+	}
+
+	/* Reclaim region 3 for BCMPREATTACHDATA/BCMPREATTACHFN */
+	.textrc3 : {
+		_rstart3 = .;
+		*(.textini3.*)
+	}
+	.datarc3 : {
+		*(.rodataini3.*)
+		*(.dataini3.*)
+		_rend3 = .;
+	}
+
+	_heap_start = .;
+	. = RELOC_TEXT_START;
+	_heap_end = .;
+
+	.text : {
+		_ftext = .;
+		text_start = .;
+		*(.init)
+		*(.text)
+		*(.text.*)
+		*(.fini)
+		*(.glue_7)
+		*(.glue_7t)
+		_etext = .;
+		text_end = .;
+	}
+
+	.rodata : {
+		rodata_start = .;
+		*(.rdata)
+		*(.rdata.*)
+		*(.rodata)
+		*(.rodata.*)
+		rodata_end = .;
+	}
+
+	.data : {
+		_fdata = .;
+		data_start = .;
+		*(.data)
+		*(.data.*)
+		*(.sdata)
+		_edata = .;
+		data_end = .;
+	}
+
+	.bss : {
+		_fbss = .;
+		bss_start = .;
+		*(.bss)
+		*(.bss.*)
+		*(.sbss)
+		*(.scommon)
+		*(COMMON)
+		bss_end = .;
+	}
+
+	_end = .;
+
+	/* Firmware meta-data (CRC, fwtag) is appended to the end of the image. */
+	_fw_meta_data = .;
+
+	.logstrs 0 (OVERLAY) : {
+		rom_lognums_offset = .;
+		KEEP(*(.romlognums))
+		ram_lognums_offset = .;
+		KEEP(*(.lognums))
+		rom_logstrs_offset = .;
+		KEEP(*(.romlogstrs))
+		ram_logstrs_offset = .;
+		KEEP(*(.logstrs))
+
+		/* Header */
+		. = ALIGN(4);
+		LONG(logstrs_size)         /* Size of this file */
+		LONG(rom_lognums_offset)
+		LONG(ram_lognums_offset)
+		LONG(rom_logstrs_offset)
+		LONG(ram_logstrs_offset)
+		LONG(1)                    /* Header version */
+		LONG(0x4C4F4753)           /* MAGIC number for verification 'LOGS' */
+		logstrs_size = .;
+	}
+}

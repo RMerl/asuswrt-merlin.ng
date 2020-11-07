@@ -1,0 +1,198 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2010" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_CT_OAM." shortObjectName="CTOAMObject" specSource="Custom" profile="X_CT_ORG_Epon:1" supportLevel="Present" oid="2510" lockZone="9" />
+
+  <parameter name="PortID" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+
+
+
+<object name="InternetGatewayDevice.X_CT_OAM.IADInfo." shortObjectName="OAMIADInfoObject" specSource="Custom" profile="X_CT_ORG_Epon:1" supportLevel="Present" />
+
+  <parameter name="Branch" type="int" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="199" />
+
+  <parameter name="Leaf" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="97" />
+
+  <parameter name="VariableWidth" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="72" />
+
+  <parameter name="MACAddress" type="hexBinary" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="021018000001" maxLength="6" />
+
+  <parameter name="ProtocolSupported" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="1" minValue="0" maxValue="1" />
+
+  <parameter name="IadSoftwareVersion" type="hexBinary" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+
+  <parameter name="IadSoftwaretime" type="hexBinary" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+
+  <parameter name="VoipUserCount" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4" />
+
+
+
+
+<object name="InternetGatewayDevice.X_CT_OAM.GlobalParameterConfig." shortObjectName="OAMGlbParamCfgObject" specSource="Custom" profile="X_CT_ORG_Epon:1" supportLevel="Present" />
+
+  <parameter name="Branch" type="int" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="199" />
+
+  <parameter name="Leaf" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="97" />
+
+  <parameter name="VariableWidth" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="84" />
+
+  <parameter name="VoiceIpMode" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="2" />
+
+  <parameter name="iadIpAddr" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="iadNetMask" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="iadDefaultGW" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="PPPoEMode" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="2" />
+
+  <parameter name="PPPOEusername" type="string" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="" maxLength="32" />
+
+  <parameter name="PPPOEpassword" type="base64" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="" maxLength="32" />
+
+  <parameter name="Taggedflag" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="2" />
+
+  <parameter name="VoiceCVlan" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="VoiceSVlan" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="VoicePriority" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="5" />
+
+  <parameter name="Status" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+
+
+
+<object name="InternetGatewayDevice.X_CT_OAM.SIPParameterConfig." shortObjectName="OAMSIPParamCfgObject" specSource="Custom" profile="X_CT_ORG_Epon:1" supportLevel="Present" />
+
+  <parameter name="Branch" type="int" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="199" />
+
+  <parameter name="Leaf" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="97" />
+
+  <parameter name="VariableWidth" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="45" />
+
+  <parameter name="MGPortNo" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="5060" minValue="0" maxValue="65535" />
+
+  <parameter name="SipProxyServIp" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="SipProxyServComPortNo" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+
+  <parameter name="BackupSipProxyServIp" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="BackUpSipProxyServComPortNo" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+
+  <parameter name="ActiveSipProxyServer" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="SipRegServIP" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="SipRegServComPortNo" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+
+  <parameter name="BackupSipRegServIp" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="BackupSipRegServComPortNo" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+
+  <parameter name="OutBoundServPortIP" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="OutBoundServPortNo" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+
+  <parameter name="SipRegIntervalSIP" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="HeartbeatSwitch" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="1" />
+
+  <parameter name="HeartbeatCycle" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="60" minValue="0" maxValue="65535" />
+
+  <parameter name="HeartbeatCount" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="3" minValue="0" maxValue="65535" />
+
+
+
+
+<object name="InternetGatewayDevice.X_CT_OAM.SIPUserParameterConfig." shortObjectName="OAMSIPUsrParamCfgObject" specSource="Custom" profile="X_CT_ORG_Epon:1" supportLevel="Present" />
+
+  <parameter name="Branch" type="int" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="199" />
+
+  <parameter name="Leaf" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="97" />
+
+  <parameter name="VariableWidth" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="64" />
+
+  <parameter name="UserAccount" type="hexBinary" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="" maxLength="32" />
+
+  <parameter name="Username" type="hexBinary" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+
+  <parameter name="UserPassword" type="hexBinary" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="" maxLength="32" />
+
+
+
+
+<object name="InternetGatewayDevice.X_CT_OAM.FAXModemConfig." shortObjectName="OAMFAXMDCfgObject" specSource="Custom" profile="X_CT_ORG_Epon:1" supportLevel="Present" />
+
+  <parameter name="Branch" type="int" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="199" />
+
+  <parameter name="Leaf" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="97" />
+
+  <parameter name="VariableWidth" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="2" />
+
+  <parameter name="VoiceT38Enable" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="1" />
+
+  <parameter name="VoiceFaxModemControl" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="1" />
+
+
+
+
+<object name="InternetGatewayDevice.X_CT_OAM.POTSStatus." shortObjectName="OAMPOTSStsObject" specSource="Custom" profile="X_CT_ORG_Epon:1" supportLevel="Present" />
+
+  <parameter name="Branch" type="int" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="199" />
+
+  <parameter name="Leaf" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="97" />
+
+  <parameter name="VariableWidth" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="12" />
+
+  <parameter name="IADPortStatus" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="10" />
+
+  <parameter name="iadPortServiceState" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="3" />
+
+  <parameter name="iadPortCodecMode" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="5" />
+
+
+
+
+<object name="InternetGatewayDevice.X_CT_OAM.IADOperation." shortObjectName="OAMIADOpObject" specSource="Custom" profile="X_CT_ORG_Epon:1" supportLevel="Present" />
+
+  <parameter name="iadOperation" type="unsignedInt" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="2" />
+
+
+
+
+<object name="InternetGatewayDevice.X_CT_OAM.SIPDigitMap." shortObjectName="OAMSIPDgtMpObject" specSource="Custom" profile="X_CT_ORG_Epon:1" supportLevel="Present" />
+
+  <parameter name="SIPDigitalMap" type="string" specSource="Custom" profile="Endpoint:1" supportLevel="ReadWrite" defaultValue="" maxLength="1024" />
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Baseline:1" /> 
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="Endpoint:1" /> 
+<profile name="X_CT_ORG_Epon:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

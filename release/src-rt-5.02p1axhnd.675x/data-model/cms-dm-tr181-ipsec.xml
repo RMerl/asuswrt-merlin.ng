@@ -1,0 +1,622 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec." shortObjectName="Dev2IpsecObject" specSource="TR181" profile="Device2_IPsec:1" requirements="P" supportLevel="Present" oid="1430" />
+  <description source="TRx">IPsec {{bibref|RFC4301}} object that supports the configuration of Encapsulating Security Payload (ESP) {{bibref|RFC4303}} and Authentication Header (AH) {{bibref|RFC4302}} in tunnel mode {{bibref|RFC4301|Section 3.2}}. Use of IKEv2 {{bibref|RFC5996}} is assumed.  The IPsec object does not currently support static configuration of tunnels and child Security Associations (SAs).See the IPsec Theory of Operation {{bibref|TR-181i2a5|Appendix IX}} for a description of the working of this IPsec data model.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables IPsec. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status3eValues" />
+    <description source="TRx">IPsec status.  {{enum}} The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="AHSupported" type="boolean" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="NotSupported" defaultValue="false" />
+    <description source="TRx">Indicates whether or not Authentication Header (AH) {{bibref|RFC4302}} is supported. </description>
+
+  <parameter name="IKEv2SupportedEncryptionAlgorithms" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Supported IKEv2 encryption algorithms {{bibref|IKEv2-params|Transform Type 1}}.  {{enum}} Note that these are the names from the above reference, transformed as follows:* Leading ''ENCR_'' (when present) discarded because they are all encryption algorithms so it's not needed. * Underscores changed to hyphens to preserve names used in existing data models (and because of inconsistent conventions).* Phrases collapsed where unambiguous, e.g. &quot;with a(n) NN octet ICV&quot; -&gt;&quot;-NN&quot;. As additional algorithms are added to the above reference, this data model will be extended according to the above conventions. </description>
+
+  <parameter name="ESPSupportedEncryptionAlgorithms" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Supported ESP encryption algorithms {{bibref|IKEv2-params|Transform Type 1}} {{bibref|RFC4835|Section 3.1.1}}.  {{enum}} Note that these are the names from the above reference, transformed as follows:* Leading ''ENCR_'' (when present) discarded because they are all encryption algorithms so it's not needed. * Underscores changed to hyphens to preserve names used in existing data models (and because of inconsistent conventions).* Phrases collapsed where unambiguous, e.g. &quot;with a(n) NN octet ICV&quot; -&gt;&quot;-NN&quot;. * Some algorithms with apparently rather specialised application are omitted, e.g. ''ENCR_NULL_AUTH_AES_GMAC''.As additional algorithms are added to the above reference, this data model will be extended according to the above conventions. </description>
+
+  <parameter name="IKEv2SupportedPseudoRandomFunctions" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Supported IKEv2 pseudo-random functions {{bibref|IKEv2-params|Transform Type 2}}.  {{enum}} Note that these are the names from the above reference, transformed as follows:* Leading ''PRF_'' (when present) discarded because they all pseudo-random functions so it's not needed. * Underscores changed to hyphens to preserve names used in existing data models.* Hyphen inserted after ''AES'' (or other acronym) when immediately followed by a key length. As additional functions are added to the above reference, this data model will be extended according to the above conventions. </description>
+
+  <parameter name="SupportedIntegrityAlgorithms" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Supported integrity algorithms {{bibref|IKEv2-params|Transform Type 3}}.  {{enum}} Note that these are the names from the above reference, transformed as follows:* Leading ''AUTH_'' (when present) discarded because they all authentication (integrity) algorithms so it's not needed. * Underscores changed to hyphens to preserve names used in existing data models.As additional algorithms are added to the above reference, this data model will be extended according to the above conventions. </description>
+
+  <parameter name="SupportedDiffieHellmanGroupTransforms" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Supported Diffie-Hellman group transforms {{bibref|IKEv2-params|Transform Type 4}}.  {{enum}} Note that these are the names from the above reference, transformed as follows:* Name (other than ''NONE'') always starts with the type of group, currently ''MODP'' or ''ECP'' (implies ECP random). * This is followed by ''-NN'', where ''NN'' is the group length in bits.* this is followed by ''-PRIME-NN'' for groups with prime order subgroups, where ''NN'' is the subgroup length in bits. As additional algorithms are added to the above reference, this data model will be extended according to the above conventions. </description>
+
+  <parameter name="MaxFilterEntries" type="unsignedInt" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">The maximum number of entries in the Filter table. A value of 0 means no specific limit. </description>
+
+  <parameter name="MaxProfileEntries" type="unsignedInt" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">The maximum number of entries in the Profile table. A value of 0 means no specific limit. </description>
+
+  <parameter name="FilterNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the Filter table. </description>
+
+  <parameter name="ProfileNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the Profile table. </description>
+
+  <parameter name="TunnelNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">The number of entries in the Tunnel table. </description>
+
+  <parameter name="IKEv2SANumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">The number of entries in the IKEv2SA table. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec.Stats." shortObjectName="Dev2IpsecStatsObject" specSource="TR181" profile="Device2_IPsec:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">This object defines access to an IP-layer NS Lookup test for the specified IP interface. When initiated, the NS Lookup test will contact {{param|DNSServer}} and look up {{param|HostName}} {{param|NumberOfRepetitions}} times. There will be a {{object|Result}} instance for each time the device performs a DNS lookup, which is determined by the value of {{param|NumberOfRepetitions}}. Any previous {{object|Result}} instances are removed when a new test is initiated.</description>
+
+  <parameter name="NegotiationFailures" type="StatsCounter32" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of times an IPsec negotiation failure has occurred. </description>
+
+  <parameter name="BytesSent" type="StatsCounter64" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes sent by IPsec. </description>
+
+  <parameter name="BytesReceived" type="StatsCounter64" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received by IPsec. </description>
+
+  <parameter name="PacketsSent" type="StatsCounter32" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes sent by IPsec. </description>
+
+  <parameter name="PacketsReceived" type="StatsCounter32" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received by IPsec. </description>
+
+  <parameter name="ErrorsSent" type="StatsCounter32" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes discarded by IPsec due to any error.  This can include packets dropped due to a lack of transmit buffers. </description>
+
+  <parameter name="UnknownSPIErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes discarded by IPsec due to an unknown SPI (Security Parameter Index). </description>
+
+  <parameter name="DecryptionErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes discarded by IPsec due to ESP decryption errors. </description>
+
+  <parameter name="IntegrityErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes discarded by IPsec due to integrity errors. </description>
+
+  <parameter name="ReplayErrors" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes discarded by IPsec due to replay errors. </description>
+
+  <parameter name="PolicyErrors" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes discarded by IPsec due to policy errors. </description>
+
+  <parameter name="OtherReceiveErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes discarded by IPsec due to errors other than unknown SPI, decryption, integrity, replay or policy errors. This can include packets dropped due to a lack of receive buffers. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec.Filter.{i}." shortObjectName="Dev2IpsecFilterObject" specSource="TR181" profile="Device2_IPsec:1" requirements="PC" supportLevel="DynamicInstances" autoOrder="true" />
+  <description source="TRx">Filter table that represents the IPsec Security Policy Database (SPD) {{bibref|RFC4301|Section 4.4.1}} selection criteria.  Each (ordered) entry defines a set of selection criteria and references a {{object|#.Profile}} table entry that specifies how matching packets will be processed. SPD filtering is performed for all packets that might need to cross the IPsec boundary {{bibref|RFC4301|Section 3.1}}.  Given that IPsec operates at the IP level, this means that SPD filtering conceptually occurs after bridging and before routing.For enabled table entries, if {{param|Interface}} is not a valid reference and {{param|AllInterfaces}} is {{false}}, then the table entry is inoperable and the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}}.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this IPsec Filter table entry. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status4eValues" />
+    <description source="TRx">The status of this IPsec Filter table entry.  {{enum}} The {{enum|Error_Misconfigured}} value indicates that a necessary configuration value is undefined or invalid.The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Order" type="unsignedInt" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" defaultValue="1" minValue="1" maxValue="4294967295" />
+    <description source="TRx">Position of the {{object}} entry in the order of precedence.  A value of ''1'' indicates the first entry considered (highest precedence).  For each packet, the highest ordered entry that matches the filter criteria is applied.  All lower order entries are ignored. When this value is modified, if the value matches that of an existing entry, the {{param}} value for the existing entry and all lower {{param}} entries is incremented (lowered in precedence) to ensure uniqueness of this value. A deletion causes {{param}} values to be compacted. When a value is changed, incrementing occurs before compaction.The value of {{param}} on creation of a {{object}} table entry MUST be one greater than the largest current value (initially assigned the lowest precedence). </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-ipsec-filter" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. </description>
+
+  <parameter name="Interface" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">SPD selection criterion. The value MUST be the path name of a table row. If the referenced object is deleted, the parameter value MUST be set to an empty string. This specifies the ingress interface associated with the entry.  It MAY be a layer 1, 2 or 3 interface.  However, the types of interfaces for which filters can be instantiated is a local matter to the CPE. </description>
+
+  <parameter name="AllInterfaces" type="boolean" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">SPD selection criterion. This specifies that all ingress interfaces are associated with the entry.  If {{true}}, the value of {{param|Interface}} is ignored since all ingress interfaces are indicated. </description>
+
+  <parameter name="DestIP" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="45" />
+    <description source="TRx">SPD selection criterion. Destination IP address.  {{empty}} indicates this criterion is not used, i.e. is ''ANY''. </description>
+
+  <parameter name="DestMask" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="45" />
+    <description source="TRx">SPD selection criterion. Destination IP address mask.  If not {{empty}}, only the indicated network portion of the {{param|DestIP}} address is to be used for selection.  {{empty}} indicates that the full {{param|DestIP}} address is to be used for selection. </description>
+
+  <parameter name="DestIPExclude" type="boolean" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="false" />
+    <description source="TRx">If {{false}}, the rule matches only those packets that match the (masked) {{param|DestIP}} entry, if specified. If {{true}}, the rule matches all packets except those that match the (masked) {{param|DestIP}} entry, if specified. </description>
+
+  <parameter name="SourceIP" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="45" />
+    <description source="TRx">SPD selection criterion. Source IP address.  {{empty}} indicates this criterion is not used, i.e. is ''ANY''. </description>
+
+  <parameter name="SourceMask" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="45" />
+    <description source="TRx">SPD selection criterion. Source IP address mask.  If not {{empty}}, only the indicated network portion of the {{param|SourceIP}} address is to be used for selection.  {{empty}} indicates that the full {{param|SourceIP}} address is to be used for selection. </description>
+
+  <parameter name="SourceIPExclude" type="boolean" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="false" />
+    <description source="TRx">If {{false}}, the rule matches only those packets that match the (masked) {{param|SourceIP}} entry, if specified. If {{true}}, the rule matches all packets except those that match the (masked) {{param|SourceIP}} entry, if specified. </description>
+
+  <parameter name="Protocol" type="int" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="255" />
+    <description source="TRx">SPD selection criterion. Protocol number.  A value of -1 indicates this criterion is not used, i.e. is ''ANY''.Note that {{bibref|RFC4301}} refers to this as the ''Next Layer Protocol''.  It is obtained from the IPv4 ''Protocol'' or the IPv6 ''Next Header'' fields. </description>
+
+  <parameter name="ProtocolExclude" type="boolean" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="false" />
+    <description source="TRx">If {{false}}, the rule matches only those packets that match {{param|Protocol}}, if specified. If {{true}}, the rule matches all packets except those that match {{param|Protocol}}, if specified. </description>
+
+  <parameter name="DestPort" type="int" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="-1" minValue="-1" maxValue="65535" />
+    <description source="TRx">SPD selection criterion. Destination port number.  A value of -1 indicates this criterion is not used, i.e. is ''ANY''.The value of this parameter is ignored for protocols that do not use ports, e.g. ICMP (1). </description>
+
+  <parameter name="DestPortRangeMax" type="int" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="-1" minValue="-1" maxValue="65535" />
+    <description source="TRx">SPD selection criterion. If specified, indicates a destination port address range from {{param|DestPort}} through {{param}} (inclusive), in which case {{param}} MUST be greater than or equal to {{param|DestPort}}.A value of -1 indicates that no destination port range is specified. </description>
+
+  <parameter name="DestPortExclude" type="boolean" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="false" />
+    <description source="TRx">If {{false}}, the rule matches only those packets that match {{param|DestPort}} (or port range), if specified. If {{true}}, the rule matches all packets except those that match {{param|DestPort}} (or port range), if specified. </description>
+
+  <parameter name="SourcePort" type="int" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="-1" minValue="-1" maxValue="65535" />
+    <description source="TRx">SPD selection criterion. Source port number.  A value of -1 indicates this criterion is not used, i.e. is ''ANY''.The value of this parameter is ignored for protocols that do not use ports, e.g. ICMP (1). </description>
+
+  <parameter name="SourcePortRangeMax" type="int" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="-1" minValue="-1" maxValue="65535" />
+    <description source="TRx">SPD selection criterion. If specified, indicates a source port address range from {{param|SourcePort}} through {{param}} (inclusive), in which case {{param}} MUST be greater than or equal to {{param|SourcePort}}.A value of -1 indicates that no source port range is specified. </description>
+
+  <parameter name="SourcePortExclude" type="boolean" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="false" />
+    <description source="TRx">If {{false}}, the rule matches only those packets that match {{param|SourcePort}} (or port range), if specified. If {{true}}, the rule matches all packets except those that match {{param|SourcePort}} (or port range), if specified. </description>
+
+  <parameter name="ProcessingChoice" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" defaultValue="Bypass" validValuesArray="ipSecProcessingChoiceValues" />
+    <description source="TRx">Indicates how packets that match this rule will be processed {{bibref|RFC4301|Section 4.4.1}}. </description>
+
+  <parameter name="Profile" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">The profile that defines the IPsec treatment for matching packets.  {{reference}} If {{param|ProcessingChoice}} is {{enum|Protect|ProcessingChoice}}, {{param}} MUST NOT be {{empty}}.  In this case, if it ever becomes {{empty}}, e.g. because the referenced profile is deleted, this IPsec Filter table entry is invalid and {{param|Status}} MUST be set to {{enum|Error_Misconfigured|Status}}.If {{param|ProcessingChoice}} is not {{enum|Protect|ProcessingChoice}}, {{param}} is ignored. Any changes to the referenced profile will have an immediate effect on any established IPsec tunnels.  Such changes will often force IKEv2 sessions and child SAs to be re-established. </description>
+
+  <parameter name="X_BROADCOM_COM_TunnelName" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Tunnel name</description>
+
+  <parameter name="X_BROADCOM_COM_SPI" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">SPI</description>
+
+
+<object name="InternetGatewayDevice.Device.IPsec.Profile.{i}." shortObjectName="Dev2IpsecProfileObject" specSource="TR181" profile="Device2_IPsec:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">Profile table that represents the IPsec Security Policy Database (SPD) {{bibref|RFC4301|Section 4.4.1}} processing info.  Each entry defines the IPsec treatment for packets that match the {{object|#.Filter}} entries that reference the entry.</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-ipsec-profile" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference.</description>
+
+  <parameter name="MaxChildSAs" type="unsignedInt" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">Controls the maximum number of child Security Association (SA) pairs that can be negotiated by a single IKEv2 session. If a new child SA pair is needed, but the current IKEv2 session already has {{param}} child SA pairs, an additional IKEv2 session (and therefore an additional IPsec tunnel) will be established.A value of 0 means no specific limit. Note that support for more than one child SA pair per IKEv2 session is OPTIONAL {{bibref|RFC5996|Section 1.3}}. </description>
+
+  <parameter name="RemoteEndpoints" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">Comma-separated list (up to 4 items) of strings (maximum length 64). The host name or IP address of the remote IPsec tunnel endpoint.  If more than one name/address is supplied, they will be tried in turn, i.e. they are in decreasing order of precedence. </description>
+
+  <parameter name="ForwardingPolicy" type="unsignedInt" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">Identifier of the forwarding policy associated with traffic that is associated with this profile. The forwarding policy can be referenced by entries in the {{object|##.Routing.Router.{i}.IPv4Forwarding}} and {{object|##.Routing.Router.{i}.IPv6Forwarding}} tables, and therefore allows SPD selection criteria to influence the forwarding decision. </description>
+
+  <parameter name="Protocol" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="ReadWrite" defaultValue="ESP" validValuesArray="ipSecProtocolValues" />
+    <description source="TRx">The &quot;child&quot; security protocol. This is not to be confused with {{object|#.Filter}}.{{param|#.Filter.{i}.Protocol}}, which is an SPD selector that can select packets that already have AH or ESP headers.  {{object}}.{{param}} selects whether AH or ESP will be used when encapsulating a packet. </description>
+
+  <parameter name="IKEv2AuthenticationMethod" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">IKEv2 CPE authentication method {{bibref|RFC5996|Section 2.15}}. {{reference|an enabled row in the {{object|.Security.Certificate}} table or in another table that contains appropriate CPE credentials}} If {{empty}}, or the referenced row is disabled or deleted, the CPE chooses the authentication method based on local policy. </description>
+
+  <parameter name="IKEv2AllowedEncryptionAlgorithms" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings. Each list item MUST be a member of the list reported by the IPsec.IKEv2SupportedEncryptionAlgorithms parameter.  Allowed IKEv2 encryption algorithms. </description>
+
+  <parameter name="ESPAllowedEncryptionAlgorithms" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings. Each list item MUST be a member of the list reported by the IPsec.ESPSupportedEncryptionAlgorithms parameter.Allowed ESP encryption algorithms. </description>
+
+  <parameter name="IKEv2AllowedPseudoRandomFunctions" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings. Each list item MUST be a member of the list reported by the IPsec.IKEv2SupportedPseudoRandomFunctions parameter.Allowed IKEv2 pseudo-random functions. </description>
+
+  <parameter name="IKEv2AllowedIntegrityAlgorithms" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings. Each list item MUST be a member of the list reported by the IPsec.SupportedIntegrityAlgorithms parameter.Allowed IKEv2 integrity algorithms. </description>
+
+  <parameter name="AHAllowedIntegrityAlgorithms" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings. Each list item MUST be a member of the list reported by the IPsec.SupportedIntegrityAlgorithms parameter.  Allowed AH integrity algorithms {{bibref|IKEv2-params|Transform Type 3}} {{bibref|RFC4835|Section 3.2}}. </description>
+
+  <parameter name="ESPAllowedIntegrityAlgorithms" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings. Each list item MUST be a member of the list reported by the IPsec.SupportedIntegrityAlgorithms parameter.  Allowed ESP integrity algorithms {{bibref|IKEv2-params|Transform Type 3}} {{bibref|RFC4835|Section 3.1.1}}. </description>
+
+  <parameter name="IKEv2AllowedDiffieHellmanGroupTransforms" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="W" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings. Each list item MUST be a member of the list reported by the IPsec.SupportedDiffieHellmanGroupTransforms parameter.  Allowed IKEv2 Diffie-Hellman group transforms. </description>
+
+  <parameter name="IKEv2DeadPeerDetectionTimeout" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">IKEv2 Dead Peer Detection (DPD) timeout in seconds.  {{bibref|RFC5996|section 2.4}} </description>
+
+  <parameter name="IKEv2NATTKeepaliveTimeout" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">IKEv2 NAT traversal (NAT-T) keepalive timeout in seconds.  {{bibref|RFC3948|Section 4}} </description>
+
+  <parameter name="AntiReplayWindowSize" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">The size of the AH or ESP Anti-Replay Window.  {{bibref|RFC4302|Section B.2}} {{bibref|RFC4303|Section A2}} A value of 0 means that Sequence Number Verification is disabled. </description>
+
+  <parameter name="DoNotFragment" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="Copy" validValuesArray="doNotFragmentValues" />
+    <description source="TRx">Controls the value of the ''Do Not Fragment'' (DF) bit.  {{bibref|RFC4301|Section 8.1}} </description>
+
+  <parameter name="DSCPMarkPolicy" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="0" minValue="-2" maxValue="63" />
+    <description source="TRx">DSCP with which to mark the outer IP header for traffic that is associated with this IPsec channel. A value of -1 indicates copy from the incoming packet.A value of -2 indicates automatic marking of DSCP. De-tunneled packets are never re-marked.Automatic DSCP marking behavior is a local matter to the CPE, possibly influenced by other Broadband Forum standards that it supports. </description>
+
+  <parameter name="IKEv2SATrafficLimit" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">IKEv2 SA lifetime in bytes, or zero if there is no traffic constraint on its expiration. If both {{param}} and {{param|IKEv2SATimeLimit}} are non-zero, the IKEv2 SA is deleted when the first limit is reached. </description>
+
+  <parameter name="IKEv2SATimeLimit" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">IKEv2 SA lifetime in seconds, or zero if there is no time constraint on its expiration. If both {{param}} and {{param|IKEv2SATrafficLimit}} are non-zero, the IKEv2 SA is deleted when the first limit is reached. </description>
+
+  <parameter name="IKEv2SAExpiryAction" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="Renegotiate" validValuesArray="ipSecSAExpiryActionValues" />
+    <description source="TRx">Action to take when an IKEv2 SA expires, whether as a result of hitting a traffic limit or a time limit. </description>
+
+  <parameter name="ChildSATrafficLimit" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">Child SA lifetime in bytes, or zero if there is no traffic constraint on its expiration. If both {{param}} and {{param|ChildSATimeLimit}} are non-zero, the child SA is deleted when the first limit is reached. </description>
+
+  <parameter name="ChildSATimeLimit" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">Child SA lifetime in seconds, or zero if there is no time constraint on its expiration. If both {{param}} and {{param|ChildSATrafficLimit}} are non-zero, the child SA is deleted when the first limit is reached. </description>
+
+  <parameter name="ChildSAExpiryAction" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="Renegotiate" validValuesArray="ipSecSAExpiryActionValues" />
+    <description source="TRx">Action to take when a Child SA expires, whether as a result of hitting a traffic limit or a time limit. </description>
+
+  <parameter name="SentCPAttrNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">The number of entries in the SentCPAttr table. </description>
+
+  <parameter name="X_BROADCOM_COM_KeyExchangeMode" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">This parameter specifies the mode of key exchange. It could be &quot;manual&quot;, &quot;IKEv1&quot;, or &quot;IKEv2&quot;.</description>
+
+  <parameter name="X_BROADCOM_COM_LocalIfName" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">This parameter specifies which WAN interface is associated with IPsec tunnel.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec.Profile.{i}.SentCPAttr.{i}." shortObjectName="Dev2IpsecProfileSentCpAttrObject" specSource="TR181" profile="Unspecified" requirements="PC" supportLevel="NotSupported" />
+  <description source="TRx">Each instance of this object represents an IKEv2 Configuration Payload (CP) {{bibref|RFC5996|Section 3.15}} Attribute that MUST, if enabled, be sent in IKEv2 CP CFG_REQUEST messages.  All such Attributes MUST be listed. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables this {{object}} entry. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference.</description>
+
+  <parameter name="Type" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" minValue="0" maxValue="32767" />
+    <description source="TRx">CP Attribute Type as described in {{bibref|RFC5996|Section 3.15.1}} and defined in {{bibref|IKEv2-params|IKEv2 Configuration Payload Attribute Types}}. </description>
+
+  <parameter name="Value" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="65535" />
+    <description source="TRx">A hexbinary encoded CP Attribute Value as described in {{bibref|RFC5996|Section 3.15.1}} and defined in {{bibref|IKEv2-params|IKEv2 Configuration Payload Attribute Types}}. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec.Profile.{i}.X_BROADCOM_COM_ManualModeCfg." shortObjectName="ManualModeCfgObject" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="Present" />
+  <description source="BROADCOM">This object includes static IPsec configuration.</description>
+
+  <parameter name="AllowedEncryptionAlgorithms" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Encryption algorithm</description>
+
+  <parameter name="EncryptionKey" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Encryption key.</description>
+
+  <parameter name="AllowedIntegrityAlgorithms" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Authentication algorithm.</description>
+
+  <parameter name="AuthenticationKey" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Authentication key.</description>
+
+  <parameter name="SPI" type="unsignedInt" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="101" />
+    <description source="BROADCOM">SPI number.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec.Profile.{i}.X_BROADCOM_COM_IKEv1Cfg." shortObjectName="Ikev1CfgObject" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="Present" />
+  <description source="BROADCOM">This object includes IKEv1 configuration.</description>
+
+  <parameter name="AuthenticationMethod" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">Authentication method.</description>
+
+  <parameter name="PreSharedKey" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="CertificateName" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="PerfectFSEn" type="boolean" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="false" />
+
+  <parameter name="Phase1Mode" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="Phase1AllowedEncryptionAlgorithms" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="Phase1AllowedIntegrityAlgorithms" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="Phase1AllowedDiffieHellmanGroupTransforms" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="Phase1KeyTime" type="unsignedInt" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="Phase2AllowedEncryptionAlgorithms" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="Phase2AllowedIntegrityAlgorithms" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="Phase2AllowedDiffieHellmanGroupTransforms" type="string" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="Phase2KeyTime" type="unsignedInt" specSource="Broadcom" profile="Device2_IPsec:1" supportLevel="ReadWrite" defaultValue="0" />
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec.Tunnel.{i}." shortObjectName="Dev2IpsecTunnelObject" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="NotSupported" />
+  <description source="TRx">Represents an IPsec tunnel, i.e. a virtual IP interface that models an IPsec tunnel entry point and exit point.  A {{object}} instance always references (and has the same lifetime as) a ({{enum|Tunnel|.IP.Interface.{i}.Type}},{{enum|Tunneled|.IP.Interface.{i}.Type}}) {{object|.IP.Interface}} pair.  The {{object}} instance models the IPsec-specific concepts, the {{enum|Tunnel|.IP.Interface.{i}.Type}} {{object|.IP.Interface}} instance models the generic concepts, and the {{enum|Tunneled|.IP.Interface.{i}.Type}} {{object|.IP.Interface}} instance exists only so it can be referenced by forwarding or filter rules. {{object}} instances are automatically created (as needed) when {{object|#.Filter}} instances are enabled and disabled.Each instance's {{param|Filters}} parameter references the {{object|#.Filter}} instances that require the {{object}} instance to exist.  If this list ever becomes {{empty}}, e.g. because all the referenced {{object|#.Filter}} instances have been disabled or deleted, the CPE MAY choose not to delete the {{object}} instance (and its associated ({{enum|Tunnel|.IP.Interface.{i}.Type}},{{enum|Tunneled|.IP.Interface.{i}.Type}}) {{object|.IP.Interface}} pair).  This can be desirable, because {{object|.QoS.Classification}}, {{object|.Routing.Router.{i}.IPv4Forwarding}}, {{object|.Routing.Router.{i}.IPv6Forwarding}} etc instances might be referencing the {{object|.IP.Interface}} instances. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-ipsec-tunnel" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. </description>
+
+  <parameter name="TunnelInterface" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The corresponding auto-created {{enum|Tunnel|Device.IP.Interface.{i}.Type}} {{object|.IP.Interface}} instance.   The value MUST be the path name of a row in the IP.Interface table. If the referenced object is deleted, this instance MUST also be deleted (so the parameter value will never be an empty string). </description>
+
+  <parameter name="TunneledInterface" type="string" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The corresponding auto-created {{enum|Tunneled|Device.IP.Interface.{i}.Type}} {{object|.IP.Interface}} instance.  The value MUST be the path name of a row in the IP.Interface table. If the referenced object is deleted, this instance MUST also be deleted (so the parameter value will never be an empty string).  </description>
+
+  <parameter name="Filters" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Comma-separated list of strings. The Filter instances that require this Tunnel instance to exist. Each list item MUST be the path name of a row in the IPsec.Filter table. If the referenced object is deleted, the corresponding item MUST be removed from the list. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec.Tunnel.{i}.Stats." shortObjectName="Dev2IpsecTunnelStatsObject" specSource="TR181" profile="Device2_IPsec:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">Results from the most recent invocation of the test, one instance per repetition.</description>
+
+  <parameter name="DecryptionErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets discarded due to ESP decryption errors. </description>
+
+  <parameter name="IntegrityErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets discarded due to integrity errors. </description>
+
+  <parameter name="ReplayErrors" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets discarded due to replay errors. </description>
+
+  <parameter name="PolicyErrors" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets discarded due to policy errors. </description>
+
+  <parameter name="OtherReceiveErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsec:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets discarded due to errors other than decryption, integrity, replay or policy errors. This can include packets dropped due to a lack of receive buffers. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec.IKEv2SA.{i}." shortObjectName="Dev2IpsecIkeV2SaObject" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="NotSupported" />
+  <description source="TRx">Represents an IKEv2 Security Association (SA), corresponding to an IKEv2 session.  Instances are automatically created and deleted as IKEv2 SAs are created and deleted. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="Unknown" validValuesArray="status5eValues" />
+    <description source="TRx">The current operational state of the IKEv2 SA. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-ipsec-ikev2sa" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. </description>
+
+  <parameter name="Tunnel" type="string" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The associated {{object|#.Tunnel}} instance.  The value MUST be the path name of a row in the Tunnel table. If the referenced object is deleted, the parameter value MUST be set to an empty string. &#10;&#10;Note that {{param}} is a unique key, i.e only one {{object}} instance is associated with a given {{object|#.Tunnel}} instance.  During rekeying {{bibref|RFC5996|Section 2.8}}, a new IKEv2 SA is created and inherits the existing IKEv2 SA's child SAs, then the old IKEv2 SA is deleted.  From the management point of view the new and old IKEv2 SAs are the same SA and MUST be modeled using the same {{object}} instance. </description>
+
+  <parameter name="LocalAddress" type="string" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" maxLength="45" />
+    <description source="TRx">The local IP address that this IKEv2 SA was negotiated with.  This is assigned via IKEv2 and will also be available via the associated {{object|#.Tunnel}}'s {{param|#.Tunnel.{i}.TunnelInterface}} {{object|##.IP.Interface.{i}.IPv4Address}} or {{object|##.IP.Interface.{i}.IPv6Address}} table (as appropriate). </description>
+
+  <parameter name="RemoteAddress" type="string" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" maxLength="45" />
+    <description source="TRx">The IP address of the peer that this IKEv2 SA was negotiated with.  This will be the IP address of one of the security gateways configured via {{param|#.Profile.{i}.RemoteEndpoints}}. </description>
+
+  <parameter name="EncryptionAlgorithm" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="DES" validValuesArray="ikeV2EncryptionAlgoValues" />
+    <description source="TRx">The encryption algorithm applied to traffic carried by this IKEv2 SA. This will be one of the {{param|#.Profile.{i}.IKEv2AllowedEncryptionAlgorithms}} from the {{object|#.Profile}} instance via which this IKEv2 SA was created. </description>
+    <description source="BROADCOM">The list of algorithms is not the complete list from the TR181 spec.  Broadcom developer who is working on this feature must edit the ikeV2EncryptionAlgoValues enumeration to what our software supports.</description>
+
+  <parameter name="EncryptionKeyLength" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The length of the encryption key in {{units}} used for the algorithm specified in the {{param|EncryptionAlgorithm}} parameter.  The value is 0 if the key length is implicit in the specified algorithm or there is no encryption applied. </description>
+
+  <parameter name="PseudoRandomFunction" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="HMAC-MD5" validValuesArray="ikeV2PseudoRandomFuncValues" />
+    <description source="TRx">The pseudo-random function used by this IKEv2 SA. This will be one of the {{param|#.Profile.{i}.IKEv2AllowedPseudoRandomFunctions}} from the {{object|#.Profile}} instance via which this IKEv2 SA was created. </description>
+    <description source="BROADCOM">The list of algorithms is not the complete list from the TR181 spec.  Broadcom developer who is working on this feature must edit the ikeV2PseudoRandomFuncValues enumeration to what our software supports.</description>
+
+  <parameter name="IntegrityAlgorithm" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="HMAC-MD5-96" validValuesArray="ikeV2IntegrityAlgoValues" />
+    <description source="TRx">The integrity algorithm applied to the traffic carried by this IKEv2 SA. This will be one of the {{param|#.Profile.{i}.IKEv2AllowedIntegrityAlgorithms}} from the {{object|#.Profile}} instance via which this IKEv2 SA was created. </description>
+    <description source="BROADCOM">The list of algorithms is not the complete list from the TR181 spec.  Broadcom developer who is working on this feature must edit the ikeV2IntegrityAlgoValues enumeration to what our software supports.</description>
+
+  <parameter name="DiffieHellmanGroupTransform" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="MODP-768" validValuesArray="ikeV2DiffieHellmanTransformValues" />
+    <description source="TRx">The Diffie-Hellman Group used by this IKEv2 SA. This will be one of the {{param|#.Profile.{i}.IKEv2AllowedDiffieHellmanGroupTransforms}} from the {{object|#.Profile}} instance via which this IKEv2 SA was created. </description>
+    <description source="BROADCOM">The list of algorithms is not the complete list from the TR181 spec.  Broadcom developer who is working on this feature must edit the ikeV2DiffieHellmanTransformValues enumeration to what our software supports.</description>
+
+  <parameter name="CreationTime" type="dateTime" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">When this IKEv2 SA was set up. </description>
+
+  <parameter name="NATDetected" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="Unsupported" validValuesArray="natDetectedValues" />
+    <description source="TRx">Whether NAT traversal is supported by the device and, if so, whether a NAT was detected. </description>
+
+  <parameter name="ReceivedCPAttrNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the ReceivedCPAttr table.</description>
+
+  <parameter name="ChildSANumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the ChildSA table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec.IKEv2SA.{i}.Stats." shortObjectName="Dev2IpsecIkeV2SaStatsObject" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">Statistics for this IKEv2 Security Association (SA). The CPE MUST reset the IKEv2 SA's Stats parameters (unless otherwise stated in individual object or parameter descriptions) whenever the associated {{param|#.Tunnel}} instance's Stats parameters are reset. </description>
+
+  <parameter name="BytesSent" type="StatsCounter64" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes handled in the outbound direction by the IKEv2 SA. </description>
+
+  <parameter name="BytesReceived" type="StatsCounter64" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes handled in the inbound direction by the IKEv2 SA. </description>
+
+  <parameter name="PacketsSent" type="StatsCounter32" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets handled in the outbound direction by the IKEv2 SA. </description>
+
+  <parameter name="PacketsReceived" type="StatsCounter32" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets handled in the inbound direction by the IKEv2 SA. </description>
+
+  <parameter name="ErrorsSent" type="StatsCounter32" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets from this IKEv2 SA discarded for any reason. This can include packets dropped due to a lack of transmit buffer space. Note that this refers to IKE protocol packets, and not to packets carried by other SAs. </description>
+
+  <parameter name="DecryptionErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets to this IKEv2 SA discarded due to decryption errors. Note that this refers to IKEv2 protocol packets, and not to packets carried by other SAs. </description>
+
+  <parameter name="IntegrityErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets to this IKEv2 SA discarded due to integrity errors. Note that this refers to IKEv2 protocol packets, and not to packets carried by other SAs. </description>
+
+  <parameter name="OtherReceiveErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets to this IKEv2 SA discarded for reasons other than decryption or integrity errors. This can include packets dropped due to a lack of receive buffer space. Note that this refers to IKEv2 protocol packets, and not to packets carried by other SAs. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec.IKEv2SA.{i}.ReceivedCPAttr.{i}." shortObjectName="Dev2IpsecIkeV2SaReceivedCpAttrObject" specSource="TR181" profile="Unspecified" requirements="PC" supportLevel="NotSupported" pruneWriteToConfigFile="true" />
+  <description source="TRx">This is a transitory table that lists all the IKEv2 Configuration Payload (CP) {{bibref|RFC5996|Section 3.15}} Attributes that have been received via CFG_REPLY messages.  Table entries are automatically created to correspond with received Attributes. However, it is a local matter to the CPE when to delete old table entries. If the same Attribute is received multiple times, it is up to the CPE to decide which entries to include (i.e. whether the same Attribute will be present multiple times). In order to allow for the same Attribute to be present multiple times within the table, this table has no unique key defined. </description>
+
+  <parameter name="Type" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" minValue="0" maxValue="32767" />
+    <description source="TRx">CP Attribute Type as described in {{bibref|RFC5996|Section 3.15.1}} and defined in {{bibref|IKEv2-params|IKEv2 Configuration Payload Attribute Types}}. </description>
+
+  <parameter name="Value" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="65535" />
+    <description source="TRx">A hexbinary encoded CP Attribute Value as described in {{bibref|RFC5996|Section 3.15.1}} and defined in {{bibref|IKEv2-params|IKEv2 Configuration Payload Attribute Types}}. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec.IKEv2SA.{i}.ChildSA.{i}." shortObjectName="Dev2IpsecIkeV2SaChildSaObject" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="NotSupported" pruneWriteToConfigFile="true" />
+  <description source="TRx">Represents a child Security Association (SA) pair, i.e. an inbound child SA and an outbound child SA. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="Unknown" validValuesArray="status5eValues" />
+    <description source="TRx">The current operational state of the child SA pair. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference.</description>
+
+  <parameter name="InboundSPI" type="unsignedInt" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The inbound child SA's Security Parameter Index (SPI). </description>
+
+  <parameter name="OutboundSPI" type="unsignedInt" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The outbound child SA's Security Parameter Index (SPI). </description>
+
+  <parameter name="CreationTime" type="dateTime" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The date and time when the child SA was created. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPsec.IKEv2SA.{i}.ChildSA.{i}.Stats." shortObjectName="Dev2IpsecIkeV2SaChildSaStatsObject" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">Statistics for this child Security Association (SA). The CPE MUST reset the child SA's Stats parameters (unless otherwise stated in individual object or parameter descriptions) whenever the parent {{object|#}} instance's Stats parameters are reset. </description>
+
+  <parameter name="BytesSent" type="StatsCounter64" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of bytes handled by the outbound child SA. </description>
+
+  <parameter name="BytesReceived" type="StatsCounter64" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of bytes handled by the inbound child SA. </description>
+
+  <parameter name="PacketsSent" type="StatsCounter32" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of packets handled by the outbound child SA. </description>
+
+  <parameter name="PacketsReceived" type="StatsCounter32" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of packets handled by the inbound child SA. </description>
+
+  <parameter name="ErrorsSent" type="StatsCounter32" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of packets discarded by the outbound child SA due to any error. This can include compression errors or errors due to a lack of transmit buffers. </description>
+
+  <parameter name="DecryptionErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of packets discarded by the inbound child SA due to decryption errors. </description>
+
+  <parameter name="IntegrityErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of packets discarded by the inbound child SA due to integrity errors. </description>
+
+  <parameter name="ReplayErrors" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of packets discarded by the inbound child SA due to replay errors. </description>
+
+  <parameter name="PolicyErrors" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of packets discarded by the inbound child SA due to policy errors. </description>
+
+  <parameter name="OtherReceiveErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IPsecAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of packets discarded by the inbound child SA due to errors other than decryption, integrity, replay or policy errors. This can include decompression errors or errors due to a lack of receive buffers. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="doNotFragmentValues" />
+  <element>Set</element>
+  <element>Clear</element>
+  <element>Copy</element>
+
+<validstringarray name="ikeV2DiffieHellmanTransformValues" />
+  <element>None</element>
+  <element>MODP-768</element>
+  <element>MODP-1024</element>
+  <element>ECP-256</element>
+  <element>ECP-192</element>
+  <element>ECP-224</element>
+
+<validstringarray name="ikeV2EncryptionAlgoValues" />
+  <element>DES</element>
+  <element>3DES</element>
+  <element>RC5</element>
+  <element>IDEA</element>
+  <element>CAST</element>
+  <element>BLOWFISH</element>
+
+<validstringarray name="ikeV2IntegrityAlgoValues" />
+  <element>None</element>
+  <element>HMAC-MD5-96</element>
+  <element>HMAC-SHA1-96</element>
+  <element>DES-MAC</element>
+  <element>AES-128-GMAC</element>
+  <element>HMAC-SHA2-256-256</element>
+
+<validstringarray name="ikeV2PseudoRandomFuncValues" />
+  <element>HMAC-MD5</element>
+  <element>HMAC-SHA1</element>
+  <element>HMAC-TIGER</element>
+  <element>AES-128-XCBC</element>
+  <element>HMAC-SHA2-256</element>
+  <element>AES-128-CMAC</element>
+
+<validstringarray name="ipSecProcessingChoiceValues" />
+  <element>Discard</element>
+  <element>Bypass</element>
+  <element>Protect</element>
+
+<validstringarray name="ipSecProtocolValues" />
+  <element>AH</element>
+  <element>ESP</element>
+
+<validstringarray name="ipSecSAExpiryActionValues" />
+  <element>Renegotiate</element>
+  <element>Delete</element>
+
+<validstringarray name="natDetectedValues" prefix="IPSECNAT" />
+  <element>None</element>
+  <element>Local</element>
+  <element>Remote</element>
+  <element>Unsupported</element>
+
+<validstringarray name="status3eValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error</element>
+
+<validstringarray name="status4eValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error_Misconfigured</element>
+  <element>Error</element>
+
+<validstringarray name="status5eValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Baseline:1" /> 
+<profile name="Device2_Baseline:2" /> 
+<profile name="Device2_Baseline:3" /> 
+<profile name="Device2_IPsec:1" /> 
+<profile name="Device2_IPsecAdv:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

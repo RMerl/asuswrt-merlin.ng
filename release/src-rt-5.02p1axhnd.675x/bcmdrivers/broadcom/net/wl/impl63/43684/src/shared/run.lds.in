@@ -1,0 +1,152 @@
+OUTPUT_ARCH(TARGET_ARCH)
+ENTRY(startup)
+SECTIONS {
+
+	FLOPS_EXECV_SECTION
+
+	. = TEXT_START;
+
+	/* Start of MPU protection region. Generate exceptions on writes to text/rodata sections. */
+	_ram_mpu_region_start = .;
+
+	.text : {
+		_ftext = .;
+		text_start = .;
+		*(.text.startup)
+		KEEP(*(.text.debugptr))
+		*(.init)
+		*(.text)
+		*(.text.*)
+		*(.fini)
+		*(.glue_7)
+		*(.glue_7t)
+		. = ALIGN(8);
+		_etext = .;
+		text_end = .;
+	}
+
+	.rodata : {
+		rodata_start = .;
+		*(.rdata)
+		*(.rdata.*)
+		*(.rodata)
+		*(.rodata.*)
+		rodata_end = .;
+	}
+
+	/* End of MPU protection region. Generate exceptions on writes to text/rodata sections. */
+	_ram_mpu_region_end = .;
+
+	.data : {
+		_fdata = .;
+		data_start = .;
+		*(.data)
+		*(.data.*)
+		*(.sdata)
+		. = ALIGN(8);
+		_edata = .;
+		data_end = .;
+	}
+
+	.bss BLOCK(16) : {
+		_fbss = .;
+		bss_start = .;
+		*(.bss)
+		*(.bss.*)
+		*(.sbss)
+		*(.scommon)
+		*(COMMON)
+		bss_end = .;
+	}
+
+	/* Reclaim region 1 for BCMINITFN/BCMINITDATA */
+	.textrc1 : {
+		_rstart1 = .;
+		*(.textini1.*)
+	}
+	.datarc1 : {
+		*(.rodataini1.*)
+		*(.dataini1.*)
+		_rend1 = .;
+	}
+
+	/* Reclaim region 5 for BCMPOSTATTACHDATA/BCMPOSTATTACHFN */
+	.textrc5 : {
+		. = ALIGN(4);
+		_rstart5 = .;
+		*(.textini5.*)
+	}
+	.datarc5 : {
+		*(.rodataini5.*)
+		*(.dataini5.*)
+		. = ALIGN(4);
+		_rend5 = .;
+	}
+
+	/* Reclaim region 2 for BCMATTACHFN/BCMATTACHDATA */
+	.textrc2 : {
+		_rstart2 = .;
+		*(.textini2.*)
+	}
+	.datarc2 : {
+		. = ALIGN(4);
+		*(.rodataini2*)
+		*(.dataini2.*)
+
+		/* Align _rend2 so that it is contiguous with the next section. This allows the
+		 * 2 sections to be joined into a single free heap block after both sections have
+		 * been reclaimed. This helps avoid fragmentation.
+		 */
+		. = ALIGN(4);
+		_rend2 = .;
+	}
+
+	/* Reclaim region 3 for BCMPREATTACHDATA/BCMPREATTACHFN */
+	.textrc3 : {
+		_rstart3 = .;
+		*(.textini3.*)
+	}
+	.datarc3 : {
+		*(.rodataini3.*)
+		*(.dataini3.*)
+		_rend3 = .;
+	}
+
+	_end = .;
+
+	/* Relocate attach functions to save-restore region to increase pre-reclaim heap size. */
+
+	SR_MEM_START
+	.srm : {
+		_srm_start = .;
+		*(.textsrm.*)
+		*(.datasrm.*)
+		_srm_end = .;
+		ASSERT((_srm_end - _srm_start) <= (SR_ATTACH_MOVE_MAX_SIZE), "ERR: SR attach section too large!");
+	}
+
+	/* Firmware meta-data (CRC, fwtag) is appended to the end of the image. */
+	_fw_meta_data = .;
+
+	.logstrs 0 (OVERLAY) : {
+		rom_lognums_offset = .;
+		KEEP(*(.romlognums))
+		ram_lognums_offset = .;
+		KEEP(*(.lognums))
+		rom_logstrs_offset = .;
+		KEEP(*(.romlogstrs))
+		ram_logstrs_offset = .;
+		KEEP(*(.logstrs))
+
+		/* Header */
+		. = ALIGN(4);
+		LONG(logstrs_size)		/* Size of this file */
+		LONG(rom_lognums_offset)
+		LONG(ram_lognums_offset)
+		LONG(rom_logstrs_offset)
+		LONG(ram_logstrs_offset)
+		LONG(1)	                	/* Header version */
+		LONG(0x4C4F4753)	/* MAGIC number for verification 'LOGS' */
+		logstrs_size = .;
+	}
+}

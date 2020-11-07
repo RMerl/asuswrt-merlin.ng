@@ -1,0 +1,189 @@
+//***************************************************************************
+//* Copyright(c) 2007 Broadcom Corporation, all rights reserved
+//* Proprietary and Confidential Information.
+//*
+//* This source file is the property of Broadcom Corporation, and
+//* may not be copied or distributed in any isomorphic form without 
+//* the prior written consent of Broadcom Corporation. 
+//*
+//* Name         : $Source$
+//*
+//* Descriptions : a simple FFE program to test calling of and returning from
+//*                FFE
+//*
+//* Revision     : $Revision$
+//* Last Modified: $Date$
+//*
+//*****************************************************************************/
+// EtherType definitions
+#define kEtherTypeBrcm   0x8874
+#define kEtherTypeVlan   0x8100
+#define kEtherTypePppSes 0x8864
+#define kEtherTypePppIp  0x0021
+#define kEtherTypeIp     0x0800
+#define kEtherTypeIpV6   0x86dd
+
+#define kIpv4ProtoTcp    6
+#define kIpv4ProtoUdp    17
+#define kIpv4ProtoOptv6  0
+#define kIpv4Proto0Hop   114
+#define kIpv4ProtoIana   141
+
+#define sMacDaSa   12
+#define sBrcmTag   6
+#define sVlanTag   4
+#define sPppSes    8
+
+#define mTcpRstSynFin 0x00070000
+
+// Nugget memory allocations
+#define noDebug      0 // to 11
+#define noIpv4Sa     12
+#define noIpv4Da     13
+#define noTuPorts    14
+#define noIpv4Offset 15
+
+#if 0
+#define DEBUG(_entry, _reg) \
+   addi  np, zero, noDebug+_entry \
+   add   (np), zero, _reg, noshift, next
+#define DEBUG_VAL(_entry, _val) \
+   addi  np, zero, noDebug+_entry \
+   addi  (np), zero, _val
+#else
+#define DEBUG(_entry, _reg)
+#define DEBUG_VAL(_entry, _val)
+#endif
+
+// Register usage
+// r0 - scratch
+// r1 - 
+// r2 - 
+// r3 - used for passing parameters to function
+// r4 - 2nd return word (full 32bits)
+// r5 - 1st return word (lower 16bits only) - Status
+
+.ORG 0
+// main/default program   
+// do nothing
+  j.halt
+
+// FIXME: For now we will assume Ethernet Frames only (no ATM encaps)
+
+.ORG 2
+// Debugging only
+  addi  r4, zero, 0xC0FFEE
+
+// Skip Ethernet DA/SA
+  addi  dp, dp, sMacDaSa                         // DA: 6B, SA: 6B
+
+  DEBUG(0, dp)
+
+ParseBrcmTag:
+  eq16o kEtherTypeBrcm, sBrcmTag, 0, next        // Skip Broadcom Tag, if necessary
+  j next
+
+  DEBUG(1, dp)
+
+// FIXME: Only looking for 0x8100. Need to support VLAN TPID Table...
+
+ParseVlan:
+  eq16o kEtherTypeVlan, sVlanTag, 0, next        // Skip VLAN tags, if neccessary
+  j EndOfVlans
+  j ParseVlan
+EndOfVlans:
+
+  DEBUG(2, dp)
+
+ParsePppSes:
+  eq16o kEtherTypePppSes, sPppSes, 0, next       // Skip Broadcom Tag, if necessary
+  j next
+
+  DEBUG(3, dp)
+
+// parse Layer 3
+  eq16  kEtherTypePppIp, kEtherTypeIp, next  
+  j SendToHost                                   // Not IPv4
+  j next                                       
+
+  DEBUG(4, dp)
+
+ParseIpv4:
+  addi  np, zero, noIpv4Offset                          // Store IPv4 offset into nugget memory 
+  add   (np), zero, dp, noshift, next
+
+ParseVerSize:
+  DEBUG(5, dp)
+  DEBUG(6, (dp))
+  eq8o  0x45, 0x45, 6, 6, next
+  j SendToHost                                          // Not 0x45
+  j next
+
+ParseFragOffset:
+  DEBUG(7, dp)
+  DEBUG(8, (dp))
+  eq16m 0, 0x3FFF, next
+  j SendToHost                                          // is Fragmented
+
+// parse IPv4 protocol
+  addi  dp, dp, 1                                       // adjust dp to IPv4 Protocol
+
+// If TCP, check flags
+  DEBUG(9, dp)
+  DEBUG(10, (dp))
+  eq8o  kIpv4ProtoTcp, kIpv4ProtoTcp, 23, 23, next      // adjust dp to TCP flags on match
+  j ParseProto_0
+  j next
+  andi  r0, (dp), mTcpRstSynFin
+  j.nz  SendToHost
+//  andi   r1, r1, zero
+//  cmpbne r0, r1, SendToHost
+  addi  dp, dp, -12                                     // adjust dp to TCP Ports
+  j SaveTuPorts
+
+ParseProto_0:
+  eq8o  kIpv4ProtoUdp, kIpv4ProtoUdp, 11, 11, next      // adjust dp to TCP Ports on match
+  j ParseProto_1
+  j next
+
+SaveTuPorts:
+// DP MUST be pointing to TU Ports when reaching here
+  addi  np,   zero, noTuPorts                           // Store TU Ports in Nugget memory 
+  add   (np), zero, (dp), noshift, next
+  addi  dp, dp, -8                                      // adjust dp to IpSa
+  j SaveIpAddress
+
+ParseProto_1:
+  gte8o  kIpv4ProtoIana, kIpv4ProtoIana, 3, 3, next     // adjust dp to IpSa on match
+  j ParseProto_2
+  j SaveNullPorts
+  j SaveNullPorts
+
+ParseProto_2:
+  eq8o  kIpv4ProtoOptv6, kIpv4Proto0Hop, 3, 3, next     // adjust dp to IpSa on match
+  j SendToHost
+  j next
+
+SaveNullPorts:
+// DP MUST be pointing to IpSa before reaching here
+  addi  np,  zero, noTuPorts                            // Store TU Ports in Nugget memory 
+  andi (np), zero, 0
+
+SaveIpAddress:
+// DP MUST be pointing to IpSa before reaching here
+  addi  np, zero, noIpv4Sa                              // Store IpSA in Nugget memory 
+  add   (np++), zero, (dp), noshift, next
+  addi  dp, dp, 4                                       // adjust dp to IpDa
+  add   (np), zero, (dp), noshift, next                 // Store IpDA in Nugget memory 
+
+FlowLookup:
+  addi  r5, zero, 0                                     // Status = Flow Lookup (in 4ke)
+  j EndofProgram
+
+SendToHost:
+  DEBUG(11, dp)
+  addi  r5, zero, 0xBAD                                 // Status = Send to Host
+
+EndofProgram:
+  j.ret r,r,r,r
+

@@ -1,0 +1,292 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Ltd., 2018" >
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_BsdCfg." />
+  <parameter name="BsdRole" nvram="bsd_role"/>
+  <parameter name="BsdPrimary" nvram="bsd_primary"/>
+  <parameter name="BsdHelper" nvram="bsd_helper"/>
+  <parameter name="BsdHport" nvram="bsd_hport"/>
+  <parameter name="BsdPport" nvram="bsd_pport"/>
+  <parameter name="BsdIfnames" nvram="bsd_ifnames"/>
+  <parameter name="BsdBounceDetect" nvram="bsd_bounce_detect"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_WpsCfg." />
+  <parameter name="WpsVersion2" nvram="wps_version2"/>
+  <parameter name="WpsDeviceName" nvram="wps_device_name"/>
+  <parameter name="WpsMfstring" nvram="wps_mfstring"/>
+  <parameter name="WpsModelname" nvram="wps_modelname"/>
+  <parameter name="WpsModelnum" nvram="wps_modelnum"/>
+  <parameter name="WpsBoardnum" nvram="boardnum"/>
+  <parameter name="WpsDevicePin" nvram="wps_device_pin"/>
+  <parameter name="WpsStaPin" nvram="wps_sta_pin"/>
+  <parameter name="WpsWerMode" nvram="wps_wer_mode"/>
+  <parameter name="WpsConfigMethod" nvram="wps_config_method"/>
+  <parameter name="WpsMsglevel" nvram="wps_msglevel"/>
+  <parameter name="WpsCustomIfNames" nvram="wps_custom_ifnames"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_NasCfg." />
+  <parameter name="Debug" nvram="nas_dbg"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_DebugMonitorCfg." />
+  <parameter name="Enable" nvram="debug_monitor_enable"/>
+  <parameter name="CrashLogDir" nvram="crash_log_backup_dir"/>
+  <parameter name="DisableAppRestart" nvram="debug_monitor_disable_app_restart"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_CeventdCfg." />
+  <parameter name="Enable" nvram="ceventd_enable"/>
+  <parameter name="CeventdOut" nvram="ceventd_out"/>
+  <parameter name="Eventmask" nvram="ceventd_eventmask"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_HapdCfg." />
+  <parameter name="Enable" nvram="hapd_enable"/>
+  <parameter name="Debug" nvram="hapd_dbg"/>
+  
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_SsdCfg." />
+  <parameter name="Enable" nvram="ssd_enable"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.Radio.{i}." />
+  <parameter name="Enable" nvram="radio"/>
+  <parameter name="X_BROADCOM_COM_WlApstaSupported" nvram="apsta"/>
+  <parameter name="X_BROADCOM_COM_WlCountry" nvram="country_code"/>
+  <parameter name="X_BROADCOM_COM_WlRegRev" nvram="country_rev"/>
+  <parameter name="X_BROADCOM_COM_WlAtf" nvram="atf"/>
+  <parameter name="X_BROADCOM_COM_WlTaf" nvram="taf_enable"/>
+  <parameter name="OperatingFrequencyBand" nvram="nband", ntype="int", vmapper="wlband"/>
+  <parameter name="OperatingStandards" nvram="phytype"/>
+  <parameter name="Channel" nvram="channel"/>
+  <parameter name="AutoChannelRefreshPeriod" nvram="acs_cs_scan_timer"/>
+  <parameter name="SupportedChannelBandwidth" nvram="bw_cap", ntype="int", vmapper="wlbwcap"/>
+  <parameter name="OperatingChannelBandwidth" nvram="bw", ntype="int", vmapper="wlbwcap"/>
+  <parameter name="ExtensionChannel" nvram="mdmsideband", ntype="string", vmapper="wlctrlsb"/>
+  <parameter name="MCS" nvram="nmcsidx"/>
+  <parameter name="BeaconPeriod" nvram="bcn"/>
+  <parameter name="DTIMPeriod" nvram="dtim"/>
+  <parameter name="X_BROADCOM_COM_WlRegMode" nvram="reg_mode", ntype="string", vmapper="wlregmode"/>
+  <parameter name="X_BROADCOM_COM_WlIntferTcptxfail" nvram="intfer_tcptxfail"/>
+  <parameter name="X_BROADCOM_COM_WlIntferPeriod" nvram="intfer_period"/>
+  <parameter name="X_BROADCOM_COM_WlIntferCnt" nvram="intfer_cnt"/>
+  <parameter name="X_BROADCOM_COM_WlIntferTxfail" nvram="intfer_txfail"/>
+  <parameter name="X_BROADCOM_COM_WlCoreRev" nvram="corerev"/>
+  <parameter name="X_BROADCOM_COM_WlBasicRate" nvram="rateset"/>
+  <parameter name="X_BROADCOM_COM_WlProtection" nvram="gmode_protection"/>
+  <parameter name="X_BROADCOM_COM_WlPreambleType" nvram="plcphdr"/>
+  <parameter name="X_BROADCOM_COM_WlFrameBurst" nvram="frameburst"/>
+  <parameter name="X_BROADCOM_COM_WlFrgThrshld" nvram="frag"/>
+  <parameter name="X_BROADCOM_COM_WlRtsThrshld" nvram="rts"/>
+  <parameter name="X_BROADCOM_COM_WlBcnRotate" nvram="bcn_rotate"/>
+  <parameter name="X_BROADCOM_COM_WlRate" nvram="rate"/>
+  <parameter name="X_BROADCOM_COM_WlgMode" nvram="gmode"/>
+  <parameter name="X_BROADCOM_COM_WlMCastRate" nvram="mrate"/>
+  <parameter name="X_BROADCOM_COM_WlInfra" nvram="infra"/>
+  <parameter name="X_BROADCOM_COM_WlAntDiv" nvram="antdiv"/>
+  <parameter name="X_BROADCOM_COM_WlDfsPreIsm" nvram="dfs_preism"/>
+  <parameter name="X_BROADCOM_COM_WlDfsPostIsm" nvram="dfs_postism"/>
+  <parameter name="X_BROADCOM_COM_WlTpcDb" nvram="tpc_db"/>
+  <parameter name="X_BROADCOM_COM_WlMBands" nvram="mband"/>
+  <parameter name="X_BROADCOM_COM_WlVersion" nvram="version"/>
+  <parameter name="X_BROADCOM_COM_WlNProtection" nvram="nmode_protection"/>
+  <parameter name="X_BROADCOM_COM_WlAmpdu" nvram="ampdu"/>
+  <parameter name="X_BROADCOM_COM_WlAmsdu" nvram="amsdu"/>
+  <parameter name="X_BROADCOM_COM_WlNmode" nvram="nmode", ntype="int", vmapper="onoffauto"/>
+  <parameter name="X_BROADCOM_COM_WlStbcTx" nvram="stbc_tx"/>
+  <parameter name="X_BROADCOM_COM_WlStbcRx" nvram="stbc_rx"/>
+  <parameter name="X_BROADCOM_COM_WlLazyWds" nvram="lazywds"/>
+  <parameter name="X_BROADCOM_COM_WlObssCoex" nvram="obss_coex"/>
+  <parameter name="X_BROADCOM_COM_WlRxChainPwrSaveEnable" nvram="rxchain_pwrsave_enable"/>
+  <parameter name="X_BROADCOM_COM_WlRxChainPwrSaveQuietTime" nvram="rxchain_pwrsave_quiet_time"/>
+  <parameter name="X_BROADCOM_COM_WlRxChainPwrSavePps" nvram="rxchain_pwrsave_pps"/>
+  <parameter name="X_BROADCOM_COM_WlRxChainPwrSaveStasAssocCheck" nvram="rxchain_pwrsave_stas_assoc_check"/>
+  <parameter name="X_BROADCOM_COM_WlRadioPwrSaveEnable" nvram="radio_pwrsave_enable"/>
+  <parameter name="X_BROADCOM_COM_WlRadioPwrSaveQuietTime" nvram="radio_pwrsave_quiet_time"/>
+  <parameter name="X_BROADCOM_COM_WlRadioPwrSavePps" nvram="radio_pwrsave_pps"/>
+  <parameter name="X_BROADCOM_COM_WlRadioPwrSaveStasAssocCheck" nvram="radio_pwrsave_stas_assoc_check"/>
+  <parameter name="X_BROADCOM_COM_WlRadioPwrSaveLevel" nvram="radio_pwrsave_level"/>
+  <parameter name="X_BROADCOM_COM_WlWds" nvram="wds"/>
+  <parameter name="X_BROADCOM_COM_WlWdsSec" nvram="wdssec_enable"/>
+  <parameter name="X_BROADCOM_COM_WlWdsTimeout" nvram="wds_timeout"/>
+  <parameter name="X_BROADCOM_COM_WlWdsSecEnable" nvram="wdssec_enable"/>
+  <parameter name="X_BROADCOM_COM_WlEnableUre" nvram="ure"/>
+  <parameter name="X_BROADCOM_COM_WlStaRetryTime" nvram="sta_retry_time"/>
+  <parameter name="X_BROADCOM_COM_WlGlobalMaxAssoc" nvram="maxassoc"/>
+  <parameter name="X_BROADCOM_COM_WlTxbfBfeCap" nvram="txbf_bfe_cap"/>
+  <parameter name="X_BROADCOM_COM_WlTxbfBfrCap" nvram="txbf_bfr_cap"/>
+  <parameter name="X_BROADCOM_COM_WlTxbfImp" nvram="txbf_imp"/>
+  <parameter name="X_BROADCOM_COM_WlWmeApBe" nvram="wme_ap_be"/>
+  <parameter name="X_BROADCOM_COM_WlWmeApBk" nvram="wme_ap_bk"/>
+  <parameter name="X_BROADCOM_COM_WlWmeApVi" nvram="wme_ap_vi"/>
+  <parameter name="X_BROADCOM_COM_WlWmeApVo" nvram="wme_ap_vo"/>
+  <parameter name="X_BROADCOM_COM_WlWmeStaBe" nvram="wme_sta_be"/>
+  <parameter name="X_BROADCOM_COM_WlWmeStaBk" nvram="wme_sta_bk"/>
+  <parameter name="X_BROADCOM_COM_WlWmeStaVi" nvram="wme_sta_vi"/>
+  <parameter name="X_BROADCOM_COM_WlWmeStaVo" nvram="wme_sta_vo"/>
+  <parameter name="X_BROADCOM_COM_WlWmfUcigmpQuery" nvram="wmf_ucigmp_query"/>
+  <parameter name="X_BROADCOM_COM_WlWmfMdataSendup" nvram="wmf_mdata_sendup"/>
+  <parameter name="X_BROADCOM_COM_WlWmfUcastUpnp" nvram="wmf_ucast_upnp"/>
+  <parameter name="X_BROADCOM_COM_WlWmfIgmpqFilter" nvram="wmf_igmpq_filter"/>
+  <parameter name="X_BROADCOM_COM_WlWmfPstaDisable" nvram="wmf_psta_disable"/>
+  <parameter name="X_BROADCOM_COM_WlPspretendRetryLimit" nvram="pspretend_retry_limit"/>
+  <parameter name="X_BROADCOM_COM_WlAmpduRtylimitTid" nvram="ampdu_rtylimit_tid"/>
+  <parameter name="X_BROADCOM_COM_WlAmpduRrRtylimitTid" nvram="ampdu_rr_rtylimit_tid"/>
+  <parameter name="X_BROADCOM_COM_WlPsrMrpt" nvram="psr_mrpt"/>
+  <parameter name="X_BROADCOM_COM_WlMuFeatures" nvram="mu_features"/>
+  <parameter name="X_BROADCOM_COM_WlVhtMode" nvram="vhtmode"/>
+  <parameter name="X_BROADCOM_COM_WlVhtFeatures" nvram="vht_features"/>
+  <parameter name="X_BROADCOM_COM_WlHeFeatures" nvram="he_features"/>
+  <parameter name="X_BROADCOM_COM_WlRxAmsduInAmpduOvr" nvram="rx_amsdu_in_ampdu_ovr"/>
+  <parameter name="X_BROADCOM_COM_WlObssDynBw" nvram="obss_dyn_bw"/>
+  <parameter name="X_BROADCOM_COM_WlCalPeriod" nvram="cal_period"/>
+  <parameter name="X_BROADCOM_COM_WlPstaInact" nvram="psta_inact"/>
+  <parameter name="X_BROADCOM_COM_WlProbRespSw" nvram="probresp_sw"/>
+  <parameter name="X_BROADCOM_COM_WlTxChain" nvram="txchain"/>
+  <parameter name="X_BROADCOM_COM_WlRxChain" nvram="rxchain"/>
+  <parameter name="X_BROADCOM_COM_WlRifsAdvert" nvram="rifs_advert"/>
+  <parameter name="X_BROADCOM_COM_WlVlanPrioMode" nvram="vlan_prio_mode"/>
+  <parameter name="X_BROADCOM_COM_WlMgmtRssiPolicy" nvram="mgmt_rssi_policy"/>
+  <parameter name="X_BROADCOM_COM_WlWetTunnel" nvram="wet_tunnel"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.Radio.{i}.X_BROADCOM_COM_AcsdCfg." />
+  <parameter name="AcsDfsrImmediate" nvram="acs_dfsr_immediate"/>
+  <parameter name="AcsExclChannels" nvram="acs_excl_chans"/>
+  <parameter name="AcsDfsrDeferred" nvram="acs_dfsr_deferred"/>
+  <parameter name="AcsDfsrActivity" nvram="acs_dfsr_activity"/>
+  <parameter name="AcsFcsMode" nvram="acs_fcs_mode"/>
+  <parameter name="AcsDfs" nvram="acs_dfs"/>
+  <parameter name="AcsCiScanTimer" nvram="acs_ci_scan_timer"/>
+  <parameter name="AcsCiScanTimeout" nvram="acs_ci_scan_timeout"/>
+  <parameter name="AcsScanEntryExpire" nvram="acs_scan_entry_expire"/>
+  <parameter name="AcsTxIdleCnt" nvram="acs_tx_idle_cnt"/>
+  <parameter name="AcsChanDwellTime" nvram="acs_chan_dwell_time"/>
+  <parameter name="AcsChanFlopPeriod" nvram="acs_chan_flop_period"/>
+  <parameter name="AcsDcsCsaUnicast" nvram="dcs_csa_unicast"/>
+  <parameter name="AcsBgdfsAhead" nvram="acs_bgdfs_ahead"/>
+  <parameter name="AcsBgdfsAvoidOnFarSta" nvram="acs_bgdfs_avoid_on_far_sta"/>
+  <parameter name="AcsBgdfsEnab" nvram="acs_bgdfs_enab"/>
+  <parameter name="AcsBgdfsFallbackBlockingCac" nvram="acs_bgdfs_fallback_blocking_cac"/>
+  <parameter name="AcsBgdfsIdleFramesThld" nvram="acs_bgdfs_idle_frames_thld"/>
+  <parameter name="AcsBgdfsIdleInterval" nvram="acs_bgdfs_idle_interval"/>
+  <parameter name="AcsBgdfsTxblankThreshold" nvram="acs_bgdfs_txblank_threshold"/>
+  <parameter name="AcsBootOnly" nvram="acs_boot_only"/>
+  <parameter name="AcsChanimNum_segments" nvram="acs_chanim_num_segments"/>
+  <parameter name="AcsFarStaRssi" nvram="acs_far_sta_rssi"/>
+  <parameter name="AcsSegmentChanim" nvram="acs_segment_chanim"/>
+  <parameter name="AcsUseEscan" nvram="acs_use_escan"/>
+  <parameter name="AcsScsDfsScan" nvram="acsd_scs_dfs_scan"/>
+  <parameter name="AcsStartOnNondfs" nvram="acs_start_on_nondfs"/>
+  <parameter name="AcsIgnoreTxfail" nvram="acs_ignore_txfail"/>
+  <parameter name="AcsInttrfNumsecs" nvram="acs_inttrf_numsecs"/>
+  <parameter name="AcsDyn160" nvram="dyn160"/>
+  <parameter name="AcsDfsReentry" nvram="acs_dfs_reentry"/>
+  <parameter name="AcsInttrfThresh" nvram="acs_inttrf_thresh"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.SSID.{i}." />
+  <parameter name="Enable" nvram="bss_enabled"/>
+  <parameter name="MACAddress" nvram="hwaddr"/>
+  <parameter name="SSID" nvram="ssid"/>
+  <parameter name="X_BROADCOM_COM_WlEnableWmf" nvram="wmf_bss_enable"/>
+  <parameter name="X_BROADCOM_COM_WlMode" nvram="mode"/>
+  <parameter name="X_BROADCOM_COM_WlAssocRetry" nvram="assoc_retry_max"/>
+  <parameter name="X_BROADCOM_COM_WlMcastRegenBssEnable" nvram="mcast_regen_bss_enable"/>
+  <parameter name="X_BROADCOM_COM_WlBssOpmodeCapReqd" nvram="bss_opmode_cap_reqd"/>
+  <parameter name="X_BROADCOM_COM_WlDwds" nvram="dwds"/>
+  <parameter name="X_BROADCOM_COM_WlProbRespMf" nvram="probresp_mf"/>
+  <parameter name="X_BROADCOM_COM_WlMap" nvram="map"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.SSID.{i}.X_BROADCOM_COM_BsdCfg." />
+  <parameter name="BsdSteeringPolicy" nvram="bsd_steering_policy"/>
+  <parameter name="BsdStaSelectionPolicy" nvram="bsd_sta_selection_policy"/>
+  <parameter name="BsdIfSelectPolicy" nvram="bsd_if_select_policy"/>
+  <parameter name="BsdIfQualifyPolicy" nvram="bsd_if_qualify_policy"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.SSID.{i}.X_BROADCOM_COM_HspotCfg." />
+  <parameter name="HspotHsflag" nvram="hsflag"/>
+  <parameter name="HspotHs2cap" nvram="hs2cap"/>
+  <parameter name="HspotOpercls" nvram="opercls"/>
+  <parameter name="HspotAnonai" nvram="anonai"/>
+  <parameter name="HspotHomeqlist" nvram="homeqlist"/>
+  <parameter name="HspotOsuSsid" nvram="osu_ssid"/>
+  <parameter name="HspotOsuUri" nvram="osu_uri"/>
+  <parameter name="HspotOsuNai" nvram="osu_nai"/>
+  <parameter name="HspotOsuMethod" nvram="osu_method"/>
+  <parameter name="HspotOsuIcons" nvram="osu_icons"/>
+  <parameter name="HspotOsuServdesc" nvram="osu_servdesc"/>
+  <parameter name="HspotGascbdel" nvram="gascbdel"/>
+  <parameter name="HspotHs2DebugLevel" nvram="hs2_debug_level"/>
+  <parameter name="HspotIwnettype" nvram="iwnettype"/>
+  <parameter name="HspotHessid" nvram="hessid"/>
+  <parameter name="HspotIpv4addr" nvram="ipv4addr"/>
+  <parameter name="HspotIpv6addr" nvram="ipv6addr"/>
+  <parameter name="HspotNetauthlist" nvram="netauthlist"/>
+  <parameter name="HspotVenuegrp" nvram="venuegrp"/>
+  <parameter name="HspotVenuetype" nvram="venuetype"/>
+  <parameter name="HspotVenuelist" nvram="venuelist"/>
+  <parameter name="Hspot3gpplist" nvram="3gpplist"/>
+  <parameter name="HspotDomainlist" nvram="domainlist"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.SSID.{i}.X_BROADCOM_COM_SsdCfg." />
+  <parameter name="SsdType" nvram="ssd_type"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.AccessPoint.{i}." />
+  <parameter name="SSIDAdvertisementEnabled" nvram="closed", ntype="boolean", vmapper="boolrev"/>
+  <parameter name="WMMCapability" nvram="wme", ntype="string", vmapper="onoffauto"/>
+  <parameter name="WMMEnable" nvram="wme_bss_disable", ntype="boolean", vmapper="boolrev"/>
+  <parameter name="UAPSDEnable" nvram="wme_apsd", ntype="string", vmapper="onoffauto"/>
+  <parameter name="MaxAssociatedDevices" nvram="bss_maxassoc"/>
+  <parameter name="IsolationEnable" nvram="ap_isolate"/>
+  <parameter name="X_BROADCOM_COM_WlWmeNoAck" nvram="wme_no_ack", ntype="string", vmapper="onoffauto"/>
+  <parameter name="X_BROADCOM_COM_WlEnableHspot" nvram="hspot"/>
+  <parameter name="X_BROADCOM_COM_WlNReqd" nvram="nreqd"/>
+  <parameter name="X_BROADCOM_COM_WlFltMacMode" nvram="macmode"/>
+  <parameter name="X_BROADCOM_COM_WlFltMacList" nvram="maclist"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.AccessPoint.{i}.Security." />
+  <parameter name="WlWep" nvram="wep"/>
+  <parameter name="KeyPassphrase" nvram="wpa_psk"/>
+  <parameter name="RekeyingInterval" nvram="wpa_gtk_rekey"/>
+  <parameter name="RadiusServerIPAddr" nvram="radius_ipaddr"/>
+  <parameter name="RadiusServerPort" nvram="radius_port"/>
+  <parameter name="RadiusSecret" nvram="radius_key"/>
+  <parameter name="X_BROADCOM_COM_WlKey1" nvram="key1" />
+  <parameter name="X_BROADCOM_COM_WlKey2" nvram="key2" />
+  <parameter name="X_BROADCOM_COM_WlKey3" nvram="key3" />
+  <parameter name="X_BROADCOM_COM_WlKey4" nvram="key4" />
+  <parameter name="X_BROADCOM_COM_WlKeyIndex" nvram="key"/>
+  <parameter name="X_BROADCOM_COM_WlWpaEncryption" nvram="crypto"/>
+  <parameter name="WlAuthMode" nvram="auth_mode"/>
+  <parameter name="WlAuthAkm" nvram="akm"/>
+  <parameter name="X_BROADCOM_COM_WlAuth" nvram="auth"/>
+  <parameter name="X_BROADCOM_COM_WlPreauth" nvram="preauth"/>
+  <parameter name="X_BROADCOM_COM_WlNetReauth" nvram="net_reauth"/>
+  <parameter name="X_BROADCOM_COM_WlMFP" nvram="mfp"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.AccessPoint.{i}.WPS." />
+  <parameter name="Enable" nvram="wps_mode" ntype="string" vmapper="boolenabled"/>
+  <parameter name="X_BROADCOM_COM_Wsc_config_state" nvram="wps_config_state"/>
+  <parameter name="X_BROADCOM_COM_Wsc_reg" nvram="wps_reg"/>
+  <parameter name="X_BROADCOM_COM_Wfi_enable" nvram="wfi_enable"/>
+  <parameter name="X_BROADCOM_COM_Wfi_pinmode" nvram="wfi_pinmode"/>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_WbdCfg." />
+  <parameter name="MultiapMode" nvram="multiap_mode"/>
+  <parameter name="WbdIfNames" nvram="wbd_ifnames"/>
+  <parameter name="MapBHOpen" nvram="map_bh_open"/>
+  <parameter name="WpsBhIfNames" nvram="wps_backhaul_ifnames"/>
+  <parameter name="WbdMsgLevel" nvram="wbd_msglevel"/>
+  <parameter name="MapMsgLevel" nvram="multiap_msglevel"/>
+  <parameter name="MapMsgLevelModule" nvram="multiap_msglevel_module"/>
+
+</xmlMandatorySingleRootNode>

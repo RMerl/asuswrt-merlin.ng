@@ -1,0 +1,698 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2013" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.QoS." shortObjectName="Dev2QosObject" specSource="TR181" profile="Device2_QoS:1" requirements="P" supportLevel="Present" oid="1500" />
+  <description source="TRx">Queue management configuration object. </description>
+
+  <parameter name="X_BROADCOM_COM_Enable" type="boolean" specSource="BROADCOM" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" hideParameterFromAcs="true" />
+    <description source="BROADCOM">Enables or disables all QoS operations. </description>
+
+  <parameter name="X_BROADCOM_COM_EnableStateChanged" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="false" neverWriteToConfigFile="true" hideParameterFromAcs="true" />
+    <description source="BROADCOM">Indicated the QoS enable has been changed.</description>
+
+  <parameter name="MaxClassificationEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The maximum number of entries available in the Classification table. </description>
+
+  <parameter name="ClassificationNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the Classification table</description>
+
+  <parameter name="MaxAppEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The maximum number of entries available in the App table. </description>
+    <description source="BROADCOM">This object is not supported, so the max number of entries is really 0.</description>
+
+  <parameter name="AppNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries available in the App table. </description>
+
+  <parameter name="MaxFlowEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The maximum number of entries available in the Flow table. </description>
+    <description source="BROADCOM">This object is not supported, so the max number of entries is really 0.</description>
+
+  <parameter name="FlowNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries available in the Flow table. </description>
+
+  <parameter name="MaxPolicerEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The maximum number of entries available in the Policer table. </description>
+    <description source="BROADCOM">This object is not supported, so the max number of entries is really 0.</description>
+
+  <parameter name="PolicerNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries available in the Policer table.</description>
+
+  <parameter name="MaxQueueEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="24" />
+    <description source="TRx">The maximum number of entries available in the Queue table. </description>
+
+  <parameter name="QueueNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries available in the Queue table. </description>
+
+  <parameter name="QueueStatsNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoSStats:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries available in the QueueStats table. </description>
+
+  <parameter name="MaxShaperEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The maximum number of entries available in the Shaper table. </description>
+
+  <parameter name="ShaperNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries available in the Shaper table. </description>
+
+  <parameter name="DefaultForwardingPolicy" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Identifier of the forwarding policy associated with traffic not associated with any specified  classifier. </description>
+
+  <parameter name="DefaultTrafficClass" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="NotSupported" />
+    <description source="TRx">Identifier of the traffic class associated with traffic not associated with any specified classifier. </description>
+
+  <parameter name="DefaultPolicer" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx"> The value MUST be the path name of a row in the Policer table.  If the referenced object is deleted, the parameter value MUST be set to an empty string.  Indicates the Policer table entry for traffic not associated with any specified classifier.  An empty string indicates a null policer. </description>
+
+  <parameter name="DefaultQueue" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">The value MUST be the path name of a row in the Queue table.  If the referenced object is deleted, the parameter value MUST be set to an empty string.  Indicates the Queue table entry for traffic not associated with any specified classifier.  Note: The interpretation of an empty string vlaue is implementation specific. </description>
+
+  <parameter name="DefaultDSCPMark" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-2" maxValue="2147483647" />
+    <description source="TRx">DSCP to mark traffic not associated with any specified classifier. A value of -1 indicates no change from the incoming packet.A value of -2 indicates automatic marking of DSCP based upon the EthernetPriority value of the incoming packet as defined in Annex A of TR-181i2. </description>
+
+  <parameter name="DefaultEthernetPriorityMark" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" minValue="-2" maxValue="2147483647" />
+    <description source="TRx">Ethernet priority code (as defined in 802.1D) to mark traffic not associated with any specified classifier. A value of -1 indicates no change from the incoming packet.A value of -2 indicates automatic marking of EthernetPriority based upon the DSCP value of the incoming packet as defined in Annex A of TR-181i2. </description>
+
+  <parameter name="AvailableAppList" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="R" supportLevel="ReadOnly" maxLength="1024" />
+    <description source="TRx">Comma-seperated list(maximum length 1024).  List items represent URNs, each indicating a protocol supported for use as a ProtocolIdentifier in the App table.  This list MAY include any of the URNs defined in Annex A of TR-181i2 as well as other URNs defined elsewhere. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.QoS.Classification.{i}." shortObjectName="Dev2QosClassificationObject" specSource="TR181" profile="Device2_QoS:1" requirements="PC" supportLevel="DynamicInstances" autoOrder="true" />
+  <description source="TRx">Classification table. For enabled table entries, if Interface is not a valid reference and AllInterfaces is false, then the table entry is inoperable and the CPE MUST set Status to Error_Misconfigured. Several of this object's parameters specify DHCP option values. Some cases are version neutral (the parameter can apply to both DHCPv4 and DHCPv6), but in other cases the representation of the option is different for DHCPv4 and DHCPv6, so it is necessary to define separate DHCPv4-specific and DHCPv6-specific parameters. Therefore, an instance of this object that uses DHCP option values as classification criteria will be associated with either DHCPv4 or DHCPv6, as indicated by the DHCPType parameter. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this classifier. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status4eValues" />
+    <description source="TRx">The status of this classifier.  The enumeration Error_Misconfigured value indicates that a necessary configuration value is undefined or invalid. The enumeration Error value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Order" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" minValue="1" maxValue="4294967295" />
+    <description source="TRx">Position of the Classification entry in the order of precedence.  A value of 1 indicates the first entry considered (highest precedence).  For each packet, the highest ordered entry that matches the classification criteria is applied. All lower order entries are ignored. When this value is modified, if the value matches that of an existing entry, the Order value for the existing entry and all lower Order entries is incremented (lowered in precedence) to ensure uniqueness of this value. A deletion causes Order values to be compacted. When a value is changed, incrementing occurs before compaction. The value of Order on creation of a Classification table entry MUST be one greater than the largest current value (initially assigned the lowest precedence). </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-qosclassification" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatitle handle used to reference this instance.  Alias provides a mechanism for an ACS to label this instance for the future reference.  If the CPE supports the Alias-based Addressing feature as defined in Section 3.6.1 of TR069a4 and described in Appendix II of TR-069a4, the following mandatory contraints MUST be enforced:  Its value MUST NOT be empty.   Its value MUST satrt with a letter.  If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix.  The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="DHCPType" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="DHCPv4" validValuesArray="dhcpTypeValues" />
+    <description source="TRx">The DHCP protocol associated with the Classification instance. Affects only parameters that specify DHCP option values as classification criteria (all such parameter descriptions note this fact).  Enumeration of: DHCPv4, DHCPv6.  If DHCPType is DHCPv4, then the Classification parameters that are DHCPv6-specific are ignored. If the DHCPType DHCPv6, then Classification parameters that are DHCPv4-specific are ignored. </description>
+
+  <parameter name="Interface" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">Classification criterion. The value MUST be the path name of table row.  If the referenced object is deleted, the parameter value MUST be set to an empty string.  This specifies the ingress interface associated with the entry. It MAY be a layer 1, 2 or 3 interface, however, the types of interfaces for which Classifications'' can be instantiated is a local matter to the CPE. </description>
+
+  <parameter name="AllInterfaces" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Classification criterion. This specifies that all ingress interfaces are associated with the entry. If true, the value of Interface is ignored since all ingress interfaces are indicated. </description>
+
+  <parameter name="DestIP" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="45" />
+    <description source="TRx">IPAddress Classification criterion. Destination IP address.  An empty string indicates this criterion is not used for classification. </description>
+
+  <parameter name="DestMask" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="49" />
+    <description source="TRx">IPPrefix.  Destination IP address mask, represented as an IP routing prefix using CIDR notation [RFC4632]. The IP address part MUST be an empty string (and, if specified, MUST be ignored). </description>
+
+  <parameter name="DestIPExclude" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the (masked) DestIP entry, if specified. If true, the class includes all packets except those that match the (masked) DestIP entry, if specified. </description>
+
+  <parameter name="SourceIP" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="45" />
+    <description source="TRx">Classification criterion. Source IP address.  An empty string indicates this criterion is not used for classification. </description>
+
+  <parameter name="SourceMask" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="49" />
+    <description source="TRx">Source IP address mask, represented as&#10;    an IP routing prefix using CIDR notation [RFC4632]. The IP address&#10;    part MUST be an empty string (and, if specified, MUST be ignored). </description>
+
+  <parameter name="SourceIPExclude" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those&#10;    packets that match the (masked) SourceIP entry, if  specified. If true, the class includes all packets except those that match the (masked) SourceIP entry, if specified. </description>
+
+  <parameter name="Protocol" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="255" />
+    <description source="TRx">Classification criterion. Protocol number.  A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="ProtocolExclude" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the Protocol entry, if specified. If true, the class includes all packets except those that match the Protocol entry, if specified. </description>
+
+  <parameter name="DestPort" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="65535" />
+    <description source="TRx">Classification criterion. Destination port number.  A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="DestPortRangeMax" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="65535" />
+    <description source="TRx">Classification criterion. If specified, indicates the classification criterion is to include the port range from DestPort through DestPortRangeMax (inclusive).  If specified, DestPortRangeMax MUST be greater than or equal to DestPort. A value of -1 indicates that no port range is specified. </description>
+
+  <parameter name="DestPortExclude" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the DestPort entry (or port range), if  specified. If true, the class includes all packets except those that match the DestPort entry (or port range), if  specified. </description>
+
+  <parameter name="SourcePort" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="65535" />
+    <description source="TRx">Classification criterion. Source port number.  A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="SourcePortRangeMax" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="65535" />
+    <description source="TRx">Classification criterion. If specified, indicates the classification criterion is to include the port range from SourcePort through SourcePortRangeMax (inclusive).  If specified,  MUST be greater than or equal to SourcePort.A value of -1 indicates that no port range is specified. </description>
+
+  <parameter name="SourcePortExclude" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the SourcePort entry (or port range),  if specified. If true, the class includes all packets except those that match the SourcePort entry (or port range), if  specified. </description>
+
+  <parameter name="SourceMACAddress" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="17" />
+    <description source="TRx">Classification criterion. Source MAC Address.  An empty string indicates this criterion is not used for classification. </description>
+
+  <parameter name="SourceMACMask" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="17" />
+    <description source="TRx">Bit-mask for the MAC address, where matching of a packet's MAC address with the SourceMACAddress is only to be done for bit positions set to one in the mask.  A mask of ''FF:FF:FF:FF:FF:FF'' or an empty string indicates all bits of the SourceMACAddress are to be used for classification. </description>
+
+  <parameter name="SourceMACExclude" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the (masked) SourceMACAddress entry, if  specified. If true, the class includes all packets except those that match the (masked) SourceMACAddress entry, if  specified. </description>
+
+  <parameter name="DestMACAddress" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="17" />
+    <description source="TRx">Classification criterion. Destination MAC Address.  An empty string indicates this criterion is not used for classification.The use of destination MAC address as a classification criterion is primarily useful only for bridged traffic. </description>
+
+  <parameter name="DestMACMask" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="17" />
+    <description source="TRx">Bit-mask for the MAC address, where matching of a packet's MAC address with the DestMACAddress is only to be done for bit positions set to one in the mask.  A mask of 'FF:FF:FF:FF:FF:FF' or an empty string indicates all bits of the DestMACAddress are to be used for classification. </description>
+
+  <parameter name="DestMACExclude" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the (masked) DestMACAddress entry, if  specified. If true, the class includes all packets except those that match the (masked) DestMACAddress entry, if  specified. </description>
+
+  <parameter name="Ethertype" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" />
+    <description source="TRx">Classification criterion. Ethertype as indicated in either the Ethernet or SNAP Type header.  A value of -1 indicates this criterion is not used for  classification. </description>
+
+  <parameter name="EthertypeExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the Ethertype entry, if specified. If true, the class includes all packets except those that match the Ethertype entry, if specified. </description>
+
+  <parameter name="SSAP" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" />
+    <description source="TRx">Classification criterion. SSAP element in the LLC header.  A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="SSAPExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the SSAP entry, if specified. If true, the class includes all packets except those that match the SSAP entry, if specified. </description>
+
+  <parameter name="DSAP" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" />
+    <description source="TRx">Classification criterion. DSAP element in the LLC header.  A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="DSAPExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the DSAP entry, if specified. If true, the class includes all packets except those that match the DSAP entry, if specified. </description>
+
+  <parameter name="LLCControl" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" />
+    <description source="TRx">Classification criterion. Control element in the LLC header.  A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="LLCControlExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the LLCControl entry, if specified. If true, the class includes all packets except those that match the LLCControl entry, if specified. </description>
+
+  <parameter name="SNAPOUI" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" />
+    <description source="TRx">Classification criterion. OUI element in the SNAP header.  A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="SNAPOUIExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the SNAPOUI entry, if specified. If true, the class includes all packets except those that match the SNAPOUI entry, if specified. </description>
+
+  <parameter name="SourceVendorClassID" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="255" />
+    <description source="TRx">Classification criterion.  Used to identify one or more LAN devices, value of the DHCPv4 Vendor Class Identifier (Option 60) as defined in RFC2132, matched according to the criterion in SourceVendorClassIDMode.  Case sensitive.This is a normal string, e.g. &quot;abc&quot; is represented as &quot;abc&quot; and not say &quot;616263&quot; hex. However, if the value includes non-printing characters then such characters have to be represented using XML escapes, e.g. #x0a for line-feed. an empty string indicates this criterion is not used for classification.Note: This parameter is DHCPv4-specific. It only applies when DHCPType is enumeration of DHCPv4, DHCPType. </description>
+
+  <parameter name="SourceVendorClassIDv6" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="65535" />
+    <description source="TRx">Classification criterion.  A hexbinary string used to identify one or more LAN devices, value of the DHCPv6 Vendor Class Identifier (Option 16) as defined in RFC3315. The option value is binary, so an exact match is REQUIRED.an empty string indicates this criterion is not used for classification. Note: This parameter is DHCPv6-specific. It only applies when DHCPType is enumeration of DHCPv6, DHCPType. </description>
+
+  <parameter name="SourceVendorClassIDExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets sourced from LAN devices that match the SourceVendorClassID entry (for enumeration of DHCPv4, DHCPType or the SourceVendorClassIDv6 entry (for enumeration of DHCPv6, DHCPType), if specified. If true, the class includes&#10;    all packets except those sourced from LAN devices that match the&#10;    SourceVendorClassID entry (for enumeration of DHCPv4, DHCPType) or the SourceVendorClassIDv6 entry(for enumeration of DHCPv6, DHCPType), if specified. </description>
+
+  <parameter name="SourceVendorClassIDMode" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="Exact" />
+    <description source="TRx">SourceVendorClassID pattern match criterion.  For example, if SourceVendorClassID is &quot;Example&quot; then an Option 60 value of &quot;Example device&quot; will match with SourceVendorClassIDMode  values of enumeration of Prefix or enumeration ofSubstring, but not with enumeration of Exact or enumeration of Suffix. </description>
+
+  <parameter name="DestVendorClassID" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="255" />
+    <description source="TRx">Classification criterion.  Used to identify one or more LAN devices, value of the DHCPv4 Vendor Class Identifier (Option 60) as defined in RFC2132, matched according to the criterion in DestVendorClassIDMode.  Case sensitive.This is a normal string, e.g. &quot;abc&quot; is represented as &quot;abc&quot; and not say &quot;616263&quot; hex. However, if the value includes non-printing characters then such characters have to be represented using XML escapes, e.g. #x0a for line-feed. an empty string indicates this criterion is not used for classification.Note: This parameter is DHCPv4-specific. It only applies when DHCPType is enumeration of DHCPv4, DHCPType. </description>
+
+  <parameter name="DestVendorClassIDv6" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="65535" />
+    <description source="TRx">Classification criterion.  A hexbinary string used to identify one or more LAN devices, value of the DHCPv6 Vendor Class Identifier (Option 16) as defined in RFC3315. The option value is binary, so an exact match is REQUIRED.an empty string indicates this criterion is not used for classification. Note: This parameter is DHCPv6-specific. It only applies when DHCPType is enumeration of DHCPv6, DHCPType. </description>
+
+  <parameter name="DestVendorClassIDExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets destined for LAN devices that match the DestVendorClassID&#10;    entry (for enumeration of DHCPv4, DHCPType) or the DestVendorClassIDv6 entry (for enumeration of DHCPv6|DHCPType), if specified. If true, the class includes all packets except those destined for LAN devices that match the DestVendorClassID entry (for enumeration of DHCPv4|DHCPType) or the DestVendorClassIDv6 entry (for enumeration of DHCPv6|DHCPType), if specified. </description>
+
+  <parameter name="DestVendorClassIDMode" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="Exact" />
+    <description source="TRx">DestVendorClassID pattern match criterion.  For example, if DestVendorClassID is &quot;Example&quot; then an Option 60 value of &quot;Example device&quot; will match with DestVendorClassIDMode values  of enumeration of Prefix or enumeration of Substring, but not with enumeration of Exact or enumeration of Suffix. </description>
+
+  <parameter name="SourceClientID" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="65535" />
+    <description source="TRx">Classification criterion.  A hexbinary string used to identify one or more LAN devices, value of the DHCP Client Identifier. The DHCP Client Identifier is Option 61 (as defined in RFC2132) for enumeration of DHCPv4|DHCPType, or is Option 1 (as defined in RFC3315) for enumeration of DHCPv6|DHCPType. The option value is binary, so an exact match is REQUIRED. An empty string indicates this criterion is not used for classification. Note: DHCPv4 Option values are limited to a length of 255, while DHCPv6 Option values can have a maximum length of 65535.Note: This parameter is DHCP version neutral. The specific DHCP version in use with this parameter is indicated by DHCPType. Note: DHCPv6 Option 1 (Client Identifier) is sometimes referred to as 'DUID'. </description>
+
+  <parameter name="SourceClientIDExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets sourced from LAN devices that match the  SourceClientID entry, if specified. If true, the class includes all packets except those sourced from LAN devices that match the SourceClientID entry, if  specified. </description>
+
+  <parameter name="DestClientID" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="65535" />
+    <description source="TRx">Classification criterion.  A hexbinary string used to identify one or more LAN devices, value of the DHCP Client Identifier. The DHCP Client Identifier is Option 61 (as defined in RFC2132) for enumeration of DHCPv4|DHCPType, or is Option 1 (as defined in RFC3315) for enumeration of DHCPv6|DHCPType. The option value is binary, so an exact match is REQUIRED.an empty string indicates this criterion is not used for classification. Note: DHCPv4 Option values are limited to a length of 255, while DHCPv6 Option values can have a maximum length of 65535.Note: This parameter is DHCP version neutral. The specific DHCP version in use with this parameter is indicated by DHCPType. Note: DHCPv6 Option 1 (Client Identifier) is sometimes referred to as 'DUID'. </description>
+
+  <parameter name="DestClientIDExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets destined for LAN devices that match the  DestClientID entry, if specified. If true, the class includes all packets except those destined for LAN devices that match the DestClientID entry, if  specified. </description>
+
+  <parameter name="SourceUserClassID" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="65535" />
+    <description source="TRx">Classification criterion.  A hexbinary string used to identify one or more LAN devices, value of the DHCP User Class Identifier. The DHCP User Class Identifier is Option 77 (as defined in RFC3004) for enumeration of DHCPv4|DHCPType, or is Option 15 (as defined in RFC3315) for enumeration of DHCPv6|DHCPType. The option value is binary, so an exact match is REQUIRED.  An empty string indicates this criterion is not used for classification. Note: DHCPv4 Option values are limited to a length of 255, while DHCPv6 Option values can have a maximum length of 65535.Note: This parameter is DHCP version neutral. The specific DHCP version in use with this parameter is indicated by DHCPType. </description>
+
+  <parameter name="SourceUserClassIDExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets sourced from LAN devices that match the SourceUserClassID entry, if specified. If true, the class includes all packets except those sourced from LAN devices that match the SourceUserClassID entry,  if specified. </description>
+
+  <parameter name="DestUserClassID" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="65535" />
+    <description source="TRx">Classification criterion.  A hexbinary string used to identify one or more LAN devices, value of the DHCP User Class Identifier. The DHCP User Class Identifier is Option 77 (as defined in RFC3004) for enumeration of DHCPv4|DHCPType, or is Option 15 (as defined in RFC3315) for enumeration of DHCPv6|DHCPType. The option value is binary, so an exact match is REQUIRED.  An empty string indicates this criterion is not used for classification. Note: DHCPv4 Option values are limited to a length of 255, while DHCPv6 Option values can have a maximum length of 65535.Note: This parameter is DHCP version neutral. The specific DHCP version in use with this parameter is indicated by DHCPType. </description>
+
+  <parameter name="DestUserClassIDExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets destined for LAN devices that match the  DestUserClassID entry, if specified. If true, the class includes all packets except those destined for LAN devices that match the DestUserClassID entry, if  specified. </description>
+
+  <parameter name="SourceVendorSpecificInfo" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="65535" />
+    <description source="TRx">Classification criterion.  A hexbinary string used to identify one or more LAN devices, value of the DHCP Vendor-specific Information, matched according to the criteria in SourceVendorSpecificInfoEnterprise and SourceVendorSpecificInfoSubOption. The DHCP Vendor-specific Information is Option 125 (as defined in RFC3925) for enumeration of DHCPv4|DHCPType, or is Option 17 (as defined in RFC3315) for enumeration of DHCPv6|DHCPType.  An empty string indicates this criterion is not used for classification. Note: DHCPv4 Option values are limited to a length of 255, while DHCPv6 Option values can have a maximum length of 65535.Note: This parameter is DHCP version neutral. The specific DHCP version in use with this parameter is indicated by DHCPType. </description>
+
+  <parameter name="SourceVendorSpecificInfoExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets sourced from LAN devices that match the  SourceVendorSpecificInfo entry, if specified. If true, the class includes all packets except those sourced from LAN devices that match the SourceVendorSpecificInfo  entry, if specified. </description>
+
+  <parameter name="SourceVendorSpecificInfoEnterprise" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">SourceVendorSpecificInfo Enterprise Number as defined in RFC3925. The default value (0) is assigned to IANA and will probably need to be replaced with an appropriate enterprise number. </description>
+
+  <parameter name="SourceVendorSpecificInfoSubOption" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" />
+    <description source="TRx">SourceVendorSpecificInfo Sub Option Code as defined in RFC3925. </description>
+
+  <parameter name="DestVendorSpecificInfo" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="65535" />
+    <description source="TRx">Classification criterion.  A hexbinary string used to identify one or more LAN devices, value of the DHCP Vendor-specific Information, matched according to the criteria in DestVendorSpecificInfoEnterprise and DestVendorSpecificInfoSubOption. The DHCP Vendor-specific Information is Option 125 (as defined in RFC3925) for enumeration of DHCPv4|DHCPType, or is Option 17 (as defined in RFC3315) for enumeration of DHCPv6|DHCPType.  An empty string indicates this criterion is not used for classification. Note: DHCPv4 Option values are limited to a length of 255, while DHCPv6 Option values can have a maximum length of 65535.Note: This parameter is DHCP version neutral. The specific DHCP version in use with this parameter is indicated by DHCPType. </description>
+
+  <parameter name="DestVendorSpecificInfoExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets destined for LAN devices that match the  DestVendorSpecificInfo entry, if specified. If true, the class includes all packets except those destined for LAN devices that match the DestVendorSpecificInfo  entry, if specified. </description>
+
+  <parameter name="DestVendorSpecificInfoEnterprise" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">DestVendorSpecificInfo Enterprise Number as defined in RFC3925. The default value (0) is assigned to IANA and will probably need to be replaced with an appropriate enterprise number. </description>
+
+  <parameter name="DestVendorSpecificInfoSubOption" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" />
+    <description source="TRx">DestVendorSpecificInfo Sub Option Code as defined in RFC3925. </description>
+
+  <parameter name="TCPACK" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Classification criterion. If false, this criterion is not used for classification.If true, this criterion matches with all TCP segments that have the ACK control bit set. </description>
+
+  <parameter name="TCPACKExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the TCPACK entry, if specified. If true, the class includes all packets except those that match the TCPACK entry, if specified. </description>
+
+  <parameter name="IPLengthMin" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Classification criterion. Minimum IP Packet Length (including header) in bytes. </description>
+
+  <parameter name="IPLengthMax" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Classification criterion. Maximum IP Packet Length (including header) in bytes.A value of zero indicates that no maximum is specified (an umlimited maximum length). </description>
+
+  <parameter name="IPLengthExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets whose length (including header) falls within the inclusive  range IPLengthMin through IPLengthMax.  A value of zero for both IPLengthMin and IPLengthMax  allows any length packet.  An equal non-zero value of IPLengthMin and IPLengthMax allows only a packet with the exact length specified. If true, the class includes all packets except those whose length (including header) falls within the inclusive range  IPLengthMin through IPLengthMax. </description>
+
+  <parameter name="DSCPCheck" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="63" />
+    <description source="TRx">Classification criterion. DiffServ codepoint (defined in RFC2474).If set to a Class Selector Codepoint (defined in RFC2474), all DSCP values that match the first 3 bits will be considered a valid  match. A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="DSCPExclude" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the DSCPCheck entry, if specified. If true, the class includes all packets except those that match the DSCPCheck entry, if specified. </description>
+
+  <parameter name="DSCPMark" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-2" />
+    <description source="TRx">Classification result. DSCP to mark traffic with that falls into this classification entry.A value of -1 indicates no change from the incoming packet. A value of -2 indicates automatic marking of DSCP based upon the EthernetPriority value of the incoming packet as defined in TR-181i2|Annex A. </description>
+
+  <parameter name="EthernetPriorityCheck" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" />
+    <description source="TRx">Classification criterion. Current Ethernet priority as defined in 802.1D.  A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="EthernetPriorityExclude" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the EthernetPriorityCheck entry, if  specified. If true, the class includes all packets except those that match the EthernetPriorityCheck entry, if  specified. </description>
+
+  <parameter name="EthernetPriorityMark" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-2" />
+    <description source="TRx">Classification result. Ethernet priority code (as defined in 802.1D) to mark traffic with that falls into this classification entry.A value of -1 indicates no change from the incoming packet. A value of -2 indicates automatic marking of EthernetPriority based upon the DSCP value of the incoming packet as defined in TR-181i2|Annex A. </description>
+
+  <parameter name="VLANIDCheck" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" />
+    <description source="TRx">Classification criterion. Current Ethernet VLAN ID as defined in 802.1Q.  A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="VLANIDExclude" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the class includes only those packets that match the VLANIDCheck entry, if specified. If true, the class includes all packets except those that match the VLANIDCheck entry, if specified. </description>
+
+  <parameter name="OutOfBandInfo" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" />
+    <description source="TRx">Classification criterion. Allows traffic to be distinguished based on out-of-band information such as physical port or application ID.  Primarily intended for,  but not restricted to, locally sourced traffic.If specified, this entry applies to traffic with matching out-of-band information.  A value of -1 indicates this criterion is not  used for classification. </description>
+
+  <parameter name="ForwardingPolicy" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Classification result. Identifier of the forwarding policy associated with traffic that falls in this classification. </description>
+
+  <parameter name="TrafficClass" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" />
+    <description source="TRx">Classification result. Identifier of the traffic class associated with traffic that falls in this classification.  If specified, at least one Queue table entry MUST include this traffic class in its .Queue.{i}.TrafficClasses parameter (which is a comma-separated list).A value of -1 indicates a null traffic class.  and App are mutually exclusive and one of the two MUST be specified.  If TrafficClass is null, App MUST be specified, and vice versa. </description>
+
+  <parameter name="Policer" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">Classification result.  Indicates the ''Policer'' table entry for traffic that falls in this classification.  An empty string indicates a null policer. Policer MAY optionally be specified in conjunction with TrafficClass. Policer and App are mutually exclusive. </description>
+
+  <parameter name="App" type="string" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">Classification result.  Indicates the 'App' table entry for traffic that falls in this classification.  An empty string indicates a null 'App'. TrafficClass and App are mutually exclusive and one of the two MUST be specified.  If TrafficClass is null, App MUST be specified, and vice versa. </description>
+
+  <parameter name="X_BROADCOM_COM_ClassRate" type="int" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1 " />
+    <description source="BROADCOM">Classification result. &#10;Rate limitation in kbps for traffic &#10;that falls in this classification. &#10;A value of -1 indicates no limitation. </description>
+
+  <parameter name="X_BROADCOM_COM_ClassName" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Queue Management Classification name.</description>
+
+  <parameter name="X_BROADCOM_COM_VLANIDTag" type="int" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="4094" />
+    <description source="BROADCOM">This is for VLAN ID auto tagging function.&#10;VLAN ID tagging is based on classification rule.</description>
+
+  <parameter name="X_BROADCOM_COM_egressInterface" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Egress queue layer 3 interface name.</description>
+
+  <parameter name="X_BROADCOM_COM_ClassQueue" type="int" specSource="BROADCOM" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1 " minValue="-1" maxValue="2147483647" />
+    <description source="BROADCOM">Classification result. &#10;Instance number of the Queue table entry for &#10;traffic that falls in this classification. &#10;A value of -1 indicates a null queue. &#10;ClassQueue and ClassApp are mutually exclusive &#10;and one of the two must be specified. If &#10;ClassQueue is null, ClassApp must be specified, &#10;and vice versa.  This parameter was present in TR98 data model but missing from TR181.  However, our code still relies on this param.  Note in theory, we could allow the ACS to set the TrafficClass params in this object and the Queue object, and our software would match these two up.  But in the end, the classification object still needs to know exactly which queue this packet should go to, which this parameter tells u.</description>
+
+ <parameter name="X_BROADCOM_COM_ClassPolicer" type="int" specSource="BROADCOM" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1 " minValue="-1" maxValue="2147483647" />
+    <description source="BROADCOM">Classification result. &#10;Instance number of the Policer table entry for &#10;traffic that falls in this classification. &#10;A value of -1 indicates a null policer. </description>
+
+  <parameter name="X_BROADCOM_COM_ClassKey" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" />
+    <description source="BROADCOM">Unique key for each classification entry. &#10;ClassKey is generated and assigned by the system, &#10;therefore it is not writeable by management apps.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.QoS.App.{i}." shortObjectName="Dev2QosAppObject" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="PC" supportLevel="NotSupported" />
+  <description source="TRx">Application table. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this App table entry. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status3eValues" />
+    <description source="TRx">The status of this App table entry.  The enumeration of Error value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-qosapp" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatitle handle used to reference this instance.  Alias provides a mechanism for an ACS to label this instance for the future reference.  If the CPE supports the Alias-based Addressing feature as defined in Section 3.6.1 of TR069a4 and described in Appendix II of TR-069a4, the following mandatory contraints MUST be enforced:  Its value MUST NOT be empty.   Its value MUST satrt with a letter.  If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix.  The CPE MUST NOT change the parameter value.  </description>
+
+  <parameter name="ProtocolIdentifier" type="string" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">URN identifying the protocol associated with the given application.  A set of defined URNs is given in TR-181i2|Annex A. </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+    <description source="TRx">Human-readable name associated with this entry in the App table. </description>
+
+  <parameter name="DefaultForwardingPolicy" type="unsignedInt" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Identifier of the forwarding policy associated with traffic associated with this App table entry, but not  associated with any specified flow. </description>
+
+  <parameter name="DefaultTrafficClass" type="unsignedInt" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Identifier of the traffic class associated with traffic associated with this App table entry, but not associated with any specified flow. </description>
+
+  <parameter name="DefaultPolicer" type="string" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">Indicates the Policer table entry for traffic associated with this Policer table entry, but not associated with any specified flow. an empty string indicates a null policer. </description>
+
+  <parameter name="DefaultDSCPMark" type="int" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-2" />
+    <description source="TRx">DSCP to mark traffic associated with this App table entry, but not associated with any specified flow. A value of -1 indicates no change from the incoming packet.A value of -2 indicates automatic marking of DSCP based upon the EthernetPriority value of the incoming packet as defined in TR-181i2|Annex A. </description>
+
+  <parameter name="DefaultEthernetPriorityMark" type="int" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-2" />
+    <description source="TRx">Ethernet priority code (as defined in 802.1D) to mark traffic associated with this App table entry, but not  associated with any specified flow. A value of -1 indicates no change from the incoming packet.A value of -2 indicates automatic marking of EthernetPriority based upon the DSCP value of the incoming packet as defined in TR-181i2|Annex A. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.QoS.Flow.{i}." shortObjectName="Dev2QosFlowObject" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="PC" supportLevel="NotSupported" />
+  <description source="TRx">Flow table. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this Flow table entry. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status3eValues" />
+    <description source="TRx">The status of this Flow table entry.  The enumeration of Error value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-qosflow" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatitle handle used to reference this instance.  Alias provides a mechanism for an ACS to label this instance for the future reference.  If the CPE supports the Alias-based Addressing feature as defined in Section 3.6.1 of TR069a4 and described in Appendix II of TR-069a4, the following mandatory contraints MUST be enforced:  Its value MUST NOT be empty.   Its value MUST satrt with a letter.  If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix.  The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="Type" type="string" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">URN identifying the type of flow to be associated with the specified policer.  A set of defined URNs is given in TR-181i2|Annex A. </description>
+
+  <parameter name="TypeParameters" type="string" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">List of name-value pairs representing additional criteria to identify the flow type.  The use and interpretation is specific to the particular FlowType URN.Encoded using the &quot;x-www-form-urlencoded&quot; content type defined in HTML4.01. </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+    <description source="TRx">Human-readable name associated with this entry in the Flow table. </description>
+
+  <parameter name="App" type="string" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">Indicates the App table entry associated with this flow.  An empty string indicates the flow table is not associated with any App table entry. </description>
+
+  <parameter name="ForwardingPolicy" type="unsignedInt" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Identifier of the forwarding policy associated with this flow. </description>
+
+  <parameter name="TrafficClass" type="unsignedInt" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Identifier of the traffic class associated with this flow. </description>
+
+  <parameter name="Policer" type="string" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">Indicates the Policer table entry for traffic that falls in this flow. an empty string indicates a null policer. </description>
+
+  <parameter name="DSCPMark" type="int" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-2" />
+    <description source="TRx">DSCP to mark traffic with that falls into this flow. A value of -1 indicates no change from the incoming packet.A value of -2 indicates automatic marking of DSCP based upon the EthernetPriority value of the incoming packet as defined in Annex A of TR-181i2. </description>
+
+  <parameter name="EthernetPriorityMark" type="int" specSource="TR181" profile="Device2_QoSDynamicFlow:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-2" />
+    <description source="TRx">Ethernet priority code (as defined in 802.1D) to mark traffic with that falls into this flow. A value of -1 indicates no change from the incoming packet.A value of -2 indicates automatic marking of EthernetPriority based upon the DSCP value of the incoming packet as defined in Annex A of TR-181i2. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.QoS.Policer.{i}." shortObjectName="Dev2QosPolicerObject" specSource="TR181" profile="Device2_QoS:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">Policer table. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this policer. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status3eValues" />
+    <description source="TRx">The status of this policer.  The enumeration of Error value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-qospolicer" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatitle handle used to reference this instance.  Alias provides a mechanism for an ACS to label this instance for the future reference.  If the CPE supports the Alias-based Addressing feature as defined in Section 3.6.1 of TR069a4 and described in Appendix II of TR-069a4, the following mandatory contraints MUST be enforced:  Its value MUST NOT be empty.   Its value MUST satrt with a letter.  If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix.  The CPE MUST NOT change the parameter value.  </description>
+
+  <parameter name="CommittedRate" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Committed rate allowed for this policer in bits per seconds. </description>
+
+  <parameter name="CommittedBurstSize" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Committed Burstsize in bytes. </description>
+
+  <parameter name="ExcessBurstSize" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Excess Burstsize in bytes. Applied for a enumeration of SingleRateThreeColor|MeterType meter. </description>
+
+  <parameter name="PeakRate" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Peak rate allowed for this Meter in bits per second. Applied for enumeration of TwoRateThreeColor meters. </description>
+
+  <parameter name="PeakBurstSize" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Peak Burstsize in bytes. Applied for enumeration of TwoRateThreeColor meters. </description>
+
+  <parameter name="MeterType" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="SimpleTokenBucket" validValuesArray="qosMeterTypeValues" />
+    <description source="TRx">Identifies the method of traffic measurement to be used for this policer.  Enumeration of SimpleTokenBucket makes use of CommittedRate and CommittedBurstSize.  Enumeration of SingleRateThreeColor makes use of CommittedRate, CommittedBurstSize, and ExcessBurstSize as  defined in RFC2697. enumeration of TwoRateThreeColor makes use of CommittedRate, CommittedBurstSize, PeakRate, and  PeakBurstSize as defined in RFC2698. </description>
+
+  <parameter name="PossibleMeterTypes" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" validValuesArray="qosMeterTypeValues" />
+    <description source="TRx">Comma separated list of strings. Indicates supported meter types. </description>
+
+  <parameter name="ConformingAction" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="Null" />
+    <description source="TRx">Instructions for how to handle traffic&#10;    that is conforming.  Null corresponds with no action. 'DSCP Value' is an unsigned integer that corresponds with a mark action overwriting the traffic's DSCP with the configured  DSCP. ':Ethernet Priority' is a colon (&quot;:&quot;) followed by an unsigned integer (no white space).  It corresponds with a mark action  overwriting the traffic's Ethernet Priority with the configured Ethernet Priority. 'DSCP Value:Ethernet Priority' is an unsigned integer followed by a colon (&quot;:&quot;) and a second unsigned integer (no white  space).  It corresponds with a mark action overwriting the traffic's DSCP and Ethernet Priority with the configured values. For example, &quot;24&quot; specifies a DSCP value of 24, &quot;:3&quot; specifies an Ethernet Priority of 3, and &quot;24:3&quot; specifies both. </description>
+
+  <parameter name="PartialConformingAction" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="Drop" />
+    <description source="TRx">Instructions for how to handle traffic&#10;    that is partially conforming (colored yellow).  Null corresponds&#10;    with no action. 'DSCP Value' is an unsigned integer that corresponds with a mark action overwriting the traffic's DSCP with the configured  DSCP.Only applies for three-color meters. ':Ethernet Priority' is a colon (&quot;:&quot;) followed by an unsigned integer (no white space).  It corresponds with a mark action  overwriting the traffic's Ethernet Priority with the configured Ethernet Priority. 'DSCP Value:Ethernet Priority' is an unsigned integer followed by a colon (&quot;:&quot;) and a second unsigned integer (no white  space).  It corresponds with a mark action overwriting the traffic's DSCP and Ethernet Priority with the configured values. For example, &quot;24&quot; specifies a DSCP value of 24, &quot;:3&quot; specifies an Ethernet Priority of 3, and &quot;24:3&quot; specifies both. </description>
+
+  <parameter name="NonConformingAction" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="Drop" />
+    <description source="TRx">Instructions for how to handle traffic&#10;    that is non-conforming.  Null corresponds with no action. 'DSCP Value' is an unsigned integer that corresponds with a mark action overwriting the traffic's DSCP with the configured  DSCP. ':Ethernet Priority' is a colon (&quot;:&quot;) followed by an unsigned integer (no white space).  It corresponds with a mark action  overwriting the traffic's Ethernet Priority with the configured Ethernet Priority. 'DSCP Value:Ethernet Priority' is an unsigned integer followed by a colon (&quot;:&quot;) and a second unsigned integer (no white  space).  It corresponds with a mark action overwriting the traffic's DSCP and Ethernet Priority with the configured values. For example, &quot;24&quot; specifies a DSCP value of 24, &quot;:3&quot; specifies an Ethernet Priority of 3, and &quot;24:3&quot; specifies both. </description>
+
+  <parameter name="TotalCountedPackets" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Total number of Packets counted by this policer, regardless of meter action. </description>
+
+  <parameter name="TotalCountedBytes" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Total number of Bytes counted by this policer, regardless of meter action. </description>
+
+  <parameter name="ConformingCountedPackets" type="unsignedInt" specSource="TR181" profile="Device2_QoSStats:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Number of conforming Packets counted by this policer, regardless of meter action. </description>
+
+  <parameter name="ConformingCountedBytes" type="unsignedInt" specSource="TR181" profile="Device2_QoSStats:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Number of conforming Bytes counted by this policer, regardless of meter action. </description>
+
+  <parameter name="PartiallyConformingCountedPackets" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Number of partially conforming Packets counted by this policer, regardless of meter action. </description>
+
+  <parameter name="PartiallyConformingCountedBytes" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Number of partially conforming Bytes counted by this policer, regardless of meter action. </description>
+
+  <parameter name="NonConformingCountedPackets" type="unsignedInt" specSource="TR181" profile="Device2_QoSStats:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Number of non-conforming Packets counted by this policer, regardless of meter action. </description>
+
+  <parameter name="NonConformingCountedBytes" type="unsignedInt" specSource="TR181" profile="Device2_QoSStats:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Number of non-conforming Bytes counted by this policer, regardless of meter action. </description>
+
+  <parameter name="X_BROADCOM_COM_PolicerName" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Queue Management Policer name.</description>
+
+  <parameter name="X_BROADCOM_COM_UsPolicerInfo" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">ID and reference count of this policer's upstream instance. Note that PolicerId is generated and assigned by the system, &#10;therefore it is not writeable by management apps.</description>
+
+  <parameter name="X_BROADCOM_COM_DsPolicerInfo" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true"/>
+    <description source="BROADCOM">ID and reference count of this policer's downstream instance. Note that PolicerId is generated and assigned by the system, &#10;therefore it is not writeable by management apps.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.QoS.Queue.{i}." shortObjectName="Dev2QosQueueObject" specSource="TR181" profile="Device2_QoS:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">Queue table. Each entry is associated with a set of traffic classes, which are specified via the TrafficClasses parameter, and is configured with weight, precedence, drop algorithm, scheduler algorithm etc as appropriate for the traffic classes. An entry can be associated either with all egress interfaces (in which case an actual queue will be instantiated on each egress interface on which traffic of that traffic class can be generated) or else with a single specified egress interface. For enabled table entries, if Interface is not a valid reference and AllInterfaces is false, then the table entry is inoperable and the CPE MUST set Status to enumeration of Error_Misconfigured|Status. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this queue. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status4eValues" />
+    <description source="TRx">The status of this queue.   The enumeration of Error_Misconfigured value indicates that a necessary configuration value is undefined or invalid.  The enumeration of Error value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-qosqueue" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatitle handle used to reference this instance.  Alias provides a mechanism for an ACS to label this instance for the future reference.  If the CPE supports the Alias-based Addressing feature as defined in Section 3.6.1 of TR069a4 and described in Appendix II of TR-069a4, the following mandatory contraints MUST be enforced:  Its value MUST NOT be empty.   Its value MUST satrt with a letter.  If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix.  The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="TrafficClasses" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">Comma-separated list of strings (maximum length 256) of unsigned integers.  Each list item identifies the set of traffic classes associated with this queue. Traffic is sent to this queue if a Classification, App or Flow table entry specifies a traffic class, e.g. via the Classification.{i}.TrafficClass parameter.If more than one queue on a given egress interface is associated with a given traffic class, the implementation will choose which queue to send traffic of this class to. </description>
+
+  <parameter name="Interface" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">The value must be a path name of a table row.  If the referenced object is deleted, the parameter value MUST be set to an empty string.  Specifies the egress interface for which the specified queue MUST exist. This MAY be a layer 1, 2 or 3 interface, however, the types of interfaces for which ''Queues'' can be instantiated is a local matter to the CPE. </description>
+
+  <parameter name="AllInterfaces" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Indicates that the specified queue MUST exist for all egress interfaces (i.e. this queue entry is to apply to all egress interfaces). If true, the value of Interface is ignored since all egress interfaces are indicated. </description>
+
+  <parameter name="HardwareAssisted" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Indicates whether ''all'' the queues corresponding to this table entry are hardware assisted. If any of the queues corresponding to this table entry are not hardware assisted, the parameter value MUST be false. </description>
+
+  <parameter name="BufferLength" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Number of bytes in the buffer. Queue buffer size for all egress interfaces for which this queue exists.  If the buffer size is not the same for all such egress  interfaces, this parameter MUST be 0. </description>
+
+  <parameter name="Weight" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">Weight of this queue in case of enumeration of WFQ|SchedulerAlgorithm or enumeration of WRR|SchedulerAlgorithm, but only  used for queues of equal precedence. </description>
+
+  <parameter name="Precedence" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="1" minValue="1" />
+    <description source="TRx">Precedence of this queue relative to others. Lower numbers imply greater precedence. </description>
+
+  <parameter name="REDThreshold" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" maxValue="100" />
+    <description source="TRx">Random Early Detection threshold, used only when DropAlgorithm is enumeration of RED|DropAlgorithm. This is the minimum threshold (''min_th'') and is measured as a percentage of the queue size.  If the value is set to zero, the CPE  MUST choose a sensible value, e.g. 5 (but the value MUST still read back as zero).In this version of the data model, there is no way to set the maximum threshold (''max_th'').  The CPE MUST choose a sensible value,  e.g. three times the minimum threshold.  In this version of the data model, there is no way to set the RED weight (''w_q'').  The CPE MUST choose a sensible value, e.g.  0.002. </description>
+
+  <parameter name="REDPercentage" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" maxValue="100" />
+    <description source="TRx">Random Early Detection percentage, used only when DropAlgorithm is enumeration of RED|DropAlgorithm. This is the maximum value of the packet marking probability (''max_p'').  If the value is set to zero, the CPE MUST choose a sensible  value, e.g. 10 (but the value MUST still read back as zero).In this version of the data model, there is no way to set the RED weight (''w_q'').  The CPE MUST choose a sensible value, e.g.  0.002. </description>
+
+  <parameter name="DropAlgorithm" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="DT" validValuesArray="DropAlgorithmValues" />
+    <description source="TRx">Dropping algorithm used for this queue if congested. </description>
+
+  <parameter name="SchedulerAlgorithm" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="SP" validValuesArray="SchedulerAlgorithmValues" />
+    <description source="TRx">Scheduling Algorithm used by scheduler. </description>
+
+  <parameter name="ShapingRate" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" />
+    <description source="TRx">Rate to shape this queue's traffic to. For leaky bucket (constant rate shaping), this is the constant rate.  For token bucket (variable rate shaping), this is the average rate. If less than or equal to 100, in percent of the rate of the highest rate-constrained layer over which the packet will travel on egress. If greater than 100, in bits per second. A value of -1 indicates no shaping.For example, for packets destined for a WAN DSL interface, if the egress will be on a PPP or IP link with a specified ShapingRate, the percentage is calculated relative to this rate.  Otherwise, if the ATM layer is rate-constrained, then the rate is calculated relative to this rate.  Otherwise, the rate is calculated relative to the physical-layer DSL rate. </description>
+
+  <parameter name="ShapingBurstSize" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Burst size in bytes.  For both leaky bucket (constant rate shaping) and token bucket (variable rate shaping)  this is the bucket size and is therefore the maximum burst size. </description>
+
+  <parameter name="X_BROADCOM_COM_MinBitRate" type="int" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1 " minValue="-1" maxValue="2147483647" />
+    <description source="BROADCOM">Committed minimum bit rate for this queue</description>
+
+  <parameter name="X_BROADCOM_COM_QueueName" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Queue Management Queue name.</description>
+
+  <parameter name="X_BROADCOM_COM_DslLatency" type="int" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="1" />
+    <description source="BROADCOM">The DSL latency set for this queue. Valid values are: 0(Path0), 1(Path1), -1(not applicable). Default is -1.</description>
+
+  <parameter name="X_BROADCOM_COM_PtmPriority" type="int" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="1" />
+    <description source="BROADCOM">The Ptm priority set for this queue. Valid values are: 0(Low), 1(High), -1(not applicable). Default is -1.</description>
+
+  <parameter name="X_BROADCOM_COM_QueueId" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" />
+    <description source="BROADCOM">ID of this queue. Note that queues &#10;assigned to the same queue interface &#10;shall have unique queue ID. &#10;QueueId is generated and assigned by the system, &#10;therefore it is not writeable by management apps.</description>
+
+  <parameter name="X_BROADCOM_COM_LowClassMaxThreshold" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0 " maxValue="100" />
+    <description source="TRx">WRED Low Class profile maximum threshold &#10;specified as a percentage of queue size. </description>
+
+  <parameter name="X_BROADCOM_COM_HighClassMinThreshold" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0 " maxValue="100" />
+    <description source="TRx">WRED High Class profile minimum threshold &#10;specified as a percentage of queue size. </description>
+
+  <parameter name="X_BROADCOM_COM_HighClassMaxThreshold" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0 " maxValue="100" />
+    <description source="TRx">WRED High Class profile maximum threshold &#10;specified as a percentage of queue size. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.QoS.QueueStats.{i}." shortObjectName="Dev2QosQueueStatsObject" specSource="TR181" profile="Device2_QoSStats:1" requirements="PC" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+  <description source="TRx">Queue statistics table. This table is managed by the ACS, which will create entries only for those {Queue, Interface} combinations for which statistics are to be collected. Note: The QueueStats table includes unique key parameters that are strong references. If a strongly referenced object is deleted, the CPE will set the referencing parameter to an empty string. However, doing so under these circumstances might cause the updated QueueStats row to then violate the table's unique key constraint; if this occurs, the CPE MUST disable the offending QueueStats row. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_QoSStats:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this object. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_QoSStats:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" />
+    <description source="TRx">The status of this object. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-qosqueuestats" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatitle handle used to reference this instance.  Alias provides a mechanism for an ACS to label this instance for the future reference.  If the CPE supports the Alias-based Addressing feature as defined in Section 3.6.1 of TR069a4 and described in Appendix II of TR-069a4, the following mandatory contraints MUST be enforced:  Its value MUST NOT be empty.   Its value MUST satrt with a letter.  If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix.  The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="Queue" type="string" specSource="TR181" profile="Device2_QoSStats:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">The value must be a path name of a row in the Queue table. Indicates ''Queue'' entry with which this object is associated. </description>
+
+  <parameter name="Interface" type="string" specSource="TR181" profile="Device2_QoSStats:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">The value must be path name of a row in the table.  If the referenced object is deleted, the parameter value MUST be set to an empty string.  Specifies the egress interface for which this object contains statistics. This MAY be a layer 1, 2 or 3 interface, however, the types of interfaces for which QueueStats can be instantiated is a local matter to the CPE. </description>
+
+  <parameter name="OutputPackets" type="unsignedInt" specSource="TR181" profile="Device2_QoSStats:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Number of packets output through the queue. </description>
+
+  <parameter name="OutputBytes" type="unsignedInt" specSource="TR181" profile="Device2_QoSStats:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Number of bytes output through the queue. </description>
+
+  <parameter name="DroppedPackets" type="unsignedInt" specSource="TR181" profile="Device2_QoSStats:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Number of packets dropped by the queue. </description>
+
+  <parameter name="DroppedBytes" type="unsignedInt" specSource="TR181" profile="Device2_QoSStats:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Number of bytes dropped by the queue. </description>
+
+  <parameter name="QueueOccupancyPackets" type="unsignedInt" specSource="TR181" profile="Device2_QoSStats:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Queue occupancy in packets (gives a measure of queue latency). </description>
+
+  <parameter name="QueueOccupancyPercentage" type="unsignedInt" specSource="TR181" profile="Device2_QoSStats:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="100" />
+    <description source="TRx">Queue occupancy measured as a percent, i.e. 100 * queue occupancy in bytes / queue size in bytes (gives a measure of queue usage). </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.QoS.Shaper.{i}." shortObjectName="Dev2QosShaperObject" specSource="TR181" profile="Device2_QoS:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">Shaper table. Used to shape the queue(s) associated with Interface. In case of a single queue for that interface, determines the egress rate of the queue. In case of multiple queues for that interface (possibly with per queue shaping rates), determines the aggregate egress rate on that interface. For enabled table entries, if Interface is not a valid reference then the table entry is inoperable and the CPE MUST set Status to enumeration of Error_Misconfigured|Status.Note: The Shaper table includes a unique key parameter that is a strong reference. If a strongly referenced object is deleted, the CPE will set the referencing parameter to an empty string. However, doing so under these circumstances might cause the updated Shaper row to then violate the table's unique key constraint; if this occurs, the CPE MUST set Status to enumeration of Error_Misconfigured|Status and disable the offending Shaper row. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this shaper. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status4eValues" />
+    <description source="TRx">The status of this shaper.   The enumeration of Error_Misconfigured value indicates that a necessary configuration value is undefined or invalid.The enumeration of Error value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-qosshaper" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatitle handle used to reference this instance.  Alias provides a mechanism for an ACS to label this instance for the future reference.  If the CPE supports the Alias-based Addressing feature as defined in Section 3.6.1 of TR069a4 and described in Appendix II of TR-069a4, the following mandatory contraints MUST be enforced:  Its value MUST NOT be empty.   Its value MUST satrt with a letter.  If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix.  The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="Interface" type="string" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">The value must be a path name of a row in the table.  The interface object associated with this 'Shaper' entry. It MAY be a layer 1, 2 or 3 interface, however, the types of interfaces for which 'Shapers' can be instantiated is a local matter to the CPE. </description>
+
+  <parameter name="ShapingRate" type="int" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" />
+    <description source="TRx">Rate to shape the associated interface connection's egress traffic to.  For leaky bucket (constant rate shaping), this is the constant rate.  For token bucket (variable rate shaping), this is the average rate. If less than or equal to 100, in percent of the rate of the highest rate-constrained layer over which the packet will travel on egress. If greater than 100, in bits per second. A value of -1 indicates no shaping.For example, for packets destined for a WAN DSL interface, if the ATM layer is rate-constrained, then the rate is calculated relative to this rate.  Otherwise, the rate is calculated relative to the physical-layer DSL rate. </description>
+
+  <parameter name="ShapingBurstSize" type="unsignedInt" specSource="TR181" profile="Device2_QoS:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Burst size in bytes.  For both leaky bucket (constant rate shaping) and token bucket (variable rate shaping)  this is the bucket size and is therefore the maximum burst size. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="DropAlgorithmValues" />
+  <element>RED</element>
+  <element>DT</element>
+  <element>WRED</element>
+  <element>BLUE</element>
+
+<validstringarray name="SchedulerAlgorithmValues" />
+  <element>SP</element>
+  <element>WRR</element>
+  <element>WFQ</element>
+
+<validstringarray name="dhcpTypeValues" />
+  <element>DHCPv4</element>
+  <element>DHCPv6</element>
+
+<validstringarray name="qosMeterTypeValues" />
+  <element>SimpleTokenBucket</element>
+  <element>SingleRateThreeColor</element>
+  <element>TwoRateThreeColor</element>
+
+<validstringarray name="status3eValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error</element>
+
+<validstringarray name="status4eValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error_Misconfigured</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Unspecified" /> 
+<profile name="Device2_QoS:1" /> 
+<profile name="Device2_QoSStats:1" /> 
+<profile name="Device2_QoSDynamicFlow:1" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

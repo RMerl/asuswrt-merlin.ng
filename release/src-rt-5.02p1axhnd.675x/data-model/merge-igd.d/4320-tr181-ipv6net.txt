@@ -1,0 +1,9 @@
+#
+# Add the objects in cms-dm-tr181-ipv6net.xml 
+# below the InternetGatewayDevice.Device.Routing object.
+#
+# See 0000-README.txt for more details
+#
+
+addObjBelowObj cms-dm-tr181-ipv6net.xml InternetGatewayDevice.Device.Routing.
+

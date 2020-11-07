@@ -1,0 +1,478 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2017" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model. The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI." shortObjectName="BcmOmciObject" specSource="Broadcom" profile="X_BROADCOM_COM_Gpon:1" supportLevel="Present" hideObjectFromAcs="true" oid="2100" lockZone="9" />
+  <description source="BROADCOM">This object is a root of all OMCI related objects. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.RunTimeData." shortObjectName="BcmOmciRtdObject" specSource="Broadcom" profile="X_BROADCOM_COM_Gpon:1" supportLevel="Present" />
+  <description source="BROADCOM">This object is a root of all OMCI run time data objects. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.RunTimeData.Multicast." shortObjectName="BcmOmciRtdMcastObject" specSource="Broadcom" profile="X_BROADCOM_COM_Gpon:1" supportLevel="Present" pruneWriteToConfigFile="true"/>
+  <description source="BROADCOM">This object holds multicast runtime data.</description>
+
+  <parameter name="IgmpAdmission" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">IGMP admission flag. </description>
+
+  <parameter name="JoinForceForward" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+
+  <parameter name="UpstreamIgmpRate" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM">This attribute limits the maximum rate of upstream IGMP traffic.</description>
+
+  <parameter name="IgmpMcastIfNames" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="128" />
+    <description source="BROADCOM">Blank delimited list of multicast interfaces which can be IGMP multicast sources.</description>
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.RunTimeData.Layer3." shortObjectName="BcmOmciRtdLayer3Object" specSource="G_988" profile="X_BROADCOM_COM_Gpon:1" supportLevel="Present" />
+  <description source="BROADCOM">This object is a root of all layer 3 run time data objects. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.RunTimeData.Layer3.IpHostConfigData.{i}." shortObjectName="BcmOmciRtdIpHostConfigDataObject" specSource="G_988" profile="X_BROADCOM_COM_Gpon:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+
+  <description source="BROADCOM">Refer G.988 Section 9.4.1.</description>
+
+  <parameter name="ManagedEntityId" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="IpOptions" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="MacAddress" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadOnly" defaultValue="00" maxLength="6" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="OntId" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="25" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="IpAddress" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="Mask" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="Gateway" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="PrimaryDns" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="SecondaryDns" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="CurrentAddress" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="CurrentMask" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="CurrentGateway" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="CurrentPrimaryDns" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="CurrentSecondaryDns" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="DomainName" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadOnly" defaultValue="00" maxLength="25" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="HostName" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadOnly" defaultValue="00" maxLength="25" />
+    <description source="BROADCOM"></description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.RunTimeData.Layer3.IpHostConfigDataExt.{i}." shortObjectName="BcmOmciRtdIpHostConfigDataExtObject" specSource="G_988" profile="Unspecified" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+  <description source="BROADCOM"></description>
+
+  <parameter name="ManagedEntityId" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" hideParameterFromAcs="true" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="ConnectionStatus" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" hideParameterFromAcs="true" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="DhcpcPid" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" hideParameterFromAcs="true" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="InterfaceName" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" hideParameterFromAcs="true" />
+    <description source="BROADCOM"></description>
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.RunTimeData.Layer3.Ipv6HostConfigData.{i}." shortObjectName="BcmOmciRtdIpv6HostConfigDataObject" specSource="G_988" profile="X_BROADCOM_COM_Gpon:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+  <description source="BROADCOM"></description>
+
+  <parameter name="ManagedEntityId" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="IpOptions" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="MacAddress" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadOnly" defaultValue="00" maxLength="12" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="OnuId" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="25" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="Ipv6LinkLocalAddress" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="32" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="Ipv6Address" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="32" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="DefaultRouter" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="32" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="PrimaryDns" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="32" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="SecondaryDns" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="32" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="CurrentAddressTable" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadOnly" defaultValue="00" maxLength="48" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="CurrentDefaultRouterTable" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadOnly" defaultValue="00" maxLength="32" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="CurrentDnsTable" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadOnly" defaultValue="00" maxLength="32" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="Duid" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadOnly" defaultValue="00" maxLength="25" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="OnlinkPrefix" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="34" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="CurrentOnlinkPrefixTable" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="52" />
+    <description source="BROADCOM"></description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.RunTimeData.Layer3.Ipv6HostConfigData.{i}.CurrentAddressTable.{i}." shortObjectName="BcmOmciRtdIpv6CurrentAddressTableObject" specSource="G_988" profile="X_BROADCOM_COM_Gpon:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+  <description source="BROADCOM"></description>
+
+  <parameter name="CurrentAddressEntry" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadOnly" defaultValue="00" maxLength="48" />
+    <description source="BROADCOM"></description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.RunTimeData.Layer3.Ipv6HostConfigData.{i}.CurrentDefaultRouterTable.{i}." shortObjectName="BcmOmciRtdIpv6CurrentDefaultRouterTableObject" specSource="G_988" profile="X_BROADCOM_COM_Gpon:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+  <description source="BROADCOM"></description>
+
+  <parameter name="CurrentDefaultRouterEntry" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadOnly" defaultValue="00" maxLength="32" />
+    <description source="BROADCOM"></description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.RunTimeData.Layer3.Ipv6HostConfigData.{i}.CurrentDnsTable.{i}." shortObjectName="BcmOmciRtdIpv6CurrentDnsTableObject" specSource="G_988" profile="X_BROADCOM_COM_Gpon:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+  <description source="BROADCOM"></description>
+
+  <parameter name="CurrentDnsEntry" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadOnly" defaultValue="00" maxLength="32" />
+    <description source="BROADCOM"></description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.RunTimeData.Layer3.Ipv6HostConfigData.{i}.CurrentOnlinkPrefixTable.{i}." shortObjectName="BcmOmciRtdIpv6CurrentOnlinkPrefixTableObject" specSource="G_988" profile="X_BROADCOM_COM_Gpon:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+  <description source="BROADCOM"></description>
+
+  <parameter name="CurrentOnlinkPrefixTableEntry" type="hexBinary" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="52" />
+    <description source="BROADCOM"></description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.RunTimeData.Layer3.Ipv6HostConfigDataExt.{i}." shortObjectName="BcmOmciRtdIpv6HostConfigDataExtObject" specSource="G_988" profile="Unspecified" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+  <description source="BROADCOM"></description>
+
+  <parameter name="ManagedEntityId" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" hideParameterFromAcs="true" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="ConnectionStatus" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" hideParameterFromAcs="true" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="DhcpcPid" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" hideParameterFromAcs="true" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="InterfaceName" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" hideParameterFromAcs="true" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="MFlag" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="OFlag" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM"></description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.RunTimeData.Layer3.TcpUdpConfigData.{i}." shortObjectName="BcmOmciRtdTcpUdpConfigDataObject" specSource="G_988" profile="X_BROADCOM_COM_Gpon:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+  <description source="BROADCOM"></description>
+
+  <parameter name="ManagedEntityId" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="PortId" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="Protocol" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="17" minValue="0" maxValue="255" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="Tos" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="IpHostPointer" type="unsignedInt" specSource="G_988" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="BROADCOM"></description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.Debug." shortObjectName="BcmOmciDebugObject" specSource="BROADCOM" profile="X_BROADCOM_COM_Gpon:1" supportLevel="Present" />
+  <description source="BROADCOM">This object is a root of OMCI application debuggging objects. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.Config." shortObjectName="BcmOmciConfigObject" specSource="Broadcom" profile="X_BROADCOM_COM_Gpon:1" supportLevel="Present" />
+  <description source="BROADCOM">This object is a root of the configuration related to the OMCI process.</description>
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.Config.OmciSystemCfg." shortObjectName="BcmOmciConfigSystemObject" specSource="Broadcom" profile="X_BROADCOM_COM_Gpon:1" supportLevel="Present" />
+  <description source="BROADCOM">This object holds the configurable system information of the OMCI Stack. The definition must be aligned with the corresponding definition in OMCISDK. </description>
+
+  <parameter name="TcontManagedEntityId" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="32768" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the first TCONT managed entity. (2 bytes).</description>
+
+  <parameter name="NumberOfTConts" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="8" minValue="0" maxValue="255" />
+    <description source="BROADCOM">Maximum number of TCONT in the ONU. (1 byte).</description>
+
+  <parameter name="QueueInit" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" minValue="0" maxValue="1" />
+    <description source="BROADCOM">0 - Init queue when the queue is used by a GEM port. 1 - Init queues when the T-CONT is set.</description>
+
+  <parameter name="TrafficSchedulers" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="2" />
+    <description source="BROADCOM">Number of schedulers between PQ and T-CONT (0, 1, 2).</description>
+
+  <parameter name="TcontPolicies" type="hexBinary" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" alwaysWriteToConfigFile="true" defaultValue="00" maxLength="64" />
+    <description source="BROADCOM">Array of 32 16-bit integers; element per T-CONT.</description>
+
+  <parameter name="EthernetManagedEntityId1" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="257" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the first Ethernet managed entity. (2 bytes).</description>
+
+  <parameter name="EthernetManagedEntityId2" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="258" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the second Ethernet managed entity. (2 bytes).</description>
+
+  <parameter name="EthernetManagedEntityId3" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="259" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the third Ethernet managed entity. (2 bytes).</description>
+
+  <parameter name="EthernetManagedEntityId4" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="260" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the fourth Ethernet managed entity. (2 bytes).</description>
+
+  <parameter name="EthernetManagedEntityId5" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="261" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the fifth Ethernet managed entity. (2 bytes).</description>
+
+  <parameter name="EthernetManagedEntityId6" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="262" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the sixth Ethernet managed entity. (2 bytes).</description>
+
+  <parameter name="EthernetManagedEntityId7" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="263" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the seventh Ethernet managed entity. (2 bytes).</description>
+
+  <parameter name="EthernetManagedEntityId8" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="264" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the eighth Ethernet managed entity. (2 bytes).</description>
+
+  <parameter name="EthUniFlexIdMode" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Flexible ME id mode for Ethernet UNI ports.</description>
+
+  <parameter name="EthUniFeSlotId" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="255" minValue="0" maxValue="255" />
+    <description source="BROADCOM">Default slot ID for 10/100 BASE-T Ethernet UNI ports. (1 byte).</description>
+
+  <parameter name="EthUniGbeSlotId" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" minValue="0" maxValue="255" />
+    <description source="BROADCOM">Default slot ID for 10/100/1000 BASE-T Ethernet UNI ports. (1 byte).</description>
+
+  <parameter name="EthUni10GSlotId" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="255" minValue="0" maxValue="255" />
+    <description source="BROADCOM">Default slot ID for 10G Ethernet UNI portis. (1 byte).</description>
+
+  <parameter name="NumberOfEthernetPorts" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="4" minValue="0" maxValue="255" />
+    <description source="BROADCOM">Maximum number of Ethernet UNI ports (including both 10/100/1000 BASE-T and 10G) in the ONU. (1 byte).</description>
+
+  <parameter name="EthernetTypes" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="4294967295" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM">The bit mask specifies which Ethernet port is member of RG bridge only, or ONT bridge only. (4 bytes).</description>
+
+  <parameter name="VeipPptpUni0" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM">Run PPTP ETH UNI_0 as VEIP. (4 bytes).</description>
+
+  <parameter name="MocaManagedEntityId1" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="513" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the first MoCA managed entity. (2 bytes).</description>
+
+  <parameter name="MocaManagedEntityId2" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="514" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the second MoCA managed entity. (2 bytes).</description>
+
+  <parameter name="NumberOfMocaPorts" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" minValue="0" maxValue="255" />
+    <description source="BROADCOM">Maximum number of MoCA in the ONU. (1 byte).</description>
+
+  <parameter name="PotsManagedEntityId1" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="769" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the first POTS managed entity. (2 bytes).</description>
+
+  <parameter name="PotsManagedEntityId2" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="770" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the second POTS managed entity. (2 bytes).</description>
+
+  <parameter name="NumberOfPotsPorts" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="2" minValue="0" maxValue="255" />
+    <description source="BROADCOM">Maximum number of POTS in the ONU. (1 byte).</description>
+
+  <parameter name="VeipManagedEntityId1" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1025" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">This attribute uniquely identifies instance of the first Virtual Ethernet Interface Point (VEIP) managed entity. (2 bytes).</description>
+
+  <parameter name="NumberOfVeipPorts" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" minValue="0" maxValue="255" />
+    <description source="BROADCOM">Maximum number of Virtual Ethernet Interface Point (VEIP) in the ONU. (1 byte).</description>
+
+  <parameter name="NumberOfDownstreamPriorityQueues" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="8" minValue="0" maxValue="255" />
+    <description source="BROADCOM">Maximum number of downstream queues per device in the ONU. (1 byte).</description>
+
+  <parameter name="DebugFlags" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+    <description source="BROADCOM">The debug flags contains enable/disable information to specify which modules should display debug messages. (4 bytes).</description>
+
+  <parameter name="PromiscMode" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" minValue="0" maxValue="255" />
+    <description source="BROADCOM">The promisc mode that OMCI uses to configure the ONU. These modes are: 0 - off, 1 - on. (1 byte).</description>
+
+  <parameter name="GetPmMode" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" />
+    <description source="BROADCOM">The mode that OMCI uses to get performance monitoring counters. These modes are: 0 - 15 minutes, 1 - current. (1 bytes).</description>
+
+  <parameter name="OmciRawEnable" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">The true value indicates OMCI raw messages are accepted by HTTPD, otherwise OMCI raw messages are discarded by HTTPD.</description>
+
+  <parameter name="CompatibleRGOmciFull" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_GponRG_OMCI_Full:1" supportLevel="ReadWrite" defaultValue="True" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Indicates the configuration is GPON RG FULL.</description>
+
+  <parameter name="CompatibleOnt" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_GponOnt:1" supportLevel="ReadWrite" defaultValue="True" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Indicates the configuration is GPON ONU.</description>
+
+  <parameter name="TrafficManagementOption" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="2" />
+    <description source="BROADCOM">This attribute identifies the traffic management option defined in ONU-G ME. (1 byte).</description>
+
+  <parameter name="VoiceModelOption" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="1" />
+    <description source="BROADCOM">This attribute selects the voice provisioning model in G.988, OMCI path (0), or IP path (1). (1 byte).</description>
+
+  <parameter name="PonAppType" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="3" />
+    <description source="BROADCOM">This attribute identifies the OMCI application type, (0)G.984, (1)G.987. (1 byte).</description>
+
+  <parameter name="PonIfType" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" />
+    <description source="BROADCOM">This attribute identifies the PON interface type, (237)XG-PON10G2488, (238)XG-PON10G10, (248)GPON24881244. (1 byte).</description>
+
+  <parameter name="DsInvalidQueueAction" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="2" minValue="0" maxValue="2" />
+    <description source="BROADCOM">This attribute identifies the QoS action when the downtream priority queue in GemPortNetworkCtp ME is unknown. (1 byte).</description>
+
+  <parameter name="JoinForceForward" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="True" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Indicates join request forwarding option. False - based on OMCI "unauthorized join request behaviour" attribute, True - override and force forwarding.</description>
+
+  <parameter name="BridgeGroupFwdMask" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Configures the forwarding of frames with reserved destination MAC addresses.</description>
+
+  <parameter name="UniDataPathMode" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="False" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">An experimental flag, it defines how the ONU looks up the OMCI MIB to find the valid ANI-UNI paths. False - check the whole OMCI MIB, True - check the UNI ports that MEs on their ANI-UNI path have been updated.</description>
+
+  <parameter name="ExtVlanDefaultRuleEnable" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" minValue="0" maxValue="127" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Defines whether or not to enable the default VLANCtl rule configuration related to Extended VLAN ME. 0: disable in both US and DS directions; 1: enable in US direction only, 2: enable in DS direction only. 3: enable in both US and DS directions.</description>
+
+  <parameter name="psk" type="hexBinary" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="16" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Defines pre-shared secret for Enhanced security control ME.</description>
+
+  <parameter name="ExtMsgSetEnable" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="True" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Defines whether or not to enable extended message set.</description>
+
+  <parameter name="OmccVersion" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" />
+    <description source="BROADCOM">Defines ONU2-G ME OMCC version in G.988, default value 0 selects internal version.</description>
+
+  <parameter name="AllocIdInitValue" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="65535" minValue="255" maxValue="65535" />
+    <description source="BROADCOM">Defines T-CONT allocId init value. (2 bytes).</description>
+
+  <parameter name="LogicalOnuId" type="hexBinary" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="24" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Defines logical ONU ID.</description>
+
+  <parameter name="LogicalPassword" type="hexBinary" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="00" maxLength="12" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Defines logical password.</description>
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.Stats." shortObjectName="BcmOmciStatsObject" specSource="Broadcom" profile="X_BROADCOM_COM_Gpon:1" supportLevel="Present" />
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OMCI.Stats.GponOmciStats." shortObjectName="BcmOmciStatsGponOmciStatsObject" specSource="Broadcom" profile="X_BROADCOM_COM_Gpon:1" supportLevel="Present" />
+  <description source="BROADCOM">This object holds the statistics counters of the OMCI Stack.</description>
+
+  <parameter name="RxGoodPackets" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total number of received packets.</description>
+
+  <parameter name="RxBaseLinePackets" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total number of received baseline packets.</description>
+
+  <parameter name="RxExtendedPackets" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total number of received Extended packets.</description>
+
+  <parameter name="RxLengthErrors" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total number of length errors in received packets.</description>
+
+  <parameter name="RxCrcErrors" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total number of CRC errors in received packets.</description>
+
+  <parameter name="RxOtherErrors" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total number of errors other than length and CRC in received packets.</description>
+
+  <parameter name="TxAvcPackets" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total number of Attribute Value Change packets transmitted.</description>
+
+  <parameter name="TxAlarmPackets" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total number of alarm packets transmitted.</description>
+
+  <parameter name="TxResponsePackets" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total number of Response packets transmitted.</description>
+
+  <parameter name="TxRetransmissions" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total number of Retransmissions.</description>
+
+  <parameter name="TxErrors" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Total number of transmission errors.</description>
+
+
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+</vsaInfo>
+
+
+<profileInfo>
+<profile name="Baseline:1" />
+<profile name="X_BROADCOM_COM_Baseline:1" />
+<profile name="X_BROADCOM_COM_Gpon:1" />
+<profile name="X_BROADCOM_COM_GponWAN:1" />
+<profile name="X_BROADCOM_COM_OMCI:1" />
+<profile name="X_BROADCOM_COM_GponRG_OMCI_Full:1" />
+<profile name="X_BROADCOM_COM_GponOnt:1" />
+<profile name="Unspecified" />
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

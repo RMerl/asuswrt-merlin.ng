@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" supportLevel="Present" lockZone="7" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.OsgidCfg." shortObjectName="OsgidCfgObject" specSource="Broadcom" profile="Unspecified" supportLevel="Present" oid="3880" />
+  <description source="BROADCOM">This object contains config parameters for osgid application.</description>
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this application.  Enumeration of&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Specify where CMS log messages goes.  Enumeration of&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;&#10;</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.LinmosdCfg." shortObjectName="LinmosdCfgObject" specSource="Broadcom" profile="Device2_SM_Baseline:1" supportLevel="Present" />
+  <description source="BROADCOM">This object contains config parameters for linmosd application.</description>
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this application.  Enumeration of&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Specify where CMS log messages goes.  Enumeration of&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;&#10;</description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.BbcdCfg." shortObjectName="BbcdCfgObject" specSource="Broadcom" profile="Device2_SM_Baseline:1" supportLevel="Present" />
+  <description source="BROADCOM">This object contains config parameters for BBC Daemon application.</description>
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this application.  Enumeration of&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Specify where CMS log messages goes.  Enumeration of&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;&#10;</description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.PmdCfg." shortObjectName="PmdCfgObject" specSource="Broadcom" profile="Device2_SM_Baseline:1" supportLevel="Present" />
+  <description source="BROADCOM">This object contains config parameters for pmd application.</description>
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this application.  Enumeration of&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Specify where CMS log messages goes.  Enumeration of&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;&#10;</description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.OpenwrtdCfg." shortObjectName="OpenwrtdCfgObject" specSource="Broadcom" profile="Device2_SM_Baseline:1" supportLevel="Present" />
+  <description source="BROADCOM">This object contains config parameters for openwrtd application.</description>
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this application.  Enumeration of&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Specify where CMS log messages goes.  Enumeration of&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;&#10;</description>
+
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.CwmpdCfg." shortObjectName="CwmpdCfgObject" specSource="Broadcom" profile="Device2_SM_Baseline:1" supportLevel="Present" />
+  <description source="BROADCOM">This object contains config parameters for cwmpd application.</description>
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this application.  Enumeration of&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Specify where CMS log messages goes.  Enumeration of&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;&#10;</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.DadCfg." shortObjectName="DadCfgObject" specSource="Broadcom" profile="Device2_SM_Baseline:1" supportLevel="Present" />
+  <description source="BROADCOM">This object contains config parameters for dad application.</description>
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this application.  Enumeration of&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Specify where CMS log messages goes.  Enumeration of&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;&#10;</description>
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.DmadCfg." shortObjectName="DmadCfgObject" specSource="Broadcom" profile="Device2_SM_Baseline:1" supportLevel="Present" />
+  <description source="BROADCOM">This object contains config parameters for dmad application.</description>
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this application.  Enumeration of&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Specify where CMS log messages goes.  Enumeration of&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;&#10;</description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.DockermdCfg." shortObjectName="DockermdCfgObject" specSource="Broadcom" profile="Device2_SM_Baseline:1" supportLevel="Present" />
+  <description source="BROADCOM">This object contains config parameters for dockermd application.</description>
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this application.  Enumeration of&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Specify where CMS log messages goes.  Enumeration of&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;&#10;</description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.FirewalldCfg." shortObjectName="FirewalldCfgObject" specSource="Broadcom" profile="Device2_SM_Baseline:1" supportLevel="Present" />
+  <description source="BROADCOM">This object contains config parameters for firewalld application.</description>
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this application.  Enumeration of&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Specify where CMS log messages goes.  Enumeration of&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;&#10;</description>
+
+
+
+<vsaInfo>
+
+<validstringarray name="LoggingDestinationValues" />
+  <element>Standard Error</element>
+  <element>Syslog</element>
+  <element>Telnet</element>
+
+<validstringarray name="LoggingLevelValues" />
+  <element>Error</element>
+  <element>Notice</element>
+  <element>Debug</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Baseline:1" /> 
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="Device2_SM_Baseline:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

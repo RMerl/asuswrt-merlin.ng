@@ -1,0 +1,9 @@
+#
+# Add the object in cms-dm-tr181-ieee1905.xml as
+# the last child of Device.
+#
+# Format of command line is
+# <cmd> <data-model-file> <target object name>
+#
+
+addLastChildObjToObj cms-dm-tr181-ieee1905.xml Device.

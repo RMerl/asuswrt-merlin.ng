@@ -1,0 +1,343 @@
+#!/bin/bash
+
+# This script runs under fakeroot.  The fakeroot utility has 
+# problems under 64-bit/multi-processor/preemptive kernel, so
+# we run it only when necessary. 
+# NOTE: If this build is being run on a 64-bit machine, make
+# sure to NOT invoke any 32-bit applications in this script.
+# Instead move all 32-bit application accesses to buildFS
+
+trap 'echo Error: command exited with code ["$?"]; exit 1' ERR
+
+if [[ -f $PROFILE_DIR/$PROFILE ]]; then
+        source $PROFILE_DIR/$PROFILE
+fi
+
+# make root file system images for squashfs, jffs2 and ubifs
+
+	#### SQUASHFS 
+
+function squashfs_enabled()
+{
+	[[ "$BRCM_FLASH_NAND_ROOTFS_SQUBI" = "y" ]] ||
+	[[ "$BRCM_ROOTFS_SQUASHFS" = "y" ]] ||
+	[[ "$BUILD_ROOTFS_SQUASHFS_HASH" = "y" ]]
+}
+
+function mksquashfs_img()
+{
+sqshimg_name="$1"
+if [ "$BRCM_IKOS" == "y" ]; then
+    $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/$sqshimg_name -noappend -all-root
+    $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/${sqshimg_name}.raw -noappend -all-root -noI -noD -noF -noX
+    #-noI			do not compress inode table
+    #-noD			do not compress data blocks
+    #-noF			do not compress fragment blocks
+    #-noX			do not compress extended attributes
+else
+    (ulimit -t 900 ; $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/$sqshimg_name -noappend -all-root -comp xz) 
+    if [ $? -ne 0 ]; then
+        echo "mksquashfs failed once"
+        (ulimit -t 900 ; $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/$sqshimg_name -noappend -all-root -comp xz) 
+        if [ $? -ne 0 ]; then
+            echo "mksquashfs failed twice"
+            exit 2
+        fi
+    fi
+fi
+}
+if squashfs_enabled; then
+    mksquashfs_img rootfs.img
+fi
+
+NANDSIZES=
+for a in ${!BUILD_NAND_IMG_BLKSIZE_*}
+do
+  eval v=\$$a
+  if [ -n "$v" ]
+  then 
+    a=${a#BUILD_NAND_IMG_BLKSIZE_}
+    a=${a%KB}
+    NANDSIZES="$NANDSIZES $a"
+  fi
+done
+echo "NANDSIZES is $NANDSIZES"
+
+if [ "$BRCM_KERNEL_ROOTFS" = "all" ]; then
+        if [ ! -e "$PROFILE_DIR/vmlinux.bin" ]; then
+             echo "error: $PROFILE_DIR/vmlinux.bin not found! Check buildFS output"
+             exit 2
+        fi 
+        if [ ! -e "$PROFILE_DIR/vmlinux" ]; then
+             echo "error: $PROFILE_DIR/vmlinux not found! Check buildFS output"
+             exit 2
+        fi 
+
+        SUMTOOL=`find $HOSTTOOLS_DIR/mtd-utils*/ -name 'sumtool' -print -quit`
+
+#### JFFS2 RootFS
+        echo -e "/cferam.000" > $HOSTTOOLS_DIR/nocomprlist
+        if [ -f $BUILD_DIR/shared/opensource/pmc/images/$BRCM_CHIP.bin ]; then
+            echo -e "/pmc.bin" >> $HOSTTOOLS_DIR/nocomprlist
+        fi
+        if [ ! -z ${BRCM_DTB} ]; then
+            for DTB in `find ${DTB_DIR} -name "*.dtb" -printf "%f\n"`
+            do
+                echo -e "/${DTB}" >> $HOSTTOOLS_DIR/nocomprlist
+            done
+        fi
+        if [ "$BUILD_NAND_KERNEL_LZMA" = "y" ]; then
+            echo "Compressing kernel using LZMA"
+            $HOSTTOOLS_DIR/cmplzma -k -2 -lzma $PROFILE_DIR/vmlinux $PROFILE_DIR/vmlinux.bin $PROFILE_DIR/vmlinux.lz
+            cp $PROFILE_DIR/vmlinux.lz $TARGET_FS/.
+            echo -e "/vmlinux.lz" >> $HOSTTOOLS_DIR/nocomprlist
+        fi
+        if [ "$BUILD_NAND_KERNEL_LZ4" = "y" ]; then
+            echo "Compressing kernel using LZ4-HC"
+            $HOSTTOOLS_DIR/cmplzma -k -2 -lz4 $PROFILE_DIR/vmlinux $PROFILE_DIR/vmlinux.bin $PROFILE_DIR/vmlinux.lz4
+            cp $PROFILE_DIR/vmlinux.lz4 $TARGET_FS/.
+            echo -e "/vmlinux.lz4" >> $HOSTTOOLS_DIR/nocomprlist
+        fi
+
+        [ ! -z ${BRCM_DTB} ] && cp -v ${DTB_DIR}/*.dtb $TARGET_FS/
+
+        if [ "$BUILD_HND_EAP_UBOOT" = "y" ] ; then
+           cp $PROFILE_DIR/../uboot/uboot${BRCM_CHIP}ram.bin $TARGET_FS/cferam.000
+        else
+           cp $CFE_RAM_FILE $TARGET_FS/cferam.000
+        fi
+
+	# Commenting out jffs2 rootfs creation since we don't have a layout that
+	# supports this anymore. However, somebody might still be using it so
+	# leaving it here in case you need it until you migrate.
+        # for BLK in $NANDSIZES
+        # do
+        #   let "BYTES = $BLK * 1024"
+        #    $HOSTTOOLS_DIR/mkfs.jffs2 --squash-uids $BRCM_ENDIAN_FLAGS -p -n -e $BYTES -r $TARGET_FS -o $PROFILE_DIR/jffs2_rootfs${BLK}kb.img -N $HOSTTOOLS_DIR/nocomprlist
+        # done
+
+        if [ "$BUILD_SECURE_BOOT" = "y" ]; then
+
+           eval "$BUILD_SBI_NOHDR --in $CFE_RAM_FILE --out $PROFILE_DIR/fs/secram.000"
+           echo -e "/secram.000" >> $HOSTTOOLS_DIR/nocomprlist
+	   if [ "$SECURE_BOOT_ARCH" == "GEN3" ] 
+	   then
+        	eval "$BUILD_SBI_NOHDR_MFG --in $CFE_RAM_FILE -out $PROFILE_DIR/fs/secmfg.000"
+           	echo -e "/secmfg.000" >> $HOSTTOOLS_DIR/nocomprlist
+           fi
+
+           eval "$BUILD_SBI_SIGN --in $PROFILE_DIR/vmlinux.lz --out $PROFILE_DIR/vmlinux.sig" 
+           cp $PROFILE_DIR/vmlinux.sig $TARGET_FS/.
+           echo -e "/vmlinux.sig" >> $HOSTTOOLS_DIR/nocomprlist
+           # Commenting out jffs2 rootfs creation since we don't have a layout that
+           # supports this anymore. However, somebody might still be using it so
+           # leaving it here in case you need it until you migrate.
+           #  for BLK in $NANDSIZES
+           #  do
+           #     let "BYTES = $BLK * 1024"
+           #      $HOSTTOOLS_DIR/mkfs.jffs2 --squash-uids $BRCM_ENDIAN_FLAGS -p -n -e $BYTES -r $TARGET_FS -o $PROFILE_DIR/jffs2_rootfs${BLK}kb_secureboot.img -N $HOSTTOOLS_DIR/nocomprlist
+           #  done
+        fi
+
+#### JFFS2 BootFS/UBI RootFS
+        # Create boot file system dir
+        rm -rf $TARGET_BOOTFS
+        mkdir $TARGET_BOOTFS
+        chmod 777 $TARGET_BOOTFS
+        mv $TARGET_FS/cferam.000 $TARGET_BOOTFS/.
+        if [ -f $BUILD_DIR/secureos/optee/optee.lz ]; then
+            cp -f $BUILD_DIR/secureos/optee/*.lz  $TARGET_BOOTFS/.
+            cp -f $BUILD_DIR/secureos/optee/*.dtb $TARGET_BOOTFS/.
+        fi
+
+        if [ -f $BUILD_DIR/shared/opensource/pmc/images/$BRCM_CHIP.bin ]; then
+            echo copy $BRCM_CHIP.bin to $TARGET_BOOTFS/pmc.bin
+            install -p $BUILD_DIR/shared/opensource/pmc/images/$BRCM_CHIP.bin $TARGET_BOOTFS/pmc.bin
+        fi
+
+	[ ! -z ${BRCM_DTB} ] && mv $TARGET_FS/*.dtb ${TARGET_BOOTFS}/.
+        rm -f $TARGET_BOOTFS/vmlinux.lz4;
+        rm -f $TARGET_BOOTFS/vmlinux.lz;
+        if [ "$BUILD_NAND_KERNEL_LZMA" = "y" ]; then
+            echo copy vmlinux.lz to $TARGET_BOOTFS
+            rm -f $TARGET_FS/vmlinux.lz
+            cp $PROFILE_DIR/vmlinux.lz $TARGET_BOOTFS/.
+        fi
+        if [ "$BUILD_NAND_KERNEL_LZ4" = "y" ]; then
+            echo copy vmlinux.lz4 to $TARGET_BOOTFS
+            rm -f $TARGET_FS/vmlinux.lz4
+            cp $PROFILE_DIR/vmlinux.lz4 $TARGET_BOOTFS/.
+        fi
+
+        mkdir -p $TARGET_FS/bootfs
+        mkdir -p $TARGET_BOOTFS/rom/etc
+
+        cp $TARGET_FS/rom/etc/image_version $TARGET_BOOTFS/rom/etc/image_version
+        echo -e "/rom/etc/image_version" >> $HOSTTOOLS_DIR/nocomprlist
+
+        echo -en "@(#) \$imageversion: " > $TARGET_BOOTFS/rom/etc/image_ident
+        cat $TARGET_FS/rom/etc/image_version | tr -d "\n" >> $TARGET_BOOTFS/rom/etc/image_ident
+        echo -en " $\n@(#) \$imageversion: " >> $TARGET_BOOTFS/rom/etc/image_ident
+        cat $TARGET_FS/rom/etc/image_version | tr -d "\n" >> $TARGET_BOOTFS/rom/etc/image_ident
+        echo -e " $" >> $TARGET_BOOTFS/rom/etc/image_ident
+
+        if [ -f $TARGET_FS/rom/etc/JENKINS_CHANGELIST ];
+        then
+            echo -en "@(#) \$changelist: " >> $TARGET_BOOTFS/rom/etc/image_ident
+            cat $TARGET_FS/rom/etc/JENKINS_CHANGELIST | tr -d "\n" >> $TARGET_BOOTFS/rom/etc/image_ident
+            echo -en " $\n@(#) \$changelist: " >> $TARGET_BOOTFS/rom/etc/image_ident
+            cat $TARGET_FS/rom/etc/JENKINS_CHANGELIST | tr -d "\n" >> $TARGET_BOOTFS/rom/etc/image_ident
+            echo -e " $" >> $TARGET_BOOTFS/rom/etc/image_ident
+        fi
+        svnc=$TARGET_FS/rom/etc/SVN_COMMIT_LIST.txt
+        if [ -f $svnc ]
+        then
+           svnr=`grep Revision $svnc | head -1`
+           echo -en " $\n@(#) \$svnrevision: $svnr " >> $TARGET_BOOTFS/rom/etc/image_ident
+           echo -e " $" >> $TARGET_BOOTFS/rom/etc/image_ident
+           echo -en " $\n@(#) \$svnrevision: $svnr " >> $TARGET_BOOTFS/rom/etc/image_ident
+           echo -e " $" >> $TARGET_BOOTFS/rom/etc/image_ident
+        fi
+        bid=$TARGET_FS/etc/build_id.txt
+        if [ -f $bid ]
+        then
+           tt=/tmp/bldfs$$
+	   cat $bid | sed -e "s/: */=/"  > $tt
+           svb=`( . $tt ; echo $BRANCH@$Revision)`
+           rm $tt
+           echo -en " $\n@(#) \$svnsource: $svb " >> $TARGET_BOOTFS/etc/image_ident
+           echo -e " $" >> $TARGET_BOOTFS/etc/image_ident
+           echo -en " $\n@(#) \$svnsource: $svb " >> $TARGET_BOOTFS/etc/image_ident
+           echo -e " $" >> $TARGET_BOOTFS/etc/image_ident
+        fi
+
+        echo -e "/rom/etc/image_ident" >> $HOSTTOOLS_DIR/nocomprlist
+
+        if squashfs_enabled; then
+                echo -e "[ubifs]"                 > $PROFILE_DIR/squbi.ini
+                echo -e "mode=ubi"               >> $PROFILE_DIR/squbi.ini
+                echo -e "image=$PROFILE_DIR/squashfs.img" >> $PROFILE_DIR/squbi.ini
+                echo -e "vol_id=0"               >> $PROFILE_DIR/squbi.ini
+                echo -e "vol_type=static"        >> $PROFILE_DIR/squbi.ini
+                echo -e "vol_name=rootfs_squashfs"  >> $PROFILE_DIR/squbi.ini
+        #        echo -e "vol_flags=autoresize"   >> $PROFILE_DIR/squbi.ini
+                mksquashfs_img squashfs.img
+        fi
+
+	for BLK in $NANDSIZES
+	do
+	   let "BYTES = $BLK * 1024"
+	   case $BLK in
+		128)
+             		PAGE=2048
+			;;
+		256|512)
+             		PAGE=4096
+			;;
+		1024)
+             		PAGE=8192
+			;;
+           esac
+           let "LEB = $BYTES - 2 * $PAGE"
+
+           echo -e "[ubifs]"                 > $PROFILE_DIR/ubi.ini
+           echo -e "mode=ubi"               >> $PROFILE_DIR/ubi.ini
+           echo -e "image=$PROFILE_DIR/rootfs_${BLK}.ubifs" >> $PROFILE_DIR/ubi.ini
+           echo -e "vol_id=0"               >> $PROFILE_DIR/ubi.ini
+           echo -e "vol_type=dynamic"       >> $PROFILE_DIR/ubi.ini
+           echo -e "vol_name=rootfs_ubifs"  >> $PROFILE_DIR/ubi.ini
+           echo -e "vol_flags=autoresize"   >> $PROFILE_DIR/ubi.ini
+
+        # -e == --lebsize = blocksize - 2xpagesize
+            $HOSTTOOLS_DIR/mkfs.jffs2 --squash-uids $BRCM_ENDIAN_FLAGS -p -n -e $BYTES -r $TARGET_BOOTFS -o $PROFILE_DIR/ibootfs${BLK}kb.img -N $HOSTTOOLS_DIR/nocomprlist
+            $SUMTOOL $BRCM_ENDIAN_FLAGS -p -i $PROFILE_DIR/ibootfs${BLK}kb.img -o $PROFILE_DIR/bootfs${BLK}kb.img -e ${BLK}KiB -n
+            rm -f $PROFILE_DIR/ibootfs${BLK}kb.img
+            $HOSTTOOLS_DIR/mtd-utils*/mkfs.ubifs --squash-uids -F -v -c 2048 -m $PAGE -e $LEB -x zlib -r $TARGET_FS -o $PROFILE_DIR/rootfs_${BLK}.ubifs
+            $HOSTTOOLS_DIR/mtd-utils*/ubinize -v -o $PROFILE_DIR/ubi_rootfs${BLK}kb.img -m $PAGE -p $BYTES  $PROFILE_DIR/ubi.ini
+            if squashfs_enabled; then
+                    $HOSTTOOLS_DIR/mtd-utils*/ubinize -v -o $PROFILE_DIR/squbi_rootfs${BLK}kb.img -m $PAGE -p $BYTES $PROFILE_DIR/squbi.ini
+            fi
+
+        done
+
+        if [ "$BUILD_SECURE_BOOT" = "y" ]; then
+
+           mv $TARGET_FS/secram.000 $TARGET_BOOTFS/.
+	   if [ -f $TARGET_FS/secmfg.000 ]; then
+              mv $TARGET_FS/secmfg.000 $TARGET_BOOTFS/.
+           fi
+           mv $TARGET_FS/vmlinux.sig $TARGET_BOOTFS/.
+
+           if [ "$BUILD_NAND_IMG_BLKSIZE_128KB" = "y" ]; then
+               $HOSTTOOLS_DIR/mkfs.jffs2 --squash-uids $BRCM_ENDIAN_FLAGS -p -n -e $FLASH_NAND_BLOCK_128KB -r $TARGET_BOOTFS -o $PROFILE_DIR/bootfs128kb_secureboot.img -N $HOSTTOOLS_DIR/nocomprlist
+           fi
+           if [ "$BUILD_NAND_IMG_BLKSIZE_256KB" = "y" ]; then
+               $HOSTTOOLS_DIR/mkfs.jffs2 --squash-uids $BRCM_ENDIAN_FLAGS -p -n -e $FLASH_NAND_BLOCK_256KB -r $TARGET_BOOTFS -o $PROFILE_DIR/bootfs256kb_secureboot.img -N $HOSTTOOLS_DIR/nocomprlist
+           fi
+           if [ "$BUILD_NAND_IMG_BLKSIZE_512KB" = "y" ]; then
+               $HOSTTOOLS_DIR/mkfs.jffs2 --squash-uids $BRCM_ENDIAN_FLAGS -p -n -e $FLASH_NAND_BLOCK_512KB -r $TARGET_BOOTFS -o $PROFILE_DIR/bootfs512kb_secureboot.img -N $HOSTTOOLS_DIR/nocomprlist
+           fi
+           if [ "$BUILD_NAND_IMG_BLKSIZE_1024KB" = "y" ]; then
+               $HOSTTOOLS_DIR/mkfs.jffs2 --squash-uids $BRCM_ENDIAN_FLAGS -p -n -e $FLASH_NAND_BLOCK_1024KB -r $TARGET_BOOTFS -o $PROFILE_DIR/bootfs1024kb_secureboot.img -N $HOSTTOOLS_DIR/nocomprlist
+           fi
+        fi
+
+        rmdir $TARGET_FS/bootfs
+
+        # -e == --lebsize = blocksize - 2xpagesize
+        if [ "$BUILD_NAND_IMG_BLKSIZE_128KB" = "y" ]; then
+            if [ "$BRCM_FLASH_NAND_LAYOUT_PUREUBI" = "y" ]; then
+                    # pureUBI
+                    $HOSTTOOLS_DIR/mtd-utils*/mkfs.ubifs --squash-uids -F -v -c 2048 -m 2048 -e 126976 -x zlib -r $TARGET_FS -o $PROFILE_DIR/rootfs.ubifs # re-ubinize file system with new fstab that does not mount JFFS2 to bootfs
+                    $PROFILE_DIR/../buildUBI -u $PROFILE_DIR/ubi_full.ini -m $PROFILE_DIR/metadata.bin -f $PROFILE_DIR/filestruct_full.bin -t $TARGET_BOOTFS -y $PROFILE_DIR/rootfs.ubifs
+                    $HOSTTOOLS_DIR/mtd-utils*/ubinize -v -o $PROFILE_DIR/ubi_rootfs128kb_pureubi.img -m 2048 -p $FLASH_NAND_BLOCK_128KB $PROFILE_DIR/ubi_full.ini
+            fi
+
+            if squashfs_enabled; then
+                    # squash on pureUBI
+                    $PROFILE_DIR/../buildUBI -u $PROFILE_DIR/ubi_full.ini -m $PROFILE_DIR/metadata.bin -f $PROFILE_DIR/filestruct_full.bin -t $TARGET_BOOTFS -y $PROFILE_DIR/squashfs.img -s 1
+                    $HOSTTOOLS_DIR/mtd-utils*/ubinize -v -o $PROFILE_DIR/squbi_rootfs128kb_pureubi.img -m 2048 -p $FLASH_NAND_BLOCK_128KB $PROFILE_DIR/ubi_full.ini
+            fi
+        fi
+
+        if [ "$BUILD_NAND_IMG_BLKSIZE_256KB" = "y" ]; then
+            # pureUBI
+            if [ "$BRCM_FLASH_NAND_LAYOUT_PUREUBI" = "y" ]; then
+                    $HOSTTOOLS_DIR/mtd-utils*/mkfs.ubifs --squash-uids -F -v -c 2048 -m 4096 -e 253952 -x zlib -r $TARGET_FS -o $PROFILE_DIR/rootfs.ubifs # re-ubinize file system with new fstab that does not mount JFFS2 to bootfs
+                    $PROFILE_DIR/../buildUBI -u $PROFILE_DIR/ubi_full.ini -m $PROFILE_DIR/metadata.bin -f $PROFILE_DIR/filestruct_full.bin -t $TARGET_BOOTFS -y $PROFILE_DIR/rootfs.ubifs
+                    $HOSTTOOLS_DIR/mtd-utils*/ubinize -v -o $PROFILE_DIR/ubi_rootfs256kb_pureubi.img -m 4096 -p $FLASH_NAND_BLOCK_256KB $PROFILE_DIR/ubi_full.ini
+            fi
+
+            if squashfs_enabled; then
+                    # squash on pureUBI
+                    $PROFILE_DIR/../buildUBI -u $PROFILE_DIR/ubi_full.ini -m $PROFILE_DIR/metadata.bin -f $PROFILE_DIR/filestruct_full.bin -t $TARGET_BOOTFS -y $PROFILE_DIR/squashfs.img -s 1
+                    $HOSTTOOLS_DIR/mtd-utils*/ubinize -v -o $PROFILE_DIR/squbi_rootfs256kb_pureubi.img -m 4096 -p $FLASH_NAND_BLOCK_256KB $PROFILE_DIR/ubi_full.ini
+            fi
+        fi
+
+        if [ "$BUILD_NAND_IMG_BLKSIZE_512KB" = "y" ]; then
+            # pureUBI
+            $HOSTTOOLS_DIR/mtd-utils*/mkfs.ubifs --squash-uids -F -v -c 2048 -m 4096 -e 516096 -x zlib -r $TARGET_FS -o $PROFILE_DIR/rootfs.ubifs # re-ubinize file system with new fstab that does not mount JFFS2 to bootfs
+            $PROFILE_DIR/../buildUBI -u $PROFILE_DIR/ubi_full.ini -m $PROFILE_DIR/metadata.bin -f $PROFILE_DIR/filestruct_full.bin -t $TARGET_BOOTFS -y $PROFILE_DIR/rootfs.ubifs
+            $HOSTTOOLS_DIR/mtd-utils*/ubinize -v -o $PROFILE_DIR/ubi_rootfs512kb_pureubi.img -m 4096 -p $FLASH_NAND_BLOCK_512KB $PROFILE_DIR/ubi_full.ini
+
+            # squash on pureUBI
+            $PROFILE_DIR/../buildUBI -u $PROFILE_DIR/ubi_full.ini -m $PROFILE_DIR/metadata.bin -f $PROFILE_DIR/filestruct_full.bin -t $TARGET_BOOTFS -y $PROFILE_DIR/squashfs.img -s 1
+            $HOSTTOOLS_DIR/mtd-utils*/ubinize -v -o $PROFILE_DIR/squbi_rootfs512kb_pureubi.img -m 4096 -p $FLASH_NAND_BLOCK_512KB $PROFILE_DIR/ubi_full.ini
+        fi
+
+        if [ "$BUILD_NAND_IMG_BLKSIZE_1024KB" = "y" ]; then
+            # pureUBI
+            $HOSTTOOLS_DIR/mtd-utils*/mkfs.ubifs --squash-uids -F -v -c 2048 -m 8192 -e 1032192 -x zlib -r $TARGET_FS -o $PROFILE_DIR/rootfs.ubifs # re-ubinize file system with new fstab that does not mount JFFS2 to bootfs
+            $PROFILE_DIR/../buildUBI -u $PROFILE_DIR/ubi_full.ini -m $PROFILE_DIR/metadata.bin -f $PROFILE_DIR/filestruct_full.bin -t $TARGET_BOOTFS -y $PROFILE_DIR/rootfs.ubifs
+            $HOSTTOOLS_DIR/mtd-utils*/ubinize -v -o $PROFILE_DIR/ubi_rootfs1024kb_pureubi.img -m 8192 -p $FLASH_NAND_BLOCK_1024KB $PROFILE_DIR/ubi_full.ini
+
+            # squash on pureUBI
+            $PROFILE_DIR/../buildUBI -u $PROFILE_DIR/ubi_full.ini -m $PROFILE_DIR/metadata.bin -f $PROFILE_DIR/filestruct_full.bin -t $TARGET_BOOTFS -y $PROFILE_DIR/squashfs.img -s 1
+            $HOSTTOOLS_DIR/mtd-utils*/ubinize -v -o $PROFILE_DIR/squbi_rootfs1024kb_pureubi.img -m 8192 -p $FLASH_NAND_BLOCK_1024KB $PROFILE_DIR/ubi_full.ini
+        fi
+
+        rm $HOSTTOOLS_DIR/nocomprlist
+
+fi
+

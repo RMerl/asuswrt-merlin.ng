@@ -1,0 +1,13 @@
+#
+# Add the object incms-dm-bcm-e2e-tr181-managementserver.xml below the
+# Device.ManagementServer. object
+#
+# Add the objects in cms-dm-bcm-e2e-tr69ccfg.xml as the
+# last children objects of Device.X_BROADCOM_COM_AppCfg.
+#
+# See 0000-README.txt for more details
+#
+
+addObjBelowObj cms-dm-bcm-e2e-tr181-managementserver.xml Device.ManagementServer.
+addLastChildObjToObj cms-dm-bcm-e2e-tr69ccfg.xml Device.X_BROADCOM_COM_AppCfg.
+

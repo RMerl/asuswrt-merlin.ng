@@ -1,0 +1,62 @@
+#**************************************
+#
+#  Copyright (c) 2014  Broadcom
+#  All Rights Reserved
+#
+#**************************************
+
+RDPA_OBJS += rdpa_types.o
+RDPA_OBJS += rdpa_common.o
+RDPA_OBJS += rdpa_rdd_map.o
+#RDPA_OBJS += rdpa_vlan_action.o
+#RDPA_OBJS += rdpa_vlan_action_ex.o
+RDPA_OBJS += rdpa_policer.o
+RDPA_OBJS += rdpa_policer_ex.o
+#RDPA_OBJS += rdpa_vlan.o
+#RDPA_OBJS += rdpa_vlan_ex.o
+RDPA_OBJS += rdpa_qos_mapper.o
+RDPA_OBJS += rdpa_qos_mapper_ex.o
+RDPA_OBJS += rdpa_dscp_to_pbit.o
+RDPA_OBJS += rdpa_dscp_to_pbit_ex.o
+#RDPA_OBJS += rdpa_bridge.o
+#RDPA_OBJS += rdpa_bridge_ex.o
+RDPA_OBJS += rdpa_egress_tm.o
+RDPA_OBJS += rdpa_egress_tm_ex.o
+RDPA_OBJS += rdpa_port.o
+RDPA_OBJS += rdpa_port_ex.o
+RDPA_OBJS += rdpa_ucast.o
+RDPA_OBJS += rdpa_l2_common.o
+RDPA_OBJS += rdpa_l2_ucast.o
+RDPA_OBJS += rdpa_wlan_mcast.o
+RDPA_OBJS += rdpa_wlan_mcast_ex.o
+RDPA_OBJS += rdpa_cpu.o
+RDPA_OBJS += rdpa_cpu_ex.o
+RDPA_OBJS += rdpa_system_ex.o
+RDPA_OBJS += rdpa_system.o
+RDPA_OBJS += rdpa_system_hw_cfg.o
+RDPA_OBJS += rdpa_ingress_class.o
+RDPA_OBJS += rdpa_ingress_class_ex.o
+RDPA_OBJS += rdpa_filter.o
+RDPA_OBJS += rdpa_filter_ex.o
+
+ifeq ("$(CONFIG_SYSTEM)", "sim")
+RDPA_OBJS += rdpa_mcast.o
+RDPA_OBJS += rdpa_mcast_ex.o
+RDPA_OBJS += rdpa_spdsvc.o
+RDPA_OBJS += rdpa_spdsvc_ex.o
+RDPA_OBJS += rdpa_spdtest_common.o
+RDPA_OBJS += rdpa_capwap.o
+else
+ifneq ($(strip $(CONFIG_BCM_RDPA_MCAST)),)
+RDPA_OBJS += rdpa_mcast.o
+RDPA_OBJS += rdpa_mcast_ex.o
+endif
+ifneq ("$(CONFIG_BCM_SPDSVC)","")
+RDPA_OBJS += rdpa_spdsvc.o
+RDPA_OBJS += rdpa_spdsvc_ex.o
+RDPA_OBJS += rdpa_spdtest_common.o
+endif
+ifneq ("$(CONFIG_BCM_CAPWAP)","")
+RDPA_OBJS += rdpa_capwap.o
+endif
+endif

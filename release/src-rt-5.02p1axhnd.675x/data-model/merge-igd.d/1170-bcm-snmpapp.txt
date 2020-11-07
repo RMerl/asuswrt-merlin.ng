@@ -1,0 +1,8 @@
+#
+# Add the object(s) in cms-dm-snmpapp.xml below the object 
+# InternetGatewayDevice.X_BROADCOM_COM_AppCfg.SskCfg.
+#
+# See 0000-README.txt for more details
+#
+
+addObjBelowObj cms-dm-snmpapp.xml InternetGatewayDevice.X_BROADCOM_COM_AppCfg.SskCfg.

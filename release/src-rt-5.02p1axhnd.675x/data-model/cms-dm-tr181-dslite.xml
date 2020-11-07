@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSLite." shortObjectName="Dev2DsliteObject" specSource="TR181" profile="Device2_DSLite:1" requirements="P" supportLevel="Present" oid="1490" />
+  <description source="TRx">Settings allowing a CPE to configure and route IPv6 Dual-Stack Lite (DSLite) as specified in {{bibref|DSLite}}. The DS-Lite mechanism is intended to be implemented only on gateway devices that support IPv4 on the LAN side and only have IPv6 connectivity on the WAN side. See the Dual-Stack Lite Theory of Operation {{bibref|TR-181i2a2|Appendix VII}} for a description of the working of this DS-Lite data model. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_DSLite:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">The manufacturer of the CPE (human readable string). </description>
+
+  <parameter name="InterfaceSettingNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_DSLite:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the InterfaceSetting table. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSLite.InterfaceSetting.{i}." shortObjectName="Dev2DsliteInterfaceSettingObject" specSource="TR181" profile="Device2_DSLite:1" requirements="R" supportLevel="DynamicInstances" />
+  <description source="TRx">DSLite {{bibref|DSLite}} settings. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_DSLite:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enable or disable this InterfaceSetting instance. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_DSLite:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status3eValues" />
+    <description source="TRx">The status of this entry. {{enum}} The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-dslite" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. If the CPE supports the Alias-based Addressing feature as defined in {{bibref|TR-069a4|3.6.1}} and described in {{bibref|TR-069a4|Appendix II}}, the following mandatory constraints MUST be enforced: *Its value MUST NOT be empty. *Its value MUST start with a letter. *If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix. *The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="EndpointAssignmentPrecedence" type="string" specSource="TR181" profile="Device2_DSLite:1" requirements="W" supportLevel="ReadWrite" defaultValue="DHCPv6" validValuesArray="EndpointAssignmentValues" />
+    <description source="TRx">Indicates the preferred method to be used in assigning values to {{param|EndpointName}} when both static and dynamic values are available. See {{param|EndpointName}} for further clarification. </description>
+
+  <parameter name="EndpointAddressTypePrecedence" type="string" specSource="TR181" profile="Device2_DSLite:2" requirements="W" supportLevel="ReadWrite" validValuesArray="EndpointAddressTypeValues" />
+    <description source="TRx">Indicates the preferred method to be used to assign the address of the DS-Lite Endpoint when both {{param|EndpointName}} and {{param|EndpointAddress}} values are available and the {{enum|Static|EndpointAssignmentPrecedence}} method is used. See {{param|EndpointName}} and {{param|EndpointAddress}} for further clarification.</description>
+
+  <parameter name="EndpointAddressInUse" type="string" specSource="TR181" profile="Device2_DSLite:2" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">[IPv6Address] Indicates the address currently in use for the tunnel concentrator (remote endpoint). It is derived from the values of the {{param|EndpointAssignmentPrecedence}}, {{param|EndpointAddressTypePrecedence}}, {{param|EndpointName}} and {{param|EndpointAddress}} parameters. It is {{empty}} if no endpoint address is currently known.</description>
+
+  <parameter name="EndpointName" type="string" specSource="TR181" profile="Device2_DSLite:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">The Fully Qualified Domain Name (FQDN) of the tunnel concentrator (remote endpoint). This parameter is based on ''OPTION_DS_LITE_NAME'' from {{bibref|DSLite-options|Section 4}} and can be assigned statically (e.g. present in the factory default configuration or set by the ACS) or can be updated dynamically (via DHCPv6). If both statically and dynamically assigned, then {{param|EndpointAssignmentPrecedence}} indicates whether it is the static configuration or the DHCPv6 configuration that is actually applied to {{param}}. Note: {{param}} is only writable when {{param|EndpointAssignmentPrecedence}} is {{enum|Static|EndpointAssignmentPrecedence}}; otherwise, {{param}} is automatically configured via the DHCPv6 received option. </description>
+
+  <parameter name="EndpointAddress" type="string" specSource="TR181" profile="Device2_DSLite:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">[IPv6Address] The address of the tunnel concentrator (remote endpoint). This parameter can only be assigned statically (e.g. present in the factory default configuration or set by the ACS). </description>
+
+  <parameter name="Origin" type="string" specSource="TR181" profile="Device2_DSLite:1" requirements="R" supportLevel="ReadOnly" validValuesArray="EndpointAssignmentValues" />
+    <description source="TRx">Method used to assign {{param|EndpointAddressInUse}}. </description>
+
+  <parameter name="TunnelInterface" type="string" specSource="TR181" profile="Device2_DSLite:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">{{reference}} This is an IP interface of ''Type'' {{enum|Tunnel|.IP.Interface.{i}.Type}} that is logically the tunnel entry point for upstream IPv4 traffic and is also logically the tunnel exit point for downstream IPv4 traffic (i.e. the entry point for non-tunneled upstream IPv4 traffic to enter a tunnel and become tunneled, or conversely, the exit point for downstream IPv4 traffic leaving a tunnel after being un-tunneled). IPv4 traffic that enters {{param}} is expected to continue on through {{param|TunneledInterface}} from the LAN, and traffic from the WAN is expected to come from TunneledInterface into TunnelInterface. TunnelInterface is a logical interface that can allow for classification, marking (of IPv4 headers), and policing of IPv4 traffic that will be going over a DS-Lite tunnel. These functions are modeled in the Device.QoS object. Note: In DS-Lite, IPv4 packets arriving over one or more device LAN IP interfaces are logically fed into this {{param}}. Likewise, DS-Lite traffic from the WAN gets logically sent from this {{param}} to LAN IP interfaces. </description>
+
+  <parameter name="TunneledInterface" type="string" specSource="TR181" profile="Device2_DSLite:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">{{reference}} This is an IP interface of ''Type'' {{enum|Tunneled|.IP.Interface.{i}.Type}} that provides information about the IPv6 headers used to encapsulate the IPv4 packets. Encapsulated IPv4 traffic that enters {{param}} from the WAN is expected to continue on through {{param|TunnelInterface}}, and traffic from the LAN is expected to come from {{param|TunnelInterface}} into {{param}}. {{param}} is a logical interface that can allow for classification, marking (of IPv6 headers and VLAN tags), and policing of IPv6 packets that encapsulate IPv4 packets in DS-Lite traffic. These functions are modeled in the {{object|.QoS.}} object. Note: In DS-Lite, {{param}} traffic originating from the LAN logically feeds into a WAN-side IPv6 capable IP interface that the &quot;DSLite IPv4-in-IPv6 tunnel&quot; goes over. DS-Lite traffic that enters over this IPv6 WAN interface gets logically sent to this {{param}}. </description>
+
+  <parameter name="X_BROADCOM_COM_TunnelName" type="string" specSource="Broadcom" profile="Device2_DSLite:1" supportLevel="ReadWrite" defaultValue="" maxLength="32" />
+    <description source="BROADCOM">User configurable tunnel name</description>
+
+  <parameter name="X_BROADCOM_COM_TunnelInterface" type="string" specSource="Broadcom" profile="Device2_DSLite:1" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="BROADCOM">This parameter contains full path to associated DSLite LAN interface's IP.Interface.x</description>
+
+  <parameter name="X_BROADCOM_COM_TunneledInterface" type="string" specSource="Broadcom" profile="Device2_DSLite:1" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="BROADCOM">This parameter contains full path to associated DSLite WAN interface's IP.Interface.x</description>
+
+
+<vsaInfo>
+
+<validstringarray name="EndpointAddressTypeValues" />
+  <element>FQDN</element>
+  <element>IPv6Address</element>
+
+<validstringarray name="EndpointAssignmentValues" />
+  <element>DHCPv6</element>
+  <element>Static</element>
+
+<validstringarray name="status3eValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Baseline:1" /> 
+<profile name="Device2_Baseline:2" /> 
+<profile name="Device2_Baseline:3" /> 
+<profile name="Device2_DSLite:1" /> 
+<profile name="Device2_DSLite:2" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

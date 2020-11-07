@@ -1,0 +1,40 @@
+#!/usr/bin/env perl
+
+use BRCM::TKKEYST;
+use strict;
+use warnings;
+use bytes;
+#use Encode;
+use Getopt::Long;
+use FindBin qw($Bin);
+use lib qw($Bin $Bin/../PerlLib);
+use File::stat;
+my %optn = (); 
+my $usage = qq(Repeat args  to form input for keystore 
+  --args abort_time=<val> --args mid=<val>.. 
+   NOTE: All values are represented as chars 
+    The following subargs are supported: 
+    arch=<val> target Secure Boot Architecture 
+    req=<val> Secure boot request (MFG or FLD, MFG or OP)
+    abort_time=<val> abort delay in seconds
+    mid=<val> hex char 
+    oid=<val> hex cahr 
+    ek=<val> file of ROE  encrypted fld key 
+    iv=<val> file of ROE encrypte fld vector 
+    hash=<val> file of fld rot hash
+    byteorder=<val> big/little  
+    out=<val> dump to file ; 
+    keystore=<keyinfo filename> - generates keystore using as an input a keyinfo=<keyinfo file>  
+    keyinfo=<keyinfo filename to dump to> - generates keyinfo);
+if (!GetOptions("args=s",\%optn)) {
+    print $usage;
+    die ("Unsuppoted argument");
+}
+#foreach (keys(%optn)) {
+#   $optn{$_} =~s/.*\'.*//g;
+#   printf ("+++++++++++ %s->%s\n",$_, $optn{$_});
+#}
+#print "SEC:$optn{arch} REQ:$optn{req} out: $optn{out} \n";
+my $keyst = BRCM::TKKEYST->new(\%optn);
+
+1;

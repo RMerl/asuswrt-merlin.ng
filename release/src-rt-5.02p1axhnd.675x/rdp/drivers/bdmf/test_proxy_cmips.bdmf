@@ -1,0 +1,9 @@
+/ transport
+this cmips 
+connect ehost domain_socket connect 0 /tmp/bdmf_cmips_ehost.socket
+#connect ehost shm connect
+connect pmips1 domain_socket listen 0 /tmp/bdmf_pmips1_cmips.socket 
+/ bdmf rem
+
+
+

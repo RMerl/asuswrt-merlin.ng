@@ -1,0 +1,11 @@
+config BCM_PON_DRV
+	tristate "Support for Broadcom Pon Drv features"
+	depends on !BRCM_IKOS
+	default m if BCM_PON_XRDP
+	default m if BCM963158
+	default n
+
+config BCM_PON_DRV_IMPL
+	int "Implementation index for Broadcom Pon Drv features"
+	depends on BCM_PON_DRV
+	default 1

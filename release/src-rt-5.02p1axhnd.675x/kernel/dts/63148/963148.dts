@@ -1,0 +1,169 @@
+/*
+ * Broadcom BCM63148 Reference Board DTS
+ */
+
+/dts-v1/;
+/memreserve/ 0x00000000 0x00008000;
+
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include "../bcm_963xx_template.dtsi"
+#include "../bcm_rsvdmem_32.dtsi"
+
+/ {
+	compatible = "brcm,bcm963148";
+	model = "Broadcom BCM963148";
+	interrupt-parent = <&gic>;
+
+	clocks {
+		armcpu: armcpu {
+			#clock-cells = <0>;
+			compatible = "brcm,63xx_cpuclk";
+			clock-output-names = "pll-cpuclk";
+		};
+
+		perclk: perclk {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <50000000>;
+		};
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		CPU0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a15";
+			reg = <0>;
+			clocks = <&armcpu>;
+			clock-names = "cpuclk";
+		};
+		CPU1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a15";
+			reg = <1>;
+			clocks = <&armcpu>;
+			clock-names = "cpuclk";
+			enable-method = "brcm,bca-smp";
+		};
+	};
+
+	/* increase coherent_pool size for ARM-based chip */
+	chosen {
+		bootargs = "console=ttyS0,115200 debug irqaffinity=0 coherent_pool=1M pci=pcie_bus_safe";
+	};
+
+	gic: interrupt-controller@80031000 {
+		compatible = "arm,cortex-a15-gic";
+		#interrupt-cells = <3>;
+		#address-cells = <0>;
+		interrupt-controller;
+		reg = <0x80031000 0x1000>, <0x80032000 0x0100>;
+	};
+
+
+	/* Legacy UBUS base */
+	ubus@fffe8000 {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0xfffe8000 0x8000>;
+
+		periph_timer: periph_timer@80 {
+			compatible = "brcm,periph-timer";
+			reg = <0x80 0x40>;
+			clocks = <&perclk>;
+			clock-names = "perclk";
+		};
+
+		nand@2000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,nand-bcm63xx", "brcm,brcmnand-v7.1";
+			reg = <0x2000 0x600>, <0xf0 0x10>;
+			reg-names = "nand", "nand-int-base";
+			status = "okay";
+
+			nandcs@0 {
+				compatible = "brcm,nandcs";
+				reg = <0>;
+				nand-on-flash-bbt;
+			};
+
+		};
+
+		watchdog@a8 {
+			compatible = "brcm,bcm96xxx-wdt";
+			reg = <0xa8 0x10>;
+			timeout-sec = <80>;
+		};
+
+		bcm63xx-i2s@fffe8900 {
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0x900 0x2d>; 
+		};
+
+		i2c@3e00 {
+			compatible = "brcm,bcm63000-i2c";
+			reg = <0x3e00 0x60>;
+		};
+	};
+
+	pmu {
+		compatible = "arm,cortex-a15-pmu";
+		interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-affinity = <&CPU0>, <&CPU1>;
+	};
+
+        pcm5100 {
+                compatible = "ti,pcm5100-dac";
+	};
+
+	bcm63xx-pcm-audio {
+		compatible = "brcm,bcm63xx-pcm-audio";
+	};
+
+#if defined(CONFIG_BCM_PCIE_HCD)
+	pcie0: pcie@80060000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		reg = <0x80060000 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		/*        flags,     pci_addr,    cpu_addr,  size */
+		ranges = <0x02000000 0 0x90000000 0x90000000 0 0x10000000>;
+
+		/* core error log interrupts */
+		interrupt-names = "intr";
+		interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+		brcm,coreid = <0>;
+	};
+
+	pcie1: pcie@80070000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		reg = <0x80070000 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		/*        flags,     pci_addr,    cpu_addr,  size */
+		ranges = <0x02000000 0 0xA0000000 0xA0000000 0 0x10000000>;
+
+		/* core error log interrupts */
+		interrupt-names = "intr";
+		interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
+		brcm,coreid = <1>;
+	};
+#endif
+};

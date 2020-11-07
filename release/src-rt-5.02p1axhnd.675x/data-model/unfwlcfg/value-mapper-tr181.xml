@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Ltd., 2006-2018" >
+
+<mapper name="WLSECMODE." shortObjectName="WLSECMODE" requirements="P" supportLevel="Present"  />
+  <value param="None"  nvram=0 enum="NWIFI_SECURITY_MODE_OPEN"  />
+  <value param="WEP-64"  nvram=1 enum="NWIFI_SECURITY_MODE_WEP_64"  />
+  <value param="WEP-128"  nvram=2 enum="NWIFI_SECURITY_MODE_WEP_128"  />
+  <value param="WPA-Personal"  nvram=3 enum="NWIFI_SECURITY_MODE_WPA_Personal"  />
+  <value param="WPA2-Personal"  nvram=4 enum="NWIFI_SECURITY_MODE_WPA2_Personal"  />
+  <value param="WPA-WPA2-Personal"  nvram=5 enum="NWIFI_SECURITY_MODE_WPA_WPA2_Personal"  />
+  <value param="WPA-Enterprise"  nvram=6 enum="NWIFI_SECURITY_MODE_WPA_Enterprise"  />
+  <value param="WPA2-Enterprise"  nvram=7 enum="NWIFI_SECURITY_MODE_WPA2_Enterprise"  />
+  <value param="WPA-WPA2-Enterprise"  nvram=8 enum="NWIFI_SECURITY_MODE_WPA_WPA2_Enterprise"  />
+
+<mapper name="WLBAND." shortObjectName="WLBAND" requirements="P"  />
+  <value param="2.4GHz" nvram=2 enum="BAND_B" />
+  <value param="5GHz"   nvram=1 enum="BAND_A" />
+  <value param="6GHz"   nvram=4 enum="BAND_6G" />
+
+<mapper name="WLNBWCAP." shortObjectName="WLBWCAP" requirements="P" supportLevel="Present"  />
+  <value param="20MHz"   nvram=1 />
+  <value param="40MHz"   nvram=3 />
+  <value param="80MHz"   nvram=7 />
+  <value param="160MHz"  nvram=15 />
+  <value param="Auto"    nvram=-1 />
+  <value param="Auto"    nvram=0xff />
+
+<mapper name="WLREGMODE." shortObjectName="WLREGMODE" requirements="P" supportLevel="Present"  />
+  <value param=0 enum="REG_MODE_OFF"   nvram="off"    />
+  <value param=1 enum="REG_MODE_H"     nvram="h"    />
+  <value param=2 enum="REG_MODE_D"     nvram="d"    />
+
+<mapper name="ONOFFAUTO." shortObjectName="ONOFFAUTO" requirements="P" supportLevel="Present"  />
+  <value param="off"  nvram=0  />
+  <value param="on"  nvram=1  />
+  <value param="auto"  nvram=-1 />
+  <value param=0  nvram="off"  />
+  <value param=1  nvram="on"  />
+  <value param=-1  nvram="auto" />
+
+<mapper name="BOOL." shortObjectName="BOOL" requirements="P" supportLevel="Present"  />
+
+<mapper name="BOOLREV." shortObjectName="BOOLREV" requirements="P" supportLevel="Present"  />
+  <value param=0  nvram=1 />
+  <value param=1  nvram=0  />
+
+<mapper name="WLCTRLSB." shortObjectName="WLCTRLSB" requirements="P" supportLevel="Present"  />
+  <value param="BelowControlChannel"  nvram="lower" />
+  <value param="Auto"                 nvram="lower"/>
+  <value param="AboveControlChannel"  nvram="upper" />
+  <value param="X_BROADCOM_COM_AboveCtrlChLL"   nvram="ll"  />
+  <value param="X_BROADCOM_COM_AboveCtrlChLU"   nvram="lu"  />
+  <value param="X_BROADCOM_COM_BelowCtrlChUL"   nvram="ul"  />
+  <value param="X_BROADCOM_COM_BelowCtrlChUU"   nvram="uu"  />
+  <value param="X_BROADCOM_COM_AboveCtrlChLLL"  nvram="lll"  />
+  <value param="X_BROADCOM_COM_AboveCtrlChLLU"  nvram="llu"  />
+  <value param="X_BROADCOM_COM_AboveCtrlChLUL"  nvram="lul"  />
+  <value param="X_BROADCOM_COM_AboveCtrlChLUU"  nvram="luu"  />
+  <value param="X_BROADCOM_COM_BelowCtrlChULL"  nvram="ull"  />
+  <value param="X_BROADCOM_COM_BelowCtrlChULU"  nvram="ulu"  />
+  <value param="X_BROADCOM_COM_BelowCtrlChUUL"  nvram="uul"  />
+  <value param="X_BROADCOM_COM_BelowCtrlChUUU"  nvram="uuu"  />
+
+<mapper name="BOOLENABLED." shortObjectName="BOOLENABLED" requirements="P" supportLevel="Present"  />
+  <value param=1  nvram="enabled" />
+  <value param=0  nvram="disabled"  />
+
+ <vsaInfo>
+ </vsaInfo>
+</xmlMandatorySingleRootNode>

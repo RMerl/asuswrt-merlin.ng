@@ -1,0 +1,279 @@
+/*
+   Copyright (c) 2015 Broadcom
+   All Rights Reserved
+
+    <:label-BRCM:2015:DUAL/GPL:standard
+
+    Unless you and Broadcom execute a separate written software license
+    agreement governing use of this software, this software is licensed
+    to you under the terms of the GNU General Public License version 2
+    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+    with the following added to such license:
+
+       As a special exception, the copyright holders of this software give
+       you permission to link this software with independent modules, and
+       to copy and distribute the resulting executable under terms of your
+       choice, provided that you also meet, for each linked independent
+       module, the terms and conditions of the license of that module.
+       An independent module is a module which is not derived from this
+       software.  The special exception does not apply to any modifications
+       of the software.
+
+    Not withstanding the above, under no circumstances may you combine
+    this software in any way with any other Broadcom software provided
+    under a license other than the GPL, without Broadcom's express prior
+    written consent.
+
+:>
+*/
+
+#ifndef _XRDP_DRV_RNR_REGS_AG_H_
+#define _XRDP_DRV_RNR_REGS_AG_H_
+
+#include "access_macros.h"
+#include "bdmf_interface.h"
+#ifdef USE_BDMF_SHELL
+#include "bdmf_shell.h"
+#endif
+#include "rdp_common.h"
+
+
+/**************************************************************************************************/
+/* int0_sts: Interrupt_0_status - While any of this field bits is set interrupt line 0 is set. SW */
+/*            can write '1' to clear any bit. Write of '0' is ignored.                            */
+/* int1_sts: Interrupt_1_status - While any of this field bits is set interrupt line 0 is set. SW */
+/*            can write '1' to clear any bit. Write of '0' is ignored.                            */
+/* int2_sts: Interrupt2_status - While this bit is set interrupt line 2 is set. SW can write '1'  */
+/*           to clear any bit. Write of '0' is ignored.                                           */
+/* int3_sts: Interrupt3_status - While this bit is set interrupt line 3 is set. SW can write '1'  */
+/*           to clear any bit. Write of '0' is ignored.                                           */
+/* int4_sts: Interrupt4_status - While this bit is set interrupt line 4 is set. SW can write '1'  */
+/*           to clear any bit. Write of '0' is ignored.                                           */
+/* int5_sts: Interrupt5_status - While this bit is set interrupt line 5 is set. SW can write '1'  */
+/*           to clear any bit. Write of '0' is ignored.                                           */
+/* int6_sts: Interrupt6_status - While this bit is set interrupt line 6 is set. SW can write '1'  */
+/*           to clear any bit. Write of '0' is ignored.                                           */
+/* int7_sts: Interrupt7_status - While this bit is set interrupt line 6 is set. SW can write '1'  */
+/*           to clear any bit. Write of '0' is ignored.                                           */
+/* int8_sts: Interrupt8_status - While this bit is set interrupt line 8 is set. SW can write '1'  */
+/*           to clear any bit. Write of '0' is ignored.                                           */
+/* int9_sts: Interrupt9_status - While this bit is set interrupt line 9 is set. SW can write '1'  */
+/*           to clear any bit. Write of '0' is ignored.                                           */
+/* fit_fail_sts: FIT_fail_status -                                                                */
+/**************************************************************************************************/
+typedef struct
+{
+    uint8_t int0_sts;
+    uint8_t int1_sts;
+    bdmf_boolean int2_sts;
+    bdmf_boolean int3_sts;
+    bdmf_boolean int4_sts;
+    bdmf_boolean int5_sts;
+    bdmf_boolean int6_sts;
+    bdmf_boolean int7_sts;
+    bdmf_boolean int8_sts;
+    bdmf_boolean int9_sts;
+    bdmf_boolean fit_fail_sts;
+} rnr_regs_cfg_int_ctrl;
+
+
+/**************************************************************************************************/
+/* int0_mask: Interrupt_0_mask - Mask INT0 causes                                                 */
+/* int1_mask: Interrupt_1_mask - INT1 mask cause                                                  */
+/* int2_mask: Interrupt_2_mask - INT2 mask cause                                                  */
+/* int3_mask: Interrupt_3_mask - INT3 mask cause                                                  */
+/* int4_mask: Interrupt_4_mask - INT4 mask cause                                                  */
+/* int5_mask: Interrupt_5_mask - INT5 mask cause                                                  */
+/* int6_mask: Interrupt_6_mask - INT6 mask cause                                                  */
+/* int7_mask: Inerrupt_7_mask - INT7 mask cause                                                   */
+/* int8_mask: Interrupt_8_mask - INT8 mask cause                                                  */
+/* int9_mask: Interrupt_9_mask - INT9 mask cause                                                  */
+/**************************************************************************************************/
+typedef struct
+{
+    uint8_t int0_mask;
+    uint8_t int1_mask;
+    bdmf_boolean int2_mask;
+    bdmf_boolean int3_mask;
+    bdmf_boolean int4_mask;
+    bdmf_boolean int5_mask;
+    bdmf_boolean int6_mask;
+    bdmf_boolean int7_mask;
+    bdmf_boolean int8_mask;
+    bdmf_boolean int9_mask;
+} rnr_regs_cfg_int_mask;
+
+
+/**************************************************************************************************/
+/* bkpt_0_en: BKPT_0_EN - Enable breakpoint 0                                                     */
+/* bkpt_0_use_thread: BKPT_0_USE_THREAD - Enable breakpoint for given thread only                 */
+/* bkpt_1_en: BKPT_1_EN - Enable breakpoint 1                                                     */
+/* bkpt_1_use_thread: BKPT_1_USE_THREAD - Enable breakpoint for given thread only                 */
+/* bkpt_2_en: BKPT_2_EN - Enable breakpoint 2                                                     */
+/* bkpt_2_use_thread: BKPT_2_USE_THREAD - Enable breakpoint for given thread only                 */
+/* bkpt_3_en: BKPT_3_EN - Enable breakpoint 3                                                     */
+/* bkpt_3_use_thread: BKPT_3_USE_THREAD - Enable breakpoint for given thread only                 */
+/* bkpt_4_en: BKPT_4_EN - Enable breakpoint 4                                                     */
+/* bkpt_4_use_thread: BKPT_4_USE_THREAD - Enable breakpoint for given thread only                 */
+/* bkpt_5_en: BKPT_5_EN - Enable breakpoint 5                                                     */
+/* bkpt_5_use_thread: BKPT_5_USE_THREAD - Enable breakpoint for given thread only                 */
+/* bkpt_6_en: BKPT_6_EN - Enable breakpoint 6                                                     */
+/* bkpt_6_use_thread: BKPT_6_USE_THREAD - Enable breakpoint for given thread only                 */
+/* bkpt_7_en: BKPT_7_EN - Enable breakpoint 7                                                     */
+/* bkpt_7_use_thread: BKPT_7_USE_THREAD - Enable breakpoint for given thread only                 */
+/* step_mode: STEP_MODE - Configure step mode                                                     */
+/* new_flags_val: NEW_FLAGS_VAL - Value for new flags                                             */
+/**************************************************************************************************/
+typedef struct
+{
+    bdmf_boolean bkpt_0_en;
+    bdmf_boolean bkpt_0_use_thread;
+    bdmf_boolean bkpt_1_en;
+    bdmf_boolean bkpt_1_use_thread;
+    bdmf_boolean bkpt_2_en;
+    bdmf_boolean bkpt_2_use_thread;
+    bdmf_boolean bkpt_3_en;
+    bdmf_boolean bkpt_3_use_thread;
+    bdmf_boolean bkpt_4_en;
+    bdmf_boolean bkpt_4_use_thread;
+    bdmf_boolean bkpt_5_en;
+    bdmf_boolean bkpt_5_use_thread;
+    bdmf_boolean bkpt_6_en;
+    bdmf_boolean bkpt_6_use_thread;
+    bdmf_boolean bkpt_7_en;
+    bdmf_boolean bkpt_7_use_thread;
+    bdmf_boolean step_mode;
+    uint8_t new_flags_val;
+} rnr_regs_cfg_bkpt_cfg;
+
+
+/**************************************************************************************************/
+/* trace_wraparound: TRACE_WRAPAROUND - Wraparound when writing trace buffer                      */
+/* trace_mode: TRACE_MODE - Select all tasks or single task mode                                  */
+/* trace_disable_idle_in: TRACE_DISABLE_IDLE_IN - Select whether to log IDLE in context swap even */
+/*                        ts                                                                      */
+/* trace_disable_wakeup_log: TRACE_DISABLE_WAKEUP_LOG - Enable/disable logging of scheduler event */
+/*                           s (wakeups). Relevant only for single task mode                      */
+/* trace_task: TRACE_TASK - Select task for single task operation                                 */
+/* idle_counter_source_sel: IDLE_COUNTER_SOURCE_SEL - Select mode for IDLE counter                */
+/* trace_reset_event_fifo: TRACE_RESET_EVENT_FIFO - Apply software reset to event FIFO            */
+/* trace_clear_fifo_overrun: TRACE_CLEAR_FIFO_OVERRUN - Write 1 to clear event FIFO overrun stick */
+/*                           y bit                                                                */
+/**************************************************************************************************/
+typedef struct
+{
+    bdmf_boolean trace_wraparound;
+    bdmf_boolean trace_mode;
+    bdmf_boolean trace_disable_idle_in;
+    bdmf_boolean trace_disable_wakeup_log;
+    uint8_t trace_task;
+    bdmf_boolean idle_counter_source_sel;
+    bdmf_boolean trace_reset_event_fifo;
+    bdmf_boolean trace_clear_fifo_overrun;
+} rnr_regs_trace_config;
+
+
+/**************************************************************************************************/
+/* dbg_sel: Debug_bus_select - Control bits for the debug design output.                          */
+/* main_dis_per_sched: Main_Disable_Periodic_Scheduling - Disables the scheduler to upgrade perio */
+/*                     dically it's selection.When this bit is set the scheduler can change it's  */
+/*                     thread selection only if a context  switch occurs.For debug only           */
+/* pico_dis_per_sched: Pico_Disable_Periodic_Scheduling - Disables the scheduler to upgrade perio */
+/*                     dically it's selection.When this bit is set the scheduler can change it's  */
+/*                     thread selection only if a context  switch occurs.For debug only           */
+/* main_fw_self_is_sync: main_fw_self_is_sync - fw self wakeup is sync                            */
+/* pico_fw_self_is_sync: pico_fw_self_is_sync - fw self wakeup is sync                            */
+/**************************************************************************************************/
+typedef struct
+{
+    uint8_t dbg_sel;
+    bdmf_boolean main_dis_per_sched;
+    bdmf_boolean pico_dis_per_sched;
+    bdmf_boolean main_fw_self_is_sync;
+    bdmf_boolean pico_fw_self_is_sync;
+} rnr_regs_dbg_design_dbg_ctrl;
+
+bdmf_error_t ag_drv_rnr_regs_reset_trace_fifo_set(uint8_t rnr_id, bdmf_boolean profiling_active);
+bdmf_error_t ag_drv_rnr_regs_reset_trace_fifo_get(uint8_t rnr_id, bdmf_boolean *profiling_active);
+bdmf_error_t ag_drv_rnr_regs_clear_trace_fifo_overrun_set(uint8_t rnr_id, bdmf_boolean trace_fifo_overrun);
+bdmf_error_t ag_drv_rnr_regs_clear_trace_fifo_overrun_get(uint8_t rnr_id, bdmf_boolean *trace_fifo_overrun);
+bdmf_error_t ag_drv_rnr_regs_rnr_enable_set(uint8_t rnr_id, bdmf_boolean en);
+bdmf_error_t ag_drv_rnr_regs_rnr_enable_get(uint8_t rnr_id, bdmf_boolean *en);
+bdmf_error_t ag_drv_rnr_regs_rnr_freq_set(uint8_t rnr_id, uint16_t micro_sec_val);
+bdmf_error_t ag_drv_rnr_regs_rnr_freq_get(uint8_t rnr_id, uint16_t *micro_sec_val);
+bdmf_error_t ag_drv_rnr_regs_cam_stop_val_set(uint8_t rnr_id, uint16_t stop_value);
+bdmf_error_t ag_drv_rnr_regs_cam_stop_val_get(uint8_t rnr_id, uint16_t *stop_value);
+bdmf_error_t ag_drv_rnr_regs_dma_illegal_set(uint8_t rnr_id, bdmf_boolean dma_illegal_status);
+bdmf_error_t ag_drv_rnr_regs_dma_illegal_get(uint8_t rnr_id, bdmf_boolean *dma_illegal_status);
+bdmf_error_t ag_drv_rnr_regs_cfg_cpu_wakeup_set(uint8_t rnr_id, uint8_t thread_num);
+bdmf_error_t ag_drv_rnr_regs_cfg_cpu_wakeup_get(uint8_t rnr_id, uint8_t *thread_num);
+bdmf_error_t ag_drv_rnr_regs_cfg_int_ctrl_set(uint8_t rnr_id, const rnr_regs_cfg_int_ctrl *cfg_int_ctrl);
+bdmf_error_t ag_drv_rnr_regs_cfg_int_ctrl_get(uint8_t rnr_id, rnr_regs_cfg_int_ctrl *cfg_int_ctrl);
+bdmf_error_t ag_drv_rnr_regs_cfg_int_mask_set(uint8_t rnr_id, const rnr_regs_cfg_int_mask *cfg_int_mask);
+bdmf_error_t ag_drv_rnr_regs_cfg_int_mask_get(uint8_t rnr_id, rnr_regs_cfg_int_mask *cfg_int_mask);
+bdmf_error_t ag_drv_rnr_regs_cfg_gen_cfg_set(uint8_t rnr_id, bdmf_boolean disable_dma_old_flow_control);
+bdmf_error_t ag_drv_rnr_regs_cfg_gen_cfg_get(uint8_t rnr_id, bdmf_boolean *disable_dma_old_flow_control);
+bdmf_error_t ag_drv_rnr_regs_cfg_ddr_cfg_set(uint8_t rnr_id, uint32_t dma_base, uint8_t dma_buf_size, uint8_t dma_static_offset);
+bdmf_error_t ag_drv_rnr_regs_cfg_ddr_cfg_get(uint8_t rnr_id, uint32_t *dma_base, uint8_t *dma_buf_size, uint8_t *dma_static_offset);
+bdmf_error_t ag_drv_rnr_regs_cfg_psram_cfg_set(uint8_t rnr_id, uint32_t dma_base, uint8_t dma_buf_size, uint8_t dma_static_offset);
+bdmf_error_t ag_drv_rnr_regs_cfg_psram_cfg_get(uint8_t rnr_id, uint32_t *dma_base, uint8_t *dma_buf_size, uint8_t *dma_static_offset);
+bdmf_error_t ag_drv_rnr_regs_cfg_ramrd_range_mask_cfg_set(uint8_t rnr_id, uint16_t mask0, uint16_t mask1);
+bdmf_error_t ag_drv_rnr_regs_cfg_ramrd_range_mask_cfg_get(uint8_t rnr_id, uint16_t *mask0, uint16_t *mask1);
+bdmf_error_t ag_drv_rnr_regs_cfg_sch_cfg_set(uint8_t rnr_id, uint8_t scheduler_mode);
+bdmf_error_t ag_drv_rnr_regs_cfg_sch_cfg_get(uint8_t rnr_id, uint8_t *scheduler_mode);
+bdmf_error_t ag_drv_rnr_regs_cfg_bkpt_cfg_set(uint8_t rnr_id, const rnr_regs_cfg_bkpt_cfg *cfg_bkpt_cfg);
+bdmf_error_t ag_drv_rnr_regs_cfg_bkpt_cfg_get(uint8_t rnr_id, rnr_regs_cfg_bkpt_cfg *cfg_bkpt_cfg);
+bdmf_error_t ag_drv_rnr_regs_cfg_bkpt_imm_set(uint8_t rnr_id, bdmf_boolean enable);
+bdmf_error_t ag_drv_rnr_regs_cfg_bkpt_imm_get(uint8_t rnr_id, bdmf_boolean *enable);
+bdmf_error_t ag_drv_rnr_regs_cfg_bkpt_sts_get(uint8_t rnr_id, uint16_t *bkpt_addr, bdmf_boolean *active);
+bdmf_error_t ag_drv_rnr_regs_cfg_pc_sts_get(uint8_t rnr_id, uint16_t *current_pc_addr, uint16_t *pc_ret);
+bdmf_error_t ag_drv_rnr_regs_cfg_profiling_cfg_0_set(uint8_t rnr_id, uint16_t trace_base_addr, uint16_t trace_max_addr);
+bdmf_error_t ag_drv_rnr_regs_cfg_profiling_cfg_0_get(uint8_t rnr_id, uint16_t *trace_base_addr, uint16_t *trace_max_addr);
+bdmf_error_t ag_drv_rnr_regs_trace_config_set(uint8_t rnr_id, const rnr_regs_trace_config *trace_config);
+bdmf_error_t ag_drv_rnr_regs_trace_config_get(uint8_t rnr_id, rnr_regs_trace_config *trace_config);
+bdmf_error_t ag_drv_rnr_regs_cfg_stall_cnt1_get(uint8_t rnr_id, uint16_t *ld_stall_cnt, uint16_t *acc_stall_cnt);
+bdmf_error_t ag_drv_rnr_regs_cfg_stall_cnt2_get(uint8_t rnr_id, uint16_t *ldio_stall_cnt, uint16_t *store_stall_cnt);
+bdmf_error_t ag_drv_rnr_regs_cfg_idle_cnt1_get(uint8_t rnr_id, uint32_t *idle_cnt);
+bdmf_error_t ag_drv_rnr_regs_cfg_jmp_cnt_get(uint8_t rnr_id, uint16_t *untaken_jmp_cnt, uint16_t *taken_jmp_cnt);
+bdmf_error_t ag_drv_rnr_regs_dbg_design_dbg_ctrl_set(uint8_t rnr_id, const rnr_regs_dbg_design_dbg_ctrl *dbg_design_dbg_ctrl);
+bdmf_error_t ag_drv_rnr_regs_dbg_design_dbg_ctrl_get(uint8_t rnr_id, rnr_regs_dbg_design_dbg_ctrl *dbg_design_dbg_ctrl);
+bdmf_error_t ag_drv_rnr_regs_dbg_design_dbg_data_get(uint8_t rnr_id, uint32_t *dbg_data);
+
+#ifdef USE_BDMF_SHELL
+enum
+{
+    cli_rnr_regs_reset_trace_fifo,
+    cli_rnr_regs_clear_trace_fifo_overrun,
+    cli_rnr_regs_rnr_enable,
+    cli_rnr_regs_rnr_freq,
+    cli_rnr_regs_cam_stop_val,
+    cli_rnr_regs_dma_illegal,
+    cli_rnr_regs_cfg_cpu_wakeup,
+    cli_rnr_regs_cfg_int_ctrl,
+    cli_rnr_regs_cfg_int_mask,
+    cli_rnr_regs_cfg_gen_cfg,
+    cli_rnr_regs_cfg_ddr_cfg,
+    cli_rnr_regs_cfg_psram_cfg,
+    cli_rnr_regs_cfg_ramrd_range_mask_cfg,
+    cli_rnr_regs_cfg_sch_cfg,
+    cli_rnr_regs_cfg_bkpt_cfg,
+    cli_rnr_regs_cfg_bkpt_imm,
+    cli_rnr_regs_cfg_bkpt_sts,
+    cli_rnr_regs_cfg_pc_sts,
+    cli_rnr_regs_cfg_profiling_cfg_0,
+    cli_rnr_regs_trace_config,
+    cli_rnr_regs_cfg_stall_cnt1,
+    cli_rnr_regs_cfg_stall_cnt2,
+    cli_rnr_regs_cfg_idle_cnt1,
+    cli_rnr_regs_cfg_jmp_cnt,
+    cli_rnr_regs_dbg_design_dbg_ctrl,
+    cli_rnr_regs_dbg_design_dbg_data,
+};
+
+int bcm_rnr_regs_cli_get(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+bdmfmon_handle_t ag_drv_rnr_regs_cli_init(bdmfmon_handle_t driver_dir);
+#endif
+
+
+#endif
+

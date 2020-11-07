@@ -1,0 +1,65 @@
+# In future, this file should be auto-generated #
+
+# General
+projects/XRDP_CFE/make.proj_flags
+
+# Firmware binaries
+
+# RDD
+drivers/rdd/Makefile
+projects/XRDP_CFE/drivers/rdd/rdd_stubs.h
+projects/XRDP_CFE/drivers/rdd/rdd_defs.h
+projects/XRDP_CFE/drivers/rdd/rdd_crc.h
+projects/XRDP_CFE/drivers/rdd/rdd_platform.h
+projects/XRDP_CFE/drivers/rdd/rdd_cpu.h
+projects/XRDP_CFE/drivers/rdd/rdd_cpu_rx.c
+projects/XRDP_CFE/drivers/rdd/rdd_cpu_rx.h
+projects/XRDP_CFE/drivers/rdd/rdd_cpu_tx_ring.h
+projects/XRDP_CFE/drivers/rdd/rdd_cpu_tx_ring.c
+projects/XRDP_CFE/drivers/rdd/BCM6846/rdd_init.h
+projects/XRDP_CFE/drivers/rdd/BCM6856/auto/rdd_ag_cpu_rx.h
+projects/XRDP_CFE/drivers/rdd/BCM6856/auto/rdd_ag_cpu_rx.c
+projects/XRDP_CFE/drivers/rdd/rdd_common.h
+projects/XRDP_CFE/drivers/rdd/rdd_data_structures_auto_gpl_6856.h
+projects/XRDP_CFE/drivers/rdd/rdd_data_structures_auto_gpl_6856.c
+projects/XRDP_CFE/drivers/rdd/BCM6856/rdd_map_auto.c
+projects/XRDP_CFE/drivers/rdd/BCM6856/rdd_map_auto.h
+projects/XRDP_CFE/drivers/rdd/BCM6846/rdd_runner_proj_defs.h
+projects/XRDP_CFE/drivers/rdp_subsystem/BCM6856/data_path_init_basic_data.h
+projects/PON_6858/drivers/rdd/rdd.h
+
+# RDP Subsystem
+drivers/rdp_subsystem/xrdp/access_macros.h
+drivers/rdp_subsystem/xrdp/access_logging.h
+drivers/rdp_subsystem/xrdp/access_logging.c
+drivers/rdp_subsystem/packing.h
+drivers/rdp_subsystem/rdp_subsystem_common.h
+drivers/rdp_subsystem/BCM6856/autogen/XRDP_GPL_AG.h
+drivers/rdp_subsystem/BCM6846/data_path_init_basic.h
+drivers/rdp_subsystem/xrdp/data_path_init_basic.c
+drivers/rdp_subsystem/xrdp/rdp_common.h
+drivers/rdp_subsystem/RU/ru_config.h
+drivers/rdp_subsystem/RU/ru_types.h
+drivers/rdp_subsystem/rdp_mm.h
+projects/XRDP_CFE/drivers/rdp_subsystem/xrdp/rdp_platform.c
+projects/XRDP_CFE/drivers/rdp_subsystem/xrdp/rdp_platform.h
+projects/XRDP_CFE/drivers/rdp_subsystem/cpu/rdp_cpu_ring.c
+projects/XRDP_CFE/drivers/rdp_subsystem/cpu/rdp_cpu_ring.h
+projects/XRDP_CFE/drivers/rdp_subsystem/cpu/rdp_cpu_ring_defs.h
+projects/XRDP_CFE/drivers/rdp_subsystem/cpu/rdp_cpu_ring_inline.h
+
+drivers/rdp_subsystem/Makefile
+
+
+# RDPA GPL
+drivers/rdpa_gpl/include/rdpa_types.h
+drivers/rdpa_gpl/include/rdpa_ip_class_basic.h
+drivers/rdpa_gpl/include/rdpa_cpu_basic.h
+
+# BDMF
+drivers/bdmf/system/bdmf_errno.h
+drivers/bdmf/framework/bdmf_data_types.h
+drivers/bdmf/system/sim/bdmf_system.h
+drivers/bdmf/system/bdmf_session.h
+
+

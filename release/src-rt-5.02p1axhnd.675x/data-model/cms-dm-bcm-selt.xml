@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_SELT_TEST." shortObjectName="SeltObject" specSource="BROADCOM" profile="X_BROADCOM_COM_Selt:1" supportLevel="Present" oid="3290" />
+  <description source="BROADCOM">CPE SELT Test Object.   .   This is a single execution of a CPE-side SELT operation.  This test can be initiated autonomously by the CPE under a certain triggering conditions or by the operator via WEBUI or TR69.</description>
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_SELT_TEST.Configuration." shortObjectName="SeltCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" supportLevel="Present" />
+  <description source="BROADCOM">CPE SELT Test Configuration object.   This object must be configured before the test is invoked.</description>
+
+  <parameter name="SeltTestState" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="W" supportLevel="ReadWrite" defaultValue="None" validValuesArray="seltStateValues"/>
+    <description source="BROADCOM">SeltTestState possible values are “None”, “Requested”, or “Error”, “Complete”.   “None” is the default value.   Administrator can set this parameter to “Start” only to invoke the SELT test.   This can be set if and only if the SeltTestState parameter is “None”, “Error” or “Complete”.  Only one test can be started at a time.   When the test is finished, the SeltTestState is set to “Completed”, and the result is read and store in X_BROADCOM_COM_DSL_SELT_TEST.Result.{i}. with the CID copied over from the Configuration object.</description>
+
+  <parameter name="MaxSeltF" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="W" supportLevel="ReadWrite" defaultValue="17000000.0" />
+    <description source="BROADCOM">Maximum upstream transmit frequency for the CPE SELT, in unit of Hz.  </description>
+
+  <parameter name="MaxSeltT" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="W" supportLevel="ReadWrite" defaultValue="20.0" />
+    <description source="BROADCOM">SELT UER Maximum Measurement Duration, as defined in G.996.2.  Unit of seconds.   A floating point string maximum 8 characters, 4 digits, decimal point, 3 digit (xxxx.xxx)</description>
+
+  <parameter name="MaxSeltPSD" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="W" supportLevel="ReadWrite" defaultValue="-80.0" />
+    <description source="BROADCOM">Maximum transmit PSD of the signal transmitted upstream during CPE SEL, in unit of dBmW/Hz.  This PSD limit applies to all frequencies.  A floating point string, max 7 characters, sign, 4 digits, decimal point and 3 digits after (+/-xxxx.x)</description>
+
+  <parameter name="CID" type="string" specSource="BROADCOM" profile="X_BROADCOM_COM_Selt:1" supportLevel="ReadWrite" defaultValue="1234567890" />
+    <description source="BROADCOM">This is a correlation identifier for a CPE SELT operation.  This field is replicated in the Test Data for correlation between the control and response and has no impact on the operation of CPE SELT.   The length of this string is 10 characters, characters numerical (0-9) or letter (A-Z, a-z). For example, 123456790</description>
+
+  <parameter name="LineNumber" type="unsignedInt" specSource="BROADCOM" profile="X_BROADCOM_COM_Selt:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="1" />
+    <description source="BROADCOM">If this a bonding line, line number specify which line the SELT Test is to run on. </description>
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_SELT_TEST.Result.{i}." shortObjectName="SeltResultObject" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true"/>
+  <description source="BROADCOM">This object contains the result of SELT test.  There are maximum of 25 test per dsl line, or maximum 50 entries if bonding is enabled.   The oldest instance will be purged and a new instance is added when there are over 25 test results.   These are runtime only objects (never written to config file).</description>
+
+  <parameter name="CID" type="string" specSource="BROADCOM" profile="X_BROADCOM_COM_Selt:1" supportLevel="Read"  />
+    <description source="BROADCOM">This is a correlation identifier for a CPE SELT operation.  This field is replicated in the Test Data for correlation between the control and response and has no impact on the operation of CPE SELT.   The length of this string is 10 characters, characters numerical (0-9) or letter (A-Z, a-z). For example, 123456790</description>
+
+  <parameter name="LineNumber" type="unsignedInt" specSource="BROADCOM" profile="X_BROADCOM_COM_Selt:1" supportLevel="Read" />
+    <description source="BROADCOM">If this a bonding line, line number specify which line the SELT Test was run on. </description>
+
+  <parameter name="TestStartTime" type="dateTime" specSource="BROADCOM" profile="X_BROADCOM_COM_Selt:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="Read" />
+    <description source="BROADCOM">The time that the test was started, in UTC.</description>
+
+  <parameter name="TestEndTime" type="dateTime" specSource="BROADCOM" profile="X_BROADCOM_COM_Selt:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="Read" />
+    <description source="BROADCOM">The time that the test completed, in UTC.</description>
+
+  <parameter name="MaxSeltPSD" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Maximum transmit PSD of the signal transmitted upstream during CPE SEL, in unit of dBmW/Hz.  This PSD limit applies to all frequencies.  A floating point string, max 7 characters, sign, 4 digits, decimal point and 3 digits after (+/-xxxx.x)</description>
+
+  <parameter name="MaxSeltF" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Maximum upstream transmit frequency for the CPE SELT, in unit of Hz.  </description>
+
+  <parameter name="MaxSeltT" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">SELT UER Maximum Measurement Duration, as defined in G.996.2.  Unit of seconds.   A floating point string maximum 8 characters, 4 digits, decimal point, 3 digit (xxxx.xxx)</description>
+
+  <parameter name="UER" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">The complex-valued uncalibrated echo response, UER, as defined in G.996.2.   The UER values are grouped together in a vector.  The vector starts from tone 1 and continues sequentially (no gaps) up to the highest used tone with exactly one complex value per tone.  (Tone means 4.3125kHz    subcarrier.)  A value UST be reported for each tone.  Values may be reported using linear units or scientific notation in the format 1.01e-3, -1.01e-3, 1.01e3, etc.   If there is no data available for a given tone, then report NaN as the value for that tone </description>
+
+  <parameter name="LoopEchoResponse" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">The "TDR" vector indicating the spatial=domain echo response (S11) of the loop.   The term "loop" in the preceding sentence means the copper twisted pair network to which the CPE is connected and specially excludes the CPE's AFE.   The first value of the vector represents the complex echo response at 1 ft from the CPE, the second value at 2nd ft fromthe CPE and so on.  Values SHALL be reported in 1-foot increments (no gaps) and the values SHALL be normalized to have absolute value with the range [-1.0, 1.0].  Values may be reported using linear units or scientific notion in the format 1.01e-3,-1.01e-3, 1.01e3, or a mixture thereof</description>
+
+  <parameter name="LoopLength" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Estimate length in feet, of the loop between CPE and DSLAM.   Report NA if not available.  </description>
+
+  <parameter name="Gauge" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Estimate wire gauge of the loop. The values are either 24, 26 or NA  </description>
+
+  <parameter name="BTLen1" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Length, in feet, of the first detected bridged tap.  The length refers to the distance from the end of the tap to the tap's splice point into the loop.  If not detected, then report 0.  </description>
+
+  <parameter name="BTLocation1" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Length, in feet, of the first detected bridged tap.  Location means the loop distance between the CPE and the tap's splice point into the loop.  If not detected, then report 0 </description>
+
+  <parameter name="BTLen2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Length, in feet, of the second detected bridged tap.  The length refers to the distance from the end of the tap to the tap's splice point into the loop.  If not detected, then report 0.  </description>
+
+  <parameter name="BTLocation2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Length, in feet, of the second detected bridged tap.  Location means the loop distance between the CPE and the tap's splice point into the loop.  If not detected, then report 0 </description>
+
+  <parameter name="NETerminationType" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Termination type detected at the near end (in other words, the end away from the CPE).  The possible values are "OPEN", "SHORT", "DSLAM", or "NA".   "OPEN" means that the loop is open (infinite ohm).  "SHORT" means that the loop is shorted (zero ohm).  DSLAM means that the loop is connected to a powered-on DSLAM.  NA means Other or Not Applicable</description>
+
+  <parameter name="MissingMicrofilterLocation" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Location, in feet, of a detected missing microfilter.   Location means the loop distance between the CPE and where the microfilter is missing.  If not dectected, then report 0 </description>
+
+  <parameter name="ShortLocation1" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Location, in feet, of the first detected short fault on the loop.  Location means the loop distance between the CPE and the fault.  If not dectected, then report 0 </description>
+
+  <parameter name="ShortLocation2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Location, in feet, of the second detected short fault on the loop.  Location means the loop distance between the CPE and the fault.  If not dectected, then report 0 </description>
+
+  <parameter name="OpenLocation1" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Location, in feet, of the first detected open fault on the loop.  Location means the loop distance between the CPE and the fault.  If not dectected, then report 0 </description>
+
+  <parameter name="OpenLocation2" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Selt:1" requirements="R" supportLevel="Read" />
+    <description source="BROADCOM">Location, in feet, of the second detected open fault on the loop.  Location means the loop distance between the CPE and the fault.  If not dectected, then report 0 </description>
+
+<vsaInfo>
+
+<validstringarray name="seltStateValues" />
+  <element>None</element>
+  <element>Requested</element>
+  <element>Complete</element>
+  <element>Error</element>
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_Selt:1" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

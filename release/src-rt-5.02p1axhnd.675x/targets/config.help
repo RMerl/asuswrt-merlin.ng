@@ -1,0 +1,587 @@
+
+BRCM_DRIVER_FAP
+  Build Broadcom FAP hardware accelerator driver.
+END
+
+BRCM_DRIVER_FAP_GSO
+  Build Broadcom GSO driver implementation for FAP hardware accelerator.
+END
+
+BRCM_DRIVER_FAP_GSO_LOOPBACK
+  Build FAP GSO loopback driver for WLAN interfaces.
+END
+
+BRCM_DRIVER_FAP_LAYER2
+  Build Layer2 bridge functionality in FAP hardware accelerator driver. Used for EPON only.
+END
+
+BRCM_DRIVER_ARL
+  Build ARL/MAC table functionality in FAP hardware accelerator driver.
+END
+
+BUILD_FAPCTL
+  Build with or without FAP Control Utility userspace app.
+  If building with this app then "FAP Support" should also be enabled.
+  See "FAP Support" under "Packet Acceleration" (top level menu).
+END
+
+BUILD_SAMBA
+  Build with or without Samba (Windows interoperability) userspace app.
+END
+
+BRCM_UCLIBC
+DESKTOP_LINUX
+# Help text goes here
+END
+
+BRCM_ROOTFS_SQUASHFS
+BRCM_ROOTFS_JFFS2
+BRCM_ROOTFS_NFS
+# Help text goes here
+END
+
+BRCM_PHY_BONDING
+# Help text goes here
+END
+ 
+BUILD_PHY_ADSL
+BUILD_PHY_MULTIMODE
+BUILD_PHY_VDSL
+# Help text goes here
+END
+
+BRCM_ADSL_ANNEX_A
+BRCM_ADSL_ANNEX_B
+BRCM_ADSL_ANNEX_C
+BRCM_ADSL_SADSL
+# Help text goes here
+END
+
+USE_GPONRG_OMCI_LIGHT
+USE_GPONRG_OMCI_FULL
+USE_GONRG_NONE
+# Help text goes here
+END
+
+BUILD_BCM_ALLOW_REAL_HW_SWITCHING
+   If Enabled, when certain conditions are met, the real layer 2 hardware
+   switch is allowed to do LAN to LAN packet switching.
+   If Disabled, the real layer 2 hardware switch is never allowed to do
+   LAN to LAN packet switching.
+END
+
+BCM_KERNEL_CMDLINE_BOOL
+   Tell kernel build to compile in a command line.  This option
+   must be enabled for the next two CMDLINE options.
+END
+
+BCM_KERNEL_CMDLINE
+   Compile this command line into the kernel.  Kernel will append
+   this command line to any command line args it received from the
+   bootloader to formulate the full kernel command line.
+END
+
+BRCM_CMA_RSVMEM 
+   Enable Linux CMA based memory resevation
+END
+
+BCM_KERNEL_CMDLINE_OVERRIDE
+   Ignore the command line args from the bootloader.  Use the
+   specified command line only.
+END
+
+BUILD_DM_LEGACY98
+BUILD_DM_HYBRID
+BUILD_DM_PURE181
+BUILD_DM_DETECT
+   TR98: use TR98 and Broadcom proprietary extensions.  Specifically,
+   do not include any objects from TR181.  Root of Data Model is
+   InternetGatewayDevice.
+
+   Hybrid: Use TR98 and Broadcom proprietary extensions, but also use a few
+   selected objects from TR181: IPV6, Homeplug, Optical, and SoftwareModules.
+   These TR181 features must still be enabled in their sections.  Root of
+   Data Model is InternetGatewayDevice.
+   
+   Pure181: Use TR181 (do not use TR98).  Root of Data Model is Device.
+   
+   DM_Detect: compile both TR98 and TR181 objects.  Early in system bootup,
+   use some external method to determine which data model the CPE should use,
+   and use that data model.  Note that although both data models are compiled,
+   only one of them is usable and active at runtime.
+END
+
+BUILD_CUSTOMER
+    Support customer sepecific features.
+END
+BUILD_CUSTOMER_NAME
+    Customer name.
+END
+
+MGMT_TR69C
+MGMT_TR69C_BEEP
+   TR69:     Build legacy tr69c.
+   TR69_BEE: Build tr69c BEE package.
+END
+
+BRCM_UCLIBC
+    Only ucLibc is supported.  If you want to enable DESKTOP_LINUX, go to
+    the Major Features Selection and look under CMS.
+END
+
+BUILD_BACKUP_PSI_MIRROR_MODE
+BUILD_BACKUP_PSI_DEVICE_DEFAULT
+    MIRROR_MODE: this is the original behavior of the backup PSI.  The backup
+    PSI area contains an exact copy of the primary PSI.
+    
+    DEVICE_DEFAULT: the backup PSI area contains a device-unique default
+    config file which was programmed at the factory using a special command,
+    psictl.  User configuration is written into the primary PSI only,
+    and if/when the primary PSI is invalidated, the device-unique default
+    config file in the backup PSI will be loaded.
+END
+
+BCM_SPEEDYGET
+    Enable accelerated wget HTTP /GET mode for speed testing
+END
+
+BUILD_BRCM_UNFWLCFG
+   This is a new wireless management system leveraging BBF Data Model (TR181 on 5.02L06 release). 
+   This new management system uses single configuration (data model) repository by mapping wifi nvram to data model. 
+   Thus it does away the need in synchronizing multiple configuration domains. 
+   There is no wlcsm library and wlmngr anymore.
+END
+
+BUILD_NVRAM
+   The legacy NVRAM by using wlcsm library.
+END
+
+BUILD_BCM_CPEPKTC
+   CPE-specific Packet Chaining.
+END
+
+BUILD_BCM_PKTFWD
+   Packet Forwarder Handoff library.
+END
+
+BUILD_BCM_PKTFWD_FLCTL
+   Credit based Host Flow Control.
+END
+
+BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG
+   Build image without BCMINTERNAL or BCMDBG defined ("external-ish").
+END
+
+BUILD_DM_TR104_V2
+   TR104V2: Use TR104 Issue 2 data model.
+END
+
+BUILD_MODSW_DOCKEREE_BR_IP
+  The IP address and mask defined by this config option will be used as
+  the value for the input argument "bip" when launching dockerd. Please
+  refer to the following URL for more details:
+  https://docs.docker.com/engine/userguide/networking/default_network/custom-docker0/'
+END
+
+BUILD_AUDIO_SUPPORT
+   Support ALSA framework, pulseaudio, re-sample libary etc.
+END
+
+BUILD_AVS_DEVICE_SDK
+   Support Amazon Alexa Device SDK and Demo App.
+END
+
+BUILD_CFE_DBG_JTAG_OPEN
+   ************* DANGEROUS DEBUG OPTION *********************
+   Even in secure boot, enable JTAG interface during CFEROM/CFERAM operation.
+END
+
+BUILD_CFE_SUPPORT_HASH_BLOCK
+   Have bootloader enforce a SHA256 signature of CFERAM, DTBs, Kernel, etc...
+END
+
+BUILD_ROOTFS_SQUASHFS_HASH
+   Enforce a SHA256 signature of the squashfs root filesystem
+END
+
+BUILD_CFE_NONSEC_MFG_CONSOLE
+   Build CFERAM to provide recovery options in MFG-secure mode without exposing keys. (Drop priviledges) 
+END
+
+BUILD_CFE_NONSEC_FLD_CONSOLE
+   Build CFERAM to provide recovery options in FLD-secure mode without exposing keys. (Drop priviledges) 
+END
+
+BUILD_CFE_ALLOW_NONSEC_SOTP_ACCESS
+   Build CFERAM to permit nonsecure masters (like Linux) to access SOTP.  
+   This is used in secure boot environments where no TEE is used and Linux drivers access the OEM regions of
+   SOTP.  
+END
+BUILD_CFE_FAILSAFE_BOOT
+    Supported only for GEN3 Secure Boot architectures. Linux Kernel Watchdog must be configured and enabled. 
+    Once enabled CFEROM(first stage bootloader), CFERAM(second stage bootloader) and Linux Userspace  
+    maintain Watchdog state across platform SoftReset. Upon booting to Linux userspace the Watchdog is stopped
+    as this is considered a successful boot. Otherwise, if system becomes unresponsive during the Watchdog tracking 
+    CFEROM on SoftReset determines the reason of the crash then switches to previously installed or fallback image. 
+    If fallback image is also crashed - CFEROM halts the system. 
+    Default Watchdog delays are - CFEROM CFERAM both are given 30s for Watchdog timer to exppire. Linux given 60s.  
+    Linux Kernel till init script (S1) - 30s;  from S1 to S89 30s.
+END
+
+BUILD_MAP
+   Build with or without MAP-T and MAP-E Technologies for IPv6.
+END
+
+BUILD_MODSW_EE
+  Build BEEP - Broadcom Execution Environment Platform with LXC and DBUS subsystems
+END
+
+BUILD_MODSW_BEE_PREINSTALL
+  Preinstall BEE - Broadcom Execution Environment running under BEEP - Needs CMS
+END
+
+BUILD_MODSW_EXAMPLEEE_PREINSTALL
+  Build Example Execution Environment running under BEEP
+END
+
+
+BUILD_MODSW_OPENWRTEE
+  Build OpenWrt Execution Environment running under BEEP
+END
+
+BUILD_MODSW_DOCKEREE
+  Build Docker Eexecution Environment under BEEP
+END
+
+BUILD_MODSW_OSGIEE
+  Build OSGI - Broadcom TR157 based OSGI Eexecution Environment
+END
+
+
+BRCM_HW_POLICING
+   Support hardware policing.
+   Only on PON platform, exclusive to BRCM_TC_POLICING and BRCM_TC_RATE_LIMIT.
+END
+
+BRCM_DRIVER_ARCHER
+   Support Archer Packet Accelerator
+   Exclusive to platforms without Runner and FAP
+   Needs Command List (CMDLIST), Buffer Pool Manager (BPM), Ethernet and DSL/XTM drivers
+END
+
+BUILD_CFE_DDR4
+   Build CFE ROM that supports DDR4
+END
+
+BUILD_CFE_APPEND_BOOT_CMDLINE
+   Append extra linux boot cmd line argument to the device tree. This string is passed to
+   CFE during the build and add to the dtb boot argument at CFE linux boot time.
+END
+
+BRCM_MULTIPLE_TR69C_SUPPORT
+   Support multiple tr69c clients. Currently just support 2 at most.
+END
+
+BRCM_DRIVER_SW_GSO
+   Emulates GSO in Software on Host CPU at driver level(Enet etc..), to improve performance
+   of applications transmitting TCP/UDP data from the modem.
+END
+
+BRCM_CSO
+   Checksum Offload (CSO) to HW for received packets in host.
+END
+
+BRCM_DRIVER_SPDTEST
+   Support Broadcom TCP/UDP Speed Test Offload
+END
+
+BUILD_DISABLE_PINMUXTEST
+   Disable building pinmux test 
+
+BRCM_REASON_TO_SKB_MARK
+   Support trap reason to skb mark
+END
+
+BRCM_DW_CXC_DATA_MODE
+   Support DW CXC data mode
+   Only on PON platform
+END
+
+BUILD_LIBMNL
+   A minimalistic user-space library oriented to Netlink developers 
+END
+
+BUILD_IPSET
+   IP sets are a framework inside the Linux kernel, which can be administered 
+   by the ipset utility. Depending on the type, an IP set may store IP 
+   addresses, networks, (TCP/UDP) port numbers, MAC addresses, interface names
+   or combinations of them in a way, which ensures lightning speed when
+   matching an entry against a set 
+END
+
+BUILD_LIBSECCOMP
+   Build libseccomp library to provides an easy to use, platform independent,
+   interface to the Linux Kernel's syscall filtering mechanism.
+END
+
+BUILD_MICRO_HTTPD
+   Build libmicrohttpd library and mhd application to provides an
+   httpd that can run independently with CMS.
+END
+
+BUILD_HND_MFG
+   Build a Wireless driver with additional debug support for manufacturing
+END
+
+BUILD_BCM_WLAN_NO_MFGBIN
+   Build an image without containing wlan mfgtest binaries in the image.
+END
+
+BUILD_HND_NIC
+   Do not build wireless dongle firmware, build only NIC Wireless driver
+END
+
+BUILD_BCM_WLAN_DPDCTL
+   Build an image with wlan interface deep power down control.
+END
+
+BUILD_EPON_DPOE_SSD
+   Support Secure Software Download.
+   Precondition: EPON DPoE mode is enabled.
+END
+
+BUILD_BCM_CLEDS_PROC_DRIVER
+   Add procfs driver for CLED
+   User can configure various color led configurations from userspace
+END
+
+BUILD_BCM_WLCLED
+   Enable WLAN CLED
+END
+
+BUILD_CERT
+   Support SSL certificates
+END
+
+BRCM_VOICE_SUPPORT
+   Support Voice features
+END
+
+BRCM_VOICE_APP_SIP
+   Support VOIP SIP application
+END
+
+BRCM_VOICE_APP_EPTAPP
+   Support DSP Endpoint application
+END
+
+BUILD_DM_TR104_V1
+BUILD_DM_TR104_V2
+   Support TR104 data model
+END
+
+BRCM_VOICE_ANNOUNCEMENT
+   Support Voice Announcement for endpoint application
+END
+
+BRCM_VOICE_DECT_SUPPORT
+   Support DECT
+END
+
+BRCM_VOICE_HALCAP_NETWORK_SUPPORT
+   Support HAL Capture Network
+END
+
+BRCM_VOICE_LOW_POWER_IDLE
+   Support Low Power State when Idle
+END
+
+BRCM_VOICE_SRTP_SUPPORT
+   Support SRTP
+END
+
+BRCM_KERNEL_NF_REGARDLESS_DROP_ORDER
+   When trying to create a new connection if Netfilter Conntrack table is full
+   we try to drop an existing connection.The connection to be dropped is selected
+   based on one of the below orders
+
+   1 : drop non-acclerated first(low_sw-->hi_sw-->low_sw_accel-->hi_sw_accel-->low_hw_accel-->hi_hw_accel)
+   2 : drop HW-accelerated last(low_sw-->low_sw_accel-->hi_sw-->hi_sw_accel-->low_hw_accel-->hi_hw_accel)
+   3 : strict priority (low_sw-->low_sw_accel-->low_hw_accel-->hi_sw-->hi_sw_accel-->hi_hw_accel)
+END
+
+BCM_FEED_RING_SIZE
+   Feed Ring is the reservoir of data buffers used to pass packets from the Runner to the CPU.
+   This constant sets its size.
+END
+
+BCM_FEED_RING_ALLOC_START
+   Ideally Feed Ring should be filled with buffers. This constant defines the ceiling
+   for the allocation of the new buffers to start.
+END
+
+BCM_FEED_RING_ALLOC_BATCH
+   We allocate Feed Ring buffers in batches. This is the allocation batch size.
+END
+
+BCM_FEED_RING_REFILL_EVERY
+   To get the Feed Ring capacity level, we need to perform some costly operations.
+   This constant defines polling interval expressed as number of packets received
+   on the CPU.
+END
+
+BCM_FEED_RING_MAX_ALLOCATIONS
+   In very rare, theoretic scenarios, we may cause a lot of buffer allocations.
+   This constant defines a maximum of buffers to be allocated for the Feed Ring.
+END
+
+BRCM_DRIVER_LICENSE
+   Driver for a Broadcom license used to enabled additional features.
+END
+
+BLD_FLASH_TOOLS
+   This installs FLASH debug tools not needed in the normal operation of the board,
+   which include command line options to issue NAND device specific commands,
+   create bad blocks and write/modify data.
+END
+
+DISABLE_NOR_RAW_PARTITION
+   Using AuxFS to store PSI instead of raw partition in NOR flash.
+END
+
+BRCM_AUXFS_PERCENT
+   When select disable NOR flash raw partition, it represents as size*4KB, or it is the percentage of flash.
+END
+
+BUILD_IMAGE_OFFSET_ZERO
+  Set IMAGE_OFFSET to 0. 63178 and 47622 bootrom mode, image offset could start
+  from 0 to reuse first 64KB of flash. Now we set IMAGE_OFFSET as 0x10000 in 
+  bcm_hwdefs.h for NOR XIP and bootrom NAND flash.
+END
+
+BRCM_DRIVER_PKTFLOW
+  Broadcom proprietary software accelerator driver (aka flow-cache).
+END
+
+BRCM_PKTFLOW_MAX_FLOWS
+  Set max number of Flow-cache supported flow entries.
+END
+
+BRCM_PKTFLOW_MAX_FDB
+  Set max number of Flow-cache supported FDB entires.
+END
+
+BRCM_PKTFLOW_MAX_HOST_DEV
+  Set max number of Flow-cache supported host device entries.
+END
+
+BRCM_PKTFLOW_MAX_HOST_MAC
+  Set max number of Flow-cache supported host MAC entries.
+END
+
+BRCM_RUNNER_MAX_FLOWS
+  Set max number of Runner accelerated flows.
+END
+
+BUILD_RDPA
+  Build RDPA (Runner Data Path API) driver.
+END
+
+BRCM_DRIVER_PKTRUNNER
+  Build Packet Runner (PktRunner) driver; This driver provides interface between Flow-cache and Runner hardware accelerator for flow acceleration.
+END
+
+BRCM_DRIVER_PKTRUNNER_GSO
+  Build support for GSO (Generic Segmenration Offload) using Runner.
+END
+
+BRCM_RDPA_MCAST_SUPPORT
+  Enable Multicast acceleration support in Runner (applicable only to 4908/62118 platforms).
+  By default Multicast acceleration is enabled in Runner, so this could be used to disable it and save some memory.
+END
+
+BCM_FCACHE_CLASSIFICATION_BYPASS
+  Enable HW accelerator assisted flow-cache packet classification capability to reduce CPU consumption.
+END
+
+BRCM_DRIVER_NETXL
+  Build NETXL driver.
+END
+
+BRCM_DRIVER_WIFI_FORWARDING_DRV
+  Build WFD (Wifi Forwarding Driver).
+END
+
+BRCM_DRIVER_DHD_RUNNER
+  Build driver to offload DHD processing to Runner.
+END
+
+BRCM_DRIVER_BPM
+  Build Software Buffer Pool Manager (BPM) driver.
+END
+
+BUILD_PMD
+  Build the userspace private PMD library.
+  The PMD library provides APIs to handle the calibration parameters.
+  It supports both JSON text calibration files and legacy binary calibration files.
+  It is enabled for all the platforms which may have a PMD device.
+END
+
+BUILD_TMCTL
+  Traffic Management Control Utility (TMCTL)
+  TMCTL provide platform independent traffic management API and CLI.
+  TMCTL API is interfacing with user applications.
+  TMCTL CLI is provided for debugging and scripts
+  Simplify code logic by removing platform dependent code in CMS.
+  Reduce the effort for customers when updating driver not using CMS.
+END
+
+BRCM_55153_DPU
+  Support for 55153 DPU product.
+  Here for this DPU product CO DSL PHY is loaded instead of CPE DSL PHY.
+END
+
+BUILD_BSTREAM_IQOS
+  Build HND Broadstream iQos (TREND DPI + linux tc)
+END 
+
+BRCM_USE_STD_TOOLCHAIN
+BRCM_USE_ALT_TOOLCHAIN
+  Specify which toolchain to use for building CommEngine images.
+  Broadcom-Crosstools-Toolchain: Use the standard toolchain distributed with all CommEngine releases
+  Alternate-Toolchain: Use an alternate user specified toolchain. Toolchain must be specified by setting proper variables in make.common
+END
+
+BRCM_ALT_TOOLCHAIN_BASE
+BRCM_ALT_ARM_TOOLCHAIN_TOPDIR
+BRCM_ALT_ARM_TOOLCHAIN_PREFIX
+BRCM_ALT_ARM_TOOLCHAIN_VER
+BRCM_ALT_ARM_TOOLCHAIN_SYSROOT_DIR
+BRCM_ALT_AARCH64_TOOLCHAIN_TOPDIR
+BRCM_ALT_AARCH64_TOOLCHAIN_PREFIX
+BRCM_ALT_AARCH64_TOOLCHAIN_VER
+BRCM_ALT_AARCH64_TOOLCHAIN_SYSROOT_DIR
+  Specify the various components which make up the path to the alternate toolchains. The variables are broken down as follows:
+
+    Full Toolchain path: <TOOLCHAIN_BASE>/<TOOLCHAIN_TOPDIR>/<TOOLCHAIN_PREFIX>/<TOOLCHAIN_SYSROOT_DIR>
+
+    e.g. Toolchain path: /opt/tools-arm-gcc-5.5-toolchain/arm-buildroot-linux-gnueabi/sysroot/
+    		TOOLCHAIN_BASE = /opt
+		TOOLCHAIN_TOPDIR = tools-arm-gcc-5.5-toolchain
+		TOOLCHAIN_PREFIX = arm-buildroot-linux-gnueabi
+		TOOLCHAIN_SYSROOT_DIR = sysroot
+		TOOLCHAIN_VER = 5.5
+
+    e.g. Toolchain path: /linaro/gcc-linaro-7.x_arm-linux-gnueabi/arm-linux-gnueabi/libc/
+    		TOOLCHAIN_BASE = /linaro
+		TOOLCHAIN_TOPDIR = gcc-linaro-7.x_arm-linux-gnueabi
+		TOOLCHAIN_PREFIX = arm-linux-gnueabi
+		TOOLCHAIN_SYSROOT_DIR = libc
+		TOOLCHAIN_VER = 7.x
+END
+BUILD_ARM_PLTS
+  The range of the 'bl' instruction in armv7 is 24 bits which limits the overall
+  size of the collection of modules that can be loaded to 16MB. This
+  configuration enables the indirect PLT feature which allows modules beyond
+  this size to be relocated in the vmalloc area.
+END

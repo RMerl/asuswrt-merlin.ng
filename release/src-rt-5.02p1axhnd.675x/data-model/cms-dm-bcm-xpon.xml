@@ -1,0 +1,248 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_XPON." shortObjectName="XponObject" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="Present" oid="2010" lockZone="9" />
+  <description source="BROADCOM">XPON(EPON/GPON) configuration</description>
+
+  <parameter name="AuthenticationId" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">Logical ID authentication ID.</description>
+
+  <parameter name="AuthenticationPassword" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">Logical ID authentication password.</description>
+
+  <parameter name="OamSelection" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">Oam vendor TEK/CTC/DPoE.</description>        
+
+  <parameter name="ImageCrc" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">CTC upgrade image CRC.</description>        
+
+  <parameter name="ImageCrcBeforeCommit" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">CTC upgrade image CRC before commit.</description>        
+    
+  <parameter name="Date" type="hexBinary" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" maxLength="8" />
+    <description source="BROADCOM">Date of Manufacturer.</description>        
+ 
+  <parameter name="MaxLinkNum" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="1" />
+    <description source="BROADCOM">Max Link Number.</description>        
+  
+  <parameter name="DpoeFileName" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue=""  maxLength="128"/>
+    <description source="BROADCOM">The DPoE ONU firmware file name (0xD7/0x010E).</description>
+
+  <parameter name="DpoeMfgTime" type="hexBinary" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" maxLength="26"/>
+    <description source="BROADCOM">The DPoE firmware CVC and CVS validity times (0xD7/0x000F), used for secure software download.</description>        
+
+  <parameter name="EponSchMode" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">Epon Schedule Mode.</description>     
+    
+  <parameter name="EponIdleTimeOffset" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">Epon Idle Time Offset.</description>
+    
+  <parameter name="ExtendedId" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">Customer Defined Extended Info.</description>
+    
+  <parameter name="EponTxLaserPowerOff" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">Epon Tx Laser Power Off.</description>
+    
+  <parameter name="MaxRuleClauseNum" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="256" />
+    <description source="BROADCOM">The maximum number of rule clauses. </description>    
+
+  <parameter name="MaxRuleResultNum" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="256" />
+    <description source="BROADCOM">The maximum number of rule results. </description>    
+
+  <parameter name="MaxRulesNum" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="256" />
+    <description source="BROADCOM">The maximum number of rules. </description> 
+    
+  <parameter name="FailSafe" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">Epon CPE device fail safe</description>
+    
+  <parameter name="CucCfgCnt" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">Cuc Configuration Counter</description>
+
+  <parameter name="LinkNum" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="1" minValue="1" maxValue="8" />
+    <description source="BROADCOM">MLLID link number</description>
+
+  <parameter name="PortNum" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="4" minValue="1" maxValue="4" />
+    <description source="BROADCOM">LAN port number</description>
+
+  <parameter name="DpoeCosignerName" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" maxLength="8" />
+    <description source="BROADCOM">The DPoE SSD cosigner name (human readable string). </description>
+
+  <parameter name="DpoeCosignerTime" type="hexBinary" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" maxLength="26"/>
+    <description source="BROADCOM">The DPoE SSD cosigner Code Access Start time as defined in DPoE-SP-OAMv2.0.</description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_XPON.UpLink.{i}." shortObjectName="UpLinkObject" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">Upstream link. </description>
+  
+  <parameter name="QueueNum" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="1" minValue="0" maxValue="8" />
+    <description source="BROADCOM">Queue number this epon link is associated. </description>
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_XPON.DownPort.{i}." shortObjectName="DownPortObject" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">Downstream port. </description>
+  
+  <parameter name="QueueNum" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="1" minValue="0" maxValue="8" />
+    <description source="BROADCOM">Queue number this lan port is associated. </description>
+        
+<object name="InternetGatewayDevice.X_BROADCOM_COM_XPON.ClockTransport." shortObjectName="ClockTransportObject" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">Clock Transport Configuration. </description>
+      
+  <parameter name="PulseOutEnabled" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">1pps output enable.</description>
+    
+  <parameter name="TodOutMode" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="2" />
+    <description source="BROADCOM">TOD output mode. </description>
+    
+  <parameter name="FiberRtt" type="int" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">Round trip time. </description>
+    
+  <parameter name="TimeAdjust" type="int" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">Per ONU time adjustment. </description>
+    
+  <parameter name="halfPeriod" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="5000000" />
+    <description source="BROADCOM">Round trip time. </description>
+        
+<object name="InternetGatewayDevice.X_BROADCOM_COM_XPON.RuleClauses.{i}." shortObjectName="Dev2RuleClausesObject" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">Rule Clauses table. </description>
+
+  <parameter name="Port" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" minValue="0" maxValue="5" />
+    <description source="BROADCOM">The port number this clause is associated. </description>
+    
+  <parameter name="RuleIndex" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The rule's index this clause is associated. </description>
+
+  <parameter name="Priority" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" minValue="1" maxValue="256" />
+    <description source="BROADCOM">Position of the ruel entry in the order of precedence.  A value of 1 indicates the first entry considered (highest precedence).  </description>
+
+  <parameter name="Length" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="256" />
+    <description source="BROADCOM">Data length of clause. </description>
+    
+  <parameter name="FieldCode" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" maxLength="32" validValuesArray="fieldCodeValues" />
+    <description source="BROADCOM">The field of this clause. </description>
+  
+  <parameter name="Instance" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="256" />
+    <description source="BROADCOM">Instance of object in the clause. </description>
+  
+  <parameter name="MsbMask" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="256" />
+    <description source="BROADCOM">Right Mask of clause. </description>
+  
+  <parameter name="LsbMask" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="256" />
+    <description source="BROADCOM">Left Mask of clause. </description>    
+
+  <parameter name="Op" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" maxLength="16" validValuesArray="OperationValues" />
+    <description source="BROADCOM">Operation of clause. </description>
+
+  <parameter name="MatchValLen" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="16" />
+    <description source="BROADCOM">Match value lenght in this clause. </description>
+
+  <parameter name="MatchVal" type="hexBinary" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" maxLength="34" />
+    <description source="BROADCOM">Match value of this clause. </description>
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_XPON.RuleResults.{i}." shortObjectName="Dev2RuleResultsObject" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">Rule Results table. </description>
+
+  <parameter name="RuleIndex" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" />
+    <description source="BROADCOM">The rule's index this clause is associated. </description>
+  
+  <parameter name="Length" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="256" />
+    <description source="BROADCOM">Data length of result. </description>
+  
+  <parameter name="ResultCode" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" maxLength="32" validValuesArray="resultCodeValues" />
+    <description source="BROADCOM">The result code of rule. </description>
+  
+  <parameter name="DestObjType" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" maxLength="16" validValuesArray="objTypeValues" />
+    <description source="BROADCOM">The Object type of this result, it is valid when result is set queue. </description>
+  
+  <parameter name="DestInst" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="16" />
+    <description source="BROADCOM">Instance of object when set queue. </description>
+  
+  <parameter name="DestQueue" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="16" />
+    <description source="BROADCOM">Queue index when set queue. </description>    
+
+  <parameter name="FieldCode" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" maxLength="16" validValuesArray="fieldCodeValues" />
+    <description source="BROADCOM">The field of this result. </description>
+  
+  <parameter name="Instance" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="256" />
+    <description source="BROADCOM">Instance of object in the result. </description>
+    
+  <parameter name="ResultVal" type="hexBinary" specSource="Broadcom" profile="X_BROADCOM_COM_XPON:1" supportLevel="ReadWrite" defaultValue="" maxLength="34" />
+    <description source="BROADCOM">Result value of this clause. </description>
+
+
+<vsaInfo>
+<validstringarray name="minimumSingleVsaValues" />
+<element>IgnoreThis</element>
+
+<validstringarray name="fieldCodeValues" />
+  <element>LinkIndex</element>
+  <element>L2DA</element>
+  <element>L2SA</element>
+  <element>EtherType</element>
+  <element>L2BDA</element>
+  <element>L2BSA</element>
+  <element>L2ITag</element>
+  <element>SVLAN</element>
+  <element>CVLAN</element>
+  <element>MPLS</element>
+  <element>IPv4ToS</element>
+  <element>IPv4TTL</element>
+  <element>IpProtocol</element>
+  <element>IPv4SA</element>
+  <element>IPv4DA</element>
+  <element>IPv6SA</element>
+  <element>IPv6DA</element>
+  <element>IPv6NextHeader</element>
+  <element>IPv6FlowLabel</element>
+  <element>TcpUdpSrcPort</element>
+  <element>TcpUdpDstPort</element>
+  <element>L2BTag</element>
+  
+<validstringarray name="OperationValues" />
+  <element>NeverMatch</element>
+  <element>Eq</element>
+  <element>NotEq</element>
+  <element>LessEq</element>
+  <element>GreaterEq</element>
+  <element>Exist</element>
+  <element>NotExist</element>  
+  <element>AlwaysMatch</element>  
+
+<validstringarray name="resultCodeValues" />
+  <element>Nop</element>
+  <element>Discard</element>
+  <element>Forwarding</element>
+  <element>Queue</element>
+  <element>Set</element>
+  <element>Copy</element>
+  <element>Delete</element>
+  <element>Insert</element>
+  <element>Replace</element>
+  <element>ClearDel</element>
+  <element>ClearIns</element>  
+
+<validstringarray name="objTypeValues" />
+  <element>Onu</element>
+  <element>NetPonPort</element>
+  <element>Link</element>
+  <element>UserPort</element>
+  <element>Queue</element>  
+      
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_XPON:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

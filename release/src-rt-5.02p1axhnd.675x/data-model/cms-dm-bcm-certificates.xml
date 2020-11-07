@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_CertificateCfg.{i}." shortObjectName="CertificateCfgObject" specSource="BROADCOM" profile="X_BROADCOM_COM_DigitalCertificates:1" supportLevel="DynamicInstances" oid="3200" />
+  <description source="TRx">Certificate Configuration Table.</description>
+
+  <parameter name="Name" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Entry name</description>
+    <description source="BROADCOM">PSI name: CERT_DATA_ENTRY</description>
+
+  <parameter name="Subject" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Subject</description>
+    <description source="BROADCOM">PSI name: CERT_DATA_ENTRY</description>
+
+  <parameter name="Type" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Type</description>
+    <description source="BROADCOM">PSI name: CERT_DATA_ENTRY</description>
+
+  <parameter name="Password" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Password</description>
+    <description source="BROADCOM">PSI name: CERT_DATA_ENTRY</description>
+
+  <parameter name="Content" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Content</description>
+    <description source="BROADCOM">PSI name: CERT_DATA_ENTRY</description>
+
+  <parameter name="PrivKey" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">PrivKey</description>
+    <description source="BROADCOM">PSI name: CERT_DATA_ENTRY</description>
+
+  <parameter name="ReqPub" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">ReqPub</description>
+    <description source="BROADCOM">PSI name: CERT_DATA_ENTRY</description>
+
+  <parameter name="RefCount" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Refcount</description>
+    <description source="BROADCOM">PSI name: CERT_DATA_ENTRY</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_WapiCertificate." shortObjectName="WapiCertificateObject" specSource="Broadcom" profile="X_BROADCOM_COM_WiFiLAN:1" supportLevel="Present" />
+  <description source="BROADCOM">Wapi certificate management.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_WapiCertificate.WapiAsCertificate." shortObjectName="WapiAsCertificateObject" specSource="Broadcom" profile="X_BROADCOM_COM_WiFiLAN:1" supportLevel="Present" />
+  <description source="BROADCOM">Authentication server certificate.</description>
+
+  <parameter name="CertificateFlag" type="unsignedInt" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="CertificateLength" type="int" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="CertificateContent" type="string" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="PrivateKeyFlag" type="unsignedInt" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="PrivateKeyLength" type="int" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="PrivateKeyContent" type="string" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_WapiCertificate.WapiIssuedCertificate." shortObjectName="WapiIssuedCertificateObject" specSource="Broadcom" profile="X_BROADCOM_COM_WiFiLAN:1" supportLevel="Present" />
+  <description source="BROADCOM">Keep track of issued/revoked/expired user certificates.  This only logs serial number, but not the whole user certificates.</description>
+
+  <parameter name="AsEnabled" type="unsignedInt" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="LastUpdated" type="unsignedInt" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="IssuedList" type="string" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="RevokedList" type="string" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+
+
+
+
+
+<vsaInfo>
+
+<validstringarray name="enabledDisabledStatusValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_WiFiLAN:1" /> 
+<profile name="X_BROADCOM_COM_DigitalCertificates:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

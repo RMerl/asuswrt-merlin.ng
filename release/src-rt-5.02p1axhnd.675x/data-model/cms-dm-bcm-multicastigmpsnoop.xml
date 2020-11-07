@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_IgmpSnoopingConfig." shortObjectName="IgmpSnoopingCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_IGMPSNOOP:1" supportLevel="Present" oid="3280" />
+  <description source="BROADCOM">Igmp snooping feature</description>
+
+  <parameter name="Enable" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">By default, always enabled.</description>
+
+  <parameter name="Status" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status4eValues" />
+    <description source="BROADCOM">Current status of this object.  If Enabled, means it has been configured to the system.</description>
+
+  <parameter name="Mode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Blocking" validValuesArray="IgmpSnoopingMode" />
+    <description source="BROADCOM">IGMP snooping modes: Standard or Blocking</description>
+
+  <parameter name="LanToLanEnable" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">IGMP Lan To Lan Multicast</description>
+
+
+<vsaInfo>
+
+<validstringarray name="IgmpSnoopingMode" />
+  <element>Standard</element>
+  <element>Blocking</element>
+
+<validstringarray name="status4eValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error_Misconfigured</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_IGMPSNOOP:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

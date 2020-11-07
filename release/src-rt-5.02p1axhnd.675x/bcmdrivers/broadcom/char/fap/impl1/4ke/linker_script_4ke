@@ -1,0 +1,31 @@
+MEMORY 
+{
+	noncached1 (!r) : ORIGIN = 0x80000000, LENGTH = 500K
+	noncached2 (!r) : ORIGIN = 0x9fc00000, LENGTH = 500K
+}
+
+/* Note: addresses 0x80004000 - 0x80006000 are reserved by hardware
+   for d-cache access.  Thus, if you map .pentry and .ptext into
+   0x80000000 you must not start mapping .text until after 0x80006004 */
+
+SECTIONS
+{
+	. = 0x0000 ;
+	.pentry : 
+		{
+				. = 0x0000 ;
+				*fap4ke_vectors.o (.text)
+				. = 0x0180 ;
+				*fap4ke_vectors2.o (.text)
+				. = 0x0480 ; 
+				LONG(0)
+				/* .= 0x6000; LONG(0) */  /* Uncomment this if using noncached1 region */
+		} > noncached2
+		/* .= 0x6004; */  /* Uncomment this if using noncached1 region */
+	.text : 
+		{ *(.text.startup) *(.text) *(.rodata*) *(.reginfo) } > noncached2
+	.data :
+		{ *(.data) } > noncached2
+	.bss :
+		{ *(.bss) *(COMMON) } > noncached2
+}

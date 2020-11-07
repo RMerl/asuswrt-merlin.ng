@@ -1,0 +1,305 @@
+/*
+   Copyright (c) 2015 Broadcom
+   All Rights Reserved
+
+    <:label-BRCM:2015:DUAL/GPL:standard
+
+    Unless you and Broadcom execute a separate written software license
+    agreement governing use of this software, this software is licensed
+    to you under the terms of the GNU General Public License version 2
+    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+    with the following added to such license:
+
+       As a special exception, the copyright holders of this software give
+       you permission to link this software with independent modules, and
+       to copy and distribute the resulting executable under terms of your
+       choice, provided that you also meet, for each linked independent
+       module, the terms and conditions of the license of that module.
+       An independent module is a module which is not derived from this
+       software.  The special exception does not apply to any modifications
+       of the software.
+
+    Not withstanding the above, under no circumstances may you combine
+    this software in any way with any other Broadcom software provided
+    under a license other than the GPL, without Broadcom's express prior
+    written consent.
+
+:>
+*/
+
+#ifndef _XRDP_DRV_NATC_AG_H_
+#define _XRDP_DRV_NATC_AG_H_
+
+#include "access_macros.h"
+#include "bdmf_interface.h"
+#ifdef USE_BDMF_SHELL
+#include "bdmf_shell.h"
+#endif
+#include "rdp_common.h"
+
+
+/**************************************************************************************************/
+/* ddr_enable:  - Enables NAT table offload to DDR functionality.NATC_CONTROL_STATUS2 register sh */
+/*             ould be configured before enabling this feature.                                   */
+/* natc_add_command_speedup_mode:  - Default behavior for an ADD command is to do a LOOKUP first  */
+/*                                to see if the entrywith the same key already exists and replace */
+/*                                 it; this is to avoid having duplicatedentries in the table for */
+/*                                 ADD command.  When this bit is set an ADD command willeither r */
+/*                                eplace the entry with the matched key or add an entry to an emp */
+/*                                ty entrydepending on whichever one is encountered first during  */
+/*                                multi-hash.  Enablingthis bit speeds up the ADD command.        */
+/* unused4:  -                                                                                    */
+/* ddr_64bit_in_128bit_swap_control:  - Swap 64-bit word within 128-bit word for DDR memory read/ */
+/*                                   write accesses(i.e., [127:0] becomes {[63:0], [127:64]}).    */
+/* smem_32bit_in_64bit_swap_control:  - Swap 32-bit word within 64-bit word for statistics (count */
+/*                                   er) memory accesses(i.e., [63:0] becomes {[31:0], [63:32]})  */
+/* smem_8bit_in_32bit_swap_control:  - Reverse bytes within 32-bit word for statistics (counter)  */
+/*                                  memory accesses(i.e., [31:0] becomes {[7:0], [15,8], [23,16], */
+/*                                   [31,24]})                                                    */
+/* ddr_swap_all_control:  - Swap all bytes on DDR interface.                                      */
+/* repeated_key_det_en:  - Enable repeated key detection to improve cache lookup performance for  */
+/*                      repeated key.                                                             */
+/* reg_32bit_in_64bit_swap_control:  - Swap 32-bit word within 64-bit word for key_result registe */
+/*                                  r accesses(i.e., [63:0] becomes {[31:0], [63:32]})            */
+/* reg_8bit_in_32bit_swap_control:  - Reverse bytes within 32-bit word for key_result register ac */
+/*                                 cesses(i.e., [31:0] becomes {[7:0], [15,8], [23,16], [31,24]}) */
+/* ddr_pending_hash_mode:  - Hash algorithm used to detect DDR pending operations.0h: 32-bit roll */
+/*                        ing XOR hash is used as cache hash function.1h: CRC32 hash is used as c */
+/*                        ache hash function.2h: CRC32 hash is used as cache hash function.3h: CR */
+/*                        C32 hash is used as cache hash function.4h: RSS hash is used as cache h */
+/*                        ash function using secret key 0.5h: RSS hash is used as cache hash func */
+/*                        tion using secret key 1.6h: RSS hash is used as cache hash function usi */
+/*                        ng secret key 2.7h: RSS hash is used as cache hash function using secre */
+/*                        t key 3.                                                                */
+/* pending_fifo_entry_check_enable:  - This bit disables caching DDR miss entry function when the */
+/*                                  re is no additional lookup havingthe same key in pending fifo */
+/*                                   (e.g., DDR miss entry is cached only if there are 2 or more  */
+/*                                  lookupof the same key within a 32 lookup window).This is to r */
+/*                                  educe excessive caching of miss entries.This bit is only vali */
+/*                                  d when CACHE_UPDATE_ON_DDR_MISS bit is set to 1.1h: Enable; m */
+/*                                  iss entry fetched from DDR will be cached if pending FIFOcont */
+/*                                  ains the same lookup having the same hash value as miss entry */
+/*                                  .0h: Disable; miss entry fetched from DDR will always be cach */
+/*                                  ed.                                                           */
+/* cache_update_on_ddr_miss:  - This bit enables caching for miss entry1h: Enable; miss entry in  */
+/*                           both cache and DDR will be cached.0h: Disable; miss entry in both ca */
+/*                           che and DDR will be not cached.                                      */
+/* ddr_disable_on_reg_lookup:  - This bit prevents register interface lookup to access DDR0h: Ena */
+/*                            ble register interface lookup in DDR.1h: Disable register interface */
+/*                             lookup in DDR.Register interface lookup will only return lookup re */
+/*                            sults in Cache.                                                     */
+/* nat_hash_mode:  - Hash algorithm used for internal caching0h: 32-bit rolling XOR hash is used  */
+/*                as cache hash function.1h: CRC32 hash is used as cache hash function. CRC32 is  */
+/*                reduced to N-bit usingthe same method as in 32-bit rolling XOR hash.2h: CRC32 h */
+/*                ash is used as cache hash function. CRC32[N:0] is used as hash value.3h: CRC32  */
+/*                hash is used as cache hash function. CRC32[31:N] is used as hash value.4h: RSS  */
+/*                hash is used as cache hash function using secret key 0. RSS[N:0] is used as has */
+/*                h value.5h: RSS hash is used as cache hash function using secret key 1. RSS[N:0 */
+/*                ] is used as hash value.6h: RSS hash is used as cache hash function using secre */
+/*                t key 2. RSS[N:0] is used as hash value.7h: RSS hash is used as cache hash func */
+/*                tion using secret key 3. RSS[N:0] is used as hash value.                        */
+/* multi_hash_limit:  - Maximum number of multi-hash iterations.This is not used if cache size is */
+/*                    32 cache entries or less.Value of 0 is 1 iteration, 1 is 2 iterations, 2 is */
+/*                    3 iterations, etc.This is not used if cache size is 32 entries or less.     */
+/* decr_count_wraparound_enable:  - Decrement Count Wraparound Enable0h: Do not decrement counter */
+/*                               s for decrement command when counters reach 01h: Always decremen */
+/*                               t counters for decrement command; will wrap around from 0 to all */
+/*                                1's                                                             */
+/* nat_arb_st:  - NAT Arbitration MechanismRound-robin arbitrationStrict priority arbitrationlist */
+/*             ed from highest to lowest priority --  NAT0, NAT1, NAT2, NAT3, RunnerStrict priori */
+/*             ty arbitration (priority reversed from above)listed from highest to lowest priorit */
+/*             y --  Runner, NAT3, NAT2, NAT1, NAT0                                               */
+/* natc_smem_increment_on_reg_lookup:  - Enables incrementing or decrementing hit counter by 1 an */
+/*                                    d byte counter by PKT_LENon successful lookups using regist */
+/*                                    er interfaceBY default, counters only increment on successf */
+/*                                    ul lookups on Runner interface                              */
+/* natc_smem_clear_by_update_disable:  - Disables clearing counters when an existing entry is rep */
+/*                                    laced by ADD command                                        */
+/* regfile_fifo_reset:  - Reset regfile_FIFO and ddr pending memory.                              */
+/* natc_enable:  - Enables all NATC state machines and input FIFO;Clearing this bit will halt all */
+/*               state machines gracefully to idle states,all outstanding transactions in the FIF */
+/*              O will remain in the FIFO and NATCwill stop accepting new commands;  All configur */
+/*              ation registers should beconfigured before enabling this bit.                     */
+/* natc_reset:  - Self Clearing Block Reset (including resetting all registers to default values) */
+/* ddr_hash_mode:  - Hash algorithm used for DDR lookupHash value is DDR table size dependent.0h: */
+/*                 32-bit rolling XOR hash is used as DDR hash function. It is reduced to N-bitDD */
+/*                R table size is 8K,   N = 13.DDR table size is 16K,  N = 14.DDR table size is 3 */
+/*                2K,  N = 15.DDR table size is 64K,  N = 16.DDR table size is 128K, N = 17.DDR t */
+/*                able size is 256K, N = 18.1h: CRC32 hash is used as DDR hash function. CRC32 is */
+/*                 reduced to N-bit usingthe same method as in 32-bit rolling XOR hash.DDR table  */
+/*                size is 8K,   N = 13.DDR table size is 16K,  N = 14.DDR table size is 32K,  N = */
+/*                 15.DDR table size is 64K,  N = 16.DDR table size is 128K, N = 17.DDR table siz */
+/*                e is 256K, N = 18.2h: CRC32 hash is used as DDR hash function. CRC32[N:0] is us */
+/*                ed as hash valueDDR table size is 8K,   N = 12.DDR table size is 16K,  N = 13.D */
+/*                DR table size is 32K,  N = 14.DDR table size is 64K,  N = 15.DDR table size is  */
+/*                128K, N = 16.DDR table size is 256K, N = 17.3h: CRC32 hash is used as DDR hash  */
+/*                function. CRC32[31:N] is used as hash valueDDR table size is 8K,   N = 19.DDR t */
+/*                able size is 16K,  N = 18.DDR table size is 32K,  N = 17.DDR table size is 64K, */
+/*                  N = 16.DDR table size is 128K, N = 15.DDR table size is 256K, N = 14.4h: RSS  */
+/*                hash is used as DDR hash function using secret key 0. RSS[N:0] is used as hash  */
+/*                value.DDR table size is 8K,   N = 13.DDR table size is 16K,  N = 14.DDR table s */
+/*                ize is 32K,  N = 15.DDR table size is 64K,  N = 16.DDR table size is 128K, N =  */
+/*                17.DDR table size is 256K, N = 18.5h: RSS hash is used as DDR hash function usi */
+/*                ng secret key 1. RSS[N:0] is used as hash value.DDR table size is 8K,   N = 13. */
+/*                DDR table size is 16K,  N = 14.DDR table size is 32K,  N = 15.DDR table size is */
+/*                 64K,  N = 16.DDR table size is 128K, N = 17.DDR table size is 256K, N = 18.6h: */
+/*                 RSS hash is used as DDR hash function using secret key 2. RSS[N:0] is used as  */
+/*                hash value.DDR table size is 8K,   N = 13.DDR table size is 16K,  N = 14.DDR ta */
+/*                ble size is 32K,  N = 15.DDR table size is 64K,  N = 16.DDR table size is 128K, */
+/*                 N = 17.DDR table size is 256K, N = 18.7h: RSS hash is used as DDR hash functio */
+/*                n using secret key 3. RSS[N:0] is used as hash value.DDR table size is 8K,   N  */
+/*                = 13.DDR table size is 16K,  N = 14.DDR table size is 32K,  N = 15.DDR table si */
+/*                ze is 64K,  N = 16.DDR table size is 128K, N = 17.DDR table size is 256K, N = 1 */
+/*                8.                                                                              */
+/* ddr_32bit_in_64bit_swap_control:  - Swap 32-bit word within 64-bit word for DDR memory read/wr */
+/*                                  ite accesses(i.e., [63:0] becomes {[31:0], [63:32]}).         */
+/* ddr_8bit_in_32bit_swap_control:  - Reverse bytes within 32-bit word for DDR memory read/write  */
+/*                                 accesses(i.e., [31:0] becomes {[7:0], [15,8], [23,16], [31,24] */
+/*                                 }).                                                            */
+/* cache_lookup_blocking_mode:  - (debug command) Do not set this bit to 1                        */
+/* age_timer_tick:  - Timer tick for pseudo-LRUTimer is incremented on every system clock cycleTi */
+/*                 mer is incremented on every packet arrival to NAT block                        */
+/* age_timer:  - Timer value used for pseudo-LRU;When timer fires the 8-bit age value of every en */
+/*            try in the cache isdecremented (cap at 0).  The entry with lower value isthe older  */
+/*            entry.  The default setting keeps track of ~0.26s age at~1ms resolution.0: 1 tick1: */
+/*             2 ticks2: 4 ticks3: 8 ticks4: 16 ticks....31: 2^31 TICKS                           */
+/* cache_algo:  - Replacement algorithm for cachingLowest-multi-hash-iteration number is used to  */
+/*             select the final replacemententry if multiple entries were chosen by the selected  */
+/*             algorithm.  Forinstance, if HIT_COUNT algorithm were selected, and 2nd, 3rd and 7t */
+/*             hentry all have the same hit_count values, 2nd entry will be evicted.Replacement a */
+/*             lgorithm prioritizes pseudo-LRU over lowest-hit-count.Replacement algorithm is LRU */
+/*              if cache size is 32 entries or less.Replacement algorithm prioritizes lowest-hit- */
+/*             count over pseudo-LRU.Replacement algorithm is LRU if cache size is 32 entries or  */
+/*             less.Replacement algorithm uses pseudo-LRU.Replacement algorithm is LRU if cache s */
+/*             ize is 32 entries or less.Replacement algorithm uses least-hit-count.Replacement a */
+/*             lgorithm is LRU if cache size is 32 entries or less.Replacement algorithm prioriti */
+/*             zes pseudo-LRU over pseudo-random.Replacement algorithm is LRU if cache size is 32 */
+/*              entries or less.Replacement algorithm prioritizes lowest-hit-count over pseudo-ra */
+/*             ndom.Replacement algorithm is LRU if cache size is 32 entries or less.Replacement  */
+/*             algorithm uses pseudo-random algorithm.Replacement algorithm prioritizes highest-h */
+/*             it-count overmost-recently-use.Replacement algorithm is LRU if cache size is 32 en */
+/*             tries or less.Replacement algorithm prioritizes pseudo-LRU over lowest-byte-count. */
+/*             Replacement algorithm is LRU if cache size is 32 entries or less.Replacement algor */
+/*             ithm prioritizes lowest-byte-count over pseudo-LRU.Replacement algorithm is LRU if */
+/*              cache size is 32 entries or less.Replacement algorithm uses least-byte-count.Repl */
+/*             acement algorithm is LRU if cache size is 32 entries or less.Replacement algorithm */
+/*              prioritizes lowest-byte-count over pseudo-random.Replacement algorithm is LRU if  */
+/*             cache size is 32 entries or less.Replacement algorithm prioritizes highest-byte-co */
+/*             unt overmost-recently-use.Replacement algorithm is LRU if cache size is 32 entries */
+/*              or less.                                                                          */
+/* unused2:  -                                                                                    */
+/* unused1:  -                                                                                    */
+/* cache_update_on_reg_ddr_lookup:  - This bit determines whether register interface lookup will  */
+/*                                 cache the entry from DDR1h: Enable; entry fetched from DDR wil */
+/*                                 l be cached using register interface lookup command0h: Disable */
+/*                                 ; entry fetched from DDR will not be cached using register int */
+/*                                 erface lookup command                                          */
+/* ddr_counter_8bit_in_32bit_swap_control:  - Reverse bytes within 32-bit word for DDR counters o */
+/*                                         n read/write accesses.(i.e., [31:0] becomes {[7:0], [1 */
+/*                                         5,8], [23,16], [31,24]})                               */
+/* ddr_hash_swap:  - Reverse bytes within 18-bit DDR hash value                                   */
+/* ddr_replace_duplicated_cached_entry_enable:  - (debug command) Do not set this bit to 1        */
+/* ddr_lookup_pending_fifo_mode_disable:  - (debug command) Do not set this bit to 1              */
+/* unused0:  -                                                                                    */
+/**************************************************************************************************/
+typedef struct
+{
+    bdmf_boolean ddr_enable;
+    bdmf_boolean natc_add_command_speedup_mode;
+    uint8_t unused4;
+    bdmf_boolean ddr_64bit_in_128bit_swap_control;
+    bdmf_boolean smem_32bit_in_64bit_swap_control;
+    bdmf_boolean smem_8bit_in_32bit_swap_control;
+    bdmf_boolean ddr_swap_all_control;
+    bdmf_boolean repeated_key_det_en;
+    bdmf_boolean reg_32bit_in_64bit_swap_control;
+    bdmf_boolean reg_8bit_in_32bit_swap_control;
+    uint8_t ddr_pending_hash_mode;
+    bdmf_boolean pending_fifo_entry_check_enable;
+    bdmf_boolean cache_update_on_ddr_miss;
+    bdmf_boolean ddr_disable_on_reg_lookup;
+    uint8_t nat_hash_mode;
+    uint8_t multi_hash_limit;
+    bdmf_boolean decr_count_wraparound_enable;
+    uint8_t nat_arb_st;
+    bdmf_boolean natc_smem_increment_on_reg_lookup;
+    bdmf_boolean natc_smem_clear_by_update_disable;
+    bdmf_boolean regfile_fifo_reset;
+    bdmf_boolean natc_enable;
+    bdmf_boolean natc_reset;
+    uint8_t ddr_hash_mode;
+    bdmf_boolean ddr_32bit_in_64bit_swap_control;
+    bdmf_boolean ddr_8bit_in_32bit_swap_control;
+    bdmf_boolean cache_lookup_blocking_mode;
+    bdmf_boolean age_timer_tick;
+    uint8_t age_timer;
+    uint8_t cache_algo;
+    uint8_t unused2;
+    uint8_t unused1;
+    bdmf_boolean cache_update_on_reg_ddr_lookup;
+    bdmf_boolean ddr_counter_8bit_in_32bit_swap_control;
+    bdmf_boolean ddr_hash_swap;
+    bdmf_boolean ddr_replace_duplicated_cached_entry_enable;
+    bdmf_boolean ddr_lookup_pending_fifo_mode_disable;
+    bdmf_boolean unused0;
+} natc_ctrl_status;
+
+
+/**************************************************************************************************/
+/* ddr_evict_count_en:  - DDR evict counter enableEach bit enables/disables the counter increment */
+/*                      based on a DDR table,bit 7 for DDR table 7..... bit 0 for DDR table 0.0h: */
+/*                      Disable DDR evict counter increment on ddr evict.1h: Enable DDR evict cou */
+/*                     nter increment on ddr evict.                                               */
+/* ddr_request_count_en:  - DDR request counter enableEach bit enables/disables the counter incre */
+/*                       ment based on a DDR table,bit 7 for DDR table 7..... bit 0 for DDR table */
+/*                        0.0h: Disable DDR request counter increment on ddr request.1h: Enable D */
+/*                       DR request counter increment on ddr request.                             */
+/* cache_miss_count_en:  - Cache miss counter enableEach bit enables/disables the counter increme */
+/*                      nt based on a DDR table,bit 7 for DDR table 7..... bit 0 for DDR table 0. */
+/*                      0h: Disable cache miss counter increment on cache miss.1h: Enable cache m */
+/*                      iss counter increment on cache miss.                                      */
+/* cache_hit_count_en:  - Cache hit counter enableEach bit enables/disables the counter increment */
+/*                      based on a DDR table,bit 7 for DDR table 7..... bit 0 for DDR table 0.0h: */
+/*                      Disable cache hit counter increment on cache hit.1h: Enable cache hit cou */
+/*                     nter increment on cache hit.                                               */
+/* counter_wraparound_dis:  - Counter wraparound disableThis applies to all stat counters defined */
+/*                          inNATC_STAT_COUNTER_CONTROL_0 and  NATC_STAT_COUNTER_CONTROL_1.0h: Th */
+/*                         e counter will wraparound to 0 after it reaches ffffffffh.1h: The coun */
+/*                         ter will cap at ffffffffh.                                             */
+/* ddr_block_count_en:  - DDR block counter enableEach bit enables/disables the counter increment */
+/*                      based on a DDR table,bit 7 for DDR table 7..... bit 0 for DDR table 0.0h: */
+/*                      Disable DDR block counter increment on ddr block.1h: Enable DDR block cou */
+/*                     nter increment on ddr block.                                               */
+/**************************************************************************************************/
+typedef struct
+{
+    uint8_t ddr_evict_count_en;
+    uint8_t ddr_request_count_en;
+    uint8_t cache_miss_count_en;
+    uint8_t cache_hit_count_en;
+    bdmf_boolean counter_wraparound_dis;
+    uint8_t ddr_block_count_en;
+} natc_ctrs_control;
+
+bdmf_error_t ag_drv_natc_ctrl_status_set(const natc_ctrl_status *ctrl_status);
+bdmf_error_t ag_drv_natc_ctrl_status_get(natc_ctrl_status *ctrl_status);
+bdmf_error_t ag_drv_natc_ctrs_control_set(const natc_ctrs_control *ctrs_control);
+bdmf_error_t ag_drv_natc_ctrs_control_get(natc_ctrs_control *ctrs_control);
+bdmf_error_t ag_drv_natc_table_control_set(uint8_t tbl_idx, uint8_t data);
+bdmf_error_t ag_drv_natc_table_control_get(uint8_t tbl_idx, uint8_t *data);
+
+#ifdef USE_BDMF_SHELL
+enum
+{
+    cli_natc_ctrl_status,
+    cli_natc_ctrs_control,
+    cli_natc_table_control,
+};
+
+int bcm_natc_cli_get(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+bdmfmon_handle_t ag_drv_natc_cli_init(bdmfmon_handle_t driver_dir);
+#endif
+
+
+#endif
+

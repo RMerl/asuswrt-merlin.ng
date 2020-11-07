@@ -1,0 +1,86 @@
+# This Makefile builds bdmf_shell application that enables
+# CLI capabilities in BDMF-based management system (ie, RDPA)
+#
+EXE=bdmf_shell
+OBJS=bdmf_shell_client.o
+LIBS = -lpthread
+
+all dynamic install: build
+
+CURR_DIR := $(shell pwd)
+BUILD_DIR:=$(subst /userspace, /userspace,$(CURR_DIR))
+BUILD_DIR:=$(word 1, $(BUILD_DIR))
+BDMF_DIR=$(BRCMDRIVERS_DIR)/opensource/char/bdmf/bcm9$(BRCM_CHIP)
+
+include $(BUILD_DIR)/make.common
+
+ALLOWED_INCLUDE_PATHS := -I. -I$(BDMF_DIR)/system -I$(BDMF_DIR)/system/linux 
+ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
+CUSTOM_CFLAGS += -Werror -Wfatal-errors -DBDMF_SYSTEM_LINUX
+
+ifneq ($(strip $(BUILD_BDMF_SHELL)),)
+build: $(EXE) generic_exe_install
+	install scripts/bs $(INSTALL_DIR)/bin
+	install scripts/bsi $(INSTALL_DIR)/bin
+	install scripts/runner $(INSTALL_DIR)/bin
+	install scripts/rdpa_common_init.sh $(INSTALL_DIR)/etc
+	install scripts/rdpa_common_filter_init.sh $(INSTALL_DIR)/etc
+ifneq ($(strip $(BRCM_DRIVER_EPON_STACK)),)
+	install scripts/rdpa_epon_init.sh $(INSTALL_DIR)/etc/
+ifeq ($(strip $(EPON_ONU_TYPE)),EPON_SFU)
+	perl -pi -e 's|switching_mode=none,ip_class_method=fc|switching_mode=mac_based,ip_class_method=none|g' $(INSTALL_DIR)/etc/rdpa_epon_init.sh
+	perl -pi -e 's|car_mode=true|car_mode=false|g' $(INSTALL_DIR)/etc/rdpa_epon_init.sh
+	perl -pi -e 's|port/index=wan0 tm_cfg={egress_tm={egress_tm/dir=us,index=100}}|llid/index=0 egress_tm={egress_tm/dir=us,index=100}|g' $(INSTALL_DIR)/etc/rdpa_epon_init.sh
+endif	
+endif
+ifneq ($(strip $(BRCM_DRIVER_GPON_STACK)),)
+ifneq ($(strip $(BRCM_EXT_SWITCH)),)
+	install scripts/rdpa_gpon_ext_sw_init.sh $(INSTALL_DIR)/etc/
+else
+	install scripts/rdpa_gpon_init.sh $(INSTALL_DIR)/etc/
+endif
+ifeq ($(strip $(GPON_ONU_TYPE)),GPON_SFU)
+	perl -pi -e 's|ip_class_method=fc|ip_class_method=none|g' $(INSTALL_DIR)/etc/rdpa_gpon_init.sh
+	perl -e 'print "bs /bdmf/new iptv/lookup_method=group_ip\n"' >>  $(INSTALL_DIR)/etc/rdpa_gpon_init.sh
+	perl -e 'print "bs /bdmf/configure system cfg={headroom_size=0}\n"' >>  $(INSTALL_DIR)/etc/rdpa_gpon_init.sh
+endif
+else
+ifneq ($(strip $(BUILD_DSL_RUNNER)),)
+	install scripts/rdpa_dsl_common_init.sh $(INSTALL_DIR)/etc/
+	install scripts/rdpa_dsl_init.sh $(INSTALL_DIR)/etc/
+else
+ifneq ($(strip $(WAN_OE_0)),)
+	install scripts/rdpa_gbe_wan0_init.sh $(INSTALL_DIR)/etc/
+ifeq ($(strip $(BRCM_CHIP)),6838)
+	perl -pi -e 's|num_lan=1,enabled_emac=emac0\+emac4|num_lan=3,enabled_emac=emac0\+emac1\+emac2\+emac3|g' $(INSTALL_DIR)/etc/rdpa_gbe_wan0_init.sh
+	perl -pi -e 's|bs /bdmf/new port/index=lan4,cfg={emac=emac4}|bs /bdmf/new port/index=lan1,cfg={emac=emac1}|g' $(INSTALL_DIR)/etc/rdpa_gbe_wan0_init.sh
+	sed  -i '/bs \/bdmf\/new port\/index=lan1,cfg={emac=emac1},emac_cfg={enable=yes}/a bs \/bdmf\/new port\/index=lan2,cfg={emac=emac2},emac_cfg={enable=yes}' $(INSTALL_DIR)/etc/rdpa_gbe_wan0_init.sh
+	sed  -i '/bs \/bdmf\/new port\/index=lan2,cfg={emac=emac2},emac_cfg={enable=yes}/a bs \/bdmf\/new port\/index=lan3,cfg={emac=emac3},emac_cfg={enable=yes}' $(INSTALL_DIR)/etc/rdpa_gbe_wan0_init.sh
+	perl -pi -e 's|level=queue,mode=sp port/index=lan4|level=queue,mode=sp port/index=lan1|g' $(INSTALL_DIR)/etc/rdpa_gbe_wan0_init.sh
+	sed  -i '/level=queue,mode=sp port\/index=lan1/a bs \/bdmf\/new egress_tm\/dir=ds,index=1,level=queue,mode=sp port\/index=lan2' $(INSTALL_DIR)/etc/rdpa_gbe_wan0_init.sh
+	sed  -i '/level=queue,mode=sp port\/index=lan2/a bs \/bdmf\/new egress_tm\/dir=ds,index=2,level=queue,mode=sp port\/index=lan3' $(INSTALL_DIR)/etc/rdpa_gbe_wan0_init.sh
+	sed  -i '/bs \/bdmf\/configure egress_tm\/dir=ds,index=0/a bs \/bdmf\/configure egress_tm\/dir=ds,index=1 queue_cfg[0]={weight=0,drop_alg=dt,drop_threshold=128,red_high_threshold=0,red_low_threshold=0}' $(INSTALL_DIR)/etc/rdpa_gbe_wan0_init.sh
+	sed  -i '/bs \/bdmf\/configure egress_tm\/dir=ds,index=1/a bs \/bdmf\/configure egress_tm\/dir=ds,index=2 queue_cfg[0]={weight=0,drop_alg=dt,drop_threshold=128,red_high_threshold=0,red_low_threshold=0}' $(INSTALL_DIR)/etc/rdpa_gbe_wan0_init.sh
+endif
+else	
+ifneq ($(strip $(WAN_OE_5)),)	
+	install scripts/rdpa_gbe_wan5_init.sh $(INSTALL_DIR)/etc/
+else
+ifneq ($(strip $(WAN_OE_4)),)
+	install scripts/rdpa_gbe_init.sh $(INSTALL_DIR)/etc/
+endif
+endif
+endif
+endif
+endif
+else
+build:
+	@echo "skipping $@ (not configured)"
+endif
+
+$(EXE): $(OBJS)
+	$(CC) -o $@ $(OBJS) $(LIBS)
+
+clean: generic_clean
+	rm -f $(INSTALL_DIR)/bin/$(EXE)
+

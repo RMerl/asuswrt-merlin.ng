@@ -1,0 +1,12 @@
+/ transport
+this ehost
+# connect cmips domain_socket connect 0 /tmp/bdmf_ehost_cmips.socket
+connect cmips shm connect 
+/ bdmf rem
+connect cmips
+/ bdmf
+new test1@cmips/initcfg1=1
+new test1@cmips/initcfg1=2
+
+
+

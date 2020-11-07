@@ -1,0 +1,8 @@
+#
+# Add TR181 USB objects to the interfaces portion of the TR181 tree
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-tr181-usb.xml Device.
+

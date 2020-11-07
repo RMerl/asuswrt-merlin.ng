@@ -1,0 +1,291 @@
+#!/bin/sh
+# Serdes Debug CLI, work via /porc entry of Serdes driver
+# Create by Fuguo Xu <fuguo.xu@broadcom.com>, 2016/01/08
+
+
+proc_entry_help="/proc/serdes/wan/help"
+proc_entry_reinit="/proc/serdes/wan/reinit" 
+proc_entry_reg="/proc/serdes/wan/reg"
+proc_entry_prbs="/proc/serdes/wan/prbs"    
+proc_entry_display="/proc/serdes/wan/display"
+proc_entry_pllsel="/proc/serdes/wan/pllsel"
+proc_entry_tx_amp="/proc/serdes/wan/tx_amp"
+proc_entry_tx_fir="/proc/serdes/wan/tx_fir"
+proc_entry_rmt_lpbk="/proc/serdes/wan/rmt_lpbk"
+proc_entry_eye_graph="/proc/serdes/wan/eye_graph"
+
+help_all()
+{
+    echo "$0 reinit [pm1]                      : reinit"
+    echo help > $proc_entry_reinit
+    cat $proc_entry_help
+
+    echo    
+    echo "$0 reg addr                          : read register"
+    echo "$0 reg addr value                    : write register"
+    echo help > $proc_entry_reg
+    cat $proc_entry_help
+
+    echo
+    echo "$0 prbs                              : show prbs status"
+    if [ "$pon" = "NGPON2" ]; then
+        echo "$0 prbs [pm1] [pm2] [pm3] [pm4] [pm5] [pm6]     : enable/disable prbs"
+    else
+        echo "$0 prbs [pm1] [pm2] [pm3] [pm4]  : enable/disable prbs"
+    fi
+    echo help > $proc_entry_prbs
+    cat $proc_entry_help
+   
+    echo
+    echo "$0 show [pm1] [pm2] ...              : show diag data, lane state legend, etc."
+    echo help > $proc_entry_display
+    cat $proc_entry_help
+    
+    echo "$0 pllsel                            : read pll selection"
+    echo "$0 pllsel <0|1>                      : write pll selection"
+    echo help > $proc_entry_pllsel
+    cat $proc_entry_help
+    
+    echo "$0 tx_amp                            : read tx amplitude control"
+    echo "$0 tx_amp [value]                    : write tx amplitude control"
+    echo help > $proc_entry_tx_amp
+    cat $proc_entry_help
+    
+    echo "$0 tx_fir [type]                     : read tx FIR "
+    echo "$0 tx_fir [type] [value]             : write tx FIR"
+    echo help > $proc_entry_tx_fir
+    cat $proc_entry_help
+    
+    echo "$0 rmt_lpbk [enable]                 : enable or disable remote loopback"
+    echo help > $proc_entry_rmt_lpbk
+    cat $proc_entry_help
+
+    echo "$0 eye_graph                         : display eye graph"
+    echo help > $proc_entry_eye_graph
+    cat $proc_entry_help
+}
+
+reinit_ctrl()
+{
+    echo "$1" > $proc_entry_reinit
+}
+
+reg_access()
+{
+    if [ "$2" = "" ]; then
+        # read
+        echo "$1" > $proc_entry_reg
+        cat $proc_entry_reg
+        echo
+    else
+        # write
+        echo "$1 $2" > $proc_entry_reg
+    fi
+}
+
+prbs_ctrl()
+{
+    if [ "$1" = "" ]; then
+        # show status
+        cat $proc_entry_prbs
+        echo
+    elif [ "$pon" = "NGPON2" ]; then
+        if [ "$1" = "1" ] ; then
+            bs /d/o getnohunt | grep -q 'nohunt = 0'
+            nohunt=$?
+            if [ "$nohunt" = "0" ]; then
+                echo > /tmp/hunt
+                bs /d/o setnohunt 1
+            fi
+            bs /d/o setchn $5 $6
+            echo New channel setting:
+            bs /d/o getchn
+        fi
+
+        echo "$1 $2 $3 $4 $5 $6" > $proc_entry_prbs
+        if [ $? -ne 0 ] ; then
+            cat $proc_entry_help
+        fi
+
+        if [ "$1" = "0" ] && [ -e /tmp/hunt ]; then
+            bs /d/o setnohunt 0
+            rm /tmp/hunt
+        fi
+    else
+        echo "$1 $2 $3 $4" > $proc_entry_prbs
+        if [ $? -ne 0 ] ; then
+            cat $proc_entry_help
+        fi
+    fi
+}
+
+show_data()
+{
+    echo "$1 $2" > $proc_entry_display
+}
+
+pll_sel()
+{
+    if [ "$1" = "" ]; then
+        # read
+        cat $proc_entry_pllsel
+        echo
+    else
+        # write
+        echo "$1" > $proc_entry_pllsel
+    fi
+}
+
+tx_amplitude()
+{
+    if [ "$1" = "" ]; then
+        # read
+        cat $proc_entry_tx_amp
+        echo
+    else
+        # write
+        echo "$1" > $proc_entry_tx_amp
+    fi
+}
+
+fir_ctrl()
+{
+    if [ "$2" = "" ]; then
+        # read
+        echo "$1" > $proc_entry_tx_fir
+        cat $proc_entry_tx_fir
+        echo
+    else
+        # write
+        echo "$1 $2" > $proc_entry_tx_fir
+    fi
+}
+
+rmt_lpbk()
+{
+    echo "$1" > $proc_entry_rmt_lpbk
+}
+
+eye_graph()
+{
+    echo "$1" > $proc_entry_eye_graph
+}
+
+serdes_pon()
+{
+pon=`pspctl dump RdpaWanType`
+case "$1" in
+    reg)
+        reg_access $2 $3
+        exit 0
+        ;;
+        
+    pllsel)
+        pll_sel $2
+        exit 0
+        ;;
+        
+    reinit)
+        reinit_ctrl $2
+        exit 0
+        ;;
+        
+    prbs)
+        prbs_ctrl $2 $3 $4 $5 $6 $7
+        exit 0
+        ;;
+
+    show)
+        show_data $2 $3
+        exit 0
+        ;;
+
+    tx_amp)
+        tx_amplitude $2 
+        exit 0
+        ;;        
+
+    tx_fir)
+        fir_ctrl $2 $3
+        exit 0
+        ;;  
+
+    rmt_lpbk)
+        rmt_lpbk $2
+        exit 0
+        ;; 
+
+    eye_graph)
+        eye_graph $2
+        exit 0
+        ;; 
+
+    -h | --help)
+        help_all
+        exit 0
+        ;;
+
+     *)
+        echo "$0: unrecognized option [$1]"
+        help_all
+        exit 1
+        ;;
+esac
+}
+
+proc_entry_lport_serdes_cmd="/proc/driver/lport/serdes_cmd"
+
+lport_help_all()
+{
+    echo "$0 lport txcfg [port]                : read tx configuration"
+    echo "$0 lport txcfg [port] [parameters]   : write tx configuration"
+    echo "Usage: txcfg <port (0-6)> [<pre (0-10)> <main (1-60)> <post1> <post2 (0-5)> <post2to1 (0-1)> <en_pre (0-1)> <en_post1 (0-1)> <en_post2 (0-1)> <tx_refcalshunt (0-15)> <hpf (0-15)]"
+    echo "  1. if post2 != 0: post1 (0-18), (pre + post1) <= 22"
+    echo "  2. if post2 == 0: post1 (0-23), (pre + post1) <= 27"
+    echo "  3. (pre + post1 + post2 + 1)    <= main"
+    echo "  4. (pre + main + post1 + post2) <= 60"
+}
+
+lport_tx_cfg()
+{
+    echo txcfg $@ > $proc_entry_lport_serdes_cmd
+}
+
+serdes_lport()
+{
+    cmd="$1"
+
+    shift 1
+
+    case "$cmd" in
+    txcfg)
+        lport_tx_cfg $@
+        exit 0
+        ;;  
+
+    -h | --help)
+        lport_help_all
+        exit 0
+        ;;
+
+     *)
+        echo "$0: unrecognized option [$cmd]"
+        lport_help_all
+        exit 1
+        ;;
+esac
+}
+
+main()
+{
+    cmd="$1"
+
+    if [ "$1" = "lport" ]; then
+        shift 1
+        serdes_lport $@
+    else
+        serdes_pon $@
+    fi
+}
+
+main $@

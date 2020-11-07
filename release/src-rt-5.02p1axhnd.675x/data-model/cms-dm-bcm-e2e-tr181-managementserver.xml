@@ -1,0 +1,353 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2018" >
+
+<!--this file is duplicated from cms-dm-tr181-managementserver.xml-->
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+
+
+
+<object name="InternetGatewayDevice.Device.X_BROADCOM_COM_E2E_ManagementServer." shortObjectName="E2E_Dev2ManagementServerObject" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present" hideObjectFromAcs="true" lockZone="8" oid="51020" />
+  <description source="TRx">This object contains parameters relating to the CPE's association with an ACS.</description>
+
+  <parameter name="EnableCWMP" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="true" />
+    <description source="TRx">Enables and disables the CPE's support for CWMP.  {{false}} means that CWMP support in the CPE is disabled, in which case the device MUST NOT send any Inform messages to the ACS or  accept any Connection Request notifications from the ACS.{{true}} means that CWMP support on the CPE is enabled. The subscriber can re-enable the CPE's CWMP support either by performing a factory reset or by using a LAN-side protocol to change  the value of this parameter back to {{true}}. </description>
+
+  <parameter name="URL" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">URL, as defined in {{bibref|RFC3986}}, for the CPE to connect to the ACS using the CPE WAN Management Protocol.  This parameter MUST be in the form of a valid HTTP or HTTPS URL.The ''host'' portion of this URL is used by the CPE for validating the ACS certificate when using SSL or TLS. Note that on a factory reset of the CPE, the value of this parameter might be reset to its factory value.  If an ACS modifies the  value of this parameter, it SHOULD be prepared to accommodate the situation that the original value is restored as the result of a  factory reset. </description>
+
+  <parameter name="LastConnectedURL" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="256" hideParameterFromAcs="true" />
+    <description source="BROADCOM">This value records the last URL which connected successfully.</description>
+
+  <parameter name="Username" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">Username used to authenticate the CPE when making a connection to the ACS using the CPE WAN Management Protocol. This username is used only for HTTP-based authentication of the CPE.Note that on a factory reset of the CPE, the value of this parameter might be reset to its factory value.  If an ACS modifies the  value of this parameter, it SHOULD be prepared to accommodate the situation that the original value is restored as the result of a  factory reset. </description>
+
+  <parameter name="Password" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" maxLength="256" isTr69Password="true" />
+    <description source="TRx">Password used to authenticate the CPE when making a connection to the ACS using the CPE WAN Management Protocol. This password is used only for HTTP-based authentication of the CPE.Note that on a factory reset of the CPE, the value of this parameter might be reset to its factory value.  If an ACS modifies the  value of this parameter, it SHOULD be prepared to accommodate the situation that the original value is restored as the result of a  factory reset. </description>
+
+  <parameter name="PeriodicInformEnable" type="boolean" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Whether or not the CPE MUST periodically send CPE information to the ACS using the Inform method  call. </description>
+
+  <parameter name="PeriodicInformInterval" type="unsignedInt" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" defaultValue="300" minValue="1" maxValue="4294967295" />
+    <description source="TRx">The duration in {{units}} of the interval for which the CPE MUST attempt to connect with the ACS and call the  Inform method if {{param|PeriodicInformEnable}} is {{true}}. </description>
+
+  <parameter name="PeriodicInformTime" type="dateTime" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">An absolute time reference in UTC to determine when the CPE will initiate the periodic Inform method calls. Each Inform call MUST occur at this reference time plus or minus an integer multiple of the {{param|PeriodicInformInterval}}. {{param}} is used only to set the ''phase'' of the periodic Informs.  The actual value of {{param}} can be arbitrarily far into the  past or future.For example, if {{param|PeriodicInformInterval}} is 86400 (a day) and if {{param}} is set to UTC midnight on some day (in the past,  present, or future) then periodic Informs will occur every day at UTC midnight.  These MUST begin on the very next midnight, even if  {{param}} refers to a day in the future. The Unknown Time value defined in {{bibref|TR-106a2|section 3.2}} indicates that no particular time reference is specified.  That is,  the CPE MAY locally choose the time reference, and needs only to adhere to the specified {{param|PeriodicInformInterval}}.If absolute time is not available to the CPE, its periodic Inform behavior MUST be the same as if the {{param}} parameter was set to the Unknown Time value. </description>
+
+  <parameter name="ParameterKey" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="32" alwaysWriteToConfigFile="true" />
+    <description source="TRx">{{param}} provides the ACS a reliable and extensible means to track changes made by the ACS.  The value of  {{param}} MUST be equal to the value of the ParameterKey argument from the most recent successful SetParameterValues, AddObject, or  DeleteObject method call from the ACS. The CPE MUST set {{param}} to the value specified in the corresponding method arguments if and only if the method completes  successfully and no fault response is generated.  If a method call does not complete successfully (implying that the changes  requested in the method did not take effect), the value of {{param}} MUST NOT be modified.The CPE MUST only modify the value of {{param}} as a result of SetParameterValues, AddObject, DeleteObject, or due to a factory  reset.  On factory reset, the value of {{param}} MUST be set to {{empty}}. </description>
+
+  <parameter name="X_BROADCOM_COM_BoundIfName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Any_WAN" />
+    <description source="BROADCOM">Name of the WAN interface that tr69c should use.&#10;For example, nas_0_0_35.  This parameter also supports two special values:&#10;Any_WAN: tr69c will use any WAN connection that comes up.&#10;LAN: tr69c will use the default LAN subnet br0.  This option is&#10;used by developers who may not have a WAN connection.&#10;&#10;There is a valid string array named BoundIfNameValues which contains the Any_WAN and LAN strings, so the MDMVS_ defines will get generated for them, but the MDM does not force this parameter to be one of those strings because this parameter can also have a free-form ifName.</description>
+
+  <parameter name="ConnectionRequestURL" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">HTTP URL, as defined in {{bibref|RFC3986}}, for an ACS to make a Connection Request notification to the CPE. In the form:: http://host:port/path The ''host'' portion of the URL MAY be the IP address for the management interface of the CPE in lieu of a host name.Note: If the ''host'' portion of the URL is a literal IPv6 address then it MUST be enclosed in square brackets (see {{bibref|RFC3986|Section 3.2.2}}). </description>
+
+  <parameter name="ConnectionRequestUsername" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">Username used to authenticate an ACS making a Connection Request to the CPE. </description>
+
+  <parameter name="ConnectionRequestPassword" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">Password used to authenticate an ACS making a Connection Request to the CPE. </description>
+
+  <parameter name="UpgradesManaged" type="boolean" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Indicates whether or not the ACS will manage upgrades for the CPE.  If {{true}}, the CPE SHOULD NOT use other  means other than the ACS to seek out available upgrades.  If {{false}}, the CPE MAY use other means for this purpose. Note that an autonomous upgrade (reported via an &quot;10 AUTONOMOUS TRANSFER COMPLETE&quot; Inform Event code) SHOULD be regarded as a managed  upgrade if it is performed according to ACS-specified policy. </description>
+
+  <parameter name="KickURL" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" maxLength="256" />
+    <description source="TRx">Present only for a CPE that supports the Kicked RPC method. LAN-accessible URL, as defined in {{bibref|RFC3986}}, from which the CPE can be ''kicked'' to initiate the Kicked RPC method call.   MUST be an absolute URL including a host name or IP address as would be used on the LAN side of the CPE. </description>
+
+  <parameter name="DownloadProgressURL" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" maxLength="256" />
+    <description source="TRx">Present only for a CPE that provides a LAN-side web page to show progress during a file download. LAN-accessible URL, as defined in {{bibref|RFC3986}}, to which a web-server associated with the ACS MAY redirect a user's browser on  initiation of a file download to observer the status of the download. </description>
+
+  <parameter name="DefaultActiveNotificationThrottle" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" />
+    <description source="TRx">This parameter is used to control throttling of active notifications sent by the CPE to the ACS.  It defines the  minimum number of {{units}} that the CPE MUST wait since the end of the last session with the ACS before establishing a new session for  the purpose of delivering an active notification. In other words, if CPE needs to establish a new session with the ACS for the sole purpose of delivering an active notification, it  MUST delay establishing such a session as needed to ensure that the minimum time since the last session completion has been met.The time is counted since the last successfully completed session, regardless of whether or not it was used for active notifications  or other purposes. However, if connection to the ACS is established for purposes other than just delivering active notifications,  including for the purpose of retrying a failed session, such connection MUST NOT be delayed based on this parameter value, and the  pending active notifications MUST be communicated during that connection.The time of the last session completion does not need to be tracked across reboots. </description>
+
+  <parameter name="CWMPRetryMinimumWaitInterval" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="5" minValue="1" maxValue="65535" />
+    <description source="TRx">Configures the first session retry wait interval, in {{units}}, as specified in {{bibref|TR-069a2|section 3.2.1.1}}. A value of 5 corresponds to the default behavior that is described in {{bibref|TR-069a2}}.The device MUST use a random value between {{param}}  and ({{param}} * {{param|CWMPRetryIntervalMultiplier}} / 1000) as the first  retry wait interval.  Other values in the retry pattern MUST be calculated using this value as a starting point. </description>
+
+  <parameter name="CWMPRetryIntervalMultiplier" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="2000" minValue="1000" maxValue="65535" />
+    <description source="TRx">Configures the retry interval multiplier as specified in {{bibref|TR-069a2|section 3.2.1.1}}. This value is expressed in units of 0.001.  Hence the values of the multiplier range between 1.000 and 65.535.A value of 2000 corresponds to the default behavior that is described in {{bibref|TR-069a2}}. The device MUST use a random value between {{param|CWMPRetryMinimumWaitInterval}}  and ({{param|CWMPRetryMinimumWaitInterval}} *  {{param}} / 1000) as the first retry wait interval.  Other values in the retry pattern MUST be calculated using this value as a  starting point. </description>
+
+  <parameter name="UDPConnectionRequestAddress" type="string" specSource="TR181" profile="Device2_UDPConnReq:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Address and port to which an ACS MAY send a UDP Connection Request to the CPE (see {{bibref|TR-069a2|Annex G}}). This parameter is represented in the form of an Authority element as defined in {{bibref|RFC3986}}.  The value MUST be in one of the  following two forms:: host:port : host* When {{param|STUNEnable}} is {{true}}, the ''host'' and ''port'' portions of this parameter MUST represent the public address and port corresponding to the NAT binding through which the ACS can send UDP Connection Request messages (once this information is learned by the CPE through the use of STUN). * When {{param|STUNEnable}} is {{false}}, the ''host'' and ''port'' portions of the URL MUST represent the local IP address and port on which the CPE is listening for UDP Connection Request messages.The second form of this parameter MAY be used only if the port value is equal to ''80''. Note: If the ''host'' portion of the URL is a literal IPv6 address then it MUST be enclosed in square brackets (see {{bibref|RFC3986|Section 3.2.2}}). </description>
+
+  <parameter name="STUNEnable" type="boolean" specSource="TR181" profile="Device2_UDPConnReq:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables the use of STUN by the CPE.  This applies only to the use of STUN in association with the  ACS to allow UDP Connection Requests. </description>
+
+  <parameter name="STUNServerAddress" type="string" specSource="TR181" profile="Device2_UDPConnReq:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">Host name or IP address of the STUN server for the CPE to send Binding Requests if STUN is enabled via  {{param|STUNEnable}}. If is {{empty}} and {{param|STUNEnable}} is {{true}}, the CPE MUST use the address of the ACS extracted from the host portion of the  ACS URL. </description>
+
+  <parameter name="STUNServerPort" type="unsignedInt" specSource="TR181" profile="Device2_UDPConnReq:1" requirements="W" supportLevel="ReadWrite" minValue="0" maxValue="65535" />
+    <description source="TRx">Port number of the STUN server for the CPE to send Binding Requests if STUN is enabled via {{param|STUNEnable}}. By default, this SHOULD be the equal to the default STUN port, 3478. </description>
+
+  <parameter name="STUNUsername" type="string" specSource="TR181" profile="Device2_UDPConnReq:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">If is not {{empty}}, the value of the STUN USERNAME attribute to be used in Binding Requests (only if message  integrity has been requested by the STUN server). If is {{empty}}, the CPE MUST NOT send STUN Binding Requests with message integrity. </description>
+
+  <parameter name="STUNPassword" type="string" specSource="TR181" profile="Device2_UDPConnReq:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">The value of the STUN Password to be used in computing the MESSAGE-INTEGRITY attribute to be used in Binding  Requests (only if message integrity has been requested by the STUN server). </description>
+
+  <parameter name="STUNMaximumKeepAlivePeriod" type="int" specSource="TR181" profile="Device2_UDPConnReq:1" requirements="W" supportLevel="ReadWrite" minValue="-1" />
+    <description source="TRx">If STUN Is enabled, the maximum period, in {{units}}, that STUN Binding Requests MUST be sent by the CPE for the  purpose of maintaining the binding in the Gateway.  This applies specifically to Binding Requests sent from the UDP Connection  Request address and port. A value of -1 indicates that no maximum period is specified. </description>
+
+  <parameter name="STUNMinimumKeepAlivePeriod" type="unsignedInt" specSource="TR181" profile="Device2_UDPConnReq:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">If STUN Is enabled, the minimum period, in {{units}}, that STUN Binding Requests can be sent by the CPE for the  purpose of maintaining the binding in the Gateway.  This limit applies only to Binding Requests sent from the UDP Connection Request  address and port, and only those that do not contain the BINDING-CHANGE attribute.  This limit does not apply to retransmissions  following the procedures defined in {{bibref|RFC3489}}. </description>
+
+  <parameter name="NATDetected" type="boolean" specSource="TR181" profile="Device2_UDPConnReq:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">When STUN is enabled, this parameter indicates whether or not the CPE has detected address and/or port mapping  in use. A {{true}} value indicates that the received MAPPED-ADDRESS in the most recent Binding Response differs from the CPE's source address and port.When {{param|STUNEnable}} is {{false}}, this value MUST be {{false}}. </description>
+
+  <parameter name="AliasBasedAddressing" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Indicates whether or not the Alias-Based Addressing Mechanism is supported. A {{true}} value indicates that the CPE supports the Alias-Based Addressing Mechanism, as defined in {{bibref|TR-069a4|3.6.1}} and described in {{bibref|TR-069a4|Appendix II}}. </description>
+
+  <parameter name="InstanceMode" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="InstanceNumber" />
+    <description source="TRx">Instance identification mode as defined in {{bibref|TR-069a4|3.6.1}}. When {{param|AliasBasedAddressing}} is {{true}}, {{param}} is used by the ACS to control whether the CPE will use Instance Numbers or Instance Aliases in returned Path Names.  {{enum}}This parameter is REQUIRED for any CPE supporting Alias-Based Addressing. </description>
+
+  <parameter name="AutoCreateInstances" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="false" />
+    <description source="TRx">Enable or disable the Auto-Create Instance Mechanism. When {{param|AliasBasedAddressing}} is {{true}}, {{param}} indicates whether or not the CPE will automatically create instances while processing a SetParameterValues RPC (as defined in {{bibref|TR-069a4|A.3.2.1}}). *A {{true}} value indicates that the CPE will perform auto-creation of instances when the Alias-Based Addressing Mechanism is used in SetParameterValues RPC.*A {{false}} value indicates that the CPE will not create new object instances. Instead, it will reject the setting of parameters in unrecognized instances and respond with a fault code. This parameter is REQUIRED for any CPE supporting Alias-Based Addressing. </description>
+
+  <parameter name="ManageableDeviceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_DeviceAssociation:1" requirements="R" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+  <parameter name="ManageableDeviceNotificationLimit" type="unsignedInt" specSource="TR111" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">The minimum time, in seconds, between Active Notifications resulting from changes to the ManageableDeviceNumberOfEntries (if Active Notification is enabled).</description>
+
+  <parameter name="EmbeddedDeviceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">{{numentries}} </description>
+
+  <parameter name="VirtualDeviceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">{{numentries}} </description>
+
+  <parameter name="SupportedConnReqMethods" type="string" specSource="TR181" profile="Device2_XMPPConnReq:1" requirements="R" supportLevel="ReadOnly" defaultValue="HTTP" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Comma-separated list of strings. The connection request methods supported by this ManagementServer. Each list item is an enumeration of: - HTTP (The connection request method as specified in [Section 3.2.2 ACS Connection Initiation/TR-069], REQUIRED) - STUN (The connection request method as specified in [Annex G Connection Request via NAT Gateway/TR-069], OPTIONAL) - XMPP (The connection request method as specified in [Annex K XMPP Connection Request/TR-069], OPTIONAL)</description>
+
+  <parameter name="ConnReqXMPPConnection" type="string" specSource="TR181" profile="Device2_XMPPConnReq:1" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="TRx">The value MUST be the path name of an object that that is used for connection requests to this ManagementServer. If the referenced object is deleted, the parameter value MUST be set to an empty string.</description>
+
+  <parameter name="ConnReqAllowedJabberIDs" type="string" specSource="TR181" profile="Device2_XMPPConnReq:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">When an XMPP Connection Request is sent to a CPE the XMPP IQ Stanza will contian a &quot;from&quot; address that contains the Jabber ID of the initiating entity. This parameter is a Comma-separated list (maximum length 256) of strings (maximum length 32). Each entry represents a Jabber ID, or address, that is allowed to initiate an XMPP Connection Request. If this Parameter is an empty string then all Jabber IDs are allowed and an XMPP Connection Request can not be deemed invalid due to the &quot;from&quot; address.</description>
+
+  <parameter name="ConnReqJabberID" type="string" specSource="TR181" profile="Device2_XMPPConnReq:1" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="TRx">The value MUST be the value of the XMPP.Connection.{i}.JabberID contained in the XMPP.Connection instance referenced by the ConnReqXMPPConnection parameter. If the ConnReqXMPPConnection parameter is empty or the XMPP.Connection instance being reference is disabled, then this value will be empty. If the XMPP.Connection instance being referenced by the ConnReqXMPPConnection parameter is lost (XMPP.Connection.{i}.Status parameter changes from Enabled to some other value), then the value of this parameter MUST remain unchanged until the connection can be reestablished and a new XMPP.Connection.{i}.JabberID can be established. If the new XMPP.Connection.{i}.JabberID is identical to the existing value, then the value of this parameter MUST NOT be altered and a VALUE CHANGE event MUST NOT be generated.</description>
+
+  <parameter name="X_BROADCOM_COM_UPNPC_IGD_WAN_ADDRESS" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_UPnPIGDHTTPConnReq:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">UPnP IGD WAN IP address</description>
+
+  <parameter name="X_BROADCOM_COM_UPNPC_IGD_EXT_PORT" type="unsignedInt" specSource="Custom" profile="X_BROADCOM_COM_UPnPIGDHTTPConnReq:1" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">The port on which Connection Request packets issued by the ACS will be received by the gateway</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.X_BROADCOM_COM_E2E_ManagementServer.X_BROADCOM_COM_E2E_ManageableDevice.{i}." shortObjectName="E2E_Dev2ManagementServerManageableDeviceObject" specSource="TR181" profile="Device2_DeviceAssociation:1" requirements="R" supportLevel="MultipleInstances" pruneWriteToConfigFile="true" />
+  <description source="TRx">Each entry in this table corresponds to a distinct LAN Device that supports Device-Gateway Association according to {{bibref|TR-069a2|Annex F}} as indicated by the presence of the DHCP option specified in that Annex. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" maxLength="64" />
+    <description source="TRx">A non-volatile handle used to reference this instance. {{param}} provides a mechanism for an ACS to label this instance for future reference. An initial unique value MUST be assigned when the CPE creates an instance of this object. This parameter is DEPRECATED because {{object}} is a transient object. </description>
+
+  <parameter name="ManufacturerOUI" type="string" specSource="TR181" profile="Device2_DeviceAssociation:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="6" minLength="6" />
+    <description source="TRx">Organizationally unique identifier of the Device manufacturer as provided to the Gateway by the Device.   Represented as a six hexadecimal-digit value using all upper-case letters and including any leading zeros.  {{pattern}} The value MUST be a valid  OUI as defined in {{bibref|OUI}}. </description>
+
+  <parameter name="SerialNumber" type="string" specSource="TR181" profile="Device2_DeviceAssociation:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Serial number of the Device as provided to the Gateway by the Device. </description>
+
+  <parameter name="ProductClass" type="string" specSource="TR181" profile="Device2_DeviceAssociation:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Identifier of the class of product for which the Device's serial number applies as provided to the Gateway by  the Device. If the Device does not provide a Product Class, then this parameter MUST be {{empty}}. </description>
+
+  <parameter name="Host" type="string" specSource="TR181" profile="Device2_DeviceAssociation:1" requirements="R" supportLevel="ReadOnly" maxLength="1024" />
+    <description source="TRx">{{list}} {{reference}}  References all the {{object|.Hosts.Host}} table entries, whether active or inactive, that correspond to this physical LAN device.  There can be multiple such entries if the device has more than one network interface. For example: ''Device.Hosts.Host.1,Device.Hosts.Host.5'' </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.X_BROADCOM_COM_E2E_ManagementServer.X_BROADCOM_COM_E2E_AutonomousTransferCompletePolicy." shortObjectName="E2E_Dev2AutonXferCompletePolicyObject" specSource="TR181" profile="Device2_AutonXferComplPolicy:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object allows configuration of CPE policy for notification of AUTONOMOUS TRANSFER COMPLETE events, defined in {{bibref|TR-069a2}}. The CPE policy determines the conditions under which the CPE notifies the ACS of the completion of file transfers that were not specifically requested by the ACS. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_AutonXferComplPolicy:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enable/disable CPE notification of AUTONOMOUS TRANSFER COMPLETE events to the ACS. </description>
+
+  <parameter name="TransferTypeFilter" type="string" specSource="TR181" profile="Device2_AutonXferComplPolicy:1" requirements="W" supportLevel="ReadWrite" defaultValue="Both" validValuesArray="TransferTypeFilter" />
+    <description source="TRx">Indicates the transfer types that MUST be included when the CPE notifies the ACS of AUTONOMOUS TRANSFER COMPLETE events.   Transfer types not indicated by this filter MUST NOT be included when the CPE notifies the ACS. {{enum}} Note that this includes any backup or restore operations that were not specifically requested by the ACS.  A backup is regarded as an Upload and a restore is regarded as a Download. </description>
+
+  <parameter name="ResultTypeFilter" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="Both" validValuesArray="ResultTypeFilter" />
+    <description source="TRx">Indicates the transfer results that MUST be included when the CPE notifies the ACS of AUTONOMOUS TRANSFER COMPLETE events.  Transfer results omitted from this list MUST NOT be included when the CPE notifies the ACS. Note that this includes any backup or restore operations that were not specifically requested by the ACS.  A backup is regarded as an Upload and a restore is regarded as a Download. </description>
+
+  <parameter name="FileTypeFilter" type="string" specSource="TR181" profile="Device2_AutonXferComplPolicy:1" requirements="W" supportLevel="ReadWrite" defaultValue="1 Firmware Upgrade Image, 3 Vendor ConfigurationFile" maxLength="1024" />
+    <description source="TRx">{{list}} Indicates the file types that&#10;    MUST be included when the CPE notifies the ACS of AUTONOMOUS&#10;    TRANSFER COMPLETE events.  File types omitted from this list MUST&#10;    NOT be included when the CPE notifies the ACS.{{pattern}}&#10;    Additionally, the following format is defined to allow the unique&#10;    definition of vendor-specific file types: X OUI followed by Vendor-specific identifier where OUIis replaced by a 6 hexadecimal-digit OUI (organizationally unique identifier) as defined in {{bibref|OUI}}, with all upper-case letters and any leading zeros included. The OUI used for a given vendor-specific file type MUST be one that is assigned to the organization that defined this file type (which is not necessarily the same as the vendor of the CPE or ACS). Note that {{empty}} indicates that all file types are excluded from this filter, effectively disabling CPE notification of AUTONOMOUS TRANSFER COMPLETE events to the ACS. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.X_BROADCOM_COM_E2E_ManagementServer.X_BROADCOM_COM_E2E_DownloadAvailability." shortObjectName="E2E_Dev2ManagementServerDownloadAvailabilityObject" specSource="TR181" profile="Device2_DownloadAnnounce:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">This object contains multicast announcement and query parameters used for the purpose of downloading files. </description>
+
+<object name="InternetGatewayDevice.Device.X_BROADCOM_COM_E2E_ManagementServer.X_BROADCOM_COM_E2E_DownloadAvailability.X_BROADCOM_COM_E2E_Announcement." shortObjectName="E2E_Dev2ManagementServerDownloadAvailabilityAnnouncementObject" specSource="TR181" profile="Device2_DownloadAnnounce:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">This object contains multicast announcement parameters used to download files. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_DownloadAnnounce:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enable/disable CPE ability to receive and use multicast announcements from a server for the purpose of downloading files. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_DownloadAnnounce:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The status of the announcement service. </description>
+
+  <parameter name="GroupNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_DownloadAnnounce:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.X_BROADCOM_COM_E2E_ManagementServer.X_BROADCOM_COM_E2E_DownloadAvailability.X_BROADCOM_COM_E2E_Announcement.X_BROADCOM_COM_E2E_Group.{i}." shortObjectName="E2E_Dev2ManagementServerDownloadAvailabilityAnnouncementGroupObject" specSource="TR181" profile="Device2_DownloadAnnounce:1" requirements="PC" supportLevel="NotSupported" />
+  <description source="TRx">Multicast groups to which the CPE SHOULD listen for announcements. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_DownloadAnnounce:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enable/disable listening to this multicast group. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_DownloadAnnounce:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" />
+    <description source="TRx">The status of this group table entry. </description>
+
+  <parameter name="URL" type="string" specSource="TR181" profile="Device2_DownloadAnnounce:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">URL {{bibref|RFC3986}} encoding the group address, source and port on which to listen, and other protocol information, e.g. expected announcement format. Depending on the application, the messages identified by this URL MAY directly contain the data to be downloaded, or alternatively MAY contain information informing the CPE how to obtain the data to be downloaded via a separate mechanism, which itself could involve a unicast or a multicast download protocol.Refer to {{bibref|DVB-TS.102.824}} for an example of a URL format that identifies a SAP {{bibref|RFC2974}} stream that indicates how to use either FLUTE {{bibref|RFC3926}} or DSM-CC {{bibref|ISO-13818-6:1998}} to perform the download. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.X_BROADCOM_COM_E2E_ManagementServer.X_BROADCOM_COM_E2E_DownloadAvailability.X_BROADCOM_COM_E2E_Query." shortObjectName="E2E_Dev2ManagementServerDownloadAvailabilityQueryObject" specSource="TR181" profile="E2E_Device2_DownloadQuery:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">This object contains multicast query parameters used to download files. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_DownloadQuery:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enable/disable CPE ability to autonomously query a server for the purpose of downloading files. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_DownloadQuery:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The status of the query service. </description>
+
+  <parameter name="URL" type="string" specSource="TR181" profile="Device2_DownloadQuery:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">URL {{bibref|RFC3986}} of the query response server. Depending on the application, the protocol described by this URL MAY be a SOAP interface, or MAY be any other RPC mechanism.Refer to {{bibref|DVB-TS.102.824}} for an example of a URL format that identifies a SOAP interface running over HTTP or HTTPS. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.X_BROADCOM_COM_E2E_ManagementServer.X_BROADCOM_COM_E2E_DUStateChangeComplPolicy." shortObjectName="E2E_Dev2DuStateChangeComplPolicyObject" specSource="TR181" profile="Device2_DUStateChngComplPolicy:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object allows configuration of CPE policy for notification of &quot;12 AUTONOMOUS DU STATE CHANGE COMPLETE&quot; events defined in {{bibref|TR-069a3}}.   The CPE policy determines the conditions under which the CPE notifies the ACS of the completion of Deployment Unit state changes that were not specifically requested via CWMP. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_DUStateChngComplPolicy:1" requirements="W" supportLevel="ReadWrite" defaultValue="False" />
+    <description source="TRx">Enables/Disables CPE notification of &quot;12 AUTONOMOUS DU STATE CHANGE COMPLETE&quot; events to the ACS. </description>
+
+  <parameter name="OperationTypeFilter" type="string" specSource="TR181" profile="Device2_DUStateChngComplPolicy:1" requirements="W" supportLevel="ReadWrite" defaultValue="Install,Update,Uninstall" />
+    <description source="TRx">Indicates the Deployment Unit operations that MUST be included when the CPE notifies the ACS of &quot;12 AUTONOMOUS DU STATE CHANGE COMPLETE&quot; events.   Operation types not indicated by this list MUST NOT be included when the CPE notifies the ACS.  {{empty}} is essentially the same as setting {{param|Enable}} to {{false}}. </description>
+
+  <parameter name="ResultTypeFilter" type="string" specSource="TR181" profile="Device2_DUStateChngComplPolicy:1" requirements="W" supportLevel="ReadWrite" defaultValue="Both" validValuesArray="ResultTypeFilter" />
+    <description source="TRx">Indicates the Deployment Unit state change results that MUST be included when the CPE notifies the ACS of &quot;12 AUTONOMOUS DU STATE CHANGE COMPLETE&quot; events.  State change results omitted from this filter MUST NOT be included when the CPE notifies the ACS. </description>
+
+  <parameter name="FaultCodeFilter" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="9001,9003,9012,9013,9015,9016,9017,9018,9022,9023,9024,9025,9026,9027,9028,9029,9030,9031,9032" />
+    <description source="TRx">Indicates the Deployment Unit state change fault codes that MUST be included when the CPE notifies the ACS of &quot;12 AUTONOMOUS DU STATE CHANGE COMPLETE&quot; events.  State change fault codes omitted from this filter MUST NOT be included when the CPE notifies the ACS. This filter has no effect on the notification of a successful autonomous state change. This filter only applies when {{param|ResultTypeFilter}} is set to either {{enum|Failure|ResultTypeFilter}} or {{enum|Both|ResultTypeFilter}}.  {{empty}} means that failed autonomous state changes will not be sent to the ACS. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.X_BROADCOM_COM_E2E_ManagementServer.X_BROADCOM_COM_E2E_EmbeddedDevice.{i}." shortObjectName="E2E_Dev2ManagementServerEmbeddedDeviceObject" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+  <description source="TRx">Each entry in this table represents a distinct Proxied Device that utilizes the Embedded Object Mechanism {{bibref|TR-069a4|Annex J.1.2}} for proxying devices. </description>
+
+  <parameter name="ControllerID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Identifier of the controller that is responsible for a sub-network of Proxied Devices within the LAN. {{empty}} indicates that this Proxied Device either:* Isn't part of a sub-network, within the LAN, with a controller entity. * Doesn't need a {{param}} to ensure its {{param|ProxiedDeviceID}} is unique throughout the LAN. </description>
+
+  <parameter name="ProxiedDeviceID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Idenitfier of the Proxied Device.   This is an opaque string that is unique to the Proxied Device within a specific sub-network within the LAN (identified by the {{param|ControllerID}}).  If the {{param|ControllerID}} is {{empty}} this {{param}} is unique across the LAN. </description>
+
+  <parameter name="Reference" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{noreference}}The value MUST be the path name of a table row.  If the referenced object is deleted, this {{object}} instance MUST also be removed. Represents the instance of a multi-instanced object that is directly controlled by, and has come into existence because of, this Proxied Device  that utilizes the Embedded Object Mechanism {{bibref|TR-069a4|Annex J.1.2}}. </description>
+
+  <parameter name="SupportedDataModel" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Represents the CWMP-DT schema instance(s) that this Proxied Device is utilizing.  The CWMP-DT schema instance is also the one being utilized by the object referenced within {{param|Reference}}. </description>
+
+  <parameter name="Host" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">References the {{object|.Hosts.Host}} table entry(s), whether active or inactive, that corresponds to this proxied LAN device. </description>
+
+  <parameter name="ProxyProtocol" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The protocol being used to communicate between the CPE Proxier and this Proxied Device. {{enum}} Vendors can extend the enumerated values with vendor specific extensions, in which case the rules outlined in {{bibref|TR-106a6|3.3}} MUST be adhered to. </description>
+
+  <parameter name="ProxyProtocolReference" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{reference|a protocol object that uses the {{param|ProxyProtocol}}}} </description>
+
+  <parameter name="DiscoveryProtocol" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list|that represents the discovery protocol(s) for this proxied device}} {{enum}}Vendors can extend the enumerated values with vendor specific extensions, in which case the rules outlined in {{bibref|TR-106a3|Section 3.3}} MUST be adhered to. </description>
+
+  <parameter name="DiscoveryProtocolReference" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} {{reference|an object discovered using one or more protocols listed in {{param|DiscoveryProtocol}}|ignore}} For objects discovered by the UPnP discovery protocol, the {{param}} would contain items that are references to instances of the following:* {{object|.UPnP.Discovery.RootDevice}} * {{object|.UPnP.Discovery.Device}}* {{object|.UPnP.Discovery.Service}} For objects discovered by the ETSI-M2M discovery protocol, the {{param}} would contain items that are references to instances of ETSIM2M.SCL.{i}.AreaNwkDeviceInfoInstance. </description>
+
+  <parameter name="CommandProcessed" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Whether or not the CPE Proxier has successfully communicated all pending configuration commands down to the Proxied Device. </description>
+
+  <parameter name="CommandProcessingErrMsg" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="1024" />
+    <description source="TRx">Detailed {{param|CommandProcessed}} error description (vendor specific). </description>
+
+  <parameter name="LastSyncTime" type="dateTime" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The last time that the CPE Proxier synchronized the state of the Proxied Device.  This parameter MUST be updated when a proxy command is executed successfully on the Proxied Device. The Unknown Time value, as defined in {{bibref|TR-106a6}}, indicates that the Proxied Device's state has not been synchronized since the CPE Proxier was last rebooted. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.X_BROADCOM_COM_E2E_ManagementServer.X_BROADCOM_COM_E2E_VirtualDevice.{i}." shortObjectName="E2E_Dev2ManagementServerVirtualDeviceObject" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+  <description source="TRx">Each entry in this table represents a distinct Proxied Device that utilizes the Virtual CWMP Device Mechanism {{bibref|TR-069a4|Annex I.1.1}} for proxying devices. </description>
+
+  <parameter name="ManufacturerOUI" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="6" minLength="6" />
+    <description source="TRx">Organizationally unique identifier of the associated Proxied Device.  Represented as a six hexadecimal-digit value using all upper-case letters and including any leading zeros.  {{pattern}} The value MUST be a valid OUI as defined in {{bibref|OUI}}. </description>
+
+  <parameter name="ProductClass" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Identifier of the class of product of the associated Proxied Device for which the serial number applies. </description>
+
+  <parameter name="SerialNumber" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Serial number of the associated Proxied Device. </description>
+
+  <parameter name="Host" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} {{reference}}  References all the {{object|.Hosts.Host}} table entries, whether active or inactive, that correspond to this proxied LAN device.  There can be multiple such entries if the Proxied Device has more than one network interface. </description>
+
+  <parameter name="ProxyProtocol" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The protocol being used to communicate between the CPE Proxier and this Proxied Device. {{enum}} Vendors can extend the enumerated values with vendor specific extensions, in which case the rules outlined in {{bibref|TR-106a6|3.3}} MUST be adhered to. </description>
+
+  <parameter name="ProxyProtocolReference" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{reference|a protocol object that uses the {{param|ProxyProtocol}}}} </description>
+
+  <parameter name="DiscoveryProtocol" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list|that represents the discovery protocol(s) for this proxied device}} {{enum}}Vendors can extend the enumerated values with vendor specific extensions, in which case the rules outlined in {{bibref|TR-106a3|Section 3.3}} MUST be adhered to. </description>
+
+  <parameter name="DiscoveryProtocolReference" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} {{reference|an object discovered using one or more protocols listed in {{param|DiscoveryProtocol}}|ignore}} For objects discovered by the UPnP discovery protocol, the {{param}} would contain items that are references to instances of the following:* {{object|.UPnP.Discovery.RootDevice}} * {{object|.UPnP.Discovery.Device}}* {{object|.UPnP.Discovery.Service}} For objects discovered by the ETSI-M2M discovery protocol, the {{param}} would contain items that are references to instances of ETSIM2M.SCL.{i}.AreaNwkDeviceInfoInstance. </description>
+
+
+
+
+<vsaInfo>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Baseline:1" /> 
+<profile name="Device2_Baseline:2" /> 
+<profile name="Device2_Baseline:3" /> 
+<profile name="Unspecified" /> 
+<profile name="Device2_UDPConnReq:1" /> 
+<profile name="Device2_DeviceAssociation:1" /> 
+<profile name="Device2_AutonXferComplPolicy:1" /> 
+<profile name="Device2_DownloadAnnounce:1" /> 
+<profile name="Device2_DownloadQuery:1" /> 
+<profile name="Device2_DUStateChngComplPolicy:1" /> 
+<profile name="Device2_XMPPConnReq:1" /> 
+<profile name="X_BROADCOM_COM_UPnPIGDHTTPConnReq:1" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

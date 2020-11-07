@@ -1,0 +1,7 @@
+#
+# Add TR181 QOS objects to TR181 tree
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-tr181-qos.xml Device.

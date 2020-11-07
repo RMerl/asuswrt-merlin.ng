@@ -1,0 +1,11 @@
+--- pciutils-3.4.1/Makefile.orig	2016-01-25 14:55:20.782821000 -0800
++++ pciutils-3.4.1/Makefile	2016-01-25 14:55:37.848682000 -0800
+@@ -2,7 +2,7 @@
+ # (c) 1998--2016 Martin Mares <mj@ucw.cz>
+ 
+ OPT=-O2
+-CFLAGS=$(OPT) -Wall -W -Wno-parentheses -Wstrict-prototypes -Wmissing-prototypes
++CFLAGS+=$(OPT) -Wall -W -Wno-parentheses -Wstrict-prototypes -Wmissing-prototypes
+ 
+ VERSION=3.4.1
+ DATE=2016-01-03

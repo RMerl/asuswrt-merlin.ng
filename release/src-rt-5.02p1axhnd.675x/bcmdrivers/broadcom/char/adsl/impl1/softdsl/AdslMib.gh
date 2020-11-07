@@ -1,0 +1,228 @@
+/****************************************************************************
+ *
+ * AdslMib.gh 
+ *
+ * Description:
+ *	This is a header file which defines the type for AdslMib
+ *	global variable structure.
+ *
+ *
+ * Copyright (c) 1993-1998 AltoCom, Inc. All rights reserved.
+ * Authors: Ilya Stomakhin
+ *
+ * $Revision: 1.8 $
+ *
+ * $Id: AdslMib.gh,v 1.8 2004/06/04 18:56:01 ilyas Exp $
+ *
+ * $Log: AdslMib.gh,v $
+ * Revision 1.8  2004/06/04 18:56:01  ilyas
+ * Added counter for ADSL2 framing and performance
+ *
+ * Revision 1.7  2003/10/17 21:02:12  ilyas
+ * Added more data for ADSL2
+ *
+ * Revision 1.6  2003/10/14 00:55:27  ilyas
+ * Added UAS, LOSS, SES error seconds counters.
+ * Support for 512 tones (AnnexI)
+ *
+ * Revision 1.5  2003/07/18 19:07:15  ilyas
+ * Merged with ADSL driver
+ *
+ * Revision 1.4  2002/11/13 21:32:49  ilyas
+ * Added adjustK support for Centillium non-standard framing mode
+ *
+ * Revision 1.3  2002/10/31 20:27:13  ilyas
+ * Merged with the latest changes for VxWorks/Linux driver
+ *
+ * Revision 1.2  2002/07/20 00:51:41  ilyas
+ * Merged witchanges made for VxWorks/Linux driver.
+ *
+ * Revision 1.1  2001/12/21 22:39:30  ilyas
+ * Added support for ADSL MIB data objects (RFC2662)
+ *
+ *
+ *****************************************************************************/
+
+#ifndef	AdslMibGlobals
+#define	AdslMibGlobals
+
+#include "AdslMib.h"
+
+typedef struct _InhibitCounters {
+	Boolean					inhibitCntrCapture;
+	uint					xdslESs;
+	uint					xdslSES;
+	uint					xdslLOSS;
+	uint					xdslLORS;
+	uint					xdslFECs;
+	uint					xdslCRCs;
+#if 0
+	uint					xdslRtxUc;
+	uint					xdslRtxTx;
+#endif
+} InhibitCounters;
+
+typedef struct
+	{
+	/* MIB data */
+
+	adslMibInfo				adslMib;
+	/*command handler */
+	dslCommandHandlerType	cmdHandlerPtr;
+	/* ADSL state data */
+
+	adslMibNotifyHandlerType notifyHandlerPtr;
+	ulonglong				txShowtimeTime;
+	uint					timeSec;
+	uint					timeMs;
+	uint					timeConStarted;
+	Boolean					currSecondErrored;
+	Boolean					currSecondLOS;
+	Boolean					losEventOccurred;
+	Boolean					currSecondLOM;
+	Boolean					currSecondSES;
+	Boolean					currSecondFEC;
+	Boolean					currSecondLCD;
+#ifdef CONFIG_BCM_DSL_GFAST
+	Boolean					currSecondLOR;
+	Boolean					lorEventOccurred;
+#endif
+	Boolean					vendorIdReceived;
+	uint					rcvPower;
+	uint					rcvRateBps;
+	uint					xmtRateBps;
+	uint					linkStatus;
+	union {
+		G992CodingParams		rcvParams;
+		G992CodingParams		rcvParams2lp[MAX_LP_NUM];
+	};
+	union {
+		G992CodingParams		xmtParams;
+		G992CodingParams		xmtParams2lp[MAX_LP_NUM];
+	};
+	union {
+		uint				shtCounters[kG992ShowtimeNumOfMonitorCounters];
+		uint				shtCounters2lp[MAX_LP_NUM][kG992ShowtimeNumOfMonitorCounters];
+	};
+	union {
+		uint				shtExtCounters[kG992ShowtimeNumOfExtendedMonitorCounters];
+		uint				shtExtCounters2lp[MAX_LP_NUM][kG992ShowtimeNumOfExtendedMonitorCounters];
+	};
+	ginpCounters				ginpCounters;
+	ginpCounters				lastTxGinpCounters;
+#ifdef CONFIG_BCM_DSL_GFAST
+	ulonglong				txANDEFTRacc;
+	gfastEocCounters			eocCounters;
+	GfastTxVectorFBEocSegment		vectorFBCounters;
+	InhibitCounters			inhibCntrsOnSES;
+	InhibitCounters			inhibCntrsOnLOR;
+	InhibitCounters			inhibCntrsOnLOS;
+#endif
+	uint					scratchData;
+	int					showtimeMarginThld;
+
+	/* ADSL diag data */
+	short					*snr;
+	short					*showtimeMargin;
+	uchar					*bitAlloc;
+	short					*gain;
+	short					*bitSwapTones;
+	ComplexShort			*chanCharLin;
+	short					*chanCharLog;
+	short					*quietLineNoise;
+#ifdef CONFIG_BCM_DSL_GFAST
+	short					*activeLineNoise;
+	uchar					*doiBitAlloc;
+	short					*doiGain;
+	ushort					nTonesGfast;
+#endif
+#if defined(CONFIG_RNC_SUPPORT)
+	short					*quietLineNoiseRnc;
+#endif
+#if defined(SUPPORT_SELT) || defined(CONFIG_VDSL_SUPPORTED)
+	ComplexLong				*uer;
+#ifdef SUPPORT_SELT
+	ushort					*echoVariance;
+#endif
+#endif
+	ushort					nTones;
+	uchar					nMsgCnt;
+	uint					g992MsgType;
+	uchar					rsOption[1+4];
+	Boolean					rsOptionValid;
+	
+	/* Non-linear detection data */
+	short 					distNoisedB[kAdslMibToneNum*2];
+
+	/* PLN data */
+	short			PLNDurationBins[kPlnNumberOfDurationBins]; 
+	short			PLNIntrArvlBins[kPlnNumberOfInterArrivalBins];
+#ifdef ADSL_MIBOBJ_PLN
+	short			PLNValueps[kAdslMibToneNum*2-32];
+	short			PLNThldCntps[kAdslMibToneNum*2-32];
+#endif
+	uint			PLNDurationHist[kPlnNumberOfDurationBins];
+	uint			PLNIntrArvlHist[kPlnNumberOfInterArrivalBins];
+	char			pathId;
+	uint			secElapsedShTm;
+	union {
+		int		per;
+		int		per2lp[MAX_LP_NUM];
+	};
+	union {
+		int		rsRate;
+		int		rsRate2lp[MAX_LP_NUM];
+	};
+	int			txUpdateStatFlag;
+	int			txCntReceived;
+	uint		PERpDS[MAX_LP_NUM];
+	int		waitBandPlan;
+	int		waitfirstQLNstatusLD;
+	int		waitfirstHLOGstatusLD;
+	int		waitfirstSNRstatusLD;
+	int		waitfirstSNRstatusMedley;
+	uint				bandPlanType;
+	bandPlanDescriptor		*bpSNR;
+	bandPlanDescriptor		*dsBpHlogForReport;
+	bandPlanDescriptor		*dsBpQLNForReport;
+	bandPlanDescriptor		*dsBpSNRForReport;
+	bandPlanDescriptor		*dsBpSNRpbForReport;
+	bandPlanDescriptor		*usBpSNRpbForReport;
+	bandPlanDescriptor		*dsBpSATNpbForReport;
+	bandPlanDescriptor		*usBpSATNpbForReport;
+	Boolean actualgFactorForToneGroupObjects;
+	short			*dsPhysGfactor;
+	short			*dsGfactorForSNRReport;
+	char		scratchObject[kVdslMibMaxToneNum];
+	bandPlanDescriptor32	scratchBpObject;
+#if defined(SUPPORT_VECTORING)
+	VectoringStateMachine		vectSM;
+	MibVectDataPhy		vectPhyData;
+#endif
+	Boolean		swapTxPath;
+	Boolean		swapRxPath;
+	uint		pathActive;
+	Boolean		minEFTRReported;
+	Boolean		ginpExtEnabled;
+	ulonglong	bitSwapReqTime[2];	/* 0 - DS, 1 - US */
+	ulonglong	txCountersReportedTime;
+	ulonglong	xdslInitIdleStateTime;
+	unsigned char	lastInitState;
+	unsigned char	adslTpsTcOptions;
+	unsigned char	uasOnSes;  /* !0 - in UAS */
+	unsigned char	sesContCnt;
+	unsigned char	reInitTimeThld;
+#ifdef CONFIG_TOD_SUPPORTED
+	TodInfo	todInfo;
+#endif
+#ifdef SUPPORT_HMI
+	MrefPsd		gMrefPsd;
+#endif
+	}
+	adslMibVarsStruct;
+
+#endif	/* AdslMibGlobals */
+
+
+
+

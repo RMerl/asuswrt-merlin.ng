@@ -1,0 +1,13 @@
+#***********************************************************************
+#  Copyright (c) 2014  Broadcom Corporation
+#  All Rights Reserved
+#***********************************************************************/
+
+This directory should contain firmware binary files include firmware microcode, and used by RDD.
+The files are auto-generated during firmware build, and should be submitted to P4 after update.
+
+Their location in CommEngine today is at //depot/CommEngine/prod/PROD_416L/shared/broadcom/rdp/impl2/firmware_dsl_63148
+
+Please note that file names were changed from lilac_fw_*.c to runner_fw_*.c and from predict_lilac_fw_*.c to
+predict_runner_fw_*.c.
+

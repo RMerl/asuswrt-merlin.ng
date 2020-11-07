@@ -1,0 +1,172 @@
+# Syntax
+# line start with '-' will be treated as a conditinal load driver.
+# conditon will be directly followed after '-' and ends with a space, 
+# condition can include configures from profile and is evalauted as bash expression. 
+# for example:
+# -BUILD_FEATURE_A xxx.ko 
+#       will only load xxx.ko when BUILD_FEATURE_A is evaluaed true
+# -!BUILD_FEATURE_B yyy.ko
+#       will only load yyy.ko when BUILD_FEATURE_B is evalued false.
+
+# bcmlibs collection of library utilities; must be loaded before any other driver
+extra/bcmlibs.ko
+
+# UBUS capture for debug purposes
+extra/ubuscap.ko
+
+extra/rdp_fpm.ko
+extra/bdmf.ko 
+
+#I2C
+extra/i2c_bcm6xxx.ko
+extra/bcm3450.ko
+extra/bcmsfp_i2c.ko
+extra/i2cmux_i2c.ko
+extra/bcm_i2c.ko
+
+# PON Driver
+extra/opticaldet.ko
+extra/bcm_pondrv.ko
+
+# BPM Driver
+extra/bcm_bpm.ko
+
+# VLAN has no dependencies
+extra/bcmvlan.ko
+
+# RDPA depends on bpm initialization
+extra/rdpa_gpl.ko
+extra/rdpa_gpl_ext.ko
+extra/rdpa.ko 
+
+# RDPA_User
+extra/rdpa_usr.ko
+
+extra/time_sync.ko 
+extra/rdpa_mw.ko
+extra/bcmbrfp.ko
+
+# General
+extra/bcm_license.ko
+extra/bcm_spdsvc.ko
+-BUILD_SPDTEST extra/bcm_tcpspdtest.ko
+extra/chipinfo.ko
+
+# Ingress QOS module
+# Must be inserted before RDPA_CMD and bcm_fap
+extra/bcm_ingqos.ko
+
+# RDPA Command Drivers
+extra/rdpa_cmd.ko
+
+extra/bcmtm.ko
+extra/pktflow.ko
+extra/cmdlist.ko
+extra/archer.ko
+extra/bcmxtmrtdrv.ko
+extra/bcmfap.ko
+extra/tdts.ko
+extra/dpicore.ko
+extra/dpiqos.ko
+extra/flowbond.ko
+extra/profdrvdd.ko
+extra/bcmxtmcfg.ko
+extra/ext_bonding.ko
+extra/atmapi.ko
+extra/adsldd.ko
+extra/blaa_dd.ko
+extra/bcmprocfs.ko
+kernel/net/ipv6/ipv6.ko
+kernel/net/atm/br2684.ko
+extra/linux-kernel-bde.ko
+extra/linux-user-bde.ko
+
+ # enet depends on moca depends on i2c
+
+extra/bcmmoca.ko
+
+extra/bcm_enet.ko
+extra/bcm_enet_sysport.ko
+# moving pktrunner after bcm_enet to get better FlowCache ICache performance
+extra/pktrunner.ko
+extra/nciLservices.ko
+extra/nciexLinuxETH.ko
+extra/nciTMSkmod.ko
+extra/bcmsw.ko && ifconfig bcmsw up
+extra/bcm_usb_dev.ko
+extra/bcmmcast.ko
+extra/bcmarl.ko
+
+# EAPFWD: added after bcm_enet.ko
+extra/eapfwd.ko
+
+#load SATA/AHCI modules
+kernel/drivers/ata/libata.ko
+kernel/drivers/ata/libahci.ko
+kernel/drivers/ata/ahci.ko
+extra/bcm_sata.ko
+kernel/drivers/ata/libahci_platform.ko
+kernel/drivers/ata/ahci_platform.ko
+
+# PCIe Host Controller Driver when compiled as LKM
+extra/bcm_pcie_hcd.ko
+
+# pcie configuration save/restore
+kernel/arch/arm/plat-bcm63xx/bcm63xx_pcie.ko
+
+# WLAN accelerator module
+extra/wfd.ko
+
+# NetXL accelerator module
+extra/netxl.ko
+
+#Voice
+extra/dsphal.ko
+extra/slicslac.ko
+extra/dect.ko
+
+extra/hs_uart_drv.ko
+
+#load usb modules
+# kernel/drivers/usb/usb-common.ko
+# kernel/drivers/usb/core/usbcore.ko
+# kernel/drivers/usb/host/ehci-hcd.ko
+# kernel/drivers/usb/host/ehci-platform.ko
+# kernel/drivers/usb/host/ehci-pci.ko
+# kernel/drivers/usb/host/ohci-hcd.ko
+# kernel/drivers/usb/host/ohci-platform.ko
+# kernel/drivers/usb/host/ohci-pci.ko
+# kernel/drivers/usb/host/xhci-hcd.ko
+# kernel/drivers/usb/host/xhci-plat-hcd.ko
+# extra/bcm_usb.ko
+# kernel/drivers/usb/class/usblp.ko
+# kernel/drivers/usb/storage/usb-storage.ko
+# kernel/drivers/usb/storage/uas.ko
+# extra/btusbdrv.ko
+
+# other modules
+
+extra/isdn.ko
+kernel/drivers/isdn/capi/capi.ko 
+extra/pwrmngtd.ko
+kernel/drivers/char/hw_random/rng-core.ko
+extra/bcmtrng.ko
+extra/bcm2079x-i2c.ko
+kernel/drivers/mailbox/mailbox.ko
+extra/bcmpdc.ko
+extra/bcmspu.ko
+extra/cryptodev.ko
+extra/spudd.ko
+
+extra/sim_card.ko
+extra/i2s.ko
+extra/bcm_thermal.ko
+extra/bcm_cpuoff.ko
+
+# presecure fullsecure modules
+extra/otp.ko
+extra/sotp.ko
+
+# LTE PCIE driver module
+extra/bcm_lte_pcie_drv.ko
+

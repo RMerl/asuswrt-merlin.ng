@@ -1,0 +1,1251 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi." shortObjectName="Dev2WifiObject" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="P" supportLevel="Present" gmapping="1" oid="2600" lockZone="4" />
+  <description source="TRx">The WiFi object is based on the WiFi Alliance 802.11 specifications ({{bibref|802.11-2007}}). It defines interface objects ({{object|Radio}} and {{object|SSID}}), and application objects ({{object|AccessPoint}} and {{object|EndPoint}}).</description>
+
+  <parameter name="RadioNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" mngrvar="radio_number" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the Radio table.</description>
+
+  <parameter name="SSIDNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" mngrvar="bssid_number" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the SSID table.</description>
+
+  <parameter name="AccessPointNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" mngrvar="ssid_number" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the AccessPoint table.</description>
+
+  <parameter name="EndPointNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="R" supportLevel="ReadOnly" mngrvar="sta_number" />
+    <description source="TRx">The number of entries in the EndPoint table.</description>
+
+  <parameter name="X_BROADCOM_COM_WlNvram" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" mngrvar="nvram" />
+    <description source="TRx">NVRAM extra information</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.Radio.{i}." shortObjectName="Dev2WifiRadioObject" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="MultipleInstances" gmapping="1" />
+  <description source="TRx">This object models an 802.11 wireless radio on a device (a stackable interface object as described in {{bibref|TR-181i2|Section 4.2}}). If the device can establish more than one connection simultaneously (e.g. a dual radio device), a separate {{object}} instance MUST be used for each physical radio of the device. See {{bibref|TR-181i2|Appendix III.1}} for additional information. Note: A dual-band single-radio device (e.g. an 802.11a/b/g radio) can be configured to operate at 2.4 or 5 GHz frequency bands, but only a single frequency band is used to transmit/receive at a given time. Therefore, a single {{object}} instance is used even for a dual-band radio.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" mngrvar="wlEnbl" nvramb="radio.radio" defaultValue="1"/>
+    <description source="TRx">Enables or disables the radio. This parameter is based on ifAdminStatus from [RFC2863].</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" defaultValue="Down" mngrvar="radioStatus" validValuesArray="ifOperStatusValues" />
+    <description source="TRx">The current operational state of the radio. (see [Section 4.2.2/TR-181i2]). Enumeration of:&#10;&#10;Up &#10;Down &#10;Unknown &#10;Dormant &#10;NotPresent &#10;LowerLayerDown &#10;Error (OPTIONAL) &#10;&#10;When Enable is false then Status SHOULD normally be Down (or NotPresent or Error if there is a fault condition on the interface). &#10;&#10;When Enable is changed to true then Status SHOULD change to Up if and only if the interface is able to transmit and receive network traffic; it SHOULD change to Dormant if and only if the interface is operable but is waiting for external actions before it can transmit and receive network traffic (and subsequently change to Up if still operable when the expected actions have completed); it SHOULD change to LowerLayerDown if and only if the interface is prevented from entering the Up state because one or more of the interfaces beneath it is down; it SHOULD remain in the Error state if there is an error or other fault condition detected on the interface; it SHOULD remain in the NotPresent state if the interface has missing (typically hardware) components; it SHOULD change to Unknown if the state of the interface can not be determined for some reason.&#10;&#10;This parameter is based on ifOperStatus from [RFC2863].&#10;</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" mngrvar="rAlias" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference.&#10;&#10;If the CPE supports the Alias-based Addressing feature as defined in [TR-069a4|3.6.1] and described in [TR-069a4|Appendix II], the following mandatory constraints MUST be enforced:&#10;&#10;* Its value MUST NOT be empty.&#10;* Its value MUST start with a letter.&#10;* If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix.&#10;* The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The textual name of the radio as assigned by the CPE.</description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in seconds since the radio entered its current operational state.</description>
+
+  <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" mngrvar="wlradiolastchange" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="1024" notifySskLowerLayersChanged="true" />
+    <description source="TRx">Comma-separated list (maximum length 1024) of strings. Each list item MUST be the path name of an interface object that is stacked immediately below this interface object. If the referenced object is deleted, the corresponding item MUST be removed from the list. See [Section 4.2.1/TR-181i2].&#10;&#10;Note: Since Radio is a layer 1 interface, it is expected that LowerLayers will not be used.&#10;</description>
+
+  <parameter name="Upstream" type="boolean" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates whether the interface points towards the Internet (true) or towards End Devices (false).&#10;For example:&#10;&#10;* For an Internet Gateway Device, Upstream will be true for all WAN interfaces and false for all LAN interfaces. &#10;* For a standalone WiFi Access Point that is connected via Ethernet to an Internet Gateway Device, Upstream will be true for the Ethernet interface and false for the WiFi Radio interface. &#10;* For an End Device, Upstream will be true for all interfaces. &#10;</description>
+
+  <parameter name="MaxBitRate" type="unsignedInt" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The maximum PHY bit rate supported by this interface (expressed in Mbps).</description>
+
+  <parameter name="SupportedFrequencyBands" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" mngrvar="wlFreqBands" />
+    <description source="TRx">Comma-separated list of strings. List items indicate the frequency bands at which the radio can operate.</description>
+
+  <parameter name="X_BROADCOM_COM_WlApstaSupported" type="boolean" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" mngrvar="wlHasApsta" nvramb="radio.apsta" />
+
+  <parameter name="X_BROADCOM_COM_GPIOOverlays" type="unsignedLong" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" mngrvar="GPIOOverlays" neverWriteToConfigFile="true" />
+
+  <parameter name="X_BROADCOM_COM_WlCountry" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" supportLevel="ReadWrite" defaultValue="US" nvramb="radio.country_code" />
+
+  <parameter name="X_BROADCOM_COM_WlSsidIdx" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="Read" defaultValue="0" />
+
+  <parameter name="X_BROADCOM_COM_WlRegRev" type="int" specSource="TR181" profile="Device2_WiFiRadio:1" supportLevel="ReadWrite" defaultValue="0" nvramb="radio.country_rev" />
+
+  <parameter name="X_BROADCOM_COM_WlAtf" type="int" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="1" nvramb="radio.atf" />
+
+  <parameter name="X_BROADCOM_COM_WlTaf" type="int" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" nvramb="radio.taf_enable" />
+
+  <parameter name="OperatingFrequencyBand" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="2.4GHz" validValuesArray="WiFiFrequencyBandValues" mngrvar="wlBand" mapper="strint.wlband.int" nvramb="radio.nband" />
+    <description source="TRx">Indicates the frequency band at which the radio is operating. If the radio supports multiple bands, and {{param}} is changed, then all parameters whose value is not valid for the new frequency band (e.g. {{param|Channel}}) MUST be set to a valid value (according to some CPE vendor-specific behavior).</description>
+
+  <parameter name="SupportedStandards" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} List items indicate which IEEE 802.11 standards this {{object}} instance can support simultaneously, in the frequency band specified by {{param|OperatingFrequencyBand}}.  {{enum}} Each value indicates support for the indicated standard. If {{param|OperatingFrequencyBand}} is set to {{enum|2.4GHz|OperatingFrequencyBand}}, only values {{enum|b}}, {{enum|g}}, {{enum|n}} are allowed. If {{param|OperatingFrequencyBand}} is set to {{enum|5GHz|OperatingFrequencyBand}}, only values {{enum|a}}, {{enum|n}}, {{enum|ac}} are allowed. </description>
+
+  <parameter name="OperatingStandards" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="n" validValuesArray="WiFiStandardValues" mngrvar="wlPhyType" nvramb="radio.phytype" />
+    <description source="TRx">{{list}} List items indicate which IEEE 802.11 standard this {{object}} instance is configured for. Each value indicates support for the indicated standard.If {{param|OperatingFrequencyBand}} is set to {{enum|2.4GHz|OperatingFrequencyBand}}, only values {{enum|b}}, {{enum|g}}, {{enum|n}} are allowed. If {{param|OperatingFrequencyBand}} is set to {{enum|5GHz|OperatingFrequencyBand}}, only values {{enum|a}}, {{enum|n}}, {{enum|ac}} are allowed.For example, a value of "g,b" (or "b,g" - order is not important) means that the 802.11g standard {{bibref|802.11g-2003}} is used with a backwards-compatible mode for 802.11b {{bibref|802.11b-1999}}. A value of "g" means that only the 802.11g standard can be used. </description>
+
+  <parameter name="PossibleChannels" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" maxLength="1024" />
+    <description source="TRx">{{list}} List items represent possible radio channels for the wireless standard (a, b, g, n) and the regulatory domain. Ranges in the form &quot;n-m&quot; are permitted. For example, for 802.11b and North America, would be &quot;1-11&quot;.</description>
+
+  <parameter name="ChannelsInUse" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="1024" />
+    <description source="TRx">{{list}} List items represent channels that the radio determines to be currently in use (including any that it is using itself). Ranges in the form &quot;n-m&quot; are permitted.</description>
+
+  <parameter name="X_BROADCOM_COM_WlChannel" type="unsignedInt" specSource="Broadcom" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="1" minValue="0" maxValue="255" nvramb="radio.channel"/>
+    <description source="TRx">Runtime variable, don't save to DM</description>
+
+  <parameter name="Channel" type="unsignedInt" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="1" minValue="0" maxValue="255" mngrvar="wlCurrentChannel"/>
+    <description source="TRx">The current radio channel used by the connection. To request automatic channel selection, set {{param|AutoChannelEnable}} to {{true}}. Whenever {{param|AutoChannelEnable}} is {{true}}, the value of the {{param}} parameter MUST be the channel selected by the automatic channel selection procedure. Note: Valid {{param}} values depend on the {{param|OperatingFrequencyBand}} and {{param|RegulatoryDomain}} values specified.</description>
+
+  <parameter name="AutoChannelSupported" type="boolean" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates whether automatic channel selection is supported by this radio. If {{false}}, then {{param|AutoChannelEnable}} MUST be {{false}}.</description>
+
+  <parameter name="AutoChannelEnable" type="boolean" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enable or disable automatic channel selection. Set to {{false}} to disable the automatic channel selection procedure, in which case the currently selected channel remains selected. Set to {{true}} to enable the automatic channel selection procedure. This procedure MUST automatically select the channel, and MAY also change it subsequently. {{param}} MUST automatically change to {{false}} whenever the channel is manually selected, i.e. whenever the {{param|Channel}} parameter is written. Whenever {{param}} is {{true}}, the value of the {{param|Channel}} parameter MUST be the channel selected by the automatic channel selection procedure.</description>
+
+  <parameter name="AutoChannelRefreshPeriod" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="900" mngrvar="wlAcsCsScanTimer" nvramb="radio.acs_cs_scan_timer" />
+    <description source="TRx">The time period in seconds between two consecutive automatic channel selections. A value of 0 means that the automatic channel selection is done only at boot time. This parameter is significant only if {{param|AutoChannelEnable}} is set to {{true}}.</description>
+
+  <parameter name="OperatingChannelBandwidth" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="40MHz" validValuesArray="WiFiChannelBandwidthValues" mngrvar="wlNBwCap" nvramb="radio.bw_cap" mapper="strint.wlbwcap.int" />
+    <description source="TRx">The preferred channel bandwidth to be used (applicable to 802.11n and 802.11ac specifications only). </description>
+
+  <parameter name="CurrentOperatingChannelBandwidth" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The channel bandwidth currently in use. </description>
+
+  <parameter name="ExtensionChannel" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="BelowControlChannel" validValuesArray="WiFiExtensionControlValues" mngrvar="wlNCtrlsb" nvramb="radio.nctrlsb" mapper="strint.wlctrlsb" />
+    <description source="TRx">The secondary extension channel position, applicable when operating in wide channel mode (i.e. when {{param|OperatingChannelBandwidth}} is set to {{enum|40MHz|OperatingChannelBandwidth}} or {{enum|Auto|OperatingChannelBandwidth}}).</description>
+
+  <parameter name="GuardInterval" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="Auto" validValuesArray="WiFiGuardIntervalValues" />
+    <description source="TRx">The guard interval value between OFDM symbols (applicable to 802.11n and 802.11ac specifications only). </description>
+
+  <parameter name="MCS" type="int" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="32" mngrvar="wlNMcsidx" nvramb="radio.nmcsidx" />
+    <description source="TRx">The Modulation Coding Scheme index (applicable to 802.11n and 802.11ac specifications only). Values from 0 to 15 MUST be supported ({{bibref|802.11n-2009}}). Values from 0 to 9 MUST be supported for {{bibref|802.11ac-2013}}.  A value of -1 indicates automatic selection of the MCS index. </description>
+
+  <parameter name="TransmitPowerSupported" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">{{list}} List items represent supported transmit power levels as {{units}} of full power. For example, "0,25,50,75,100". A -1 item indicates auto mode (automatic decision by CPE). Auto mode allows the ''Radio'' to adjust transmit power accordingly. For example, this can be useful for power-save modes such asEU-CoC, where the ''Radio'' can adjust power according to activity in the CPE. </description>
+
+  <parameter name="TransmitPower" type="int" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="100" minValue="-1" maxValue="100" mngrvar="wlTxPwrPcnt" />
+    <description source="TRx">Indicates the current transmit power level as a percentage of full power. The value MUST be one of the values reported by the {{param|TransmitPowerSupported}} parameter. A value of -1 indicates auto mode (automatic decision by CPE).</description>
+
+  <parameter name="IEEE80211hSupported" type="boolean" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates whether IEEE 802.11h {{bibref|802.11h-2003}} functionality is supported by this radio. The value can be {{true}} only if the 802.11a or the 802.11n@5GHz standard is supported (i.e. {{param|SupportedFrequencyBands}} includes {{enum|5GHz|SupportedFrequencyBands}} and {{param|SupportedStandards}} includes {{enum|a|SupportedStandards}} and/or {{enum|n|SupportedStandards}}).</description>
+
+  <parameter name="IEEE80211hEnabled" type="boolean" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Indicates whether IEEE 802.11h functionality is enabled on this radio. The value can be {{true}} only if the 802.11a or the 802.11n@5GHz standard is supported and enabled (i.e. {{param|OperatingFrequencyBand}} is {{enum|5GHz|OperatingFrequencyBand}} and {{param|OperatingStandards}} includes {{enum|a|OperatingStandards}} and/or {{enum|n|OperatingStandards}}).</description>
+
+  <parameter name="RegulatoryDomain" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="US/0" maxLength="3" mngrvar="wlCountryRev" minLength="3" />
+    <description source="TRx">The 802.11d Regulatory Domain. First two octets are {{bibref|ISO3166-1}} two-character country code. The third octet is either &quot; &quot; (all environments), &quot;O&quot; (outside) or &quot;I&quot; (inside).</description>
+
+  <parameter name="RetryLimit" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="7" minValue="0" />
+   <description source="TRx">The maximum number of retransmissions of a short packet i.e. a packet that is no longer than the {{param|RTSThreshold}}. This corresponds to IEEE 802.11 parameter ''dot11ShortRetryLimit''  {{bibref|802.11-2012}}. </description>
+
+  <parameter name="CCARequest" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="11" minLength="11" />
+    <description source="TRx">A request for the clear channel assessment (CCA) report in the format specified in {{bibref|802.11-2012|Clause 8.4.2.23.3}}. </description>
+
+  <parameter name="CCAReport" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="12" minLength="12" />
+    <description source="TRx">The clear channel assessment (CCA) report in the format specified in {{bibref|802.11-2012|Clause 8.4.2.24.3}}. When read, the value of this parameter MUST correspond to {{param|CCARequest}}.  How this is achieved is a local matter to the CPE.If this parameter is read before a CCARequest has been issued, then its value is {{empty}}. </description>
+
+  <parameter name="RPIHistogramRequest" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="11" minLength="11" />
+    <description source="TRx">A request for a received power indicator (RPI) histogram in the format specified in {{bibref|802.11-2012|Clause 8.4.2.23.4}}. </description>
+
+  <parameter name="RPIHistogramReport" type="hexBinary" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="19" minLength="19" />
+    <description source="TRx">Received power indicator (RPI) histogram report in the format specified in {{bibref|802.11-2012|Clause 8.4.2.24.4}}. </description>
+
+  <parameter name="FragmentationThreshold" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">This specifies the current maximum size, in {{units}}, of the MPDU that can be delivered to the PHY. This parameter is based on ''dot11FragmentationThreshold'' from {{bibref|802.11-2012}}. </description>
+
+  <parameter name="RTSThreshold" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">This indicates the number of {{units}} in an MPDU, below which an RTS/CTS handshake is not performed. This parameter is based on ''dot11RTSThreshold'' from {{bibref|802.11-2012}}. </description>
+
+  <parameter name="LongRetryLimit" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">This indicates the maximum number of transmission attempts of a frame, the length of which is greater than {{param|RTSThreshold}}, that will be made before a failure condition is indicated. This parameter is based on ''dot11LongRetryLimit'' from {{bibref|802.11-2012}}. </description>
+
+  <parameter name="BeaconPeriod" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Time interval between transmitting beacons (expressed in {{units}}). This parameter is based on ''dot11BeaconPeriod'' from {{bibref|802.11-2012}}. </description>
+
+  <parameter name="DTIMPeriod" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">This specifies the number of beacon intervals that elapse between transmission of Beacon frames containing a TIM element whose DTIM Count field is 0. This parameter is based on ''dot11DTIMPeriod'' from {{bibref|802.11-2012}}. </description>
+
+  <parameter name="PacketAggregationEnable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">This determines whether or not packet aggregation (commonly called "frame aggregation") is enabled. This applies only to 802.11n. </description>
+
+  <parameter name="PreambleType" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">The type of preamble. Longer preambles (more overhead) are needed by 802.11g to coexist with legacy systems 802.11 and 802.11b. </description>
+
+  <parameter name="BasicDataTransmitRates" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">{{list}} The set of data rates, in ''Mbps'', that have to be supported by all stations that desire to join this BSS. The stations have to be able to receive and transmit at each of the data rates listed in {{param}}. For example, a value of "1,2", indicates that stations support 1 Mbps and 2 Mbps. Most control packets use a data rate in {{param}}. </description>
+
+  <parameter name="OperationalDataTransmitRates" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">{{list}} Maximum access point data transmit rates in ''Mbps'' for unicast frames (a superset of {{param|BasicDataTransmitRates}}). Given the value of {{param|BasicDataTransmitRates}} from the example above, {{param}} might be "1,2,5.5,11", indicating that unicast frames can additionally be transmitted at 5.5 Mbps and 11 Mbps. </description>
+
+  <parameter name="SupportedDataTransmitRates" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} Data transmit rates in ''Mbps'' for unicast frames at which the access point will permit a station to connect (a subset of {{param|OperationalDataTransmitRates}}). Given the values of {{param|BasicDataTransmitRates}} and {{param|OperationalDataTransmitRates}} from the examples above, {{param}} might be "1,2,5.5", indicating that the AP will only permit connections at 1 Mbps, 2 Mbps and 5.5 Mbps, even though it could theoretically accept connections at 11 Mbps. </description>
+
+  <parameter name="BsdPrimary" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="192.168.1.1" maxLength="16" nvramb="radio.bsd_primary" />
+
+  <parameter name="BsdHelper" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="192.168.1.2" maxLength="16" nvramb="radio.bsd_helper" />
+
+  <parameter name="BsdHport" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="9877" nvramb="radio.bsd_hport" />
+
+  <parameter name="BsdPport" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="9878" nvramb="radio.bsd_pport" />
+
+  <parameter name="BsdRole" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvramb="radio.bsd_role" />
+
+  <parameter name="SsdEnable" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvramb="radio.ssd_enable" />
+
+  <parameter name="WlVer" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="32" />
+    <description source="BROADCOM">From WlanAdapter</description>
+
+  <parameter name="WlTafEnable" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="WlIperf" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="WlVecSupported" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" mngrvar="wlHasVec" />
+
+  <parameter name="WlVec" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="WlTXBFCapable" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="WlEnableBFR" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" />
+
+  <parameter name="WlEnableBFE" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" />
+
+  <parameter name="WlPspretendThreshold" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="WlPspretendRetryLimit" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="5" />
+
+  <parameter name="WlRegMode" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvramb="radio.reg_mode" mapper="keep.wlregmode.intstr" />
+
+  <parameter name="WlIntferTcptxfail" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="5" nvramb="radio.intfer_tcptxfail" />
+
+  <parameter name="WlIntferPeriod" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvramb="radio.intfer_period" />
+
+  <parameter name="WlIntferCnt" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="3" nvramb="radio.intfer_cnt" />
+
+  <parameter name="WlIntferTxfail" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="5" nvramb="radio.intfer_txfail" />
+
+  <parameter name="WlAcsDfsrImmediate" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="300 3" maxLength="32" nvramb="radio.acs_dfsr_immediate" />
+
+  <parameter name="WlAcsExclChannels" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" nvramb="radio.acs_excl_chans" />
+    <description source="TRx">with comma seperated channel list</description>
+
+  <parameter name="WlAcsDfsrDeferred" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="604800 5" maxLength="32" nvramb="radio.acs_dfsr_deferred" />
+
+  <parameter name="WlAcsDfsrActivity" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="30 10240" maxLength="32" nvramb="radio.acs_dfsr_activity" />
+
+  <parameter name="WlAcsFcsMode" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvramb="radio.acs_fcs_mode" />
+
+  <parameter name="WlAcsDfs" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="2" nvramb="radio.acs_dfs" />
+
+  <parameter name="WlAcsCiScanTimer" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="4" nvramb="radio.acs_ci_scan_timer" />
+
+  <parameter name="WlAcsCiScanTimeout" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="300" nvramb="radio.acs_ci_scan_timeout" />
+
+  <parameter name="WlAcsScanEntryExpire" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="3600" nvramb="radio.acs_scan_entry_expire" />
+
+  <parameter name="WlAcsTxIdleCnt" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvramb="radio.acs_tx_idle_cnt" />
+
+  <parameter name="WlAcsChanDwellTime" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="70" nvramb="radio.acs_chan_dwell_time" />
+
+  <parameter name="WlAcsChanFlopPeriod" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="70" nvramb="radio.acs_chan_flop_period" />
+
+  <parameter name="X_BROADCOM_COM_WlOperMode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="ap" maxLength="16"/>
+
+  <parameter name="X_BROADCOM_COM_WlCoreRev" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvramb="radio.corerev" />
+
+  <parameter name="X_BROADCOM_COM_WlBasicRate" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="default" maxLength="8" nvramb="radio.rateset" />
+
+  <parameter name="X_BROADCOM_COM_WlProtection" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="auto" maxLength="8" nvramb="radio.gmode_protection" />
+
+  <parameter name="X_BROADCOM_COM_WlPreambleType" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="long" maxLength="16" nvramb="radio.plcphdr" />
+
+  <parameter name="X_BROADCOM_COM_WlFrameBurst" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="on" maxLength="4" nvramb="radio.frameburst" />
+
+  <parameter name="X_BROADCOM_COM_WlFrgThrshld" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="2346" nvramb="radio.frag" />
+
+  <parameter name="X_BROADCOM_COM_WlRtsThrshld" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="2347" nvramb="radio.rts" />
+
+  <parameter name="X_BROADCOM_COM_WlDtmIntvl" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvramb="radio.dtim" />
+
+  <parameter name="X_BROADCOM_COM_WlBcnIntvl" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="100" nvramb="radio.bcn" />
+
+  <parameter name="X_BROADCOM_COM_WlRate" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvramb="radio.rate" />
+
+  <parameter name="X_BROADCOM_COM_WlgMode" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvramb="radio.gmode" />
+
+  <parameter name="X_BROADCOM_COM_WlMCastRate" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvramb="radio.mrate" />
+
+  <parameter name="X_BROADCOM_COM_WlInfra" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvramb="radio.infra" />
+
+  <parameter name="X_BROADCOM_COM_WlAntDiv" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" nvramb="radio.antdiv" />
+
+  <parameter name="X_BROADCOM_COM_WlDfsPreIsm" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" nvramb="radio.dfs_preism" />
+
+  <parameter name="X_BROADCOM_COM_WlDfsPostIsm" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" nvramb="radio.dfs_postism" />
+
+  <parameter name="X_BROADCOM_COM_WlTpcDb" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvramb="radio.tpc_db" />
+
+  <parameter name="X_BROADCOM_COM_WlCsScanTimer" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="15" />
+
+  <parameter name="X_BROADCOM_COM_WlMBands" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="2" nvramb="radio.mband" />
+    <description source="BROADCOM">m_bands(Band_B), from WlanAdapter</description>
+
+  <parameter name="X_BROADCOM_COM_WlVersion" type="string" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="64" nvramb="radio.version" specsource="Broadcom" />
+    <description source="BROADCOM">From WlanAdapter</description>
+
+  <parameter name="X_BROADCOM_COM_WlNumBss" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="4" />
+
+  <parameter name="X_BROADCOM_COM_WlMaxMbss" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="4" />
+
+  <parameter name="X_BROADCOM_COM_WlMbssSupported" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" mngrvar="wlSupportMbss" />
+
+  <parameter name="X_BROADCOM_COM_WlNProtection" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="auto" maxLength="8" nvramb="radio.nmode_protection" />
+
+  <parameter name="X_BROADCOM_COM_WlAmpduSupported" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="X_BROADCOM_COM_WlAmsduSupported" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="X_BROADCOM_COM_WlAmpdu" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="auto" maxLength="8" nvramb="radio.ampdu" />
+
+  <parameter name="X_BROADCOM_COM_WlAmsdu" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="auto" maxLength="8" nvramb="radio.amsdu" />
+
+  <parameter name="X_BROADCOM_COM_WlNmode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="auto" maxLength="8" nvramb="radio.nmode" mapper="keep.onoffauto.strint" />
+
+  <parameter name="X_BROADCOM_COM_WlStbcTx" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="auto" nvramb="radio.stbc_tx" mapper="strint.onoffauto" />
+
+  <parameter name="X_BROADCOM_COM_WlStbcRx" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvramb="radio.stbc_rx" />
+
+  <parameter name="X_BROADCOM_COM_WlLazyWds" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvramb="radio.lazywds" />
+
+  <parameter name="X_BROADCOM_COM_WlAburnSupported" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" mngrvar="wlHasAfterburner" />
+    <description source="BROADCOM">aburnSupported&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_WlAfterBurnerEn" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="off" maxLength="8" mngrvar="wlAfterBurnerEn" />
+
+  <parameter name="X_BROADCOM_COM_WlWmfSupported" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" mngrvar="wlHasWmf" />
+
+  <parameter name="X_BROADCOM_COM_WlWMMSupported" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" mngrvar="wlHasWme" />
+
+  <parameter name="X_BROADCOM_COM_WlRifs" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="auto" maxLength="8" />
+
+  <parameter name="X_BROADCOM_COM_WlRifsAdvert" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" />
+
+  <parameter name="X_BROADCOM_COM_WlChanImEnab" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" />
+
+  <parameter name="X_BROADCOM_COM_WlObssCoex" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvramb="radio.obss_coex" />
+
+  <parameter name="X_BROADCOM_COM_WlRxChainPwrSaveEnable" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvramb="radio.rxchain_pwrsave_enable" />
+
+  <parameter name="X_BROADCOM_COM_WlRxChainPwrSaveQuietTime" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="60" nvramb="radio.rxchain_pwrsave_quiet_time" />
+
+  <parameter name="X_BROADCOM_COM_WlRxChainPwrSavePps" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="10" nvramb="radio.rxchain_pwrsave_pps" />
+
+  <parameter name="X_BROADCOM_COM_WlRadioPwrSaveEnable" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="1" nvramb="radio.radio_pwrsave_enable" />
+
+  <parameter name="X_BROADCOM_COM_WlRadioPwrSaveQuietTime" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1800" nvramb="radio.radio_pwrsave_quiet_time" />
+
+  <parameter name="X_BROADCOM_COM_WlRadioPwrSavePps" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="10" nvramb="radio.radio_pwrsave_pps" />
+
+  <parameter name="X_BROADCOM_COM_WlRadioPwrSaveLevel" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="2" nvramb="radio.radio_pwrsave_level" />
+
+  <parameter name="X_BROADCOM_COM_WlRadioPwrSaveOnTime" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="NotSupported" defaultValue="50" />
+    <description source="BROADCOM">This parameter is not used anymore, it is obsolete.</description>
+
+  <parameter name="X_BROADCOM_COM_WlTxPriority" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Wlan TXDataPath Priority Feature. If true, tx data path is handled in WORKQUEUE; otherwise, it is handled in SOFTIRQ. By default, it is handled in SOFTIRQ.&#10;0: Normal (SOFTIRQ)&#10;1: Low (WORKQUEUE)</description>
+
+  <parameter name="X_BROADCOM_COM_WlRxPriority" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Wlan RXDataPath Priority Feature. If true, rx data path is handled in WORKQUEUE; otherwise, it is handled in SOFTIRQ. By default, it is handled in SOFTIRQ.&#10;0: Normal (SOFTIRQ)&#10;1: Low (WORKQUEUE)</description>
+
+  <parameter name="X_BROADCOM_COM_WlCalPriority" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">WLAN Periodical Calibration Priority. If true, calibration is handled in WORKQUEUE; otherwise, it is handled in timer. By default, it is handled in WORKQUEUE.&#10;0:Normal (TIMER)&#10;1:Low (WORKQUEUE)</description>
+
+  <parameter name="X_BROADCOM_COM_WlWds" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" nvramb="radio.wds" />
+
+  <parameter name="X_BROADCOM_COM_WlWdsSec" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvramb="radio.wdssec_enable" />
+
+  <parameter name="X_BROADCOM_COM_WlWdsTimeout" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvramb="radio.wds_timeout" />
+
+  <parameter name="X_BROADCOM_COM_WlWdsKey" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="X_BROADCOM_COM_WlWdsSecEnable" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvramb="radio.wdssec_enable" />
+
+  <parameter name="X_BROADCOM_COM_WlEnableUre" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="X_BROADCOM_COM_WlStaRetryTime" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="5" nvramb="radio.sta_retry_time"/>
+
+  <parameter name="X_BROADCOM_COM_WlGlobalMaxAssoc" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="128" nvramb="radio.maxassoc" />
+    <description source="BROADCOM">From TR98 WlanAdapter.WlBaseCfg object</description>
+
+  <parameter name="X_BROADCOM_COM_WlTxbfBfeCap" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="2" nvramb="radio.txbf_bfe_cap" />
+
+  <parameter name="X_BROADCOM_COM_WlTxbfBfrCap" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="2" nvramb="radio.txbf_bfr_cap" />
+
+  <parameter name="X_BROADCOM_COM_WlRadioPwrSaveStaAssocCheck" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1"  nvramb="radio.radio_pwrsave_stas_assoc_check" />
+  <parameter name="X_BROADCOM_COM_WlRxChainPwrSaveStaAssocCheck" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvramb="radio.rxchain_pwrsave_stas_assoc_check" />
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.Radio.{i}.Stats." shortObjectName="Dev2WifiRadioStatsObject" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="P" supportLevel="Present" gmapping="2" />
+  <description source="TRx">Throughput statistics for this interface. Packet counters here count 802.11 WiFi frames. See {{bibref|TR-181i2a5|Appendix III}} for further details. The CPE MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's {{param|#.Status}} parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's {{param|#.Enable}} parameter transitions from {{false}} to {{true}}). Administrative and operational interface status is discussed in {{bibref|TR-181i2a5|Section 4.2.2}}. </description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted out of the interface, including framing characters.</description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received on the interface, including framing characters.</description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets transmitted out of the interface.</description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received on the interface.</description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets that could not be transmitted because of errors.</description>
+
+  <parameter name="ErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets that contained errors preventing them from being delivered to a higher-layer protocol.</description>
+
+  <parameter name="DiscardPacketsSent" type="unsignedInt" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space.</description>
+
+  <parameter name="DiscardPacketsReceived" type="unsignedInt" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets which were chosen to be discarded even though no errors had been detected to prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space.</description>
+
+  <parameter name="PLCPErrorCount" type="unsignedInt" specSource="TR181" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of packets that were received with a detected Physical Layer Convergence Protocol (PLCP) header error.</description>
+
+  <parameter name="FCSErrorCount" type="unsignedInt" specSource="TR181" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of packets that were received with a detected FCS error. This parameter is based on dot11FCSErrorCount</description>
+
+  <parameter name="InvalidMACCount" type="unsignedInt" specSource="TR181" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of packets that were received with a detected invalid MAC header error.</description>
+
+  <parameter name="PacketsOtherReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of packets that were received, but which were destined for a MAC address that is not associated with this interface.</description>
+
+  <parameter name="Noise" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">An indicator of average noise strength received at this radio, measured in {{units}}. This measurement of non-IEEE 802.11 noise power is made by sampling the channel when virtual carrier sense indicates idle and this radio is neither transmitting nor receiving a frame. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.NeighboringWiFiDiagnostic." shortObjectName="Dev2WifiNeighboringwifidiagnosticObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object defines access to other WiFi SSIDs that this device is able to receive. </description>
+
+  <parameter name="DiagnosticsState" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="ResultNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.NeighboringWiFiDiagnostic.Result.{i}." shortObjectName="Dev2WifiNeighboringwifidiagnosticResultObject" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">Neighboring SSID table. This table models the other WiFi SSIDs that this device is able to receive. </description>
+
+  <parameter name="Radio" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The Radio that detected the neighboring WiFi SSID. </description>
+
+  <parameter name="SSID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="32" />
+    <description source="TRx">The current service set identifier in use by the neighboring WiFi SSID. The value MAY be empty for hidden SSIDs. </description>
+
+  <parameter name="BSSID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="17" />
+    <description source="TRx">The BSSID used for the neighboring WiFi SSID. </description>
+
+  <parameter name="Mode" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The mode the neighboring WiFi radio is operating in. </description>
+
+  <parameter name="Channel" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxValue="255" minValue="1" />
+    <description source="TRx">The current radio channel used by the neighboring WiFi radio. </description>
+
+  <parameter name="SignalStrength" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxValue="0" minValue="-200" />
+    <description source="TRx">An indicator of radio signal strength (RSSI) of the neighboring WiFi radio measured in {{units}}, as an average of the last 100 packets received. </description>
+
+  <parameter name="SecurityModeEnabled" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The type of encryption the neighboring WiFi SSID advertises. </description>
+
+  <parameter name="EncryptionMode" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The type of encryption the neighboring WiFi SSID advertises. </description>
+
+  <parameter name="OperatingFrequencyBand" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the frequency band at which the radio this SSID instance is operating. </description>
+
+  <parameter name="SupportedStandards" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} List items indicate which IEEE 802.11 standards this {{object}} instance can support simultaneously, in the frequency band specified by {{param|OperatingFrequencyBand}}. {{enum}} Each value indicates support for the indicated standard.If {{param|OperatingFrequencyBand}} is set to {{enum|2.4GHz|OperatingFrequencyBand}}, only values {{enum|b}}, {{enum|g}}, {{enum|n}} are allowed. If {{param|OperatingFrequencyBand}} is set to {{enum|5GHz|OperatingFrequencyBand}}, only values {{enum|a}}, {{enum|n}}, {{enum|ac}} are allowed. </description>
+
+  <parameter name="OperatingStandards" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} List items indicate which IEEE 802.11 standard that is detected for this {{object}}. Each value indicates support for the indicated standard.If {{param|OperatingFrequencyBand}} is set to {{enum|2.4GHz|##.Radio.{i}.SupportedFrequencyBands}}, only values {{enum|b}}, {{enum|g}}, {{enum|n}} are allowed. If {{param|OperatingFrequencyBand}} is set to {{enum|5GHz|##.Radio.{i}.SupportedFrequencyBands}}, only values {{enum|a}}, {{enum|n}}, {{enum|ac}} are allowed.For example, a value of "g,b" (or "b,g" - order is not important) means that the 802.11g standard {{bibref|802.11g-2003}} is used with a backwards-compatible mode for 802.11b {{bibref|802.11b-1999}}. A value of "g" means that only the 802.11g standard can be used. </description>
+
+  <parameter name="OperatingChannelBandwidth" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates the bandwidth at which the channel is operating. </description>
+
+  <parameter name="BeaconPeriod" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Time interval (in {{units}}) between transmitting beacons. </description>
+
+  <parameter name="Noise" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxValue="0" minValue="-200" />
+    <description source="TRx">Indicator of average noise strength (in {{units}}) received from the neighboring WiFi radio. </description>
+
+  <parameter name="BasicDataTransferRates" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">{{list}} Basic data transmit rates (in Mbps) for the SSID.  For example, if {{param}} is "1,2", this indicates that the SSID is operating with basic rates of 1 Mbps and 2 Mbps. </description>
+
+  <parameter name="SupportedDataTransferRates" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">{{list}} Data transmit rates (in Mbps) for unicast frames at which the SSID will permit a station to connect. For example, if {{param}} is "1,2,5.5", this indicates that the SSID will only permit connections at 1 Mbps, 2 Mbps and 5.5 Mbps. </description>
+
+  <parameter name="DTIMPeriod" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of beacon intervals that elapse between transmission of Beacon frames containing a TIM element whose DTIM count field is 0. This value is transmitted in the DTIM Period field of beacon frames. {{bibref|802.11-2012}} </description>
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.SSID.{i}." shortObjectName="Dev2WifiSsidObject" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="PC" supportLevel="DynamicInstances" gmapping="1" />
+  <description source="TRx">WiFi SSID table (a stackable interface object as described in {{bibref|TR-181i2|Section 4.2}}), where table entries model the MAC layer. A WiFi SSID entry is typically stacked on top of a {{object|#.Radio}} object. WiFi SSID is also a multiplexing layer, i.e. more than one {{object}} can be stacked above a single {{object|#.Radio}}.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" mngrvar="wlEnblSsid" nvram="bssid.bss_enabled" />
+    <description source="TRx">Enables or disables the SSID entry. This parameter is based on ''ifAdminStatus'' from {{bibref|RFC2863}}.</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="R" supportLevel="ReadOnly" defaultValue="Down" mngrvar="ssidStatus" validValuesArray="ifOperStatusValues" />
+    <description source="TRx">The current operational state of the SSID entry (see {{bibref|TR-181i2|Section 4.2.2}}). {{enum}} When {{param|Enable}} is {{false}} then {{param}} SHOULD normally be {{enum|Down}} (or {{enum|NotPresent}} or {{enum|Error}} if there is a fault condition on the interface). When {{param|Enable}} is changed to {{true}} then {{param}} SHOULD change to {{enum|Up}} if and only if the interface is able to transmit and receive network traffic; it SHOULD change to {{enum|Dormant}} if and only if the interface is operable but is waiting for external actions before it can transmit and receive network traffic (and subsequently change to {{enum|Up}} if still operable when the expected actions have completed); it SHOULD change to {{enum|LowerLayerDown}} if and only if the interface is prevented from entering the {{enum|Up}} state because one or more of the interfaces beneath it is down; it SHOULD remain in the {{enum|Error}} state if there is an error or other fault condition detected on the interface; it SHOULD remain in the {{enum|NotPresent}} state if the interface has missing (typically hardware) components; it SHOULD change to {{enum|Unknown}} if the state of the interface can not be determined for some reason. This parameter is based on ''ifOperStatus'' from {{bibref|RFC2863}}.</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-wifissid" maxLength="64" mngrvar="sAlias" notifySskAliasChanged="true" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. If the CPE supports the Alias-based Addressing feature as defined in {{bibref|TR-069a4|3.6.1}} and described in {{bibref|TR-069a4|Appendix II}}, the following mandatory constraints MUST be enforced: *Its value MUST NOT be empty. *Its value MUST start with a letter. *If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix. *The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_WiFiSSID:1" mngrvar="wlifname" requirements="R" supportLevel="ReadOnly" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The textual name of the radio as assigned by the CPE.</description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in seconds since the SSID entered its current operational state.</description>
+
+  <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" mngrvar="wlssidlastchange" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
+
+  <parameter name="X_BROADCOM_COM_Upstream" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="BROADCOM">Broadcom Wifi allows one SSID on the radio to be Upstream while the other SSIDs on the same radio is Downstream.  So must have an Upstream param at the SSID level.  Cannot use the radio's Upstream param.</description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="1024" notifySskLowerLayersChanged="true" />
+    <description source="TRx">{{list}} {{reference|an interface object that is stacked immediately below this interface object}} See {{bibref|TR-181i2|Section 4.2.1}}.</description>
+
+  <parameter name="BSSID" type="string" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="R" supportLevel="ReadOnly" maxLength="17" />
+    <description source="TRx">The Basic Service Set ID. This is the MAC address of the access point, which can either be local (when this instance models an access point SSID) or remote (when this instance models an end point SSID).</description>
+
+  <parameter name="MACAddress" type="string" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="R" supportLevel="ReadOnly" maxLength="17" mngrvar="wlBssid" nvram="bssid.hwaddr" />
+    <description source="TRx">The MAC address of this interface. If this instance models an access point SSID, {{param}} is the same as {{param||BSSID}}. Note: This is not necessarily the same as the Ethernet header source or destination MAC address, which is associated with the IP interface and is modeled via the {{param|.Ethernet.Link.{i}.MACAddress}} parameter.</description>
+
+  <parameter name="SSID" type="string" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="W" supportLevel="ReadWrite" defaultValue="Broadcom" maxLength="32" mngrvar="wlSsid" nvram="bssid.ssid" />
+    <description source="TRx">The current service set identifier in use by the connection. The SSID is an identifier that is attached to packets sent over the wireless LAN that functions as an ID for joining a particular radio network (BSS).</description>
+
+  <parameter name="X_BROADCOM_COM_Adapter" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" hideParameterFromAcs="true" />
+    <description source="BROADCOM">The adapter index</description>
+
+  <parameter name="X_BROADCOM_COM_WlEnableWmf" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvram="bssid.wmf_bss_enable" />
+
+  <parameter name="X_BROADCOM_COM_Index" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" hideParameterFromAcs="true" />
+    <description source="BROADCOM">Used to track the index of this SSID within this radio/adapter</description>
+
+  <parameter name="X_BROADCOM_COM_WlIdx" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" />
+
+  <parameter name="X_BROADCOM_COM_WlBrName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="br0" maxLength="32" />
+  <parameter name="X_BROADCOM_COM_WlMode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="ap" maxLength="16" nvram="bssid.mode" />
+  <parameter name="X_BROADCOM_COM_WlAssocRetry" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="3" nvram="bssid.assoc_retry_max" />
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.SSID.{i}.Stats." shortObjectName="Dev2WifiSsidStatsObject" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="P" supportLevel="Present" gmapping="2" />
+  <description source="TRx">Throughput statistics for this interface. Packet counters here count 802.11 WiFi frames. See {{bibref|TR-181i2a5|Appendix III}} for further details. The CPE MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's {{param|#.Status}} parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's {{param|#.Enable}} parameter transitions from {{false}} to {{true}}). Administrative and operational interface status is discussed in {{bibref|TR-181i2a5|Section 4.2.2}}. </description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted out of the interface, including framing characters.</description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received on the interface, including framing characters.</description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets transmitted out of the interface.</description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received on the interface.</description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets that could not be transmitted because of errors.</description>
+
+  <parameter name="RetransCount" type="unsignedInt" specSource="TR181" profile="Unspecified" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The total number of transmitted packets which were retransmissions. Two retransmissions of the same packet results in this counter incrementing by two.</description>
+
+  <parameter name="FailedRetransCount" type="unsignedInt" specSource="TR181" profile="Unspecified" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of packets that were not transmitted successfully due to the number of retransmission attempts exceeding an 802.11 retry limit. This parameter is based on dot11FailedCount from [802.11-2012].</description>
+
+  <parameter name="RetryCount" type="unsignedInt" specSource="TR181" profile="Unspecified" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of packets that were successfully transmitted after one or more retransmissions. This parameter is based on dot11RetryCount from [802.11-2012].</description>
+
+  <parameter name="MultipleRetryCount" type="unsignedInt" specSource="TR181" profile="Unspecified" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of packets that were successfully transmitted after more than one retransmission. This parameter is based on dot11MultipleRetryCount from [802.11-2012].</description>
+
+  <parameter name="ACKFailureCount" type="unsignedInt" specSource="TR181" profile="Unspecified" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of expected ACKs that were never received. This parameter is based on dot11ACKFailureCount from [802.11-2012].</description>
+
+  <parameter name="AggregatedPacketCount" type="unsignedInt" specSource="TR181" profile="Unspecified" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of aggregated packets that were transmitted. This applies only to 802.11n and 802.11ac.</description>
+
+  <parameter name="ErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_WiFiSSID:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets that contained errors preventing them from being delivered to a higher-layer protocol.</description>
+
+  <parameter name="UnicastPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets requested for transmission which were not addressed to a multicast or broadcast address at this layer, including those that were discarded or not sent.</description>
+
+  <parameter name="UnicastPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received packets, delivered by this layer to a higher layer, which were not addressed to a multicast or broadcast address at this layer.</description>
+
+  <parameter name="DiscardPacketsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space.</description>
+
+  <parameter name="DiscardPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets which were chosen to be discarded even though no errors had been detected to prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space.</description>
+
+  <parameter name="MulticastPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets that higher-level protocols requested for transmission and which were addressed to a multicast address at this layer, including those that were discarded or not sent.</description>
+
+  <parameter name="MulticastPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received packets, delivered by this layer to a higher layer, which were addressed to a multicast address at this layer.</description>
+
+  <parameter name="BroadcastPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets that higher-level protocols requested for transmission and which were addressed to a broadcast address at this layer, including those that were discarded or not sent.</description>
+
+  <parameter name="BroadcastPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received packets, delivered by this layer to a higher layer, which were addressed to a broadcast address at this layer.</description>
+
+  <parameter name="UnknownProtoPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received via the interface which were discarded because of an unknown or unsupported protocol.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.AccessPoint.{i}." shortObjectName="Dev2WifiAccessPointObject" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="PC" supportLevel="DynamicInstances" gmapping="1" />
+  <description source="TRx">This object models an 802.11 connection from the perspective of a wireless access point. Each {{object}} entry is associated with a particular {{object|#.SSID}} interface instance via the {{param|SSIDReference}} parameter. For enabled table entries, if {{param|SSIDReference}} is not a valid reference then the table entry is inoperable and the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}}. Note: The {{object}} table includes a unique key parameter that is a strong reference. If a strongly referenced object is deleted, the CPE will set the referencing parameter to {{empty}}. However, doing so under these circumstances might cause the updated {{object}} row to then violate the table's unique key constraint; if this occurs, the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}} and disable the offending {{object}} row.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" mngrvar="apEnable" />
+    <description source="TRx">Enables or disables this access point.</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" mngrvar="apStatus" validValuesArray="status4eValues" />
+    <description source="TRx">Indicates the status of this access point. {{enum}} The {{enum|Error_Misconfigured}} value indicates that a necessary configuration value is undefined or invalid. The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition.</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-wifiap" maxLength="64" mngrvar="apAlias" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. If the CPE supports the Alias-based Addressing feature as defined in {{bibref|TR-069a4|3.6.1}} and described in {{bibref|TR-069a4|Appendix II}}, the following mandatory constraints MUST be enforced: *Its value MUST NOT be empty. *Its value MUST start with a letter. *If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix. *The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="SSIDReference" type="string" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">The value MUST be the path name of a row in the SSID table. If the referenced object is deleted, the parameter value MUST be set to an empty string. </description>
+
+  <parameter name="SSIDAdvertisementEnabled" type="boolean" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="1" mngrvar="wlHide" nvram="ap.closed" mapper="onoffreverse.bool" />
+    <description source="TRx">Indicates whether or not beacons include the SSID name.</description>
+
+  <parameter name="RetryLimit" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" minValue="0" maxValue="7" />
+    <description source="TRx">The maximum number of retransmission for a packet. This corresponds to IEEE 802.11 parameter ''dot11ShortRetryLimit''. This parameter is DEPRECATED because it is really a {{object|#.Radio}} attribute.  Use {{param|#.Radio.{i}.RetryLimit}}. </description>
+
+  <parameter name="WMMCapability" type="boolean" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" mngrvar="wlWme" nvram="ap.wme" defaultValue="1" mapper="keep.onoffauto.boolstr" />
+    <description source="TRx">Indicates whether this access point supports WiFi Multimedia (WMM) Access Categories (AC).</description>
+
+  <parameter name="UAPSDCapability" type="boolean" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Indicates whether this access point supports WMM Unscheduled Automatic Power Save Delivery (U-APSD). Note: U-APSD support implies WMM support.</description>
+
+  <parameter name="WMMEnable" type="boolean" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="1" mngrvar="wlDisableWme" nvram="ap.wme_bss_disable" mapper="onoffreverse.bool" />
+    <description source="TRx">Enables or disables the SSID entry. This parameter is based on ''ifAdminStatus'' from {{bibref|RFC2863}}.</description>
+
+  <parameter name="X_BROADCOM_COM_WlSesAvail" type="boolean" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="1" />
+
+  <parameter name="X_BROADCOM_COM_WlWapiAvail" type="boolean" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+
+  <parameter name="UAPSDEnable" type="boolean" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="true" mngrvar="wlWmeApsd" nvram="ap.wme_apsd" mapper="keep.onoffauto.boolstr" />
+    <description source="TRx">Whether U-APSD support is currently enabled. When enabled, this is indicated in beacon frames. Note: U-APSD can only be enabled if WMM is also enabled.</description>
+
+  <parameter name="AssociatedDeviceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="R" supportLevel="ReadOnly" mngrvar="numStations" neverWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the AssociatedDevice table.</description>
+
+  <parameter name="MaxAssociatedDevices" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="128" mngrvar="wlMaxAssoc" nvram="ap.bss_maxassoc" />
+    <description source="TRx">The maximum number of devices that can simultaneously be connected to the access point. A value of 0 means that there is no specific limit.</description>
+
+  <parameter name="IsolationEnable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" mngrvar="wlAPIsolation" nvram="ap.ap_isolate" />
+    <description source="TRx">Enables or disables device isolation. A value of {{true}} means that the devices connected to the Access Point are isolated from all other devices within the home network (as is typically the case for a Wireless Hotspot).</description>
+
+  <parameter name="MACAddressControlEnabled" type="boolean" specSource="TR181" profile="Device2_WiFiAccessPoint:2" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Indicates whether or not MAC Address Control is enabled on this {{object|#}}.  MAC Address Control limits client devices to those whose hardware addresses match the {{param|AllowedMACAddress}} list. </description>
+
+  <parameter name="AllowedMACAddress" type="string" specSource="TR181" profile="Device2_WiFiAccessPoint:2" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Hardware addresses of client devices that are allowed to associate with this {{object|#}} if {{param|MACAddressControlEnabled}} is {{true}}. </description>
+
+  <parameter name="X_BROADCOM_COM_Adapter" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" hideParameterFromAcs="true" />
+    <description source="BROADCOM">The adapter index</description>
+
+  <parameter name="X_BROADCOM_COM_Index" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" hideParameterFromAcs="true" />
+    <description source="BROADCOM">Used to track the index of this AP within this radio/adapter</description>
+
+  <parameter name="X_BROADCOM_COM_WlWmeNoAck" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvramb="ap.wme_no_ack" mapper="keep.onoffauto.intstr" />
+
+  <parameter name="X_BROADCOM_COM_WlEnableHspot" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvram="ap.hspot" />
+
+  <parameter name="X_BROADCOM_COM_WlNReqd" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvram="ap.nreqd" />
+
+  <parameter name="X_BROADCOM_COM_WlFltMacMode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="disabled" maxLength="16" nvram="ap.macmode" />
+
+  <parameter name="X_BROADCOM_COM_WlFltMacList" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" nvram="ap.maclist" />
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.AccessPoint.{i}.Security." shortObjectName="Dev2WifiAccessPointSecurityObject" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="P" supportLevel="Present" gmapping="1" />
+  <description source="TRx">This object contains security related parameters that apply to a CPE acting as an Access Point {{bibref|802.11-2007}}.</description>
+
+  <parameter name="Reset" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">When set to {{true}}, this {{object|#}} instance's WiFi security settings are reset to their factory default values. The affected settings include {{param|ModeEnabled}}, {{param|WEPKey}}, {{param|PreSharedKey}} , {{param|KeyPassphrase}} and {{param|#.WPS.PIN}} (if applicable). If the parameter cannot be set, the CPE MUST reject the request as an invalid parameter value. Possible failure reasons include a lack of default values or if {{param|ModeEnabled}} is an Enterprise type, i.e. {{enum|WPA-Enterprise|ModesSupported}}, {{enum|WPA2-Enterprise|ModesSupported}} or {{enum|WPA-WPA2-Enterprise|ModesSupported}}. </description>
+
+  <parameter name="ModesSupported" type="string" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="R" supportLevel="ReadOnly" defaultValue="None,WEP-64,WEP-128,WPA-Personal,WPA-Enterprise,WPA2-Personal,WPA2-Enterprise,WPA-WPA2-Personal,WPA-WPA2-Enterprise" />
+    <description source="TRx">{{list}} Indicates which security modes this {{object|#}} instance is capable of supporting.</description>
+
+  <parameter name="ModeEnabled" type="string" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="None" validValuesArray="WifiModeValues" mngrvar="wlSecMode" mapper="strint.wlsecmode" />
+    <description source="TRx">Indicates which security mode is enabled.</description>
+
+  <parameter name="X_BROADCOM_COM_WlKeyBit" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="Read" defaultValue="0" />
+
+  <parameter name="WlWep" type="string" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="disabled" nvram="ap_sec.wep" />
+
+  <parameter name="WEPKey" type="hexBinary" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" maxLength="13" isTr69Password="true" />
+    <description source="TRx">A WEP key expressed as a hexadecimal string. {{param}} is used only if {{param|ModeEnabled}} is set to {{enum|WEP-64|ModeEnabled}} or {{enum|WEP-128|ModeEnabled}}. A 5 byte {{param}} corresponds to security mode {{enum|WEP-64|ModeEnabled}} and a 13 byte {{param}} corresponds to security mode {{enum|WEP-128|ModeEnabled}}.</description>
+
+  <parameter name="PreSharedKey" type="hexBinary" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" maxLength="32" isTr69Password="true" />
+    <description source="TRx">A literal PreSharedKey (PSK) expressed as a hexadecimal string. {{param}} is only used if {{param|ModeEnabled}} is set to {{enum|WPA-Personal|ModeEnabled}} or {{enum|WPA2-Personal|ModeEnabled}} or {{enum|WPA-WPA2-Personal|ModeEnabled}}. If {{param|KeyPassphrase}} is written, then {{param}} is immediately generated. The ACS SHOULD NOT set both the {{param|KeyPassphrase}} and the {{param}} directly (the result of doing this is undefined).</description>
+
+  <parameter name="KeyPassphrase" type="string" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="1234567890" maxLength="64" mngrvar="wlWpaPsk" nvram="ap_sec.wpa_psk" minLength="8" isTr69Password="true" />
+    <description source="TRx">A passphrase from which the {{param|PreSharedKey}} is to be generated, for {{enum|WPA-Personal|ModeEnabled}} or {{enum|WPA2-Personal|ModeEnabled}} or {{enum|WPA-WPA2-Personal|ModeEnabled}} security modes. If {{param}} is written, then {{param|PreSharedKey}} is immediately generated. The ACS SHOULD NOT set both the {{param}} and the {{param|PreSharedKey}} directly (the result of doing this is undefined). The key is generated as specified by WPA, which uses PBKDF2 from PKCS #5: Password-based Cryptography Specification Version 2.0 ({{bibref|RFC2898}}).</description>
+
+  <parameter name="RekeyingInterval" type="unsignedInt" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" mngrvar="wlWpaGTKRekey" nvram="ap_sec.wpa_gtk_rekey" />
+    <description source="TRx">The interval (expressed in {{units}}) in which the keys are re-generated. This is applicable to WPA, WPA2 and Mixed (WPA-WPA2) modes in Personal or Enterprise mode (i.e. when {{param|ModeEnabled}} is set to a value other than {{enum|None|ModeEnabled}} or {{enum|WEP-64|ModeEnabled}} or {{enum|WEP-128|ModeEnabled}}. </description>
+
+  <parameter name="RadiusServerIPAddr" type="string" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="0.0.0.0" maxLength="45" mngrvar="wlRadiusServerIP" nvram="ap_sec.radius_ipaddr" />
+    <description source="TRx">The IP Address of the RADIUS server used for WLAN security. {{param}} is only applicable when {{param|ModeEnabled}} is an Enterprise type (i.e. {{enum|WPA-Enterprise|ModeEnabled}}, {{enum|WPA2-Enterprise|ModeEnabled}} or {{enum|WPA-WPA2-Enterprise|ModeEnabled}}).</description>
+
+  <parameter name="SecondaryRadiusServerIPAddr" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="45" />
+    <description source="TRx">The IP Address of a secondary RADIUS server used for WLAN security. {{param}} is only applicable when {{param|ModeEnabled}} is an Enterprise type (i.e. {{enum|WPA-Enterprise|ModeEnabled}}, {{enum|WPA2-Enterprise|ModeEnabled}} or {{enum|WPA-WPA2-Enterprise|ModeEnabled}}). The client can forward requests to the secondary server in the event that the primary server is down or unreachable, or after a number of tries to the primary server fail, or in a round-robin fashion {{bibref|RFC2865}}.</description>
+
+  <parameter name="RadiusServerPort" type="unsignedInt" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="1812" mngrvar="wlRadiusPort" nvram="ap_sec.radius_port" />
+    <description source="TRx">The port number of the RADIUS server used for WLAN security. {{param}} is only applicable when {{param|ModeEnabled}} is an Enterprise type (i.e. {{enum|WPA-Enterprise|ModeEnabled}}, {{enum|WPA2-Enterprise|ModeEnabled}} or {{enum|WPA-WPA2-Enterprise|ModeEnabled}}).</description>
+
+  <parameter name="SecondaryRadiusServerPort" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="1812" />
+    <description source="TRx">The port number of the secondary RADIUS server used for WLAN security. {{param}} is only applicable when {{param|ModeEnabled}} is an Enterprise type (i.e. {{enum|WPA-Enterprise|ModeEnabled}}, {{enum|WPA2-Enterprise|ModeEnabled}} or {{enum|WPA-WPA2-Enterprise|ModeEnabled}}). If this parameter is not implemented, the secondary RADIUS server will use the same port number as the primary RADIUS server.</description>
+
+  <parameter name="RadiusSecret" type="string" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="1234" mngrvar="wlRadiusKey" nvram="ap_sec.radius_key" isTr69Password="true" />
+    <description source="TRx">The secret used for handshaking with the RADIUS server {{bibref|RFC2865}}.</description>
+
+  <parameter name="SecondaryRadiusSecret" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" isTr69Password="true" />
+    <description source="TRx">The secret used for handshaking with the secondary RADIUS server {{bibref|RFC2865}}. If this parameter is not implemented, the secondary RADIUS server will use the same secret as the primary RADIUS server.</description>
+
+  <parameter name="X_BROADCOM_COM_WlKey1" type="hexBinary" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="49505152535455565748495051" maxLength="13" nvram="ap_sec.key1" />
+
+  <parameter name="X_BROADCOM_COM_WlKey2" type="hexBinary" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="49505152535455565748495051" maxLength="13" nvram="ap_sec.key2" />
+
+  <parameter name="X_BROADCOM_COM_WlKey3" type="hexBinary" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="49505152535455565748495051" maxLength="13" nvram="ap_sec.key3" />
+
+  <parameter name="X_BROADCOM_COM_WlKey4" type="hexBinary" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="49505152535455565748495051" maxLength="13" nvram="ap_sec.key4" />
+
+  <parameter name="X_BROADCOM_COM_WlKeyIndex" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" nvram="ap_sec.key" />
+
+  <parameter name="X_BROADCOM_COM_WlWpaEncryption" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="tkip+aes" maxLength="16" mngrvar="wlWpa" nvram="ap_sec.crypto" />
+
+  <parameter name="WlAuthMode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="open" maxLength="18" nvram="ap_sec.auth_mode" />
+
+  <parameter name="WlAuthAkm" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="open" maxLength="64" nvram="ap_sec.akm" />
+
+  <parameter name="X_BROADCOM_COM_WlAuth" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvram="ap_sec.auth" />
+
+  <parameter name="X_BROADCOM_COM_WlPreauth" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvram="ap_sec.preauth" />
+
+  <parameter name="X_BROADCOM_COM_WlNetReauth" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="36000" nvram="ap_sec.net_reauth" />
+
+  <parameter name="X_BROADCOM_COM_WlMFP" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" nvram="ap_sec.mfp" />
+
+  <parameter name="X_BROADCOM_COM_WlSsdType" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" nvramb="ap_sec.ssd_type" />
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.AccessPoint.{i}.WPS." shortObjectName="Dev2WifiAccessPointWpsObject" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="P" supportLevel="Present" gmapping="1" />
+  <description source="TRx">This object contains parameters related to Wi-Fi Protected Setup for this access point (as specified in {{bibref|WPSv1.0}} or {bibref|WPSv2.0}}). </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" mngrvar="wpsEnable" />
+    <description source="TRx">Enables or disables WPS functionality for this access point.</description>
+
+  <parameter name="ConfigMethodsSupported" type="string" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="R" supportLevel="ReadOnly" defaultValue="PushButton,PIN" />
+    <description source="TRx">WPS configuration methods supported by the device. {{enum}} This parameter corresponds directly to the "Config Methods" attribute of {{bibref|WPS 2.0}}.The {{enum|USBFlashDrive}} and {{enum|Ethernet}} are only applicable in WPS 1.0 and are deprecated in WPS 2.x. The {{enum|PhysicalPushButton}}, {{enum|VirtualPushButton}}, {{enum|PhysicalDisplay}} and {{enum|VirtualDisplay}} are applicable to WPS 2.x only. </description>
+
+  <parameter name="ConfigMethodsEnabled" type="string" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="PushButton" validValuesArray="WPSConfigValues" />
+    <description source="TRx">{{list}} Indicates WPS configuration methods enabled on the device.</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} Indicates the current status of WPS. If the device goes to {{enum|SetupLocked}} the WPS needs to be disabled and re-enabled to come out of state. </description>
+
+  <parameter name="Version" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The Wi-Fi Simple Configuration version supported by the device, a string of the form ''m.n'' where ''m'' is the major version and ''n'' is the minor version. For example, a value of ''1.0'' denotes WSC 1.0 and a value of ''2.0'' denotes WSC 2.0. </description>
+
+  <parameter name="PIN" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="8" />
+    <description source="TRx">Represents the Device PIN used for PIN based pairing between WPS peers. This PIN is either a four digit number or an eight digit number. {{hidden}} </description>
+
+  <parameter name="X_BROADCOM_COM_Wsc_config_state" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" maxLength="4" mngrvar="wlWscAPMode" nvram="ap_wps.wps_config_state" />
+
+  <parameter name="X_BROADCOM_COM_Wsc_mode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="enabled" maxLength="12" mngrvar="wlWscMode" nvram="ap_wps.wps_mode" />
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.AccessPoint.{i}.AssociatedDevice.{i}." shortObjectName="Dev2WifiAssociatedDeviceObject" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="R" supportLevel="MultipleInstances" pruneWriteToConfigFile="true" gmapping="2" />
+  <description source="TRx">A table of the devices currently associated with the access point.</description>
+
+  <parameter name="MACAddress" type="string" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="17" mngrvar="macAddress" />
+    <description source="TRx">The MAC address of an associated device.</description>
+
+  <parameter name="OperatingStandard" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The operating standard that this associated device is connected with. </description>
+
+  <parameter name="AuthenticationState" type="boolean" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" mngrvar="authorized" />
+    <description source="TRx">Whether an associated device has authenticated ({{true}}) or not ({{false}}).</description>
+
+  <parameter name="LastDataDownlinkRate" type="unsignedInt" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="NotSupported" defaultValue="1000" minValue="1000" maxValue="600000" />
+    <description source="TRx">The data transmit rate in kbps that was most recently used for transmission from the access point to the associated device.</description>
+
+  <parameter name="LastDataUplinkRate" type="unsignedInt" specSource="TR181" profile="Device2_WiFiAccessPoint:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="NotSupported" defaultValue="1000" minValue="1000" maxValue="600000" />
+    <description source="TRx">The data transmit rate in kbps that was most recently used for transmission from the associated device to the access point.</description>
+
+  <parameter name="SignalStrength" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" defaultValue="-200" minValue="-200" maxValue="0" />
+    <description source="TRx">An indicator of radio signal strength of the uplink from the associated device to the access point, measured in dBm, as an average of the last 100 packets received from the device.</description>
+
+  <parameter name="Retransmissions" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" defaultValue="0" minValue="0" maxValue="100" />
+    <description source="TRx">The number of packets that had to be re-transmitted, from the last 100 packets sent to the associated device. Multiple re-transmissions of the same packet count as one.</description>
+
+  <parameter name="Active" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="false" mngrvar="associated" />
+    <description source="TRx">Whether or not this node is currently present in the WiFi AccessPoint network. The ability to list inactive nodes is OPTIONAL. If the CPE includes inactive nodes in this table, {{param}} MUST be set to {{false}} for each inactive node. The length of time an inactive node remains listed in this table is a local matter to the CPE.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.AccessPoint.{i}.AssociatedDevice.{i}.Stats." shortObjectName="Dev2WifiAssociateddeviceStatsObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">These count bytes or packets sent to, or received from, this Associated Device, which is a WiFi station associated to this access point. Packet counters here count 802.11 WiFi frames.The CPE MUST reset these {{object}} parameters (unless otherwise stated in individual object or parameter descriptions) either when the {{param|##.Status}} of the parent {{object|##}} object transitions from {{enum|Disabled|##.Status}} to {{enum|Enabled|##.Status}}, or when it transitions from {{enum|Enabled|##.Status}} to {{enum|Disabled|##.Status}}. </description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted to the Associated Device, including framing characters. </description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received from the Associated Device, including framing characters. </description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets transmitted to the Associated Device. </description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received from the Associated Device. </description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets that could not be transmitted because of errors. These might be due to the number of retransmissions exceeding the retry limit, or from other causes. </description>
+
+  <parameter name="RetransCount" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of transmitted packets which were retransmissions. Two retransmissions of the same packet results in this counter incrementing by two. </description>
+
+  <parameter name="FailedRetransCount" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of packets that were not transmitted successfully due to the number of retransmission attempts exceeding an 802.11 retry limit. This parameter is based on ''dot11FailedCount'' from {{bibref|802.11-2012}}. </description>
+
+  <parameter name="RetryCount" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of packets that were successfully transmitted after one or more retransmissions. This parameter is based on ''dot11RetryCount'' from {{bibref|802.11-2012}}. </description>
+
+  <parameter name="MultipleRetryCount" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of packets that were successfully transmitted after more than one retransmission. This parameter is based on ''dot11MultipleRetryCount'' from {{bibref|802.11-2012}}. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.AccessPoint.{i}.AC.{i}." shortObjectName="Dev2WifiAccessPointAcObject" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">This object contains parameters related to WiFi QoS for different 802.11e access categories (priorities). Access categories are: BE, BK, VI, and VO. These parameters can help control and monitor 802.11e Enhanced distributed channel access (EDCA). The size of this table is fixed, with four entries which are identified by the {{param|AccessCategory}} parameter as follows: * BE (Best Effort)* BK (Background) * VI (Video)* VO (Voice) </description>
+
+  <parameter name="AccessCategory" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">This identifies the access category. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="AIFSN" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="15" minValue="2" />
+    <description source="TRx">Arbitration Inter Frame Spacing (Number). This is the number of time slots in the arbitration interframe space. </description>
+
+  <parameter name="ECWMin" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="15" minValue="0" />
+    <description source="TRx">Exponent of Contention Window (Minimum). This encodes the values of CWMin as an exponent: CWMin = 2^ECWMin - 1. For example, if ECWMin is 8, then CWMin is 2^8 - 1, or 255, (expressed in {{units}}). </description>
+
+  <parameter name="ECWMax" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="15" minValue="0" />
+    <description source="TRx">Exponent of Contention Window (Maximum). This encodes the values of CWMax as an exponent: CWMax = 2^ECWMax - 1. For example, if ECWMax is 8, then CWMax is 2^8 - 1, or 255, (expressed in {{units}}). </description>
+
+  <parameter name="TxOpMax" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="255" minValue="0" />
+    <description source="TRx">Maximum transmit opportunity, in multiples of {{units}}. A TXOP time interval of 0 means it is limited to a single MAC protocol data unit (MPDU). </description>
+
+  <parameter name="AckPolicy" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Ack Policy, where False="Do Not Acknowledge" and True="Acknowledge" </description>
+
+  <parameter name="OutQLenHistogramIntervals" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">{{list}} Definition of the histogram intervals for counting the transmit queue length in packets. Each value indicates the maximum value of the interval. For example, "0,1,4,8," defines the five intervals: 0 packets in queue, 1 packet in queue, 2 to 4 packets in queue, 5 to 8 packets in queue, and 9 or more packets in queue. (No value after the last comma means no upper bound.) If this parameter is set to {{empty}}, no {{param|Stats.OutQLenHistogram}} stats will be collected. </description>
+
+  <parameter name="OutQLenHistogramSampleInterval" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">The time between recording samples of the current transmit queue in {{units}}. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.AccessPoint.{i}.AC.{i}.Stats." shortObjectName="Dev2WifiAccessPointAcStatsObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains statistics for different 802.11e access categories (priorities). Packet counters here count 802.11 WiFi frames.If there are not separate stats for each access category, (e.g., 802.11e is not used and there is only one queue), then only access category 0 = BE applies (e.g., the statistics for the single queue are in access category 0 = BE). The CPE MUST reset the Access Point's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the Access Point becomes operationally down due to a previous administrative down (i.e. the Access Point's Status parameter transitions to a Diasbled state) or when the Access Point becomes administratively up (i.e. the Access Point's Enable parameter transitions from false to true). Administrative and operational status is discussed in [Section 4.2.2/TR-181i2]. </description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of {{units}} transmitted in this access category, including framing characters. </description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of {{units}} received in this access category, including framing characters. </description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of {{units}} transmitted in this access category. </description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of {{units}} received in this access category. </description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound {{units}} in this access category that could not be transmitted because of errors. These might be due to the number of retransmissions exceeding the retry limit, or from other causes. </description>
+
+  <parameter name="ErrorsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound {{units}} in this access category that contained errors preventing them from being delivered to a higher-layer protocol. </description>
+
+  <parameter name="DiscardPacketsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound {{units}} in this access category which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space. </description>
+
+  <parameter name="DiscardPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound {{units}} in this access category which were chosen to be discarded even though no errors had been detected to prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space. </description>
+
+  <parameter name="RetransCount" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of transmitted {{units}} in this access category which were retransmissions. Two retransmissions of the same packet results in this counter incrementing by two. </description>
+
+  <parameter name="OutQLenHistogram" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} Histogram of the total length of the transmit queue of this access category in packets (1 packet, 2 packets, etc.) according to the intervals defined by {{param|#.OutQLenHistogramIntervals}}, with samples taken each {{param|#.OutQLenHistogramSampleInterval}}. Example: "12,5,1,0,2,0,0,1". </description>
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.AccessPoint.{i}.Accounting." shortObjectName="Dev2WifiAccessPointAccountingObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains the parameters related to RADIUS accounting functionality for the access point. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables accounting functionality for the access point. </description>
+
+  <parameter name="ServerIPAddr" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="45" />
+    <description source="TRx">The IP Address of the RADIUS accounting server. </description>
+
+  <parameter name="SecondaryServerIPAddr" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="45" />
+    <description source="TRx">The IP Address of a secondary RADIUS accounting server. The client can forward requests to the secondary server in the event that the primary server is down or unreachable, or after a number of tries to the primary server fail, or in a round-robin fashion. {{bibref|RFC2866}} </description>
+
+  <parameter name="ServerPort" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="1813" />
+    <description source="TRx">The port number of the RADIUS server used for accounting. The default port is 1813 as defined in {{bibref|RFC2866}}. </description>
+
+  <parameter name="SecondaryServerPort" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="1813" />
+    <description source="TRx">The port number of the secondary RADIUS server used for accounting. The default port is 1813 as defined in {{bibref|RFC2866}}. If this parameter is not implemented, the secondary RADIUS server will use the same port number as the primary RADIUS server. </description>
+
+  <parameter name="Secret" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">The secret used for handshaking with the RADIUS accounting server {{bibref|RFC2865}}. </description>
+
+  <parameter name="SecondarySecret" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">The secret used for handshaking with the secondary RADIUS accounting server {{bibref|RFC2865}}. If this parameter is not implemented, the secondary RADIUS server will use the same secret as the primary RADIUS server. </description>
+
+  <parameter name="InterimInterval" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" maxValue="0" minValue="0" />
+    <description source="TRx">Specifies the default interim accounting interval in {{units}}, which is used for service accounting when the ''Acct-Interim-Interval'' attribute is not configured. {{bibref|RFC2869|Section 2.1}} The value MUST NOT be smaller than 60.  The value SHOULD NOT be smaller than  600, and careful consideration should be given to its impact on network traffic {{bibref|RFC2869|Section 5.16}}.A value of 0 means no interim accounting messages are sent. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.EndPoint.{i}." shortObjectName="Dev2WifiEndPointObject" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">This object models an 802.11 connection from the perspective of a wireless end point. Each {{object}} entry is associated with a particular {{object|#.SSID}} interface instance via the {{param|SSIDReference}} parameter, and an associated active {{object|Profile}} instance via the {{param|ProfileReference}} parameter. The active profile is responsible for specifying the actual SSID and security settings used by the end point. For enabled table entries, if {{param|SSIDReference}} or {{param|ProfileReference}} is not a valid reference then the table entry is inoperable and the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}}. Note: The {{object}} table includes a unique key parameter that is a strong reference. If a strongly referenced object is deleted, the CPE will set the referencing parameter to {{empty}}. However, doing so under these circumstances might cause the updated {{object}} row to then violate the table's unique key constraint; if this occurs, the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}} and disable the offending {{object}} row.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" mngrvar="endpointEnable" />
+    <description source="TRx">Enables or disables this end point.</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" mngrvar="endpointStatus" validValuesArray="status4eValues" />
+    <description source="TRx">Indicates the status of this end point. {{enum}} The {{enum|Error_Misconfigured}} value indicates that a necessary configuration value is undefined or invalid. The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition.</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-wifiendpoint" maxLength="64" mngrvar="epAlias" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. If the CPE supports the Alias-based Addressing feature as defined in {{bibref|TR-069a4|3.6.1}} and described in {{bibref|TR-069a4|Appendix II}}, the following mandatory constraints MUST be enforced: *Its value MUST NOT be empty. *Its value MUST start with a letter. *If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix. *The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="ProfileReference" type="string" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">The value MUST be the path name of a row in the Profile table. If the referenced object is deleted, the parameter value MUST be set to an empty string.  This is the currently active profile, which specifies the SSID and security settings to be used by the end point.</description>
+
+  <parameter name="SSIDReference" type="string" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="256" />
+    <description source="TRx">The value MUST be the path name of a row in the SSID table. If the referenced object is deleted, the parameter value MUST be set to an empty string. {{param}} is determined based on the {{param|Profile.{i}.SSID}} within the associated {{param|ProfileReference}}) endpoint profile. {{param}} MUST be {{empty}} if {{param|ProfileReference}} is {{empty}} (i.e. only when an active profile is assigned can the associated SSID interface be determined).</description>
+
+  <parameter name="ProfileNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the Profile table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.EndPoint.{i}.Stats." shortObjectName="Dev2WifiEndPointStatsObject" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Throughput statistics for this end point.</description>
+
+  <parameter name="LastDataDownlinkRate" type="unsignedInt" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="1000" minValue="1000" maxValue="600000" />
+    <description source="TRx">The data transmit rate in kbps that was most recently used for transmission from the access point to the end point device.</description>
+
+  <parameter name="LastDataUplinkRate" type="unsignedInt" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="1000" minValue="1000" maxValue="600000" />
+    <description source="TRx">The data transmit rate in kbps that was most recently used for transmission from the end point to the access point device.</description>
+
+  <parameter name="SignalStrength" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="-200" minValue="-200" maxValue="0" />
+    <description source="TRx">An indicator of radio signal strength of the downlink from the access point to the end point, measured in dBm, as an average of the last 100 packets received from the device.</description>
+
+  <parameter name="Retransmissions" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="100" />
+    <description source="TRx">The number of packets that had to be re-transmitted, from the last 100 packets sent to the access point. Multiple re-transmissions of the same packet count as one.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.EndPoint.{i}.Security." shortObjectName="Dev2WifiEndPointSecurityObject" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains security related parameters that apply to a CPE acting as an Access Point {{bibref|802.11-2007}}.</description>
+
+  <parameter name="ModesSupported" type="string" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx"> Comma-separated list of strings.  Indicates which security modes this {{object|#}} instance is capable of supporting.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.EndPoint.{i}.Profile.{i}." shortObjectName="Dev2WifiEndPointProfileObject" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">EndPoint Profile table. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this Profile. When there are multiple WiFi EndPoint Profiles, e.g. each instance supports a different SSID and/or different security configuration, this parameter can be used to control which of the instances are currently enabled.</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="WiFiProfileStatusValues" />
+    <description source="TRx">Indicates the status of this Profile. {{enum}} The {{enum|Active}} value is reserved for the instance that is actively connected. The {{enum|Available}} value represents an instance that is not currently active, but is also not disabled or in error. The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition.</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. If the CPE supports the Alias-based Addressing feature as defined in {{bibref|TR-069a4|3.6.1}} and described in {{bibref|TR-069a4|Appendix II}}, the following mandatory constraints MUST be enforced: *Its value MUST NOT be empty. *Its value MUST start with a letter. *If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix. *The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="SSID" type="string" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="W" supportLevel="ReadWrite" maxLength="32" />
+    <description source="TRx">The profile identifier in use by the connection. The SSID is an identifier that is attached to packets sent over the wireless LAN that functions as an ID for joining a particular radio network (BSS).</description>
+
+  <parameter name="Location" type="string" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Location of the profile. This value serves as a reminder from the user, describing the location of the profile. For example: &quot;Home&quot;, &quot;Office&quot;, &quot;Neighbor House&quot;, &quot;Airport&quot;, etc. An empty string is also valid.</description>
+
+  <parameter name="Priority" type="unsignedInt" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" />
+    <description source="TRx">The profile Priority defines one of the criteria used by the End Point to automatically select the &quot;best&quot; AP when several APs with known profiles are simultaneously available for association. In this situation, the End Point has to select the AP with the higher priority in its profile. If there are several APs with the same priority, providing different SSID or the same SSID, then the wireless end point has to select the APs according to other criteria like signal quality, SNR, etc. 0 is the highest priority.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.EndPoint.{i}.Profile.{i}.Security." shortObjectName="Dev2WifiEndPointProfileSecurityObject" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains security related parameters that apply to a WiFi End Point profile {{bibref|802.11-2007}}.</description>
+
+  <parameter name="ModeEnabled" type="string" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="W" supportLevel="ReadWrite" validValuesArray="WifiModeValues" />
+    <description source="TRx">Indicates which security mode is enabled.</description>
+
+  <parameter name="WEPKey" type="hexBinary" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="W" supportLevel="ReadWrite" maxLength="13" isTr69Password="true" />
+    <description source="TRx">A WEP key expressed as a hexadecimal string. {{param}} is used only if {{param|ModeEnabled}} is set to {{enum|WEP-64|ModeEnabled}} or {{enum|WEP-128|ModeEnabled}}. A 5 byte {{param}} corresponds to security mode {{enum|WEP-64|ModeEnabled}} and a 13 byte {{param}} corresponds to security mode {{enum|WEP-128|ModeEnabled}}.</description>
+
+  <parameter name="PreSharedKey" type="hexBinary" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="W" supportLevel="ReadWrite" maxLength="32" isTr69Password="true" />
+    <description source="TRx">A literal PreSharedKey (PSK) expressed as a hexadecimal string. {{param}} is only used if {{param|ModeEnabled}} is set to {{enum|WPA-Personal|ModeEnabled}} or {{enum|WPA2-Personal|ModeEnabled}} or {{enum|WPA-WPA2-Personal|ModeEnabled}}. If {{param|KeyPassphrase}} is written, then {{param}} is immediately generated. The ACS SHOULD NOT set both the {{param|KeyPassphrase}} and the {{param}} directly (the result of doing this is undefined).</description>
+
+  <parameter name="KeyPassphrase" type="string" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="W" supportLevel="ReadWrite" maxLength="64" minLength="8" isTr69Password="true" />
+    <description source="TRx">A passphrase from which the {{param|PreSharedKey}} is to be generated, for {{enum|WPA-Personal|ModeEnabled}} or {{enum|WPA2-Personal|ModeEnabled}} or {{enum|WPA-WPA2-Personal|ModeEnabled}} security modes. If {{param}} is written, then {{param|PreSharedKey}} is immediately generated. The ACS SHOULD NOT set both the {{param}} and the {{param|PreSharedKey}} directly (the result of doing this is undefined). The key is generated as specified by WPA, which uses PBKDF2 from PKCS #5: Password-based Cryptography Specification Version 2.0 ({{bibref|RFC2898}}).</description>
+
+  <parameter name="MFPConfig" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="Disabled" />
+    <description source="TRx">Management Frame Protection configuration applicable when {{param|ModeEnabled}} is set to {{enum|WPA2-Personal|ModeEnabled}} or {{enum|WPA2-Enterprise|ModeEnabled}}. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.EndPoint.{i}.WPS." shortObjectName="Dev2WifiEndPointWpsObject" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains parameters related to Wi-Fi Protected Setup {{bibref|WPSv1.0}} for this end point.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="W" supportLevel="ReadWrite" defaulfValue="true" />
+    <description source="TRx">Enables or disables WPS functionality for this end point.</description>
+
+  <parameter name="ConfigMethodsSupported" type="string" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">&gt;{{list}} Indicates the WPS configuration methods supported by the device. {{enum}} This parameter corresponds directly to the &quot;Config Methods&quot; attribute of the WPS specification {{bibref|WPSv1.0}}.</description>
+
+  <parameter name="ConfigMethodsEnabled" type="string" specSource="TR181" profile="Device2_WiFiEndPoint:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">&gt;{{list}} Indicates the WPS configuration methods enabled on the device.</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} Indicates the current status of WPS in EndPoint. </description>
+
+  <parameter name="Version" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The Wi-Fi Simple Configuration version supported by the device, a string of the form ''m.n'' where ''m'' is the major version and ''n'' is the minor version. For example, a value of ''1.0'' denotes WSC 1.0 and a value of ''2.0'' denotes WSC 2.0. </description>
+
+  <parameter name="PIN" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="4" minValue="4" />
+    <description source="TRx">Represents the Device PIN used for PIN based pairing between WPS peers. This PIN is either a four digit number or an eight digit number. {{hidden}} </description>
+
+
+<object name="InternetGatewayDevice.Device.WiFi.EndPoint.{i}.AC.{i}." shortObjectName="Dev2WifiEndPointAcObject" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">This object contains parameters related to WiFi QoS for different 802.11e access categories (priorities). Access categories are: BE, BK, VI, and VO. These parameters can help control and monitor 802.11e Enhanced distributed channel access (EDCA). The size of this table is fixed, with four entries which are identified by the {{param|AccessCategory}} parameter as follows: * BE (Best Effort)* BK (Background) * VI (Video)* VO (Voice) </description>
+
+  <parameter name="AccessCategory" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">This identifies the access category. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="AIFSN" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="15" minValue="2" />
+    <description source="TRx">Arbitration Inter Frame Spacing (Number). This is the number of time slots in the arbitration interframe space. </description>
+
+  <parameter name="ECWMin" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="15" minValue="0" />
+    <description source="TRx">Exponent of Contention Window (Minimum). This encodes the values of CWMin as an exponent: CWMin = 2^ECWMin - 1. For example, if ECWMin is 8, then CWMin is 2^8 - 1, or 255, (expressed in {{units}}). </description>
+
+  <parameter name="ECWMax" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="15" minValue="0" />
+    <description source="TRx">Exponent of Contention Window (Maximum). This encodes the values of CWMax as an exponent: CWMax = 2^ECWMax - 1. For example, if ECWMax is 8, then CWMax is 2^8 - 1, or 255, (expressed in {{units}}). </description>
+
+  <parameter name="TxOpMax" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxValue="255" minValue="0" />
+    <description source="TRx">Maximum transmit opportunity, in multiples of {{units}}. A TXOP time interval of 0 means it is limited to a single MAC protocol data unit (MPDU). </description>
+
+  <parameter name="AckPolicy" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Ack Policy, where False="Do Not Acknowledge" and True="Acknowledge" </description>
+
+  <parameter name="OutQLenHistogramIntervals" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">{{list}} Definition of the histogram intervals for counting the transmit queue length in packets. Each value indicates the maximum value of the interval. For example, "0,1,4,8," defines the five intervals: 0 packets in queue, 1 packet in queue, 2 to 4 packets in queue, 5 to 8 packets in queue, and 9 or more packets in queue. (No value after the last comma means no upper bound.) If this parameter is set to an empty string, no {{param|Stats.OutQLenHistogram}} stats will be collected. </description>
+
+  <parameter name="OutQLenHistogramSampleInterval" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">The time between recording samples of the current transmit queue {{units}}. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.WiFi.EndPoint.{i}.AC.{i}.Stats." shortObjectName="Dev2WifiEndPointAcStatsObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains statistics for different 802.11e access categories (priorities). Packet counters here count 802.11 WiFi frames.If there are not separate stats for each access category, (e.g., 802.11e is not used and there is only one queue), then only access category 0 = BE applies (e.g., the statistics for the single queue are in access category 0 = BE). The CPE MUST reset the EndPoint's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the EndPoint becomes operationally down due to a previous administrative down (i.e. the EndPoint's Status parameter transitions to a Diasbled state) or when the EndPoint becomes administratively up (i.e. the EndPoint's Enable parameter transitions from false to true). Administrative and operational status is discussed in [Section 4.2.2/TR-181i2]. </description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of {{units}} transmitted in this access category, including framing characters. </description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of {{units}} received in this access category, including framing characters. </description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of {{units}} transmitted in this access category. </description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of {{units}} received in this access category. </description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound {{units}} in this access category that could not be transmitted because of errors. These might be due to the number of retransmissions exceeding the retry limit, or from other causes. </description>
+
+  <parameter name="ErrorsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound {{units}} in this access category that contained errors preventing them from being delivered to a higher-layer protocol. </description>
+
+  <parameter name="DiscardPacketsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound {{units}} in this access category which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space. </description>
+
+  <parameter name="DiscardPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound {{units}} in this access category which were chosen to be discarded even though no errors had been detected to prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space. </description>
+
+  <parameter name="RetransCount" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of transmitted {{units}} in this access category which were retransmissions. Two retransmissions of the same packet results in this counter incrementing by two. </description>
+
+  <parameter name="OutQLenHistogram" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} Histogram of the total length of the transmit queue of this access category in packets (1 packet, 2 packets, etc.) according to the intervals defined by {{param|#.OutQLenHistogramIntervals}}, with samples taken each {{param|#.OutQLenHistogramSampleInterval}}. Example: "12,5,1,0,2,0,0,1" </description>
+
+
+
+<vsaInfo>
+
+<validstringarray name="WPSConfigValues" />
+  <element>USBFlashDrive</element>
+  <element>Ethernet</element>
+  <element>ExternalNFCToken</element>
+  <element>IntegratedNFCToken</element>
+  <element>NFCInterface</element>
+  <element>PushButton</element>
+  <element>PIN</element>
+
+<validstringarray name="WiFiChannelBandwidthValues" />
+  <element>20MHz</element>
+  <element>40MHz</element>
+  <element>80MHz</element>
+  <element>160MHz</element>
+  <element>Auto</element>
+
+<validstringarray name="WiFiExtensionControlValues" />
+  <element>AboveControlChannel</element>
+  <element>BelowControlChannel</element>
+  <element>Auto</element>
+  <element>X_BROADCOM_COM_AboveCtrlChLL</element>
+  <element>X_BROADCOM_COM_AboveCtrlChLU</element>
+  <element>X_BROADCOM_COM_BelowCtrlChUL</element>
+  <element>X_BROADCOM_COM_BelowCtrlChUU</element>
+  <element>X_BROADCOM_COM_AboveCtrlChLLL</element>
+  <element>X_BROADCOM_COM_AboveCtrlChLLU</element>
+  <element>X_BROADCOM_COM_AboveCtrlChLUL</element>
+  <element>X_BROADCOM_COM_AboveCtrlChLUU</element>
+  <element>X_BROADCOM_COM_BelowCtrlChULL</element>
+  <element>X_BROADCOM_COM_BelowCtrlChULU</element>
+  <element>X_BROADCOM_COM_BelowCtrlChUUL</element>
+  <element>X_BROADCOM_COM_BelowCtrlChUUU</element>
+
+<validstringarray name="WiFiFrequencyBandValues" />
+  <element>2.4GHz</element>
+  <element>5GHz</element>
+  <element>6GHz</element>
+
+<validstringarray name="WiFiGuardIntervalValues" />
+  <element>400nsec</element>
+  <element>800nsec</element>
+  <element>Auto</element>
+
+<validstringarray name="WiFiProfileStatusValues" />
+  <element>Active</element>
+  <element>Available</element>
+  <element>Error</element>
+  <element>Disabled</element>
+
+<validstringarray name="WiFiStandardValues" prefix="WIFISTD" />
+  <element>a</element>
+  <element>b</element>
+  <element>g</element>
+  <element>n</element>
+  <element>v</element>
+  <element>ac</element>
+  <element>ax</element>
+
+<validstringarray name="WifiModeValues" />
+  <element>None</element>
+  <element>WEP-64</element>
+  <element>WEP-128</element>
+  <element>WPA-Personal</element>
+  <element>WPA2-Personal</element>
+  <element>WPA-WPA2-Personal</element>
+  <element>WPA-Enterprise</element>
+  <element>WPA2-Enterprise</element>
+  <element>WPA-WPA2-Enterprise</element>
+
+<validstringarray name="ifOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+<validstringarray name="status4eValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error_Misconfigured</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Baseline:1" />
+<profile name="Device2_Baseline:2" />
+<profile name="Device2_Baseline:3" />
+<profile name="Device2_WiFiRadio:1" />
+<profile name="Device2_WiFiSSID:1" />
+<profile name="Device2_WiFiAccessPoint:1" />
+<profile name="Device2_WiFiEndPoint:1" />
+<profile name="Unspecified" />
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

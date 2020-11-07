@@ -1,0 +1,4 @@
+
+condition: ifneq ($(strip $(BUILD_ARCHERCTL)),)
+
+dependson: private/libs/archer 

@@ -1,0 +1,249 @@
+/*
+<:copyright-broadcom 
+ 
+ Copyright (c) 2002 Broadcom Corporation 
+ All Rights Reserved 
+ No portions of this material may be reproduced in any form without the 
+ written permission of: 
+          Broadcom Corporation 
+          16215 Alton Parkway 
+          Irvine, California 92619 
+ All information contained in this document is Broadcom Corporation 
+ company private, proprietary, and trade secret. 
+ 
+:>
+*/
+/****************************************************************************
+ *
+ * G992p3OvhMsg.gh 
+ *
+ * Description:
+ *	This is a header file which defines the type for the G992p3 overhead 
+ *  channel messages global variable structure.
+ *
+ *
+ * Copyright (c) 1999-2003 BroadCom, Inc. All rights reserved.
+ * Authors: Ilya Stomakhin
+ *
+ * $Revision: 1.5 $
+ *
+ * $Id: G992p3OvhMsg.gh,v 1.5 2004/09/11 03:52:25 ilyas Exp $
+ *
+ * $Log: G992p3OvhMsg.gh,v $
+ * Revision 1.5  2004/09/11 03:52:25  ilyas
+ * Added support for overhead message segmentation
+ *
+ * Revision 1.4  2004/07/07 01:27:20  ilyas
+ * Fixed OHC message stuck problem on L2 entry/exit
+ *
+ * Revision 1.3  2004/06/10 00:13:31  ilyas
+ * Added L2/L3 and SRA
+ *
+ * Revision 1.2  2004/04/12 23:34:52  ilyas
+ * Merged the latest ADSL driver chnages for ADSL2+
+ *
+ * Revision 1.1  2003/07/18 19:39:18  ilyas
+ * Initial G.992.3 overhead channel message implementation (from ADSL driver)
+ *
+ *
+ *****************************************************************************/
+
+#ifndef	G992p3OvhMsgFramerGlobals
+#define	G992p3OvhMsgFramerGlobals
+
+#define	kG992p3OvhMsgMaxCmdSize			(16 + 16)
+#if defined(CONFIG_VDSL_SUPPORTED)
+#define	kG992p3OvhMsgMaxRspSize			(16 + 4*512)
+#else
+#define	kG992p3OvhMsgMaxRspSize			(16 + 2*512)
+#endif
+#define	kMaxClearEocTxFrames			16
+#define	kG992p3OvhMsgMaxSegRspSize		7
+
+#define	kG992p3OvhMsgMaxPollCmd			15
+#if defined(CONFIG_VDSL_SUPPORTED)
+#if defined(CONFIG_BCM_DSL_GFAST) || defined(CONFIG_VDSLBRCMPRIV1_SUPPORT)
+#define MAX_NUM_VECTRD_CMDS_SEQ		16
+#else
+#define MAX_NUM_VECTRD_CMDS_SEQ		10
+#endif
+#endif
+
+typedef struct
+	{
+	dslFrame				*segFrame;
+	dslFrameBuffer			*segFrBufCur;
+	dslFrameBuffer			segFrBuf;
+	uint					timeSegOut;
+	uchar					tryCnt;
+	uchar					segTotal;
+	uchar					segId;
+	}
+	g992p3SegFrameCtlStruct;
+
+typedef struct
+	{
+	DListHeader			segFrameList;
+	dslFrameBuffer			*pFirstSegBuf;
+	uchar				*pFirstSegData;
+	uint				lastSegRcvTime;
+	uchar				segId;
+	dslFrame			txRspFrame;
+	dslFrameBuffer			txRspFrBuf;
+	uchar				txRspBuf[kG992p3OvhMsgMaxSegRspSize];
+	}
+	g992p3RcvSegFrameCtlStruct;
+
+
+typedef struct
+	{
+	uchar					*cmd;
+	uint					len;
+	uint					tmPeriod;
+	uint					tmLastSent;
+	uint					cmdFlags;
+	} g992p3PollCmdStruct;
+#if defined(CONFIG_VDSL_SUPPORTED)
+typedef	struct _CmdToneGroup{
+	unsigned short						stopToneGp;
+	unsigned short						startToneGp;
+}	CmdToneGroup;
+
+typedef	struct _VDSLPMDVectorReadCmdToneGrp	{
+	CmdToneGroup				toneGroups[MAX_NUM_VECTRD_CMDS_SEQ];
+	unsigned short				numCmds;
+	unsigned short				lastCmdNm;
+}	VDSLPMDVectorReadCmdToneGrp;
+#endif
+typedef	struct _INMParamStruct	{
+	uchar									equivalentInpMode;
+	uchar									clusterContinuationParameter;
+	unsigned short				interArrivalTimeOffset;
+	unsigned short				interArrivalTimeStep;
+	uchar									defaultParametersFlag;
+	uchar									newConfig;
+	uchar					equivalentInpFormat;
+	uchar					bridgingEnable;
+	uchar					interArrivalTimeScale;
+	uchar					equivalentInpScale;
+	uchar					inmGfastCoCpeSupport;
+}	INMParamStruct;
+typedef struct
+	{
+	bitMap					setup;
+	dslFrameHandlerType		rxReturnFramePtr;
+	dslFrameHandlerType		txSendFramePtr;
+	dslFrameHandlerType		txSendCompletePtr;
+	dslCommandHandlerType	cmdHandlerPtr;
+	dslStatusHandlerType	statusHandlerPtr;
+
+	dslFrame				txRspFrame;
+	dslFrameBuffer			txRspFrBuf;
+	dslFrameBuffer			txRspFrBuf1;
+	uchar					txRspBuf[kG992p3OvhMsgMaxRspSize];
+	dslFrame				txPwrRspFrame;
+	dslFrameBuffer			txPwrRspFrBuf0;
+	dslFrameBuffer			txPwrRspFrBuf0a;
+	dslFrameBuffer			txPwrRspFrBuf1;
+	uchar					txPwrRspBuf0[8];
+	dslFrame				*lastTxCmdFrame;
+	dslFrame				txOLRCmdFrame;
+	dslFrameBuffer			txOLRCmdFrBuf0;
+	dslFrameBuffer			txOLRCmdFrBuf0a;
+	dslFrameBuffer			txOLRCmdFrBuf1;
+	uchar					txOLRCmdBuf[kG992p3OvhMsgMaxCmdSize];
+	dslFrame				txCmdFrame;
+	dslFrameBuffer			txCmdFrBuf0;
+	dslFrameBuffer			txCmdFrBuf0a;
+	dslFrameBuffer			txCmdFrBuf1;
+	uchar					txCmdBuf[kG992p3OvhMsgMaxCmdSize];
+	g992p3SegFrameCtlStruct	txSegFrameCtl;
+	circBufferStruct		txClEocFrameCB;
+	dslFrame				*txClEocFrame[kMaxClearEocTxFrames];
+	circBufferStruct		txNonStdFacFrameCB;
+	dslFrame				*txNonStdFacFrame[kMaxClearEocTxFrames];
+	circBufferStruct		txDatagramFrameCB;
+	dslFrame				*txDatagramFrame[kMaxClearEocTxFrames];
+#ifdef SUPPORT_HMI
+	circBufferStruct		txHmiEocFrameCB;
+	dslFrame				*txHmiEocFrame[kMaxClearEocTxFrames];
+#endif
+	uint					txFlags;
+	uchar					txL0Rq;
+	uchar					txL3Rq;
+
+	uint					timeMs;
+	uint					timeCmdOut;
+	uint					txXmtDelay;
+	uint					cmdTryCnt;
+	uint					cmdNum;
+	uint					timeRspOut;
+	uchar					*txPmdCmd;
+
+	g992p3PollCmdStruct		pollCmd[kG992p3OvhMsgMaxPollCmd];
+	uint					pollCmdNum;
+
+	uchar					rxCmdMsgNum;
+	uchar					rxRspMsgNum;
+	uchar					txCmdMsgNum[4];
+	uchar					txRspMsgNum;
+	
+	char					txRspMsgNumStored;	
+	char 					kG992p3OvhMsgCmdPLN;
+	adslINMConfiguration 				    inmConfig;
+	int						INMMessageReadCntrRspFlag;
+	int						INMMessageReadParamsRspFlag;
+	int 					INMWaitForParamsFlag;
+	int 					PLNMessageReadRspFlag;
+	uint 					cmdTime;
+	char* 					pPLNPeakNoiseTable;
+	int 					PLNPeakNoiseTableLen;
+	char* 					pPLNThresholdCountTable;
+	int 					PLNThresholdCountTableLen;
+	uint					PLNNoiseMarginPerBinDecLevel;
+	uint 					PLNNoiseMarginBroadbandDecLevel;	
+	uint					PLNPerBinPeakNoiseMsrCounter;
+	uint					PLNPerBinThldCounter;
+	uint					PLNImpulseDurStatCounter;
+	uint 					PLNImpulseInterArrStatCounter;
+	uint 					PLNUpdtCount;
+	int 					PLNPerBinMeasurementCounterRcvFlag;
+	int					PLNBroadbandMsrCounterRcvFlag;
+	ushort					PLNnInpBin;
+	int 					PLNinpBinTableLen;
+	char*					pPLNinpBinTablePtr;
+	ushort*					pPLNinpBinIntervalPtr;
+	ushort 					PLNnItaBin;
+	int 					PLNitaBinTableLen;
+	char*					pPLNitaBinTablePtr;
+	ushort*					pPLNitaBinIntervalPtr;
+	uint					PLNElapsedTimeMSec;
+	uint 					PLNElapsedTimeSec;
+	int					PLNActiveFlag;
+	uint					cmdPollingStamp;
+
+	DListHeader			g992P3OlrFrameList;
+	uchar				olrSegmentSerialNum;
+	uchar				*pFirstOlrData;
+	dslFrameBuffer			*pFirstOlrBuf;
+	uint				lastOlrSegmentRcvTime;
+	uint				ohRspTimeout;
+	uint				ohUnrespondedCmdTime;
+
+	g992p3RcvSegFrameCtlStruct	segCmd[3];
+	g992p3RcvSegFrameCtlStruct	segRsp[3];
+#if defined(CONFIG_VDSL_SUPPORTED)
+	int					pollingSnrBlRdCmd;
+	VDSLPMDVectorReadCmdToneGrp	VectorBlockRdCmdSeq;
+	int                     coVendorBRCM;
+#endif
+	int		rateChangeFlag;
+	char		phriFlag;	/* previous host reinit flag */
+	}
+	g992p3OvhMsgVarsStruct;
+
+#endif	/* G992p3OvhMsgFramerGlobals */
+
+
+
+

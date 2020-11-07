@@ -1,0 +1,533 @@
+/*
+* <:copyright-BRCM:2014:proprietary:standard
+* 
+*    Copyright (c) 2014 Broadcom 
+*    All Rights Reserved
+* 
+*  This program is the proprietary software of Broadcom and/or its
+*  licensors, and may only be used, duplicated, modified or distributed pursuant
+*  to the terms and conditions of a separate, written license agreement executed
+*  between you and Broadcom (an "Authorized License").  Except as set forth in
+*  an Authorized License, Broadcom grants no license (express or implied), right
+*  to use, or waiver of any kind with respect to the Software, and Broadcom
+*  expressly reserves all rights in and to the Software and all intellectual
+*  property rights therein.  IF YOU HAVE NO AUTHORIZED LICENSE, THEN YOU HAVE
+*  NO RIGHT TO USE THIS SOFTWARE IN ANY WAY, AND SHOULD IMMEDIATELY NOTIFY
+*  BROADCOM AND DISCONTINUE ALL USE OF THE SOFTWARE.
+* 
+*  Except as expressly set forth in the Authorized License,
+* 
+*  1. This program, including its structure, sequence and organization,
+*     constitutes the valuable trade secrets of Broadcom, and you shall use
+*     all reasonable efforts to protect the confidentiality thereof, and to
+*     use this information only in connection with your use of Broadcom
+*     integrated circuit products.
+* 
+*  2. TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS"
+*     AND WITH ALL FAULTS AND BROADCOM MAKES NO PROMISES, REPRESENTATIONS OR
+*     WARRANTIES, EITHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, WITH
+*     RESPECT TO THE SOFTWARE.  BROADCOM SPECIFICALLY DISCLAIMS ANY AND
+*     ALL IMPLIED WARRANTIES OF TITLE, MERCHANTABILITY, NONINFRINGEMENT,
+*     FITNESS FOR A PARTICULAR PURPOSE, LACK OF VIRUSES, ACCURACY OR
+*     COMPLETENESS, QUIET ENJOYMENT, QUIET POSSESSION OR CORRESPONDENCE
+*     TO DESCRIPTION. YOU ASSUME THE ENTIRE RISK ARISING OUT OF USE OR
+*     PERFORMANCE OF THE SOFTWARE.
+* 
+*  3. TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL BROADCOM OR
+*     ITS LICENSORS BE LIABLE FOR (i) CONSEQUENTIAL, INCIDENTAL, SPECIAL,
+*     INDIRECT, OR EXEMPLARY DAMAGES WHATSOEVER ARISING OUT OF OR IN ANY
+*     WAY RELATING TO YOUR USE OF OR INABILITY TO USE THE SOFTWARE EVEN
+*     IF BROADCOM HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES;
+*     OR (ii) ANY AMOUNT IN EXCESS OF THE AMOUNT ACTUALLY PAID FOR THE
+*     SOFTWARE ITSELF OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS
+*     SHALL APPLY NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY
+*     LIMITED REMEDY.
+* :> 
+*/
+
+/*
+ * RDD Legacy mapping 
+ */
+
+#ifndef _RDD_LEGACY_CONV_H_
+#define _RDD_LEGACY_CONV_H_
+
+#include "rdd_defs.h"
+
+/* VLAN Action */
+#define rdd_tpid_id_t rdd_tpid_id
+#define RDD_TPID_ID_7 rdd_tpid_id_7 
+
+#define rdd_bridge_vlan_cmd_t rdd_bridge_vlan_command
+#define RDD_VLAN_CMD_TRANSPARENT rdd_vlan_command_transparent
+#define RDD_VLAN_CMD_ADD_TAG rdd_vlan_command_add_tag
+#define RDD_VLAN_CMD_REMOVE_TAG rdd_vlan_command_remove_tag 
+#define RDD_VLAN_CMD_REPLACE_TAG rdd_vlan_command_replace_tag
+#define RDD_VLAN_CMD_ADD_TWO_TAGS rdd_vlan_command_add_two_tags
+#define RDD_VLAN_CMD_REMOVE_TWO_TAGS rdd_vlan_command_remove_two_tags
+#define RDD_VLAN_CMD_ADD_OUTER_TAG_REPLACE_INNER_TAG rdd_vlan_command_add_outer_tag_replace_inner_tag
+#define RDD_VLAN_CMD_REMOVE_OUTER_TAG_REPLACE_INNER_TAG rdd_vlan_command_remove_outer_tag_replace_inner_tag
+#define RDD_VLAN_CMD_ADD_TAG_ALWAYS rdd_vlan_command_add_tag_always
+#define RDD_VLAN_CMD_REMOVE_TAG_ALWAYS rdd_vlan_command_remove_tag_always
+#define RDD_VLAN_CMD_REPLACE_OUTER_TAG_REPLACE_INNER_TAG rdd_vlan_command_replace_outer_tag_replace_inner_tag
+#define RDD_VLAN_CMD_REMOVE_OUTER_TAG_COPY rdd_vlan_command_remove_outer_tag_copy
+#define RDD_VLAN_CMD_ADD_3RD_TAG rdd_vlan_command_add_3rd_tag
+#define RDD_MAX_VLAN_CMD rdd_max_vlan_command
+
+#define rdd_bridge_pbits_cmd_t rdd_bridge_pbits_command
+#define RDD_PBITS_CMD_TRANSPARENT rdd_pbits_command_transparent
+#define RDD_PBITS_CMD_COPY rdd_pbits_command_copy
+#define RDD_PBITS_CMD_CONFIGURED rdd_pbits_command_configured
+#define RDD_PBITS_CMD_REMAP rdd_pbits_command_remap
+#define RDD_MAX_PBITS_CMD rdd_max_pbits_command
+
+#define rdd_vlan_cmd_param_t rdd_vlan_command_params 
+
+#define rdd_tpid_overwrite_table_cfg rdd_tpid_overwrite_table_config
+#define rdd_vlan_cmd_cfg rdd_vlan_command_config
+
+/* Policer */
+#define rdd_rate_limit_params_t RDD_RATE_LIMIT_PARAMS
+#define rdd_policer_cfg rdd_policer_config
+#define rdd_us_quasi_policer_cfg rdd_us_quasi_policer_config 
+
+/* VLAN */
+#define rdd_lan_vid_cfg_t RDD_LAN_VID_PARAMS
+#define rdd_lan_vid_entry_cfg rdd_lan_vid_entry_modify
+#define rdd_wan_vid_cfg rdd_wan_vid_config
+
+/* IP Class */
+#define rdd_ds_lite_tunnel_cfg rdd_dual_stack_lite_tunnel_config
+
+#define rdd_l4_filter_t RDD_LAYER4_FILTER_INDEX
+#define RDD_L4_FILTER_ERROR RDD_LAYER4_FILTER_ERROR
+#define RDD_L4_FILTER_EXCEPTION RDD_LAYER4_FILTER_EXCEPTION
+#define RDD_L4_FILTER_IP_FIRST_FRAGMENT RDD_LAYER4_FILTER_IP_FIRST_FRAGMENT
+#define RDD_L4_FILTER_IP_FRAGMENT RDD_LAYER4_FILTER_IP_FRAGMENT
+#define RDD_L4_FILTER_GRE RDD_LAYER4_FILTER_GRE
+#define RDD_L4_FILTER_L3_IPV4 RDD_LAYER4_FILTER_LAYER3_IPV4
+#define RDD_L4_FILTER_L3_IPV6 RDD_LAYER4_FILTER_LAYER3_IPV6
+#define RDD_L4_FILTER_ICMP RDD_LAYER4_FILTER_ICMP
+#define RDD_L4_FILTER_ESP RDD_LAYER4_FILTER_ESP
+#define RDD_L4_FILTER_AH RDD_LAYER4_FILTER_AH
+#define RDD_L4_FILTER_IPV6 RDD_LAYER4_FILTER_IPV6
+#define RDD_L4_FILTER_UDEF_0 RDD_LAYER4_FILTER_USER_DEFINED_0
+#define RDD_L4_FILTER_UDEF_1 RDD_LAYER4_FILTER_USER_DEFINED_1
+#define RDD_L4_FILTER_UDEF_2 RDD_LAYER4_FILTER_USER_DEFINED_2
+#define RDD_L4_FILTER_UDEF_3 RDD_LAYER4_FILTER_USER_DEFINED_3
+#define RDD_L4_FILTER_UNKNOWN RDD_LAYER4_FILTER_UNKNOWN
+
+#define rdd_action BL_LILAC_RDD_LAYER4_FILTER_ACTION_DTE
+#define ACTION_FORWARD BL_LILAC_RDD_LAYER4_FILTER_FORWARD
+#define ACTION_TRAP BL_LILAC_RDD_LAYER4_FILTER_CPU_TRAP
+#define ACTION_DROP BL_LILAC_RDD_LAYER4_FILTER_DROP
+
+#define rdd_l4_filter_set rdd_layer4_filter_set
+#define rdd_ip_frag_filter_cfg rdd_ip_fragments_filter_config 
+#define rdd_hdr_err_filter_cfg rdd_header_error_filter_config
+
+#define rdd_fc_fwd_action_t RDD_FLOW_CACHE_FORWARD_ACTION 
+#define RDD_FC_FWD_ACTION_CPU RDD_FLOW_CACHE_FORWARD_ACTION_CPU
+#define RDD_FC_FWD_ACTION_DROP RDD_FLOW_CACHE_FORWARD_ACTION_DROP
+
+#define rdd_ip_flow_t BL_LILAC_RDD_ADD_CONNECTION_DTE
+
+#define rdd_various_counters_t BL_LILAC_RDD_VARIOUS_COUNTERS_DTE
+
+#define rdd_various_counters_mask_t RDD_VARIOUS_COUNTERS_MASK 
+#define INVALID_L2_PROTO_DROP_COUNTER_MASK INVALID_LAYER2_PROTOCOL_DROP_COUNTER_MASK
+#define L4_FILTERS_DROP_COUNTER_MASK LAYER4_FILTERS_DROP_COUNTER_MASK
+#define IPTV_L3_DROP_COUNTER_MASK IPTV_LAYER3_DROP_COUNTER_MASK
+#define L4_FILTERS_DROP_COUNTER_MASK LAYER4_FILTERS_DROP_COUNTER_MASK
+
+#define rdd_subnet_id_t BL_LILAC_RDD_SUBNET_ID_DTE 
+#define RDD_SUBNET_FLOW_CACHE BL_LILAC_RDD_SUBNET_FLOW_CACHE
+#define RDD_SUBNET_BRIDGE BL_LILAC_RDD_SUBNET_BRIDGE
+#define RDD_SUBNET_BRIDGE_IPTV BL_LILAC_RDD_SUBNET_BRIDGE_IPTV
+#define RDD_SUBNET_LAN BL_LILAC_RDD_SUBNET_LAN
+
+#define rdd_3_tupples_ip_flows_enable rdd_3_tupples_connection_mode_config
+
+#define rdd_us_pci_fc_enable rdd_us_pci_flow_cache_config
+#define rdd_full_fc_acceleration_cfg rdd_full_flow_cache_acceleration_config
+
+#define rdd_full_fc_acceleration_mode_t rdd_full_fc_acceleration_mode
+#define RDD_FULL_FC_ACCELERATION_NON_IP 0
+#define RDD_FULL_FC_ACCELERATION_MCAST_IP 1 
+
+#define rdd_full_fc_acceleration_multicast_ip rdd_3_tupples_connection_mode_config
+
+#define rdd_ds_lite_enable rdd_dual_stack_lite_enable
+
+/* Ingress Filter */
+#define rdd_local_switching_filters_cfg rdd_local_switching_filters_config
+#define rdd_tpid_detect_filter_value_cfg rdd_tpid_detect_filter_value_config
+
+#define rdd_ingress_filter_action_t BL_LILAC_RDD_FILTER_ACTION_DTE
+#define RDD_FILTER_ACTION_CPU_TRAP BL_LILAC_RDD_FILTER_ACTION_CPU_TRAP
+#define RDD_FILTER_ACTION_DROP BL_LILAC_RDD_FILTER_ACTION_DROP
+
+#define rdd_ether_type_filter_t BL_LILAC_RDD_ETHER_TYPE_FILTER_NUMBER_DTE
+#define RDD_ETHER_TYPE_FILTER_USER_0 BL_LILAC_RDD_ETHER_TYPE_FILTER_USER_0 
+#define RDD_ETHER_TYPE_FILTER_USER_1 BL_LILAC_RDD_ETHER_TYPE_FILTER_USER_1
+#define RDD_ETHER_TYPE_FILTER_USER_2 BL_LILAC_RDD_ETHER_TYPE_FILTER_USER_2
+#define RDD_ETHER_TYPE_FILTER_USER_3 BL_LILAC_RDD_ETHER_TYPE_FILTER_USER_3
+#define RDD_ETHER_TYPE_FILTER_PPPOE_D BL_LILAC_RDD_ETHER_TYPE_FILTER_PPPOE_D
+#define RDD_ETHER_TYPE_FILTER_PPPOE_S BL_LILAC_RDD_ETHER_TYPE_FILTER_PPPOE_S
+#define RDD_ETHER_TYPE_FILTER_ARP BL_LILAC_RDD_ETHER_TYPE_FILTER_ARP
+#define RDD_ETHER_TYPE_FILTER_1588 BL_LILAC_RDD_ETHER_TYPE_FILTER_1588
+#define RDD_ETHER_TYPE_FILTER_802_1X BL_LILAC_RDD_ETHER_TYPE_FILTER_802_1X
+#define RDD_ETHER_TYPE_FILTER_802_1AG_CFM BL_LILAC_RDD_ETHER_TYPE_FILTER_802_1AG_CFM
+
+#define rdpa_filter2rdd_etype_filter rdpa_filter_to_rdd_etype_filter
+
+#define rdd_ingress_filter_t BL_LILAC_RDD_INGRESS_FILTER_DTE 
+#define RDD_FILTER_IGMP BL_LILAC_RDD_IGMP_FILTER_NUMBER
+#define RDD_FILTER_ICMPV6 BL_LILAC_RDD_ICMPV6_FILTER_NUMBER
+#define RDD_FILTER_UDEF_0 BL_LILAC_RDD_USER_0_FILTER_NUMBER
+#define RDD_FILTER_UDEF_1 BL_LILAC_RDD_USER_1_FILTER_NUMBER
+#define RDD_FILTER_UDEF_2 BL_LILAC_RDD_USER_2_FILTER_NUMBER
+#define RDD_FILTER_UDEF_3 BL_LILAC_RDD_USER_3_FILTER_NUMBER
+#define RDD_FILTER_PPPOE_D BL_LILAC_RDD_PPPOE_D_FILTER_NUMBER
+#define RDD_FILTER_PPPOE_S BL_LILAC_RDD_PPPOE_S_FILTER_NUMBER
+#define RDD_FILTER_ARP BL_LILAC_RDD_ARP_FILTER_NUMBER
+#define RDD_FILTER_1588 BL_LILAC_RDD_1588_FILTER_NUMBER
+#define RDD_FILTER_802_1X BL_LILAC_RDD_802_1X_FILTER_NUMBER
+#define RDD_FILTER_802_1AG_CFM BL_LILAC_RDD_802_1AG_CFM_FILTER_NUMBER
+#define RDD_FILTER_BROADCAST BL_LILAC_RDD_BROADCAST_FILTER_NUMBER
+#define RDD_FILTER_MULTICAST BL_LILAC_RDD_MULTICAST_FILTER_NUMBER
+#define RDD_FILTER_LAST BL_LILAC_RDD_INGRESS_FILTERS_NUMBER
+
+/* EMAC ID */
+#define rdd_emac_id_t BL_LILAC_RDD_EMAC_ID_DTE
+#define RDD_EMAC_ID_START BL_LILAC_RDD_EMAC_ID_START
+#define RDD_EMAC_ID_PCI BL_LILAC_RDD_EMAC_ID_PCI
+#define RDD_EMAC_ID_WIFI BL_LILAC_RDD_EMAC_ID_PCI
+#define RDD_EMAC_ID_LAN_START BL_LILAC_RDD_EMAC_ID_START
+#define RDD_EMAC_ID_0 BL_LILAC_RDD_EMAC_ID_0 
+#define RDD_EMAC_ID_1 BL_LILAC_RDD_EMAC_ID_1
+#define RDD_EMAC_ID_2 BL_LILAC_RDD_EMAC_ID_2
+#define RDD_EMAC_ID_3 BL_LILAC_RDD_EMAC_ID_3
+#define RDD_EMAC_ID_4 BL_LILAC_RDD_EMAC_ID_4
+#define RDD_EMAC_ID_5 BL_LILAC_RDD_EMAC_ID_5
+#define RDD_EMAC_ID_6 BL_LILAC_RDD_EMAC_ID_6
+#define RDD_EMAC_ID_7 BL_LILAC_RDD_EMAC_ID_7
+#define RDD_EMAC_ID_8 BL_LILAC_RDD_EMAC_ID_8
+#define RDD_EMAC_ID_9 BL_LILAC_RDD_EMAC_ID_9
+#define RDD_EMAC_ID_10 BL_LILAC_RDD_EMAC_ID_10
+#define RDD_EMAC_ID_11 BL_LILAC_RDD_EMAC_ID_11
+#define RDD_EMAC_ID_12 BL_LILAC_RDD_EMAC_ID_12
+#define RDD_EMAC_ID_13 BL_LILAC_RDD_EMAC_ID_13
+#define RDD_EMAC_ID_14 BL_LILAC_RDD_EMAC_ID_14
+#define RDD_EMAC_ID_15 BL_LILAC_RDD_EMAC_ID_15
+#define RDD_EMAC_ID_16 BL_LILAC_RDD_EMAC_ID_16
+#define RDD_EMAC_ID_17 BL_LILAC_RDD_EMAC_ID_17
+#define RDD_EMAC_ID_18 BL_LILAC_RDD_EMAC_ID_18
+#define RDD_EMAC_ID_19 BL_LILAC_RDD_EMAC_ID_19
+#define RDD_EMAC_ID_20 BL_LILAC_RDD_EMAC_ID_20
+#define RDD_EMAC_ID_21 BL_LILAC_RDD_EMAC_ID_21
+#define RDD_EMAC_ID_COUNT BL_LILAC_RDD_EMAC_ID_COUNT
+
+/* QoS Mapper */
+#define rdd_dscp_to_pbits_cfg rdd_dscp_to_pbits_config 
+#define rdd_ds_pbits_to_qos_entry_cfg rdd_ds_pbits_to_qos_entry_config 
+#define rdd_ds_tc_to_queue_entry_cfg rdd_ds_traffic_class_to_queue_entry_config
+#define rdd_us_wan_flow_cfg rdd_us_wan_flow_config
+#define rdd_ds_wan_flow_cfg rdd_ds_wan_flow_config
+#define rdd_us_tc_to_queue_entry_cfg rdd_us_traffic_class_to_queue_entry_config
+#define rdd_ds_tc_to_queue_entry_cfg rdd_ds_traffic_class_to_queue_entry_config
+#define rdd_us_pbits_to_qos_entry_cfg rdd_us_pbits_to_qos_entry_config
+#define rdd_ds_pbits_to_qos_entry_cfg rdd_ds_pbits_to_qos_entry_config
+#define rdd_us_pbits_to_wan_flow_entry_cfg rdd_us_pbits_to_wan_flow_entry_config
+#define rdd_dscp_to_pbits_global_cfg rdd_dscp_to_pbits_global_config
+#define rdd_dscp_to_pbits_dei_global_cfg rdd_dscp_to_pbits_dei_global_config
+
+/* Bridge */
+#define rdd_bridge_port_t BL_LILAC_RDD_BRIDGE_PORT_DTE
+#define rdd_vport_id_t BL_LILAC_RDD_BRIDGE_PORT_DTE
+
+#define rdd_mac_params_t RDD_MAC_PARAMS
+
+#define rdd_mac_fwd_action_t BL_LILAC_RDD_MAC_FWD_ACTION_DTE
+#define RDD_MAC_FWD_ACTION_FORWARD BL_LILAC_RDD_MAC_FWD_ACTION_FORWARD
+#define RDD_MAC_FWD_ACTION_DROP BL_LILAC_RDD_MAC_FWD_ACTION_DROP
+#define RDD_MAC_FWD_ACTION_CPU_TRAP0 BL_LILAC_RDD_MAC_FWD_ACTION_CPU_TRAP0
+#define RDD_MAC_FWD_ACTION_CPU_TRAP1 BL_LILAC_RDD_MAC_FWD_ACTION_CPU_TRAP1
+#define RDD_MAC_FWD_ACTION_CPU_TRAP2 BL_LILAC_RDD_MAC_FWD_ACTION_CPU_TRAP2
+#define RDD_MAC_FWD_ACTION_CPU_TRAP3 BL_LILAC_RDD_MAC_FWD_ACTION_CPU_TRAP3
+#define RDD_MAC_FWD_ACTION_RATE_LIMIT BL_LILAC_RDD_MAC_FWD_ACTION_RATE_LIMIT 
+
+#define rdd_forwarding_matrix_cfg rdd_forwarding_matrix_config
+#define rdd_wifi_ssid_forwarding_matrix_cfg rdd_wifi_ssid_forwarding_matrix_config 
+#define rdd_bridge_flooding_cfg rdd_bridge_flooding_config
+#define rdd_us_unknown_da_flooding_bridge_port_cfg rdd_upstream_unknown_da_flooding_bridge_port_config 
+
+#define rdd_mac_table_clear rdd_clear_mac_table
+#define rdd_ds_conn_miss_action_filter_enable rdd_ds_connection_miss_action_filter_config
+
+/* Egress TM */
+#define rdd_rate_limiter_t RDD_RATE_LIMITER_ID_DTE
+#define RDD_RATE_LIMITER_PORT_0 RDD_RATE_LIMITER_EMAC_0
+#define RDD_RATE_LIMITER_PORT_1 RDD_RATE_LIMITER_EMAC_1
+#define RDD_RATE_LIMITER_PORT_2 RDD_RATE_LIMITER_EMAC_2
+#define RDD_RATE_LIMITER_PORT_3 RDD_RATE_LIMITER_EMAC_3
+#define RDD_RATE_LIMITER_PORT_4 RDD_RATE_LIMITER_EMAC_4
+#define RDD_RATE_LIMITER_PORT_5 RDD_RATE_LIMITER_EMAC_5
+#define RDD_RATE_LIMITER_PORT_6 RDD_RATE_LIMITER_EMAC_6
+#define RDD_RATE_LIMITER_PORT_7 RDD_RATE_LIMITER_EMAC_7
+#define RDD_RATE_LIMITER_PORT_8 RDD_RATE_LIMITER_EMAC_8
+#define RDD_RATE_LIMITER_PORT_9 RDD_RATE_LIMITER_EMAC_9
+#define RDD_RATE_LIMITER_PORT_10 RDD_RATE_LIMITER_EMAC_10
+#define RDD_RATE_LIMITER_PORT_11 RDD_RATE_LIMITER_EMAC_11
+#define RDD_RATE_LIMITER_PORT_12 RDD_RATE_LIMITER_EMAC_12
+#define RDD_RATE_LIMITER_PORT_13 RDD_RATE_LIMITER_EMAC_13
+#define RDD_RATE_LIMITER_PORT_14 RDD_RATE_LIMITER_EMAC_14
+#define RDD_RATE_LIMITER_PORT_15 RDD_RATE_LIMITER_EMAC_15
+#define RDD_RATE_LIMITER_PORT_LAST RDD_RATE_LIMITER_EMAC_LAST
+#define RDD_RATE_LIMITER_DISABLED RDD_RATE_LIMITER_IDLE
+
+#define rdd_rate_cntrl_params_t RDD_RATE_CONTROLLER_PARAMS
+#define rdd_rate_cntrl_remove rdd_rate_controller_remove
+#define rdd_rate_cntrl_cfg rdd_rate_controller_config
+#define rdd_rate_cntrl_modify rdd_rate_controller_modify
+
+#define rdd_wan_channel_schedule_t RDD_WAN_CHANNEL_SCHEDULE
+
+#define rdd_peak_schedule_mode_t RDD_US_PEAK_SCHEDULING_MODE
+#define RDD_PEAK_SCHEDULE_MODE_ROUND_ROBIN RDD_US_PEAK_SCHEDULING_MODE_ROUND_ROBIN
+#define RDD_PEAK_SCHEDULE_MODE_STRICT_PRIORITY RDD_US_PEAK_SCHEDULING_MODE_STRICT_PRIORITY
+
+#define rdd_inter_lan_schedule_mode_t BL_LILAC_RDD_INTER_LAN_SCHEDULING_MODE_DTE
+#define RDD_INTER_LAN_SCHEDULE_MODE_NORMAL BL_LILAC_RDD_INTER_LAN_SCHEDULING_MODE_NORMAL
+#define RDD_INTER_LAN_SCHEDULE_MODE_STRICT_PRIORITY BL_LILAC_RDD_INTER_LAN_SCHEDULING_MODE_STRICT_PRIORITY
+#define RDD_INTER_LAN_SCHEDULE_MODE_ROUND_ROBIN BL_LILAC_RDD_INTER_LAN_SCHEDULING_MODE_ROUND_ROBIN
+
+#define rdd_inter_lan_schedule_mode_cfg rdd_inter_lan_scheduling_mode_config
+
+#define rdd_wan_channel_cfg rdd_wan_channel_set
+
+#define rdd_queue_profile_id_t rdd_queue_profile
+#define RDD_QUEUE_PROFILE_0 rdd_queue_profile_0
+#define RDD_QUEUE_PROFILE_1 rdd_queue_profile_1
+#define RDD_QUEUE_PROFILE_2 rdd_queue_profile_2
+#define RDD_QUEUE_PROFILE_3 rdd_queue_profile_3
+#define RDD_QUEUE_PROFILE_4 rdd_queue_profile_4
+#define RDD_QUEUE_PROFILE_5 rdd_queue_profile_5
+#define RDD_QUEUE_PROFILE_6 rdd_queue_profile_6
+#define RDD_QUEUE_PROFILE_7 rdd_queue_profile_7
+#define RDD_QUEUE_PROFILE_DISABLED rdd_queue_profile_disabled
+
+#define rdd_queue_profile_t RDD_QUEUE_PROFILE
+#define rdd_queue_profile_cfg rdd_queue_profile_config
+
+#define rdd_eth_tx_queue_cfg rdd_eth_tx_queue_config
+#define rdd_wan_tx_queue_cfg rdd_wan_tx_queue_config
+
+#define rdd_us_overall_rate_limiter_cfg rdd_us_overall_rate_limiter_config
+#define rdd_emac_rate_limiter_cfg rdd_emac_rate_limiter_config
+#define rdd_wan_channel_rate_limiter_cfg rdd_wan_channel_rate_limiter_config
+
+#define rdd_service_queue_pm_counters_t RDD_SERVICE_QUEUE_PM_COUNTERS_DTE
+
+#define rdd_eth_tx_ddr_queue_addr_cfg rdd_eth_tx_ddr_queue_addr_config
+
+/* LLID */
+#define rdd_flow_pm_counters_t BL_LILAC_RDD_FLOW_PM_COUNTERS_DTE
+#define RDD_FLOW_PM_COUNTERS_TX BL_LILAC_RDD_FLOW_PM_COUNTERS_TX
+#define RDD_FLOW_PM_COUNTERS_RX BL_LILAC_RDD_FLOW_PM_COUNTERS_RX
+#define RDD_FLOW_PM_COUNTERS_BOTH BL_LILAC_RDD_FLOW_PM_COUNTERS_BOTH
+
+/* GEM */
+#define rdd_wan_channel_id_t RDD_WAN_CHANNEL_ID 
+
+/* Ingress classification */
+#define RDD_US_IC_RULE_CFG_TABLE_SIZE RDD_US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE_SIZE
+#define RDD_DS_IC_RULE_CFG_TABLE_SIZE RDD_DS_INGRESS_CLASSIFICATION_RULE_CFG_TABLE_SIZE
+#define RDD_US_IC_CONTEXT_TABLE_SIZE RDD_US_INGRESS_CLASSIFICATION_CONTEXT_TABLE_SIZE
+#define RDD_DS_IC_CONTEXT_TABLE_SIZE RDD_DS_INGRESS_CLASSIFICATION_CONTEXT_TABLE_SIZE
+
+#define rdd_ic_context_t rdd_ingress_classification_context_t 
+#define us_vlan_cmd vlan_command_id.us_vlan_command
+#define ds_vlan_cmd vlan_command_id.ds_vlan_command
+#define ds_eth0_vlan_cmd vlan_command_id.ds_vlan_command.eth0_vlan_command
+#define ds_eth1_vlan_cmd vlan_command_id.ds_vlan_command.eth1_vlan_command
+#define ds_eth2_vlan_cmd vlan_command_id.ds_vlan_command.eth2_vlan_command
+#define ds_eth3_vlan_cmd vlan_command_id.ds_vlan_command.eth3_vlan_command
+#define ds_eth4_vlan_cmd vlan_command_id.ds_vlan_command.eth4_vlan_command
+#define ds_pci_vlan_cmd vlan_command_id.ds_vlan_command.pci_vlan_command
+#define ds_eth5_vlan_cmd vlan_command_id.ds_vlan_command.eth5_vlan_command
+#define ds_eth6_vlan_cmd vlan_command_id.ds_vlan_command.eth6_vlan_command
+#define ds_eth7_vlan_cmd vlan_command_id.ds_vlan_command.eth7_vlan_command
+#define ds_eth8_vlan_cmd vlan_command_id.ds_vlan_command.eth8_vlan_command
+#define ds_eth9_vlan_cmd vlan_command_id.ds_vlan_command.eth9_vlan_command
+#define ds_eth10_vlan_cmd vlan_command_id.ds_vlan_command.eth10_vlan_command
+#define ds_eth11_vlan_cmd vlan_command_id.ds_vlan_command.eth11_vlan_command
+#define ds_eth12_vlan_cmd vlan_command_id.ds_vlan_command.eth12_vlan_command
+#define ds_eth13_vlan_cmd vlan_command_id.ds_vlan_command.eth13_vlan_command
+#define ds_eth14_vlan_cmd vlan_command_id.ds_vlan_command.eth14_vlan_command
+#define ds_eth15_vlan_cmd vlan_command_id.ds_vlan_command.eth15_vlan_command
+
+#define rdd_ic_context_cfg rdd_ingress_classification_context_config
+#define rdd_ic_context_get rdd_ingress_classification_context_get
+#define rdd_ic_context_counter_read rdd_ingress_classification_context_counter_read
+
+#define rdd_ic_rule_cfg_add rdd_ingress_classification_rule_cfg_add 
+#define rdd_ic_rule_cfg_delete rdd_ingress_classification_rule_cfg_delete
+#define rdd_ic_rule_cfg_modify rdd_ingress_classification_rule_cfg_modify
+
+#define rdd_ic_rule_add rdd_ingress_classification_rule_add
+#define rdd_ic_rule_delete rdd_ingress_classification_rule_delete
+
+#define rdd_ic_generic_rule_cfg rdd_ingress_classification_generic_rule_cfg
+#define RDD_VLAN_COMMAND_SKIP LILAC_RDD_VLAN_COMMAND_SKIP
+
+#define rdd_ic_lkp_mode_t rdd_ingress_classification_lookup_mode
+#define RDD_IC_LKP_MODE_IH rdd_ingress_classification_lookup_mode_ih
+#define RDD_IC_LKP_MODE_OPTIMIZED rdd_ingress_classification_lookup_mode_optimized
+#define RDD_IC_LKP_MODE_SHORT rdd_ingress_classification_lookup_mode_short
+#define RDD_IC_LKP_MODE_LONG rdd_ingress_classification_lookup_mode_long
+
+/* IPTV */
+#define mc_key_vid l2_entry_fields.vid 
+#define mc_key_mac l2_entry_fields.mac_addr 
+#define mc_key_gr_ip l3_entry_fields.dst_ip 
+#define mc_key_src_ip l3_entry_fields.src_ip 
+#define mc_ssid_vector l2_entry_fields.ssid_vector
+#define mc_egress_port_vector l2_entry_fields.egress_port_vector
+#define mc_ic_context l2_entry_fields.ingress_classification_context
+
+#define rdd_vport_pm_counters_t BL_LILAC_RDD_BRIDGE_PORT_PM_COUNTERS_DTE
+#define rdd_crc_err_counter_get rdd_crc_error_counter_get
+
+/* PORT */
+#define rdd_sa_mac_lkp_cfg rdd_sa_mac_lookup_config
+#define rdd_unknown_sa_mac_cmd_cfg rdd_unknown_sa_mac_cmd_config
+#define rdd_da_mac_lkp_cfg rdd_da_mac_lookup_config
+#define rdd_unknown_da_mac_cmd_cfg rdd_unknown_da_mac_cmd_config
+#define rdd_emac_id_vector_t BL_LILAC_RDD_BRIDGE_PORT_VECTOR_DTE
+#define rdd_us_ic_default_flows_cfg rdd_us_ingress_classification_default_flows_config
+#define rdpa_ports2rdd_emac_id_vector rdpa_ports2rdd_bridge_port_vector
+#define rdd_subnet_pm_counters_t BL_LILAC_RDD_SUBNET_PM_COUNTERS_DTE
+#define rdpa_if_to_rdd_emac_id_vector rdpa_if_to_rdd_bridge_port_vector
+#define rdd_ic_debug_mode_enable rdd_debug_mode_config
+#define RDD_DDR_PACKET_BUFFER_SIZE LILAC_RDD_RUNNER_PACKET_BUFFER_SIZE
+#define rdd_g9991_vport_to_emac_mapping_cfg rdd_G9991_virtual_to_physical_port_mapping_config
+
+/* SYSTEM */
+#define rdd_drop_precedence_cfg rdd_drop_precedence_config
+#define rdd_ddr_packet_headroom_size_cfg rdd_ddr_headroom_size_config
+#define rdd_mtu_cfg rdd_mtu_config
+
+/* FW-INIT */
+#define rdd_init_params_t RDD_INIT_PARAMS
+#define rdd_sim_save_hw_cfg bl_lilac_rdd_save_sim_config
+#define rdd_sim_save_tx_pointers bl_lilac_rdd_copy_tx_pointers_table
+#define CPU_RX_QUEUE_ID_0 BL_LILAC_RDD_CPU_RX_QUEUE_0
+#define CPU_RX_QUEUE_ID_1 BL_LILAC_RDD_CPU_RX_QUEUE_1
+#define CPU_RX_QUEUE_ID_2 BL_LILAC_RDD_CPU_RX_QUEUE_2
+#define CPU_RX_QUEUE_ID_3 BL_LILAC_RDD_CPU_RX_QUEUE_3
+#define CPU_RX_QUEUE_ID_4 BL_LILAC_RDD_CPU_RX_QUEUE_4
+#define CPU_RX_QUEUE_ID_5 BL_LILAC_RDD_CPU_RX_QUEUE_5
+#define CPU_RX_QUEUE_ID_6 BL_LILAC_RDD_CPU_RX_QUEUE_6
+#define CPU_RX_QUEUE_ID_7 BL_LILAC_RDD_CPU_RX_QUEUE_7
+#define PCI_TX_QUEUE_ID_0 BL_LILAC_RDD_PCI_TX_QUEUE_0
+#define PCI_TX_QUEUE_ID_1 BL_LILAC_RDD_PCI_TX_QUEUE_1
+#define PCI_TX_QUEUE_ID_2 BL_LILAC_RDD_PCI_TX_QUEUE_2
+#define PCI_TX_QUEUE_ID_3 BL_LILAC_RDD_PCI_TX_QUEUE_3
+
+/* XXX: Temporary, due to missing EPON/LLID separation */
+#ifndef _RDPA_EPON_H
+static inline rdpa_epon_mode _rdpa_epon_mode_get(void)
+{
+    return rdpa_epon_ctc;
+}
+
+static inline bdmf_boolean is_rdpa_epon_ctc_or_cuc_mode(void)
+{
+    return 1;
+}
+#endif
+
+/* RDP Subsystem */
+#define rdd_init_params_t RDD_INIT_PARAMS
+#define rdd_ipv6_enable rdd_ipv6_config
+
+#define LAN0_TX_THREAD_NUMBER ETH0_TX_THREAD_NUMBER
+#define LAN1_TX_THREAD_NUMBER ETH1_TX_THREAD_NUMBER
+#define LAN2_TX_THREAD_NUMBER ETH2_TX_THREAD_NUMBER
+#define LAN3_TX_THREAD_NUMBER ETH3_TX_THREAD_NUMBER
+#define LAN4_TX_THREAD_NUMBER ETH4_TX_THREAD_NUMBER
+
+#define WAN_RX_NORMAL_DESCRIPTORS_ADDRESS GPON_RX_NORMAL_DESCRIPTORS_ADDRESS
+#define LAN0_RX_DESCRIPTORS_ADDRESS ETH0_RX_DESCRIPTORS_ADDRESS
+#define LAN1_RX_DESCRIPTORS_ADDRESS ETH1_RX_DESCRIPTORS_ADDRESS
+#define LAN2_RX_DESCRIPTORS_ADDRESS ETH2_RX_DESCRIPTORS_ADDRESS
+#define LAN3_RX_DESCRIPTORS_ADDRESS ETH3_RX_DESCRIPTORS_ADDRESS
+#define LAN4_RX_DESCRIPTORS_ADDRESS ETH4_RX_DESCRIPTORS_ADDRESS
+
+#define LAN0_RX_DIRECT_DESCRIPTORS_ADDRESS ETH0_RX_DIRECT_DESCRIPTORS_ADDRESS
+#define LAN1_RX_DIRECT_DESCRIPTORS_ADDRESS ETH1_RX_DIRECT_DESCRIPTORS_ADDRESS
+#define LAN2_RX_DIRECT_DESCRIPTORS_ADDRESS ETH2_RX_DIRECT_DESCRIPTORS_ADDRESS
+#define LAN3_RX_DIRECT_DESCRIPTORS_ADDRESS ETH3_RX_DIRECT_DESCRIPTORS_ADDRESS
+#define LAN4_RX_DIRECT_DESCRIPTORS_ADDRESS ETH4_RX_DIRECT_DESCRIPTORS_ADDRESS
+
+#define LAN0_RX_DIRECT_RUNNER_A_TASK_NUMBER ETH0_RX_DIRECT_RUNNER_A_TASK_NUMBER
+#define LAN1_RX_DIRECT_RUNNER_A_TASK_NUMBER ETH1_RX_DIRECT_RUNNER_A_TASK_NUMBER
+#define LAN2_RX_DIRECT_RUNNER_A_TASK_NUMBER ETH2_RX_DIRECT_RUNNER_A_TASK_NUMBER
+#define LAN3_RX_DIRECT_RUNNER_A_TASK_NUMBER ETH3_RX_DIRECT_RUNNER_A_TASK_NUMBER
+#define LAN4_RX_DIRECT_RUNNER_A_TASK_NUMBER ETH4_RX_DIRECT_RUNNER_A_TASK_NUMBER
+
+#define LAN0_RX_DIRECT_RUNNER_B_TASK_NUMBER ETH0_RX_DIRECT_RUNNER_B_TASK_NUMBER
+#define LAN1_RX_DIRECT_RUNNER_B_TASK_NUMBER ETH1_RX_DIRECT_RUNNER_B_TASK_NUMBER
+#define LAN2_RX_DIRECT_RUNNER_B_TASK_NUMBER ETH2_RX_DIRECT_RUNNER_B_TASK_NUMBER
+#define LAN3_RX_DIRECT_RUNNER_B_TASK_NUMBER ETH3_RX_DIRECT_RUNNER_B_TASK_NUMBER
+#define LAN4_RX_DIRECT_RUNNER_B_TASK_NUMBER ETH4_RX_DIRECT_RUNNER_B_TASK_NUMBER
+
+#define rdd_wan_physical_port_t BL_LILAC_RDD_WAN_PHYSICAL_PORT_DTE 
+#define RDD_WAN_PHYSICAL_PORT_GPON BL_LILAC_RDD_WAN_PHYSICAL_PORT_GPON
+#define RDD_WAN_PHYSICAL_PORT_ETH4 BL_LILAC_RDD_WAN_PHYSICAL_PORT_ETH4
+#define RDD_WAN_PHYSICAL_PORT_ETH5 BL_LILAC_RDD_WAN_PHYSICAL_PORT_ETH5
+#define RDD_WAN_PHYSICAL_PORT_ETH0 BL_LILAC_RDD_WAN_PHYSICAL_PORT_ETH0
+#define RDD_WAN_PHYSICAL_PORT_EPON BL_LILAC_RDD_WAN_PHYSICAL_PORT_EPON
+
+#define rdd_mac_table_size_t BL_LILAC_RDD_MAC_TABLE_SIZE_DTE
+#define RDD_MAC_TABLE_SIZE_32 BL_LILAC_RDD_MAC_TABLE_SIZE_32
+#define RDD_MAC_TABLE_SIZE_64 BL_LILAC_RDD_MAC_TABLE_SIZE_64
+#define RDD_MAC_TABLE_SIZE_128 BL_LILAC_RDD_MAC_TABLE_SIZE_128
+#define RDD_MAC_TABLE_SIZE_256 BL_LILAC_RDD_MAC_TABLE_SIZE_256
+#define RDD_MAC_TABLE_SIZE_512 BL_LILAC_RDD_MAC_TABLE_SIZE_512
+#define RDD_MAC_TABLE_SIZE_1024 BL_LILAC_RDD_MAC_TABLE_SIZE_1024
+#define RDD_MAC_TABLE_SIZE_2048 BL_LILAC_RDD_MAC_TABLE_SIZE_2048
+#define RDD_MAC_TABLE_SIZE_4096 BL_LILAC_RDD_MAC_TABLE_SIZE_4096
+
+/* CPU */
+#define RDD_PACKET_BUFFER_SIZE LILAC_RDD_RUNNER_PACKET_BUFFER_SIZE 
+#define RDD_PACKET_HEADROOM_OFFSET LILAC_RDD_PACKET_DDR_OFFSET 
+
+#define rdd_cpu_rx_meter BL_LILAC_RDD_CPU_METER_DTE 
+#define CPU_RX_METER_ID_0 BL_LILAC_RDD_CPU_METER_0
+#define CPU_RX_METER_ID_1 BL_LILAC_RDD_CPU_METER_1
+#define CPU_RX_METER_ID_2 BL_LILAC_RDD_CPU_METER_2
+#define CPU_RX_METER_ID_3 BL_LILAC_RDD_CPU_METER_3
+#define CPU_RX_METER_ID_4 BL_LILAC_RDD_CPU_METER_4
+#define CPU_RX_METER_ID_5 BL_LILAC_RDD_CPU_METER_5
+#define CPU_RX_METER_ID_6 BL_LILAC_RDD_CPU_METER_6
+#define CPU_RX_METER_ID_7 BL_LILAC_RDD_CPU_METER_7
+#define CPU_RX_METER_ID_8 BL_LILAC_RDD_CPU_METER_8
+#define CPU_RX_METER_ID_9 BL_LILAC_RDD_CPU_METER_9
+#define CPU_RX_METER_ID_10 BL_LILAC_RDD_CPU_METER_10
+#define CPU_RX_METER_ID_11 BL_LILAC_RDD_CPU_METER_11
+#define CPU_RX_METER_ID_12 BL_LILAC_RDD_CPU_METER_12
+#define CPU_RX_METER_ID_13 BL_LILAC_RDD_CPU_METER_13
+#define CPU_RX_METER_ID_14 BL_LILAC_RDD_CPU_METER_14
+#define CPU_RX_METER_ID_15 BL_LILAC_RDD_CPU_METER_15
+#define CPU_RX_METER_DISABLE BL_LILAC_RDD_CPU_METER_DISABLE
+
+#define rdd_cpu_tx_send_message f_rdd_cpu_tx_send_message
+
+#ifdef CONFIG_DHD_RUNNER
+#define RDD_CPU_TX_MESSAGE_DHD_MESSAGE LILAC_RDD_CPU_TX_MESSAGE_DHD_MESSAGE
+#endif
+
+#endif
+

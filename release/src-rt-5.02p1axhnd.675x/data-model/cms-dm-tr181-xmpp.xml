@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2014" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.XMPP." shortObjectName="Dev2XmppObject" specSource="TR181" profile="Device2_XMPPBasic:1" requirements="P" supportLevel="Present" oid="1900" />
+  <description source="TRx">The XMPP represents the XMPP capabilities of the device.</description>
+
+  <parameter name="ConnectionNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_XMPPBasic:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the Connection table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.XMPP.Connection.{i}." shortObjectName="Dev2XmppConnObject" specSource="TR181" profile="Device2_XMPPBasic:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">The Connection represents a XMPP connection between the device and a server. The Username, Domain and Resource comprise the full identity (JabberID) of this Connection for this device. At most one entry in this table (regardless of whether or not it is enabled) can exist with a given value for Alias. On creation of a new table entry, the CPE MUST choose an initial value for Alias such that the new entry does not conflict with any existing entries. At most one enabled entry in this table can exist with all the same values for Username, Domain and Resource.&#10; </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_XMPPBasic:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this Connection. This parameter is based on ''ifAdminStatus'' from RFC2863.</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_XMPPBasic:1" requirements="W" supportLevel="NotSupported" defaultValue="cpe-conn" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. An initial unique value MUST be assigned when the CPE creates an instance of this object.</description>
+
+  <parameter name="Username" type="string" specSource="TR181" profile="Device2_XMPPBasic:1" requirements="W" supportLevel="ReadWrite" maxLength="256" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The proposed local-part of the Jabber ID of this Connection, and the value to be used to authenticate this Connection when making a connection to the Server using the procedure outlined in [Section 6/RFC6120].</description>
+
+  <parameter name="Password" type="string" specSource="TR181" profile="Device2_XMPPBasic:1" requirements="W" supportLevel="ReadWrite" maxLength="256" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Password used to authenticate this Connection when making a connection to the Server using the procedure outlined in [Section 6/RFC6120]. Note that on a factory reset of the CPE, the value of this parameter might be reset to its factory value. If an ACS modifies the value of this parameter, it SHOULD be prepared to accommodate the situation that the original value is restored as the result of a factory reset.When read, this parameter returns an empty string, regardless of the actual value.</description>
+
+  <parameter name="Domain" type="string" specSource="TR181" profile="Device2_XMPPBasic:1" requirements="W" supportLevel="ReadWrite" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The proposed domain-part of the Jabber ID of this Connection.</description>
+
+  <parameter name="Resource" type="string" specSource="TR181" profile="Device2_XMPPBasic:1" requirements="W" supportLevel="ReadWrite" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The proposed resource-part of the Jabber ID of this Connection.</description>
+
+  <parameter name="JabberID" type="string" specSource="TR181" profile="Device2_XMPPBasic:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The complete Jabber ID as determined by the first-hop XMPP server at time of connection establishment. This Jabber ID will usually be the standard concatentation of the local-part (Username), domain-part (Domain), and resource-part (Resource) as defined in [Section 2.1/RFC6120] (local-part@domain-part/resource-part), but since the Jabber ID is owned by the first-hop XMPP Server there are cases where the value will be different.</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_XMPPBasic:1" requirements="R" supportLevel="ReadOnly" defaultValue="Down" validValuesArray="IfOperStatusValues" />
+    <description source="TRx">The current operational state of this Connection (see [Section 4.2.2/TR-181i2]). When Enable is false then Status SHOULD normally be Disabled or Error if there is a fault condition on the interface). When Enable is changed to true then Status SHOULD change to Enabled if and only if the interface is able to transmit and receive PDUs; it SHOULD change to Dormant if and only if the interface is operable but is waiting for external actions before it can transmit and receive network traffic (and subsequently change to Enabled if still operable when the expected actions have completed); it SHOULD change to Unknown if the state of the interface can not be determined for some reason.</description>
+
+  <parameter name="LastChangeDate" type="dateTime" specSource="TR181" profile="Device2_XMPPBasic:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">The date and time at which this Connection entered into its current operational state.</description>
+
+  <parameter name="ServerConnectAlgorithm" type="string" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="W" supportLevel="ReadWrite" defaultValue="DNS-SRV" validValuesArray="XmppServerAlgorithm" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The algorithm the Connection uses when connecting with the associated lists of servers. Enumeration of: - DNS (Use the connection algorithm as specified in [Section 3.2/RFC6120] where the value of the Domain parameter is used to look up the DNS entry) - ServerTable (Use the instances of the Server table based on the values of the Server.{i}.Priority and Server.{i}.Weight parameters as the basis for reconnect. Instances must be reachable and reachable instances with the lowest value MUST be preferred).</description>
+
+  <parameter name="KeepAliveInterval" type="long" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of seconds that keep alive events as specified in [Section 4.6.1/RFC6120] are sent by this Connection. A value of 0 disables the keep alive functionality. A value of -1 indicates that the keep alive interval is a vendor specific implementation. [Section 4.6.4/RFC6120] recommends not checking more frequently than every 5 minutes (or 300 seconds).</description>
+
+  <parameter name="ServerRetryMaxInterval" type="unsignedInt" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="W" supportLevel="ReadWrite" defaultValue="3600" alwaysWriteToConfigFile="true" />
+    <description source="TRx">This parameter defines the interval between reconnection attempts, in seconds, based on the following: Once the exponential back-off algorithm defined in [Section 3.3/RFC6120] has been reached for all the XMPP servers, a Device MUST continue to reconnect with the list of Servers based on the value of this ServerRetryMaxInterval. If the value of this parameter is greater than 0 and the value calculated by the exponential back-off algorithm defined in [Section 3.3/RFC6120] exceeds the value of this parameter then the Device MUST utilize the value of this parameter in the next retry attempt for the server. NOTE: A value of 0 means that this parameter is effectively disabled.</description>
+
+  <parameter name="ServerRetryAttempts" type="int" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="W" supportLevel="ReadWrite" defaultValue="16" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of times that this Connection attempts to connect using a Server before trying another Server. A value -1 indicates that this Connection MUST not attempt to reconnect with a Server upon failure.</description>
+
+  <parameter name="UseTLS" type="boolean" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" alwaysWriteToConfigFile="true" />
+    <description source="TRx">This parameter allows an ACS to configure whether or not this XMPP Connection is required to use TLS independent of whether or not the XMPP Server that is being connected to is configured for TLS &quot;mandatory-to-negotiate&quot;. If the value of UseTLS is true then the CPE will initiate TLS negotiation if not required to by the XMPP Server. If the value of UseTLS is false then the CPE will not initiate TLS negotiation if not required to by the XMPP Server.</description>
+
+  <parameter name="TLSEstablished" type="boolean" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter represents the TLS state of this XMPP Connection. If this XMPP Connection is established and is secured by TLS then the value of this parameter is true. If this XMPP Connection is either not established or established but not secured by TLS then the value of this parameter is false.</description>
+
+  <parameter name="ServerNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the Server table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.XMPP.Connection.{i}.Server.{i}." shortObjectName="Dev2XmppConnServerObject" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">The Server represents a XMPP server to be used for a Connection. At most one entry in this table (regardless of whether or not it is enabled) can exist with a given value for Alias. On creation of a new table entry, the CPE MUST choose an initial value for Alias such that the new entry does not conflict with any existing entries. At most one enabled entry in this table can exist with the same values for ServerAddress and Port.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this Server. This parameter is based on ''ifAdminStatus'' from RFC2863.</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-conn-server" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. An initial unique value MUST be assigned when the CPE creates an instance of this object.</description>
+
+  <parameter name="Priority" type="unsignedInt" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The priority of this Server that is used by the Connection when determining the Server to connect. The Connection MUST contact the Server with the lowest-numbered priority that the Connection can reach as defined in [RFC2782]. The selection of Servers with the same Priority value utilizes the Weight parameter to determine which Server is selected by the Connection.</description>
+
+  <parameter name="Weight" type="int" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" alwaysWriteToConfigFile="true" />
+    <description source="TRx">This parameter specifies a relative weight for entries with the same Priority. The mechanism is defined in [RFC2782]. A value of -1 indicates that the implementation of this parameter is specific to the Vendor.</description>
+
+  <parameter name="ServerAddress" type="string" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Fully Qualified Domain Name (FQDN) or IP address of the XMPP server for this Connection.</description>
+
+  <parameter name="Port" type="unsignedInt" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="W" supportLevel="ReadWrite" defaultValue="5222" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Port number of the XMPP server for this Connection.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.XMPP.Connection.{i}.Stats." shortObjectName="Dev2XmppConnStatsObject" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">XMPP Connection statistics information for this resource.</description>
+
+  <parameter name="ReceivedMessages" type="unsignedInt" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The number of XMPP Messages of any type that have been received on this Connection.</description>
+
+  <parameter name="TransmittedMessages" type="unsignedInt" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The number of XMPP Messages of any type that have been transmitted on this Connection.</description>
+
+  <parameter name="ReceivedErrorMessages" type="unsignedInt" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The number of Errored XMPP Messages of any type that have been received on this Connection.</description>
+
+  <parameter name="TransmittedErrorMessages" type="unsignedInt" specSource="TR181" profile="Device2_XMPPAdvanced:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The number of XMPP Messages of any type that have been transmitted by this Connection where a response to the message from the peer was an Error.</description>
+
+
+<vsaInfo>
+
+<validstringarray name="IfOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+<validstringarray name="XmppServerAlgorithm" />
+  <element>DNS-SRV</element>
+  <element>ServerTable</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_XMPPBasic:1" /> 
+<profile name="Device2_XMPPAdvanced:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

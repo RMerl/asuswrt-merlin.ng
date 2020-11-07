@@ -1,0 +1,10 @@
+config BCM_CLEDS_PROC_DRIVER
+	tristate "Broadcom CLED  Proc Driver"
+	default n
+
+config BCM_CLEDS_PROC_DRIVER_IMPL
+	int "Implementation index for Broadcom CLED Proc driver"
+	depends on BCM_CLEDS_PROC_DRIVER
+	default 1 
+
+

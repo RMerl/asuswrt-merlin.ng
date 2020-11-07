@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="TR98" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="TR181" profile="Unspecified" supportLevel="Present" />
+  <description source="TRx">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DLNA." shortObjectName="Dev2DlnaObject" specSource="TR181" profile="Device2_DLNA:1" requirements="P" supportLevel="NotSupported" oid="1670" />
+  <description source="TRx">This object contains all DLNA related objects and parameters. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DLNA.Capabilities." shortObjectName="Dev2DlnaCapabilitiesObject" specSource="TR181" profile="Device2_DLNA:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">DLNA capabilities. </description>
+
+  <parameter name="HNDDeviceClass" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Comma-separated list (maximum length 256) of strings.  Indicates the supported DLNA Home Network Device Classes {{bibref|DLNA-NDIG|Table 4-1}}. </description>
+
+  <parameter name="DeviceCapability" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Comma-separated list (maximum length 256) of strings.  Indicates the supported DLNA Device Capabilities {{bibref|DLNA-NDIG|Table 4-2}}. </description>
+
+  <parameter name="HIDDeviceClass" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Comma-separated list (maximum length 256) of strings.  Indicates the supported DLNA Home Infrastructure Device Classes {{bibref|DLNA-NDIG|Table 4-4}}. </description>
+
+  <parameter name="ImageClassProfileID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Comma-separated list (maximum length 256) of strings.  Indicates the DLNA Image Class Profile IDs supported by this device, from Tables 5-2 and 5-3 of {{bibref|DLNA-NDIG}}. </description>
+
+  <parameter name="AudioClassProfileID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Comma-separated list (maximum length 256) of strings.  Indicates the DLNA Audio Class Profile IDs supported by this device, from Tables 5-4 through 5-10 of {{bibref|DLNA-NDIG}}. </description>
+
+  <parameter name="AVClassProfileID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Comma-separated list (maximum length 256) of strings.  Indicates the DLNA AV Class Profile IDs supported by this device, from Tables 5-11 through 5-15 of {{bibref|DLNA-NDIG}}. </description>
+
+  <parameter name="MediaCollectionProfileID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Comma-separated list (maximum length 256) of strings.  Indicates the DLNA Media Collection Profile IDs supported by this device {{bibref|DLNA-NDIG|Table 5-16}}. </description>
+
+  <parameter name="PrinterClassProfileID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Comma-separated list (maximum length 256) of strings.  Indicates the DLNA Printer Class Profile IDs supported by this device {{bibref|DLNA-NDIG|Table 5-17}}. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_DLNA:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

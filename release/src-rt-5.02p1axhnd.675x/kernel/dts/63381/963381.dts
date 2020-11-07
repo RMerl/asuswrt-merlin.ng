@@ -1,0 +1,43 @@
+/*
+ * Broadcom BCM63138 Reference Board DTS
+ */
+
+/dts-v1/;
+
+#include "../bcm_963xx_template.dtsi"
+#include "../bcm_rsvdmem_32.dtsi"
+
+/ {
+	compatible = "brcm,bcm963381";
+	model = "Broadcom BCM963381";
+
+	/* Legacy UBUS base */
+	ubus@10000000 {
+		compatible = "simple-bus";
+		ranges = <0 0x10000000 0x6000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		nand@2000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,nand-bcm63xx", "brcm,brcmnand-v7.0";
+			reg = <0x2000 0x600>, <0x100 0x10>;
+			reg-names = "nand", "nand-int-base";
+			status = "okay";
+
+			nandcs@0 {
+				compatible = "brcm,nandcs";
+				reg = <0>;
+				nand-on-flash-bbt;
+			};
+
+		};
+
+		watchdog@e8 {
+			compatible = "brcm,bcm96xxx-wdt";
+			reg = <0xe8 0x10>;
+			timeout-sec = <80>;
+		};
+	};
+};

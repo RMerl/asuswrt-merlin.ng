@@ -1,0 +1,413 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2013" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.BondingGroup.{i}." shortObjectName="Dev2DslBondingGroupObject" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="MultipleInstances" oid="1090" />
+  <description source="TRx"> The DSL bonding data model is closely aligned with TR-159. Corresponds to TR-159 ''oBondingGroup''. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_BondedDSL:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables the bonding group. This parameter is based on ''ifAdminStatus'' from RFC2863. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" validValuesArray="ifOperStatusValues" />
+    <description source="TRx"> This parameter is based on ''ifOperStatus'' from RFC2863. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_BondedDSL:1" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-bondinggroup" maxLength="64" autoGenerateAlias="true" notifySskAliasChanged="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. An initial unique value MUST be assigned when the CPE creates an instance of this object. </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The textual name of the bonding group as assigned by the CPE. </description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in seconds since the bonding group entered its current operational state. </description>
+
+  <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" maxLength="1024" notifySskLowerLayersChanged="true" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Comma seperated list (maximum length 1024). Each list item must be the be the path name of an interface object that is stacked immediately below this interface object.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  See Section 4.2.1 of TR-181i2. </description>
+
+  <parameter name="GroupStatus" type="string" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" validValuesArray="dslBondingGroupStatusValues" />
+    <description source="TRx">Comma-separated list of strings. Indicates the current fault status of the DSL bonding group.  Enumeration of NoPeer, PeerPowerLoss, PeerBondSchemeMismatch and LowRate. Corresponds to TR-159 ''oBondingGroup.aGroupStatus''. </description>
+
+  <parameter name="GroupID" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">DSL bonding group ID.  Corresponds to TR-159 ''oBondingGroup.aGroupID''. </description>
+
+  <parameter name="BondSchemesSupported" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="ATM,Ethernet" validValuesArray="dslBondingSchemeValues" />
+    <description source="TRx">Comma-separated list of&#10;    strings. Supported DSL bonding schemes. Enumeration of ATM, Ethernet, TDIM. Corresponds to TR-159 ''oBondingGroup.aGroupBondSchemesSupported''. </description>
+
+  <parameter name="BondScheme" type="string" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" validValuesArray="dslBondingSchemeValues" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Currently operating bonding scheme.  Corresponds to TR-159 ''aGroupOperBondScheme''. </description>
+
+  <parameter name="GroupCapacity" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" defaultValue="2" minValue="1" maxValue="32" />
+    <description source="TRx">DSL bonding group capacity, i.e. the maximum number of channels that can be bonded in this group. Corresponds to  TR-159 ''oBondingGroup.aGroupCapacity''. </description>
+
+  <parameter name="RunningTime" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in seconds for which this bonding group has been operationally up.  Corresponds to  G.998.1,section 11.4.2 'Group Running Time'. </description>
+
+  <parameter name="TargetUpRate" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Desired upstream data rate in bits per seconds for this DSL bonding group (zero indicates best effort). Corresponds to  TR-159 ''oBondingGroup.aGroupTargetUpRate''. </description>
+
+  <parameter name="TargetDownRate" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Desired downstream data rate in bits per seconds for DSL bonding group (zero indicates best effort). Corresponds to  TR-159 ''oBondingGroup.aGroupTargetDownRate''. </description>
+
+  <parameter name="ThreshLowUpRate" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">Threshold upstream data rate in bits per seconds for this DSL bonding group.  GroupStatus will include  LowRate,GroupStatus whenever the upstream rate is less than this threshold.  Corresponds to TR-159  ''oBondingGroup.aGroupThreshLowUpRate''. </description>
+
+  <parameter name="ThreshLowDownRate" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" defaultValue="0" />
+    <description source="TRx">Threshold downstream data rate in bits per second for this DSL bonding group.  GroupStatus will include LowRate,GroupStatus whenever the downstream rate is less than this threshold.  Corresponds to TR-159  'oBondingGroup.aGroupThreshLowDownRate'. </description>
+
+  <parameter name="UpstreamDifferentialDelayTolerance" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The maximum upstream differential delay in milliseconds among member links in a bonding group.  Corresponds to  G.998.1,section 11.4.1 ''Differential Delay Tolerance''. </description>
+
+  <parameter name="DownstreamDifferentialDelayTolerance" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The maximum downstream differential delay in milliseconds among member links in a bonding group.  Corresponds to  G.998.1,section 11.4.1 ''Differential Delay Tolerance''. </description>
+
+  <parameter name="BondedChannelNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" minValue="1" maxValue="32" />
+    <description source="TRx">Number of entries in Bonded Channel table. Corresponds to TR-159 'oBondingGroup.aGroupNumChannels'. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.BondingGroup.{i}.BondedChannel.{i}." shortObjectName="Dev2DslBondingGroupBondedChannelObject" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">DSL bonded channel table. Each table entry represents a bonded channel within the bonding group, and is&#10;  associated with exactly one Channel object instance. There MUST be an instance of this object for each DSL channel that is bonded. When a object .Channel is no longer bonded, then the CPE MUST delete the corresponding this object instance. However, when a bonded&#10;  object .Channel becomes disabled, the channel remains bonded and so the corresponding this object instance MUST NOT be deleted. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-bondedchannel" maxLength="64" autoGenerateAlias="true" notifySskAliasChanged="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. An initial unique value MUST be assigned when the CPE creates an instance of this object. </description>
+
+  <parameter name="Channel" type="string" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" maxLength="256" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The value MUST be the path name of the row in DSL.channel.  This is the channel that is being bonded. This is read-only because bonding is expected to be configured by the CPE, not by the ACS. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.BondingGroup.{i}.BondedChannel.{i}.Ethernet." shortObjectName="Dev2DslBondingGroupBondedChannelEthernetObject" specSource="TR181" profile="Device2_BondedDSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Per-channel G.998.2 Ethernet-based bonding parameters. This object MUST be present if, and only if, BondScheme is  Ethernet,.BondScheme. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.BondingGroup.{i}.BondedChannel.{i}.Ethernet.Stats." shortObjectName="Dev2DslBondingGroupBondedChannelEthernetStatsObject" specSource="TR181" profile="Device2_BondedDSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx"> The CPE MUST reset the Stats parameters&#10;  either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's Status parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's parameter .Enable parameter transitions from false to true). Administrative and operational interface status is discussed in TR-181i2,section 4.2.2. </description>
+
+  <parameter name="UnderflowErrorsSent" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of underflow errors sent, i.e. on the transmit side of the interface. </description>
+
+  <parameter name="CRCErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of CRC errors received, i.e. on the receive side of the interface. </description>
+
+  <parameter name="AlignmentErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of alignment errors received, i.e. on the receive side of the interface. </description>
+
+  <parameter name="ShortPacketsReceived" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of short packets received, i.e. on the receive side of the interface. </description>
+
+  <parameter name="LongPacketsReceived" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of long packets received, i.e. on the receive side of the interface. </description>
+
+  <parameter name="OverflowErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of overflow errors received, i.e. on the receive side of the interface. </description>
+
+  <parameter name="PauseFramesReceived" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of pause frames received, i.e. on the receive side of the interface. </description>
+
+  <parameter name="FramesDropped" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of frames dropped, e.g. because the receive queue is full. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.BondingGroup.{i}.Stats." shortObjectName="Dev2DslBondingGroupStatsObject" specSource="TR181" profile="Device2_BondedDSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Throughput statistics for this interface. The CPE MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's parameter .Status parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's parameter .Enable parameter transitions from false to true). Administrative and operational interface status is discussed inTR-181i2,section 4.2.2. </description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted out of the interface, including framing characters.  </description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received on the interface, including framing characters.  </description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets transmitted out of the interface. </description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received on the interface. </description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets that could not be transmitted because of errors.  </description>
+
+  <parameter name="ErrorsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets that contained errors preventing them from being delivered to a higher-layer protocol.  </description>
+
+  <parameter name="UnicastPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets requested for transmission which were not addressed to a multicast or broadcast address at this layer, including those that were discarded or not sent.  </description>
+
+  <parameter name="UnicastPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received packets, delivered by this layer to a higher layer, which were not addressed to a multicast or broadcast address at this layer.  </description>
+
+  <parameter name="DiscardPacketsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space.  </description>
+
+  <parameter name="DiscardPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets which were chosen to be discarded even though no errors had been detected to  prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space.  </description>
+
+  <parameter name="MulticastPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets that higher-level protocols requested for transmission and which were addressed to a multicast address at this layer, including those that were discarded or not sent. </description>
+
+  <parameter name="MulticastPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received packets, delivered by this layer to a higher layer, which were addressed to a multicast address at this layer. </description>
+
+  <parameter name="BroadcastPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets that higher-level protocols requested for transmission and which were addressed to a broadcast address at this layer, including those that were discarded or not sent. </description>
+
+  <parameter name="BroadcastPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received packets, delivered by this layer to a higher layer, which were addressed to a broadcast address at this layer. </description>
+
+  <parameter name="UnknownProtoPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received via the interface which were discarded because of an unknown or unsupported  protocol. </description>
+
+  <parameter name="TotalStart" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx"> Note: this parameter SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="CurrentDayStart" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx"> Statistics SHOULD continue to be accumulated across CPE reboots, though this might not always be possible. Note: this parameter SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="QuarterHourStart" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx"> Statistics SHOULD continue to be accumulated across CPE reboots, though this might not always be possible. Note: this parameter SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.BondingGroup.{i}.Stats.Total." shortObjectName="Dev2DslBondingGroupStatsTotalObject" specSource="TR181" profile="Device2_BondedDSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Total statistics for this bonding group. Note: The Stats.Total parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="FailureReasons" type="string" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" validValuesArray="dslBondingFailureReasonValues" />
+    <description source="TRx">Comma-separated list of values.  Indicates the failure conditions that have occurred during the accumulation period.  Corresponds to G.998.1,section 11.4.3 ''Current Group Failure Reason''. </description>
+
+  <parameter name="UpstreamRate" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The achieved upstream data rate in bits per second (which might change subject to dynamic link usage conditions).  Corresponds to G.998.1,section 11.4.2 ''Achieved Aggregate Data Rate''. </description>
+
+  <parameter name="DownstreamRate" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The achieved downstream data rate in bits per second (which might change subject to dynamic link usage conditions).   Corresponds to G.998.1,section 11.4.2 ''Achieved Aggregate Data Rate''. </description>
+
+  <parameter name="UpstreamPacketLoss" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The total number of upstream packets that were lost at aggregation output from a bonding group during the  accumulation period.  Corresponds to G.998.1,section 11.4.2 ''Group Rx Cell Loss Count''. </description>
+
+  <parameter name="DownstreamPacketLoss" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The total number of downstream packets that were lost at aggregation output from a bonding group during the  accumulation period.  Corresponds to G.998.1,section 11.4.2 ''Group Rx Cell Loss Count''. </description>
+
+  <parameter name="UpstreamDifferentialDelay" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The achieved upstream differential delay in milliseconds (which might change subject to dynamic link usage  conditions). </description>
+
+  <parameter name="DownstreamDifferentialDelay" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The achieved downstream differential delay in millionseconds (which might change subject to dynamic link usage  conditions). </description>
+
+  <parameter name="FailureCount" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The number of times that the group was declared ''Unavailable'' during the accumulation period.  Corresponds to  G.998.1,Section 11.4.3 ''Group Failure Count''. </description>
+
+  <parameter name="ErroredSeconds" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time in seconds during which the group was declared ''Errored'' during the accumulation period. Corresponds to TR-159 ''oBondingGroup.aGroupPerf**ES''. </description>
+
+  <parameter name="SeverelyErroredSeconds" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time in seconds during which the group was declared ''SeverelyErrored'' during the accumulation period.  Corresponds to TR-159 ''oBondingGroup.aGroupPerf**SES''. </description>
+
+  <parameter name="UnavailableSeconds" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time in seconds during which the group was declared ''Unavailable'' during the accumulation period.  Corresponds to TR-159 ''oBondingGroup.aGroupPerf**UAS''. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.BondingGroup.{i}.Stats.CurrentDay." shortObjectName="Dev2DslBondingGroupStatsCurrentDayObject" specSource="TR181" profile="Device2_BondedDSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Current day statistics for this bonding group. Note: This object's parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="FailureReasons" type="string" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" validValuesArray="dslBondingFailureReasonValues" />
+    <description source="TRx">Comma-separated list of values.  Indicates the failure conditions that have occurred during the accumulation period.  Corresponds to G.998.1,section 11.4.3 ''Current Group Failure Reason''. </description>
+
+  <parameter name="UpstreamRate" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The achieved upstream data rate in bits per second (which might change subject to dynamic link usage conditions).  Corresponds to G.998.1,section 11.4.2 ''Achieved Aggregate Data Rate''. </description>
+
+  <parameter name="DownstreamRate" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The achieved downstream data rate in bits per second (which might change subject to dynamic link usage conditions).   Corresponds to G.998.1,section 11.4.2 ''Achieved Aggregate Data Rate''. </description>
+
+  <parameter name="UpstreamPacketLoss" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The total number of upstream packets that were lost at aggregation output from a bonding group during the  accumulation period.  Corresponds to G.998.1,section 11.4.2 ''Group Rx Cell Loss Count''. </description>
+
+  <parameter name="DownstreamPacketLoss" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The total number of downstream packets that were lost at aggregation output from a bonding group during the  accumulation period.  Corresponds to G.998.1,section 11.4.2 ''Group Rx Cell Loss Count''. </description>
+
+  <parameter name="UpstreamDifferentialDelay" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The achieved upstream differential delay in milliseconds (which might change subject to dynamic link usage  conditions). </description>
+
+  <parameter name="DownstreamDifferentialDelay" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The achieved downstream differential delay in milliseconds (which might change subject to dynamic link usage  conditions). </description>
+
+  <parameter name="FailureCount" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The number of times that the group was declared ''Unavailable'' during the accumulation period.  Corresponds to  G.998.1,Section 11.4.3 ''Group Failure Count''. </description>
+
+  <parameter name="ErroredSeconds" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time in seconds during which the group was declared ''Errored'' during the accumulation period. Corresponds to TR-159 ''oBondingGroup.aGroupPerf**ES''. </description>
+
+  <parameter name="SeverelyErroredSeconds" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time in seconds during which the group was declared ''SeverelyErrored'' during the accumulation period.  Corresponds to TR-159 ''oBondingGroup.aGroupPerf**SES''. </description>
+
+  <parameter name="UnavailableSeconds" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time in seconds during which the group was declared ''Unavailable'' during the accumulation period.  Corresponds to TR-159 ''oBondingGroup.aGroupPerf**UAS''. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.BondingGroup.{i}.Stats.QuarterHour." shortObjectName="Dev2DslBondingGroupStatsQuarterHourObject" specSource="TR181" profile="Device2_BondedDSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Current quarter hour statistics for this bonding group. Note: This object parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="FailureReasons" type="string" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" validValuesArray="dslBondingFailureReasonValues" />
+    <description source="TRx">Comma-separated list of values.  Indicates the failure conditions that have occurred during the accumulation period.  Corresponds to G.998.1,section 11.4.3 ''Current Group Failure Reason''. </description>
+
+  <parameter name="UpstreamRate" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The achieved upstream data rate in bits per second (which might change subject to dynamic link usage conditions).  Corresponds to G.998.1,section 11.4.2 ''Achieved Aggregate Data Rate''. </description>
+
+  <parameter name="DownstreamRate" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The achieved downstream data rate in bits per second (which might change subject to dynamic link usage conditions).   Corresponds to G.998.1,section 11.4.2 ''Achieved Aggregate Data Rate''. </description>
+
+  <parameter name="UpstreamPacketLoss" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The total number of upstream packets that were lost at aggregation output from a bonding group during the  accumulation period.  Corresponds to G.998.1,section 11.4.2 ''Group Rx Cell Loss Count''. </description>
+
+  <parameter name="DownstreamPacketLoss" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The total number of downstream packets that were lost at aggregation output from a bonding group during the  accumulation period.  Corresponds to G.998.1,section 11.4.2 ''Group Rx Cell Loss Count''. </description>
+
+  <parameter name="UpstreamDifferentialDelay" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The achieved upstream differential delay in milliseconds (which might change subject to dynamic link usage  conditions). </description>
+
+  <parameter name="DownstreamDifferentialDelay" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The achieved downstream differential delay in milliseconds (which might change subject to dynamic link usage  conditions). </description>
+
+  <parameter name="FailureCount" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">The number of times that the group was declared ''Unavailable'' during the accumulation period.  Corresponds to  G.998.1,Section 11.4.3 ''Group Failure Count''. </description>
+
+  <parameter name="ErroredSeconds" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time in seconds during which the group was declared ''Errored'' during the accumulation period. Corresponds to TR-159 ''oBondingGroup.aGroupPerf**ES''. </description>
+
+  <parameter name="SeverelyErroredSeconds" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time in second during which the group was declared ''SeverelyErrored'' during the accumulation period.  Corresponds to TR-159 ''oBondingGroup.aGroupPerf**SES''. </description>
+
+  <parameter name="UnavailableSeconds" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time in seconds during which the group was declared ''Unavailable'' during the accumulation period.  Corresponds to TR-159 ''oBondingGroup.aGroupPerf**UAS''. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.BondingGroup.{i}.Ethernet." shortObjectName="Dev2DslBondingGroupEthernetObject" specSource="TR181" profile="Device2_BondedDSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Ethernet-based bonding parameters G.998.2. This object MUST be present if, and only if, BondScheme is Ethernet,BondScheme. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DSL.BondingGroup.{i}.Ethernet.Stats." shortObjectName="Dev2DslBondingGroupEthernetStatsObject" specSource="TR181" profile="Device2_BondedDSL:1" requirements="P" supportLevel="Present" />
+  <description source="TRx"> The CPE MUST reset the Stats parameters either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's .Status parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's .Enable parameter transitions from false to true). Administrative and operational interface status is discussed in TR-181i2,section 4.2.2. </description>
+
+  <parameter name="PAFErrors" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Number of PAF errors.  Corresponds to TR-159 ''oBondETH.aEthRxErrors''. </description>
+
+  <parameter name="PAFSmallFragments" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of PAF Small Fragment events.  Corresponds to TR-159  ''oBondETH.aEthRxSmallFragments''. </description>
+
+  <parameter name="PAFLargeFragments" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of PAF Large Fragment events. Corresponds to TR-159  ''oBondETH.aEthRxLargeFragments''. </description>
+
+  <parameter name="PAFBadFragments" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of PAF Bad Fragment events. Corresponds to TR-159  ''oBondETH.aEthRxBadFragments''. </description>
+
+  <parameter name="PAFLostFragments" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Number of PAF Lost Fragment events. Corresponds to TR-159  ''oBondETH.aEthRxLostFragments''. </description>
+
+  <parameter name="PAFLateFragments" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of PAF Late Fragment events. </description>
+
+  <parameter name="PAFLostStarts" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of PAF Lost Start events. Corresponds to TR-159 ''oBondETH.aEthRxLostStarts''. </description>
+
+  <parameter name="PAFLostEnds" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of PAF Lost End events. Corresponds to TR-159 ''oBondETH.aEthRxLostEnds''. </description>
+
+  <parameter name="PAFOverflows" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of PAF Overflow events. Corresponds to TR-159 ''oBondETH.aEthRxOverflows''. </description>
+
+  <parameter name="PauseFramesSent" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of pause frames sent, i.e. on the transmit side of the interface. </description>
+
+  <parameter name="CRCErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of CRC errors received, i.e. on the receive side of the interface. </description>
+
+  <parameter name="AlignmentErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of alignment errors received, i.e. on the receive side of the interface. </description>
+
+  <parameter name="ShortPacketsReceived" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of short packets received, i.e. on the receive side of the interface. </description>
+
+  <parameter name="LongPacketsReceived" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">Number of long packets received, i.e. on the receive side of the interface. </description>
+
+  <parameter name="OverflowErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Number of overflow errors received, i.e. on the receive side of the interface. </description>
+
+  <parameter name="FramesDropped" type="unsignedInt" specSource="TR181" profile="Device2_BondedDSL:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Number of frames dropped, e.g. because the receive queue is full. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="dslBondingFailureReasonValues" />
+  <element>LowRate</element>
+  <element>ExcessiveDelay</element>
+  <element>InsufficientBuffers</element>
+  <element>Other</element>
+
+<validstringarray name="dslBondingGroupStatusValues" />
+  <element>NoPeer</element>
+  <element>PeerPowerLoss</element>
+  <element>PeerBondSchemeMismatch</element>
+  <element>LowRate</element>
+  <element>None</element>
+
+<validstringarray name="dslBondingSchemeValues" />
+  <element>ATM</element>
+  <element>Ethernet</element>
+  <element>TDIM</element>
+
+<validstringarray name="ifOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_BondedDSL:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

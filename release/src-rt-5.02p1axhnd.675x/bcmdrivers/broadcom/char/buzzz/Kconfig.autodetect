@@ -1,0 +1,32 @@
+menu "Broadcom BUZZZ Tool"
+
+config BUZZZ
+	bool "Broadcom BUZZZ Tool Framework"
+	depends on BCM_KF_BUZZZ
+	default n
+	help
+	  Enable kernel tools framework: event/performance/function call tracing
+
+config BUZZZ_FUNC
+	bool "Broadcom BUZZZ Func Tool"
+	depends on BUZZZ
+	default n
+	help
+	  Enable Function tracing tool
+
+config BUZZZ_PMON
+	bool "Broadcom BUZZZ PMON Tool"
+	depends on BUZZZ
+	default n
+	help
+	  Enable performance monitoring tool
+
+config BUZZZ_KEVT
+	bool "Broadcom BUZZZ Kernel Event Tracing Tool"
+	depends on BUZZZ
+	default n
+	help
+	  Enable Kernel Event Tracing tool
+
+endmenu
+

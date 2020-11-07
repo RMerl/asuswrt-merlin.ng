@@ -1,0 +1,11 @@
+#*******************************************
+#  Copyright (c) 2014  Broadcom
+#  All Rights Reserved
+#******************************************/
+
+This directory is a placeholder for DSL project specific RDD files. As initial version, it can contain the sources and
+header files from //depot/CommEngine/prod/PROD_416L/shared/broadcom/rdp/impl2/rdd/.
+Please note that this directory also includes auto-generated files (by table-manager), which are updated during firmware
+build. After they are changed, they should be submitted to P4. 
+
+Makefile should not be changed.

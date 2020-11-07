@@ -1,0 +1,588 @@
+#
+# Makefile for the Broadcom DSLCPE's WLAN modules.
+#
+ifeq ($(MAKECMDGOALS),version_info)
+obj := $(BRCMDRIVERS_DIR)/broadcom/net/wl/$(LN_NAME)
+else
+infoout := 1
+endif
+
+define info_out
+	$(if $(infoout),$(info $(1)))
+endef
+
+FILTER_OUT = $(foreach v,$(2),$(if $(findstring $(1),$(v)),,$(v)))
+
+#
+# The default configuration to use
+# this is selectable, please change according to 
+# the desired configuration
+#
+wlaltbld := $(shell echo $(CONFIG_BCM_WLALTBLD))
+
+ifeq ($(strip $(BRCM_CHIP)),6368)
+ ifeq ($(strip $(wlaltbld)),)
+  wlaltbld := ap_2gn
+ else
+  ifeq ($(strip $(wlaltbld)),default)
+   wlaltbld := ap_2gn
+  endif
+ endif
+else # not 6368
+ ifeq ($(strip $(wlaltbld)),)
+  wlaltbld := ap_2nv
+ else
+  ifeq ($(strip $(wlaltbld)), default)
+   IMPL=$(CONFIG_BCM_WLAN_IMPL)
+   ifneq ($(WL),)
+    IMPL=$(patsubst IMPL%,%,$(WL))  
+   endif
+   ifeq ($(shell if [ $(IMPL) -ge 14 ]; then echo 1; else echo 0; fi),1)
+    wlaltbld := ap_2nv
+   else
+    wlaltbld := ap_2n
+   endif
+  endif
+ endif
+endif
+$(call info_out, ===========makefile.wlan.src CONFIG_BCM_WLALTBLD=$(CONFIG_BCM_WLALTBLD)  wlaltbld=$(wlaltbld) ===========)
+
+export DEFAULT_CONFIG := wlconfig_lx_wl_dslcpe_pci_$(wlaltbld)
+
+# the following line forces EXTRA_CFLAGS to be recursivley defined variable
+# (which is required by all of the WL builds).
+ifneq ($(EXTRA_CFLAGS),)
+$(call info_out, EXTRA_CFLAGS IS NOT EMPTY ($(EXTRA_CFLAGS)))
+endif
+EXTRA_CFLAGS =
+
+# Add -wapi for smd and wapi build, to generate final default config
+DEFAULT_CONFIG_EXT := $(DEFAULT_CONFIG)
+subver := 
+ifeq ($(strip $(CONFIG_BCM_WAPI)),y)
+$(call info_out, ===========WAPI enable ==========)
+DEFAULT_CONFIG_EXT := $(addsuffix -wapi, $(DEFAULT_CONFIG_EXT))
+subver +=-wapi
+endif
+ifeq ($(strip $(CONFIG_DEBUG_KERNEL)),y)
+$(call info_out, ===========Kernel Hacking enable ==========)
+DEFAULT_CONFIG_EXT := $(addsuffix -kdb, $(DEFAULT_CONFIG_EXT))
+subver +=-kdb
+endif
+
+ifeq ($(strip $(RELEASE_BUILD)), 1)
+export BRAND_LAST_CONFIG=zlast_
+export LASTBUILDBRANDCAP=z_
+export DEFAULT_CONFIG_EXT_ORI := $(DEFAULT_CONFIG_EXT)
+endif
+
+# generate version suffix
+empty=
+space=$(empty) $(empty)
+subver := $(subst $(space),,$(subver))
+
+#
+#open objects are provided source format
+#
+# OPEN_OBJS ?=  ../shared/impl1/wl_linux_dslcpe.o
+
+#OPEN_OBJS should be consisten with WLFILES:Should be auto filtered
+OPEN_OBJS += main/src/shared/bcmsrom.o main/src/shared/linux_osl.o main/src/shared/bcmutils.o
+
+ifeq ($(USE_WLAN_SHARED), 1)
+      ifeq ($(WL_SHARED_AVAIL), 1)   
+          DSLCPE_WLFILES += wl_linux_dslcpe.c wl_pktc.c wl_wfd.c wl_blog.c wl_thread.c wl_spdsvc.c
+      endif
+else
+      DSLCPE_WLFILES += wl_linux_dslcpe.c wl_dslcpe_pktc.c
+endif
+
+#
+#excluded files which is not part of the driver
+#
+EXCLUDED_FILES := main/src/shared/wl_linux.c
+
+#
+#driver prefix
+#
+DRIVER_PREFIX=wl
+
+wldrv-objs :=
+use_lib :=
+
+#
+#DSL Linux Release Version
+#       
+EXTRA_CFLAGS += -DDSL_LINUX_VERSION_CODE=$(shell expr $(BRCM_VERSION) \* 65536 + $(BRCM_RELEASE) \* 256 + $(shell echo $(BRCM_EXTRAVERSION) | sed 's/^\([[:digit:]]*\).*/\1/'))
+
+ifeq ($(strip $(WLSRCBASE)),)
+###########################################
+#
+# the wl root dir executes only here
+#
+###########################################
+export ALLSRCBASE= $(obj)
+export WLSRCBASE= $(obj)/main/src
+export WLCFGDIR = $(obj)/main/src/wl/config
+export WLMAIN = main/src
+
+export WLBASE	= wl
+export SHBASE	= shared
+export SHWIFI	= shared/bcmwifi
+export COBASE	= bcmcrypto
+export EMFBASE  = emf/emf
+export IGSBASE  = emf/igs
+export NIGHTLY_WL := $(WL)
+
+ifeq ($(strip $(BRCM_CHIP)),6362)
+export OVERRIDEBASE = wl/sys/6362
+endif
+
+#setup $(INSTALL_DIR)/etc/wlan
+$(shell	if [ ! -d $(INSTALL_DIR)/etc/wlan ]; then \
+        rm -f $(INSTALL_DIR)/etc/wlan; \
+        install -d $(INSTALL_DIR)/etc/wlan; \
+        fi	;)
+
+ifeq ($(strip $(RELEASE_BUILD)), 1)
+# Get brands
+brands := $(shell cat $(ALLSRCBASE)/../wlbrands | sed -e 's/dr_wl_brands=//' -e 's/(//' -e 's/)//')
+ifneq ($(strip $(brands)),)
+# Create last build brand
+LASTBUILDBRAND=$(addprefix $(LASTBUILDBRANDCAP), $(lastword $(brands)))
+# Add prefix 'zlast_' with DEFAULT_CONFIG_EXT 
+DEFAULT_CONFIG_EXT := $(BRAND_LAST_CONFIG)$(DEFAULT_CONFIG_EXT)
+# Add prefix z_<last brand> on above
+DEFAULT_CONFIG_EXT := $(addprefix $(LASTBUILDBRAND)-, $(DEFAULT_CONFIG_EXT))
+endif
+endif		
+#setup and enumerate config files
+BUILDDIR = build
+WLDSLCPEPREFIX = wlconfig_lx_wl_dslcpe_
+export WLCFGPREFIX = $(WLDSLCPEPREFIX)pci_
+
+export BUILDDIRPREFIX = wlobj-
+export DEFAULT_OBJ_NAME=$(BUILDDIRPREFIX)$(DEFAULT_CONFIG_EXT)-$(BRCM_CHIP)-$(BCMARCH).o_save
+ifeq ($(strip $(RELEASE_BUILD)), 1)
+ifneq ($(strip $(brands)),)
+export DEFAULT_OBJ_NAME=$(BUILDDIRPREFIX)$(DEFAULT_CONFIG_EXT_ORI)-$(BRCM_CHIP)-$(BCMARCH).o_save
+endif
+endif
+
+#hardcoded relative path from builddir to the root dir
+export WLSRCBASE_REL = ../..
+
+#check if source is available
+export SOURCE_AVAIL= $(shell if [ -e $(obj)/$(WLMAIN)/wl/sys/wlc.c ]; then echo 1; else echo 0; fi ;)
+export WMF_AVAIL= $(shell if [ -e $(obj)/$(WLMAIN)/wl/sys/wlc_wmf.c ]; then echo 1; else echo 0; fi ;)
+export EMF_STAND_ALONE= $(shell if [ -e $(obj)/$(WLMAIN)/emf/Makefile ]; then echo 1; else echo 0; fi ;)
+export WL_SHARED_AVAIL = $(shell if [ -e $(ALLSRCBASE)/../shared/impl1/wl_linux_dslcpe.c ]; then echo 1; else echo 0; fi ;)
+
+#define name of the last to build dir
+LAST_TO_BUILD = z_$(WLCFGPREFIX)zdefault
+
+#setup build sub directory for each config
+$(shell install -d $(BUILDDIR))
+
+$(shell cd $(ALLSRCBASE)/..; ./make_version.sh $(WLSRCBASE) $(subver))
+include $(WLSRCBASE)/epivers
+export DSLCPE_WLAN_VERSION = $(EPI_VERSION_STR)
+EXTRA_CFLAGS += -DDSLCPE_WLAN_VERSION=\"$(DSLCPE_WLAN_VERSION)\"
+WLFLAGS += -DDSLCPE_WLAN_VERSION=\"$(DSLCPE_WLAN_VERSION)\"
+EXTRA_CFLAGS += -Wno-date-time
+#EXTRA_CFLAGS += $(BRCM_WERROR_CFLAGS)
+
+ifeq ($(strip $(SOURCE_AVAIL)), 1)
+   ifeq ($(strip $(RELEASE_BUILD)), 1)
+      $(call info_out, echo rel_wl_impl=${CONFIG_BCM_WLAN_IMPL})
+      $(shell echo rel_wl_impl=${CONFIG_BCM_WLAN_IMPL} > $(WLSRCBASE)/rimpl)
+      wl_config_files := $(filter $(WLCFGPREFIX)%, $(notdir $(wildcard $(WLSRCBASE)/$(WLBASE)/config/*)))
+
+      ifeq ($(strip $(CONFIG_BCM_WAPI)),y)
+          wl_config_files := $(addsuffix -wapi, $(wl_config_files))
+      endif
+
+      ifeq ($(strip $(CONFIG_DEBUG_KERNEL)),y)
+          wl_config_files := $(addsuffix -kdb, $(wl_config_files))
+      endif
+
+      $(call info_out, wl_config_files ===========$(wl_config_files)===================)
+
+ifneq ($(strip $(brands)),)
+      #Add BRAND_LAST_CONFIG to create build directory
+      wl_config_files_tmp := $(addprefix $(BRAND_LAST_CONFIG), $(findstring $(DEFAULT_CONFIG_EXT_ORI), $(wl_config_files)))
+      wl_config_files := $(filter-out $(DEFAULT_CONFIG_EXT_ORI), $(wl_config_files))
+      wl_config_files += $(wl_config_files_tmp)
+
+      # Add prefix for last brand and create new brand profiles brands_with_last
+      # Remove last brand
+      brands_with_last=$(filter-out $(word $(words $(brands)), $(brands)), $(brands))
+      # Add prefix'd last brand
+      brands_with_last+=$(addprefix $(LASTBUILDBRANDCAP), $(lastword $(brands)))
+      
+      #Add tag from brands
+      wl_config_files := $(foreach brand, $(brands_with_last), $(addprefix $(brand)-, $(wl_config_files)))
+      export start_brand_build := 1
+endif
+   else
+      wl_config_files = $(DEFAULT_CONFIG_EXT)
+   endif
+
+   ifeq ($(strip $(WMF_AVAIL)), 1)
+      $(foreach config, $(wl_config_files), \
+      $(shell install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(EMFBASE); \
+      install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(IGSBASE)))
+   endif
+
+   ifeq ($(USE_WLAN_SHARED), 1)
+   ifeq ($(strip $(WL_SHARED_AVAIL)), 1)
+      $(shell install -d $(ALLSRCBASE)/$(BUILDDIR)/shared/impl1)
+      $(shell ln -sf $(ALLSRCBASE)/../shared/impl1/*.c $(ALLSRCBASE)/$(BUILDDIR)/shared/impl1/.)
+   endif
+   endif
+
+   ###install phymods dirs ###
+   wl_phymods_dirs := $(foreach dir, $(wildcard $(WLSRCBASE)/wl/phymods/*), $(wildcard $(dir)/*))
+   phymods_dirs := $(wl_phymods_dirs:$(WLSRCBASE)/wl/%=%)
+   $(foreach config, $(wl_config_files), \
+   $(foreach dir, $(phymods_dirs), $(shell install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(WLBASE)/$(dir))))
+
+   $(foreach config, $(wl_config_files), \
+   $(shell install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config); \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(COBASE); \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(SHBASE); \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(SHWIFI)/src; \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(WLBASE); \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(WLBASE)/dump/src; \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(WLBASE)/sys; \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(WLBASE)/phy; \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(WLBASE)/clm/src; \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(WLBASE)/iocv/src; \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(WLBASE)/keymgmt/src; \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(WLBASE)/ppr/src; \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(WLBASE)/olpc/src; \
+   ln -sf $(WLSRCBASE_REL)/Makefile $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/Makefile; \
+   chmod 777 -R  $(ALLSRCBASE)/$(BUILDDIR)))
+   
+   $(foreach config, $(wl_config_files), \
+   $(if $(filter %$(PROXYARP),1),\
+   $(shell install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/proxyarp;\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/router;\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/router/proxyarp;)))
+
+   ifneq ($(strip $(OVERRIDEBASE)),)
+      $(foreach config, $(wl_config_files), \
+      $(shell install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(OVERRIDEBASE); \
+      install -d $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(config)/$(WLMAIN)/$(OVERRIDEBASE)))
+   endif   
+   
+   #sym link to the default config, this should be the last directory to build
+   #define a virtual build configuration as the last one to build
+   export LAST_TO_BUILD_DIR = $(ALLSRCBASE)/$(BUILDDIR)/$(BUILDDIRPREFIX)$(LAST_TO_BUILD)
+
+   $(shell rm -f $(BUILDDIRPREFIX)$(config)$(DEFAULT_CONFIG_EXT) $(LAST_TO_BUILD_DIR))   
+      
+   #####test, for built in ######
+   ifneq ($(strip $(CONFIG_BCM_WLAN)),y)   
+      #add to wl_config_files
+      $(shell ln -sf $(BUILDDIRPREFIX)$(config)$(DEFAULT_CONFIG_EXT) $(LAST_TO_BUILD_DIR))   
+      wl_config_files += $(LAST_TO_BUILD)
+   endif
+   #####test, for built in ######
+   
+   #enum dirs
+   wl_subdirs = $(foreach dir, $(wildcard $(ALLSRCBASE)/$(BUILDDIR)/*), $(lastword $(subst $(BRCM_CHIP)/, , $(dir)))/)
+
+   wl_subdirs := $(call FILTER_OUT,dhdobj, $(wl_subdirs))
+   wl_subdirs := $(call FILTER_OUT,shared, $(wl_subdirs))
+   $(call info_out, ===========wl_subdirs = $(wl_subdirs)===================)
+   #make the build sub-folders
+   obj-$(CONFIG_BCM_WLAN) += $(wl_subdirs)
+   ifeq ($(strip $(EMF_STAND_ALONE)), 1)
+   obj-$(CONFIG_BCM_WLAN) += $(WLMAIN)/emf/ 
+   endif
+
+else  #not source_avail
+   include $(WLCFGDIR)/$(DEFAULT_CONFIG)
+   include $(WLCFGDIR)/wl.mk
+   ifeq ($(strip $(EMF_STAND_ALONE)), 1)
+   obj-$(CONFIG_BCM_WLAN) += $(WLMAIN)/emf/
+   endif
+
+   obj-$(CONFIG_BCM_WLAN) += $(DRIVER_PREFIX).o
+   $(DRIVER_PREFIX)-objs += $(WLMAIN)/$(DRIVER_PREFIX)_dep.o  $(OPEN_OBJS)
+   $(obj)/$(WLMAIN)/$(DRIVER_PREFIX)_dep.o: build_maps
+	  cp -f $(WLSRCBASE)/$(DEFAULT_OBJ_NAME) $(obj)/$(WLMAIN)/$(DRIVER_PREFIX)_dep.o
+endif
+	
+else
+
+# This wlan makefile is reentrant, and EXTRA_CFLAGS is cleared before
+# we hit this point.  Redefining version here
+EXTRA_CFLAGS += -DDSLCPE_WLAN_VERSION=\"$(DSLCPE_WLAN_VERSION)\"
+EXTRA_CFLAGS += -Wno-date-time
+#EXTRA_CFLAGS += $(BRCM_WERROR_CFLAGS)
+
+###########################################
+#
+# the build sub dirs execute here
+#
+###########################################
+$(call info_out, ===building $(obj) wireless driver===)      
+ifeq ($(strip $(RELEASE_BUILD)), 1)
+    # Get brands
+    brands := $(shell cat $(ALLSRCBASE)/../wlbrands | sed -e 's/dr_wl_brands=//' -e 's/(//' -e 's/)//')
+    ifneq ($(strip $(brands)),)
+        # Create last build brand
+        LASTBUILDBRAND=$(addprefix $(LASTBUILDBRANDCAP), $(lastword $(brands)))
+        # Add prefix 'zlast_' with DEFAULT_CONFIG_EXT 
+        DEFAULT_CONFIG_EXT := $(BRAND_LAST_CONFIG)$(DEFAULT_CONFIG_EXT)
+        # Add prefix  z_<last brand> on above
+        DEFAULT_CONFIG_EXT := $(addprefix $(LASTBUILDBRAND)-, $(DEFAULT_CONFIG_EXT))
+    endif
+endif
+
+   ifeq ($(strip $(LAST_TO_BUILD_DIR)), $(strip $(obj)))
+       ifneq ($(strip $(CONFIG_BCM_WLAN)),y)
+          ifeq ($(strip $(RELEASE_BUILD)), 1)
+       	     $(shell touch $(WLSRCBASE)/$(DRIVER_PREFIX).o)
+       	     $(shell ln -f $(WLSRCBASE)/$(DRIVER_PREFIX).o $(obj)/../$(BUILDDIRPREFIX)$(config)$(DEFAULT_CONFIG_EXT)/$(WLMAIN)/$(DRIVER_PREFIX).o)
+ 	     include $(WLCFGDIR)/$(DEFAULT_CONFIG)
+             include $(WLCFGDIR)/wl.mk
+             obj-$(CONFIG_BCM_WLAN) += $(DRIVER_PREFIX).o
+             $(DRIVER_PREFIX)-objs += $(DRIVER_PREFIX)_dep.o  $(OPEN_OBJS)
+             $(obj)/$(DRIVER_PREFIX)_dep.o: build_maps
+	     cp -f $(WLSRCBASE)/$(DEFAULT_OBJ_NAME) $(obj)/$(DRIVER_PREFIX)_dep.o
+          endif
+       else
+             $(call info_out, echo $(strip $(CONFIG_BCM_WLAN)) do nothing)
+             #do nothing
+       endif
+   else
+      ifeq ($(strip $(RELEASE_BUILD)), 1)
+      	   obj-$(CONFIG_BCM_WLAN) += $(notdir $(obj)).o
+      else
+	   obj-$(CONFIG_BCM_WLAN) += $(DRIVER_PREFIX).o	
+      endif
+
+      # Find the base config file name
+      dir_tmp:=$(strip $(subst $(BUILDDIRPREFIX), ,$(notdir $(obj))))
+      dir_tmp := $(subst -wapi,,$(dir_tmp))
+      dir_tmp := $(subst -kdb,,$(dir_tmp))
+
+      ifeq ($(strip $(RELEASE_BUILD)), 1)
+         ifneq ($(strip $(brands)),)
+            #Strip brand 
+            cur_brand := $(strip $(foreach brand, $(brands), $(findstring $(brand)-, $(dir_tmp))))
+            #Remove brand and 'z_'
+            dir_tmp := $(subst $(cur_brand),,$(dir_tmp))
+            dir_tmp := $(subst $(LASTBUILDBRANDCAP),,$(dir_tmp))
+            #Strip 'zlast' tag to get name of build config file
+            dir_tmp := $(subst $(BRAND_LAST_CONFIG),,$(dir_tmp))
+            #From 'XXX-' remove '-'
+            cur_brand := $(subst -,,$(cur_brand))
+            ifeq ($(strip $(start_brand_build)), 1)      
+               dummy_shell := $(shell cp -rf $(ALLSRCBASE)/../impl${CONFIG_BCM_WLAN_IMPL}-$(cur_brand)/* $(ALLSRCBASE)/../impl${CONFIG_BCM_WLAN_IMPL})
+               export start_brand_build=0
+            endif
+            dir_last_tmp :=$(findstring $(BRAND_LAST_CONFIG), $(obj))
+            ifneq ($(strip $(dir_last_tmp)),)
+               #Meet 'zlast', next brand should be used in next turn 
+               export start_brand_build=1
+            endif
+         endif
+      endif
+      include $(WLCFGDIR)/$(dir_tmp)
+      #include $(WLCFGDIR)/$(strip $(subst $(BUILDDIRPREFIX), ,$(notdir $(obj))))
+      include $(WLCFGDIR)/wl.mk
+      ifeq ($(strip $(RELEASE_BUILD)), 1)
+      	   $(notdir $(obj))-objs = $(wldrv-objs)
+      else
+           $(DRIVER_PREFIX)-objs = $(wldrv-objs)
+      endif	   
+
+      ###########################################
+      #
+      # build library here
+      #
+      ###########################################
+      #automatic collect files to if not using library
+      #include all files
+      wl_files += $(wildcard $(WLSRCBASE)/$(WLBASE)/sys/*.c $(WLSRCBASE)/$(WLBASE)/phy/*.c $(WLSRCBASE)/$(WLBASE)/clm/src/*.c $(WLSRCBASE)/$(WLBASE)/ppr/src/*.c $(WLSRCBASE)/$(WLBASE)/olpc/src/*.c $(WLSRCBASE)/$(SHBASE)/*.c  $(WLSRCBASE)/$(SHWIFI)/src/*.c $(WLSRCBASE)/$(COBASE)/*.c $(WLSRCBASE)/$(WLBASE)/keymgmt/src/*.c $(WLSRCBASE)/$(WLBASE)/dump/src/*.c)
+
+      ###########################################
+      #
+      # build phymods archive
+      #
+      ###########################################
+      #include phymods files
+      ar_phymods_files += $(foreach file, $(PHY_SRC) $(PHY_SRC_LO) $(PHY_SRC_HI) , $(WLSRCBASE)/../$(file) )
+
+      ifneq ($(strip $(ar_phymods_files)),)
+          phymods_obj   += $(ar_phymods_files:.c=.o)
+          phymods_short_named_files = $(subst $(ALLSRCBASE)/, , $(ar_phymods_files))
+          $(foreach file, $(phymods_short_named_files), $(eval $(shell echo files=$( phymods_short_named_files:.o=.c); test ! -e $(obj)/$(file) && ln -sf $(ALLSRCBASE)/$(file) $(obj)/$(file))))
+          ARCHIVE_FILE += $(obj)/phymods.a
+
+          ifeq ($(strip $(RELEASE_BUILD)), 1)
+            $(notdir $(obj))-objs += phymods.a
+          else
+            $(DRIVER_PREFIX)-objs += phymods.a
+          endif
+      endif
+
+      #### build phymods archive end ####
+
+      ifeq ($(strip $(EMF_STAND_ALONE)), 0)
+        wl_files += $(wildcard $(WLSRCBASE)/$(EMFBASE)/*.c $(WLSRCBASE)/$(IGSBASE)/*.c)
+      endif
+
+      ifeq ($(PROXYARP), 1)   
+        wl_files += $(wildcard $(WLSRCBASE)/proxyarp/*.c)
+        wl_files += $(wildcard $(WLSRCBASE)/router/proxyarp/*.c)
+      endif
+
+       wl_files += $(wildcard $(WLSRCBASE)/$(WLBASE)/iocv/src/*.c) 
+
+      ifeq ($(WLOLPC), 1)   
+        wl_files += $(wildcard $(WLSRCBASE)/$(WLBASE)/olpc/src/*.c)
+      endif
+      ifneq ($(strip $(OVERRIDEBASE)),)
+         #replacing files from OVERRODEBASE
+         subst_files = $(notdir $(wildcard $(WLSRCBASE)/$(OVERRIDEBASE)/*.c))
+         orig_files = $(foreach file, $(subst_files), $(wildcard $(WLSRCBASE)/$(WLBASE)/sys/$(file)))
+         
+         wl_files_after_remove_orig = $(filter-out $(orig_files), $(wl_files))
+         wl_files := $(wl_files_after_remove_orig)
+         wl_files += $(wildcard $(WLSRCBASE)/$(OVERRIDEBASE)/*.c)   
+      endif
+      ifeq ($(USE_WLAN_SHARED), 1)
+      ifeq ($(WL_SHARED_AVAIL), 1)   
+        wl_files += $(wildcard $(ALLSRCBASE)/../shared/impl1/wl_*.c)
+	wl_files += $(ALLSRCBASE)/../shared/impl1/bcmsromio.c
+      endif
+      endif
+
+      WLFILES += $(DSLCPE_WLFILES)
+
+      #find all the files specified in WLFILES
+      full_named_files=$(foreach file, $(WLFILES), $(filter %$(file),$(wl_files)))
+
+      #strip leading paths to this dir
+      unsorted_short_named_files = $(subst $(ALLSRCBASE)/, , $(full_named_files))
+      short_named_files=$(sort $(unsorted_short_named_files))
+      
+      #remove exceptions files
+      wl_drivers_files = $(foreach file, $(short_named_files), $(filter-out $(foreach unwanted, $(EXCLUDED_FILES), $(unwanted)), $(file)))  
+   
+      #translate suffix from .c to .o
+      wl_drivers_object_files = $(wl_drivers_files:.c=.o)
+      
+      #add each file, instead of a long string, make it easy to kernel build procedure
+      wldrv-objs += $(foreach m_object, $(wl_drivers_object_files),$(firstword $(m_object)))
+
+      #
+      # create sw link for the build dirs, invoked from build dirs
+      #
+      $(foreach file, $(wl_drivers_files), $(eval $(shell echo files=$(wldrv-objs:.o=.c); test ! -e $(obj)/$(file) && ln -sf $(ALLSRCBASE)/$(file) $(obj)/$(file))))
+   
+      #
+      # build the driver library
+      #
+      ifeq ($(strip $(RELEASE_BUILD)), 1)
+          $(obj)/$(notdir $(obj)).o: build_library
+	  	if [ "$(strip $(RELEASE_BUILD))" = "1" -a "$(strip $(brands))" != "" ]; then \			
+		   cp -f $(obj)/wldrvlib.o $(WLSRCBASE)/$(notdir $(BUILDDIRPREFIX)$(dir_tmp))-$(BRCM_CHIP)-$(BCMARCH).o_save; \
+		   rm -f $(WLSRCBASE)/$(notdir $(obj))-$(BRCM_CHIP)-$(BCMARCH).o_save; \
+		   if [ "$(strip $(dir_last_tmp))" != "" ]; then \
+			cp -rf $(ALLSRCBASE)/../impl${CONFIG_BCM_WLAN_IMPL}/* $(ALLSRCBASE)/../impl${CONFIG_BCM_WLAN_IMPL}-$(cur_brand); \
+		   fi; \
+		fi
+      else
+          $(obj)/$(DRIVER_PREFIX).o: build_library build_maps
+      endif
+
+      # open objects are not included in the library
+      wl_lib_objects = $(foreach file, $(wl_drivers_object_files), $(filter-out $(foreach unwanted, $(OPEN_OBJS), $(unwanted)), $(file)))
+      #$(error $(wl_lib_objects))
+
+      .PHONY : build_library 
+      build_library: $(addprefix $(obj)/, $(wl_lib_objects)) $(ARCHIVE_FILE)
+	$(LD) $(ld_flags) -r -o $(obj)/wldrvlib.o  $^
+	cp -f $(obj)/wldrvlib.o $(WLSRCBASE)/$(notdir $(obj))-$(BRCM_CHIP)-$(BCMARCH).o_save
+
+      $(call info_out, WLFILES = $(sort $(WLFILES)))
+      $(call info_out, WLFLAGS = $(sort $(WLFLAGS)))
+      $(call info_out, EXTRA_CFLAGS = $(sort $(EXTRA_CFLAGS)))   
+      $(call info_out, wldrv-objs= $(wl_drivers_object_files))	
+      $(call info_out, ===============================)
+   endif
+endif
+
+#
+# ARCHIVE_FILE phymods.a file
+#
+$(obj)/phymods.a:  $(addprefix $(obj)/, $(phymods_short_named_files:.c=.o))
+	$(AR) -rcs $@ $^
+	$(RANLIB) $@
+
+#
+# srom files
+#
+SROM_MAP_PATH := $(BRCMDRIVERS_DIR)/broadcom/net/wl/shared/impl1/srom
+
+ifeq ($(strip $(BRCM_CHIP)),47189)
+# don't need nvramvars anymore when use ENVRAM.
+SUPPORTED_VARS := 
+SUPPORTED_NVRAMVARS := 
+
+build_maps :
+
+build_vars_map :
+
+else
+SUPPORTED_VARS := bcm4331
+SUPPORTED_NVRAMVARS := bcmcmn bcm4360 bcm43602 bcm43522 bcm4352 bcm4365 bcm4366 bcm43664 bcm43666 bcm43217 bcm4363
+
+build_maps : build_vars_map build_srom_map build_nvramvars_map
+
+build_vars_map : $(SROM_MAP_PATH)/$(SUPPORTED_VARS)_vars.bin
+
+endif
+
+$(SROM_MAP_PATH)/%_vars.bin: $(SROM_MAP_PATH)/%_vars.c
+	rm -f $@
+	if [ ! -e ${@:.bin=.c} ]; then \
+		ln -sf $< ${@:.bin=.c}; \
+	fi ;
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DCONFIG_BCM9$(BRCM_CHIP) -c -o ${@:.bin=.o} ${@:.bin=.c}
+	$(OBJCOPY) -j .data -O binary ${@:.bin=.o} $@
+	install -d $(INSTALL_DIR)/etc/wlan
+	install -m 755 $@ $(INSTALL_DIR)/etc/wlan
+
+build_srom_map : $(addprefix $(SROM_MAP_PATH)/bcm, $(addsuffix _map.bin,$(SUPPORTED_CHIPS)))
+
+$(SROM_MAP_PATH)/bcm%_map.bin: $(SROM_MAP_PATH)/bcm%_map.c
+	rm -f $@
+	if [ ! -e ${@:.bin=.c} ]; then \
+		ln -sf $<  ${@:.bin=.c}; \
+	fi ;
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DCONFIG_BCM9$(BRCM_CHIP) -c -o ${@:.bin=.o} ${@:.bin=.c}
+	$(OBJCOPY) -j .data -O binary ${@:.bin=.o} $@
+	install -d $(INSTALL_DIR)/etc/wlan
+	install -m 755 $@ $(INSTALL_DIR)/etc/wlan
+
+build_nvramvars_map : $(addprefix $(SROM_MAP_PATH)/, $(addsuffix _nvramvars.bin, $(SUPPORTED_NVRAMVARS))) $(addprefix $(SROM_MAP_PATH)/, $(addsuffix _nvramvars.bin, $(SUPPORTED_NVRAMVARS_ADDITIONAL)))
+
+$(SROM_MAP_PATH)/%_nvramvars.bin: $(SROM_MAP_PATH)/%_nvramvars.c 
+	rm -f $@
+	if [ -e $< ]; then \
+		ln -sf $< ${@:.bin=.c}; \
+		$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -DCONFIG_BCM9$(BRCM_CHIP) -c -o ${@:.bin=.o} ${@:.bin=.c}; \
+		$(OBJCOPY) -j .data -O binary ${@:.bin=.o} $@; \
+		install -d $(INSTALL_DIR)/etc/wlan; \
+		install -m 755 $@ $(INSTALL_DIR)/etc/wlan; \
+	fi ;
+
+version_info:
+	@echo $(shell echo "wl:"; cat $(WLSRCBASE)/epivers; cat $(WLSRCBASE)/rver;)

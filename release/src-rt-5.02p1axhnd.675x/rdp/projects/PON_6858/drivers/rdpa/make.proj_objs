@@ -1,0 +1,91 @@
+#*************************************
+#
+#  Copyright (c) 2014  Broadcom
+#  All Rights Reserved
+#
+#*************************************
+
+RDPA_OBJS += rdpa_types.o
+RDPA_OBJS += rdpa_common.o
+RDPA_OBJS += rdpa_common_ex.o
+RDPA_OBJS += rdpa_rdd_map.o
+RDPA_OBJS += rdpa_cpu.o
+RDPA_OBJS += rdpa_cpu_ex.o
+RDPA_OBJS += rdpa_vlan_action.o
+RDPA_OBJS += rdpa_vlan_action_ex.o
+RDPA_OBJS += rdpa_policer.o
+RDPA_OBJS += rdpa_policer_ex.o
+RDPA_OBJS += rdpa_vlan.o
+RDPA_OBJS += rdpa_tunnel.o
+RDPA_OBJS += rdpa_vlan_ex.o
+RDPA_OBJS += rdpa_ip_class_ex.o
+RDPA_OBJS += rdpa_natc_common_ex.o
+RDPA_OBJS += rdpa_ip_class.o
+RDPA_OBJS += rdpa_l2_common.o
+RDPA_OBJS += rdpa_l2l3_common.o
+RDPA_OBJS += rdpa_l2l3_common_ex.o
+RDPA_OBJS += rdpa_l2_class_ex.o
+RDPA_OBJS += rdpa_l2_class.o
+RDPA_OBJS += rdpa_iptv_ex.o
+RDPA_OBJS += rdpa_iptv.o
+RDPA_OBJS += rdpa_filter.o
+RDPA_OBJS += rdpa_filter_ex.o
+RDPA_OBJS += rdpa_qos_mapper.o
+RDPA_OBJS += rdpa_qos_mapper_ex.o
+RDPA_OBJS += rdpa_tc_to_queue.o
+RDPA_OBJS += rdpa_tc_to_queue_ex.o
+RDPA_OBJS += rdpa_pbit_to_queue.o
+RDPA_OBJS += rdpa_pbit_to_queue_ex.o
+RDPA_OBJS += rdpa_pbit_to_gem.o
+RDPA_OBJS += rdpa_dscp_to_pbit.o
+RDPA_OBJS += rdpa_dscp_to_pbit_ex.o
+RDPA_OBJS += rdpa_gem.o
+RDPA_OBJS += rdpa_gem_ex.o
+RDPA_OBJS += rdpa_tcont.o
+RDPA_OBJS += rdpa_tcont_ex.o
+RDPA_OBJS += rdpa_mllid.o
+RDPA_OBJS += rdpa_mllid_ex.o
+RDPA_OBJS += rdpa_llid.o
+RDPA_OBJS += rdpa_llid_ex.o
+RDPA_OBJS += rdpa_bridge.o
+RDPA_OBJS += rdpa_bridge_ex.o
+RDPA_OBJS += rdpa_egress_tm.o
+RDPA_OBJS += rdpa_egress_tm_ex.o
+RDPA_OBJS += rdpa_ingress_class.o
+RDPA_OBJS += rdpa_ingress_class_ex.o
+RDPA_OBJS += rdpa_port_ex.o
+RDPA_OBJS += rdpa_port.o
+RDPA_OBJS += rdpa_system_ex.o
+RDPA_OBJS += rdpa_system.o
+RDPA_OBJS += rdpa_system_hw_cfg.o
+RDPA_OBJS += rdpa_wlan_mcast.o
+RDPA_OBJS += rdpa_wlan_mcast_ex.o
+RDPA_OBJS += rdpa_dhd_helper.o
+RDPA_OBJS += rdpa_dhd_helper_ex.o
+RDPA_OBJS += rdpa_dhd_sim.o
+RDPA_OBJS += rdpa_spdtest_common.o
+
+ifeq ("$(CONFIG_SYSTEM)", "sim")
+RDPA_OBJS += rdpa_spdsvc.o
+RDPA_OBJS += rdpa_spdsvc_ex.o
+RDPA_OBJS += rdpa_spdtest_common_ex.o
+RDPA_OBJS += rdpa_tcpspdtest.o
+RDPA_OBJS += rdpa_tcpspdtest_ex.o
+RDPA_OBJS += rdpa_udpspdtest.o
+RDPA_OBJS += rdpa_udpspdtest_ex.o
+endif
+
+ifeq ("$(CONFIG_SYSTEM)", "linux")
+ifneq ("$(CONFIG_BCM_SPDSVC)","")
+RDPA_OBJS += rdpa_spdsvc.o
+RDPA_OBJS += rdpa_spdsvc_ex.o
+endif
+ifneq ("$(CONFIG_BCM_SPDTEST)","")
+RDPA_OBJS += rdpa_spdtest_common_ex.o
+RDPA_OBJS += rdpa_tcpspdtest.o
+RDPA_OBJS += rdpa_tcpspdtest_ex.o
+RDPA_OBJS += rdpa_udpspdtest.o
+RDPA_OBJS += rdpa_udpspdtest_ex.o
+endif
+endif
+

@@ -1,0 +1,136 @@
+.TH UBINIZE 8 "September 2016" "mtd-utils"
+.SH NAME
+ubinize \- a tool for generating UBI images
+.SH SYNOPSIS
+.B ubinize
+[-o filename] [-p <bytes>] [-m <bytes>] [-s <bytes>] [-O <num>] [-e <num>]
+[-x <num>] [-Q <num>] [-v] [-h] [-V] [--output=<filename>] [--peb-size=<bytes>]
+[--min-io-size=<bytes>] [--sub-page-size=<bytes>] [--vid-hdr-offset=<num>]
+[--erase-counter=<num>] [--ubi-ver=<num>] [--image-seq=<num>] [--verbose]
+[--help] [--version] ini-file
+.SH DESCRIPTION
+An UBI image may contain one or more UBI volumes which have to be defined in
+the input configuration ini-file. The ini file defines all the UBI volumes \-
+their characteristics and the contents, but it does not define the
+characteristics of the flash the UBI image is generated for. Instead, the
+flash characteristics are defined via the command-line options. Note, if not
+sure about some of the command-line parameters, do not specify them and let
+the utility use default values.
+.SH OPTIONS
+.TP
+.BR \-o , " \-\-output=\fIfile\fP"
+Specify output file
+.TP
+.BR \-p , " \-\-peb\-size=\fIbytes\fP"
+Size of the physical eraseblock of the flash this UBI image is created for
+in bytes, kilobytes (KiB), or megabytes (MiB). This parameter is mandatory.
+.TP
+.BR \-m , " \-\-min\-io-size=\fIbytes\fP"
+Minimum input/output unit size of the flash in bytes
+.TP
+.BR \-s , " \-\-sub\-page\-size=\fIbytes\fP"
+Minimum input/output unit used for UBI headers, e.g. sub-page size in case
+of NAND flash (equivalent to the minimum input/output unit size by default).
+.TP
+.BR \-O , " \-\-vid\-hdr\-offset=\fInum\fP"
+Offset if the VID header from start of the physical eraseblock (default is the
+next minimum I/O unit or sub-page after the EC header)
+.TP
+.BR \-e , " \-\-erase\-counter=\fInum\fP"
+The erase counter value to put to EC headers (default is 0).
+.TP
+.BR \-x , " \-\-ubi\-ver=\fInum\fP"
+UBI version number to put to EC headers (default is 1).
+.TP
+.BR \-Q , " \-\-image\-seq=\fInum\fP"
+32-bit UBI image sequence number to use (by default a random number is picked).
+.TP
+.BR \-v , " \-\-verbose"
+Be verbose.
+.TP
+.BR \-h , " \-\-help"
+Print a help message and exit.
+.TP
+.BR \-V , " \-\-version"
+Print program version and exit.
+.SH EXAMPLE
+ubinize -o ubi.img -p 16KiB -m 512 -s 256 cfg.ini
+
+Create UBI image \fIubi.img\fP as described by configuration file
+\fIcfg.ini\fP.
+
+A physical erase block on the flash is \fI16KiB\fP in size and has \fI512\fP
+byte pages with \fI256\fP byte sub-pages.
+.SH INI-FILE FORMAT
+The input configuration ini-file describes all the volumes which have to
+be included to the output UBI image. Each volume is described in its own
+section which may be named arbitrarily. The section consists on
+"key=value" pairs, for example:
+.PP
+.in +4n
+.nf
+[jffs2\-volume]
+mode=ubi
+image=../jffs2.img
+vol_id=1
+vol_size=30MiB
+vol_type=dynamic
+vol_name=jffs2_volume
+vol_flags=autoresize
+vol_alignment=1
+.fi
+.in
+
+This example configuration file tells the utility to create an UBI image
+with one volume with ID 1, volume size 30MiB, the volume is dynamic, has
+name \fIjffs2_volume\fP, \fIautoresize\fP volume flag, and alignment 1.
+
+The \fBimage=../jffs2.img\fP line tells the utility to take the contents of
+the volume from the \fB../jffs2.img\fP file. The size of the image file has
+to be less or equivalent to the volume size (30MiB).
+
+The \fBmode=ubi\fP line is mandatory and just tells that the section describes
+an UBI volume \- other section modes may be added in the future.
+
+Notes:
+.IP \[bu] 4
+Size in vol_size might be specified kilobytes (KiB), megabytes (MiB),
+gigabytes (GiB) or bytes (no modifier).
+.IP \[bu]
+If "vol_size" key is absent, the volume size is assumed to be
+equivalent to the size of the image file (defined by "image" key).
+.IP \[bu]
+If the "image" is absent, the volume is assumed to be empty
+.IP \[bu]
+Volume alignment must not be greater than the logical eraseblock size.
+.IP \[bu]
+One ini file may contain arbitrary number of sections, the utility will
+put all the volumes which are described by these section to the output
+UBI image file.
+.SH AUTHORS
+.nf
+Man page written by David Oberhollenzer, based on the help text of
+the ubinize utility written by Artem Bityutskiy and Oliver Lohmann.
+.fi
+.SH REPORTING BUGS
+Report mtd-utils bugs to the Linux mtd mailing list.
+.TP
+Linux mtd mailing list: <linux-mtd@lists.infradead.org>
+.TP
+Linux mtd home page: <http://www.linux-mtd.infradead.org/>
+.SH AVAILABILITY
+The ubinize command is part of the mtd-utils package and is available from
+ftp://ftp.infradead.org/pub/mtd-utils/.
+.SH COPYRIGHT
+Copyright \(co International Business Machines Corp., 2006
+.br
+Copyright \(co 2008 Nokia Corporation
+.br
+Copyright \(co 2016 sigma star gmbh
+
+License GPLv2: GNU GPL version 2 <http://gnu.org/licenses/gpl2.html>.
+.br
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+.SH SEE ALSO
+.BR mkfs.jffs2 (1)

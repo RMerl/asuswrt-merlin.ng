@@ -1,0 +1,12 @@
+interface nas_0_37 {
+        send ia-pd 0;
+};
+
+#
+#br0 gets 3ffe:ffff:100:0::/64
+#because sla-id = 0
+id-assoc pd {
+        prefix-interface br0 {
+                sla-id 0;
+        };
+};

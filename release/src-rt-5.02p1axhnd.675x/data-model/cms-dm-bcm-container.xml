@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Ltd, 2017" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_Container." shortObjectName="ContainerObject" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" supportLevel="Present" oid="3500" pruneWriteToConfigFile="true" lockZone="6" />
+  <description source="TRx">Object represents software container technology running in the system.</description>
+
+  <parameter name="ContainerNumberOfEntries" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="BROADCOM">The number of entries in the Container table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_Container.ContainerInfo.{i}." shortObjectName="ContainerInfoObject" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+  <description source="TRx">This object contains information about the container.</description>
+
+  <parameter name="Standard" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="32" validValuesArray="ContainerStandardValues" />
+    <description source="BROADCOM">A string describing the container standard.  Example is "Docker", "LXC" for Linux Containers.</description>
+
+  <parameter name="ExecEnvRef" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">This value is the full path name of a row in the ExecEnv table if container is associated with the execution environment. Not all container will have an association with an execution environment, in which case, this value will be an empty string.</description>
+
+  <parameter name="ReferencePath" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">This value is the full path of a row in a table that this container reference to. For example, it can be referenced to a table in ExecutionUnit table. Or it can be referenced to a table of images.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_Container.ContainerInfo.{i}.State." shortObjectName="ContainerStateObject" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="P" supportLevel="Present" pruneWriteToConfigFile="true" />
+  <description source="TRx">This object contains container state information.</description>
+
+  <parameter name="ID" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="64" />
+    <description source="BROADCOM">The unique identifier of container.</description>
+
+  <parameter name="Name" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="64" />
+    <description source="BROADCOM">The friendly name of container.</description>
+
+  <parameter name="Status" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" validValuesArray="ContainerStatusValues" />
+    <description source="BROADCOM">The status of container.</description>
+
+  <parameter name="PID" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="32" />
+    <description source="BROADCOM">The PID of container.</description>
+
+  <parameter name="CpuUse" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="32" />
+    <description source="BROADCOM">CPU usage with its unit in second.</description>
+
+  <parameter name="MemoryUse" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="32" />
+    <description source="BROADCOM">Memory usage with its uint in MiB.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_Container.ContainerInfo.{i}.Network." shortObjectName="ContainerNetworkObject" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="P" supportLevel="Present" pruneWriteToConfigFile="true" />
+  <description source="TRx">This object contains container network information.</description>
+
+  <parameter name="Interface" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="32" />
+    <description source="BROADCOM">The list of IPv4 addresses can be assessable to container. They are separated by comma delimeter.</description>
+
+  <parameter name="IPv4Addresses" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="255" />
+    <description source="BROADCOM">The list of IPv4 addresses can be assessable to container. They are separated by comma delimeter.</description>
+
+  <parameter name="IPv6Addresses" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="255" />
+    <description source="BROADCOM">The list of IPv6 addresses can be assessable to container. They are separated by comma delimeter.</description>
+
+  <parameter name="Ports" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="255" />
+    <description source="BROADCOM">It describes how ports are supported or mapped.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_Container.ContainerInfo.{i}.Stats." shortObjectName="ContainerStatsObject" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="P" supportLevel="Present" pruneWriteToConfigFile="true" />
+  <description source="TRx">This object contains container statistics information.</description>
+
+  <parameter name="BytesSent" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="" maxLength="32" />
+    <description source="TRx">The total number of bytes transmitted out of the container with its unit in KiB. </description>
+
+  <parameter name="BytesReceived" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_Container:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="" maxLength="32" />
+    <description source="TRx">The total number of bytes received on the container with its unit in KiB. </description>
+
+
+
+
+<vsaInfo>
+
+<validstringarray name="ContainerStatusValues" />
+  <element>Starting</element>
+  <element>Running</element>
+  <element>Stopping</element>
+  <element>Stopped</element>
+  <element>Aborting</element>
+
+<validstringarray name="ContainerStandardValues" />
+  <element>LXC</element>
+  <element>Docker</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_Container:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

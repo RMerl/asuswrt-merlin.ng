@@ -1,0 +1,279 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use bytes;
+####
+#### Assembles images for GEN3 devices for NAND/SPINAND puresqubi
+####
+unless ( $ENV{SECURE_BOOT_ARCH} eq 'GEN3' ) {
+    die "Not supported $ENV{SECURE_BOOT_ARCH}";
+}
+
+sub shell {
+
+    #if (defined $_[1]) {
+    print "$_[0]\n";
+
+    #}
+    my $res = `$_[0]`;
+    ( $? == 0 ) or die "ERROR: $!";
+    print "$res";
+    return $res;
+}
+
+my $CFEROM = $ENV{CFE_ROM} ;
+if ($ENV{OTHER_IMAGES}) {
+   $CFEROM .= $ENV{OTHER_IMAGES};
+}
+
+#
+# Staging of the script
+#
+# Stage 1: prepare -  generates authenticated headers, prepares non-secure cferom then exit
+# must be complete by stage 2
+#
+# Stage 2: complete - expects hashes/headers/bootloader signatures generated outside of the scope of this script
+#
+
+
+
+print "-- args @ARGV --- \n";
+
+my @args = @ARGV;
+
+my $max_image_size = $ENV{BTRM_IMAGE_SIZE_ALLOCATION} * 1024;
+#
+# max nvram size
+my $nvram_size = 1024;
+#
+# max nvrams
+# 2 of 3 in at least in 2 different erase blocks 
+# 2 of 2 could be in the same block
+# more nvram instances can be added; modiry nvram_offset array accordingly 
+my $num_nvram = 3;
+#
+#accounting for dupilcate NVRAM block
+# NVRAM size is set at 1024
+my $image_alloc_size = $max_image_size + $nvram_size;
+#
+# starting offset where first image is placed
+my $offset = 65536;
+#
+# number of unsecured images:
+# 2 copies of unsec images + one headerless XIP cferom 
+my $num_unsec_images = 3;
+#
+# 2 copies of fld secure images 
+my $num_sec_images = 2;
+
+#
+# we want to insert secure+unsecure images in 1MB
+# let's  guard against overflow
+# account for 65k reserved block from the beginning of the boot area
+(  ((1024*1024 - $offset) - ($image_alloc_size * ($num_unsec_images + $num_sec_images)) - ($nvram_size*$num_nvram)) >= 0 )
+  or die "this number of images will not fit to a boot area";
+
+#
+# prepare an array of offsets for non-secure images
+#
+my @unsec_offset = map{ $offset + $image_alloc_size * $_} (0..$num_unsec_images-1);
+
+$offset = $unsec_offset[-1] + $image_alloc_size;
+#
+# set an array of offsets for secure images
+#  
+my @sec_offset = map{ $offset + $image_alloc_size * $_} (0..$num_sec_images-1);
+
+#
+# transforms string NAND BLOCKSIZEs in Kilo denominations to a sorted array of numeral perl representation
+my @block_size = sort  map{ $_ * 1024 } (split(' ',$ENV{BUILD_NAND_IMG_BLKSIZE}));
+#
+# prepare NVRAM offset list arranging it be place 
+# place nvram instance at least in 2 different erase blocks
+# The loop below places in 2 different blocks   
+my $nvram_offs;
+foreach (@unsec_offset,@sec_offset) {
+	my $sz = $_ + $image_alloc_size;
+	if ( $sz <= $block_size[-1]) { 
+              if ($num_nvram > 1 ) {
+		$nvram_offs .=  ($sz - $nvram_size) . ",";
+		$num_nvram--;
+              }
+	} else {
+		if ($num_nvram > 0) {
+		    $nvram_offs .=  ($sz - $nvram_size) . ",";
+		    $num_nvram--;
+		}
+        }
+}
+# if num_nvram still non zero assume that nvram were set 
+# in one block; forcing at least in the next block  
+if ($num_nvram) {
+    $nvram_offs .=  $block_size[-1] ;
+}
+
+#
+### IF YOU WANT CUSTOM OFFSETS, replace values in @unsec_offset,  @sec_offset and @nvram_offs 
+#
+print " nvram offsets: $nvram_offs \n unsecure images offsets : @unsec_offset \n secure images offsets: @sec_offset \n nand erase blocks  @block_size\n";
+
+if ( ( defined $args[0] ) && ($args[0] eq "prepare") ) {
+
+# Building
+# Non-secure and/or FLd secure image
+#
+# This demonstrates how to finalize an image.   Here, one would insert any additional components to be included
+# in the signature block for the boot filesystem
+#
+# Create the block of hashes
+#
+    shell(
+        "$ENV{HOSTTOOLS_DIR}/imagetools/mkhashes\\
+	--out=$ENV{WDIR}/hashes.bin --item rootfs=$ENV{PROFILE_DIR}/squashfs.img --file cferam.000 --boot $ENV{WDIR}/bootfs"
+    );
+    shell(
+        "$ENV{HOSTTOOLS_DIR}/imagetools/mkhashes\\
+	--out=$ENV{WDIR}/.hashes.fld --item rootfs=$ENV{PROFILE_DIR}/squashfs.img --file cferam.000 --boot $ENV{WDIR}/bootfs"
+    );
+
+    #
+    # Get rid of the non-hash signature
+    shell("rm -f $ENV{WDIR}/bootfs/vmlinux.sig");
+
+    #
+    #
+    #
+    # build UBI cferom
+    #
+    # start with a 1meg empty region
+    shell("$ENV{HOSTTOOLS_DIR}/imagetools/gen1meg $ENV{WDIR}/region");
+
+    if ( ( defined $ENV{BUILD_SECURE_BOOT}) && $ENV{BUILD_SECURE_BOOT} eq 'y' ) {
+
+        #
+        # now let's make signed images
+        #
+        # Generate the auth headers for CFEROM
+        shell(
+            "$ENV{HOSTTOOLS_DIR}/imagetools/insertboot --arch $ENV{SECURE_BOOT_ARCH} --cfe $ENV{CFE_ROM} \\
+		--field  --cred=$ENV{FLD_CRED_LIST} --chip=$ENV{BRCM_CHIP} --out=$ENV{WDIR}/.header.fld"
+        );
+    }
+
+    print "Executed stage : $args[0]  \n";
+    exit 0;
+}
+
+
+#
+# insert a few copies of an essentially empty nvram
+#
+shell(
+    "$ENV{HOSTTOOLS_DIR}/createimg.pl --replace --offsets=$nvram_offs --input=$ENV{WDIR}/region --outputfile=$ENV{WDIR}/region \\
+		--nvram_magic --conf $ENV{HOSTTOOLS_DIR}/local_install/conf/$ENV{TOOLCHAIN_PREFIX}.conf"
+);
+
+#
+# and put a few copies of cferom in flash with nonsecure headers
+# $offset == 65536;
+#
+foreach (@unsec_offset) {
+        if ($_ == 0) { 
+		shell(
+    			"$ENV{HOSTTOOLS_DIR}/imagetools/insertboot --cfe $CFEROM --arch XIP \\
+				--chip=$ENV{BRCM_CHIP} --offset $_ $ENV{WDIR}/region"
+		);
+        } else {
+		shell(
+    			"$ENV{HOSTTOOLS_DIR}/imagetools/insertboot --arch $ENV{SECURE_BOOT_ARCH} --cfe $CFEROM --nonsec \\
+			--chip=$ENV{BRCM_CHIP} --offset $_ $ENV{WDIR}/region"
+		);
+	}
+}
+
+#
+# Stage 2 - complete image assembly by adding signature generated elsewhere
+#
+if ( $ENV{BUILD_SECURE_BOOT} eq 'y' ) {
+
+    #
+    # For secure build only
+    # hashes.sig and auth_sig must be available before this stage
+    #
+    shell(
+        "cat $ENV{WDIR}/.hashes.fld.sig $ENV{WDIR}/.hashes.fld > $ENV{WDIR}/bootfs/hashes.fld"
+    );
+
+    #shell("rm -vf $ENV{WDIR}/.hashes.fld $ENV{WDIR}/.hashes.fld.sig");
+    #
+    # insert number copies of the signed cferom into flash images
+    # as specified in num_sec_images
+    foreach (@sec_offset) { 
+           shell(
+                 "$ENV{HOSTTOOLS_DIR}/imagetools/insertboot --arch $ENV{SECURE_BOOT_ARCH} --cfe $CFEROM --field=$ENV{WDIR}/.auth.header.fld.sig  \\
+		       --cred=$ENV{FLD_CRED_LIST} --chip=$ENV{BRCM_CHIP} --offset $_ $ENV{WDIR}/region"
+           );
+    }
+
+}
+
+#
+# Copy hashes.bin for non-secure mode 
+shell(
+        "cp -rvf $ENV{WDIR}/hashes.bin $ENV{WDIR}/.hashes.fld $ENV{WDIR}/bootfs/"
+    );
+#
+# Create the pureubi "blob.bin" file with cferam, vmlinux, dtbs, etc...
+shell(
+    "$ENV{HOSTTOOLS_DIR}/imagetools/mkfs.nada --out=$ENV{WDIR}/head/blob.bin $ENV{WDIR}/bootfs"
+);
+
+# Then create the metadata for the image
+shell(
+    "$ENV{HOSTTOOLS_DIR}/imagetools/mkfs.nada --out=$ENV{WDIR}/head/meta.bin --extra cferam.000=998 --extra squash=1 --extra committed=0"
+);
+
+#
+#build_ubi
+#
+# generate a ubi.ini file combining the rootfs, metadata, and boot volumes
+#
+shell(
+    "$ENV{HOSTTOOLS_DIR}/imagetools/mkubi_ini --meta=$ENV{WDIR}/head/meta.bin  --boot=$ENV{WDIR}/head/blob.bin \\
+	--root=$ENV{PROFILE_DIR}/squashfs.img > $ENV{WDIR}/ubi.ini"
+);
+
+#
+# iterate over all enabled NAND block sizes
+#
+foreach (@block_size) {
+    my $i = $_ /1024;
+    print "## Generating ubinized image for NAND $i kb blocksize ##\n";
+    my $pg_size = shell("$ENV{HOSTTOOLS_DIR}/imagetools/nand_peb_to_pg_size $i");
+    #
+    # this is an implicit conversion from string to integer; purpousefully simple
+    #	
+    #my $peb_size = $_;
+    print "PEB SIZE $_ \n";
+    shell(
+        "$ENV{HOSTTOOLS_DIR}/mtd-utils*/ubinize -v -o $ENV{WDIR}/my_rootfs${i}kb_puresqubi.img \\
+	-m ${pg_size} -p $_  $ENV{WDIR}/ubi.ini"
+    );
+    shell(
+        "$ENV{HOSTTOOLS_DIR}/addvtoken --endian $ENV{ARCH_ENDIAN} --chip $ENV{BRCM_CHIP} --flashtype NAND$i --btrm 1 \\
+	$ENV{WDIR}/my_rootfs${i}kb_puresqubi.img $ENV{WDIR}/custom_$ENV{PROFILE}_puresqubi_${i}.w"
+    );
+    shell(
+        "cat $ENV{WDIR}/region $ENV{WDIR}/my_rootfs${i}kb_puresqubi.img > $ENV{WDIR}/my_cferom_rootfs${i}kb_puresqubi.img"
+    );
+    shell(
+        "$ENV{HOSTTOOLS_DIR}/addvtoken --endian $ENV{ARCH_ENDIAN} --chip $ENV{BRCM_CHIP} --flashtype NAND${i} --btrm 1 \\
+	 $ENV{IMG_DDR_TYPE_OPT} $ENV{WDIR}/my_cferom_rootfs${i}kb_puresqubi.img $ENV{WDIR}/custom_$ENV{PROFILE}_cferom_puresqubi_${i}.w"
+    );
+    shell(
+        "ls -1 $ENV{WDIR}/my_cferom_rootfs${i}kb_puresqubi.img $ENV{WDIR}/custom_$ENV{PROFILE}_cferom_puresqubi_${i}.w \\
+	$ENV{WDIR}/custom_$ENV{PROFILE}_puresqubi_${i}.w"
+    );
+}
+shell("mv $ENV{WDIR}/bootfs  $ENV{WDIR}/bootfs.$$");
+shell("mv $ENV{WDIR}/head  $ENV{WDIR}/head.$$");

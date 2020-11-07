@@ -1,0 +1,234 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2014" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_BMU." shortObjectName="BatteryManagementObject" specSource="Broadcom" profile="X_BROADCOM_COM_BMU:1" supportLevel="Present" oid="3232" lockZone="10" />
+  <description source="BROADCOM">Battery Management</description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_BMU.Config." shortObjectName="BatteryManagementConfigurationObject" specSource="Broadcom" profile="X_BROADCOM_COM_BMU:1" supportLevel="Present" />
+  <description source="BROADCOM">Defines the configuration of the Battery Management System</description>
+
+  <parameter name="PollIntervalSeconds" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="5" minValue="1" maxValue="86400" />
+    <description source="BROADCOM">Polling period of Controller to Low-Level Pico processor</description>
+
+  <parameter name="MaxChargePercent" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="90" minValue="0" maxValue="100" />
+    <description source="BROADCOM">Percentage when to stop charging the battery</description>
+
+  <parameter name="UpsConfigLowBattTime" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="30" minValue="0" maxValue="1440" />
+    <description source="BROADCOM">Time in minutes when BatteryChargeLow will become true</description>
+
+  <parameter name="ReplacementThresholdPercent" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="55" minValue="0" maxValue="100" />
+    <description source="BROADCOM">Charge capacity in Percentage when BatteryBad will become true</description>
+
+  <parameter name="LowChargePercent" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="25" minValue="0" maxValue="100" />
+    <description source="BROADCOM">Charge in percentage when BatteryChargeLowPercent will become true</description>
+
+  <parameter name="LifeTestingEnabled" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Whether to run LifeTesting or not</description>
+
+  <parameter name="LifeTestPeriod" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="180" minValue="1" maxValue="3650" />
+    <description source="BROADCOM">Days between calibration</description>
+
+  <parameter name="LifeTestTOD" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="22:00" />
+    <description source="BROADCOM">Time of the day during the day when Calibration is performed eg. 22:00</description>
+
+  <parameter name="PackVoltageSmoothingSteps" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" minValue="1" maxValue="1000" />
+    <description source="BROADCOM">Number of samples required when reading pack voltage</description>
+
+  <parameter name="BoardVoltageSmoothingSteps" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" minValue="1" maxValue="1000" />
+    <description source="BROADCOM">Number of samples required when reading board voltage</description>
+
+  <parameter name="PackTemperatureSmoothingSteps" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" minValue="1" maxValue="1000" />
+    <description source="BROADCOM">Number of samples required when reading pack temperature</description>
+
+  <parameter name="BoardTemperatureSmoothingSteps" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" minValue="1" maxValue="1000" />
+    <description source="BROADCOM">Number of samples required when reading board temperature</description>
+
+  <parameter name="AllowedFaults" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="16" minValue="16" maxValue="65535" />
+    <description source="BROADCOM">DOI is enabled by default and cannot be disabled</description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_BMU.Status." shortObjectName="BatteryManagementStatusObject" specSource="Broadcom" profile="X_BROADCOM_COM_BMU:1" supportLevel="Present" pruneWriteToConfigFile="true" />
+  <description source="BROADCOM">Describes the status of the Battery Management System</description>
+
+  <parameter name="Version" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" maxLength="128" />
+    <description source="BROADCOM">Version of the Firmware running on Battery Microcontroller</description>
+
+  <parameter name="BuildDateTime" type="DateTime" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" />
+    <description source="BROADCOM">Date and time when the Battery Microcontroller firmware was built </description>
+
+  <parameter name="OperatingOnBattery" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="BROADCOM">Whether the system is running from battery or utility power</description>
+
+  <parameter name="State" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Init" validValuesArray="BmuControllerStateValues" />
+    <description source="BROADCOM">The State of the Battery Management Unit Controller. See BmuControllerStateValues.</description>
+
+  <parameter name="NumberOfPresentBatteries" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="2" />
+    <description source="BROADCOM"></description>
+
+  <parameter name="InputVoltage" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="20000" />
+    <description source="BROADCOM">Board input voltage in millivolts</description>
+
+  <parameter name="Temperature" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="-512" maxValue="512" />
+    <description source="BROADCOM">Board temperature in Celcius</description>
+
+  <parameter name="EstimatedMinutesRemaining" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="1440" />
+    <description source="BROADCOM">Estimate of the number of minutes remaining for the system based on current change</description>
+
+  <parameter name="BatteryCurrent" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="-65535" maxValue="65535" />
+    <description source="BROADCOM">Measured current to (negative) or from (positive) the batteries</description>
+
+  <parameter name="UpsSecondsOnBattery" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="86400" />
+    <description source="BROADCOM">Number of seconds since the system has been running on batteries</description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_BMU.BatteryStatus.{i}." shortObjectName="BatteryManagementBatteryStatusObject" specSource="Broadcom" profile="X_BROADCOM_COM_BMU:1" supportLevel="MultipleInstances" pruneWriteToConfigFile="true" />
+  <description source="BROADCOM">These are runtime only objects (never written to config file) used to&#10;report the status of each battery connected to the system.</description>
+
+  <parameter name="Index" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="1" />
+    <description source="BROADCOM">Index to identify the battery</description>
+
+  <parameter name="BatteryPresent" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="BROADCOM">Whether this battery is present</description>
+
+  <parameter name="BatteryValid" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="BROADCOM">Whether this battery EPROM is validated by the controller</description>
+
+  <parameter name="BatteryBad" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="BROADCOM">Whether this battery state of health is below ReplacementThresholdPercent</description>
+
+  <parameter name="BatterySelected" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="BROADCOM">Whether this battery is selected for charge or discharge</description>
+
+  <parameter name="BatteryFullyCharged" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="BROADCOM">Whether this battery is fully charged</description>
+
+  <parameter name="BatteryChargeLow" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="BROADCOM">Whether this battery charge is below 7.13 Volts</description>
+
+  <parameter name="BatteryChargeLowPercent" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="BROADCOM">Whether this battery charge is below LowChargePercent</description>
+
+  <parameter name="BatteryChargeDepleted" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="BROADCOM">Whether this battery charge is below the depletion voltage from EPROM</description>
+
+  <parameter name="BatteryChargeStateUnknown" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="BROADCOM">Whether this battery charge state has not been determined</description>
+
+  <parameter name="BatteryChargeCapacity" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="20000" />
+    <description source="BROADCOM">Battery charge capacity in mAh per design</description>
+
+  <parameter name="BatteryActualCapacity" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="20000" />
+    <description source="BROADCOM">Actual Battery charge capacity from life test</description>
+
+  <parameter name="BatteryFullChargeVoltage" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="20000" />
+    <description source="BROADCOM">Battery Voltage when achieving full charge</description>
+
+  <parameter name="BatteryDepletedVoltage" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="20000" />
+    <description source="BROADCOM">Battery Voltage when depleted</description>
+
+  <parameter name="BatteryMeasuredVoltage" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="20000" />
+    <description source="BROADCOM">Battery measured voltage in millivolts</description>
+
+  <parameter name="BatteryPercentCharge" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="100" />
+    <description source="BROADCOM">Battery charge as a percent of its designed charge capacity</description>
+
+  <parameter name="BatteryEstimatedMinutesRemaining" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="1440" />
+    <description source="BROADCOM">An estimate of the number of minutes remaining on this battery based on its charge</description>
+
+  <parameter name="BatteryTemperature" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="-512" maxValue="512" />
+    <description source="BROADCOM">Battery temperature in Celcius</description>
+
+  <parameter name="BatteryLifeTestCount" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="99999" />
+    <description source="BROADCOM">The number of times that a life test has been performed on this battery</description>
+
+  <parameter name="BatteryLastLifeTest" type="DateTime" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:01Z" />
+    <description source="BROADCOM">Date and time when the last life test was started on this battery</description>
+
+  <parameter name="BatteryNextLifeTest" type="DateTime" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" />
+    <description source="BROADCOM">Date and time when the next life test is currently scheduled</description>
+
+  <parameter name="BatteryLifeTestState" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Idle" validValuesArray="BmuLifeTestStateValues" />
+    <description source="BROADCOM">The State of the battery during life test. See BmuLifeTestStateValues.</description>
+
+  <parameter name="BatteryStateofHealth" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="100" />
+    <description source="BROADCOM">A ratio of the actual battery charge capacity as measured by the life test to the battery capacity per design</description>
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_BMU.BatteryNonVol.{i}." shortObjectName="BatteryManagementBatteryNonVolObject" specSource="Broadcom" profile="X_BROADCOM_COM_BMU:1" supportLevel="MultipleInstances" hideParameterFromAcs="true" />
+  <description source="BROADCOM">These objects save battery information across reboots. This data is not meant to be legible nor one for one with battery status</description>
+
+  <parameter name="Index" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" />
+
+  <parameter name="Flags" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" />
+
+  <parameter name="EstLifeRemaining" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="255" />
+
+  <parameter name="DesignCapacity" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+
+  <parameter name="MaxMicroWh" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+
+  <parameter name="Guid" type="unsignedLong" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="18446744073709551615" />
+
+  <parameter name="LifeTestCount" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+
+  <parameter name="LastLifeTestStarted" type="unsignedLong" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" minValue="0" maxValue="4294967295" />
+
+  <parameter name="NextLifeTestUpdate" type="unsignedLong" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+
+  <parameter name="TotalSeconds" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="4294967295" />
+
+  <parameter name="SeriesResistance" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+
+  <parameter name="DchgVoltages" type="hexBinary" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="203" />
+
+
+
+<vsaInfo>
+
+<validstringarray name="BmuControllerStateValues" />
+  <element>Init</element>
+  <element>Idle</element>
+  <element>Sleep</element>
+  <element>ChargeInit</element>
+  <element>Precharge</element>
+  <element>FastCharge</element>
+  <element>Topoff</element>
+  <element>ChargeSuspended</element>
+  <element>Discharge</element>
+  <element>EternalSleep</element>
+  <element>ForcedDischarge</element>
+
+
+<validstringarray name="BmuLifeTestStateValues" />
+  <element>Idle</element>
+  <element>Begin</element>
+  <element>PTD</element>
+  <element>StartCharge</element>
+  <element>HWIMP</element>
+  <element>MonitorCharge</element>
+  <element>StartSWIMP</element>
+  <element>ComplSWIMP</element>
+  <element>Discharge</element>
+  <element>Complete</element>
+
+</vsaInfo>
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_BMU:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

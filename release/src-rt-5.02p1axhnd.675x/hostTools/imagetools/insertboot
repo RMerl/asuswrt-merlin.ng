@@ -1,0 +1,152 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use bytes;
+use Getopt::Long;
+use File::Find;
+use File::Temp qw[ tempfile ];
+use File::Basename;
+use Data::Dumper;
+use BRCM::SBI;
+
+my $cfe;
+my $is_encrypted;
+my $chipfamily;
+my $offset = 0;
+my $output;
+my $arch = "XIP";
+my $nonsecure;
+my $netboot;
+my $mfgsig;
+my $fieldsig;
+my $sig;
+my $cred;
+my $usage = qq[usage: $0 boot_region_file
+   --cfe cfe_filename
+   --encrypted 
+   --arch XIP|GEN2|GEN3
+   --chip [4908|63158|...]
+   --offset bytes
+   --netboot                 # creates new boot_region_file instead of modifying existing one
+   --nonsecure               # mode eligible in nonsecure mode (in Gen3)
+   --mfgsig file             # mfg signature in file
+   --cred directory          # public credential files in directory
+   --fieldsig file           # field signature in file
+   --output filename    # filename to place headers 
+];
+$ENV{PATH} .=':bb';
+print "-- $ENV{PATH} \n";
+if (
+    !GetOptions(
+        "cfe=s",    \$cfe,        "encrypted",  \$is_encrypted,
+        "chip=s",   \$chipfamily, "arch=s",     \$arch,
+        "offset=i", \$offset,     "nonsecure",  \$nonsecure,
+        "netboot",  \$netboot,    "creddir=s",  \$cred,
+        "mfgsig:s", \$mfgsig,     "fieldsig:s", \$fieldsig,
+        "output=s", \$output,
+    )
+  )
+{
+    print $usage;
+    exit 1;
+}
+my @images = split(/,/, $cfe);
+if (@images > 1) {
+	$cfe = $images[0];
+}
+my $regionfile = shift @ARGV;
+if ( ( !$regionfile && !$output ) || ( $regionfile && $output ) || ( !$cfe ) ) {
+    die($usage);
+}
+my $region;
+my $cfebin;
+{
+    local $/;
+    if ($netboot) {
+        $region = "\0" x 128;
+    }
+    elsif ($regionfile) {
+        open( F, "<", $regionfile )
+          or die("can't open $regionfile for reading");
+        $region = <F>;
+        close(F);
+    }
+    open( C, "<", $cfe ) or die("can't open $cfe for reading");
+    $cfebin = <C>;
+    close(C);
+    if ($mfgsig) {
+        open( S, "<", $mfgsig );
+        $sig = <S>;
+        close(S);
+    }
+    if ($fieldsig) {
+        open( S, "<", $fieldsig ) or die("cant read sig");
+        print "slurped in sig\n";
+        $sig = <S>;
+        close(S);
+    }
+    if (@images == 2) {
+        open( S, "<", $images[1] ) or die("cant read $images[1]");
+        print "slurped in $images[1]\n";
+        $images[1] = <S>;
+        close(S);
+        
+    }
+}
+
+my $mode;
+if ($nonsecure) {
+    $mode = 'UNSEC';
+}
+elsif ( defined($fieldsig) ) {
+    $mode = 'FLD';
+}
+elsif ( defined($mfgsig) ) {
+    $mode = 'MFG';
+}
+else { die($usage); }
+
+if ( $arch eq 'XIP' ) {
+    substr( $region, $offset, length($cfebin) ) = $cfebin;
+}
+
+if ( $arch eq 'GEN3' ) {
+    my $sbi = new BRCM::SBI(
+        {
+            sec_mode  => $mode,
+            byteorder => 'little',
+            chip      => $chipfamily,
+            cred      => $cred
+        }
+    );
+    my $header = $sbi->prepare_header( length($cfebin) );
+    if ($output) {
+        open( O, ">", $output ) or die("cant open output");
+        print O $header->{auth};
+        close(O);
+    }
+    if ($region) {
+        my $trailer =
+          $sbi->prepare_trailer( $header->{auth}, $cfebin,
+            { mfg => $sig, fld => $sig } );
+        my $out = $header->{unauth} . $header->{auth} . $cfebin . $trailer;
+	if (@images == 2)  {
+        	$out .= $images[1];
+	}
+        if ($netboot) {
+            $region = $out;
+        }
+        else {
+            substr( $region, $offset, length($out) ) = $out;
+        }
+    }
+}
+
+if ($regionfile) {
+    open( F, ">", $regionfile ) or die("can't open $regionfile for writing");
+    print F $region;
+    close(F);
+}
+
+#

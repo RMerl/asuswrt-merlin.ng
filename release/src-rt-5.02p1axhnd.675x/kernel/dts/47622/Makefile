@@ -1,0 +1,10 @@
+dtb-$(CONFIG_OF) += \
+	9$(CONFIG_BCM_CHIP_NUMBER).dtb \
+	96755REF2.dtb \
+	96755REF1.dtb
+
+dtb-$(CONFIG_BCM_HND_EAP) += 947622EAP.dtb
+dtb-$(CONFIG_BCM_HND_EAP) += 947622EAPS.dtb
+dtb-$(CONFIG_BCM_HND_EAP) += 947622EAP2.dtb
+dtb-$(CONFIG_BCM_HND_EAP) += 947622LEAP.dtb
+include $(DTS_DIR)/dts/make.dtbs

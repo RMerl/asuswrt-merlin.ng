@@ -1,0 +1,8 @@
+#
+# Add TR181 Enet LAG - Link Aggregation objects to the interfaces portion of the TR181 tree
+#
+# See 0000-README.txt for more details
+#
+
+addObjBelowObj cms-dm-tr181-eth-lag.xml Device.Ethernet.VLANTermination.{i}.
+

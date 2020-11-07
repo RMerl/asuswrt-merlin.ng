@@ -1,0 +1,54 @@
+#
+# This is a common config file which is used mainly by modules
+# or brand makefiles. The ".usf" suffix stands for "universal
+# settings file". The important feature is that this file is
+# both legal makefile and shell syntax, and could also be parsed
+# as a properties file by any language (Perl, Python, Java, ...)
+# which understands properties.
+#
+# Rules: Each line is either an assignment, a comment, or blank.
+# Assignments MUST be of the form "foo=bar" (no spaces around
+# the =) and comments have a leading "#" character. Continuation
+# lines are allowed only within quotes.
+#
+# It's available to be included by makefiles like WLAN_Common.mk,
+# or by brand makefiles, or sourced by build scripts.
+#
+# Copyright (C) 2020, Broadcom. All Rights Reserved.
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+# SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+# OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+# CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+#
+# <<Broadcom-WL-IPTag/Open:>>
+#
+# $Id: WLAN.usf 774681 2019-05-02 13:20:56Z $
+#
+
+# Current list of components. This list is used in makefiles
+# to set vpath search and include (-I) paths. All new components
+# should be added here. Please keep it sorted alphabetically as
+# a single line without continuation characters. You may also
+# want to add new components to the cstyle filelist.
+
+WLAN_COMPONENT_PATHS=components/accel components/apf components/avs components/awd components/bcmcrypto components/clm-api components/math components/msch components/nan components/phy components/proto components/router/bcmdrv components/shim components/wlioctl src/dongle src/rte src/shared/bcmwifi src/wl/ate src/wl/chctx src/wl/dump src/wl/encode src/wl/gas src/wl/iocv src/wl/keymgmt src/wl/lwip src/wl/mbo_oce src/wl/natoe src/wl/olpc src/wl/ppr src/wl/proxd src/wl/randmac src/wl/rel_mcast src/wl/airiq
+
+# This is a staging area for generated content that needs to be shared
+# between build and packaging steps. E.g when CLM data files
+# need to be packaged they are first staged to $(WLAN_GEN_BASEDIR)
+# and packaged from there.
+
+WLAN_GEN_BASEDIR=generated
+
+# This is the conventional Windows mount point for network files.
+
+WLAN_WINPFX=Z:

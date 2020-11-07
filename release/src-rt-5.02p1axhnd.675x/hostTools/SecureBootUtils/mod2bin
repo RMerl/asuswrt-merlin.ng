@@ -1,0 +1,21 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use bytes;
+use FindBin qw($Bin);
+use lib "$Bin/../PerlLib";
+use BRCM::SBI_UTIL;
+use Getopt::Long;
+
+my $in;
+my $out;
+
+if (!(GetOptions("in=s", \$in,"out=s",\$out))) { 
+    die(qq[usage: $0 Converts base64 modulus to a binary
+	--in file of base64 modulus 
+	--out output filename
+]);
+}
+
+my $obj = BRCM::SBI_UTIL->new();
+$obj->mod2bin($in, $out);

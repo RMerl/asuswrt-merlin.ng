@@ -1,0 +1,166 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_PwrMngtCfg." shortObjectName="PwrMngtObject" specSource="Broadcom" profile="X_BROADCOM_COM_PwrMngt:1" supportLevel="Present" oid="3230" lockZone="10" />
+  <description source="BROADCOM">Power Management Configuration</description>
+
+  <parameter name="CPUSpeed" type="unsignedInt" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="256" minValue="0" maxValue="256" />
+    <description source="BROADCOM">MIPS CPU speed modification through CP0 of Reg 22, Sel 5</description>
+
+  <parameter name="CPUr4kWaitEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">MIPS CPU r4k wait instruction when idle to save power consumption when enabled</description>
+
+  <parameter name="DRAMSelfRefreshEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">DRAM Self Refresh mode </description>
+
+  <parameter name="DRAMAutoPDEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">DRAM Auto power down mode </description>
+
+  <parameter name="EthAutoPwrDwnEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">Ethernet Auto power down mode </description>
+
+  <parameter name="EthEEE" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">Energy Efficient Ethernet mode</description>
+
+  <parameter name="EthRegisteredCount" type="int" specSource="Custom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="20" />
+    <description source="BROADCOM">Reports the number of registered ethernet  interfaces</description>
+
+  <parameter name="EthIfConnectedCount" type="int" specSource="Custom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="20" />
+    <description source="BROADCOM">Reports the number of ethenet interfaces that are in full power mode.</description>
+
+  <parameter name="USBIfRegisteredCount" type="int" specSource="Custom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="20" />
+    <description source="BROADCOM">Reports the number of registered USB interfaces.</description>
+
+  <parameter name="USBIfConnectedCount" type="int" specSource="Custom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="20" />
+    <description source="BROADCOM">Reports the number of USB interfaces that are in full power mode.</description>
+
+  <parameter name="AvsEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">Adaptive Voltage Scaling mode </description>
+
+  <parameter name="VCTEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">To enable or disable voice thread</description>
+
+  <parameter name="WifiEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">To enable or disable WiFi functionality</description>
+
+  <parameter name="LedEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">LEDs will be lit when this flag is enabled</description>
+
+  <parameter name="USBHostEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">USB Host is enabled when this flag is set</description>
+
+  <parameter name="USBDevEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">USB Device is enabled when this flag is set</description>
+
+  <parameter name="DSLEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">DSL is enabled when this flag is set</description>
+
+  <parameter name="MoCAEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">MoCA</description>
+
+  <parameter name="GPONEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">GPON</description>
+
+  <parameter name="bcm6358MAC0En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">pm6358MAC0En for BCM6358</description>
+
+  <parameter name="bcm6358MAC1En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">pm6358MAC1En for BCM6368</description>
+
+  <parameter name="bcm6358EPHYEn" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">pm6358EPHYEn for BCM6358</description>
+
+  <parameter name="bcm5325ePHY0En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">pm5325ePHY0En for BCM6358</description>
+
+  <parameter name="bcm5325ePHY1En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">pm5325ePHY1En for BCM6358</description>
+
+  <parameter name="bcm5325ePHY2En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">pm5325ePHY2En for BCM6358</description>
+
+  <parameter name="bcm5325ePHY3En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">pm5325ePHY3En for BCM6358</description>
+
+  <parameter name="bcm5325ePHY45En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">pm5325ePHY45En for BCM6358</description>
+
+  <parameter name="bcm6368ePHY0En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">pm6368EthPHY0En for BCM6368</description>
+
+  <parameter name="bcm6368ePHY1En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">pm6368EthPHY1En for BCM6368</description>
+
+  <parameter name="bcm6368ePHY2En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">pm6368EthPHY2En for BCM6368</description>
+
+  <parameter name="bcm6368ePHY3En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">pm6368EthPHY3En for BCM6368</description>
+
+  <parameter name="bcm6816ePHY0En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">Ethernet PHY</description>
+
+  <parameter name="bcm6816ePHY1En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">Ethernet PHY</description>
+
+  <parameter name="bcm6816ePHY2En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">Ethernet PHY</description>
+
+  <parameter name="bcm6816ePHY3En" type="boolean" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">Ethernet PHY</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_StandbyCfg." shortObjectName="StandbyCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_StandBy:1" supportLevel="Present" />
+  <description source="BROADCOM">A Power Saving feature that allows configuring a time when the system or specific interfaces are put to sleep and a time to wake up.</description>
+
+  <parameter name="StandbyEnable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_StandBy:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">To enable or disable the Standby feature. When enabled and Standby Time and Wake Up Time are specified, the system goes in Standby at Standby Time and wakes up at Wake Up time.</description>
+
+  <parameter name="StandbyStatusString" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_StandBy:1" supportLevel="ReadWrite" defaultValue="Disabled" validValuesArray="StandbyStateValues" />
+
+  <parameter name="StandbyHour" type="int" specSource="Broadcom" profile="X_BROADCOM_COM_StandBy:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="23" />
+    <description source="BROADCOM">The hour at which Standby starts.</description>
+
+  <parameter name="StandbyMinutes" type="int" specSource="Broadcom" profile="X_BROADCOM_COM_StandBy:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="59" />
+    <description source="BROADCOM">The minutes when Standby Starts</description>
+
+  <parameter name="WakeupHour" type="int" specSource="Broadcom" profile="X_BROADCOM_COM_StandBy:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="23" />
+    <description source="BROADCOM">The hour when Standby finishes.</description>
+
+  <parameter name="WakeupMinutes" type="int" specSource="Broadcom" profile="X_BROADCOM_COM_StandBy:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="59" />
+    <description source="BROADCOM">The minutes when Standby ends.</description>
+
+
+<vsaInfo>
+
+<validstringarray name="StandbyStateValues" />
+  <element>Disabled</element>
+  <element>Standby or Wake Up Time is not set</element>
+  <element>Standby Time must be different from Wake Up Time</element>
+  <element>Local time has not been acquired</element>
+  <element>Waiting for Standby Time</element>
+  <element>Waiting for Wake Up Time</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_PwrMngt:1" /> 
+<profile name="X_BROADCOM_COM_StandBy:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

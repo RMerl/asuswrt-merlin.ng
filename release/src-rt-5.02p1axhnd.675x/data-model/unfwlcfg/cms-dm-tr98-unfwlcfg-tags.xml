@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Ltd., 2018" >
+<object name="InternetGatewayDevice.LANDevice.{i}.WLANConfiguration.{i}.X_BROADCOM_COM_WlanAdapter.WlBaseCfg." />
+  <parameter name="WlEnbl" nvram="radio"/>
+  <parameter name="WlBasicRate" nvram="rateset"/>
+  <parameter name="WlProtection" nvram="gmode_protection"/>
+  <parameter name="WlPreambleType" nvram="plcphdr"/>
+  <parameter name="WlFrameBurst" nvram="frameburst"/>
+  <parameter name="WlChannel" nvram="channel"/>
+  <parameter name="WlFrgThrshld" nvram="frag"/>
+  <parameter name="WlRtsThrshld" nvram="rts"/>
+  <parameter name="WlDtmIntvl" nvram="dtim"/>
+  <parameter name="WlBcnIntvl" nvram="bcn"/>
+  <parameter name="WlRate" nvram="rate"/>
+  <parameter name="WlgMode" nvram="gmode"/>
+  <parameter name="WlMCastRate" nvram="mrate"/>
+  <parameter name="WlDfsPreIsm" nvram="dfs_preism"/>
+  <parameter name="WlDfsPostIsm" nvram="dfs_postism"/>
+  <parameter name="WlTpcDb" nvram="tpc_db"/>
+  <parameter name="WlGlobalMaxAssoc" nvram="maxassoc"/>
+  <parameter name="WlLazyWds" nvram="lazywds"/>
+  <parameter name="WlRifsAdvert" nvram="rifs_advert", ntype="string", vmapper="onoffauto"/>
+  <parameter name="WlObssCoex" nvram="obss_coex"/>
+  <parameter name="WlRxChainPwrSaveEnable" nvram="rxchain_pwrsave_enable"/>
+  <parameter name="WlRxChainPwrSaveQuietTime" nvram="rxchain_pwrsave_quiet_time"/>
+  <parameter name="WlRxChainPwrSavePps" nvram="rxchain_pwrsave_pps"/>
+  <parameter name="WlEnableBFR" nvram="txbf_bfr_cap"/>
+  <parameter name="WlEnableBFE" nvram="txbf_bfe_cap"/>
+  <parameter name="BsdRole" nvram="bsd_role"/>
+  <parameter name="BsdHport" nvram="bsd_hport"/>
+  <parameter name="BsdPport" nvram="bsd_pport"/>
+  <parameter name="BsdHelper" nvram="bsd_helper"/>
+  <parameter name="BsdPrimary" nvram="bsd_primary"/>
+  <parameter name="SsdEnable" nvram="ssd_enable"/>
+  <parameter name="WlTafEnable" nvram="taf_enable"/>
+  <parameter name="WlAtf" nvram="atf"/>
+  <parameter name="WlPspretendThreshold" nvram="pspretend_threshold"/>
+  <parameter name="WlPspretendRetryLimit" nvram="pspretend_retry_limit"/>
+  <parameter name="WlAcsFcsMode" nvram="acs_fcs_mode"/>
+  <parameter name="WlAcsDfs" nvram="acs_dfs"/>
+  <parameter name="WlAcsCsScanTimer" nvram="acs_cs_scan_timer"/>
+  <parameter name="WlAcsCiScanTimer" nvram="acs_ci_scan_timer"/>
+  <parameter name="WlAcsCiScanTimeout" nvram="acs_ci_scan_timeout"/>
+  <parameter name="WlAcsScanEntryExpire" nvram="acs_scan_entry_expire"/>
+  <parameter name="WlAcsTxIdleCnt" nvram="acs_tx_idle_cnt"/>
+  <parameter name="WlAcsChanDwellTime" nvram="acs_chan_dwell_time"/>
+  <parameter name="WlAcsChanFlopPeriod" nvram="acs_chan_flop_period"/>
+  <parameter name="WlIntferPeriod" nvram="intfer_period"/>
+  <parameter name="WlIntferCnt" nvram="intfer_cnt"/>
+  <parameter name="WlIntferTxfail" nvram="intfer_txfail"/>
+  <parameter name="WlIntferTcptxfail" nvram="intfer_tcptxfail"/>
+  <parameter name="WlAcsDfsrImmediate" nvram="acs_dfsr_immediate"/>
+  <parameter name="WlAcsDfsrDeferred" nvram="acs_dfsr_deferred"/>
+  <parameter name="WlAcsDfsrActivity" nvram="acs_dfsr_activity"/>
+  <parameter name="WlWdsSec" nvram="wdssec_enable"/>
+
+
+<object name="InternetGatewayDevice.LANDevice.{i}.WLANConfiguration.{i}.X_BROADCOM_COM_WlanAdapter.WlMimoCfg." />
+  <parameter name="WlNBwCap" nvram="bw_cap"/>
+  <parameter name="WlNCtrlsb" nvram="nctrlsb", ntype="string", vmapper="wlctrlsb"/>
+  <parameter name="WlNBand" nvram="nband"/>
+  <parameter name="WlNMcsidx" nvram="nmcsidx"/>
+  <parameter name="WlNProtection" nvram="nmode_protection"/>
+  <parameter name="WlNmode" nvram="nmode", ntype="int", vmapper="onoffauto"/>
+  <parameter name="WlStbcTx" nvram="stbc_tx", ntype="string", vmapper="onoffauto"/>
+  <parameter name="WlStbcRx" nvram="stbc_rx"/>
+
+
+<object name="InternetGatewayDevice.LANDevice.{i}.WLANConfiguration.{i}.X_BROADCOM_COM_WlanAdapter.WlVirtIntfCfg.{i}." />
+  <parameter name="WlSsid" nvram="ssid"/>
+  <parameter name="WlBssMacAddr" nvram="hwaddr"/>
+  <parameter name="WlWpaPsk" nvram="wpa_psk"/>
+  <parameter name="WlWep" nvram="wep"/>
+  <parameter name="WlWpa" nvram="crypto"/>
+  <parameter name="WlWpaGTKRekey" nvram="wpa_gtk_rekey"/>
+  <parameter name="WlRadiusKey" nvram="radius_key"/>
+  <parameter name="WlRadiusServerIP" nvram="radius_ipaddr"/>
+  <parameter name="WlRadiusPort" nvram="radius_port"/>
+  <parameter name="WlAuth" nvram="auth"/>
+  <parameter name="WlAuthMode" nvram="akm"/>
+  <parameter name="WlEnblSsid" nvram="bss_enabled"/>
+  <parameter name="WlPreauth" nvram="preauth"/>
+  <parameter name="WlNetReauth" nvram="net_reauth"/>
+  <parameter name="WlMFP" nvram="mfp"/>
+  <parameter name="WlSsdType" nvram="ssd_type"/>
+  <parameter name="WlHide" nvram="closed"/>
+  <parameter name="WlAPIsolation" nvram="ap_isolate"/>
+  <parameter name="WlMaxAssoc" nvram="bss_maxassoc"/>
+  <parameter name="WlDisableWme" nvram="wme_bss_disable"/>
+  <parameter name="WlFltMacMode" nvram="macmode"/>
+  <parameter name="WlEnableWmf" nvram="wmf_bss_enable"/>
+  <parameter name="WlEnableHspot" nvram="hspot"/>
+  <parameter name="WlOperMode" nvram="mode"/>
+
+
+<object name="InternetGatewayDevice.LANDevice.{i}.WLANConfiguration.{i}.X_BROADCOM_COM_WlanAdapter.WlVirtIntfCfg.{i}.WlWpsCfg." />
+  <parameter name="Wsc_config_state" nvram="wps_config_state"/>
+  <parameter name="Wsc_mode" nvram="wps_mode"/>
+
+
+</xmlMandatorySingleRootNode>

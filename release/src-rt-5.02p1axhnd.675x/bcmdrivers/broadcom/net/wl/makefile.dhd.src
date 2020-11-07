@@ -1,0 +1,455 @@
+#
+# Makefile for the Broadcom DSLCPE's WLAN modules.
+#
+ifeq ($(MAKECMDGOALS),version_info)
+obj := $(BRCMDRIVERS_DIR)/broadcom/net/wl/$(LN_NAME)
+else
+infoout := 1
+endif
+
+define info_out
+	$(if $(infoout),$(info $(1)))
+endef
+
+FILTER_OUT = $(foreach v,$(2),$(if $(findstring $(1),$(v)),,$(v)))
+
+#
+# The default configuration to use
+# this is selectable, please change according to 
+# the desired configuration
+#
+dhdaltbld := $(shell echo $(CONFIG_BCM_DHDALTBLD))
+
+ifeq ($(strip $(dhdaltbld)),)
+  dhdaltbld := ap_2nv
+endif
+
+DHD_DEFAULT_CONFIG := dhdconfig_lx_dhd_dslcpe_pci_$(dhdaltbld)
+
+# the following line forces EXTRA_CFLAGS to be recursivley defined variable
+# (which is required by all of the WL builds).
+ifneq ($(EXTRA_CFLAGS),)
+$(call info_out, EXTRA_CFLAGS IS NOT EMPTY ($(EXTRA_CFLAGS)))
+endif
+EXTRA_CFLAGS =
+
+DHD_DEFAULT_CONFIG_EXT := $(DHD_DEFAULT_CONFIG)
+subver := 
+ifeq ($(strip $(CONFIG_DEBUG_KERNEL)),y)
+$(call info_out, ===========Kernel Hacking enable ==========)
+DHD_DEFAULT_CONFIG_EXT := $(addsuffix -kdb, $(DHD_DEFAULT_CONFIG_EXT))
+subver +=-kdb
+endif
+
+ifeq ($(strip $(RELEASE_BUILD)), 1)
+export BRAND_LAST_CONFIG=zlast_
+export LASTBUILDBRANDCAP=z_
+export DHD_DEFAULT_CONFIG_EXT_ORI := $(DHD_DEFAULT_CONFIG_EXT)
+endif
+
+# generate version suffix
+empty=
+space=$(empty) $(empty)
+subver := $(subst $(space),,$(subver))
+
+#
+#excluded files which is not part of the driver
+#
+EXCLUDED_FILES :=
+
+#
+#driver prefix
+#
+DHD_DRIVER_PREFIX=dhd
+
+dhddrv-objs :=
+use_lib :=
+
+#
+#DSL Linux Release Version
+#       
+EXTRA_CFLAGS += -DDSL_LINUX_VERSION_CODE=$(shell expr $(BRCM_VERSION) \* 65536 + $(BRCM_RELEASE) \* 256 + $(shell echo $(BRCM_EXTRAVERSION) | sed 's/^\([[:digit:]]*\).*/\1/'))
+
+ifeq ($(strip $(DHDSRCBASE)),)
+###########################################
+#
+# the wl root dir executes only here
+#
+###########################################
+export DHDAP_USE_SEPARATE_CHECKOUTS := 1
+
+export ALLSRCBASE = $(obj)
+export SRCBASE_DHD = dhd/src
+export SRCBASE = $(obj)/$(SRCBASE_DHD)
+export DHDSRCBASE= $(obj)/$(SRCBASE_DHD)
+export DHDCFGDIR = $(DHDSRCBASE)/dhd/config
+export DHDBASE	= dhd
+export SHBASE	= shared
+export SHWIFI	= shared/bcmwifi
+export DONGLE   = $(SRCBASE_DHD)/dongle
+export COMMINCL  = common/include
+export WLSYS = wl/sys
+
+include $(DHDCFGDIR)/$(DHD_DEFAULT_CONFIG)
+include $(DHDCFGDIR)/dhd_router.mk
+
+export EMFBASE  = emf/emf
+export IGSBASE  = emf/igs
+
+$(shell	if [ ! -d $(INSTALL_DIR)/etc/wlan ]; then \
+        rm -f $(INSTALL_DIR)/etc/wlan; \
+        install -d $(INSTALL_DIR)/etc/wlan; \
+	fi	;)
+
+$(shell	if [ ! -d $(INSTALL_DIR)/etc/wlan/dhd ]; then \
+        rm -f $(INSTALL_DIR)/etc/wlan/dhd; \
+        install -d $(INSTALL_DIR)/etc/wlan/dhd; \
+	install -d $(INSTALL_DIR)/etc/wlan/dhd/43602a1; \
+	install -d $(INSTALL_DIR)/etc/wlan/dhd/43602a3; \
+	install -d $(INSTALL_DIR)/etc/wlan/dhd/mfg/43602a1; \
+	install -d $(INSTALL_DIR)/etc/wlan/dhd/mfg/43602a3; \
+	install -d $(INSTALL_DIR)/etc/wlan/dhd/4366c0; \
+	install -d $(INSTALL_DIR)/etc/wlan/dhd/mfg/4366c0; \
+	install -d $(INSTALL_DIR)/etc/wlan/dhd/4363c0; \
+	install -d $(INSTALL_DIR)/etc/wlan/dhd/mfg/4363c0; \
+        fi	;)
+
+ifeq ($(strip $(RELEASE_BUILD)), 1)
+# Get brands
+brands := $(shell cat $(ALLSRCBASE)/../wlbrands | sed -e 's/dr_wl_brands=//' -e 's/(//' -e 's/)//')
+ifneq ($(strip $(brands)),)
+# Create last build brand
+LASTBUILDBRAND=$(addprefix $(LASTBUILDBRANDCAP), $(lastword $(brands)))
+# Add prefix 'zlast_' with DEFAULT_CONFIG_EXT 
+DHD_DEFAULT_CONFIG_EXT := $(BRAND_LAST_CONFIG)$(DHD_DEFAULT_CONFIG_EXT)
+# Add prefix z_<last brand> on above
+DHD_DEFAULT_CONFIG_EXT := $(addprefix $(LASTBUILDBRAND)-, $(DHD_DEFAULT_CONFIG_EXT))
+endif
+endif		
+#setup and enumerate config files
+BUILDDIR = build
+DHDDSLCPEPREFIX = dhdconfig_lx_dhd_dslcpe_
+export DHDCFGPREFIX = $(DHDDSLCPEPREFIX)pci_
+
+export DHDBUILDDIRPREFIX = dhdobj-
+export DHD_DEFAULT_OBJ_NAME=$(DHDBUILDDIRPREFIX)$(DHD_DEFAULT_CONFIG_EXT)-$(BRCM_CHIP)-$(BCMARCH).o_save
+ifeq ($(strip $(RELEASE_BUILD)), 1)
+ifneq ($(strip $(brands)),)
+export DHD_DEFAULT_OBJ_NAME=$(DHDBUILDDIRPREFIX)$(DHD_DEFAULT_CONFIG_EXT_ORI)-$(BRCM_CHIP)-$(BCMARCH).o_save
+endif
+endif
+
+#hardcoded relative path from builddir to the root dir
+export DHDSRCBASE_REL = ../..
+
+#check if source is available
+export DHD_SOURCE_AVAIL= $(shell if [ -e $(obj)/dhd/src/dhd/sys/dhd_common.c ]; then echo 1; else echo 0; fi ;)
+export DHD_SHARED_AVAIL= $(shell if [ -e $(obj)/../shared/impl1/dhd_nbuff.c ]; then echo 1; else echo 0; fi ;)
+
+#define name of the last to build dir
+DHD_LAST_TO_BUILD = z_$(DHDCFGPREFIX)zdefault
+
+#setup build sub directory for each config
+$(shell install -d $(BUILDDIR))
+
+$(shell cd $(ALLSRCBASE)/..; ./make_version.sh $(DHDSRCBASE) $(subver))
+include $(DHDSRCBASE)/epivers
+export DSLCPE_WLAN_VERSION = $(EPI_VERSION_STR)
+EXTRA_CFLAGS += -DDSLCPE_WLAN_VERSION=\"$(DSLCPE_WLAN_VERSION)\"
+EXTRA_CFLAGS += -Wno-date-time
+#EXTRA_CFLAGS += $(BRCM_WERROR_CFLAGS)
+
+ifeq ($(strip $(DHD_SOURCE_AVAIL)), 1)
+   ifeq ($(strip $(RELEASE_BUILD)), 1)
+      $(call info_out, echo rel_wl_impl=${CONFIG_BCM_WLAN_IMPL})
+      $(shell echo rel_wl_impl=${CONFIG_BCM_WLAN_IMPL} > $(DHDSRCBASE)/rimpl)
+      dhd_config_files := $(filter $(DHDCFGPREFIX)%, $(notdir $(wildcard $(DHDSRCBASE)/$(DHDBASE)/config/*)))
+
+      ifeq ($(strip $(CONFIG_DEBUG_KERNEL)),y)
+          dhd_config_files := $(addsuffix -kdb, $(dhd_config_files))
+      endif
+
+ifneq ($(strip $(brands)),)
+      #Add BRAND_LAST_CONFIG to create build directory
+      dhd_config_files_tmp := $(addprefix $(BRAND_LAST_CONFIG), $(findstring $(DHD_DEFAULT_CONFIG_EXT_ORI), $(dhd_config_files)))
+      dhd_config_files := $(filter-out $(DHD_DEFAULT_CONFIG_EXT_ORI), $(dhd_config_files))
+      dhd_config_files += $(dhd_config_files_tmp)
+
+      # Add prefix for last brand and create new brand profiles brands_with_last
+      # Remove last brand
+      brands_with_last=$(filter-out $(word $(words $(brands)), $(brands)), $(brands))
+      # Add prefix'd last brand
+      brands_with_last+=$(addprefix $(LASTBUILDBRANDCAP), $(lastword $(brands)))
+      
+      #Add tag from brands
+      dhd_config_files := $(foreach brand, $(brands_with_last), $(addprefix $(brand)-, $(dhd_config_files)))
+      export start_brand_build := 1
+endif
+   else
+      dhd_config_files = $(DHD_DEFAULT_CONFIG_EXT)
+   endif
+
+   ifeq ($(strip $(WMF_AVAIL)), 1)
+      $(foreach config, $(dhd_config_files), \
+      $(shell install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(SRCBASE_DHD)/$(EMFBASE); \
+      install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(SRCBASE_DHD)/$(IGSBASE)))
+      $(shell ln -sf $(ALLSRCBASE)/main/src/emf   $(DHDSRCBASE)/emf; \
+      ln -sf $(ALLSRCBASE)/main/src/router/emf   $(DHDSRCBASE)/router/emf)
+   endif
+
+   ifeq ($(USE_WLAN_SHARED), 1)
+   ifeq ($(strip $(DHD_SHARED_AVAIL)), 1)
+      $(shell install -d $(ALLSRCBASE)/$(BUILDDIR)/shared/impl1)
+      $(shell ln -sf $(ALLSRCBASE)/../shared/impl1/*.c $(ALLSRCBASE)/$(BUILDDIR)/shared/impl1/.)
+   endif
+   endif
+
+   $(foreach config, $(dhd_config_files), \
+   $(shell install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config); \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(SRCBASE_DHD)/$(DHDBASE)/sys; \
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(SRCBASE_DHD)/$(SHBASE);\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(SRCBASE_DHD)/$(SHWIFI)/src;\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE);\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/43602a1;\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/43602a3;\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/mfg/43602a1;\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/mfg/43602a3;\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/4366c0;\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/mfg/4366c0;\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/4363c0;\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/mfg/4363c0;\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(SRCBASE_DHD)/$(COMMINCL);\
+   install -d $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(SRCBASE_DHD)/$(WLSYS);\
+   install -m 755 $(obj)/$(DONGLE)/43602a1/rtecdc.bin $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/43602a1/;\
+   install -m 755 $(obj)/$(DONGLE)/43602a3/rtecdc.bin $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/43602a3/;\
+   install -m 755 $(obj)/$(DONGLE)/mfg/43602a1/rtecdc.bin $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/mfg/43602a1/;\
+   install -m 755 $(obj)/$(DONGLE)/mfg/43602a3/rtecdc.bin $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/mfg/43602a3/;\
+   install -m 755 $(obj)/$(DONGLE)/4366c0/rtecdc.bin $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/4366c0/;\
+   if [ -e $(obj)/$(DONGLE)/4366c0/rtecdc_nodhdhdr.bin ]; then \
+      install -m 755 $(obj)/$(DONGLE)/4366c0/rtecdc_nodhdhdr.bin $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/4366c0/;\
+   fi; \
+   install -m 755 $(obj)/$(DONGLE)/mfg/4366c0/rtecdc.bin $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/mfg/4366c0/;\
+   if [ -e $(obj)/$(DONGLE)/mfg/4366c0/rtecdc_nodhdhdr.bin ]; then \
+      install -m 755 $(obj)/$(DONGLE)/mfg/4366c0/rtecdc_nodhdhdr.bin $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/mfg/4366c0/;\
+   fi; \
+   install -m 755 $(obj)/$(DONGLE)/nvram.txt $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/nvram.txt;\
+   ln -sf $(DHDSRCBASE_REL)/Makefile $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/Makefile; \
+   if [ -e $(obj)/$(DONGLE)/4363c0/rtecdc.bin ]; then \
+      install -m 755 $(obj)/$(DONGLE)/4363c0/rtecdc.bin $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/4363c0/;\
+   fi; \
+   if [ -e $(obj)/$(DONGLE)/mfg/4363c0/rtecdc.bin ]; then \
+      install -m 755 $(obj)/$(DONGLE)/mfg/4363c0/rtecdc.bin $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(config)/$(DONGLE)/mfg/4363c0/;\
+   fi; \
+   chmod 777 -R  $(ALLSRCBASE)/$(BUILDDIR)))   
+
+   #sym link to the default config, this should be the last directory to build
+   #define a virtual build configuration as the last one to build
+   export DHD_LAST_TO_BUILD_DIR = $(ALLSRCBASE)/$(BUILDDIR)/$(DHDBUILDDIRPREFIX)$(DHD_LAST_TO_BUILD)
+
+   $(shell rm -f $(DHDBUILDDIRPREFIX)$(config)$(DHD_DEFAULT_CONFIG_EXT) $(DHD_LAST_TO_BUILD_DIR))   
+      
+   #####test, for built in ######
+   ifneq ($(strip $(CONFIG_BCM_WLAN)),y)   
+      #add to dhd_config_files
+      $(shell ln -sf $(DHDBUILDDIRPREFIX)$(config)$(DHD_DEFAULT_CONFIG_EXT) $(DHD_LAST_TO_BUILD_DIR))   
+      dhd_config_files += $(DHD_LAST_TO_BUILD)
+   endif
+   #####test, for built in ######
+   
+   #enum dirs
+   dhd_subdirs = $(foreach dir, $(wildcard $(ALLSRCBASE)/$(BUILDDIR)/*), $(lastword $(subst $(BRCM_CHIP)/, , $(dir)))/)
+
+   dhd_subdirs := $(call FILTER_OUT,wlobj, $(dhd_subdirs))
+   dhd_subdirs := $(call FILTER_OUT,shared, $(dhd_subdirs))
+$(info =====> dhd_subdirs=$(dhd_subdirs) <=====)
+
+   #make the build sub-folders
+   obj-$(CONFIG_BCM_WLAN) += $(dhd_subdirs)
+else  #not source_avail
+   include $(DHDCFGDIR)/$(DHD_DEFAULT_CONFIG)
+   include $(DHDCFGDIR)/dhd_router.mk
+   obj-$(CONFIG_BCM_WLAN) += $(DHD_DRIVER_PREFIX).o
+   $(DHD_DRIVER_PREFIX)-objs += $(DHD_DRIVER_PREFIX)_dep.o  $(DHD_OPEN_OBJS)
+   $(obj)/$(DHD_DRIVER_PREFIX)_dep.o:
+	  cp -f $(DHDSRCBASE)/$(DHD_DEFAULT_OBJ_NAME) $(obj)/$(DHD_DRIVER_PREFIX)_dep.o
+	  install -m 755 $(obj)/$(DONGLE)/43602a1/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/43602a1/
+	  install -m 755 $(obj)/$(DONGLE)/43602a3/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/43602a3/
+	  install -m 755 $(obj)/$(DONGLE)/mfg/43602a1/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/mfg/43602a1/
+	  install -m 755 $(obj)/$(DONGLE)/mfg/43602a3/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/mfg/43602a3/
+	  install -m 755 $(obj)/$(DONGLE)/4366c0/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/4366c0/
+	  if [ -e $(obj)/$(DONGLE)/4366c0/rtecdc_nodhdhdr.bin ]; then \
+	     install -m 755 $(obj)/$(DONGLE)/4366c0/rtecdc_nodhdhdr.bin $(INSTALL_DIR)/etc/wlan/dhd/4366c0/; \
+	  fi
+	  install -m 755 $(obj)/$(DONGLE)/mfg/4366c0/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/mfg/4366c0/
+	  if [ -e $(obj)/$(DONGLE)/mfg/4366c0/rtecdc_nodhdhdr.bin ]; then \
+	     install -m 755 $(obj)/$(DONGLE)/mfg/4366c0/rtecdc_nodhdhdr.bin $(INSTALL_DIR)/etc/wlan/dhd/mfg/4366c0/; \
+	  fi
+	  if [ -e $(obj)/$(DONGLE)/4363c0/rtecdc.bin ]; then \
+	     install -m 755 $(obj)/$(DONGLE)/4363c0/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/4363c0/; \
+	  fi
+	  if [ -e $(obj)/$(DONGLE)/mfg/4363c0/rtecdc.bin ]; then \
+	     install -m 755 $(obj)/$(DONGLE)/mfg/4363c0/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/mfg/4363c0/; \
+	  fi
+	  install -m 755 $(obj)/$(DONGLE)/nvram.txt $(INSTALL_DIR)/etc/wlan/dhd/nvram.txt
+endif
+	
+else
+
+# This wlan makefile is reentrant, and EXTRA_CFLAGS is cleared before
+# we hit this point.  Redefining version here
+EXTRA_CFLAGS += -DDSLCPE_WLAN_VERSION=\"$(DSLCPE_WLAN_VERSION)\"
+EXTRA_CFLAGS += -Wno-date-time
+#EXTRA_CFLAGS += $(BRCM_WERROR_CFLAGS)
+
+###########################################
+#
+# the build sub dirs execute here
+#
+###########################################
+$(call info_out, ===building $(obj) dhd driver===)      
+ifeq ($(strip $(RELEASE_BUILD)), 1)
+    # Get brands
+    brands := $(shell cat $(ALLSRCBASE)/../wlbrands | sed -e 's/dr_wl_brands=//' -e 's/(//' -e 's/)//')
+    ifneq ($(strip $(brands)),)
+        # Create last build brand
+        LASTBUILDBRAND=$(addprefix $(LASTBUILDBRANDCAP), $(lastword $(brands)))
+        # Add prefix 'zlast_' with DEFAULT_CONFIG_EXT 
+        DHD_DEFAULT_CONFIG_EXT := $(BRAND_LAST_CONFIG)$(DHD_DEFAULT_CONFIG_EXT)
+        # Add prefix  z_<last brand> on above
+        DHD_DEFAULT_CONFIG_EXT := $(addprefix $(LASTBUILDBRAND)-, $(DHD_DEFAULT_CONFIG_EXT))
+    endif
+endif
+
+   ifeq ($(strip $(DHD_LAST_TO_BUILD_DIR)), $(strip $(obj)))
+       ifneq ($(strip $(CONFIG_BCM_WLAN)),y)
+          ifeq ($(strip $(RELEASE_BUILD)), 1)
+       	     $(shell touch $(DHDSRCBASE)/$(DHD_DRIVER_PREFIX).o)
+       	     $(shell ln -f $(DHDSRCBASE)/$(DHD_DRIVER_PREFIX).o $(obj)/../$(DHDBUILDDIRPREFIX)$(config)$(DHD_DEFAULT_CONFIG_EXT)/$(DHD_DRIVER_PREFIX).o)
+ 	     include $(DHDCFGDIR)/$(DHD_DEFAULT_CONFIG)
+             include $(DHDCFGDIR)/dhd_router.mk
+             obj-$(CONFIG_BCM_WLAN) += $(DHD_DRIVER_PREFIX).o
+             $(DHD_DRIVER_PREFIX)-objs += $(DHD_DRIVER_PREFIX)_dep.o  $(DHD_OPEN_OBJS)
+             $(obj)/$(DHD_DRIVER_PREFIX)_dep.o:
+	     cp -f $(DHDSRCBASE)/$(DHD_DEFAULT_OBJ_NAME) $(obj)/$(DHD_DRIVER_PREFIX)_dep.o
+          endif
+       else
+             $(call info_out, echo $(strip $(CONFIG_BCM_WLAN)) do nothing)
+             #do nothing
+       endif
+   else
+      ifeq ($(strip $(RELEASE_BUILD)), 1)
+      	   obj-$(CONFIG_BCM_WLAN) += $(notdir $(obj)).o
+      else
+	   obj-$(CONFIG_BCM_WLAN) += $(DHD_DRIVER_PREFIX).o	
+      endif
+
+      # Find the base config file name
+      dir_tmp:=$(strip $(subst $(DHDBUILDDIRPREFIX), ,$(notdir $(obj))))
+      dir_tmp := $(subst -wapi,,$(dir_tmp))
+      dir_tmp := $(subst -kdb,,$(dir_tmp))
+      ifeq ($(strip $(RELEASE_BUILD)), 1)
+         ifneq ($(strip $(brands)),)
+            #Strip brand 
+            cur_brand := $(strip $(foreach brand, $(brands), $(findstring $(brand)-, $(dir_tmp))))
+            #Remove brand and 'z_'
+            dir_tmp := $(subst $(cur_brand),,$(dir_tmp))
+            dir_tmp := $(subst $(LASTBUILDBRANDCAP),,$(dir_tmp))
+            #Strip 'zlast' tag to get name of build config file
+            dir_tmp := $(subst $(BRAND_LAST_CONFIG),,$(dir_tmp))
+            #From 'XXX-' remove '-'
+            cur_brand := $(subst -,,$(cur_brand))
+            ifeq ($(strip $(start_brand_build)), 1)      
+               dummy_shell := $(shell cp -rf $(ALLSRCBASE)/../impl${CONFIG_BCM_WLAN_IMPL}-$(cur_brand)/* $(ALLSRCBASE)/../impl${CONFIG_BCM_WLAN_IMPL})
+               export start_brand_build=0
+            endif
+            dir_last_tmp :=$(findstring $(BRAND_LAST_CONFIG), $(obj))
+            ifneq ($(strip $(dir_last_tmp)),)
+               #Meet 'zlast', next brand should be used in next turn 
+               export start_brand_build=1
+            endif
+         endif
+      endif
+      include $(DHDCFGDIR)/$(dir_tmp)
+ 
+      include $(DHDCFGDIR)/dhd_router.mk
+
+      ifeq ($(strip $(RELEASE_BUILD)), 1)
+      	   $(notdir $(obj))-objs = $(dhddrv-objs)
+      else
+           $(DHD_DRIVER_PREFIX)-objs = $(dhddrv-objs)
+      endif	   
+
+      ###########################################
+      #
+      # build library here
+      #
+      ###########################################
+      #automatic collect files to if not using library
+
+      dhd_drivers_files = $(foreach dhdfile,$(DHDFILES_SRC),$(shell echo dhd/$(dhdfile)))
+      #translate suffix from .c to .o
+      dhd_drivers_object_files = $(dhd_drivers_files:.c=.o)
+      
+      #add each file, instead of a long string, make it easy to kernel build procedure
+      dhddrv-objs += $(foreach m_object, $(dhd_drivers_object_files),$(firstword $(m_object)))
+   
+      #
+      # create sw link for the build dirs, invoked from build dirs
+      #
+      $(call info_out, =======create sw link for the build dirs invoked from build dirs $(obj)=====)		
+      $(foreach file, $(dhd_drivers_files), $(eval $(shell echo files=$(dhddrv-objs:.o=.c); test ! -e $(obj)/$(file) && ln -sf $(ALLSRCBASE)/$(file) $(obj)/$(file))))
+   
+      #
+      # build the driver library
+      #
+      ifeq ($(strip $(RELEASE_BUILD)), 1)
+          $(obj)/$(notdir $(obj)).o: dhd_build_library
+	  	if [ "$(strip $(RELEASE_BUILD))" = "1" -a "$(strip $(brands))" != "" ]; then \			
+		   cp -f $(obj)/dhddrvlib.o $(DHDSRCBASE)/$(notdir $(DHDBUILDDIRPREFIX)$(dir_tmp))-$(BRCM_CHIP)-$(BCMARCH).o_save; \
+		   rm -f $(DHDSRCBASE)/$(notdir $(obj))-$(BRCM_CHIP)-$(BCMARCH).o_save; \
+		   if [ "$(strip $(dir_last_tmp))" != "" ]; then \
+			cp -rf $(ALLSRCBASE)/../impl${CONFIG_BCM_WLAN_IMPL}/* $(ALLSRCBASE)/../impl${CONFIG_BCM_WLAN_IMPL}-$(cur_brand); \
+		   fi; \
+		fi
+      else
+          $(obj)/$(DHD_DRIVER_PREFIX).o: dhd_build_library
+      endif
+
+      # open objects are not included in the library
+      dhd_lib_objects = $(foreach file, $(dhd_drivers_object_files), $(filter-out $(foreach unwanted, $(DHD_OPEN_OBJS), $(unwanted)), $(file)))
+      #$(error $(wl_lib_objects))
+
+      .PHONY : dhd_build_library 
+      dhd_build_library: $(addprefix $(obj)/, $(dhd_lib_objects))
+	$(LD) $(ld_flags) -r -o $(obj)/dhddrvlib.o  $^
+	cp -f $(obj)/dhddrvlib.o $(DHDSRCBASE)/$(notdir $(obj))-$(BRCM_CHIP)-$(BCMARCH).o_save
+	install -m 755 $(obj)/$(DONGLE)/43602a1/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/43602a1/
+	install -m 755 $(obj)/$(DONGLE)/43602a3/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/43602a3/
+	install -m 755 $(obj)/$(DONGLE)/mfg/43602a1/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/mfg/43602a1/
+	install -m 755 $(obj)/$(DONGLE)/mfg/43602a3/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/mfg/43602a3/
+	install -m 755 $(obj)/$(DONGLE)/4366c0/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/4366c0/
+	if [ -e $(obj)/$(DONGLE)/4366c0/rtecdc_nodhdhdr.bin ]; then \
+	   install -m 755 $(obj)/$(DONGLE)/4366c0/rtecdc_nodhdhdr.bin $(INSTALL_DIR)/etc/wlan/dhd/4366c0/; \
+	fi
+	install -m 755 $(obj)/$(DONGLE)/mfg/4366c0/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/mfg/4366c0/
+	if [ -e $(obj)/$(DONGLE)/mfg/4366c0/rtecdc_nodhdhdr.bin ]; then \
+	   install -m 755 $(obj)/$(DONGLE)/mfg/4366c0/rtecdc_nodhdhdr.bin $(INSTALL_DIR)/etc/wlan/dhd/mfg/4366c0/; \
+	fi
+
+	if [ -e $(obj)/$(DONGLE)/4363c0/rtecdc.bin ]; then \
+	   install -m 755 $(obj)/$(DONGLE)/4363c0/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/4363c0/; \
+	fi
+	if [ -e $(obj)/$(DONGLE)/mfg/4363c0/rtecdc.bin ]; then \
+	   install -m 755 $(obj)/$(DONGLE)/mfg/4363c0/rtecdc.bin $(INSTALL_DIR)/etc/wlan/dhd/mfg/4363c0/; \
+	fi
+	install -m 755 $(obj)/$(DONGLE)/nvram.txt $(INSTALL_DIR)/etc/wlan/dhd/nvram.txt
+	if [ -d $(DHDSRCBASE)/dongle/clm ]; then \
+		install -m 755 $(DHDSRCBASE)/dongle/clm/*.clm_blob $(INSTALL_DIR)/etc/wlan/clm/ ; \
+	fi
+
+      $(call info_out, EXTRA_CFLAGS = $(sort $(EXTRA_CFLAGS)))   
+      $(call info_out, DHDIFLAGS = $(DHDIFLAGS))
+      $(call info_out, dhddrv-objs= $(dhd_drivers_object_files))	
+      $(call info_out, ===============================)
+   endif
+endif

@@ -1,0 +1,24 @@
+<PUBLISH>
+--- 963158GW.old	2019-04-30 10:00:49.112670469 -0700
++++ 963158GW	2019-05-01 09:13:30.535413216 -0700
+@@ -532,7 +532,7 @@
+ # Bootloader and Secure Boot Options
+ #
+ BUILD_DYNAMIC_CFE=y
+-# BUILD_CFE_BOARD_DTB is not set
++BUILD_CFE_BOARD_DTB=y
+ # BUILD_HND_EAP_UBOOT is not set
+ # BUILD_CFE_DDR4 is not set
+ BUILD_CFE_APPEND_BOOT_CMDLINE=""
+@@ -612,7 +612,10 @@
+ # BUILD_OPENVSWITCH is not set
+ # BRCM_OVS_SUPPORT is not set
+ # BUILD_BRCM_HOSTAPD is not set
+-# BUILD_BCM_ASOC_AUDIO is not set
++BUILD_BCM_ASOC_AUDIO=y
++SND_SOC_MAPLELEAF=y
++# SND_SOC_CS4345 is not set
++# SND_SOC_PCM5100 is not set
+ 
+ #
+ # Management Protocols and User Interface Selection

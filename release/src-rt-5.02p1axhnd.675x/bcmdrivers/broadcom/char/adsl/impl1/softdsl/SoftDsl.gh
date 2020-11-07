@@ -1,0 +1,597 @@
+/****************************************************************************
+ *
+ * SoftDsl.gh 
+ *
+ * Description:
+ *	This is a header file which defines the type for the DSL
+ *	global variable structure.
+ *
+ * Copyright (c) 1993-1997 AltoCom, Inc. All rights reserved.
+ * Authors: Ilya Stomakhin
+ *
+ * $Revision: 1.72 $
+ *
+ * $Id: SoftDsl.gh,v 1.72 2004/04/30 23:05:19 kdu Exp $
+ *
+ * $Log: SoftDsl.gh,v $
+ * Revision 1.72  2004/04/30 23:05:19  kdu
+ * Fixed interop issues in TDC lab for TMM.
+ *
+ * Revision 1.70  2004/04/10 23:30:48  ilyas
+ * Defined gloval structure for slow (SDRAM) data
+ *
+ * Revision 1.69  2004/04/02 18:33:45  gsyu
+ * Share MuxFramer buffers with scratch memory
+ *
+ * Revision 1.68  2004/02/04 20:12:38  linyin
+ * Support adsl2plus
+ *
+ * Revision 1.67  2004/02/03 19:10:37  gsyu
+ * Added separated carrierInfo structures for G992P5
+ *
+ * Revision 1.66  2004/01/26 04:21:06  yongbing
+ * Merge changes in ADSL2 branch into Annex A branch
+ *
+ * Revision 1.65  2004/01/13 19:12:07  gsyu
+ * Added two more variables for Double upstream
+ *
+ * Revision 1.64  2003/12/04 02:10:37  linyin
+ * Add a variable for FbmsOL mode
+ *
+ * Revision 1.63  2003/11/20 00:57:50  yongbing
+ * Merge ADSL2 functionalities into Annex A branch
+ *
+ * Revision 1.62  2003/11/05 01:59:12  liang
+ * Add vendor ID code for Infineon.
+ *
+ * Revision 1.61  2003/08/12 22:59:41  khp
+ * - for Haixiang: added support for ADSL_MARGIN_TWEAK_TEST
+ *
+ * Revision 1.60  2003/08/01 00:08:19  liang
+ * Added firmware ID for Samsung ADI 930 DSLAM.
+ *
+ * Revision 1.59  2003/07/14 14:40:08  khp
+ * - AnnexB: added bad SNR2 retrain counter to connectin setup
+ *
+ * Revision 1.58  2003/06/25 02:40:22  liang
+ * Added firmware ID for Annex A UE9000 ADI918 (from Aliant, Canada).
+ *
+ * Revision 1.57  2003/06/25 00:00:40  ilyas
+ * -added firmware IDs for TI 4000C and AC5 (Annex B)
+ *
+ * Revision 1.56  2003/05/31 01:50:38  khp
+ * -add firmware IDs for ECI16 and ECI16A
+ *
+ * Revision 1.55  2003/03/27 19:30:52  liang
+ * Add and initialize new connectionSetup field coVendorFirmwareID under module ADSL_IDENTIFY_VENDOR_FIRMWARE.
+ *
+ * Revision 1.54  2002/12/13 18:35:48  yongbing
+ * Add support for G.992.2 Annex C in start up
+ *
+ * Revision 1.53  2002/12/06 02:06:33  liang
+ * Moved the T1.413 RAck1/RAck2 switching variables to connection setup structure.
+ *
+ * Revision 1.52  2002/11/26 02:49:46  liang
+ * Added variable codingGainDecrement to the connectionSetup structure to solve the C-Rates-RA option failure problem.
+ *
+ * Revision 1.51  2002/10/20 18:56:16  khp
+ * - for linyin:
+ *   - #ifdef NEC_NSIF_WORKAROUND:
+ *     - add status and fail counter for NSIF
+ *
+ * Revision 1.50  2002/09/28 02:36:50  yongbing
+ * Add retrain in T1.413 with R-Ack1 tone
+ *
+ * Revision 1.49  2002/09/12 21:07:19  ilyas
+ * Added HEC, OCD and LCD counters
+ *
+ * Revision 1.48  2002/07/19 01:51:35  liang
+ * Added vendor ID constant for Alcatel.
+ *
+ * Revision 1.47  2002/06/27 21:51:08  liang
+ * Added xmt and rcv tone selection bitmap in connection setup.
+ *
+ * Revision 1.46  2002/06/11 20:48:06  liang
+ * Added CO vendor ID field to connectionSetup structure.
+ *
+ * Revision 1.45  2002/06/06 03:05:43  khp
+ * -use boolean in connectup setup instead of localCapabilities.features to indicate FBM mode
+ *
+ * Revision 1.44  2002/03/22 19:38:58  yongbing
+ * Modify for co-exist of G994P1 and T1P413
+ *
+ * Revision 1.43  2002/03/02 00:52:40  ilyas
+ * AnnexC delay needs to be long for prototype
+ *
+ * Revision 1.42  2002/01/19 23:59:17  ilyas
+ * Added support for LOG and eye data to ADSL core target
+ *
+ * Revision 1.41  2002/01/16 19:03:59  ilyas
+ * Added HOST_ONLY ifdefs around ADSL core data
+ *
+ * Revision 1.40  2002/01/14 17:41:04  liang
+ * Move xmt & rcv sample buffers to top level.
+ *
+ * Revision 1.39  2001/12/21 22:45:34  ilyas
+ * Added support for ADSL MIB data object
+ *
+ * Revision 1.38  2001/12/13 02:24:22  ilyas
+ * Added G997 (Clear EOC and G997 framer) support
+ *
+ * Revision 1.37  2001/11/30 05:56:31  liang
+ * Merged top of the branch AnnexBDevelopment onto top of the tree.
+ *
+ * Revision 1.36  2001/10/19 00:12:07  ilyas
+ * Added support for frame oriented (no ATM) data link layer
+ *
+ * Revision 1.29.2.5  2001/10/03 01:44:00  liang
+ * Merged with codes from main tree (tag SoftDsl_2_18).
+ *
+ * Revision 1.29.2.4  2001/08/18 00:00:36  georgep
+ * Add variable to store annexC pathDelay
+ *
+ * Revision 1.29.2.3  2001/08/08 17:33:27  yongbing
+ * Merge with tag SoftDsl_2_17
+ *
+ * Revision 1.35  2001/08/29 02:56:01  ilyas
+ * Added tests for flattening/unflatenning command and statuses (dual mode)
+ *
+ * Revision 1.34  2001/08/28 03:26:32  ilyas
+ * Added support for running host and adsl core parts separately ("dual" mode)
+ *
+ * Revision 1.33  2001/06/18 19:49:36  ilyas
+ * Changes to include support for HOST_ONLY mode
+ *
+ * Revision 1.32  2001/05/18 21:21:44  liang
+ * Save the current number of rcv samples to line handler for QProc test.
+ *
+ * Revision 1.31  2001/04/25 01:20:11  ilyas
+ *
+ * Don't use DSL frame functions if ATM_LAYER is not defined
+ *
+ * Revision 1.30  2001/03/25 06:11:20  liang
+ * Combined separate loop attenuation status for ATUR & ATUC into one status.
+ * Replace separate hardware AGC info status for ATUR & ATUC into hardware AGC
+ * request status and hardware AGC obtained status.
+ * Use store AGC command to save hardware AGC value instead of returning value
+ * from status report.
+ *
+ * Revision 1.29  2001/03/17 03:00:46  georgep
+ * Added agcInfo to connectionSetupStruct
+ *
+ * Revision 1.28  2001/02/10 03:03:09  ilyas
+ * Added one more DslFrame function
+ *
+ * Revision 1.27  2000/08/31 19:04:24  liang
+ * Added scratch buffer structure definition.
+ *
+ * Revision 1.26  2000/07/23 20:52:52  ilyas
+ * Added xxxFrameBufSetAddress() function for ATM framer layers
+ * Rearranged linkLayer functions in one structure which is passed as a
+ * parameter to xxxLinkLayerInit() function to be set there
+ *
+ * Revision 1.25  2000/07/18 21:42:25  ilyas
+ * Fixed compiler warning about pointer casting
+ *
+ * Revision 1.24  2000/07/18 21:18:45  ilyas
+ * Added GLOBAL_PTR_BIAS feature to utilize full 64K MIPS relative addressing space
+ *
+ * Revision 1.23  2000/07/18 20:03:24  ilyas
+ * Changed DslFrame functions definitions to macros,
+ * Removed gDslVars from their parameter list
+ *
+ * Revision 1.22  2000/07/17 21:08:15  lkaplan
+ * removed global pointer
+ *
+ * Revision 1.21  2000/05/09 23:00:26  ilyas
+ * Added ATM status messages, ATM timer, Tx frames flush on timeout
+ * Fixed a bug - adding flushed Tx frames to the list of free Rx frames
+ *
+ * Revision 1.20  2000/05/03 03:57:04  ilyas
+ * Added LOG file support for writing ATM data
+ *
+ * Revision 1.19  2000/04/19 00:31:47  ilyas
+ * Added global SoftDsl functions for Vc, added OOB info functions
+ *
+ * Revision 1.18  2000/04/13 08:36:22  yura
+ * Added SoftDslSetRefData, SoftDslGetRefData functions
+ *
+ * Revision 1.17  2000/04/13 05:38:54  georgep
+ * Added T1p413 "Activation and Acknowledgement" which can substitute G994P1
+ *
+ * Revision 1.16  2000/04/05 22:30:42  liang
+ * Changed function & constant names from G992p2 to G992 for the Main module.
+ *
+ * Revision 1.15  2000/04/04 04:16:06  liang
+ * Merged with SoftDsl_0_03 from old tree.
+ *
+ * Revision 1.15  2000/04/04 01:47:21  ilyas
+ * Implemented abstract dslFrame and dslFrameBuffer objects
+ *
+ * Revision 1.14  2000/04/01 02:53:33  georgep
+ * Added pointer to G992p2Profile inside connectionSetup
+ *
+ * Revision 1.13  2000/03/18 01:27:56  georgep
+ * Changed connectionSetup to include G992p1 Capabilities
+ *
+ * Revision 1.12  2000/02/29 01:39:05  georgep
+ * put variable haveRemoteCapabilities inside connectionSetupStruct
+ *
+ * Revision 1.11  2000/02/08 00:44:36  liang
+ * Fix the gDslVars definition for Irix environment.
+ *
+ * Revision 1.10  1999/11/19 00:59:29  george
+ * Define physicalLayerVars as a union
+ *
+ * Revision 1.9  1999/11/11 19:19:42  george
+ * Porting to 16Bit Compiler
+ *
+ * Revision 1.8  1999/11/09 20:26:17  george
+ * Added G992P2_PROFILE to modules list
+ *
+ * Revision 1.7  1999/10/27 23:01:54  wan
+ * Add G.994.1 setup in dslConnectionSetupStruct for setting up Initiation side
+ *
+ * Revision 1.6  1999/08/12 21:16:27  george
+ * Move profileVars definition to G992p2/G992p2Profile.gh
+ *
+ * Revision 1.5  1999/08/10 18:20:43  george
+ * Define fastRetrainVars
+ *
+ * Revision 1.4  1999/07/16 02:03:02  liang
+ * Added Tx & Rx data handler function pointers.
+ *
+ * Revision 1.3  1999/07/03 01:40:15  liang
+ * Redefined dsl command parameter list and added connection setup struct.
+ *
+ * Revision 1.2  1999/02/10 01:56:37  liang
+ * Added hooks for G994.1 and G992.2.
+ *
+ *
+ *****************************************************************************/
+
+#ifndef	SoftDslGlobals
+#define	SoftDslGlobals
+
+#include "SoftDsl.h"
+
+#ifdef G992P2_PROFILE
+#include "G992p2Profile.gh"
+#endif
+
+#ifdef ADSL_FRAMER
+#include "MuxFramer.gh"
+#endif
+
+#ifdef ATM
+#include "SoftAtm.gh"
+#endif
+
+#ifdef DSL_PACKET
+#include "DslPacket.gh"
+#endif
+
+#ifdef G997_1_FRAMER
+#include "G997.gh"
+#ifdef G992P3
+#include "G992p3OvhMsg.gh"
+#endif
+#endif
+
+#ifdef ADSL_MIB
+#include "AdslMib.gh"
+#endif
+
+#ifndef HOST_ONLY
+#ifdef T1P413
+#include "T1p413Main.gh"
+#endif
+
+#ifdef G994P1
+#include "G994p1Main.gh"
+#endif
+
+#ifdef G992
+#include "G992Main.gh"
+#endif
+
+#include "SoftDslSampleBuffers.gh"
+#endif
+
+#if defined(HOST_ONLY) && defined(G997_1_FRAMER)
+
+#define	kG997MaxRxPendingFrames		16
+#define	kG997MaxTxPendingFrames		16
+
+typedef struct {
+	dslFrame		fr;
+	dslFrameBuffer	frBuf;
+#ifdef G992P3
+	dslFrameBuffer	frBufHdr;
+	uchar		eocHdr[4];
+#endif
+} ac997FramePoolItem;
+
+typedef struct {
+	circBufferStruct	g997RxFrCB;
+	void			*g997RxFrBuf[kG997MaxRxPendingFrames];
+	dslFrameBuffer		*g997RxCurBuf;
+	ulong			timeUpdate;
+	int			pendingFrFlag;
+
+	ac997FramePoolItem	g997TxFrBufPool[kG997MaxTxPendingFrames];
+	void			*g997TxFrList;
+} ac997FrameCtrl;
+#endif
+
+typedef struct __dslSlowVarsStruct
+	{
+	int								tmp;
+	}
+	 dslSlowVarsStruct;
+
+typedef struct __dslVarsStruct
+	{
+	bitMap							setup;
+	eyeHandlerType					eyeHandlerPtr;
+	logHandlerType					logHandlerPtr;
+	dslDriverCallbackType			driverCallback;
+
+	rcvHandlerType					rcvHandlerPtr;
+	xmtHandlerType					xmtHandlerPtr;
+
+#ifndef ADSLCORE_ONLY
+	dslCommandHandlerType			adslCoreCommandHandlerPtr;
+#endif
+	dslCommandHandlerType			dataPumpCommandHandlerPtr;
+
+	dslStatusHandlerType			internalStatusHandlerPtr;
+	dslStatusHandlerType			externalStatusHandlerPtr;
+#ifndef ADSLCORE_ONLY
+	dslStatusHandlerType			externalLinkLayerStatusHandlerPtr;
+#endif
+
+	dslDirectionType				direction;
+	dslConnectionSetupStruct		connectionSetup;
+
+#ifdef NEC_NSIF_WORKAROUND
+	uchar 					G994NsStatus;
+	uchar 					G994NsFailCounter;
+#endif
+
+	dslFrameHandlerType				rxIndicateHandlerPtr;
+	dslFrameHandlerType				txCompleteHandlerPtr;
+
+	linkLayerFunctions				LinkLayerFunctions;
+	dslSlowVarsStruct				*dslSlowVars;
+
+#ifdef DSL_FRAME_FUNCTIONS
+	dslFrameFunctions				DslFrameFunctions;
+#endif
+	uint							refData;
+	uint							execTime;
+	int								currRcvNSamps;
+
+#ifndef HOST_ONLY
+	DslSampleBuffersStruct			sampleBuffersVars;
+
+#ifdef G992P2_PROFILE
+	G992p2ProfileVarsStruct			G992p2ProfileVars;
+#endif
+			
+#ifdef ADSL_FRAMER
+	muxFramerVarsStruct				muxFramerVars;
+#endif
+#endif /* HOST_ONLY */
+
+#ifdef DSL_LINKLAYER
+	union
+		{
+#ifdef ATM
+		atmVarsStruct				atmVars;
+#endif
+#ifdef DSL_PACKET
+		dslPacketVarsStruct			dslPacketVars;
+#endif
+		} linkLayerVars;
+#endif
+
+#ifdef G997_1_FRAMER
+	g997VarsStruct					G997Vars;
+#ifdef G992P3
+	g992p3OvhMsgVarsStruct			G992p3OvhMsgVars;
+#endif
+#endif
+
+#ifdef ADSL_MIB
+	adslMibVarsStruct				adslMibVars;
+#endif
+
+#ifndef HOST_ONLY
+	union
+		{
+#ifdef T1P413
+ 		T1p413VarsStruct			T1p413Vars;
+#endif		
+#ifdef G994P1
+		G994p1VarsStruct			G994p1Vars;
+#endif
+#ifdef G992
+		G992VarsStruct				G992Vars;
+#endif
+		} physicalLayerVars;
+	union
+		{
+#ifdef G992
+		G992ScratchVarsStruct		G992ScratchVars;
+#endif
+#if defined(ADSL_FRAMER) && defined(SHARE_MUX_FRAMER_VARS)
+        muxFramerSharedVarsStruct	muxFramerSharedVars;
+#endif
+		} scratchVars;
+#endif /* HOST_ONLY */
+
+#if defined(HOST_ONLY) && defined(G997_1_FRAMER)
+	ac997FrameCtrl	clEocCtrl;
+	ac997FrameCtrl	nsfCtrl;
+	ac997FrameCtrl	datagramCtrl;
+#ifdef SUPPORT_HMI
+	ac997FrameCtrl	hmiEocCtrl;
+#endif
+#endif
+	uchar				lineId;
+	Boolean				xdslCoreOvhMsgPrintEnabled;
+	Boolean				pollingRateAdjusted;
+	uint				timeInL2Ms;
+	Boolean				xdslCoreShMarginMonEnabled;
+	uint				xdslCoreLOMTimeout;
+	int					xdslCoreLOMTime;
+	}
+	 dslVarsStruct;
+
+#ifndef GLOBAL_PTR_BIAS
+#define	gDslGlobalVarPtr			((struct __dslVarsStruct *)gDslVars)
+#define	gDslGlobalSlowVarPtr		(gDslGlobalVarPtr->dslSlowVars)
+#else
+#define	gDslGlobalVarPtr			((struct __dslVarsStruct *) (void*)((uchar*)(gDslVars) - GLOBAL_PTR_BIAS))
+#define	gDslGlobalSlowVarPtr		((struct __dslSlowVarsStruct *) (void*)((uchar*)(gDslGlobalVarPtr->dslSlowVars) - GLOBAL_PTR_BIAS))
+#endif
+
+#define	gDslSampleBuffersVars		(gDslGlobalVarPtr->sampleBuffersVars)
+
+#define	gDslMuxFramerVars			(gDslGlobalVarPtr->muxFramerVars)
+#define	gDslMuxFramerSharedVars		(gDslGlobalVarPtr->scratchVars.muxFramerSharedVars)
+#define	gDslLinkLayerVars			(gDslGlobalVarPtr->linkLayerVars)
+#define	gDslAtmVars					(gDslGlobalVarPtr->linkLayerVars.atmVars)
+#define	gDslPacketVars				(gDslGlobalVarPtr->linkLayerVars.dslPacketVars)
+#define	gG997Vars					(gDslGlobalVarPtr->G997Vars)
+
+#ifdef G992P3
+#define	gG992p3OvhMsgVars			(gDslGlobalVarPtr->G992p3OvhMsgVars)
+#endif
+
+#define	gAdslMibVars				(gDslGlobalVarPtr->adslMibVars)
+
+#define	gT1p413Vars					(gDslGlobalVarPtr->physicalLayerVars.T1p413Vars)
+#define	gG994p1Vars					(gDslGlobalVarPtr->physicalLayerVars.G994p1Vars)
+#define	gG992Vars					(gDslGlobalVarPtr->physicalLayerVars.G992Vars)
+#define gG992p2ProfileVars			(gDslGlobalVarPtr->G992p2ProfileVars)
+
+#define	gG992ScratchVars			(gDslGlobalVarPtr->scratchVars.G992ScratchVars)
+
+#ifndef gEyeHandlerPtr
+#define	gEyeHandlerPtr				(gDslGlobalVarPtr->eyeHandlerPtr)
+#endif
+
+#ifndef gLogHandlerPtr
+#define	gLogHandlerPtr				(gDslGlobalVarPtr->logHandlerPtr)
+#endif
+
+#ifdef VP_SIMULATOR
+#define	gDriverCallback(x)			(gDslGlobalVarPtr->driverCallback)(x)
+#else
+#define	gDriverCallback(x)
+#endif
+
+/*
+**
+**		Frame functions callouts
+**
+*/
+
+#define	gDslFrameFunc				(gDslGlobalVarPtr->DslFrameFunctions)
+
+#define	DslFrameBufferGetLength(gDslVars, fb) \
+	gDslFrameFunc.__DslFrameBufferGetLength(fb)
+
+#define DslFrameBufferGetAddress(gDslVars, fb) \
+	gDslFrameFunc.__DslFrameBufferGetAddress(fb)
+
+#define DslFrameBufferSetLength(gDslVars, fb, l) \
+	gDslFrameFunc.__DslFrameBufferSetLength(fb, l)
+
+#define DslFrameBufferSetAddress(gDslVars, fb, p) \
+	gDslFrameFunc.__DslFrameBufferSetAddress(fb, p)
+
+#define DslFrameInit(gDslVars, f) \
+	gDslFrameFunc.__DslFrameInit(f)
+
+#define DslFrameGetLength(gDslVars, pFrame) \
+	gDslFrameFunc.__DslFrameGetLength(pFrame)
+
+#define DslFrameGetBufCnt(gDslVars, pFrame) \
+	gDslFrameFunc.__DslFrameGetBufCnt(pFrame)
+
+#define DslFrameGetFirstBuffer(gDslVars, pFrame) \
+	gDslFrameFunc.__DslFrameGetFirstBuffer(pFrame)
+
+#define DslFrameGetNextBuffer(gDslVars, pFrBuffer) \
+	gDslFrameFunc.__DslFrameGetNextBuffer(pFrBuffer)
+
+#define DslFrameSetNextBuffer(gDslVars, pFrBuf, pFrBufNext) \
+	gDslFrameFunc.__DslFrameSetNextBuffer(pFrBuf, pFrBufNext)
+
+#define DslFrameGetLastBuffer(gDslVars, pFrame) \
+	gDslFrameFunc.__DslFrameGetLastBuffer(pFrame)
+
+#define DslFrameGetLinkFieldAddress(gDslVars, f) \
+	gDslFrameFunc.__DslFrameGetLinkFieldAddress(f)
+
+#define DslFrameGetFrameAddressFromLink(gDslVars, lnk) \
+	gDslFrameFunc.__DslFrameGetFrameAddressFromLink(lnk)
+
+
+#define DslFrameGetOobInfo(gDslVars, f, pOobInfo) \
+	gDslFrameFunc.__DslFrameGetOobInfo(f, pOobInfo)
+
+#define DslFrameSetOobInfo(gDslVars, f, pOobInfo) \
+	gDslFrameFunc.__DslFrameSetOobInfo(f, pOobInfo)
+
+
+#define DslFrameEnqueBufferAtBack(gDslVars, f, b) \
+	gDslFrameFunc.__DslFrameEnqueBufferAtBack(f, b)
+
+#define DslFrameEnqueFrameAtBack(gDslVars, fMain, f) \
+	gDslFrameFunc.__DslFrameEnqueFrameAtBack(fMain, f)
+
+#define DslFrameEnqueBufferAtFront(gDslVars, f, b) \
+	gDslFrameFunc.__DslFrameEnqueBufferAtFront(f, b)
+
+#define DslFrameEnqueFrameAtFront(gDslVars, fMain, f) \
+	gDslFrameFunc.__DslFrameEnqueFrameAtFront(fMain, f)
+
+#define DslFrameDequeBuffer(gDslVars, pFrame) \
+	gDslFrameFunc.__DslFrameDequeBuffer(pFrame)
+
+#define DslFrameAllocMemForFrames(gDslVars, frameNum) \
+	gDslFrameFunc.__DslFrameAllocMemForFrames(frameNum)
+
+#define DslFrameFreeMemForFrames(gDslVars, hMem) \
+	gDslFrameFunc.__DslFrameFreeMemForFrames(hMem)
+
+#define DslFrameAllocFrame(gDslVars, handle) \
+	gDslFrameFunc.__DslFrameAllocFrame(handle)
+
+#define DslFrameFreeFrame(gDslVars, handle, pFrame) \
+	gDslFrameFunc.__DslFrameFreeFrame(handle, pFrame)
+
+#define DslFrameAllocMemForBuffers(gDslVars, ppMemPool, bufNum, memSize) \
+	gDslFrameFunc.__DslFrameAllocMemForBuffers(ppMemPool, bufNum, memSize)
+
+#define DslFrameFreeMemForBuffers(gDslVars, hMem, memSize, pMemPool) \
+	gDslFrameFunc.__DslFrameFreeMemForBuffers(hMem, memSize, pMemPool)
+
+#define DslFrameAllocBuffer(gDslVars, handle, pMem, length) \
+	gDslFrameFunc.__DslFrameAllocBuffer(handle, pMem, length)
+
+#define DslFrameFreeBuffer(gDslVars, handle, pBuf) \
+	gDslFrameFunc.__DslFrameFreeBuffer(handle, pBuf)
+
+#define DslFrame2Id(gDslVars, handle, pFrame) \
+	gDslFrameFunc.__DslFrame2Id(handle, pFrame)
+
+#define DslFrameId2Frame(gDslVars, handle, frameId) \
+	gDslFrameFunc.__DslFrameId2Frame (handle, frameId)
+
+
+#endif	/* SoftDslGlobals */

@@ -1,0 +1,9 @@
+#
+# Add the object(s) in cms-dm-bcm-speedservice.xml above the 
+# object Device.ManagementServer.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-bcm-container.xml Device.
+

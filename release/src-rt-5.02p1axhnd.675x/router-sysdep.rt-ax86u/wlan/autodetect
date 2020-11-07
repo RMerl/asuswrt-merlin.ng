@@ -1,0 +1,3 @@
+dependson: private/libs/wlcsm public/libs/libxml2 private/libs/cms_core public/libs/jsonc public/libs/sqlite private/apps/nvram private/apps/hndrouter public/libs/bcm_util private/libs/pmd public/libs/bcm_flashutil public/libs/bcm_boardctl
+condition: ifeq ($(shell ( [ ! -z $(BRCM_DRIVER_WIRELESS) ]) && [  -z $(BUILD_BRCM_HNDROUTER_ALONE) ];  echo $$?),0)
+

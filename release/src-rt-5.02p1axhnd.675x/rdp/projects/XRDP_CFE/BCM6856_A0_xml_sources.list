@@ -1,0 +1,14 @@
+../XRDP_CFE/firmware/src/BCM6856/project_data_structures.xml
+../XRDP_CFE/firmware/xml/pon_common_cfe.xml
+../XRDP_CFE/firmware/xml/common.xml
+../XRDP_CFE/firmware/xml/protocols_headers.xml
+../XRDP_CFE/firmware/xml/cpu_tx_ring.xml
+../XRDP_CFE/firmware/xml/cpu_rx.xml
+../../firmware/common/xrdp/debug/debug.xml
+../XRDP_CFE/firmware/xml/multicast_replication.xml
+../XRDP_CFE/firmware/xml/basic_scheduler.xml
+../XRDP_CFE/firmware/xml/complex_scheduler.xml
+../XRDP_CFE/firmware/xml/hw_data_structures.xml
+../XRDP_CFE/firmware/xml/BCM6846_A0_hw_data_structures.xml
+../XRDP_CFE/firmware/xml/basic_rate_limiter.xml
+../XRDP_CFE/firmware/xml/complex_rate_limiter.xml

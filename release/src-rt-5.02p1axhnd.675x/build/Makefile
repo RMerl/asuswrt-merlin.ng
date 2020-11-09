@@ -26,7 +26,7 @@ all:
 	$(MAKE) -f build/Makefile default
 
 all_postcheck1: profile_saved_check sanity_check rdp_link\
-     create_install pinmuxcheck dynamic_cfe kernelbuild modbuild\
+     create_install pinmuxcheck dynamic_cfe\
      parallel_targets
 
 # Order-only rules
@@ -424,11 +424,11 @@ kernelbuild: $(KERNEL_DIR)/.pre_kernelbuild hnd_dongle rdp_link
 else
 kernelbuild: $(KERNEL_DIR)/.pre_kernelbuild
 endif
-	CURRENT_ARCH=$(KERNEL_ARCH) TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk
+	CURRENT_ARCH=$(KERNEL_ARCH) TOOLCHAIN_TOP= $(MAKE) $(PARALLEL_BUILD) -C $(BUILD_DIR)/build -f Bcmkernel.mk
 
 
 headers_install: kernelbuild
-	CURRENT_ARCH=$(KERNEL_ARCH) TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk headers_install INSTALL_HDR_PATH=$(INC_KERNELAPI_PATH)
+	CURRENT_ARCH=$(KERNEL_ARCH) TOOLCHAIN_TOP= $(MAKE) $(PARALLEL_BUILD) -C $(BUILD_DIR)/build -f Bcmkernel.mk headers_install INSTALL_HDR_PATH=$(INC_KERNELAPI_PATH)
 
 modbuild: headers_install
 

@@ -335,7 +335,11 @@ function show_etherstate_hnd(){
 		var speedMapping = new Array();
 		speedMapping["M"] = "100 Mbps";
 		speedMapping["G"] = "1 Gbps";
+		speedMapping["Q"] = "2.5 Gbps";
+		speedMapping["F"] = "5 Gbps";
+		speedMapping["T"] = "10 Gbps";
 		speedMapping["X"] = "Unplugged";
+
 		var parseArray = [];
 		for (var prop in _array) {
 			if (_array.hasOwnProperty(prop)) {

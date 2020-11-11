@@ -1,0 +1,116 @@
+/*
+ * CSS styles used in Site Survey Tab for Tabels
+ *
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: tablestyle.css 603186 2015-12-01 07:49:11Z $
+ */
+
+#aplistplaceholder {
+	width:95.3%;
+	margin-top:10px;
+	margin-left:28px;
+}
+
+.aplisttable {
+	border-collapse:collapse;
+	width:90%;
+	font-size:17px;
+	margin-left:30px;
+	margin-top:50px;
+	margin-bottom:20px;
+}
+
+.aplisttable thead {
+	cursor: pointer;
+	color:white;
+}
+
+.aplisttable th,td {
+	padding-left:10px;
+	padding-right:10px;
+}
+
+.aplisttable tbody tr {
+	border:0px solid #679C80;
+}
+
+.aplisttable tbody tr td {
+	vertical-align:center;
+}
+
+.curduttr {
+	color:#990000;
+	font-weight:bold;
+}
+
+#aplisttableid tbody tr:nth-child(even) {
+	background-color:#E6EDF0;
+}
+
+tbody tr.hilite td {
+	background: none repeat scroll 0 0 #6BAAFC;
+	color: white;
+}
+
+#aplisttableid tbody tr:nth-child(odd) {
+	background-color:#CDD6DB;
+}
+
+#aplisttableid thead tr th.headerSortUp span {
+	background-image: url('up-arrow.gif');
+}
+
+#aplisttableid thead tr th.headerSortDown span {
+	background-image: url('down-arrow.gif');
+}
+
+#aplisttableid thead tr th span {
+	padding-right: 20px;
+	background-repeat: no-repeat;
+	background-position: 100% 100%;
+}
+
+div.pager {
+	text-align: center;
+	margin: .5em 0;
+}
+
+div.pager span {
+	display: inline-block;
+	width: 1.8em;
+	height: 1.8em;
+	line-height: 1.8;
+	text-align: center;
+	cursor: pointer;
+	background: #000;
+	color: #fff;
+	margin-right: 0.2em;
+}
+
+div.pager span.active {
+	background: #c00;
+}
+
+.sitesurveygraphtable {
+	width:96%;
+	height:500px;
+	margin-left:55px;
+	margin-top:50px;
+	margin-bottom:20px;
+}

@@ -44,6 +44,8 @@ BAX88=y
 BAX58=y
 BAX56=y
 
+BAX86=y
+
 ### Paths
 # Store built images there
 STAGE_LOC="$HOME/images"
@@ -72,7 +74,7 @@ build_fw()
 		if [ "$FWMODEL" = "rt-ac86u" ] || [ "$FWMODEL" = "rt-ax88u" ]; then
 			FWNAME="$(find -- *_cferom_ubi.w | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_cferom_ubi.w~~g').zip"
-		elif [ "$FWMODEL" = "rt-ax58u" ] || [ "$FWMODEL" = "rt-ax56u" ]; then
+		elif [ "$FWMODEL" = "rt-ax58u" ] || [ "$FWMODEL" = "rt-ax56u" ] || [ "$FWMODEL" = "rt-ax86u" ]; then
 			FWNAME="$(find -- *_cferom_pureubi.w | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_cferom_pureubi.w~~g').zip"
 		else
@@ -161,7 +163,9 @@ fi
 if [ "$BAX56" = "y" ]; then
 	clean_tree amng.ax56 release/src-rt-5.02axhnd.675x rt-ax56u master
 fi
-
+if [ "$BAX86" = "y" ]; then
+	clean_tree amng.ax86 release/src-rt-5.02p1axhnd.675x rt-ax86u master
+fi
 echo "--- $(date +%R) - All trees ready!"
 
 # Launch parallel builds
@@ -210,6 +214,11 @@ fi
 
 if [ "$BAX56" = "y" ]; then
 	build_fw amng.ax56/release/src-rt-5.02axhnd.675x rt-ax56u &
+	sleep 10
+fi
+
+if [ "$BAX86" = "y" ]; then
+	build_fw amng.ax86/release/src-rt-5.02p1axhnd.675x rt-ax86u &
 	sleep 10
 fi
 

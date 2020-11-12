@@ -344,7 +344,12 @@ void decrypt_packet() {
 		if (checkmac() != DROPBEAR_SUCCESS) {
 			dropbear_exit("Integrity error");
 		}
+
 	}
+	
+#if DROPBEAR_FUZZ
+	fuzz_dump(ses.readbuf->data, ses.readbuf->len);
+#endif
 
 	/* get padding length */
 	buf_setpos(ses.readbuf, PACKET_PADDING_OFF);

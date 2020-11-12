@@ -381,7 +381,7 @@ static void get_algolist(char* algolist, unsigned int algolist_len,
 	}
 	if (algolist_len > MAX_PROPOSED_ALGO*(MAX_NAME_LEN+1)) {
 		*ret_count = 0;
-		}
+	}
 
 	/* ret_list will contain a list of the strings parsed out.
 	   We will have at least one string (even if it's just "") */
@@ -392,11 +392,11 @@ static void get_algolist(char* algolist, unsigned int algolist_len,
 			/* someone is trying something strange */
 			*ret_count = 0;
 			return;
-	}
+		}
 
 		if (algolist[i] == ',') {
 			if (*ret_count >= max_count) {
-				/* Too many */
+				dropbear_exit("Too many remote algorithms");
 				*ret_count = 0;
 				return;
 			}

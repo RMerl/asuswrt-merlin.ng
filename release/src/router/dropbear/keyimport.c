@@ -637,7 +637,7 @@ static sign_key *openssh_read(const char *filename, const char * UNUSED(passphra
 				buf_incrpos(blobbuf, 8);
 				buf_eatstring(blobbuf);
 				buf_eatstring(blobbuf);
-				buf_incrpos(blobbuf, -SSH_SIGNKEY_ED25519_LEN-4);
+				buf_decrpos(blobbuf, SSH_SIGNKEY_ED25519_LEN+4);
 				if (buf_get_ed25519_priv_key(blobbuf, retkey->ed25519key)
 						== DROPBEAR_SUCCESS) {
 					errmsg = NULL;

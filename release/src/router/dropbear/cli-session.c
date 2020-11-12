@@ -352,6 +352,11 @@ static void cli_session_cleanup(void) {
 	(void)fcntl(cli_ses.stdoutcopy, F_SETFL, cli_ses.stdoutflags);
 	(void)fcntl(cli_ses.stderrcopy, F_SETFL, cli_ses.stderrflags);
 
+	/* Don't leak */
+	m_close(cli_ses.stdincopy);
+	m_close(cli_ses.stdoutcopy);
+	m_close(cli_ses.stderrcopy);
+
 	cli_tty_cleanup();
 	if (cli_ses.server_sig_algs) {
 		buf_free(cli_ses.server_sig_algs);
@@ -407,3 +412,63 @@ static void recv_msg_global_request_cli(void) {
 	/* Send a proper rejection */
 	send_msg_request_failure();
 }
+
+void cli_dropbear_exit(int exitcode, const char* format, va_list param) {
+	char exitmsg[150];
+	char fullmsg[300];
+
+	/* Note that exit message must be rendered before session cleanup */
+
+	/* Render the formatted exit message */
+	vsnprintf(exitmsg, sizeof(exitmsg), format, param);
+	TRACE(("Exited, cleaning up: %s", exitmsg))
+
+	/* Add the prefix depending on session/auth state */
+	if (!ses.init_done) {
+		snprintf(fullmsg, sizeof(fullmsg), "Exited: %s", exitmsg);
+	} else {
+		snprintf(fullmsg, sizeof(fullmsg), 
+				"Connection to %s@%s:%s exited: %s", 
+				cli_opts.username, cli_opts.remotehost, 
+				cli_opts.remoteport, exitmsg);
+	}
+
+	/* Do the cleanup first, since then the terminal will be reset */
+	session_cleanup();
+	
+#if DROPBEAR_FUZZ
+    if (fuzz.do_jmp) {
+        longjmp(fuzz.jmp, 1);
+    }
+#endif
+
+	/* Avoid printing onwards from terminal cruft */
+	fprintf(stderr, "\n");
+
+	dropbear_log(LOG_INFO, "%s", fullmsg);
+
+	exit(exitcode);
+}
+
+void cli_dropbear_log(int priority, const char* format, va_list param) {
+
+	char printbuf[1024];
+	const char *name;
+
+	name = cli_opts.progname;
+	if (!name) {
+		name = "dbclient";
+	}
+
+	vsnprintf(printbuf, sizeof(printbuf), format, param);
+
+#ifndef DISABLE_SYSLOG
+	if (opts.usingsyslog) {
+		syslog(priority, "%s", printbuf);
+	}
+#endif
+
+	fprintf(stderr, "%s: %s\n", name, printbuf);
+	fflush(stderr);
+}
+

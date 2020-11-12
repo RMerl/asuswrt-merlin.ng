@@ -487,6 +487,12 @@ void recv_msg_kexinit() {
 		TRACE(("continue recv_msg_kexinit: sent kexinit"))
 	}
 
+	/* "Once a party has sent a SSH_MSG_KEXINIT message ...
+	further SSH_MSG_KEXINIT messages MUST NOT be sent" */
+	if (ses.kexstate.recvkexinit) {
+		dropbear_exit("Unexpected KEXINIT");
+	}
+
 	/* start the kex hash */
 	local_ident_len = strlen(LOCAL_IDENT);
 	remote_ident_len = strlen(ses.remoteident);

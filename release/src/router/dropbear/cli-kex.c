@@ -46,6 +46,13 @@ void send_msg_kexdh_init() {
 	TRACE(("send_msg_kexdh_init()"))	
 
 	CHECKCLEARTOWRITE();
+
+#if DROPBEAR_FUZZ
+	if (fuzz.fuzzing && fuzz.skip_kexmaths) {
+		return;
+	}
+#endif
+
 	buf_putbyte(ses.writepayload, SSH_MSG_KEXDH_INIT);
 	switch (ses.newkeys->algo_kex->mode) {
 #if DROPBEAR_NORMAL_DH
@@ -98,6 +105,12 @@ void recv_msg_kexdh_reply() {
 	unsigned char* keyblob = NULL;
 
 	TRACE(("enter recv_msg_kexdh_reply"))
+	
+#if DROPBEAR_FUZZ
+	if (fuzz.fuzzing && fuzz.skip_kexmaths) {
+		return;
+	}
+#endif
 
 	if (cli_ses.kex_state != KEXDH_INIT_SENT) {
 		dropbear_exit("Received out-of-order kexdhreply");

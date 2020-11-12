@@ -1316,6 +1316,8 @@
 #undef BN_S_MP_KARATSUBA_SQR_C
 #undef BN_S_MP_TOOM_MUL_C
 #undef BN_S_MP_TOOM_SQR_C
+/* Dropbear uses its own random source */
+#undef BN_S_MP_RAND_PLATFORM_C
 
 #define MP_FIXED_CUTOFFS
 

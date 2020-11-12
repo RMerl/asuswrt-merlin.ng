@@ -5,15 +5,13 @@
 
 enum wrapfd_mode {
     UNUSED = 0,
-    PLAIN,
-    INPROGRESS,
-    RANDOMIN
+    COMMONBUF, // using the common buffer
 };
 
-void wrapfd_setup(void);
+// buf is a common buffer read by all wrapped FDs. doesn't take ownership of buf
+void wrapfd_setup(buffer *buf);
 void wrapfd_setseed(uint32_t seed);
-// doesn't take ownership of buf. buf is optional.
-void wrapfd_add(int fd, buffer *buf, enum wrapfd_mode mode);
+int wrapfd_new();
 
 // called via #defines for read/write/select
 int wrapfd_read(int fd, void *out, size_t count);

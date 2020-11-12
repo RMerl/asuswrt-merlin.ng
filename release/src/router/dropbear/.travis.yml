@@ -28,8 +28,14 @@ matrix:
       # OS X says daemon() and utmp are deprecated
       env: WEXTRAFLAGS="-Wno-deprecated-declarations -Werror"
     # Note: the fuzzing malloc wrapper doesn't replace free() in system libtomcrypt, so need bundled.
-    - name: "fuzzing"
+    # Address sanitizer
+    - name: "fuzz-asan"
       env: DO_FUZZ=1 CONFIGURE_FLAGS="--enable-fuzz --disable-harden --enable-bundled-libtom" WEXTRAFLAGS=-Werror LDFLAGS=-fsanitize=address EXTRACFLAGS=-fsanitize=address CXX=clang++
+      compiler: clang
+    # Undefined Behaviour sanitizer
+    - name: "fuzz-ubsan"
+      # don't fail with alignment due to https://github.com/libtom/libtomcrypt/issues/549
+      env: DO_FUZZ=1 CONFIGURE_FLAGS="--enable-fuzz --disable-harden --enable-bundled-libtom" WEXTRAFLAGS=-Werror LDFLAGS=-fsanitize=undefined EXTRACFLAGS="-fsanitize=undefined -fno-sanitize-recover=undefined -fsanitize-recover=alignment" CXX=clang++
       compiler: clang
 
 # container-based builds

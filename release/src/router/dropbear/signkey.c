@@ -235,7 +235,7 @@ int buf_get_pub_key(buffer *buf, sign_key *key, enum signkey_type *type) {
 	*type = keytype;
 
 	/* Rewind the buffer back before "ssh-rsa" etc */
-	buf_incrpos(buf, -len - 4);
+	buf_decrpos(buf, len + 4);
 
 #if DROPBEAR_DSS
 	if (keytype == DROPBEAR_SIGNKEY_DSS) {
@@ -316,7 +316,7 @@ int buf_get_priv_key(buffer *buf, sign_key *key, enum signkey_type *type) {
 	*type = keytype;
 
 	/* Rewind the buffer back before "ssh-rsa" etc */
-	buf_incrpos(buf, -len - 4);
+	buf_decrpos(buf, len + 4);
 
 #if DROPBEAR_DSS
 	if (keytype == DROPBEAR_SIGNKEY_DSS) {

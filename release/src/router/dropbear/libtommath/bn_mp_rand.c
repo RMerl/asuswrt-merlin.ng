@@ -3,11 +3,13 @@
 /* LibTomMath, multiple-precision integer library -- Tom St Denis */
 /* SPDX-License-Identifier: Unlicense */
 
-mp_err(*s_mp_rand_source)(void *out, size_t size) = s_mp_rand_platform;
+/* Dropbear sets this separately, avoid platform code */
+mp_err(*s_mp_rand_source)(void *out, size_t size) = NULL;
 
 void mp_rand_source(mp_err(*source)(void *out, size_t size))
 {
-   s_mp_rand_source = (source == NULL) ? s_mp_rand_platform : source;
+   /* Dropbear, don't reset to platform if source==NULL */
+   s_mp_rand_source = source;
 }
 
 mp_err mp_rand(mp_int *a, int digits)

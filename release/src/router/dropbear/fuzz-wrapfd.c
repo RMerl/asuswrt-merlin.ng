@@ -17,25 +17,33 @@ static const double CHANCE_WRITE2 = 0.5;
 
 struct fdwrap {
 	enum wrapfd_mode mode;
-	buffer *buf;
 	int closein;
 	int closeout;
 };
 
-static struct fdwrap wrap_fds[IOWRAP_MAXFD+1];
-/* for quick selection of in-use descriptors */
-static int wrap_used[IOWRAP_MAXFD+1];
-static unsigned int nused;
+static struct fdwrap wrap_fds[IOWRAP_MAXFD+1] = {{UNUSED, 0, 0}};
+static int wrapfd_maxfd = -1;
 static unsigned short rand_state[3];
+static buffer *input_buf;
+static int devnull_fd = -1;
 
-void wrapfd_setup(void) {
+static void wrapfd_remove(int fd);
+
+void wrapfd_setup(buffer *buf) {
 	TRACE(("wrapfd_setup"))
-	nused = 0;
-	memset(wrap_fds, 0x0, sizeof(wrap_fds));
-	memset(wrap_used, 0x0, sizeof(wrap_used));
+
+	// clean old ones
+	int i;
+	for (i = 0; i <= wrapfd_maxfd; i++) {
+		if (wrap_fds[i].mode == COMMONBUF) {
+			wrapfd_remove(i);
+		}
+	}
+	wrapfd_maxfd = -1;
 
 	memset(rand_state, 0x0, sizeof(rand_state));
 	wrapfd_setseed(50);
+	input_buf = buf;
 }
 
 void wrapfd_setseed(uint32_t seed) {
@@ -43,39 +51,30 @@ void wrapfd_setseed(uint32_t seed) {
 	nrand48(rand_state);
 }
 
-void wrapfd_add(int fd, buffer *buf, enum wrapfd_mode mode) {
-	TRACE(("wrapfd_add %d buf %p mode %d", fd, buf, mode))
-	assert(fd >= 0);
-	assert(fd <= IOWRAP_MAXFD);
-	assert(wrap_fds[fd].mode == UNUSED);
-	assert(buf || mode == RANDOMIN);
+int wrapfd_new() {
+	if (devnull_fd == -1) {
+		devnull_fd = open("/dev/null", O_RDONLY);
+		assert(devnull_fd != -1);
+	}
 
-	wrap_fds[fd].mode = mode;
-	wrap_fds[fd].buf = buf;
+	int fd = dup(devnull_fd);
+	assert(fd != -1);
+	assert(wrap_fds[fd].mode == UNUSED);
+	wrap_fds[fd].mode = COMMONBUF;
 	wrap_fds[fd].closein = 0;
 	wrap_fds[fd].closeout = 0;
-	wrap_used[nused] = fd;
+	wrapfd_maxfd = MAX(fd, wrapfd_maxfd);
 
-	nused++;
+	return fd;
 }
 
-void wrapfd_remove(int fd) {
-	unsigned int i, j;
+static void wrapfd_remove(int fd) {
 	TRACE(("wrapfd_remove %d", fd))
 	assert(fd >= 0);
 	assert(fd <= IOWRAP_MAXFD);
 	assert(wrap_fds[fd].mode != UNUSED);
 	wrap_fds[fd].mode = UNUSED;
-
-
-	/* remove from used list */
-	for (i = 0, j = 0; i < nused; i++) {
-		if (wrap_used[i] != fd) {
-			wrap_used[j] = wrap_used[i];
-			j++;
-		}
-	}
-	nused--;
+	m_close(fd);
 }
 
 int wrapfd_close(int fd) {
@@ -89,7 +88,6 @@ int wrapfd_close(int fd) {
 
 int wrapfd_read(int fd, void *out, size_t count) {
 	size_t maxread;
-	buffer *buf;
 
 	if (!fuzz.wrapfds) {
 		return read(fd, out, count);
@@ -115,15 +113,14 @@ int wrapfd_read(int fd, void *out, size_t count) {
 		return -1;
 	}
 
-	buf = wrap_fds[fd].buf;
-	if (buf) {
-		maxread = MIN(buf->len - buf->pos, count);
+	if (input_buf) {
+		maxread = MIN(input_buf->len - input_buf->pos, count);
 		/* returns 0 if buf is EOF, as intended */
 		if (maxread > 0) {
 			maxread = nrand48(rand_state) % maxread + 1;
 		}
-		memcpy(out, buf_getptr(buf, maxread), maxread);
-		buf_incrpos(buf, maxread);
+		memcpy(out, buf_getptr(input_buf, maxread), maxread);
+		buf_incrpos(input_buf, maxread);
 		return maxread;
 	}
 
@@ -174,8 +171,6 @@ int wrapfd_select(int nfds, fd_set *readfds, fd_set *writefds,
 	int i, nset, sel;
 	int ret = 0;
 	int fdlist[IOWRAP_MAXFD+1];
-
-	memset(fdlist, 0x0, sizeof(fdlist));
 
 	if (!fuzz.wrapfds) {
 		return select(nfds, readfds, writefds, exceptfds, timeout);

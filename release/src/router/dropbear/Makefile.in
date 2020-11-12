@@ -65,7 +65,6 @@ ifeq (@DROPBEAR_FUZZ@, 1)
 	allobjs = $(COMMONOBJS) fuzz-common.o  fuzz-wrapfd.o $(CLISVROBJS) $(CLIOBJS) $(SVROBJS) @CRYPTLIB@
 	allobjs:=$(subst svr-main.o, ,$(allobjs))
 	allobjs:=$(subst cli-main.o, ,$(allobjs))
-	allobjs:=$(sort $(allobjs))
 
 	dropbearobjs=$(allobjs) svr-main.o
 	dbclientobjs=$(allobjs) cli-main.o
@@ -268,7 +267,8 @@ lint:
 ## Fuzzing targets
 
 # list of fuzz targets
-FUZZ_TARGETS=fuzzer-preauth fuzzer-pubkey fuzzer-verify fuzzer-preauth_nomaths fuzzer-kexdh fuzzer-kexecdh fuzzer-kexcurve25519
+FUZZ_TARGETS=fuzzer-preauth fuzzer-pubkey fuzzer-verify fuzzer-preauth_nomaths \
+	fuzzer-kexdh fuzzer-kexecdh fuzzer-kexcurve25519 fuzzer-client fuzzer-client_nomaths
 
 FUZZER_OPTIONS = $(addsuffix .options, $(FUZZ_TARGETS))
 
@@ -279,10 +279,7 @@ list-fuzz-targets:
 fuzzstandalone: FUZZLIB=fuzz-harness.o
 fuzzstandalone: fuzz-harness.o fuzz-targets
 
-# exclude svr-main.o to avoid duplicate main
-svrfuzzobjs=$(subst svr-main.o, ,$(dropbearobjs))
-
-fuzz-harness.o: $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs) fuzz-common.o
+fuzz-harness.o: $(HEADERS) $(LIBTOM_DEPS) Makefile $(allobjs) fuzz-common.o
 
 # build all the fuzzers. This will require fail to link unless built with
 # make fuzz-targets FUZZLIB=-lFuzzer.a 
@@ -290,25 +287,31 @@ fuzz-harness.o: $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs) fuzz-common.o
 fuzz-targets: $(FUZZ_TARGETS) $(FUZZER_OPTIONS)
 
 fuzzer-preauth: fuzzer-preauth.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
 fuzzer-preauth_nomaths: fuzzer-preauth_nomaths.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
 fuzzer-pubkey: fuzzer-pubkey.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
 fuzzer-verify: fuzzer-verify.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
 fuzzer-kexdh: fuzzer-kexdh.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
 fuzzer-kexecdh: fuzzer-kexecdh.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
 fuzzer-kexcurve25519: fuzzer-kexcurve25519.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+
+fuzzer-client: fuzzer-client.o fuzz-harness.o
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+
+fuzzer-client_nomaths: fuzzer-client_nomaths.o fuzz-harness.o
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
 fuzzer-%.options: Makefile
 	echo "[libfuzzer]"               > $@

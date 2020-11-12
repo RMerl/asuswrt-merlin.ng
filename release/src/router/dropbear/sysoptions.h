@@ -4,7 +4,7 @@
  *******************************************************************/
 
 #ifndef DROPBEAR_VERSION
-#define DROPBEAR_VERSION "2020.80"
+#define DROPBEAR_VERSION "2020.81"
 #endif
 
 #ifndef LOCAL_IDENT
@@ -178,7 +178,7 @@ If you test it please contact the Dropbear author */
 						   explicitly specified for all protocols (just
 						   for algos) but seems valid */
 
-#define MAX_PROPOSED_ALGO 20
+#define MAX_PROPOSED_ALGO 50
 
 /* size/count limits */
 /* From transport rfc */

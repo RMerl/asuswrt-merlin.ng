@@ -1,3 +1,22 @@
+2020.81 - 29 October 2020
+
+- Fix regression in 2020.79 which prevented connecting with some SSH 
+  implementations. Increase MAX_PROPOSED_ALGO to 50, and print a log 
+  message if the limit is hit. This fixes interoperability with sshj 
+  library (used by PyCharm), and GoAnywhere.
+  Reported by Pirmin Walthert and Piotr Jurkiewicz
+
+- Fix building with non-GCC compilers, reported by Kazuo Kuroi
+
+- Fix potential long delay in dbclient, found by OSS Fuzz
+
+- Fix null pointer dereference crash, found by OSS Fuzz
+
+- libtommath now uses the same random source as Dropbear (in 2020.79 
+  and 2020.80 used getrandom() separately)
+
+- Some fuzzing improvements, start of a dbclient fuzzer
+
 2020.80 - 26 June 2020
 
 - Don't block authorized_keys logins with no-X11-forwarding or no-agent-forwarding 
@@ -215,7 +234,7 @@
   dropbear is running with -a (Allow connections to forwarded ports from any host)
   This could potentially allow arbitrary code execution as root by an authenticated user.
   Affects versions 2013.56 to 2016.74. Thanks to Mark Shepard for reporting the crash.
-  CVE-2017-9078 https://secure.ucc.asn.au/hg/dropbear/rev/c8114a48837c
+  CVE-2017-9078 https://hg.ucc.asn.au/dropbear/rev/c8114a48837c
 
 - Security: Fix information disclosure with ~/.ssh/authorized_keys symlink.
   Dropbear parsed authorized_keys as root, even if it were a symlink. The fix
@@ -227,7 +246,7 @@
   contents of that file.
   This information disclosure is to an already authenticated user.
   Thanks to Jann Horn of Google Project Zero for reporting this.
-  CVE-2017-9079 https://secure.ucc.asn.au/hg/dropbear/rev/0d889b068123
+  CVE-2017-9079 https://hg.ucc.asn.au/dropbear/rev/0d889b068123
 
 - Generate hostkeys with dropbearkey atomically and flush to disk with fsync
   Thanks to Andrei Gherzan for a patch
@@ -247,23 +266,23 @@
   run arbitrary code as the dbclient user. This could be a problem if scripts
   or webpages pass untrusted input to the dbclient program.
   CVE-2016-7406
-  https://secure.ucc.asn.au/hg/dropbear/rev/b66a483f3dcb
+  https://hg.ucc.asn.au/dropbear/rev/b66a483f3dcb
 
 - Security: dropbearconvert import of OpenSSH keys could run arbitrary code as
   the local dropbearconvert user when parsing malicious key files
   CVE-2016-7407
-  https://secure.ucc.asn.au/hg/dropbear/rev/34e6127ef02e
+  https://hg.ucc.asn.au/dropbear/rev/34e6127ef02e
 
 - Security: dbclient could run arbitrary code as the local dbclient user if
   particular -m or -c arguments are provided. This could be an issue where
   dbclient is used in scripts.
   CVE-2016-7408
-  https://secure.ucc.asn.au/hg/dropbear/rev/eed9376a4ad6
+  https://hg.ucc.asn.au/dropbear/rev/eed9376a4ad6
 
 - Security: dbclient or dropbear server could expose process memory to the
   running user if compiled with DEBUG_TRACE and running with -v
   CVE-2016-7409
-  https://secure.ucc.asn.au/hg/dropbear/rev/6a14b1f6dc04
+  https://hg.ucc.asn.au/dropbear/rev/6a14b1f6dc04
 
   The security issues were reported by an anonymous researcher working with
   Beyond Security's SecuriTeam Secure Disclosure www.beyondsecurity.com/ssd.html
@@ -309,7 +328,7 @@
 
 - Validate X11 forwarding input. Could allow bypass of authorized_keys command= restrictions,
   found by github.com/tintinweb. Thanks for Damien Miller for a patch. CVE-2016-3116
-  https://secure.ucc.asn.au/hg/dropbear/rev/a3e8389e01ff
+  https://hg.ucc.asn.au/dropbear/rev/a3e8389e01ff
 
 2015.71 - 3 December 2015
 
@@ -590,11 +609,11 @@ kernels, from Steve Dover
 - Limit the size of decompressed payloads, avoids memory exhaustion denial
   of service 
   Thanks to Logan Lamb for reporting and investigating it. CVE-2013-4421
-  https://secure.ucc.asn.au/hg/dropbear/rev/0bf76f54de6f
+  https://hg.ucc.asn.au/dropbear/rev/0bf76f54de6f
 
 - Avoid disclosing existence of valid users through inconsistent delays
   Thanks to Logan Lamb for reporting. CVE-2013-4434
-  https://secure.ucc.asn.au/hg/dropbear/rev/d7784616409a
+  https://hg.ucc.asn.au/dropbear/rev/d7784616409a
 
 - Update config.guess and config.sub for newer architectures
 
@@ -697,7 +716,7 @@ though probably will be soon
   This bug affects releases 0.52 onwards. Ref CVE-2012-0920.
   Thanks to Danny Fullerton of Mantor Organization for reporting
   the bug.
-  https://secure.ucc.asn.au/hg/dropbear/rev/818108bf7749
+  https://hg.ucc.asn.au/dropbear/rev/818108bf7749
 
 - Compile fix, only apply IPV6 socket options if they are available in headers
   Thanks to Gustavo Zacarias for the patch
@@ -741,7 +760,7 @@ though probably will be soon
 - New version numbering scheme.
 
 Source repository has now migrated to Mercurial at 
-https://secure.ucc.asn.au/hg/dropbear/graph/default
+https://hg.ucc.asn.au/dropbear/graph/default
 
 0.53.1 - Wednesday 2 March 2011
 

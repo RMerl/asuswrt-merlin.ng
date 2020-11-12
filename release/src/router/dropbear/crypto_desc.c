@@ -3,10 +3,17 @@
 #include "crypto_desc.h"
 #include "ltc_prng.h"
 #include "ecc.h"
+#include "dbrandom.h"
 
 #if DROPBEAR_LTC_PRNG
 	int dropbear_ltc_prng = -1;
 #endif
+
+/* Wrapper for libtommath */
+static mp_err dropbear_rand_source(void* out, size_t size) {
+	genrandom((unsigned char*)out, (unsigned int)size);
+	return MP_OKAY;
+}
 
 
 /* Register the compiled in ciphers.
@@ -66,6 +73,8 @@ void crypto_init() {
 		dropbear_exit("Error registering crypto");
 	}
 #endif
+
+	mp_rand_source(dropbear_rand_source);
 
 #if DROPBEAR_ECC
 	ltc_mp = ltm_desc;

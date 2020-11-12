@@ -121,7 +121,6 @@ static void generic_dropbear_exit(int exitcode, const char* format,
 	_dropbear_log(LOG_INFO, fmtbuf, param);
 
 #if DROPBEAR_FUZZ
-	/* longjmp before cleaning up svr_opts */
     if (fuzz.do_jmp) {
         longjmp(fuzz.jmp, 1);
     }
@@ -257,6 +256,12 @@ int spawn_command(void(*exec_fn)(const void *user_data), const void *exec_data,
 
 	const int FDIN = 0;
 	const int FDOUT = 1;
+
+#if DROPBEAR_FUZZ
+	if (fuzz.fuzzing) {
+		return fuzz_spawn_command(ret_writefd, ret_readfd, ret_errfd, ret_pid);
+	}
+#endif
 
 	/* redirect stdin/stdout/stderr */
 	if (pipe(infds) != 0) {

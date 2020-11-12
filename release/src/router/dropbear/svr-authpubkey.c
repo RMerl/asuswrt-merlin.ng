@@ -304,7 +304,7 @@ static int checkpubkey_line(buffer* line, int line_num, const char* filename,
 				is_comment = 1;
 				break;
 			}
-			buf_incrpos(line, -1);
+			buf_decrpos(line, 1);
 			break;
 		}
 		if (is_comment) {

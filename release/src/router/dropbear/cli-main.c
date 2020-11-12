@@ -31,9 +31,7 @@
 #include "dbrandom.h"
 #include "crypto_desc.h"
 #include "netio.h"
-
-static void cli_dropbear_exit(int exitcode, const char* format, va_list param) ATTRIB_NORETURN;
-static void cli_dropbear_log(int priority, const char* format, va_list param);
+#include "fuzz.h"
 
 #if DROPBEAR_CLI_PROXYCMD
 static void cli_proxy_cmd(int *sock_in, int *sock_out, pid_t *pid_out);
@@ -98,58 +96,6 @@ int main(int argc, char ** argv) {
 }
 #endif /* DBMULTI stuff */
 
-static void cli_dropbear_exit(int exitcode, const char* format, va_list param) {
-	char exitmsg[150];
-	char fullmsg[300];
-
-	/* Note that exit message must be rendered before session cleanup */
-
-	/* Render the formatted exit message */
-	vsnprintf(exitmsg, sizeof(exitmsg), format, param);
-	TRACE(("Exited, cleaning up: %s", exitmsg))
-
-	/* Add the prefix depending on session/auth state */
-	if (!ses.init_done) {
-		snprintf(fullmsg, sizeof(fullmsg), "Exited: %s", exitmsg);
-	} else {
-		snprintf(fullmsg, sizeof(fullmsg), 
-				"Connection to %s@%s:%s exited: %s", 
-				cli_opts.username, cli_opts.remotehost, 
-				cli_opts.remoteport, exitmsg);
-	}
-
-	/* Do the cleanup first, since then the terminal will be reset */
-	session_cleanup();
-	/* Avoid printing onwards from terminal cruft */
-	fprintf(stderr, "\n");
-
-	dropbear_log(LOG_INFO, "%s", fullmsg);
-	exit(exitcode);
-}
-
-static void cli_dropbear_log(int priority,
-		const char* format, va_list param) {
-
-	char printbuf[1024];
-	const char *name;
-
-	name = cli_opts.progname;
-	if (!name) {
-		name = "dbclient";
-	}
-
-	vsnprintf(printbuf, sizeof(printbuf), format, param);
-
-#ifndef DISABLE_SYSLOG
-	if (opts.usingsyslog) {
-		syslog(priority, "%s", printbuf);
-	}
-#endif
-
-	fprintf(stderr, "%s: %s\n", name, printbuf);
-	fflush(stderr);
-}
-
 static void exec_proxy_cmd(const void *user_data_cmd) {
 	const char *cmd = user_data_cmd;
 	char *usershell;
@@ -199,4 +145,5 @@ static void kill_proxy_sighandler(int UNUSED(signo)) {
 	kill_proxy_command();
 	_exit(1);
 }
+
 #endif /* DROPBEAR_CLI_PROXYCMD */

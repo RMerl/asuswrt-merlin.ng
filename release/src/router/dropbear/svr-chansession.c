@@ -693,7 +693,11 @@ static int sessioncommand(struct Channel *channel, struct ChanSess *chansess,
 
 	/* take global command into account */
 	if (svr_opts.forced_command) {
-		chansess->original_command = chansess->cmd ? : m_strdup("");
+		if (chansess->cmd) {
+			chansess->original_command = chansess->cmd;
+		} else {
+			chansess->original_command = m_strdup("");
+		}
 		chansess->cmd = m_strdup(svr_opts.forced_command);
 	} else {
 		/* take public key option 'command' into account */

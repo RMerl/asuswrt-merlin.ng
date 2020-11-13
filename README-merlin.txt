@@ -40,6 +40,7 @@ Fully supported devices:
  * RT-AX88U
  * RT-AX56U
  * RT-AX58U & RT-AX3000
+ * RT-AX86U
 
 No longer supported:
  * RT-N16

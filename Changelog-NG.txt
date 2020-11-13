@@ -2,17 +2,17 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.1 (xx-xx-xxxx)
-  Switched to the new 386 codebase.  Models are going to
-  gradually be re-added to this new code base.
-  386 introduces AiMesh 2.0, finalizes the move to
-  OpenSSL 1.1.1 firmware-wide, adds a new speedtest
-  (powered by Ookla).  For more details, please refer
+  Switched to the new 386 codebase.  386 introduces
+  AiMesh 2.0, finalizes the move to OpenSSL 1.1.1
+  firmware-wide, adds a new speedtest (powered
+  by Ookla).  For more details, please refer
   to Asus's own release notes.
 
   - NOTE: For developers, note that firmware code is
           once again back on the master branch, with
           both mainline and ax being reunified again.
 
+  - NEW: Added support for the RT-AX86U.
   - NEW: Added stub and stub-v2 compression options to OpenVPN
          clients.  Not added to server, since compression is
          considered deprecated, and will be removed most likely
@@ -28,6 +28,7 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: zlib to 1.2.11.
   - UPDATED: lz4 to 1.9.2.
   - UPDATED: e2fsprogs to 1.45.6.
+  - UPDATED: dropbear to 2020.81.
   - CHANGED: firmware update checks are no longer using the
              server address stored in nvram, for security
              purposes.  Devs who were using that nvram
@@ -53,6 +54,7 @@ Asuswrt-Merlin 386/NG Changelog
   - REMOVED: fq_codel support for Adaptive QoS.  Due to a change
              in how Trend Micro configures QoS, it is no longer
              possible to intercept these to inject fq_codel.
+  - REMOVED: Support for the Cloudcheck mobile app.
 
 
 384.19 (14-Aug-2020)

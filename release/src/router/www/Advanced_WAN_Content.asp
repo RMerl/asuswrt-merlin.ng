@@ -1386,7 +1386,7 @@ function pullDNSList(_this) {
 </script>
 </head>
 
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <script>
 	if(sw_mode == 3){
 		alert("<#page_not_support_mode_hint#>");

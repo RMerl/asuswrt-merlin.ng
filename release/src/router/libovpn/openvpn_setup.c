@@ -438,7 +438,7 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 					continue;
 				}
 
-				fp_ccd = fopen(cname, "w");
+				fp_ccd = fopen(cname, "a");
 				chmod(cname, S_IRUSR|S_IWUSR);
 
 				if (fp_ccd) {

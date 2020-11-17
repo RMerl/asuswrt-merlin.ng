@@ -2592,10 +2592,12 @@ GetPacketDropCount(struct upnphttp * h, const char * action)
 	     int bodylen;
 	     char *err_msg = "Invalid Args";
 
+#if 0	// Kludge - debug function missing in 40577
 	     if (nvgfn_GetPacketDropCount(&value) < 0) {
 		     err_msg = "action fail!";
 		     goto Err;
 	     }
+#endif
 
 	     bodylen = snprintf(body, sizeof(body), resp, action, SERVICE_TYPE_NVGFN,
 	                        value, action);

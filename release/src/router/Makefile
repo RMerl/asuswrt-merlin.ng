@@ -1463,7 +1463,7 @@ endif
 ifeq ($(RTCONFIG_BCMARM),y)
 obj-y += libnfnetlink-1.0.1
 obj-y += libmnl-1.0.4
-obj-y += ipset-6
+obj-y += ipset-7.6
 endif
 obj-$(RTCONFIG_NFS) += nfs-utils-1.3.4
 obj-$(RTCONFIG_NFS) += portmap

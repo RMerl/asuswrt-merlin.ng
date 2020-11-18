@@ -636,7 +636,8 @@ function validForm(){
 
         if((document.form.wan_proto.value == "dhcp")
 		|| (document.form.wan_proto.value == "static")){
-			if(!validator.numberRange(document.form.wan_mtu, 576, 9000))
+			if(document.form.wan_mtu.value != "" &&
+			   !validator.numberRange(document.form.wan_mtu, 576, 9000))
 				return false;
 	}
 

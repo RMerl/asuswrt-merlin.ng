@@ -87,7 +87,8 @@ function getAllWlArray(){
 	var amas_bdlkey = httpApi.nvramGet(["amas_bdlkey"]).amas_bdlkey;
 	
 	if(isSupport("triband")){
-		if(isSupport('wifi6e')){			
+		if(isSupport('wifi6e')){
+			document.querySelector('label[for="wireless_checkbox"]').innerHTML = '<#qis_wireless_setting_separate1#>';
 			wlArrayRet.push({"title":"5 GHz", "ifname":"1", "suffix": "_5G"});
 		}
 		else{
@@ -139,8 +140,31 @@ function getPAPList(siteSurveyAPList, filterType, filterValue) {
 		if(_profile == null || _profile.length == 0)
 			_profile = ["", "", "", "", "", "", "", "", "", ""];
 
-		this.band = getBandWidthName(_profile[2]).name;
-		this.unit = getBandWidthName(_profile[2]).unit;
+		this.band = (function(){
+			if(isSupport('wifi6e') && _profile[0] === '6G'){
+				return "6GHz";
+				//return {name: "6GHz", unit: 2};
+			}
+			else if(isSupport('wifi6e') && _profile[0] === '5G'){
+				return "5GHz";
+			}
+			else{
+				return getBandWidthName(_profile[2]).name;
+			}
+			
+		})();
+		this.unit = (function(){
+			if(isSupport('wifi6e') && _profile[0] === '6G'){
+				return 2;
+				//return {name: "6GHz", unit: 2};
+			}
+			else if(isSupport('wifi6e') && _profile[0] === '5G'){
+				return 1;
+			}
+			else{
+				return getBandWidthName(_profile[2]).unit;
+			}		
+		})();
 		this.ssid = htmlEnDeCode.htmlEncode(decodeURIComponent(_profile[1]));
 		this.channel = _profile[2];
 		this.authentication = _profile[3];
@@ -649,8 +673,10 @@ function handleSysDep(){
 
 function handleModelIcon() {
 	$('#ModelPid_img').css('background-image', 'url(' + function() {
-		var modelInfo = httpApi.nvramGet(["territory_code", "productid", "odmpid", "color", "rc_support"], true);
+		var modelInfo = httpApi.nvramGet(["territory_code", "productid", "odmpid", "color", "rc_support", "CoBrand"], true);
 		var ttc = modelInfo.territory_code;
+		var CoBrand = modelInfo.CoBrand;
+		var isGundam = (CoBrand == 1 || ttc.search('GD') == '0');
 		var based_modelid = modelInfo.productid;
 		var odmpid = modelInfo.odmpid;
 		var color = modelInfo.color.toUpperCase();
@@ -707,7 +733,7 @@ function handleModelIcon() {
 					return default_png_path;
 			}
 		}
-		else if((based_modelid == 'RT-AX82U' || based_modelid == 'RT-AX86U') && ttc.search('GD') == '0'){
+		else if((based_modelid == 'RT-AX82U' || based_modelid == 'RT-AX86U') && isGundam){
 			return default_png_path = "/images/Model_product_GD.png";
 		}
 		else if(odm_support){

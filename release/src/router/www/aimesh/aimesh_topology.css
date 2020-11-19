@@ -1829,6 +1829,12 @@
 .jstree-anchor.weak.wireless:before {
 	background-position: -218px -38px;
 }
+.jstree-anchor.great.plc:before {
+	background-position: -724px -38px;
+}
+.jstree-anchor.weak.plc:before {
+	background-position: -806px -38px;
+}
 .jstree-anchor.disconnected:before {
 	background-position: -287px -38px;
 }
@@ -1983,6 +1989,12 @@
 }
 .jstree-default .jstree-node.weak.wireless:before{
 	background-position: -586px 0px;
+}
+.jstree-default .jstree-node.great.plc:before{
+	background-position: -886px 0px;
+}
+.jstree-default .jstree-node.weak.plc:before{
+	background-position: -962px 0px;
 }
 .jstree-default .jstree-node.disconnected:before{
 	background-position: -655px 0px;
@@ -2241,7 +2253,7 @@
 	background-position: 0px 0px;
 }
 .aimesh_introduction{
-	background-image: url(/images/New_ui/amesh/AiMesh-introduction.png);
+	background-image: url(/images/New_ui/amesh/AiMesh-introduction.jpg);
 	width: 100%;
 	height: 520px;
 	background-size: 100%;
@@ -2357,6 +2369,12 @@
 }
 .connect_line_info_bg .connect_line.wireless.weak:before{
 	background-position: -223px 0px;
+}
+.connect_line_info_bg .connect_line.plc.great:before{
+	background-position: -729px -59px;
+}
+.connect_line_info_bg .connect_line.plc.weak:before{
+	background-position: -811px -59px;
 }
 .connect_line_info_bg .connect_line.disconnected:before{
 	background-position: -292px -55px;

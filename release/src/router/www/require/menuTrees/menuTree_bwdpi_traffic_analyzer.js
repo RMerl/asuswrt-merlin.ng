@@ -438,6 +438,9 @@ define(function(){
 				if(!rrsut_support)
 					retArray.push("cloud_router_sync.asp");
 
+				if(!tencent_qmacc_support)
+					retArray.push("menu_TencentAcceleration");
+
 				if(!uu_support){
 					retArray.push("menu_UU");
 				}

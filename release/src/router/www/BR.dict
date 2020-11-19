@@ -26,7 +26,7 @@ AiMesh_Node_desc2=Por favor vá para a página de configurações do seu roteado
 AiMesh_Notice1=As alterações feitas as configurações sem fio afetarão a sua rede!
 AiMesh_Add_Another_Node_confirm=Deseja adicionar outro nó?
 AiMesh_Add_Another_Node=Adicionar outro nó
-AiMesh_backhaul_band_5GHz-2_desc1=5 GHz-2 is now used as dedicated WiFi backhaul under AiMesh mode.
+AiMesh_backhaul_band_5GHz-2_desc1=is now used as dedicated WiFi backhaul under AiMesh mode.
 AiMesh_backhaul_band_5GHz-2_desc2=If you want to change wireless settings, please go to <span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">here</span>.
 AiMesh_Choose_Another_Node=Escolher outro nó
 AiMesh_Find_Router=Encontramos há alguns roteadores próximos
@@ -685,6 +685,7 @@ qis_wireless_setting=Nomeie um nome único ou SSID (Identificador do conjunto de
 qis_wireless_setting_skdesc=Digite uma senha de rede entre 8 e 63 caracteres (letras, números ou combinação de ambos) ou 64 dígitos hexadecimais. A configuração de segurança padrão é WPA2-Personal AES. Caso você não deseje configurar a segurança de rede, deixe o campo da chave de segurança em branco, mas isto expõe sua rede a acesso não autorizado.
 qis_wireless_setting_skdesc1=Digite uma senha de rede entre 8 e 63 caracteres (letras, números ou combinação de ambos). A configuração de segurança padrão é WPA2-Personal AES.
 qis_wireless_setting_separate=Separe 2.4 GHz e 5 GHz
+qis_wireless_setting_separate1=Separe 2.4 GHz, 5 GHz e 6 GHz
 QKSet_account_nameblank=Nome da conta não pode estar em branco.
 QKSet_account_empty=Os campos Nome do Usuário/Senha não podem ficar vazios.
 QKSet_account_webtitle=Configuração da conta do provedor de Internet (ISP)

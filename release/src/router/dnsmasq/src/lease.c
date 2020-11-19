@@ -649,6 +649,26 @@ struct dhcp_lease *lease_find_by_client(unsigned char *hwaddr, int hw_len, int h
   return NULL;
 }
 
+struct dhcp_lease *lease_find_by_hwaddr(unsigned char *hwaddr, int hw_len, int hw_type)
+{
+  struct dhcp_lease *lease;
+
+  for (lease = leases; lease; lease = lease->next)
+    {
+#ifdef HAVE_DHCP6
+      if (lease->flags & (LEASE_TA | LEASE_NA))
+	continue;
+#endif
+      if (hw_len != 0 &&
+	  lease->hwaddr_len == hw_len &&
+	  lease->hwaddr_type == hw_type &&
+	  memcmp(hwaddr, lease->hwaddr, hw_len) == 0)
+	return lease;
+    }
+
+  return NULL;
+}
+
 struct dhcp_lease *lease_find_by_addr(struct in_addr addr)
 {
   struct dhcp_lease *lease;

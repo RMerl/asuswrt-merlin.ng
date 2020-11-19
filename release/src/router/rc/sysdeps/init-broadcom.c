@@ -1706,8 +1706,10 @@ void ether_led()
 #ifdef RTCONFIG_HND_ROUTER_AX
 #define ETHCTL_EEE_ON		0x0001
 #define ETHCTL_APD_OFF		0x0002
-#endif
+#define ETHCTL_WIRESPEED_ON	0x0004
+#else
 #define ETHCTL_WIRESPEED_OFF	0x0004
+#endif
 #define ETHCTL_PHYRESET		0x0008
 #ifdef RTCONFIG_HND_ROUTER_AX_675X
 #define ETHCTL_CABLE_DIAG	0x0010
@@ -1761,7 +1763,7 @@ void init_switch_pre()
 #if !defined(RTAX95Q) && !defined(RTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56)
 	add_to_list("eth4", ifnames, sizeof(ifnames));
 #endif
-#if defined(RTAX86U) || defined(RTAX5700) || defined(RTCONFIG_EXT_BCM53134) || defined(RTCONFIG_EXTPHY_BCM84880)
+#if defined(RTCONFIG_EXT_BCM53134) || defined(RTCONFIG_EXTPHY_BCM84880)
 	add_to_list("eth5", ifnames, sizeof(ifnames));
 #endif
 	foreach(word, ifnames, next) {
@@ -1770,15 +1772,31 @@ void init_switch_pre()
 			doSystem("ethctl %s phy-reset", WAN_IF_ETH);
 		else {
 #ifdef RTCONFIG_HND_ROUTER_AX
-			if (ethctl & ETHCTL_EEE_ON)
-				doSystem("ethctl %s eee on", word);
-			else
+			dbg("%s: EEE %s\n", word, (ethctl & ETHCTL_EEE_ON) ? "on" : "off");
+			if (!(ethctl & ETHCTL_EEE_ON)) {
+#ifdef RTCONFIG_EXTPHY_BCM84880
+#if defined(RTAX86U) || defined(RTAX5700)
+				if(nvram_get_int("ext_phy_model")) { // 0: BCM54991, 1: RTL8226
+					eval("ethctl", "phy", "ext", EXTPHY_RTL_ADDR_STR, "0x07003c", "0x0000"); // bit 2:3 1:on 0:off eee (1000M/100M)
+					eval("ethctl", "phy", "ext", EXTPHY_RTL_ADDR_STR, "0x07003e", "0x0000"); // bit 0 1:on 0:off eee (2500M)				
+				} else
+#endif
+#endif
 				doSystem("ethctl %s eee off", word);
+			}
+
+			dbg("%s: APD %s\n", word, (ethctl & ETHCTL_APD_OFF) ? "off" : "on");
 			if (ethctl & ETHCTL_APD_OFF)
 				doSystem("ethctl %s apd off", word);
-#endif
+
+			dbg("%s: ethernet@wirespeed %s\n", word, (ethctl & ETHCTL_WIRESPEED_ON) ? "enabled" : "disabled");
+			if (ethctl & ETHCTL_WIRESPEED_ON)
+				doSystem("ethctl %s ethernet@wirespeed enable", word);
+#else
+			dbg("%s: ethernet@wirespeed %s\n", word, (ethctl & ETHCTL_WIRESPEED_OFF) ? "disabled" : "enabled");
 			if (!(ethctl & ETHCTL_WIRESPEED_OFF))
 				doSystem("ethctl %s ethernet@wirespeed enable", word);
+#endif
 #ifdef RTCONFIG_HND_ROUTER_AX_675X
 			if (ethctl & ETHCTL_CABLE_DIAG)
 				doSystem("ethctl %s cable-diag enable", word);
@@ -1827,14 +1845,12 @@ void init_switch_pre()
 	system("ethswctl -c pmdioaccess -x 0x1330 -l 2 -d 0xf017");
 #endif
 
-#ifdef RPAX56
-        doSystem("ethswctl -c wan -o disable -i eth0");
-#else
 	doSystem("ethswctl -c wan -o enable -i %s", WAN_IF_ETH);
-#endif
 
+#if !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710))
 	foreach(word, ifnames, next)
 		doSystem("tmctl porttminit --devtype 0 --if %s --flag 1", word);
+#endif
 }
 
 #define ARRAYSIZE(a)	(sizeof(a)/sizeof(a[0]))
@@ -2498,7 +2514,7 @@ void eth_phypower(char *port, int onoff){
 #endif
 	if(!strncmp(port, "br1", 3) || !strncmp(port, "vlan", 4) || !strncmp(port, "eth", 3))
 	{
-		snprintf(cmd, sizeof(cmd), "ethctl %s phy-power %s", "eth0", onoff ? "up" : "down");
+		snprintf(cmd, sizeof(cmd), "ethctl %s phy-power %s", WAN_IF_ETH, onoff ? "up" : "down");
 		system(cmd);
 	}
 	else
@@ -3702,6 +3718,7 @@ void init_others(void)
 #endif
 #if defined(DSL_AX82U)
 	update_misc1();
+	update_cfe_ax82u();
 	tweak_process_affinity(0, 2); //test nvram_get issue
 	{
 		pid_t pid;
@@ -3976,12 +3993,38 @@ int get_bsd_nonvht_status(int unit)
 }
 #endif
 
+//#ifdef RPAX56
+int find_user_unit(char *ustr)
+{
+	char tmp[100], prefix[]="wlXXXXXXX_";
+	char word[256], *next;
+	int unit = 0;
+
+	_dprintf("test it, %s\n", __func__);	// tmp test
+        foreach (word, nvram_safe_get("wl_ifnames"), next) {
+		snprintf(prefix, sizeof(prefix), "wlc%d_", unit);
+		if(*nvram_safe_get(strcat_r(prefix, ustr, tmp))) {
+			return unit;
+		} else				// tmp test
+			_dprintf("no data of %s+%s\n ", prefix, ustr);	// tmp test
+                unit++;
+        }
+
+	_dprintf("%s: no results\n", __func__);
+	return 0;
+}
+//#endif
+
 void generate_wl_para(char *ifname, int unit, int subunit)
 {
 	dbG("unit %d subunit %d\n", unit, subunit);
 
 	char tmp[100], prefix[]="wlXXXXXXX_";
 	char tmp2[100], prefix2[]="wlXXXXXXX_";
+//#ifdef RPAX56
+	char prefix3[]="wlXXXXXXX_", *tmp3;
+	int unit2;
+//#endif
 	char *list, *list2;
 	int list_size;
 	char *nv, *nvp, *b;
@@ -4231,6 +4274,12 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #endif
 				nvram_set(strcat_r(prefix, "bss_enabled", tmp), "0");
 		}
+//#ifdef RPAX56
+		if(nvram_match(strcat_r(prefix2, "prev_mode", tmp), "wet") && nvram_match(strcat_r(prefix2, "mode", tmp), "ap")) {
+			_dprintf("disable guestnetwork(%s) when changing from client mode to ap.\n", prefix);
+			nvram_set(strcat_r(prefix, "bss_enabled", tmp), "0");
+		}
+//#endif
 #endif
 	}
 
@@ -4280,7 +4329,25 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		else
 #endif
 		snprintf(prefix2, sizeof(prefix2), "wlc%d_", unit ? 1 : 0);
+//#ifdef RPAX56
+		if (nvram_match("x_Setting", "1") && nvram_match("rpsync", "1") && subunit == -1 && dpsta_mode() && !strlen(nvram_safe_get(strcat_r(prefix2, "ssid", tmp)))) {
 
+			unit2 = find_user_unit("ssid");	
+			_dprintf("null ssid of %s, get user unit=%d\n", prefix2, unit2);	// tmp test
+			snprintf(prefix3, sizeof(prefix3), "wlc%d_", unit2);
+			_dprintf("\n==reset %s to be as %s due no configs\n", prefix2, prefix3);
+
+			if((tmp3 = nvram_safe_get(strcat_r(prefix3, "ssid", tmp))) && *tmp3) {	
+				_dprintf("reset ssid %s as %s\n", strcat_r(prefix2, "ssid", tmp), tmp3);	// tmp test
+				nvram_set(strcat_r(prefix2, "ssid", tmp), tmp3);
+			} else
+				nvram_set(strcat_r(prefix2, "ssid", tmp), "__emptyssid__");
+			tmp3 = nvram_safe_get(strcat_r(prefix3, "wpa_psk", tmp));
+			nvram_set(strcat_r(prefix2, "wpa_psk", tmp), tmp3);
+			tmp3 = nvram_safe_get(strcat_r(prefix3, "crypto", tmp));
+			nvram_set(strcat_r(prefix2, "crypto", tmp), tmp3);
+		} else
+//#endif
 		if (nvram_match("x_Setting", "0") ||
 			((dpsr_mode()
 #ifdef RTCONFIG_DPSTA
@@ -6358,14 +6425,8 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 		}
 
 		/* write default WAN net device to handle vlanctl commands */
-		if (model == MODEL_RTAX58U) {
-			sprintf(wan_if, "eth4");
-			sprintf(wanVlanDev, "eth4.v0");
-		}
-		else {
-			sprintf(wan_if, "eth0");
-			sprintf(wanVlanDev, "eth0.v0");
-		}
+		sprintf(wan_if, WAN_IF_ETH);
+		sprintf(wanVlanDev, "%s.v0", WAN_IF_ETH);
 
 		/* Using vlanctl to handle vlan forwarding */
 		if ((wan_vid || switch_stb > 0 || nvram_match("switch_wantag", "unifi_biz")) && !nvram_match("switch_wantag", "superonline")) { /* config wan port or bridge hinet IPTV traffic */
@@ -8945,7 +9006,8 @@ void set_acs_ifnames()
 	nvram_set("wl1_acs_excl_chans", list);
 
 	/* WAR: exclude acsd from selecting chanspec 6g1, 6g5, 6g9, 6g13, 6g17, 6g21, 6g25,6g29 bw20/40/80/160, also 6g233 bw20 */
-	nvram_set("wl2_acs_excl_chans", "0x5001,0x5002,0x5005,0x5009,0x500d,0x5011,0x5015,0x5019,0x501d,0x5803,0x5903,0x580b,0x590b,0x5813,0x5913,0x581b,0x591b,0x6007,0x6107,0x6207,0x6307,0x6017,0x6117,0x6217,0x6317,0x680f,0x690f,0x6a0f,0x6b0f,0x6c0f,0x6d0f,0x6e0f,0x6f0f,0x50e9");
+	/* add exclude 6g225, 6g229, 6g225/40, 6g229/40 */
+	nvram_set("wl2_acs_excl_chans", "0x5001,0x5002,0x5005,0x5009,0x500d,0x5011,0x5015,0x5019,0x501d,0x5803,0x5903,0x580b,0x590b,0x5813,0x5913,0x581b,0x591b,0x6007,0x6107,0x6207,0x6307,0x6017,0x6117,0x6217,0x6317,0x680f,0x690f,0x6a0f,0x6b0f,0x6c0f,0x6d0f,0x6e0f,0x6f0f,0x50e9,0x50e1,0x50e5,0x58e3,0x59e3");
 #else
 	if (nvram_match("wl1_band5grp", "7")) {		// EU, JP, UA
 #ifdef RTAC66U
@@ -9489,6 +9551,10 @@ void hnd_nat_ac_init(int bootup)
 		fc_fini();
 	else if (!bootup)
 		fc_init();
+
+#ifdef RTCONFIG_HND_ROUTER_AX
+	eval("fc", "config", "--tcp-ack-mflows", nvram_get_int("fc_tcp_ack_mflows_disable_force") ? "0" : "1");
+#endif
 
 	if (nvram_match("runner_disable", "1"))
 #if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)

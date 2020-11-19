@@ -111,24 +111,27 @@ function initial_led_control() {
 	$(".setting_enable_bg .switch").click(function(e){
 		e = e || event;
 		e.stopPropagation();
-		$(".setting_enable_bg .switch").toggleClass("off on").promise().done(function(){
-			var switch_status = $(".setting_enable_bg .switch").hasClass("on");
-			lightl_effect_animate.clear($light_effect_bg);
-			if(switch_status){
-				$(".switch_off").show();
-				scheme_item_post.Mode = $(".scheme_bg.active").attr("Mode");
-				set_scheme_mode(scheme_item_post.Mode, scheme_item_post["LED_Set"]);
-			}
-			else{
-				$(".switch_off").hide();
-				scheme_item_post.Mode = "0";
-				$light_effect_bg.removeClass().addClass("light_effect_bg");
-				$light_effect_bg.css("background", "initial");
-			}
+		var AllLED = httpApi.nvramGet(["AllLED"]).AllLED;
+		if(AllLED == "1"){
+			$(".setting_enable_bg .switch").toggleClass("off on").promise().done(function(){
+				var switch_status = $(".setting_enable_bg .switch").hasClass("on");
+				lightl_effect_animate.clear($light_effect_bg);
+				if(switch_status){
+					$(".switch_off").show();
+					scheme_item_post.Mode = $(".scheme_bg.active").attr("Mode");
+					set_scheme_mode(scheme_item_post.Mode, scheme_item_post["LED_Set"]);
+				}
+				else{
+					$(".switch_off").hide();
+					scheme_item_post.Mode = "0";
+					$light_effect_bg.removeClass().addClass("light_effect_bg");
+					$light_effect_bg.css("background", "initial");
+				}
 
-			var postData = {"ledg_scheme": scheme_item_post.Mode};
-			httpApi.set_ledg(postData);
-		});
+				var postData = {"ledg_scheme": scheme_item_post.Mode};
+				httpApi.set_ledg(postData);
+			});
+		}
 	});
 	$(".setting_scheme .scheme_bg").unbind("click");
 	$(".setting_scheme .scheme_bg").click(function(e){
@@ -171,6 +174,10 @@ function initial_led_control() {
 	});
 
 	var ledg_scheme = httpApi.nvramGet(["ledg_scheme"], true).ledg_scheme;
+	var AllLED = httpApi.nvramGet(["AllLED"], true).AllLED;
+	if(AllLED == "0")
+		$(".all_led_off").show();
+
 	var ledg_scheme_old = httpApi.nvramGet(["ledg_scheme_old"], true).ledg_scheme_old;
 	var ledg_rgb = httpApi.nvramGet(["ledg_rgb" + ledg_scheme + ""], true)["ledg_rgb" + ledg_scheme + ""];
 	if(ledg_scheme == "1" ||ledg_scheme == "2" || ledg_scheme == "3" || ledg_scheme == "7" || (ledg_scheme == "0" && ledg_scheme_old != "")) {
@@ -613,5 +620,6 @@ $(document).ready(initial_led_control);
 			<div class="hue_bar_mask"></div>
 		</div>
 	</div>
+	<div class="all_led_off">Please enable the LED function by pressing the middle hardware button on the front cover about 3 seconds.</div><!-- untranslated -->
 </div>
 </body>

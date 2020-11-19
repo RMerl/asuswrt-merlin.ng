@@ -713,11 +713,13 @@ get_uplinkports_linkrate(char *ifname)
 	int i, ret;
 	char out_buf[64];
 	int lret=0;
+	int len;
 #if defined(RTCONFIG_HND_ROUTER_AX_6710)
 	// MODEL_RTAX86U, MODEL_RTAX68U
 #if defined(RTCONFIG_EXTPHY_BCM84880)
-	// L5(2.5G) W0 L1 L2 L3 L4
+	// L5(2.5G) W0 L1 L2 L3 L4 <--LAYOUT
 	// eth5 eth0 eth4 eth3 eth2 eth1
+	// ate seq is W-L1-L2-L3-L4-L5 (eth0-eth4-eth3-eth2-eth1-eth5)
 	int lan_ports = 5;
 #else
 	// W0 L1 L2 L3 L4
@@ -739,17 +741,12 @@ get_uplinkports_linkrate(char *ifname)
         int model = get_model();
         switch(model) {
 	case MODEL_RTAX86U:
-		if(nvram_get_int("wans_extwan")) {
-			sprintf(pif[0], "%s", "eth0");
-			sprintf(pif[1], "%s", "eth5");
-		} else {
-			sprintf(pif[0], "%s", "eth5");
-			sprintf(pif[1], "%s", "eth0");
-		}
-		sprintf(pif[2], "%s", "eth4");
-		sprintf(pif[3], "%s", "eth3");
-		sprintf(pif[4], "%s", "eth2");
-		sprintf(pif[5], "%s", "eth1");
+		sprintf(pif[0], "%s", "eth0");
+		sprintf(pif[1], "%s", "eth4");
+		sprintf(pif[2], "%s", "eth3");
+		sprintf(pif[3], "%s", "eth2");
+		sprintf(pif[4], "%s", "eth1");
+		sprintf(pif[5], "%s", "eth5");
 
 		break;
 	case MODEL_RTAX68U:
@@ -761,17 +758,12 @@ get_uplinkports_linkrate(char *ifname)
 
 		break;
 	case MODEL_GTAXE11000:
-		if(nvram_get_int("wans_extwan")) {
-			sprintf(pif[0], "%s", "eth0");
-			sprintf(pif[1], "%s", "eth5");
-		} else {
-			sprintf(pif[0], "%s", "eth5");
-			sprintf(pif[1], "%s", "eth0");
-		}
+		sprintf(pif[0], "%s", "eth0");
 		sprintf(pif[2], "%s", "eth1");
 		sprintf(pif[3], "%s", "eth4");
 		sprintf(pif[4], "%s", "eth2");
 		sprintf(pif[5], "%s", "eth3");
+		sprintf(pif[1], "%s", "eth5");
 
 		break;
 	default:
@@ -802,19 +794,33 @@ get_uplinkports_linkrate(char *ifname)
 		break;
 	}
 
+	if(!*nvram_safe_get("wan_ifname") && nvram_get_int("sw_mode")!=1) {  // ap/re mode
+		sprintf(pif[0], "%s", "eth0");	// here the report follows lan_ifnames
+		ret = hnd_get_phy_status(pif[0]);
+		if(ret == 0) {
+			lrate[0] = 0;
+		} else {
+			ret = hnd_get_phy_speed(pif[0]);
+			lrate[0] = (ret == 2500)? 2500 : (ret == 1000) ? 1000 : 100;
+		}
+	}
+
 	i = 1;
+	len = strlen(out_buf);
 #if defined(GTAXE11000)
-	foreach(word, lanports_seq, next){
+	foreach(word, lanports_seq, next)
 #else
-	foreach(word, nvram_safe_get("lan_ifnames"), next){
+	foreach(word, nvram_safe_get("lan_ifnames"), next)
 #endif
+	{
+		sprintf(pif[i], "%s", word);	// here the report follows lan_ifnames
 		ret = hnd_get_phy_status(word);
 		if(ret == 0) {
-			sprintf(out_buf, "%sL%d=X;", out_buf, i);
+			len += sprintf(out_buf + len, "L%d=X;", i);
 			lrate[i] = 0;
 		} else{
 			ret = hnd_get_phy_speed(word);
-			sprintf(out_buf, "%sL%d=%s;", out_buf, i,
+			len += sprintf(out_buf + len, "L%d=%s;", i,
 #ifdef RTCONFIG_EXTPHY_BCM84880
 					(ret == 2500)? "Q" :
 #endif
@@ -824,7 +830,6 @@ get_uplinkports_linkrate(char *ifname)
 		}
 
 		++i;
-		if(i > lan_ports) break;
 	}
 
 	//return lret > 0 ? lret : 0;
@@ -1027,17 +1032,12 @@ get_uplinkports_linkrate(char *ifname)
 #ifdef RTCONFIG_EXT_BCM53134
 		pmdv2 = hnd_ethswctl(PMDIOACCESS, 0x0104, 4, 0, 0);
 #endif
-		if(nvram_get_int("wans_extwan")) {
-			sprintf(pif[0], "%s", "eth0");
-			sprintf(pif[5], "%s", "eth5");
-		} else {
-			sprintf(pif[0], "%s", "eth5");
-			sprintf(pif[5], "%s", "eth0");
-		}
+		sprintf(pif[0], "%s", "eth0");
 		sprintf(pif[1], "%s", "eth4");
 		sprintf(pif[2], "%s", "eth3");
 		sprintf(pif[3], "%s", "eth2");
 		sprintf(pif[4], "%s", "eth1");
+		sprintf(pif[5], "%s", "eth5");
 		break;
 	case MODEL_RTAX88U:
 		/*
@@ -1168,7 +1168,7 @@ get_uplinkports_linkrate(char *ifname)
 	}
 
 	memset(out_buf, 0, 64);
-
+	len = 0;
 	for (i=0; i<lan_ports+1; i++) {
 		mask = 0;
 		mask |= 0x0001<<ports[i];
@@ -1184,10 +1184,10 @@ get_uplinkports_linkrate(char *ifname)
 #endif
 		{
 			if (i==0) {
-				sprintf(out_buf, "W0=X;");
+				len  = sprintf(out_buf, "W0=X;");
 				lrate[0] = 0;
 			} else {
-				sprintf(out_buf, "%sL%d=X;", out_buf, i);
+				len += sprintf(out_buf + len, "L%d=X;", i);
 				lrate[i] = 0;
 			}
 		}
@@ -1206,10 +1206,10 @@ get_uplinkports_linkrate(char *ifname)
 #endif
 			if (i==0) {
 #ifdef RTCONFIG_HND_ROUTER_AX_675X
-				sprintf(out_buf, "W0=%s;", (ret == 2500) ? "Q" : ((ret == 1000) ? "G" : "M"));
+				len = sprintf(out_buf, "W0=%s;", (ret == 2500) ? "Q" : ((ret == 1000) ? "G" : "M"));
 				lrate[i] = ret;
 #else
-				sprintf(out_buf, "W0=%s;",
+				len = sprintf(out_buf, "W0=%s;",
 #ifdef RTCONFIG_EXTPHY_BCM84880
 						(ret & 4)? "Q" :
 #endif
@@ -1228,10 +1228,10 @@ get_uplinkports_linkrate(char *ifname)
 					ext_lret = 1;
 
 #ifdef RTCONFIG_HND_ROUTER_AX_675X
-				sprintf(out_buf, "%sL%d=%s;", out_buf, i, (ret == 2500) ? "Q" : ((ret == 1000) ? "G" : "M"));
+				len += sprintf(out_buf + len, "L%d=%s;", i, (ret == 2500) ? "Q" : ((ret == 1000) ? "G" : "M"));
 				lrate[i] = ret;
 #else
-				sprintf(out_buf, "%sL%d=%s;", out_buf, i,
+				len += sprintf(out_buf + len, "L%d=%s;", i,
 #ifdef RTCONFIG_EXTPHY_BCM84880
 					(ret & 4)? "Q" :
 #endif

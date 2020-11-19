@@ -1751,7 +1751,7 @@ function popAMeshClientListEditTable(event) {
 				var option_array = gen_conn_priority_select_option(node_info, eap_flag);
 				option_array.forEach(function(item, index, array) {
 					$conn_priority_select_obj.append($("<option/>").attr({"value": item.value, "conn_type": item.conn_type}).text(item.text));
-					if(item.conn_type == "eth")
+					if(item.conn_type != "auto" && item.conn_type != "wifi")
 						support_eth_num++;
 				});
 
@@ -1774,7 +1774,7 @@ function popAMeshClientListEditTable(event) {
 				if(eap_flag) {
 					if(support_eth_num <= "1") {//only one eth
 						$conn_priority_select_obj.attr("disabled", true);
-						$conn_priority_select_obj.children("option:selected").html("<#AiMesh_Node_ConnPrio_Eth_Only_Title#>");
+						$conn_priority_select_obj.children("option").removeAttr("selected").filter("[conn_type=eth]:first").prop("selected", true);
 					}
 					else
 						$conn_priority_select_obj.attr("disabled", false);
@@ -2462,11 +2462,11 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 
 	option_array.push(gen_option_attr("3", ((_eap_flag) ? "<#Auto#> (<#AiMesh_Node_ConnPrio_Eth_Based_Title#>)" : "<#Auto#>"), "auto"));
 
-	var port_mapping = [{value:"1", text:"WAN"}, {value:"2", text:"LAN"}];
-	var interface_mapping = [{value:"1", text:"Ethernet"}, {value:"2", text:"Wireless"}, {value:"3", text:"Power Line"}];
+	var port_mapping = [{value:"1", text:"WAN"}, {value:"2", text:"LAN"}];//Def
+	var interface_mapping = [{value:"1", text:"Ethernet"}, {value:"2", text:"Wi-Fi"}, {value:"3", text:"Powerline"}];//Type
 	var eth_rate_mapping = [{value:"1", text:"10M"}, {value:"2", text:"100M"}, {value:"3", text:"1G"}, {value:"4", text:"2.5G"}, {value:"5", text:"5G"},
-		{value:"6", text:"10G base-T"}, {value:"7", text:"10G SFP+"}];
-	var wifi_rate_mapping = [{value:"1", text:"2.4G"}, {value:"2", text:"5G"}, {value:"3", text:"6G"}];
+		{value:"6", text:"10G base-T"}, {value:"7", text:"10G SFP+"}];//SubType
+	var wifi_rate_mapping = [{value:"1", text:"2.4G"}, {value:"2", text:"5G"}, {value:"3", text:"6G"}];//SubType
 
 	if("capability" in _node_info){
 		if("21" in _node_info.capability) {
@@ -2498,18 +2498,20 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 								conn_type = "eth";
 								break;
 							case "2":
-								if_text = "Wireless";
+								if_text = if_type.text;
 								rate_type =  wifi_rate_mapping.filter(function(item, index, _array){
 									return (item.value == port_obj.SubType);
 								})[0];
 								conn_type = "wifi";
 								break;
+							case "3":
+								if_text = if_type.text;
+								conn_type = "plc";
+								break;
 						}
-						if(rate_type != undefined)
+						if(rate_type != undefined && rate_type != "")
 							rate_text = rate_type.text;
 					}
-					if(rate_text == "" || if_text == "")
-						return true;
 
 					var option_value = port_obj.amas_ethernet;
 					var option_text = rate_text + " " + if_text;
@@ -2517,6 +2519,8 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 					if(idx_text != "0")
 						option_text += idx_text;
 					option_text += " " + eap_text;
+					if(_eap_flag && conn_type == "wifi")
+						return true;
 					option_array.push(gen_option_attr(option_value, option_text, option_conn_type));
 				});
 			}

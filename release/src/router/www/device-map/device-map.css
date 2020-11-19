@@ -490,7 +490,7 @@ Rog Device      36
 	background-size: 100%;
 }
 .radio_1{
-	background-position: 0% 2px;
+	background-position: 0% 1px;
 }
 .radioIcon.GN.radio_1{
 	background-image:url('/images/New_ui/amesh/radio_gn_1.svg');
@@ -517,6 +517,7 @@ Rog Device      36
 	background-color: #06CCDE;
 	height: 11px;
 	width: 28px;
+	border-radius: 2px;
 }
 .band_txt_chrome {
 	font-size: 9px;

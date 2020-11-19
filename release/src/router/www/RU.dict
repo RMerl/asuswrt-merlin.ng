@@ -26,7 +26,7 @@ AiMesh_Node_desc2=Войдите в веб-интерфейс роутера AiM
 AiMesh_Notice1=Изменения, внесенные в настройки беспроводной сети, повлияют на Вашу mesh-сеть!
 AiMesh_Add_Another_Node_confirm=Хотите добавить другой узел?
 AiMesh_Add_Another_Node=Добавить другой узел
-AiMesh_backhaul_band_5GHz-2_desc1=5 GHz-2 is now used as dedicated WiFi backhaul under AiMesh mode.
+AiMesh_backhaul_band_5GHz-2_desc1=is now used as dedicated WiFi backhaul under AiMesh mode.
 AiMesh_backhaul_band_5GHz-2_desc2=If you want to change wireless settings, please go to <span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">here</span>.
 AiMesh_Choose_Another_Node=Выберите другой узел
 AiMesh_Find_Router=Мы обнаружили поблизости роутер
@@ -685,6 +685,7 @@ qis_wireless_setting=Назначьте уникальное имя или SSID 
 qis_wireless_setting_skdesc=Введите сетевой ключ длиной от 8 до 63 символов (буквы, цифры или их сочетание) или 64 шестнадцатеричных цифры. По умолчанию настройки безопасности установлены как WPA2-Personal AES. Если Вы не хотите настраивать сетевую безопасность, оставьте поле ключа безопасности пустым, но это не защищает сеть от несанкционированного доступа.
 qis_wireless_setting_skdesc1=Введите сетевой ключ длиной от 8 до 63 символов (буквы, цифры или их сочетание). По умолчанию настройки безопасности установлены как WPA2-Personal AES.
 qis_wireless_setting_separate=Отдельные 2.4 ГГц и 5 ГГц
+qis_wireless_setting_separate1=Отдельные 2.4 ГГц, 5 ГГц и 6 ГГц
 QKSet_account_nameblank=Требуется ввести имя учетной записи.
 QKSet_account_empty=Поля Имя пользователя/пароль не могут быть пустыми.
 QKSet_account_webtitle=Настройка учетной записи поставщика услуг Интернета

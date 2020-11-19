@@ -1513,6 +1513,10 @@ config RTCONFIG_GEOIP
 	bool "determine country by IP address"
 	default n
 
+config RTCONFIG_GEOIP_EG
+	bool "Egypt IP Address Ranges matching"
+	default n
+
 config RTCONFIG_TRANSMISSION
 	bool "Transmission A Fast, Easy and Free BitTorrent client"
 	default n

@@ -1,6 +1,7 @@
 20201,Cosmote,*99#,,,internet,Cosmote Internet
-20205,Vodafone,*99#,,,internet,Vf Mobile Broadband
-20210,WIND ADSM,*99#,,,gint.b-online.gr,WIND Internet
+20205,Vodafone,*99#,,,internet.vodafone.gr,Vf Mobile Broadband
+20209,Q Internet,*99#,,,myq,Q-Telecom
+20210,WIND,*99#,,,gint.b-online.gr,WIND Internet
 20404,Vodafone,*99***1#,vodafone,vodafone,live.vodafone.com,Vodafone Internet
 20408,KPN,*99***1#,,,portalmmm.nl,KPN/Hi Mobiel Internet
 20410,KPN,*99***1#,,,internet,KPN
@@ -8,32 +9,44 @@
 20416,T-Mobile,*99***1#,tmobile,tmobile,internet,T-Mobile Internet
 20420,NL Orange NL GPRS,,,,internet,Orange Internet
 20465,AGMS NL,*99#,,,agms.nl.gmm,AGMS NL
-20601,BE Belgacom INTERNET.PROXIMUS.BE GPRS,,,,internet.proximus.be,Proximus Internet
-20601,BE Belgacom INTERNET.PROXIMUS.BE GPRS,,wap,wap,wap.proximus.be,Proximus HTTP
-20610,BE Mobistar GPRS,,,,mworld.be,Mobistar HTTP
-20610,BE Mobistar GPRS,,,,mworld.be,Mobistar Internet
-20620,Base Pro Belgium GPRS,*99***1#,base,base,gprs.base.be,BASE HTTP
-20620,Base Pro Belgium GPRS,*99***1#,base,base,gprs.base.be,BASE Internet
-20801,FR  Orange F,,orange,orange,orange.fr,Orange Internet
-20810,SFR Entreprise France UMTS GPRS,,,,websfr,SFR Internet
-20815,Free,*99#,,,free,Free
-20820,Bouygues Telecom Entreprise France GPRS,*99***1#,a2b,acces,a2bouygtel.com,Bouygues
+20601,Proximus,,,,internet.proximus.be,Proximus Internet
+20601,Proximus,,wap,wap,wap.proximus.be,Proximus HTTP
+20610,Orange BE,,,,mworld.be,Orange (Mobistar)
+20610,Orange BE,,,,mworld.be,Orange (Mobistar)
+20620,BASE,*99***1#,base,base,gprs.base.be,BASE HTTP
+20620,BASE,*99***1#,base,base,gprs.base.be,BASE Internet
+20801,Orange Internet,,orange,orange,orange,Orange Internet
+20810,SFR Internet,,,,sl2sfr,SFR Internet
+20815,Free Mobile,,,,free,Free
+20820,Bouygues Telecom,*99***1#,a2b,acces,mmsbouygtel.com,Bouygues
 20826,NRJ WEB,*99#,,,fnetnrj,NRJ WEB
-21401,Vodafone,*99#,wap@wap,wap125,airtelwap.es,Vodafone Internet
-21403,MASmovil,*99***1#,EUSKALTEL,CLIENTE,internet.euskaltel.mobi,Internet Euskaltel
+21401,Internet móvil,*99#,wap@wap,wap125,airtelwap.es,Internet móvil
+21401,INTERNET,*99#,vodafone,vodafone,airtelwap.es,INTERNET
+21402,ALTECOM,,,,altecom.net,ALTECOM
+21402,FIBRACAT,,,,fibracat.cat,FIBRACAT
+21403,Orange Internet Móvil,*99#,orange,orange,orangeworld,Orange Internet Móvil
+21403,Euskaltel,*99***1#,EUSKALTEL,CLIENTE,internet.euskaltel.mobi,Internet Euskaltel
+21403,Happy Internet,,,,internettph,Happy
+21403,RACC INTERNET,,CLIENTERACC,RACC,internet.racc.net,RACC
+21403,CABLE movil Internet,,,,internettph,CABLE movil
+21403,Ibercom Internet,,,,ibercominternet,Ibercom
 21404,Yoigo Internet,*99#,,,internet,Yoigo Internet
 21406,Vodafone,*99#,EUSKALTEL,CLIENTE,internet.euskaltel.mobi,Internet Euskaltel
-21407,movistar,*99#,MOVISTAR,MOVISTAR,movistar.es,Conexion Compartida
-21408,EUSKALTEL1,*99#,EUSKALTEL,CLIENTE,internet.euskaltel.mobi,Internet Euskaltel
-21416,telecable Internet,*99#,telecable,telecable,internet.telecable.es,telecable Internet
+21407,Movistar,*99#,MOVISTAR,MOVISTAR,movistar.es,Conexion Compartida
+21408,Euskaltel Internet,*99#,EUSKALTEL,CLIENTE,internet.euskaltel.mobi,Internet Euskaltel
+21416,TeleCable Internet,*99#,telecable,telecable,internet.telecable.es,telecable Internet
 21418,ONO,*99#,,,internet.ono.com,ONO Internet
-21419,Simyo,*99#,,,gprs-service.com,Internet Simyo ES
-21421,Internet,*99#,,,jazzinternet,Internet
+21419,Simyo,*99#,orange,orange,orangeworld,Internet Simyo ES
+21421,jazzinternet,*99#,,,jazzinternet,JAZZTEL
+21422,DIGI SPAIN,,,,internet.digimobil.es,DIGI Spain
 21425,Layca Internet,*99#,lmes,plus,data.lycamobile.es,Layca Internet
+21427,Truphone,,,,truphone.com,Truphone
 21432,Tuenti,*99#,tuenti,tuenti,tuenti.com,Tuenti
-21601,Pannon,*99#,,,online,Telenor Online
-21630,HU T-Mobile GPRS,,,,internet.telekom,Telekom HU NET
-21630,HU T-Mobile GPRS,,,,wnw,Telekom Web
+21434,INET Internet,,,,inet.es,
+21601,Telenor HU ,*99#,,,online,Telenor Online
+21601,Djuice NET,*99#,,,net,Djuice
+21630,T-Mobile HU ,*99#,,,internet.telekom,Telekom HU NET
+21630,T-Mobile HU ,*99#,,,,Telekom Web
 21670,Vodafone Hungary UMTS GPRS,*99#,,,internet.vodafone.net,Vodafone Internet postpaid
 21670,Vodafone Hungary UMTS GPRS,*99#,,,vitamax.internet.vodafone.net,Vodafone Internet prepaid
 21670,Vodafone Hungary UMTS GPRS,*99#,vodawap,vodawap,vitamax.wap.vodafone.net,Vodafone HTTP prepaid
@@ -45,16 +58,24 @@
 21910,VIPnet Croatia UMTS GPRS,,,,data.vip.hr,Broadband
 22001,Telenor INTERNET,*99#,telenor,gprs,internet,Telenor INTERNET
 22002,Promonte Internet,*99#,gprs,gprs,gprs.promonte.com,Promonte Internet
-22003,mts internet,*99#,mts,064,3gnet,mts internet
-22003,mts wap,*99#,mts,064,gprswap,mts wap
+22003,mts internet,*99#,mts,64,3gnet,mts internet
+22003,mts wap,*99#,mts,64,gprswap,mts wap
 22005,Vip GPRS,*99#,vipmobile,vipmobile,vipmobile,Vip GPRS
-22201,TIM,*99#,,,ibox.tim.it,TIM Web
-22201,TIM,*99#,WAPTIM,WAPTIM,wap.tim.it,WAP TIM
-22210,Vodafone,*99#,,,mobile.vodafone.it,Vodafone
-22210,Vodafone,*99#,,,web.omnitel.it,Vodafone
+22201,TIM DUN (IT),*99#,,,ibox.tim.it,TIM DUN (IT)
+22201,TIM,*99#,,,wap.tim.it,WAP TIM
+22201,gid Internet,,,,internet.windmobile.ca,gid
+22201,IUSACELL Modem,,iusacellgsm,iusacellgsm,modem.iusacellgsm.mx,IUSACELL
+22201,NOVERCA WEB,,,,web.noverca.it,Noverca
+22210,Acc. Internet da cell,*99#,,,mobile.vodafone.it,Vodafone
+22210,Tethering Internet,*99#,,,web.omnitel.it,Vodafone
+22210,PosteMobile,*99#,,,wap.postemobile.it,PosteMobile
 22233,PosteMobile,*99#,,,wap.postemobile.it,PosteMobile
-22234,BT internet,*99#,,,internet.btitalia.it,BT internet
+22236,DIGI Italy,,,,digi.mobile,DIGI Italy
+22250,Iliad,,,,iliad,Iliad
+22253,WEB CoopVoce,,,,internet.coopvoce.it,WEB CoopVoce
+22254,Plintron,,,,data.plintron.it,Plintron
 22288,Wind,*99#,,,internet.wind,WIND DUN
+22288,WindMobile,,,,internet.windmobile.ca,WindMobile
 22298,BLU Italy GPRS,*99***1#,,,,Blu
 22299,3,*99#,,,tre.it,3 Italia
 22601,Vodafone,*99#,internet.pre.vodafone.ro,vodafone,internet.pre.vodafone.ro,Vodafone Internet prepaid
@@ -63,9 +84,9 @@
 22605,RDS Internet postpaid,*99#,,,Internet,RDS Internet postpaid
 22606,Cosmote,*99#,,,broadband,Connect Mobile
 22610,Orange,*99#,,,internet,Orange Internet postpaid
-22801,Swisscom Switzerland GPRS,*99***1#,,,gprs.swisscom.ch,Swisscom Services
-22802,Sunrise Switzerland GPRS,*99***1#,,,internet,Sunrise Internet
-22803,CH Orange CH GPRS,,,,Click,Orange HTTP prepaid
+22801,Swisscom Switzerland,*99***1#,,,gprs.swisscom.ch,Swisscom Services
+22802,Sunrise Switzerland,*99***1#,,,internet,Sunrise live
+22803,Salt(Orange CH),*99#,,,internet,Orange Internet
 23001,T-Mobile,*99#,,,internet.t-mobile.cz,T-Mobile Internet postpaid
 23002,O2,*99#,,,internet,O2 Internet postpaid
 23003,Vodafone,*99***1#,,,internet,Vodafone Internet
@@ -84,42 +105,52 @@
 23210,3,*99***1#,,,drei.at,3 AT
 23211,data.bob,*99#,data@bob.at,ppp,bob.at,data.bob
 23212,yesss!,*99***1#,,,web.yesss.at,yesss
-23402,O2,*99#,o2web,password,mobile.o2.co.uk,O2 Mobile Web
-23410,O2,*99#,o2web,password,mobile.o2.co.uk,O2 Mobile Web
-23411,O2,*99#,o2bb,password,m-bb.o2.co.uk,O2
+23401,UBIQUISYS,*99#,,,internet,UBIQUISYS
+23408,BT One Phone,,,,Internetinternet.btonephone.com,BT One Phone Internet
+23410,O2 Mobile,*99#,o2web,password,mobile.o2.co.uk,O2 Mobile Web
+23411,O2,*99#,O2web,O2web,m-bb.o2.co.uk,O2
 23415,Vodafone,*99#,,,wap.vodafone.co.uk,Vodafone
 23420,3,*99#,,,three.co.uk,3 Internet
-23430,Internet,*99#,eesecure,secure,everywhere,Internet
-23431,Internet,*99#,eesecure,secure,everywhere,Internet
-23432,Internet,*99#,eesecure,secure,everywhere,Internet
-23433,Orange,,eesecure,secure,everywhere,Internet
+23426,Lycamobile,,lmuk,plus,data.lycamobile.co.uk,Lycamobile
+23430,EE Internet,*99#,eesecure,secure,everywhere,Internet
+23431,EE Internet,*99#,eesecure,secure,everywhere,Internet
+23432,EE Internet,*99#,eesecure,secure,everywhere,Internet
+23433,EE Internet,,eesecure,secure,everywhere,Internet
 23434,Orange,,eesecure,secure,everywhere,Internet
-23801,TDC,*99#,,,internet,Happii Internet
-23802,Telenor,*99#,,,internet.bibob.dk,Bibob Internet
-23806,3,*99#,,,data.dk,Oister
+23801,DK TDC,*99#,,,internet,TDC Internet
+23801,Telmore Internet,*99#,,,internet,TELMORE
+23802,Telenor(sonofon),*99#,,,Internet,Telenor Internet
+23806,3,*99#,,,data.tre.dk,Hi3G Denmark
 23810,TDC,*99#,,,internet,TDC
-23820,Telia,*99#,,,websp,Call me Internet
-23830,Orange,*99#,,,web.orange.dk,Telia
+23812,Lycamobile DK,*99#,,,data.lycamobile.dk,Lycamobile
+23820,Telia DK,*99#,,,www.internet.mtelia.dk,Telia SurfPort
+23820,Call me DK,*99#,,,webSP,Call me Internet
+23830,Orange DK,*99#,,,web.orange.dk,Orange DE
 23866,Telenor Internet,*99#,,,internet,Telenor Internet
 23877,Telenor,*99#,,,internet.bibob.dk,Bibob Internet
 24001,Telia,*99#,,,online.telia.se,Telia SE Internet
-24002,3,*99#,,,data.tre.se,3 HUTCHISON
-24006,Telenor,*99#,,,internet.telenor.se,Telenor
+24002,3,*99#,,,data.tre.se,3 SE
+24004,3,*99#,,,bredband.tre.se,3 Sweden
+24005,Comviq,*99#,,,4g.tele2.se,Comviq
+24006,Telenor,*99#,,,internet,Telenor
 24007,Tele2,*99#,,,4g.tele2.se,Ventelo Internet
-24008,Telenor,*99#,,,internet.telenor.se,Telenor
-24009,TelenorMobilsurf,*99#,,,services.telenor.se,TelenorMobilsurf
+24007,Gamma Data,,,,gamma.co.uk,Gamma Data
+24007,Jump,,,,Jump,Jump
+24008,Telenor Mobilsurf,*99#,,,services.telenor.se,TelenorMobilsurf
+24009,Com4,*99#,,,com4,Com4
 24010,Spring Mobile,*99#,,,data.springmobil.se,Spring data
+24017,Halebop SE,*99#,,,halebop.telia.se,Halebop Internet
+24024,Tele2 Swden,*99#,,,internet.tele2.se,Tele2 Internet
 24201,Telenor,*99#,,,telenor,Telenor Internet
-24202,NetCom,*99#,,,internet.netcom.no,Chess Internet
-24204,Tele2,*99#,,,internet.tele2.no,Tele2
-24205,Network Norway,*99#,,,internet,NWN Internet
-24205,Network Norway,*99#,,,internet,One Call Internet
-24212,Telenor,*99#,,,telenor,Telenor
-24403,DNA,*99#,,,internet,DNA
-24404,AINA,*99#,,,internet.aina.fi,AINA
-24405,Elisa,*99#,,,Internet,Elisa Internet
+24202,Telia NO,*99#,,,telia,Telia NO
+24209,Com4 NO,*99#,,,com4,Com4 NO
+24214,Ice,*99#,,,ice.net,Ice Internet
+24403,DNA Internet,,,,internet,DNA
+24404,DNA Internet,,,,internet,DNA
+24405,Elisa Internet,*99#,,,Internet,Elisa
 24410,TDC Internet,*99#,song@internet,songnet,internet.song.fi,TDC Internet
-24412,DNA,*99#,,,internet,DNA
+24412,DNA Internet,*99#,,,internet,DNA
+24412,DNA Pro Internet,*99#,,,dnapro.fi,DNA
 24413,DNA,*99#,,,internet,DNA
 24421,Saunalahti,*99#,,,internet.saunalahti,Saunalahti Internet
 24491,Sonera,*99#,,,internet,Sonera Internet
@@ -135,64 +166,53 @@
 24803,Tele2 Internet,*99#,,,Internet.tele2.ee,Tele2 Internet
 24803,Tele2 Internet(Prepaid),*99#,,,wap.tele2.ee,Tele2 Internet(Prepaid)
 25001,MTS,*99***1#,mts,mts,internet.mts.ru,MTS Internet
-25001,MTS,*99***1#,mts,mts,wap.mts.ru,MTS HTTP
 25002,MegaFon,*99***1#,,,internet,Megafon Internet
-25002,MegaFon,*99***1#,wap,wap,wap,Megafon HTTP
 25011,Yota Internet,*99#,,,yota.ru,Yota Internet
-25014,MegaFon,*99***1#,,,internet.nw,SMARTS
 25020,Tele2,*99***1#,,,internet.tele2.ru,TELE2 Internet
-25028,Beeline,*99***1#,beeline,beeline,internet.beeline.ru,Beeline
+25028,VODA internet,,,,vodalte.ru,VODA internet
 25035,Motiv Internet,*99#,,motiv,inet.ycc.ru,Motiv Internet
-25050,MTS,*99***1#,,,internet.mts.ru,MTS
-25099,Beeline,*99***1#,beeline,beeline,internet.beeline.ru,BeeLine Internet
-25099,Beeline,*99***1#,beeline,beeline,wap.beeline.ru,BeeLine HTTP
+25044,Next Mobile,,,,Next,Next Mobile
+25050,Sberbank-Telecom Internet,,,,internet.sberbank-tele.com,Sberbank Internet
+25099,Beeline,*99#,beeline,beeline,internet.beeline.ru,Beeline Internet
 25501,MTS,#777,,,internet,MTS Internet
-25501,MTS,#777,,,wap.jeans.ua,JEANS HTTP
-25501,MTS,#777,,,wap,MTS HTTP
-25501,MTS,#777,,,www.jeans.ua,JEANS Internet
-25501,MTS,#777,,,www.umc.ua,MTS Internet_old
 25502,Beeline,*99#,,,internet.beeline.ua,Beeline Internet
-25502,Beeline,*99#,,,wap.beeline.ua,Beeline HTTP
-25503,Kyivstar,*99#,igprs,internet,www.kyivstar.net,Kyivstar Post Paid Internet
-25503,Kyivstar,*99#,,,wap.ab.kyivstar.net,Ace_Base G HTTP
-25503,Kyivstar,*99#,,,wap.ab.kyivstar.net,Mobilych HTTP
-25503,Kyivstar,*99#,,,wap.djuice.com.ua,Djuice HTTP
-25503,Kyivstar,*99#,,,wap.kyivstar.net,Kyivstar HTTP
-25503,Kyivstar,*99#,,,www.ab.kyivstar.net,Ace_Base G Internet
-25503,Kyivstar,*99#,,,www.ab.kyivstar.net,Kyivstar Pre Paid Internet
-25503,Kyivstar,*99#,,,www.ab.kyivstar.net,Mobilych Internet
-25503,Kyivstar,*99#,,,www.djuice.com.ua,Djuice Internet
-25506,life,*99#,,,internet,life Internet
-25506,life,*99#,,,wap,life HTTP
+25503,Kyivstar,*99#,igprs,internet,www.kyivstar.net,Kyivstar Internet
+25503,Djuice Internet,*99#,,,www.djuice.com.ua,Djuice Internet
+25506,Lifecell,*99#,,,internet,Lifecell Internet
 25507,Utel Internet,*99#,,,3g.utel.ua,Utel Internet
-25521,PEOPLEnet,#777,,000000,,PEOPLEnet
+25521,PEOPLEnet,#777,,0,,PEOPLEnet
 25523,CDMA Ukraine,#777,,,,CDMA Ukraine
-26001,Plus,*99#,,,internet,Plus
-26002,T-Mobile,*99***1#,,,erainternet,T-Mobile
-26003,Orange,*99#,,,internet,Orange
-26006,Play,*99#,,,internet,P4 Internet
-26006,Play,*99#,,,wap,P4 Data HTTP
-26012,Cyfrowy Polsat,*99***1#,,,plus,Cyfrowy Polsat
+26001,Plus,*99#,,,plus,Plus Internet
+26002,T-Mobile PL,*99#,,,internet,T-Mobile
+26002,Heyah internet,*99#,,,heyah.pl,Heyah internet
+26003,Orange PL,*99#,,,internet,Orange Internet
+26006,Play,*99#,,,internet,Play Internet
+26006,Play,*99#,,,wap,Play Internet
+26033,Truphone PL,,,,truphone.com,Truphone PL
+26044,Rebtel,,,,rebtel,Rebtel
+26015,Aero2,*99#,,,darmowy,Aero2
+26016,Aero2,*99#,,,darmowy,Aero2
 26017,Aero2,*99#,,,darmowy,Aero2
-26201,DE T-D1 GPRS,,t-mobile,tm,internet.telekom,T-Mobile Internet (4G)
-26201,DE T-D1 GPRS,,t-mobile,tm,internet.t-mobile,T-Mobile Internet
-26202,Vodafone,*99***1#,vodafone,internet,web.vodafone.de,Vodafone Internet
-26202,Vodafone,*99***1#,vodafone,live,wap.vodafone.de,Vodafone HTTP
-26203,E-Plus,*99***1#,eplus,wap,internet.eplus.de,E-Plus Internet
+26201,Telekom Internet,,telekom,telekom,internet.telekom,T-Mobile Internet 
+26202,Vodafone DE,*99#,vodafone,internet,web.vodafone.de,Vodafone Internet
+26202,Vodafone,*99#,,,,Vodafone Internet
+26203,E-Plus,*99***1#,eplus,internet,internet.eplus.de,E-Plus Internet
+26220,MVNO DE,,mvno,mvno,internet.mvno.mobi,MVNO DE
 26204,Vodafone,*99***1#,vodafone,vodafone,web.vodafone.de,Vodafone
 26205,E-Plus,*99***1#,eplus,gprs,internet.eplus.de,E-Plus
 26206,T-Mobile,*99***1#,tm,tm,internet.t-mobile,T-Mobile
-26207,O2,*99***1#,,,internet.debitel.de,Debitel INET post-paid
-26208,O2,*99***1#,,,internet,o2 (DE)
-26208,O2,*99***1#,,,pinternet.interkom.de,o2 (DE) Prepaid
-26209,Vodafone,*99***1#,vodafone,vodafone,web.vodafone.de,Vodafone
+26207,O2,*99***1#,,,internet,o2 (DE)
+26207,Lidl Mobile,*99#,,,pinternet.interkom.de,Lidl Mobile
+26207,Tchibo Internet,*99#,,,webmobil1,Tchibo Internet
+26207,Fonic Prepaid,*99#,,,pinternet.interkom.de,Fonic Prepaid
+26208,O2 DE IMS,,,,ims,o2 (DE) Prepaid
 26210,O2,*99***1#,,,internet,Arcor AG &amp; Co
-26214,DE Quam GPRS,,quam,quam,quam.de,Group 3G UMTS
-26216,Telogic ex. Vistream,*99***1#,WAP,Vistream,internet.vistream.net,vistream
-26277,E-Plus,*99***1#,eplus,gprs,internet.eplus.de,E-Plus
-26278,T-Mobile,*99***1#,tm,tm,internet.t-mobile,T-Mobile
-26801,Vodafone,*99#,vodafone,vodafone,internet.vodafone.pt,Vodafone Internet
-26803,Optimus,*99#,,,umts,Optimus
+26242,Truphone,,,,truphone.com,Truphone
+26243,lycamobile,,,,data.lycamobile.de,lycamobile
+26801,Vodafone Net2,*99#,vodafone,vodafone,net2.vodafone.pt,Vodafone Internet
+26801,vodafone P dun,,,,internet.vodafone.pt,vodafone P dun
+26803,PortalOptimus,*99#,,,umts,PortalOptimus
+26803,Optimus HotSpot,,,,modem,Optimus HotSpot
 26806,TMN,*99#,,,internet,TMN Internet
 27001,LUXGSM Luxembourg GPRS,*99***1#,wap,wap,wap.pt.lu,LUXGSM HTTP postpaid
 27001,LUXGSM Luxembourg GPRS,*99***1#,web,web,web.pt.lu,LUXGSM Internet postpaid
@@ -211,15 +231,10 @@
 28403,Vivacom,359871000,wap,wap,wap.vivatel.bg,VivaTel HTTP postpaid
 28405,GLOBUL,359891000,,,globul,Globul HTTP postpaid
 28405,GLOBUL,359891000,,,globul,Globul Internet postpaid
-28601,Turkcell,*99#,gprs,gprs,wap,Turkcell HTTP
 28601,Turkcell,*99#,,,internet,Turkcell Internet
-28602,Vodafone,*99#,vodafone,vodafone,internet,Vodafone Internet
+28602,Vodafone TR,*99#,vodafone,vodafone,internet,Vodafone Internet
 28602,Vodafone,*99#,vodafone,vodafone,prepaidgprs,Vodafone Internet prepaid
-28602,Vodafone,*99#,vodafone,vodafone,vflive,Vodafone Live
-28603,Avea,*99#,wap,wap,internet,AVEA Internet
-28603,Avea,*99#,wap,wap,wap,AVEA HTTP
-28603,Avea,*99#,wap,wap,wap,AVEA HTTP
-28604,Avea,*99#,,,internet,Aycell
+28603,Avea,*99#,,,internet,AVEA Internet
 29340,Simobil Corporate Slovenia GPRS,,simobil,internet,si.simobil.internet,Si.mobil internet
 29341,Planet,*99#,mobitel,internet,internet,Planet
 29370,Tusmobil HTTP,*99#,tusmobil,internet,internet.tusmobil.si,Tusmobil HTTP
@@ -704,7 +719,7 @@
 44000,EMOBILE,*99#,em,em,em.std,EMOBILE
 44004,SoftBank,*99***1#,em,em,emb.ne.jp,Vodafone
 44006,SoftBank,*99***1#,em,em,emb.ne.jp,Vodafone
-44010,ASAHI NET,*99#,d@w.asahinet.jp,0000,lte.mobac.net,ASAHI NET
+44010,ASAHI NET,*99#,d@w.asahinet.jp,0,lte.mobac.net,ASAHI NET
 44020,SoftBank,*99***1#,ym,ym,plus.acs.jp,Y!mobile
 44040,SoftBank,*99***1#,em,em,emb.ne.jp,Vodafone
 44041,SoftBank,*99***1#,em,em,emb.ne.jp,Vodafone
@@ -769,13 +784,9 @@
 46020,CMCC HTTP,*99#,wap,wap,cmwap,CMCC HTTP
 46020,CMCC Internet,*99#,,,cmnet,CMCC Internet
 46601,Far EasTone,*99#,,,internet,Far EasTone
-46605,Far EasTone,*99#,,,gtnet,GT Internet
-46611,Chunghwa Telecom,*99***1#,,,internet,Chunghwa LDM
-46688,Far EasTone,*99#,,,internet,KGT Internet
-46689,VIBO,*99#,,,internet,T Star-internet
-46689,VIBO,*99#,,,viboone,VIBOONE
-46689,VIBO,*99#,,,vibo,VIBO-vibo
-46692,Chunghwa Telecom,*99***1#,,,internet,CHT Internet
+46605,GT,*99#,,,Gent,KGT-Online
+46689,T-Star,*99#,,,internet,T Star-internet
+46692,Chunghwa,*99***1#,,,internet,CHT Internet
 46693,TW Mobile,*99#,,,internet,TW Mobile
 46697,TW Mobile,*99#,,,internet,TW Mobile
 46699,TW Mobile,*99#,,,internet,TW Mobile
@@ -843,14 +854,14 @@
 52000,CAT,*99#,,,internet,CAT
 52001,AIS,*99#,,,internet,Advanced Info Service
 52003,AIS,*99#,,,internet,AIS Internet
-52004,Truemove H,*99#,true,true,internet,Truemove H
+52004,Truemove H,*99#,TRUE,TRUE,internet,Truemove H
 52005,DTAC,*99#,,,internet,DTAC Internet
 52018,DTAC,*99#,,,internet,DTAC Internet
 52023,AIS,*99#,,,internet,Advanced Info Service
-52099,truemove H,*99#,true,true,hinternet,True Move
+52099,truemove H,*99#,TRUE,TRUE,hinternet,True Move
 52501,SingTel,*99#,,,internet,SingTel
 52502,SingTel HTTP,*99#,65IDEAS,IDEAS,e-ideas,SingTel HTTP
-52503,M1,*99#,+65,user123,miworldmcard,MiWorld GPRS prepaid
+52503,M1,*99#,65,user123,miworldmcard,MiWorld GPRS prepaid
 52503,M1,*99#,MSISDN,user123,miworld,MiWorld GPRS
 52503,M1,*99#,MSISDN,user123,sunsurfmcard,MiWorld Internet prepaid
 52503,M1,*99#,MSISDN,user123,sunsurf,Sunsurf Internet

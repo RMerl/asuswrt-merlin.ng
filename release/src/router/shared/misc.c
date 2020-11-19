@@ -42,6 +42,7 @@
 
 #include "shutils.h"
 #include "shared.h"
+#include "wlif_utils.h"
 
 #ifndef ETHER_ADDR_LEN
 #define	ETHER_ADDR_LEN		6
@@ -5095,3 +5096,46 @@ void firmware_downgrade_check(uint32_t sf)
 	check_mssid_prelink_reset(sf);
 #endif
 }
+
+char *get_unused_brif(unsigned int num, char *ret_buffer, size_t ret_buffer_size)
+{
+	unsigned int i = 0;
+	unsigned int total = 0;
+	char *ptr = NULL;
+	char *end_ptr = NULL;
+	char br_ifname[64];
+	size_t copy_size = 0;
+	
+	if (num <= 0 || !ret_buffer || ret_buffer_size <= 0)
+		return NULL;
+
+	memset(ret_buffer, 0, ret_buffer_size);
+	ptr = &ret_buffer[0];
+	end_ptr = ptr + ret_buffer_size;
+	for (i=1, total=0, copy_size=0; i<WLIFU_MAX_NO_BRIDGE && total<num && copy_size<ret_buffer_size; i++) 
+	{
+		memset(br_ifname, 0, sizeof(br_ifname));
+		snprintf(br_ifname, sizeof(br_ifname), "br%d", i);
+		if (!iface_exist(br_ifname))
+		{
+			ptr += snprintf(ptr, end_ptr - ptr, "%s ", br_ifname);
+			copy_size += strlen(br_ifname) + 1;
+			total ++;
+		}
+	}
+
+	if (copy_size < ret_buffer_size) 
+	{
+		if (strlen(ret_buffer) > 0)
+		{
+			ret_buffer[strlen(ret_buffer)-1] = '\0';
+		}
+	}
+	else 
+	{
+		memset(ret_buffer, 0, ret_buffer_size);	
+	}
+	
+	return (strlen(ret_buffer) > 0) ? ret_buffer : NULL;
+}
+

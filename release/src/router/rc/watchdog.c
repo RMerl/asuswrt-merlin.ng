@@ -4009,15 +4009,15 @@ void btn_check(void)
 #endif
 
 #if defined(RTCONFIG_LP5523)
-//				lp55xx_leds_proc(LP55XX_ALL_LEDS_OFF, LP55XX_PREVIOUS_STATE);
+				lp55xx_leds_proc(LP55XX_ALL_LEDS_OFF, LP55XX_PREVIOUS_STATE);
 #else
 				led_control_normal();
 #endif // RTCONFIG_LP5523
 
 				alarmtimer(NORMAL_PERIOD, 0);
 #if defined(RTCONFIG_BCM_CLED) && defined(RTCONFIG_SINGLE_LED)
-			bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
-			nvram_unset("bcm_cled_in_wps");
+				bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
+				nvram_unset("bcm_cled_in_wps");
 #endif
 #if defined(RTCONFIG_CONCURRENTREPEATER)
 				nvram_set_int("led_status", LED_WPS_FAIL);
@@ -4129,10 +4129,6 @@ void btn_check(void)
 		/* 0123456789 */
 		/* 1010101010 */
 #if defined(RTCONFIG_LP5523)
-/* obsoleted
-		if (btn_count_setup == 1)
-			lp55xx_leds_proc(LP55XX_WPS_SYNC_LEDS, LP55XX_WPS_PARAM_SYNC);
-*/
 #elif defined(RTCONFIG_FIXED_BRIGHTNESS_RGBLED)
 #elif defined(BLUECAVE)
 		if (!bc_wps_led) {
@@ -5031,7 +5027,7 @@ aggled_control(int mode)
 #endif
 
 #if !defined(RTAX55) && !defined(RTAX1800)
-static int lstatus = 0;
+static int lstatus = -1;
 #endif
 #ifndef RTCONFIG_LAN4WAN_LED
 #if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
@@ -7031,7 +7027,7 @@ static void auto_firmware_check()
 #if defined(RTL_WTDOG)
 			stop_rtl_watchdog();
 #endif
-			nvram_set("webs_update_trigger", "watchdog");
+			nvram_set("webs_update_trigger", "WDG");
 			eval("/usr/sbin/webs_update.sh");
 #if defined(RTL_WTDOG)
 			start_rtl_watchdog();
@@ -8873,7 +8869,7 @@ wdp:
 		modem_flow_check(modem_unit);
 #endif
 #endif
-#ifdef RTCONFIG_FORCE_AUTO_UPGRADE
+#if 0
 	auto_firmware_check();
 #elif RTCONFIG_MERLINUPDATE
 	auto_firmware_check_merlin();
@@ -8976,6 +8972,15 @@ watchdog_main(int argc, char *argv[])
 #endif
 	g_boost_status[BOOST_ACS_DFS_SW] = !!nvram_get_int("acs_dfs");
 	g_boost_status[BOOST_LED_SW] = !!nvram_get_int("AllLED");
+#endif
+#ifdef RPAX56
+	if(ATE_BRCM_FACTORY_MODE()) {
+		_dprintf("watchdog turn on factory mode led\n");
+                eval("sw", "0xff803014", "0xfffff75f");
+                eval("sw", "0xff803018", "0x00001000");
+		_bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_NOBLINK);
+                eval("sw", "0xFF80301c", "0xc8a0");
+	}
 #endif
 
 #ifdef RTCONFIG_CONCURRENTREPEATER

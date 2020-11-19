@@ -1117,6 +1117,10 @@ handle_request(void)
 			cp = &cur[15];
 			cp += strspn( cp, " \t" );
 			cl = strtoul( cp, NULL, 0 );
+			if(cl < 0){
+				send_error( 400, "Bad Request", (char*) 0, "Illegal HTTP Format." );
+				return;
+			}
 		}
 		else if ((cp = strstr( cur, "boundary=" ))) {
 			boundary = &cp[9];
@@ -1437,6 +1441,9 @@ handle_request(void)
 #ifdef RTCONFIG_IPSEC
 					&& !strstr(file, "renew_ikev2_cert_mobile.pem") && !strstr(file, "ikev2_cert_mobile.pem")
 					&& !strstr(file, "renew_ikev2_cert_windows.der") && !strstr(file, "ikev2_cert_windows.der")
+#endif
+#if defined(RTCONFIG_TR069) && defined(DSL_AX82U)
+					|| (strstr(file, "Advanced_TR069_Content.asp") && is_ax5400_i1())
 #endif
 					){
 				send_error( 404, "Not Found", (char*) 0, "File not found." );

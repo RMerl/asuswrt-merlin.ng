@@ -284,7 +284,7 @@ function Reload_pdesc(obj, url){
 		url_group.push(["cloud"]);
 
 		desclist.push(["AiMesh","AiMesh"]);
-        url_group.push(["AiMesh"]);
+		url_group.push(["AiMesh"]);
 
 		desclist.push(["<#menu5_1#>","Wireless"]);
 		url_group.push(["ACL", "WAdvanced", "Wireless", "WMode", "WSecurity", "WWPS"]);
@@ -320,7 +320,7 @@ function Reload_pdesc(obj, url){
 		url_group.push(["OperationMode", "System", "SettingBackup"]);
 
 		desclist.push(["<#System_Log#>","System Log"]);
-		url_group.push(["VPN"]);
+		url_group.push(["System"]);
 
 		desclist.push(["<#Network_Tools#>","Network Tools"]);		//25
 		url_group.push(["Status_"]);
@@ -336,6 +336,11 @@ function Reload_pdesc(obj, url){
 
 		desclist.push(["<#menu5_6_3#>","FW update"]);
 		url_group.push(["FirmwareUpgrade"]);
+
+		if(isSupport("Instant_Guard")){
+			desclist.push(["Instant Guard","Instant Guard"]);	//30 //Untranslated
+			url_group.push(["Instant_Guard"]);
+		}
 
 	}
 	else if(ptype == "Connection_or_Speed_Problem"){

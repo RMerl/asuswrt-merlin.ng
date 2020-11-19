@@ -1874,7 +1874,7 @@ function onDropBoxLogin(_parm){
 								<#AiDisk_Account#>
 							</th>			
 							<td>
-							  <input type="text" maxlength="32"class="input_32_table" style="height: 23px;" id="cloud_username" name="cloud_username" value="" autocorrect="off" autocapitalize="off">
+							  <input type="text" maxlength="64"class="input_32_table" style="height: 23px;" id="cloud_username" name="cloud_username" value="" autocorrect="off" autocapitalize="off">
 							</td>
 						  </tr>	
 

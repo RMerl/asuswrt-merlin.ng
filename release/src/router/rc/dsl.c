@@ -655,6 +655,12 @@ void get_ptm_param(XTM_PARAM* p, int idx)
 	p->vid = nvram_pf_get_int(prefix, "vid");
 	p->dot1p = nvram_pf_get_int(prefix, "dot1p");
 	p->total_config = nvram_get_int("dslx_config_num");
+#ifdef DSL_AX82U
+	if (is_ax5400_i1()) {
+		p->pbr = nvram_get_int("qos_xobw_dsl");
+		p->mbs = p->pbr ? 10000 : 0;
+	}
+#endif
 }
 
 void get_xdsl_param(XDSL_PARAM* p)

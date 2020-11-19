@@ -1052,6 +1052,21 @@ static void init_switch_qca(void)
 
 		"qca-nss-tun6rd",
 		"qca-nss-tunipip6",
+#elif defined(RTCONFIG_SOC_IPQ60XX)
+		"qca-nss-bridge-mgr", "qca-nss-gre",
+		"qca-nss-l2tpv2", "qca-nss-lag-mgr", "qca-nss-map-t",
+		"qca-nss-pppoe", "qca-nss-pptp", "qca-nss-vlan",
+		/* 52-diag-char */
+		"diagchar",
+		/* 52-qca-nss-crypto */
+		"qca-nss-crypto",
+		"qca-nss-macsec",
+		"qca-nss-qdisc",
+		"qca-nss-cfi-cryptoapi",
+		"qca-nss-ipsecmgr",
+		"qca-nss-tun6rd",
+		"qca-nss-tunipip6",
+		"qca-nss-cfi-ocf",
 #endif
 #endif	/* RTCONFIG_STRONGSWAN || RTCONFIG_QUICKSEC */
 		NULL
@@ -1230,7 +1245,7 @@ void init_switch(void)
 {
 	init_switch_qca();
 
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074) || defined(RTCONFIG_SOC_IPQ60XX)
 	init_ecm();
 #endif
 }
@@ -2830,6 +2845,7 @@ static void __load_wifi_driver(int testmode)
 					vphy, nvram_pf_safe_get(prefix, "txpower"));
 			}
 #ifdef RTCONFIG_AMAS_WGN
+			extern int check_gn(void);
                        if(check_gn()) //guestnetwork enabled
                        {
                                eval(IWPRIV, (char*) VPHY_2G, "no_vlan", "1");
@@ -3325,7 +3341,7 @@ void fini_wl(void)
 
 #if !defined(RTCONFIG_WIFI_SON)
 #if defined(RTCONFIG_QCA) && defined(RTCONFIG_SOC_IPQ40XX)
-        if(nvram_get_int("restwifi_qis")==0) //reduce the finish time of QIS 
+        if(nvram_match("x_Setting", "1") && nvram_match("restwifi_qis", "0")) //reduce the finish time of QIS 
         {
 #if defined(RTCONFIG_BT_CONN)
 		stop_bluetooth_service();

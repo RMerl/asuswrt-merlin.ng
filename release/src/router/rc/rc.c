@@ -321,6 +321,17 @@ static int rctest_main(int argc, char *argv[])
 		mask = atoi(argv[2]);
 		TRACE_PT("debug for phy_speed %x\n", get_phy_speed(mask));
 	}
+#ifdef RTCONFIG_BCM_CLED
+	else if (strcmp(argv[1], "cled")==0) {
+		unsigned int led, mode;
+
+		led = atoi(argv[2]);
+		mode = atoi(argv[3]);
+		_dprintf("set Cled %d as %d\n", led, mode);
+		_bcm_cled_ctrl(led, mode);
+		eval("sw", "0xFF80301c", "0xc8a0");
+	}
+#endif
 #ifdef HND_ROUTER
 	else if (strcmp(argv[1], "regr")==0) {
 		unsigned int reg;
@@ -1440,6 +1451,7 @@ static const applets_t applets[] = {
 #endif	
 #if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
 	{ "restart_plc",		restart_plc_main				},
+	{ "detect_plc",			detect_plc_main					},
 #endif
 	{NULL, NULL}
 };
@@ -1690,6 +1702,7 @@ int main(int argc, char **argv)
 			char tmp[32];
 			int ptb_mode=0;
 			int i=0;
+			char *p = tmp;
 
 			memset(tmp, '\0', 32);
 			while (argv[i])
@@ -1717,9 +1730,9 @@ int main(int argc, char **argv)
 					}
 
 					if (i==2)
-						sprintf(tmp, "%s0x%s%x", tmp, safe_atoi(argv[i])<16?"0":"", safe_atoi(argv[i]));
+						p += sprintf(p, "0x%s%x", safe_atoi(argv[i])<16?"0":"", safe_atoi(argv[i]));
 					else
-						sprintf(tmp, "%s_0x%s%x", tmp, safe_atoi(argv[i])<16?"0":"", safe_atoi(argv[i]));
+						p += sprintf(p, "_0x%s%x", safe_atoi(argv[i])<16?"0":"", safe_atoi(argv[i]));
 
 					break;
 				case 5:
@@ -2640,8 +2653,17 @@ int main(int argc, char **argv)
 
 		ret = extphy_bit_op(reg, val, wr, start_bit, end_bit, wait_ms);
 
-		_dprintf("addr=0x%02x, reg=0x%06x, val=0x%04x\n", EXTPHY_ADDR, reg, ret);
+#if defined(RTAX86U) || defined(RTAX5700)
+		if(nvram_get_int("ext_phy_model") == 1)
+			_dprintf("addr=0x%02x, reg=0x%06x, val=0x%04x\n", EXTPHY_RTL_ADDR, reg, ret);
+		else
+#endif
+			_dprintf("addr=0x%02x, reg=0x%06x, val=0x%04x\n", EXTPHY_ADDR, reg, ret);
 
+		return 0;
+	}
+	else if (!strcmp(base, "get_ext_phy_id")) {
+		get_ext_phy_id();
 		return 0;
 	}
 #endif

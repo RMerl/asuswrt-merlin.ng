@@ -56,6 +56,7 @@ else ifeq ($(RTCONFIG_SOC_IPQ8074),y)
 CFLAGS += -DPGCONTROL3
 else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	# ipq40xx
+CFLAGS += -DPGCONTROL3
 else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 	# qca956x / qcn550x
 else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
@@ -68,23 +69,15 @@ else ifeq ($(RTCONFIG_BCMARM),y)
 ifeq ($(RTCONFIG_BCM7),y)
 	# bcm7
 else ifeq ($(HND_ROUTER),y)
-ifeq ($(HND_ROUTER_AX),y)
-ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_HND_ROUTER_AX_6710)),y)
+	# hnd / axhnd
 CFLAGS += -DPGCONTROL3
-else
-CFLAGS += -DPGCONTROL3
-endif # RTCONFIG_HND_ROUTER_AX_675X
-else
-	# hnd
-endif # HND_ROUTER_AX
 else ifeq ($(RTCONFIG_BCM_7114),y)
 	# bcm7114
+CFLAGS += -DPGCONTROL3
 else
 ifeq ($(RTCONFIG_BCMSMP),y)
 	# bcm6_smp
 CFLAGS += -DPGCONTROL3
-else
-	# bcm6_up
 endif
 endif
 endif

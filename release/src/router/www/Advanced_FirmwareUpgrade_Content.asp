@@ -534,7 +534,7 @@ function detect_update(){
 		}
 		else{
 			document.start_update.action_mode.value="apply";
-			document.start_update.webs_update_trigger.value="AFC.asp";
+			document.start_update.webs_update_trigger.value="FWUG";
 			document.start_update.action_script.value="start_webs_update";
 			document.start_update.submit();
 		}
@@ -548,7 +548,7 @@ function detect_update(){
 				((first_link_status == "2" && first_link_auxstatus == "0") || (first_link_status == "2" && first_link_auxstatus == "2")) ||
 				((secondary_link_status == "2" && secondary_link_auxstatus == "0") || (secondary_link_status == "2" && secondary_link_auxstatus == "2"))){
 		document.start_update.action_mode.value="apply";
-		document.start_update.webs_update_trigger.value="AFC.asp";
+		document.start_update.webs_update_trigger.value="FWUG";
 		document.start_update.action_script.value="start_webs_update";
 		document.getElementById('info_fail_faq').style.display="none";
 		document.getElementById('update_states').style.display="";

@@ -1050,6 +1050,7 @@ void convert_routes(void)
 			while ((b = strsep(&nvp, "<")) != NULL) {
 				int i = 0;
 				char *routes;
+				int len;
 
 				if ((vstrsep(b, ">", &ip, &netmask, &gateway, &metric, &interface) != 5))
 					continue;
@@ -1066,8 +1067,9 @@ void convert_routes(void)
 				else
 					continue;
 
+				len = strlen(routes);
 				_dprintf("%x %s %s %s %s %s\n", ++i, ip, netmask, gateway, metric, interface);
-				sprintf(routes, "%s %s:%s:%s:%d", routes, ip, netmask, gateway, atoi(metric)+1);
+				sprintf(routes + len, " %s:%s:%s:%d", ip, netmask, gateway, atoi(metric)+1);
 			}
 			free(nv);
 		}
@@ -1267,7 +1269,8 @@ void repeater_nat_setting(){
 	fprintf(fp, "-A PREROUTING -d 10.0.0.1 -p tcp --dport 80 -j DNAT --to-destination %s:%d\n", lan_ip, lan_port);
 	fprintf(fp, "-A PREROUTING -d %s -p tcp --dport 80 -j DNAT --to-destination %s:%d\n", nvram_default_get("lan_ipaddr"), lan_ip, lan_port);
 #ifdef RTCONFIG_REDIRECT_DNAME
-	fprintf(fp, "-A PREROUTING -p udp --dport 53 -j DNAT --to-destination %s:53\n", lan_ip);
+	if (nvram_invmatch("redirect_dname", "0"))
+		fprintf(fp, "-A PREROUTING -p udp --dport 53 -j DNAT --to-destination %s:53\n", lan_ip);
 #endif
 	fprintf(fp, "-A PREROUTING -p udp --dport 53 -j DNAT --to-destination %s:18018\n", lan_ip);
 	fprintf(fp, "COMMIT\n");
@@ -5921,7 +5924,7 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	ip2class(lan_ip, nvram_safe_get("lan_netmask"), lan_class);
 #endif
 
-	if(IS_NON_AQOS()){
+	if(IS_NON_AQOS() || IS_ROG_QOS()){
 			add_iQosRules(wan_if);
 	}
 	else {
@@ -6151,7 +6154,7 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 		wan_max_unit = WAN_UNIT_MULTICAST_IPTV_MAX;
 #endif
 
-	if(IS_NON_AQOS()){
+	if(IS_NON_AQOS() || IS_ROG_QOS()){
 		for(unit = WAN_UNIT_FIRST; unit < wan_max_unit; ++unit){
 			if(!is_wan_connect(unit))
 				continue;

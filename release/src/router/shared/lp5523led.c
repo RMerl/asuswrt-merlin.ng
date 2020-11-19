@@ -387,8 +387,10 @@ void lp55xx_leds_sch(int start, int end)
 	int start_day=0, end_day=0;
 	int start_time=0, end_time=0;
 	int week, hour;
+	int len;
 
 	memset(result, '\0', sizeof(result));
+	len = 0;
 
 	for (week=0;week<7;week++) {
 		for (hour=0;hour<24;hour++) {
@@ -406,7 +408,7 @@ void lp55xx_leds_sch(int start, int end)
 						end_day = week;
 						end_time = hour;
 
-						snprintf(result, sizeof(result), "%s%s%d%d%s%d%s%d", result, strlen(result)?"<":"", start_day, end_day, start_time<10?"0":"", start_time, end_time<10?"0":"", end_time);
+						len += snprintf(result + len, sizeof(result)-len, "%s%d%d%s%d%s%d", len?"<":"", start_day, end_day, start_time<10?"0":"", start_time, end_time<10?"0":"", end_time);
 					}
 				}
 			}
@@ -424,7 +426,7 @@ void lp55xx_leds_sch(int start, int end)
 						end_day = week;
 						end_time = hour;
 
-						snprintf(result, sizeof(result), "%s%s%d%d%s%d%s%d", result, strlen(result)?"<":"", start_day, end_day, start_time<10?"0":"", start_time, end_time<10?"0":"", end_time);
+						len += snprintf(result + len, sizeof(result)-len, "%s%d%d%s%d%s%d", len?"<":"", start_day, end_day, start_time<10?"0":"", start_time, end_time<10?"0":"", end_time);
 					}
 				}
 			}
@@ -432,7 +434,7 @@ void lp55xx_leds_sch(int start, int end)
 	}
 
 	if (flag == 1)
-		snprintf(result, sizeof(result), "%s%s%d%s%s%d%s", result, strlen(result)?"<":"", start_day, "0", start_time<10?"0":"", start_time, "00");
+		len += snprintf(result + len, sizeof(result)-len, "%s%d%s%s%d%s", len?"<":"", start_day, "0", start_time<10?"0":"", start_time, "00");
 
 	nvram_set("lp55xx_lp5523_sch", result);
 

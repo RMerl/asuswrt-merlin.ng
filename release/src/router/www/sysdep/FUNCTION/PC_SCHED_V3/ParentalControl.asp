@@ -128,6 +128,7 @@ function initial(){
 		client_time_obj.offtime = MULTIFILTER_MACFILTER_DAYTIME_V2_row[index];
 		client_time_sche_json.push(JSON.parse(JSON.stringify(client_time_obj)));
 	});
+	weekScheduleApi.data_max = (isSupport("MaxRule_PC_DAYTIME") == 0 ? 128 : isSupport("MaxRule_PC_DAYTIME"));
 	show_menu();
 	if(hnd_support || based_modelid == "RT-AC1200" || based_modelid == "RT-AC1200_V2" || based_modelid == "RT-AC1200GU" || based_modelid == "RT-N19"){
 		$("#nat_desc").hide();
@@ -408,6 +409,13 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 function gen_lantowanTable(event){
 	weekScheduleApi.PC_init_data(event.data.offtime);
 	weekScheduleApi.PC_init_layout("weekScheduleBg");
+	var PC_other_client_rule_num = 0;
+	$.each(client_time_sche_json, function( index, value ) {
+		var client_time_obj = value;
+		if(event.data.mac != client_time_obj.mac && client_time_obj.offtime != "")
+			PC_other_client_rule_num += client_time_obj.offtime.split("<").length;
+	});
+	weekScheduleApi.PC_other_client_rule_num = PC_other_client_rule_num;
 	weekScheduleApi.callback_btn_cancel = cancel_lantowan;
 	weekScheduleApi.callback_btn_apply = function(){
 		event.data.offtime = weekScheduleApi.PC_transform_offtime_json_to_string();
@@ -426,6 +434,20 @@ function addRow_main(){
 
 	if(client_time_sche_json.length >= upper){
 		alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
+		return false;
+	}
+
+	var all_client_total_rule_num = 2;//add new client, default 2 rules.
+	$.each(client_time_sche_json, function( index, value ) {
+		var client_time_obj = value;
+		if(client_time_obj.offtime != "")
+			all_client_total_rule_num += client_time_obj.offtime.split("<").length;
+	});
+	if(all_client_total_rule_num > weekScheduleApi.data_max){
+		var hint = "<#weekSche_MAX_Num#>".replace("#MAXNUM", weekScheduleApi.data_max);
+		hint += "\n";
+		hint += "<#weekSche_MAX_Del_Hint#>";
+		alert(hint);
 		return false;
 	}
 

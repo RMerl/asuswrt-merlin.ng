@@ -26,6 +26,9 @@
 #ifdef RTCONFIG_FBWIFI
 #include <fbwifi.h>
 #endif
+#ifdef RTCONFIG_BWDPI
+#include <bwdpi.h>
+#endif
 
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
 #include <PMS_DBAPIs.h>
@@ -1129,13 +1132,13 @@ static int add_qos_rules(char *pcWANIF)
 // The definations of all partations
 // eth0 : WAN
 // 1:1  : upload
-// 1:2  : download   (1000000Kbits)
+// 1:2  : download   (10240000Kbits = 10Gbps)
 // 1:10 : highest
 // 1:20 : high
 // 1:30 : middle
 // 1:40 : low        (default)
 // 1:50 : lowest
-// 1:60 : ALL Download (WAN to LAN and LAN to LAN) (1000000kbits)
+// 1:60 : ALL Download (WAN to LAN and LAN to LAN) (10240000kbits = 10Gbps)
 /*******************************************************************/
 
 /* Tc */
@@ -1305,9 +1308,9 @@ static int start_tqos(void)
 			protocol = "802.1q";
 			fprintf(f,
 				"# download 1:2\n"
-				"\t$TCA parent 1: classid 1:2 htb rate 1000000kbit ceil 1000000kbit burst 10000 cburst 10000\n"
+				"\t$TCA parent 1: classid 1:2 htb rate 10240000kbit ceil 10240000kbit burst 10000 cburst 10000\n"
 				"# 1:60 ALL Download for BCM\n"
-				"\t$TCA parent 1:2 classid 1:60 htb rate 1000000kbit ceil 1000000kbit burst 10000 cburst 10000 prio 6\n"
+				"\t$TCA parent 1:2 classid 1:60 htb rate 10240000kbit ceil 10240000kbit burst 10000 cburst 10000 prio 6\n"
 				"\t$TQA parent 1:60 handle 60: pfifo\n"
 				"\t$TFA parent 1: prio 6 protocol %s u32 match mark 6 0x%x flowid 1:60\n", protocol, QOS_MASK
 				);
@@ -1487,6 +1490,10 @@ exit_start_tqos:
 void stop_iQos(void)
 {
 	eval((char *)qosfn, "stop");
+
+#ifdef HND_ROUTER
+	config_obw_off();
+#endif
 }
 
 static int add_bandwidth_limiter_rules(char *pcWANIF)
@@ -1736,10 +1743,10 @@ static int start_bandwidth_limiter(void)
 		   "start()\n"
 		   "{\n"
 		   "\t$TQA root handle 1: htb\n"
-		   "\t$TCA parent 1: classid 1:1 htb rate 1024000kbit\n"
+		   "\t$TCA parent 1: classid 1:1 htb rate 10240000kbit\n"
 		   "\n"
 		   "\t$TQAU root handle 2: htb\n"
-		   "\t$TCAU parent 2: classid 2:1 htb rate 1024000kbit\n"
+		   "\t$TCAU parent 2: classid 2:1 htb rate 10240000kbit\n"
 	);
 
 	// access router : mark 9
@@ -1962,12 +1969,389 @@ exit_start_bandwidth_limiter:
 	return ret;
 }
 
+static int add_rog_qos_rules(char *pcWANIF)
+{
+	FILE *fn;
+#ifdef RTCONFIG_IPV6
+	FILE *fn_ipv6 = NULL;
+#endif
+	char *buf;
+	char *g;
+	char *p, *wan;
+	char *addr;
+	int class_num;
+	int unit;
+	char main_rule[192], end[256], end2[256];
+	char chain[sizeof("QOSOXXX")];
+	int v4v6_ok;
+	int lock;
+	int evalRet;
+	char *action = NULL;
+	int model = get_model();
+
+	switch (model) {
+		case MODEL_DSLAX82U:
+			action = "--set-mark";
+			manual_return = 1;
+			break;
+		default:
+			action = "--set-return";
+			manual_return = 0;
+			break;
+	}
+
+	del_iQosRules(); // flush related rules in mangle table
+
+	if((fn = fopen(mangle_fn, "w")) == NULL) return -2;
+#ifdef RTCONFIG_IPV6
+	if(ipv6_enabled() && (fn_ipv6 = fopen(mangle_fn_ipv6, "w")) == NULL){
+		fclose(fn);
+		return -3;
+	}
+#endif
+
+	lock = file_lock(qos_ipt_lock);
+	QOSDBG("[qos] iptables START\n");
+	fprintf(fn,
+		"*mangle\n"
+		":PREROUTING ACCEPT [0:0]\n"
+		":OUTPUT ACCEPT [0:0]\n"
+		);
+#ifdef RTCONFIG_IPV6
+	if (fn_ipv6 && ipv6_enabled())
+	fprintf(fn_ipv6,
+		"*mangle\n"
+		":PREROUTING ACCEPT [0:0]\n"
+		":OUTPUT ACCEPT [0:0]\n"
+		);
+#endif
+
+	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+		wan = get_wan_ifname(unit);
+		if (!wan || *wan == '\0')
+			continue;
+		if (wan_primary_ifunit() != unit
+#if defined(RTCONFIG_DUALWAN)
+		    && (nvram_match("wans_mode", "fo") || nvram_match("wans_mode", "fb"))
+#endif
+		)
+			continue;
+		fprintf(fn, ":QOSO%d - [0:0]\n", unit);
+#ifdef RTCONFIG_IPV6
+		if (fn_ipv6 && ipv6_enabled())
+		fprintf(fn_ipv6, ":QOSO%d - [0:0]\n" , unit);
+#endif
+	}
+
+	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+		wan = get_wan_ifname(unit);
+		if (!wan || *wan == '\0')
+			continue;
+		if (wan_primary_ifunit() != unit
+#if defined(RTCONFIG_DUALWAN)
+		    && (nvram_match("wans_mode", "fo") || nvram_match("wans_mode", "fb"))
+#endif
+		   )
+			continue;
+
+		/* Beginning of the Rule */
+		/* device */
+		class_num = QOS_ROG_MARK_MID;
+		snprintf(chain, sizeof(chain), "QOSO%d", unit);	// chain name
+		snprintf(end , sizeof(end), " -j MARK %s 0x%x/0x%x\n", action, class_num, QOS_MASK);
+		snprintf(end2, sizeof(end2), " -j RETURN\n");
+
+		g = buf = strdup(nvram_safe_get("rog_clientlist"));
+		while (g) {
+
+			if ((p = strsep(&g, "<")) == NULL) break;
+			if((vstrsep(p, ">", &addr)) != 1) continue;
+
+			v4v6_ok = IPT_V4;
+#ifdef RTCONFIG_IPV6
+			if (fn_ipv6 && ipv6_enabled())
+				v4v6_ok |= IPT_V6;
+#endif
+
+			if(strcmp(addr, "")) {
+				snprintf(main_rule, sizeof(main_rule), "-m mac --mac-source %s", addr);
+			}
+			else {
+				continue;
+			}
+
+			/* build final rule */
+			if (v4v6_ok & IPT_V4){
+				fprintf(fn, "-A %s %s %s", chain, main_rule, end);
+				if(manual_return)
+				fprintf(fn, "-A %s %s %s", chain, main_rule, end2);
+			}
+
+#ifdef RTCONFIG_IPV6
+			if (fn_ipv6 && ipv6_enabled() && (v4v6_ok & IPT_V6)){
+				fprintf(fn_ipv6, "-A %s %s %s", chain, main_rule, end);
+				if(manual_return)
+				fprintf(fn_ipv6, "-A %s %s %s", chain, main_rule, end2);
+			}
+#endif
+		}
+		free(buf);
+
+		/* Highest */
+		class_num = QOS_ROG_MARK_HIGH;
+		snprintf(end , sizeof(end), " -j MARK %s 0x%x/0x%x\n", action, class_num, QOS_MASK);
+		snprintf(main_rule , sizeof(main_rule), "-p udp -m multiport --dports 53,67,68");
+		fprintf(fn, "-A %s %s %s", chain, main_rule, end);
+		if(manual_return)
+			fprintf(fn , "-A %s %s %s\n", chain, main_rule, end2);
+		snprintf(main_rule , sizeof(main_rule), "-p 1");
+		fprintf(fn, "-A %s %s %s", chain, main_rule, end);
+		if(manual_return)
+			fprintf(fn , "-A %s %s %s\n", chain, main_rule, end2);
+
+		/* The default class */
+		class_num = QOS_ROG_MARK_LOW;
+		snprintf(end , sizeof(end), " -j MARK %s 0x%x/0x%x\n", action, class_num, QOS_MASK);
+
+		fprintf(fn, "-A %s %s", chain, end);
+		if(manual_return)
+			fprintf(fn , "-A %s %s\n", chain, end2);
+		fprintf(fn, "-A FORWARD -o %s -j %s\n", wan, chain);
+		fprintf(fn, "-A OUTPUT -o %s -j %s\n", wan, chain);
+
+#ifdef RTCONFIG_IPV6
+		if (fn_ipv6 && ipv6_enabled() && *wan6face && wan_primary_ifunit() == unit) {
+			fprintf(fn_ipv6, "-A %s %s", chain, end);
+			if(manual_return)
+				fprintf(fn_ipv6, "-A %s %s\n", chain, end2);
+			fprintf(fn_ipv6, "-A FORWARD -o %s -j %s\n", wan6face, chain);
+			fprintf(fn_ipv6, "-A OUTPUT -o %s -j %s\n", wan6face, chain);
+		}
+#endif
+	} /* for (u = WAN_UNIT_FIRST; u < WAN_UNIT_MAX; ++u) */
+
+	fprintf(fn, "COMMIT\n");
+	fclose(fn);
+	chmod(mangle_fn, 0700);
+	evalRet = eval("iptables-restore", "-n", (char*)mangle_fn);
+	rule_apply_checking("qos_multiwan", __LINE__, (char*)mangle_fn, evalRet);
+#ifdef RTCONFIG_IPV6
+	if (fn_ipv6 && ipv6_enabled())
+	{
+		fprintf(fn_ipv6, "COMMIT\n");
+		fclose(fn_ipv6);
+		chmod(mangle_fn_ipv6, 0700);
+
+//		eval("ip6tables-restore", "-n", (char*)mangle_fn_ipv6);
+//		ipv6_qos_applied++;
+	}
+#endif
+	file_unlock(lock);
+	QOSDBG("[rog] iptables DONE!\n");
+
+	return 0;
+}
+
+static int start_rog_qos()
+{
+	static char wan_if_list[WAN_UNIT_MAX][IFNAMSIZ] = { "", "" };
+	int ret = 0, gen_mangle = 0;
+	FILE *f, *f_top;
+	int lock;
+	char *wan;
+	int unit;
+	char fname[sizeof(TMP_QOS) + 4];	/* /tmp/qos, /tmp/qos.0, /tmp/qos.1 ... */
+	char prefix[16];
+	unsigned int obw;
+	char obw_str[8];
+#ifdef HND_ROUTER
+	int wantype = get_dualwan_by_unit(wan_primary_ifunit());
+#endif
+
+	/* If WAN interface changes, generate mangle table again. */
+	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+		if (wan_primary_ifunit() != unit
+#if defined(RTCONFIG_DUALWAN)
+		    && (nvram_match("wans_mode", "fo") || nvram_match("wans_mode", "fb"))
+#endif
+		   )
+			continue;
+		wan = get_wan_ifname(unit);
+		if (!wan || *wan == '\0' || !strcmp(wan, wan_if_list[unit]))
+			continue;
+
+		sprintf(prefix, "wan%d_", unit);
+		if (!nvram_pf_match(prefix, "state_t", "2"))
+			continue;
+		gen_mangle++;
+		strcpy(wan_if_list[unit], wan);
+	}
+	if (gen_mangle)
+		add_rog_qos_rules("");
+
+#ifdef HND_ROUTER
+	if (wantype == WANS_DUALWAN_IF_WAN) {
+		eval((char *)qosfn, "stop");
+		config_obw();
+		nvram_set_int("fc_disable", nvram_get_int("fc_disable_force") ? 1 : 0);
+		if (nvram_get_int("fc_disable"))
+			fc_fini();
+		else
+			fc_init();
+		return 0;
+	}
+	else {
+		nvram_set_int("fc_disable", 1);
+		fc_fini();
+	}
+#endif
+
+	lock = file_lock(qos_lock);
+
+	if (!(f_top = fopen(qosfn, "w"))) {
+		ret = -2;
+		goto exit_rog_qos;
+	}
+
+	/* Create top-level /tmp/qos */
+	QOSDBG("[qos] tc START!\n");
+	fprintf(f_top,"#!/bin/sh\n");
+
+	/* Create /tmp/qos.X for each WAN unit. */
+	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+		snprintf(fname, sizeof(fname), "%s.%d", TMP_QOS, unit);
+		wan = get_wan_ifname(unit);
+		if (!wan || *wan == '\0')
+			continue;
+
+		if (wan_primary_ifunit() != unit
+#if defined(RTCONFIG_DUALWAN)
+		    && (nvram_match("wans_mode", "fo") || nvram_match("wans_mode", "fb"))
+#endif
+		   )
+		{
+			if (f_exists(fname))
+				unlink(fname);
+			/* Remove qdisc of unused WAN. Ref to stop case below. */
+			eval("tc", "qdisc", "del", "dev", wan, "root");
+			continue;
+		}
+		if (!(f = fopen(fname, "w"))) {
+			fprintf(stderr, "[qos] Can't write to %s\n", fname);
+			continue;
+		}
+
+#if defined(RTCONFIG_DUALWAN)
+		if(unit != 0)
+			snprintf(obw_str, sizeof(obw_str), "qos_obw%d", unit);
+		else
+#endif
+			snprintf(obw_str, sizeof(obw_str), "qos_obw");
+		obw = strtoul(nvram_safe_get(obw_str), NULL, 10);
+		if (!obw)
+		{
+#ifdef DSL_AX82U
+			if (is_ax5400_i1())
+			{
+				if (unit)
+					snprintf(obw_str, sizeof(obw_str), "qos_xobw%d", unit);
+				else
+					snprintf(obw_str, sizeof(obw_str), "qos_xobw");
+				obw = strtoul(nvram_safe_get(obw_str), NULL, 10);
+				if (!obw)
+					continue;
+			}
+			else
+#endif
+			continue;
+		}
+
+		fprintf(stderr, "[qos][unit %d] tc START!\n", unit);
+
+		/* Egress OBW  -- set the HTB shaper (Classful Qdisc)
+		 * the BW is set here for each class
+		 */
+
+		/* WAN */
+		fprintf(f,
+			"#!/bin/sh\n"
+			"I=%s\n"
+			"SFQ=\"sfq perturb 10\"\n"
+			"TQA=\"tc qdisc add dev $I\"\n"
+			"TCA=\"tc class add dev $I\"\n"
+			"TFA=\"tc filter add dev $I\"\n"
+			"case \"$1\" in\n"
+			"start)\n"
+			"\ttc qdisc del dev $I root 2>/dev/null\n"
+			"\t$TQA root handle 1: htb default 30\n"
+			"\t$TCA parent 1: classid 1:1 htb rate %ukbit ceil %ukbit\n"
+			"\t$TCA parent 1:1 classid 1:10 htb rate %ukbit ceil %ukbit prio 1\n"
+			"\t$TCA parent 1:1 classid 1:20 htb rate %ukbit ceil %ukbit prio 2\n"
+			"\t$TCA parent 1:1 classid 1:30 htb rate %ukbit ceil %ukbit prio 3\n"
+			"\t$TQA parent 1:10 handle 10: $SFQ\n"
+			"\t$TQA parent 1:20 handle 20: $SFQ\n"
+			"\t$TQA parent 1:30 handle 30: $SFQ\n"
+			"\t$TFA parent 1: prio 10 protocol all handle %d/0x%x fw flowid 1:10\n"
+			"\t$TFA parent 1: prio 20 protocol all handle %d/0x%x fw flowid 1:20\n"
+			"\t$TFA parent 1: prio 30 protocol all handle %d/0x%x fw flowid 1:30\n"
+			, wan
+			, obw, obw
+			, obw, obw
+			, obw / 10, obw
+			, obw / 100, obw
+			, QOS_ROG_MARK_HIGH, QOS_MASK
+			, QOS_ROG_MARK_MID, QOS_MASK
+			, QOS_ROG_MARK_LOW, QOS_MASK
+			);
+
+		fputs(
+			"\t;;\n"
+			"stop)\n"
+			"\ttc qdisc del dev $I root 2>/dev/null\n"
+			"\t;;\n"
+			"*)\n"
+			"\t#---------- Upload ----------\n"
+			"\ttc -s -d filter ls dev $I\n"
+			"\ttc -s -d qdisc ls dev $I\n"
+			"\techo\n"
+			"esac\n"
+			, f);
+
+		fclose(f);
+		chmod(fname, 0700);
+
+		fprintf(f_top, "[ -e %s ] && %s \"$1\"\n", fname, fname);
+		QOSDBG("[qos]unit %d] tc done!\n", unit);
+	} /* for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) */
+
+	fclose(f_top);
+	chmod(qosfn, 0700);
+	eval((char *)qosfn, "start");
+	QOSDBG("[qos] tc done!\n");
+
+exit_rog_qos:
+	file_unlock(lock);
+
+	return ret;
+}
+
 int add_iQosRules(char *pcWANIF)
 {
 	int status = 0, qos_type = nvram_get_int("qos_type");
 
-	if (pcWANIF == NULL || nvram_get_int("qos_enable") != 1)
+	if (pcWANIF == NULL)
 		return -1;
+
+	if (nvram_get_int("qos_enable") != 1) {
+		if (nvram_get_int("rog_enable")
+#ifdef RTCONFIG_BWDPI
+		 && !dump_dpi_support(INDEX_ADAPTIVE_QOS)
+#endif
+		)
+			return add_rog_qos_rules(pcWANIF);
+		else
+			return -1;
+	}
 
 	switch (qos_type) {
 	case 0:
@@ -2138,11 +2522,19 @@ int start_iQos(void)
 	int status = 0, qos_type = nvram_get_int("qos_type");
 
 #ifdef DSL_AX82U
-	config_queue();
+	if (is_ax5400_i1()) config_obw();
 #endif
 
-	if (nvram_get_int("qos_enable") != 1)
-		return -1;
+	if (nvram_get_int("qos_enable") != 1) {
+		if (nvram_get_int("rog_enable")
+#ifdef RTCONFIG_BWDPI
+		 && !dump_dpi_support(INDEX_ADAPTIVE_QOS)
+#endif
+		)
+			return start_rog_qos();
+		else
+			return -1;
+	}
 
 	switch (qos_type) {
 	case 0:

@@ -176,6 +176,8 @@ var wifi_schedule_value = '<% nvram_get("wl_sched"); %>'.replace(/&#62/g, ">").r
 var wl_unit_value = '<% nvram_get("wl_unit"); %>';
 var wl_bw_160_value = '<% nvram_get("wl_bw_160"); %>';
 var country_array = [<% get_support_region_list(); %>][0];
+var EG_mode = ('<% nvram_get("EG_mode"); %>' == 1);
+
 if(country_array == undefined)
 	country_array = [];
 
@@ -187,6 +189,12 @@ var _AU2_support = false;
 if(tcode == "GD"){
 	country_array = country_array.join("-").replace("-CN", "").split("-")
 	country_selection_list.push(["GD", "<#country_CN#>"]);
+}
+
+if(EG_mode){
+	location_list_support = true;
+	country_array = ["EU"];
+	country_selection_list[3][1] = "Egypt";
 }
 
 // for RT-AC58U CX/01
@@ -799,6 +807,10 @@ function generate_country_selection(){
 	code += '</select>';
 
 	document.getElementById('region_div').innerHTML = code;
+
+	if(EG_mode){
+		document.form.location_code.disabled = true;
+	}
 
 	if(orig_region == ""){
 		document.form.location_code.value = tcode;

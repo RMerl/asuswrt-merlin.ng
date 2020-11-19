@@ -325,7 +325,11 @@ endef
 
 ifneq ($(LIVE_UPDATE_RSA),)
 export KEY_PATH = $(SRC_ROOT)/../../../key
+ifneq ($(LIVE_UPDATE_RSA_GPL),)
+export LIVE_UPDATE_RSA_VER = 
+else
 export LIVE_UPDATE_RSA_VER = $(LIVE_UPDATE_RSA)
+endif
 endif
 
 LANTIQ_LINUX_DIR=linux/linux-3.10.104
@@ -512,7 +516,11 @@ wl_sysdep:
 	else \
 		if [ -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DHD_DIR)/src/dongle/sysdeps/default/43684b0/rtecdc.bin ]; then \
 			mkdir -p $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DHD_DIR)/src/dongle/bin/43684b0/ ; \
-			cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DHD_DIR)/src/dongle/sysdeps/default/43684b0/rtecdc.bin $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DHD_DIR)/src/dongle/bin/43684b0/. ; \
+			cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DHD_DIR)/src/dongle/sysdeps/default/43684b0/rtecdc.bin $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DHD_DIR)/src/dongle/bin/43684c0/. ; \
+		fi; \
+		if [ -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DHD_DIR)/src/dongle/sysdeps/default/43684c0/rtecdc.bin ]; then \
+			mkdir -p $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DHD_DIR)/src/dongle/bin/43684c0/ ; \
+			cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DHD_DIR)/src/dongle/sysdeps/default/43684c0/rtecdc.bin $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DHD_DIR)/src/dongle/bin/43684c0/. ; \
 		fi; \
 	fi;
 endif
@@ -557,7 +565,7 @@ ifeq ($(LIVE_UPDATE_RSA),)
 	@echo '#define LIVE_UPDATE_RSA_VERSION ""' >> router/shared/version.h
 else
 ifneq (,$(wildcard $(KEY_PATH)/private*.pem))
-	@echo '#define LIVE_UPDATE_RSA_VERSION "$(LIVE_UPDATE_RSA)"' >> router/shared/version.h
+	@echo '#define LIVE_UPDATE_RSA_VERSION "$(LIVE_UPDATE_RSA_VER)"' >> router/shared/version.h
 else
 	@echo '#define LIVE_UPDATE_RSA_VERSION ""' >> router/shared/version.h
 endif
@@ -2404,6 +2412,10 @@ define RouterOptions
 	if [ "$(GEOIP)" = "y" ]; then \
 		sed -i "/RTCONFIG_GEOIP/d" $(1); \
 		echo "RTCONFIG_GEOIP=y" >>$(1); \
+	fi; \
+	if [ "$(GEOIP_EG)" = "y" ]; then \
+		sed -i "/RTCONFIG_GEOIP_EG/d" $(1); \
+		echo "RTCONFIG_GEOIP_EG=y" >>$(1); \
 	fi; \
 	if [ "$(TRANSMISSION)" = "y" ]; then \
 		sed -i "/RTCONFIG_TRANSMISSION/d" $(1); \
@@ -5075,6 +5087,10 @@ fi; \
 	else \
 		echo "# CONFIG_NETFILTER_ASUS_FILTER is not set" >>$(1); \
 	fi; \
+	if [ "$(BUILD_NAME)" = "RT-AX55" ] || [ "$(BUILD_NAME)" = "RT-AX1800" ]; then \
+		sed -i "/CONFIG_BCM_PKTFLOW_MAX_FLOWS/d" $(1); \
+		echo "CONFIG_BCM_PKTFLOW_MAX_FLOWS=8192" >>$(1); \
+	fi; \
 	)
 	$(call platformKernelConfig, $(1))
 	$(call extraKernelConfig, $(1))
@@ -5255,6 +5271,10 @@ define save_src_config
 			echo "Update model configuration" ; \
 			rm -f .config ; \
 	fi ;
+	@for var in $($(shell echo GENERAL_BASE | tr a-z A-Z)) ; do \
+		echo "export $${var}" >> .config ; \
+		export $${var} ; \
+	done ;
 	@for var in $($(shell echo $(1) | tr a-z A-Z)) ; do \
 		echo "export $${var}" >> .config ; \
 		export $${var} ; \

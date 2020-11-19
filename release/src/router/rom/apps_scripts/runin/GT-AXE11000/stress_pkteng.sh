@@ -4,7 +4,12 @@ echo "!!! ATE RUN-IN START !!!"
 
 # CPU + MEMORY
 echo "start stress..."
-stress cpu -e 4 -t 30000 &
+CPU_cores=`grep -c processor /proc/cpuinfo`
+count=0
+while [ $count -lt $CPU_cores ]; do
+	stress cpu -b $count -t 30000 &
+	count=`expr $count + 1`
+done
 
 # 2G
 echo "start eth6 pkteng..."
@@ -82,19 +87,18 @@ wl -i eth8 mbss 0
 wl -i eth8 ampdu 0
 wl -i eth8 PM 0
 wl -i eth8 stbc_tx 0
-wl -i eth8 bw_cap 5g 7
+wl -i eth8 bw_cap 6g 7
 wl -i eth8 bi 65535
 wl -i eth8 mimo_txbw -1
 wl -i eth8 frameburst 1
 wl -i eth8 spatial_policy 1
 wl -i eth8 txcore  -s 1 -c 15
-wl -i eth8 band a
-wl -i eth8 chanspec 36/80
+wl -i eth8 chanspec 6g37/80
 wl -i eth8 he features 3
 wl -i eth8 up
 wl -i eth8 phy_forcecal 1
 wl -i eth8 phy_watchdog 0
-wl -i eth8 5g_rate -e 11 -s 1 -i 0 --ldpc -b 80
+wl -i eth8 6g_rate -e 11 -s 1 -i 0 --ldpc -b 80
 wl -i eth8 txpwr1 -q -o 88
 wl -i eth8 phy_forcecal 1
 wl -i eth8 pkteng_start 00:11:22:33:44:55 tx 100 907 0 00:22:44:66:88:04

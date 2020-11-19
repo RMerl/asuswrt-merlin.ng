@@ -4,6 +4,7 @@
 /* string for data */
 #define CFG_STR_FEATURE		"feature"
 #define CFG_STR_PRIVATE_FEATURE		"private_feature"
+#define CFG_STR_CONTROL_FEATURE		"control_feature"
 #define CFG_STR_CFGVER		"cfg_ver"
 #define CFG_STR_CFGALL		"cfg_all"
 #define CFG_STR_SWMODE		"sw_mode"
@@ -90,6 +91,8 @@
 #define CFG_STR_WLC_LLDP_COST_STAT  "lldp_wlc_cost_stat"
 #define CFG_STR_ETH_LLDP_COST_STAT  "lldp_eth_cost_stat"
 #if defined(RTCONFIG_AMAS_WGN)
+#define CFG_STR_WGN_CTRL_FEATURE	"guest_network"
+#define CFG_STR_WGN_WO_VLAN 		"wgn_without_vlan"
 #define CFG_STR_WGN_WLOFF_VIFS		"cfg_wgn_wloff_vifs"
 #define CFG_STR_SYNC_NODE_X_Y		"cfg_wl%d.%d_sync_node"
 #define CFG_STR_SYNC_NODE_2G_G1		"cfg_wl0.1_sync_node"

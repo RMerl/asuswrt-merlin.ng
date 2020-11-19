@@ -1063,7 +1063,7 @@ apply.amasonboarding = function(){
 				result_text += "1. <#AiMesh_Node_AddDesc1#>";
 				result_text += "<br>";
 				result_text += "2. <#AiMesh_Node_AddDesc2#>";
-				$("#amasonboarding_page").find(".resultBtn").html("<#AiMesh_Add_Another_Node#>");
+				result_text += "<br><br>";
 			}
 			else{
 				result_text += "<#AiMesh_info_unabled#>";
@@ -1074,8 +1074,8 @@ apply.amasonboarding = function(){
 				result_text += "<li><#AiMesh_info_unabled4#></li>";
 				result_text += "<li><#AiMesh_FindNode_Not_advA3#></li>";
 				result_text += "</ol>";
-				$("#amasonboarding_page").find(".resultBtn").html("<#AiMesh_Choose_Another_Node#>");
 			}
+			result_text += 'If you want to find another available AiMesh node nearby, please click "Search".';/* untranslated */
 			$("#amasonboarding_page").find("#result").html(result_text);
 			$("#amasonboarding_page").find("#result").find(".amesh_device_info").html(handle_ui_model_name(_model_name, _ui_model_name) + " (" + labelMac + ")");
 			$("#amasonboarding_page").find("#result").show();

@@ -51,6 +51,7 @@
 #include <bcmparams.h>
 #include <net/route.h>
 #include <stdarg.h>
+#include <sys/wait.h>
 
 #include <linux/types.h>
 #if !defined(__GLIBC__) && !defined(__UCLIBC__) /* musl */
@@ -87,6 +88,10 @@
 
 #ifdef RTCONFIG_BWDPI
 #include <bwdpi_common.h>
+#endif
+
+#if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
+#include <plc_utils.h>
 #endif
 
 #if defined(RTCONFIG_AMAS)
@@ -3217,26 +3222,16 @@ wan_up(const char *pwan_ifname)
 			start_firewall(wan_unit, 0);
 		}
 
-		if(IS_NON_AQOS()){
+		if(IS_NON_AQOS() || IS_ROG_QOS()){
 			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
 			start_iQos();
 		}
-#ifdef DSL_AX82U
-		else if (is_ax5400_i1()) {
-			start_iQos();
-		}
-#endif
 	}
 	else{
-		if(IS_NON_AQOS()){
+		if(IS_NON_AQOS() || IS_ROG_QOS()){
 			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
 			start_iQos();
 		}
-#ifdef DSL_AX82U
-		else if (is_ax5400_i1()) {
-			start_iQos();
-		}
-#endif
 	}
 #else
 	start_iQos();
@@ -3259,12 +3254,10 @@ wan_up(const char *pwan_ifname)
 #endif
 
 #if defined(RTCONFIG_HND_ROUTER_AX)
-	if (strcmp(wan_proto, "pptp") == 0) {
+	if (strcmp(wan_proto, "pptp") == 0)
 		eval("fc", "config", "--tcp-ack-mflows", "0");
-	}
-	else {
-		eval("fc", "config", "--tcp-ack-mflows", "1");
-	}
+	else
+		eval("fc", "config", "--tcp-ack-mflows", nvram_get_int("fc_tcp_ack_mflows_disable_force") ? "0" : "1");
 #endif
 
 _dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
@@ -4099,62 +4092,170 @@ void dumparptable()
 }
 
 #ifdef RTCONFIG_QCA_PLC_UTILS
-#define PLCTOOL_M	"/tmp/plctool-m"
 int autodet_plc_main(int argc, char *argv[]){
-	FILE *fd;
-	char buf[100], *ptr1, *ptr2;
-	char ifname[8], plc_mac[18], resp_mac[18];
-	int found = 0, idx = 0, chk = 0, cnt = 0;
-
-	get_plc_ifname(ifname);
-	strlcpy(plc_mac, nvram_safe_get("plc_macaddr"), sizeof(plc_mac));
-
-	snprintf(buf, sizeof(buf), "/usr/local/bin/plctool -i %s -m -e %s > %s", ifname, plc_mac, PLCTOOL_M);
-	system(buf);
-
-	if (!(fd = fopen(PLCTOOL_M, "r"))) {
-		_dprintf("%s: Can't open %s\n", __func__, PLCTOOL_M);
-		return -1;
-	}
-
-	// parse content
-	while (fgets(buf, sizeof(buf), fd) != NULL) {
-		// check response MAC
-		if (!found && (ptr1 = strstr(buf, ifname))) {
-			ptr2 = strstr(buf, " Found ");
-			if (ptr2) {
-				idx++;
-				ptr1 += strlen(ifname) + 1;
-				strlcpy(resp_mac, ptr1, sizeof(resp_mac));
-				if (!strncmp(resp_mac, plc_mac, 17))
-					found = 1;
-				continue;
-			}
-		}
-
-		// check amount of member
-		if (strstr(buf, "network->TEI")) {
-			idx--;
-			if (idx == 0) {
-				cnt++;
-				chk = 1;
-			} else
-				chk = 0;
-			continue;
-		}
-		if (chk && (ptr1 = strstr(buf, "network->STATIONS"))) {
-			ptr1 += strlen("network->STATIONS") + 3;
-			cnt += atoi(ptr1);
-		}
-	}
-
-	fclose(fd);
-	unlink(PLCTOOL_M);
+	int cnt;
+	cnt = get_connected_plc(NULL);
 	nvram_set_int("autodet_plc_state" , cnt);
 
 	return 0;
 }
 #endif
+#if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
+#define PLC_FAILED_CNT 2
+#define PLC_TIMEOUT_CNT 4
+int compare_mac_skip3(const char *mac_1, const char *mac_2)
+{
+	unsigned long value_1, value_2;
+	if(mac_1 == NULL || mac_2 == NULL || strncasecmp(mac_1, mac_2, 15) != 0)
+		return 0;
+
+	value_1 = strtoul(mac_1+15, NULL, 16);
+	value_2 = strtoul(mac_2+15, NULL, 16);
+	return (value_1 < 256 && value_2 < 256 && ((value_1 & ~0x7) == (value_2 & ~0x7)));
+}
+
+static void h_chld(int signo)
+{
+	while(waitpid(-1, NULL, WNOHANG) > 0);
+}
+
+static int wps_state = 0;
+static void h_plc_wps(int signo)
+{
+	wps_state = 1;
+}
+
+int detect_plc_main(int argc, char *argv[]){
+	int num, last_num;
+	int interval = 5;
+	int i;
+	struct remote_plc *rplc;
+	int tx, rx;
+	int failed_cnt;
+	int reset_cnt;
+	int retry = 0;
+	char plc_ifname[16];
+	char br_ifname[16];
+
+	signal(SIGCHLD, h_chld);
+	signal(SIGUSR1, h_plc_wps);
+
+	get_plc_ifname(plc_ifname);
+	strlcpy(br_ifname, nvram_safe_get("lan_ifname"), sizeof(br_ifname));
+	last_num = -1;
+	failed_cnt = PLC_FAILED_CNT;
+	reset_cnt = 0;
+	while(1) {
+		if (is_intf_up(plc_ifname) <= 0 || is_intf_up(br_ifname) <= 0
+				 || nvram_get_int("plchost_active") <= 0)
+		{ //interface inactive OR plchost is stopped
+			sleep(2);
+			continue;
+		}
+		if (pids("plchost") == 0) {
+			_dprintf("#PLC# MISSING plchost !!\n");
+			extern int start_plchost();
+			start_plchost();
+		}
+
+		/* normal work */
+		if (nvram_get_int("plc_ready"))
+			num = get_connected_plc(&rplc);
+		else
+			num = 0;
+
+	    if (num > 0 || failed_cnt++ >= PLC_FAILED_CNT) {
+		tx = rx = 0;
+		if (num > 0) {
+		    {
+			for(i = 0; i < num; i++) {
+				tx += rplc[i].tx;
+				rx += rplc[i].rx;
+			}
+			tx = tx/num;
+			rx = rx/num;
+		    }
+			free(rplc);
+			rplc = NULL;
+			failed_cnt = 0;
+			reset_cnt = 0;
+			interval = 10;
+		}
+
+		if (num != last_num) {
+			nvram_set_int("autodet_plc_state" , num);
+			last_num = num;
+		}
+		nvram_set_int("autodet_plc_tx", tx);
+		nvram_set_int("autodet_plc_rx", rx);
+		if (num > 0 && (tx < 10 || rx < 10)) {
+			void run_plcrate(int duration);
+			run_plcrate(1);
+		}
+	    }
+		if (num <= 0) {
+			if (failed_cnt > PLC_TIMEOUT_CNT) {
+				if (!chk_plc_alive()) {
+					_dprintf("#PLC# not alive !!\n");
+					do_plc_reset(1);
+				}
+				else if (!nvram_get_int("plc_ready")) {
+					if (reset_cnt++ >= 3) {
+						_dprintf("#PLC# force reset !!\n");
+						do_plc_reset(1);
+						reset_cnt = 0;
+					}
+					else {
+						_dprintf("#PLC# not reset normally !!\n");
+						do_plc_reset(0);
+					}
+				}
+				failed_cnt = 0;
+			}
+			interval = 5;
+		}
+
+		/* check WPS state */
+		if (wps_state == 1) {
+			if (is_wps_stopped() == 0) {
+				_dprintf("#PLC# wifi wps running!\n");
+				do_plc_pushbutton(6);	/* 1: PLC join procedure */
+					wps_state = 2;
+			}
+			else {
+				interval = 1;
+				if (retry++ > 10) {
+					_dprintf("#PLC# wifi wps NOT run!\n");
+					wps_state = 0;
+					retry = 0;
+				}
+			}
+		}
+		else if (wps_state == 2) {
+			int pb_state;
+			int wps_stopped;
+
+			pb_state = get_plc_pb_state();
+			wps_stopped = is_wps_stopped();
+			if (wps_stopped == 0 && (pb_state == 0 || pb_state == 4 || pb_state == 5 || pb_state == 6)) {
+				_dprintf("#PLC# plc push button is stopped! pb_state(%d)\n", pb_state);
+				stop_wps_method();
+			}
+			if (wps_stopped && (pb_state == 1 || pb_state == 2 || pb_state == 3)) {
+				_dprintf("#PLC# wifi wps is stopped! wps_stopped(%d)\n", wps_stopped);
+				do_plc_pushbutton(5);	/* 5: stop PLC join procedure */
+			}
+			if (wps_stopped || (pb_state == 0 || pb_state == 4 || pb_state == 5 || pb_state == 6)) {
+				wps_state = 0;
+				retry = 0;
+			}
+		}
+
+		sleep(interval);
+	}
+	return 0;
+}
+#endif	/* RTCONFIG_QCA_PLC_UTILS || RTCONFIG_QCA_PLC2 */
 
 int autodet_main(int argc, char *argv[]){
 	int unit;

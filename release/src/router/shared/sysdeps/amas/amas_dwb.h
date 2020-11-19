@@ -20,9 +20,6 @@ extern const char *sc_detailed_param[];
 
 extern void cm_revertSmartConnectParameters(int bandNum);
 #endif
-#ifdef RTCONFIG_DWB
-void dwb_init_settings(void);
-#endif
 
 extern void dwb_init_settings(void);
 

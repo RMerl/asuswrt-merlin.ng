@@ -895,6 +895,7 @@ extern void update_cfe_basemac();
 #endif
 #if defined(DSL_AX82U)
 extern void update_misc1();
+extern void update_cfe_ax82u();
 #endif
 #ifdef RTCONFIG_BCM_MFG
 extern void brcm_mfg_init();
@@ -964,7 +965,8 @@ extern void hnd_set_hwstp(void);
 extern void config_mssid_isolate(char *ifname, int vif);
 #endif
 #ifdef HND_ROUTER
-extern void config_queue();
+extern void config_obw();
+extern void config_obw_off();
 #endif
 #endif
 
@@ -1071,6 +1073,8 @@ typedef struct {
 	int dot1q;
 	int vid;
 	int dot1p;
+	int mbr;
+	int pbr;
 	int total_config;
 } XTM_PARAM;
 
@@ -1170,7 +1174,7 @@ extern int get_xdsl_bits_ds(uint8_t *data, size_t *num);
 extern void set_vendor_id(const char* vendor_id);
 extern void set_version(const char* version);
 extern void set_serial_no(const char* serial_no);
-extern void config_ptm_queue(int qid, QOS_Q_PARAM *p);
+extern void config_ptm_queue(QOS_Q_PARAM *p);
 #endif
 
 #endif /* RTCONFIG_DSL_HOST */
@@ -1402,11 +1406,13 @@ extern void ip2class(char *lan_ip, char *netmask, char *buf);
 #ifdef RTCONFIG_WIFI_SON
 extern void set_cap_apmode_filter(void);
 #endif
+extern void write_extra_port_forwarding(FILE *fp, char *lan_ip);
 extern void write_extra_filter(FILE *fp);
 #ifdef RTCONFIG_IPV6
 extern void write_extra_filter6(FILE *fp);
 #endif
 extern void rule_apply_checking(char *caller, int line, char *rule_path, int ret);
+extern void reset_filter(void);
 
 /* pc.c */
 #ifdef RTCONFIG_PARENTALCTRL
@@ -1671,6 +1677,7 @@ extern void set_mssid_prelink_config();
 extern void duplicate_prelink_config();
 extern void restore_prelink_config();
 extern void set_mssid_prelink_bss_enabled(int unit, int subunit);
+extern void restore_mssid_prelink_config();
 #endif
 #endif
 
@@ -2361,6 +2368,8 @@ void pre_addif_bridge(int iftype);
 void pre_delif_bridge(int iftype);
 void post_addif_bridge(int iftype);
 void post_delif_bridge(int iftype);
+void post_sent_action(void);
+void post_bh_changed(int iftype);
 int get_radar_status(int bssidx);
 int Pty_procedure_check(int unit, int wlif_count);
 #ifdef RTCONFIG_BHCOST_OPT
@@ -2481,6 +2490,7 @@ extern void stop_bsd(void);
 #endif
 #if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
 extern int restart_plc_main(int argc, char *argv[]);
+extern int detect_plc_main(int argc, char *argv[]);
 #endif
 
 //wireless.c
@@ -2992,6 +3002,7 @@ extern void asus_ctrl_sku_check();
 #ifdef GTAC5300
 extern void asus_ctrl_sku_update();
 #endif
+extern int asus_ctrl_nv(char *asusctrl);
 #endif
 
 #ifdef RTCONFIG_BCMARM

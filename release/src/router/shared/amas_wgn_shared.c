@@ -879,6 +879,71 @@ char *wgn_guest_ifnames(
 	return (offset > 0 && offset <= ifnames_bsize) ? ret_ifnames : NULL;
 }
 
+char *wgn_guest_all_ifnames(
+	char *ret_ifnames,
+	size_t ifnames_bsize)
+{
+	int unit = -1;
+	int subunit = -1;
+	
+	size_t i = 0;
+	size_t offset = 0;
+	
+   	struct wgn_vlan_rule_t vlan_list[WGN_MAXINUM_VLAN_RULELIST];
+    size_t vlan_total = 0;
+
+    char s[33];	
+	
+	if (!ret_ifnames || ifnames_bsize <= 0)
+		return NULL;
+
+	memset(vlan_list, 0, sizeof(struct wgn_vlan_rule_t) * WGN_MAXINUM_VLAN_RULELIST);
+    if (!wgn_vlan_list_get_from_nvram(vlan_list, WGN_MAXINUM_VLAN_RULELIST, &vlan_total))
+        return NULL;
+
+	for (i=0, offset=0; i<vlan_total && offset<ifnames_bsize; i++) {
+		unit = subunit = -1;
+		wgn_get_wl_unit(&unit, &subunit, &vlan_list[i]);
+        if (unit > 0 && subunit > 0)
+        {
+            memset(s, 0, sizeof(s));
+            snprintf(s, sizeof(s), "wl%d.%d ", unit, subunit);
+            strlcat(ret_ifnames, s, ifnames_bsize);
+            offset += strlen(s);
+        }		
+	}
+	
+	if (strlen(ret_ifnames) > 0)
+		ret_ifnames[strlen(ret_ifnames)-1] = '\0';
+
+	return (offset > 0 && offset <= ifnames_bsize) ? ret_ifnames : NULL;
+}
+
+int wgn_guest_is_enabled(
+	void)
+{
+	char ifnames[1024];
+	char word[64];
+	char s[64];
+	char *next = NULL;
+	
+	int ret = 0;
+	
+	memset(ifnames, 0, sizeof(ifnames));
+	if (wgn_guest_all_ifnames(ifnames, sizeof(ifnames)-1)) {
+		foreach(word, ifnames, next) {
+			memset(s, 0, sizeof(s));
+			snprintf(s, sizeof(s), "%s_bss_enabled", word);
+			if (nvram_get_int(s) != 0) {
+				ret = 1;
+				break;
+			}
+		}
+	}
+
+	return ret;
+}
+
 char *wgn_guest_vlans(
 	char *ifnames, 
 	char *ret_vlans,

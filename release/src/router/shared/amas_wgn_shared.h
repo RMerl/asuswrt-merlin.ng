@@ -96,6 +96,8 @@ extern void 			wgn_get_wl_unit(int *result_unit, int *result_subunit, wgn_vlan_r
 extern void 			wgn_set_wl_unit(int unit, int subunit, wgn_vlan_rule *vlan_rule);
 extern int 				wgn_guest_ifcount(int band);
 extern char*			wgn_guest_ifnames(int band, int total, char *ret_ifnames, size_t buffer_size);
+extern char*			wgn_guest_all_ifnames(char *ret_ifnames, size_t ifnames_bsize);
 extern char*			wgn_guest_vlans(char *ifnames, char *ret_vlans, size_t vlans_bsize);
 extern void 			wgn_check_settings(void);
-#endif 	/* !__WGN_SHAREDH__ */ 
+extern int 				wgn_guest_is_enabled(void);
+#endif 	/* !__WGN_SHAREDH__ */

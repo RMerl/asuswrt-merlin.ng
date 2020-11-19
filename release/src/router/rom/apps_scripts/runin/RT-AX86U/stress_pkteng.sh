@@ -12,7 +12,7 @@ count=0
 while [ $count -lt $CPU_cores ]; do
 	stress cpu -b $count -t 30000 &
 	count=`expr $count + 1`
-do
+done
 
 # 2G
 echo "start 2.4GHz pkteng..."

@@ -55,6 +55,9 @@ int terminate = 0;
 int child_c;
 struct hotplug2_child_t *child;
 int netlink_socket;
+#ifdef QCAMUSL
+int got_sig_child = 0;
+#endif
 
 char *modprobe_command = NULL;
 
@@ -142,6 +145,11 @@ int add_hotplug2_event_env(struct hotplug2_event_t *event, char *item) {
 	 *
 	 * TODO: Split this to a different function
 	 */
+#ifdef QCAMUSL
+	if (!strcmp(item, "SUBSYSTEM")) {
+		event->subsystem_idx = event->env_vars_c - 1;
+	} else
+#endif
 	if (!strcmp(item, "DEVPATH")) {
 		event->env_vars_c++;
 		event->env_vars = xrealloc(event->env_vars, sizeof(struct env_var_t) * event->env_vars_c);
@@ -210,6 +218,9 @@ inline struct hotplug2_event_t *get_hotplug2_event(char *event_str, int size) {
 	event->env_vars = NULL;
 	event->plain_s = size;
 	event->plain = xmalloc(size);
+#ifdef QCAMUSL
+	event->subsystem_idx = -1;
+#endif
 	memcpy(event->plain, event_str, size);
 	
 	skip = ++ptr - event_str;
@@ -280,6 +291,31 @@ void cleanup() {
 	INFO("cleanup", "All children terminated.");
 }
 
+#ifdef QCAMUSL
+void clear_child(void)
+{
+	pid_t p;
+	while (1) {
+#ifndef WAIT_ANY
+#define WAIT_ANY (-1)
+#endif
+		p = waitpid (WAIT_ANY, NULL, WNOHANG);
+		if (p <= 0)
+			break;
+
+		DBG("sighandler", "caught pid: %d.", p);
+		if (p == coldplug_p) {
+			DBG("sighandler", "coldplug_p: %d.", coldplug_p);
+			coldplug_p = FORK_FINISHED;
+		} else {
+			child = remove_child_by_pid(child, p, NULL, &child_c);
+		}
+
+		DBG("sighandler", "child_c: %d, child: %p, highest_seqnum: %lld, cur_seqnum: %lld, coldplug_p: %d.\n", child_c, child, highest_seqnum, get_kernel_seqnum(), coldplug_p);
+	}
+}
+#endif
+
 /**
  * Handles all signals.
  *
@@ -320,6 +356,9 @@ void sighandler(int sig) {
 		 * what kind of child it was. It may also invoke termination.
 		 */
 		case SIGCHLD:
+#ifdef QCAMUSL
+			got_sig_child++;
+#else
 			while (1) {
 #ifndef WAIT_ANY
 #define WAIT_ANY (-1)
@@ -338,6 +377,7 @@ void sighandler(int sig) {
 				
 				DBG("sighandler", "child_c: %d, child: %p, highest_seqnum: %lld, cur_seqnum: %lld, coldplug_p: %d.\n", child_c, child, highest_seqnum, get_kernel_seqnum(), coldplug_p);
 			}
+#endif
 			
 			if (TERMCONDITION) {
 				INFO("sighandler", "No more events to be processed, quitting.");
@@ -483,6 +523,9 @@ int get_modprobe_command() {
 	return 0;
 }
 
+#ifdef QCAMUSL
+const char *skip_array[]= { "gpio", "module", "drivers", "queues", "platform", "class", NULL};
+#endif
 int main(int argc, char *argv[]) {
 	/*
 	 * TODO, cleanup
@@ -499,7 +542,12 @@ int main(int argc, char *argv[]) {
 	unsigned int flags;
 	char *coldplug_command = NULL;
 	char *rules_file = HOTPLUG2_RULE_PATH;
+#ifndef QCAMUSL
 	sigset_t block_mask;
+#else
+	fd_set rmask;
+	int ret;
+#endif
 	struct pollfd msg_poll;
 
 	struct hotplug2_event_t *backlog = NULL;
@@ -657,6 +705,12 @@ end_rules:
 	 * Main loop reading uevents
 	 */
 	while (!terminate) {
+#ifdef QCAMUSL
+		if (got_sig_child > 0) {
+			clear_child();
+			got_sig_child = 0;
+		}
+#endif
 		if ((n_backlog > 0) && (child_c < max_child_c)) {
 			/* dequeue backlog message */
 			tmpevent = backlog;
@@ -683,6 +737,15 @@ end_rules:
 				if (fds == 0)
 					continue;
 			}
+#ifdef QCAMUSL
+			if (got_sig_child)
+				continue;
+			FD_ZERO(&rmask);
+			FD_SET(netlink_socket, &rmask);
+			ret = select(netlink_socket+1, &rmask, NULL, NULL, NULL);
+			if (ret < 0)
+				continue;
+#endif
 			size = recv(netlink_socket, &buffer, sizeof(buffer), 0);
 			recv_errno = errno;
 			if (size < 0)
@@ -699,6 +762,22 @@ end_rules:
 			}
 		}
 		
+#ifdef QCAMUSL
+		if (tmpevent->subsystem_idx != -1) {
+			int idx = tmpevent->subsystem_idx;
+			int j, got;
+			for (j=0, got=0; skip_array[j]!=NULL; j++) {
+				if (!strcmp(tmpevent->env_vars[idx].value, skip_array[j])) {
+					got=1;
+					break;
+				}
+			}
+			if (got) {
+				free_hotplug2_event(tmpevent);
+				continue;
+			}
+		}
+#endif
 		/*
 		 * Look up two important items of the event
 		 */
@@ -759,9 +838,11 @@ end_rules:
 				continue;
 			}
 			
+#ifndef QCAMUSL
 			sigemptyset(&block_mask);
 			sigaddset(&block_mask, SIGCHLD);
 			sigprocmask(SIG_BLOCK, &block_mask, 0);
+#endif
 			p = fork();
 			switch (p) {
 				case -1:
@@ -771,7 +852,11 @@ end_rules:
 					/*
 					 * TODO: We do not have to dup here, or do we?
 					 */
+#ifndef QCAMUSL
 					sigprocmask(SIG_UNBLOCK, &block_mask, 0);
+#else
+					signal(SIGINT, SIG_DFL);
+#endif
 					signal(SIGCHLD, SIG_DFL);
 					signal(SIGUSR1, SIG_DFL);
 					if (!dumb)
@@ -786,7 +871,9 @@ end_rules:
 					child_c++;
 					break;
 			}
+#ifndef QCAMUSL
 			sigprocmask(SIG_UNBLOCK, &block_mask, 0);
+#endif
 		}
 		
 		free_hotplug2_event(tmpevent);

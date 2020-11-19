@@ -559,6 +559,7 @@ var tr069_support = isSupport("tr069");
 var tor_support = isSupport("tor");
 var stainfo_support = isSupport("stainfo");
 var dhcp_override_support = isSupport("dhcp_override");
+var redirect_dname_support = isSupport("redirect_dname");
 var disnwmd_support = isSupport("disable_nwmd");
 var wtfast_support = isSupport("wtfast");
 var wtf_redeem_support = isSupport("wtf_redeem");
@@ -622,6 +623,7 @@ var nt_center_support = isSupport("nt_center");
 var dblog_support = isSupport("dblog");
 var wan_bonding_support = isSupport("wanbonding");
 var MaxRule_parentctrl = isSupport("MaxRule_parentctrl");
+var MaxRule_bwdpi_wrs = isSupport("MaxRule_bwdpi_wrs");
 // return enum bs_port_id
 function wanAggr_p2_num(wanports_bond){
 	var p2_port = "4";

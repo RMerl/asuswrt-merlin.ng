@@ -847,6 +847,7 @@ var weekScheduleApi = {
 	},
 	"PC_data" : [],
 	"PC_current_id" : 0,
+	"PC_other_client_rule_num" : 0,
 	"PC_offtime_attr" : function(){
 		this.id = "";
 		this.enable = 1;
@@ -954,7 +955,8 @@ var weekScheduleApi = {
 			Object.keys(weekScheduleApi.PC_data).forEach(function(key) {
 				current_data_num += weekScheduleApi.PC_data[key].length;
 			});
-			if(current_data_num + 1 > weekScheduleApi.data_max){
+			var total_client_rule_num = weekScheduleApi.PC_other_client_rule_num + current_data_num;
+			if(total_client_rule_num + 1 > weekScheduleApi.data_max){
 				popupHint.init();
 				var hint = "<#weekSche_MAX_Num#>".replace("#MAXNUM", weekScheduleApi.data_max);
 				hint += "<br>";

@@ -80,13 +80,12 @@ extern int PS_pclose(FILE *);
 #endif
 
 #ifdef RTCONFIG_EXTPHY_BCM84880
-#if 1
+// BCM84880, BCM54991
 #define EXTPHY_ADDR 0x1e
 #define EXTPHY_ADDR_STR "0x1e"
-#else // RTL8226
-#define EXTPHY_ADDR 0x03
-#define EXTPHY_ADDR_STR "0x03"
-#endif
+// RTL8226
+#define EXTPHY_RTL_ADDR 0x03
+#define EXTPHY_RTL_ADDR_STR "0x03"
 
 #if defined(GTAX11000)
 #define PHY_ID_54991E "3590:5099"
@@ -241,6 +240,9 @@ extern int PS_pclose(FILE *);
 #define FBWIFI_MARK_MASK	FBWIFI_MARK_SET(0x3)
 #define FBWIFI_MARK_INV_MASK	(~(FBWIFI_MARK_SET(0x3)))
 #define QOS_MASK		(0x3F)
+#define QOS_ROG_MARK_HIGH	6
+#define QOS_ROG_MARK_MID	5
+#define QOS_ROG_MARK_LOW	4
 
 /* QoS related define */
 #define IS_TQOS()               (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 0)   // T.QoS
@@ -249,6 +251,7 @@ extern int PS_pclose(FILE *);
 #define IS_GFN_QOS()            (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 3)   // GeForce NOW QoS (Nvidia)
 #define IS_NON_AQOS()           (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1)   // non A.QoS = others QoS (T.QoS / bandwidth monitor ... etc.)
 #define IS_NON_FC_QOS()         (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1 && nvram_get_int("qos_type") != 2) // non FC QoS= others QoS except A.QOS / BW QOS
+#define IS_ROG_QOS()            (nvram_get_int("qos_enable") == 0 && nvram_get_int("rog_enable") == 1) // QoS Disable, Gear Accelerator enable
 
 /* Guest network mark */
 #define GUEST_INIT_MARKNUM 10   /*10 ~ 30 for Guest Network. */
@@ -2520,6 +2523,7 @@ static inline int is_aqr_phy_exist(void)
 #endif	/* RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033 */
 
 /* misc.c */
+extern char *get_unused_brif(unsigned int num, char *ret_buffer, size_t ret_buffer_size);
 #if !defined(HND_ROUTER)
 extern void ipt_account(FILE *fp, char *interface);
 #endif

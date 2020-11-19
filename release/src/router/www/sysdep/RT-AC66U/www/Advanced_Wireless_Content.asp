@@ -202,6 +202,10 @@ function initial(){
 		}
 	}
 
+	if(band6g_support && wl_unit == '2'){
+		document.getElementById('psc6g_field').style.display = "";	
+	}
+
 	if(wl_info[wl_unit].dfs_support){
 		if(document.form.wl_channel.value  == '0'){
 			document.getElementById('dfs_checkbox').style.display = "";
@@ -803,6 +807,13 @@ function applyRule(){
 					else {
 						document.form.wl2_bw_160.value = 0;
 					}
+
+					if(band6g_support && $('#band2_psc6g_checkbox').is(':checked')){
+						document.form.psc6g.value = 1;
+					}
+					else{
+						document.form.psc6g.value = 0;
+					}
 				}
 			}
 			else if(document.form.smart_connect_t.value == '2'){
@@ -842,10 +853,25 @@ function applyRule(){
 				else {
 					document.form.wl2_bw_160.value = 0;
 				}
+
+				if(band6g_support && $('#band2_psc6g_checkbox').is(':checked')){
+					document.form.psc6g.value = 1;
+				}
+				else{
+					document.form.psc6g.value = 0;
+				}
 			}
 		}
 		else{
-			if(wl_unit == '2' && band5g2_support){
+			if(wl_unit == '2' && band6g_support){
+				if(document.getElementById('psc6g_checkbox').checked){
+					document.form.psc6g.value = "1";
+				}
+				else{
+					document.form.psc6g.value = "0";
+				}
+			}
+			else if(wl_unit == '2' && band5g2_support){
 				document.form.acs_dfs.disabled = true;
 				if(document.form.acs_dfs_checkbox.checked){
 					document.form.acs_band3.value = "1";
@@ -1791,6 +1817,21 @@ function separateGenChannel(unit, channel, bandwidth){
 		}
 	}
 	else if(unit == '2'){
+		if(band6g_support){		// due to GT-AXE11000 does not support
+			if(document.getElementById('band2_psc6g_checkbox').checked){
+				channel_5g_2 = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+			}
+
+			for(var i=channel_5g_2.length-1; i>=0; i--){
+				var _channel = parseInt(channel_5g_2[i]);
+				if(_channel < 30 || _channel > 231){
+					channel_5g_2.splice(i, 1);
+				}
+			}
+
+			$('#band2_psc6g').show();
+		}
+
 		if (curBandwidth == '0') {
 			$('#band2_extChannel_field').show();
 			loop_auto: for (i = 0; i < channel_5g_2.length; i++) {
@@ -2099,6 +2140,7 @@ function handleMFP(){
 		$('#mbo_notice').hide();
 	}
 }
+
 </script>
 </head>
 
@@ -2192,6 +2234,7 @@ function handleMFP(){
 <input type="hidden" name="acs_band1" value='<% nvram_get("acs_band1"); %>'>
 <input type="hidden" name="acs_band3" value='<% nvram_get("acs_band3"); %>'>
 <input type="hidden" name="acs_ch13" value='<% nvram_get("acs_ch13"); %>'>
+<input type="hidden" name="psc6g" value='<% nvram_get("psc6g"); %>'>
 <input type="hidden" name="wps_enable" value="<% nvram_get("wps_enable"); %>">
 <input type="hidden" name="wps_band" value="<% nvram_get("wps_band_x"); %>">
 <input type="hidden" name="wps_dualband" value="<% nvram_get("wps_dualband"); %>">
@@ -2385,6 +2428,7 @@ function handleMFP(){
 						<span id="acs_band1_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_band1_support(this);" <% nvram_match("acs_band1", "1", "checked"); %>><#WLANConfig11b_EChannel_band1#></span>
 						<span id="acs_band3_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_band3_support(this);" <% nvram_match("acs_band3", "1", "checked"); %>><#WLANConfig11b_EChannel_band3#></span>
 						<span id="acs_ch13_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_ch13_support(this);" <% nvram_match("acs_ch13", "1", "checked"); %>><#WLANConfig11b_EChannel_acs_ch13#></span>
+						<span id="psc6g_field" style="display:none;"><input id="psc6g_checkbox" type="checkbox" onClick="wl_chanspec_list_change();" <% nvram_match("psc6g", "1", "checked"); %>>enable PSC (Preferred Scanning Channel) to ensure the 6GHz devices connectivity. Please check <a href="https://www.asus.com/support/FAQ/1044625" target="_blank" style="color:#FC0;text-decoration: underline;">FAQ</a>.</span>
 					</td>
 			  </tr> 
 		  	<!-- end -->
@@ -2632,8 +2676,8 @@ function handleMFP(){
 					<td>
 						<select name="band2_channel" class="input_option" onChange="separateChannelHandler('2', this.value);"></select>
 						<span id="band2_autoChannel" style="display:none;margin-left:10px;">Current Control Channel</span><br>
-						<span id="band2_acsDFS"><input id="band2_acsDFS_checkbox" type="checkbox" <% nvram_match("acs_band3", "1" ,
-							 "checked" ); %>><#WLANConfig11b_EChannel_dfs#></span>
+						<span id="band2_acsDFS"><input id="band2_acsDFS_checkbox" type="checkbox" <% nvram_match("acs_band3", "1" , "checked" ); %>><#WLANConfig11b_EChannel_dfs#></span>
+						<span id="band2_psc6g" style="display:none"><input id="band2_psc6g_checkbox" type="checkbox" onclick="separateGenChannel('2', document.form.band2_channel.value, document.form.band2_bw.value);" <% nvram_match("psc6g", "1" , "checked" ); %>>enable PSC (Preferred Scanning Channel) to ensure the 6GHz devices connectivity. Please check <a href="https://www.asus.com/support/FAQ/1044625" target="_blank" style="color:#FC0;text-decoration: underline;">FAQ</a>.</span>
 					</td>
 				</tr>
 				<tr id="band2_extChannel_field" style="display:none">

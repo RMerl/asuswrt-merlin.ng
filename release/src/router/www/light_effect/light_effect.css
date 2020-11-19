@@ -414,3 +414,9 @@
 	-ms-user-select: none;
 	user-select: none;
 }
+.all_led_off {
+	color: #FC0;
+	font-size: 14px;
+	padding: 0px 10px 10px 10px;
+	display: none;
+}

@@ -922,8 +922,8 @@ void convert_wl_sched_v1_to_sched_v2() {
 
 /*For parental control scheduler*/
 void convert_pc_sched_v1_to_sched_v2() {
-	char str_sched_v1[MAX_NVRAM_SCHED_LEN*16];
-	char str_sched_v2[MAX_NVRAM_SCHED_LEN*16];
+	char str_sched_v1[MAX_NVRAM_SCHED_LEN];
+	char str_sched_v2[MAX_NVRAM_SCHED_LEN];
 	char tmp_str_sched_v2[MAX_NVRAM_SCHED_LEN];
 	char word[MAX_NVRAM_SCHED_LEN], *next_word;
 	int changed = 0, count;

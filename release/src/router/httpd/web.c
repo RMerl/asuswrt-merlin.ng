@@ -3937,7 +3937,7 @@ int validate_apply(webs_t wp, json_object *root) {
 					config_iptv_vlan(value);
 				}
 
-				if(!strncmp(name, "TM_EULA", 1) && !strncmp(value, "1", 1)){
+				if(!strcmp(name, "TM_EULA") && !strncmp(value, "1", 1)){
 					time_t now;
 					char timebuf[100];
 
@@ -12287,7 +12287,11 @@ wps_finish:
 		char event_msg[64] = {0};
 
 		if (!strcmp(action_mode, "firmware_check")){
-			nvram_set("webs_update_trigger", "cfgsync_firmware_check");
+			if(check_user_agent(user_agent) != FROM_BROWSER)
+				nvram_set("webs_update_trigger", "APP_CFG");
+			else
+				nvram_set("webs_update_trigger", "GUI_CFG");
+
 			snprintf(event_msg, sizeof(event_msg), HTTPD_GENERIC_MSG, EID_HTTPD_FW_CHECK);
 		}
 		else if (!strcmp(action_mode, "firmware_upgrade"))
@@ -13762,8 +13766,8 @@ do_upload_cert_key(char *url, FILE *stream, int len, char *boundary)
 	char upload_fifo[32];
 	FILE *fifo = NULL;
 	int ret = EINVAL, ch;
-	char *filename, *p;
-	char buf[1024];
+	char *filename = NULL, *p = NULL;
+	char buf[1024] = {0};
 
 	memset(buf, 0, sizeof(buf));
 	upload_cert_check_dir();
@@ -13786,9 +13790,13 @@ do_upload_cert_key(char *url, FILE *stream, int len, char *boundary)
 
 	unlink(upload_fifo);
 	p = buf;
-	filename = strstr(p, "filename=\"") + strlen("filename=\"");
-	p = strstr(filename, "\"");
-	strcpy(p, "\0");
+
+	if(p != NULL && (filename = strstr(p, "filename=\"")) != NULL){
+		filename = filename + strlen("filename=\"");
+		p = strstr(filename, "\"");
+		strcpy(p, "\0");
+	}else
+		goto err;
 	//_dprintf("key filename = %s\n", filename);
 
 	/* Skip boundary and headers */
@@ -13848,9 +13856,12 @@ do_upload_cert_key(char *url, FILE *stream, int len, char *boundary)
 	unlink(upload_fifo);
 
 	p = buf;
-	filename = strstr(p, "filename=\"") + strlen("filename=\"");
-	p = strstr(filename, "\"");
-	strcpy(p, "\0");
+	if(p != NULL && (filename = strstr(p, "filename=\"")) != NULL){
+		filename = filename + strlen("filename=\"");
+		p = strstr(filename, "\"");
+		strcpy(p, "\0");
+	}else
+		goto err;
 	//_dprintf("cert filename = %s\n", filename);
 
 	/* Skip boundary and headers */
@@ -16087,37 +16098,50 @@ FINISH:
 static void
 do_blocking_cgi(char *url, FILE *stream)
 {
-	char nvramTmp[4096]={0};
-	struct json_object *root=NULL;
-	char *buf, *g, *p;
-	char *block_CName, *block_mac,*block_interval, *block_timestap;
-	char *block_enabled_t, *block_CName_t, *block_mac_t,*block_interval_t, *block_timestap_t;
+	char nvramTmp[4096] = {0};
+	struct json_object *root = NULL;
+	char *buf = NULL, *g = NULL, *p = NULL;
+	char block_CName[32] = {0}, block_mac[18] = {0},block_interval[10] = {0}, block_timestamp[11] = {0};
+	char *block_enabled_t = NULL, *block_CName_t = NULL, *block_mac_t = NULL,*block_interval_t = NULL, *block_timestamp_t = NULL;
 	int retStatus = 0;
 	time_t now = uptime();
 	time(&now);
 
 	do_json_decode(&root);
 
-	block_CName = get_cgi_json("CName", root);
-	block_mac = get_cgi_json("MacAddress", root);
-	block_interval = get_cgi_json("Interval", root);
-	block_timestap = get_cgi_json("TimeStamp", root);
+	strlcpy(block_CName, safe_get_cgi_json("CName", root), sizeof(block_CName));
+	strlcpy(block_mac, safe_get_cgi_json("MacAddress", root), sizeof(block_mac));
+	strlcpy(block_interval, safe_get_cgi_json("Interval", root), sizeof(block_interval));
+	strlcpy(block_timestamp, safe_get_cgi_json("TimeStamp", root), sizeof(block_timestamp));
 
-	if(strstr(nvram_safe_get("MULTIFILTER_MAC"), block_mac) == NULL || now - atol(block_timestap) > 0){
+	if(!isValidMacAddress(block_mac))
+		goto FINISH;
+
+	if(!isValidtimestamp_noletter(block_timestamp))
+		goto FINISH;
+
+	if(!isValidtimestamp_noletter(block_interval))
+		goto FINISH;
+
+
+	if(strstr(nvram_safe_get("MULTIFILTER_MAC"), block_mac) == NULL || now - atol(block_timestamp) > 0){
 		_dprintf("blocking_cgi: not valid blocking request\n");
-		if (root != NULL) 
+		if (root)
 			json_object_put(root);
 		return;
 	}
 
-	//_dprintf("%s: block_CName = %s, block_mac = %s, block_timestr = \"%ld\", block_timestap = %s\n", __func__, block_CName, block_mac, now, block_timestap);
+	//_dprintf("%s: block_CName = %s, block_mac = %s, block_timestr = \"%ld\", block_timestamp = %s\n", __func__, block_CName, block_mac, now, block_timestamp);
 	g = buf = strdup(nvram_safe_get("MULTIFILTER_TMP"));
 	while (buf) {
 		if ((p = strsep(&g, "<")) == NULL) break;
-		if((vstrsep(p, ">", &block_enabled_t, &block_CName_t, &block_mac_t, &block_interval_t, &block_timestap_t)) != 5) continue;
+		if((vstrsep(p, ">", &block_enabled_t, &block_CName_t, &block_mac_t, &block_interval_t, &block_timestamp_t)) != 5) continue;
 
-		//_dprintf("%s: block_enabled_t = %s, block_CName_t = %s, block_mac_t = %s , block_interval_t =%s, block_timestap_t = %s\n", __func__, block_enabled_t, block_CName_t, block_mac_t, block_interval_t, block_timestap_t);
-		if((now-atol(block_timestap_t)) > 0){
+		if(!isValidtimestamp_noletter(block_timestamp_t))
+			continue;
+
+		//_dprintf("%s: block_enabled_t = %s, block_CName_t = %s, block_mac_t = %s , block_interval_t =%s, block_timestamp_t = %s\n", __func__, block_enabled_t, block_CName_t, block_mac_t, block_interval_t, block_timestamp_t);
+		if((now-atol(block_timestamp_t)) > 0){
 			continue;
 		}else if(strstr(nvram_safe_get("MULTIFILTER_MAC"), block_mac_t) == NULL){
 			continue;
@@ -16125,37 +16149,40 @@ do_blocking_cgi(char *url, FILE *stream)
 			if(!strcmp(block_mac_t, block_mac))
 				retStatus = 1;
 
-			strcat(nvramTmp, "<");
-			strcat(nvramTmp, "1");
-			strcat(nvramTmp, ">");
-			strcat(nvramTmp, block_CName_t);
-			strcat(nvramTmp, ">");
-			strcat(nvramTmp, block_mac_t);
-			strcat(nvramTmp, ">");
-			strcat(nvramTmp, block_interval_t);
-			strcat(nvramTmp, ">");
-			strcat(nvramTmp, block_timestap_t);
+			strlcat(nvramTmp, "<", sizeof(nvramTmp));
+			strlcat(nvramTmp, "1", sizeof(nvramTmp));
+			strlcat(nvramTmp, ">", sizeof(nvramTmp));
+			strlcat(nvramTmp, block_CName_t, sizeof(nvramTmp));
+			strlcat(nvramTmp, ">", sizeof(nvramTmp));
+			strlcat(nvramTmp, block_mac_t, sizeof(nvramTmp));
+			strlcat(nvramTmp, ">", sizeof(nvramTmp));
+			strlcat(nvramTmp, block_interval_t, sizeof(nvramTmp));
+			strlcat(nvramTmp, ">", sizeof(nvramTmp));
+			strlcat(nvramTmp, block_timestamp_t, sizeof(nvramTmp));
 		}
 	}
-	free(buf);
-	if (root != NULL) 
-		json_object_put(root);
 
 	if(retStatus == 0){
-		strcat(nvramTmp, "<");
-		strcat(nvramTmp, "1");
-		strcat(nvramTmp, ">");
-		strcat(nvramTmp, block_CName);
-		strcat(nvramTmp, ">");
-		strcat(nvramTmp, block_mac);
-		strcat(nvramTmp, ">");
-		strcat(nvramTmp, block_interval);
-		strcat(nvramTmp, ">");
-		strcat(nvramTmp, block_timestap);
+		strlcat(nvramTmp, "<", sizeof(nvramTmp));
+		strlcat(nvramTmp, "1", sizeof(nvramTmp));
+		strlcat(nvramTmp, ">", sizeof(nvramTmp));
+		strlcat(nvramTmp, block_CName, sizeof(nvramTmp));
+		strlcat(nvramTmp, ">", sizeof(nvramTmp));
+		strlcat(nvramTmp, block_mac, sizeof(nvramTmp));
+		strlcat(nvramTmp, ">", sizeof(nvramTmp));
+		strlcat(nvramTmp, block_interval, sizeof(nvramTmp));
+		strlcat(nvramTmp, ">", sizeof(nvramTmp));
+		strlcat(nvramTmp, block_timestamp, sizeof(nvramTmp));
 	}
 	nvram_set("MULTIFILTER_TMP", nvramTmp);
 	nvram_commit();
 	notify_rc("restart_firewall");
+
+FINISH:
+	free(buf);
+
+	if(root)
+		json_object_put(root);
 }
 #else
 static void do_blocking_request_cgi(char *url, FILE *stream){}
@@ -18394,12 +18421,15 @@ do_rog_first_qos_cgi(char *url, FILE *stream)
 			if(!nvram_match("qos_enable", "1") || !nvram_match("qos_type", "0"))
 				notify_nt = 1;
 #endif
-			nvram_set("qos_enable", "1");
+			/*
+			nvram_set("qos_enable", "0");
 			nvram_set("qos_type", "0");
+			nvram_set("rog_enable", "1");
 			if(nvram_get_int("qos_obw") == 0)
 				nvram_set("qos_obw", "1048576");
 			if(nvram_get_int("qos_ibw") == 0)
 				nvram_set("qos_ibw", "1048576");
+			*/
 			nvram_commit();
 			ret = HTTP_RULE_ADD_SUCCESS;
 		}else{
@@ -24150,6 +24180,362 @@ ej_geoiplookup(int eid, webs_t wp, int argc, char_t **argv)
 }
 #endif
 
+#ifdef RTCONFIG_GEOIP_EG
+struct geoip_subnet_str {
+	char *begin;
+	char *end;
+};
+
+/* refer to https://lite.ip2location.com/egypt-ip-address-ranges */
+struct geoip_subnet_str geoip_subnet_strs[] = {
+	{ "31.6.10.0", "31.6.10.255" },
+	{ "34.99.146.0", "34.99.147.255" },
+	{ "34.99.218.0", "34.99.219.255" },
+	{ "34.103.133.3", "34.103.133.9" },
+	{ "34.103.133.26", "34.103.133.99" },
+	{ "34.103.133.253", "34.103.133.254" },
+	{ "34.103.162.0", "34.103.163.255" },
+	{ "34.103.206.1", "34.103.206.1" },
+	{ "34.103.206.10", "34.103.206.12" },
+	{ "34.103.206.100", "34.103.206.119" },
+	{ "34.103.226.0", "34.103.226.255" },
+	{ "34.124.72.0", "34.124.72.255" },
+	{ "37.46.196.32", "37.46.196.47" },
+	{ "41.32.0.0", "41.47.255.255" },
+	{ "41.64.0.0", "41.65.255.255" },
+	{ "41.67.80.0", "41.67.87.255" },
+	{ "41.68.0.0", "41.69.255.255" },
+	{ "41.72.64.0", "41.72.95.255" },
+	{ "41.77.136.0", "41.77.143.255" },
+	{ "41.78.22.0", "41.78.22.255" },
+	{ "41.78.60.0", "41.78.63.255" },
+	{ "41.78.148.0", "41.78.151.255" },
+	{ "41.88.0.0", "41.88.255.255" },
+	{ "41.91.0.0", "41.91.255.255" },
+	{ "41.128.0.0", "41.131.255.255" },
+	{ "41.152.0.0", "41.153.255.255" },
+	{ "41.155.128.0", "41.155.255.255" },
+	{ "41.176.0.0", "41.176.255.255" },
+	{ "41.178.0.0", "41.179.252.255" },
+	{ "41.187.0.0", "41.187.255.255" },
+	{ "41.190.248.0", "41.190.251.255" },
+	{ "41.191.80.0", "41.191.83.255" },
+	{ "41.196.0.0", "41.196.255.255" },
+	{ "41.199.0.0", "41.199.255.255" },
+	{ "41.205.96.0", "41.205.127.255" },
+	{ "41.206.128.0", "41.206.159.255" },
+	{ "41.206.176.0", "41.206.176.255" },
+	{ "41.206.189.0", "41.206.189.49" },
+	{ "41.206.189.51", "41.206.189.255" },
+	{ "41.209.192.0", "41.209.255.255" },
+	{ "41.215.240.0", "41.215.243.255" },
+	{ "41.217.160.0", "41.217.191.255" },
+	{ "41.217.224.0", "41.217.231.255" },
+	{ "41.218.128.0", "41.218.191.255" },
+	{ "41.221.128.0", "41.221.143.255" },
+	{ "41.222.128.0", "41.222.135.255" },
+	{ "41.222.168.0", "41.222.175.255" },
+	{ "41.223.20.0", "41.223.23.255" },
+	{ "41.223.52.0", "41.223.55.255" },
+	{ "41.223.196.0", "41.223.199.255" },
+	{ "41.223.240.0", "41.223.241.255" },
+	{ "41.232.0.0", "41.239.255.255" },
+	{ "45.96.0.0", "45.111.255.255" },
+	{ "45.132.139.0", "45.132.139.255" },
+	{ "45.135.184.0", "45.135.184.255" },
+	{ "45.195.86.0", "45.195.86.255" },
+	{ "45.240.0.0", "45.247.255.255" },
+	{ "57.83.0.0", "57.83.15.255" },
+	{ "57.88.48.0", "57.88.63.255" },
+	{ "57.188.16.0", "57.188.16.255" },
+	{ "62.12.124.0", "62.12.127.255" },
+	{ "62.68.224.0", "62.68.255.255" },
+	{ "62.114.0.0", "62.114.255.255" },
+	{ "62.117.32.0", "62.117.63.255" },
+	{ "62.135.0.0", "62.135.127.255" },
+	{ "62.139.0.0", "62.139.255.255" },
+	{ "62.140.64.0", "62.140.127.255" },
+	{ "62.193.64.0", "62.193.127.255" },
+	{ "62.216.128.190", "62.216.128.190" },
+	{ "62.216.128.194", "62.216.128.194" },
+	{ "62.216.129.181", "62.216.129.181" },
+	{ "62.216.129.185", "62.216.129.185" },
+	{ "62.216.129.189", "62.216.129.189" },
+	{ "62.216.129.193", "62.216.129.193" },
+	{ "62.216.129.214", "62.216.129.214" },
+	{ "62.216.129.218", "62.216.129.218" },
+	{ "62.216.133.1", "62.216.133.2" },
+	{ "62.216.133.17", "62.216.133.18" },
+	{ "62.216.133.21", "62.216.133.22" },
+	{ "62.216.148.0", "62.216.149.255" },
+	{ "62.240.96.0", "62.240.127.255" },
+	{ "62.241.128.0", "62.241.159.255" },
+	{ "63.222.249.0", "63.222.249.255" },
+	{ "63.223.12.5", "63.223.12.6" },
+	{ "63.223.12.17", "63.223.12.18" },
+	{ "63.223.12.21", "63.223.12.22" },
+	{ "63.223.12.25", "63.223.12.26" },
+	{ "63.223.12.29", "63.223.12.30" },
+	{ "63.223.12.33", "63.223.12.33" },
+	{ "63.223.12.45", "63.223.12.45" },
+	{ "63.223.12.49", "63.223.12.49" },
+	{ "63.223.12.53", "63.223.12.53" },
+	{ "63.223.12.65", "63.223.12.66" },
+	{ "64.86.35.0", "64.86.35.255" },
+	{ "64.86.186.17", "64.86.186.17" },
+	{ "65.19.176.112", "65.19.176.127" },
+	{ "69.169.31.0", "69.169.31.255" },
+	{ "70.33.184.96", "70.33.184.127" },
+	{ "70.33.186.160", "70.33.186.191" },
+	{ "80.75.160.0", "80.75.191.255" },
+	{ "80.77.0.0", "80.77.0.32" },
+	{ "80.77.0.34", "80.77.0.44" },
+	{ "80.77.0.46", "80.77.0.64" },
+	{ "80.77.0.66", "80.77.0.68" },
+	{ "80.77.0.70", "80.77.0.72" },
+	{ "80.77.0.74", "80.77.0.84" },
+	{ "80.77.0.86", "80.77.0.120" },
+	{ "80.77.0.122", "80.77.0.124" },
+	{ "80.77.0.126", "80.77.0.128" },
+	{ "80.77.0.130", "80.77.0.136" },
+	{ "80.77.0.138", "80.77.0.148" },
+	{ "80.77.0.150", "80.77.0.160" },
+	{ "80.77.0.162", "80.77.0.255" },
+	{ "80.77.2.120", "80.77.2.127" },
+	{ "80.77.2.160", "80.77.3.255" },
+	{ "80.77.5.0", "80.77.7.255" },
+	{ "80.77.12.0", "80.77.13.255" },
+	{ "80.77.15.0", "80.77.15.255" },
+	{ "81.10.0.0", "81.10.127.255" },
+	{ "81.21.96.0", "81.21.102.255" },
+	{ "81.21.106.0", "81.21.111.255" },
+	{ "81.29.97.0", "81.29.97.255" },
+	{ "81.29.99.0", "81.29.99.255" },
+	{ "81.29.105.0", "81.29.107.255" },
+	{ "82.129.128.0", "82.129.255.255" },
+	{ "82.195.187.22", "82.195.187.22" },
+	{ "82.201.128.0", "82.201.255.255" },
+	{ "84.11.144.64", "84.11.144.127" },
+	{ "84.36.0.0", "84.36.255.255" },
+	{ "84.205.96.0", "84.205.127.255" },
+	{ "84.233.0.0", "84.233.127.255" },
+	{ "85.205.124.0", "85.205.124.255" },
+	{ "88.202.105.144", "88.202.105.159" },
+	{ "88.202.109.144", "88.202.109.159" },
+	{ "92.249.30.0", "92.249.30.255" },
+	{ "102.8.0.0", "102.15.255.255" },
+	{ "102.40.0.0", "102.47.255.255" },
+	{ "102.56.0.0", "102.63.255.255" },
+	{ "102.64.58.0", "102.64.58.255" },
+	{ "102.68.22.0", "102.68.22.255" },
+	{ "102.68.127.0", "102.68.127.255" },
+	{ "102.69.149.0", "102.69.150.255" },
+	{ "102.128.176.0", "102.128.183.255" },
+	{ "102.131.32.0", "102.131.35.255" },
+	{ "102.164.114.0", "102.164.115.255" },
+	{ "102.164.122.0", "102.164.122.255" },
+	{ "102.184.0.0", "102.191.255.255" },
+	{ "102.223.144.0", "102.223.147.255" },
+	{ "102.223.172.0", "102.223.172.255" },
+	{ "102.223.242.0", "102.223.243.255" },
+	{ "102.223.250.0", "102.223.250.255" },
+	{ "103.111.60.0", "103.111.60.255" },
+	{ "104.44.36.217", "104.44.36.217" },
+	{ "104.44.36.219", "104.44.36.219" },
+	{ "104.44.40.24", "104.44.40.25" },
+	{ "104.44.238.199", "104.44.238.199" },
+	{ "104.44.239.49", "104.44.239.49" },
+	{ "104.44.239.51", "104.44.239.51" },
+	{ "104.44.239.53", "104.44.239.53" },
+	{ "104.133.45.0", "104.133.45.255" },
+	{ "104.245.124.48", "104.245.124.63" },
+	{ "105.32.0.0", "105.42.195.255" },
+	{ "105.42.197.0", "105.47.255.255" },
+	{ "105.80.0.0", "105.95.255.255" },
+	{ "105.180.0.0", "105.183.255.255" },
+	{ "105.192.0.0", "105.207.255.255" },
+	{ "107.153.84.0", "107.153.87.255" },
+	{ "114.198.235.0", "114.198.236.255" },
+	{ "114.198.239.0", "114.198.239.255" },
+	{ "146.252.122.0", "146.252.122.255" },
+	{ "154.128.0.0", "154.143.255.255" },
+	{ "154.176.0.0", "154.191.255.255" },
+	{ "154.236.0.0", "154.238.8.255" },
+	{ "154.238.10.0", "154.239.255.255" },
+	{ "155.11.0.0", "155.11.255.255" },
+	{ "155.12.128.0", "155.12.191.255" },
+	{ "156.160.0.0", "156.223.255.255" },
+	{ "157.167.81.0", "157.167.81.255" },
+	{ "162.158.129.0", "162.158.131.255" },
+	{ "162.252.56.16", "162.252.56.23" },
+	{ "163.121.0.0", "163.121.255.255" },
+	{ "164.160.64.0", "164.160.67.255" },
+	{ "164.160.104.0", "164.160.107.255" },
+	{ "169.239.37.0", "169.239.37.255" },
+	{ "176.67.86.68", "176.67.86.71" },
+	{ "185.133.16.0", "185.133.19.255" },
+	{ "185.163.110.160", "185.163.110.191" },
+	{ "185.187.178.0", "185.187.178.255" },
+	{ "188.214.122.0", "188.214.122.255" },
+	{ "192.101.142.0", "192.101.142.255" },
+	{ "192.198.120.0", "192.198.120.255" },
+	{ "193.19.232.0", "193.19.235.255" },
+	{ "193.227.0.0", "193.227.63.255" },
+	{ "193.227.128.0", "193.227.128.255" },
+	{ "194.79.96.0", "194.79.127.255" },
+	{ "195.43.2.16", "195.43.2.31" },
+	{ "195.43.2.80", "195.43.2.255" },
+	{ "195.43.3.96", "195.43.3.255" },
+	{ "195.43.4.64", "195.43.4.127" },
+	{ "195.43.4.192", "195.43.6.255" },
+	{ "195.43.10.0", "195.43.10.255" },
+	{ "195.43.21.0", "195.43.26.255" },
+	{ "195.43.28.0", "195.43.31.255" },
+	{ "195.234.168.0", "195.234.168.255" },
+	{ "195.234.185.0", "195.234.185.255" },
+	{ "195.234.252.0", "195.234.255.255" },
+	{ "195.246.32.0", "195.246.63.255" },
+	{ "196.1.143.0", "196.1.143.255" },
+	{ "196.2.192.0", "196.2.223.255" },
+	{ "196.6.185.0", "196.6.185.255" },
+	{ "196.6.236.0", "196.6.236.255" },
+	{ "196.10.97.0", "196.10.97.255" },
+	{ "196.10.120.0", "196.10.120.255" },
+	{ "196.12.11.0", "196.12.11.255" },
+	{ "196.13.206.0", "196.13.206.255" },
+	{ "196.13.244.0", "196.13.244.255" },
+	{ "196.13.253.0", "196.13.253.255" },
+	{ "196.20.32.0", "196.20.63.255" },
+	{ "196.22.5.0", "196.22.5.255" },
+	{ "196.22.7.0", "196.22.7.255" },
+	{ "196.22.130.0", "196.22.130.255" },
+	{ "196.41.73.0", "196.41.73.255" },
+	{ "196.41.83.0", "196.41.83.255" },
+	{ "196.43.198.0", "196.43.198.255" },
+	{ "196.43.201.0", "196.43.201.255" },
+	{ "196.43.219.0", "196.43.219.255" },
+	{ "196.43.237.0", "196.43.237.255" },
+	{ "196.46.22.0", "196.46.22.255" },
+	{ "196.46.29.0", "196.46.29.255" },
+	{ "196.46.188.0", "196.46.191.255" },
+	{ "196.50.22.0", "196.50.23.255" },
+	{ "196.128.0.0", "196.159.255.255" },
+	{ "196.201.3.0", "196.201.3.255" },
+	{ "196.201.25.0", "196.201.26.255" },
+	{ "196.201.28.0", "196.201.28.255" },
+	{ "196.201.240.0", "196.201.247.255" },
+	{ "196.202.0.0", "196.202.127.255" },
+	{ "196.204.0.0", "196.205.255.255" },
+	{ "196.216.24.0", "196.216.31.255" },
+	{ "196.216.140.0", "196.216.143.255" },
+	{ "196.216.206.0", "196.216.206.255" },
+	{ "196.216.240.0", "196.216.241.255" },
+	{ "196.216.252.0", "196.216.252.255" },
+	{ "196.218.0.0", "196.218.247.255" },
+	{ "196.219.0.0", "196.219.247.255" },
+	{ "196.221.0.0", "196.221.255.255" },
+	{ "196.223.7.0", "196.223.7.255" },
+	{ "196.223.16.0", "196.223.17.255" },
+	{ "197.32.0.0", "197.63.255.255" },
+	{ "197.120.0.0", "197.127.255.255" },
+	{ "197.132.0.0", "197.135.255.255" },
+	{ "197.150.0.0", "197.151.255.255" },
+	{ "197.160.0.0", "197.167.255.255" },
+	{ "197.192.0.0", "197.199.255.255" },
+	{ "197.222.0.0", "197.223.255.255" },
+	{ "197.246.0.0", "197.246.255.255" },
+	{ "199.95.178.0", "199.95.179.255" },
+	{ "205.251.93.0", "205.251.93.255" },
+	{ "207.46.35.212", "207.46.35.213" },
+	{ "208.29.92.52", "208.29.92.52" },
+	{ "208.127.248.73", "208.127.248.108" },
+	{ "209.88.146.0", "209.88.154.255" },
+	{ "212.12.224.0", "212.12.234.79" },
+	{ "212.12.234.88", "212.12.255.255" },
+	{ "212.60.14.0", "212.60.14.255" },
+	{ "212.103.160.0", "212.103.185.95" },
+	{ "212.103.185.104", "212.103.190.255" },
+	{ "212.103.191.16", "212.103.191.255" },
+	{ "212.122.224.0", "212.122.255.255" },
+	{ "213.131.64.0", "213.131.95.255" },
+	{ "213.152.64.0", "213.152.95.255" },
+	{ "213.154.32.0", "213.154.63.255" },
+	{ "213.158.160.0", "213.158.191.255" },
+	{ "213.181.224.0", "213.181.255.255" },
+	{ "213.182.201.0", "213.182.201.255" },
+	{ "213.212.192.0", "213.212.255.255" },
+	{ "213.242.116.10", "213.242.116.10" },
+	{ "217.20.224.0", "217.20.239.255" },
+	{ "217.52.0.0", "217.55.255.255" },
+	{ "217.139.0.0", "217.139.255.255" }
+};
+
+struct geoip_subnet {
+	in_addr_t begin;
+	in_addr_t end;
+};
+
+#define ARRAYSIZE(a)    (sizeof(a)/sizeof(a[0]))
+
+static int geoip_match(char *ip)
+{
+	int i;
+	struct geoip_subnet geoip_subnets[ARRAYSIZE(geoip_subnet_strs)];
+#ifdef GEOIPDBG
+	struct in_addr addr_begin, addr_end;
+#endif
+	in_addr_t in_addr_ip;
+
+	in_addr_ip = inet_addr(ip);
+	for (i = 0; (i < ARRAYSIZE(geoip_subnet_strs)); i++) {
+#if 0
+		inet_aton(geoip_subnet_strs[i].begin, &addr_begin);
+		inet_aton(geoip_subnet_strs[i].end, &addr_end);
+
+		geoip_subnets[i].begin = ntohl(addr_begin.s_addr);
+		geoip_subnets[i].end = ntohl(addr_end.s_addr);
+
+		dbg("begin: %s\n", inet_ntoa(addr_begin));
+		dbg("end: %s\n", inet_ntoa(addr_end));
+#else
+		geoip_subnets[i].begin = inet_addr(geoip_subnet_strs[i].begin);
+		geoip_subnets[i].end = inet_addr(geoip_subnet_strs[i].end);
+#ifdef GEOIPDBG
+		addr_begin.s_addr = geoip_subnets[i].begin;
+		addr_end.s_addr = geoip_subnets[i].end;
+
+		dbg("subnet begin: %s\n", inet_ntoa(addr_begin));
+		dbg("subnet end: %s\n", inet_ntoa(addr_end));
+#endif
+		if ((ntohl(in_addr_ip) >= ntohl(geoip_subnets[i].begin)) &&
+		    (ntohl(in_addr_ip) <= ntohl(geoip_subnets[i].end))) {
+#ifdef GEOIPDBG
+			dbg("idx: %d\n", i);
+			dbg("IP %s match subnet %s:%s\n", ip, geoip_subnet_strs[i].begin, geoip_subnet_strs[i].end);
+#endif
+			return 1;
+		}
+#endif
+        }
+
+	return 0;
+}
+
+static int
+ej_geoiplookup_eg(int eid, webs_t wp, int argc, char_t **argv)
+{
+	int unit;
+	char tmp[100], prefix[] = "wanXXXXXXXXXX_";
+	char *wanip;
+
+	unit = wan_primary_ifunit();
+	wan_prefix(unit, prefix);
+	wanip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
+
+	return websWrite(wp, "%d", geoip_match(wanip));
+}
+#endif
+
 #ifdef RTCONFIG_JFFS2USERICON
 static int
 ej_get_upload_icon(int eid, webs_t wp, int argc, char **argv) {
@@ -28609,6 +28995,9 @@ struct ej_handler ej_handlers[] = {
 	{ "wl_nband_info", ej_wl_nband_info},
 #ifdef RTCONFIG_GEOIP
 	{ "geoiplookup", ej_geoiplookup},
+#endif
+#ifdef RTCONFIG_GEOIP_EG
+	{ "geoiplookup_eg", ej_geoiplookup_eg },
 #endif
 #ifdef RTCONFIG_JFFS2USERICON
 	{ "get_upload_icon", ej_get_upload_icon},

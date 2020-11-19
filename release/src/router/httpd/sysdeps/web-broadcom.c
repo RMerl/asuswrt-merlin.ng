@@ -1542,7 +1542,12 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, void *bi_generic)
 #endif
 		{
 			retval += websWrite(wp, "\tChanspec: %sGHz channel %d %dMHz (0x%x)\n",
-				CHSPEC_IS2G(bi->chanspec)?"2.4":"5", CHSPEC_CHANNEL(bi->chanspec),
+#ifdef RTCONFIG_WIFI6E
+				CHSPEC_IS2G(bi->chanspec)?"2.4":CHSPEC_IS6G(bi->chanspec)?"6":"5",
+#else
+				CHSPEC_IS2G(bi->chanspec)?"2.4":"5",
+#endif
+				CHSPEC_CHANNEL(bi->chanspec),
 				(CHSPEC_IS160(bi->chanspec) ?
 				160:(CHSPEC_IS80(bi->chanspec) ?
 				80 : (CHSPEC_IS40(bi->chanspec) ?
@@ -2297,6 +2302,7 @@ ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	scb_val_t scb_val;
 	char rate_buf[8];
 	int hr, min, sec;
+	char timebuf[11];
 #ifdef RTCONFIG_BCMWL6
 	wl_dfs_status_t *dfs_status;
 	char chanspec_str[CHANSPEC_STR_LEN];
@@ -2555,8 +2561,8 @@ wds_list:
 	ret += websWrite(wp, "\n");
 	ret += websWrite(wp, "Stations List                           \n");
 	ret += websWrite(wp, "----------------------------------------\n");
-	ret += websWrite(wp, "%-4s%-18s%-11s%-11s%-8s%-4s%-4s",
-				"idx", "MAC", "Associated", "Authorized", "   RSSI ", "PHY", "PSM");
+	ret += websWrite(wp, "%-4s%-18s%-11s%-11s%-7s%-4s%-4s",
+				"idx", "MAC", "Associated", "Authorized", "  RSSI", "PHY", "PSM");
 #ifndef RTCONFIG_QTN
 #if (WL_STA_VER >= 4)
 	ret += websWrite(wp, "%-4s%-5s",
@@ -2591,9 +2597,9 @@ wds_list:
 
 		memcpy(&scb_val.ea, &auth->ea[i], ETHER_ADDR_LEN);
 		if (wl_ioctl(ifname, WLC_GET_RSSI, &scb_val, sizeof(scb_val_t)))
-			ret += websWrite(wp, "%-8s", "");
+			ret += websWrite(wp, "%-7s", "");
 		else
-			ret += websWrite(wp, " %3ddBm ", scb_val.val);
+			ret += websWrite(wp, "%3ddBm ", scb_val.val);
 
 		ret += websWrite(wp, "%-4s", phy_type_str[wl_sta_info_phy(sta, unit)]);
 
@@ -2624,8 +2630,8 @@ wds_list:
 #endif
 		if (sta->flags & WL_STA_SCBSTATS)
 		{
-			ret += websWrite(wp, "%8s", print_rate_buf(sta->tx_rate, rate_buf, sizeof(rate_buf)));
-			ret += websWrite(wp, "%8s", print_rate_buf(sta->rx_rate, rate_buf, sizeof(rate_buf)));
+			ret += websWrite(wp, "%-8s", print_rate_buf(sta->tx_rate, rate_buf, sizeof(rate_buf)));
+			ret += websWrite(wp, "%-8s", print_rate_buf(sta->rx_rate, rate_buf, sizeof(rate_buf)));
 		}
 		else
 			ret += websWrite(wp, "%-16s", "");
@@ -2633,7 +2639,8 @@ wds_list:
 		hr = sta->in / 3600;
 		min = (sta->in % 3600) / 60;
 		sec = sta->in - hr * 3600 - min * 60;
-		ret += websWrite(wp, "%02d:%02d:%02d", hr, min, sec);
+		snprintf(timebuf, sizeof(timebuf), "%02d:%02d:%02d", hr, min, sec);
+		ret += websWrite(wp, "%12s", timebuf);
 
 		ret += websWrite(wp, "\n");
 	}
@@ -2668,9 +2675,9 @@ wds_list:
 
 				memcpy(&scb_val.ea, &auth->ea[ii], ETHER_ADDR_LEN);
 				if (wl_ioctl(name_vif, WLC_GET_RSSI, &scb_val, sizeof(scb_val_t)))
-					ret += websWrite(wp, "%-8s", "");
+					ret += websWrite(wp, "%-7s", "");
 				else
-					ret += websWrite(wp, " %3ddBm ", scb_val.val);
+					ret += websWrite(wp, "%3ddBm ", scb_val.val);
 
 				ret += websWrite(wp, "%-4s", phy_type_str[wl_sta_info_phy(sta, unit)]);
 
@@ -2701,8 +2708,8 @@ wds_list:
 #endif
 				if (sta->flags & WL_STA_SCBSTATS)
 				{
-					ret += websWrite(wp, "%8s", print_rate_buf(sta->tx_rate, rate_buf, sizeof(rate_buf)));
-					ret += websWrite(wp, "%8s", print_rate_buf(sta->rx_rate, rate_buf, sizeof(rate_buf)));
+					ret += websWrite(wp, "%-8s", print_rate_buf(sta->tx_rate, rate_buf, sizeof(rate_buf)));
+					ret += websWrite(wp, "%-8s", print_rate_buf(sta->rx_rate, rate_buf, sizeof(rate_buf)));
 				}
 				else
 					ret += websWrite(wp, "%-16s", "");
@@ -2710,7 +2717,8 @@ wds_list:
 				hr = sta->in / 3600;
 				min = (sta->in % 3600) / 60;
 				sec = sta->in - hr * 3600 - min * 60;
-				ret += websWrite(wp, "%02d:%02d:%02d", hr, min, sec);
+				snprintf(timebuf, sizeof(timebuf), "%02d:%02d:%02d", hr, min, sec);
+				ret += websWrite(wp, "%12s", timebuf);
 
 				ret += websWrite(wp, "\n");
 			}

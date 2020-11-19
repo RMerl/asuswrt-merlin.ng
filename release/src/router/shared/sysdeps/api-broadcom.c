@@ -235,6 +235,13 @@ static int _reset12 = 0;
 int bcm_cled_ctrl(int rgb, int cled_mode)
 {
 	int state_changed = 0;
+
+#ifdef RPAX56
+	if(ate_brcm_factory_mode()) {
+		//_dprintf("skip bcmcledctrl under atemode\n");
+		return 0;
+	}
+#endif
 #if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX82_XD6) || defined(RPAX56)
 	state_changed = _bcm_cled_ctrl(rgb, cled_mode);
 	if(state_changed == 1){
@@ -1165,7 +1172,10 @@ int extphy_bit_op(unsigned int reg, unsigned int val, int wr, unsigned int start
 		return -1;
 	}
 
-	ethctl.phy_addr = EXTPHY_ADDR;
+	if(nvram_get_int("ext_phy_model") == 1)
+		ethctl.phy_addr = EXTPHY_RTL_ADDR;
+	else
+		ethctl.phy_addr = EXTPHY_ADDR;
 	ethctl.phy_reg = reg;
 	ethctl.flags = ETHCTL_FLAG_ACCESS_EXT_PHY;
 

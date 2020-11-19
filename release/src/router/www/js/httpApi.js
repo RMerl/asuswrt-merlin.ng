@@ -400,7 +400,7 @@ var httpApi ={
 		else if(wanInfo.link_wan == ""){
 			retData.wanType = wanTypeList.check;
 		}
-		else if(wanInfo.link_wan == "0"){
+		else if(wanInfo.link_wan == "0" && (isSupport("gobi") || !hadPlugged("modem"))){
 			retData.wanType = wanTypeList.noWan;
 		}
 		else if(
@@ -414,19 +414,7 @@ var httpApi ={
 		else if( (wanInfo.wan0_state_t    == "2" && wanInfo.wan0_sbstate_t  == "0" && wanInfo.wan0_auxstate_t == "2") ||
 				 (wanInfo.wan0_state_t    == "2" && wanInfo.wan0_sbstate_t  == "0" && wanInfo.wan0_auxstate_t == "0")
 		){
-				retData.wanType = wanTypeList.dhcp;
-		}
-		else if(wanInfo.autodet_state == ""){
-			retData.wanType = wanTypeList.check;
-			if(this.detRetryCnt > 0){
-				this.detRetryCnt --;
-			}
-			else{
-				this.startAutoDet();
-				retData.isIPConflict = false;
-				retData.isError = false;
-				this.detRetryCnt = this.detRetryCnt_MAX;
-			}
+			retData.wanType = wanTypeList.dhcp;
 		}
 		else if(iCanUsePPPoE){
 			retData.wanType = wanTypeList.pppoe;

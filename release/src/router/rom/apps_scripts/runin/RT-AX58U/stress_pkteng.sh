@@ -4,9 +4,12 @@ echo "!!! ATE RUN-IN START !!!"
 
 # CPU (+ MEMORY ?)
 echo "start stress..."
-stress cpu -b 0 -t 30000 &
-stress cpu -b 1 -t 30000 &
-stress cpu -b 2 -t 30000 &
+CPU_cores=`grep -c processor /proc/cpuinfo`
+count=0
+while [ $count -lt $CPU_cores ]; do
+	stress cpu -b $count -t 30000 &
+	count=`expr $count + 1`
+done
 
 # 2G
 echo "start 2.4GHz pkteng..."

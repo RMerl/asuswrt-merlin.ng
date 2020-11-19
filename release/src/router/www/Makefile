@@ -86,6 +86,7 @@ ifneq ($(RTCONFIG_DSL),y)
 	cp $(TOP)/www/sysdep/BLUECAVE/www/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
 	cp $(TOP)/www/sysdep/BLUECAVE/www/mobile $(INSTALLDIR)/www/mobile -rf
 	cp $(TOP)/www/sysdep/BLUECAVE/www/require/modules/modem.js $(INSTALLDIR)/www/require/modules/ -rf
+	rm -rf $(INSTALLDIR)/www/images/New_ui/smart_connect_concept.gif
 ifneq ($(RTCONFIG_WIFI_SON),y)
 	rm -rf $(INSTALLDIR)/www/images/qis
 endif

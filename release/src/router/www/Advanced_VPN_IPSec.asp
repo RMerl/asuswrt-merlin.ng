@@ -329,10 +329,12 @@ function showipsec_clientlist() {
 			if(ipsec_client_list_json.hasOwnProperty(username)) {
 				var passwd = ipsec_client_list_json[username]["passwd"];
 				var ver = ipsec_client_list_json[username]["ver"];
+				if(ver == "2")
+					ver = "3";
 				if(ver != "3")
 					ver = "V" + ver;
 				else
-					ver = "Both";
+					ver = "V1&V2";
 				code +='<tr>';
 				if(username.length > 28) {
 					ipsec_user_name = username.substring(0, 26) + "...";
@@ -421,7 +423,7 @@ function addRow_Group(upper) {
 		var username_obj = document.form.ipsec_client_list_username;
 		username_obj.value = "";
 		password_obj.value = "";
-		ike_obj.value = "2"
+		ike_obj.value = "3";
 		showipsec_clientlist();
 	}
 }
@@ -1054,8 +1056,7 @@ function export_cert(_mode) {
 													<td width="30%">
 														<select name="ipsec_client_list_ike" onchange="" class="input_option">
 															<option value="1">V1</option>
-															<option value="2" selected="selected">V2</option>
-															<option value="3">Both</option><!-- untranslated -->
+															<option value="3" selected="selected">V1&V2</option>
 														</select>
 													</td>
 													<td width="10%">

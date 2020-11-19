@@ -935,15 +935,14 @@ rtkswitch_Port_phyStatus(unsigned int port_mask)
 	if (port_mask == 1U << LAN3_PORT) { /*PLC*/
 		if (status) {
 			/* CHECK PLC member ship here!! */
-			// TBD.
-			// TBD.
-			// TBD.
-			// TBD.
-			// TBD.
-			// TBD.
+			int num;
+			if((num = nvram_get_int("autodet_plc_state")) > 0)
+				status = 1;
+			else
+				status = 0;
 		}
 		///// temporarily disable PLC
-		if (!nvram_match("useplc", "1"))
+		if (nvram_match("notuseplc", "1"))
 			return 0;
 		if (nvram_get_int("shell_timeout") == 0)
 			return 0;
@@ -963,15 +962,15 @@ rtkswitch_Port_phyLinkRate(unsigned int port_mask)
 	if (port_mask == 1U << LAN3_PORT) { /*PLC*/
 		if (speed == 1000) {
 			/* CHECK PLC speed here!! */
-			// TBD.
-			// TBD.
-			// TBD.
-			// TBD.
-			// TBD.
-			// TBD.
+			int tx, rx;
+			tx = nvram_get_int("autodet_plc_tx");
+			rx = nvram_get_int("autodet_plc_rx");
+			speed = rx;
+			if ((tx = nvram_get_int("audodet_plc_rate")) > 0)
+				speed = tx;
 		}
 		///// temporarily disable PLC
-		if (!nvram_match("useplc", "1"))
+		if (nvram_match("notuseplc", "1"))
 			return 0;
 		if (nvram_get_int("shell_timeout") == 0)
 			return 0;

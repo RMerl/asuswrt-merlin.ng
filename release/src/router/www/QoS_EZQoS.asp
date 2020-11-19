@@ -648,7 +648,7 @@ function validForm(){
 			}
 
 			if(qos_xobw_orig > 0){
-				if((qos_xobw_orig/1024).toFixed(2) < document.form.obw.value){
+				if((qos_xobw_orig/1024).toFixed(2) < parseFloat(document.form.obw.value)){
 					alert("<#value_lower_than#> "+ (qos_xobw_orig/1024).toFixed(2));
 					document.form.obw.focus();
 					document.form.obw.select();
@@ -662,7 +662,7 @@ function validForm(){
 			if(mtwancfg_support) {
 
 				if(qos_xobw1_orig > 0){
-					if((qos_xobw1_orig/1024).toFixed(2) < document.form.obw1.value){
+					if((qos_xobw1_orig/1024).toFixed(2) < parseFloat(document.form.obw1.value)){
 						alert("<#value_lower_than#> "+(qos_xobw1_orig/1024).toFixed(2));
 						document.form.obw1.focus();
 						document.form.obw1.select();

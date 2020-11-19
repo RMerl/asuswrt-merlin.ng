@@ -63,6 +63,12 @@ function initial(){
 }
 
 function validForm(){
+
+	if(!validator.isValidHost(document.form.destIP.value)){
+		document.form.destIP.focus();
+		return false;
+	}
+
 	if(document.form.cmdMethod.value == "ping"){
 		if(!validator.range(document.form.pingCNT, 1, 99))
 			return false;

@@ -15,6 +15,7 @@ extern int getPLC_MAC(char *abuf);
 extern int getPLC_NMK(char *abuf);
 extern int getPLC_PWD(void);
 extern char *get_plc_ifname(char ifname[]);
+extern int current_nmk(char *nmk);
 #ifdef PLAX56_XP4
 #define PLC_INTERFACE	"eth1"
 #endif
@@ -46,6 +47,7 @@ extern void save_plc_setting(void);
 
 extern void turn_led_pwr_off(void);
 
+#endif	/* PLC_UTILS */
 struct remote_plc {
 	char mac[18];
 	char pwd[20];
@@ -63,6 +65,11 @@ extern int get_connected_plc(struct remote_plc **rplc);
 extern int get_known_plc(struct remote_plc **rplc);
 extern int trigger_plc_pair(void);
 extern int add_remote_plc(char *mac, char *pwd);
+extern int chk_plc_alive(void);
+extern void do_plc_reset(int force);
+extern int plctool_get(const char *cmd, char buf[], int size, const char *chk_str);
+extern int plc_wait_busy(void);
+extern int do_plc_pushbutton(int pb_act);
+extern int get_plc_pb_state(void);
 
-#endif	/* PLC_UTILS */
 #endif /* _plc_utils_h_ */

@@ -352,6 +352,7 @@ RTCONFIG_HAS_5G=y
 # RTCONFIG_ROG is not set
 # RTCONFIG_ROG_UI is not set
 # RTCONFIG_GEOIP is not set
+# RTCONFIG_GEOIP_EG is not set
 # RTCONFIG_TRANSMISSION is not set
 RTCONFIG_TCODE=y
 # RTCONFIG_LACP is not set

@@ -292,6 +292,7 @@ enum {
 	ASUSCTRL_DFS_BAND3,
 	ASUSCTRL_CHG_PWR,
 	ASUSCTRL_CHG_SKU,
+	ASUSCTRL_EG_MODE,
 	ASUSCTRL_MAX
 };
 #endif
@@ -430,9 +431,7 @@ extern char *get_userdns_r(const char *prefix, char *buf, size_t buflen);
 
 extern int asus_ctrl_en(int cid);
 
-#if defined(RTCONFIG_BROOP) || defined(RTCONFIG_AMAS_ETHDETECT)
 int is_bridged(const char *brif, const char *ifname);
-#endif
 #ifdef RTCONFIG_BROOP
 int netlink_broop(char ctrl, int val);
 int detect_broop();

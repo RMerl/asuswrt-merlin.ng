@@ -13,6 +13,7 @@
 #include <iwlib.h>
 #include "utils.h"
 #include "shutils.h"
+#include "flash_mtd.h"
 #include <shared.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
@@ -1307,6 +1308,17 @@ static void set_nss_power_save_mode(void)
 
 void set_power_save_mode(void)
 {
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+	uint32_t val;
+
+	if (!nvram_match("pwrsave_mode", "0")
+	 && !FRead((unsigned char*)&val, OFFSET_L2CEILING, sizeof(val))) {
+		if (val == UINT32_MAX)
+			val = 0;
+		if (val > 0)
+			nvram_set("pwrsave_mode", "0");
+	}
+#endif
 	set_cpu_power_save_mode();
 	set_nss_power_save_mode();
 }
@@ -1930,6 +1942,52 @@ cprintf("## %s(): ret(%d) ap_addr(%02x:%02x:%02x:%02x:%02x:%02x)\n", __func__, r
 	return 1;
 }
 
+
+#if defined(RTCONFIG_BCN_RPT)
+int save_wlxy_mac(char *mode, char* ifname)
+{
+	char cmdbuf[20],buf[1024];
+ 	FILE *fp;
+        int len;
+        char *pt1,*pt2;
+	int x,y;
+	char prefix[sizeof("wlXXXXXXXXXXXXX_")];
+	x=-1;y=-1;
+	if(!strcmp(mode,"ap"))
+	{
+		get_wlif_unit(ifname,&x,&y);
+		if(x!=-1 && y>0)
+		{
+			snprintf(prefix, sizeof(prefix), "wl%d.%d_hwaddr", x,y);
+			snprintf(cmdbuf, sizeof(cmdbuf), "ifconfig %s", ifname);
+			fp = popen(cmdbuf, "r");
+			pt1=NULL;
+			pt2=NULL;
+        		if (fp) {
+                		memset(buf, 0, sizeof(buf));
+                		len = fread(buf, 1, sizeof(buf), fp);
+                		pclose(fp);
+                		if (len > 1) {
+                        		buf[len-1] = '\0';
+                        		pt1 = strstr(buf, "HWaddr ");
+                        		if (pt1)
+                        		{
+                                		pt2 = pt1 + strlen("HWaddr ");
+                                		*(pt2+17)='\0';
+					}
+				}	
+                        }
+			if(pt2 && strlen(pt2)==17)
+			{	
+				_dprintf("%s=%s\n",prefix,pt2);
+				nvram_set(prefix,pt2);
+			}	
+		}
+	}			
+}
+#endif	
+
+
 #if defined(RTCONFIG_CFG80211)
 /**
  * Get PHY name of a cfg80211 based VAP interface.
@@ -2016,6 +2074,10 @@ int create_vap(char *ifname, int unit, char *mode)
 	if (!strcmp(mode, "sta"))
 		eval("iw", "dev", ifname, "set", "4addr", "on");
 #endif
+
+#if defined(RTCONFIG_BCN_RPT)
+	save_wlxy_mac(mode,ifname);
+#endif	
 
 	return 0;
 }

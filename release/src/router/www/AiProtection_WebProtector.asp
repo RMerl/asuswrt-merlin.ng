@@ -226,7 +226,7 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 	}
 }
 
-function addRow_main(obj, length){
+function addRow_main(obj){
 	var category_array = $(obj.parentNode).siblings()[2].children;
 	var subCategory_array;
 	var category_checkbox;
@@ -236,7 +236,7 @@ function addRow_main(obj, length){
 	var blank_category = 0;
 	var apps_filter_row =  apps_filter.split("<");
 	var apps_filter_col = "";
-	var upper = 16;
+	var upper = MaxRule_bwdpi_wrs>0?MaxRule_bwdpi_wrs:16;
 
 	//check max limit of rule list
 	if(apps_filter.split("<").length >= upper){
@@ -334,7 +334,7 @@ function genMain_table(){
 	var clientListEventData = [];
 	code += '<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="mainTable_table">';
 	code += '<thead><tr>';
-	code += '<td colspan="5"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;16)</td>';
+	code += '<td colspan="5"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;'+MaxRule_bwdpi_wrs+')</td>';
 	code += '</tr></thead>';
 	code += '<tbody>';
 	code += '<tr>';
@@ -370,7 +370,7 @@ function genMain_table(){
 	}
 
 	code += '</td>';
-	code += '<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onclick="addRow_main(this, 16)" value=""></td>';
+	code += '<td style="border-bottom:2px solid #000;"><input class="add_btn" type="button" onclick="addRow_main(this)" value=""></td>';
 	code += '</tr>';
 	if(apps_filter == ""){
 		code += '<tr><td style="color:#FFCC00;" colspan="10"><#IPConnection_VSList_Norule#></td></tr>';

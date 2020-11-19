@@ -98,6 +98,7 @@ COMMON_OBJS += chmgmt.o
 endif
 COMMON_OBJS += encrypt.o cfg_crc.o cfg_udp.o cfg_dencrypt.o cfg_common.o cfg_ipc.o cfg_wevent.o cfg_upgrade.o cfg_clientlist.o cfg_sched.o cfg_slavelist.o
 COMMON_OBJS += cfg_capability.o cfg_action.o cfg_eventnotify.o
+COMMON_OBJS += cfg_ctrllist.o
 ifeq ($(RTCONFIG_DWB),y)
 COMMON_OBJS += cfg_dwb.o
 endif

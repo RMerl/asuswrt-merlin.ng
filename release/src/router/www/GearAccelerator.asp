@@ -102,21 +102,31 @@ body{
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/form.js"></script>
+<script type="text/javascript" src="/js/asus_eula.js"></script>
 
 <script>
 var fc_disable_orig = '<% nvram_get("fc_disable"); %>';
 var runner_disable_orig = '<% nvram_get("runner_disable"); %>';
 var ctf_disable = '<% nvram_get("ctf_disable"); %>';
 var ctf_fa_mode = '<% nvram_get("ctf_fa_mode"); %>';
-
 function initial(){
 	show_menu();
 
-	if((document.form.qos_enable.value == '1') && (document.form.qos_type.value == '0')){
-		document.getElementById("game_priority_enable").checked = true;
+	if(adaptiveqos_support){
+		if(document.form.qos_enable.value == '1' && document.form.qos_type.value == '1'){
+			document.getElementById("game_priority_enable").checked = true;
+		}
+		else{
+			document.getElementById("game_priority_enable").checked = false;
+		}
 	}
 	else{
-		document.getElementById("game_priority_enable").checked = false;
+		if(document.form.rog_enable.value == '1' && document.form.qos_type.value == '0'){
+			document.getElementById("game_priority_enable").checked = true;
+		}
+		else{
+			document.getElementById("game_priority_enable").checked = false;
+		}
 	}
 
 	setTimeout("showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 500);
@@ -145,7 +155,14 @@ function pullLANIPList(obj){
 	else
 		hideClients_Block();
 }
-var gameList = '<% nvram_get("rog_clientlist"); %>'.replace(/&#60/g, "<");;
+
+if(adaptiveqos_support){
+	var gameList = '<% nvram_get("bwdpi_game_list"); %>'.replace(/&#60/g, "<");
+}
+else{
+	var gameList = '<% nvram_get("rog_clientlist"); %>'.replace(/&#60/g, "<");
+}
+
 function genGameList(){
 	var list_array = gameList.split('<');
 	var code = '';
@@ -217,19 +234,24 @@ function addGameList(){
 	}
 
 	gameList = '<' + mac + gameList;
-	$.ajax({
-		url: '/rog_first_qos.cgi',
-		dataType: 'json',
-		data: {
-			rog_mac: mac,
-			action: 'add'
-		},
-		error: function(){},
-		success: function(response){
-			genGameList();
-		}
-	});
-
+	if(adaptiveqos_support){
+		genGameList();
+	}
+	else{
+		$.ajax({
+			url: '/rog_first_qos.cgi',
+			dataType: 'json',
+			data: {
+				rog_mac: mac,
+				action: 'add'
+			},
+			error: function(){},
+			success: function(response){
+				genGameList();
+			}
+		});
+	}
+	
 	setTimeout("showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 500);
 }
 
@@ -244,18 +266,23 @@ function delGameList(target){
 	}
 
 	gameList = temp;
-	$.ajax({
-		url: '/rog_first_qos.cgi',
-		dataType: 'json',
-		data: {
-			rog_mac: mac,
-			action: 'delete'
-		},
-		error: function(){},
-		success: function(response){
-			genGameList();
-		}
-	});
+	if(adaptiveqos_support){
+		genGameList();
+	}
+	else{
+		$.ajax({
+			url: '/rog_first_qos.cgi',
+			dataType: 'json',
+			data: {
+				rog_mac: mac,
+				action: 'delete'
+			},
+			error: function(){},
+			success: function(response){
+				genGameList();
+			}
+		});
+	}
 
 	setTimeout("showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 500);
 }
@@ -270,57 +297,107 @@ function hideGameListField(){
 }
 
 function enableGamePriority(){
-	if(document.form.qos_enable.value == '0'){		// OFF -> ON
-		if(document.form.qos_obw.value == '0' || document.form.qos_obw.value == ''){
-			document.form.qos_obw.disabled = false;
-			document.form.qos_obw.value = '2048000';
-		}
-
-		if(document.form.qos_ibw.value == '0' || document.form.qos_ibw.value == ''){
-			document.form.qos_ibw.disabled = false;
-			document.form.qos_ibw.value = '1024000';
-		}
-	}
-	
-	if(document.getElementById("game_priority_enable").checked){
-		document.form.qos_enable.value = '1';
-		document.form.qos_type.value = '0';
-		document.form.action_script.value = 'reboot';
-
-		if(document.form.qos_type.value == 0 && !lantiq_support){
-			FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-		}
-	}
-	else{
-		document.form.qos_enable.value = '0';
-	}
-
-	if(ctf_disable == 1 || (fc_disable_orig != '' && runner_disable_orig != '')){
-		document.form.action_script.value = "restart_qos;restart_firewall";
-	}
-	else{
-		if(ctf_fa_mode == "2"){
-			FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+	if(adaptiveqos_support){
+		if(document.form.qos_enable.value == "0" && document.form.TM_EULA.value == "0"){
+			ASUS_EULA
+				.config(eula_confirm, cancel)
+				.show("tm");
 		}
 		else{
-			if(document.form.qos_type.value == 0 && !lantiq_support){
-				FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
-			}	
+			if(document.getElementById("game_priority_enable").checked){
+				document.form.qos_enable.value = '1';
+				document.form.qos_type.value = '1';	
+			}
 			else{
+				document.form.qos_enable.value = '0';
+			}
+
+			if(ctf_disable == 1 || (fc_disable_orig != '' && runner_disable_orig != '')){
 				document.form.action_script.value = "restart_qos;restart_firewall";
 			}
+			else{
+				if(ctf_fa_mode == "2"){
+					FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+				}
+				else{
+					document.form.action_script.value = "restart_qos;restart_firewall";		
+				}
+			}
+
+			if(reset_wan_to_fo.change_status)
+				reset_wan_to_fo.change_wan_mode(document.form);
+
+			document.form.bwdpi_game_list.disabled = false;
+			document.form.bwdpi_game_list.value = gameList;	
+			document.form.submit();
 		}
 	}
+	else{
+		if(document.form.rog_enable.value == '0'){		// OFF -> ON
+			if(document.form.qos_obw.value == '0' || document.form.qos_obw.value == ''){
+				document.form.qos_obw.disabled = false;
+				document.form.qos_obw.value = '2048000';
+			}
 
-	if(reset_wan_to_fo.change_status)
-		reset_wan_to_fo.change_wan_mode(document.form);
+			if(document.form.qos_ibw.value == '0' || document.form.qos_ibw.value == ''){
+				document.form.qos_ibw.disabled = false;
+				document.form.qos_ibw.value = '1024000';
+			}
+		}
+	
+		if(document.getElementById("game_priority_enable").checked){
+			document.form.rog_enable.value = '1';
+			document.form.qos_enable.value = '0';
+			document.form.qos_type.value = '0';
+			document.form.action_script.value = 'reboot';
 
-		
-	document.form.submit();
+			if(document.form.qos_type.value == 0 && !lantiq_support){
+				FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+			}
+		}
+		else{
+			document.form.rog_enable.value = '0';
+		}
+
+		if(ctf_disable == 1 || (fc_disable_orig != '' && runner_disable_orig != '')){
+			document.form.action_script.value = "restart_qos;restart_firewall";
+		}
+		else{
+			if(ctf_fa_mode == "2"){
+				FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+			}
+			else{
+				if(document.form.qos_type.value == 0 && !lantiq_support){
+					FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+				}	
+				else{
+					document.form.action_script.value = "restart_qos;restart_firewall";
+				}
+			}
+		}
+
+		if(reset_wan_to_fo.change_status)
+			reset_wan_to_fo.change_wan_mode(document.form);
+
+		document.form.submit();
+	}
+}
+
+function eula_confirm(){
+	document.form.TM_EULA.value = 1;
+	enableGamePriority();
+}
+
+function cancel(){
+	refreshpage();
 }
 
 function applyRule(){
 	showLoading();
+	if(adaptiveqos_support){
+		document.form.bwdpi_game_list.disabled = false;
+		document.form.bwdpi_game_list.value = gameList;
+	}
 	document.form.submit();
 }
 </script>
@@ -353,6 +430,9 @@ function applyRule(){
 <input type="hidden" name="qos_type" value="<% nvram_get("qos_type"); %>">
 <input type="hidden" name="qos_obw" value="<% nvram_get("qos_obw"); %>" disabled>
 <input type="hidden" name="qos_ibw" value="<% nvram_get("qos_ibw"); %>" disabled>
+<input type="hidden" name="bwdpi_game_list" value="<% nvram_get("bwdpi_game_list"); %>" disabled>
+<input type="hidden" name="TM_EULA" value="<% nvram_get("TM_EULA"); %>">
+<input type="hidden" name="rog_enable" value="<% nvram_get("rog_enable"); %>">
 </form>
 
 <table class="content" align="center" cellspacing="0" style="margin:auto;">

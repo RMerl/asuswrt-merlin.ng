@@ -1738,6 +1738,28 @@ function display_manage_block(){
 				$conn_priority_select_obj.children().remove().end();
 				var eap_flag = false;
 				var support_eth_num = 0;
+				var conn_priority_hint_array = {
+					"auto": {
+						"title":"<#Auto#>",
+						"desc":"<#AiMesh_Node_ConnPrio_Auto_Desc#>",
+						"support":false
+					},
+					"eth": {
+						"title":"<#AiMesh_Node_ConnPrio_Eth_First_Title#>",
+						"desc":"The system will prioritize #CONNTYPE connection. It will switch to Wi-Fi backhaul when #CONNTYPE connection is no longer available.".replace(/#CONNTYPE/g, "<#wan_ethernet#>"),/* untranslated */
+						"support":false
+					},
+					"wifi": {
+						"title":"Wi-Fi first",/* untranslated */
+						"desc":"The system will always prioritize Wi-Fi backhaul connection even when Ethernet backhaul is available.",/* untranslated */
+						"support":false
+					},
+					"plc": {
+						"title":"Powerline first",/* untranslated */
+						"desc":"The system will prioritize #CONNTYPE connection. It will switch to Wi-Fi backhaul when #CONNTYPE connection is no longer available.".replace(/#CONNTYPE/g, "Powerline"),/* untranslated */
+						"support":false
+					}
+				};
 				if(isSupport("amas_eap")){
 					var amas_eap_bhmode = httpApi.nvramGet(["amas_eap_bhmode"]).amas_eap_bhmode;
 					if(amas_eap_bhmode != "0" && amas_eap_bhmode != "")
@@ -1747,8 +1769,9 @@ function display_manage_block(){
 				var option_array = gen_conn_priority_select_option(specific_node_data, eap_flag);
 				option_array.forEach(function(item, index, array) {
 					$conn_priority_select_obj.append($("<option/>").attr({"value": item.value, "conn_type": item.conn_type}).text(item.text));
-					if(item.conn_type == "eth")
+					if(item.conn_type != "auto" && item.conn_type != "wifi")
 						support_eth_num++;
+					conn_priority_hint_array[item.conn_type].support = true;
 				});
 
 				if($conn_priority_select_obj.children("option[value="+connection_priority.value+"]").length > 0)
@@ -1767,29 +1790,29 @@ function display_manage_block(){
 					data.amas_ethernet = $conn_priority_select_obj.val();
 					manage_set_config(data, specific_node_data.mac);
 				});
-				$("#manage_block").find(".manage_conn_priority").find(".hover_pop_hint_bg").remove();
-				var conn_priority_hint = "";
-				conn_priority_hint += $("<span>").addClass("conn_priority_title").html("<#Auto#>")[0].outerHTML;
-				conn_priority_hint += "<br>";
-				conn_priority_hint += $("<span>").addClass("conn_priority_content").html("<#AiMesh_Node_ConnPrio_Auto_Desc#>")[0].outerHTML;
-
-				if(select_node_capability.wans_cap_wan){
-					conn_priority_hint += "<div class='height_space'></div>";
-					conn_priority_hint += $("<span>").addClass("conn_priority_title").html("<#AiMesh_Node_ConnPrio_Eth_First_Title#>")[0].outerHTML;
-					conn_priority_hint += "<br>";
-					conn_priority_hint += $("<span>").addClass("conn_priority_content").html("<#AiMesh_Node_ConnPrio_Eth_First_Desc#>")[0].outerHTML;
-				}
-				else{
+				if(!select_node_capability.wans_cap_wan){
 					$conn_priority_select_obj.children("option[conn_type='eth']").remove();
 					$conn_priority_select_obj.val(3);
+					conn_priority_hint_array["eth"]["support"] = false;
 				}
+				$("#manage_block").find(".manage_conn_priority").find(".hover_pop_hint_bg").remove();
+				var conn_priority_hint = "";
+				$.each(conn_priority_hint_array, function( index, value ) {
+					if(value["support"]){
+						if(conn_priority_hint != "")
+							conn_priority_hint += "<div class='height_space'></div>";
+						conn_priority_hint += $("<span>").addClass("conn_priority_title").html(value["title"])[0].outerHTML;
+						conn_priority_hint += "<br>";
+						conn_priority_hint += $("<span>").addClass("conn_priority_content").html(value["desc"])[0].outerHTML;
+					}
+				});
 
 				if(eap_flag) {
 					conn_priority_hint += "<div class='height_space'></div>";
 					conn_priority_hint += $("<span>").addClass("conn_priority_content text_yellow").html("* <#AiMesh_Node_ConnPrio_EAP_Enabled01#> <#AiMesh_Node_ConnPrio_EAP_Enabled02#>")[0].outerHTML;
 					if(support_eth_num <= "1") {//only one eth
 						$conn_priority_select_obj.attr("disabled", true);
-						$conn_priority_select_obj.children("option:selected").html("<#AiMesh_Node_ConnPrio_Eth_Only_Title#>");
+						$conn_priority_select_obj.children("option").removeAttr("selected").filter("[conn_type=eth]:first").prop("selected", true);
 					}
 					else
 						$conn_priority_select_obj.attr("disabled", false);
@@ -2173,13 +2196,35 @@ function manage_set_reconnect_control(_node_info){
 	var re_reconnect_mode = "";
 	var timeout = 5;
 	var count = 10;
-
+	var show_eth_backhaul_hint = false;
+	var show_hint = function(_hint){
+		$("#aimesh_hint_msg").empty();
+		$("#aimesh_hint_msg").append(popup_hint_api.get_component_text());
+		$("#aimesh_hint_msg").append(popup_hint_api.get_component_action());
+		$("#aimesh_hint_msg .hint_text").html(_hint);
+		$("#aimesh_hint_msg #action_canacl").hide();
+		$("#aimesh_hint_msg #action_ok").show();
+		$("#aimesh_hint_msg #action_ok").unbind("click");
+		$("#aimesh_hint_msg #action_ok").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			$("#aimesh_hint_msg").hide();
+		});
+		$("#aimesh_hint_msg").show();
+		adjust_panel_block_top("aimesh_hint_msg", 100);
+	};
+	if(aimesh_data.cfg_clientlist.length == "1"){
+		var hint = "This function optimizes your network only when there are node(s) existing and using wireless connection.";/* untranslated */
+		show_hint(hint);
+		return false;
+	}
 	if(_node_info == "all"){
 		re_reconnect_flag = "all";
 		re_reconnect_mode = "all";
 		check_format = true;
 		if(cookie.get("AiMesh_never_ask_optimization") == "1")
 			never_ask = true;
+		show_eth_backhaul_hint = all_node_is_eth_backhaul;
 	}
 	else if(validator.mac_addr(_node_info.mac)){
 		re_reconnect_flag = _node_info.mac;
@@ -2188,6 +2233,15 @@ function manage_set_reconnect_control(_node_info){
 		nvramSet_obj.device_list = _node_info.mac.toUpperCase();
 		//if(cookie.get("AiMesh_never_ask_reconnect_node") == "1")
 			never_ask = true;
+		if(_node_info.re_path == "1" || _node_info.re_path == "16" || _node_info.re_path == "32" || _node_info.re_path == "64")
+			show_eth_backhaul_hint = true;
+	}
+
+	if(show_eth_backhaul_hint){
+		var hint = "Currently your AiMesh system is built with hardwired connection. This function helps to optimize your network only when using a wireless connection.";/* untranslated */
+		show_hint(hint);
+		re_reconnect_flag = "";
+		return false;
 	}
 
 	if(check_format){
@@ -2232,6 +2286,7 @@ function manage_set_reconnect_control(_node_info){
 				e = e || event;
 				e.stopPropagation();
 				$("#aimesh_hint_msg").hide();
+				re_reconnect_flag = "";
 			});
 			$("#aimesh_hint_msg #action_ok").show();
 			$("#aimesh_hint_msg #action_ok").unbind("click");
@@ -2788,6 +2843,7 @@ function client_list_refresh(){
 	genClientList();
 }
 function jstree_refresh(){
+	all_node_is_eth_backhaul = true;
 	client_get_client_date();
 	$('#jstree').jstree(true).settings.core.data = get_topology_data();
 	$('#jstree').jstree(true).refresh();
@@ -2825,6 +2881,7 @@ var current_client_click_type = "all";
 var cap_mac = "";
 var select_node_capability = {};
 var node_not_support_feature = [];
+var all_node_is_eth_backhaul = true;
 function initial_AiMesh(){
 	clearInterval(interval_tree_update);
 	httpApi.nvramSet({"action_mode": "firmware_check"});
@@ -2915,10 +2972,14 @@ function initial_AiMesh(){
 				else if(specific_node_data.re_path == "2"){
 					$node_connect_type.addClass("wireless wl_2g");
 					$(el).attr("custom_connect_type", "wireless");
+					if(node.parent != "#")
+						all_node_is_eth_backhaul = false;
 				}
 				else{
 					$node_connect_type.addClass("wireless wl_5g");
 					$(el).attr("custom_connect_type", "wireless");
+					if(node.parent != "#")
+						all_node_is_eth_backhaul = false;
 				}
 
 				var location = transform_location(node_mac, specific_node_data);
@@ -3033,6 +3094,8 @@ function initial_AiMesh(){
 		$connect_line_info_bg.append(gen_line_info("wired", "weak", "<#AiMesh_Topology_Line_Wired_Normal#>"));
 		$connect_line_info_bg.append(gen_line_info("wireless", "great", "<#AiMesh_Topology_Line_WiFi_Great#>"));
 		$connect_line_info_bg.append(gen_line_info("wireless", "weak", "<#AiMesh_Topology_Line_WiFi_Weak#>"));
+		$connect_line_info_bg.append(gen_line_info("plc", "great", "Powerline connection with good signal quality"));/* untranslated */
+		$connect_line_info_bg.append(gen_line_info("plc", "weak", "Powerline connection with weak signal quality"));/* untranslated */
 		$connect_line_info_bg.append(gen_line_info("", "disconnected", "<#Disconnected#>"));
 		var $faq = $("<div>");
 		$faq.addClass("faq_bg");
@@ -3237,11 +3300,11 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 
 	option_array.push(gen_option_attr("3", ((_eap_flag) ? "<#Auto#> (<#AiMesh_Node_ConnPrio_Eth_Based_Title#>)" : "<#Auto#>"), "auto"));
 
-	var port_mapping = [{value:"1", text:"WAN"}, {value:"2", text:"LAN"}];
-	var interface_mapping = [{value:"1", text:"Ethernet"}, {value:"2", text:"Wireless"}, {value:"3", text:"Power Line"}];
+	var port_mapping = [{value:"1", text:"WAN"}, {value:"2", text:"LAN"}];//Def
+	var interface_mapping = [{value:"1", text:"Ethernet"}, {value:"2", text:"Wi-Fi"}, {value:"3", text:"Powerline"}];//Type
 	var eth_rate_mapping = [{value:"1", text:"10M"}, {value:"2", text:"100M"}, {value:"3", text:"1G"}, {value:"4", text:"2.5G"}, {value:"5", text:"5G"},
-		{value:"6", text:"10G base-T"}, {value:"7", text:"10G SFP+"}];
-	var wifi_rate_mapping = [{value:"1", text:"2.4G"}, {value:"2", text:"5G"}, {value:"3", text:"6G"}];
+		{value:"6", text:"10G base-T"}, {value:"7", text:"10G SFP+"}];//SubType
+	var wifi_rate_mapping = [{value:"1", text:"2.4G"}, {value:"2", text:"5G"}, {value:"3", text:"6G"}];//SubType
 
 	if("capability" in _node_info){
 		if("21" in _node_info.capability) {
@@ -3273,18 +3336,20 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 								conn_type = "eth";
 								break;
 							case "2":
-								if_text = "Wireless";
+								if_text = if_type.text;
 								rate_type =  wifi_rate_mapping.filter(function(item, index, _array){
 									return (item.value == port_obj.SubType);
 								})[0];
 								conn_type = "wifi";
 								break;
+							case "3":
+								if_text = if_type.text;
+								conn_type = "plc";
+								break;
 						}
-						if(rate_type != undefined)
+						if(rate_type != undefined && rate_type != "")
 							rate_text = rate_type.text;
 					}
-					if(rate_text == "" || if_text == "")
-						return true;
 
 					var option_value = port_obj.amas_ethernet;
 					var option_text = rate_text + " " + if_text;
@@ -3292,6 +3357,8 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 					if(idx_text != "0")
 						option_text += idx_text;
 					option_text += " " + eap_text;
+					if(_eap_flag && conn_type == "wifi")
+						return true;
 					option_array.push(gen_option_attr(option_value, option_text, option_conn_type));
 				});
 			}

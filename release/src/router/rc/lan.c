@@ -1353,13 +1353,14 @@ void start_lan(void)
 				if (get_role()==0) // CAP
 				{
 					char vif[15];
+					int len;
 					if (strcmp(CONFIGURED_WAN_NIC, DEFAULT_WAN_NIC)==0)
-						sprintf(vif,"%s",DEFAULT_LAN_NIC);
+						len = sprintf(vif,"%s",DEFAULT_LAN_NIC);
 					else
-						sprintf(vif,"%s",DEFAULT_WAN_NIC);
+						len = sprintf(vif,"%s",DEFAULT_WAN_NIC);
 
 					eval("vconfig", "add",vif,"55");
-					sprintf(vif,"%s.55",vif);
+					sprintf(vif +len,".55");
 					eval("ifconfig",vif,"up");
 					eval("brctl","addif",BR_GUEST,vif);
 				}
@@ -2289,8 +2290,10 @@ _dprintf("nat_rule: stop_nat_rules 1.\n");
 	wgn_check_avalible_brif();
 	wgn_start();
 #if defined(RTCONFIG_QCA)
+	extern int wgn_process(void);
        wgn_process();
 #endif
+	start_amas_lldpd();
 #endif	
 
 #ifdef RTCONFIG_ALPINE
@@ -2547,6 +2550,7 @@ skip_br:
 #endif
 #ifdef RTCONFIG_AMAS_WGN
 	wgn_stop();
+	start_amas_lldpd();
 #endif	
 
 #ifdef RTCONFIG_BCMWL6
@@ -2658,6 +2662,12 @@ void hotplug_net(void)
 	if (!(interface = getenv("INTERFACE")) ||
 	    !(action = getenv("ACTION")))
 		return;
+#if defined(PLAX56_XP4)
+	if (!strcmp(interface, "eth0")) // XP4 use eth1-eth4
+		return;
+	else if (nvram_match("HwId", "B") && !strcmp(interface, "eth4")) // Node have no eth4
+		return;
+#endif
 #if defined(RTCONFIG_HND_ROUTER) && defined(RTCONFIG_DPSTA)
 	link = getenv("LINK");
 	_dprintf("hotplug net INTERFACE=%s ACTION=%s LINK=%s\n", interface, action, link);
@@ -3783,16 +3793,17 @@ lan_up(char *lan_ifname)
 	start_dnsmasq();
 
 #ifdef RTCONFIG_REDIRECT_DNAME
+	if (nvram_invmatch("redirect_dname", "0")
 #ifdef RTCONFIG_REALTEK
-	if(access_point_mode() 
+	&& (access_point_mode()
 #ifdef RTCONFIG_AMAS
 	|| re_mode()
 #endif
 	)
 #else
-	if(sw_mode() == SW_MODE_AP)
+	&& sw_mode() == SW_MODE_AP
 #endif
-	{
+	) {
 		redirect_nat_setting();
 		int evalRet = eval("iptables-restore", NAT_RULES);
 		rule_apply_checking("lan", __LINE__, NAT_RULES, evalRet);
@@ -3938,16 +3949,17 @@ lan_up(char *lan_ifname)
 #endif
 
 #ifdef RTCONFIG_REDIRECT_DNAME
+	if (nvram_invmatch("redirect_dname", "0")
 #ifdef RTCONFIG_REALTEK
-	if(access_point_mode()
+	&& (access_point_mode()
 #ifdef RTCONFIG_AMAS
 		|| re_mode()
 #endif
 	)
 #else
-	if(sw_mode() == SW_MODE_AP)
+	&& sw_mode() == SW_MODE_AP
 #endif
-	{
+	) {
 		redirect_nat_setting();
 		int evalRet = eval("iptables-restore", NAT_RULES);
 		rule_apply_checking("lan", __LINE__, NAT_RULES, evalRet);
@@ -4271,6 +4283,7 @@ gmac3_no_swbr:
 #endif
 #ifdef RTCONFIG_AMAS_WGN
 	wgn_stop();
+	start_amas_lldpd();
 #endif	
 
 #ifdef RTCONFIG_BCMWL6
@@ -4963,6 +4976,7 @@ gmac3_no_swbr:
 	wgn_check_subnet_conflict();
 	wgn_check_avalible_brif();
 	wgn_start();
+	start_amas_lldpd();
 #endif	
 #ifdef RTCONFIG_BCMWL6
 	set_acs_ifnames();

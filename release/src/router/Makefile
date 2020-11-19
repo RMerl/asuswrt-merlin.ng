@@ -340,6 +340,9 @@ export CONFIG_MBO_AP=y
 ifeq ($(RTCONFIG_WIFI6E),y)
 export BUILD_43684C0 := y
 endif
+ifeq ($(BUILD_NAME), GT-AX11000)
+export BUILD_43684_COMBO := y
+endif
 #only if 4908 platform
 ifeq ($(BRCM_CHIP),4908)
 export CONFIG_CSIMOND := y
@@ -650,7 +653,7 @@ endif
 endif
 obj-$(RTCONFIG_DHDAP) += dhd
 ifeq ($(wildcard $(SRCBASE_DHD)/dongle/sysdeps),)
-obj-$(RTCONFIG_DHDAP) += $(if $(or $(RTCONFIG_BCM7),$(RTCONFIG_HND_ROUTER_AX_675X)),pciefd)
+obj-$(RTCONFIG_DHDAP) += $(if $(or $(RTCONFIG_BCM7),$(RTCONFIG_HND_ROUTER_AX),$(RTCONFIG_HND_ROUTER_AX_675X)),pciefd)
 endif
 
 ifeq ($(or $(RTCONFIG_BCM_7114),$(HND_ROUTER)),y)
@@ -5618,7 +5621,7 @@ udev-install: udev
 	$(MAKE) -C udev DESTDIR=$(INSTALLDIR) prefix=/udev install-udevtrigger
 
 hotplug2:
-	$(MAKE) -C $@ CROSS_COMPILE=$(CROSS_COMPILE) EXTRACFLAGS="$(EXTRACFLAGS)"
+	$(MAKE) -C $@ CROSS_COMPILE=$(CROSS_COMPILE) EXTRACFLAGS="$(EXTRACFLAGS) $(if $(and $(RTCONFIG_QCA),$(RTCONFIG_MUSL_LIBC)),-DQCAMUSL,)"
 
 hotplug2-install: hotplug2
 	$(MAKE) -C hotplug2 install PREFIX=$(INSTALLDIR)/hotplug2 SUBDIRS=""

@@ -101,6 +101,11 @@ int is_wps_stopped(void)
 	int wps_enrollee_band = nvram_match("wifison_ready", "1") ? 1 : 0;
 #endif
 
+#ifdef RTCONFIG_QCA_PLC2
+	if (nvram_invmatch("wlready", "1"))
+		return 1;	// wifi not ready = stop
+#endif
+
 	i = 0;
 	strcpy(ifnames, nvram_safe_get("wl_ifnames"));
 	foreach (word, ifnames, next) {
@@ -112,11 +117,18 @@ int is_wps_stopped(void)
 		}
 		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
 		snprintf(prefix, sizeof(prefix), "wl%d_", i);
+#ifdef RTCONFIG_QCA_PLC2
+		if (get_radio_status(word) == 0) {
+			++i;
+			continue;
+		}
+#else
 		if (!__need_to_start_wps_band(prefix) || nvram_match(strcat_r(prefix, "radio", tmp), "0")) {
 			ret = 0;
 			++i;
 			continue;
 		}
+#endif
 
 #ifdef RTCONFIG_WPS_ENROLLEE
 		if (nvram_match("wps_enrollee", "1")) {
@@ -165,11 +177,17 @@ int is_wps_stopped(void)
 			ret = 1;
 		}
 		else if (!strcmp(status, "Failed") 
+				|| !strcmp(status, "Timed-out")
+				|| !strcmp(status, "Overlap")
 #ifdef RTCONFIG_WPS_ENROLLEE
 				|| !strcmp(status, "INACTIVE")
 #endif
 		) {
 			dbG("\nWPS %s\n", status);
+			ret = 1;
+		}
+		else if (!strcmp(status, "Idle")
+			) {
 			ret = 1;
 		}
 		else

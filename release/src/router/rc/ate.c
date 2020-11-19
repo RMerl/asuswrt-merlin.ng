@@ -614,7 +614,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 					eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a835", "0xffff");	// CTL LED4 MASK LOW
 				}
 				else{
-					eval("ethctl", "phy", "ext", "0x03", "0x1fd032", "0x0027");		// RTK LCR2 LED Control Reg
+					eval("ethctl", "phy", "ext", EXTPHY_RTL_ADDR_STR, "0x1fd032", "0x0027");	// RTL LCR2 LED Control Reg
 				}
 #endif
 			}
@@ -1205,7 +1205,7 @@ void asus_ate_StartATEMode(void)
 {
 	nvram_set("asus_mfg", "1");
 #if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
-	nvram_set("ATEMODE", "1");
+	nvram_set(ATE_QCA_FACTORY_MODE_STR(), "1");
 #endif
 #ifdef RTCONFIG_QSR10G
 	start_ate_mode_qsr10g();
@@ -2276,7 +2276,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
 		GetPhyStatus(1, NULL);
 #else
-		if (!GetPhyStatus(1, NULL) && nvram_match("ATEMODE", "1")) {
+		if (!GetPhyStatus(1, NULL) && nvram_match(ATE_FACTORY_MODE_STR(), "1")) {
 			puts("ATE_ERROR");
 		}
 #endif
@@ -3241,6 +3241,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	}
 	else if(!strcmp(command, "Set_StartBTDiag"))
 	{
+		extern void setStartBTDiag(void);
 		setStartBTDiag();
 		puts("1");
 		return 0;

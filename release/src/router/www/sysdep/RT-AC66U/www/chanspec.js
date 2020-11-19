@@ -430,9 +430,13 @@ function wl_chanspec_list_change(){
 		else if(band == "2"){	// 5 GHz-2 - high band
 			wl_channel_list_5g_2 = JSON.parse('<% channel_list_5g_2(); %>');
 			if(band6g_support){		// due to GT-AXE11000 does not support
+				if(document.getElementById('psc6g_checkbox').checked){
+					wl_channel_list_5g_2 = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+				}
+
 				for(var i=wl_channel_list_5g_2.length-1; i>=0; i--){
 					var _channel = parseInt(wl_channel_list_5g_2[i]);
-					if(_channel < 30 || _channel == 233){
+					if(_channel < 30 || _channel > 221){	// remove 1, 5, 9, 13, 17, 21, 25, 29, 225, 229, 233
 						wl_channel_list_5g_2.splice(i, 1);
 					}
 				}

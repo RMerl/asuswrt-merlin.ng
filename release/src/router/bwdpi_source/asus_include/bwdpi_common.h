@@ -97,9 +97,8 @@
 	Now, new module only uses /dev/idp. Old platforms / models use old node /dev/detector.
 	Add compile flag to make these platform use old node, others are considered as new models to make sure module could untar and load signature.
 */
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_RALINK) \
-	|| defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) \
-	|| (defined(RTCONFIG_HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX))
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_RALINK) \
+	|| defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_BCM7)
 #define DEVNODE         "/dev/detector" // old node
 #else
 #define DEVNODE         "/dev/idp"      // new node
@@ -113,6 +112,13 @@
 #define BWDPI_ANA_DIR   BWDPI_DB_DIR"/TrafficAnalyzer"
 #define BWDPI_HIS_DIR   BWDPI_DB_DIR"/WebHistory"
 #define BWDPI_MON_DIR   BWDPI_DB_DIR"/AiProtectionMonitor"
+#define BWDPI_WBL_PATH  BWDPI_DB_DIR"/WBL"
+
+// Traffic Analyzer database
+#define BWDPI_ANA_DB    (strcmp(nvram_safe_get("bwdpi_ana_path"), "")) ? nvram_safe_get("bwdpi_ana_path") : BWDPI_ANA_DIR"/TrafficAnalyzer.db"
+
+// Web History database
+#define BWDPI_HIS_DB    (strcmp(nvram_safe_get("bwdpi_his_path"), "")) ? nvram_safe_get("bwdpi_his_path") : BWDPI_HIS_DIR"/WebHistory.db"
 
 // AiProtection Monitor database
 #define BWDPI_MON_DB    (strcmp(nvram_safe_get("bwdpi_mon_path"), "")) ? nvram_safe_get("bwdpi_mon_path") : BWDPI_MON_DIR"/AiProtectionMonitor.db"

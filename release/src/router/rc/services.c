@@ -1293,7 +1293,7 @@ void start_dnsmasq(void)
 		perror("/etc/hosts");
 
 #ifdef RTCONFIG_REDIRECT_DNAME
-	if (access_point_mode()) {
+	if (nvram_invmatch("redirect_dname", "0") && access_point_mode()) {
 #ifdef RTCONFIG_DHCP_OVERRIDE
 		if (nvram_match("dhcp_enable_x", "1") && nvram_match("dnsqmode", "2")
 #ifdef RTCONFIG_DEFAULT_AP_MODE
@@ -6348,6 +6348,7 @@ stop_wbd(void)
 int
 stop_plchost(void)
 {
+	nvram_set("plchost_active", "0");
 	if (pids("plchost"))
 		killall_tk("plchost");
 	return 0;
@@ -6357,8 +6358,13 @@ int
 start_plchost(void)
 {
 	char plc_ifname[16];
-	char *plchost_argv[] = {"/usr/local/bin/plchost", "-i", plc_ifname, "-N", BOOT_NVM_PATH, "-P", BOOT_PIB_PATH, NULL};
+	char *plchost_argv[] = {"/usr/local/bin/plchost", "-i", plc_ifname
+#ifdef RTCONFIG_QCA_PLC2
+		, "-A", nvram_safe_get("lan_ifname")
+#endif
+		, "-N", BOOT_NVM_PATH, "-P", BOOT_PIB_PATH, NULL};
 	pid_t pid;
+	int ret;
 
 	nvram_set("plc_wake", "1");
 	get_plc_ifname(plc_ifname);
@@ -6366,19 +6372,20 @@ start_plchost(void)
 #ifdef PLC_INTERFACE
 	_ifconfig(PLC_INTERFACE, IFUP, NULL, NULL, NULL, 0);
 #endif
-	return _eval(plchost_argv, NULL, 0, &pid);
+	do_plc_reset(1);	//force reset when start plchost
+	ret = _eval(plchost_argv, ">/dev/console" /*NULL*/, 0, &pid);
+	nvram_set("plchost_active", "1");
+	return ret;
 }
 
 void
-reset_plc(void)
+reset_plc(int ending)
 {
 	FILE *fp;
 	int rlen;
 	int cnt = 0;
-	char buf[1024], plc_mac[18];
-	char plc_ifname[16];
 
-	if (nvram_match("plc_ready", "0"))
+	if (nvram_invmatch("plc_ready", "1"))
 		return;
 
 #if defined(PLN12)
@@ -6391,37 +6398,50 @@ reset_plc(void)
 		set_gpio(wake_gpio, 0);
 #endif
 
-	strlcpy(plc_mac, nvram_safe_get("plc_macaddr"), sizeof(plc_mac));
-	get_plc_ifname(plc_ifname);
-
 	while (1) {
-		snprintf(buf, sizeof(buf), "/usr/local/bin/plctool -i %s -I -e %s", plc_ifname, plc_mac);
-	    if ((fp = popen(buf, "r"))) {
-		rlen = fread(buf, 1, sizeof(buf), fp);
-		pclose(fp);
-		if (rlen > 1) {
-			buf[rlen-1] = '\0';
-			if (strstr(buf, plc_mac))
-				break;
-		}
-	    }
+		if (chk_plc_alive())
+			break;
+
 		dbg("%s: wait Powerline wake up...\n", __func__);
 		if (cnt++ > 3)
 			break;
 		sleep(1);
 	}
 
+	if(ending)
+	{
+		extern int stop_detect_plc(void);
+		stop_detect_plc();
+	}
 	stop_plchost();
-	eval("/usr/local/bin/plctool", "-i", plc_ifname, "-R", plc_mac);
-	nvram_set("plc_ready", "0");
+	do_plc_reset(0);
 }
 
 int 
 restart_plc_main(int argc, char *argv[])
 {
-	reset_plc();
+	reset_plc(0);
 	start_plchost();
 	return 0;
+}
+
+
+int
+stop_detect_plc(void)
+{
+	if (pids("detect_plc"))
+		killall_tk("detect_plc");
+	return 0;
+}
+
+int
+start_detect_plc(void)
+{
+	char *detect_plc_argv[] = {"detect_plc", NULL};
+	pid_t pid;
+
+	stop_detect_plc();
+	return _eval(detect_plc_argv, NULL, 0, &pid);
 }
 #endif
 
@@ -7084,6 +7104,7 @@ void start_ethbl_lldpd(void)
 	//char *lldpd[] = {"lldpd", nvram_safe_get("lan_ifname"), NULL};
 	char *lldpd[] = {"lldpd", NULL};
 	pid_t pid;
+	int len = 0;
 
 	if (pids("lldpd"))
 		killall_tk("lldpd");
@@ -7098,12 +7119,12 @@ void start_ethbl_lldpd(void)
 	memset(buf,0,sizeof(buf));
 	foreach(ifname, nvram_safe_get("lan_ifnames"), next)
 	{
-		if(strlen(buf))
-			sprintf(buf,"%s,%s",buf,ifname);
+		if(len)
+			len += sprintf(buf + len,",%s",ifname);
 		else
-			sprintf(buf,"%s",ifname);
+			len = sprintf(buf,"%s",ifname);
 	}
-	sprintf(buf,"%s,%s",buf,"br0");
+	sprintf(buf + len,",%s","br0");
 	eval("lldpcli","configure","system","interface","pattern",buf);
 	eval("lldpcli","configure","lldp","tx-interval","10");
 	eval("lldpcli","configure","lldp","tx-hold","2");
@@ -9678,6 +9699,10 @@ stop_services(void)
 {
 	run_custom_script("services-stop", 0, NULL, NULL);
 
+#if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
+	stop_detect_plc();
+#endif
+
 #ifdef RTCONFIG_AMAS_ADTBW
 	stop_amas_adtbw();
 #endif
@@ -11144,7 +11169,7 @@ void factory_reset(void)
 #endif
 	}
 #ifdef RTCONFIG_QCA_PLC_UTILS
-	reset_plc();
+	reset_plc(1);
 	eval("mtd-erase", "-d", "plc");
 #endif
 
@@ -11270,7 +11295,7 @@ again:
 		nvram_set_int("wlready", 0);
 #endif
 #if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
-		reset_plc();
+		reset_plc(1);
 		sleep(1);
 #endif
 
@@ -11339,7 +11364,7 @@ again:
 		}
 #endif
 #if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
-		reset_plc();
+		reset_plc(1);
 #endif
 		sleep(2); // wait for all httpd event done
 		stop_lan_port();
@@ -11467,7 +11492,7 @@ again:
 			stop_networkmap();
 
 #if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
-			reset_plc();
+			reset_plc(1);
 #endif
 #ifdef RTCONFIG_CFGSYNC
 #ifdef RTCONFIG_CONNDIAG
@@ -11750,7 +11775,7 @@ again:
 #endif
 			stop_jffs2(1);
 #if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
-			reset_plc();
+			reset_plc(1);
 #endif
 			stop_misc();
 
@@ -13040,10 +13065,10 @@ check_ddr_done:
 	}
 	else if (strcmp(script, "wan_if") == 0) {
 		if(cmd[1]) {
+			_dprintf("%s: wan_if: %s.\n", __FUNCTION__, cmd[1]);
 #ifdef RTCONFIG_IPV6
 			int restart_ipv6 = atoi(cmd[1]) == wan_primary_ifunit_ipv6();
 #endif
-			_dprintf("%s: wan_if: %s.\n", __FUNCTION__, cmd[1]);
 			if(action & RC_SERVICE_STOP)
 			{
 				stop_wan_if(atoi(cmd[1]));
@@ -14941,6 +14966,10 @@ retry_wps_enr:
 #if defined(RTCONFIG_OPENVPN)
 			}
 #endif
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
+		/* It's a workaround for QCA platform due to accelerator / module / vpn can't work together */
+		start_dpi_engine_service();
+#endif
 		}
 	}
 #endif
@@ -15155,6 +15184,10 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
             rc_ipsec_set(IPSEC_SET,PROF_SVR);
 			start_firewall(wan_primary_ifunit(), 0);
 			start_dnsmasq();
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
+		/* It's a workaround for QCA platform due to accelerator / module / vpn can't work together */
+		start_dpi_engine_service();
+#endif
         } else if(0 == strcmp(script, "ipsec_start")){
             rc_ipsec_set(IPSEC_START,PROF_SVR);
 			start_firewall(wan_primary_ifunit(), 0);
@@ -15171,6 +15204,10 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
             rc_ipsec_set(IPSEC_SET,PROF_CLI);
         } else if(0 == strcmp(script, "ipsec_start_cli")){
             rc_ipsec_set(IPSEC_START,PROF_CLI);
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
+		/* It's a workaround for QCA platform due to accelerator / module / vpn can't work together */
+		start_dpi_engine_service();
+#endif
         } else if(0 == strcmp(script, "ipsec_stop_cli")){
             rc_ipsec_set(IPSEC_STOP,PROF_CLI);
         } else if(0 == strcmp(script, "ipsec_gen_cert")){
@@ -15466,6 +15503,7 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 #ifdef RTCONFIG_STA_AP_BAND_BIND
 	else if (strcmp(script, "update_sta_binding")==0)
 	{
+		extern int update_sta_binding_list(void);
 		update_sta_binding_list();
 	}
 #endif
@@ -15611,7 +15649,7 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 #endif
 #if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
 	else if (strcmp(script, "plc") == 0) {
-		if (action & RC_SERVICE_STOP) reset_plc();
+		if (action & RC_SERVICE_STOP) reset_plc(0);
 		if (action & RC_SERVICE_START) start_plchost();
 	}
 #endif	/* RTCONFIG_QCA_PLC_UTILS || RTCONFIG_QCA_PLC2 */
@@ -16059,12 +16097,6 @@ void gen_lldpd_if(char *bind_ifnames)
 					bind_ifnames += sprintf(bind_ifnames, ",");
 
 				bind_ifnames += sprintf(bind_ifnames, "%s", word);
-#if defined(RTCONFIG_HND_ROUTER) && defined(RTCONFIG_DPSTA) && defined(RTCONFIG_AMAS_WGN)
-				/* add interface for guest network enabled */
-				bind_ifnames += sprintf(bind_ifnames, ",");
-				snprintf(dpsta_ifname, sizeof(dpsta_ifname), "%s.0", word);
-				bind_ifnames += sprintf(bind_ifnames, "%s", dpsta_ifname);
-#endif
 			}
 		}
 		else
@@ -16121,6 +16153,11 @@ void start_amas_lldpd(void)
 /* TODO: clarify do we need to use lan_hostname instead of productid here */
 	char *productid = nvram_safe_get("productid");
 	memset(bind_ifnames, 0x00, sizeof(bind_ifnames));
+
+#ifdef RTCONFIG_AMAS_WGN
+	char lldpd_bind_ifnames[128] = {0};
+	memset(lldpd_bind_ifnames, 0, sizeof(lldpd_bind_ifnames));
+#endif
 
 	init_x_Setting = nvram_get_int("x_Setting");
 
@@ -16179,6 +16216,15 @@ void start_amas_lldpd(void)
 
 	_dprintf("rc: ==> binding interface(%s) for lldpd\n", bind_ifnames);
 
+#ifdef RTCONFIG_AMAS_WGN
+	if (f_read_string("/tmp/lldpd_bind_ifnames", lldpd_bind_ifnames, sizeof(lldpd_bind_ifnames)) > 0) {
+		if (strncmp(bind_ifnames, lldpd_bind_ifnames, strlen(lldpd_bind_ifnames)) == 0) {
+			_dprintf("rc: ==> binding interface match lldpd_bind_ifnames(%s)...\n", lldpd_bind_ifnames);
+			return;
+		}		
+	}
+#endif	// RTCONFIG_AMAS_WGN
+
 	stop_amas_lldpd();
 
 	FILE *fp = NULL;
@@ -16223,7 +16269,10 @@ void start_amas_lldpd(void)
 
 	if (fp)
 		fclose(fp);
-
+	
+#ifdef RTCONFIG_AMAS_WGN
+	f_write_string("/tmp/lldpd_bind_ifnames", bind_ifnames, 0, 0);
+#endif	// RTCONFIG_AMAS_WGN
 	eval("sh", "/tmp/run_lldpd.sh");
 }
 

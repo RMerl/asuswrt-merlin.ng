@@ -241,7 +241,11 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	}
 
       /* do we have a lease in store? */
+#if 0
+      lease = lease_find_by_hwaddr(mess->chaddr, mess->hlen, mess->htype);
+#else
       lease = lease_find_by_client(mess->chaddr, mess->hlen, mess->htype, clid, clid_len);
+#endif
 
       /* If this request is missing a clid, but we've seen one before, 
 	 use it again for option matching etc. */

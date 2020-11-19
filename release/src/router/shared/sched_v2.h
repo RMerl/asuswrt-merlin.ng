@@ -1,7 +1,7 @@
 #ifndef __SCHED_V2_SHARED_H__
 #define __SCHED_V2_SHARED_H__
 
-#define MAX_NVRAM_SCHED_LEN 1024
+#define MAX_NVRAM_SCHED_LEN 4097
 #define MAX_SCHED_RULES 64
 
 #define SCHED_V2_DISABLE 0

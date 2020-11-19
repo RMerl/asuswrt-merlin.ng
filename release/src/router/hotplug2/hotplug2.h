@@ -77,6 +77,9 @@ struct hotplug2_event_t {
 	char *plain;
 	int plain_s;
 	struct hotplug2_event_t *next;
+#ifdef QCAMUSL
+	int subsystem_idx;
+#endif
 };
 
 struct options_t {

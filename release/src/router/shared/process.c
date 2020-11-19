@@ -204,6 +204,7 @@ static int un_tcpsock_connect(char *path, int nodelay)
 	strcpy(uaddr.sun_path, path);
 
 	if ( connect(sock, (struct sockaddr*)(&uaddr), sizeof(uaddr)) == -1 ) {
+		close(sock);
 		_dprintf("%s: connect[%s]: %s\n", __func__, path, strerror(errno));
 		close(sock);
 		return -1;

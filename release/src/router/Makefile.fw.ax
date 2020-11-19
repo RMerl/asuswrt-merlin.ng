@@ -26,10 +26,15 @@ PCIEFD_EMBED_HEADER		:= $(SRCBASE_DHD)/shared/rtecdc_router.h
 PCIEFD_IMAGE_DIR		:= $(SRCBASE_DHD)/dongle/bin
 
 # All firmware targets must be defined here
+ifeq ($(BUILD_43684_COMBO),y)
+    PCIEFD_TARGETS_LIST         := 43684b0
+    PCIEFD_TARGETS_LIST         += 43684c0
+else
 ifeq ($(BUILD_43684C0),y)
     PCIEFD_TARGETS_LIST		:= 43684c0
 else
     PCIEFD_TARGETS_LIST		:= 43684b0
+endif
 endif
 ifneq ($(CONFIG_STBAP),y)
 #ifneq ($(CONFIG_AIRIQ),)
@@ -390,23 +395,29 @@ pciefd-cleangen:
 		$(RM) -f  $(PCIEFD_EMBED_HEADER).tmp.*; \
 	fi
 
-ifeq ($(ALREADY_HAVE_RTECDC),)
+ifneq ($(PREBUILT_BCMBIN),1)
+#ifeq ($(ALREADY_HAVE_RTECDC),)
 pciefd: pciefd-cleangen $(obj-pciefd)
+ifeq ($(BUILD_43684_COMBO),y)
+	@$(RM) $(PCIEFD_EMBED_HEADER)
+	@cp $(PCIEFD_EMBED_HEADER_TEMPLATE) $(PCIEFD_EMBED_HEADER)
 	@# PCIEFD_EMBED_HEADER expands to '.../dhd/src/shared/rtecdc_router.h'
-	@#for i in $(wildcard $(PCIEFD_EMBED_HEADER).tmp.*) ; do \
-	#	cat $${i} >> $(PCIEFD_EMBED_HEADER); \
-	#	$(RM) -f $${i}; \
-	#done
+	@for i in $(wildcard $(PCIEFD_EMBED_HEADER).tmp.*) ; do \
+		cat $${i} >> $(PCIEFD_EMBED_HEADER); \
+		$(RM) -f $${i}; \
+	done
+else
 	@$(RM) $(PCIEFD_EMBED_HEADER)
 	@$(RM) $(PCIEFD_EMBED_HEADER).tmp.*
 	@cp $(PCIEFD_EMBED_HEADER_TEMPLATE) $(PCIEFD_EMBED_HEADER)
 	@echo "#include <rtecdc_$(FW_$(R_CHIP)_CHIPID).h>" >> $(PCIEFD_EMBED_HEADER)
 	@echo "#define DLIMAGE_$(FW_$(R_CHIP)_CHIPID)" >> $(PCIEFD_EMBED_HEADER)
+endif
 else
 pciefd:
-	@echo "Copy $(ALREADY_HAVE_RTECDC) to $(PCIEFD_IMAGE_DIR)"
-	@rm -rf $(PCIEFD_IMAGE_DIR)/*.bin
-	cp -rp $(ALREADY_HAVE_RTECDC) $(PCIEFD_IMAGE_DIR)
+#	@echo "Copy $(ALREADY_HAVE_RTECDC) to $(PCIEFD_IMAGE_DIR)"
+#	@rm -rf $(PCIEFD_IMAGE_DIR)/*.bin
+#	cp -rp $(ALREADY_HAVE_RTECDC) $(PCIEFD_IMAGE_DIR)
 endif
 
 pciefd-clean: pciefd-cleangen $(clean-pciefd)

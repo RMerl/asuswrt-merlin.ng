@@ -29,6 +29,8 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: lz4 to 1.9.2.
   - UPDATED: e2fsprogs to 1.45.6.
   - UPDATED: dropbear to 2020.81.
+  - UPDATED: Switched userspace ipset from 6.32 to 7.6 (to match
+             with upstream)
   - CHANGED: firmware update checks are no longer using the
              server address stored in nvram, for security
              purposes.  Devs who were using that nvram
@@ -46,6 +48,8 @@ Asuswrt-Merlin 386/NG Changelog
              applied for clients set to auto-start with WAN.
   - CHANGED: Increased number of available mount points for addon
              webpages to 20.
+  - CHANGED: Multiple routes can now be defined per client on the
+             OpenVPN client-specific configuration.
   - FIXED: DHCP could fail to renew its lease with some ISPs when
            Trend Micro engine was enabled (workaround provided
            by Asus)

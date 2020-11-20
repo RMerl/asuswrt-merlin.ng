@@ -417,7 +417,6 @@ endif
 kernel: sanity_check create_install kernelbuild hosttools buildimage
 
 shared_link:
-	@echo "make shared_link"
 	if [ ! -L '$(SRCBASE)/router/hnd_shared' ]; then \
 		ln -sf $(SRCBASE)/shared  $(SRCBASE)/router/hnd_shared; \
 	fi

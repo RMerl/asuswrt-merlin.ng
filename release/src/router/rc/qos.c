@@ -2436,6 +2436,11 @@ static int start_rog_qos()
 #ifdef HND_ROUTER
 	int wantype = get_dualwan_by_unit(wan_primary_ifunit());
 #endif
+	int wan_mtu, bw;
+	char *qsched;
+	int overhead = 0;
+	char overheadstr[sizeof("overhead 128 linklayer ethernet")];
+	char nvmtu[sizeof("wan0_mtu")];
 
 #ifdef HND_ROUTER
 	if (wantype == WANS_DUALWAN_IF_WAN) {
@@ -2467,6 +2472,40 @@ static int start_rog_qos()
 		return -1;
 	}
 
+	bw = obw;
+
+#ifdef RTCONFIG_BCMARM
+	switch(nvram_get_int("qos_sched")){
+		case 1:
+			qsched = "codel";
+			break;
+		case 2:
+			if (bw < 51200)
+				qsched = "fq_codel quantum 300 noecn";
+			else
+				qsched = "fq_codel noecn";
+			break;
+		default:
+			qsched = "sfq perturb 10";
+			break;
+	}
+
+	overhead = nvram_get_int("qos_overhead");
+#else
+	qsched = "sfq perturb 10";
+#endif
+
+	if (overhead > 0)
+		snprintf(overheadstr, sizeof(overheadstr),"overhead %d %s",
+		         overhead, nvram_get_int("qos_atm") ? "linklayer atm" : "linklayer ethernet");
+	else
+		strcpy(overheadstr, "");
+
+	snprintf(nvmtu, sizeof (nvmtu), "wan%d_mtu", wan_primary_ifunit());
+	wan_mtu = nvram_get_int(nvmtu);
+	if (wan_mtu == 0)
+		wan_mtu = 1500;
+
 	if((f = fopen(qosfn, "w")) == NULL) return -2;
 
 	strlcpy(wan, get_wan_ifname(wan_primary_ifunit()), sizeof(wan));
@@ -2482,7 +2521,7 @@ static int start_rog_qos()
 	fprintf(f,
 		"#!/bin/sh\n"
 		"I=%s\n"
-		"SFQ=\"sfq perturb 10\"\n"
+		"SCH=\"%s\"\n"
 		"TQA=\"tc qdisc add dev $I\"\n"
 		"TCA=\"tc class add dev $I\"\n"
 		"TFA=\"tc filter add dev $I\"\n"
@@ -2490,21 +2529,22 @@ static int start_rog_qos()
 		"start)\n"
 		"\ttc qdisc del dev $I root 2>/dev/null\n"
 		"\t$TQA root handle 1: htb default 30\n"
-		"\t$TCA parent 1: classid 1:1 htb rate %ukbit ceil %ukbit\n"
-		"\t$TCA parent 1:1 classid 1:10 htb rate %ukbit ceil %ukbit prio 1\n"
-		"\t$TCA parent 1:1 classid 1:20 htb rate %ukbit ceil %ukbit prio 2\n"
-		"\t$TCA parent 1:1 classid 1:30 htb rate %ukbit ceil %ukbit prio 3\n"
-		"\t$TQA parent 1:10 handle 10: $SFQ\n"
-		"\t$TQA parent 1:20 handle 20: $SFQ\n"
-		"\t$TQA parent 1:30 handle 30: $SFQ\n"
+		"\t$TCA parent 1: classid 1:1 htb rate %ukbit ceil %ukbit %s\n"
+		"\t$TCA parent 1:1 classid 1:10 htb rate %ukbit ceil %ukbit prio 1 quantum %u %s\n"
+		"\t$TCA parent 1:1 classid 1:20 htb rate %ukbit ceil %ukbit prio 2 quantum %u %s\n"
+		"\t$TCA parent 1:1 classid 1:30 htb rate %ukbit ceil %ukbit prio 3 quantum %u %s\n"
+		"\t$TQA parent 1:10 handle 10: $SCH\n"
+		"\t$TQA parent 1:20 handle 20: $SCH\n"
+		"\t$TQA parent 1:30 handle 30: $SCH\n"
 		"\t$TFA parent 1: prio 10 protocol all handle %d/0x%x fw flowid 1:10\n"
 		"\t$TFA parent 1: prio 20 protocol all handle %d/0x%x fw flowid 1:20\n"
 		"\t$TFA parent 1: prio 30 protocol all handle %d/0x%x fw flowid 1:30\n"
+		, qsched
 		, wan
-		, obw, obw
-		, obw, obw
-		, obw / 10, obw
-		, obw / 100, obw
+		, obw, obw, overheadstr
+		, obw, obw, wan_mtu, overheadstr
+		, obw / 10, obw, wan_mtu, overheadstr
+		, obw / 100, obw, wan_mtu, overheadstr
 		, QOS_ROG_MARK_HIGH, QOS_MASK
 		, QOS_ROG_MARK_MID, QOS_MASK
 		, QOS_ROG_MARK_LOW, QOS_MASK

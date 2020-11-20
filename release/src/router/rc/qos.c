@@ -1990,6 +1990,9 @@ static int start_GeForce_QoS(void)
 	FILE *f = NULL;
 	unsigned int ibw = 0, obw = 0;
 	unsigned int ibw_re = 0, obw_re = 0;
+	char *qsched;
+	int overhead = 0;
+	char overheadstr[sizeof("overhead 128 linklayer ethernet")];
 
 	_dprintf("[GeForce] start GeForceNow QoS ...\n");
 	ibw = strtoul(nvram_safe_get("qos_ibw"), NULL, 10);
@@ -2009,9 +2012,39 @@ static int start_GeForce_QoS(void)
 	if (ibw_re < 1024 && ibw_re != 0) ibw_re = 1024;
 	if (obw_re < 1024 && obw_re != 0) obw_re = 1024;
 
+	mtu = strtoul(nvram_safe_get("wan_mtu"), NULL, 10);
+	bw = obw;
+#ifdef RTCONFIG_BCMARM
+		switch(nvram_get_int("qos_sched")){
+			case 1:
+				qsched = "codel";
+				break;
+			case 2:
+				if (bw < 51200)
+					qsched = "fq_codel quantum 300 noecn";
+				else
+					qsched = "fq_codel noecn";
+				break;
+			default:
+				qsched = "sfq perturb 10";
+				break;
+		}
+
+		overhead = nvram_get_int("qos_overhead");
+#else
+		qsched = "sfq perturb 10";
+#endif
+
+		if (overhead > 0)
+			snprintf(overheadstr, sizeof(overheadstr),"overhead %d %s",
+			         overhead, nvram_get_int("qos_atm") ? "linklayer atm" : "linklayer ethernet");
+		else
+			strcpy(overheadstr, "");
+
 	if ((f = fopen(qosfn, "w")) == NULL) return -2;
 	fprintf(f,
 		"#!/bin/sh\n"
+		"SCH='%s'\n"
 		"WAN=%s\n"
 		"LAN=%s\n"
 		"\n"
@@ -2023,6 +2056,7 @@ static int start_GeForce_QoS(void)
 		"TCA=\"tc class add dev $LAN\"\n"
 		"TFA=\"tc filter add dev $LAN\"\n"
 		"\n"
+		, sched
 		, get_wan_ifname(wan_primary_ifunit())
 		, nvram_safe_get("lan_ifname")
 	);
@@ -2032,44 +2066,44 @@ static int start_GeForce_QoS(void)
 		"{\n"
 		"echo \"root ...\"\n"
 		"$TQA root handle 1: htb default 50\n"
-		"$TCA parent 1: classid 1:1 htb rate %ukbit\n"
+		"$TCA parent 1: classid 1:1 htb rate %ukbit %s\n"
 		"\n"
 		"$TQAU root handle 2: htb default 50\n"
-		"$TCAU parent 2: classid 2:1 htb rate %ukbit\n"
+		"$TCAU parent 2: classid 2:1 htb rate %ukbit %s\n"
 		"\n"
 		"echo \"download ...\"\n"
 		"# 1:10\n"
-		"$TCA parent 1:1 classid 1:10 htb rate %ukbit ceil %ukbit prio 1\n"
-		"$TQA parent 1:10 handle 10: $SFQ\n"
+		"$TCA parent 1:1 classid 1:10 htb rate %ukbit ceil %ukbit prio 1 quantum %u %s\n"
+		"$TQA parent 1:10 handle 10: $SCH\n"
 		"$TFA parent 1: prio 1 protocol ip handle 10 fw flowid 1:10\n"
 		"\n"
 		"# 1:20\n"
-		"$TCA parent 1:1 classid 1:20 htb rate %fkbit ceil %ukbit prio 2\n"
-		"$TQA parent 1:20 handle 20: $SFQ\n"
+		"$TCA parent 1:1 classid 1:20 htb rate %fkbit ceil %ukbit prio 2 quantum %u %s\n"
+		"$TQA parent 1:20 handle 20: $SCH\n"
 		"$TFA parent 1: prio 2 protocol ip handle 20 fw flowid 1:20\n"
 		"\n"
 		"# 1:30\n"
-		"$TCA parent 1:1 classid 1:30 htb rate %fkbit ceil %ukbit prio 3\n"
-		"$TQA parent 1:30 handle 30: $SFQ\n"
+		"$TCA parent 1:1 classid 1:30 htb rate %fkbit ceil %ukbit prio 3 quantum %u %s\n"
+		"$TQA parent 1:30 handle 30: $SCH\n"
 		"$TFA parent 1: prio 3 protocol ip handle 30 fw flowid 1:30\n"
 		"\n"
 		"# 1:40\n"
-		"$TCA parent 1:1 classid 1:40 htb rate %fkbit ceil %ukbit prio 4\n"
-		"$TQA parent 1:40 handle 40: $SFQ\n"
+		"$TCA parent 1:1 classid 1:40 htb rate %fkbit ceil %ukbit prio 4 quantum %u %s\n"
+		"$TQA parent 1:40 handle 40: $SCH\n"
 		"$TFA parent 1: prio 4 protocol ip handle 40 fw flowid 1:40\n"
 		"\n"
 		"# 1:50\n"
-		"$TCA parent 1:1 classid 1:50 htb rate %fkbit ceil %ukbit prio 5\n"
-		"$TQA parent 1:50 handle 50: $SFQ\n"
+		"$TCA parent 1:1 classid 1:50 htb rate %fkbit ceil %ukbit prio 5 quantum %u %s\n"
+		"$TQA parent 1:50 handle 50: $SCH\n"
 		"$TFA parent 1: prio 5 protocol ip handle 50 fw flowid 1:50\n"
 		"\n"
-		, ibw             // 1:
-		, obw             // 2:
-		, ibw_re,   ibw   // 1:10
-		, 0.20*ibw, ibw   // 1:20
-		, 0.15*ibw, ibw   // 1:30
-		, 0.10*ibw, ibw   // 1:40
-		, 0.05*ibw, ibw   // 1:50
+		, ibw,      overheadstr            // 1:
+		, obw,      overheadstr            // 2:
+		, ibw_re,   ibw, mtu, overheadstr  // 1:10
+		, 0.20*ibw, ibw, mtu, overheadstr  // 1:20
+		, 0.15*ibw, ibw, mtu, overheadstr  // 1:30
+		, 0.10*ibw, ibw, mtu, overheadstr  // 1:40
+		, 0.05*ibw, ibw, mtu, overheadstr  // 1:50
 	);
 
 	/* fixed ports */
@@ -2094,35 +2128,35 @@ static int start_GeForce_QoS(void)
 		"\n"
 		"echo \"upload ...\"\n"
 		"# 2:10\n"
-		"$TCAU parent 2:1 classid 2:10 htb rate %ukbit ceil %ukbit prio 1\n"
-		"$TQAU parent 2:10 handle 10: $SFQ\n"
+		"$TCAU parent 2:1 classid 2:10 htb rate %ukbit ceil %ukbit prio 1 quantum %u %s\n"
+		"$TQAU parent 2:10 handle 10: $SCH\n"
 		"$TFAU parent 2: prio 1 protocol ip handle 10 fw flowid 2:10\n"
 		"\n"
 		"# 2:20\n"
-		"$TCAU parent 2:1 classid 2:20 htb rate %fkbit ceil %ukbit prio 2\n"
-		"$TQAU parent 2:20 handle 20: $SFQ\n"
+		"$TCAU parent 2:1 classid 2:20 htb rate %fkbit ceil %ukbit prio 2 quantum %u %s\n"
+		"$TQAU parent 2:20 handle 20: $SCH\n"
 		"$TFAU parent 2: prio 2 protocol ip handle 20 fw flowid 2:20\n"
 		"\n"
 		"# 2:30\n"
-		"$TCAU parent 2:1 classid 2:30 htb rate %fkbit ceil %ukbit prio 3\n"
-		"$TQAU parent 2:30 handle 30: $SFQ\n"
+		"$TCAU parent 2:1 classid 2:30 htb rate %fkbit ceil %ukbit prio 3 quantum %u %s\n"
+		"$TQAU parent 2:30 handle 30: $SCH\n"
 		"$TFAU parent 2: prio 3 protocol ip handle 30 fw flowid 2:30\n"
 		"\n"
 		"# 2:40\n"
-		"$TCAU parent 2:1 classid 2:40 htb rate %fkbit ceil %ukbit prio 4\n"
-		"$TQAU parent 2:40 handle 40: $SFQ\n"
+		"$TCAU parent 2:1 classid 2:40 htb rate %fkbit ceil %ukbit prio 4 quantum %u %s\n"
+		"$TQAU parent 2:40 handle 40: $SCH\n"
 		"$TFAU parent 2: prio 4 protocol ip handle 40 fw flowid 2:40\n"
 		"\n"
 		"# 2:50\n"
-		"$TCAU parent 2:1 classid 2:50 htb rate %fkbit ceil %ukbit prio 5\n"
-		"$TQAU parent 2:50 handle 50: $SFQ\n"
+		"$TCAU parent 2:1 classid 2:50 htb rate %fkbit ceil %ukbit prio 5 quantum %u %s\n"
+		"$TQAU parent 2:50 handle 50: $SCH\n"
 		"$TFAU parent 2: prio 5 protocol ip handle 50 fw flowid 2:50\n"
 		"\n"
-		, obw_re  , obw   // 2:10
-		, 0.20*obw, obw   // 2:20
-		, 0.15*obw, obw   // 2:30
-		, 0.10*obw, obw   // 2:40
-		, 0.05*obw, obw   // 2:50
+		, obw_re  , obw, mtu, overheadstr   // 2:10
+		, 0.20*obw, obw, mtu, overheadstr   // 2:20
+		, 0.15*obw, obw, mtu, overheadstr   // 2:30
+		, 0.10*obw, obw, mtu, overheadstr   // 2:40
+		, 0.05*obw, obw, mtu, overheadstr   // 2:50
 	);
 
 	/* fixed ports */

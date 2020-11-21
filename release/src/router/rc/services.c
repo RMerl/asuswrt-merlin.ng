@@ -17283,7 +17283,9 @@ void setup_leds()
 		eval("et", "-i", "eth0", "robowr", "0", "0x18", "0x01ff");
 		eval("et", "-i", "eth0", "robowr", "0", "0x1a", "0x01ff");
 #elif defined(HND_ROUTER)
+#ifndef GTAC2900
 		led_control(LED_WAN_NORMAL, LED_ON);
+#endif
 		setLANLedOn();
 #else
 		eval("et", "robowr", "0", "0x18", "0x01ff");
@@ -17313,6 +17315,8 @@ void setup_leds()
 			eval("wl", "-i", "eth5", "ledbh", "0", "25");
 #elif defined(RTAX86U)
 			eval("wl", "-i", "eth6", "ledbh", "7", "7");
+#elif defined(GTAC2900)
+			eval("wl", "ledbh", "9", "1");
 #endif
 		}
 
@@ -17323,6 +17327,8 @@ void setup_leds()
 			eval("wl", "ledbh", "10", "7");
 #elif defined(RTAC86U)
 			eval("wl", "-i", "eth6", "ledbh", "9", "7");
+#elif defined(GTAC2900)
+			eval("wl", "-i", "eth6", "ledbh", "9", "1");
 #elif defined(RTCONFIG_BCM_7114)
 			eval("wl", "-i", "eth2", "ledbh", "9", "7");
 #elif defined(RTAC87U)
@@ -17346,7 +17352,15 @@ void setup_leds()
 #endif
 		}
 #endif
+
+#ifdef RTCONFIG_LOGO_LED
+		led_control(LED_LOGO, LED_ON);
+#endif
 	}
+
+#if defined(RTCONFIG_RGBLED)
+	start_aurargb();
+#endif
 }
 
 #if !defined(HND_ROUTER)

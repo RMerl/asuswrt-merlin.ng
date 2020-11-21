@@ -1,0 +1,555 @@
+﻿@font-face{
+	font-family: Roboto-Regular;
+	src: url(/fonts/Roboto-Regular.ttf) format("opentype");
+}
+.light_effect_bg {
+	width: 95vw;
+	height: 228px;
+	position: relative;
+	margin: auto;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+}
+.light_effect_bg.prePage {
+	width: 100vw;
+	height: 100vh;
+}
+.light_effect_mask {
+	width: 100%;
+	height: 100%;
+	background-image: url(/images/New_ui/light_effect/light_effect_mask.png);
+	background-size: 95vw 229px;
+	background-repeat: no-repeat;
+}
+.logo_aura_rgb {
+	background-image: url(/images/New_ui/light_effect/logo_aura_rgb.png);
+	background-repeat: no-repeat;
+	width: 22vw;
+	height: 22vw;
+	position: absolute;
+	background-size: cover;
+	bottom: 5vw;
+	left: 5vw;
+}
+.light_effect_mask.prePage {
+	background-size: 100% 100%;
+	background-image: url(/images/New_ui/light_effect/light_effect_mask_pre.png);
+}
+.light_effect_bg > span  {
+	position: absolute;
+	bottom: 28px;
+	left: 12px;
+	font-size: 22px;
+	color: #FFFFFF;
+	text-shadow: 8px 8px 4px rgba(0,0,0,0.50);
+	font-family: Arial, Helvetica, sans-serif, "Microsoft JhengHei";
+	font-weight: bolder;
+}
+.light_effect_bg > span:nth-child(1) {
+	font-size: 15px;
+	bottom: 57px;
+	color: rgba(255,255,255,0.60);
+}
+.light_effect_setting_bg {
+	width: 95vw;
+	height: auto;
+	box-shadow: 0 0 2px 0 rgba(0,0,0,0.12), 0 2px 2px 0 rgba(0,0,0,0.12);
+	border-radius: 0px 0px 5px 5px;
+	margin: auto;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+}
+.setting_enable_bg > div{
+	position: relative;
+	float: left;
+}
+.setting_enable_bg > div:last-child {
+	float: right;
+}
+.light_effect_setting_bg .setting_enable_bg {
+	height: 70px;
+	position: relative;
+}
+.hue_bar {
+	cursor: pointer;
+	height: 30px;
+	width: 90%;
+	background: linear-gradient(to right, #F00 0%, #FF0 17%, #0F0 33%, #0FF 50%, #00F 67%, #F0F 83%, #F00 100%);
+	margin: auto;
+	border-radius: 6px;
+	position: relative;
+}
+.hue_slider {
+	width: 15px;
+	height: 38px;
+	border-radius: 4px;
+	border: 1px solid rgba(255, 255, 255, 0.5);
+	box-shadow: 4px 4px 8px 0 rgba(0,0,0,0.50), inset -2px -2px 2px 0 rgba(0,0,0,0.50);
+	position: absolute;
+	transform: translate(-50%, -50%);
+	cursor: pointer;
+	top: 15px;
+	left: 0%;
+	background-color: rgb(255, 0, 0);
+}
+.hue_slider.active {
+	width: 18px;
+	height: 40px;
+}
+.hue_bar_mask {
+	display: none;
+	height: 100%;
+	position: absolute;
+	width: 100%;
+	top: 0;
+	background-color: rgba(46, 57, 61, 0.7);
+	border-radius: 0 0 5px 5px;
+}
+.setting_enable_bg .text {
+	width: 58%;
+	height: 100%;
+	font-size: 14px;
+	display: table;
+}
+.setting_enable_bg .text > span {
+	display: table-cell;
+	vertical-align: middle;
+	padding-left: 18px;
+	color: #FFFFFF;
+}
+.setting_enable_bg .switch {
+	background: rgba(0, 0, 0, 0.5);
+	border-radius: 50px;
+	width: 60px;
+	height: 30px;
+	position: absolute;
+	display: inline-block;
+	-webkit-transition: all 0.6s;
+	transition: all 0.6s;
+	cursor: pointer;
+	top: 20px;
+	right: 5%;
+}
+.setting_enable_bg .switch:before {
+	border-radius: 83px;
+	display: block;
+	position: absolute;
+	content: "";
+	height: 24px;
+	width: 24px;
+	right: 3px;
+	top: 3px;
+	-webkit-transition: 0.6s;
+	transition: all 0.6s;
+	-webkit-transition-delay: 0.01s;
+	transition-delay: 0.01s;
+}
+.setting_enable_bg .switch.off:before {
+	-webkit-transform: translateX(-30px);
+	-ms-transform: translateX(-30px);
+	transform: translateX(-30px);
+	background: #A4B7C3;
+}
+.setting_enable_bg .switch.on:before {
+	background: #1EA2FF;
+}
+.setting_enable_bg .schedule {
+	cursor: pointer;
+	border: 1px solid rgba(0,0,0,0.10);
+	box-shadow: 0 2px 4px 0 rgba(0,0,0,0.50), inset -1px -1px 5px 0 rgba(0,0,0,0.50), inset 1px 1px 5px 0 rgba(255,255,255,0.20);
+	height: 36px;
+	width: 36px;
+	top: 15px;
+	right: 3%;
+	background-repeat: no-repeat;
+	background-position: 50%;
+	display: none;
+}
+.scheme_list_bg {
+	height: 90px;
+}
+.scheme_list_bg > div {
+	float: left;
+	position: relative;
+}
+.scheme_list_bg .boundary {
+	width: 8%;
+	height: 90px;
+	cursor: pointer;
+}
+.scheme_list_bg #boundary_left.arrow:before {
+	position: absolute;
+	content: "";
+	top: 0;
+	right: -2.5vw;
+	bottom: 0;
+	left: 0;
+	margin: auto;
+	width: 2vh;
+	height: 2vh;
+	border-top: 0.5vh solid rgba(255,255,255,0.60);
+	border-right: 0.5vh solid rgba(255,255,255,0.60);
+	-o-transform: rotate(-135deg);
+	-ms-transform: rotate(-135deg);
+	-moz-transform: rotate(-135deg);
+	-webkit-transform: rotate(-135deg);
+	transform: rotate(-135deg);
+	animation: left_arrow 1.2s infinite linear;
+}
+.scheme_list_bg #boundary_right.arrow:before {
+	position: absolute;
+	content: "";
+	top: 0;
+	right: 1.5vw;
+	bottom: 0;
+	left: 0;
+	margin: auto;
+	width: 2vh;
+	height: 2vh;
+	border-top: 0.5vh solid rgba(255,255,255,0.60);
+	border-right: 0.5vh solid rgba(255,255,255,0.60);
+	-o-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	-moz-transform: rotate(45deg);
+	-webkit-transform: rotate(45deg);
+	transform: rotate(47deg);
+	animation: right_arrow 1.2s infinite linear;
+}
+@keyframes left_arrow {
+	100% { right: -1.5vw; opacity: 0.1;}
+}
+@keyframes right_arrow {
+	100% { right: 0.5vw; opacity: 0.1;}
+}
+.setting_scheme {
+	display: flex;
+	overflow-x: auto;
+	overflow-y: hidden;
+	word-break: break-all;
+	width: 84%;
+}
+.setting_scheme .scheme_bg {
+	cursor: pointer;
+	height: 84px;
+	text-align: center;
+	width: 100%;
+}
+.setting_scheme .icon {
+	height: 60%;
+	background-repeat: no-repeat;
+	background-size: 5vh;
+	background-position: 50% 90%;
+}
+.setting_scheme .text {
+	position: relative;
+	top: 6px;
+	width: 100%;
+	color: rgba(255,255,255,0.60);
+	font-size: 13px;
+}
+.setting_scheme .active .text, .setting_scheme.support_hover > div:hover .text{
+	color: #FFFFFF;
+}
+.setting_scheme #static .icon {
+	background-image: url(/images/New_ui/light_effect/scheme-static_resting.svg);
+}
+.setting_scheme #static.active .icon, .setting_scheme.support_hover #static:hover .icon {
+	background-image: url(/images/New_ui/light_effect/scheme-static_active.svg);
+}
+.setting_scheme #breathing .icon {
+	background-image: url(/images/New_ui/light_effect/scheme-breathing_resting.svg);
+}
+.setting_scheme #breathing.active .icon, .setting_scheme.support_hover #breathing:hover .icon {
+	background-image: url(/images/New_ui/light_effect/scheme-breathing_active.svg);
+}
+.setting_scheme #rainbow .icon {
+	background-image: url(/images/New_ui/light_effect/scheme-rainbow_resting.svg);
+}
+.setting_scheme #rainbow.active .icon, .setting_scheme.support_hover #rainbow:hover .icon {
+	background-image: url(/images/New_ui/light_effect/scheme-rainbow_active.svg);
+}
+.setting_scheme #wave .icon {
+	background-image: url(/images/New_ui/light_effect/scheme-wave_resting.svg);
+}
+.setting_scheme #wave.active .icon, .setting_scheme.support_hover #wave:hover .icon {
+	background-image: url(/images/New_ui/light_effect/scheme-wave_active.svg);
+}
+.setting_scheme #ccycle .icon {
+	background-image: url(/images/aura/color_cycle.svg);
+}
+.setting_scheme #ccycle.active .icon, .setting_scheme.support_hover #ccycle:hover .icon {
+	background-image: url(/images/aura/color_cycle_active.svg);
+}
+.setting_scheme #flash .icon {
+	background-image: url(/images/aura/flash.svg);
+}
+.setting_scheme #flash.active .icon, .setting_scheme.support_hover #flash:hover .icon {
+	background-image: url(/images/aura/flash_active.svg);
+}
+.setting_scheme #strobing .icon {
+	background-image: url(/images/aura/strobing.svg);
+}
+.setting_scheme #strobing.active .icon, .setting_scheme.support_hover #strobing:hover .icon {
+	background-image: url(/images/aura/strobing_active.svg);
+}
+.setting_scheme #comet .icon {
+	background-image: url(/images/aura/comet.svg);
+}
+.setting_scheme #comet.active .icon, .setting_scheme.support_hover #comet:hover .icon {
+	background-image: url(/images/aura/comet_active.svg);
+}
+.setting_scheme #snight .icon {
+	background-image: url(/images/aura/starry_night.svg);
+}
+.setting_scheme #snight.active .icon, .setting_scheme.support_hover #snight:hover .icon {
+	background-image: url(/images/aura/starry_night_active.svg);
+}
+.setting_scheme #yoyo .icon {
+	background-image: url(/images/aura/glowing_yoyo.svg);
+}
+.setting_scheme #yoyo.active .icon, .setting_scheme.support_hover #yoyo:hover .icon {
+	background-image: url(/images/aura/glowing_yoyo_active.svg);
+}
+.setting_scheme #event .icon {
+	background-image: url(/images/aura/event.svg);
+}
+.setting_scheme #event.active .icon, .setting_scheme.support_hover #event:hover .icon {
+	background-image: url(/images/aura/event_active.svg);
+}
+.setting_hue {
+	padding: 30px 0;
+	position: relative;
+	opacity: 0;
+}
+.horizontal_line {
+	background: rgba(255,255,255,0.08);
+	height: 1px;
+	margin: 2px 0;
+}
+.rainbow, .yoyo {
+	background: linear-gradient(to right, #F00 0%, #FF0 17%, #0F0 33%, #0FF 50%, #00F 67%, #F0F 83%, #F00 100%);
+	background-size: 1000% 100%;
+	-moz-animation: rainbow 15s ease-in-out infinite;
+	-webkit-animation: rainbow 15s ease-in-out infinite;
+	-o-animation: rainbow 15s ease-in-out infinite;
+	animation: rainbow 15s linear infinite;
+}
+.yoyo {
+	-moz-animation: rainbow 5s ease-in-out infinite;
+	-webkit-animation: rainbow 5s ease-in-out infinite;
+	-o-animation: rainbow 5s ease-in-out infinite;
+	animation: rainbow 5s linear infinite;
+}
+@-moz-keyframes rainbow {
+	0%, 100% {background-position: 0 0;}
+	50% {background-position: 100% 0;}
+}
+@-webkit-keyframes rainbow {
+	0%, 100% {background-position: 0 0;}
+	50% {background-position: 100% 0;}
+}
+@-o-keyframes rainbow {
+	0%, 100% {background-position: 0 0;}
+	50% {background-position: 100% 0;}
+}
+@keyframes rainbow {
+	0%, 100% {background-position: 0 0;}
+	50% {background-position: 100% 0;}
+}
+.ccycle {
+	-moz-animation: ccycle 8s infinite linear;
+	-webkit-animation: ccycle 8s infinite linear;
+	-o-animation: ccycle 8s infinite linear;
+	animation: ccycle 8s infinite linear;
+}
+@-moz-keyframes ccycle {
+	0%   { background: #F00; }
+	17%  { background: #FF0; }
+	33%  { background: #0F0; }
+	50%  { background: #0FF; }
+	67%  { background: #00F; }
+	83%  { background: #F0F; }
+	100% { background: #F00; }
+}
+@-webkit-keyframes ccycle {
+	0%   { background: #F00; }
+	17%  { background: #FF0; }
+	33%  { background: #0F0; }
+	50%  { background: #0FF; }
+	67%  { background: #00F; }
+	83%  { background: #F0F; }
+	100% { background: #F00; }
+}
+@-o-keyframes ccycle {
+	0%   { background: #F00; }
+	17%  { background: #FF0; }
+	33%  { background: #0F0; }
+	50%  { background: #0FF; }
+	67%  { background: #00F; }
+	83%  { background: #F0F; }
+	100% { background: #F00; }
+}
+@keyframes ccycle {
+	0%   { background: #F00; }
+	17%  { background: #FF0; }
+	33%  { background: #0F0; }
+	50%  { background: #0FF; }
+	67%  { background: #00F; }
+	83%  { background: #F0F; }
+	100% { background: #F00; }
+}
+.strobing {
+	-moz-animation: strobing 20s infinite linear;
+	-webkit-animation: strobing 20s infinite linear;
+	-o-animation: strobing 20s infinite linear;
+	animation: strobing 20s infinite linear;
+}
+@-moz-keyframes strobing {
+	0%   { background: #F00;}
+	8%   { background: #000;}
+	16%  { background: #FF0;}
+	24%  { background: #000;}
+	32%  { background: #0F0;}
+	40%  { background: #000;}
+	48%  { background: #0FF;}
+	56%  { background: #000;}
+	64%  { background: #00F;}
+	72%  { background: #000;}
+	80%  { background: #F0F;}
+	88%  { background: #000;}
+	96%  { background: #F00;}
+	100% { background: #000;}
+}
+@-webkit-keyframes strobing {
+	0%   { background: #F00;}
+	8%   { background: #000;}
+	16%  { background: #FF0;}
+	24%  { background: #000;}
+	32%  { background: #0F0;}
+	40%  { background: #000;}
+	48%  { background: #0FF;}
+	56%  { background: #000;}
+	64%  { background: #00F;}
+	72%  { background: #000;}
+	80%  { background: #F0F;}
+	88%  { background: #000;}
+	96%  { background: #F00;}
+	100% { background: #000;}
+}
+@-o-keyframes strobing {
+	0%   { background: #F00;}
+	8%   { background: #000;}
+	16%  { background: #FF0;}
+	24%  { background: #000;}
+	32%  { background: #0F0;}
+	40%  { background: #000;}
+	48%  { background: #0FF;}
+	56%  { background: #000;}
+	64%  { background: #00F;}
+	72%  { background: #000;}
+	80%  { background: #F0F;}
+	88%  { background: #000;}
+	96%  { background: #F00;}
+	100% { background: #000;}
+}
+@keyframes strobing {
+	0%   { background: #F00;}
+	8%   { background: #000;}
+	16%  { background: #FF0;}
+	24%  { background: #000;}
+	32%  { background: #0F0;}
+	40%  { background: #000;}
+	48%  { background: #0FF;}
+	56%  { background: #000;}
+	64%  { background: #00F;}
+	72%  { background: #000;}
+	80%  { background: #F0F;}
+	88%  { background: #000;}
+	96%  { background: #F00;}
+	100% { background: #000;}
+}
+.event {
+	background: linear-gradient(to right, #F00 30%, #FF0 40%, #0F0 50%, #0FF 60%, #00F 70%, #F0F 80%, #F00 90%);
+}
+.no_highlights {
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+#event .event_helpicon > span {
+	position: relative;
+}
+#event .event_helpicon > span:before {
+	position: absolute;
+	content: "";
+	background: url(/images/New_ui/helpicon.png);
+	width: 16px;
+	height: 16px;
+	background-size: cover;
+	cursor: pointer;
+	right: -18px;
+}
+.aura-event-container {
+	position: absolute;
+	z-index: 20;
+	width: 80vw;
+	height: auto;
+	background: rgb(0 0 0 / 0.8);
+	font-family: Roboto-Regular;
+	font-size: 14px;
+	padding: 10px 6px 20px 10px;
+	overflow-y: auto;
+	border-radius: 4px;
+	color: #FFF;
+	top: 2vh;
+	margin: auto;
+	left: 0;
+	right: 0;
+	border: 1px solid rgb(255 255 255 / 0.3);
+	display: none;
+}
+.aura-event-container .aura-event-title-bg > div:first-of-type {
+	display: flex;
+	justify-content: space-between;
+}
+.aura-event-container .aura-event-title-bg .title {
+	font-size: 16px;
+	font-weight: bold;
+}
+.aura-event-container .aura-event-title-bg .desc {
+	margin: 3px 0 6px 0;
+	color:#BFBFBF;
+}
+.aura-event-container .aura-event-title-bg .cancel_btn {
+	width: 20px;
+	height: 20px;
+	border: 2px solid rgb(255 255 255 / 0.5);
+	border-radius: 50%;
+	margin-right: 5px;
+	cursor: pointer;
+	text-align: center;
+	line-height: 22px;
+	font-family: Roboto-Regular;
+}
+.aura-event-container .aura-event-content-bg {
+	margin-left: 12px;
+}
+.aura-event-container .aura-event-content-bg .title {
+	font-weight: bold;
+}
+.aura-event-container .aura-event-content-bg .desc {
+	margin: 0 0 6px 0;
+	color: #BFBFBF;
+}
+.event-cancel {
+	width: 20px;
+	height: 20px;
+	background: url(images/gameprofile/cancel.svg) no-repeat center;
+	border: 1px solid #842500;
+	background-color: #262626;
+	border-radius: 50%;
+	margin-right: 5px;
+	cursor: pointer;
+}

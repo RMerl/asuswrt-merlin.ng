@@ -48,7 +48,7 @@ then
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 	cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-BCM7.x-6.x $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
 
-elif [ "$BUILD_NAME" == "RT-AC86U" ]
+elif [ "$BUILD_NAME" == "RT-AC86U" ] || [ "$BUILD_NAME" == "GT-AC2900" ]
 then
 	SDK="_94908hnd"
 	ARCH="_arm"
@@ -197,6 +197,10 @@ fi
 if [ "$BUILD_NAME" == "RT-AC88U" ]
 then
 	cp release/src/router/rtl_bin/prebuilt/* $REPO/release/src/router/rtl_bin/prebuilt/
+fi
+if [ "$BUILD_NAME" == "GT-AC2900" ]
+then
+        cp release/src/router/aura_sw/prebuild/* $REPO/release/src/router/aura_sw/prebuild/$BUILD_NAME/
 fi
 
 # Anything newer than SDK6

@@ -3194,7 +3194,7 @@ void chk_gmac3_excludes()
 //  wl_ifnames
 //  btn_xxxx_gpio
 //  led_xxxx_gpio
-
+static int reset_gpio = 1;
 int init_nvram(void)
 {
 	const int sw_mode __attribute__((unused)) = sw_mode();
@@ -3232,103 +3232,106 @@ int init_nvram(void)
 	memset(wan_ifaces, 0, sizeof(wan_ifaces));
 	memset(wl_ifaces, 0, sizeof(wl_ifaces));
 	nvram_set("rc_support", "");
-	nvram_set_int("btn_rst_gpio", 0xff);
-	nvram_set_int("btn_wps_gpio", 0xff);
-	nvram_set_int("btn_radio_gpio", 0xff);
-	nvram_set_int("led_pwr_gpio", 0xff);
-	nvram_set_int("led_wps_gpio", 0xff);
-	nvram_set_int("pwr_usb_gpio", 0xff);
-	nvram_set_int("pwr_usb_gpio2", 0xff);
-	nvram_set_int("led_usb_gpio", 0xff);
-	nvram_set_int("led_lan_gpio", 0xff);
-	nvram_set_int("led_lan1_gpio", 0xff);
-	nvram_set_int("led_lan2_gpio", 0xff);
-	nvram_set_int("led_lan3_gpio", 0xff);
-	nvram_set_int("led_lan4_gpio", 0xff);
-	nvram_set_int("led_wan_gpio", 0xff);
+	if (reset_gpio) {
+		nvram_set_int("btn_rst_gpio", 0xff);
+		nvram_set_int("btn_wps_gpio", 0xff);
+		nvram_set_int("btn_radio_gpio", 0xff);
+		nvram_set_int("led_pwr_gpio", 0xff);
+		nvram_set_int("led_wps_gpio", 0xff);
+		nvram_set_int("pwr_usb_gpio", 0xff);
+		nvram_set_int("pwr_usb_gpio2", 0xff);
+		nvram_set_int("led_usb_gpio", 0xff);
+		nvram_set_int("led_lan_gpio", 0xff);
+		nvram_set_int("led_lan1_gpio", 0xff);
+		nvram_set_int("led_lan2_gpio", 0xff);
+		nvram_set_int("led_lan3_gpio", 0xff);
+		nvram_set_int("led_lan4_gpio", 0xff);
+		nvram_set_int("led_wan_gpio", 0xff);
 #if defined(RTCONFIG_WANLEDX2)
-	nvram_unset("led_wan2_gpio");
+		nvram_unset("led_wan2_gpio");
 #endif
 #ifdef HND_ROUTER
-	nvram_set_int("led_wan_normal_gpio", 0xff);
+		nvram_set_int("led_wan_normal_gpio", 0xff);
 #endif
 #ifdef RTCONFIG_EXTPHY_BCM84880
-	nvram_set_int("led_extphy_gpio", 0xff);
+		nvram_set_int("led_extphy_gpio", 0xff);
 #endif
-	nvram_set_int("led_2g_gpio", 0xff);
-	nvram_set_int("led_5g_gpio", 0xff);
-	nvram_set_int("led_all_gpio", 0xff);
-	nvram_set_int("led_logo_gpio", 0xff);
-	nvram_set_int("led_usb3_gpio", 0xff);
-	nvram_set_int("fan_gpio", 0xff);
-	nvram_set_int("have_fan_gpio", 0xff);
+		nvram_set_int("led_2g_gpio", 0xff);
+		nvram_set_int("led_5g_gpio", 0xff);
+		nvram_set_int("led_all_gpio", 0xff);
+		nvram_set_int("led_logo_gpio", 0xff);
+		nvram_set_int("led_usb3_gpio", 0xff);
+		nvram_set_int("fan_gpio", 0xff);
+		nvram_set_int("have_fan_gpio", 0xff);
 #ifdef RTCONFIG_SWMODE_SWITCH
 #if defined(PLAC66U)
-	nvram_set_int("btn_swmode1_gpio", 0xff);
+		nvram_set_int("btn_swmode1_gpio", 0xff);
 #else
-	nvram_set_int("btn_swmode1_gpio", 0xff);
-	nvram_set_int("btn_swmode2_gpio", 0xff);
-	nvram_set_int("btn_swmode3_gpio", 0xff);
-	nvram_set_int("swmode_switch", 0);
+		nvram_set_int("btn_swmode1_gpio", 0xff);
+		nvram_set_int("btn_swmode2_gpio", 0xff);
+		nvram_set_int("btn_swmode3_gpio", 0xff);
+		nvram_set_int("swmode_switch", 0);
 #endif	/* Model */
 #endif	/* RTCONFIG_SWMODE_SWITCH */
 #ifdef RTCONFIG_WIRELESS_SWITCH
-	nvram_set_int("btn_wifi_gpio", 0xff);
+		nvram_set_int("btn_wifi_gpio", 0xff);
 #endif
 #ifdef RTCONFIG_WIFI_TOG_BTN
-	nvram_set_int("btn_wltog_gpio", 0xff);
+		nvram_set_int("btn_wltog_gpio", 0xff);
 #else
-	nvram_unset("btn_wltog_gpio");
+		nvram_unset("btn_wltog_gpio");
 #endif
 #ifdef RTCONFIG_LED_BTN
-	nvram_set_int("btn_led_gpio", 0xff);
+		nvram_set_int("btn_led_gpio", 0xff);
 #else
-	nvram_unset("btn_led_gpio");
+		nvram_unset("btn_led_gpio");
 #endif
 #ifdef RTCONFIG_EJUSB_BTN
-	nvram_set_int("btn_ejusb1_gpio", 0xff);
-	nvram_set_int("btn_ejusb2_gpio", 0xff);
+		nvram_set_int("btn_ejusb1_gpio", 0xff);
+		nvram_set_int("btn_ejusb2_gpio", 0xff);
 #endif
 #ifdef RTCONFIG_TURBO_BTN
-	nvram_set_int("btn_turbo_gpio", 0xff);
-	nvram_set_int("led_turbo_gpio", 0xff);
+		nvram_set_int("btn_turbo_gpio", 0xff);
+		nvram_set_int("led_turbo_gpio", 0xff);
 #endif
 #if defined(RTCONFIG_WANRED_LED)
-	nvram_unset("led_wan_red_gpio");
+		nvram_unset("led_wan_red_gpio");
 #if defined(RTCONFIG_WANLEDX2)
-	nvram_unset("led_wan2_red_gpio");
+		nvram_unset("led_wan2_red_gpio");
 #endif
 #endif
 #if defined(RTCONFIG_PWRRED_LED)
-	nvram_unset("led_pwr_red_gpio");
+		nvram_unset("led_pwr_red_gpio");
 #endif
 #if defined(RTCONFIG_FAILOVER_LED)
-	nvram_unset("led_failover_gpio");
+		nvram_unset("led_failover_gpio");
 #endif
 #if defined(RTCONFIG_M2_SSD)
-	nvram_unset("led_sata_gpio");
+		nvram_unset("led_sata_gpio");
 #endif
 #if defined(RTCONFIG_R10G_LED)
-	nvram_unset("led_r10g_gpio");
+		nvram_unset("led_r10g_gpio");
 #endif
 #if defined(RTCONFIG_SFPP_LED)
-	nvram_unset("led_sfpp_gpio");
+		nvram_unset("led_sfpp_gpio");
 #endif
 #ifdef RTCONFIG_INTERNAL_GOBI
-	nvram_unset("btn_lte_gpio");
-	nvram_unset("led_3g_gpio");
-	nvram_unset("led_lte_gpio");
-	nvram_unset("led_sig1_gpio");
-	nvram_unset("led_sig2_gpio");
-	nvram_unset("led_sig3_gpio");
+		nvram_unset("btn_lte_gpio");
+		nvram_unset("led_3g_gpio");
+		nvram_unset("led_lte_gpio");
+		nvram_unset("led_sig1_gpio");
+		nvram_unset("led_sig2_gpio");
+		nvram_unset("led_sig3_gpio");
 #endif
 #ifdef BLUECAVE
-	nvram_unset("led_ctl_sig1_gpio");
-	nvram_unset("led_ctl_sig2_gpio");
-	nvram_unset("led_ctl_sig3_gpio");
-	nvram_unset("led_idr_sig1_gpio");
-	nvram_unset("led_idr_sig1_gpio");
+		nvram_unset("led_ctl_sig1_gpio");
+		nvram_unset("led_ctl_sig2_gpio");
+		nvram_unset("led_ctl_sig3_gpio");
+		nvram_unset("led_idr_sig1_gpio");
+		nvram_unset("led_idr_sig1_gpio");
 #endif
+		reset_gpio = 0;
+	}
 #ifdef RTCONFIG_NBR_RPT
 	nvram_unset("channel_2g");
 	nvram_unset("channelclass_2g");
@@ -8689,7 +8692,6 @@ int init_nvram(void)
 		nvram_set_int("btn_wps_gpio", 29|GPIO_ACTIVE_LOW);
 		nvram_set_int("btn_rst_gpio", 4|GPIO_ACTIVE_LOW);
 		nvram_set_int("btn_led_gpio", 31|GPIO_ACTIVE_LOW);
-
 #if 0
 #ifdef RTCONFIG_XHCIMODE
                 nvram_set("xhci_ports", "2-1 2-2");
@@ -14246,7 +14248,6 @@ static void sysinit(void)
 #if defined(RTCONFIG_FIXED_BRIGHTNESS_RGBLED)
 	nvram_set("success_start_service", "0");
 #endif
-
 	init_nvram();  // for system indepent part after getting model
 
 #ifdef RTCONFIG_JFFS_NVRAM
@@ -14931,12 +14932,6 @@ _dprintf("%s %d turnning on power on ethernet here\n", __func__, __LINE__);
 #endif
 #endif
 
-#if defined(RTCONFIG_HND_ROUTER_AX_675X)
-#if !defined(RPAX56) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
-			load_wl_modules();
-			restart_wireless();
-#endif
-#endif
 #ifdef HND_ROUTER
 			if (is_router_mode()) start_mcpd_proxy();
 #endif

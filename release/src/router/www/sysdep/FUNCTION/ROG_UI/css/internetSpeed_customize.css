@@ -1,0 +1,193 @@
+@font-face{
+	font-family: Roboto;
+	src: url(../fonts/Roboto-Regular.woff) format("woff"),
+		 url(../fonts/Roboto-Regular.ttf) format("opentype");
+}
+
+@font-face{
+	font-family: Xolonium;
+	src: url(../fonts/xolonium.regular.woff) format("woff"),
+		 url(../fonts/xolonium.regular.otf) format("opentype");
+}
+
+.container{
+	font-family: Roboto;
+}
+
+.formfonttitle{
+	font-family: Xolonium;
+	font-size: 18px;
+}
+
+.formfontdesc{
+	color: #C9D1D7;
+}
+
+.description-bar{
+	border-left: none;
+	padding-left: 0;
+}
+
+.split-Line{
+	background: #DB0730;
+}
+
+.ookla_info{
+	color: #79031A;
+}
+
+.speedTest_div{
+	background: #1A1A20;
+	border: 1px solid #5C0C0B;
+}
+
+.speedTest_result_div{
+	background: #1F2025;
+}
+
+.date_div{
+	border-bottom: solid #580717 6px;
+}
+
+.download_upload_text{
+	color: #B30527;
+}
+
+.ping_result_title{
+	color: #B30527;
+}
+
+.speedTest_btn_container{
+	font-family: Xolonium;
+}
+
+.speedTest_btn_press{
+	color: #FFFFFF;
+}
+
+.alert_notification{
+	background-color: #232429;
+}
+
+.close_icon{
+	background-color: #333333;
+}
+
+.close_icon:hover{
+	background-color: #333333;
+}
+
+.history_downup_font{
+	color: #808FFD;
+}
+
+.history_delete:hover{
+	background-color: #333333;
+}
+
+.left_arrow:hover{
+	background: rgba(255,255,255,0.05) url(../images/speedtest/speedtest_arrow_left_red.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.right_arrow:hover{
+	background: rgba(255,255,255,0.05) url(../images/speedtest/speedtest_arrow_right_red.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.up_arrow{
+	background: url(../images/speedtest/speedtest_arrow_right_red.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.up_arrow:hover{
+	background: url(../images/speedtest/speedtest_arrow_right_white.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.history_select_checked{
+	background: #DB0730 url(../images/speedtest/checked_24px.svg) no-repeat center;
+	background-size: 90%;
+}
+
+.detail_speed_level{
+	background-color: #232429;
+}
+
+.detail_title{
+	font-family: Xolonium;
+	border-bottom: #79031A solid 1px;
+}
+
+.detail_level_desc_div{
+	border-bottom: #79031A solid 1px;
+}
+
+.detail_last_test_div{
+	border-bottom: #79031A solid 1px;
+}
+
+.speed_level_text2{
+	font-family: Xolonium;
+}
+
+.level_desc_title{
+	color: #B30527;
+}
+
+.ping_title{
+	color: #B30527;
+}
+
+.down_arrow{
+	background: url(../images/speedtest/speedtest_arrow_right_white.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.server_list_check{
+	background: url(../images/speedtest/checked_24px_red.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.server_list_brick{
+	background: #1935FF;
+}
+
+.no_test_result{
+	color: #8492B4;
+}
+
+.cur_server_container{
+	background: #232429;
+}
+
+#outer_server_container{
+	background: #232429;
+}
+
+.level_ping_div{
+	background-color: #232429;
+}
+
+::-webkit-scrollbar{
+	background: #3C3E42;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #595D64;
+}
+
+@media (max-width: 720px) {
+	.level_ping_div{
+		background-color: transparent;
+	}
+
+	.ping_result_div{
+		background-color: #232429;
+	}
+
+	.up_arrow_container{
+		background: #232429;
+	}
+
+}

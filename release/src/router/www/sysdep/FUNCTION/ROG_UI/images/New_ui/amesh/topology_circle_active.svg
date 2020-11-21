@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="84px" height="84px" viewBox="0 0 84 84" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>rog-circle-active</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="3.8661274%" y1="14.7825087%" x2="93.4493937%" y2="90.199347%" id="linearGradient-1">
+            <stop stop-color="#AA0000" offset="0%"></stop>
+            <stop stop-color="#D20015" offset="48.526564%"></stop>
+            <stop stop-color="#D50000" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="11.9496579%" y1="15.2903594%" x2="86.5818256%" y2="92.7707543%" id="linearGradient-2">
+            <stop stop-color="#900000" offset="0%"></stop>
+            <stop stop-color="#6B0F0F" offset="56.5720017%"></stop>
+            <stop stop-color="#960000" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="-4.50575087%" y1="11.4203559%" x2="100%" y2="92.4975212%" id="linearGradient-3">
+            <stop stop-color="#C20000" offset="0%"></stop>
+            <stop stop-color="#D43C3C" stop-opacity="0.828862544" offset="28.803315%"></stop>
+            <stop stop-color="#FFD9D9" stop-opacity="0.846399694" offset="49.3797508%"></stop>
+            <stop stop-color="#E34646" stop-opacity="0.877922858" offset="69.4995777%"></stop>
+            <stop stop-color="#D50000" offset="100%"></stop>
+        </linearGradient>
+        <circle id="path-4" cx="37" cy="37" r="36"></circle>
+        <filter x="-15.3%" y="-15.3%" width="130.6%" height="130.6%" filterUnits="objectBoundingBox" id="filter-5">
+            <feMorphology radius="1.5" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="2.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"></feComposite>
+            <feColorMatrix values="0 0 0 0 1   0 0 0 0 0.409749356   0 0 0 0 0.368559451  0 0 0 0.323617788 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <linearGradient x1="84.0930856%" y1="19.3811548%" x2="19.730728%" y2="84.3807629%" id="linearGradient-6">
+            <stop stop-color="#5D0F0F" offset="0%"></stop>
+            <stop stop-color="#D66C50" offset="48.6251514%"></stop>
+            <stop stop-color="#5C0404" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="12.4823392%" y1="14.9754668%" x2="87.437062%" y2="87.1062067%" id="linearGradient-7">
+            <stop stop-color="#5A0505" offset="0%"></stop>
+            <stop stop-color="#861616" offset="20.7374367%"></stop>
+            <stop stop-color="#E23939" offset="49.7358903%"></stop>
+            <stop stop-color="#710F0F" offset="82.8943201%"></stop>
+            <stop stop-color="#490000" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="49.9999999%" y1="-7.12649578%" x2="49.9999999%" y2="107.303297%" id="linearGradient-8">
+            <stop stop-color="#CDCDCD" offset="0%"></stop>
+            <stop stop-color="#FFFFFF" offset="50.7522171%"></stop>
+            <stop stop-color="#969191" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50.8549966%" y1="-2.74080233%" x2="50.8549966%" y2="102.334244%" id="linearGradient-9">
+            <stop stop-color="#AF0000" offset="0%"></stop>
+            <stop stop-color="#903E3E" offset="22.6091087%"></stop>
+            <stop stop-color="#E09494" offset="40.5088682%"></stop>
+            <stop stop-color="#FFEFEF" offset="50.0976562%"></stop>
+            <stop stop-color="#EA7F7F" offset="61.4336993%"></stop>
+            <stop stop-color="#940707" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="metarials-rog" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="singal-quality" transform="translate(-87.000000, -384.000000)">
+            <g id="circle" transform="translate(87.000000, 290.000000)">
+                <g id="active" transform="translate(5.000000, 99.000000)">
+                    <path d="M37,73.5 C57.1583934,73.5 73.5,57.1583934 73.5,37 C73.5,16.8416066 57.1583934,0.5 37,0.5 C16.8416066,0.5 0.5,16.8416066 0.5,37 C0.5,57.1583934 16.8416066,73.5 37,73.5 Z M37,72.5 C17.3938914,72.5 1.5,56.6061086 1.5,37 C1.5,17.3938914 17.3938914,1.5 37,1.5 C56.6061086,1.5 72.5,17.3938914 72.5,37 C72.5,56.6061086 56.6061086,72.5 37,72.5 Z" id="Oval" fill="url(#linearGradient-1)" fill-rule="nonzero"></path>
+                    <g id="Oval">
+                        <use fill="black" fill-opacity="1" filter="url(#filter-5)" xlink:href="#path-4"></use>
+                        <use stroke="url(#linearGradient-3)" stroke-width="1" fill="url(#linearGradient-2)" fill-rule="evenodd" xlink:href="#path-4"></use>
+                    </g>
+                    <path d="M37,73.5 C57.1583934,73.5 73.5,57.1583934 73.5,37 C73.5,16.8416066 57.1583934,0.5 37,0.5 C16.8416066,0.5 0.5,16.8416066 0.5,37 C0.5,57.1583934 16.8416066,73.5 37,73.5 Z M37,72.5 C17.3938914,72.5 1.5,56.6061086 1.5,37 C1.5,17.3938914 17.3938914,1.5 37,1.5 C56.6061086,1.5 72.5,17.3938914 72.5,37 C72.5,56.6061086 56.6061086,72.5 37,72.5 Z" id="Oval" fill="url(#linearGradient-6)" fill-rule="nonzero" style="mix-blend-mode: soft-light;"></path>
+                    <circle id="Oval" fill-opacity="0.75" fill="url(#linearGradient-7)" cx="37" cy="37" r="30"></circle>
+                    <path d="M37,67 C53.5685425,67 67,53.5685425 67,37 C67,20.4314575 53.5685425,7 37,7 C20.4314575,7 7,20.4314575 7,37 C7,53.5685425 20.4314575,67 37,67 Z M37,66 C20.9837423,66 8,53.0162577 8,37 C8,20.9837423 20.9837423,8 37,8 C53.0162577,8 66,20.9837423 66,37 C66,53.0162577 53.0162577,66 37,66 Z" id="Oval" fill="url(#linearGradient-8)" style="mix-blend-mode: overlay;"></path>
+                    <path d="M37,67 C53.5685425,67 67,53.5685425 67,37 C67,20.4314575 53.5685425,7 37,7 C20.4314575,7 7,20.4314575 7,37 C7,53.5685425 20.4314575,67 37,67 Z M37,66 C20.9837423,66 8,53.0162577 8,37 C8,20.9837423 20.9837423,8 37,8 C53.0162577,8 66,20.9837423 66,37 C66,53.0162577 53.0162577,66 37,66 Z" id="Oval" fill-opacity="0.6" fill="url(#linearGradient-9)"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

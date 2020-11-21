@@ -1,0 +1,61 @@
+.eula_container{
+    margin: auto;
+    width: 50%;
+}
+
+.alert_ASUS_EULA{
+	line-height: 160%;
+	font-size: 14px;
+	font-family: Arial, Verdana, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
+	height:auto;
+	position:absolute;
+	background: rgba(0,0,0,0.9);
+	z-index:10;
+	width: 50%;
+	margin-top:150px;
+	border-radius:10px;
+	padding:25px;
+	display: none;
+}
+
+.custom_ol{
+	counter-reset:item;
+	list-style: none;
+	margin-left: -2em;
+}
+
+.custom_ol li:before{
+ content:"(" counter(item) ")";
+ counter-increment:item;
+ margin-right:0.5em;
+}
+
+.custom_ol li{
+ padding-left:1em;
+ text-indent:-2em;
+}
+
+.custom_ol li li{
+	counter-reset:item;
+	list-style: none;
+	text-indent: -1em;
+	margin-left:-3em;
+}
+
+.custom_ol li li:before{
+	content: "-";
+}
+#tm_eula_content{
+	background-color: #111;
+	overflow-y: auto;
+	font-size: 14px;
+	padding: 18px 42px;
+}
+.control-field{
+	margin: 18px 0;
+	display: flex;
+	justify-content: space-around;
+}
+.eula-content-padding{
+	margin-top: 18px;
+}

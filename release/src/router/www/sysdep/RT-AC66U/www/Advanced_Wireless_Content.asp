@@ -661,15 +661,11 @@ function applyRule(){
 		if(auth_mode == 'sae'){
 			document.form.wl_mfp.value = '2';
 		}
-		else if(auth_mode == 'psk2sae'){
+		else if(auth_mode == 'psk2sae' && document.form.wl_mfp.value == '0'){
 			document.form.wl_mfp.value = '1';
 		}
 		else if(auth_mode == 'psk2' || auth_mode == 'pskpsk2' || auth_mode == 'wpa2' || auth_mode == 'wpawpa2'){
 			if(mbo_support && mbo == '1' && document.form.wl_mfp.value == '0'){
-				document.form.wl_mfp.value = '1';
-			}
-
-			if(document.form.wl_mfp.value == '2'){
 				document.form.wl_mfp.value = '1';
 			}
 		}
@@ -1824,7 +1820,7 @@ function separateGenChannel(unit, channel, bandwidth){
 
 			for(var i=channel_5g_2.length-1; i>=0; i--){
 				var _channel = parseInt(channel_5g_2[i]);
-				if(_channel < 30 || _channel > 231){
+				if(_channel < 30 || _channel > 221){
 					channel_5g_2.splice(i, 1);
 				}
 			}

@@ -1,0 +1,46 @@
+.banner_COD{
+	position: absolute;
+	width: 1280px;
+	height: 667px;
+	margin:-130px 0 0 -390px;
+	z-index: -1;
+	-webkit-animation-name: COD_banners;
+	-webkit-animation-duration: 30s;
+	-webkit-animation-iteration-count: infinite;
+	-webkit-animation-timing-function: ease-in-out;
+	animation-name: COD_banners;
+	animation-duration: 30s;
+	animation-iteration-count: infinite;
+	animation-timing-function: ease-in-out;
+}
+.banner{
+	position: absolute;
+	z-index: -1;
+	margin: -120px 0 0 -260px;
+	background: url('../images/New_ui/GT-bg_header.png');
+	width: 1127px;
+	height: 439px;
+}
+@-webkit-keyframes COD_banners{
+	0%   {background: url('../images/New_ui/COD_rog_banner_01.png');}
+	25%  {background: url('../images/New_ui/COD_rog_banner_02.png');}
+	50%  {background: url('../images/New_ui/COD_rog_banner_03.png');}
+	75%  {background: url('../images/New_ui/COD_rog_banner_04.png');}
+	100% {background: url('../images/New_ui/COD_rog_banner_05.png');}
+}
+@keyframes COD_banners{
+	0%   {background: url('../images/New_ui/COD_rog_banner_01.png');}
+	25%  {background: url('../images/New_ui/COD_rog_banner_02.png');}
+	50%  {background: url('../images/New_ui/COD_rog_banner_03.png');}
+	75%  {background: url('../images/New_ui/COD_rog_banner_04.png');}
+	100% {background: url('../images/New_ui/COD_rog_banner_05.png');}
+}
+.bg_rog{
+	background:url('../images/New_ui/bg_content_ROG.png') no-repeat;
+}
+.cod_connect{
+	width: 156px;
+	height: 168px;
+	background: url('../images/New_ui/ic-connect-COD.png');
+	margin: 10px 0 0 63px;
+}

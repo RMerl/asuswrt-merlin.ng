@@ -581,13 +581,8 @@ function applyRule(){
 		if(auth_mode == 'sae'){
 			document.form.wl_mfp.value = '2';
 		}
-		else if(auth_mode == 'psk2sae'){
+		else if(auth_mode == 'psk2sae' && document.form.wl_mfp.value == '0'){
 			document.form.wl_mfp.value = '1';
-		}
-		else if(auth_mode == 'psk' || auth_mode == 'psk2' || auth_mode == 'pskpsk2' || auth_mode == 'psk2sae' || auth_mode == 'wpa' || auth_mode == 'wpa2' || auth_mode == 'wpawpa2'){
-			if(document.form.wl_mfp.value == '2'){
-				document.form.wl_mfp.value = '1';
-			}
 		}
 
 		if(Bcmwifi_support) {

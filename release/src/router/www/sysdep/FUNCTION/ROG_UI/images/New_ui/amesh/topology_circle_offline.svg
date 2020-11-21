@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="84px" height="84px" viewBox="0 0 84 84" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>rog-circle-disable</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50%" y1="-17.0691839%" x2="50%" y2="84.2628557%" id="linearGradient-1">
+            <stop stop-color="#3E3E3E" offset="0%"></stop>
+            <stop stop-color="#181818" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="11.349044%" x2="50%" y2="94.1665183%" id="linearGradient-2">
+            <stop stop-color="#484848" offset="0%"></stop>
+            <stop stop-color="#1E1E1E" offset="100%"></stop>
+        </linearGradient>
+        <circle id="path-3" cx="37" cy="37" r="37"></circle>
+        <filter x="-30.4%" y="-30.4%" width="160.8%" height="160.8%" filterUnits="objectBoundingBox" id="filter-4">
+            <feMorphology radius="2.5" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feMorphology radius="3" operator="erode" in="SourceAlpha" result="shadowInner"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowInner" result="shadowInner"></feOffset>
+            <feComposite in="shadowOffsetOuter1" in2="shadowInner" operator="out" result="shadowOffsetOuter1"></feComposite>
+            <feGaussianBlur stdDeviation="6" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.1 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="metarials-rog" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="singal-quality" transform="translate(-87.000000, -478.000000)">
+            <g id="circle" transform="translate(87.000000, 290.000000)">
+                <g id="dis-2" transform="translate(5.000000, 193.000000)">
+                    <g id="Group-6">
+                        <g id="Group">
+                            <circle id="Oval" fill="#46535C" cx="37" cy="37" r="37"></circle>
+                            <circle id="Oval" fill-opacity="0.9" fill="url(#linearGradient-1)" cx="37" cy="37" r="37"></circle>
+                            <circle id="Oval" fill-opacity="0.75" fill="url(#linearGradient-2)" cx="37" cy="37" r="30.8333333"></circle>
+                        </g>
+                        <circle id="Oval" stroke="#787878" cx="37" cy="37" r="37"></circle>
+                        <g id="Oval">
+                            <use fill="black" fill-opacity="1" filter="url(#filter-4)" xlink:href="#path-3"></use>
+                            <use stroke-opacity="0.44" stroke="#45505E" stroke-width="1" xlink:href="#path-3"></use>
+                        </g>
+                        <circle id="Oval" stroke="#9F9F9F" cx="37" cy="37" r="30.3333333"></circle>
+                        <circle id="Oval" stroke-opacity="0.44" stroke="#45505E" cx="37" cy="37" r="30.3333333"></circle>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

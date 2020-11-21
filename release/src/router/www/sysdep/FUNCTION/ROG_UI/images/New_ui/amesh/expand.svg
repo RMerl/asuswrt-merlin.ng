@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="158px" height="17px" viewBox="0 0 158 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>ic-next</title>
+    <desc>Created with Sketch.</desc>
+    <g id="-" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="singal-quality" transform="translate(-160.000000, -835.000000)">
+            <g id="Group-33" transform="translate(163.000000, 838.000000)">
+                <path d="M44.5332031,1 L100.808594,1 L94.601057,8.59440577 C92.3219697,11.3826798 88.9111418,13 85.3099322,13 L60.456577,13 C56.9896548,13 53.6921545,11.5005779 51.4132675,8.88787371 L44.5332031,1 Z" id="Rectangle" fill="#740F0F"></path>
+                <polyline id="Path-2" stroke="#9C9C9C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="69.0161133 5 73 8.95068359 77.0004883 5"></polyline>
+            </g>
+        </g>
+    </g>
+</svg>

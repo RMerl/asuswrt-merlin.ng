@@ -705,12 +705,15 @@ void get_gpio_values_once(int force)
 	if (gpio_values_loaded && !force) return;
 
 	gpio_values_loaded = 1;
+
 	// TODO : add other models
 	for (i = 0; i < ARRAY_SIZE(led_gpio_table); ++i) {
 		led_gpio_table[i] = -1;
 	}
+
 	for (p = &led_btn_table[0]; p->p_val; ++p)
 		*(p->p_val) = __get_gpio(p->nv);
+
 }
 
 int button_pressed(int which)

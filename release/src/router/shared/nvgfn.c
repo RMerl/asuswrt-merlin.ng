@@ -31,9 +31,9 @@ void nvgfn_kernel_setting(int val)
 		f_write_string(UDP_MEM     , "65536 131072 262144", 0, 0);
 	}
 	else {
-		f_write_string(UDP_RMEM_MIN, "4096", 0, 0);
-		f_write_string(UDP_WMEM_MIN, "4096", 0, 0);
-		f_write_string(UDP_MEM     , "10317 13758 20634", 0, 0);
+		f_write_string(UDP_RMEM_MIN, "8192", 0, 0);
+		f_write_string(UDP_WMEM_MIN, "8192", 0, 0);
+		f_write_string(UDP_MEM     , "32767 65536 131072", 0, 0);
 	}
 	NVGFN_DBG("modify kernel setting (%d)\n", val);
 }
@@ -55,6 +55,35 @@ static void nvgfn_run_GFNQoS()
 		notify_rc("restart_qos");
 		notify_rc("restart_firewall");
 	}
+}
+
+int nvgfn_GetPacketDropCount(int *value)
+{
+	    char *pNext;
+	    char *f_content_buf[256];
+	    char *num;
+	    char *dest[8] = {0};
+	    char *delim = " ";
+	    int count = 0;
+
+    	    system("cat /proc/net/snmp | grep Udp: | grep -v In > /tmp/PacketDropCount");
+	    f_read_string("/tmp/PacketDropCount", f_content_buf, sizeof(f_content_buf));
+
+     	    pNext = strtok(f_content_buf,delim);
+	    while (pNext != NULL)
+  	    {
+		count=count+1;
+		if(count==6){
+			nvram_set("nvgfn_getudppacketdrop", pNext);
+		}
+
+		pNext = strtok(NULL, delim);
+  	    }   
+
+	    *value = nvram_get_int("nvgfn_getudppacketdrop");
+
+	    NVGFN_DBG("value = %d\n", *value);
+	    return 1;
 }
 
 int nvgfn_GetQosState(int *value)

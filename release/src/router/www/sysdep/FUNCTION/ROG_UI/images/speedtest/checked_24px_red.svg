@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <polygon id="check_box_24px-a" points="9.333 18.667 2.667 12 4.547 10.12 9.333 14.893 19.453 4.773 21.333 6.667"/>
+  </defs>
+  <use fill="#DB0730" fill-opacity=".87" fill-rule="evenodd" xlink:href="#check_box_24px-a"/>
+</svg>

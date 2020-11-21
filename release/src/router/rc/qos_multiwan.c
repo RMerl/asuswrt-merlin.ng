@@ -1160,6 +1160,7 @@ static int start_tqos(void)
 	char prefix[16], imq_if[IFNAMSIZ];
 	char burst_root[32];
 	char burst_leaf[32];
+	char *qsched;
 #ifdef CONFIG_BCMWL5
 	char *protocol="802.1q";
 #endif
@@ -1269,12 +1270,18 @@ static int start_tqos(void)
 		mtu = strtoul(nvram_safe_get("wan_mtu"), NULL, 10);
 		bw = obw;
 
+#if defined(RTCONFIG_HND_ROUTER_AX)
+		qsched = "fq_codel quantum 300 limit 1000 noecn";
+#else
+		qsched = "sfq perturb 10";
+#endif
+
 		/* WAN */
 		fprintf(f,
 			"#!/bin/sh\n"
 			"#LAN/WAN\n"
+			"SCH=\"%s\"\n"
 			"I=%s\n"
-			"SFQ=\"sfq perturb 10\"\n"
 			"TQA=\"tc qdisc add dev $I\"\n"
 			"TCA=\"tc class add dev $I\"\n"
 			"TFA=\"tc filter add dev $I\"\n"
@@ -1295,6 +1302,7 @@ static int start_tqos(void)
 #endif
 			"# upload 2:1\n"
 			"\t$TCA parent 1: classid 1:1 htb rate %ukbit ceil %ukbit %s\n" ,
+				qsched,
 				wan, imq_if,
 				(nvram_pf_get_int(prefix, "default") + 1) * 10,
 #ifdef CLS_ACT
@@ -1342,7 +1350,7 @@ static int start_tqos(void)
 
 			fprintf(f, "# egress %d: %u-%u%%\n", i, rate, ceil);
 			fprintf(f, "\t$TCA parent 1:1 classid 1:%d htb rate %ukbit %s %s prio %d quantum %u\n", x, calc(bw, rate), s, burst_leaf, (i >= 6) ? 7 : (i + 1), mtu);
-			fprintf(f, "\t$TQA parent 1:%d handle %d: $SFQ\n", x, x);
+			fprintf(f, "\t$TQA parent 1:%d handle %d: $SCH\n", x, x);
 			fprintf(f, "\t$TFA parent 1: prio %d protocol ip u32 match mark %d 0x%x flowid 1:%d\n", x, i + 1, QOS_MASK, x);
 		}
 		free(buf);
@@ -1431,7 +1439,7 @@ static int start_tqos(void)
 				x = (i + 1) * 10;
 				fprintf(f, "# ingress %d: %u%%\n", i, rate);
 				fprintf(f,"\t$TCADL parent 2:1 classid 2:%d htb rate %ukbit %s prio %d quantum %u\n", x, calc(bw, rate), burst_leaf, (i >= 6) ? 7 : (i + 1), mtu);
-				fprintf(f,"\t$TQADL parent 2:%d handle %d: $SFQ\n", x, x);
+				fprintf(f,"\t$TQADL parent 2:%d handle %d: $SCH\n", x, x);
 				fprintf(f,"\t$TFADL parent 2: prio %d protocol ip u32 match mark %d 0x%x flowid 2:%d\n", x, i + 1, QOS_MASK, x);
 #else
 				x = i + 1;
@@ -1680,6 +1688,7 @@ static int start_bandwidth_limiter(void)
 	int addr_type, lock;		/* handler of br0 for each WAN unit */
 	char addr_new[40];
 	char wl_ifname[IFNAMSIZ];
+	char *qsched;
 
 	/* If WAN interface changes, generate mangle table again. */
 	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
@@ -1727,15 +1736,23 @@ static int start_bandwidth_limiter(void)
 	get_qos_prefix(0, prefix);
 	guest = 3;	/* 3 ~ 12 ==> egress from guest network, handle (qdisc-id) */
 
+#if defined(RTCONFIG_HND_ROUTER_AX)
+	qsched = "fq_codel quantum 300 limit 1000 noecn";
+#else
+	qsched = "sfq perturb 10";
+#endif
+
 	fprintf(f, "#!/bin/sh\n"
-		   "WAN=%s\n", wan);
+		   "SCH=\"%s\"\n"
+		   "WAN=%s\n"
+		   , qsched
+		   , wan);
 	fprintf(f, "tc qdisc del dev $WAN root 2>/dev/null\n"
 		   "tc qdisc del dev $WAN ingress 2>/dev/null\n"
 		   "\n"
 		   "TQAU=\"tc qdisc add dev $WAN\"\n"
 		   "TCAU=\"tc class add dev $WAN\"\n"
 		   "TFAU=\"tc filter add dev $WAN\"\n"
-		   "SFQ=\"sfq perturb 10\"\n"
 		   "TQA=\"tc qdisc add dev br0\"\n"
 		   "TCA=\"tc class add dev br0\"\n"
 		   "TFA=\"tc filter add dev br0\"\n"
@@ -1753,11 +1770,11 @@ static int start_bandwidth_limiter(void)
 	// default : 10Gbps
 	fprintf(f, "\n"
 		   "\t$TCA parent 1:1 classid 1:9 htb rate %ukbit ceil %ukbit prio 1\n", max_wire_speed, max_wire_speed);
-	fprintf(f, "\t$TQA parent 1:9 handle 9: $SFQ\n");
+	fprintf(f, "\t$TQA parent 1:9 handle 9: $SCH\n");
 	fprintf(f, "\t$TFA parent 1: prio 1 protocol ip u32 match mark 9 0x%x flowid 1:9\n", QOS_MASK);
 	fprintf(f, "\n"
 		   "\t$TCAU parent 2:1 classid 2:9 htb rate %ukbit ceil %ukbit prio 1\n", max_wire_speed, max_wire_speed);
-	fprintf(f, "\t$TQAU parent 2:9 handle 9: $SFQ\n");
+	fprintf(f, "\t$TQAU parent 2:9 handle 9: $SCH\n");
 	fprintf(f, "\t$TFAU parent 2: prio 1 protocol ip u32 match mark 9 0x%x flowid 2:9\n", QOS_MASK);
 
 	/* ASUSWRT
@@ -1806,14 +1823,14 @@ static int start_bandwidth_limiter(void)
 					sscanf(dev_owned->mac, "%02X:%02X:%02X:%02X:%02X:%02X",&s[0],&s[1],&s[2],&s[3],&s[4],&s[5]);
 					fprintf(f, "\n"
 						   "$TCA parent 1:1 classid 1:%d htb rate %skbit ceil %skbit prio %d\n", class, dlc, dlc, class);
-					fprintf(f, "$TQA parent 1:%d handle %d: $SFQ\n", class, class);
+					fprintf(f, "$TQA parent 1:%d handle %d: $SCH\n", class, class);
 					fprintf(f, "$TFA parent 1: protocol ip prio %d u32 match u16 0x0800 0xFFFF at -2"
 						   " match u32 0x%02X%02X%02X%02X 0xFFFFFFFF at -12"
 						   " match u16 0x%02X%02X 0xFFFF at -14 flowid 1:%d",
 						   class, s[2], s[3], s[4], s[5], s[0], s[1], class);
 					fprintf(f, "\n");
 					fprintf(f, "$TCAU parent 2:1 classid 2:%d htb rate %skbit ceil %skbit prio %d\n", class, upc, upc, class);
-					fprintf(f, "$TQAU parent 2:%d handle %d: $SFQ\n", class, class);
+					fprintf(f, "$TQAU parent 2:%d handle %d: $SCH\n", class, class);
 					fprintf(f, "$TFAU parent 2: prio %d protocol ip u32 match mark %d 0x%x flowid 2:%d\n", class, class, QOS_MASK, class);
 					owned_dev = owned_dev->next;
 				}
@@ -1829,25 +1846,25 @@ static int start_bandwidth_limiter(void)
 			sscanf(addr_new, "%02X:%02X:%02X:%02X:%02X:%02X",&s[0],&s[1],&s[2],&s[3],&s[4],&s[5]);
 			fprintf(f, "\n"
 				   "\t$TCA parent 1:1 classid 1:%d htb rate %skbit ceil %skbit prio %d\n", class, dlc, dlc, class);
-			fprintf(f, "\t$TQA parent 1:%d handle %d: $SFQ\n", class, class);
+			fprintf(f, "\t$TQA parent 1:%d handle %d: $SCH\n", class, class);
 			fprintf(f, "\t$TFA parent 1: protocol ip prio %d u32 match u16 0x0800 0xFFFF at -2"
 				   " match u32 0x%02X%02X%02X%02X 0xFFFFFFFF at -12"
 				   " match u16 0x%02X%02X 0xFFFF at -14 flowid 1:%d",
 				   class, s[2], s[3], s[4], s[5], s[0], s[1], class);
 			fprintf(f, "\n"
 				   "\t$TCAU parent 2:1 classid 2:%d htb rate %skbit ceil %skbit prio %d\n", class, upc, upc, class);
-			fprintf(f, "\t$TQAU parent 2:%d handle %d: $SFQ\n", class, class);
+			fprintf(f, "\t$TQAU parent 2:%d handle %d: $SCH\n", class, class);
 			fprintf(f, "\t$TFAU parent 2: prio %d protocol ip u32 match mark %d 0x%x flowid 2:%d\n", class, class, QOS_MASK, class);
 		}
 		else if (addr_type == TYPE_IP || addr_type == TYPE_IPRANGE)
 		{
 			fprintf(f, "\n"
 				   "\t$TCA parent 1:1 classid 1:%d htb rate %skbit ceil %skbit prio %d\n", class, dlc, dlc, class);
-			fprintf(f, "\t$TQA parent 1:%d handle %d: $SFQ\n", class, class);
+			fprintf(f, "\t$TQA parent 1:%d handle %d: $SCH\n", class, class);
 			fprintf(f, "\t$TFA parent 1: prio %d protocol ip u32 match mark %d 0x%x flowid 1:%d\n", class, class, QOS_MASK, class);
 			fprintf(f, "\n"
 				   "\t$TCAU parent 2:1 classid 2:%d htb rate %skbit ceil %skbit prio %d\n", class, upc, upc, class);
-			fprintf(f, "\t$TQAU parent 2:%d handle %d: $SFQ\n", class, class);
+			fprintf(f, "\t$TQAU parent 2:%d handle %d: $SCH\n", class, class);
 			fprintf(f, "\t$TFAU parent 2: prio %d protocol ip u32 match mark %d 0x%x flowid 2:%d\n", class, class, QOS_MASK, class);
 		}
 	}
@@ -1889,11 +1906,11 @@ static int start_bandwidth_limiter(void)
 			fprintf(f, "\t$TCA%d%d parent %d: classid %d:1 htb rate %skbit\n", i, j, guest, guest, nvram_pf_safe_get(wlv, "_bw_dl")); //7
 			fprintf(f, "\n"
 				   "\t$TCA%d%d parent %d:1 classid %d:%d htb rate 1kbit ceil %skbit prio %d\n", i, j, guest, guest, guest_mark, nvram_pf_safe_get(wlv, "_bw_dl"), guest_mark);
-			fprintf(f, "\t$TQA%d%d parent %d:%d handle %d: $SFQ\n", i, j, guest, guest_mark, guest_mark);
+			fprintf(f, "\t$TQA%d%d parent %d:%d handle %d: $SCH\n", i, j, guest, guest_mark, guest_mark);
 			fprintf(f, "\t$TFA%d%d parent %d: prio %d protocol ip u32 match mark %d 0x%x flowid %d:%d\n", i, j, guest, guest_mark, guest_mark, QOS_MASK, guest, guest_mark); // 10
 			fprintf(f, "\n"
 				   "\t$TCAU parent 2:1 classid 2:%d htb rate 1kbit ceil %skbit prio %d\n", guest_mark, nvram_safe_get(strcat_r(wlv, "_bw_ul", tmp)), guest_mark);
-			fprintf(f, "\t$TQAU parent 2:%d handle %d: $SFQ\n", guest_mark, guest_mark);
+			fprintf(f, "\t$TQAU parent 2:%d handle %d: $SCH\n", guest_mark, guest_mark);
 			fprintf(f, "\t$TFAU parent 2: prio %d protocol ip u32 match mark %d 0x%x flowid 2:%d\n", guest_mark, guest_mark, QOS_MASK, guest_mark); //13
 			QOSDBG("[BWLIT_GUEST] create %s bandwidth limiter, qdisc=%d, class=%d\n", wl_if, guest, guest_mark);
 			guest++; // add guest 3: ~ 14: (12 guestnetwork)
@@ -2164,6 +2181,7 @@ static int start_rog_qos()
 	char prefix[16];
 	unsigned int obw;
 	char obw_str[8];
+	char *qsched;
 #ifdef HND_ROUTER
 	int wantype = get_dualwan_by_unit(wan_primary_ifunit());
 #endif
@@ -2272,11 +2290,17 @@ static int start_rog_qos()
 		 * the BW is set here for each class
 		 */
 
+#if defined(RTCONFIG_HND_ROUTER_AX)
+		qsched = "fq_codel quantum 300 limit 1000 noecn";
+#else
+		qsched = "sfq perturb 10";
+#endif
+
 		/* WAN */
 		fprintf(f,
 			"#!/bin/sh\n"
+			"SCH=\"%s\"\n"
 			"I=%s\n"
-			"SFQ=\"sfq perturb 10\"\n"
 			"TQA=\"tc qdisc add dev $I\"\n"
 			"TCA=\"tc class add dev $I\"\n"
 			"TFA=\"tc filter add dev $I\"\n"
@@ -2288,12 +2312,13 @@ static int start_rog_qos()
 			"\t$TCA parent 1:1 classid 1:10 htb rate %ukbit ceil %ukbit prio 1\n"
 			"\t$TCA parent 1:1 classid 1:20 htb rate %ukbit ceil %ukbit prio 2\n"
 			"\t$TCA parent 1:1 classid 1:30 htb rate %ukbit ceil %ukbit prio 3\n"
-			"\t$TQA parent 1:10 handle 10: $SFQ\n"
-			"\t$TQA parent 1:20 handle 20: $SFQ\n"
-			"\t$TQA parent 1:30 handle 30: $SFQ\n"
+			"\t$TQA parent 1:10 handle 10: $SCH\n"
+			"\t$TQA parent 1:20 handle 20: $SCH\n"
+			"\t$TQA parent 1:30 handle 30: $SCH\n"
 			"\t$TFA parent 1: prio 10 protocol all handle %d/0x%x fw flowid 1:10\n"
 			"\t$TFA parent 1: prio 20 protocol all handle %d/0x%x fw flowid 1:20\n"
 			"\t$TFA parent 1: prio 30 protocol all handle %d/0x%x fw flowid 1:30\n"
+			, qsched
 			, wan
 			, obw, obw
 			, obw, obw

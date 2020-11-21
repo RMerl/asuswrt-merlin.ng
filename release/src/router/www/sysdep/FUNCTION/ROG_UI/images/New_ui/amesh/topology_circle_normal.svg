@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="84px" height="84px" viewBox="0 0 84 84" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>rog-circle-normal</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="17.2001607%" y1="76.6737453%" x2="86.1697635%" y2="25.7386937%" id="linearGradient-1">
+            <stop stop-color="#313131" offset="0%"></stop>
+            <stop stop-color="#454545" offset="47.6351351%"></stop>
+            <stop stop-color="#313131" offset="100%"></stop>
+        </linearGradient>
+        <circle id="path-2" cx="36" cy="36" r="36"></circle>
+        <filter x="-14.6%" y="-14.6%" width="129.2%" height="129.2%" filterUnits="objectBoundingBox" id="filter-3">
+            <feMorphology radius="1" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="2.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.768197409   0 0 0 0 1   0 0 0 0 0.976216933  0 0 0 0.22 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <linearGradient x1="90.3162693%" y1="83.4810046%" x2="15.7561644%" y2="15.1987801%" id="linearGradient-4">
+            <stop stop-color="#133240" offset="0.023754223%"></stop>
+            <stop stop-color="#488591" offset="51.3935811%"></stop>
+            <stop stop-color="#0D3340" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="100%" x2="50%" y2="0%" id="linearGradient-5">
+            <stop stop-color="#4E4E4E" offset="0%"></stop>
+            <stop stop-color="#BCBCBC" offset="54.3892525%"></stop>
+            <stop stop-color="#595959" offset="99.1422086%"></stop>
+        </linearGradient>
+        <path d="M37,73.5 C57.1583934,73.5 73.5,57.1583934 73.5,37 C73.5,16.8416066 57.1583934,0.5 37,0.5 C16.8416066,0.5 0.5,16.8416066 0.5,37 C0.5,57.1583934 16.8416066,73.5 37,73.5 Z M37,72.5 C17.3938914,72.5 1.5,56.6061086 1.5,37 C1.5,17.3938914 17.3938914,1.5 37,1.5 C56.6061086,1.5 72.5,17.3938914 72.5,37 C72.5,56.6061086 56.6061086,72.5 37,72.5 Z" id="path-6"></path>
+        <linearGradient x1="3.38941083%" y1="3.35618134%" x2="101.999998%" y2="100.999999%" id="linearGradient-7">
+            <stop stop-color="#596872" offset="0%"></stop>
+            <stop stop-color="#3C4449" offset="3.32295186%"></stop>
+            <stop stop-color="#99B8CE" offset="51.0478252%"></stop>
+            <stop stop-color="#21252A" offset="100%"></stop>
+        </linearGradient>
+        <path d="M37,67 C53.5685425,67 67,53.5685425 67,37 C67,20.4314575 53.5685425,7 37,7 C20.4314575,7 7,20.4314575 7,37 C7,53.5685425 20.4314575,67 37,67 Z M37,66 C20.9837423,66 8,53.0162577 8,37 C8,20.9837423 20.9837423,8 37,8 C53.0162577,8 66,20.9837423 66,37 C66,53.0162577 53.0162577,66 37,66 Z" id="path-8"></path>
+    </defs>
+    <g id="metarials-rog" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="singal-quality" transform="translate(-87.000000, -290.000000)">
+            <g id="circle" transform="translate(87.000000, 290.000000)">
+                <g id="nomal" transform="translate(5.000000, 5.000000)">
+                    <g id="Group" transform="translate(1.000000, 1.000000)">
+                        <g id="Oval">
+                            <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+                            <use fill="url(#linearGradient-1)" fill-rule="evenodd" xlink:href="#path-2"></use>
+                            <use fill-opacity="0.289308348" fill="#42E9FF" fill-rule="evenodd" style="mix-blend-mode: multiply;" xlink:href="#path-2"></use>
+                        </g>
+                        <circle id="Oval" fill-opacity="0.75" fill="url(#linearGradient-4)" cx="36" cy="36" r="30"></circle>
+                    </g>
+                    <g id="Oval">
+                        <use fill="url(#linearGradient-5)" xlink:href="#path-6"></use>
+                        <use fill-opacity="0.451267483" fill="#09FCFF" style="mix-blend-mode: overlay;" xlink:href="#path-6"></use>
+                    </g>
+                    <g id="Oval" fill-rule="nonzero">
+                        <use fill="url(#linearGradient-7)" xlink:href="#path-8"></use>
+                        <use fill-opacity="0.335036058" fill="#09FCFF" style="mix-blend-mode: overlay;" xlink:href="#path-8"></use>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

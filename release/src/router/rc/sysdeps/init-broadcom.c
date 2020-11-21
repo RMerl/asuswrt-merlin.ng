@@ -1847,7 +1847,11 @@ void init_switch_pre()
 
 	doSystem("ethswctl -c wan -o enable -i %s", WAN_IF_ETH);
 
-#if !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710))
+#ifdef BCM6750
+	system("swmdk");
+#endif
+
+#if !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56)
 	foreach(word, ifnames, next)
 		doSystem("tmctl porttminit --devtype 0 --if %s --flag 1", word);
 #endif
@@ -2794,96 +2798,6 @@ reset_psr_hwaddr()
 }
 #endif
 
-#if defined(RTCONFIG_HND_ROUTER_AX_675X)
-void load_wl_modules(void)
-{
-	char module[80], modules[80], *next;
-	int i = 0, maxunit = -1;
-	int unit;
-	char ifname[16] = {0};
-	char instance_base[128];
-	char instance_base2[128];
-
-	_dprintf("[%s][%d]: starting...\n", __func__, __LINE__);
-	_dprintf("[%s][%d]: unload dhd wl...\n", __func__, __LINE__);
-	eval("rmmod", "wl");
-	sleep(2);
-	eval("rmmod", "dhd");
-	sleep(2);
-
-	memset(modules, 0, sizeof(modules));
-#if defined(RTAX92U) || defined(RTCONFIG_HND_ROUTER_AX_675X)
-	add_to_list("wl", modules, sizeof(modules));
-#endif
-#if defined(RTCONFIG_BCM_7114) && defined(RTCONFIG_MFGFW)
-	add_to_list("dhdtest", modules, sizeof(modules));
-#else
-	add_to_list("dhd", modules, sizeof(modules));
-#endif
-#ifdef RTCONFIG_BCM_7114
-	add_to_list("dhd24", modules, sizeof(modules));
-#endif
-
-	foreach(module, modules, next) {
-#ifdef RTCONFIG_BCM_7114
-		if (strcmp(module, "dhd") == 0 && nvram_get_int("dhd24"))
-			continue;
-		else if (strcmp(module, "dhd24") == 0 && nvram_get_int("dhd24"))
-			eval("rmmod", "dhd");
-#endif
-		if (strcmp(module, "dhd") == 0 || strcmp(module, "dhd24") == 0 || strcmp(module, "wl") == 0) {
-#if defined(RTAX56_XD4)
-			if(strcmp(module, "wl") == 0){
-				_dprintf("[%s][%d](): insmod wl intf_name=wl%%d instance_base=0.\n",
-					__func__, __LINE__);
-				eval("insmod", "wl", "intf_name=wl%d instance_base=0");
-				sleep(2);
-				continue;
-			}
-#endif
-
-			/* Search for existing wl devices and the max unit number used */
-			for (i = 1; i <= DEV_NUMIFS; i++) {
-				snprintf(ifname, sizeof(ifname), WL_IF_PREFIX, i);
-				if (!wl_probe(ifname)) {
-					unit = -1;
-					if (!wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit))) {
-						maxunit = (unit > maxunit) ? unit : maxunit;
-					}
-				}
-			}
-			memset(instance_base, 0, sizeof(instance_base));
-			memset(instance_base2, 0, sizeof(instance_base2));
-#if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
-			if ((strcmp(module, "dhd") == 0) || (strcmp(module, "dhd24") == 0))
-				snprintf(instance_base, sizeof(instance_base), "instance_base=%d dhd_msg_level=%d", maxunit + 1, nvram_get_int("dhd_msg_level"));
-			else
-#endif
-			{
-				if (strtoul(nvram_safe_get("wl_msglevel"), NULL, 0))
-					snprintf(instance_base, sizeof(instance_base), "msglevel=%d", (int)strtoul(nvram_safe_get("wl_msglevel"), NULL, 0));
-				if (strtoul(nvram_safe_get("wl_msglevel2"), NULL, 0))
-					snprintf(instance_base2, sizeof(instance_base2), "%s msglevel2=%d", instance_base, (int)strtoul(nvram_safe_get("wl_msglevel2"), NULL, 0));
-				else
-					strncpy(instance_base2, instance_base, sizeof(instance_base2));
-				snprintf(instance_base, sizeof(instance_base), "instance_base=%d %s", maxunit + 1, instance_base2);
-			}
-_dprintf("[%s][%d](): insmod %s %s.\n", __func__, __LINE__, module, instance_base);
-			eval("insmod", module, instance_base);
-			sleep(2);
-		} else {
-			eval("insmod", module);
-			 _dprintf("\nmodule %s loaded\n", module);
-		}
-	}
-#if defined(RTCONFIG_HND_ROUTER_AX) && defined(BCA_HNDROUTER) && defined(RTCONFIG_HND_WL)
-	wl_thread_affinity_update();
-#endif
-
-	_dprintf("[%s][%d): end.\n", __func__, __LINE__);
-}
-#endif	/* RTCONFIG_HND_ROUTER_AX_675X */
-
 #ifdef RTCONFIG_DHDAP
 void load_wl()
 {
@@ -2975,10 +2889,7 @@ _dprintf("load_wl(): starting...\n");
 		if (strcmp(module, "dhd") == 0 || strcmp(module, "dhd24") == 0 || strcmp(module, "wl") == 0) {
 #if defined(RTAX56_XD4)
 			if(strcmp(module, "wl") == 0){
-				_dprintf("[%s][%d](): insmod wl intf_name=wl%%d instance_base=0.\n",
-					__func__, __LINE__);
 				eval("insmod", "wl", "intf_name=wl%d instance_base=0");
-				sleep(2);
 				continue;
 			}
 #endif
@@ -4000,13 +3911,11 @@ int find_user_unit(char *ustr)
 	char word[256], *next;
 	int unit = 0;
 
-	_dprintf("test it, %s\n", __func__);	// tmp test
         foreach (word, nvram_safe_get("wl_ifnames"), next) {
 		snprintf(prefix, sizeof(prefix), "wlc%d_", unit);
 		if(*nvram_safe_get(strcat_r(prefix, ustr, tmp))) {
 			return unit;
-		} else				// tmp test
-			_dprintf("no data of %s+%s\n ", prefix, ustr);	// tmp test
+		}
                 unit++;
         }
 
@@ -4333,12 +4242,12 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		if (nvram_match("x_Setting", "1") && nvram_match("rpsync", "1") && subunit == -1 && dpsta_mode() && !strlen(nvram_safe_get(strcat_r(prefix2, "ssid", tmp)))) {
 
 			unit2 = find_user_unit("ssid");	
-			_dprintf("null ssid of %s, get user unit=%d\n", prefix2, unit2);	// tmp test
+			//_dprintf("null ssid of %s, get user unit=%d\n", prefix2, unit2);	// tmp test
 			snprintf(prefix3, sizeof(prefix3), "wlc%d_", unit2);
-			_dprintf("\n==reset %s to be as %s due no configs\n", prefix2, prefix3);
+			//_dprintf("\n==reset %s to be as %s due no configs\n", prefix2, prefix3);
 
 			if((tmp3 = nvram_safe_get(strcat_r(prefix3, "ssid", tmp))) && *tmp3) {	
-				_dprintf("reset ssid %s as %s\n", strcat_r(prefix2, "ssid", tmp), tmp3);	// tmp test
+				//_dprintf("reset ssid %s as %s\n", strcat_r(prefix2, "ssid", tmp), tmp3);	// tmp test
 				nvram_set(strcat_r(prefix2, "ssid", tmp), tmp3);
 			} else
 				nvram_set(strcat_r(prefix2, "ssid", tmp), "__emptyssid__");

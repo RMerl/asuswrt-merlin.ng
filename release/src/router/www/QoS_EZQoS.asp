@@ -894,6 +894,10 @@ function change_qos_type(value){
 		document.getElementById('bandwidth_setting_tr').style.display = "none";
 		show_up_down(1);
 		document.getElementById('list_table').style.display = "none";
+		if (codel_support) {
+			document.getElementById('qos_sched_tr').style.display = "";
+			document.getElementById('qos_overhead_tr').style.display = "";
+		}
 		if(document.form.qos_type_orig.value == 3 && document.form.qos_enable_orig.value != 0)
 			document.form.action_script.value = "restart_qos;restart_firewall";
 		else{

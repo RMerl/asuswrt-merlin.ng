@@ -1998,7 +1998,7 @@ static int start_GeForce_QoS(void)
 	char *qsched;
 	int overhead = 0;
 	char overheadstr[sizeof("overhead 128 linklayer ethernet")];
-	int wan_mtu;
+	int wan_mtu, bw;
 	char nvmtu[sizeof("wan0_mtu")];
 
 	_dprintf("[GeForce] start GeForceNow QoS ...\n");
@@ -2067,7 +2067,7 @@ static int start_GeForce_QoS(void)
 		"TCA=\"tc class add dev $LAN\"\n"
 		"TFA=\"tc filter add dev $LAN\"\n"
 		"\n"
-		, sched
+		, qsched
 		, get_wan_ifname(wan_primary_ifunit())
 		, nvram_safe_get("lan_ifname")
 	);

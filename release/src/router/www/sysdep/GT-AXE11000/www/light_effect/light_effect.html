@@ -1,0 +1,660 @@
+﻿<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="stylesheet" type="text/css" href="/light_effect/light_effect.css" />
+<head>
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/calendar/jquery-ui.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
+</head>
+<script >
+var $light_effect_bg = $("#light_effect_bg");
+var $hue_bar = $("#hue_bar");
+var $hue_slider = $("#hue_slider");
+var hue_click = false;
+var hsl = {h:0, s:100, l:50};
+var scheme_page_idx = 1;
+var scheme_page_max_count = 4;
+var scheme_pages = 1;
+var scheme_item_post = {
+	"LED_Set" : {"R" : 255, "G" : 0, "B" : 0},
+	"Mode" : 1,
+	"Speed" : 0,
+	"Direction" : 0
+};
+function initial_led_control() {
+	$light_effect_bg = $("#light_effect_bg");
+	$hue_bar = $("#hue_bar");
+	$hue_slider = $("#hue_slider");
+	if($(".light_effect_setting_bg .setting_enable_bg .schedule").css("display") != "none")
+		$(".light_effect_setting_bg .setting_enable_bg .switch").css("right", "20%");
+
+	if(!isMobile()) {
+		$hue_bar.mousedown(function(e) {
+			if($(".setting_hue").css("opacity") == "1") {
+				if(e.target.id == "hue_bar") {
+					hue_click = true;
+					set_hue_value(e);
+				}
+				else {
+					hue_click = true;
+					$hue_slider.addClass("active");
+				}
+				lightl_effect_animate.clear($light_effect_bg);
+			}
+		});
+		$(document).mousemove(function(e) {
+			if(hue_click) {
+				set_hue_value(e);
+			}
+		});
+		$(document).mouseup(function(e) {
+			if(hue_click) {
+				set_light_effect();
+			}
+		});
+	}
+	else {
+		$(".setting_scheme").removeClass("support_hover");
+		$(".light_effect_setting_bg").addClass("no_highlights");
+		$hue_bar[0].addEventListener("touchstart", function (e) {
+			if($(".setting_hue").css("opacity") == "1") {
+				if(e.target.id == "hue_bar") {
+					hue_click = true;
+					set_hue_value(e);
+				}
+				else {
+					hue_click = true;
+					$hue_slider.addClass("active");
+				}
+				lightl_effect_animate.clear($light_effect_bg);
+			}
+		});
+		document.addEventListener("touchmove", function (e) {
+			if(hue_click) {
+				set_hue_value(e);
+			}
+		});
+		document.addEventListener("touchend", function (e) {
+			if(hue_click) {
+				set_light_effect();
+			}
+		});
+	}
+
+	$(".setting_enable_bg .switch").unbind("click");
+	$(".setting_enable_bg .switch").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		$(".setting_enable_bg .switch").toggleClass("off on").promise().done(function(){
+			var switch_status = $(".setting_enable_bg .switch").hasClass("on");
+			lightl_effect_animate.clear($light_effect_bg);
+			if(switch_status){
+				httpApi.nvramSet({
+					"aurargb_enable": "1",
+					"action_mode": "apply",
+					"rc_service": "start_aurargb"
+				});
+				$(".switch_off").show();
+				set_scheme_mode(scheme_item_post.Mode, scheme_item_post["LED_Set"]);
+			}
+			else{
+				httpApi.nvramSet({
+					"aurargb_enable": "0",
+					"action_mode": "apply",
+					"rc_service": "start_aurargb"
+				});
+				$(".switch_off").hide();
+				$light_effect_bg.removeClass().addClass("light_effect_bg");
+				$light_effect_bg.css("background", "initial");
+			}
+		});
+	});
+	$(".setting_scheme .scheme_bg").unbind("click");
+	$(".setting_scheme .scheme_bg").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		var id = e.currentTarget.id;
+		var mode = e.currentTarget.getAttribute("mode");
+		if(mode == "0"){
+			if($(e.target).closest('.event_helpicon').length == 1){
+				$('#aura_event_trigger').fadeIn();
+				return false;
+			}
+		}
+
+		lightl_effect_animate.clear($light_effect_bg);
+		$light_effect_bg.removeClass().addClass("light_effect_bg");
+
+		$(".setting_scheme .scheme_bg").removeClass("active");
+		$(".setting_scheme #" + id + "").addClass("active");
+
+		set_scheme_mode(mode, scheme_item_post["LED_Set"]);
+		var ledg_rgb_post = [];
+
+		ledg_rgb_post.push(scheme_item_post["LED_Set"]["R"]);
+		ledg_rgb_post.push(scheme_item_post["LED_Set"]["G"]);
+		ledg_rgb_post.push(scheme_item_post["LED_Set"]["B"]);
+		ledg_rgb_post.push(scheme_item_post["Mode"]);
+		ledg_rgb_post.push(scheme_item_post["Speed"]);
+		ledg_rgb_post.push(scheme_item_post["Direction"]);
+		httpApi.nvramSet({
+			"aurargb_val": ledg_rgb_post.join(","),
+			"action_mode": "apply",
+			"rc_service": "start_aurargb"
+		});
+	});
+	$(".scheme_list_bg .boundary").unbind("click");
+	$(".scheme_list_bg .boundary").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		var id = e.currentTarget.id.replace("boundary_", "");
+		if(id == "left")
+			scheme_page_idx = Math.max(1, (scheme_page_idx - 1));
+		else if(id == "right")
+			scheme_page_idx = Math.min(scheme_pages, (scheme_page_idx + 1));
+		control_scheme_list(scheme_page_idx);
+	});
+
+	var aurargb_val = httpApi.nvramGet(["aurargb_val"], true)["aurargb_val"];
+	if(aurargb_val != undefined && aurargb_val != ""){
+		var aurargb_array = aurargb_val.split(",");
+		if(aurargb_array.length == 6){
+			scheme_item_post.LED_Set.R = aurargb_array[0];
+			scheme_item_post.LED_Set.G = aurargb_array[1];
+			scheme_item_post.LED_Set.B = aurargb_array[2];
+			scheme_item_post.Mode = aurargb_array[3];
+			scheme_item_post.Speed = aurargb_array[4];
+			scheme_item_post.Direction = aurargb_array[5];
+		}
+	}
+	var ledg_scheme = httpApi.nvramGet(["aurargb_enable"], true)["aurargb_enable"];
+
+	$(".scheme_list_bg .setting_scheme .scheme_bg[mode=" + scheme_item_post.Mode + "]").addClass("active");
+	if(ledg_scheme == "0") {
+		$(".setting_enable_bg .switch").addClass("off");
+		lightl_effect_animate.clear($light_effect_bg);
+		$(".switch_off").hide();
+		$light_effect_bg.removeClass().addClass("light_effect_bg");
+		$light_effect_bg.css("background", "initial");
+	}
+	else {
+		$(".setting_enable_bg .switch").addClass("on");
+		var count = 0;
+		var interval_check = setInterval(function() {
+			if(get_offset($hue_bar).width != 0) {
+				set_scheme_mode(scheme_item_post.Mode, scheme_item_post["LED_Set"]);
+				clearInterval(interval_check);
+			}
+			else {
+				count++;
+				if(count == 500)
+					clearInterval(interval_check);
+			}
+		}, 50);
+	}
+
+	$(".scheme_list_bg .setting_scheme .scheme_bg").each(function(idx) {
+		if($(this).hasClass("active"))
+			scheme_page_idx = Math.ceil((idx + 1) / scheme_page_max_count);
+	});
+	scheme_pages = Math.ceil(($(".scheme_list_bg .setting_scheme .scheme_bg").length / scheme_page_max_count));
+	control_scheme_list(scheme_page_idx);
+}
+function set_scheme_mode(_type, _LED_Set_Obj){
+	scheme_item_post["LED_Set"]["R"] = _LED_Set_Obj["R"];
+	scheme_item_post["LED_Set"]["G"] = _LED_Set_Obj["G"];
+	scheme_item_post["LED_Set"]["B"] = _LED_Set_Obj["B"];
+	scheme_item_post.Speed = "0";
+	var group_rgb = scheme_item_post["LED_Set"];
+	var hue_slider_rgb = [group_rgb["R"],group_rgb["G"],group_rgb["B"]];
+	switch(_type) {
+		case "0" :
+			$light_effect_bg.css("background", "");
+			$light_effect_bg.addClass("event");
+			$(".setting_hue").fadeTo(0, 0);
+			scheme_item_post.Mode = "0";//event
+			break;
+		case "1" :
+			rgbToLeft(hue_slider_rgb);
+			$light_effect_bg.css("background", "rgb("+ group_rgb["R"] + ", " + group_rgb["G"] + ", " + group_rgb["B"] + ")");
+			$(".setting_hue").fadeTo(0, 1);
+			scheme_item_post.Mode = "1";//static
+			break;
+		case "2" :
+			rgbToLeft(hue_slider_rgb);
+			$light_effect_bg.css("background", "rgb("+ group_rgb["R"] + ", " + group_rgb["G"] + ", " + group_rgb["B"] + ")");
+			lightl_effect_animate.breathing($light_effect_bg, hue_slider_rgb);
+			$(".setting_hue").fadeTo(0, 1);
+			scheme_item_post.Mode = "2";//breathing
+			break;
+		case "5" :
+			$light_effect_bg.css("background", "");
+			$light_effect_bg.addClass("rainbow");
+			$(".setting_hue").fadeTo(0, 0);
+			scheme_item_post.Mode = "5";//rainbow
+			break;
+		case "8" :
+			lightl_effect_animate.comet($light_effect_bg, hue_slider_rgb);
+			$(".setting_hue").fadeTo(0, 0);
+			scheme_item_post.Mode = "8";//comet
+			break;
+		case "3" :
+			rgbToLeft(hue_slider_rgb);
+			$light_effect_bg.css("background", "rgb("+ group_rgb["R"] + ", " + group_rgb["G"] + ", " + group_rgb["B"] + ")");
+			lightl_effect_animate.flash($light_effect_bg, hue_slider_rgb);
+			$(".setting_hue").fadeTo(0, 1);
+			scheme_item_post.Mode = "3";//flash
+			break;
+		case "12" :
+			$light_effect_bg.css("background", "");
+			$light_effect_bg.addClass("yoyo");
+			$(".setting_hue").fadeTo(0, 0);
+			scheme_item_post.Mode = "12";//yoyo
+			break;
+		case "4" :
+			$light_effect_bg.addClass("ccycle");
+			$(".setting_hue").fadeTo(0, 0);
+			scheme_item_post.Mode = "4";//ccycle
+			scheme_item_post.Speed = "2";
+			break;
+		case "13" :
+			lightl_effect_animate.snight($light_effect_bg, hue_slider_rgb);
+			$(".setting_hue").fadeTo(0, 0);
+			scheme_item_post.Mode = "13";//snight
+			break;
+		case "6" :
+			$light_effect_bg.addClass("strobing");
+			$(".setting_hue").fadeTo(0, 0);
+			scheme_item_post.Mode = "6";//strobing
+			break;
+		case "11" :
+			lightl_effect_animate.wave($light_effect_bg, hue_slider_rgb);
+			$(".setting_hue").fadeTo(0, 0);
+			scheme_item_post.Mode = "11";//wave
+			break;
+	}
+}
+function isMobile() {
+	if( navigator.userAgent.match(/iPhone/i) ||
+		navigator.userAgent.match(/iPod/i)    ||
+		navigator.userAgent.match(/iPad/i)    ||
+		(navigator.userAgent.match(/Android/i) && (navigator.userAgent.match(/Mobile/i) || navigator.userAgent.match(/Tablet/i))) ||
+		(navigator.userAgent.match(/Opera/i) && (navigator.userAgent.match(/Mobi/i) || navigator.userAgent.match(/Mini/i))) ||
+		navigator.userAgent.match(/IEMobile/i)  ||
+		navigator.userAgent.match(/BlackBerry/i) ||
+		navigator.userAgent.match(/asusrouter/i)
+	)
+		return true;
+	else
+		return false;
+}
+var color_converter = {
+	"RGBtoHSL" : function(rgbArr) {
+		var R = rgbArr[0] / 255;
+		var G = rgbArr[1] / 255;
+		var B = rgbArr[2] / 255;
+		var maxColor = Math.max(R,G,B);
+		var minColor = Math.min(R,G,B);
+		var L = (maxColor + minColor) / 2;
+		var S = 0;
+		var H = 0;
+		var HSL = [];
+		if(maxColor != minColor) {
+			if(L < 0.5)
+				S = (maxColor - minColor) / (maxColor + minColor);
+			else
+				S = (maxColor - minColor) / (2.0 - maxColor - minColor);
+
+			if(R == maxColor)
+				H = (G - B) / (maxColor - minColor);
+			else if(G == maxColor)
+				H = 2.0 + (B - R) / (maxColor - minColor);
+			else
+				H = 4.0 + (R - G) / (maxColor - minColor);
+		}
+
+		L = Math.round(L * 100);
+		S = Math.round(S * 100);
+		H = Math.round(H * 60);
+		if(H < 0)
+			H += 360;
+
+		HSL = [H, S, L];
+		return HSL;
+	},
+	"RGBtoHEX" : function(rgbArr) {
+		var R = rgbArr[0].toString(16);
+		var G = rgbArr[1].toString(16);
+		var B = rgbArr[2].toString(16);
+		R.length == 1 ? R = "0" + R : R;
+		G.length == 1 ? G = "0" + G : G;
+		B.length == 1 ? B = "0" + B : B;
+		return "#" + R + G + B;
+	},
+	"HSLtoRGB" : function(hslArr) {
+		var H = hslArr[0] / 360;
+		var S = hslArr[1] / 100;
+		var L = hslArr[2] / 100;
+		var RGB = [];
+		if(S == 0)
+			RGB = [Math.round(L*255),Math.round(L*255),Math.round(L*255)];
+		else{
+			var q = L >= 0.5 ? (L + S - L * S) : (L * (1 + S));
+			var p = 2 * L - q;
+			var tr = RGB[0] = H + 1 / 3;
+			var tg = RGB[1] = H;
+			var tb = RGB[2] = H - 1 / 3;
+			for(var i = 0; i < RGB.length; i++) {
+				var tc = RGB[i];
+				if(tc < 0)
+					tc = tc + 1;
+				else if(tc > 1)
+					tc = tc - 1;
+				switch(true) {
+					case (tc < (1 / 6)):
+						tc = p + (q - p) * 6 * tc;
+						break;
+					case ((1 / 6) <= tc && tc < 0.5):
+						tc = q;
+						break;
+					case (0.5 <= tc && tc < (2 / 3)):
+						tc = p + (q - p) * (4 - 6 * tc);
+						break;
+					default:
+						tc = p;
+						break;
+				}
+				RGB[i] = Math.round(tc * 255);
+			}
+		}
+		return RGB;
+	},
+};
+function get_offset(element) {
+	var y = parseInt(element[0].getBoundingClientRect().top);
+	var x = parseInt(element[0].getBoundingClientRect().left);
+	var height = parseInt(element[0].offsetHeight);
+	var width = parseInt(element[0].offsetWidth);
+	return {"x": x, "y": y, "height": height, "width": width};
+}
+function set_hue_value(e) {
+	var x = 0;
+	var left = 0;
+	if(isMobile())
+		x = e.touches[0].pageX - get_offset($hue_bar).x;
+	else
+		x = e.pageX - get_offset($hue_bar).x;
+	left = Math.max(Math.min(x, get_offset($hue_bar).width),0);
+	$hue_slider.css("left", left);
+	$hue_slider.addClass("active");
+	hsl.h = Math.round(parseInt($hue_slider.css("left")) / get_offset($hue_bar).width * 360);
+	if(hsl.h == 360)
+		hsl.h = 359;//avoid slider same as 255,0,0
+	$hue_slider.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
+	$light_effect_bg.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
+}
+function set_light_effect() {
+	var select_rgb = $(".hue_slider").css("background-color").replace('rgb(', '').replace(')','' ).split(',').map(Number);
+	$hue_slider.removeClass("active");
+	hue_click = false;
+	if($(".scheme_bg.active")[0].id == "breathing") {
+		rgbToLeft(select_rgb);
+		$light_effect_bg.css("background", "rgb("+ select_rgb[0] + ", " + select_rgb[1] + ", " + select_rgb[2] + ")");
+		lightl_effect_animate.breathing($light_effect_bg, select_rgb);
+	}
+	if($(".scheme_bg.active")[0].id == "flash") {
+		rgbToLeft(select_rgb);
+		$light_effect_bg.css("background", "rgb("+ select_rgb[0] + ", " + select_rgb[1] + ", " + select_rgb[2] + ")");
+		lightl_effect_animate.flash($light_effect_bg, select_rgb);
+	}
+
+	var ledg_rgb_post = [];
+	scheme_item_post["LED_Set"]["R"] = select_rgb[0];
+	scheme_item_post["LED_Set"]["G"] = select_rgb[1];
+	scheme_item_post["LED_Set"]["B"] = select_rgb[2];
+	ledg_rgb_post.push(scheme_item_post["LED_Set"]["R"]);
+	ledg_rgb_post.push(scheme_item_post["LED_Set"]["G"]);
+	ledg_rgb_post.push(scheme_item_post["LED_Set"]["B"]);
+	ledg_rgb_post.push(scheme_item_post["Mode"]);
+	ledg_rgb_post.push(scheme_item_post["Speed"]);
+	ledg_rgb_post.push(scheme_item_post["Direction"]);
+
+	httpApi.nvramSet({
+		"aurargb_val": ledg_rgb_post.join(","),
+		"action_mode": "apply",
+		"rc_service": "start_aurargb"
+	});
+}
+function rgbToLeft(_rgb) {
+	var hsl_array = color_converter.RGBtoHSL(_rgb);
+	hsl.h = hsl_array[0];
+	hsl.s = 100;
+	hsl.l = 50;
+	var left = Math.round((parseInt(hsl.h) / 360) * get_offset($hue_bar).width);
+	$hue_slider.css("left", left);
+	$hue_slider.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
+	$light_effect_bg.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
+}
+var lightl_effect_animate = {
+	"interval" : false,
+	"rainbow_array" : ["#ff0000", "#ffa500", "#ffff00", "#008000", "#0000ff", "#4b0082", "#ee82ee"],
+	"breathing" : function(_obj, _rgbArr) {
+		var breathing_color = function(_obj, _rgbArr) {
+			_obj.animate({
+				backgroundColor: "rgba("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ", 1)"
+			}, 1000);
+
+			_obj.animate({
+				backgroundColor: "rgba("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ", 0.2)"
+			}, 1000);
+
+		};
+		breathing_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			breathing_color(_obj, _rgbArr);
+		},2000);
+	},
+	"flash" : function(_obj, _rgbArr) {
+		var flash_color = function(_obj, _rgbArr) {
+			_obj.css("background", "rgb("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ")")
+			.delay(1000)
+			.animate({backgroundColor: "rgba("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ", 0.1)"}, 0);
+		};
+		flash_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			flash_color(_obj, _rgbArr);
+		},2000);
+	},
+	"snight" : function(_obj, _rgbArr) {
+		var color_idx = 0;
+		var color_end = lightl_effect_animate.rainbow_array.length;
+
+		var snight_color = function(_obj, _rgbArr) {
+			var rgbColor = lightl_effect_animate.rainbow_array[color_idx];
+			var rgbaColor = 'rgba(' + parseInt(rgbColor.slice(-6,-4),16)
+				+ ',' + parseInt(rgbColor.slice(-4,-2),16)
+				+ ',' + parseInt(rgbColor.slice(-2),16)
+				+',0.7)';
+			_obj.css("background", rgbColor)
+			.delay(250)
+			.animate({backgroundColor: rgbaColor}, 100)
+			.delay(250)
+			.animate({backgroundColor: rgbColor}, 100)
+		};
+		snight_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			color_idx++;
+			if(color_idx >= color_end)
+				color_idx = 0;
+			snight_color(_obj, _rgbArr);
+		},1500);
+	},
+	"comet" : function(_obj, _rgbArr) {
+		var percent_init = 0;
+		var percent_end = 100;
+		var color_idx = 0;
+		var color_end = lightl_effect_animate.rainbow_array.length;
+		var comet_color = function(_obj, _rgbArr) {
+			var min = middle = max = 0;
+			min = Math.max(0, (percent_init - 30));
+			middle = percent_init;
+			max = Math.min(100, (percent_init + 30));
+			_obj.css("background", "linear-gradient(to right, rgb(0, 0, 0) " + min + "%, "+ lightl_effect_animate.rainbow_array[color_idx] +" " + middle + "%, rgb(0, 0, 0) " + max + "%)");
+		};
+		comet_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			percent_init += 10;
+			comet_color(_obj, _rgbArr);
+			if(percent_init >= percent_end){
+				percent_init = 0;
+				color_idx++;
+				if(color_idx >= color_end)
+					color_idx = 0;
+			}
+		},150);
+	},
+	"wave" : function(_obj, _rgbArr) {
+		var percent_init = 0;
+		var percent_end = 100;
+		var wave_color_idx = 0;
+		var wave_color_end = lightl_effect_animate.rainbow_array.length;
+		var wave_color = function(_obj, _rgbArr) {
+			_obj.css("background", "linear-gradient(to right, rgb(0, 0, 0) 0%, "+ lightl_effect_animate.rainbow_array[wave_color_idx] +" " + percent_init + "%, rgb(0, 0, 0) 100%)");
+		};
+		wave_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			percent_init += 10;
+			wave_color(_obj, _rgbArr);
+			if(percent_init >= percent_end){
+				percent_init = 0;
+				wave_color_idx++;
+				if(wave_color_idx >= wave_color_end)
+					wave_color_idx = 0;
+			}
+		},200);
+	},
+	"clear" : function(_obj) {
+		clearInterval(lightl_effect_animate.interval);
+		_obj.stop(true,true);
+	}
+}
+function control_scheme_list(_idx) {
+	var start_idx = ((_idx -1 ) * scheme_page_max_count);
+	$(".setting_scheme .scheme_bg").hide();
+	for(var i = ((_idx -1 ) * scheme_page_max_count); i < ((_idx -1 ) * scheme_page_max_count) + scheme_page_max_count ; i += 1) {
+		$(".setting_scheme .scheme_bg").eq(i).show();
+	}
+	$(".scheme_list_bg .boundary").addClass("arrow");
+	if(_idx == 1)
+		$(".scheme_list_bg #boundary_left").removeClass("arrow");
+	if(_idx == scheme_pages)
+		$(".scheme_list_bg #boundary_right").removeClass("arrow");
+}
+function multiply_rgb(_value) {
+	return (Math.ceil(_value * 2) > 255) ? 255 : Math.ceil(_value * 2);
+}
+function hideEventTriggerDesc() {
+	$('#aura_event_trigger').fadeOut();
+}
+$(document).ready(initial_led_control);
+</script>
+<body style="margin:initial;">
+<div class="light_effect_bg" id="light_effect_bg">
+	<div class="logo_aura_rgb"></div>
+	<div class="light_effect_mask"></div>
+</div>
+<div class="light_effect_setting_bg">
+	<div class="setting_enable_bg">
+		<div class="text"><span>Aura RGB <#WLANConfig11b_WirelessCtrl_button1name#></span></div>
+		<div class="switch"></div>
+		<div class="schedule"></div>
+	</div>
+	<div class="switch_off">
+		<div class="horizontal_line "></div>
+		<div class="scheme_list_bg">
+			<div id="boundary_left" class="boundary arrow"></div>
+			<div class="setting_scheme support_hover">
+				<div id="event" class="scheme_bg" mode="0">
+					<div class="icon"></div>
+					<div class="text event_helpicon"><span><#AURA_Event#></span></div>
+				</div>
+				<div id="static" class="scheme_bg" mode="1">
+					<div class="icon"></div>
+					<div class="text"><#BoostKey_AURA_state_static#></div>
+				</div>
+				<div id="breathing" class="scheme_bg" mode="2">
+					<div class="icon"></div>
+					<div class="text"><#BoostKey_AURA_state_breathing#></div>
+				</div>
+				<div id="rainbow" class="scheme_bg"mode="5">
+					<div class="icon"></div>
+					<div class="text"><#BoostKey_AURA_state_rainbow#></div>
+				</div>
+				<div id="comet" class="scheme_bg"mode="8">
+					<div class="icon"></div>
+					<div class="text"><#BoostKey_AURA_state_comet#></div>
+				</div>
+				<div id="flash" class="scheme_bg"mode="3">
+					<div class="icon"></div>
+					<div class="text"><#BoostKey_AURA_state_flash#></div>
+				</div>
+				<div id="yoyo" class="scheme_bg"mode="12">
+					<div class="icon"></div>
+					<div class="text"><#BoostKey_AURA_state_glowing#></div>
+				</div>
+				<div id="ccycle" class="scheme_bg"mode="4">
+					<div class="icon"></div>
+					<div class="text"><#BoostKey_AURA_state_cycle#></div>
+				</div>
+				<div id="snight" class="scheme_bg"mode="13">
+					<div class="icon"></div>
+					<div class="text"><#BoostKey_AURA_state_star#></div>
+				</div>
+				<div id="strobing" class="scheme_bg" mode="6">
+					<div class="icon"></div>
+					<div class="text"><#BoostKey_AURA_state_strobing#></div>
+				</div>
+				<div id="wave" class="scheme_bg" mode="11">
+					<div class="icon"></div>
+					<div class="text"><#BoostKey_AURA_state_wave#></div>
+				</div>
+			</div>
+			<div id="boundary_right" class="boundary arrow"></div>
+		</div>
+		<div class="horizontal_line"></div>
+		<div class="setting_hue">
+			<div class="hue_bar" id="hue_bar">
+				<div class="hue_slider" id="hue_slider"></div>
+			</div>
+			<div class="hue_bar_mask"></div>
+		</div>
+	</div>
+</div>
+<div id="aura_event_trigger" class="aura-event-container aura-event-desc-hide">
+	<div class="aura-event-title-bg">
+		<div>
+			<div class="title"><#AURA_Event#></div>
+			<div class="cancel_btn" onclick="hideEventTriggerDesc();">X</div>
+		</div>
+		<div class="desc"><#AURA_Event_desc#></div>
+	</div>
+	<div class="aura-event-content-bg">
+		<div>
+			<li class="title"><#Game_Boost#></li>
+			<div class="desc"><#AURA_Event_Boost_desc#></div>
+		</div>
+		<div>
+			<li class="title"><#AURA_Event_Traffic#></li>
+			<div class="desc"><#AURA_Event_Traffic_desc#></div>
+		</div>
+		<div>
+			<li class="title"><#AURA_Event_Login#></li>
+			<div class="desc"><#AURA_Event_Login_desc#></div>
+		</div>
+		<div>
+			<li class="title"><#AURA_Event_Attack#></li>
+			<div class="desc"><#AURA_Event_Attack_desc#></div>
+		</div>
+		<div style="margin: 12px 0 0 -12px;"><#AURA_Event_Note#></div>
+	</div>
+</div>
+</body>

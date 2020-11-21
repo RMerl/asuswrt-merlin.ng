@@ -16,7 +16,7 @@ MODELS_HAVE_USB3 = GT-AC2900 \
 	RP-AC68U \
 	GT-AXE11000
 
-MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AX88U RT-AC86U GT-AC2900 AC2900 RT-AC3100 RT-AC5300 GT-AC5300 GT-AXY16000 RT-AX89U GT-AC9600 DSL-AC68U \
+MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AX88U RT-AC86U GT-AC2900 RT-AC3100 RT-AC5300 GT-AC5300 GT-AXY16000 RT-AX89U GT-AC9600 DSL-AC68U \
 	RT-AC68U 4G-AC68U RT-AC68R RT-AC68W RT-AC68RW GT-AX11000 RT-AC1900P RT-AC67U RT-AC56U RT-AC56R RT-AC85U RT-AC85P RT-AC65U BRT-AC828 BLUECAVE RT-AX92U RT-AX95Q RT-AX56_XD4 RT-AX58U TUF-AX3000 RT-AX82U RT-AX56U MAP-AC1300 \
 	RT-AX86U RT-AX5700 RT-AX68U DSL-AX82U \
 	MAP-AC2200 MAP-AC2200V RT-AC95U \
@@ -79,6 +79,12 @@ endif
 	rm -rf $(INSTALLDIR)/www/device-map/compatibility.asp
 	cp -rf $(INSTALLDIR)/www/images/new/* $(INSTALLDIR)/www/images/
 	rm -rf $(INSTALLDIR)/www/images/new
+
+ifeq ($(BUILD_NAME), GT-AC2900)
+ifeq ($(RTCONFIG_ROG_UI), y)
+	cp -r $(TOP)/www/sysdep/FUNCTION/ROG_UI/* $(INSTALLDIR)/www/
+endif
+endif
 
 ifeq ($(RTCONFIG_AMAS),y)
 ifneq ($(RTCONFIG_DSL),y)
@@ -695,7 +701,7 @@ else ifeq ($(BUILD_NAME),RT-AC65U)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_RT-AC65U.js modules/menuTree.js
 else ifeq ($(BUILD_NAME),GT-AXY16000)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_ROG_AXY16000.js modules/menuTree.js
-else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC5300 GT-AC9600 GT-AX11000 GT-AC2900 GT-AXE11000))
+else ifeq ($(RTCONFIG_ROG_UI),y)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_ROG.js modules/menuTree.js
 else ifeq ($(BUILD_NAME),BRT-AC828)
 	cd $(INSTALLDIR)/www/require && mv menuTrees/menuTree_BRTAC828.js modules/menuTree.js
@@ -922,7 +928,7 @@ ifneq ($(RTCONFIG_AMAS),y)
 endif
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U DSL-AX82U GT-AXE11000))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U DSL-AX82U GT-AXE11000 GT-AC2900 GT-AX11000))
 	rm -rf $(INSTALLDIR)/www/light_effect
 	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect
 	rm -rf $(INSTALLDIR)/www/device-map/router_light_effect.asp

@@ -9153,49 +9153,40 @@ int wdg_monitor_main(int argc, char *argv[])
 // Asuswrt-Merlin's code, without the auto-upgrade and debug logging
 void auto_firmware_check_merlin()
 {
-	static int period_retry = -1;
-	static int period = 5757;
+	int periodic_check = 0;
+	static int period_retry = 0;
+	static int bootup_check_period = 3;	//wait 3 times(90s) to check
 	static int bootup_check = 1;
-	static int periodic_check = 0;
-	int cycle_manual = nvram_get_int("fw_check_period");
-	int cycle = (cycle_manual > 1) ? cycle_manual : 5760;
 	int initial_state;
-
 	time_t now;
-	struct tm *tm;
+	struct tm local;
 	static int rand_hr, rand_min;
 
-	if (!nvram_get_int("ntp_ready") || !nvram_get_int("firmware_check_enable"))
+#if defined(RTAX58U) || defined(RTAX56U)
+	if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
 		return;
-
-	if (!bootup_check && !periodic_check)
-	{
-		time(&now);
-		tm = localtime(&now);
-
-		if ((tm->tm_hour == (2 + rand_hr)) &&	// every 48 hours at 2 am + random offset
-		    (tm->tm_min == rand_min))
-		{
-			periodic_check = 1;
-			period = -1;
-		}
+#endif
+	if (!nvram_get_int("ntp_ready")){
+		return;
 	}
 
-	if (bootup_check || periodic_check)
-		period = (period + 1) % cycle;
-	else
+	if(bootup_check_period > 0){	//bootup wait 90s to check
+		bootup_check_period--;
 		return;
+	}
 
-	if (!period || (period_retry < 2 && bootup_check == 0))
+	time(&now);
+	localtime_r(&now, &local);
+
+	if(local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min) //at 2 am + random offset to check
+		periodic_check = 1;
+
+	if (bootup_check || periodic_check || period_retry!=0)
 	{
-		period_retry = (period_retry+1) % 3;
-		if (bootup_check)
-		{
-			bootup_check = 0;
-			rand_hr = rand_seed_by_time() % 4;
-			rand_min = rand_seed_by_time() % 60;
-		}
-
+#if defined(RTCONFIG_ASUSCTRL) && defined(GTAC5300)
+		if (periodic_check)
+			asus_ctrl_sku_update();
+#endif
 #ifdef RTCONFIG_ASD
 		//notify asd to download version file
 		if (pids("asd"))
@@ -9204,16 +9195,37 @@ void auto_firmware_check_merlin()
 		}
 #endif
 
+		if (bootup_check)
+		{
+			bootup_check = 0;
+			rand_hr = rand_seed_by_time() % 4;
+			rand_min = rand_seed_by_time() % 60;
+#ifdef RTCONFIG_AMAS
+			if(nvram_match("re_mode", "1"))
+				return;
+#endif
+		}
+
+		if (!nvram_get_int("firmware_check_enable") ||
+		    nvram_contains_word("rc_support", "noupdate"))
+			return;
+
+		period_retry = (period_retry+1) % 3;
 		initial_state = nvram_get_int("webs_state_flag");
 
-		if(!nvram_contains_word("rc_support", "noupdate")){
-			eval("/usr/sbin/webs_update.sh");
-		}
+#if defined(RTL_WTDOG)
+		stop_rtl_watchdog();
+#endif
+		eval("/usr/sbin/webs_update.sh");
+#if defined(RTL_WTDOG)
+		start_rtl_watchdog();
+#endif
 
 		if (nvram_get_int("webs_state_update") &&
 		    !nvram_get_int("webs_state_error") &&
 		    strlen(nvram_safe_get("webs_state_info_am")))
 		{
+			period_retry = 0;	// We got a response from server, no need to retry
 			if ((initial_state == 0) && (nvram_get_int("webs_state_flag") == 1))		// New update
 			{
 				char version[4], revision[3], build[16];

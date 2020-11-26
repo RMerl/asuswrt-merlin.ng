@@ -1233,7 +1233,7 @@ char *get_default_ssid(int unit, int subunit)
 #endif
 #if defined(DSL_AX82U) && !defined(RTCONFIG_BCM_MFG)
 		if (is_ax5400_i1())
-			sprintf((char *)ssidbase, "OPTUSGR%02x%02x%02x", mac_binary[3], mac_binary[4], mac_binary[5]);
+			sprintf((char *)ssidbase, "OPTUSGR%02X%02X%02X", mac_binary[3], mac_binary[4], mac_binary[5]);
 		else
 #endif
 			sprintf((char *)ssidbase, "%s_%02X", SSID_PREFIX, mac_binary[5]);

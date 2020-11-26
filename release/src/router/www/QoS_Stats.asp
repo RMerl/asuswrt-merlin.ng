@@ -68,6 +68,9 @@ if ("<% nvram_get("qos_enable"); %>" == 0) {	// QoS disabled
 } else if (qos_type == "2") {			// BW limiter
 	var qos_mode = 3;
 	var qos_default = 0;
+} else if (qos_type == "3") {			// GeForce Now
+	var qos_mode = 4;
+	var qos_default = 4;
 } else {					// invalid mode
 	var qos_mode = 0;
 	var qos_default = 0;
@@ -393,6 +396,7 @@ function redraw(){
 			break;
 
 		case 2:		// Adaptive
+		case 4:		// GeForce Now
 			if (pie_obj_dl != undefined) pie_obj_dl.destroy();
 			var ctx_dl = document.getElementById("pie_chart_dl").getContext("2d");
 			tcdata_lan_array.sort(function(a,b) {return a[0]-b[0]} );
@@ -465,7 +469,8 @@ function draw_chart(data_array, ctx, pie) {
 		labels_array.push(label);
 		values_array.push(value);
 
-		if ((qos_mode == 2 && i == qos_default) || (qos_mode == 1 && tcclass-1 == qos_default))
+		if ((qos_mode == 2 && i == qos_default) ||
+		    ((qos_mode == 1 || qos_mode == 4) && tcclass-1 == qos_default))
 			label = label + "<span style=\"font-size: 75%; font-style: italic;\"> (Default)</span>";
 
 		var unit = " Bytes";

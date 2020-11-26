@@ -94,6 +94,123 @@ static void get_unique_filename(struct mystr* p_outstr,
 static int data_transfer_checks_ok(struct vsf_session* p_sess);
 static void resolve_tilde(struct mystr* p_str, struct vsf_session* p_sess);
 
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
+// nothing
+#else // should be musl
+// modified version of realpath@uClibc-ng
+#define MAX_READLINKS 32
+static char *local_resolve(const char *path, char got_path[])
+{
+	char copy_path[PATH_MAX];
+	char *max_path, *new_path;
+	size_t path_len;
+	int readlinks = 0;
+	int link_len;
+
+	if ((path == NULL) || (got_path ==NULL)) {
+		return NULL;
+	}
+	if (*path == '\0') {
+		return NULL;
+	}
+	/* Make a copy of the source path since we may need to modify it. */
+	path_len = strlen(path);
+	if (path_len >= PATH_MAX - 2) {
+		return NULL;
+	}
+	/* Copy so that path is at the end of copy_path[] */
+	strcpy(copy_path + (PATH_MAX-1) - path_len, path);
+	path = copy_path + (PATH_MAX-1) - path_len;
+	max_path = got_path + PATH_MAX - 2; /* points to last non-NUL char */
+	new_path = got_path;
+	if (*path != '/') {
+		/* If it's a relative pathname use getcwd for starters. */
+		if (!getcwd(new_path, PATH_MAX - 1))
+			goto err;
+		new_path += strlen(new_path);
+		if (new_path[-1] != '/')
+			*new_path++ = '/';
+	} else {
+		*new_path++ = '/';
+		path++;
+	}
+	/* Expand each slash-separated pathname component. */
+	while (*path != '\0') {
+		/* Ignore stray "/". */
+		if (*path == '/') {
+			path++;
+			continue;
+		}
+		if (*path == '.') {
+			/* Ignore ".". */
+			if (path[1] == '\0' || path[1] == '/') {
+				path++;
+				continue;
+			}
+			if (path[1] == '.') {
+				if (path[2] == '\0' || path[2] == '/') {
+					path += 2;
+					/* Ignore ".." at root. */
+					if (new_path == got_path + 1)
+						continue;
+					/* Handle ".." by backing up. */
+					while ((--new_path)[-1] != '/');
+					continue;
+				}
+			}
+		}
+		/* Safely copy the next pathname component. */
+		while (*path != '\0' && *path != '/') {
+			if (new_path > max_path) {
+ err:
+				return NULL;
+			}
+			*new_path++ = *path++;
+		}
+
+		/* Protect against infinite loops. */
+		if (readlinks++ > MAX_READLINKS) {
+			goto err;
+		}
+		path_len = strlen(path);
+		/* See if last (so far) pathname component is a symlink. */
+		*new_path = '\0';
+		{
+			link_len = readlink(got_path, copy_path, PATH_MAX - 1);
+			if (link_len < 0) {
+				/* EINVAL means the file exists but isn't a symlink. */
+				if (errno != EINVAL) {
+					goto err;
+				}
+			} else {
+				/* Safe sex check. */
+				if (path_len + link_len >= PATH_MAX - 2) {
+					goto err;
+				}
+				/* Note: readlink doesn't add the null byte. */
+				/* copy_path[link_len] = '\0'; - we don't need it too */
+				if (*copy_path == '/')
+					/* Start over for an absolute symlink. */
+					new_path = got_path;
+				else
+					/* Otherwise back up over this component. */
+					while (*(--new_path) != '/');
+				/* Prepend symlink contents to path. */
+				memmove(copy_path + (PATH_MAX-1) - link_len - path_len, copy_path, link_len);
+				path = copy_path + (PATH_MAX-1) - link_len - path_len;
+			}
+		}
+		*new_path++ = '/';
+	}
+	/* Delete trailing slash but don't whomp a lone slash. */
+	if (new_path != got_path + 1 && new_path[-1] == '/')
+		new_path--;
+	/* Make sure it's null terminated. */
+	*new_path = '\0';
+	return got_path;
+}
+#endif
+
 void
 process_post_login(struct vsf_session* p_sess)
 {
@@ -316,7 +433,11 @@ process_post_login(struct vsf_session* p_sess)
 				str_append_str(&p_sess->full_path, &p_sess->ftp_arg_str);
 
 				// Get the true path.
+#if defined(__GLIBC__) || defined(__UCLIBC__) /* not musl */
 				realpath(str_getbuf(&p_sess->full_path), fullpath);
+#else
+				local_resolve(str_getbuf(&p_sess->full_path), fullpath);
+#endif
 				str_alloc_text(&p_sess->full_path, fullpath);
 
 				memset(fullpath, 0, PATH_MAX);

@@ -1,0 +1,2560 @@
+﻿@font-face{
+	font-family: Roboto-Regular;
+	src: url(/fonts/Roboto-Regular.ttf) format("opentype");
+}
+@font-face{
+	font-family: Roboto-Light;
+	src: url(/fonts/Roboto-Light.ttf) format("opentype");
+}
+#jstree{
+	display: flex;
+}
+.ui-slider {
+	position: relative;
+	text-align: left;
+}
+.ui-slider .ui-slider-handle {
+	position: absolute;
+	width: 12px;
+	height: 12px;
+}
+.ui-slider .ui-slider-range {
+	position: absolute;
+}
+.ui-slider-horizontal {
+	height: 6px;
+}
+.ui-widget-content {
+	background: #2B353C;
+	box-shadow: inset 0 1px 0 0 rgba(0,0,0,0.10);
+	border-radius: 83px;
+}
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default {
+	border: 1px solid ;
+	background: #A4B7C3;
+	margin-top:-4px;
+	margin-left:-6px;
+	color: #A4B7C3;
+}
+/* Corner radius */
+.ui-corner-all,
+.ui-corner-top,
+.ui-corner-left,
+.ui-corner-tl {
+	border-top-left-radius: 4px;
+}
+.ui-corner-all,
+.ui-corner-top,
+.ui-corner-right,
+.ui-corner-tr {
+	border-top-right-radius: 4px;
+}
+.ui-corner-all,
+.ui-corner-bottom,
+.ui-corner-left,
+.ui-corner-bl {
+	border-bottom-left-radius: 4px;
+}
+.ui-corner-all,
+.ui-corner-bottom,
+.ui-corner-right,
+.ui-corner-br {
+	border-bottom-right-radius: 4px;
+}
+.ui-slider-horizontal .ui-slider-range {
+	top: 0;
+	height: 100%;
+}
+#led_slider .ui-slider-range {
+	background: #3367d6;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 1px;
+	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 1px;
+}
+#led_slider {
+	width: 150px;
+	margin-top: 8px;
+	float: left;
+}
+#led_text {
+	margin-left: 20px;
+	font-weight: bolder;
+	float: left;
+}
+
+#manage_block, #client_block{
+	margin-top: 18px;
+}
+.info_left{
+	width: 53%;
+	height: auto;
+	float: left;
+}
+.info_right{
+	width: 45%;
+	height: auto;
+	float: right;
+	padding: 2% 1% 2% 1%;
+	background-color: #300202;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+}
+.card_block_bg{
+	width: 100%;
+	height: auto;
+	margin: auto;
+	background: #190303;
+	border: 1px solid #740F0F;
+	box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20), 0 1px 4px 0 rgba(60,60,60,0.30);
+	border-radius: 4px;
+}
+.card_block_bg.manage_settings_bg{
+	padding-bottom: 18px;
+}
+.icon_bg{
+	width: 100%;
+	height: 148px;
+	position: relative;
+	border-radius: 4px 4px 0px 0px;
+}
+.translucent_bg{
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: 100%;
+	height: 148px;
+	background-size: 100% 100%;
+}
+.translucent_bg:before{
+	content: "";
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	margin: auto;
+	background-image: linear-gradient(190deg, rgba(255,255,255,0) 60%, rgba(0,0,0,0.8) 100%);
+}
+.translucent_bg.Home, .translucent_bg.Custom{ 
+	background-image: url("/images/New_ui/amesh/location/Home.png");
+}
+.translucent_bg.Living_Room{
+	background-image: url("/images/New_ui/amesh/location/Living_Room.png");
+}
+.translucent_bg.Dining_Room{
+	background-image: url("/images/New_ui/amesh/location/Dining_Room.png");
+}
+.translucent_bg.Kitchen{
+	background-image: url("/images/New_ui/amesh/location/Kitchen.png");
+}
+.translucent_bg.Bedroom{
+	background-image: url("/images/New_ui/amesh/location/Bedroom.png");
+}
+.translucent_bg.Master_Bedroom{
+	background-image: url("/images/New_ui/amesh/location/Master_Bedroom.png");
+}
+.translucent_bg.Kids_Room{
+	background-image: url("/images/New_ui/amesh/location/Kids_Room.png");
+}
+.translucent_bg.Guest_Room{
+	background-image: url("/images/New_ui/amesh/location/Guest_Room.png");
+}
+.translucent_bg.Study_Room{
+	background-image: url("/images/New_ui/amesh/location/Study_Room.png");
+}
+.translucent_bg.Walk-in_Closet{
+	background-image: url("/images/New_ui/amesh/location/Walk-in_Closet.png");
+}
+.translucent_bg.Bathroom{
+	background-image: url("/images/New_ui/amesh/location/Bathroom.png");
+}
+.translucent_bg.Office{
+	background-image: url("/images/New_ui/amesh/location/Office.png");
+}
+.translucent_bg.Meeting_Room{
+	background-image: url("/images/New_ui/amesh/location/Meeting_Room.png");
+}
+.translucent_bg.Hallway{
+	background-image: url("/images/New_ui/amesh/location/Hallway.png");
+}
+.translucent_bg.Hall{
+	background-image: url("/images/New_ui/amesh/location/Hall.png");
+}
+.translucent_bg.Stairwell{
+	background-image: url("/images/New_ui/amesh/location/Stairwell.png");
+}
+.translucent_bg.Third_Floor{
+	background-image: url("/images/New_ui/amesh/location/Third_Floor.png");
+}
+.translucent_bg.Second_Floor{
+	background-image: url("/images/New_ui/amesh/location/Second_Floor.png");
+}
+.translucent_bg.Attic{
+	background-image: url("/images/New_ui/amesh/location/Attic.png");
+}
+.translucent_bg.Basement{
+	background-image: url("/images/New_ui/amesh/location/Basement.png");
+}
+.translucent_bg.Storage{
+	background-image: url("/images/New_ui/amesh/location/Storage.png");
+}
+.translucent_bg.Balcony{
+	background-image: url("/images/New_ui/amesh/location/Balcony.png");
+}
+.translucent_bg.Yard{
+	background-image: url("/images/New_ui/amesh/location/Yard.png");
+}
+.translucent_bg.Garage{
+	background-image: url("/images/New_ui/amesh/location/Garage.png");
+}
+.model_info_bg{
+	position: absolute;
+	top: 96px;
+	left: 16px;
+}
+.model_name{
+	margin-bottom: 3px;
+	font-size: 24px;
+	color: #FFFFFF;
+	text-shadow: 0 1px 7px rgba(0,0,0,0.66);
+}
+.model_name > span.node_feature_notice{
+	position: relative;
+}
+.model_name > span.node_feature_notice:after{
+	position: absolute;
+	content: "";
+	background-image: url(/images/New_ui/amesh/feature_notice.svg);
+	width: 20px;
+	height: 20px;
+	background-size: cover;
+	right: -24px;
+	top: 4px;
+}
+.mac_info{
+	font-size: 12px;
+	color: #B9CFDE;
+	text-shadow: 0 1px 3px rgba(0,0,0,0.66);
+}
+.mac_info :first-child{
+	padding-right: 5px;
+	border-right: 1px solid #B9CFDE;
+	margin-right: 5px;
+}
+.model_icon{
+	background-image: url(/images/New_ui/amesh/AiMesh_component.svg);
+	background-position: 0% 100%;
+	background-repeat: no-repeat;
+	background-size: 420%;
+	width: 110px;
+	height: 110px;
+	position: absolute;
+	bottom: 6px;
+	right: 6px;
+	z-index: 9;
+	background-position: 0% 0%;
+}
+.model_icon.web{
+	background-size: contain;
+	background-position: 50%;
+}
+.location_dropdown_icon:before{
+	background-image: url('/images/New_ui/amesh/location_dropdown.svg');
+	background-size: 850%;
+	background-repeat: no-repeat;
+}
+.location_dropdown_icon.selected:before{
+	background-image: url('/images/New_ui/amesh/location_dropdown_active.svg');
+}
+.topology_icon:before{
+	background-image: url('/images/New_ui/amesh/location_topology.svg');
+}
+.topology_icon.offline:before{
+	background-image: url('/images/New_ui/amesh/location_topology_offline.svg');
+}
+.location_dropdown_icon.Home:before, .location_dropdown_icon.selected.Home:before, .topology_icon.Home:before{
+	background-position: 0% 0%;
+}
+.location_dropdown_icon.Living_Room:before, .location_dropdown_icon.selected.Living_Room:before, .topology_icon.Living_Room:before{
+	background-position: 0% 20%;
+}
+.location_dropdown_icon.Dining_Room:before, .location_dropdown_icon.selected.Dining_Room:before, .topology_icon.Dining_Room:before{
+	background-position: 0% 40%;
+}
+.location_dropdown_icon.Kitchen:before, .location_dropdown_icon.selected.Kitchen:before, .topology_icon.Kitchen:before{
+	background-position: 0% 60%;
+}
+.location_dropdown_icon.Bedroom:before, .location_dropdown_icon.selected.Bedroom:before, .topology_icon.Bedroom:before{
+	background-position: 16.5% 0%;
+}
+.location_dropdown_icon.Master_Bedroom:before, .location_dropdown_icon.selected.Master_Bedroom:before, .topology_icon.Master_Bedroom:before{
+	background-position: 16.5% 20%;
+}
+.location_dropdown_icon.Kids_Room:before, .location_dropdown_icon.selected.Kids_Room:before, .topology_icon.Kids_Room:before{
+	background-position: 16.5% 40%;
+}
+.location_dropdown_icon.Guest_Room:before, .location_dropdown_icon.selected.Guest_Room:before, .topology_icon.Guest_Room:before{
+	background-position: 16.5% 59%;
+}
+.location_dropdown_icon.Study_Room:before, .location_dropdown_icon.selected.Study_Room:before, .topology_icon.Study_Room:before{
+	background-position: 16.5% 80%;
+}
+.location_dropdown_icon.Walk-in_Closet:before, .location_dropdown_icon.selected.Walk-in_Closet:before, .topology_icon.Walk-in_Closet:before{
+	background-position: 16.5% 100%;
+}
+.location_dropdown_icon.Bathroom:before, .location_dropdown_icon.selected.Bathroom:before, .topology_icon.Bathroom:before{
+	background-position: 33.5% 0%;
+}
+.location_dropdown_icon.Office:before, .location_dropdown_icon.selected.Office:before, .topology_icon.Office:before{
+	background-position: 33.5% 20%;
+}
+.location_dropdown_icon.Meeting_Room:before, .location_dropdown_icon.selected.Meeting_Room:before, .topology_icon.Meeting_Room:before{
+	background-position: 33.5% 40%;
+}
+.location_dropdown_icon.Hallway:before, .location_dropdown_icon.selected.Hallway:before, .topology_icon.Hallway:before{
+	background-position: 50% 0%;
+}
+.location_dropdown_icon.Hall:before, .location_dropdown_icon.selected.Hall:before, .topology_icon.Hall:before{
+	background-position: 50% 20%;
+}
+.location_dropdown_icon.Stairwell:before, .location_dropdown_icon.selected.Stairwell:before, .topology_icon.Stairwell:before{
+	background-position: 50% 40%;
+}
+.location_dropdown_icon.Third_Floor:before, .location_dropdown_icon.selected.Third_Floor:before, .topology_icon.Third_Floor:before{
+	background-position: 66.5% 0%;
+}
+.location_dropdown_icon.Second_Floor:before, .location_dropdown_icon.selected.Second_Floor:before, .topology_icon.Second_Floor:before{
+	background-position: 66.5% 20%;
+}
+.location_dropdown_icon.Attic:before, .location_dropdown_icon.selected.Attic:before, .topology_icon.Attic:before{
+	background-position: 66.5% 40%;
+}
+.location_dropdown_icon.Basement:before, .location_dropdown_icon.selected.Basement:before, .topology_icon.Basement:before{
+	background-position: 66.5% 59%;
+}
+.location_dropdown_icon.Storage:before, .location_dropdown_icon.selected.Storage:before, .topology_icon.Storage:before{
+	background-position: 83.5% 0%;
+}
+.location_dropdown_icon.Balcony:before, .location_dropdown_icon.selected.Balcony:before, .topology_icon.Balcony:before{
+	background-position: 83.5% 20%;
+}
+.location_dropdown_icon.Yard:before, .location_dropdown_icon.selected.Yard:before, .topology_icon.Yard:before{
+	background-position: 83.5% 40%;
+}
+.location_dropdown_icon.Garage:before, .location_dropdown_icon.selected.Garage:before, .topology_icon.Garage:before{
+	background-position: 83.5% 59%;
+}
+.location_dropdown_icon.Custom:before, .location_dropdown_icon.selected.Custom:before, .topology_icon.Custom:before{
+	background-position: 100% 0%;
+}
+
+/*the container must be positioned relative:*/
+.custom_select{
+	position: relative;
+	width: 90%;
+	z-index: 9;
+	margin: auto;
+}
+.custom_select select{
+	display: none; /*hide original SELECT element:*/
+}
+.custom_select input{
+	position: absolute;
+	height: auto;
+	width: 67%;
+	top: 7px;
+	left: 46px;
+	border: 0;
+	outline: none;
+	z-index: 20;
+	color: #ffffff;
+	font-size: 14px;
+	font-family: Roboto-Light, "Microsoft JhengHei";
+	background: transparent;
+}
+.location_info_bg span.location_hint{
+	color: #FC0;
+	position: relative;
+	margin-left: 18px;
+	font-size: 14px;
+	z-index: 5;
+}
+.custom_pure_text{
+	cursor: initial !important;
+}
+.custom_select_selected, .custom_pure_text{
+	background-color: rgba(25, 3, 3, 0.7);
+	border-radius: 4px 4px 0px 0px;
+	font-size: 14px;
+	font-family: Roboto-Light, "Microsoft JhengHei";
+	height: 21px;
+}
+/*style the arrow inside the select element:*/
+.custom_select_selected:after{
+	position: absolute;
+	content: "";
+	top: 13px;
+	right: 10px;
+	width: 5px;
+	height: 5px;
+	border-top: 2px solid #bd2a2a;
+	border-right: 2px solid #bd2a2a;
+	-o-transform: rotate(135deg);
+	-ms-transform: rotate(135deg);
+	-moz-transform: rotate(135deg);
+	-webkit-transform: rotate(135deg);
+	transform: rotate(135deg);
+}
+/*point the arrow upwards when the select box is open (active):*/
+.custom_select_selected.custom_select_arrow_active:after{
+	-o-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+	-moz-transform: rotate(-45deg);
+	-webkit-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+	top: 16px;
+}
+/*style the items (options), including the selected item:*/
+.custom_select_items div, .custom_select_selected, .custom_pure_text{
+	color: #ffffff;
+	padding: 7px 22px 7px 45px;
+	border: 1px solid 740F0F;
+	border-color: transparent transparent #4c0f0f transparent;
+	cursor: pointer;
+	user-select: none;
+	position: relative;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.custom_select_selected{
+	border: 1px solid #740F0F;
+}
+.custom_select_items div:before{
+	position: absolute;
+	content: "";
+	top: 8px;
+	left: 15px;
+	width: 20px;
+	height: 20px;
+}
+.custom_select_selected:before, .custom_pure_text:before{
+	position: absolute;
+	content: "";
+	top: 5px;
+	left: 12px;
+	width: 24px;
+	height: 24px;
+}
+.custom_select_same_as_selected{
+	background-color: #740F0F;
+	color: #00FCFF !important;
+}
+.custom_select_same_as_selected:after{
+	position: absolute;
+	content: "";
+	top: 12px;
+	right: 10px;
+	width: 8px;
+	height: 5px;
+	border-top: 2px solid #00FCFF;
+	border-right: 2px solid #00FCFF;
+	-o-transform: rotate(135deg);
+	-ms-transform: rotate(135deg);
+	-moz-transform: rotate(135deg);
+	-webkit-transform:rotate(135deg);
+	transform: rotate(135deg);
+}
+/*style items (options):*/
+.custom_select_items {
+	position: absolute;
+	background-color: rgba(25, 3, 3, 0.95);
+	left: 0;
+	right: 0;
+	height: 185px;
+	overflow-y: scroll;
+	border-radius: 0px 0px 4px 4px;
+	font-family: Roboto-Light, "Microsoft JhengHei";
+}
+.custom_select_items div:hover{
+	background-color: #740F0F;
+}
+.custom_select_items::-webkit-scrollbar-track{
+	border: 4px solid rgba(25, 3, 3, 0.95);
+	background-color: rgba(189, 42, 42, 0.3);
+}
+.custom_select_items::-webkit-scrollbar{
+	width: 10px;
+}
+.custom_select_items::-webkit-scrollbar-thumb{
+	border-radius: 10px;
+	background-color: #bd2a2a;
+	border: 2px solid rgba(25, 3, 3, 0.95);
+}
+/*hide the items when the select box is closed:*/
+.custom_select_hide{
+	display: none;
+}
+.text_center{
+	display: -webkit-box;
+	display: -moz-box;
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+
+	-webkit-box-align: center;
+	-moz-box-align: center;
+	-ms-flex-align: center;
+	-webkit-align-items: center;
+	align-items: center;
+
+	-webkit-box-pack: center;
+	-moz-box-pack: center;
+	-ms-flex-pack: center;
+	-webkit-justify-content: center;
+	justify-content: center;
+}
+.item_bg{
+	height: 78px;
+	background-color: #190303;
+	border-radius: 4px;
+	position: relative;
+}
+.item_space{
+	height: 6px;
+	background-color: #190303;
+}
+.item_bg.location{
+	height: auto;
+	padding: 10px 0px 16px 0px;
+}
+.item_bg.signal{
+	height: 60px;
+	border-radius: 0px;
+	padding: 10px 0px;
+}
+.item_bg.fw_version{
+	display: flex;
+	border-radius: 0px;
+	height: 48px;
+}
+.item_bg.fw_version > div{
+	float: left;
+	height: 100%;
+}
+.item_bg.category{
+	background-color: #190303;
+}
+.signal_text_bg.signal{
+	font-size: 30px;
+	margin-left: 18px;
+	font-family: Roboto-Light, "Microsoft JhengHei";
+	height: 30px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	line-height: 30px;
+	margin-top: 6px;
+}
+.bubble_icon{
+	background: url(/images/New_ui/amesh/cards_usage.svg) no-repeat;
+	background-size: initial;
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+}
+.bubble_icon.warn_red{
+	background-position: 5px -176px;
+}
+.bubble_icon.warn_grey{
+	background-position: -41px -176px;
+}
+.bubble_icon.more{
+	background-position: -87px -176px;
+	cursor: pointer;
+}
+.bubble_icon.hide{
+	background: none !important; 
+}
+.bubble_icon.info{
+	background-position: -99px -76px;
+	background-size: 500%;
+}
+.signal_hint_text{
+	margin-left: 18px;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 12px;
+	color: #7F8FA4;
+}
+.fw_version_title_bg{
+	width: 36%;
+	color: #A4B7C3;
+	text-align: left;
+	padding-left: 18px;
+	font-size: 14px;
+	display: table;
+	word-break: break-word;
+}
+.fw_version_title_bg > div:first-child, .fw_version_text_bg > div:first-child{
+	display: table-cell;
+	vertical-align: middle;
+}
+.fw_version_text_bg{
+	width: 58%;
+	display: table;
+	word-break: break-word;
+}
+.fw_version_text{
+	color: #FFFFFF;
+	font-size: 14px;
+	font-family: Roboto-Light, "Microsoft JhengHei";
+	text-decoration: underline;
+	position: relative;
+}
+.fw_version_text > span:first-child{
+	cursor: pointer;
+}
+.bubble_icon.fw_icon{
+	position: absolute;
+	top: -5px;
+	cursor: initial;
+}
+.bubble_icon.signal_icon{
+	position: absolute;
+	top: 5px;
+	cursor: pointer;
+	display: none;
+}
+.category_bg{
+	float: left;
+	width: 33.3%;
+	height: 100%;
+	text-align: center;
+	color: #A4B7C3;
+	font-size: 12px;
+	cursor: pointer;
+	position: relative;
+	background-image: linear-gradient(#551f1f 1%, #400505 100%);
+}
+.category_bg.clicked{
+	color: #FFFFFF;
+	background-image: linear-gradient(#5d0c0c 1%, #791818 100%);
+	outline: 1px solid rgba(116, 15, 15, 0.5);
+}
+.category_bg > div{
+	height: 58%;
+	position: relative;
+}
+.category_bg > div:first-child:before{
+	content: "";
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+	width: 30px;
+	height: 30px;
+	background: url(/images/New_ui/amesh/cards_usage.svg) no-repeat;
+	background-size: 1100%;
+}
+.category_bg > div.client:before{
+	background-position: 5px -85px;
+}
+.category_bg.clicked > div.client:before{
+	background-position: 5px -136.8px;
+}
+.category_bg > div.network:before{
+	background-position: -47px -85px;
+}
+.category_bg.clicked > div.network:before{
+	background-position: -47px -136.8px;
+}
+.category_bg > div.manage:before{
+	background-position: -99px -85px;
+}
+.category_bg.clicked > div.manage:before{
+	background-position: -99px -136.8px;
+}
+.connect_type_status_bg > div, .manage_settings_bg > div{
+	height: 60px;
+	position: relative;
+}
+.connect_type_status_bg div.common_separate_bg{
+	height: 76px;
+	position: relative;
+}
+.connect_type_status_bg div.common_separate_bg.horizontal_line.phy_rate{
+	height: 58px;
+	position: relative;
+}
+.wan_status_bg > div{
+	height: 60px;
+	position: relative;
+}
+.wan_status_bg > div > span{
+	line-height: 48px;
+}
+.connect_type_status_bg .uplink_type_bg{
+	margin-bottom: 6px;
+}
+.connect_type_status_bg .uplink_type_title{
+	line-height: 36px;
+	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-size: 24px;
+	margin-left: 22px;
+}
+.connect_type_status_bg .uplink_type_title.great, .signal_text_bg.signal.great{
+	color: #4EF81C;
+}
+.connect_type_status_bg .uplink_type_title.ok, .signal_text_bg.signal.ok{
+	color: #4EF81C;
+}
+.connect_type_status_bg .uplink_type_title.weak, .signal_text_bg.signal.weak{
+	color: #ffa500;
+}
+.connect_type_status_bg .uplink_type_title.disconnected, .signal_text_bg.signal.disconnected{
+	color: #627681;
+}
+.connect_type_status_bg .uplink_type_ip{
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 14px;
+	color: #CDEBFF;
+	position: absolute;
+	margin-left: 22px;
+}
+.connect_type_status_bg .uplink_icon_bg {
+	height: 100%;
+	width: 30%;
+	position: absolute;
+	top: -24px;
+	right: 0;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon{
+	background: url(/images/New_ui/amesh/signal_quality.svg) no-repeat;
+	background-repeat: no-repeat;
+	background-size: initial;
+	width: 72px;
+	height: 72px;
+	position: absolute;
+	right: 21px;
+	top: 4px;
+	background-position: -304px 0px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_2g.great{
+	background-position: 0px 0px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_2g.ok{
+	background-position: 0px -102px
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_2g.weak{
+	background-position: 0px -204px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_5g.great{
+	background-position: -102px 0px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_5g.ok{
+	background-position: -102px -102px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_5g.weak{
+	background-position: -102px -204px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_5g_1.great{
+	background-position: -204px 0px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_5g_1.ok{
+	background-position: -204px -102px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_5g_1.weak{
+	background-position: -204px -204px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_5g_2.great{
+	background-position: -306px 0px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_5g_2.ok{
+	background-position: -306px -102px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_5g_2.weak{
+	background-position: -306px -204px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.disconnected{
+	background-position: 0px -306px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.T{
+	background-position: 0px -408px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.F{
+	background-position: -102px -408px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.Q{
+	background-position: -102px -408px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.G{
+	background-position: -204px -408px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired{
+	background-position: -204px -510px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.M{
+	background-position: 0px -510px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.disconnected, .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.X{
+	background-position: -102px -510px;
+}
+.card_block_bg span.connect_title{
+	top: 24px;
+	line-height: initial;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+}
+.card_block_bg span.connect_title.vertical{
+	top: 18px;
+	line-height: initial;
+	padding-left: 20px;
+}
+.wan_status_bg div.connect_icon_bg > div{
+	background: url(/images/New_ui/amesh/cards_usage.svg) no-repeat;
+	background-size: initial;
+	width: 65px;
+	height: 65px;
+	position: absolute;
+}
+.wan_status_bg div.connect_icon_bg > .router{
+	background-position: -162px 6px;
+	right: 12px;
+	top: 6px;
+}
+.wan_status_bg div.connect_icon_bg.disconnected > .router{
+	background-position: -78px 6px;
+}
+.wan_status_bg div.connect_icon_bg > .connect_line{
+	background-position: -251px -6px;
+	right: 28px;
+	top: 62px;
+}
+.wan_status_bg div.connect_icon_bg > .internet{
+	background-position: 8px 0px;
+	right: 88px;
+	top: 62px;
+}
+.wan_status_bg div.connect_icon_bg > .connect_status{
+	background-position: -48px -224px;
+	right: 52px;
+	top: 86px;
+	width: 24px;
+	height: 24px;
+}
+.wan_status_bg div.connect_icon_bg.disconnected > .connect_status{
+	background-position: 2px -224px;
+}
+.wan_status_bg div.connect_icon_bg{
+	position: absolute;
+	height: 100px;
+	width: 50%;
+	top: 0;
+	right: 0;
+}
+.card_block_bg span.connect_title, span.connect_status{
+	position: relative;
+	font-size: 16px;
+	color: #FFFFFF;
+	margin-left: 22px;
+}
+.card_block_bg span.connect_title:before{
+	content: "";
+	position: absolute;
+	left: 0;
+	top: -8px;
+	width: 24px;
+}
+.card_block_bg span.connect_title.vertical:before{
+	top: 0px;
+	right: 0;
+	height: 100%;
+}
+.card_block_bg span.connect_title.wan:before{
+	border-top: 3px solid #740F0F;
+}
+.card_block_bg span.connect_title.wired:before{
+	border-top: 3px solid #740F0F;
+}
+.card_block_bg span.connect_title.wl_5g_2:before{
+	border-top: 3px solid #740F0F;
+}
+.card_block_bg span.connect_title.wl_5g:before{
+	border-top: 3px solid #740F0F;
+}
+.card_block_bg span.connect_title.wl_2g:before{
+	border-top: 3px solid #740F0F;
+}
+.card_block_bg span.connect_title.vertical.traffic:before{
+	border-left: 3px solid #740F0F;
+}
+.card_block_bg span.connect_title.manage:before{
+	border-top: 3px solid #740F0F;
+}
+.wan_status_bg span.connect_status{
+	font-size: 20px;
+	font-family: Roboto-Light, "Microsoft JhengHei";
+}
+.wan_status_bg span.connect_status.connected{
+	color: #00FCFF;
+}
+.wan_status_bg span.connect_status.disconnected{
+	color: #FF922A;
+}
+.wan_connect_info > div{
+	float: left;
+	width: 49%;
+	height: 100%;
+	position: relative;
+}
+.wan_connect_info > div:first-child:before, .common_separate_bg > div:nth-child(2):before{/*vertical_line*/
+	position: absolute;
+	content: " ";
+	right: 0;
+	height: 90%;
+	border-left: 1px solid #740F0F;
+}
+.wan_connect_info > div > div{
+	height: 45%;
+	padding-left: 22px;
+}
+.wan_connect_info .connect_info_title{
+	font-size: 12px;
+	color: #A4B7C3;
+}
+.wan_connect_info .connect_info_text{
+	font-size: 16px;
+	color: #FFFFFF;
+}
+.separation_line{
+	position: relative;
+	height: 20px;
+	line-height: 20px;
+	margin: 18px 0px 6px 0px;
+	text-align: center;
+}
+.separation_line i{
+	display: block;
+	height: 1px;
+	background: #4F5E68;
+	position: absolute;
+	top: 45%;
+	width: 100%;
+	z-index: 1;
+}
+.separation_line p{
+	display: inline-block;
+	font-size: 13px;
+	color: #A4B7C3;
+	background: #300202;
+	padding: 0px 12px 0px 12px;
+	text-align: center;
+	margin: 0 auto;
+	position: relative;
+	z-index: 2;
+}
+.fronthaul_info .separation_line {
+	cursor: pointer;
+	margin: 18px 0px 18px 0px;
+}
+.fronthaul_info .separation_line p:before{
+	background: url(/images/New_ui/amesh/expand.svg) no-repeat;
+	position: absolute;
+	content: "";
+	width: 60px;
+	height: 18px;
+	background-position: -46px 0px;
+	top: 19px;
+	bottom: 0;
+	right: 0;
+	left: 0;
+	margin: 0 auto;
+	-moz-transform:scaleY(-1);
+	-webkit-transform:scaleY(-1);
+	-o-transform:scaleY(-1);
+	transform:scaleY(-1);
+}
+.fronthaul_info .separation_line p.hide:before{
+	-moz-transform:scaleY(1);
+	-webkit-transform:scaleY(1);
+	-o-transform:scaleY(1);
+	transform:scaleY(1);
+	top: 16px;
+}
+.common_title{
+	margin: 6px 0px 6px 22px;
+	color: #A4B7C3;
+	font-size: 14px;
+	height: auto;
+	position: relative;
+}
+.common_title.white{
+	color: #FFFFFF;
+}
+.common_content_bg{
+	background: #000000;
+	border-radius: 4px;
+	height: 30px;
+	width: 90%;
+	margin: 7px 0px 0px 22px;
+	border: 1px solid #300202;
+}
+.common_content_text{
+	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-size: 14px;
+	color: #FFFFFF;
+	letter-spacing: 3px;
+	line-height: 30px;
+	margin-left: 24px;
+}
+.common_content_text.mac{
+	letter-spacing: 1px;
+	margin-left: 12px;
+}
+.common_content_text.ssid{
+	letter-spacing: 0px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	display: inline-block;
+	width: 92%;
+}
+.fronthaul .common_title_content_bg{
+	margin-bottom: 12px;
+}
+.common_title_content_bg{
+	color: #A4B7C3;
+	font-size: 14px;
+	height: 30px !important;
+	line-height: 30px !important;
+	margin-top: 6px;
+}
+.common_title_content_bg > div{
+	float: left;
+	margin-left: 22px;
+}
+.common_title_content_bg > div.content_bg{
+	background: #000000;
+	border-radius: 4px;
+	width: 55%;
+	margin-left: 12px;
+	padding-left: 24px;
+	color: #FFFFFF;
+	letter-spacing: 1px;
+	border: 1px solid #300202;
+}
+.common_separate_bg > div:not(:first-child){
+	height: 48px;
+	float: left;
+	width: 50%;
+	position: relative;
+}
+.common_separate_bg.phy_rate > div:not(:first-child){
+	height: 36px;
+}
+.common_separate_bg span{
+	position: absolute;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 12px;
+	color: #A4B7C3;
+}
+.common_separate_bg span.transmit_title{
+	left: 22px;
+	top: -4px;
+}
+.common_separate_bg span.transmit_value{
+	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-size: 20px;
+	color: #00FCFF;
+	bottom: 6px;
+	right: 52px;
+	padding: 0px 2px;
+}
+.common_separate_bg span.transmit_value.green{
+	color: #9EFF3C;
+}
+.common_separate_bg span.transmit_unit{
+	bottom: 3px;
+	left: 120px;
+	font-family: Roboto-Light, "Microsoft JhengHei";
+}
+.common_separate_bg.horizontal_line:before,
+.item_bg.signal:before,.item_bg.location:before,
+.manage_settings_bg > div.horizontal_line:before{
+	content: "";
+	position: absolute;
+	left: 5%;
+	bottom: 0;
+	height: 1px;
+	width: 90%;
+	border-bottom: 1px solid #740F0F;
+}
+.backhaul_info .backhaul_bg{
+	background: rgba(28,39,44,0.30);
+	border-radius: 4px 4px 0px 0px;
+	height: auto;
+	padding-bottom: 18px;
+}
+.backhaul_info .backhaul_bg > div:first-child{
+	height: 60px;
+}
+.backhaul_info .common_content_bg, .backhaul_info .common_title_content_bg .content_bg{
+	background: #000000;
+}
+.backhaul_info .traffic_bg{
+	height: 48px;
+}
+.traffic_separate_title_bg{
+	margin: 6px 0px 6px 0px;
+}
+.traffic_separate_title_bg > div{
+	width: 50%;
+	float: left;
+}
+.traffic_separate_title_bg > div > div{
+	margin-left: 22px;
+}
+.clearBoth{
+	clear: both;
+	width: 0% !important;
+	height: 0% !important;
+	float: initial !important;
+}
+.manage_switch_led .switch, .manage_switch_wifi .switch{
+	box-shadow: inset 0 1px 0 0 rgba(0,0,0,0.10);
+	border-radius: 83px;
+	width: 40px;
+	height: 24px;
+	position: relative;
+	display: inline-block;
+	-webkit-transition: all 0.6s;
+	transition: all 0.6s;
+	cursor: pointer;
+}
+.manage_switch_led .switch.off, .manage_switch_wifi .switch.off{
+	background: rgb(255 255 255 / 0.3);
+}
+.manage_switch_led .switch.on, .manage_switch_wifi .switch.on{
+	background: #91071f;
+}
+.manage_switch_led .switch:before, .manage_switch_wifi .switch:before{
+	border-radius: 83px;
+	display: block;
+	position: absolute;
+	content: "";
+	height: 18px;
+	width: 18px;
+	left: 3px;
+	top: 3px;
+	-webkit-transition: 0.6s;
+	transition: all 0.6s;
+	-webkit-transition-delay: 0.01s;
+	transition-delay: 0.01s;
+	background: #f7f7f7;
+}
+.manage_switch_led .switch.on:before, .manage_switch_wifi .switch.on:before{
+	-webkit-transform: translateX(16px);
+	-ms-transform: translateX(16px);
+	transform: translateX(16px);
+}
+.manage_switch_led, .manage_remove_node, .manage_slider_led, .manage_reboot_node{
+	height: 56px !important
+}
+.manage_common_title{
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 14px;
+	color: #FFFFFF;
+}
+.manage_common_separate_bg{
+	position: absolute;
+	top: 50%;
+	-webkit-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	transform: translateY(-50%);
+}
+.manage_common_separate_bg.left{
+	margin-left: 22px;
+}
+.manage_common_separate_bg.right{
+	margin-right: 22px;
+	right: 0;
+}
+.manage_settings_bg .dropdown_item_bg{
+	height: 92px;
+}
+.manage_settings_bg .dropdown_item_bg > div{
+	margin-left: 22px;
+}
+.manage_settings_bg .dropdown_item_bg > div:nth-child(1){
+	height: 30px;
+	line-height: 42px;
+}
+.manage_settings_bg .dropdown_item_bg > div:nth-child(2){
+	height: 36px;
+	margin-top: 12px;
+}
+.manage_settings_bg .dropdown_item_bg .dropdown_select{
+	background: #190809;
+	border: 1px solid #740f0f;
+	border-radius: 4px;
+	color: #FFFFFF;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 14px;
+	line-height: 36px;
+	height: 36px;
+	width: 93%;
+	padding-left: 6px;
+	outline: none;
+}
+.manage_settings_bg .dropdown_item_bg .bubble_icon{
+	position: relative;
+	top: 7px;
+}
+.manage_settings_bg .sub_item_bg{
+	height: auto;
+	padding: 10px 0px 4px 0px;
+}
+.manage_settings_bg .sub_item_bg > div{
+	margin-left: 22px;
+	position: relative;
+}
+.manage_sub_item_bg .manage_common_title .wifi_title{
+	position: relative;
+}
+.manage_sub_item_bg .manage_common_title .wifi_title.loading:after{
+	content: "";
+	position: absolute;
+	top: -4px;
+	right: -30px;
+	width: 24px;
+	height: 24px;
+	background-image: url(/images/InternetScan.gif);
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg.loading:after{
+	content: "";
+	position: absolute;
+	bottom: 0;
+	top: 0;
+	left: 0;
+	right: 0;
+	width: 90%;
+	margin: auto;
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div{
+	height: 36px;
+	position: relative;
+	margin-top: 8px;
+	line-height: 36px;
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div .manage_common_title{
+	color: #A4B7C3;
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div:before{
+	content: "";
+	position: absolute;
+	left: 5%;
+	top: -4px;
+	height: 1px;
+	width: 90%;
+	border-top: 1px solid #740F0F;
+}
+.manage_btn{
+	background-image: linear-gradient(-180deg, #6A7C83 0%, #364249 62%, #222D32 100%);
+	border: 1px solid #740F0F;
+	box-shadow: 0 1px 2px 0 rgba(0,0,0,0.30);
+	border-radius: 4px;
+	padding: 7px 18px;
+	cursor: pointer;
+}
+.manage_disconnected{
+	text-align: left;
+	color: #FC0;
+	font-size: 14px;
+	height: auto !important;
+	margin-bottom: 10px;
+	padding: 0px 18px 0px 22px;
+}
+.manage_disconnected:before{
+	content: "";
+	position: absolute;
+	left: 5%;
+	bottom: -10px;
+	height: 1px;
+	width: 90%;
+	border-bottom: 1px solid #740F0F;
+}
+.backhaul_bg .bubble_icon, .fronthaul_bg .bubble_icon{
+	position: absolute;
+	top: -2px;
+}
+.custom_radio_label{
+	margin-right: 12px !important;
+	cursor: pointer;
+	position: relative;
+}
+.custom_radio_label:before{
+	content: '';
+	display: inline-block;
+	vertical-align: middle;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	border-color: rgb(207 10 44 / 0.7);
+	border-width: 2px;
+	border-style: solid;
+}
+.custom_radio_label.checked:after{
+	content: '';
+	width: 8px;
+	height: 8px;
+	background: #cf0a2c;
+	border-radius: 50%;
+	position: absolute;
+	top: 2px;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+}
+.custom_radio_label > .custom_radio{
+	display: none;
+}
+.managment_icon{
+	background: url(/images/New_ui/amesh/managment_icon.svg) no-repeat;
+	background-size: 500%;
+	width: 24px;
+	height: 24px;
+	cursor: pointer;
+}
+.managment_icon.trash_icon{
+	background-position: 3px -151px;
+}
+.managment_icon.reconnect_icon{
+	background-position: 2px -42px;
+}
+.managment_icon.reboot_icon{
+	background-position: 2px -96px;
+}
+.managment_icon.preferable_backhaul_icon{
+	background-position: 2px -206px;
+}
+.managment_icon.preferable_backhaul_icon.float_right{
+	float: right;
+}
+.preferable_backhaul_text{
+	color: #A4B7C3;
+	font-size: 12px;
+	float: left;
+	margin-top: 3px;
+	margin-right: 6px;
+}
+.arrow_right_icon{
+	position: relative;
+	right: 8px;
+	width: 10px;
+	height: 10px;
+	border-top: 3px solid #ffffff;
+	border-right: 3px solid #ffffff;
+	-o-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	-moz-transform: rotate(45deg);
+	-webkit-transform: rotate(45deg);
+	transform: rotate(45deg);
+	cursor: pointer;
+}
+.client_num_bg{
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 14px;
+	color: #FFFFFF;
+	margin: 24px 22px 18px 22px;
+}
+.client_num_bg div.left{
+	float: left;
+	position: relative;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 16px;
+}
+.client_num_bg div.left span:before{
+	content: "";
+	position: absolute;
+	left: 0;
+	top: -8px;
+	width: 24px;
+	border-top: 3px solid #740F0F;
+}
+.client_num_bg div.right{
+	float: right;
+}
+.client_num_bg div.right span{
+	font-size: 18px;
+}
+.client_tab_bg{
+	display: flex;
+	background: #420606;
+	border: 1px solid #740F0F;
+	border-radius: 4px;
+	height: 36px;
+	line-height: 36px;
+	width: 95%;
+	margin: 0 auto;
+}
+.client_tab_bg div{
+	float: left;
+	text-align: center;
+	vertical-align: middle;
+	font-size: 12px;
+	color: #A4B7C3;
+	cursor: pointer;
+	position: relative;
+	width: 33%;
+}
+.client_tab_bg div:nth-child(2){
+	width: 34%;
+}
+.client_tab_bg div.clicked{
+	color: #FFFFFF;
+	background-image: linear-gradient(#5d0c0c 1%, #791818 100%);
+	outline: 1px solid #740F0F;
+	border-radius: 2px;
+}
+.client_list_bg{
+	margin-top: 12px;
+	margin-bottom: 12px;
+}
+.client_list_bg .each_client_bg{
+	position: relative;
+	padding: 8px 0px;
+	height: 42px;
+}
+.client_list_bg .each_client_bg > div{
+	cursor: pointer;
+}
+.client_list_bg .each_client_bg:before{
+	content: "";
+	position: absolute;
+	left: 5%;
+	bottom: 0;
+	height: 1px;
+	width: 90%;
+	border-bottom: 1px solid #740F0F;
+}
+.client_list_bg .client_icon_bg{
+	height: 42px;
+	width: 42px;
+	margin: 0px 10px 0px 18px;
+	float: left;
+	position: relative;
+}
+.client_list_bg .client_icon_bg.default_icon{
+	background-image: url(/images/New_ui/networkmap/client-list.svg);
+	background-repeat: no-repeat;
+	background-size: 900%;
+	border-radius: 8px;
+	background-color: #680516;
+}
+.client_list_bg .client_icon_bg.vender_icon{
+	background-image: url(/images/New_ui/networkmap/vender-list.png);
+	background-repeat: no-repeat;
+	background-size: 180%;
+	top: 1px;
+}
+.client_list_bg .client_icon_bg.user_icon{
+	background-size: cover;
+	border-radius: 8px;
+}
+.client_list_bg .client_action_bg{
+	right: 0;
+}
+.client_list_bg .client_action_bg > span{
+	cursor: pointer;
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background-color: rgb(145,7,31);
+	background-image: url(/images/New_ui/amesh/client_control.svg);
+	background-repeat: no-repeat;
+	background-size: initial;
+	margin-left: 6px;
+	border-radius: 50%;
+}
+.client_list_bg .client_action_bg > span:hover{
+	background-color:  rgba(207,10,44);
+}
+.client_list_bg .client_action_bg > span.unbind{
+	background-color: #FFFFFF;
+	background-position: 4px -103px !important;
+}
+.client_list_bg .client_action_bg > span.reconn{
+	background-position: -37px -73px;
+}
+.client_list_bg .client_action_bg > span.bind{
+	background-position: 5px -73px;
+}
+.client_list_bg .client_action_bg > span.bind_notice{
+	background-image: url(/images/New_ui/amesh/bind_notice.png) !important;
+	background-size: cover;
+	cursor: initial;
+	background-color: initial;
+	margin-left: initial;
+}
+.type0{
+	background-image:url('/images/New_ui/networkmap/client.svg') !important;
+	background-size: 100% !important;
+}
+.client_list_bg .client_content_bg{
+	float: left;
+	width: 75%;
+	height: 100%;
+	position: relative;
+}
+.client_list_bg .client_content_bg > .client_content_name{
+	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-size: 16px;
+	color: #FFFFFF;
+	height: 60%;
+}
+.client_list_bg .client_content_bg > .client_content_name.offline, .client_list_bg .client_content_bg > .client_content_mac_ip.offline{
+	color: #627681;
+}
+.client_list_bg .client_content_bg > .client_content_name div{
+	position: absolute;
+}
+.client_list_bg .client_content_bg .client_content_name .client_name{
+	width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon{
+	width: 20px;
+	height: 20px;
+	background-image: url(/images/New_ui/amesh/client_control.svg);
+	background-size: 650%;
+	background-repeat: no-repeat;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wired{
+	background-position: 0px -28px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wireless{
+	background-position: -34px -28px;
+}
+.client_list_bg .client_content_bg > .client_content_mac_ip{
+	font-size: 13px;
+	color: #B9CFDE;
+	height: 40%;
+	display: inline-flex;
+}
+.client_list_bg .client_content_bg > .client_content_mac_ip div{
+	position: relative;
+	float: left;
+}
+.client_list_bg .client_content_bg > .client_content_mac_ip div:not(:first-child){
+	float: left;
+	padding-left: 10px;
+}
+.client_list_bg .client_content_bg > .client_content_mac_ip > div:not(:first-child):before{
+	position: absolute;
+	content: "";
+	left: 5px;
+	height: 110%;
+	border-left: 1px solid #7F8FA4;
+	top: 1px;
+}
+.client_list_bg .no_client_hint{
+	text-align: center;
+	color: #FC0;
+	font-size: 14px;
+}
+.fronthaul_info .fronthaul_bg:not(:last-child){
+	margin-bottom: 18px;
+}
+.popup_hint_bg{
+	display: none;
+	height: auto;
+	width: 65%;
+	background: rgb(0, 0, 0);
+	border: 1px solid #740F0F;
+	box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20), 0 1px 4px 0 rgba(60,60,60,0.30);
+	border-radius: 4px;
+	position: absolute;
+	padding: 18px;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 16px;
+	left: 12%;
+	z-index: 500;
+	margin-bottom: 30px;
+}
+.popup_hint_bg .action_bg{
+	margin-top: 18px;
+	text-align: right;
+}
+.popup_hint_bg .action_bg .button_gen{
+	margin-left: 18px;
+}
+.popup_hint_bg .notice_text{
+	margin-bottom: 10px;
+	position: relative;
+}
+.popup_hint_bg .notice_text.hint{
+	color: #FC0;
+	font-size: 14px;
+}
+.popup_hint_bg .notice_text_blue{
+	color: #33ACFF;
+}
+.popup_hint_bg .notice_text > span.gray{
+	color: #64737c;
+}
+.popup_hint_bg .notice_text .not_support_hint{
+	position: absolute;
+	top: 8px;
+	right: 0;
+}
+.popup_hint_bg .horizontal_line:before{
+	content: "";
+	position: absolute;
+	bottom: -4px;
+	height: 1px;
+	width: 100%;
+	border-bottom: 1px solid #740F0F;
+}
+.popup_hint_bg .notice_text_location{
+	color: #A4B7C3;
+	font-size: 12px;
+}
+.popup_hint_bg .model_info{
+	margin-left: 15px;
+}
+.popup_hint_bg .model_info.no_location{
+	display: inline-block;
+	height: 30px;
+	line-height: 30px;
+}
+.popup_hint_bg .model_info.offline{
+	color: #64737c;
+	font-size: 13px;
+	margin-left: 3px;
+	position: relative;
+	top: -2px;
+}
+.popup_hint_bg .custom_radio_bg{
+	position: absolute;
+	top: 12px;
+	right: 0;
+	margin-right: 0px;
+}
+.popup_hint_bg .custom_radio_bg.no_location{
+	top: 6px;
+}
+.popup_hint_bg .custom_radio_bg > span{
+	margin-right: initial;
+}
+.popup_hint_bg .mask_bg{
+	position: absolute;
+	width: 100%;
+	top: 0;
+	right: 0;
+	left: 0;
+	bottom: 0;
+	margin: auto;
+	background: rgba(0, 0, 0, 0.6);
+	border-radius: 4px;
+}
+.popup_hint_bg .action_more_bg{
+	margin-top: 18px;
+	position: relative;
+}
+.popup_hint_bg .action_more_bg:before{
+	content: "";
+	position: absolute;
+	top: -10px;
+	width: 100%;
+	border-top: 1px solid #616E79;
+}
+.popup_hint_bg .action_more_bg > span{
+	cursor: pointer;
+	font-size: 12px;
+	color: #A4B7C3;
+}
+.popup_hint_bg .action_more_bg > span:nth-child(1){
+	float: right;
+}
+.popup_hint_bg .action_more_bg > span:nth-child(2){
+	float: right;
+}
+.hover_pop_hint_bg{
+	cursor: initial;
+	position: absolute;
+	height: auto;
+	line-height: 180%;
+	width: 270px;
+	background: #000;
+	border: 1px solid #740F0F;
+	box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20), 0 1px 4px 0 rgba(60,60,60,0.30);
+	border-radius: 4px;
+	padding: 18px;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 16px;
+	color: #FFFFFF;
+	z-index: 500;
+	display: none;
+}
+.hover_pop_hint_bg.conn_priority_icon, .hover_pop_hint_bg.lacp_icon{
+	top: 40px;
+	left: 16px;
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_title{
+	position: relative;
+	padding-left: 12px;
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_title:before{
+	content: "";
+	position: absolute;
+	width: 6px;
+	height: 6px;
+	background-color: #FFF;
+	border-radius: 50%;
+	top: 7px;
+	left: 0px;
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_content{
+	color: #A4B7C3;
+	font-size: 13px;
+	line-height: 140%;
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_content.text_yellow{
+	color: #FC0;
+}
+.hover_pop_hint_bg.conn_priority_icon .height_space{
+	height: 12px;
+}
+.hover_pop_hint_bg.fw_icon{
+	top: 26px;
+	left: -124px;
+}
+.hover_pop_hint_bg.ssid_icon{
+	top: 30px;
+	left: -2px;
+}
+.hover_pop_hint_bg.bind_notice{
+	top: 34px;
+	left: -220px;
+}
+.hover_pop_hint_bg.node_feature_notice{
+	top: 32px;
+	left: 0px;
+}
+.hover_pop_hint_bg.node_feature_notice .list_item{
+	margin: 0;
+	padding: 0 18px;
+	color: #33ACFF;
+}
+.hover_pop_hint:hover::before{
+	content: '';
+	position: absolute;
+	width: 0;
+	height: 0;
+	z-index: 510;
+	top: 26px;
+	left: 7px;
+	width: 10px;
+	height: 10px;
+	border-top: 1px solid #740F0F;
+	border-right: 1px solid #740F0F;
+	-o-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+	-moz-transform: rotate(-45deg);
+	-webkit-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+	background-color: #000;
+}
+.hover_pop_hint.node_feature_notice:hover::before{
+	right: -27px;
+	left: initial;
+}
+.bubble_icon.info:hover + .hover_pop_hint_bg,
+.bubble_icon.fw_icon:hover + .hover_pop_hint_bg,
+.bubble_icon.signal_icon:hover + .hover_pop_hint_bg,
+.bind_notice:hover + .hover_pop_hint_bg,
+.node_feature_notice:hover + .hover_pop_hint_bg
+{
+	display: block;
+}
+/* jsTree default theme */
+.jstree-node,
+.jstree-children,
+.jstree-container-ul {
+	display: block;
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+	list-style-image: none;
+}
+.jstree-children:before{
+	content: "";
+	position: absolute;
+}
+.jstree-node {
+	white-space: nowrap;
+}
+.jstree-anchor {
+	display: inline-block;
+	color: black;
+	white-space: nowrap;
+	padding: 0 4px 0 1px;
+	margin: 0;
+	vertical-align: top;
+}
+.jstree-anchor:before {
+	content: "";
+	position: absolute;
+	width: 36px;
+	height: 82px;
+	background-image: url(/images/New_ui/amesh/topology_connect_quality.svg);
+	background-position: 12px -8px;
+	left: -32px;
+	top: -14px;
+	z-index: 200;
+	background-repeat: no-repeat;
+}
+.jstree-anchor.great.wired:before {
+	background-position: 10px -38px;
+}
+.jstree-anchor.weak.wired:before {
+	background-position: -66px -38px;
+}
+.jstree-anchor.great.wireless:before {
+	background-position: -142px -38px;
+}
+.jstree-anchor.weak.wireless:before {
+	background-position: -218px -38px;
+}
+.jstree-anchor.disconnected:before {
+	background-position: -287px -38px;
+}
+.jstree-anchor.wired:after {
+	background-position: 0px 0px;
+}
+.jstree-anchor.wl_2g:after {
+	background-position: -40px 0px;
+}
+.jstree-anchor.wl_5g:after {
+	background-position: -80px 0px;
+}
+.jstree-anchor.wl_5g_1:after {
+	background-position: -120px 0px;
+}
+.jstree-anchor.wl_5g_2:after {
+	background-position: -160px 0px;
+}
+.jstree-anchor.without-before-element:before, .jstree-anchor.without-before-element:after{
+	content: none;
+}
+.jstree-anchor:focus {
+	outline: 0;
+}
+.jstree-anchor,
+.jstree-anchor:link,
+.jstree-anchor:visited,
+.jstree-anchor:hover,
+.jstree-anchor:active {
+	text-decoration: none;
+	color: inherit;
+}
+.jstree-icon {
+	display: inline-block;
+	text-decoration: none;
+	margin: 0;
+	padding: 0;
+	vertical-align: top;
+	text-align: center;
+}
+.jstree-icon:empty {
+	display: inline-block;
+	text-decoration: none;
+	margin: 0;
+	padding: 0;
+	vertical-align: top;
+	text-align: center;
+}
+.jstree-ocl {
+	cursor: pointer;
+}
+.jstree-leaf > .jstree-ocl {
+	cursor: default;
+}
+.jstree .jstree-open > .jstree-children {
+	display: block;
+}
+.jstree .jstree-closed > .jstree-children,
+.jstree .jstree-leaf > .jstree-children {
+	display: none;
+}
+.jstree-anchor > .jstree-themeicon {
+	margin-right: 0px;
+}
+.jstree-wholerow-ul {
+	position: relative;
+	display: inline-block;
+	min-width: 100%;
+}
+.jstree-wholerow-ul .jstree-leaf > .jstree-ocl {
+	cursor: pointer;
+}
+.jstree-wholerow-ul .jstree-anchor,
+.jstree-wholerow-ul .jstree-icon {
+	position: relative;
+}
+.jstree-wholerow-ul .jstree-wholerow {
+	width: 100%;
+	cursor: pointer;
+	position: absolute;
+	left: 0;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.jstree-default .jstree-node,
+.jstree-default .jstree-icon {
+	background-repeat: no-repeat;
+	background-color: transparent;
+}
+.jstree-default .jstree-hovered {
+	background: #300202;
+	box-shadow: 0 2px 0 0 rgba(0,0,0,0.10);
+}
+.jstree-default .jstree-clicked {
+	background: #300202;
+	box-shadow: 0 2px 0 0 rgba(0,0,0,0.10);
+}
+.jstree-default .jstree-no-icons .jstree-anchor > .jstree-themeicon {
+	display: none;
+}
+.jstree-default .jstree-disabled.jstree-hovered {
+	background: transparent;
+	box-shadow: none;
+}
+.jstree-default > .jstree-wholerow-ul .jstree-hovered,
+.jstree-default > .jstree-wholerow-ul .jstree-clicked {
+	background: transparent;
+	box-shadow: none;
+	border-radius: 0;
+	/*background: #36444C;*/
+}
+.jstree-default .jstree-wholerow {
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+}
+.jstree-default .jstree-wholerow-hovered {
+	background: #300202;
+	box-shadow: 0 2px 0 0 rgba(0,0,0,0.10);
+}
+.jstree-default .jstree-wholerow-clicked {
+	background: #300202;
+	box-shadow: -3px 0 0 0 #A10000, 0 2px 0 0 rgba(0,0,0,0.10);
+}
+.jstree-default .jstree-node {
+	min-height: 0px;
+	line-height: 0px;
+	margin-left: 0px;
+	min-width: 0px;
+	position: relative;
+}
+.jstree-default .jstree-node:before{
+	content: "";
+	position: absolute;
+	width: 36px;
+	height: 100%;
+	background: url(/images/New_ui/amesh/topology_connect_quality.svg);
+	background-position: -116px 0px;
+	z-index: 100;
+	background-repeat: repeat-y;
+}
+.jstree-default .jstree-node.great.wired:before{
+	background-position: -358px 0px;
+}
+.jstree-default .jstree-node.weak.wired:before{
+	background-position: -434px 0px;
+}
+.jstree-default .jstree-node.great.wireless:before{
+	background-position: -510px 0px;
+}
+.jstree-default .jstree-node.weak.wireless:before{
+	background-position: -586px 0px;
+}
+.jstree-default .jstree-node.disconnected:before{
+	background-position: -655px 0px;
+}
+.jstree-default .jstree-node.level_2:before{
+	left: 30px;
+}
+.jstree-default .jstree-node.level_3:before{
+	left: 90px;
+}
+.jstree-default .jstree-node.level_4:before{
+	left: 150px;
+}
+.jstree-default .jstree-node.level_5:before{
+	left: 210px;
+}
+.jstree-default .jstree-anchor {
+	line-height: 110px;
+	height: 110px;
+	width: 95%;
+}
+.jstree-default .jstree-icon{
+	width: 0px;
+	height: 110px;
+	line-height: 110px;
+}
+.jstree-default .jstree-icon:before{
+	width: 9px;
+	height: 110px;
+	line-height: 110px;
+	content: "";
+	position: absolute;
+}
+.jstree-default .jstree-icon.jstree-themeicon {
+	width: 90px;
+	height: 110px;
+	line-height: 110px;
+	float: left;
+	z-index: 500;
+}
+.jstree-default .jstree-icon.jstree-themeicon:before{
+	content: "";
+	position: absolute;
+	width: 36px;
+	height: 36px;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	margin: auto;
+}
+.jstree-default .jstree-icon.jstree-themeicon:after{
+	content: "";
+	position: absolute;
+	width: 74px;
+	height: 74px;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	margin: auto;
+	box-shadow: 0 0 2px 4px rgba(35, 35, 35, 0.5);
+	border-radius: 50%;
+}
+
+.jstree-default .jstree-wholerow {
+	height: 110px;
+}
+.jstree-default .jstree-node,
+.jstree-default .jstree-icon {
+	background-image: url("/images/New_ui/amesh/topology_circle_normal.svg");
+	background-repeat: no-repeat;
+	background-position: 50%;
+}
+.jstree-default .jstree-node {
+	background-position: -292px -4px;
+	background-repeat: repeat-y;
+}
+.jstree-default .jstree-last {
+	background: transparent;
+}
+.jstree-default .jstree-open > .jstree-ocl {
+	background-position: -132px -4px;
+}
+.jstree-default .jstree-closed > .jstree-ocl {
+	background-position: -100px -4px;
+}
+.jstree-default .jstree-leaf > .jstree-ocl {
+	background-position: -68px -4px;
+}
+.jstree-anchor .jstree-icon.jstree-themeicon {
+	background-image: url("/images/New_ui/amesh/topology_circle_normal.svg");
+}
+.jstree-anchor.jstree-clicked .jstree-icon.jstree-themeicon {
+	background-image: url("/images/New_ui/amesh/topology_circle_active.svg");
+}
+.jstree-anchor .jstree-icon.jstree-themeicon.offline {
+	background-image: url("/images/New_ui/amesh/topology_circle_offline.svg");
+}
+.jstree-default > .jstree-no-dots .jstree-node:before{
+	content: "";
+	position: absolute;
+}
+.jstree-default > .jstree-no-dots .jstree-node,
+.jstree-default > .jstree-no-dots .jstree-leaf > .jstree-ocl,
+.jstree-default > .jstree-no-dots .jstree-node.jstree-last,
+.jstree-default > .jstree-no-dots .jstree-node.jstree-last:before{
+	background: transparent;
+}
+.jstree-default > .jstree-no-dots .jstree-open > .jstree-ocl {
+	background: transparent;
+}
+.jstree-default > .jstree-no-dots .jstree-closed > .jstree-ocl {
+	background: transparent;
+}
+.jstree-default .jstree-disabled {
+	background: transparent;
+}
+.jstree-default .jstree-disabled.jstree-hovered {
+	background: transparent;
+}
+.jstree-default > .jstree-container-ul > .jstree-node {
+	margin-left: 0;
+	margin-right: 0;
+}
+.topology_node_info{
+	float: left;
+	height: 100%;
+	line-height: initial;
+	margin-left: 0px;
+	width: 160px;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+}
+.topology_node_info > div{
+	line-height: 180%;
+	color: #FFFFFF;
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+.topology_node_info > div:nth-child(1){
+	font-size: 18px;
+	height: 24%;
+	margin-top: 12px;
+}
+.topology_node_info > div:nth-child(1) > span:nth-child(1).node_feature_notice{
+	position: relative;
+}
+.topology_node_info > div:nth-child(1) > span:nth-child(1).node_feature_notice:before{
+	content: "";
+	position: absolute;
+	width: 6px;
+	height: 6px;
+	background-color: #ebae04;
+	border-radius: 50%;
+	top: 13px;
+	right: -12px;
+}
+.topology_node_info > div:nth-child(2){
+	font-size: 14px;
+	color: #A4B7C3;
+	margin-left: 3px;
+	/*overflow : hidden;
+	text-overflow: ellipsis;*/
+	word-break: break-all;
+	white-space: pre-wrap;
+	height: 33%;
+	line-height: 120%
+}
+.topology_node_info > div:nth-child(3){
+	font-size: 12px;
+	color: #A4B7C3;
+	margin-left: 3px;
+	height: 24%;
+}
+.topology_node_info > div:nth-child(3) > span:nth-child(2){
+	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-size: 16px;
+	color: #00FCFF;
+	margin-left: 6px;
+	margin-top: -4px;
+	position: relative;
+}
+.topology_node_info > div:nth-child(3) > span:nth-child(2).bind_notice:before{
+	content: "";
+	position: absolute;
+	width: 6px;
+	height: 6px;
+	background-color: #ebae04;
+	border-radius: 50%;
+	top: 8px;
+	left: 12px;
+}
+.clientlist_content{
+	z-index: 500 !important;
+	margin-left: initial !important;
+	margin-top: initial !important;
+	right: 12%;
+	top: 12%;
+}
+.node_btn_control{
+	position: relative;
+	text-align: center;
+	margin-bottom: 30px;
+	height: 35px;
+}
+.node_btn_control:before{
+	content: "";
+	position: absolute;
+	left: 2%;
+	bottom: -15px;
+	width: 95%;
+	border-top: 1px solid #616E79;
+}
+.node_btn_control > div{
+	background-image: linear-gradient(-180deg, #740f0f 0%, #420606 62%, #400505 100%);
+	border: 1px solid #740F0F;
+	box-shadow: 0 1px 2px 0 rgba(0,0,0,0.30);
+	border-radius: 4px;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 14px;
+	color: #FFFFFF;
+	display: inline-block;
+	cursor: pointer;
+	width: 48%;
+	float: left;
+	height: 35px;
+	margin-left: 4px;
+}
+.node_btn_control > div > span{
+	display: inline-block;
+	vertical-align: middle;
+	height: 35px;
+	line-height: 35px;
+	position: relative;
+	margin-left: 18px;
+}
+.node_btn_control > div > span.add_icon:before{
+	content: "+";
+	position: absolute;
+	left: -18px;
+	top: 1px;
+	font-size: 24px;
+	font-family: none;
+	font-weight: bolder;
+}
+.node_btn_control > div > span.refresh_icon:before{
+	content: "";
+	position: absolute;
+	left: -25px;
+	top: 8px;
+	background: url(/images/New_ui/amesh/client_control.svg) no-repeat;
+	background-size: 700%;
+	width: 20px;
+	height: 20px;
+	background-position: 0px 0px;
+}
+.aimesh_introduction{
+	background-image: url(/images/New_ui/amesh/AiMesh-introduction.jpg);
+	width: 100%;
+	height: 520px;
+	background-size: 100%;
+	background-position: center;
+	background-repeat: no-repeat;
+	position: relative;
+	top: -15px;
+}
+.aimesh_intro_text{
+	color: #FFFFFF;
+	text-align: center;
+	width: 80%;
+	position: absolute;
+	left: 0;
+	right: 0;
+	margin: auto;
+	top: 36px;
+}
+.aimesh_intro_text > div:nth-child(1){
+	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-size: 24px;
+}
+.aimesh_intro_text > div:nth-child(2):before{
+	content: "";
+	position: absolute;
+	left: 0%;
+	top: -9px;
+	width: 100%;
+	background: #d0e4f7;
+	background: -moz-radial-gradient(center, ellipse cover, #d0e4f7 0%,#87bcea 10%,#416c8e 50%,#162632 100%);
+	background: -webkit-radial-gradient(center, ellipse cover, #d0e4f7 0%,#87bcea 10%,#416c8e 50%,#162632 100%);
+	background: radial-gradient(ellipse at center, #d0e4f7 0%,#87bcea 10%,#416c8e 50%,#162632 100%);
+	height: 1px;
+}
+.aimesh_intro_text > div:nth-child(2){
+	font-family: Roboto-light, "Microsoft JhengHei";
+	font-size: 12px;
+	position: relative;
+	margin-top: 18px;
+}
+.connect_info_bg{
+	position: relative;
+	margin-top: 30px;
+	height: auto;
+	min-height: 30px;
+}
+.connect_info_bg:before{
+	content: "";
+	position: absolute;
+	left: 2%;
+	top: -15px;
+	width: 95%;
+	border-top: 1px solid #616E79;
+}
+.connect_line_info_icon{
+	width: 26px;
+	height: 26px;
+	position: absolute;
+	background: #374A57;
+	border-radius: 50%;
+	background-image: url(/images/New_ui/amesh/cards_usage.svg);
+	background-position: -108px -82.5px;
+	background-size: 500%;
+	background-repeat: no-repeat;
+	right: 15px;
+	top: -8px;
+	cursor: pointer;
+	z-index: 100;
+}
+.connect_line_info_bg > div{
+	height: 32px;
+	line-height: 32px;
+	margin: 12px 0px;
+}
+.connect_line_info_bg > div > div{
+	float: left;
+	margin-left: 12px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	width: 85%;
+	text-align: left;
+}
+.connect_line_info_bg .connect_line{
+	width: 30px;
+	height: 30px;
+	border-radius: 4px;
+	border-color: #8AADB5;
+	background: #300202;
+	position: relative;
+	border-width: 1px;
+	border-style: solid;
+	position: relative;
+} 
+.connect_line_info_bg .connect_line:before{
+	content: "";
+	position: absolute;
+	background-image: url(/images/New_ui/amesh/topology_connect_quality.svg);
+	width: 26px;
+	height: 26px;
+	left: 2px;
+	top: 2px;
+	background-repeat: no-repeat;
+}
+.connect_line_info_bg .connect_line.wired.great:before{
+	background-position: 5px 0px;
+}
+.connect_line_info_bg .connect_line.wired.weak:before{
+	background-position: -71px 0px;
+}
+.connect_line_info_bg .connect_line.wireless.great:before{
+	background-position: -147px 0px;
+}
+.connect_line_info_bg .connect_line.wireless.weak:before{
+	background-position: -223px 0px;
+}
+.connect_line_info_bg .connect_line.disconnected:before{
+	background-position: -292px -55px;
+}
+.connect_line_info_bg .faq_bg{
+	height: auto;
+	margin-left: 12px;
+}
+.connect_type_status_bg.fronthaul .wired_hide{
+	height: auto !important;
+	margin-top: 12px !important;
+	margin-bottom: 12px !important;
+}
+.connect_type_status_bg.backhaul .wired_hide{
+	height: auto !important;
+}
+.connect_type_status_bg.backhaul .spacing{
+	margin-top: 12px !important;
+}
+.aimesh_tab{
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 16px;
+	color: #FFFFFF;
+	height: 24px;
+}
+.aimesh_tab > span{
+	margin-left: 5px;
+	margin-right: 24px;
+	cursor: pointer;
+	position: relative;
+}
+.aimesh_tab > span.clicked:before{
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: -10px;
+	width: 100%;
+	border-bottom: 2px solid #A10000;
+}
+.aimesh_tab_content{
+	width: 100%;
+	display: none;
+}
+.client_reconnect_loading_icon{
+	background-image: url(/images/InternetScan.gif);
+	width: 60px;
+	height: 60px;
+	background-repeat: no-repeat;
+	background-size: contain;
+	left: 0;
+	right: 0;
+	margin: auto;
+	margin-bottom: 15px;
+}
+.client_reconnect_loading_text{
+	text-align: center;
+}
+
+/* CSS Loader */
+.cssload-bellContainer.topology_node{
+	height: 110px;
+}
+.cssload-bellContainer.topology_node .cssload-bell{
+	height: 68px;
+	width: 68px;
+	left: 11px;
+	top: 21px;
+	z-index: 500;
+}
+.cssload-bellContainer.topology_node .cssload-circle .cssload-inner {
+	border: 2px solid rgba(0, 252, 255, 0.4);
+	box-shadow: inset 0px 0px 10px rgba(0,252,255,0.15);
+}
+.cssload-bellContainer{
+	height: 60px;
+}
+.cssload-bell {
+	margin-top: 0px;
+	width: 50px;
+	height: 50px;
+	border-radius: 100%;
+	position: absolute;
+	left: calc(50% - 25px);
+}
+.cssload-circle {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+}
+.cssload-circle .cssload-inner {
+	width: 100%;
+	height: 100%;
+	border-radius: 100%;
+	border: 3px solid rgba(0,122,255,0.7);
+	border-right: none;
+	border-top: none;
+	background-clip: padding;
+	box-shadow: inset 0px 0px 10px rgba(0,122,255,0.15);
+}
+.cssload-circle:nth-of-type(1) {
+	transform: rotate(0deg);
+	-o-transform: rotate(0deg);
+	-ms-transform: rotate(0deg);
+	-webkit-transform: rotate(0deg);
+	-moz-transform: rotate(0deg);
+}
+.cssload-circle:nth-of-type(1) .cssload-inner,
+.cssload-circle:nth-of-type(2) .cssload-inner,
+.cssload-circle:nth-of-type(3) .cssload-inner
+{
+	animation: cssload-spin 2s infinite linear;
+	-o-animation: cssload-spin 2s infinite linear;
+	-ms-animation: cssload-spin 2s infinite linear;
+	-webkit-animation: cssload-spin 2s infinite linear;
+	-moz-animation: cssload-spin 2s infinite linear;
+}
+.cssload-circle:nth-of-type(2) {
+	transform: rotate(70deg);
+	-o-transform: rotate(70deg);
+	-ms-transform: rotate(70deg);
+	-webkit-transform: rotate(70deg);
+	-moz-transform: rotate(70deg);
+}
+
+.cssload-circle:nth-of-type(3) {
+	transform: rotate(140deg);
+	-o-transform: rotate(140deg);
+	-ms-transform: rotate(140deg);
+	-webkit-transform: rotate(140deg);
+	-moz-transform: rotate(140deg);
+}
+.cssload-bell{
+	animation: cssload-spin 5s infinite linear;
+	-o-animation: cssload-spin 5s infinite linear;
+	-ms-animation: cssload-spin 5s infinite linear;
+	-webkit-animation: cssload-spin 5s infinite linear;
+	-moz-animation: cssload-spin 5s infinite linear;
+}
+@keyframes cssload-spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+@-o-keyframes cssload-spin {
+	from {
+		-o-transform: rotate(0deg);
+	}
+	to {
+		-o-transform: rotate(360deg);
+	}
+}
+@-ms-keyframes cssload-spin {
+	from {
+		-ms-transform: rotate(0deg);
+	}
+	to {
+		-ms-transform: rotate(360deg);
+	}
+}
+@-webkit-keyframes cssload-spin {
+	from {
+		-webkit-transform: rotate(0deg);
+	}
+	to {
+		-webkit-transform: rotate(360deg);
+	}
+}
+@-moz-keyframes cssload-spin {
+	from {
+		-moz-transform: rotate(0deg);
+	}
+	to {
+		-moz-transform: rotate(360deg);
+	}
+}
+.loadingBlock{
+	width: 500px;
+}
+.cssload-bellContainer.center{
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+}
+.splitLine{
+	margin: 5px;
+	height: 1px;
+}

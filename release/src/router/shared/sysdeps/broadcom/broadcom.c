@@ -923,7 +923,7 @@ get_uplinkports_linkrate(char *ifname)
 #if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
 		ext = 1;
 #endif
-		sprintf(pif[0], "%s", "eth0");
+		sprintf(pif[0], "%s", "vlan2");
 		break;
 	case MODEL_RTAC56S:
 	case MODEL_RTAC56U:
@@ -1242,10 +1242,9 @@ get_uplinkports_linkrate(char *ifname)
 			}
 		}
 	}
-
 #if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
 	if (ext) {
-		ext_lret = ext_rtk_phyState(0, &exrate[0]);
+		ext_lret = ext_rtk_phyState(0, &exrate[0], NULL);
 		if(ext_lret) lret |= ext_lret << (lan_ports+1);
 	}
 #endif

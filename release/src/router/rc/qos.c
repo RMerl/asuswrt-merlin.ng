@@ -1600,7 +1600,6 @@ static int start_bandwidth_limiter(void)
 		"TQAU=\"tc qdisc add dev $WAN\"\n"
 		"TCAU=\"tc class add dev $WAN\"\n"
 		"TFAU=\"tc filter add dev $WAN\"\n"
-		"SFQ=\"sfq perturb 10\"\n"
 		"TQA=\"tc qdisc add dev br0\"\n"
 		"TCA=\"tc class add dev br0\"\n"
 		"TFA=\"tc filter add dev br0\"\n"
@@ -1613,6 +1612,7 @@ static int start_bandwidth_limiter(void)
 		"\n"
 		"\t$TQAU root handle 2: htb\n"
 		"\t$TCAU parent 2: classid 2:1 htb rate 10240000kbit\n"
+		, qsched
 		, get_wan_ifname(wan_primary_ifunit())
 	);
 	// access router : mark 9
@@ -2433,11 +2433,11 @@ static int start_rog_qos()
 	FILE *f;
 	char wan[16];
 	unsigned int obw;
+	char *qsched;
 #ifdef HND_ROUTER
 	int wantype = get_dualwan_by_unit(wan_primary_ifunit());
 #endif
 	int wan_mtu, bw;
-	char *qsched;
 	int overhead = 0;
 	char overheadstr[sizeof("overhead 128 linklayer ethernet")];
 	char nvmtu[sizeof("wan0_mtu")];

@@ -27,6 +27,7 @@ extern void nvgfn_kernel_setting(int val);
 extern void nvgfn_mcs_isauto(int val);
 extern char *upnp_nvram_get(char *name);
 extern int upnp_nvram_set(char *name, char *value);
+extern int nvgfn_GetPacketDropCount(int *value);
 extern int nvgfn_GetQosState(int *value);
 extern int nvgfn_SetQosState(char *value);
 extern int nvgfn_GetQosRule(NVGFN_QOS_RULE_T *qos_rule);

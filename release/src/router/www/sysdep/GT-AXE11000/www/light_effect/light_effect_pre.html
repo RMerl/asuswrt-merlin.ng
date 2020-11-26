@@ -1,0 +1,199 @@
+﻿<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="stylesheet" type="text/css" href="/light_effect/light_effect.css" />
+<head>
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/calendar/jquery-ui.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
+</head>
+<script >
+var $light_effect_bg = $("#light_effect_bg");
+var scheme_item_post = {
+	"LED_Set" : {"R" : 255, "G" : 0, "B" : 0},
+	"Mode" : 1,
+	"Speed" : 0,
+	"Direction" : 0
+};
+function initial_led_control() {
+	$light_effect_bg = $("#light_effect_bg");
+
+	var aurargb_val = httpApi.nvramGet(["aurargb_val"], true)["aurargb_val"];
+	if(aurargb_val != undefined && aurargb_val != ""){
+		var aurargb_array = aurargb_val.split(",");
+		if(aurargb_array.length == 6){
+			scheme_item_post.LED_Set.R = aurargb_array[0];
+			scheme_item_post.LED_Set.G = aurargb_array[1];
+			scheme_item_post.LED_Set.B = aurargb_array[2];
+			scheme_item_post.Mode = aurargb_array[3];
+			scheme_item_post.Speed = aurargb_array[4];
+			scheme_item_post.Direction = aurargb_array[5];
+		}
+	}
+	var ledg_scheme = httpApi.nvramGet(["aurargb_enable"], true)["aurargb_enable"];
+	if(ledg_scheme == "0") {
+		lightl_effect_animate.clear($light_effect_bg);
+		$light_effect_bg.removeClass().addClass("light_effect_bg prePage");
+		$light_effect_bg.css("background", "initial");
+	}
+	else
+		setTimeout(function () {set_scheme_mode(scheme_item_post.Mode, scheme_item_post["LED_Set"])}, 50);
+}
+function set_scheme_mode(_type, _LED_Set_Obj){
+	scheme_item_post["LED_Set"]["R"] = _LED_Set_Obj["R"];
+	scheme_item_post["LED_Set"]["G"] = _LED_Set_Obj["G"];
+	scheme_item_post["LED_Set"]["B"] = _LED_Set_Obj["B"];
+	var group_rgb = scheme_item_post["LED_Set"];
+	var hue_slider_rgb = [group_rgb["R"],group_rgb["G"],group_rgb["B"]];
+	switch(_type) {
+		case "0" :
+			$light_effect_bg.css("background", "");
+			$light_effect_bg.addClass("event");
+			break;
+		case "1" :
+			$light_effect_bg.css("background", "rgb("+ group_rgb["R"] + ", " + group_rgb["G"] + ", " + group_rgb["B"] + ")");
+			break;
+		case "2" :
+			$light_effect_bg.css("background", "rgb("+ group_rgb["R"] + ", " + group_rgb["G"] + ", " + group_rgb["B"] + ")");
+			lightl_effect_animate.breathing($light_effect_bg, hue_slider_rgb);
+			break;
+		case "5" :
+			$light_effect_bg.css("background", "");
+			$light_effect_bg.addClass("rainbow");
+			break;
+		case "8" :
+			lightl_effect_animate.comet($light_effect_bg, hue_slider_rgb);
+			break;
+		case "3" :
+			$light_effect_bg.css("background", "rgb("+ group_rgb["R"] + ", " + group_rgb["G"] + ", " + group_rgb["B"] + ")");
+			lightl_effect_animate.flash($light_effect_bg, hue_slider_rgb);
+			break;
+		case "12" :
+			$light_effect_bg.css("background", "");
+			$light_effect_bg.addClass("yoyo");
+			break;
+		case "4" :
+			$light_effect_bg.addClass("ccycle");
+			break;
+		case "13" :
+			lightl_effect_animate.snight($light_effect_bg, hue_slider_rgb);
+			break;
+		case "6" :
+			$light_effect_bg.addClass("strobing");
+			break;
+		case "11" :
+			lightl_effect_animate.wave($light_effect_bg, hue_slider_rgb);
+			break;
+	}
+}
+var lightl_effect_animate = {
+	"interval" : false,
+	"rainbow_array" : ["#ff0000", "#ffa500", "#ffff00", "#008000", "#0000ff", "#4b0082", "#ee82ee"],
+	"breathing" : function(_obj, _rgbArr) {
+		var breathing_color = function(_obj, _rgbArr) {
+			_obj.animate({
+				backgroundColor: "rgba("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ", 1)"
+			}, 1000);
+
+			_obj.animate({
+				backgroundColor: "rgba("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ", 0.2)"
+			}, 1000);
+
+		};
+		breathing_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			breathing_color(_obj, _rgbArr);
+		},2000);
+	},
+	"flash" : function(_obj, _rgbArr) {
+		var flash_color = function(_obj, _rgbArr) {
+			_obj.css("background", "rgb("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ")")
+			.delay(1000)
+			.animate({backgroundColor: "rgba("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ", 0.1)"}, 0);
+		};
+		flash_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			flash_color(_obj, _rgbArr);
+		},2000);
+	},
+	"snight" : function(_obj, _rgbArr) {
+		var color_idx = 0;
+		var color_end = lightl_effect_animate.rainbow_array.length;
+
+		var snight_color = function(_obj, _rgbArr) {
+			var rgbColor = lightl_effect_animate.rainbow_array[color_idx];
+			var rgbaColor = 'rgba(' + parseInt(rgbColor.slice(-6,-4),16)
+				+ ',' + parseInt(rgbColor.slice(-4,-2),16)
+				+ ',' + parseInt(rgbColor.slice(-2),16)
+				+',0.7)';
+			_obj.css("background", rgbColor)
+			.delay(250)
+			.animate({backgroundColor: rgbaColor}, 100)
+			.delay(250)
+			.animate({backgroundColor: rgbColor}, 100)
+		};
+		snight_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			color_idx++;
+			if(color_idx >= color_end)
+				color_idx = 0;
+			snight_color(_obj, _rgbArr);
+		},1500);
+	},
+	"comet" : function(_obj, _rgbArr) {
+		var percent_init = 0;
+		var percent_end = 100;
+		var color_idx = 0;
+		var color_end = lightl_effect_animate.rainbow_array.length;
+		var comet_color = function(_obj, _rgbArr) {
+			var min = middle = max = 0;
+			min = Math.max(0, (percent_init - 30));
+			middle = percent_init;
+			max = Math.min(100, (percent_init + 30));
+			_obj.css("background", "linear-gradient(to right, rgb(0, 0, 0) " + min + "%, "+ lightl_effect_animate.rainbow_array[color_idx] +" " + middle + "%, rgb(0, 0, 0) " + max + "%)");
+		};
+		comet_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			percent_init += 10;
+			comet_color(_obj, _rgbArr);
+			if(percent_init >= percent_end){
+				percent_init = 0;
+				color_idx++;
+				if(color_idx >= color_end)
+					color_idx = 0;
+			}
+		},150);
+	},
+	"wave" : function(_obj, _rgbArr) {
+		var percent_init = 0;
+		var percent_end = 100;
+		var wave_color_idx = 0;
+		var wave_color_end = lightl_effect_animate.rainbow_array.length;
+		var wave_color = function(_obj, _rgbArr) {
+			_obj.css("background", "linear-gradient(to right, rgb(0, 0, 0) 0%, "+ lightl_effect_animate.rainbow_array[wave_color_idx] +" " + percent_init + "%, rgb(0, 0, 0) 100%)");
+		};
+		wave_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			percent_init += 10;
+			wave_color(_obj, _rgbArr);
+			if(percent_init >= percent_end){
+				percent_init = 0;
+				wave_color_idx++;
+				if(wave_color_idx >= wave_color_end)
+					wave_color_idx = 0;
+			}
+		},200);
+	},
+	"clear" : function(_obj) {
+		clearInterval(lightl_effect_animate.interval);
+		_obj.stop(true,true);
+	}
+}
+function multiply_rgb(_value) {
+	return (Math.ceil(_value * 2) > 255) ? 255 : Math.ceil(_value * 2);
+}
+$(document).ready(initial_led_control);
+</script>
+<body style="margin:initial;background-color:#000;">
+<div class="light_effect_bg prePage" id="light_effect_bg">
+	<div class="light_effect_mask prePage"></div>
+</div>
+</body>

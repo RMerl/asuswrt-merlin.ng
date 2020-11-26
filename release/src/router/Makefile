@@ -73,6 +73,8 @@ endif
 include common.mak
 ifneq ($(HND_ROUTER),y)
 include $(SRCBASE)/.config
+else
+export CFLAGS += -DBCM$(BCM_CHIP)
 endif
 
 ifeq ($(RTCONFIG_RALINK),y)

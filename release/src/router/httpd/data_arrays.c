@@ -679,18 +679,21 @@ int ej_tcclass_dump_array(int eid, webs_t wp, int argc, char_t **argv) {
 	FILE *fp;
 	int ret = 0;
 	char tmp[64];
+	int qos_type;
 #ifdef RTAX58U
 	char *wan_ifname = "eth4";
 #else
 	char *wan_ifname = "eth0";
 #endif
 
+	qos_type = nvram_get_int("qos_type");
+
 	if (nvram_get_int("qos_enable") == 0) {
 		ret += websWrite(wp, "var tcdata_lan_array = [[]];\nvar tcdata_wan_array = [[]];\n");
 		return ret;
 	}
 
-	if (nvram_get_int("qos_type") == 1) {	// Adaptive-only
+	if (qos_type == 1 || qos_type == 3) {	// Adaptive or Geforce Now
 		system("tc -s class show dev br0 > /tmp/tcclass.txt");
 
 		ret += websWrite(wp, "var tcdata_lan_array = [\n");
@@ -706,7 +709,7 @@ int ej_tcclass_dump_array(int eid, webs_t wp, int argc, char_t **argv) {
 
 	}
 
-	if (nvram_get_int("qos_type") != 2) {	// Must not be BW Limiter
+	if (qos_type != 2) {	// Must not be BW Limiter
 		snprintf(tmp, sizeof(tmp), "tc -s class show dev %s > /tmp/tcclass.txt", wan_ifname);
 		system(tmp);
 
@@ -731,11 +734,18 @@ int tcclass_dump(FILE *fp, webs_t wp) {
 	int stage = 0;
 	unsigned long long traffic;
 	int ret = 0;
+	const char *class_template;
+
+	if (nvram_get_int("qos_type") == 3) {	//geforce now, has both 1:* and 2:*
+		class_template = "class htb %*c:%d %*s";
+	} else {
+		class_template = "class htb 1:%d %*s";
+	}
 
 	while (fgets(buf, sizeof(buf) , fp)) {
 		switch (stage) {
 			case 0:	// class
-				if (sscanf(buf, "class htb 1:%d %*s", &tcclass) == 1) {
+				if (sscanf(buf, class_template, &tcclass) == 1) {
 					// Skip roots 1:1 and 1:2, and skip 1:60 in tQoS since it's BCM's download class
 					if ( (tcclass < 10) || ((nvram_get_int("qos_type") == 0) && (tcclass == 60))) {
 						continue;

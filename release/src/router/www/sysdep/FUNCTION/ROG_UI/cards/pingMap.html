@@ -1,0 +1,373 @@
+﻿<style>
+	#mapContainer{
+		width: 90%;
+		height: 140px;
+		position: relative;
+		background-image: url(/cards/pingMap-images/map.svg);
+		background-repeat: no-repeat;
+		background-size: 100% 100%;
+		margin-top: 20px;
+	}
+	#pingResult{
+		width: 100%;
+		position: relative;
+		margin-top: 20px;
+		display: flex;
+		flex-wrap: wrap;
+	}
+	.gameImage{
+		width: 90px;
+		height: 150px;
+		display: inline-table;
+		text-align: center;
+		margin-left: 3px;
+		margin-bottom: 10px;
+		border: 2px solid #0000;
+	}
+	.gameImage:hover{
+		border: 2px solid #bd5003;
+		border-radius: 5px;
+	}
+	.selectedGame{
+		border: 2px solid #bd5003;
+		border-radius: 5px;
+	}
+	.imgWrap {
+		cursor: pointer;
+		overflow: hidden;
+		border-radius: 5px;
+	}
+	.gameName{
+		font-family: rog;
+		line-height: 10px;
+	}
+	#gameListWrap{
+		width: 90%;		
+		overflow-x: scroll;
+		margin-top: 12px;
+	}
+	#gameListWrap::-webkit-scrollbar-track {
+		border: 6px solid #000;
+		padding: 2px 0;
+		background-color: #404040;
+	}
+	#gameListWrap::-webkit-scrollbar {
+		width: 10px;
+	}
+	#gameListWrap::-webkit-scrollbar-thumb {
+		border-radius: 10px;
+		background-color: #737272;
+		border: 3px solid #000;
+	}
+	#gameList{
+		height: 165px;
+		display: inline-flex;
+	}
+	.rog-font-title{
+		font-size: 18px;
+		margin: 20px 20px 10px 20px;
+		height: 30px;
+	}
+	#container{
+		width: 300px;
+		overflow-x: scroll;
+	}
+	#pingResultSimple{
+		width: 330px;	
+		opacity: 0.8;
+		margin-top: -20px;
+		background-image: url(/cards/pingMap-images/dsash_title_bg.png);
+		background-repeat: no-repeat;
+	}
+	.pLevel{
+		display: inline-table;
+		height: 60px;
+		font-family: rog;
+		margin-right: 20px;
+	}
+	.pTitle{
+		width: 80px;
+		font-size: 20px;
+		line-height: 15px;
+	}
+	.pLevelName{
+		height: 30px;
+		line-height: 30px;
+	}
+	.pLevelCount{
+		height: 40px;
+		line-height: 0px;
+		width: 50px;
+		text-align: right;
+		font-size: 50px;			
+	}
+	#pHigh{
+		color: #00bfff;
+	}
+	#pMedium{
+		color: #0ff;
+	}
+	#pLow{
+		color: #6a5acd;		
+	}
+	.pL{
+		background-image: url('/cards/pingMap-images/point-low.png') !important;
+	}
+	.pH{
+		background-image: url('/cards/pingMap-images/point-high.png') !important;
+	}
+	.pM{
+		background-image: url('/cards/pingMap-images/point.png') !important;
+	}
+	.pDefault{
+		background-image: url('/cards/pingMap-images/point.png') !important;
+	}
+	.cardTitle{
+		height: 30px;
+		padding: 10px;
+	}
+</style>
+<script>
+	var gameList = {}
+	$.getJSON("/ajax/gameList.json", function(data){
+		gameList = data;
+		setTimeout(genGameListOption, 100);
+	})
+
+	$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/gameList.json", function(data){
+		gameList = data;
+		setTimeout(genGameListOption, 100);
+	})
+
+	function genGameListOption(){
+		for(var i in gameList){
+			$('#gameSelector')
+				.append(
+					$('<option>', {value: i, text: i}).addClass("content_input_fd")
+				)
+				.change(function(elem){
+					changeGame(elem.target.value);
+				})
+
+			var gameCover = $("<div>")
+				.addClass("imgWrap")
+				.append(
+					$("<img>")
+						.attr({
+							"src": "/cards/pingMap-images/" + i + ".jpg",
+							"height": "120px"
+						})
+						.css({"border-radius": "5px"})
+				)
+
+			$('<div>')
+				.addClass("gameImage")
+				.append(gameCover)
+				.append($("<span>").addClass("gameName").html(i))
+				.appendTo($("#gameList"))
+				.click(function(){
+					changeGame($(this).find('span').html());
+					$(".selectedGame").removeClass("selectedGame")
+					$(this).addClass("selectedGame");
+				})
+		}
+
+		$(".gameImage")[0].click();
+		// changeGame(document.form.gameSelector.value);
+	}
+
+	function changeGame(game){
+		var currentGame = gameList[game];
+
+		// Reset Table
+		$("#pingResult").empty();
+
+		// Reset MAP
+		$(".server").remove();
+		netoolApi.queueList = {};
+
+		// Reset Ping Level
+		netoolApi.level = {
+			"high": 0,
+			"medium": 0,
+			"low": 0,
+		};
+		$("#pHigh").html(netoolApi.level.high)
+		$("#pMedium").html(netoolApi.level.medium)
+		$("#pLow").html(netoolApi.level.low)
+
+		currentGame.forEach(function(element, index){
+			var pointId = index+1;
+			var thisPoint = {
+				"serverIp": element.ip,
+				"pointId": pointId,
+				"finish": false
+			}
+
+			netoolApi.queueList[element.ip] = thisPoint;
+			require(['/require/modules/mapApi.js'], function(mapApi){
+				setTimeout(function(){
+					mapApi.draw("", pointId, element, "server s"+pointId, function(){
+						netoolApi.queueList = {};
+						netoolApi.queueList[element.ip] = thisPoint;
+						netoolApi.start(thisPoint);
+					});
+				}, index*100);
+			});
+		});
+
+		setTimeout(netoolApi.queue, 1000);
+	}
+
+	var netoolApi = {
+		level: {
+			"high": 0,
+			"medium": 0,
+			"low": 0,
+		},
+
+		queueList: {
+			"serverIp": {
+				"serverIp": "",
+				"pointId": "",
+				"finish": true
+			}
+		},
+
+		queue: function(){
+			for(var el in netoolApi.queueList){
+				if(!netoolApi.queueList[el].finish){
+					netoolApi.start(netoolApi.queueList[el]);
+					return true;
+				}
+			}
+		},
+
+		start: function(obj){
+			if(obj.serverIp == "" || !obj.serverIp) return false;
+
+			breath.stop($(".s"+obj.pointId));
+			breath.start($(".s"+obj.pointId));
+
+			$.getJSON("/netool.cgi", {"type":2,"target":obj.serverIp})
+				.done(function(data){
+					if(data.successful != "0") setTimeout(function(){
+						netoolApi.check(obj, data.successful)
+					}, 3000)
+				})
+				.fail(function(e){
+					netoolApi.show(obj, "Fail to start")
+				});
+		},
+
+		check: function(obj, fileName){
+			if(fileName == "") return false;
+
+			$.getJSON("/netool.cgi", {"type":0,"target":fileName})
+				.done(function(data){
+					if(!netoolApi.queueList[fileName]) return false;
+
+					try{
+						if(parseInt(data.result[0].ping) < 100){
+							netoolApi.level.high++;
+							obj.level = "pH";
+						}
+						else if(parseInt(data.result[0].ping) < 200){
+							netoolApi.level.medium++;
+							obj.level = "pM";
+						}
+						else{
+							netoolApi.level.low++;
+							obj.level = "pL";
+						}
+
+						netoolApi.show(obj, data.result[0].ping + " ms");
+					}
+					catch(e){
+						netoolApi.show(obj, "Result Not Found")
+					}
+				})
+				.fail(function(data){
+					setTimeout(function(){
+						netoolApi.check(obj, fileName);
+					}, 1000);
+				});
+		},
+
+		show: function(obj, content){
+			if(!netoolApi.queueList[obj.serverIp]) return false;
+
+			breath.stop($(".s"+obj.pointId));
+			setTimeout(function(){$(".s"+obj.pointId).fadeIn(100)}, 500);
+			netoolApi.queueList[obj.serverIp].finish = true;
+			netoolApi.queue();
+
+			$("#pingResult").append(
+				$("<div>")
+					.css({"margin-left": "10px", "width": "85px"})
+					.html(obj.pointId + ": " + content)
+			);
+
+			$("#pHigh").html(netoolApi.level.high)
+			$("#pMedium").html(netoolApi.level.medium)
+			$("#pLow").html(netoolApi.level.low)
+			$(".s"+obj.pointId).find($("div")).removeClass("pDefault").addClass(obj.level)
+		}
+	}
+
+	var breath = {
+		stop: function($d){
+			if($d.data("timer")){
+				clearInterval($d.data("timer"));
+				$d
+					.data("timer", null)
+					.clearQueue()
+					.fadeIn(100)
+					.css({"z-index": 10})
+			}
+		},
+
+		start: function($d){
+			$d.data("timer", (function(){
+				return setInterval(function(){
+					$d.fadeOut(300);
+					setTimeout(function(){$d.fadeIn(500);}, 300)
+				}, 1000)
+			})())
+		}
+	}
+</script>
+<div class="rog-title cardTitle"><#AiProtection_title_Radar#></div>
+
+<div style="margin-left:10px">
+	<div style="display:none">
+		<#Game_List#>:
+		<select id="gameSelector" class="input_option"></select>
+	</div>
+	<div id="gameListWrap">
+		<div id="gameList"></div>
+	</div>
+	<div id="mapContainer"></div>
+	<div id="pingResult" style="display:none"></div>
+
+	<div id="pingResultSimple">
+		<div class="pLevel">
+			<div class="pTitle">PING STATUS</div>
+		</div>
+
+		<div class="pLevel">
+			<div class="pLevelName"><#Low#></div>
+			<div class="pLevelCount" id="pHigh">0</div>				
+		</div>
+
+		<div class="pLevel">
+			<div class="pLevelName"><#Medium#></div>
+			<div class="pLevelCount" id="pMedium">0</div>				
+		</div>
+
+		<div class="pLevel">
+			<div class="pLevelName"><#High#></div>
+			<div class="pLevelCount" id="pLow">0</div>				
+		</div>
+	</div>
+</div>

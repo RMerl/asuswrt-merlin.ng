@@ -13,12 +13,16 @@ Asuswrt-Merlin 386/NG Changelog
           both mainline and ax being reunified again.
 
   - NEW: Added support for the RT-AX86U.
+  - NEW: Added support for the GT-AC2900, with a few restrictions:
+         - Non-ROG UI is used
+         - VPN Fusion is not supported
+         - A few other ROG-specific features are not supported
   - NEW: Added stub and stub-v2 compression options to OpenVPN
          clients.  Not added to server, since compression is
          considered deprecated, and will be removed most likely
          in OpenVPN 2.6, for security reasons.
   - NEW: Added tls-crypt-v2 support to OpenVPN clients.
-  - UPDATED: Merged GPL 386_40577 (beta GPL from Asus).
+  - UPDATED: Merged GPL 386_40996 (beta GPL from Asus).
   - UPDATED: Openssl to 1.1.1h.
   - UPDATED: Updated to OpenVPN 2.5.0.  Note that OpenVPN
              2.4.0 or newer is now required by the exported

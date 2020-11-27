@@ -1632,8 +1632,19 @@ body{
 		width: 1024px;
 	}
 }
-</style>
 
+.input_option{
+	height:25px;
+	background-color:#576D73;
+	border-top-width:1px;
+	border-bottom-width:1px;
+	border-color:#888;
+	color:#FFFFFF;
+	font-family: Lucida Console;
+	font-size:13px;
+	margin-bottom:8px;
+}
+</style>
 <script>
 var speedTest_result = [];
 var speedTest_history = [];
@@ -1684,6 +1695,7 @@ function customize_speedTestBtn(){
 }
 
 function init(){
+	build_interface_list();
 	customize_speedTestBtn();
 	get_speedTest_history();
 	show_history_results();
@@ -1843,7 +1855,8 @@ function do_speedTest_exe(exe_type, server_id){
 		type: "POST",
 		data: {
 			"type": type,
-			"id": id
+			"id": id,
+			"iface": document.getElementById("iface").value
 		},
 		error: function(){
 			console.log("do_speedTest_exe error");
@@ -2597,6 +2610,27 @@ function close_info(){
 	$(".function_desc").fadeOut(300);
 	$("#hiddenMask").css("display", "none");
 }
+
+function build_interface_list(){
+	var obj = document.getElementById("iface");
+
+	add_option(obj, "WAN", "", 1);
+
+	if ("<% nvram_get("vpn_client1_state"); %>" == "2")
+		add_option(obj, "<% nvram_get("vpn_client1_desc"); %>", "tun11", 0);
+	if ("<% nvram_get("vpn_client2_state"); %>" == "2")
+		add_option(obj, "<% nvram_get("vpn_client2_desc"); %>", "tun12", 0);
+	if ("<% nvram_get("vpn_client3_state"); %>" == "2")
+		add_option(obj, "<% nvram_get("vpn_client3_desc"); %>", "tun13", 0);
+	if ("<% nvram_get("vpn_client4_state"); %>" == "2")
+		add_option(obj, "<% nvram_get("vpn_client4_desc"); %>", "tun14", 0);
+	if ("<% nvram_get("vpn_client5_state"); %>" == "2")
+		add_option(obj, "<% nvram_get("vpn_client5_desc"); %>", "tun15", 0);
+
+	if (obj.length > 1)
+		document.getElementById("iface_div").style.display = "";
+}
+
 </script>
 <div id="hiddenMask" class="speed_level_mask"></div>
 <div class="bg">
@@ -2618,6 +2652,11 @@ function close_info(){
 					<div class="speedtest_logo"></div>
 				</div>
 			</div>
+		</div>
+		<div id="iface_div" style="margin-top: 25px; margin-left:10px;">
+			<label>Select interface to test:</label>
+			<select name="iface" id="iface" class="input_option">
+			</select>
 		</div>
 		<div class="normal_show">
 			<div id="notification_str" class="wan_notice">

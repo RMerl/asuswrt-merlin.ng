@@ -23904,12 +23904,13 @@ enum{
 	}
 
 static int
-ookla_exec(char *type, char *id)
+ookla_exec(char *type, char *id, char *iface)
 {
 	int pid;
 	int retval = 0;
+	char *iface_arg;
 
-	OOKLA_DBG(" type=%s, id=%s\n", type, id);
+	OOKLA_DBG(" type=%s, id=%s, iface=%s\n", type, id, iface);
 
 
 	/* check folder and files */
@@ -23919,21 +23920,26 @@ ookla_exec(char *type, char *id)
 	/* kill old ookla process */
 	if (pidof("ookla") > 0) doSystem("killall -9 ookla");
 
+	if (!strcmp(iface, ""))
+		iface_arg = NULL;
+	else
+		iface_arg = "-I";
+
 	nvram_set_int("ookla_state", OOKLA_STATE_RUN);
 	if (!strcmp(type, "") && !strcmp(id, "")) {
-		char *cmd[] = {"ookla", "-c", "http://www.speedtest.net/api/embed/vz0azjarf5enop8a/config", "-f", "jsonl", NULL};
+		char *cmd[] = {"ookla", "-c", "http://www.speedtest.net/api/embed/vz0azjarf5enop8a/config", "-f", "jsonl", iface_arg, iface, NULL};
 		if (f_exists(OOKLA_RESULT)) unlink(OOKLA_RESULT);
 		retval = _eval(cmd, ">"OOKLA_RESULT, 0, &pid);
 	}
 	else if (!strcmp(type, "list") && !strcmp(id, "")) {
-		char *cmd[] = {"ookla", "-c", "http://www.speedtest.net/api/embed/vz0azjarf5enop8a/config", "-f", "jsonl", "-L", NULL};
+		char *cmd[] = {"ookla", "-c", "http://www.speedtest.net/api/embed/vz0azjarf5enop8a/config", "-f", "jsonl", "-L", iface_arg, iface, NULL};
 		if (f_exists(OOKLA_SERVERS)) unlink(OOKLA_SERVERS);
 		retval = _eval(cmd, ">"OOKLA_SERVERS, 0, &pid);
 	}
 	else if (!strcmp(type, "") && strcmp(id, "")) {
 		/* check xss for input "id" */
 		if (check_xss_blacklist(id, 0)) return retval;
-		char *cmd[] = {"ookla", "-c", "http://www.speedtest.net/api/embed/vz0azjarf5enop8a/config", "-f", "jsonl", "-s", id, NULL};
+		char *cmd[] = {"ookla", "-c", "http://www.speedtest.net/api/embed/vz0azjarf5enop8a/config", "-f", "jsonl", "-s", id, iface_arg, iface, NULL};
 		if (f_exists(OOKLA_RESULT)) unlink(OOKLA_RESULT);
 		retval = _eval(cmd, ">"OOKLA_RESULT, 0, &pid);
 	}
@@ -23946,16 +23952,18 @@ do_ookla_speedtest_exe_cgi(char *url, FILE *stream)
 {
 	int retval = 0;
 	struct json_object *root = NULL;
-	char *type = NULL, *id = NULL;
+	char *type = NULL, *id = NULL, *iface = NULL;
 
 	do_json_decode(&root);
 	type = get_cgi_json("type", root);
 	id = get_cgi_json("id", root);
+	iface = get_cgi_json("iface", root);
 
 	if (type == NULL) type = "";
 	if (id == NULL) id = "";
+	if (iface == NULL) iface = "";
 
-	retval = ookla_exec(type, id);
+	retval = ookla_exec(type, id, iface);
 
 	if (root != NULL) json_object_put(root);
 }

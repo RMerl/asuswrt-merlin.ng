@@ -65,6 +65,7 @@ typedef enum
 typedef struct _ob_status{
 	unsigned char neighmac[7];
 	unsigned char modelname[64];
+	unsigned char tcode[16];
 	int obstatus; 		//1 (OB_OFF),  2 (OB_Available), 3 (OB_REQ), 4 (OB_LOCKED), 5 (OB_SUCCESS)
 	int timestamp;
 	int reboottime;
@@ -111,6 +112,7 @@ typedef struct _id_info{
 	unsigned char id[MAX_VERSION_TEXT_LENGTH+1];
 	unsigned int  idlen;
 	unsigned char modelname[64];
+	unsigned char tcode[16];
 	int obstatus; 		//1 (OB_OFF),  2 (OB_Available), 3 (OB_REQ), 4 (OB_LOCKED), 5 (OB_SUCCESS)
 	int timestamp;
 	unsigned char bundlekey[MAX_VERSION_TEXT_LENGTH+1];

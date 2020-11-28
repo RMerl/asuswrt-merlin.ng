@@ -167,8 +167,8 @@ void update_ovpn_status(ovpn_type_t type, int unit, ovpn_status_t status_type, o
         sprintf(varname, "vpn_%s%d_errno", (type == OVPN_TYPE_SERVER ? "server" : "client"), unit);
         nvram_set_int(varname, err_no);
 
-	if (type == OVPN_TYPE_SERVER && (status_type == OVPN_STS_INIT || status_type == OVPN_STS_STOP)) {
-		sprintf(varname, "vpn_server%d_rip", unit);
+	if (type == OVPN_TYPE_CLIENT && (status_type == OVPN_STS_INIT || status_type == OVPN_STS_STOP)) {
+		sprintf(varname, "vpn_client%d_rip", unit);
 		nvram_set(varname, "");
 	}
 }

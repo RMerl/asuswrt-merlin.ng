@@ -5322,6 +5322,7 @@ ifeq ($(HND_ROUTER_AX_675X),y)
 	@echo "Copy router-sysdep.$(lowercase_B) content"
 	@rm -fr router-sysdep
 	@cp -ar router-sysdep.$(lowercase_B)/ router-sysdep
+else ifeq ($(HND_ROUTER_AX),y)	# RT-AX88U - do noting
 else	# RT-AC86U or GT-AC2900
 	@cp -ar $(TOP_PLATFORM)/hnd_extra/prebuilt/$(BUILD_NAME)/* $(TOP_PLATFORM)/hnd_extra/prebuilt/
 endif

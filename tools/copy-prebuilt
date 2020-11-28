@@ -95,13 +95,12 @@ then
 	cp -a release/src/router/tuxera/broadcom$ARCH$HND/* $REPO/release/src/router/tuxera/broadcom$ARCH$HND/
 	cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-HND $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
 
-elif [ "$BUILD_NAME" == "RT-AX88U" ] || [ "$BUILD_NAME" == "RT-AX92U" ] || [ "$BUILD_NAME" == "RT-AX86U" ]
+elif [ "$BUILD_NAME" == "RT-AX88U" ] || [ "$BUILD_NAME" == "RT-AX92U" ]
 then
 	SDK="_axhnd"
 	ARCH="_arm"
 	HND="_axhnd"
 
-#TODO: handle wl for AX86U
 	cp release/src-rt-5.02axhnd/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd/wl/exe/prebuilt/
 	cp -a release/src/router/tuxera/broadcom_arm_ax/* $REPO/release/src/router/tuxera/broadcom_arm_ax/
 	cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-AXHND $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
@@ -114,6 +113,15 @@ then
 
 	cp release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/
 	cp -a release/src/router/tuxera/broadcom_arm_ax_6750/* $REPO/release/src/router/tuxera/broadcom_arm_ax_6750/
+	cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-AXHND $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
+elif [ "$BUILD_NAME" == "RT-AX86U" ]
+then
+	SDK="_axhnd"
+	ARCH="_arm"
+	HND="_axhnd"
+
+	cp release/src-rt-5.02p1axhnd.675x/wl/exe/prebuilt/* $REPO/release/src-rt-5.02p1axhnd.675x/wl/exe/prebuilt/
+	cp -a release/src/router/tuxera/broadcom_arm_ax/* $REPO/release/src/router/tuxera/broadcom_arm_ax/
 	cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-AXHND $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
 else
 	echo "Unrecognized BUILD_NAME!"

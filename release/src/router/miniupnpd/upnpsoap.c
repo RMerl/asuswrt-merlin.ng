@@ -346,9 +346,11 @@ GetExternalIPAddress(struct upnphttp * h, const char * action, const char * ns)
 			syslog(LOG_ERR, "Failed to get ip address for interface %s",
 				ext_if_name);
 			strncpy(ext_ip_addr, "0.0.0.0", INET_ADDRSTRLEN);
+#if 0
 		} else if (addr_is_reserved(&addr)) {
 			syslog(LOG_NOTICE, "private/reserved address %s is not suitable for external IP", ext_ip_addr);
 			strncpy(ext_ip_addr, "0.0.0.0", INET_ADDRSTRLEN);
+#endif
 		}
 	}
 #else

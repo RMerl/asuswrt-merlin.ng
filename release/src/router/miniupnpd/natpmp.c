@@ -108,9 +108,11 @@ static void FillPublicAddressResponse(unsigned char * resp, in_addr_t senderaddr
 			syslog(LOG_ERR, "Failed to get IP for interface %s", ext_if_name);
 			resp[3] = 3;	/* Network Failure (e.g. NAT box itself
 			                 * has not obtained a DHCP lease) */
+#if 0
 		} else if (addr_is_reserved(&addr)) {
 			resp[3] = 3;	/* Network Failure, box has not obtained
 			                   public IP address */
+#endif
 		} else {
 			inet_pton(AF_INET, tmp, resp+8); /* ok */
 		}

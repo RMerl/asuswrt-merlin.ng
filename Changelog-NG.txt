@@ -38,6 +38,7 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: lz4 to 1.9.2.
   - UPDATED: e2fsprogs to 1.45.6.
   - UPDATED: dropbear to 2020.81.
+  - UPDATED: miniupnpd to 2.2 (git snapshot from 20201129)
   - UPDATED: Switched userspace ipset from 6.32 to 7.6 (to match
              with upstream)
   - CHANGED: firmware update checks are no longer using the
@@ -62,6 +63,8 @@ Asuswrt-Merlin 386/NG Changelog
   - FIXED: DHCP could fail to renew its lease with some ISPs when
            Trend Micro engine was enabled (workaround provided
            by Asus)
+  - FIXED: OpenVPN client remote IP wasn't updated on client
+           stop/restart.
   - REMOVED: Option to disable NCP.  The NCP cipher list is
              now used both for NCP and non-NCP endpoints.
   - REMOVED: fq_codel support for Adaptive QoS.  Due to a change

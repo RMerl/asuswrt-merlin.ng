@@ -1,6 +1,6 @@
-/* $Id: natpmp.c,v 1.55 2018/03/12 22:41:54 nanard Exp $ */
+/* $Id: natpmp.c,v 1.57 2019/09/24 11:48:01 nanard Exp $ */
 /* MiniUPnP project
- * (c) 2007-2017 Thomas Bernard
+ * (c) 2007-2019 Thomas Bernard
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
@@ -108,11 +108,9 @@ static void FillPublicAddressResponse(unsigned char * resp, in_addr_t senderaddr
 			syslog(LOG_ERR, "Failed to get IP for interface %s", ext_if_name);
 			resp[3] = 3;	/* Network Failure (e.g. NAT box itself
 			                 * has not obtained a DHCP lease) */
-#if 0
 		} else if (addr_is_reserved(&addr)) {
 			resp[3] = 3;	/* Network Failure, box has not obtained
 			                   public IP address */
-#endif
 		} else {
 			inet_pton(AF_INET, tmp, resp+8); /* ok */
 		}
@@ -320,7 +318,7 @@ void ProcessIncomingNATPMPPacket(int s, unsigned char *msg_buff, int len,
 								resp[3] = 2;	/* Not Authorized/Refused */
 								break;
 							} else {
-								syslog(LOG_DEBUG, "NAT-PMP %s port %hu mapping removed",
+								syslog(LOG_INFO, "NAT-PMP %s port %hu mapping removed",
 								       proto2==IPPROTO_TCP?"TCP":"UDP", eport2);
 								index--;
 							}

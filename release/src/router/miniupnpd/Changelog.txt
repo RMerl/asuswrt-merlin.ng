@@ -1,4 +1,80 @@
-$Id: Changelog.txt,v 1.450 2019/08/24 08:42:50 nanard Exp $
+$Id: Changelog.txt,v 1.472 2020/10/31 09:16:14 nanard Exp $
+
+VERSION 2.2.0 : released on 2020/10/31
+
+2020/10/30:
+  OpenBSD: portinuse.c compatible with OpenBSD 5.5+
+
+2020/10/26:
+  Improve AddAnyPortMapping port selection
+
+2020/10/22:
+  netfilter_nft: fix rule-cache update when using the same chain name in
+    both tables.
+
+2020/06/20:
+  -v/-vv to output more log (LOG_INFO / LOG_DEBUG)
+  AddAnyPortMapping() tries all possible ports
+
+2020/06/10:
+  improvements and bug fixes in netfilter_nft/nftnlrdr_misc.c
+
+2020/06/05:
+  fix handling of ipv4 M-SEARCH received on ipv6 sockets
+  numerous fixes in linux/nftables implementation
+
+2020/06/03:
+  configure --disable-fork to disable going to background
+  improve upnp_get_portmapping_number_of_entries()
+
+2020/05/30:
+  "IGD2 Port Triggering" pf implementation (adding a nat rule)
+
+2020/05/07:
+  Linux: use libcap or libcap-ng to drop unnecessary capabilities
+
+2020/05/04:
+  Move configuration detection from Makefiles to configure (was genconfig.sh)
+  update linux Makefiles
+
+2020/04/29:
+  fix for bridges
+
+2020/04/21:
+  Remove FW API detecting code from Makefile (BSD). generate bsdmake.inc
+  netfilter: addmasqueraderule() even if internal/external ports are the same
+  improve error and debug log in upnpstun.c
+
+2020/04/20:
+  Fix "IGD2 Port Triggering" in update_portmapping()
+
+2020/04/12:
+  pf: disabled setting dst address in rule by default
+
+2020/04/09:
+  Option to disable IPv6 at runtime : -4 / ipv6_disable=yes
+
+2020/03/29:
+  Fix FreeBSD build
+
+2019/12/18:
+  Fix PCPSendUnsolicitedAnnounce() when IPv6 is not available
+
+2019/10/05:
+  Use OpenSSL TLS_server_method() instead of TLSv1_server_method()
+  Add --version commandline option
+
+2019/10/03:
+  Use OpenBSD pledge()
+
+2019/10/02:
+  Working NFTables implementation thanks to Paul Chambers
+
+2019/09/24:
+  Distinguish between iptables and nftables in genconfig.sh
+
+2019/09/01:
+  fix of nftables scripts : https://github.com/miniupnp/miniupnp/pull/395
 
 2019/08/24:
   Small fixes in netfilter code

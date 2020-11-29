@@ -2,7 +2,7 @@
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2019 Thomas Bernard
+ * (c) 2006-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -84,33 +84,6 @@ extern int runtime_flags;
 
 #define PERFORMSTUNMASK    0x1000
 
-#ifdef ENABLE_AURASYNC
-#define ENABLEAURASYNCMASK	0x2000
-#define	AS_RGB_MIN	0
-#define	AS_RGB_MAX	255
-#define	AS_GROUP_MIN	0
-#define	AS_GROUP_MAX	7
-#define	AS_MODE_MIN	0
-#define	AS_MODE_MAX	13
-#define	AS_DIR_MIN	0
-#define	AS_DIR_MAX	1
-extern int aura_standalone;
-#endif
-#ifdef ENABLE_NVGFN
-#define ENABLENVGFNMASK				0x4000
-#define NVGFN_QOSPORT_MIN			1024
-#define NVGFN_QOSPORT_MAX			65535
-#define NVGFN_MCSINDEX_MIN			0
-#define NVGFN_MCSINDEX_MAX			23
-#define NVGFN_SPATIALSTREAMS_MIN	1
-#define NVGFN_SPATIALSTREAMS_MAX	3
-#define NVGFN_BANDWIDTH_MIN			1
-#define NVGFN_BANDWIDTH_MAX			65535
-#define NVGFN_WIFISCANINTERVAL_MIN	0
-#define NVGFN_WIFISCANINTERVAL_MAX	65535
-extern int gfn_only;
-#endif
-
 #define SETFLAG(mask)	runtime_flags |= mask
 #define GETFLAG(mask)	(runtime_flags & mask)
 #define CLEARFLAG(mask)	runtime_flags &= ~mask
@@ -167,15 +140,6 @@ extern const char * anchor_name;
 /* queue and tag for PF rules */
 extern const char * queue;
 extern const char * tag;
-#endif
-
-#ifdef USE_NETFILTER
-extern const char * miniupnpd_nat_chain;
-extern const char * miniupnpd_nat_postrouting_chain;
-extern const char * miniupnpd_forward_chain;
-#ifdef ENABLE_UPNPPINHOLE
-extern const char * miniupnpd_v6_filter_chain;
-#endif
 #endif
 
 #ifdef ENABLE_NFQUEUE

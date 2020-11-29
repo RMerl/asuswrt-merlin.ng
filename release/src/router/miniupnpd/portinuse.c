@@ -1,8 +1,8 @@
-/* $Id: portinuse.c,v 1.3 2014/04/01 12:52:50 nanard Exp $ */
+/* $Id: portinuse.c,v 1.12 2020/11/04 21:29:50 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
- * (c) 2007-2017 Thomas Bernard
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
+ * (c) 2007-2020 Thomas Bernard
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -163,7 +163,12 @@ static struct nlist list[] = {
 		kvm_close(kd);
 		return -1;
 	}
-	next = CIRCLEQ_FIRST(&table.inpt_queue); /*TAILQ_FIRST(&table.inpt_queue);*/
+	/* inpt_queue was CIRCLEQ_HEAD, it is TAILQ_HEAD since OpenBSD 5.5 */
+#ifdef INPT_QUEUE_IS_CIRCLEQ
+	next = CIRCLEQ_FIRST(&table.inpt_queue);
+#else
+	next = TAILQ_FIRST(&table.inpt_queue);
+#endif
 	while(next != NULL) {
 		if(((u_long)next & 3) != 0) break;
 		n = kvm_read(kd, (u_long)next, &inpcb, sizeof(inpcb));
@@ -171,7 +176,11 @@ static struct nlist list[] = {
 			syslog(LOG_ERR, "kvm_read(): %s", kvm_geterr(kd));
 			break;
 		}
-		next = CIRCLEQ_NEXT(&inpcb, inp_queue);	/*TAILQ_NEXT(&inpcb, inp_queue);*/
+#ifdef INPT_QUEUE_IS_CIRCLEQ
+		next = CIRCLEQ_NEXT(&inpcb, inp_queue);
+#else
+		next = TAILQ_NEXT(&inpcb, inp_queue);
+#endif
 		/* skip IPv6 sockets */
 		if((inpcb.inp_flags & INP_IPV6) != 0)
 			continue;
@@ -259,7 +268,7 @@ static struct nlist list[] = {
 		/* no support for IPv6 */
 		if (INP_ISIPV6(inp) != 0)
 			continue;
-		syslog(LOG_DEBUG, "%08lx:%hu %08lx:%hu <=> %hu %08lx:%hu",
+		syslog(LOG_DEBUG, "%08lx:%hu %08lx:%hu <=> %u %08lx:%u",
 		       (u_long)inp->inp_laddr.s_addr, ntohs(inp->inp_lport),
 		       (u_long)inp->inp_faddr.s_addr, ntohs(inp->inp_fport),
 		       eport, (u_long)ip_addr.s_addr, iport
@@ -358,7 +367,7 @@ static struct nlist list[] = {
 		/* no support for IPv6 */
 		if ((xip->inp_vflag & INP_IPV6) != 0)
 			continue;
-		syslog(LOG_DEBUG, "%08lx:%hu %08lx:%hu <=> %hu %08lx:%hu",
+		syslog(LOG_DEBUG, "%08lx:%hu %08lx:%hu <=> %u %08lx:%u",
 		       (u_long)inc->inc_laddr.s_addr, ntohs(inc->inc_lport),
 		       (u_long)inc->inc_faddr.s_addr, ntohs(inc->inc_fport),
 		       eport, (u_long)ip_addr.s_addr, iport

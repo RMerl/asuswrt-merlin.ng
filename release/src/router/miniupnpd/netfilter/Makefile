@@ -8,7 +8,7 @@ LIBS = -lip4tc
 ARCH := $(shell uname -m | grep -q "x86_64" && echo 64)
 ifdef IPTABLESPATH
 CFLAGS := $(CFLAGS) -I$(IPTABLESPATH)/include/
-LDFLAGS := $(LDFLAFGS) -L$(IPTABLESPATH)/libiptc/
+LDFLAGS := $(LDFLAGS) -L$(IPTABLESPATH)/libiptc/
 # get iptables version and set IPTABLES_143 macro if needed
 IPTABLESVERSION := $(shell grep "\#define VERSION" $(IPTABLESPATH)/config.h | tr -d \" |cut -d" " -f3 )
 IPTABLESVERSION1 := $(shell echo $(IPTABLESVERSION) | cut -d. -f1 )

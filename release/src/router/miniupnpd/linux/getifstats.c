@@ -1,7 +1,7 @@
-/* $Id: getifstats.c,v 1.14 2018/03/13 23:05:21 nanard Exp $ */
+/* $Id: getifstats.c,v 1.16 2020/05/10 17:51:00 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2019 Thomas Bernard
+ * (c) 2006-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -11,9 +11,8 @@
 #include <string.h>
 #include <time.h>
 
-#include "../config.h"
+#include "config.h"
 #include "../getifstats.h"
-#include "../upnputils.h"
 
 #ifdef GET_WIRELESS_STATS
 #include <unistd.h>
@@ -143,7 +142,6 @@ getifstats(const char * ifname, struct ifdata * data)
 	}
 	fclose(f);
 	/* get interface speed */
-	/* NB! some interfaces, like ppp, don't support speed queries */
 	snprintf(fname, sizeof(fname), "/sys/class/net/%s/speed", ifname);
 	f = fopen(fname, "r");
 	if(f) {

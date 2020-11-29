@@ -1,8 +1,8 @@
-/* $Id: testupnpdescgen.c,v 1.36 2018/07/06 12:05:48 nanard Exp $ */
+/* $Id: testupnpdescgen.c,v 1.37 2020/11/04 21:02:29 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2018 Thomas Bernard
+ * (c) 2006-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -29,7 +29,7 @@ char modelnumber[] = "1";
 char presentationurl[] = "http://192.168.0.1:8080/";
 /*char presentationurl[] = "";*/
 #ifdef ENABLE_MANUFACTURER_INFO_CONFIGURATION
-char friendly_name[] = ROOTDEV_FRIENDLYNAME;
+char friendly_name[] = OS_NAME " router";
 char manufacturer_name[] = ROOTDEV_MANUFACTURER;
 char manufacturer_url[] = ROOTDEV_MANUFACTURERURL;
 char model_name[] = ROOTDEV_MODELNAME;
@@ -37,7 +37,7 @@ char model_description[] = ROOTDEV_MODELDESCRIPTION;
 char model_url[] = ROOTDEV_MODELURL;
 #endif /* ENABLE_MANUFACTURER_INFO_CONFIGURATION */
 #ifdef RANDOMIZE_URLS
-char random_url[] = "RANDOM";
+char random_url[RANDOM_URL_MAX_LEN] = "RANDOM";
 #endif /* RANDOMIZE_URLS */
 unsigned int upnp_configid = 666;
 
@@ -223,18 +223,6 @@ main(int argc, char * * argv)
 		xml_pretty_print(s, l, f);
 		fclose(f);
 	}
-	free(s);
-	printf("\n-------------\n");
-#endif
-#ifdef ENABLE_AURASYNC
-	s = getVarsAS(&l);
-	xml_pretty_print(s, l, stdout);
-	free(s);
-	printf("\n-------------\n");
-#endif
-#ifdef ENABLE_NVGFN
-	s = getVarsNVGFN(&l);
-	xml_pretty_print(s, l, stdout);
 	free(s);
 	printf("\n-------------\n");
 #endif

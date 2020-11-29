@@ -1,5 +1,5 @@
 # MiniUPnP project
-# http://miniupnp.free.fr/
+# http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
 # Author: Thomas Bernard
 # This Makefile should work for MacOSX
 #
@@ -124,8 +124,8 @@ testasyncsendto: config.h $(TEST_ASYNCSENDTO_OBJS)
 testportinuse: config.h $(TEST_PORTINUSE_OBJS)
 	$(CC) $(CFLAGS) -o $@ $(TEST_PORTINUSE_OBJS)
 
-config.h: genconfig.sh
-	./genconfig.sh
+config.h: configure VERSION
+	./configure
 
 .SUFFIXES: .o .c
 .c.o:

@@ -1,4 +1,4 @@
-/* $Id: upnpevents.c,v 1.43 2019/05/20 19:59:21 nanard Exp $ */
+/* $Id: upnpevents.c,v 1.44 2019/09/24 11:47:06 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/types.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -109,30 +110,10 @@ newSubscriber(const char * eventurl, const char * callback, int callbacklen)
 	else if(strcmp(eventurl, DP_EVENTURL)==0)
 		tmp->service = EDP;
 #endif
-#ifdef ENABLE_AURASYNC
-	else if(strcmp(eventurl, AS_EVENTURL)==0 && GETFLAG(ENABLEAURASYNCMASK))
-		tmp->service = EAS;
-#endif
-#ifdef ENABLE_NVGFN
-	else if(strcmp(eventurl, NVGFN_EVENTURL)==0 && GETFLAG(ENABLENVGFNMASK))
-		tmp->service = ENVGFN;
-#endif
 	else {
 		free(tmp);
 		return NULL;
 	}
-#ifdef ENABLE_AURASYNC
-	if (aura_standalone && (tmp->service != EAS)) {
-		free(tmp);
-		return NULL;
-	}
-#endif
-#ifdef ENABLE_NVGFN
-	if (gfn_only && (tmp->service != ENVGFN)) {
-		free(tmp);
-		return NULL;
-	}
-#endif
 	memcpy(tmp->callback, callback, callbacklen);
 	tmp->callback[callbacklen] = '\0';
 #if defined(LIB_UUID)
@@ -456,16 +437,6 @@ static void upnp_event_prepare(struct upnp_event_notify * obj)
 #ifdef ENABLE_DP_SERVICE
 	case EDP:
 		xml = getVarsDP(&l);
-		break;
-#endif
-#ifdef ENABLE_AURASYNC
-	case EAS:
-		xml = getVarsAS(&l);
-		break;
-#endif
-#ifdef ENABLE_NVGFN
-	case ENVGFN:
-		xml = getVarsNVGFN(&l);
 		break;
 #endif
 	default:

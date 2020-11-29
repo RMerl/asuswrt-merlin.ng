@@ -2,14 +2,19 @@
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
  * (c) 2015 Tomofumi Hayashi
- * 
+ * (c) 2019 Paul Chambers
+ * (c) 2020 Thomas Bernard
+ *
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution.
  */
 #include <sys/queue.h>
 
-#define NFT_TABLE_NAT  "nat"
-#define NFT_TABLE_FILTER  "filter"
+extern const char * nft_table;
+extern const char * nft_prerouting_chain;
+extern const char * nft_postrouting_chain;
+extern const char * nft_forward_chain;
+
 #define NFT_DESCR_SIZE 1024
 
 enum rule_reg_type { 
@@ -26,7 +31,7 @@ enum rule_reg_type {
 	RULE_REG_IP6_PROTO,
 	RULE_REG_TCP_DPORT,
 	RULE_REG_TCP_SD_PORT, /* source & dest */
-	RULE_REG_IMM_VAL,
+	RULE_REG_IMM_VAL,     /* immediate */
 	RULE_REG_MAX,
 };
 
@@ -71,7 +76,6 @@ typedef struct rule_t {
 	uint64_t bytes;
 	char * desc;
 	uint32_t desc_len;
-	int index;
 } rule_t;
 
 LIST_HEAD(rule_list, rule_t);
@@ -79,8 +83,30 @@ extern struct rule_list head_filter;
 extern struct rule_list head_redirect;
 extern struct rule_list head_peer;
 
+/** called at initialization.
+ * establishes persistent connection to mnl/netfilter socket, needs elevated privilege */
 int
-nft_send_request(struct nftnl_rule * rule, uint16_t cmd, enum rule_chain_type type);
+nft_mnl_connect(void);
+
+/** called at shutdown, to release the mnl/netfilter socket */
+void
+nft_mnl_disconnect(void);
+
+#ifdef DEBUG
+void
+print_rule(const char *func, int line, const struct nftnl_rule *rule);
+
+void
+print_redirect_rules(const char * ifname);
+
+#define debug_rule(rule)		do { print_rule(__func__, __LINE__, rule); } while (0)
+
+#else
+#define debug_rule(rule)
+#endif
+
+int
+nft_send_rule(struct nftnl_rule * rule, uint16_t cmd, enum rule_chain_type type);
 struct nftnl_rule *
 rule_set_dnat(uint8_t family, const char * ifname, uint8_t proto,
 	      in_addr_t rhost, unsigned short eport,
@@ -109,8 +135,18 @@ rule_set_filter_common(struct nftnl_rule *r, uint8_t family, const char * ifname
 		uint8_t proto, unsigned short eport, unsigned short iport, 
 		unsigned short rport, const char *descr, const char *handle);
 struct nftnl_rule *rule_del_handle(rule_t *r);
-void reflesh_nft_cache_filter(void);
-void reflesh_nft_cache_redirect(void);
-void reflesh_nft_cache_peer(void);
-void reflesh_nft_cache(struct rule_list *head, char *table, const char *chain, uint32_t family);
-void print_rule(rule_t *r);
+int refresh_nft_cache_filter(void);
+int refresh_nft_cache_redirect(void);
+int refresh_nft_cache_peer(void);
+int refresh_nft_cache(struct rule_list *head, const char *table, const char *chain, uint32_t family, enum rule_type type);
+
+int
+table_op(enum nf_tables_msg_types op, uint16_t family, const char * name);
+int
+chain_op(enum nf_tables_msg_types op, uint16_t family, const char * table,
+         const char * name, const char * type, uint32_t hooknum, signed int priority );
+
+struct mnl_nlmsg_batch *
+start_batch( char *buf, size_t buf_size);
+int
+send_batch(struct mnl_nlmsg_batch * batch);

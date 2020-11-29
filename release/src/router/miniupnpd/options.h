@@ -1,9 +1,9 @@
-/* $Id: options.h,v 1.30 2019/05/21 08:39:44 nanard Exp $ */
+/* $Id: options.h,v 1.32 2020/04/09 18:40:42 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * author: Ryan Wagoner
- * (c) 2006-2019 Thomas Bernard
+ * (c) 2006-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -27,6 +27,7 @@ enum upnpconfigoptions {
 	UPNPLISTENING_IP,		/* listening_ip */
 #ifdef ENABLE_IPV6
 	UPNPIPV6_LISTENING_IP,		/* listening address for IPv6 */
+	UPNPIPV6_DISABLE,		/* ipv6_disable */
 #endif /* ENABLE_IPV6 */
 	UPNPPORT,				/* "port" / "http_port" */
 #ifdef ENABLE_HTTPS
@@ -71,12 +72,6 @@ enum upnpconfigoptions {
 	UPNPSECUREMODE,			/* secure_mode */
 #ifdef ENABLE_LEASEFILE
 	UPNPLEASEFILE,			/* lease_file */
-#endif
-#ifdef ENABLE_AURASYNC
-	UPNPENABLEAURASYNC,
-#endif
-#ifdef ENABLE_NVGFN
-	UPNPENABLENVGFN,
 #endif
 	UPNPMINISSDPDSOCKET,	/* minissdpdsocket */
 #ifdef IGD_V2

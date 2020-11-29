@@ -1,26 +1,29 @@
-/* $Id: iptcrdr.c,v 1.62 2019/08/24 07:06:22 nanard Exp $ */
+/* $Id: iptcrdr.c,v 1.67 2020/11/11 12:09:05 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2019 Thomas Bernard
+ * (c) 2006-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <dlfcn.h>
-#include <iptables.h>
+#include <xtables.h>
 #include <linux/netfilter/xt_DSCP.h>
 #include <libiptc/libiptc.h>
 
 #include <linux/version.h>
 
-#if IPTABLES_143
+#include "../config.h"
+
+#ifdef IPTABLES_143
+#pragma "1.4.3 found"
 /* IPTABLES API version >= 1.4.3 */
 
 /* added in order to compile on gentoo :
@@ -31,8 +34,8 @@
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 #define LIST_POISON2  ((void *) 0x00200200 )
 
-#if 1
-#include "../../iptables-1.4.x/include/net/netfilter/nf_nat.h"
+#if 0
+#include <linux/netfilter/nf_nat.h>
 #else
 #include "tiny_nf_nat.h"
 #endif
@@ -40,11 +43,12 @@
 #define ip_nat_range		nf_nat_range
 #define IPTC_HANDLE		struct iptc_handle *
 #else
+#pragma "1.4.3 NOT found"
 /* IPTABLES API version < 1.4.3 */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22)
 #include <linux/netfilter_ipv4/ip_nat.h>
 #else
-#if 1
+#if 0
 #include <linux/netfilter/nf_nat.h>
 #else
 #include "tiny_nf_nat.h"
@@ -59,9 +63,52 @@
 #endif
 
 #include "../macros.h"
-#include "../config.h"
 #include "iptcrdr.h"
 #include "../upnpglobalvars.h"
+
+/* chain names to use in the nat and filter tables. */
+
+/* iptables -t nat -N MINIUPNPD
+ * iptables -t nat -A PREROUTING -i <ext_if_name> -j MINIUPNPD */
+static const char * miniupnpd_nat_chain = "MINIUPNPD";
+
+/* iptables -t nat -N MINIUPNPD-POSTROUTING
+ * iptables -t nat -A POSTROUTING -o <ext_if_name> -j MINIUPNPD-POSTROUTING */
+static const char * miniupnpd_nat_postrouting_chain = "MINIUPNPD-POSTROUTING";
+
+/* iptables -t filter -N MINIUPNPD
+ * iptables -t filter -A FORWARD -i <ext_if_name> ! -o <ext_if_name> -j MINIUPNPD */
+static const char * miniupnpd_forward_chain = "MINIUPNPD";
+
+/**
+ * used by the core to override default chain names if specified in config file
+ * @param param which string to set
+ * @param string the new name to use. Do not dispose after setting (i.e. use strdup if not static).
+ * @return 0 if successful
+ */
+int
+set_rdr_name(rdr_name_type param, const char *string)
+{
+	if (string == NULL || strlen(string) > 30 || string[0] == '\0') {
+		syslog(LOG_ERR, "%s(): invalid string argument '%s'", "set_rdr_name", string);
+		return -1;
+	}
+	switch (param) {
+		case RDR_NAT_PREROUTING_CHAIN_NAME:
+			miniupnpd_nat_chain = string;
+			break;
+		case RDR_NAT_POSTROUTING_CHAIN_NAME:
+			miniupnpd_nat_postrouting_chain = string;
+			break;
+		case RDR_FORWARD_CHAIN_NAME:
+			miniupnpd_forward_chain = string;
+			break;
+		default:
+			syslog(LOG_ERR, "%s(): tried to set invalid string parameter: %d", "set_rdr_name", param);
+			return -2;
+	}
+	return 0;
+}
 
 /* local functions declarations */
 static int
@@ -224,17 +271,13 @@ add_redirect_rule2(const char * ifname,
 	if(r >= 0) {
 		add_redirect_desc(eport, proto, desc, timestamp);
 #ifdef ENABLE_PORT_TRIGGERING
-		/* http://www.netfilter.org/documentation/HOWTO/NAT-HOWTO-6.html#ss6.3
-		 * The default behavior is to alter the connection as little
-		 * as possible, within the constraints of the rule given by
-		 * the user.
-		 * This means we won't remap ports unless we have to. */
-		if(iport != eport) {
-			/* TODO : check if this should be done only with UDP */
-			r = addmasqueraderule(proto, eport, iaddr, iport, rhost/*, ifname*/);
-			if(r < 0) {
-				syslog(LOG_NOTICE, "add_redirect_rule2(): addmasqueraderule returned %d", r);
-			}
+		/* we now always setup SNAT to support bidirectional mapping
+		 * we cannot expect that iport == eport on all the firewall.
+		 */
+		/* TODO : check if this should be done only with UDP */
+		r = addmasqueraderule(proto, eport, iaddr, iport, rhost/*, ifname*/);
+		if(r < 0) {
+			syslog(LOG_NOTICE, "add_redirect_rule2(): addmasqueraderule returned %d", r);
 		}
 #endif /* ENABLE_PORT_TRIGGERING */
 	}
@@ -858,7 +901,7 @@ delete_redirect_and_filter_rules(unsigned short eport, int proto)
 				{
 					const struct ipt_udp * info;
 					info = (const struct ipt_udp *)match->data;
-					iport = info->dpts[0];
+					iport = info->spts[0];
 				}
 
 				index = i;
@@ -1713,7 +1756,7 @@ update_portmapping(const char * ifname, unsigned short eport, int proto,
 	const struct ipt_entry * e;
 	struct ipt_entry * new_e = NULL;
 	size_t entry_len;
-	const struct ipt_entry_target * target;
+	struct ipt_entry_target * target;
 	struct ip_nat_multi_range * mr;
 	const struct ipt_entry_match *match;
 	uint32_t iaddr = 0;
@@ -1856,6 +1899,10 @@ update_portmapping(const char * ifname, unsigned short eport, int proto,
 				r = -1;
 			} else {
 				memcpy(new_e, e, entry_len);
+				target = (void *)new_e + new_e->target_offset;
+				if (target->u.user.name[0] == '\0' && iptc_get_target(e, h)) {
+					strncpy(target->u.user.name, iptc_get_target(e, h), sizeof(target->u.user.name));
+				}
 			}
 			break;
 		}
@@ -1887,6 +1934,105 @@ update_portmapping(const char * ifname, unsigned short eport, int proto,
 	if(r < 0)
 		return r;
 
+#ifdef ENABLE_PORT_TRIGGERING
+	/* update snat rule */
+	h = iptc_init("nat");
+	if(!h)
+	{
+		syslog(LOG_ERR, "%s() : iptc_init() failed : %s",
+		       "update_portmapping", iptc_strerror(errno));
+		goto skip;
+	}
+	i = 0; found = 0;
+	if(!iptc_is_chain(miniupnpd_nat_postrouting_chain, h))
+	{
+		syslog(LOG_ERR, "chain %s not found", miniupnpd_nat_postrouting_chain);
+	}
+	else
+	{
+		/* we must find the right index for the filter rule */
+#ifdef IPTABLES_143
+		for(e = iptc_first_rule(miniupnpd_nat_postrouting_chain, h);
+		    e;
+			e = iptc_next_rule(e, h), i++)
+#else
+		for(e = iptc_first_rule(miniupnpd_nat_postrouting_chain, &h);
+		    e;
+			e = iptc_next_rule(e, &h), i++)
+#endif
+		{
+			if(proto==e->ip.proto)
+			{
+				target = (void *)e + e->target_offset;
+				mr = (struct ip_nat_multi_range *)&target->data[0];
+				syslog(LOG_DEBUG, "postrouting rule #%u: %s %s %hu",
+						i, target->u.user.name, inet_ntoa(e->ip.src), ntohs(mr->range[0].min.all));
+				/* target->u.user.name SNAT / MASQUERADE */
+				if (eport != ntohs(mr->range[0].min.all)) {
+					continue;
+				}
+				match = (const struct ipt_entry_match *)&e->elems;
+				if(0 == strncmp(match->u.user.name, "tcp", IPT_FUNCTION_MAXNAMELEN))
+				{
+					const struct ipt_tcp * info;
+					info = (const struct ipt_tcp *)match->data;
+					if(old_iport != info->spts[0])
+						continue;
+				}
+				else
+				{
+					const struct ipt_udp * info;
+					info = (const struct ipt_udp *)match->data;
+					if(old_iport != info->spts[0])
+						continue;
+				}
+				if (iaddr != e->ip.src.s_addr) {
+					continue;
+				}
+				index = i;
+				found = 1;
+				entry_len = sizeof(struct ipt_entry) + match->u.match_size + target->u.target_size;
+				new_e = malloc(entry_len);
+				if(new_e == NULL) {
+					syslog(LOG_ERR, "%s: malloc(%u) error",
+							"update_portmapping", (unsigned)entry_len);
+					r = -1;
+				} else {
+					memcpy(new_e, e, entry_len);
+				}
+				break;
+			}
+		}
+	}
+#ifdef IPTABLES_143
+	iptc_free(h);
+#else
+	iptc_free(&h);
+#endif
+	if(!found || r < 0)
+		goto skip;
+
+	syslog(LOG_INFO, "Trying to update snat rule at index %u", index);
+	match = (struct ipt_entry_match *)&new_e->elems;
+	if(0 == strncmp(match->u.user.name, "tcp", IPT_FUNCTION_MAXNAMELEN))
+	{
+		struct ipt_tcp * info;
+		info = (struct ipt_tcp *)match->data;
+		info->spts[0] = info->spts[1] = iport;
+	}
+	else
+	{
+		struct ipt_udp * info;
+		info = (struct ipt_udp *)match->data;
+		info->spts[0] = info->spts[1] = iport;
+	}
+	r = update_rule_and_commit("nat", miniupnpd_nat_postrouting_chain, index, new_e);
+	free(new_e); new_e = NULL;
+	if(r < 0)
+		syslog(LOG_INFO, "Trying to update snat rule at index %u fail!", index);
+
+skip:
+#endif /* ENABLE_PORT_TRIGGERING */
 	return update_portmapping_desc_timestamp(ifname, eport, proto, desc, timestamp);
 }
 

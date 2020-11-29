@@ -1,9 +1,9 @@
-/* $Id: options.c,v 1.37 2019/05/21 08:39:44 nanard Exp $ */
+/* $Id: options.c,v 1.39 2020/04/09 18:40:42 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * author: Ryan Wagoner
- * (c) 2006-2019 Thomas Bernard
+ * (c) 2006-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -40,6 +40,7 @@ static const struct {
 	{ UPNPLISTENING_IP, "listening_ip" },
 #ifdef ENABLE_IPV6
 	{ UPNPIPV6_LISTENING_IP, "ipv6_listening_ip" },
+	{ UPNPIPV6_DISABLE, "ipv6_disable" },
 #endif /* ENABLE_IPV6 */
 	{ UPNPPORT, "port" },
 	{ UPNPPORT, "http_port" },	/* "port" and "http_port" are synonims */
@@ -72,12 +73,6 @@ static const struct {
 #endif
 #ifdef ENABLE_NATPMP
 	{ UPNPENABLENATPMP, "enable_natpmp"},
-#endif
-#ifdef ENABLE_AURASYNC
-	{ UPNPENABLEAURASYNC, "enable_aurasync"},
-#endif
-#ifdef ENABLE_NVGFN
-	{ UPNPENABLENVGFN, "enable_nvgfn"},
 #endif
 #ifdef ENABLE_PCP
 	{ UPNPPCPMINLIFETIME, "min_lifetime"},

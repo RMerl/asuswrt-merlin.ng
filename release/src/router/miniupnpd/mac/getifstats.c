@@ -1,4 +1,4 @@
-/* $Id: getifstats.c,v 1.8 2018/03/13 23:05:21 nanard Exp $ */
+/* $Id: getifstats.c,v 1.9 2020/05/10 22:25:45 nanard Exp $ */
 /*
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
@@ -19,8 +19,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "config.h"
 #include "../getifstats.h"
-#include "../config.h"
 
 int getifstats(const char * ifname, struct ifdata * data) {
 	int mib[] = { CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_IFLIST, if_nametoindex(ifname) };

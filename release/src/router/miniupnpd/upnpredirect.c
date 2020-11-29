@@ -1,8 +1,8 @@
-/* $Id: upnpredirect.c,v 1.95 2018/07/06 12:05:48 nanard Exp $ */
+/* $Id: upnpredirect.c,v 1.97 2020/06/06 17:55:24 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2018 Thomas Bernard
+ * (c) 2006-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -110,7 +110,7 @@ lease_file_add(unsigned short eport,
 	}
 
 	/* convert our time to unix time
-	 * if LEASEFILE_USE_REMAINING_TIME is defined, only the remaining time is stored */
+     * if LEASEFILE_USE_REMAINING_TIME is defined, only the remaining time is stored */
 	if (timestamp != 0) {
 		timestamp -= upnp_time();
 #ifndef LEASEFILE_USE_REMAINING_TIME
@@ -579,14 +579,16 @@ upnp_delete_redirection(unsigned short eport, const char * protocol)
 	return _upnp_delete_redir(eport, proto_atoi(protocol));
 }
 
-/* upnp_get_portmapping_number_of_entries()
- * TODO: improve this code. */
+/* upnp_get_portmapping_number_of_entries() */
 int
 upnp_get_portmapping_number_of_entries()
 {
+#if defined(USE_PF) || defined(USE_NFTABLES)
+	return get_redirect_rule_count(ext_if_name);
+#else
 	int n = 0, r = 0;
 	unsigned short eport, iport;
-	char protocol[4], iaddr[32], desc[64], rhost[32];
+	char protocol[8], iaddr[32], desc[64], rhost[32];
 	unsigned int leaseduration;
 	do {
 		protocol[0] = '\0'; iaddr[0] = '\0'; desc[0] = '\0';
@@ -598,6 +600,7 @@ upnp_get_portmapping_number_of_entries()
 		n++;
 	} while(r==0);
 	return (n-1);
+#endif
 }
 
 /* functions used to remove unused rules
@@ -676,7 +679,7 @@ get_upnp_rules_state_list(int max_rules_number_target)
 	{
 		if(tmp->to_remove)
 		{
-			syslog(LOG_DEBUG, "remove port mapping %hu %s because it has expired",
+			syslog(LOG_NOTICE, "remove port mapping %hu %s because it has expired",
 			       tmp->eport, proto_itoa(tmp->proto));
 			_upnp_delete_redir(tmp->eport, tmp->proto);
 			*p = tmp->next;
@@ -722,8 +725,8 @@ remove_unused_rules(struct rule_state * list)
 				       "%" PRIu64 "packets %" PRIu64 "bytes",
 				       list->eport, proto_itoa(list->proto),
 				       packets, bytes);
-				if(_upnp_delete_redir(list->eport, list->proto) >= 0)
-					n++;
+				_upnp_delete_redir(list->eport, list->proto);
+				n++;
 			}
 		}
 		tmp = list;
@@ -731,7 +734,7 @@ remove_unused_rules(struct rule_state * list)
 		free(tmp);
 	}
 	if(n>0)
-		syslog(LOG_DEBUG, "removed %d unused rules", n);
+		syslog(LOG_NOTICE, "removed %d unused rules", n);
 }
 
 /* upnp_get_portmappings_in_range()

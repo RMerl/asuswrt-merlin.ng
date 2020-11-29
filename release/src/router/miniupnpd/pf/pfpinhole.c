@@ -1,8 +1,8 @@
-/* $Id: pfpinhole.c,v 1.27 2018/03/13 23:05:21 nanard Exp $ */
+/* $Id: pfpinhole.c,v 1.29 2020/05/10 22:22:50 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2012-2018 Thomas Bernard
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2012-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -29,10 +29,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../config.h"
+#include "config.h"
 #include "pfpinhole.h"
 #include "../upnpglobalvars.h"
 #include "../macros.h"
+#include "../upnputils.h"
 
 /* the pass rules created by add_pinhole() are as follow :
  *

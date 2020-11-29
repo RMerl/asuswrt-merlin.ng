@@ -1,7 +1,7 @@
-/* $Id: upnppermissions.c,v 1.18 2014/03/07 10:43:29 nanard Exp $ */
+/* $Id: upnppermissions.c,v 1.20 2020/10/30 21:37:35 nanard Exp $ */
 /* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2014 Thomas Bernard
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -262,3 +262,44 @@ check_upnp_rule_against_permissions(const struct upnpperm * permary,
 	return 1;	/* Default : accept */
 }
 
+void
+get_permitted_ext_ports(uint32_t * allowed,
+                        const struct upnpperm * permary, int n_perms,
+                        in_addr_t addr, u_short iport)
+{
+	int i, j;
+
+	/* build allowed external ports array */
+	memset(allowed, 0xff, 65536 / 8);	/* everything allowed by default */
+
+	for (i = n_perms - 1; i >= 0; i--)
+	{
+		if( (addr & permary[i].mask.s_addr)
+		  != (permary[i].address.s_addr & permary[i].mask.s_addr) )
+			continue;
+		if( (iport < permary[i].iport_min) || (permary[i].iport_max < iport))
+			continue;
+		for (j = (int)permary[i].eport_min ; j <= (int)permary[i].eport_max; )
+		{
+			if ((j % 32) == 0 && ((int)permary[i].eport_max >= (j + 31)))
+			{
+				/* 32bits at once */
+				allowed[j / 32] = (permary[i].type == UPNPPERM_ALLOW) ? 0xffffffff : 0;
+				j += 32;
+			}
+			else
+			{
+				do
+				{
+					/* one bit at once */
+					if (permary[i].type == UPNPPERM_ALLOW)
+						allowed[j / 32] |= (1 << (j % 32));
+					else
+						allowed[j / 32] &= ~(1 << (j % 32));
+					j++;
+				}
+				while ((j % 32) != 0 && (j <= (int)permary[i].eport_max));
+			}
+		}
+	}
+}

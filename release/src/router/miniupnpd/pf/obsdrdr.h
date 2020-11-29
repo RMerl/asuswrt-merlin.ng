@@ -1,8 +1,8 @@
-/* $Id: obsdrdr.h,v 1.24 2018/07/06 12:00:10 nanard Exp $ */
+/* $Id: obsdrdr.h,v 1.25 2020/05/29 21:48:57 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2018 Thomas Bernard
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -67,6 +67,8 @@ int
 clear_redirect_rules(void);
 int
 clear_filter_rules(void);
+int
+clear_nat_rules(void);
 #endif
 
 #endif

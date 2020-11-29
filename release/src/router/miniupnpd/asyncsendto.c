@@ -1,11 +1,12 @@
-/* $Id: asyncsendto.c,v 1.8 2017/05/24 22:51:57 nanard Exp $ */
+/* $Id: asyncsendto.c,v 1.12 2020/11/11 12:13:26 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2018 Thomas Bernard
+ * (c) 2006-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
 #include <sys/types.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/queue.h>
@@ -21,6 +22,8 @@
 #include "asyncsendto.h"
 #include "upnputils.h"
 
+enum send_state {ESCHEDULED=1, EWAITREADY=2, ESENDNOW=3} state;
+
 /* state diagram for a packet :
  *
  *                     |
@@ -33,7 +36,7 @@
 struct scheduled_send {
 	LIST_ENTRY(scheduled_send) entries;
 	struct timeval ts;
-	enum {ESCHEDULED=1, EWAITREADY=2, ESENDNOW=3} state;
+	enum send_state state;
 	int sockfd;
 	const void * buf;
 	size_t len;
@@ -95,7 +98,7 @@ sendto_schedule2(int sockfd, const void *buf, size_t len, int flags,
                  const struct sockaddr_in6 *src_addr,
                  unsigned int delay)
 {
-	enum {ESCHEDULED, EWAITREADY, ESENDNOW} state;
+	enum send_state state;
 	ssize_t n;
 	size_t alloc_len;
 	struct timeval tv;

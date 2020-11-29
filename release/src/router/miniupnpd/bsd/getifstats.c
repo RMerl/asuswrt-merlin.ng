@@ -19,7 +19,7 @@
 #endif
 
 #include "../getifstats.h"
-#include "../config.h"
+#include "config.h"
 
 int
 getifstats(const char *ifname, struct ifdata *data)

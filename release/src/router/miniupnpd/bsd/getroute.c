@@ -1,7 +1,7 @@
-/* $Id: getroute.c,v 1.12 2015/11/19 11:46:30 nanard Exp $ */
+/* $Id: getroute.c,v 1.15 2020/05/10 22:24:11 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2017 Thomas Bernard
+ * (c) 2006-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -17,7 +17,7 @@
 #include <net/if_dl.h>
 #endif
 
-#include "../config.h"
+#include "config.h"
 #include "../upnputils.h"
 
 /* SA_SIZE() is a multiple of sizeof(long) with a minimum value of sizeof(long) */

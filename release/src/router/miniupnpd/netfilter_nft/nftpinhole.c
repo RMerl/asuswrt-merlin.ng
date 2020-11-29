@@ -1,7 +1,7 @@
-/* $Id: iptpinhole.c,v 1.19 2018/04/22 19:36:58 nanard Exp $ */
+/* $Id: nftpinhole.c,v 1.7 2020/11/11 12:08:43 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2012-2018 Thomas Bernard
+ * (c) 2012-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -35,8 +35,8 @@
 
 #include "tiny_nf_nat.h"
 
+#include "config.h"
 #include "../macros.h"
-#include "../config.h"
 #include "nftnlrdr.h"
 #include "../upnpglobalvars.h"
 
@@ -101,7 +101,7 @@ int add_pinhole(const char * ifname,
 			    rhost_addr_p, &ihost_addr,
 				0, int_port, rem_port, comment, 0);
 
-	res = nft_send_request(r, NFT_MSG_NEWRULE, RULE_CHAIN_FILTER);
+	res = nft_send_rule(r, NFT_MSG_NEWRULE, RULE_CHAIN_FILTER);
 
 	if (res < 0)
 		return -1;
@@ -135,7 +135,7 @@ find_pinhole(const char * ifname,
 	inet_pton(AF_INET6, int_client, &daddr);
 
 	d_printf(("find_pinhole()\n"));
-	reflesh_nft_cache_filter();
+	refresh_nft_cache_filter();
 
 	LIST_FOREACH(p, &head_filter, entry) {
 
@@ -186,7 +186,7 @@ delete_pinhole(unsigned short uid)
 	         "pinhole-%hu", uid);
 
 	d_printf(("delete_pinhole()\n"));
-	reflesh_nft_cache_filter();
+	refresh_nft_cache_filter();
 
 	LIST_FOREACH(p, &head_filter, entry) {
 		// Only forward entries
@@ -200,7 +200,7 @@ delete_pinhole(unsigned short uid)
 		strtok(tmp_label, " ");
 		if (0 == strcmp(tmp_label, label_start)) {
 			r = rule_del_handle(p);
-			nft_send_request(r, NFT_MSG_DELRULE, RULE_CHAIN_FILTER);
+			nft_send_rule(r, NFT_MSG_DELRULE, RULE_CHAIN_FILTER);
 			return 0;
 		}
 	}
@@ -211,7 +211,9 @@ delete_pinhole(unsigned short uid)
 int
 update_pinhole(unsigned short uid, unsigned int timestamp)
 {
+#ifdef DEBUG
 	char iaddr[INET6_ADDRSTRLEN];
+#endif
 	char raddr[INET6_ADDRSTRLEN];
 	char label_start[NFT_DESCR_SIZE];
 	char tmp_label[NFT_DESCR_SIZE];
@@ -232,7 +234,7 @@ update_pinhole(unsigned short uid, unsigned int timestamp)
 	snprintf(label_start, sizeof(label_start),
 	         "pinhole-%hu", uid);
 
-	reflesh_nft_cache_filter();
+	refresh_nft_cache_filter();
 
 	proto = -1;
 	memset(&rhost_addr, 0, sizeof(struct in6_addr));
@@ -290,7 +292,7 @@ update_pinhole(unsigned short uid, unsigned int timestamp)
 
 	// Delete rule
 	r = rule_del_handle(p);
-	res = nft_send_request(r, NFT_MSG_DELRULE, RULE_CHAIN_FILTER);
+	res = nft_send_rule(r, NFT_MSG_DELRULE, RULE_CHAIN_FILTER);
 
 	if (res < 0)
 		return -1;
@@ -306,7 +308,7 @@ update_pinhole(unsigned short uid, unsigned int timestamp)
 			    rhost_addr_p, &ihost_addr,
 				0, iport, rport, comment, 0);
 
-	res = nft_send_request(r, NFT_MSG_NEWRULE, RULE_CHAIN_FILTER);
+	res = nft_send_rule(r, NFT_MSG_NEWRULE, RULE_CHAIN_FILTER);
 
 	if (res < 0)
 		return -1;
@@ -333,7 +335,7 @@ get_pinhole_info(unsigned short uid,
 	         "pinhole-%hu", uid);
 
 	d_printf(("get_pinhole_info()\n"));
-	reflesh_nft_cache_filter();
+	refresh_nft_cache_filter();
 
 	LIST_FOREACH(p, &head_filter, entry) {
 		// Only forward entries
@@ -370,7 +372,8 @@ get_pinhole_info(unsigned short uid,
 				*proto = p->proto;
 
 			if (timestamp) {
-				if (sscanf(p->desc, PINEHOLE_LABEL_FORMAT_SKIPDESC,(int *) &uid, &ts) != 2) {
+				int uid_temp;
+				if (sscanf(p->desc, PINEHOLE_LABEL_FORMAT_SKIPDESC, &uid_temp, &ts) != 2) {
 					syslog(LOG_DEBUG, "rule with label '%s' is not a IGD pinhole", p->desc);
 					continue;
 				}
@@ -418,7 +421,7 @@ clean_pinhole_list(unsigned int * next_timestamp)
 	current_time = upnp_time();
 
 	d_printf(("clean_pinhole_list()\n"));
-	reflesh_nft_cache_filter();
+	refresh_nft_cache_filter();
 
 	LIST_FOREACH(p, &head_filter, entry) {
 		// Only forward entries
@@ -436,7 +439,7 @@ clean_pinhole_list(unsigned int * next_timestamp)
 		if (ts <= (unsigned int)current_time) {
 			syslog(LOG_INFO, "removing expired pinhole '%s'", p->desc);
 			r = rule_del_handle(p);
-			nft_send_request(r, NFT_MSG_DELRULE, RULE_CHAIN_FILTER);
+			nft_send_rule(r, NFT_MSG_DELRULE, RULE_CHAIN_FILTER);
 			n++;
 		} else {
 			if (uid > max_uid)

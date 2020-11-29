@@ -282,7 +282,7 @@ static const struct { uint32_t address; uint32_t rmask; } reserved[] = {
 	{ IP(192,  52, 193, 0), MSK(24) }, /* RFC7450 AMT */
 	{ IP(192,  88,  99, 0), MSK(24) }, /* RFC7526 6to4 Relay Anycast */
 	{ IP(192, 168,   0, 0), MSK(16) }, /* RFC1918 Private-Use */
-	{ IP(192, 175,  48, 0), MSK(16) }, /* RFC7534 Direct Delegation AS112 Service */
+	{ IP(192, 175,  48, 0), MSK(24) }, /* RFC7534 Direct Delegation AS112 Service */
 	{ IP(198,  18,   0, 0), MSK(15) }, /* RFC2544 Benchmarking */
 	{ IP(198,  51, 100, 0), MSK(24) }, /* RFC5737 Documentation (TEST-NET-2) */
 	{ IP(203,   0, 113, 0), MSK(24) }, /* RFC5737 Documentation (TEST-NET-3) */

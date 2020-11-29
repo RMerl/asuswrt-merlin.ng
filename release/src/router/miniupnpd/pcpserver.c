@@ -1,7 +1,7 @@
 /* $Id: pcpserver.c,v 1.51 2019/05/21 08:39:44 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
- * Website : http://miniupnp.free.fr/
+ * Website : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Peter Tatrai
 
 Copyright (c) 2013 by Cisco Systems, Inc.
@@ -1682,19 +1682,24 @@ void PCPSendUnsolicitedAnnounce(int * sockets, int n_sockets)
 	addr.sin_addr.s_addr = inet_addr("224.0.0.1");
 	addr.sin_port = htons(5350);
 	for(i = 0; i < n_sockets; i++) {
+		if (sockets[i] < 0) {
+			continue;
+		}
 		len = sendto_or_schedule(sockets[i], buff, PCP_MIN_LEN, 0, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 		if( len < 0 ) {
-			syslog(LOG_ERR, "PCPSendUnsolicitedAnnounce() sendto(): %m");
+			syslog(LOG_ERR, "PCPSendUnsolicitedAnnounce(sockets[%d]) sendto(): %m", i);
 		}
 	}
 #ifdef ENABLE_IPV6
-	memset(&addr6, 0, sizeof(struct sockaddr_in6));
-	addr6.sin6_family = AF_INET6;
-	inet_pton(AF_INET6, "FF02::1", &(addr6.sin6_addr));
-	addr6.sin6_port = htons(5350);
-	len = sendto_or_schedule(socket6, buff, PCP_MIN_LEN, 0, (struct sockaddr *)&addr6, sizeof(struct sockaddr_in6));
-	if( len < 0 ) {
-		syslog(LOG_ERR, "PCPSendUnsolicitedAnnounce() IPv6 sendto(): %m");
+	if (socket6 >= 0) {
+		memset(&addr6, 0, sizeof(struct sockaddr_in6));
+		addr6.sin6_family = AF_INET6;
+		inet_pton(AF_INET6, "FF02::1", &(addr6.sin6_addr));
+		addr6.sin6_port = htons(5350);
+		len = sendto_or_schedule(socket6, buff, PCP_MIN_LEN, 0, (struct sockaddr *)&addr6, sizeof(struct sockaddr_in6));
+		if( len < 0 ) {
+			syslog(LOG_ERR, "PCPSendUnsolicitedAnnounce() IPv6 sendto(): %m");
+		}
 	}
 #endif /* ENABLE_IPV6 */
 }

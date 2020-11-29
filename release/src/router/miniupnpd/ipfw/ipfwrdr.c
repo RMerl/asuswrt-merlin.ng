@@ -1,4 +1,4 @@
-/* $Id: ipfwrdr.c,v 1.16 2016/02/12 13:44:01 nanard Exp $ */
+/* $Id: ipfwrdr.c,v 1.17 2020/05/10 22:25:45 nanard Exp $ */
 /*
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
@@ -8,7 +8,7 @@
  * in the LICENCE file provided within the distribution
  */
 
-#include "../config.h"
+#include "config.h"
 #include "../macros.h"
 
 #include <sys/param.h>

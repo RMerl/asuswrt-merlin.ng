@@ -1,7 +1,7 @@
-/* $Id: ifacewatcher.c,v 1.9 2018/02/03 22:05:42 nanard Exp $ */
+/* $Id: ifacewatcher.c,v 1.10 2019/10/02 22:02:02 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2018 Thomas Bernard
+ * (c) 2006-2020 Thomas Bernard
  *
  * ifacewatcher.c
  *
@@ -49,6 +49,7 @@
 #include <signal.h>
 
 #include "../config.h"
+#include "../macros.h"
 
 #ifdef USE_IFACEWATCHER
 
@@ -280,6 +281,7 @@ ProcessInterfaceWatchNotify(int s)
 		switch(nlhdr->nlmsg_type) {
 		case RTM_DELLINK:
 			is_del = 1;
+			FALL_THROUGH;
 		case RTM_NEWLINK:
 #if 0
 /* disabled at the moment */
@@ -295,6 +297,7 @@ ProcessInterfaceWatchNotify(int s)
 			break;
 		case RTM_DELADDR:
 			is_del = 1;
+			FALL_THROUGH;
 		case RTM_NEWADDR:
 			/* see /usr/include/linux/netlink.h
 			 * and /usr/include/linux/rtnetlink.h */

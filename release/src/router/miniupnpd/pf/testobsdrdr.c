@@ -1,7 +1,7 @@
-/* $Id: testobsdrdr.c,v 1.30 2018/04/12 09:27:54 nanard Exp $ */
+/* $Id: testobsdrdr.c,v 1.31 2020/05/29 22:29:13 nanard Exp $ */
 /* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2018 Thomas Bernard
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2006-2020 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -97,7 +97,7 @@ main(int argc, char * * argv)
 	add_redirect_rule("ep0", 12123, "192.168.1.23", 1234);
 	add_redirect_rule2("ep0", 12155, "192.168.1.155", 1255, IPPROTO_TCP);
 #endif
-	if(add_redirect_rule2("ep0", "8.8.8.8", 12123, "192.168.1.125", 1234,
+	if(add_redirect_rule2("ep0", NULL/*"8.8.8.8"*/, 12123, "192.168.1.125", 1234,
 	                   IPPROTO_UDP, "test description", 0) < 0)
 		printf("add_redirect_rule2() #3 failed\n");
 	use_ext_ip_addr = NULL;
@@ -124,7 +124,11 @@ main(int argc, char * * argv)
 		       packets, bytes);
 	}
 
+/*
 	if(delete_redirect_rule("ep0", 12123, IPPROTO_UDP) < 0)
+		printf("delete_redirect_rule() failed\n");
+*/
+	if(delete_redirect_and_filter_rules("ep0", 12123, IPPROTO_UDP) < 0)
 		printf("delete_redirect_rule() failed\n");
 
 	if(delete_redirect_rule("ep0", 12123, IPPROTO_UDP) < 0)
@@ -138,6 +142,7 @@ main(int argc, char * * argv)
 	if(clear) {
 		clear_redirect_rules();
 		clear_filter_rules();
+		clear_nat_rules();
 	}
 	/*list_rules();*/
 

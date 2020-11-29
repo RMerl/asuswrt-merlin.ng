@@ -1,11 +1,9 @@
-/* $Id: ifacewatcher.c,v 1.8 2014/04/18 08:23:51 nanard Exp $ */
+/* $Id: ifacewatcher.c,v 1.9 2020/05/10 22:23:56 nanard Exp $ */
 /* Project MiniUPnP
- * web : http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2011 Thomas BERNARD
+ * web : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2011-2020 Thomas BERNARD
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
-
-#include "../config.h"
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -17,6 +15,8 @@
 
 #define	SALIGN	(sizeof(long) - 1)
 #define	SA_RLEN(sa)	(SA_LEN(sa) ? ((SA_LEN(sa) + SALIGN) & ~SALIGN) : (SALIGN + 1))
+
+#include "config.h"
 
 #include "../upnputils.h"
 #include "../upnpglobalvars.h"

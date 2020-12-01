@@ -70,15 +70,15 @@
 
 /* iptables -t nat -N MINIUPNPD
  * iptables -t nat -A PREROUTING -i <ext_if_name> -j MINIUPNPD */
-static const char * miniupnpd_nat_chain = "MINIUPNPD";
+static const char * miniupnpd_nat_chain = "UPNP";
 
 /* iptables -t nat -N MINIUPNPD-POSTROUTING
  * iptables -t nat -A POSTROUTING -o <ext_if_name> -j MINIUPNPD-POSTROUTING */
-static const char * miniupnpd_nat_postrouting_chain = "MINIUPNPD-POSTROUTING";
+static const char * miniupnpd_nat_postrouting_chain = "UPNP-POSTROUTING";
 
 /* iptables -t filter -N MINIUPNPD
  * iptables -t filter -A FORWARD -i <ext_if_name> ! -o <ext_if_name> -j MINIUPNPD */
-static const char * miniupnpd_forward_chain = "MINIUPNPD";
+static const char * miniupnpd_forward_chain = "UPNP";
 
 /**
  * used by the core to override default chain names if specified in config file

@@ -14253,6 +14253,7 @@ static void sysinit(void)
 #ifdef RTCONFIG_JFFS_NVRAM
 	if(RESTORE_DEFAULTS()) {
 		nvram_set("jffs2_on", "1");
+		nvram_set("jffs2_enable", "1");
 		nvram_set("jffs2_clean_fs", "1");
 	}
 	start_jffs2();

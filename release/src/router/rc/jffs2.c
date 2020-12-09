@@ -394,9 +394,7 @@ void start_jffs2(void)
 #endif
 
 #ifdef CONFIG_BCMWL5
-#if !defined(RTAC3200) && !defined(RTAC56U) && !defined(RTAC87U)	//kludge
 	check_asus_jffs();
-#endif
 #endif
 
 	if (!check_if_dir_exist("/jffs/scripts/")) mkdir("/jffs/scripts/", 0755);

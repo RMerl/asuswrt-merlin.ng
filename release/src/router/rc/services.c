@@ -5274,10 +5274,10 @@ start_httpd(void)
 #ifdef RTCONFIG_HTTPS
 #ifdef RTCONFIG_LETSENCRYPT
 	if(nvram_match("le_enable", "1")) {
-		if(!is_le_cert(HTTPD_CERT) || !cert_key_match(HTTPD_CERT, HTTPD_KEY)) {
+//		if(!is_le_cert(HTTPD_CERT) || !cert_key_match(HTTPD_CERT, HTTPD_KEY)) {
 			cp_le_cert(LE_FULLCHAIN, HTTPD_CERT);
 			cp_le_cert(LE_KEY, HTTPD_KEY);
-		}
+//		}
 	}
 	else if(nvram_match("le_enable", "2")){
                 if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {

@@ -1612,7 +1612,6 @@ static int start_bandwidth_limiter(void)
 		"\n"
 		"\t$TQAU root handle 2: htb\n"
 		"\t$TCAU parent 2: classid 2:1 htb rate 10240000kbit\n"
-		, qsched
 		, get_wan_ifname(wan_primary_ifunit())
 	);
 	// access router : mark 9

@@ -509,6 +509,26 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 #else	// HND lacks robocfg support
 			strcpy(result, "[]");
 #endif
+		} else if(strlen(type) > 8 && strncmp(type,"hwaccel", 7) == 0 ) {
+			if (!strcmp(&type[8], "runner"))	// Also Archer on 675x
+				system("/bin/fc status | grep \"HW Acceleration\" >/tmp/output.txt");
+			else if (!strcmp(&type[8], "fc"))
+				system("/bin/fc status | grep \"Flow Learning\" >/tmp/output.txt");
+
+			char *buffer = read_whole_file("/tmp/output.txt");
+			if (buffer) {
+				if (strstr(buffer, "Enabled"))
+					strcpy(result,"Enabled");
+				else if (strstr(buffer, "Disabled"))
+					strcpy(result, "Disabled");
+				else
+					strcpy(result, "<unknown>");
+				free(buffer);
+			} else {
+				strcpy(result, "<unknown>");
+			}
+			unlink("/tmp/output.txt");
+
 		} else {
 			strcpy(result,"Not implemented");
 		}

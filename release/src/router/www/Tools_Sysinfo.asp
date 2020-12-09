@@ -124,32 +124,20 @@ function hwaccel_state(){
 	var qos_type = '<% nvram_get("qos_type"); %>';
 
 	if (hnd_support) {
-		code = "Runner:<span> ";
+		var machine_name = "<% get_machine_name(); %>";
+		if (machine_name.search("aarch64") != -1)
+			code = "Runner:<span> ";
+		else
+			code = "Archer:<span> ";
 
-		if ('<% nvram_get("runner_disable"); %>' == '1') {
-			code += "Disabled";
-			if ('<% nvram_get("runner_disable_force"); %>' == '1') {
-				code += " <i>(by user)</i>";
-			} else {
-				if (qos_enable == '1')
-					code += " <i>(QoS)</i>";
-			}
-		} else {
-			code += "Enabled";
-		}
+		var state = "<% sysinfo("hwaccel.runner"); %>";
+
+		code += state;
 
 		code += "</span>&nbsp;&nbsp;-&nbsp;&nbsp;Flow Cache:<span> ";
-		if ('<% nvram_get("fc_disable"); %>' == '1') {
-			code += "Disabled";
-			if ('<% nvram_get("fc_disable_force"); %>' == '1') {
-				code += " <i>(by user)</i>";
-			} else {
-				if ((qos_enable == '1') && (qos_type != '1'))
-					code += " <i>(QoS)</i>";
-			}
-		} else {
-			code += "Enabled";
-		}
+		state = "<% sysinfo("hwaccel.fc"); %>";
+
+		code += state;
 		code += "</span>";
 	} else {
 		if (ctf_dis == "1") {

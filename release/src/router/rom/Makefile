@@ -61,7 +61,7 @@ PKG_LIST += ncurses-base libiconv
 endif
 
 ifeq ($(RTCONFIG_LIVE_UPDATE_RSA),y)
-KEY_PATH= $(SRC_ROOT)/../../../key
+KEY_PATH= ~/amng.private/other
 endif
 
 all:
@@ -177,8 +177,16 @@ ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_BWDPI_DEP)),y)
 	cp -f webs_scripts/sig2nd_upgrade.sh $(INSTALLDIR)/usr/sbin/sig_upgrade.sh
 	cp -f webs_scripts/sig2nd_update.sh $(INSTALLDIR)/usr/sbin/sig_update.sh
 endif
+ifeq ($(RTCONFIG_LIVE_UPDATE_RSA),y)
+ifneq ("$(wildcard $(KEY_PATH)/public$(LIVE_UPDATE_RSA).pem)","")
+	cp -f $(KEY_PATH)/public$(LIVE_UPDATE_RSA).pem $(INSTALLDIR)/usr/sbin/public.pem
+else
+	cp -f webs_scripts/public.pem $(INSTALLDIR)/usr/sbin/public.pem
+endif
+else
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/public.pem $(INSTALLDIR)/usr/sbin/public.pem
+endif
 endif
 
 else	#merlinupdate

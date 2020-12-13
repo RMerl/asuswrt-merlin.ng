@@ -324,7 +324,7 @@ $(if $(CONFIG_UBOOT_CONFIG_LTQ_IMAGE_EXTRA_CHECKS), \
 endef
 
 ifneq ($(LIVE_UPDATE_RSA),)
-export KEY_PATH = $(SRC_ROOT)/../../../key
+export KEY_PATH = ~/amng.private/other
 ifneq ($(LIVE_UPDATE_RSA_GPL),)
 export LIVE_UPDATE_RSA_VER = 
 else
@@ -564,7 +564,7 @@ endif
 ifeq ($(LIVE_UPDATE_RSA),)
 	@echo '#define LIVE_UPDATE_RSA_VERSION ""' >> router/shared/version.h
 else
-ifneq (,$(wildcard $(KEY_PATH)/private*.pem))
+ifneq (,$(wildcard $(KEY_PATH)/public*.pem))
 	@echo '#define LIVE_UPDATE_RSA_VERSION "$(LIVE_UPDATE_RSA_VER)"' >> router/shared/version.h
 else
 	@echo '#define LIVE_UPDATE_RSA_VERSION ""' >> router/shared/version.h

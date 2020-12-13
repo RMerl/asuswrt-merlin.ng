@@ -30,6 +30,8 @@ void set_basic_fw_name(void){
 #endif
 #ifdef RTCONFIG_LIVE_UPDATE_RSA
 	nvram_set("live_update_rsa_ver", live_update_rsa_ver);
+#else
+	nvram_unset("live_update_rsa_ver");
 #endif
 }
 

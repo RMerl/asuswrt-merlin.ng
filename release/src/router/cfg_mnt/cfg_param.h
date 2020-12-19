@@ -39,11 +39,15 @@
 #ifdef RTCONFIG_BHCOST_OPT
 #define	FT_PREFERAP	BIT(18)  /* Prefer AP feature */
 #endif
+#if defined(RTCONFIG_FANCTRL)
+#define FT_FANCTRL		BIT(19)
+#endif
 
 /* service */
 #define RESTART_WIRELESS		"restart_wireless"
 #define CHPASS		"chpass"
 #define RESTART_TIME		"restart_time"
+#define RESTART_FANCTRL		"restart_fanctrl"
 #define RESTART_LOGGER		"restart_logger"
 #define RESTART_SENDFEEDBACK		"restart_sendfeedback"
 #define RESTART_DBLOG		"restart_dblog"
@@ -99,6 +103,9 @@ struct feature_mapping_s feature_mapping_list[] = {
 #endif
 #ifdef RTCONFIG_BHCOST_OPT
 	{ "prefer_ap", FT_PREFERAP, TRIGGER_OPT },
+#endif
+#if defined(RTCONFIG_FANCTRL)
+	{ "fanctrl",	FT_FANCTRL,	RESTART_FANCTRL },
 #endif
 	{ NULL, 0, NULL }
 };
@@ -294,6 +301,9 @@ enum {
 	SUBFT_TIMESCHEDV2_5G,
 	SUBFT_TIMESCHEDV2_5G1,
 
+#if defined(RTCONFIG_FANCTRL)
+	SUBFT_FANCTRL,
+#endif
 	SUBFT_MAX
 };
 
@@ -478,6 +488,9 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "sta_bind_ap", SUBFT_STA_BIND_AP, FT_STA_BIND_AP},
 #endif
 
+#if defined(RTCONFIG_FANCTRL)
+	{ "fanctrl",		SUBFT_FANCTRL,	FT_FANCTRL },
+#endif
 	/* END */
 	{ NULL, 0, 0}
 };
@@ -900,6 +913,9 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "sta_binding_list",	FT_STA_BIND_AP,		SUBFT_STA_BIND_AP},
 #endif
 
+#if defined(RTCONFIG_FANCTRL)
+	{ "fanctrl_dutycycle",	FT_FANCTRL,	SUBFT_FANCTRL },
+#endif
 	/* END */
 	{ NULL, 0, 0 }
 };

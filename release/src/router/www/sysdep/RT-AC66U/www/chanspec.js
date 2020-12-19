@@ -88,7 +88,7 @@ for(i=0;i<_chanspecs_5g.length;i++){
 		}
 	}
 }
-if(wl_info.band5g_2_support){
+if(wl_info.band5g_2_support || isSupport('wifi6e')){
 	var wl2 = {
 		"channel_20m": [],
 		"channel_40m": [],
@@ -450,7 +450,18 @@ function wl_chanspec_list_change(){
 				if(amesh_support && httpApi.hasAiMeshNode()){
 					var _wl_channel = new Array();
 					for(j=1; j<mesh_5g2.auto.chanspec.length; j++){
-						_wl_channel.push(mesh_5g2.auto.chanspec[j]);
+						if(band6g_support && document.getElementById('psc6g_checkbox').checked){
+                            for(var k=wl_channel_list_5g_2.length-1; k>=0; k--){
+                                var _str = '6g' + wl_channel_list_5g_2[k];
+                                if(mesh_5g2.auto.chanspec[j].search(_str) != -1){
+                                    _wl_channel.push(mesh_5g2.auto.chanspec[j]);
+                                   break;
+                                }
+                            }             
+                        }
+                        else{
+                            _wl_channel.push(mesh_5g2.auto.chanspec[j]);
+                        }
 					}
 
 					wl_channel_list_5g_2 = _wl_channel;	
@@ -521,7 +532,18 @@ function wl_chanspec_list_change(){
 				var _wl_channel = new Array();
 				if(amesh_support && httpApi.hasAiMeshNode()){
 					for(j=1; j<mesh_5g2.chan_160m.chanspec.length; j++){
-						_wl_channel.push(mesh_5g2.chan_160m.chanspec[j]);
+						if(band6g_support && document.getElementById('psc6g_checkbox').checked){
+                            for(var k=wl_channel_list_5g_2.length-1; k>=0; k--){
+                                var _str = '6g' + wl_channel_list_5g_2[k];
+                                if(mesh_5g2.chan_160m.chanspec[j].search(_str) != -1){
+                                    _wl_channel.push(mesh_5g2.chan_160m.chanspec[j]);
+                                   break;
+                                }
+                            }             
+                        }
+                        else{
+                            _wl_channel.push(mesh_5g2.chan_160m.chanspec[j]);
+                        }
 					}
 				}
 				else{
@@ -554,7 +576,18 @@ function wl_chanspec_list_change(){
 				var _wl_channel = new Array();
 				if(amesh_support && httpApi.hasAiMeshNode()){
 					for(j=1; j<mesh_5g2.chan_80m.chanspec.length; j++){
-						_wl_channel.push(mesh_5g2.chan_80m.chanspec[j]);
+						if(band6g_support && document.getElementById('psc6g_checkbox').checked){
+                            for(var k=wl_channel_list_5g_2.length-1; k>=0; k--){
+                                var _str = '6g' + wl_channel_list_5g_2[k];
+                                if(mesh_5g2.chan_80m.chanspec[j].search(_str) != -1){
+                                    _wl_channel.push(mesh_5g2.chan_80m.chanspec[j]);
+                                   break;
+                                }
+                            }             
+                        }
+                        else{
+                            _wl_channel.push(mesh_5g2.chan_80m.chanspec[j]);
+                        }
 					}
 				}
 				else{
@@ -587,7 +620,18 @@ function wl_chanspec_list_change(){
 				var _wl_channel = new Array();
 				if(amesh_support && httpApi.hasAiMeshNode()){
 					for(j=1; j<mesh_5g2.chan_40m.chanspec.length; j++){
-						_wl_channel.push(mesh_5g2.chan_40m.chanspec[j]);
+						if(band6g_support && document.getElementById('psc6g_checkbox').checked){
+                            for(var k=wl_channel_list_5g_2.length-1; k>=0; k--){
+                                var _str = '6g' + wl_channel_list_5g_2[k];
+                                if(mesh_5g2.chan_40m.chanspec[j].search(_str) != -1){
+                                    _wl_channel.push(mesh_5g2.chan_40m.chanspec[j]);
+                                   break;
+                                }
+                            }             
+                        }
+                        else{
+                            _wl_channel.push(mesh_5g2.chan_40m.chanspec[j]);
+                        }
 					}
 				}
 				else{
@@ -627,7 +671,18 @@ function wl_chanspec_list_change(){
 				var _wl_channel = new Array();
 				if(amesh_support && httpApi.hasAiMeshNode()){					
 					for(j=1; j<mesh_5g2.chan_20m.chanspec.length; j++){
-						_wl_channel.push(mesh_5g2.chan_20m.chanspec[j]);
+						if(band6g_support && document.getElementById('psc6g_checkbox').checked){
+                            for(var k=wl_channel_list_5g_2.length-1; k>=0; k--){
+                                var _str = '6g' + wl_channel_list_5g_2[k];
+                                if(mesh_5g2.chan_20m.chanspec[j].search(_str) != -1){
+                                    _wl_channel.push(mesh_5g2.chan_20m.chanspec[j]);
+                                   break;
+                                }
+                            }             
+                        }
+                        else{
+                            _wl_channel.push(mesh_5g2.chan_20m.chanspec[j]);
+                        }
 					}
 
 					wl_channel_list_5g_2 = _wl_channel;

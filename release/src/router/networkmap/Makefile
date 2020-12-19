@@ -151,10 +151,10 @@ install:
 ifneq ($(AC2900),y)
 	install -D asusdiscovery $(INSTALLDIR)/usr/sbin/asusdiscovery
 	$(STRIP) $(INSTALLDIR)/usr/sbin/asusdiscovery
-#ifneq ($(wildcard $(SRCBASE)/router/networkmap/*.c),)
+ifneq ($(wildcard $(SRCBASE)/router/networkmap/arpstorm),)
 	install -D arpstorm $(INSTALLDIR)/usr/sbin/arpstorm
 	$(STRIP) $(INSTALLDIR)/usr/sbin/arpstorm
-#endif
+endif
 endif
 	install -d $(INSTALLDIR)/usr/networkmap
 	cp -f networkmap.oui.js $(INSTALLDIR)/usr/networkmap/networkmap.oui.js

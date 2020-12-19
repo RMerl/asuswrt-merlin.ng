@@ -348,6 +348,7 @@ var wl_nband_title = [];
 var wl_nband_array = "<% wl_nband_info(); %>".toArray();
 var band2g_count = 0;
 var band5g_count = 0;
+var band6g_count = 0;
 var band60g_count = 0;
 for (var j=0; j<wl_nband_array.length; j++) {
 	if(wl_nband_array[j] == '2'){
@@ -356,12 +357,11 @@ for (var j=0; j<wl_nband_array.length; j++) {
 	}
 	else if(wl_nband_array[j] == '1'){
 		band5g_count++;
-		if(isSupport('wifi6e') && band5g_count > 1){
-			wl_nband_title.push('6 GHz');
-		}
-		else{
-			wl_nband_title.push("5 GHz" + ((band5g_count > 1) ? ("-" + band5g_count) : ""));
-		}	
+		wl_nband_title.push("5 GHz" + ((band5g_count > 1) ? ("-" + band5g_count) : ""));
+	}
+	else if(wl_nband_array[j] == '4'){
+		band6g_count++;
+		wl_nband_title.push("6 GHz");
 	}
 	else if(wl_nband_array[j] == '6'){
 		band60g_count++;
@@ -392,6 +392,12 @@ var wl_info = {
 				else
 					return false;
 			})(),
+	band6g_support:(function(){
+			if(band6g_count > 0)
+				return true;
+			else
+				return false;
+	})(),		
 	band60g_support:(function(){
 				if(band60g_count > 0)
 					return true;
@@ -400,6 +406,7 @@ var wl_info = {
 			})(),
 	band2g_total:band2g_count,
 	band5g_total:band5g_count,
+	band6g_total:band6g_count,
 	band60g_total:band60g_count,
 	wl_if_total:(function(){
 					var count = 0;
@@ -962,7 +969,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 
 	banner_code +='<span onclick="change_wl_unit_status(0)" id="elliptic_ssid_2g" class="title_link"></span>';
 	banner_code +='<span onclick="change_wl_unit_status(1)" id="elliptic_ssid_5g" class="title_link"></span>\n';
-	if(wl_info.band5g_2_support)
+	if(wl_info.band5g_2_support || wl_info.band6g_support)
 		banner_code +='<span onclick="change_wl_unit_status(2)" id="elliptic_ssid_5g_2" class="title_link"></span>\n';
 	banner_code +='</span></td>\n';
 
@@ -1070,7 +1077,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 
 	if(wifison_ready == "1"){
 		document.getElementById("elliptic_ssid_5g").style.display = "none";
-		if(wl_info.band5g_2_support)
+		if(wl_info.band5g_2_support || wl_info.band6g_support)
 			document.getElementById('elliptic_ssid_5g_2').style.display = "none";
 	}
 
@@ -1832,7 +1839,7 @@ function show_top_status(){
 	var ssid_status_2g =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl0_ssid"); %>'));
 	var ssid_status_5g =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl1_ssid"); %>'));
 
-	if(wl_info.band5g_2_support){
+	if(wl_info.band5g_2_support || wl_info.band6g_support){
 		var ssid_status_5g_2 =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl2_ssid"); %>'));
 	}
 
@@ -1842,7 +1849,7 @@ function show_top_status(){
 	if(!band5g_support)
 		ssid_status_5g = "";
 
-	if(!wl_info.band5g_2_support)
+	if(!wl_info.band5g_2_support && !wl_info.band6g_support)
 		ssid_status_5g_2 = "";
 
 	if(sw_mode == 4){
@@ -1859,7 +1866,7 @@ function show_top_status(){
 		document.getElementById('elliptic_ssid_5g').style.textDecoration="none";
 		document.getElementById('elliptic_ssid_5g').style.cursor="auto";
 		document.getElementById('elliptic_ssid_5g').onclick = null;
-		if(wl_info.band5g_2_support){
+		if(wl_info.band5g_2_support || wl_info.band6g_support){
 			document.getElementById('elliptic_ssid_5g_2').style.textDecoration="none";
 			document.getElementById('elliptic_ssid_5g_2').style.cursor="auto";
 			document.getElementById('elliptic_ssid_5g_2').onclick = null;
@@ -1869,7 +1876,7 @@ function show_top_status(){
 		if(concurrep_support){
 			ssid_status_2g =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl0.1_ssid"); %>'));
 			ssid_status_5g =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl1.1_ssid"); %>'));
-			if(wl_info.band5g_2_support)
+			if(wl_info.band5g_2_support || wl_info.band6g_support)
 				ssid_status_5g_2 =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl2.1_ssid"); %>'));
 
 			if(wlc_express == '1'){
@@ -1879,14 +1886,14 @@ function show_top_status(){
 				document.getElementById('elliptic_ssid_5g').style.display = "none";
 			}
 			else if(wlc_express == '3'){
-				if(wl_info.band5g_2_support)
+				if(wl_info.band5g_2_support || wl_info.band6g_support)
 					document.getElementById('elliptic_ssid_5g_2').style.display = "none";
 			}
 		}	
 		else if(wlc_band == '0')
 			ssid_status_2g =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl0.1_ssid"); %>'));
 		else if(wlc_band == '2'){
-			if(wl_info.band5g_2_support){
+			if(wl_info.band5g_2_support || wl_info.band6g_support){
 				ssid_status_5g_2 =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl2.1_ssid"); %>'));
 			}
 		}
@@ -1927,7 +1934,7 @@ function show_top_status(){
 
 	document.getElementById('elliptic_ssid_5g').title = "5 GHz: \n"+ htmlEnDeCode.htmlDecode(ssid_status_5g);
 
-	if(wl_info.band5g_2_support){
+	if(wl_info.band5g_2_support || wl_info.band6g_support){
 		if(htmlEnDeCode.htmlDecode(ssid_status_5g_2).length >18){
 			document.getElementById('elliptic_ssid_5g_2').innerHTML = htmlEnDeCode.htmlEncode((htmlEnDeCode.htmlDecode(ssid_status_5g_2)).substring(0,15)) + "...";
 		}
@@ -1947,7 +1954,7 @@ function show_top_status(){
 		if('<% nvram_get("smart_connect_x"); %>' == '1'){
 			document.getElementById('elliptic_ssid_2g').title = "Smart Connect: \n"+ htmlEnDeCode.htmlDecode(ssid_status_2g);
 			document.getElementById('elliptic_ssid_5g').style.display = "none";
-			if(wl_info.band5g_2_support) {
+			if(wl_info.band5g_2_support || wl_info.band6g_support) {
 				if(isSupport("triband") && dwb_info.mode)
 					document.getElementById('elliptic_ssid_5g_2').style.display = "";
 				else
@@ -1957,12 +1964,12 @@ function show_top_status(){
 			document.getElementById('elliptic_ssid_2g').title = "2.4 GHz: \n"+ htmlEnDeCode.htmlDecode(ssid_status_2g);
 			document.getElementById('elliptic_ssid_5g').title = "5 GHz Smart Connect: \n"+ htmlEnDeCode.htmlDecode(ssid_status_5g);
 			document.getElementById('elliptic_ssid_5g').style.display = "";
-			if(wl_info.band5g_2_support)
+			if(wl_info.band5g_2_support || wl_info.band6g_support)
 				document.getElementById('elliptic_ssid_5g_2').style.display = "none";
 		}else{
 			document.getElementById('elliptic_ssid_2g').title = "2.4 GHz: \n"+ htmlEnDeCode.htmlDecode(ssid_status_2g);
 			document.getElementById('elliptic_ssid_5g').style.display = "";
-			if(wl_info.band5g_2_support)
+			if(wl_info.band5g_2_support || wl_info.band6g_support)
 				document.getElementById('elliptic_ssid_5g_2').style.display = "";
 		}
 	}
@@ -3060,7 +3067,7 @@ function refreshStatus(xhr){
 
 	// wifi hw sw status
 	if(wifi_hw_sw_support && !downsize_8m_support && !downsize_4m_support){
-		if(wl_info.band5g_2_support){
+		if(wl_info.band5g_2_support || wl_info.band6g_support){
 				if(wlan0_radio_flag == "0" && wlan1_radio_flag == "0" && wlan2_radio_flag == "0"){
 						document.getElementById("wifi_hw_sw_status").className = "wifihwswstatusoff";
 						document.getElementById("wifi_hw_sw_status").onclick = function(){}
@@ -3070,7 +3077,7 @@ function refreshStatus(xhr){
 						document.getElementById("wifi_hw_sw_status").onclick = function(){}
 				}
 		}	
-		else if(wl_info.band5g_support){
+		else if(wl_info.band5g_support || wl_info.band6g_support){
 			if(wlan0_radio_flag == "0" && wlan1_radio_flag == "0"){
 					document.getElementById("wifi_hw_sw_status").className = "wifihwswstatusoff";
 					document.getElementById("wifi_hw_sw_status").onclick = function(){}
@@ -3188,7 +3195,7 @@ function refreshStatus(xhr){
 	}
 
 	// guest network
-	if (multissid_support && !isSwMode('mb') && !isSwMode('re') && (gn_array_5g.length > 0 || (wl_info.band5g_2_support && gn_array_5g_2.length > 0))){
+	if (multissid_support && !isSwMode('mb') && !isSwMode('re') && (gn_array_5g.length > 0 || ((wl_info.band5g_2_support || wl_info.band6g_support) && gn_array_5g_2.length > 0))){
 		if(based_modelid == "RT-AC87U"){	//workaround for RT-AC87U
 			for(var i=0; i<gn_array_2g.length; i++){
 				if(gn_array_2g[i][0] == 1){
@@ -3809,13 +3816,12 @@ function regen_band(obj_name){
 		if(wl_info.band5g_total == 1)
 			band_desc.push("5 GHz");
 		else{
-			if(band6g_support){			
-				band_desc.push.apply(band_desc, ['5 GHz', '6 GHz']);
-				break;
-			}
-			else{
-				band_desc.push("5 GHz-"+i);
-			}
+			band_desc.push("5 GHz-"+i);
+		}			
+	}
+	for(i=1;i<wl_info.band6g_total+1;i++){
+		if(wl_info.band6g_total == 1){
+			band_desc.push("6 GHz");
 		}			
 	}
 	for(i=1;i<wl_info.band60g_total+1;i++){
@@ -3825,7 +3831,7 @@ function regen_band(obj_name){
 			band_desc.push("60 GHz-"+i);
 	}
 	for(i=0;i<wl_nband_array.length;i++){
-		if (wl_nband_array[i] != 2 && wl_nband_array[i] != 1 && wl_nband_array[i] != 6)
+		if (wl_nband_array[i] != 2 && wl_nband_array[i] != 1 && wl_nband_array[i] != 4 && wl_nband_array[i] != 6)
 			continue;
 		band_value.push(i);
 	}
@@ -4033,4 +4039,23 @@ if(isGundam){
 	window.addEventListener('resize', function(event){
 		calGDpostion();	
 	});
+}
+
+function check_ddns_status(){
+	var ddns_flag = true;
+	if('<% nvram_get("ddns_enable_x");%>' == "1" && '<% nvram_get("ddns_hostname_x");%>' != ""){
+		if('<% nvram_get("ddns_server_x");%>' == 'WWW.ASUS.COM') { //ASUS DDNS
+			if((ddns_return_code.indexOf('200')==-1) && (ddns_return_code.indexOf('220')==-1) && (ddns_return_code.indexOf('230')==-1))
+				ddns_flag = false;
+
+		}
+		else{ //Other ddns service
+			if(ddns_updated != '1' || ddns_return_code=='unknown_error' || ddns_return_code=="auth_fail")
+				ddns_flag = false;
+		}
+	}
+	else
+		ddns_flag = false;
+
+	return ddns_flag;
 }

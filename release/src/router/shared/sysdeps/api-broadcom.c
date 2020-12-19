@@ -242,7 +242,7 @@ int bcm_cled_ctrl(int rgb, int cled_mode)
 		return 0;
 	}
 #endif
-#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX82_XD6) || defined(RPAX56)
+#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX82_XD6) || defined(RPAX56)
 	state_changed = _bcm_cled_ctrl(rgb, cled_mode);
 	if(state_changed == 1){
 #ifdef RTAX82_XD6
@@ -301,7 +301,7 @@ uint32_t get_gpio(uint32_t gpio)
 #endif
 }
 
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX82_XD6)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM6750)
 uint32_t get_gpio2(uint32_t gpio)
 {
 	int board_fp = open("/dev/brcmboard", O_RDWR);
@@ -556,7 +556,7 @@ int phy_ioctl(int fd, int write, int phy, int reg, uint32_t *value)
 	struct ifreq ifr;
 	int ret, vecarg[2];
 
-#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
 	return 1;
 #endif
 	memset(&ifr, 0, sizeof(ifr));
@@ -580,7 +580,7 @@ static inline int ethswctl_init(struct ifreq *p_ifr)
 {
     int skfd;
 
-#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
 	return 1;
 #endif
     /* Open a basic socket */
@@ -1021,7 +1021,16 @@ error:
 #else
 int ethctl_get_link_status(char *ifname)
 {
+#if defined(RTCONFIG_HND_ROUTER_AX_675X)
+	char tmp[100], buf[32];
+	int ret = 0;
 
+	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/operstate", ifname);
+	f_read_string(tmp, buf, sizeof(buf));
+
+	if(strcmp(buf, "up\n")==0) ret = 1;
+	else ret = 0;
+#else
 	char *cmd[] = {"ethctl", ifname, "media-type", NULL};
 	char *output = "/tmp/ethctl_get_link_status.txt";
 	char *str;
@@ -1048,6 +1057,7 @@ int ethctl_get_link_status(char *ifname)
 
 	file_unlock(lock);
 
+#endif
 	return ret;
 }
 #endif //!defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_EXTPHY_BCM84880)
@@ -1991,7 +2001,7 @@ uint32_t set_ex53134_ctrl(uint32_t portmask, int ctrl)
 	int i=0;
 	uint32_t value;
 
-#if defined(RTAX95Q) || defined(RTAX56_XD4)
+#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4)
 	return 1;
 #endif
 	for (i = 0; i < 4 && (portmask >> i); i++) {
@@ -2013,7 +2023,7 @@ uint32_t set_phy_ctrl(uint32_t portmask, int ctrl)
 	int fd, i, model;
 	uint32_t value;
 
-#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
 	return 1;
 #endif
 	model = get_switch();
@@ -2238,11 +2248,9 @@ void set_radio(int on, int unit, int subunit)
 
 #if defined(RTAC66U) || defined(BCM4352) || defined(RTAX82U)
 	if ((unit == 1) & (subunit < 1)) {
-#ifdef RTAX82U
-#ifndef RTCONFIG_BCM_MFG
+#if defined(RTAX82U) && !defined(RTCONFIG_BCM_MFG)
 		if (!nvram_get_int("LED_order"))
 			led_control(LED_5G, on ? LED_ON : LED_OFF);
-#endif
 #else
 		if (on) {
 #ifndef RTCONFIG_LED_BTN
@@ -2533,7 +2541,13 @@ int get_bonding_port_status(int port)
 		/* 7 W0 */
 		ports[0]=7;
 	}
-#elif defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
+#elif defined(CTAX56_XD4)
+	int lan_ports=1;
+
+	int ports[lan_ports+1];
+	/* 7 3	W0 L1 */
+	ports[0]=7; ports[1]=3;
+#elif defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400)
 	int lan_ports=4;
 	int ports[lan_ports+1];
 	/* 4 3 2 1 0	W0 L1 L2 L3 L4 */

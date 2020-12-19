@@ -3366,7 +3366,7 @@ int nvram_check_and_set(char *name, char *value)
 }
 #endif
 
-static int is_passwd_default(){
+int is_passwd_default(){
 	char *http_passwd = nvram_safe_get("http_passwd");
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	char dec_passwd[NVRAM_ENC_LEN];
@@ -11367,7 +11367,7 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 #endif
 #elif defined(HND_ROUTER)
 			eval("ether-wake", "-i", "eth3", dstmac);
-#ifdef RTAX82U
+#if defined(RTAX82U) || defined(GSAX5400)
 			eval("ether-wake", "-i", "eth2", dstmac);
 #else
 			eval("ether-wake", "-i", "eth4", dstmac);
@@ -19349,7 +19349,7 @@ do_bandwidth_monitor_ej(char *url, FILE *stream) {
 }
 #endif
 
-#if defined(RTAX82U) || defined(DSL_AX82U)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 static void
 do_set_ledg_cgi(char *url, FILE *stream) {
 
@@ -19665,7 +19665,7 @@ struct mime_handler mime_handlers[] = {
 	{ "set_ookla_speedtest_start_time.cgi", "text/html", no_cache_IE7, do_html_post_and_get, set_ookla_speedtest_start_time_cgi, do_auth },
 #endif
 	{ "del_client_data.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_del_client_data_cgi, do_auth },
-#if defined(RTAX82U) || defined(DSL_AX82U)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 	{ "set_ledg.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ledg_cgi, do_auth },
 #endif
 	{ NULL, NULL, NULL, NULL, NULL, NULL }
@@ -27459,7 +27459,8 @@ ej_get_realip(int eid, webs_t wp, int argc, char **argv)
         char *cmd[] = {"/usr/sbin/getrealip.sh", NULL};
         int pid;
 
-        _eval(cmd, NULL, 0, &pid);
+	if(nvram_match("link_internet", "2"))
+        	_eval(cmd, NULL, 0, &pid);
 
 	return 0;
 }
@@ -27928,6 +27929,13 @@ ej_get_wan_lan_status(int eid, webs_t wp, int argc, char **argv)
 		default:
 			continue;
 		}
+#if defined(MAPAC2200)
+		if(lan_count==2)
+		{
+			lan_count=1;
+			break;
+		}
+#endif		
 		json_object_object_add(wanLanLinkSpeed, name, json_object_new_string(speed));
 	}
 	json_object_object_add(wanLanCount, "wanCount", json_object_new_int(wan_count));
@@ -27935,11 +27943,10 @@ ej_get_wan_lan_status(int eid, webs_t wp, int argc, char **argv)
 	json_object_object_add(wanLanStatus, "portSpeed", wanLanLinkSpeed);
 	json_object_object_add(wanLanStatus, "portCount", wanLanCount);
 	wanLanLinkSpeed = wanLanCount = NULL;
-
+	
 	ptr = (char *)json_object_get_string(wanLanStatus);
 	if (ptr == NULL)
 		goto error_put;
-
 	ret = websWrite(wp, "%s", ptr);
 
 error_put:
@@ -29385,7 +29392,7 @@ struct log_pass_url_list log_pass_handlers[] = {
 	{ NULL, NULL }
 };	/* */
 
-#if defined(RTAX82U) || defined(DSL_AX82U)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 void switch_ledg(int action)
 {
 	switch(action) {

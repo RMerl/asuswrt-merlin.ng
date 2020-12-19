@@ -95,7 +95,7 @@ extern int PS_pclose(FILE *);
 #endif
 
 #ifdef CONFIG_BCMWL5
-#if defined(RTAX56_XD4)
+#if defined(RTAX56_XD4) || defined(CTAX56_XD4)
 #define WL_IF_PREFIX "wl%d"
 #define WL_IF_PREFIX_2 "wl"
 #else
@@ -221,7 +221,7 @@ extern int PS_pclose(FILE *);
 #define WLREADY			"wlready"
 #endif
 
-#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(DSL_AX82U) || defined(RTAX82_XD6)
+#if defined(BCM6750) || defined(BCM63178)
 #define WAN_IF_ETH	"eth4"
 #else
 #define WAN_IF_ETH	"eth0"
@@ -1194,11 +1194,18 @@ enum led_id {
 	LED_RGB1_GREEN,
 	LED_RGB1_BLUE,
 #endif
+#if defined(CTAX56_XD4)
+	BT_RESET,
+	BT_DISABLE,
+	LED_RGB1_RED,
+	LED_RGB1_GREEN,
+	LED_RGB1_BLUE,
+#endif
 #if defined(RTAX56_XD4)
 	IND_BT,
 	IND_PA,
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 	LED_GROUP1_RED,
 	LED_GROUP1_GREEN,
 	LED_GROUP1_BLUE,
@@ -1211,6 +1218,11 @@ enum led_id {
 	LED_GROUP4_RED,
 	LED_GROUP4_GREEN,
 	LED_GROUP4_BLUE,
+#if defined(GSAX3000) || defined(GSAX5400)
+	LED_GROUP5_RED,
+	LED_GROUP5_GREEN,
+	LED_GROUP5_BLUE,
+#endif
 #endif
 #if defined(DSL_AX82U)
 	LED_WIFI,
@@ -1891,7 +1903,7 @@ extern int led_control(int which, int mode);
 extern uint32_t gpio_dir(uint32_t gpio, int dir);
 extern uint32_t set_gpio(uint32_t gpio, uint32_t value);
 extern uint32_t get_gpio(uint32_t gpio);
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX82_XD6)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(GSAX3000) || defined(GSAX5400)
 extern uint32_t get_gpio2(uint32_t gpio);
 #endif
 extern int get_switch_model(void);
@@ -2031,7 +2043,9 @@ extern int get_radar_channel_list(const char *vphy, int radar_list[], int size);
 extern int get_bw_nctrlsb(const char *ifname, int *bw, int *nctrlsb);
 extern char *get_wpa_ctrl_sk(int band, char ctrl_sk[], int size);
 extern void set_wpa_cli_cmd(int band, const char *cmd, int chk_reply);
+#if defined(RTCONFIG_BT_CONN_UART)
 extern void execute_bt_bscp();
+#endif
 #endif
 #if defined(RTCONFIG_REALTEK)
 extern char *get_wififname(int band);
@@ -2229,8 +2243,9 @@ extern int get_qca8337_PHY_power(int port);
 #ifdef RTCONFIG_LAN4WAN_LED
 extern int led_ctrl(void);
 #endif
-#if defined(RTCONFIG_SOC_IPQ40XX)
 extern unsigned int rtkswitch_Port_phyStatus(unsigned int port_mask);
+extern unsigned int rtkswitch_Port_phyLinkRate(unsigned int port_mask);
+#if defined(RTCONFIG_SOC_IPQ40XX)
 extern int get_channel_list_via_driver(int unit, char *buffer, int len);
 extern int get_channel_list_via_country(int unit, const char *country_code, char *buffer, int len);
 #endif
@@ -3248,6 +3263,9 @@ extern int init_enc_nvram(void);
 extern int is_wlsta_connect(int unit, int vidx, char *macaddr);
 extern void set_deauth_sta(int bssidx, int vifidx, char *mac_addr);
 #endif
+#ifdef RTCONFIG_BHCOST_OPT
+extern int gen_uplinkport_describe(char *port_def, char *type, char *subtype, int index);
+#endif
 
 #ifdef RTCONFIG_ISP_CUSTOMIZE
 extern char *find_customize_setting_by_name(const char *name);
@@ -3476,7 +3494,7 @@ enum {
 extern int amazon_wss_ap_isolate_support(char *prefix);
 extern void firmware_downgrade_check(uint32_t sf);
 
-#if defined(RTAX82U) || defined(DSL_AX82U)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 #define LEDG_OFF			0
 #define LEDG_STEADY_MODE		1
 #define LEDG_FADING_REVERSE_MODE	2

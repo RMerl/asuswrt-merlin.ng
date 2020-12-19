@@ -935,7 +935,8 @@ void convert_pc_sched_v1_to_sched_v2() {
 		//if (!nvram_get("MULTIFILTER_MACFILTER_DAYTIME_V2")) {
 			foreach_62_keep_empty_string(count, word, str_sched_v1, next_word) {
 				snprintf(tmp_str_sched_v2, sizeof(tmp_str_sched_v2), "%s", "");
-				if (convert_to_str_sched_v2(word, 0, tmp_str_sched_v2, sizeof(tmp_str_sched_v2))) {
+				// convert to v2 and merge same period to one rule
+				if (convert_to_str_sched_v2(word, 1, tmp_str_sched_v2, sizeof(tmp_str_sched_v2))) {
 					SCHED_DBG("tmp_str_sched_v2  : %s", tmp_str_sched_v2);
 					snprintf(str_sched_v2 + strlen(str_sched_v2), sizeof(str_sched_v2) - strlen(str_sched_v2), "%s>", tmp_str_sched_v2);
 					changed = 1;

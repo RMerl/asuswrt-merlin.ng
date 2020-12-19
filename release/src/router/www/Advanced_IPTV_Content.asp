@@ -1097,7 +1097,7 @@ function change_port_settings(val, changed){
 	}
 	else if(val == "56"){
 		if(changed){
-			var msg="Change IPTV/ VOIP port settings to LAN5/ LAN6 will disable Bonding/ Link aggregation function. Are you sure to do it?";
+			var msg="<#NAT_lacp_disable_note#>";	/*Untranslated*/
 			if(lacp_enabled){
 				if(!confirm(msg)){
 					document.form.iptv_port_settings.value = "12";

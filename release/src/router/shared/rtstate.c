@@ -778,12 +778,14 @@ void set_wanscap_support(char *feature)
 void add_wanscap_support(char *feature)
 {
 	char features[128];
+	int len;
 
 	strcpy(features, nvram_safe_get("wans_cap"));
 
-	if(strlen(features)==0) nvram_set("wans_cap", feature);
+	if((len = strlen(features))==0)
+		nvram_set("wans_cap", feature);
 	else {
-		sprintf(features, "%s %s", features, feature);
+		len += sprintf(features + len, " %s", feature);
 		nvram_set("wans_cap", features);
 	}
 }

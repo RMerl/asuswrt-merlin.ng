@@ -345,8 +345,14 @@ function loadData()
 			}
 			else if (i == "WIRELESS0")
 				t = "<#tm_wireless#> (2.4GHz)";
-			else if (i == "WIRELESS2")
-				t = "<#tm_wireless#> (5GHz-2)";
+			else if (i == "WIRELESS2"){
+				if(wl_info.band6g_support){
+					t = "<#tm_wireless#> (6GHz)";
+				}
+				else{
+					t = "<#tm_wireless#> (5GHz-2)";
+				}				
+			}				
 			else if (i == "WIRELESS3")
 				t = "<#tm_wireless#> (60GHz)";
 			else if (i == "WIRED")

@@ -106,9 +106,6 @@ OBJS += wrs_wbl.o      # wrs - white and black list
 
 # TrendMicro
 OBJS += conf_app.o ioc_anomaly.o ioc_common.o ioc_qos.o ioc_vp.o ioc_wbl.o ioc_wrs.o ioc_mesh.o
-ifneq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
-OBJS += ioc_patrol_tq.o
-endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 vpath %.c $(SRCBASE)/shared

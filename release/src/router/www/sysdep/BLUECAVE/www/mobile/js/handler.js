@@ -219,6 +219,9 @@ apply.dhcp = function(){
 	if($("#iptv_checkbox").is(":checked")){
 		goTo.IPTV();
 	}
+	else if($("#wan_dhcp_option_checkbox").is(":checked")){
+		goTo.wan_dhcp_option();
+	}
 	else if(isSupport("gobi")){
 		switch(systemVariable.detwanResult.simState){
 			case "READY":
@@ -440,6 +443,39 @@ apply.iptv = function(){
 
 	}
 
+	if(qisPostData.wan_proto == "dhcp" && $("#wan_dhcp_option_checkbox").is(":checked")){
+		goTo.wan_dhcp_option();
+	}
+	else if(isSupport("gobi")){
+		switch(systemVariable.detwanResult.simState){
+			case "READY":
+				goTo.Wireless();
+				break;
+			case "PIN":
+				goTo.PIN();
+				break;
+			case "PUK":
+				goTo.Unlock();
+				break;
+			default:
+				goTo.Wireless();
+				break;
+		}
+	}
+	else if(hadPlugged("modem")){
+		goTo.Modem();
+	}
+	else{
+		goTo.Wireless();
+	}
+};
+
+apply.wan_dhcp_option = function(){
+
+	qisPostData.wan_proto = "dhcp";
+	qisPostData.wan_vendorid = $("#wan_vendorid").val();
+	qisPostData.wan_clientid_type = ($("#wan_clientid_type").is(":checked"))? 1:0;
+	qisPostData.wan_clientid = $('#wan_clientid').val();
 	if(isSupport("gobi")){
 		switch(systemVariable.detwanResult.simState){
 			case "READY":
@@ -460,6 +496,16 @@ apply.iptv = function(){
 		goTo.Modem();
 	}
 	else{
+		if(isWANChanged()){
+			httpApi.nvramSet((function(){
+				qisPostData.action_mode = "apply";
+				qisPostData.rc_service = "restart_wan_if 0";
+				return qisPostData;
+			})());
+
+			updateOriginWan();
+		}
+
 		goTo.Wireless();
 	}
 };
@@ -790,8 +836,15 @@ apply.wireless = function(){
 
 		qisPostData.wl2_ssid = ($("#wireless_ssid_2").length) ? $("#wireless_ssid_2").val() : qisPostData.wl0_ssid;
 		qisPostData.wl2_wpa_psk = ($("#wireless_key_2").length) ? $("#wireless_key_2").val() : qisPostData.wl0_wpa_psk;
-		qisPostData.wl2_auth_mode_x = "psk2";
-		qisPostData.wl2_crypto = "aes";
+		if(isSupport('wifi6e')){
+			qisPostData.wl2_auth_mode_x = "sae";
+			qisPostData.wl2_crypto = "aes";
+			systemVariable['wl2_mfp'] = '2';
+		}
+		else{
+			qisPostData.wl2_auth_mode_x = "psk2";
+			qisPostData.wl2_crypto = "aes";
+		}	
 	}
 
 	if(qisPostData.hasOwnProperty("wl3_ssid")){
@@ -1189,6 +1242,8 @@ abort.resetModem = function(){
 };
 
 abort.wan = function(){
+	$("#iptv_checkbox").enableCheckBox(false);
+	$("#wan_dhcp_option_checkbox").enableCheckBox(false);
 	goTo.loadPage("accountPrompt_setting", true);
 }
 
@@ -1420,6 +1475,17 @@ abort.iptv = function(){
 	}
 };
 
+abort.wan_dhcp_option = function(){
+	postDataModel.remove(wanDhcpOptionObj);
+	if($("#iptv_checkbox").is(":checked")){
+		goTo.loadPage("iptv_setting", true);
+	}
+	else{
+		goTo.loadPage("wan_setting", true);
+	}
+
+};
+
 abort.getLanIp = function(){
 	postDataModel.remove(lanObj.general);
 	postDataModel.remove(lanObj.staticIp);
@@ -1518,6 +1584,9 @@ abort.wireless = function(){
 		}
 		else
 			goTo.loadPage(systemVariable.historyPage[systemVariable.historyPage.length-2], true);
+	}
+	else if(qisPostData.wan_proto == "dhcp" && $("#wan_dhcp_option_checkbox").is(":checked")){
+		goTo.loadPage("wan_dhcp_option_setting", true);
 	}
 	else if($("#iptv_checkbox").is(":checked")){
 		goTo.loadPage("iptv_setting", true);
@@ -1988,6 +2057,7 @@ goTo.dailIP = function(){
 
 	$(".dailIP").show();
 	$(".autoIP").hide();
+	$("#dhcp_option_checkbox").hide();
 
 	if(!isSupport("VPNCLIENT") && !isSupport("IPTV")){
 		goTo.PPPoE();
@@ -2000,12 +2070,14 @@ goTo.dailIP = function(){
 goTo.autoIP = function(){
 	$(".dailIP").hide();
 	$(".autoIP").show();
+	$("#dhcp_option_checkbox").show();
 	// $("#connTypeDesc").html("<#QIS_SmartConn_TypeAuto#>")
 
 	goTo.loadPage("wan_setting", false);	
 }
 
 goTo.DHCP = function(){
+
 	if(systemVariable.originWanType.toLowerCase() !== "dhcp"){
 		postDataModel.remove(wanObj.all);
 
@@ -2364,6 +2436,11 @@ goTo.IPTV = function(){
 	goTo.loadPage("iptv_setting", false);
 };
 
+goTo.wan_dhcp_option = function(){
+	postDataModel.insert(wanDhcpOptionObj);
+	goTo.loadPage("wan_dhcp_option_setting", false);
+};
+
 goTo.GetLanIp = function(){
 	postDataModel.insert(lanObj.general);
 	goTo.loadPage("getLanIp_setting", false);
@@ -2630,8 +2707,9 @@ goTo.Wireless = function(){
 		}
 		qisPostData.smart_connect_x = $("#wireless_checkbox").prop("checked") ? "0" : "1";
 	}
-	else
+	else{
 		$("#wireless_sync_checkbox").enableCheckBox((isSupport("dualband") || isSupport("triband") || isSupport('5G')));
+	}
 
 	if(!$(".wlInput").length){
 		var wlArray = (qisPostData.hasOwnProperty("smart_connect_x") && !$("#wireless_checkbox").prop("checked")) ? [{"title":"", "ifname":"0"}] : getAllWlArray();

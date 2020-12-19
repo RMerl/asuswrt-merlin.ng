@@ -219,6 +219,8 @@ function initial(){
 var MAX_RETRY_NUM = 5;
 var external_ip_retry_cnt = MAX_RETRY_NUM;
 function show_warning_message(){
+	var set_ddns_text = '<a href="../Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration: underline; font-family:Lucida Console;"><#vpn_ipsec_set_DDNS#></a>';
+	var set_ip_and_ddns_text = wanlink_ipaddr() + ', ' + set_ddns_text;
 	if(realip_support && (based_modelid == "BRT-AC828"|| wans_mode != "lb")){
 		if(realip_state != "2" && external_ip_retry_cnt > 0){
 			if( external_ip_retry_cnt == MAX_RETRY_NUM )
@@ -237,9 +239,11 @@ function show_warning_message(){
 			else {
 				if(ddns_enable_x == "1" && ddns_hostname_x != "") {
 					$(".general_server_addr").html(ddns_hostname_x);
+					if(!check_ddns_status())
+						$(".general_server_addr").append(', ' + set_ddns_text);
 				}
 				else {
-					$(".general_server_addr").html(wanlink_ipaddr() + ', ' + '<a href="../Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration: underline; font-family:Lucida Console;"><#vpn_ipsec_set_DDNS#></a>');
+					$(".general_server_addr").html(set_ip_and_ddns_text);
 				}
 			}
 		}
@@ -254,9 +258,11 @@ function show_warning_message(){
 			else {
 				if(ddns_enable_x == "1" && ddns_hostname_x != "") {
 					$(".general_server_addr").html(ddns_hostname_x);
+					if(!check_ddns_status())
+						$(".general_server_addr").append(', ' + set_ddns_text);
 				}
 				else {
-					$(".general_server_addr").html(wanlink_ipaddr() + ', ' + '<a href="../Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration: underline; font-family:Lucida Console;"><#vpn_ipsec_set_DDNS#></a>');
+					$(".general_server_addr").html(set_ip_and_ddns_text);
 				}
 			}
 		}
@@ -271,9 +277,11 @@ function show_warning_message(){
 	else {
 		if(ddns_enable_x == "1" && ddns_hostname_x != "") {
 			$(".general_server_addr").html(ddns_hostname_x);
+			if(!check_ddns_status())
+				$(".general_server_addr").append(', ' + set_ddns_text);
 		}
 		else {
-			$(".general_server_addr").html(wanlink_ipaddr() + ', ' + '<a href="../Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration: underline; font-family:Lucida Console;"><#vpn_ipsec_set_DDNS#></a>');
+			$(".general_server_addr").html(set_ip_and_ddns_text);
 		}
 	}
 }
@@ -762,6 +770,11 @@ function export_cert(_mode) {
 			location.href = "ikev2_cert_mobile.pem";
 	}
 	else if(_mode == "1") {//renew
+		if(!check_ddns_status()){
+			alert("Update failed, please check your DDNS setting.");/* untranslated */
+			window.location.href = "Advanced_ASUSDDNS_Content.asp";
+			return false;
+		}
 		$(".button_gen.ipsec_active.renew").hide();
 		$(".ipsec_inactive.renew_hint").hide();
 		$(".renewLoadingIcon").show();

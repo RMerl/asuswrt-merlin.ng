@@ -339,7 +339,7 @@ function bsd_disable(val){
 		document.form.wl1_bsd_if_qualify_policy.disabled = false;
 		document.form.wl2_bsd_if_qualify_policy.disabled = false;
 		document.form.bsd_bounce_detect.disabled = false;
-		if(!(wl_info.band2g_support && wl_info.band5g_support && !wl_info.band5g_2_support)) //dual band
+		if(!(wl_info.band2g_support && wl_info.band5g_support && (!wl_info.band5g_2_support && !wl_info.band6g_support))) //dual band
 			document.form.bsd_ifnames.disabled = false;
 	}
 }
@@ -381,7 +381,7 @@ function gen_bsd_steering_div(flag){
 			code +='<td width="40%" align="center" >5GHz-1</td><td width="40%" align="center" >5GHz-2</td>';
 		}
 	}
-	else if(!wl_info.band5g_2_support)
+	else if(!wl_info.band5g_2_support && !wl_info.band6g_support)
 		code +='<td width="40%" align="center" >2.4GHz</td><td width="40%" align="center" >5GHz</td>';
 	else{
 		if(band6g_support){
@@ -482,7 +482,7 @@ function gen_bsd_sta_select_div(){
 	
 	code +='<tr><th width="20%">RSSI</th>';
 	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
-		if('<% nvram_get("smart_connect_x"); %>' == '2' || !wl_info.band5g_2_support)
+		if('<% nvram_get("smart_connect_x"); %>' == '2' || (!wl_info.band5g_2_support && !wl_info.band6g_support))
 			code +='<td width="40%"><div><table><tr>';
 		else
 			code +='<td width="27%"><div><table><tr>';
@@ -549,7 +549,7 @@ function gen_bsd_if_select_div(){
 	code +="<thead><tr><td colspan=\"4\"><#smart_connect_ISQP#></td></tr></thead>";
 
 	code +='<tr id="target_band_text"><th width="20%"><#Interface_target#></th>';
-     if('<% nvram_get("smart_connect_x"); %>' != 2 && wl_info.band5g_2_support){
+     if('<% nvram_get("smart_connect_x"); %>' != 2 && (wl_info.band5g_2_support || wl_info.band6g_support)){
 	for(i = start_band_idx; i < wl_info.wl_if_total; i++){
 		code +='<td width="27%" style="padding:0px 0px 0px 0px;"><div><table><tr>';
 		code +='<td style="border:0px; padding:0px 0px 0px 3px;">1:</td>';
@@ -634,7 +634,7 @@ function gen_bsd_if_select_div(){
 		code +='</option>';
 		code +='</select></td></tr></table></div></td>';
 	}
-     }else if(!wl_info.band5g_2_support){
+     }else if(!wl_info.band5g_2_support && !wl_info.band6g_support){
 		code +='<td width="40%">5GHz</td><td width="40%">2.4GHz</td>'
 	}else{
 		if(band6g_support){
@@ -757,7 +757,7 @@ function handle_bsd_nvram(){
 	else if(bsd_sta_select_policy_bin[i][2] == 1 && bsd_sta_select_policy_bin[i][3] == 0)	//legacy
 		document.form['wl'+i+'_bsd_sta_select_policy_vht_s'].value = 2;	
 
-	if('<% nvram_get("smart_connect_x"); %>' != 2 && wl_info.band5g_2_support && isSupport("triband") && !dwb_info.mode){
+	if('<% nvram_get("smart_connect_x"); %>' != 2 && (wl_info.band5g_2_support || wl_info.band6g_support) && isSupport("triband") && !dwb_info.mode){
 		/* [Interface Select and Qualify Procedures] - bsd_if_qualify_policy setting*/
 		var bsd_if_select_policy_1st = wl_name[wl_ifnames.indexOf(bsd_if_select_policy[i][0])]; 
 		var bsd_if_select_policy_2nd = wl_name[wl_ifnames.indexOf(bsd_if_select_policy[i][1])]; 
@@ -909,11 +909,11 @@ function applyRule(){
 			document.form.wl2_bsd_if_select_policy.value = '<% nvram_default_get("wl2_bsd_if_select_policy"); %>';
 		}
 		else {
-			if(wl_info.band5g_2_support){
+			if(wl_info.band5g_2_support || wl_info.band6g_support){
 				bsd_if_select_policy[i][0] = wl_ifnames[wl_name.indexOf(wl_names[i][document.form['wl'+i+'_bsd_if_select_policy_first'].value])];
 				bsd_if_select_policy[i][1] = wl_ifnames[wl_name.indexOf(wl_names[i][document.form['wl'+i+'_bsd_if_select_policy_second'].value])];
 				document.form['wl'+i+'_bsd_if_select_policy'].value = bsd_if_select_policy[i].toString().replace(/,/g,' ');
-			}else if(wl_info.band2g_support && wl_info.band5g_support && !wl_info.band5g_2_support){ //dual wan
+			}else if(wl_info.band2g_support && wl_info.band5g_support && (!wl_info.band5g_2_support && !wl_info.band6g_support)){ //dual wan
 				document.form.wl0_bsd_if_select_policy.value = '<% nvram_default_get("wl0_bsd_if_select_policy"); %>';
 				document.form.wl1_bsd_if_select_policy.value = '<% nvram_default_get("wl1_bsd_if_select_policy"); %>';
 			}
@@ -1023,12 +1023,14 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "RT-AX56_XD4" ||
+				based_modelid == "CT-AX56_XD4" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX56U"
-				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
+				based_modelid == "RT-AX56U" || 
+				based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
+				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
 				based_modelid == "GT-AXE11000"
 				)?1000:600,
 			value:1,
@@ -1055,12 +1057,14 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "RT-AX56_XD4" ||
+				based_modelid == "CT-AX56_XD4" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX56U"
-				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
+				based_modelid == "RT-AX56U" ||
+				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+				based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
 				based_modelid == "GT-AXE11000"
 				)?1000:600,
 			value:1,
@@ -1087,12 +1091,14 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "RT-AX56_XD4" ||
+				based_modelid == "CT-AX56_XD4" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX56U"
-				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
+				based_modelid == "RT-AX56U"	||
+				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+				based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
 				based_modelid == "GT-AXE11000"
 				)?2167:1300,
 			value:1,
@@ -1119,12 +1125,14 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "RT-AX56_XD4" ||
+				based_modelid == "CT-AX56_XD4" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX56U"
-				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
+				based_modelid == "RT-AX56U"	||
+				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+				based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
 				based_modelid == "GT-AXE11000"
 				)?2167:1300,
 			value:1,
@@ -1203,12 +1211,14 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "RT-AX56_XD4" ||
+				based_modelid == "CT-AX56_XD4" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX56U"
-				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
+				based_modelid == "RT-AX56U"	||
+				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+				based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
 				based_modelid == "GT-AXE11000"
 				)?1000:600,
 			value:1,
@@ -1235,12 +1245,14 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "RT-AX56_XD4" ||
+				based_modelid == "CT-AX56_XD4" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX56U"
-				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
+				based_modelid == "RT-AX56U"	||
+				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+				based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
 				based_modelid == "GT-AXE11000"
 				)?1000:600,
 			value:1,
@@ -1267,12 +1279,14 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "RT-AX56_XD4" ||
+				based_modelid == "CT-AX56_XD4" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX56U"
-				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
+				based_modelid == "RT-AX56U"	||
+				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+				based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
 				based_modelid == "GT-AXE11000"
 				)?2167:1300,
 			value:1,
@@ -1299,12 +1313,14 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "RT-AX56_XD4" ||
+				based_modelid == "CT-AX56_XD4" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
-				based_modelid == "RT-AX56U"
-				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
+				based_modelid == "RT-AX56U"	||
+				based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+				based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
 				based_modelid == "GT-AXE11000"
 				)?2167:1300,
 			value:1,
@@ -1437,12 +1453,14 @@ function check_power(power_value,flag){
 			based_modelid == "RT-AX92U" ||
 			based_modelid == "RT-AX95Q" ||
 			based_modelid == "RT-AX56_XD4" ||
+			based_modelid == "CT-AX56_XD4" ||
 			based_modelid == "RT-AX58U" ||
 			based_modelid == "TUF-AX3000" ||
 			based_modelid == "DSL-AX82U" ||
 			based_modelid == "RT-AX82U" ||
-			based_modelid == "RT-AX56U"
-			|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
+			based_modelid == "RT-AX56U"	||
+			based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+			based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
 			based_modelid == "GT-AXE11000"
 			)
 			power_value_limit = 2167;
@@ -1478,12 +1496,14 @@ function set_lg_power(power_value,flag,idx){
 			based_modelid == "RT-AX92U" ||
 			based_modelid == "RT-AX95Q" ||
 			based_modelid == "RT-AX56_XD4" ||
+			based_modelid == "CT-AX56_XD4" ||
 			based_modelid == "RT-AX58U" ||
 			based_modelid == "TUF-AX3000" ||
 			based_modelid == "DSL-AX82U" ||
 			based_modelid == "RT-AX82U" ||
-			based_modelid == "RT-AX56U"
-			|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
+			based_modelid == "RT-AX56U"	||
+			based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+			based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
 			based_modelid == "GT-AXE11000"
 			)
 			divd = 10;
@@ -1502,12 +1522,14 @@ function set_lg_power(power_value,flag,idx){
 			based_modelid == "RT-AX92U" ||
 			based_modelid == "RT-AX95Q" ||
 			based_modelid == "RT-AX56_XD4" ||
+			based_modelid == "CT-AX56_XD4" ||
 			based_modelid == "RT-AX58U" ||
 			based_modelid == "TUF-AX3000" ||
 			based_modelid == "DSL-AX82U" ||
 			based_modelid == "RT-AX82U" ||
-			based_modelid == "RT-AX56U"
-			|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
+			based_modelid == "RT-AX56U"	||
+			based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+			based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" ||
 			based_modelid == "GT-AXE11000"
 			)
 			divd = 21;

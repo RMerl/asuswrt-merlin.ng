@@ -483,7 +483,7 @@ var tableApi = {
 		//title
 		var $titleHtml = $("<div>");
 		$titleHtml.addClass("pureText");
-		$titleHtml.html("Create New Policy");/*untranslated*/
+		$titleHtml.html("<#JS_create_policy#>");/*untranslated*/
 		$titleHtml.appendTo($divHtml);
 
 		//close icon

@@ -62,6 +62,7 @@ var wans_mode ='<% nvram_get("wans_mode"); %>';
 var no_phddns = isSupport("no_phddns");
 
 var ddns_return_code = '<% nvram_get_ddns("LANHostConfig","ddns_return_code"); %>';
+var ddns_return_code_chk = '<% nvram_get("ddns_return_code_chk"); %>';
 var ddns_old_name = '<% nvram_get("ddns_hostname_old"); %>';
 var ddns_server_x = '<% nvram_get("ddns_server_x"); %>';
 var ddns_enable_x = '<% nvram_get("ddns_enable_x"); %>';
@@ -71,6 +72,10 @@ var httpd_cert_info = [<% httpd_cert_info(); %>][0];
 var orig_le_enable = '<% nvram_get("le_enable"); %>';
 var le_state = '<% nvram_get("le_state"); %>';
 var httpd_restart = 0;
+var ddnsStatus = getDDNSState(ddns_return_code_chk, ddns_hostname_x_t, ddns_old_name);
+var deregister_fail = 0;
+var cur_wan_ipaddr = wanlink_ipaddr();
+var inadyn = isSupport("inadyn");
 
 function init(){
 	show_menu();
@@ -118,7 +123,7 @@ function show_warning_message(){
 				setTimeout("get_real_ip();", 3000);
 		}
 		else if(realip_state != "2"){
-			if(validator.isPrivateIP(wanlink_ipaddr()))
+			if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr))
 				showhide("wan_ip_hide2", 1);
 			else
 				showhide("wan_ip_hide2", 0);
@@ -130,7 +135,7 @@ function show_warning_message(){
 				showhide("wan_ip_hide2", 0);
 		}
 	}
-	else if(validator.isPrivateIP(wanlink_ipaddr()))
+	else if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr))
 		showhide("wan_ip_hide2", 1);
 }
 
@@ -253,7 +258,7 @@ function ddns_load_body(){
 
     hideLoading();
 
-	if(ddns_enable_x == "1")
+	if(ddns_enable_x == "1" && !deregister_fail)
 	{
 		var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
 
@@ -261,10 +266,22 @@ function ddns_load_body(){
 			document.getElementById("ddns_result").innerHTML = ddnsHint;
 			document.getElementById('ddns_result_tr').style.display = "";
 		}
-		if(ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230'){
+
+		if((ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230') ||
+		   (ddns_return_code_chk.indexOf('200')!=-1 || ddns_return_code_chk.indexOf('220')!=-1 || ddns_return_code_chk == 'register,230')){
 			showhide("wan_ip_hide2", 0);
 			if(ddns_server_x == "WWW.ASUS.COM"){
 				showhide("wan_ip_hide3", 1);
+				document.getElementById("ddns_status").innerHTML = "<#Status_Active#>";
+				if(inadyn)
+					$("#deregister_btn").css("display", "inline");
+			}
+		}
+		else{
+			if(ddns_server_x == "WWW.ASUS.COM"){
+				document.getElementById("ddns_status").innerHTML = "<#Status_Inactive#>";
+				if(ddnsStatus != "")
+					$("#ddns_status_detail").css("display", "inline");
 			}
 		}
 	}
@@ -458,6 +475,135 @@ function onSubmitApply(s){
 	return true;
 }
 
+function change_ddns_setting(v){
+	document.getElementById("ddns_result_tr").style.display = "none";
+	document.getElementById("ddns_status_tr").style.display = "none";
+	if(inadyn)
+		$("#deregister_btn").css("display", "none");
+	if (v == "WWW.ASUS.COM"){
+			document.getElementById("ddns_hostname_info_tr").style.display = "none";
+			document.getElementById("ddns_hostname_tr").style.display="";
+			document.form.ddns_hostname_x.parentNode.style.display = "none";
+			document.form.DDNSName.parentNode.style.display = "";
+			var ddns_hostname_title = ddns_hostname_x_t.substring(0, ddns_hostname_x_t.indexOf('.asuscomm.com'));
+			if(ddns_hostname_x_t != '' && ddns_hostname_title)
+					document.getElementById("DDNSName").value = ddns_hostname_title;
+			else
+					document.getElementById("DDNSName").value = "<#asusddns_inputhint#>";
+
+			inputCtrl(document.form.ddns_username_x, 0);
+			inputCtrl(document.form.ddns_passwd_x, 0);
+			document.form.ddns_wildcard_x[0].disabled= 1;
+			document.form.ddns_wildcard_x[1].disabled= 1;
+			showhide("link", 0);
+			showhide("linkToHome", 0);
+			showhide("wildcard_field",0);
+			document.form.ddns_regular_check.value = 0;
+			showhide("check_ddns_field", 0);
+			inputCtrl(document.form.ddns_regular_period, 0);
+			showhide("customnote", 0);
+			showhide("need_custom_scripts", 0);
+			document.getElementById("ddns_status_tr").style.display = "";
+
+			if(ddns_enable_x == "1" && ddns_server_x_t == "WWW.ASUS.COM" &&
+				(ddns_return_code_chk.indexOf('200')!=-1 || ddns_return_code_chk.indexOf('220')!=-1 || ddns_return_code_chk == 'register,230')){
+				document.getElementById("ddns_status").innerHTML = "<#Status_Active#>";
+				if(inadyn)
+					$("#deregister_btn").css("display", "inline");
+			}
+			else
+				document.getElementById("ddns_status").innerHTML = "<#Status_Inactive#>";
+	}
+	else if (v == "CUSTOM"){
+			document.form.ddns_hostname_x.parentNode.style.display = "";
+			document.form.DDNSName.parentNode.style.display = "none";
+			inputCtrl(document.form.ddns_username_x, 0);
+			inputCtrl(document.form.ddns_passwd_x, 0);
+			document.form.ddns_wildcard_x[0].disabled= 1;
+			document.form.ddns_wildcard_x[1].disabled= 1;
+			showhide("customnote", 1);
+			showhide("link", 0);
+			showhide("linkToHome", 0);
+			showhide("wildcard_field",0);
+			showhide("check_ddns_field", 0);
+			if (('<% nvram_get("jffs2_enable"); %>' != '1') || ('<% nvram_get("jffs2_scripts"); %>' != '1'))
+				showhide("need_custom_scripts", 1);
+			else
+			showhide("need_custom_scripts", 0);
+	}
+	else if( v == "WWW.ORAY.COM"){
+		document.getElementById("ddns_hostname_tr").style.display="none";
+		inputCtrl(document.form.ddns_username_x, 1);
+		inputCtrl(document.form.ddns_passwd_x, 1);
+		document.form.ddns_wildcard_x[0].disabled= 1;
+		document.form.ddns_wildcard_x[1].disabled= 1;
+		showhide("link", 1);
+		showhide("linkToHome", 0);
+		showhide("wildcard_field",0);
+		document.form.ddns_regular_check.value = 0;
+		showhide("check_ddns_field", 0);
+		inputCtrl(document.form.ddns_regular_period, 0);
+	}
+	else{
+			document.getElementById("ddns_hostname_info_tr").style.display = "none";
+			document.getElementById("ddns_hostname_tr").style.display="";
+			document.form.ddns_hostname_x.parentNode.style.display = "";
+			document.form.DDNSName.parentNode.style.display = "none";
+			inputCtrl(document.form.ddns_username_x, 1);
+			inputCtrl(document.form.ddns_passwd_x, 1);
+			var disable_wild = 0;
+			if(v == "WWW.TUNNELBROKER.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM")
+				var disable_wild = 1;
+			else
+				var disable_wild = 0;
+			document.form.ddns_wildcard_x[0].disabled= disable_wild;
+			document.form.ddns_wildcard_x[1].disabled= disable_wild;
+			if(v == "WWW.ZONEEDIT.COM" || v == "DOMAINS.GOOGLE.COM" || v == "WWW.NAMECHEAP.COM"){
+				showhide("link", 0);
+				showhide("linkToHome", 1);
+			}
+			else{
+				showhide("link", 1);
+				showhide("linkToHome", 0);
+			}
+
+			showhide("wildcard_field",!disable_wild);
+			showhide("check_ddns_field", 1);
+			showhide("customnote", 0);
+			showhide("need_custom_scripts", 0);
+			if(document.form.ddns_regular_check.value == 0)
+				inputCtrl(document.form.ddns_regular_period, 0);
+			else
+				inputCtrl(document.form.ddns_regular_period, 1);
+	}
+
+	var default_hostname_label = "<a class=\"hintstyle\" href=\"javascript:void(0);\" onClick=\"openHint(5,13);\"><#LANHostConfig_x_DDNSHostNames_itemname#></a>";
+	if(v == "WWW.NAMECHEAP.COM") {
+		document.getElementById("ddns_username_th").innerHTML = "Domain Name";
+		document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";
+		document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
+	}
+	else if(v == "FREEDNS.AFRAID.ORG") {
+		document.getElementById("ddns_username_th").innerHTML = "Username";
+		document.getElementById("ddns_password_th").innerHTML = "<#PPPConnection_Password_itemname#>";
+		document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
+	}
+	else if (v == "WWW.TUNNELBROKER.NET") {
+		document.getElementById("ddns_username_th").innerHTML = "Account Name";
+		document.getElementById("ddns_password_th").innerHTML = "Update Key";
+		document.getElementById("ddns_hostname_th").innerHTML = "Tunnel ID";
+	}
+	else {
+		document.getElementById("ddns_username_th").innerHTML = "<#LANHostConfig_x_DDNSUserName_itemname#>";
+		document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";
+		document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
+	}
+
+	if(letsencrypt_support){
+		document.getElementById("le_crypt").style.display = "";
+	}
+}
+
 function change_cert_method(cert_method){
 	var html_code = "";
 	if(letsencrypt_support){
@@ -606,6 +752,58 @@ function upload_cert_key(){
 function save_cert_key(){
 	location.href = "cert_key.tar";
 }
+
+function show_ddns_status_detail() {
+	var ddnsHint = getDDNSState(ddns_return_code_chk, ddns_hostname_x_t, ddns_old_name);
+
+	if(ddnsHint != ""){
+		overlib(ddnsHint);
+	}
+}
+
+function asuscomm_deregister(){
+	$.ajax({
+		url: "/unreg_ASUSDDNS.cgi",
+
+		success: function( response ) {
+			check_unregister_result();
+		}
+	});
+}
+
+var max_retry_count = 6;
+var retry_count = 0;
+function check_unregister_result(){
+	var asusddns_reg_result = httpApi.nvramGet(["asusddns_reg_result"], true).asusddns_reg_result;
+	var action_type = asusddns_reg_result.slice(0, asusddns_reg_result.indexOf(','));
+	var return_status = "";
+	var timeout = 0;
+
+	if(action_type != "unregister" && retry_count < max_retry_count){
+		setTimeout(check_unregister_result, 500);
+		retry_count++;
+	}
+	else if(action_type == "unregister"){
+		return_status = asusddns_reg_result.slice(asusddns_reg_result.indexOf(',') + 1);
+	}
+	else if(retry_count == max_retry_count){
+		timeout = 1;
+	}
+
+	if(timeout || return_status != ""){
+		if(return_status == "200"){
+			alert("Deregistration is successful.");
+			refreshpage();
+		}
+		else{
+			hideLoading();
+			alert("Fail to deregister ASUSDDNS hostname.");
+			deregister_fail = 1;
+			retry_count = 0;
+		}
+	}
+
+}
 </script>
 </head>
 
@@ -667,6 +865,10 @@ function save_cert_key(){
 				<input type="radio" value="0" name="ddns_enable_x" onClick="return change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')" <% nvram_match("ddns_enable_x", "0", "checked"); %>><#checkbox_No#>
 				</td>
 			</tr>
+			<tr id="ddns_status_tr" style="display:none;">
+				<th>DDNS Status</th>
+				<td><sapn id="ddns_status" style="color:#FFCC00"></sapn><span id="ddns_status_detail" class="notificationon" style="display: none;" onmouseover="show_ddns_status_detail();" onMouseOut="nd();"></span></td>
+			</tr>
 			<tr id="ddns_result_tr" style="display:none;">
 				<th>DDNS Registration Result</th>
 				<td id="ddns_result"></td>
@@ -709,6 +911,7 @@ function save_cert_key(){
 						<option value="FREEDNS.AFRAID.ORG" <% nvram_match("ddns_server_x", "FREEDNS.AFRAID.ORG","selected"); %>>FREEDNS.AFRAID.ORG</option>
 						<option value="CUSTOM" <% nvram_match("ddns_server_x", "CUSTOM","selected");  %>>Custom</option>
 					</select>
+					<input id="deregister_btn" class="button_gen" style="display: none; margin-left: 5px;" type="button" value="Deregister" onclick="showLoading();asuscomm_deregister();"/>
 				<a id="link" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_DDNSServer_linkname#></a>
 				<a id="linkToHome" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#ddns_home_link#></a>
 				<div id="customnote" style="display:none;"><span>For the Custom DDNS you must manually create a ddns-start script that handles your custom notification.</span></div>

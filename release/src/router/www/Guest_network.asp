@@ -30,7 +30,7 @@
 
 var wl1_nmode_x = '<% nvram_get("wl1_nmode_x"); %>';
 var wl0_nmode_x = '<% nvram_get("wl0_nmode_x"); %>';
-if(wl_info.band5g_2_support){
+if(wl_info.band5g_2_support || wl_info.band6g_support){
 	var wl2_nmode_x = '<% nvram_get("wl2_nmode_x"); %>';
 }
 
@@ -82,7 +82,7 @@ function initial(){
 	if(!band5g_support || no5gmssid_support)
 		document.getElementById("guest_table5").style.display = "none";
 	
-	if(wl_info.band5g_2_support){
+	if(wl_info.band5g_2_support || wl_info.band6g_support){
 		if(band6g_support){
 			document.getElementById("wl_opt1").innerHTML = "5 GHz";
 		}
@@ -108,6 +108,7 @@ function initial(){
 	if(document.form.preferred_lang.value == "JP"){    //use unique font-family for JP
 		document.getElementById('2g_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
 		document.getElementById('5g_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
+		$("#faq_amazon").attr("href", "https://www.amazon.co.jp//gp/help/customer/display.html/?nodeId=GMPKVYDBR223TRPY");
 	}	
 	
 	if("<% get_parameter("af"); %>" == "wl_NOnly_note"){
@@ -137,7 +138,7 @@ function initial(){
 		$("#smart_home_0").show();
 		if(band5g_support)
 			$("#smart_home_1").show();
-		if(wl_info.band5g_2_support)
+		if(wl_info.band5g_2_support || wl_info.band6g_support)
 			$("#smart_home_2").show();
 	}
 
@@ -331,7 +332,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 								captive_portal_used_wl_array[fbwifi_5g] = "Facebook Wi-Fi";
 							}
 						}
-						if(wl_info.band5g_2_support) {
+						if(wl_info.band5g_2_support || wl_info.band6g_support) {
 							var fbwifi_5g_2 = '<% nvram_get("fbwifi_5g_2"); %>';
 							if(fbwifi_5g_2 != "off") {
 								captive_portal_used_wl_array[fbwifi_5g_2] = "Facebook Wi-Fi";
@@ -506,7 +507,7 @@ function gen_gntable(){
 	if(gn_array_5g_tmp.length > 0){
 		htmlcode5 += '<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g">';
 		htmlcode5 += '<tr id="5g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;">';
-		if(wl_info.band5g_2_support){
+		if(wl_info.band5g_2_support || wl_info.band6g_support){
 			if(band6g_support){
 				htmlcode5 += '<span>5 GHz</span>';
 			}
@@ -534,7 +535,7 @@ function gen_gntable(){
 		check_bw_status(gn_array_5g_tmp);
 	}
 
-  	if(wl_info.band5g_2_support && gn_array_5g_2_tmp.length > 0){
+  	if((wl_info.band5g_2_support || wl_info.band6g_support)&& gn_array_5g_2_tmp.length > 0){
 		htmlcode5_2 += '<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g_2">';
 		if(band6g_support){
 			htmlcode5_2 += '<tr id="5g_2_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>6 GHz</span>';
@@ -818,7 +819,7 @@ function guest_divctrl(flag){
 		if(band5g_support)
 			document.getElementById("guest_table5").style.display = "none";
 		
-		if(wl_info.band5g_2_support)
+		if(wl_info.band5g_2_support || wl_info.band6g_support)
 			document.getElementById("guest_table5_2").style.display = "none";
 
 		if(wl_info.band60g_support)
@@ -837,14 +838,14 @@ function guest_divctrl(flag){
 		document.getElementById("guest_table2").style.display = "";
 		if(!band5g_support || no5gmssid_support){
 			document.getElementById("guest_table5").style.display = "none";
-			if(!wl_info.band5g_2_support)
+			if(!wl_info.band5g_2_support && !wl_info.band6g_support)
 				document.getElementById("guest_table5_2").style.display = "none";
 		}
 		else{
 			document.getElementById("guest_table5").style.display = "";
 		}		
 		
-		if(wl_info.band5g_2_support)
+		if(wl_info.band5g_2_support || wl_info.band6g_support)
 			document.getElementById("guest_table5_2").style.display = "";
 
 		if(wl_info.band60g_support)
@@ -878,7 +879,7 @@ function mbss_display_ctrl(){
 		document.getElementById("guest_table2").style.display = "none";
 		if(band5g_support)
 			document.getElementById("guest_table5").style.display = "none";
-		if(wl_info.band5g_2_support)
+		if(wl_info.band5g_2_support || wl_info.band6g_support)
 			document.getElementById("guest_table5_2").style.display = "none";
 		if(wl_info.band60g_support)
 			document.getElementById("guest_table60").style.display = "none";
@@ -1568,7 +1569,7 @@ function apply_amazon_wss(){
 								<tr>
 									<td>
 										<span style="line-height:20px;"><#WSS_setup_desc0#></span>&nbsp;
-										<a style="color:#FC0;text-decoration:underline;cursor:pointer;" href="https://www.amazon.com/gp/help/customer/display.html/?nodeId=GMPKVYDBR223TRPY" target="_blank"><#Learn_more#></a>
+										<a id="faq_amazon" style="color:#FC0;text-decoration:underline;cursor:pointer;" href="https://www.amazon.com/gp/help/customer/display.html/?nodeId=GMPKVYDBR223TRPY" target="_blank"><#Learn_more#></a>
 										<br>
 										<span><#WSS_setup_desc1#></span>
 										<br>

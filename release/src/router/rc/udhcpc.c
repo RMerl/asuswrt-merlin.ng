@@ -1221,7 +1221,7 @@ udhcpc_lan(int argc, char **argv)
 
 #ifdef RTCONFIG_IPV6
 static int
-deconfig6(char *wan_ifname)
+deconfig6(char *wan_ifname, const int mode)
 {
 	char *lan_ifname = nvram_safe_get("lan_ifname");
 
@@ -1247,6 +1247,11 @@ deconfig6(char *wan_ifname)
 		nvram_set(ipv6_nvname("ipv6_get_domain"), "");
 		if (nvram_get_int(ipv6_nvname("ipv6_dnsenable")))
 			update_resolvconf();
+	}
+
+	if(mode == 1)
+	{
+		notify_rc("restart_ddns");
 	}
 
 	return 0;
@@ -1363,6 +1368,7 @@ skip:
 #endif
 	}
 
+	notify_rc("restart_ddns");
 	return 0;
 }
 
@@ -1403,10 +1409,12 @@ int dhcp6c_wan(int argc, char **argv)
 
 	if (!argv[1] || !argv[2])
 		return EINVAL;
-	else if (strcmp(argv[2], "started") == 0 ||
-		 strcmp(argv[2], "stopped") == 0 ||
-		 strcmp(argv[2], "unbound") == 0)
-		return deconfig6(argv[1]);
+	else if (strcmp(argv[2], "started") == 0)
+		return deconfig6(argv[1], 0);
+	else if ( strcmp(argv[2], "stopped") == 0)
+		return deconfig6(argv[1], 1);
+	else if ( strcmp(argv[2], "unbound") == 0)
+		return deconfig6(argv[1], 2);		
 	else if (strcmp(argv[2], "bound") == 0)
 		return bound6(argv[1], 1);
 	else if (strcmp(argv[2], "updated") == 0 ||

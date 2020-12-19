@@ -25,7 +25,8 @@ extern int cm_loadPrivateChannel(int unit, chinfo_t *avblChannel, int channelCou
 extern int cm_isValidChannel(int unit, int channel);
 extern void cm_resetChanspec();
 extern int cm_checkBwCapability(int unit, int *bwCap, int *nctrlsbCap, int *bwRe, int *nctrlsbRe);
-extern int cm_isValidBwNctrlsb(int unit, int channel, int bw, int nctrlsb);
+extern int cm_isValidBwNctrlsb(int unit, int channel, int bw, int nctrlsb, int checkBwCap);
+extern int cm_findSuitableBwNctrlsb(int unit, int channel, int *bw, int *nctrlsb);
 
 #endif /* __CFG_CHANSPEC_H__ */
 /* End of cfg_chanspec.h */

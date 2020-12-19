@@ -679,7 +679,7 @@ function validForm(){
 		ssid_array.push(httpApi.nvramGet(["wl0_ssid"]).wl0_ssid);
 		if(wl_info.band5g_support)
 			ssid_array.push(httpApi.nvramGet(["wl1_ssid"]).wl1_ssid);
-		if(wl_info.band5g_2_support)
+		if(wl_info.band5g_2_support || wl_info.band6g_support)
 			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
 		jsonPara["current_ssid"] = ssid_array;
 		if(!validator.dwb_check_wl_setting(jsonPara)) {

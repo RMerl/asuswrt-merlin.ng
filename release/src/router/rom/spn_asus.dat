@@ -117,15 +117,14 @@
 23432,EE Internet,*99#,eesecure,secure,everywhere,Internet
 23433,EE Internet,,eesecure,secure,everywhere,Internet
 23434,Orange,,eesecure,secure,everywhere,Internet
-23801,DK TDC,*99#,,,internet,TDC Internet
-23801,Telmore Internet,*99#,,,internet,TELMORE
+23801,DK TDC,*99#,,,internet,Happii Internet
 23802,Telenor(sonofon),*99#,,,Internet,Telenor Internet
-23806,3,*99#,,,data.tre.dk,Hi3G Denmark
+23806,3,*99#,,,data.tre.dk,Oister
 23810,TDC,*99#,,,internet,TDC
 23812,Lycamobile DK,*99#,,,data.lycamobile.dk,Lycamobile
-23820,Telia DK,*99#,,,www.internet.mtelia.dk,Telia SurfPort
 23820,Call me DK,*99#,,,webSP,Call me Internet
-23830,Orange DK,*99#,,,web.orange.dk,Orange DE
+23820,Telia DK,*99#,,,www.internet.mtelia.dk,Telia SurfPort
+23830,Orange DK,*99#,,,web.orange.dk,Telia
 23866,Telenor Internet,*99#,,,internet,Telenor Internet
 23877,Telenor,*99#,,,internet.bibob.dk,Bibob Internet
 24001,Telia,*99#,,,online.telia.se,Telia SE Internet
@@ -968,4 +967,4 @@
 74402,CLARO Paraguay,*99#,ctigprs,ctigprs999,wap.ctimovil.com.py,Claro
 74801,ANCEL,*99#,,,gprs.ancel,Ancel
 74807,movistar Banda Ancha,*99#,movistar,movistar,apnumt.movistar.com.uy,Movistar
-74810,CLARO Uruguay,*99#,ctigprs,ctigprs999,intenet.ctimovil.com.uy,Claro
+24001,CLARO Uruguay,*99#,ctigprs,ctigprs999,intenet.ctimovil.com.uy,Claro

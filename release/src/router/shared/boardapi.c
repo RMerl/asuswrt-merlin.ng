@@ -201,7 +201,7 @@ static const struct led_btn_table_s {
 	{ "led_white_gpio",	&led_gpio_table[LED_WHITE] },
 #endif
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 	{ "led_group1_red_gpio",	&led_gpio_table[LED_GROUP1_RED] },
 	{ "led_group1_green_gpio",	&led_gpio_table[LED_GROUP1_GREEN] },
 	{ "led_group1_blue_gpio",	&led_gpio_table[LED_GROUP1_BLUE] },
@@ -214,6 +214,11 @@ static const struct led_btn_table_s {
 	{ "led_group4_red_gpio",	&led_gpio_table[LED_GROUP4_RED] },
 	{ "led_group4_green_gpio",	&led_gpio_table[LED_GROUP4_GREEN] },
 	{ "led_group4_blue_gpio",	&led_gpio_table[LED_GROUP4_BLUE] },
+#endif
+#if defined(GSAX3000) || defined(GSAX5400)
+	{ "led_group5_red_gpio",	&led_gpio_table[LED_GROUP5_RED] },
+	{ "led_group5_green_gpio",	&led_gpio_table[LED_GROUP5_GREEN] },
+	{ "led_group5_blue_gpio",	&led_gpio_table[LED_GROUP5_BLUE] },
 #endif
 
 #ifdef RPAC53
@@ -275,6 +280,11 @@ static const struct led_btn_table_s {
 #if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX82_XD6)
 	{ "bt_rst_gpio",        &led_gpio_table[BT_RESET] },
 	{ "bt_disable_gpio",    &led_gpio_table[BT_DISABLE] },
+	{ "led_rgb1_red_gpio",  &led_gpio_table[LED_RGB1_RED] },
+	{ "led_rgb1_green_gpio",        &led_gpio_table[LED_RGB1_GREEN] },
+	{ "led_rgb1_blue_gpio", &led_gpio_table[LED_RGB1_BLUE] },
+#endif
+#if defined(CTAX56_XD4)
 	{ "led_rgb1_red_gpio",  &led_gpio_table[LED_RGB1_RED] },
 	{ "led_rgb1_green_gpio",        &led_gpio_table[LED_RGB1_GREEN] },
 	{ "led_rgb1_blue_gpio", &led_gpio_table[LED_RGB1_BLUE] },

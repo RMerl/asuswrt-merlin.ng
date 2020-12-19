@@ -544,6 +544,7 @@ static void erp_standby_mode(int model)
 			eval("wl", "-i", "eth5", "down"); // turn off 5g radio
 			break;
 		case MODEL_RTAX56_XD4:
+		case MODEL_CTAX56_XD4:
 			eval("wl", "-i", "wl0", "down");
 			eval("wl", "-i", "wl1", "down"); // turn off 5g radio
 			break;
@@ -600,7 +601,7 @@ static void erp_standby_mode(int model)
 		eval("wl", "-i", "eth4", "down"); // turn off 2g radio
 	}
 
-	if (model == MODEL_RTAX56_XD4) {
+	if (model == MODEL_RTAX56_XD4 || model == MODEL_CTAX56_XD4) {
 		// triple band
 		eval("wl", "-i", "wl0", "down"); // turn off 2g radio
 	}
@@ -894,6 +895,7 @@ static void ERP_CHECK_MODE()
 		&& model != MODEL_RTAX92U
 		&& model != MODEL_RTAX95Q
 		&& model != MODEL_RTAX56_XD4
+		&& model != MODEL_CTAX56_XD4
 		&& model != MODEL_RTAX58U
 		&& model != MODEL_RTAX55
 		&& model != MODEL_RTAX56U
@@ -937,7 +939,7 @@ static void ERP_CHECK_MODE()
 #if defined(RTCONFIG_QCA)
 	erp_wl_sta_num = erp_check_wl_auth_stat();
 #else
-	if (model == MODEL_GTAC5300 || model == MODEL_RTAX88U || model == MODEL_GTAX11000 || model == MODEL_RTAX92U || model == MODEL_RTAX95Q || model == MODEL_RTAX56_XD4 || model == MODEL_RTAX58U || model == MODEL_RTAX55 || model == MODEL_RTAX56U || model == MODEL_RPAX56 || model == MODEL_GTAXE11000)
+	if (model == MODEL_GTAC5300 || model == MODEL_RTAX88U || model == MODEL_GTAX11000 || model == MODEL_RTAX92U || model == MODEL_RTAX95Q || model == MODEL_RTAX56_XD4 || model == MODEL_CTAX56_XD4 || model == MODEL_RTAX58U || model == MODEL_RTAX55 || model == MODEL_RTAX56U || model == MODEL_RPAX56 || model == MODEL_GTAXE11000)
 		erp_wl_sta_num = erp_check_wl_auth_stat();
 #endif
 
@@ -1062,6 +1064,7 @@ int erp_monitor_main(int argc, char **argv)
 		&& model != MODEL_RTAX92U
 		&& model != MODEL_RTAX95Q
 		&& model != MODEL_RTAX56_XD4
+		&& model != MODEL_CTAX56_XD4
 		&& model != MODEL_RTAX58U
 		&& model != MODEL_RTAX55
 		&& model != MODEL_RTAX56U

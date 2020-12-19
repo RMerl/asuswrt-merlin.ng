@@ -803,6 +803,15 @@
 .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.M{
 	background-position: 0px -510px;
 }
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.plc.great{
+	background-position: -918px -306px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.plc.weak{
+	background-position: -918px -408px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.plc.disconnected{
+	background-position: -918px -510px;
+}
 .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.disconnected, .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.X{
 	background-position: -102px -510px;
 }

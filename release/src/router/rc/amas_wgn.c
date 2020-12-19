@@ -63,11 +63,7 @@
 #define IS_RE()  			( (nvram_get_int("re_mode") == 1) )
 
 #define WGN_WLIFU_MAX_NO_BRIDGE	WLIFU_MAX_NO_BRIDGE
-#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
-#define WGN_ETH_IFNAME			"eth4"
-#else
-#define WGN_ETH_IFNAME			"eth0"
-#endif
+#define WGN_ETH_IFNAME			WAN_IF_ETH
 #define WGN_WAN_IFNAME			"wan0_ifname"
 #define WGN_IFNAMES 			"wgn_ifnames"
 #define WGN_ENABLED             "wgn_enabled"

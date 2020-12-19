@@ -28,21 +28,12 @@
 #define LANIF_2G	"eth1"
 #define LANIF_5G	"wifi0"
 
-#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX82_XD6)
-#define WANIF_ETH	"eth4"
-#else
-#define WANIF_ETH	"eth0"
-#endif
+#define WANIF_ETH	WAN_IF_ETH
 #define WANIF_WAN0	"vlan2"
 #define WANIF_WAN1	"vlan3"
 #define WANIF_USB	"usb"
 #ifdef RTCONFIG_USB_MULTIMODEM
 #define WANIF_USB2	"usb2"
-#endif
-#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX82_XD6)
-#define WANIF_ETH_USB	"eth4 usb"
-#else
-#define WANIF_ETH_USB	"eth0 usb"
 #endif
 #endif
 
@@ -129,8 +120,10 @@ void init_dualwan(int argc, char *argv[])
 		}
 	}
 #ifdef RTCONFIG_USB_MODEM
-	else
-		nvram_set("wan_ifnames", WANIF_ETH_USB);
+	else {
+		snprintf(wan_if, sizeof(wan_if), "%s %s", WANIF_ETH, WANIF_USB);
+		nvram_set("wan_ifnames", wan_if);
+	}
 #endif
 }
 #endif

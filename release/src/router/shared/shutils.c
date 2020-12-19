@@ -438,7 +438,7 @@ int _cpu_eval(int *ppid, char *cmds[])
 
 int _cpu_mask_eval(char *const argv[], const char *path, int timeout, int *ppid, unsigned int mask)
 {
-	int maxn = get_cmds_size(argv) + 2;
+	int maxn = get_cmds_size(argv) + 3;
 	char *cpuargv[maxn];
 	int argc = 0;
 	int i;

@@ -33,6 +33,7 @@
 #define _RSN_AKM_SHA256_1X_ BIT(2)
 #define _RSN_AKM_SHA256_PSK_ BIT(3)
 #define _RSN_AKM_SAE_PSK_ BIT(4)
+#define _RSN_AKM_OWE_ BIT(5)
 #endif
 
 #define PMKID_LEN 16

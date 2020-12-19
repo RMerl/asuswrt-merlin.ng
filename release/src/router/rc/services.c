@@ -3581,6 +3581,7 @@ start_ddns(void)
 	char usrstr[32 + 32 + sizeof(":")];
 #else
 	int realip;
+	char cache_path[512] = {0};
 #endif
 	int wild, ret = -1;
 	int unit, asus_ddns = 0;
@@ -3836,6 +3837,8 @@ start_ddns(void)
 			use_custom_config("inadyn.conf", "/etc/inadyn.conf");
 			run_postconf("inadyn", "/etc/inadyn.conf");
 
+			snprintf(cache_path, sizeof(cache_path), "/var/cache/inadyn/%s.cache", host);
+			unlink(cache_path);
 			ret = _eval(inadyn_argv, NULL, 0, &pid);
 		}
 	} else {	// Custom DDNS
@@ -4041,6 +4044,7 @@ asusddns_unregister(void)
 {
 #ifdef RTCONFIG_INADYN
 	FILE *fp;
+	char cache_path[512] = {0};
 #endif
 	char *wan_ifname;
 #ifndef RTCONFIG_INADYN
@@ -4128,6 +4132,9 @@ _dprintf("%s: do ez-ipupdate to unregister! unit = %d wan_ifname = %s nserver = 
 				fprintf(fp, "secure-ssl = false\n");
 			fclose(fp);
 
+			//need to remove cache file to make inadyn work
+			snprintf(cache_path, sizeof(cache_path), "/var/cache/inadyn/%s.cache", nvram_safe_get("ddns_hostname_x"));
+			unlink(cache_path);
 			ret = _eval(inadyn_argv, NULL, 0, NULL);
 		}
 	}
@@ -4591,7 +4598,9 @@ mcpd_conf(void)
 #if defined(RTAX55) || defined(RTAX1800)
 		/* Adjust snooping interface for bcm + rtkswtch */
 		if (nvram_get_int("switch_wan1tagid")) {
-			if(nvram_get_int("switch_stb_x") == 6)
+			if (nvram_match("switch_wantag", "unifi_home"))
+				fprintf(fp, "igmp-snooping-interfaces %s\n", "br1");
+			else if(nvram_get_int("switch_stb_x") == 6)
 				fprintf(fp, "igmp-snooping-interfaces %s\n", "br3");
 			else
 				fprintf(fp, "igmp-snooping-interfaces %s\n", "br2");
@@ -4606,6 +4615,8 @@ mcpd_conf(void)
 		fprintf(fp, "igmp-snooping-interfaces %s\n", nvram_safe_get("lan_ifname"));
 	if(nvram_match("switch_wantag", "movistar"))
 		fprintf(fp, "igmp-mcast-interfaces %s\n", "vlan2");
+	else if (nvram_match("switch_wantag", "unifi_home"))
+		fprintf(fp, "igmp-mcast-interfaces %s\n", "eth0.600");
 	else if (nvram_match("switch_wantag", "unifi_biz") ||
 		nvram_match("switch_wantag", "stuff_fibre") || nvram_match("switch_wantag", "spark") ||
 		nvram_match("switch_wantag", "2degrees") || nvram_match("switch_wantag", "slingshot") ||
@@ -6981,10 +6992,14 @@ void start_bluetooth_service(void)
 		notify_rc("start_bluetooth_service");
 		return;
 	}
-
 #if defined(RTCONFIG_QCA) && defined(RTCONFIG_BT_CONN_UART)
-	sleep(2);	// wait a minute for device ready
+	if (!pids("hciattach")) {
+		return;
+	}
+	else
+		sleep(2);	// wait a minute for device ready
 #endif
+
 #if !defined(BLUECAVE) && !defined(RTAX95Q) && !defined(RTAX56_XD4) && !defined(RTAX82_XD6)
 	while (!check_bluetooth_device(str_inf)) {
 		sleep(1);
@@ -9315,7 +9330,7 @@ start_aura_rgb_sw(void)
 int
 start_services(void)
 {
-#if defined(RTAX82U) || defined(DSL_AX82U)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 	start_ledg();
 	start_ledbtn();
 #endif
@@ -9956,7 +9971,7 @@ stop_services(void)
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	stop_roamast();
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 	stop_ledg();
 	stop_ledbtn();
 #endif
@@ -10011,7 +10026,7 @@ stop_services_mfg(void)
 #ifdef RTCONFIG_ASD
 	stop_asd();
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 	stop_ledg();
 	stop_ledbtn();
 #endif
@@ -10417,7 +10432,7 @@ start_sw_devled(void)
 	char *sw_devled_argv[] = {"sw_devled", NULL};
 	pid_t whpid;
 
-#if defined(RTAX95Q) || defined(RTAX56_XD4)
+#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4)
 	return 1;
 #endif
 
@@ -10954,7 +10969,7 @@ void restore_config_before_firmware_downgrade()
 #endif
 }
 
-#if defined(RTAX82U) || defined(DSL_AX82U)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 int
 start_ledg(void)
 {
@@ -13986,11 +14001,6 @@ check_ddr_done:
 		if((action & RC_SERVICE_STOP) && (action & RC_SERVICE_START))
 		{
 			stop_bluetooth_service();
-#if defined(RTCONFIG_QCA) && defined(RTCONFIG_BT_CONN_UART)
-			BT_chip_reset(0);
-			sleep(1);
-			BT_chip_reset(1);
-#endif
 			start_bluetooth_service();
 		}
 		else if(action&RC_SERVICE_STOP) stop_bluetooth_service();
@@ -15634,7 +15644,7 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 		if (action & RC_SERVICE_STOP) stop_watchdog();
 		if (action & RC_SERVICE_START) start_watchdog();
 	}
-#if defined(RTAX82U) || defined(DSL_AX82U)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 	else if (strcmp(script, "ledg") == 0)
 	{
 		if (action & RC_SERVICE_STOP) stop_ledg();
@@ -16218,9 +16228,11 @@ void start_amas_lldpd(void)
 
 #ifdef RTCONFIG_AMAS_WGN
 	if (f_read_string("/tmp/lldpd_bind_ifnames", lldpd_bind_ifnames, sizeof(lldpd_bind_ifnames)) > 0) {
-		if (strncmp(bind_ifnames, lldpd_bind_ifnames, strlen(lldpd_bind_ifnames)) == 0) {
+		if (strcmp(bind_ifnames, lldpd_bind_ifnames) == 0) {
 			_dprintf("rc: ==> binding interface match lldpd_bind_ifnames(%s)...\n", lldpd_bind_ifnames);
-			return;
+			if (pids("lldpd")) {
+				return;
+			}
 		}		
 	}
 #endif	// RTCONFIG_AMAS_WGN
@@ -16293,6 +16305,11 @@ void stop_amas_lldpd(void)
 
 	killall_tk("lldpcli");
 	killall_tk("lldpd");
+
+#ifdef RTCONFIG_AMAS_WGN
+	system("rm -rf /tmp/lldpd_bind_ifnames");
+#endif	// RTCONFIG_AMAS_WGN
+
 }
 
 #endif

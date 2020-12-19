@@ -798,6 +798,12 @@
 								<input type="checkbox" id="iptv_checkbox" value="1" data-mini="true" />
 							</div>
 						</div>
+						<div id= "dhcp_option_checkbox">
+							<div id="dhcp_option_check_container" class="labelContainer dhcp_option">
+								<label for="wan_dhcp_option_checkbox" class="labelInput"><#ipv6_6rd_dhcp_option#></label>
+								<input type="checkbox" id="wan_dhcp_option_checkbox" value="1" data-mini="true" />
+							</div>
+						</div>
 						<!-- Action Button -->
 						<div class="footer_desktop">
 							<div class="desktop_abortBtn" onclick='abort.wan()'><#CTL_prev#></div>
@@ -1266,6 +1272,61 @@
 							</table>
 						</div>
 					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- E-WAN DHCP option Setting -->
+		<div id="wan_dhcp_option_setting" data-role="page" class="qisBackground">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Internet#></div>
+						<div class="titleSub"><#ipv6_6rd_dhcp_option#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div class="pageDesc">DHCP option settings</div>
+					<div>
+						<div>
+							<div class="inputTitleContainer">
+								<div class="inputTitle">Class-identifier (option 60)</div>
+							</div>
+							<div class="inputContainer">
+								<input id="wan_vendorid" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="126" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
+							</div>
+						</div>
+
+						<div>
+							<div class="inputTitleContainer">
+								<div class="inputTitle">Client-identifier (option 61)</div>
+							</div>
+							<div class="inputContainer">
+								<input type="checkbox" id="wan_clientid_type" name="wan_clientid_type" onclick="showDiableDHCPclientID(this);" class="labelInput"><label for="wan_clientid_type" class="labelInput">IAID/DUID</label><br>
+								<input id="wan_clientid" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="126" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
+							</div>
+						</div>
+					</div>
+
+					<!-- Action Button -->
+					<div class="footer_desktop">
+						<div class="desktop_abortBtn" onclick='abort.wan_dhcp_option()'><#CTL_prev#></div>
+						<div class="desktop_applyBtn" onclick="apply.wan_dhcp_option();"><#CTL_next#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr>
+								<td class="mobileAbort" style="width:50%" onclick='abort.wan_dhcp_option()'>
+									<div class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+								<td class="mobileApply" onclick="apply.wan_dhcp_option();">
+									<div class="mobile_applyBtn"><#CTL_next#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+
 				</div>
 			</div>
 		</div>

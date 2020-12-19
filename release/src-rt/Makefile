@@ -472,7 +472,7 @@ wl_sysdep:
 	else \
 		if [ -d $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/src/wl/sysdeps/default/clm ]; then \
 			cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/src/wl/sysdeps/default/clm/src/wlc_clm_data.c $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/src/wl/clm/src/. ; \
-		elif [ -d $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/sysdeps/default/clm-api ]; then \
+		elif [ -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/sysdeps/default/clm-api/src/wlc_clm_data.c ]; then \
 			cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/sysdeps/default/clm-api/src/wlc_clm_data.c $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/src/. ; \
 		fi; \
 	fi;
@@ -483,7 +483,7 @@ wl_sysdep:
                 	cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/sysdeps/$(BUILD_NAME)/clm-api/include/wlc_clm.h $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/include/. ; \
 		fi; \
 	else \
-		if [ -d $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/sysdeps/default ]; then \
+		if [ -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/sysdeps/default/clm-api/src/wlc_clm_data.c ]; then \
 			cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/sysdeps/default/clm-api/src/wlc_clm_data.c $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/src/. ; \
 		fi; \
 	fi;
@@ -1806,6 +1806,8 @@ define RouterOptions
 	if [ "$(BCN_RPT)" = "y" ]; then \
 		sed -i "/RTCONFIG_BCN_RPT/d" $(1); \
 		echo "RTCONFIG_BCN_RPT=y" >>$(1); \
+		sed -i "/RTCONFIG_11K_RCPI_CHECK/d" $(1); \
+		echo "RTCONFIG_11K_RCPI_CHECK=y" >>$(1); \
 	fi; \
 	if [ "$(BTM_11V)" = "y" ]; then \
 		sed -i "/RTCONFIG_BTM_11V/d" $(1); \
@@ -3118,6 +3120,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_DBG_BLUECAVE_OBD/d" $(1); \
 		echo "RTCONFIG_DBG_BLUECAVE_OBD=y" >>$(1); \
 	fi; \
+	if [ "$(RTL8221VB)" = "y" ]; then \
+		sed -i "/RTCONFIG_RTL8221VB/d" $(1); \
+		echo "RTCONFIG_RTL8221VB=y" >>$(1); \
+	fi; \
 	if [ "$(AMAS)" = "y" ]; then \
 		sed -i "/RTCONFIG_AMAS/d" $(1); \
 		echo "RTCONFIG_AMAS=y" >>$(1); \
@@ -3251,6 +3257,8 @@ define RouterOptions
 		echo "RTCONFIG_CONN_EVENT_TO_EX_AP=y" >>$(1); \
 		sed -i "/RTCONFIG_BCN_RPT/d" $(1); \
 		echo "RTCONFIG_BCN_RPT=y" >>$(1); \
+		sed -i "/RTCONFIG_11K_RCPI_CHECK/d" $(1); \
+		echo "RTCONFIG_11K_RCPI_CHECK=y" >>$(1); \
 		sed -i "/RTCONFIG_BTM_11V/d" $(1); \
 		echo "RTCONFIG_BTM_11V=y" >>$(1); \
 		if [ "$(CONFIG_BCMWL5)" = "y" ]; then \
@@ -3422,6 +3430,8 @@ define RouterOptions
 		echo "RTCONFIG_RAST_NONMESH_KVONLY=y" >>$(1); \
 		sed -i "/RTCONFIG_BCN_RPT/d" $(1); \
 		echo "RTCONFIG_BCN_RPT=y" >>$(1); \
+		sed -i "/RTCONFIG_11K_RCPI_CHECK/d" $(1); \
+		echo "RTCONFIG_11K_RCPI_CHECK=y" >>$(1); \
 		sed -i "/RTCONFIG_BTM_11V/d" $(1); \
 		echo "RTCONFIG_BTM_11V=y" >>$(1); \
 		sed -i "/RTCONFIG_NEW_USER_LOW_RSSI/d" $(1); \
@@ -4734,6 +4744,10 @@ fi; \
 	else \
 		sed -i "/CONFIG_DHDAP/d" $(1); \
 		echo "# CONFIG_DHDAP is not set" >>$(1); \
+		sed -i "/CONFIG_BCM_DHD_RUNNER/d" $(1); \
+		echo "# CONFIG_BCM_DHD_RUNNER is not set" >>$(1); \
+		sed -i "/CONFIG_BCM_DHD_RUNNER_GSO/d" $(1); \
+		echo "# CONFIG_BCM_DHD_RUNNER_GSO is not set" >>$(1); \
 	fi; \
 	sed -i "/CONFIG_HND_WL/d" $(1); \
 	if [ "$(HND_WL)" = "y" ]; then \
@@ -5296,7 +5310,7 @@ endef
 	$(call save_src_config, RT$@)
 	$(MAKE) bin
 
-brt-% BRT-% rt-% RT-% gt-% GT-% gx-% GX-% rp-% RP-% ea-% EA-% tm-% TM-% pl-% PL-% ac% map-% MAP-% vzw-% VZW-% sh-% SH-% tuf-% TUF-%:
+brt-% BRT-% rt-% RT-% CT-% ct-% gt-% GT-% gx-% GX-% rp-% RP-% ea-% EA-% tm-% TM-% pl-% PL-% ac% map-% MAP-% vzw-% VZW-% sh-% SH-% tuf-% TUF-% gs-% GS-%:
 ifeq ($(REALTEK),y)
 	rm -f include
 	ln -sf include-n66u include

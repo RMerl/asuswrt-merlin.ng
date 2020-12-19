@@ -115,6 +115,7 @@ GLOBAL  osl_t	       *g_osl;		/* OS-Layer state */
 
 #define RXBUFSZ 2048
 #define TXBUFSZ 2048
+#define ICONMAXSZ 32768
 GLOBAL  uint8_t		g_rxbuf[RXBUFSZ];	/* fixed buffer we receive packets into */
 GLOBAL  uint8_t		g_txbuf[TXBUFSZ];	/* fixed buffer we transmit packets from */
 GLOBAL  uint8_t		g_re_txbuf[TXBUFSZ];	/* alternate tx buffer for retransmission from */

@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Jun  5 15:30:17 2017
+ * Date: Fri Sep 25 20:09:01 2020
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "rt-ac87u"
+#define TMCFG_MODEL "rt-ac68u"
 
 /*
  * Target device information
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC87U_GPL_382_11683/release/src-rt-6.x.4708/linux/linux-2.6.36"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC68U_GPL_385_20633/release/src-rt-6.x.4708/linux/linux-2.6.36"
 #define TMCFG_KERN_ARCH "arm"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n
@@ -60,7 +60,7 @@
 /*
  * Target device toolchain (cross utilities)
  */
-#define TMCFG_TC_PFX "/opt/ASUS/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/arm-brcm-linux-uclibcgnueabi-"
+#define TMCFG_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ac87u/bin/arm-brcm-linux-uclibcgnueabi-"
 #define TMCFG_TC_BIT_FIELD_ORDER_LITTLE_ENDIAN 1 // y
 #define TMCFG_TC_BIT_FIELD_ORDER_BIG_ENDIAN 0 // n
 #define TMCFG_TC_CC "$(TMCFG_TC_PFX)gcc"
@@ -95,7 +95,7 @@
  */
 #define TMCFG_E_EXTRA_CFLAGS ""
 #define TMCFG_E_KMOD_NAME "tdts"
-#define TMCFG_E_KMOD_IOCTL_DEV_NAME "detector"
+#define TMCFG_E_KMOD_IOCTL_DEV_NAME "idp"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
 #define TMCFG_E_KMOD_IOCTL_DEV_MIN 0
 #define TMCFG_E_KMOD_IOCTL_DEV_MAGIC 190
@@ -106,7 +106,7 @@
 #define TMCFG_E_MAJ_VER 2
 #define TMCFG_E_MID_VER 0
 #define TMCFG_E_MIN_VER 1
-#define TMCFG_E_LOCAL_VER "r3273244"
+#define TMCFG_E_LOCAL_VER "r4031774"
 
 /*
  * Engine core
@@ -165,13 +165,22 @@
 #define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_BUFFALO 0 // n
 #define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_BELKIN 0 // n
 #define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_LENOVO 0 // n
+#define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_UBIQUITI 0 // n
+#define TMCFG_E_CORE_RULE_BINDING_CATEGORY_RETAIL_COMPANY_RUCKUS 0 // n
 #define TMCFG_E_CORE_IP6 1 // y
 #define TMCFG_E_CORE_TCP_STREAM_REASM 0 // n
 #define TMCFG_E_CORE_FINE_GRAIN_TCP_LOCK 0 // n
 #define TMCFG_E_CORE_CONFIG_TCP_CHAIN_LAYOUT 3
 #define TMCFG_E_CORE_CONFIG_TCP_CONN_NUM 8
 #define TMCFG_E_CORE_CONFIG_TCP_HASH_SIZE 1
-#define TMCFG_E_CORE_CONFIG_TCP_TURBO_MODE 0 // n
+#define TMCFG_E_CORE_CONFIG_TCP_TURBO_MODE_ENABLED 1 // y
+#define TMCFG_E_CORE_CONFIG_TCP_PACKET_INSPECTION_DEPTH 20
+#define TMCFG_E_CORE_CONFIG_TCP_BYTE_INSPECTION_DEPTH 30000
+#define TMCFG_E_CORE_CONFIG_TCP_SG_PACKET_INSPECTION_DEPTH 50
+#define TMCFG_E_CORE_CONFIG_UDP_TURBO_MODE_ENABLED 1 // y
+#define TMCFG_E_CORE_CONFIG_UDP_PACKET_INSPECTION_DEPTH 7
+#define TMCFG_E_CORE_CONFIG_UDP_BYTE_INSPECTION_DEPTH 10000
+#define TMCFG_E_CORE_CONFIG_UDP_SG_PACKET_INSPECTION_DEPTH 50
 #define TMCFG_E_CORE_UDP_FLOW_TRACKING 1 // y
 #define TMCFG_E_CORE_CONFIG_UDP_FLOW_NUM 4
 #define TMCFG_E_CORE_CONFIG_UDP_HASH_SIZE 1
@@ -189,7 +198,7 @@
 #define TMCFG_E_CORE_AC_STATE_NUM 64
 #define TMCFG_E_CORE_DYNAMIC_SIGNATURE_TABLE 1 // y
 #define TMCFG_E_CORE_DYNAMIC_MEMORY_ALLOC 0 // n
-#define TMCFG_E_CORE_CONNECTION_DYNAMIC_ALLOC 0 // n
+#define TMCFG_E_CORE_CONNECTION_DYNAMIC_ALLOC 1 // y
 #define TMCFG_E_CORE_CONFIG_HTTP_DECODER_NUM 1
 #define TMCFG_E_CORE_CONFIG_HTTP_URI_LENGTH 2048
 #define TMCFG_E_CORE_CONFIG_HTTP_REPLY_DECODE 0 // n
@@ -213,7 +222,7 @@
  * DevID
  */
 #define TMCFG_E_CORE_DEVID_UA 1 // y
-#define TMCFG_E_CORE_DEVID_COLLECT_UN 1 // y
+#define TMCFG_E_CORE_DEVID_COLLECT_UN 0 // n
 
 /*
  * Engine shell
@@ -241,7 +250,7 @@
 /*
  * Userspace toolchain
  */
-#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin/arm-brcm-linux-uclibcgnueabi-"
+#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ac87u/bin/arm-brcm-linux-uclibcgnueabi-"
 #define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
 #define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
 #define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"

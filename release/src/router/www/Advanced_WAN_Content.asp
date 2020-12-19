@@ -778,6 +778,10 @@ function change_wan_type(wan_type, flag){
 	if(wan_type == "pppoe"){
 		inputCtrl(document.form.wan_dnsenable_x[0], 1);
 		inputCtrl(document.form.wan_dnsenable_x[1], 1);
+		showhide("wan_DHCP_opt",0);
+		inputCtrl(document.form.wan_vendorid, 0);
+		inputCtrl(document.form.wan_clientid, 0);
+		document.form.wan_clientid_type.disabled = true;
 		
 		inputCtrl(document.form.wan_auth_x, 0);
 		inputCtrl(document.form.wan_pppoe_username, 1);
@@ -810,6 +814,10 @@ function change_wan_type(wan_type, flag){
 	else if(wan_type == "pptp"){
 		inputCtrl(document.form.wan_dnsenable_x[0], 1);
 		inputCtrl(document.form.wan_dnsenable_x[1], 1);
+		showhide("wan_DHCP_opt",0);
+		inputCtrl(document.form.wan_vendorid, 0);
+		inputCtrl(document.form.wan_clientid, 0);
+		document.form.wan_clientid_type.disabled = true;
 		
 		inputCtrl(document.form.wan_auth_x, 0);
 		inputCtrl(document.form.wan_pppoe_username, 1);
@@ -842,6 +850,10 @@ function change_wan_type(wan_type, flag){
 	else if(wan_type == "l2tp"){
 		inputCtrl(document.form.wan_dnsenable_x[0], 1);
 		inputCtrl(document.form.wan_dnsenable_x[1], 1);
+		showhide("wan_DHCP_opt",0);
+		inputCtrl(document.form.wan_vendorid, 0);
+		inputCtrl(document.form.wan_clientid, 0);
+		document.form.wan_clientid_type.disabled = true;
 		
 		inputCtrl(document.form.wan_auth_x, 0);
 		inputCtrl(document.form.wan_pppoe_username, 1);
@@ -874,6 +886,10 @@ function change_wan_type(wan_type, flag){
 	else if(wan_type == "static"){
 		inputCtrl(document.form.wan_dnsenable_x[0], 0);
 		inputCtrl(document.form.wan_dnsenable_x[1], 0);
+		showhide("wan_DHCP_opt",0);
+		inputCtrl(document.form.wan_vendorid, 0);
+		inputCtrl(document.form.wan_clientid, 0);
+		document.form.wan_clientid_type.disabled = true;
 		
 		inputCtrl(document.form.wan_auth_x, 1);
 		inputCtrl(document.form.wan_pppoe_username, (document.form.wan_auth_x.value != ""));
@@ -923,6 +939,11 @@ function change_wan_type(wan_type, flag){
 	else{	// Automatic IP or 802.11 MD or ""		
 		inputCtrl(document.form.wan_dnsenable_x[0], 1);
 		inputCtrl(document.form.wan_dnsenable_x[1], 1);
+		showhide("wan_DHCP_opt",1);
+		inputCtrl(document.form.wan_vendorid, 1);
+		inputCtrl(document.form.wan_clientid, 1);
+		document.form.wan_clientid_type.disabled = false;
+		showDiableDHCPclientID(document.form.tmp_dhcp_clientid_type);
 		
 		inputCtrl(document.form.wan_auth_x, 1);	
 		inputCtrl(document.form.wan_pppoe_username, (document.form.wan_auth_x.value != ""));
@@ -1384,6 +1405,31 @@ function pullDNSList(_this) {
 		$element.hide();
 	}
 }
+
+function change_wizard(o, id){
+	if (id == "dotPresets") {
+		var i = o.value;
+		if (i == -1) return;
+		document.form.dnspriv_server_0.value = dot_servers_array[i].dnspriv_server;
+		document.form.dnspriv_port_0.value = dot_servers_array[i].dnspriv_port;
+		document.form.dnspriv_hostname_0.value = dot_servers_array[i].dnspriv_hostname;
+		document.form.dnspriv_spkipin_0.value = dot_servers_array[i].dnspriv_spkipin;
+
+		document.getElementById("dotPresets").selectedIndex = 0;
+	}
+}
+
+function showDiableDHCPclientID(clientid_enable){
+	if(clientid_enable.checked) {
+		document.form.wan_clientid_type.value = "1";
+		document.form.wan_clientid.value = "";
+		document.form.wan_clientid.style.display = "none";
+	}
+	else {
+		document.form.wan_clientid_type.value = "0";
+		document.form.wan_clientid.style.display = "";
+	}
+}
 </script>
 </head>
 
@@ -1427,6 +1473,7 @@ function pullDNSList(_this) {
 <input type="hidden" name="switch_wantag" value="<% nvram_get("switch_wantag"); %>" disabled>
 <input type="hidden" name="switch_stb_x" value="<% nvram_get("switch_stb_x"); %>" disabled>
 <input type="hidden" name="lacp_enabled" value="<% nvram_get("lacp_enabled"); %>" disabled>
+<input type="hidden" name="wan_clientid_type" value="">
 <input type="hidden" name="dnspriv_rulelist" value="" disabled>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
@@ -1730,6 +1777,25 @@ function pullDNSList(_this) {
 					<input type="radio" name="dnspriv_profile" class="input" value="0" onclick="return change_common_radio(this, 'IPConnection', 'dnspriv_profile', 0)" <% nvram_match("dnspriv_profile", "0", "checked"); %> />Opportunistic
 				</td>
 			</tr>
+			</table>
+
+			<table id="wan_DHCP_opt" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+			<thead>
+				<tr><td colspan="2"><#ipv6_6rd_dhcp_option#></td></tr>
+			</thead>
+				<tr>
+					<th width="40%">Class-identifier (option 60):</th>
+					<td>
+						<input type="text" name="wan_vendorid" class="input_25_table" value="<% nvram_get("wan_vendorid"); %>" maxlength="126" autocapitalization="off" autocomplete="off">
+					</td>
+				</tr>
+				<tr>
+					<th width="40%">Client-identifier (option 61):</th>
+					<td>
+						<input type="checkbox" id="tmp_dhcp_clientid_type" name="tmp_dhcp_clientid_type" onclick="showDiableDHCPclientID(this);" <% nvram_match("wan_clientid_type", "1", "checked"); %>>IAID/DUID<br>
+						<input type="text" name="wan_clientid" class="input_25_table" value="<% nvram_get("wan_clientid"); %>" maxlength="126" autocapitalization="off" autocomplete="off">
+					</td>
+				</tr>
 			</table>
 
 			<table id="DNSPrivacy" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table" style="display:none">

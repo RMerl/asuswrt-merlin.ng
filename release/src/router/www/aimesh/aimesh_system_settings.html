@@ -225,7 +225,7 @@ function initial_system_settings() {
 							});
 						});
 						var sc_array = [];
-						if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support){
+						if(wl_info.band2g_support && wl_info.band5g_support && (wl_info.band5g_2_support || wl_info.band6g_support)){
 							if(isSupport("wifi6e")){
 								sc_array.push({"text":"Tri-Band Smart Connect (2.4 GHz, 5 GHz and 6 GHz)", "value":"1"});
 								sc_array.push({"text":"5 GHz Smart Connect (5 GHz and 6 GHz)", "value":"2"});

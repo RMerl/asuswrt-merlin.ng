@@ -2261,7 +2261,7 @@ function sorterClientList() {
 				sorter.doSorter(sorter.wl1_index, indexMapType[sorter.wl1_index], 'wl1_list');
 			if(wl_info.band5g_support)
 				sorter.doSorter(sorter.wl2_index, indexMapType[sorter.wl2_index], 'wl2_list');
-			if(wl_info.band5g_2_support)
+			if(wl_info.band5g_2_support || wl_info.band6g_support)
 				sorter.doSorter(sorter.wl3_index, indexMapType[sorter.wl3_index], 'wl3_list');
 			if(isSupport("amas")){
 				for(var i=1; i<multissid_count+1; i++)

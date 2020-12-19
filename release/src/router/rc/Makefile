@@ -315,11 +315,11 @@ OBJS += amas-ssd-broadcom.o
 endif
 endif
 ifeq ($(RTCONFIG_BCM_MFG),y)
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900 RT-AX58U TUF-AX3000 RT-AX82U RT-AX82_XD6 RT-AX55 RT-AX1800 DSL-AX82U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900 RT-AX58U TUF-AX3000 RT-AX82U RT-AX82_XD6 RT-AX55 RT-AX1800 DSL-AX82U GS-AX3000 GS-AX5400))
 OBJS += cfe.o
 endif
 else
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900 RT-AX58U TUF-AX3000 RT-AX82U RT-AX82_XD6 DSL-AX82U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900 RT-AX58U TUF-AX3000 RT-AX82U RT-AX82_XD6 DSL-AX82U GS-AX3000 GS-AX5400))
 OBJS += cfe.o
 endif
 endif
@@ -848,7 +848,7 @@ endif
 DIAG_OBJS += conn_diag-sql.o
 endif
 
-ifeq ($(RTAX82U),y)
+ifeq ($(or $(RTAX82U),$(GSAX3000),$(GSAX5400)),y)
 LDFLAGS += -lm
 OBJS += ledg.o
 OBJS += ledbtn.o
@@ -1330,7 +1330,7 @@ ifeq ($(RTCONFIG_EXTPHY_BCM84880),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc get_ext_phy_id
 endif
 
-ifeq ($(RTAX82U)$(DSL_AX82U),y)
+ifeq ($(or $(RTAX82U),$(DSL_AX82U),$(GSAX3000),$(GSAX5400)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledg
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledbtn
 endif
@@ -1448,7 +1448,7 @@ ifneq ($(wildcard ./prebuild/ate.o),)
 ate.o:
 	@-cp -f ./prebuild/ate.o .
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900 RT-AX58U TUF-AX3000 RT-AX82U RT-AX82_XD6 DSL-AX82U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900 RT-AX58U TUF-AX3000 RT-AX82U RT-AX82_XD6 DSL-AX82U GS-AX3000 GS-AX5400))
 ifneq ($(wildcard ./prebuild/cfe.o),)
 cfe.o:
 	@-cp -f ./prebuild/cfe.o .
@@ -1735,7 +1735,7 @@ endif
 endif
 endif
 
-ifeq ($(RTAX82U)$(DSL_AX82U),y)
+ifeq ($(or $(RTAX82U),$(DSL_AX82U),$(GSAX3000),$(GSAX5400)),y)
 ifneq ($(wildcard ./prebuild/ledg.o.o),)
 ledg.o:
 	@-cp -f ./prebuild/ledg.o .

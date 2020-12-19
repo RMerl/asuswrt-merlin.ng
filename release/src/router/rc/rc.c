@@ -598,7 +598,7 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "gpior") == 0) {
 			printf("%d\n", get_gpio(atoi(argv[2])));
 		}
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX82_XD6)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(GSAX3000) || defined(GSAX5400)
 		else if (strcmp(argv[1], "gpio2r") == 0) {
 			printf("%d\n", get_gpio2(atoi(argv[2])));
 		}
@@ -1370,7 +1370,7 @@ static const applets_t applets[] = {
 	{ "firmware_enc_crc",		firmware_enc_crc_main		},
 	{ "fw_check",			fw_check_main			},
 #endif
-#if defined(RTAX82U)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400)
 	{ "ledg",			ledg_main			},
 	{ "ledbtn",			ledbtn_main			},
 #endif
@@ -1434,9 +1434,11 @@ static const applets_t applets[] = {
  ||  (defined(RTCONFIG_SOC_IPQ8074))
 	{ "erp_monitor",		erp_monitor_main		},
 #endif
+#ifdef RTCONFIG_WIFI_SON
 #if defined(MAPAC2200)
 	{ "dpdt_ant",			dpdt_ant_main		},
 #endif
+#endif	
 #if defined(MAPAC1300) || defined(VZWAC1300) || defined(SHAC1300)
 	{ "thermal_txpwr",		thermal_txpwr_main		},
 #endif

@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Aug 21 14:59:42 2017
+ * Date: Fri Sep 25 21:10:07 2020
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -93,10 +93,10 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_RT_AC87U 1 // y
-#define TMCFG_MODEL "rt-ac87u"
+#define TMCFG_MODEL_RT_AC68U 1 // y
+#define TMCFG_MODEL "rt-ac68u"
 #define TMCFG_OEM_SRC 1 // y
-#define TMCFG_OEM_SRC_BRCM 1 // y
+#define TMCFG_OEM_SRC_BRCM_CTF_4708 1 // y
 
 /*
  * Target device information
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC87U_GPL_382_11683/release/src-rt-6.x.4708/linux/linux-2.6.36"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC68U_GPL_385_20633/release/src-rt-6.x.4708/linux/linux-2.6.36"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
@@ -152,8 +152,8 @@
 #define TMCFG_E_UDB_CORE 1 // y
 #define TMCFG_E_UDB_CORE_MAJ_VER 0
 #define TMCFG_E_UDB_CORE_MIN_VER 2
-#define TMCFG_E_UDB_CORE_REV_VER 14
-#define TMCFG_E_UDB_CORE_SHN_REV_NUM 3529123
+#define TMCFG_E_UDB_CORE_REV_VER 18
+#define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
 #define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
 #define TMCFG_E_UDB_CORE_CONN_EXTRA 1 // y
@@ -161,7 +161,6 @@
 #define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
-#define TMCFG_E_UDB_CORE_APP_WBL 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
 #define TMCFG_E_UDB_CORE_WBL_MIN_VER 2
@@ -177,7 +176,7 @@
 #define TMCFG_E_UDB_CORE_WBL_URL_NUM 1024
 #define TMCFG_E_UDB_CORE_WEB_FUNC 1 // y
 #define TMCFG_E_UDB_CORE_DC 1 // y
-#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 1 // y
+#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 0 // n
 #define TMCFG_E_UDB_CORE_ANOMALY_PREVENT 1 // y
 #define TMCFG_E_UDB_CORE_VIRTUAL_PATCH 1 // y
 #define TMCFG_E_UDB_CORE_SWNAT 0 // n
@@ -187,15 +186,13 @@
 #define TMCFG_E_UDB_CORE_HWNAT 0 // n
 #define TMCFG_E_UDB_CORE_HWQOS 0 // n
 #define TMCFG_E_UDB_CORE_APP_PATROL 1 // y
-#define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 1 // y
-#define TMCFG_E_UDB_CORE_APP_REDIRECT_URL 1 // y
-#define TMCFG_E_UDB_CORE_PATROL_TIME_GRP_NUM 32
-#define TMCFG_E_UDB_CORE_PATROL_TIME_DEV_NUM 6
+#define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 0 // n
+#define TMCFG_E_UDB_CORE_APP_REDIRECT_URL 0 // n
 #define TMCFG_E_UDB_CORE_PROG_CTRL 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_NONE 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V1 0 // n
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V2 0 // n
-#define TMCFG_E_UDB_CORE_WPR_PAGE 1 // y
+#define TMCFG_E_UDB_CORE_WPR_PAGE 0 // n
 #define TMCFG_E_UDB_CORE_TMDBG 0 // n
 #define TMCFG_E_UDB_CORE_MEMTRACK 0 // n
 #define TMCFG_E_UDB_CORE_HTTP_REFER 0 // n
@@ -212,7 +209,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "890c91d"
+#define TMCFG_E_REL_PKG_LOCAL_VER "7812743e"
 
 /*
  * Accompany applications or modules
@@ -221,7 +218,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC68U_GPL_384_20648/release/src-rt-6.x.4708/include -I/opt/ASUS/asuswrt_AC68U_GPL_384_20648/release/src-rt-6.x.4708/common/include"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC68U_GPL_385_20633/release/src-rt-6.x.4708/include -I/opt/ASUS/asuswrt_AC68U_GPL_385_20633/release/src-rt-6.x.4708/common/include"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""
@@ -285,10 +282,10 @@
 #define TMCFG_APP_U_TDTS_WRED_THREAD_POOL 1 // y
 #define TMCFG_APP_U_TDTS_WRED_PROG_CTRL 1 // y
 #define TMCFG_APP_U_WRS_LOCAL_CACHE 0x7D000
-#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10"
+#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10-ASUS-HRU77VWJ"
 #define TMCFG_APP_U_WRED_TMUFE_VENDOR_ID "ASUS"
-#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-en.url.trendmicro.com"
-#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 0 // n
+#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-asus-en.url.trendmicro.com"
+#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 1 // y
 #define TMCFG_APP_U_TDTS_WRED_TMUFE21 0 // n
 #define TMCFG_APP_U_WBL 1 // y
 

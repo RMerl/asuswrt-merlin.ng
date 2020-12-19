@@ -685,7 +685,7 @@ static int update_alias_table(ddns_t *ctx)
 			}
 		}
 
-		if (RC_DDNS_RSP_NOTOK == rc || RC_DDNS_RSP_AUTH_FAIL == rc)
+		if (RC_DDNS_RSP_NOTOK == rc || RC_DDNS_RSP_AUTH_FAIL == rc || RC_DDNS_RSP_NOHOST == rc)
 			remember = rc;
 
 		if (RC_DDNS_RSP_RETRY_LATER == rc && !remember)

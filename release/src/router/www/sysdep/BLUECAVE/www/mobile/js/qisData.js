@@ -190,6 +190,12 @@ var iptvObj = {
 	"switch_wantag": ""
 }
 
+var wanDhcpOptionObj = {
+	"wan_vendorid": "",
+	"wan_clientid_type": "",
+	"wan_clientid": ""
+}
+
 var iptvManualObj = {
 	"switch_wan0tagid": "",
 	"switch_wan0prio": "",

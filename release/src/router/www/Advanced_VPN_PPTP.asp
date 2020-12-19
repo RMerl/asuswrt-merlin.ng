@@ -56,8 +56,8 @@ var pptpd_sr_edit_username = "";
 
 var max_shift = "";	/*MODELDEP (include dict #PPTP_desc2# #vpn_max_clients# #vpn_maximum_clients#) : 
 				RT-AC5300/GT-AC5300/GT-AX11000/RT-AC86U/AC2900/RT-AC3200/RT-AC3100/RT-AC88U/RT-AX88U/RT-AC87U/RT-AC68U/RT-AC66U/RT-AC56U/RT-N66U/RT-N18U */
-if(based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC3100" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" ||
-		based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" || based_modelid == "GT-AXE11000" ||
+if(based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC3100" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX56_XD4" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" ||
+		based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
 		based_modelid == "RT-AC66U" || based_modelid == "RT-AC56U" ||
 		based_modelid == "RT-N66U" || based_modelid == "RT-N18U"){
 	max_shift = parseInt("29");
@@ -570,9 +570,9 @@ function showpptpd_clientlist(){
 					if(pptpd_clientlist_col[0].length >28){
 						overlib_str0[i-1] = pptpd_clientlist_col[0];
 						pptpd_clientlist_col[0]=pptpd_clientlist_col[0].substring(0, 26)+"...";
-						code +='<td width="30%" title="'+overlib_str0[i]+'">'+ pptpd_clientlist_col[0] +'</td>';
+						code +='<td width="30%" title="'+htmlEnDeCode.htmlEncode(overlib_str0[i])+'">'+ htmlEnDeCode.htmlEncode(pptpd_clientlist_col[0]) +'</td>';
 					}else
-						code +='<td width="30%" title="'+pptpd_clientlist_col[0]+'">'+ pptpd_clientlist_col[0] +'</td>';
+						code +='<td width="30%" title="'+htmlEnDeCode.htmlEncode(pptpd_clientlist_col[0])+'">'+ htmlEnDeCode.htmlEncode(pptpd_clientlist_col[0]) +'</td>';
 				}
 				else if(j == 1){
 					overlib_str1[i-1] = pptpd_clientlist_col[1];

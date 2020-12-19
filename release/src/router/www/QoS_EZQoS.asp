@@ -346,7 +346,7 @@ if(wl_info.band5g_support != '-1'){
 		}
 	}
 }
-if(wl_info.band5g_2_support != '-1'){
+if(wl_info.band5g_2_support != '-1' || wl_info.band6g_support != '-1'){
 	var gn_array_5g_2_length = gn_array_5g_2.length;
 	for(var k=0;k<gn_array_5g_2_length;k++){
 		if(gn_array_5g_2[k][18] == "1"){	//GN with Bandwidth Limiter

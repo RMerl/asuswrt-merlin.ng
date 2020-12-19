@@ -589,6 +589,7 @@ static int add_qos_rules(char *pcWANIF)
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
 		case MODEL_RTAX56_XD4:
+		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
 		case MODEL_RTAX55:
 		case MODEL_RTAX56U:
@@ -2286,6 +2287,7 @@ static int add_rog_qos_rules(char *pcWANIF)
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
 		case MODEL_RTAX56_XD4:
+		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
 		case MODEL_RTAX55:
 		case MODEL_RTAX56U:

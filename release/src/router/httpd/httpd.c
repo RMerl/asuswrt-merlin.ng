@@ -285,6 +285,10 @@ int temp_turn_off_auth = 0;	// for QISxxx.htm pages
 
 int amas_support = 0;
 
+struct timeval alarm_tv;
+time_t alarm_timestamp = 0;
+int check_alive_flag = 0;
+
 /* Const vars */
 const int int_1 = 1;
 const struct linger linger = { 1, 0 };
@@ -1310,7 +1314,7 @@ handle_request(void)
 				}
 			}
 			if (handler->auth) {
-#if defined(RTAX82U) || defined(DSL_AX82U)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 				switch_ledg(LEDG_QIS_FINISH);
 #endif
 				if ((mime_exception&MIME_EXCEPTION_NOAUTH_FIRST)&&!x_Setting) {
@@ -1442,8 +1446,12 @@ handle_request(void)
 					&& !strstr(file, "renew_ikev2_cert_mobile.pem") && !strstr(file, "ikev2_cert_mobile.pem")
 					&& !strstr(file, "renew_ikev2_cert_windows.der") && !strstr(file, "ikev2_cert_windows.der")
 #endif
-#if defined(RTCONFIG_TR069) && defined(DSL_AX82U)
-					|| (strstr(file, "Advanced_TR069_Content.asp") && is_ax5400_i1())
+#if defined(DSL_AX82U)
+					|| (is_ax5400_i1() &&
+						(strstr(file, "Advanced_TR069_Content.asp")
+						 || strstr(file, "Advanced_OAM_Content.asp")
+						 || strstr(file, "Advanced_ADSL_Content.asp")
+						))
 #endif
 					){
 				send_error( 404, "Not Found", (char*) 0, "File not found." );
@@ -2036,6 +2044,26 @@ search_desc (pkw_t pkw, char *name)
 #endif
 #endif //TRANSLATE_ON_FLY
 
+void check_alive()
+{
+	check_alive_flag = 1;
+	static int check_alive_count = 0;
+
+	if(alarm_timestamp != alarm_tv.tv_sec){
+		alarm_timestamp = alarm_tv.tv_sec;
+		check_alive_count = 0;
+	}
+	else if(check_alive_count > 20){
+		logmessage("HTTPD", "waitting 10 minitues and restart\n");
+		notify_rc("restart_httpd");
+	}
+	else{
+		check_alive_count++;
+	}
+
+	alarm(30);
+}
+
 int main(int argc, char **argv)
 {
 	usockaddr usa;
@@ -2106,6 +2134,9 @@ int main(int argc, char **argv)
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGCHLD, chld_reap);
 	signal(SIGUSR1, update_wlan_log);
+	signal(SIGALRM, check_alive);
+
+	alarm(30);
 
 #ifdef RTCONFIG_HTTPS
 	//if (do_ssl)
@@ -2161,6 +2192,12 @@ int main(int argc, char **argv)
 		fd_set rfds;
 		conn_item_t *item, *next;
 		int max_fd, count;
+
+		/* record alive flag */
+		if(check_alive_flag == 1){
+			alarm_tv.tv_sec = uptime();
+			check_alive_flag = 0;
+		}
 
 		memcpy(&rfds, &active_rfds, sizeof(rfds));
 		max_fd = -1;

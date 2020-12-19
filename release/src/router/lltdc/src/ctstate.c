@@ -116,9 +116,12 @@ image_to_base64(char *file_path,  char *client_mac) {
 	buffer = (char*) malloc (sizeof(char)*lSize);
 	base64 = (char*) malloc (sizeof(char)*lSize);
 
-	if (buffer == NULL) {
+	if (!buffer || !base64) {
 		printf("Memory error\n");
 		i = 0;
+		fclose(pFile);
+		if (buffer) free(buffer);
+		if (base64) free(base64);
 		return i;
 	}
 
@@ -127,6 +130,9 @@ image_to_base64(char *file_path,  char *client_mac) {
 	if (result != lSize) {
 		printf("Reading error\n");
 		i = 0;
+		fclose(pFile);
+		free(buffer);
+		free(base64);
 		return i;
 	}
 
@@ -134,6 +140,9 @@ image_to_base64(char *file_path,  char *client_mac) {
 	if (openvpn_base64_encode (buffer, lSize, &base64) <= 0) {
 		printf("binary encode error \n");
 		i = 0;
+		fclose(pFile);
+		free(buffer);
+		free(base64);
 		return i;
 	}
 
@@ -445,6 +454,89 @@ state_process_packet()
     }
     dump_packet(g_rxbuf);
 
+#if 1
+	if (g_opcode == Opcode_QueryLargeTlvResp)
+	{
+		topo_ether_header_t*    ehdr;
+		topo_base_header_t*     bhdr;
+		icon_image_header_t*    icon_image_hdr;
+		char *icon_ptr, *cmp_ptr;
+		int icon_copy_len, retry;
+		int more;
+
+		retry = 0;
+		ehdr = (topo_ether_header_t*)(g_rxbuf);
+		bhdr = (topo_base_header_t*)(ehdr + 1);
+		icon_image_hdr = (icon_image_header_t*)(bhdr + 1);
+		icon_ptr = (char*)(icon_image_hdr + 1);
+		more = icon_image_hdr->icon_image_type >> 15;
+		icon_copy_len = ntohs(icon_image_hdr->icon_image_type) & 0x3FFF;
+		g_rcvd_icon_len += icon_copy_len;
+
+		DEBUG({printf("SEQ : %u\n", g_sequencenum);})
+		DEBUG({printf("length : %d\n", icon_copy_len);})
+		DEBUG({printf("more : %d\n", more);})
+
+		if (g_rcvd_icon_len > ICONMAXSZ)
+		{
+			DEBUG({printf("\n*** Receive Icon Image Fail!!! ***\n\n");})
+			g_rcvd_icon_len = -3;
+			if (g_icon_fd)
+			{
+				fclose(g_icon_fd);
+				g_icon_fd = NULL;
+			}
+			remove(icon_file);
+			return -1;
+		}
+
+		if (g_sequencenum == 0)
+		{
+			cmp_ptr = icon_ptr;
+			cmp_ptr += 1296;
+			if (icon_compare(cmp_ptr))
+			{
+				while( (g_icon_fd == NULL) && (retry < 5) )
+				{
+					snprintf(src_mac, sizeof(src_mac), "%02x%02x%02x%02x%02x%02x", ETHERADDR_PRINT(&ehdr->eh_src));
+					snprintf(icon_file, sizeof(icon_file), "%s%s.ico", TMP_ICON_PATH, src_mac);
+					DEBUG({printf("<>Write icon_file : %s <>\n", icon_file);})
+					g_icon_fd = fopen(icon_file, "wb");
+
+					if(g_icon_fd != NULL)
+						break;
+					else
+						retry++;
+				}
+			}
+			else
+			{
+				DEBUG({printf("\n!!!!! Get Default Icon !!!!!\n");})
+				g_rcvd_icon_len = -2;
+				return 0;
+			}
+		}
+
+		if (g_icon_fd == NULL)
+		{
+			DEBUG({printf("<>Not received first packet or open file %s failed\n", icon_file);})
+			g_rcvd_icon_len = -3;
+			return 0;
+		}
+
+		fwrite(icon_ptr, sizeof(char), icon_copy_len, g_icon_fd);
+
+		if (more == 0)
+		{
+			DEBUG({printf("End Of Icon Image!!!\n");})
+			DEBUG({printf("    *** Reveiced icon len = %d\n", g_rcvd_icon_len);})
+			fclose(g_icon_fd);
+			g_icon_fd = NULL;
+			g_rcvd_icon_len = -1;
+			image_to_base64(icon_file, src_mac);
+		}
+	}
+#else
     if (g_opcode == Opcode_QueryLargeTlvResp)
     {
     	topo_ether_header_t*    ehdr;
@@ -529,6 +621,7 @@ state_process_packet()
 	}
 
     }
+#endif
 
     return 0;	/* Success! */
 }

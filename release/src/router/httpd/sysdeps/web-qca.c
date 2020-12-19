@@ -1151,7 +1151,11 @@ static int getSTAInfo(int unit, WIFI_STA_TABLE *sta_info)
 	unit_name = strdup(get_wifname(unit));
 	if (!unit_name)
 		return ret;
+#if defined(RTCONFIG_AMAS_WGN)  
+        wl_ifnames = strdup(get_all_lan_ifnames());
+#else
 	wl_ifnames = strdup(nvram_safe_get("lan_ifnames"));
+#endif	
 	if (!wl_ifnames) {
 		free(unit_name);
 		return ret;

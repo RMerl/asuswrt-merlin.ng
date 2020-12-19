@@ -409,7 +409,7 @@ function saveMode(){
 					restore_wl_config_wep("wl1_");
 					restore_wl_config("wl1.1_");
 				}
-				if(wl_info.band5g_2_support){
+				if(wl_info.band5g_2_support || wl_info.band6g_support){
 					restore_wl_config_wep("wl2_");
 					restore_wl_config("wl2.1_");
 				}
@@ -425,7 +425,7 @@ function saveMode(){
 				close_guest_unit(1,1);
 			}
 			
-			if(wl_info.band5g_2_support){
+			if(wl_info.band5g_2_support || wl_info.band6g_support){
 				inputCtrl(document.form.wl2_ssid,1);
 				inputCtrl(document.form.wl2_crypto,1);
 				inputCtrl(document.form.wl2_wpa_psk,1);
@@ -440,7 +440,7 @@ function saveMode(){
 				document.getElementById('routerSSID').style.height="370px";				
 			}
 
-			if(wl_info.band5g_2_support){
+			if(wl_info.band5g_2_support || wl_info.band6g_support){
 				if(band6g_support){
 					document.getElementById("5g2_title").innerHTML = '6 GHz - <#Security#>';
 				}
@@ -525,7 +525,7 @@ function applyRule(){
 					document.form.wl1_auth_mode_x.value = "open";
 			}
 
-			if(wl_info.band5g_2_support){
+			if(wl_info.band5g_2_support || wl_info.band6g_support){
 				inputCtrl(document.form.wl2_ssid,1);
 				inputCtrl(document.form.wl2_crypto,1);
 				inputCtrl(document.form.wl2_wpa_psk,1);

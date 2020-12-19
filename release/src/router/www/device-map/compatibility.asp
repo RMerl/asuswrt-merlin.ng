@@ -34,7 +34,7 @@ function initial(){
 			document.getElementById("t0").style.display = "";
 			document.getElementById("t1").style.display = "";
 
-			if(parent.wl_info.band5g_2_support)
+			if(parent.wl_info.band5g_2_support || parent.wl_info.band6g_support)
 				tab_reset(0);
 
 			if(parent.wl_info.band60g_support)
@@ -140,7 +140,12 @@ function tab_reset(v){
 		if(parent.wl_info.band5g_2_support){
 			document.getElementById("span1").innerHTML = "5GHz-1";
 			document.getElementById("span2").innerHTML = "5GHz-2";
-		}else{
+		}
+		else if(parent.wl_info.band6g_support){
+			document.getElementById("span1").innerHTML = "5GHz";
+			document.getElementById("span2").innerHTML = "6GHz";
+		}
+		else{
 			document.getElementById("span1").innerHTML = "5GHz";
 			document.getElementById("t2").style.display = "none";
 		}
@@ -156,7 +161,7 @@ function tab_reset(v){
 			else
 				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
 		}
-		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE" || based_modelid == "MAP-AC1750" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-AX56_XD4" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" || based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")
+		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE" || based_modelid == "MAP-AC1750" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-AX56_XD4" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" || based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400")
 			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
 		
 		document.getElementById("t1").style.display = "none";

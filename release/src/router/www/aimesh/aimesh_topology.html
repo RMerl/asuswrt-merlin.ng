@@ -1278,62 +1278,75 @@ function network_set_wan_info(){
 }
 function network_set_uplink_info(_node_info){
 	var re_path = _node_info.re_path;
-	var signal_quality = "";
-	if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64"){
-		signal_quality = get_connect_quality(_node_info.online, re_path, _node_info.wired_port);
-	}
-	else if(re_path == "2"){
-		signal_quality = get_connect_quality(_node_info.online, re_path, _node_info.rssi2g);
-	}
-	else{
-		signal_quality = get_connect_quality(_node_info.online, re_path, _node_info.rssi5g);
-	}
+	var signal_quality = get_connect_quality(_node_info);
 	$("#network_block .uplink_info #uplink_connect_type").removeClass().addClass("uplink_type_title " + signal_quality.type + " " + signal_quality.css + "");
 	$("#network_block .uplink_info #uplink_connect_type").html(signal_quality.type_text);
 	$("#network_block .uplink_info #uplink_connect_ip").html(_node_info.ip);
 	$("#network_block .uplink_info .uplink_icon_bg").children().removeClass().addClass("uplink_type_icon " + signal_quality.type + " " + signal_quality.css + "");
 }
-function get_connect_quality(_re_online, _re_path, _quality_info){
+function get_connect_quality(_node_info){
+	var _re_online = _node_info.online;
+	var _re_path = _node_info.re_path;
+	var _quality_info = "";
 	//_re_path, 1:wired, 2:2G, 4:5G, 8:5G2, 6:2G+5G, 10:2G+5G2
 	var result = {"type":"wired", "quality":0, "css":"wired disconnected", "type_text":"<#wan_ethernet#>", "quality_text":"<#Disconnected#>"};
 	//result.quality, 0:disconnected, 1:weak, 2:ok, 3:great
 	if(_re_path == "1" || _re_path == "16" || _re_path == "32" || _re_path == "64"){
-		result.type = "wired";
-		result.type_text = "<#wan_ethernet#>";
+		var real_port_type = gen_real_port_type(_node_info);
+		if(real_port_type.type == "eth"){
+			result.type = "wired";
+			result.type_text = "<#wan_ethernet#>";
+		}
+		else if(real_port_type.type == "plc"){
+			result.type = "plc";
+			result.type_text = "Powerline";/* untranslated */
+		}
+		_quality_info = _node_info.wired_port;
 		if(_re_online == "1"){
-			result.quality = 3;
-			result.css = "wired great G";
-			result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
-			var wired_map = {"T":3,"F":3,"Q":3,"G":3,"M":1,"X":0};
-			if(_quality_info != undefined){
-				if("wan_port" in _quality_info) {
-					if("WAN 0" in _quality_info.wan_port) {
-						if("link_rate" in _quality_info.wan_port["WAN 0"]) {
-							var link_rate = _quality_info.wan_port["WAN 0"].link_rate;
-							if(link_rate != ""){
-								result.css = "wired " + link_rate;
-								result.quality = wired_map[link_rate];
-								if(result.quality == 3){
-									result.css += " great";
-									result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
-								}
-								else if(result.quality == 1){
-									result.css += " weak";
-									result.quality_text = "<#AiMesh_Conn_Quality_Normal#>";
+			if(real_port_type.type == "eth"){
+				result.quality = 3;
+				result.css = "wired great G";
+				result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
+				var wired_map = {"T":3,"F":3,"Q":3,"G":3,"M":1,"X":0};
+				if(_quality_info != undefined){
+					if("wan_port" in _quality_info) {
+						if("WAN 0" in _quality_info.wan_port) {
+							if("link_rate" in _quality_info.wan_port["WAN 0"]) {
+								var link_rate = _quality_info.wan_port["WAN 0"].link_rate;
+								if(link_rate != ""){
+									result.css = "wired " + link_rate;
+									result.quality = wired_map[link_rate];
+									if(result.quality == 3){
+										result.css += " great";
+										result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
+									}
+									else if(result.quality == 1){
+										result.css += " weak";
+										result.quality_text = "<#AiMesh_Conn_Quality_Normal#>";
+									}
 								}
 							}
 						}
 					}
 				}
 			}
+			else if(real_port_type.type == "plc"){
+				result.quality = 3;
+				result.css = "plc great";
+				result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
+			}
 		}
 		else{
 			result.quality = 0;
-			result.css = "wired disconnected";
+			if(real_port_type.type == "eth")
+				result.css = "wired disconnected";
+			else if(real_port_type.type == "plc")
+				result.css = "plc disconnected";
 			result.quality_text = "<#Disconnected#>";
 		}
 	}
 	else if(_re_path == "2"){
+		_quality_info = _node_info.rssi2g
 		result.type = "wireless";
 		result.type_text = "<#menu5_1#> - 2.4GHz";
 		if(_re_online == "1"){
@@ -1348,6 +1361,7 @@ function get_connect_quality(_re_online, _re_path, _quality_info){
 		}
 	}
 	else{
+		_quality_info = _node_info.rssi5g
 		result.type = "wireless";
 		result.type_text = "<#menu5_1#> - 5GHz";
 		if(_re_online == "1"){
@@ -1393,6 +1407,56 @@ function get_connect_quality(_re_online, _re_path, _quality_info){
 			result.quality = 0;
 			result.css = "disconnected";
 			result.quality_text = "<#Disconnected#>";
+		}
+	}
+	return result;
+}
+function gen_real_port_type(_node_info){
+	var result = {type:"eth", speed:"G"};
+	var interface_mapping = [{value:"1", type:"eth"}, {value:"2", type:"wifi"}, {value:"3", type:"plc"}];//Type
+	var eth_rate_mapping = [{value:"1", type:"M"}, {value:"2", type:"M"}, {value:"3", type:"G"}, {value:"4", type:"F"}, {value:"5", type:"Q"},
+		{value:"6", type:"T"}, {value:"7", type:"T"}];//SubType
+	var eth_re_path_sequence = {"1":1, "16":2, "32":3, "64":4};
+	var eth_mapping_idx = ((eth_re_path_sequence[_node_info.re_path] == undefined) ? 0 : (eth_re_path_sequence[_node_info.re_path]));
+	var eth_current_idx = 1;
+	if(_node_info.re_path == "1" || _node_info.re_path == "16" || _node_info.re_path == "32" || _node_info.re_path == "64"){
+		if("capability" in _node_info){
+			if("21" in _node_info.capability) {
+				var multiple_uplink_port = _node_info.capability["21"];
+				if(multiple_uplink_port["Ports"] != undefined) {
+					$.each(multiple_uplink_port["Ports"], function( index, value ){
+						var conn_type = "";
+						var port_obj = value;
+						var if_type = interface_mapping.filter(function(item, index, _array){
+							return (item.value == port_obj.Type);
+						})[0];
+						if(if_type != undefined){
+							var rate_type = "";
+							switch(if_type.value){
+								case "1":
+									if(eth_current_idx == eth_mapping_idx){
+										result.type = "eth";
+										rate_type =  eth_rate_mapping.filter(function(item, index, _array){
+											return (item.value == port_obj.SubType);
+										})[0];
+										if(rate_type != undefined && rate_type != "")
+											result.speed = rate_type.type;
+										return false;
+									}
+									eth_current_idx++;
+									break;
+								case "3":
+									if(eth_current_idx == eth_mapping_idx){
+										result.type = "plc";
+										return false;
+									}
+									eth_current_idx++;
+									break;
+							}
+						}
+					});
+				}
+			}
 		}
 	}
 	return result;
@@ -2630,14 +2694,8 @@ function set_primary_info(_node_info){
 	var isReNode = (mac != cap_mac) ? true : false;
 	if(isReNode){
 		$(".primary_info_bg").find(".item_bg.signal").show();
-		var signal_quality = "";
+		var signal_quality = get_connect_quality(_node_info);
 		var signal_quality_hint = "";
-		if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64")
-			signal_quality = get_connect_quality(_node_info.online, re_path, _node_info.wired_port);
-		else if(re_path == "2")
-			signal_quality = get_connect_quality(_node_info.online, re_path, _node_info.rssi2g);
-		else
-			signal_quality = get_connect_quality(_node_info.online, re_path, _node_info.rssi5g);
 
 		$(".primary_info_bg #signal_quality").html(signal_quality.quality_text);
 		$(".primary_info_bg #signal_quality").attr("title", signal_quality.quality_text);
@@ -2946,14 +3004,7 @@ function initial_AiMesh(){
 					$(el).attr("custom_connect_quality", "disconnected");//add custom attr for quality, used at re_draw_connect_line()
 				}
 				else{
-					var signal_quality = "";
-					if(specific_node_data.re_path == "1" || specific_node_data.re_path == "16" || specific_node_data.re_path == "32" || specific_node_data.re_path == "64")
-						signal_quality = get_connect_quality(specific_node_data.online, specific_node_data.re_path, specific_node_data.wired_port);
-					else if(specific_node_data.re_path == "2")
-						signal_quality = get_connect_quality(specific_node_data.online, specific_node_data.re_path, specific_node_data.rssi2g);
-					else
-						signal_quality = get_connect_quality(specific_node_data.online, specific_node_data.re_path, specific_node_data.rssi5g);
-
+					var signal_quality = get_connect_quality(specific_node_data);
 					var quality_css = "great";
 					if(signal_quality.quality > 1)
 						quality_css = "great";
@@ -2966,8 +3017,8 @@ function initial_AiMesh(){
 				}
 				
 				if(specific_node_data.re_path == "1" || specific_node_data.re_path == "16" || specific_node_data.re_path == "32" || specific_node_data.re_path == "64"){//node connect type
-					$node_connect_type.addClass("wired");
-					$(el).attr("custom_connect_type", "wired");
+					$node_connect_type.addClass(signal_quality.type);
+					$(el).attr("custom_connect_type", (signal_quality.type));
 				}
 				else if(specific_node_data.re_path == "2"){
 					$node_connect_type.addClass("wireless wl_2g");

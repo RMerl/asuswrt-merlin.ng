@@ -64,7 +64,7 @@ function initial(){
 	if(!band5g_support){
 		document.getElementById("wps_band_tr").style.display = "none";		
 	}else{		
-		if(wl_info.band5g_2_support){	//Tri-band, RT-AC3200
+		if(wl_info.band5g_2_support || wl_info.band6g_support){	//Tri-band, RT-AC3200
 			if(band6g_support){
 				document.getElementById("wps_opt1").innerHTML = '5 GHz';
 				document.getElementById("wps_opt2").innerHTML = '6 GHz';
@@ -396,7 +396,7 @@ function show_wsc_status(wps_infos){
 		document.getElementById("wps_enable_word").innerHTML = "<#btn_Enabled#>";
 		document.getElementById("enableWPSbtn").value = "<#btn_disable#>";
 		document.getElementById("switchWPSbtn").style.display = "none";
-		if(wl_info.band5g_2_support){
+		if(wl_info.band5g_2_support || wl_info.band6g_support){
 			document.getElementById("wps_switch").style.display = "";	
 			document.getElementById("wps_select").style.display = "none";
 		}
@@ -416,13 +416,13 @@ function show_wsc_status(wps_infos){
 			currentBand = 0;
 	}
 	else if(wps_infos[12].firstChild.nodeValue == 1){
-		if(!wl_info.band5g_2_support){
+		if(!wl_info.band5g_2_support && !wl_info.band6g_support){
 			document.getElementById("wps_band_word").innerHTML = "5 GHz";
 			band_string = "5 GHz";
 		}else{
 			if(band6g_support){
-				document.getElementById("wps_band_word").innerHTML = "5 GHz";
-				band_string = "5 GHz";
+				document.getElementById("wps_band_word").innerHTML = "6 GHz";
+				band_string = "6 GHz";
 			}
 			else{
 				document.getElementById("wps_band_word").innerHTML = "5 GHz-1";

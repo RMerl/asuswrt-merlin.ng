@@ -112,7 +112,7 @@ function initial(){
 		document.getElementById("wl_unit_field").style.display = "none";
 	}
 	
-	if(wl_info.band5g_2_support){
+	if(wl_info.band5g_2_support || wl_info.band6g_support){
 		if(band6g_support){
 			document.getElementById("5g2_title").innerHTML = "6 GHz MAC";
 		}

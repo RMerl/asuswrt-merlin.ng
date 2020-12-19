@@ -30,12 +30,15 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <net/ethernet.h>
+#include <net/if.h>
+#include <arpa/inet.h>
 
 #ifdef ASUSWRT
 #include <bcmnvram.h>
 #endif
 
 #define ASUSDDNS_IP_SERVER	"ns1.asuscomm.com"
+//#define ASUSDDNS_IP_SERVER	"52.250.15.7"
 #define ASUSDDNS_CHECKIP_URL	"/myip.php"
 
 #if defined(ASUSWRT) && defined(ASUSWRT_LE)
@@ -49,8 +52,19 @@
 #define ASUSDDNS_IP_HTTP_REQUEST					\
 	"GET %s?"							\
 	"hostname=%s&"							\
-	ASUSDDNS_ARGS							\
-	"myip=%s "							\
+	ASUSDDNS_ARGS
+
+#define ASUSDDNS_IP_HTTP_REQUEST_MYIP		\
+	"myip=%s&"
+
+#ifdef USE_IPV6
+#define ASUSDDNS_IP_HTTP_REQUEST_MYIPV6		\
+	"myipv6=%s&"
+#endif
+
+#define ASUSDDNS_IP_HTTP_REQUEST_2		\
+	"model=%s&"							\
+	"fw_ver=%s "							\
 	"HTTP/1.0\r\n"							\
 	"Authorization: Basic %s\r\n"					\
 	"Host: %s\r\n"							\
@@ -108,6 +122,50 @@ static ddns_system_t asus_unregister = {
 	.server_name  = ASUSDDNS_IP_SERVER,
 	.server_url   = "/ddns/register.jsp"
 };
+
+#ifdef USE_IPV6
+#define IPV6_ADDR_GLOBAL        0x0000U
+static char * _get_ipv6_addr(const char *ifname, char *ipv6addr, const size_t len)
+{
+	FILE *f;
+	int ret = -1, scope, prefix;
+	unsigned char ipv6[16];
+	char dname[IFNAMSIZ], address[INET6_ADDRSTRLEN];
+
+	if(!ifname || !ipv6addr)
+		return ret;
+
+	f = fopen("/proc/net/if_inet6", "r");
+	if(!f)
+		return ret;
+
+	while (19 == fscanf(f,
+                        " %2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx %*x %x %x %*x %s",
+                        &ipv6[0], &ipv6[1], &ipv6[2], &ipv6[3], &ipv6[4], &ipv6[5], &ipv6[6], &ipv6[7], &ipv6[8], &ipv6[9], &ipv6[10], 
+                        &ipv6[11], &ipv6[12], &ipv6[13], &ipv6[14], &ipv6[15], &prefix, &scope, dname))
+	{
+		if(strcmp(ifname, dname))
+		{
+			continue;
+		}
+
+		if(inet_ntop(AF_INET6, ipv6, address, sizeof(address)) == NULL)
+		{
+			continue;
+	       }
+
+		if(scope == IPV6_ADDR_GLOBAL)
+		{
+			strlcpy(ipv6addr, address, len);
+			ret =0;
+			break;
+		}
+	}
+
+	fclose(f);
+	return ret;
+}
+#endif
 
 #define MD5_DIGEST_BYTES 16
 static void
@@ -255,6 +313,15 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 	char acme_arg[sizeof("acme_challenge=1&txtdata=&")+64] = "";
 #endif
 #endif
+	char fwver[32];
+#ifdef USE_IPV6
+	char ip6_addr[INET6_ADDRSTRLEN] = {0};
+
+	if(!_get_ipv6_addr(iface, ip6_addr, sizeof(ip6_addr)))
+			logit(LOG_WARNING, "%s ipv6 address=<%s>", iface, ip6_addr);
+#endif
+
+	logit(LOG_WARNING, "alias address=<%s>", alias->address);
 
 	make_request(ctx, info, alias);
 
@@ -267,6 +334,8 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 #endif
 #endif
 
+	 snprintf(fwver, sizeof(fwver), "%s.%s_%s", nvram_safe_get("firmver"), nvram_safe_get("buildno"), nvram_safe_get("extendno"));
+#if 0
 	return snprintf(ctx->request_buf, ctx->request_buflen,
 			ASUSDDNS_IP_HTTP_REQUEST,
 			info->server_url,
@@ -278,13 +347,51 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 #endif
 #endif
 			alias->address,
+			nvram_safe_get("productid"),
+			fwver,
 			info->creds.encoded_password ? : "",
 			info->server_name.name,
 			info->user_agent);
+#else
+	snprintf(ctx->request_buf, ctx->request_buflen,
+			ASUSDDNS_IP_HTTP_REQUEST,
+			info->server_url,
+			alias->name
+#ifdef ASUSWRT
+			,oldmac_arg
+#ifdef ASUSWRT_LE
+			,acme_arg
+#endif
+#endif
+		);
+	snprintf(ctx->request_buf + strlen(ctx->request_buf), ctx->request_buflen - strlen(ctx->request_buf),
+			ASUSDDNS_IP_HTTP_REQUEST_MYIP,
+			alias->address
+		);
+#ifdef USE_IPV6
+	if(ip6_addr[0] != '\0')
+	{
+		snprintf(ctx->request_buf + strlen(ctx->request_buf), ctx->request_buflen - strlen(ctx->request_buf),
+				ASUSDDNS_IP_HTTP_REQUEST_MYIPV6,
+				ip6_addr
+			);
+	}
+#endif
+	snprintf(ctx->request_buf + strlen(ctx->request_buf), ctx->request_buflen - strlen(ctx->request_buf),
+			ASUSDDNS_IP_HTTP_REQUEST_2,
+			nvram_safe_get("productid"),
+			fwver,
+			info->creds.encoded_password ? : "",
+			info->server_name.name,
+			info->user_agent);
+	//logit(LOG_WARNING, "request<%s>", ctx->request_buf);
+	return strlen(ctx->request_buf);
+#endif
 }
 
 static int request_unregister(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 {
+	logit(LOG_WARNING, "do request_unregister");
 	make_request(ctx, info, alias);
 	return snprintf(ctx->request_buf, ctx->request_buflen,
 			ASUSDDNS_UNREG_HTTP_REQUEST,
@@ -302,7 +409,6 @@ static int response_update(http_trans_t *trans, ddns_info_t *info, ddns_alias_t 
 #ifdef ASUSWRT
 	char ret_buf[64];
 #endif
-
 	p_rsp = trans->rsp_body;
 
 	if ((p = strchr(p_rsp, '|')) && (p = strchr(++p, '|')))
@@ -323,7 +429,7 @@ static int response_update(http_trans_t *trans, ddns_info_t *info, ddns_alias_t 
 #ifdef ASUSWRT
 		nvram_set("ddns_suggest_name", domain);
 #endif
-		return RC_DDNS_RSP_NOTOK;
+		return RC_DDNS_RSP_DOMAIN_IN_USE_REG;
 	case 230:
 		logit(LOG_WARNING, "New domain update success, old domain '%s'", domain);
 #ifdef ASUSWRT
@@ -335,21 +441,25 @@ static int response_update(http_trans_t *trans, ddns_info_t *info, ddns_alias_t 
 #ifdef ASUSWRT
 		nvram_set("ddns_old_name", domain);
 #endif
-		return RC_DDNS_RSP_NOTOK;
+		return RC_DDNS_RSP_DOMAIN_IN_USE_UPDATE;
 	case 297:		/* invalid hostname */
 		logit(LOG_WARNING, "Invalid hostname");
-		return RC_DDNS_RSP_NOTOK;
+		return RC_DDNS_INVALID_HOSTNAME;
 	case 298:		/* invalid domain name */
 		logit(LOG_WARNING, "Invalid domain name");
-		return RC_DDNS_RSP_NOTOK;
+		return RC_DDNS_INVALID_DOMAIN_NAME;
 	case 299:		/* invalid ip format */
 		logit(LOG_WARNING, "Invalid IP address");
-		return RC_DDNS_RSP_NOTOK;
+		return RC_DDNS_INVALID_IP;
 	case 401:		/* authentication failure */
 		logit(LOG_WARNING, "Authentication failure");
 		return RC_DDNS_RSP_AUTH_FAIL;
+	case 402:
+		logit(LOG_WARNING, "Registration blocked");
+		return RC_DDNS_RSP_REG_BLOCK;
 	case 407:		/* proxy authentication required */
-		return RC_DDNS_RSP_NOTOK;
+		logit(LOG_WARNING, "Proxy authenticatio blocked");
+		return RC_DDNS_RSP_PROXY_AUTH_REQ;
 	}
 
 	if (trans->status >= 500 && trans->status < 600)
@@ -375,6 +485,8 @@ static int response_register(http_trans_t *trans, ddns_info_t *info, ddns_alias_
 	if (info->system == &asus_unregister) {
 		snprintf(ret_buf, sizeof(ret_buf), "%s,%d", "unregister", trans->status);
 		nvram_set("asusddns_reg_result", ret_buf);
+		if(trans->status == 200)
+			nvram_set("ddns_enable_x", "0");
 	} else {
 		snprintf(ret_buf, sizeof(ret_buf), "%s,%d", "register", trans->status);
 		nvram_set("ddns_return_code", ret_buf);
@@ -391,7 +503,7 @@ static int response_register(http_trans_t *trans, ddns_info_t *info, ddns_alias_
 #ifdef ASUSWRT
 		nvram_set("ddns_suggest_name", domain);
 #endif
-		return RC_DDNS_RSP_NOTOK;
+		return RC_DDNS_RSP_DOMAIN_IN_USE_REG;
 	case 230:		/* registration new domain success */
 		logit(LOG_WARNING, "Registration success, previous domain '%s'", domain);
 #ifdef ASUSWRT
@@ -403,21 +515,25 @@ static int response_register(http_trans_t *trans, ddns_info_t *info, ddns_alias_
 #ifdef ASUSWRT
 		nvram_set("ddns_old_name", domain);
 #endif
-		return RC_DDNS_RSP_NOTOK;
+		return RC_DDNS_RSP_DOMAIN_IN_USE_UPDATE;
 	case 297:		/* invalid hostname */
 		logit(LOG_WARNING, "Invalid hostname");
-		return RC_DDNS_RSP_NOTOK;
+		return RC_DDNS_INVALID_HOSTNAME;
 	case 298:		/* invalid domain name */
 		logit(LOG_WARNING, "Invalid domain name");
-		return RC_DDNS_RSP_NOTOK;
+		return RC_DDNS_INVALID_DOMAIN_NAME;
 	case 299:		/* invalid ip format */
 		logit(LOG_WARNING, "Invalid IP address");
-		return RC_DDNS_RSP_NOTOK;
+		return RC_DDNS_INVALID_IP;
 	case 401:		/* authentication failure */
 		logit(LOG_WARNING, "Authentication failure");
 		return RC_DDNS_RSP_AUTH_FAIL;
+	case 402:
+		logit(LOG_WARNING, "Registration blocked");
+		return RC_DDNS_RSP_REG_BLOCK;
 	case 407:		/* proxy authentication required */
-		return RC_DDNS_RSP_NOTOK;
+		logit(LOG_WARNING, "Proxy authenticatio blocked");
+		return RC_DDNS_RSP_PROXY_AUTH_REQ;
 	}
 
 	return RC_DDNS_RSP_NOTOK;

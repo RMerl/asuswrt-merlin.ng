@@ -1921,7 +1921,8 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 					return PHY_RECONN;
 				}
 				else{
-					record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NOPHY);
+					//record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NOPHY);
+					record_wan_state_nvram(wan_unit, WAN_STATE_INITIALIZING, WAN_STOPPED_REASON_NONE, WAN_AUXSTATE_NOPHY);
 					_dprintf("wanduck(%d): SIM or modem is pulled off.\n", wan_unit);
 
 #if defined(RTCONFIG_NOTIFICATION_CENTER)
@@ -2608,7 +2609,7 @@ void record_conn_status(int wan_unit){
 			}
 #endif
 
-			logmessage(log_title, "Ethernet link down.");
+			logmessage(log_title, "WAN(%d) link down.", wan_unit);
 
 #if defined(RTCONFIG_NOTIFICATION_CENTER)
 			_dprintf("wanduck(%d): NC send SYS_WAN_CABLE_UNPLUGGED_EVENT.\n", wan_unit);
@@ -2803,7 +2804,7 @@ void record_conn_status(int wan_unit){
 		}
 #endif
 
-		logmessage(log_title, "Ethernet link up.");
+		logmessage(log_title, "WAN(%d) link up.", wan_unit);
 	}
 }
 
@@ -3137,6 +3138,9 @@ int wanduck_main(int argc, char *argv[]){
 	if(sw_mode == SW_MODE_ROUTER && !strcmp(dualwan_mode, "lb")){
 		cross_state = DISCONN;
 		for(wan_unit = WAN_UNIT_FIRST; wan_unit < WAN_UNIT_MAX; ++wan_unit){
+			if(get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_NONE)
+				continue;
+
 			conn_state[wan_unit] = if_wan_phyconnected(wan_unit);
 			if(conn_state[wan_unit] == CONNED){
 				current_state[wan_unit] = nvram_get_int(nvram_state[wan_unit]);
@@ -3473,6 +3477,12 @@ _dprintf("nat_rule: start_nat_rules 4.\n");
 				}
 #endif
 #endif
+				if(get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_NONE){
+					link_wan[wan_unit] = 0;
+					link_wan_old = link_wan[wan_unit];
+					continue;
+				}
+
 				link_wan_old = link_wan[wan_unit];
 				conn_state[wan_unit] = if_wan_phyconnected(wan_unit);
 if(test_log){

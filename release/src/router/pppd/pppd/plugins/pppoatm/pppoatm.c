@@ -26,6 +26,11 @@
 #include <sys/stat.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
+#ifdef RTCONFIG_DSL_BCM
+#define ATM_BACKEND_PPP_BCM      5
+#define ATM_BACKEND_PPP_BCM_DISCONN    6
+#define ATM_BACKEND_PPP_BCM_CLOSE_DEV  7
+#endif
 
 const char pppd_version[] = VERSION;
 
@@ -108,7 +113,11 @@ static void no_device_given_pppoatm(void)
 static void set_line_discipline_pppoatm(int fd)
 {
 	struct atm_backend_ppp be;
+#ifdef RTCONFIG_DSL_BCM
+	be.backend_num = ATM_BACKEND_PPP_BCM;
+#else
 	be.backend_num = ATM_BACKEND_PPP;
+#endif
 	if (!llc_encaps)
 		be.encaps = PPPOATM_ENCAPS_VC;
 	else if (!vc_encaps)
@@ -163,7 +172,42 @@ static int connect_pppoatm(void)
 
 static void disconnect_pppoatm(void)
 {
+#ifdef RTCONFIG_DSL_BCM
+	if (pppoa_fd > 0) {
+		struct atm_backend_ppp be;
+		be.backend_num = ATM_BACKEND_PPP_BCM_CLOSE_DEV;
+		if (ioctl(pppoa_fd, ATM_SETBACKEND, &be) < 0)
+		 fatal("ioctl(ATM_SETBACKEND): %m");
+		close(pppoa_fd);
+		pppoa_fd= -1;
+	}
+#else
 	close(pppoa_fd);
+#endif
+}
+
+static void send_config_pppoatm(int mtu, u_int32_t asyncmap,
+	int pcomp, int accomp)
+{
+	int sock;
+	struct ifreq ifr;
+	if (mtu > pppoatm_max_mtu)
+		error("Couldn't increase MTU to %d", mtu);
+	sock = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sock < 0)
+		fatal("Couldn't create IP socket: %m");
+	strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
+	ifr.ifr_mtu = mtu;
+	if (ioctl(sock, SIOCSIFMTU, (caddr_t) &ifr) < 0)
+		fatal("ioctl(SIOCSIFMTU): %m");
+	(void) close (sock);
+}
+
+static void recv_config_pppoatm(int mru, u_int32_t asyncmap,
+	int pcomp, int accomp)
+{
+	if (mru > pppoatm_max_mru)
+		error("Couldn't increase MRU to %d", mru);
 }
 
 void plugin_init(void)
@@ -187,8 +231,8 @@ struct channel pppoa_channel = {
     disconnect: &disconnect_pppoatm,
     establish_ppp: &generic_establish_ppp,
     disestablish_ppp: &generic_disestablish_ppp,
-    send_config: NULL,
-    recv_config: NULL,
+    send_config: &send_config_pppoatm,
+    recv_config: &recv_config_pppoatm,
     close: NULL,
     cleanup: NULL
 };

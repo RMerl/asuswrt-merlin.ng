@@ -76,7 +76,11 @@ static void ledbtn_alarmtimer()
 static void ledbtn(int sig)
 {
 	LED_status = 0;
+#if !defined(RTCONFIG_LED_BTN) && !defined(RTCONFIG_WIFI_TOG_BTN)
+	int val = button_pressed(BTN_WPS) && nvram_match("btn_ez_radiotoggle", "0") && nvram_match("btn_ez_mode", "1");
+#else
 	int val = button_pressed(BTN_LED);
+#endif
 	if (val) {
 		if (!btn_led_pressed)
 		{

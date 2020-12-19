@@ -408,12 +408,18 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 		'wifiNewCertWPA3': [['Open System', 'open'], ['Shared Key', 'shared'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA2-Enterprise', 'wpa2'], ['WPA/WPA2-Enterprise', 'wpawpa2'], ['Radius with 802.1x', 'radius']],
 		'wifiNewCertNoWPA3':  [['Open System', 'open'], ['Shared Key', 'shared'], ['WPA2-Personal', 'psk2'], ['WPA-Auto-Personal', 'pskpsk2'], ['WPA2-Enterprise', 'wpa2'], ['WPA-Auto-Enterprise', 'wpawpa2'], ['Radius with 802.1x', 'radius']],
 		'normalWithWPA3':  [['Open System', 'open'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA2-Enterprise', 'wpa2'], ['WPA/WPA2-Enterprise', 'wpawpa2']],
-		'normalWithoutWPA3': [['Open System', 'open'], ['WPA2-Personal', 'psk2'], ['WPA-Auto-Personal', 'pskpsk2'], ['WPA2-Enterprise', 'wpa2'], ['WPA-Auto-Enterprise', 'wpawpa2']]
+		'normalWithoutWPA3': [['Open System', 'open'], ['WPA2-Personal', 'psk2'], ['WPA-Auto-Personal', 'pskpsk2'], ['WPA2-Enterprise', 'wpa2'], ['WPA-Auto-Enterprise', 'wpawpa2']],
+		'6G': [['Opportunistic Wireless Encryption', 'owe'], ['WPA3-Personal', 'sae']]
 	}
 
 	if(sw_mode == '2' || (system.modelName == 'RT-AC87U' && unit == '1')){
 		if(system.wpa3Support){
-			auth_array = authObj['repeaterWithWPA3'];
+			if(system.band6gSupport && unit == '2'){
+				auth_array = authObj['6G'];
+			}
+			else{
+				auth_array = authObj['repeaterWithWPA3'];
+			}
 		}
 		else{
 			auth_array = authObj['repeater'];
@@ -432,10 +438,20 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 			}
 			else if(system.wpa3Support){
 				if(system.newWiFiCertSupport){
-					auth_array = authObj['wifiNewCertWPA3'];
+					if(system.band6gSupport && unit == '2'){
+						auth_array = authObj['6G'];
+					}
+					else{
+						auth_array = authObj['wifiNewCertWPA3'];
+					}
 				}
 				else{
-					auth_array = authObj['allWithWPA3'];
+					if(system.band6gSupport && unit == '2'){
+						auth_array = authObj['6G'];
+					}
+					else{
+						auth_array = authObj['allWithWPA3'];
+					}
 				}
 			}
 			else{
@@ -450,7 +466,12 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 	}
 	else{	// normal case
 		if(system.wpa3Support){
-			auth_array = authObj['normalWithWPA3'];
+			if(system.band6gSupport && unit == '2'){
+				auth_array = authObj['6G'];
+			}
+			else{
+				auth_array = authObj['normalWithWPA3'];
+			}
 		}
 		else{
 			auth_array = authObj['normalWithoutWPA3'];
@@ -647,7 +668,7 @@ function updateVariable(id, value, flag){
 	var prefix = id.split('_')[0];
 	var wpsEnable = variable['wps_enable'];
 	// variable padding
-	if(value == 'sae'){
+	if(value == 'sae' || value == 'owe'){
 		variable[prefix + '_mfp'] = '2';
 	}
 	else if(value == 'psk2sae' && nvram[prefix + '_mfp'] == '0'){	

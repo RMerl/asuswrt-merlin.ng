@@ -548,6 +548,11 @@ Rog Device      36
 	width: 28px;
 	background-image:url('/images/New_ui/networkmap/wiredIcon.png') !important;
 }
+.radio_plc{
+	height: 28px;
+	width: 28px;
+	background-image:url('/images/New_ui/networkmap/power.png') !important;
+}
 .clientlist_content{
 	position: absolute;
 	-webkit-border-radius: 5px;

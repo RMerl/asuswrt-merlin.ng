@@ -460,6 +460,7 @@ int init_toggle(void)
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
 		case MODEL_RTAX56_XD4:
+		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
 		case MODEL_RTAX56U:
 		case MODEL_RTAX86U:
@@ -3653,11 +3654,11 @@ void btn_check(void)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
 #elif defined(RTAX95Q)
 				eval("wl", "-i", "eth4", "ledbh", "10", "7");
-#elif defined(RTAX56_XD4)
+#elif defined(RTAX56_XD4) || defined(CTAX56_XD4)
 				eval("wl", "-i", "wl0", "ledbh", "10", "7");
 #elif defined(RTAX55) || defined(RTAX1800)
 				eval("wl", "-i", "eth2", "ledbh", "0", "25");
-#elif defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX82_XD6)
+#elif defined(BCM6750)
 #if defined(RTAX82U) && !defined(RTCONFIG_BCM_MFG)
 				if (!nvram_get_int("LED_order"))
 					eval("wl", "-i", "eth5", "ledbh", "0", "1");
@@ -3691,11 +3692,11 @@ void btn_check(void)
 				eval("wl", "-i", "eth6", "ledbh", "10", "7");
 #elif defined(RTAX95Q)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
-#elif defined(RTAX56_XD4)
+#elif defined(RTAX56_XD4) || defined(CTAX56_XD4)
 				eval("wl", "-i", "wl1", "ledbh", "10", "7");
 #elif defined(RTAX55) || defined(RTAX1800)
 				eval("wl", "-i", "eth3", "ledbh", "0", "25");
-#elif defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX82_XD6)
+#elif defined(BCM6750)
 #if defined(RTAX82U) && !defined(RTCONFIG_BCM_MFG)
 				if (!nvram_get_int("LED_order")) {
 					led_control(LED_5G, LED_ON);
@@ -3748,7 +3749,7 @@ void btn_check(void)
 			led_control(LED_LOGO, LED_ON);
 #endif
 			kill_pidfile_s("/var/run/usbled.pid", SIGTSTP); // inform usbled to reset status
-#ifdef RTAX82U
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400)
 			kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
 #endif
 		}
@@ -4949,11 +4950,11 @@ unsigned long get_etlan_count()
 	char buf[256];
 	char *ifname, *p;
 	unsigned long counter=0;
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000)
 	unsigned long tmpcnt=0;
 #endif
 
-#if defined(RTAX95Q) || defined(RTAX56_XD4)
+#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4)
 	return -1;
 #endif
 
@@ -5726,6 +5727,7 @@ void led_check(int sig)
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
 		case MODEL_RTAX56_XD4:
+		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
 		case MODEL_RTAX56U:
 		case MODEL_GTAXE11000:
@@ -6523,6 +6525,33 @@ void dnsmasq_check()
 #endif
 }
 
+#ifdef RPAX56
+void amas_linkctrl()
+{
+        char xif[256]={0}, *next = NULL;
+        int wan_state;
+	int bktime = nvram_get_int("bktime")?:5;
+
+	if(dpsta_mode() && !nvram_match("x_Setting", "0")) {
+        	if( nvram_get_int("cfg_alive")==1 && *nvram_safe_get("amas_ifname") &&  strstr(nvram_safe_get("sta_phy_ifnames"), nvram_safe_get("amas_ifname")) && !nvram_match("aet_ctrl", "1") ) {
+			_dprintf("%s phypower off:\n", __func__);
+                        foreach(xif, nvram_safe_get("lan_ifnames"), next) {
+				if(!strstr(nvram_safe_get("wl_ifnames"), xif))
+					eth_phypower(xif, 0);
+			}
+			_dprintf("%s phypower on after %d secs:\n", __func__, bktime);
+			sleep(bktime);
+                        foreach(xif, nvram_safe_get("lan_ifnames"), next) {
+				if(!strstr(nvram_safe_get("wl_ifnames"), xif))
+					eth_phypower(xif, 1);
+			}
+
+                        nvram_set("aet_ctrl", "1");
+                }
+        }
+}
+#endif
+
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 void roamast_check()
 {
@@ -7291,7 +7320,7 @@ static void link_pap_status()
 					set_rgbled(RGBLED_AP_MODE_CONNECTED);
 #endif
 				}
-				else if ((wifison_ready && sw_mode==SW_MODE_AP) || (!wifison_ready && nvram_match("re_mode", "1"))) { // AiMesh Re
+				else if ((wifison_ready && sw_mode==SW_MODE_AP) || (!wifison_ready && nvram_match("re_mode", "1"))) { //AiMesh Re
 					if (nvram_get_int("amas_eap_bhmode") > 0) { //Re Eth Only
 #if defined(RTCONFIG_LP5523)
 						lp55xx_leds_proc(LP55XX_DISCONNCOR_LDES, LP55XX_ACT_NONE);
@@ -7299,6 +7328,17 @@ static void link_pap_status()
 						set_rgbled(RGBLED_DISCONNECTED);
 #endif
 					}
+#if defined(MAPAC2200) || defined(MAPAC1300)
+					else if (nvram_match("productid", "MAP-AC2200") || nvram_match("productid", "MAP-AC1300")) { //Lyra only
+						if (prelink_pap_status == 1) {
+							link_pap_status = count_point + 20;
+							lp55xx_leds_proc(LP55XX_AMAS_RE_SYNC_LEDS, LP55XX_ACT_3ON1OFF);
+						}
+						else {
+							lp55xx_leds_proc(LP55XX_DISCONNCOR_LDES, LP55XX_ACT_NONE);
+						}
+					}
+#endif
 					else {
 #if defined(RTCONFIG_LP5523)
 						lp55xx_leds_proc(LP55XX_AMAS_RE_SYNC_LEDS, LP55XX_ACT_3ON1OFF);
@@ -8846,6 +8886,9 @@ wdp:
 	dnsmasq_check();
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	roamast_check();
+#endif
+#ifdef RPAX56
+	amas_linkctrl();
 #endif
 #ifdef RTAC87U
 	qtn_module_check();

@@ -77,6 +77,7 @@ start_pppd(int unit)
 	int ret = 0;
 #ifdef RTCONFIG_DSL
 	char dsl_prefix[16] = {0};
+	get_dsl_prefix_by_wan_unit(unit, dsl_prefix, sizeof(dsl_prefix));
 #endif
 
 	_dprintf("%s: unit=%d.\n", __FUNCTION__, unit);
@@ -147,6 +148,27 @@ start_pppd(int unit)
 		fprintf(fp, "nomppe nomppc\n");
 	}
 
+#ifdef RTCONFIG_DSL_HOST
+	if (nvram_match("dslx_transmode", "atm") && nvram_pf_match(dsl_prefix, "proto", "pppoa")) {
+		fprintf(fp, "plugin pppoatm.so %d.%d\n"
+			, nvram_pf_get_int(dsl_prefix, "vpi")
+			, nvram_pf_get_int(dsl_prefix, "vci"));
+		if (nvram_pf_get_int(dsl_prefix, "encap"))
+			fprintf(fp, "vc-encaps\n");
+		else
+			fprintf(fp, "llc-encaps\n");
+		if (nvram_pf_match(dsl_prefix, "pppoe_auth", "pap")) {
+			fprintf(fp, "-chap\n"
+						"-mschap\n"
+						"-mschap-v2\n"
+						);
+		}
+		else if (nvram_pf_match(dsl_prefix, "pppoe_auth", "chap")) {
+			fprintf(fp, "-pap\n");
+		}
+	}
+	else
+#endif
 	if (nvram_match(strcat_r(prefix, "proto", tmp), "pppoe")) {
 		fprintf(fp, "plugin rp-pppoe.so nic-%s\n",
 			nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
@@ -177,12 +199,11 @@ start_pppd(int unit)
 			fprintf(fp, "-pap\n");
 		}
 
-		get_dsl_prefix_by_wan_unit(unit, dsl_prefix, sizeof(dsl_prefix));
+#ifdef RTCONFIG_DSL_REMOTE
 		if (nvram_match("dslx_transmode", "atm")
 			&& nvram_pf_match(dsl_prefix, "proto", "pppoa")
 		) {
 			char *dsl_mac = NULL;
-#ifdef RTCONFIG_DSL_REMOTE
 			FILE *fp_dsl_mac;
 			int timeout = 10; /* wait up to 10 seconds */
 
@@ -198,11 +219,8 @@ start_pppd(int unit)
 			}
 			fprintf(fp, "rp_pppoe_sess %d:%s\n", 154,
 				(dsl_mac && *dsl_mac) ? dsl_mac : "00:11:22:33:44:55");
-#else
-			fprintf(fp, "rp_pppoe_sess %d:%s\n", 154,
-				nvram_safe_get(strcat_r(prefix, "hwaddr", tmp)));
-#endif
 		}
+#endif
 #endif
 
 		fprintf(fp, "mru %d\n", nvram_valid_get_int(strcat_r(prefix, "pppoe_mru", tmp), 128, 1500, 1492));

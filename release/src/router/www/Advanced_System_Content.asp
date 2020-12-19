@@ -1001,10 +1001,10 @@ var timezones = [
 	["UTC-5.45",	"(GMT+05:45) <#TZ57#>"],
 	["RFT-6",	"(GMT+06:00) <#TZ60#>"],
 	["UTC-6",	"(GMT+06:00) <#TZ58#>"],
-	["UTC-6_2",	"(GMT+06:00) <#TZ62_1#>"],
 	["UTC-6.30",	"(GMT+06:30) <#TZ61#>"],
 	["UTC-7",	"(GMT+07:00) <#TZ62#>"],
 	["UTC-7_2",	"(GMT+07:00) <#TZ63#>"],
+	["UTC-7_3",     "(GMT+07:00) <#TZ62_1#>"],      //UTC-6_2
 	["CST-8",	"(GMT+08:00) <#TZ64#>"],
 	["CST-8_1",	"(GMT+08:00) <#TZ65#>"],
 	["SST-8",	"(GMT+08:00) <#TZ66#>"],
@@ -1462,7 +1462,7 @@ function change_url(num, flag){
 	else if(flag == 'https_wan'){
 		var https_wanport = num;
 		var host_addr = "";
-		if(ddns_enable_x == "1" && ddns_hostname_x_t.length != 0)
+		if(check_ddns_status())
 				host_addr = ddns_hostname_x_t;
 		else
 			host_addr = wan_ipaddr;

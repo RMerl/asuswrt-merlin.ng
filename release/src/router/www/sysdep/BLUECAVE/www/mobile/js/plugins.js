@@ -308,6 +308,19 @@ function hadPlugged(deviceType){
 	return (usbDeviceList.join().search(deviceType) != -1)
 }
 
+function showDiableDHCPclientID(clientid_enable){
+	if(clientid_enable.checked) {
+		$('#wan_clientid').val("")
+						  .attr('disabled', true)
+						  .hide();
+	}
+	else {
+		$('#wan_clientid').val("")
+		                  .attr('disabled', false)
+		                  .show();
+	}
+}
+
 var Get_Component_Header = function(){
 	var tableTr = $("<tr>");
 
@@ -636,7 +649,7 @@ function handleSysDep(){
 		systemVariable.forceChangePwInTheEnd = true;
 	}
 
-	if(!isNoWAN) $(".amasNoWAN").remove();
+	if(!isNoWAN || !isSupport("amasNode")) $(".amasNoWAN").remove();
 	if(!isSupport("amas")) $(".amasSupport").remove();
 	if(isSupport("amas") && isSupport("amas_bdl")){
 		$("#amassearch_page").load("/mobile/pages/amassearch_page.html");

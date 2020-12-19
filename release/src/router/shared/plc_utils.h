@@ -58,6 +58,8 @@ struct remote_plc {
 			*/
 	int tx;
 	int rx;
+	int tx_mimo;
+	int rx_mimo;
 };
 
 extern int apply_private_name(char *pnn, char *nv);

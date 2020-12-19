@@ -23,7 +23,7 @@ TARGET_LIBS = -L$(TOP)/openssl -lssl -lcrypto -ldl -lm
 AUTHLIB_LIBS = -L$(TOP)/openssl -lssl -lcrypto -ldl -lm
 
 LDFLAGS = -L.
-LDFLAGS += -L$(TOP)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
+LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 ifeq ($(HND_ROUTER),y)
 LDFLAGS += $(EXTRALDFLAGS)

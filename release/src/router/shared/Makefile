@@ -495,6 +495,36 @@ prebuild/%.o:
 .depend: $(OBJS:%.o=%.c)
 	@$(CC) $(CFLAGS) -M $^ > .depend
 
+ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
+ifneq ($(wildcard prebuild/bcmutils.o),)
+bcmutils.o: prebuild/bcmutils.o
+	cp prebuild/$@ .
+else
+.bcmutils.depend: bcmutils.c
+	@$(CC) $(CFLAGS) -M $< > $@
+endif
+endif
+
+ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
+ifneq ($(wildcard prebuild/bcmwifi_channels.o),)
+bcmwifi_channels.o: prebuild/bcmwifi_channels.o
+	cp prebuild/$@ .
+else
+.bcmwifi_channels.depend: bcmwifi_channels.c
+	@$(CC) $(CFLAGS) -M $< > $@
+endif
+endif
+
+ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
+ifneq ($(wildcard prebuild/bcmxtlv.o),)
+bcmxtlv.o: prebuild/bcmxtlv.o
+	cp prebuild/$@ .
+else
+.bcmxtlv.depend: bcmxtlv.c
+	@$(CC) $(CFLAGS) -M $< > $@
+endif
+endif
+
 .%.depend: %.c
 	@$(CC) $(CFLAGS) -M $< > $@
 

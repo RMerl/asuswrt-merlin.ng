@@ -1347,6 +1347,9 @@ void time_zone_x_mapping(void)
 	else if (nvram_match("time_zone", "UTC-3_5")){	/*Volgograd*/
 		nvram_set("time_zone", "UTC-4_7");
 	}
+	else if (nvram_match("time_zone", "UTC-6_2")){  /*Novosibirsk*/
+		nvram_set("time_zone", "UTC-7_3");
+	}
 
 	len = snprintf(tmpstr, sizeof(tmpstr), "%s", nvram_safe_get("time_zone"));
 	/* replace . with : */

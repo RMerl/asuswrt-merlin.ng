@@ -284,7 +284,7 @@ int iface_name_to_vport(const char *iface)
  */
 int ipq60xx_vlan_set(int vtype, char *upstream_if, int vid, int prio, unsigned int mbr, unsigned int untag)
 {
-	unsigned int m = mbr, u = untag;
+	unsigned int m = mbr, u = untag, upstream_mask = 0;
 	int vport, upstream_vport, wan_vlan_br = 0, wan_br = 0;
 	char wvlan_if[IFNAMSIZ], vid_str[6], prio_str[4], brv_if[IFNAMSIZ];
 	char *add_upst_viface[] = { "ip", "link", "add", "link", upstream_if, wvlan_if, "type", "vlan", "id", vid_str, NULL };
@@ -302,6 +302,7 @@ int ipq60xx_vlan_set(int vtype, char *upstream_if, int vid, int prio, unsigned i
 		dbg("%s: Can't find vport for upstream iface [%s]\n", __func__, upstream_if);
 		return -1;
 	}
+	upstream_mask = 1U << upstream_vport;
 
 	if (vtype == VLAN_TYPE_WAN_NO_VLAN) {
 		wan_br = 1;
@@ -313,11 +314,11 @@ int ipq60xx_vlan_set(int vtype, char *upstream_if, int vid, int prio, unsigned i
 	/* Replace WAN port as selected upstream port. */
 	if (mbr & (1U << WAN_PORT)) {
 		mbr &= ~(1U << WAN_PORT);
-		mbr |= (1U << upstream_vport);
+		mbr |= upstream_mask;
 	}
 	if (untag & (1U << WAN_PORT)) {
 		untag &= ~(1U << WAN_PORT);
-		untag |= (1U << upstream_vport);
+		untag |= upstream_mask;
 	}
 
 	snprintf(vid_str, sizeof(vid_str), "%d", vid);
@@ -358,16 +359,45 @@ int ipq60xx_vlan_set(int vtype, char *upstream_if, int vid, int prio, unsigned i
 	}
 
 	if ((vtype == VLAN_TYPE_WAN && wan_vlan_br) || vtype == VLAN_TYPE_STB_VOIP) {
-		for (vport = 0, m = mbr & ~((1U << upstream_vport)), u = untag;
+		for (vport = 0, m = mbr & ~upstream_mask, u = untag;
 		     vport < MAX_WANLAN_PORT && m > 0;
 		     vport++, m >>= 1, u >>= 1)
 		{
+			char *tmp_str;
 			if (!(m & 1))
 				continue;
 
 			dbg("%s: vport %d iface %s vid %d prio %d u %d\n",
 				__func__, vport, vport_to_iface[vport], vid, prio, u & 1);
-			eval("brctl", "addif", brv_if, (char*) vport_to_iface[vport]);
+
+			if (u & 1) {
+				char br_untag_path[] = "/sys/class/net/ethXXXXXXXXXXXX/brport/untagged_vlan_en";
+				eval("brctl", "addif", brv_if, (char*) vport_to_iface[vport]);
+				snprintf(br_untag_path, sizeof(br_untag_path), "/sys/class/net/%s/brport/untagged_vlan", (char*) vport_to_iface[vport]);
+				f_write_string(br_untag_path, vid_str, 0, 0); // vid value, include 0
+				snprintf(br_untag_path, sizeof(br_untag_path), "/sys/class/net/%s/brport/untagged_vlan_en", (char*) vport_to_iface[vport]);
+				f_write_string(br_untag_path, "1", 0, 0); // enable
+			} else {
+				char lan_if[IFNAMSIZ], lan_vlan_if[IFNAMSIZ];
+				char *add_lan_vlan_viface[] = { "ip", "link", "add", "link", lan_if, lan_vlan_if, "type", "vlan", "id", vid_str, NULL };
+				char *set_lan_vlan_egress_map[] = { "vconfig", "set_egress_map", lan_vlan_if, "0", prio_str, NULL };
+				snprintf(lan_if, sizeof(lan_if), "%s",  (char *)vport_to_iface[vport]);
+				snprintf(lan_vlan_if, sizeof(lan_vlan_if), "%s.%d", (char *)vport_to_iface[vport], vid);
+				_eval(add_lan_vlan_viface, DBGOUT, 0, NULL);
+				_eval(set_lan_vlan_egress_map, DBGOUT, 0, NULL);
+				eval("ifconfig", lan_vlan_if, "0.0.0.0", "up");
+				eval("brctl", "addif", brv_if, lan_vlan_if);
+			}
+			// remove lan_nic from lan_ifnames
+			tmp_str = strdup(nvram_safe_get("lan_ifnames"));
+			if (tmp_str) {
+				if (remove_word(tmp_str, ((char *)vport_to_iface[vport]))) {
+					trim_space(tmp_str);
+					nvram_set("lan_ifnames", tmp_str);
+				}
+				free(tmp_str);
+				eval("ifconfig", (char *)vport_to_iface[vport], "0.0.0.0", "up");
+			}
 		}
 	}
 
@@ -1164,11 +1194,16 @@ void __post_start_lan_wl(void)
 
 int __sw_based_iptv(void)
 {
-	/* GT-AXY16000 always use software bridge to implement IPTV feature.
-	 * If we support LAN3~8 as upstream port of IPTV and all VoIP/STB
-	 * ports on LAN3~8, we can support IPTV by just configure QCA8337
-	 * switch.  Return zero if all above conditions true.
+	/* IPQ60XX always use software bridge to implement IPTV feature.
 	 */
+	return 1;
+}
+
+/**
+ * for compatible with qca8075_qca8337_phy_aqr107_ar8035_qca8033.c mechanism
+ */
+int __sw_bridge_iptv_different_switches(void)
+{
 	return 1;
 }
 

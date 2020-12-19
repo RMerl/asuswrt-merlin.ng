@@ -242,9 +242,9 @@ start_emf(char *lan_ifname)
 	}
 #endif
 #ifdef RTCONFIG_PROXYSTA
-#ifdef RPAX56
-	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", "0");
-	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "2",  "-m", "0");
+#ifdef RTCONFIG_HND_ROUTER_AX
+	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", (psta_exist() || psr_exist() || (sw_mode() == SW_MODE_AP && !nvram_get_int("bcm_snooping"))) ? "0" : "2");
+	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "2",  "-m", (psta_exist() || psr_exist() || (sw_mode() == SW_MODE_AP && !nvram_get_int("bcm_snooping"))) ? "0" : "2");
 #else
 	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", (psta_exist() || psr_exist()) ? "0" : "2");
 	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "2",  "-m", (psta_exist() || psr_exist()) ? "0" : "2");
@@ -1642,7 +1642,7 @@ void start_lan(void)
 #endif
 #endif
 
-#if defined(RTAX56_XD4)
+#if defined(RTAX56_XD4) || defined(CTAX56_XD4)
 				if (!strcmp(ifname, "wl0"))
 					set_hwaddr(ifname, (const char *) nvram_safe_get("0:macaddr"));
 				if (!strcmp(ifname, "wl1"))
@@ -5231,7 +5231,7 @@ void CP_lanaccess_wl(void)
 				SKIP_ABSENT_FAKE_IFACE(ifname);
 
 				snprintf(nv, sizeof(nv) - 1, "%s_lanaccess", wif_to_vif(ifname));
-				lanaccess_mssid(ifname, !strcmp(nvram_safe_get(nv), "off");
+				lanaccess_mssid(ifname, !strcmp(nvram_safe_get(nv), "off"));
 			}
 			free(wl_ifnames);
 		}

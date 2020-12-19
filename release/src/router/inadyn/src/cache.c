@@ -165,7 +165,6 @@ int read_cache_file(ddns_t *ctx)
 // XXX: TODO better plugin identifiction here
 		for (j = 0; j < info->alias_count; j++)
 			read_one(&info->alias[j], nonslookup);
-
 		info = conf_info_iterator(0);
 	}
 
@@ -193,6 +192,38 @@ int write_cache_file(ddns_alias_t *alias)
 
 	return 1;
 }
+
+#ifdef ASUSWRT
+int remove_cache_file_with_hostname(ddns_alias_t *alias)
+{
+	char buf[512] = {0};
+	char old_domain_name[512] = {0};
+
+#if 0
+	if(!alias || !cache_dir)
+		return 0;
+
+	nvram_get("ddns_hostname_old", old_domain_name);
+
+	if(strcmp(old_domain_name, alias->name))
+	{
+		logit(LOG_NOTICE, "Remove old cache file %s for %s", old_domain_name, alias->name);
+		snprintf(buf, sizeof(buf),  "%s/%s.cache", cache_dir, old_domain_name);
+		unlink(buf);
+	}
+	return 1;
+#else
+	if(!cache_dir)
+		return 0;
+
+	logit(LOG_NOTICE, "Remove old cache file %s for %s", cache_dir, alias->name);
+	snprintf(buf, sizeof(buf),  "rm -rf %s/*", cache_dir);
+	system(buf);
+
+#endif
+}
+#endif
+
 
 /**
  * Local Variables:

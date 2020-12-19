@@ -55,6 +55,15 @@
 #define RC_DDNS_RSP_NOTOK               48
 #define RC_DDNS_RSP_RETRY_LATER         49
 #define RC_DDNS_RSP_AUTH_FAIL           50
+#ifdef ASUSWRT
+#define RC_DDNS_RSP_DOMAIN_IN_USE_REG  100
+#define RC_DDNS_RSP_DOMAIN_IN_USE_UPDATE   101
+#define RC_DDNS_INVALID_HOSTNAME         102
+#define RC_DDNS_INVALID_DOMAIN_NAME          103
+#define RC_DDNS_INVALID_IP          104
+#define RC_DDNS_RSP_REG_BLOCK  105
+#define RC_DDNS_RSP_PROXY_AUTH_REQ 106
+#endif
 
 #define RC_OS_INVALID_IP_ADDRESS        61
 #define RC_OS_FORK_FAILURE              62

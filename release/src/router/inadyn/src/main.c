@@ -216,12 +216,7 @@ static int compose_paths(void)
 
 	/* Default cache dir: "/var" + "/cache/" + "inadyn" */
 	if (!cache_dir) {
-
-#ifdef ASUSWRT
-		size_t len = strlen("/tmp/inadyn.cache") + 1;
-#else
 		size_t len = strlen(LOCALSTATEDIR) + strlen(ident) + 8;
-#endif
 
 		cache_dir = malloc(len);
 		if (!cache_dir) {
@@ -229,11 +224,7 @@ static int compose_paths(void)
 			logit(LOG_ERR, "Failed allocating memory, exiting.");
 			return RC_OUT_OF_MEMORY;
 		}
-#ifdef ASUSWRT
-		strcpy(cache_dir, "/tmp/inadyn.cache");
-#else
 		snprintf(cache_dir, len, "%s/cache/%s", LOCALSTATEDIR, ident);
-#endif
 
 		if (access(cache_dir, W_OK)) {
 			char *home, *tmp;
@@ -553,34 +544,37 @@ leave:
 		logit(LOG_ERR, "Error code %d: %s", rc, error_str(rc));
 
 #ifdef ASUSWRT
-	switch (rc) {
-	case RC_OK:
-		nvram_set("ddns_return_code", "200");
-		nvram_set("ddns_return_code_chk", "200");
-		break;
-	case RC_TCP_CONNECT_FAILED:
-		nvram_set ("ddns_return_code", "Time-out");
-		nvram_set ("ddns_return_code_chk", "Time-out");
-		break;
-	case RC_HTTPS_FAILED_CONNECT:
-	case RC_HTTPS_FAILED_GETTING_CERT:
-		nvram_set ("ddns_return_code", "connect_fail");
-		nvram_set ("ddns_return_code_chk", "connect_fail");
-		break;
-	case RC_DDNS_RSP_NOHOST:
-	case RC_DDNS_RSP_NOTOK:
-		nvram_set("ddns_return_code", "Update failed");
-		nvram_set("ddns_return_code_chk", "Update failed");
-		break;
-	case RC_DDNS_RSP_AUTH_FAIL:
-		nvram_set("ddns_return_code", "auth_fail");
-		nvram_set("ddns_return_code_chk", "auth_fail");
-		break;
-	default:
-		nvram_set("ddns_return_code", "unknown_error");
-		nvram_set("ddns_return_code_chk", "unknown_error");
-		break;
-	}
+		if(nvram_match("ddns_return_code", "ddns_query"))
+		{
+			switch (rc) {
+			case RC_OK:
+				nvram_set("ddns_return_code", "200");
+				nvram_set("ddns_return_code_chk", "200");
+				break;
+			case RC_TCP_CONNECT_FAILED:
+				nvram_set ("ddns_return_code", "Time-out");
+				nvram_set ("ddns_return_code_chk", "Time-out");
+				break;
+			case RC_HTTPS_FAILED_CONNECT:
+			case RC_HTTPS_FAILED_GETTING_CERT:
+				nvram_set ("ddns_return_code", "connect_fail");
+				nvram_set ("ddns_return_code_chk", "connect_fail");
+				break;
+			case RC_DDNS_RSP_NOHOST:
+			case RC_DDNS_RSP_NOTOK:
+				nvram_set("ddns_return_code", "Update failed");
+				nvram_set("ddns_return_code_chk", "Update failed");
+				break;
+			case RC_DDNS_RSP_AUTH_FAIL:
+				nvram_set("ddns_return_code", "auth_fail");
+				nvram_set("ddns_return_code_chk", "auth_fail");
+				break;
+			default:
+				nvram_set("ddns_return_code", "unknown_error");
+				nvram_set("ddns_return_code_chk", "unknown_error");
+				break;
+			}
+		}
 #endif
 
 	return rc;

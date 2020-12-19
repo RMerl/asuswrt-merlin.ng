@@ -661,7 +661,9 @@ static int update_alias_table(ddns_t *ctx)
 			if (!alias->update_required) {
 #ifdef ASUSWRT
 				if (script_exec && !alias->script_called)
+				{
 					goto script_exec;
+				}
 #endif
 				continue;
 			}
@@ -672,6 +674,9 @@ static int update_alias_table(ddns_t *ctx)
 			alias->update_required = 0;
 			alias->last_update = time(NULL);
 
+#ifdef ASUSWRT
+			remove_cache_file_with_hostname(alias);
+#endif
 			/* Update cache file for this entry */
 			write_cache_file(alias);
 
@@ -927,7 +932,6 @@ int ddns_main_loop(ddns_t *ctx)
 			    ++ctx->num_iterations >= ctx->total_iterations)
 				break;
 		}
-
 		if (ctx->cmd == CMD_RESTART) {
 			logit(LOG_INFO, "RESTART command received. Restarting.");
 			ctx->cmd = NO_CMD;

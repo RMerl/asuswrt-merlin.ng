@@ -1786,14 +1786,14 @@ function showDiableDHCPclientID(clientid_enable){
 				<tr>
 					<th width="40%">Class-identifier (option 60):</th>
 					<td>
-						<input type="text" name="wan_vendorid" class="input_25_table" value="<% nvram_get("wan_vendorid"); %>" maxlength="126" autocapitalization="off" autocomplete="off">
+						<input type="text" id="wan_vendorid" name="wan_vendorid" class="input_25_table" value="<% nvram_get("wan_vendorid"); %>" maxlength="126" autocapitalization="off" autocomplete="off">
 					</td>
 				</tr>
 				<tr>
 					<th width="40%">Client-identifier (option 61):</th>
 					<td>
 						<input type="checkbox" id="tmp_dhcp_clientid_type" name="tmp_dhcp_clientid_type" onclick="showDiableDHCPclientID(this);" <% nvram_match("wan_clientid_type", "1", "checked"); %>>IAID/DUID<br>
-						<input type="text" name="wan_clientid" class="input_25_table" value="<% nvram_get("wan_clientid"); %>" maxlength="126" autocapitalization="off" autocomplete="off">
+						<input type="text" id="wan_clientid" name="wan_clientid" class="input_25_table" value="<% nvram_get("wan_clientid"); %>" maxlength="126" autocapitalization="off" autocomplete="off">
 					</td>
 				</tr>
 			</table>
@@ -1977,14 +1977,6 @@ function showDiableDHCPclientID(clientid_enable){
 		</tr>
 
 		<tr>
-		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,7);">Manual clientid (Option 61)</a></th>
-			<td><input type="text" name="wan_clientid" class="input_32_table" maxlength="128" value="<% nvram_get("wan_clientid"); %>" onKeyPress="return validator.isString(this, event)"></td>
-		</tr>
-		<tr>
-		<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,8);">Manual Vendor class (Option 60)</a></th>
-			<td><input type="text" name="wan_vendorid" class="input_32_table" maxlength="128" value="<% nvram_get("wan_vendorid"); %>" onKeyPress="return validator.isString(this, event)"></td>
-		</tr>
-
 		<tr>
 			<th><#Extend_TTL_Value#></th>
 				<td>

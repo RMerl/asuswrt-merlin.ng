@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Jul 16 16:39:04 2018
+ * Date: Fri Oct 16 18:05:11 2020
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "gt-ac5300"
+#define TMCFG_MODEL "rt-ac86u"
 
 /*
  * Target device information
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswgt_AC5300_GPL_384_20648/release/src-rt-5.02hnd/kernel/linux-4.1"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC86U_GPL_384_82180/release/src-rt-5.02hnd/kernel/linux-4.1"
 #define TMCFG_KERN_ARCH "arm64"
 #define TMCFG_CPU_32BITS 0 // n
 #define TMCFG_CPU_64BITS 1 // y
@@ -60,7 +60,7 @@
 /*
  * Target device toolchain (cross utilities)
  */
-#define TMCFG_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-gt_ac5300_k/usr/bin/aarch64-linux-"
+#define TMCFG_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ax88u_k/usr/bin/aarch64-linux-"
 #define TMCFG_TC_BIT_FIELD_ORDER_LITTLE_ENDIAN 1 // y
 #define TMCFG_TC_BIT_FIELD_ORDER_BIG_ENDIAN 0 // n
 #define TMCFG_TC_CC "$(TMCFG_TC_PFX)gcc"
@@ -95,7 +95,7 @@
  */
 #define TMCFG_E_EXTRA_CFLAGS ""
 #define TMCFG_E_KMOD_NAME "tdts"
-#define TMCFG_E_KMOD_IOCTL_DEV_NAME "detector"
+#define TMCFG_E_KMOD_IOCTL_DEV_NAME "idp"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
 #define TMCFG_E_KMOD_IOCTL_DEV_MIN 0
 #define TMCFG_E_KMOD_IOCTL_DEV_MAGIC 190
@@ -250,7 +250,7 @@
 /*
  * Userspace toolchain
  */
-#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-gt_ac5300_u/usr/bin/arm-buildroot-linux-gnueabi-"
+#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ax88u_u/usr/bin/arm-buildroot-linux-gnueabi-"
 #define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
 #define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
 #define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"

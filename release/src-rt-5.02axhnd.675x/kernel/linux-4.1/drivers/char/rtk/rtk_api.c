@@ -272,7 +272,7 @@ int rtk_ext_swctl_init(void)
     mac_cfg.nway = DISABLED; 
     mac_cfg.txpause = ENABLED; 
     mac_cfg.rxpause = ENABLED;   
-    rtk_port_rgmiiDelayExt_set(EXT_PORT0, 1, 0);
+    rtk_port_rgmiiDelayExt_set(EXT_PORT1, 1, 0);
         
 	if ((ret = rtk_port_macForceLinkExt_set(EXT_PORT1, mode, &mac_cfg))!= RT_ERR_OK)
     {

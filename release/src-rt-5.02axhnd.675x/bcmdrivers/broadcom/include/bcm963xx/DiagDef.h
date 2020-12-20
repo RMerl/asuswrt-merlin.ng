@@ -344,6 +344,8 @@ typedef struct {
 #define DIAG_DEBUG_CMD_PHY_FROM_TMP			56	/* PHY load from /tmp on/off */
 #define	DIAG_DEBUG_CMD_DUMP_MEM				57  /* dump specified memory range to a file */
 #define	DIAG_DEBUG_CMD_SECT_OFF				58  /* offsets of the variables used in section dump */
+#define DIAG_DEBUG_CMD_READ_AFEPLL_ChCfg	59	/* param1-chanId(0 - ch01, 1 - ch23, 2 - ch45) to read */
+#define DIAG_DEBUG_CMD_WRITE_AFEPLL_ChCfg	60	/* param1-chanId(0 - ch01, 1 - ch23, 2 - ch45) to write; param2-value to be written */
 
 
 typedef struct {

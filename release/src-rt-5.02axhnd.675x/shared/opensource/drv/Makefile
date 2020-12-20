@@ -221,6 +221,11 @@ ifeq ($(strip ${BRCM_CHIP}),47622)
     DRV_OBJS += phys/phy_bp_parsing_47622.o
     DRV_OBJS += phys/phy_drv_sf2.o
     DRV_OBJS += phys/phy_drv_ext3.o
+ifeq ($(strip ${MODEL}),RTAX95Q)
+    DRV_OBJS += phys/nic_rtl8226b_init.o
+    DRV_OBJS += phys/nic_rtl8226.o
+    DRV_OBJS += phys/rtl8226.o
+endif
     DRV_OBJS += phys/phy_mac_sec.o
     DRV_OBJS += phys/phy_mac_sec_list.o
     DRV_OBJS += phys/sha256.o

@@ -53,7 +53,7 @@ OBJS = $(CEVENTD_OBJS) $(CEVENTC_OBJS)
 
 ${OBJS}: cevent_app_common.h
 
-EXES = ceventd ceventc
+EXES = $(if $(wildcard prebuilt/ceventd),prebuilt/ceventd,ceventd) $(if $(wildcard prebuilt/ceventc),prebuilt/ceventc,ceventc)
 
 INST = $(addsuffix -install,$(EXES))
 

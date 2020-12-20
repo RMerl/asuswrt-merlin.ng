@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Nov 18 11:33:49 2019
+ * Date: Thu Oct 15 18:08:55 2020
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -93,10 +93,10 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_RT_AX95Q 1 // y
-#define TMCFG_MODEL "rt-ax95q"
+#define TMCFG_MODEL_RT_AX56U 1 // y
+#define TMCFG_MODEL "rt-ax56u"
 #define TMCFG_OEM_SRC 1 // y
-#define TMCFG_OEM_SRC_BRCM_FC 1 // y
+#define TMCFG_OEM_SRC_BRCM_FC_6755 1 // y
 
 /*
  * Target device information
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX95Q_GPL_386_24350/release/src-rt-5.02axhnd.675x/kernel/linux-4.1/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX56U_GPL_384_9424/release/src-rt-5.02axhnd.675x/kernel/linux-4.1/"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
@@ -161,7 +161,6 @@
 #define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
-#define TMCFG_E_UDB_CORE_APP_WBL 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
 #define TMCFG_E_UDB_CORE_WBL_MIN_VER 2
@@ -177,7 +176,7 @@
 #define TMCFG_E_UDB_CORE_WBL_URL_NUM 1024
 #define TMCFG_E_UDB_CORE_WEB_FUNC 1 // y
 #define TMCFG_E_UDB_CORE_DC 1 // y
-#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 1 // y
+#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 0 // n
 #define TMCFG_E_UDB_CORE_ANOMALY_PREVENT 1 // y
 #define TMCFG_E_UDB_CORE_VIRTUAL_PATCH 1 // y
 #define TMCFG_E_UDB_CORE_SWNAT 0 // n
@@ -187,15 +186,13 @@
 #define TMCFG_E_UDB_CORE_HWNAT 0 // n
 #define TMCFG_E_UDB_CORE_HWQOS 0 // n
 #define TMCFG_E_UDB_CORE_APP_PATROL 1 // y
-#define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 1 // y
-#define TMCFG_E_UDB_CORE_APP_REDIRECT_URL 1 // y
-#define TMCFG_E_UDB_CORE_PATROL_TIME_GRP_NUM 32
-#define TMCFG_E_UDB_CORE_PATROL_TIME_DEV_NUM 6
+#define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 0 // n
+#define TMCFG_E_UDB_CORE_APP_REDIRECT_URL 0 // n
 #define TMCFG_E_UDB_CORE_PROG_CTRL 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_NONE 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V1 0 // n
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V2 0 // n
-#define TMCFG_E_UDB_CORE_WPR_PAGE 1 // y
+#define TMCFG_E_UDB_CORE_WPR_PAGE 0 // n
 #define TMCFG_E_UDB_CORE_TMDBG 0 // n
 #define TMCFG_E_UDB_CORE_MEMTRACK 0 // n
 #define TMCFG_E_UDB_CORE_HTTP_REFER 0 // n
@@ -212,7 +209,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "e8fa91de"
+#define TMCFG_E_REL_PKG_LOCAL_VER "7812743e"
 
 /*
  * Accompany applications or modules
@@ -221,7 +218,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX95Q_GPL_386_24350/release/src-rt-5.02axhnd.675x/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AX95Q_GPL_386_24350/release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AX95Q_GPL_386_24350/release/src-rt-5.02axhnd.675x/bcmdrivers/opensource/include/bcm963xx"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX56U_GPL_384_9424/release/src-rt-5.02axhnd.675x/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AX56U_GPL_384_9424/release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AX56U_GPL_384_9424/release/src-rt-5.02axhnd.675x/bcmdrivers/opensource/include/bcm963xx"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""
@@ -247,7 +244,7 @@
 #define TMCFG_APP_U_TC_RANLIB "$(TMCFG_APP_U_TC_PFX)ranlib"
 #define TMCFG_APP_U_TC_STRIP "$(TMCFG_APP_U_TC_PFX)strip"
 #define TMCFG_APP_U_TC_OBJDUMP "$(TMCFG_APP_U_TC_PFX)objdump"
-#define TMCFG_APP_U_EXTRA_CFLAGS ""
+#define TMCFG_APP_U_EXTRA_CFLAGS "-fstack-protector-all"
 #define TMCFG_APP_U_EXTRA_LDFLAGS ""
 
 /*
@@ -285,10 +282,10 @@
 #define TMCFG_APP_U_TDTS_WRED_THREAD_POOL 1 // y
 #define TMCFG_APP_U_TDTS_WRED_PROG_CTRL 1 // y
 #define TMCFG_APP_U_WRS_LOCAL_CACHE 0x7D000
-#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10"
+#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10-ASUS-HRU77VWJ"
 #define TMCFG_APP_U_WRED_TMUFE_VENDOR_ID "ASUS"
-#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-en.url.trendmicro.com"
-#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 0 // n
+#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-asus-en.url.trendmicro.com"
+#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 1 // y
 #define TMCFG_APP_U_TDTS_WRED_TMUFE21 0 // n
 #define TMCFG_APP_U_WBL 1 // y
 

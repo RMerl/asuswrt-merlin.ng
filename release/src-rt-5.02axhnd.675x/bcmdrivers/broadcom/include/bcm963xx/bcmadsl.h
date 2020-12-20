@@ -42,7 +42,7 @@ extern "C" {
 #endif
 
 /* Incldes. */
-#if !defined(_CFE_) && !defined(_NOOS)
+#if !defined(_NOOS)
 #include <linux/version.h>
 #endif
 #include "AdslMibDef.h"
@@ -54,9 +54,7 @@ extern "C" {
 #define BCM_IOC_PTR(ptr_t, ptr) ptr_t ptr;
 #endif
    
-#ifndef _CFE_
 #define DSL_KTHREAD
-#endif
 
 //**************************************************************************
 // Type Definitions
@@ -237,7 +235,7 @@ BCMADSL_STATUS BcmAdsl_Check(void);
 BCMADSL_STATUS BcmAdsl_MapAtmPortIDs(unsigned short usAtmFastPortId, unsigned short usAtmInterleavedPortId);
 #endif
 
-#if defined(__KERNEL__) || defined(_CFE_) || defined(__ECOS) || defined(_NOOS)
+#if defined(__KERNEL__) || defined(__ECOS) || defined(_NOOS)
 BCMADSL_STATUS BcmAdsl_Initialize(unsigned char lineId, ADSL_FN_NOTIFY_CB pFnNotifyCb, void *pParm, adslCfgProfile *pAdslCfg);
 BCMADSL_STATUS BcmAdsl_Uninitialize(unsigned char lineId);
 BCMADSL_STATUS BcmAdsl_ConnectionStart(unsigned char lineId);

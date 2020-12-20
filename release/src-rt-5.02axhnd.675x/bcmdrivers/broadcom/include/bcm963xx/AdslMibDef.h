@@ -136,7 +136,7 @@ written consent.
  *
  *
  *****************************************************************************/
-#if !defined(_CFE_) && !defined(_NOOS)
+#if !defined(_NOOS)
 #include <linux/version.h>
 #endif
 
@@ -164,7 +164,12 @@ extern "C" {
 #define PSDATA_IMPL_VERSION		2
 
 #ifndef CONFIG_VDSL_SUPPORTED
+#if defined(CONFIG_BCM963268) || defined(CHIP_63268) || defined(CONFIG_BCM963138) || defined(CHIP_63138) ||  \
+	  defined(CONFIG_BCM963148) || defined(CHIP_63148) || defined(CONFIG_BCM963381) || defined(CHIP_63381) || \
+	  defined(CONFIG_BCM963158) || defined(CHIP_63158) || defined(CONFIG_BCM963178) || defined(CHIP_63178) || \
+	  defined(DMP_VDSL2WAN_1)
 #define CONFIG_VDSL_SUPPORTED
+#endif
 #endif
 
 #if defined(CONFIG_VDSL_SUPPORTED)
@@ -585,6 +590,7 @@ typedef struct _adslVersionInfo {
 #define kOidAdslPrivGetTodInfo              55
 #define kOidAdslPrivGetMrefPsdInfo          56
 #define kOidAdslPrivGetExtraSkbCnt          57
+#define kOidAdslPrivGetLineFeatures         58
 
 
 #define kOidAdslExtraPLNInfo						11
@@ -1076,6 +1082,8 @@ typedef struct _adslChanCounters {
     unsigned int       adslChanUncorrectBlks;
     unsigned int       adslChanTxFEC;
     unsigned int       adslChanTxCRC;
+    unsigned int       rxUncorrectableCW;
+    unsigned int       txUncorrectableCW;
 } adslChanCounters;
 
 typedef struct _adslChanPerfDataEntry {
@@ -1145,7 +1153,10 @@ typedef struct _adslINMConfiguration {
 #define kXdslEventFastRetrain       0x800
 #define kXdslEventKeyChal          0x1000
 #define kXdslEventSeltNext         0x2000
-
+#ifdef SUPPORT_HMI
+#define kXdslEvent15MinutesCntrs   0x4000
+#define kXdslEvent24HoursCntrs     0x8000
+#endif
 
 typedef struct _adslThreshCounters {
     unsigned int       adslThreshLofs;
@@ -1922,6 +1933,13 @@ struct MrefPsd {
 
 #endif  /*__MREFPSD_  */
 
+typedef struct {
+  unsigned int  supportedStandards;
+  unsigned int  enabledStandards;
+  unsigned int  supportedOptions;
+  unsigned int  enabledOptions;
+} LineFeatureInfos;
+
 #endif  /* SUPPORT_HMI */
 
 /* Global info structure */
@@ -2084,7 +2102,9 @@ typedef struct _adslMibInfo {
 #if defined(SUPPORT_DSL_GFAST) || defined(CONFIG_BCM_DSL_GFAST)
 	unsigned int gfastSupportedOptions;
 	gfastDtaInfo			gfastDta;
+	gfastCounters		gfastCur15MinCntrs;
 #endif
+	ginpCounters		ginpCur15MinCntrs[2];	/* NE - 0, FE - 1 */
 } adslMibInfo;
 
 #if defined(__cplusplus)

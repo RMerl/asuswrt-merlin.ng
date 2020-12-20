@@ -5,7 +5,8 @@ all:
 	@cp -f prebuilt/$(EXE) .
 
 install: generic_exe_install
-	ln -sf $(EXE) $(INSTALL_DIR)/bin/bmc
+	mkdir -p $(INSTALL_DIR)/bin
+	(cd $(INSTALL_DIR)/bin; rm -f bmc; ln -s $(EXE) bmc)
 
 clean:
 

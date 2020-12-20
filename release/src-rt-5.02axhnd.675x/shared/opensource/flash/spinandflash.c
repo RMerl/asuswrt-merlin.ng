@@ -176,6 +176,7 @@
 #define FMPART              0xA1
 //#define ID_FM25G01B         0xD1 // do not support, has ECC enable in wrong location
 #define ID_FM25S01          0xA1
+#define ID_FM25S01A         0xE4 // (DID) Device ID
 
 /* XTX manufacturer ID
    XTX parts have a few incompatibilities with other SPI NAND parts,
@@ -236,6 +237,7 @@
      {SPI_MAKE_ID(XTXPART,      ID_XT26G01A),    "XTX XT26G01A"},           \
      {SPI_MAKE_ID(XTXPART,      ID_XT26G02A),    "XTX XT26G02A"},           \
      {SPI_MAKE_ID(FMPART,       ID_FM25S01),     "FM 25S01"},               \
+     {SPI_MAKE_ID(FMPART,       ID_FM25S01A),    "FM 25S01A"},              \
      {0,""}                                                                 \
     }
 
@@ -1089,6 +1091,9 @@ static int spi_nand_read_cfg(PCFE_SPI_NAND_CHIP pchip)
         pchip->chip_spare_size = 0x80; // 128, encompasses whole OOB and ECC
         pchip->ecclayout = &spinand_oob_toshiba_micron_ab;
 #endif
+        break;
+
+    case SPI_MAKE_ID(FMPART, ID_FM25S01A): // 1Gb, 128MB
         break;
 
     default: // 1Gb, 128MB

@@ -4,7 +4,7 @@ EXE = bcm_bootstate
 all:
 	@cp -f prebuilt/$(EXE) .
 
-install:
+install: generic_exe_install
 
 clean:
 

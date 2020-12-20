@@ -1,8 +1,14 @@
 
 EXE = swmdk
 
+ifneq ($(wildcard prebuilt/$(EXE)),)
 all:
 	@cp -f prebuilt/$(EXE) .
+else
+all:
+	echo "no prebuilt $(EXE), touch $(EXE) for non-swmdk models"
+	touch ./$(EXE)
+endif
 
 install: generic_exe_install
 	mkdir -p $(INSTALL_DIR)/etc/init.d

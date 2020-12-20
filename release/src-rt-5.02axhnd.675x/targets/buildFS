@@ -423,6 +423,11 @@ if [ "$BUILD_NAME" == "RT-AX55" ] || [ "$BUILD_NAME" == "RT-AX1800" ]; then
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/cdrom
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/scsi
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/usb
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/net/bonding/bonding.ko
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/fs
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/net/ipv4/tcp_bic.ko
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/net/ipv4/tcp_htcp.ko
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/net/ipv4/tcp_westwood.ko
 	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/dhd/43684b0
 	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/9*.nvm
 	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/MAP-AX6600.nvm

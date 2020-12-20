@@ -45,6 +45,10 @@ else
 REBUILD_IGS_MODULE=$(shell if [ -d "$(src)/$(IGSSRCDIR)" -a "$(REUSE_PREBUILT_IGS)" != "1" ]; then echo 1; else echo 0; fi)
 endif
 
+ifneq ($(wildcard $(src)/../../router-sysdep/hnd_igs/prebuilt/igs.o),)
+REBUILD_IGS_MODULE=0
+endif
+
 ifeq ($(REBUILD_IGS_MODULE),1)
 
 IGS_OBJS := $(IGSCSRCDIR)/igsc.o $(IGSCSRCDIR)/igsc_sdb.o $(IGSSRCDIR)/igs_linux.o \

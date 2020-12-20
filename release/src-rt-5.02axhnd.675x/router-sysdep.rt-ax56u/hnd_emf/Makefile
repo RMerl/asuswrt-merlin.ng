@@ -47,6 +47,10 @@ else
 REBUILD_EMF_MODULE=$(shell if [ -d "$(src)/$(EMFSRCDIR)" -a "$(REUSE_PREBUILT_EMF)" != "1" ]; then echo 1; else echo 0; fi)
 endif
 
+ifneq ($(wildcard $(src)/../../router-sysdep/hnd_emf/prebuilt/emf.o),)
+REBUILD_EMF_MODULE=0
+endif
+
 ifeq ($(REBUILD_EMF_MODULE),1)
 
 EMF_OBJS := $(EMFCSRCDIR)/emfc.o        $(EMFSRCDIR)/emf_linux.o

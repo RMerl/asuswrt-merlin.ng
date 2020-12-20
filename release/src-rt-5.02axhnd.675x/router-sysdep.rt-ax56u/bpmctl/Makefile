@@ -5,7 +5,8 @@ all:
 	@cp -f prebuilt/$(EXE) .
 
 install: generic_exe_install
-	ln -sf $(EXE) $(INSTALL_DIR)/bin/bpm
+	mkdir -p $(INSTALL_DIR)/bin
+	(cd $(INSTALL_DIR)/bin; rm -f bpm; ln -s $(EXE) bpm)
 
 clean:
 

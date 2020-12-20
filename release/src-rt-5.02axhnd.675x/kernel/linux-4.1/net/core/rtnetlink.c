@@ -3233,9 +3233,12 @@ static int rtnetlink_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
 		rtnl_calcit_func calcit;
 		u16 min_dump_alloc = 0;
 
+		rtnl_lock();
+
 		dumpit = rtnl_get_dumpit(family, type);
 		if (dumpit == NULL)
-			return -EOPNOTSUPP;
+			goto err_unlock;
+
 		calcit = rtnl_get_calcit(family, type);
 		if (calcit)
 			min_dump_alloc = calcit(skb, nlh);
@@ -3249,22 +3252,27 @@ static int rtnetlink_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
 			};
 			err = netlink_dump_start(rtnl, skb, nlh, &c);
 		}
-		rtnl_lock();
 		return err;
 	}
 
+	rtnl_lock();
 	doit = rtnl_get_doit(family, type);
 	if (doit == NULL)
-		return -EOPNOTSUPP;
+		goto err_unlock;
 
-	return doit(skb, nlh);
+	err = doit(skb, nlh);
+	rtnl_unlock();
+
+	return err;
+
+err_unlock:
+	rtnl_unlock();
+	return -EOPNOTSUPP;
 }
 
 static void rtnetlink_rcv(struct sk_buff *skb)
 {
-	rtnl_lock();
 	netlink_rcv_skb(skb, &rtnetlink_rcv_msg);
-	rtnl_unlock();
 }
 
 static int rtnetlink_event(struct notifier_block *this, unsigned long event, void *ptr)

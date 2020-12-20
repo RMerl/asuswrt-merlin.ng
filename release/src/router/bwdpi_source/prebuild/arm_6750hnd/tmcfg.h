@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue Oct 22 18:06:38 2019
+ * Date: Sun Oct 11 13:22:43 2020
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "rt-ax95q"
+#define TMCFG_MODEL "rt-ax56u"
 
 /*
  * Target device information
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX95Q_GPL_386_24350/release/src-rt-5.02axhnd.675x/kernel/linux-4.1/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX56U_GPL_384_9424/release/src-rt-5.02axhnd.675x/kernel/linux-4.1"
 #define TMCFG_KERN_ARCH "arm"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n
@@ -106,7 +106,7 @@
 #define TMCFG_E_MAJ_VER 2
 #define TMCFG_E_MID_VER 0
 #define TMCFG_E_MIN_VER 1
-#define TMCFG_E_LOCAL_VER "r4031774"
+#define TMCFG_E_LOCAL_VER "09297f16"
 
 /*
  * Engine core
@@ -222,7 +222,7 @@
  * DevID
  */
 #define TMCFG_E_CORE_DEVID_UA 1 // y
-#define TMCFG_E_CORE_DEVID_COLLECT_UN 1 // y
+#define TMCFG_E_CORE_DEVID_COLLECT_UN 0 // n
 
 /*
  * Engine shell
@@ -239,7 +239,7 @@
  * Kernel
  */
 #define TMCFG_APP_K_EXTRA_CFLAGS ""
-#define TMCFG_APP_K_TDTS_NFFW 1 // y
+#define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_NFFW_INTERNAL 0 // n
 #define TMCFG_APP_K_TEMPLATE 0 // n
 
@@ -257,7 +257,7 @@
 #define TMCFG_APP_U_TC_RANLIB "$(TMCFG_APP_U_TC_PFX)ranlib"
 #define TMCFG_APP_U_TC_STRIP "$(TMCFG_APP_U_TC_PFX)strip"
 #define TMCFG_APP_U_TC_OBJDUMP "$(TMCFG_APP_U_TC_PFX)objdump"
-#define TMCFG_APP_U_EXTRA_CFLAGS ""
+#define TMCFG_APP_U_EXTRA_CFLAGS "-fstack-protector-all"
 #define TMCFG_APP_U_EXTRA_LDFLAGS ""
 #define TMCFG_APP_U_KA_API 1 // y
 #define TMCFG_APP_U_TDTS_RULE_AGENT 1 // y

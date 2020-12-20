@@ -46,6 +46,10 @@ endif
 
 REBUILD_HND_MODULE=$(shell if [ -d "$(src)/$(HND_DIR)" -a "$(REUSE_PREBUILT_HND)" != "1" ]; then echo 1; else echo 0; fi)
 
+ifneq ($(wildcard $(src)/$(HND_DIR)/prebuilt/hnd.o),)
+REBUILD_HND_MODULE=0
+endif
+
 ifeq ($(REBUILD_HND_MODULE),1)
 #Linux-4.1.0: Include the shared object files required for Wl, EMF and IGS modules
 hnd-objs := $(HND_DIR)/hnd_c.o shared_ksyms.o

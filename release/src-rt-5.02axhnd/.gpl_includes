@@ -1,3 +1,6 @@
 release/src/router/bcm_flashutil/bcm_flashutil.h
 release/src/router/nt_center/lib/*.h
-release/src-rt-5.02axhnd/bcmdrivers/broadcom/net/wl/impl51/sys/components/apps/hspot/router/hspot_ap/*
+release/src-rt-5.02axhnd/bcmdrivers/broadcom/net/wl/impl51/sys/components/apps/hspot/router/hspot_ap/Makefile
+release/src-rt-5.02axhnd/bcmdrivers/broadcom/net/wl/impl51/sys/components/apps/hspot/router/hspot_ap/*.h
+release/src-rt-5.02axhnd/bcmdrivers/broadcom/net/wl/impl51/sys/components/apps/hspot/router/hspot_ap/*.png
+release/src-rt-5.02axhnd/bcmdrivers/broadcom/net/wl/impl51/sys/components/apps/hspot/router/hspot_ap/prebuilt/

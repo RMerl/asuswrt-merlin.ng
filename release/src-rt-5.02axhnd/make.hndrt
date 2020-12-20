@@ -667,14 +667,13 @@ export BUILD_4_LEVEL_QOS=y
 endif
 
 hnd_dongle: version_info
-ifeq ($(REBUILD_DONGLE),y)
-	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) pciefd
-else
+	$(MAKE) -C $(BUILD_DIR)/router version
+	$(MAKE) -C $(BUILD_DIR)/router pciefd
+
 ifneq ($(strip $(BUILD_HND_NIC)),)
 	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) version
 else
 	@true
-endif
 endif
 
 # Leave it for the future when soap server is decoupled from cfm

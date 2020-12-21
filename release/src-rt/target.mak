@@ -1,6 +1,3 @@
-# All pltform
-export GENERAL_BASE := LIVE_UPDATE_RSA=2
-
 #
 # Broadcom SDK 6.37 ARM platform
 #

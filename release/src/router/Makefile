@@ -5814,7 +5814,7 @@ openvpn/Makefile:
 			--disable-selinux \
 			--enable-plugin-auth-pam \
 			ac_cv_lib_resolv_gethostbyname=no \
-			$(if $(filter y,$(HND_ROUTER)),,--enable-iproute2) \
+			--enable-iproute2 \
         )
 
 openvpn-clean:

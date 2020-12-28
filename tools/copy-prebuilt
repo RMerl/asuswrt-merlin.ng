@@ -69,6 +69,7 @@ then
 	arm-brcm-linux-uclibcgnueabi-strip $REPO/release/src/router/hnd_extra/prebuilt/$BUILD_NAME/wl
 	cp release/src/router/envram_bin/envram$ARCH$SDK/* $REPO/release/src/router/envram_bin/envram$ARCH$SDK/
 	cp release/src-rt-5.02hnd/wl/exe/prebuilt/* $REPO/release/src-rt-5.02hnd/wl/exe/prebuilt/
+	cp release/src-rt-5.02hnd/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02hnd/hostTools/prebuilt/$BUILD_NAME/
 	cp release/src/router/rdpactl/prebuilt/* $REPO/release/src/router/rdpactl/prebuilt/
 	cp release/src/router/pwrctl_lib/prebuilt/* $REPO/release/src/router/pwrctl_lib/prebuilt/
 	cp release/src/router/bcm_flasher/prebuilt/* $REPO/release/src/router/bcm_flasher/prebuilt/
@@ -118,6 +119,7 @@ then
 	ARCH="_arm"
 	HND="_axhnd"
 
+	cp release/src-rt-5.02axhnd/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/
 	cp release/src-rt-5.02axhnd/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd/wl/exe/prebuilt/
 	cp -a release/src/router/tuxera/broadcom_arm_ax/* $REPO/release/src/router/tuxera/broadcom_arm_ax/
 	if [ -d "release/src/router/ookla_speedtest/prebuild/" ]
@@ -134,6 +136,7 @@ then
 	HND="_6750hnd"
 
 	cp release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/
+	cp release/src-rt-5.02axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
 	cp -a release/src/router/tuxera/broadcom_arm_ax_6750/* $REPO/release/src/router/tuxera/broadcom_arm_ax_6750/
 	if [ -d "release/src/router/ookla_speedtest/prebuild/" ]
 	then
@@ -148,6 +151,7 @@ then
 	ARCH="_arm"
 	HND="_axhnd"
 
+	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02hnd/hostTools/prebuilt/
 	cp release/src-rt-5.02p1axhnd.675x/wl/exe/prebuilt/* $REPO/release/src-rt-5.02p1axhnd.675x/wl/exe/prebuilt/
 	cp -a release/src/router/tuxera/broadcom_arm_ax/* $REPO/release/src/router/tuxera/broadcom_arm_ax/
 	if [ -d "release/src/router/ookla_speedtest/prebuild/" ]

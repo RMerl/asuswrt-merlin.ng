@@ -2563,7 +2563,11 @@ int nvFeatureSet(int set, int clr)
 int getAVSConfig(void)
 {
     // enabled if nvram unreadable or not explicitly disabled
+#if defined(RTAC86U) || defined(GTAC2900)
+    return 1; //1:disable avs
+#else
     return nvFeatureGet(NVFEAT_AVSDISABLED);
+#endif
 }
 
 void setAVSConfig(int on)

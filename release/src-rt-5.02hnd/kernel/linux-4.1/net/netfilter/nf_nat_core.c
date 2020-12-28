@@ -184,66 +184,62 @@ same_src(const struct nf_conn *ct,
 }
 
 #ifdef CATHY_DEBUG_NAT_EXT
-#define DUMP_PKT_NAT(data, len) \
-{ \
-	unsigned int ii; \
-	printk("%s %d data %p, len %d ", __func__, __LINE__, (data), (len)); \
-	for (ii = 0; ii < (len); ii++) { \
-		if (!(ii & 0xf)) \
-			printk("\n"); \
-		printk("%02x ", ((unsigned char *)(data))[ii]); \
-	} \
-	printk("\n\n"); \
+static noinline void dump_pkt_nat(void *data, int len)
+{
+	unsigned int ii;
+
+	printk("data %p len %d ", data, len);
+	for (ii = 0; ii < len; ii++) {
+		if (!(ii & 0xf))
+			printk("\n");
+		printk("%02x ", ((unsigned char *)(data))[ii]);
+	}
+	printk("\n\n");
 }
 
-void print_nat_table_by_hash(struct net *net, unsigned int h)
+noinline void print_nat_table_by_hash(struct net *net, unsigned int h)
 {
-	struct nf_conn_nat *nat, *prev_nat = NULL;
+	struct nf_conn_nat *nat;
 	int tot_size = get_tot_size_all_ext_types();
-	unsigned char *data;
+	struct hlist_node *f;
+	struct nf_conn *ct;
+	int loop = 0;
 
-	printk("%s: h %d htable sz %d init_net %p net %p nat_bysource first %p\n",
-		__FUNCTION__, h, net->ct.nat_htable_size, &init_net, net,
-		hlist_first_rcu(&net->ct.nat_bysource[h]));
+	printk("%s: h %d htable sz %d init_net %p net %p ext tot_size %d\n",
+		__FUNCTION__, h, net->ct.nat_htable_size, &init_net, net, tot_size);
+
+	/* first is the first nat (address of bysource in nat is same as nat's address) */
+	f = hlist_first_rcu(&net->ct.nat_bysource[h]);
+	printk("%s: nat_bysource first %p\n", __FUNCTION__, f);
+	if (virt_addr_valid(f)) {
+		dump_pkt_nat(f, sizeof(struct nf_conn_nat));
+	}
 
 	hlist_for_each_entry_rcu(nat, &net->ct.nat_bysource[h], bysource) {
-		if (!virt_addr_valid(nat)) {
-			printk("%s: nat is invalid %p prev_nat %p next %p\n",
-				__FUNCTION__, nat,
-				prev_nat, prev_nat ? hlist_next_rcu(&prev_nat->bysource) : NULL);
-			break;
-		}
-		else if (!virt_addr_valid(nat->ct)) {
-			printk("%s: nat->ct is invalid %p nat %p next %p prev_nat %p next %p\n",
-				__FUNCTION__, nat->ct, nat, hlist_next_rcu(&nat->bysource),
-				prev_nat, prev_nat ? hlist_next_rcu(&prev_nat->bysource) : NULL);
-			break;
+		printk("%s %d: loop %d\n", __FUNCTION__, __LINE__, loop);
+		if (virt_addr_valid(nat)) {
+			printk("%s %d: print nat %p\n", __FUNCTION__, __LINE__, nat);
+			dump_pkt_nat(nat, sizeof(struct nf_conn_nat));
+			ct = nat->ct;
+			if (virt_addr_valid(ct)) {
+				printk("%s %d: print ct %p\n", __FUNCTION__, __LINE__, ct);
+				dump_pkt_nat(ct, sizeof(struct nf_conn));
+				printk("%s %d: print ct->ext %p\n", __FUNCTION__, __LINE__, ct->ext);
+				if (virt_addr_valid(ct->ext)) {
+					dump_pkt_nat(ct->ext, (tot_size * 2));
+				}
+			}
+			else {
+				printk("%s %d: invalid ct %p\n", __FUNCTION__, __LINE__, ct);
+			}
+			printk("%s %d: next nat %p\n", __FUNCTION__, __LINE__,
+				hlist_next_rcu(&nat->bysource));
 		}
 		else {
-			printk("%s: nat %p ct %p nfct_nat %p next %p prev_nat %p next %p\n",
-				__FUNCTION__, nat, nat->ct, nfct_nat(nat->ct),
-				hlist_next_rcu(&nat->bysource),
-				prev_nat, prev_nat ? hlist_next_rcu(&prev_nat->bysource) : NULL);
+			printk("%s %d: invalid nat %p\n", __FUNCTION__, __LINE__, nat);
 		}
-		prev_nat = nat;
-	}
-
-	if (virt_addr_valid(prev_nat)) {
-		printk("%s: print prev_nat %p ct %p\n", __FUNCTION__, prev_nat, prev_nat->ct);
-		if (virt_addr_valid(prev_nat->ct) && virt_addr_valid(prev_nat->ct->ext))
-			DUMP_PKT_NAT(prev_nat->ct->ext, (prev_nat->ct->ext->len + 64));
-		data = (unsigned char *)prev_nat;
-		DUMP_PKT_NAT((data - tot_size), (tot_size * 2));
-		printk("%s: ==============\n", __FUNCTION__);
-	}
-
-	if (virt_addr_valid(nat)) {
-		printk("%s: print nat %p ct %p\n", __FUNCTION__, nat, nat->ct);
-		if (virt_addr_valid(nat->ct) && virt_addr_valid(nat->ct->ext))
-			DUMP_PKT_NAT(nat->ct->ext, (nat->ct->ext->len + 64));
-		data = (unsigned char *)nat;
-		DUMP_PKT_NAT((data - tot_size), (tot_size * 2));
-		printk("%s: ==============\n", __FUNCTION__);
+		loop++;
+		printk("%s %d: next loop %d\n", __FUNCTION__, __LINE__, loop);
 	}
 }
 #endif /* CATHY_DEBUG_NAT_EXT */
@@ -262,18 +258,35 @@ find_appropriate_src(struct net *net, u16 zone,
 	const struct nf_conn *ct;
 #ifdef CATHY_DEBUG_NAT_EXT
 	int loop_cnt = 0;
+	const struct nf_conn_nat *prev_nat = NULL;
 #endif /* CATHY_DEBUG_NAT_EXT */
 
 	hlist_for_each_entry_rcu(nat, &net->ct.nat_bysource[h], bysource) {
 #ifdef CATHY_DEBUG_NAT_EXT
 		if (!virt_addr_valid(nat) || !virt_addr_valid(nat->ct)) {
-			printk("%s %d: loop_cnt %d h %d htable sz %d init_net %p net %p\n",
+			struct hlist_head *head;
+
+			printk("%s %d: loop_cnt %d h %d htable sz %d init_net %p net %p nat %p prev_nat %p\n",
 				__FUNCTION__, __LINE__, loop_cnt, h, net->ct.nat_htable_size,
-				&init_net, net);
+				&init_net, net, nat, prev_nat);
+
 			print_nat_table_by_hash(net, h);
+
+			/* remove the abnormal node */
+			spin_lock_bh(&nf_nat_lock);
+			head = &net->ct.nat_bysource[h];
+			if (prev_nat) {
+				rcu_assign_pointer(hlist_next_rcu(&prev_nat->bysource), NULL);
+			}
+			else {
+				rcu_assign_pointer(hlist_first_rcu(head), NULL);
+			}
+			spin_unlock_bh(&nf_nat_lock);
+
 			break;
 		}
 		loop_cnt++;
+		prev_nat = nat;
 #endif /* CATHY_DEBUG_NAT_EXT */
 		ct = nat->ct;
 		if (same_src(ct, tuple) && nf_ct_zone(ct) == zone) {

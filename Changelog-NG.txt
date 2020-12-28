@@ -80,6 +80,8 @@ Asuswrt-Merlin 386/NG Changelog
            by Asus)
   - FIXED: OpenVPN client remote IP wasn't updated on client
            stop/restart.
+  - FIXED: Couldn't force generating a new SSL certificate for the
+           webui.
   - REMOVED: Option to disable NCP.  The NCP cipher list is
              now used both for NCP and non-NCP endpoints.
   - REMOVED: fq_codel support for Adaptive QoS.  Due to a change

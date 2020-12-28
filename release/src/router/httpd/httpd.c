@@ -2351,6 +2351,7 @@ void erase_cert(void)
 {
 	unlink("/etc/cert.pem");
 	unlink("/etc/key.pem");
+	unlink(HTTPS_CA_JFFS);
 	nvram_set("https_crt_gen", "0");
 }
 

@@ -1897,11 +1897,8 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			/* MTU */
 			if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
 				mtu = nvram_get_int(strcat_r(prefix, "mtu", tmp));
-				if (mtu < 576)
-					mtu = 576;
-
-				if (mtu > 9000)
-					mtu = 9000;	// Limit to a sane value
+				if ((mtu < 576) || (mtu > 9000))
+					mtu = 1500;	// Set a sane default value
 
 				ifr.ifr_mtu = mtu;
 				strncpy(ifr.ifr_name, wan_ifname, IFNAMSIZ);
@@ -1968,11 +1965,8 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			/* MTU */
 			if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
 				mtu = nvram_get_int(strcat_r(prefix, "mtu", tmp));
-				if (mtu < 576)
-					mtu = 576;
-
-				if (mtu > 9000)
-					mtu = 9000;     // Limit to a sane value
+				if ((mtu < 576) || (mtu > 9000))
+					mtu = 1500;	// Set a sane default value
 
 				ifr.ifr_mtu = mtu;
 				strncpy(ifr.ifr_name, wan_ifname, IFNAMSIZ);

@@ -435,7 +435,7 @@ function initial(){
 				document.getElementById('settingSelection').style.display = "none";
 			}
 
-			if((codel_support) && (qos_type != 1) && (document.getElementById('qos_sched').value != "0")){
+			if((codel_support) && (qos_type != 1)){
 				document.getElementById('qos_overhead_tr').style.display = "";
 			}
 
@@ -820,7 +820,6 @@ function change_qos_type(value){
 		show_up_down(1);
 		document.getElementById('list_table').style.display = "none";
 		if (codel_support) {
-			document.getElementById('qos_sched_tr').style.display = "";
 			document.getElementById('qos_overhead_tr').style.display = "";
 		}
 		if(document.form.qos_type_orig.value == 0 && document.form.qos_enable_orig.value != 0){
@@ -842,9 +841,7 @@ function change_qos_type(value){
 			document.getElementById('GeForce_type').checked = false;
 		document.getElementById('list_table').style.display = "none";
 		if (codel_support) {
-			document.getElementById('qos_sched_tr').style.display = "none";
 			document.getElementById('qos_overhead_tr').style.display = "none";
-//			change_scheduler(document.form.qos_sched.value);
 		}
 		if(document.form.qos_type_orig.value == 1 && document.form.qos_enable_orig.value != 0)
 			document.form.action_script.value = "restart_qos;restart_firewall";
@@ -872,7 +869,6 @@ function change_qos_type(value){
 		show_up_down(0);
 		document.getElementById('list_table').style.display = "block";
 		if (codel_support) {
-			document.getElementById('qos_sched_tr').style.display = "";
 			document.getElementById('qos_overhead_tr').style.display = "";
 		}
 		if(document.form.qos_type_orig.value == 2 && document.form.qos_enable_orig.value != 0)
@@ -895,7 +891,6 @@ function change_qos_type(value){
 		show_up_down(1);
 		document.getElementById('list_table').style.display = "none";
 		if (codel_support) {
-			document.getElementById('qos_sched_tr').style.display = "";
 			document.getElementById('qos_overhead_tr').style.display = "";
 		}
 		if(document.form.qos_type_orig.value == 3 && document.form.qos_enable_orig.value != 0)
@@ -1577,18 +1572,6 @@ function set_overhead(entry){
 	document.getElementById('overhead_presets_list').style.display='none';
 }
 
-function change_scheduler(value){
-	if (codel_support) {
-		if ((document.form.qos_type.value == "1") && (value == 0))	// Adaptive and sfq
-			var state = "none";
-		else
-			var state = "";
-
-		document.getElementById('qos_overhead_tr').style.display = state;
-		document.getElementById('qos_sched').value = value;
-	}
-}
-
 </script>
 </head>
 <body onload="initial();" id="body_id" onunload="unload_body();" class="bg">
@@ -1693,7 +1676,6 @@ function change_scheduler(value){
 			<input type="hidden" name="bwdpi_app_rulelist" value="<% nvram_get("bwdpi_app_rulelist"); %>" disabled>
 			<input type="hidden" name="qos_bw_rulelist" value="" disabled>
 			<input type="hidden" name="qos_atm" id="qos_atm">
-			<input type="hidden" name="qos_sched" id="qos_sched" value="<% nvram_get("qos_sched"); %>">
 
 			<table width="95%" border="0" align="left" cellpadding="0" cellspacing="0" class="FormTitle" id="FormTitle" style="height:820px;">
 				<tr>
@@ -1769,10 +1751,6 @@ function change_scheduler(value){
 															 function() {
 																document.form.qos_enable.value = "1";
 																if(document.form.qos_enable_orig.value != "1"){
-																	if (codel_support) {
-																		document.getElementById('qos_sched_tr').style.display = "";
-																		change_scheduler(document.getElementById('qos_sched').value);
-																	}
 																	if(document.getElementById('int_type').checked == true && adaptiveqos_support)
 																		document.form.next_page.value = "QoS_EZQoS.asp";
 																	else if(document.getElementById('trad_type').checked)		//Traditional QoS
@@ -1811,11 +1789,9 @@ function change_scheduler(value){
 																	alert(alert_hint);
 
 																if(codel_support) {
-																	document.getElementById('qos_sched_tr').style.display = "none";
 																	document.getElementById('qos_overhead_tr').style.display = "none";
 																}
 																if(adaptiveqos_support){
-
 																	document.getElementById('qos_enable_hint').style.display = "none";
 																	show_settings("NonAdaptive");
 																}
@@ -1841,14 +1817,6 @@ function change_scheduler(value){
 												<input id="manu" name="bw_setting_name" onClick="bandwidth_setting();" type="radio"><label for="manu"><#Manual_Setting_btn#></label>
 											</td>
 										</tr>		
-										<tr id="qos_sched_tr" style="display:none">
-											<th>Queue Discipline</th>
-											<td colspan="2">
-												<input name="qos_sched_x" value="0" type="radio" onclick="change_scheduler(this.value);"<% nvram_match("qos_sched", "0","checked"); %>><label for="sfq">sfq</label>
-												<input name="qos_sched_x" value="1" type="radio" onclick="change_scheduler(this.value);" <% nvram_match("qos_sched", "1","checked"); %>><label for="codel">codel</label>
-												<input name="qos_sched_x" value="2" type="radio" onclick="change_scheduler(this.value);" <% nvram_match("qos_sched", "2","checked"); %>><label for="fq_codel">fq_codel</label>
-											</td>
-										</tr>
 										<tr id="qos_overhead_tr" style="display:none">
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50, 28);">WAN packet overhead</a></th>
 											<td colspan="2">

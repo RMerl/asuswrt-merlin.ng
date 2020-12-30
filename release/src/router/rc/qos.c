@@ -1077,7 +1077,7 @@ static int start_tqos(void)
 	unsigned int rate;
 	unsigned int ceil;
 	unsigned int ibw, obw, bw;
-	int wan_mtu;
+	unsigned int mtu;
 	FILE *f;
 	int x;
 	int inuse;
@@ -1119,45 +1119,35 @@ static int start_tqos(void)
 	bw = obw;
 
 #ifdef RTCONFIG_BCMARM
-		switch(nvram_get_int("qos_sched")){
-			case 1:
-				qsched = "codel";
-				break;
-			case 2:
-				if (bw < 51200)
-					qsched = "fq_codel quantum 300 noecn";
-				else
-					qsched = "fq_codel noecn";
-				break;
-			default:
-				qsched = "sfq perturb 10";
-				break;
-		}
+	if (bw < 51200)
+		qsched = "fq_codel quantum 300 noecn";
+	else
+		qsched = "fq_codel noecn";
 
-		overhead = nvram_get_int("qos_overhead");
+	overhead = nvram_get_int("qos_overhead");
 #else
-		qsched = "sfq perturb 10";
+	qsched = "sfq perturb 10";
 #endif
 
-		if (overhead > 0)
-			snprintf(overheadstr, sizeof(overheadstr),"overhead %d %s",
-			         overhead, nvram_get_int("qos_atm") ? "linklayer atm" : "linklayer ethernet");
-		else
-			strcpy(overheadstr, "");
+	if (overhead > 0)
+		snprintf(overheadstr, sizeof(overheadstr),"overhead %d %s",
+		         overhead, nvram_get_int("qos_atm") ? "linklayer atm" : "linklayer ethernet");
+	else
+		strcpy(overheadstr, "");
 
 	const char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
 	const char *lan_ifname = nvram_safe_get("lan_ifname");
 
 	snprintf(nvmtu, sizeof (nvmtu), "wan%d_mtu", wan_primary_ifunit());
-	wan_mtu = nvram_get_int(nvmtu);
-	if (wan_mtu == 0)
-		wan_mtu = 1500;
+	mtu = nvram_get_int(nvmtu);
+	if (mtu == 0)
+		mtu = 1500;
 
 	/* Upload (WAN egress) */
 	fprintf(f,
 		"#!/bin/sh\n"
 		"#LAN/WAN\n"
-		"SCH='%s'\n"
+		"SCH=\"%s\"\n"
 		"ULIF='%s'\n"
 		"TQAUL=\"tc qdisc add dev $ULIF\"\n"
 		"TCAUL=\"tc class add dev $ULIF\"\n"
@@ -1230,7 +1220,7 @@ static int start_tqos(void)
 			"\t$TQAUL parent 1:%d handle %d: $SCH\n"
 			"\t$TFAUL parent 1: prio %d protocol ip handle %d fw flowid 1:%d\n",
 				i, rate, ceil,
-				x, calc(bw, rate), s, burst_leaf, (i >= 6) ? 7 : (i + 1), wan_mtu, overheadstr,
+				x, calc(bw, rate), s, burst_leaf, (i >= 6) ? 7 : (i + 1), mtu, overheadstr,
 				x, x,
 				x, i + 1, x);
 	}
@@ -1331,7 +1321,7 @@ static int start_tqos(void)
 				"\t$TQADL parent 2:%d handle %d: $SCH\n"
 				"\t$TFADL parent 2: prio %d protocol ip handle %d fw flowid 2:%d\n",
 					i, rate,
-					x, calc(bw, rate), burst_leaf, (i >= 6) ? 7 : (i + 1), wan_mtu, overheadstr,
+					x, calc(bw, rate), burst_leaf, (i >= 6) ? 7 : (i + 1), mtu, overheadstr,
 					x, x,
 					x, i + 1, x);
 		}
@@ -1574,17 +1564,7 @@ static int start_bandwidth_limiter(void)
 	char *qsched;
 
 #ifdef RTCONFIG_BCMARM
-	switch(nvram_get_int("qos_sched")){
-		case 1:
-			qsched = "codel";
-			break;
-		case 2:
-			qsched = "fq_codel quantum 300";
-			break;
-		default:
-			qsched = "sfq perturb 10";
-			break;
-	}
+	qsched = "fq_codel quantum 300 limit 1000 noecn";
 #else
 	qsched = "sfq perturb 10";
 #endif
@@ -1592,6 +1572,7 @@ static int start_bandwidth_limiter(void)
 	if ((f = fopen(qosfn, "w")) == NULL) return -2;
 	fprintf(f,
 		"#!/bin/sh\n"
+		"SCH=\"%s\"\n"
 		"WAN=%s\n"
 		"tc qdisc del dev $WAN root 2>/dev/null\n"
 		"tc qdisc del dev $WAN ingress 2>/dev/null\n"
@@ -1613,6 +1594,7 @@ static int start_bandwidth_limiter(void)
 		"\n"
 		"\t$TQAU root handle 2: htb\n"
 		"\t$TCAU parent 2: classid 2:1 htb rate 10240000kbit\n"
+		, qsched
 		, get_wan_ifname(wan_primary_ifunit())
 	);
 	// access router : mark 9
@@ -1620,14 +1602,12 @@ static int start_bandwidth_limiter(void)
 	fprintf(f,
 		"\n"
 		"\t$TCA parent 1:1 classid 1:9 htb rate 10240000kbit ceil 10240000kbit prio 1\n"
-		"\t$TQA parent 1:9 handle 9: %s\n"
+		"\t$TQA parent 1:9 handle 9: $SCH\n"
 		"\t$TFA parent 1: prio 1 protocol ip handle 9 fw flowid 1:9\n"
 		"\n"
 		"\t$TCAU parent 2:1 classid 2:9 htb rate 10240000kbit ceil 10240000kbit prio 1\n"
-		"\t$TQAU parent 2:9 handle 9: %s\n"
-		"\t$TFAU parent 2: prio 1 protocol ip handle 9 fw flowid 2:9\n",
-		qsched,
-		qsched
+		"\t$TQAU parent 2:9 handle 9: $SCH\n"
+		"\t$TFAU parent 2: prio 1 protocol ip handle 9 fw flowid 2:9\n"
 	);
 
 	/* ASUSWRT
@@ -1655,17 +1635,17 @@ static int start_bandwidth_limiter(void)
 			fprintf(f,
 				"\n"
 				"\t$TCA parent 1:1 classid 1:%d htb rate %skbit ceil %skbit prio %d\n"
-				"\t$TQA parent 1:%d handle %d: %s\n"
+				"\t$TQA parent 1:%d handle %d: $SCH\n"
 				"\t$TFA parent 1: protocol ip prio %d u32 match u16 0x0800 0xFFFF at -2 match u32 0x%02X%02X%02X%02X 0xFFFFFFFF at -12 match u16 0x%02X%02X 0xFFFF at -14 flowid 1:%d"
 				"\n"
 				"\t$TCAU parent 2:1 classid 2:%d htb rate %skbit ceil %skbit prio %d\n"
-				"\t$TQAU parent 2:%d handle %d: %s\n"
+				"\t$TQAU parent 2:%d handle %d: $SCH\n"
 				"\t$TFAU parent 2: prio %d protocol ip handle %d fw flowid 2:%d\n"
 				, class, dlc, dlc, class
-				, class, class, qsched
+				, class, class
 				, class, s[2], s[3], s[4], s[5], s[0], s[1], class
 				, class, upc, upc, class
-				, class, class, qsched
+				, class, class
 				, class, class, class
 			);
 		}
@@ -1674,17 +1654,17 @@ static int start_bandwidth_limiter(void)
 			fprintf(f,
 				"\n"
 				"\t$TCA parent 1:1 classid 1:%d htb rate %skbit ceil %skbit prio %d\n"
-				"\t$TQA parent 1:%d handle %d: %s\n"
+				"\t$TQA parent 1:%d handle %d: $SCH\n"
 				"\t$TFA parent 1: prio %d protocol ip handle %d fw flowid 1:%d\n"
 				"\n"
 				"\t$TCAU parent 2:1 classid 2:%d htb rate %skbit ceil %skbit prio %d\n"
-				"\t$TQAU parent 2:%d handle %d: %s\n"
+				"\t$TQAU parent 2:%d handle %d: $SCH\n"
 				"\t$TFAU parent 2: prio %d protocol ip handle %d fw flowid 2:%d\n"
 				, class, dlc, dlc, class
-				, class, class, qsched
+				, class, class
 				, class, class, class
 				, class, upc, upc, class
-				, class, class, qsched
+				, class, class
 				, class, class, class
 			);
 		}
@@ -1735,11 +1715,11 @@ static int start_bandwidth_limiter(void)
 					"\t$TCA%d%d parent %d: classid %d:1 htb rate %skbit\n" // 7
 					"\n"
 					"\t$TCA%d%d parent %d:1 classid %d:%d htb rate 1kbit ceil %skbit prio %d\n"
-					"\t$TQA%d%d parent %d:%d handle %d: %s\n"
+					"\t$TQA%d%d parent %d:%d handle %d: $SCH\n"
 					"\t$TFA%d%d parent %d: prio %d protocol ip handle %d fw flowid %d:%d\n" // 10
 					"\n"
 					"\t$TCAU parent 2:1 classid 2:%d htb rate 1kbit ceil %skbit prio %d\n"
-					"\t$TQAU parent 2:%d handle %d: %s\n"
+					"\t$TQAU parent 2:%d handle %d: $SCH\n"
 					"\t$TFAU parent 2: prio %d protocol ip handle %d fw flowid 2:%d\n" // 13
 					, wl_if
 					, i, j, wl_if
@@ -1753,10 +1733,10 @@ static int start_bandwidth_limiter(void)
 #endif
 					, i, j, guest, guest, nvram_safe_get(strcat_r(wlv, "_bw_dl", tmp)) //7
 					, i, j, guest, guest, guest_mark, nvram_safe_get(strcat_r(wlv, "_bw_dl", tmp)), guest_mark
-					, i, j, guest, guest_mark, guest_mark, qsched
+					, i, j, guest, guest_mark, guest_mark
 					, i, j, guest, guest_mark, guest_mark, guest, guest_mark // 10
 					, guest_mark, nvram_safe_get(strcat_r(wlv, "_bw_ul", tmp)), guest_mark
-					, guest_mark, guest_mark, qsched
+					, guest_mark, guest_mark
 					, guest_mark, guest_mark, guest_mark //13
 				);
 				QOSDBG("[BWLIT_GUEST] create %s bandwidth limiter, qdisc=%d, class=%d\n", wl_if, guest, guest_mark);
@@ -2004,7 +1984,7 @@ static int start_GeForce_QoS(void)
 	char *qsched;
 	int overhead = 0;
 	char overheadstr[sizeof("overhead 128 linklayer ethernet")];
-	int wan_mtu, bw;
+	int mtu, bw;
 	char nvmtu[sizeof("wan0_mtu")];
 
 	_dprintf("[GeForce] start GeForceNow QoS ...\n");
@@ -2027,36 +2007,25 @@ static int start_GeForce_QoS(void)
 
 	bw = obw;
 #ifdef RTCONFIG_BCMARM
-		switch(nvram_get_int("qos_sched")){
-			case 1:
-				qsched = "codel";
-				break;
-			case 2:
-				if (bw < 51200)
-					qsched = "fq_codel quantum 300 noecn";
-				else
-					qsched = "fq_codel noecn";
-				break;
-			default:
-				qsched = "sfq perturb 10";
-				break;
-		}
-
-		overhead = nvram_get_int("qos_overhead");
+	if (bw < 51200)
+		qsched = "fq_codel quantum 300 noecn";
+	else
+		qsched = "fq_codel noecn";
+	overhead = nvram_get_int("qos_overhead");
 #else
-		qsched = "sfq perturb 10";
+	qsched = "sfq perturb 10";
 #endif
 
-		if (overhead > 0)
-			snprintf(overheadstr, sizeof(overheadstr),"overhead %d %s",
-			         overhead, nvram_get_int("qos_atm") ? "linklayer atm" : "linklayer ethernet");
-		else
-			strcpy(overheadstr, "");
+	if (overhead > 0)
+		snprintf(overheadstr, sizeof(overheadstr),"overhead %d %s",
+		         overhead, nvram_get_int("qos_atm") ? "linklayer atm" : "linklayer ethernet");
+	else
+		strcpy(overheadstr, "");
 
 	snprintf(nvmtu, sizeof (nvmtu), "wan%d_mtu", wan_primary_ifunit());
-	wan_mtu = nvram_get_int(nvmtu);
-	if (wan_mtu == 0)
-		wan_mtu = 1500;
+	mtu = nvram_get_int(nvmtu);
+	if (mtu == 0)
+		mtu = 1500;
 
 	if ((f = fopen(qosfn, "w")) == NULL) return -2;
 	fprintf(f,
@@ -2116,11 +2085,11 @@ static int start_GeForce_QoS(void)
 		"\n"
 		, ibw,      overheadstr            // 1:
 		, obw,      overheadstr            // 2:
-		, ibw_re,   ibw, wan_mtu, overheadstr  // 1:10
-		, 0.20*ibw, ibw, wan_mtu, overheadstr  // 1:20
-		, 0.15*ibw, ibw, wan_mtu, overheadstr  // 1:30
-		, 0.10*ibw, ibw, wan_mtu, overheadstr  // 1:40
-		, 0.05*ibw, ibw, wan_mtu, overheadstr  // 1:50
+		, ibw_re,   ibw, mtu, overheadstr  // 1:10
+		, 0.20*ibw, ibw, mtu, overheadstr  // 1:20
+		, 0.15*ibw, ibw, mtu, overheadstr  // 1:30
+		, 0.10*ibw, ibw, mtu, overheadstr  // 1:40
+		, 0.05*ibw, ibw, mtu, overheadstr  // 1:50
 	);
 
 	/* fixed ports */
@@ -2169,11 +2138,11 @@ static int start_GeForce_QoS(void)
 		"$TQAU parent 2:50 handle 50: $SCH\n"
 		"$TFAU parent 2: prio 5 protocol ip handle 50 fw flowid 2:50\n"
 		"\n"
-		, obw_re  , obw, wan_mtu, overheadstr   // 2:10
-		, 0.20*obw, obw, wan_mtu, overheadstr   // 2:20
-		, 0.15*obw, obw, wan_mtu, overheadstr   // 2:30
-		, 0.10*obw, obw, wan_mtu, overheadstr   // 2:40
-		, 0.05*obw, obw, wan_mtu, overheadstr   // 2:50
+		, obw_re  , obw, mtu, overheadstr   // 2:10
+		, 0.20*obw, obw, mtu, overheadstr   // 2:20
+		, 0.15*obw, obw, mtu, overheadstr   // 2:30
+		, 0.10*obw, obw, mtu, overheadstr   // 2:40
+		, 0.05*obw, obw, mtu, overheadstr   // 2:50
 	);
 
 	/* fixed ports */
@@ -2438,7 +2407,7 @@ static int start_rog_qos()
 #ifdef HND_ROUTER
 	int wantype = get_dualwan_by_unit(wan_primary_ifunit());
 #endif
-	int wan_mtu, bw;
+	int mtu, bw;
 	int overhead = 0;
 	char overheadstr[sizeof("overhead 128 linklayer ethernet")];
 	char nvmtu[sizeof("wan0_mtu")];
@@ -2476,21 +2445,10 @@ static int start_rog_qos()
 	bw = obw;
 
 #ifdef RTCONFIG_BCMARM
-	switch(nvram_get_int("qos_sched")){
-		case 1:
-			qsched = "codel";
-			break;
-		case 2:
-			if (bw < 51200)
-				qsched = "fq_codel quantum 300 noecn";
-			else
-				qsched = "fq_codel noecn";
-			break;
-		default:
-			qsched = "sfq perturb 10";
-			break;
-	}
-
+	if (bw < 51200)
+		qsched = "fq_codel quantum 300 noecn";
+	else
+		qsched = "fq_codel noecn";
 	overhead = nvram_get_int("qos_overhead");
 #else
 	qsched = "sfq perturb 10";
@@ -2503,9 +2461,9 @@ static int start_rog_qos()
 		strcpy(overheadstr, "");
 
 	snprintf(nvmtu, sizeof (nvmtu), "wan%d_mtu", wan_primary_ifunit());
-	wan_mtu = nvram_get_int(nvmtu);
-	if (wan_mtu == 0)
-		wan_mtu = 1500;
+	mtu = nvram_get_int(nvmtu);
+	if (mtu == 0)
+		mtu = 1500;
 
 	if((f = fopen(qosfn, "w")) == NULL) return -2;
 
@@ -2521,8 +2479,8 @@ static int start_rog_qos()
 	/* WAN */
 	fprintf(f,
 		"#!/bin/sh\n"
-		"I=%s\n"
 		"SCH=\"%s\"\n"
+		"I=%s\n"
 		"TQA=\"tc qdisc add dev $I\"\n"
 		"TCA=\"tc class add dev $I\"\n"
 		"TFA=\"tc filter add dev $I\"\n"
@@ -2543,9 +2501,9 @@ static int start_rog_qos()
 		, qsched
 		, wan
 		, obw, obw, overheadstr
-		, obw, obw, wan_mtu, overheadstr
-		, obw / 10, obw, wan_mtu, overheadstr
-		, obw / 100, obw, wan_mtu, overheadstr
+		, obw, obw, mtu, overheadstr
+		, obw / 10, obw, mtu, overheadstr
+		, obw / 100, obw, mtu, overheadstr
 		, QOS_ROG_MARK_HIGH, QOS_MASK
 		, QOS_ROG_MARK_MID, QOS_MASK
 		, QOS_ROG_MARK_LOW, QOS_MASK
@@ -2577,12 +2535,6 @@ static int start_rog_qos()
 int add_iQosRules(char *pcWANIF)
 {
 	int status = 0;
-
-#if 0
-	if (IS_AQOS()) {
-		set_codel_patch();
-	}
-#endif
 
 	if (nvram_get_int("qos_enable") != 1) {
 		if (nvram_get_int("rog_enable")

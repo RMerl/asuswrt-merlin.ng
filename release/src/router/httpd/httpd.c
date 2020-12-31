@@ -2252,10 +2252,6 @@ int main(int argc, char **argv)
 			setsockopt(item->fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 			setsockopt(item->fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 
-			/* Set receive/send timeouts */
-			setsockopt(item->fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-			setsockopt(item->fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
-
 			/* Set the KEEPALIVE option to cull dead connections */
 			setsockopt(item->fd, SOL_SOCKET, SO_KEEPALIVE, &int_1, sizeof(int_1));
 			item->deadline = tv.tv_sec + MAX_CONN_TIMEOUT;

@@ -3701,7 +3701,7 @@ void init_others(void)
 #ifdef GTAC2900
 	update_cfe_ac2900();
 #endif
-#if defined(RTAC86U) || defined(GTAC2900)
+#if 0	//defined(RTAC86U) || defined(GTAC2900)
 	system("pwr config --wait off");
 #endif
 #if defined(RTAX88U) || defined(RTAX92U)

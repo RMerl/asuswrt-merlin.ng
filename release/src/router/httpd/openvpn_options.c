@@ -704,7 +704,6 @@ read_config_file (const char *file, int unit)
 	return ret;
 }
 
-
 void parse_openvpn_status(int unit)
 {
 	FILE *fpi, *fpo;
@@ -754,9 +753,9 @@ void parse_openvpn_status(int unit)
 				token = strtok(NULL, ",");	//Connected Since (time_t)
 				token = strtok(NULL, ",");	//Username
 				if(token)
-					fprintf(fpo, "%s\n", token);
+					fprintf(fpo, "%s", token);
 				else
-					fprintf(fpo, "NoUsername\n");
+					fprintf(fpo, "NoUsername");
 				fprintf(fpo, "\n");
 			}
 #if 0

@@ -108,8 +108,8 @@ ifeq ($(RTCONFIG_CAPTCHA),y)
 CFLAGS += -DCAPTCHA
 endif
 
-OBJS = httpd.o cgi.o ej.o
-OBJS += web.o common.o nvram_f.o
+OBJS = httpd.o cgi.o ej.o 
+OBJS += web.o common.o nvram_f.o 
 OBJS += aspbw.o initial_web_hook.o
 OBJS += apps.o
 OBJS += sysinfo.o data_arrays.o
@@ -151,7 +151,7 @@ OBJS += vis_gui.o
 endif
 
 ifeq ($(RTCONFIG_HTTPS),y)
-OBJS += pwenc.o
+OBJS += $(if $(wildcard pwenc.c), pwenc.o, prebuild/pwenc.o)
 endif
 
 ifeq ($(RTCONFIG_CAPTCHA),y)
@@ -171,10 +171,10 @@ LIBS += -lm
 ifeq ($(RTCONFIG_PUSH_EMAIL),y)
 ifeq ($(RTCONFIG_OPENSSL11),y)
 CFLAGS += -I$(TOP)/openssl-1.1/include
-LIBS += -L$(TOP)/openssl-1.1 -lssl -lcrypto -ldl
+LIBS += -L$(TOP)/openssl-1.1 -lcrypto -lssl -ldl
 else
 CFLAGS += -I$(TOP)/openssl/include
-LIBS += -L$(TOP)/openssl -lssl -lcrypto -ldl
+LIBS += -L$(TOP)/openssl -lcrypto -lssl -ldl
 endif
 endif
 
@@ -209,7 +209,6 @@ endif
 
 ifeq ($(RTCONFIG_HTTPS),y)
 CFLAGS += -I$(TOP)/mssl
-LIBS += -L$(TOP)/mssl -lmssl
 ifeq ($(RTCONFIG_OPENSSL11),y)
 CFLAGS += -I$(TOP)/openssl-1.1/include
 LIBS += -L$(TOP)/openssl-1.1 -lssl -lcrypto -ldl
@@ -217,6 +216,7 @@ else
 CFLAGS += -I$(TOP)/openssl/include
 LIBS += -L$(TOP)/openssl -lssl -lcrypto -ldl
 endif
+LIBS += -L$(TOP)/mssl -lmssl
 endif
 
 ifeq ($(RTCONFIG_OPENVPN),y)

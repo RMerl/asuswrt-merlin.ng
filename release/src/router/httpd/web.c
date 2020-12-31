@@ -1942,6 +1942,7 @@ static int ej_get_basic_clientlist_count(int eid, webs_t wp, int argc, char_t **
 	return 0;
 }
 
+
 /* Report sys up time */
 static int
 ej_uptime(int eid, webs_t wp, int argc, char_t **argv)
@@ -23635,7 +23636,6 @@ ej_cpu_core_num(int eid, webs_t wp, int argc, char_t **argv){
 
 	websWrite(wp, "%d", count);
 	return 0;
-
 }
 
 static int
@@ -27349,7 +27349,7 @@ ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 	int le_enable = nvram_get_int("le_enable");
 	int http_enable = nvram_get_int("http_enable");
 
-	if(http_enable == 0)    //http only
+	if(http_enable == 0)	//http only
 	{
 		if(le_enable == 1)
 			get_path_le_domain_cert(cert_path, sizeof(cert_path));
@@ -27362,7 +27362,6 @@ ej_httpd_cert_info(int eid, webs_t wp, int argc, char **argv)
 #endif
 	{
 		snprintf(cert_path, sizeof(cert_path), "%s", HTTPD_CERT);
-//		strcpy(cert_path, UPLOAD_CERT);
 	}
 
 	fp = fopen(cert_path, "r");

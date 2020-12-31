@@ -275,7 +275,6 @@ do_ej(char *path, FILE *stream)
 
 #ifdef TRANSLATE_ON_FLY
 	// Load dictionary file
-
 	lang = nvram_safe_get("preferred_lang");
 	if(!check_lang_support(lang)){
 		lang = nvram_default_get("preferred_lang");

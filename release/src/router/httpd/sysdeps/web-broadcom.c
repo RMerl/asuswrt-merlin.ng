@@ -6324,7 +6324,6 @@ PSTA_ERR:
 }
 #endif
 
-
 /* enable for all BCM */
 #ifdef HND_ROUTER
 const char *syslog_msg_filter[] = {

@@ -1120,7 +1120,7 @@ static int start_tqos(void)
 
 #ifdef RTCONFIG_BCMARM
 	if (bw < 51200)
-		qsched = "fq_codel quantum 300 noecn";
+		qsched = "fq_codel quantum 300 limit 1000 noecn";
 	else
 		qsched = "fq_codel noecn";
 
@@ -2008,7 +2008,7 @@ static int start_GeForce_QoS(void)
 	bw = obw;
 #ifdef RTCONFIG_BCMARM
 	if (bw < 51200)
-		qsched = "fq_codel quantum 300 noecn";
+		qsched = "fq_codel quantum 300 limit 1000 noecn";
 	else
 		qsched = "fq_codel noecn";
 	overhead = nvram_get_int("qos_overhead");
@@ -2446,7 +2446,7 @@ static int start_rog_qos()
 
 #ifdef RTCONFIG_BCMARM
 	if (bw < 51200)
-		qsched = "fq_codel quantum 300 noecn";
+		qsched = "fq_codel quantum 300 limit 1000 noecn";
 	else
 		qsched = "fq_codel noecn";
 	overhead = nvram_get_int("qos_overhead");

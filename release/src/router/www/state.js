@@ -423,6 +423,8 @@ var wl_info = {
 
 function isSupport(_ptn){
 	var ui_support = [<% get_ui_support(); %>][0];
+	if (based_modelid == "RT-AX56U" || based_modelid == "RT-AX58U") // Kludge
+		ui_support["ookla"] = 1;
 	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
 }
 

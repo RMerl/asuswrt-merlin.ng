@@ -278,7 +278,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			struct statvfs fiData;
 
 			if (statvfs("/jffs",&fiData) == 0 ) {
-				sprintf(result,"%d",(fiData.f_bfree * fiData.f_frsize / MBYTES));
+				sprintf(result,"%ld",(fiData.f_bfree * fiData.f_frsize / MBYTES));
 			} else {
 				strcpy(result,"-1");
 			}

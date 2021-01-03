@@ -343,9 +343,10 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 
 	// Proto
 	fprintf(fp, "proto %s\n", sconf->proto);
-	if(!strcmp(sconf->proto, "udp"))
+	if(!strcmp(sconf->proto, "udp")) {
+		fprintf(fp, "multihome\n");
 		fprintf(fp_client, "proto udp\n");
-	else
+	} else
 		fprintf(fp_client, "proto tcp-client\n");
 
 	// Port

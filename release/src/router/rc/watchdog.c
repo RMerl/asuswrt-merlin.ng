@@ -9210,7 +9210,7 @@ void auto_firmware_check_merlin()
 	struct tm local;
 	static int rand_hr, rand_min;
 
-#if defined(RTAX58U) || defined(RTAX56U)
+#if 0		//defined(RTAX58U) || defined(RTAX56U)
 	if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
 		return;
 #endif

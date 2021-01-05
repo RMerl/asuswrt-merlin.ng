@@ -313,6 +313,8 @@ function loadData()
 				continue;
 			}
 
+			if (i == "BRIDGE") continue;
+
 			if (updateReTotal) {
 				h.rx_total = h.rx_max = 0;
 				h.tx_total = h.tx_max = 0;

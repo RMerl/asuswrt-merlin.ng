@@ -34,7 +34,7 @@ Asuswrt-Merlin 386/NG Changelog
   - NEW: Added tls-crypt-v2 support to OpenVPN clients.
   - NEW: Added option to select an OpenVPN client when
          running Oookla Speedtest.
-  - UPDATED: Merged GPL 386_41350 (beta GPL from Asus).
+  - UPDATED: Merged GPL 386_41535
   - UPDATED: Openssl to 1.1.1i.
   - UPDATED: Updated to OpenVPN 2.5.0.  Note that OpenVPN
              2.4.0 or newer is now required by the exported
@@ -87,6 +87,8 @@ Asuswrt-Merlin 386/NG Changelog
   - REMOVED: fq_codel support for Adaptive QoS.  Due to a change
              in how Trend Micro configures QoS, it is no longer
              possible to intercept these to inject fq_codel.
+  - REMOVED: Option to select sfq as a queue scheduler for t.QoS
+             or Bandwidth Limiter, and always use fq_codel.
   - REMOVED: Support for the Cloudcheck mobile app.
 
 

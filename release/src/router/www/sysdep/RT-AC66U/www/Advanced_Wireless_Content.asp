@@ -1198,13 +1198,13 @@ function enableSmartCon(val){
 	else {
 		if(wl_info.band2g_support && wl_info.band5g_support && (wl_info.band5g_2_support || wl_info.band6g_support)){
 			if(band6g_support){
-				desc = ["Tri-Band Smart Connect (2.4 GHz, 5 GHz and 6 GHz)", "5 GHz Smart Connect (5 GHz and 6 GHz)"];
+				desc = ["Tri-Band Smart Connect (2.4 GHz, 5 GHz and 6 GHz)"];
+				value = ["1"];
 			}
 			else{
 				desc = ["Tri-Band Smart Connect (2.4 GHz, 5 GHz-1 and 5 GHz-2)", "5 GHz Smart Connect (5 GHz-1 and 5 GHz-2)"];
-			}
-			
 			value = ["1", "2"];
+		}
 		}
 		else if(wl_info.band2g_support && wl_info.band5g_support){
 			desc = ["Dual-Band Smart Connect (2.4 GHz and 5 GHz)"];
@@ -2264,7 +2264,7 @@ function handleMFP(){
       <div style="margin: 10px 0 10px 5px" class="splitLine"></div>
       <div class="formfontdesc"><#adv_wl_desc#></div>
 		
-			<table width="99%" border="1" align="center" cellpadding="4" cellspacing="0" id="WLgeneral" class="FormTable">
+			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" id="WLgeneral" class="FormTable">
 			<tr id="smartcon_enable_field" style="display:none;">
 				<th width="30%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0,27);"><#smart_connect_enable#></a></th>
 			  	<td>
@@ -2584,7 +2584,7 @@ function handleMFP(){
 			  	</tr>
 			  </table>
 
-			<table id="band_separate" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+			<table id="band_separate" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" style="margin-top:5px">
 				<thead>
 					<tr id="band0_title_field">
 						<td colspan="2">2.4 GHz</td>

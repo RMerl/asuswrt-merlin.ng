@@ -721,12 +721,15 @@
 .connect_type_status_bg .uplink_type_title.disconnected, .signal_text_bg.signal.disconnected{
 	color: #627681;
 }
-.connect_type_status_bg .uplink_type_ip{
+.connect_type_status_bg .uplink_type_ip, .connect_type_status_bg .uplink_type_mode_title{
 	font-family: Roboto-Regular, "Microsoft JhengHei";
 	font-size: 14px;
 	color: #CDEBFF;
 	position: absolute;
 	margin-left: 22px;
+}
+.connect_type_status_bg .uplink_type_mode_title{
+	color: #A4B7C3;
 }
 .connect_type_status_bg .uplink_icon_bg {
 	height: 100%;
@@ -781,6 +784,15 @@
 }
 .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_5g_2.weak{
 	background-position: -306px -204px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_6g.great{
+	background-position: -816px 0px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_6g.ok{
+	background-position: -816px -102px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_6g.weak{
+	background-position: -816px -204px;
 }
 .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.disconnected{
 	background-position: 0px -306px;
@@ -885,26 +897,11 @@
 	right: 0;
 	height: 100%;
 }
-.card_block_bg span.connect_title.wan:before{
-	border-top: 3px solid #2A5E7A;
-}
-.card_block_bg span.connect_title.wired:before{
-	border-top: 3px solid #2A5E7A;
-}
-.card_block_bg span.connect_title.wl_5g_2:before{
-	border-top: 3px solid #2A5E7A;
-}
-.card_block_bg span.connect_title.wl_5g:before{
-	border-top: 3px solid #2A5E7A;
-}
-.card_block_bg span.connect_title.wl_2g:before{
+.card_block_bg span.connect_title.horizontal_line:before{
 	border-top: 3px solid #2A5E7A;
 }
 .card_block_bg span.connect_title.vertical.traffic:before{
 	border-left: 3px solid #2A5E7A;
-}
-.card_block_bg span.connect_title.manage:before{
-	border-top: 3px solid #2A5E7A;
 }
 .wan_status_bg span.connect_status{
 	font-size: 20px;
@@ -1498,13 +1495,13 @@
 }
 .client_list_bg .client_action_bg > span.unbind{
 	background-color: #FFFFFF;
-	background-position: 4px -103px !important;
+	background-position: -369.5px 1px !important;
 }
 .client_list_bg .client_action_bg > span.reconn{
-	background-position: -37px -73px;
+	background-position: -332.5px 1px;
 }
 .client_list_bg .client_action_bg > span.bind{
-	background-position: 5px -73px;
+	background-position: -295.5px 1px;
 }
 .client_list_bg .client_action_bg > span.bind_notice{
 	background-image: url(/images/New_ui/amesh/bind_notice.png) !important;
@@ -1545,14 +1542,26 @@
 	width: 20px;
 	height: 20px;
 	background-image: url(/images/New_ui/amesh/client_control.svg);
-	background-size: 650%;
+	background-size: 345px;
 	background-repeat: no-repeat;
 }
 .client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wired{
-	background-position: 0px -28px;
+	background-position-x: -32px;
 }
-.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wireless{
-	background-position: -34px -28px;
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_2g{
+	background-position-x: -65px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g{
+	background-position-x: -98px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_2{
+	background-position-x: -164px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g{
+	background-position-x: -197px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.plc{
+	background-position-x: -230px;
 }
 .client_list_bg .client_content_bg > .client_content_mac_ip{
 	font-size: 13px;
@@ -2256,7 +2265,7 @@
 	left: -25px;
 	top: 8px;
 	background: url(/images/New_ui/amesh/client_control.svg) no-repeat;
-	background-size: 700%;
+	background-size: 350px;
 	width: 20px;
 	height: 20px;
 	background-position: 0px 0px;

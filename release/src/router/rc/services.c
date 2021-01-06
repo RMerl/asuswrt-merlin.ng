@@ -9981,6 +9981,9 @@ stop_services(void)
 #ifdef RTCONFIG_BCM_OAM
 	stop_oam();
 #endif
+#if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
+	stop_envrams();
+#endif
 }
 
 #ifdef RTCONFIG_QCA
@@ -13148,6 +13151,7 @@ check_ddr_done:
 
 #ifdef DSL_AX82U
 			config_stb_bridge();
+#else //for old qis
 			nvram_set("dslx_converted", "0");
 #endif
 			dsl_wan_config(2);
@@ -13171,6 +13175,7 @@ check_ddr_done:
 			stop_wan_if(atoi(cmd[1]));
 #ifdef DSL_AX82U
 			config_stb_bridge();
+#else //for old qis
 			nvram_set("dslx_converted", "0");
 #endif
 			dsl_wan_config(2);
@@ -16880,6 +16885,7 @@ start_dsl_autodet(void)
 	killall_tk("auto_det");
 	nvram_set("dsltmp_adslatequit", "0");
 	nvram_set("dsltmp_autodet_state", "Detecting");
+	nvram_set("dsltmp_autodet_wan_type", "");
 	sleep(1);
 	_eval(autodet_argv, NULL, 0, &pid);
 

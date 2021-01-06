@@ -5139,3 +5139,15 @@ char *get_unused_brif(unsigned int num, char *ret_buffer, size_t ret_buffer_size
 	return (strlen(ret_buffer) > 0) ? ret_buffer : NULL;
 }
 
+int is_passwd_default(){
+	char *http_passwd = nvram_safe_get("http_passwd");
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+	char dec_passwd[NVRAM_ENC_LEN];
+	pw_dec(http_passwd, dec_passwd, sizeof(dec_passwd));
+	http_passwd = dec_passwd;
+#endif
+	if(strcmp(nvram_default_get("http_passwd"), http_passwd) == 0)
+		return 1;
+	else
+	return 0;
+}

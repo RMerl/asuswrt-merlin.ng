@@ -658,13 +658,13 @@ Rog Device      36
 	width: 24px;
 	height: 24px;
 	background-image: url(/images/New_ui/amesh/client_control.svg);
-	background-size: 800%;
+	background-size: 400px;
 	background-repeat: no-repeat;
 	top: -6px;
 	right: -12px;
 	border-radius: 50%;
 	background-color: #475a5f;
-	background-position: 4px -87px;
+	background-position: -304px 1px;
 }
 .clientlist_viewlist {
 	position: absolute;

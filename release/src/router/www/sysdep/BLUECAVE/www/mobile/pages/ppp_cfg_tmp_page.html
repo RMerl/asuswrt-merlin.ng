@@ -1,0 +1,512 @@
+<style>
+.cfg_val{
+	font-size:30px;
+	color:#FC0;
+}
+span{
+	border:0px solid #FFFFFF;
+	color:#FFFFFF;
+	font-size:24px;
+	font-family:Arial, Helvetica, sans-serif;
+	/*width:27px;*/
+	text-align:right;
+	margin:0px auto;
+	ime-mode:disabled;
+}
+#DE_ISP_note{
+	font-size:24px;
+	font-family:Arial, Helvetica, sans-serif;
+	text-align:left;
+	margin-left:30px;
+	margin-top:-15px;
+}
+.isp_note_title{
+	color:#FFCC00;
+}
+.isp_note_title2{
+	color:#FFF;
+}
+.isp_note{	
+	margin-top:-10px;
+	line-height:100%;
+	color:#FFF;
+}
+.isp_note_content{
+	margin-left:30px;
+}
+.account_format{
+	margin-top:5px;
+	margin-left:30px;
+}
+.num2{
+	color:#569AC7;
+	font-weight: bold;
+}
+.num1{
+	color:#CCFF00;
+	font-weight: bold;
+}
+
+#iptv_manual_setting{
+	font-size:24px;
+	margin-left:3%;
+	margin-top:-3%;
+}
+
+#ISP_table{
+	font-size:22px;
+	color:#FFF;
+}
+#specialisp{
+	width: 20px;
+	height: 20px;
+}
+.stb_msg{
+	font-size:22px;
+	color:#FFCC00;
+	margin-left:35px;
+}
+.QISGeneralFont{
+	font-size:22px;
+	font-family:Arial, Helvetica, sans-serif;
+	color:#66CCFF;
+	font-weight:bolder;
+	margin-left:35px;
+	margin-top:-32px;
+}
+
+</style>
+<script>
+<% login_state_hook(); %>
+var transfer_mode = qisPostData.dslx_transmode; //atm, ptm
+var prctl_str = "default";
+
+var prctl_val = qisPostData.dsl_proto;
+var vpi_val = qisPostData.dsl_vpi;
+var vci_val = qisPostData.dsl_vci;
+var encap_val = qisPostData.dsl_encap;
+var vlanid_val = qisPostData.dsl_vid;
+var ispname_str = decodeURIComponent(qisPostData.dsltmp_cfg_ispname);
+var country_str = qisPostData.dsltmp_cfg_country;
+
+if (prctl_val == "pppoe")
+	prctl_str = "PPPoE";
+else if (prctl_val == "pppoa")
+	prctl_str = "PPPoA";
+
+var encap_str = "LLC";
+if (encap_val == "1") encap_str = "VC-Mux";
+
+
+var iptv_atm_pvc_str = "";
+var iptv_ptm_pvc_str = "";
+var dsltmp_cfg_iptv_pvclist = decodeURIComponent(qisPostData.dsltmp_cfg_iptv_pvclist);
+var iptv_num_pvc_val = parseInt(qisPostData.dsltmp_cfg_iptv_num_pvc);
+
+
+//udpate iptv information
+if (iptv_num_pvc_val > 0) {
+	var dsltmp_cfg_iptv_pvclist_row;
+	var dsltmp_cfg_iptv_pvclist_col;
+	var i, j;
+
+	iptv_atm_pvc_str = iptv_num_pvc_val + " IPTV PVC(s)";
+	iptv_ptm_pvc_str = iptv_num_pvc_val + " IPTV service(s)";
+
+	//<vpi>vci>proto>encap>vlanid
+	if(dsltmp_cfg_iptv_pvclist.charAt(0) == "<")	//rempve the 1st "<"
+		dsltmp_cfg_iptv_pvclist = dsltmp_cfg_iptv_pvclist.substr(1,dsltmp_cfg_iptv_pvclist.length);
+	dsltmp_cfg_iptv_pvclist_row = dsltmp_cfg_iptv_pvclist.split('<');
+
+	iptv_atm_pvc_str += ": ";
+	iptv_ptm_pvc_str += ": ";
+	for(i=0; i<dsltmp_cfg_iptv_pvclist_row.length; i++) {
+		if(i > 0) {
+			iptv_atm_pvc_str += " + ";
+			iptv_ptm_pvc_str += " + ";
+		}
+		dsltmp_cfg_iptv_pvclist_col = dsltmp_cfg_iptv_pvclist_row[i].split('>');
+		for(j=0; j<dsltmp_cfg_iptv_pvclist_col.length; j++){
+			switch(j) {
+				case 0:	//vpi
+					iptv_atm_pvc_str += "<span class='cfg_val'>" + dsltmp_cfg_iptv_pvclist_col[j] + "/";
+					break;
+				case 1:	//vci
+					iptv_atm_pvc_str += dsltmp_cfg_iptv_pvclist_col[j] + ",";
+					break;
+				case 2:	//proto
+					iptv_ptm_pvc_str += "<span class='cfg_val'>";
+					if(dsltmp_cfg_iptv_pvclist_col[j] == 3) {
+						iptv_atm_pvc_str += "Bridged, ";
+						iptv_ptm_pvc_str += "Bridged, ";
+					}
+					else {
+						iptv_atm_pvc_str += ", ";
+						iptv_ptm_pvc_str += "Bridged, ";
+					}
+					break;
+				case 3:	//encap
+					if(dsltmp_cfg_iptv_pvclist_col[j] == 1)
+						iptv_atm_pvc_str += "VC-Mux";
+					else
+						iptv_atm_pvc_str += "LLC";
+					break;
+				case 4:	//vlan id
+					if(dsltmp_cfg_iptv_pvclist_col[j] != "") {
+						iptv_atm_pvc_str += "VLAN ID " + dsltmp_cfg_iptv_pvclist_col[j];
+						iptv_ptm_pvc_str += "VLAN ID " + dsltmp_cfg_iptv_pvclist_col[j];
+					}
+					iptv_atm_pvc_str += "</span>";
+					iptv_ptm_pvc_str += "</span>";
+					break;
+			}
+		}
+	}
+}
+
+function DE_ISP_detect(){	
+	if(country_str == "Germany" 
+		&& (ispname_str =="1&1" ||  /*ATM*/
+				ispname_str == "1&1 (Telekom VDSL Resale Anschluss)" ||  /*PTM*/ 
+				ispname_str == "Congstar" || /*Both in ATM/PTM*/
+				ispname_str.search("Deutsche Telekom") >= 0 || /*ATM/PTM*/
+				ispname_str.search("GMX") >= 0 ||	/*Both in ATM/PTM*/
+				ispname_str.search("KielNET") >= 0 || /*ATM/PTM*/
+				ispname_str.search("NetAachen") >= 0 || 
+				ispname_str.search("NetCologne") >= 0
+			)
+	){
+		$("#tblsetting_2").hide();
+		$("#tblsetting_DE").show();
+		$("#tr_DE_password").show();
+		$("#tr_DE_hwaddr").show();
+		if(ispname_str == "1&1" || ispname_str == "1&1 (Telekom VDSL Resale Anschluss)"){	//ATM/PTM
+			$("#tr_DE_username").show();
+			$("#ATM_1n1").show();
+		}
+		if(ispname_str == "Congstar"){
+			$("#tr_DE_username").show();
+			$("#ATM_PTM_Congstar").show();
+		}
+		if(ispname_str.search("Deutsche Telekom") >= 0){
+			$("#tr_DE_Deutsche_id").show();
+			$("#tr_DE_Deutsche_AN").show();
+			$("#tr_DE_Deutsche_Co").show();
+		}		
+		if(ispname_str.search("GMX") >= 0){
+			$("#tr_DE_username").show();
+			$("#ATM_PTM_GMX").show();
+		}
+		if(ispname_str.search("KielNET") >= 0){
+			$("#tr_DE_username").show();
+			$("#default_username").show();
+			$("#DE_pppoe_username").val("acs");
+			$("#pppoe_password_DE").val("acs");
+		}
+		
+		if(ispname_str.search("NetAachen") >= 0 || ispname_str.search("NetCologne") >= 0){
+			$("#tr_DE_username").show();
+			$("#default_username").show();
+			$("#DE_pppoe_username").val("nc@nc");
+			$("#pppoe_password_DE").val("nc");			
+		}		
+	}
+}
+
+function showMAC(){
+	var tempMAC = "";	
+	$('#wan_hwaddr_DE').val(login_mac_str());
+	$('#wan_hwaddr_DE').focus();
+}
+</script>
+
+<div class="headerBar">
+	<table style="width:100%">
+		<tr>
+			<td style="padding:0;width:17px;">
+				<div style="margin-right:20px;">
+					<a href="#navigation">
+						<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+					</a>
+				</div>
+			</td>
+			<td style="padding:0;width:130px;">
+				<div>
+					<div class="icon_logo"></div>
+				</div>
+			</td>
+			<td style="padding:0;">
+				<div class="model_welcome"></div>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="tableContainer">
+	<div class="desktop_left_field">
+		<div>
+			<div class="titleMain"><#Manual_Setting_Title#></div>
+			<div class="titleSub"><#Settings#></div>
+		</div>
+	</div>
+	<div class="table_td">
+
+		<div id="trans_info" class="pageDesc"></div>
+
+		<div class="pageDesc"><#PPP_cfg_usersel_desc#></div>
+		<div id="hint_msg"></div>
+
+		<div id="tblsetting_2">
+			<div>
+				<div class="inputTitleContainer">
+					<div class="inputTitle"><#Username#></div>
+				</div>
+				<div class="inputContainer">
+					<input id="dsltmp_qis_pppoe_username" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
+				</div>
+			</div>
+			<div>
+				<div class="inputTitleContainer">
+					<div class="inputTitle"><#PPPConnection_Password_itemname#></div>
+					<div class="secureInput icon_eye_close" for="dsltmp_qis_pppoe_passwd"></div>
+				</div>
+				<div class="inputContainer">
+					<input id="dsltmp_qis_pppoe_passwd" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
+				</div>
+			</div>
+
+			<div id="mac_addr" style="display:none;">
+				<div class="inputTitleContainer">
+					<div class="inputTitle"><#PPPConnection_x_MacAddressForISP_itemname#></div>
+				</div>
+				<div class="inputContainer">
+					<input id="dsltmp_qis_hwaddr" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="17" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" /><span class="descSteps">&nbsp;<#BOP_isp_mac_item#>&nbsp;example: 00:11:22:33:44:55</span>
+				</div>
+			</div>
+		</div>
+
+		<div id="tblsetting_DE">
+			<div id="tr_DE_username" style="display:none;">
+				<div class="inputTitleContainer">
+					<div class="inputTitle"><#Username#></div>
+				</div>
+				<div id="ATM_1n1" style="display:none;" class="inputContainer">
+					<span class="descSteps">1und1/<input id="pppoe_username_1n1_ATM" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput_DE pppInput" data-role="none" value="" data-clear-btn="true" />@online.de</span>
+				</div>
+				<div id="ATM_PTM_Congstar" style="display:none;" class="inputContainer">
+					<span class="descSteps"><input id="pppoe_username_Congstar" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput_DE pppInput" data-role="none" value="" data-clear-btn="true" />@congstar.de</span>
+				</div>
+				<div id="ATM_PTM_GMX" style="display:none;" class="inputContainer">
+					<span class="descSteps">GMX/<input id="pppoe_username_GMX" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput_DE pppInput" data-role="none" value="" data-clear-btn="true" />@online.de</span>
+				</div>
+				<div id="PTM_1n1" style="display:none;" class="inputContainer">
+					<span class="descSteps">H1und1/<input id="pppoe_username_1n1_PTM" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput_DE pppInput" data-role="none" value="" data-clear-btn="true" />@online.de</span>
+				</div>
+				<div id="default_username" style="display:none;" class="inputContainer">
+					<input id="DE_pppoe_username" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
+				</div>
+			</div>
+
+			<div id="tr_DE_Deutsche_id" style="display:none;">
+				<div class="inputTitleContainer">
+					<div class="inputTitle"><#ppp_ID_Connection#></div>
+				</div>
+				<div class="inputContainer">
+					<input id="pppoe_id_Deutsche" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="12" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
+				</div>
+			</div>
+
+			<div id="tr_DE_Deutsche_AN" style="display:none;">
+				<div class="inputTitleContainer">
+					<div class="inputTitle"><#ppp_Access_Number#></div>
+				</div>
+				<div class="inputContainer">
+					<input id="pppoe_AN_Deutsche" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="12" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
+				</div>
+			</div>
+
+			<div id="tr_DE_Deutsche_Co" style="display:none;">
+				<div class="inputTitleContainer">
+					<div class="inputTitle"><#ppp_CoUser_Number#></div>
+				</div>
+				<div class="inputContainer">
+					<input id="pppoe_Co_Deutsche" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="4" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
+				</div>
+			</div>
+
+			<div id="tr_DE_password" style="display:none;">
+				<div class="inputTitleContainer">
+					<div class="inputTitle"><#PPPConnection_Password_itemname#></div>
+					<div class="secureInput icon_eye_close" for="pppoe_password_DE"></div>
+				</div>
+				<div class="inputContainer">
+					<input id="pppoe_password_DE" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="32" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
+				</div>
+			</div>
+
+			<div id="tr_DE_hwaddr" style="display:none;">
+				<div class="inputTitleContainer">
+					<div class="inputTitle"><#BOP_isp_mac_item#></div>
+				</div>
+				<div class="inputContainer">
+					<span class="descSteps"><input id="wan_hwaddr_DE" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="17" class="textInput_DE pppInput" data-role="none" value="" data-clear-btn="true" /><input type="button" class="macCloneBtn" style="margin-left:20px;" onclick="showMAC();" value="<#BOP_isp_MACclone#>"><br>
+					&nbsp;<#BOP_isp_mac_item#>&nbsp;example: 00:11:22:33:44:55</span>
+				</div>
+			</div>
+		</div>
+		
+		<div style="margin-top:160px;">
+			<div class="footer_desktop">
+				<div class="desktop_abortBtn" id="desktop_abortBtn" onclick="abort.ppp_cfg_tmp(transfer_mode)"><#CTL_prev#></div>
+				<div class="desktop_applyBtn btn_wireless_apply" onclick="apply.ppp_cfg_tmp()"><#CTL_next#></div>
+			</div>
+			<div class="footer_mobile">
+				<table style="width:100%;" cellpadding="0" cellspacing="0">
+					<tr>
+						<td class="mobileAbort" id="mobile_abortBtn" style="width:50%" onclick="abort.ppp_cfg_tmp(transfer_mode)">
+							<div class="mobile_abortBtn"><#CTL_prev#></div>
+						</td>
+						<td class="mobileApply" onclick="apply.ppp_cfg_tmp()">
+							<div class="mobile_applyBtn btn_wireless_apply"><#CTL_next#></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class='footerPadding'></div>
+
+<script>
+
+	//--- initial ------------------------------------------------
+	DE_ISP_detect();
+	
+	$(".secureInput")
+		.unbind("click")
+		.click(checkPasswd);
+	
+	postDataModel.insert(dsl_wanObj.PPPOEObj);
+	if(transfer_mode == "ptm"){
+
+		$("#trans_info").html("<#Transfer_Mode#>: <span class=\"cfg_val\">VDSL WAN (PTM)</span>,&nbsp;<#Layer3Forwarding_x_ConnectionType_itemname#>: <span class=\"cfg_val\">"+ prctl_str +"</span>, <#WANVLANIDText#>: <span class=\"cfg_val\">"+ vlanid_val +"</span><br><b>"+ iptv_ptm_pvc_str +"</b>");
+
+	}
+	else{
+
+		if(vlanid_val.length > 0){
+			$("#trans_info").html("<#Transfer_Mode#>: <span class=\"cfg_val\">ADSL WAN (ATM)</span>,&nbsp;<#Layer3Forwarding_x_ConnectionType_itemname#>: <span class=\"cfg_val\">"+ prctl_str +"</span>, VPI/VCI: <span class=\"cfg_val\">"+ vpi_val + "/"+ vci_val +", "+ encap_str +"</span>, <#WANVLANIDText#>: <span class=\"cfg_val\">" + vlanid_val + "</span><br><b>"+ iptv_atm_pvc_str +"</b>");
+		}
+		else{
+			$("#trans_info").html("<#Transfer_Mode#>: <span class=\"cfg_val\">ADSL WAN (ATM)</span>,&nbsp;<#Layer3Forwarding_x_ConnectionType_itemname#>: <span class=\"cfg_val\">"+ prctl_str +"</span>, VPI/VCI: <span class=\"cfg_val\">"+ vpi_val + "/"+ vci_val +", "+ encap_str +"</span><br><b>"+ iptv_atm_pvc_str +"</b>");
+		}
+
+		if (country_str == "Brazil"){
+			if (prctl_val == "pppoe" && vpi_val == "0" && vci_val == "35" && encap_val == "0" && ispname_str == "GVT"){
+
+				$('#dsltmp_qis_pppoe_username').val("turbonet@turbonet");
+				$('#dsltmp_qis_pppoe_passwd').val("gvt25");
+				//setTimeout("submitForm()",2000);
+			}
+
+			if (ispname_str == "Telefonica Speedy"){
+				qisPostData.dsl_pppoe_mtu = "1480";				
+			}
+		}
+
+		if (country_str == "India"){
+			if(ispname_str == "BSNL (PPPOE)" || ispname_str == "BSNL (PPPOA)" || ispname_str == "MTNL (PPPOE)" || ispname_str == "MTNL (PPPOA)"){
+				qisPostData.dsl_pppoe_mtu = "1442";
+			}
+		}
+
+		if (country_str == "Denmark"){
+			//denmark ISP need input MAC address
+			$('#mac_addr').show();
+		}
+		else{
+			$('#mac_addr').hide();	
+		}
+	}
+
+	//-------------------------------------------- initial -------
+
+	apply.ppp_cfg_tmp = function(){
+		var pppoe_username_tmp="";
+		var pppoe_passwd_tmp="";
+
+		if(country_str == "Germany"){
+					
+			pppoe_username_tmp = $('#dsltmp_qis_pppoe_username').val();
+			pppoe_passwd_tmp = $('#dsltmp_qis_pppoe_passwd').val();
+			qisPostData.dsl_hwaddr = $('#wan_hwaddr_DE').val();
+			
+			if(ispname_str == "1&1" || ispname_str == "1&1 (Telekom VDSL Resale Anschluss)"){	//ATM/PTM
+				pppoe_username_tmp = "1und1/"+ $('#pppoe_username_1n1_ATM').val() +"@online.de";
+				pppoe_passwd_tmp = $('#pppoe_password_DE').val();
+			}
+			if(ispname_str == "Congstar"){	//Both in ATM/PTM
+				pppoe_username_tmp = $('#pppoe_username_Congstar').val() +"@congstar.de";
+				pppoe_passwd_tmp = $('#pppoe_password_DE').val();
+			}	
+					
+			if(ispname_str.search("Deutsche Telekom") >= 0){	/*1st is ATM, else PTM*/
+				if($('#pppoe_AN_Deutsche').val().length < 12){	//length < 12, add '#' symbol
+					pppoe_username_tmp = $('#pppoe_id_Deutsche').val() + $('#pppoe_AN_Deutsche').val() +"#"+ $('#pppoe_Co_Deutsche').val() +"@t-online.de";
+				}
+				else{
+					pppoe_username_tmp = $('#pppoe_id_Deutsche').val() + $('#pppoe_AN_Deutsche').val() + $('#pppoe_Co_Deutsche').val() +"@t-online.de";
+				}
+				pppoe_passwd_tmp = $('#pppoe_password_DE').val();
+			}
+					
+			if(ispname_str.search("GMX") >= 0){	//Both in ATM/PTM
+				pppoe_username_tmp = "GMX/"+ $('#pppoe_username_GMX').val() +"@online.de";
+				pppoe_passwd_tmp = $('#pppoe_password_DE').val();
+			}
+					
+			if(ispname_str.search("KielNET") >= 0 ||		/*1st is ATM, 2nd is PTM*/
+				ispname_str.search("NetAachen") >= 0 || 
+				ispname_str.search("NetCologne") >= 0
+			){
+
+				pppoe_username_tmp = $('#DE_pppoe_username').val();
+				pppoe_passwd_tmp = $('#pppoe_password_DE').val();
+			}
+							
+		}
+		else{
+			if(hasBlank([$("#dsltmp_qis_pppoe_username")])){
+				$('dsltmp_qis_pppoe_username').focus();
+				alert("<#File_Pop_content_alert_desc1#>");
+				return false;
+			}
+			else if (hasBlank([$("#dsltmp_qis_pppoe_passwd")])){
+				$('dsltmp_qis_pppoe_passwd').focus();
+				alert("<#File_Pop_content_alert_desc6#>");
+				return false;
+			}
+
+			pppoe_username_tmp = $('#dsltmp_qis_pppoe_username').val();
+			pppoe_passwd_tmp = $('#dsltmp_qis_pppoe_passwd').val();
+			if(country_str == "Denmark"){
+				qisPostData.dsl_hwaddr = $('#dsltmp_qis_hwaddr').val();
+			}
+		}
+
+		qisPostData.dsl_pppoe_username = pppoe_username_tmp;
+		qisPostData.dsl_pppoe_passwd = pppoe_passwd_tmp;
+		qisPostData.dsl_DHCPClient = 1;
+		qisPostData.dsl_dnsenable = 1;
+
+		httpApi.nvramSet((function(){
+			qisPostData.action_mode = "apply";
+			qisPostData.rc_service = "restart_dslwan_qis 0";
+			//alert(qisPostData); //Viz tmp
+			return qisPostData;
+		})());
+
+		goTo.Wireless();
+	};
+
+	
+</script>

@@ -1,0 +1,269 @@
+<script type="text/JavaScript" src="mobile/js/jstz.min.js"></script>
+<style>
+.cfg_val{
+	font-size:30px;
+	color:#FC0;
+}
+span{
+	border:0px solid #FFFFFF;
+	color:#FFFFFF;
+	font-size:24px;
+	font-family:Arial, Helvetica, sans-serif;
+	/*width:27px;*/
+	text-align:right;
+	margin:0px auto;
+	ime-mode:disabled;
+}
+
+
+#iptv_manual_setting{
+	font-size:24px;
+	margin-left:3%;
+	margin-top:-3%;
+}
+
+#ISP_table{
+	font-size:22px;
+	color:#FFF;
+}
+#specialisp{
+	width: 20px;
+	height: 20px;
+}
+.stb_msg{
+	font-size:22px;
+	color:#FFCC00;
+	margin-left:35px;
+}
+.QISGeneralFont{
+	font-size:22px;
+	font-family:Arial, Helvetica, sans-serif;
+	color:#66CCFF;
+	font-weight:bolder;
+	margin-left:35px;
+	margin-top:-32px;
+}
+
+</style>
+<script>
+<% login_state_hook(); %>
+var transfer_mode = qisPostData.dslx_transmode; //atm, ptm
+
+var prctl_val = qisPostData.dsl_proto;
+var vpi_val = qisPostData.dsl_vpi;
+var vci_val = qisPostData.dsl_vci;
+var encap_val = qisPostData.dsl_encap;
+var vlanid_val = qisPostData.dsl_vid;
+var ispname_str = decodeURIComponent(qisPostData.dsltmp_cfg_ispname);
+var country_str = qisPostData.dsltmp_cfg_country;
+
+var encap_str = "LLC";
+if (encap_val == "1") encap_str = "VC-Mux";
+
+var mac_addr_2g =  httpApi.nvramGet(["wan0_hwaddr"]).wan0_hwaddr;
+var mac_addr_last_3bytes = "\"" + mac_addr_2g.substring(9, 11) + mac_addr_2g.substring(12, 14) + mac_addr_2g.substring(15, 17) + "\"";
+var model_name = httpApi.nvramGet(["productid"]).productid;
+
+var iptv_atm_pvc_str = "";
+var iptv_ptm_pvc_str = "";
+var iptv_num_pvc_val = parseInt(qisPostData.dsltmp_cfg_iptv_num_pvc);
+var dsltmp_cfg_iptv_pvclist = decodeURIComponent(qisPostData.dsltmp_cfg_iptv_pvclist);
+
+//udpate iptv information
+if (iptv_num_pvc_val > 0) {
+	var dsltmp_cfg_iptv_pvclist_row;
+	var dsltmp_cfg_iptv_pvclist_col;
+	var i, j;
+
+	iptv_atm_pvc_str = iptv_num_pvc_val + " IPTV PVC(s)";
+	iptv_ptm_pvc_str = iptv_num_pvc_val + " IPTV service(s)";
+
+	//<vpi>vci>proto>encap>vlanid
+	if(dsltmp_cfg_iptv_pvclist.charAt(0) == "<")	//rempve the 1st "<"
+		dsltmp_cfg_iptv_pvclist = dsltmp_cfg_iptv_pvclist.substr(1,dsltmp_cfg_iptv_pvclist.length);
+	dsltmp_cfg_iptv_pvclist_row = dsltmp_cfg_iptv_pvclist.split('<');
+
+	iptv_atm_pvc_str += ": ";
+	iptv_ptm_pvc_str += ": ";
+	for(i=0; i<dsltmp_cfg_iptv_pvclist_row.length; i++) {
+		if(i > 0) {
+			iptv_atm_pvc_str += " + ";
+			iptv_ptm_pvc_str += " + ";
+		}
+		dsltmp_cfg_iptv_pvclist_col = dsltmp_cfg_iptv_pvclist_row[i].split('>');
+		for(j=0; j<dsltmp_cfg_iptv_pvclist_col.length; j++){
+			switch(j) {
+				case 0:	//vpi
+					iptv_atm_pvc_str += "<span class='cfg_val'>" + dsltmp_cfg_iptv_pvclist_col[j] + "/";
+					break;
+				case 1:	//vci
+					iptv_atm_pvc_str += dsltmp_cfg_iptv_pvclist_col[j] + ",";
+					break;
+				case 2:	//proto
+					iptv_ptm_pvc_str += "<span class='cfg_val'>";
+					if(dsltmp_cfg_iptv_pvclist_col[j] == 3) {
+						iptv_atm_pvc_str += "Bridged, ";
+						iptv_ptm_pvc_str += "Bridged, ";
+					}
+					else {
+						iptv_atm_pvc_str += ", ";
+						iptv_ptm_pvc_str += "Bridged, ";
+					}
+					break;
+				case 3:	//encap
+					if(dsltmp_cfg_iptv_pvclist_col[j] == 1)
+						iptv_atm_pvc_str += "VC-Mux";
+					else
+						iptv_atm_pvc_str += "LLC";
+					break;
+				case 4:	//vlan id
+					if(dsltmp_cfg_iptv_pvclist_col[j] != "") {
+						iptv_atm_pvc_str += "VLAN ID " + dsltmp_cfg_iptv_pvclist_col[j];
+						iptv_ptm_pvc_str += "VLAN ID " + dsltmp_cfg_iptv_pvclist_col[j];
+					}
+					iptv_atm_pvc_str += "</span>";
+					iptv_ptm_pvc_str += "</span>";
+					break;
+			}
+		}
+	}
+}
+
+function showMAC(){
+	var tempMAC = "";	
+	$('#wan_hwaddr').val(login_mac_str());
+	$('#wan_hwaddr').focus();
+}
+</script>
+
+<div class="headerBar">
+	<table style="width:100%">
+		<tr>
+			<td style="padding:0;width:17px;">
+				<div style="margin-right:20px;">
+					<a href="#navigation">
+						<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+					</a>
+				</div>
+			</td>
+			<td style="padding:0;width:130px;">
+				<div>
+					<div class="icon_logo"></div>
+				</div>
+			</td>
+			<td style="padding:0;">
+				<div class="model_welcome"></div>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="tableContainer">
+	<div class="desktop_left_field">
+		<div>
+			<div class="titleMain"><#Manual_Setting_Title#></div>
+			<div class="titleSub"><#Settings#></div>
+		</div>
+	</div>
+	<div class="table_td">
+		<div id="trans_info" class="pageDesc"></div>
+
+		<div class="pageDesc"></div>
+		<div id="hint_msg"></div>
+
+		<div id="mac_addr" style="display:none;">
+			<div class="inputTitleContainer">
+				<div class="inputTitle"><#PPPConnection_x_MacAddressForISP_itemname#></div>
+			</div>
+			<div class="inputContainer">
+				<input id="wan_hwaddr" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="17" class="textInput_DE pppInput" data-role="none" value="" data-clear-btn="true" />
+				<span class="descSteps">
+					<input type="button" class="macCloneBtn" style="margin-left:20px;" onclick="showMAC();" value="<#BOP_isp_MACclone#>"><br><!-- class="button.ui-btn" -->
+				&nbsp;<#BOP_isp_mac_item#>&nbsp;example: 00:11:22:33:44:55
+				</span>
+			</div>
+		</div>
+		
+		<!-- Action Button -->
+		<div class="footer_desktop">
+			<div class="desktop_abortBtn" onclick="abort.mer_cfg_tmp(transfer_mode);"><#CTL_prev#></div>
+			<div class="desktop_applyBtn" onclick="apply.mer_cfg_tmp();"><#CTL_next#></div>
+		</div>
+		<div class="footer_mobile">
+			<table style="width:100%;" cellpadding="0" cellspacing="0">
+			<tr>
+				<td class="mobileAbort" style="width:50%" onclick="abort.mer_cfg_tmp(transfer_mode);">
+					<div class="mobile_abortBtn"><#CTL_prev#></div>
+				</td>
+				<td class="mobileApply" onclick="apply.mer_cfg_tmp();">
+					<div class="mobile_applyBtn"><#CTL_next#></div>
+				</td>
+			</tr>
+			</table>
+		</div>
+
+	</div>
+</div>
+<div class='footerPadding'></div>
+
+<script>
+
+	//--- initial ------------------------------------------------
+
+
+	postDataModel.insert(dsl_wanObj.dslDHCPObj);
+	if(transfer_mode == "ptm"){
+
+		$("#trans_info").html("<#Transfer_Mode#>: <span class=\"cfg_val\">VDSL WAN (PTM)</span>,&nbsp;<#Layer3Forwarding_x_ConnectionType_itemname#>: <span class=\"cfg_val\"><#BOP_ctype_title1#></span>, <#WANVLANIDText#>: <span class=\"cfg_val\">"+ vlanid_val +"</span><br><b>"+ iptv_ptm_pvc_str +"</b>");
+	}
+	else{
+		
+		if(vlanid_val.length > 0){
+			$("#trans_info").html("<#Transfer_Mode#>: <span class=\"cfg_val\">ADSL WAN (ATM)</span>,&nbsp;<#Layer3Forwarding_x_ConnectionType_itemname#>: <span class=\"cfg_val\">MER</span>, VPI/VCI: <span class=\"cfg_val\">"+ vpi_val + "/"+ vci_val +", "+ encap_str +"</span>, <#WANVLANIDText#>: <span class=\"cfg_val\">" + vlanid_val + "</span><br><b>"+ iptv_atm_pvc_str +"</b>");
+		}
+		else{
+			$("#trans_info").html("<#Transfer_Mode#>: <span class=\"cfg_val\">ADSL WAN (ATM)</span>,&nbsp;<#Layer3Forwarding_x_ConnectionType_itemname#>: <span class=\"cfg_val\">MER</span>, VPI/VCI: <span class=\"cfg_val\">"+ vpi_val + "/"+ vci_val +", "+ encap_str +"</span><br><b>"+ iptv_atm_pvc_str +"</b>");
+		}
+	}
+
+	if (country_str == "Denmark")
+	{
+		//Denmark ISP might need to use MAC clone
+		$('#mac_addr').show();
+	}
+	else{
+		$('#mac_addr').hide();	
+	}
+	//----------------------------------------------- initial ----
+
+	apply.mer_cfg_tmp = function(){
+
+		qisPostData.dsl_DHCPClient = 1;
+		qisPostData.dsl_dnsenable = 1;
+
+		if (country_str == "United Kingdom" && (ispname_str == "SKY (MER)" || ispname_str == "Sky - Fibre Broadband"))
+		{
+			qisPostData.dslx_dhcp_clientid = mac_addr_last_3bytes;
+			qisPostData.dslx_dhcp_hostname = model_name;
+		}
+		else
+		{
+			qisPostData.dslx_dhcp_clientid = "";
+			qisPostData.dslx_dhcp_hostname = "";
+		}
+		
+		if (country_str == "Denmark"){
+			qisPostData.dsl_hwaddr = $('#wan_hwaddr').val();
+		}
+
+		httpApi.nvramSet((function(){
+			qisPostData.action_mode = "apply";
+			qisPostData.rc_service = "restart_dslwan_qis 0";
+			//alert(qisPostData); //Viz tmp
+			return qisPostData;
+		})());
+
+		goTo.Wireless();
+	};
+
+
+</script>

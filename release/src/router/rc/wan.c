@@ -4172,6 +4172,7 @@ int detect_plc_main(int argc, char *argv[]){
 					amas_cap_addr = NULL;
 			}
 #endif	/* RTCONFIG_AMAS */
+
 			for(i = 0; i < num; i++) {
 #ifdef RTCONFIG_AMAS
 				if (amas_cap_addr && compare_mac_skip3(amas_cap_addr, rplc[i].mac)) {
@@ -4180,7 +4181,6 @@ int detect_plc_main(int argc, char *argv[]){
 					tx_mimo = rplc[i].tx_mimo;
 					rx_mimo = rplc[i].rx_mimo;
 					cnt = 1;
-cprintf("#PLC# find amas_cap(%s) tx(%d : %d) rx(%d : %d)\n", amas_cap_addr, tx, tx_mimo, rx, rx_mimo);
 					break;
 				}
 #endif	/* RTCONFIG_AMAS */

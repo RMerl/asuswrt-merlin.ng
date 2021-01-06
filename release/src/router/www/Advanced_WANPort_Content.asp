@@ -102,6 +102,8 @@ var wans_standby_orig = '<% nvram_get("wans_standby"); %>';
 var min_detect_interval = 2;
 var min_fo_detect_count = 5;
 var dns_probe_timeout_threshold = (httpApi.nvramGet(["dns_probe_timeout"], true).dns_probe_timeout > 0)? parseInt(httpApi.nvramGet(["dns_probe_timeout"], true).dns_probe_timeout)+1 : 1;
+var qos_enable_orig = '<% nvram_get("qos_enable"); %>';
+var qos_type_orig = '<% nvram_get("qos_type"); %>';
 
 
 var country = new Array("None", "China");
@@ -571,6 +573,14 @@ function applyRule(){
 			if(document.form.wans_dualwan.value.split(" ").indexOf("wan") == -1){
 				document.form.bond_wan.disabled = false;
 				document.form.bond_wan.value = "0";
+			}
+		}
+	}
+
+	if(wans_dualwan_orig != document.form.wans_dualwan.value &&　qos_enable_orig == 1){
+		if(qos_type_orig == 1 || qos_type_orig == 0 || qos_type_orig == 3){		//(qos_type_orig == 1 && document.form.bw_setting_name[1].checked == true ) || 
+			if( !confirm("Since QoS setting was applied before Dual WAN setting is changed, you need to re-configure QoS again.")){	/*Untranslated*/
+				return false;
 			}
 		}
 	}

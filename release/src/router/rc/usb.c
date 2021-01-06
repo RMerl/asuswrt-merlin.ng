@@ -747,7 +747,14 @@ void start_usb(int mode)
 #endif
 			modprobe(SD_MOD);
 			modprobe(SG_MOD);
+#if defined(RTCONFIG_HND_ROUTER_AX)
+			static char storage_quirks[] = "0bc2:231a:u";
+
+			snprintf(param, sizeof(param), "quirks=%s", storage_quirks);
+			eval("insmod", USBSTORAGE_MOD, param);
+#else
 			modprobe(USBSTORAGE_MOD);
+#endif
 			MODPROBE__UAS;
 
 			if (nvram_get_int("usb_fs_ext3")) {

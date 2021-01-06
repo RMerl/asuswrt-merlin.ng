@@ -361,6 +361,9 @@ function genSmartConnect(){
 			_optionArray = [['<#wl_securitylevel_0#>', '0'], ['Dual-Band Smart Connect', '1']];
 		}
 		else{
+			if(isSupport("wifi6e"))
+				_optionArray = [['<#wl_securitylevel_0#>', '0'], ['Tri-Band Smart Connect', '1']];
+			else
 			_optionArray = [['<#wl_securitylevel_0#>', '0'], ['Tri-Band Smart Connect', '1'], ['5GHz Smart Connect', '2']];
 		}		
 	}

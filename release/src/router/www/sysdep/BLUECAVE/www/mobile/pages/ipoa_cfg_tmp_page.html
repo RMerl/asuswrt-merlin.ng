@@ -1,0 +1,283 @@
+<script type="text/JavaScript" src="mobile/js/jstz.min.js"></script>
+<style>
+.cfg_val{
+	font-size:30px;
+	color:#FC0;
+}
+span{
+	border:0px solid #FFFFFF;
+	color:#FFFFFF;
+	font-size:24px;
+	font-family:Arial, Helvetica, sans-serif;
+	/*width:27px;*/
+	text-align:right;
+	margin:0px auto;
+	ime-mode:disabled;
+}
+
+
+#iptv_manual_setting{
+	font-size:24px;
+	margin-left:3%;
+	margin-top:-3%;
+}
+
+#ISP_table{
+	font-size:22px;
+	color:#FFF;
+}
+#specialisp{
+	width: 20px;
+	height: 20px;
+}
+.stb_msg{
+	font-size:22px;
+	color:#FFCC00;
+	margin-left:35px;
+}
+.QISGeneralFont{
+	font-size:22px;
+	font-family:Arial, Helvetica, sans-serif;
+	color:#66CCFF;
+	font-weight:bolder;
+	margin-left:35px;
+	margin-top:-32px;
+}
+
+</style>
+<script>
+
+var transfer_mode = qisPostData.dslx_transmode; //atm, ptm
+
+var prctl_val = qisPostData.dsl_proto;
+var vpi_val = qisPostData.dsl_vpi;
+var vci_val = qisPostData.dsl_vci;
+var encap_val = qisPostData.dsl_encap;
+var vlanid_val = qisPostData.dsl_vid;
+var ispname_str = decodeURIComponent(qisPostData.dsltmp_cfg_ispname);
+var country_str = qisPostData.dsltmp_cfg_country;
+
+var encap_str = "LLC";
+if (encap_val == "1") encap_str = "VC-Mux";
+
+var mac_addr_2g =  httpApi.nvramGet(["wan0_hwaddr"]).wan0_hwaddr;
+var mac_addr_last_3bytes = "\"" + mac_addr_2g.substring(9, 11) + mac_addr_2g.substring(12, 14) + mac_addr_2g.substring(15, 17) + "\"";
+var model_name = httpApi.nvramGet(["productid"]).productid;
+
+var iptv_num_pvc_val = qisPostData.dsltmp_cfg_iptv_num_pvc;
+var iptv_atm_pvc_str = "";
+var iptv_ptm_pvc_str = "";
+var dsltmp_cfg_iptv_pvclist = decodeURIComponent(qisPostData.dsltmp_cfg_iptv_pvclist);
+//udpate iptv information
+if (iptv_num_pvc_val != "0" && iptv_num_pvc_val != "") {
+	var dsltmp_cfg_iptv_pvclist_row;
+	var dsltmp_cfg_iptv_pvclist_col;
+	var i, j;
+
+	iptv_atm_pvc_str = iptv_num_pvc_val + " IPTV PVC(s)";
+	iptv_ptm_pvc_str = iptv_num_pvc_val + " IPTV service(s)";
+
+	//<vpi>vci>proto>encap>vlanid
+	if(dsltmp_cfg_iptv_pvclist.charAt(0) == "<")	//rempve the 1st "<"
+		dsltmp_cfg_iptv_pvclist = dsltmp_cfg_iptv_pvclist.substr(1,dsltmp_cfg_iptv_pvclist.length);
+	dsltmp_cfg_iptv_pvclist_row = dsltmp_cfg_iptv_pvclist.split('<');
+
+	iptv_atm_pvc_str += ": ";
+	iptv_ptm_pvc_str += ": ";
+	for(i=0; i<dsltmp_cfg_iptv_pvclist_row.length; i++) {
+		if(i > 0) {
+			iptv_atm_pvc_str += " + ";
+			iptv_ptm_pvc_str += " + ";
+		}
+		dsltmp_cfg_iptv_pvclist_col = dsltmp_cfg_iptv_pvclist_row[i].split('>');
+		for(j=0; j<dsltmp_cfg_iptv_pvclist_col.length; j++){
+			switch(j) {
+				case 0:	//vpi
+					iptv_atm_pvc_str += "<span class='cfg_val'>" + dsltmp_cfg_iptv_pvclist_col[j] + "/";
+					break;
+				case 1:	//vci
+					iptv_atm_pvc_str += dsltmp_cfg_iptv_pvclist_col[j] + ",";
+					break;
+				case 2:	//proto
+					iptv_ptm_pvc_str += "<span class='cfg_val'>";
+					if(dsltmp_cfg_iptv_pvclist_col[j] == 3) {
+						iptv_atm_pvc_str += "Bridged, ";
+						iptv_ptm_pvc_str += "Bridged, ";
+					}
+					else {
+						iptv_atm_pvc_str += ", ";
+						iptv_ptm_pvc_str += "Bridged, ";
+					}
+					break;
+				case 3:	//encap
+					if(dsltmp_cfg_iptv_pvclist_col[j] == 1)
+						iptv_atm_pvc_str += "VC-Mux";
+					else
+						iptv_atm_pvc_str += "LLC";
+					break;
+				case 4:	//vlan id
+					if(dsltmp_cfg_iptv_pvclist_col[j] != "") {
+						iptv_atm_pvc_str += "VLAN ID " + dsltmp_cfg_iptv_pvclist_col[j];
+						iptv_ptm_pvc_str += "VLAN ID " + dsltmp_cfg_iptv_pvclist_col[j];
+					}
+					iptv_atm_pvc_str += "</span>";
+					iptv_ptm_pvc_str += "</span>";
+					break;
+			}
+		}
+	}
+}
+
+</script>
+
+<div class="headerBar">
+	<table style="width:100%">
+		<tr>
+			<td style="padding:0;width:17px;">
+				<div style="margin-right:20px;">
+					<a href="#navigation">
+						<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+					</a>
+				</div>
+			</td>
+			<td style="padding:0;width:130px;">
+				<div>
+					<div class="icon_logo"></div>
+				</div>
+			</td>
+			<td style="padding:0;">
+				<div class="model_welcome"></div>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="tableContainer">
+	<div class="desktop_left_field">
+		<div>
+			<div class="titleMain"><#Manual_Setting_Title#></div>
+			<div class="titleSub"><#Settings#></div>
+		</div>
+	</div>
+	<div class="table_td">
+		<div id="trans_info" class="pageDesc"></div>
+
+		<div class="pageDesc"><#Layer3Forwarding_x_UseStaticIP_itemname#></div>
+		<div id="hint_msg"></div>
+
+		<div class="table_td">
+			<div class="pageDesc"><#QIS_SmartConn_StaticDesc#></div>
+			<div>
+				<div>
+					<div class="inputTitleContainer">
+						<div class="inputTitle"><#IPConnection_ExternalIPAddress_itemname#></div>
+					</div>
+					<div class="inputContainer">
+						<input id="dsl_ipaddr" class="textInput staticInput" data-role="none" onkeypress="return validator.isIPAddr(this, event);" maxlength="15" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+					</div>
+				</div>
+				<div>
+					<div class="inputTitleContainer">
+						<div class="inputTitle"><#IPConnection_x_ExternalSubnetMask_itemname#></div>
+					</div>
+					<div class="inputContainer">
+						<input id="dsl_netmask" class="textInput staticInput" data-role="none" onkeypress="return validator.isIPAddr(this, event);" maxlength="15" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+					</div>
+				</div>
+				<div>
+					<div class="inputTitleContainer">
+						<div class="inputTitle"><#IPConnection_x_ExternalGateway_itemname#></div>
+					</div>
+					<div class="inputContainer">
+						<input id="dsl_gateway" class="textInput staticInput" data-role="none" onkeypress="return validator.isIPAddr(this, event);" maxlength="15" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+					</div>
+				</div>
+				<div>
+					<div class="inputTitleContainer">
+						<div class="inputTitle"><#IPConnection_x_DNSServer1_itemname#></div>
+					</div>
+					<div class="inputContainer">
+						<input id="dsl_dns1_x" class="textInput staticInput" data-role="none" onkeypress="return validator.isIPAddr(this, event);" maxlength="15" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+					</div>
+				</div>
+				<div>
+					<div class="inputTitleContainer">
+						<div class="inputTitle"><#IPConnection_x_DNSServer2_itemname#></div>
+					</div>
+					<div class="inputContainer">
+						<input id="dsl_dns2_x" class="textInput staticInput" data-role="none" onkeypress="return validator.isIPAddr(this, event);" maxlength="15" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="hint_yellow">Note:  If you are not sure about the IP/DNS address setting, then please contact with your ISP.</div>
+		
+		<!-- Action Button -->
+		<div class="footer_desktop">
+			<div class="desktop_abortBtn" onclick='abort.ipoa_cfg_tmp()'><#Manual_Setting_btn#></div>
+			<div class="desktop_applyBtn" onclick="apply.ipoa_cfg_tmp();"><#CTL_next#></div>
+		</div>
+		<div class="footer_mobile">
+			<table style="width:100%;" cellpadding="0" cellspacing="0">
+			<tr>
+				<td class="mobileAbort" style="width:50%" onclick='abort.ipoa_cfg_tmp()'>
+					<div class="mobile_abortBtn"><#Manual_Setting_btn#></div>
+				</td>
+				<td class="mobileApply" onclick="apply.ipoa_cfg_tmp();">
+					<div class="mobile_applyBtn"><#CTL_next#></div>
+				</td>
+			</tr>
+			</table>
+		</div>
+
+	</div>
+</div>
+<div class='footerPadding'></div>
+
+<script>
+
+	//--- initial ------------------------------------------------
+
+	postDataModel.insert(dsl_wanObj.dslDHCPObj);
+	if(transfer_mode == "ptm"){
+
+		$("#trans_info").html("<#Transfer_Mode#>: <span class=\"cfg_val\">VDSL WAN (PTM)</span>,&nbsp;<#Layer3Forwarding_x_ConnectionType_itemname#>: <span class=\"cfg_val\"><#BOP_ctype_title5#></span>, <#WANVLANIDText#>: <span class=\"cfg_val\">"+ vlanid_val +"</span><br><b>"+ iptv_ptm_pvc_str +"</b>");
+	}
+	else{
+
+		if(vlanid_val.length > 0){
+			$("#trans_info").html("<#Transfer_Mode#>: <span class=\"cfg_val\">ADSL WAN (ATM)</span>,&nbsp;<#Layer3Forwarding_x_ConnectionType_itemname#>: <span class=\"cfg_val\">IPoA</span>, VPI/VCI: <span class=\"cfg_val\">"+ vpi_val + "/"+ vci_val +", "+ encap_str +"</span>, <#WANVLANIDText#>: <span class=\"cfg_val\">" + vlanid_val + "</span><br><b>"+ iptv_atm_pvc_str +"</b>");
+		}
+		else{
+			$("#trans_info").html("<#Transfer_Mode#>: <span class=\"cfg_val\">ADSL WAN (ATM)</span>,&nbsp;<#Layer3Forwarding_x_ConnectionType_itemname#>: <span class=\"cfg_val\">IPoA</span>, VPI/VCI: <span class=\"cfg_val\">"+ vpi_val + "/"+ vci_val +", "+ encap_str +"</span><br><b>"+ iptv_atm_pvc_str +"</b>");
+		}
+	}
+
+	if (country_str == "France" && ispname_str == "Free Degroupe"){	//ATM	
+		$('#dsl_dns1_x').val("212.27.40.240");
+		$('#dsl_dns2_x').val("212.27.40.241");
+	}
+	//----------------------------------------------- initial ----
+
+	apply.ipoa_cfg_tmp = function(){
+
+		qisPostData.dsl_DHCPClient = 0;			
+		qisPostData.dsl_ipaddr = $('#dsl_ipaddr').val();
+		qisPostData.dsl_netmask = $('#dsl_netmask').val();
+		qisPostData.dsl_gateway = $('#dsl_gateway').val();
+		qisPostData.dsl_dnsenable = 0;
+		qisPostData.dsl_dns1 = $('#dsl_dns1_x').val();
+		qisPostData.dsl_dns2 = $('#dsl_dns2_x').val();
+
+		httpApi.nvramSet((function(){
+			qisPostData.action_mode = "apply";
+			qisPostData.rc_service = "restart_dslwan_qis 0";
+			//alert(qisPostData); //Viz tmp
+			return qisPostData;
+		})());
+
+		goTo.Wireless();
+	};
+
+
+</script>

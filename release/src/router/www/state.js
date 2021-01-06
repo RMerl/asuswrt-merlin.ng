@@ -1385,7 +1385,7 @@ function showMenuTree(menuList, menuExclude){
 						//-------Fine tune Menu icon end----------
 
 						menu_code += '"';
-						if(curMenu.index == "menu_QIS" && odmpid == "DSL-AX5400"){
+						if(curMenu.index == "menu_QIS" && isSupport("is_ax5400_i1")){
 							menu_code += ' style="display:none;"';
 						}
 						menu_code += ' onclick="goToPage(';

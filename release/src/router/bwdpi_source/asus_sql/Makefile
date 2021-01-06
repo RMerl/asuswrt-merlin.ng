@@ -62,7 +62,12 @@ else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
 CFLAGS += -DPGCONTROL3
 else ifeq ($(RTCONFIG_RALINK),y)
+ifeq ($(RTCONFIG_RALINK_MT7622),y)
+	# mtk7622
+CFLAGS += -DPGCONTROL3
+else
 	# mtk
+endif
 else ifeq ($(RTCONFIG_LANTIQ),y)
 	# lantiq
 else ifeq ($(RTCONFIG_BCMARM),y)
@@ -96,6 +101,9 @@ LD2 += $(LDFLAGS) $(EXTRALD)
 
 # ASUSWRT
 OBJS += bwdpi_sqlite.o traffic_analyzer.o sqlite_stat.o web_history.o AiProtectionMonitor.o
+ifeq ($(RT4GAC86U),y)
+OBJS += $(LIBDIR)/libc_nonshared.a
+endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 vpath %.c $(SRCBASE)/shared

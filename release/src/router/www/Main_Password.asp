@@ -9,6 +9,7 @@
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
 <title>ASUS Login</title>
+<script type="text/javascript" src="/require/require.min.js"></script>
 <style>
 .content{
 	width:580px;
@@ -103,6 +104,8 @@ var is_KR_sku = (function(){
 })();
 var isIE8 = navigator.userAgent.search("MSIE 8") > -1; 
 var isIE9 = navigator.userAgent.search("MSIE 9") > -1; 
+var defaultPass = ("<% check_pw(); %>" == "1");
+var timeZoneObj;
 
 function initial(){
 	if(is_KR_sku)
@@ -147,6 +150,19 @@ function initial(){
 				submitForm();
 			}
 		};
+	}
+
+	if(defaultPass){
+		require(['/require/modules/timeZone.js'], function(timeZone) {
+			var preferredLang = "<% nvram_get("preferred_lang"); %>";
+			timeZoneObj = new timeZone.get(preferredLang);
+
+			document.form.time_zone.value = timeZoneObj.time_zone;
+			document.form.time_zone.disabled = false;
+			document.form.time_zone_dst.value = (timeZoneObj.hasDst) ? 1 : 0;
+			document.form.time_zone_dst.disabled = !timeZoneObj.hasDst;
+			document.form.action_script.value = "restart_time";
+		});
 	}
 }
 
@@ -412,6 +428,8 @@ function showError(str){
 <input name="foilautofill" style="display: none;" type="password">
 <input type="hidden" name="http_username" value="">
 <input type="hidden" name="http_passwd" value="">
+<input type="hidden" name="time_zone" value="" disabled>
+<input type="hidden" name="time_zone_dst" value="" disabled>
 <table id="loginTable" align="center" cellpadding="0" cellspacing="0" style="display:none">
 	<tr>
 		<td>

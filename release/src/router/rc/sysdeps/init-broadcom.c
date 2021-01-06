@@ -1217,6 +1217,7 @@ void generate_switch_para(void)
 		case MODEL_RPAX56:
 		case MODEL_RTAX86U:
 		case MODEL_RTAX68U:
+		case MODEL_RTAC68U_V4:
 		case MODEL_GTAXE11000:
 			break;
 
@@ -1846,6 +1847,7 @@ void init_switch_pre()
 	system("ethswctl -c pmdioaccess -x 0x1330 -l 2 -d 0xf017");
 #endif
 
+	if(!nonre_clientMode())
 	doSystem("ethswctl -c wan -o enable -i %s", WAN_IF_ETH);
 
 #if defined(BCM6750) || defined(BCM63178)
@@ -1957,6 +1959,7 @@ void init_switch()
 		case MODEL_RTAX92U:
 		case MODEL_RTAX86U:
 		case MODEL_RTAX68U:
+		case MODEL_RTAC68U_V4:
 		case MODEL_GTAXE11000:
 		{
 			/* set wanports in init_nvram for dualwan */
@@ -2704,6 +2707,7 @@ reset_mssid_hwaddr(int unit)
 			case MODEL_RTAX58U:
 			case MODEL_RTAX86U:
 			case MODEL_RTAX68U:
+			case MODEL_RTAC68U_V4:
 #ifdef RTAC3200
 				if (unit < 2)
 					snprintf(macaddr_str, sizeof(macaddr_str), "%d:macaddr", 1 - unit);
@@ -3421,6 +3425,7 @@ void init_syspara(void)
 		case MODEL_RPAX56:
 		case MODEL_RTAX86U:
 		case MODEL_RTAX68U:
+		case MODEL_RTAC68U_V4:
 		case MODEL_GTAXE11000:
 			if (!nvram_get("lan_hwaddr"))
 				nvram_set("lan_hwaddr", cfe_nvram_safe_get("et0macaddr"));
@@ -3636,7 +3641,7 @@ void tweak_usb_affinity(int enable)
 	int *ptr;
 #ifdef RTCONFIG_HND_ROUTER_AX_675X
 #if defined(RTCONFIG_HND_ROUTER_AX_6710)
-	int usb_irqs[] = {25, 26, 27, -1};	// RT-AX86U, RT-AX68U
+	int usb_irqs[] = {25, 26, 27, -1};	// RT-AX86U, RT-AX68U. RT-AC68U_V4
 #elif defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX56U) || defined(RTAX55) || defined(RTAX1800)
 	int usb_irqs[] = {45, 46, 47, -1};	// BCM6755
 #else
@@ -3712,7 +3717,7 @@ void init_others(void)
 #if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
 	update_cfe_675x();
 #endif
-#ifdef BCM6750
+#if defined(BCM6750) && !defined(RTAX82_XD6)
 	update_cfe_ax58u();
 #endif
 #if defined(RTCONFIG_BCM_MFG) && (defined(RTAX55) || defined(RTAX1800))
@@ -4069,6 +4074,21 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		}
 #endif
 
+#ifdef RTCONFIG_WIFI6E
+		if (nvram_get_int(strcat_r(prefix, "nband", tmp)) == 4) { // 6G band
+			nvram_set(strcat_r(prefix, "sae_pwe", tmp), "1");
+			nvram_set(strcat_r(prefix, "wps_mode", tmp), "disabled");
+			if (!strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "open")) {
+				nvram_set(strcat_r(prefix, "auth_mode_x", tmp), "owe");
+				nvram_set(strcat_r(prefix, "crypto", tmp), "");
+			}
+			else if(strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "sae") &&
+				strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "owe")) {
+				nvram_set(strcat_r(prefix, "auth_mode_x", tmp), "sae");
+				nvram_set(strcat_r(prefix, "crypto", tmp), "aes");
+			}
+		}
+#endif
 		nvram_set("lan_wps_oob", nvram_match("w_Setting", "1") ? "disabled" : "enabled");
 		nvram_set(strcat_r(prefix, "wps_mode", tmp), (nvram_match("wps_enable", "1") && (is_ap(unit)
 #ifdef RTCONFIG_PROXYSTA
@@ -6361,6 +6381,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 	case MODEL_RTAX56U:
 	case MODEL_RTAX86U:
 	case MODEL_RTAX68U:
+	case MODEL_RTAC68U_V4:
 	case MODEL_GTAXE11000:
 				/* eth0 eth4 eth3 eth2 eth1					  */	
 				/* WAN  L1   L2   L3   L4					  */
@@ -6401,7 +6422,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 			}
 		}
 		/* Modles revert to 4 ports base IPTV profile */
-		else if (model == MODEL_RTAC86U || model == MODEL_RTAX88U || model == MODEL_RTAX92U || model == MODEL_RTAX56U || model == MODEL_GTAX11000 || model == MODEL_RTAX86U || model == MODEL_RTAX68U || model == MODEL_GTAXE11000) {
+		else if (model == MODEL_RTAC86U || model == MODEL_RTAX88U || model == MODEL_RTAX92U || model == MODEL_RTAX56U || model == MODEL_GTAX11000 || model == MODEL_RTAX86U || model == MODEL_RTAX68U || model == MODEL_RTAC68U_V4 || model == MODEL_GTAXE11000) {
 			sprintf(ethPort1, "eth1");
 			sprintf(ethPort2, "eth2");
 			sprintf(ethPort3, "eth3");
@@ -6777,7 +6798,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 					eval("ethswctl", "-c", "hwstp",  "-i",  vlanDev1, "-o",  "disable");
 			}
 		} else if (nvram_match("switch_stb_x", "5") && nvram_match("switch_wantag", "none")) {
-			if (model == MODEL_RTAC86U || model == MODEL_RTAX88U || model == MODEL_RTAX92U || model == MODEL_RTAX56U || model == MODEL_GTAX11000 || model == MODEL_RTAX86U || model == MODEL_RTAX68U || model == MODEL_GTAXE11000) {
+			if (model == MODEL_RTAC86U || model == MODEL_RTAX88U || model == MODEL_RTAX92U || model == MODEL_RTAX56U || model == MODEL_GTAX11000 || model == MODEL_RTAX86U || model == MODEL_RTAX68U || model == MODEL_RTAC68U_V4 || model == MODEL_GTAXE11000) {
 				sprintf(ethPort1, "eth3");
 				sprintf(vlanDev1, "eth3.v0");
 				sprintf(ethPort2, "eth4");
@@ -6831,7 +6852,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort2, "-o", "enable");
 			}
 			else if (nvram_match("switch_wantag", "none")) {
-				if (model == MODEL_RTAC86U || model == MODEL_RTAX88U || model == MODEL_RTAX92U || model == MODEL_RTAX56U || model == MODEL_GTAX11000 || model == MODEL_RTAX86U || model == MODEL_RTAX68U || model == MODEL_GTAXE11000) {
+				if (model == MODEL_RTAC86U || model == MODEL_RTAX88U || model == MODEL_RTAX92U || model == MODEL_RTAX56U || model == MODEL_GTAX11000 || model == MODEL_RTAX86U || model == MODEL_RTAX68U || model == MODEL_RTAC68U_V4 || model == MODEL_GTAXE11000) {
 					sprintf(ethPort3, "eth1");
 					sprintf(vlanDev3, "eth1.v0");
 					sprintf(ethPort4, "eth2");

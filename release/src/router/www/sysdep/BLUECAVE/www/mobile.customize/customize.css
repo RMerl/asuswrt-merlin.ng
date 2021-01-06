@@ -27,6 +27,12 @@
 #noWanPic{
 	width: 350px;
 }
+#noWanDsl{
+	position: absolute;
+	margin-top: -260px;
+	margin-left: -80px;
+	display: none;
+}
 #noWanEth{
 	position: absolute;
 	margin-top: -260px;

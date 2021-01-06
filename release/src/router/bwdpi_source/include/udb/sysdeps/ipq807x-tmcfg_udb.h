@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue Jul 14 16:11:45 2020
+ * Date: Mon Dec 14 14:09:45 2020
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX89X_GPL_386_21790/release/src-qca-ipq806x/linux/linux-4.4.x"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX89X_GPL_386_22790/release/src-qca-ipq806x/linux/linux-4.4.x.spf11.0"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
@@ -152,7 +152,7 @@
 #define TMCFG_E_UDB_CORE 1 // y
 #define TMCFG_E_UDB_CORE_MAJ_VER 0
 #define TMCFG_E_UDB_CORE_MIN_VER 2
-#define TMCFG_E_UDB_CORE_REV_VER 18
+#define TMCFG_E_UDB_CORE_REV_VER 20
 #define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
 #define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
@@ -161,7 +161,6 @@
 #define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
-#define TMCFG_E_UDB_CORE_APP_WBL 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
 #define TMCFG_E_UDB_CORE_WBL_MIN_VER 2
@@ -212,7 +211,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "4b635f32"
+#define TMCFG_E_REL_PKG_LOCAL_VER "e146672"
 
 /*
  * Accompany applications or modules

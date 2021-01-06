@@ -375,10 +375,18 @@ function initial(){
 				document.getElementById('rssi_div').style.display = "none";
 			else
 				document.getElementById('rssi_div').style.display = "";
-			if(wlc_band == 0)
-				document.getElementById('wlc_band_status').innerHTML = "2.4GHz"; 
-			else	
-				document.getElementById('wlc_band_status').innerHTML = "5GHz";
+			
+			if(wlc_band == 0){
+				document.getElementById('wlc_band_status').innerHTML = "2.4 GHz"; 
+			}
+			else{
+				if(band6g_support && wlc_band == '2'){
+					document.getElementById('wlc_band_status').innerHTML = "6 GHz";
+				}
+				else{
+					document.getElementById('wlc_band_status').innerHTML = "5 GHz";
+				}				
+			}	
 		}
 		document.getElementById('NM_connect_title').innerHTML = "<#parent_AP_status#> :";
 	}

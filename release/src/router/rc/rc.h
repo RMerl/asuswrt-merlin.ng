@@ -1142,8 +1142,14 @@ typedef struct {
 	char rate_up[16];
 	char max_rate_down[16]; //Attainable data rate
 	char max_rate_up[16];
+	unsigned int fec_down;
+	unsigned int fec_up;
 	unsigned int crc_down;
 	unsigned int crc_up;
+	unsigned int es_down;
+	unsigned int es_up;
+	unsigned int ses_down;
+	unsigned int ses_up;
 	char inp_down[16]; // INP
 	char inp_up[16];
 	char inp_rein_down[16]; //INP REIN (Repetitive Electrical Impulse Noise)
@@ -1967,6 +1973,12 @@ extern int init_3g_param(const char *port_path, const unsigned int vid, const un
 extern int write_3g_ppp_conf(int modem_unit);
 #endif
 #endif
+
+// dsl_fb.c
+extern unsigned long readFileSize( char *filepath );
+#ifdef RTCONFIG_AHS
+#define AHS_HWSW_ST_JFFS_FILE "ahs_hwsw_status.txt"
+#endif /* RTCONFIG_AHS */
 
 #ifdef RTCONFIG_DSL
 //dsl.c
@@ -2971,6 +2983,16 @@ extern void package_restore_defaults();
 // dsl_fb.c
 #ifdef RTCONFIG_FRS_FEEDBACK
 extern int do_feedback(const char* feedback_file, char* attach_cmd);
+#endif
+
+// frs_service.c
+#ifdef RTCONFIG_AHS
+typedef struct hwsw_state_s {
+	char content[256];
+	int ctl_envram;
+	int ctl_frs;
+	int ctl_eula;
+} hwsw_state_t;
 #endif
 
 #if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)

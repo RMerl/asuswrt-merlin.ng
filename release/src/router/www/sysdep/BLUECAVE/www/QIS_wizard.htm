@@ -48,15 +48,73 @@
 
 				// setup systemVariables
 				setTimeout(function(){
-					var initNvram = httpApi.nvramGet(["wan0_proto", "wan0_pppoe_username", "wan0_pppoe_passwd", "wan0_dnsenable_x", "sw_mode", "wlc_psta", "wl_ifnames", "wl_version", "productid", "rc_support", "x_Setting", "preferred_lang", "territory_code", "reboot_time", "lan_ipaddr", "wlc_dpsta", "CoBrand"]);
+					var initNvram = httpApi.nvramGet([
+						"sw_mode", 
+						"wlc_psta", 
+						"wl_ifnames", 
+						"wl_version", 
+						"productid", 
+						"rc_support", 
+						"x_Setting", 
+						"preferred_lang", 
+						"territory_code", 
+						"reboot_time", 
+						"lan_ipaddr", 
+						"wlc_dpsta", 
+						"CoBrand", 
+						"wans_dualwan", 
+						"dslx_transmode", 
+						"dsl0_proto", 
+						"dsl0_pppoe_username", 
+						"dsl0_pppoe_passwd", 
+						"dsl0_dnsenable", 
+						"dsl8_proto", 
+						"dsl8_pppoe_username", 
+						"dsl8_pppoe_passwd", 
+						"dsl8_dnsenable"
+					]);
 
 					systemVariable.historyPage = [];
-					systemVariable.originWanType = initNvram.wan0_proto;
-					if(systemVariable.originWanType == "pppoe" || systemVariable.originWanType == "pptp" || systemVariable.originWanType == "l2tp"){
-						systemVariable.originPppAccount.username = initNvram.wan0_pppoe_username;
-						systemVariable.originPppAccount.password = initNvram.wan0_pppoe_passwd;
+
+					var ethWan = initNvram.wans_dualwan.split(" ").indexOf("wan");
+					systemVariable.ethWanIf = (ethWan == -1) ? 0 : ethWan;
+					wanObj.general.wan_unit = systemVariable.ethWanIf;
+					wanObj.all.wan_unit = systemVariable.ethWanIf;
+
+					var initWanNvram = httpApi.nvramGetWanByUnit(systemVariable.ethWanIf, [
+						"wan_proto", 
+						"wan_pppoe_username", 
+						"wan_pppoe_passwd", 
+						"wan_dnsenable_x", 
+					]);
+
+					if(initNvram.dslx_transmode != ""){
+						if(initNvram.dslx_transmode == "ptm"){
+							systemVariable.originWanType = initNvram.dsl8_proto;
+							if(systemVariable.originWanType == "pppoe" || systemVariable.originWanType == "pppoa"){
+								systemVariable.originPppAccount.username = initNvram.dsl8_pppoe_username;
+								systemVariable.originPppAccount.password = initNvram.dsl8_pppoe_passwd;
+							}
+							systemVariable.wanDnsenable = initNvram.dsl8_dnsenable;
+						}
+						else{
+							systemVariable.originWanType = initNvram.dsl0_proto;
+							if(systemVariable.originWanType == "pppoe" || systemVariable.originWanType == "ppoa"){
+								systemVariable.originPppAccount.username = initNvram.dsl0_pppoe_username;
+								systemVariable.originPppAccount.password = initNvram.dsl0_pppoe_passwd;
+							}
+							systemVariable.wanDnsenable = initNvram.dsl0_dnsenable;
+						}
+						systemVariable.originOpMode = "RT";
 					}
-					systemVariable.wanDnsenable = initNvram.wan0_dnsenable_x;
+					else{
+
+						systemVariable.originWanType = initWanNvram.wan_proto;
+					if(systemVariable.originWanType == "pppoe" || systemVariable.originWanType == "pptp" || systemVariable.originWanType == "l2tp"){
+							systemVariable.originPppAccount.username = initWanNvram.wan_pppoe_username;
+							systemVariable.originPppAccount.password = initWanNvram.wan_pppoe_passwd;
+					}
+						systemVariable.wanDnsenable = initWanNvram.wan_dnsenable_x;
 					systemVariable.originOpMode = (function(){
 						if(initNvram.sw_mode == "2" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
 						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
@@ -66,6 +124,7 @@
 						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
 						else return "RT";
 					})();
+					}
 					systemVariable.opMode = systemVariable.originOpMode;
 					systemVariable.wirelessBand = initNvram.wl_ifnames.split(" ").length;
 					systemVariable.sdkVersion = initNvram.wl_version.split(".")[0];
@@ -132,6 +191,10 @@
 
 					if(initNvram.isError) setTimeout(arguments.callee, 1000);
 				}, 500);
+				
+				$("#uiLanguage").load("/mobile/pages/uiLanguage.html", function(){
+					$('#selected_lang').html("<#selected_language#>");
+				});
 			});
 		</script>
 	</head>
@@ -153,8 +216,8 @@
 								<div class="icon_logo"></div>
 							</div>
 						</td>
-						<td>
-							<div class="model_welcome"></div>
+						<td style="vertical-align: top;position: absolute;right:250px;">
+							<ul id="uiLanguage" class="navigation" style="color: #fff"></ul>
 						</td>
 					</tr>
 				</table>
@@ -294,6 +357,73 @@
 										<label for="setting_profile"><#CTL_upload#></label>
 										<div style="display:none">
 											<input id="setting_profile" type="file" name="file" class="input" style="display:none" onchange="apply.upload();" />
+										</div>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>					
+						</div>					
+					</div>
+
+					<div>
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_abortBtn" onclick='abort.advSetting()'><#CTL_prev#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:100%;" onclick='abort.advSetting()'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Advanced Setting for DSL -->
+		<div id="advanced_setting_dsl" data-role="page" class="qisBackground">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Internet#></div>
+						<div class="titleSub"><#menu5_6_1#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div class="amasSupport amasNoWAN">
+						<div class="pageDesc"><#AiMesh_Desc#></div>
+						<div>
+							<div class="selectorTopContainer">
+								<div class="selectorContainer">
+									<div class="selectorContainerDiv">
+										<div class="selectBar" onclick="goTo.asNode()"><#AiMesh_setup_node#></div>
+										<div class="narrowContainer">
+											<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div style="height: 50px"></div>
+
+					<div class="pageDesc"><#Setting_upload_itemdesc#></div>
+					<div>
+						<div class="selectorTopContainer" id="settingProfileBarDSL">
+							<div class="selectorContainer">
+								<div class="selectorContainerDiv">
+									<div class="selectBar">
+										<label for="setting_profile"><#CTL_upload#></label>
+										<div style="display:none">
+											<input id="setting_profile_dsl" type="file" name="file" class="input" style="display:none" onchange="apply.upload();" />
 										</div>
 									</div>
 									<div class="narrowContainer">
@@ -476,6 +606,59 @@
 			</div>
 		</div>
 
+		<!-- DSL Detecting -->
+		<div id="waiting_dsl_page" data-role="page" class="qisBackground">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Internet#></div>
+						<div class="titleSub"><#QKSet_detect_sanglass#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div class="pageDesc">
+						<div><#QKSet_detect_waitdesc#></div>
+					</div>
+					<strong><span id="LED_state" style="display:none;"></span></strong>
+					<strong><span id="no_cable" style="color:#FFCC00;display:none;"><#QIS_NoCable_desc#></span></strong>
+					<div class="cssload-bellContainer">
+						<div class="cssload-bell">
+							<div class="cssload-circle">
+								<div class="cssload-inner"></div>
+							</div>
+							<div class="cssload-circle">
+								<div class="cssload-inner"></div>
+							</div>
+							<div class="cssload-circle">
+								<div class="cssload-inner"></div>
+							</div>
+							<div class="cssload-circle">
+								<div class="cssload-inner"></div>
+							</div>
+							<div class="cssload-circle">
+								<div class="cssload-inner"></div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Action Button -->
+					<div class="footer_desktop">
+						<div class="desktop_applyBtn" onclick="goTo.Manual()"><#Manual_Setting_btn#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr>
+								<td class="mobileApply" onclick="goTo.Manual()">
+									<div class="mobile_applyBtn"><#Manual_Setting_btn#></div>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Operation Mode Page -->
 		<div id="opMode_page" data-role="page" class="qisBackground">
 			<div class="headerBar"></div>
@@ -578,13 +761,14 @@
 					<div>
 						<div id="noWanContainer">
 							<div><img id="noWanPic" width="504" src="/images/WANunplug.png"></div>
+							<div><img id="noWanDsl" width="504" src="/images/WANunplug_dsl.png"></div>
 							<div><img id="noWanEth" width="504" src="/images/WANunplug_eth.png"></div>
 							<div><img id="noWanUsb" width="504" src="/images/WANunplug_usb.png"></div>
 						</div>
 						<!-- Action Button -->
 						<div class="footer_desktop">
 							<div class="desktop_abortBtn" onclick="abort.nowan()"><#CTL_prev#></div>
-							<div class="desktop_applyBtn" onclick="apply.manual()"><#Manual_Setting_btn#></div>
+							<div id="desktop_manual_applyBtn" class="desktop_applyBtn" onclick="apply.manual()"><#Manual_Setting_btn#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -593,7 +777,7 @@
 										<div class="mobile_abortBtn"><#CTL_prev#></div>
 									</td>
 									<td class="mobileApply" onclick="apply.manual()">
-										<div class="mobile_applyBtn"><#Manual_Setting_btn#></div>
+										<div id="mobile_manual_applyBtn" class="mobile_applyBtn"><#Manual_Setting_btn#></div>
 									</td>
 								</tr>
 							</table>
@@ -2065,13 +2249,13 @@
 
 					<!-- Action Button -->
 					<div class="footer_desktop">
-						<div class="desktop_abortBtn" onclick='abort.wireless();'><#CTL_prev#></div>
+						<div class="desktop_abortBtn" id="wireless_abortBtn" onclick='abort.wireless();'><#CTL_prev#></div>
 						<div class="desktop_applyBtn btn_wireless_apply" onclick="apply.wireless();"><#CTL_apply#></div>
 					</div>
 					<div class="footer_mobile">
 						<table style="width:100%;" cellpadding="0" cellspacing="0">
 							<tr>
-								<td class="mobileAbort" style="width:50%" onclick='abort.wireless();'>
+								<td class="mobileAbort" id="wireless_mobile_abortBtn" style="width:50%" onclick='abort.wireless();'>
 									<div class="mobile_abortBtn"><#CTL_prev#></div>
 								</td>
 								<td class="mobileApply" onclick="apply.wireless();">
@@ -2252,6 +2436,39 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- DSL detected PPP -->
+		<div id="ppp_cfg_page" data-role="page" class="qisBackground"></div>
+
+		<!-- DSL detected MER -->
+		<div id="mer_cfg_page" data-role="page" class="qisBackground"></div>
+
+		<!-- DSL iptv -->
+		<div id="dsl_iptv_setting" data-role="page" class="qisBackground"></div>
+
+		<!-- DSL DHCP option -->
+		<div id="dsl_dhcp_option_setting" data-role="page" class="qisBackground"></div>		
+
+		<!-- DSL PTM Manual -->
+		<div id="PTM_manual_setting_page" data-role="page" class="qisBackground"></div>
+
+		<!-- DSL ATM Manual -->
+		<div id="manual_setting_page" data-role="page" class="qisBackground"></div>
+
+		<!-- DSL PPP cfg tmp-->
+		<div id="ppp_cfg_tmp_page" data-role="page" class="qisBackground"></div>
+
+		<!-- DSL MER cfg tmp -->
+		<div id="mer_cfg_tmp_page" data-role="page" class="qisBackground"></div>
+
+		<!-- DSL IPOA cfg tmp -->
+		<div id="ipoa_cfg_tmp_page" data-role="page" class="qisBackground"></div>
+
+		<!-- DSL Bridge cfg tmp -->
+		<div id="bridge_cfg_tmp_page" data-role="page" class="qisBackground"></div>
+		
+		<!-- IPTV tmp -->
+		<div id="dsl_iptv_page" data-role="page" class="qisBackground"></div>
 
 		<!-- AMAS Introduction -->
 		<div id="amasintro_page" data-role="page" class="qisBackground aimeshPages"></div>

@@ -209,6 +209,17 @@ var httpApi ={
 		return retData;
 	},
 
+	"nvramGetWanByUnit": function(unit, nvrams){
+		if(!nvrams.every(function(nvram){return nvram.indexOf("wan_") !== -1}) || isNaN(unit)) return {};
+
+		var reult = {};
+		var nvramsByUnit = function(nvram){return nvram.replace("wan_", "wan" + unit + "_");}
+		var wanInfo = httpApi.nvramGet(nvrams.map(nvramsByUnit), 1);
+		$.each(wanInfo, function(item){reult[item.replace(unit, "")] = wanInfo[item];});
+
+		return reult;
+	},
+
 	"nvramSet": function(postData, handler){
 		delete postData.isError;
 
@@ -321,6 +332,10 @@ var httpApi ={
 
 	"startAutoDet": function(){
 		$.get("/appGet.cgi?hook=start_force_autodet()");
+	},
+
+	"startDSLAutoDet": function(){
+		$.get("/appGet.cgi?hook=start_dsl_autodet()");
 	},
 
 	"detwanGetRet": function(){
@@ -453,6 +468,100 @@ var httpApi ={
 				this.detRetryCnt = this.detRetryCnt_MAX;
 			}
 		}
+
+		return retData;
+	},
+
+	"detDSLwanGetRet": function(){
+		var wanInfo = httpApi.nvramGet(["wan0_state_t", "wan0_sbstate_t", "wan0_auxstate_t", 
+										//dsl_autodet_state     dsl_line_state        wan_type                   dslx_annex_state
+										"dsltmp_autodet_state", "dsltmp_adslsyncsts", "dsltmp_autodet_wan_type", "dslx_annex",
+										"link_internet", "x_Setting", "usb_modem_act_sim", "link_wan"], true);
+
+		var wanTypeList = {
+			"check": "CHECKING",
+			"dhcp": "DHCP",
+			"ppp": "PPP",
+			"ptm": "PTM_Manual",
+			"atm": "Manual",
+			"modem": "MODEM",
+			"resetModem": "RESETMODEM",
+			"connected": "CONNECTED",
+			"noWan": "NOWAN"
+		}
+
+		var retData = {
+			"wanType": "CHECKING",
+			"dsl_line_state": wanInfo.dsltmp_autodet_state,
+			"isIPConflict": (function(){
+				return (wanInfo.wan0_state_t == "4" && wanInfo.wan0_sbstate_t == "4")
+			})(),
+			"simState": "WAITING",
+			"isError": false
+		};
+
+		if(wanInfo.isError){
+			retData.wanType = wanTypeList.check;
+			retData.isIPConflict = false;
+			retData.isError = true;
+		}
+		else if(wanInfo.link_wan == ""){
+			retData.wanType = wanTypeList.check;
+		}
+		else if(wanInfo.link_wan == "0"){
+			retData.wanType = wanTypeList.noWan;
+		}
+		else if(wanInfo.dsltmp_adslsyncsts == "up"){
+
+			if(wanInfo.dsltmp_autodet_wan_type == "PTM"){
+				retData.wanType = wanTypeList.ptm;
+			}
+			else if(wanInfo.dsltmp_autodet_wan_type == "ATM" && (wanInfo.dslx_annex == "5" || wanInfo.dslx_annex == "6")){
+				retData.wanType = wanTypeList.atm;
+			}
+			else if(wanInfo.dsltmp_autodet_state == "pppoe" || wanInfo.dsltmp_autodet_state == "pppoa"){
+				retData.wanType = wanTypeList.ppp;
+			}
+			else if(wanInfo.dsltmp_autodet_state == "dhcp"){
+				retData.wanType = wanTypeList.dhcp;
+			}
+			else if(wanInfo.dsltmp_autodet_state == "Fail"){
+				if(wanInfo.dsltmp_autodet_wan_type == "PTM"){
+					retData.wanType = wanTypeList.ptm;
+				}
+				else{
+					retData.wanType = wanTypeList.atm;
+				}
+			}
+			else {
+				retData.wanType = wanTypeList.check;	//annex re-detect... or timeout
+			}
+
+		}
+		else if(wanInfo.dsltmp_adslsyncsts == "init" || wanInfo.dsltmp_adslsyncsts == "initializing" || wanInfo.dsltmp_adslsyncsts == "wait"){
+			//if(linkup_autodet == 1) {	//up -> down, restart auto det
+			//		linkup_autodet = 0;
+			//		Redirect_count = 0;
+			//		document.redirectForm.rc_service.value = "restart_dsl_autodet";
+			//		document.redirectForm.submit();
+			//}
+			//AnnexSwitch_enable = 0;
+
+			set_state_info(wanInfo.dsltmp_autodet_state);
+			retData.wanType = wanTypeList.check;
+		}
+		else if(wanInfo.dsltmp_adslsyncsts == "down" || wanInfo.dsltmp_adslsyncsts == "Detecting" || wanInfo.dsltmp_adslsyncsts == "wait for init" || wanInfo.dsltmp_adslsyncsts == ""){
+
+			//(AnnexSwitch_enable == 1) &&
+			set_state_info(wanInfo.dsltmp_autodet_state);
+			retData.wanType = wanTypeList.check;
+		}
+		else{
+
+			set_state_info(wanInfo.dsltmp_autodet_state);
+			retData.wanType = wanTypeList.check;
+		}
+
 
 		return retData;
 	},
@@ -1105,7 +1214,8 @@ var httpApi ={
 			"force_topology_ctl" : {
 				"value" : 3,
 				"def" : {
-					"preferable_backhaul" : {"bit" : 0}
+					"preferable_backhaul" : {"bit" : 0},
+					"prefer_node_apply" : {"bit" : 1}
 				}
 			},
 			"rc_support" : {

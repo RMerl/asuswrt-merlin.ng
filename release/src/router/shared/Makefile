@@ -130,6 +130,10 @@ ifeq ($(RTCONFIG_RGBLED),y)
 CFLAGS += -I$(TOP)/i2c-tools-3.1.2/include/linux
 endif
 
+ifneq ($(findstring CONFIG_BCM_KF_NETFILTER=, $(shell cat $(LINUXDIR)/.config)),)
+CFLAGS         += -DBCM_KF_NETFILTER
+endif
+
 OBJS = shutils.o defaults.o model.o rtstate.o boardapi.o
 OBJS += network_utility.o
 OBJS += misc.o version.o files.o strings.o process.o

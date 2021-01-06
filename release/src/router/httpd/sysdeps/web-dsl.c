@@ -376,10 +376,18 @@ int update_dsl_iptv_variables()
 #else
 	char *reboot_flag = "1";
 #endif
+#if defined(DSL_AX82U) //new qis
+	int is_ptm = nvram_match("dslx_transmode", "ptm") ? 1 : 0;
+#endif
 
 	//PVC
+#if defined(DSL_AX82U) //new qis
+	if (nvram_match("dsl0_proto", "mer") || nvram_match("dsl8_proto", "dhcp"))
+		is_dhcp = 1;
+#else
 	if(nvram_match("dsltmp_qis_proto", "dhcp") || nvram_match("dsltmp_qis_proto", "mer"))
 		is_dhcp = 1;
+#endif
 	_dprintf("dsltmp_cfg_iptv_pvclist=%s\n", nvram_safe_get("dsltmp_cfg_iptv_pvclist"));
 	nvp = nv = strdup(nvram_safe_get("dsltmp_cfg_iptv_pvclist"));
 	while(nv && (b = strsep(&nvp, "<")) != NULL){
@@ -390,6 +398,19 @@ int update_dsl_iptv_variables()
 
 		_dprintf("vpi=[%s], vci=[%s], proto=[%s], encap=[%s], vid=[%s]\n", vpi, vci, proto, encap, vid);
 
+#if defined(DSL_AX82U) //new qis
+		if(is_ptm) {
+			snprintf(prefix, sizeof(prefix), "dsl8.%d_", unit);
+			nvram_set("dsltmp_transmode", "ptm");
+		}
+		else {
+			snprintf(prefix, sizeof(prefix), "dsl%d_", unit);
+			nvram_set(strcat_r(prefix, "vpi", tmp), vpi);
+			nvram_set(strcat_r(prefix, "vci", tmp), vci);
+			nvram_set(strcat_r(prefix, "encap", tmp), encap);
+			nvram_set("dsltmp_transmode", "atm");
+		}
+#else
 		if(nvram_match("dsltmp_transmode", "atm")) {
 			snprintf(prefix, sizeof(prefix), "dsl%d_", unit);
 
@@ -403,6 +424,7 @@ int update_dsl_iptv_variables()
 			nvram_set("dslx_transmode", "ptm");
 			notify_rc("restart_dsl_setting");
 		}
+#endif
 
 		nvram_set(strcat_r(prefix, "enable", tmp), "1");
 

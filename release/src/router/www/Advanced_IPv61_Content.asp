@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <html xmlns:v>
 <head>
@@ -615,20 +615,6 @@ function valid_IP(obj_name, obj_flag){
 		}
 }
 
-function ipv6_valid(obj){
-	//var rangere=new RegExp("^[a-f0-9]{1,4}:([a-f0-9]{0,4}:){2,6}[a-f0-9]{1,4}$", "gi");	
-	var rangere=new RegExp("^((([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){5}:([0-9A-Fa-f]{1,4}:)?[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){4}:([0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){3}:([0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){2}:([0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}((\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b)\\.){3}(\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b)\\.){3}(\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b)\\.){3}(\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b))|([0-9A-Fa-f]{1,4}::([0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})|(::([0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){1,7}:))$", "gi");
-	if(rangere.test(obj.value)){
-			//alert(obj.value+"good");	
-			return true;
-	}else{
-			alert(obj.value+" <#JS_validip#>");
-			obj.focus();
-			obj.select();			
-			return false;
-	}	
-}
-
 function GetIPv6_split(obj){
 	
 	var Split_1_IPv6 = obj.split("::");
@@ -691,19 +677,19 @@ function calcIP6(ip) {
 function validForm(){
 	
 	if(document.form.ipv61_service.value=="other"){
-		if(!ipv6_valid(document.form.ipv61_ipaddr) || 
+		if(!validator.isLegal_ipv6(document.form.ipv61_ipaddr) ||
 				!validator.range(document.form.ipv61_prefix_len_wan, 3, 128)){
 				return false;
 		}
 		if(document.form.ipv61_gateway.value != "" &&
-				!ipv6_valid(document.form.ipv61_gateway)){
+				!validator.isLegal_ipv6(document.form.ipv61_gateway)){
 				return false;
 		}
 		
 				// stateful autconf eats 16 bits of 128
 		if(!validator.range(document.form.ipv61_prefix_length, 3,
 				document.form.ipv61_autoconf_type[1].checked ? 112 : 126) ||
-				!ipv6_valid(document.form.ipv61_rtr_addr)){
+				!validator.isLegal_ipv6(document.form.ipv61_rtr_addr)){
 				return false;
 		}
 
@@ -733,7 +719,7 @@ function validForm(){
 			// stateful autconf eats 16 bits of 128
 			if(!validator.range(document.form.ipv61_prefix_length, 3,
 				document.form.ipv61_autoconf_type[1].checked ? 112 : 126) ||
-				!ipv6_valid(document.form.ipv61_rtr_addr)){
+				!validator.isLegal_ipv6(document.form.ipv61_rtr_addr)){
 				return false;	
 			}
 		}
@@ -772,11 +758,11 @@ function validForm(){
 	    document.form.ipv61_service.value=="other" ||
 	    document.form.ipv61_service.value=="6to4" || document.form.ipv61_service.value=="6in4" || document.form.ipv61_service.value=="6rd"){
 		if(document.form.ipv61_dns1.value != "")
-			if(!ipv61_valid(document.form.ipv61_dns1)) return false;
+			if(!validator.isLegal_ipv6(document.form.ipv61_dns1)) return false;
 		if(document.form.ipv61_dns2.value != "")
-			if(!ipv61_valid(document.form.ipv61_dns2)) return false;
+			if(!validator.isLegal_ipv6(document.form.ipv61_dns2)) return false;
 		if(document.form.ipv61_dns3.value != "")
-			if(!ipv61_valid(document.form.ipv61_dns3)) return false;
+			if(!validator.isLegal_ipv6(document.form.ipv61_dns3)) return false;
 	}
 
 	if(document.form.ipv61_service.value=="6to4"){
@@ -785,11 +771,11 @@ function validForm(){
 	
 	if(document.form.ipv61_service.value=="6in4"){
 			if(!validator.ipRange(document.form.ipv61_tun_v4end, "")) return false;  //6in4 tun endpoint	
-			if(!ipv6_valid(document.form.ipv61_tun_addr)) return false;  //6in4 Client IPv6 Address			
+			if(!validator.isLegal_ipv6(document.form.ipv61_tun_addr)) return false;  //6in4 Client IPv6 Address
 			if(!validator.range(document.form.ipv61_tun_addrlen, 3, 128))  return false;
-			if(document.form.ipv61_tun_peer.value != "" && !ipv6_valid(document.form.ipv61_tun_peer)) return false;
+			if(document.form.ipv61_tun_peer.value != "" && !validator.isLegal_ipv6(document.form.ipv61_tun_peer)) return false;
 			if(!validator.range(document.form.ipv61_prefix_length, 3, 126) ||
-					!ipv6_valid(document.form.ipv61_prefix)){
+					!validator.isLegal_ipv6(document.form.ipv61_prefix)){
 					return false;
 			}
 	}		
@@ -797,7 +783,7 @@ function validForm(){
 	if(document.form.ipv61_service.value=="6rd" && document.form.ipv61_6rd_dhcp[1].checked){
 			if(!validator.ipRange(document.form.ipv61_6rd_router, "")) return false;  //6rd ip4 router
 			if(!validator.range(document.form.ipv61_6rd_ip4size, 0, 32)) return false;  //6rd ip4 router mask length
-			if(!ipv6_valid(document.form.ipv61_6rd_prefix) ||
+			if(!validator.isLegal_ipv6(document.form.ipv61_6rd_prefix) ||
 					!validator.range(document.form.ipv61_6rd_prefixlen, 3,
 					126 - (32 - document.form.ipv61_6rd_ip4size.value))){
 					return false;

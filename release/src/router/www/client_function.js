@@ -118,6 +118,57 @@ var totalClientNum = {
 }
 
 var AiMeshTotalClientNum = [];
+var isWL_map = {
+	"0" : {
+		"text": "Wired",
+		"type": "eth",
+		"idx": 1
+	},
+	"1" : {
+		"text": "2.4G",
+		"type": "2g",
+		"idx": 1
+	},
+	"2" : {
+		"text": "5G",
+		"type": "5g",
+		"idx": 1
+	},
+	"3" : {
+		"text": "5G",
+		"type": "5g",
+		"idx": 2
+	},
+	"4" : {
+		"text": "6G",
+		"type": "6g",
+		"idx": 1
+	}
+};
+var _wl_band_count = (function(){
+	var _wl_nband_array = "<% wl_nband_info(); %>".toArray();
+	var counts = {};
+	for(var i = 0; i < _wl_nband_array.length; i++){
+		var band_text = (function(_wl_band){
+			if(_wl_band == "2")
+				return "2g";
+			else if(_wl_band == "1")
+				return "5g";
+			else if(_wl_band == "4")
+				return "6g";
+		})(_wl_nband_array[i]);
+		counts[band_text] = (counts[band_text] + 1) || 1;
+	}
+	return counts;
+})();
+for(var index in isWL_map){
+	if(index == "0")//filter wired
+		continue;
+	var wl_item = isWL_map[index];
+	if(_wl_band_count[wl_item.type] != undefined && _wl_band_count[wl_item.type] > 1){
+		wl_item["text"] = ((wl_item.type).toLocaleUpperCase() + "-" + wl_item["idx"]);
+	}
+}
 
 var setClientAttr = function(){
 	this.type = "0";
@@ -172,7 +223,11 @@ function genClientList(){
 	totalClientNum.wired = 0;
 	totalClientNum.wireless = 0;
 	AiMeshTotalClientNum = [];
-	for(var i=0; i<wl_nband_title.length; i++) totalClientNum.wireless_ifnames[i] = 0;
+	for(var index in isWL_map){
+		if(index == "0")//filter wired
+			continue;
+		totalClientNum.wireless_ifnames[index - 1] = 0;
+	}
 	if(originData.fromNetworkmapd != undefined && originData.fromNetworkmapd.length > 0 && originData.fromNetworkmapd[0].maclist != undefined) {
 		for(var i=0; i<originData.fromNetworkmapd[0].maclist.length; i++){
 			var thisClient = originData.fromNetworkmapd[0][originData.fromNetworkmapd[0].maclist[i]];
@@ -785,7 +840,7 @@ function popClientListEditTable(event) {
 			clientIconHtml += '<div class="' + radioIcon_css + ' radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
 			if(clientInfo.isWL != 0) {
 				var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
-				clientIconHtml += '<div class="band_block"><span class="' + bandClass + '" style="color:#000000;">' + wl_nband_title[clientInfo.isWL-1].replace("Hz", "").replace(/\s*/g,"") + '</span></div>';
+				clientIconHtml += '<div class="band_block"><span class="' + bandClass + '" style="color:#000000;">' + isWL_map[clientInfo.isWL]["text"] + '</span></div>';
 			}
 			document.getElementById('card_client_interface').innerHTML = clientIconHtml;
 			document.getElementById("card_client_interface").title = connectModeTip;
@@ -1849,29 +1904,11 @@ function removeIframeClick(iframeName, action) {
 }
 
 var all_list = new Array();//All
-var wired_list = new Array();
-var wl1_list = new Array();//2.4G
-var wl2_list = new Array();//5G
-var wl3_list = new Array();//5G-2
-
 var sorter = {
 	"indexFlag" : 3 , // default sort is by IP
 	"all_index" : 3,
 	"all_display" : true,
-	"wired_index" : 3,
-	"wired_display" : true,
-	"wl1_index" : 3,
-	"wl1_display" : true,
-	"wl2_index" : 3,
-	"wl2_display" : true,
-	"wl3_index" : 3,
-	"wl3_display" : true,
 	"sortingMethod" : "increase", 
-	"sortingMethod_wired" : "increase", 
-	"sortingMethod_wl1" : "increase", 
-	"sortingMethod_wl2" : "increase", 
-	"sortingMethod_wl3" : "increase", 
-
 	"num_increase" : function(a, b) {
 		if(sorter.indexFlag == 3) { //IP
 			var a_num = 0, b_num = 0;
@@ -1948,23 +1985,8 @@ var sorter = {
 				sorter.wired_index = sorterClickIndex;
 				sorter.sortingMethod_wired = (sorter.sortingMethod_wired == "increase") ? "decrease" : "increase";
 				break;
-			case "wl1" :
-				sorterLastIndex = sorter.wl1_index;
-				sorter.wl1_index = sorterClickIndex;
-				sorter.sortingMethod_wl1 = (sorter.sortingMethod_wl1 == "increase") ? "decrease" : "increase";
-				break;
-			case "wl2" :
-				sorterLastIndex = sorter.wl2_index;
-				sorter.wl2_index = sorterClickIndex;
-				sorter.sortingMethod_wl2 = (sorter.sortingMethod_wl2 == "increase") ? "decrease" : "increase";
-				break;
-			case "wl3" :
-				sorterLastIndex = sorter.wl3_index;
-				sorter.wl3_index = sorterClickIndex;
-				sorter.sortingMethod_wl3 = (sorter.sortingMethod_wl3 == "increase") ? "decrease" : "increase";
-				break;	
 		}
-		if(isSupport("amas") && clickItem.substr(0,2) == "gn"){
+		if(clickItem.substr(0,2) == "wl" || isSupport("amas") && clickItem.substr(0,2) == "gn"){
 			sorterLastIndex = sorter[""+clickItem+"_index"];
 			sorter[""+clickItem+"_index"] = sorterClickIndex;
 			sorter["sortingMethod_"+clickItem+""] = (sorter["sortingMethod_"+clickItem+""] == "increase") ? "decrease" : "increase";
@@ -1985,20 +2007,8 @@ var sorter = {
 				clickIndex = sorter.wired_index;
 				clickSortingMethod = sorter.sortingMethod_wired;
 				break;
-			case "wl1" :
-				clickIndex = sorter.wl1_index;
-				clickSortingMethod = sorter.sortingMethod_wl1;
-				break;
-			case "wl2" :
-				clickIndex = sorter.wl2_index;
-				clickSortingMethod = sorter.sortingMethod_wl2;
-				break;
-			case "wl3" :
-				clickIndex = sorter.wl3_index;
-				clickSortingMethod = sorter.sortingMethod_wl3;
-				break;
 		}
-		if(isSupport("amas") && _arrayName.substr(0,2) == "gn"){
+		if(_arrayName.substr(0,2) == "wl" || isSupport("amas") && _arrayName.substr(0,2) == "gn"){
 			clickIndex = sorter[""+_arrayName.substr(0,3)+"_index"];
 			clickSortingMethod = sorter["sortingMethod_"+_arrayName.substr(0,3)+""];
 		}
@@ -2034,29 +2044,32 @@ var sorter = {
 			eval(""+_arrayName+".sort(sorter."+_Method+"_"+sorter.sortingMethod+");");
 		}
 		else if(clienlistViewMode == "ByInterface") {
-			switch (_arrayName) {
-				case "wired_list" :
+			if(_arrayName == "wired_list")
 					eval(""+_arrayName+".sort(sorter."+_Method+"_"+sorter.sortingMethod_wired+");");
-					break;
-				case "wl1_list" :
-					eval(""+_arrayName+".sort(sorter."+_Method+"_"+sorter.sortingMethod_wl1+");");
-					break;
-				case "wl2_list" :
-					eval(""+_arrayName+".sort(sorter."+_Method+"_"+sorter.sortingMethod_wl2+");");
-					break;
-				case "wl3_list" :
-					eval(""+_arrayName+".sort(sorter."+_Method+"_"+sorter.sortingMethod_wl3+");");
-					break;
-			}
-			if(isSupport("amas") && _arrayName.substr(0,2) == "gn"){
+			else if(_arrayName.substr(0,2) == "wl")
+				eval("wl_list['"+_arrayName.substr(0,3)+"'].sort(sorter."+_Method+"_"+sorter["sortingMethod_"+_arrayName.substr(0,3)+""]+");");
+			else if(isSupport("amas") && _arrayName.substr(0,2) == "gn")
 				eval("gn_list['"+_arrayName.substr(0,3)+"'].sort(sorter."+_Method+"_"+sorter["sortingMethod_"+_arrayName.substr(0,3)+""]+");");
 			}
-		}
 		drawClientListBlock(_arrayName);
 		sorter.drawBorder(_arrayName);
 	}
 }
-
+var wired_list = new Array();
+var wl_list = [];
+for(var index in isWL_map){
+	if(index == "0"){
+		sorter["wired_index"] = 3;
+		sorter["wired_display"] = true;
+		sorter["ssortingMethod_wired"] = "increase";
+	}
+	else{
+		wl_list["wl" + index + ""] = new Array();
+		sorter["wl" + index + "_index"] = 3;
+		sorter["wl" + index + "_display"] = true;
+		sorter["sortingMethod_wl" + index + ""] = "increase";
+	}
+}
 if(isSupport("amas")){
 	var gn_list = [];
 	for(var i=1; i<multissid_count+1; i++){
@@ -2097,10 +2110,12 @@ function changeClientListViewMode() {
 	create_clientlist_listview();
 	sorterClientList();
 	sorter.all_display = true;
-	sorter.wired_display = true;
-	sorter.wl1_display = true;
-	sorter.wl2_display = true;
-	sorter.wl3_display = true;
+	$.each(isWL_map, function(index, value){
+		if(index == "0")
+			sorter["wired_display"] = true;
+		else
+			sorter["wl" + index + "_display"] = true;
+	});
 	if(isSupport("amas")){
 		for(var i=1; i<multissid_count+1; i++)
 			sorter["gn" + i + "_display"] = true;
@@ -2177,9 +2192,9 @@ function exportClientListLog() {
 					if_name = "Wired";
 				else{
 					if(isSupport("amas") && array[i][13] != "")
-						if_name =  wl_nband_title[array[i][9] - 1] + " Guest Network - " +  array[i][13];
+						if_name = isWL_map[array[i][9]]["text"].replace("G", " GHz") + " Guest Network - " +  array[i][13];
 					else
-						if_name = wl_nband_title[array[i][9] - 1];
+						if_name = isWL_map[array[i][9]]["text"].replace("G", " GHz");
 				}
 				tempArray[6] = if_name;
 				tempArray[7] = (array[i][6] == "") ? "-" : array[i][6];
@@ -2200,10 +2215,12 @@ function exportClientListLog() {
 			setArray(all_list);
 			break;
 		case "ByInterface" :
+			$.each(isWL_map, function(index, value){
+				if(index == "0")
 			setArray(wired_list);
-			setArray(wl1_list);
-			setArray(wl2_list);
-			setArray(wl3_list);
+				else
+					setArray(wl_list["wl"+index+""]);
+			});
 			if(isSupport("amas")){
 				for(var i=1; i<multissid_count+1; i++)
 					setArray(gn_list["gn"+i+""]);
@@ -2256,13 +2273,14 @@ function sorterClientList() {
 			sorter.doSorter(sorter.all_index, indexMapType[sorter.all_index], 'all_list');
 			break;
 		case "ByInterface" :
+			$.each(isWL_map, function(index, value){
+				if(index == "0")
 			sorter.doSorter(sorter.wired_index, indexMapType[sorter.wired_index], 'wired_list');
-			if(wl_info.band2g_support)
-				sorter.doSorter(sorter.wl1_index, indexMapType[sorter.wl1_index], 'wl1_list');
-			if(wl_info.band5g_support)
-				sorter.doSorter(sorter.wl2_index, indexMapType[sorter.wl2_index], 'wl2_list');
-			if(wl_info.band5g_2_support || wl_info.band6g_support)
-				sorter.doSorter(sorter.wl3_index, indexMapType[sorter.wl3_index], 'wl3_list');
+				else{
+					if($("#clientlist_wl" + index + "_list_Block").length > 0)
+						sorter.doSorter(sorter["wl" + index + "_index"], indexMapType[sorter["wl" + index + "_index"]], "wl" + index + "_list");
+				}
+			});
 			if(isSupport("amas")){
 				for(var i=1; i<multissid_count+1; i++)
 					sorter.doSorter(sorter["gn"+i+"_index"], indexMapType[sorter["gn"+i+"_index"]], 'gn'+i+'_list');
@@ -2273,10 +2291,12 @@ function sorterClientList() {
 
 function create_clientlist_listview() {
 	all_list = [];
+	$.each(isWL_map, function(index, value){
+		if(index == "0")
 	wired_list = [];
-	wl1_list = [];
-	wl2_list = [];
-	wl3_list = [];
+		else
+			wl_list["wl"+index+""] = [];
+	});
 	if(isSupport("amas")){
 		for(var i=1; i<multissid_count+1; i++)
 			gn_list["gn"+i+""] = [];
@@ -2371,7 +2391,7 @@ function create_clientlist_listview() {
 			code += "</table>";
 			code += "<div id='clientlist_wired_list_Block'></div>";
 	
-			var wl_map = {"2.4 GHz": "1",  "5 GHz": "2", "5 GHz-1": "2", "5 GHz-2": "3", "6 GHz": "3"};
+			var wl_map = {"2.4 GHz": "1",  "5 GHz": "2", "5 GHz-1": "2", "5 GHz-2": "3", "6 GHz": "4"};
 			obj_width = stainfo_support ? obj_width_map[2] : obj_width_map[1];
 			for(var i = 0; i < wl_nband_title.length; i += 1) {
 				code += "<table width='100%' border='1' align='center' cellpadding='0' cellspacing='0' class='FormTable_table' style='margin-top:15px;'>";
@@ -2466,22 +2486,10 @@ function create_clientlist_listview() {
 				case "ByInterface" :
 					if(isSupport("amas") && clientList[clientList[i]].isWL != 0 && clientList[clientList[i]].isGN != "")
 						gn_list["gn"+clientList[clientList[i]].isGN+""].push(tempArray);
-					else{
-						switch (clientList[clientList[i]].isWL) {
-							case 0:
+					else if(clientList[clientList[i]].isWL == 0)
 								wired_list.push(tempArray);
-								break;
-							case 1:
-								wl1_list.push(tempArray);
-								break;
-							case 2:
-								wl2_list.push(tempArray);
-								break;
-							case 3:
-								wl3_list.push(tempArray);
-								break;
-						}
-					}
+					else
+						wl_list["wl"+clientList[clientList[i]].isWL+""].push(tempArray);
 					break;
 			}
 		}
@@ -2494,22 +2502,20 @@ function create_clientlist_listview() {
 		}
 	}
 	else {
-		if(!sorter.wired_display) {
+		$.each(isWL_map, function(index, value){
+			if(index == "0"){
+				if(!sorter.wired_display){
 			document.getElementById("clientlist_wired_list_Block").style.display = "none";
 			document.getElementById("wired_expander").innerHTML = "[ <#Clientlist_Show#> ]";
 		}
-		if(!sorter.wl1_display) {
-			document.getElementById("clientlist_wl1_list_Block").style.display = "none";
-			document.getElementById("wl1_expander").innerHTML = "[ <#Clientlist_Show#> ]";
 		}
-		if(!sorter.wl2_display) {
-			document.getElementById("clientlist_wl2_list_Block").style.display = "none";
-			document.getElementById("wl2_expander").innerHTML = "[ <#Clientlist_Show#> ]";
-		}
-		if(!sorter.wl3_display) {
-			document.getElementById("clientlist_wl3_list_Block").style.display = "none";
-			document.getElementById("wl3_expander").innerHTML = "[ <#Clientlist_Show#> ]";
-		}
+			else{
+				if(!sorter["wl"+index+"_display"]){
+					document.getElementById("clientlist_wl"+index+"_list_Block").style.display = "none";
+					document.getElementById("wl"+index+"_expander").innerHTML = "[ <#Clientlist_Show#> ]";
+				}
+			}
+		});
 		if(isSupport("amas")){
 			for(var i=1; i<multissid_count+1; i++){
 				if(!sorter["gn"+i+"_display"]){
@@ -2531,16 +2537,9 @@ function drawClientListBlock(objID) {
 		case "wired_list" :
 			sortArray = wired_list;
 			break;
-		case "wl1_list" :
-			sortArray = wl1_list;
-			break;
-		case "wl2_list" :
-			sortArray = wl2_list;
-			break;	
-		case "wl3_list" :
-			sortArray = wl3_list;
-			break;
 	}
+	if(sortArray == "" && objID.substr(0,2) == "wl")
+		sortArray = wl_list[objID.substr(0,3)];
 	if(sortArray == "" && isSupport("amas")){
 		if(objID.substr(0,2) == "gn")
 			sortArray = gn_list[objID.substr(0,3)];
@@ -2687,7 +2686,7 @@ function drawClientListBlock(objID) {
 					clientListCode += "<td width='" + obj_width[5] + "' align='center'><div style='height:28px;width:28px'><div class='" +  radioIcon_css + " radio_" + rssi_t + "'></div>";
 					if(clientlist_sort[j].isWL != 0) {
 						var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
-						clientListCode += "<div class='band_block'><span class='" + bandClass + "'>" + wl_nband_title[clientlist_sort[j].isWL-1].replace("Hz", "").replace(/\s*/g,"") + "</span></div>";
+						clientListCode += "<div class='band_block'><span class='" + bandClass + "'>" + isWL_map[clientlist_sort[j].isWL]["text"] + "</span></div>";
 					}
 					clientListCode += "</div></td>";
 				}
@@ -2722,20 +2721,10 @@ function showHideContent(objnmae, thisObj) {
 			if(clienlistViewMode == "All")
 				sorter.all_display = true;
 			else {
-				switch (clickItem) {
-					case "wired" :
+				if(clickItem == "wired")
 						sorter.wired_display = true;
-						break;
-					case "wl1" :
-						sorter.wl1_display = true;
-						break;
-					case "wl2" :
-						sorter.wl2_display = true;
-						break;
-					case "wl3" :
-						sorter.wl3_display = true;
-						break;
-				}
+				else
+					sorter["" + clickItem + "_display"] = true;
 			}
 			slideFlag = true;
 			slideDown(objnmae, 200);
@@ -2745,20 +2734,10 @@ function showHideContent(objnmae, thisObj) {
 			if(clienlistViewMode == "All")
 				sorter.all_display = false;
 			else {
-				switch (clickItem) {
-					case "wired" :
+				if(clickItem == "wired")
 						sorter.wired_display = false;
-						break;
-					case "wl1" :
-						sorter.wl1_display = false;
-						break;
-					case "wl2" :
-						sorter.wl2_display = false;
-						break;
-					case "wl3" :
-						sorter.wl3_display = false;
-						break;
-				}
+				else
+					sorter["" + clickItem + "_display"] = false;
 			}
 			slideFlag = true;
 			slideUp(objnmae, 200);

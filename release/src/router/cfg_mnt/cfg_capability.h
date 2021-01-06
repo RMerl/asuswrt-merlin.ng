@@ -63,6 +63,7 @@ enum capabilityType {
 #ifdef RTCONFIG_BHCOST_OPT
 /* for FORCE_TOPOLOGY_CTL & CONN_EAP_MODE */
 #define GENERAL_MODE   BIT(0)
+#define PREFER_NODE_APPLY    BIT(1)
 #endif
 
 #ifdef RTCONFIG_FRONTHAUL_DWB
@@ -134,7 +135,7 @@ enum capabilityType {
 /* capability */
 static capability_s capability_list[] __attribute__ ((unused)) = {
 #ifdef RTCONFIG_BHCOST_OPT
-	{ FORCE_TOPOLOGY_CTL, GENERAL_MODE, RE_SUPPORT |CAP_SUPPORT},
+	{ FORCE_TOPOLOGY_CTL, GENERAL_MODE | PREFER_NODE_APPLY, RE_SUPPORT |CAP_SUPPORT},
 #endif
 	{ REBOOT_CTL, MANUAL_REBOOT, RE_SUPPORT | CAP_SUPPORT},
 #if defined(RTCONFIG_LACP)

@@ -73,6 +73,7 @@ $(document).ready(function(){
 	}  
 });
 
+var model=httpApi.nvramGet(['productid']).productid;
 var nvram = new Object();
 var variable = new Object();
 function getVariable(){
@@ -82,7 +83,6 @@ function getVariable(){
 		_element = ['wl0_hwaddr'];
 		_array.push.apply(_array, _element);
 	}
-
 	if(system.band5gSupport){
 		_element = ['wl1_hwaddr'];
 		_array.push.apply(_array, _element);
@@ -149,9 +149,17 @@ function genElement(){
 			code += '<div class="info-block"><div class="info-title">6 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl2_hwaddr +'</div></div>';
 		}
 		else{
+			if(model == 'MAP-AC2200')
+			{
+				code += '<div class="info-block"><div class="info-title">5 GHz-1 <#MAC_Address#></div><div class="info-content">'+ variable.wl2_hwaddr +'</div></div>';
+				code += '<div class="info-block"><div class="info-title">5 GHz-2 <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';
+			}
+			else
+			{
 			code += '<div class="info-block"><div class="info-title">5 GHz-1 <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';
 			code += '<div class="info-block"><div class="info-title">5 GHz-2 <#MAC_Address#></div><div class="info-content">'+ variable.wl2_hwaddr +'</div></div>';
 		}	
+	}
 	}
 	else{
 		code += '<div class="info-block"><div class="info-title">5 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';

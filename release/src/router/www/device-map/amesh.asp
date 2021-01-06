@@ -356,6 +356,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 			var onboarding_device_id = newReMac.replace(/:/g, "");
 			var source = newReMacArray[newReMac].source;
 			var tcode = newReMacArray[newReMac].tcode;
+			var type = newReMacArray[newReMac].type;
 			if($('#ready_onBoarding_block').find('#' + onboarding_device_id + '').length == 0) {
 				if(checkCloudIconExist[model_name] == undefined)
 					checkCloudIconExist[model_name] = false;
@@ -395,8 +396,12 @@ function gen_ready_onboardinglist(_onboardingList) {
 							code += labelMac;
 							code += "</div>";
 							code += "<div class='amesh_interface_icon'>";
-							if(source == 2)
+							if(source == 2){
+								if(type != undefined && type == "65536")
+									code += "<div class='radioIcon radio_plc'></div>";
+								else
 								code += "<div class='radioIcon radio_wired'></div>";
+							}
 							else
 								code += "<div class='radioIcon radio_" + client_convRSSI(rssi) + "'></div>";
 							code += '</div>';
@@ -428,8 +433,12 @@ function gen_ready_onboardinglist(_onboardingList) {
 					}
 				);
 				if(newReMac != aimesh_select_new_re_mac){
-					if(source == 2)
+					if(source == 2){
+						if(type != undefined && type == "65536")
+							$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_plc');
+						else
 						$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_wired');
+					}
 					else
 						$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_' + client_convRSSI(rssi) + '');
 				}
@@ -466,11 +475,12 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 				var pap5g = _onboardingList[idx].pap5g;
 				var rssi2g = _onboardingList[idx].rssi2g;
 				var rssi5g = _onboardingList[idx].rssi5g;
+				var rssi6g = _onboardingList[idx].rssi6g;
 				var online = _onboardingList[idx].online;
 				var connect_type = _onboardingList[idx].re_path;
 				var tcode = _onboardingList[idx].tcode;
 				var wireless_band = 0;
-				var wireless_band_array = ["2.4G", "5G"];
+				var wireless_band_array = ["2.4G", "5G", "6G"];
 				var wireless_rssi = 4;
 				var alias = "Home";
 				if("config" in _onboardingList[idx]) {
@@ -513,6 +523,10 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 				else if(connect_type == "2") {
 					wireless_band = 0;
 					wireless_rssi = client_convRSSI(rssi2g);
+				}
+				else if(connect_type == "128") {
+					wireless_band = 2;
+					wireless_rssi = client_convRSSI(rssi6g);
 				}
 				else {
 					wireless_band = 1;
@@ -1026,13 +1040,15 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _ui_model_name, _rssi,
 				$amesh_action_bg.append($amesh_apply);
 				$amesh_apply.click(
 					function() {
-						var authMode = httpApi.nvramGet(["wl0_auth_mode_x", "wl1_auth_mode_x", "wl2_auth_mode_x"], true);
 						var postData = {};
-
-						Object.keys(authMode).map(function(item, idx){ 
-							if(authMode[item] == "sae"){
-								postData[item] = "psk2sae";
-								postData["wl" + idx + "_mfp"] = 1;
+						var band6g = 4;
+						$.each(wl_nband_array, function(index, value){
+							var authMode = httpApi.nvramGet(["wl" + index + "_auth_mode_x"], true)["wl" + index + "_auth_mode_x"];
+							if(value == band6g)
+								return true;
+							if(authMode == "sae"){
+								postData["wl" + index + "_auth_mode_x"] = "psk2sae";
+								postData["wl" + index + "_mfp"] = 1;
 							}
 						});
 
@@ -2270,6 +2286,7 @@ function ajax_AiMesh_node_clients(_nodeMac){
 					parent.$("#edit_amesh_client_block .amesh_router_icon.card").addClass('amesh_router_image_web');
 					parent.$("#edit_amesh_client_block .amesh_router_icon.card").removeClass('amesh_router_icon');
 				}
+
 				parent.$("#edit_amesh_client_block #aimesh_node_connection_type").html(get_connect_type(node_info).text);
 				parent.$("#edit_amesh_client_block .amesh_interface_icon.static_info").html(get_connect_type(node_info).icon);
 			}
@@ -2355,9 +2372,8 @@ function gen_AiMesh_node_client(_nodeClient_array) {
 			nodeClientHtml += "<td width='" + aimesh_node_client_info_width[3] + "' align='center'>";
 			nodeClientHtml += "<div style='margin: auto;' class='radioIcon radio_" + rssi + "'></div>";
 			if(nodeClientObj.isWL != "0") {
-				var wireless_band_array = ["", "2.4G", "5G", "5G-2"];
 				var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
-				nodeClientHtml += "<div class='band_block' style='margin: auto;'><span class=" + bandClass + " style='color: #000000;'>" + wireless_band_array[nodeClientObj.isWL] + "</span></div>";
+				nodeClientHtml += "<div class='band_block' style='margin: auto;'><span class=" + bandClass + " style='color: #000000;'>" + isWL_map[nodeClientObj.isWL]["text"] + "</span></div>";
 			}
 			nodeClientHtml += "</td>";
 			nodeClientHtml += "</tr>";
@@ -2420,11 +2436,15 @@ function get_connect_type(_node_info) {
 			component.text = "<#tm_wireless#>";
 			var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
 			var wireless_band = 0;
-			var wireless_band_array = ["2.4G", "5G"];
+			var wireless_band_array = ["2.4G", "5G", "6G"];
 			var wireless_rssi = 4;
 			if(_node_info.re_path == "2") {
 				wireless_band = 0;
 				wireless_rssi = client_convRSSI(_node_info.rssi2g);
+			}
+			if(_node_info.re_path == "128") {
+				wireless_band = 2;
+				wireless_rssi = client_convRSSI(_node_info.rssi6g);
 			}
 			else {
 				wireless_band = 1;

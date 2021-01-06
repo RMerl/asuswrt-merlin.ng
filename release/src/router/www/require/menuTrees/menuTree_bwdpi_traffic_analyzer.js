@@ -891,7 +891,7 @@ define(function(){
 					retArray.push("AdaptiveQoS_InternetSpeed.asp");
 				}
 
-				if (odmpid == "DSL-AX5400") {
+				if (isSupport("is_ax5400_i1")) {
 					retArray.push("Advanced_ADSL_Content.asp");
 				}
 
@@ -900,7 +900,7 @@ define(function(){
 		}
 	}
 
-	if(odmpid == "RT-N66U_C1" || odmpid == "DSL-AX5400"){
+	if(isSupport("is_ax5400_i1") || odmpid == "RT-N66U_C1"){
 		menuTree.list.splice(8,2);
 	}
 	else{

@@ -1,0 +1,16 @@
+<% shown_language_css(); %>
+
+<script>	
+	var submit_language= function(obj){
+		if(obj.id != systemVariable.uiLanguage){
+			httpApi.nvramSet({
+				'action_mode': 'apply',
+				'preferred_lang': obj.id
+			}, function(){
+				location.href = location.href;
+			});
+		}
+		else
+			alert("No change LANGUAGE!");
+	}
+</script>

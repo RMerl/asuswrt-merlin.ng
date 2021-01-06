@@ -392,7 +392,7 @@ function enableGamePriority(){
 	}
 	else{
 		if(document.form.rog_enable.value == '0'){		// OFF -> ON
-			if(odmpid == "DSL-AX5400") {
+			if(isSupport("is_ax5400_i1")) {
 				if(document.form.qos_obw.value == '0' || document.form.qos_obw.value == ''){
 					document.form.qos_obw.disabled = false;
 					document.form.qos_obw.value = '51200';

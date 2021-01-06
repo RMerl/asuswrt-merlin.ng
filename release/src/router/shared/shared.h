@@ -1621,9 +1621,19 @@ static inline int dpsta_mode()
 }
 #endif
 
+static inline int mb_mode() /* psta_mode */
+{
+	return (sw_mode() == SW_MODE_AP && nvram_get_int("wlc_psta") == 1);
+}
+
 static inline int dpsr_mode()
 {
 	return ((sw_mode() == SW_MODE_AP) && (nvram_get_int("wlc_psta") == 2) && (nvram_get_int("wlc_dpsta") == 2));
+}
+
+static inline int nonre_clientMode()
+{
+	return ((mb_mode() || dpsta_mode()) && !nvram_match("re_mode", "1")); 
 }
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
@@ -2088,6 +2098,7 @@ extern int amas_dfs_status(int band);
 extern void trans_to_bhmode(int *amas_eth_bhmode, int *amas_wifi_bhmode, int *amas_costmode, int *amas_rssiscoremode);
 extern unsigned int get_uplinkports_linkrate(char *ifname);
 extern void trigger_opt();
+extern int gen_uplinkport_describe(char *port_def, char *type, char *subtype, int index);
 #else
 extern void Pty_start_wlc_connect(int band);
 #endif
@@ -3558,5 +3569,7 @@ struct cled_config3 {
 	uint32_t phase_delay2: 16;
 };
 #endif
+
+int is_passwd_default(void);
 
 #endif	/* !__SHARED_H__ */

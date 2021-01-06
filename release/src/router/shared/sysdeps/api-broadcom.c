@@ -2568,7 +2568,7 @@ int get_bonding_port_status(int port)
 	/* 7 4 3 2 1 0	L5(2.5G) W0 L1 L2 L3 L4 */
 	/* eth5 eth0 eth4 eth3 eth2 eth1 */
 	ports[0] = "eth0"; ports[1] = "eth4"; ports[2] = "eth3"; ports[3] = "eth2"; ports[4] = "eth1"; ports[5] = "eth5";
-#elif defined(RTAX68U)
+#elif defined(RTAX68U) || defined(RTAC68U_V4)
 	int lan_ports = 4;
 	char *ports[lan_ports+1];
 	/* 4 3 2 1 0	W0 L1 L2 L3 L4 */

@@ -42,6 +42,9 @@
 #if defined(RTCONFIG_FANCTRL)
 #define FT_FANCTRL		BIT(19)
 #endif
+#ifdef RTCONFIG_AMAS_WGN
+#define FT_BW_LIMIT BIT(20) /* Bandwidth limiter for guest network feature */
+#endif
 
 /* service */
 #define RESTART_WIRELESS		"restart_wireless"
@@ -66,6 +69,9 @@
 #define UPDATE_STA_BINDING	"update_sta_binding"
 #endif
 #define TRIGGER_OPT		"trigger_opt"
+#ifdef RTCONFIG_AMAS_WGN
+#define RESTART_BW_LIMIT	"restart_qos;restart_firewall"
+#endif
 
 struct feature_mapping_s {
 	char *name;
@@ -103,6 +109,9 @@ struct feature_mapping_s feature_mapping_list[] = {
 #endif
 #ifdef RTCONFIG_BHCOST_OPT
 	{ "prefer_ap", FT_PREFERAP, TRIGGER_OPT },
+#endif
+#ifdef RTCONFIG_AMAS_WGN
+	{ "bw_limiter", FT_BW_LIMIT, RESTART_BW_LIMIT},
 #endif
 #if defined(RTCONFIG_FANCTRL)
 	{ "fanctrl",	FT_FANCTRL,	RESTART_FANCTRL },
@@ -301,6 +310,20 @@ enum {
 	SUBFT_TIMESCHEDV2_5G,
 	SUBFT_TIMESCHEDV2_5G1,
 
+#if defined(RTCONFIG_AMAS_WGN)
+	/* bandwidth limiter for guest network */
+    SUBFT_BW_LIMIT,
+    SUBFT_BW_LIMIT_2G_G1,
+    SUBFT_BW_LIMIT_2G_G2,
+    SUBFT_BW_LIMIT_2G_G3,
+    SUBFT_BW_LIMIT_5G_G1,
+    SUBFT_BW_LIMIT_5G_G2,
+    SUBFT_BW_LIMIT_5G_G3,
+    SUBFT_BW_LIMIT_5G1_G1,
+    SUBFT_BW_LIMIT_5G1_G2,
+    SUBFT_BW_LIMIT_5G1_G3,
+#endif
+
 #if defined(RTCONFIG_FANCTRL)
 	SUBFT_FANCTRL,
 #endif
@@ -486,6 +509,20 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 #if defined(RTCONFIG_STA_AP_BAND_BIND)
 	/* sta binding ap */
 	{ "sta_bind_ap", SUBFT_STA_BIND_AP, FT_STA_BIND_AP},
+#endif
+
+#if defined(RTCONFIG_AMAS_WGN)
+	/* bandwidth limiter for guest network */
+    { "bw_limiter", SUBFT_BW_LIMIT, FT_BW_LIMIT },
+    { "bw_limiter_2g_g1", SUBFT_BW_LIMIT_2G_G1, FT_BW_LIMIT },
+    { "bw_limiter_2g_g2", SUBFT_BW_LIMIT_2G_G2, FT_BW_LIMIT },
+    { "bw_limiter_2g_g3", SUBFT_BW_LIMIT_2G_G3, FT_BW_LIMIT },
+    { "bw_limiter_5g_g1", SUBFT_BW_LIMIT_5G_G1, FT_BW_LIMIT },
+    { "bw_limiter_5g_g2", SUBFT_BW_LIMIT_5G_G2, FT_BW_LIMIT },
+    { "bw_limiter_5g_g3", SUBFT_BW_LIMIT_5G_G3, FT_BW_LIMIT },
+    { "bw_limiter_5g1_g1", SUBFT_BW_LIMIT_5G1_G1, FT_BW_LIMIT },
+    { "bw_limiter_5g1_g2", SUBFT_BW_LIMIT_5G1_G2, FT_BW_LIMIT },
+    { "bw_limiter_5g1_g3", SUBFT_BW_LIMIT_5G1_G3, FT_BW_LIMIT },
 #endif
 
 #if defined(RTCONFIG_FANCTRL)
@@ -675,6 +712,38 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl1.3_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G_G3},
 	{ "wl2.3_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G3},
 	{ "wl2.3_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G3},
+#if defined(RTCONFIG_AMAS_WGN)
+    /* bandwidth limiter for guest network */
+    { "qos_enable",     FT_BW_LIMIT,    SUBFT_BW_LIMIT },
+    { "qos_type",       FT_BW_LIMIT,    SUBFT_BW_LIMIT },
+    { "wl0.1_bw_enabled",   FT_BW_LIMIT,    SUBFT_BW_LIMIT_2G_G1 },
+    { "wl0.1_bw_ul",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_2G_G1 },
+    { "wl0.1_bw_dl",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_2G_G1 },
+    { "wl0.2_bw_enabled",   FT_BW_LIMIT,    SUBFT_BW_LIMIT_2G_G2 },
+    { "wl0.2_bw_ul",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_2G_G2 },
+    { "wl0.2_bw_dl",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_2G_G2 },
+    { "wl0.3_bw_enabled",   FT_BW_LIMIT,    SUBFT_BW_LIMIT_2G_G3 },
+    { "wl0.3_bw_ul",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_2G_G3 },
+    { "wl0.3_bw_dl",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_2G_G3 },
+    { "wl1.1_bw_enabled",   FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G_G1 },
+    { "wl1.1_bw_ul",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G_G1 },
+    { "wl1.1_bw_dl",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G_G1 },
+    { "wl1.2_bw_enabled",   FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G_G2 },
+    { "wl1.2_bw_ul",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G_G2 },
+    { "wl1.2_bw_dl",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G_G2 },
+    { "wl1.3_bw_enabled",   FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G_G3 },
+    { "wl1.3_bw_ul",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G_G3 },
+    { "wl1.3_bw_dl",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G_G3 },
+    { "wl2.1_bw_enabled",   FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G1_G1 },
+    { "wl2.1_bw_ul",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G1_G1 },
+    { "wl2.1_bw_dl",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G1_G1 },
+    { "wl2.2_bw_enabled",   FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G1_G2 },
+    { "wl2.2_bw_ul",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G1_G2 },
+    { "wl2.2_bw_dl",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G1_G2 },
+    { "wl2.3_bw_enabled",   FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G1_G3 },
+    { "wl2.3_bw_ul",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G1_G3 },
+    { "wl2.3_bw_dl",    FT_BW_LIMIT,    SUBFT_BW_LIMIT_5G1_G3 },
+#endif
 	/* wireless advanced */
 	{ "wl0_user_rssi", 		FT_WIRELESS, 		SUBFT_ADVANCED_2G},
 	{ "wl1_user_rssi", 		FT_WIRELESS, 		SUBFT_ADVANCED_5G},

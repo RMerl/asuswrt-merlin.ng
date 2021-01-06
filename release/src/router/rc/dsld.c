@@ -154,6 +154,12 @@ static void update_xdsl_status()
 	nvram_set("dsllog_attainup", info.max_rate_up);
 	nvram_set_int("dsllog_crcdown", (int)info.crc_down);
 	nvram_set_int("dsllog_crcup", (int)info.crc_up);
+	nvram_set_int("dsllog_fecdown", (int)info.fec_down);
+	nvram_set_int("dsllog_fecup", (int)info.fec_up);
+	nvram_set_int("dsllog_esdown", (int)info.es_down);
+	nvram_set_int("dsllog_esup", (int)info.es_up);
+	nvram_set_int("dsllog_sesdown", (int)info.ses_down);
+	nvram_set_int("dsllog_sesup", (int)info.ses_up);
 	nvram_set("dsllog_inpdown", info.inp_down);
 	nvram_set("dsllog_inpup", info.inp_up);
 	nvram_set("dsllog_inpreindown", info.inp_rein_down);

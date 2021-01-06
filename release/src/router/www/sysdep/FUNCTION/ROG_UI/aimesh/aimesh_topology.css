@@ -721,12 +721,15 @@
 .connect_type_status_bg .uplink_type_title.disconnected, .signal_text_bg.signal.disconnected{
 	color: #627681;
 }
-.connect_type_status_bg .uplink_type_ip{
+.connect_type_status_bg .uplink_type_ip, .connect_type_status_bg .uplink_type_mode_title{
 	font-family: Roboto-Regular, "Microsoft JhengHei";
 	font-size: 14px;
 	color: #CDEBFF;
 	position: absolute;
 	margin-left: 22px;
+}
+.connect_type_status_bg .uplink_type_mode_title{
+	color: #A4B7C3;
 }
 .connect_type_status_bg .uplink_icon_bg {
 	height: 100%;
@@ -802,6 +805,15 @@
 }
 .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.M{
 	background-position: 0px -510px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.plc.great{
+	background-position: -918px -306px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.plc.weak{
+	background-position: -918px -408px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.plc.disconnected{
+	background-position: -918px -510px;
 }
 .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.disconnected, .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.X{
 	background-position: -102px -510px;
@@ -1837,6 +1849,12 @@
 .jstree-anchor.weak.wireless:before {
 	background-position: -218px -38px;
 }
+.jstree-anchor.great.plc:before {
+	background-position: -724px -38px;
+}
+.jstree-anchor.weak.plc:before {
+	background-position: -806px -38px;
+}
 .jstree-anchor.disconnected:before {
 	background-position: -287px -38px;
 }
@@ -1991,6 +2009,12 @@
 }
 .jstree-default .jstree-node.weak.wireless:before{
 	background-position: -586px 0px;
+}
+.jstree-default .jstree-node.great.plc:before{
+	background-position: -886px 0px;
+}
+.jstree-default .jstree-node.weak.plc:before{
+	background-position: -962px 0px;
 }
 .jstree-default .jstree-node.disconnected:before{
 	background-position: -655px 0px;
@@ -2365,6 +2389,12 @@
 }
 .connect_line_info_bg .connect_line.wireless.weak:before{
 	background-position: -223px 0px;
+}
+.connect_line_info_bg .connect_line.plc.great:before{
+	background-position: -729px -59px;
+}
+.connect_line_info_bg .connect_line.plc.weak:before{
+	background-position: -811px -59px;
 }
 .connect_line_info_bg .connect_line.disconnected:before{
 	background-position: -292px -55px;

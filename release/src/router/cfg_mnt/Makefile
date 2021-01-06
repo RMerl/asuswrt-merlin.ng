@@ -195,6 +195,11 @@ ifeq ($(or $(HND_ROUTER_AX),$(RTCONFIG_WIFI_QCN5024_QCN5054)),y)
 CFLAGS += -DSUPPORT_11AX
 endif
 
+ifeq ($(RTCONFIG_QCA_PLC2),y)
+CFLAGS += -DPLC_STATUS
+endif
+
+
 ifeq ($(wildcard $(SRCBASE)/router/cfg_mnt/*.c),)
 all:
 	-cp -f prebuild/$(BUILD_NAME)/cfg_server cfg_server

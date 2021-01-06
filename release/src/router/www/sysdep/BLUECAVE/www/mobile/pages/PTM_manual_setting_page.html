@@ -1,0 +1,598 @@
+<script>
+var AutoDetInfo = httpApi.nvramGet(["dsltmp_autodet_state", "dsltmp_autodet_vpi", "dsltmp_autodet_vci", "dsltmp_autodet_encap","dsltmp_autodet_wan_type","dslx_transmode"]);
+
+var country_code = "";
+var selected_country = "";
+var ISP_List = [ <% get_isp_list("/www/ISP_PTM_List.txt"); %> ];
+var ISP_List_IPTV = [ <% get_isp_list("/www/ISP_PTM_List_IPTV.txt"); %> ];
+var ru_idx_start = 0;
+var dslx_annex_state = httpApi.nvramGet(["dslx_annex"]).dslx_annex;
+
+var wan_type = AutoDetInfo.dsltmp_autodet_wan_type;
+
+</script>
+
+<div class="headerBar">
+	<table style="width:100%">
+		<tr>
+			<td style="padding:0;width:17px;">
+				<div style="margin-right:20px;">
+					<a href="#navigation">
+						<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+					</a>
+				</div>
+			</td>
+			<td style="padding:0;width:130px;">
+				<div>
+					<div class="icon_logo"></div>
+				</div>
+			</td>
+			<td style="padding:0;">
+				<div class="model_welcome"></div>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="tableContainer">
+	<div class="desktop_left_field">
+		<div>
+			<div class="titleMain"><#Manual_Setting_Title#></div>
+			<div class="titleSub"><#Settings#></div>
+		</div>
+	</div>
+	<div class="table_td">
+		<!--div class="pageDesc"><#Manual_Setting_Title#></div-->
+		<div class="pageDesc"><#Manual_Setting_desc1#></div>
+		<div id="hint_msg"></div>
+
+
+		<div>
+			<div class="inputTitleContainer">
+				<div class="inputTitle"><#Manual_Setting_contry#></div>
+			</div>
+			<div class="inputContainer">
+				<select id="CountryList" class="optionInput"></select>
+			</div>
+		</div>
+		<div id="City_tr">
+			<div class="inputTitleContainer">
+				<div class="inputTitle"><#Manual_Setting_city#></div>
+			</div>
+			<div class="inputContainer">
+				<select id="CityList" class="optionInput"></select>
+			</div>
+		</div>
+		<div id="ISP_tr">
+			<div class="inputTitleContainer">
+				<div class="inputTitle">ISP</div>
+			</div>
+			<div class="inputContainer">
+				<select id="ISPList" class="optionInput"></select>
+			</div>
+		</div>
+		<div id="Service_tr">
+			<div class="inputTitleContainer">
+				<div class="inputTitle"><#qis_service#></div>
+			</div>
+			<div class="inputContainer">
+				<select id="Service" class="optionInput"></select>
+				<span id="STBPortMsg" class="hint_yellow">Please connect the IPTV STB to LAN Port 1</span>	<!-- Untranslated -->
+			</div>
+		</div>
+
+		
+		<div id='vccInfo'>
+			<div class="tosDesc"><#Manual_Setting_desc3#></div>
+
+			<div>
+				<div class="inputTitleContainer">
+					<div class="inputTitle"><#Layer3Forwarding_x_ConnectionType_itemname#></div>
+				</div>
+				<div class="inputContainer">
+					<select id="user_prctl" class="optionInput">
+						<option value="dhcp"><#BOP_ctype_title1#></option>
+						<option value="static"><#BOP_ctype_title5#></option>
+						<option value="pppoe">PPPoE</option>
+						<option value="bridge">Bridge</option>
+						
+					</select>
+				</div>
+			</div>
+			<div>
+				<div class="inputTitleContainer">
+					<div class="inputTitle"><#WANVLANIDText#></div>
+				</div>
+				<div class="inputContainer">
+					<input id="dslx_vid" type="text" maxlength="5" class="textInput" value="" data-clear-btn="true" />
+				</div>
+			</div>
+
+		</div>
+
+
+
+		<div style="margin-top:160px;">
+			<div class="footer_desktop">
+				<div id="detectButton" class="desktop_abortBtn" id="desktop_abortBtn" onclick="abort.PTM_manual_setting()"><#CTL_Detect_Again#></div>
+				<div class="desktop_applyBtn btn_wireless_apply" onclick="apply.PTM_manual_setting()"><#CTL_next#></div>
+			</div>
+			<div class="footer_mobile">
+				<table style="width:100%;" cellpadding="0" cellspacing="0">
+					<tr>
+						<td id="mobile_detectButton" class="mobileAbort" id="mobile_abortBtn" style="width:50%" onclick="abort.PTM_manual_setting()">
+							<div class="mobile_abortBtn"><#CTL_Detect_Again#></div>
+						</td>
+						<td class="mobileApply" onclick="apply.PTM_manual_setting()">
+							<div class="mobile_applyBtn btn_wireless_apply"><#CTL_next#></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class='footerPadding'></div>
+
+<script>
+
+	function hidePVCInfo(hide) {
+		if ( hide == 1 ) {
+			$('#vccInfo').hide();
+		}
+		else{
+			$('#vccInfo').show();
+		}
+	}
+
+	function hideCityList(hide) {
+		if ( hide == 1 ){
+			$("#CityList").hide();
+		}
+		else{
+			$("#CityList").show();	
+		}
+	}
+
+	function ShowPVC(idx) {
+		if ( idx=='NO' )
+			hidePVCInfo(0);
+		else
+			hidePVCInfo(1);
+	}
+
+	function ChgSVC(idx) {
+		if(idx == "default"){
+			$("#STBPortMsg").hide();
+			return;
+		}
+		var STBPM_display=0;
+		var iptv_idx = ISP_List[idx][13];
+		if(iptv_idx != "") {	//iptv idx
+
+			for(var j = 0; j < ISP_List_IPTV.length; j++){
+				if (ISP_List_IPTV[j][0] == iptv_idx && ISP_List_IPTV[j][3] == "3") {
+					STBPM_display=1;
+				}
+			}
+
+			if(STBPM_display==1){
+				if(ISP_List[idx][5] == "VDSL+MOD")
+					$("#STBPortMsg").text("Please connect the MOD(STB) to LAN Port 1");
+				else
+					$("#STBPortMsg").text("Please connect the IPTV STB to LAN Port 1");
+
+				$("#STBPortMsg").show();
+			}
+			else{
+				$("#STBPortMsg").hide();
+			}
+		}
+		else {
+			$("#STBPortMsg").hide();
+		}
+	}
+
+	function showCountryList(o){
+
+		var showed_country = "";
+
+		$('#CountryList').empty();
+
+		$('#CountryList').append($('<option>', {value: "default", text : "<#Select_menu_default#>"} ));
+		for(var i = 0; i < ISP_List.length; i++){
+
+			if(showed_country != ISP_List[i][1]){	//keep unique country in list
+				$('#CountryList').append($('<option>', {value: ISP_List[i][1], text : ISP_List[i][2]} ));
+				if(o == ISP_List[i][1]){
+					$("#CountryList option[value='ISP_List[i][1]']").attr("selected", true);
+					//code +="' selected='selected'";
+				}
+
+				showed_country = ISP_List[i][1];
+			}
+		}
+		$('#CountryList').append($('<option>', {value: "NO", text : "<#Not_Listed#>"} ));
+
+		$("#CountryList").change(function(){
+			showAllList($("#CountryList").val());
+		});
+	}
+
+	function showCityList(o){
+		var showedCity = "";
+
+		$('#CityList').empty();
+		for(var i = 0; i < ISP_List.length; i++){
+			if((showedCity != ISP_List[i][3]) && (o == ISP_List[i][1])){
+				$('#CityList').append($('<option>', {value: ISP_List[i][3], text : ISP_List[i][3]} ));
+				//code +="<option value='"+ISP_List[i][3]+"'>"+ISP_List[i][3]+"</option>";
+				showedCity = ISP_List[i][3];
+			}
+		}
+
+		$("#CityList").change(function(){
+			showRussiaISPList($("#CityList").val());
+		});
+	}
+	
+	function showNomoISPList(country){
+		var showed_isp = "";
+		var first_element = 0;
+
+		$('#ISPList').empty();
+		for(var i = 0; i < ISP_List.length; i++){
+			if(country == ISP_List[i][1]){
+				if(showed_isp == ISP_List[i][4]){	//same isp internet setting with additional service
+					continue;
+				}
+				else {
+					showed_isp = ISP_List[i][4];
+				}
+
+				if (first_element==0) {
+					first_element=1;
+					ShowPVC(i);
+					$('#ISPList').append($('<option>', {value: ISP_List[i][0], text : ISP_List[i][4]} ));
+					$("#ISPList option[value='ISP_List[i][0]']").attr("selected", true);
+
+				}
+				else {
+					$('#ISPList').append($('<option>', {value: ISP_List[i][0], text : ISP_List[i][4]} ));
+				}
+			}
+		}
+		$('#ISPList').append($('<option>', {value: "NO", text : "<#Not_Listed#>"} ));
+
+		$("#ISPList").change(function(){
+		 	ShowPVC($("#ISPList").val());
+		 	showNomoISPServiceByIdx($("#ISPList").val());
+		});
+	}
+
+	function showNomoISPServiceByIdx(idx) {
+		$("#Service_tr").hide();
+
+		var first_element = 0;
+		var sel_idx = 0;
+
+		$('#Service').empty();
+		for(var i = idx; i < ISP_List.length; i++){
+			if(ISP_List[idx][4] != ISP_List[i][4])	//only show this isp
+				break;
+			if(ISP_List[i][5] == "")
+				continue;
+
+			if (first_element == 0) {
+				first_element = 1;
+				sel_idx = i;
+				$('#Service').append($('<option>', {value: ISP_List[i][0], text : ISP_List[i][5]} ));
+				$("#Service option[value='ISP_List[i][0]']").attr("selected", true);
+			}
+			else {
+				$('#Service').append($('<option>', {value: ISP_List[i][0], text : ISP_List[i][5]} ));
+			}
+		}
+
+		if(first_element != 0) {
+			$("#Service_tr").show();
+			$("#Service").change(function(){
+				ChgSVC($("#Service").val());
+			});
+		}
+		ChgSVC(sel_idx);
+	}
+
+	function showRussiaISPList(o){
+		ISPlocatedCity = o;
+		hidePVCInfo(1);
+		$("#ISPList").empty();
+
+		var First_ISP= "";
+		var showed_ISP = "";
+		var first_element = 0;
+		for(var i = ru_idx_start; i < ISP_List.length; i++){
+			if((showed_ISP != ISP_List[i][4]) && (o == ISP_List[i][3])){
+				if (first_element==0) {
+					first_element=1;
+					ShowPVC(i);
+					$('#ISPList').append($('<option>', {value: ISP_List[i][0], text : ISP_List[i][4]} ));
+					$("#ISPList option[value='ISP_List[i][0]']").attr("selected", true);
+				}
+				else {
+					$('#ISPList').append($('<option>', {value: ISP_List[i][0], text : ISP_List[i][4]} ));
+				}
+
+				if(First_ISP == "")
+					First_ISP = ISP_List[i][4];
+				showed_ISP = ISP_List[i][4];
+			}
+		}
+		
+		$('#ISPList').append($('<option>', {value: "NO", text : "<#Not_Listed#>"} ));
+
+		$("#ISPList").change(function(){
+		 	ShowPVC($("#ISPList").val());
+		 	showRussiaISPServiceByIdx(ISPlocatedCity, $("#ISPList").val());
+		});
+
+		showRussiaISPService(ISPlocatedCity, First_ISP);
+	}
+
+	function showRussiaISPServiceByIdx(c, idx){
+		$("#Service").empty();
+
+		if (idx=="NO"){
+			$("#Service_tr").hide();
+		}
+		else{
+			
+			$("#Service_tr").show();
+
+			var first_element = 0;
+			var sel_idx = 0;
+			for(var i = ru_idx_start; i < ISP_List.length; i++){
+				if((c == ISP_List[i][3]) && (idx == ISP_List[i][4])){
+					if (first_element == 0)
+					{
+						first_element = 1;
+						sel_idx = i;
+					}
+					//code +="<option value='"+ISP_List[i][0]+"'>"+ISP_List[i][5]+"</option>";
+					$('#Service').append($('<option>', {value: ISP_List[i][0], text : ISP_List[i][5]} ));
+				}
+			}
+
+			$("#Service").change(function(){
+				ChgSVC($("#Service").val());
+			});
+			ChgSVC(sel_idx);
+		}
+	}
+
+	function showRussiaISPService(c, o){
+		$("#Service").empty();
+
+		if (o=="NO") {
+			$("#Service_tr").hide();
+		}
+   		else {
+			$("#Service_tr").show();
+			var first_element = 0;
+			var sel_idx = 0;
+			for(var i = ru_idx_start; i < ISP_List.length; i++){
+				if((c == ISP_List[i][3]) && (o == ISP_List[i][4])){
+					if (first_element == 0)
+					{
+						first_element = 1;
+						sel_idx = i;
+					}
+					$('#Service').append($('<option>', {value: ISP_List[i][0], text : ISP_List[i][5]} ));
+				}
+			}
+			
+			$("#Service").change(function(){
+				ChgSVC($("#Service").val());
+			});
+			ChgSVC(sel_idx);
+		}
+	}
+
+	function showAllList(o){
+		var i;
+		selected_country = o;
+
+		if(0){//if(o == "Russia"){	//Do not use since no country information in PTM list currently
+			$("#City_tr").show();
+			$("#Service_tr").show();
+			hideCityList(0);
+			showCityList(o);
+			if (ru_idx_start == 0) {
+				for(i=0; i< ISP_List.length; i++) {
+					if(ISP_List[i][1]=="Russia")
+						break;
+				}
+				ru_idx_start = i;
+			}
+			showRussiaISPList(ISP_List[ru_idx_start][3]);
+			showRussiaISPService(ISP_List[ru_idx_start][3], ISP_List[ru_idx_start][4]);
+			hidePVCInfo(1);
+		}
+		else{
+			$("#City_tr").hide();
+			$("#Service_tr").hide();
+			hideCityList(1);
+			showNomoISPList(o);
+			for(i=0; i< ISP_List.length; i++) {
+				if(ISP_List[i][1] == o) {
+					showNomoISPServiceByIdx(i);
+					//showSpecificSetting(i);
+					break;
+				}
+			}
+		}
+		if (o=="NO")
+			hidePVCInfo(0);
+	   	else
+			hidePVCInfo(1);
+	}
+
+	function setIptvNumPvc() {
+		var pvc_cnt = 0;
+		var tmp = qisPostData.dsltmp_cfg_iptv_idx;
+		var dsltmp_cfg_iptv_pvclist_value = "";
+
+		if (tmp != "") {
+			for(var i = 0; i < ISP_List_IPTV.length; i++){
+				if (ISP_List_IPTV[i][0] == tmp) {
+					pvc_cnt++;
+					dsltmp_cfg_iptv_pvclist_value +=
+						"<" + ISP_List_IPTV[i][1]
+						+ ">" + ISP_List_IPTV[i][2]
+						+ ">" + ISP_List_IPTV[i][3]
+						+ ">" + ISP_List_IPTV[i][4]
+						+ ">" + ISP_List_IPTV[i][5]
+				}
+			}
+			qisPostData.dsltmp_cfg_iptv_enable = "1";
+			qisPostData.dsltmp_cfg_iptv_num_pvc = pvc_cnt.toString();
+			qisPostData.dsltmp_cfg_iptv_pvclist = dsltmp_cfg_iptv_pvclist_value;
+		}
+		else{
+			qisPostData.dsltmp_cfg_iptv_enable = "0";
+			qisPostData.dsltmp_cfg_iptv_num_pvc = "0";
+			qisPostData.dsltmp_cfg_iptv_pvclist = "";
+		}
+	}
+
+	function transfer_proto(flag){
+		var val = "";	// 0: PPPoE / 2: DHCP / 3:Bridge / 4:Static
+		switch(flag){
+			case "0":
+					val="pppoe";
+					break;
+			case "2":
+					val="dhcp";
+					break;
+			case "3":
+					val="bridge";
+					break;
+			case "4":
+					val="static";
+					break;
+			default:
+					val="pppoe";
+					break;
+		}
+
+		return val;
+	}
+
+	//--------initial-------------------------------------------
+	
+	hidePVCInfo(1);
+
+	if(dslx_annex_state == 5 || dslx_annex_state == 6){
+		document.getElementById("detectButton").style.display = "none";
+		document.getElementById("mobile_detectButton").style.display = "none";
+	}
+
+	if(country_code=="")
+	    country_code = "default";
+	showCountryList(country_code);
+	showAllList(country_code);
+
+	postDataModel.insert(dsltmpQISObj);
+	postDataModel.insert(dsl_wanObj.ptm_dslObj);
+	postDataModel.insert(dslIPTVObj);
+
+	//--------initial-------------------------------------------
+
+	apply.PTM_manual_setting = function(){
+
+	if($("#CountryList").val() == 'default'){
+		alert("<#JS_fieldblank#>");
+		$("#CountryList").focus();
+		return false;           
+        }
+        else if ( $("#CountryList").val()=='NO'|| $("#ISPList").val()=='NO' ){	//Not Listed: Manual setting
+        	var tmp_vlanid = $("#dslx_vid").val();
+
+			if ( isNaN(tmp_vlanid) == true ) {
+				alert('<#WANVLANIDText#> "' + tmp_vlanid + '" <#Manual_Setting_JS_invalid#>');
+				$("#dslx_vid").focus();
+				return false;
+			}
+
+			qisPostData.dsl_proto = $("#user_prctl").val();
+			qisPostData.dsl_vid = $("#dslx_vid").val();
+			if(qisPostData.dsl_vid != ""){
+				qisPostData.dsl_dot1q = 1;
+			}
+
+			qisPostData.dsltmp_cfg_iptv_idx = "";
+			qisPostData.dsltmp_cfg_ispname = "";	
+			qisPostData.dsltmp_cfg_country = ($("#CountryList").val()=='Turkey' || $("#CountryList").val()=='Australia')? $("#CountryList").val():"";
+
+        }
+        else {	//Selected from List
+
+        	var isp_idx = 0
+			if (0) {	//if (selected_country == "Russia") {	//Do not use since no country information in PTM list currently
+				isp_idx = $("#Service").val();
+			}
+			else {
+				isp_idx = $("#ISPList").val();
+				if(ISP_List[isp_idx][5] != ""){
+					isp_idx = $("#Service").val();
+				}
+			}			
+
+			qisPostData.dsl_proto = transfer_proto(ISP_List[isp_idx][8]);	//need to transferred
+			qisPostData.dsl_encap = ISP_List[isp_idx][9];
+			qisPostData.dsl_vid = ISP_List[isp_idx][10];
+			if(qisPostData.dsl_vid != ""){
+				qisPostData.dsl_dot1q = 1;
+			}
+
+			qisPostData.dsltmp_cfg_country = ISP_List[isp_idx][1];
+			qisPostData.dsltmp_cfg_ispname = ISP_List[isp_idx][4];
+			qisPostData.dsltmp_cfg_iptv_rmvlan = ISP_List[isp_idx][11];
+			qisPostData.dsltmp_cfg_iptv_mr = ISP_List[isp_idx][12];
+			qisPostData.dsltmp_cfg_iptv_idx = ISP_List[isp_idx][13];
+        }
+
+        setIptvNumPvc();
+
+		// dsltmp --------------------------------
+		qisPostData.dslx_transmode = (wan_type=="PTM")? "ptm": "atm";
+     		qisPostData.dsltmp_transmode = qisPostData.dslx_transmode;
+		// -------------------------------- dsltmp
+	
+		switch(qisPostData.dsl_proto){ //redirect pages //pppoe, dhcp, bridge, ipoa
+			case "pppoe":
+						goTo.PPP_TMP();
+						break;
+			case "dhcp":
+						goTo.MER_TMP();
+						break;
+			case "bridge":
+						goTo.BRIDGE_TMP();
+						break;
+			case "static":
+						goTo.IPOA_TMP();
+						break;
+			default:
+						alert("<#Connectiontype_unknown#>");
+						break;
+		}
+
+	};
+
+	abort.PTM_manual_setting = function(transmode){
+		postDataModel.remove(dsltmpQISObj);
+		postDataModel.remove(dsl_wanObj.ptm_all);
+		postDataModel.remove(dslIPTVObj);
+		httpApi.startDSLAutoDet();
+		setTimeout("goTo.WaitingDSL()", 300);
+	};
+</script>

@@ -93,8 +93,8 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/disk_functions.js"></script>
@@ -338,10 +338,18 @@ function initial(){
 				document.getElementById('rssi_div').style.display = "none";
 			else
 				document.getElementById('rssi_div').style.display = "";
-			if(wlc_band == 0)
-				document.getElementById('wlc_band_status').innerHTML = "2.4GHz"; 
-			else	
-				document.getElementById('wlc_band_status').innerHTML = "5GHz";
+				
+			if(wlc_band == 0){
+				document.getElementById('wlc_band_status').innerHTML = "2.4 GHz"; 
+			}
+			else{
+				if(band6g_support && wlc_band == '2'){
+					document.getElementById('wlc_band_status').innerHTML = "6 GHz";
+				}
+				else{
+					document.getElementById('wlc_band_status').innerHTML = "5 GHz";
+				}				
+			}
 		}
 		document.getElementById('NM_connect_title').innerHTML = "<#parent_AP_status#> :";
 	}
@@ -1529,7 +1537,7 @@ function popupEditBlock(clientObj){
 				if(navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)){
 					bandClass = "band_txt_chrome";
 				}
-				clientIconHtml += '<div class="band_block"><span class="' + bandClass + '">' + wl_nband_title[clientObj.isWL-1].replace("Hz", "").replace(/\s*/g,"") + '</span></div>';
+				clientIconHtml += '<div class="band_block"><span class="' + bandClass + '">' + isWL_map[clientObj.isWL]["text"] + '</span></div>';
 			}
 			document.getElementById('client_interface').innerHTML = clientIconHtml;
 			document.getElementById('client_interface').title = connectModeTip;
@@ -1808,7 +1816,7 @@ function check_usb3(){
 	if(based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85P" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U"|| based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AX92U" || based_modelid == "RT-ACRH26" || based_modelid == "RT-AC95U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX56_XD4" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-ACRH18" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400"){
 		document.getElementById('usb_text_1').innerHTML = "USB 3.0";
 	}
-	else if(based_modelid == "RT-AC88Q" || based_modelid == "RT-AX89U" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "GT-AX11000" || based_modelid == "GT-AC9600" || based_modelid == "GT-AXY16000" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" || based_modelid == "GT-AXE11000"){
+	else if(based_modelid == "RT-AC88Q" || based_modelid == "RT-AX89U" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "GT-AX11000" || based_modelid == "GT-AC9600" || based_modelid == "GT-AXY16000" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" || based_modelid == "GT-AXE11000"){
 		document.getElementById('usb_text_1').innerHTML = "USB 3.0";
 		document.getElementById('usb_text_2').innerHTML = "USB 3.0";
 	}

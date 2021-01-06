@@ -57,7 +57,12 @@ else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
 CFLAGS += -DPGCONTROL3
 else ifeq ($(RTCONFIG_RALINK),y)
+ifeq ($(RTCONFIG_RALINK_MT7622),y)
+	# mtk7622
+CFLAGS += -DPGCONTROL3
+else
 	# mtk
+endif
 else ifeq ($(RTCONFIG_LANTIQ),y)
 	# lantiq
 else ifeq ($(RTCONFIG_BCMARM),y)
@@ -106,6 +111,10 @@ OBJS += wrs_wbl.o      # wrs - white and black list
 
 # TrendMicro
 OBJS += conf_app.o ioc_anomaly.o ioc_common.o ioc_qos.o ioc_vp.o ioc_wbl.o ioc_wrs.o ioc_mesh.o
+
+ifeq ($(RT4GAC86U),y)
+OBJS += $(LIBDIR)/libc_nonshared.a
+endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 vpath %.c $(SRCBASE)/shared

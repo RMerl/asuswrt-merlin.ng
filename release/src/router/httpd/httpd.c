@@ -284,6 +284,7 @@ time_t turn_off_auth_timestamp = 0;
 int temp_turn_off_auth = 0;	// for QISxxx.htm pages
 
 int amas_support = 0;
+int HTS = 0;	//HTTP Transport Security
 
 struct timeval alarm_tv;
 time_t alarm_timestamp = 0;
@@ -1147,6 +1148,12 @@ handle_request(void)
 	len = strlen( file );
 	if ( file[0] == '/' || strcmp( file, ".." ) == 0 || strncmp( file, "../", 3 ) == 0 || strstr( file, "/../" ) != (char*) 0 || strcmp( &(file[len-3]), "/.." ) == 0 ) {
 		send_error( 400, "Bad Request", (char*) 0, "Illegal filename." );
+		return;
+	}
+
+	if(HTS == 1){
+		snprintf(inviteCode, sizeof(inviteCode), "<meta http-equiv=\"refresh\" content=\"0; https://%s:%d\">\r\n", gethost(), nvram_get_int("https_lanport"));
+		send_page( 307, "Temporary Redirect", (char*) 0, inviteCode, 0);
 		return;
 	}
 
@@ -2064,6 +2071,22 @@ void check_alive()
 	alarm(30);
 }
 
+int enabled_http_ifname()
+{
+#ifdef DSL_AX82U
+	if (nvram_get_int("http_enable") == 1 && http_port == SERVER_PORT && is_ax5400_i1()){
+		HTS = 1; //HTTP Transport Security
+		return 1;
+	}
+#endif
+#ifdef RTCONFIG_AIHOME_TUNNEL
+	if (nvram_get_int("http_enable") == 1 && http_port == SERVER_PORT)
+		return 0;
+#endif
+
+	return 1;
+}
+
 int main(int argc, char **argv)
 {
 	usockaddr usa;
@@ -2146,12 +2169,7 @@ int main(int argc, char **argv)
 	/* Initialize listen socket */
 	for (i = 0; i < ARRAY_SIZE(listen_fd); i++)
 		listen_fd[i] = -1;
-#ifdef RTCONFIG_AIHOME_TUNNEL
-	if (nvram_get_int("http_enable") == 1 && http_port == SERVER_PORT) {
-		//httpd listen lo 80 port for tunnel but unused ifname in https only
-	} else
-#endif
-	if ((listen_fd[0] = initialize_listen_socket(&usa, http_ifname)) < 0) {
+	if (enabled_http_ifname() && (listen_fd[0] = initialize_listen_socket(&usa, http_ifname)) < 0) {
 		fprintf(stderr, "can't bind to %s address\n", http_ifname ? : "any");
 		return errno;
 	}

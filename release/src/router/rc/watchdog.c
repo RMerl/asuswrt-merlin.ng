@@ -3669,6 +3669,8 @@ void btn_check(void)
 				eval("wl", "-i", "eth6", "ledbh", "7", "7");
 #elif defined(RTAX68U)
 				eval("wl", "-i", "eth5", "ledbh", "7", "7");
+#elif defined(RTAC68U_V4)
+				eval("wl", "-i", "eth6", "ledbh", "10", "7");
 #elif defined(RTAX56U)
 				eval("wl", "-i", "eth5", "ledbh", "0", "25");
 #elif defined(RPAX56)
@@ -3708,6 +3710,8 @@ void btn_check(void)
 				eval("wl", "-i", "eth7", "ledbh", "15", "7");
 #elif defined(RTAX68U)
 				eval("wl", "-i", "eth6", "ledbh", "7", "7");
+#elif defined(RTAC68U_V4)
+				eval("wl", "-i", "eth5", "ledbh", "10", "7");
 #elif defined(RTAX56U)
 				eval("wl", "-i", "eth6", "ledbh", "0", "25");
 #elif defined(RPAX56)

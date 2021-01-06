@@ -639,6 +639,9 @@ int issyspara(char *p)
 	// skip checking for wl[]_, wan[], lan[]_
 	if ((strstr(p, "wl") && strncmp(p+3, "_failed", 7)) || strstr(p, "wan") || strstr(p, "lan")
 		|| strstr(p, "vpn_server") || strstr(p, "vpn_client")
+#ifdef RTCONFIG_DSL
+		|| !strncmp(p, "dsl", 3)
+#endif
 	)
 		return 1;
 

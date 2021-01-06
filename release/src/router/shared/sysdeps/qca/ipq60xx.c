@@ -974,8 +974,6 @@ rtkswitch_Port_phyStatus(unsigned int port_mask)
 		///// temporarily disable PLC
 		if (nvram_match("notuseplc", "1"))
 			return 0;
-		if (nvram_get_int("shell_timeout") == 0)
-			return 0;
 		///// end of temporarily disable PLC
 	}
 #endif
@@ -1001,8 +999,6 @@ rtkswitch_Port_phyLinkRate(unsigned int port_mask)
 		}
 		///// temporarily disable PLC
 		if (nvram_match("notuseplc", "1"))
-			return 0;
-		if (nvram_get_int("shell_timeout") == 0)
 			return 0;
 		///// end of temporarily disable PLC
 	}

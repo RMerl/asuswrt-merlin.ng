@@ -10,7 +10,7 @@ MODELS_HAVE_USB3 = GT-AC2900 \
 	RT-AC5300 GT-AC5300 GT-AC9600 RT-AC95U RT-AC3100 RT-AC3200 GT-AX11000\
 	RT-AC55U RT-AC55UHP RT-AC58U 4G-AC53U RT-AC82U RT-AC88Q RT-AX89U \
 	RT-AC86U RT-AC88U RT-AX88U RT-AC87U RT-AC85U RT-AC68U RT-AC68A 4G-AC68U RT-AC65U RT-AC56S RT-AC56U RT-AX92U RT-AX95Q RT-AX56_XD4 CT-AX56_XD4 RT-AX58U TUF-AX3000 RT-AX82U RT-AX56U GS-AX3000 GS-AX5400 \
-	RT-AX86U RT-AX5700 RT-AX68U \
+	RT-AX86U RT-AX5700 RT-AX68U RT-AC68U_V4 \
 	RT-N65U \
 	RT-N18U \
 	RP-AC68U \
@@ -18,7 +18,7 @@ MODELS_HAVE_USB3 = GT-AC2900 \
 
 MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AX88U RT-AC86U GT-AC2900 RT-AC3100 RT-AC5300 GT-AC5300 GT-AXY16000 RT-AX89U GT-AC9600 DSL-AC68U \
 	RT-AC68U 4G-AC68U RT-AC68R RT-AC68W RT-AC68RW GT-AX11000 RT-AC1900P RT-AC67U RT-AC56U RT-AC56R RT-AC85U RT-AC85P RT-AC65U BRT-AC828 BLUECAVE RT-AX92U RT-AX95Q RT-AX56_XD4 CT-AX56_XD4 RT-AX58U TUF-AX3000 RT-AX82U GS-AX3000 GS-AX5400 RT-AX56U MAP-AC1300 \
-	RT-AX86U RT-AX5700 RT-AX68U DSL-AX82U \
+	RT-AX86U RT-AX5700 RT-AX68U RT-AC68U_V4 DSL-AX82U \
 	MAP-AC2200 MAP-AC2200V RT-AC95U \
 	GT-AXE11000
 
@@ -87,10 +87,10 @@ endif
 endif
 
 ifeq ($(RTCONFIG_AMAS),y)
-ifneq ($(RTCONFIG_DSL),y)
+ifneq ($(BUILD_NAME),DSL-AC68U)
 	cp $(TOP)/www/sysdep/BLUECAVE/www/Advanced_Wireless_Survey.asp $(INSTALLDIR)/www/Advanced_Wireless_Survey.asp
 	cp $(TOP)/www/sysdep/BLUECAVE/www/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
-	cp $(TOP)/www/sysdep/BLUECAVE/www/mobile $(INSTALLDIR)/www/mobile -rf
+	cp $(TOP)/www/sysdep/BLUECAVE/www/mobile $(INSTALLDIR)/www/ -rf
 	cp $(TOP)/www/sysdep/BLUECAVE/www/require/modules/modem.js $(INSTALLDIR)/www/require/modules/ -rf
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smart_connect_concept.gif
 ifneq ($(RTCONFIG_WIFI_SON),y)
@@ -101,6 +101,19 @@ endif
 	rm -rf $(INSTALLDIR)/www/qis_m
 	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
 endif
+endif
+
+ifneq ($(BUILD_NAME),DSL-AX82U)
+	rm -rf $(INSTALLDIR)/www/mobile/js/jstz.min.js
+	rm -rf $(INSTALLDIR)/www/mobile/pages/bridge_cfg_tmp_page.html
+	rm -rf $(INSTALLDIR)/www/mobile/pages/dsl_iptv_page.html
+	rm -rf $(INSTALLDIR)/www/mobile/pages/ipoa_cfg_tmp_page.html
+	rm -rf $(INSTALLDIR)/www/mobile/pages/manual_setting_page.html
+	rm -rf $(INSTALLDIR)/www/mobile/pages/mer_cfg_page.html
+	rm -rf $(INSTALLDIR)/www/mobile/pages/mer_cfg_tmp_page.html
+	rm -rf $(INSTALLDIR)/www/mobile/pages/ppp_cfg_page.html
+	rm -rf $(INSTALLDIR)/www/mobile/pages/ppp_cfg_tmp_page.html
+	rm -rf $(INSTALLDIR)/www/mobile/pages/PTM_manual_setting_page.html
 endif
 
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), $(MODELS_QIS_SLIDER)))
@@ -257,9 +270,6 @@ endif
 ifeq ($(RTCONFIG_DSL),y)
 	rm -rf $(INSTALLDIR)/www/qis/QIS_welcome.htm
 	rm -rf $(INSTALLDIR)/www/qis/QIS_manual.htm
-	rm -rf $(INSTALLDIR)/www/images/New_ui/rt.jpg
-	rm -rf $(INSTALLDIR)/www/images/New_ui/ap.jpg
-	rm -rf $(INSTALLDIR)/www/images/New_ui/re.jpg
 	rm -rf $(INSTALLDIR)/www/Advanced_OperationMode_Content.asp
 else
 	rm -rf $(INSTALLDIR)/www/Main_Spectrum_Content.asp
@@ -509,7 +519,7 @@ ifneq ($(RTCONFIG_SNMPD), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_SNMP_Content.asp
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC3200 RT-AC5300 GT-AC5300 GT-AC9600 RT-AC86U GT-AC2900 RT-AC88U RT-AX88U RT-AC3100 GT-AX11000 RT-AX92U RT-AX95Q RT-AX56_XD4 CT-AX56_XD4 RT-AX58U TUF-AX3000 DSL-AX82U RT-AX82U RT-AX56U RP-AX56 RT-AX86U RT-AX5700 RT-AX68U GT-AXE11000 RT-AX55 GS-AX3000 GS-AX5400))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC3200 RT-AC5300 GT-AC5300 GT-AC9600 RT-AC86U GT-AC2900 RT-AC88U RT-AX88U RT-AC3100 GT-AX11000 RT-AX92U RT-AX95Q RT-AX56_XD4 CT-AX56_XD4 RT-AX58U TUF-AX3000 DSL-AX82U RT-AX82U RT-AX56U RP-AX56 RT-AX86U RT-AX5700 RT-AX68U RT-AC68U_V4 GT-AXE11000 RT-AX55 GS-AX3000 GS-AX5400))
 	rm -rf $(INSTALLDIR)/www/Advanced_Smart_Connect.asp
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smart_connect.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smart_connect_concept.gif
@@ -548,7 +558,7 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), 4G-AC53U 4G-AC55U 4G-AC68U))
 	rm -rf $(INSTALLDIR)/www/Advanced_Modem_Content.asp
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC88U RT-AX88U RT-AC3100 RT-AC5300 GT-AC5300 GT-AC9600 RT-AC86U GT-AC2900 RT-AC3200 GT-AX11000 RT-AX92U RT-AX95Q RT-AX56_XD4 CT-AX56_XD4 RT-AX58U TUF-AX3000 DSL-AX82U RT-AX82U RT-AX56U RT-AX86U RT-AX5700 RT-AX68U GT-AXE11000 GS-AX3000 GS-AX5400))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC88U RT-AX88U RT-AC3100 RT-AC5300 GT-AC5300 GT-AC9600 RT-AC86U GT-AC2900 RT-AC3200 GT-AX11000 RT-AX92U RT-AX95Q RT-AX56_XD4 CT-AX56_XD4 RT-AX58U TUF-AX3000 DSL-AX82U RT-AX82U RT-AX56U RT-AX86U RT-AX5700 RT-AX68U RT-AC68U_V4 GT-AXE11000 GS-AX3000 GS-AX5400))
 	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
 	rm -rf $(INSTALLDIR)/www/css/effect.css
 	rm -rf $(INSTALLDIR)/www/qis_m
@@ -812,8 +822,10 @@ endif
 ifneq ($(RTCONFIG_ROG_UI),y)   
 	rm -rf $(INSTALLDIR)/www/fonts/ROG_Fonts-Regular.otf
 	rm -rf $(INSTALLDIR)/www/fonts/ROG_Fonts-Regular.woff
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME),  GS-AX5400 GS-AX3000))
 	rm -rf $(INSTALLDIR)/www/fonts/xolonium.regular.otf
 	rm -rf $(INSTALLDIR)/www/fonts/xolonium.regular.woff
+endif
 	rm -rf $(INSTALLDIR)/www/images/triLvGameAcceleration
 	rm -rf $(INSTALLDIR)/www/css/triLvGameAcceleration.css
 	rm -rf $(INSTALLDIR)/www/ajax_wanlink.asp

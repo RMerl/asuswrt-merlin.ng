@@ -206,9 +206,6 @@ function initial(){
 	httpApi.faqURL("1037370", function(url){document.getElementById("ntp_faq").href=url;});
 	show_http_clientlist();
 	showNTPList();
-	if(odmpid == "DSL-AX5400"){
-		document.getElementById("ntp_pull_arrow").style.display = "";
-	}
 	display_spec_IP(document.form.http_client.value);
 
 	if(reboot_schedule_support){
@@ -325,18 +322,27 @@ function initial(){
 	}
 
 	/* MODELDEP */
-//	if(tmo_support){
-	if(1){
-		document.getElementById("telnet_tr").style.display = "none";
+	if(isSupport("is_ax5400_i1")){
+		document.getElementById("ntp_pull_arrow").style.display = "";
+	}
+
+
+	if(isSupport("is_ax5400_i1") || tmo_support){
+		document.getElementById("telnetd_sshd_table").style.display = "none";
 		document.form.telnetd_enable[0].disabled = true;
 		document.form.telnetd_enable[1].disabled = true;
+		document.form.sshd_enable.disabled = true;
 	}
 	else{
-		document.getElementById("telnet_tr").style.display = "";
-		document.form.telnetd_enable[0].disabled = false;
-		document.form.telnetd_enable[1].disabled = false;
+		document.getElementById("telnetd_sshd_table").style.display = "";
+//		document.form.telnetd_enable[0].disabled = false;
+//		document.form.telnetd_enable[1].disabled = false;
 		telnet_enable(httpApi.nvramGet(["telnetd_enable"]).telnetd_enable);
 	}
+
+	document.getElementById("telnet_tr").style.display = "none";
+	document.form.telnetd_enable[0].disabled = true;
+	document.form.telnetd_enable[1].disabled = true;
 
 	if(powerline_support)
 		document.getElementById("plc_sleep_tr").style.display = "";
@@ -2323,13 +2329,13 @@ function pullNTPList(obj){
 				</tr>
 			</table>
 
-			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">
+			<table id="telnetd_sshd_table" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">
 				<thead>
 					<tr>
 					  <td colspan="2"><#qis_service#></td>
 					</tr>
 				</thead>
-				<tr id="telnet_tr">
+				<tr id="telnet_tr" style="display:none;">
 					<th><#Enable_Telnet#></th>
 					<td>
 						<input type="radio" name="telnetd_enable" value="1" onchange="telnet_enable(this.value);" <% nvram_match_x("LANHostConfig", "telnetd_enable", "1", "checked"); %>><#checkbox_Yes#>

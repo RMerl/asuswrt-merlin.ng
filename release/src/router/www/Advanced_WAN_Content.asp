@@ -141,6 +141,8 @@ function initial(){
 		showhide("dnssec_strict_tr", "<% nvram_get("dnssec_enable"); %>" == "1" ? 1 : 0);
 	}
 
+	change_nat(<% nvram_get("wan_nat_x"); %>);
+
 	if(yadns_support){
 		if(yadns_enable != 0 && yadns_mode != -1){
 			document.getElementById("yadns_hint").style.display = "";
@@ -1430,6 +1432,12 @@ function showDiableDHCPclientID(clientid_enable){
 		document.form.wan_clientid.style.display = "";
 	}
 }
+
+function change_nat(state) {
+	if (isSupport("bcm_kf_netfilter")) {
+		document.getElementById("nat_type_tr").style.display = (state ? "" : "none");
+	}
+}
 </script>
 </head>
 
@@ -1550,7 +1558,8 @@ function showDiableDHCPclientID(clientid_enable){
 									<input type="radio" name="wan_nat_x" class="input" value="1" onclick="change_nat(1);" <% nvram_match("wan_nat_x", "1", "checked"); %>><#checkbox_Yes#>
 									<input type="radio" name="wan_nat_x" class="input" value="0" onclick="change_nat(0);" <% nvram_match("wan_nat_x", "0", "checked"); %>><#checkbox_No#>
 								</td>
-							</tr>				
+							</tr>
+
 							<tr id="nat_type_tr" style="display:none;">
 								<th>NAT Type</th>
 								<td>

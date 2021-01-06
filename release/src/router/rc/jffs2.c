@@ -122,9 +122,34 @@ unsigned int get_root_type(void)
 #endif
 }
 
+static int check_mountpoint(char *mountpoint)
+{
+	FILE *procpt;
+	char line[256], devname[48], mpname[48], system_type[10], mount_mode[128];
+	int dummy1, dummy2;
+
+	if ((procpt = fopen("/proc/mounts", "r")) != NULL)
+	while (fgets(line, sizeof(line), procpt)) {
+		memset(mpname, 0x0, sizeof(mpname));
+		if (sscanf(line, "%s %s %s %s %d %d", devname, mpname, system_type, mount_mode, &dummy1, &dummy2) != 6)
+			continue;
+
+		if (!strcmp(mpname, mountpoint))
+			return 1;
+	}
+
+	if (procpt)
+		fclose(procpt);
+
+	return 0;
+}
+
 int check_in_rootfs(const char *mount_point, const char *msg_title, int format)
 {
 	struct statfs sf;
+
+	if (!check_mountpoint((char *)mount_point)) return 1;
+
 	if (statfs(mount_point, &sf) == 0) {
 		if (sf.f_type != get_root_type()) {
 			// already mounted

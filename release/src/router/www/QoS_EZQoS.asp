@@ -258,23 +258,27 @@
 // WAN
 <% wanlink(); %>
 <% first_wanlink(); %>
+<% secondary_wanlink(); %>
 var wans_dualwan_orig = '<% nvram_get("wans_dualwan"); %>';
 var dualwan_type = wans_dualwan_orig.split(" ");
 var wans_flag = (wans_dualwan_orig.search("none") != -1 || !parent.dualWAN_support) ? 0 : 1;
 var dsllink_statusstr = "";
-if(wans_flag == 1)	//dual_wan enabled
+var dsllink_statusstr_secondary = "";
+if(wans_flag == 1){	//dual_wan enabled
 	dsllink_statusstr = first_wanlink_statusstr();
+	dsllink_statusstr_secondary = secondary_wanlink_statusstr();
+}
 else
 	dsllink_statusstr = wanlink_statusstr();
-var dsl_DataRateDown = parseInt("<% nvram_get("dsllog_dataratedown"); %>");
-var dsl_DataRateUp = parseInt("<% nvram_get("dsllog_datarateup"); %>");
+var dsl_DataRateUp = parseInt("<% nvram_get("dsllog_datarateup"); %>");			//connection UL speed
+var dsl_DataRateDown = parseInt("<% nvram_get("dsllog_dataratedown"); %>");		//connection DL speed
 
 //HND_ROUTER HW NAT (fc_disable/runner_disable) ON: 0/0 ; OFF: 1/1
 var fc_disable_orig = '<% nvram_get("fc_disable"); %>';
 var runner_disable_orig = '<% nvram_get("runner_disable"); %>';
 
-var qos_xobw_orig = parseInt(httpApi.nvramGet(["qos_xobw"], true).qos_xobw);
-var qos_xobw1_orig = parseInt(httpApi.nvramGet(["qos_xobw1"], true).qos_xobw1);
+var qos_xobw_orig = parseInt(httpApi.nvramGet(["qos_xobw"], true).qos_xobw);	//shapping UL speed /PrimaryWAN
+var qos_xobw1_orig = parseInt(httpApi.nvramGet(["qos_xobw1"], true).qos_xobw1);	//shapping UL speed /SecondaryWAN
 
 var bwdpi_app_rulelist = "<% nvram_get("bwdpi_app_rulelist"); %>".replace(/&#60/g, "<");
 var category_title = ["", "<#Adaptive_Game#>", "<#Adaptive_Stream#>", "<#Adaptive_Message#>", "<#Adaptive_WebSurf#>","<#Adaptive_FileTransfer#>", "<#Adaptive_Others#>", "<#Adaptive_eLearning#>"];
@@ -546,22 +550,49 @@ function init_changeScale(){
 	var upload = document.form.qos_obw.value;
 	var download = document.form.qos_ibw.value;
 
-	if(dsl_support		//MODELDEP: DSL-AC68U,DSLAC68R,DSL-AX82U
-	&& wans_dualwan_orig.search("dsl") >= 0 && dsllink_statusstr == "Connected"
-	&& ((upload == "" || upload == "0") && (download == "" || download == "0"))){
+	if(dualwan_type[0].toLowerCase() == "dsl"
+	&& ((upload == "" || upload == "0") && (download == "" || download == "0"))
+	&& qos_xobw_orig > 0
+	){
+		document.form.obw.value = (qos_xobw_orig/1024).toFixed(2);
+		document.form.ibw.value = (dsl_DataRateDown/1024).toFixed(2);
+	}
+	else if(dualwan_type[0].toLowerCase() == "dsl" && dsllink_statusstr == "Connected"
+	&& ((upload == "" || upload == "0") && (download == "" || download == "0"))
+	&& dsl_DataRateUp > 0
+	){
 
-		document.form.obw.value = dsl_DataRateUp/1024;
-		document.form.ibw.value = dsl_DataRateDown/1024;
+		document.form.obw.value = (dsl_DataRateUp/1024).toFixed(2);
+		document.form.ibw.value = (dsl_DataRateDown/1024).toFixed(2);
 	}
 	else{
-		document.form.obw.value = upload/1024;
-		document.form.ibw.value = download/1024;
+		document.form.obw.value = (upload/1024).toFixed(2);
+		document.form.ibw.value = (download/1024).toFixed(2);
 	}
-	if(mtwancfg_support) {
+
+	if(mtwancfg_support &&  wans_flag == "1") {
 		var upload1 = document.form.qos_obw1.value;
 		var download1 = document.form.qos_ibw1.value;
-		document.form.obw1.value = upload1/1024;
-		document.form.ibw1.value = download1/1024;
+
+		if(dualwan_type[1].toLowerCase() == "dsl"
+		&& ((upload1 == "" || upload1 == "0") && (download1 == "" || download1 == "0"))
+		&& qos_xobw1_orig > 0
+		){
+			document.form.obw1.value = (qos_xobw1_orig/1024).toFixed(2);
+			document.form.ibw1.value = (dsl_DataRateDown/1024).toFixed(2);
+		}
+		else if(dualwan_type[1].toLowerCase() == "dsl" && dsllink_statusstr_secondary == "Connected"
+		&& ((upload1 == "" || upload1 == "0") && (download1 == "" || download1 == "0"))
+		&& dsl_DataRateUp > 0
+		){
+
+			document.form.obw1.value = (dsl_DataRateUp/1024).toFixed(2);
+			document.form.ibw1.value = (dsl_DataRateDown/1024).toFixed(2);
+		}
+		else{
+			document.form.obw1.value = (upload1/1024).toFixed(2);
+			document.form.ibw1.value = (download1/1024).toFixed(2);
+		}
 	}
 }
 
@@ -579,6 +610,10 @@ function switchPage(page){
 }
 
 function validForm(){
+	var error_obw=0;
+	var error_obw1=0;
+	var error_ibw=0;
+	var error_ibw1=0;
 	if(document.form.qos_enable.value == 0 && document.form.qos_enable_orig.value == 0){
 		if(geforceNow_support){
 			if(document.form.nvgfn_enable.value == orig_nvgfn_enable){
@@ -596,49 +631,72 @@ function validForm(){
 			if(!reset_wan_to_fo.check_status())
 				return false;
 		}
+
 		if(qos_type != 2){	//not Bandwidth Limiter
-			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && document.form.obw.value.length == 0){	//To check field is empty
-				alert("<#JS_fieldblank#>");
-				document.form.obw.focus();
-				document.form.obw.select();
-				return false;
-			}
-			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && document.form.obw.value == 0){		// To check field is 0 && Traditional QoS
+
+			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.obw.value.length == 0 || document.form.obw.value == 0)){		// To check field is 0 && Traditional QoS
 				alert("Upload Bandwidth can not be 0");	/* untranslated */
 				document.form.obw.focus();
 				document.form.obw.select();
-				return false;
+				error_obw++;
 
 			}
+			else if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.obw, 0, 9999999999, "")){
+				error_obw++;
+			}
+
 			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && document.form.obw.value.split(".").length > 2){		//To check more than two point symbol
 				alert("The format of field of upload bandwidth is invalid"); /* untranslated */
 				document.form.obw.focus();
 				document.form.obw.select();
-				return false;
+				error_obw++;
 			}
-			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.obw, 0, 9999999999, "")){
+
+			if(error_obw > 0){
+
+				if(qos_xobw_orig > 0){
+					document.form.obw.value = (qos_xobw_orig/1024).toFixed(2);
+				}
+				else if(dualwan_type[0].toLowerCase() == "dsl" && dsllink_statusstr == "Connected" && dsl_DataRateUp > 0){
+					document.form.obw.value = (dsl_DataRateUp/1024).toFixed(2);
+				}
+				else if(dualwan_type[0].toLowerCase() == "dsl"){
+					document.form.obw.value = "100";
+				}
+				else{
+					document.form.obw.value = "1000";	
+				}
 				return false;
 			}
 
-			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && document.form.ibw.value.length == 0){
-				alert("<#JS_fieldblank#>");
-				document.form.ibw.focus();
-				document.form.ibw.select();
-				return false;
-			}
-			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && document.form.ibw.value == 0){		// To check field is 0 && Traditional QoS
+			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.ibw.value.length == 0 || document.form.ibw.value == 0)){		// To check field is 0 && Traditional QoS
 				alert("Download Bandwidth can not be 0");	/* untranslated */
 				document.form.ibw.focus();
 				document.form.ibw.select();
-				return false;
+				error_ibw++;
 			}
+			else if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.ibw, 0, 9999999999, "")){
+				error_ibw++;
+			}
+
 			if(((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && document.form.ibw.value.split(".").length > 2){
 				alert("The format of field of download bandwidth is invalid");	/* untranslated */
 				document.form.ibw.focus();
 				document.form.ibw.select();
-				return false;
+				error_ibw++;
 			}
-			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.ibw, 0, 9999999999, "")){
+
+			if(error_ibw > 0){
+
+				if(dualwan_type[0].toLowerCase() == "dsl"  && dsllink_statusstr == "Connected" && dsl_DataRateDown > 0){
+					document.form.ibw.value = (dsl_DataRateDown/1024).toFixed(2);
+				}
+				else if(dualwan_type[0].toLowerCase() == "dsl"){
+					document.form.ibw.value = "300";
+				}
+				else{
+					document.form.ibw.value = "1000";
+			}
 				return false;
 			}
 
@@ -659,7 +717,81 @@ function validForm(){
 			document.form.qos_ibw.disabled = false;
 			document.form.qos_obw.value = document.form.obw.value*1024;
 			document.form.qos_ibw.value = document.form.ibw.value*1024;
-			if(mtwancfg_support) {
+
+
+
+			if(mtwancfg_support && wans_flag == "1") {
+
+				if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.obw1.value.length == 0 || document.form.obw1.value == 0)){		// To check field is 0 && Traditional QoS
+					alert("Upload Bandwidth can not be 0");	/* untranslated */
+					document.form.obw1.focus();
+					document.form.obw1.select();
+					error_obw1++;
+
+				}
+				else if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.obw1, 0, 9999999999, "")){
+					error_obw1++;
+				}
+
+				if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && document.form.obw1.value.split(".").length > 2){		//To check more than two point symbol
+					alert("The format of field of upload bandwidth is invalid"); /* untranslated */
+					document.form.obw1.focus();
+					document.form.obw1.select();
+					error_obw1++;
+				}
+
+				if(error_obw1 > 0){
+
+					if(qos_xobw1_orig > 0){
+						document.form.obw1.value = (qos_xobw1_orig/1024).toFixed(2);
+					}
+					else if(dualwan_type[1].toLowerCase() == "dsl" && dsllink_statusstr_secondary == "Connected" && dsl_DataRateUp > 0){
+						document.form.obw1.value = (dsl_DataRateUp/1024).toFixed(2);
+					}
+					else if(dualwan_type[1].toLowerCase() == "dsl"){
+						document.form.obw1.value = "100";
+					}
+					else{
+						document.form.obw1.value = "1000";	
+					}
+					return false;
+				}
+
+				if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.ibw1.value.length == 0 || document.form.ibw1.value == 0)){		// To check field is 0 && Traditional QoS
+					alert("Download Bandwidth can not be 0");	/* untranslated */
+					document.form.ibw1.focus();
+					document.form.ibw1.select();
+					error_ibw1++;
+				}
+				else if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.ibw1, 0, 9999999999, "")){
+					error_ibw1++;
+				}
+
+				if(((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && document.form.ibw1.value.split(".").length > 2){
+					alert("The format of field of download bandwidth is invalid");	/* untranslated */
+					document.form.ibw1.focus();
+					document.form.ibw1.select();
+					error_ibw1++;
+				}
+
+				if(error_ibw1 > 0){
+
+					if(dualwan_type[1].toLowerCase() == "dsl"  && dsllink_statusstr_secondary == "Connected" && dsl_DataRateDown > 0){
+						document.form.ibw1.value = (dsl_DataRateDown/1024).toFixed(2);
+					}
+					else if(dualwan_type[1].toLowerCase() == "dsl"){
+						document.form.ibw1.value = "300";
+					}
+					else{
+						document.form.ibw1.value = "1000";	
+					}
+					return false;
+				}
+
+				if(qos_type == 1 && document.getElementById('auto').checked){
+					document.form.obw1.value = 0;
+					document.form.ibw1.value = 0;
+				}
 
 				if(qos_xobw1_orig > 0){
 					if((qos_xobw1_orig/1024).toFixed(2) < parseFloat(document.form.obw1.value)){
@@ -669,6 +801,7 @@ function validForm(){
 						return false;
 					}
 				}
+
 				document.form.qos_obw1.disabled = false;
 				document.form.qos_ibw1.disabled = false;
 				document.form.qos_obw1.value = document.form.obw1.value*1024;

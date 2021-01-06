@@ -26,7 +26,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue Jul 14 14:05:56 2020
+ * Date: Mon Dec 14 14:06:38 2020
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX89X_GPL_386_21790/release/src-qca-ipq806x/linux/linux-4.4.x/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX89X_GPL_386_22790/release/src-qca-ipq806x/linux/linux-4.4.x.spf11.0"
 #define TMCFG_KERN_ARCH "arm"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n

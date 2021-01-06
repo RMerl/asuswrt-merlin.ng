@@ -47,8 +47,8 @@ p{
 }
 </style>
 <script type="text/javascript" src="/state.js"></script>
-<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/tmmenu.js"></script>
 <script>
@@ -78,17 +78,19 @@ var mapscanning = 0;
 
 var clientMacUploadIcon = new Array();
 
+var wl_nband_isWL_map = {"2.4 GHz":"1", "5 GHz":"2", "5 GHz-1":"2", "5 GHz-2":"3", "6 GHz":"4"};
 function generate_wireless_band_list(){
 	if(wl_nband_title.length == 1) return false;
 
 	var code = '<ul>';
 	for(var i=0; i<wl_nband_title.length; i++){
+		var isWL_id = wl_nband_isWL_map[wl_nband_title[i]];
 		code += '<li><a onclick="switchTab_drawClientList(\'';
-		code += i;
+		code += isWL_id;
 		code += '\')">&nbsp;&nbsp;';
 		code += wl_nband_title[i];
 		code += '&nbsp;&nbsp;(<b style="font-size:11px;" id="liWirelessNum';
-		code += i;
+		code += isWL_id;
 		code += '">0</b>)</a></li>';
 	}
 	code += '</ul>';
@@ -128,9 +130,10 @@ function drawClientList(tab){
 		if(tab == 'online' && !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
 		if((tab == 'wired' && clientObj.isWL != 0) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
 		if((tab == 'wireless' && clientObj.isWL == 0) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
-		if((tab == 'wireless0' && (clientObj.isWL == 0 || clientObj.isWL == 2 || clientObj.isWL == 3)) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
-		if((tab == 'wireless1' && (clientObj.isWL == 0 || clientObj.isWL == 1 || clientObj.isWL == 3)) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
-		if((tab == 'wireless2' && (clientObj.isWL == 0 || clientObj.isWL == 1 || clientObj.isWL == 2)) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
+		if((tab == 'wireless1' && clientObj.isWL != 1) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
+		if((tab == 'wireless2' && clientObj.isWL != 2) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
+		if((tab == 'wireless3' && clientObj.isWL != 3) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
+		if((tab == 'wireless4' && clientObj.isWL != 4) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
 		if(tab == 'custom' && clientObj.from != "customList"){i++; pagesVar.endIndex++; continue;}
 		var clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
 		if(clientName.toLowerCase().indexOf(document.getElementById("searchingBar").value.toLowerCase()) == -1){i++; pagesVar.endIndex++; continue;}
@@ -248,7 +251,7 @@ function drawClientList(tab){
 			clientHtmlTd += '<div class="' + radioIcon_css + ' radio_' + rssi_t +'" title="' + connectModeTip + '"></div>';
 			if(clientObj.isWL != 0) {
 				var bandClass = (navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)) ? "band_txt_chrome" : "band_txt";
-				clientHtmlTd += '<div class="band_block"><span class='+bandClass+'>' + wl_nband_title[clientObj.isWL-1].replace("Hz", "").replace(/\s*/g,"") + '</span></div>';
+				clientHtmlTd += '<div class="band_block"><span class='+bandClass+'>' + isWL_map[clientObj.isWL]["text"] + '</span></div>';
 			}
 			clientHtmlTd += '</div>';
 		}
@@ -322,7 +325,8 @@ function drawClientList(tab){
 
 	if(wl_nband_title.length > 1){
 		for(var i=0; i<wl_nband_title.length; i++){
-			document.getElementById("liWirelessNum" + i).innerHTML = totalClientNum.wireless_ifnames[i];
+			var isWL_id = wl_nband_isWL_map[wl_nband_title[i]];
+			document.getElementById("liWirelessNum" + isWL_id).innerHTML = totalClientNum.wireless_ifnames[parseInt(isWL_id)-1];
 		}
 	}
 
@@ -383,7 +387,7 @@ function retOverLibStr(client){
 	if(client.isITunes)
 		overlibStr += "<p><#Device_service_iTune#></p>YES";
 	if(client.isWL > 0){
-		overlibStr += "<p><#Wireless_Radio#>:</p>" + wl_nband_title[client.isWL-1] + " (" + client.rssi + " dBm)";
+		overlibStr += "<p><#Wireless_Radio#>:</p>" + isWL_map[client.isWL]["text"].replace("G", " GHz") + " (" + client.rssi + " dBm)";
 		if(stainfo_support) {
 			overlibStr += "<p>Tx Rate:</p>" + ((client.curTx != "") ? client.curTx : "-");
 			overlibStr += "<p>Rx Rate:</p>" + ((client.curRx != "") ? client.curRx : "-");

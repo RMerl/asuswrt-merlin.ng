@@ -1,0 +1,390 @@
+<script type="text/JavaScript" src="mobile/js/jstz.min.js"></script>
+<style>
+.cfg_val{
+	font-size:30px;
+	color:#FC0;
+}
+span{
+	border:0px solid #FFFFFF;
+	color:#FFFFFF;
+	font-size:24px;
+	font-family:Arial, Helvetica, sans-serif;
+	/*width:27px;*/
+	text-align:right;
+	margin:0px auto;
+	ime-mode:disabled;
+}
+
+
+#iptv_manual_setting{
+	font-size:24px;
+	margin-left:3%;
+	margin-top:-3%;
+}
+
+#ISP_table{
+	font-size:22px;
+	color:#FFF;
+}
+#specialisp{
+	width: 20px;
+	height: 20px;
+}
+.stb_msg{
+	font-size:22px;
+	color:#FFCC00;
+	margin-left:35px;
+}
+.QISGeneralFont{
+	font-size:22px;
+	font-family:Arial, Helvetica, sans-serif;
+	color:#66CCFF;
+	font-weight:bolder;
+	margin-left:35px;
+	margin-top:-32px;
+}
+
+</style>
+<script>
+
+var RAW_ISP_List = [<% get_isp_list("/www/ISP_List.txt"); %>];
+var RAW_ISP_List_IPTV = [<% get_isp_list("/www/ISP_List_IPTV.txt"); %>];
+var RAW_ISP_PTM_List = [<% get_isp_list("/www/ISP_PTM_List.txt"); %>];
+var RAW_ISP_PTM_List_IPTV = [<% get_isp_list("/www/ISP_PTM_List_IPTV.txt"); %>];
+var ISP_List = (wan_type == "PTM")? RAW_ISP_PTM_List : RAW_ISP_List;
+var ISP_List_IPTV = (wan_type == "PTM")? RAW_ISP_PTM_List_IPTV : RAW_ISP_List_IPTV;
+
+var transfer_mode = qisPostData.dslx_transmode; //atm, ptm
+var prctl_val = qisPostData.dsl_proto;
+var prctl_str = "";
+var vpi_val = qisPostData.dsl_vpi;
+var vci_val = qisPostData.dsl_vci;
+var encap_val = qisPostData.dsl_encap;
+var vlanid_val = qisPostData.dsl_vid;
+
+if(prctl_val == "mer") {
+	prctl_str = (transfer_mode=="ptm")?"DHCP":"MER";
+	prctl_val = "2";
+}
+else if(prctl_val == "pppoe") {
+	prctl_str = "PPPoE";
+	prctl_val = "0";
+}
+else {
+	prctl_str = "PPPoA";
+	prctl_val = "1";
+}
+
+var encap_str = "LLC";
+if (encap_val == "1") encap_str = "VC-Mux";
+
+var iptv_num_pvc_val = qisPostData.dsltmp_cfg_iptv_num_pvc;
+var iptv_atm_pvc_str = "";
+var iptv_ptm_pvc_str = "";
+var dsltmp_cfg_iptv_pvclist = decodeURIComponent(qisPostData.dsltmp_cfg_iptv_pvclist);
+
+</script>
+
+<div class="headerBar">
+	<table style="width:100%">
+		<tr>
+			<td style="padding:0;width:17px;">
+				<div style="margin-right:20px;">
+					<a href="#navigation">
+						<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+					</a>
+				</div>
+			</td>
+			<td style="padding:0;width:130px;">
+				<div>
+					<div class="icon_logo"></div>
+				</div>
+			</td>
+			<td style="padding:0;">
+				<div class="model_welcome"></div>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="tableContainer">
+	<div class="desktop_left_field">
+		<div>
+			<div class="titleMain"><#Internet#></div>
+			<div class="titleSub"><#QKSet_ISP_head#></div>
+		</div>
+	</div>
+	<div class="table_td">
+		<div class="pageDesc"><#PPPConnection_x_HostNameForISP_sectionname#></div>
+
+		<div class="pageDesc"></div>
+		<div id="hint_msg"></div>
+
+		<div>
+			<div class="inputTitleContainer">
+				<div class="inputTitle"><#Manual_Setting_contry#></div>
+			</div>
+			<div class="inputContainer">
+				<select id="CountryList_iptv" class="optionInput"></select>
+			</div>
+		</div>
+
+		<div>
+			<div class="inputTitleContainer">
+				<div class="inputTitle"><#HSDPAConfig_ISP_itemname#> & <#qis_service#></div>
+			</div>
+			<div class="inputContainer">
+				<select id="ISPnServiceList_iptv" class="optionInput"></select>
+				<span id="STBPortMsg" class="hint_yellow">Please connect the IPTV STB to LAN Port 1</span>	<!-- Untranslated -->
+			</div>
+		</div>
+		
+		<!-- Action Button -->
+		<div class="footer_desktop">
+			<div class="desktop_abortBtn" onclick='abort.dsl_iptv()'><#CTL_prev#></div>
+			<div class="desktop_applyBtn" onclick="apply.dsl_iptv();"><#CTL_next#></div>
+		</div>
+		<div class="footer_mobile">
+			<table style="width:100%;" cellpadding="0" cellspacing="0">
+			<tr>
+				<td class="mobileAbort" style="width:50%" onclick='abort.dsl_iptv()'>
+					<div class="mobile_abortBtn"><#CTL_prev#></div>
+				</td>
+				<td class="mobileApply" onclick="apply.dsl_iptv();">
+					<div class="mobile_applyBtn"><#CTL_next#></div>
+				</td>
+			</tr>
+			</table>
+		</div>
+
+	</div>
+</div>
+<div class='footerPadding'></div>
+
+<script>
+
+	function showCountryList_iptv(){
+		//var code = "";
+		var showed_country = "";
+		$('#CountryList_iptv').empty();
+		//code +="<select name='country' onchange='showISPList(this.value);' class='input_option'>";
+		$('#CountryList_iptv').append($('<option>', {value: "default", text : "<#Select_menu_default#>"} ));
+		//code +="<option value='default'><#Select_menu_default#></option>";
+		
+		for(var i = 0; i < ISP_List.length; i++){
+			if(ISP_List[i][5] == "")
+				continue;
+
+			//  0     1        2       3   4                      5          6   7    8   9  10 11 12  13  
+			//["757","Taiwan","Taiwan","","HiNet (0, 33, PPPoE)","ADSL+MOD","0","33","0","0","","","1","12"]
+			if(prctl_val == ISP_List[i][8])  {	//proto				
+				if(wan_type == "ATM") {
+					if(vpi_val == ISP_List[i][6]	//vpi
+						&& vci_val == ISP_List[i][7]	//vci
+						&& encap_val == ISP_List[i][9]	//encap
+					) {
+						if(showed_country != ISP_List[i][1]){
+
+							$('#CountryList_iptv').append($('<option>', {value: ISP_List[i][1], text : ISP_List[i][2]} ));
+							//code +="<option value='"+ISP_List[i][1];
+							//code +="'>"+ISP_List[i][2]+"</option>";
+							showed_country = ISP_List[i][1];
+						}
+					}
+				}
+				else {	//PTM
+					if(vlanid_val == ISP_List[i][10]) {	//vlan id
+						if(showed_country != ISP_List[i][1]){
+							$('#CountryList_iptv').append($('<option>', {value: ISP_List[i][1], text : ISP_List[i][2]} ));
+							//code +="<option value='"+ISP_List[i][1];
+							//code +="'>"+ISP_List[i][2]+"</option>";
+							showed_country = ISP_List[i][1];
+						}
+					}
+				}
+			}
+		}
+		
+		//code +="</select>";
+		//document.getElementById("CountryList_iptv").innerHTML = code;
+		$("#CountryList_iptv").change(function(){
+			showISPList($("#CountryList_iptv").val());
+		});
+	}
+
+	function showISPList(country){
+
+		$('#ISPnServiceList_iptv').empty();
+		if(country == "default"){
+			$("#STBPortMsg").hide();
+			//code +="<select id='ISP' name='ISP' onChange='ChgSVC(this.value);' class='input_option'>";
+			$('#ISPnServiceList_iptv').append($('<option>', {value: "default", text : "<#Select_menu_default#>"} ));
+			//code +="<option value='default'><#Select_menu_default#></option>";
+		}
+		//var code = "";
+		var showed_isp = "";
+		var first_element = 0;
+		var sel_idx = "default";
+		
+		for(var i = 0; i < ISP_List.length; i++){
+			if(country == ISP_List[i][1]){
+				if(ISP_List[i][5] == "")
+					continue;
+				if(ISP_List[i][12] == "" && ISP_List[i][13] == "")	//no iptv service
+					continue;			
+				
+				if(prctl_val == ISP_List[i][8])  {	//proto
+					if(wan_type == "ATM") {
+						if(vpi_val == ISP_List[i][6]	//vpi
+							&& vci_val == ISP_List[i][7]	//vci
+							&& encap_val == ISP_List[i][9]	//encap
+						) {
+							if (first_element==0) {
+								first_element=1;
+								sel_idx = i;
+								$('#ISPnServiceList_iptv').append($('<option>', {value: ISP_List[i][0], text : ISP_List[i][4]+", "+ISP_List[i][5]} ));
+								$("#ISPnServiceList_iptv option[value='ISP_List[i][0]']").attr("selected", true);
+								//code +="<option value='"+ISP_List[i][0]+"' selected='selected'>"+ISP_List[i][4]+", "+ISP_List[i][5]+"</option>";
+							}
+							else {
+								$('#ISPnServiceList_iptv').append($('<option>', {value: ISP_List[i][0], text : ISP_List[i][4]+", "+ISP_List[i][5]} ));
+								//code +="<option value='"+ISP_List[i][0]+"'>"+ISP_List[i][4]+", "+ISP_List[i][5]+"</option>";
+							}
+						}
+					}
+					else {	//PTM
+						if(vlanid_val == ISP_List[i][10]) {	//vlan id
+							if (first_element==0) {
+								first_element=1;
+								$('#ISPnServiceList_iptv').append($('<option>', {value: ISP_List[i][0], text : ISP_List[i][4]+", "+ISP_List[i][5]} ));
+								$("#ISPnServiceList_iptv option[value='ISP_List[i][0]']").attr("selected", true);
+								//code +="<option value='"+ISP_List[i][0]+"' selected='selected'>"+ISP_List[i][4]+", "+ISP_List[i][5]+"</option>";
+							}
+							else {
+								$('#ISPnServiceList_iptv').append($('<option>', {value: ISP_List[i][0], text : ISP_List[i][4]+", "+ISP_List[i][5]} ));
+								//code +="<option value='"+ISP_List[i][0]+"'>"+ISP_List[i][4]+", "+ISP_List[i][5]+"</option>";
+							}
+						}
+					}
+				}
+			
+			}
+		}
+		
+		//code +="</select>";
+		//document.getElementById("ISPnServiceList_iptv").innerHTML = code;
+		$("#ISPnServiceList_iptv").change(function(){
+		 	ChgSVC($("#ISPnServiceList_iptv").val());
+		});
+		
+		ChgSVC(sel_idx);
+	}
+	function ChgSVC(idx) {
+		if(idx == "default"){
+			$("#STBPortMsg").hide();
+			return;
+		}
+
+		var STBPM_display=0;
+		var iptv_idx = ISP_List[idx][13];
+		if(iptv_idx != "") {	//iptv idx
+
+			for(var j = 0; j < ISP_List_IPTV.length; j++){
+				if (ISP_List_IPTV[j][0] == iptv_idx && ISP_List_IPTV[j][3] == "3") {
+					STBPM_display=1;
+				}
+			}
+			
+			if(STBPM_display==1){
+
+				if((wan_type == "ATM" && ISP_List[idx][5] == "ADSL+MOD") || (wan_type == "PTM" && ISP_List[idx][5] == "VDSL+MOD"))
+					$("#STBPortMsg").text("Please connect the MOD(STB) to LAN Port 1");
+				else
+					$("#STBPortMsg").text("Please connect the IPTV STB to LAN Port 1");
+		
+				$("#STBPortMsg").show();
+			}
+			else{
+				$("#STBPortMsg").hide();
+			}
+		}
+		else {
+			$("#STBPortMsg").hide();
+		}
+	}
+	function valid_ISP(){
+		if( $("#ISPnServiceList_iptv").val() == "default" )
+			return false;
+		else
+			return true;
+	}
+	function setIptvNumPvc() {
+		var pvc_cnt = 0;
+		var isp_idx = $("#ISPnServiceList_iptv").val();
+		var iptv_idx = ISP_List[isp_idx][13];
+		var dsltmp_cfg_iptv_pvclist_value = "";
+
+		if (iptv_idx != "") {
+			for(var i = 0; i < ISP_List_IPTV.length; i++){
+				if (ISP_List_IPTV[i][0] == iptv_idx) {
+					pvc_cnt++;
+					dsltmp_cfg_iptv_pvclist_value +=
+						"<" + ISP_List_IPTV[i][1]
+						+ ">" + ISP_List_IPTV[i][2]
+						+ ">" + ISP_List_IPTV[i][3]
+						+ ">" + ISP_List_IPTV[i][4]
+						+ ">" + ISP_List_IPTV[i][5]
+				}
+			}
+		}
+		qisPostData.dsltmp_cfg_iptv_enable = "1";
+		qisPostData.dsltmp_cfg_iptv_num_pvc = pvc_cnt.toString();
+		qisPostData.dsltmp_cfg_iptv_rmvlan = ISP_List[isp_idx][11];
+		qisPostData.dsltmp_cfg_iptv_mr = ISP_List[isp_idx][12];
+		qisPostData.dsltmp_cfg_iptv_pvclist = dsltmp_cfg_iptv_pvclist_value;
+	}
+
+	//--- initial ------------------------------------------------
+	showCountryList_iptv();
+	showISPList("default");
+
+	//----------------------------------------------- initial ----
+
+	apply.dsl_iptv = function(){
+
+		postDataModel.insert(dslIPTVObj);
+		if(valid_ISP())
+			setIptvNumPvc();
+		else{
+			$("#ISPnServiceList_iptv").focus();
+			return false;	
+		}
+
+		httpApi.nvramSet((function(){
+			qisPostData.action_mode = "apply";
+			qisPostData.rc_service = "restart_dslwan_qis 0";
+			return qisPostData;
+		})());
+
+		goTo.Wireless();
+	};
+
+	abort.dsl_iptv = function(transmode){
+		postDataModel.remove(dslIPTVObj);
+		if(transfer_mode=="ptm"){
+			postDataModel.remove(dsl_wanObj.ptm_all);
+			goTo.loadPage("PTM_manual_setting_page", true);
+		}
+		else{
+			postDataModel.remove(dsl_wanObj.atm_all);
+			if(prctl_str=="DHCP" || prctl_str=="MER"){
+				goTo.loadPage("mer_cfg_page", true);
+			}
+			else if(prctl_str=="PPPoE"){
+				goTo.loadPage("ppp_cfg_page", true);
+			}
+			else{
+				goTo.loadPage("manual_setting_page", true);
+			}
+		}		
+	};
+</script>

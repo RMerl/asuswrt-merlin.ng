@@ -715,7 +715,7 @@ get_uplinkports_linkrate(char *ifname)
 	int lret=0;
 	int len;
 #if defined(RTCONFIG_HND_ROUTER_AX_6710)
-	// MODEL_RTAX86U, MODEL_RTAX68U
+	// MODEL_RTAX86U, MODEL_RTAX68U, MODEL_RTAC68U_V4
 #if defined(RTCONFIG_EXTPHY_BCM84880)
 	// L5(2.5G) W0 L1 L2 L3 L4 <--LAYOUT
 	// eth5 eth0 eth4 eth3 eth2 eth1
@@ -750,6 +750,7 @@ get_uplinkports_linkrate(char *ifname)
 
 		break;
 	case MODEL_RTAX68U:
+	case MODEL_RTAC68U_V4:
 		sprintf(pif[0], "%s", "eth0");
 		sprintf(pif[1], "%s", "eth4");
 		sprintf(pif[2], "%s", "eth3");

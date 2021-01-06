@@ -1,0 +1,272 @@
+<script type="text/JavaScript" src="mobile/js/jstz.min.js"></script>
+<style>
+.cfg_val{
+	font-size:30px;
+	color:#FC0;
+}
+span{
+	border:0px solid #FFFFFF;
+	color:#FFFFFF;
+	font-size:24px;
+	font-family:Arial, Helvetica, sans-serif;
+	/*width:27px;*/
+	text-align:right;
+	margin:0px auto;
+	ime-mode:disabled;
+}
+
+
+#iptv_manual_setting{
+	font-size:24px;
+	margin-left:3%;
+	margin-top:-3%;
+}
+
+#ISP_table{
+	font-size:22px;
+	color:#FFF;
+}
+#specialisp{
+	width: 20px;
+	height: 20px;
+}
+.stb_msg{
+	font-size:22px;
+	color:#FFCC00;
+	margin-left:35px;
+}
+.QISGeneralFont{
+	font-size:22px;
+	font-family:Arial, Helvetica, sans-serif;
+	color:#66CCFF;
+	font-weight:bolder;
+	margin-left:35px;
+	margin-top:-32px;
+}
+
+</style>
+<script>
+var AutoDetInfo = httpApi.nvramGet(["dsltmp_autodet_state", "dsltmp_autodet_vpi", "dsltmp_autodet_vci", "dsltmp_autodet_encap","dsltmp_autodet_wan_type","dslx_transmode"]);
+var ISP_List = [<% get_isp_list("/www/ISP_List.txt"); %>];
+var ISP_List_IPTV = [<% get_isp_list("/www/ISP_List_IPTV.txt"); %>];
+
+var detect_status = AutoDetInfo.dsltmp_autodet_state;
+var wan_type = AutoDetInfo.dsltmp_autodet_wan_type;
+var vpi_val = AutoDetInfo.dsltmp_autodet_vpi;
+var vci_val = AutoDetInfo.dsltmp_autodet_vci;
+var encap_val = AutoDetInfo.dsltmp_autodet_encap;
+var prctl_val = "2";
+var vlanid_val = "";	//tmp
+var encap_str = "LLC";
+if (encap_val == "1") encap_str = "VC-Mux";
+var mac_addr_2g =  httpApi.nvramGet(["wan0_hwaddr"]).wan0_hwaddr;
+var mac_addr_last_3bytes = "\"" + mac_addr_2g.substring(9, 11) + mac_addr_2g.substring(12, 14) + mac_addr_2g.substring(15, 17) + "\"";
+var model_name = httpApi.nvramGet(["productid"]).productid;
+
+//Brazil timezone GMT-03:00
+//India timezone GMT+05:30
+var timezone = jstz.determine_timezone();
+var timez = timezone.offset();
+
+if (vpi_val == "0" && vci_val == "35" && encap_val == "0" && detect_status == "pppoe" && timez == "-03:00"){
+	//Brazil - GVT
+	gvt_note = "<br><br>" + "(<#isp_br_gvt_note#>)"
+	$('#hint_msg').text(gvt_note);
+}
+
+
+</script>
+
+<div class="headerBar">
+	<table style="width:100%">
+		<tr>
+			<td style="padding:0;width:17px;">
+				<div style="margin-right:20px;">
+					<a href="#navigation">
+						<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+					</a>
+				</div>
+			</td>
+			<td style="padding:0;width:130px;">
+				<div>
+					<div class="icon_logo"></div>
+				</div>
+			</td>
+			<td style="padding:0;">
+				<div class="model_welcome"></div>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="tableContainer">
+	<div class="desktop_left_field">
+		<div>
+			<div class="titleMain">MER</div>
+			<div class="titleSub"><#Settings#></div>
+		</div>
+	</div>
+	<div class="table_td">
+		<div class="pageDesc"><#Layer3Forwarding_x_ConnectionType_itemname#>: <span class="cfg_val">MER Dynamic IP</span>, VPI/VCI: <span id="detect_val" class="cfg_val"></span>
+		</div>
+		<div class="pageDesc"><#PPP_cfg_usersel_desc#></div>
+		<div id="hint_msg"></div>
+
+		<div>
+		<table id="iptv_manual_setting" width="92%" border="0" align="left" cellpadding="3" cellspacing="0">
+			<tr>
+				<td>
+					<input type="checkbox" id="specialisp" name="specialisp">
+					<label for="specialisp">
+						<div class="QISGeneralFont"><#PPPConnection_x_HostNameForISP_sectionname#> ( IPTV Service )</div>
+					</label>
+				</td>
+			</tr>
+		</table>
+		</div>
+		
+		<div style="margin-top:160px;">
+			<div class="footer_desktop">
+				<div class="desktop_abortBtn" id="desktop_abortBtn" onclick="abort.mer_cfg(wan_type)"><#Manual_Setting_btn#></div>
+				<div class="desktop_applyBtn btn_wireless_apply" onclick="apply.mer_cfg()"><#CTL_next#></div>
+			</div>
+			<div class="footer_mobile">
+				<table style="width:100%;" cellpadding="0" cellspacing="0">
+					<tr>
+						<td class="mobileAbort" id="mobile_abortBtn" style="width:50%" onclick="abort.mer_cfg(wan_type)">
+							<div class="mobile_abortBtn"><#Manual_Setting_btn#></div>
+						</td>
+						<td class="mobileApply" onclick="apply.mer_cfg()">
+							<div class="mobile_applyBtn btn_wireless_apply"><#CTL_next#></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class='footerPadding'></div>
+
+<script>
+
+	function haveIPTVService() {
+		//compare detection result with isp list
+		for(var i = 0; i < ISP_List.length; i++){
+			if(wan_type == "ATM") {
+				if(vpi_val == ISP_List[i][6]	//vpi
+					&& vci_val == ISP_List[i][7]	//vci
+					&& prctl_val == ISP_List[i][8]	//proto
+					&& encap_val == ISP_List[i][9]	//encap
+					&& (ISP_List[i][12] != "" || ISP_List[i][13] != "")	//mr, iptv idx
+				) {
+					return true;
+				}
+			}
+			else {	//PTM
+				if(prctl_val == ISP_List[i][8]	//proto
+					&& vlanid_val == ISP_List[i][10]	//vlan id
+					&& (ISP_List[i][12] != "" || ISP_List[i][13] != "")	//mr, iptv idx
+				) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+	
+	//--------initial-------------------------------------------
+
+	$("#detect_val").html(vpi_val+" / "+vci_val+", "+encap_str);
+
+	if(haveIPTVService()) {
+		$("#iptv_manual_setting").show();
+	}
+	else {
+		$("#iptv_manual_setting").hide();
+	}
+	$("#STBPortMsg").hide();
+
+	postDataModel.insert(dsltmpQISObj);
+	postDataModel.insert(dsl_wanObj.atm_dslObj);
+	postDataModel.insert(dsl_wanObj.dslDHCPObj);
+
+	//--------initial-------------------------------------------
+
+	apply.mer_cfg = function(){
+
+		// dsltmp --------------------------------
+		qisPostData.dslx_transmode = (wan_type=="PTM")? "ptm": "atm";
+		qisPostData.dsltmp_transmode = qisPostData.dslx_transmode;
+		// -------------------------------- dsltmp
+
+		// dslObj --------------------------------------------------------
+ 		qisPostData.dsl_vpi = vpi_val;
+ 		qisPostData.dsl_vci = vci_val;
+ 		qisPostData.dsl_proto = "mer";
+ 		qisPostData.dsl_encap = encap_val;
+ 		//qisPostData.dsl0_dot1q = "";	// If vid with value then set dot1q=1	
+ 		//qisPostData.dsl0_vid = "";   // Matched ISP List that vid with value
+ 		qisPostData.dsl_svc_cat = "0";
+ 		qisPostData.dsl_pcr = "0";
+ 		qisPostData.dsl_scr = "0";
+ 		qisPostData.dsl_mbs = "0";
+ 		// -------------------------------------------------------- dslObj
+
+        // dslDHCPObj-------------------------------------------------------
+        qisPostData.dsl_DHCPClient = "1";
+		qisPostData.dsl_ipaddr = "0.0.0.0";
+		qisPostData.dsl_netmask = "0.0.0.0";
+		qisPostData.dsl_gateway = "0.0.0.0";
+		qisPostData.dsl_dnsenable = "1";
+		qisPostData.dsl_dns1 = "";
+		qisPostData.dsl_dns2 = "";
+ 		if (vpi_val == "0" && vci_val == "40" && encap_val == "1")
+		{
+			qisPostData.dslx_dhcp_clientid = mac_addr_last_3bytes;
+			qisPostData.dslx_dhcp_hostname = model_name;
+		}
+		else
+		{
+			qisPostData.dslx_dhcp_clientid = "";
+			qisPostData.dslx_dhcp_hostname = "";
+		}
+		// ------------------------------------------------------- dslDHCPObj
+
+ 		// dslIPTVObj--------------------------------------------------------
+		if($("#specialisp").is(":checked")){
+			goTo.DSL_IPTV();
+		}	// -------------------------------------------------------- dslIPTVObj
+		else if(1==0){	// -------------------------------------------- DHCP option
+			goTo.DHCP_option();
+		}// -------------------------------------------- DHCP option
+		else{
+ 			
+			if(!qisPostData.hasOwnProperty("dsltmp_cfg_iptv_pvclist")){
+				postDataModel.insert(dslIPTVObj);	//reset IPTV
+				qisPostData.dsltmp_cfg_iptv_enable = "0";
+				qisPostData.dsltmp_cfg_iptv_rmvlan = "";
+				qisPostData.dsltmp_cfg_iptv_mr = "";
+				qisPostData.dsltmp_cfg_iptv_num_pvc = "0";
+				qisPostData.dsltmp_cfg_iptv_pvclist = "";
+				qisPostData.dsltmp_cfg_iptv_idx = "";
+				qisPostData.dsltmp_cfg_ispname = "";
+				qisPostData.dsltmp_cfg_country = "";
+
+			}
+		//if(isWANChanged() || window.pppAuthFailChecked){
+			httpApi.nvramSet((function(){
+				qisPostData.action_mode = "apply";
+				qisPostData.rc_service = "restart_dslwan_qis 0";
+				//alert(qisPostData); //Viz tmp
+				return qisPostData;
+			})());
+
+			//updateOriginWan();
+		//}
+	
+			goTo.Wireless();
+		}
+	};
+
+
+</script>

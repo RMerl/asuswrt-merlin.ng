@@ -373,7 +373,6 @@ void set_radio(int on, int unit, int subunit)
 		return;
 	}
 
-#if defined(RTCONFIG_SOC_IPQ8074)
 	if(sub)
 	{
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, sub);
@@ -382,6 +381,7 @@ void set_radio(int on, int unit, int subunit)
 	else	
 		strlcpy(wds_iface, get_wififname(unit), sizeof(wds_iface));
 
+#if defined(RTCONFIG_SOC_IPQ8074)
 #if defined(RTCONFIG_SINGLE_HOSTAPD)
 		if (on) {
 			char bss_cfg[sizeof("bss_config=") + IFNAMSIZ + sizeof(":/etc/Wireless/conf/hostapd_XXX.conf") + IFNAMSIZ];
@@ -403,6 +403,17 @@ void set_radio(int on, int unit, int subunit)
 			eval("hostapd", "-d", "-B", "-P", pid_path, "-e", entropy_path, conf_path);
 		} else {
 			kill_pidfile(pid_path);
+		}
+#endif
+#else // NOT IPQ8074
+#if defined(RTCONFIG_CFG80211) && defined(RTCONFIG_SINGLE_HOSTAPD)
+		if (on) {
+			char bss_cfg[sizeof("bss_config=") + IFNAMSIZ + sizeof(":/etc/Wireless/conf/hostapd_XXX.conf") + IFNAMSIZ];
+
+			snprintf(bss_cfg, sizeof(bss_cfg), "bss_config=%s:/etc/Wireless/conf/hostapd_%s.conf", wds_iface, wds_iface);
+			eval(QWPA_CLI, "-g", QHOSTAPD_CTRL_IFACE, "raw", "ADD", bss_cfg);
+		} else {
+			eval(QWPA_CLI, "-g", QHOSTAPD_CTRL_IFACE, "raw", "REMOVE", wds_iface);
 		}
 #endif
 #endif
@@ -1230,6 +1241,9 @@ static void set_cpu_power_save_mode(void)
 	case 1:
 		/* CPU: On Demand - auto */
 		set_cpufreq_attr("scaling_governor", "ondemand");
+#if defined(RTCONFIG_SOC_IPQ8074)
+		set_cpufreq_attr("scaling_min_freq", "1382400");
+#endif
 		break;
 	default:
 		/* CPU: performance - max. freq */

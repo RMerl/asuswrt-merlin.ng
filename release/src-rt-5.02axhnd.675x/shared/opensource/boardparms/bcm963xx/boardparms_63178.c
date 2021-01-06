@@ -652,9 +652,9 @@ static bp_elem_t g_bcm963178ref6[] = {
   {bp_usGpioLedWL0Act,         .u.us = BP_GPIO_31_AL | BP_LED_USE_GPIO},  /* WLAN_2G_ACT, must use BP_LED_USE_GPIO */
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_84_AL},	// USB power
   {bp_usButtonIdx,             .u.us = 2},
-  {bp_usGpio_Intr,             .u.us = BP_GPIO_7_AL},	// 4T4R
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_14_AL},	// 4T4R
   {bp_usButtonIdx,             .u.us = 3},
-  {bp_usGpio_Intr,             .u.us = BP_GPIO_9_AL},	// ePA
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_33_AL},	// GS
 
   {bp_usGphyBaseAddress,       .u.us = BCM963178_PHY_BASE},  // use phy addressses on SF2 with base address 0x8
   {bp_ucPhyType0,              .u.uc = BP_ENET_EXTERNAL_SWITCH},

@@ -71,6 +71,7 @@ typedef struct _ob_status{
 	int reboottime;
 	int conntimeout;
 	int traffictimeout;
+	int type;
 }ob_status,*ptr_obstatus;
 
 

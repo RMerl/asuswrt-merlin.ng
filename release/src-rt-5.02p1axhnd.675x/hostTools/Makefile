@@ -81,9 +81,9 @@ bcmImageBuilder: bcmImageBuilder.c
 version:
 	cp -f ../router/shared/version.h .
 
-ifneq ($(wildcard ./prebuilt/addvtoken),)
+ifneq ($(wildcard ./prebuilt/$(BUILD_NAME)/addvtoken),)
 addvtoken:
-	@-cp -f ./prebuilt/addvtoken .
+	@-cp -f ./prebuilt/$(BUILD_NAME)/addvtoken .
 else
 addvtoken: addvtoken.c
 	rm -rf addvtoken

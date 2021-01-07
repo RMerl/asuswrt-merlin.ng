@@ -1,3 +1,4 @@
+
 EXE = tmctl
 
 all:
@@ -10,4 +11,3 @@ clean:
 dynamic: all install
 
 include $(BUILD_DIR)/make.common
-

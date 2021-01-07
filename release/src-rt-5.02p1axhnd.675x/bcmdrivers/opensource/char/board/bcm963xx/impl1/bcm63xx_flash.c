@@ -1413,6 +1413,37 @@ static int crashLogCommit(void)
 
     return 0;
 }
+
+static int crashLogErase(void)
+{
+    struct mtd_info *mtd;
+    int block = 0, data_offset = 0, tot_mtdblocks;
+
+    mtd = get_mtd_device_nm(crashlog_mtd);
+    if (IS_ERR_OR_NULL(mtd)) {
+        printk("\n crashLogErase: Failed to get mtd !\n");
+        return -1;
+    }
+
+    memset(crashLogBuf, 0, CRASHLOG_MAX_SIZE);
+    tot_mtdblocks = mtd->size / mtd->erasesize;
+    block = 0;
+    data_offset = 0;
+    for (; (block < tot_mtdblocks) && (data_offset < CRASHLOG_MAX_SIZE); block++) {
+        /* skip bad block */
+        if (nandEraseBlk(mtd, (block * mtd->erasesize)) == 0)  {
+            nandWriteBlk(mtd, (block * mtd->erasesize), mtd->erasesize, &crashLogBuf[data_offset], FALSE);
+            data_offset += mtd->erasesize;
+	    break;
+        }
+    }
+
+    printk("crashLogErase: write %d blocks  data_offset %d \n", block+1, data_offset);
+
+    return 0;
+}
+
+
 /* Read from nand flash and save to file */
 int crashFileSet(const char* filename)
 {
@@ -1446,8 +1477,11 @@ int crashFileSet(const char* filename)
 	printk("ret %d retlen %ld buff %c %c %c\n",
 		ret, retlen, pbuffer[0], pbuffer[1], pbuffer[2]);
         //size = 0; /* zero-length file */
-    }
+    } else {
     kerSysFsFileSet(filename, pbuffer, size);
+        crashLogErase();
+    }
+
     kfree(pbuffer);
     return 0;
 }

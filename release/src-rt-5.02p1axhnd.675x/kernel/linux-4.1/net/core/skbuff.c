@@ -1176,8 +1176,6 @@ struct sk_buff *skb_xlate_dp(struct fkbuff * fkb_p, uint8_t *dirty_p)
 	bcm_skb_set_end_pointer(skb_p, SKB_DATA_ALIGN((skb_p->data -skb_p->head) +
 		fkb_p->len + BCM_SKB_TAILROOM));
 
-	skb_p->end = skb_p->tail + (0x10 - (((uintptr_t)skb_tail_pointer(skb_p)) & 0xf)); 
-
 #if defined (CONFIG_BCM_KF_BPM_BUF_TRACKING)
 	GBPM_INC_REF(skb_p->data);
 	KERN_GBPM_TRACK_SKB(skb_p, GBPM_VAL_XLATE, 0);

@@ -1249,7 +1249,7 @@ static DUMP_RUNNERREG_STRUCT DS_GSO_CONTEXT_TABLE =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_DOORBELL_SCRATCH =
+static DUMP_RUNNERREG_STRUCT TIMER_DHD_TX_POST_DOORBELL_SCRATCH =
 {
 	4,
 	{
@@ -1329,7 +1329,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_FLOW_RING_DROP_COUNTER =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT TIMER_DHD_TX_POST_DOORBELL_SCRATCH =
+static DUMP_RUNNERREG_STRUCT SPDSVC_HOST_BUF_PTR =
 {
 	4,
 	{
@@ -1339,21 +1339,21 @@ static DUMP_RUNNERREG_STRUCT TIMER_DHD_TX_POST_DOORBELL_SCRATCH =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT GSO_TX_DHD_L2_BUFFER =
+static DUMP_RUNNERREG_STRUCT GSO_TX_ENQUEUE_PCI_PACKET_CONTEXT =
 {
-	1,
+	8,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb6d8 },
+		{ dump_RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY, 0xb6d8 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT IPTV_COUNTERS_BUFFER =
+static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_DOORBELL_SCRATCH =
 {
-	2,
+	4,
 	{
-		{ dump_RDD_IPTV_COUNTERS_BUFFER, 0xb6ee },
+		{ dump_RDD_FOUR_BYTES, 0xb6e0 },
 		{ 0, 0 },
 	}
 };
@@ -1369,7 +1369,7 @@ static DUMP_RUNNERREG_STRUCT RUNNER_FLOW_IH_RESPONSE =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT GSO_TX_ENQUEUE_PCI_PACKET_CONTEXT =
+static DUMP_RUNNERREG_STRUCT CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT =
 {
 	8,
 	{
@@ -1409,17 +1409,17 @@ static DUMP_RUNNERREG_STRUCT DS_SYSTEM_CONFIGURATION =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT SPDSVC_HOST_BUF_PTR =
+static DUMP_RUNNERREG_STRUCT FIREWALL_IPV6_R16_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb7e4 },
+		{ dump_RDD_FIREWALL_IPV6_R16_BUFFER_ENTRY, 0xb7e4 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_L2_BUFFER =
+static DUMP_RUNNERREG_STRUCT GSO_TX_DHD_L2_BUFFER =
 {
 	1,
 	{
@@ -1429,11 +1429,11 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_L2_BUFFER =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT CPU_TX_PICO_INGRESS_QUEUE_PTR =
+static DUMP_RUNNERREG_STRUCT IPTV_COUNTERS_BUFFER =
 {
 	2,
 	{
-		{ dump_RDD_CPU_TX_PICO_INGRESS_QUEUE_PTR, 0xb7fe },
+		{ dump_RDD_IPTV_COUNTERS_BUFFER, 0xb7fe },
 		{ 0, 0 },
 	}
 };
@@ -1491,7 +1491,7 @@ static DUMP_RUNNERREG_STRUCT SERVICE_QUEUES_OVERALL_RATE_LIMITER =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT ETH_TX_SCRATCH =
+static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_L2_BUFFER =
 {
 	1,
 	{
@@ -1501,11 +1501,21 @@ static DUMP_RUNNERREG_STRUCT ETH_TX_SCRATCH =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT =
+static DUMP_RUNNERREG_STRUCT CPU_TX_PICO_INGRESS_QUEUE_PTR =
 {
-	8,
+	2,
 	{
-		{ dump_RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY, 0xb9a8 },
+		{ dump_RDD_CPU_TX_PICO_INGRESS_QUEUE_PTR, 0xb9ae },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT ETH_TX_SCRATCH =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xb9b0 },
 		{ 0, 0 },
 	}
 };
@@ -1515,7 +1525,7 @@ static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_KEY_BUFFER =
 {
 	16,
 	{
-		{ dump_RDD_SIXTEEN_BYTES, 0xb9b0 },
+		{ dump_RDD_SIXTEEN_BYTES, 0xb9c0 },
 		{ 0, 0 },
 	}
 };
@@ -1525,7 +1535,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_DS_PICO_DHD_TX_POST_CONTEXT =
 {
 	16,
 	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb9c0 },
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb9d0 },
 		{ 0, 0 },
 	}
 };
@@ -1535,7 +1545,7 @@ static DUMP_RUNNERREG_STRUCT WLAN_MCAST_DHD_TX_POST_CONTEXT =
 {
 	16,
 	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb9d0 },
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb9e0 },
 		{ 0, 0 },
 	}
 };
@@ -1545,7 +1555,7 @@ static DUMP_RUNNERREG_STRUCT GSO_TX_DS_PICO_DHD_TX_POST_CONTEXT =
 {
 	16,
 	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb9e0 },
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb9f0 },
 		{ 0, 0 },
 	}
 };
@@ -1555,7 +1565,7 @@ static DUMP_RUNNERREG_STRUCT EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb9f0 },
+		{ dump_RDD_ONE_BYTE, 0xba00 },
 		{ 0, 0 },
 	}
 };
@@ -1565,7 +1575,7 @@ static DUMP_RUNNERREG_STRUCT ETH_TX_EMACS_STATUS =
 {
 	1,
 	{
-		{ dump_RDD_ETH_TX_EMACS_STATUS_ENTRY, 0xb9f5 },
+		{ dump_RDD_ETH_TX_EMACS_STATUS_ENTRY, 0xba05 },
 		{ 0, 0 },
 	}
 };
@@ -1575,7 +1585,7 @@ static DUMP_RUNNERREG_STRUCT FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD =
 {
 	2,
 	{
-		{ dump_RDD_FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD, 0xb9f6 },
+		{ dump_RDD_FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD, 0xba06 },
 		{ 0, 0 },
 	}
 };
@@ -1585,17 +1595,7 @@ static DUMP_RUNNERREG_STRUCT HASH_BASED_FORWARDING_PORT_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_HASH_BASED_FORWARDING_PORT_ENTRY, 0xb9f8 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT FIREWALL_IPV6_R16_BUFFER =
-{
-	4,
-	{
-		{ dump_RDD_FIREWALL_IPV6_R16_BUFFER_ENTRY, 0xb9fc },
+		{ dump_RDD_HASH_BASED_FORWARDING_PORT_ENTRY, 0xba08 },
 		{ 0, 0 },
 	}
 };
@@ -1605,7 +1605,7 @@ static DUMP_RUNNERREG_STRUCT DOWNSTREAM_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR 
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba00 },
+		{ dump_RDD_TWO_BYTES, 0xba0c },
 		{ 0, 0 },
 	}
 };
@@ -1615,7 +1615,7 @@ static DUMP_RUNNERREG_STRUCT CPU_RX_PD_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba02 },
+		{ dump_RDD_TWO_BYTES, 0xba0e },
 		{ 0, 0 },
 	}
 };
@@ -1625,7 +1625,7 @@ static DUMP_RUNNERREG_STRUCT DS_CPU_RX_PICO_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xba04 },
+		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xba10 },
 		{ 0, 0 },
 	}
 };
@@ -1635,7 +1635,7 @@ static DUMP_RUNNERREG_STRUCT DS_BPM_DDR_BUFFER_HEADROOM_SIZE =
 {
 	2,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xba06 },
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xba12 },
 		{ 0, 0 },
 	}
 };
@@ -1645,7 +1645,7 @@ static DUMP_RUNNERREG_STRUCT DS_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION =
 {
 	2,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xba08 },
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xba14 },
 		{ 0, 0 },
 	}
 };
@@ -1655,7 +1655,7 @@ static DUMP_RUNNERREG_STRUCT DS_CPU_RX_FAST_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xba0a },
+		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xba16 },
 		{ 0, 0 },
 	}
 };
@@ -1665,7 +1665,7 @@ static DUMP_RUNNERREG_STRUCT DS_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR =
 {
 	2,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xba0c },
+		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xba18 },
 		{ 0, 0 },
 	}
 };
@@ -1675,7 +1675,7 @@ static DUMP_RUNNERREG_STRUCT DS_ANY_SRC_PORT_FLOW_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xba0e },
+		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xba1a },
 		{ 0, 0 },
 	}
 };
@@ -1685,17 +1685,7 @@ static DUMP_RUNNERREG_STRUCT GSO_DESC_PTR =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xba10 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xba14 },
+		{ dump_RDD_FOUR_BYTES, 0xba1c },
 		{ 0, 0 },
 	}
 };
@@ -1705,17 +1695,17 @@ static DUMP_RUNNERREG_STRUCT GSO_TX_DHD_HOST_BUF_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba18 },
+		{ dump_RDD_ONE_BYTE, 0xba20 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT IPSEC_DS_DDR_SA_DESC_TABLE_PTR =
+static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xba1c },
+		{ dump_RDD_FOUR_BYTES, 0xba24 },
 		{ 0, 0 },
 	}
 };
@@ -1725,7 +1715,17 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_HOST_BUF_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba20 },
+		{ dump_RDD_ONE_BYTE, 0xba28 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT IPSEC_DS_DDR_SA_DESC_TABLE_PTR =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xba2c },
 		{ 0, 0 },
 	}
 };
@@ -1735,7 +1735,7 @@ static DUMP_RUNNERREG_STRUCT DS_TIMER_7_SCHEDULER_NEXT_ENTRY =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba24 },
+		{ dump_RDD_TWO_BYTES, 0xba30 },
 		{ 0, 0 },
 	}
 };
@@ -1745,7 +1745,7 @@ static DUMP_RUNNERREG_STRUCT DS_MEMLIB_SEMAPHORE =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba26 },
+		{ dump_RDD_TWO_BYTES, 0xba32 },
 		{ 0, 0 },
 	}
 };
@@ -1755,7 +1755,7 @@ static DUMP_RUNNERREG_STRUCT WAN_PHYSICAL_PORT =
 {
 	2,
 	{
-		{ dump_RDD_WAN_PHYSICAL_PORT, 0xba28 },
+		{ dump_RDD_WAN_PHYSICAL_PORT, 0xba34 },
 		{ 0, 0 },
 	}
 };
@@ -1765,7 +1765,7 @@ static DUMP_RUNNERREG_STRUCT DOWNSTREAM_MULTICAST_LAN_ENQUEUE_SERVICE_QUEUE_INGR
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba2a },
+		{ dump_RDD_TWO_BYTES, 0xba36 },
 		{ 0, 0 },
 	}
 };
@@ -1775,7 +1775,7 @@ static DUMP_RUNNERREG_STRUCT DS_RUNNER_CONGESTION_STATE =
 {
 	2,
 	{
-		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xba2c },
+		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xba38 },
 		{ 0, 0 },
 	}
 };
@@ -1785,7 +1785,7 @@ static DUMP_RUNNERREG_STRUCT GSO_PICO_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba2e },
+		{ dump_RDD_TWO_BYTES, 0xba3a },
 		{ 0, 0 },
 	}
 };
@@ -1795,7 +1795,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_COMPLETE_BPM_REF_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba30 },
+		{ dump_RDD_TWO_BYTES, 0xba3c },
 		{ 0, 0 },
 	}
 };
@@ -1805,7 +1805,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_POST_CPU_BPM_REF_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba32 },
+		{ dump_RDD_TWO_BYTES, 0xba3e },
 		{ 0, 0 },
 	}
 };
@@ -1815,7 +1815,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_BPM_CONGESTION_UG3_DROP_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba34 },
+		{ dump_RDD_TWO_BYTES, 0xba40 },
 		{ 0, 0 },
 	}
 };
@@ -1825,7 +1825,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_BPM_CONGESTION_ALLOC_FAIL_DROP_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba36 },
+		{ dump_RDD_TWO_BYTES, 0xba42 },
 		{ 0, 0 },
 	}
 };
@@ -1835,7 +1835,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_DDR_SA_DESC_SIZE =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba38 },
+		{ dump_RDD_TWO_BYTES, 0xba44 },
 		{ 0, 0 },
 	}
 };
@@ -1845,7 +1845,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba3a },
+		{ dump_RDD_TWO_BYTES, 0xba46 },
 		{ 0, 0 },
 	}
 };
@@ -1855,7 +1855,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_IP_LENGTH =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba3c },
+		{ dump_RDD_TWO_BYTES, 0xba48 },
 		{ 0, 0 },
 	}
 };
@@ -1865,7 +1865,7 @@ static DUMP_RUNNERREG_STRUCT PRIVATE_A_DUMMY_STORE =
 {
 	1,
 	{
-		{ dump_RDD_DUMMY_STORE_ENTRY, 0xba3e },
+		{ dump_RDD_DUMMY_STORE_ENTRY, 0xba4a },
 		{ 0, 0 },
 	}
 };
@@ -1875,7 +1875,7 @@ static DUMP_RUNNERREG_STRUCT ETH_TX_INTER_LAN_SCHEDULING_OFFSET =
 {
 	1,
 	{
-		{ dump_RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY, 0xba3f },
+		{ dump_RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY, 0xba4b },
 		{ 0, 0 },
 	}
 };
@@ -1885,7 +1885,7 @@ static DUMP_RUNNERREG_STRUCT DS_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba40 },
+		{ dump_RDD_ONE_BYTE, 0xba4c },
 		{ 0, 0 },
 	}
 };
@@ -1895,7 +1895,7 @@ static DUMP_RUNNERREG_STRUCT DS_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba41 },
+		{ dump_RDD_ONE_BYTE, 0xba4d },
 		{ 0, 0 },
 	}
 };
@@ -1905,7 +1905,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_DS_PICO_SEMAPHORE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba42 },
+		{ dump_RDD_ONE_BYTE, 0xba4e },
 		{ 0, 0 },
 	}
 };
@@ -1915,7 +1915,7 @@ static DUMP_RUNNERREG_STRUCT DS_FC_GLOBAL_CFG =
 {
 	1,
 	{
-		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xba43 },
+		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xba4f },
 		{ 0, 0 },
 	}
 };
@@ -1925,7 +1925,7 @@ static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba44 },
+		{ dump_RDD_ONE_BYTE, 0xba50 },
 		{ 0, 0 },
 	}
 };
@@ -1935,7 +1935,7 @@ static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_IP_FLOW_RULE_CFG_DESCRIPT
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba45 },
+		{ dump_RDD_ONE_BYTE, 0xba51 },
 		{ 0, 0 },
 	}
 };
@@ -1945,7 +1945,7 @@ static DUMP_RUNNERREG_STRUCT DS_PACKET_BUFFER_SIZE_ASR_8 =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba46 },
+		{ dump_RDD_ONE_BYTE, 0xba52 },
 		{ 0, 0 },
 	}
 };
@@ -1955,7 +1955,7 @@ static DUMP_RUNNERREG_STRUCT DS_MAIN_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba47 },
+		{ dump_RDD_ONE_BYTE, 0xba53 },
 		{ 0, 0 },
 	}
 };
@@ -1965,7 +1965,7 @@ static DUMP_RUNNERREG_STRUCT DS_PICO_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba48 },
+		{ dump_RDD_ONE_BYTE, 0xba54 },
 		{ 0, 0 },
 	}
 };
@@ -1975,7 +1975,7 @@ static DUMP_RUNNERREG_STRUCT DS_RUNNER_FLOW_IH_RESPONSE_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba49 },
+		{ dump_RDD_ONE_BYTE, 0xba55 },
 		{ 0, 0 },
 	}
 };
@@ -1985,7 +1985,7 @@ static DUMP_RUNNERREG_STRUCT DS_PARALLEL_PROCESSING_SLAVE_VECTOR =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xba4a },
+		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xba56 },
 		{ 0, 0 },
 	}
 };
@@ -1995,7 +1995,7 @@ static DUMP_RUNNERREG_STRUCT DS_PARALLEL_PROCESSING_CONTEXT_CACHE_MODE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba4b },
+		{ dump_RDD_ONE_BYTE, 0xba57 },
 		{ 0, 0 },
 	}
 };
@@ -2005,7 +2005,7 @@ static DUMP_RUNNERREG_STRUCT DS_IH_CONGESTION_THRESHOLD =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba4c },
+		{ dump_RDD_ONE_BYTE, 0xba58 },
 		{ 0, 0 },
 	}
 };
@@ -2015,7 +2015,7 @@ static DUMP_RUNNERREG_STRUCT DS_FW_MAC_ADDRS_COUNT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba4d },
+		{ dump_RDD_ONE_BYTE, 0xba59 },
 		{ 0, 0 },
 	}
 };
@@ -2025,7 +2025,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_DMA_SYNCHRONIZATION =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba4e },
+		{ dump_RDD_ONE_BYTE, 0xba5a },
 		{ 0, 0 },
 	}
 };
@@ -2035,7 +2035,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_POST_CPU_SEMAPHORE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba4f },
+		{ dump_RDD_ONE_BYTE, 0xba5b },
 		{ 0, 0 },
 	}
 };
@@ -2045,7 +2045,7 @@ static DUMP_RUNNERREG_STRUCT RING_CACHE_DHD_TXPOST_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba50 },
+		{ dump_RDD_ONE_BYTE, 0xba5c },
 		{ 0, 0 },
 	}
 };
@@ -2055,7 +2055,7 @@ static DUMP_RUNNERREG_STRUCT COMMON_DHD_TXPOST_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba51 },
+		{ dump_RDD_ONE_BYTE, 0xba5d },
 		{ 0, 0 },
 	}
 };
@@ -2065,7 +2065,7 @@ static DUMP_RUNNERREG_STRUCT TXCPL_INT_DHD_TXPOST_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba52 },
+		{ dump_RDD_ONE_BYTE, 0xba5e },
 		{ 0, 0 },
 	}
 };
@@ -2075,7 +2075,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_SA_DESC_NEXT_REPLACE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba53 },
+		{ dump_RDD_ONE_BYTE, 0xba5f },
 		{ 0, 0 },
 	}
 };
@@ -2085,7 +2085,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_US_SA_DESC_NEXT_REPLACE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba54 },
+		{ dump_RDD_ONE_BYTE, 0xba60 },
 		{ 0, 0 },
 	}
 };
@@ -2184,11 +2184,13 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_LOOKUP_TABLE =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_QUEUE_PROFILE_TABLE =
+static DUMP_RUNNERREG_STRUCT DSL_PTM_BOND_TX_HDR_TABLE =
 {
-	16,
+#if defined DSL_63138
+	2,
 	{
-		{ dump_RDD_QUEUE_PROFILE, 0x8380 },
+		{ dump_RDD_DSL_PTM_BOND_TX_HDR_ENTRY, 0x83c0 },
+#endif
 		{ 0, 0 },
 	}
 };
@@ -2294,23 +2296,21 @@ static DUMP_RUNNERREG_STRUCT US_MAIN_TIMER_TASK_DESCRIPTOR_TABLE =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT DSL_PTM_BOND_TX_HDR_TABLE =
+static DUMP_RUNNERREG_STRUCT US_TRAFFIC_CLASS_TO_QUEUE_TABLE =
 {
-#if defined DSL_63138
-	2,
+	1,
 	{
-		{ dump_RDD_DSL_PTM_BOND_TX_HDR_ENTRY, 0x91c0 },
-#endif
+		{ dump_RDD_US_QUEUE_ENTRY, 0x91c0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_TRAFFIC_CLASS_TO_QUEUE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE =
 {
-	1,
+	2,
 	{
-		{ dump_RDD_US_QUEUE_ENTRY, 0x9200 },
+		{ dump_RDD_TWO_BYTES, 0x9200 },
 		{ 0, 0 },
 	}
 };
@@ -2336,11 +2336,11 @@ static DUMP_RUNNERREG_STRUCT US_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_L2_UCAST_CONNECTION_BUFFER =
 {
-	2,
+	16,
 	{
-		{ dump_RDD_TWO_BYTES, 0x92c0 },
+		{ dump_RDD_FC_L2_UCAST_CONNECTION_ENTRY, 0x92c0 },
 		{ 0, 0 },
 	}
 };
@@ -2356,11 +2356,11 @@ static DUMP_RUNNERREG_STRUCT US_RATE_LIMITER_TABLE =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_METER_TABLE =
+static DUMP_RUNNERREG_STRUCT US_QUEUE_PROFILE_TABLE =
 {
-	8,
+	16,
 	{
-		{ dump_RDD_CPU_RX_METER_ENTRY, 0x9380 },
+		{ dump_RDD_QUEUE_PROFILE, 0x9380 },
 		{ 0, 0 },
 	}
 };
@@ -2396,94 +2396,11 @@ static DUMP_RUNNERREG_STRUCT WAN_CHANNELS_0_7_TABLE =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_L2_UCAST_CONNECTION_BUFFER =
-{
-	16,
-	{
-		{ dump_RDD_FC_L2_UCAST_CONNECTION_ENTRY, 0xa2c0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_INGRESS_HANDLER_SKB_DATA_POINTER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xa300 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_GRE_RUNNER_FLOW_HEADER_BUFFER =
-{
-	128,
-	{
-		{ dump_RDD_GRE_RUNNER_FLOW_HEADER_BUFFER, 0xa380 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_PROFILING_BUFFER_PICO_RUNNER =
-{
-	256,
-	{
-		{ dump_RDD_PROFILING_BUFFER_PICO_RUNNER, 0xa400 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE =
-{
-	8,
-	{
-		{ dump_RDD_INGRESS_CLASSIFICATION_RULE_CFG_ENTRY, 0xa500 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_CONNECTION_CACHE_BUFFER =
-{
-	16,
-	{
-		{ dump_RDD_CONNECTION_ENTRY, 0xa580 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_PARAMETER_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_INGRESS_FILTERS_PARAMETER_ENTRY, 0xa600 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
 static DUMP_RUNNERREG_STRUCT US_PICO_TIMER_TASK_DESCRIPTOR_TABLE =
 {
 	8,
 	{
-		{ dump_RDD_TIMER_TASK_DESCRIPTOR_ENTRY, 0xa660 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT DHD_RX_COMPLETE_FLOW_RING_BUFFER =
-{
-	32,
-	{
-		{ dump_RDD_DHD_RX_POST_DESCRIPTOR, 0xa680 },
-		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR, 0xa680 },
-		{ dump_RDD_DHD_RX_POST_DESCRIPTOR_CWI32, 0xa680 },
-		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR_CWI32, 0xa680 },
+		{ dump_RDD_TIMER_TASK_DESCRIPTOR_ENTRY, 0xa2c0 },
 		{ 0, 0 },
 	}
 };
@@ -2493,13 +2410,95 @@ static DUMP_RUNNERREG_STRUCT US_FC_L2_UCAST_TUPLE_BUFFER =
 {
 	32,
 	{
-		{ dump_RDD_FC_L2_UCAST_TUPLE_ENTRY, 0xa6e0 },
+		{ dump_RDD_FC_L2_UCAST_TUPLE_ENTRY, 0xa2e0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT DHD_RX_POST_FLOW_RING_BUFFER =
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_METER_TABLE =
+{
+	8,
+	{
+		{ dump_RDD_CPU_RX_METER_ENTRY, 0xa300 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_INGRESS_HANDLER_SKB_DATA_POINTER =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xa380 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_GRE_RUNNER_FLOW_HEADER_BUFFER =
+{
+	128,
+	{
+		{ dump_RDD_GRE_RUNNER_FLOW_HEADER_BUFFER, 0xa400 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE =
+{
+	8,
+	{
+		{ dump_RDD_INGRESS_CLASSIFICATION_RULE_CFG_ENTRY, 0xa480 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_PROFILING_BUFFER_PICO_RUNNER =
+{
+	256,
+	{
+		{ dump_RDD_PROFILING_BUFFER_PICO_RUNNER, 0xa500 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_CONNECTION_CACHE_BUFFER =
+{
+	16,
+	{
+		{ dump_RDD_CONNECTION_ENTRY, 0xa600 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_PARAMETER_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_INGRESS_FILTERS_PARAMETER_ENTRY, 0xa680 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT DSL_PTM_BOND_TX_HDR_DEBUG_TABLE =
+{
+#if defined DSL_63138
+	2,
+	{
+		{ dump_RDD_DSL_PTM_BOND_TX_HDR_ENTRY, 0xa6f0 },
+#endif
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT DHD_RX_COMPLETE_FLOW_RING_BUFFER =
 {
 	32,
 	{
@@ -2522,23 +2521,14 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_GENERIC_RULE_CFG_TABLE =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_INGRESS_RATE_LIMITER_TABLE =
+static DUMP_RUNNERREG_STRUCT DHD_RX_POST_FLOW_RING_BUFFER =
 {
-	16,
+	32,
 	{
-		{ dump_RDD_INGRESS_RATE_LIMITER_ENTRY, 0xa780 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT DSL_PTM_BOND_TX_HDR_DEBUG_TABLE =
-{
-#if defined DSL_63138
-	2,
-	{
-		{ dump_RDD_DSL_PTM_BOND_TX_HDR_ENTRY, 0xa7d0 },
-#endif
+		{ dump_RDD_DHD_RX_POST_DESCRIPTOR, 0xa780 },
+		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR, 0xa780 },
+		{ dump_RDD_DHD_RX_POST_DESCRIPTOR_CWI32, 0xa780 },
+		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR_CWI32, 0xa780 },
 		{ 0, 0 },
 	}
 };
@@ -2554,11 +2544,11 @@ static DUMP_RUNNERREG_STRUCT US_FAST_RUNNER_GLOBAL_REGISTERS_INIT =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_SPDSVC_CONTEXT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_RATE_LIMITER_TABLE =
 {
-	80,
+	16,
 	{
-		{ dump_RDD_SPDSVC_CONTEXT_ENTRY, 0xa800 },
+		{ dump_RDD_INGRESS_RATE_LIMITER_ENTRY, 0xa800 },
 		{ 0, 0 },
 	}
 };
@@ -2584,41 +2574,21 @@ static DUMP_RUNNERREG_STRUCT US_PICO_RUNNER_GLOBAL_REGISTERS_INIT =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE =
+static DUMP_RUNNERREG_STRUCT US_SPDSVC_CONTEXT_TABLE =
 {
-	1,
+	80,
 	{
-		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xa880 },
+		{ dump_RDD_SPDSVC_CONTEXT_ENTRY, 0xa880 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_CPU_TX_MESSAGE_DATA_BUFFER =
+static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_MAINB_PARAM =
 {
-	64,
+	8,
 	{
-		{ dump_RDD_CPU_TX_MESSAGE_DATA_BUFFER_ENTRY, 0xa8c0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_ROUTER_INGRESS_QUEUE =
-{
-	1,
-	{
-		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xa900 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HEADER_SCRATCH =
-{
-	32,
-	{
-		{ dump_RDD_DHD_L2_HEADER_BUFFER_ENTRY, 0xa940 },
+		{ dump_RDD_EIGHT_BYTES, 0xa8d0 },
 		{ 0, 0 },
 	}
 };
@@ -2628,17 +2598,37 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_CONFIGURATION_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_INGRESS_FILTERS_CONFIGURATION_ENTRY, 0xa960 },
+		{ dump_RDD_INGRESS_FILTERS_CONFIGURATION_ENTRY, 0xa8e0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_TOTAL_PPS_RATE_LIMITER =
+static DUMP_RUNNERREG_STRUCT US_ETH0_EEE_MODE_CONFIG_MESSAGE =
 {
-	8,
+	4,
 	{
-		{ dump_RDD_TOTAL_PPS_RATE_LIMITER_ENTRY, 0xa978 },
+		{ dump_RDD_FOUR_BYTES, 0xa8fc },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE =
+{
+	1,
+	{
+		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xa900 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_CPU_TX_MESSAGE_DATA_BUFFER =
+{
+	64,
+	{
+		{ dump_RDD_CPU_TX_MESSAGE_DATA_BUFFER_ENTRY, 0xa940 },
 		{ 0, 0 },
 	}
 };
@@ -2674,7 +2664,7 @@ static DUMP_RUNNERREG_STRUCT US_MAIN_TIMER_CONTROL_DESCRIPTOR =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_ETH0_EEE_MODE_CONFIG_MESSAGE =
+static DUMP_RUNNERREG_STRUCT US_BPM_EXTRA_DDR_BUFFERS_BASE =
 {
 	4,
 	{
@@ -2714,7 +2704,7 @@ static DUMP_RUNNERREG_STRUCT US_PICO_TIMER_CONTROL_DESCRIPTOR =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_BPM_EXTRA_DDR_BUFFERS_BASE =
+static DUMP_RUNNERREG_STRUCT US_BPM_DDR_OPTIMIZED_BUFFERS_BASE =
 {
 	4,
 	{
@@ -2734,11 +2724,31 @@ static DUMP_RUNNERREG_STRUCT GPON_ABSOLUTE_TX_BBH_COUNTER =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_GPE_COMMAND_PRIMITIVE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_TOTAL_PPS_RATE_LIMITER =
 {
-	2,
+	8,
 	{
-		{ dump_RDD_GPE_COMMAND_PRIMITIVE_ENTRY, 0xa9b8 },
+		{ dump_RDD_TOTAL_PPS_RATE_LIMITER_ENTRY, 0xa9b8 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HEADER_SCRATCH =
+{
+	32,
+	{
+		{ dump_RDD_DHD_L2_HEADER_BUFFER_ENTRY, 0xa9c0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_RUNNER_FLOW_HEADER_DESCRIPTOR =
+{
+	8,
+	{
+		{ dump_RDD_RUNNER_FLOW_HEADER_DESCRIPTOR, 0xa9e0 },
 		{ 0, 0 },
 	}
 };
@@ -2754,7 +2764,7 @@ static DUMP_RUNNERREG_STRUCT US_ONE_BUFFER =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE =
+static DUMP_RUNNERREG_STRUCT US_ROUTER_INGRESS_QUEUE =
 {
 	1,
 	{
@@ -2764,11 +2774,31 @@ static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE =
 };
 #endif
 #if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_GPE_COMMAND_PRIMITIVE_TABLE =
+{
+	2,
+	{
+		{ dump_RDD_GPE_COMMAND_PRIMITIVE_ENTRY, 0xaa40 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE =
+{
+	1,
+	{
+		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xaa80 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
 static DUMP_RUNNERREG_STRUCT US_DEBUG_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_DEBUG_BUFFER_ENTRY, 0xaa40 },
+		{ dump_RDD_DEBUG_BUFFER_ENTRY, 0xaac0 },
 		{ 0, 0 },
 	}
 };
@@ -2778,67 +2808,7 @@ static DUMP_RUNNERREG_STRUCT US_FW_MAC_ADDRS =
 {
 	8,
 	{
-		{ dump_RDD_EIGHT_BYTES, 0xaac0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_RUNNER_FLOW_HEADER_DESCRIPTOR =
-{
-	8,
-	{
-		{ dump_RDD_RUNNER_FLOW_HEADER_DESCRIPTOR, 0xab40 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_NULL_BUFFER =
-{
-	8,
-	{
-		{ dump_RDD_EIGHT_BYTES, 0xab58 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_CPU_PARAMETERS_BLOCK =
-{
-	20,
-	{
-		{ dump_RDD_CPU_PARAMETERS_BLOCK_ENTRY, 0xab60 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_BPM_DDR_OPTIMIZED_BUFFERS_BASE =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xab74 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_BYTE_1, 0xab78 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_INGRESS_QUEUE =
-{
-	1,
-	{
-		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xab80 },
+		{ dump_RDD_EIGHT_BYTES, 0xab40 },
 		{ 0, 0 },
 	}
 };
@@ -2855,7 +2825,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_FLOW_RING_BUFFER =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_MAINB_PARAM =
+static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_PICOB_PARAM =
 {
 	8,
 	{
@@ -2885,31 +2855,41 @@ static DUMP_RUNNERREG_STRUCT US_CPU_TX_FAST_QUEUE =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE =
+static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_INGRESS_QUEUE =
 {
-	2,
+	1,
 	{
-		{ dump_RDD_US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_ENTRY, 0xac80 },
+		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xac80 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
+static DUMP_RUNNERREG_STRUCT US_CPU_PARAMETERS_BLOCK =
 {
-	2,
+	20,
 	{
-		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xace0 },
+		{ dump_RDD_CPU_PARAMETERS_BLOCK_ENTRY, 0xacc0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_PICOB_PARAM =
+static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFERS_BASE =
 {
-	8,
+	4,
 	{
-		{ dump_RDD_EIGHT_BYTES, 0xacf0 },
+		{ dump_RDD_FOUR_BYTES, 0xacd4 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT GPON_ABSOLUTE_TX_FIRMWARE_COUNTER =
+{
+	1,
+	{
+		{ dump_RDD_GPON_ABSOLUTE_TX_COUNTER, 0xacd8 },
 		{ 0, 0 },
 	}
 };
@@ -2938,81 +2918,21 @@ static DUMP_RUNNERREG_STRUCT US_CPU_TX_PICO_QUEUE =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_CSO_CONTEXT_TABLE =
-{
-	84,
-	{
-		{ dump_RDD_CSO_CONTEXT_ENTRY, 0xad80 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFERS_BASE =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xadd4 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT GPON_ABSOLUTE_TX_FIRMWARE_COUNTER =
-{
-	1,
-	{
-		{ dump_RDD_GPON_ABSOLUTE_TX_COUNTER, 0xadd8 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_DHD_FLOW_RING_DROP_COUNTER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xae00 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_CONNECTION_TABLE_CONFIG =
-{
-	4,
-	{
-		{ dump_RDD_CONNECTION_TABLE_CONFIG, 0xae14 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR =
-{
-	6,
-	{
-		{ dump_RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY, 0xae18 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE_PTR =
+static DUMP_RUNNERREG_STRUCT US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xae1e },
+		{ dump_RDD_US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_ENTRY, 0xad80 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
+static DUMP_RUNNERREG_STRUCT US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
 {
 	2,
 	{
-		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xae20 },
+		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xade0 },
 		{ 0, 0 },
 	}
 };
@@ -3022,47 +2942,47 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xae30 },
+		{ dump_RDD_TWO_BYTES, 0xadf0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_SYSTEM_CONFIGURATION =
+static DUMP_RUNNERREG_STRUCT US_CSO_CONTEXT_TABLE =
 {
-	36,
+	84,
 	{
-		{ dump_RDD_SYSTEM_CONFIGURATION, 0xae40 },
+		{ dump_RDD_CSO_CONTEXT_ENTRY, 0xae00 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_CONTEXT_TABLE_CONFIG =
-{
-	4,
-	{
-		{ dump_RDD_CONTEXT_TABLE_CONFIG, 0xae64 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_ENTRY, 0xae68 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT DATA_POINTER_DUMMY_TARGET =
+static DUMP_RUNNERREG_STRUCT US_CONNECTION_TABLE_CONFIG =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xae88 },
+		{ dump_RDD_CONNECTION_TABLE_CONFIG, 0xae54 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_NULL_BUFFER =
+{
+	8,
+	{
+		{ dump_RDD_EIGHT_BYTES, 0xae58 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
+{
+	2,
+	{
+		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xae60 },
 		{ 0, 0 },
 	}
 };
@@ -3072,37 +2992,57 @@ static DUMP_RUNNERREG_STRUCT US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xae90 },
+		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xae70 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT WAN_TX_SCRATCH =
+static DUMP_RUNNERREG_STRUCT US_DHD_FLOW_RING_DROP_COUNTER =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xae80 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_CONTEXT_TABLE_CONFIG =
+{
+	4,
+	{
+		{ dump_RDD_CONTEXT_TABLE_CONFIG, 0xae94 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaea0 },
+		{ dump_RDD_US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_ENTRY, 0xae98 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE =
+static DUMP_RUNNERREG_STRUCT US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_CPU_REASON_TO_METER_ENTRY, 0xaeb8 },
+		{ dump_RDD_BYTE_1, 0xaeb8 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE =
+static DUMP_RUNNERREG_STRUCT US_SYSTEM_CONFIGURATION =
 {
-	2,
+	36,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xaeca },
+		{ dump_RDD_SYSTEM_CONFIGURATION, 0xaec0 },
 		{ 0, 0 },
 	}
 };
@@ -3112,37 +3052,37 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_ENTRY, 0xaecc },
+		{ dump_RDD_PARALLEL_PROCESSING_ENTRY, 0xaee4 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE =
+static DUMP_RUNNERREG_STRUCT WAN_TX_SCRATCH =
 {
 	1,
 	{
-		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xaed0 },
+		{ dump_RDD_ONE_BYTE, 0xaee8 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
+static DUMP_RUNNERREG_STRUCT CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaed9 },
+		{ dump_RDD_CPU_REASON_TO_METER_ENTRY, 0xaf00 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION =
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xaeda },
+		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xaf12 },
 		{ 0, 0 },
 	}
 };
@@ -3152,57 +3092,57 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_SLAVE_LOCK =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xaedc },
+		{ dump_RDD_FOUR_BYTES, 0xaf14 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_BUFFER =
+static DUMP_RUNNERREG_STRUCT US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR =
 {
-	16,
+	6,
 	{
-		{ dump_RDD_SIXTEEN_BYTES, 0xaee0 },
+		{ dump_RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY, 0xaf18 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT CPU_TX_DS_EGRESS_DHD_TX_POST_CONTEXT =
-{
-	16,
-	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xaef0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_LAYER2_HEADER_BUFFER =
-{
-	1,
-	{
-		{ dump_RDD_ONE_BYTE, 0xaf00 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE_PTR =
+static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xaf0e },
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xaf1e },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_TASK_REORDER_FIFO =
+static DUMP_RUNNERREG_STRUCT BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY, 0xaf10 },
+		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xaf20 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xaf29 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION =
+{
+	2,
+	{
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xaf2a },
 		{ 0, 0 },
 	}
 };
@@ -3212,213 +3152,33 @@ static DUMP_RUNNERREG_STRUCT US_CPU_TX_FLUSH_PAUSE_REQUEST =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xaf14 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_ONE_BYTE, 0xaf18 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_DEBUG_PERIPHERALS_STATUS_REGISTER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xaf20 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT IH_BUFFER_BBH_POINTER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xaf24 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_CONTEXT_CONTINUATION_TABLE_CONFIG =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xaf28 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_DOORBELL_SCRATCH =
-{
-	4,
-	{
 		{ dump_RDD_FOUR_BYTES, 0xaf2c },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_RATE_CONTROLLER_EXPONENT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_BUFFER =
 {
-	1,
+	16,
 	{
-		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0xaf30 },
+		{ dump_RDD_SIXTEEN_BYTES, 0xaf30 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR =
+static DUMP_RUNNERREG_STRUCT CPU_TX_DS_EGRESS_DHD_TX_POST_CONTEXT =
 {
-	2,
+	16,
 	{
-		{ dump_RDD_LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xaf34 },
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xaf40 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR =
-{
-	2,
-	{
-		{ dump_RDD_LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xaf36 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR =
-{
-	2,
-	{
-		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xaf38 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_ANY_SRC_PORT_FLOW_COUNTER =
-{
-	2,
-	{
-		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xaf3a },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HOST_DATA_PTR_BUFFER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xaf3c },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_TIMER_7_SCHEDULER_NEXT_ENTRY =
-{
-	2,
-	{
-		{ dump_RDD_TWO_BYTES, 0xaf40 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_MEMLIB_SEMAPHORE =
-{
-	2,
-	{
-		{ dump_RDD_TWO_BYTES, 0xaf42 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT ETHWAN2_RX_INGRESS_QUEUE_PTR =
-{
-	2,
-	{
-		{ dump_RDD_TWO_BYTES, 0xaf44 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_RUNNER_CONGESTION_STATE =
-{
-	2,
-	{
-		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xaf46 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT WAN_ENQUEUE_INGRESS_QUEUE_PTR =
-{
-	2,
-	{
-		{ dump_RDD_WAN_ENQUEUE_INGRESS_QUEUE_PTR_ENTRY, 0xaf48 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_DHD_BPM_CONGESTION_UG3_DROP_COUNTER =
-{
-	2,
-	{
-		{ dump_RDD_TWO_BYTES, 0xaf4a },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_DHD_BPM_CONGESTION_ALLOC_FAIL_DROP_COUNTER =
-{
-	2,
-	{
-		{ dump_RDD_TWO_BYTES, 0xaf4c },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_FC_GLOBAL_CFG =
-{
-	1,
-	{
-		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xaf4e },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT ETHWAN2_SWITCH_PORT =
-{
-	1,
-	{
-		{ dump_RDD_ONE_BYTE, 0xaf4f },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR =
+static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_LAYER2_HEADER_BUFFER =
 {
 	1,
 	{
@@ -3428,11 +3188,251 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR =
 };
 #endif
 #if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xaf5e },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT DATA_POINTER_DUMMY_TARGET =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xaf60 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_TASK_REORDER_FIFO =
+{
+	1,
+	{
+		{ dump_RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY, 0xaf68 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_DEBUG_PERIPHERALS_STATUS_REGISTER =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xaf6c },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xaf70 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT IH_BUFFER_BBH_POINTER =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xaf78 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_CONTEXT_CONTINUATION_TABLE_CONFIG =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xaf7c },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_DOORBELL_SCRATCH =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xaf80 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xaf84 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xaf86 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_RATE_CONTROLLER_EXPONENT_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0xaf88 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR =
+{
+	2,
+	{
+		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xaf8c },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_ANY_SRC_PORT_FLOW_COUNTER =
+{
+	2,
+	{
+		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xaf8e },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HOST_DATA_PTR_BUFFER =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xaf90 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_TIMER_7_SCHEDULER_NEXT_ENTRY =
+{
+	2,
+	{
+		{ dump_RDD_TWO_BYTES, 0xaf94 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_MEMLIB_SEMAPHORE =
+{
+	2,
+	{
+		{ dump_RDD_TWO_BYTES, 0xaf96 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT ETHWAN2_RX_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_TWO_BYTES, 0xaf98 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_RUNNER_CONGESTION_STATE =
+{
+	2,
+	{
+		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xaf9a },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT WAN_ENQUEUE_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_WAN_ENQUEUE_INGRESS_QUEUE_PTR_ENTRY, 0xaf9c },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_DHD_BPM_CONGESTION_UG3_DROP_COUNTER =
+{
+	2,
+	{
+		{ dump_RDD_TWO_BYTES, 0xaf9e },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_DHD_BPM_CONGESTION_ALLOC_FAIL_DROP_COUNTER =
+{
+	2,
+	{
+		{ dump_RDD_TWO_BYTES, 0xafa0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_FC_GLOBAL_CFG =
+{
+	1,
+	{
+		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xafa2 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT ETHWAN2_SWITCH_PORT =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xafa3 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xafa4 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
 static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_IP_FLOW_RULE_CFG_DESCRIPTOR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf51 },
+		{ dump_RDD_ONE_BYTE, 0xafa5 },
 		{ 0, 0 },
 	}
 };
@@ -3442,7 +3442,7 @@ static DUMP_RUNNERREG_STRUCT US_PACKET_BUFFER_SIZE_ASR_8 =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf52 },
+		{ dump_RDD_ONE_BYTE, 0xafa6 },
 		{ 0, 0 },
 	}
 };
@@ -3452,7 +3452,7 @@ static DUMP_RUNNERREG_STRUCT US_MAIN_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf53 },
+		{ dump_RDD_ONE_BYTE, 0xafa7 },
 		{ 0, 0 },
 	}
 };
@@ -3462,7 +3462,7 @@ static DUMP_RUNNERREG_STRUCT US_PICO_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf54 },
+		{ dump_RDD_ONE_BYTE, 0xafa8 },
 		{ 0, 0 },
 	}
 };
@@ -3472,7 +3472,7 @@ static DUMP_RUNNERREG_STRUCT US_RUNNER_FLOW_IH_RESPONSE_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf55 },
+		{ dump_RDD_ONE_BYTE, 0xafa9 },
 		{ 0, 0 },
 	}
 };
@@ -3482,7 +3482,7 @@ static DUMP_RUNNERREG_STRUCT DSL_PTM_BOND_TX_CONTROL =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf56 },
+		{ dump_RDD_ONE_BYTE, 0xafaa },
 		{ 0, 0 },
 	}
 };
@@ -3492,7 +3492,7 @@ static DUMP_RUNNERREG_STRUCT DSL_BUFFER_ALIGNMENT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf57 },
+		{ dump_RDD_ONE_BYTE, 0xafab },
 		{ 0, 0 },
 	}
 };
@@ -3502,7 +3502,7 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_SLAVE_VECTOR =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xaf58 },
+		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xafac },
 		{ 0, 0 },
 	}
 };
@@ -3512,7 +3512,7 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_CACHE_MODE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf59 },
+		{ dump_RDD_ONE_BYTE, 0xafad },
 		{ 0, 0 },
 	}
 };
@@ -3522,7 +3522,7 @@ static DUMP_RUNNERREG_STRUCT US_IH_CONGESTION_THRESHOLD =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf5a },
+		{ dump_RDD_ONE_BYTE, 0xafae },
 		{ 0, 0 },
 	}
 };
@@ -3532,7 +3532,7 @@ static DUMP_RUNNERREG_STRUCT US_FW_MAC_ADDRS_COUNT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf5b },
+		{ dump_RDD_ONE_BYTE, 0xafaf },
 		{ 0, 0 },
 	}
 };
@@ -3542,7 +3542,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_DMA_SYNCHRONIZATION =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf5c },
+		{ dump_RDD_ONE_BYTE, 0xafb0 },
 		{ 0, 0 },
 	}
 };
@@ -4080,21 +4080,11 @@ static DUMP_RUNNERREG_STRUCT PM_COUNTERS_BUFFER =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT TX_CPL_DHD_DMA_SCRATCH =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0x76e0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63138
 static DUMP_RUNNERREG_STRUCT DS_R2D_DHD_DMA_SCRATCH =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0x76ec },
+		{ dump_RDD_FOUR_BYTES, 0x76e0 },
 		{ 0, 0 },
 	}
 };
@@ -4150,11 +4140,11 @@ static DUMP_RUNNERREG_STRUCT INTERRUPT_COALESCING_TIMER_ARMED =
 };
 #endif
 #if defined DSL_63138
-static DUMP_RUNNERREG_STRUCT DS_RATE_CONTROLLER_EXPONENT_TABLE =
+static DUMP_RUNNERREG_STRUCT TX_CPL_DHD_DMA_SCRATCH =
 {
-	1,
+	4,
 	{
-		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0x7700 },
+		{ dump_RDD_FOUR_BYTES, 0x7700 },
 		{ 0, 0 },
 	}
 };
@@ -4164,7 +4154,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_POST_BUFFERS_IN_USE_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0x7704 },
+		{ dump_RDD_TWO_BYTES, 0x770c },
 		{ 0, 0 },
 	}
 };
@@ -4174,7 +4164,7 @@ static DUMP_RUNNERREG_STRUCT COMMON_A_DUMMY_STORE =
 {
 	1,
 	{
-		{ dump_RDD_DUMMY_STORE_ENTRY, 0x7706 },
+		{ dump_RDD_DUMMY_STORE_ENTRY, 0x770e },
 		{ 0, 0 },
 	}
 };
@@ -4184,7 +4174,17 @@ static DUMP_RUNNERREG_STRUCT FC_SERVICE_QUEUE_MODE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0x7707 },
+		{ dump_RDD_ONE_BYTE, 0x770f },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63138
+static DUMP_RUNNERREG_STRUCT DS_RATE_CONTROLLER_EXPONENT_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0x7710 },
 		{ 0, 0 },
 	}
 };
@@ -6155,7 +6155,7 @@ static DUMP_RUNNERREG_STRUCT DS_GSO_CONTEXT_TABLE =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_DOORBELL_SCRATCH =
+static DUMP_RUNNERREG_STRUCT TIMER_DHD_TX_POST_DOORBELL_SCRATCH =
 {
 	4,
 	{
@@ -6235,7 +6235,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_FLOW_RING_DROP_COUNTER =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT TIMER_DHD_TX_POST_DOORBELL_SCRATCH =
+static DUMP_RUNNERREG_STRUCT SPDSVC_HOST_BUF_PTR =
 {
 	4,
 	{
@@ -6245,21 +6245,21 @@ static DUMP_RUNNERREG_STRUCT TIMER_DHD_TX_POST_DOORBELL_SCRATCH =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT GSO_TX_DHD_L2_BUFFER =
+static DUMP_RUNNERREG_STRUCT GSO_TX_ENQUEUE_PCI_PACKET_CONTEXT =
 {
-	1,
+	8,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb6d8 },
+		{ dump_RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY, 0xb6d8 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT IPTV_COUNTERS_BUFFER =
+static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_DOORBELL_SCRATCH =
 {
-	2,
+	4,
 	{
-		{ dump_RDD_IPTV_COUNTERS_BUFFER, 0xb6ee },
+		{ dump_RDD_FOUR_BYTES, 0xb6e0 },
 		{ 0, 0 },
 	}
 };
@@ -6275,7 +6275,7 @@ static DUMP_RUNNERREG_STRUCT RUNNER_FLOW_IH_RESPONSE =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT GSO_TX_ENQUEUE_PCI_PACKET_CONTEXT =
+static DUMP_RUNNERREG_STRUCT CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT =
 {
 	8,
 	{
@@ -6315,17 +6315,17 @@ static DUMP_RUNNERREG_STRUCT DS_SYSTEM_CONFIGURATION =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT SPDSVC_HOST_BUF_PTR =
+static DUMP_RUNNERREG_STRUCT FIREWALL_IPV6_R16_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb7e4 },
+		{ dump_RDD_FIREWALL_IPV6_R16_BUFFER_ENTRY, 0xb7e4 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_L2_BUFFER =
+static DUMP_RUNNERREG_STRUCT GSO_TX_DHD_L2_BUFFER =
 {
 	1,
 	{
@@ -6335,11 +6335,11 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_L2_BUFFER =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT CPU_TX_PICO_INGRESS_QUEUE_PTR =
+static DUMP_RUNNERREG_STRUCT IPTV_COUNTERS_BUFFER =
 {
 	2,
 	{
-		{ dump_RDD_CPU_TX_PICO_INGRESS_QUEUE_PTR, 0xb7fe },
+		{ dump_RDD_IPTV_COUNTERS_BUFFER, 0xb7fe },
 		{ 0, 0 },
 	}
 };
@@ -6397,7 +6397,7 @@ static DUMP_RUNNERREG_STRUCT SERVICE_QUEUES_OVERALL_RATE_LIMITER =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT ETH_TX_SCRATCH =
+static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_L2_BUFFER =
 {
 	1,
 	{
@@ -6407,11 +6407,21 @@ static DUMP_RUNNERREG_STRUCT ETH_TX_SCRATCH =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT =
+static DUMP_RUNNERREG_STRUCT CPU_TX_PICO_INGRESS_QUEUE_PTR =
 {
-	8,
+	2,
 	{
-		{ dump_RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY, 0xb9a8 },
+		{ dump_RDD_CPU_TX_PICO_INGRESS_QUEUE_PTR, 0xb9ae },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT ETH_TX_SCRATCH =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xb9b0 },
 		{ 0, 0 },
 	}
 };
@@ -6421,7 +6431,7 @@ static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_KEY_BUFFER =
 {
 	16,
 	{
-		{ dump_RDD_SIXTEEN_BYTES, 0xb9b0 },
+		{ dump_RDD_SIXTEEN_BYTES, 0xb9c0 },
 		{ 0, 0 },
 	}
 };
@@ -6431,7 +6441,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_DS_PICO_DHD_TX_POST_CONTEXT =
 {
 	16,
 	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb9c0 },
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb9d0 },
 		{ 0, 0 },
 	}
 };
@@ -6441,7 +6451,7 @@ static DUMP_RUNNERREG_STRUCT WLAN_MCAST_DHD_TX_POST_CONTEXT =
 {
 	16,
 	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb9d0 },
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb9e0 },
 		{ 0, 0 },
 	}
 };
@@ -6451,7 +6461,7 @@ static DUMP_RUNNERREG_STRUCT GSO_TX_DS_PICO_DHD_TX_POST_CONTEXT =
 {
 	16,
 	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb9e0 },
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb9f0 },
 		{ 0, 0 },
 	}
 };
@@ -6461,7 +6471,7 @@ static DUMP_RUNNERREG_STRUCT EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb9f0 },
+		{ dump_RDD_ONE_BYTE, 0xba00 },
 		{ 0, 0 },
 	}
 };
@@ -6471,7 +6481,7 @@ static DUMP_RUNNERREG_STRUCT ETH_TX_EMACS_STATUS =
 {
 	1,
 	{
-		{ dump_RDD_ETH_TX_EMACS_STATUS_ENTRY, 0xb9f5 },
+		{ dump_RDD_ETH_TX_EMACS_STATUS_ENTRY, 0xba05 },
 		{ 0, 0 },
 	}
 };
@@ -6481,7 +6491,7 @@ static DUMP_RUNNERREG_STRUCT FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD =
 {
 	2,
 	{
-		{ dump_RDD_FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD, 0xb9f6 },
+		{ dump_RDD_FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD, 0xba06 },
 		{ 0, 0 },
 	}
 };
@@ -6491,17 +6501,7 @@ static DUMP_RUNNERREG_STRUCT HASH_BASED_FORWARDING_PORT_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_HASH_BASED_FORWARDING_PORT_ENTRY, 0xb9f8 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT FIREWALL_IPV6_R16_BUFFER =
-{
-	4,
-	{
-		{ dump_RDD_FIREWALL_IPV6_R16_BUFFER_ENTRY, 0xb9fc },
+		{ dump_RDD_HASH_BASED_FORWARDING_PORT_ENTRY, 0xba08 },
 		{ 0, 0 },
 	}
 };
@@ -6511,7 +6511,7 @@ static DUMP_RUNNERREG_STRUCT DOWNSTREAM_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR 
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba00 },
+		{ dump_RDD_TWO_BYTES, 0xba0c },
 		{ 0, 0 },
 	}
 };
@@ -6521,7 +6521,7 @@ static DUMP_RUNNERREG_STRUCT CPU_RX_PD_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba02 },
+		{ dump_RDD_TWO_BYTES, 0xba0e },
 		{ 0, 0 },
 	}
 };
@@ -6531,7 +6531,7 @@ static DUMP_RUNNERREG_STRUCT DS_CPU_RX_PICO_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xba04 },
+		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xba10 },
 		{ 0, 0 },
 	}
 };
@@ -6541,7 +6541,7 @@ static DUMP_RUNNERREG_STRUCT DS_BPM_DDR_BUFFER_HEADROOM_SIZE =
 {
 	2,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xba06 },
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xba12 },
 		{ 0, 0 },
 	}
 };
@@ -6551,7 +6551,7 @@ static DUMP_RUNNERREG_STRUCT DS_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION =
 {
 	2,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xba08 },
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xba14 },
 		{ 0, 0 },
 	}
 };
@@ -6561,7 +6561,7 @@ static DUMP_RUNNERREG_STRUCT DS_CPU_RX_FAST_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xba0a },
+		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xba16 },
 		{ 0, 0 },
 	}
 };
@@ -6571,7 +6571,7 @@ static DUMP_RUNNERREG_STRUCT DS_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR =
 {
 	2,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xba0c },
+		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xba18 },
 		{ 0, 0 },
 	}
 };
@@ -6581,7 +6581,7 @@ static DUMP_RUNNERREG_STRUCT DS_ANY_SRC_PORT_FLOW_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xba0e },
+		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xba1a },
 		{ 0, 0 },
 	}
 };
@@ -6591,17 +6591,7 @@ static DUMP_RUNNERREG_STRUCT GSO_DESC_PTR =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xba10 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xba14 },
+		{ dump_RDD_FOUR_BYTES, 0xba1c },
 		{ 0, 0 },
 	}
 };
@@ -6611,17 +6601,17 @@ static DUMP_RUNNERREG_STRUCT GSO_TX_DHD_HOST_BUF_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba18 },
+		{ dump_RDD_ONE_BYTE, 0xba20 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT IPSEC_DS_DDR_SA_DESC_TABLE_PTR =
+static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xba1c },
+		{ dump_RDD_FOUR_BYTES, 0xba24 },
 		{ 0, 0 },
 	}
 };
@@ -6631,7 +6621,17 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_HOST_BUF_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba20 },
+		{ dump_RDD_ONE_BYTE, 0xba28 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT IPSEC_DS_DDR_SA_DESC_TABLE_PTR =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xba2c },
 		{ 0, 0 },
 	}
 };
@@ -6641,7 +6641,7 @@ static DUMP_RUNNERREG_STRUCT DS_TIMER_7_SCHEDULER_NEXT_ENTRY =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba24 },
+		{ dump_RDD_TWO_BYTES, 0xba30 },
 		{ 0, 0 },
 	}
 };
@@ -6651,7 +6651,7 @@ static DUMP_RUNNERREG_STRUCT DS_MEMLIB_SEMAPHORE =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba26 },
+		{ dump_RDD_TWO_BYTES, 0xba32 },
 		{ 0, 0 },
 	}
 };
@@ -6661,7 +6661,7 @@ static DUMP_RUNNERREG_STRUCT WAN_PHYSICAL_PORT =
 {
 	2,
 	{
-		{ dump_RDD_WAN_PHYSICAL_PORT, 0xba28 },
+		{ dump_RDD_WAN_PHYSICAL_PORT, 0xba34 },
 		{ 0, 0 },
 	}
 };
@@ -6671,7 +6671,7 @@ static DUMP_RUNNERREG_STRUCT DOWNSTREAM_MULTICAST_LAN_ENQUEUE_SERVICE_QUEUE_INGR
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba2a },
+		{ dump_RDD_TWO_BYTES, 0xba36 },
 		{ 0, 0 },
 	}
 };
@@ -6681,7 +6681,7 @@ static DUMP_RUNNERREG_STRUCT DS_RUNNER_CONGESTION_STATE =
 {
 	2,
 	{
-		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xba2c },
+		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xba38 },
 		{ 0, 0 },
 	}
 };
@@ -6691,7 +6691,7 @@ static DUMP_RUNNERREG_STRUCT GSO_PICO_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba2e },
+		{ dump_RDD_TWO_BYTES, 0xba3a },
 		{ 0, 0 },
 	}
 };
@@ -6701,7 +6701,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_COMPLETE_BPM_REF_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba30 },
+		{ dump_RDD_TWO_BYTES, 0xba3c },
 		{ 0, 0 },
 	}
 };
@@ -6711,7 +6711,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_POST_CPU_BPM_REF_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba32 },
+		{ dump_RDD_TWO_BYTES, 0xba3e },
 		{ 0, 0 },
 	}
 };
@@ -6721,7 +6721,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_BPM_CONGESTION_UG3_DROP_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba34 },
+		{ dump_RDD_TWO_BYTES, 0xba40 },
 		{ 0, 0 },
 	}
 };
@@ -6731,7 +6731,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_BPM_CONGESTION_ALLOC_FAIL_DROP_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba36 },
+		{ dump_RDD_TWO_BYTES, 0xba42 },
 		{ 0, 0 },
 	}
 };
@@ -6741,7 +6741,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_DDR_SA_DESC_SIZE =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba38 },
+		{ dump_RDD_TWO_BYTES, 0xba44 },
 		{ 0, 0 },
 	}
 };
@@ -6751,7 +6751,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba3a },
+		{ dump_RDD_TWO_BYTES, 0xba46 },
 		{ 0, 0 },
 	}
 };
@@ -6761,7 +6761,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_IP_LENGTH =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xba3c },
+		{ dump_RDD_TWO_BYTES, 0xba48 },
 		{ 0, 0 },
 	}
 };
@@ -6771,7 +6771,7 @@ static DUMP_RUNNERREG_STRUCT PRIVATE_A_DUMMY_STORE =
 {
 	1,
 	{
-		{ dump_RDD_DUMMY_STORE_ENTRY, 0xba3e },
+		{ dump_RDD_DUMMY_STORE_ENTRY, 0xba4a },
 		{ 0, 0 },
 	}
 };
@@ -6781,7 +6781,7 @@ static DUMP_RUNNERREG_STRUCT ETH_TX_INTER_LAN_SCHEDULING_OFFSET =
 {
 	1,
 	{
-		{ dump_RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY, 0xba3f },
+		{ dump_RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY, 0xba4b },
 		{ 0, 0 },
 	}
 };
@@ -6791,7 +6791,7 @@ static DUMP_RUNNERREG_STRUCT DS_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba40 },
+		{ dump_RDD_ONE_BYTE, 0xba4c },
 		{ 0, 0 },
 	}
 };
@@ -6801,7 +6801,7 @@ static DUMP_RUNNERREG_STRUCT DS_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba41 },
+		{ dump_RDD_ONE_BYTE, 0xba4d },
 		{ 0, 0 },
 	}
 };
@@ -6811,7 +6811,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_DS_PICO_SEMAPHORE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba42 },
+		{ dump_RDD_ONE_BYTE, 0xba4e },
 		{ 0, 0 },
 	}
 };
@@ -6821,7 +6821,7 @@ static DUMP_RUNNERREG_STRUCT DS_FC_GLOBAL_CFG =
 {
 	1,
 	{
-		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xba43 },
+		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xba4f },
 		{ 0, 0 },
 	}
 };
@@ -6831,7 +6831,7 @@ static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba44 },
+		{ dump_RDD_ONE_BYTE, 0xba50 },
 		{ 0, 0 },
 	}
 };
@@ -6841,7 +6841,7 @@ static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_IP_FLOW_RULE_CFG_DESCRIPT
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba45 },
+		{ dump_RDD_ONE_BYTE, 0xba51 },
 		{ 0, 0 },
 	}
 };
@@ -6851,7 +6851,7 @@ static DUMP_RUNNERREG_STRUCT DS_PACKET_BUFFER_SIZE_ASR_8 =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba46 },
+		{ dump_RDD_ONE_BYTE, 0xba52 },
 		{ 0, 0 },
 	}
 };
@@ -6861,7 +6861,7 @@ static DUMP_RUNNERREG_STRUCT DS_MAIN_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba47 },
+		{ dump_RDD_ONE_BYTE, 0xba53 },
 		{ 0, 0 },
 	}
 };
@@ -6871,7 +6871,7 @@ static DUMP_RUNNERREG_STRUCT DS_PICO_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba48 },
+		{ dump_RDD_ONE_BYTE, 0xba54 },
 		{ 0, 0 },
 	}
 };
@@ -6881,7 +6881,7 @@ static DUMP_RUNNERREG_STRUCT DS_RUNNER_FLOW_IH_RESPONSE_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba49 },
+		{ dump_RDD_ONE_BYTE, 0xba55 },
 		{ 0, 0 },
 	}
 };
@@ -6891,7 +6891,7 @@ static DUMP_RUNNERREG_STRUCT DS_PARALLEL_PROCESSING_SLAVE_VECTOR =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xba4a },
+		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xba56 },
 		{ 0, 0 },
 	}
 };
@@ -6901,7 +6901,7 @@ static DUMP_RUNNERREG_STRUCT DS_PARALLEL_PROCESSING_CONTEXT_CACHE_MODE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba4b },
+		{ dump_RDD_ONE_BYTE, 0xba57 },
 		{ 0, 0 },
 	}
 };
@@ -6911,7 +6911,7 @@ static DUMP_RUNNERREG_STRUCT DS_IH_CONGESTION_THRESHOLD =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba4c },
+		{ dump_RDD_ONE_BYTE, 0xba58 },
 		{ 0, 0 },
 	}
 };
@@ -6921,7 +6921,7 @@ static DUMP_RUNNERREG_STRUCT DS_FW_MAC_ADDRS_COUNT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba4d },
+		{ dump_RDD_ONE_BYTE, 0xba59 },
 		{ 0, 0 },
 	}
 };
@@ -6931,7 +6931,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_DMA_SYNCHRONIZATION =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba4e },
+		{ dump_RDD_ONE_BYTE, 0xba5a },
 		{ 0, 0 },
 	}
 };
@@ -6941,7 +6941,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_POST_CPU_SEMAPHORE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba4f },
+		{ dump_RDD_ONE_BYTE, 0xba5b },
 		{ 0, 0 },
 	}
 };
@@ -6951,7 +6951,7 @@ static DUMP_RUNNERREG_STRUCT RING_CACHE_DHD_TXPOST_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba50 },
+		{ dump_RDD_ONE_BYTE, 0xba5c },
 		{ 0, 0 },
 	}
 };
@@ -6961,7 +6961,7 @@ static DUMP_RUNNERREG_STRUCT COMMON_DHD_TXPOST_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba51 },
+		{ dump_RDD_ONE_BYTE, 0xba5d },
 		{ 0, 0 },
 	}
 };
@@ -6971,7 +6971,7 @@ static DUMP_RUNNERREG_STRUCT TXCPL_INT_DHD_TXPOST_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba52 },
+		{ dump_RDD_ONE_BYTE, 0xba5e },
 		{ 0, 0 },
 	}
 };
@@ -6981,7 +6981,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_SA_DESC_NEXT_REPLACE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba53 },
+		{ dump_RDD_ONE_BYTE, 0xba5f },
 		{ 0, 0 },
 	}
 };
@@ -6991,7 +6991,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_US_SA_DESC_NEXT_REPLACE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xba54 },
+		{ dump_RDD_ONE_BYTE, 0xba60 },
 		{ 0, 0 },
 	}
 };
@@ -7090,11 +7090,13 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_LOOKUP_TABLE =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_QUEUE_PROFILE_TABLE =
+static DUMP_RUNNERREG_STRUCT DSL_PTM_BOND_TX_HDR_TABLE =
 {
-	16,
+#if defined DSL_63148
+	2,
 	{
-		{ dump_RDD_QUEUE_PROFILE, 0x8380 },
+		{ dump_RDD_DSL_PTM_BOND_TX_HDR_ENTRY, 0x83c0 },
+#endif
 		{ 0, 0 },
 	}
 };
@@ -7200,23 +7202,21 @@ static DUMP_RUNNERREG_STRUCT US_MAIN_TIMER_TASK_DESCRIPTOR_TABLE =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT DSL_PTM_BOND_TX_HDR_TABLE =
+static DUMP_RUNNERREG_STRUCT US_TRAFFIC_CLASS_TO_QUEUE_TABLE =
 {
-#if defined DSL_63148
-	2,
+	1,
 	{
-		{ dump_RDD_DSL_PTM_BOND_TX_HDR_ENTRY, 0x91c0 },
-#endif
+		{ dump_RDD_US_QUEUE_ENTRY, 0x91c0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_TRAFFIC_CLASS_TO_QUEUE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE =
 {
-	1,
+	2,
 	{
-		{ dump_RDD_US_QUEUE_ENTRY, 0x9200 },
+		{ dump_RDD_TWO_BYTES, 0x9200 },
 		{ 0, 0 },
 	}
 };
@@ -7242,11 +7242,11 @@ static DUMP_RUNNERREG_STRUCT US_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_L2_UCAST_CONNECTION_BUFFER =
 {
-	2,
+	16,
 	{
-		{ dump_RDD_TWO_BYTES, 0x92c0 },
+		{ dump_RDD_FC_L2_UCAST_CONNECTION_ENTRY, 0x92c0 },
 		{ 0, 0 },
 	}
 };
@@ -7262,11 +7262,11 @@ static DUMP_RUNNERREG_STRUCT US_RATE_LIMITER_TABLE =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_METER_TABLE =
+static DUMP_RUNNERREG_STRUCT US_QUEUE_PROFILE_TABLE =
 {
-	8,
+	16,
 	{
-		{ dump_RDD_CPU_RX_METER_ENTRY, 0x9380 },
+		{ dump_RDD_QUEUE_PROFILE, 0x9380 },
 		{ 0, 0 },
 	}
 };
@@ -7302,94 +7302,11 @@ static DUMP_RUNNERREG_STRUCT WAN_CHANNELS_0_7_TABLE =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_L2_UCAST_CONNECTION_BUFFER =
-{
-	16,
-	{
-		{ dump_RDD_FC_L2_UCAST_CONNECTION_ENTRY, 0xa2c0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_INGRESS_HANDLER_SKB_DATA_POINTER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xa300 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_GRE_RUNNER_FLOW_HEADER_BUFFER =
-{
-	128,
-	{
-		{ dump_RDD_GRE_RUNNER_FLOW_HEADER_BUFFER, 0xa380 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_PROFILING_BUFFER_PICO_RUNNER =
-{
-	256,
-	{
-		{ dump_RDD_PROFILING_BUFFER_PICO_RUNNER, 0xa400 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE =
-{
-	8,
-	{
-		{ dump_RDD_INGRESS_CLASSIFICATION_RULE_CFG_ENTRY, 0xa500 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_CONNECTION_CACHE_BUFFER =
-{
-	16,
-	{
-		{ dump_RDD_CONNECTION_ENTRY, 0xa580 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_PARAMETER_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_INGRESS_FILTERS_PARAMETER_ENTRY, 0xa600 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
 static DUMP_RUNNERREG_STRUCT US_PICO_TIMER_TASK_DESCRIPTOR_TABLE =
 {
 	8,
 	{
-		{ dump_RDD_TIMER_TASK_DESCRIPTOR_ENTRY, 0xa660 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT DHD_RX_COMPLETE_FLOW_RING_BUFFER =
-{
-	32,
-	{
-		{ dump_RDD_DHD_RX_POST_DESCRIPTOR, 0xa680 },
-		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR, 0xa680 },
-		{ dump_RDD_DHD_RX_POST_DESCRIPTOR_CWI32, 0xa680 },
-		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR_CWI32, 0xa680 },
+		{ dump_RDD_TIMER_TASK_DESCRIPTOR_ENTRY, 0xa2c0 },
 		{ 0, 0 },
 	}
 };
@@ -7399,13 +7316,95 @@ static DUMP_RUNNERREG_STRUCT US_FC_L2_UCAST_TUPLE_BUFFER =
 {
 	32,
 	{
-		{ dump_RDD_FC_L2_UCAST_TUPLE_ENTRY, 0xa6e0 },
+		{ dump_RDD_FC_L2_UCAST_TUPLE_ENTRY, 0xa2e0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT DHD_RX_POST_FLOW_RING_BUFFER =
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_METER_TABLE =
+{
+	8,
+	{
+		{ dump_RDD_CPU_RX_METER_ENTRY, 0xa300 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_INGRESS_HANDLER_SKB_DATA_POINTER =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xa380 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_GRE_RUNNER_FLOW_HEADER_BUFFER =
+{
+	128,
+	{
+		{ dump_RDD_GRE_RUNNER_FLOW_HEADER_BUFFER, 0xa400 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE =
+{
+	8,
+	{
+		{ dump_RDD_INGRESS_CLASSIFICATION_RULE_CFG_ENTRY, 0xa480 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_PROFILING_BUFFER_PICO_RUNNER =
+{
+	256,
+	{
+		{ dump_RDD_PROFILING_BUFFER_PICO_RUNNER, 0xa500 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_CONNECTION_CACHE_BUFFER =
+{
+	16,
+	{
+		{ dump_RDD_CONNECTION_ENTRY, 0xa600 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_PARAMETER_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_INGRESS_FILTERS_PARAMETER_ENTRY, 0xa680 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT DSL_PTM_BOND_TX_HDR_DEBUG_TABLE =
+{
+#if defined DSL_63148
+	2,
+	{
+		{ dump_RDD_DSL_PTM_BOND_TX_HDR_ENTRY, 0xa6f0 },
+#endif
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT DHD_RX_COMPLETE_FLOW_RING_BUFFER =
 {
 	32,
 	{
@@ -7428,23 +7427,14 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_GENERIC_RULE_CFG_TABLE =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_INGRESS_RATE_LIMITER_TABLE =
+static DUMP_RUNNERREG_STRUCT DHD_RX_POST_FLOW_RING_BUFFER =
 {
-	16,
+	32,
 	{
-		{ dump_RDD_INGRESS_RATE_LIMITER_ENTRY, 0xa780 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT DSL_PTM_BOND_TX_HDR_DEBUG_TABLE =
-{
-#if defined DSL_63148
-	2,
-	{
-		{ dump_RDD_DSL_PTM_BOND_TX_HDR_ENTRY, 0xa7d0 },
-#endif
+		{ dump_RDD_DHD_RX_POST_DESCRIPTOR, 0xa780 },
+		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR, 0xa780 },
+		{ dump_RDD_DHD_RX_POST_DESCRIPTOR_CWI32, 0xa780 },
+		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR_CWI32, 0xa780 },
 		{ 0, 0 },
 	}
 };
@@ -7460,11 +7450,11 @@ static DUMP_RUNNERREG_STRUCT US_FAST_RUNNER_GLOBAL_REGISTERS_INIT =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_SPDSVC_CONTEXT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_RATE_LIMITER_TABLE =
 {
-	80,
+	16,
 	{
-		{ dump_RDD_SPDSVC_CONTEXT_ENTRY, 0xa800 },
+		{ dump_RDD_INGRESS_RATE_LIMITER_ENTRY, 0xa800 },
 		{ 0, 0 },
 	}
 };
@@ -7490,41 +7480,21 @@ static DUMP_RUNNERREG_STRUCT US_PICO_RUNNER_GLOBAL_REGISTERS_INIT =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE =
+static DUMP_RUNNERREG_STRUCT US_SPDSVC_CONTEXT_TABLE =
 {
-	1,
+	80,
 	{
-		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xa880 },
+		{ dump_RDD_SPDSVC_CONTEXT_ENTRY, 0xa880 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_CPU_TX_MESSAGE_DATA_BUFFER =
+static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_MAINB_PARAM =
 {
-	64,
+	8,
 	{
-		{ dump_RDD_CPU_TX_MESSAGE_DATA_BUFFER_ENTRY, 0xa8c0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_ROUTER_INGRESS_QUEUE =
-{
-	1,
-	{
-		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xa900 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HEADER_SCRATCH =
-{
-	32,
-	{
-		{ dump_RDD_DHD_L2_HEADER_BUFFER_ENTRY, 0xa940 },
+		{ dump_RDD_EIGHT_BYTES, 0xa8d0 },
 		{ 0, 0 },
 	}
 };
@@ -7534,17 +7504,37 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_CONFIGURATION_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_INGRESS_FILTERS_CONFIGURATION_ENTRY, 0xa960 },
+		{ dump_RDD_INGRESS_FILTERS_CONFIGURATION_ENTRY, 0xa8e0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_TOTAL_PPS_RATE_LIMITER =
+static DUMP_RUNNERREG_STRUCT US_ETH0_EEE_MODE_CONFIG_MESSAGE =
 {
-	8,
+	4,
 	{
-		{ dump_RDD_TOTAL_PPS_RATE_LIMITER_ENTRY, 0xa978 },
+		{ dump_RDD_FOUR_BYTES, 0xa8fc },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE =
+{
+	1,
+	{
+		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xa900 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_CPU_TX_MESSAGE_DATA_BUFFER =
+{
+	64,
+	{
+		{ dump_RDD_CPU_TX_MESSAGE_DATA_BUFFER_ENTRY, 0xa940 },
 		{ 0, 0 },
 	}
 };
@@ -7580,7 +7570,7 @@ static DUMP_RUNNERREG_STRUCT US_MAIN_TIMER_CONTROL_DESCRIPTOR =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_ETH0_EEE_MODE_CONFIG_MESSAGE =
+static DUMP_RUNNERREG_STRUCT US_BPM_EXTRA_DDR_BUFFERS_BASE =
 {
 	4,
 	{
@@ -7620,7 +7610,7 @@ static DUMP_RUNNERREG_STRUCT US_PICO_TIMER_CONTROL_DESCRIPTOR =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_BPM_EXTRA_DDR_BUFFERS_BASE =
+static DUMP_RUNNERREG_STRUCT US_BPM_DDR_OPTIMIZED_BUFFERS_BASE =
 {
 	4,
 	{
@@ -7640,11 +7630,31 @@ static DUMP_RUNNERREG_STRUCT GPON_ABSOLUTE_TX_BBH_COUNTER =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_GPE_COMMAND_PRIMITIVE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_TOTAL_PPS_RATE_LIMITER =
 {
-	2,
+	8,
 	{
-		{ dump_RDD_GPE_COMMAND_PRIMITIVE_ENTRY, 0xa9b8 },
+		{ dump_RDD_TOTAL_PPS_RATE_LIMITER_ENTRY, 0xa9b8 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HEADER_SCRATCH =
+{
+	32,
+	{
+		{ dump_RDD_DHD_L2_HEADER_BUFFER_ENTRY, 0xa9c0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_RUNNER_FLOW_HEADER_DESCRIPTOR =
+{
+	8,
+	{
+		{ dump_RDD_RUNNER_FLOW_HEADER_DESCRIPTOR, 0xa9e0 },
 		{ 0, 0 },
 	}
 };
@@ -7660,7 +7670,7 @@ static DUMP_RUNNERREG_STRUCT US_ONE_BUFFER =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE =
+static DUMP_RUNNERREG_STRUCT US_ROUTER_INGRESS_QUEUE =
 {
 	1,
 	{
@@ -7670,11 +7680,31 @@ static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE =
 };
 #endif
 #if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_GPE_COMMAND_PRIMITIVE_TABLE =
+{
+	2,
+	{
+		{ dump_RDD_GPE_COMMAND_PRIMITIVE_ENTRY, 0xaa40 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE =
+{
+	1,
+	{
+		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xaa80 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
 static DUMP_RUNNERREG_STRUCT US_DEBUG_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_DEBUG_BUFFER_ENTRY, 0xaa40 },
+		{ dump_RDD_DEBUG_BUFFER_ENTRY, 0xaac0 },
 		{ 0, 0 },
 	}
 };
@@ -7684,67 +7714,7 @@ static DUMP_RUNNERREG_STRUCT US_FW_MAC_ADDRS =
 {
 	8,
 	{
-		{ dump_RDD_EIGHT_BYTES, 0xaac0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_RUNNER_FLOW_HEADER_DESCRIPTOR =
-{
-	8,
-	{
-		{ dump_RDD_RUNNER_FLOW_HEADER_DESCRIPTOR, 0xab40 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_NULL_BUFFER =
-{
-	8,
-	{
-		{ dump_RDD_EIGHT_BYTES, 0xab58 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_CPU_PARAMETERS_BLOCK =
-{
-	20,
-	{
-		{ dump_RDD_CPU_PARAMETERS_BLOCK_ENTRY, 0xab60 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_BPM_DDR_OPTIMIZED_BUFFERS_BASE =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xab74 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_BYTE_1, 0xab78 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_INGRESS_QUEUE =
-{
-	1,
-	{
-		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xab80 },
+		{ dump_RDD_EIGHT_BYTES, 0xab40 },
 		{ 0, 0 },
 	}
 };
@@ -7761,7 +7731,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_FLOW_RING_BUFFER =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_MAINB_PARAM =
+static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_PICOB_PARAM =
 {
 	8,
 	{
@@ -7791,31 +7761,41 @@ static DUMP_RUNNERREG_STRUCT US_CPU_TX_FAST_QUEUE =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE =
+static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_INGRESS_QUEUE =
 {
-	2,
+	1,
 	{
-		{ dump_RDD_US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_ENTRY, 0xac80 },
+		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xac80 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
+static DUMP_RUNNERREG_STRUCT US_CPU_PARAMETERS_BLOCK =
 {
-	2,
+	20,
 	{
-		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xace0 },
+		{ dump_RDD_CPU_PARAMETERS_BLOCK_ENTRY, 0xacc0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_PICOB_PARAM =
+static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFERS_BASE =
 {
-	8,
+	4,
 	{
-		{ dump_RDD_EIGHT_BYTES, 0xacf0 },
+		{ dump_RDD_FOUR_BYTES, 0xacd4 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT GPON_ABSOLUTE_TX_FIRMWARE_COUNTER =
+{
+	1,
+	{
+		{ dump_RDD_GPON_ABSOLUTE_TX_COUNTER, 0xacd8 },
 		{ 0, 0 },
 	}
 };
@@ -7844,81 +7824,21 @@ static DUMP_RUNNERREG_STRUCT US_CPU_TX_PICO_QUEUE =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_CSO_CONTEXT_TABLE =
-{
-	84,
-	{
-		{ dump_RDD_CSO_CONTEXT_ENTRY, 0xad80 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFERS_BASE =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xadd4 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT GPON_ABSOLUTE_TX_FIRMWARE_COUNTER =
-{
-	1,
-	{
-		{ dump_RDD_GPON_ABSOLUTE_TX_COUNTER, 0xadd8 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_DHD_FLOW_RING_DROP_COUNTER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xae00 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_CONNECTION_TABLE_CONFIG =
-{
-	4,
-	{
-		{ dump_RDD_CONNECTION_TABLE_CONFIG, 0xae14 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR =
-{
-	6,
-	{
-		{ dump_RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY, 0xae18 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE_PTR =
+static DUMP_RUNNERREG_STRUCT US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xae1e },
+		{ dump_RDD_US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_ENTRY, 0xad80 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
+static DUMP_RUNNERREG_STRUCT US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
 {
 	2,
 	{
-		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xae20 },
+		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xade0 },
 		{ 0, 0 },
 	}
 };
@@ -7928,47 +7848,47 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xae30 },
+		{ dump_RDD_TWO_BYTES, 0xadf0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_SYSTEM_CONFIGURATION =
+static DUMP_RUNNERREG_STRUCT US_CSO_CONTEXT_TABLE =
 {
-	36,
+	84,
 	{
-		{ dump_RDD_SYSTEM_CONFIGURATION, 0xae40 },
+		{ dump_RDD_CSO_CONTEXT_ENTRY, 0xae00 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_CONTEXT_TABLE_CONFIG =
-{
-	4,
-	{
-		{ dump_RDD_CONTEXT_TABLE_CONFIG, 0xae64 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_ENTRY, 0xae68 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT DATA_POINTER_DUMMY_TARGET =
+static DUMP_RUNNERREG_STRUCT US_CONNECTION_TABLE_CONFIG =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xae88 },
+		{ dump_RDD_CONNECTION_TABLE_CONFIG, 0xae54 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_NULL_BUFFER =
+{
+	8,
+	{
+		{ dump_RDD_EIGHT_BYTES, 0xae58 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
+{
+	2,
+	{
+		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xae60 },
 		{ 0, 0 },
 	}
 };
@@ -7978,37 +7898,57 @@ static DUMP_RUNNERREG_STRUCT US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xae90 },
+		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xae70 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT WAN_TX_SCRATCH =
+static DUMP_RUNNERREG_STRUCT US_DHD_FLOW_RING_DROP_COUNTER =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xae80 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_CONTEXT_TABLE_CONFIG =
+{
+	4,
+	{
+		{ dump_RDD_CONTEXT_TABLE_CONFIG, 0xae94 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaea0 },
+		{ dump_RDD_US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_ENTRY, 0xae98 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE =
+static DUMP_RUNNERREG_STRUCT US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_CPU_REASON_TO_METER_ENTRY, 0xaeb8 },
+		{ dump_RDD_BYTE_1, 0xaeb8 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE =
+static DUMP_RUNNERREG_STRUCT US_SYSTEM_CONFIGURATION =
 {
-	2,
+	36,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xaeca },
+		{ dump_RDD_SYSTEM_CONFIGURATION, 0xaec0 },
 		{ 0, 0 },
 	}
 };
@@ -8018,37 +7958,37 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_ENTRY, 0xaecc },
+		{ dump_RDD_PARALLEL_PROCESSING_ENTRY, 0xaee4 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE =
+static DUMP_RUNNERREG_STRUCT WAN_TX_SCRATCH =
 {
 	1,
 	{
-		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xaed0 },
+		{ dump_RDD_ONE_BYTE, 0xaee8 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
+static DUMP_RUNNERREG_STRUCT CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaed9 },
+		{ dump_RDD_CPU_REASON_TO_METER_ENTRY, 0xaf00 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION =
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xaeda },
+		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xaf12 },
 		{ 0, 0 },
 	}
 };
@@ -8058,57 +7998,57 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_SLAVE_LOCK =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xaedc },
+		{ dump_RDD_FOUR_BYTES, 0xaf14 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_BUFFER =
+static DUMP_RUNNERREG_STRUCT US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR =
 {
-	16,
+	6,
 	{
-		{ dump_RDD_SIXTEEN_BYTES, 0xaee0 },
+		{ dump_RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY, 0xaf18 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT CPU_TX_DS_EGRESS_DHD_TX_POST_CONTEXT =
-{
-	16,
-	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xaef0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_LAYER2_HEADER_BUFFER =
-{
-	1,
-	{
-		{ dump_RDD_ONE_BYTE, 0xaf00 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE_PTR =
+static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xaf0e },
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xaf1e },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_TASK_REORDER_FIFO =
+static DUMP_RUNNERREG_STRUCT BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY, 0xaf10 },
+		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xaf20 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xaf29 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION =
+{
+	2,
+	{
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xaf2a },
 		{ 0, 0 },
 	}
 };
@@ -8118,213 +8058,33 @@ static DUMP_RUNNERREG_STRUCT US_CPU_TX_FLUSH_PAUSE_REQUEST =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xaf14 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_ONE_BYTE, 0xaf18 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_DEBUG_PERIPHERALS_STATUS_REGISTER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xaf20 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT IH_BUFFER_BBH_POINTER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xaf24 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_CONTEXT_CONTINUATION_TABLE_CONFIG =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xaf28 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_DOORBELL_SCRATCH =
-{
-	4,
-	{
 		{ dump_RDD_FOUR_BYTES, 0xaf2c },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_RATE_CONTROLLER_EXPONENT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_BUFFER =
 {
-	1,
+	16,
 	{
-		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0xaf30 },
+		{ dump_RDD_SIXTEEN_BYTES, 0xaf30 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR =
+static DUMP_RUNNERREG_STRUCT CPU_TX_DS_EGRESS_DHD_TX_POST_CONTEXT =
 {
-	2,
+	16,
 	{
-		{ dump_RDD_LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xaf34 },
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xaf40 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR =
-{
-	2,
-	{
-		{ dump_RDD_LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xaf36 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR =
-{
-	2,
-	{
-		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xaf38 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_ANY_SRC_PORT_FLOW_COUNTER =
-{
-	2,
-	{
-		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xaf3a },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HOST_DATA_PTR_BUFFER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xaf3c },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_TIMER_7_SCHEDULER_NEXT_ENTRY =
-{
-	2,
-	{
-		{ dump_RDD_TWO_BYTES, 0xaf40 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_MEMLIB_SEMAPHORE =
-{
-	2,
-	{
-		{ dump_RDD_TWO_BYTES, 0xaf42 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT ETHWAN2_RX_INGRESS_QUEUE_PTR =
-{
-	2,
-	{
-		{ dump_RDD_TWO_BYTES, 0xaf44 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_RUNNER_CONGESTION_STATE =
-{
-	2,
-	{
-		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xaf46 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT WAN_ENQUEUE_INGRESS_QUEUE_PTR =
-{
-	2,
-	{
-		{ dump_RDD_WAN_ENQUEUE_INGRESS_QUEUE_PTR_ENTRY, 0xaf48 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_DHD_BPM_CONGESTION_UG3_DROP_COUNTER =
-{
-	2,
-	{
-		{ dump_RDD_TWO_BYTES, 0xaf4a },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_DHD_BPM_CONGESTION_ALLOC_FAIL_DROP_COUNTER =
-{
-	2,
-	{
-		{ dump_RDD_TWO_BYTES, 0xaf4c },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_FC_GLOBAL_CFG =
-{
-	1,
-	{
-		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xaf4e },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT ETHWAN2_SWITCH_PORT =
-{
-	1,
-	{
-		{ dump_RDD_ONE_BYTE, 0xaf4f },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR =
+static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_LAYER2_HEADER_BUFFER =
 {
 	1,
 	{
@@ -8334,11 +8094,251 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR =
 };
 #endif
 #if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xaf5e },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT DATA_POINTER_DUMMY_TARGET =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xaf60 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_TASK_REORDER_FIFO =
+{
+	1,
+	{
+		{ dump_RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY, 0xaf68 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_DEBUG_PERIPHERALS_STATUS_REGISTER =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xaf6c },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xaf70 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT IH_BUFFER_BBH_POINTER =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xaf78 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_CONTEXT_CONTINUATION_TABLE_CONFIG =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xaf7c },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_DOORBELL_SCRATCH =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xaf80 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xaf84 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xaf86 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_RATE_CONTROLLER_EXPONENT_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0xaf88 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR =
+{
+	2,
+	{
+		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xaf8c },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_ANY_SRC_PORT_FLOW_COUNTER =
+{
+	2,
+	{
+		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xaf8e },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HOST_DATA_PTR_BUFFER =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xaf90 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_TIMER_7_SCHEDULER_NEXT_ENTRY =
+{
+	2,
+	{
+		{ dump_RDD_TWO_BYTES, 0xaf94 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_MEMLIB_SEMAPHORE =
+{
+	2,
+	{
+		{ dump_RDD_TWO_BYTES, 0xaf96 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT ETHWAN2_RX_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_TWO_BYTES, 0xaf98 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_RUNNER_CONGESTION_STATE =
+{
+	2,
+	{
+		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xaf9a },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT WAN_ENQUEUE_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_WAN_ENQUEUE_INGRESS_QUEUE_PTR_ENTRY, 0xaf9c },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_DHD_BPM_CONGESTION_UG3_DROP_COUNTER =
+{
+	2,
+	{
+		{ dump_RDD_TWO_BYTES, 0xaf9e },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_DHD_BPM_CONGESTION_ALLOC_FAIL_DROP_COUNTER =
+{
+	2,
+	{
+		{ dump_RDD_TWO_BYTES, 0xafa0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_FC_GLOBAL_CFG =
+{
+	1,
+	{
+		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xafa2 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT ETHWAN2_SWITCH_PORT =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xafa3 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xafa4 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
 static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_IP_FLOW_RULE_CFG_DESCRIPTOR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf51 },
+		{ dump_RDD_ONE_BYTE, 0xafa5 },
 		{ 0, 0 },
 	}
 };
@@ -8348,7 +8348,7 @@ static DUMP_RUNNERREG_STRUCT US_PACKET_BUFFER_SIZE_ASR_8 =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf52 },
+		{ dump_RDD_ONE_BYTE, 0xafa6 },
 		{ 0, 0 },
 	}
 };
@@ -8358,7 +8358,7 @@ static DUMP_RUNNERREG_STRUCT US_MAIN_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf53 },
+		{ dump_RDD_ONE_BYTE, 0xafa7 },
 		{ 0, 0 },
 	}
 };
@@ -8368,7 +8368,7 @@ static DUMP_RUNNERREG_STRUCT US_PICO_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf54 },
+		{ dump_RDD_ONE_BYTE, 0xafa8 },
 		{ 0, 0 },
 	}
 };
@@ -8378,7 +8378,7 @@ static DUMP_RUNNERREG_STRUCT US_RUNNER_FLOW_IH_RESPONSE_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf55 },
+		{ dump_RDD_ONE_BYTE, 0xafa9 },
 		{ 0, 0 },
 	}
 };
@@ -8388,7 +8388,7 @@ static DUMP_RUNNERREG_STRUCT DSL_PTM_BOND_TX_CONTROL =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf56 },
+		{ dump_RDD_ONE_BYTE, 0xafaa },
 		{ 0, 0 },
 	}
 };
@@ -8398,7 +8398,7 @@ static DUMP_RUNNERREG_STRUCT DSL_BUFFER_ALIGNMENT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf57 },
+		{ dump_RDD_ONE_BYTE, 0xafab },
 		{ 0, 0 },
 	}
 };
@@ -8408,7 +8408,7 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_SLAVE_VECTOR =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xaf58 },
+		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xafac },
 		{ 0, 0 },
 	}
 };
@@ -8418,7 +8418,7 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_CACHE_MODE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf59 },
+		{ dump_RDD_ONE_BYTE, 0xafad },
 		{ 0, 0 },
 	}
 };
@@ -8428,7 +8428,7 @@ static DUMP_RUNNERREG_STRUCT US_IH_CONGESTION_THRESHOLD =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf5a },
+		{ dump_RDD_ONE_BYTE, 0xafae },
 		{ 0, 0 },
 	}
 };
@@ -8438,7 +8438,7 @@ static DUMP_RUNNERREG_STRUCT US_FW_MAC_ADDRS_COUNT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf5b },
+		{ dump_RDD_ONE_BYTE, 0xafaf },
 		{ 0, 0 },
 	}
 };
@@ -8448,7 +8448,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_DMA_SYNCHRONIZATION =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xaf5c },
+		{ dump_RDD_ONE_BYTE, 0xafb0 },
 		{ 0, 0 },
 	}
 };
@@ -8986,21 +8986,11 @@ static DUMP_RUNNERREG_STRUCT PM_COUNTERS_BUFFER =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT TX_CPL_DHD_DMA_SCRATCH =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0x76e0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined DSL_63148
 static DUMP_RUNNERREG_STRUCT DS_R2D_DHD_DMA_SCRATCH =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0x76ec },
+		{ dump_RDD_FOUR_BYTES, 0x76e0 },
 		{ 0, 0 },
 	}
 };
@@ -9056,11 +9046,11 @@ static DUMP_RUNNERREG_STRUCT INTERRUPT_COALESCING_TIMER_ARMED =
 };
 #endif
 #if defined DSL_63148
-static DUMP_RUNNERREG_STRUCT DS_RATE_CONTROLLER_EXPONENT_TABLE =
+static DUMP_RUNNERREG_STRUCT TX_CPL_DHD_DMA_SCRATCH =
 {
-	1,
+	4,
 	{
-		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0x7700 },
+		{ dump_RDD_FOUR_BYTES, 0x7700 },
 		{ 0, 0 },
 	}
 };
@@ -9070,7 +9060,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_POST_BUFFERS_IN_USE_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0x7704 },
+		{ dump_RDD_TWO_BYTES, 0x770c },
 		{ 0, 0 },
 	}
 };
@@ -9080,7 +9070,7 @@ static DUMP_RUNNERREG_STRUCT COMMON_A_DUMMY_STORE =
 {
 	1,
 	{
-		{ dump_RDD_DUMMY_STORE_ENTRY, 0x7706 },
+		{ dump_RDD_DUMMY_STORE_ENTRY, 0x770e },
 		{ 0, 0 },
 	}
 };
@@ -9090,7 +9080,17 @@ static DUMP_RUNNERREG_STRUCT FC_SERVICE_QUEUE_MODE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0x7707 },
+		{ dump_RDD_ONE_BYTE, 0x770f },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined DSL_63148
+static DUMP_RUNNERREG_STRUCT DS_RATE_CONTROLLER_EXPONENT_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0x7710 },
 		{ 0, 0 },
 	}
 };
@@ -11193,7 +11193,7 @@ static DUMP_RUNNERREG_STRUCT DS_SYSTEM_CONFIGURATION =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_DOORBELL_SCRATCH =
+static DUMP_RUNNERREG_STRUCT TIMER_DHD_TX_POST_DOORBELL_SCRATCH =
 {
 	4,
 	{
@@ -11243,11 +11243,21 @@ static DUMP_RUNNERREG_STRUCT DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE =
 };
 #endif
 #if defined WL4908
+static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_DOORBELL_SCRATCH =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xb820 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
 static DUMP_RUNNERREG_STRUCT IPSEC_DS_SA_DESC_CAM_TABLE =
 {
 	2,
 	{
-		{ dump_RDD_IPSEC_SA_DESC_CAM, 0xb820 },
+		{ dump_RDD_IPSEC_SA_DESC_CAM, 0xb830 },
 		{ 0, 0 },
 	}
 };
@@ -11257,57 +11267,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_US_SA_DESC_CAM_TABLE =
 {
 	2,
 	{
-		{ dump_RDD_IPSEC_SA_DESC_CAM, 0xb840 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT SERVICE_QUEUES_OVERALL_RATE_LIMITER =
-{
-	24,
-	{
-		{ dump_RDD_SERVICE_QUEUES_RATE_LIMITER_DESCRIPTOR, 0xb860 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT GSO_TX_DHD_L2_BUFFER =
-{
-	1,
-	{
-		{ dump_RDD_ONE_BYTE, 0xb878 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT IPTV_COUNTERS_BUFFER =
-{
-	2,
-	{
-		{ dump_RDD_IPTV_COUNTERS_BUFFER, 0xb88e },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_L2_BUFFER =
-{
-	1,
-	{
-		{ dump_RDD_ONE_BYTE, 0xb890 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT CPU_TX_PICO_INGRESS_QUEUE_PTR =
-{
-	2,
-	{
-		{ dump_RDD_CPU_TX_PICO_INGRESS_QUEUE_PTR, 0xb8a6 },
+		{ dump_RDD_IPSEC_SA_DESC_CAM, 0xb850 },
 		{ 0, 0 },
 	}
 };
@@ -11317,67 +11277,57 @@ static DUMP_RUNNERREG_STRUCT ETH_TX_SCRATCH =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb8a8 },
+		{ dump_RDD_ONE_BYTE, 0xb870 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT TIMER_DHD_TX_POST_DOORBELL_SCRATCH =
+static DUMP_RUNNERREG_STRUCT SERVICE_QUEUES_OVERALL_RATE_LIMITER =
 {
-	4,
+	24,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb8b8 },
+		{ dump_RDD_SERVICE_QUEUES_RATE_LIMITER_DESCRIPTOR, 0xb880 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT SPDSVC_HOST_BUF_PTR =
+static DUMP_RUNNERREG_STRUCT GSO_TX_DHD_L2_BUFFER =
 {
-	4,
+	1,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb8bc },
+		{ dump_RDD_ONE_BYTE, 0xb898 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_KEY_BUFFER =
+static DUMP_RUNNERREG_STRUCT IPTV_COUNTERS_BUFFER =
 {
-	16,
+	2,
 	{
-		{ dump_RDD_SIXTEEN_BYTES, 0xb8c0 },
+		{ dump_RDD_IPTV_COUNTERS_BUFFER, 0xb8ae },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT CPU_TX_DS_PICO_DHD_TX_POST_CONTEXT =
+static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_L2_BUFFER =
 {
-	16,
+	1,
 	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb8d0 },
+		{ dump_RDD_ONE_BYTE, 0xb8b0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT WLAN_MCAST_DHD_TX_POST_CONTEXT =
+static DUMP_RUNNERREG_STRUCT CPU_TX_PICO_INGRESS_QUEUE_PTR =
 {
-	16,
+	2,
 	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb8e0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT GSO_TX_DS_PICO_DHD_TX_POST_CONTEXT =
-{
-	16,
-	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb8f0 },
+		{ dump_RDD_CPU_TX_PICO_INGRESS_QUEUE_PTR, 0xb8c6 },
 		{ 0, 0 },
 	}
 };
@@ -11387,7 +11337,7 @@ static DUMP_RUNNERREG_STRUCT EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb900 },
+		{ dump_RDD_ONE_BYTE, 0xb8c8 },
 		{ 0, 0 },
 	}
 };
@@ -11397,7 +11347,7 @@ static DUMP_RUNNERREG_STRUCT ETH_TX_EMACS_STATUS =
 {
 	1,
 	{
-		{ dump_RDD_ETH_TX_EMACS_STATUS_ENTRY, 0xb905 },
+		{ dump_RDD_ETH_TX_EMACS_STATUS_ENTRY, 0xb8cd },
 		{ 0, 0 },
 	}
 };
@@ -11407,7 +11357,47 @@ static DUMP_RUNNERREG_STRUCT FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD =
 {
 	2,
 	{
-		{ dump_RDD_FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD, 0xb906 },
+		{ dump_RDD_FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD, 0xb8ce },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_KEY_BUFFER =
+{
+	16,
+	{
+		{ dump_RDD_SIXTEEN_BYTES, 0xb8d0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT CPU_TX_DS_PICO_DHD_TX_POST_CONTEXT =
+{
+	16,
+	{
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb8e0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT WLAN_MCAST_DHD_TX_POST_CONTEXT =
+{
+	16,
+	{
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb8f0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT GSO_TX_DS_PICO_DHD_TX_POST_CONTEXT =
+{
+	16,
+	{
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb900 },
 		{ 0, 0 },
 	}
 };
@@ -11417,7 +11407,17 @@ static DUMP_RUNNERREG_STRUCT HASH_BASED_FORWARDING_PORT_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_HASH_BASED_FORWARDING_PORT_ENTRY, 0xb908 },
+		{ dump_RDD_HASH_BASED_FORWARDING_PORT_ENTRY, 0xb910 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT SPDSVC_HOST_BUF_PTR =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xb914 },
 		{ 0, 0 },
 	}
 };
@@ -11427,7 +11427,7 @@ static DUMP_RUNNERREG_STRUCT DS_CPU_TX_DATA_POINTER_DUMMY_TARGET =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb90c },
+		{ dump_RDD_FOUR_BYTES, 0xb918 },
 		{ 0, 0 },
 	}
 };
@@ -11437,7 +11437,7 @@ static DUMP_RUNNERREG_STRUCT FIREWALL_IPV6_R16_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_FIREWALL_IPV6_R16_BUFFER_ENTRY, 0xb910 },
+		{ dump_RDD_FIREWALL_IPV6_R16_BUFFER_ENTRY, 0xb91c },
 		{ 0, 0 },
 	}
 };
@@ -11447,7 +11447,7 @@ static DUMP_RUNNERREG_STRUCT DOWNSTREAM_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR 
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb914 },
+		{ dump_RDD_TWO_BYTES, 0xb920 },
 		{ 0, 0 },
 	}
 };
@@ -11457,7 +11457,7 @@ static DUMP_RUNNERREG_STRUCT CPU_RX_PD_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb916 },
+		{ dump_RDD_TWO_BYTES, 0xb922 },
 		{ 0, 0 },
 	}
 };
@@ -11467,7 +11467,7 @@ static DUMP_RUNNERREG_STRUCT DS_CPU_RX_PICO_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xb918 },
+		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xb924 },
 		{ 0, 0 },
 	}
 };
@@ -11477,7 +11477,7 @@ static DUMP_RUNNERREG_STRUCT DS_BPM_DDR_BUFFER_HEADROOM_SIZE =
 {
 	2,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xb91a },
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xb926 },
 		{ 0, 0 },
 	}
 };
@@ -11487,7 +11487,7 @@ static DUMP_RUNNERREG_STRUCT DS_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION =
 {
 	2,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xb91c },
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xb928 },
 		{ 0, 0 },
 	}
 };
@@ -11497,7 +11497,7 @@ static DUMP_RUNNERREG_STRUCT DS_CPU_RX_FAST_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xb91e },
+		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xb92a },
 		{ 0, 0 },
 	}
 };
@@ -11507,7 +11507,7 @@ static DUMP_RUNNERREG_STRUCT DS_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR =
 {
 	2,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xb920 },
+		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xb92c },
 		{ 0, 0 },
 	}
 };
@@ -11517,7 +11517,7 @@ static DUMP_RUNNERREG_STRUCT DS_ANY_SRC_PORT_FLOW_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xb922 },
+		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xb92e },
 		{ 0, 0 },
 	}
 };
@@ -11527,17 +11527,7 @@ static DUMP_RUNNERREG_STRUCT GSO_DESC_PTR =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb924 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT GSO_TX_DHD_HOST_BUF_PTR =
-{
-	1,
-	{
-		{ dump_RDD_ONE_BYTE, 0xb928 },
+		{ dump_RDD_FOUR_BYTES, 0xb930 },
 		{ 0, 0 },
 	}
 };
@@ -11547,17 +11537,17 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb92c },
+		{ dump_RDD_FOUR_BYTES, 0xb934 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_HOST_BUF_PTR =
+static DUMP_RUNNERREG_STRUCT GSO_TX_DHD_HOST_BUF_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb930 },
+		{ dump_RDD_ONE_BYTE, 0xb938 },
 		{ 0, 0 },
 	}
 };
@@ -11567,7 +11557,17 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_DDR_SA_DESC_TABLE_PTR =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb934 },
+		{ dump_RDD_FOUR_BYTES, 0xb93c },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_HOST_BUF_PTR =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xb940 },
 		{ 0, 0 },
 	}
 };
@@ -11577,7 +11577,7 @@ static DUMP_RUNNERREG_STRUCT DS_TIMER_7_SCHEDULER_NEXT_ENTRY =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb938 },
+		{ dump_RDD_TWO_BYTES, 0xb944 },
 		{ 0, 0 },
 	}
 };
@@ -11587,7 +11587,7 @@ static DUMP_RUNNERREG_STRUCT DS_MEMLIB_SEMAPHORE =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb93a },
+		{ dump_RDD_TWO_BYTES, 0xb946 },
 		{ 0, 0 },
 	}
 };
@@ -11597,7 +11597,7 @@ static DUMP_RUNNERREG_STRUCT WAN_PHYSICAL_PORT =
 {
 	2,
 	{
-		{ dump_RDD_WAN_PHYSICAL_PORT, 0xb93c },
+		{ dump_RDD_WAN_PHYSICAL_PORT, 0xb948 },
 		{ 0, 0 },
 	}
 };
@@ -11607,7 +11607,7 @@ static DUMP_RUNNERREG_STRUCT DOWNSTREAM_MULTICAST_LAN_ENQUEUE_SERVICE_QUEUE_INGR
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb93e },
+		{ dump_RDD_TWO_BYTES, 0xb94a },
 		{ 0, 0 },
 	}
 };
@@ -11617,7 +11617,7 @@ static DUMP_RUNNERREG_STRUCT DS_RUNNER_CONGESTION_STATE =
 {
 	2,
 	{
-		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xb940 },
+		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xb94c },
 		{ 0, 0 },
 	}
 };
@@ -11627,7 +11627,7 @@ static DUMP_RUNNERREG_STRUCT DS_RX_SBPM_TO_FPM_COPY_SCRATCHPAD_PTR =
 {
 	2,
 	{
-		{ dump_RDD_BYTES_2, 0xb942 },
+		{ dump_RDD_BYTES_2, 0xb94e },
 		{ 0, 0 },
 	}
 };
@@ -11637,7 +11637,7 @@ static DUMP_RUNNERREG_STRUCT GSO_PICO_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb944 },
+		{ dump_RDD_TWO_BYTES, 0xb950 },
 		{ 0, 0 },
 	}
 };
@@ -11647,7 +11647,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_COMPLETE_BPM_REF_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb946 },
+		{ dump_RDD_TWO_BYTES, 0xb952 },
 		{ 0, 0 },
 	}
 };
@@ -11657,7 +11657,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_POST_CPU_BPM_REF_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb948 },
+		{ dump_RDD_TWO_BYTES, 0xb954 },
 		{ 0, 0 },
 	}
 };
@@ -11667,7 +11667,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_BPM_CONGESTION_UG3_DROP_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb94a },
+		{ dump_RDD_TWO_BYTES, 0xb956 },
 		{ 0, 0 },
 	}
 };
@@ -11677,7 +11677,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_BPM_CONGESTION_ALLOC_FAIL_DROP_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb94c },
+		{ dump_RDD_TWO_BYTES, 0xb958 },
 		{ 0, 0 },
 	}
 };
@@ -11687,7 +11687,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_DDR_SA_DESC_SIZE =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb94e },
+		{ dump_RDD_TWO_BYTES, 0xb95a },
 		{ 0, 0 },
 	}
 };
@@ -11697,7 +11697,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb950 },
+		{ dump_RDD_TWO_BYTES, 0xb95c },
 		{ 0, 0 },
 	}
 };
@@ -11707,7 +11707,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_IP_LENGTH =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb952 },
+		{ dump_RDD_TWO_BYTES, 0xb95e },
 		{ 0, 0 },
 	}
 };
@@ -11717,7 +11717,7 @@ static DUMP_RUNNERREG_STRUCT PRIVATE_A_DUMMY_STORE =
 {
 	1,
 	{
-		{ dump_RDD_DUMMY_STORE_ENTRY, 0xb954 },
+		{ dump_RDD_DUMMY_STORE_ENTRY, 0xb960 },
 		{ 0, 0 },
 	}
 };
@@ -11727,7 +11727,7 @@ static DUMP_RUNNERREG_STRUCT ETH_TX_INTER_LAN_SCHEDULING_OFFSET =
 {
 	1,
 	{
-		{ dump_RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY, 0xb955 },
+		{ dump_RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY, 0xb961 },
 		{ 0, 0 },
 	}
 };
@@ -11737,7 +11737,7 @@ static DUMP_RUNNERREG_STRUCT DS_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb956 },
+		{ dump_RDD_ONE_BYTE, 0xb962 },
 		{ 0, 0 },
 	}
 };
@@ -11747,7 +11747,7 @@ static DUMP_RUNNERREG_STRUCT DS_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb957 },
+		{ dump_RDD_ONE_BYTE, 0xb963 },
 		{ 0, 0 },
 	}
 };
@@ -11757,7 +11757,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_DS_PICO_SEMAPHORE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb958 },
+		{ dump_RDD_ONE_BYTE, 0xb964 },
 		{ 0, 0 },
 	}
 };
@@ -11767,7 +11767,7 @@ static DUMP_RUNNERREG_STRUCT DS_FC_GLOBAL_CFG =
 {
 	1,
 	{
-		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xb959 },
+		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xb965 },
 		{ 0, 0 },
 	}
 };
@@ -11777,7 +11777,7 @@ static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb95a },
+		{ dump_RDD_ONE_BYTE, 0xb966 },
 		{ 0, 0 },
 	}
 };
@@ -11787,7 +11787,7 @@ static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_IP_FLOW_RULE_CFG_DESCRIPT
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb95b },
+		{ dump_RDD_ONE_BYTE, 0xb967 },
 		{ 0, 0 },
 	}
 };
@@ -11797,7 +11797,7 @@ static DUMP_RUNNERREG_STRUCT DS_PACKET_BUFFER_SIZE_ASR_8 =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb95c },
+		{ dump_RDD_ONE_BYTE, 0xb968 },
 		{ 0, 0 },
 	}
 };
@@ -11807,7 +11807,7 @@ static DUMP_RUNNERREG_STRUCT DS_MAIN_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb95d },
+		{ dump_RDD_ONE_BYTE, 0xb969 },
 		{ 0, 0 },
 	}
 };
@@ -11817,7 +11817,7 @@ static DUMP_RUNNERREG_STRUCT DS_PICO_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb95e },
+		{ dump_RDD_ONE_BYTE, 0xb96a },
 		{ 0, 0 },
 	}
 };
@@ -11827,7 +11827,7 @@ static DUMP_RUNNERREG_STRUCT DS_RUNNER_FLOW_IH_RESPONSE_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb95f },
+		{ dump_RDD_ONE_BYTE, 0xb96b },
 		{ 0, 0 },
 	}
 };
@@ -11837,7 +11837,7 @@ static DUMP_RUNNERREG_STRUCT DS_PARALLEL_PROCESSING_SLAVE_VECTOR =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xb960 },
+		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xb96c },
 		{ 0, 0 },
 	}
 };
@@ -11847,7 +11847,7 @@ static DUMP_RUNNERREG_STRUCT DS_PARALLEL_PROCESSING_CONTEXT_CACHE_MODE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb961 },
+		{ dump_RDD_ONE_BYTE, 0xb96d },
 		{ 0, 0 },
 	}
 };
@@ -11857,7 +11857,7 @@ static DUMP_RUNNERREG_STRUCT DS_IH_CONGESTION_THRESHOLD =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb962 },
+		{ dump_RDD_ONE_BYTE, 0xb96e },
 		{ 0, 0 },
 	}
 };
@@ -11867,7 +11867,7 @@ static DUMP_RUNNERREG_STRUCT DS_FAST_MALLOC_RESULT_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb963 },
+		{ dump_RDD_BYTE_1, 0xb96f },
 		{ 0, 0 },
 	}
 };
@@ -11877,7 +11877,7 @@ static DUMP_RUNNERREG_STRUCT DS_PICO_MALLOC_RESULT_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb964 },
+		{ dump_RDD_BYTE_1, 0xb970 },
 		{ 0, 0 },
 	}
 };
@@ -11887,7 +11887,7 @@ static DUMP_RUNNERREG_STRUCT DS_RX_SBPM_TO_FPM_COPY_SEMAPHORE =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb965 },
+		{ dump_RDD_BYTE_1, 0xb971 },
 		{ 0, 0 },
 	}
 };
@@ -11897,7 +11897,7 @@ static DUMP_RUNNERREG_STRUCT DS_FW_MAC_ADDRS_COUNT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb966 },
+		{ dump_RDD_ONE_BYTE, 0xb972 },
 		{ 0, 0 },
 	}
 };
@@ -11907,7 +11907,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_DMA_SYNCHRONIZATION =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb967 },
+		{ dump_RDD_ONE_BYTE, 0xb973 },
 		{ 0, 0 },
 	}
 };
@@ -11917,7 +11917,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_POST_CPU_SEMAPHORE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb968 },
+		{ dump_RDD_ONE_BYTE, 0xb974 },
 		{ 0, 0 },
 	}
 };
@@ -11927,7 +11927,7 @@ static DUMP_RUNNERREG_STRUCT RING_CACHE_DHD_TXPOST_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb969 },
+		{ dump_RDD_ONE_BYTE, 0xb975 },
 		{ 0, 0 },
 	}
 };
@@ -11937,7 +11937,7 @@ static DUMP_RUNNERREG_STRUCT COMMON_DHD_TXPOST_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb96a },
+		{ dump_RDD_ONE_BYTE, 0xb976 },
 		{ 0, 0 },
 	}
 };
@@ -11947,7 +11947,7 @@ static DUMP_RUNNERREG_STRUCT TXCPL_INT_DHD_TXPOST_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb96b },
+		{ dump_RDD_ONE_BYTE, 0xb977 },
 		{ 0, 0 },
 	}
 };
@@ -11957,7 +11957,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_SA_DESC_NEXT_REPLACE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb96c },
+		{ dump_RDD_ONE_BYTE, 0xb978 },
 		{ 0, 0 },
 	}
 };
@@ -11967,7 +11967,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_US_SA_DESC_NEXT_REPLACE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb96d },
+		{ dump_RDD_ONE_BYTE, 0xb979 },
 		{ 0, 0 },
 	}
 };
@@ -12088,11 +12088,11 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_LOOKUP_TABLE =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_QUEUE_PROFILE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_TRAFFIC_CLASS_TO_QUEUE_TABLE =
 {
-	16,
+	1,
 	{
-		{ dump_RDD_QUEUE_PROFILE, 0x8380 },
+		{ dump_RDD_US_QUEUE_ENTRY, 0x83c0 },
 		{ 0, 0 },
 	}
 };
@@ -12198,21 +12198,21 @@ static DUMP_RUNNERREG_STRUCT US_MAIN_TIMER_TASK_DESCRIPTOR_TABLE =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_TRAFFIC_CLASS_TO_QUEUE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE =
 {
-	1,
+	2,
 	{
-		{ dump_RDD_US_QUEUE_ENTRY, 0x91c0 },
+		{ dump_RDD_TWO_BYTES, 0x91c0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE =
 {
-	2,
+	1,
 	{
-		{ dump_RDD_TWO_BYTES, 0x9200 },
+		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0x9200 },
 		{ 0, 0 },
 	}
 };
@@ -12268,11 +12268,11 @@ static DUMP_RUNNERREG_STRUCT US_RATE_LIMITER_TABLE =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_METER_TABLE =
+static DUMP_RUNNERREG_STRUCT US_QUEUE_PROFILE_TABLE =
 {
-	8,
+	16,
 	{
-		{ dump_RDD_CPU_RX_METER_ENTRY, 0x9380 },
+		{ dump_RDD_QUEUE_PROFILE, 0x9380 },
 		{ 0, 0 },
 	}
 };
@@ -12328,21 +12328,21 @@ static DUMP_RUNNERREG_STRUCT US_FAST_RUNNER_GLOBAL_REGISTERS_INIT =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_INGRESS_HANDLER_SKB_DATA_POINTER =
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_METER_TABLE =
 {
-	4,
+	8,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xa300 },
+		{ dump_RDD_CPU_RX_METER_ENTRY, 0xa300 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_GRE_RUNNER_FLOW_HEADER_BUFFER =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_HANDLER_SKB_DATA_POINTER =
 {
-	128,
+	4,
 	{
-		{ dump_RDD_GRE_RUNNER_FLOW_HEADER_BUFFER, 0xa380 },
+		{ dump_RDD_FOUR_BYTES, 0xa380 },
 		{ 0, 0 },
 	}
 };
@@ -12370,11 +12370,11 @@ static DUMP_RUNNERREG_STRUCT US_PICO_RUNNER_GLOBAL_REGISTERS_INIT =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE =
+static DUMP_RUNNERREG_STRUCT US_GRE_RUNNER_FLOW_HEADER_BUFFER =
 {
-	8,
+	128,
 	{
-		{ dump_RDD_INGRESS_CLASSIFICATION_RULE_CFG_ENTRY, 0xa680 },
+		{ dump_RDD_GRE_RUNNER_FLOW_HEADER_BUFFER, 0xa680 },
 		{ 0, 0 },
 	}
 };
@@ -12390,50 +12390,37 @@ static DUMP_RUNNERREG_STRUCT US_PROFILING_BUFFER_PICO_RUNNER =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_PARAMETER_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE =
 {
-	1,
+	8,
 	{
-		{ dump_RDD_INGRESS_FILTERS_PARAMETER_ENTRY, 0xa800 },
+		{ dump_RDD_INGRESS_CLASSIFICATION_RULE_CFG_ENTRY, 0xa800 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT DHD_RX_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_PARAMETER_TABLE =
 {
-	4,
+	1,
 	{
-		{ dump_RDD_BYTES_4, 0xa860 },
+		{ dump_RDD_INGRESS_FILTERS_PARAMETER_ENTRY, 0xa880 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT US_FC_L2_UCAST_CONNECTION_BUFFER =
+{
+	16,
+	{
+		{ dump_RDD_FC_L2_UCAST_CONNECTION_ENTRY, 0xa8f0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
 static DUMP_RUNNERREG_STRUCT DHD_RX_COMPLETE_FLOW_RING_BUFFER =
-{
-	32,
-	{
-		{ dump_RDD_DHD_RX_POST_DESCRIPTOR, 0xa880 },
-		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR, 0xa880 },
-		{ dump_RDD_DHD_RX_POST_DESCRIPTOR_CWI32, 0xa880 },
-		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR_CWI32, 0xa880 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_0_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
-{
-	4,
-	{
-		{ dump_RDD_BYTES_4, 0xa8e0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT DHD_RX_POST_FLOW_RING_BUFFER =
 {
 	32,
 	{
@@ -12446,7 +12433,7 @@ static DUMP_RUNNERREG_STRUCT DHD_RX_POST_FLOW_RING_BUFFER =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_0_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT DHD_RX_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
@@ -12566,27 +12553,20 @@ static DUMP_RUNNERREG_STRUCT US_CPU_TX_MESSAGE_DATA_BUFFER =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_INGRESS_RATE_LIMITER_TABLE =
+static DUMP_RUNNERREG_STRUCT DHD_RX_POST_FLOW_RING_BUFFER =
 {
-	16,
+	32,
 	{
-		{ dump_RDD_INGRESS_RATE_LIMITER_ENTRY, 0xaa00 },
+		{ dump_RDD_DHD_RX_POST_DESCRIPTOR, 0xaa00 },
+		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR, 0xaa00 },
+		{ dump_RDD_DHD_RX_POST_DESCRIPTOR_CWI32, 0xaa00 },
+		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR_CWI32, 0xaa00 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_FC_L2_UCAST_CONNECTION_BUFFER =
-{
-	16,
-	{
-		{ dump_RDD_FC_L2_UCAST_CONNECTION_ENTRY, 0xaa50 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_0_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
@@ -12596,11 +12576,11 @@ static DUMP_RUNNERREG_STRUCT US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_SPDSVC_CONTEXT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_RATE_LIMITER_TABLE =
 {
-	80,
+	16,
 	{
-		{ dump_RDD_SPDSVC_CONTEXT_ENTRY, 0xaa80 },
+		{ dump_RDD_INGRESS_RATE_LIMITER_ENTRY, 0xaa80 },
 		{ 0, 0 },
 	}
 };
@@ -12616,7 +12596,7 @@ static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_MAINB_PARAM =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_0_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
@@ -12626,27 +12606,27 @@ static DUMP_RUNNERREG_STRUCT US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TAB
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE =
+static DUMP_RUNNERREG_STRUCT US_SPDSVC_CONTEXT_TABLE =
 {
-	1,
+	80,
 	{
-		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xab00 },
+		{ dump_RDD_SPDSVC_CONTEXT_ENTRY, 0xab00 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_2_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_PICOB_PARAM =
 {
-	4,
+	8,
 	{
-		{ dump_RDD_BYTES_4, 0xab40 },
+		{ dump_RDD_EIGHT_BYTES, 0xab50 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_2_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
@@ -12666,7 +12646,7 @@ static DUMP_RUNNERREG_STRUCT US_ROUTER_INGRESS_QUEUE =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_CPU_TX_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
@@ -12676,21 +12656,11 @@ static DUMP_RUNNERREG_STRUCT US_CPU_TX_FPM_ALLOC_RESULT_TABLE =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_CONFIGURATION_TABLE =
+static DUMP_RUNNERREG_STRUCT US_2_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_INGRESS_FILTERS_CONFIGURATION_ENTRY, 0xabe0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_ONE_BUFFER =
-{
-	8,
-	{
-		{ dump_RDD_EIGHT_BYTES, 0xabf8 },
+		{ dump_RDD_BYTES_4, 0xabe0 },
 		{ 0, 0 },
 	}
 };
@@ -12726,31 +12696,21 @@ static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HEADER_SCRATCH =
+static DUMP_RUNNERREG_STRUCT US_2_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 {
-	32,
+	4,
 	{
-		{ dump_RDD_DHD_L2_HEADER_BUFFER_ENTRY, 0xacc0 },
+		{ dump_RDD_BYTES_4, 0xacc0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_RUNNER_FLOW_HEADER_DESCRIPTOR =
+static DUMP_RUNNERREG_STRUCT US_CPU_TX_FPM_ALLOC_RESULT_TABLE =
 {
-	8,
+	4,
 	{
-		{ dump_RDD_RUNNER_FLOW_HEADER_DESCRIPTOR, 0xace0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_NULL_BUFFER =
-{
-	8,
-	{
-		{ dump_RDD_EIGHT_BYTES, 0xacf8 },
+		{ dump_RDD_BYTES_4, 0xace0 },
 		{ 0, 0 },
 	}
 };
@@ -12819,21 +12779,11 @@ static DUMP_RUNNERREG_STRUCT US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_GPE_COMMAND_PRIMITIVE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_CONFIGURATION_TABLE =
 {
-	2,
+	4,
 	{
-		{ dump_RDD_GPE_COMMAND_PRIMITIVE_ENTRY, 0xaf20 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_CPU_PARAMETERS_BLOCK =
-{
-	20,
-	{
-		{ dump_RDD_CPU_PARAMETERS_BLOCK_ENTRY, 0xaf60 },
+		{ dump_RDD_INGRESS_FILTERS_CONFIGURATION_ENTRY, 0xaf20 },
 		{ 0, 0 },
 	}
 };
@@ -12843,17 +12793,37 @@ static DUMP_RUNNERREG_STRUCT US_BPM_DDR_OPTIMIZED_BUFFERS_BASE =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xaf74 },
+		{ dump_RDD_FOUR_BYTES, 0xaf3c },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_FAST_MALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HEADER_SCRATCH =
 {
-	4,
+	32,
 	{
-		{ dump_RDD_BYTES_4, 0xaf78 },
+		{ dump_RDD_DHD_L2_HEADER_BUFFER_ENTRY, 0xaf40 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT US_RUNNER_FLOW_HEADER_DESCRIPTOR =
+{
+	8,
+	{
+		{ dump_RDD_RUNNER_FLOW_HEADER_DESCRIPTOR, 0xaf60 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT US_ONE_BUFFER =
+{
+	8,
+	{
+		{ dump_RDD_EIGHT_BYTES, 0xaf78 },
 		{ 0, 0 },
 	}
 };
@@ -12879,42 +12849,31 @@ static DUMP_RUNNERREG_STRUCT US_BPM_DDR_1_OPTIMIZED_BUFFERS_BASE =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT GPON_ABSOLUTE_TX_FIRMWARE_COUNTER =
+static DUMP_RUNNERREG_STRUCT US_GPE_COMMAND_PRIMITIVE_TABLE =
 {
-	1,
+	2,
 	{
-		{ dump_RDD_GPON_ABSOLUTE_TX_COUNTER, 0xafd8 },
+		{ dump_RDD_GPE_COMMAND_PRIMITIVE_ENTRY, 0xafd8 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_FLOW_RING_BUFFER =
-{
-	48,
-	{
-		{ dump_RDD_DHD_TX_POST_DESCRIPTOR, 0xb000 },
-		{ dump_RDD_DHD_TX_POST_DESCRIPTOR_CWI32, 0xb000 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_PICOB_PARAM =
+static DUMP_RUNNERREG_STRUCT US_NULL_BUFFER =
 {
 	8,
 	{
-		{ dump_RDD_EIGHT_BYTES, 0xb030 },
+		{ dump_RDD_EIGHT_BYTES, 0xb018 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_DHD_FLOW_RING_DROP_COUNTER =
+static DUMP_RUNNERREG_STRUCT US_CPU_PARAMETERS_BLOCK =
 {
-	4,
+	20,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb040 },
+		{ dump_RDD_CPU_PARAMETERS_BLOCK_ENTRY, 0xb020 },
 		{ 0, 0 },
 	}
 };
@@ -12924,7 +12883,38 @@ static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFERS_BASE =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb054 },
+		{ dump_RDD_FOUR_BYTES, 0xb034 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT US_FAST_MALLOC_RESULT_TABLE =
+{
+	4,
+	{
+		{ dump_RDD_BYTES_4, 0xb038 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_FLOW_RING_BUFFER =
+{
+	48,
+	{
+		{ dump_RDD_DHD_TX_POST_DESCRIPTOR, 0xb040 },
+		{ dump_RDD_DHD_TX_POST_DESCRIPTOR_CWI32, 0xb040 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT GPON_ABSOLUTE_TX_FIRMWARE_COUNTER =
+{
+	1,
+	{
+		{ dump_RDD_GPON_ABSOLUTE_TX_COUNTER, 0xb070 },
 		{ 0, 0 },
 	}
 };
@@ -12934,7 +12924,7 @@ static DUMP_RUNNERREG_STRUCT US_PICO_MALLOC_RESULT_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0xb058 },
+		{ dump_RDD_BYTES_4, 0xb098 },
 		{ 0, 0 },
 	}
 };
@@ -12944,7 +12934,7 @@ static DUMP_RUNNERREG_STRUCT US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
 {
 	2,
 	{
-		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xb060 },
+		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xb0a0 },
 		{ 0, 0 },
 	}
 };
@@ -12954,17 +12944,17 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb070 },
+		{ dump_RDD_TWO_BYTES, 0xb0b0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_SYSTEM_CONFIGURATION =
+static DUMP_RUNNERREG_STRUCT US_DHD_FLOW_RING_DROP_COUNTER =
 {
-	36,
+	4,
 	{
-		{ dump_RDD_SYSTEM_CONFIGURATION, 0xb080 },
+		{ dump_RDD_FOUR_BYTES, 0xb0c0 },
 		{ 0, 0 },
 	}
 };
@@ -12974,7 +12964,7 @@ static DUMP_RUNNERREG_STRUCT US_BPM_DDR_1_BUFFERS_BASE =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb0a4 },
+		{ dump_RDD_FOUR_BYTES, 0xb0d4 },
 		{ 0, 0 },
 	}
 };
@@ -12984,17 +12974,7 @@ static DUMP_RUNNERREG_STRUCT US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb0a8 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xb0b0 },
+		{ dump_RDD_BYTE_1, 0xb0d8 },
 		{ 0, 0 },
 	}
 };
@@ -13004,47 +12984,27 @@ static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
 {
 	2,
 	{
-		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xb0c0 },
+		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xb0e0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE =
+static DUMP_RUNNERREG_STRUCT US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_ENTRY, 0xb0d0 },
+		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xb0f0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT WAN_TX_SCRATCH =
+static DUMP_RUNNERREG_STRUCT US_SYSTEM_CONFIGURATION =
 {
-	1,
+	36,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb0f0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_CPU_REASON_TO_METER_ENTRY, 0xb108 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE_PTR =
-{
-	2,
-	{
-		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xb11a },
+		{ dump_RDD_SYSTEM_CONFIGURATION, 0xb100 },
 		{ 0, 0 },
 	}
 };
@@ -13054,37 +13014,47 @@ static DUMP_RUNNERREG_STRUCT US_CONNECTION_TABLE_CONFIG =
 {
 	4,
 	{
-		{ dump_RDD_CONNECTION_TABLE_CONFIG, 0xb11c },
+		{ dump_RDD_CONNECTION_TABLE_CONFIG, 0xb124 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xb120 },
+		{ dump_RDD_US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_ENTRY, 0xb128 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
+static DUMP_RUNNERREG_STRUCT WAN_TX_SCRATCH =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb129 },
+		{ dump_RDD_ONE_BYTE, 0xb148 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE =
+static DUMP_RUNNERREG_STRUCT CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_CPU_REASON_TO_METER_ENTRY, 0xb160 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xb12a },
+		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xb172 },
 		{ 0, 0 },
 	}
 };
@@ -13094,47 +13064,7 @@ static DUMP_RUNNERREG_STRUCT US_CONTEXT_TABLE_CONFIG =
 {
 	4,
 	{
-		{ dump_RDD_CONTEXT_TABLE_CONFIG, 0xb12c },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_BUFFER =
-{
-	16,
-	{
-		{ dump_RDD_SIXTEEN_BYTES, 0xb130 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT CPU_TX_DS_EGRESS_DHD_TX_POST_CONTEXT =
-{
-	16,
-	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb140 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_LAYER2_HEADER_BUFFER =
-{
-	1,
-	{
-		{ dump_RDD_ONE_BYTE, 0xb150 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION =
-{
-	2,
-	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xb15e },
+		{ dump_RDD_CONTEXT_TABLE_CONFIG, 0xb174 },
 		{ 0, 0 },
 	}
 };
@@ -13144,27 +13074,47 @@ static DUMP_RUNNERREG_STRUCT US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR =
 {
 	6,
 	{
-		{ dump_RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY, 0xb160 },
+		{ dump_RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY, 0xb178 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE_PTR =
+static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xb166 },
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xb17e },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT DATA_POINTER_DUMMY_TARGET =
+static DUMP_RUNNERREG_STRUCT BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE =
 {
-	4,
+	1,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb168 },
+		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xb180 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xb189 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION =
+{
+	2,
+	{
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xb18a },
 		{ 0, 0 },
 	}
 };
@@ -13174,17 +13124,57 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_ENTRY, 0xb170 },
+		{ dump_RDD_PARALLEL_PROCESSING_ENTRY, 0xb18c },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_DEBUG_PERIPHERALS_STATUS_REGISTER =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_BUFFER =
+{
+	16,
+	{
+		{ dump_RDD_SIXTEEN_BYTES, 0xb190 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT CPU_TX_DS_EGRESS_DHD_TX_POST_CONTEXT =
+{
+	16,
+	{
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb1a0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_LAYER2_HEADER_BUFFER =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xb1b0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xb1be },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT DATA_POINTER_DUMMY_TARGET =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb174 },
+		{ dump_RDD_FOUR_BYTES, 0xb1c0 },
 		{ 0, 0 },
 	}
 };
@@ -13194,17 +13184,17 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_TASK_REORDER_FIFO =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY, 0xb178 },
+		{ dump_RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY, 0xb1c8 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT IH_BUFFER_BBH_POINTER =
+static DUMP_RUNNERREG_STRUCT US_DEBUG_PERIPHERALS_STATUS_REGISTER =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb17c },
+		{ dump_RDD_FOUR_BYTES, 0xb1cc },
 		{ 0, 0 },
 	}
 };
@@ -13214,7 +13204,17 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb180 },
+		{ dump_RDD_ONE_BYTE, 0xb1d0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT IH_BUFFER_BBH_POINTER =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xb1d8 },
 		{ 0, 0 },
 	}
 };
@@ -13224,7 +13224,7 @@ static DUMP_RUNNERREG_STRUCT US_CONTEXT_CONTINUATION_TABLE_CONFIG =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb188 },
+		{ dump_RDD_FOUR_BYTES, 0xb1dc },
 		{ 0, 0 },
 	}
 };
@@ -13234,17 +13234,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_DOORBELL_SCRATCH =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb18c },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
-static DUMP_RUNNERREG_STRUCT US_RATE_CONTROLLER_EXPONENT_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0xb190 },
+		{ dump_RDD_FOUR_BYTES, 0xb1e0 },
 		{ 0, 0 },
 	}
 };
@@ -13254,7 +13244,17 @@ static DUMP_RUNNERREG_STRUCT US_CPU_TX_DATA_POINTER_DUMMY_TARGET =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb194 },
+		{ dump_RDD_FOUR_BYTES, 0xb1e4 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT US_RATE_CONTROLLER_EXPONENT_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0xb1e8 },
 		{ 0, 0 },
 	}
 };
@@ -13264,7 +13264,7 @@ static DUMP_RUNNERREG_STRUCT LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE
 {
 	2,
 	{
-		{ dump_RDD_LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xb198 },
+		{ dump_RDD_LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xb1ec },
 		{ 0, 0 },
 	}
 };
@@ -13274,7 +13274,7 @@ static DUMP_RUNNERREG_STRUCT LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xb19a },
+		{ dump_RDD_LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xb1ee },
 		{ 0, 0 },
 	}
 };
@@ -13284,7 +13284,7 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR =
 {
 	2,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xb19c },
+		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xb1f0 },
 		{ 0, 0 },
 	}
 };
@@ -13294,7 +13294,7 @@ static DUMP_RUNNERREG_STRUCT US_ANY_SRC_PORT_FLOW_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xb19e },
+		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xb1f2 },
 		{ 0, 0 },
 	}
 };
@@ -13304,7 +13304,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HOST_DATA_PTR_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb1a0 },
+		{ dump_RDD_FOUR_BYTES, 0xb1f4 },
 		{ 0, 0 },
 	}
 };
@@ -13314,7 +13314,7 @@ static DUMP_RUNNERREG_STRUCT US_TIMER_7_SCHEDULER_NEXT_ENTRY =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb1a4 },
+		{ dump_RDD_TWO_BYTES, 0xb1f8 },
 		{ 0, 0 },
 	}
 };
@@ -13324,7 +13324,7 @@ static DUMP_RUNNERREG_STRUCT US_MEMLIB_SEMAPHORE =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb1a6 },
+		{ dump_RDD_TWO_BYTES, 0xb1fa },
 		{ 0, 0 },
 	}
 };
@@ -13334,7 +13334,7 @@ static DUMP_RUNNERREG_STRUCT ETHWAN2_RX_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb1a8 },
+		{ dump_RDD_TWO_BYTES, 0xb1fc },
 		{ 0, 0 },
 	}
 };
@@ -13344,7 +13344,7 @@ static DUMP_RUNNERREG_STRUCT US_RUNNER_CONGESTION_STATE =
 {
 	2,
 	{
-		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xb1aa },
+		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xb1fe },
 		{ 0, 0 },
 	}
 };
@@ -13354,7 +13354,7 @@ static DUMP_RUNNERREG_STRUCT WAN_ENQUEUE_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_WAN_ENQUEUE_INGRESS_QUEUE_PTR_ENTRY, 0xb1ac },
+		{ dump_RDD_WAN_ENQUEUE_INGRESS_QUEUE_PTR_ENTRY, 0xb200 },
 		{ 0, 0 },
 	}
 };
@@ -13364,7 +13364,7 @@ static DUMP_RUNNERREG_STRUCT US_RX_SBPM_TO_FPM_COPY_SCRATCHPAD_PTR =
 {
 	2,
 	{
-		{ dump_RDD_BYTES_2, 0xb1ae },
+		{ dump_RDD_BYTES_2, 0xb202 },
 		{ 0, 0 },
 	}
 };
@@ -13374,7 +13374,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_BPM_CONGESTION_UG3_DROP_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb1b0 },
+		{ dump_RDD_TWO_BYTES, 0xb204 },
 		{ 0, 0 },
 	}
 };
@@ -13384,7 +13384,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_BPM_CONGESTION_ALLOC_FAIL_DROP_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb1b2 },
+		{ dump_RDD_TWO_BYTES, 0xb206 },
 		{ 0, 0 },
 	}
 };
@@ -13394,7 +13394,7 @@ static DUMP_RUNNERREG_STRUCT US_FC_GLOBAL_CFG =
 {
 	1,
 	{
-		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xb1b4 },
+		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xb208 },
 		{ 0, 0 },
 	}
 };
@@ -13404,7 +13404,7 @@ static DUMP_RUNNERREG_STRUCT ETHWAN2_SWITCH_PORT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1b5 },
+		{ dump_RDD_ONE_BYTE, 0xb209 },
 		{ 0, 0 },
 	}
 };
@@ -13414,7 +13414,7 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1b6 },
+		{ dump_RDD_ONE_BYTE, 0xb20a },
 		{ 0, 0 },
 	}
 };
@@ -13424,7 +13424,7 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_IP_FLOW_RULE_CFG_DESCRIPT
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1b7 },
+		{ dump_RDD_ONE_BYTE, 0xb20b },
 		{ 0, 0 },
 	}
 };
@@ -13434,7 +13434,7 @@ static DUMP_RUNNERREG_STRUCT US_PACKET_BUFFER_SIZE_ASR_8 =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1b8 },
+		{ dump_RDD_ONE_BYTE, 0xb20c },
 		{ 0, 0 },
 	}
 };
@@ -13444,7 +13444,7 @@ static DUMP_RUNNERREG_STRUCT US_MAIN_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1b9 },
+		{ dump_RDD_ONE_BYTE, 0xb20d },
 		{ 0, 0 },
 	}
 };
@@ -13454,7 +13454,7 @@ static DUMP_RUNNERREG_STRUCT US_PICO_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1ba },
+		{ dump_RDD_ONE_BYTE, 0xb20e },
 		{ 0, 0 },
 	}
 };
@@ -13464,7 +13464,7 @@ static DUMP_RUNNERREG_STRUCT US_RUNNER_FLOW_IH_RESPONSE_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1bb },
+		{ dump_RDD_ONE_BYTE, 0xb20f },
 		{ 0, 0 },
 	}
 };
@@ -13474,7 +13474,7 @@ static DUMP_RUNNERREG_STRUCT DSL_BUFFER_ALIGNMENT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1bc },
+		{ dump_RDD_ONE_BYTE, 0xb210 },
 		{ 0, 0 },
 	}
 };
@@ -13484,7 +13484,7 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_SLAVE_VECTOR =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xb1bd },
+		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xb211 },
 		{ 0, 0 },
 	}
 };
@@ -13494,7 +13494,7 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_CACHE_MODE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1be },
+		{ dump_RDD_ONE_BYTE, 0xb212 },
 		{ 0, 0 },
 	}
 };
@@ -13504,7 +13504,7 @@ static DUMP_RUNNERREG_STRUCT US_IH_CONGESTION_THRESHOLD =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1bf },
+		{ dump_RDD_ONE_BYTE, 0xb213 },
 		{ 0, 0 },
 	}
 };
@@ -13514,7 +13514,7 @@ static DUMP_RUNNERREG_STRUCT US_FAST_MALLOC_RESULT_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb1c0 },
+		{ dump_RDD_BYTE_1, 0xb214 },
 		{ 0, 0 },
 	}
 };
@@ -13524,7 +13524,7 @@ static DUMP_RUNNERREG_STRUCT US_PICO_MALLOC_RESULT_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb1c1 },
+		{ dump_RDD_BYTE_1, 0xb215 },
 		{ 0, 0 },
 	}
 };
@@ -13534,7 +13534,7 @@ static DUMP_RUNNERREG_STRUCT DHD_RX_FPM_ALLOC_RESULT_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb1c2 },
+		{ dump_RDD_BYTE_1, 0xb216 },
 		{ 0, 0 },
 	}
 };
@@ -13544,7 +13544,7 @@ static DUMP_RUNNERREG_STRUCT US_RX_SBPM_TO_FPM_COPY_SEMAPHORE =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb1c3 },
+		{ dump_RDD_BYTE_1, 0xb217 },
 		{ 0, 0 },
 	}
 };
@@ -13554,7 +13554,7 @@ static DUMP_RUNNERREG_STRUCT US_FW_MAC_ADDRS_COUNT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1c4 },
+		{ dump_RDD_ONE_BYTE, 0xb218 },
 		{ 0, 0 },
 	}
 };
@@ -13564,7 +13564,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_DMA_SYNCHRONIZATION =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1c5 },
+		{ dump_RDD_ONE_BYTE, 0xb219 },
 		{ 0, 0 },
 	}
 };
@@ -14142,21 +14142,11 @@ static DUMP_RUNNERREG_STRUCT PM_COUNTERS_BUFFER =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT TX_CPL_DHD_DMA_SCRATCH =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0x77e0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908
 static DUMP_RUNNERREG_STRUCT DS_R2D_DHD_DMA_SCRATCH =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0x77ec },
+		{ dump_RDD_FOUR_BYTES, 0x77e0 },
 		{ 0, 0 },
 	}
 };
@@ -14182,11 +14172,11 @@ static DUMP_RUNNERREG_STRUCT DS_CPU_DHD_DMA_SCRATCH =
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT DS_RATE_CONTROLLER_EXPONENT_TABLE =
+static DUMP_RUNNERREG_STRUCT TX_CPL_DHD_DMA_SCRATCH =
 {
-	1,
+	4,
 	{
-		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0x7800 },
+		{ dump_RDD_FOUR_BYTES, 0x7800 },
 		{ 0, 0 },
 	}
 };
@@ -14196,7 +14186,7 @@ static DUMP_RUNNERREG_STRUCT TIMER_7_TIMER_PERIOD =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0x7804 },
+		{ dump_RDD_TWO_BYTES, 0x780c },
 		{ 0, 0 },
 	}
 };
@@ -14206,17 +14196,17 @@ static DUMP_RUNNERREG_STRUCT INTERRUPT_COALESCING_TIMER_PERIOD =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0x7806 },
+		{ dump_RDD_TWO_BYTES, 0x780e },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908
-static DUMP_RUNNERREG_STRUCT DHD_TX_POST_BUFFERS_IN_USE_COUNTER =
+static DUMP_RUNNERREG_STRUCT DS_RATE_CONTROLLER_EXPONENT_TABLE =
 {
-	2,
+	1,
 	{
-		{ dump_RDD_TWO_BYTES, 0x7808 },
+		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0x7810 },
 		{ 0, 0 },
 	}
 };
@@ -14226,7 +14216,7 @@ static DUMP_RUNNERREG_STRUCT INTERRUPT_COALESCING_TIMER_ARMED =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0x780c },
+		{ dump_RDD_TWO_BYTES, 0x7814 },
 		{ 0, 0 },
 	}
 };
@@ -14236,7 +14226,7 @@ static DUMP_RUNNERREG_STRUCT COMMON_A_DUMMY_STORE =
 {
 	1,
 	{
-		{ dump_RDD_DUMMY_STORE_ENTRY, 0x780e },
+		{ dump_RDD_DUMMY_STORE_ENTRY, 0x7816 },
 		{ 0, 0 },
 	}
 };
@@ -14246,7 +14236,17 @@ static DUMP_RUNNERREG_STRUCT FC_SERVICE_QUEUE_MODE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0x780f },
+		{ dump_RDD_ONE_BYTE, 0x7817 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908
+static DUMP_RUNNERREG_STRUCT DHD_TX_POST_BUFFERS_IN_USE_COUNTER =
+{
+	2,
+	{
+		{ dump_RDD_TWO_BYTES, 0x7818 },
 		{ 0, 0 },
 	}
 };
@@ -16339,11 +16339,21 @@ static DUMP_RUNNERREG_STRUCT DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT IPSEC_DS_SA_DESC_CAM_TABLE =
+static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_DOORBELL_SCRATCH =
 {
-	2,
+	4,
 	{
-		{ dump_RDD_IPSEC_SA_DESC_CAM, 0xb5a0 },
+		{ dump_RDD_FOUR_BYTES, 0xb5a0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT ETH_TX_SCRATCH =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xb5b0 },
 		{ 0, 0 },
 	}
 };
@@ -16359,7 +16369,7 @@ static DUMP_RUNNERREG_STRUCT DS_SYSTEM_CONFIGURATION =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_DOORBELL_SCRATCH =
+static DUMP_RUNNERREG_STRUCT TIMER_DHD_TX_POST_DOORBELL_SCRATCH =
 {
 	4,
 	{
@@ -16409,7 +16419,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_INGRESS_QUEUE =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT IPSEC_US_SA_DESC_CAM_TABLE =
+static DUMP_RUNNERREG_STRUCT IPSEC_DS_SA_DESC_CAM_TABLE =
 {
 	2,
 	{
@@ -16419,11 +16429,11 @@ static DUMP_RUNNERREG_STRUCT IPSEC_US_SA_DESC_CAM_TABLE =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT ETH_TX_SCRATCH =
+static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_KEY_BUFFER =
 {
-	1,
+	16,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb6e0 },
+		{ dump_RDD_SIXTEEN_BYTES, 0xb6e0 },
 		{ 0, 0 },
 	}
 };
@@ -16459,11 +16469,21 @@ static DUMP_RUNNERREG_STRUCT WLAN_MCAST_INGRESS_QUEUE =
 };
 #endif
 #if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT IPSEC_US_SA_DESC_CAM_TABLE =
+{
+	2,
+	{
+		{ dump_RDD_IPSEC_SA_DESC_CAM, 0xb740 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
 static DUMP_RUNNERREG_STRUCT SERVICE_QUEUES_OVERALL_RATE_LIMITER =
 {
 	24,
 	{
-		{ dump_RDD_SERVICE_QUEUES_RATE_LIMITER_DESCRIPTOR, 0xb740 },
+		{ dump_RDD_SERVICE_QUEUES_RATE_LIMITER_DESCRIPTOR, 0xb760 },
 		{ 0, 0 },
 	}
 };
@@ -16473,7 +16493,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_L2_BUFFER =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb758 },
+		{ dump_RDD_ONE_BYTE, 0xb778 },
 		{ 0, 0 },
 	}
 };
@@ -16483,17 +16503,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_PICO_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_CPU_TX_PICO_INGRESS_QUEUE_PTR, 0xb76e },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_KEY_BUFFER =
-{
-	16,
-	{
-		{ dump_RDD_SIXTEEN_BYTES, 0xb770 },
+		{ dump_RDD_CPU_TX_PICO_INGRESS_QUEUE_PTR, 0xb78e },
 		{ 0, 0 },
 	}
 };
@@ -16503,7 +16513,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_DS_PICO_DHD_TX_POST_CONTEXT =
 {
 	16,
 	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb780 },
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb790 },
 		{ 0, 0 },
 	}
 };
@@ -16513,7 +16523,7 @@ static DUMP_RUNNERREG_STRUCT WLAN_MCAST_DHD_TX_POST_CONTEXT =
 {
 	16,
 	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb790 },
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb7a0 },
 		{ 0, 0 },
 	}
 };
@@ -16523,7 +16533,7 @@ static DUMP_RUNNERREG_STRUCT GSO_TX_DS_PICO_DHD_TX_POST_CONTEXT =
 {
 	16,
 	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb7a0 },
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb7b0 },
 		{ 0, 0 },
 	}
 };
@@ -16533,27 +16543,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT =
 {
 	8,
 	{
-		{ dump_RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY, 0xb7b0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT TIMER_DHD_TX_POST_DOORBELL_SCRATCH =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xb7b8 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT SPDSVC_HOST_BUF_PTR =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xb7bc },
+		{ dump_RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY, 0xb7c0 },
 		{ 0, 0 },
 	}
 };
@@ -16563,7 +16553,7 @@ static DUMP_RUNNERREG_STRUCT EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb7c0 },
+		{ dump_RDD_ONE_BYTE, 0xb7c8 },
 		{ 0, 0 },
 	}
 };
@@ -16573,7 +16563,7 @@ static DUMP_RUNNERREG_STRUCT ETH_TX_EMACS_STATUS =
 {
 	1,
 	{
-		{ dump_RDD_ETH_TX_EMACS_STATUS_ENTRY, 0xb7c5 },
+		{ dump_RDD_ETH_TX_EMACS_STATUS_ENTRY, 0xb7cd },
 		{ 0, 0 },
 	}
 };
@@ -16583,7 +16573,7 @@ static DUMP_RUNNERREG_STRUCT FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD =
 {
 	2,
 	{
-		{ dump_RDD_FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD, 0xb7c6 },
+		{ dump_RDD_FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD, 0xb7ce },
 		{ 0, 0 },
 	}
 };
@@ -16593,7 +16583,17 @@ static DUMP_RUNNERREG_STRUCT HASH_BASED_FORWARDING_PORT_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_HASH_BASED_FORWARDING_PORT_ENTRY, 0xb7c8 },
+		{ dump_RDD_HASH_BASED_FORWARDING_PORT_ENTRY, 0xb7d0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT SPDSVC_HOST_BUF_PTR =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xb7d4 },
 		{ 0, 0 },
 	}
 };
@@ -16603,7 +16603,7 @@ static DUMP_RUNNERREG_STRUCT DS_CPU_TX_DATA_POINTER_DUMMY_TARGET =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb7cc },
+		{ dump_RDD_FOUR_BYTES, 0xb7d8 },
 		{ 0, 0 },
 	}
 };
@@ -16613,7 +16613,7 @@ static DUMP_RUNNERREG_STRUCT FIREWALL_IPV6_R16_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_FIREWALL_IPV6_R16_BUFFER_ENTRY, 0xb7d0 },
+		{ dump_RDD_FIREWALL_IPV6_R16_BUFFER_ENTRY, 0xb7dc },
 		{ 0, 0 },
 	}
 };
@@ -16623,7 +16623,7 @@ static DUMP_RUNNERREG_STRUCT DOWNSTREAM_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR 
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb7d4 },
+		{ dump_RDD_TWO_BYTES, 0xb7e0 },
 		{ 0, 0 },
 	}
 };
@@ -16633,7 +16633,7 @@ static DUMP_RUNNERREG_STRUCT CPU_RX_PD_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb7d6 },
+		{ dump_RDD_TWO_BYTES, 0xb7e2 },
 		{ 0, 0 },
 	}
 };
@@ -16643,7 +16643,7 @@ static DUMP_RUNNERREG_STRUCT DS_CPU_RX_PICO_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xb7d8 },
+		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xb7e4 },
 		{ 0, 0 },
 	}
 };
@@ -16653,7 +16653,7 @@ static DUMP_RUNNERREG_STRUCT DS_BPM_DDR_BUFFER_HEADROOM_SIZE =
 {
 	2,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xb7da },
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xb7e6 },
 		{ 0, 0 },
 	}
 };
@@ -16663,7 +16663,7 @@ static DUMP_RUNNERREG_STRUCT DS_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION =
 {
 	2,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xb7dc },
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xb7e8 },
 		{ 0, 0 },
 	}
 };
@@ -16673,7 +16673,7 @@ static DUMP_RUNNERREG_STRUCT DS_CPU_RX_FAST_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xb7de },
+		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xb7ea },
 		{ 0, 0 },
 	}
 };
@@ -16683,7 +16683,7 @@ static DUMP_RUNNERREG_STRUCT DS_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR =
 {
 	2,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xb7e0 },
+		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xb7ec },
 		{ 0, 0 },
 	}
 };
@@ -16693,7 +16693,7 @@ static DUMP_RUNNERREG_STRUCT DS_ANY_SRC_PORT_FLOW_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xb7e2 },
+		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xb7ee },
 		{ 0, 0 },
 	}
 };
@@ -16703,17 +16703,7 @@ static DUMP_RUNNERREG_STRUCT GSO_DESC_PTR =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb7e4 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT GSO_TX_DHD_HOST_BUF_PTR =
-{
-	1,
-	{
-		{ dump_RDD_ONE_BYTE, 0xb7e8 },
+		{ dump_RDD_FOUR_BYTES, 0xb7f0 },
 		{ 0, 0 },
 	}
 };
@@ -16723,17 +16713,17 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb7ec },
+		{ dump_RDD_FOUR_BYTES, 0xb7f4 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_HOST_BUF_PTR =
+static DUMP_RUNNERREG_STRUCT GSO_TX_DHD_HOST_BUF_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb7f0 },
+		{ dump_RDD_ONE_BYTE, 0xb7f8 },
 		{ 0, 0 },
 	}
 };
@@ -16743,7 +16733,17 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_DDR_SA_DESC_TABLE_PTR =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb7f4 },
+		{ dump_RDD_FOUR_BYTES, 0xb7fc },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_HOST_BUF_PTR =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xb800 },
 		{ 0, 0 },
 	}
 };
@@ -16753,7 +16753,7 @@ static DUMP_RUNNERREG_STRUCT DS_TIMER_7_SCHEDULER_NEXT_ENTRY =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb7f8 },
+		{ dump_RDD_TWO_BYTES, 0xb804 },
 		{ 0, 0 },
 	}
 };
@@ -16763,7 +16763,7 @@ static DUMP_RUNNERREG_STRUCT DS_MEMLIB_SEMAPHORE =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb7fa },
+		{ dump_RDD_TWO_BYTES, 0xb806 },
 		{ 0, 0 },
 	}
 };
@@ -16773,7 +16773,7 @@ static DUMP_RUNNERREG_STRUCT WAN_PHYSICAL_PORT =
 {
 	2,
 	{
-		{ dump_RDD_WAN_PHYSICAL_PORT, 0xb7fc },
+		{ dump_RDD_WAN_PHYSICAL_PORT, 0xb808 },
 		{ 0, 0 },
 	}
 };
@@ -16783,7 +16783,7 @@ static DUMP_RUNNERREG_STRUCT DOWNSTREAM_MULTICAST_LAN_ENQUEUE_SERVICE_QUEUE_INGR
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb7fe },
+		{ dump_RDD_TWO_BYTES, 0xb80a },
 		{ 0, 0 },
 	}
 };
@@ -16793,7 +16793,7 @@ static DUMP_RUNNERREG_STRUCT DS_RUNNER_CONGESTION_STATE =
 {
 	2,
 	{
-		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xb800 },
+		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xb80c },
 		{ 0, 0 },
 	}
 };
@@ -16803,7 +16803,7 @@ static DUMP_RUNNERREG_STRUCT DS_RX_SBPM_TO_FPM_COPY_SCRATCHPAD_PTR =
 {
 	2,
 	{
-		{ dump_RDD_BYTES_2, 0xb802 },
+		{ dump_RDD_BYTES_2, 0xb80e },
 		{ 0, 0 },
 	}
 };
@@ -16813,7 +16813,7 @@ static DUMP_RUNNERREG_STRUCT GSO_PICO_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb804 },
+		{ dump_RDD_TWO_BYTES, 0xb810 },
 		{ 0, 0 },
 	}
 };
@@ -16823,7 +16823,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_COMPLETE_BPM_REF_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb806 },
+		{ dump_RDD_TWO_BYTES, 0xb812 },
 		{ 0, 0 },
 	}
 };
@@ -16833,7 +16833,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_POST_CPU_BPM_REF_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb808 },
+		{ dump_RDD_TWO_BYTES, 0xb814 },
 		{ 0, 0 },
 	}
 };
@@ -16843,7 +16843,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_BPM_CONGESTION_UG3_DROP_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb80a },
+		{ dump_RDD_TWO_BYTES, 0xb816 },
 		{ 0, 0 },
 	}
 };
@@ -16853,7 +16853,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_BPM_CONGESTION_ALLOC_FAIL_DROP_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb80c },
+		{ dump_RDD_TWO_BYTES, 0xb818 },
 		{ 0, 0 },
 	}
 };
@@ -16863,7 +16863,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_DDR_SA_DESC_SIZE =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb80e },
+		{ dump_RDD_TWO_BYTES, 0xb81a },
 		{ 0, 0 },
 	}
 };
@@ -16873,7 +16873,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb810 },
+		{ dump_RDD_TWO_BYTES, 0xb81c },
 		{ 0, 0 },
 	}
 };
@@ -16883,7 +16883,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_IP_LENGTH =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb812 },
+		{ dump_RDD_TWO_BYTES, 0xb81e },
 		{ 0, 0 },
 	}
 };
@@ -16893,7 +16893,7 @@ static DUMP_RUNNERREG_STRUCT PRIVATE_A_DUMMY_STORE =
 {
 	1,
 	{
-		{ dump_RDD_DUMMY_STORE_ENTRY, 0xb814 },
+		{ dump_RDD_DUMMY_STORE_ENTRY, 0xb820 },
 		{ 0, 0 },
 	}
 };
@@ -16903,7 +16903,7 @@ static DUMP_RUNNERREG_STRUCT ETH_TX_INTER_LAN_SCHEDULING_OFFSET =
 {
 	1,
 	{
-		{ dump_RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY, 0xb815 },
+		{ dump_RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY, 0xb821 },
 		{ 0, 0 },
 	}
 };
@@ -16913,7 +16913,7 @@ static DUMP_RUNNERREG_STRUCT DS_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb816 },
+		{ dump_RDD_ONE_BYTE, 0xb822 },
 		{ 0, 0 },
 	}
 };
@@ -16923,7 +16923,7 @@ static DUMP_RUNNERREG_STRUCT DS_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb817 },
+		{ dump_RDD_ONE_BYTE, 0xb823 },
 		{ 0, 0 },
 	}
 };
@@ -16933,7 +16933,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_DS_PICO_SEMAPHORE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb818 },
+		{ dump_RDD_ONE_BYTE, 0xb824 },
 		{ 0, 0 },
 	}
 };
@@ -16943,7 +16943,7 @@ static DUMP_RUNNERREG_STRUCT DS_FC_GLOBAL_CFG =
 {
 	1,
 	{
-		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xb819 },
+		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xb825 },
 		{ 0, 0 },
 	}
 };
@@ -16953,7 +16953,7 @@ static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb81a },
+		{ dump_RDD_ONE_BYTE, 0xb826 },
 		{ 0, 0 },
 	}
 };
@@ -16963,7 +16963,7 @@ static DUMP_RUNNERREG_STRUCT DS_INGRESS_CLASSIFICATION_IP_FLOW_RULE_CFG_DESCRIPT
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb81b },
+		{ dump_RDD_ONE_BYTE, 0xb827 },
 		{ 0, 0 },
 	}
 };
@@ -16973,7 +16973,7 @@ static DUMP_RUNNERREG_STRUCT DS_PACKET_BUFFER_SIZE_ASR_8 =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb81c },
+		{ dump_RDD_ONE_BYTE, 0xb828 },
 		{ 0, 0 },
 	}
 };
@@ -16983,7 +16983,7 @@ static DUMP_RUNNERREG_STRUCT DS_MAIN_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb81d },
+		{ dump_RDD_ONE_BYTE, 0xb829 },
 		{ 0, 0 },
 	}
 };
@@ -16993,7 +16993,7 @@ static DUMP_RUNNERREG_STRUCT DS_PICO_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb81e },
+		{ dump_RDD_ONE_BYTE, 0xb82a },
 		{ 0, 0 },
 	}
 };
@@ -17003,7 +17003,7 @@ static DUMP_RUNNERREG_STRUCT DS_RUNNER_FLOW_IH_RESPONSE_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb81f },
+		{ dump_RDD_ONE_BYTE, 0xb82b },
 		{ 0, 0 },
 	}
 };
@@ -17013,7 +17013,7 @@ static DUMP_RUNNERREG_STRUCT DS_PARALLEL_PROCESSING_SLAVE_VECTOR =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xb820 },
+		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xb82c },
 		{ 0, 0 },
 	}
 };
@@ -17023,7 +17023,7 @@ static DUMP_RUNNERREG_STRUCT DS_PARALLEL_PROCESSING_CONTEXT_CACHE_MODE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb821 },
+		{ dump_RDD_ONE_BYTE, 0xb82d },
 		{ 0, 0 },
 	}
 };
@@ -17033,7 +17033,7 @@ static DUMP_RUNNERREG_STRUCT DS_IH_CONGESTION_THRESHOLD =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb822 },
+		{ dump_RDD_ONE_BYTE, 0xb82e },
 		{ 0, 0 },
 	}
 };
@@ -17043,7 +17043,7 @@ static DUMP_RUNNERREG_STRUCT DS_FAST_MALLOC_RESULT_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb823 },
+		{ dump_RDD_BYTE_1, 0xb82f },
 		{ 0, 0 },
 	}
 };
@@ -17053,7 +17053,7 @@ static DUMP_RUNNERREG_STRUCT DS_PICO_MALLOC_RESULT_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb824 },
+		{ dump_RDD_BYTE_1, 0xb830 },
 		{ 0, 0 },
 	}
 };
@@ -17063,7 +17063,7 @@ static DUMP_RUNNERREG_STRUCT DS_RX_SBPM_TO_FPM_COPY_SEMAPHORE =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb825 },
+		{ dump_RDD_BYTE_1, 0xb831 },
 		{ 0, 0 },
 	}
 };
@@ -17073,7 +17073,7 @@ static DUMP_RUNNERREG_STRUCT DS_FW_MAC_ADDRS_COUNT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb826 },
+		{ dump_RDD_ONE_BYTE, 0xb832 },
 		{ 0, 0 },
 	}
 };
@@ -17083,7 +17083,7 @@ static DUMP_RUNNERREG_STRUCT DS_DHD_DMA_SYNCHRONIZATION =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb827 },
+		{ dump_RDD_ONE_BYTE, 0xb833 },
 		{ 0, 0 },
 	}
 };
@@ -17093,7 +17093,7 @@ static DUMP_RUNNERREG_STRUCT DHD_TX_POST_CPU_SEMAPHORE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb828 },
+		{ dump_RDD_ONE_BYTE, 0xb834 },
 		{ 0, 0 },
 	}
 };
@@ -17103,7 +17103,7 @@ static DUMP_RUNNERREG_STRUCT RING_CACHE_DHD_TXPOST_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb829 },
+		{ dump_RDD_ONE_BYTE, 0xb835 },
 		{ 0, 0 },
 	}
 };
@@ -17113,7 +17113,7 @@ static DUMP_RUNNERREG_STRUCT COMMON_DHD_TXPOST_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb82a },
+		{ dump_RDD_ONE_BYTE, 0xb836 },
 		{ 0, 0 },
 	}
 };
@@ -17123,7 +17123,7 @@ static DUMP_RUNNERREG_STRUCT TXCPL_INT_DHD_TXPOST_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb82b },
+		{ dump_RDD_ONE_BYTE, 0xb837 },
 		{ 0, 0 },
 	}
 };
@@ -17133,7 +17133,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_DS_SA_DESC_NEXT_REPLACE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb82c },
+		{ dump_RDD_ONE_BYTE, 0xb838 },
 		{ 0, 0 },
 	}
 };
@@ -17143,7 +17143,7 @@ static DUMP_RUNNERREG_STRUCT IPSEC_US_SA_DESC_NEXT_REPLACE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb82d },
+		{ dump_RDD_ONE_BYTE, 0xb839 },
 		{ 0, 0 },
 	}
 };
@@ -17264,11 +17264,11 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_LOOKUP_TABLE =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_QUEUE_PROFILE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_TRAFFIC_CLASS_TO_QUEUE_TABLE =
 {
-	16,
+	1,
 	{
-		{ dump_RDD_QUEUE_PROFILE, 0x8380 },
+		{ dump_RDD_US_QUEUE_ENTRY, 0x83c0 },
 		{ 0, 0 },
 	}
 };
@@ -17374,21 +17374,21 @@ static DUMP_RUNNERREG_STRUCT US_MAIN_TIMER_TASK_DESCRIPTOR_TABLE =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_TRAFFIC_CLASS_TO_QUEUE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE =
 {
-	1,
+	2,
 	{
-		{ dump_RDD_US_QUEUE_ENTRY, 0x91c0 },
+		{ dump_RDD_TWO_BYTES, 0x91c0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE =
 {
-	2,
+	1,
 	{
-		{ dump_RDD_TWO_BYTES, 0x9200 },
+		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0x9200 },
 		{ 0, 0 },
 	}
 };
@@ -17444,11 +17444,11 @@ static DUMP_RUNNERREG_STRUCT US_RATE_LIMITER_TABLE =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_METER_TABLE =
+static DUMP_RUNNERREG_STRUCT US_QUEUE_PROFILE_TABLE =
 {
-	8,
+	16,
 	{
-		{ dump_RDD_CPU_RX_METER_ENTRY, 0x9380 },
+		{ dump_RDD_QUEUE_PROFILE, 0x9380 },
 		{ 0, 0 },
 	}
 };
@@ -17504,21 +17504,21 @@ static DUMP_RUNNERREG_STRUCT US_FAST_RUNNER_GLOBAL_REGISTERS_INIT =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_INGRESS_HANDLER_SKB_DATA_POINTER =
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_METER_TABLE =
 {
-	4,
+	8,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xa300 },
+		{ dump_RDD_CPU_RX_METER_ENTRY, 0xa300 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_GRE_RUNNER_FLOW_HEADER_BUFFER =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_HANDLER_SKB_DATA_POINTER =
 {
-	128,
+	4,
 	{
-		{ dump_RDD_GRE_RUNNER_FLOW_HEADER_BUFFER, 0xa380 },
+		{ dump_RDD_FOUR_BYTES, 0xa380 },
 		{ 0, 0 },
 	}
 };
@@ -17546,11 +17546,11 @@ static DUMP_RUNNERREG_STRUCT US_PICO_RUNNER_GLOBAL_REGISTERS_INIT =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE =
+static DUMP_RUNNERREG_STRUCT US_GRE_RUNNER_FLOW_HEADER_BUFFER =
 {
-	8,
+	128,
 	{
-		{ dump_RDD_INGRESS_CLASSIFICATION_RULE_CFG_ENTRY, 0xa680 },
+		{ dump_RDD_GRE_RUNNER_FLOW_HEADER_BUFFER, 0xa680 },
 		{ 0, 0 },
 	}
 };
@@ -17566,50 +17566,37 @@ static DUMP_RUNNERREG_STRUCT US_PROFILING_BUFFER_PICO_RUNNER =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_PARAMETER_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE =
 {
-	1,
+	8,
 	{
-		{ dump_RDD_INGRESS_FILTERS_PARAMETER_ENTRY, 0xa800 },
+		{ dump_RDD_INGRESS_CLASSIFICATION_RULE_CFG_ENTRY, 0xa800 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT DHD_RX_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_PARAMETER_TABLE =
 {
-	4,
+	1,
 	{
-		{ dump_RDD_BYTES_4, 0xa860 },
+		{ dump_RDD_INGRESS_FILTERS_PARAMETER_ENTRY, 0xa880 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_FC_L2_UCAST_CONNECTION_BUFFER =
+{
+	16,
+	{
+		{ dump_RDD_FC_L2_UCAST_CONNECTION_ENTRY, 0xa8f0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
 static DUMP_RUNNERREG_STRUCT DHD_RX_COMPLETE_FLOW_RING_BUFFER =
-{
-	32,
-	{
-		{ dump_RDD_DHD_RX_POST_DESCRIPTOR, 0xa880 },
-		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR, 0xa880 },
-		{ dump_RDD_DHD_RX_POST_DESCRIPTOR_CWI32, 0xa880 },
-		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR_CWI32, 0xa880 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_0_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
-{
-	4,
-	{
-		{ dump_RDD_BYTES_4, 0xa8e0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT DHD_RX_POST_FLOW_RING_BUFFER =
 {
 	32,
 	{
@@ -17622,7 +17609,7 @@ static DUMP_RUNNERREG_STRUCT DHD_RX_POST_FLOW_RING_BUFFER =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_0_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT DHD_RX_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
@@ -17742,27 +17729,20 @@ static DUMP_RUNNERREG_STRUCT US_CPU_TX_MESSAGE_DATA_BUFFER =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_INGRESS_RATE_LIMITER_TABLE =
+static DUMP_RUNNERREG_STRUCT DHD_RX_POST_FLOW_RING_BUFFER =
 {
-	16,
+	32,
 	{
-		{ dump_RDD_INGRESS_RATE_LIMITER_ENTRY, 0xaa00 },
+		{ dump_RDD_DHD_RX_POST_DESCRIPTOR, 0xaa00 },
+		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR, 0xaa00 },
+		{ dump_RDD_DHD_RX_POST_DESCRIPTOR_CWI32, 0xaa00 },
+		{ dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR_CWI32, 0xaa00 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_FC_L2_UCAST_CONNECTION_BUFFER =
-{
-	16,
-	{
-		{ dump_RDD_FC_L2_UCAST_CONNECTION_ENTRY, 0xaa50 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_0_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
@@ -17772,11 +17752,11 @@ static DUMP_RUNNERREG_STRUCT US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_SPDSVC_CONTEXT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_RATE_LIMITER_TABLE =
 {
-	80,
+	16,
 	{
-		{ dump_RDD_SPDSVC_CONTEXT_ENTRY, 0xaa80 },
+		{ dump_RDD_INGRESS_RATE_LIMITER_ENTRY, 0xaa80 },
 		{ 0, 0 },
 	}
 };
@@ -17792,7 +17772,7 @@ static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_MAINB_PARAM =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_0_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
@@ -17802,27 +17782,27 @@ static DUMP_RUNNERREG_STRUCT US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TAB
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE =
+static DUMP_RUNNERREG_STRUCT US_SPDSVC_CONTEXT_TABLE =
 {
-	1,
+	80,
 	{
-		{ dump_RDD_INGRESS_QUEUE_ENTRY, 0xab00 },
+		{ dump_RDD_SPDSVC_CONTEXT_ENTRY, 0xab00 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT CAPWAPR0_RX_DESCRIPTORS =
+static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_PICOB_PARAM =
 {
 	8,
 	{
-		{ dump_RDD_ETH_RX_DESCRIPTORS, 0xab40 },
+		{ dump_RDD_EIGHT_BYTES, 0xab50 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_2_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
@@ -17842,7 +17822,7 @@ static DUMP_RUNNERREG_STRUCT US_ROUTER_INGRESS_QUEUE =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT CAPWAPR1_RX_DESCRIPTORS =
+static DUMP_RUNNERREG_STRUCT CAPWAPR0_RX_DESCRIPTORS =
 {
 	8,
 	{
@@ -17852,7 +17832,7 @@ static DUMP_RUNNERREG_STRUCT CAPWAPR1_RX_DESCRIPTORS =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_2_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
@@ -17892,7 +17872,7 @@ static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT CAPWAPR2_RX_DESCRIPTORS =
+static DUMP_RUNNERREG_STRUCT CAPWAPR1_RX_DESCRIPTORS =
 {
 	8,
 	{
@@ -17902,7 +17882,7 @@ static DUMP_RUNNERREG_STRUCT CAPWAPR2_RX_DESCRIPTORS =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_CPU_TX_FPM_ALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_2_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
@@ -17975,51 +17955,31 @@ static DUMP_RUNNERREG_STRUCT US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_CONFIGURATION_TABLE =
+static DUMP_RUNNERREG_STRUCT US_2_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_INGRESS_FILTERS_CONFIGURATION_ENTRY, 0xaf20 },
+		{ dump_RDD_BYTES_4, 0xaf20 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_ONE_BUFFER =
+static DUMP_RUNNERREG_STRUCT CAPWAPR2_RX_DESCRIPTORS =
 {
 	8,
 	{
-		{ dump_RDD_EIGHT_BYTES, 0xaf38 },
+		{ dump_RDD_ETH_RX_DESCRIPTORS, 0xaf40 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HEADER_SCRATCH =
+static DUMP_RUNNERREG_STRUCT US_CPU_TX_FPM_ALLOC_RESULT_TABLE =
 {
-	32,
+	4,
 	{
-		{ dump_RDD_DHD_L2_HEADER_BUFFER_ENTRY, 0xaf40 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_RUNNER_FLOW_HEADER_DESCRIPTOR =
-{
-	8,
-	{
-		{ dump_RDD_RUNNER_FLOW_HEADER_DESCRIPTOR, 0xaf60 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_NULL_BUFFER =
-{
-	8,
-	{
-		{ dump_RDD_EIGHT_BYTES, 0xaf78 },
+		{ dump_RDD_BYTES_4, 0xaf60 },
 		{ 0, 0 },
 	}
 };
@@ -18045,31 +18005,21 @@ static DUMP_RUNNERREG_STRUCT US_BPM_DDR_OPTIMIZED_BUFFERS_BASE =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_GPE_COMMAND_PRIMITIVE_TABLE =
+static DUMP_RUNNERREG_STRUCT US_ONE_BUFFER =
 {
-	2,
+	8,
 	{
-		{ dump_RDD_GPE_COMMAND_PRIMITIVE_ENTRY, 0xafd8 },
+		{ dump_RDD_EIGHT_BYTES, 0xafd8 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_FAST_MALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_FILTERS_CONFIGURATION_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0xb018 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_CPU_PARAMETERS_BLOCK =
-{
-	20,
-	{
-		{ dump_RDD_CPU_PARAMETERS_BLOCK_ENTRY, 0xb020 },
+		{ dump_RDD_INGRESS_FILTERS_CONFIGURATION_ENTRY, 0xafe0 },
 		{ 0, 0 },
 	}
 };
@@ -18079,17 +18029,47 @@ static DUMP_RUNNERREG_STRUCT US_BPM_DDR_1_OPTIMIZED_BUFFERS_BASE =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb034 },
+		{ dump_RDD_FOUR_BYTES, 0xaffc },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_PICO_MALLOC_RESULT_TABLE =
+static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HEADER_SCRATCH =
 {
-	4,
+	32,
 	{
-		{ dump_RDD_BYTES_4, 0xb038 },
+		{ dump_RDD_DHD_L2_HEADER_BUFFER_ENTRY, 0xb000 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_GPE_COMMAND_PRIMITIVE_TABLE =
+{
+	2,
+	{
+		{ dump_RDD_GPE_COMMAND_PRIMITIVE_ENTRY, 0xb020 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_RUNNER_FLOW_HEADER_DESCRIPTOR =
+{
+	8,
+	{
+		{ dump_RDD_RUNNER_FLOW_HEADER_DESCRIPTOR, 0xb060 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_NULL_BUFFER =
+{
+	8,
+	{
+		{ dump_RDD_EIGHT_BYTES, 0xb078 },
 		{ 0, 0 },
 	}
 };
@@ -18099,58 +18079,28 @@ static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_FLOW_RING_BUFFER =
 {
 	48,
 	{
-		{ dump_RDD_DHD_TX_POST_DESCRIPTOR, 0xb040 },
-		{ dump_RDD_DHD_TX_POST_DESCRIPTOR_CWI32, 0xb040 },
+		{ dump_RDD_DHD_TX_POST_DESCRIPTOR, 0xb080 },
+		{ dump_RDD_DHD_TX_POST_DESCRIPTOR_CWI32, 0xb080 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT GPON_ABSOLUTE_TX_FIRMWARE_COUNTER =
-{
-	1,
-	{
-		{ dump_RDD_GPON_ABSOLUTE_TX_COUNTER, 0xb070 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_BYTE_1, 0xb098 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
+static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM =
 {
 	2,
 	{
-		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xb0a0 },
+		{ dump_RDD_TWO_BYTES, 0xb0b0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT RUNNER_FWTRACE_PICOB_PARAM =
+static DUMP_RUNNERREG_STRUCT US_CPU_PARAMETERS_BLOCK =
 {
-	8,
+	20,
 	{
-		{ dump_RDD_EIGHT_BYTES, 0xb0b0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_DHD_FLOW_RING_DROP_COUNTER =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0xb0c0 },
+		{ dump_RDD_CPU_PARAMETERS_BLOCK_ENTRY, 0xb0c0 },
 		{ 0, 0 },
 	}
 };
@@ -18166,51 +18116,21 @@ static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFERS_BASE =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR =
+static DUMP_RUNNERREG_STRUCT GPON_ABSOLUTE_TX_FIRMWARE_COUNTER =
 {
-	6,
+	1,
 	{
-		{ dump_RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY, 0xb0d8 },
+		{ dump_RDD_GPON_ABSOLUTE_TX_COUNTER, 0xb0d8 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE_PTR =
+static DUMP_RUNNERREG_STRUCT US_DHD_FLOW_RING_DROP_COUNTER =
 {
-	2,
+	4,
 	{
-		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xb0de },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
-{
-	2,
-	{
-		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xb0e0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM =
-{
-	2,
-	{
-		{ dump_RDD_TWO_BYTES, 0xb0f0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_SYSTEM_CONFIGURATION =
-{
-	36,
-	{
-		{ dump_RDD_SYSTEM_CONFIGURATION, 0xb100 },
+		{ dump_RDD_FOUR_BYTES, 0xb100 },
 		{ 0, 0 },
 	}
 };
@@ -18220,27 +18140,27 @@ static DUMP_RUNNERREG_STRUCT US_BPM_DDR_1_BUFFERS_BASE =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb124 },
+		{ dump_RDD_FOUR_BYTES, 0xb114 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_ENTRY, 0xb128 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT DATA_POINTER_DUMMY_TARGET =
+static DUMP_RUNNERREG_STRUCT US_FAST_MALLOC_RESULT_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb148 },
+		{ dump_RDD_BYTES_4, 0xb118 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
+{
+	2,
+	{
+		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xb120 },
 		{ 0, 0 },
 	}
 };
@@ -18250,37 +18170,17 @@ static DUMP_RUNNERREG_STRUCT US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xb150 },
+		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xb130 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT WAN_TX_SCRATCH =
+static DUMP_RUNNERREG_STRUCT US_SYSTEM_CONFIGURATION =
 {
-	1,
+	36,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb160 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_CPU_REASON_TO_METER_ENTRY, 0xb178 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE =
-{
-	2,
-	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xb18a },
+		{ dump_RDD_SYSTEM_CONFIGURATION, 0xb140 },
 		{ 0, 0 },
 	}
 };
@@ -18290,37 +18190,57 @@ static DUMP_RUNNERREG_STRUCT US_CONNECTION_TABLE_CONFIG =
 {
 	4,
 	{
-		{ dump_RDD_CONNECTION_TABLE_CONFIG, 0xb18c },
+		{ dump_RDD_CONNECTION_TABLE_CONFIG, 0xb164 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE =
+static DUMP_RUNNERREG_STRUCT WAN_TX_SCRATCH =
 {
 	1,
 	{
-		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xb190 },
+		{ dump_RDD_ONE_BYTE, 0xb168 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
-{
-	1,
-	{
-		{ dump_RDD_ONE_BYTE, 0xb199 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION =
+static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE =
 {
 	2,
 	{
-		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xb19a },
+		{ dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY, 0xb180 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_ENTRY, 0xb190 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_CPU_REASON_TO_METER_ENTRY, 0xb1b0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_PICO_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR, 0xb1c2 },
 		{ 0, 0 },
 	}
 };
@@ -18330,47 +18250,47 @@ static DUMP_RUNNERREG_STRUCT US_CONTEXT_TABLE_CONFIG =
 {
 	4,
 	{
-		{ dump_RDD_CONTEXT_TABLE_CONFIG, 0xb19c },
+		{ dump_RDD_CONTEXT_TABLE_CONFIG, 0xb1c4 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_BUFFER =
+static DUMP_RUNNERREG_STRUCT US_PICO_MALLOC_RESULT_TABLE =
 {
-	16,
+	4,
 	{
-		{ dump_RDD_SIXTEEN_BYTES, 0xb1a0 },
+		{ dump_RDD_BYTES_4, 0xb1c8 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT CPU_TX_DS_EGRESS_DHD_TX_POST_CONTEXT =
-{
-	16,
-	{
-		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb1b0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_LAYER2_HEADER_BUFFER =
+static DUMP_RUNNERREG_STRUCT BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1c0 },
+		{ dump_RDD_BROADCOM_SWITCH_PORT_MAPPING, 0xb1d0 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE_PTR =
+static DUMP_RUNNERREG_STRUCT US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xb1d9 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE =
 {
 	2,
 	{
-		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xb1ce },
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE, 0xb1da },
 		{ 0, 0 },
 	}
 };
@@ -18380,17 +18300,87 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_ENTRY, 0xb1d0 },
+		{ dump_RDD_PARALLEL_PROCESSING_ENTRY, 0xb1dc },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_DEBUG_PERIPHERALS_STATUS_REGISTER =
+static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_KEY_BUFFER =
+{
+	16,
+	{
+		{ dump_RDD_SIXTEEN_BYTES, 0xb1e0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT CPU_TX_DS_EGRESS_DHD_TX_POST_CONTEXT =
+{
+	16,
+	{
+		{ dump_RDD_DHD_TX_POST_CONTEXT_ENTRY, 0xb1f0 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_BYTE_1, 0xb200 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT CPU_TX_DHD_LAYER2_HEADER_BUFFER =
+{
+	1,
+	{
+		{ dump_RDD_ONE_BYTE, 0xb208 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION =
+{
+	2,
+	{
+		{ dump_RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 0xb216 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR =
+{
+	6,
+	{
+		{ dump_RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY, 0xb218 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_CPU_RX_FAST_INGRESS_QUEUE_PTR =
+{
+	2,
+	{
+		{ dump_RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR, 0xb21e },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT DATA_POINTER_DUMMY_TARGET =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb1d4 },
+		{ dump_RDD_FOUR_BYTES, 0xb220 },
 		{ 0, 0 },
 	}
 };
@@ -18400,17 +18390,17 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_TASK_REORDER_FIFO =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY, 0xb1d8 },
+		{ dump_RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY, 0xb228 },
 		{ 0, 0 },
 	}
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT IH_BUFFER_BBH_POINTER =
+static DUMP_RUNNERREG_STRUCT US_DEBUG_PERIPHERALS_STATUS_REGISTER =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb1dc },
+		{ dump_RDD_FOUR_BYTES, 0xb22c },
 		{ 0, 0 },
 	}
 };
@@ -18420,7 +18410,17 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb1e0 },
+		{ dump_RDD_ONE_BYTE, 0xb230 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT IH_BUFFER_BBH_POINTER =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0xb238 },
 		{ 0, 0 },
 	}
 };
@@ -18430,7 +18430,7 @@ static DUMP_RUNNERREG_STRUCT US_CONTEXT_CONTINUATION_TABLE_CONFIG =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb1e8 },
+		{ dump_RDD_FOUR_BYTES, 0xb23c },
 		{ 0, 0 },
 	}
 };
@@ -18440,17 +18440,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_DOORBELL_SCRATCH =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb1ec },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT US_RATE_CONTROLLER_EXPONENT_TABLE =
-{
-	1,
-	{
-		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0xb1f0 },
+		{ dump_RDD_FOUR_BYTES, 0xb240 },
 		{ 0, 0 },
 	}
 };
@@ -18460,7 +18450,17 @@ static DUMP_RUNNERREG_STRUCT US_CPU_TX_DATA_POINTER_DUMMY_TARGET =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb1f4 },
+		{ dump_RDD_FOUR_BYTES, 0xb244 },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT US_RATE_CONTROLLER_EXPONENT_TABLE =
+{
+	1,
+	{
+		{ dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY, 0xb248 },
 		{ 0, 0 },
 	}
 };
@@ -18470,7 +18470,7 @@ static DUMP_RUNNERREG_STRUCT LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE
 {
 	2,
 	{
-		{ dump_RDD_LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xb1f8 },
+		{ dump_RDD_LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xb24c },
 		{ 0, 0 },
 	}
 };
@@ -18480,7 +18480,7 @@ static DUMP_RUNNERREG_STRUCT LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xb1fa },
+		{ dump_RDD_LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 0xb24e },
 		{ 0, 0 },
 	}
 };
@@ -18490,7 +18490,7 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR =
 {
 	2,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xb1fc },
+		{ dump_RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR, 0xb250 },
 		{ 0, 0 },
 	}
 };
@@ -18500,7 +18500,7 @@ static DUMP_RUNNERREG_STRUCT US_ANY_SRC_PORT_FLOW_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xb1fe },
+		{ dump_RDD_ANY_SRC_PORT_FLOW_COUNTER, 0xb252 },
 		{ 0, 0 },
 	}
 };
@@ -18510,7 +18510,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_TX_POST_HOST_DATA_PTR_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0xb200 },
+		{ dump_RDD_FOUR_BYTES, 0xb254 },
 		{ 0, 0 },
 	}
 };
@@ -18520,7 +18520,7 @@ static DUMP_RUNNERREG_STRUCT US_TIMER_7_SCHEDULER_NEXT_ENTRY =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb204 },
+		{ dump_RDD_TWO_BYTES, 0xb258 },
 		{ 0, 0 },
 	}
 };
@@ -18530,7 +18530,7 @@ static DUMP_RUNNERREG_STRUCT US_MEMLIB_SEMAPHORE =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb206 },
+		{ dump_RDD_TWO_BYTES, 0xb25a },
 		{ 0, 0 },
 	}
 };
@@ -18540,7 +18540,7 @@ static DUMP_RUNNERREG_STRUCT ETHWAN2_RX_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb208 },
+		{ dump_RDD_TWO_BYTES, 0xb25c },
 		{ 0, 0 },
 	}
 };
@@ -18550,7 +18550,7 @@ static DUMP_RUNNERREG_STRUCT US_RUNNER_CONGESTION_STATE =
 {
 	2,
 	{
-		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xb20a },
+		{ dump_RDD_RUNNER_CONGESTION_STATE_ENTRY, 0xb25e },
 		{ 0, 0 },
 	}
 };
@@ -18560,7 +18560,7 @@ static DUMP_RUNNERREG_STRUCT WAN_ENQUEUE_INGRESS_QUEUE_PTR =
 {
 	2,
 	{
-		{ dump_RDD_WAN_ENQUEUE_INGRESS_QUEUE_PTR_ENTRY, 0xb20c },
+		{ dump_RDD_WAN_ENQUEUE_INGRESS_QUEUE_PTR_ENTRY, 0xb260 },
 		{ 0, 0 },
 	}
 };
@@ -18570,7 +18570,7 @@ static DUMP_RUNNERREG_STRUCT US_RX_SBPM_TO_FPM_COPY_SCRATCHPAD_PTR =
 {
 	2,
 	{
-		{ dump_RDD_BYTES_2, 0xb20e },
+		{ dump_RDD_BYTES_2, 0xb262 },
 		{ 0, 0 },
 	}
 };
@@ -18580,7 +18580,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_BPM_CONGESTION_UG3_DROP_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb210 },
+		{ dump_RDD_TWO_BYTES, 0xb264 },
 		{ 0, 0 },
 	}
 };
@@ -18590,7 +18590,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_BPM_CONGESTION_ALLOC_FAIL_DROP_COUNTER =
 {
 	2,
 	{
-		{ dump_RDD_TWO_BYTES, 0xb212 },
+		{ dump_RDD_TWO_BYTES, 0xb266 },
 		{ 0, 0 },
 	}
 };
@@ -18600,7 +18600,7 @@ static DUMP_RUNNERREG_STRUCT US_FC_GLOBAL_CFG =
 {
 	1,
 	{
-		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xb214 },
+		{ dump_RDD_FC_GLOBAL_CFG_ENTRY, 0xb268 },
 		{ 0, 0 },
 	}
 };
@@ -18610,7 +18610,7 @@ static DUMP_RUNNERREG_STRUCT ETHWAN2_SWITCH_PORT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb215 },
+		{ dump_RDD_ONE_BYTE, 0xb269 },
 		{ 0, 0 },
 	}
 };
@@ -18620,7 +18620,7 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb216 },
+		{ dump_RDD_ONE_BYTE, 0xb26a },
 		{ 0, 0 },
 	}
 };
@@ -18630,7 +18630,7 @@ static DUMP_RUNNERREG_STRUCT US_INGRESS_CLASSIFICATION_IP_FLOW_RULE_CFG_DESCRIPT
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb217 },
+		{ dump_RDD_ONE_BYTE, 0xb26b },
 		{ 0, 0 },
 	}
 };
@@ -18640,7 +18640,7 @@ static DUMP_RUNNERREG_STRUCT US_PACKET_BUFFER_SIZE_ASR_8 =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb218 },
+		{ dump_RDD_ONE_BYTE, 0xb26c },
 		{ 0, 0 },
 	}
 };
@@ -18650,7 +18650,7 @@ static DUMP_RUNNERREG_STRUCT US_MAIN_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb219 },
+		{ dump_RDD_ONE_BYTE, 0xb26d },
 		{ 0, 0 },
 	}
 };
@@ -18660,7 +18660,7 @@ static DUMP_RUNNERREG_STRUCT US_PICO_DMA_SYNCRONIZATION_ADDRESS =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb21a },
+		{ dump_RDD_ONE_BYTE, 0xb26e },
 		{ 0, 0 },
 	}
 };
@@ -18670,7 +18670,7 @@ static DUMP_RUNNERREG_STRUCT US_RUNNER_FLOW_IH_RESPONSE_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb21b },
+		{ dump_RDD_ONE_BYTE, 0xb26f },
 		{ 0, 0 },
 	}
 };
@@ -18680,7 +18680,7 @@ static DUMP_RUNNERREG_STRUCT DSL_BUFFER_ALIGNMENT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb21c },
+		{ dump_RDD_ONE_BYTE, 0xb270 },
 		{ 0, 0 },
 	}
 };
@@ -18690,7 +18690,7 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_SLAVE_VECTOR =
 {
 	1,
 	{
-		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xb21d },
+		{ dump_RDD_PARALLEL_PROCESSING_SLAVE_VECTOR, 0xb271 },
 		{ 0, 0 },
 	}
 };
@@ -18700,7 +18700,7 @@ static DUMP_RUNNERREG_STRUCT US_PARALLEL_PROCESSING_CONTEXT_CACHE_MODE =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb21e },
+		{ dump_RDD_ONE_BYTE, 0xb272 },
 		{ 0, 0 },
 	}
 };
@@ -18710,7 +18710,7 @@ static DUMP_RUNNERREG_STRUCT US_IH_CONGESTION_THRESHOLD =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb21f },
+		{ dump_RDD_ONE_BYTE, 0xb273 },
 		{ 0, 0 },
 	}
 };
@@ -18720,7 +18720,7 @@ static DUMP_RUNNERREG_STRUCT US_FAST_MALLOC_RESULT_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb220 },
+		{ dump_RDD_BYTE_1, 0xb274 },
 		{ 0, 0 },
 	}
 };
@@ -18730,7 +18730,7 @@ static DUMP_RUNNERREG_STRUCT US_PICO_MALLOC_RESULT_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb221 },
+		{ dump_RDD_BYTE_1, 0xb275 },
 		{ 0, 0 },
 	}
 };
@@ -18740,7 +18740,7 @@ static DUMP_RUNNERREG_STRUCT DHD_RX_FPM_ALLOC_RESULT_MUTEX =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb222 },
+		{ dump_RDD_BYTE_1, 0xb276 },
 		{ 0, 0 },
 	}
 };
@@ -18750,7 +18750,7 @@ static DUMP_RUNNERREG_STRUCT US_RX_SBPM_TO_FPM_COPY_SEMAPHORE =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xb223 },
+		{ dump_RDD_BYTE_1, 0xb277 },
 		{ 0, 0 },
 	}
 };
@@ -18760,7 +18760,7 @@ static DUMP_RUNNERREG_STRUCT US_FW_MAC_ADDRS_COUNT =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb224 },
+		{ dump_RDD_ONE_BYTE, 0xb278 },
 		{ 0, 0 },
 	}
 };
@@ -18770,7 +18770,7 @@ static DUMP_RUNNERREG_STRUCT US_DHD_DMA_SYNCHRONIZATION =
 {
 	1,
 	{
-		{ dump_RDD_ONE_BYTE, 0xb225 },
+		{ dump_RDD_ONE_BYTE, 0xb279 },
 		{ 0, 0 },
 	}
 };
@@ -19398,21 +19398,11 @@ static DUMP_RUNNERREG_STRUCT PM_COUNTERS_BUFFER =
 };
 #endif
 #if defined WL4908_EAP
-static DUMP_RUNNERREG_STRUCT TX_CPL_DHD_DMA_SCRATCH =
-{
-	4,
-	{
-		{ dump_RDD_FOUR_BYTES, 0x7ee0 },
-		{ 0, 0 },
-	}
-};
-#endif
-#if defined WL4908_EAP
 static DUMP_RUNNERREG_STRUCT DS_R2D_DHD_DMA_SCRATCH =
 {
 	4,
 	{
-		{ dump_RDD_FOUR_BYTES, 0x7eec },
+		{ dump_RDD_FOUR_BYTES, 0x7ee0 },
 		{ 0, 0 },
 	}
 };
@@ -19483,6 +19473,16 @@ static DUMP_RUNNERREG_STRUCT FC_SERVICE_QUEUE_MODE =
 	1,
 	{
 		{ dump_RDD_ONE_BYTE, 0x7eff },
+		{ 0, 0 },
+	}
+};
+#endif
+#if defined WL4908_EAP
+static DUMP_RUNNERREG_STRUCT TX_CPL_DHD_DMA_SCRATCH =
+{
+	4,
+	{
+		{ dump_RDD_FOUR_BYTES, 0x7f00 },
 		{ 0, 0 },
 	}
 };
@@ -20624,7 +20624,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DS_GSO_CONTEXT_TABLE", 1, PRIVATE_A_INDEX, &DS_GSO_CONTEXT_TABLE, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "DS_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
+	{ "TIMER_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &TIMER_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "DS_DEBUG_BUFFER", 1, PRIVATE_A_INDEX, &DS_DEBUG_BUFFER, 32, 1, 1 },
@@ -20648,19 +20648,19 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DS_DHD_FLOW_RING_DROP_COUNTER", 1, PRIVATE_A_INDEX, &DS_DHD_FLOW_RING_DROP_COUNTER, 5, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "TIMER_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &TIMER_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
+	{ "SPDSVC_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &SPDSVC_HOST_BUF_PTR, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "GSO_TX_DHD_L2_BUFFER", 1, PRIVATE_A_INDEX, &GSO_TX_DHD_L2_BUFFER, 22, 1, 1 },
+	{ "GSO_TX_ENQUEUE_PCI_PACKET_CONTEXT", 1, PRIVATE_A_INDEX, &GSO_TX_ENQUEUE_PCI_PACKET_CONTEXT, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "IPTV_COUNTERS_BUFFER", 1, PRIVATE_A_INDEX, &IPTV_COUNTERS_BUFFER, 1, 1, 1 },
+	{ "DS_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_DOORBELL_SCRATCH, 4, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "RUNNER_FLOW_IH_RESPONSE", 1, PRIVATE_A_INDEX, &RUNNER_FLOW_IH_RESPONSE, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "GSO_TX_ENQUEUE_PCI_PACKET_CONTEXT", 1, PRIVATE_A_INDEX, &GSO_TX_ENQUEUE_PCI_PACKET_CONTEXT, 1, 1, 1 },
+	{ "CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT", 1, PRIVATE_A_INDEX, &CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "DS_GSO_DESC_TABLE", 1, PRIVATE_A_INDEX, &DS_GSO_DESC_TABLE, 1, 1, 1 },
@@ -20672,13 +20672,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DS_SYSTEM_CONFIGURATION", 1, PRIVATE_A_INDEX, &DS_SYSTEM_CONFIGURATION, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "SPDSVC_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &SPDSVC_HOST_BUF_PTR, 1, 1, 1 },
+	{ "FIREWALL_IPV6_R16_BUFFER", 1, PRIVATE_A_INDEX, &FIREWALL_IPV6_R16_BUFFER, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "CPU_TX_DHD_L2_BUFFER", 1, PRIVATE_A_INDEX, &CPU_TX_DHD_L2_BUFFER, 22, 1, 1 },
+	{ "GSO_TX_DHD_L2_BUFFER", 1, PRIVATE_A_INDEX, &GSO_TX_DHD_L2_BUFFER, 22, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "CPU_TX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_A_INDEX, &CPU_TX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
+	{ "IPTV_COUNTERS_BUFFER", 1, PRIVATE_A_INDEX, &IPTV_COUNTERS_BUFFER, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "GPON_RX_NORMAL_DESCRIPTORS", 1, PRIVATE_A_INDEX, &GPON_RX_NORMAL_DESCRIPTORS, 32, 1, 1 },
@@ -20696,10 +20696,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "SERVICE_QUEUES_OVERALL_RATE_LIMITER", 1, PRIVATE_A_INDEX, &SERVICE_QUEUES_OVERALL_RATE_LIMITER, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "ETH_TX_SCRATCH", 1, PRIVATE_A_INDEX, &ETH_TX_SCRATCH, 16, 1, 1 },
+	{ "CPU_TX_DHD_L2_BUFFER", 1, PRIVATE_A_INDEX, &CPU_TX_DHD_L2_BUFFER, 22, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT", 1, PRIVATE_A_INDEX, &CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT, 1, 1, 1 },
+	{ "CPU_TX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_A_INDEX, &CPU_TX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "ETH_TX_SCRATCH", 1, PRIVATE_A_INDEX, &ETH_TX_SCRATCH, 16, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "DS_INGRESS_CLASSIFICATION_KEY_BUFFER", 1, PRIVATE_A_INDEX, &DS_INGRESS_CLASSIFICATION_KEY_BUFFER, 1, 1, 1 },
@@ -20724,9 +20727,6 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 #endif
 #if defined DSL_63138
 	{ "HASH_BASED_FORWARDING_PORT_TABLE", 1, PRIVATE_A_INDEX, &HASH_BASED_FORWARDING_PORT_TABLE, 4, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "FIREWALL_IPV6_R16_BUFFER", 1, PRIVATE_A_INDEX, &FIREWALL_IPV6_R16_BUFFER, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "DOWNSTREAM_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR", 1, PRIVATE_A_INDEX, &DOWNSTREAM_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 1, 1, 1 },
@@ -20756,16 +20756,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "GSO_DESC_PTR", 1, PRIVATE_A_INDEX, &GSO_DESC_PTR, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER, 1, 1, 1 },
-#endif
-#if defined DSL_63138
 	{ "GSO_TX_DHD_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &GSO_TX_DHD_HOST_BUF_PTR, 4, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "IPSEC_DS_DDR_SA_DESC_TABLE_PTR", 1, PRIVATE_A_INDEX, &IPSEC_DS_DDR_SA_DESC_TABLE_PTR, 1, 1, 1 },
+	{ "DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "CPU_TX_DHD_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &CPU_TX_DHD_HOST_BUF_PTR, 4, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "IPSEC_DS_DDR_SA_DESC_TABLE_PTR", 1, PRIVATE_A_INDEX, &IPSEC_DS_DDR_SA_DESC_TABLE_PTR, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "DS_TIMER_7_SCHEDULER_NEXT_ENTRY", 1, PRIVATE_A_INDEX, &DS_TIMER_7_SCHEDULER_NEXT_ENTRY, 1, 1, 1 },
@@ -20900,10 +20900,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_FREE_PACKET_DESCRIPTORS_POOL", 1, PRIVATE_B_INDEX, &US_FREE_PACKET_DESCRIPTORS_POOL, 3072, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_INGRESS_FILTERS_LOOKUP_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_LOOKUP_TABLE, 6, 16, 1 },
+	{ "US_INGRESS_FILTERS_LOOKUP_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_LOOKUP_TABLE, 7, 16, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_QUEUE_PROFILE_TABLE", 1, PRIVATE_B_INDEX, &US_QUEUE_PROFILE_TABLE, 8, 1, 1 },
+	{ "DSL_PTM_BOND_TX_HDR_TABLE", 1, PRIVATE_B_INDEX, &DSL_PTM_BOND_TX_HDR_TABLE, 32, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "WAN_CHANNELS_8_39_TABLE", 1, PRIVATE_B_INDEX, &WAN_CHANNELS_8_39_TABLE, 32, 1, 1 },
@@ -20936,10 +20936,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_MAIN_TIMER_TASK_DESCRIPTOR_TABLE", 1, PRIVATE_B_INDEX, &US_MAIN_TIMER_TASK_DESCRIPTOR_TABLE, 4, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "DSL_PTM_BOND_TX_HDR_TABLE", 1, PRIVATE_B_INDEX, &DSL_PTM_BOND_TX_HDR_TABLE, 32, 1, 1 },
+	{ "US_TRAFFIC_CLASS_TO_QUEUE_TABLE", 1, PRIVATE_B_INDEX, &US_TRAFFIC_CLASS_TO_QUEUE_TABLE, 8, 8, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_TRAFFIC_CLASS_TO_QUEUE_TABLE", 1, PRIVATE_B_INDEX, &US_TRAFFIC_CLASS_TO_QUEUE_TABLE, 8, 8, 1 },
+	{ "US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE, 32, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE", 1, PRIVATE_B_INDEX, &US_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE, 16, 1, 1 },
@@ -20948,13 +20948,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE", 1, PRIVATE_B_INDEX, &US_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE, 16, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE, 32, 1, 1 },
+	{ "US_L2_UCAST_CONNECTION_BUFFER", 1, PRIVATE_B_INDEX, &US_L2_UCAST_CONNECTION_BUFFER, 4, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_RATE_LIMITER_TABLE", 1, PRIVATE_B_INDEX, &US_RATE_LIMITER_TABLE, 16, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_CPU_RX_METER_TABLE", 1, PRIVATE_B_INDEX, &US_CPU_RX_METER_TABLE, 16, 1, 1 },
+	{ "US_QUEUE_PROFILE_TABLE", 1, PRIVATE_B_INDEX, &US_QUEUE_PROFILE_TABLE, 8, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_CONNECTION_CONTEXT_BUFFER", 1, PRIVATE_B_INDEX, &US_CONNECTION_CONTEXT_BUFFER, 8, 1, 1 },
@@ -20966,7 +20966,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "WAN_CHANNELS_0_7_TABLE", 1, PRIVATE_B_INDEX, &WAN_CHANNELS_0_7_TABLE, 8, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_L2_UCAST_CONNECTION_BUFFER", 1, PRIVATE_B_INDEX, &US_L2_UCAST_CONNECTION_BUFFER, 4, 1, 1 },
+	{ "US_PICO_TIMER_TASK_DESCRIPTOR_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_TIMER_TASK_DESCRIPTOR_TABLE, 4, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_FC_L2_UCAST_TUPLE_BUFFER", 1, PRIVATE_B_INDEX, &US_FC_L2_UCAST_TUPLE_BUFFER, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_CPU_RX_METER_TABLE", 1, PRIVATE_B_INDEX, &US_CPU_RX_METER_TABLE, 16, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_INGRESS_HANDLER_SKB_DATA_POINTER", 1, PRIVATE_B_INDEX, &US_INGRESS_HANDLER_SKB_DATA_POINTER, 32, 1, 1 },
@@ -20975,43 +20981,34 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_GRE_RUNNER_FLOW_HEADER_BUFFER", 1, PRIVATE_B_INDEX, &US_GRE_RUNNER_FLOW_HEADER_BUFFER, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_PROFILING_BUFFER_PICO_RUNNER", 1, PRIVATE_B_INDEX, &US_PROFILING_BUFFER_PICO_RUNNER, 1, 1, 1 },
+	{ "US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE, 16, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE, 16, 1, 1 },
+	{ "US_PROFILING_BUFFER_PICO_RUNNER", 1, PRIVATE_B_INDEX, &US_PROFILING_BUFFER_PICO_RUNNER, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_CONNECTION_CACHE_BUFFER", 1, PRIVATE_B_INDEX, &US_CONNECTION_CACHE_BUFFER, 8, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_INGRESS_FILTERS_PARAMETER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_PARAMETER_TABLE, 6, 16, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_PICO_TIMER_TASK_DESCRIPTOR_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_TIMER_TASK_DESCRIPTOR_TABLE, 4, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "DHD_RX_COMPLETE_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_COMPLETE_FLOW_RING_BUFFER, 3, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_FC_L2_UCAST_TUPLE_BUFFER", 1, PRIVATE_B_INDEX, &US_FC_L2_UCAST_TUPLE_BUFFER, 1, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "DHD_RX_POST_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_POST_FLOW_RING_BUFFER, 3, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_INGRESS_CLASSIFICATION_GENERIC_RULE_CFG_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_GENERIC_RULE_CFG_TABLE, 4, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_INGRESS_RATE_LIMITER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_RATE_LIMITER_TABLE, 5, 1, 1 },
+	{ "US_INGRESS_FILTERS_PARAMETER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_PARAMETER_TABLE, 7, 16, 1 },
 #endif
 #if defined DSL_63138
 	{ "DSL_PTM_BOND_TX_HDR_DEBUG_TABLE", 1, PRIVATE_B_INDEX, &DSL_PTM_BOND_TX_HDR_DEBUG_TABLE, 8, 1, 1 },
 #endif
 #if defined DSL_63138
+	{ "DHD_RX_COMPLETE_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_COMPLETE_FLOW_RING_BUFFER, 3, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_INGRESS_CLASSIFICATION_GENERIC_RULE_CFG_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_GENERIC_RULE_CFG_TABLE, 4, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "DHD_RX_POST_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_POST_FLOW_RING_BUFFER, 3, 1, 1 },
+#endif
+#if defined DSL_63138
 	{ "US_FAST_RUNNER_GLOBAL_REGISTERS_INIT", 1, PRIVATE_B_INDEX, &US_FAST_RUNNER_GLOBAL_REGISTERS_INIT, 8, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_SPDSVC_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_SPDSVC_CONTEXT_TABLE, 1, 1, 1 },
+	{ "US_INGRESS_RATE_LIMITER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_RATE_LIMITER_TABLE, 5, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_FC_L2_UCAST_CONNECTION_BUFFER", 1, PRIVATE_B_INDEX, &US_FC_L2_UCAST_CONNECTION_BUFFER, 1, 1, 1 },
@@ -21020,22 +21017,22 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_PICO_RUNNER_GLOBAL_REGISTERS_INIT", 1, PRIVATE_B_INDEX, &US_PICO_RUNNER_GLOBAL_REGISTERS_INIT, 8, 1, 1 },
 #endif
 #if defined DSL_63138
+	{ "US_SPDSVC_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_SPDSVC_CONTEXT_TABLE, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "RUNNER_FWTRACE_MAINB_PARAM", 1, PRIVATE_B_INDEX, &RUNNER_FWTRACE_MAINB_PARAM, 2, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_INGRESS_FILTERS_CONFIGURATION_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_CONFIGURATION_TABLE, 7, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_ETH0_EEE_MODE_CONFIG_MESSAGE", 1, PRIVATE_B_INDEX, &US_ETH0_EEE_MODE_CONFIG_MESSAGE, 1, 1, 1 },
+#endif
+#if defined DSL_63138
 	{ "US_CPU_RX_PICO_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE, 64, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_CPU_TX_MESSAGE_DATA_BUFFER", 1, PRIVATE_B_INDEX, &US_CPU_TX_MESSAGE_DATA_BUFFER, 1, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_ROUTER_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_ROUTER_INGRESS_QUEUE, 64, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_DHD_TX_POST_HEADER_SCRATCH", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_HEADER_SCRATCH, 1, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_INGRESS_FILTERS_CONFIGURATION_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_CONFIGURATION_TABLE, 6, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_TOTAL_PPS_RATE_LIMITER", 1, PRIVATE_B_INDEX, &US_TOTAL_PPS_RATE_LIMITER, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "ETHWAN_ABSOLUTE_TX_BBH_COUNTER", 1, PRIVATE_B_INDEX, &ETHWAN_ABSOLUTE_TX_BBH_COUNTER, 1, 1, 1 },
@@ -21047,7 +21044,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_MAIN_TIMER_CONTROL_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_MAIN_TIMER_CONTROL_DESCRIPTOR, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_ETH0_EEE_MODE_CONFIG_MESSAGE", 1, PRIVATE_B_INDEX, &US_ETH0_EEE_MODE_CONFIG_MESSAGE, 1, 1, 1 },
+	{ "US_BPM_EXTRA_DDR_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_EXTRA_DDR_BUFFERS_BASE, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "ETHWAN_ABSOLUTE_TX_FIRMWARE_COUNTER", 1, PRIVATE_B_INDEX, &ETHWAN_ABSOLUTE_TX_FIRMWARE_COUNTER, 1, 1, 1 },
@@ -21059,16 +21056,28 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_PICO_TIMER_CONTROL_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_PICO_TIMER_CONTROL_DESCRIPTOR, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_BPM_EXTRA_DDR_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_EXTRA_DDR_BUFFERS_BASE, 1, 1, 1 },
+	{ "US_BPM_DDR_OPTIMIZED_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_OPTIMIZED_BUFFERS_BASE, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "GPON_ABSOLUTE_TX_BBH_COUNTER", 1, PRIVATE_B_INDEX, &GPON_ABSOLUTE_TX_BBH_COUNTER, 40, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_GPE_COMMAND_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_GPE_COMMAND_PRIMITIVE_TABLE, 32, 1, 1 },
+	{ "US_TOTAL_PPS_RATE_LIMITER", 1, PRIVATE_B_INDEX, &US_TOTAL_PPS_RATE_LIMITER, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_DHD_TX_POST_HEADER_SCRATCH", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_HEADER_SCRATCH, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_RUNNER_FLOW_HEADER_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_RUNNER_FLOW_HEADER_DESCRIPTOR, 3, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_ONE_BUFFER", 1, PRIVATE_B_INDEX, &US_ONE_BUFFER, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_ROUTER_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_ROUTER_INGRESS_QUEUE, 64, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_GPE_COMMAND_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_GPE_COMMAND_PRIMITIVE_TABLE, 32, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_CPU_RX_FAST_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_RX_FAST_INGRESS_QUEUE, 64, 1, 1 },
@@ -21080,46 +21089,19 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_FW_MAC_ADDRS", 1, PRIVATE_B_INDEX, &US_FW_MAC_ADDRS, 16, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_RUNNER_FLOW_HEADER_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_RUNNER_FLOW_HEADER_DESCRIPTOR, 3, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_NULL_BUFFER", 1, PRIVATE_B_INDEX, &US_NULL_BUFFER, 1, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_CPU_PARAMETERS_BLOCK", 1, PRIVATE_B_INDEX, &US_CPU_PARAMETERS_BLOCK, 1, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_BPM_DDR_OPTIMIZED_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_OPTIMIZED_BUFFERS_BASE, 1, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE", 1, PRIVATE_B_INDEX, &US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE, 8, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_DHD_TX_POST_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_INGRESS_QUEUE, 64, 1, 1 },
-#endif
-#if defined DSL_63138
 	{ "US_DHD_TX_POST_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_FLOW_RING_BUFFER, 1, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "RUNNER_FWTRACE_MAINB_PARAM", 1, PRIVATE_B_INDEX, &RUNNER_FWTRACE_MAINB_PARAM, 2, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_CPU_TX_FAST_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_TX_FAST_QUEUE, 16, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE", 1, PRIVATE_B_INDEX, &US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE, 48, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "RUNNER_FWTRACE_PICOB_PARAM", 1, PRIVATE_B_INDEX, &RUNNER_FWTRACE_PICOB_PARAM, 2, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_CPU_TX_PICO_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_TX_PICO_QUEUE, 16, 1, 1 },
+	{ "US_CPU_TX_FAST_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_TX_FAST_QUEUE, 16, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_CSO_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_CSO_CONTEXT_TABLE, 1, 1, 1 },
+	{ "US_DHD_TX_POST_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_INGRESS_QUEUE, 64, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_CPU_PARAMETERS_BLOCK", 1, PRIVATE_B_INDEX, &US_CPU_PARAMETERS_BLOCK, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_BPM_DDR_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFERS_BASE, 1, 1, 1 },
@@ -21128,25 +21110,34 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "GPON_ABSOLUTE_TX_FIRMWARE_COUNTER", 1, PRIVATE_B_INDEX, &GPON_ABSOLUTE_TX_FIRMWARE_COUNTER, 40, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_DHD_FLOW_RING_DROP_COUNTER", 1, PRIVATE_B_INDEX, &US_DHD_FLOW_RING_DROP_COUNTER, 5, 1, 1 },
+	{ "US_CPU_TX_PICO_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_TX_PICO_QUEUE, 16, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_CONNECTION_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONNECTION_TABLE_CONFIG, 1, 1, 1 },
+	{ "US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE", 1, PRIVATE_B_INDEX, &US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE, 48, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR, 1, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_CPU_RX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
+	{ "US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM, 8, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_SYSTEM_CONFIGURATION", 1, PRIVATE_B_INDEX, &US_SYSTEM_CONFIGURATION, 1, 1, 1 },
+	{ "US_CSO_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_CSO_CONTEXT_TABLE, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_CONNECTION_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONNECTION_TABLE_CONFIG, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_NULL_BUFFER", 1, PRIVATE_B_INDEX, &US_NULL_BUFFER, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE", 1, PRIVATE_B_INDEX, &US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE, 16, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_DHD_FLOW_RING_DROP_COUNTER", 1, PRIVATE_B_INDEX, &US_DHD_FLOW_RING_DROP_COUNTER, 5, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_CONTEXT_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONTEXT_TABLE_CONFIG, 1, 1, 1 },
@@ -21155,10 +21146,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE, 32, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_B_INDEX, &DATA_POINTER_DUMMY_TARGET, 2, 1, 1 },
+	{ "US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE", 1, PRIVATE_B_INDEX, &US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE, 8, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE", 1, PRIVATE_B_INDEX, &US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE, 16, 1, 1 },
+	{ "US_SYSTEM_CONFIGURATION", 1, PRIVATE_B_INDEX, &US_SYSTEM_CONFIGURATION, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR, 4, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "WAN_TX_SCRATCH", 1, PRIVATE_B_INDEX, &WAN_TX_SCRATCH, 24, 1, 1 },
@@ -21167,10 +21161,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE", 1, PRIVATE_B_INDEX, &CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE, 3, 6, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE, 1, 1, 1 },
+	{ "US_CPU_RX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR, 4, 1, 1 },
+	{ "US_PARALLEL_PROCESSING_SLAVE_LOCK", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_SLAVE_LOCK, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE", 1, PRIVATE_B_INDEX, &BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE, 9, 1, 1 },
@@ -21182,7 +21182,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_PARALLEL_PROCESSING_SLAVE_LOCK", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_SLAVE_LOCK, 1, 1, 1 },
+	{ "US_CPU_TX_FLUSH_PAUSE_REQUEST", 1, PRIVATE_B_INDEX, &US_CPU_TX_FLUSH_PAUSE_REQUEST, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_INGRESS_CLASSIFICATION_KEY_BUFFER", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_KEY_BUFFER, 1, 1, 1 },
@@ -21197,16 +21197,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_CPU_RX_FAST_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &US_CPU_RX_FAST_INGRESS_QUEUE_PTR, 1, 1, 1 },
 #endif
 #if defined DSL_63138
+	{ "DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_B_INDEX, &DATA_POINTER_DUMMY_TARGET, 2, 1, 1 },
+#endif
+#if defined DSL_63138
 	{ "US_PARALLEL_PROCESSING_TASK_REORDER_FIFO", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_TASK_REORDER_FIFO, 4, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_CPU_TX_FLUSH_PAUSE_REQUEST", 1, PRIVATE_B_INDEX, &US_CPU_TX_FLUSH_PAUSE_REQUEST, 1, 1, 1 },
+	{ "US_DEBUG_PERIPHERALS_STATUS_REGISTER", 1, PRIVATE_B_INDEX, &US_DEBUG_PERIPHERALS_STATUS_REGISTER, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE, 8, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "US_DEBUG_PERIPHERALS_STATUS_REGISTER", 1, PRIVATE_B_INDEX, &US_DEBUG_PERIPHERALS_STATUS_REGISTER, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "IH_BUFFER_BBH_POINTER", 1, PRIVATE_B_INDEX, &IH_BUFFER_BBH_POINTER, 1, 1, 1 },
@@ -21218,13 +21218,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "US_RATE_CONTROLLER_EXPONENT_TABLE", 1, PRIVATE_B_INDEX, &US_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
-#endif
-#if defined DSL_63138
 	{ "LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 1, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "US_RATE_CONTROLLER_EXPONENT_TABLE", 1, PRIVATE_B_INDEX, &US_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR, 1, 1, 1 },
@@ -21461,10 +21461,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "PM_COUNTERS_BUFFER", 1, COMMON_A_INDEX, &PM_COUNTERS_BUFFER, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "TX_CPL_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &TX_CPL_DHD_DMA_SCRATCH, 3, 1, 1 },
-#endif
-#if defined DSL_63138
-	{ "DS_R2D_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &DS_R2D_DHD_DMA_SCRATCH, 1, 1, 1 },
+	{ "DS_R2D_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &DS_R2D_DHD_DMA_SCRATCH, 4, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "DS_CPU_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &DS_CPU_DHD_DMA_SCRATCH, 1, 1, 1 },
@@ -21482,7 +21479,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "INTERRUPT_COALESCING_TIMER_ARMED", 1, COMMON_A_INDEX, &INTERRUPT_COALESCING_TIMER_ARMED, 1, 1, 1 },
 #endif
 #if defined DSL_63138
-	{ "DS_RATE_CONTROLLER_EXPONENT_TABLE", 1, COMMON_A_INDEX, &DS_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
+	{ "TX_CPL_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &TX_CPL_DHD_DMA_SCRATCH, 3, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "DHD_TX_POST_BUFFERS_IN_USE_COUNTER", 1, COMMON_A_INDEX, &DHD_TX_POST_BUFFERS_IN_USE_COUNTER, 1, 1, 1 },
@@ -21492,6 +21489,9 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 #endif
 #if defined DSL_63138
 	{ "FC_SERVICE_QUEUE_MODE", 1, COMMON_A_INDEX, &FC_SERVICE_QUEUE_MODE, 1, 1, 1 },
+#endif
+#if defined DSL_63138
+	{ "DS_RATE_CONTROLLER_EXPONENT_TABLE", 1, COMMON_A_INDEX, &DS_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
 #endif
 #if defined DSL_63138
 	{ "MAIN_A_DEBUG_TRACE", 1, COMMON_A_INDEX, &MAIN_A_DEBUG_TRACE, 512, 1, 1 },
@@ -22061,7 +22061,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DS_GSO_CONTEXT_TABLE", 1, PRIVATE_A_INDEX, &DS_GSO_CONTEXT_TABLE, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "DS_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
+	{ "TIMER_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &TIMER_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "DS_DEBUG_BUFFER", 1, PRIVATE_A_INDEX, &DS_DEBUG_BUFFER, 32, 1, 1 },
@@ -22085,19 +22085,19 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DS_DHD_FLOW_RING_DROP_COUNTER", 1, PRIVATE_A_INDEX, &DS_DHD_FLOW_RING_DROP_COUNTER, 5, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "TIMER_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &TIMER_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
+	{ "SPDSVC_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &SPDSVC_HOST_BUF_PTR, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "GSO_TX_DHD_L2_BUFFER", 1, PRIVATE_A_INDEX, &GSO_TX_DHD_L2_BUFFER, 22, 1, 1 },
+	{ "GSO_TX_ENQUEUE_PCI_PACKET_CONTEXT", 1, PRIVATE_A_INDEX, &GSO_TX_ENQUEUE_PCI_PACKET_CONTEXT, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "IPTV_COUNTERS_BUFFER", 1, PRIVATE_A_INDEX, &IPTV_COUNTERS_BUFFER, 1, 1, 1 },
+	{ "DS_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_DOORBELL_SCRATCH, 4, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "RUNNER_FLOW_IH_RESPONSE", 1, PRIVATE_A_INDEX, &RUNNER_FLOW_IH_RESPONSE, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "GSO_TX_ENQUEUE_PCI_PACKET_CONTEXT", 1, PRIVATE_A_INDEX, &GSO_TX_ENQUEUE_PCI_PACKET_CONTEXT, 1, 1, 1 },
+	{ "CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT", 1, PRIVATE_A_INDEX, &CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "DS_GSO_DESC_TABLE", 1, PRIVATE_A_INDEX, &DS_GSO_DESC_TABLE, 1, 1, 1 },
@@ -22109,13 +22109,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DS_SYSTEM_CONFIGURATION", 1, PRIVATE_A_INDEX, &DS_SYSTEM_CONFIGURATION, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "SPDSVC_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &SPDSVC_HOST_BUF_PTR, 1, 1, 1 },
+	{ "FIREWALL_IPV6_R16_BUFFER", 1, PRIVATE_A_INDEX, &FIREWALL_IPV6_R16_BUFFER, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "CPU_TX_DHD_L2_BUFFER", 1, PRIVATE_A_INDEX, &CPU_TX_DHD_L2_BUFFER, 22, 1, 1 },
+	{ "GSO_TX_DHD_L2_BUFFER", 1, PRIVATE_A_INDEX, &GSO_TX_DHD_L2_BUFFER, 22, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "CPU_TX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_A_INDEX, &CPU_TX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
+	{ "IPTV_COUNTERS_BUFFER", 1, PRIVATE_A_INDEX, &IPTV_COUNTERS_BUFFER, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "GPON_RX_NORMAL_DESCRIPTORS", 1, PRIVATE_A_INDEX, &GPON_RX_NORMAL_DESCRIPTORS, 32, 1, 1 },
@@ -22133,10 +22133,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "SERVICE_QUEUES_OVERALL_RATE_LIMITER", 1, PRIVATE_A_INDEX, &SERVICE_QUEUES_OVERALL_RATE_LIMITER, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "ETH_TX_SCRATCH", 1, PRIVATE_A_INDEX, &ETH_TX_SCRATCH, 16, 1, 1 },
+	{ "CPU_TX_DHD_L2_BUFFER", 1, PRIVATE_A_INDEX, &CPU_TX_DHD_L2_BUFFER, 22, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT", 1, PRIVATE_A_INDEX, &CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT, 1, 1, 1 },
+	{ "CPU_TX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_A_INDEX, &CPU_TX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "ETH_TX_SCRATCH", 1, PRIVATE_A_INDEX, &ETH_TX_SCRATCH, 16, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "DS_INGRESS_CLASSIFICATION_KEY_BUFFER", 1, PRIVATE_A_INDEX, &DS_INGRESS_CLASSIFICATION_KEY_BUFFER, 1, 1, 1 },
@@ -22161,9 +22164,6 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 #endif
 #if defined DSL_63148
 	{ "HASH_BASED_FORWARDING_PORT_TABLE", 1, PRIVATE_A_INDEX, &HASH_BASED_FORWARDING_PORT_TABLE, 4, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "FIREWALL_IPV6_R16_BUFFER", 1, PRIVATE_A_INDEX, &FIREWALL_IPV6_R16_BUFFER, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "DOWNSTREAM_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR", 1, PRIVATE_A_INDEX, &DOWNSTREAM_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 1, 1, 1 },
@@ -22193,16 +22193,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "GSO_DESC_PTR", 1, PRIVATE_A_INDEX, &GSO_DESC_PTR, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER, 1, 1, 1 },
-#endif
-#if defined DSL_63148
 	{ "GSO_TX_DHD_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &GSO_TX_DHD_HOST_BUF_PTR, 4, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "IPSEC_DS_DDR_SA_DESC_TABLE_PTR", 1, PRIVATE_A_INDEX, &IPSEC_DS_DDR_SA_DESC_TABLE_PTR, 1, 1, 1 },
+	{ "DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "CPU_TX_DHD_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &CPU_TX_DHD_HOST_BUF_PTR, 4, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "IPSEC_DS_DDR_SA_DESC_TABLE_PTR", 1, PRIVATE_A_INDEX, &IPSEC_DS_DDR_SA_DESC_TABLE_PTR, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "DS_TIMER_7_SCHEDULER_NEXT_ENTRY", 1, PRIVATE_A_INDEX, &DS_TIMER_7_SCHEDULER_NEXT_ENTRY, 1, 1, 1 },
@@ -22337,10 +22337,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_FREE_PACKET_DESCRIPTORS_POOL", 1, PRIVATE_B_INDEX, &US_FREE_PACKET_DESCRIPTORS_POOL, 3072, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_INGRESS_FILTERS_LOOKUP_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_LOOKUP_TABLE, 6, 16, 1 },
+	{ "US_INGRESS_FILTERS_LOOKUP_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_LOOKUP_TABLE, 7, 16, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_QUEUE_PROFILE_TABLE", 1, PRIVATE_B_INDEX, &US_QUEUE_PROFILE_TABLE, 8, 1, 1 },
+	{ "DSL_PTM_BOND_TX_HDR_TABLE", 1, PRIVATE_B_INDEX, &DSL_PTM_BOND_TX_HDR_TABLE, 32, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "WAN_CHANNELS_8_39_TABLE", 1, PRIVATE_B_INDEX, &WAN_CHANNELS_8_39_TABLE, 32, 1, 1 },
@@ -22373,10 +22373,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_MAIN_TIMER_TASK_DESCRIPTOR_TABLE", 1, PRIVATE_B_INDEX, &US_MAIN_TIMER_TASK_DESCRIPTOR_TABLE, 4, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "DSL_PTM_BOND_TX_HDR_TABLE", 1, PRIVATE_B_INDEX, &DSL_PTM_BOND_TX_HDR_TABLE, 32, 1, 1 },
+	{ "US_TRAFFIC_CLASS_TO_QUEUE_TABLE", 1, PRIVATE_B_INDEX, &US_TRAFFIC_CLASS_TO_QUEUE_TABLE, 8, 8, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_TRAFFIC_CLASS_TO_QUEUE_TABLE", 1, PRIVATE_B_INDEX, &US_TRAFFIC_CLASS_TO_QUEUE_TABLE, 8, 8, 1 },
+	{ "US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE, 32, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE", 1, PRIVATE_B_INDEX, &US_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE, 16, 1, 1 },
@@ -22385,13 +22385,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE", 1, PRIVATE_B_INDEX, &US_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE, 16, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE, 32, 1, 1 },
+	{ "US_L2_UCAST_CONNECTION_BUFFER", 1, PRIVATE_B_INDEX, &US_L2_UCAST_CONNECTION_BUFFER, 4, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_RATE_LIMITER_TABLE", 1, PRIVATE_B_INDEX, &US_RATE_LIMITER_TABLE, 16, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_CPU_RX_METER_TABLE", 1, PRIVATE_B_INDEX, &US_CPU_RX_METER_TABLE, 16, 1, 1 },
+	{ "US_QUEUE_PROFILE_TABLE", 1, PRIVATE_B_INDEX, &US_QUEUE_PROFILE_TABLE, 8, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_CONNECTION_CONTEXT_BUFFER", 1, PRIVATE_B_INDEX, &US_CONNECTION_CONTEXT_BUFFER, 8, 1, 1 },
@@ -22403,7 +22403,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "WAN_CHANNELS_0_7_TABLE", 1, PRIVATE_B_INDEX, &WAN_CHANNELS_0_7_TABLE, 8, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_L2_UCAST_CONNECTION_BUFFER", 1, PRIVATE_B_INDEX, &US_L2_UCAST_CONNECTION_BUFFER, 4, 1, 1 },
+	{ "US_PICO_TIMER_TASK_DESCRIPTOR_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_TIMER_TASK_DESCRIPTOR_TABLE, 4, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_FC_L2_UCAST_TUPLE_BUFFER", 1, PRIVATE_B_INDEX, &US_FC_L2_UCAST_TUPLE_BUFFER, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_CPU_RX_METER_TABLE", 1, PRIVATE_B_INDEX, &US_CPU_RX_METER_TABLE, 16, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_INGRESS_HANDLER_SKB_DATA_POINTER", 1, PRIVATE_B_INDEX, &US_INGRESS_HANDLER_SKB_DATA_POINTER, 32, 1, 1 },
@@ -22412,43 +22418,34 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_GRE_RUNNER_FLOW_HEADER_BUFFER", 1, PRIVATE_B_INDEX, &US_GRE_RUNNER_FLOW_HEADER_BUFFER, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_PROFILING_BUFFER_PICO_RUNNER", 1, PRIVATE_B_INDEX, &US_PROFILING_BUFFER_PICO_RUNNER, 1, 1, 1 },
+	{ "US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE, 16, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE, 16, 1, 1 },
+	{ "US_PROFILING_BUFFER_PICO_RUNNER", 1, PRIVATE_B_INDEX, &US_PROFILING_BUFFER_PICO_RUNNER, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_CONNECTION_CACHE_BUFFER", 1, PRIVATE_B_INDEX, &US_CONNECTION_CACHE_BUFFER, 8, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_INGRESS_FILTERS_PARAMETER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_PARAMETER_TABLE, 6, 16, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_PICO_TIMER_TASK_DESCRIPTOR_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_TIMER_TASK_DESCRIPTOR_TABLE, 4, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "DHD_RX_COMPLETE_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_COMPLETE_FLOW_RING_BUFFER, 3, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_FC_L2_UCAST_TUPLE_BUFFER", 1, PRIVATE_B_INDEX, &US_FC_L2_UCAST_TUPLE_BUFFER, 1, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "DHD_RX_POST_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_POST_FLOW_RING_BUFFER, 3, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_INGRESS_CLASSIFICATION_GENERIC_RULE_CFG_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_GENERIC_RULE_CFG_TABLE, 4, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_INGRESS_RATE_LIMITER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_RATE_LIMITER_TABLE, 5, 1, 1 },
+	{ "US_INGRESS_FILTERS_PARAMETER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_PARAMETER_TABLE, 7, 16, 1 },
 #endif
 #if defined DSL_63148
 	{ "DSL_PTM_BOND_TX_HDR_DEBUG_TABLE", 1, PRIVATE_B_INDEX, &DSL_PTM_BOND_TX_HDR_DEBUG_TABLE, 8, 1, 1 },
 #endif
 #if defined DSL_63148
+	{ "DHD_RX_COMPLETE_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_COMPLETE_FLOW_RING_BUFFER, 3, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_INGRESS_CLASSIFICATION_GENERIC_RULE_CFG_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_GENERIC_RULE_CFG_TABLE, 4, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "DHD_RX_POST_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_POST_FLOW_RING_BUFFER, 3, 1, 1 },
+#endif
+#if defined DSL_63148
 	{ "US_FAST_RUNNER_GLOBAL_REGISTERS_INIT", 1, PRIVATE_B_INDEX, &US_FAST_RUNNER_GLOBAL_REGISTERS_INIT, 8, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_SPDSVC_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_SPDSVC_CONTEXT_TABLE, 1, 1, 1 },
+	{ "US_INGRESS_RATE_LIMITER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_RATE_LIMITER_TABLE, 5, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_FC_L2_UCAST_CONNECTION_BUFFER", 1, PRIVATE_B_INDEX, &US_FC_L2_UCAST_CONNECTION_BUFFER, 1, 1, 1 },
@@ -22457,22 +22454,22 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_PICO_RUNNER_GLOBAL_REGISTERS_INIT", 1, PRIVATE_B_INDEX, &US_PICO_RUNNER_GLOBAL_REGISTERS_INIT, 8, 1, 1 },
 #endif
 #if defined DSL_63148
+	{ "US_SPDSVC_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_SPDSVC_CONTEXT_TABLE, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "RUNNER_FWTRACE_MAINB_PARAM", 1, PRIVATE_B_INDEX, &RUNNER_FWTRACE_MAINB_PARAM, 2, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_INGRESS_FILTERS_CONFIGURATION_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_CONFIGURATION_TABLE, 7, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_ETH0_EEE_MODE_CONFIG_MESSAGE", 1, PRIVATE_B_INDEX, &US_ETH0_EEE_MODE_CONFIG_MESSAGE, 1, 1, 1 },
+#endif
+#if defined DSL_63148
 	{ "US_CPU_RX_PICO_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE, 64, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_CPU_TX_MESSAGE_DATA_BUFFER", 1, PRIVATE_B_INDEX, &US_CPU_TX_MESSAGE_DATA_BUFFER, 1, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_ROUTER_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_ROUTER_INGRESS_QUEUE, 64, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_DHD_TX_POST_HEADER_SCRATCH", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_HEADER_SCRATCH, 1, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_INGRESS_FILTERS_CONFIGURATION_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_CONFIGURATION_TABLE, 6, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_TOTAL_PPS_RATE_LIMITER", 1, PRIVATE_B_INDEX, &US_TOTAL_PPS_RATE_LIMITER, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "ETHWAN_ABSOLUTE_TX_BBH_COUNTER", 1, PRIVATE_B_INDEX, &ETHWAN_ABSOLUTE_TX_BBH_COUNTER, 1, 1, 1 },
@@ -22484,7 +22481,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_MAIN_TIMER_CONTROL_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_MAIN_TIMER_CONTROL_DESCRIPTOR, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_ETH0_EEE_MODE_CONFIG_MESSAGE", 1, PRIVATE_B_INDEX, &US_ETH0_EEE_MODE_CONFIG_MESSAGE, 1, 1, 1 },
+	{ "US_BPM_EXTRA_DDR_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_EXTRA_DDR_BUFFERS_BASE, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "ETHWAN_ABSOLUTE_TX_FIRMWARE_COUNTER", 1, PRIVATE_B_INDEX, &ETHWAN_ABSOLUTE_TX_FIRMWARE_COUNTER, 1, 1, 1 },
@@ -22496,16 +22493,28 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_PICO_TIMER_CONTROL_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_PICO_TIMER_CONTROL_DESCRIPTOR, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_BPM_EXTRA_DDR_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_EXTRA_DDR_BUFFERS_BASE, 1, 1, 1 },
+	{ "US_BPM_DDR_OPTIMIZED_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_OPTIMIZED_BUFFERS_BASE, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "GPON_ABSOLUTE_TX_BBH_COUNTER", 1, PRIVATE_B_INDEX, &GPON_ABSOLUTE_TX_BBH_COUNTER, 40, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_GPE_COMMAND_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_GPE_COMMAND_PRIMITIVE_TABLE, 32, 1, 1 },
+	{ "US_TOTAL_PPS_RATE_LIMITER", 1, PRIVATE_B_INDEX, &US_TOTAL_PPS_RATE_LIMITER, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_DHD_TX_POST_HEADER_SCRATCH", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_HEADER_SCRATCH, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_RUNNER_FLOW_HEADER_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_RUNNER_FLOW_HEADER_DESCRIPTOR, 3, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_ONE_BUFFER", 1, PRIVATE_B_INDEX, &US_ONE_BUFFER, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_ROUTER_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_ROUTER_INGRESS_QUEUE, 64, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_GPE_COMMAND_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_GPE_COMMAND_PRIMITIVE_TABLE, 32, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_CPU_RX_FAST_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_RX_FAST_INGRESS_QUEUE, 64, 1, 1 },
@@ -22517,46 +22526,19 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_FW_MAC_ADDRS", 1, PRIVATE_B_INDEX, &US_FW_MAC_ADDRS, 16, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_RUNNER_FLOW_HEADER_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_RUNNER_FLOW_HEADER_DESCRIPTOR, 3, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_NULL_BUFFER", 1, PRIVATE_B_INDEX, &US_NULL_BUFFER, 1, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_CPU_PARAMETERS_BLOCK", 1, PRIVATE_B_INDEX, &US_CPU_PARAMETERS_BLOCK, 1, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_BPM_DDR_OPTIMIZED_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_OPTIMIZED_BUFFERS_BASE, 1, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE", 1, PRIVATE_B_INDEX, &US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE, 8, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_DHD_TX_POST_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_INGRESS_QUEUE, 64, 1, 1 },
-#endif
-#if defined DSL_63148
 	{ "US_DHD_TX_POST_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_FLOW_RING_BUFFER, 1, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "RUNNER_FWTRACE_MAINB_PARAM", 1, PRIVATE_B_INDEX, &RUNNER_FWTRACE_MAINB_PARAM, 2, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_CPU_TX_FAST_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_TX_FAST_QUEUE, 16, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE", 1, PRIVATE_B_INDEX, &US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE, 48, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "RUNNER_FWTRACE_PICOB_PARAM", 1, PRIVATE_B_INDEX, &RUNNER_FWTRACE_PICOB_PARAM, 2, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_CPU_TX_PICO_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_TX_PICO_QUEUE, 16, 1, 1 },
+	{ "US_CPU_TX_FAST_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_TX_FAST_QUEUE, 16, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_CSO_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_CSO_CONTEXT_TABLE, 1, 1, 1 },
+	{ "US_DHD_TX_POST_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_INGRESS_QUEUE, 64, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_CPU_PARAMETERS_BLOCK", 1, PRIVATE_B_INDEX, &US_CPU_PARAMETERS_BLOCK, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_BPM_DDR_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFERS_BASE, 1, 1, 1 },
@@ -22565,25 +22547,34 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "GPON_ABSOLUTE_TX_FIRMWARE_COUNTER", 1, PRIVATE_B_INDEX, &GPON_ABSOLUTE_TX_FIRMWARE_COUNTER, 40, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_DHD_FLOW_RING_DROP_COUNTER", 1, PRIVATE_B_INDEX, &US_DHD_FLOW_RING_DROP_COUNTER, 5, 1, 1 },
+	{ "US_CPU_TX_PICO_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_TX_PICO_QUEUE, 16, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_CONNECTION_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONNECTION_TABLE_CONFIG, 1, 1, 1 },
+	{ "US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE", 1, PRIVATE_B_INDEX, &US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE, 48, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR, 1, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_CPU_RX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
+	{ "US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM, 8, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_SYSTEM_CONFIGURATION", 1, PRIVATE_B_INDEX, &US_SYSTEM_CONFIGURATION, 1, 1, 1 },
+	{ "US_CSO_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_CSO_CONTEXT_TABLE, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_CONNECTION_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONNECTION_TABLE_CONFIG, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_NULL_BUFFER", 1, PRIVATE_B_INDEX, &US_NULL_BUFFER, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE", 1, PRIVATE_B_INDEX, &US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE, 16, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_DHD_FLOW_RING_DROP_COUNTER", 1, PRIVATE_B_INDEX, &US_DHD_FLOW_RING_DROP_COUNTER, 5, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_CONTEXT_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONTEXT_TABLE_CONFIG, 1, 1, 1 },
@@ -22592,10 +22583,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE, 32, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_B_INDEX, &DATA_POINTER_DUMMY_TARGET, 2, 1, 1 },
+	{ "US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE", 1, PRIVATE_B_INDEX, &US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE, 8, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE", 1, PRIVATE_B_INDEX, &US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE, 16, 1, 1 },
+	{ "US_SYSTEM_CONFIGURATION", 1, PRIVATE_B_INDEX, &US_SYSTEM_CONFIGURATION, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR, 4, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "WAN_TX_SCRATCH", 1, PRIVATE_B_INDEX, &WAN_TX_SCRATCH, 24, 1, 1 },
@@ -22604,10 +22598,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE", 1, PRIVATE_B_INDEX, &CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE, 3, 6, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE, 1, 1, 1 },
+	{ "US_CPU_RX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR, 4, 1, 1 },
+	{ "US_PARALLEL_PROCESSING_SLAVE_LOCK", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_SLAVE_LOCK, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE", 1, PRIVATE_B_INDEX, &BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE, 9, 1, 1 },
@@ -22619,7 +22619,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_PARALLEL_PROCESSING_SLAVE_LOCK", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_SLAVE_LOCK, 1, 1, 1 },
+	{ "US_CPU_TX_FLUSH_PAUSE_REQUEST", 1, PRIVATE_B_INDEX, &US_CPU_TX_FLUSH_PAUSE_REQUEST, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_INGRESS_CLASSIFICATION_KEY_BUFFER", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_KEY_BUFFER, 1, 1, 1 },
@@ -22634,16 +22634,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_CPU_RX_FAST_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &US_CPU_RX_FAST_INGRESS_QUEUE_PTR, 1, 1, 1 },
 #endif
 #if defined DSL_63148
+	{ "DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_B_INDEX, &DATA_POINTER_DUMMY_TARGET, 2, 1, 1 },
+#endif
+#if defined DSL_63148
 	{ "US_PARALLEL_PROCESSING_TASK_REORDER_FIFO", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_TASK_REORDER_FIFO, 4, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_CPU_TX_FLUSH_PAUSE_REQUEST", 1, PRIVATE_B_INDEX, &US_CPU_TX_FLUSH_PAUSE_REQUEST, 1, 1, 1 },
+	{ "US_DEBUG_PERIPHERALS_STATUS_REGISTER", 1, PRIVATE_B_INDEX, &US_DEBUG_PERIPHERALS_STATUS_REGISTER, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE, 8, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "US_DEBUG_PERIPHERALS_STATUS_REGISTER", 1, PRIVATE_B_INDEX, &US_DEBUG_PERIPHERALS_STATUS_REGISTER, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "IH_BUFFER_BBH_POINTER", 1, PRIVATE_B_INDEX, &IH_BUFFER_BBH_POINTER, 1, 1, 1 },
@@ -22655,13 +22655,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "US_RATE_CONTROLLER_EXPONENT_TABLE", 1, PRIVATE_B_INDEX, &US_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
-#endif
-#if defined DSL_63148
 	{ "LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 1, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "US_RATE_CONTROLLER_EXPONENT_TABLE", 1, PRIVATE_B_INDEX, &US_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR, 1, 1, 1 },
@@ -22898,10 +22898,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "PM_COUNTERS_BUFFER", 1, COMMON_A_INDEX, &PM_COUNTERS_BUFFER, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "TX_CPL_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &TX_CPL_DHD_DMA_SCRATCH, 3, 1, 1 },
-#endif
-#if defined DSL_63148
-	{ "DS_R2D_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &DS_R2D_DHD_DMA_SCRATCH, 1, 1, 1 },
+	{ "DS_R2D_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &DS_R2D_DHD_DMA_SCRATCH, 4, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "DS_CPU_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &DS_CPU_DHD_DMA_SCRATCH, 1, 1, 1 },
@@ -22919,7 +22916,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "INTERRUPT_COALESCING_TIMER_ARMED", 1, COMMON_A_INDEX, &INTERRUPT_COALESCING_TIMER_ARMED, 1, 1, 1 },
 #endif
 #if defined DSL_63148
-	{ "DS_RATE_CONTROLLER_EXPONENT_TABLE", 1, COMMON_A_INDEX, &DS_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
+	{ "TX_CPL_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &TX_CPL_DHD_DMA_SCRATCH, 3, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "DHD_TX_POST_BUFFERS_IN_USE_COUNTER", 1, COMMON_A_INDEX, &DHD_TX_POST_BUFFERS_IN_USE_COUNTER, 1, 1, 1 },
@@ -22929,6 +22926,9 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 #endif
 #if defined DSL_63148
 	{ "FC_SERVICE_QUEUE_MODE", 1, COMMON_A_INDEX, &FC_SERVICE_QUEUE_MODE, 1, 1, 1 },
+#endif
+#if defined DSL_63148
+	{ "DS_RATE_CONTROLLER_EXPONENT_TABLE", 1, COMMON_A_INDEX, &DS_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
 #endif
 #if defined DSL_63148
 	{ "MAIN_A_DEBUG_TRACE", 1, COMMON_A_INDEX, &MAIN_A_DEBUG_TRACE, 512, 1, 1 },
@@ -23537,7 +23537,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DS_SYSTEM_CONFIGURATION", 1, PRIVATE_A_INDEX, &DS_SYSTEM_CONFIGURATION, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "DS_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
+	{ "TIMER_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &TIMER_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
 #endif
 #if defined WL4908
 	{ "CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT", 1, PRIVATE_A_INDEX, &CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT, 1, 1, 1 },
@@ -23552,10 +23552,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE", 1, PRIVATE_A_INDEX, &DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE, 16, 1, 1 },
 #endif
 #if defined WL4908
+	{ "DS_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_DOORBELL_SCRATCH, 4, 1, 1 },
+#endif
+#if defined WL4908
 	{ "IPSEC_DS_SA_DESC_CAM_TABLE", 1, PRIVATE_A_INDEX, &IPSEC_DS_SA_DESC_CAM_TABLE, 16, 1, 1 },
 #endif
 #if defined WL4908
 	{ "IPSEC_US_SA_DESC_CAM_TABLE", 1, PRIVATE_A_INDEX, &IPSEC_US_SA_DESC_CAM_TABLE, 16, 1, 1 },
+#endif
+#if defined WL4908
+	{ "ETH_TX_SCRATCH", 1, PRIVATE_A_INDEX, &ETH_TX_SCRATCH, 16, 1, 1 },
 #endif
 #if defined WL4908
 	{ "SERVICE_QUEUES_OVERALL_RATE_LIMITER", 1, PRIVATE_A_INDEX, &SERVICE_QUEUES_OVERALL_RATE_LIMITER, 1, 1, 1 },
@@ -23573,13 +23579,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "CPU_TX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_A_INDEX, &CPU_TX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "ETH_TX_SCRATCH", 1, PRIVATE_A_INDEX, &ETH_TX_SCRATCH, 16, 1, 1 },
+	{ "EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS", 1, PRIVATE_A_INDEX, &EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS, 5, 1, 1 },
 #endif
 #if defined WL4908
-	{ "TIMER_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &TIMER_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
+	{ "ETH_TX_EMACS_STATUS", 1, PRIVATE_A_INDEX, &ETH_TX_EMACS_STATUS, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "SPDSVC_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &SPDSVC_HOST_BUF_PTR, 1, 1, 1 },
+	{ "FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD", 1, PRIVATE_A_INDEX, &FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD, 1, 1, 1 },
 #endif
 #if defined WL4908
 	{ "DS_INGRESS_CLASSIFICATION_KEY_BUFFER", 1, PRIVATE_A_INDEX, &DS_INGRESS_CLASSIFICATION_KEY_BUFFER, 1, 1, 1 },
@@ -23594,16 +23600,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "GSO_TX_DS_PICO_DHD_TX_POST_CONTEXT", 1, PRIVATE_A_INDEX, &GSO_TX_DS_PICO_DHD_TX_POST_CONTEXT, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS", 1, PRIVATE_A_INDEX, &EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS, 5, 1, 1 },
-#endif
-#if defined WL4908
-	{ "ETH_TX_EMACS_STATUS", 1, PRIVATE_A_INDEX, &ETH_TX_EMACS_STATUS, 1, 1, 1 },
-#endif
-#if defined WL4908
-	{ "FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD", 1, PRIVATE_A_INDEX, &FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD, 1, 1, 1 },
-#endif
-#if defined WL4908
 	{ "HASH_BASED_FORWARDING_PORT_TABLE", 1, PRIVATE_A_INDEX, &HASH_BASED_FORWARDING_PORT_TABLE, 4, 1, 1 },
+#endif
+#if defined WL4908
+	{ "SPDSVC_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &SPDSVC_HOST_BUF_PTR, 1, 1, 1 },
 #endif
 #if defined WL4908
 	{ "DS_CPU_TX_DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_A_INDEX, &DS_CPU_TX_DATA_POINTER_DUMMY_TARGET, 1, 1, 1 },
@@ -23639,16 +23639,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "GSO_DESC_PTR", 1, PRIVATE_A_INDEX, &GSO_DESC_PTR, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "GSO_TX_DHD_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &GSO_TX_DHD_HOST_BUF_PTR, 4, 1, 1 },
-#endif
-#if defined WL4908
 	{ "DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "CPU_TX_DHD_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &CPU_TX_DHD_HOST_BUF_PTR, 4, 1, 1 },
+	{ "GSO_TX_DHD_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &GSO_TX_DHD_HOST_BUF_PTR, 4, 1, 1 },
 #endif
 #if defined WL4908
 	{ "IPSEC_DS_DDR_SA_DESC_TABLE_PTR", 1, PRIVATE_A_INDEX, &IPSEC_DS_DDR_SA_DESC_TABLE_PTR, 1, 1, 1 },
+#endif
+#if defined WL4908
+	{ "CPU_TX_DHD_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &CPU_TX_DHD_HOST_BUF_PTR, 4, 1, 1 },
 #endif
 #if defined WL4908
 	{ "DS_TIMER_7_SCHEDULER_NEXT_ENTRY", 1, PRIVATE_A_INDEX, &DS_TIMER_7_SCHEDULER_NEXT_ENTRY, 1, 1, 1 },
@@ -23801,10 +23801,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_FREE_PACKET_DESCRIPTORS_POOL", 1, PRIVATE_B_INDEX, &US_FREE_PACKET_DESCRIPTORS_POOL, 3072, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_INGRESS_FILTERS_LOOKUP_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_LOOKUP_TABLE, 6, 16, 1 },
+	{ "US_INGRESS_FILTERS_LOOKUP_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_LOOKUP_TABLE, 7, 16, 1 },
 #endif
 #if defined WL4908
-	{ "US_QUEUE_PROFILE_TABLE", 1, PRIVATE_B_INDEX, &US_QUEUE_PROFILE_TABLE, 8, 1, 1 },
+	{ "US_TRAFFIC_CLASS_TO_QUEUE_TABLE", 1, PRIVATE_B_INDEX, &US_TRAFFIC_CLASS_TO_QUEUE_TABLE, 8, 8, 1 },
 #endif
 #if defined WL4908
 	{ "WAN_CHANNELS_8_39_TABLE", 1, PRIVATE_B_INDEX, &WAN_CHANNELS_8_39_TABLE, 32, 1, 1 },
@@ -23837,10 +23837,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_MAIN_TIMER_TASK_DESCRIPTOR_TABLE", 1, PRIVATE_B_INDEX, &US_MAIN_TIMER_TASK_DESCRIPTOR_TABLE, 4, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_TRAFFIC_CLASS_TO_QUEUE_TABLE", 1, PRIVATE_B_INDEX, &US_TRAFFIC_CLASS_TO_QUEUE_TABLE, 8, 8, 1 },
+	{ "US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE, 32, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE, 32, 1, 1 },
+	{ "US_CPU_RX_PICO_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE, 64, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE", 1, PRIVATE_B_INDEX, &US_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE, 16, 1, 1 },
@@ -23858,7 +23858,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_RATE_LIMITER_TABLE", 1, PRIVATE_B_INDEX, &US_RATE_LIMITER_TABLE, 16, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_CPU_RX_METER_TABLE", 1, PRIVATE_B_INDEX, &US_CPU_RX_METER_TABLE, 16, 1, 1 },
+	{ "US_QUEUE_PROFILE_TABLE", 1, PRIVATE_B_INDEX, &US_QUEUE_PROFILE_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_CONNECTION_CONTEXT_BUFFER", 1, PRIVATE_B_INDEX, &US_CONNECTION_CONTEXT_BUFFER, 8, 1, 1 },
@@ -23876,10 +23876,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_FAST_RUNNER_GLOBAL_REGISTERS_INIT", 1, PRIVATE_B_INDEX, &US_FAST_RUNNER_GLOBAL_REGISTERS_INIT, 8, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_INGRESS_HANDLER_SKB_DATA_POINTER", 1, PRIVATE_B_INDEX, &US_INGRESS_HANDLER_SKB_DATA_POINTER, 32, 1, 1 },
+	{ "US_CPU_RX_METER_TABLE", 1, PRIVATE_B_INDEX, &US_CPU_RX_METER_TABLE, 16, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_GRE_RUNNER_FLOW_HEADER_BUFFER", 1, PRIVATE_B_INDEX, &US_GRE_RUNNER_FLOW_HEADER_BUFFER, 1, 1, 1 },
+	{ "US_INGRESS_HANDLER_SKB_DATA_POINTER", 1, PRIVATE_B_INDEX, &US_INGRESS_HANDLER_SKB_DATA_POINTER, 32, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_CONNECTION_CONTEXT_REMAINING_BUFFER", 1, PRIVATE_B_INDEX, &US_CONNECTION_CONTEXT_REMAINING_BUFFER, 8, 1, 1 },
@@ -23888,28 +23888,25 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_PICO_RUNNER_GLOBAL_REGISTERS_INIT", 1, PRIVATE_B_INDEX, &US_PICO_RUNNER_GLOBAL_REGISTERS_INIT, 8, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE, 16, 1, 1 },
+	{ "US_GRE_RUNNER_FLOW_HEADER_BUFFER", 1, PRIVATE_B_INDEX, &US_GRE_RUNNER_FLOW_HEADER_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_PROFILING_BUFFER_PICO_RUNNER", 1, PRIVATE_B_INDEX, &US_PROFILING_BUFFER_PICO_RUNNER, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_INGRESS_FILTERS_PARAMETER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_PARAMETER_TABLE, 6, 16, 1 },
+	{ "US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE, 16, 1, 1 },
 #endif
 #if defined WL4908
-	{ "DHD_RX_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &DHD_RX_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+	{ "US_INGRESS_FILTERS_PARAMETER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_PARAMETER_TABLE, 7, 16, 1 },
+#endif
+#if defined WL4908
+	{ "US_FC_L2_UCAST_CONNECTION_BUFFER", 1, PRIVATE_B_INDEX, &US_FC_L2_UCAST_CONNECTION_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908
 	{ "DHD_RX_COMPLETE_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_COMPLETE_FLOW_RING_BUFFER, 3, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_0_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_0_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
-#endif
-#if defined WL4908
-	{ "DHD_RX_POST_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_POST_FLOW_RING_BUFFER, 3, 1, 1 },
-#endif
-#if defined WL4908
-	{ "US_0_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_0_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+	{ "DHD_RX_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &DHD_RX_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908
 	{ "ETHWAN_ABSOLUTE_TX_BBH_COUNTER", 1, PRIVATE_B_INDEX, &ETHWAN_ABSOLUTE_TX_BBH_COUNTER, 1, 1, 1 },
@@ -23945,43 +23942,37 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_CPU_TX_MESSAGE_DATA_BUFFER", 1, PRIVATE_B_INDEX, &US_CPU_TX_MESSAGE_DATA_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908
+	{ "DHD_RX_POST_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_POST_FLOW_RING_BUFFER, 3, 1, 1 },
+#endif
+#if defined WL4908
+	{ "US_0_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_0_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+#endif
+#if defined WL4908
 	{ "US_INGRESS_RATE_LIMITER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_RATE_LIMITER_TABLE, 5, 1, 1 },
-#endif
-#if defined WL4908
-	{ "US_FC_L2_UCAST_CONNECTION_BUFFER", 1, PRIVATE_B_INDEX, &US_FC_L2_UCAST_CONNECTION_BUFFER, 1, 1, 1 },
-#endif
-#if defined WL4908
-	{ "US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
-#endif
-#if defined WL4908
-	{ "US_SPDSVC_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_SPDSVC_CONTEXT_TABLE, 1, 1, 1 },
 #endif
 #if defined WL4908
 	{ "RUNNER_FWTRACE_MAINB_PARAM", 1, PRIVATE_B_INDEX, &RUNNER_FWTRACE_MAINB_PARAM, 2, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+	{ "US_0_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_0_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_CPU_RX_PICO_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE, 64, 1, 1 },
+	{ "US_SPDSVC_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_SPDSVC_CONTEXT_TABLE, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_2_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_2_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+	{ "RUNNER_FWTRACE_PICOB_PARAM", 1, PRIVATE_B_INDEX, &RUNNER_FWTRACE_PICOB_PARAM, 2, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_2_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_2_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+	{ "US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_ROUTER_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_ROUTER_INGRESS_QUEUE, 64, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_CPU_TX_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_CPU_TX_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+	{ "US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_INGRESS_FILTERS_CONFIGURATION_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_CONFIGURATION_TABLE, 6, 1, 1 },
-#endif
-#if defined WL4908
-	{ "US_ONE_BUFFER", 1, PRIVATE_B_INDEX, &US_ONE_BUFFER, 1, 1, 1 },
+	{ "US_2_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_2_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_CPU_TX_FAST_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_TX_FAST_QUEUE, 16, 1, 1 },
@@ -23990,13 +23981,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_CPU_RX_FAST_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_RX_FAST_INGRESS_QUEUE, 64, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_DHD_TX_POST_HEADER_SCRATCH", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_HEADER_SCRATCH, 1, 1, 1 },
+	{ "US_2_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_2_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_RUNNER_FLOW_HEADER_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_RUNNER_FLOW_HEADER_DESCRIPTOR, 3, 1, 1 },
-#endif
-#if defined WL4908
-	{ "US_NULL_BUFFER", 1, PRIVATE_B_INDEX, &US_NULL_BUFFER, 1, 1, 1 },
+	{ "US_CPU_TX_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_CPU_TX_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_CPU_TX_PICO_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_TX_PICO_QUEUE, 16, 1, 1 },
@@ -24014,16 +24002,19 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE", 1, PRIVATE_B_INDEX, &US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE, 48, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_GPE_COMMAND_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_GPE_COMMAND_PRIMITIVE_TABLE, 32, 1, 1 },
-#endif
-#if defined WL4908
-	{ "US_CPU_PARAMETERS_BLOCK", 1, PRIVATE_B_INDEX, &US_CPU_PARAMETERS_BLOCK, 1, 1, 1 },
+	{ "US_INGRESS_FILTERS_CONFIGURATION_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_CONFIGURATION_TABLE, 7, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_BPM_DDR_OPTIMIZED_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_OPTIMIZED_BUFFERS_BASE, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_FAST_MALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_FAST_MALLOC_RESULT_TABLE, 2, 1, 1 },
+	{ "US_DHD_TX_POST_HEADER_SCRATCH", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_HEADER_SCRATCH, 1, 1, 1 },
+#endif
+#if defined WL4908
+	{ "US_RUNNER_FLOW_HEADER_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_RUNNER_FLOW_HEADER_DESCRIPTOR, 3, 1, 1 },
+#endif
+#if defined WL4908
+	{ "US_ONE_BUFFER", 1, PRIVATE_B_INDEX, &US_ONE_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_CSO_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_CSO_CONTEXT_TABLE, 1, 1, 1 },
@@ -24032,19 +24023,25 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_BPM_DDR_1_OPTIMIZED_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_1_OPTIMIZED_BUFFERS_BASE, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "GPON_ABSOLUTE_TX_FIRMWARE_COUNTER", 1, PRIVATE_B_INDEX, &GPON_ABSOLUTE_TX_FIRMWARE_COUNTER, 40, 1, 1 },
+	{ "US_GPE_COMMAND_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_GPE_COMMAND_PRIMITIVE_TABLE, 32, 1, 1 },
+#endif
+#if defined WL4908
+	{ "US_NULL_BUFFER", 1, PRIVATE_B_INDEX, &US_NULL_BUFFER, 1, 1, 1 },
+#endif
+#if defined WL4908
+	{ "US_CPU_PARAMETERS_BLOCK", 1, PRIVATE_B_INDEX, &US_CPU_PARAMETERS_BLOCK, 1, 1, 1 },
+#endif
+#if defined WL4908
+	{ "US_BPM_DDR_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFERS_BASE, 1, 1, 1 },
+#endif
+#if defined WL4908
+	{ "US_FAST_MALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_FAST_MALLOC_RESULT_TABLE, 2, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_DHD_TX_POST_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_FLOW_RING_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "RUNNER_FWTRACE_PICOB_PARAM", 1, PRIVATE_B_INDEX, &RUNNER_FWTRACE_PICOB_PARAM, 2, 1, 1 },
-#endif
-#if defined WL4908
-	{ "US_DHD_FLOW_RING_DROP_COUNTER", 1, PRIVATE_B_INDEX, &US_DHD_FLOW_RING_DROP_COUNTER, 5, 1, 1 },
-#endif
-#if defined WL4908
-	{ "US_BPM_DDR_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFERS_BASE, 1, 1, 1 },
+	{ "GPON_ABSOLUTE_TX_FIRMWARE_COUNTER", 1, PRIVATE_B_INDEX, &GPON_ABSOLUTE_TX_FIRMWARE_COUNTER, 40, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_PICO_MALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_MALLOC_RESULT_TABLE, 2, 1, 1 },
@@ -24056,7 +24053,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM, 8, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_SYSTEM_CONFIGURATION", 1, PRIVATE_B_INDEX, &US_SYSTEM_CONFIGURATION, 1, 1, 1 },
+	{ "US_DHD_FLOW_RING_DROP_COUNTER", 1, PRIVATE_B_INDEX, &US_DHD_FLOW_RING_DROP_COUNTER, 5, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_BPM_DDR_1_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_1_BUFFERS_BASE, 1, 1, 1 },
@@ -24065,10 +24062,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE", 1, PRIVATE_B_INDEX, &US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908
+	{ "US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
+#endif
+#if defined WL4908
 	{ "US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE", 1, PRIVATE_B_INDEX, &US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE, 16, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
+	{ "US_SYSTEM_CONFIGURATION", 1, PRIVATE_B_INDEX, &US_SYSTEM_CONFIGURATION, 1, 1, 1 },
+#endif
+#if defined WL4908
+	{ "US_CONNECTION_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONNECTION_TABLE_CONFIG, 1, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE, 32, 1, 1 },
@@ -24083,7 +24086,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_CPU_RX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_CONNECTION_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONNECTION_TABLE_CONFIG, 1, 1, 1 },
+	{ "US_CONTEXT_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONTEXT_TABLE_CONFIG, 1, 1, 1 },
+#endif
+#if defined WL4908
+	{ "US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR, 1, 1, 1 },
+#endif
+#if defined WL4908
+	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE, 1, 1, 1 },
 #endif
 #if defined WL4908
 	{ "BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE", 1, PRIVATE_B_INDEX, &BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE, 9, 1, 1 },
@@ -24092,10 +24101,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR", 1, PRIVATE_B_INDEX, &US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE, 1, 1, 1 },
+	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_CONTEXT_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONTEXT_TABLE_CONFIG, 1, 1, 1 },
+	{ "US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR, 4, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_INGRESS_CLASSIFICATION_KEY_BUFFER", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_KEY_BUFFER, 1, 1, 1 },
@@ -24107,31 +24116,22 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "CPU_TX_DHD_LAYER2_HEADER_BUFFER", 1, PRIVATE_B_INDEX, &CPU_TX_DHD_LAYER2_HEADER_BUFFER, 14, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 1, 1, 1 },
-#endif
-#if defined WL4908
-	{ "US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR, 1, 1, 1 },
-#endif
-#if defined WL4908
 	{ "US_CPU_RX_FAST_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &US_CPU_RX_FAST_INGRESS_QUEUE_PTR, 1, 1, 1 },
 #endif
 #if defined WL4908
 	{ "DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_B_INDEX, &DATA_POINTER_DUMMY_TARGET, 2, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR, 4, 1, 1 },
+	{ "US_PARALLEL_PROCESSING_TASK_REORDER_FIFO", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_TASK_REORDER_FIFO, 4, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_DEBUG_PERIPHERALS_STATUS_REGISTER", 1, PRIVATE_B_INDEX, &US_DEBUG_PERIPHERALS_STATUS_REGISTER, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_PARALLEL_PROCESSING_TASK_REORDER_FIFO", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_TASK_REORDER_FIFO, 4, 1, 1 },
+	{ "US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908
 	{ "IH_BUFFER_BBH_POINTER", 1, PRIVATE_B_INDEX, &IH_BUFFER_BBH_POINTER, 1, 1, 1 },
-#endif
-#if defined WL4908
-	{ "US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908
 	{ "US_CONTEXT_CONTINUATION_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONTEXT_CONTINUATION_TABLE_CONFIG, 1, 1, 1 },
@@ -24140,10 +24140,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_RATE_CONTROLLER_EXPONENT_TABLE", 1, PRIVATE_B_INDEX, &US_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
+	{ "US_CPU_TX_DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_B_INDEX, &US_CPU_TX_DATA_POINTER_DUMMY_TARGET, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "US_CPU_TX_DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_B_INDEX, &US_CPU_TX_DATA_POINTER_DUMMY_TARGET, 1, 1, 1 },
+	{ "US_RATE_CONTROLLER_EXPONENT_TABLE", 1, PRIVATE_B_INDEX, &US_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
 #endif
 #if defined WL4908
 	{ "LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 1, 1, 1 },
@@ -24410,10 +24410,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "PM_COUNTERS_BUFFER", 1, COMMON_A_INDEX, &PM_COUNTERS_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "TX_CPL_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &TX_CPL_DHD_DMA_SCRATCH, 3, 1, 1 },
-#endif
-#if defined WL4908
-	{ "DS_R2D_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &DS_R2D_DHD_DMA_SCRATCH, 1, 1, 1 },
+	{ "DS_R2D_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &DS_R2D_DHD_DMA_SCRATCH, 4, 1, 1 },
 #endif
 #if defined WL4908
 	{ "DHD_TX_POST_BUFFERS_THRESHOLD", 1, COMMON_A_INDEX, &DHD_TX_POST_BUFFERS_THRESHOLD, 6, 1, 1 },
@@ -24422,7 +24419,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DS_CPU_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &DS_CPU_DHD_DMA_SCRATCH, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "DS_RATE_CONTROLLER_EXPONENT_TABLE", 1, COMMON_A_INDEX, &DS_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
+	{ "TX_CPL_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &TX_CPL_DHD_DMA_SCRATCH, 3, 1, 1 },
 #endif
 #if defined WL4908
 	{ "TIMER_7_TIMER_PERIOD", 1, COMMON_A_INDEX, &TIMER_7_TIMER_PERIOD, 1, 1, 1 },
@@ -24431,7 +24428,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "INTERRUPT_COALESCING_TIMER_PERIOD", 1, COMMON_A_INDEX, &INTERRUPT_COALESCING_TIMER_PERIOD, 1, 1, 1 },
 #endif
 #if defined WL4908
-	{ "DHD_TX_POST_BUFFERS_IN_USE_COUNTER", 1, COMMON_A_INDEX, &DHD_TX_POST_BUFFERS_IN_USE_COUNTER, 2, 1, 1 },
+	{ "DS_RATE_CONTROLLER_EXPONENT_TABLE", 1, COMMON_A_INDEX, &DS_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
 #endif
 #if defined WL4908
 	{ "INTERRUPT_COALESCING_TIMER_ARMED", 1, COMMON_A_INDEX, &INTERRUPT_COALESCING_TIMER_ARMED, 1, 1, 1 },
@@ -24441,6 +24438,9 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 #endif
 #if defined WL4908
 	{ "FC_SERVICE_QUEUE_MODE", 1, COMMON_A_INDEX, &FC_SERVICE_QUEUE_MODE, 1, 1, 1 },
+#endif
+#if defined WL4908
+	{ "DHD_TX_POST_BUFFERS_IN_USE_COUNTER", 1, COMMON_A_INDEX, &DHD_TX_POST_BUFFERS_IN_USE_COUNTER, 2, 1, 1 },
 #endif
 #if defined WL4908
 	{ "MAIN_A_DEBUG_TRACE", 1, COMMON_A_INDEX, &MAIN_A_DEBUG_TRACE, 512, 1, 1 },
@@ -25043,13 +25043,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE", 1, PRIVATE_A_INDEX, &DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE, 16, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "IPSEC_DS_SA_DESC_CAM_TABLE", 1, PRIVATE_A_INDEX, &IPSEC_DS_SA_DESC_CAM_TABLE, 16, 1, 1 },
+	{ "DS_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_DOORBELL_SCRATCH, 4, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "ETH_TX_SCRATCH", 1, PRIVATE_A_INDEX, &ETH_TX_SCRATCH, 16, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "DS_SYSTEM_CONFIGURATION", 1, PRIVATE_A_INDEX, &DS_SYSTEM_CONFIGURATION, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "DS_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
+	{ "TIMER_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &TIMER_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "GSO_TX_DHD_L2_BUFFER", 1, PRIVATE_A_INDEX, &GSO_TX_DHD_L2_BUFFER, 22, 1, 1 },
@@ -25064,10 +25067,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "DS_DHD_TX_POST_INGRESS_QUEUE", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_INGRESS_QUEUE, 64, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "IPSEC_US_SA_DESC_CAM_TABLE", 1, PRIVATE_A_INDEX, &IPSEC_US_SA_DESC_CAM_TABLE, 16, 1, 1 },
+	{ "IPSEC_DS_SA_DESC_CAM_TABLE", 1, PRIVATE_A_INDEX, &IPSEC_DS_SA_DESC_CAM_TABLE, 16, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "ETH_TX_SCRATCH", 1, PRIVATE_A_INDEX, &ETH_TX_SCRATCH, 16, 1, 1 },
+	{ "DS_INGRESS_CLASSIFICATION_KEY_BUFFER", 1, PRIVATE_A_INDEX, &DS_INGRESS_CLASSIFICATION_KEY_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "RUNNER_FLOW_IH_RESPONSE", 1, PRIVATE_A_INDEX, &RUNNER_FLOW_IH_RESPONSE, 1, 1, 1 },
@@ -25079,6 +25082,9 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "WLAN_MCAST_INGRESS_QUEUE", 1, PRIVATE_A_INDEX, &WLAN_MCAST_INGRESS_QUEUE, 64, 1, 1 },
 #endif
 #if defined WL4908_EAP
+	{ "IPSEC_US_SA_DESC_CAM_TABLE", 1, PRIVATE_A_INDEX, &IPSEC_US_SA_DESC_CAM_TABLE, 16, 1, 1 },
+#endif
+#if defined WL4908_EAP
 	{ "SERVICE_QUEUES_OVERALL_RATE_LIMITER", 1, PRIVATE_A_INDEX, &SERVICE_QUEUES_OVERALL_RATE_LIMITER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
@@ -25086,9 +25092,6 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 #endif
 #if defined WL4908_EAP
 	{ "CPU_TX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_A_INDEX, &CPU_TX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "DS_INGRESS_CLASSIFICATION_KEY_BUFFER", 1, PRIVATE_A_INDEX, &DS_INGRESS_CLASSIFICATION_KEY_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "CPU_TX_DS_PICO_DHD_TX_POST_CONTEXT", 1, PRIVATE_A_INDEX, &CPU_TX_DS_PICO_DHD_TX_POST_CONTEXT, 1, 1, 1 },
@@ -25103,12 +25106,6 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT", 1, PRIVATE_A_INDEX, &CPU_TX_ENQUEUE_PCI_PACKET_CONTEXT, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "TIMER_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_A_INDEX, &TIMER_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "SPDSVC_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &SPDSVC_HOST_BUF_PTR, 1, 1, 1 },
-#endif
-#if defined WL4908_EAP
 	{ "EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS", 1, PRIVATE_A_INDEX, &EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS, 5, 1, 1 },
 #endif
 #if defined WL4908_EAP
@@ -25119,6 +25116,9 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 #endif
 #if defined WL4908_EAP
 	{ "HASH_BASED_FORWARDING_PORT_TABLE", 1, PRIVATE_A_INDEX, &HASH_BASED_FORWARDING_PORT_TABLE, 4, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "SPDSVC_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &SPDSVC_HOST_BUF_PTR, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "DS_CPU_TX_DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_A_INDEX, &DS_CPU_TX_DATA_POINTER_DUMMY_TARGET, 1, 1, 1 },
@@ -25154,16 +25154,16 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "GSO_DESC_PTR", 1, PRIVATE_A_INDEX, &GSO_DESC_PTR, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "GSO_TX_DHD_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &GSO_TX_DHD_HOST_BUF_PTR, 4, 1, 1 },
-#endif
-#if defined WL4908_EAP
 	{ "DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER", 1, PRIVATE_A_INDEX, &DS_DHD_TX_POST_HOST_DATA_PTR_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "CPU_TX_DHD_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &CPU_TX_DHD_HOST_BUF_PTR, 4, 1, 1 },
+	{ "GSO_TX_DHD_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &GSO_TX_DHD_HOST_BUF_PTR, 4, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "IPSEC_DS_DDR_SA_DESC_TABLE_PTR", 1, PRIVATE_A_INDEX, &IPSEC_DS_DDR_SA_DESC_TABLE_PTR, 1, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "CPU_TX_DHD_HOST_BUF_PTR", 1, PRIVATE_A_INDEX, &CPU_TX_DHD_HOST_BUF_PTR, 4, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "DS_TIMER_7_SCHEDULER_NEXT_ENTRY", 1, PRIVATE_A_INDEX, &DS_TIMER_7_SCHEDULER_NEXT_ENTRY, 1, 1, 1 },
@@ -25316,10 +25316,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_FREE_PACKET_DESCRIPTORS_POOL", 1, PRIVATE_B_INDEX, &US_FREE_PACKET_DESCRIPTORS_POOL, 3072, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_INGRESS_FILTERS_LOOKUP_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_LOOKUP_TABLE, 6, 16, 1 },
+	{ "US_INGRESS_FILTERS_LOOKUP_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_LOOKUP_TABLE, 7, 16, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_QUEUE_PROFILE_TABLE", 1, PRIVATE_B_INDEX, &US_QUEUE_PROFILE_TABLE, 8, 1, 1 },
+	{ "US_TRAFFIC_CLASS_TO_QUEUE_TABLE", 1, PRIVATE_B_INDEX, &US_TRAFFIC_CLASS_TO_QUEUE_TABLE, 8, 8, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "WAN_CHANNELS_8_39_TABLE", 1, PRIVATE_B_INDEX, &WAN_CHANNELS_8_39_TABLE, 32, 1, 1 },
@@ -25352,10 +25352,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_MAIN_TIMER_TASK_DESCRIPTOR_TABLE", 1, PRIVATE_B_INDEX, &US_MAIN_TIMER_TASK_DESCRIPTOR_TABLE, 4, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_TRAFFIC_CLASS_TO_QUEUE_TABLE", 1, PRIVATE_B_INDEX, &US_TRAFFIC_CLASS_TO_QUEUE_TABLE, 8, 8, 1 },
+	{ "US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE, 32, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE, 32, 1, 1 },
+	{ "US_CPU_RX_PICO_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE, 64, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE", 1, PRIVATE_B_INDEX, &US_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE, 16, 1, 1 },
@@ -25373,7 +25373,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_RATE_LIMITER_TABLE", 1, PRIVATE_B_INDEX, &US_RATE_LIMITER_TABLE, 16, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_CPU_RX_METER_TABLE", 1, PRIVATE_B_INDEX, &US_CPU_RX_METER_TABLE, 16, 1, 1 },
+	{ "US_QUEUE_PROFILE_TABLE", 1, PRIVATE_B_INDEX, &US_QUEUE_PROFILE_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_CONNECTION_CONTEXT_BUFFER", 1, PRIVATE_B_INDEX, &US_CONNECTION_CONTEXT_BUFFER, 8, 1, 1 },
@@ -25391,10 +25391,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_FAST_RUNNER_GLOBAL_REGISTERS_INIT", 1, PRIVATE_B_INDEX, &US_FAST_RUNNER_GLOBAL_REGISTERS_INIT, 8, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_INGRESS_HANDLER_SKB_DATA_POINTER", 1, PRIVATE_B_INDEX, &US_INGRESS_HANDLER_SKB_DATA_POINTER, 32, 1, 1 },
+	{ "US_CPU_RX_METER_TABLE", 1, PRIVATE_B_INDEX, &US_CPU_RX_METER_TABLE, 16, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_GRE_RUNNER_FLOW_HEADER_BUFFER", 1, PRIVATE_B_INDEX, &US_GRE_RUNNER_FLOW_HEADER_BUFFER, 1, 1, 1 },
+	{ "US_INGRESS_HANDLER_SKB_DATA_POINTER", 1, PRIVATE_B_INDEX, &US_INGRESS_HANDLER_SKB_DATA_POINTER, 32, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_CONNECTION_CONTEXT_REMAINING_BUFFER", 1, PRIVATE_B_INDEX, &US_CONNECTION_CONTEXT_REMAINING_BUFFER, 8, 1, 1 },
@@ -25403,28 +25403,25 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_PICO_RUNNER_GLOBAL_REGISTERS_INIT", 1, PRIVATE_B_INDEX, &US_PICO_RUNNER_GLOBAL_REGISTERS_INIT, 8, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE, 16, 1, 1 },
+	{ "US_GRE_RUNNER_FLOW_HEADER_BUFFER", 1, PRIVATE_B_INDEX, &US_GRE_RUNNER_FLOW_HEADER_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_PROFILING_BUFFER_PICO_RUNNER", 1, PRIVATE_B_INDEX, &US_PROFILING_BUFFER_PICO_RUNNER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_INGRESS_FILTERS_PARAMETER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_PARAMETER_TABLE, 6, 16, 1 },
+	{ "US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_RULE_CFG_TABLE, 16, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "DHD_RX_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &DHD_RX_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+	{ "US_INGRESS_FILTERS_PARAMETER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_PARAMETER_TABLE, 7, 16, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "US_FC_L2_UCAST_CONNECTION_BUFFER", 1, PRIVATE_B_INDEX, &US_FC_L2_UCAST_CONNECTION_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "DHD_RX_COMPLETE_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_COMPLETE_FLOW_RING_BUFFER, 3, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_0_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_0_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "DHD_RX_POST_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_POST_FLOW_RING_BUFFER, 3, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_0_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_0_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+	{ "DHD_RX_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &DHD_RX_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "ETHWAN_ABSOLUTE_TX_BBH_COUNTER", 1, PRIVATE_B_INDEX, &ETHWAN_ABSOLUTE_TX_BBH_COUNTER, 1, 1, 1 },
@@ -25460,40 +25457,37 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_CPU_TX_MESSAGE_DATA_BUFFER", 1, PRIVATE_B_INDEX, &US_CPU_TX_MESSAGE_DATA_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
+	{ "DHD_RX_POST_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &DHD_RX_POST_FLOW_RING_BUFFER, 3, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "US_0_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_0_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+#endif
+#if defined WL4908_EAP
 	{ "US_INGRESS_RATE_LIMITER_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_RATE_LIMITER_TABLE, 5, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_FC_L2_UCAST_CONNECTION_BUFFER", 1, PRIVATE_B_INDEX, &US_FC_L2_UCAST_CONNECTION_BUFFER, 1, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_SPDSVC_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_SPDSVC_CONTEXT_TABLE, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "RUNNER_FWTRACE_MAINB_PARAM", 1, PRIVATE_B_INDEX, &RUNNER_FWTRACE_MAINB_PARAM, 2, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+	{ "US_0_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_0_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_CPU_RX_PICO_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE, 64, 1, 1 },
+	{ "US_SPDSVC_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_SPDSVC_CONTEXT_TABLE, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "CAPWAPR0_RX_DESCRIPTORS", 1, PRIVATE_B_INDEX, &CAPWAPR0_RX_DESCRIPTORS, 4, 1, 1 },
+	{ "RUNNER_FWTRACE_PICOB_PARAM", 1, PRIVATE_B_INDEX, &RUNNER_FWTRACE_PICOB_PARAM, 2, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_2_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_2_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+	{ "US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_1_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_ROUTER_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_ROUTER_INGRESS_QUEUE, 64, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "CAPWAPR1_RX_DESCRIPTORS", 1, PRIVATE_B_INDEX, &CAPWAPR1_RX_DESCRIPTORS, 4, 1, 1 },
+	{ "CAPWAPR0_RX_DESCRIPTORS", 1, PRIVATE_B_INDEX, &CAPWAPR0_RX_DESCRIPTORS, 4, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_2_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_2_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+	{ "US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_1_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_CPU_TX_FAST_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_TX_FAST_QUEUE, 16, 1, 1 },
@@ -25502,10 +25496,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_CPU_RX_FAST_INGRESS_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_RX_FAST_INGRESS_QUEUE, 64, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "CAPWAPR2_RX_DESCRIPTORS", 1, PRIVATE_B_INDEX, &CAPWAPR2_RX_DESCRIPTORS, 4, 1, 1 },
+	{ "CAPWAPR1_RX_DESCRIPTORS", 1, PRIVATE_B_INDEX, &CAPWAPR1_RX_DESCRIPTORS, 4, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_CPU_TX_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_CPU_TX_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
+	{ "US_2_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_2_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_CPU_TX_PICO_QUEUE", 1, PRIVATE_B_INDEX, &US_CPU_TX_PICO_QUEUE, 16, 1, 1 },
@@ -25523,19 +25517,13 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE", 1, PRIVATE_B_INDEX, &US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TABLE, 48, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_INGRESS_FILTERS_CONFIGURATION_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_CONFIGURATION_TABLE, 6, 1, 1 },
+	{ "US_2_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_2_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_ONE_BUFFER", 1, PRIVATE_B_INDEX, &US_ONE_BUFFER, 1, 1, 1 },
+	{ "CAPWAPR2_RX_DESCRIPTORS", 1, PRIVATE_B_INDEX, &CAPWAPR2_RX_DESCRIPTORS, 4, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_DHD_TX_POST_HEADER_SCRATCH", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_HEADER_SCRATCH, 1, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_RUNNER_FLOW_HEADER_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_RUNNER_FLOW_HEADER_DESCRIPTOR, 3, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_NULL_BUFFER", 1, PRIVATE_B_INDEX, &US_NULL_BUFFER, 1, 1, 1 },
+	{ "US_CPU_TX_FPM_ALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_CPU_TX_FPM_ALLOC_RESULT_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_CSO_CONTEXT_TABLE", 1, PRIVATE_B_INDEX, &US_CSO_CONTEXT_TABLE, 1, 1, 1 },
@@ -25544,79 +25532,82 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_BPM_DDR_OPTIMIZED_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_OPTIMIZED_BUFFERS_BASE, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_GPE_COMMAND_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_GPE_COMMAND_PRIMITIVE_TABLE, 32, 1, 1 },
+	{ "US_ONE_BUFFER", 1, PRIVATE_B_INDEX, &US_ONE_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_FAST_MALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_FAST_MALLOC_RESULT_TABLE, 2, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_CPU_PARAMETERS_BLOCK", 1, PRIVATE_B_INDEX, &US_CPU_PARAMETERS_BLOCK, 1, 1, 1 },
+	{ "US_INGRESS_FILTERS_CONFIGURATION_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_FILTERS_CONFIGURATION_TABLE, 7, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_BPM_DDR_1_OPTIMIZED_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_1_OPTIMIZED_BUFFERS_BASE, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_PICO_MALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_MALLOC_RESULT_TABLE, 2, 1, 1 },
+	{ "US_DHD_TX_POST_HEADER_SCRATCH", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_HEADER_SCRATCH, 1, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "US_GPE_COMMAND_PRIMITIVE_TABLE", 1, PRIVATE_B_INDEX, &US_GPE_COMMAND_PRIMITIVE_TABLE, 32, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "US_RUNNER_FLOW_HEADER_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_RUNNER_FLOW_HEADER_DESCRIPTOR, 3, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "US_NULL_BUFFER", 1, PRIVATE_B_INDEX, &US_NULL_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_DHD_TX_POST_FLOW_RING_BUFFER", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_FLOW_RING_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "GPON_ABSOLUTE_TX_FIRMWARE_COUNTER", 1, PRIVATE_B_INDEX, &GPON_ABSOLUTE_TX_FIRMWARE_COUNTER, 40, 1, 1 },
+	{ "US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM, 8, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE", 1, PRIVATE_B_INDEX, &US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE, 8, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "RUNNER_FWTRACE_PICOB_PARAM", 1, PRIVATE_B_INDEX, &RUNNER_FWTRACE_PICOB_PARAM, 2, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_DHD_FLOW_RING_DROP_COUNTER", 1, PRIVATE_B_INDEX, &US_DHD_FLOW_RING_DROP_COUNTER, 5, 1, 1 },
+	{ "US_CPU_PARAMETERS_BLOCK", 1, PRIVATE_B_INDEX, &US_CPU_PARAMETERS_BLOCK, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_BPM_DDR_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFERS_BASE, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR, 1, 1, 1 },
+	{ "GPON_ABSOLUTE_TX_FIRMWARE_COUNTER", 1, PRIVATE_B_INDEX, &GPON_ABSOLUTE_TX_FIRMWARE_COUNTER, 40, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_CPU_RX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM, 8, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_SYSTEM_CONFIGURATION", 1, PRIVATE_B_INDEX, &US_SYSTEM_CONFIGURATION, 1, 1, 1 },
+	{ "US_DHD_FLOW_RING_DROP_COUNTER", 1, PRIVATE_B_INDEX, &US_DHD_FLOW_RING_DROP_COUNTER, 5, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_BPM_DDR_1_BUFFERS_BASE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_1_BUFFERS_BASE, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE, 32, 1, 1 },
+	{ "US_FAST_MALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_FAST_MALLOC_RESULT_TABLE, 2, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_B_INDEX, &DATA_POINTER_DUMMY_TARGET, 2, 1, 1 },
+	{ "US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE", 1, PRIVATE_B_INDEX, &US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE, 16, 1, 1 },
 #endif
 #if defined WL4908_EAP
+	{ "US_SYSTEM_CONFIGURATION", 1, PRIVATE_B_INDEX, &US_SYSTEM_CONFIGURATION, 1, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "US_CONNECTION_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONNECTION_TABLE_CONFIG, 1, 1, 1 },
+#endif
+#if defined WL4908_EAP
 	{ "WAN_TX_SCRATCH", 1, PRIVATE_B_INDEX, &WAN_TX_SCRATCH, 24, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE, 8, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_TABLE, 32, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE", 1, PRIVATE_B_INDEX, &CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE, 3, 6, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE, 1, 1, 1 },
+	{ "US_CPU_RX_PICO_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &US_CPU_RX_PICO_INGRESS_QUEUE_PTR, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_CONNECTION_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONNECTION_TABLE_CONFIG, 1, 1, 1 },
+	{ "US_CONTEXT_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONTEXT_TABLE_CONFIG, 1, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "US_PICO_MALLOC_RESULT_TABLE", 1, PRIVATE_B_INDEX, &US_PICO_MALLOC_RESULT_TABLE, 2, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE", 1, PRIVATE_B_INDEX, &BROADCOM_SWITCH_PORT_TO_BRIDGE_PORT_MAPPING_TABLE, 9, 1, 1 },
@@ -25625,10 +25616,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR", 1, PRIVATE_B_INDEX, &US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 1, 1, 1 },
+	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_CONTEXT_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONTEXT_TABLE_CONFIG, 1, 1, 1 },
+	{ "US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR, 4, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_INGRESS_CLASSIFICATION_KEY_BUFFER", 1, PRIVATE_B_INDEX, &US_INGRESS_CLASSIFICATION_KEY_BUFFER, 1, 1, 1 },
@@ -25637,25 +25628,34 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "CPU_TX_DS_EGRESS_DHD_TX_POST_CONTEXT", 1, PRIVATE_B_INDEX, &CPU_TX_DS_EGRESS_DHD_TX_POST_CONTEXT, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
+	{ "US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE", 1, PRIVATE_B_INDEX, &US_BUF_SIZE_TO_TOKEN_COUNT_LOG2_TABLE, 8, 1, 1 },
+#endif
+#if defined WL4908_EAP
 	{ "CPU_TX_DHD_LAYER2_HEADER_BUFFER", 1, PRIVATE_B_INDEX, &CPU_TX_DHD_LAYER2_HEADER_BUFFER, 14, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION", 1, PRIVATE_B_INDEX, &US_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION, 1, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR", 1, PRIVATE_B_INDEX, &US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_CPU_RX_FAST_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &US_CPU_RX_FAST_INGRESS_QUEUE_PTR, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR, 4, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "US_DEBUG_PERIPHERALS_STATUS_REGISTER", 1, PRIVATE_B_INDEX, &US_DEBUG_PERIPHERALS_STATUS_REGISTER, 1, 1, 1 },
+	{ "DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_B_INDEX, &DATA_POINTER_DUMMY_TARGET, 2, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_PARALLEL_PROCESSING_TASK_REORDER_FIFO", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_TASK_REORDER_FIFO, 4, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "IH_BUFFER_BBH_POINTER", 1, PRIVATE_B_INDEX, &IH_BUFFER_BBH_POINTER, 1, 1, 1 },
+	{ "US_DEBUG_PERIPHERALS_STATUS_REGISTER", 1, PRIVATE_B_INDEX, &US_DEBUG_PERIPHERALS_STATUS_REGISTER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE", 1, PRIVATE_B_INDEX, &US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE, 8, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "IH_BUFFER_BBH_POINTER", 1, PRIVATE_B_INDEX, &IH_BUFFER_BBH_POINTER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_CONTEXT_CONTINUATION_TABLE_CONFIG", 1, PRIVATE_B_INDEX, &US_CONTEXT_CONTINUATION_TABLE_CONFIG, 1, 1, 1 },
@@ -25664,10 +25664,10 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "US_DHD_TX_POST_DOORBELL_SCRATCH", 1, PRIVATE_B_INDEX, &US_DHD_TX_POST_DOORBELL_SCRATCH, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_RATE_CONTROLLER_EXPONENT_TABLE", 1, PRIVATE_B_INDEX, &US_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
+	{ "US_CPU_TX_DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_B_INDEX, &US_CPU_TX_DATA_POINTER_DUMMY_TARGET, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "US_CPU_TX_DATA_POINTER_DUMMY_TARGET", 1, PRIVATE_B_INDEX, &US_CPU_TX_DATA_POINTER_DUMMY_TARGET, 1, 1, 1 },
+	{ "US_RATE_CONTROLLER_EXPONENT_TABLE", 1, PRIVATE_B_INDEX, &US_RATE_CONTROLLER_EXPONENT_TABLE, 4, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR", 1, PRIVATE_B_INDEX, &LOCAL_SWITCHING_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR, 1, 1, 1 },
@@ -25949,10 +25949,7 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 	{ "PM_COUNTERS_BUFFER", 1, COMMON_A_INDEX, &PM_COUNTERS_BUFFER, 1, 1, 1 },
 #endif
 #if defined WL4908_EAP
-	{ "TX_CPL_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &TX_CPL_DHD_DMA_SCRATCH, 3, 1, 1 },
-#endif
-#if defined WL4908_EAP
-	{ "DS_R2D_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &DS_R2D_DHD_DMA_SCRATCH, 1, 1, 1 },
+	{ "DS_R2D_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &DS_R2D_DHD_DMA_SCRATCH, 4, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "DS_CPU_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &DS_CPU_DHD_DMA_SCRATCH, 1, 1, 1 },
@@ -25974,6 +25971,9 @@ TABLE_STRUCT RUNNER_TABLES[NUMBER_OF_TABLES] =
 #endif
 #if defined WL4908_EAP
 	{ "FC_SERVICE_QUEUE_MODE", 1, COMMON_A_INDEX, &FC_SERVICE_QUEUE_MODE, 1, 1, 1 },
+#endif
+#if defined WL4908_EAP
+	{ "TX_CPL_DHD_DMA_SCRATCH", 1, COMMON_A_INDEX, &TX_CPL_DHD_DMA_SCRATCH, 3, 1, 1 },
 #endif
 #if defined WL4908_EAP
 	{ "US_INGRESS_CLASSIFICATION_LOOKUP_LONG_TABLE", 1, COMMON_B_INDEX, &US_INGRESS_CLASSIFICATION_LOOKUP_LONG_TABLE, 128, 1, 1 },

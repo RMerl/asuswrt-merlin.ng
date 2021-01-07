@@ -1405,6 +1405,9 @@ wl_pktfwd_lut_del(uint8_t * d3addr, struct net_device * net_device)
                 return;
 
             wlif = WL_DEV_IF(net_device);
+            if (!virt_addr_valid(wlif))
+                return;
+
             d3fwd_wlif = wlif->d3fwd_wlif;
 
             /* only WLAN NIC endpoints, exclude DHD endpoints */

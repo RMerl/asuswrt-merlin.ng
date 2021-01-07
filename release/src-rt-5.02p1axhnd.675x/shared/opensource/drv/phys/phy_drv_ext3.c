@@ -1783,8 +1783,8 @@ static void phys_reset_lift(uint32_t phy_map)
 
 static int _phy_cfg(uint32_t enabled_phys)
 {
-    int i, j, k, ret = 0;
-    uint32_t phy_map;
+    int i, j, k, ret = -1;
+    uint32_t phy_map = 0;
 
     if (!enabled_phys)
         return 0;
@@ -1793,7 +1793,7 @@ static int _phy_cfg(uint32_t enabled_phys)
 
 	phys_reset_lift(enabled_phys);
 
-    for (i = 0; i < sizeof(firmware_list)/sizeof(firmware_list[0]); i++)
+    for (i = 0; i < sizeof(firmware_list)/sizeof(firmware_list[0]) && ret < 0; i++)
     {
         for (j = 0; j < sizeof(phy_desc)/sizeof(phy_desc[0]); j++)
         {
@@ -1816,9 +1816,14 @@ static int _phy_cfg(uint32_t enabled_phys)
                     printk("0x%x ", k);
                 }
                 printk("\n");
+                ret = 0;
+                break;
             }
         }
     }
+
+    if (ret < 0)
+        return ret;
 
     printk("\nLoading firmware into detected PHYs...\n\n");
 

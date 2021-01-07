@@ -1069,10 +1069,26 @@ normal_path:
 
         if (unlikely(len < ETH_ZLEN))
         {                
-            nbuff_pad(pNBuff, ETH_ZLEN - len);
+            ret = nbuff_pad(pNBuff, ETH_ZLEN - len);
+            if (unlikely(ret))
+            {
+                /* if skb can't pad, skb is freed on error */
+                INC_STAT_TX_DROP(port->p.parent_sw,tx_dropped_no_skb);
+                return 0;
+            }
             if (IS_SKBUFF_PTR(pNBuff))
                 (PNBUFF_2_SKBUFF(pNBuff))->len = ETH_ZLEN;
-            len = ETH_ZLEN;
+            /*
+             * nbuff_pad might call pskb_expand_head() which can
+             * create an identical copy of the sk_buff. &sk_buff itself is not
+             * changed but any pointers pointing to the skb header may change
+             * and must be reloaded after the call. So we do that here.
+             */
+            if (nbuff_get_params_ext(pNBuff, &data, &len, &mark, &priority, &rflags) == NULL)
+            {
+                INC_STAT_TX_DROP(port,tx_dropped_bad_nbuff);
+                return 0;
+            }
         }
 
         dispatch_info.drop_eligible = 0;
@@ -2508,6 +2524,11 @@ enet_swqueue_fini(void)
     enet_swqueue = enet_info->enet_swqueue;
 
     enet_info->enet_swqueue = ENET_SWQUEUE_NULL;
+
+    if (ENET_SWQUEUE_NULL == enet_swqueue) {
+        printk("%s: enet swqueue is null\n", __FUNCTION__);
+        return;
+    }
 
     ENET_ASSERT(enet_swqueue != ENET_SWQUEUE_NULL);
 

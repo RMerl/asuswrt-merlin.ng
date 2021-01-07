@@ -147,7 +147,7 @@ static int32_t is_mdio_ready(uint32_t *p)
 
     if (cmd.fail)
     {
-        printk("MDIO Error: MDIO got failure status on phy %d\n", cmd.phy_prt_addr);
+        //printk("MDIO Error: MDIO got failure status on phy %d\n", cmd.phy_prt_addr);
         memset(&cmd, 0, sizeof(cmd));
         WRITE_32(p, cmd);
         return 0;

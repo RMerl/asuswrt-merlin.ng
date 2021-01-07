@@ -3,6 +3,7 @@
 # Makefile for the Power Management Module
 #
 
+ifneq ($(PREBUILT_EXTRAMOD),1)
 pwrmngtd-objs   := pwrmngtdrv.o
 pwrmngtd-objs   += pwrmngt.o
 
@@ -72,6 +73,9 @@ EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
 EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/pmc
 EXTRA_CFLAGS += -fno-exceptions
 EXTRA_CFLAGS += -Werror -Wfatal-errors
+else
+pwrmngtd-objs += pwrmngtd$(PRBM_EXT).o
+endif
 
  #-include $(TOPDIR)/Rules.make
 

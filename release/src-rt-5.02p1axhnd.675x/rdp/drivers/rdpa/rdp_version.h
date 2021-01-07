@@ -51,6 +51,6 @@
 #define RDP_VERSION_MAJOR  2
 #define RDP_VERSION_MINOR  7
 #define RDP_VERSION_BRANCH 1
-#define RDP_VERSION_SW "$Change: 259583 $"
+#define RDP_VERSION_SW "$Change: 282838 $"
 
 #endif

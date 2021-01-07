@@ -1,34 +1,15 @@
 
-
-#GLOBAL_RELEASE_SCRIPT_NOTOUCH
-
-
-ifneq ($(wildcard Makefile.fullsrc),)
-
-include Makefile.fullsrc
-
-else
-
 EXE = mcpctl
-dynamic: generic_exe_install
+
+all:
+	@cp -f prebuilt/$(EXE) .
+
+install: generic_exe_install
+	mkdir -p $(INSTALL_DIR)/bin
+	(cd $(INSTALL_DIR)/bin; rm -f mcp; ln -s $(EXE) mcp)
 
 clean:
-	rm -f $(EXE)
 
-mcpctl:
-	cp $(EXE)_$(PROFILE).save $(EXE)
-
-#
-# Set our CommEngine directory (by splitting the pwd into two words
-# at /userspace and taking the first word only).
-# Then include the common defines under CommEngine.
-#
-
-CURR_DIR := $(shell pwd)
-BUILD_DIR:=$(subst /userspace, /userspace,$(CURR_DIR))
-BUILD_DIR:=$(word 1, $(BUILD_DIR))
+dynamic: all install
 
 include $(BUILD_DIR)/make.common
-endif
-
-

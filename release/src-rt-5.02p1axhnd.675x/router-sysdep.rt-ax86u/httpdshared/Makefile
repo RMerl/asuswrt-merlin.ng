@@ -17,6 +17,13 @@ OBJS := httpdshared.o
 CURR_DIR := $(shell pwd)
 BUILD_DIR:=$(HND_SRC)
 
+ifneq ($(wildcard prebuilt/libhttpdshared.so),)
+REBUILD_MODULE=0
+else
+REBUILD_MODULE=1
+endif
+
+
 all: build_$(LIB)
 	@echo "Done Building $@"
 
@@ -62,9 +69,13 @@ CUSTOM_CFLAGS += -Werror -Wfatal-errors
 # Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
 # See Section 10.2 of Gnu Make manual
 # 
+ifeq ($(REBUILD_MODULE),1)
 $(LIB): $(OBJS)
 	$(CC) -shared $(BCM_LD_FLAGS) -Wl,--whole-archive,-soname,$(notdir $@) -o $@ $(OBJS) -Wl,--no-whole-archive
-
+else
+$(LIB):
+	cp -f prebuilt/libhttpdshared.so .
+endif
 
 
 #

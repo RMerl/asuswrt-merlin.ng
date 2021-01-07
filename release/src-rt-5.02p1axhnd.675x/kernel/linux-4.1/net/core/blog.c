@@ -2236,7 +2236,7 @@ unsigned long blog_request( BlogRequest_t request, void * net_p,
                        sw_bstats_p->tx_bytes+hw_bstats_p->tx_bytes,
                        sw_bstats_p->multicast+hw_bstats_p->multicast);
             /* Work-around : put_stats only used by WLAN for backward compatibility */
-            if ( dev_p->put_stats )
+            if ( (dev_p->reg_state == NETREG_REGISTERED) && virt_addr_valid(dev_p->put_stats) )
             {
                 BlogStats_t bstats; 
                 memcpy(&bstats, sw_bstats_p, sizeof(bstats)); 

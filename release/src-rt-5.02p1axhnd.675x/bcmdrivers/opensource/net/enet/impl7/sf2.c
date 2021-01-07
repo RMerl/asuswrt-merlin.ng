@@ -457,6 +457,10 @@ void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int dupl
         /* notify linux after we have finished setting our internal state */
         if (!old_link || old_speed != phy_dev->speed || old_duplex != phy_dev->duplex)
         {
+	    char link[16];
+	    char *env[] = {link, NULL};
+	    snprintf(link, sizeof(link), "LINK=up");
+            
             if (!old_link && port->p.parent_sw == sf2_sw) 
             {
                 if(PORT_ROLE_IS_WAN(port))
@@ -467,9 +471,6 @@ void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int dupl
             }
 
             if (netif_carrier_ok(port->dev) == 0) {
-                char link[16];
-                char *env[] = {link, NULL};
-                snprintf(link, sizeof(link), "LINK=up");
                 kobject_uevent_env(&port->dev->dev.kobj, KOBJ_CHANGE, env);
                 netif_carrier_on(port->dev);
             }

@@ -23,7 +23,10 @@ endif
 endif
 
 obj-$(CONFIG_BCM_TMS) += nciTMSkmod.o
+obj-$(CONFIG_BCM_TMS) += nciLservices.o
+obj-$(CONFIG_BCM_TMS) += nciexLinuxETH.o
 
+ifneq ($(PREBUILT_EXTRAMOD),1)
 ifeq ($(strip $(HAVESRC)),)
 nciTMSkmod-objs += nciTMSkmod_dep.o
 else
@@ -37,10 +40,13 @@ nciTMSkmod-objs	:=	ethPackage.o eth2App.o eth2Drv.o ethOAM.o ethMUX.o ethTStamp.
 endif
 
 #For TMS external module
-obj-$(CONFIG_BCM_TMS) += nciLservices.o
 nciLservices-objs := Lservices.o
-obj-$(CONFIG_BCM_TMS) += nciexLinuxETH.o
 nciexLinuxETH-objs := exLinuxETH.o
+else
+nciTMSkmod-objs := nciTMSkmod$(PRBM_EXT).o
+nciLservices-objs := nciLservices$(PRBM_EXT).o
+nciexLinuxETH-objs := nciexLinuxETH$(PRBM_EXT).o
+endif
 
 #This Makefile structure requires that it will be called with -j1
 #Sub-makes of this Makefile can be called with -j

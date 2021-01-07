@@ -189,7 +189,7 @@ int phy_drivers_init(void)
     ret |= phy_driver_init(PHY_TYPE_6856_SGMII);
     ret |= phy_driver_init(PHY_TYPE_EXT1);
     ret |= phy_driver_init(PHY_TYPE_EXT2);
-    ret |= phy_driver_init(PHY_TYPE_EXT3);
+    phy_driver_init(PHY_TYPE_EXT3);
     ret |= phy_driver_init(PHY_TYPE_LPORT_SERDES);
     ret |= phy_driver_init(PHY_TYPE_53125);
     ret |= phy_driver_init(PHY_TYPE_CROSSBAR);

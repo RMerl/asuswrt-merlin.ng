@@ -12,10 +12,14 @@ EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/net/wl/$(LN_NAME)/wl/wlcsm_ext/inc
 EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/net/wl/$(LN_NAME)/main/src/wl/wlcsm_ext/include
 endif
 
+ifneq ($(PREBUILT_EXTRAMOD),1)
 pktflow-objs   := fcache.o fcachedrv.o flwstats.o pathstats.o
 
 ifeq  ($(strip $(CONFIG_BCM_FHW)),y)
 pktflow-objs   += fcachehw.o
+endif
+else
+pktflow-objs   += pktflow$(PRBM_EXT).o
 endif
 
 obj-$(CONFIG_BCM_PKTFLOW) += pktflow.o

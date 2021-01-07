@@ -49,6 +49,10 @@ REBUILD_DHD_MODULE=$(shell if [ -d "$(SRCBASE)/../../$(SRCBASE_DHD)/dhd/sys" ]; 
 endif
 $(info "module : $(REBUILD_DHD_MODULE)")
 
+ifneq ($(wildcard $(src)/../../router-sysdep/hnd_dhd/prebuilt/dhd.o),)
+REBUILD_DHD_MODULE=0
+endif
+
 # XXX: d11.h is required to support WL_MONITOR in dhd. If this file is not
 # present in release tarball, disable WL_MONITOR to avoid build problems.
 WL_MONITOR=$(shell if [ -f "$(SRCBASE)/../../$(SRCBASE_DHD)/include/hndd11.h" ]; then echo 1; else echo 0; fi)

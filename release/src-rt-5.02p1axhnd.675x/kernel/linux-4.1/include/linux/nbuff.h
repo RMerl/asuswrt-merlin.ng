@@ -1816,7 +1816,7 @@ static inline int nbuff_pad(pNBuff_t pNBuff, int padLen)
 {
     if ( IS_SKBUFF_PTR(pNBuff) )
     {
-        skb_pad((struct sk_buff *)pNBuff, padLen);
+        return skb_pad((struct sk_buff *)pNBuff, padLen);
     }
     else
     {

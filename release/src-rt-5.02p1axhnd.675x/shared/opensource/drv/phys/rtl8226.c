@@ -231,9 +231,14 @@ int _phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *pcaps)
 {
     uint32_t caps = 0;
 
-	BOOL status = FAILURE;
+	BOOL status = SUCCESS;
 	PHY_LINK_ABILITY phylinkability;
 	memset(&phylinkability, 0x0, sizeof(phylinkability));
+
+    if ((caps_type == CAPS_TYPE_LP_ADVERTISED)) {
+		status = 0;
+		goto Exit;
+	}
 
     if ((caps_type != CAPS_TYPE_ADVERTISE) 
         && (caps_type != CAPS_TYPE_SUPPORTED))

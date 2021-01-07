@@ -864,8 +864,10 @@ $(if $(wildcard $(KEY_PATH)/private*.pem), \
 )
 $(if $(findstring sy, $(8)), \
        $(HOSTTOOLS_DIR)/scripts/bcmImageMaker --cferom $(2) --blocksize $(FLASH_NAND_BLOCK_$(3)KB) --bootofs $(4) --bootsize $(FLASH_NAND_BLOCK_$(3)KB)  --rootfs squbi_rootfs$(3)kb_pureubi.img --image $(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi --fsonly $(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi --ubionlyimage $(IMG_DDR_TYPE_OPT) $(6) $(5);)\
-       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi.w ] || md5sum $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi.w > $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi.md5; \
-       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi.w ] || [ ! -f $(HND_SRC)/../../buildtools/private.pem ] || openssl sha1 -sign $(HND_SRC)/../../buildtools/private.pem -out $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi.w; \
+       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || md5sum $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w > $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.md5; \
+       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || [ ! -f $(HND_SRC)/../../buildtools/private.pem ] || openssl sha1 -sign $(HND_SRC)/../../buildtools/private.pem -out $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w; \
+       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || rm -rf $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_pureubi*; \
+       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || rm -rf $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi*; \
   )
 endef
 

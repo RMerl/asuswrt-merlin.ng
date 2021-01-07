@@ -1107,6 +1107,7 @@ static bp_elem_t g_bcm94908tbrhx_wan2p5g[] = {
   {bp_last}
 };
 
+#if 0
 static bp_elem_t g_bcm94906ref2[] = {
   {bp_cpBoardId,               .u.cp = "94906REF2"},
   {bp_usUsbPwrOn0,             .u.us = BP_GPIO_64_AH},
@@ -1116,6 +1117,73 @@ static bp_elem_t g_bcm94906ref2[] = {
   {bp_elemTemplate,            .u.bp_elemp = g_bcm94906ref},
   {bp_last}
 };
+#else
+static bp_elem_t g_bcm94906ref2[] = {
+  {bp_cpBoardId,               .u.cp = "94906REF2"},
+  {bp_ulCompatChipId,          .u.ul = 0x4906},
+  {bp_ulInterfaceEnable,       .u.ul = BP_PINMUX_FNTYPE_EMMC},
+  {bp_usGpioLedBlPowerOn,      .u.us = BP_GPIO_4_AL},
+  {bp_usButtonIdx,             .u.us = 0},
+  {  bp_usButtonExtIntr,       .u.us = BP_EXT_INTR_0 },
+  {  bp_usGpio_Intr,           .u.us = BP_GPIO_23_AL},
+#ifdef BRCM_BTN_ACTION
+  {    bp_usButtonAction,      .u.us = BP_BTN_ACTION_RESTORE_DEFAULTS | BP_BTN_TRIG_PRESS  },
+#endif
+  {bp_usButtonIdx,             .u.us = 1},
+  {  bp_usButtonExtIntr,       .u.us = BP_EXT_INTR_1 },
+  {  bp_usGpio_Intr,           .u.us = BP_GPIO_22_AL},
+#ifdef BRCM_BTN_ACTION
+  {    bp_usButtonAction,      .u.us = BP_BTN_ACTION_SES | BP_BTN_TRIG_PRESS  },
+#endif
+#if defined(_CFE_)
+  {bp_usExtIntrResetToDefault, .u.us = BP_EXT_INTR_2},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_23_AL},
+  {bp_usExtIntrSesBtnWireless, .u.us = BP_EXT_INTR_3},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_22_AL},
+#endif
+  {bp_usButtonIdx,             .u.us = 2},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_15_AL},	// LED button
+  {bp_usButtonIdx,             .u.us = 3},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_14_AL},	// Wifi button
+
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_0_AL},	// USB2 LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_2_AL},	// USB3 LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_3_AL},	// USB_PCTL
+
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_16_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_17_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_18_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_19_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_20_AL},	// WAN red LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_21_AL},
+  {bp_usGphyBaseAddress,       .u.us = BCM94908_PHY_BASE},  // use phy addressses on SF2 with base address 0x8
+  {bp_ucPhyType0,              .u.uc = BP_ENET_NO_PHY}, // Runner
+  {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP},
+  {bp_ucPhyAddress,            .u.uc = 0x1e},
+  {bp_ulPortMap,               .u.ul = 0x9},
+  {bp_ulPhyId0,                .u.ul = GMII_DIRECT | EXTSW_CONNECTED},
+  {bp_ulPortFlags,             .u.ul = PORT_FLAG_MGMT }, // Managment port is on switch
+  {bp_ulPhyId3,                .u.ul = BP_PHY_ID_NOT_SPECIFIED},
+  {bp_ulCrossbar,              .u.ul = 10},
+  {bp_ulCrossbarPhyId,         .u.ul = (BCM94908_PHY_BASE + 0x04) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  /* use the WAN LED from runner */
+  {bp_usLinkLed,               .u.us = BP_SERIAL_GPIO_21_AH},
+  {bp_ucPhyType1,              .u.uc = BP_ENET_EXTERNAL_SWITCH},
+  {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP}, // Accessing SF2 as MMapped external switch
+  {bp_ulPortMap,               .u.ul = 0x0f},
+  {bp_ulPhyId0,                .u.ul = (BCM94908_PHY_BASE + 0x00) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_usLinkLed,               .u.us = BP_SERIAL_GPIO_16_AH},
+  {bp_ulPhyId1,                .u.ul = (BCM94908_PHY_BASE + 0x01) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_usLinkLed,               .u.us = BP_SERIAL_GPIO_17_AH},
+  {bp_ulPhyId2,                .u.ul = (BCM94908_PHY_BASE + 0x02) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_usLinkLed,               .u.us = BP_SERIAL_GPIO_18_AH},
+  {bp_ulPhyId3,                .u.ul = (BCM94908_PHY_BASE + 0x03) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_usLinkLed,               .u.us = BP_SERIAL_GPIO_19_AH},
+
+  {bp_ulMemoryConfig,          .u.ul = BP_DDR_SPEED_800_11_11_11 | BP_DDR_TOTAL_SIZE_512MB| BP_DDR_DEVICE_WIDTH_16 | BP_DDR_TOTAL_WIDTH_16BIT | BP_DDR_SSC_CONFIG_1},
+  {bp_last}
+};
+#endif
 
 static bp_elem_t g_bcm94908axe11000[] = {
   {bp_cpBoardId,               .u.cp = "GT-AXE11000"},

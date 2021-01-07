@@ -109,6 +109,7 @@ enum WLEMF_CMD {
 #endif /* BCM_DHD_LOCK */
 
 /* check if virtual wlan net deivce */
-#define check_virt_wlan(_dev)  ( !(_dev) || !netdev_path_is_root(_dev) || ((_dev)->priv_flags & IFF_BCM_VLAN) )
+#define check_virt_wlan(_dev)  ( !(_dev) || !netdev_path_is_root(_dev) || \
+	((_dev)->priv_flags & IFF_BCM_VLAN) || ((_dev)->priv_flags & IFF_802_1Q_VLAN) )
 
 #endif /* __DHD_NIC_COMMON_H__ */

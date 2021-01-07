@@ -26,16 +26,16 @@ endif
 endif
 
 # Choose BASE_DIR based on where router resides - src or components
-EMF_BASE_DIR := $(firstword $(wildcard ../../router-sysdep/emf$(BCMEX7)))
-
-EMFDIR       := ../emf$(BCMEX7)
+EMF_BASE_DIR := $(firstword $(wildcard ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/components/router-sysdep/emf       \
+                                       ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src/router-sysdep/emf))
+EMFDIR       := ../emf
 IGSSRCDIR    := $(EMFDIR)/igs
 IGSCSRCDIR   := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/components/emf/igs
 
 SRCBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src
 IGSFILES_SRC   := $(SRCBASE_OFFSET)/shared
 SRCBASE        := $(src)/$(SRCBASE_OFFSET)
-COMPONENTSBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/components/
+COMPONENTSBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/components
 COMPONENTSBASE := $(src)/$(COMPONENTSBASE_OFFSET)
 SRCBASE_ROUTER := $(COMPONENTSBASE)/router-sysdep
 
@@ -43,6 +43,10 @@ ifeq ($(PREBUILT_EXTRAMOD),1)
 REBUILD_IGS_MODULE=0
 else
 REBUILD_IGS_MODULE=$(shell if [ -d "$(src)/$(IGSSRCDIR)" -a "$(REUSE_PREBUILT_IGS)" != "1" ]; then echo 1; else echo 0; fi)
+endif
+
+ifneq ($(wildcard $(src)/../../router-sysdep/hnd_igs/prebuilt/igs.o),)
+REBUILD_IGS_MODULE=0
 endif
 
 ifeq ($(REBUILD_IGS_MODULE),1)
@@ -56,7 +60,7 @@ endif
 
 # Search for sources under src/router/emf/igs
 ifneq ($(wildcard $(src)/$(IGSSRCDIR)),)
-    EXTRA_CFLAGS += -I$(SRCBASE_ROUTER)/emf$(BCMEX7)/igs -I$(SRCBASE_ROUTER)/emf$(BCMEX7)/emf
+    EXTRA_CFLAGS += -I$(SRCBASE_ROUTER)/emf/igs -I$(SRCBASE_ROUTER)/emf/emf
     EXTRA_CFLAGS += -I$(SRCBASE_ROUTER)/bcmdrv/include -I$(SRCBASE_ROUTER)/bcmdrv/include/emf/igs
     EXTRA_CFLAGS += -I$(SRCBASE_ROUTER)/bcmdrv/include/emf/emf
     EXTRA_CFLAGS += -I$(SRCBASE)/include         -I$(COMPONENTSBASE)/proto/include
@@ -69,14 +73,10 @@ endif
 
 obj-$(CONFIG_BCM_WLAN) := igs.o
 
-ifeq ($(CONFIG_BUZZZ_FUNC),y)
-subdir-ccflags-y += -O0 -fno-inline -finstrument-functions
-endif # CONFIG_BUZZZ_FUNC
-
 else # IGSSRCDIR doesn't exist
     # Otherwise, assume prebuilt object module(s) in src/igs/linux directory
     prebuilt := igs.o
-    igs-objs := $(SRCBASE_OFFSET)/router-sysdep/hnd_igs/prebuilt/$(prebuilt)
+    igs-objs := prebuilt/$(prebuilt)
     obj-$(CONFIG_BCM_WLAN) := igs.o
 endif
 

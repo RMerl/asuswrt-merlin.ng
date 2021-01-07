@@ -632,6 +632,7 @@ typedef struct wl_event_data_if {
 	uint8 reserved;		/* bit mask (WLC_E_IF_FLAGS_XXX ) */
 	uint8 bssidx;		/* bsscfg index */
 	uint8 role;		/* see I/F role */
+	struct ether_addr peer_addr;	/* peer (WDS/DWDS Client) MAC address (if applicable) */
 } wl_event_data_if_t;
 
 /* WLC_E_NATOE event data */
@@ -670,8 +671,11 @@ typedef struct wl_event_data_rssi {
 
 /* WLC_E_IF flag */
 #define WLC_E_IF_FLAGS_BSSCFG_NOIF	0x1	/* no host I/F creation needed */
-#define WLC_E_IF_FLAGS_LEGACY_WDS_STA 0x2 /* LEGACY supplicant WDS I/F */
-#define WLC_E_IF_FLAGS_LEGACY_WDS_AP 0x4 /* LEGACY Authenticator WDS I/F */
+#define WLC_E_IF_FLAGS_WDS_STA		0x2	/* WDS supplicant interface */
+#define WLC_E_IF_FLAGS_WDS_AP		0x4	/* WDS Authenticator or DWDD client interface */
+
+#define WLC_E_IF_FLAGS_LEGACY_WDS_STA	WLC_E_IF_FLAGS_WDS_STA
+#define WLC_E_IF_FLAGS_LEGACY_WDS_AP	WLC_E_IF_FLAGS_WDS_AP
 
 /* Reason codes for LINK */
 #define WLC_E_LINK_BCN_LOSS     1   /* Link down because of beacon loss */

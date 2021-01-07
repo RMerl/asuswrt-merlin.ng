@@ -52,6 +52,7 @@
 #
 #***********************************************************************/
 
+ifneq ($(PREBUILT_EXTRAMOD),1)
 pktrunner-objs := ../shared/pktrunner_driver.o pktrunner_proto.o pktrunner_ucast.o
 
 ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_4908_63158_),_$(strip $(BRCM_CHIP))_)
@@ -70,6 +71,9 @@ ifeq ($(strip $(CONFIG_BCM_CMDLIST_SIM)),)
 pktrunner-objs += pktrunner_host.o
 else
 EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/char/cmdlist/impl1
+endif
+else
+pktrunner-objs += pktrunner$(PRBM_EXT).o
 endif
 
 obj-$(CONFIG_BCM_PKTRUNNER) += pktrunner.o

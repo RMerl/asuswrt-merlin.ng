@@ -424,13 +424,6 @@ mkdir -p ${TARGET_FS}/rom/etc/wlan/dhd/43684c0
 cp ${HND_SRC}/bcmdrivers/broadcom/net/wl/impl${BCM_WLIMPL}/sys/src/dongle/bin/43684c0/rtecdc.bin ${TARGET_FS}/rom/etc/wlan/dhd/43684c0
 fi
 
-if [ "$BUILD_NAME" == "RT-AX68U" ]; then
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/extra/dhd.ko
-	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/dhd
-	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram
-	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/dhd
-fi
-
 # strip userspace binaries is sstrip is "enabled"
 # sstrip is set to /bin/touch if BUILD_GDBSERVER=y
 if [ "$SSTRIP" != "/bin/touch" ]; then

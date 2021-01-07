@@ -418,6 +418,13 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 MODEL = $(subst -,,$(BUILD_NAME))
 KBUILD_CFLAGS += -D$(MODEL)
 
+PREBUILT_EXTRAMOD=$(shell if [ ! -f "$(HND_SRC)/upb.mak" -o "$(PRBM)" = "1" ]; then echo 1; else echo 0; fi)
+export PREBUILT_EXTRAMOD
+PREBUILT_BCMBIN=$(PREBUILT_EXTRAMOD)
+export PREBUILT_BCMBIN
+export PRBM_EXT=_preb
+export PRBM_DIR=prebuilt
+
 ifneq ($(strip $(BCA_HNDROUTER)),)
 KBUILD_CFLAGS	+= -DBCA_CPE_BSP_SHARED
 endif

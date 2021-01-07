@@ -3347,13 +3347,25 @@ void dump_RDD_BROADCOM_SWITCH_PORT_MAPPING(bdmf_session_handle session, unsigned
 
 }
 
-void dump_RDD_IPTV_COUNTERS_BUFFER(bdmf_session_handle session, unsigned char *p)
+void dump_RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register IPTV_COUNTERS_BUFFER\n");
+	bdmf_session_print(session, "  Register ENQUEUE_PCI_PACKET_CONTEXT_ENTRY\n");
 
 	MREAD_16((uint8_t *)p, r);
-	bdmf_session_print(session, "\treserved_fw_only         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tdhd_context_ptr          = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)p + 2, r);
+	bdmf_session_print(session, "\tdhd_host_buf_ptr         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)p + 4, r);
+	bdmf_session_print(session, "\tdhd_l2_buf               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)p + 6, r);
+	bdmf_session_print(session, "\tret_addr                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
@@ -3378,29 +3390,6 @@ void dump_RDD_RUNNER_FLOW_IH_RESPONSE(bdmf_session_handle session, unsigned char
 		}
 	}
 	bdmf_session_print(session, "\n");
-}
-
-void dump_RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register ENQUEUE_PCI_PACKET_CONTEXT_ENTRY\n");
-
-	MREAD_16((uint8_t *)p, r);
-	bdmf_session_print(session, "\tdhd_context_ptr          = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)p + 2, r);
-	bdmf_session_print(session, "\tdhd_host_buf_ptr         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)p + 4, r);
-	bdmf_session_print(session, "\tdhd_l2_buf               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)p + 6, r);
-	bdmf_session_print(session, "\tret_addr                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
 }
 
 void dump_RDD_GSO_DESC_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -3573,10 +3562,21 @@ void dump_RDD_SYSTEM_CONFIGURATION(bdmf_session_handle session, unsigned char *p
 
 }
 
-void dump_RDD_CPU_TX_PICO_INGRESS_QUEUE_PTR(bdmf_session_handle session, unsigned char *p)
+void dump_RDD_FIREWALL_IPV6_R16_BUFFER_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register CPU_TX_PICO_INGRESS_QUEUE_PTR\n");
+	bdmf_session_print(session, "  Register FIREWALL_IPV6_R16_BUFFER_ENTRY\n");
+
+	MREAD_32((uint8_t *)p, r);
+	bdmf_session_print(session, "\treserved_fw_only         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_IPTV_COUNTERS_BUFFER(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register IPTV_COUNTERS_BUFFER\n");
 
 	MREAD_16((uint8_t *)p, r);
 	bdmf_session_print(session, "\treserved_fw_only         = 0x%08x", (unsigned int)r);
@@ -3591,6 +3591,17 @@ void dump_RDD_IPSEC_SA_DESC_CAM(bdmf_session_handle session, unsigned char *p)
 
 	MREAD_16((uint8_t *)p, r);
 	bdmf_session_print(session, "\tsa_desc_idx              = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_CPU_TX_PICO_INGRESS_QUEUE_PTR(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register CPU_TX_PICO_INGRESS_QUEUE_PTR\n");
+
+	MREAD_16((uint8_t *)p, r);
+	bdmf_session_print(session, "\treserved_fw_only         = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
@@ -3697,17 +3708,6 @@ void dump_RDD_HASH_BASED_FORWARDING_PORT_ENTRY(bdmf_session_handle session, unsi
 
 	MREAD_8((uint8_t *)p, r);
 	bdmf_session_print(session, "\tegress_port              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_FIREWALL_IPV6_R16_BUFFER_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register FIREWALL_IPV6_R16_BUFFER_ENTRY\n");
-
-	MREAD_32((uint8_t *)p, r);
-	bdmf_session_print(session, "\treserved_fw_only         = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
@@ -3912,6 +3912,32 @@ void dump_RDD_CSO_PSEUDO_HEADER_BUFFER_ENTRY(bdmf_session_handle session, unsign
 	bdmf_session_print(session, "\n");
 }
 
+#if defined DSL_63138
+void dump_RDD_DSL_PTM_BOND_TX_HDR_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register DSL_PTM_BOND_TX_HDR_ENTRY\n");
+
+	FIELD_MREAD_8((uint8_t *)p, 7, 1, r);
+	bdmf_session_print(session, "\tport_sel                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)p, 5, 2, r);
+	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)p, 4, 1, r);
+	bdmf_session_print(session, "\tpkt_eop                  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_16((uint8_t *)p, 0, 12, r);
+	bdmf_session_print(session, "\tfrag_size                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+#endif
+
 void dump_RDD_WAN_CHANNEL_8_39_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -4083,32 +4109,6 @@ void dump_RDD_US_WAN_FLOW_ENTRY(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 
 }
-
-#if defined DSL_63138
-void dump_RDD_DSL_PTM_BOND_TX_HDR_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register DSL_PTM_BOND_TX_HDR_ENTRY\n");
-
-	FIELD_MREAD_8((uint8_t *)p, 7, 1, r);
-	bdmf_session_print(session, "\tport_sel                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	FIELD_MREAD_8((uint8_t *)p, 5, 2, r);
-	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	FIELD_MREAD_8((uint8_t *)p, 4, 1, r);
-	bdmf_session_print(session, "\tpkt_eop                  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	FIELD_MREAD_16((uint8_t *)p, 0, 12, r);
-	bdmf_session_print(session, "\tfrag_size                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-#endif
 
 void dump_RDD_US_QUEUE_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
@@ -4690,6 +4690,17 @@ void dump_RDD_CSO_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p)
 
 }
 
+void dump_RDD_US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_ENTRY\n");
+
+	MREAD_8((uint8_t *)p, r);
+	bdmf_session_print(session, "\tflow_id                  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
 void dump_RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -4705,28 +4716,6 @@ void dump_RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY(bdmf_session_hand
 
 	MREAD_16((uint8_t *)p + 4, r);
 	bdmf_session_print(session, "\tguaranteed_threshold     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register US_INGRESS_CLASSIFICATION_DEFAULT_FLOWS_ENTRY\n");
-
-	MREAD_8((uint8_t *)p, r);
-	bdmf_session_print(session, "\tflow_id                  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register RATE_CONTROLLER_EXPONENT_ENTRY\n");
-
-	MREAD_8((uint8_t *)p, r);
-	bdmf_session_print(session, "\texponent                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
@@ -4749,6 +4738,17 @@ void dump_RDD_LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR(bdmf_session_handle 
 
 	MREAD_16((uint8_t *)p, r);
 	bdmf_session_print(session, "\treserved_fw_only         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_RATE_CONTROLLER_EXPONENT_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register RATE_CONTROLLER_EXPONENT_ENTRY\n");
+
+	MREAD_8((uint8_t *)p, r);
+	bdmf_session_print(session, "\texponent                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }

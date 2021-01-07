@@ -4,6 +4,7 @@
 #
 
 obj-$(CONFIG_BCM_VLAN) += bcmvlan.o
+ifneq ($(PREBUILT_EXTRAMOD),1)
 bcmvlan-objs += bcm_vlan.o bcm_vlan_local.o bcm_vlan_user.o bcm_vlan_dev.o bcm_vlan_rule.o bcm_vlan_test.o bcm_vlan_flows.o bcm_vlan_dp.o
 
 EXTRA_CFLAGS += -I$(obj)
@@ -27,6 +28,9 @@ EXTRA_CFLAGS += -DCONFIG_BCM_VLAN_ISOLATION
 endif
 
 -include $(TOPDIR)/Rules.make
+else
+bcmvlan-objs += bcmvlan$(PRBM_EXT).o
+endif
 
 clean:
 	rm -f core *.o *.a *.s .*.cmd *.ko

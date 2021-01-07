@@ -22,6 +22,12 @@
 
 include $(TOP)/.config
 
+ifneq ($(wildcard prebuilt/debug_monitor),)
+REBUILD_MODULE=0
+else
+REBUILD_MODULE=1
+endif
+
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/../components/shared -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/common/include
 
 ifeq ($(strip $(BCA_HNDROUTER)),)
@@ -40,12 +46,14 @@ OBJS := dhd_monitor.o
 all: debug_monitor
 
 clean:
-	rm -f *.o dhd_monitor .*.depend
+	rm -f *.o debug_monitor .*.depend
 
 install: all
 	install -d $(INSTALLDIR)/usr/sbin
 	install debug_monitor $(INSTALLDIR)/usr/sbin
 	$(STRIP) $(INSTALLDIR)/usr/sbin/debug_monitor
+
+ifeq ($(REBUILD_MODULE),1)
 
 ifneq ($(PREBUILT_BCMBIN),1)
 debug_monitor: $(OBJS)
@@ -60,3 +68,9 @@ endif
 	$(CC) $(CFLAGS) -M $< > $@
 
 -include $(OBJS:%.o=.%.depend)
+
+else
+debug_monitor:
+	cp -f prebuilt/debug_monitor .
+endif
+

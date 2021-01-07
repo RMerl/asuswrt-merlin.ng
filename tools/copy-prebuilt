@@ -151,7 +151,7 @@ then
 	ARCH="_arm"
 	HND="_axhnd"
 
-	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02hnd/hostTools/prebuilt/
+	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
 	cp release/src-rt-5.02p1axhnd.675x/wl/exe/prebuilt/* $REPO/release/src-rt-5.02p1axhnd.675x/wl/exe/prebuilt/
 	cp -a release/src/router/tuxera/broadcom_arm_ax/* $REPO/release/src/router/tuxera/broadcom_arm_ax/
 	if [ -d "release/src/router/ookla_speedtest/prebuild/" ]

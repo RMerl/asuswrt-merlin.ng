@@ -2,7 +2,6 @@
 #
 # Makefile for the Power Management Module
 #
-
 ifneq ($(PREBUILT_EXTRAMOD),1)
 pwrmngtd-objs   := pwrmngtdrv.o
 pwrmngtd-objs   += pwrmngt.o
@@ -61,8 +60,6 @@ ifneq (${BRCM_CPU_FREQ_PWRSAVE},)
 EXTRA_CFLAGS += -DCONFIG_BCM_CPU_FREQ_PWRSAVE
 endif
 
-obj-$(CONFIG_BCM_PWRMNGT) += pwrmngtd.o
-
 EXTRA_CFLAGS += -I.
 EXTRA_CFLAGS += -I./avs_40
 EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/net/enet/shared 
@@ -73,9 +70,11 @@ EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
 EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/pmc
 EXTRA_CFLAGS += -fno-exceptions
 EXTRA_CFLAGS += -Werror -Wfatal-errors
+
 else
 pwrmngtd-objs += pwrmngtd$(PRBM_EXT).o
 endif
+obj-$(CONFIG_BCM_PWRMNGT) += pwrmngtd.o
 
  #-include $(TOPDIR)/Rules.make
 

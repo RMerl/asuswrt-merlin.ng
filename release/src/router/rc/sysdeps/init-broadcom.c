@@ -37,7 +37,19 @@
 #include <linux/major.h>
 
 #ifdef RTCONFIG_BCMWL6
-#include <d11.h>
+//#include <d11.h>
+/* phy types */
+#define PHY_TYPE_A	0
+#define PHY_TYPE_B	1
+#define PHY_TYPE_G	2
+#define PHY_TYPE_N	4
+#define PHY_TYPE_LP	5
+#define PHY_TYPE_SSN	6
+#define PHY_TYPE_LCN	8
+#define PHY_TYPE_LCNXN	9
+#define PHY_TYPE_HT	7
+#define PHY_TYPE_AC	11
+#define PHY_TYPE_AX	13
 #ifdef RTCONFIG_HND_ROUTER_AX
 #define WLCONF_PHYTYPE2STR(phy)	((phy) == PHY_TYPE_A ? "a" : \
 				 (phy) == PHY_TYPE_B ? "b" : \

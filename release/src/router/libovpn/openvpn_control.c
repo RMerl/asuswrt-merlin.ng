@@ -501,7 +501,7 @@ void ovpn_start_server(int unit) {
 	}
 
 	if ((pidof(&buffer[6])) >= 0) {
-		logmessage("openvpn", "OpenVPN client %d start attempt - already running.", unit);
+		logmessage("openvpn", "OpenVPN server %d start attempt - already running.", unit);
 		return;
 	}
 

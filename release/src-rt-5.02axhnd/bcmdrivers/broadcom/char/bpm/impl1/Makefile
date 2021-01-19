@@ -12,9 +12,6 @@ EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/opensource/net/enet/shared
 
 EXTRA_CFLAGS += -Werror -Wfatal-errors 
 
-%.o:
-	cp $(obj)/prebuilt/*.o $(obj)/
-
 clean:
 	rm -f core *.ko *.o *.a *.s
 

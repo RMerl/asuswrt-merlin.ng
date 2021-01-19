@@ -254,3 +254,8 @@ then
 		cp release/src/router/bsd/prebuilt/* $REPO/release/src/router/bsd/prebuilt/$BUILD_NAME/
 		cp release/src/router/dhd/prebuilt/* $REPO/release/src/router/dhd/prebuilt/$BUILD_NAME/
 fi
+
+# Cleanup
+rm $REPO/release/src/router/rc/prebuild/$BUILD_NAME/init-broadcom.o
+rm $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/*.pem
+rm $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/*.enc

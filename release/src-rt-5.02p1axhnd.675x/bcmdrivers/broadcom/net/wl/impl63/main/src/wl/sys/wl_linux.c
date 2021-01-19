@@ -1094,9 +1094,6 @@ wl_attach(uint16 vendor, uint16 device, ulong regs,
 	int primary_idx = 0;
 	uint online_cpus, iomode = 0;
 	unit = wl_get_next_instance();
-#ifdef RTAC68UV4
-	unit = 1 - unit;
-#endif
 	err = 0;
 
 	if (device == EMBEDDED_2x2AX_ID) { /**< PCIe device id for 63178 802.11ax dualband device */

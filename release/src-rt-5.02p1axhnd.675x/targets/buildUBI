@@ -109,7 +109,11 @@ if [ ! -z "$METADATA" ]; then
    printf "%.8x" 3 | xxd -r -p >> $PROFILE_DIR/TEMP # size of data
 
    printf "cferam.000\0" > $PROFILE_DIR/TEMP2 # NAND_CFE_RAM_NAME
+if [ "$BUILD_NAME" == "RT-AC68U_V4" ]; then
+   printf "000" >> $PROFILE_DIR/TEMP2
+else
    printf "998" >> $PROFILE_DIR/TEMP2
+fi
    append_file_struct $METADATA;
 
    if [ ! -z "$SQUASH" ]; then

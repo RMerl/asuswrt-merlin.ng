@@ -36,9 +36,15 @@ else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 	@cp include/udb/sysdeps/qca956x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # qca956x / qnc550x
 	@cp bin/qca956x/* bin/ -rf                                                           # qca956x / qnc550x
 else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
+ifeq ($(RTCONFIG_QCA_PLC2),y)
+	@cp include/tdts/sysdeps/ipq60xx-plc-tmcfg.h include/tdts/tmcfg.h -f                 # ipq60xx-plc
+	@cp include/udb/sysdeps/ipq60xx-plc-tmcfg_udb.h include/udb/tmcfg_udb.h -f           # ipq60xx-plc
+	@cp bin/ipq60xx-plc/* bin/ -rf                                                       # ipq60xx-plc
+else
 	@cp include/tdts/sysdeps/ipq60xx-tmcfg.h include/tdts/tmcfg.h -f                     # ipq60xx
 	@cp include/udb/sysdeps/ipq60xx-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # ipq60xx
 	@cp bin/ipq60xx/* bin/ -rf                                                           # ipq60xx
+endif
 else ifeq ($(RTCONFIG_RALINK),y)
 ifeq ($(RTCONFIG_RALINK_MT7622),y)
 	@cp include/tdts/sysdeps/mtk7622-tmcfg.h include/tdts/tmcfg.h -f                     # mtk7622
@@ -49,10 +55,6 @@ else
 	@cp include/udb/sysdeps/mtk-tmcfg_udb.h include/udb/tmcfg_udb.h -f                   # mtk
 	@cp bin/mtk/* bin/ -rf                                                               # mtk
 endif
-else ifeq ($(RTCONFIG_ALPINE),y)
-	@cp include/tdts/sysdeps/alpine-tmcfg.h include/tdts/tmcfg.h -f                      # gt-ac9600
-	@cp include/udb/sysdeps/alpine-tmcfg_udb.h include/udb/tmcfg_udb.h -f                # gt-ac9600
-	@cp bin/alpine/* bin/ -rf                                                            # gt-ac9600
 else ifeq ($(RTCONFIG_LANTIQ),y)
 	@cp include/tdts/sysdeps/lantiq-tmcfg.h include/tdts/tmcfg.h -f                      # lantiq
 	@cp include/udb/sysdeps/lantiq-tmcfg_udb.h include/udb/tmcfg_udb.h -f                # lantiq
@@ -124,8 +126,13 @@ else ifeq ($(RTCONFIG_QCN550X),y)
 	@cp include/tdts/sysdeps/qcn550x-tmcfg.h include/tdts/tmcfg.h -f                     # qcn550x
 	@cp include/udb/sysdeps/qcn550x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # qcn550x
 else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
+ifeq ($(RTCONFIG_QCA_PLC2),y)
+	@cp include/tdts/sysdeps/ipq60xx-plc-tmcfg.h include/tdts/tmcfg.h -f                 # ipq60xx-plc
+	@cp include/udb/sysdeps/ipq60xx-plc-tmcfg_udb.h include/udb/tmcfg_udb.h -f           # ipq60xx-plc
+else
 	@cp include/tdts/sysdeps/ipq60xx-tmcfg.h include/tdts/tmcfg.h -f                     # ipq60xx
 	@cp include/udb/sysdeps/ipq60xx-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # ipq60xx
+endif
 else ifeq ($(RTCONFIG_RALINK),y)
 ifeq ($(RTCONFIG_RALINK_MT7622),y)
 	@cp include/tdts/sysdeps/mtk7622-tmcfg.h include/tdts/tmcfg.h -f                     # mtk7622
@@ -134,9 +141,6 @@ else
 	@cp include/tdts/sysdeps/mtk-tmcfg.h include/tdts/tmcfg.h -f                         # mtk
 	@cp include/udb/sysdeps/mtk-tmcfg_udb.h include/udb/tmcfg_udb.h -f                   # mtk
 endif
-else ifeq ($(RTCONFIG_ALPINE),y)
-	@cp include/tdts/sysdeps/alpine-tmcfg.h include/tdts/tmcfg.h -f                      # gt-ac9600
-	@cp include/udb/sysdeps/alpine-tmcfg_udb.h include/udb/tmcfg_udb.h -f                # gt-ac9600
 else ifeq ($(RTCONFIG_LANTIQ),y)
 	@cp include/tdts/sysdeps/lantiq-tmcfg.h include/tdts/tmcfg.h -f                      # lantiq
 	@cp include/udb/sysdeps/lantiq-tmcfg_udb.h include/udb/tmcfg_udb.h -f                # lantiq
@@ -221,7 +225,11 @@ else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 	@cp -f modules/qca956x/* RC_INDEP/
 	@cp -f bin/wrs/rule.trf RC_INDEP/ # wrs / lite version
 else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
+ifeq ($(RTCONFIG_QCA_PLC2),y)
+	@cp -f modules/ipq60xx-plc/* RC_INDEP/
+else
 	@cp -f modules/ipq60xx/* RC_INDEP/
+endif
 else ifeq ($(RTCONFIG_RALINK),y)
 ifeq ($(RTCONFIG_RALINK_MT7622),y)
 	@cp -f modules/mtk7622/* RC_INDEP/
@@ -233,8 +241,6 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX53U))
 else
 	@cp -f bin/partial/rule.trf RC_INDEP/
 endif
-else ifeq ($(RTCONFIG_ALPINE),y)
-	@cp -f modules/alpine/* RC_INDEP/
 else ifeq ($(RTCONFIG_LANTIQ),y)
 	@cp -f modules/lantiq/* RC_INDEP/
 else ifeq ($(RTCONFIG_BCMARM),y)

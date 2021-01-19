@@ -99,6 +99,7 @@ unsigned int get_root_type(void)
 		case MODEL_GTAX11000:
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
+		case MODEL_RTAXE95Q:
 		case MODEL_RTAX56_XD4:
 		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:

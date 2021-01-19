@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=Mod Tambahan tidak dipilih.
 QIS_confirm_recommand_encryp=Kami amat mengesyorkan anda menetapkan tetapan keselamatan wayarles yang dahulu, adakah anda hendak meneruskan?
 QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Please plug in the cable to DSL port. System will detect your network setting automatically.
 QIS_detect_desc1=Sambungan PPPoE/DSL dikesan.
 QIS_detect_desc2=Persediaan Bestari mengesan bahawa jenis sambungan Internet anda adalah PPPoE/DSL.
 QIS_detect_desc3=Klik "Seterusnya" untuk memasukkan nama akaun dan kata laluan yang telah dibekalkan oleh Pembekal Perkhidmatan Internet (ISP) anda.

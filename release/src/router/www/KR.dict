@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=ANNEX 모드를 선택하지 않았습니다.
 QIS_confirm_recommand_encryp=무선 보안 설정을 설정하는 것을 권장합니다. 계속하시겠습니까?
 QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Please plug in the cable to DSL port. System will detect your network setting automatically.
 QIS_detect_desc1=PPPoE / DSL 연결이 감지되었습니다.
 QIS_detect_desc2=설치 마법사가 인터넷 연결 형식이 PPPoE / DSL 임을 감지하였습니다.
 QIS_detect_desc3=다음을 클릭한 후, 인터넷 서비스 제공자 (ISP) 가 제공하는 계정 이름과 암호를 입력하십시오.

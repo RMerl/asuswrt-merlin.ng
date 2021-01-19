@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=El modo de anexo no está seleccionado.
 QIS_confirm_recommand_encryp=Es muy recomendable que establezca primero el configuración de seguridad inalámbrica. ¿Desea continuar?
 QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Please plug in the cable to DSL port. System will detect your network setting automatically.
 QIS_detect_desc1=Se ha detectado una conexión PPPoE/DSL.
 QIS_detect_desc2=El asistente de configuración ha detectado que el tipo de su conexión a Internet es PPPoE/DSL.
 QIS_detect_desc3=Haga clic en "Next" (Siguiente) para introducir el nombre y la contraseña de la cuenta, proporcionados por su proveedor de servicios de Internet (ISP).

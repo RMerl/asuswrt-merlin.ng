@@ -154,7 +154,7 @@ function tab_reset(v){
 			document.getElementById("t3").style.display = "none";
 		}		
 	}else if(v == 1){	//Smart Connect
-		if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AC95U" || based_modelid == "GT-AXE11000") {
+		if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q" || based_modelid == "RT-AC95U" || based_modelid == "GT-AXE11000") {
 			if(isSupport("triband") && dwb_info.mode) {
 				document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
 			}

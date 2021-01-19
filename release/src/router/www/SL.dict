@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=Način ANNEX ni izbran.
 QIS_confirm_recommand_encryp=Priporočamo, da najprej konfigurirate varnostne nastavitve za brezžično omrežje. Ali želite nadaljevati?
 QIS_desc_1=Priključite kabel na priključek WAN. Sistem bo samodejno zaznal nastavitve omrežja.
 QIS_desc_2=Način za strokovnjake, nastavitve brez povezave
+QIS_desc_3=Priključite kabel na priključek DSL. Sistem bo samodejno zaznal nastavitve omrežja.
 QIS_detect_desc1=Zaznana je bila povezava PPPoE/DSL.
 QIS_detect_desc2=Čarovnik za nastavitev je zaznal, da uporabljate vrsto internetne povezave PPPoE/DSL.
 QIS_detect_desc3=Kliknite »Naprej«, da vnesete ime računa in geslo, ki ju je posredoval ponudnik internetnih storitev (ISP).

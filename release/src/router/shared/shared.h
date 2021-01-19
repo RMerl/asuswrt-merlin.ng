@@ -1187,7 +1187,7 @@ enum led_id {
  && (defined(RTAX89U) || defined(GTAXY16000))
 	PWR_USB2,
 #endif
-#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX82_XD6)
+#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(RTAX82_XD6)
 	BT_RESET,
 	BT_DISABLE,
 	LED_RGB1_RED,
@@ -3571,5 +3571,12 @@ struct cled_config3 {
 #endif
 
 int is_passwd_default(void);
+
+#ifdef BCM_BSD
+#define SMRTCONN_DISABLE	0
+#define	SMRTCONN_FULL_BANDS	1
+#define SMRTCONN_5G_ONLY	2
+#define SMRTCONN_2G_AND_5G	3
+#endif
 
 #endif	/* !__SHARED_H__ */

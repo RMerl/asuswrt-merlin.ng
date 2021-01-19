@@ -28,8 +28,12 @@ var weekScheduleApi = {
 			var weekday_obj = value;
 			weekScheduleApi.data["w_" + weekday_obj.bitwise] = [];//initial data obj
 		});
+		if(typeof _jsonObj != "object")
+			return;
 		Object.keys(_jsonObj).forEach(function(key) {
 			var weekday_idx = key;
+			if(typeof _jsonObj[weekday_idx] != "object")
+				return;
 			Object.keys(_jsonObj[weekday_idx]).forEach(function(key) {
 				if(typeof _jsonObj[weekday_idx][key] == "object"){
 					var enable = parseInt(_jsonObj[weekday_idx][key].enable);

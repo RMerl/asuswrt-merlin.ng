@@ -1128,6 +1128,7 @@ typedef struct {
 	char mod[16]; //e.g. ADSL2+
 	char type[16]; //e.g. Annex A
 	char profile[16]; //e.g. 30a
+	char vect[20]; // Vectoring state
 	uint8_t vid[8]; //farend vendor id
 	int is_vdsl2_gfast;
 	int tcm_down; //trellis coding modulation
@@ -1150,6 +1151,8 @@ typedef struct {
 	unsigned int es_up;
 	unsigned int ses_down;
 	unsigned int ses_up;
+	int ginp_down;
+	int ginp_up;
 	char inp_down[16]; // INP
 	char inp_up[16];
 	char inp_rein_down[16]; //INP REIN (Repetitive Electrical Impulse Noise)

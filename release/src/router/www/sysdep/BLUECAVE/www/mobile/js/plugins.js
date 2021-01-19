@@ -870,6 +870,22 @@ function setupWLCNvram(apProfileID) {
 	}
 }
 
+function setupFronthaulNetwork(_smart_connect){
+	if(isSupport("FRONTHAUL_NETWORK")){
+		postDataModel.insert(fronthaulNetworkObj);
+		switch(_smart_connect){
+			case "0":
+			case "2":
+			case "3":
+				qisPostData.fh_ap_enabled = "0";
+				break;
+			case "1":
+				qisPostData.fh_ap_enabled = httpApi.nvramDefaultGet(["fh_ap_enabled"]).fh_ap_enabled;
+				break;
+		}
+	}
+}
+
 function sortAP(kind, sequence){
 	var array_tmp = new Array();
 	array_tmp = httpApi.hookGet("get_ap_info", false).sort(function(a,b){
@@ -1126,8 +1142,11 @@ var isSupport = function(_ptn){
 		case "amas_bdl":
 			matchingResult = (ui_support["amas_bdl"] == 1 && amas_bdlkey.length == 0) ? true : false;
 			break;
+		case "FRONTHAUL_NETWORK":
+			matchingResult = ui_support["amas_fronthaul_network"] || false;
+			break;
 		case "MB_mode_concurrep":
-			if(isSwMode("MB") && isSupport("concurrep") && odmpid != "RP-AC1900" && based_modelid != 'RP-AX56')
+			if(isSwMode("MB") && (ui_support["concurrep"] == 1) && odmpid != "RP-AC1900" && based_modelid != 'RP-AX56')
 				matchingResult = true;
 			else
 				matchingResult = false;

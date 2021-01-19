@@ -5,6 +5,7 @@
 #define ONBOARDING_LIST_JSON_PATH	"/tmp/onboarding.json"
 #define ONBOARDING_STATUS_PATH	"/tmp/obstatus"
 #define ONBOARDING_VSIE_PATH	"/tmp/obvsie"
+#define GUEST_VSIE_PATH	"/tmp/guest_vsie"
 #define WPS_CHECK_TIME		5
 #define WPS_TIMEOUT		120		//  minutes
 #define WPS_WAIT_TIMEOUT		150		// 3 minutes

@@ -1008,3 +1008,6 @@ width:122px;
   background: url(images/New_ui/icon_indexes.png);
   background-position: -0px -40px; width: 43px; height: 43px;
 }
+.radio_hint{
+    background-color: #E64100;
+}

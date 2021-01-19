@@ -2375,7 +2375,7 @@ ej_wl_get_guestnetwork(int eid, webs_t wp, int argc, char_t **argv)
 		return -1;
 	}
 
-#ifdef RTCONFIG_LYRA_5G_SWAP
+#if defined(RTCONFIG_LYRA_5G_SWAP)
 	unit = swap_5g_band(atoi(unitname));
 #else
 	unit = atoi(unitname);
@@ -4017,7 +4017,12 @@ int validate_apply(webs_t wp, json_object *root) {
 	}
 
 #ifdef RTCONFIG_DSL
-	if(nvram_match("dsltmp_qis_dsl_pvc_set", "1")) {
+#ifdef RTCONFIG_DSL_BCM //new qis
+	if(strstr(action_script, "restart_dslwan_qis"))
+#else
+	if(nvram_match("dsltmp_qis_dsl_pvc_set", "1"))
+#endif
+	{
 		update_dsl_iptv_variables();
 		nvram_modified = 1;
 	}

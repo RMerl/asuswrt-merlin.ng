@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=Liitetilaa ei ole valittu.
 QIS_confirm_recommand_encryp=On vahvasti suositeltavaa asettaa ensin langattoman yhteyden suojausasetuksia. Haluatko jatkaa?
 QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Please plug in the cable to DSL port. System will detect your network setting automatically.
 QIS_detect_desc1=PPPoE/DSL-yhteys havaittu.
 QIS_detect_desc2=Ohjattu asennus havaitsi, että internet-yhteystyyppisi on PPPoE/DSL.
 QIS_detect_desc3=Napsauta "Seuraava" ja anna internet-palveluntarjoajalta (ISP) saamasi tilinimi ja -salasana.

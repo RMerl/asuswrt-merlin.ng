@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=ANNEX mode is not selected.
 QIS_confirm_recommand_encryp=We strongly recommend that you set the wireless security settings first, do you want to continue?
 QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Please plug in the cable to DSL port. System will detect your network setting automatically.
 QIS_detect_desc1=PPPoE/DSL connection is detected.
 QIS_detect_desc2=The Setup Wizard detected that your Internet connection type is PPPoE/DSL.
 QIS_detect_desc3=Click "Next" to enter the account name and password that your Internet Service Provider (ISP) has provided.

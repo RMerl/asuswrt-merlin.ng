@@ -562,8 +562,6 @@ function client_gen_client_component(_dataArray, _node_info){
 				if(aimesh_node_client_upload_icon[nodeClientObj.mac] == undefined) {
 					var clientMac = nodeClientObj.mac.replace(/\:/g, "");
 					userIconBase64 = getUploadIcon(clientMac);
-
-					if(userIconBase64 != "NoIcon")
 						aimesh_node_client_upload_icon[nodeClientObj.mac] = userIconBase64;
 				}
 				else
@@ -1404,6 +1402,7 @@ function get_connect_quality(_node_info){
 		}
 	}
 	else if(_re_path == "128"){
+		_quality_info = _node_info.rssi6g
 		result.type = "wireless";
 		result.type_text = "<#menu5_1#> - 6GHz";
 		if(_re_online == "1"){
@@ -2739,7 +2738,7 @@ function cloud_router_icon_set(_image_url){
 		$(".primary_info_bg").find(".model_icon").css("background-image", "");
 }
 function cloud_router_icon_get(_model_name, _tcode) {
-	if('<% nvram_get("x_Setting"); %>' == '1' && parent.wanConnectStatus && !cloudRouterIconCheckCache[_model_name]) {
+	if(httpApi.nvramGet(["x_Setting"]).x_Setting == '1' && parent.wanConnectStatus && !cloudRouterIconCheckCache[_model_name]) {
 		httpApi.checkCloudModelIcon(
 			_model_name,
 			function(src){
@@ -2812,14 +2811,6 @@ function set_primary_info(_node_info){
 	}
 	else
 		$(".primary_info_bg").find(".fw_version_text_bg").find(".hover_pop_hint_bg").remove();
-
-	if(cloudRouterIconCheckCache[model_name] == undefined)
-		cloudRouterIconCheckCache[model_name] = false;
-
-	if(cloudRouterIconCheckCache[model_name])
-		cloud_router_icon_set(cloudRouterIconCheckCache[model_name]);
-	else
-		cloud_router_icon_get(model_name, tcode);
 
 	var isReNode = (mac != cap_mac) ? true : false;
 	if(isReNode){
@@ -2898,6 +2889,17 @@ function set_primary_info(_node_info){
 		$(".primary_info_bg").find(".custom_select .custom_pure_text").show();
 		$(".primary_info_bg").find(".custom_select #input_location").attr("disabled", true);
 	}
+}
+function update_model_icon(_node_info){
+	var model_name = _node_info.model_name;
+	var tcode = _node_info.tcode;
+	if(cloudRouterIconCheckCache[model_name] == undefined)
+		cloudRouterIconCheckCache[model_name] = false;
+
+	if(cloudRouterIconCheckCache[model_name])
+		cloud_router_icon_set(cloudRouterIconCheckCache[model_name]);
+	else
+		cloud_router_icon_get(model_name, tcode);
 }
 var transform_band_index = function(_bandNum){
 	return ((Math.pow(2,_bandNum)) - 1).toString();
@@ -2994,13 +2996,8 @@ function get_topology_data(){
 	}
 	return treeTopology;
 }
-function change_node(_mac){
-	current_click_mac = _mac;
-	var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
-		return (item.mac == current_click_mac);
-	})[0];
-
-	var isReNode = (_mac != cap_mac) ? true : false;
+function change_node(_node_info){
+	var isReNode = (_node_info.mac != cap_mac) ? true : false;
 	if(isReNode){
 		$("#manage").show();
 		$(".category_bg").css({"width": "33.3%"})
@@ -3010,13 +3007,11 @@ function change_node(_mac){
 		$(".category_bg").css({"width": "50%"})
 	}
 
-	if(specific_node_data != undefined){
-		select_node_capability = httpApi.aimesh_get_node_capability(specific_node_data);
-		set_primary_info(specific_node_data);
+	select_node_capability = httpApi.aimesh_get_node_capability(_node_info);
+	set_primary_info(_node_info);
 		if(!isReNode && (current_click_tab == "manage"))
 			current_click_tab = "client";
 		control_category_block(current_click_tab);
-	}
 }
 function jstree_re_draw_connect_line(){
 	var $jstree_leaves = $('#jstree').find(".jstree-node");
@@ -3078,10 +3073,11 @@ var cap_mac = "";
 var select_node_capability = {};
 var node_not_support_feature = [];
 var all_node_is_eth_backhaul = true;
+var jstree_load_ready = false;
 function initial_AiMesh(){
 	clearInterval(interval_tree_update);
 	httpApi.nvramSet({"action_mode": "firmware_check"});
-	client_get_client_date();
+	aimesh_data.cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
 	var cap_obj = aimesh_data.cfg_clientlist[0];//cap
 	if(cap_obj != undefined){
 		gen_custom_select("Home");
@@ -3228,7 +3224,7 @@ function initial_AiMesh(){
 					}
 				}
 				if(isSupport("amas_eap")) {
-					var amas_eap_bhmode = httpApi.nvramGet(["amas_eap_bhmode"], true).amas_eap_bhmode;
+					var amas_eap_bhmode = httpApi.nvramGet(["amas_eap_bhmode"]).amas_eap_bhmode;
 					if(amas_eap_bhmode != "0" && amas_eap_bhmode != "") {
 						var node_capability = httpApi.aimesh_get_node_capability(specific_node_data);
 						if(!node_capability.ethernet_backhaul_mode) {
@@ -3261,13 +3257,25 @@ function initial_AiMesh(){
 	});
 	$('#jstree').on("select_node.jstree", function (e, data) {
 		var node_mac = data.node.id.replace("topo_", "").replace(/-/g, ':');
-		change_node(node_mac);
+		current_click_mac = node_mac;
+		var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
+			return (item.mac == current_click_mac);
+		})[0];
+		if(specific_node_data != undefined){
+			change_node(specific_node_data);
+			if(jstree_load_ready)
+				update_model_icon(specific_node_data);
+		}
 	});
 	$('#jstree').on("ready.jstree", function(e, data) {
-		$('#jstree').jstree('select_node', "topo_" + current_click_mac.replace(/:/g, '-'));
 		$("#jstree").jstree("open_all");
 		jstree_re_draw_connect_line();
 		aimesh_introduction_control();
+		$('#jstree').jstree('select_node', "topo_" + current_click_mac.replace(/:/g, '-'));
+		jstree_load_ready = true;
+		setTimeout(function() {
+			jstree_refresh();
+		}, 150);
 	});
 
 	$(".connect_line_info_icon").unbind("click");

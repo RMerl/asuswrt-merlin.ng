@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=ไม่ได้เลือกโหมดผนวก
 QIS_confirm_recommand_encryp=แรกสุด เราแนะนำให้คุณตั้งค่าตั้งค่าระบบป้องกันไร้สาย คุณต้องการทำต่อหรือไม่?
 QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Please plug in the cable to DSL port. System will detect your network setting automatically.
 QIS_detect_desc1=ตรวจพบการเชื่อมต่อ PPPoE/DSL
 QIS_detect_desc2=ตัวช่วยสร้างการตั้งค่า ตรวจพบว่าชนิดการเชื่อมต่ออินเทอร์เน็ตของคุณคือ PPPoE/DSL
 QIS_detect_desc3=คลิก "ถัดไป" เพื่อป้อนชื่อบัญชีและรหัสผ่านที่ผู้ให้บริการอินเทอร์เน็ต (ISP) ของคุณให้มา

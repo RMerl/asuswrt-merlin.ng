@@ -523,7 +523,7 @@ int aqr_phy_speed(unsigned int phy)
 			ret = 5000;
 			break;
 		default:
-			dbg("%s: AQR PHY 0x%x: unknown speed 0x%x\n", __func__, speed);
+			dbg("%s: AQR PHY 0x%x: unknown speed 0x%x\n", __func__, phy, speed);
 			break;
 	}
 

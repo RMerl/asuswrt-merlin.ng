@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=Modul anexă nu este selectat.
 QIS_confirm_recommand_encryp=Vă recomandăm ferm să setaţi mai întâi de setările de securitate wireless. Doriţi să continuaţi?
 QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Please plug in the cable to DSL port. System will detect your network setting automatically.
 QIS_detect_desc1=Este detectată o conexiune PPPoE/DSL.
 QIS_detect_desc2=Expertul de configurare a detectat faptul că aveţi o conexiune la Internet de tip PPPoE/DSL.
 QIS_detect_desc3=Faceţi clic pe "Următor" pentru a introduce numele de cont şi parola furnizate ISP-ul dvs.

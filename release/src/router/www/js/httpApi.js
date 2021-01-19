@@ -1253,6 +1253,14 @@ var httpApi ={
 					"manual_force_roaming" : {"bit" : 0}
 				}
 			},
+			"fronthaul_ap_ctl" : {
+				"value" : 18,
+				"def" : {
+					"fronthaul_ap_option_off" : {"bit" : 0},
+					"fronthaul_ap_option_auto" : {"bit" : 1},
+					"fronthaul_ap_option_on" : {"bit" : 2}
+				}
+			},
 			"sta_binding_ap" : {
 				"value" : 19,
 				"def" : {

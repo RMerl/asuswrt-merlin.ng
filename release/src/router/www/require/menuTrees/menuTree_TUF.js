@@ -43,6 +43,14 @@ define(function(){
 				]
 			},
 			{
+				menuName: "AiMesh",
+				index: "menu_AiMesh", 
+				tab: [
+					{url: "AiMesh.asp", tabName: "AiMesh"},
+					{url: "NULL", tabName: "__INHERIT__"}
+				]
+			},
+			{
 				menuName: "<#Guest_Network#>",
 				index: "menu_GuestNetwork",
 				tab: [

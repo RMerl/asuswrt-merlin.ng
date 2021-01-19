@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=Není vybrán režim dodatku.
 QIS_confirm_recommand_encryp=Důrazně doporučujeme nejdříve nastavit nastavení bezdrátového zabezpečení, chcete pokračovat?
 QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Please plug in the cable to DSL port. System will detect your network setting automatically.
 QIS_detect_desc1=Bylo rozpoznáno připojení PPPoE/DSL.
 QIS_detect_desc2=Průvodce konfigurací rozpoznal typ vašeho připojení k Internetu PPPoE/DSL.
 QIS_detect_desc3=Klepněte na "Další" a zadejte název účtu a heslo, které vám poskytl váš poskytovatel služeb Internetu (ISP).

@@ -137,6 +137,7 @@ static void update_xdsl_status()
 	nvram_set("dsllog_opmode", info.mod);
 	nvram_set("dsllog_adsltype", info.type);
 	nvram_set("dsllog_vdslcurrentprofile", info.profile);
+	nvram_set("dsllog_vectoringstate", info.vect);
 	nvram_set("dsllog_farendvendorid", get_vendor_name(info.vid));
 	nvram_set("dsllog_xdslmode", info.is_vdsl2_gfast?"VDSL":"ADSL");
 	nvram_set("dsllog_tcmdown", info.tcm_down?"On":"Off");
@@ -160,6 +161,8 @@ static void update_xdsl_status()
 	nvram_set_int("dsllog_esup", (int)info.es_up);
 	nvram_set_int("dsllog_sesdown", (int)info.ses_down);
 	nvram_set_int("dsllog_sesup", (int)info.ses_up);
+	nvram_set("dsllog_ginpdown", info.ginp_down?"On":"Off");
+	nvram_set("dsllog_ginpup", info.ginp_up?"On":"Off");
 	nvram_set("dsllog_inpdown", info.inp_down);
 	nvram_set("dsllog_inpup", info.inp_up);
 	nvram_set("dsllog_inpreindown", info.inp_rein_down);

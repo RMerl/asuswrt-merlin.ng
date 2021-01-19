@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=Aucune ANNEXe n'a été sélectionnée
 QIS_confirm_recommand_encryp=Il est fortement recommandé de d'abord définir les paramètres de sécurité sans fil. Souhaitez-vous continuer?
 QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Please plug in the cable to DSL port. System will detect your network setting automatically.
 QIS_detect_desc1=Connexion PPPoE/DSL détectée.
 QIS_detect_desc2=L'Assistant de configuration a détecté votre connexion Internet comme étant de type PPPoE/DSL.
 QIS_detect_desc3=Cliquez sur Suivant pour entrer le nom d'utilisateur et le mot de passe fournis par votre FAI (Fournisseur d'accès à Internet).

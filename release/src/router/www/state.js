@@ -798,7 +798,26 @@ if(lyra_hide_support){
 }
 
 var wifison_ready = '<% nvram_get("wifison_ready"); %>';
+var radioHintIgnored = false;
+(function(){
+	var array = document.cookie.split(';');
+	
+	for(var i=0; i<array.length; i++){
+		var _temp = array[i].trim();
+		if(_temp == 'radioAllDisableHint=ignore'){
+			radioHintIgnored = true;
+		}
+	}
+})();
+var radio_all_disabled = (function(){
+	 if((wlan0_radio_flag == '' || wlan0_radio_flag == '0')
+	 && (wlan1_radio_flag == '' || wlan1_radio_flag == '0')
+	 && (wlan2_radio_flag == '' || wlan2_radio_flag == '0')){
+		return true;
+	 }
 
+	 return false;
+})();
 var banner_code, menu_code="", menu1_code="", menu2_code="", tab_code="", footer_code;
 function show_banner(L3){// L3 = The third Level of Menu
 	var banner_code = "";
@@ -955,6 +974,14 @@ function show_banner(L3){// L3 = The third Level of Menu
 	banner_code +='<tr>\n';
 	banner_code +='<td class="minup_bg" height="179" valign="top"><table width="764" border="0" cellpadding="0" cellspacing="0" height="35px" style="margin-left:230px;">\n';
 	banner_code +='<tbody><tr>\n';
+
+	if(radio_all_disabled && !radioHintIgnored){
+		banner_code += '<div style="padding: 2px 8px;margin: 0 0 2px 230px;width:735px;display:flex;justify-content:space-between;" class="radio_hint">';
+		banner_code += '<div style="font-size: 14px;">Your Wi-Fi radio is currently disabled</div>';
+		banner_code += '<div style="background-image: url(\'images/New_ui/arrow_right.svg\');width:16px;height:16px;background-size: 60%;background-repeat:no-repeat;cursor: pointer" onclick="radio_hint();"></div>';
+		banner_code += '</div>';
+	}
+	
  	if(rog_support && current_url.indexOf("GameDashboard") != -1){
  		banner_code +='<td valign="center" class="titledown" width="auto" style="visibility: hidden">';
  	}
@@ -1810,15 +1837,31 @@ function browser_compatibility(){
 	try{
 		// if jQuery is available
 		var $container = $("#tabMenu").parent();
+		if(radio_all_disabled){
+			$('<div>')
+				.css({"margin-top":"8px"})
+				.append($container.children())
+				.appendTo($container);
+
+			$("#tabMenu").css({"margin-top":"-120px"})
+		}
+		else{
 		$('<div>')
 			.css({"margin-top":"-140px"})
 			.append($container.children())
 			.appendTo($container)
 	}
+	}
 	catch(e){
 		var container = document.getElementById('tabMenu').parentNode;
 		var newDiv = document.createElement('div');	
+		if(radio_all_disabled){
+			newDiv.style.marginTop = "8px";
+		}
+		else{
 		newDiv.style.marginTop = "-140px";
+		}
+		
 		for(var i=0; i<container.children.length; i++){
 			newDiv.appendChild(container.children[i].cloneNode(true));
 		}
@@ -4060,4 +4103,77 @@ function check_ddns_status(){
 		ddns_flag = false;
 
 	return ddns_flag;
+}
+
+
+function radio_hint(){
+	
+
+	$("#Loading").css({"visibility": "visible"});
+	$("#loadingBlock").css({"visibility": "hidden"});
+	var obj = $('.banner1');
+
+	var code = '<div class="eula_panel_container border-container" style="display:block;position:absolute;width:450px;height:280px;background-color: rgba(0,0,0,.9);padding: 24px 36px;font-family:Roboto;">';
+	code += '<div style="font-size: 16px;font-weight: bold;margin: 12px 0;">Your Wi-Fi radio is currently disabled</div>';
+	code += '<div style="margin: 24px 0;">Your device and AiMesh system might have issue when connecting wirelessly.</div>';
+	code += '<div style="margin: 24px 0;">You can enable Wi-Fi radio by pressing Turn On button</div>';
+	code += '<div style="margin: 32px 0;"><input id="radio_hint_checkbox" type="checkbox">Don\'t remind me again</div>';
+	
+	code += '<div style="display:flex;justify-content:flex-end;margin:28px 0;">';
+	code += '<div id="cancelBtn" class="button-container button-container-sm" style="margin: 0 12px;" onclick="radio_disagree();"><div class="button-icon icon-cancel"></div><div class="button-text">Cancel</div></div>';
+	code += '<div id="applyBtn" class="button-container button-container-sm" style="margin: 0 12px;"  onclick="radio_agree();"><div class="button-icon button-icon-check"></div><div class="button-text">Turn On</div></div>';
+	code += '</div>';
+	code += '';
+	code += '';
+	code += '';
+	code += '';
+	code += '</div>';
+	code += '';
+	code += '';
+	code += '';
+	code += '';
+	code += '';
+	obj.html(code);
+}
+
+function radio_disagree(){
+	if(document.getElementById('radio_hint_checkbox').checked){
+		radio_set_cookie();
+	}
+
+	$('.banner1').html('');
+	location.href = location.href;
+}
+
+function radio_set_cookie(){
+	var cookie = document.cookie;
+	var array = cookie.split(';');
+	document.cookie = 'radioAllDisableHint=ignore';
+}
+
+function radio_agree(){
+	$("#Loading").css({"visibility": "hidden"});
+	$("#loadingBlock").css({"visibility": ""});
+	
+	if(document.getElementById('radio_hint_checkbox').checked){
+		radio_set_cookie();
+	}
+
+	
+	var postObj = new Object();
+	var rc_time = 10;
+	showLoading(rc_time);
+	$('.banner1').html('');
+	postObj = {
+		'action_mode': 'apply',
+		'rc_service': 'restart_wireless',
+		'wl0_radio': '1',
+		'wl1_radio': '1',
+		'wl2_radio': '1'
+	}
+	httpApi.nvramSet(postObj, function(){		
+		setTimeout(function(){
+			location.href = location.href;
+		}, rc_time*1000);
+	});
 }

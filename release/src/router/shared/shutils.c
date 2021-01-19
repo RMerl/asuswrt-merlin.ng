@@ -119,8 +119,11 @@ void dbgprintf (const char * format, ...)
 			va_end(args);
 			fclose(f);
 		}
+		else
+		{
 		close(nfd);
 	}
+}
 }
 
 void dbg(const char * format, ...)
@@ -136,6 +139,7 @@ void dbg(const char * format, ...)
 		vfprintf(f, format, args);
 		va_end(args);
 		fclose(f);
+		nfd = -1;
 	}
 	else
 	{

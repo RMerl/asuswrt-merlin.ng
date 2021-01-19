@@ -107,7 +107,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl0.1_channel", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 #else
-#if !defined (RTAC3200) && !defined (RTAC5300) && !defined (GTAC5300) && !defined(MAPAC2200) && !defined(GTAX11000) && !defined(RTAX92U) && !defined(RTAX95Q) && !defined(GTAXE11000)
+#if !defined (RTAC3200) && !defined (RTAC5300) && !defined (GTAC5300) && !defined(MAPAC2200) && !defined(GTAX11000) && !defined(RTAX92U) && !defined(RTAX95Q) && !defined(RTAXE95Q) && !defined(GTAXE11000)
 	{ "wl1_ssid", SSID_PREFIX "_5G", CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #else
 	{ "wl1_ssid", SSID_PREFIX "_5G-1", CKN_STR32, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -245,7 +245,7 @@ struct nvram_tuple router_defaults[] = {
 #ifdef BCM_BSD
 	{ "wl0_chanspec", "0", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wl1_chanspec", "0", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAC5300) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(GTAXE11000)
+#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAC5300) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAXE95Q) || defined(GTAXE11000)
 	{ "wl2_chanspec", "0", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 #endif
@@ -328,12 +328,12 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl_bw_160", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* bandwidth 160MHz support */
 #ifdef BCM_BSD
 	{ "wl1_bw_160", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAC5300) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(GTAXE11000)
-#if defined(RTAX95Q) || defined(GTAXE11000)
+#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAC5300) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAXE95Q) || defined(GTAXE11000)
+#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(GTAXE11000)
 	{ "wl2_bw_160", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #else
 	{ "wl2_bw_160", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#endif	/* RTAX95Q */
+#endif	/* RTAX95Q, RTAXE95Q */
 #endif
 #endif
 #endif
@@ -374,7 +374,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl1_nband", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },    /* 5 GHz */
 #if defined (RTAC3200) || defined (RTAC5300) || defined (GTAC5300) || defined (GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RPAC92)
 	{ "wl2_nband", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#elif defined(GTAXE11000)
+#elif defined(RTAXE95Q) || defined(GTAXE11000)
 	{ "wl2_nband", "4", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* 6 GHz */
 #endif
 
@@ -563,7 +563,7 @@ struct nvram_tuple router_defaults[] = {
 #ifdef BCM_BSD
 	{ "wl0_bw", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },        /* 0/1/2/3 auto/20/40/80MHz */
 	{ "wl1_bw", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },        /* 0/1/2/3 auto/20/40/80MHz */
-#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAC5300) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(GTAXE11000)
+#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAC5300) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAXE95Q) || defined(GTAXE11000)
 	{ "wl2_bw", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },        /* 0/1/2/3 auto/20/40/80MHz */
 #endif
 #endif
@@ -961,7 +961,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "dpsta_ifnames", "", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "dpsta_policy", "4", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "dpsta_lan_uif", "3", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#if defined (RTAC3200) || defined (RTAC5300) || defined (GTAC5300) || defined (RTAX92U) || defined (GTAX11000) || defined(RTAX95Q) || defined(GTAXE11000)
+#if defined (RTAC3200) || defined (RTAC5300) || defined (GTAC5300) || defined (RTAX92U) || defined (GTAX11000) || defined(RTAX95Q) || defined(RTAXE95Q) || defined(GTAXE11000)
 	{ "dpsta_band", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #else
 	{ "dpsta_band", "-1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -1139,7 +1139,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "bsd_ifnames", "eth2 eth1 eth3", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #elif defined(RTAX92U)
 	{ "bsd_ifnames", "eth5 eth6 eth7", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#elif defined(RTAX95Q)
+#elif defined(RTAX95Q) || defined(RTAXE95Q)
 	{ "bsd_ifnames", "eth4 eth5 eth6", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #else
 	{ "bsd_ifnames", "eth1 eth2 eth3", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -1162,7 +1162,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl0_bsd_if_select_policy", "eth7 eth6", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wl1_bsd_if_select_policy", "eth5 eth7", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wl2_bsd_if_select_policy", "eth5 eth6", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#elif defined(RTAX95Q)
+#elif defined(RTAX95Q) || defined(RTAXE95Q)
 	{ "wl0_bsd_if_select_policy", "eth6 eth5", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wl1_bsd_if_select_policy", "eth4 eth6", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wl2_bsd_if_select_policy", "eth4 eth5", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -1181,7 +1181,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "bsd_ifnames_x", "eth2 eth3", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #elif defined(RTAX92U)
 	{ "bsd_ifnames_x", "eth6 eth7", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#elif defined(RTAX95Q)
+#elif defined(RTAX95Q) || defined(RTAXE95Q)
 	{ "bsd_ifnames_x", "eth5 eth6", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #elif defined(GTAC5300) || defined(GTAX11000) || defined(GTAXE11000)
 	{ "bsd_ifnames_x", "eth7 eth8", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -1200,7 +1200,7 @@ struct nvram_tuple router_defaults[] = {
 #elif defined(RTAX92U)
 	{ "wl1_bsd_if_select_policy_x", "eth7", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wl2_bsd_if_select_policy_x", "eth6", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#elif defined(RTAX95Q)
+#elif defined(RTAX95Q) || defined(RTAXE95Q)
 	{ "wl1_bsd_if_select_policy_x", "eth6", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wl2_bsd_if_select_policy_x", "eth5", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #elif defined(GTAC5300) || defined(GTAX11000) || defined(GTAXE11000)
@@ -1336,7 +1336,7 @@ struct nvram_tuple router_defaults[] = {
 #else
 	{ "wl0_he_features", "3", CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },      /* HE features */
 	{ "wl1_he_features", "3", CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },      /* HE features */
-#if defined(GTAX11000) || defined(RTAX95Q) || defined(GTAXE11000)
+#if defined(GTAX11000) || defined(RTAX95Q) ||  defined(RTAXE95Q) || defined(GTAXE11000)
 	{ "wl2_he_features", "3", CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },      /* HE features */
 #endif
 #endif
@@ -3811,6 +3811,9 @@ struct nvram_tuple router_defaults[] = {
 	{ "ledg_rgb7", "0,0,128,0,0,128,0,0,128,0,0,128", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 #endif
+#if defined(RTAC86U) || defined(GTAC2900)
+	{ "cpuwait", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif
 #ifdef RTCONFIG_TCPLUGIN
 	{ "tencent_qmacc_enable"    , "0", CKN_STR1  , CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "tencent_eula_check"      , "0", CKN_STR1  , CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -4643,6 +4646,9 @@ struct nvram_tuple router_state_defaults[] = {
 	{ "dsllog_sysvmid", "00000000000000000000000000000000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "dsllog_modemvid", "26005443434E5A01", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
+#ifdef RTCONFIG_DSL_BCM
+	{ "dsllog_vectoringstate", "", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif
 #endif
 #endif
 
@@ -5039,7 +5045,7 @@ struct nvram_tuple bcm4360ac_defaults[] = {
 	{ "2:ledbh10", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ 0, 0, 0, 0, 0, 0, 0 }
 };
-#elif defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(GTAC5300) || defined(RTAX88U) || defined(RTAC86U) || defined(GTAC2900) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U) || defined(GTAXE11000) || defined(RTAC68U_V4)
+#elif defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(GTAC5300) || defined(RTAX88U) || defined(RTAC86U) || defined(GTAC2900) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U) || defined(GTAXE11000) || defined(RTAC68U_V4)
 struct nvram_tuple bcm4360ac_defaults[] = {
 	{ 0, 0, 0, 0, 0, 0, 0 }
 };

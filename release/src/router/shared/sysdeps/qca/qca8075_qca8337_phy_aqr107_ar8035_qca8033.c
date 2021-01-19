@@ -840,7 +840,7 @@ static int get_qca8075_8337_8035_8033_aqr107_phy_linkStatus(unsigned int mask, u
 		break;
 	default:
 		speed=0;
-		_dprintf("%s: invalid speed!\n", __func__);
+		_dprintf("%s: mask %8x t %8x invalid speed!\n", __func__, mask, t);
 	}
 	return speed;
 }
@@ -1010,8 +1010,17 @@ static void get_qca8075_8337_8035_8033_aqr107_WAN_Speed(unsigned int *speed)
 	case 0x2:
 		*speed = 1000;
 		break;
+	case 0x3:
+		*speed = 10000;
+		break;
+	case 0x4:
+		*speed = 2500;
+		break;
+	case 0x5:
+		*speed = 5000;
+		break;
 	default:
-		_dprintf("%s: invalid speed!\n", __func__);
+		_dprintf("%s: invalid speed! (%d)\n", __func__, v);
 	}
 }
 
@@ -1771,6 +1780,7 @@ int __get_bonding_port_status(enum bs_port_id bs_port)
 	if (vport == WAN10GR_PORT && !is_aqr_phy_exist())
 		return 0;
 
+	get_qca8337_port_definition();
 	phy = vport_to_phy_addr[vport];
 	if (phy < 0) {
 		dbg("%s: can't get PHY address of vport %d\n", __func__, vport);

@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=Vedleggsfunksjonen er ikke aktivert.
 QIS_confirm_recommand_encryp=Vi anbefaler sterkt at du setter trådløse sikkerhetsinnstillingene først. Ønsker du å fortsette?
 QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Please plug in the cable to DSL port. System will detect your network setting automatically.
 QIS_detect_desc1=PPPoE/DSL-tilkobling er registrert.
 QIS_detect_desc2=Oppsettsveiviseren registrerte at Internett-tilkoblingstypen din er PPPoE/DSL.
 QIS_detect_desc3=Klikk på "Neste" for å legge inn kontonavn og passord som Internettleverandøren din har oppgitt.

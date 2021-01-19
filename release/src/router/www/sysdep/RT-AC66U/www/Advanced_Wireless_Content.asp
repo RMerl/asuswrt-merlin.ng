@@ -493,7 +493,7 @@ function genBWTable(_unit){
 				based_modelid == "RT-AC66U" || 
 				based_modelid == "RT-AC3200" || 
 				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX56_XD4" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q" || based_modelid == "RT-AX56_XD4" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
 				based_modelid == "RT-AC53U") && document.form.wl_nmode_x.value == 1){		//N only
 				bws = [0, 1, 2];
 				bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];
@@ -1222,7 +1222,7 @@ function enableSmartCon(val){
 		if(wl_unit != 0){
 			if(wl_info[wl_unit].bw_160_support){
 				$("#enable_160_field").show();
-				if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U' || based_modelid == 'RT-AX95Q' || based_modelid == 'GT-AXE11000') && wl2.channel_160m == '' && wl_unit == '2'){
+				if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U' || based_modelid == 'RT-AX95Q' || based_modelid == 'RT-AXE95Q' || based_modelid == 'GT-AXE11000') && wl2.channel_160m == '' && wl_unit == '2'){
 					$("#enable_160_field").hide();
 				}
 			}
@@ -1269,7 +1269,7 @@ function enableSmartCon(val){
 		document.getElementById("smart_connect_field").style.display = "";
 		document.getElementById("smartcon_rule_link").style.display = "table-cell";
 		$("#enable_160_field").hide();
-		if ((wl_unit == '0' && val == '2') || based_modelid == "RT-AC3200" || ((based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q") && country != "EU" && wl_unit == "1")) {
+		if ((wl_unit == '0' && val == '2') || based_modelid == "RT-AC3200" || ((based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q") && country != "EU" && wl_unit == "1")) {
 			$("#dfs_checkbox").hide();
 		}
 		else {
@@ -1286,7 +1286,7 @@ function enableSmartCon(val){
 		
 		if(dwb_info.mode && wl_unit == dwb_info.band && wl_unit != 0 && bw_160_support) {
 			$("#enable_160_field").show();
-			if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U' || based_modelid == 'RT-AX95Q' || based_modelid == 'GT-AXE11000') && wl2.channel_160m == '' && wl_unit == '2'){
+			if((based_modelid == 'GT-AX11000' || based_modelid == 'RT-AX92U' || based_modelid == 'RT-AX95Q' || based_modelid == 'RT-AXE95Q' || based_modelid == 'GT-AXE11000') && wl2.channel_160m == '' && wl_unit == '2'){
 				$("#enable_160_field").hide();
 			}
 		}
@@ -2104,7 +2104,7 @@ function separateChannelHandler(unit, channel){
 }
 function controlHideSSIDHint() {
 	$("#dwb_band_hide_hint").hide();
-	if(dwb_info.mode && (dwb_info.band == wl_unit) && document.form.smart_connect_x.value == "1" && (based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q"))
+	if(dwb_info.mode && (dwb_info.band == wl_unit) && document.form.smart_connect_x.value == "1" && (based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q"))
 		$("#dwb_band_hide_hint").show();
 }
 function controlAXOnlyHint() {

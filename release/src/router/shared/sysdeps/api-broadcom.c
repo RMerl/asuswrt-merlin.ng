@@ -242,7 +242,7 @@ int bcm_cled_ctrl(int rgb, int cled_mode)
 		return 0;
 	}
 #endif
-#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX82_XD6) || defined(RPAX56)
+#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX82_XD6) || defined(RPAX56)
 	state_changed = _bcm_cled_ctrl(rgb, cled_mode);
 	if(state_changed == 1){
 #ifdef RTAX82_XD6
@@ -343,7 +343,7 @@ uint32_t set_gpio(uint32_t gpio, uint32_t value)
 		return -1;
 	}
 
-#if defined(RTAX95Q)
+#if defined(RTAX95Q) || defined(RTAXE95Q)
 	write(ledfd, active_low?(!value?"0":"255"):(!value?"255":"0"), active_low?(!value?1:3):(!value?3:1));
 #else
 	write(ledfd, active_low?(!value?"255":"0"):(!value?"0":"255"), active_low?(!value?3:1):(!value?1:3));
@@ -556,7 +556,7 @@ int phy_ioctl(int fd, int write, int phy, int reg, uint32_t *value)
 	struct ifreq ifr;
 	int ret, vecarg[2];
 
-#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
 	return 1;
 #endif
 	memset(&ifr, 0, sizeof(ifr));
@@ -580,7 +580,7 @@ static inline int ethswctl_init(struct ifreq *p_ifr)
 {
     int skfd;
 
-#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
 	return 1;
 #endif
     /* Open a basic socket */
@@ -2001,7 +2001,7 @@ uint32_t set_ex53134_ctrl(uint32_t portmask, int ctrl)
 	int i=0;
 	uint32_t value;
 
-#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4)
+#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4)
 	return 1;
 #endif
 	for (i = 0; i < 4 && (portmask >> i); i++) {
@@ -2023,7 +2023,7 @@ uint32_t set_phy_ctrl(uint32_t portmask, int ctrl)
 	int fd, i, model;
 	uint32_t value;
 
-#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
 	return 1;
 #endif
 	model = get_switch();
@@ -2520,7 +2520,7 @@ int get_bonding_port_status(int port)
 	int ports[lan_ports+1];
 	/* 7 3 2 1 0	W0 L1 L2 L3 L4 */
 	ports[0]=7; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
-#elif defined(RTAX95Q)
+#elif defined(RTAX95Q) || defined(RTAXE95Q)
 	int lan_ports=4;
 	int ports[lan_ports+1];
 	/* 7 3 2 1 0	W0 L1 L2 L3 L4 */

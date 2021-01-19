@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=未選擇 ANNEX 模式。
 QIS_confirm_recommand_encryp=強烈建議您首先設定無線網路安全設定，是否繼續？
 QIS_desc_1=請將網路線接上 WAN 埠。系統將會自動偵測你的網路設定。
 QIS_desc_2=直接進行離線設定或設定進階功能
+QIS_desc_3=請將網路線接上 DSL 埠。系統將會自動偵測你的網路設定。
 QIS_detect_desc1=偵測到 PPPoE/DSL 連線。
 QIS_detect_desc2=設定精靈偵測到您的網路連線類型為 PPPoE/DSL。
 QIS_detect_desc3=點選「下一步」輸入您的網際網路服務供應商（ISP）提供的帳戶名稱與密碼。

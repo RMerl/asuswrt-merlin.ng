@@ -428,7 +428,7 @@ function enableGamePriority(){
 	
 		if(document.getElementById("game_priority_enable").checked){
 			document.form.rog_enable.value = '1';
-			document.form.qos_enable.value = '0';
+//			document.form.qos_enable.value = '0';
 			document.form.qos_type.value = '0';
 			document.form.action_script.value = 'reboot';
 

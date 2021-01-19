@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=ANNEX-Modus ist nicht ausgewählt.
 QIS_confirm_recommand_encryp=Wir empfehlen Ihnen dringend, dass Sie die drahtlosen Sicherheitseinstellungen zuerst. Wollen Sie fortfahren?
 QIS_desc_1=Schließen Sie das Netzwerkkabel an den WAN-Port an. Das System erkennt Ihre Netzwerkeinstellungen automatisch.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Schließen Sie das Netzwerkkabel an den DSL-Port an. Das System erkennt Ihre Netzwerkeinstellungen automatisch.
 QIS_detect_desc1=PPPoE/DSL-Verbindung erkannt.
 QIS_detect_desc2=Setup-Assistent hat erkannt, dass Sie über PPPoE/DSL verbunden sind.
 QIS_detect_desc3=Klicken Sie auf "Weiter", um den von Ihrem Internetdienstanbieter (ISP) bereitgestellten Benutzernamen sowie das Kennwort einzugeben.

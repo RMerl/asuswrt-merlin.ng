@@ -700,10 +700,10 @@ char *fix_fw_name(char *orig_fw_name)
 static inline char *fix_fw_name(char *orig_fw_name) { return orig_fw_name; }
 #endif
 
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
 /* download firmware */
 #ifndef FIRMWARE_DIR
-#if defined(RTCONFIG_QCA) || defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTCONFIG_QCA) || defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
 #define FIRMWARE_DIR	"/lib/firmware"
 #else
 #define FIRMWARE_DIR	"/tmp"
@@ -1056,7 +1056,7 @@ static int hotplug_main(int argc, char *argv[])
 			return coma_uevent();
 #endif /* LINUX_2_6_36 */
 #endif
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
 		else if(!strcmp(argv[1], "firmware")) {
 			hotplug_firmware();
 		}

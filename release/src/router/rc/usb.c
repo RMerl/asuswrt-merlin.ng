@@ -747,14 +747,7 @@ void start_usb(int mode)
 #endif
 			modprobe(SD_MOD);
 			modprobe(SG_MOD);
-#if defined(RTCONFIG_HND_ROUTER_AX)
-			static char storage_quirks[] = "0bc2:231a:u";
-
-			snprintf(param, sizeof(param), "quirks=%s", storage_quirks);
-			eval("insmod", USBSTORAGE_MOD, param);
-#else
 			modprobe(USBSTORAGE_MOD);
-#endif
 			MODPROBE__UAS;
 
 			if (nvram_get_int("usb_fs_ext3")) {
@@ -3450,11 +3443,8 @@ start_samba(void)
 
 #if defined(SMP) && !defined(HND_ROUTER)
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710) && !defined(DSL_AX82U)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
 	taskset_ret = -1;
-#elif defined(DSL_AX82U)
-	char *smbd_argv[] = { "/usr/sbin/smbd", "-D", "-s", "/etc/smb.conf", NULL };
-	taskset_ret = _cpu_mask_eval(smbd_argv, NULL, 0, NULL, 7);
 #else
 	if(!nvram_match("stop_taskset", "1")){
 		if(cpu_num > 1)

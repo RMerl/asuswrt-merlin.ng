@@ -15,7 +15,7 @@ Transmission: curl-7.21.7 libevent-2.0.21 Transmission/Makefile
 
 Transmission-install: Transmission
 	install -D $</daemon/transmission-daemon $(INSTALLDIR)/$</usr/sbin/transmission-daemon
-	install -D $</daemon/transmission-remote $(INSTALLDIR)/$</usr/sbin/transmission-remote
+	install -D $</utils/transmission-remote $(INSTALLDIR)/$</usr/sbin/transmission-remote
 	$(STRIP) $(INSTALLDIR)/$</usr/sbin/*
 
 Transmission-clean:

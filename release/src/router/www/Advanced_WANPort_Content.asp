@@ -174,7 +174,7 @@ function initial(){
 		document.form.wans_lanport1.remove(2);
 		document.form.wans_lanport2.remove(3);
 		document.form.wans_lanport2.remove(2);
-	}else if(based_modelid == "RT-AC95U" || based_modelid == "RT-AX95Q"){
+	}else if(based_modelid == "RT-AC95U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q"){
 		document.form.wans_lanport1.remove(3);
 		document.form.wans_lanport2.remove(3);
 	}

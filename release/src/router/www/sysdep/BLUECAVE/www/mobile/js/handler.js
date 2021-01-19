@@ -826,7 +826,14 @@ apply.wireless = function(){
 
 		qisPostData.wl0_ssid = $("#wireless_ssid_0").val();
 		qisPostData.wl0_wpa_psk = $("#wireless_key_0").val();
+		if(isSupport('wifi6e') && qisPostData.smart_connect_x == '1'){
+			qisPostData.wl0_auth_mode_x = "psk2sae";
+			systemVariable['wl0_mfp'] = '1';
+		}
+		else{
 		qisPostData.wl0_auth_mode_x = "psk2";
+		}
+
 		qisPostData.wl0_crypto = "aes";
 	}
 
@@ -835,7 +842,14 @@ apply.wireless = function(){
 
 		qisPostData.wl1_ssid = ($("#wireless_ssid_1").length) ? $("#wireless_ssid_1").val() : qisPostData.wl0_ssid;
 		qisPostData.wl1_wpa_psk = ($("#wireless_key_1").length) ? $("#wireless_key_1").val() : qisPostData.wl0_wpa_psk;
+		if(isSupport('wifi6e') && qisPostData.smart_connect_x == '1'){
+			qisPostData.wl1_auth_mode_x = "psk2sae";
+			systemVariable['wl1_mfp'] = '1';
+		}
+		else{
 		qisPostData.wl1_auth_mode_x = "psk2";
+		}
+
 		qisPostData.wl1_crypto = "aes";
 	}
 
@@ -941,7 +955,12 @@ apply.submitQIS = function(){
 		$(".btn_wireless_apply").html("<#CTL_apply#>");
 		$(".btn_login_apply").html("<#CTL_apply#>");
 		$("#wan_pppoe_passwd").showTextHint("<#QKSet_Internet_Setup_fail_reason2#>");
+		if(qisPostData.dsl_unit=="0" || qisPostData.dsl_unit=="8"){
+			goTo.loadPage("ppp_cfg_tmp_page", true);
+		}
+		else{
 		goTo.loadPage("pppoe_setting", true);
+	}
 	}
 	else if(linkInternet && isSupport("fupgrade")){
 		var errCount = 0;
@@ -1582,6 +1601,7 @@ postDataModel.remove(wirelessObj.wl0);
 postDataModel.remove(wirelessObj.wl1);
 postDataModel.remove(wirelessObj.wl2);
 postDataModel.remove(smartConnectObj);
+postDataModel.remove(fronthaulNetworkObj);
 
 if(isSupport("dsl")){
 
@@ -2916,6 +2936,10 @@ goTo.Wireless = function(){
 			}
 		}
 		qisPostData.smart_connect_x = $("#wireless_checkbox").prop("checked") ? "0" : "1";
+		if(isSupport('wifi6e') && qisPostData.smart_connect_x == '1'){
+			$('#wifi6e_legacy_hint').show();
+		}
+		setupFronthaulNetwork(qisPostData.smart_connect_x);
 	}
 	else{
 		$("#wireless_sync_checkbox").enableCheckBox((isSupport("dualband") || isSupport("triband") || isSupport('5G')));
@@ -2932,12 +2956,20 @@ goTo.Wireless = function(){
 			if(curStatus){
 				__wlArray = getAllWlArray()
 				qisPostData.smart_connect_x = "0";
+				setupFronthaulNetwork(qisPostData.smart_connect_x);
 				$("#wireless_sync_checkbox").enableCheckBox(true);
+				if(isSupport('wifi6e')){
+					$('#wifi6e_legacy_hint').hide();
+				}
 			}
 			else{
 				__wlArray = [{"title":"", "ifname":"0"}];
 				qisPostData.smart_connect_x = "1";
+				setupFronthaulNetwork(qisPostData.smart_connect_x);
 				$("#wireless_sync_checkbox").enableCheckBox(false);
+				if(isSupport('wifi6e')){
+					$('#wifi6e_legacy_hint').show();
+				}
 			}
 
 			genWirelessInputField(__wlArray);
@@ -3257,6 +3289,10 @@ goTo.Finish = function(){
 		}, 8000);
 	}
 
+	if(isSupport('wifi6e') && qisPostData.smart_connect_x == '1'){
+		$('#wifi6e_legacy_hint_summary').show();
+	}
+	
 	goTo.loadPage("summary_page", false);
 };
 
@@ -3395,8 +3431,10 @@ goTo.NoWan = function(){
 			if(!isPage("noWan_page")) return false;
 
 			if(isSupport("dsl") && $("#noWanDsl").is(":visible")){
+
 				$("#noWanDsl").fadeOut(500);	
-				setTimeout(function(){$("#noWanEth").fadeIn(500);}, 500);
+				//setTimeout(function(){$("#noWanEth").fadeIn(500);}, 500);
+				setTimeout(function(){$("#noWanDsl").fadeIn(500);}, 500);
 			}
 			else if($("#noWanEth").is(":visible")){
 				$("#noWanEth").fadeOut(500);	
@@ -3420,6 +3458,7 @@ goTo.NoWan = function(){
 
 	if(isSupport("dsl")){
 
+		$('#noWan_desc').html("<#QIS_desc_3#>");
 		$('#desktop_manual_applyBtn').html("<#CTL_Skip#>");
 		$('#mobile_manual_applyBtn').html("<#CTL_Skip#>");
 

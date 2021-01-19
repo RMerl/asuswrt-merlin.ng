@@ -3294,6 +3294,44 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 	}
 #endif
 
+#ifdef RTCONFIG_PC_SCHED_V3
+	/* Clamp TCP MSS to PMTU of WAN interface before accepting RELATED packets */
+	if (nvram_get_int("jumbo_frame_enable") ||
+#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
+	    nvram_get_int("pptpd_enable") ||
+#endif
+#if defined(RTCONFIG_USB_MODEM)
+	    dualwan_unit__usbif(wan_unit) ||
+#endif
+	    strcmp(wan_proto, "pppoe") == 0 ||
+	    strcmp(wan_proto, "pptp") == 0 ||
+	    strcmp(wan_proto, "l2tp") == 0) {
+		fprintf(fp, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+	}
+#ifdef RTCONFIG_IPV6
+	switch (get_ipv6_service()) {
+	case IPV6_NATIVE_DHCP:
+	case IPV6_MANUAL:
+#ifdef RTCONFIG_6RELAYD
+	case IPV6_PASSTHROUGH:
+#endif
+		if (!nvram_get_int("jumbo_frame_enable") &&
+#if defined(RTCONFIG_USB_MODEM)
+		    dualwan_unit__nonusbif(wan_unit) &&
+#endif
+		    !(strcmp(wan_proto, "dhcp") != 0 && strcmp(wan_proto, "static") != 0 &&
+		      nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp")))
+			break;
+		/* fall through */
+	case IPV6_6IN4:
+	case IPV6_6TO4:
+	case IPV6_6RD:
+		fprintf(fp_ipv6, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+		break;
+	}
+#endif
+#endif
+
 #ifdef RTCONFIG_INTERNETCTRL
 	ic_s *ic_list = NULL;
 	int ic_count;
@@ -3774,6 +3812,7 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp_ipv6, "-A FORWARD -p udp -d ff00::/8 -j ACCEPT\n");
 #endif
 
+#ifndef RTCONFIG_PC_SCHED_V3
 	/* Clamp TCP MSS to PMTU of WAN interface before accepting RELATED packets */
 	if (nvram_get_int("jumbo_frame_enable") ||
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
@@ -3786,13 +3825,8 @@ TRACE_PT("writing Parental Control\n");
 	    strcmp(wan_proto, "pptp") == 0 ||
 	    strcmp(wan_proto, "l2tp") == 0) {
 		fprintf(fp, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
-#ifdef RTCONFIG_PC_SCHED_V3
-		if (*macdrop)
-			fprintf(fp, "-A %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", macdrop);
-#else
 		if (*macaccept)
 			fprintf(fp, "-A %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", macaccept);
-#endif
 	}
 #ifdef RTCONFIG_IPV6
 	switch (get_ipv6_service()) {
@@ -3812,16 +3846,12 @@ TRACE_PT("writing Parental Control\n");
 	case IPV6_6IN4:
 	case IPV6_6TO4:
 	case IPV6_6RD:
-#ifdef RTCONFIG_PC_SCHED_V3
-		if (*macdrop)
-			fprintf(fp_ipv6, "-A %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", macdrop);
-#else
  				fprintf(fp_ipv6, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
 		if (*macaccept)
 			fprintf(fp_ipv6, "-A %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", macaccept);
-#endif
 		break;
 	}
+#endif
 #endif
 
 	fprintf(fp, "-A FORWARD -m state --state ESTABLISHED,RELATED -j %s\n", logaccept);
@@ -4646,6 +4676,56 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 	}
 #endif
 
+#ifdef RTCONFIG_PC_SCHED_V3
+	/* Clamp TCP MSS to PMTU of WAN interface before accepting RELATED packets */
+	if (nvram_get_int("jumbo_frame_enable"))
+		goto clamp_mss;
+#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
+	if (nvram_get_int("pptpd_enable"))
+		goto clamp_mss;
+#endif
+	for (unit = WAN_UNIT_FIRST; unit < wan_max_unit; unit++) {
+		if (!is_wan_connect(unit))
+			continue;
+
+		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+		wan_proto = nvram_safe_get(strcat_r(prefix, "proto", tmp));
+		if (
+#if defined(RTCONFIG_USB_MODEM)
+		    dualwan_unit__usbif(unit) ||
+#endif
+		    strcmp(wan_proto, "pppoe") == 0 ||
+		    strcmp(wan_proto, "pptp") == 0 ||
+		    strcmp(wan_proto, "l2tp") == 0) {
+		clamp_mss:
+			fprintf(fp, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+			break; // set one time
+		}
+	}
+#ifdef RTCONFIG_IPV6
+	switch (get_ipv6_service()) {
+	case IPV6_NATIVE_DHCP:
+	case IPV6_MANUAL:
+#ifdef RTCONFIG_6RELAYD
+	case IPV6_PASSTHROUGH:
+#endif
+		if (!nvram_get_int("jumbo_frame_enable") &&
+#if defined(RTCONFIG_USB_MODEM)
+		    dualwan_unit__nonusbif(wan_primary_ifunit_ipv6()) &&
+#endif
+		    !(strcmp(wan_proto, "dhcp") != 0 && strcmp(wan_proto, "static") != 0 &&
+		      nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp")))
+			break;
+		/* fall through */
+	case IPV6_6IN4:
+	case IPV6_6TO4:
+	case IPV6_6RD:
+		fprintf(fp_ipv6, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+		break;
+	}
+#endif
+#endif
+
 #ifdef RTCONFIG_INTERNETCTRL
 	ic_s *ic_list = NULL;
 	int ic_count;
@@ -5120,6 +5200,7 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp_ipv6, "-A FORWARD -p udp -d ff00::/8 -j ACCEPT\n");
 #endif
 
+#ifndef RTCONFIG_PC_SCHED_V3
 	/* Clamp TCP MSS to PMTU of WAN interface before accepting RELATED packets */
 	if (nvram_get_int("jumbo_frame_enable"))
 		goto clamp_mss;
@@ -5143,13 +5224,8 @@ TRACE_PT("writing Parental Control\n");
 		    strcmp(wan_proto, "l2tp") == 0) {
 		clamp_mss:
 			fprintf(fp, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
-#ifdef RTCONFIG_PC_SCHED_V3
-			if (*macdrop)
-				fprintf(fp, "-A %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", macdrop);
-#else
 			if (*macaccept)
 				fprintf(fp, "-A %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", macaccept);
-#endif
 			break; // set one time
 		}
 	}
@@ -5172,15 +5248,11 @@ TRACE_PT("writing Parental Control\n");
 	case IPV6_6TO4:
 	case IPV6_6RD:
 		fprintf(fp_ipv6, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
-#ifdef RTCONFIG_PC_SCHED_V3
-		if (*macdrop)
-			fprintf(fp_ipv6, "-A %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", macdrop);
-#else
 		if (*macaccept)
 			fprintf(fp_ipv6, "-A %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", macaccept);
-#endif
 		break;
 	}
+#endif
 #endif
 
 	fprintf(fp, "-A FORWARD -m state --state ESTABLISHED,RELATED -j %s\n", logaccept);

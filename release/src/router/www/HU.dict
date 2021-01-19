@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=A csatolt mód nincs kiválasztva.
 QIS_confirm_recommand_encryp=Javasoljuk, hogy előbb a nélküli biztonsági beállításokat állítsa be. Biztosan folytatja?
 QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Please plug in the cable to DSL port. System will detect your network setting automatically.
 QIS_detect_desc1=PPPoE/DSL kapcsolat észlelhető.
 QIS_detect_desc2=A Beállító varázsló észlelte, hogy az Ön internet-kapcsolatának típusa PPPoE/DSL.
 QIS_detect_desc3=Kattintson a "Tovább" gombra az internet-szolgáltató (ISPÖ által megadott fióknév és jelszó beviteléhez.

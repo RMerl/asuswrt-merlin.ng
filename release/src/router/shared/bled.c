@@ -1022,8 +1022,10 @@ void set_rgbled(unsigned int mode)
 		led_control(LED_BLUE, LED_ON);
 		led_control(LED_GREEN, LED_ON);
 		led_control(LED_RED, LED_ON);
+#if defined(RTAC59_CD6R) || defined(RTAC59_CD6N) || defined(PLAX56_XP4)
 		if (RGBLED_WHITE & RGBLED_WLED)
 			led_control(LED_WHITE, LED_ON);
+#endif		
 		rgbled_udef_mode = 1;
 	}
 

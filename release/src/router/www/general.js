@@ -279,7 +279,7 @@ function onSubmitCtrlOnly(o, s){
 }
 
 function handle_11ac_80MHz(){
-	if(band5g_support == false || band5g_11ac_support == false || document.form.wl_unit[0].selected == true || document.form.wl_nmode_x.value=='2' || document.form.wl_nmode_x.value=='1') {
+	if(band5g_support == false || band5g_11ac_support == false || wl_unit == '0' || document.form.wl_nmode_x.value=='2' || document.form.wl_nmode_x.value=='1') {
 		document.form.wl_bw[0].text = "20/40 MHz";
 		document.form.wl_bw.remove(3); //remove 80 Mhz when not when not required required
 	} else {
@@ -1714,7 +1714,7 @@ function limit_auth_method(g_unit){
 			var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"]];
 		}
 	}
-	else if(document.form.wl_unit.value == "3"){//60G, kernel 3.4 11ad driver doesn't support WPA-Enterprise.
+	else if(wl_unit == "3"){//60G, kernel 3.4 11ad driver doesn't support WPA-Enterprise.
 		var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"]];
 	}
 	else if(document.form.wl_nmode_x.value != "2"){

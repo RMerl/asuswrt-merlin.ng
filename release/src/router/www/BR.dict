@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=Modo anexo não está selecionado.
 QIS_confirm_recommand_encryp=Recomendamos muito que você defina seu configurações de segurança sem fio, deseja continuar?
 QIS_desc_1=Por favor conecte o cabo na porta WAN. O sistema irá detectar as configurações da sua rede automaticamente.
 QIS_desc_2=Modo expert, configurações offline
+QIS_desc_3=Por favor conecte o cabo na porta DSL. O sistema irá detectar as configurações da sua rede automaticamente.
 QIS_detect_desc1=A conexão PPPoE/DSL está detectada.
 QIS_detect_desc2=O Assistente de Configuração detectou que seu tipo de conexão de Internet é PPPoE/DSL.
 QIS_detect_desc3=Clique em "Próximo" para entrar no nome da conta e senha que seu Provedor de Servido de Internet (ISP) forneceu.

@@ -31,6 +31,7 @@ function initial_system_settings() {
 						"rc_service" : "restart_wireless"
 					}, function(){
 						setTimeout(function(){
+							httpApi.nvramGet(["amas_eap_bhmode"],true);
 							if(typeof jstree_refresh == "function")
 								jstree_refresh();
 						},1000);
@@ -386,6 +387,7 @@ function initial_system_settings() {
 							}
 							httpApi.nvramSet(nvramSet_obj, function(){
 								setTimeout(function(){
+									httpApi.nvramGet(["amas_eap_bhmode"],true);
 									if(typeof jstree_refresh == "function")
 										jstree_refresh();
 								},1000);

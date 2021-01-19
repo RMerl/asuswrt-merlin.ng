@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=未选择 ANNEX 模式。
 QIS_confirm_recommand_encryp=强烈建议您首先设置无线网络安全设置，是否继续？
 QIS_desc_1=请将网路线接上 WAN 接口。系统将会自动侦测你的网路设定。
 QIS_desc_2=直接进行门店模式或设定专家模式
+QIS_desc_3=请将网路线接上 DSL 接口。系统将会自动侦测你的网路设定。
 QIS_detect_desc1=侦测到 PPPoE/DSL 连接。
 QIS_detect_desc2=设置向导侦测到您的网络连接类型为 PPPoE/DSL。
 QIS_detect_desc3=点击「下一步」输入您的互联网服务供应商（ISP）提供的帐户名称与密码。

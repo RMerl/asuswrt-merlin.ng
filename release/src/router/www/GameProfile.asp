@@ -33,6 +33,55 @@ var overlib_str = new Array();	//Viz add 2011.07 for record longer virtual srvr 
 var vts_rulelist_array = decodeURIComponent('<% nvram_char_to_ascii("","game_vts_rulelist"); %>').replace(/&#62/g, ">");
 var nvram = httpApi.nvramGet(["vts_enable_x"]);
 var gameList = new Object;
+/*handle legacy profile*/
+(function(){
+	var vts_rulelist_row = vts_rulelist_array.split('<');
+	var _temp = '';
+	for(var i=0; i<vts_rulelist_row.length; i++){
+		var vts_rulelist_col = vts_rulelist_row[i].split('>');
+		var _platform = vts_rulelist_col[0].split('@')[1];
+		var _port = vts_rulelist_col[1];
+		if((vts_rulelist_col[0].indexOf('Rocket League') != -1)){
+			if(_platform == 'PC' && _port == '7000:9000'){
+				_temp += '<' + vts_rulelist_col[0];
+				_temp += '>' + '7000:8080,8082:8442,8444:9000';
+				_temp += '>' + vts_rulelist_col[2];
+				_temp += '>' + vts_rulelist_col[3];
+				_temp += '>' + vts_rulelist_col[4];
+				_temp += '>' + vts_rulelist_col[5];
+			}
+			else if(_platform == 'PS4' && _port == '1935,3074,3478:3480,7000:9000'){
+				_temp += '<' + vts_rulelist_col[0];
+				_temp += '>' + '1935,3074,3478:3480,7000:8080,8082:8442,8444:9000';
+				_temp += '>' + vts_rulelist_col[2];
+				_temp += '>' + vts_rulelist_col[3];
+				_temp += '>' + vts_rulelist_col[4];
+				_temp += '>' + vts_rulelist_col[5];
+			}
+			else if(_platform == 'XBOXONE' && _port == '88,500,3074,3544,4500,7000:9000'){
+				_temp += '<' + vts_rulelist_col[0];
+				_temp += '>' + '88,500,3074,3544,4500,7000:8080,8082:8442,8444:9000';
+				_temp += '>' + vts_rulelist_col[2];
+				_temp += '>' + vts_rulelist_col[3];
+				_temp += '>' + vts_rulelist_col[4];
+				_temp += '>' + vts_rulelist_col[5];
+			}
+			else if(_platform == 'STEAM' && _port == '4380,7000:9000,27000:27031,27036:27037'){
+				_temp += '<' + vts_rulelist_col[0];
+				_temp += '>' + '4380,7000:8080,8082:8442,8444:9000,27000:27031,27036:27037';
+				_temp += '>' + vts_rulelist_col[2];
+				_temp += '>' + vts_rulelist_col[3];
+				_temp += '>' + vts_rulelist_col[4];
+				_temp += '>' + vts_rulelist_col[5];
+			}
+		}
+		else{
+			_temp += '<' + vts_rulelist_row[i];
+		}
+	}
+})();
+
+
 function initial(){
 	show_menu();
 	(nvram.vts_enable_x == '1') ? $('#PF_switch').prop('checked', true) :  $('#PF_switch').prop('checked', false);

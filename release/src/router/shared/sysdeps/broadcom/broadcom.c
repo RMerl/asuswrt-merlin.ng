@@ -714,6 +714,7 @@ get_uplinkports_linkrate(char *ifname)
 	char out_buf[64];
 	int lret=0;
 	int len;
+	int verbose = nvram_get_int("verbose");
 #if defined(RTCONFIG_HND_ROUTER_AX_6710)
 	// MODEL_RTAX86U, MODEL_RTAX68U, MODEL_RTAC68U_V4
 #if defined(RTCONFIG_EXTPHY_BCM84880)
@@ -731,6 +732,8 @@ get_uplinkports_linkrate(char *ifname)
 	char word[256], *next;
 #if defined(GTAXE11000)
         char lanports_seq[64] = {"eth1 eth4 eth2 eth3 eth5"};   /* L1 L2 L3 L4 L5 */
+#elif defined(RTAX86U)
+        char lanports_seq[64] = {"eth4 eth3 eth2 eth1 eth0 eth5"};   /* L1 L2 L3 L4 W 2.5G */
 #endif
 
 	for (i=0; i<lan_ports+1; i++) {
@@ -795,7 +798,13 @@ get_uplinkports_linkrate(char *ifname)
 		break;
 	}
 
-	if(!*nvram_safe_get("wan_ifname") && nvram_get_int("sw_mode")!=1) {  // ap/re mode
+	char *wanif = nvram_safe_get("wan_ifname");
+#if defined(RTAX86U)
+	i = 0;
+#else
+	if((!*nvram_safe_get("wan_ifname")) && nvram_get_int("sw_mode")!=1) {  // ap/re mode
+		if(verbose)
+			_dprintf("set first if as eth0\n");
 		sprintf(pif[0], "%s", "eth0");	// here the report follows lan_ifnames
 		ret = hnd_get_phy_status(pif[0]);
 		if(ret == 0) {
@@ -805,15 +814,20 @@ get_uplinkports_linkrate(char *ifname)
 			lrate[0] = (ret == 2500)? 2500 : (ret == 1000) ? 1000 : 100;
 		}
 	}
-
 	i = 1;
+#endif
 	len = strlen(out_buf);
-#if defined(GTAXE11000)
+#if defined(GTAXE11000) || defined(RTAX86U)
 	foreach(word, lanports_seq, next)
 #else
 	foreach(word, nvram_safe_get("lan_ifnames"), next)
 #endif
 	{
+		if( i > lan_ports ) {
+			if(verbose)
+				_dprintf("out of ifnum\n");
+			break;
+		}
 		sprintf(pif[i], "%s", word);	// here the report follows lan_ifnames
 		ret = hnd_get_phy_status(word);
 		if(ret == 0) {
@@ -839,7 +853,7 @@ get_uplinkports_linkrate(char *ifname)
 	unsigned int regv=0, pmdv=0, regv2=0, pmdv2=0;
 #endif
 #ifdef RTCONFIG_EXT_BCM53134
-#if defined(RTAX95Q)
+#if defined(RTAX95Q) || defined(RTAXE95Q)
 	int lan_ports=3;
 #elif defined(RTAX56_XD4) || defined(CTAX56_XD4)
 	int lan_ports=1;
@@ -1080,6 +1094,7 @@ get_uplinkports_linkrate(char *ifname)
 		break;
 #else	// RTCONFIG_HND_ROUTER_AX_675X
 	case MODEL_RTAX95Q:
+	case MODEL_RTAXE95Q:
 		/*
 			0 1 2 3 W0 L1 L2 L3
  		 */
@@ -1260,7 +1275,7 @@ get_uplinkports_linkrate(char *ifname)
 
 #endif // RTCONFIG_HND_ROUTER_AX_6710
 
-	if(nvram_match("verbose", "1")) {
+	if(verbose) {
 		for( i=0; i<lan_ports+1; ++i)
 			printf("[%d] portif=%s, lrate=%d\n", i, pif[i], lrate[i]);
 		printf("\n");
@@ -1714,7 +1729,7 @@ phy_port_mapping get_phy_port_mapping(void)
 		.port[4] = { .phy_port_id = 0, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth1" }
 #endif
 #else //#ifndef RTCONFIG_HND_ROUTER_AX_675X
-#if defined(RTAX95Q)
+#if defined(RTAX95Q) || defined(RTAXE95Q)
 		.count = 4,
 		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 2500, .ifname = "eth0" },
 		.port[1] = { .phy_port_id = 1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "eth3" },

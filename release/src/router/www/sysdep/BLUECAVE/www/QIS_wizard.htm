@@ -754,7 +754,7 @@
 					</div>
 				</div>
 				<div class="table_td">
-					<div class="pageDesc">
+					<div class="pageDesc" id="noWan_desc">
 						<#QIS_desc_1#>
 					</div>
 
@@ -2242,6 +2242,7 @@
 		  				<input type="checkbox" id="wireless_checkbox" data-mini="true"/>
 					</div>
 
+					<div id="wifi6e_legacy_hint" class="hint_yellow" style="margin-top:6px;display:none">By using the same wireless network of all bands, some legacy devices might encounter compatibility issue when connecting to 6GHz network. To make sure the connectivity, we suggest you to separate 2.4GHz, 5GHz and 6GHz wireless settings.</div>
 					<div class="labelContainer" id="syncSSID" style="display:none;">
 						<label for="wireless_sync_checkbox" class="labelInput"><#qis_ssid_desc#></label>
 		  				<input type="checkbox" id="wireless_sync_checkbox" data-mini="true"/>
@@ -2419,6 +2420,7 @@
 						<div id="stepText2"><#qis_summary_description_step2#></div>
 					</div>
 						
+					<div id="wifi6e_legacy_hint_summary" class="hint_yellow" style="display:none">*Note: If your devices have connection issues afterwards, please go to “Wireless Setting” in Web/App to change configurations via a hardwired device or a device supporting WiFi 6E.</div>
 					<div id="finishButton" style="display:none">
 						<div class="footer_desktop">
 							<div class="desktop_applyBtn" onclick="goTo.leaveQIS();"><#QKSet_finishpre_rebootnow#></div>

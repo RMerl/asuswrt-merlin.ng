@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Aug 21 18:59:16 2017
+ * Date: Fri Oct 30 00:07:39 2020
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -50,6 +50,7 @@
 #undef TMCFG_APP_U_TC_AR
 #undef TMCFG_APP_U_TC_PFX
 #undef TMCFG_APP_U_TC_CC
+#undef TMCFG_TC_PFX
 #undef TMCFG_APP_U_TC_PFX
 #undef TMCFG_APP_K_TEMPLATE
 #undef TMCFG_APP_K_TDTS_NFFW
@@ -93,8 +94,8 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_RT_AC85U 1 // y
-#define TMCFG_MODEL "rt-ac85u"
+#define TMCFG_MODEL_4G_AC86U 1 // y
+#define TMCFG_MODEL "4g-ac86u"
 #define TMCFG_OEM_SRC 0 // n
 
 /*
@@ -102,19 +103,19 @@
  */
 #define TMCFG_KERN_SPACE 1 // y
 #define TMCFG_ARCH_X86 0 // n
-#define TMCFG_ARCH_MIPS 1 // y
-#define TMCFG_ARCH_ARM 0 // n
-#define TMCFG_CPU_32BITS 1 // y
-#define TMCFG_CPU_64BITS 0 // n
+#define TMCFG_ARCH_MIPS 0 // n
+#define TMCFG_ARCH_ARM 1 // y
+#define TMCFG_CPU_32BITS 0 // n
+#define TMCFG_CPU_64BITS 1 // y
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC85U_GPL_380_5972/release/src-ra-5010/linux/linux-3.10.14.x"
-#define TMCFG_KERN_ARCH "mips"
+#define TMCFG_KERN_DIR "/opt/ASUS/asusw4g_AC86U_GPL_382_40610/release/src-ra-openwrt-4110/linux/linux-4.4.198"
+#define TMCFG_KERN_ARCH "arm64"
 
 /*
  * Toolchain (TC) configurations
  */
-#define TMCFG_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-mips-rt_ac85u_k/usr/bin/mipsel-linux-"
+#define TMCFG_TC_PFX "/opt/MTK_ARM/7622/mtk-openwrt-4.1.0.0_20190515/staging_dir/toolchain-aarch64_cortex-a53+neon-vfpv4_gcc-5.4.0_glibc-2.24/bin/aarch64-openwrt-linux-"
 
 /*
  * Advanced Build Options
@@ -151,12 +152,13 @@
 #define TMCFG_E_UDB_CORE 1 // y
 #define TMCFG_E_UDB_CORE_MAJ_VER 0
 #define TMCFG_E_UDB_CORE_MIN_VER 2
-#define TMCFG_E_UDB_CORE_REV_VER 14
-#define TMCFG_E_UDB_CORE_SHN_REV_NUM 3529123
+#define TMCFG_E_UDB_CORE_REV_VER 18
+#define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
 #define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
 #define TMCFG_E_UDB_CORE_CONN_EXTRA 1 // y
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
+#define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
@@ -174,23 +176,23 @@
 #define TMCFG_E_UDB_CORE_WBL_URL_NUM 1024
 #define TMCFG_E_UDB_CORE_WEB_FUNC 1 // y
 #define TMCFG_E_UDB_CORE_DC 1 // y
-#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 1 // y
+#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 0 // n
 #define TMCFG_E_UDB_CORE_ANOMALY_PREVENT 1 // y
 #define TMCFG_E_UDB_CORE_VIRTUAL_PATCH 1 // y
 #define TMCFG_E_UDB_CORE_IQOS_SUPPORT 1 // y
-#define TMCFG_E_UDB_CORE_IQOS_RSV_DEF_CLS 0 // n
+#define TMCFG_E_UDB_CORE_IQOS_RSV_DEF_CLS 1 // y
+#define TMCFG_E_UDB_CORE_GCTRL_SUPPORT 0 // n
 #define TMCFG_E_UDB_CORE_APP_PATROL 1 // y
-#define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 1 // y
-#define TMCFG_E_UDB_CORE_APP_REDIRECT_URL 1 // y
-#define TMCFG_E_UDB_CORE_PATROL_TIME_GRP_NUM 32
-#define TMCFG_E_UDB_CORE_PATROL_TIME_DEV_NUM 6
+#define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 0 // n
+#define TMCFG_E_UDB_CORE_APP_REDIRECT_URL 0 // n
 #define TMCFG_E_UDB_CORE_PROG_CTRL 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_NONE 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V1 0 // n
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V2 0 // n
-#define TMCFG_E_UDB_CORE_WPR_PAGE 1 // y
+#define TMCFG_E_UDB_CORE_WPR_PAGE 0 // n
 #define TMCFG_E_UDB_CORE_TMDBG 0 // n
 #define TMCFG_E_UDB_CORE_MEMTRACK 0 // n
+#define TMCFG_E_UDB_CORE_HTTP_REFER 0 // n
 #define TMCFG_E_UDB_SHELL 1 // y
 #define TMCFG_E_UDB_SHELL_EXTRA_CFLAGS ""
 #define TMCFG_E_UDB_SHELL_KMOD_NAME "tdts_udb"
@@ -204,7 +206,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "3529123"
+#define TMCFG_E_REL_PKG_LOCAL_VER "7812743e"
 
 /*
  * Accompany applications or modules
@@ -230,14 +232,14 @@
 /*
  * Userspace toolchain
  */
-#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-mips-rt_ac85u_u/bin/mipsel-uclibc-"
+#define TMCFG_APP_U_TC_PFX "$(TMCFG_TC_PFX)"
 #define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
 #define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
 #define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"
 #define TMCFG_APP_U_TC_RANLIB "$(TMCFG_APP_U_TC_PFX)ranlib"
 #define TMCFG_APP_U_TC_STRIP "$(TMCFG_APP_U_TC_PFX)strip"
 #define TMCFG_APP_U_TC_OBJDUMP "$(TMCFG_APP_U_TC_PFX)objdump"
-#define TMCFG_APP_U_EXTRA_CFLAGS ""
+#define TMCFG_APP_U_EXTRA_CFLAGS "-fstack-protector-all"
 #define TMCFG_APP_U_EXTRA_LDFLAGS ""
 
 /*
@@ -275,10 +277,10 @@
 #define TMCFG_APP_U_TDTS_WRED_THREAD_POOL 1 // y
 #define TMCFG_APP_U_TDTS_WRED_PROG_CTRL 1 // y
 #define TMCFG_APP_U_WRS_LOCAL_CACHE 0x7D000
-#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10"
+#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10-ASUS-HRU77VWJ"
 #define TMCFG_APP_U_WRED_TMUFE_VENDOR_ID "ASUS"
-#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-en.url.trendmicro.com"
-#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 0 // n
+#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-asus-en.url.trendmicro.com"
+#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 1 // y
 #define TMCFG_APP_U_TDTS_WRED_TMUFE21 0 // n
 #define TMCFG_APP_U_WBL 1 // y
 
@@ -291,6 +293,7 @@
 #define TMCFG_APP_U_UDB_SAMPLE 1 // y
 #define TMCFG_APP_U_TC_DAEMON 1 // y
 #define TMCFG_APP_U_MTK 0 // n
+#define TMCFG_APP_U_MTK_V2 0 // n
 #define TMCFG_APP_U_PROG_CTRL 1 // y
 #define TMCFG_APP_U_DEMO_GUI 0 // n
 #define TMCFG_APP_U_DEMO_GUI_V22 0 // n

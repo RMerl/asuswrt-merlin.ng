@@ -35,7 +35,7 @@
 var wlc_band = httpApi.nvramGet(['wlc_band']).wlc_band;
 var assassinMode_enable = (function(){
 	if(system.modelName == 'TUF-AX3000' 
-	&& system.territoryCode.includes('CN') 
+	&& system.territoryCode.indexOf('CN') != -1 
 	&& httpApi.nvramGet(['location_code']).location_code == 'XX'){
 		return true
 	}
@@ -60,7 +60,7 @@ function getVariable(){
 	var _array = new Array('sw_mode', 'wps_enable');
 	var _ssid = new Array();
 
-	if(system.modelName == 'TUF-AX3000' && system.territoryCode.includes('CN')){
+	if(system.modelName == 'TUF-AX3000' && system.territoryCode.indexOf('CN') != -1){
 		_array.push('location_code');
 	}
 
@@ -127,6 +127,9 @@ function getVariable(){
 		
 		_array.push.apply(_array, _element);
 	}
+
+	if(dwb_info.mode == "1" && isSupport("amas_fronthaul_network"))
+		_array.push('fh_ap_enabled');
 
 	nvram = httpApi.nvramGet(_array);
 
@@ -236,7 +239,7 @@ function genElement(){
 	}
 
 	// part for Assassin mode
-	if(system.modelName == 'TUF-AX3000' && system.territoryCode.includes('CN')){
+	if(system.modelName == 'TUF-AX3000' && system.territoryCode.indexOf('CN') != -1){
 		document.getElementById('assassin_mode').style.display= '';
 	}
 
@@ -688,6 +691,13 @@ function updateVariable(id, value, flag){
 	}
 	else{
 		variable['wps_enable'] = nvram['wps_enable'];
+	}
+
+	if(dwb_info.mode == "1" && isSupport("amas_fronthaul_network")){
+		if(variable['smart_connect_x'] == "1")
+			variable['fh_ap_enabled'] = httpApi.nvramDefaultGet(["fh_ap_enabled"]).fh_ap_enabled;
+		else
+			variable['fh_ap_enabled'] = "0";
 	}
 
 	if(regen){

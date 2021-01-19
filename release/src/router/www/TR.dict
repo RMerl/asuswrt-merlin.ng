@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=Ekleme modu seçili değil.
 QIS_confirm_recommand_encryp=İlk olarak kablosuz güvenlik ayarlarını ayarlamanızı önemle tavsiye ederiz, devam etmek istiyor musunuz?
 QIS_desc_1=Please plug in the cable to WAN port. System will detect your network setting automatically.
 QIS_desc_2=Expert mode, offline settings
+QIS_desc_3=Please plug in the cable to DSL port. System will detect your network setting automatically.
 QIS_detect_desc1=PPPoE/DSL bağlantısı algılandı.
 QIS_detect_desc2=Kurulum Sihirbazı Internet bağlantı türünüzün PPPoE/DSL olduğunu algıladı.
 QIS_detect_desc3=Internet Hizmet Sağlayıcınızın (ISS) sağladığı hesap adını ve parolayı girmek için "İleri" öğesini tıklayın.

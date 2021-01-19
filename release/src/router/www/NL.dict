@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=ANNEX-modus is niet geselecteerd.
 QIS_confirm_recommand_encryp=Wij raden u sterk aan eerst de draadloze beveiligingsinstellingen in te stellen. Wilt u doorgaan?
 QIS_desc_1=Sluit de kabel aan op de WAN-poort. Het systeem zal automatisch uw netwerkinstelling detecteren.
 QIS_desc_2=Expertmodus, offline-instellingen
+QIS_desc_3=Sluit de kabel aan op de DSL-poort. Het systeem zal automatisch uw netwerkinstelling detecteren.
 QIS_detect_desc1=PPPoE/DSL-verbinding is gedetecteerd.
 QIS_detect_desc2=De Setup-wizard heeft gedetecteerd dat uw type internetverbinding PPPoE/DSL is.
 QIS_detect_desc3=Klik op "Next” (Volgende) om de accountnaam en het wachtwoord die uw internetprovider (ISP) u heeft gegeven, in te voeren.

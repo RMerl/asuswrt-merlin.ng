@@ -277,7 +277,7 @@ static const struct led_btn_table_s {
 	{ "led_yellow_gpio",    &led_gpio_table[LED_YELLOW_GPIO] },
 	{ "led_purple_gpio",    &led_gpio_table[LED_PURPLE_GPIO] },
 #endif
-#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX82_XD6)
+#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(RTAX82_XD6)
 	{ "bt_rst_gpio",        &led_gpio_table[BT_RESET] },
 	{ "bt_disable_gpio",    &led_gpio_table[BT_DISABLE] },
 	{ "led_rgb1_red_gpio",  &led_gpio_table[LED_RGB1_RED] },
@@ -1079,6 +1079,7 @@ int wanport_status(int wan_unit)
 		case MODEL_GTAC5300:
 		case MODEL_RTAX88U:
 		case MODEL_RTAX95Q:
+		case MODEL_RTAXE95Q:
 		case MODEL_GTAX11000:
 		case MODEL_GTAXE11000:
 			extra_p0 = S_53134;

@@ -31,6 +31,8 @@ SRCFILE = qca_ipq40xx_SPF10CS
 else # IPQ40XX
 SRCFILE = qca_ipq40xx
 endif # IPQ40XX
+else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
+SRCFILE = qca_ipq60xx
 else
 $(error Tuxera driver is not available)
 endif

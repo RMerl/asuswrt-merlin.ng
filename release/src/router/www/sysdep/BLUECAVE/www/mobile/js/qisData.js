@@ -116,6 +116,10 @@ var smartConnectObj = {
 	"smart_connect_x": "1"
 }
 
+var fronthaulNetworkObj = {
+	"fh_ap_enabled": "2"
+}
+
 var wlcObj = {
 	"wlc_band": "",
 	"wlc_ssid": "",
@@ -311,7 +315,6 @@ var dsl_wanObj = {
 	},
 
 	"atm_dslObj" : {
-		"dsltmp_qis_dsl_pvc_set": "1",
 		"dsl_enable": "1",
 		"dsl_unit": "0",
 		"dsl_vpi": "",
@@ -357,7 +360,6 @@ var dsl_wanObj = {
 		"dsl_pppoe_options": "",
 		"dsl_pppoe_ac": "",
 		"dsl_pppoe_relay": "",
-		"dsltmp_qis_dsl_pvc_set": "",
 		"dsl_enable": "",
 		"dsl_unit": "",
 		"dsl_vpi": "",

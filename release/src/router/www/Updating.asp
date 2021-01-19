@@ -24,7 +24,7 @@
 	 || parent.based_modelid == "RT-AC5300" || parent.based_modelid == "GT-AC5300"
 	 || parent.based_modelid == "GT-AC9600"
 	 || parent.based_modelid == "RT-AC88U"  || parent.based_modelid == "RT-AX88U" || parent.based_modelid == "RT-AC3100"
-	 || parent.based_modelid == "RT-AC86U" || parent.based_modelid == "GT-AC2900" || parent.based_modelid == "GT-AX11000" || parent.based_modelid == "RT-AX92U" || parent.based_modelid == "RT-AX95Q" || parent.based_modelid == "RT-AX56_XD4" || parent.based_modelid == "CT-AX56_XD4" || parent.based_modelid == "RT-AX58U" || parent.based_modelid == "TUF-AX3000" || parent.based_modelid == "RT-AX82U" || parent.based_modelid == "RT-AX56U"
+	 || parent.based_modelid == "RT-AC86U" || parent.based_modelid == "GT-AC2900" || parent.based_modelid == "GT-AX11000" || parent.based_modelid == "RT-AX92U" || parent.based_modelid == "RT-AX95Q"  || parent.based_modelid == "RT-AXE95Q" || parent.based_modelid == "RT-AX56_XD4" || parent.based_modelid == "CT-AX56_XD4" || parent.based_modelid == "RT-AX58U" || parent.based_modelid == "TUF-AX3000" || parent.based_modelid == "RT-AX82U" || parent.based_modelid == "RT-AX56U"
 	 || parent.based_modelid == "RT-AX86U" || parent.based_modelid == "RT-AX5700" || parent.based_modelid == "RT-AX68U" || parent.based_modelid == "RT-AC68U_V4"
 	 || parent.based_modelid == "GT-AXE11000"
 	 || parent.based_modelid == "GS-AX3000" || parent.based_modelid == "GS-AX5400"

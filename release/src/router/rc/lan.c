@@ -1634,7 +1634,7 @@ void start_lan(void)
 				if (!strcmp(ifname, "eth1")
 					|| !strcmp(ifname, "eth2")
 					|| !strcmp(ifname, "eth3")
-#if !defined(RTAX95Q)
+#if !defined(RTAX95Q) && !defined(RTAXE95Q)
 					|| !strcmp(ifname, "eth4")
 #endif
 					)

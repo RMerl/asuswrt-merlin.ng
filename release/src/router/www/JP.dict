@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=ANNEX mode is not selected.
 QIS_confirm_recommand_encryp=はじめに無線セキュリティ設定することを推奨します。続行しますか?
 QIS_desc_1=インターネットサービスプロバイダ (ISP) の接続タイプを自動検知して設定を行う場合。
 QIS_desc_2=手動で設定を行う場合
+QIS_desc_3=インターネットサービスプロバイダ (ISP) の接続タイプを自動検知して設定を行う場合。
 QIS_detect_desc1=PPPoE/DSL 接続が検出されました。
 QIS_detect_desc2=セットアップウィザードにより、インターネット接続タイプは PPPoE/DSL であることが検出されました。
 QIS_detect_desc3=「次へ」をクリックし、インターネットサービスプロバイダー（ISP）が割り当てたアカウント名とパスワードを入力します。

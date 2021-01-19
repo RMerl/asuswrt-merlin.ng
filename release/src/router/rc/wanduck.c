@@ -2485,6 +2485,14 @@ void handle_dns_req(int sfd, unsigned char *request, int maxlen, struct sockaddr
 			d_reply->flag_set.flag_num = htons(0x8183);
 			d_reply->auth_rrs = htons(1);
 #endif
+#ifdef RTCONFIG_DSL
+		} else if (strcasecmp(queries.name, "ntp01.mvp.tivibu.com.tr") == 0) {
+			d_reply->answer_rrs = htons(1);
+			answer.addr = htonl(0xc0a87946);
+		} else if (strcasecmp(queries.name, "ntp02.mvp.tivibu.com.tr") == 0) {
+			d_reply->answer_rrs = htons(1);
+			answer.addr = htonl(0xc0a87947);
+#endif
 		} else if (*queries.name) {
 			/* no error */
 			d_reply->answer_rrs = htons(1);

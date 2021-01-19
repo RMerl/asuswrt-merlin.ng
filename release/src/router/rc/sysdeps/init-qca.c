@@ -3126,7 +3126,7 @@ void init_wl(void)
 #if defined(RTCONFIG_REPEATER_STAALLBAND)
 					if (sw_mode() == SW_MODE_REPEATER && nvram_get_int("x_Setting")) {
 						dbG("\ncreate a STA node %s from %s\n", get_staifname(unit), get_vphyifname(unit));
-						create_vap(get_staifname(i), i, "sta");
+						create_vap(get_staifname(unit), unit, "sta");
 						sleep(1);
 					}
 #endif
@@ -3177,7 +3177,7 @@ void init_wl(void)
 				if(nvram_get_int("x_Setting"))
 				{
 					_dprintf("=>init_wl: create sta vaps\n");
-					create_vap(get_staifname(i), i, "sta");
+					create_vap(get_staifname(1), 1, "sta");
 					sleep(1);
 					ifconfig(get_staifname(1), IFUP, NULL, NULL);
 				}

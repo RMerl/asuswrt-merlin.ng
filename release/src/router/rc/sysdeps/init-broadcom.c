@@ -86,6 +86,10 @@ void wl_thread_affinity_update(void);
 #endif
 #endif
 
+#ifdef BCM_BSD
+void smart_connect_sync_config(int unit);
+#endif
+
 int wan_phyid = -1;
 
 void init_devs(void)
@@ -1221,6 +1225,7 @@ void generate_switch_para(void)
 		case MODEL_GTAX11000:
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
+		case MODEL_RTAXE95Q:
 		case MODEL_RTAX56_XD4:
 		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
@@ -1774,11 +1779,13 @@ void init_switch_pre()
 #if !defined(RTAX56_XD4) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RTAX82_XD6) && !defined(RPAX56)
 	add_to_list("eth3", ifnames, sizeof(ifnames));
 #endif
-#if !defined(RTAX95Q) && !defined(RTAX56_XD4) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56)
+#if !defined(RTAX95Q) && !defined(RTAXE95Q) && !defined(RTAX56_XD4) && !defined(CTAX56_XD4) && !defined(RTAX55) && !defined(RTAX1800) && !defined(RPAX56)
 	add_to_list("eth4", ifnames, sizeof(ifnames));
 #endif
 #if defined(RTCONFIG_EXT_BCM53134) || defined(RTCONFIG_EXTPHY_BCM84880)
+#if !defined(RTAX95Q) && !defined(RTAXE95Q)
 	add_to_list("eth5", ifnames, sizeof(ifnames));
+#endif
 #endif
 	foreach(word, ifnames, next) {
 		ethctl = !strncmp(word, WAN_IF_ETH, strlen(WAN_IF_ETH)) ? ethctl_wan : ethctl_lan;
@@ -2081,6 +2088,7 @@ void init_switch()
 			break;
 		}
 		case MODEL_RTAX95Q:
+		case MODEL_RTAXE95Q:
 		case MODEL_RTAX56_XD4:
 		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
@@ -2091,7 +2099,7 @@ void init_switch()
 		{
 			/* set wanports in init_nvram for dualwan */
 			/* WAN L1 L2 L3 L4 */
-#if defined(RTAX95Q)
+#if defined(RTAX95Q) || defined(RTAXE95Q)
 			int ports[4] = { 0, 1, 2, 3 };
 #elif defined(RTAX56_XD4)
 			int ports[1] = { 0 };
@@ -2714,6 +2722,7 @@ reset_mssid_hwaddr(int unit)
 			case MODEL_RTAC86U:
 			case MODEL_RTAC3100:
 			case MODEL_RTAX95Q:
+			case MODEL_RTAXE95Q:
 			case MODEL_RTAX56_XD4:
 			case MODEL_CTAX56_XD4:
 			case MODEL_RTAX58U:
@@ -3095,6 +3104,9 @@ void init_wl(void)
 #ifndef RTAX95Q
 		case MODEL_RTAX95Q:
 #endif
+#ifndef RTAXE95Q
+		case MODEL_RTAXE95Q:
+#endif
 		case MODEL_GTAXE11000:
 			set_bcm4360ac_vars();
 			break;
@@ -3232,6 +3244,9 @@ void init_wl_compact(void)
 		case MODEL_RTAX92U:
 #ifndef RTAX95Q
 		case MODEL_RTAX95Q:
+#endif
+#ifndef RTAXE95Q
+		case MODEL_RTAXE95Q:
 #endif
 		case MODEL_GTAXE11000:
 			set_bcm4360ac_vars();
@@ -3429,6 +3444,7 @@ void init_syspara(void)
 		case MODEL_GTAX11000:
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
+		case MODEL_RTAXE95Q:
 		case MODEL_RTAX56_XD4:
 		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
@@ -3585,7 +3601,7 @@ void wl_thread_affinity_update(void)
 		if ((fp = fopen("/proc/interrupts", "r")) != NULL) {
 			while (fgets(buf, sizeof(buf), fp) != NULL) {
 				if (strstr(buf, WL_IF_PREFIX_2) != NULL
-#if defined(RTAX95Q) || defined(BCM6750) || defined(BCM63178)
+#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(BCM6750) || defined(BCM63178)
 					|| strstr(buf, "dhdpcie") != NULL
 #endif
 				) {
@@ -3654,7 +3670,7 @@ void tweak_usb_affinity(int enable)
 #ifdef RTCONFIG_HND_ROUTER_AX_675X
 #if defined(RTCONFIG_HND_ROUTER_AX_6710)
 	int usb_irqs[] = {25, 26, 27, -1};	// RT-AX86U, RT-AX68U. RT-AC68U_V4
-#elif defined(RTAX95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX56U) || defined(RTAX55) || defined(RTAX1800)
+#elif defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX56U) || defined(RTAX55) || defined(RTAX1800)
 	int usb_irqs[] = {45, 46, 47, -1};	// BCM6755
 #else
 	int usb_irqs[] = {41, 42, 43, -1};	// BCM6750
@@ -3718,7 +3734,8 @@ void init_others(void)
 #ifdef GTAC2900
 	update_cfe_ac2900();
 #endif
-#if 0	//defined(RTAC86U) || defined(GTAC2900)
+#if defined(RTAC86U) || defined(GTAC2900)
+	if (!nvram_get_int("cpuwait"))
 	system("pwr config --wait off");
 #endif
 #if defined(RTAX88U) || defined(RTAX92U)
@@ -3738,7 +3755,6 @@ void init_others(void)
 #if defined(DSL_AX82U)
 	update_misc1();
 	update_cfe_ax82u();
-	tweak_process_affinity(0, 2); //test nvram_get issue
 	{
 		pid_t pid;
 		if ((pid = get_pid_by_thrd_name("bcmxtm_rx")) > 0)
@@ -3970,7 +3986,7 @@ int is_ap(int unit)
 #define BSD_STA_SELECT_POLICY_FLAG_NON_VHT	0x00000008	/* NON VHT STA */
 #define BSD_IF_QUALIFY_POLICY_NVRAM		"bsd_if_qualify_policy"
 #define BSD_QUALIFY_POLICY_FLAG_NON_VHT		0x00000004	/* NON VHT STA */
-#if defined(RTAC5300) || defined(GTAC5300) || defined(RTAC3200) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(GTAXE11000)
+#if defined(RTAC5300) || defined(GTAC5300) || defined(RTAC3200) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAXE95Q) || defined(GTAXE11000)
 #define BSD_STA_SELECT_POLICY_NVRAM_X		"bsd_sta_select_policy_x"
 #define BSD_IF_QUALIFY_POLICY_NVRAM_X		"bsd_if_qualify_policy_x"
 #endif
@@ -3984,8 +4000,8 @@ int get_bsd_nonvht_status(int unit)
 	unsigned int flags;
 
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-#if defined(RTAC5300) || defined(GTAC5300) || defined(RTAC3200) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(GTAXE11000)
-	if (nvram_get_int("smart_connect_x") == 2) // 5GHz Only
+#if defined(RTAC5300) || defined(GTAC5300) || defined(RTAC3200) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAXE95Q) || defined(GTAXE11000)
+	if (nvram_get_int("smart_connect_x") == SMRTCONN_5G_ONLY) // 5GHz Only
 		str = nvram_get(strcat_r(prefix, BSD_STA_SELECT_POLICY_NVRAM_X, tmp));
 	else
 #endif
@@ -3996,8 +4012,8 @@ int get_bsd_nonvht_status(int unit)
 		if ((num == 11) && (flags & BSD_STA_SELECT_POLICY_FLAG_NON_VHT))
 			return 1;
 	}
-#if defined(RTAC5300) || defined(GTAC5300) || defined(RTAC3200) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(GTAXE11000)
-	if (nvram_get_int("smart_connect_x") == 2) // 5GHz Only
+#if defined(RTAC5300) || defined(GTAC5300) || defined(RTAC3200) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAXE95Q) || defined(GTAXE11000)
+	if (nvram_get_int("smart_connect_x") == SMRTCONN_5G_ONLY) // 5GHz Only
 		str = nvram_get(strcat_r(prefix, BSD_IF_QUALIFY_POLICY_NVRAM_X, tmp));
 	else
 #endif
@@ -4070,9 +4086,6 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #if defined(RTCONFIG_HND_ROUTER_AX)
 	int cap_11ax = wl_cap(unit, "11ax");
 #endif
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PRELINK) && !defined(RTCONFIG_MSSID_PRELINK)
-	int result = 0;
-#endif
 
 	if (subunit == -1)
 	{
@@ -4122,78 +4135,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #endif
 
 #ifdef BCM_BSD
-		if (((unit == 0) && nvram_get_int("smart_connect_x") == 1) ||
-		    ((unit == 1) && nvram_get_int("smart_connect_x") == 2)) {
-			int wlif_count = num_of_wl_if();
-			for (i = unit + 1; i < wlif_count; i++) {
-#ifdef RTCONFIG_DWB
-				if((nvram_get_int("dwb_mode") == 1 || nvram_get_int("dwb_mode") == 3) && nvram_get_int("dwb_band") > 0 && i == nvram_get_int("dwb_band"))
-				{
-					dbg("Don't apply wl0 to wl%d in smart_connect function, if enabled DWB mode.\n", i);
-					continue;
-				}
-#endif
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PRELINK) && !defined(RTCONFIG_MSSID_PRELINK)
-				result = 0;
-				if (amas_prelink_band_sync_bypass(i, &result) == AMAS_RESULT_SUCCESS) {
-					if (result == 1) {
-						_dprintf("Do not apply wl0 to wl%d, it meets prelink setting.\n", i);
-						continue;
-					}
-				}
-#endif
-				snprintf(prefix2, sizeof(prefix2), "wl%d_", i);
-				nvram_set(strcat_r(prefix2, "ssid", tmp2), nvram_safe_get(strcat_r(prefix, "ssid", tmp)));
-#ifdef RTCONFIG_WIFI6E
-				if (nvram_get_int(strcat_r(prefix2, "nband", tmp2)) == 4) { // 6G band
-					if (!strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "open")) {
-						nvram_set(strcat_r(prefix2, "auth_mode_x", tmp2), "owe");
-						nvram_set(strcat_r(prefix2, "crypto", tmp2), "");
-					}
-					else {
-						nvram_set(strcat_r(prefix2, "auth_mode_x", tmp2), "sae");
-						nvram_set(strcat_r(prefix2, "crypto", tmp2), "aes");
-					}
-				}
-				else
-#endif
-				{
-					nvram_set(strcat_r(prefix2, "auth_mode_x", tmp2), nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)));
-					nvram_set(strcat_r(prefix2, "crypto", tmp2), nvram_safe_get(strcat_r(prefix, "crypto", tmp)));
-				}
-				nvram_set(strcat_r(prefix2, "wep_x", tmp2), nvram_safe_get(strcat_r(prefix, "wep_x", tmp)));
-				nvram_set(strcat_r(prefix2, "key", tmp2), nvram_safe_get(strcat_r(prefix, "key", tmp)));
-				nvram_set(strcat_r(prefix2, "key1", tmp2), nvram_safe_get(strcat_r(prefix, "key1", tmp)));
-				nvram_set(strcat_r(prefix2, "key2", tmp2), nvram_safe_get(strcat_r(prefix, "key2", tmp)));
-				nvram_set(strcat_r(prefix2, "key3", tmp2), nvram_safe_get(strcat_r(prefix, "key3", tmp)));
-				nvram_set(strcat_r(prefix2, "key4", tmp2), nvram_safe_get(strcat_r(prefix, "key4", tmp)));
-				nvram_set(strcat_r(prefix2, "phrase_x", tmp2), nvram_safe_get(strcat_r(prefix, "phrase_x", tmp)));
-				nvram_set(strcat_r(prefix2, "wpa_psk", tmp2), nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp)));
-				nvram_set(strcat_r(prefix2, "radius_ipaddr", tmp2), nvram_safe_get(strcat_r(prefix, "radius_ipaddr", tmp)));
-				nvram_set(strcat_r(prefix2, "radius_key", tmp2), nvram_safe_get(strcat_r(prefix, "radius_key", tmp)));
-				nvram_set(strcat_r(prefix2, "radius_port", tmp2), nvram_safe_get(strcat_r(prefix, "radius_port", tmp)));
-				nvram_set(strcat_r(prefix2, "closed", tmp2), nvram_safe_get(strcat_r(prefix, "closed", tmp)));
-#if defined(RTCONFIG_HND_ROUTER_AX)
-				nvram_set(strcat_r(prefix2, "11ax", tmp2), nvram_safe_get(strcat_r(prefix, "11ax", tmp)));
-				nvram_set(strcat_r(prefix2, "mbo_enable", tmp2), nvram_safe_get(strcat_r(prefix, "mbo_enable", tmp)));
-				nvram_set(strcat_r(prefix2, "mfp", tmp2), nvram_safe_get(strcat_r(prefix, "mfp", tmp)));
-#endif
-			}
-		}
-
-#if 0
-		int acs = 1;
-		if (!(((unit == 0) && (nvram_get_int("smart_connect_x") == 1)) ||
-		      ((unit == 1) && nvram_get_int("smart_connect_x")) ||
-		      ((unit == 2) && nvram_get_int("smart_connect_x"))))
-			acs = 0;
-
-		if (acs) {
-			nvram_set(strcat_r(prefix, "nmode_x", tmp), "0");
-			nvram_set(strcat_r(prefix, "bw", tmp), "0");
-			nvram_set(strcat_r(prefix, "chanspec", tmp), "0");
-		}
-#endif
+		smart_connect_sync_config(unit);
 #endif
 
 			ure = is_ure(unit);
@@ -6399,6 +6341,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				/* WAN  L1   L2   L3   L4					  */
 
 	case MODEL_RTAX95Q:
+	case MODEL_RTAXE95Q:
 				/* eth0 eth1 eth2 eth3						  */	
 				/* WAN  L1   L2   L3						  */
 
@@ -6455,8 +6398,8 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 			sprintf(vlanDev3, "eth2.v0");
 			sprintf(vlanDev4, "eth3.v0");
 		}
-		/* Spefici net devices order for RT-AX95Q */
-		else if (model == MODEL_RTAX95Q) {
+		/* Spefici net devices order for RT-AX95Q, RT-AXE95Q */
+		else if (model == MODEL_RTAX95Q || model == MODEL_RTAXE95Q) {
 			sprintf(ethPort1, "eth3");
 			sprintf(ethPort2, "eth2");
 			sprintf(ethPort3, "eth2");
@@ -6663,7 +6606,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 						sprintf(vlanDev2, "eth4.v0");
 					}
 				}
-				else if (model == MODEL_RTAX95Q) {
+				else if (model == MODEL_RTAX95Q || model == MODEL_RTAXE95Q) {
 					sprintf(ethPort2, "eth3");
 					sprintf(vlanDev2, "eth3.v0");
 				}
@@ -6816,7 +6759,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				sprintf(ethPort2, "eth4");
 				sprintf(vlanDev2, "eth4.v0");
 			}
-			else if (model == MODEL_RTAX95Q) {
+			else if (model == MODEL_RTAX95Q || model == MODEL_RTAXE95Q) {
 				sprintf(ethPort1, "eth1");
 				sprintf(vlanDev1, "eth1.v0");
 				sprintf(ethPort2, "eth2");
@@ -6870,7 +6813,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 					sprintf(ethPort4, "eth2");
 					sprintf(vlanDev4, "eth2.v0");
 				}
-				else if (model == MODEL_RTAX95Q) {
+				else if (model == MODEL_RTAX95Q || model == MODEL_RTAXE95Q) {
 					sprintf(ethPort3, "eth2");
 					sprintf(vlanDev3, "eth2.v0");
 					sprintf(ethPort4, "eth3");
@@ -9143,7 +9086,7 @@ void set_acs_ifnames()
 	else
 		/* exclude acsd from selecting chanspec 165 */
 		nvram_set("wl2_acs_excl_chans", (nvram_get_hex("wl2_band5grp") & WL_5G_BAND_4) ? "0xd0a5" : "");
-#elif defined(GTAXE11000)
+#elif defined(GTAXE11000) || defined(RTAXE95Q)
 	snprintf(list, sizeof(list), "");
 
 	/* band 2 */
@@ -9734,6 +9677,7 @@ void hnd_nat_ac_init(int bootup)
 #if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
 		/* apply archer instead of runner */
 		eval("fc", "config", "--hw-accel", "1");
+		eval("archerctl", "sysport_tm", "disable");
 #else
 		eval("runner", "enable");
 #endif
@@ -9791,5 +9735,138 @@ void wl_driver_mode_update(void)
 			}
 		}
 	}
+}
+#endif
+
+#ifdef BCM_BSD
+void smart_connect_realign_ifnames() {
+
+	int wlif_count = num_of_wl_if();
+	int i = 0, j = 0, bandtype;
+	char tmp[32], prefix[]="wlXXXXXXX_";
+	char tmp2[32], prefix2[]="wlXXXXXXX_";
+	char bsd_ifnames[32];
+	char bsd_if_sel[32];
+
+	if (wlif_count < 3)
+		return;
+
+	if (nvram_match("re_mode", "1"))
+		return;
+
+	if(nvram_get_int("smart_connect_x") == SMRTCONN_2G_AND_5G) {
+		memset(bsd_ifnames, 0, sizeof(bsd_ifnames));
+		for (i = 0; i < wlif_count; i++) {
+			memset(bsd_if_sel, 0, sizeof(bsd_if_sel));
+			snprintf(prefix, sizeof(prefix), "wl%d_", i);
+			bandtype = nvram_get_int(strcat_r(prefix, "nband", tmp));
+			if(bandtype == 2 || bandtype == 1)
+				add_to_list(nvram_safe_get(strcat_r(prefix, "ifname", tmp)) , bsd_ifnames, sizeof(bsd_ifnames));
+			else
+				continue;
+
+			for (j = wlif_count - 1; j >= 0; j--) {
+				snprintf(prefix2, sizeof(prefix2), "wl%d_", j);
+				if (j == i)
+				    continue;
+				bandtype = nvram_get_int(strcat_r(prefix2, "nband", tmp2));
+				if(bandtype == 2 || bandtype == 1)
+					add_to_list(nvram_safe_get(strcat_r(prefix2, "ifname", tmp2)) , bsd_if_sel, sizeof(bsd_if_sel));
+			}
+
+			if(strlen(bsd_if_sel))
+				nvram_set(strcat_r(prefix, "bsd_if_select_policy", tmp), bsd_if_sel);
+		}
+
+		if(strlen(bsd_ifnames))
+			nvram_set("bsd_ifnames", bsd_ifnames);
+
+	}
+}
+
+void smart_connect_sync_config(int unit) {
+
+	char tmp[100], prefix[]="wlXXXXXXX_";
+	char tmp2[100], prefix2[]="wlXXXXXXX_";
+	int wlif_count = num_of_wl_if();
+	int i = 0;
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PRELINK) && !defined(RTCONFIG_MSSID_PRELINK)
+	int result = 0;
+#endif
+
+	if(!nvram_get_int("smart_connect_x"))
+		return;
+
+	if (((unit == 0) && nvram_get_int("smart_connect_x") == SMRTCONN_FULL_BANDS) ||	// Full bands smart connect
+#ifdef RTCONFIG_WIFI6E
+	   ((unit == 0) && nvram_get_int("smart_connect_x") == SMRTCONN_2G_AND_5G) ||	// 2.4GHz + 5GHz smart connect
+#endif
+	   ((unit == 1) && nvram_get_int("smart_connect_x") == SMRTCONN_5G_ONLY)	// 5GHz only smart connect
+	) {
+
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		for (i = unit + 1; i < wlif_count; i++) {
+#ifdef RTCONFIG_DWB
+			if((nvram_get_int("dwb_mode") == 1 || nvram_get_int("dwb_mode") == 3) && nvram_get_int("dwb_band") > 0 && i == nvram_get_int("dwb_band"))
+			{
+				dbg("Don't apply wl0 to wl%d in smart_connect function, if enabled DWB mode.\n", i);
+				continue;
+			}
+#endif
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PRELINK) && !defined(RTCONFIG_MSSID_PRELINK)
+			result = 0;
+			if (amas_prelink_band_sync_bypass(i, &result) == AMAS_RESULT_SUCCESS) {
+				if (result == 1) {
+					_dprintf("Do not apply wl0 to wl%d, it meets prelink setting.\n", i);
+					continue;
+				}
+			}
+#endif
+			snprintf(prefix2, sizeof(prefix2), "wl%d_", i);
+			nvram_set(strcat_r(prefix2, "ssid", tmp2), nvram_safe_get(strcat_r(prefix, "ssid", tmp)));
+#ifdef RTCONFIG_WIFI6E
+			if (nvram_get_int("smart_connect_x") == SMRTCONN_2G_AND_5G && nvram_get_int(strcat_r(prefix2, "nband", tmp2)) != 1) { // only sync 5G with 2.4G
+				continue;
+			}
+
+			if (nvram_get_int(strcat_r(prefix2, "nband", tmp2)) == 4) { // 6G band, convert to supported auth mode
+				if (!strcmp(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "open")) {
+					nvram_set(strcat_r(prefix2, "auth_mode_x", tmp2), "owe");
+					nvram_set(strcat_r(prefix2, "crypto", tmp2), "");
+				}
+				else {
+					nvram_set(strcat_r(prefix2, "auth_mode_x", tmp2), "sae");
+					nvram_set(strcat_r(prefix2, "crypto", tmp2), "aes");
+				}
+			}
+			else
+#endif
+			{
+				nvram_set(strcat_r(prefix2, "auth_mode_x", tmp2), nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)));
+				nvram_set(strcat_r(prefix2, "crypto", tmp2), nvram_safe_get(strcat_r(prefix, "crypto", tmp)));
+			}
+			nvram_set(strcat_r(prefix2, "wep_x", tmp2), nvram_safe_get(strcat_r(prefix, "wep_x", tmp)));
+			nvram_set(strcat_r(prefix2, "key", tmp2), nvram_safe_get(strcat_r(prefix, "key", tmp)));
+			nvram_set(strcat_r(prefix2, "key1", tmp2), nvram_safe_get(strcat_r(prefix, "key1", tmp)));
+			nvram_set(strcat_r(prefix2, "key2", tmp2), nvram_safe_get(strcat_r(prefix, "key2", tmp)));
+			nvram_set(strcat_r(prefix2, "key3", tmp2), nvram_safe_get(strcat_r(prefix, "key3", tmp)));
+			nvram_set(strcat_r(prefix2, "key4", tmp2), nvram_safe_get(strcat_r(prefix, "key4", tmp)));
+			nvram_set(strcat_r(prefix2, "phrase_x", tmp2), nvram_safe_get(strcat_r(prefix, "phrase_x", tmp)));
+			nvram_set(strcat_r(prefix2, "wpa_psk", tmp2), nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp)));
+			nvram_set(strcat_r(prefix2, "radius_ipaddr", tmp2), nvram_safe_get(strcat_r(prefix, "radius_ipaddr", tmp)));
+			nvram_set(strcat_r(prefix2, "radius_key", tmp2), nvram_safe_get(strcat_r(prefix, "radius_key", tmp)));
+			nvram_set(strcat_r(prefix2, "radius_port", tmp2), nvram_safe_get(strcat_r(prefix, "radius_port", tmp)));
+			nvram_set(strcat_r(prefix2, "closed", tmp2), nvram_safe_get(strcat_r(prefix, "closed", tmp)));
+#if defined(RTCONFIG_HND_ROUTER_AX)
+			nvram_set(strcat_r(prefix2, "11ax", tmp2), nvram_safe_get(strcat_r(prefix, "11ax", tmp)));
+			nvram_set(strcat_r(prefix2, "mbo_enable", tmp2), nvram_safe_get(strcat_r(prefix, "mbo_enable", tmp)));
+			nvram_set(strcat_r(prefix2, "mfp", tmp2), nvram_safe_get(strcat_r(prefix, "mfp", tmp)));
+#endif
+		}
+#ifdef RTCONFIG_WIFI6E
+		smart_connect_realign_ifnames();
+#endif
+	}
+
 }
 #endif

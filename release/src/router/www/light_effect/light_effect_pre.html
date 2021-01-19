@@ -8,18 +8,20 @@
 <script >
 var $light_effect_bg = $("#light_effect_bg");
 var scheme_item_post = {
-	"LED_Set" : {
-		"1" : {"R" : 0, "G" : 0, "B" : 128},
-		"2" : {"R" : 0, "G" : 0, "B" : 128},
-		"3" : {"R" : 0, "G" : 0, "B" : 128},
-		"4" : {"R" : 0, "G" : 0, "B" : 128},
-	},
+	"LED_Set" : {},
 	"Mode" : 6
 }
+var ledg_group = ((isSupport("ledg_count") == 0) ? 4 : isSupport("ledg_count"));
+for(var i = 1; i <= ledg_group; i += 1){
+	var led_group = {};
+	led_group[i] = {"R" : 0, "G" : 0, "B" : 128};
+	$.extend(true, scheme_item_post.LED_Set, led_group);
+}
+
 function initial_led_control() {
 	var set_scheme_item_post = function(_ledg_rgb) {
 		var ledg_rgb_array = _ledg_rgb.split(",");
-		if(ledg_rgb_array.length == 12) {
+		if(ledg_rgb_array.length == (ledg_group * 3)) {
 			for(var i = 0; i < ledg_rgb_array.length; i += 3) {
 				var group_idx = (Math.floor(i / 3)) + 1;
 				scheme_item_post["LED_Set"][group_idx]["R"] = multiply_rgb(parseInt(ledg_rgb_array[i]));
@@ -143,6 +145,10 @@ var lightl_effect_animate = {
 }
 function multiply_rgb(_value) {
 	return (Math.ceil(_value * 2) > 255) ? 255 : Math.ceil(_value * 2);
+}
+function isSupport(_ptn){
+	var ui_support = [<% get_ui_support(); %>][0];
+	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
 }
 $(document).ready(initial_led_control);
 </script>

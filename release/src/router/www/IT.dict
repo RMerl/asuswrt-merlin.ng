@@ -428,6 +428,7 @@ QIS_chooseAnnex_yet=Modalità ANNEX non selezionata.
 QIS_confirm_recommand_encryp=Si raccomanda di configurare prima le impostazioni di sicurezza wireless, volete continuare?
 QIS_desc_1=Per favore inserire il cavo nella porta WAN. Il sistema configurerà la rete automaticamente.
 QIS_desc_2=Modalità utente esperto, configurazione offline.
+QIS_desc_3=Per favore inserire il cavo nella porta DSL. Il sistema configurerà la rete automaticamente.
 QIS_detect_desc1=Rilevata connessione PPPoE/DSL.
 QIS_detect_desc2=L’installazione guidata ha rilevato che il tipo di connessione ad Internet è PPPoE/DSL.
 QIS_detect_desc3=Fare clic su “Next” (Avanti) per inserire il nome account e la password forniti dall’ISP (Internet Service Provider).

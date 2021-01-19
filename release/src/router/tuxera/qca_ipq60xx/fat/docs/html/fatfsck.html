@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<!-- This is an automatically generated file.  Do not edit.
+   Copyright (c) 2014 Sougata Santra / Tuxera Inc.
+   Copyright (c) 2011-2012 Erik Larsson / Tuxera Inc.
+   -->
+<head>
+  <meta charset="utf-8"/>
+  <style>
+    table.head, table.foot { width: 100%; }
+    td.head-rtitle, td.foot-os { text-align: right; }
+    td.head-vol { text-align: center; }
+    div.Pp { margin: 1ex 0ex; }
+    div.Nd, div.Bf, div.Op { display: inline; }
+    span.Pa, span.Ad { font-style: italic; }
+    span.Ms { font-weight: bold; }
+    dl.Bl-diag > dt { font-weight: bold; }
+    code.Nm, code.Fl, code.Cm, code.Ic, code.In, code.Fd, code.Fn,
+    code.Cd { font-weight: bold; font-family: inherit; }
+  </style>
+  <title>FATFSCK(8)</title>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td class="head-ltitle">FATFSCK(8)</td>
+    <td class="head-vol">System Manager's Manual</td>
+    <td class="head-rtitle">FATFSCK(8)</td>
+  </tr>
+</table>
+<div class="manual-text">
+<h1 class="Sh" title="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+fatfsck - check and repair a FAT volume
+<h1 class="Sh" title="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h1>
+<b>fatfsck</b> [ <i>options</i>] <i>device</i>
+<h1 class="Sh" title="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<b>fatfsck</b> will check a FAT volume for errors, and optionally correct them.
+  Run fatfsck without arguments for a full list of options.
+<h1 class="Sh" title="Sh" id="OPTIONS"><a class="permalink" href="#OPTIONS">OPTIONS</a></h1>
+Below is a summary of all the options that <b>fatfsck</b> accepts. Nearly all
+  options have two equivalent names. The short name is preceded by <b>-</b> and
+  the long name is preceded by <b>--</b>.
+<dl class="Bl-tag">
+  <dt><b>-b</b>, <b>--basic</b></dt>
+  <dd>Do only a basic file system check or repair. This option limits fatfsck to
+      checking/repairing the boot region, FAT and the root directory. All other
+      directories and allocations are ignored. This is useful when you want to
+      do a fast check/repair which makes sure that the volume will mount
+      properly and that the root directory will be accessible.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>-p</b>, <b>--probe</b></dt>
+  <dd>Probe for a FAT file system. This runs some tests on the device to check
+      if the file system is FAT.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>-q</b>, <b>--quiet</b></dt>
+  <dd>Suppresses informational messages. Only error/warning messages and the
+      final summary is displayed during execution.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>-r</b>, <b>--repair</b></dt>
+  <dd>Repair on-disk inconsistencies encountered.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>-a</b>, <b>--automatic-repair</b></dt>
+  <dd>If the volume is marked dirty, then repair on-disk inconsistencies
+      encountered (equivalent to the <b>-r</b>/<b>--repair</b> option).
+      Otherwise exit immediately with no action.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>-s</b>, <b>--strict</b></dt>
+  <dd>Turns on strict checking. This includes checking things that are not
+      normally required to make sure the volume follows FAT specifications. This
+      may increase the execution time for fatfsck.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>-t</b>, <b>--timeout</b> SECONDS</dt>
+  <dd>Timeout in seconds before fatfsck will abort the volume check/repair. If
+      specified, this sets an upper limit on the execution time of fatfsck.
+      After the timeout occurs, fatfsck will clear all its pending tasks and
+      return as soon as possible.
+    <div>&#x00A0;</div>
+    As a special case, a timeout value of 0 means that there is no timeout, i.e.
+      it is equivalent to not specifying the timeout option at all.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>-B</b>, <b>--progress-fd</b> FD</dt>
+  <dd>Enables progress reporting through the dedicated file descriptor <b>FD</b>
+      using the same format as the one emitted by e2fsck's <b>-C</b>
+    option.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>--cp</b> CODEPAGE</dt>
+  <dd>Use the given code page to decode the volume label and short file names.
+      The following code pages are supported: 437, 737, 775, 850, 852, 855, 857,
+      860, 861, 862, 863, 864, 865, 866, 869, 874, 932, 936, 949, 950. The
+      default is 437.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>-v</b>, <b>--verbose</b></dt>
+  <dd>Verbose output. This makes fatfsck print more information about what it's
+      doing, for instance which directory/file it's currently processing.</dd>
+</dl>
+<h1 class="Sh" title="Sh" id="EXIT_STATUS"><a class="permalink" href="#EXIT_STATUS">EXIT
+  STATUS</a></h1>
+<b>0</b>: Success. <b>fatfsck</b> did what it was instructed to do successfully.
+<dl class="Bl-tag">
+  <dt><b>1</b>: Unknown error. Error came from outside <b>fatfsck</b>
+    (libraries, operating system kernel, ...).</dt>
+  <dd></dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>2</b>: Invalid arguments. An error was detected when parsing the
+    options.</dt>
+  <dd></dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>3</b>: FAT volume errors were detected (when checking) or could not be
+    repaired (when repairing)</dt>
+  <dd></dd>
+</dl>
+<h1 class="Sh" title="Sh" id="PLEASE_NOTE"><a class="permalink" href="#PLEASE_NOTE">PLEASE
+  NOTE</a></h1>
+<b>fatfsck</b> currently does not support checking and repairing of FAT12
+  volumes.
+<h1 class="Sh" title="Sh" id="BUGS"><a class="permalink" href="#BUGS">BUGS</a></h1>
+If you find a bug please send an email describing the problem to
+  fat-support@tuxera.com.
+<h1 class="Sh" title="Sh" id="AUTHORS"><a class="permalink" href="#AUTHORS">AUTHORS</a></h1>
+<b>fatfsck</b> was written by
+<div class="Bd-indent">Erik Larsson, Tuxera Inc.
+<div>&#x00A0;</div>
+Sougata Santra, Tuxera Inc.</div>
+<h1 class="Sh" title="Sh" id="AVAILABILITY"><a class="permalink" href="#AVAILABILITY">AVAILABILITY</a></h1>
+<b>fatfsck</b> is part of the <b>Tuxera FATprogs</b> package.</div>
+<table class="foot">
+  <tr>
+    <td class="foot-date">March 2014</td>
+    <td class="foot-os">Tuxera TFATprogs 3017.7.17.3</td>
+  </tr>
+</table>
+</body>
+</html>

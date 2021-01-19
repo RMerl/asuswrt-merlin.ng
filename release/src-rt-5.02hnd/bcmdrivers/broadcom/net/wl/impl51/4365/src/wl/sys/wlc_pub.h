@@ -1271,8 +1271,9 @@ typedef struct {
 #define WLF2_PCB1_NAN		12	/* nan_mac_txstatus */
 #define WLF2_PCB1_WLFC		13	/* wl_hostpkt_callback */
 #define WLF2_PCB1_AIBSS_DATA	14	/* AIBSS TX packets */
-
-
+#ifdef WLPROBRESP_INTRANSIT_FILTER
+#define WLF2_PCB1_PROBRESP	15	/* wlc_proberesp_cb */
+#endif /* WLPROBRESP_INTRANSIT_FILTER */
 
 /* macros to access the pkttag.flags2.pcb1 field */
 #define WLF2_PCB1(p)		((WLPKTTAG(p)->flags2 & WLF2_PCB1_MASK) >> WLF2_PCB1_SHIFT)

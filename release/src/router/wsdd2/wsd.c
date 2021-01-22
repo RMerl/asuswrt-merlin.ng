@@ -813,7 +813,11 @@ static int send_http_resp_header(int fd, struct endpoint *ep,
 {
 	const char resp_hdr_fmt[] =
 		"HTTP/1.1 %s\r\n"
+#ifdef ASUSWRT
+		"Server: ASUSWRT WSD Server\r\r"
+#else
 		"Server: NETGEAR WSD Server\r\n"
+#endif
 		"Date: %s\r\n"
 		"Connection: close\r\n"
 		"Content-Type: application/soap+xml\r\n"

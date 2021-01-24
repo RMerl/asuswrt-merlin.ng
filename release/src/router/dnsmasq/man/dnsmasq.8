@@ -692,8 +692,8 @@ still marks the request so that no upstream nameserver will add client
 address information either. The default is zero for both IPv4 and
 IPv6. Note that upstream nameservers may be configured to return
 different results based on this information, but the dnsmasq cache
-does not take account. If a dnsmasq instance is configured such that
-different results may be encountered, caching should be disabled.
+does not take account. Caching is therefore disabled for such replies,
+unless the subnet address being added is constant.
 
 For example,
 .B --add-subnet=24,96
@@ -1480,6 +1480,22 @@ to allow netbooting. This mode is enabled using the
 .B proxy
 keyword in
 .B --dhcp-range.
+.TP
+.B --dhcp-pxe-vendor=<vendor>[,...]
+According to UEFI and PXE specifications, DHCP packets between PXE clients and
+proxy PXE servers should have 
+.I PXEClient 
+in their vendor-class field. However, the firmware of computers from a few
+vendors is customized to carry a different identifier in that field. This option
+is used to consider such identifiers valid for identifying PXE clients. For 
+instance
+
+.B --dhcp-pxe-vendor=PXEClient,HW-Client
+
+will enable dnsmasq to also provide proxy PXE service to those PXE clients with
+.I HW-Client
+in as their identifier.
+>>>>>>> 907def3... pxe: support pxe clients with custom vendor-class
 .TP  
 .B \-X, --dhcp-lease-max=<number>
 Limits dnsmasq to the specified maximum number of DHCP leases. The

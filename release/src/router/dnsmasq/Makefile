@@ -52,16 +52,20 @@ top!=pwd
 top?=$(CURDIR)
 
 ifeq ($(CRYPTO),openssl)
-crypto_pkg = libcrypto
-crypto_opt = -DHAVE_OPENSSL
+crypto_pkgs = libcrypto
+crypto_pkg  = libcrypto
+crypto_opt  = -DHAVE_OPENSSL
+crypto_lgmp =
 else
-crypto_pkg = nettle hogweed
-crypto_opt = -DHAVE_NETTLE
+crypto_pkgs = nettle hogweed
+crypto_pkg  = nettle
+crypto_opt  = -DHAVE_NETTLE
+crypto_lgmp = -lgmp
 endif
 
 dbus_cflags =   `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DBUS $(PKG_CONFIG) --cflags dbus-1` 
 dbus_libs =     `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DBUS $(PKG_CONFIG) --libs dbus-1` 
-ubus_libs =     `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_UBUS "" --copy -lubox -lubus`
+ubus_libs =     `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_UBUS "" --copy '-lubox -lubus'`
 idn_cflags =    `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_IDN $(PKG_CONFIG) --cflags libidn` 
 idn_libs =      `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_IDN $(PKG_CONFIG) --libs libidn` 
 idn2_cflags =   `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_LIBIDN2 $(PKG_CONFIG) --cflags libidn2`
@@ -70,10 +74,13 @@ ct_cflags =     `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_CONNTRACK $(PKG_CON
 ct_libs =       `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_CONNTRACK $(PKG_CONFIG) --libs libnetfilter_conntrack`
 lua_cflags =    `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_LUASCRIPT $(PKG_CONFIG) --cflags lua5.2` 
 lua_libs =      `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_LUASCRIPT $(PKG_CONFIG) --libs lua5.2` 
-crypto_cflags = `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC $(PKG_CONFIG) --cflags $(crypto_pkg)` \
-		`echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC "" --copy $(crypto_opt)`
-crypto_libs =   `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC $(PKG_CONFIG) --libs $(crypto_pkg)`
-gmp_libs =      `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC NO_GMP --copy -lgmp`
+crypto_cflags = `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC     $(PKG_CONFIG) --cflags '$(crypto_pkgs)' \
+                                                        HAVE_CRYPTOHASH $(PKG_CONFIG) --cflags $(crypto_pkg)` \
+                `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC "" --copy $(crypto_opt)` \
+                `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_CRYPTOHASH "" --copy $(crypto_opt)`
+crypto_libs =   `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC     $(PKG_CONFIG) --libs '$(crypto_pkgs)' \
+                                                        HAVE_CRYPTOHASH $(PKG_CONFIG) --libs $(crypto_pkg)`
+gmp_libs =      `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC NO_GMP --copy '$(crypto_lgmp)'`
 sunos_libs =    `if uname | grep SunOS >/dev/null 2>&1; then echo -lsocket -lnsl -lposix4; fi`
 version =     -DVERSION='\"`$(top)/bld/get-version $(top)`\"'
 
@@ -86,7 +93,8 @@ objs = cache.o rfc1035.o util.o option.o forward.o network.o \
        helper.o tftp.o log.o conntrack.o dhcp6.o rfc3315.o \
        dhcp-common.o outpacket.o radv.o slaac.o auth.o ipset.o \
        domain.o dnssec.o blockdata.o tables.o loop.o inotify.o \
-       poll.o rrfilter.o edns0.o arp.o crypto.o crypto-openssl.o dump.o ubus.o metrics.o
+       poll.o rrfilter.o edns0.o arp.o crypto.o crypto-openssl.o dump.o ubus.o \
+       metrics.o hash_questions.o
 
 hdrs = dnsmasq.h config.h dhcp-protocol.h dhcp6-protocol.h \
        dns-protocol.h radv-protocol.h ip6addr.h metrics.h

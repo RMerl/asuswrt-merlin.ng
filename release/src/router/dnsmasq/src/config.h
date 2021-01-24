@@ -128,6 +128,9 @@ HAVE_AUTH
    define this to include the facility to act as an authoritative DNS
    server for one or more zones.
 
+HAVE_CRYPTOHASH
+   include just hash function from crypto library, but no DNSSEC.
+
 HAVE_DNSSEC
    include DNSSEC validator.
 
@@ -198,6 +201,7 @@ RESOLVFILE
 /* #define HAVE_IDN */
 /* #define HAVE_LIBIDN2 */
 /* #define HAVE_CONNTRACK */
+/* #define HAVE_CRYPTOHASH */
 /* #define HAVE_DNSSEC */
 /* #define HAVE_NETTLE */
 /* #define HAVE_OPENSSL */
@@ -433,6 +437,10 @@ static char *compile_opts =
 "no-"
 #endif
 "auth "
+#if !defined(HAVE_CRYPTOHASH) && !defined(HAVE_DNSSEC)
+"no-"
+#endif
+"cryptohash "
 #ifndef HAVE_DNSSEC
 "no-"
 #endif

@@ -167,6 +167,7 @@ struct myoption {
 #define LOPT_IGNORE_CLID   358
 #define LOPT_SINGLE_PORT   359
 #define LOPT_SCRIPT_TIME   360
+#define LOPT_PXE_VENDOR    361
  
 #ifdef HAVE_GETOPT_LONG
 static const struct option opts[] =  
@@ -270,6 +271,7 @@ static const struct myoption opts[] =
     { "dhcp-circuitid", 1, 0, LOPT_CIRCUIT },
     { "dhcp-remoteid", 1, 0, LOPT_REMOTE },
     { "dhcp-subscrid", 1, 0, LOPT_SUBSCR },
+    { "dhcp-pxe-vendor", 1, 0, LOPT_PXE_VENDOR },
     { "interface-name", 1, 0, LOPT_INTNAME },
     { "dhcp-hostsfile", 1, 0, LOPT_DHCP_HOST },
     { "dhcp-optsfile", 1, 0, LOPT_DHCP_OPTS },
@@ -383,6 +385,7 @@ static struct {
   { LOPT_CIRCUIT, ARG_DUP, "set:<tag>,<circuit>", gettext_noop("Map RFC3046 circuit-id to tag."), NULL },
   { LOPT_REMOTE, ARG_DUP, "set:<tag>,<remote>", gettext_noop("Map RFC3046 remote-id to tag."), NULL },
   { LOPT_SUBSCR, ARG_DUP, "set:<tag>,<remote>", gettext_noop("Map RFC3993 subscriber-id to tag."), NULL },
+  { LOPT_PXE_VENDOR, ARG_DUP, "<vendor>[,...]", gettext_noop("Specify vendor class to match for PXE requests."), NULL },
   { 'J', ARG_DUP, "tag:<tag>...", gettext_noop("Don't do DHCP for hosts with tag set."), NULL },
   { LOPT_BROADCAST, ARG_DUP, "[=tag:<tag>...]", gettext_noop("Force broadcast replies for hosts with tag set."), NULL }, 
   { 'k', OPT_NO_FORK, NULL, gettext_noop("Do NOT fork into the background, do NOT run in debug mode."), NULL },
@@ -3674,8 +3677,8 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	     new->val = opt_malloc(new->len);
 	     memcpy(new->val + 1, arg, new->len - 1);
 	     
-	     new->u.vendor_class = (unsigned char *)"PXEClient";
-	     new->flags = DHOPT_VENDOR;
+	     new->u.vendor_class = NULL;
+	     new->flags = DHOPT_VENDOR | DHOPT_VENDOR_PXE;
 	     
 	     if (comma && atoi_check(comma, &timeout))
 	       *(new->val) = timeout;
@@ -3937,6 +3940,19 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	new->next = daemon->override_relays;
 	daemon->override_relays = new;
 	arg = comma;
+	}
+	  break;
+
+    case LOPT_PXE_VENDOR: /* --dhcp-pxe-vendor */
+      {
+        while (arg) {
+	  struct dhcp_pxe_vendor *new = opt_malloc(sizeof(struct dhcp_pxe_vendor));
+	  comma = split(arg);
+          new->data = opt_string_alloc(arg);
+	  new->next = daemon->dhcp_pxe_vendors;
+	  daemon->dhcp_pxe_vendors = new;
+	  arg = comma;
+	}
       }
       break;
 
@@ -5213,6 +5229,13 @@ void read_opts(int argc, char **argv, char *compile_opts)
       strcpy(buff, "hostmaster.");
       strcat(buff, daemon->authserver);
       daemon->hostmaster = opt_string_alloc(buff);
+    }
+
+  if (!daemon->dhcp_pxe_vendors)
+    {
+      daemon->dhcp_pxe_vendors = opt_malloc(sizeof(struct dhcp_pxe_vendor));
+      daemon->dhcp_pxe_vendors->data = opt_string_alloc(DHCP_PXE_DEF_VENDOR);
+      daemon->dhcp_pxe_vendors->next = NULL;
     }
   
   /* only one of these need be specified: the other defaults to the host-name */

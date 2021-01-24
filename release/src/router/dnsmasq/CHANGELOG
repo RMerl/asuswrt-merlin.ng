@@ -1,3 +1,37 @@
+version 2.83
+	Use the values of --min-port and --max-port in outgoing
+	TCP connections to upstream DNS servers.
+
+	Fix a remote buffer overflow problem in the DNSSEC code. Any
+	dnsmasq with DNSSEC compiled in and enabled is vulnerable to this,
+	referenced by CVE-2020-25681, CVE-2020-25682, CVE-2020-25683
+	CVE-2020-25687.
+
+	Be sure to only accept UDP DNS query replies at the address
+	from which the query was originated. This keeps as much entropy
+	in the {query-ID, random-port} tuple as possible, to help defeat
+	cache poisoning attacks. Refer: CVE-2020-25684.
+
+	Use the SHA-256 hash function to verify that DNS answers
+	received are for the questions originally asked. This replaces
+	the slightly insecure SHA-1 (when compiled with DNSSEC) or
+	the very insecure CRC32 (otherwise). Refer: CVE-2020-25685.
+
+	Handle multiple identical near simultaneous DNS queries better.
+	Previously, such queries would all be forwarded
+	independently. This is, in theory, inefficent but in practise
+	not a problem, _except_ that is means that an answer for any
+	of the forwarded queries will be accepted and cached.
+	An attacker can send a query multiple times, and for each repeat,
+	another {port, ID} becomes capable of accepting the answer he is
+	sending in the blind, to random IDs and ports. The chance of a
+	succesful attack is therefore multiplied by the number of repeats
+	of the query. The new behaviour detects repeated queries and
+	merely stores the clients sending repeats so that when the
+	first query completes, the answer can be sent to all the
+	clients who asked. Refer: CVE-2020-25686.
+	
+
 version 2.82
 	Improve behaviour in the face of network interfaces which come
 	and go and change index. Thanks to Petr Mensik for the patch.

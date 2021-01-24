@@ -1262,17 +1262,46 @@ int random_sock(int family)
 int local_bind(int fd, union mysockaddr *addr, char *intname, unsigned int ifindex, int is_tcp)
 {
   union mysockaddr addr_copy = *addr;
+  unsigned short port;
+  int tries = 1, done = 0;
+  unsigned int ports_avail = ((unsigned short)daemon->max_port - (unsigned short)daemon->min_port) + 1;
+ 
+  if (addr_copy.sa.sa_family == AF_INET)
+    port = addr_copy.in.sin_port;
+  else
+    port = addr_copy.in6.sin6_port;
 
   /* cannot set source _port_ for TCP connections. */
   if (is_tcp)
+    port = 0;
+
+  /* Bind a random port within the range given by min-port and max-port */
+  if (port == 0)
     {
-      if (addr_copy.sa.sa_family == AF_INET)
-	addr_copy.in.sin_port = 0;
-      else
-	addr_copy.in6.sin6_port = 0;
+      tries = ports_avail < 30 ? 3 * ports_avail : 100;
+      port = htons(daemon->min_port + (rand16() % ((unsigned short)ports_avail)));
     }
   
-  if (bind(fd, (struct sockaddr *)&addr_copy, sa_len(&addr_copy)) == -1)
+  while (tries--)
+    {
+      if (addr_copy.sa.sa_family == AF_INET)
+	addr_copy.in.sin_port = port;
+      else
+	addr_copy.in6.sin6_port = port;
+
+      if (bind(fd, (struct sockaddr *)&addr_copy, sa_len(&addr_copy)) != -1)
+	{
+	  done = 1;
+	  break;
+	}
+      
+      if (errno != EADDRINUSE && errno != EACCES)
+	return 0;
+      
+      port = htons(daemon->min_port + (rand16() % ((unsigned short)ports_avail)));
+    }
+
+  if (!done)
     return 0;
 
   if (!is_tcp && ifindex > 0)

@@ -1,35 +1,37 @@
 #!/bin/sh
 
-search=$1
-shift
-pkg=$1
-shift
-op=$1
-shift
-
 in=`cat`
 
-if grep "^\#[[:space:]]*define[[:space:]]*$search" config.h >/dev/null 2>&1 || \
-    echo $in | grep $search >/dev/null 2>&1; then
+search()
+{
+    grep "^\#[[:space:]]*define[[:space:]]*$1" config.h >/dev/null 2>&1 || \
+    echo $in | grep $1 >/dev/null 2>&1
+}
+
+while [ "$#" -gt 0 ]; do
+    search=$1
+    pkg=$2
+    op=$3
+    lib=$4
+    shift 4
+if search "$search"; then
+
 # Nasty, nasty, in --copy, arg 2 (if non-empty) is another config to search for, used with NO_GMP
     if [ $op = "--copy" ]; then
 	if [ -z "$pkg" ]; then
-	    pkg="$*"
-	elif grep "^\#[[:space:]]*define[[:space:]]*$pkg" config.h >/dev/null 2>&1 || \
-		 echo $in | grep $pkg >/dev/null 2>&1; then
+	    pkg="$lib"
+	elif search "$pkg"; then
 	    pkg=""
 	else 
-	    pkg="$*"
+	    pkg="$lib"
 	fi
-    elif grep "^\#[[:space:]]*define[[:space:]]*${search}_STATIC" config.h >/dev/null 2>&1 || \
-	     echo $in | grep ${search}_STATIC >/dev/null 2>&1; then
-	pkg=`$pkg  --static $op $*`
+    elif search "${search}_STATIC"; then
+	pkg=`$pkg  --static $op $lib`
     else
-	pkg=`$pkg $op $*`
+	pkg=`$pkg $op $lib`
     fi
     
-    if grep "^\#[[:space:]]*define[[:space:]]*${search}_STATIC" config.h >/dev/null 2>&1 || \
-	   echo $in | grep ${search}_STATIC >/dev/null 2>&1; then
+    if search "${search}_STATIC"; then
 	if [ $op = "--libs" ] || [ $op = "--copy" ]; then
 	    echo "-Wl,-Bstatic $pkg -Wl,-Bdynamic"
 	else
@@ -40,3 +42,4 @@ if grep "^\#[[:space:]]*define[[:space:]]*$search" config.h >/dev/null 2>&1 || \
     fi
 fi
 
+done

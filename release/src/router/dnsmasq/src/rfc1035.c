@@ -333,55 +333,6 @@ unsigned char *skip_section(unsigned char *ansp, int count, struct dns_header *h
   return ansp;
 }
 
-/* CRC the question section. This is used to safely detect query 
-   retransmission and to detect answers to questions we didn't ask, which 
-   might be poisoning attacks. Note that we decode the name rather 
-   than CRC the raw bytes, since replies might be compressed differently. 
-   We ignore case in the names for the same reason. Return all-ones
-   if there is not question section. */
-#ifndef HAVE_DNSSEC
-unsigned int questions_crc(struct dns_header *header, size_t plen, char *name)
-{
-  int q;
-  unsigned int crc = 0xffffffff;
-  unsigned char *p1, *p = (unsigned char *)(header+1);
-
-  for (q = ntohs(header->qdcount); q != 0; q--) 
-    {
-      if (!extract_name(header, plen, &p, name, 1, 4))
-	return crc; /* bad packet */
-      
-      for (p1 = (unsigned char *)name; *p1; p1++)
-	{
-	  int i = 8;
-	  char c = *p1;
-
-	  if (c >= 'A' && c <= 'Z')
-	    c += 'a' - 'A';
-
-	  crc ^= c << 24;
-	  while (i--)
-	    crc = crc & 0x80000000 ? (crc << 1) ^ 0x04c11db7 : crc << 1;
-	}
-      
-      /* CRC the class and type as well */
-      for (p1 = p; p1 < p+4; p1++)
-	{
-	  int i = 8;
-	  crc ^= *p1 << 24;
-	  while (i--)
-	    crc = crc & 0x80000000 ? (crc << 1) ^ 0x04c11db7 : crc << 1;
-	}
-
-      p += 4;
-      if (!CHECK_LEN(header, p, plen, 0))
-	return crc; /* bad packet */
-    }
-
-  return crc;
-}
-#endif
-
 size_t resize_packet(struct dns_header *header, size_t plen, unsigned char *pheader, size_t hlen)
 {
   unsigned char *ansp = skip_questions(header, plen);
@@ -1408,6 +1359,8 @@ size_t answer_request(struct dns_header *header, char *limit, size_t qlen,
 		}
 
 	    }
+	  else
+	    return 0; /* give up if any cached CNAME in chain can't be used for DNSSEC reasons. */
 
 	  strcpy(name, cname_target);
 	}

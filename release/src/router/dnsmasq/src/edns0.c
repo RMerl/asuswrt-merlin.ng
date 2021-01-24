@@ -264,7 +264,8 @@ static void encoder(unsigned char *in, char *out)
   out[3] = char64(in[2]);
 }
 
-static size_t add_dns_client(struct dns_header *header, size_t plen, unsigned char *limit, union mysockaddr *l3, time_t now)
+static size_t add_dns_client(struct dns_header *header, size_t plen, unsigned char *limit,
+			     union mysockaddr *l3, time_t now, int *cacheablep)
 {
   int maclen, replace = 2; /* can't get mac address, just delete any incoming. */
   unsigned char mac[DHCP_CHADDR_MAX];
@@ -273,6 +274,7 @@ static size_t add_dns_client(struct dns_header *header, size_t plen, unsigned ch
   if ((maclen = find_mac(l3, mac, 1, now)) == 6)
     {
       replace = 1;
+      *cacheablep = 0;
 
       if (option_bool(OPT_MAC_HEX))
 	print_mac(encode, mac, maclen);
@@ -288,14 +290,18 @@ static size_t add_dns_client(struct dns_header *header, size_t plen, unsigned ch
 }
 
 
-static size_t add_mac(struct dns_header *header, size_t plen, unsigned char *limit, union mysockaddr *l3, time_t now)
+static size_t add_mac(struct dns_header *header, size_t plen, unsigned char *limit,
+		      union mysockaddr *l3, time_t now, int *cacheablep)
 {
   int maclen;
   unsigned char mac[DHCP_CHADDR_MAX];
 
   if ((maclen = find_mac(l3, mac, 1, now)) != 0)
-    plen = add_pseudoheader(header, plen, limit, PACKETSZ, EDNS0_OPTION_MAC, mac, maclen, 0, 0); 
-    
+    {
+      *cacheablep = 0;
+      plen = add_pseudoheader(header, plen, limit, PACKETSZ, EDNS0_OPTION_MAC, mac, maclen, 0, 0); 
+    }
+  
   return plen; 
 }
 
@@ -313,17 +319,18 @@ static void *get_addrp(union mysockaddr *addr, const short family)
   return &addr->in.sin_addr;
 }
 
-static size_t calc_subnet_opt(struct subnet_opt *opt, union mysockaddr *source)
+static size_t calc_subnet_opt(struct subnet_opt *opt, union mysockaddr *source, int *cacheablep)
 {
   /* http://tools.ietf.org/html/draft-vandergaast-edns-client-subnet-02 */
   
   int len;
   void *addrp = NULL;
   int sa_family = source->sa.sa_family;
-
+  int cacheable = 0;
+  
   opt->source_netmask = 0;
   opt->scope_netmask = 0;
-
+    
   if (source->sa.sa_family == AF_INET6 && daemon->add_subnet6)
     {
       opt->source_netmask = daemon->add_subnet6->mask;
@@ -331,6 +338,7 @@ static size_t calc_subnet_opt(struct subnet_opt *opt, union mysockaddr *source)
 	{
 	  sa_family = daemon->add_subnet6->addr.sa.sa_family;
 	  addrp = get_addrp(&daemon->add_subnet6->addr, sa_family);
+	  cacheable = 1;
 	} 
       else 
 	addrp = &source->in6.sin6_addr;
@@ -343,14 +351,13 @@ static size_t calc_subnet_opt(struct subnet_opt *opt, union mysockaddr *source)
 	{
 	  sa_family = daemon->add_subnet4->addr.sa.sa_family;
 	  addrp = get_addrp(&daemon->add_subnet4->addr, sa_family);
+	  cacheable = 1; /* Address is constant */
 	} 
 	else 
 	  addrp = &source->in.sin_addr;
     }
   
   opt->family = htons(sa_family == AF_INET6 ? 2 : 1);
-  
-  len = 0;
   
   if (addrp && opt->source_netmask != 0)
     {
@@ -359,18 +366,26 @@ static size_t calc_subnet_opt(struct subnet_opt *opt, union mysockaddr *source)
       if (opt->source_netmask & 7)
 	opt->addr[len-1] &= 0xff << (8 - (opt->source_netmask & 7));
     }
+  else
+    {
+      cacheable = 1; /* No address ever supplied. */
+      len = 0;
+    }
+
+  if (cacheablep)
+    *cacheablep = cacheable;
   
   return len + 4;
 }
  
-static size_t add_source_addr(struct dns_header *header, size_t plen, unsigned char *limit, union mysockaddr *source)
+static size_t add_source_addr(struct dns_header *header, size_t plen, unsigned char *limit, union mysockaddr *source, int *cacheable)
 {
   /* http://tools.ietf.org/html/draft-vandergaast-edns-client-subnet-02 */
   
   int len;
   struct subnet_opt opt;
   
-  len = calc_subnet_opt(&opt, source);
+  len = calc_subnet_opt(&opt, source, cacheable);
   return add_pseudoheader(header, plen, (unsigned char *)limit, PACKETSZ, EDNS0_OPTION_CLIENT_SUBNET, (unsigned char *)&opt, len, 0, 0);
 }
 
@@ -383,18 +398,18 @@ int check_source(struct dns_header *header, size_t plen, unsigned char *pseudohe
   unsigned char *p;
   int code, i, rdlen;
   
-   calc_len = calc_subnet_opt(&opt, peer);
+  calc_len = calc_subnet_opt(&opt, peer, NULL);
    
-   if (!(p = skip_name(pseudoheader, header, plen, 10)))
-     return 1;
-   
-   p += 8; /* skip UDP length and RCODE */
-   
-   GETSHORT(rdlen, p);
-   if (!CHECK_LEN(header, p, plen, rdlen))
-     return 1; /* bad packet */
-   
-   /* check if option there */
+  if (!(p = skip_name(pseudoheader, header, plen, 10)))
+    return 1;
+  
+  p += 8; /* skip UDP length and RCODE */
+  
+  GETSHORT(rdlen, p);
+  if (!CHECK_LEN(header, p, plen, rdlen))
+    return 1; /* bad packet */
+  
+  /* check if option there */
    for (i = 0; i + 4 < rdlen; i += len + 4)
      {
        GETSHORT(code, p);
@@ -412,24 +427,28 @@ int check_source(struct dns_header *header, size_t plen, unsigned char *pseudohe
    return 1;
 }
 
+/* Set *check_subnet if we add a client subnet option, which needs to checked 
+   in the reply. Set *cacheable to zero if we add an option which the answer
+   may depend on. */
 size_t add_edns0_config(struct dns_header *header, size_t plen, unsigned char *limit, 
-			union mysockaddr *source, time_t now, int *check_subnet)    
+			union mysockaddr *source, time_t now, int *check_subnet, int *cacheable)    
 {
   *check_subnet = 0;
-
+  *cacheable = 1;
+  
   if (option_bool(OPT_ADD_MAC))
-    plen  = add_mac(header, plen, limit, source, now);
+    plen  = add_mac(header, plen, limit, source, now, cacheable);
   
   if (option_bool(OPT_MAC_B64) || option_bool(OPT_MAC_HEX))
-    plen = add_dns_client(header, plen, limit, source, now);
-
+    plen = add_dns_client(header, plen, limit, source, now, cacheable);
+  
   if (daemon->dns_client_id)
     plen = add_pseudoheader(header, plen, limit, PACKETSZ, EDNS0_OPTION_NOMCPEID, 
 			    (unsigned char *)daemon->dns_client_id, strlen(daemon->dns_client_id), 0, 1);
   
   if (option_bool(OPT_CLIENT_SUBNET))
     {
-      plen = add_source_addr(header, plen, limit, source); 
+      plen = add_source_addr(header, plen, limit, source, cacheable); 
       *check_subnet = 1;
     }
 	  

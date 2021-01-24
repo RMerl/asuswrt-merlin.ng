@@ -17,15 +17,18 @@
 
 #include "dnsmasq.h"
 
-#if defined(HAVE_DNSSEC) && defined(HAVE_OPENSSL)
+#ifdef HAVE_OPENSSL
+#if defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH)
 
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
 #include <openssl/evp.h>
+#include <openssl/err.h>
+
+#ifdef HAVE_DNSSEC
 #include <openssl/rsa.h>
 #include <openssl/ecdsa.h>
 #include <openssl/x509.h>
-#include <openssl/err.h>
 
 #if !defined(OPENSSL_NO_ENGINE) && !defined(NO_GOST)
 #  include <openssl/engine.h>
@@ -36,6 +39,7 @@ static char *gost_hash = NULL;
 
 #if OPENSSL_VERSION_NUMBER >= 0x10101000L
 #  define HAVE_EDDSA
+#endif
 #endif
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
@@ -67,7 +71,7 @@ static int ECDSA_SIG_set0(ECDSA_SIG *sig, BIGNUM *r, BIGNUM *s)
 #endif
 
 #ifdef HAVE_EDDSA
-/* Implement a "hash-function" to the nettle API, which simply returns
+/* Implement a "hash-function" to the openssl API, which simply returns
    the input data, concatenated into a single, statically maintained, buffer.
 
    Used for the EdDSA sigs, which operate on the whole message, rather
@@ -246,6 +250,7 @@ size_t hash_length(const void *hash)
   return EVP_MD_size(md);
 }
 
+#ifdef HAVE_DNSSEC
 static int dnsmasq_rsa_verify(struct blockdata *key_data, unsigned int key_len, unsigned char *sig, size_t sig_len,
 			      unsigned char *digest, size_t digest_len, int algo)
 {
@@ -594,6 +599,7 @@ char *nsec3_digest_name(int digest)
     default: return NULL;
     }
 }
+#endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
 static void *dnsmasq_malloc(size_t size, const char *file, int line)
@@ -660,3 +666,4 @@ void crypto_init(void)
 }
 
 #endif
+#endif /* HAVE_OPENSSL */

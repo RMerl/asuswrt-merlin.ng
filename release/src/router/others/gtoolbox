@@ -1,9 +1,14 @@
 #!/bin/sh
 ####################################################################
+cfe_lanmac="et0macaddr"
+cfe_2gmac="0:macaddr"
+cfe_5gmac="1:macaddr"
+macpattern="^[A-F0-9]{2}(:[A-F0-9]{2}){5}$"
+
 get_mac() {
-	MAC_LAN=`envram get et0macaddr`
-	MAC_2G=`envram get 1:macaddr`
-	MAC_5G=`envram get 2:macaddr`
+	MAC_LAN=`envram get $cfe_lanmac`
+	MAC_2G=`envram get $cfe_2gmac`
+	MAC_5G=`envram get $cfe_5gmac`
 }
 
 get_wl_driver() {
@@ -19,30 +24,51 @@ fix_timeout() {
 	envram commit
 }
 
+checkmac() {
+	tmp=$(echo $1 | grep -E "$macpattern")
+	if [ -z "$tmp" ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
 mod_lanmac() {
 	echo "LAN MAC: $MAC_LAN"
-	read -p "MAC(留空不修改):" maclan
-	if [ -n "$maclan" ]; then
-		`envram set 'et0macaddr'="$maclan"`
+	read -p "MAC(使用:分隔，留空不修改): " maclan
+	maclan=$(echo $maclan | tr '[a-f]' '[A-F]')
+	checkmac $maclan
+	if [ $? -eq 1 ]; then
+		`envram set $cfe_lanmac="$maclan"`
 		envram commit
+	else
+		echo "输入错误或未输入"; sleep 1
 	fi
 }
 
 mod_2gmac() {
 	echo "2.4G MAC: $MAC_2G"
-	read -p "MAC(留空不修改):" mac2g
-	if [ -n "$mac2g" ]; then
-		`envram set '1:macaddr'="$mac2g"`
+	read -p "MAC(使用:分隔，留空不修改): " mac2g
+	maclan=$(echo $mac2g | tr '[a-f]' '[A-F]')
+	checkmac $mac2g
+	if [ $? -eq 1 ]; then
+		`envram set $cfe_2gmac="$mac2g"`
 		envram commit
+	else
+		echo "输入错误或未输入"; sleep 1
 	fi
 }
 
 mod_5gmac() {
-	echo "2.4G MAC: $MAC_5G"
-	read -p "MAC(留空不修改):" mac5g
-	if [ -n "$mac5g" ]; then
-		`envram set '2:macaddr'="$mac5g"`
+	echo "5G MAC: $MAC_5G"
+	read -p "MAC(使用:分隔，留空不修改): " mac5g
+	mac5g=$(echo $mac5g | tr '[a-f]' '[A-F]')
+	checkmac $mac5g
+	if [ $? -eq 1 ]; then
+		`envram set $cfe_5gmac="$mac5g"`
 		envram commit
+	else
+		echo "输入错误或未输入"; sleep 1
 	fi
 }
 
@@ -152,9 +178,11 @@ do
 		rm_softcenter_detect;sleep 1;;
 	9)
 		upgrade_mcu_firmware;sleep 1;;
-    q)
-		killall -9 envrams; echo; exit;;
-    *)
+	q|Q)
+		killall -9 envrams; echo; return 1;;
+	[0-9a-zA-Z])
 		ops;;
+    *)
+		;;
 	esac
 done

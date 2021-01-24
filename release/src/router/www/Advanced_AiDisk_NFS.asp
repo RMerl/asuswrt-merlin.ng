@@ -574,7 +574,7 @@ function check_dir_path(){
 <div id="DM_mask" class="mask_bg"></div>
 <div id="folderTree_panel" class="panel_folder" >
 		<table><tr><td>
-			<div class="machineName" style="width:200px;font-family:Microsoft JhengHei;font-size:12pt;font-weight:bolder; margin-top:15px;margin-left:30px;"><#Web_Title2#></div>
+			<div class="machineName" style="width:200px;font-size:12pt;font-weight:bolder; margin-top:15px;margin-left:30px;"><#Web_Title2#></div>
 		</td>
 		<td>
 			<div style="width:240px;margin-top:17px;margin-left:125px;">

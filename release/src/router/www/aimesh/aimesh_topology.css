@@ -99,7 +99,7 @@
 	float: right;
 	padding: 2% 1% 2% 1%;
 	background-color: #424E55;
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 }
 .card_block_bg{
 	width: 100%;
@@ -407,7 +407,7 @@
 	z-index: 20;
 	color: #ffffff;
 	font-size: 14px;
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 	background: transparent;
 }
 .location_info_bg span.location_hint{
@@ -424,7 +424,7 @@
 	background-color: rgba(33,44,49,0.7);
 	border-radius: 4px 4px 0px 0px;
 	font-size: 14px;
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 	height: 21px;
 }
 /*style the arrow inside the select element:*/
@@ -512,7 +512,7 @@
 	height: 185px;
 	overflow-y: scroll;
 	border-radius: 0px 0px 4px 4px;
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 }
 .custom_select_items div:hover{
 	background-color: #3C474B;
@@ -586,7 +586,7 @@
 .signal_text_bg.signal{
 	font-size: 30px;
 	margin-left: 18px;
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 	height: 32px;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -620,7 +620,7 @@
 }
 .signal_hint_text{
 	margin-left: 18px;
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 	font-size: 12px;
 	color: #7F8FA4;
 }
@@ -645,7 +645,7 @@
 .fw_version_text{
 	color: #FFFFFF;
 	font-size: 14px;
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 	text-decoration: underline;
 	position: relative;
 }
@@ -764,7 +764,7 @@
 }
 .connect_type_status_bg .uplink_type_title{
 	line-height: 110%;
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 	font-size: 24px;
 	margin-left: 22px;
 	margin-bottom: 10px;
@@ -782,7 +782,7 @@
 	color: #627681;
 }
 .connect_type_status_bg .uplink_type_ip, .connect_type_status_bg .uplink_type_mode_title{
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 	font-size: 14px;
 	color: #CDEBFF;
 	margin-left: 22px;
@@ -889,7 +889,7 @@
 .card_block_bg span.connect_title{
 	top: 24px;
 	line-height: initial;
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 }
 .card_block_bg span.connect_title.vertical{
 	top: 18px;
@@ -967,7 +967,7 @@
 }
 .wan_status_bg span.connect_status{
 	font-size: 20px;
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 }
 .wan_status_bg span.connect_status.connected{
 	color: #00FCFF;
@@ -1073,7 +1073,7 @@
 	margin: 7px 0px 0px 22px;
 }
 .common_content_text{
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 	font-size: 14px;
 	color: #FFFFFF;
 	letter-spacing: 3px;
@@ -1126,7 +1126,7 @@
 }
 .common_separate_bg span{
 	position: absolute;
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 	font-size: 12px;
 	color: #A4B7C3;
 }
@@ -1135,7 +1135,7 @@
 	top: -4px;
 }
 .common_separate_bg span.transmit_value{
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 	font-size: 20px;
 	color: #00FCFF;
 	bottom: 6px;
@@ -1148,7 +1148,7 @@
 .common_separate_bg span.transmit_unit{
 	bottom: 3px;
 	left: 120px;
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 }
 .common_separate_bg.horizontal_line:before,
 .item_bg.signal:before,.item_bg.location:before,
@@ -1233,7 +1233,7 @@
 	height: 56px !important
 }
 .manage_common_title{
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 	font-size: 14px;
 	color: #FFFFFF;
 }
@@ -1294,7 +1294,7 @@
 	border: 1px solid #4C5B65;
 	border-radius: 4px;
 	color: #FFFFFF;
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 	font-size: 14px;
 	color: #FFFFFF;
 	line-height: 36px;
@@ -1478,7 +1478,7 @@
 	right: 6px;
 }
 .client_num_bg{
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 	font-size: 14px;
 	color: #FFFFFF;
 	margin: 24px 22px 18px 22px;
@@ -1486,7 +1486,7 @@
 .client_num_bg div.left{
 	float: left;
 	position: relative;
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 	font-size: 16px;
 }
 .client_num_bg div.left span:before{
@@ -1620,7 +1620,7 @@
 	position: relative;
 }
 .client_list_bg .client_content_bg > .client_content_name{
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 	font-size: 16px;
 	color: #FFFFFF;
 	height: 60%;
@@ -1702,7 +1702,7 @@
 	border-radius: 4px;
 	position: absolute;
 	padding: 18px;
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 	font-size: 16px;
 	left: 12%;
 	z-index: 500;
@@ -1817,7 +1817,7 @@
 	box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20), 0 1px 4px 0 rgba(60,60,60,0.30);
 	border-radius: 4px;
 	padding: 18px;
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 	font-size: 16px;
 	color: #FFFFFF;
 	z-index: 500;
@@ -2265,7 +2265,7 @@
 	line-height: initial;
 	margin-left: 0px;
 	width: 160px;
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 }
 .topology_node_info > div{
 	line-height: 180%;
@@ -2310,7 +2310,7 @@
 	height: 24%;
 }
 .topology_node_info > div:nth-child(3) > span:nth-child(2){
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 	font-size: 16px;
 	color: #33ACFF;
 	margin-left: 6px;
@@ -2353,7 +2353,7 @@
 	border: 1px solid #425057;
 	box-shadow: 0 1px 2px 0 rgba(0,0,0,0.30);
 	border-radius: 4px;
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 	font-size: 14px;
 	color: #FFFFFF;
 	display: inline-block;
@@ -2412,7 +2412,7 @@
 	top: 36px;
 }
 .aimesh_intro_text > div:nth-child(1){
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-Light;
 	font-size: 24px;
 }
 .aimesh_intro_text > div:nth-child(2):before{
@@ -2428,7 +2428,7 @@
 	height: 1px;
 }
 .aimesh_intro_text > div:nth-child(2){
-	font-family: Roboto-Light, "Microsoft JhengHei";
+	font-family: Roboto-light;
 	font-size: 12px;
 	position: relative;
 	margin-top: 18px;
@@ -2486,7 +2486,7 @@
 	border-width: 1px;
 	border-style: solid;
 	position: relative;
-} 
+}
 .connect_line_info_bg .connect_line:before{
 	content: "";
 	position: absolute;
@@ -2534,7 +2534,7 @@
 	margin-top: 12px !important;
 }
 .aimesh_tab{
-	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-family: Roboto-Regular;
 	font-size: 16px;
 	color: #FFFFFF;
 	height: 24px;

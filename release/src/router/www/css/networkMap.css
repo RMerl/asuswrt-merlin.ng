@@ -5,10 +5,10 @@
 }
 body{
 	margin: 0;
-	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Verdana, sans-serif;​
 	font-size: 13px;
 	/*
-	font-family: Roboto, Microsoft JhengHei, Helvetica, Arial, sans-serif;
+	font-family: Roboto, Helvetica, Arial, sans-serif;
 	font-size: 14px;
 	*/
 	color: #FFFFFF;
@@ -80,10 +80,10 @@ body{
 	color: #FC0;
 	font-size: 13px;
 }
-.button, .table-body, .table-header{
+.button, .table-body, .table-header, .ram-content{
 	text-align: center;
 }
-.button-right, .bar-text-percent, .ram-content{
+.button-right, .bar-text-percent{
 	text-align: right;
 }
 .button, .button-right{

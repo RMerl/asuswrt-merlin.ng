@@ -1,5 +1,5 @@
 ﻿.current_time_text, .offtime_schedule_text{
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, Microsoft JhengHei, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 	font-size: 14px;
 	color: #FFFFFF;
 	margin-left: 18px;
@@ -79,7 +79,7 @@
 .overview_time_title_bg{
 	height: 32px;
 	line-height: 32px;
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, Microsoft JhengHei, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 	font-size: 14px;
 	color: #FFFFFF;
 }
@@ -111,7 +111,7 @@
 	border-radius: 4px;
 	position: absolute;
 	padding: 18px;
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, Microsoft JhengHei, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 	font-size: 16px;
 	left: 12%;
 	z-index: 100;
@@ -128,7 +128,7 @@
 	cursor: pointer;
 }
 .popup_edit_weekSchedule .edit_offtime_title{
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, Microsoft JhengHei, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 	font-size: 14px;
 	color: #FFFFFF;
 }
@@ -188,7 +188,7 @@
 	outline: none;
 	color: #ffffff;
 	font-size: 14px;
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, Microsoft JhengHei, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 	background: transparent;
 }
 .popup_edit_weekSchedule .custom_select_input_bg .custom_select{
@@ -198,7 +198,7 @@
 	background-color: #43494B;
 	border-radius: 2px;
 	font-size: 14px;
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, Microsoft JhengHei, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 	color: #ffffff;
 	padding: 2px;
 	border: 1px solid #979797;
@@ -246,7 +246,7 @@
 	max-height: 175px;
 	overflow-y: scroll;
 	border-radius: 0px 0px 2px 2px;
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, Microsoft JhengHei, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 }
 .popup_edit_weekSchedule .custom_select_input_bg .custom_select_option{
 	color: #ffffff;
@@ -346,7 +346,7 @@
 	font-size: 12px;
 	text-align: center;
 	line-height: 35px;
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, Microsoft JhengHei, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 	margin-right: 25px;
 	cursor: pointer;
 	position: relative;
@@ -589,7 +589,7 @@
 	position: absolute;
 }
 .PC_SCHED .offtime_schedule_header .title{
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, Microsoft JhengHei, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 	font-size: 14px;
 	color: #FFF;
 	margin-left: 10px;
@@ -662,7 +662,7 @@
 	font-size: 14px;
 }
 .PC_SCHED .grid_period_title{
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, Microsoft JhengHei, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 	font-size: 20px;
 	margin-left: 10px;
 	margin-top: 10px;

@@ -573,7 +573,7 @@ function genRAMElement(){
 }
 
 function genNETelement() {
-	var code = '<div class="division-block">Internet Traffic</div>';
+	var code = '<div class="division-block"><#Status_Traffic#></div>';
 	code += '<div>';
 	code += '<div>';
 	code += '<div class="display-flex flex-a-center info-block">';

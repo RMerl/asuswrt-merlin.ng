@@ -131,8 +131,8 @@ void update_cfe_k3(void)
 	snprintf(buf, sizeof(buf), "Set CFE MAC: LAN & 2.4G=%s, 2.4G_bak=%s, 5G=%s", et0mac, wl1mac, wl2mac);
 	//logmessage("K3INIT", "CFE has upgraded to 1.0.37_mesh already!");
 	//logmessage("K3INIT", buf);
-	_dprintf("**** Upgraded CFE - %s\n", buf);
-	_dprintf("**** Upgraded CFE - Set PIN=%s\n", PIN);
+	kprintf("Upgraded CFE - %s\n", buf);
+	kprintf("Upgraded CFE - Set PIN=%s\n", PIN);
 	usleep(100000);
 	reboot(RB_AUTOBOOT);
 }
@@ -169,7 +169,7 @@ void k3_init_done()
 		system("/koolshare/bin/ks-services-start.sh start");
 	}
 	logmessage("K3INIT", "软件中心初始化完成");
-	_dprintf("**** softcenter: init done\n");
+	kprintf("softcenter: init done\n");
 #endif
 }
 
@@ -184,11 +184,11 @@ void start_k3screen(void)
 	killall_tk("k3screenctrl");
 
 	logmessage("K3INIT", "屏幕控制程序开始启动");
-	_dprintf("**** k3screen: start\n");
+	kprintf("k3screen: start\n");
 	mkdir_if_none("/tmp/k3screenctrl");
 	doSystem("ln -snf /lib/k3screenctrl/* /tmp/k3screenctrl");
 	_eval(k3screenctrl_argv, NULL, 0, &pid1);
-	_dprintf("**** k3screen: ok\n");
+	kprintf("k3screen: ok\n");
 }
 
 int GetPhyStatusk3(int verbose)

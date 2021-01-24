@@ -391,10 +391,12 @@ extern void set_basic_fw_name(void);
 #define _dprintf		cprintf
 #define csprintf		cprintf
 #define dprintf			cprintf
+#define kprintf(fmt, args...) (cprintf("**** %s[%s(%d)] "fmt, __FILE__, __FUNCTION__, __LINE__, ## args));
 #else
 #define _dprintf(args...)	do { } while(0)
 #define csprintf(args...)	do { } while(0)
 #define dprintf(args...)	do { } while(0)
+#define kprintf(args...)	do { } while(0)
 #endif
 
 #define ASUS_STOP_COMMIT	"asus_stop_commit"

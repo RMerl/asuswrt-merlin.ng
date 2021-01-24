@@ -89,6 +89,14 @@
 	border-bottom-right-radius: 1px;
 }
 #slider .ui-slider-handle { border-color: #93E7FF; }
+#slider1 .ui-slider-range {
+	background: #93E7FF;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 1px;
+	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 1px;
+}
+#slider1 .ui-slider-handle { border-color: #93E7FF; }
 </style>
 <script>
 $(function () {
@@ -700,6 +708,7 @@ function initial(){
 	}
 
 	control_TimeField();
+	handle_chpower();
 
 	if(isSwMode("re")){
 		var _rows = document.getElementById("WAdvTable").rows;
@@ -830,11 +839,16 @@ function adjust_tx_power(){
 	var power_value_old = document.form.wl_TxPower.value;	//old nvram not exist now (value)
 	var power_value_new = document.form.wl_txpower.value;	//current nvram now (percentage)
 	var translated_value = 0;
-	
+	var power_value = parseInt(document.form.wl_custompower.value);
+
 	if(!power_support){
 		document.getElementById("wl_txPower_field").style.display = "none";
 	}
 	else{
+		document.getElementById('slider1').children[0].style.width = (power_value * 100 / 31) + "%";
+		document.getElementById('slider1').children[1].style.left = (power_value * 100 / 31) + "%";
+		document.getElementById("tx_power1_desc").innerHTML = power_value + "dbm " + Math.round(Math.pow(10,( power_value / 10 )))+ "mW";
+
 		if(power_value_old != ""){
 			translated_value = parseInt(power_value_old/80*100);
 			if(translated_value >=100){
@@ -884,6 +898,17 @@ function adjust_tx_power(){
 			document.form.wl_txpower.value = 100;
 			document.getElementById("tx_power_desc").innerHTML = power_table_desc[4];
 		}	
+	}
+}
+
+function handle_chpower(){
+	if(document.form.wl_cpenable[0].checked){
+		document.getElementById("wl_custompower_field").style.display = "";
+		document.getElementById("wl_txPower_field").style.display = "none";
+	}
+	else{
+		document.getElementById("wl_custompower_field").style.display = "none";
+		document.getElementById("wl_txPower_field").style.display = "";
 	}
 }
 
@@ -1101,6 +1126,22 @@ function register_event(){
 				set_power(ui.value);	  
 			}
 		}); 
+	});
+
+	$(function() {
+		$( "#slider1" ).slider({
+			orientation: "horizontal",
+			range: "min",
+			min:0,
+			max: 31,
+			value:26,
+			slide:function(event, ui){
+				document.getElementById('tx_power1_desc').innerHTML = ui.value + "dbm " + Math.round(Math.pow(10,( ui.value / 10 )))+ "mW";
+			},
+			stop:function(event, ui){
+				document.form.wl_custompower.value = ui.value;
+			}
+		});
 	});
 }
 
@@ -1331,6 +1372,7 @@ function check_nodes_support_wireless_scheduler() {
 <input type="hidden" name="acs_dfs" value="<% nvram_get("acs_dfs"); %>">
 <input type="hidden" name="w_Setting" value="1">
 <input type="hidden" name="wl_txpower" value="<% nvram_get("wl_txpower"); %>">
+<input type="hidden" name="wl_custompower" value="<% nvram_get("wl_custompower"); %>">
 <input type="hidden" name="wl1_mumimo" value="<% nvram_get("wl1_mumimo"); %>" disabled>
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
@@ -1697,6 +1739,13 @@ function check_nodes_support_wireless_scheduler() {
 							</select>
 						</td>
 					</tr>
+					<tr id="wl_chpower_enable">
+						<th><#WLANConfig11b_TxPower_custom#></th>
+						<td>
+							<input type="radio" value="1" name="wl_cpenable" class="input" onClick="handle_chpower();" <% nvram_match("wl_cpenable", "1", "checked"); %>><#checkbox_Yes#>
+							<input type="radio" value="0" name="wl_cpenable" class="input" onClick="handle_chpower();" <% nvram_match("wl_cpenable", "0", "checked"); %>><#checkbox_No#>
+						</td>
+					</tr>
 					<tr id="wl_txPower_field">
 						<th><a id="wl_txPower_field_title" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 16);"><#WLANConfig11b_TxPower_itemname#></a></th>
 						<td>
@@ -1716,7 +1765,24 @@ function check_nodes_support_wireless_scheduler() {
 							</div>
 						</td>
 					</tr>
+					<tr id="wl_custompower_field">
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 16);"><#WLANConfig11b_TxPower_itemname#></a></th>
+						<td>
+							<div>
+								<table>
+									<tr>
+										<td style="border:0px;padding-left:0px;">
+											<div id="slider1" style="width:300px;"></div>
+										</td>
+										<td style="border:0px;width:60px;">
+											<div id="tx_power1_desc" style="width:150px;font-size:14px;"></div>
+										</td>
 
+									</tr>
+								</table>
+							</div>
+						</td>
+					</tr>
 					<!--QCA9984 platform only, e.g. BRT-AC828 -->
 					<tr id="agiledfs_tr" style="display:none">
 						<th>Agile DFS</th>

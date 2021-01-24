@@ -132,8 +132,6 @@ int main (int argc, char **argv)
       /* one char flag per possible RR in answer section (may get extended). */
       daemon->rr_status_sz = 64;
       daemon->rr_status = safe_malloc(sizeof(*daemon->rr_status) * daemon->rr_status_sz);
-
-      crypto_init();
     }
 #endif
 
@@ -391,6 +389,9 @@ int main (int argc, char **argv)
   
   if (daemon->port != 0)
     {
+#if defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH)
+      crypto_init();
+#endif
       cache_init();
 
       blockdata_init();

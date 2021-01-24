@@ -508,5 +508,4 @@ void crypto_init(void)
   /* dummy */
 }
 #endif
-
 #endif /* HAVE_NETTLE */

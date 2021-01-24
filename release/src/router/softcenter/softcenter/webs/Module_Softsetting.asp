@@ -20,9 +20,18 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/res/softcenter.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
+<style>
+input[type=button]:focus {
+	outline: none;
+}
+</style>
 <script>
 var _responseLen;
 var noChange = 0;
+String.prototype.myReplace = function(f, e){
+	var reg = new RegExp(f, "g"); 
+	return this.replace(reg, e); 
+}
 function init(menu_hook) {
 	show_menu();
 	get_log();
@@ -84,7 +93,7 @@ function install_now(moduleInfo) {
 	});
 }
 function get_log(s) {
-	var retArea = E("soft_log");
+	var retArea = E("soft_log_area");
 	$.ajax({
 		url: '/_temp/soft_log.txt',
 		type: 'GET',
@@ -92,7 +101,7 @@ function get_log(s) {
 		cache: false,
 		success: function(response) {
 			if (response.search("XU6J03M6") != -1) {
-				retArea.value = response.replace("XU6J03M6", " ");
+				retArea.value = response.myReplace("XU6J03M6", " ");
 				retArea.scrollTop = retArea.scrollHeight;
 				if (s) {
 					setTimeout("window.location.reload()", 3000);
@@ -116,7 +125,7 @@ function get_log(s) {
 		},
 		error: function(xhr, status, error) {
 			if (s) {
-				E("soft_log").value = "获取日志失败！";
+				E("soft_log_area").value = "获取日志失败！";
 			}
 		}
 	});
@@ -167,8 +176,8 @@ function get_log(s) {
 												</td>
 											</tr>
 										</table>
-										<div id="log_content" style="margin-top:10px;display: block;">
-											<textarea cols="63" rows="40" wrap="off" readonly="readonly" id="soft_log" style="width:99%; font-family:'Lucida Console'; font-size:12px;background:#475A5F;color:#FFFFFF;"></textarea>
+										<div id="log_content" class="soft_setting_log">
+											<textarea cols="63" rows="40" wrap="on" readonly="readonly" id="soft_log_area" class="soft_setting_log1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
 										</div>
 										<div class="KoolshareBottom">
 											论坛技术支持: <a href="https://koolshare.cn" target="_blank"> <i><u>https://koolshare.cn</u></i></a><br />

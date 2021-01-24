@@ -15952,6 +15952,9 @@ int init_nvram(void)
 #else
 		add_rc_support("mssid 2.4G 5G usbX2");
 #endif
+#ifdef RTCONFIG_TCPLUGIN
+		add_rc_support("tencent_qmacc");
+#endif
 #ifdef RTCONFIG_MERLINUPDATE
 		add_rc_support("update");
 #else

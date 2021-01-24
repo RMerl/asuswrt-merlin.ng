@@ -232,3 +232,104 @@ int GetPhyStatusk3(int verbose)
 
 	return lret;
 }
+
+#ifdef RTCONFIG_UUPLUGIN
+void exec_uu_k3(void)
+{
+	FILE *fpmodel, *fpmac, *fpuu, *fpurl, *fpmd5, *fpcfg;
+	char buf[128];
+	int download, i;
+	char *dup, *url, *md5;
+
+	if(nvram_get_int("sw_mode") == 1)
+	{
+		add_rc_support("uu_accel");
+		if ((fpmodel = fopen("/var/model", "w")))
+		{
+			fprintf(fpmodel, nvram_get("productid"));
+			fclose(fpmodel);
+		}
+		if ((fpmac = fopen("/var/label_macaddr", "w")))
+		{
+			char *etmac = get_label_mac();
+			toLowerCase(etmac);
+			fprintf(fpmac, etmac);
+			fclose(fpmac);
+		}
+		if ((fpuu = fopen("/var/uu_plugin_dir", "w")))
+		{
+			fprintf(fpuu, "/jffs");
+			fclose(fpuu);
+		}
+		system("mkdir -p /tmp/uu");
+		download = system("wget -t 2 -T 30 --dns-timeout=120 --header=Accept:text/plain -q --no-check-certificate 'https://router.uu.163.com/api/script/monitor?type=asuswrt-merlin' -O /tmp/uu/script_url");
+		if (!download)
+		{
+			kprintf("download uuplugin script info successfully\n");
+			if (fpurl = fopen("/tmp/uu/script_url", "r"))
+			{
+				fgets(buf, 128, fpurl);
+				fclose(fpurl);
+				unlink("/tmp/uu/script_url");
+				dup = strdup(buf);
+				url = strsep(&dup, ",");
+				md5 = strsep(&dup, ",");
+				if (md5 != NULL)
+				{
+					kprintf("URL: %s\n", url);
+					kprintf("MD5: %s\n", md5);
+					if (!doSystem("wget -t 2 -T 30 --dns-timeout=120 --header=Accept:text/plain -q --no-check-certificate %s -O /tmp/uu/uuplugin_monitor.sh", url))
+					{
+						kprintf("download uuplugin script successfully\n");
+						if ((fpcfg = fopen("/tmp/uu/uuplugin_monitor.config", "w")))
+						{
+							fprintf(fpcfg, "router=asuswrt-merlin\n");
+							fprintf(fpcfg, "model=RT-AC3100\n");
+							fclose(fpcfg);
+						}
+						if ((fpmd5=popen("md5sum /tmp/uu/uuplugin_monitor.sh | awk '{print $1}'", "r")))
+						{
+							bzero(buf, sizeof(buf));
+							if((fread(buf, 1, 128, fpmd5)))
+							{
+								if (!strncasecmp(buf, md5, 32))
+								{
+									pid_t pid;
+									char *uu_argv[] = { "/tmp/uu/uuplugin_monitor.sh", NULL };
+									kprintf("prepare to execute uuplugin stript...\n");
+									chmod("/tmp/uu/uuplugin_monitor.sh", 0755);
+									_eval(uu_argv, NULL, 0, &pid);
+								}
+							}
+							pclose(fpmd5);
+						}
+					}
+				}
+				free(dup);
+			}
+		}
+	}
+}
+#endif
+
+#ifdef RTCONFIG_TCPLUGIN
+void exec_tcplugin(void)
+{
+	FILE *fpmodel, *fpmac;
+	if (nvram_get_int("sw_mode") == 1)
+	{
+		if ((fpmodel = fopen("/var/model", "w")))
+		{
+			fprintf(fpmodel, nvram_get("productid"));
+			fclose(fpmodel);
+		}
+	}
+	if ((fpmac = fopen("/var/label_macaddr", "w")))
+	{
+		char *etmac = get_label_mac();
+		toLowerCase(etmac);
+		fprintf(fpmac, etmac);
+		fclose(fpmac);
+	}
+}
+#endif

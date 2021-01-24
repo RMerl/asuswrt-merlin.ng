@@ -1899,7 +1899,7 @@ function separateGenBWTable(unit){
 	else if(unit == '1'){
 		curBandwidth = '<% nvram_get("wl1_bw"); %>';
 		curChannel = '<% nvram_get("wl1_chanspec"); %>';
-		if (band5g_11ax_support) {
+		if (band5g_11ax_support || bw_160_support) {
 			if (band1_enable_bw_160 == '1') {
 				if (wl1.channel_160m == '') {
 					bws = [0, 1, 2, 3];

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2020 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -389,12 +389,12 @@ int main (int argc, char **argv)
   
   if (daemon->port != 0)
     {
+      cache_init();
+      blockdata_init();
 #if defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH)
       crypto_init();
 #endif
-      cache_init();
-
-      blockdata_init();
+      hash_questions_init();
     }
 
 #ifdef HAVE_INOTIFY

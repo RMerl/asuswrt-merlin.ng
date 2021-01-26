@@ -658,7 +658,7 @@ void crypto_init(void)
   CRYPTO_set_mem_functions(dnsmasq_malloc,
 			   dnsmasq_realloc,
 			   dnsmasq_free);
-  OPENSSL_add_all_algorithms_conf();
+  OpenSSL_add_all_algorithms();
 
 #ifdef HAVE_GOST
   dnsmasq_gost_init();

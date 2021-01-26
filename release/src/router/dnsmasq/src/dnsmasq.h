@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2020 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
  
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define COPYRIGHT "Copyright (c) 2000-2020 Simon Kelley"
+#define COPYRIGHT "Copyright (c) 2000-2021 Simon Kelley"
 
 /* We do defines that influence behavior of stdio.h, so complain
    if included too early. */
@@ -155,6 +155,11 @@ extern int capget(cap_user_header_t header, cap_user_data_t data);
 #include <sys/prctl.h>
 #elif defined(HAVE_SOLARIS_NETWORK)
 #include <priv.h>
+#endif
+
+/* Backwards compat with 2.83 */
+#if defined(HAVE_NETTLEHASH)
+#  define HAVE_CRYPTOHASH
 #endif
 
 /* daemon is function in the C library.... */
@@ -1257,6 +1262,7 @@ size_t filter_rrsigs(struct dns_header *header, size_t plen);
 int setup_timestamp(void);
 
 /* hash_questions.c */
+void hash_questions_init(void);
 unsigned char *hash_questions(struct dns_header *header, size_t plen, char *name);
 
 /* crypto.c */

@@ -34,13 +34,14 @@ Asuswrt-Merlin 386/NG Changelog
   - NEW: Added tls-crypt-v2 support to OpenVPN clients.
   - NEW: Added option to select an OpenVPN client when
          running Oookla Speedtest.
-  - UPDATED: Merged GPL 386_41535
+  - UPDATED: Merged GPL 386_41700
   - UPDATED: Openssl to 1.1.1i.
   - UPDATED: Updated to OpenVPN 2.5.0.  Note that OpenVPN
              2.4.0 or newer is now required by the exported
              client config file.  You can still manually
              configure an older client to connect with your
              router.
+  - UPDATED: dnsmasq to 2.84 (themiron)
   - UPDATED: nano to 5.2.
   - UPDATED: curl to 7.72.0.
   - UPDATED: zlib to 1.2.11.

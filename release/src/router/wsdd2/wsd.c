@@ -814,7 +814,7 @@ static int send_http_resp_header(int fd, struct endpoint *ep,
 	const char resp_hdr_fmt[] =
 		"HTTP/1.1 %s\r\n"
 #ifdef ASUSWRT
-		"Server: ASUSWRT WSD Server\r\r"
+		"Server: ASUSWRT WSD Server\r\n"
 #else
 		"Server: NETGEAR WSD Server\r\n"
 #endif

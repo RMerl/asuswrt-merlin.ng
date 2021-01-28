@@ -3254,6 +3254,14 @@ wan_up(const char *pwan_ifname)
 		eval("fc", "config", "--tcp-ack-mflows", nvram_get_int("fc_tcp_ack_mflows_disable_force") ? "0" : "1");
 #endif
 
+#if defined(RTCONFIG_SAMBASRV)
+	if (nvram_match("enable_samba", "1"))
+	{
+		stop_samba(0);
+		start_samba();
+	}
+#endif
+
 _dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
 }
 

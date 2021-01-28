@@ -390,7 +390,7 @@ static int open_ep(struct endpoint **epp, struct service *sv,
 #endif
 
 #ifdef SO_BINDTODEVICE
-	if (/* !sv->mcast_addr && */
+	if (!sv->mcast_addr &&
 			(ep->family == AF_INET || ep->family == AF_INET6)) {
 		struct ifreq ifr;
 		strncpy(ifr.ifr_name, ep->ifname, IFNAMSIZ-1);

@@ -1,7 +1,7 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
-386.1 (xx-xx-xxxx)
+386.1 (30-Jan-2021)
   Switched to the new 386 codebase.  386 introduces
   AiMesh 2.0, finalizes the move to OpenSSL 1.1.1
   firmware-wide, adds a new speedtest (powered
@@ -41,7 +41,10 @@ Asuswrt-Merlin 386/NG Changelog
              client config file.  You can still manually
              configure an older client to connect with your
              router.
-  - UPDATED: dnsmasq to 2.84 (themiron)
+  - UPDATED: dnsmasq to 2.84, resolving CVE-2020-25681,
+             CVE-2020-25682, CVE-2020-25683, CVE-2020-25687,
+             CVE-2020-25684, CVE-2020-25685 and
+             CVE-2020-25686 aka DNSpooq  (themiron)
   - UPDATED: nano to 5.2.
   - UPDATED: curl to 7.72.0.
   - UPDATED: zlib to 1.2.11.
@@ -53,11 +56,11 @@ Asuswrt-Merlin 386/NG Changelog
              with upstream)
   - CHANGED: firmware update checks are no longer using the
              server address stored in nvram, for security
-             purposes.  Devs who were using that nvram
+             reasons.  Devs who were using that nvram
              should instead edit the webs_scripts/* to
              use their own URL.
-  - CHANGED: The old legacy cipher setting is now only available
-             when running with static key authentication.
+  - CHANGED: The old legacy cipher setting in OpenVPN is now only
+             available when running with static key authentication.
   - CHANGED: Tweaks to the OpenVPN webui layout
   - CHANGED: OpenVPN clients will now NAT all outbound traffic,
              regardless of the source subnet.

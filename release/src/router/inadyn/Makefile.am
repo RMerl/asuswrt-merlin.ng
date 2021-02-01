@@ -10,13 +10,6 @@ if HAVE_SYSTEMD
 systemd_DATA    = inadyn.service
 endif
 
-## Generate MD5 checksum file
-MD5 = md5sum
-md5-dist:
-	@for file in $(DIST_ARCHIVES); do	\
-		$(MD5) $$file > ../$$file.md5;	\
-	done
-
 ## Check if tagged in git
 release-hook:
 	@if [ ! `git tag | grep $(PACKAGE_VERSION)` ]; then				\
@@ -40,15 +33,20 @@ package build-deb:
 	@dpkg-buildpackage -uc -us -B
 
 ## Target to run when building a release
-release: release-hook distcheck package md5-dist
+release: release-hook distcheck package
+	@for file in $(DIST_ARCHIVES); do		\
+		md5sum    $$file > ../$$file.md5;	\
+		sha256sum $$file > ../$$file.sha256;	\
+	done
 	@mv $(DIST_ARCHIVES) ../
 	@echo
 	@echo "Resulting release files:"
 	@echo "================================================================="
-	@for file in $(DIST_ARCHIVES); do					\
-		printf "%-32s Distribution tarball\n" $$file;			\
-		printf "%-32s " $$file.md5; cat ../$$file.md5 | cut -f1 -d' ';	\
+	@for file in $(DIST_ARCHIVES); do						\
+		printf "%-32s Distribution tarball\n" $$file;				\
+		printf "%-32s " $$file.md5;    cat ../$$file.md5    | cut -f1 -d' ';	\
+		printf "%-32s " $$file.sha256; cat ../$$file.sha256 | cut -f1 -d' ';	\
 	done
-	@for file in `cd ..; ls $(PACKAGE)_$(VERSION)*`; do			\
-		printf "%-32s Debian/Ubuntu package\n" $$file;			\
+	@for file in `cd ..; ls inadyn_$(VERSION)* inadyn-dbg*_$(VERSION)*`; do		\
+		printf "%-32s Debian/Ubuntu package\n" $$file;				\
 	done

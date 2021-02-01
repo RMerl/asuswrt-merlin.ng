@@ -23,6 +23,7 @@
 .Op Fl c, -cmd Ar /path/to/cmd
 .Op Fl C, -continue-on-error
 .Op Fl e, -exec Ar /path/to/cmd
+.Op Fl -exec-mode Ar MODE
 .Op Fl f, -config Ar FILE
 .Op Fl h, -help
 .Op Fl i, -iface Ar IFNAME
@@ -124,11 +125,10 @@ formerly
 .Aq https://www.cloudflare.com
 .El
 .Pp
-DDNS providers not listed here, like
-.Aq http://twoDNS.de ,
-can often be configured using the generic DDNS provider plugin.  See
+DDNS providers not listed here can often be configured using the
+generic/custom DDNS provider plugin.  See
 .Xr inadyn.conf 5
-for example configurations.
+for examples.
 .Sh OPTIONS
 Earlier versions of
 .Nm
@@ -193,19 +193,33 @@ to not exit on errors from a DDNS provider and instead try again later.
 Please do not use this, it usually indicates that we are sending a
 malformed request, e.g. wrong username, password or DNS alias for the
 given account.  Continuing could possibly lock you out of your account!
-.It Fl e, -exec Ar /path/to/cmd Op optional args
-Full path to command, or script, to run after a successful DDNS update.
+.It Fl e, -exec=/path/to/cmd Op optional args
+Full path to command, or script, to run.
 The following environment variables are set: INADYN_IP, INADYN_HOSTNAME.
 The first environment variable contains the new IP address, the second
 the host name alias.  The
 .Nm cmd
-is called for each listed host name that is successfully updated.  If
+is called for each listed host name.  If
 .Nm
 is started with the
 .Fl i Ar IFNAME
 command line option, the INADYN_IFACE environment variable is also set.
 You will need to quote the complete command if any arguments, or pipe,
 is given.
+.It Fl -exec-mode Ar MODE
+Use
+.Ar MODE
+to set the exec script run mode: compat, event:
+- compat: run exec handler on successful DDNS update only, default
+- event: run exec handler on any update status
+The following environment variables are set:
+INADYN_EVENT, INADYN_ERROR, INADYN_ERROR_MESSAGE.
+INADYN_EVENT contains the event, one of: nochg, update, error.
+The event nochg indicates that no update had to be sent, the event
+update indicates that an update was sent successully, the event error
+indicates that the update was sent and an error occurred.
+INADYN_ERROR contains the error code,
+INADYN_ERROR_MESSAGE contains the error message for the error code.
 .It Fl f, -config Ar FILE
 Use
 .Ar FILE

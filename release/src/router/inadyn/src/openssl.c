@@ -225,13 +225,13 @@ int ssl_send(http_t *client, const char *buf, int len)
 	if (!client->ssl_enabled)
 		return tcp_send(&client->tcp, buf, len);
 
-	ERR_clear_error();
-	if((rc = SSL_write(client->ssl, buf, len)) <= 0){
-		err = SSL_get_error(client->ssl, rc);
-		if(err == SSL_ERROR_WANT_WRITE){
-			return ssl_send(client, buf, len);
-		}
-	}
+	do {
+		ERR_clear_error();
+		rc = SSL_write(client->ssl, buf, len);
+		if (rc <= 0)
+			err = SSL_get_error(client->ssl, rc);
+	} while (err == SSL_ERROR_WANT_WRITE);
+
 	if (rc <= 0) {
 		ssl_check_error();
 		return RC_HTTPS_SEND_ERROR;
@@ -244,33 +244,30 @@ int ssl_send(http_t *client, const char *buf, int len)
 
 int ssl_recv(http_t *client, char *buf, int buf_len, int *recv_len)
 {
-	int len, rc, err = SSL_ERROR_NONE;
+	int rc, err, len = 0;
 
-	*recv_len = 0;
 	if (!client->ssl_enabled)
 		return tcp_recv(&client->tcp, buf, buf_len, recv_len);
 
-	ERR_clear_error();
-	/* Read HTTP header */
-	len = rc = SSL_read(client->ssl, buf, buf_len);
-	if (rc <= 0) {
-		err = SSL_get_error(client->ssl, rc);
-		if(err == SSL_ERROR_WANT_READ){
-			return ssl_recv(client, buf, buf_len, recv_len);
+	err = SSL_ERROR_NONE;
+	do {
+		ERR_clear_error();
+		rc = SSL_read(client->ssl, buf + len, buf_len - len);
+		if (rc > 0) {
+			len += rc;
+		} else {
+			err = SSL_get_error(client->ssl, rc);
 		}
+	} while (rc > 0 || err == SSL_ERROR_WANT_READ);
+
+	if (rc < 0) {
 		ssl_check_error();
 		return RC_HTTPS_RECV_ERROR;
 	}
-	*recv_len += len;
 
-	/* Read HTTP body */
-	len = rc = SSL_read(client->ssl, &buf[len], buf_len - len);
-	if (rc <= 0) {
-		ssl_check_error();
-		len = 0;
-	}
-	*recv_len += len;
-	logit(LOG_DEBUG, "Successfully received HTTPS response (%d bytes)!", *recv_len);
+	*recv_len = len;
+
+	logit(LOG_DEBUG, "Successfully received HTTPS response (%d/%d bytes)!", *recv_len, buf_len);
 
 	return 0;
 }

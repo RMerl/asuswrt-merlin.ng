@@ -38,6 +38,8 @@ static void *param = NULL;
  * @cmd:  Full path to script or command to run
  * @ip:   IP address to set as %INADYN_IP env. variable
  * @name: String to set as %INADYN_HOSTNAME env. variable
+ * @event:Event name to set as %INADYN_EVENT env. variable
+ * @error:Error code to set as %INADYN_ERROR env. variable
  *
  * If inadyn has been started with the --iface=IFNAME command line
  * option the IFNAME is sent to the script as %INADYN_IFACE.
@@ -45,18 +47,24 @@ static void *param = NULL;
  * Returns:
  * Posix %OK(0), or %RC_OS_FORK_FAILURE on vfork() failure
  */
-int os_shell_execute(char *cmd, char *ip, char *name)
+int os_shell_execute(char *cmd, char *ip, char *name, char *event, int error)
 {
 	int rc = 0;
 	int child;
+	char errbuf[11];
 
 	child = vfork();
 	switch (child) {
 	case 0:
+		snprintf(errbuf, sizeof(errbuf), "%d", error);
 		setenv("INADYN_IP", ip, 1);
 		setenv("INADYN_HOSTNAME", name, 1);
+		setenv("INADYN_EVENT", event, 1);
+		setenv("INADYN_ERROR", errbuf, 1);
+		setenv("INADYN_ERROR_MESSAGE", error_str(error), 1);
 		if (iface)
 			setenv("INADYN_IFACE", iface, 1);
+
 		execl("/bin/sh", "sh", "-c", cmd, (char *)0);
 		exit(1);
 		break;
@@ -195,25 +203,26 @@ int os_install_signal_handler(void *ctx)
 	return 0;
 }
 
-static int pid_alive(char *pidfn)
+static int pid_alive(pid_t pid) {
+	return !(kill(pid, 0) && errno == ESRCH);
+}
+
+static pid_t getpid_from_pidfile(char *pidfn)
 {
 	FILE *fp;
-	int alive = 1;
-
+	pid_t pid = 0;
 	fp = fopen(pidfn, "r");
 	if (fp) {
 		char buf[20];
 
 		if (fgets(buf, sizeof(buf), fp)) {
-			pid_t pid = atoi(buf);
-
-			if (kill(pid, 0) && errno == ESRCH)
-				alive = 0;
+			pid = atoi(buf);
 		}
+
 		fclose(fp);
 	}
 
-	return alive;
+	return pid;
 }
 
 /*
@@ -232,9 +241,7 @@ int os_check_perms(void)
 	if ((mkpath(cache_dir, 0755) && errno != EEXIST) || access(cache_dir, W_OK)) {
 		logit(LOG_WARNING, "No write permission to %s: %s", cache_dir, strerror(errno));
 		logit(LOG_WARNING, "Cannot guarantee DDNS server won't lock you out for excessive updates.");
-	} else if (chown(cache_dir, uid, gid))
-		logit(LOG_WARNING, "Cannot change owner of cache directory %s to %d:%d, skipping: %s",
-		      cache_dir, uid, gid, strerror(errno));
+	}
 
 	/* Handle --no-pidfile case as well, check for "" */
 	if (pidfile_name && pidfile_name[0]) {
@@ -246,20 +253,19 @@ int os_check_perms(void)
 		else
 			strlcpy(pidfn, pidfile_name, sizeof(pidfn));
 
-		if (!access(pidfn, F_OK) && pid_alive(pidfn)) {
-			logit(LOG_ERR, "PID file %s already exists, %s already running?",
-			      pidfn, prognm);
-			return RC_PIDFILE_EXISTS_ALREADY;
+		if (!access(pidfn, F_OK)) {
+			pid_t pid = getpid_from_pidfile(pidfn);
+			if (pid > 0 && pid != getpid() && pid_alive(pid)) {
+				logit(LOG_ERR, "PID file %s already exists, %s already running?",
+							pidfn, prognm);
+				return RC_PIDFILE_EXISTS_ALREADY;
+			}
 		}
 
 		pidfile_dir = dirname(strdupa(pidfn));
 		if (access(pidfile_dir, F_OK)) {
 			if (mkpath(pidfile_dir, 0755) && errno != EEXIST)
 				logit(LOG_ERR, "No write permission to %s, aborting.", pidfile_dir);
-			else if (chown(pidfile_dir, uid, gid))
-				logit(LOG_WARNING,
-				      "Cannot change owner of PID file directory %s to %d:%d, skipping: %s",
-				      pidfile_dir, uid, gid, strerror(errno));
 		}
 	}
 

@@ -309,9 +309,9 @@ static int cfg_parseproxy(cfg_t *cfg, char *server, tcp_proxy_type_t *type, ddns
 
 static int set_provider_opts(cfg_t *cfg, ddns_info_t *info, int custom)
 {
-	size_t j;
-	const char *str;
 	ddns_system_t *system;
+	const char *str;
+	size_t j;
 
 	if (custom)
 		str = "custom";
@@ -343,6 +343,8 @@ static int set_provider_opts(cfg_t *cfg, ddns_info_t *info, int custom)
 	strlcpy(info->server_url, system->server_url, sizeof(info->server_url));
 
 	info->wildcard = cfg_getbool(cfg, "wildcard");
+	info->ttl = cfg_getint(cfg, "ttl");
+	info->proxied = cfg_getbool(cfg, "proxied");
 	info->ssl_enabled = cfg_getbool(cfg, "ssl");
 	str = cfg_getstr(cfg, "username");
 	if (str && strlen(str) <= sizeof(info->creds.username))
@@ -436,6 +438,12 @@ static int set_provider_opts(cfg_t *cfg, ddns_info_t *info, int custom)
 			strlcpy(info->checkip_url, str, sizeof(info->checkip_url));
 		else
 			strlcpy(info->checkip_url, "/", sizeof(info->checkip_url));
+
+		if (!strcasecmp(info->checkip_name.name, "default")) {
+			strlcpy(info->checkip_name.name, DDNS_MY_IP_SERVER, sizeof(info->checkip_name.name));
+			strlcpy(info->checkip_url, "/", sizeof(info->checkip_url));
+			/* let local checkip-ssl decide HTTP/HTTPS for ipify */
+		}
 
 		/*
 		 * If a custom checkip server is defined, the
@@ -531,6 +539,8 @@ cfg_t *conf_parse_file(char *file, ddns_t *ctx)
 		CFG_STR_LIST("alias",        NULL, CFGF_DEPRECATED),
 		CFG_BOOL    ("ssl",          cfg_true, CFGF_NONE),
 		CFG_BOOL    ("wildcard",     cfg_false, CFGF_NONE),
+		CFG_INT     ("ttl",          -1, CFGF_NODEFAULT),
+		CFG_BOOL    ("proxied",      cfg_false, CFGF_NONE),
 		CFG_STR     ("checkip-server", NULL, CFGF_NONE), /* Syntax:  name:port */
 		CFG_STR     ("checkip-path",   NULL, CFGF_NONE), /* Default: "/" */
 		CFG_BOOL    ("checkip-ssl",    cfg_true, CFGF_NONE),
@@ -547,6 +557,8 @@ cfg_t *conf_parse_file(char *file, ddns_t *ctx)
 		CFG_STR_LIST("alias",        NULL, CFGF_DEPRECATED),
 		CFG_BOOL    ("ssl",          cfg_true, CFGF_NONE),
 		CFG_BOOL    ("wildcard",     cfg_false, CFGF_NONE),
+		CFG_INT     ("ttl",          -1, CFGF_NODEFAULT),
+		CFG_BOOL    ("proxied",      cfg_false, CFGF_NONE),
 		CFG_STR     ("checkip-server", NULL, CFGF_NONE), /* Syntax:  name:port */
 		CFG_STR     ("checkip-path",   NULL, CFGF_NONE), /* Default: "/" */
 		CFG_BOOL    ("checkip-ssl",    cfg_true, CFGF_NONE),

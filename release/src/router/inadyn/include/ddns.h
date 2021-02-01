@@ -90,6 +90,11 @@ typedef enum {
 	CMD_CHECK_NOW,
 } ddns_cmd_t;
 
+typedef enum {
+	EXEC_MODE_COMPAT,
+	EXEC_MODE_EVENT
+} ddns_exec_mode_t;
+
 typedef struct {
 	char           username[USERNAME_LEN];
 	char           password[PASSWORD_LEN];
@@ -155,6 +160,12 @@ typedef struct di {
 	/* Use wildcard, *.foo.bar */
 	int            wildcard;
 
+	/* DNS ttl option */
+	long int       ttl;
+
+	/* CDN proxied option */
+	int            proxied;
+
 	/*
 	 * Provider specific data, per-conf-entry.  E.g., the Cloudflare
 	 * plugin stores zone_id and hostname_id here.  Set up by the
@@ -201,6 +212,7 @@ extern int ignore_errors;
 extern int startup_delay;
 extern int allow_ipv6;
 extern int verify_addr;
+extern int exec_mode;
 extern char *ident;
 extern char *prognm;
 extern char *iface;

@@ -161,10 +161,16 @@ record.  Default is to use HTTPS (true).
 The username, if applicable.  This might be referred to as hash by some providers.
 .It Cm password = PASSWORD
 The password, if applicable.
-.It Cm checkip-server = checkip.example.com[:port]
-Server to use for periodic IP address changes,
+.It Cm checkip-server = <default | checkip.example.com[:port]>
+This setting allows you to override the default checkip server with
+either the string
+.Cm default ,
+to use In-a-dyn's built-in default,
+.Cm "api.ipify.org",
+or the complete name of the server to use for periodic IP address
+changes.  The optional
 .Pa port
-defaults to
+argument defaults to
 .Ar 80 .
 .Pp
 This is an optional setting.  For
@@ -182,7 +188,11 @@ setting, below.  When set in a
 section it overrides the provider's default
 .Cm checkip-server .
 .It Cm checkip-path = "/some/checkip/url"
-Optional server path for check IP server, defaults to "/".
+Optional server path for check IP server, defaults to "/".  When the
+.Cm checkip-server
+is set to
+.Cm default ,
+this setting is ignored.
 .It Cm checkip-ssl = <true | false>
 This setting usually follows the
 .Cm ssl
@@ -225,13 +235,17 @@ Same as the global setting, but only for this provider.  If omitted it
 defaults to the global setting, which if unset uses the default
 .Nm inadyn
 user agent string.  For more information, see above.
-.It Cm wildcard = true
+.It Cm wildcard = <true | false>
 Enable domain name wildcarding of your domain name, for DDNS providers
 that support this, e.g. easydns.com and loopia.com.  This means that
 anything typed before your hostname, e.g. www. or ftp., is also updated
 when your IP changes.  Default: disabled.  For
 .Nm inadyn
 < 1.96.3 wildcarding was enabled by default.
+.It Cm ttl = SEC
+Time to live of your domain name.  Only works with supported DDNS providers, e.g. cloudflare.com.
+.It Cm proxied = <true | false>
+Proxy DNS origin via provider's CDN network.  Only works with supported DDNS providers, e.g. cloudflare.com.  Default: false
 .El
 .It Cm provider [email@]ddns-service[.tld] {}
 Either a unique substring matching the provider, or or one of the exact
@@ -474,34 +488,25 @@ provider dnspod.cn {
     hostname = yourhost.example.com
 }
 
-# Create a unique API token with the following Permissions:
-#   Zone: Zone - Read
-#   Zone: DNS - Edit
-#
-# If the token is limited to a specific zone (it should be)
-# it will also need the following permission:
-#   Account: Account Settings - Read
-#
-# For more information, see this Cloudflare Community post:
-# https://community.cloudflare.com/t/bug-zone-detail-by-name-requires-zone-list-permission/128042
-#
-# Note: global API keys are NOT supported for security reasons
+# www.cloudflare.com
 provider cloudflare.com {
-     username = unused (but currently something must be entered)
-     password = your_api_token
-     hostname = yourhost.example.com
+    username = zone.name
+    password = api_token # Create a unique custom api token with the following permissions: Zone.Zone - Read, Zone.DNS - Edit.
+    hostname = hostname.zone.name
+    ttl = 1 # optional, value of 1 is 'automatic'.
+    proxied = false # optional.
 }
 
-# Generic example for twoDNS.de
-custom twoDNS.de {
-    username       = account4
-    password       = secret4
-    checkip-server = checkip.two-dns.de
+# Generic example, check all details for your provider!
+custom example {
+    username       = myuser
+    password       = mypass
+    checkip-server = checkip.example.com
     checkip-path   = /
     checkip-ssl    = false
-    ddns-server    = update.twodns.de
+    ddns-server    = update.example.com
     ddns-path      = "/update?hostname="
-    hostname       = example.dd-dns.de
+    hostname       = myhostname.example.net
 }
 .Ed
 .Pp

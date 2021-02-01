@@ -85,9 +85,8 @@ take a small fee, but also provide more domains to choose from:
    * <https://connect.yandex.ru>
    * <https://www.cloudflare.com>
 
-DDNS providers not supported natively like <http://twoDNS.de>, can be
-enabled using the generic DDNS plugin.  See below for configuration
-examples.
+DDNS providers not supported natively can be enabled using the generic
+DDNS plugin.  See below for configuration examples.
 
 In-A-Dyn defaults to HTTPS, but not all providers may support this, so
 try disabling SSL for the update (`ssl = false`) or the checkip phase
@@ -126,9 +125,12 @@ This looks for the default `.conf` file, to check any file, use:
         hostname    = some.example.com
     }
 
+    # We override checkip server with the In-a-dyn built-in 'default',
+    # api.ipify.org, for details on this, see below.
     provider freemyip {
-        password    = YOUR_TOKEN
-        hostname    = YOUR_DOMAIN.freemyip.com
+        password       = YOUR_TOKEN
+        hostname       = YOUR_DOMAIN.freemyip.com
+        checkip-server = default
     }
 
     provider dyn {
@@ -136,7 +138,7 @@ This looks for the default `.conf` file, to check any file, use:
         username    = charlie
         password    = snoopy
         hostname    = { peanuts, woodstock }
-	user-agent  = Mozilla/4.0
+        user-agent  = Mozilla/4.0
     }
 
     # Google Domains - notice use of '@' to update root entry
@@ -202,22 +204,14 @@ This looks for the default `.conf` file, to check any file, use:
          hostname = yourhost.example.com
     }
 
-    # Create a unique API token with the following Permissions:
-    #   Zone: Zone - Read
-    #   Zone: DNS - Edit
-    #
-    # If the token is limited to a specific zone (it should be)
-	# it will also need the following permission:
-    #   Account: Account Settings - Read
-	#
-    # For more information, see this Cloudflare Community post:
-	# https://community.cloudflare.com/t/bug-zone-detail-by-name-requires-zone-list-permission/128042
-    #
-    # Note: global API keys are NOT supported for security reasons
+    # Create a unique custom API token with the following permissions:
+    # -> Zone.Zone - Read, Zone.DNS - Edit.
     provider cloudflare.com {
-         username = unused (but currently something must be entered)
-         password = your_api_token
-         hostname = yourhost.example.com
+        username = zone.name
+        password = api_token_important_read_comment
+        hostname = hostname.zone.name
+        ttl = 1 # optional, value of 1 is 'automatic'.
+        proxied = false # optional.
     }
 
 Notice how the config has three different users of the No-IP provider --
@@ -242,9 +236,11 @@ and password **must** be the *Update key* found in the *Advanced*
 configuration tab.
 
 Sometimes the default `checkip-server` for a DDNS provider can be very
-slow to respond, to this end Inadyn now supports overriding this server
-with a custom one, like for custom DDNS provider, or even a custom
-command.  See the man pages, or the below section, for more information.
+slow to respond, to this end In-a-dyn now support overriding it with a
+custom one, or a custom command.  The easiest way to change it is to set
+`checkip-server = default`, triggering In-a-dyn to use `api.ipify.org`,
+which it also use for custom DDNS providers.  See the man pages, or the
+below section, for more information.
 
 Some providers require using a specific browser to send updates, this
 can be worked around using the `user-agent = STRING` setting, as shown
@@ -268,21 +264,22 @@ and/or password, you can leave these fields out.  Basic authentication,
 will still be used in communication with the server, but with empty
 username and password.
 
-A DDNS provider like <http://twoDNS.de> can be setup like this:
+A custom DDNS provider can be setup like this:
 
-    custom twoDNS {
+    custom example {
         username       = myuser
         password       = mypass
-        checkip-server = checkip.two-dns.de
+        checkip-server = checkip.example.com
         checkip-path   = /
-        ddns-server    = update.twodns.de
+        ddns-server    = update.example.com
         ddns-path      = "/update?hostname="
-        hostname       = myhostname.dd-dns.de
+        hostname       = myhostname.example.net
 	}
 
-For <https://www.namecheap.com> DDNS can look as follows.  Notice how
-the hostname syntax differs between these two DDNS providers.  You need
-to investigate details like this yourself when using the generic/custom
+You can even override existing plugin support for known DDNS providers,
+e.g., for <https://www.namecheap.com> it can look as follows.  Notice
+how the hostname syntax differs between these two examples.  You need to
+investigate details like this yourself when using the generic/custom
 DDNS plugin:
 
     custom namecheap {

@@ -29,7 +29,7 @@
 	"ip4=%s "							\
 	"HTTP/1.0\r\n"							\
 	"Host: %s\r\n"							\
-	"User-Agent: %s\r\n"
+	"User-Agent: %s\r\n\r\n"
 
 #define MD5_DIGEST_BYTES  16
 

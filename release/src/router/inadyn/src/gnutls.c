@@ -295,41 +295,33 @@ int ssl_send(http_t *client, const char *buf, int len)
 
 int ssl_recv(http_t *client, char *buf, int buf_len, int *recv_len)
 {
-	int ret, len = buf_len;
+	int ret, len = 0;
 
 	if (!client->ssl_enabled)
 		return tcp_recv(&client->tcp, buf, buf_len, recv_len);
 
-	/* Read HTTP header */
 	do {
-		ret = gnutls_record_recv(client->ssl, buf, len);
-	} while (ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
-
-	if (ret < 0) {
-		logit(LOG_WARNING, "Failed receiving GnuTLS header response: %s",
-		      gnutls_strerror(ret));
-		return RC_HTTPS_RECV_ERROR;
-	}
-
-	/* Read HTTP body */
-	len = ret;
-	buf_len -= ret;
-	do {
-		ret = gnutls_record_recv(client->ssl, &buf[len], buf_len);
-		if (ret >= 0) {
+		ret = gnutls_record_recv(client->ssl, buf + len, buf_len - len);
+		if (ret > 0) {
 			len += ret;
-			buf_len -= ret;
 		}
-	} while (ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
+	} while (ret > 0 || ret == GNUTLS_E_INTERRUPTED || ret == GNUTLS_E_AGAIN);
 
+	/*
+	 * We may get GNUTLS_E_PREMATURE_TERMINATION here.  It happens
+	 * when a server closes the TCP connection without a prior TLS
+	 * shutdown alert.  Probably indicates a bug in the server's
+	 * TLS handling.  OpenSSL seems to ignore this so we do too.
+	 *                       -- André Colomb
+	 */
 	if (ret < 0 && ret != GNUTLS_E_PREMATURE_TERMINATION) {
-		logit(LOG_WARNING, "Failed receiving GnuTLS body response: %s",
-		      gnutls_strerror(ret));
+		logit(LOG_WARNING, "Failed receiving HTTPS response: %s", gnutls_strerror(ret));
 		return RC_HTTPS_RECV_ERROR;
 	}
 
 	*recv_len = len;
-	logit(LOG_DEBUG, "Successfully received HTTPS response (%d bytes)!", len);
+
+	logit(LOG_DEBUG, "Successfully received HTTPS response (%d/%d bytes)!", *recv_len, buf_len);
 
 	return 0;
 }

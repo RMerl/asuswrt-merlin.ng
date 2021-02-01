@@ -59,7 +59,7 @@ static const char *CLOUDFLARE_HOSTNAME_UPDATE_REQUEST	= "PUT " API_URL "/zones/%
 	"Content-Length: %zd\r\n\r\n" \
 	"%s";
 	
-static const char *CLOUDFLARE_UPDATE_JSON_FORMAT = "{\"type\":\"%s\",\"name\":\"%s\",\"content\":\"%s\"}";
+static const char *CLOUDFLARE_UPDATE_JSON_FORMAT = "{\"type\":\"%s\",\"name\":\"%s\",\"content\":\"%s\",\"ttl\":%li,\"proxied\":%s}";
 
 static const char *IPV4_RECORD_TYPE = "A";
 static const char *IPV6_RECORD_TYPE = "AAAA";
@@ -76,9 +76,15 @@ static ddns_system_t plugin = {
 	.request      = (req_fn_t)request,
 	.response     = (rsp_fn_t)response,
 
-	.checkip_name = DYNDNS_MY_IP_SERVER,
-	.checkip_url  = DYNDNS_MY_CHECKIP_URL,
-	.checkip_ssl  = DYNDNS_MY_IP_SSL,
+	/*
+	 * 1.1.1.1 is chosen here due to "allow-ipv6" is default to false
+	 * www.cloudflare.com would also work but is dual stack and may return ipv6 address
+	 * use 1.1.1.1 to would force it return ipv4 by default
+	 * see examples/cloudflare-*.conf
+	 */
+	.checkip_name = "1.1.1.1",
+	.checkip_url  = "/cdn-cgi/trace",
+	.checkip_ssl  = DDNS_CHECKIP_SSL_SUPPORTED,
 
 	.server_name  = API_HOST,
 	.server_url   = API_URL
@@ -88,7 +94,6 @@ static ddns_system_t plugin = {
  * filled by the setup() callback and handed to ddns_info_t
  * for use later in the request() callback .
  */
-#define MAX_NAME 64
 #define MAX_ID (32 + 1)
 
 struct cfdata {
@@ -212,15 +217,15 @@ static int json_copy_value(char *dest, size_t dest_size, const char *json, const
 
 static int get_id(char *dest, size_t dest_size, const ddns_info_t *info, char *request, size_t request_len)
 {
-	const size_t  RESP_BUFFER_SIZE = 4096;
 	const char   *body;
 	http_trans_t  trans;
 	jsmntok_t     id;
 	http_t        client;
 	char         *response_buf;
+	size_t        response_buflen = DDNS_HTTP_RESPONSE_BUFFER_SIZE;
 	int           rc = RC_OK;
 
-	response_buf = calloc(RESP_BUFFER_SIZE, sizeof(char));
+	response_buf = calloc(response_buflen, sizeof(char));
 	if (!response_buf)
 		return RC_OUT_OF_MEMORY;
 
@@ -235,7 +240,7 @@ static int get_id(char *dest, size_t dest_size, const ddns_info_t *info, char *r
 	trans.req = request;
 	trans.req_len = request_len;
 	trans.rsp = response_buf;
-	trans.max_rsp_len = RESP_BUFFER_SIZE - 1; /* Save place for a \0 at the end */
+	trans.max_rsp_len = response_buflen - 1; /* Save place for a \0 at the end */
 
 	logit(LOG_DEBUG, "Request:\n%s", request);
 	CHECK(http_transaction(&client, &trans));
@@ -264,25 +269,6 @@ cleanup:
 	return rc;
 }
 
-static void get_zone(char *dest, size_t dest_len, const char *hostname)
-{
-	const char *end = hostname + strlen(hostname);
-	const char *root;
-	int count = 0;
-
-	for (root = end; root != hostname; root--) {
-		if (*root == '.')
-			count++;
-
-		if (count == 2) {
-			root++;
-			break;
-		}
-	}
-
-	strlcpy(dest, root, dest_len);
-}
-
 static const char* get_record_type(const char *address)
 {
 	if (strstr(address, ":"))
@@ -296,8 +282,14 @@ static int setup(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *hostname)
 	const char *record_type;
 	struct cfdata *data;
 	size_t len;
-	char zone_name[MAX_NAME];
+	const char *zone_name = info->creds.username;
 	int rc = RC_OK;
+
+	if (*zone_name == '\0' || !strchr(zone_name, '.'))
+	{
+		logit(LOG_ERR, "Invalid zone. Enter the Cloudflare zone in the username field.");
+		return RC_DDNS_INVALID_OPTION;
+	}
 
 	data = calloc(1, sizeof(struct cfdata));
 	if (!data)
@@ -307,10 +299,9 @@ static int setup(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *hostname)
 		free(info->data);
 	info->data = data;
 
-	get_zone(zone_name, sizeof(zone_name), hostname->name);
 	record_type = get_record_type(hostname->address);
 
-	logit(LOG_DEBUG, "User: %s Zone: %s", info->creds.username, zone_name);
+	logit(LOG_DEBUG, "Zone: %s", zone_name);
 
 	len = snprintf(ctx->request_buf, ctx->request_buflen,
 		       CLOUDFLARE_ZONE_ID_REQUEST,
@@ -345,10 +336,14 @@ static int setup(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *hostname)
 	}
 
 	rc = get_id(data->hostname_id, MAX_ID, info, ctx->request_buf, ctx->request_buflen);
-	if (rc == RC_OK)
+	if (rc == RC_OK) {
 		logit(LOG_DEBUG, "Cloudflare Host: '%s' Id: %s", hostname->name, data->hostname_id);
-	else
+	} else if (rc == RC_DDNS_RSP_NOHOST) {
+		strcpy(data->hostname_id, "");
+		return RC_OK;
+	} else {
 		logit(LOG_INFO, "Hostname '%s' not found.", hostname->name);
+	}
 
 	return rc;
 }
@@ -365,7 +360,10 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *hostname)
 			       CLOUDFLARE_UPDATE_JSON_FORMAT,
 			       record_type,
 			       hostname->name,
-			       hostname->address);
+			       hostname->address,
+			       info->ttl >= 0 ? info-> ttl : 1, // Time to live for DNS record. Value of 1 is 'automatic'
+			       info->proxied ? "true" : "false");
+
 
 	if (strlen(data->hostname_id) == 0)
 		return snprintf(ctx->request_buf, ctx->request_buflen,

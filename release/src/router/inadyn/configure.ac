@@ -1,5 +1,5 @@
 AC_PREREQ(2.61)
-AC_INIT([In-a-dyn], [2.7], [https://github.com/troglobit/inadyn/issues],
+AC_INIT([In-a-dyn], [2.8.1], [https://github.com/troglobit/inadyn/issues],
 	[inadyn], [https://troglobit.com/projects/inadyn/])
 AC_CONFIG_AUX_DIR(aux)
 AM_INIT_AUTOMAKE([1.11 foreign dist-xz])
@@ -167,7 +167,7 @@ AM_CONDITIONAL([HAVE_SYSTEMD], [test "x$with_systemd" != "xno"])
 # Expand $sbindir early, into $SBINDIR, for systemd unit file
 # NOTE: This does *not* take prefix/exec_prefix override at "make
 #       install" into account, unfortunately.
-test "x$prefix" = xNONE && prefix=
+test "x$prefix" = xNONE && prefix=$ac_default_prefix
 test "x$exec_prefix" = xNONE && exec_prefix='${prefix}'
 SYSCONFDIR=`eval echo $sysconfdir`
 SYSCONFDIR=`eval echo $SYSCONFDIR`

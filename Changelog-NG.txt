@@ -1,6 +1,14 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+386.2 (xx-xxx-2021)
+  - UPDATED: inadyn to 2.8.1.
+  - FIXED: Missing Game Mode to RT-AC88U
+  - FIXED: Non-working 160 MHz settings for RT-AC88U region/versions
+           that should support it
+  - FIXED: Missing Instant Guard to RT-AX56U and RT-AC88U.
+
+
 386.1 (30-Jan-2021)
   Switched to the new 386 codebase.  386 introduces
   AiMesh 2.0, finalizes the move to OpenSSL 1.1.1

@@ -1,5 +1,5 @@
 /* Multithreading primitives.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,10 +24,43 @@
 
 /* Use the POSIX threads library.  */
 
+# include <errno.h>
 # include <pthread.h>
 # include <stdlib.h>
 
 # if PTHREAD_IN_USE_DETECTION_HARD
+
+#  if defined __FreeBSD__ || defined __DragonFly__                 /* FreeBSD */
+
+/* Test using pthread_key_create.  */
+
+int
+glthread_in_use (void)
+{
+  static int tested;
+  static int result; /* 1: linked with -lpthread, 0: only with libc */
+
+  if (!tested)
+    {
+      pthread_key_t key;
+      int err = pthread_key_create (&key, NULL);
+
+      if (err == ENOSYS)
+        result = 0;
+      else
+        {
+          result = 1;
+          if (err == 0)
+            pthread_key_delete (key);
+        }
+      tested = 1;
+    }
+  return result;
+}
+
+#  else                                                     /* Solaris, HP-UX */
+
+/* Test using pthread_create.  */
 
 /* The function to be executed by a dummy thread.  */
 static void *
@@ -61,6 +94,8 @@ glthread_in_use (void)
     }
   return result;
 }
+
+#  endif
 
 # endif
 

@@ -1,6 +1,6 @@
 /* A GNU-like <math.h>.
 
-   Copyright (C) 2002-2003, 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2003, 2007-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,8 +22,23 @@
 #endif
 @PRAGMA_COLUMNS@
 
-/* The include_next requires a split double-inclusion guard.  */
+#if defined _GL_INCLUDING_MATH_H
+/* Special invocation convention:
+   - On FreeBSD 12.2 we have a sequence of nested includes
+     <math.h> -> <stdlib.h> -> <sys/wait.h> -> <sys/types.h> -> <sys/select.h>
+       -> <signal.h> -> <pthread.h> -> <stdlib.h> -> <math.h>
+     In this situation, the functions are not yet declared, therefore we cannot
+     provide the C++ aliases.  */
+
 #@INCLUDE_NEXT_AS_FIRST_DIRECTIVE@ @NEXT_AS_FIRST_DIRECTIVE_MATH_H@
+
+#else
+/* Normal invocation convention.  */
+
+/* The include_next requires a split double-inclusion guard.  */
+#define _GL_INCLUDING_MATH_H
+#@INCLUDE_NEXT_AS_FIRST_DIRECTIVE@ @NEXT_AS_FIRST_DIRECTIVE_MATH_H@
+#undef _GL_INCLUDING_MATH_H
 
 #ifndef _@GUARD_PREFIX@_MATH_H
 #define _@GUARD_PREFIX@_MATH_H
@@ -1307,6 +1322,7 @@ _GL_FUNCDECL_RPL (ilogbl, int, (long double x));
 _GL_CXXALIAS_RPL (ilogbl, int, (long double x));
 # else
 #  if !@HAVE_ILOGBL@
+#   undef ilogbl
 _GL_FUNCDECL_SYS (ilogbl, int, (long double x));
 #  endif
 _GL_CXXALIAS_SYS (ilogbl, int, (long double x));
@@ -1321,19 +1337,52 @@ _GL_WARN_ON_USE (ilogbl, "ilogbl is unportable - "
 #endif
 
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef j0
-# define j0 _j0
+#if @GNULIB_MDA_J0@
+/* On native Windows, map 'j0' to '_j0', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::j0 always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef j0
+#   define j0 _j0
+#  endif
+_GL_CXXALIAS_MDA (j0, double, (double x));
+# else
+_GL_CXXALIAS_SYS (j0, double, (double x));
+# endif
+_GL_CXXALIASWARN (j0);
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef j1
-# define j1 _j1
+#if @GNULIB_MDA_J1@
+/* On native Windows, map 'j1' to '_j1', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::j1 always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef j1
+#   define j1 _j1
+#  endif
+_GL_CXXALIAS_MDA (j1, double, (double x));
+# else
+_GL_CXXALIAS_SYS (j1, double, (double x));
+# endif
+_GL_CXXALIASWARN (j1);
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef jn
-# define jn _jn
+#if @GNULIB_MDA_JN@
+/* On native Windows, map 'jn' to '_jn', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::jn always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef jn
+#   define jn _jn
+#  endif
+_GL_CXXALIAS_MDA (jn, double, (int n, double x));
+# else
+_GL_CXXALIAS_SYS (jn, double, (int n, double x));
+# endif
+_GL_CXXALIASWARN (jn);
 #endif
 
 
@@ -2054,7 +2103,7 @@ _GL_FUNCDECL_RPL (sinf, float, (float x));
 _GL_CXXALIAS_RPL (sinf, float, (float x));
 # else
 #  if !@HAVE_SINF@
- #  undef sinf
+#   undef sinf
 _GL_FUNCDECL_SYS (sinf, float, (float x));
 #  endif
 _GL_CXXALIAS_SYS (sinf, float, (float x));
@@ -2301,19 +2350,52 @@ _GL_WARN_ON_USE (truncl, "truncl is unportable - "
 #endif
 
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef y0
-# define y0 _y0
+#if @GNULIB_MDA_Y0@
+/* On native Windows, map 'y0' to '_y0', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::y0 always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef y0
+#   define y0 _y0
+#  endif
+_GL_CXXALIAS_MDA (y0, double, (double x));
+# else
+_GL_CXXALIAS_SYS (y0, double, (double x));
+# endif
+_GL_CXXALIASWARN (y0);
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef y1
-# define y1 _y1
+#if @GNULIB_MDA_Y1@
+/* On native Windows, map 'y1' to '_y1', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::y1 always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef y1
+#   define y1 _y1
+#  endif
+_GL_CXXALIAS_MDA (y1, double, (double x));
+# else
+_GL_CXXALIAS_SYS (y1, double, (double x));
+# endif
+_GL_CXXALIASWARN (y1);
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef yn
-# define yn _yn
+#if @GNULIB_MDA_YN@
+/* On native Windows, map 'yn' to '_yn', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::yn always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef yn
+#   define yn _yn
+#  endif
+_GL_CXXALIAS_MDA (yn, double, (int n, double x));
+# else
+_GL_CXXALIAS_SYS (yn, double, (int n, double x));
+# endif
+_GL_CXXALIASWARN (yn);
 #endif
 
 
@@ -2497,7 +2579,7 @@ _GL_EXTERN_C int rpl_isnanl (long double x) _GL_ATTRIBUTE_CONST;
 #  if defined isnan || defined GNULIB_NAMESPACE
 _GL_MATH_CXX_REAL_FLOATING_DECL_1 (isnan)
 #   undef isnan
-#   if __GNUC__ >= 6 || (defined __clang__ && !((defined __APPLE__ && defined __MACH__) || defined __FreeBSD__ || defined __OpenBSD__ || (defined _WIN32 && !defined __CYGWIN__)))
+#   if __GNUC__ >= 6 || (defined __clang__ && !((defined __APPLE__ && defined __MACH__) || (defined __FreeBSD__ && __clang_major__ < 7) || defined __OpenBSD__ || (defined _WIN32 && !defined __CYGWIN__)))
   /* This platform's <cmath> possibly defines isnan through a set of inline
      functions.  */
 _GL_MATH_CXX_REAL_FLOATING_DECL_2 (isnan, rpl_isnan, bool)
@@ -2601,4 +2683,5 @@ _GL_WARN_REAL_FLOATING_DECL (signbit);
 _GL_INLINE_HEADER_END
 
 #endif /* _@GUARD_PREFIX@_MATH_H */
+#endif /* _GL_INCLUDING_MATH_H */
 #endif /* _@GUARD_PREFIX@_MATH_H */

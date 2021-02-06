@@ -1,3 +1,244 @@
+Changes between v5.4 and v5.5:
+------------------------------
+
+Benno Schulenberg (84):
+      build: fix compilation for --enable-{tiny,help,multibuffer}
+      build: fix compilation when configured with --disable-utf8
+      build: fix compilation when configured with --enable-tiny
+      build: remove the '--with-slang' configure option
+      bump version numbers and add a news item for the 5.5 release
+      chars: short-circuit determining the width of characters under U+0300
+      chars: speed up the handling of invalid UTF-8 starter bytes
+      copyright: update the years for the FSF
+      display: add code for showing minimal state-information bar at the bottom
+      display: do not show the state flags in the help viewer or file browser
+      docs: explain the effect of --minibar / -_ / 'set minibar'
+      docs: explain the purpose of --markmatch / -^ / 'set markmatch'
+      docs: insert links to the mailing-list archives into the README
+      docs: mention in NEWS that some workarounds were removed
+      docs: mention the new 'set promptcolor' option
+      docs: remove all mentions of Slang
+      feedback: differentiate between remarks, mistakes, and information
+      feedback: wipe the status bar by default after 20 keystrokes
+      files: when truncating a file name, give an indication of this
+      general: remove support for Slang
+      gnulib: update to its current upstream state
+      input: intercept ^Z also when --minibar is active
+      input: interpret a keystroke as Meta only when an earlier escape was solo
+      memory: avoid leaking the speller or linter command string, when invoked
+      minibar: add an [x/y] "counter" when multiple files are open
+      minibar: add a percentage that shows how far the cursor is into the file
+      minibar: allow the number-of-lines to overrule also the state flags
+      minibar: allow the number-of-lines to overrule location + character code
+      minibar: drop the side spaces before suppressing the state flags
+      minibar: represent bytes as 0xNN and valid Unicode code points as U+NNNN
+      minibar: show the info bar again some 0.8 seconds after a message
+      minibar: show the line count in the bar (at startup and when saving)
+      minibar: show Unicode codes when in a UTF-8 locale
+      minibar: suppress some elements when there is no room to show them
+      minibar: when the next character has zero width, show its code too
+      minibar: when the overnext character has zero width too, show its code
+      mouse: do not offset the shortcuts by 'margin' when using --linenumbers
+      oops: use the correct condition for checking the last line will change
+      options: accept 'set promptcolor' for setting the color of the prompt bar
+      options: add --markmatch and -^ for activating the select-match behavior
+      options: add --minibar and -_ for activating basic state-information bar
+      prompt: restore a workaround for a cursor misplacement bug in ncurses
+      prompt: suppress the ">" character always when exactly at the right edge
+      rcfile: rename 'nowrap' toggle to 'breaklonglines', to match the option
+      search: set the mark at the end of a found match so it gets highlighted
+      search: suppress the cursor when highlighting a match
+      speller: do an internal spell check when --speller is an empty string
+      speller: strip leading whitespace from command, to avoid a sneaky crash
+      syntax: go: add author and license line
+      syntax: nanorc: colorize 'bookstyle' as a valid option
+      syntax: nanorc: colorize 'set promptcolor' as valid
+      syntax: sh: recognize shebangs with any shell after 'env', not just 'sh'
+      tweaks: adjust the indentation after the previous change
+      tweaks: avoid compilation warnings on 32-bit machine plus newer compiler
+      tweaks: avoid computing the cursor column twice, and the "page" too
+      tweaks: avoid hitting negative values when using size_t
+      tweaks: change an intermediate variable to a better one
+      tweaks: clean up after the previous change
+      tweaks: condense the description of how to report a bug
+      tweaks: correct a translator hint
+      tweaks: correct two comments after the previous changes
+      tweaks: do not change the pointer, but move the content of the string
+      tweaks: drop a small optimization for invalid UTF-8 starter bytes
+      tweaks: elide a variable, by using a reallocation instead
+      tweaks: fold some conditions into bitwise masks, for efficiency
+      tweaks: fold two similar and three identical cases together
+      tweaks: move 'set indicator' to its alphabetical place in the manual
+      tweaks: move the displaying of the state letters into a separate function
+      tweaks: push back the deprecation of the 'set nowrap' option
+      tweaks: put the new options in a consistent order in the code
+      tweaks: reduce the scope of a static variable
+      tweaks: remove some #ifdefs that were there only for Slang
+      tweaks: rename a variable, to be similar to its sister
+      tweaks: reshuffle a condition, to probably avoid an unneeded calculation
+      tweaks: reshuffle an option, to have two related ones grouped together
+      tweaks: reshuffle some lines, to group things better
+      tweaks: reshuffle some lines, to have most #includes near the beginning
+      tweaks: reshuffle some more lines, to have most #defines together
+      tweaks: reshuffle two lines, and rename a variable to a plain word
+      tweaks: reword the description of an option
+      tweaks: simplify a bit of logic
+      tweaks: use a boolean instead of an enumeration of two values
+      undo: remove the added magic line when a replacement caused one
+      weeding: remove some obsolete information from the README
+
+OIX (1):
+      mouse: update title bar (the M flag) when the click is on the cursor
+
+
+Changes between v5.3 and v5.4:
+------------------------------
+
+Benno Schulenberg (31):
+      bindings: accept b for scrolling back up in help viewer and file browser
+      build: exclude a workaround for VTE/Konsole when using a recent ncurses
+      build: include a workaround for VTE only when using an older libvte
+      bump version numbers and add a news item for the 5.4 release
+      copyright: update to the current year for significantly changed files
+      docs: adjust for the changed name of the header-file package on Debian
+      docs: use standard-compliant HTML entities for the four arrows
+      feedback: abort when user tries to open multiple files in tiny version
+      gnulib: update to its current upstream state
+      help: allow the penultimate item extra space when the number is uneven
+      help: show all valid help items also in the Write-Out menu
+      linting: avoid putting the cursor beyond the end of the line
+      moving: skip combining characters and other zero-width characters
+      options: do not spew out the help text when an option is not recognized
+      prompt: skip over combining characters also when editing a search string
+      rcfile: stop accepting 'set view' in a nanorc file, and undocument it
+      statusbar: properly pluralize the line+word+character count report
+      tweaks: avoid copying an option's argument when there is no need
+      tweaks: normalize the formatting after the previous two changes
+      tweaks: rename two variables and improve two comments
+      tweaks: rename two variables, one for contrast, another for visibility
+      tweaks: reshuffle a fragment of code, for clarity
+      tweaks: reshuffle a line, elide two braces, and adjust the indentation
+      tweaks: reshuffle three lines and elide braces after the previous change
+      tweaks: slightly shorten a loop, to place the actual action outside of it
+      tweaks: use the standard symbols for the three standard file descriptors
+      utils: die when trying to allocate zero bytes
+      weeding: remove another unneeded workaround for VTE
+      weeding: remove a workaround for early versions of ncurses-6.0
+      weeding: remove a workaround for versions of ncurses before 5.9
+      weeding: remove a workaround for VTE that is not needed
+
+
+Changes between v5.2 and v5.3:
+------------------------------
+
+Arturo Borrero González (1):
+      syntax: nftables: include author and license lines
+
+Benno Schulenberg (92):
+      browser: make M-W/M-Q functional right after startup, if there is history
+      browser: sort names that differ only in case with uppercase first
+      browser: wipe the status bar before searching again with M-W or M-Q
+      build: abort the update script if a PO file contains a control character
+      build: avoid two compiler warnings when gnulib has been ripped out
+      build: do not accept --enable-libmagic when not having color support
+      build: do not let Slang translate escape sequences to key codes
+      build: exclude bunches of raw escape sequences from the tiny version
+      build: exclude --emptyline, --jumpyscrolling, and --noread from tiny nano
+      build: exclude excessive version information from the tiny version
+      build: exclude option --tabsize (-T) from the tiny version
+      build: exclude reading a file from standard input from the tiny version
+      build: exclude the three --help column headers from the tiny version
+      build: include some raw sequences for the graphical Debian installer
+      build: stop using an obsolete macro, and use 'void' for signal handlers
+      build: to verify wide curses, probe for a function that cannot be a macro
+      bump version numbers and add a news item for the 5.3 release
+      chars: reduce searching time with roughly 85 percent for plain ASCII
+      display: do not unnecessarily wipe the status bar
+      display: do not wipe the status bar when the terminal has just one row
+      display: force the cursor to reappear after a message (when using Slang)
+      display: force the cursor to reappear in a better way (when using Slang)
+      display: skip a special-case refresh when a message was written
+      docs: add a link to the website also to the info manual
+      docs: add the customary (1) after the name of command-line programs
+      docs: condense the descriptions of cutting and pasting
+      docs: explain the purpose of -! / --magic / 'set magic'
+      docs: explain the 'set scrollercolor' option, for coloring the indicator
+      docs: explain what the options --stateflags (-%) and 'set stateflags' do
+      docs: improve two wordings in the sample nanorc
+      docs: mention that syntax definitions are available in /usr/share/nano/
+      feedback: don't give a hint for <Bsp>, and not after an Alt+key was used
+      feedback: in the tiny version, let M-H show the helpful hint too
+      feedback: make an "Unbound key" message disappear on the next keystroke
+      feedback: show a helpful message for ^G even when there is no help
+      feedback: show helpful message for the first ^H at the top of the file
+      gnulib: update to its current upstream state
+      help: do not leave the cursor on the status bar after a search
+      help: do not show "^G Help" in the tiny version when there is no help
+      help: ensure the help lines are always drawn, also when using Slang
+      help: in the tiny version, show Prev/Next Word before Backward/Forward
+      help: nicely pair menu items also when built with just --disable-help
+      new feature: option --stateflags to show some states in top-right corner
+      options: add -? as a synonym of -h (--help), but leave it undocumented
+      options: move --stateflags (-%) and --magic (-!) to the end of the list
+      options: require --magic or 'set magic' to enable the use of libmagic
+      rcfile: add 'set scrollercolor', for changing the color of the indicator
+      suspension: do not enter an invalid byte upon resume (when using Slang)
+      suspension: properly resume from an external SIGSTOP
+      suspension: resume properly from an external SIGSTOP (when using Slang)
+      suspension: switch off flow control at the right moment (for Slang)
+      syntaxes: add author and license lines to four of the files
+      syntax: nanorc: stop coloring 'morespace' and 'smooth' as valid
+      syntax: nanorc: stop coloring 'nopauses' and 'nowrap' as valid
+      syntax: nanorc: stop coloring 'quiet' and 'backwards' and 'finalnewline'
+      syntax: po: do not leave the occasional tab with a red background color
+      syntax: po: highlight embedded control codes that shouldn't be there
+      syntax: sh: recognize some shell scripts by their Emacs modeline
+      tweaks: add a hint for translators
+      tweaks: add some comments to the C syntax, and sort some keywords
+      tweaks: adjust some whitespace in the docs, and improve a comment
+      tweaks: avoid a compiler warning when compiling with more than -O1
+      tweaks: condense a bit of code
+      tweaks: condense a bit of code after the previous change
+      tweaks: drop the unneeded saving and restoring of a global variable
+      tweaks: dummy commit, to add some info about the previous one
+      tweaks: elide a one-line function, after reducing it to a single call
+      tweaks: fold one function into another, to elide an unneeded return value
+      tweaks: harmonize the spelling of a compound word, and rewrap a section
+      tweaks: harmonize the style of error messages and warnings in ./configure
+      tweaks: make two of the changes that 'autoupdate' suggests
+      tweaks: move three functions, to before the ones that call them
+      tweaks: move two more functions, to before the ones that call them
+      tweaks: move two more functions, to before the one that calls them
+      tweaks: normalize the indentation after the previous change
+      tweaks: remove an inconsistent newline from the end of an error message
+      tweaks: remove an unused element from 'funcstruct', saving 8 more bytes
+      tweaks: remove mistaken escape sequences for function keys on xterm
+      tweaks: remove two stray comments and two lines that were commented out
+      tweaks: rename another variable, away from being misnamed
+      tweaks: rename four variables, reshuffle them, and correct one type
+      tweaks: rename two elements of history struct, away from abbreviations
+      tweaks: rename two variables, to be more distinct
+      tweaks: replace two more occurrences of 'AC_TRY_RUN' with 'AC_RUN_IFELSE'
+      tweaks: reshuffle a condition, to elide a blank string
+      tweaks: reshuffle some lines after the previous change
+      tweaks: reshuffle some lines and adjust indentation after previous change
+      tweaks: reshuffle two lines and a function name, for a consistent order
+      tweaks: rewrap nine more old NEWS items, for balanced line lengths
+      tweaks: rewrap three NEWS items, for more balanced line lengths
+      tweaks: stop 'autoupdate' from failing with "end of file in string"
+      version: remove URL and email address from the --version output
+
+Hussam al-Homsi (5):
+      syntax: c: colorize also one-character constants, and the null directive
+      syntax: c: colorize also the keywords that start with an underscore
+      syntax: c: colorize also the 'restrict' keyword, and the #line directive
+      tweaks: reorder a member of 'funcstruct', to save 8 bytes of padding
+      tweaks: stop casting the return of malloc() and friends
+
+Ryan Westlund (1):
+      syntax: markdown: add author and license line
+
+
 Changes between v5.1 and v5.2:
 ------------------------------
 
@@ -216,7 +457,7 @@ Benno Schulenberg (374):
       locking: prevent a symlink attack by not opening an existing lock file
       memory: plug a leak, by freeing the cutbuffer after a bracketed paste
       menus: remove unneeded words and shortenings from key labels
-      new feature: a position-plus-portion indicator on the righthand side
+      new feature: a position-plus-portion indicator on the right-hand side
       oops -- restore an accidentally changed file
       options: add --indicator and -q for switching on the scroll-bar thing
       options: add -O/--bookstyle to make leading whitespace mean new paragraph
@@ -276,7 +517,7 @@ Benno Schulenberg (374):
       tweaks: adjust the conditional help-item pairing for absence of speller
       tweaks: adjust the file format indicator in a quicker way
       tweaks: adjust the indentation after the previous change
-      tweask: adjust the indentation after the previous change
+      tweaks: adjust the indentation after the previous change
       tweaks: avoid a compiler warning
       tweaks: avoid a function call when a simple boolean will do
       tweaks: avoid an unnecessary refresh for zero or just one completion
@@ -876,7 +1117,7 @@ Benno Schulenberg (166):
       tweaks: reshuffle some declarations, and expand a few variable names
       tweaks: reshuffle some lines, to avoid tallying the menus when not needed
       tweaks: reshuffle some lines, to group all ignored keystrokes together
-      tweaks: reshuffle three lines, to make the grouping tighther
+      tweaks: reshuffle three lines, to make the grouping tighter
       tweaks: reshuffle two lines, to do the linking first, then the content
       tweaks: reword two comments, and rewrap another
       tweaks: rewrap a comment and a line, and reshuffle a fragment of code
@@ -1340,7 +1581,7 @@ Benno Schulenberg (235):
       tweaks: elide a pre-processor #else clause, by using braces instead
       tweaks: elide a variable, drop a comment, and remove unneeded braces
       tweaks: elide two unneeded variables
-      tweaks: enforce the miminum amount of scrolling in a simpler way
+      tweaks: enforce the minimum amount of scrolling in a simpler way
       tweaks: exclude a bug check from the tiny version
       tweaks: exclude another bug check from the tiny version
       tweaks: factor out a fragment of code that is repeated three times
@@ -1360,7 +1601,7 @@ Benno Schulenberg (235):
       tweaks: move a function to the file where it is used
       tweaks: move an assignment that is useful only when searching forward
       tweaks: move a syntax check to a better place, to reduce duplication
-      tweaks: move the tyding-up-after-a-search to a single exit point
+      tweaks: move the tidying-up-after-a-search to a single exit point
       tweaks: normalize the indentation after the previous two changes
       tweaks: place a function better, and reduce some comments to a single one
       tweaks: put some timing code back into the search function
@@ -1566,7 +1807,7 @@ Benno Schulenberg (85):
       tweaks: rename a variable, to be more distinct and more descriptive
       tweaks: rename a variable, to get out of the way for another rename
       tweaks: rename some variables, for more contrast and to match others
-      tweaks: rename some variables, to be less repititious
+      tweaks: rename some variables, to be less repetitious
       tweaks: rename two variables, for more contrast
       tweaks: rename two variables, to be more distinct and more fitting
       tweaks: rename two variables, to make more sense

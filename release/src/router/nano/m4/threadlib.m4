@@ -1,5 +1,5 @@
-# threadlib.m4 serial 27
-dnl Copyright (C) 2005-2020 Free Software Foundation, Inc.
+# threadlib.m4 serial 29
+dnl Copyright (C) 2005-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -398,8 +398,8 @@ AC_DEFUN([gl_THREADLIB_EARLY_BODY],
     [m4_divert_text([DEFAULTS], [gl_use_threads_default=])])
   m4_divert_text([DEFAULTS], [gl_use_winpthreads_default=])
   AC_ARG_ENABLE([threads],
-AC_HELP_STRING([--enable-threads={isoc|posix|isoc+posix|windows}], [specify multithreading API])m4_ifdef([gl_THREADLIB_DEFAULT_NO], [], [
-AC_HELP_STRING([--disable-threads], [build without multithread safety])]),
+AS_HELP_STRING([--enable-threads={isoc|posix|isoc+posix|windows}], [specify multithreading API])m4_ifdef([gl_THREADLIB_DEFAULT_NO], [], [
+AS_HELP_STRING([--disable-threads], [build without multithread safety])]),
     [gl_use_threads=$enableval],
     [if test -n "$gl_use_threads_default"; then
        gl_use_threads="$gl_use_threads_default"
@@ -486,6 +486,17 @@ AC_DEFUN([gl_THREADLIB_BODY],
               AC_DEFINE([USE_POSIX_THREADS_WEAK], [1],
                 [Define if references to the POSIX multithreading library should be made weak.])
               LIBTHREAD= LTLIBTHREAD=
+            else
+              case "$host_os" in
+                freebsd* | dragonfly*)
+                  if test "x$LIBTHREAD" != "x$LIBMULTITHREAD"; then
+                    dnl If weak symbols can't tell whether pthread_create(), pthread_key_create()
+                    dnl etc. will succeed, we need a runtime test.
+                    AC_DEFINE([PTHREAD_IN_USE_DETECTION_HARD], [1],
+                      [Define if the pthread_in_use() detection is hard.])
+                  fi
+                  ;;
+              esac
             fi
           fi
         fi

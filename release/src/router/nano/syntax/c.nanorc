@@ -6,28 +6,34 @@ magic "^(C|C\+\+) (source|program)"
 comment "//"
 
 # Constants.
-color brightred "\<[A-Z_][0-9A-Z_]+\>"
+color brightred "\<[A-Z_][0-9A-Z_]*\>"
 # Labels.
 color brightmagenta "^[[:space:]]*[A-Z_a-z]+:[[:space:]]*$"
 
-color green "\<(float|double|bool|char|int|short|long|sizeof|enum|void|auto|static|const|struct|union|typedef|extern|(un)?signed|inline)\>"
+# Types and related keywords.
+color green "\<(auto|bool|char|const|double|enum|extern|float|inline|int|long|restrict|short|signed|sizeof|static|struct|typedef|union|unsigned|void)\>"
 color green "\<([[:lower:]][[:lower:]_]*|(u_?)?int(8|16|32|64))_t\>"
-color green "\<(class|namespace|template|public|protected|private|typename|this|friend|virtual|override|using|mutable|volatile|register|explicit)\>"
-color brightyellow "\<(for|if|while|do|else|case|default|switch)\>"
+color green "\<(_(Alignas|Alignof|Atomic|Bool|Complex|Generic|Imaginary|Noreturn|Static_assert|Thread_local))\>"
+color green "\<(class|explicit|friend|mutable|namespace|override|private|protected|public|register|template|this|typename|using|virtual|volatile)\>"
+
+# Flow control.
+color brightyellow "\<(if|else|for|while|do|switch|case|default)\>"
 color brightyellow "\<(try|throw|catch|operator|new|delete)\>"
-color magenta "\<(goto|continue|break|return)\>"
-color brightmagenta "'([^'\]|(\\["'abfnrtv\\]))'" "'\\(([0-3]?[0-7]{1,2}))'" "'\\x[0-9A-Fa-f]{1,2}'"
+color magenta "\<(break|continue|goto|return)\>"
+
+# Single-quoted stuff (characters, backslash escapes, hex and octal byte codes).
+color brightmagenta "'([^'\]|\\(["'\abfnrtv]|x[0-9A-Fa-f]{1,2}|[0-3]?[0-7]{1,2}))'"
 
 # GCC builtins.
 color cyan "__attribute__[[:space:]]*\(\([^)]*\)\)" "__(aligned|asm|builtin|hidden|inline|packed|restrict|section|typeof|weak)__"
 
-# Strings.  In general you will want your strings and comments to come last,
-# because highlighting rules are applied in the order they are read in.
+# Strings.  (In general you will want your strings and comments to come last,
+# because highlighting rules are applied in the order they are read in.)
 color brightyellow ""([^"]|\\")*"" "#[[:space:]]*include[[:space:]]+<[^[:blank:]=]*>"
 
 # Preprocessor directives.
 color brightcyan start="^[[:space:]]*#[[:space:]]*(if(n?def)?|elif|warning|error|pragma)\>" end="(\`|[^\\])$"
-color brightcyan "^[[:space:]]*#[[:space:]]*(define|else|endif|include(_next)?|undef)\>"
+color brightcyan "^[[:space:]]*#[[:space:]]*((define|else|endif|include(_next)?|line|undef)\>|$)"
 
 # Comments.
 color brightblue "//.*"

@@ -1,7 +1,7 @@
 /**************************************************************************
  *   rcfile.c  --  This file is part of GNU nano.                         *
  *                                                                        *
- *   Copyright (C) 2001-2011, 2013-2020 Free Software Foundation, Inc.    *
+ *   Copyright (C) 2001-2011, 2013-2021 Free Software Foundation, Inc.    *
  *   Copyright (C) 2014 Mike Frysinger                                    *
  *   Copyright (C) 2019 Brand Huntsman                                    *
  *   Copyright (C) 2014-2020 Benno Schulenberg                            *
@@ -48,16 +48,17 @@ static const rcoption rcopts[] = {
 #endif
 	{"casesensitive", CASE_SENSITIVE},
 	{"constantshow", CONSTANT_SHOW},
-	{"emptyline", EMPTY_LINE},
 #ifdef ENABLED_WRAPORJUSTIFY
 	{"fill", 0},
 #endif
 #ifdef ENABLE_HISTORIES
 	{"historylog", HISTORYLOG},
 #endif
-	{"jumpyscrolling", JUMPY_SCROLLING},
 #ifdef ENABLE_LINENUMBERS
 	{"linenumbers", LINE_NUMBERS},
+#endif
+#ifdef HAVE_LIBMAGIC
+	{"magic", USE_MAGIC},
 #endif
 	{"morespace", MORE_SPACE},  /* Deprecated; remove in 2021. */
 #ifdef ENABLE_MOUSE
@@ -70,7 +71,7 @@ static const rcoption rcopts[] = {
 	{"nonewlines", NO_NEWLINES},
 	{"nopauses", NO_PAUSES},  /* Obsolete; remove in 2021. */
 #ifdef ENABLE_WRAPPING
-	{"nowrap", NO_WRAP},  /* Deprecated; remove in 2021. */
+	{"nowrap", NO_WRAP},  /* Deprecated; remove in 2024. */
 #endif
 #ifdef ENABLE_OPERATINGDIR
 	{"operatingdir", 0},
@@ -93,9 +94,7 @@ static const rcoption rcopts[] = {
 #endif
 	{"suspend", SUSPENDABLE},  /* Deprecated; remove in 2022. */
 	{"suspendable", SUSPENDABLE},
-	{"tabsize", 0},
 	{"tempfile", SAVE_ON_EXIT},  /* Deprecated; remove in 2022. */
-	{"view", VIEW_MODE},
 #ifndef NANO_TINY
 	{"afterends", AFTER_ENDS},
 	{"allow_insecure_backup", INSECURE_BACKUP},
@@ -105,15 +104,21 @@ static const rcoption rcopts[] = {
 	{"backupdir", 0},
 	{"bookstyle", BOOKSTYLE},
 	{"cutfromcursor", CUT_FROM_CURSOR},
+	{"emptyline", EMPTY_LINE},
 	{"guidestripe", 0},
 	{"indicator", INDICATOR},
+	{"jumpyscrolling", JUMPY_SCROLLING},
 	{"locking", LOCKING},
+	{"markmatch", MARK_MATCH},
 	{"matchbrackets", 0},
+	{"minibar", MINIBAR},
 	{"noconvert", NO_CONVERT},
 	{"showcursor", SHOW_CURSOR},
 	{"smarthome", SMART_HOME},
 	{"smooth", SMOOTH_SCROLL},  /* Deprecated; remove in 2021. */
 	{"softwrap", SOFTWRAP},
+	{"stateflags", STATEFLAGS},
+	{"tabsize", 0},
 	{"tabstospaces", TABS_TO_SPACES},
 	{"trimblanks", TRIM_BLANKS},
 	{"unix", MAKE_IT_UNIX},
@@ -126,7 +131,9 @@ static const rcoption rcopts[] = {
 	{"titlecolor", 0},
 	{"numbercolor", 0},
 	{"stripecolor", 0},
+	{"scrollercolor", 0},
 	{"selectedcolor", 0},
+	{"promptcolor", 0},
 	{"statuscolor", 0},
 	{"errorcolor", 0},
 	{"keycolor", 0},
@@ -469,7 +476,8 @@ keystruct *strtosc(const char *input)
 		else if (!strcmp(input, "cutfromcursor"))
 			s->toggle = CUT_FROM_CURSOR;
 #ifdef ENABLE_WRAPPING
-		else if (!strcmp(input, "nowrap"))
+		else if (!strcmp(input, "breaklonglines") ||
+		         !strcmp(input, "nowrap"))  /* Deprecated; remove in 2024. */
 			s->toggle = BREAK_LONG_LINES;
 #endif
 		else if (!strcmp(input, "tabstospaces"))
@@ -612,7 +620,7 @@ bool compile(const char *expression, int rex_flags, regex_t **packed)
 
 	if (outcome != 0) {
 		size_t length = regerror(outcome, compiled, NULL, 0);
-		char *message = charalloc(length);
+		char *message = nmalloc(length);
 
 		regerror(outcome, compiled, message, length);
 		jot_error(N_("Bad regex \"%s\": %s"), expression, message);
@@ -662,7 +670,7 @@ void begin_new_syntax(char *ptr)
 	}
 
 	/* Initialize a new syntax struct. */
-	live_syntax = (syntaxtype *)nmalloc(sizeof(syntaxtype));
+	live_syntax = nmalloc(sizeof(syntaxtype));
 	live_syntax->name = copy_of(nameptr);
 	live_syntax->filename = copy_of(nanorc);
 	live_syntax->lineno = lineno;
@@ -1166,7 +1174,7 @@ void parse_rule(char *ptr, int rex_flags)
 		}
 
 		/* Allocate a rule, fill in the data, and link it into the list. */
-		newcolor = (colortype *)nmalloc(sizeof(colortype));
+		newcolor = nmalloc(sizeof(colortype));
 
 		newcolor->start = start_rgx;
 		newcolor->end = end_rgx;
@@ -1196,14 +1204,11 @@ colortype *parse_interface_color(char *combostr)
 {
 	colortype *trio = nmalloc(sizeof(colortype));
 
-	if (parse_combination(combostr, &trio->fg, &trio->bg, &trio->attributes)) {
-		free(combostr);
-		return trio;
-	} else {
-		free(combostr);
+	if (!parse_combination(combostr, &trio->fg, &trio->bg, &trio->attributes)) {
 		free(trio);
 		return NULL;
-	}
+	} else
+		return trio;
 }
 
 /* Read regex strings enclosed in double quotes from the line pointed at
@@ -1248,7 +1253,7 @@ void grab_and_store(const char *kind, char *ptr, regexlisttype **storage)
 			continue;
 
 		/* Copy the regex into a struct, and hook this in at the end. */
-		newthing = (regexlisttype *)nmalloc(sizeof(regexlisttype));
+		newthing = nmalloc(sizeof(regexlisttype));
 		newthing->full_regex = copy_of(regexstring);
 		newthing->next = NULL;
 
@@ -1542,8 +1547,6 @@ void parse_rcfile(FILE *rcstream, bool just_syntax, bool intros_only)
 			continue;
 		}
 #endif
-		argument = copy_of(argument);
-
 #ifdef ENABLE_COLOR
 		if (strcmp(option, "titlecolor") == 0)
 			color_combo[TITLE_BAR] = parse_interface_color(argument);
@@ -1551,8 +1554,12 @@ void parse_rcfile(FILE *rcstream, bool just_syntax, bool intros_only)
 			color_combo[LINE_NUMBER] = parse_interface_color(argument);
 		else if (strcmp(option, "stripecolor") == 0)
 			color_combo[GUIDE_STRIPE] = parse_interface_color(argument);
+		else if (strcmp(option, "scrollercolor") == 0)
+			color_combo[SCROLL_BAR] = parse_interface_color(argument);
 		else if (strcmp(option, "selectedcolor") == 0)
 			color_combo[SELECTED_TEXT] = parse_interface_color(argument);
+		else if (strcmp(option, "promptcolor") == 0)
+			color_combo[PROMPT_BAR] = parse_interface_color(argument);
 		else if (strcmp(option, "statuscolor") == 0)
 			color_combo[STATUS_BAR] = parse_interface_color(argument);
 		else if (strcmp(option, "errorcolor") == 0)
@@ -1565,7 +1572,7 @@ void parse_rcfile(FILE *rcstream, bool just_syntax, bool intros_only)
 #endif
 #ifdef ENABLE_OPERATINGDIR
 		if (strcmp(option, "operatingdir") == 0)
-			operating_dir = argument;
+			operating_dir = copy_of(argument);
 		else
 #endif
 #ifdef ENABLED_WRAPORJUSTIFY
@@ -1574,31 +1581,21 @@ void parse_rcfile(FILE *rcstream, bool just_syntax, bool intros_only)
 				jot_error(N_("Requested fill size \"%s\" is invalid"), argument);
 				fill = -COLUMNS_FROM_EOL;
 			}
-			free(argument);
 		} else
 #endif
 #ifndef NANO_TINY
-		if (strcmp(option, "guidestripe") == 0) {
-			if (!parse_num(argument, &stripe_column) || stripe_column <= 0) {
-				jot_error(N_("Guide column \"%s\" is invalid"), argument);
-				stripe_column = 0;
-			}
-			free(argument);
-		} else if (strcmp(option, "matchbrackets") == 0) {
-			if (has_blank_char(argument)) {
+		if (strcmp(option, "matchbrackets") == 0) {
+			if (has_blank_char(argument))
 				jot_error(N_("Non-blank characters required"));
-				free(argument);
-			} else if (mbstrlen(argument) % 2 != 0) {
+			else if (mbstrlen(argument) % 2 != 0)
 				jot_error(N_("Even number of characters required"));
-				free(argument);
-			} else
-				matchbrackets = argument;
+			else
+				matchbrackets = copy_of(argument);
 		} else if (strcmp(option, "whitespace") == 0) {
-			if (mbstrlen(argument) != 2 || breadth(argument) != 2) {
+			if (mbstrlen(argument) != 2 || breadth(argument) != 2)
 				jot_error(N_("Two single-column characters required"));
-				free(argument);
-			} else {
-				whitespace = argument;
+			else {
+				whitespace = copy_of(argument);
 				whitelen[0] = char_length(whitespace);
 				whitelen[1] = char_length(whitespace + whitelen[0]);
 			}
@@ -1606,41 +1603,43 @@ void parse_rcfile(FILE *rcstream, bool just_syntax, bool intros_only)
 #endif
 #ifdef ENABLE_JUSTIFY
 		if (strcmp(option, "punct") == 0) {
-			if (has_blank_char(argument)) {
+			if (has_blank_char(argument))
 				jot_error(N_("Non-blank characters required"));
-				free(argument);
-			} else
-				punct = argument;
+			else
+				punct = copy_of(argument);
 		} else if (strcmp(option, "brackets") == 0) {
-			if (has_blank_char(argument)) {
+			if (has_blank_char(argument))
 				jot_error(N_("Non-blank characters required"));
-				free(argument);
-			} else
-				brackets = argument;
+			else
+				brackets = copy_of(argument);
 		} else if (strcmp(option, "quotestr") == 0)
-			quotestr = argument;
-		else
-#endif
-#ifndef NANO_TINY
-		if (strcmp(option, "backupdir") == 0)
-			backup_dir = argument;
-		else
-		if (strcmp(option, "wordchars") == 0)
-			word_chars = argument;
+			quotestr = copy_of(argument);
 		else
 #endif
 #ifdef ENABLE_SPELLER
 		if (strcmp(option, "speller") == 0)
-			alt_speller = argument;
+			alt_speller = copy_of(argument);
 		else
 #endif
-		if (strcmp(option, "tabsize") == 0) {
+#ifndef NANO_TINY
+		if (strcmp(option, "backupdir") == 0)
+			backup_dir = copy_of(argument);
+		else if (strcmp(option, "wordchars") == 0)
+			word_chars = copy_of(argument);
+		else if (strcmp(option, "guidestripe") == 0) {
+			if (!parse_num(argument, &stripe_column) || stripe_column <= 0) {
+				jot_error(N_("Guide column \"%s\" is invalid"), argument);
+				stripe_column = 0;
+			}
+		} else if (strcmp(option, "tabsize") == 0) {
 			if (!parse_num(argument, &tabsize) || tabsize <= 0) {
 				jot_error(N_("Requested tab size \"%s\" is invalid"), argument);
 				tabsize = -1;
 			}
-			free(argument);
 		}
+#else
+		;  /* Properly terminate any earlier 'else'. */
+#endif
 	}
 
 	if (intros_only)

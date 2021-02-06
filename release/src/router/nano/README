@@ -25,7 +25,7 @@ Overview
 
 How to compile and install nano
 
-    Download the latest nano source tarball, then:
+    Download the latest nano source tarball, and then:
 
         tar -xvf nano-x.y.tar.gz
         cd nano-x.y
@@ -33,12 +33,13 @@ How to compile and install nano
         make
         make install
 
-    It's that simple.  Use --prefix with configure to override the
-    default installation directory of /usr/local.
+    You will need the header files of ncurses installed for ./configure
+    to succeed -- get them from libncurses-dev (Debian) or ncurses-devel
+    (Fedora) or a similarly named package.  Use --prefix with ./configure
+    to override the default installation directory of /usr/local.
 
-    If you haven't configured with the --disable-nanorc option, after
-    installation you may want to copy the doc/sample.nanorc file to
-    your home directory, rename it to ".nanorc", and then edit it
+    After installation you may want to copy the doc/sample.nanorc file
+    to your home directory, rename it to ".nanorc", and then edit it
     according to your taste.
 
 Web Page
@@ -51,26 +52,25 @@ Mailing Lists
 
     + info-nano@gnu.org is a very low traffic list used to announce
       new nano versions or other important info about the project.
+
     + help-nano@gnu.org is for those seeking to get help without
       wanting to hear about the technical details of its development.
+
     + nano-devel@gnu.org is the list used by the people that make nano
       and a general development discussion list, with moderate traffic.
 
     To subscribe, send email to <name>-request@gnu.org with a subject
     of "subscribe", where <name> is the list you want to subscribe to.
 
+    The archives of the development and help mailing lists are here:
+
+        https://lists.gnu.org/archive/html/nano-devel/
+        https://lists.gnu.org/archive/html/help-nano/
+
 Bug Reports
 
-    To report a bug, please file a description of the problem on nano's
-    bug tracker (https://savannah.gnu.org/bugs/?group=nano -- hover on
-    "Bugs", then click "Submit new").  The issue may have already been
-    reported, so please look first.
-
-Current Status
-
-    Since version 2.5.0, GNU nano has abandoned the distinction between
-    a stable and a development branch: it is now on a "rolling" release
-    -- fixing bugs and adding new features go hand in hand.
+    If you find a bug, please file a detailed description of the problem
+    on nano's bug tracker: https://savannah.gnu.org/bugs/?group=nano.
 
 Copyright Years
 

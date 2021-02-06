@@ -1,7 +1,7 @@
 /**************************************************************************
  *   help.c  --  This file is part of GNU nano.                           *
  *                                                                        *
- *   Copyright (C) 2000-2011, 2013-2020 Free Software Foundation, Inc.    *
+ *   Copyright (C) 2000-2011, 2013-2021 Free Software Foundation, Inc.    *
  *   Copyright (C) 2017 Rishabh Dave                                      *
  *   Copyright (C) 2014-2019 Benno Schulenberg                            *
  *                                                                        *
@@ -50,7 +50,7 @@ void help_init(void)
 	char *ptr;
 
 	/* First, set up the initial help text for the current function. */
-	if (currmenu == MWHEREIS || currmenu == MREPLACE || currmenu == MREPLACEWITH) {
+	if (currmenu & (MWHEREIS|MREPLACE|MREPLACEWITH)) {
 		htx[0] = N_("Search Command Help Text\n\n "
 				"Enter the words or characters you would like to "
 				"search for, and then press Enter.  If there is a "
@@ -240,7 +240,7 @@ void help_init(void)
 #endif
 
 	/* Allocate memory for the help text. */
-	help_text = charalloc(allocsize + 1);
+	help_text = nmalloc(allocsize + 1);
 
 	/* Now add the text we want. */
 	strcpy(help_text, htx[0]);
@@ -457,9 +457,13 @@ void show_help(void)
 
 		/* Show the cursor when we searched and found something. */
 		kbinput = get_kbinput(edit, didfind == 1 || ISSET(SHOW_CURSOR));
+
 		didfind = 0;
 
 #ifndef NANO_TINY
+		openfile->mark = NULL;
+		hide_cursor = FALSE;
+
 		if (bracketed_paste || kbinput == BRACKETED_PASTE_MARKER) {
 			beep();
 			continue;
@@ -475,14 +479,13 @@ void show_help(void)
 		} else if (func == do_up || func == do_scroll_up) {
 			do_scroll_up();
 		} else if (func == do_down || func == do_scroll_down) {
-			if (openfile->edittop->lineno + editwinrows - 1 <
-								openfile->filebot->lineno)
+			if (openfile->edittop->lineno + editwinrows - 1 < openfile->filebot->lineno)
 				do_scroll_down();
 		} else if (func == do_page_up || func == do_page_down ||
-					func == to_first_line || func == to_last_line ||
-					func == do_findprevious || func == do_findnext) {
+					func == to_first_line || func == to_last_line) {
 			func();
-		} else if (func == do_search_forward || func == do_search_backward) {
+		} else if (func == do_search_backward || func == do_search_forward ||
+					func == do_findprevious || func == do_findnext) {
 			func();
 			bottombars(MHELP);
 #ifdef ENABLE_NANORC
@@ -503,7 +506,6 @@ void show_help(void)
 		} else
 			unbound_key(kbinput);
 
-		currmenu = MHELP;
 		edit_refresh();
 
 		location = 0;
@@ -550,7 +552,7 @@ void show_help(void)
 	}
 
 #ifdef ENABLE_BROWSER
-	if (oldmenu == MBROWSER || oldmenu == MWHEREISFILE || oldmenu == MGOTODIR)
+	if (oldmenu & (MBROWSER|MWHEREISFILE|MGOTODIR))
 		browser_refresh();
 	else
 #endif
@@ -568,8 +570,8 @@ void do_help(void)
 #ifdef ENABLE_HELP
 	show_help();
 #else
-	if (currmenu == MMAIN)
-		say_there_is_no_help();
+	if (currmenu & (MMAIN|MBROWSER))
+		statusbar(_("^W = Ctrl+W    M-W = Alt+W"));
 	else
 		beep();
 #endif

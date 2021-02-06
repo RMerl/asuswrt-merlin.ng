@@ -1,6 +1,6 @@
 /* A GNU-like <stdlib.h>.
 
-   Copyright (C) 1995, 2001-2004, 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2001-2004, 2006-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -53,8 +53,8 @@
 # include <sys/loadavg.h>
 #endif
 
-/* Native Windows platforms declare mktemp() in <io.h>.  */
-#if 0 && (defined _WIN32 && ! defined __CYGWIN__)
+/* Native Windows platforms declare _mktemp() in <io.h>.  */
+#if defined _WIN32 && !defined __CYGWIN__
 # include <io.h>
 #endif
 
@@ -149,6 +149,31 @@ _GL_WARN_ON_USE (_Exit, "_Exit is unportable - "
 #endif
 
 
+/* Allocate memory with indefinite extent and specified alignment.  */
+#if @GNULIB_ALIGNED_ALLOC@
+# if @REPLACE_ALIGNED_ALLOC@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef aligned_alloc
+#   define aligned_alloc rpl_aligned_alloc
+#  endif
+_GL_FUNCDECL_RPL (aligned_alloc, void *, (size_t alignment, size_t size));
+_GL_CXXALIAS_RPL (aligned_alloc, void *, (size_t alignment, size_t size));
+# else
+#  if @HAVE_ALIGNED_ALLOC@
+_GL_CXXALIAS_SYS (aligned_alloc, void *, (size_t alignment, size_t size));
+#  endif
+# endif
+# if @HAVE_ALIGNED_ALLOC@
+_GL_CXXALIASWARN (aligned_alloc);
+# endif
+#elif defined GNULIB_POSIXCHECK
+# undef aligned_alloc
+# if HAVE_RAW_DECL_ALIGNED_ALLOC
+_GL_WARN_ON_USE (aligned_alloc, "aligned_alloc is not portable - "
+                 "use gnulib module aligned_alloc for portability");
+# endif
+#endif
+
 #if @GNULIB_ATOLL@
 /* Parse a signed decimal integer.
    Returns the value of the integer.  Errors are not detected.  */
@@ -217,19 +242,92 @@ _GL_WARN_ON_USE (canonicalize_file_name,
 # endif
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef ecvt
-# define ecvt _ecvt
+#if @GNULIB_MDA_ECVT@
+/* On native Windows, map 'ecvt' to '_ecvt', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::ecvt on all platforms that have
+   it.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef ecvt
+#   define ecvt _ecvt
+#  endif
+_GL_CXXALIAS_MDA (ecvt, char *,
+                  (double number, int ndigits, int *decptp, int *signp));
+# else
+#  if @HAVE_DECL_ECVT@
+_GL_CXXALIAS_SYS (ecvt, char *,
+                  (double number, int ndigits, int *decptp, int *signp));
+#  endif
+# endif
+# if (defined _WIN32 && !defined __CYGWIN__) || @HAVE_DECL_ECVT@
+_GL_CXXALIASWARN (ecvt);
+# endif
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef fcvt
-# define fcvt _fcvt
+#if @GNULIB_MDA_FCVT@
+/* On native Windows, map 'fcvt' to '_fcvt', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::fcvt on all platforms that have
+   it.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef fcvt
+#   define fcvt _fcvt
+#  endif
+_GL_CXXALIAS_MDA (fcvt, char *,
+                  (double number, int ndigits, int *decptp, int *signp));
+# else
+#  if @HAVE_DECL_FCVT@
+_GL_CXXALIAS_SYS (fcvt, char *,
+                  (double number, int ndigits, int *decptp, int *signp));
+#  endif
+# endif
+# if (defined _WIN32 && !defined __CYGWIN__) || @HAVE_DECL_FCVT@
+_GL_CXXALIASWARN (fcvt);
+# endif
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef gcvt
-# define gcvt _gcvt
+#if @GNULIB_FREE_POSIX@
+# if @REPLACE_FREE@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef free
+#   define free rpl_free
+#  endif
+_GL_FUNCDECL_RPL (free, void, (void *ptr));
+_GL_CXXALIAS_RPL (free, void, (void *ptr));
+# else
+_GL_CXXALIAS_SYS (free, void, (void *ptr));
+# endif
+# if __GLIBC__ >= 2
+_GL_CXXALIASWARN (free);
+# endif
+#elif defined GNULIB_POSIXCHECK
+# undef free
+/* Assume free is always declared.  */
+_GL_WARN_ON_USE (free, "free is not future POSIX compliant everywhere - "
+                 "use gnulib module free for portability");
+#endif
+
+#if @GNULIB_MDA_GCVT@
+/* On native Windows, map 'gcvt' to '_gcvt', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::gcvt on all platforms that have
+   it.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef gcvt
+#   define gcvt _gcvt
+#  endif
+_GL_CXXALIAS_MDA (gcvt, char *, (double number, int ndigits, char *buf));
+# else
+#  if @HAVE_DECL_GCVT@
+_GL_CXXALIAS_SYS (gcvt, char *, (double number, int ndigits, char *buf));
+#  endif
+# endif
+# if (defined _WIN32 && !defined __CYGWIN__) || @HAVE_DECL_GCVT@
+_GL_CXXALIASWARN (gcvt);
+# endif
 #endif
 
 #if @GNULIB_GETLOADAVG@
@@ -483,9 +581,49 @@ _GL_WARN_ON_USE (mkstemps, "mkstemps is unportable - "
 # endif
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef mktemp
-# define mktemp _mktemp
+#if @GNULIB_MDA_MKTEMP@
+/* On native Windows, map 'mktemp' to '_mktemp', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::mktemp always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef mktemp
+#   define mktemp _mktemp
+#  endif
+_GL_CXXALIAS_MDA (mktemp, char *, (char * /*template*/));
+# else
+_GL_CXXALIAS_SYS (mktemp, char *, (char * /*template*/));
+# endif
+_GL_CXXALIASWARN (mktemp);
+#endif
+
+/* Allocate memory with indefinite extent and specified alignment.  */
+#if @GNULIB_POSIX_MEMALIGN@
+# if @REPLACE_POSIX_MEMALIGN@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef posix_memalign
+#   define posix_memalign rpl_posix_memalign
+#  endif
+_GL_FUNCDECL_RPL (posix_memalign, int,
+                  (void **memptr, size_t alignment, size_t size)
+                  _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (posix_memalign, int,
+                  (void **memptr, size_t alignment, size_t size));
+# else
+#  if @HAVE_POSIX_MEMALIGN@
+_GL_CXXALIAS_SYS (posix_memalign, int,
+                  (void **memptr, size_t alignment, size_t size));
+#  endif
+# endif
+# if @HAVE_POSIX_MEMALIGN@
+_GL_CXXALIASWARN (posix_memalign);
+# endif
+#elif defined GNULIB_POSIXCHECK
+# undef posix_memalign
+# if HAVE_RAW_DECL_POSIX_MEMALIGN
+_GL_WARN_ON_USE (posix_memalign, "posix_memalign is not portable - "
+                 "use gnulib module posix_memalign for portability");
+# endif
 #endif
 
 #if @GNULIB_POSIX_OPENPT@
@@ -576,9 +714,22 @@ _GL_CXXALIAS_MDA (putenv, int, (char *string));
 _GL_CXXALIAS_SYS (putenv, int, (char *string));
 # endif
 _GL_CXXALIASWARN (putenv);
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef putenv
-# define putenv _putenv
+#elif @GNULIB_MDA_PUTENV@
+/* On native Windows, map 'putenv' to '_putenv', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::putenv always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef putenv
+#   define putenv _putenv
+#  endif
+/* Need to cast, because on mingw, the parameter is either
+   'const char *string' or 'char *string'.  */
+_GL_CXXALIAS_MDA_CAST (putenv, int, (char *string));
+# else
+_GL_CXXALIAS_SYS (putenv, int, (char *string));
+# endif
+_GL_CXXALIASWARN (putenv);
 #endif
 
 #if @GNULIB_QSORT_R@

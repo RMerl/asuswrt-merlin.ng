@@ -1,5 +1,5 @@
 /* vsprintf with automatic memory allocation.
-   Copyright (C) 2002-2004, 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2004, 2007-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,6 +22,9 @@
 
 /* Get size_t.  */
 #include <stddef.h>
+
+/* Get _GL_ATTRIBUTE_SPEC_PRINTF_STANDARD.  */
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,10 +60,10 @@ extern "C" {
 #endif
 extern char * asnprintf (char *restrict resultbuf, size_t *lengthp,
                          const char *format, ...)
-       _GL_ATTRIBUTE_FORMAT ((__printf__, 3, 4));
+       _GL_ATTRIBUTE_FORMAT ((_GL_ATTRIBUTE_SPEC_PRINTF_STANDARD, 3, 4));
 extern char * vasnprintf (char *restrict resultbuf, size_t *lengthp,
                           const char *format, va_list args)
-       _GL_ATTRIBUTE_FORMAT ((__printf__, 3, 0));
+       _GL_ATTRIBUTE_FORMAT ((_GL_ATTRIBUTE_SPEC_PRINTF_STANDARD, 3, 0));
 
 #ifdef __cplusplus
 }

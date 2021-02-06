@@ -1,5 +1,5 @@
-# inttypes.m4 serial 31
-dnl Copyright (C) 2006-2020 Free Software Foundation, Inc.
+# inttypes.m4 serial 32
+dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -44,7 +44,7 @@ AC_DEFUN([gl_INTTYPES_PRI_SCN],
          #ifdef _WIN64
          LLP64
          #endif
-         ]]),
+         ]])
       ],
       [PRIPTR_PREFIX='"l"'],
       [PRIPTR_PREFIX='"ll"'])

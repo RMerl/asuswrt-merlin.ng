@@ -1,5 +1,5 @@
-# unistd_h.m4 serial 81
-dnl Copyright (C) 2006-2020 Free Software Foundation, Inc.
+# unistd_h.m4 serial 85
+dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -41,7 +41,9 @@ AC_DEFUN([gl_UNISTD_H],
 #  include <io.h>
 # endif
 #endif
-    ]], [access chdir chown dup dup2 dup3 environ euidaccess faccessat fchdir
+    ]], [access chdir chown copy_file_range dup dup2 dup3 environ euidaccess
+    execl execle execlp execv execve execvp execvpe
+    faccessat fchdir
     fchownat fdatasync fsync ftruncate getcwd getdomainname getdtablesize
     getentropy getgroups gethostname getlogin getlogin_r getpagesize getpass
     getusershell setusershell endusershell
@@ -50,6 +52,11 @@ AC_DEFUN([gl_UNISTD_H],
     truncate ttyname_r unlink unlinkat usleep])
 
   AC_REQUIRE([AC_C_RESTRICT])
+
+  AC_CHECK_DECLS_ONCE([execvpe])
+  if test $ac_cv_have_decl_execvpe = no; then
+    HAVE_DECL_EXECVPE=0
+  fi
 ])
 
 AC_DEFUN([gl_UNISTD_MODULE_INDICATOR],
@@ -73,6 +80,13 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   GNULIB_DUP3=0;                 AC_SUBST([GNULIB_DUP3])
   GNULIB_ENVIRON=0;              AC_SUBST([GNULIB_ENVIRON])
   GNULIB_EUIDACCESS=0;           AC_SUBST([GNULIB_EUIDACCESS])
+  GNULIB_EXECL=0;                AC_SUBST([GNULIB_EXECL])
+  GNULIB_EXECLE=0;               AC_SUBST([GNULIB_EXECLE])
+  GNULIB_EXECLP=0;               AC_SUBST([GNULIB_EXECLP])
+  GNULIB_EXECV=0;                AC_SUBST([GNULIB_EXECV])
+  GNULIB_EXECVE=0;               AC_SUBST([GNULIB_EXECVE])
+  GNULIB_EXECVP=0;               AC_SUBST([GNULIB_EXECVP])
+  GNULIB_EXECVPE=0;              AC_SUBST([GNULIB_EXECVPE])
   GNULIB_FACCESSAT=0;            AC_SUBST([GNULIB_FACCESSAT])
   GNULIB_FCHDIR=0;               AC_SUBST([GNULIB_FCHDIR])
   GNULIB_FCHOWNAT=0;             AC_SUBST([GNULIB_FCHOWNAT])
@@ -117,11 +131,34 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   GNULIB_UNLINKAT=0;             AC_SUBST([GNULIB_UNLINKAT])
   GNULIB_USLEEP=0;               AC_SUBST([GNULIB_USLEEP])
   GNULIB_WRITE=0;                AC_SUBST([GNULIB_WRITE])
+  dnl Support Microsoft deprecated alias function names by default.
+  GNULIB_MDA_ACCESS=1;           AC_SUBST([GNULIB_MDA_ACCESS])
+  GNULIB_MDA_CHDIR=1;            AC_SUBST([GNULIB_MDA_CHDIR])
+  GNULIB_MDA_CLOSE=1;            AC_SUBST([GNULIB_MDA_CLOSE])
+  GNULIB_MDA_DUP=1;              AC_SUBST([GNULIB_MDA_DUP])
+  GNULIB_MDA_DUP2=1;             AC_SUBST([GNULIB_MDA_DUP2])
+  GNULIB_MDA_EXECL=1;            AC_SUBST([GNULIB_MDA_EXECL])
+  GNULIB_MDA_EXECLE=1;           AC_SUBST([GNULIB_MDA_EXECLE])
+  GNULIB_MDA_EXECLP=1;           AC_SUBST([GNULIB_MDA_EXECLP])
+  GNULIB_MDA_EXECV=1;            AC_SUBST([GNULIB_MDA_EXECV])
+  GNULIB_MDA_EXECVE=1;           AC_SUBST([GNULIB_MDA_EXECVE])
+  GNULIB_MDA_EXECVP=1;           AC_SUBST([GNULIB_MDA_EXECVP])
+  GNULIB_MDA_EXECVPE=1;          AC_SUBST([GNULIB_MDA_EXECVPE])
+  GNULIB_MDA_GETCWD=1;           AC_SUBST([GNULIB_MDA_GETCWD])
+  GNULIB_MDA_GETPID=1;           AC_SUBST([GNULIB_MDA_GETPID])
+  GNULIB_MDA_ISATTY=1;           AC_SUBST([GNULIB_MDA_ISATTY])
+  GNULIB_MDA_LSEEK=1;            AC_SUBST([GNULIB_MDA_LSEEK])
+  GNULIB_MDA_READ=1;             AC_SUBST([GNULIB_MDA_READ])
+  GNULIB_MDA_RMDIR=1;            AC_SUBST([GNULIB_MDA_RMDIR])
+  GNULIB_MDA_SWAB=1;             AC_SUBST([GNULIB_MDA_SWAB])
+  GNULIB_MDA_UNLINK=1;           AC_SUBST([GNULIB_MDA_UNLINK])
+  GNULIB_MDA_WRITE=1;            AC_SUBST([GNULIB_MDA_WRITE])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_CHOWN=1;           AC_SUBST([HAVE_CHOWN])
   HAVE_COPY_FILE_RANGE=1; AC_SUBST([HAVE_COPY_FILE_RANGE])
   HAVE_DUP3=1;            AC_SUBST([HAVE_DUP3])
   HAVE_EUIDACCESS=1;      AC_SUBST([HAVE_EUIDACCESS])
+  HAVE_EXECVPE=1;         AC_SUBST([HAVE_EXECVPE])
   HAVE_FACCESSAT=1;       AC_SUBST([HAVE_FACCESSAT])
   HAVE_FCHDIR=1;          AC_SUBST([HAVE_FCHDIR])
   HAVE_FCHOWNAT=1;        AC_SUBST([HAVE_FCHOWNAT])
@@ -152,6 +189,7 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   HAVE_UNLINKAT=1;        AC_SUBST([HAVE_UNLINKAT])
   HAVE_USLEEP=1;          AC_SUBST([HAVE_USLEEP])
   HAVE_DECL_ENVIRON=1;    AC_SUBST([HAVE_DECL_ENVIRON])
+  HAVE_DECL_EXECVPE=1;    AC_SUBST([HAVE_DECL_EXECVPE])
   HAVE_DECL_FCHDIR=1;     AC_SUBST([HAVE_DECL_FCHDIR])
   HAVE_DECL_FDATASYNC=1;  AC_SUBST([HAVE_DECL_FDATASYNC])
   HAVE_DECL_GETDOMAINNAME=1; AC_SUBST([HAVE_DECL_GETDOMAINNAME])
@@ -169,6 +207,13 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   REPLACE_CLOSE=0;        AC_SUBST([REPLACE_CLOSE])
   REPLACE_DUP=0;          AC_SUBST([REPLACE_DUP])
   REPLACE_DUP2=0;         AC_SUBST([REPLACE_DUP2])
+  REPLACE_EXECL=0;        AC_SUBST([REPLACE_EXECL])
+  REPLACE_EXECLE=0;       AC_SUBST([REPLACE_EXECLE])
+  REPLACE_EXECLP=0;       AC_SUBST([REPLACE_EXECLP])
+  REPLACE_EXECV=0;        AC_SUBST([REPLACE_EXECV])
+  REPLACE_EXECVE=0;       AC_SUBST([REPLACE_EXECVE])
+  REPLACE_EXECVP=0;       AC_SUBST([REPLACE_EXECVP])
+  REPLACE_EXECVPE=0;      AC_SUBST([REPLACE_EXECVPE])
   REPLACE_FACCESSAT=0;    AC_SUBST([REPLACE_FACCESSAT])
   REPLACE_FCHOWNAT=0;     AC_SUBST([REPLACE_FCHOWNAT])
   REPLACE_FTRUNCATE=0;    AC_SUBST([REPLACE_FTRUNCATE])

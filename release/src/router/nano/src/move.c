@@ -1,7 +1,7 @@
 /**************************************************************************
  *   move.c  --  This file is part of GNU nano.                           *
  *                                                                        *
- *   Copyright (C) 1999-2011, 2013-2020 Free Software Foundation, Inc.    *
+ *   Copyright (C) 1999-2011, 2013-2021 Free Software Foundation, Inc.    *
  *   Copyright (C) 2014-2018 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
@@ -115,6 +115,7 @@ void do_page_up(void)
 	int mustmove = (editwinrows < 3) ? 1 : editwinrows - 2;
 	size_t leftedge, target_column;
 
+#ifndef NANO_TINY
 	/* If we're not in smooth scrolling mode, put the cursor at the
 	 * beginning of the top line of the edit window, as Pico does. */
 	if (ISSET(JUMPY_SCROLLING)) {
@@ -123,6 +124,7 @@ void do_page_up(void)
 		openfile->current_y = 0;
 		target_column = 0;
 	} else
+#endif
 		get_edge_and_target(&leftedge, &target_column);
 
 	/* Move up the required number of lines or chunks.  If we can't, we're
@@ -145,6 +147,7 @@ void do_page_down(void)
 	int mustmove = (editwinrows < 3) ? 1 : editwinrows - 2;
 	size_t leftedge, target_column;
 
+#ifndef NANO_TINY
 	/* If we're not in smooth scrolling mode, put the cursor at the
 	 * beginning of the top line of the edit window, as Pico does. */
 	if (ISSET(JUMPY_SCROLLING)) {
@@ -153,6 +156,7 @@ void do_page_down(void)
 		openfile->current_y = 0;
 		target_column = 0;
 	} else
+#endif
 		get_edge_and_target(&leftedge, &target_column);
 
 	/* Move down the required number of lines or chunks.  If we can't, we're
@@ -287,6 +291,10 @@ void do_prev_word(bool allow_punct)
 			/* If at the head of a line now, this surely is a word start. */
 			if (openfile->current_x == 0)
 				break;
+#ifdef ENABLE_UTF8
+		} else if (is_zerowidth(openfile->current->data + openfile->current_x)) {
+			; /* skip */
+#endif
 		} else if (seen_a_word) {
 			/* This is space now: we've overshot the start of the word. */
 			step_forward = TRUE;
@@ -335,11 +343,20 @@ bool do_next_word(bool after_ends, bool allow_punct)
 			if (is_word_char(openfile->current->data + openfile->current_x,
 								allow_punct))
 				seen_word = TRUE;
+#ifdef ENABLE_UTF8
+			else if (is_zerowidth(openfile->current->data + openfile->current_x))
+				; /* skip */
+#endif
 			else if (seen_word)
 				break;
 		} else
 #endif
 		{
+#ifdef ENABLE_UTF8
+			if (is_zerowidth(openfile->current->data + openfile->current_x))
+				; /* skip */
+			else
+#endif
 			/* If this is not a word character, then it's a separator; else
 			 * if we've already seen a separator, then it's a word start. */
 			if (!is_word_char(openfile->current->data + openfile->current_x,
@@ -577,10 +594,16 @@ void do_left(void)
 {
 	linestruct *was_current = openfile->current;
 
-	if (openfile->current_x > 0)
+	if (openfile->current_x > 0) {
 		openfile->current_x = step_left(openfile->current->data,
 												openfile->current_x);
-	else if (openfile->current != openfile->filetop) {
+#ifdef ENABLE_UTF8
+		while (openfile->current_x > 0 &&
+					is_zerowidth(openfile->current->data + openfile->current_x))
+			openfile->current_x = step_left(openfile->current->data,
+												openfile->current_x);
+#endif
+	} else if (openfile->current != openfile->filetop) {
 		openfile->current = openfile->current->prev;
 		openfile->current_x = strlen(openfile->current->data);
 	}
@@ -593,10 +616,16 @@ void do_right(void)
 {
 	linestruct *was_current = openfile->current;
 
-	if (openfile->current->data[openfile->current_x] != '\0')
+	if (openfile->current->data[openfile->current_x] != '\0') {
 		openfile->current_x = step_right(openfile->current->data,
 												openfile->current_x);
-	else if (openfile->current != openfile->filebot) {
+#ifdef ENABLE_UTF8
+		while (openfile->current->data[openfile->current_x] != '\0' &&
+					is_zerowidth(openfile->current->data + openfile->current_x))
+			openfile->current_x = step_right(openfile->current->data,
+												openfile->current_x);
+#endif
+	} else if (openfile->current != openfile->filebot) {
 		openfile->current = openfile->current->next;
 		openfile->current_x = 0;
 	}

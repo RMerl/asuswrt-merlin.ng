@@ -1,8 +1,8 @@
 /**************************************************************************
  *   search.c  --  This file is part of GNU nano.                         *
  *                                                                        *
- *   Copyright (C) 1999-2011, 2013-2020 Free Software Foundation, Inc.    *
- *   Copyright (C) 2015-2019 Benno Schulenberg                            *
+ *   Copyright (C) 1999-2011, 2013-2021 Free Software Foundation, Inc.    *
+ *   Copyright (C) 2015-2020 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -22,6 +22,7 @@
 #include "prototypes.h"
 
 #include <string.h>
+#include <time.h>
 
 static bool came_full_circle = FALSE;
 		/* Have we reached the starting line again while searching? */
@@ -38,10 +39,10 @@ bool regexp_init(const char *regexp)
 	/* If regex compilation failed, show the error message. */
 	if (value != 0) {
 		size_t len = regerror(value, &search_regexp, NULL, 0);
-		char *str = charalloc(len);
+		char *str = nmalloc(len);
 
 		regerror(value, &search_regexp, str, len);
-		statusline(ALERT, _("Bad regex \"%s\": %s"), regexp, str);
+		statusline(AHEM, _("Bad regex \"%s\": %s"), regexp, str);
 		free(str);
 
 		return FALSE;
@@ -78,7 +79,7 @@ void search_init(bool replacing, bool retain_answer)
 	if (*last_search != '\0') {
 		char *disp = display_string(last_search, 0, COLS / 3, FALSE, FALSE);
 
-		thedefault = charalloc(strlen(disp) + 7);
+		thedefault = nmalloc(strlen(disp) + 7);
 		/* We use (COLS / 3) here because we need to see more on the line. */
 		sprintf(thedefault, " [%s%s]", disp,
 				(breadth(last_search) > COLS / 3) ? "..." : "");
@@ -250,7 +251,7 @@ int findnextstr(const char *needle, bool whole_word_only, int modus,
 			line = (ISSET(BACKWARDS_SEARCH)) ? openfile->filebot : openfile->filetop;
 
 			if (modus == JUSTFIND) {
-				statusbar(_("Search Wrapped"));
+				statusline(REMARK, _("Search Wrapped"));
 				/* Delay the "Searching..." message for at least two seconds. */
 				feedback = -2;
 			}
@@ -321,6 +322,17 @@ int findnextstr(const char *needle, bool whole_word_only, int modus,
 	if (match_len != NULL)
 		*match_len = found_len;
 
+#ifndef NANO_TINY
+	if (modus == JUSTFIND && ISSET(MARK_MATCH) && (!openfile->mark || openfile->softmark)) {
+		openfile->mark = line;
+		openfile->mark_x = found_x + found_len;
+		openfile->softmark = TRUE;
+		if (!ISSET(SHOW_CURSOR))
+			hide_cursor = TRUE;
+		shift_held = TRUE;
+	}
+#endif
+
 	/* Wipe the "Searching..." message and unsuppress cursor-position display. */
 	if (feedback > 0) {
 		wipe_statusbar();
@@ -355,7 +367,7 @@ void do_research(void)
 #endif
 
 	if (*last_search == '\0') {
-		statusbar(_("No current search pattern"));
+		statusline(AHEM, _("No current search pattern"));
 		return;
 	}
 
@@ -365,7 +377,8 @@ void do_research(void)
 	/* Use the search-menu key bindings, to allow cancelling. */
 	currmenu = MWHEREIS;
 
-	wipe_statusbar();
+	if (LINES > 1)
+		wipe_statusbar();
 
 	go_looking();
 
@@ -392,7 +405,7 @@ void not_found_msg(const char *str)
 	char *disp = display_string(str, 0, (COLS / 2) + 1, FALSE, FALSE);
 	size_t numchars = actual_x(disp, wideness(disp, COLS / 2));
 
-	statusline(HUSH, _("\"%.*s%s\" not found"), numchars, disp,
+	statusline(AHEM, _("\"%.*s%s\" not found"), numchars, disp,
 						(disp[numchars] == '\0') ? "" : "...");
 	free(disp);
 }
@@ -419,12 +432,14 @@ void go_looking(void)
 	 * where we started searching, then this is the only occurrence. */
 	if (didfind == 1 && openfile->current == was_current &&
 				openfile->current_x == was_current_x)
-		statusbar(_("This is the only occurrence"));
+		statusline(REMARK, _("This is the only occurrence"));
+	else if (didfind == 1 && LINES == 1)
+		refresh_needed = TRUE;
 	else if (didfind == 0)
 		not_found_msg(last_search);
 
 #ifdef TIMEIT
-	statusline(HUSH, "Took: %.2f", (double)(clock() - start) / CLOCKS_PER_SEC);
+	statusline(INFO, "Took: %.2f", (double)(clock() - start) / CLOCKS_PER_SEC);
 #endif
 
 	edit_redraw(was_current, CENTERING);
@@ -489,7 +504,7 @@ char *replace_line(const char *needle)
 		new_size += strlen(answer) - match_len;
 	}
 
-	copy = charalloc(new_size);
+	copy = nmalloc(new_size);
 
 	/* Copy the head of the original line. */
 	strncpy(copy, openfile->current->data, openfile->current_x);
@@ -746,7 +761,7 @@ void ask_for_and_do_replacements(void)
 	refresh_needed = TRUE;
 
 	if (numreplaced >= 0)
-		statusline(HUSH, P_("Replaced %zd occurrence",
+		statusline(REMARK, P_("Replaced %zd occurrence",
 				"Replaced %zd occurrences", numreplaced), numreplaced);
 }
 
@@ -794,7 +809,7 @@ void do_gotolinecolumn(ssize_t line, ssize_t column, bool retain_answer,
 
 		/* Try to extract one or two numbers from the user's response. */
 		if (!parse_line_column(answer, &line, &column)) {
-			statusline(ALERT, _("Invalid line or column number"));
+			statusline(AHEM, _("Invalid line or column number"));
 			return;
 		}
 	} else {
@@ -942,7 +957,7 @@ void do_find_bracket(void)
 	ch = mbstrchr(matchbrackets, openfile->current->data + openfile->current_x);
 
 	if (ch == NULL) {
-		statusbar(_("Not a bracket"));
+		statusline(AHEM, _("Not a bracket"));
 		return;
 	}
 
@@ -985,7 +1000,7 @@ void do_find_bracket(void)
 		}
 	}
 
-	statusbar(_("No matching bracket"));
+	statusline(AHEM, _("No matching bracket"));
 
 	/* Restore the cursor position. */
 	openfile->current = was_current;
@@ -1000,9 +1015,9 @@ void put_or_lift_anchor(void)
 	update_line(openfile->current, openfile->current_x);
 
 	if (openfile->current->has_anchor)
-		statusbar(_("Placed anchor"));
+		statusline(REMARK, _("Placed anchor"));
 	else
-		statusbar(_("Removed anchor"));
+		statusline(REMARK, _("Removed anchor"));
 }
 
 /* Make the given line the current line, or report the anchoredness. */
@@ -1016,9 +1031,9 @@ void go_to_and_confirm(linestruct *line)
 		edit_redraw(was_current, CENTERING);
 		statusbar(_("Jumped to anchor"));
 	} else if (openfile->current->has_anchor)
-		statusbar(_("This is the only anchor"));
+		statusline(REMARK, _("This is the only anchor"));
 	else
-		statusbar(_("There are no anchors"));
+		statusline(AHEM, _("There are no anchors"));
 }
 
 /* Jump to the first anchor before the current line; wrap around at the top. */

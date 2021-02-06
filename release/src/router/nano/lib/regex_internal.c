@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -300,18 +300,20 @@ build_wcs_upper_buffer (re_string_t *pstr)
       while (byte_idx < end_idx)
 	{
 	  wchar_t wc;
+	  unsigned char ch = pstr->raw_mbs[pstr->raw_mbs_idx + byte_idx];
 
-	  if (isascii (pstr->raw_mbs[pstr->raw_mbs_idx + byte_idx])
-	      && mbsinit (&pstr->cur_state))
+	  if (isascii (ch) && mbsinit (&pstr->cur_state))
 	    {
-	      /* In case of a singlebyte character.  */
-	      pstr->mbs[byte_idx]
-		= toupper (pstr->raw_mbs[pstr->raw_mbs_idx + byte_idx]);
 	      /* The next step uses the assumption that wchar_t is encoded
 		 ASCII-safe: all ASCII values can be converted like this.  */
-	      pstr->wcs[byte_idx] = (wchar_t) pstr->mbs[byte_idx];
-	      ++byte_idx;
-	      continue;
+	      wchar_t wcu = __towupper (ch);
+	      if (isascii (wcu))
+		{
+		  pstr->mbs[byte_idx] = wcu;
+		  pstr->wcs[byte_idx] = wcu;
+		  byte_idx++;
+		  continue;
+		}
 	    }
 
 	  remain_len = end_idx - byte_idx;
@@ -348,7 +350,6 @@ build_wcs_upper_buffer (re_string_t *pstr)
 	    {
 	      /* It is an invalid character, an incomplete character
 		 at the end of the string, or '\0'.  Just use the byte.  */
-	      int ch = pstr->raw_mbs[pstr->raw_mbs_idx + byte_idx];
 	      pstr->mbs[byte_idx] = ch;
 	      /* And also cast it to wide char.  */
 	      pstr->wcs[byte_idx++] = (wchar_t) ch;

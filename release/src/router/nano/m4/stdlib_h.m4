@@ -1,5 +1,5 @@
-# stdlib_h.m4 serial 49
-dnl Copyright (C) 2007-2020 Free Software Foundation, Inc.
+# stdlib_h.m4 serial 55
+dnl Copyright (C) 2007-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -22,13 +22,28 @@ AC_DEFUN([gl_STDLIB_H],
 #if HAVE_RANDOM_H
 # include <random.h>
 #endif
-    ]], [_Exit atoll canonicalize_file_name getloadavg getsubopt grantpt
+    ]], [_Exit aligned_alloc atoll canonicalize_file_name free
+    getloadavg getsubopt grantpt
     initstate initstate_r mbtowc mkdtemp mkostemp mkostemps mkstemp mkstemps
-    posix_openpt ptsname ptsname_r qsort_r random random_r reallocarray
-    realpath rpmatch secure_getenv setenv setstate setstate_r srandom
-    srandom_r strtod strtold strtoll strtoull unlockpt unsetenv])
+    posix_memalign posix_openpt ptsname ptsname_r qsort_r
+    random random_r reallocarray realpath rpmatch secure_getenv setenv
+    setstate setstate_r srandom srandom_r
+    strtod strtold strtoll strtoull unlockpt unsetenv])
 
   AC_REQUIRE([AC_C_RESTRICT])
+
+  AC_CHECK_DECLS_ONCE([ecvt])
+  if test $ac_cv_have_decl_ecvt = no; then
+    HAVE_DECL_ECVT=0
+  fi
+  AC_CHECK_DECLS_ONCE([fcvt])
+  if test $ac_cv_have_decl_fcvt = no; then
+    HAVE_DECL_FCVT=0
+  fi
+  AC_CHECK_DECLS_ONCE([gcvt])
+  if test $ac_cv_have_decl_gcvt = no; then
+    HAVE_DECL_GCVT=0
+  fi
 ])
 
 AC_DEFUN([gl_STDLIB_MODULE_INDICATOR],
@@ -43,9 +58,11 @@ AC_DEFUN([gl_STDLIB_MODULE_INDICATOR],
 AC_DEFUN([gl_STDLIB_H_DEFAULTS],
 [
   GNULIB__EXIT=0;         AC_SUBST([GNULIB__EXIT])
+  GNULIB_ALIGNED_ALLOC=0; AC_SUBST([GNULIB_ALIGNED_ALLOC])
   GNULIB_ATOLL=0;         AC_SUBST([GNULIB_ATOLL])
   GNULIB_CALLOC_POSIX=0;  AC_SUBST([GNULIB_CALLOC_POSIX])
   GNULIB_CANONICALIZE_FILE_NAME=0;  AC_SUBST([GNULIB_CANONICALIZE_FILE_NAME])
+  GNULIB_FREE_POSIX=0;    AC_SUBST([GNULIB_FREE_POSIX])
   GNULIB_GETLOADAVG=0;    AC_SUBST([GNULIB_GETLOADAVG])
   GNULIB_GETSUBOPT=0;     AC_SUBST([GNULIB_GETSUBOPT])
   GNULIB_GRANTPT=0;       AC_SUBST([GNULIB_GRANTPT])
@@ -56,6 +73,7 @@ AC_DEFUN([gl_STDLIB_H_DEFAULTS],
   GNULIB_MKOSTEMPS=0;     AC_SUBST([GNULIB_MKOSTEMPS])
   GNULIB_MKSTEMP=0;       AC_SUBST([GNULIB_MKSTEMP])
   GNULIB_MKSTEMPS=0;      AC_SUBST([GNULIB_MKSTEMPS])
+  GNULIB_POSIX_MEMALIGN=0;AC_SUBST([GNULIB_POSIX_MEMALIGN])
   GNULIB_POSIX_OPENPT=0;  AC_SUBST([GNULIB_POSIX_OPENPT])
   GNULIB_PTSNAME=0;       AC_SUBST([GNULIB_PTSNAME])
   GNULIB_PTSNAME_R=0;     AC_SUBST([GNULIB_PTSNAME_R])
@@ -77,10 +95,20 @@ AC_DEFUN([gl_STDLIB_H_DEFAULTS],
   GNULIB_UNLOCKPT=0;      AC_SUBST([GNULIB_UNLOCKPT])
   GNULIB_UNSETENV=0;      AC_SUBST([GNULIB_UNSETENV])
   GNULIB_WCTOMB=0;        AC_SUBST([GNULIB_WCTOMB])
+  dnl Support Microsoft deprecated alias function names by default.
+  GNULIB_MDA_ECVT=1;      AC_SUBST([GNULIB_MDA_ECVT])
+  GNULIB_MDA_FCVT=1;      AC_SUBST([GNULIB_MDA_FCVT])
+  GNULIB_MDA_GCVT=1;      AC_SUBST([GNULIB_MDA_GCVT])
+  GNULIB_MDA_MKTEMP=1;    AC_SUBST([GNULIB_MDA_MKTEMP])
+  GNULIB_MDA_PUTENV=1;    AC_SUBST([GNULIB_MDA_PUTENV])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE__EXIT=1;              AC_SUBST([HAVE__EXIT])
+  HAVE_ALIGNED_ALLOC=1;      AC_SUBST([HAVE_ALIGNED_ALLOC])
   HAVE_ATOLL=1;              AC_SUBST([HAVE_ATOLL])
   HAVE_CANONICALIZE_FILE_NAME=1;  AC_SUBST([HAVE_CANONICALIZE_FILE_NAME])
+  HAVE_DECL_ECVT=1;          AC_SUBST([HAVE_DECL_ECVT])
+  HAVE_DECL_FCVT=1;          AC_SUBST([HAVE_DECL_FCVT])
+  HAVE_DECL_GCVT=1;          AC_SUBST([HAVE_DECL_GCVT])
   HAVE_DECL_GETLOADAVG=1;    AC_SUBST([HAVE_DECL_GETLOADAVG])
   HAVE_GETSUBOPT=1;          AC_SUBST([HAVE_GETSUBOPT])
   HAVE_GRANTPT=1;            AC_SUBST([HAVE_GRANTPT])
@@ -92,6 +120,7 @@ AC_DEFUN([gl_STDLIB_H_DEFAULTS],
   HAVE_MKOSTEMPS=1;          AC_SUBST([HAVE_MKOSTEMPS])
   HAVE_MKSTEMP=1;            AC_SUBST([HAVE_MKSTEMP])
   HAVE_MKSTEMPS=1;           AC_SUBST([HAVE_MKSTEMPS])
+  HAVE_POSIX_MEMALIGN=1;     AC_SUBST([HAVE_POSIX_MEMALIGN])
   HAVE_POSIX_OPENPT=1;       AC_SUBST([HAVE_POSIX_OPENPT])
   HAVE_PTSNAME=1;            AC_SUBST([HAVE_PTSNAME])
   HAVE_PTSNAME_R=1;          AC_SUBST([HAVE_PTSNAME_R])
@@ -115,12 +144,15 @@ AC_DEFUN([gl_STDLIB_H_DEFAULTS],
   HAVE_SYS_LOADAVG_H=0;      AC_SUBST([HAVE_SYS_LOADAVG_H])
   HAVE_UNLOCKPT=1;           AC_SUBST([HAVE_UNLOCKPT])
   HAVE_DECL_UNSETENV=1;      AC_SUBST([HAVE_DECL_UNSETENV])
+  REPLACE_ALIGNED_ALLOC=0;   AC_SUBST([REPLACE_ALIGNED_ALLOC])
   REPLACE_CALLOC=0;          AC_SUBST([REPLACE_CALLOC])
   REPLACE_CANONICALIZE_FILE_NAME=0;  AC_SUBST([REPLACE_CANONICALIZE_FILE_NAME])
+  REPLACE_FREE=0;            AC_SUBST([REPLACE_FREE])
   REPLACE_INITSTATE=0;       AC_SUBST([REPLACE_INITSTATE])
   REPLACE_MALLOC=0;          AC_SUBST([REPLACE_MALLOC])
   REPLACE_MBTOWC=0;          AC_SUBST([REPLACE_MBTOWC])
   REPLACE_MKSTEMP=0;         AC_SUBST([REPLACE_MKSTEMP])
+  REPLACE_POSIX_MEMALIGN=0;  AC_SUBST([REPLACE_POSIX_MEMALIGN])
   REPLACE_PTSNAME=0;         AC_SUBST([REPLACE_PTSNAME])
   REPLACE_PTSNAME_R=0;       AC_SUBST([REPLACE_PTSNAME_R])
   REPLACE_PUTENV=0;          AC_SUBST([REPLACE_PUTENV])

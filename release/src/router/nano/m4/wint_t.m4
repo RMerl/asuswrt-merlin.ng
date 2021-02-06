@@ -1,5 +1,5 @@
-# wint_t.m4 serial 8
-dnl Copyright (C) 2003, 2007-2020 Free Software Foundation, Inc.
+# wint_t.m4 serial 10
+dnl Copyright (C) 2003, 2007-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -14,15 +14,7 @@ AC_DEFUN([gt_TYPE_WINT_T],
   AC_CACHE_CHECK([for wint_t], [gt_cv_c_wint_t],
     [AC_COMPILE_IFELSE(
        [AC_LANG_PROGRAM(
-          [[
-/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
-   <wchar.h>.
-   BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h> must be included
-   before <wchar.h>.  */
-#include <stddef.h>
-#include <stdio.h>
-#include <time.h>
-#include <wchar.h>
+          [[#include <wchar.h>
             wint_t foo = (wchar_t)'\0';]],
           [[]])],
        [gt_cv_c_wint_t=yes],
@@ -32,25 +24,16 @@ AC_DEFUN([gt_TYPE_WINT_T],
 
     dnl Determine whether gnulib's <wchar.h> or <wctype.h> would, if present,
     dnl override 'wint_t'.
-    AC_CACHE_CHECK([whether wint_t is too small],
-      [gl_cv_type_wint_t_too_small],
+    AC_CACHE_CHECK([whether wint_t is large enough],
+      [gl_cv_type_wint_t_large_enough],
       [AC_COMPILE_IFELSE(
-         [AC_LANG_PROGRAM([[
-/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
-   <wchar.h>.
-   BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h> must be
-   included before <wchar.h>.  */
-#if !(defined __GLIBC__ && !defined __UCLIBC__)
-# include <stddef.h>
-# include <stdio.h>
-# include <time.h>
-#endif
-#include <wchar.h>
-            int verify[sizeof (wint_t) < sizeof (int) ? -1 : 1];
+         [AC_LANG_PROGRAM(
+            [[#include <wchar.h>
+              int verify[sizeof (wint_t) < sizeof (int) ? -1 : 1];
             ]])],
-         [gl_cv_type_wint_t_too_small=no],
-         [gl_cv_type_wint_t_too_small=yes])])
-    if test $gl_cv_type_wint_t_too_small = yes; then
+         [gl_cv_type_wint_t_large_enough=yes],
+         [gl_cv_type_wint_t_large_enough=no])])
+    if test $gl_cv_type_wint_t_large_enough = no; then
       GNULIB_OVERRIDES_WINT_T=1
     else
       GNULIB_OVERRIDES_WINT_T=0

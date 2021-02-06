@@ -1,6 +1,6 @@
 /* A substitute for ISO C99 <wchar.h>, for platforms that have issues.
 
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -65,19 +65,11 @@
 # include <features.h> /* for __GLIBC__ */
 #endif
 
-/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
-   <wchar.h>.
-   BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h> must be
-   included before <wchar.h>.
-   In some builds of uClibc, <wchar.h> is nonexistent and wchar_t is defined
+/* In some builds of uClibc, <wchar.h> is nonexistent and wchar_t is defined
    by <stddef.h>.
    But avoid namespace pollution on glibc systems.  */
 #if !(defined __GLIBC__ && !defined __UCLIBC__)
 # include <stddef.h>
-#endif
-#ifndef __GLIBC__
-# include <stdio.h>
-# include <time.h>
 #endif
 
 /* Include the original <wchar.h> if it exists.
@@ -961,9 +953,25 @@ _GL_CXXALIASWARN (wcsdup);
 _GL_WARN_ON_USE (wcsdup, "wcsdup is unportable - "
                  "use gnulib module wcsdup for portability");
 # endif
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef wcsdup
-# define wcsdup _wcsdup
+#elif @GNULIB_MDA_WCSDUP@
+/* On native Windows, map 'wcsdup' to '_wcsdup', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::wcsdup always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef wcsdup
+#   define wcsdup _wcsdup
+#  endif
+_GL_CXXALIAS_MDA (wcsdup, wchar_t *, (const wchar_t *s));
+# else
+_GL_FUNCDECL_SYS (wcsdup, wchar_t *, (const wchar_t *s));
+#  if @HAVE_DECL_WCSDUP@
+_GL_CXXALIAS_SYS (wcsdup, wchar_t *, (const wchar_t *s));
+#  endif
+# endif
+# if (defined _WIN32 && !defined __CYGWIN__) || @HAVE_DECL_WCSDUP@
+_GL_CXXALIASWARN (wcsdup);
+# endif
 #endif
 
 

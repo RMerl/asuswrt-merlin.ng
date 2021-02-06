@@ -45,7 +45,7 @@ ul.no-bullet {list-style: none}
 
 
 <span id="Top"></span><span id="SEC_Top"></span>
-<p>This manual documents the GNU <code>nano</code> editor, version 5.2.
+<p>This manual documents the GNU <code>nano</code> editor, version 5.5.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -90,15 +90,15 @@ Pico differ.
 <p>Starting with version 4.0, <code>nano</code> no longer hard-wraps an overlong
 line by default.  It further uses linewise scrolling by default, and by
 default includes the line below the title bar into the editing area.
-</p>
-<p>If you want the old, Pico behavior back, you can use the
+If you want the old, Pico behavior back, you can use the
 following options: <samp>--breaklonglines</samp>,
 <samp>--jumpyscrolling</samp>, and <samp>--emptyline</samp>
-(or <samp>-bje</samp> for short).
+(or <samp>-bje</samp>).
 </p>
 <p>Please report bugs via <a href="https://savannah.gnu.org/bugs/?group=nano">https://savannah.gnu.org/bugs/?group=nano</a>.
 </p>
-
+<p>For background information see <a href="https://nano-editor.org/">https://nano-editor.org/</a>.
+</p>
 <hr>
 <span id="Invoking"></span><span id="Invoking-1"></span><h2 class="chapter">2 Invoking</h2>
 
@@ -246,7 +246,7 @@ and place it at that position again upon reopening such a file.
 <dt><samp>-Q &quot;<var>regex</var>&quot;</samp></dt>
 <dt><samp>--quotestr=&quot;<var>regex</var>&quot;</samp></dt>
 <dd><p>Set the regular expression for matching the quoting part of a line.
-The default value is <tt>&quot;^([&nbsp;<!-- /@w -->\t]*([!#%:;&gt;|}]|//))+&quot;</tt>.
+The default value is &quot;<tt>^([&nbsp;<!-- /@w -->\t]*([!#%:;&gt;|}]|//))+</tt>&quot;.
 (Note that <code>\t</code> stands for a literal Tab character.)
 This makes it possible to rejustify blocks of quoted text when composing
 email, and to rewrap blocks of line comments when writing source code.
@@ -497,6 +497,46 @@ disabled to display the help-system navigation keys.
 keystroke (usually <kbd>^Z</kbd>).
 </p>
 </dd>
+<dt><samp>-^</samp></dt>
+<dt><samp>--markmatch</samp></dt>
+<dd><p>After a search, set the mark at the end of the found match
+(if there is any) so that it gets highlighted.  This makes
+the match more visible, but also allows deleting the match
+with a single keystroke.
+</p>
+</dd>
+<dt><samp>-%</samp></dt>
+<dt><samp>--stateflags</samp></dt>
+<dd><p>Use the top-right corner of the screen for showing some state flags:
+<code>I</code> when auto-indenting, <code>M</code> when the mark is on, <code>L</code> when
+hard-wrapping (breaking long lines), <code>R</code> when recording a macro,
+and <code>S</code> when soft-wrapping.
+When the buffer is modified, a star (<code>*</code>) is shown after the
+filename in the center of the title bar.
+</p>
+</dd>
+<dt><samp>-_</samp></dt>
+<dt><samp>--minibar</samp></dt>
+<dd><p>Suppress the title bar and instead show information about
+the current buffer at the bottom of the screen, in the space
+for the status bar.  In this &quot;minibar&quot; the file name is shown
+on the left, followed by an asterisk if the buffer has been modified.
+On the right are displayed the current line and column number, the
+code of the character under the cursor (in Unicode format: U+xxxx),
+the same flags as are shown by <code>--stateflags</code>, and a percentage
+that expresses how far the cursor is into the file (linewise).
+When a file is loaded or saved, and also when switching between buffers,
+the number of lines in the buffer is displayed after the file name.
+This number is cleared upon the next keystroke, or replaced with an
+[i/n] counter when multiple buffers are open.
+</p>
+</dd>
+<dt><samp>-!</samp></dt>
+<dt><samp>--magic</samp></dt>
+<dd><p>When neither the file&rsquo;s name nor its first line give a clue,
+try using libmagic to determine the applicable syntax.
+</p>
+</dd>
 </dl>
 
 
@@ -571,23 +611,22 @@ and then pressing the desired key.
 <hr>
 <span id="The-Cutbuffer"></span><span id="The-Cutbuffer-1"></span><h3 class="section">4.3 The Cutbuffer</h3>
 
-<p>Text can be cut from a file, a whole line at a time, by using the &rsquo;Cut Text&rsquo;
-command (default key binding: <kbd>^K</kbd>).  The cut line is stored in
-the cutbuffer.  Consecutive strokes of <kbd>^K</kbd> will add each cut line
-to this buffer, but a <kbd>^K</kbd>
+<p>Text can be cut from a file a whole line at a time with <kbd>^K</kbd>.
+The cut line is stored in the cutbuffer.  Consecutive strokes of <kbd>^K</kbd>
+will add each cut line to this buffer, but a <kbd>^K</kbd>
 after any other keystroke will overwrite the entire cutbuffer.
 </p>
-<p>The contents of the cutbuffer can be pasted back into the file with the
-&rsquo;Uncut Text&rsquo; command (default key binding: <kbd>^U</kbd>).
+<p>The contents of the cutbuffer can be pasted at the current cursor position
+with <kbd>^U</kbd>.
 </p>
-<p>A line of text can be copied into the cutbuffer (without cutting it) with
-the &rsquo;Copy Text&rsquo; command (default key binding: <kbd>M-6</kbd>).
+<p>A line of text can be copied into the cutbuffer (without cutting it)
+with <kbd>M-6</kbd>.
 </p>
 <hr>
 <span id="The-Mark"></span><span id="The-Mark-1"></span><h3 class="section">4.4 The Mark</h3>
 
-<p>Text can be selected by first &rsquo;setting the Mark&rsquo; (default key bindings:
-<kbd>^6</kbd> and <kbd>M-A</kbd>) and then moving the cursor to the other end of the portion
+<p>Text can be selected by first &rsquo;setting the Mark&rsquo; with <kbd>^6</kbd>
+or <kbd>M-A</kbd> and then moving the cursor to the other end of the portion
 to be selected.  The selected portion of text will be highlighted.
 This selection can now be cut or copied in its entirety with a single
 <kbd>^K</kbd> or <kbd>M-6</kbd>.  Or the selection can be used to limit the scope of
@@ -598,8 +637,8 @@ while using the cursor keys.  Holding down the <kbd>Ctrl</kbd> or <kbd>Alt</kbd>
 key too will increase the stride.  Such a selection is cancelled
 upon any cursor movement where <kbd>Shift</kbd> isn&rsquo;t held.
 </p>
-<p>Cutting or copying selected text will toggle the mark off automatically.
-If necessary, it can be toggled off manually with another <kbd>^6</kbd> or <kbd>M-A</kbd>.
+<p>Cutting or copying selected text toggles off the mark automatically.
+If needed, it can be toggled off manually with another <kbd>^6</kbd> or <kbd>M-A</kbd>.
 </p>
 <hr>
 <span id="Screen-Layout"></span><span id="Screen-Layout-1"></span><h3 class="section">4.5 Screen Layout</h3>
@@ -861,7 +900,7 @@ beginning of a paragraph (unless auto-indenting is on).
 paragraphs.  This may not include blank characters.  Only closing
 punctuation (see <code>set punct</code>), optionally followed by the specified
 closing brackets, can end sentences.  The default value is
-<tt>&quot;&quot;')&gt;]}&quot;</tt>.
+&quot;<tt>&quot;')&gt;]}</tt>&quot;.
 </p>
 </dd>
 <dt><code>set breaklonglines</code></dt>
@@ -931,6 +970,12 @@ text.  (The color of the stripe can be changed with <code>set stripecolor</code>
 executed commands, so they can be easily reused in later sessions.
 </p>
 </dd>
+<dt><code>set indicator</code></dt>
+<dd><p>Display a &quot;scrollbar&quot; on the righthand side of the edit window.
+It shows the position of the viewport in the buffer
+and how much of the buffer is covered by the viewport.
+</p>
+</dd>
 <dt><code>set jumpyscrolling</code></dt>
 <dd><p>Scroll the buffer contents per half-screen instead of per line.
 </p>
@@ -949,12 +994,41 @@ See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid co
 <dt><code>set locking</code></dt>
 <dd><p>Enable vim-style lock-files for when editing files.
 </p>
+</dd>
+<dt><code>set magic</code></dt>
+<dd><p>When neither the file&rsquo;s name nor its first line give a clue,
+try using libmagic to determine the applicable syntax.
+(Calling libmagic can be relatively time consuming.
+It is therefore not done by default.)
+</p>
+</dd>
+<dt><code>set markmatch</code></dt>
+<dd><p>After a search, set the mark at the end of the found match
+(if there is any) so that it gets highlighted.  This makes
+the match more visible, but also allows deleting the match
+with a single keystroke.
+</p>
 <span id="set-matchbrackets"></span></dd>
 <dt><code>set matchbrackets &quot;<var>characters</var>&quot;</code></dt>
 <dd><p>Specify the opening and closing brackets that can be found by bracket
 searches.  This may not include blank characters.  The opening set must
 come before the closing set, and the two sets must be in the same order.
-The default value is <tt>&quot;(&lt;[{)&gt;]}&quot;</tt>.
+The default value is &quot;<tt>(&lt;[{)&gt;]}</tt>&quot;.
+</p>
+</dd>
+<dt><code>set minibar</code></dt>
+<dd><p>Suppress the title bar and instead show information about
+the current buffer at the bottom of the screen, in the space
+for the status bar.  In this &quot;minibar&quot; the file name is shown
+on the left, followed by an asterisk if the buffer has been modified.
+On the right are displayed the current line and column number, the
+code of the character under the cursor (in Unicode format: U+xxxx),
+the same flags as are shown by <code>set stateflags</code>, and a percentage
+that expresses how far the cursor is into the file (linewise).
+When a file is loaded or saved, and also when switching between buffers,
+the number of lines in the buffer is displayed after the file name.
+This number is cleared upon the next keystroke, or replaced with an
+[i/n] counter when multiple buffers are open.
 </p>
 </dd>
 <dt><code>set morespace</code></dt>
@@ -1014,10 +1088,10 @@ The cursor position is remembered for the 200 most-recently edited files.
 <dd><p>Preserve the XON and XOFF keys (<kbd>^Q</kbd> and <kbd>^S</kbd>).
 </p>
 </dd>
-<dt><code>set indicator</code></dt>
-<dd><p>Display a &quot;scrollbar&quot; on the righthand side of the edit window.
-It shows the position of the viewport in the buffer
-and how much of the buffer is covered by the viewport.
+<dt><code>set promptcolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var></code></dt>
+<dd><p>Use this color combination for the prompt bar.
+(When this option is not specified, the colors of the title bar are used.)
+See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
 </p>
 </dd>
 <dt><code>set punct &quot;<var>characters</var>&quot;</code></dt>
@@ -1025,7 +1099,7 @@ and how much of the buffer is covered by the viewport.
 paragraphs.  This may not include blank characters.  Only the
 specified closing punctuation, optionally followed by closing brackets
 (see <code>set brackets</code>), can end sentences.
-The default value is <tt>&quot;!.?&quot;</tt>.
+The default value is &quot;<tt>!.?</tt>&quot;.
 </p>
 </dd>
 <dt><code>set quickblank</code></dt>
@@ -1035,7 +1109,7 @@ keystroke instead of 25.  Note that <samp>constantshow</samp> overrides this.
 </dd>
 <dt><code>set quotestr &quot;<var>regex</var>&quot;</code></dt>
 <dd><p>Set the regular expression for matching the quoting part of a line.
-The default value is <tt>&quot;^([&nbsp;<!-- /@w -->\t]*([!#%:;&gt;|}]|//))+&quot;</tt>.
+The default value is &quot;<tt>^([&nbsp;<!-- /@w -->\t]*([!#%:;&gt;|}]|//))+</tt>&quot;.
 (Note that <code>\t</code> stands for a literal Tab character.)
 This makes it possible to rejustify blocks of quoted text when composing
 email, and to rewrap blocks of line comments when writing source code.
@@ -1062,6 +1136,13 @@ Regular expressions in <code>nano</code> are of the extended type (ERE).
 <dt><code>set saveonexit</code></dt>
 <dd><p>Save a changed buffer automatically on exit (<kbd>^X</kbd>); don&rsquo;t prompt.
 (The old form of this option, <code>set tempfile</code>, is deprecated.)
+</p>
+</dd>
+<dt><code>set scrollercolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
+<dd><p>Use this color combination for the indicator alias &quot;scrollbar&quot;.
+(On terminal emulators that link to a libvte older than version 0.55,
+using a background color here does not work correctly.)
+See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
 </p>
 </dd>
 <dt><code>set selectedcolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var></code></dt>
@@ -1097,6 +1178,15 @@ the screen&rsquo;s edge, by using also <code>set atblanks</code>.)
 <dt><code>set speller &quot;<var>program</var> [<var>argument</var> &hellip;]&quot;</code></dt>
 <dd><p>Use the given program to do spell checking and correcting.
 See <a href="#g_t_002d_002dspeller"><samp>--speller</samp></a> for details.
+</p>
+</dd>
+<dt><code>set stateflags</code></dt>
+<dd><p>Use the top-right corner of the screen for showing some state flags:
+<code>I</code> when auto-indenting, <code>M</code> when the mark is on, <code>L</code> when
+hard-wrapping (breaking long lines), <code>R</code> when recording a macro,
+and <code>S</code> when soft-wrapping.
+When the buffer is modified, a star (<code>*</code>) is shown after the
+filename in the center of the title bar.
 </p>
 </dd>
 <dt><code>set statuscolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var></code></dt>
@@ -1137,12 +1227,6 @@ hard-wrapping occurs or when text is justified.
 default behavior of saving a file in the format that it had.
 (This option has no effect when you also use <code>set noconvert</code>.)
 </p>
-</dd>
-<dt><code>set view</code></dt>
-<dd><p>Disallow file modification: read-only mode.
-This mode allows the user to open also other files for viewing,
-unless <samp>--restricted</samp> is given on the command line.
-</p>
 <span id="Whitespace"></span></dd>
 <dt><code>set whitespace &quot;<var>characters</var>&quot;</code></dt>
 <dd><p>Set the two characters used to indicate the presence of tabs and
@@ -1177,6 +1261,9 @@ This is inherently imperfect, because regular expressions are not
 powerful enough to fully parse a file.  Nevertheless, regular
 expressions can do a lot and are easy to make, so they are a
 good fit for a small editor like <code>nano</code>.
+</p>
+<p>See <samp>/usr/share/nano/</samp> and <samp>/usr/share/nano/extra/</samp>
+for the syntax-coloring definitions that are available out of the box.
 </p>
 <p>All regular expressions in <code>nano</code> are POSIX extended regular expressions
 (ERE).  This means that <code>.</code>, <code>?</code>, <code>*</code>, <code>+</code>, <code>^</code>,
@@ -1249,7 +1336,7 @@ characters after the pipe are appended at the end of the line.  If no pipe
 character is present, the full string is prepended; for example, <tt>&quot;#&quot;</tt> for
 Python files.  If empty double quotes are specified, the comment/uncomment
 functions are disabled; for example, <tt>&quot;&quot;</tt> for JSON.
-The default value is <tt>&quot;#&quot;</tt>.
+The default value is &quot;<tt>#</tt>&quot;.
 </p>
 </dd>
 <dt><code>tabgives &quot;<var>string</var>&quot;</code></dt>
@@ -1814,8 +1901,9 @@ is the beginning of a paragraph.
 position to the end of the line.
 </p>
 </dd>
-<dt><code>nowrap</code></dt>
+<dt><code>breaklonglines</code></dt>
 <dd><p>Toggles whether long lines will be hard-wrapped to the next line.
+(The old name of this function, &rsquo;nowrap&rsquo;, is deprecated.)
 </p>
 </dd>
 <dt><code>tabstospaces</code></dt>
@@ -2142,8 +2230,8 @@ available GNU <code>nano</code> translations.
 </p>
 </dd>
 <dt><code>--enable-utf8</code></dt>
-<dd><p>Include support for reading and writing Unicode files.  This will require
-either a wide version of curses, or a UTF-8-enabled version of Slang.
+<dd><p>Include support for reading and writing Unicode files.
+This requires a wide version of the curses library.
 </p>
 </dd>
 <dt><code>--disable-utf8</code></dt>
@@ -2155,11 +2243,6 @@ You can use this or the previous option to override that detection.
 <dt><code>--enable-altrcname=<var>name</var></code></dt>
 <dd><p>Use the file with the given <var>name</var> (in the user&rsquo;s home directory)
 as nano&rsquo;s settings file, instead of the default <code>.nanorc</code>.
-</p>
-</dd>
-<dt><code>--with-slang</code></dt>
-<dd><p>Compile <code>nano</code> against Slang instead of against ncurses or other
-curses libraries.
 </p>
 </dd>
 </dl>

@@ -1,5 +1,5 @@
-# stdint.m4 serial 55
-dnl Copyright (C) 2001-2020 Free Software Foundation, Inc.
+# stdint.m4 serial 58
+dnl Copyright (C) 2001-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -34,7 +34,7 @@ AC_DEFUN_ONCE([gl_STDINT_H],
   AC_SUBST([HAVE_WCHAR_H])
 
   dnl Check for <inttypes.h>.
-  dnl AC_INCLUDES_DEFAULT defines $ac_cv_header_inttypes_h.
+  AC_CHECK_HEADERS_ONCE([inttypes.h])
   if test $ac_cv_header_inttypes_h = yes; then
     HAVE_INTTYPES_H=1
   else
@@ -43,7 +43,7 @@ AC_DEFUN_ONCE([gl_STDINT_H],
   AC_SUBST([HAVE_INTTYPES_H])
 
   dnl Check for <sys/types.h>.
-  dnl AC_INCLUDES_DEFAULT defines $ac_cv_header_sys_types_h.
+  AC_CHECK_HEADERS_ONCE([sys/types.h])
   if test $ac_cv_header_sys_types_h = yes; then
     HAVE_SYS_TYPES_H=1
   else
@@ -302,9 +302,10 @@ static const char *macro_values[] =
       HAVE_C99_STDINT_H=1
       dnl Now see whether the system <stdint.h> works without
       dnl __STDC_CONSTANT_MACROS/__STDC_LIMIT_MACROS defined.
-      AC_CACHE_CHECK([whether stdint.h predates C++11],
-        [gl_cv_header_stdint_predates_cxx11_h],
-        [gl_cv_header_stdint_predates_cxx11_h=yes
+      dnl If not, there would be problems when stdint.h is included from C++.
+      AC_CACHE_CHECK([whether stdint.h works without ISO C predefines],
+        [gl_cv_header_stdint_without_STDC_macros],
+        [gl_cv_header_stdint_without_STDC_macros=no
          AC_COMPILE_IFELSE([
            AC_LANG_PROGRAM([[
 #define _GL_JUST_INCLUDE_SYSTEM_STDINT_H 1 /* work if build isn't clean */
@@ -315,13 +316,14 @@ gl_STDINT_INCLUDES
 intmax_t im = INTMAX_MAX;
 int32_t i32 = INT32_C (0x7fffffff);
            ]])],
-           [gl_cv_header_stdint_predates_cxx11_h=no])])
+           [gl_cv_header_stdint_without_STDC_macros=yes])
+        ])
 
-      if test "$gl_cv_header_stdint_predates_cxx11_h" = yes; then
+      if test $gl_cv_header_stdint_without_STDC_macros = no; then
         AC_DEFINE([__STDC_CONSTANT_MACROS], [1],
-                  [Define to 1 if the system <stdint.h> predates C++11.])
+          [Define to 1 if the system <stdint.h> predates C++11.])
         AC_DEFINE([__STDC_LIMIT_MACROS], [1],
-                  [Define to 1 if the system <stdint.h> predates C++11.])
+          [Define to 1 if the system <stdint.h> predates C++11.])
       fi
       AC_CACHE_CHECK([whether stdint.h has UINTMAX_WIDTH etc.],
         [gl_cv_header_stdint_width],
@@ -491,13 +493,9 @@ AC_DEFUN([gl_INTEGER_TYPE_SUFFIX],
 dnl gl_STDINT_INCLUDES
 AC_DEFUN([gl_STDINT_INCLUDES],
 [[
-  /* BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h> must be
-     included before <wchar.h>.  */
   #include <stddef.h>
   #include <signal.h>
   #if HAVE_WCHAR_H
-  # include <stdio.h>
-  # include <time.h>
   # include <wchar.h>
   #endif
 ]])

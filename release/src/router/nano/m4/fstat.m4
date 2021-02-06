@@ -1,5 +1,5 @@
-# fstat.m4 serial 6
-dnl Copyright (C) 2011-2020 Free Software Foundation, Inc.
+# fstat.m4 serial 7
+dnl Copyright (C) 2011-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -35,5 +35,6 @@ AC_DEFUN([gl_FUNC_FSTAT],
 # Prerequisites of lib/fstat.c and lib/stat-w32.c.
 AC_DEFUN([gl_PREREQ_FSTAT], [
   AC_REQUIRE([gl_HEADER_SYS_STAT_H])
+  AC_REQUIRE([gl_PREREQ_STAT_W32])
   :
 ])

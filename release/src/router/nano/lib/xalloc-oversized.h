@@ -1,6 +1,6 @@
 /* xalloc-oversized.h -- memory allocation size checking
 
-   Copyright (C) 1990-2000, 2003-2004, 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 1990-2000, 2003-2004, 2006-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ typedef size_t __xalloc_count_type;
    positive and N must be nonnegative.  This is a macro, not a
    function, so that it works correctly even when SIZE_MAX < N.  */
 
-#if 7 <= __GNUC__
+#if 7 <= __GNUC__ && !defined __clang__
 # define xalloc_oversized(n, s) \
    __builtin_mul_overflow_p (n, s, (__xalloc_count_type) 1)
 #elif 5 <= __GNUC__ && !defined __ICC && !__STRICT_ANSI__

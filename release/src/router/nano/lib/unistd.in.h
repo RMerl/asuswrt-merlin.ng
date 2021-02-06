@@ -1,5 +1,5 @@
 /* Substitute for and wrapper around <unistd.h>.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -93,20 +93,18 @@
 # undef __need_system_stdlib_h
 #endif
 
-/* Native Windows platforms declare chdir, getcwd, rmdir in
+/* Native Windows platforms declare _chdir, _getcwd, _rmdir in
    <io.h> and/or <direct.h>, not in <unistd.h>.
-   They also declare access(), chmod(), close(), dup(), dup2(), isatty(),
-   lseek(), read(), unlink(), write() in <io.h>.  */
-#if ((@GNULIB_CHDIR@ || @GNULIB_GETCWD@ || @GNULIB_RMDIR@ \
-      || defined GNULIB_POSIXCHECK) \
-     && (defined _WIN32 && ! defined __CYGWIN__))
-# include <io.h>     /* mingw32, mingw64 */
-# include <direct.h> /* mingw64, MSVC 9 */
-#elif (@GNULIB_CLOSE@ || @GNULIB_DUP@ || @GNULIB_DUP2@ || @GNULIB_ISATTY@ \
-       || @GNULIB_LSEEK@ || @GNULIB_READ@ || @GNULIB_UNLINK@ || @GNULIB_WRITE@ \
-       || defined GNULIB_POSIXCHECK) \
-      && (defined _WIN32 && ! defined __CYGWIN__)
+   They also declare _access(), _chmod(), _close(), _dup(), _dup2(), _isatty(),
+   _lseek(), _read(), _unlink(), _write() in <io.h>.  */
+#if defined _WIN32 && !defined __CYGWIN__
 # include <io.h>
+# include <direct.h>
+#endif
+
+/* Native Windows platforms declare _execl*, _execv* in <process.h>.  */
+#if defined _WIN32 && !defined __CYGWIN__
+# include <process.h>
 #endif
 
 /* AIX and OSF/1 5.1 declare getdomainname in <netdb.h>, not in <unistd.h>.
@@ -138,11 +136,8 @@
 
 /* MSVC defines off_t in <sys/types.h>.
    May also define off_t to a 64-bit type on native Windows.  */
-/* But avoid namespace pollution on glibc systems.  */
-#ifndef __GLIBC__
-/* Get off_t, ssize_t.  */
-# include <sys/types.h>
-#endif
+/* Get off_t, ssize_t, mode_t.  */
+#include <sys/types.h>
 
 /* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */
 
@@ -292,9 +287,20 @@ _GL_WARN_ON_USE (access, "access does not always support X_OK - "
                  "also, this function is a security risk - "
                  "use the gnulib module faccessat instead");
 # endif
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef access
-# define access _access
+#elif @GNULIB_MDA_ACCESS@
+/* On native Windows, map 'access' to '_access', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::access always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef access
+#   define access _access
+#  endif
+_GL_CXXALIAS_MDA (access, int, (const char *file, int mode));
+# else
+_GL_CXXALIAS_SYS (access, int, (const char *file, int mode));
+# endif
+_GL_CXXALIASWARN (access);
 #endif
 
 
@@ -315,9 +321,20 @@ _GL_CXXALIASWARN (chdir);
 _GL_WARN_ON_USE (chown, "chdir is not always in <unistd.h> - "
                  "use gnulib module chdir for portability");
 # endif
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef chdir
-# define chdir _chdir
+#elif @GNULIB_MDA_CHDIR@
+/* On native Windows, map 'chdir' to '_chdir', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::chdir always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef chdir
+#   define chdir _chdir
+#  endif
+_GL_CXXALIAS_MDA (chdir, int, (const char *file));
+# else
+_GL_CXXALIAS_SYS (chdir, int, (const char *file) _GL_ARG_NONNULL ((1)));
+# endif
+_GL_CXXALIASWARN (chdir);
 #endif
 
 
@@ -380,9 +397,20 @@ _GL_CXXALIASWARN (close);
 /* Assume close is always declared.  */
 _GL_WARN_ON_USE (close, "close does not portably work on sockets - "
                  "use gnulib module close for portability");
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef close
-# define close _close
+#elif @GNULIB_MDA_CLOSE@
+/* On native Windows, map 'close' to '_close', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::close always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef close
+#   define close _close
+#  endif
+_GL_CXXALIAS_MDA (close, int, (int fd));
+# else
+_GL_CXXALIAS_SYS (close, int, (int fd));
+# endif
+_GL_CXXALIASWARN (close);
 #endif
 
 
@@ -397,10 +425,11 @@ _GL_CXXALIAS_SYS (copy_file_range, ssize_t, (int ifd, off_t *ipos,
 # endif
 _GL_CXXALIASWARN (copy_file_range);
 #elif defined GNULIB_POSIXCHECK
-/* Assume copy_file_range is always declared.  */
+# if HAVE_RAW_DECL_COPY_FILE_RANGE
 _GL_WARN_ON_USE (copy_file_range,
                  "copy_file_range is unportable - "
                  "use gnulib module copy_file_range for portability");
+# endif
 #endif
 
 
@@ -427,9 +456,20 @@ _GL_CXXALIASWARN (dup);
 _GL_WARN_ON_USE (dup, "dup is unportable - "
                  "use gnulib module dup for portability");
 # endif
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef dup
-# define dup _dup
+#elif @GNULIB_MDA_DUP@
+/* On native Windows, map 'dup' to '_dup', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::dup always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef dup
+#   define dup _dup
+#  endif
+_GL_CXXALIAS_MDA (dup, int, (int oldfd));
+# else
+_GL_CXXALIAS_SYS (dup, int, (int oldfd));
+# endif
+_GL_CXXALIASWARN (dup);
 #endif
 
 
@@ -461,9 +501,20 @@ _GL_CXXALIASWARN (dup2);
 _GL_WARN_ON_USE (dup2, "dup2 is unportable - "
                  "use gnulib module dup2 for portability");
 # endif
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef dup2
-# define dup2 _dup2
+#elif @GNULIB_MDA_DUP2@
+/* On native Windows, map 'dup2' to '_dup2', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::dup2 always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef dup2
+#   define dup2 _dup2
+#  endif
+_GL_CXXALIAS_MDA (dup2, int, (int oldfd, int newfd));
+# else
+_GL_CXXALIAS_SYS (dup2, int, (int oldfd, int newfd));
+# endif
+_GL_CXXALIASWARN (dup2);
 #endif
 
 
@@ -564,40 +615,279 @@ _GL_WARN_ON_USE (euidaccess, "euidaccess is unportable - "
 #endif
 
 
-#if defined _WIN32 && !defined __CYGWIN__
+#if @GNULIB_EXECL@
+# if @REPLACE_EXECL@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execl
+#   define execl rpl_execl
+#  endif
+_GL_FUNCDECL_RPL (execl, int, (const char *program, const char *arg, ...)
+                              _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (execl, int, (const char *program, const char *arg, ...));
+# else
+_GL_CXXALIAS_SYS (execl, int, (const char *program, const char *arg, ...));
+# endif
+_GL_CXXALIASWARN (execl);
+#elif defined GNULIB_POSIXCHECK
 # undef execl
-# define execl _execl
+# if HAVE_RAW_DECL_EXECL
+_GL_WARN_ON_USE (execl, "execl behaves very differently on mingw - "
+                 "use gnulib module execl for portability");
+# endif
+#elif @GNULIB_MDA_EXECL@
+/* On native Windows, map 'execl' to '_execl', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::execl always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execl
+#   define execl _execl
+#  endif
+_GL_CXXALIAS_MDA (execl, intptr_t, (const char *program, const char *arg, ...));
+# else
+_GL_CXXALIAS_SYS (execl, int, (const char *program, const char *arg, ...));
+# endif
+_GL_CXXALIASWARN (execl);
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
+#if @GNULIB_EXECLE@
+# if @REPLACE_EXECLE@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execle
+#   define execle rpl_execle
+#  endif
+_GL_FUNCDECL_RPL (execle, int, (const char *program, const char *arg, ...)
+                               _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (execle, int, (const char *program, const char *arg, ...));
+# else
+_GL_CXXALIAS_SYS (execle, int, (const char *program, const char *arg, ...));
+# endif
+_GL_CXXALIASWARN (execle);
+#elif defined GNULIB_POSIXCHECK
 # undef execle
-# define execle _execle
+# if HAVE_RAW_DECL_EXECLE
+_GL_WARN_ON_USE (execle, "execle behaves very differently on mingw - "
+                 "use gnulib module execle for portability");
+# endif
+#elif @GNULIB_MDA_EXECLE@
+/* On native Windows, map 'execle' to '_execle', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::execle always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execle
+#   define execle _execle
+#  endif
+_GL_CXXALIAS_MDA (execle, intptr_t,
+                  (const char *program, const char *arg, ...));
+# else
+_GL_CXXALIAS_SYS (execle, int, (const char *program, const char *arg, ...));
+# endif
+_GL_CXXALIASWARN (execle);
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
+#if @GNULIB_EXECLP@
+# if @REPLACE_EXECLP@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execlp
+#   define execlp rpl_execlp
+#  endif
+_GL_FUNCDECL_RPL (execlp, int, (const char *program, const char *arg, ...)
+                               _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (execlp, int, (const char *program, const char *arg, ...));
+# else
+_GL_CXXALIAS_SYS (execlp, int, (const char *program, const char *arg, ...));
+# endif
+_GL_CXXALIASWARN (execlp);
+#elif defined GNULIB_POSIXCHECK
 # undef execlp
-# define execlp _execlp
+# if HAVE_RAW_DECL_EXECLP
+_GL_WARN_ON_USE (execlp, "execlp behaves very differently on mingw - "
+                 "use gnulib module execlp for portability");
+# endif
+#elif @GNULIB_MDA_EXECLP@
+/* On native Windows, map 'execlp' to '_execlp', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::execlp always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execlp
+#   define execlp _execlp
+#  endif
+_GL_CXXALIAS_MDA (execlp, intptr_t,
+                  (const char *program, const char *arg, ...));
+# else
+_GL_CXXALIAS_SYS (execlp, int, (const char *program, const char *arg, ...));
+# endif
+_GL_CXXALIASWARN (execlp);
 #endif
 
 
-#if defined _WIN32 && !defined __CYGWIN__
+#if @GNULIB_EXECV@
+# if @REPLACE_EXECV@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execv
+#   define execv rpl_execv
+#  endif
+_GL_FUNCDECL_RPL (execv, int, (const char *program, char * const *argv)
+                              _GL_ARG_NONNULL ((1, 2)));
+_GL_CXXALIAS_RPL (execv, int, (const char *program, char * const *argv));
+# else
+_GL_CXXALIAS_SYS (execv, int, (const char *program, char * const *argv));
+# endif
+_GL_CXXALIASWARN (execv);
+#elif defined GNULIB_POSIXCHECK
 # undef execv
-# define execv _execv
+# if HAVE_RAW_DECL_EXECV
+_GL_WARN_ON_USE (execv, "execv behaves very differently on mingw - "
+                 "use gnulib module execv for portability");
+# endif
+#elif @GNULIB_MDA_EXECV@
+/* On native Windows, map 'execv' to '_execv', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::execv always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execv
+#   define execv _execv
+#  endif
+_GL_CXXALIAS_MDA_CAST (execv, intptr_t,
+                       (const char *program, char * const *argv));
+# else
+_GL_CXXALIAS_SYS (execv, int, (const char *program, char * const *argv));
+# endif
+_GL_CXXALIASWARN (execv);
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
+#if @GNULIB_EXECVE@
+# if @REPLACE_EXECVE@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execve
+#   define execve rpl_execve
+#  endif
+_GL_FUNCDECL_RPL (execve, int,
+                  (const char *program, char * const *argv, char * const *env)
+                  _GL_ARG_NONNULL ((1, 2)));
+_GL_CXXALIAS_RPL (execve, int,
+                  (const char *program, char * const *argv, char * const *env));
+# else
+_GL_CXXALIAS_SYS (execve, int,
+                  (const char *program, char * const *argv, char * const *env));
+# endif
+_GL_CXXALIASWARN (execve);
+#elif defined GNULIB_POSIXCHECK
 # undef execve
-# define execve _execve
+# if HAVE_RAW_DECL_EXECVE
+_GL_WARN_ON_USE (execve, "execve behaves very differently on mingw - "
+                 "use gnulib module execve for portability");
+# endif
+#elif @GNULIB_MDA_EXECVE@
+/* On native Windows, map 'execve' to '_execve', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::execve always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execve
+#   define execve _execve
+#  endif
+_GL_CXXALIAS_MDA_CAST (execve, intptr_t,
+                       (const char *program, char * const *argv,
+                        char * const *env));
+# else
+_GL_CXXALIAS_SYS (execve, int,
+                  (const char *program, char * const *argv, char * const *env));
+# endif
+_GL_CXXALIASWARN (execve);
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
+#if @GNULIB_EXECVP@
+# if @REPLACE_EXECVP@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execvp
+#   define execvp rpl_execvp
+#  endif
+_GL_FUNCDECL_RPL (execvp, int, (const char *program, char * const *argv)
+                               _GL_ARG_NONNULL ((1, 2)));
+_GL_CXXALIAS_RPL (execvp, int, (const char *program, char * const *argv));
+# else
+_GL_CXXALIAS_SYS (execvp, int, (const char *program, char * const *argv));
+# endif
+_GL_CXXALIASWARN (execvp);
+#elif defined GNULIB_POSIXCHECK
 # undef execvp
-# define execvp _execvp
+# if HAVE_RAW_DECL_EXECVP
+_GL_WARN_ON_USE (execvp, "execvp behaves very differently on mingw - "
+                 "use gnulib module execvp for portability");
+# endif
+#elif @GNULIB_MDA_EXECVP@
+/* On native Windows, map 'execvp' to '_execvp', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::execvp always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execvp
+#   define execvp _execvp
+#  endif
+_GL_CXXALIAS_MDA_CAST (execvp, intptr_t,
+                       (const char *program, char * const *argv));
+# else
+_GL_CXXALIAS_SYS (execvp, int, (const char *program, char * const *argv));
+# endif
+_GL_CXXALIASWARN (execvp);
 #endif
 
-#if defined _WIN32 && !defined __CYGWIN__
+#if @GNULIB_EXECVPE@
+# if @REPLACE_EXECVPE@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execvpe
+#   define execvpe rpl_execvpe
+#  endif
+_GL_FUNCDECL_RPL (execvpe, int,
+                  (const char *program, char * const *argv, char * const *env)
+                  _GL_ARG_NONNULL ((1, 2)));
+_GL_CXXALIAS_RPL (execvpe, int,
+                  (const char *program, char * const *argv, char * const *env));
+# else
+#  if !@HAVE_DECL_EXECVPE@
+_GL_FUNCDECL_SYS (execvpe, int,
+                  (const char *program, char * const *argv, char * const *env)
+                  _GL_ARG_NONNULL ((1, 2)));
+#  endif
+_GL_CXXALIAS_SYS (execvpe, int,
+                  (const char *program, char * const *argv, char * const *env));
+# endif
+_GL_CXXALIASWARN (execvpe);
+#elif defined GNULIB_POSIXCHECK
 # undef execvpe
-# define execvpe _execvpe
+# if HAVE_RAW_DECL_EXECVPE
+_GL_WARN_ON_USE (execvpe, "execvpe behaves very differently on mingw - "
+                 "use gnulib module execvpe for portability");
+# endif
+#elif @GNULIB_MDA_EXECVPE@
+/* On native Windows, map 'execvpe' to '_execvpe', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::execvpe on all platforms that have
+   it.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef execvpe
+#   define execvpe _execvpe
+#  endif
+_GL_CXXALIAS_MDA_CAST (execvpe, intptr_t,
+                       (const char *program, char * const *argv,
+                        char * const *env));
+# elif @HAVE_EXECVPE@
+#  if !@HAVE_DECL_EXECVPE@
+_GL_FUNCDECL_SYS (execvpe, int,
+                  (const char *program, char * const *argv, char * const *env)
+                  _GL_ARG_NONNULL ((1, 2)));
+#  endif
+_GL_CXXALIAS_SYS (execvpe, int,
+                  (const char *program, char * const *argv, char * const *env));
+# endif
+# if (defined _WIN32 && !defined __CYGWIN__) || @HAVE_EXECVPE@
+_GL_CXXALIASWARN (execvpe);
+# endif
 #endif
 
 
@@ -688,7 +978,7 @@ _GL_CXXALIASWARN (fchownat);
 # undef fchownat
 # if HAVE_RAW_DECL_FCHOWNAT
 _GL_WARN_ON_USE (fchownat, "fchownat is not portable - "
-                 "use gnulib module openat for portability");
+                 "use gnulib module fchownat for portability");
 # endif
 #endif
 
@@ -794,9 +1084,22 @@ _GL_CXXALIASWARN (getcwd);
 _GL_WARN_ON_USE (getcwd, "getcwd is unportable - "
                  "use gnulib module getcwd for portability");
 # endif
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef getcwd
-# define getcwd _getcwd
+#elif @GNULIB_MDA_GETCWD@
+/* On native Windows, map 'getcwd' to '_getcwd', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::getcwd always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef getcwd
+#   define getcwd _getcwd
+#  endif
+/* Need to cast, because on mingw, the second parameter is either
+   'int size' or 'size_t size'.  */
+_GL_CXXALIAS_MDA_CAST (getcwd, char *, (char *buf, size_t size));
+# else
+_GL_CXXALIAS_SYS_CAST (getcwd, char *, (char *buf, size_t size));
+# endif
+_GL_CXXALIASWARN (getcwd);
 #endif
 
 
@@ -1131,9 +1434,20 @@ _GL_WARN_ON_USE (getpass, "getpass is unportable - "
 #endif
 
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef getpid
-# define getpid _getpid
+#if @GNULIB_MDA_GETPID@
+/* On native Windows, map 'getpid' to '_getpid', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::getpid always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef getpid
+#   define getpid _getpid
+#  endif
+_GL_CXXALIAS_MDA (getpid, int, (void));
+# else
+_GL_CXXALIAS_SYS (getpid, pid_t, (void));
+# endif
+_GL_CXXALIASWARN (getpid);
 #endif
 
 
@@ -1225,9 +1539,20 @@ _GL_CXXALIASWARN (isatty);
 _GL_WARN_ON_USE (isatty, "isatty has portability problems on native Windows - "
                  "use gnulib module isatty for portability");
 # endif
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef isatty
-# define isatty _isatty
+#elif @GNULIB_MDA_ISATTY@
+/* On native Windows, map 'isatty' to '_isatty', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::isatty always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef isatty
+#   define isatty _isatty
+#  endif
+_GL_CXXALIAS_MDA (isatty, int, (int fd));
+# else
+_GL_CXXALIAS_SYS (isatty, int, (int fd));
+# endif
+_GL_CXXALIASWARN (isatty);
 #endif
 
 
@@ -1355,9 +1680,20 @@ _GL_CXXALIASWARN (lseek);
 _GL_WARN_ON_USE (lseek, "lseek does not fail with ESPIPE on pipes on some "
                  "systems - use gnulib module lseek for portability");
 # endif
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef lseek
-# define lseek _lseek
+#elif @GNULIB_MDA_LSEEK@
+/* On native Windows, map 'lseek' to '_lseek', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::lseek always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef lseek
+#   define lseek _lseek
+#  endif
+_GL_CXXALIAS_MDA (lseek, long, (int fd, long offset, int whence));
+# else
+_GL_CXXALIAS_SYS (lseek, off_t, (int fd, off_t offset, int whence));
+# endif
+_GL_CXXALIASWARN (lseek);
 #endif
 
 
@@ -1497,15 +1833,27 @@ _GL_CXXALIAS_RPL (read, ssize_t, (int fd, void *buf, size_t count));
 #  endif
 _GL_CXXALIAS_MDA (read, ssize_t, (int fd, void *buf, size_t count));
 # else
-/* Need to cast, because on mingw, the third parameter is
-                                                          unsigned int count
-   and the return type is 'int'.  */
-_GL_CXXALIAS_SYS_CAST (read, ssize_t, (int fd, void *buf, size_t count));
+_GL_CXXALIAS_SYS (read, ssize_t, (int fd, void *buf, size_t count));
 # endif
 _GL_CXXALIASWARN (read);
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef read
-# define read _read
+#elif @GNULIB_MDA_READ@
+/* On native Windows, map 'read' to '_read', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::read always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef read
+#   define read _read
+#  endif
+#  ifdef __MINGW32__
+_GL_CXXALIAS_MDA (read, int, (int fd, void *buf, unsigned int count));
+#  else
+_GL_CXXALIAS_MDA (read, ssize_t, (int fd, void *buf, unsigned int count));
+#  endif
+# else
+_GL_CXXALIAS_SYS (read, ssize_t, (int fd, void *buf, size_t count));
+# endif
+_GL_CXXALIASWARN (read);
 #endif
 
 
@@ -1604,9 +1952,20 @@ _GL_CXXALIASWARN (rmdir);
 _GL_WARN_ON_USE (rmdir, "rmdir is unportable - "
                  "use gnulib module rmdir for portability");
 # endif
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef rmdir
-# define rmdir _rmdir
+#elif @GNULIB_MDA_RMDIR@
+/* On native Windows, map 'rmdir' to '_rmdir', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::rmdir always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef rmdir
+#   define rmdir _rmdir
+#  endif
+_GL_CXXALIAS_MDA (rmdir, int, (char const *name));
+# else
+_GL_CXXALIAS_SYS (rmdir, int, (char const *name));
+# endif
+_GL_CXXALIASWARN (rmdir);
 #endif
 
 
@@ -1665,9 +2024,20 @@ _GL_WARN_ON_USE (sleep, "sleep is unportable - "
 #endif
 
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef swab
-# define swab _swab
+#if @GNULIB_MDA_SWAB@
+/* On native Windows, map 'swab' to '_swab', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::creat always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef swab
+#   define swab _swab
+#  endif
+_GL_CXXALIAS_MDA (swab, void, (char *from, char *to, int n));
+# else
+_GL_CXXALIAS_SYS (swab, void, (const void *from, void *to, ssize_t n));
+# endif
+_GL_CXXALIASWARN (swab);
 #endif
 
 
@@ -1811,9 +2181,20 @@ _GL_CXXALIASWARN (unlink);
 _GL_WARN_ON_USE (unlink, "unlink is not portable - "
                  "use gnulib module unlink for portability");
 # endif
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef unlink
-# define unlink _unlink
+#elif @GNULIB_MDA_UNLINK@
+/* On native Windows, map 'unlink' to '_unlink', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::unlink always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef unlink
+#   define unlink _unlink
+#  endif
+_GL_CXXALIAS_MDA (unlink, int, (char const *file));
+# else
+_GL_CXXALIAS_SYS (unlink, int, (char const *file));
+# endif
+_GL_CXXALIASWARN (unlink);
 #endif
 
 
@@ -1838,7 +2219,7 @@ _GL_CXXALIASWARN (unlinkat);
 # undef unlinkat
 # if HAVE_RAW_DECL_UNLINKAT
 _GL_WARN_ON_USE (unlinkat, "unlinkat is not portable - "
-                 "use gnulib module openat for portability");
+                 "use gnulib module unlinkat for portability");
 # endif
 #endif
 
@@ -1892,15 +2273,27 @@ _GL_CXXALIAS_RPL (write, ssize_t, (int fd, const void *buf, size_t count));
 #  endif
 _GL_CXXALIAS_MDA (write, ssize_t, (int fd, const void *buf, size_t count));
 # else
-/* Need to cast, because on mingw, the third parameter is
-                                                             unsigned int count
-   and the return type is 'int'.  */
-_GL_CXXALIAS_SYS_CAST (write, ssize_t, (int fd, const void *buf, size_t count));
+_GL_CXXALIAS_SYS (write, ssize_t, (int fd, const void *buf, size_t count));
 # endif
 _GL_CXXALIASWARN (write);
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef write
-# define write _write
+#elif @GNULIB_MDA_WRITE@
+/* On native Windows, map 'write' to '_write', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::write always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef write
+#   define write _write
+#  endif
+#  ifdef __MINGW32__
+_GL_CXXALIAS_MDA (write, int, (int fd, const void *buf, unsigned int count));
+#  else
+_GL_CXXALIAS_MDA (write, ssize_t, (int fd, const void *buf, unsigned int count));
+#  endif
+# else
+_GL_CXXALIAS_SYS (write, ssize_t, (int fd, const void *buf, size_t count));
+# endif
+_GL_CXXALIASWARN (write);
 #endif
 
 _GL_INLINE_HEADER_END

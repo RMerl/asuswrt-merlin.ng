@@ -1,6 +1,6 @@
 /* Like <fcntl.h>, but with non-working flags defined to 0.
 
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -112,9 +112,21 @@ _GL_CXXALIASWARN (creat);
 /* Assume creat is always declared.  */
 _GL_WARN_ON_USE (creat, "creat is not always POSIX compliant - "
                  "use gnulib module creat for portability");
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef creat
-# define creat _creat
+#elif @GNULIB_MDA_CREAT@
+/* On native Windows, map 'creat' to '_creat', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::creat always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef creat
+#   define creat _creat
+#  endif
+/* Need to cast, because in mingw the last argument is 'int mode'.  */
+_GL_CXXALIAS_MDA_CAST (creat, int, (const char *filename, mode_t mode));
+# else
+_GL_CXXALIAS_SYS (creat, int, (const char *filename, mode_t mode));
+# endif
+_GL_CXXALIASWARN (creat);
 #endif
 
 #if @GNULIB_FCNTL@
@@ -174,9 +186,22 @@ _GL_CXXALIASWARN (open);
 /* Assume open is always declared.  */
 _GL_WARN_ON_USE (open, "open is not always POSIX compliant - "
                  "use gnulib module open for portability");
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef open
-# define open _open
+#elif @GNULIB_MDA_OPEN@
+/* On native Windows, map 'open' to '_open', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::open always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef open
+#   define open _open
+#  endif
+_GL_CXXALIAS_MDA (open, int, (const char *filename, int flags, ...));
+# else
+_GL_CXXALIAS_SYS (open, int, (const char *filename, int flags, ...));
+# endif
+# if !defined __hpux
+_GL_CXXALIASWARN (open);
+# endif
 #endif
 
 #if @GNULIB_OPENAT@

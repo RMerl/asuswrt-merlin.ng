@@ -1,3 +1,39 @@
+2021.01.14 - GNU nano 5.5 "Rebecca"
+• Option 'set minibar' makes nano suppress the title bar and instead
+  show a bar with basic editing information at the bottom: file name
+  (plus an asterisk when the buffer is modified), the cursor position
+  (line,column), the character under the cursor (U+xxxx), the flags
+  that --stateflags normally shows, plus the percentage of the buffer
+  that is above the cursor.
+• With 'set promptcolor' the color combination of the prompt bar can
+  be changed, to allow contrasting it with the mini bar (which always
+  has the same color as the title bar).
+• Option 'set markmatch' highlights the result of a successful search
+  by putting the mark at the end of the match, making the match more
+  visible.  It also suppresses the cursor until the next keystroke.
+  (If you dislike the hiding of the cursor, use 'set showcursor'.)
+• The bindable toggle 'nowrap' has been renamed to 'breaklonglines',
+  to match the corresponding option, like for all other toggles.
+• Support for Slang has been removed.
+
+2020.12.02 - GNU nano 5.4 "Terre des hommes"
+• Moving the cursor now skips over combining characters (and other
+  zero-width characters).  Deleting a character deletes also any
+  succeeding zero-width characters, but backspacing deletes just
+  one character at a time.
+• Workarounds for older ncurses and older libvtes were removed.
+
+2020.10.07 - GNU nano 5.3 "Revolution!"
+• Option 'set stateflags' makes nano show the state of auto-indenting,
+  the mark, hard-wrapping, macro recording, and soft-wrapping in the
+  title bar.  The flags take the place of "Modified", and a modified
+  buffer is instead indicated by an asterisk (*) after its name.
+• Nano no longer by default tries using libmagic to determine the type
+  of a file (when neither filename nor first line gave a clue), because
+  in most cases it is a waste of time.  It requires using the option
+  --magic or -! or 'set magic' to make nano try libmagic.
+• The color of the indicator can be changed with 'set scrollercolor'.
+
 2020.08.24 - GNU nano 5.2 "Ranrapalca"
 • Making certain replacements after a large paste does not crash.
 • Hitting a toggle at the Search prompt does not clear the answer.
@@ -529,7 +565,7 @@
 
 2016.02.12 - GNU nano 2.5.2 is carrying too many dogs.  This release
              includes several fixes for various memory leaks, position-
-             history size growth, and a long standing issue with using
+             history size growth, and a long-standing issue with using
              nano under sudo creating root-owned files.  There are also
              the usual bevy of documentation and other miscellaneous
              fixes and touchups.  Upgrade today while supplies last,
@@ -771,28 +807,27 @@
 
 2009.11.30 - GNU nano 2.2.0 "Doc Brown" is released!  The culmination
              of almost two years of development and hot on the heels
-             of nano's 10th birthday is available for all your
-             editing needs!  Bugs fixed since the last release
-             include several fixes for tiny mode (involving both
-             the help keys and replace menu text), more 'final'
-             fixes for soft wrapping, and several typo and documentation
-             updates including nanorc tweaks and a new syntax
-             highlighting file for makefiles.  Also included is a long
-             standing fix for random crashing when using nanorc on
-             FreeBSD, and nano will no longer clear the screen on
-             suspend to maintain compatibility with other *nix editors.
-             For those who haven't been playing along at home, please
-             see the official web page for the summary of new
-             features since 2.0.  Special thanks to all who have
-             submitted bug reports recently in support of our new
-             stable release, and apologies for all those bugs we
-             didn't yet find :-) Peace to all.
+             of nano's 10th birthday is available for all your editing
+             needs!  Bugs fixed since the last release include several
+             fixes for tiny mode (involving both the help keys and
+             replace menu text), more 'final' fixes for soft wrapping,
+             and several typo and documentation updates including nanorc
+             tweaks and a new syntax highlighting file for makefiles.
+             Also included is a long-standing fix for random crashing
+             when using nanorc on FreeBSD, and nano will no longer clear
+             the screen on suspend to maintain compatibility with other
+             *nix editors.  For those who haven't been playing along at
+             home, please see the official web page for the summary of
+             new features since 2.0.  Special thanks to all who have
+             submitted bug reports recently in support of our new stable
+             release, and apologies for all those bugs we didn't yet
+             find :-)  Peace to all.
 
 
 2009.11.21 - GNU nano 2.1.99pre2 is available for a special pre-Black
              Friday discount.  Included are some (hopefully final)
              fixes for issues with last page display caused by the
-             soft wrapping code, and a fix for a long standing issue
+             soft wrapping code, and a fix for a long-standing issue
              with hitting the Home key when going through the search
              history.  On the features front, nano will now attempt to
              retain the proper ownership and permissions when trying
@@ -924,7 +959,7 @@
              contains fixes for binding bad keys, some
              configure-specific compilation failures, and more issues
              with the new input back end and in particular the status
-             bar.  Also fixed are some long standing issues with
+             bar.  Also fixed are some long-standing issues with
              compiling on AIX, and a segfault when making the terminal
              window too small.  Rest in Peace Tim and George!
 
@@ -1105,7 +1140,7 @@
 
 2005.12.23 - GNU nano 1.3.10 rises to the surface.  This release
              contains several new features as well as fixes for
-             several longstanding bugs.  The former include the
+             several long-standing bugs.  The former include the
              ability to scroll up or down single lines without
              scrolling the cursor, reworked bracket searching code
              that doesn't require regular expression support,
@@ -1327,38 +1362,37 @@
              and enjoy GNU nano 1.2.0.
 
 
-2003.02.13 - GNU nano 1.1.99pre3 "The last testing version, no
-             really!" is released.  This release includes fixes for
-             wrapping (again), resizing, color syntax highlighting,
-             rcfile parsing, the mouse code, more memory leaks, and
-             some reversion of the code to get the user's home
-             directory (nano will now again rely on $HOME).  There
-             are also translation updates, a new manual page for the
-             nanorc file, and an UPGRADE file detailing the changes
-             since version 1.0.  Please submit reports for any bugs
-             you might find to the development team
-             (nano-devel@gnu.org), and enjoy nano almost-1.2.0 ;-)
+2003.02.13 - GNU nano 1.1.99pre3 "The last testing version, no really!"
+             is released.  This release includes fixes for wrapping
+             (again), resizing, color syntax highlighting, rcfile
+             parsing, the mouse code, more memory leaks, and some
+             reversion of the code to get the user's home directory
+             (nano will now again rely on $HOME).  There are also
+             translation updates, a new manual page for the nanorc
+             file, and an UPGRADE file detailing the changes since
+             version 1.0.  Please submit reports for any bugs you
+             might find to the development team (nano-devel@gnu.org),
+             and enjoy nano almost-1.2.0 ;-)
 
-2003.02.03 - GNU nano 1.1.99pre2 "bugs in my pockets, bugs in my
-             shoes" is released.  There are, not surprisingly, only
-             bugfixes in this release as we move toward the stable
-             1.2.0 release.  Fixes are included for translatable
-             string format, subexpression replacement, constant
-             cursor position, invalid search regexes, justify, screen
-             state on SIGHUP and SIGTERM, cutting to end cuts with
-             long lines, many file browser and operating directory
-             bugs, memory and file descriptor leaks, marker code,
-             spell checker, the mouse code with long lines, multiple
-             buffers and non-file open errors, replacement string
-             length, and a silly but serious history message crash.
-             There is also a drastic improvement in CPU utilization
-             for the color regex code.
-                 Depending on the number of bugs found in this
-             release, there may be a 1.1.99pre3 or RC1, or just a
-             1.2.0 release.  Most of the major bugs seem to have been
-             worked out, so if you are waiting for a good time to
-             test nano before the official 1.2.0 release, this would
-             be the one to use.  Happy bug hunting!
+2003.02.03 - GNU nano 1.1.99pre2 "bugs in my pockets, bugs in my shoes"
+             is released.  There are, not surprisingly, only bugfixes
+             in this release as we move toward the stable 1.2.0
+             release.  Fixes are included for translatable string
+             format, subexpression replacement, constant cursor
+             position, invalid search regexes, justify, screen state on
+             SIGHUP and SIGTERM, cutting to end cuts with long lines,
+             many file browser and operating directory bugs, memory and
+             file descriptor leaks, marker code, spell checker, the
+             mouse code with long lines, multiple buffers and non-file
+             open errors, replacement string length, and a silly but
+             serious history message crash.  There is also a drastic
+             improvement in CPU utilization for the color regex code.
+                 Depending on the number of bugs found in this release,
+             there may be a 1.1.99pre3 or RC1, or just a 1.2.0 release.
+             Most of the major bugs seem to have been worked out, so if
+             you are waiting for a good time to test nano before the
+             official 1.2.0 release, this would be the one to use.
+             Happy bug hunting!
 
 2003.01.17 - GNU nano 1.1.99pre1 "enough already" has been released.
              This release is, barring bug fixes and documentation
@@ -1419,19 +1453,19 @@
              word and next word, nanorc parser and line wrapping
              code.  Have fun!
 
-2002.07.25 - At long last!  GNU nano 1.1.10 "What didn't we break?" is
-             released.  This version of GNU nano features version
+2002.07.25 - At long last!  GNU nano 1.1.10 "What didn't we break?"
+             is released.  This version of GNU nano features version
              0.11.2 of gettext, building with automake 1.6, some new
              code for displaying control characters, browser
-             improvements, a new backup file option (-B, --backup), a
-             new option to ignore rc files (-I, --ignorercfiles),
+             improvements, a new backup file option (-B, --backup),
+             a new option to ignore rc files (-I, --ignorercfiles),
              compatibility with -pedantic, handling null characters
              before EOF, a slightly sportier nanorc.sample and more.
-                 Fixes are included for justification,
-             the reading and writing file routines, resizing and fill
-             length, millions of memory leaks, the usage screen was
-             updated, and the --quotestr and --regexp really work
-             now ;-)  Enjoy :)
+                 Fixes are included for justification, the reading
+             and writing file routines, resizing and fill length,
+             millions of memory leaks, the usage screen was updated,
+             and the --quotestr and --regexp really work now ;-)
+             Enjoy :)
 
 2002.05.12 - GNU nano 1.1.9 is released, happy Mother's Day!  This
              release includes many new features, including a prepend
@@ -1701,7 +1735,7 @@
 
 2000.11.23 - Happy Thanksgiving!  Nano 0.9.21 is our "last version was
              a big turkey" release.  It fixes several bugs introduced
-             by the previous version, as well as a few long- standing
+             by the previous version, as well as a few long-standing
              display bugs.  All 0.9.20 users are strongly encouraged
              to upgrade to this release.
 
@@ -1922,19 +1956,19 @@
              it is yours to take care of and keep up to date.
 
 2000.03.01 - Well, to continue my trend of going back on my previous
-             release's comments, nano 0.8.7 is released.  The
-             crashing behavior was still occurring, and this most
-             recent fix also fixes some other wrapping problems, so
-             here you go.  There may be another release soon, there
-             may not be, is that vague enough? =)
+             release's comments, nano 0.8.7 is released.  The crashing
+             behavior was still occurring, and this most recent fix
+             also fixes some other wrapping problems, so here you go.
+             There may be another release soon, there may not be, is
+             that vague enough? =)
 
 2000.02.25 - More minor bugfixes in 0.8.6, the bizarre behavior at the
              end of a page has ceased, thankfully.  I'm also moving
              next weekend, so don't be shocked if you don't see a new
              version of nano next week  =-)
 
-2000.02.11 - Okay, here we go again.  Aside from a few minor fixes and
-             some under-the-hood changes, you won't notice much
+2000.02.11 - Okay, here we go again.  Aside from a few minor fixes
+             and some under-the-hood changes, you won't notice much
              different in this version of nano.  I haven't gotten
              much feedback on the help feature, is it simply amazing
              or does no one care?  Write and let me know! =)
@@ -1949,23 +1983,22 @@
              address nano@asty.org for bugs, etc.
 
 2000.02.02 - Okay, I hate to go back on what I said in the last release,
-             but I may be changing jobs very soon.  I will release
-             version 0.8.2 as is (no i18n, no help menu (yet)).  I
-             expect things to settle down by the end of next week,
-             and then I can try to start on the i18n support and help
-             menu; look for these new features in version 0.8.5 to
-             0.9.0.
+             but I may be changing jobs very soon.  I will release version
+             0.8.2 as is (no i18n, no help menu (yet)).  I expect things
+             to settle down by the end of next week, and then I can try to
+             start on the i18n support and help menu; look for these new
+             features in version 0.8.5 to 0.9.0.
 
 2000.01.28 - Nano 0.8.1 marks our first official step toward
-             internationalization (i18n) and the help system (^G).  I
-             will be merging in Jordi's patches for initial i18n in
-             the next version, and will implement the help system
+             internationalization (i18n) and the help system (^G).
+             I will be merging in Jordi's patches for initial i18n
+             in the next version, and will implement the help system
              with i18n built into it shortly after that.  Please
              don't hesitate to send bug reports, as long as you're
              sure the fault lies with nano =-).
 
-2000.01.25 - Nano 0.8.0 is officially the 'let's try and be at least a
-             little portable, mmmmkay?' release.  There are many
+2000.01.25 - Nano 0.8.0 is officially the "let's try and be at least
+             a little portable, mmmmkay?" release.  There are many
              portability checks and fixes; many thanks to Andy Kahn
              for his patches.  I removed the broken do_spell behavior
              with the 'spell' program; for now, we only try to call
@@ -1975,31 +2008,29 @@
 2000.01.24 - Nano 0.7.9 features many new features.  Among them are a
              new autoindent feature (-i, --autoindent), tempfile flag
              like Pico's -t flag (-t, --tempfile), and preliminary
-             spelling program support.  The spelling function tries
-             to run 'spell' and then 'ispell' in that order, but you
-             can specify another spelling program with -s or
-             --speller.
+             spelling program support.  The spelling function tries to
+             run 'spell' and then 'ispell' in that order, but you can
+             specify another spelling program with -s or --speller.
 
-2000.01.17 - Nano 0.7.7 is officially the 'way too much stuff changed this
-             release' release.  It's the busy time at work for me, so
-             please don't get offended if your patch doesn't get
-             included in the next immediate version of nano.  I'm
-             sure all the changes in this release will cause a few
-             bugs, so 0.7.8 will primarily be about fixing those
-             bugs.
+2000.01.17 - Nano 0.7.7 is officially the "way too much stuff changed
+             this release" release.  It's the busy time at work for me,
+             so please don't get offended if your patch doesn't get
+             included in the next immediate version of nano.  I'm sure
+             all the changes in this release will cause a few bugs, so
+             0.7.8 will primarily be about fixing those bugs.
 
              Things added this release include resizability (kinda),
              new -x and -c flags (see nano -h for help), long command
              line flag support, and the usual array of bugfixes.
 
-2000.01.15 - Nano 0.7.6 is officially the 'lightning' release.  It now
-             loads large files much faster than previous versions,
-             and is even much faster than Pico or vi in some rather
-             rudimentary tests.  Many thanks to Adam Rogoyski for the
-             read_byte patch!
+2000.01.15 - Nano 0.7.6 is officially the "lightning" release.
+             It now loads large files much faster than previous
+             versions, and is even much faster than Pico or vi
+             in some rather rudimentary tests.  Many thanks to
+             Adam Rogoyski for the read_byte patch!
 
-2000.01.09 - As of this version (0.7.4), TIP has officially been renamed
-             to nano.  The new homepage is at
-             http://faculty.plattsburgh.edu/astyanax/nano.  Please
-             update your bookmarks, tell your friends, and all that
-             jazz.
+2000.01.09 - As of this version (0.7.4), TIP has officially
+             been renamed to nano.  The new homepage is at
+             http://faculty.plattsburgh.edu/astyanax/nano.
+             Please update your bookmarks, tell your friends,
+             and all that jazz.

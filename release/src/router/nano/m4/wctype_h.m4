@@ -1,8 +1,8 @@
-# wctype_h.m4 serial 25
+# wctype_h.m4 serial 26
 
 dnl A placeholder for ISO C99 <wctype.h>, for platforms that lack it.
 
-dnl Copyright (C) 2006-2020 Free Software Foundation, Inc.
+dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -41,13 +41,6 @@ AC_DEFUN([gl_WCTYPE_H],
         [
           AC_RUN_IFELSE(
             [AC_LANG_SOURCE([[
-               /* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be
-                  included before <wchar.h>.
-                  BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h>
-                  must be included before <wchar.h>.  */
-               #include <stddef.h>
-               #include <stdio.h>
-               #include <time.h>
                #include <wchar.h>
                #include <wctype.h>
                int main () { return iswprint ('x') == 0; }
@@ -92,14 +85,7 @@ AC_DEFUN([gl_WCTYPE_H],
       REPLACE_TOWLOWER=0
     else
       AC_CHECK_DECLS([towlower],,,
-        [[/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be
-             included before <wchar.h>.
-             BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h>
-             must be included before <wchar.h>.  */
-          #include <stddef.h>
-          #include <stdio.h>
-          #include <time.h>
-          #include <wchar.h>
+        [[#include <wchar.h>
           #if HAVE_WCTYPE_H
           # include <wctype.h>
           #endif
@@ -128,14 +114,7 @@ AC_DEFUN([gl_WCTYPE_H],
   AC_CACHE_CHECK([for wctype_t], [gl_cv_type_wctype_t],
     [AC_COMPILE_IFELSE(
        [AC_LANG_PROGRAM(
-          [[/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be
-               included before <wchar.h>.
-               BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h>
-               must be included before <wchar.h>.  */
-            #include <stddef.h>
-            #include <stdio.h>
-            #include <time.h>
-            #include <wchar.h>
+          [[#include <wchar.h>
             #if HAVE_WCTYPE_H
             # include <wctype.h>
             #endif
@@ -154,14 +133,7 @@ AC_DEFUN([gl_WCTYPE_H],
   AC_CACHE_CHECK([for wctrans_t], [gl_cv_type_wctrans_t],
     [AC_COMPILE_IFELSE(
        [AC_LANG_PROGRAM(
-          [[/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be
-               included before <wchar.h>.
-               BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h>
-               must be included before <wchar.h>.  */
-            #include <stddef.h>
-            #include <stdio.h>
-            #include <time.h>
-            #include <wchar.h>
+          [[#include <wchar.h>
             #include <wctype.h>
             wctrans_t a;
           ]],
@@ -176,14 +148,7 @@ AC_DEFUN([gl_WCTYPE_H],
   dnl Check for declarations of anything we want to poison if the
   dnl corresponding gnulib module is not in use.
   gl_WARN_ON_USE_PREPARE([[
-/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
-   <wchar.h>.
-   BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h> must be
-   included before <wchar.h>.  */
 #if !(defined __GLIBC__ && !defined __UCLIBC__)
-# include <stddef.h>
-# include <stdio.h>
-# include <time.h>
 # include <wchar.h>
 #endif
 #include <wctype.h>

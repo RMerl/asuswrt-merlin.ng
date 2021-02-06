@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -75,6 +75,14 @@
 /* In case that the system doesn't have isblank().  */
 #if !defined _LIBC && ! (defined isblank || (HAVE_ISBLANK && HAVE_DECL_ISBLANK))
 # define isblank(ch) ((ch) == ' ' || (ch) == '\t')
+#endif
+
+/* regex code assumes isascii has its usual numeric meaning,
+   even if the portable character set uses EBCDIC encoding,
+   and even if wint_t is wider than int.  */
+#ifndef _LIBC
+# undef isascii
+# define isascii(c) (((c) & ~0x7f) == 0)
 #endif
 
 #ifdef _LIBC

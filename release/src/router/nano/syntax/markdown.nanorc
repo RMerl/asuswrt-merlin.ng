@@ -1,5 +1,8 @@
 ## Syntax highlighting for Markdown files.
 
+## Original authors:  Ryan Westlund and Benno Schulenberg
+## License:  GPL version 3 or newer
+
 syntax markdown "\.md$"
 comment "<!--|-->"
 

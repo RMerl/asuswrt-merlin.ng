@@ -1,6 +1,6 @@
 /* nl_langinfo() replacement: query locale dependent information.
 
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,11 +21,36 @@
 #include <langinfo.h>
 
 #include <locale.h>
+#include <stdlib.h>
 #include <string.h>
 #if defined _WIN32 && ! defined __CYGWIN__
 # define WIN32_LEAN_AND_MEAN  /* avoid including junk */
 # include <windows.h>
 # include <stdio.h>
+#endif
+
+#if REPLACE_NL_LANGINFO && !NL_LANGINFO_MTSAFE
+# if defined _WIN32 && !defined __CYGWIN__
+
+#  define WIN32_LEAN_AND_MEAN  /* avoid including junk */
+#  include <windows.h>
+
+# elif HAVE_PTHREAD_API
+
+#  include <pthread.h>
+#  if HAVE_THREADS_H && HAVE_WEAK_SYMBOLS
+#   include <threads.h>
+#   pragma weak thrd_exit
+#   define c11_threads_in_use() (thrd_exit != NULL)
+#  else
+#   define c11_threads_in_use() 0
+#  endif
+
+# elif HAVE_THREADS_H
+
+#  include <threads.h>
+
+# endif
 #endif
 
 /* nl_langinfo() must be multithread-safe.  To achieve this without using
@@ -117,6 +142,137 @@ ctype_codeset (void)
 
 # undef nl_langinfo
 
+/* Without locking, on Solaris 11.3, test-nl_langinfo-mt fails, with message
+   "thread5 disturbed by threadN!", even when threadN invokes only
+      nl_langinfo (CODESET);
+      nl_langinfo (CRNCYSTR);
+   Similarly on Solaris 10.  */
+
+# if !NL_LANGINFO_MTSAFE /* Solaris */
+
+#  define ITEMS (MAXSTRMSG + 1)
+#  define MAX_RESULT_LEN 80
+
+static char *
+nl_langinfo_unlocked (nl_item item)
+{
+  static char result[ITEMS][MAX_RESULT_LEN];
+
+  /* The result of nl_langinfo is in storage that can be overwritten by
+     other calls to nl_langinfo.  */
+  char *tmp = nl_langinfo (item);
+  if (item >= 0 && item < ITEMS && tmp != NULL)
+    {
+      size_t tmp_len = strlen (tmp);
+      if (tmp_len < MAX_RESULT_LEN)
+        strcpy (result[item], tmp);
+      else
+        {
+          /* Produce a truncated result.  Oh well...  */
+          result[item][MAX_RESULT_LEN - 1] = '\0';
+          memcpy (result[item], tmp, MAX_RESULT_LEN - 1);
+        }
+      return result[item];
+    }
+  else
+    return tmp;
+}
+
+/* Use a lock, so that no two threads can invoke nl_langinfo_unlocked
+   at the same time.  */
+
+/* Prohibit renaming this symbol.  */
+#  undef gl_get_nl_langinfo_lock
+
+#  if defined _WIN32 && !defined __CYGWIN__
+
+extern __declspec(dllimport) CRITICAL_SECTION *gl_get_nl_langinfo_lock (void);
+
+static char *
+nl_langinfo_with_lock (nl_item item)
+{
+  CRITICAL_SECTION *lock = gl_get_nl_langinfo_lock ();
+  char *ret;
+
+  EnterCriticalSection (lock);
+  ret = nl_langinfo_unlocked (item);
+  LeaveCriticalSection (lock);
+
+  return ret;
+}
+
+#  elif HAVE_PTHREAD_API
+
+extern
+#   if defined _WIN32 || defined __CYGWIN__
+  __declspec(dllimport)
+#   endif
+  pthread_mutex_t *gl_get_nl_langinfo_lock (void);
+
+#   if HAVE_WEAK_SYMBOLS /* musl libc, FreeBSD, NetBSD, OpenBSD, Haiku */
+
+     /* Avoid the need to link with '-lpthread'.  */
+#    pragma weak pthread_mutex_lock
+#    pragma weak pthread_mutex_unlock
+
+     /* Determine whether libpthread is in use.  */
+#    pragma weak pthread_mutexattr_gettype
+     /* See the comments in lock.h.  */
+#    define pthread_in_use() \
+       (pthread_mutexattr_gettype != NULL || c11_threads_in_use ())
+
+#   else
+#    define pthread_in_use() 1
+#   endif
+
+static char *
+nl_langinfo_with_lock (nl_item item)
+{
+  if (pthread_in_use())
+    {
+      pthread_mutex_t *lock = gl_get_nl_langinfo_lock ();
+      char *ret;
+
+      if (pthread_mutex_lock (lock))
+        abort ();
+      ret = nl_langinfo_unlocked (item);
+      if (pthread_mutex_unlock (lock))
+        abort ();
+
+      return ret;
+    }
+  else
+    return nl_langinfo_unlocked (item);
+}
+
+#  elif HAVE_THREADS_H
+
+extern mtx_t *gl_get_nl_langinfo_lock (void);
+
+static char *
+nl_langinfo_with_lock (nl_item item)
+{
+  mtx_t *lock = gl_get_nl_langinfo_lock ();
+  char *ret;
+
+  if (mtx_lock (lock) != thrd_success)
+    abort ();
+  ret = nl_langinfo_unlocked (item);
+  if (mtx_unlock (lock) != thrd_success)
+    abort ();
+
+  return ret;
+}
+
+#  endif
+
+# else
+
+/* On other platforms, no lock is needed.  */
+#  define nl_langinfo_with_lock nl_langinfo
+
+# endif
+
 char *
 rpl_nl_langinfo (nl_item item)
 {
@@ -183,7 +339,7 @@ rpl_nl_langinfo (nl_item item)
     default:
       break;
     }
-  return nl_langinfo (item);
+  return nl_langinfo_with_lock (item);
 }
 
 #else

@@ -1,9 +1,9 @@
 /**************************************************************************
  *   cut.c  --  This file is part of GNU nano.                            *
  *                                                                        *
- *   Copyright (C) 1999-2011, 2013-2020 Free Software Foundation, Inc.    *
+ *   Copyright (C) 1999-2011, 2013-2021 Free Software Foundation, Inc.    *
  *   Copyright (C) 2014 Mark Majeres                                      *
- *   Copyright (C) 2016, 2018, 2019 Benno Schulenberg                     *
+ *   Copyright (C) 2016, 2018-2020 Benno Schulenberg                      *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -88,7 +88,7 @@ void do_deletion(undo_type action)
 		openfile->current->has_anchor |= joining->has_anchor;
 #endif
 		/* Add the content of the next line to that of the current one. */
-		openfile->current->data = charealloc(openfile->current->data,
+		openfile->current->data = nrealloc(openfile->current->data,
 				strlen(openfile->current->data) + strlen(joining->data) + 1);
 		strcat(openfile->current->data, joining->data);
 
@@ -121,7 +121,14 @@ void do_delete(void)
 		zap_text();
 	else
 #endif
+	{
 		do_deletion(DEL);
+#ifdef ENABLE_UTF8
+		while (openfile->current->data[openfile->current_x] != '\0' &&
+				is_zerowidth(openfile->current->data + openfile->current_x))
+			do_deletion(DEL);
+#endif
+	}
 }
 
 /* Backspace over one character.  That is, move the cursor left one
@@ -133,7 +140,10 @@ void do_backspace(void)
 		zap_text();
 	else
 #endif
-	if (openfile->current_x > 0 || openfile->current != openfile->filetop) {
+	if (openfile->current_x > 0) {
+		openfile->current_x = step_left(openfile->current->data, openfile->current_x);
+		do_deletion(BACK);
+	} else if (openfile->current != openfile->filetop) {
 		do_left();
 		do_deletion(BACK);
 	}
@@ -289,7 +299,7 @@ void extract_segment(linestruct *top, size_t top_x, linestruct *bot, size_t bot_
 		if (bot->next)
 			bot->next->prev = top;
 
-		top->data = charealloc(top->data, top_x + strlen(bot->data + bot_x) + 1);
+		top->data = nrealloc(top->data, top_x + strlen(bot->data + bot_x) + 1);
 		strcpy(top->data + top_x, bot->data + bot_x);
 
 		last = bot;
@@ -308,7 +318,7 @@ void extract_segment(linestruct *top, size_t top_x, linestruct *bot, size_t bot_
 		cutbuffer = taken;
 		cutbottom = last;
 	} else {
-		cutbottom->data = charealloc(cutbottom->data,
+		cutbottom->data = nrealloc(cutbottom->data,
 							strlen(cutbottom->data) + strlen(taken->data) + 1);
 		strcat(cutbottom->data, taken->data);
 
@@ -375,7 +385,7 @@ void ingraft_buffer(linestruct *topline)
 
 	if (extralen > 0) {
 		/* Insert the text of topline at the current cursor position. */
-		line->data = charealloc(line->data, length + extralen + 1);
+		line->data = nrealloc(line->data, length + extralen + 1);
 		memmove(line->data + xpos + extralen, line->data + xpos, length - xpos + 1);
 		strncpy(line->data + xpos, topline->data, extralen);
 	}
@@ -401,7 +411,7 @@ void ingraft_buffer(linestruct *topline)
 		/* Add the text after the cursor position at the end of botline. */
 		length = strlen(botline->data);
 		extralen = strlen(tailtext);
-		botline->data = charealloc(botline->data, length + extralen + 1);
+		botline->data = nrealloc(botline->data, length + extralen + 1);
 		strcpy(botline->data + length, tailtext);
 
 		/* Put the cursor at the end of the grafted text. */
@@ -702,7 +712,7 @@ void paste_text(void)
 		/* The leftedge where we started the paste. */
 
 	if (cutbuffer == NULL) {
-		statusbar(_("Cutbuffer is empty"));
+		statusline(AHEM, _("Cutbuffer is empty"));
 		return;
 	}
 

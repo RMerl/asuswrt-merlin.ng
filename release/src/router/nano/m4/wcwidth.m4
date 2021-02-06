@@ -1,5 +1,5 @@
-# wcwidth.m4 serial 31
-dnl Copyright (C) 2006-2020 Free Software Foundation, Inc.
+# wcwidth.m4 serial 33
+dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -19,17 +19,8 @@ AC_DEFUN([gl_FUNC_WCWIDTH],
   AC_CHECK_FUNCS_ONCE([wcwidth])
 
   AC_CHECK_DECLS([wcwidth], [], [], [[
-/* AIX 3.2.5 declares wcwidth in <string.h>. */
-#include <string.h>
-/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
-   <wchar.h>.
-   BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h> must be included
-   before <wchar.h>.  */
-#include <stddef.h>
-#include <stdio.h>
-#include <time.h>
-#include <wchar.h>
-]])
+    #include <wchar.h>
+  ]])
   if test $ac_cv_have_decl_wcwidth != yes; then
     HAVE_DECL_WCWIDTH=0
   fi
@@ -62,15 +53,6 @@ AC_DEFUN([gl_FUNC_WCWIDTH],
         AC_RUN_IFELSE(
           [AC_LANG_SOURCE([[
 #include <locale.h>
-/* AIX 3.2.5 declares wcwidth in <string.h>. */
-#include <string.h>
-/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
-   <wchar.h>.
-   BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h> must be included
-   before <wchar.h>.  */
-#include <stddef.h>
-#include <stdio.h>
-#include <time.h>
 #include <wchar.h>
 #if !HAVE_DECL_WCWIDTH
 extern

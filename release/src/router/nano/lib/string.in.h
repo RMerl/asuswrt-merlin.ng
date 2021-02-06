@@ -1,6 +1,6 @@
 /* A GNU-like <string.h>.
 
-   Copyright (C) 1995-1996, 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 1995-1996, 2001-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -69,6 +69,14 @@
 # include <unistd.h>
 #endif
 
+/* AIX 7.2 declares ffsl and ffsll in <strings.h>, not in <string.h>.  */
+/* But in any case avoid namespace pollution on glibc systems.  */
+#if ((@GNULIB_FFSL@ || @GNULIB_FFSLL@ || defined GNULIB_POSIXCHECK) \
+     && defined _AIX) \
+    && ! defined __GLIBC__
+# include <strings.h>
+#endif
+
 /* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */
 
 /* The definition of _GL_ARG_NONNULL is copied here.  */
@@ -110,10 +118,18 @@ _GL_WARN_ON_USE (ffsl, "ffsl is not portable - use the ffsl module");
 
 /* Find the index of the least-significant set bit.  */
 #if @GNULIB_FFSLL@
-# if !@HAVE_FFSLL@
+# if @REPLACE_FFSLL@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   define ffsll rpl_ffsll
+#  endif
+_GL_FUNCDECL_RPL (ffsll, int, (long long int i));
+_GL_CXXALIAS_RPL (ffsll, int, (long long int i));
+# else
+#  if !@HAVE_FFSLL@
 _GL_FUNCDECL_SYS (ffsll, int, (long long int i));
-# endif
+#  endif
 _GL_CXXALIAS_SYS (ffsll, int, (long long int i));
+# endif
 _GL_CXXALIASWARN (ffsll);
 #elif defined GNULIB_POSIXCHECK
 # undef ffsll
@@ -123,9 +139,22 @@ _GL_WARN_ON_USE (ffsll, "ffsll is not portable - use the ffsll module");
 #endif
 
 
-#if defined _WIN32 && !defined __CYGWIN__
-# undef memccpy
-# define memccpy _memccpy
+#if @GNULIB_MDA_MEMCCPY@
+/* On native Windows, map 'memccpy' to '_memccpy', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::memccpy always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef memccpy
+#   define memccpy _memccpy
+#  endif
+_GL_CXXALIAS_MDA (memccpy, void *,
+                  (void *dest, const void *src, int c, size_t n));
+# else
+_GL_CXXALIAS_SYS (memccpy, void *,
+                  (void *dest, const void *src, int c, size_t n));
+# endif
+_GL_CXXALIASWARN (memccpy);
 #endif
 
 
@@ -133,6 +162,7 @@ _GL_WARN_ON_USE (ffsll, "ffsll is not portable - use the ffsll module");
 #if @GNULIB_MEMCHR@
 # if @REPLACE_MEMCHR@
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef memchr
 #   define memchr rpl_memchr
 #  endif
 _GL_FUNCDECL_RPL (memchr, void *, (void const *__s, int __c, size_t __n)
@@ -413,9 +443,23 @@ _GL_CXXALIASWARN (strdup);
 _GL_WARN_ON_USE (strdup, "strdup is unportable - "
                  "use gnulib module strdup for portability");
 # endif
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef strdup
-# define strdup _strdup
+#elif @GNULIB_MDA_STRDUP@
+/* On native Windows, map 'creat' to '_creat', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::creat always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef strdup
+#   define strdup _strdup
+#  endif
+_GL_CXXALIAS_MDA (strdup, char *, (char const *__s));
+# else
+#  if defined __cplusplus && defined GNULIB_NAMESPACE && defined strdup
+#   undef strdup
+#  endif
+_GL_CXXALIAS_SYS (strdup, char *, (char const *__s));
+# endif
+_GL_CXXALIASWARN (strdup);
 #endif
 
 /* Append no more than N characters from SRC onto DEST.  */
@@ -1042,6 +1086,30 @@ _GL_CXXALIASWARN (strerror_r);
 # if HAVE_RAW_DECL_STRERROR_R
 _GL_WARN_ON_USE (strerror_r, "strerror_r is unportable - "
                  "use gnulib module strerror_r-posix for portability");
+# endif
+#endif
+
+/* Return the name of the system error code ERRNUM.  */
+#if @GNULIB_STRERRORNAME_NP@
+# if @REPLACE_STRERRORNAME_NP@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef strerrorname_np
+#   define strerrorname_np rpl_strerrorname_np
+#  endif
+_GL_FUNCDECL_RPL (strerrorname_np, const char *, (int errnum));
+_GL_CXXALIAS_RPL (strerrorname_np, const char *, (int errnum));
+# else
+#  if !@HAVE_STRERRORNAME_NP@
+_GL_FUNCDECL_SYS (strerrorname_np, const char *, (int errnum));
+#  endif
+_GL_CXXALIAS_SYS (strerrorname_np, const char *, (int errnum));
+# endif
+_GL_CXXALIASWARN (strerrorname_np);
+#elif defined GNULIB_POSIXCHECK
+# undef strerrorname_np
+# if HAVE_RAW_DECL_STRERRORNAME_NP
+_GL_WARN_ON_USE (strerrorname_np, "strerrorname_np is unportable - "
+                 "use gnulib module strerrorname_np for portability");
 # endif
 #endif
 

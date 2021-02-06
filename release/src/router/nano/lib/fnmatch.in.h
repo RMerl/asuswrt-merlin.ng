@@ -1,5 +1,5 @@
 /* Substitute for and wrapper around <fnmatch.h>.
-   Copyright (C) 1991-1993, 1996-1999, 2001-2003, 2005, 2007, 2009-2020 Free
+   Copyright (C) 1991-1993, 1996-1999, 2001-2003, 2005, 2007, 2009-2021 Free
    Software Foundation, Inc.
 
    This file is part of the GNU C Library.

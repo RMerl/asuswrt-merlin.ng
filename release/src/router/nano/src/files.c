@@ -1,7 +1,7 @@
 /**************************************************************************
  *   files.c  --  This file is part of GNU nano.                          *
  *                                                                        *
- *   Copyright (C) 1999-2011, 2013-2020 Free Software Foundation, Inc.    *
+ *   Copyright (C) 1999-2011, 2013-2021 Free Software Foundation, Inc.    *
  *   Copyright (C) 2015-2020 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
@@ -81,6 +81,7 @@ void make_new_buffer(void)
 #endif
 #ifndef NANO_TINY
 	openfile->mark = NULL;
+	openfile->softmark = FALSE;
 
 	openfile->fmt = NIX_FILE;
 
@@ -95,6 +96,26 @@ void make_new_buffer(void)
 #ifdef ENABLE_COLOR
 	openfile->syntax = NULL;
 #endif
+}
+
+/* Return the given file name in a way that fits within the given space. */
+char *crop_to_fit(const char *name, int room)
+{
+	char *clipped;
+
+	if (breadth(name) <= room)
+		return display_string(name, 0, room, FALSE, FALSE);
+
+	if (room < 4)
+		return copy_of("_");
+
+	clipped = display_string(name, breadth(name) - room + 3, room, FALSE, FALSE);
+
+	clipped = nrealloc(clipped, strlen(clipped) + 4);
+	memmove(clipped + 3, clipped, strlen(clipped) + 1);
+	clipped[0] = '.'; clipped[1] = '.'; clipped[2] = '.';
+
+	return clipped;
 }
 
 #ifndef NANO_TINY
@@ -159,7 +180,7 @@ bool write_lockfile(const char *lockfilename, const char *filename, bool modifie
 		return FALSE;
 	}
 
-	lockdata = charalloc(LOCKSIZE);
+	lockdata = nmalloc(LOCKSIZE);
 	memset(lockdata, 0, LOCKSIZE);
 
 	/* This is the lock data we will store (other bytes remain 0x00):
@@ -212,7 +233,7 @@ char *do_lockfile(const char *filename, bool ask_the_user)
 	char *secondcopy = copy_of(filename);
 	size_t locknamesize = strlen(filename) + strlen(locking_prefix) +
 							strlen(locking_suffix) + 3;
-	char *lockfilename = charalloc(locknamesize);
+	char *lockfilename = nmalloc(locknamesize);
 	struct stat fileinfo;
 
 	snprintf(lockfilename, locknamesize, "%s/%s%s%s", dirname(namecopy),
@@ -225,7 +246,7 @@ char *do_lockfile(const char *filename, bool ask_the_user)
 	else if (stat(lockfilename, &fileinfo) != -1) {
 		char *lockbuf, *question, *pidstring, *postedname, *promptstr;
 		static char lockprog[11], lockuser[17];
-		int lockfd, lockpid, room, choice;
+		int lockfd, lockpid, choice;
 		ssize_t readamt;
 
 		if ((lockfd = open(lockfilename, O_RDONLY)) < 0) {
@@ -235,7 +256,7 @@ char *do_lockfile(const char *filename, bool ask_the_user)
 			return NULL;
 		}
 
-		lockbuf = charalloc(LOCKSIZE);
+		lockbuf = nmalloc(LOCKSIZE);
 
 		readamt = read(lockfd, lockbuf, LOCKSIZE);
 
@@ -258,7 +279,7 @@ char *do_lockfile(const char *filename, bool ask_the_user)
 		lockuser[16] = '\0';
 		free(lockbuf);
 
-		pidstring = charalloc(11);
+		pidstring = nmalloc(11);
 		sprintf (pidstring, "%u", (unsigned int)lockpid);
 
 		/* Display newlines in filenames as ^J. */
@@ -266,23 +287,12 @@ char *do_lockfile(const char *filename, bool ask_the_user)
 
 		/* TRANSLATORS: The second %s is the name of the user, the third that of the editor. */
 		question = _("File %s is being edited by %s (with %s, PID %s); open anyway?");
-		room = COLS - breadth(question) + 7 - breadth(lockuser) -
-								breadth(lockprog) - breadth(pidstring);
-		if (room < 4)
-			postedname = copy_of("_");
-		else if (room < breadth(filename)) {
-			char *fragment = display_string(filename,
-								breadth(filename) - room + 3, room, FALSE, FALSE);
-			postedname = charalloc(strlen(fragment) + 4);
-			strcpy(postedname, "...");
-			strcat(postedname, fragment);
-			free(fragment);
-		} else
-			postedname = display_string(filename, 0, room, FALSE, FALSE);
+		postedname = crop_to_fit(filename, COLS - breadth(question) - breadth(lockuser) -
+											breadth(lockprog) - breadth(pidstring) + 7);
 
 		/* Allow extra space for username (14), program name (8), PID (8),
 		 * and terminating \0 (1), minus the %s (2) for the file name. */
-		promptstr = charalloc(strlen(question) + 29 + strlen(postedname));
+		promptstr = nmalloc(strlen(question) + 29 + strlen(postedname));
 		sprintf(promptstr, question, postedname, lockuser, lockprog, pidstring);
 		free(postedname);
 		free(pidstring);
@@ -314,7 +324,7 @@ char *do_lockfile(const char *filename, bool ask_the_user)
 void stat_with_alloc(const char *filename, struct stat **pstat)
 {
 	if (*pstat == NULL)
-		*pstat = (struct stat *)nmalloc(sizeof(struct stat));
+		*pstat = nmalloc(sizeof(struct stat));
 
 	if (stat(filename, *pstat) != 0) {
 		free(*pstat);
@@ -500,7 +510,13 @@ void mention_name_and_linecount(void)
 {
 	size_t count = openfile->filebot->lineno -
 						(openfile->filebot->data[0] == '\0' ? 1 : 0);
+
 #ifndef NANO_TINY
+	if (ISSET(MINIBAR)) {
+		report_size = TRUE;
+		return;
+	}
+
 	if (openfile->fmt != NIX_FILE)
 		/* TRANSLATORS: First %s is file name, second %s is file format. */
 		statusline(HUSH, P_("%s -- %zu line (%s)", "%s -- %zu lines (%s)", count),
@@ -519,7 +535,7 @@ void redecorate_after_switch(void)
 {
 	/* If only one file buffer is open, there is nothing to update. */
 	if (openfile == openfile->next) {
-		statusbar(_("No more open file buffers"));
+		statusline(AHEM, _("No more open file buffers"));
 		return;
 	}
 
@@ -615,7 +631,7 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 		/* The length of the current line of the file. */
 	size_t bufsize = LUMPSIZE;
 		/* The size of the line buffer; increased as needed. */
-	char *buf = charalloc(bufsize);
+	char *buf = nmalloc(bufsize);
 		/* The buffer in which we assemble each line of the file. */
 	linestruct *topline;
 		/* The top of the new buffer where we store the read file. */
@@ -689,7 +705,7 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 			 * decreasing it -- it gets freed when reading is finished. */
 			if (len == bufsize) {
 				bufsize += LUMPSIZE;
-				buf = charealloc(buf, bufsize);
+				buf = nrealloc(buf, bufsize);
 			}
 
 			continue;
@@ -719,15 +735,15 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 
 #ifndef NANO_TINY
 	block_sigwinch(FALSE);
-#endif
 
 	/* When reading from stdin, restore the terminal and reenter curses mode. */
 	if (isendwin()) {
-		if (!isatty(STANDARD_INPUT))
+		if (!isatty(STDIN_FILENO))
 			reconnect_and_store_state();
 		terminal_init();
 		doupdate();
 	}
+#endif
 
 	/* If there was a real error during the reading, let the user know. */
 	if (ferror(f) && errornumber != EINTR && errornumber != 0)
@@ -831,7 +847,7 @@ int open_file(const char *filename, bool new_one, FILE **f)
 		free(full_filename);
 
 		if (new_one) {
-			statusbar(_("New File"));
+			statusline(REMARK, _("New File"));
 			return 0;
 		} else {
 			statusline(ALERT, _("File \"%s\" not found"), filename);
@@ -889,7 +905,7 @@ char *get_next_filename(const char *name, const char *suffix)
 
 	/* Reserve space for: the name plus the suffix plus a dot plus
 	 * possibly five digits plus a null byte. */
-	buf = charalloc(wholenamelen + 7);
+	buf = nmalloc(wholenamelen + 7);
 	sprintf(buf, "%s%s", name, suffix);
 
 	while (TRUE) {
@@ -916,7 +932,7 @@ static pid_t pid_of_command = -1;
 		/* The PID of a forked process -- needed when wanting to abort it. */
 
 /* Send an unconditional kill signal to the running external command. */
-RETSIGTYPE cancel_the_command(int signal)
+void cancel_the_command(int signal)
 {
 	kill(pid_of_command, SIGKILL);
 }
@@ -966,13 +982,16 @@ bool execute_command(const char *command)
 		close(from_fd[0]);
 
 		/* Connect the write end of the output pipe to the process' output streams. */
-		dup2(from_fd[1], fileno(stdout));
-		dup2(from_fd[1], fileno(stderr));
+		if (dup2(from_fd[1], STDOUT_FILENO) < 0)
+			exit(3);
+		if (dup2(from_fd[1], STDERR_FILENO) < 0)
+			exit(4);
 
 		/* If the parent sends text, connect the read end of the
 		 * feeding pipe to the child's input stream. */
 		if (should_pipe) {
-			dup2(to_fd[0], fileno(stdin));
+			if (dup2(to_fd[0], STDIN_FILENO) < 0)
+				exit(5);
 			close(to_fd[1]);
 		}
 
@@ -980,7 +999,7 @@ bool execute_command(const char *command)
 		execl(theshell, tail(theshell), "-c", should_pipe ? &command[1] : command, NULL);
 
 		/* If the exec call returns, there was an error. */
-		exit(1);
+		exit(6);
 	}
 
 	/* Parent: close the unused write end of the pipe. */
@@ -1307,7 +1326,7 @@ char *get_full_path(const char *origpath)
 	if (origpath == NULL)
 		return NULL;
 
-	allocation = charalloc(PATH_MAX + 1);
+	allocation = nmalloc(PATH_MAX + 1);
 	here = getcwd(allocation, PATH_MAX + 1);
 
 	/* If getting the current directory failed, go up one level and try again,
@@ -1321,7 +1340,7 @@ char *get_full_path(const char *origpath)
 	/* If we found a directory, make sure its path ends in a slash. */
 	if (here != NULL) {
 		if (strcmp(here, "/") != 0) {
-			here = charealloc(here, strlen(here) + 2);
+			here = nrealloc(here, strlen(here) + 2);
 			strcat(here, "/");
 		}
 	} else {
@@ -1340,7 +1359,7 @@ char *get_full_path(const char *origpath)
 		size_t length = strlen(target);
 
 		if (target[length - 1] != '/') {
-			target = charealloc(target, length + 2);
+			target = nrealloc(target, length + 2);
 			strcat(target, "/");
 		}
 	}
@@ -1367,14 +1386,14 @@ char *get_full_path(const char *origpath)
 		} else {
 			free(target);
 
-			allocation = charalloc(PATH_MAX + 1);
+			allocation = nmalloc(PATH_MAX + 1);
 			target = getcwd(allocation, PATH_MAX + 1);
 
 			/* If we got a result, make sure it ends in a slash.
 			 * Otherwise, ensure that we return NULL. */
 			if (target != NULL) {
 				if (strcmp(target, "/") != 0) {
-					target = charealloc(target, strlen(target) + 2);
+					target = nrealloc(target, strlen(target) + 2);
 					strcat(target, "/");
 				}
 			} else {
@@ -1393,7 +1412,7 @@ char *get_full_path(const char *origpath)
 	/* If we were given more than a bare path, concatenate the target path
 	 * with the filename portion to get the full, absolute file path. */
 	if (!path_only && target != NULL) {
-		target = charealloc(target, strlen(target) + strlen(just_filename) + 1);
+		target = nrealloc(target, strlen(target) + strlen(just_filename) + 1);
 		strcat(target, just_filename);
 	}
 
@@ -1439,7 +1458,7 @@ char *safe_tempfile(FILE **stream)
 	if (tempdir == NULL)
 		tempdir = copy_of("/tmp/");
 
-	tempfile_name = charealloc(tempdir, strlen(tempdir) + 12);
+	tempfile_name = nrealloc(tempdir, strlen(tempdir) + 12);
 	strcat(tempfile_name, "nano.XXXXXX");
 
 	fd = mkstemp(tempfile_name);
@@ -1465,7 +1484,7 @@ void init_operating_dir(void)
 		die(_("Invalid operating directory: %s\n"), operating_dir);
 
 	free(operating_dir);
-	operating_dir = charealloc(target, strlen(target) + 1);
+	operating_dir = nrealloc(target, strlen(target) + 1);
 }
 
 /* Check whether the given path is outside of the operating directory.
@@ -1514,7 +1533,7 @@ void init_backup_dir(void)
 		die(_("Invalid backup directory: %s\n"), backup_dir);
 
 	free(backup_dir);
-	backup_dir = charealloc(target, strlen(target) + 1);
+	backup_dir = nrealloc(target, strlen(target) + 1);
 }
 #endif
 
@@ -1556,10 +1575,11 @@ int copy_file(FILE *inn, FILE *out, bool close_out)
 bool make_backup_of(char *realname)
 {
 	FILE *original = NULL, *backup_file = NULL;
-	int creation_flags, descriptor, verdict;
 	static struct timespec filetime[2];
+	int creation_flags, descriptor;
 	bool second_attempt = FALSE;
 	char *backupname = NULL;
+	int verdict = 0;
 
 	/* Remember the original file's access and modification times. */
 	filetime[0].tv_sec = openfile->statinfo->st_atime;
@@ -1571,7 +1591,7 @@ bool make_backup_of(char *realname)
 	 * by appending a tilde to the original file name.  Otherwise,
 	 * we create a numbered backup in the specified directory. */
 	if (backup_dir == NULL) {
-		backupname = charalloc(strlen(realname) + 2);
+		backupname = nmalloc(strlen(realname) + 2);
 		sprintf(backupname, "%s~", realname);
 	} else {
 		char *thename = get_full_path(realname);
@@ -1586,7 +1606,7 @@ bool make_backup_of(char *realname)
 		} else
 			thename = copy_of(tail(realname));
 
-		backupname = charalloc(strlen(backup_dir) + strlen(thename) + 1);
+		backupname = nmalloc(strlen(backup_dir) + strlen(thename) + 1);
 		sprintf(backupname, "%s%s", backup_dir, thename);
 		free(thename);
 
@@ -1678,7 +1698,7 @@ bool make_backup_of(char *realname)
 		warn_and_briefly_pause(_("Trying again in your home directory"));
 		currmenu = MMOST;
 
-		backupname = charalloc(strlen(homedir) + strlen(tail(realname)) + 9);
+		backupname = nmalloc(strlen(homedir) + strlen(tail(realname)) + 9);
 		sprintf(backupname, "%s/%s~XXXXXX", homedir, tail(realname));
 
 		descriptor = mkstemp(backupname);
@@ -1977,8 +1997,13 @@ bool write_file(const char *name, FILE *thefile, bool tmp,
 		titlebar(NULL);
 	}
 
+#ifndef NANO_TINY
+	if (ISSET(MINIBAR) && fullbuffer && !tmp)
+		report_size = TRUE;
+	else
+#endif
 	if (!tmp)
-		statusline(HUSH, P_("Wrote %zu line", "Wrote %zu lines",
+		statusline(REMARK, P_("Wrote %zu line", "Wrote %zu lines",
 								lineswritten), lineswritten);
 	retval = TRUE;
 
@@ -2042,12 +2067,11 @@ bool write_marked_file(const char *name, FILE *stream, bool tmp,
  * the buffer is to be discarded. */
 int do_writeout(bool exiting, bool withprompt)
 {
-	bool result = FALSE;
-	kind_of_writing_type method = OVERWRITE;
 	char *given;
 		/* The filename we offer, or what the user typed so far. */
 	bool maychange = (openfile->filename[0] == '\0');
 		/* Whether it's okay to save the file under a different name. */
+	kind_of_writing_type method = OVERWRITE;
 #ifdef ENABLE_EXTRA
 	static bool did_credits = FALSE;
 #endif
@@ -2104,7 +2128,8 @@ int do_writeout(bool exiting, bool withprompt)
 
 		if (response < 0) {
 			statusbar(_("Cancelled"));
-			break;
+			free(given);
+			return 0;
 		}
 
 		func = func_from_key(&response);
@@ -2146,9 +2171,8 @@ int do_writeout(bool exiting, bool withprompt)
 			continue;
 		}
 #endif
-		if (func == do_help) {
+		if (func == do_help)
 			continue;
-		}
 
 #ifdef ENABLE_EXTRA
 		/* If the user pressed Ctrl-X in the edit window, and answered "Y" at
@@ -2161,8 +2185,10 @@ int do_writeout(bool exiting, bool withprompt)
 				did_credits = TRUE;
 			} else
 				/* TRANSLATORS: Concisely say the screen is too small. */
-				statusbar(_("Too tiny"));
-			break;
+				statusline(AHEM, _("Too tiny"));
+
+			free(given);
+			return 0;
 		}
 #endif
 
@@ -2175,6 +2201,7 @@ int do_writeout(bool exiting, bool withprompt)
 			full_filename = get_full_path(openfile->filename);
 			name_exists = (stat((full_answer == NULL) ?
 								answer : full_answer, &st) != -1);
+
 			if (openfile->filename[0] == '\0')
 				do_warning = name_exists;
 			else
@@ -2210,10 +2237,8 @@ int do_writeout(bool exiting, bool withprompt)
 
 				if (name_exists) {
 					char *question = _("File \"%s\" exists; OVERWRITE? ");
-					char *name = display_string(answer, 0,
-										COLS - breadth(question) + 1, FALSE, FALSE);
-					char *message = charalloc(strlen(question) +
-												strlen(name) + 1);
+					char *name = crop_to_fit(answer, COLS - breadth(question) + 1);
+					char *message = nmalloc(strlen(question) + strlen(name) + 1);
 
 					sprintf(message, question, name);
 
@@ -2261,23 +2286,19 @@ int do_writeout(bool exiting, bool withprompt)
 #endif
 		}
 
-		/* Here's where we allow the selected text to be written to
-		 * a separate file.  If we're using restricted mode, this
-		 * function is disabled, since it allows reading from or
-		 * writing to files not specified on the command line. */
-#ifndef NANO_TINY
-		if (openfile->mark && !exiting && withprompt && !ISSET(RESTRICTED))
-			result = write_marked_file(answer, NULL, FALSE, method);
-		else
-#endif
-			result = write_file(answer, NULL, FALSE, method, TRUE);
-
+		free(given);
 		break;
 	}
 
-	free(given);
-
-	return result ? 1 : 0;
+	/* When the mark is on (and we've prompted for a name and we're
+	 * not exiting and we're not in restricted mode), then write out
+	 * the marked region; otherwise, write out the whole buffer. */
+#ifndef NANO_TINY
+	if (openfile->mark && withprompt && !exiting && !ISSET(RESTRICTED))
+		return write_marked_file(answer, NULL, FALSE, method);
+	else
+#endif
+		return write_file(answer, NULL, FALSE, method, TRUE);
 }
 
 /* Write the current buffer to disk, or discard it. */
@@ -2330,7 +2351,7 @@ char *real_dir_from_tilde(const char *path)
 #endif
 	}
 
-	retval = charalloc(strlen(tilded) + strlen(path + i) + 1);
+	retval = nmalloc(strlen(tilded) + strlen(path + i) + 1);
 	sprintf(retval, "%s%s", tilded, path + i);
 
 	free(tilded);
@@ -2354,11 +2375,13 @@ int diralphasort(const void *va, const void *vb)
 	if (!aisdir && bisdir)
 		return 1;
 
-	/* Standard function brain damage: We should be sorting
-	 * alphabetically and case-insensitively according to the current
-	 * locale, but there's no standard strcasecoll() function, so we
-	 * have to use multibyte strcasecmp() instead. */
-	return mbstrcasecmp(a, b);
+	int difference = mbstrcasecmp(a, b);
+
+	/* If two names are equivalent when ignoring case, compare them bytewise. */
+	if (difference == 0)
+		return strcmp(a, b);
+	else
+		return difference;
 }
 #endif
 
@@ -2393,8 +2416,8 @@ char **username_completion(const char *morsel, size_t length, size_t *num_matche
 			if (outside_of_confinement(userdata->pw_dir, TRUE))
 				continue;
 #endif
-			matches = (char **)nrealloc(matches, (*num_matches + 1) * sizeof(char *));
-			matches[*num_matches] = charalloc(strlen(userdata->pw_name) + 2);
+			matches = nrealloc(matches, (*num_matches + 1) * sizeof(char *));
+			matches[*num_matches] = nmalloc(strlen(userdata->pw_name) + 2);
 			sprintf(matches[*num_matches], "~%s", userdata->pw_name);
 			++(*num_matches);
 		}
@@ -2442,7 +2465,7 @@ char **filename_completion(const char *morsel, size_t length, size_t *num_matche
 		dirname = real_dir_from_tilde(dirname);
 		/* A non-absolute path is relative to the current browser directory. */
 		if (dirname[0] != '/') {
-			dirname = charealloc(dirname, strlen(present_path) + strlen(wasdirname) + 1);
+			dirname = nrealloc(dirname, strlen(present_path) + strlen(wasdirname) + 1);
 			sprintf(dirname, "%s%s", present_path, wasdirname);
 		}
 		free(wasdirname);
@@ -2468,7 +2491,7 @@ char **filename_completion(const char *morsel, size_t length, size_t *num_matche
 		if (strncmp(entry->d_name, filename, filenamelen) == 0 &&
 									strcmp(entry->d_name, ".") != 0 &&
 									strcmp(entry->d_name, "..") != 0) {
-			fullname = charealloc(fullname, strlen(dirname) +
+			fullname = nrealloc(fullname, strlen(dirname) +
 											strlen(entry->d_name) + 1);
 
 			sprintf(fullname, "%s%s", dirname, entry->d_name);
@@ -2480,7 +2503,7 @@ char **filename_completion(const char *morsel, size_t length, size_t *num_matche
 			if (currmenu == MGOTODIR && !is_dir(fullname))
 				continue;
 
-			matches = (char **)nrealloc(matches, (*num_matches + 1) * sizeof(char *));
+			matches = nrealloc(matches, (*num_matches + 1) * sizeof(char *));
 			matches[*num_matches] = copy_of(entry->d_name);
 			++(*num_matches);
 		}
@@ -2551,7 +2574,7 @@ char *input_tab(char *morsel, size_t *place, void (*refresh_func)(void), bool *l
 		common_len += len1;
 	}
 
-	shared = charalloc(length_of_path + common_len + 1);
+	shared = nmalloc(length_of_path + common_len + 1);
 
 	strncpy(shared, morsel, length_of_path);
 	strncpy(shared + length_of_path, matches[0], common_len);
@@ -2560,7 +2583,7 @@ char *input_tab(char *morsel, size_t *place, void (*refresh_func)(void), bool *l
 	shared[common_len] = '\0';
 
 	/* Cover also the case of the user specifying a relative path. */
-	glued = charalloc(strlen(present_path) + common_len + 1);
+	glued = nmalloc(strlen(present_path) + common_len + 1);
 	sprintf(glued, "%s%s", present_path, shared);
 
 	if (num_matches == 1 && (is_dir(shared) || is_dir(glued)))
@@ -2568,7 +2591,7 @@ char *input_tab(char *morsel, size_t *place, void (*refresh_func)(void), bool *l
 
 	/* If the matches have something in common, copy that part. */
 	if (common_len != *place) {
-		morsel = charealloc(morsel, common_len + 1);
+		morsel = nrealloc(morsel, common_len + 1);
 		strncpy(morsel, shared, common_len);
 		morsel[common_len] = '\0';
 		*place = common_len;

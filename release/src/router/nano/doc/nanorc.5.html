@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Mon Aug 24 10:52:29 2020 -->
+<!-- CreationDate: Thu Jan 14 11:12:28 2021 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -222,10 +222,10 @@ screen if the screen is resized. The default value is
 <p style="margin-left:11%;"><b>set functioncolor</b>
 [<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
-<p style="margin-left:15%;">Specify the color combination
-to use for the function descriptions in the two help lines
-at the bottom of the screen. See <b>set titlecolor</b> for
-more details.</p>
+<p style="margin-left:15%;">Use this color combination for
+the concise function descriptions in the two help lines at
+the bottom of the screen. See <b>set titlecolor</b> for more
+details.</p>
 
 <p style="margin-left:11%;"><b>set guidestripe</b>
 <i>number</i></p>
@@ -256,9 +256,9 @@ half-screen instead of per line.</p>
 <p style="margin-left:11%;"><b>set keycolor</b>
 [<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
-<p style="margin-left:15%;">Specify the color combination
-to use for the shortcut key combos in the two help lines at
-the bottom of the screen. See <b>set titlecolor</b> for more
+<p style="margin-left:15%;">Use this color combination for
+the shortcut key combos in the two help lines at the bottom
+of the screen. See <b>set titlecolor</b> for more
 details.</p>
 
 <p style="margin-left:11%;"><b>set linenumbers</b></p>
@@ -272,6 +272,21 @@ gets a mark in the margin.)</p>
 <p style="margin-left:15%;">Enable vim-style lock-files for
 when editing files.</p>
 
+<p style="margin-left:11%;"><b>set magic</b></p>
+
+<p style="margin-left:15%;">When neither the file&rsquo;s
+name nor its first line give a clue, try using libmagic to
+determine the applicable syntax. (Calling libmagic can be
+relatively time consuming. It is therefore not done by
+default.)</p>
+
+<p style="margin-left:11%;"><b>set markmatch</b></p>
+
+<p style="margin-left:15%;">After a search, set the mark at
+the end of the found match (if there is any) so that it gets
+highlighted. This makes the match more visible, but also
+allows deleting the match with a single keystroke.</p>
+
 <p style="margin-left:11%;"><b>set matchbrackets
 &quot;</b><i>characters</i><b>&quot;</b></p>
 
@@ -280,6 +295,23 @@ brackets that can be found by bracket searches. This may not
 include blank characters. The opening set must come before
 the closing set, and the two sets must be in the same order.
 The default value is &quot;<b>(&lt;[{)&gt;]}</b>&quot;.</p>
+
+<p style="margin-left:11%;"><b>set minibar</b></p>
+
+<p style="margin-left:15%;">Suppress the title bar and
+instead show information about the current buffer at the
+bottom of the screen, in the space for the status bar. In
+this &quot;minibar&quot; the file name is shown on the left,
+followed by an asterisk if the buffer has been modified. On
+the right are displayed the current line and column number,
+the code of the character under the cursor (in Unicode
+format: U+xxxx), the same flags as are shown by <b>set
+stateflags</b>, and a percentage that expresses how far the
+cursor is into the file (linewise). When a file is loaded or
+saved, and also when switching between buffers, the number
+of lines in the buffer is displayed after the file name.
+This number is cleared upon the next keystroke, or replaced
+with an [i/n] counter when multiple buffers are open.</p>
 
 <p style="margin-left:11%;"><b>set morespace</b></p>
 
@@ -331,8 +363,8 @@ breaklonglines</b> instead.</p>
 <p style="margin-left:11%;"><b>set numbercolor</b>
 [<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
-<p style="margin-left:15%;">Specify the color combination
-to use for line numbers. See <b>set titlecolor</b> for more
+<p style="margin-left:15%;">Use this color combination for
+line numbers. See <b>set titlecolor</b> for more
 details.</p>
 
 <p style="margin-left:11%;"><b>set operatingdir</b>
@@ -354,6 +386,14 @@ remembered for the 200 most-recently edited files.</p>
 
 <p style="margin-left:15%;">Preserve the XON and XOFF keys
 (<b>^Q</b> and <b>^S</b>).</p>
+
+<p style="margin-left:11%;"><b>set promptcolor</b>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
+
+<p style="margin-left:15%;">Use this color combination for
+the prompt bar. (When this option is not specified, the
+colors of the title bar are used.) See <b>set titlecolor</b>
+for more details.</p>
 
 <p style="margin-left:11%;"><b>set punct
 &quot;</b><i>characters</i><b>&quot;</b></p>
@@ -411,11 +451,20 @@ automatically on exit (<b>^X</b>); don&rsquo;t prompt. (The
 old form of this option, <b>set tempfile</b>, is
 deprecated.)</p>
 
+<p style="margin-left:11%;"><b>set scrollercolor</b>
+<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
+
+<p style="margin-left:15%;">Use this color combination for
+the indicator alias &quot;scrollbar&quot;. (On terminal
+emulators that link to a libvte older than version 0.55,
+using a background color here does not work correctly.) See
+<b>set titlecolor</b> for more details.</p>
+
 <p style="margin-left:11%;"><b>set selectedcolor</b>
 [<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
-<p style="margin-left:15%;">Specify the color combination
-to use for selected text. See <b>set titlecolor</b> for more
+<p style="margin-left:15%;">Use this color combination for
+selected text. See <b>set titlecolor</b> for more
 details.</p>
 
 <p style="margin-left:11%;"><b>set showcursor</b></p>
@@ -453,22 +502,32 @@ atblanks</b>.)</p>
 
 <p style="margin-left:15%;">Use the given <i>program</i> to
 do spell checking and correcting, instead of using the
-built-in corrector that calls <b>hunspell</b> or GNU
-<b>spell</b>.</p>
+built-in corrector that calls <b>hunspell</b>(1) or
+<b>spell</b>(1).</p>
+
+<p style="margin-left:11%;"><b>set stateflags</b></p>
+
+<p style="margin-left:15%;">Use the top-right corner of the
+screen for showing some state flags: <b>I</b> when
+auto-indenting, <b>M</b> when the mark is on, <b>L</b> when
+hard-wrapping (breaking long lines), <b>R</b> when recording
+a macro, and <b>S</b> when soft-wrapping. When the buffer is
+modified, a star (<b>*</b>) is shown after the filename in
+the center of the title bar.</p>
 
 <p style="margin-left:11%;"><b>set statuscolor</b>
 [<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
-<p style="margin-left:15%;">Specify the color combination
-to use for the status bar. See <b>set titlecolor</b> for
-more details.</p>
+<p style="margin-left:15%;">Use this color combination for
+the status bar. See <b>set titlecolor</b> for more
+details.</p>
 
 <p style="margin-left:11%;"><b>set stripecolor</b>
 [<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
-<p style="margin-left:15%;">Specify the color combination
-to use for the vertical guiding stripe. See <b>set
-titlecolor</b> for more details.</p>
+<p style="margin-left:15%;">Use this color combination for
+the vertical guiding stripe. See <b>set titlecolor</b> for
+more details.</p>
 
 <p style="margin-left:11%;"><b>set suspendable</b></p>
 
@@ -490,19 +549,19 @@ spaces.</p>
 <p style="margin-left:11%;"><b>set titlecolor</b>
 [<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
-<p style="margin-left:15%;">Specify the color combination
-to use for the title bar. Valid names for the foreground and
-background colors are: <b>red</b>, <b>green</b>,
-<b>blue</b>, <b>magenta</b>, <b>yellow</b>, <b>cyan</b>,
-<b>white</b>, and <b>black</b>. Each of these eight names
-may be prefixed with the word <b>light</b> to get a brighter
-version of that color. On terminal emulators that can do at
-least 256 colors, other valid (but unprefixable) color names
-are: <b>pink</b>, <b>purple</b>, <b>mauve</b>,
-<b>lagoon</b>, <b>mint</b>, <b>lime</b>, <b>peach</b>,
-<b>orange</b>, <b>latte</b>, and <b>normal</b> -- where
-<b>normal</b> means the default foreground or background
-color. Either &quot;<i>fgcolor</i>&quot; or
+<p style="margin-left:15%;">Use this color combination for
+the title bar. Valid names for the foreground and background
+colors are: <b>red</b>, <b>green</b>, <b>blue</b>,
+<b>magenta</b>, <b>yellow</b>, <b>cyan</b>, <b>white</b>,
+and <b>black</b>. Each of these eight names may be prefixed
+with the word <b>light</b> to get a brighter version of that
+color. On terminal emulators that can do at least 256
+colors, other valid (but unprefixable) color names are:
+<b>pink</b>, <b>purple</b>, <b>mauve</b>, <b>lagoon</b>,
+<b>mint</b>, <b>lime</b>, <b>peach</b>, <b>orange</b>,
+<b>latte</b>, and <b>normal</b> -- where <b>normal</b> means
+the default foreground or background color. Either
+&quot;<i>fgcolor</i>&quot; or
 &quot;<b>,</b><i>bgcolor</i>&quot; may be left out, and the
 pair may be preceded by <b>bold</b> and/or <b>italic</b>
 (separated by commas) to get a bold and/or slanting
@@ -520,13 +579,6 @@ text is justified.</p>
 format. This overrides nano&rsquo;s default behavior of
 saving a file in the format that it had. (This option has no
 effect when you also use <b>set noconvert</b>.)</p>
-
-<p style="margin-left:11%;"><b>set view</b></p>
-
-<p style="margin-left:15%;">Disallow file modification:
-read-only mode. This mode allows the user to open also other
-files for viewing, unless <b>&minus;&minus;restricted</b> is
-given on the command line.</p>
 
 <p style="margin-left:11%;"><b>set whitespace
 &quot;</b><i>characters</i><b>&quot;</b></p>
@@ -981,8 +1033,8 @@ toggled).</p>
 <p style="margin-left:15%;"><b>speller</b></p>
 
 <p style="margin-left:18%;">Invokes a spell-checking
-program, either the default <b>hunspell</b> or GNU
-<b>spell</b>, or the one defined by
+program, either the default <b>hunspell</b>(1) or GNU
+<b>spell</b>(1), or the one defined by
 <b>&minus;&minus;speller</b> or <b>set speller</b>.</p>
 
 <p style="margin-left:15%;"><b>formatter</b></p>
@@ -1387,10 +1439,11 @@ line is the beginning of a paragraph.</p>
 will cut the whole line or just from the current cursor
 position to the end of the line.</p>
 
-<p style="margin-left:15%;"><b>nowrap</b></p>
+<p style="margin-left:15%;"><b>breaklonglines</b></p>
 
 <p style="margin-left:18%;">Toggles whether long lines will
-be hard-wrapped to the next line.</p>
+be hard-wrapped to the next line. (The old name of this
+function, &rsquo;nowrap&rsquo;, is deprecated.)</p>
 
 <p style="margin-left:15%;"><b>tabstospaces</b></p>
 
@@ -1515,13 +1568,23 @@ file.</p>
 <p style="margin-left:22%;">Per-user configuration
 file.</p>
 
+<p style="margin-left:11%;"><i>/usr/share/nano/*</i></p>
+
+<p style="margin-left:22%;">Syntax definitions for the
+syntax coloring of common file types (and for less common
+file types in the <i>extra/</i> subdirectory).</p>
+
 <h2>SEE ALSO
 <a name="SEE ALSO"></a>
 </h2>
 
 
+<p style="margin-left:11%; margin-top: 1em"><b>nano</b>(1)
+<i><br>
+https://nano-editor.org/cheatsheet.html</i></p>
 
-<p style="margin-left:11%; margin-top: 1em"><b>nano</b>(1)</p>
+<p style="margin-left:22%;">An overview of the default key
+bindings.</p>
 <hr>
 </body>
 </html>

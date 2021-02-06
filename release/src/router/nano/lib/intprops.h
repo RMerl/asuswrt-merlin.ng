@@ -1,6 +1,6 @@
 /* intprops.h -- properties of integer types
 
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published
@@ -48,7 +48,7 @@
 /* Minimum and maximum values for integer types and expressions.  */
 
 /* The width in bits of the integer type or expression T.
-   Do not evaluate T.
+   Do not evaluate T.  T must not be a bit-field expression.
    Padding bits are not supported; this is checked at compile-time below.  */
 #define TYPE_WIDTH(t) (sizeof (t) * CHAR_BIT)
 
@@ -70,7 +70,7 @@
    ? _GL_SIGNED_INT_MAXIMUM (e)                                         \
    : _GL_INT_NEGATE_CONVERT (e, 1))
 #define _GL_SIGNED_INT_MAXIMUM(e)                                       \
-  (((_GL_INT_CONVERT (e, 1) << (TYPE_WIDTH ((e) + 0) - 2)) - 1) * 2 + 1)
+  (((_GL_INT_CONVERT (e, 1) << (TYPE_WIDTH (+ (e)) - 2)) - 1) * 2 + 1)
 
 /* Work around OpenVMS incompatibility with C99.  */
 #if !defined LLONG_MAX && defined __INT64_MAX
@@ -95,8 +95,9 @@
 #endif
 
 /* Return 1 if the integer type or expression T might be signed.  Return 0
-   if it is definitely unsigned.  This macro does not evaluate its argument,
-   and expands to an integer constant expression.  */
+   if it is definitely unsigned.  T must not be a bit-field expression.
+   This macro does not evaluate its argument, and expands to an
+   integer constant expression.  */
 #if _GL_HAVE___TYPEOF__
 # define _GL_SIGNED_TYPE_OR_EXPR(t) TYPE_SIGNED (__typeof__ (t))
 #else
@@ -109,6 +110,8 @@
 #define INT_BITS_STRLEN_BOUND(b) (((b) * 146 + 484) / 485)
 
 /* Bound on length of the string representing an integer type or expression T.
+   T must not be a bit-field expression.
+
    Subtract 1 for the sign bit if T is signed, and then add 1 more for
    a minus sign if needed.
 
@@ -120,7 +123,7 @@
    + _GL_SIGNED_TYPE_OR_EXPR (t))
 
 /* Bound on buffer size needed to represent an integer type or expression T,
-   including the terminating null.  */
+   including the terminating null.  T must not be a bit-field expression.  */
 #define INT_BUFSIZE_BOUND(t) (INT_STRLEN_BOUND (t) + 1)
 
 
@@ -223,7 +226,9 @@
 
 /* True if __builtin_add_overflow (A, B, P) and __builtin_sub_overflow
    (A, B, P) work when P is non-null.  */
-#if 5 <= __GNUC__ && !defined __ICC
+/* __builtin_{add,sub}_overflow exists but is not reliable in GCC 5.x and 6.x,
+   see <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=98269>.  */
+#if 7 <= __GNUC__ && !defined __ICC
 # define _GL_HAS_BUILTIN_ADD_OVERFLOW 1
 #elif defined __has_builtin
 # define _GL_HAS_BUILTIN_ADD_OVERFLOW __has_builtin (__builtin_add_overflow)
@@ -241,7 +246,17 @@
 
 /* True if __builtin_add_overflow_p (A, B, C) works, and similarly for
    __builtin_sub_overflow_p and __builtin_mul_overflow_p.  */
-#define _GL_HAS_BUILTIN_OVERFLOW_P (7 <= __GNUC__)
+#if defined __clang__ || defined __ICC
+/* Clang 11 lacks __builtin_mul_overflow_p, and even if it did it
+   would presumably run afoul of Clang bug 16404.  ICC 2021.1's
+   __builtin_add_overflow_p etc. are not treated as integral constant
+   expressions even when all arguments are.  */
+# define _GL_HAS_BUILTIN_OVERFLOW_P 0
+#elif defined __has_builtin
+# define _GL_HAS_BUILTIN_OVERFLOW_P __has_builtin (__builtin_mul_overflow_p)
+#else
+# define _GL_HAS_BUILTIN_OVERFLOW_P (7 <= __GNUC__)
+#endif
 
 /* The _GL*_OVERFLOW macros have the same restrictions as the
    *_RANGE_OVERFLOW macros, except that they do not assume that operands
@@ -374,8 +389,9 @@
    _GL_INT_OP_WRAPV (a, b, r, -, _GL_INT_SUBTRACT_RANGE_OVERFLOW)
 #endif
 #if _GL_HAS_BUILTIN_MUL_OVERFLOW
-# if (9 < __GNUC__ + (3 <= __GNUC_MINOR__) \
-      || (__GNUC__ == 8 && 4 <= __GNUC_MINOR__))
+# if ((9 < __GNUC__ + (3 <= __GNUC_MINOR__) \
+       || (__GNUC__ == 8 && 4 <= __GNUC_MINOR__)) \
+      && !defined __ICC)
 #  define INT_MULTIPLY_WRAPV(a, b, r) __builtin_mul_overflow (a, b, r)
 # else
    /* Work around GCC bug 91450.  */
@@ -566,7 +582,7 @@
       ? (EXPR_SIGNED (_GL_INT_CONVERT (tmax, b)) \
          ? (a) < (tmax) / (b) \
          : ((INT_NEGATE_OVERFLOW (b) \
-             ? _GL_INT_CONVERT (b, tmax) >> (TYPE_WIDTH (b) - 1) \
+             ? _GL_INT_CONVERT (b, tmax) >> (TYPE_WIDTH (+ (b)) - 1) \
              : (tmax) / -(b)) \
             <= -1 - (a))) \
       : INT_NEGATE_OVERFLOW (_GL_INT_CONVERT (b, tmin)) && (b) == -1 \
@@ -581,5 +597,34 @@
          ? (EXPR_SIGNED (b) ? 0 < (b) + (tmin) : -1 - (tmin) < (b) - 1) \
          : (tmin) / (a) < (b)) \
       : (tmax) / (b) < (a)))
+
+/* The following macros compute A + B, A - B, and A * B, respectively.
+   If no overflow occurs, they set *R to the result and return 1;
+   otherwise, they return 0 and may modify *R.
+
+   Example usage:
+
+     long int result;
+     if (INT_ADD_OK (a, b, &result))
+       printf ("result is %ld\n", result);
+     else
+       printf ("overflow\n");
+
+   A, B, and *R should be integers; they need not be the same type,
+   and they need not be all signed or all unsigned.
+
+   These macros work correctly on all known practical hosts, and do not rely
+   on undefined behavior due to signed arithmetic overflow.
+
+   These macros are not constant expressions.
+
+   These macros may evaluate their arguments zero or multiple times, so the
+   arguments should not have side effects.
+
+   These macros are tuned for B being a constant.  */
+
+#define INT_ADD_OK(a, b, r) ! INT_ADD_WRAPV (a, b, r)
+#define INT_SUBTRACT_OK(a, b, r) ! INT_SUBTRACT_WRAPV (a, b, r)
+#define INT_MULTIPLY_OK(a, b, r) ! INT_MULTIPLY_WRAPV (a, b, r)
 
 #endif /* _GL_INTPROPS_H */

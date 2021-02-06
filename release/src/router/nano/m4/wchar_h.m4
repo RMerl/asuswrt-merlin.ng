@@ -1,13 +1,13 @@
 dnl A placeholder for ISO C99 <wchar.h>, for platforms that have issues.
 
-dnl Copyright (C) 2007-2020 Free Software Foundation, Inc.
+dnl Copyright (C) 2007-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
 dnl Written by Eric Blake.
 
-# wchar_h.m4 serial 46
+# wchar_h.m4 serial 50
 
 AC_DEFUN([gl_WCHAR_H],
 [
@@ -40,16 +40,7 @@ AC_DEFUN([gl_WCHAR_H],
   dnl Check for declarations of anything we want to poison if the
   dnl corresponding gnulib module is not in use.
   gl_WARN_ON_USE_PREPARE([[
-/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
-   <wchar.h>.
-   BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h> must be
-   included before <wchar.h>.  */
-#if !(defined __GLIBC__ && !defined __UCLIBC__)
-# include <stddef.h>
-# include <stdio.h>
-# include <time.h>
-#endif
-#include <wchar.h>
+      #include <wchar.h>
     ]],
     [btowc wctob mbsinit mbrtowc mbrlen mbsrtowcs mbsnrtowcs wcrtomb
      wcsrtombs wcsnrtombs wcwidth
@@ -60,6 +51,13 @@ AC_DEFUN([gl_WCHAR_H],
     ])
 
   AC_REQUIRE([AC_C_RESTRICT])
+
+  AC_CHECK_DECLS([wcsdup], [], [], [[
+      #include <wchar.h>
+    ]])
+  if test $ac_cv_have_decl_wcsdup = no; then
+    HAVE_DECL_WCSDUP=0
+  fi
 ])
 
 dnl Check whether <wchar.h> is usable at all.
@@ -70,56 +68,49 @@ AC_DEFUN([gl_WCHAR_H_INLINE_OK],
   dnl and <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=42440>. In summary,
   dnl glibc version 2.5 or older, together with gcc version 4.3 or newer and
   dnl the option -std=c99 or -std=gnu99, leads to a broken <wchar.h>.
+  AC_REQUIRE([AC_CANONICAL_HOST])
   AC_CACHE_CHECK([whether <wchar.h> uses 'inline' correctly],
     [gl_cv_header_wchar_h_correct_inline],
     [gl_cv_header_wchar_h_correct_inline=yes
-     AC_LANG_CONFTEST([
-       AC_LANG_SOURCE([[#define wcstod renamed_wcstod
-/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
-   <wchar.h>.
-   BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h> must be
-   included before <wchar.h>.  */
-#include <stddef.h>
-#include <stdio.h>
-#include <time.h>
-#include <wchar.h>
-extern int zero (void);
-int main () { return zero(); }
-]])])
-     dnl Do not rename the object file from conftest.$ac_objext to
-     dnl conftest1.$ac_objext, as this will cause the link to fail on
-     dnl z/OS when using the XPLINK object format (due to duplicate
-     dnl CSECT names). Instead, temporarily redefine $ac_compile so
-     dnl that the object file has the latter name from the start.
-     save_ac_compile="$ac_compile"
-     ac_compile=`echo "$save_ac_compile" | sed s/conftest/conftest1/`
-     if echo '#include "conftest.c"' >conftest1.c &&
-        AC_TRY_EVAL([ac_compile]); then
-       AC_LANG_CONFTEST([
-         AC_LANG_SOURCE([[#define wcstod renamed_wcstod
-/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
-   <wchar.h>.
-   BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h> must be
-   included before <wchar.h>.  */
-#include <stddef.h>
-#include <stdio.h>
-#include <time.h>
-#include <wchar.h>
-int zero (void) { return 0; }
-]])])
-       dnl See note above about renaming object files.
-       ac_compile=`echo "$save_ac_compile" | sed s/conftest/conftest2/`
-       if echo '#include "conftest.c"' >conftest2.c &&
-          AC_TRY_EVAL([ac_compile]); then
-         if $CC -o conftest$ac_exeext $CFLAGS $LDFLAGS conftest1.$ac_objext conftest2.$ac_objext $LIBS >&AS_MESSAGE_LOG_FD 2>&1; then
-           :
-         else
-           gl_cv_header_wchar_h_correct_inline=no
+     case "$host_os" in
+       *-gnu* | gnu*)
+         AC_LANG_CONFTEST([
+           AC_LANG_SOURCE([[
+             #define wcstod renamed_wcstod
+             #include <wchar.h>
+             extern int zero (void);
+             int main () { return zero(); }
+           ]])])
+         dnl Do not rename the object file from conftest.$ac_objext to
+         dnl conftest1.$ac_objext, as this will cause the link to fail on
+         dnl z/OS when using the XPLINK object format (due to duplicate
+         dnl CSECT names). Instead, temporarily redefine $ac_compile so
+         dnl that the object file has the latter name from the start.
+         save_ac_compile="$ac_compile"
+         ac_compile=`echo "$save_ac_compile" | sed s/conftest/conftest1/`
+         if echo '#include "conftest.c"' >conftest1.c \
+            && AC_TRY_EVAL([ac_compile]); then
+           AC_LANG_CONFTEST([
+             AC_LANG_SOURCE([[
+               #define wcstod renamed_wcstod
+               #include <wchar.h>
+               int zero (void) { return 0; }
+             ]])])
+           dnl See note above about renaming object files.
+           ac_compile=`echo "$save_ac_compile" | sed s/conftest/conftest2/`
+           if echo '#include "conftest.c"' >conftest2.c \
+              && AC_TRY_EVAL([ac_compile]); then
+             if $CC -o conftest$ac_exeext $CFLAGS $LDFLAGS conftest1.$ac_objext conftest2.$ac_objext $LIBS >&AS_MESSAGE_LOG_FD 2>&1; then
+               :
+             else
+               gl_cv_header_wchar_h_correct_inline=no
+             fi
+           fi
          fi
-       fi
-     fi
-     ac_compile="$save_ac_compile"
-     rm -f conftest[12].c conftest[12].$ac_objext conftest$ac_exeext
+         ac_compile="$save_ac_compile"
+         rm -f conftest[12].c conftest[12].$ac_objext conftest$ac_exeext
+         ;;
+     esac
     ])
   if test $gl_cv_header_wchar_h_correct_inline = no; then
     AC_MSG_ERROR([<wchar.h> cannot be used with this compiler ($CC $CFLAGS $CPPFLAGS).
@@ -186,6 +177,8 @@ AC_DEFUN([gl_WCHAR_H_DEFAULTS],
   GNULIB_WCSTOK=0;      AC_SUBST([GNULIB_WCSTOK])
   GNULIB_WCSWIDTH=0;    AC_SUBST([GNULIB_WCSWIDTH])
   GNULIB_WCSFTIME=0;    AC_SUBST([GNULIB_WCSFTIME])
+  dnl Support Microsoft deprecated alias function names by default.
+  GNULIB_MDA_WCSDUP=1;  AC_SUBST([GNULIB_MDA_WCSDUP])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_BTOWC=1;         AC_SUBST([HAVE_BTOWC])
   HAVE_MBSINIT=1;       AC_SUBST([HAVE_MBSINIT])
@@ -227,6 +220,7 @@ AC_DEFUN([gl_WCHAR_H_DEFAULTS],
   HAVE_WCSWIDTH=1;      AC_SUBST([HAVE_WCSWIDTH])
   HAVE_WCSFTIME=1;      AC_SUBST([HAVE_WCSFTIME])
   HAVE_DECL_WCTOB=1;    AC_SUBST([HAVE_DECL_WCTOB])
+  HAVE_DECL_WCSDUP=1;   AC_SUBST([HAVE_DECL_WCSDUP])
   HAVE_DECL_WCWIDTH=1;  AC_SUBST([HAVE_DECL_WCWIDTH])
   REPLACE_MBSTATE_T=0;  AC_SUBST([REPLACE_MBSTATE_T])
   REPLACE_BTOWC=0;      AC_SUBST([REPLACE_BTOWC])

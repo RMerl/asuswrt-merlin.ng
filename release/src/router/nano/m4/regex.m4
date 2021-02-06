@@ -1,6 +1,6 @@
-# serial 70
+# serial 71
 
-# Copyright (C) 1996-2001, 2003-2020 Free Software Foundation, Inc.
+# Copyright (C) 1996-2001, 2003-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -354,7 +354,6 @@ AC_DEFUN([gl_PREREQ_REGEX],
   AC_REQUIRE([AC_C_RESTRICT])
   AC_REQUIRE([AC_TYPE_MBSTATE_T])
   AC_REQUIRE([gl_EEMALLOC])
-  AC_REQUIRE([gl_GLIBC21])
   AC_CHECK_HEADERS([libintl.h])
   AC_CHECK_FUNCS_ONCE([isblank iswctype])
   AC_CHECK_DECLS([isblank], [], [], [[#include <ctype.h>]])

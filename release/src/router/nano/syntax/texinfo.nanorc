@@ -1,5 +1,8 @@
 ## Syntax highlighting for Texinfo files.
 
+## Original author:  Benno Schulenberg
+## License:  GPL version 3 or newer
+
 syntax texinfo "\.texi$"
 header "^\\input texinfo"
 magic "Texinfo source"

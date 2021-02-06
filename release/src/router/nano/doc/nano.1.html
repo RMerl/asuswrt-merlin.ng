@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Mon Aug 24 10:52:28 2020 -->
+<!-- CreationDate: Thu Jan 14 11:12:27 2021 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -287,7 +287,7 @@ position again upon reopening such a file.</p>
 
 <p style="margin-left:22%;">Set the regular expression for
 matching the quoting part of a line. The default value is
-<b>&quot;^([&nbsp;\t]*([!#%:;&gt;|}]|//))+&quot;</b>. (Note
+&quot;<b>^([&nbsp;\t]*([!#%:;&gt;|}]|//))+</b>&quot;. (Note
 that <b>\t</b> stands for an actual Tab.) This makes it
 possible to rejustify blocks of quoted text when composing
 email, and to rewrap blocks of line comments when writing
@@ -322,7 +322,7 @@ rudely at the screen&rsquo;s edge, by using also
 
 <p style="margin-left:22%;">Set the size (width) of a tab
 to <i>number</i> columns. The value of <i>number</i> must be
-greater than 0. The default value is 8.</p>
+greater than 0. The default value is <b>8</b>.</p>
 
 <p style="margin-left:11%;"><b>&minus;U</b>,
 <b>&minus;&minus;quickblank</b></p>
@@ -513,7 +513,7 @@ of columns. If the value is 0 or less, wrapping will occur
 at the width of the screen minus <i>number</i> columns,
 allowing the wrap point to vary along with the width of the
 screen if the screen is resized. The default value is
-&minus;8.</p>
+<b>&minus;8</b>.</p>
 
 <p style="margin-left:11%;"><b>&minus;s
 &quot;</b><i>program</i> [<i>argument</i> ...]<b>&quot;</b>,
@@ -522,8 +522,8 @@ screen if the screen is resized. The default value is
 
 <p style="margin-left:22%;">Use this command to perform
 spell checking and correcting, instead of using the built-in
-corrector that calls <b>hunspell</b> or GNU
-<b>spell</b>.</p>
+corrector that calls <b>hunspell</b>(1) or
+<b>spell</b>(1).</p>
 
 <p style="margin-left:11%;"><b>&minus;t</b>,
 <b>&minus;&minus;saveonexit</b></p>
@@ -577,6 +577,51 @@ stop at word ends instead of beginnings.</p>
 <p style="margin-left:22%;">Allow the user to suspend the
 editor (with <b>^Z</b> by default).</p>
 
+<p style="margin-left:11%;"><b>&minus;^</b>,
+<b>&minus;&minus;markmatch</b></p>
+
+<p style="margin-left:22%;">After a search, set the mark at
+the end of the found match (if there is any) so that it gets
+highlighted. This makes the match more visible, but also
+allows deleting the match with a single keystroke.</p>
+
+<p style="margin-left:11%;"><b>&minus;%</b>,
+<b>&minus;&minus;stateflags</b></p>
+
+<p style="margin-left:22%;">Use the top-right corner of the
+screen for showing some state flags: <b>I</b> when
+auto-indenting, <b>M</b> when the mark is on, <b>L</b> when
+hard-wrapping (breaking long lines), <b>R</b> when recording
+a macro, and <b>S</b> when soft-wrapping. When the buffer is
+modified, a star (<b>*</b>) is shown after the filename in
+the center of the title bar.</p>
+
+<p style="margin-left:11%;"><b>&minus;_</b>,
+<b>&minus;&minus;minibar</b></p>
+
+<p style="margin-left:22%;">Suppress the title bar and
+instead show information about the current buffer at the
+bottom of the screen, in the space for the status bar. In
+this &quot;minibar&quot; the file name is shown on the left,
+followed by an asterisk if the buffer has been modified. On
+the right are displayed the current line and column number,
+the code of the character under the cursor (in Unicode
+format: U+xxxx), the same flags as are shown by
+<b>&minus;&minus;stateflags</b>, and a percentage that
+expresses how far the cursor is into the file (linewise).
+When a file is loaded or saved, and also when switching
+between buffers, the number of lines in the buffer is
+displayed after the file name. This number is cleared upon
+the next keystroke, or replaced with an [i/n] counter when
+multiple buffers are open.</p>
+
+<p style="margin-left:11%;"><b>&minus;!</b>,
+<b>&minus;&minus;magic</b></p>
+
+<p style="margin-left:22%;">When neither the file&rsquo;s
+name nor its first line give a clue, try using libmagic to
+determine the applicable syntax.</p>
+
 <h2>TOGGLES
 <a name="TOGGLES"></a>
 </h2>
@@ -613,6 +658,10 @@ two configuration files: first the system&rsquo;s
 <i>~/.config/nano/nanorc</i>, whichever is encountered
 first. See <b>nanorc</b>(5) for more information on the
 possible contents of those files.</p>
+
+<p style="margin-left:11%; margin-top: 1em">See
+<i>/usr/share/nano/</i> and <i>/usr/share/nano/extra/</i>
+for available syntax-coloring definitions.</p>
 
 <h2>NOTES
 <a name="NOTES"></a>

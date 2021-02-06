@@ -1,5 +1,8 @@
 ## Syntax highlighting for Go.
 
+## Original author:  Robert Clausecker
+## License:  CC0 (public domain)
+
 syntax go "\.go$"
 comment "//"
 

@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2020 Free Software Foundation, Inc.
+# Copyright (C) 2002-2021 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -83,6 +83,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module glob:
   # Code from module glob-h:
   # Code from module hard-locale:
+  # Code from module idx:
   # Code from module include_next:
   # Code from module intprops:
   # Code from module inttypes-incomplete:
@@ -444,6 +445,10 @@ AC_DEFUN([gl_INIT],
   gl_FUNC_NL_LANGINFO
   if test $HAVE_NL_LANGINFO = 0 || test $REPLACE_NL_LANGINFO = 1; then
     AC_LIBOBJ([nl_langinfo])
+  fi
+  if test $REPLACE_NL_LANGINFO = 1 && test $NL_LANGINFO_MTSAFE = 0; then
+    AC_LIBOBJ([nl_langinfo-lock])
+    gl_PREREQ_NL_LANGINFO_LOCK
   fi
   gl_LANGINFO_MODULE_INDICATOR([nl_langinfo])
   gl_FUNC_OPENDIR
@@ -817,6 +822,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/glthread/threadlib.c
   lib/hard-locale.c
   lib/hard-locale.h
+  lib/idx.h
   lib/intprops.h
   lib/inttypes.in.h
   lib/isblank.c
@@ -841,6 +847,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/lstat.c
   lib/malloc.c
   lib/malloc/scratch_buffer.h
+  lib/malloc/scratch_buffer_dupfree.c
   lib/malloc/scratch_buffer_grow.c
   lib/malloc/scratch_buffer_grow_preserve.c
   lib/malloc/scratch_buffer_set_array_size.c
@@ -866,6 +873,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/msvc-inval.h
   lib/msvc-nothrow.c
   lib/msvc-nothrow.h
+  lib/nl_langinfo-lock.c
   lib/nl_langinfo.c
   lib/opendir.c
   lib/pathmax.h
@@ -1000,7 +1008,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/getopt.m4
   m4/gettime.m4
   m4/gettimeofday.m4
-  m4/glibc21.m4
   m4/glob.m4
   m4/glob_h.m4
   m4/gnulib-common.m4
@@ -1045,6 +1052,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/off_t.m4
   m4/opendir.m4
   m4/pathmax.m4
+  m4/pid_t.m4
   m4/printf-frexp.m4
   m4/printf-frexpl.m4
   m4/printf.m4

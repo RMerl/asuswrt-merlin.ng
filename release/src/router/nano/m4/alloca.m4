@@ -1,5 +1,5 @@
-# alloca.m4 serial 18
-dnl Copyright (C) 2002-2004, 2006-2007, 2009-2020 Free Software Foundation,
+# alloca.m4 serial 20
+dnl Copyright (C) 2002-2004, 2006-2007, 2009-2021 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -104,5 +104,5 @@ AH_VERBATIM([STACK_DIRECTION],
         STACK_DIRECTION = 0 => direction of growth unknown */
 #undef STACK_DIRECTION])dnl
 AC_DEFINE_UNQUOTED(STACK_DIRECTION, $ac_cv_c_stack_direction)
-])
+])# _AC_LIBOBJ_ALLOCA
 ])

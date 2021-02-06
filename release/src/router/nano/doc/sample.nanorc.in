@@ -76,10 +76,19 @@
 ## no plans to implement vim-style undo state in these files.
 # set locking
 
+## Fall back to slow libmagic to try and determine an applicable syntax.
+# set magic
+
+# After a search, set the mark at the end of the found match (if any).
+# set markmatch
+
 ## The opening and closing brackets that can be found by bracket
 ## searches.  They cannot contain blank characters.  The former set must
 ## come before the latter set, and both must be in the same order.
 # set matchbrackets "(<[{)>]}"
+
+## Suppress title bar and show file name and editor state at the bottom.
+# set minibar
 
 ## Enable mouse support, if available for your system.  When enabled,
 ## mouse clicks can be used to place the cursor, set the mark (with a
@@ -159,6 +168,10 @@
 ## does not have a default value.
 # set speller "aspell -x -c"
 
+## Use the end of the title bar for some state flags: I = auto-indenting,
+## M = mark, L = hard-wrapping long lines, R = recording, S = soft-wrapping.
+# set stateflags
+
 ## Allow nano to be suspended (with ^Z by default).
 # set suspendable
 ## (The old form of this option, 'set suspend', is deprecated.)
@@ -171,9 +184,6 @@
 
 ## Snip whitespace at the end of lines when justifying or hard-wrapping.
 # set trimblanks
-
-## Disallow file modification.  Why would you want this in an rcfile? ;)
-# set view
 
 ## The two single-column characters used to display the first characters
 ## of tabs and spaces.  187 in ISO 8859-1 (0000BB in Unicode) and 183 in
@@ -199,19 +209,24 @@
 ## Paint the interface elements of nano.  These are examples;
 ## by default there are no colors, except for errorcolor.
 # set titlecolor bold,lightwhite,blue
+# set promptcolor lightwhite,lightblack
 # set statuscolor bold,lightwhite,green
 # set errorcolor bold,lightwhite,red
 # set selectedcolor lightwhite,magenta
 # set stripecolor ,yellow
+# set scrollercolor cyan
 # set numbercolor cyan
 # set keycolor cyan
 # set functioncolor green
+
 ## In root's .nanorc you might want to use:
 # set titlecolor bold,lightwhite,magenta
+# set promptcolor black,yellow
 # set statuscolor bold,lightwhite,magenta
 # set errorcolor bold,lightwhite,red
 # set selectedcolor lightwhite,cyan
 # set stripecolor ,yellow
+# set scrollercolor magenta
 # set numbercolor magenta
 # set keycolor lightmagenta
 # set functioncolor magenta
@@ -220,7 +235,7 @@
 ## === Syntax coloring ===
 ## For all details, see 'man nanorc', section SYNTAX HIGHLIGHTING.
 
-## To include all existing syntax definitions, you can do:
+## To include most of the existing syntax definitions, you can do:
 # include "@PKGDATADIR@/*.nanorc"
 
 ## Or you can select just the ones you need.  For example:
@@ -229,7 +244,8 @@
 # include "@PKGDATADIR@/sh.nanorc"
 
 ## In @PKGDATADIR@/extra/ you can find some syntaxes that are
-## specific for certain distros or for less common languages.
+## specific for certain distros or for some less common languages.
+
 
 ## If <Tab> should always produce four spaces when editing a Python file,
 ## independent of the settings of 'tabsize' and 'tabstospaces':

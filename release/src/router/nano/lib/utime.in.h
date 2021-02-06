@@ -1,5 +1,5 @@
 /* Substitute for and wrapper around <utime.h>.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -85,9 +85,22 @@ _GL_WARN_ON_USE (utime,
                  "utime is unportable - "
                  "use gnulib module canonicalize-lgpl for portability");
 # endif
-#elif defined _WIN32 && !defined __CYGWIN__
-# undef utime
-# define utime _utime
+#elif @GNULIB_MDA_UTIME@
+/* On native Windows, map 'utime' to '_utime', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::utime always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef utime
+#   define utime _utime
+#  endif
+_GL_CXXALIAS_MDA (utime, int, (const char *filename, const struct utimbuf *ts));
+# else
+_GL_CXXALIAS_SYS (utime, int, (const char *filename, const struct utimbuf *ts));
+# endif
+# if __GLIBC__ >= 2
+_GL_CXXALIASWARN (utime);
+# endif
 #endif
 
 #if @GNULIB_UTIME@

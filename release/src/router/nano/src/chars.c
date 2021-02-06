@@ -1,8 +1,8 @@
 /**************************************************************************
  *   chars.c  --  This file is part of GNU nano.                          *
  *                                                                        *
- *   Copyright (C) 2001-2011, 2013-2020 Free Software Foundation, Inc.    *
- *   Copyright (C) 2016-2019 Benno Schulenberg                            *
+ *   Copyright (C) 2001-2011, 2013-2021 Free Software Foundation, Inc.    *
+ *   Copyright (C) 2016-2020 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -179,8 +179,8 @@ char control_mbrep(const char *c, bool isdata)
 /* Return the width in columns of the given (multibyte) character. */
 int mbwidth(const char *c)
 {
-	/* Ask for the width only when the character isn't plain ASCII. */
-	if ((signed char)*c <= 0) {
+	/* Only characters beyond U+02FF can be other than one column wide. */
+	if ((unsigned char)*c > 0xCB) {
 		wchar_t wc;
 		int width;
 
@@ -197,12 +197,18 @@ int mbwidth(const char *c)
 		return 1;
 }
 
+/* Return TRUE when the given character occupies zero cells. */
+bool is_zerowidth(const char *ch)
+{
+	return (use_utf8 && mbwidth(ch) == 0);
+}
+
 /* Convert the given Unicode value to a multibyte character, if possible.
  * If the conversion succeeds, return the (dynamically allocated) multibyte
  * character and its length.  Otherwise, return a length of zero. */
 char *make_mbchar(long code, int *length)
 {
-	char *mb_char = charalloc(MAXCHARLEN);
+	char *mb_char = nmalloc(MAXCHARLEN);
 
 	*length = wctomb(mb_char, (wchar_t)code);
 
@@ -221,7 +227,7 @@ int char_length(const char *pointer)
 {
 #ifdef ENABLE_UTF8
 	/* If possibly a multibyte character, get its length; otherwise, it's 1. */
-	if ((signed char)*pointer < 0) {
+	if ((unsigned char)*pointer > 0xC1) {
 		int length = mblen(pointer, MAXCHARLEN);
 
 		return (length < 0 ? 1 : length);
@@ -237,7 +243,7 @@ size_t mbstrlen(const char *pointer)
 
 	while (*pointer != '\0') {
 #ifdef ENABLE_UTF8
-		if ((signed char)*pointer < 0) {
+		if ((unsigned char)*pointer > 0xC1) {
 			int length = mblen(pointer, MAXCHARLEN);
 
 			pointer += (length < 0 ? 1 : length);
@@ -259,7 +265,7 @@ int collect_char(const char *string, char *thechar)
 
 #ifdef ENABLE_UTF8
 	/* If this is a UTF-8 starter byte, get the number of bytes of the character. */
-	if ((signed char)*string < 0) {
+	if ((unsigned char)*string > 0xC1) {
 		charlen = mblen(string, MAXCHARLEN);
 
 		/* When the multibyte sequence is invalid, only take the first byte. */
@@ -374,6 +380,22 @@ int mbstrncasecmp(const char *s1, const char *s2, size_t n)
 		wchar_t wc1, wc2;
 
 		while (*s1 != '\0' && *s2 != '\0' && n > 0) {
+			if ((signed char)*s1 >= 0 && (signed char)*s2 >= 0) {
+				if ('A' <= (*s1 & 0x5F) && (*s1 & 0x5F) <= 'Z') {
+					if ('A' <= (*s2 & 0x5F) && (*s2 & 0x5F) <= 'Z') {
+						if ((*s1 & 0x5F) != (*s2 & 0x5F))
+							return ((*s1 & 0x5F) - (*s2 & 0x5F));
+					} else
+						return ((*s1 | 0x20) - *s2);
+				} else if ('A' <= (*s2 & 0x5F) && (*s2 & 0x5F) <= 'Z')
+					return (*s1 - (*s2 | 0x20));
+				else if (*s1 != *s2)
+					return (*s1 - *s2);
+
+				s1++; s2++; n--;
+				continue;
+			}
+
 			bool bad1 = (mbtowc(&wc1, s1, MAXCHARLEN) < 0);
 			bool bad2 = (mbtowc(&wc2, s2, MAXCHARLEN) < 0);
 

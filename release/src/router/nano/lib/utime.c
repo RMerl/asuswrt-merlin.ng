@@ -1,5 +1,5 @@
 /* Work around platform bugs in utime.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -257,6 +257,32 @@ utime (const char *name, const struct utimbuf *ts)
       ts_with_nanoseconds[1].tv_nsec = 0;
       return _gl_utimens_windows (name, ts_with_nanoseconds);
     }
+}
+
+#else
+
+# include <errno.h>
+# include <sys/stat.h>
+# include "filename.h"
+
+int
+utime (const char *name, const struct utimbuf *ts)
+#undef utime
+{
+# if REPLACE_FUNC_UTIME_FILE
+  /* macOS 10.13 mistakenly succeeds when given a symbolic link to a
+     non-directory with a trailing slash.  */
+  size_t len = strlen (name);
+  if (len > 0 && ISSLASH (name[len - 1]))
+    {
+      struct stat buf;
+
+      if (stat (name, &buf) == -1 && errno != EOVERFLOW)
+        return -1;
+    }
+# endif /* REPLACE_FUNC_UTIME_FILE */
+
+  return utime (name, ts);
 }
 
 #endif

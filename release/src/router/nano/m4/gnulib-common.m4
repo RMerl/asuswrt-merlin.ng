@@ -1,5 +1,5 @@
-# gnulib-common.m4 serial 57
-dnl Copyright (C) 2007-2020 Free Software Foundation, Inc.
+# gnulib-common.m4 serial 63
+dnl Copyright (C) 2007-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -483,23 +483,17 @@ AC_DEFUN([gl_FEATURES_H],
 # gl_PROG_CC_C99
 # Modifies the value of the shell variable CC in an attempt to make $CC
 # understand ISO C99 source code.
-# This is like AC_PROG_CC_C99, except that
-# - AC_PROG_CC_C99 does not mix well with AC_PROG_CC_STDC
-#   <https://lists.gnu.org/r/bug-gnulib/2011-09/msg00367.html>,
-#   but many more packages use AC_PROG_CC_STDC than AC_PROG_CC_C99
-#   <https://lists.gnu.org/r/bug-gnulib/2011-09/msg00441.html>.
-# Remaining problems:
-# - When AC_PROG_CC_STDC is invoked twice, it adds the C99 enabling options
-#   to CC twice
-#   <https://lists.gnu.org/r/bug-gnulib/2011-09/msg00431.html>.
-# - AC_PROG_CC_STDC is likely to change now that C11 is an ISO standard.
 AC_DEFUN([gl_PROG_CC_C99],
 [
-  dnl Change that version number to the minimum Autoconf version that supports
-  dnl mixing AC_PROG_CC_C99 calls with AC_PROG_CC_STDC calls.
-  m4_version_prereq([9.0],
-    [AC_REQUIRE([AC_PROG_CC_C99])],
-    [AC_REQUIRE([AC_PROG_CC_STDC])])
+  dnl Just use AC_PROG_CC_C99.
+  dnl When AC_PROG_CC_C99 and AC_PROG_CC_STDC are used together, the substituted
+  dnl value of CC will contain the C99 enabling options twice. But this is only
+  dnl a cosmetic problem.
+  dnl With Autoconf >= 2.70, use AC_PROG_CC since it implies AC_PROG_CC_C99;
+  dnl this avoids a "warning: The macro `AC_PROG_CC_C99' is obsolete."
+  m4_version_prereq([2.70],
+    [AC_REQUIRE([AC_PROG_CC])],
+    [AC_REQUIRE([AC_PROG_CC_C99])])
 ])
 
 # gl_PROG_AR_RANLIB
@@ -573,16 +567,16 @@ Amsterdam
 ])
 
 # AC_C_RESTRICT
-# This definition is copied from post-2.69 Autoconf and overrides the
-# AC_C_RESTRICT macro from autoconf 2.60..2.69.  It can be removed
-# once autoconf >= 2.70 can be assumed.  It's painful to check version
-# numbers, and in practice this macro is more up-to-date than Autoconf
-# is, so override Autoconf unconditionally.
+# This definition is copied from post-2.70 Autoconf and overrides the
+# AC_C_RESTRICT macro from autoconf 2.60..2.70.
+m4_version_prereq([2.70.1], [], [
 AC_DEFUN([AC_C_RESTRICT],
 [AC_CACHE_CHECK([for C/C++ restrict keyword], [ac_cv_c_restrict],
   [ac_cv_c_restrict=no
-   # The order here caters to the fact that C++ does not require restrict.
-   for ac_kw in __restrict __restrict__ _Restrict restrict; do
+   # Put '__restrict__' first, to avoid problems with glibc and non-GCC; see:
+   # https://lists.gnu.org/archive/html/bug-autoconf/2016-02/msg00006.html
+   # Put 'restrict' last, because C++ lacks it.
+   for ac_kw in __restrict__ __restrict _Restrict restrict; do
      AC_COMPILE_IFELSE(
       [AC_LANG_PROGRAM(
          [[typedef int *int_ptr;
@@ -602,7 +596,7 @@ AC_DEFUN([AC_C_RESTRICT],
  AH_VERBATIM([restrict],
 [/* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
-   supported directly.  */
+   supported only directly.  */
 #undef restrict
 /* Work around a bug in older versions of Sun C++, which did not
    #define __restrict__ or support _Restrict or __restrict__
@@ -620,6 +614,7 @@ AC_DEFUN([AC_C_RESTRICT],
    *)  AC_DEFINE_UNQUOTED([restrict], [$ac_cv_c_restrict]) ;;
  esac
 ])# AC_C_RESTRICT
+])
 
 # gl_BIGENDIAN
 # is like AC_C_BIGENDIAN, except that it can be AC_REQUIREd.
@@ -630,13 +625,20 @@ AC_DEFUN([gl_BIGENDIAN],
   AC_C_BIGENDIAN
 ])
 
+# A temporary file descriptor.
+# Must be less than 10, because dash 0.5.8 does not support redirections
+# with multi-digit file descriptors.
+m4_define([GL_TMP_FD], 9)
+
 # gl_SILENT(command)
 # executes command, but without the normal configure output.
+# This is useful when you want to invoke AC_CACHE_CHECK (or AC_CHECK_FUNC etc.)
+# inside another AC_CACHE_CHECK.
 AC_DEFUN([gl_SILENT],
 [
-  {
-    $1
-  } AS_MESSAGE_FD>/dev/null
+  exec GL_TMP_FD>&AS_MESSAGE_FD AS_MESSAGE_FD>/dev/null
+  $1
+  exec AS_MESSAGE_FD>&GL_TMP_FD GL_TMP_FD>&-
 ])
 
 # gl_CACHE_VAL_SILENT(cache-id, command-to-set-it)
@@ -646,10 +648,9 @@ AC_DEFUN([gl_SILENT],
 # by an AC_MSG_CHECKING/AC_MSG_RESULT pair.
 AC_DEFUN([gl_CACHE_VAL_SILENT],
 [
-  saved_as_echo_n="$as_echo_n"
-  as_echo_n=':'
-  AC_CACHE_VAL([$1], [$2])
-  as_echo_n="$saved_as_echo_n"
+  gl_SILENT([
+    AC_CACHE_VAL([$1], [$2])
+  ])
 ])
 
 dnl Expands to some code for use in .c programs that, on native Windows, defines

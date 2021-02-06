@@ -1,5 +1,5 @@
-# printf.m4 serial 69
-dnl Copyright (C) 2003, 2007-2020 Free Software Foundation, Inc.
+# printf.m4 serial 71
+dnl Copyright (C) 2003, 2007-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -759,13 +759,7 @@ AC_DEFUN([gl_PRINTF_DIRECTIVE_LS],
     [
       AC_RUN_IFELSE(
         [AC_LANG_SOURCE([[
-/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
-   <wchar.h>.
-   BSD/OS 4.0.1 has a bug: <stddef.h>, <stdio.h> and <time.h> must be
-   included before <wchar.h>.  */
-#include <stddef.h>
 #include <stdio.h>
-#include <time.h>
 #include <wchar.h>
 #include <string.h>
 int main ()
@@ -1198,7 +1192,7 @@ dnl Test whether the string produced by the snprintf function is always NUL
 dnl terminated. (ISO C99, POSIX:2001)
 dnl Result is gl_cv_func_snprintf_truncation_c99.
 
-AC_DEFUN([gl_SNPRINTF_TRUNCATION_C99],
+AC_DEFUN_ONCE([gl_SNPRINTF_TRUNCATION_C99],
 [
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles

@@ -11,7 +11,7 @@ File: nano.info,  Node: Top,  Next: Introduction,  Up: (dir)
 nano
 ****
 
-This manual documents the GNU ‘nano’ editor, version 5.2.
+This manual documents the GNU ‘nano’ editor, version 5.5.
 
 * Menu:
 
@@ -45,13 +45,13 @@ Pico Compatibility:: for more details on how ‘nano’ and Pico differ.
 
    Starting with version 4.0, ‘nano’ no longer hard-wraps an overlong
 line by default.  It further uses linewise scrolling by default, and by
-default includes the line below the title bar into the editing area.
-
-   If you want the old, Pico behavior back, you can use the following
-options: ‘--breaklonglines’, ‘--jumpyscrolling’, and ‘--emptyline’ (or
-‘-bje’ for short).
+default includes the line below the title bar into the editing area.  If
+you want the old, Pico behavior back, you can use the following options:
+‘--breaklonglines’, ‘--jumpyscrolling’, and ‘--emptyline’ (or ‘-bje’).
 
    Please report bugs via <https://savannah.gnu.org/bugs/?group=nano>.
+
+   For background information see <https://nano-editor.org/>.
 
 
 File: nano.info,  Node: Invoking,  Next: Command-line Options,  Prev: Introduction,  Up: Top
@@ -403,6 +403,41 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
      Enable the ability to suspend ‘nano’ using the system’s suspend
      keystroke (usually ‘^Z’).
 
+‘-^’
+‘--markmatch’
+     After a search, set the mark at the end of the found match (if
+     there is any) so that it gets highlighted.  This makes the match
+     more visible, but also allows deleting the match with a single
+     keystroke.
+
+‘-%’
+‘--stateflags’
+     Use the top-right corner of the screen for showing some state
+     flags: ‘I’ when auto-indenting, ‘M’ when the mark is on, ‘L’ when
+     hard-wrapping (breaking long lines), ‘R’ when recording a macro,
+     and ‘S’ when soft-wrapping.  When the buffer is modified, a star
+     (‘*’) is shown after the filename in the center of the title bar.
+
+‘-_’
+‘--minibar’
+     Suppress the title bar and instead show information about the
+     current buffer at the bottom of the screen, in the space for the
+     status bar.  In this "minibar" the file name is shown on the left,
+     followed by an asterisk if the buffer has been modified.  On the
+     right are displayed the current line and column number, the code of
+     the character under the cursor (in Unicode format: U+xxxx), the
+     same flags as are shown by ‘--stateflags’, and a percentage that
+     expresses how far the cursor is into the file (linewise).  When a
+     file is loaded or saved, and also when switching between buffers,
+     the number of lines in the buffer is displayed after the file name.
+     This number is cleared upon the next keystroke, or replaced with an
+     [i/n] counter when multiple buffers are open.
+
+‘-!’
+‘--magic’
+     When neither the file’s name nor its first line give a clue, try
+     using libmagic to determine the applicable syntax.
+
 
 File: nano.info,  Node: Editor Basics,  Next: Built-in Help,  Prev: Command-line Options,  Up: Top
 
@@ -472,17 +507,16 @@ File: nano.info,  Node: The Cutbuffer,  Next: The Mark,  Prev: Commands,  Up: Ed
 4.3 The Cutbuffer
 =================
 
-Text can be cut from a file, a whole line at a time, by using the ’Cut
-Text’ command (default key binding: ‘^K’).  The cut line is stored in
-the cutbuffer.  Consecutive strokes of ‘^K’ will add each cut line to
-this buffer, but a ‘^K’ after any other keystroke will overwrite the
-entire cutbuffer.
+Text can be cut from a file a whole line at a time with ‘^K’.  The cut
+line is stored in the cutbuffer.  Consecutive strokes of ‘^K’ will add
+each cut line to this buffer, but a ‘^K’ after any other keystroke will
+overwrite the entire cutbuffer.
 
-   The contents of the cutbuffer can be pasted back into the file with
-the ’Uncut Text’ command (default key binding: ‘^U’).
+   The contents of the cutbuffer can be pasted at the current cursor
+position with ‘^U’.
 
    A line of text can be copied into the cutbuffer (without cutting it)
-with the ’Copy Text’ command (default key binding: ‘M-6’).
+with ‘M-6’.
 
 
 File: nano.info,  Node: The Mark,  Next: Screen Layout,  Prev: The Cutbuffer,  Up: Editor Basics
@@ -490,21 +524,20 @@ File: nano.info,  Node: The Mark,  Next: Screen Layout,  Prev: The Cutbuffer,  U
 4.4 The Mark
 ============
 
-Text can be selected by first ’setting the Mark’ (default key bindings:
-‘^6’ and ‘M-A’) and then moving the cursor to the other end of the
-portion to be selected.  The selected portion of text will be
-highlighted.  This selection can now be cut or copied in its entirety
-with a single ‘^K’ or ‘M-6’.  Or the selection can be used to limit the
-scope of a search-and-replace (‘^\’) or spell-checking session (‘^T’).
+Text can be selected by first ’setting the Mark’ with ‘^6’ or ‘M-A’ and
+then moving the cursor to the other end of the portion to be selected.
+The selected portion of text will be highlighted.  This selection can
+now be cut or copied in its entirety with a single ‘^K’ or ‘M-6’.  Or
+the selection can be used to limit the scope of a search-and-replace
+(‘^\’) or spell-checking session (‘^T’).
 
    On some terminals, text can be selected also by holding down ‘Shift’
 while using the cursor keys.  Holding down the ‘Ctrl’ or ‘Alt’ key too
 will increase the stride.  Such a selection is cancelled upon any cursor
 movement where ‘Shift’ isn’t held.
 
-   Cutting or copying selected text will toggle the mark off
-automatically.  If necessary, it can be toggled off manually with
-another ‘^6’ or ‘M-A’.
+   Cutting or copying selected text toggles off the mark automatically.
+If needed, it can be toggled off manually with another ‘^6’ or ‘M-A’.
 
 
 File: nano.info,  Node: Screen Layout,  Next: Search and Replace,  Prev: The Mark,  Up: Editor Basics
@@ -821,6 +854,11 @@ The supported settings in a nanorc file are:
      Save the last hundred search strings and replacement strings and
      executed commands, so they can be easily reused in later sessions.
 
+‘set indicator’
+     Display a "scrollbar" on the righthand side of the edit window.  It
+     shows the position of the viewport in the buffer and how much of
+     the buffer is covered by the viewport.
+
 ‘set jumpyscrolling’
      Scroll the buffer contents per half-screen instead of per line.
 
@@ -836,11 +874,37 @@ The supported settings in a nanorc file are:
 ‘set locking’
      Enable vim-style lock-files for when editing files.
 
+‘set magic’
+     When neither the file’s name nor its first line give a clue, try
+     using libmagic to determine the applicable syntax.  (Calling
+     libmagic can be relatively time consuming.  It is therefore not
+     done by default.)
+
+‘set markmatch’
+     After a search, set the mark at the end of the found match (if
+     there is any) so that it gets highlighted.  This makes the match
+     more visible, but also allows deleting the match with a single
+     keystroke.
+
 ‘set matchbrackets "CHARACTERS"’
      Specify the opening and closing brackets that can be found by
      bracket searches.  This may not include blank characters.  The
      opening set must come before the closing set, and the two sets must
      be in the same order.  The default value is "(<[{)>]}".
+
+‘set minibar’
+     Suppress the title bar and instead show information about the
+     current buffer at the bottom of the screen, in the space for the
+     status bar.  In this "minibar" the file name is shown on the left,
+     followed by an asterisk if the buffer has been modified.  On the
+     right are displayed the current line and column number, the code of
+     the character under the cursor (in Unicode format: U+xxxx), the
+     same flags as are shown by ‘set stateflags’, and a percentage that
+     expresses how far the cursor is into the file (linewise).  When a
+     file is loaded or saved, and also when switching between buffers,
+     the number of lines in the buffer is displayed after the file name.
+     This number is cleared upon the next keystroke, or replaced with an
+     [i/n] counter when multiple buffers are open.
 
 ‘set morespace’
      Deprecated option since it has become the default setting.  When
@@ -889,10 +953,10 @@ The supported settings in a nanorc file are:
 ‘set preserve’
      Preserve the XON and XOFF keys (‘^Q’ and ‘^S’).
 
-‘set indicator’
-     Display a "scrollbar" on the righthand side of the edit window.  It
-     shows the position of the viewport in the buffer and how much of
-     the buffer is covered by the viewport.
+‘set promptcolor [bold,][italic,]FGCOLOR,BGCOLOR’
+     Use this color combination for the prompt bar.  (When this option
+     is not specified, the colors of the title bar are used.)  *Note set
+     functioncolor:: for valid color names.
 
 ‘set punct "CHARACTERS"’
      Set the characters treated as closing punctuation when justifying
@@ -933,6 +997,12 @@ The supported settings in a nanorc file are:
      Save a changed buffer automatically on exit (‘^X’); don’t prompt.
      (The old form of this option, ‘set tempfile’, is deprecated.)
 
+‘set scrollercolor FGCOLOR,BGCOLOR’
+     Use this color combination for the indicator alias "scrollbar".
+     (On terminal emulators that link to a libvte older than version
+     0.55, using a background color here does not work correctly.)
+     *Note set functioncolor:: for valid color names.
+
 ‘set selectedcolor [bold,][italic,]FGCOLOR,BGCOLOR’
      Use this color combination for selected text.  *Note set
      functioncolor:: for valid color names.
@@ -962,6 +1032,13 @@ The supported settings in a nanorc file are:
 ‘set speller "PROGRAM [ARGUMENT ...]"’
      Use the given program to do spell checking and correcting.  *Note
      --speller:: for details.
+
+‘set stateflags’
+     Use the top-right corner of the screen for showing some state
+     flags: ‘I’ when auto-indenting, ‘M’ when the mark is on, ‘L’ when
+     hard-wrapping (breaking long lines), ‘R’ when recording a macro,
+     and ‘S’ when soft-wrapping.  When the buffer is modified, a star
+     (‘*’) is shown after the filename in the center of the title bar.
 
 ‘set statuscolor [bold,][italic,]FGCOLOR,BGCOLOR’
      Use this color combination for the status bar.  *Note set
@@ -994,11 +1071,6 @@ The supported settings in a nanorc file are:
      default behavior of saving a file in the format that it had.  (This
      option has no effect when you also use ‘set noconvert’.)
 
-‘set view’
-     Disallow file modification: read-only mode.  This mode allows the
-     user to open also other files for viewing, unless ‘--restricted’ is
-     given on the command line.
-
 ‘set whitespace "CHARACTERS"’
      Set the two characters used to indicate the presence of tabs and
      spaces.  They must be single-column characters.  The default pair
@@ -1029,6 +1101,9 @@ expressions (see the ‘color’ command below).  This is inherently
 imperfect, because regular expressions are not powerful enough to fully
 parse a file.  Nevertheless, regular expressions can do a lot and are
 easy to make, so they are a good fit for a small editor like ‘nano’.
+
+   See ‘/usr/share/nano/’ and ‘/usr/share/nano/extra/’ for the
+syntax-coloring definitions that are available out of the box.
 
    All regular expressions in ‘nano’ are POSIX extended regular
 expressions (ERE). This means that ‘.’, ‘?’, ‘*’, ‘+’, ‘^’, ‘$’, and
@@ -1547,8 +1622,9 @@ that of the Backspace key.
      Toggles whether cutting text will cut the whole line or just from
      the current cursor position to the end of the line.
 
-‘nowrap’
+‘breaklonglines’
      Toggles whether long lines will be hard-wrapped to the next line.
+     (The old name of this function, ’nowrap’, is deprecated.)
 
 ‘tabstospaces’
      Toggles whether typed tabs will be converted to spaces.
@@ -1826,9 +1902,8 @@ familiar with compiling programs with autoconf support:
      available GNU ‘nano’ translations.
 
 ‘--enable-utf8’
-     Include support for reading and writing Unicode files.  This will
-     require either a wide version of curses, or a UTF-8-enabled version
-     of Slang.
+     Include support for reading and writing Unicode files.  This
+     requires a wide version of the curses library.
 
 ‘--disable-utf8’
      Exclude support for reading and writing Unicode files.  Normally
@@ -1840,40 +1915,36 @@ familiar with compiling programs with autoconf support:
      Use the file with the given NAME (in the user’s home directory) as
      nano’s settings file, instead of the default ‘.nanorc’.
 
-‘--with-slang’
-     Compile ‘nano’ against Slang instead of against ncurses or other
-     curses libraries.
-
 
 
 Tag Table:
 Node: Top199
 Node: Introduction554
-Node: Invoking1700
-Node: Command-line Options3316
-Ref: --speller12442
-Node: Editor Basics14587
-Node: Entering Text14883
-Node: Commands15872
-Node: The Cutbuffer16669
-Node: The Mark17390
-Node: Screen Layout18389
-Node: Search and Replace19568
-Node: Using the Mouse20303
-Node: Anchors20916
-Node: Limitations21721
-Node: Built-in Help22038
-Node: The File Browser22463
-Node: Feature Toggles23354
-Node: Nanorc Files25161
-Node: Settings26782
-Ref: set functioncolor30052
-Ref: set matchbrackets31982
-Ref: Whitespace38405
-Node: Syntax Highlighting39160
-Node: Rebinding Keys45790
-Node: Pico Compatibility60167
-Node: Building and Configure Options64707
+Node: Invoking1750
+Node: Command-line Options3366
+Ref: --speller12492
+Node: Editor Basics16301
+Node: Entering Text16597
+Node: Commands17586
+Node: The Cutbuffer18383
+Node: The Mark18957
+Node: Screen Layout19927
+Node: Search and Replace21106
+Node: Using the Mouse21841
+Node: Anchors22454
+Node: Limitations23259
+Node: Built-in Help23576
+Node: The File Browser24001
+Node: Feature Toggles24892
+Node: Nanorc Files26699
+Node: Settings28320
+Ref: set functioncolor31590
+Ref: set matchbrackets34218
+Ref: Whitespace42030
+Node: Syntax Highlighting42785
+Node: Rebinding Keys49550
+Node: Pico Compatibility64002
+Node: Building and Configure Options68542
 
 End Tag Table
 

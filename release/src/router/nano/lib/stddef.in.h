@@ -1,6 +1,6 @@
 /* A substitute for POSIX 2008 <stddef.h>, for platforms that have issues.
 
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -48,6 +48,23 @@
 /* Normal invocation convention.  */
 
 # ifndef _@GUARD_PREFIX@_STDDEF_H
+
+/* On AIX 7.2, with xlc in 64-bit mode, <stddef.h> defines max_align_t to a
+   type with alignment 4, but 'long' has alignment 8.  */
+#  if defined _AIX && defined _ARCH_PPC64
+#   if !GNULIB_defined_max_align_t
+#    ifdef _MAX_ALIGN_T
+/* /usr/include/stddef.h has already defined max_align_t.  Override it.  */
+typedef long rpl_max_align_t;
+#     define max_align_t rpl_max_align_t
+#    else
+/* Prevent /usr/include/stddef.h from defining max_align_t.  */
+typedef long max_align_t;
+#     define _MAX_ALIGN_T
+#    endif
+#    define GNULIB_defined_max_align_t 1
+#   endif
+#  endif
 
 /* The include_next requires a split double-inclusion guard.  */
 

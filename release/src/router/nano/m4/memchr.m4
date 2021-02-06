@@ -1,5 +1,5 @@
-# memchr.m4 serial 16
-dnl Copyright (C) 2002-2004, 2009-2020 Free Software Foundation, Inc.
+# memchr.m4 serial 17
+dnl Copyright (C) 2002-2004, 2009-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -59,6 +59,7 @@ AC_DEFUN_ONCE([gl_FUNC_MEMCHR],
 #endif
   if (fence)
     {
+      /* Test against bugs on glibc systems.  */
       if (memchr (fence, 0, 0))
         result |= 1;
       strcpy (fence - 9, "12345678");
@@ -66,6 +67,9 @@ AC_DEFUN_ONCE([gl_FUNC_MEMCHR],
         result |= 2;
       if (memchr (fence - 1, 0, 3) != fence - 1)
         result |= 4;
+      /* Test against bug on AIX 7.2.  */
+      if (memchr (fence - 4, '6', 16) != fence - 4)
+        result |= 8;
     }
   /* Test against bug on Android 4.3.  */
   {
@@ -74,7 +78,7 @@ AC_DEFUN_ONCE([gl_FUNC_MEMCHR],
     input[1] = 'b';
     input[2] = 'c';
     if (memchr (input, 0x789abc00 | 'b', 3) != input + 1)
-      result |= 8;
+      result |= 16;
   }
   return result;
 ]])],

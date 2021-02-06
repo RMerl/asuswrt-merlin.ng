@@ -1,8 +1,8 @@
 # Configure a more-standard replacement for <time.h>.
 
-# Copyright (C) 2000-2001, 2003-2007, 2009-2020 Free Software Foundation, Inc.
+# Copyright (C) 2000-2001, 2003-2007, 2009-2021 Free Software Foundation, Inc.
 
-# serial 12
+# serial 15
 
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -25,6 +25,22 @@ AC_DEFUN([gl_HEADER_TIME_H_BODY],
   AC_REQUIRE([gl_CHECK_TYPE_STRUCT_TIMESPEC])
 
   AC_REQUIRE([AC_C_RESTRICT])
+
+  AC_CACHE_CHECK([for TIME_UTC in <time.h>],
+    [gl_cv_time_h_has_TIME_UTC],
+    [AC_COMPILE_IFELSE(
+       [AC_LANG_PROGRAM(
+          [[#include <time.h>
+          ]],
+          [[static int x = TIME_UTC; x++;]])],
+       [gl_cv_time_h_has_TIME_UTC=yes],
+       [gl_cv_time_h_has_TIME_UTC=no])])
+  if test $gl_cv_time_h_has_TIME_UTC = yes; then
+    TIME_H_DEFINES_TIME_UTC=1
+  else
+    TIME_H_DEFINES_TIME_UTC=0
+  fi
+  AC_SUBST([TIME_H_DEFINES_TIME_UTC])
 ])
 
 dnl Check whether 'struct timespec' is declared
@@ -113,14 +129,18 @@ AC_DEFUN([gl_HEADER_TIME_H_DEFAULTS],
   GNULIB_STRFTIME=0;                     AC_SUBST([GNULIB_STRFTIME])
   GNULIB_STRPTIME=0;                     AC_SUBST([GNULIB_STRPTIME])
   GNULIB_TIMEGM=0;                       AC_SUBST([GNULIB_TIMEGM])
+  GNULIB_TIMESPEC_GET=0;                 AC_SUBST([GNULIB_TIMESPEC_GET])
   GNULIB_TIME_R=0;                       AC_SUBST([GNULIB_TIME_R])
   GNULIB_TIME_RZ=0;                      AC_SUBST([GNULIB_TIME_RZ])
   GNULIB_TZSET=0;                        AC_SUBST([GNULIB_TZSET])
+  dnl Support Microsoft deprecated alias function names by default.
+  GNULIB_MDA_TZSET=1;                    AC_SUBST([GNULIB_MDA_TZSET])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_DECL_LOCALTIME_R=1;               AC_SUBST([HAVE_DECL_LOCALTIME_R])
   HAVE_NANOSLEEP=1;                      AC_SUBST([HAVE_NANOSLEEP])
   HAVE_STRPTIME=1;                       AC_SUBST([HAVE_STRPTIME])
   HAVE_TIMEGM=1;                         AC_SUBST([HAVE_TIMEGM])
+  HAVE_TIMESPEC_GET=1;                   AC_SUBST([HAVE_TIMESPEC_GET])
   dnl Even GNU libc does not have timezone_t yet.
   HAVE_TIMEZONE_T=0;                     AC_SUBST([HAVE_TIMEZONE_T])
   dnl If another module says to replace or to not replace, do that.

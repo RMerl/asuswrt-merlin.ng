@@ -1,5 +1,5 @@
-# isnanf.m4 serial 17
-dnl Copyright (C) 2007-2020 Free Software Foundation, Inc.
+# isnanf.m4 serial 18
+dnl Copyright (C) 2007-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -169,7 +169,7 @@ int main()
       m.value = NaN ();
       /* Set the bits below the exponent to 01111...111.  */
       m.word[0] &= -1U << FLT_EXPBIT0_BIT;
-      m.word[0] |= 1U << (FLT_EXPBIT0_BIT - 1) - 1;
+      m.word[0] |= (1U << (FLT_EXPBIT0_BIT - 1)) - 1;
       if (!isnanf (m.value))
         result |= 4;
     }

@@ -1,5 +1,5 @@
-# include_next.m4 serial 25
-dnl Copyright (C) 2006-2020 Free Software Foundation, Inc.
+# include_next.m4 serial 26
+dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -106,19 +106,21 @@ dnl We intentionally avoid using AC_LANG_SOURCE here.
   AC_SUBST([INCLUDE_NEXT])
   AC_SUBST([INCLUDE_NEXT_AS_FIRST_DIRECTIVE])
   AC_SUBST([PRAGMA_SYSTEM_HEADER])
-  AC_CACHE_CHECK([whether system header files limit the line length],
-    [gl_cv_pragma_columns],
-    [dnl HP NonStop systems, which define __TANDEM, have this misfeature.
-     AC_EGREP_CPP([choke me],
+
+  dnl HP NonStop systems, which define __TANDEM, limit the line length
+  dnl after including some system header files.
+  AC_CACHE_CHECK([whether source code line length is unlimited],
+    [gl_cv_source_line_length_unlimited],
+    [AC_EGREP_CPP([choke me],
        [
 #ifdef __TANDEM
 choke me
 #endif
        ],
-       [gl_cv_pragma_columns=yes],
-       [gl_cv_pragma_columns=no])
+       [gl_cv_source_line_length_unlimited=no],
+       [gl_cv_source_line_length_unlimited=yes])
     ])
-  if test $gl_cv_pragma_columns = yes; then
+  if test $gl_cv_source_line_length_unlimited = no; then
     PRAGMA_COLUMNS="#pragma COLUMNS 10000"
   else
     PRAGMA_COLUMNS=

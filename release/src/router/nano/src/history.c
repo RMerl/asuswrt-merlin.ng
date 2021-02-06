@@ -1,7 +1,7 @@
 /**************************************************************************
  *   history.c  --  This file is part of GNU nano.                        *
  *                                                                        *
- *   Copyright (C) 2003-2011, 2013-2020 Free Software Foundation, Inc.    *
+ *   Copyright (C) 2003-2011, 2013-2021 Free Software Foundation, Inc.    *
  *   Copyright (C) 2016, 2017, 2019 Benno Schulenberg                     *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
@@ -299,17 +299,17 @@ void load_history(void)
 	}
 
 	linestruct **history = &search_history;
-	char *line = NULL;
-	size_t buf_len = 0;
+	char *stanza = NULL;
+	size_t dummy = 0;
 	ssize_t read;
 
 	/* Load the three history lists (first search, then replace, then execute)
 	 * from oldest entry to newest.  Between two lists there is an empty line. */
-	while ((read = getline(&line, &buf_len, histfile)) > 0) {
-		line[--read] = '\0';
+	while ((read = getline(&stanza, &dummy, histfile)) > 0) {
+		stanza[--read] = '\0';
 		if (read > 0) {
-			recode_NUL_to_LF(line, read);
-			update_history(history, line);
+			recode_NUL_to_LF(stanza, read);
+			update_history(history, stanza);
 		} else if (history == &search_history)
 			history = &replace_history;
 		else
@@ -320,7 +320,7 @@ void load_history(void)
 		jot_error(N_("Error reading %s: %s"), histname, strerror(errno));
 
 	free(histname);
-	free(line);
+	free(stanza);
 
 	/* Reading in the lists has marked them as changed; undo this side effect. */
 	history_changed = FALSE;
@@ -361,7 +361,7 @@ void save_history(void)
 	histfile = fopen(histname, "wb");
 
 	if (histfile == NULL) {
-		jot_error(N_("Error writing %s: %s\n"), histname, strerror(errno));
+		jot_error(N_("Error writing %s: %s"), histname, strerror(errno));
 		free(histname);
 		return;
 	}
@@ -371,10 +371,10 @@ void save_history(void)
 
 	if (!write_list(searchtop, histfile) || !write_list(replacetop, histfile) ||
 											!write_list(executetop, histfile))
-		jot_error(N_("Error writing %s: %s\n"), histname, strerror(errno));
+		jot_error(N_("Error writing %s: %s"), histname, strerror(errno));
 
 	if (fclose(histfile) == EOF)
-		jot_error(N_("Error writing %s: %s\n"), histname, strerror(errno));
+		jot_error(N_("Error writing %s: %s"), histname, strerror(errno));
 
 	free(histname);
 }
@@ -393,34 +393,35 @@ void load_poshistory(void)
 	if (histfile == NULL)
 		return;
 
-	char *line = NULL, *lineptr, *xptr;
-	size_t buf_len = 0;
 	ssize_t read, count = 0;
 	struct stat fileinfo;
 	poshiststruct *record_ptr = NULL, *newrecord;
+	char *lineptr, *columnptr;
+	char *stanza = NULL;
+	size_t dummy = 0;
 
 	/* Read and parse each line, and store the extracted data. */
-	while ((read = getline(&line, &buf_len, histfile)) > 5) {
+	while ((read = getline(&stanza, &dummy, histfile)) > 5) {
 		/* Decode NULs as embedded newlines. */
-		recode_NUL_to_LF(line, read);
+		recode_NUL_to_LF(stanza, read);
 
-		/* Find where the x index and line number are in the line. */
-		xptr = revstrstr(line, " ", line + read - 3);
-		if (xptr == NULL)
+		/* Find the spaces before column number and line number. */
+		columnptr = revstrstr(stanza, " ", stanza + read - 3);
+		if (columnptr == NULL)
 			continue;
-		lineptr = revstrstr(line, " ", xptr - 2);
+		lineptr = revstrstr(stanza, " ", columnptr - 2);
 		if (lineptr == NULL)
 			continue;
 
 		/* Now separate the three elements of the line. */
-		*(xptr++) = '\0';
+		*(columnptr++) = '\0';
 		*(lineptr++) = '\0';
 
 		/* Create a new position record. */
-		newrecord = (poshiststruct *)nmalloc(sizeof(poshiststruct));
-		newrecord->filename = copy_of(line);
-		newrecord->lineno = atoi(lineptr);
-		newrecord->xno = atoi(xptr);
+		newrecord = nmalloc(sizeof(poshiststruct));
+		newrecord->filename = copy_of(stanza);
+		newrecord->linenumber = atoi(lineptr);
+		newrecord->columnnumber = atoi(columnptr);
 		newrecord->next = NULL;
 
 		/* Add the record to the list. */
@@ -445,7 +446,7 @@ void load_poshistory(void)
 	if (fclose(histfile) == EOF)
 		jot_error(N_("Error reading %s: %s"), poshistname, strerror(errno));
 
-	free(line);
+	free(stanza);
 
 	if (stat(poshistname, &fileinfo) == 0)
 		latest_timestamp = fileinfo.st_mtime;
@@ -459,7 +460,7 @@ void save_poshistory(void)
 	FILE *histfile = fopen(poshistname, "wb");
 
 	if (histfile == NULL) {
-		jot_error(N_("Error writing %s: %s\n"), poshistname, strerror(errno));
+		jot_error(N_("Error writing %s: %s"), poshistname, strerror(errno));
 		return;
 	}
 
@@ -472,9 +473,9 @@ void save_poshistory(void)
 
 		/* Assume 20 decimal positions each for line and column number,
 		 * plus two spaces, plus the line feed, plus the null byte. */
-		path_and_place = charalloc(strlen(posptr->filename) + 44);
+		path_and_place = nmalloc(strlen(posptr->filename) + 44);
 		sprintf(path_and_place, "%s %zd %zd\n",
-								posptr->filename, posptr->lineno, posptr->xno);
+								posptr->filename, posptr->linenumber, posptr->columnnumber);
 		length = strlen(path_and_place);
 
 		/* Encode newlines in filenames as NULs. */
@@ -483,13 +484,13 @@ void save_poshistory(void)
 		path_and_place[length - 1] = '\n';
 
 		if (fwrite(path_and_place, sizeof(char), length, histfile) < length)
-			jot_error(N_("Error writing %s: %s\n"), poshistname, strerror(errno));
+			jot_error(N_("Error writing %s: %s"), poshistname, strerror(errno));
 
 		free(path_and_place);
 	}
 
 	if (fclose(histfile) == EOF)
-		jot_error(N_("Error writing %s: %s\n"), poshistname, strerror(errno));
+		jot_error(N_("Error writing %s: %s"), poshistname, strerror(errno));
 
 	if (stat(poshistname, &fileinfo) == 0)
 		latest_timestamp = fileinfo.st_mtime;
@@ -556,7 +557,7 @@ void update_poshistory(void)
 	/* If we didn't find it, make a new node; otherwise, if we're
 	 * not at the end, move the matching one to the end. */
 	if (theone == NULL) {
-		theone = (poshiststruct *)nmalloc(sizeof(poshiststruct));
+		theone = nmalloc(sizeof(poshiststruct));
 		theone->filename = copy_of(fullpath);
 		if (position_history == NULL)
 			position_history = theone;
@@ -573,8 +574,8 @@ void update_poshistory(void)
 	}
 
 	/* Store the last cursor position. */
-	theone->lineno = openfile->current->lineno;
-	theone->xno = xplustabs() + 1;
+	theone->linenumber = openfile->current->lineno;
+	theone->columnnumber = xplustabs() + 1;
 	theone->next = NULL;
 
 	free(fullpath);
@@ -604,8 +605,8 @@ bool has_old_position(const char *file, ssize_t *line, ssize_t *column)
 	if (posptr == NULL)
 		return FALSE;
 
-	*line = posptr->lineno;
-	*column = posptr->xno;
+	*line = posptr->linenumber;
+	*column = posptr->columnnumber;
 	return TRUE;
 }
 #endif /* ENABLE_HISTORIES */

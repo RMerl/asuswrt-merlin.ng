@@ -1,6 +1,6 @@
-# serial 16
+# serial 17
 # Configure fcntl.h.
-dnl Copyright (C) 2006-2007, 2009-2020 Free Software Foundation, Inc.
+dnl Copyright (C) 2006-2007, 2009-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -42,6 +42,9 @@ AC_DEFUN([gl_FCNTL_H_DEFAULTS],
   GNULIB_NONBLOCKING=0;  AC_SUBST([GNULIB_NONBLOCKING])
   GNULIB_OPEN=0;         AC_SUBST([GNULIB_OPEN])
   GNULIB_OPENAT=0;       AC_SUBST([GNULIB_OPENAT])
+  dnl Support Microsoft deprecated alias function names by default.
+  GNULIB_MDA_CREAT=1;    AC_SUBST([GNULIB_MDA_CREAT])
+  GNULIB_MDA_OPEN=1;     AC_SUBST([GNULIB_MDA_OPEN])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_FCNTL=1;          AC_SUBST([HAVE_FCNTL])
   HAVE_OPENAT=1;         AC_SUBST([HAVE_OPENAT])

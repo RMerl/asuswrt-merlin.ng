@@ -1,5 +1,8 @@
 ## Syntax highlighting for the packet-filtering rules of Netfilter.
 
+## Original author:  Arturo Borrero González <arturo@debian.org>
+## License:  GPL version 3 or newer
+
 syntax nftables "\.(nft|nftables)$"
 header "^#!.*(nft|nftables)"
 comment "#"

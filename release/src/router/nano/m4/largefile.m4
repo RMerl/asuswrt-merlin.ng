@@ -1,7 +1,7 @@
 # Enable large files on systems where this is not the default.
 # Enable support for files on Linux file systems with 64-bit inode numbers.
 
-# Copyright 1992-1996, 1998-2020 Free Software Foundation, Inc.
+# Copyright 1992-1996, 1998-2021 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -25,7 +25,7 @@ AC_DEFUN([gl_SET_LARGEFILE_SOURCE],
 # The following implementation works around a problem in autoconf <= 2.69;
 # AC_SYS_LARGEFILE does not configure for large inodes on Mac OS X 10.5,
 # or configures them incorrectly in some cases.
-m4_version_prereq([2.70], [] ,[
+m4_version_prereq([2.70], [], [
 
 # _AC_SYS_LARGEFILE_TEST_INCLUDES
 # -------------------------------

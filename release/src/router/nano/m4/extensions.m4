@@ -1,14 +1,19 @@
-# serial 18  -*- Autoconf -*-
+# serial 22  -*- Autoconf -*-
 # Enable extensions on systems that normally disable them.
 
-# Copyright (C) 2003, 2006-2020 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2006-2021 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
+dnl Define to empty for the benefit of Autoconf 2.69 and earlier, so that
+dnl AC_USE_SYSTEM_EXTENSIONS (below) can be used unchanged from Autoconf 2.70+.
+m4_ifndef([AC_CHECK_INCLUDES_DEFAULT],
+  [AC_DEFUN([AC_CHECK_INCLUDES_DEFAULT], [])])
+
 # This definition of AC_USE_SYSTEM_EXTENSIONS is stolen from git
 # Autoconf.  Perhaps we can remove this once we can assume Autoconf
-# 2.70 or later everywhere, but since Autoconf mutates rapidly
+# is recent-enough everywhere, but since Autoconf mutates rapidly
 # enough in this area it's likely we'll need to redefine
 # AC_USE_SYSTEM_EXTENSIONS for quite some time.
 
@@ -26,36 +31,27 @@
 #      its dependencies. This will ensure that the gl_USE_SYSTEM_EXTENSIONS
 #      invocation occurs in gl_EARLY, not in gl_INIT.
 
+m4_version_prereq([2.70.1], [], [
+
 # AC_USE_SYSTEM_EXTENSIONS
 # ------------------------
 # Enable extensions on systems that normally disable them,
 # typically due to standards-conformance issues.
-#
-# Remember that #undef in AH_VERBATIM gets replaced with #define by
-# AC_DEFINE.  The goal here is to define all known feature-enabling
-# macros, then, if reports of conflicts are made, disable macros that
-# cause problems on some platforms (such as __EXTENSIONS__).
+# We unconditionally define as many of the known feature-enabling
+# as possible, reserving conditional behavior for macros that are
+# known to cause problems on some platforms (such as __EXTENSIONS__).
 AC_DEFUN_ONCE([AC_USE_SYSTEM_EXTENSIONS],
-[AC_BEFORE([$0], [AC_COMPILE_IFELSE])dnl
+[AC_BEFORE([$0], [AC_PREPROC_IFELSE])dnl
+AC_BEFORE([$0], [AC_COMPILE_IFELSE])dnl
+AC_BEFORE([$0], [AC_LINK_IFELSE])dnl
 AC_BEFORE([$0], [AC_RUN_IFELSE])dnl
-
-  AC_CHECK_HEADER([minix/config.h], [MINIX=yes], [MINIX=])
-  if test "$MINIX" = yes; then
-    AC_DEFINE([_POSIX_SOURCE], [1],
-      [Define to 1 if you need to in order for 'stat' and other
-       things to work.])
-    AC_DEFINE([_POSIX_1_SOURCE], [2],
-      [Define to 2 if the system does not provide POSIX.1 features
-       except with this defined.])
-    AC_DEFINE([_MINIX], [1],
-      [Define to 1 if on MINIX.])
-    AC_DEFINE([_NETBSD_SOURCE], [1],
-      [Define to 1 to make NetBSD features available.  MINIX 3 needs this.])
-  fi
-
+AC_BEFORE([$0], [AC_CHECK_INCLUDES_DEFAULT])dnl
+dnl #undef in AH_VERBATIM gets replaced with #define by AC_DEFINE.
 dnl Use a different key than __EXTENSIONS__, as that name broke existing
 dnl configure.ac when using autoheader 2.62.
-  AH_VERBATIM([USE_SYSTEM_EXTENSIONS],
+dnl The macros below are in alphabetical order ignoring leading _ or __
+dnl prefixes.
+AH_VERBATIM([USE_SYSTEM_EXTENSIONS],
 [/* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
 # undef _ALL_SOURCE
@@ -64,19 +60,44 @@ dnl configure.ac when using autoheader 2.62.
 #ifndef _DARWIN_C_SOURCE
 # undef _DARWIN_C_SOURCE
 #endif
+/* Enable general extensions on Solaris.  */
+#ifndef __EXTENSIONS__
+# undef __EXTENSIONS__
+#endif
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
 # undef _GNU_SOURCE
 #endif
-/* Enable NetBSD extensions on NetBSD.  */
+/* Enable X/Open compliant socket functions that do not require linking
+   with -lxnet on HP-UX 11.11.  */
+#ifndef _HPUX_ALT_XOPEN_SOCKET_API
+# undef _HPUX_ALT_XOPEN_SOCKET_API
+#endif
+/* Identify the host operating system as Minix.
+   This macro does not affect the system headers' behavior.
+   A future release of Autoconf may stop defining this macro.  */
+#ifndef _MINIX
+# undef _MINIX
+#endif
+/* Enable general extensions on NetBSD.
+   Enable NetBSD compatibility extensions on Minix.  */
 #ifndef _NETBSD_SOURCE
 # undef _NETBSD_SOURCE
 #endif
-/* Enable OpenBSD extensions on NetBSD.  */
+/* Enable OpenBSD compatibility extensions on NetBSD.
+   Oddly enough, this does nothing on OpenBSD.  */
 #ifndef _OPENBSD_SOURCE
 # undef _OPENBSD_SOURCE
 #endif
-/* Enable threading extensions on Solaris.  */
+/* Define to 1 if needed for POSIX-compatible behavior.  */
+#ifndef _POSIX_SOURCE
+# undef _POSIX_SOURCE
+#endif
+/* Define to 2 if needed for POSIX-compatible behavior.  */
+#ifndef _POSIX_1_SOURCE
+# undef _POSIX_1_SOURCE
+#endif
+/* Enable POSIX-compatible threading on Solaris.  */
 #ifndef _POSIX_PTHREAD_SEMANTICS
 # undef _POSIX_PTHREAD_SEMANTICS
 #endif
@@ -112,22 +133,19 @@ dnl configure.ac when using autoheader 2.62.
 #ifndef _TANDEM_SOURCE
 # undef _TANDEM_SOURCE
 #endif
-/* Enable X/Open extensions if necessary.  HP-UX 11.11 defines
-   mbstate_t only if _XOPEN_SOURCE is defined to 500, regardless of
-   whether compiling with -Ae or -D_HPUX_SOURCE=1.  */
+/* Enable X/Open extensions.  Define to 500 only if necessary
+   to make mbstate_t available.  */
 #ifndef _XOPEN_SOURCE
 # undef _XOPEN_SOURCE
 #endif
-/* Enable X/Open compliant socket functions that do not require linking
-   with -lxnet on HP-UX 11.11.  */
-#ifndef _HPUX_ALT_XOPEN_SOCKET_API
-# undef _HPUX_ALT_XOPEN_SOCKET_API
-#endif
-/* Enable general extensions on Solaris.  */
-#ifndef __EXTENSIONS__
-# undef __EXTENSIONS__
-#endif
-])
+])dnl
+
+  AC_REQUIRE([AC_CHECK_INCLUDES_DEFAULT])dnl
+  _AC_CHECK_HEADER_ONCE([wchar.h])
+  _AC_CHECK_HEADER_ONCE([minix/config.h])
+
+dnl Defining __EXTENSIONS__ may break the system headers on some systems.
+dnl (FIXME: Which ones?)
   AC_CACHE_CHECK([whether it is safe to define __EXTENSIONS__],
     [ac_cv_safe_to_define___extensions__],
     [AC_COMPILE_IFELSE(
@@ -136,11 +154,33 @@ dnl configure.ac when using autoheader 2.62.
           ]AC_INCLUDES_DEFAULT])],
        [ac_cv_safe_to_define___extensions__=yes],
        [ac_cv_safe_to_define___extensions__=no])])
-  test $ac_cv_safe_to_define___extensions__ = yes &&
-    AC_DEFINE([__EXTENSIONS__])
+
+dnl HP-UX 11.11 defines mbstate_t only if _XOPEN_SOURCE is defined to
+dnl 500, regardless of whether compiling with -Ae or -D_HPUX_SOURCE=1.
+dnl But defining _XOPEN_SOURCE may turn *off* extensions on platforms
+dnl not covered by turn-on-extensions macros (notably Dragonfly, Free,
+dnl and OpenBSD, which don't have any equivalent of _NETBSD_SOURCE) so
+dnl it should only be defined when necessary.
+  AC_CACHE_CHECK([whether _XOPEN_SOURCE should be defined],
+    [ac_cv_should_define__xopen_source],
+    [ac_cv_should_define__xopen_source=no
+    AS_IF([test $ac_cv_header_wchar_h = yes],
+      [AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([[
+          #include <wchar.h>
+          mbstate_t x;]])],
+        [],
+        [AC_COMPILE_IFELSE(
+          [AC_LANG_PROGRAM([[
+            #define _XOPEN_SOURCE 500
+            #include <wchar.h>
+            mbstate_t x;]])],
+          [ac_cv_should_define__xopen_source=yes])])])])
+
   AC_DEFINE([_ALL_SOURCE])
   AC_DEFINE([_DARWIN_C_SOURCE])
   AC_DEFINE([_GNU_SOURCE])
+  AC_DEFINE([_HPUX_ALT_XOPEN_SOCKET_API])
   AC_DEFINE([_NETBSD_SOURCE])
   AC_DEFINE([_OPENBSD_SOURCE])
   AC_DEFINE([_POSIX_PTHREAD_SEMANTICS])
@@ -152,24 +192,18 @@ dnl configure.ac when using autoheader 2.62.
   AC_DEFINE([__STDC_WANT_LIB_EXT2__])
   AC_DEFINE([__STDC_WANT_MATH_SPEC_FUNCS__])
   AC_DEFINE([_TANDEM_SOURCE])
-  AC_CACHE_CHECK([whether _XOPEN_SOURCE should be defined],
-    [ac_cv_should_define__xopen_source],
-    [ac_cv_should_define__xopen_source=no
-     AC_COMPILE_IFELSE(
-       [AC_LANG_PROGRAM([[
-          #include <wchar.h>
-          mbstate_t x;]])],
-       [],
-       [AC_COMPILE_IFELSE(
-          [AC_LANG_PROGRAM([[
-             #define _XOPEN_SOURCE 500
-             #include <wchar.h>
-             mbstate_t x;]])],
-          [ac_cv_should_define__xopen_source=yes])])])
-  test $ac_cv_should_define__xopen_source = yes &&
-    AC_DEFINE([_XOPEN_SOURCE], [500])
-  AC_DEFINE([_HPUX_ALT_XOPEN_SOCKET_API])
+  AS_IF([test $ac_cv_header_minix_config_h = yes],
+    [MINIX=yes
+    AC_DEFINE([_MINIX])
+    AC_DEFINE([_POSIX_SOURCE])
+    AC_DEFINE([_POSIX_1_SOURCE], [2])],
+    [MINIX=])
+  AS_IF([test $ac_cv_safe_to_define___extensions__ = yes],
+    [AC_DEFINE([__EXTENSIONS__])])
+  AS_IF([test $ac_cv_should_define__xopen_source = yes],
+    [AC_DEFINE([_XOPEN_SOURCE], [500])])
 ])# AC_USE_SYSTEM_EXTENSIONS
+])
 
 # gl_USE_SYSTEM_EXTENSIONS
 # ------------------------
@@ -177,13 +211,17 @@ dnl configure.ac when using autoheader 2.62.
 # typically due to standards-conformance issues.
 AC_DEFUN_ONCE([gl_USE_SYSTEM_EXTENSIONS],
 [
-  dnl Require this macro before AC_USE_SYSTEM_EXTENSIONS.
-  dnl gnulib does not need it. But if it gets required by third-party macros
-  dnl after AC_USE_SYSTEM_EXTENSIONS is required, autoconf 2.62..2.63 emit a
-  dnl warning: "AC_COMPILE_IFELSE was called before AC_USE_SYSTEM_EXTENSIONS".
-  dnl Note: We can do this only for one of the macros AC_AIX, AC_GNU_SOURCE,
-  dnl AC_MINIX. If people still use AC_AIX or AC_MINIX, they are out of luck.
-  AC_REQUIRE([AC_GNU_SOURCE])
-
   AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
+
+  dnl On OpenBSD 6.8 with GCC, the include files contain a couple of
+  dnl definitions that are only activated with an explicit -D_ISOC11_SOURCE.
+  dnl That's because this version of GCC (4.2.1) supports the option
+  dnl '-std=gnu99' but not the option '-std=gnu11'.
+  AC_REQUIRE([AC_CANONICAL_HOST])
+  case "$host_os" in
+    openbsd*)
+      AC_DEFINE([_ISOC11_SOURCE], [1],
+        [Define to enable the declarations of ISO C 11 types and functions.])
+      ;;
+  esac
 ])

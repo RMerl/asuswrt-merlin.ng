@@ -1,5 +1,5 @@
-# sys_stat_h.m4 serial 34   -*- Autoconf -*-
-dnl Copyright (C) 2006-2020 Free Software Foundation, Inc.
+# sys_stat_h.m4 serial 38   -*- Autoconf -*-
+dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -71,6 +71,7 @@ AC_DEFUN([gl_SYS_STAT_H_DEFAULTS],
   GNULIB_GETUMASK=0;    AC_SUBST([GNULIB_GETUMASK])
   GNULIB_LCHMOD=0;      AC_SUBST([GNULIB_LCHMOD])
   GNULIB_LSTAT=0;       AC_SUBST([GNULIB_LSTAT])
+  GNULIB_MKDIR=0;       AC_SUBST([GNULIB_MKDIR])
   GNULIB_MKDIRAT=0;     AC_SUBST([GNULIB_MKDIRAT])
   GNULIB_MKFIFO=0;      AC_SUBST([GNULIB_MKFIFO])
   GNULIB_MKFIFOAT=0;    AC_SUBST([GNULIB_MKFIFOAT])
@@ -79,6 +80,10 @@ AC_DEFUN([gl_SYS_STAT_H_DEFAULTS],
   GNULIB_STAT=0;        AC_SUBST([GNULIB_STAT])
   GNULIB_UTIMENSAT=0;   AC_SUBST([GNULIB_UTIMENSAT])
   GNULIB_OVERRIDES_STRUCT_STAT=0; AC_SUBST([GNULIB_OVERRIDES_STRUCT_STAT])
+  dnl Support Microsoft deprecated alias function names by default.
+  GNULIB_MDA_CHMOD=1;   AC_SUBST([GNULIB_MDA_CHMOD])
+  GNULIB_MDA_MKDIR=1;   AC_SUBST([GNULIB_MDA_MKDIR])
+  GNULIB_MDA_UMASK=1;   AC_SUBST([GNULIB_MDA_UMASK])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_FCHMODAT=1;      AC_SUBST([HAVE_FCHMODAT])
   HAVE_FSTATAT=1;       AC_SUBST([HAVE_FSTATAT])
@@ -99,7 +104,9 @@ AC_DEFUN([gl_SYS_STAT_H_DEFAULTS],
   REPLACE_LSTAT=0;      AC_SUBST([REPLACE_LSTAT])
   REPLACE_MKDIR=0;      AC_SUBST([REPLACE_MKDIR])
   REPLACE_MKFIFO=0;     AC_SUBST([REPLACE_MKFIFO])
+  REPLACE_MKFIFOAT=0;   AC_SUBST([REPLACE_MKFIFOAT])
   REPLACE_MKNOD=0;      AC_SUBST([REPLACE_MKNOD])
+  REPLACE_MKNODAT=0;    AC_SUBST([REPLACE_MKNODAT])
   REPLACE_STAT=0;       AC_SUBST([REPLACE_STAT])
   REPLACE_UTIMENSAT=0;  AC_SUBST([REPLACE_UTIMENSAT])
 ])

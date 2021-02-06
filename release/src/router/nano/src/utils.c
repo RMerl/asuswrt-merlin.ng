@@ -1,7 +1,7 @@
 /**************************************************************************
  *   utils.c  --  This file is part of GNU nano.                          *
  *                                                                        *
- *   Copyright (C) 1999-2011, 2013-2020 Free Software Foundation, Inc.    *
+ *   Copyright (C) 1999-2011, 2013-2021 Free Software Foundation, Inc.    *
  *   Copyright (C) 2016, 2017, 2019 Benno Schulenberg                     *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
@@ -68,7 +68,7 @@ const char *tail(const char *path)
 char *concatenate(const char *path, const char *name)
 {
 	size_t pathlen = strlen(path);
-	char *joined = charalloc(pathlen + strlen(name) + 1);
+	char *joined = nmalloc(pathlen + strlen(name) + 1);
 
 	strcpy(joined, path);
 	strcpy(joined + pathlen, name);
@@ -108,19 +108,19 @@ int digits(ssize_t n)
 }
 #endif
 
-/* Read an integer from str.  If it parses okay, store it in *result
- * and return TRUE; otherwise, return FALSE. */
-bool parse_num(const char *str, ssize_t *result)
+/* Read an integer from the given string.  If it parses okay,
+ * store it in *result and return TRUE; otherwise, return FALSE. */
+bool parse_num(const char *string, ssize_t *result)
 {
-	char *first_error;
 	ssize_t value;
+	char *excess;
 
-	/* The manual page for strtol() says this is required. */
+	/* Clear the error number so that we can check it afterward. */
 	errno = 0;
 
-	value = (ssize_t)strtol(str, &first_error, 10);
+	value = (ssize_t)strtol(string, &excess, 10);
 
-	if (errno == ERANGE || *str == '\0' || *first_error != '\0')
+	if (errno == ERANGE || *string == '\0' || *excess != '\0')
 		return FALSE;
 
 	*result = value;
@@ -294,7 +294,10 @@ void *nmalloc(size_t howmuch)
 {
 	void *r = malloc(howmuch);
 
-	if (r == NULL && howmuch != 0)
+	if (howmuch == 0)
+		die("Allocating zero bytes.  Please report a bug.\n");
+
+	if (r == NULL)
 		die(_("Nano is out of memory!\n"));
 
 	return r;
@@ -306,7 +309,10 @@ void *nrealloc(void *ptr, size_t howmuch)
 {
 	void *r = realloc(ptr, howmuch);
 
-	if (r == NULL && howmuch != 0)
+	if (howmuch == 0)
+		die("Allocating zero bytes.  Please report a bug.\n");
+
+	if (r == NULL)
 		die(_("Nano is out of memory!\n"));
 
 	return r;
@@ -318,7 +324,7 @@ char *mallocstrcpy(char *dest, const char *src)
 {
 	size_t count = strlen(src) + 1;
 
-	dest = charealloc(dest, count);
+	dest = nrealloc(dest, count);
 	strncpy(dest, src, count);
 
 	return dest;
@@ -328,7 +334,7 @@ char *mallocstrcpy(char *dest, const char *src)
  * of the given string, and NUL-terminate the copy. */
 char *measured_copy(const char *string, size_t count)
 {
-	char *thecopy = charalloc(count + 1);
+	char *thecopy = nmalloc(count + 1);
 
 	memcpy(thecopy, string, count);
 	thecopy[count] = '\0';

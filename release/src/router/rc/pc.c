@@ -734,17 +734,17 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 
 #ifdef BLOCKLOCAL
 				if(!((follow_e->end_hour == 0 || follow_e->end_hour == 24) && follow_e->end_min == 0)) {
-				fprintf(fp, "-A INPUT -i %s -m time", lan_if);
+					fprintf(fp, "-A INPUT -i %s -m time", lan_if);
 					if(follow_e->end_hour > 0 || follow_e->end_min > 0)
 						fprintf(fp, " --timestop %d:%d", follow_e->end_hour, follow_e->end_min);
-				fprintf(fp, "%s %s %s %s -j %s\n", DAYS_PARAM, get_pc_date_str(follow_e->day_of_week, 1, date_buf, sizeof(date_buf)), chk_type, follow_addr, ftype);
+					fprintf(fp, "%s %s %s %s -j %s\n", DAYS_PARAM, get_pc_date_str(follow_e->day_of_week, 1, date_buf, sizeof(date_buf)), chk_type, follow_addr, ftype);
 				}
 #endif
 				if(!((follow_e->end_hour == 0 || follow_e->end_hour == 24) && follow_e->end_min == 0)) {
-				fprintf(fp, "-A FORWARD -i %s -m time", lan_if);
+					fprintf(fp, "-A FORWARD -i %s -m time", lan_if);
 					if(follow_e->end_hour > 0 || follow_e->end_min > 0)
 						fprintf(fp, " --timestop %d:%d", follow_e->end_hour, follow_e->end_min);
-				fprintf(fp, "%s %s %s %s -j %s\n", DAYS_PARAM, get_pc_date_str(follow_e->day_of_week, 1, date_buf, sizeof(date_buf)), chk_type, follow_addr, fftype);
+					fprintf(fp, "%s %s %s %s -j %s\n", DAYS_PARAM, get_pc_date_str(follow_e->day_of_week, 1, date_buf, sizeof(date_buf)), chk_type, follow_addr, fftype);
 				}
 			} else {
 #ifdef BLOCKLOCAL

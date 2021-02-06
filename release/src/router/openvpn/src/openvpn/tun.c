@@ -2064,13 +2064,9 @@ open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tun
     ASSERT(0);
 }
 
-#endif /* !PENDANTIC */
+#endif /* !PEDANTIC */
 
 #ifdef ENABLE_FEATURE_TUN_PERSIST
-
-#ifndef TUNSETGROUP
-#define TUNSETGROUP     _IOW('T', 206, int)
-#endif
 
 /* TUNSETGROUP appeared in 2.6.23 */
 #ifndef TUNSETGROUP

@@ -904,11 +904,13 @@ var validator = {
 							return false;
 						}
 					}
-					for (var key = 0; key < items1.length; key += 1) {
-						if (!isHex(items1[key])) {
-							alert(obj.value + " <#JS_validip#>");
-							obj.focus();
-							return false;
+					if (items1 != "") {
+						for (var key = 0; key < items1.length; key += 1) {
+							if (!isHex(items1[key])) {
+								alert(obj.value + " <#JS_validip#>");
+								obj.focus();
+								return false;
+							}
 						}
 					}
 					return true;

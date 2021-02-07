@@ -71,28 +71,6 @@ var client_convRSSI = function(val) {
 	return result;
 };
 
-/* ouiDB lookup code */
-var ouiClientListArray = new Array();
-ouiClientListArray = Session.get("ouiDB");
-if(ouiClientListArray == undefined) {
-	ouiClientListArray = [];
-	//Download OUI DB
-	setTimeout(function() {
-		var ouiBDjs = document.createElement("script");
-		ouiBDjs.type = "application/javascript";
-		ouiBDjs.src = "/js/ouiDB.js";
-		window.document.body.appendChild(ouiBDjs);
-	}, 1000);
-}
-
-function updateManufacturer(_ouiDBArray) {
-	ouiClientListArray = [];
-	ouiClientListArray = _ouiDBArray;
-	Session.set("ouiDB", _ouiDBArray);
-}
-
-/* End ouiDB lookup code */
-
 var ipState = new Array();
 ipState["Static"] = "<#BOP_ctype_title5#>";
 ipState["DHCP"] = "<#BOP_ctype_title1#>";
@@ -3167,7 +3145,7 @@ function retOverLibStr(client){
 	if(client.isITunes)
 		overlibStr += "<p><#Device_service_iTune#></p>YES";
 	if(client.isWL > 0){
-		overlibStr += "<p><#Wireless_Radio#>:</p>" + wl_nband_title[client.isWL-1] + " (" + client.rssi + " dBm)";
+		overlibStr += "<p><#Wireless_Radio#>:</p>" + isWL_map[client.isWL]["text"].replace("G", " GHz") + " (" + client.rssi + " dBm)";
 		if(stainfo_support) {
 			overlibStr += "<p>Tx Rate:</p>" + ((client.curTx != "") ? client.curTx : "-");
 			overlibStr += "<p>Rx Rate:</p>" + ((client.curRx != "") ? client.curRx : "-");
@@ -3191,7 +3169,7 @@ function ajaxCallJsonp(target){
 }
 
 function oui_query_full_vendor(mac){
-	if(clientList[mac].vendor != "") {
+	if(clientList[mac] != undefined && clientList[mac].vendor != "") {
 		setTimeout(function(){
 			var overlibStrTmp = retOverLibStr(clientList[mac]);
 			overlibStrTmp += "<p><span>.....................................</span></p><p style='margin-top:5px'><#Manufacturer#> :</p>";
@@ -3200,10 +3178,12 @@ function oui_query_full_vendor(mac){
 		}, 1);
 	}
 	else {
-		if('<% nvram_get("x_Setting"); %>' == '1' && wanConnectStatus && clientList[mac].internetState) {
 			var queryStr = mac.replace(/\:/g, "").splice(6,6,"");
-			var overlibStrTmp = retOverLibStr(clientList[mac]);
-			$.getJSON("http://nw-dlcdnet.asus.com/plugin/js/ouiDB.json", function(data){
+			if (clientList[mac] != undefined)
+				var overlibStrTmp = retOverLibStr(clientList[mac]);
+			else
+				var overlibStrTmp = "<p><#MAC_Address#>:</p>" + mac.toUpperCase();
+			$.getJSON("/js/ouiDB.json", function(data){
 				if(data != "" && data[queryStr] != undefined){
 					if(overlib.isOut) return nd();
 					var vendor_name = data[queryStr].trim();
@@ -3212,7 +3192,6 @@ function oui_query_full_vendor(mac){
 					return overlib(overlibStrTmp);
 				}
 			});
-		}
 	}
 }
 

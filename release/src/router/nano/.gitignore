@@ -18,7 +18,6 @@ core
 /aclocal.m4
 /ar-lib
 /autom4te.cache
-/compile
 /config.cache
 /config.guess
 /config.h
@@ -71,7 +70,6 @@ core
 
 # gnulib entries
 /gnulib/
-/lib/
 /m4/.gitignore
 /m4/gnulib-cache.m4
 /snippet/

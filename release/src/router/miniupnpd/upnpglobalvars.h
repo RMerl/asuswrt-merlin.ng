@@ -84,6 +84,34 @@ extern int runtime_flags;
 
 #define PERFORMSTUNMASK    0x1000
 
+#ifdef ENABLE_AURASYNC
+#define ENABLEAURASYNCMASK	0x2000
+#define	AS_RGB_MIN	0
+#define	AS_RGB_MAX	255
+#define	AS_GROUP_MIN	0
+#define	AS_GROUP_MAX	7
+#define	AS_MODE_MIN	0
+#define	AS_MODE_MAX	13
+#define	AS_DIR_MIN	0
+#define	AS_DIR_MAX	1
+extern int aura_standalone;
+#endif
+
+#ifdef ENABLE_NVGFN
+#define ENABLENVGFNMASK				0x4000
+#define NVGFN_QOSPORT_MIN			1024
+#define NVGFN_QOSPORT_MAX			65535
+#define NVGFN_MCSINDEX_MIN			0
+#define NVGFN_MCSINDEX_MAX			23
+#define NVGFN_SPATIALSTREAMS_MIN	1
+#define NVGFN_SPATIALSTREAMS_MAX	3
+#define NVGFN_BANDWIDTH_MIN			1
+#define NVGFN_BANDWIDTH_MAX			65535
+#define NVGFN_WIFISCANINTERVAL_MIN	0
+#define NVGFN_WIFISCANINTERVAL_MAX	65535
+extern int gfn_only;
+#endif
+
 #define SETFLAG(mask)	runtime_flags |= mask
 #define GETFLAG(mask)	(runtime_flags & mask)
 #define CLEARFLAG(mask)	runtime_flags &= ~mask

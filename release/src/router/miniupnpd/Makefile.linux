@@ -27,7 +27,7 @@ CONFIG_OPTIONS += --firewall=iptables
 CFLAGS ?= -Os
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -fno-common
-CFLAGS += -fstack-protector -fPIE
+CFLAGS += $(if $(QCA),-fno-stack-protector,-fstack-protector) -fPIE
 CFLAGS += -D_FORTIFY_SOURCE=2
 CPPFLAGS += -D_GNU_SOURCE
 CFLAGS += -Wall

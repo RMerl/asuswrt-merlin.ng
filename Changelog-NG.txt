@@ -3,10 +3,29 @@ Asuswrt-Merlin 386/NG Changelog
 
 386.2 (xx-xxx-2021)
   - UPDATED: inadyn to 2.8.1.
-  - FIXED: Missing Game Mode to RT-AC88U
+  - UPDATED: nano to 5.5.
+  - CHANGED: Use local OUI database instead of remote one hosted
+             on Asus's server (allows queries to work even when
+             accessing webui over https)
+  - CHANGED: If dropbear cannot create keys in /jffs then
+             create temporary ones in /etc so SSH can work even
+             without a working JFFS partition.
+  - FIXED: Missing Game Mode on RT-AC88U
   - FIXED: Non-working 160 MHz settings for RT-AC88U region/versions
            that should support it
   - FIXED: Missing Instant Guard to RT-AX56U and RT-AC88U.
+  - FIXED: IPv6 ending with "::" were considered invalid on the
+           webui (was breaking the Prefix field on the 6in4 tunnel
+           page for instance).
+  - FIXED: OUI lookups on site survey page not working
+           (for non-HND models)
+  - FIXED: Wifi Radar missing on GT-AC2900
+  - FIXED: Netools-enabled pages not used by GT-AC2900 and
+           RT-AX86U
+  - FIXED: GeForce NOW UPNP not working
+  - FIXED: Erasing the JFFS partition would often require a second
+           reboot since the operation failed when encountering
+           a bad block.  These are now properly skipped.
 
 
 386.1 (30-Jan-2021)

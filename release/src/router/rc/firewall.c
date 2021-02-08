@@ -2290,7 +2290,6 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 #else
 				fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE\n", p, wanx_if, wanx_ip);
 #endif
-
 		}
 
 		// masquerade lan to lan
@@ -3846,7 +3845,7 @@ TRACE_PT("writing Parental Control\n");
 	case IPV6_6IN4:
 	case IPV6_6TO4:
 	case IPV6_6RD:
- 				fprintf(fp_ipv6, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+		fprintf(fp_ipv6, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
 		if (*macaccept)
 			fprintf(fp_ipv6, "-A %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", macaccept);
 		break;
@@ -3958,7 +3957,7 @@ TRACE_PT("writing Parental Control\n");
 		if (*macdrop)
 			fprintf(fp_ipv6, "-A %s -i %s -o %s -j %s\n", macdrop, lan_if, lan_if, logdrop);
 #else
-	if (*macaccept)
+		if (*macaccept)
 			fprintf(fp_ipv6, "-A %s -i %s -o %s -j %s\n", macaccept, lan_if, lan_if, logaccept);
 #endif
 	}
@@ -3983,7 +3982,7 @@ TRACE_PT("writing Parental Control\n");
 		if (*macdrop)
 			fprintf(fp_ipv6, "-A %s -m state --state INVALID -j %s\n", macdrop, logdrop);
 #else
-	if (*macaccept)
+		if (*macaccept)
 			fprintf(fp_ipv6, "-A %s -m state --state INVALID -j %s\n", macaccept, logdrop);
 #endif
 	}
@@ -4201,14 +4200,6 @@ TRACE_PT("writing Parental Control\n");
 	}
 
 #ifdef RTCONFIG_INTERNETCTRL
-#ifdef RTCONFIG_PC_SCHED_V3
-	// MAC address in list and in time period -> ACCEPT.
-	fprintf(fp, "-A PControls -j %s\n", logdrop);
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled())
-		fprintf(fp_ipv6, "-A PControls -j %s\n", logdrop);
-#endif
-#else
 	// MAC address in list and in time period -> ACCEPT.
 	fprintf(fp, "-A ICAccept -j %s\n", logaccept);
 	fprintf(fp, "-A ICDrop -j %s\n", logdrop);
@@ -4221,6 +4212,14 @@ TRACE_PT("writing Parental Control\n");
 #endif
 
 #ifdef RTCONFIG_PARENTALCTRL
+#ifdef RTCONFIG_PC_SCHED_V3
+	// MAC address in list and in time period -> ACCEPT.
+	fprintf(fp, "-A PControls -j %s\n", logdrop);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled())
+		fprintf(fp_ipv6, "-A PControls -j %s\n", logdrop);
+#endif
+#else
 	// MAC address in list and in time period -> ACCEPT.
 	fprintf(fp, "-A PControls -j %s\n", logaccept);
 #ifdef RTCONFIG_IPV6
@@ -4765,7 +4764,6 @@ TRACE_PT("writing temporary Parental Control\n");
 		if (ipv6_enabled()){
 			config_pause_block_string(pc_list, fp_ipv6, logaccept, logdrop, 2);
 			config_daytime_string(pc_list, fp_ipv6, logaccept, logdrop, 1);
-			config_daytime_string(pc_list, fp_ipv6, logaccept, logdrop, 1);
 		}
 #endif
 
@@ -5204,7 +5202,6 @@ TRACE_PT("writing Parental Control\n");
 	/* Clamp TCP MSS to PMTU of WAN interface before accepting RELATED packets */
 	if (nvram_get_int("jumbo_frame_enable"))
 		goto clamp_mss;
-
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 	if (nvram_get_int("pptpd_enable"))
 		goto clamp_mss;
@@ -5292,8 +5289,6 @@ TRACE_PT("writing Parental Control\n");
 #endif
 // ~ oleg patch
 		/* Filter out invalid WAN->WAN connections */
-
-
 		fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wan_if, lan_if, "other2wan");
 #ifdef RTCONFIG_IPV6
 		 if (ipv6_enabled() && *wan6face) {

@@ -828,6 +828,7 @@ mtd_erase(const char *mtd)
 #ifdef RTAC87U
 	char erase_err[255] = {0};
 #endif
+	int skipbb = 0, ret;
 
 	/* Open MTD device */
 	if ((mtd_fd = mtd_open(mtd, O_RDWR)) < 0) {
@@ -847,6 +848,23 @@ mtd_erase(const char *mtd)
 	for (erase_info.start = 0;
 	     erase_info.start < mtd_info.size;
 	     erase_info.start += mtd_info.erasesize) {
+
+		if (!skipbb) {
+			loff_t offset = erase_info.start;
+			if ((ret = ioctl(mtd_fd, MEMGETBADBLOCK, &offset)) > 0) {
+				_dprintf("Skipping bad block at 0x%08x\n", erase_info.start);
+				continue;
+			} else if (ret < 0) {
+				if (errno == EOPNOTSUPP) {
+					skipbb = 1;     // Not supported by this device
+				} else {
+					perror(mtd);
+					close(mtd_fd);
+					return errno;
+				}
+			}
+		}
+
 		(void) ioctl(mtd_fd, MEMUNLOCK, &erase_info);
 		if (ioctl(mtd_fd, MEMERASE, &erase_info) != 0) {
 			perror(mtd);

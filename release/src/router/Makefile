@@ -3771,10 +3771,10 @@ skipdbv2-clean:
 	@rm -f skipdbv2/Makefile
 
 skipdbv2-install: skipdbv2
-	install -D skipdbv2/bin/skipd $(INSTALLDIR)/skipdbv2/usr/sbin/skipd
-	install -D skipdbv2/bin/dbus $(INSTALLDIR)/skipdbv2/usr/sbin/dbus
-	$(STRIP) $(INSTALLDIR)/skipdbv2/usr/sbin/skipd
-	$(STRIP) $(INSTALLDIR)/skipdbv2/usr/sbin/dbus
+	install -D skipdbv2/bin/skipd $(INSTALLDIR)/skipdbv2/usr/bin/skipd
+	install -D skipdbv2/bin/dbus $(INSTALLDIR)/skipdbv2/usr/bin/dbus
+	$(STRIP) $(INSTALLDIR)/skipdbv2/usr/bin/skipd
+	$(STRIP) $(INSTALLDIR)/skipdbv2/usr/bin/dbus
 
 miniupnpd/config.h: shared/version.h
 ifeq ($(RTCONFIG_IGD2),y)

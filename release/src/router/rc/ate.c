@@ -3458,7 +3458,7 @@ int chk_envrams_proc(void)
 
 void start_envrams(void) {
 	if (!pids("envrams"))
-	system("/usr/sbin/envrams >/dev/null");
+		system("/usr/sbin/envrams >/dev/null");
 }
 
 void stop_envrams(void) {

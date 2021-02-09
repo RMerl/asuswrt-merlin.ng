@@ -2412,7 +2412,6 @@ int no_need_to_start_wps(void)
 		     strstr(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "wpa") ||
 		     nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "radius"))
 			ret++;
-
 #ifdef RTCONFIG_RALINK
 		if (nvram_match("wl_mssid", "1"))
 #endif
@@ -5295,9 +5294,9 @@ start_httpd(void)
 //		}
 	}
 	else if(nvram_match("le_enable", "2")){
-                if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
-                        eval("cp", UPLOAD_CERT, HTTPD_CERT);
-                        eval("cp", UPLOAD_KEY, HTTPD_KEY);
+		if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
+			eval("cp", UPLOAD_CERT, HTTPD_CERT);
+			eval("cp", UPLOAD_KEY, HTTPD_KEY);
 		}
 	}
 	else
@@ -5609,7 +5608,6 @@ void start_upnp(void)
 						while (portv && (c = strsep(&portp, ",")) != NULL) {
 							if (strcmp(proto, "TCP") == 0 || strcmp(proto, "BOTH") == 0)
 								fprintf(f, "deny %s 0.0.0.0/0 0-65535\n", c);
-
 							if (strcmp(proto, "UDP") == 0 || strcmp(proto, "BOTH") == 0)
 								fprintf(f, "deny %s 0.0.0.0/0 0-65535\n", c);
 						}
@@ -5790,6 +5788,7 @@ stop_ntpc(void)
 		killall_tk("ntpclient");
 #endif
 }
+
 
 void refresh_ntpc(void)
 {
@@ -6241,7 +6240,6 @@ int stop_norton(void)
 }
 
 #endif /* __CONFIG_NORTON__ */
-
 
 #ifdef RTCONFIG_IXIAEP
 int
@@ -9710,6 +9708,9 @@ start_services(void)
 #ifdef RTCONFIG_NBR_RPT
 	start_nbr_monitor();
 #endif
+#if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
+	start_detect_plc();
+#endif
 
 	run_custom_script("services-start", 0, NULL, NULL);
 
@@ -9724,7 +9725,6 @@ stop_services(void)
 #if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
 	stop_detect_plc();
 #endif
-
 #ifdef RTCONFIG_AMAS_ADTBW
 	stop_amas_adtbw();
 #endif
@@ -12129,8 +12129,8 @@ script_allnet:
 			stop_uam_srv();
 #endif
 #if defined(RTCONFIG_WIFI_SON)
-			if(nvram_match("wifison_ready","1"))
-				stop_amas_lib();
+		        if(nvram_match("wifison_ready","1"))
+                		stop_amas_lib();
 #endif
 
 
@@ -13093,7 +13093,7 @@ check_ddr_done:
 	}
 	else if (strcmp(script, "wan_if") == 0) {
 		if(cmd[1]) {
-			_dprintf("%s: wan_if: %s.\n", __FUNCTION__, cmd[1]);
+		       _dprintf("%s: wan_if: %s.\n", __FUNCTION__, cmd[1]);
 #ifdef RTCONFIG_IPV6
 			int restart_ipv6 = atoi(cmd[1]) == wan_primary_ifunit_ipv6();
 #endif

@@ -1867,7 +1867,7 @@ void init_switch_pre()
 #endif
 
 	if(!nonre_clientMode())
-	doSystem("ethswctl -c wan -o enable -i %s", WAN_IF_ETH);
+		doSystem("ethswctl -c wan -o enable -i %s", WAN_IF_ETH);
 
 #if defined(BCM6750) || defined(BCM63178)
 	system("swmdk");
@@ -3736,7 +3736,7 @@ void init_others(void)
 #endif
 #if defined(RTAC86U) || defined(GTAC2900)
 	if (!nvram_get_int("cpuwait"))
-	system("pwr config --wait off");
+		system("pwr config --wait off");
 #endif
 #if defined(RTAX88U) || defined(RTAX92U)
 	if(nvram_match("HwVer", "1.0")) {

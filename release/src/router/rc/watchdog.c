@@ -7548,11 +7548,11 @@ static void bt_turn_off_service()
 		if (strstr(buf, "ble_qis_done")) {
 			if (nvram_get_int("bt_turn_off") != 2)
 				return;
-				nvram_set("x_Setting", "1");
-				nvram_set("qis_Setting", "1");
-				nvram_commit();
-				stop_bluetooth_service();
-			}
+			nvram_set("x_Setting", "1");
+			nvram_set("qis_Setting", "1");
+			nvram_commit();
+			stop_bluetooth_service();
+		}
 		nvram_set("w_Setting", "1");
 
 		tmp = strtok(buf, delim);
@@ -7565,7 +7565,7 @@ static void bt_turn_off_service()
 			}
 
 			if (strncmp(tmp, "ble_qis_done", strlen(tmp))) 
-			notify_rc_and_wait(tmp);
+				notify_rc_and_wait(tmp);
 
 			tmp = strtok(NULL, delim);
 		}

@@ -2326,7 +2326,6 @@ void stop_lan(void)
 	if (is_routing_enabled())
 	{
 		stop_wanduck();
-
 		del_lan_routes(lan_ifname);
 	}
 #ifdef RTCONFIG_WIRELESSREPEATER

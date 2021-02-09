@@ -22,6 +22,7 @@ CFLAGS += -I$(TOP_PLATFORM)/dpsta
 endif
 CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -DDLM -DASUS_DDNS -DASUS_EXT -DBTN_SETUP -DWEB_REDIRECT
+
 CFLAGS += -DDEBUG_RCTEST
 
 ifeq ($(RTCONFIG_WPS),y)

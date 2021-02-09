@@ -815,7 +815,6 @@ void update_wan6_state(char *prefix, int state, int reason)
 		// keep ip info if it is stopped from connected
 		nvram_set_int(strcat_r(prefix, "sbstate_t", tmp), reason);
 	}
-
 }
 #endif
 

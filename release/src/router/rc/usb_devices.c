@@ -1605,8 +1605,8 @@ int write_3g_conf(FILE *fp, int dno, int aut, const unsigned int vid, const unsi
 			fprintf(fp, "HuaweiNewMode=1\n");
 			break;
 		case SN_Huawei_K5160:
-			fprintf(fp, "DefaultVendor=0x%04x\n",   0x12d1);
-			fprintf(fp, "DefaultProduct=0x%04x\n",  0x1f1e);
+			fprintf(fp, "DefaultVendor=0x%04x\n",	0x12d1);
+			fprintf(fp, "DefaultProduct=0x%04x\n",	0x1f1e);
 			fprintf(fp, "TargetVendor=0x%04x\n",    0x12d1);
 			fprintf(fp, "TargetProductList=\"%s\"\n",	"157f,1592");
 			fprintf(fp, "HuaweiNewMode=1\n");

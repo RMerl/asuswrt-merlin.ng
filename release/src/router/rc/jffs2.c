@@ -250,9 +250,10 @@ void format_mount_2nd_jffs2(void)
 	}
 
 	sprintf(s, "rm -rf %s/*", SECOND_JFFS2_PATH);
-
 	system(s);
+
 	userfs_prepare(SECOND_JFFS2_PATH);
+
 	notice_set("2nd_jffs", format ? "Formatted" : "Loaded");
 
 #if 0 /* disable legacy & asus autoexec */
@@ -268,7 +269,7 @@ void format_mount_2nd_jffs2(void)
 
 void start_jffs2(void)
 {
-	if (!nvram_match("jffs2_enable", "1")) {
+	if (!nvram_match("jffs2_on", "1")) {
 		notice_set("jffs", "");
 		return;
 	}
@@ -302,6 +303,7 @@ void start_jffs2(void)
 			error("formatting");
 			return;
 		}
+
 		format = 1;
 	}
 
@@ -398,9 +400,9 @@ void start_jffs2(void)
 	}
 
 	userfs_prepare("/jffs");
+
 	notice_set("jffs", format ? "Formatted" : "Loaded");
 	jffs2_fail = 0;
-
 
 #if defined(HND_ROUTER) || defined(DSL_AC68U)
 #ifdef RTCONFIG_JFFS_NVRAM
@@ -416,7 +418,6 @@ void start_jffs2(void)
 		system(p);
 		chdir("/");
 	}
-
 	run_userfile("/jffs", ".asusrouter", "/jffs", 3);
 #endif
 

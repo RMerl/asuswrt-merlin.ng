@@ -32,7 +32,7 @@ function initial(){
 	else
 		document.getElementById("transfer_ddns_field").style.display = "none";
 
-	if ('<% nvram_get("jffs2_enable"); %>' != '1') {
+	if ('<% nvram_get("jffs2_on"); %>' != '1') {
 		document.getElementById("jffsrestore").style.display = "none";
 		document.getElementById("jffsbackup").style.display = "none";
 	}

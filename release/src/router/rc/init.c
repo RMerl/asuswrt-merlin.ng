@@ -2082,7 +2082,7 @@ restore_defaults(void)
 	wl_defaults();
 #if defined(RTCONFIG_MSSID_PRELINK)
 	mssid_prelink_defaults();
-#endif	/* RTCONFIG_MSSID_PRELINK */
+#endif  /* RTCONFIG_MSSID_PRELINK */
 	lan_defaults(restore_defaults);
 
 	wan_defaults();
@@ -14783,7 +14783,6 @@ static void sysinit(void)
 #ifdef RTCONFIG_JFFS_NVRAM
 	if(RESTORE_DEFAULTS()) {
 		nvram_set("jffs2_on", "1");
-		nvram_set("jffs2_enable", "1");
 		nvram_set("jffs2_clean_fs", "1");
 	}
 	start_jffs2();
@@ -15097,16 +15096,15 @@ int init_main(int argc, char *argv[])
 		init_others_defer();
 #endif
 
-#if !defined(RTCONFIG_TEST_BOARDDATA_FILE) && !defined(RTCONFIG_JFFS_NVRAM)
-		start_jffs2();
-#endif
-
 		sigemptyset(&sigset);
 		for (i = 0; i < sizeof(initsigs) / sizeof(initsigs[0]); i++) {
 			sigaddset(&sigset, initsigs[i]);
 		}
 		sigprocmask(SIG_BLOCK, &sigset, NULL);
 
+#if !defined(RTCONFIG_TEST_BOARDDATA_FILE) && !defined(RTCONFIG_JFFS_NVRAM)
+		start_jffs2();
+#endif
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 		init_enc_nvram();
 		init_nvram4();

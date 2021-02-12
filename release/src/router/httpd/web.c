@@ -19693,7 +19693,7 @@ struct mime_handler mime_handlers[] = {
 	{ "ureip.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "remote.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "js/jquery.js", "text/javascript", cache_object, NULL, do_file, NULL },
-	{ "js/ouiDB.js", "text/javascript", cache_object, NULL, do_file, NULL },
+	{ "js/ouiDB.json", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "js/chart.min.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "require/require.min.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "calendar/jquery-ui.js", "text/javascript", cache_object, NULL, do_file, NULL },

@@ -19,11 +19,6 @@ ops() {
 	echo "${x} - 选项无效"; sleep 1
 }
 
-fix_timeout() {
-	envram unset screen_timeout
-	envram commit
-}
-
 checkmac() {
 	tmp=$(echo $1 | grep -E "$macpattern")
 	if [ -z "$tmp" ]; then
@@ -103,9 +98,28 @@ erase_mtd() {
 	echo "格式化完成！"
 }
 
-rm_softcenter_detect() {
-	sed -i 's/\tdetect_package/\t# detect_package/g' /koolshare/scripts/ks_tar_install.sh
-	echo "去除软件中心检测完成！"
+hack_softcenter_detect() {
+	tar_sh="/koolshare/scripts/ks_tar_install.sh"
+	app_sh="/koolshare/scripts/ks_app_install.sh"
+
+	sed -i 's/\tdetect_package/\t# detect_package/g' ${tar_sh}
+
+	if [ $(grep -c "s/ 384/ 386/g" ${tar_sh}) -eq 0 ]; then
+		sed -i "/chmod.*\$INSTALL_SCRIPT/a\sed -i 's\/ 384\/ 386\/g' \$INSTALL_SCRIPT >\/dev\/null 2>&1" ${tar_sh}
+	fi
+
+	if [ $(grep -c "s/ 384/ 386/g" ${app_sh}) -eq 0 ]; then
+		tmpsh=`grep 'chmod.*/install.sh' ${app_sh} | awk '{print $NF}'`
+		sed -i "/chmod.*\/install.sh/a\sed -i 's\/ 384\/ 386\/g' ${tmpsh} >\/dev\/null 2>&1" ${app_sh}
+	fi
+	echo "软件中心安装脚本修改完成！"
+}
+
+reset_softcenter() {
+	koolshare-reset
+	jffsinit.sh
+	skipd
+	/koolshare/init.d/V01softok.sh
 }
 
 upgrade_mcu_firmware() {
@@ -146,43 +160,43 @@ do
 	echo "-------------------------"
 	echo "无线驱动 - ${WL_DRIVER}.ko"
 	echo "#########################"
-	echo "1) 修复屏幕超时保存"
-	echo "2) 修改LAN MAC"
-	echo "3) 修改2.4G MAC"
-	echo "4) 修改5G MAC"
-	echo "5) 无线驱动更换成dhd24.ko"
-	echo "6) 无线驱动更换成dhd.ko"
-	echo "7）格式化/dev/mtd5"
-	echo "8）去除软件中心检测"
+	echo "1) 修改LAN MAC"
+	echo "2) 修改2.4G MAC"
+	echo "3) 修改5G MAC"
+	echo "4) 无线驱动更换成dhd24.ko"
+	echo "5) 无线驱动更换成dhd.ko"
+	echo "6）格式化/dev/mtd5"
+	echo "7）软件中心去检测、兼容旧版安装包"
+	echo "8）重置软件中心为固件版本"
 	echo "9）升级MCU固件"
 	echo "q) 退出"
 	echo
 	read -n 1 -p "Choice: " x
 	echo
 	case ${x} in
-    1)
-		fix_timeout;sleep 1;;
-    2)
-		mod_lanmac;sleep 1;;
-    3)
-		mod_2gmac;sleep 1;;
-    4)
-		mod_5gmac;sleep 1;;
-    5)
-		wl_dhd24;sleep 1;;
-    6)
-		wl_dhd;sleep 1;;
+	1)
+		mod_lanmac; sleep 1;;
+	2)
+		mod_2gmac; sleep 1;;
+	3)
+		mod_5gmac; sleep 1;;
+	4)
+		wl_dhd24; sleep 1;;
+	5)
+		wl_dhd; sleep 1;;
+	6)
+		erase_mtd; sleep 1;;
 	7)
-		erase_mtd;sleep 1;;
+		hack_softcenter_detect; sleep 1;;
 	8)
-		rm_softcenter_detect;sleep 1;;
+		reset_softcenter; sleep 1;;
 	9)
-		upgrade_mcu_firmware;sleep 1;;
+		upgrade_mcu_firmware; sleep 1;;
 	q|Q)
 		killall -9 envrams; echo; return 1;;
 	[0-9a-zA-Z])
 		ops;;
-    *)
+	*)
 		;;
 	esac
 done

@@ -10,7 +10,7 @@ menuconfig NET
 	  The reason is that some programs need kernel networking support even
 	  when running on a stand-alone machine that isn't connected to any
 	  other computer.
-	  
+
 	  If you are upgrading from an older kernel, you
 	  should consider updating your networking tools too because changes
 	  in the kernel and the tools often go hand in hand. The tools are
@@ -186,6 +186,10 @@ config BRIDGE_NETFILTER
 	  ebtables.
 
 	  If unsure, say N.
+
+config BCM_KF_NETFILTER:
+	bool "Boardcom KF NETFILTER"
+	default y
 
 source "net/netfilter/Kconfig"
 source "net/ipv4/netfilter/Kconfig"

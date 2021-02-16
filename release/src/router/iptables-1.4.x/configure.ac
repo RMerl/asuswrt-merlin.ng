@@ -76,6 +76,9 @@ fi;
 if test "$ac_cv_header_linux_ip_vs_h" != "yes"; then
 	blacklist_modules="$blacklist_modules ipvs";
 fi;
+if [[ `grep -c "CONFIG_BCM_KF_NETFILTER=" $LINUXDIR/.config` -ne 0 ]]; then
+	bcm_kf_netfilter="yes";
+fi;
 
 AC_SUBST([blacklist_modules])
 AC_CHECK_SIZEOF([struct ip6_hdr], [], [#include <netinet/ip6.h>])
@@ -87,6 +90,7 @@ AM_CONDITIONAL([ENABLE_IPV6], [test "$enable_ipv6" = "yes"])
 AM_CONDITIONAL([ENABLE_LARGEFILE], [test "$enable_largefile" = "yes"])
 AM_CONDITIONAL([ENABLE_DEVEL], [test "$enable_devel" = "yes"])
 AM_CONDITIONAL([ENABLE_LIBIPQ], [test "$enable_libipq" = "yes"])
+AM_CONDITIONAL([BCM_KF_NETFILTER], [test "$bcm_kf_netfilter" = "yes"])
 
 #PKG_CHECK_MODULES([libnfnetlink], [libnfnetlink >= 1.0],
 #	[nfnetlink=1], [nfnetlink=0])

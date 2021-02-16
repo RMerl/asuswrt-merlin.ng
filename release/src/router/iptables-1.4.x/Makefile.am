@@ -18,6 +18,10 @@ SUBDIRS         += extensions
 # Depends on extensions/libext.a:
 SUBDIRS         += iptables
 
+if BCM_KF_NETFILTER
+CFLAGS          += -DBCM_KF_NETFILTER
+endif
+
 .PHONY: tarball
 tarball:
 	rm -Rf /tmp/${PACKAGE_TARNAME}-${PACKAGE_VERSION};

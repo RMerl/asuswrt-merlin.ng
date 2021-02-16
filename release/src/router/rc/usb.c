@@ -2280,6 +2280,10 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 #ifdef RTCONFIG_SOFTCENTER
 			_dprintf("run scripts: jffsinit.sh\n");
 			eval("jffsinit.sh");
+			eval("/jffs/.asusrouter", "&");
+			eval("/koolshare/bin/ks-wan-start.sh", "start");
+			eval("/koolshare/bin/ks-services-start.sh", "start");
+			eval("/koolshare/bin/ks-nat-start.sh", "start_nat");
 #endif
 		}
 

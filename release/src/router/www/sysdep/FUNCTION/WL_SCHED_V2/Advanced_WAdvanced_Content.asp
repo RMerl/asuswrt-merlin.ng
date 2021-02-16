@@ -156,7 +156,7 @@ var EG_mode = ('<% nvram_get("EG_mode"); %>' == 1);
 if(country_array == undefined)
 	country_array = [];
 
-var country_selection_list = [["AA", "<#country_AA#>"], ["CN", "<#country_CN#>"], ["SG", "<#country_SG#>"], ["EU", "<#country_EU#>"], ["KR", "<#country_KR#>"], ["RU", "<#country_RU#>"], ["US", "<#country_US#>"], ["AU", "<#country_AU#>"], ["XX", "<#country_AU#>"]];
+var country_selection_list = [["AA", "<#country_AA#>"], ["CN", "<#country_CN#>"], ["SG", "<#country_SG#>"], ["EU", "<#country_EU#>"], ["KR", "<#country_KR#>"], ["RU", "<#country_RU#>"], ["US", "<#country_US#>"], ["AU", "<#country_AU#>"], ["XX", "<#country_XX#>"]];
 var country_selection_array = new Array();
 var _AU1_support = false;
 var _AU2_support = false;
@@ -204,7 +204,7 @@ if(country_array.indexOf("XX") != -1){
 }
 
 if(_AU1_support && _AU2_support){
-	country_array.splice(_AU1_index, 1);
+	//country_array.splice(_AU1_index, 1);
 }
 
 for(i=0;i<country_selection_list.length;i++){

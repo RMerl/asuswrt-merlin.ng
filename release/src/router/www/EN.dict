@@ -1737,6 +1737,7 @@ Connections=Connections
 ConnectionStatus=Connection status
 country_AA=Asia
 country_AU=Australia
+country_XX=AustraliaXX
 country_CN=China
 country_EU=Europe
 country_KR=Korea

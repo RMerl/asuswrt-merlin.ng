@@ -63,14 +63,24 @@ void update_cfe_k3(void)
 	int i, j, k = 0;
 	int val;
 
-	if (!check_if_file_exist(ROMCFE) || cfe_nvram_match("bl_version", "1.0.37_mesh"))
+	kprintf("Check CFE version...\n", buf);
+	if (!check_if_file_exist(ROMCFE) || cfe_nvram_match("bl_version", "1.0.37_mesh2"))
 		return;
 	//if (pids("envrams"))
 	//sleep(5);
 
 	strcpy(et0mac, cfe_nvram_safe_get("et0macaddr"));
-	strcpy(wl1mac, cfe_nvram_safe_get("1:macaddr"));
-	strcpy(wl2mac, cfe_nvram_safe_get("2:macaddr"));
+	if (!cfe_nvram_get("0:macaddr"))
+	{
+		strcpy(wl1mac, cfe_nvram_safe_get("1:macaddr"));
+		strcpy(wl2mac, cfe_nvram_safe_get("2:macaddr"));
+	}
+	else
+	{
+		strcpy(wl1mac, cfe_nvram_safe_get("0:macaddr"));
+		strcpy(wl2mac, cfe_nvram_safe_get("1:macaddr"));
+	}
+
 	for (i = 0; et0mac[i]; ++i) {
 		if (et0mac[i] == '-')
 			et0mac[i] = ':';
@@ -115,10 +125,9 @@ void update_cfe_k3(void)
 	doSystem("dd if=%s of=/dev/mtdblock0 2>/dev/null", ROMCFE);
 
 	envram_set("et0macaddr", et0mac);
-	envram_set("1:macaddr", et0mac); // 2.4G MAC is the same as LAN MAC in Merlin
-	envram_set("2:macaddr", wl2mac);
-	if (!strlen(cfe_nvram_safe_get("1:macbak")))
-		envram_set("1:macbak", wl1mac); // Backup 2.4G MAC
+	envram_set("0:macaddr", et0mac); // 2.4G MAC is the same as LAN MAC in Merlin
+	envram_set("1:macaddr", wl2mac);
+	envram_set("2:macaddr", "00:11:22:33:44:66"); // For downgrade to 384
 	envram_set("secret_code", PIN);
 	envram_commit();
 	nvram_set("secret_code", PIN);
@@ -128,7 +137,7 @@ void update_cfe_k3(void)
 	//killall_tk("envrams");
 
 	bzero(buf, sizeof(buf));
-	snprintf(buf, sizeof(buf), "Set CFE MAC: LAN & 2.4G=%s, 2.4G_bak=%s, 5G=%s", et0mac, wl1mac, wl2mac);
+	snprintf(buf, sizeof(buf), "Set CFE MAC: LAN & 2.4G=%s, 5G=%s", et0mac, wl2mac);
 	//logmessage("K3INIT", "CFE has upgraded to 1.0.37_mesh already!");
 	//logmessage("K3INIT", buf);
 	kprintf("Upgraded CFE - %s\n", buf);
@@ -137,26 +146,36 @@ void update_cfe_k3(void)
 	reboot(RB_AUTOBOOT);
 }
 
-void k3_init()
+void k3_init(void)
 {
 	bool isChange = 0;
 
-	if (!nvram_get("modelname"))
+	kprintf("k3 init begin.\n");
+
+	if (nvram_match("modelname", ""))
 	{
 		nvram_set("modelname", "K3");
 		isChange = 1;
 	}
-	if (!nvram_get("screen_timeout"))
+	if (nvram_match("screen_timeout", ""))
 	{
 		nvram_set("screen_timeout", "30");
 		isChange = 1;
 	}
+	if (nvram_match("location_code", ""))
+	{
+		nvram_set("location_code", "AU");
+		isChange = 1;
+	}
 
 	if (isChange)
+	{
 		nvram_commit();
+		kprintf("location_code: %s\n", nvram_safe_get("location_code"));
+	}
 }
 
-void k3_init_done()
+void k3_init_done(void)
 {
 	start_k3screen();
 

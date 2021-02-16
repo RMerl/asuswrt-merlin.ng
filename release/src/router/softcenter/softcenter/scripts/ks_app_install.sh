@@ -5,7 +5,7 @@ source /koolshare/scripts/base.sh
 #
 # Copyright (C) 2019/2020 kooldev
 #
-# 此脚为arm384软件中心安装脚本。
+# 此脚为arm384/arm386软件中心安装脚本。
 # 软件中心地址: https://github.com/koolshare/armsoft
 #
 ###################################################
@@ -25,6 +25,26 @@ alias echo_date='echo 【$(TZ=UTC-8 date -R +%Y年%m月%d日\ %X)】:'
 eval $(dbus export softcenter_installing_)
 BIN_NAME=$(basename "$0")
 BIN_NAME="${BIN_NAME%.*}"
+ROG_86U=0
+BUILDNO=$(nvram get buildno)
+EXT_NU=$(nvram get extendno)
+EXT_NU=$(echo ${EXT_NU%_*} | grep -Eo "^[0-9]{1,10}$")
+[ -z "${EXT_NU}" ] && EXT_NU="0"
+
+if [ -n "$(nvram get extendno | grep koolshare)" -a "$(nvram get productid)" == "RT-AC86U" -a "${EXT_NU}" -lt "81918" -a "${BUILDNO}" != "386" ];then
+	ROG_86U=1
+fi
+
+MODEL=$(nvram get productid)
+if [ "$MODEL" == "GT-AC5300" -o "$MODEL" == "GT-AX11000" -o "$ROG_86U" == "1" ];then
+	# 官改固件，骚红皮肤
+	ROG=1
+fi
+
+if [ "$(nvram get productid)" == "TUF-AX3000" ];then
+	# 官改固件，橙色皮肤
+	TUF=1
+fi
 
 quit_ks_install(){
 	[ -n "${softcenter_installing_todo}" ] && rm -rf "/tmp/${softcenter_installing_todo}*"
@@ -201,7 +221,7 @@ install_ks_module() {
 	# fi
 
 	# 13. 检查.valid 字符串
-	# if [ -z "$(grep arm384 /tmp/${softcenter_installing_todo}/.valid)" ];then
+	# if [ -z "$(grep -w arm384 /tmp/${softcenter_installing_todo}/.valid)" ];then
 	# 	echo_date "软件中心：该插件包不能在本平台安装！"
 	# 	quit_ks_install
 	# fi
@@ -210,6 +230,29 @@ install_ks_module() {
 	if [ -f /tmp/${softcenter_installing_todo}/uninstall.sh ]; then
 		chmod 755 /tmp/${softcenter_installing_todo}/uninstall.sh
 		cp -rf /tmp/${softcenter_installing_todo}/uninstall.sh /koolshare/scripts/uninstall_${softcenter_installing_todo}.sh
+	fi
+
+	# 15. 皮肤预处理-1，目前softwarece center采用ROG文件夹方式存放皮肤
+	if [ -d /tmp/${softcenter_installing_todo}/ROG -a "$ROG" == "1" ]; then
+		cp -rf /tmp/${softcenter_installing_todo}/ROG/* /tmp/${softcenter_installing_todo}/
+	fi
+	if [ -d /tmp/${softcenter_installing_todo}/ROG -a "$TUF" == "1" ]; then
+		find /tmp/${softcenter_installing_todo}/ROG/ -name "*.asp" | xargs sed -i 's/3e030d/3e2902/g;s/91071f/92650F/g;s/680516/D0982C/g;s/cf0a2c/c58813/g;s/700618/74500b/g;s/530412/92650F/g'
+		find /tmp/${softcenter_installing_todo}/ROG/ -name "*.css" | xargs sed -i 's/3e030d/3e2902/g;s/91071f/92650F/g;s/680516/D0982C/g;s/cf0a2c/c58813/g;s/700618/74500b/g;s/530412/92650F/g'
+		cp -rf /tmp/${softcenter_installing_todo}/ROG/* /tmp/${softcenter_installing_todo}/
+	fi
+
+	# 16. 皮肤预处理-2，一般来说插件的install.sh里会处理，但是避免一些插件没有处理，所以安装前先处理一次
+	if [ "$ROG" == "1" ];then
+		echo_date "为插件【${softcenter_installing_name}】安装ROG风格皮肤..."
+	else
+		if [ "$TUF" == "1" ];then
+			echo_date "为插件【${softcenter_installing_name}】安装TUF风格皮肤..."
+			sed -i 's/3e030d/3e2902/g;s/91071f/92650F/g;s/680516/D0982C/g;s/cf0a2c/c58813/g;s/700618/74500b/g;s/530412/92650F/g' /tmp/${softcenter_installing_todo}/webs/Module_${softcenter_installing_todo}.asp >/dev/null 2>&1
+		else
+			echo_date "为插件【${softcenter_installing_name}】安装ASUSWRT风格皮肤..."
+			sed -i '/rogcss/d' /tmp/${softcenter_installing_todo}/webs/Module_${softcenter_installing_todo}.asp >/dev/null 2>&1
+		fi
 	fi
 
 	# 17. 运行install.sh进行插件安装

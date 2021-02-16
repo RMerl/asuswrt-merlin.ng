@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# for arm384 platform
+# for arm384/arm386 platform
 
 export KSROOT=/koolshare
 source $KSROOT/scripts/base.sh
@@ -10,6 +10,24 @@ LOG_FILE_BACKUP=/tmp/upload/soft_install_log_backup.txt
 eval $(dbus export soft)
 TARGET_DIR=/tmp/upload
 MODEL=$(nvram get productid)
+ROG_86U=0
+EXT_NU=$(nvram get extendno)
+EXT_NU=$(echo ${EXT_NU%_*} | grep -Eo "^[0-9]{1,10}$")
+[ -z "${EXT_NU}" ] && EXT_NU="0"
+
+if [ -n "$(nvram get extendno | grep koolshare)" -a "$(nvram get productid)" == "RT-AC86U" -a "${EXT_NU}" -lt "81918" ];then
+	ROG_86U=1
+fi
+
+if [ "$MODEL" == "GT-AC5300" -o "$MODEL" == "GT-AX11000" -o "$ROG_86U" == "1" ];then
+	# 官改固件，骚红皮肤
+	ROG=1
+fi
+
+if [ "$(nvram get productid)" == "TUF-AX3000" ];then
+	# 官改固件，橙色皮肤
+	TUF=1
+fi
 
 jffs_space(){
 	local JFFS_AVAL=$(df | grep -w "/jffs" | awk '{print $4}')
@@ -84,7 +102,7 @@ install_tar(){
 
 			# 检查jffs空间，不可描述不做检测，交给插件自己处理
 			local JFFS_AVAL=$(jffs_space)
-			if [ "${MODULE_NAME}" != "shadowsocks" ];then
+			if [ "${MODULE_NAME}" != "shadowsocks" -a "${MODULE_NAME}" != "merlinclash" ];then
 				echo_date "检测jffs分区剩余空间..."
 				local JFFS_NEED=$(du -s /tmp/${MODULE_NAME} | awk '{print $1}')
 				local TAR_SIZE=$(du -s /tmp/${soft_name} | awk '{print $1}')
@@ -106,13 +124,13 @@ install_tar(){
 			fi
 
 			# 检查下安装包是否是hnd的
-			if [ -f "${SCRIPT_AB_DIR}/.valid" -a -n "$(grep arm384 ${SCRIPT_AB_DIR}/.valid)" ];then
+			if [ -f "${SCRIPT_AB_DIR}/.valid" -a -n "$(grep -w arm384 ${SCRIPT_AB_DIR}/.valid)" ];then
 				continue
 			elif [ "${MODULE_NAME}" == "shadowsocks" ];then
 				# hnd的不可描述包没有校验字符串，避免安装失败
 				continue
 			else
-				echo_date 你上传的离线安装包不是arm384平台的离线包！！！
+				echo_date 你上传的离线安装包不是arm384/arm386平台的离线包！！！
 				echo_date 请上传正确的离线安装包！！！
 				echo_date 删除相关文件并退出...
 				clean
@@ -129,6 +147,24 @@ install_tar(){
 			echo_date 运行安装脚本...
 			echo_date ====================== step 2 ===========================
 
+			if [ -d /tmp/${MODULE_NAME}/GT-AC5300 -a "$ROG" == "1" ]; then
+				cp -rf /tmp/${MODULE_NAME}/GT-AC5300/* /tmp/${MODULE_NAME}/
+			fi
+
+			if [ -d /tmp/${MODULE_NAME}/ROG -a "$ROG" == "1" ]; then
+				echo_date "检测到ROG官改皮肤，安装中..."
+				cp -rf /tmp/${MODULE_NAME}/ROG/* /tmp/${MODULE_NAME}/
+			fi
+
+			if [ -d /tmp/${MODULE_NAME}/ROG -a "$TUF" == "1" ]; then
+				# 骚红变橙色
+				echo_date "检测到TUF官改皮肤，安装中..."
+				find /tmp/${MODULE_NAME}/ROG/ -name "*.asp" | xargs sed -i 's/3e030d/3e2902/g;s/91071f/92650F/g;s/680516/D0982C/g;s/cf0a2c/c58813/g;s/700618/74500b/g;s/530412/92650F/g'
+				find /tmp/${MODULE_NAME}/ROG/ -name "*.css" | xargs sed -i 's/3e030d/3e2902/g;s/91071f/92650F/g;s/680516/D0982C/g;s/cf0a2c/c58813/g;s/700618/74500b/g;s/530412/92650F/g'
+				cp -rf /tmp/${MODULE_NAME}/ROG/* /tmp/${MODULE_NAME}/
+			fi
+
+			sleep 1
 			start-stop-daemon -S -q -x $INSTALL_SCRIPT 2>&1
 			if [ "$?" != "0" ];then
 				echo_date 因为${MODULE_NAME}插件安装失败！退出离线安装！
@@ -139,7 +175,15 @@ install_tar(){
 				exit
 			fi
 
-			sed -i '/rogcss/d' /koolshare/webs/Module_${MODULE_NAME}.asp >/dev/null 2>&1
+			if [ "$ROG" == "1" ];then
+				continue
+			else
+				if [ "$TUF" == "1" ];then
+					sed -i 's/3e030d/3e2902/g;s/91071f/92650F/g;s/680516/D0982C/g;s/cf0a2c/c58813/g;s/700618/74500b/g;s/530412/92650F/g' /koolshare/webs/Module_${MODULE_NAME}.asp >/dev/null 2>&1
+				else
+					sed -i '/rogcss/d' /koolshare/webs/Module_${MODULE_NAME}.asp >/dev/null 2>&1
+				fi
+			fi
 
 			echo_date ====================== step 3 ===========================
 			dbus set "softcenter_module_${MODULE_NAME}${NAME_SUFFIX}=${MODULE_NAME}"

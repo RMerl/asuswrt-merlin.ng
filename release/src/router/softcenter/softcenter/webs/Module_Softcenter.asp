@@ -129,16 +129,6 @@ input[type=button]:focus {
 	width:60%;
 	border-right: 1px solid #000;
 }
-.show-install-btn, .show-uninstall-btn {
-	border: none;
-	background: #444;
-	color: #fff;
-	padding: 10px 20px;
-	border-radius: 5px 5px 0px 0px;
-}
-.active {
-	background: #444f53;
-}
 .install-status-1 .uninstall-btn {
 	display: block;
 }

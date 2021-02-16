@@ -1722,7 +1722,7 @@ misc_defaults(int restore_defaults)
 		case MODEL_RTAC88U:
 		case MODEL_RTAC3100:
 #ifdef RTK3
-			nvram_set("reboot_time", "70");
+			nvram_set("reboot_time", "80");
 #else
 			nvram_set("reboot_time", "140");
 #endif

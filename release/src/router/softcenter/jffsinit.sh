@@ -1,8 +1,29 @@
 #!/bin/sh
 
+# detect basic_center and remove it
+if [ -d "/jffs/.basic_center" ];then
+	rm -rf /jffs/.basic_center
+	[ -d "/jffs/db" ] && rm -rf /jffs/db
+	[ -d "/jffs/asdb" ] && rm -rf /jffs/asdb
+	[ -L "/jffs/etc/profile" ] && rm -rf /jffs/etc
+	[ -L "/jffs/configs/profile.add" ] && rm -rf /jffs/configs
+	sync
+fi
+
+# http web should work under port 80
+if [ "$(nvram get http_lanport)" != "80" -o -n "$(ps|grep -w httpd|grep -v grep|grep 81)" ];then
+	nvram set http_lanport=80
+	nvram commit
+	service restart_httpd >/dev/null 2>&1
+fi
+
+# remove files after router started, incase dnsmasq won't start
+[ -d "/jffs/configs/dnsmasq.d" ] && rm -rf /jffs/configs/dnsmasq.d/*
+
 # make some folders
 mkdir -p /jffs/scripts
 mkdir -p /jffs/configs/dnsmasq.d
+mkdir -p /jffs/etc
 mkdir -p /tmp/upload
 
 # install all
@@ -13,6 +34,7 @@ else
 fi
 ROM_VERSION=$(cat /rom/etc/koolshare/.soft_ver)
 COMP=$(/rom/etc/koolshare/bin/versioncmp $CUR_VERSION $ROM_VERSION)
+
 if [ ! -d "/jffs/.koolshare" -o "$COMP" == "1" ]; then
 	#cp -a /rom/etc/koolshare/ /jffs/.koolshare
 	mkdir -p /jffs/.koolshare
@@ -26,10 +48,17 @@ if [ ! -d "/jffs/.koolshare" -o "$COMP" == "1" ]; then
 	chmod 755 /koolshare/perp/.control/*
 	chmod 755 /koolshare/perp/httpdb/*
 	chmod 755 /koolshare/scripts/*
+	# make some link
 	[ ! -L "/koolshare/bin/base64_decode" ] && ln -sf /koolshare/bin/base64_encode /koolshare/bin/base64_decode
 	[ ! -L "/koolshare/scripts/ks_app_remove.sh" ] && ln -sf /koolshare/scripts/ks_app_install.sh /koolshare/scripts/ks_app_remove.sh
 	[ ! -L "/jffs/.asusrouter" ] && ln -sf /koolshare/bin/kscore.sh /jffs/.asusrouter
-	[ ! -L "/jffs/configs/profile.add" ] && ln -sf /koolshare/scripts/base.sh /jffs/configs/profile.add
+	if [ -n "$(nvram get extendno | grep koolshare)" ];then
+		# for offcial mod, RT-AC86U, GT-AC5300, TUF-AX3000, RT-AX86U, etc
+		[ ! -L "/jffs/etc/profile" ] && ln -sf /koolshare/scripts/base.sh /jffs/etc/profile
+	else
+		# for Merlin mod, RT-AX88U, RT-AC86U, etc
+		[ ! -L "/jffs/configs/profile.add" ] && ln -sf /koolshare/scripts/base.sh /jffs/configs/profile.add
+	fi
 	#service restart_skipd
 fi
 
@@ -82,3 +111,4 @@ else
 	[ "$STARTCOMAND4" == "0" ] && sed -i '1a /koolshare/bin/ks-services-start.sh start' /jffs/scripts/services-start
 fi
 
+sync

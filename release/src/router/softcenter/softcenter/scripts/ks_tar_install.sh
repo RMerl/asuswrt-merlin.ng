@@ -143,7 +143,6 @@ install_tar(){
 			echo_date 准备安装${MODULE_NAME}插件！
 			echo_date 找到安装脚本！
 			chmod +x $INSTALL_SCRIPT >/dev/null 2>&1
-			sed -i "s/ 384/ 386/g" $INSTALL_SCRIPT >/dev/null 2>&1
 			echo_date 运行安装脚本...
 			echo_date ====================== step 2 ===========================
 

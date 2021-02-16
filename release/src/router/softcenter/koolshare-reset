@@ -10,6 +10,7 @@ sh perp.sh stop >/dev/null 2>&1
 # remove software center files
 cd /
 rm -rf /jffs/db
+rm -rf /jffs/ksdb
 rm -rf /jffs/.asusrouter
 rm -rf /jffs/.koolshare
 rm -rf /jffs/scripts/dnsmasq.postconf

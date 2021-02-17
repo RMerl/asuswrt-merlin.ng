@@ -15952,6 +15952,9 @@ int init_nvram(void)
 #ifdef RTCONFIG_TCPLUGIN
 		add_rc_support("tencent_qmacc");
 #endif
+#ifdef BCM_KF_NETFILTER
+		add_rc_support("bcm_kf_netfilter");
+#endif
 #ifdef RTCONFIG_MERLINUPDATE
 		add_rc_support("update");
 #else

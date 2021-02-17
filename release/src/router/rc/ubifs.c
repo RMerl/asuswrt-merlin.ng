@@ -124,7 +124,7 @@ static inline int ubifs_erase(int dev, int part)
 
 void start_ubifs(void)
 {
-	if (!nvram_match("jffs2_enable", "1")) {
+	if (!nvram_match("jffs2_on", "1")) {
 		notice_set("jffs", "");
 		return;
 	}

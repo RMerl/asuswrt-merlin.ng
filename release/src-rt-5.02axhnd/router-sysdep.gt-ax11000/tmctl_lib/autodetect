@@ -1,0 +1,5 @@
+
+condition:ifneq ($(strip $(BUILD_TMCTL)),)
+dependson: ethswctl rdpactl fapctl bcmtm bdmf eponctl
+
+

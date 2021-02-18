@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006-2012"  warning="This file is auto-generated.  Edits to this file will be lost!" >
+
+<object name="WLSECMODE." shortObjectName="WLSECMODE" requirements="P" supportLevel="Present"  />
+ <parameter name="None"  defaultValue="NWIFI_SECURITY_MODE_OPEN"  />
+ <parameter name="WEP-64"  defaultValue="NWIFI_SECURITY_MODE_WEP_64"  />
+ <parameter name="WEP-128"  defaultValue="NWIFI_SECURITY_MODE_WEP_128"  />
+ <parameter name="WPA-Personal"  defaultValue="NWIFI_SECURITY_MODE_WPA_Personal"  />
+ <parameter name="WPA2-Personal"  defaultValue="NWIFI_SECURITY_MODE_WPA2_Personal"  />
+ <parameter name="WPA-WPA2-Personal"  defaultValue="NWIFI_SECURITY_MODE_WPA_WPA2_Personal"  />
+ <parameter name="WPA-Enterprise"  defaultValue="NWIFI_SECURITY_MODE_WPA_Enterprise"  />
+ <parameter name="WPA2-Enterprise"  defaultValue="NWIFI_SECURITY_MODE_WPA2_Enterprise"  />
+ <parameter name="WPA-WPA2-Enterprise"  defaultValue="NWIFI_SECURITY_MODE_WPA_WPA2_Enterprise"  />
+ 
+
+
+<object name="WLBAND." shortObjectName="WLBAND" requirements="P"  />
+  <parameter name="2.4GHz"   defaultValue="BAND_B" />
+  <parameter name="5GHz"   defaultValue="BAND_A" />
+
+
+<object name="WLNBWCAP." shortObjectName="WLBWCAP" requirements="P" supportLevel="Present"  />
+  <parameter name="20MHz"   defaultValue="1" />
+  <parameter name="40MHz"   defaultValue="3" />
+  <parameter name="80MHz"   defaultValue="7" />
+  <parameter name="160MHz"   defaultValue="15" />
+
+
+<object name="WLREGMODE." shortObjectName="WLREGMODE" requirements="P" supportLevel="Present"  />
+  <parameter name="off"   defaultValue="REG_MODE_OFF" />
+  <parameter name="h"   defaultValue="REG_MODE_H" />
+  <parameter name="d"   defaultValue="REG_MODE_D" />
+  <parameter name="strict_h"   defaultValue="4" />
+
+<object name="ONOFFAUTO." shortObjectName="ONOFFAUTO" requirements="P" supportLevel="Present"  />
+ <parameter name="off"  defaultValue="0"  />
+ <parameter name="on"  defaultValue="1"  />
+ <parameter name="auto"  defaultValue="-1" />
+
+<object name="BOOL." shortObjectName="BOOL" requirements="P" supportLevel="Present"  />
+
+<object name="WLCTRLSB." shortObjectName="WLCTRLSB" requirements="P" supportLevel="Present"  />
+ <parameter name="BelowControlChannel"  defaultValue="-1" nvram="lower" />
+ <parameter name="Auto"  defaultValue="0"  nvram="lower"/>
+ <parameter name="AboveControlChannel"  defaultValue="1" nvram="upper" />
+ <parameter name="X_BROADCOM_COM_AboveCtrlChLL"  defaultValue="2" nvram="ll"  />
+ <parameter name="X_BROADCOM_COM_AboveCtrlChLU"  defaultValue="3" nvram="lu"  />
+ <parameter name="X_BROADCOM_COM_BelowCtrlChUL"  defaultValue="4" nvram="ul"  />
+ <parameter name="X_BROADCOM_COM_BelowCtrlChUU"  defaultValue="5" nvram="uu"  />
+ <parameter name="X_BROADCOM_COM_AboveCtrlChLLL"  defaultValue="6" nvram="lll"  />
+ <parameter name="X_BROADCOM_COM_AboveCtrlChLLU"  defaultValue="7" nvram="llu"  />
+ <parameter name="X_BROADCOM_COM_AboveCtrlChLUL"  defaultValue="8" nvram="lul"  />
+ <parameter name="X_BROADCOM_COM_AboveCtrlChLUU"  defaultValue="9" nvram="luu"  />
+ <parameter name="X_BROADCOM_COM_BelowCtrlChULL"  defaultValue="10" nvram="ull"  />
+ <parameter name="X_BROADCOM_COM_BelowCtrlChULU"  defaultValue="11" nvram="ulu"  />
+ <parameter name="X_BROADCOM_COM_BelowCtrlChUUL"  defaultValue="12" nvram="uul"  />
+ <parameter name="X_BROADCOM_COM_BelowCtrlChUUU"  defaultValue="13" nvram="uuu"  />
+
+ <vsaInfo>
+ </vsaInfo>
+</xmlMandatorySingleRootNode>

@@ -1,0 +1,41 @@
+00:09.0 Ethernet controller: Red Hat, Inc Virtio network device
+	Subsystem: Red Hat, Inc Virtio network device
+	Physical Slot: 9
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+	Interrupt: pin A routed to IRQ 10
+	Region 0: I/O ports at c060 [size=32]
+	Region 1: Memory at febd6000 (32-bit, non-prefetchable) [size=4K]
+	Region 2: Memory at fea00000 (32-bit, non-prefetchable) [size=512K]
+	Expansion ROM at feb80000 [disabled] [size=256K]
+	Capabilities: [84] MSI-X: Enable+ Count=3 Masked-
+		Vector table: BAR=1 offset=00000000
+		PBA: BAR=1 offset=00000800
+	Capabilities: [70] VirtIO: Notify
+		BAR=2 offset=00003000 size=00040000
+		multiplier=00001000
+	Capabilities: [60] VirtIO: DeviceCfg
+		BAR=2 offset=00002000 size=00001000
+	Capabilities: [50] VirtIO: ISR
+		BAR=2 offset=00001000 size=00001000
+	Capabilities: [40] VirtIO: CommonCfg
+		BAR=2 offset=00000000 size=00001000
+	Kernel driver in use: virtio-pci
+00: f4 1a 00 10 07 05 10 00 00 00 00 02 00 00 00 00
+10: 61 c0 00 00 00 60 bd fe 00 00 a0 fe 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 f4 1a 01 00
+30: 00 00 b8 fe 84 00 00 00 00 00 00 00 0a 01 00 00
+40: 09 00 10 01 02 00 00 00 00 00 00 00 00 10 00 00
+50: 09 40 10 03 02 00 00 00 00 10 00 00 00 10 00 00
+60: 09 50 10 04 02 00 00 00 00 20 00 00 00 10 00 00
+70: 09 60 14 02 02 00 00 00 00 30 00 00 00 00 04 00
+80: 00 10 00 00 11 70 02 80 01 00 00 00 01 08 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+

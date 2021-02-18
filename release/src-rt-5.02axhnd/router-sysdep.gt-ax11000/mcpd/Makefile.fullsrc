@@ -1,0 +1,121 @@
+all dynamic install: conditional_build
+
+EXE = mcpd
+
+#
+# Set our CommEngine directory (by splitting the pwd into two words
+# at /userspace and taking the first word only).
+# Then include the common defines under CommEngine.
+#
+CURR_DIR := $(shell pwd)
+BUILD_DIR:=$(HND_SRC)
+
+include $(BUILD_DIR)/make.common
+
+OBJS = common.o obj_hndlr.o ssm_hndlr.o mcpd_main.o igmp_main.o igmp_proxy.o igmp_snooping.o 
+OBJS += mcpd_mroute.o mcpd_nl.o mcpd_config.o mcpd_timer.o mcpd_ctl.o
+ifneq ($(strip $(BUILD_IPV6)), )
+OBJS += mld_main.o mld_proxy.o mld_snooping.o mcpd_mroute6.o 
+endif
+#ifneq ($(strip $(BUILD_BRCM_CMS)),)
+#OBJS += mcpd_cms.o 
+#ifneq ($(strip $(BUILD_GPON)),)
+#OBJS += mcpd_omci.o
+#endif
+#endif
+
+LIBS = -lbcmmcast -lbridgeutil
+ifneq ($(strip $(BUILD_BRCM_CMS)),)
+LIBS += -lcms_msg $(CMS_COMMON_LIBS) 
+endif
+
+clean: generic_clean
+	rm -f $(INSTALL_DIR)/bin/$(EXE) 
+
+binaryonly_dist_clean: clean generic_binaryonly_dist_clean
+	rm -f Makefile.fullsrc
+
+ifneq ($(strip $(BUILD_MCAST_PROXY)),)
+conditional_build: generic_exe_install
+else
+conditional_build:
+	@echo "skipping mcpd (not configured)"
+endif
+
+ifneq ($(strip $(BRCM_VOICE_SUPPORT)),)
+include $(BUILD_DIR)/make.voice
+endif
+
+ifneq ($(strip $(BUILD_BRCM_FTTDP)),)
+CUSTOM_CFLAGS += -DBRCM_FTTDP
+endif
+
+ifneq ($(strip $(BUILD_IPV6)),)
+CUSTOM_CFLAGS += -DSUPPORT_MLD
+endif
+
+CUSTOM_CFLAGS+=$(SSP_TYP_COMPILER_OPTS)
+LIBS += $(SSP_TYP_LIBS)
+
+
+#
+# Private apps and libs are allowed to include header files from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+#
+ALLOWED_INCLUDE_PATHS := -I.\
+                         -I$(BUILD_DIR)/userspace/public/include  \
+                         -I$(BUILD_DIR)/userspace/public/include/$(OALDIR) \
+                         -I$(BUILD_DIR)/userspace/private/include  \
+                         -I$(BUILD_DIR)/userspace/private/include/$(OALDIR) \
+                         -I$(KERNEL_LINKS_DIR)
+
+
+
+#
+# Private apps and libs are allowed to link with libraries from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+#
+ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
+
+# treat all warnings as errors
+CUSTOM_CFLAGS += -Werror -Wfatal-errors
+
+CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
+CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
+CFLAGS += -I$(KERNEL_LINKS_DIR)
+
+#
+# Implicit rule will make the .c into a .o
+# Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
+# See Section 10.2 of Gnu Make manual
+#
+ifeq ($(wildcard $(SRCBASE)/router-sysdep/mcpd/*.c),)
+$(EXE):
+	-cp -f $(SRCBASE)/router-sysdep/mcpd/prebuilt/mcpd mcpd
+else
+$(EXE): $(OBJS) 
+	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
+endif
+
+
+
+#
+# Include the rule for making dependency files.
+# The '-' in front of the second include suppresses
+# error messages when make cannot find the .d files.
+# It will just regenerate them.
+# See Section 4.14 of Gnu Make.
+#
+
+include $(BUILD_DIR)/make.deprules
+
+-include $(OBJS:.o=.d)
+
+
+

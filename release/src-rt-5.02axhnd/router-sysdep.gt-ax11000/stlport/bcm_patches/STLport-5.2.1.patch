@@ -1,0 +1,70 @@
+--- STLport-5.2.1/build/lib/gcc.mak	2008-12-10 01:56:51.000000000 -0800
++++ STLport-5.2.1-new/build/lib/gcc.mak	2013-03-07 10:15:37.531684271 -0800
+@@ -12,7 +12,8 @@ include ${SRCROOT}/Makefiles/gmake/top.m
+ include ${SRCROOT}/Makefiles/gmake/subdirs.mak
+ 
+ ifeq ($(OSNAME),linux)
+-DEFS += -D_GNU_SOURCE
++#DEFS += -D_GNU_SOURCE
++DEF +=-D_STLP_USE_UCLIBC
+ endif
+ 
+ # options for build with boost support
+--- STLport-5.2.1/build/Makefiles/gmake/extern.mak	2008-12-10 01:56:51.000000000 -0800
++++ STLport-5.2.1-new/build/Makefiles/gmake/extern.mak	2013-02-22 15:12:02.267208326 -0800
+@@ -26,6 +26,7 @@ STLPORT_DIR ?= ${SRCROOT}/..
+ endif
+ 
+ ifdef STLPORT_DIR
+-STLPORT_LIB_DIR ?= $(STLPORT_DIR)/${TARGET_NAME}lib
++#STLPORT_LIB_DIR ?= $(STLPORT_DIR)/${TARGET_NAME}lib
++STLPORT_LIB_DIR ?= $(STLPORT_DIR)/build/lib/${TARGET_NAME}lib
+ STLPORT_INCLUDE_DIR ?= $(STLPORT_DIR)/stlport
+ endif
+--- STLport-5.2.1/build/Makefiles/gmake/unix/rules-so.bak	2008-12-10 04:56:51.000000000 -0500
++++ STLport-5.2.1/build/Makefiles/gmake/unix/rules-so.mak	2013-03-27 12:29:34.615967000 -0400
+@@ -47,6 +47,8 @@
+ # The GNU make 3.81 free from this problem, but it new...
+ 
+ define do_so_links
++$$(OBJ$(1)): $(OUTPUT_DIRS)
++
+ $${SO_NAME_OUT$(1)xxx}:	$$(OBJ$(1)) $$(LIBSDEP)
+ ifeq ("${_C_SOURCES_ONLY}","")
+ ifneq ($(COMPILER_NAME),bcc)
+
+--- STLport-5.2.1/stlport/stl/config/features.bak      2014-12-02 14:10:59.986106717 -0800
++++ STLport-5.2.1/stlport/stl/config/features.h  2014-12-02 14:12:34.774103139 -0800
+@@ -308,5 +308,5 @@
+ /* Some compiler support 0 size array so we use negative size array to generate
+  * a compilation time error.
+  */
+-#  define _STLP_STATIC_ASSERT(expr) typedef char __static_assert[expr ? 1 : -1];
++#  define _STLP_STATIC_ASSERT(expr) typedef char __static_assert[expr ? 1 : -1] __attribute__((unused));
+ #endif
+
+ /* apple mpw exception handling bug */
+
+--- STLport-5.2.1/stlport/stl/_istream.bak        2014-12-02 14:39:03.330043089 -0800
++++ STLport-5.2.1/stlport/stl/_istream.c  2014-12-02 14:39:14.882042649 -0800
+@@ -1145,7 +1145,7 @@ basic_istream<_CharT, _Traits>::ignore(s
+
+   if (__sentry) {
+     basic_streambuf<_CharT, _Traits>* __buf = this->rdbuf();
+-    typedef _STLP_PRIV _Constant_unary_fun<bool, int_type> _Const_bool;
++    typedef _STLP_PRIV _Constant_unary_fun<bool, int_type> _Const_bool __attribute__((unused));
+     typedef _STLP_PRIV _Constant_binary_fun<streamsize, streamsize, streamsize>
+       _Const_streamsize;
+     const streamsize __maxss = (numeric_limits<streamsize>::max)();
+
+--- STLport-5.2.1/src/time_facets.bak	2015-02-19 15:38:21.825516284 -0800
++++ STLport-5.2.1/src/time_facets.cpp	2015-02-19 15:39:02.418145474 -0800
+@@ -428,7 +428,7 @@
+         break;
+       {
+         int diff;
+-#    if defined (__USE_BSD) || defined (__BEOS__)
++#    if defined (__USE_BSD) || defined (__BEOS__) || defined (__USE_MISC)
+         diff = t->tm_gmtoff;
+ #    else
+         diff = t->__tm_gmtoff;

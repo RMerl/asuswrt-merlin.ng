@@ -1,0 +1,3 @@
+dependson: private/libs/ethswctl private/libs/pwrctl public/libs/cms_msg public/libs/cms_util public/libs/bcm_flashutil public/libs/cms_boardctl public/libs/bcm_util
+condition: ifneq ($(strip $(BUILD_PWRCTL)),)
+

@@ -1,0 +1,11 @@
+ID=pci/0/1/
+#pa0b0
+47=15a9
+#pa0b1
+48=fab2
+#pa0b2
+49=fe99
+
+ID=pci/0/2/
+#pa0maxpwr
+52=384c

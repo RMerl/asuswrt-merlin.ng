@@ -1,0 +1,1046 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Broadcom MDK Programmer's Reference, mdk_ug_cdk_bmd_components</title>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+<style type="text/css">
+<!--
+body {
+	font-family: verdana, arial, helvetica, sans-serif;
+}
+pre.code {
+        background: #eaeaea;
+        color: black;
+        width: auto;
+        margin-left: 0em;
+        margin-right: 1em;
+        border: solid 1px black;
+        white-space: pre;
+        padding: 4px;
+        font-family: courier new, courier, monospace;
+        font-weight: normal;
+        font-size: 80%;
+}
+tt {
+        font-family: courier new, courier, monospace;
+}
+a:link, a:visited {
+        text-decoration: none;
+}
+-->
+</style>
+</head>
+
+<body bgcolor="#ffffff">
+<table><tr><td width="20">&nbsp;</td><td width="700">
+    <h2><a href="index.html">Broadcom MDK Programmer's Reference</a></h2>
+    <h2>5.  BMD Components
+</h2>
+<p>The BMD is a simple API built on top of the CDK and the PHY Driver
+Library. The BMD includes API dispatch functions as well as chip
+specific implementations of each API function. In addition to the
+driver code, the BMD also includes a set of shell commands that
+correspond to the API functions.
+<p>The BMD is intended for use in small footprint applications including
+boot loaders and unmanaged switch applications.
+<p>The number of chips supported by the BMD usually is smaller than the
+number of chips supported by the CDK, however the BMD adapts to the
+CDK even if the set of supported chips differ.
+<a name="mdk_ug_bmd_api"></a>
+<h3>5.1.   BMD API</h3>
+<p>All the necessary definitions for programming to the BMD API are
+located in the header file <tt>bmd.h.</tt><p>All BMD API functions return error codes as defined in the CDK header
+file <tt>cdk_error.h.</tt><p>A complete reference to the BMD API can be found in
+  <a href="sect_bmd_api_function_reference.html">Section 8,  BMD API Function Reference
+</a> . 
+<a name="bmd_api_driver_initialization"></a>
+<h4>5.1.1.   Driver Initialization</h4>
+<p>Before the BMD API can be used, devices must be created within the CDK
+using the <tt>cdk_dev_create</tt> function described earlier.
+<p>After creating a CDK device, the BMD must be associated with the CDK
+ device. This is done by calling  <a href="sect_bmd_api_function_reference.html#bmd_attach"><tt>bmd_attach</tt></a> , which also
+initializes internal BMD software structures. Calls to any other BMD
+API function will fail until the BMD has been successfully attached.
+<p><a name="bmd_api_chip_initialization"></a>
+<h4>5.1.2.   Chip Initialization</h4>
+<p>The first thing to do after attaching the BMD is usually to reset the
+ switch chip, and this is done by calling  <a href="sect_bmd_api_function_reference.html#bmd_reset"><tt>bmd_reset</tt></a> . After the
+reset sequence completes, all chip registers and memories should be
+accessible. Note that this is not necessarily true after a simple
+hardware reset.
+<p> The reset sequence should be followed by a call to  <a href="sect_bmd_api_function_reference.html#bmd_init"><tt>bmd_init</tt></a> , 
+which performs additional initialization of the data plane (MMU,
+forwarding tables, port blocks, etc.)
+<p><a name="bmd_api_port_configuration"></a>
+<h4>5.1.3.   Port Configuration</h4>
+<p>With the basic initialization out of the way, it is time to configure
+ the front panel ports. The  <a href="sect_bmd_api_function_reference.html#bmd_port_mode_set"><tt>bmd_port_mode_set</tt></a>  function configures
+a port to either auto-negotiation mode or a forced speed/duplex
+setting.
+<p>Below are some examples:
+<pre class="code">
+/* Set port 3 on unit 0 to auto-negotiation */
+<tt>bmd_port_mode_set</tt>(0, 3, <tt>bmdPortModeAuto</tt>, 0);
+
+/* Set port 5 on unit 0 to 100 Mbps full duplex with PHY loopback */
+<tt>bmd_port_mode_set</tt>(0, 5, <tt>bmdPortMode100fd</tt>, <tt>BMD_PORT_MODE_F_PHY_LOOPBACK</tt>);
+
+</pre>
+ The  <a href="sect_bmd_api_function_reference.html#bmd_port_mode_get"><tt>bmd_port_mode_get</tt></a>  function will return the current port
+mode, and in addition to the configuration flags supported by
+  <a href="sect_bmd_api_function_reference.html#bmd_port_mode_set"><tt>bmd_port_mode_set</tt></a> , any of the following status flags may be set:
+<br><br><b>Table 2:   BMD Port Status Flags</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td>  <tt>BMD_PORT_MODE_F_LINK_UP</tt></td><td> PHY link is up
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_AUTONEG</tt></td><td> PHY auto-negotiation is enabled
+</td></tr></tbody></table><br>If no PHY is present, the link will be reported as being up. This
+allows support of designs with back-to-back MAC interfaces.
+<p>Many managed switch ports require that the MAC controller settings are
+adjusted to properly reflect the duplex and speed negotiated by the
+PHY, and for proper management of MMU resources and port statistics it
+is often necessary to turn off switching to offline ports. Such tasks
+ are performed by  <a href="sect_bmd_api_function_reference.html#bmd_port_mode_update"><tt>bmd_port_mode_update</tt></a> , which should be called at
+regular intervals.
+<p><a name="bmd_api_vlan_management"></a>
+<h4>5.1.4.   VLAN Management</h4>
+<p> After a chip has been initialized with  <a href="sect_bmd_api_function_reference.html#bmd_init"><tt>bmd_init</tt></a> , no VLANs
+ exist. Use the  <a href="sect_bmd_api_function_reference.html#bmd_vlan_create"><tt>bmd_vlan_create</tt></a>  to create a VLAN and then use
+  <a href="sect_bmd_api_function_reference.html#bmd_vlan_port_add"><tt>bmd_vlan_port_add</tt></a>  to add ports to the VLAN. If a port should
+send packets untagged you must specify the <tt>BMD_VLAN_PORT_F_UNTAGGED</tt>
+flag.
+<pre class="code">
+/* Create VLAN 1 */
+<tt>bmd_vlan_create</tt>(0, 1);
+
+/* Add port 25 to VLAN 1 in untagged mode */
+<tt>bmd_vlan_port_add</tt>(0, 1, <tt>BMD_VLAN_PORT_F_UNTAGGED</tt>);
+
+</pre>
+ Ports can be removed from a VLAN using  <a href="sect_bmd_api_function_reference.html#bmd_vlan_port_remove"><tt>bmd_vlan_port_remove</tt></a> , and
+ VLANs can be destroyed with  <a href="sect_bmd_api_function_reference.html#bmd_vlan_destroy"><tt>bmd_vlan_destroy</tt></a> . 
+<p> The  <a href="sect_bmd_api_function_reference.html#bmd_vlan_port_get"><tt>bmd_vlan_port_get</tt></a>  function may be used to determine which
+ports belong to a VLAN.
+<p>Whenever an untagged packet is received, a port-dependent default VLAN
+ ID is assigned to the packet. Use  <a href="sect_bmd_api_function_reference.html#bmd_port_vlan_set"><tt>bmd_port_vlan_set</tt></a>  to set or
+ change the default VLAN for a port, and  <a href="sect_bmd_api_function_reference.html#bmd_port_vlan_get"><tt>bmd_port_vlan_get</tt></a>  to
+obtain the current setting.
+<p><a name="bmd_api_stp_management"></a>
+<h4>5.1.5.   Spanning Tree Management</h4>
+<p>For switch chips supporting the spanning tree protocol it is necessary
+to move the port into the forwarding state, even if no spanning trees
+exist on the network.
+<p> Use the  <a href="sect_bmd_api_function_reference.html#bmd_port_stp_set"><tt>bmd_port_stp_set</tt></a>  function to change the spanning tree
+ state for a port and  <a href="sect_bmd_api_function_reference.html#bmd_port_stp_get"><tt>bmd_port_stp_get</tt></a>  to get the current state.
+<p><a name="bmd_api_unmanaged_mode"></a>
+<h4>5.1.6.   Unmanaged Mode</h4>
+<p>A common use of the BMD is to initialize a switch chip to do basic L2
+ switching. The  <a href="sect_bmd_api_function_reference.html#bmd_switching_init"><tt>bmd_switching_init</tt></a>  API is designed to accomplish this
+with a single function call.
+<p> The  <a href="sect_bmd_api_function_reference.html#bmd_switching_init"><tt>bmd_switching_init</tt></a>  function will reset the switch chip and perform
+all necessary initialization including port mode, VLAN and spanning
+tree configuration.
+<p><a name="bmd_api_l2_management"></a>
+<h4>5.1.7.   L2 Table Management</h4>
+<p>The BMD API provides a basic interface for adding static entries to
+ the L2 address table. Use  <a href="sect_bmd_api_function_reference.html#bmd_port_mac_addr_add"><tt>bmd_port_mac_addr_add</tt></a>  to add an L2
+ entry and  <a href="sect_bmd_api_function_reference.html#bmd_port_mac_addr_remove"><tt>bmd_port_mac_addr_remove</tt></a>  to remove an L2 entry.
+<p><a name="bmd_api_cpu_packet_interface"></a>
+<h4>5.1.8.   CPU Packet Interface</h4>
+<p>Packets sent to/from the CPU are defined by the following structure:
+<pre class="code">
+typedef struct <tt>bmd_pkt_s</tt> {
+    int port;                   /* Egress/ingress port number. */
+    <tt>uint8_t</tt> *data;              /* Packet data buffer. */
+    int size;                   /* Size of packet data. */
+    <tt>dma_addr_t</tt> baddr;           /* Hardware bus address of packet data buffer. */
+    <tt>uint32_t</tt> flags;             /* BMD_PKT_F_xxx flags. */
+    void *cookie;               /* Optional application data. */
+    <tt>bmd_pkt_type_t</tt> <tt>mh_pkt_type</tt>; /* Module header packet type. */
+    <tt>uint8_t</tt> <tt>mh_src_mod</tt>;         /* Module header source module. */
+    <tt>uint8_t</tt> <tt>mh_src_port</tt>;        /* Module header source port. */
+    <tt>uint8_t</tt> <tt>mh_dst_mod</tt>;         /* Module header destination module. */
+    <tt>uint8_t</tt> <tt>mh_dst_port</tt>;        /* Module header destination port. */
+} <tt>bmd_pkt_t</tt>;
+</pre>
+The data pointer must point to a DMA'able packet buffer containing
+size number of bytes including CRC. The CRC is normally recalculated
+in hardware, but the necessary CRC buffer space (4 bytes) is always
+part of the packet data.
+<p>The physical bus address that corresponds to the data pointer must be
+placed in the baddr member of the packet structure.
+<p>Note that for non-coherent cache architectures, it is the
+responsibility of the caller to flush cached packets buffers before
+  <a href="sect_bmd_api_function_reference.html#bmd_tx"><tt>bmd_tx</tt></a>  is called, and to invalidate packets buffers after they are
+ returned by  <a href="sect_bmd_api_function_reference.html#bmd_rx_poll"><tt>bmd_rx_poll</tt></a> . 
+<p>Ethernet MAC addresses are passed to the BMD API functions using the
+following data type:
+<pre class="code">
+typedef struct <tt>bmd_mac_addr_s</tt> {
+    <tt>uint8_t</tt> b[6];
+} <tt>bmd_mac_addr_t</tt>;
+</pre>
+ The  <a href="sect_bmd_api_function_reference.html#bmd_tx"><tt>bmd_tx</tt></a>  function transmits a single packet from the CPU to a
+front panel port. The flags member of the packet structure may contain
+one or more of the following flags:
+<br><br><b>Table 3:   BMD Transmit Packet Flags</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td>  <tt>BMD_PKT_F_UNTAGGED</tt></td><td> Send packet untagged
+</td></tr><tr><td>  <tt>BMD_PKT_F_CRC_REGEN</tt></td><td> Regenerate CRC in hardware
+</td></tr></tbody></table><br>Note that the packet buffer must always contain a 4 byte VLAN tag,
+even when the packet is sent untagged.
+<p> The  <a href="sect_bmd_api_function_reference.html#bmd_rx_start"><tt>bmd_rx_start</tt></a>  function submits a packet buffer to the CPU
+receive DMA engine. The size member of the packet structure should
+contain the full size of the associated data buffer. Note that
+currently only a single received buffer can be submitted.
+<p> After a packet buffer has been submitted, the  <a href="sect_bmd_api_function_reference.html#bmd_rx_poll"><tt>bmd_rx_poll</tt></a> function must be used to poll the CPU receive DMA engine to see if the
+previously submitted packet buffer has been filled. If so, the packet
+pointer is returned and the size member of the packet will now contain
+the actual number of bytes received including CRC.
+<p>The packet buffer will always include a 4 byte VLAN tag, even if the
+packet ingressed to the switch untagged.
+<p> The  <a href="sect_bmd_api_function_reference.html#bmd_rx_stop"><tt>bmd_rx_stop</tt></a>  function can be used to abort any outstanding
+packet reception. This essentially moves the ownership of packets
+previously submitted to the CPU receive DMA engine back to the
+driver/application.
+<p>Since L2 addresses are not learnt for packets sent from the CPU, it is
+recommended to add the CPU MAC address as a static entry in the L2
+address table to prevent packets destined for the CPU from being
+flooded to all switch ports in the VLAN. The
+  <a href="sect_bmd_api_function_reference.html#bmd_cpu_mac_addr_add"><tt>bmd_cpu_mac_addr_add</tt></a>  function is provided specifically for this
+purpose. CPU MAC address entries can be removed from the L2 table
+ using the  <a href="sect_bmd_api_function_reference.html#bmd_cpu_mac_addr_remove"><tt>bmd_cpu_mac_addr_remove</tt></a>  function.
+<p><a name="bmd_api_bmd_statistics_functions"></a>
+<h4>5.1.9.   Statistics Functions</h4>
+<p>The BMD statistics functions are mainly intended for debugging
+purposes. In general all counters are passed unmodified from hardware
+and no attempts are made to prevent counters from wrapping
+prematurely, i.e. counters may wrap at 32 bits or 36 bits even if the
+BMD counter type is 64 bits wide.
+<p>The statistics interface is based on the following data types:
+<pre class="code">
+typedef struct <tt>bmd_counter_s</tt> {
+    <tt>uint32_t</tt> v[2];  /* v[0] is least significant word. */
+} <tt>bmd_counter_t</tt>;
+
+typedef enum <tt>bmd_stat_e</tt> {
+    <tt>bmdStatTxPackets</tt>, 
+    <tt>bmdStatTxBytes</tt>, 
+    <tt>bmdStatTxErrors</tt>, 
+    <tt>bmdStatRxPackets</tt>, 
+    <tt>bmdStatRxBytes</tt>, 
+    <tt>bmdStatRxErrors</tt>, 
+    <tt>bmdStatRxDrops</tt>, 
+    <tt>bmdStatCount</tt> 
+} <tt>bmd_stat_t</tt>;
+</pre>
+ Use  <a href="sect_bmd_api_function_reference.html#bmd_stat_get"><tt>bmd_stat_get</tt></a>   to read counters and  <a href="sect_bmd_api_function_reference.html#bmd_stat_clear"><tt>bmd_stat_clear</tt></a>  to
+clear counters.
+<p><a name="bmd_api_bmd_miscellaneous_functions"></a>
+<h4>5.1.10.   Miscellaneous Functions</h4>
+<p>The BMD API provides a couple of functions that are not directly
+related to the switching operation.
+<p> The  <a href="sect_bmd_api_function_reference.html#bmd_download"><tt>bmd_download</tt></a>  function can be used to download device or
+board specific microcode. Currently the only supported download type
+is <tt>bmdDownloadPortLedController</tt>, which is used for downloading code to
+the LED Controller found in Broadcom XGS devices.
+<p> The  <a href="sect_bmd_api_function_reference.html#bmd_test_interrupt_assert"><tt>bmd_test_interrupt_assert</tt></a>   and  <a href="sect_bmd_api_function_reference.html#bmd_test_interrupt_clear"><tt>bmd_test_interrupt_clear</tt></a> functions can be used to validate the proper functioning of hardware
+interrupts on a new board design. Calling the
+  <a href="sect_bmd_api_function_reference.html#bmd_test_interrupt_assert"><tt>bmd_test_interrupt_assert</tt></a>  function will program the switch device to
+generate a hardware interrupt, which must be handled by a
+system-specific interrtupt handler. The interrupt handler should call
+  <a href="sect_bmd_api_function_reference.html#bmd_test_interrupt_clear"><tt>bmd_test_interrupt_clear</tt></a>  to clear the interrupt condition.
+<p><p><a name="mdk_ug_cdk_bmd_shell_commands"></a>
+<h3>5.2.   BMD Shell Commands</h3>
+<p>The BMD includes a set of shell commands to exercise the BMD API, and
+these can be added on top of the CDK shell commands as an additional
+debugging tool.
+<p>In order to see the exact syntax for each BMD shell command, please
+use the built-in <tt>help</tt> command.
+<a name="mdk_ug_bmd_shcmd_bmd"></a>
+<h4>5.2.1.   bmd</h4>
+<p>The <tt>bmd</tt> command will show a complete list of all BMD compile-time
+configuration options and their settings. It will also show a list of
+base drivers that are included in the build. Note that base drivers
+are included based on the chip includes in the CDK.
+<p>The syntax for the command is as follows:
+<pre class="code">
+bmd [argument [argument ...]]
+</pre>
+The arguments to the <tt>bmd</tt> command are option filters on the configuration options 
+you wish to display. You may specify any number of the following optional arguments:
+<pre class="code">
+1             Display all variables that are non-zero.
+0             Display all variables that are zero. 
+&lt;substring&gt;   Only display if the given substring is in the name. 
+!&lt;substring&gt;  Only display if the given substring is not in the name. 
+</pre>
+Examples:
+<pre class="code">
+BMD.0&gt; bmd
+BMD.0&gt; bmd <tt>SHELL_INCLUDE</tt>
+</pre>
+<p><a name="mdk_ug_bmd_shcmd_pdl"></a>
+<h4>5.2.2.   pdl</h4>
+<p>The <tt>pdl</tt> command will show a complete list of all PHY Driver
+Library (PDL) compile-time configuration options and their
+settings. Optional arguments can be used to filter the output by
+option value (zero/non-zero) or option name (positive/negative
+sub-string match).
+<p>In order to see all settings, do not specify any arguments:
+<pre class="code">
+BMD.0&gt; pdl
+</pre>
+To see all included external PHYs:
+<pre class="code">
+BMD.0&gt; pdl 1 BCM !BCMI !BCM53
+</pre>
+Here the first argument will ensure that only enabled options are
+shown. The following arguments permits all PHY chip options except for
+ chip-internal transceivers. Please see  <a href="sect_mdk_ug_phy_driver_library.html#mdk_ug_pdl_configuration">Section 6.2,  PDL Configuration
+</a> for more informaton.
+<p><a name="mdk_ug_bmd_shcmd_reset"></a>
+<h4>5.2.3.   reset</h4>
+<p> The <tt>reset</tt> command calls the  <a href="sect_bmd_api_function_reference.html#bmd_reset"><tt>bmd_reset</tt></a>  API for the current
+unit.
+<p><a name="mdk_ug_bmd_shcmd_init"></a>
+<h4>5.2.4.   init</h4>
+<p> The <tt>init</tt> command calls the  <a href="sect_bmd_api_function_reference.html#bmd_init"><tt>bmd_init</tt></a>  API for the current
+unit.
+<p><a name="mdk_ug_bmd_shcmd_vlan"></a>
+<h4>5.2.5.   vlan</h4>
+<p>The <tt>vlan</tt> command supports five different subcommands for managing
+VLANs.
+<p>The <tt> vlan create </tt> and <tt> vlan destroy </tt> commands create and
+ destroy VLANs using the  <a href="sect_bmd_api_function_reference.html#bmd_vlan_create"><tt>bmd_vlan_create</tt></a>  and
+  <a href="sect_bmd_api_function_reference.html#bmd_vlan_destroy"><tt>bmd_vlan_destroy</tt></a>  APIs.
+<p>The <tt> vlan add </tt> and <tt> vlan remove </tt> commands add and remove
+ ports to and from VLANs using the  <a href="sect_bmd_api_function_reference.html#bmd_vlan_port_add"><tt>bmd_vlan_port_add</tt></a>  and
+  <a href="sect_bmd_api_function_reference.html#bmd_vlan_port_remove"><tt>bmd_vlan_port_remove</tt></a>  APIs.
+<p>The <tt> vlan show </tt> command will display the current VLAN
+ configuration by calling the  <a href="sect_bmd_api_function_reference.html#bmd_vlan_port_get"><tt>bmd_vlan_port_get</tt></a>  API for all
+VLANs.
+<p><a name="mdk_ug_bmd_shcmd_pvlan"></a>
+<h4>5.2.6.   pvlan</h4>
+<p>The <tt>pvlan</tt> command sets or gets the default VLAN for a port using
+ the  <a href="sect_bmd_api_function_reference.html#bmd_port_vlan_set"><tt>bmd_port_vlan_set</tt></a>   and  <a href="sect_bmd_api_function_reference.html#bmd_port_vlan_get"><tt>bmd_port_vlan_get</tt></a>  API functions.
+<p><a name="mdk_ug_bmd_shcmd_stp"></a>
+<h4>5.2.7.   stp</h4>
+<p>The <tt>stp</tt> command sets or gets the spanning tree state of a port using
+ the  <a href="sect_bmd_api_function_reference.html#bmd_port_stp_set"><tt>bmd_port_stp_set</tt></a>   and  <a href="sect_bmd_api_function_reference.html#bmd_port_stp_get"><tt>bmd_port_stp_get</tt></a>  APIs.
+<p><a name="mdk_ug_bmd_shcmd_portmode"></a>
+<h4>5.2.8.   portmode</h4>
+<p>The <tt>portmode</tt> command is used to configure the port operating mode
+ using the  <a href="sect_bmd_api_function_reference.html#bmd_port_mode_set"><tt>bmd_port_mode_set</tt></a>  API and to get the status of a port using
+ the  <a href="sect_bmd_api_function_reference.html#bmd_port_mode_get"><tt>bmd_port_mode_get</tt></a>  API.
+<p>A special sequence of APIs calls is required when a port is operating
+in auto-negotiation mode in order to align the internal port and MAC
+settings with the negotiated settings at the PHY level.
+<p>First put the port in auto-negotiation mode:
+<pre class="code">
+BMD.0&gt; portmode 1 auto
+</pre>
+Next poll for link:
+<pre class="code">
+BMD.0&gt; portmode 1
+Port 1: -, auto-neg, link down
+BMD.0&gt; portmode 1
+Port 1: 1000fd, auto-neg, link down
+BMD.0&gt; portmode 1
+Port 1: 1000fd, auto-neg, link up
+</pre>
+The port settings at the PHY is now 1000 Mbps full duplex, but the MAC
+and port could be in a different mode. To update the MAC and port
+state, the port mode must be set updated using the <tt> portmode update
+</tt> command:
+<pre class="code">
+BMD.0&gt; portmode 1 update
+</pre>
+By using the internal flag, the PHY remains in auto-negotiation mode,
+which is usually the desired behavior.
+<p> As an alternative, the  <a href="sect_bmd_api_function_reference.html#bmd_port_mode_update"><tt>bmd_port_mode_update</tt></a>  API can be invoked after a
+valid link has been established:
+<pre class="code">
+BMD.0&gt; port 0 update
+</pre>
+<p><a name="mdk_ug_bmd_shcmd_tx"></a>
+<h4>5.2.9.   tx</h4>
+<p>The <tt>tx</tt> command is used for sending packets from the CPU to a front
+ panel port using the  <a href="sect_bmd_api_function_reference.html#bmd_tx"><tt>bmd_tx</tt></a>  API function. Currently this command
+only allows the user to change the source and destination MAC address,
+and the remaining part of the packet is a fixed incremental
+pattern. The number of bytes to send can also be specified, and this
+number includes the 4 byte CRC.
+<p>Sending two 128 byte packets on port 1 can be done like this:
+<pre class="code">
+BMD.0&gt; tx 2 1 size=128
+</pre>
+<p><a name="mdk_ug_bmd_shcmd_rx"></a>
+<h4>5.2.10.   rx</h4>
+<p>The <tt>rx</tt> command is used to allow packets from the front panel ports to
+ be forwarded to the CPU. The rx command uses the  <a href="sect_bmd_api_function_reference.html#bmd_rx_start"><tt>bmd_rx_start</tt></a> , 
+  <a href="sect_bmd_api_function_reference.html#bmd_rx_poll"><tt>bmd_rx_poll</tt></a>   and  <a href="sect_bmd_api_function_reference.html#bmd_rx_stop"><tt>bmd_rx_stop</tt></a>  API functions. In addition to simply
+calling the API functions one at a time, the <tt>rx</tt> command provides some
+convenience for receiving multiple packets. A typical receive sequence
+will look like this:
+<pre class="code">
+BMD.0&gt; rx start
+BMD.0&gt; rx
+BMD.0&gt; rx
+<tt>bmd_rx</tt>[0]: port = 1, size = 68
+BMD.0&gt; rx drain
+<tt>bmd_rx</tt>[0]: port = 1, size = 68
+<tt>bmd_rx</tt>[0]: port = 1, size = 68
+</pre>
+ Executing <tt>rx</tt> with no additional argument will call  <a href="sect_bmd_api_function_reference.html#bmd_rx_poll"><tt>bmd_rx_poll</tt></a>  and if
+a packet is received, another receive buffer will be submitted using
+  <a href="sect_bmd_api_function_reference.html#bmd_rx_start"><tt>bmd_rx_start</tt></a> . Executing <tt> rx drain </tt> will repeat this sequence until
+  <a href="sect_bmd_api_function_reference.html#bmd_rx_poll"><tt>bmd_rx_poll</tt></a>  reports that no more packets are available in the CPU
+receive buffer on the switch device.
+<p><a name="mdk_ug_bmd_shcmd_cpumac"></a>
+<h4>5.2.11.   cpumac</h4>
+<p>A CPU MAC address can be assigned or removed using the <tt>cpumac</tt>
+ command. This command will call the  <a href="sect_bmd_api_function_reference.html#bmd_cpu_mac_addr_add"><tt>bmd_cpu_mac_addr_add</tt></a>  and
+  <a href="sect_bmd_api_function_reference.html#bmd_cpu_mac_addr_remove"><tt>bmd_cpu_mac_addr_remove</tt></a>  respectively.
+<p><a name="mdk_ug_bmd_shcmd_pmac"></a>
+<h4>5.2.12.   pmac</h4>
+<p> The <tt>pmac</tt> command calls the  <a href="sect_bmd_api_function_reference.html#bmd_port_mac_addr_add"><tt>bmd_port_mac_addr_add</tt></a>  and
+  <a href="sect_bmd_api_function_reference.html#bmd_port_mac_addr_remove"><tt>bmd_port_mac_addr_remove</tt></a>  API functions to insert and remove
+static entries in the switch L2 table.
+<p>Below is an example of how to add a static L2 entry for port 2, VLAN
+1:
+<pre class="code">
+bcm.0&gt; pmac add 2 1 00:10:18:01:23:45
+</pre>
+<p><a name="mdk_ug_bmd_shcmd_stat"></a>
+<h4>5.2.13.   stat</h4>
+<p> The <tt>stat</tt> command provides access to the  <a href="sect_bmd_api_function_reference.html#bmd_stat_get"><tt>bmd_stat_get</tt></a>  and
+  <a href="sect_bmd_api_function_reference.html#bmd_stat_clear"><tt>bmd_stat_clear</tt></a>  API functions. The <tt>stat</tt> command followed by a
+port number will iterate over all supported statistics types and
+display the counter values.
+<p><a name="mdk_ug_bmd_shcmd_swinit"></a>
+<h4>5.2.14.   swinit</h4>
+<p> The <tt>swinit</tt> command calls the  <a href="sect_bmd_api_function_reference.html#bmd_switching_init"><tt>bmd_switching_init</tt></a>  API to configure
+the switch for unmanaged L2 switching.
+<p>In a test setup the typical use would be a command sequence like this:
+<pre class="code">
+BCM.0&gt; swinit
+BCM.0&gt; portmode all update
+BCM.0&gt; portmode all update
+</pre>
+The reason for calling <tt> port update </tt> twice is the fact that most
+PHYs implement the link status bit as sticky link-down.
+<p><a name="mdk_ug_bmd_shcmd_phy"></a>
+<h4>5.2.15.   phy</h4>
+<p>The <tt>phy</tt> command is not tied to any BMD API functions, but provides
+a convenient way to access the PHYs attached to a BMD device.
+<p>The <tt>can</tt> be used in severel different ways, where the most basic
+variant is to show which PHYs are associated with each port:
+<pre class="code">
+BCM.0&gt; phy info
+</pre>
+This command will show basic PHY information for each PHY on each
+port. If more than one PHY bus exists for a port then more than one
+PHY may be associated with the port. Each PHY is therefore assigned an
+index of which index 0 is the outermost PHY in the PHY chain.
+<p>The <tt>phy</tt> command can also be used to inspect or modify PHY
+registers. To show all IEEE registers of the outermost PHY on port 3,
+use the following command:
+<pre class="code">
+BCM.0&gt; phy 3 0
+</pre>
+To show just a single register, e.g. the MII status register (register
+01h), simply add the register address:
+<pre class="code">
+BCM.0&gt; phy 3 0 0x1
+</pre>
+Some (but not all) PHY drivers have a symbol table associated which
+allows symbolic register access. To dump all registers as symbols, use
+the following command:
+<pre class="code">
+BCM.0&gt; phy 3 0 raw *
+</pre>
+To show e.g. the MII status register on a BCM5464 PHY:
+<pre class="code">
+BCM.0&gt; phy 3 0 <tt>mii_statr</tt>
+</pre>
+The <tt>phy</tt> command also support a probe feature, which will (re)probe
+all PHY buses on all ports. This can be useful when the BMD is used as
+a debug monitor for another driver. After probing the PHYs, both
+switch chip and PHY registers can be inspected.
+<p><a name="mdk_ug_bmd_shcmd_pinfo"></a>
+<h4>5.2.16.   pinfo</h4>
+<p>The <tt>pinfo</tt> (port information) command is not tied to any BMD API
+functions, but provides a convenient way to determine the port
+configuration for a switch device.
+<p>Some devices have separate port mappings for physical, logical and MMU
+ports, and these mappings are necessary to know when performing
+low-level register access. The <tt>pinfo</tt> command makes it easy to see
+these port mappings as well as the type and maximum speed for each
+port (if supported by the BMD driver).
+<p>To show the port configuration for all switch ports:
+<pre class="code">
+BCM.0&gt; pinfo all
+</pre>
+To see which PHY bus drivers are assigned to a particular port:
+<pre class="code">
+BCM.0&gt; pinfo phybus 1
+</pre>
+Note that as opposed to the <tt>phy</tt> command, the <tt>pinfo</tt> command
+will show the PHY bus driver and PHY address even if no PHY has been
+found during the PHY probing process.
+<p><p><a name="mdk_ug_bmd_configuration"></a>
+<h3>5.3.   BMD Configuration</h3>
+<p>The BMD configuration file is called <tt>bmd_config.h</tt> and it is structured
+like the <tt>cdk_config.h</tt> file, i.e. all parameters are listed with a
+default value that can be overridden at compile time. As for the CDK,
+this can be done via the compiler command line or through a special
+configuration file called <tt>bmd_custom_config.h,</tt> which must exist in the
+default compiler include path. In the latter case the only parameter
+that needs to be specified on the compiler command line is
+<tt>BMD_INCLUDE_CUSTOM_CONFIG</tt>.
+<p>In addition to the normal BMD configuration parameters, the
+<tt>bmd_config.h</tt> file declares the following functions, which must be
+supplied by the system:
+<pre class="code">
+extern int              /* Return 0 on success */
+<tt>BMD_SYS_USLEEP</tt>(
+    <tt>uint32_t</tt> usecs);    /* Sleep time in microseconds */
+
+extern void *           /* Logical address of DMA memory block */
+<tt>BMD_SYS_DMA_ALLOC_COHERENT</tt>(
+    void *dvc,          /* CDK device context */
+    <tt>size_t</tt> size,        /* Requested amount of DMA memory */
+    <tt>dma_addr_t</tt> *baddr); /* (OUT) physical bus address */
+
+extern void
+<tt>BMD_SYS_DMA_FREE_COHERENT</tt>(
+    void *dvc,          /* CDK device context */
+    <tt>size_t</tt> size,        /* Size of DMA memory block */
+    void *laddr,        /* Logical address of DMA memory block */
+    <tt>dma_addr_t</tt> baddr);  /* Physical bus address */
+</pre>
+The <tt>BMD_SYS_USLEEP</tt> function must stall execution for at least usecs
+number of microseconds, and the function is used primarily for
+hardware reset and initialization sequences with strict timing
+requirements.
+<p>The <tt>BMD_SYS_DMA_ALLOC_COHERENT</tt> function must allocate cache-coherent
+DMA'able memory and return the logical and physical bus address of the
+allocated block of memory.  The function will be passed the device
+context handle used in <tt>cdk_dev_create</tt>() and the requested size of DMA
+memory.  On non-cache-coherent architecures this function should
+return uncached memory.
+<p>The <tt>BMD_SYS_DMA_FREE_COHERENT</tt> function deallocates memory previously
+allocated with <tt>BMD_SYS_DMA_ALLOC_COHERENT.</tt><p>Note that the DMA functions are required only if
+<tt>BMD_CONFIG_INCLUDE_DMA</tt> is defined to a non-zero value.
+<p>Please refer to the <tt>bmd_config.h</tt> file or the following table for a complete list of BMD
+configuration options. Note that a special shell command called <tt>bmd</tt>
+will list the settings of all BMD configuration parameters.
+
+<a name=BMD_CONFIG_TABLE></a>
+<br><br><b>Table 4:   BMD Configuration Definitions</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  DEFINE</b></td><td><b>  DEFAULT</b></td><td><b> Description
+</b></td></tr><tr><td><tt>BMD_INCLUDE_CUSTOM_CONFIG</tt></td><td><tt>Undefined</tt></td><td> Include BMD system config file if specified.
+</td></tr><tr><td><tt>BMD_SYS_USLEEP</tt></td><td><tt> Must be specified. </tt></td><td> TBD
+</td></tr><tr><td><tt>BMD_CONFIG_INCLUDE_DMA</tt></td><td><tt> 1 </tt></td><td> Support for DMA to/from host CPU
+</td></tr><tr><td><tt>BMD_CONFIG_INCLUDE_DMA_CACHE_CONTROL</tt></td><td><tt> 0 </tt></td><td> Support for DMA memory flush/invalidate in case coherent DMA memory is unavailable
+</td></tr><tr><td><tt>BMD_CONFIG_MAX_UNITS</tt></td><td><tt> CDK_CONFIG_MAX_UNITS </tt></td><td> Maximum number of chips supported
+</td></tr><tr><td><tt>BMD_CONFIG_MAX_PORTS</tt></td><td><tt> CDK_CONFIG_MAX_PORTS </tt></td><td> Maximum number of ports per chip supported
+</td></tr><tr><td><tt>BMD_CONFIG_DMA_MAX_POLLS</tt></td><td><tt> 10000 </tt></td><td> Maximum number of DMA descriptor polls
+</td></tr><tr><td><tt>BMD_CONFIG_DEFAULT_VLAN</tt></td><td><tt> 1 </tt></td><td> Default VLAN
+</td></tr><tr><td><tt>BMD_CONFIG_SIMULATION</tt></td><td><tt> 0 </tt></td><td> Simulation environment
+</td></tr><tr><td><tt>BMD_CONFIG_INCLUDE_XE</tt></td><td><tt> 1 </tt></td><td> Include 10 Gbps Ethernet drivers
+</td></tr><tr><td><tt>BMD_CONFIG_INCLUDE_HIGIG</tt></td><td><tt> 1 </tt></td><td> Include HiGig support
+</td></tr><tr><td><tt>BMD_CONFIG_INCLUDE_PHY</tt></td><td><tt> 1 </tt></td><td> Include PHY drivers
+</td></tr><tr><td><tt>BMD_CONFIG_MAX_PHYS</tt></td><td><tt> 2 </tt></td><td> Maximum number of PHYs per port
+</td></tr><tr><td><tt>BMD_CONFIG_OPTIMIZE_DISPATCH</tt></td><td><tt> 1 </tt></td><td> Optimize inclusion of the BMD API dispatch layer.
+When enabled, the intermediate BMD API dispatch layer will be compiled out
+if the build is configured for only one device.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_DEFAULT</tt></td><td><tt> 1 </tt></td><td> This is the default setting for all unspecified shell commands.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_BMD</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the BMD Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_RESET</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the RESET Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_INIT</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the INIT Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_TX</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the TX Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_RX</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the RX Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_VLAN</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the VLAN Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_PORT_MODE</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the PORT MODE Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_PORT_STP</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the PORT STP Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_PORT_VLAN</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the PORT VLAN Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_PORT_MAC</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the port MAC Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_CPU_MAC</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the CPU MAC Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_STAT</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the STAT Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_SWITCHING_INIT</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the SWITCHING INIT Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_PDL</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the PDL Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_PHY</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the PHY Command.
+</td></tr><tr><td><tt>BMD_CONFIG_SHELL_INCLUDE_PORT_INFO</tt></td><td><tt> BMD_CONFIG_SHELL_INCLUDE_DEFAULT </tt></td><td> Include the PINFO Command.
+</td></tr></tbody></table><br><p><a name="mdk_ug_bmd_dma_memory_management"></a>
+<h3>5.4.   BMD DMA Memory Management</h3>
+<p>The BMD requires access to DMA'able memory primarily for storing DMA
+descriptors for packet transfers to and from the CPU.  On most systems
+without cache-coherent DMA memory, the best performance is achieved by
+storing DMA descriptors in uncached memory.
+<p>Packet buffers should also reside in DMA'able memory, but even on
+systems without cache-coherent memory it is often preferable to store
+packet buffers in cached memory.
+<p>The BMD is designed to leave the cache management to the application
+whenever possible.  If the appliction allocates a packet buffer in
+cached memory on a system without cache-coherent DMA memory, the
+application must ensure that the buffer cache is flushed before the
+packet buffer is passed to the BMD transmit interface.  Likewise, a
+packet buffer returned from the BMD receive interface must be
+invalidated by the application before the buffer content is accessed.
+<p>The BMD driver allocates memory for DMA descriptors using the
+application-provided <tt>BMD_SYS_DMA_ALLOC_COHERENT</tt> function.  On systems
+without cache-coherent DMA memory it is strongly recommended that this
+function returns uncached memory.
+<p>Below is an example implementation taken from the Broadcom CFE boot
+loader:
+<pre class="code">
+void *
+<tt>mdk_sys_dma_alloc_coherent</tt>(void *dvc, <tt>size_t</tt> size, <tt>dma_addr_t</tt> *baddr)
+{
+    void *base;
+
+    /* Allocate memory on a cache-line boundary */
+    base = KMALLOC(ALIGN(size, <tt>CACHE_ALIGN</tt>), <tt>CACHE_ALIGN</tt>);
+
+    if (base != <tt>NULL</tt>) {
+        /* Synchronize cache and memory */
+	<tt>CACHE_DMA_INVAL</tt>(base, size);
+
+        /* Get the physical bus address for allocated memory */
+        *baddr = <tt>PTR_TO_PCI</tt>(base);
+    }
+
+    /* Return logical pointer that provides uncached access */
+    return <tt>CACHE_DMA_SHARED</tt>(base);
+}
+</pre>
+The next example shows how to allocate a packet buffer for a <tt>bmd_pkt_t</tt>
+data structure:
+<pre class="code">
+int
+<tt>alloc_pkt_data</tt>(<tt>bmd_pkt_t</tt> *pkt, <tt>size_t</tt> size)
+{
+    /* Allocate cached packet buffer */
+    pkt-&gt;data = KMALLOC(size, ALIGN(align, <tt>CACHE_ALIGN</tt>));
+    if (pkt-&gt;data == <tt>NULL</tt>) {
+	xprintf("Error allocating packet buffer\n");
+        return -1;
+    }
+
+    /* Synchronize cache and memory */
+    <tt>CACHE_DMA_INVAL</tt>(pkt-&gt;data, size);
+
+    /* Set up physical bus address */
+    pkt-&gt;baddr = <tt>PTR_TO_PCI</tt>(pkt-&gt;data);
+
+    return 0;
+}
+</pre>
+Finally, an example of passing a packet buffer to the BMD transmit
+interface after all data has been written to the buffer:
+<pre class="code">
+int
+<tt>do_tx</tt>(int unit, int port, <tt>bmd_pkt_t</tt> *pkt)
+{
+    /* Flush cache before transmit */
+    <tt>CACHE_DMA_SYNC</tt>(pkt-&gt;data, pkt-&gt;size);
+
+    /* Set egress port */
+    pkt-&gt;port = port;
+
+    return <tt>bmd_tx</tt>(unit, pkt);
+}
+</pre>
+<p><a name="mdk_ug_bmd_port_mapping"></a>
+<h3>5.5.   BMD Port Mapping</h3>
+<p>For many switch devices the physical port numbers do not correspond to
+the logical port numbers printed next to the front-panel connectors.
+In some cases the relationship is simple, e.g. logical port number =
+physical port number + 1, but for some switch devices the relationship
+is rather complicated, and this can be cumbersome to deal with.  In
+order to simplify debugging and application development, the CDK
+optionally provides macros for translating physical port addresses to
+logical addresses and vice versa.  The port translation is enabled by
+setting <tt>CDK_CONFIG_INCLUDE_PORT_MAP</tt>=1.
+<p>The port translation uses a default mapping that matches the most
+common board layout for a particular device, however the translation
+map can be modified as necessary using the <tt>CDK_PORT_MAP_SET</tt> macro.
+The translation map itself is a simple array of physical port numbers
+indexed by the logical port number. Logical port 0 is usually the CPU
+port, port 1 is the first front-panel port, and so forth.
+<p>Note that when port mapping is enabled, the BMD shell commands will
+use logical port numbers, whereas the CDK get/set commands will keep using
+physical port numbers.  The BMD shell command 'port all' will show all
+logical ports and the corresponding physical port.
+<p><a name="mdk_ug_bmd_phy_management"></a>
+<h3>5.6.   BMD PHY Management</h3>
+<p>The BMD does not include any PHY drivers, but relies on the
+stand-alone PHY Driver Library described in
+  <a href="sect_mdk_ug_phy_driver_library.html">Section 6,  PHY Driver Library
+</a> . 
+<a name="mdk_ug_bmd_phy_probing"></a>
+<h4>5.6.1.   PHY Probing</h4>
+<p>To enable PHY support in the BMD, the application must provide a PHY
+probing function and a null-terminated list of PHY drivers.  The BMD
+PHY subsystem is initialized by calling bmd_phy_probe_init, which is
+declared in <tt>&lt;bmd/bmd_phy_ctrl.h&gt;.</tt><pre class="code">
+extern int 
+<tt>bmd_phy_probe_init</tt>(
+    <tt>bmd_phy_probe_func_t</tt> probe,
+    <tt>phy_driver_t</tt> **<tt>drv_list</tt>);
+</pre>
+In order to simplify application development, the BMD itself includes
+a default PHY probing function as well as a default list of PHY
+drivers.  The list of PHY drivers will include only the PHYs that are
+currently enabled in the PHY Driver Library.  Please refer to
+  <a href="sect_mdk_ug_phy_driver_library.html#mdk_ug_pdl_configuration">Section 6.2,  PDL Configuration
+</a>  for additional information.
+<p>Below is a code snippet that demonstrates how to initialize PHY
+probing using the default probe function and PHY driver list.
+<pre class="code">
+#include &lt;bmd/<tt>bmd_phy_ctrl</tt>.h&gt;
+
+int main(int argc, char *argv[])
+{
+    <tt>bmd_phy_probe_init</tt>(<tt>bmd_phy_probe_default</tt>, <tt>bmd_phy_drv_list</tt>);
+
+    ...
+}
+</pre>
+<p><a name="mdk_ug_bmd_phy_bus_driver"></a>
+<h4>5.6.2.   PHY Bus Drivers</h4>
+<p>Before the PHY probing function can do anything useful, it needs one
+or more PHY bus drivers.  Most of the Broadcom switch chip devices
+include one or more MII Management interfaces, and the standard PHY
+bus drivers for these interfaces are automatically assigned to all
+ ports when  <a href="sect_bmd_api_function_reference.html#bmd_attach"><tt>bmd_attach</tt></a>  is called.
+<p>In case non-standard PHY addressing is used or if additional PHY
+buses exist in a hardware design, it is possible to override the
+standard list of PHY bus drivers using the following function:
+<pre class="code">
+extern int
+<tt>bmd_phy_bus_set</tt>(
+    int unit,
+    int port,
+    <tt>phy_bus_t</tt> **<tt>bus_list</tt>);
+</pre>
+To override the auto-assigned list of PHY bus drivers, this function
+ must be called after  <a href="sect_bmd_api_function_reference.html#bmd_attach"><tt>bmd_attach</tt></a> . 
+<p>Below is an example of a custom PHY bus driver that uses the MII
+management interface found on all XGS switch chips.  Usually only the
+PHY address function (<tt>custom_phy_bus_phy_addr</tt> in the example)
+needs to be tweaked, but if the PHYs reside on a bus which is not
+controlled by the switch chip, it will be necessary to provide
+hardware access functions for that bus.  These functions would replace
+the <tt>_read</tt> and <tt>_write</tt> functions in the example driver.
+<pre class="code">
+/* Include XGS MII access functions */
+#include &lt;cdk/arch/<tt>xgs_miim</tt>.h&gt;
+
+/* Get PHY address for a switch port - depends on board layout */
+static <tt>uint32_t</tt>
+<tt>_phy_addr</tt>(int port)
+{
+    return port - 1 + <tt>CDK_XGS_MIIM_BUS_2</tt>;
+}
+
+/* Read a PHY register */
+static int 
+<tt>_read</tt>(int unit, <tt>uint32_t</tt> addr, <tt>uint32_t</tt> reg, <tt>uint32_t</tt> *val)
+{
+    return <tt>cdk_xgs_miim_read</tt>(unit, addr, reg, val);
+}
+
+/* Write a PHY register */
+static int 
+<tt>_write</tt>(int unit, <tt>uint32_t</tt> addr, <tt>uint32_t</tt> reg, <tt>uint32_t</tt> val)
+{
+    return <tt>cdk_xgs_miim_write</tt>(unit, addr, reg, val);
+}
+
+/* Get PHY instance within this system */
+static int
+<tt>_phy_inst</tt>(int port)
+{
+    return (port - 1) &amp; 3;
+}
+
+/* Custom PHY bus driver */
+<tt>phy_bus_t</tt> <tt>custom_phy_bus_ext</tt> = {
+    "<tt>custom_phy_bus_ext</tt>",
+    <tt>_phy_addr</tt>,
+    <tt>_read</tt>,
+    <tt>_write</tt>,
+    <tt>_phy_inst</tt>
+};
+</pre>
+The next example shows how the custom PHY driver can be used with a
+ BCM56820-based design. After calling  <a href="sect_bmd_api_function_reference.html#bmd_attach"><tt>bmd_attach</tt></a>  the default PHY
+bus drivers have been attached to all ports, but we want to replace
+the external PHY bus driver for all the 10 GbE ports (physical ports
+1-24).
+<pre class="code">
+/* Include default PHY bus driver for the internal PHY bus */
+#include &lt;phy/<tt>phy_buslist</tt>.h&gt;
+
+/* Our custom PHY bus driver */
+extern <tt>phy_bus_t</tt> <tt>phy_bus_custom_ext</tt>;
+
+/* Custom PHY bus driver list */
+static <tt>phy_bus_t</tt> *<tt>custom_phy_bus_list</tt>[] = {
+    &amp;<tt>phy_bus_bcm56820_miim_int</tt>,
+    &amp;<tt>phy_bus_custom_ext</tt>,
+    <tt>NULL</tt>
+};
+
+void <tt>dev_init</tt>(int unit)
+{
+    int port;
+      ...
+
+    <tt>bmd_attach</tt>(unit);
+    for (port = 1; port &lt;= 24; port++) {
+        <tt>bmd_phy_bus_set</tt>(unit, port, <tt>custom_phy_bus_list</tt>);
+    }
+      ...
+}
+</pre>
+Please note that in case of clause 45 capable PHYs, the clause 45
+device is stored in the upper 16 bits of the <tt>reg</tt> parameter and the
+PHY register address is stored in the lower 16 bits.  This means that
+e,g, the IEEE control register (0000h) on a clause 45 PMA/PMD device
+(1) is referenced as 00010000h.
+<p>PHY instances matter when e.g. each lane of a XAUI core can be used as
+a separate GbE PHY. Typically lane 0 of the XAUI core has a special
+meaning, and certain registers of lane 0 may affect all four lanes.
+For such cases the PHY driver needs to know which lane it is operating
+on, and this lane information is derived from the PHY instance.
+<p><a name="mdk_ug_bmd_phy_driver_call_backs"></a>
+<h4>5.6.3.   PHY Driver Call-back Functions</h4>
+<p>In addition to a custom PHY bus driver, a particular board layout may
+require that XAUI lanes are remapped or that lane polarities are
+swapped. To address this, the PHY driver library offers two call-back
+hooks which are invoked immediately after PHY reset and immediately
+after PHY initialization respectively.
+<p>The PHY reset call-back is typically used for lane remapping and
+polarity swaps, whereas the PHY init call-bcak is used for additional
+non-standard PHY initialization, e.g. LED programming.
+<p>Below is an example of a PHY reset call-back function which performs
+several per-port reconfigurations of the PHYs. Note that the function
+argument is a PHY chain which makes it necessary to search each chain
+for the desired PHY driver.
+<pre class="code">
+static int 
+<tt>_phy_reset_cb</tt>(<tt>phy_ctrl_t</tt> *pc)
+{
+    int rv = <tt>CDK_E_NONE</tt>;
+    int port;
+    <tt>phy_ctrl_t</tt> *lpc = pc;
+    <tt>uint32_t</tt> <tt>tx_pol</tt>, <tt>rx_map</tt>;
+
+    while (lpc) {
+        if (lpc-&gt;drv == <tt>NULL</tt> || lpc-&gt;drv-&gt;<tt>drv_name</tt> == <tt>NULL</tt>) {
+            return <tt>CDK_E_INTERNAL</tt>;
+        }
+        if (<tt>CDK_STRSTR</tt>(lpc-&gt;drv-&gt;<tt>drv_name</tt>, "<tt>unicore16g_xgxs</tt>") != <tt>NULL</tt>) {
+            port = <tt>PHY_CTRL_PORT</tt>(lpc);
+            /* Invert Tx polarity on all lanes of port 3 */
+            if (port == 3) {
+                <tt>tx_pol</tt> = 0x1111;
+                rv = <tt>PHY_CONFIG_SET</tt>(lpc, PhyConfig_XauiTxPolInvert,
+                                    <tt>tx_pol</tt>, <tt>NULL</tt>);
+                <tt>PHY_VERB</tt>(lpc, ("Flip Tx pol (0x%04"PRIx32")\n", <tt>tx_pol</tt>));
+            }
+            /* Remap Rx lanes on all ports */
+            <tt>rx_map</tt> = 0x0123;
+            rv = <tt>PHY_CONFIG_SET</tt>(lpc, PhyConfig_XauiRxLaneRemap,
+                                <tt>rx_map</tt>, <tt>NULL</tt>);
+            <tt>PHY_VERB</tt>(lpc, ("Remap Rx lanes (0x%04"PRIx32")\n", <tt>rx_map</tt>));
+        } else if (<tt>CDK_STRSTR</tt>(lpc-&gt;drv-&gt;<tt>drv_name</tt>, "hyperlite") != <tt>NULL</tt>) {
+            /* Remap Rx lanes on all ports */
+            <tt>rx_map</tt> = 0x0123;
+            rv = <tt>PHY_CONFIG_SET</tt>(lpc, PhyConfig_XauiRxLaneRemap,
+                                <tt>rx_map</tt>, <tt>NULL</tt>);
+            <tt>PHY_VERB</tt>(lpc, ("Remap Rx lanes (0x%04"PRIx32")\n", <tt>rx_map</tt>));
+        }
+        lpc = lpc-&gt;next;
+    }
+
+    return rv;
+}
+</pre>
+The PHY call-back functions should be installed through the BMD helper
+functions shown below at the same time the PHY probe functions is
+configured.
+<pre class="code">
+extern int 
+<tt>bmd_phy_reset_cb_register</tt>(int (*<tt>reset_cb</tt>)(<tt>phy_ctrl_t</tt> *pc));
+
+extern int 
+<tt>bmd_phy_init_cb_register</tt>(int (*<tt>init_cb</tt>)(<tt>phy_ctrl_t</tt> *pc));
+</pre>
+The correspnding application code will look something like this:
+<pre class="code">
+#include &lt;bmd/<tt>bmd_phy_ctrl</tt>.h&gt;
+
+int main(int argc, char *argv[])
+{
+    <tt>bmd_phy_probe_init</tt>(<tt>bmd_phy_probe_default</tt>, <tt>bmd_phy_drv_list</tt>);
+    <tt>bmd_phy_reset_cb_register</tt>(<tt>_phy_reset_cb</tt>);
+
+    ...
+}
+</pre>
+<p><a name="mdk_ug_bmd_phy_bus_driver_backward_compatibility"></a>
+<h4>5.6.4.   PHY Bus Driver Backward Compatibility</h4>
+<p>As of MDK version 2.4 the signature of the <tt>phy_bus_t</tt> has changed
+in order to support newer 10G PHYs and EEE (Energy Efficient Ethernet)
+GE PHYs.
+<p>If you would like to write a PHY bus driver that works with both new
+and older versions of the MDK, the MDK now has a version define for
+the <tt>phy_bus_t</tt> structure called <tt>PHY_BUS_VERSION.</tt> This define
+will be changed only in case the signature of <tt>phy_bus_t</tt> changes in
+the future.
+<p>The example below shows how you can write a PHY bus driver that works
+with multiple versions of the <tt>phy_bus_t</tt> structure.
+<pre class="code">
+/* Include XGS MII access functions */
+#include &lt;cdk/arch/<tt>xgs_miim</tt>.h&gt;
+
+/* Get PHY address for a switch port - depends on board layout */
+static <tt>uint32_t</tt>
+<tt>_phy_addr</tt>(int port)
+{
+    return port - 1 + <tt>CDK_XGS_MIIM_BUS_2</tt>;
+}
+
+#ifdef <tt>PHY_BUS_VERSION</tt>
+
+#if <tt>PHY_BUS_VERSION</tt> == 4
+
+/* Read a PHY register */
+static int 
+<tt>_read</tt>(int unit, <tt>uint32_t</tt> addr, <tt>uint32_t</tt> reg, <tt>uint32_t</tt> *val)
+{
+    return <tt>cdk_xgs_miim_read</tt>(unit, addr, reg, val);
+}
+
+/* Write a PHY register */
+static int 
+<tt>_write</tt>(int unit, <tt>uint32_t</tt> addr, <tt>uint32_t</tt> reg, <tt>uint32_t</tt> val)
+{
+    return <tt>cdk_xgs_miim_write</tt>(unit, addr, reg, val);
+}
+
+#else
+#error Unsupported <tt>PHY_BUS_VERSION</tt>
+#endif
+
+#else /* MDK 2.3.x (and earlier) */
+
+/* Read a PHY register on a switch port */
+static int 
+<tt>_read</tt>(int unit, int port, <tt>uint32_t</tt> reg, <tt>uint32_t</tt> *val)
+{
+    return <tt>cdk_xgs_miim_read</tt>(unit, <tt>_phy_addr</tt>(port), reg, val);
+}
+
+/* Write a PHY register on a switch port */
+static int 
+<tt>_write</tt>(int unit, int port, <tt>uint32_t</tt> reg, <tt>uint32_t</tt> val)
+{
+    return <tt>cdk_xgs_miim_write</tt>(unit, <tt>_phy_addr</tt>(port), reg, val);
+}
+
+#endif /* <tt>PHY_BUS_VERSION</tt> */
+
+/* Custom PHY bus driver */
+<tt>phy_bus_t</tt> <tt>custom_phy_bus_ext</tt> = {
+#ifdef <tt>PHY_BUS_VERSION</tt>
+    "<tt>custom_phy_bus_ext</tt>",
+#endif
+    <tt>_phy_addr</tt>,
+    <tt>_read</tt>,
+    <tt>_write</tt>
+};
+</pre>
+<p><p><a name="mdk_ug_bmd_higig_support"></a>
+<h3>5.7.   BMD HiGig Support</h3>
+<p>The BMD is not intended for use in stacking application, but for
+debugging purposes, it supports encoding and decoding of HiGig headers
+when packets are sent to and from the CPU.
+<a name="mdk_ug_bmd_higig_dump_rx_dma"></a>
+<h4>5.7.1.   Dumping Rx DMA Information</h4>
+<p> When packets are received via the  <a href="sect_bmd_api_function_reference.html#bmd_rx_poll"><tt>bmd_rx_poll</tt></a>  API function, it
+is possible to dump DMA descriptors and HiGig module header by
+enabling the proper debug dump flags:
+<pre class="code">
+BMD.0&gt; debug dma higig
+</pre>
+Below is an example of the DMA debug output for an XGS device:
+<pre class="code">
+Tx DMA ctrl = 000b000c 000805e2
+Tx DMA stat = 8000000c 800005e2
+Tx DMA mhdr = 000b000c ff000000 00000000 00000002
+Rx DMA ctrl = 000005f2
+Rx DMA stat = 800305f2
+Rx pkt stat = 05f20000 00000000 00000000 001d0c00 00000000 01000000 0001121f 00000000 00000000
+Rx DMA mhdr = fb000000 001f0000 00000000 001d0100
+HIGIG2 module header:
+        <tt>HDR_EXT_LEN</tt>&lt;5:7&gt;=0x0
+        OPCODE&lt;8:10&gt;=0x1
+        <tt>SRC_T</tt>&lt;13&gt;=0x0
+        PFM&lt;14:15&gt;=0x0
+        <tt>VID_LOW</tt>&lt;16:23&gt;=0x1d
+        <tt>VID_HIGH</tt>&lt;24:31&gt;=0x0
+        <tt>VC_LABEL</tt>&lt;32:47&gt;=0x0
+        <tt>CLASSIFICATION_TAG</tt>&lt;48:63&gt;=0x0
+        <tt>VC_LABEL_19_16</tt>&lt;48:51&gt;=0x0
+        <tt>LABEL_PRESENT</tt>&lt;52&gt;=0x0
+        L3&lt;53&gt;=0x0
+        MIRROR&lt;56&gt;=0x0
+        <tt>MIRROR_DONE</tt>&lt;57&gt;=0x0
+        <tt>MIRROR_ONLY</tt>&lt;58&gt;=0x0
+        <tt>INGRESS_TAGGED</tt>&lt;59&gt;=0x0
+        <tt>DST_TGID</tt>&lt;60:62&gt;=0x0
+        <tt>DST_T</tt>&lt;63&gt;=0x0
+        <tt>PPD_TYPE</tt>&lt;64:66&gt;=0x0
+        DP&lt;70:71&gt;=0x0
+        LBID&lt;72:79&gt;=0x0
+        <tt>SRC_PID</tt>&lt;80:87&gt;=0x1f
+        <tt>SRC_MODID</tt>&lt;88:95&gt;=0x0
+        <tt>DST_PORT_MGIDL</tt>&lt;96:103&gt;=0x0
+        <tt>DST_MODID_MGIDH</tt>&lt;104:111&gt;=0x0
+        TC&lt;112:115&gt;=0x0
+        MCST&lt;116&gt;=0x0
+        START&lt;120:127&gt;=0xfb
+</pre>
+<p><a name="mdk_ug_bmd_higig_parse_rx"></a>
+<h4>5.7.2.   Parsing Rx HiGig Information</h4>
+<p>In addition to the dump feature, basic HiGig header information is
+also parsed into the <tt>mh_XXX</tt> field of the <tt>bmd_pkt_t</tt> structure.
+<p>Currently only packet type and source and destination module/port
+information is supported.
+<p><a name="mdk_ug_bmd_higig_encode_tx"></a>
+<h4>5.7.3.   Encoding Tx HiGig Information</h4>
+<p>The BMD shell <tt>tx</tt> command supports adding an arbitrary stacking
+header specified as a sequence of hex bytes. Since encoding a HiGig
+header this way is quite cumbersome, it is also possible to use
+symbolic field names.
+<p>In order to see the HiGig+/HiGig2 field names supported, use one of the
+following commands:
+<pre class="code">
+BCM.0&gt; tx hglist
+BCM.0&gt; tx hg2list
+</pre>
+When encoding the HiGig header, each field must be prepended with \cw
+hg for HiGig+ encoding or <tt>hg2</tt> for HiGig2 encoding. Below is an
+example of sending a HiGig2 packet on port 28:
+<pre class="code">
+BCM.0&gt; tx 1 28 hg2opcode=1 <tt>hg2src_modid</tt>=2 <tt>hg2dst_port_mgidl</tt>=4
+</pre>
+<p><p>
+</table>
+</body>
+</html>

@@ -1,0 +1,2 @@
+STLport-5.2.1.patch
+- cross-compile for mips and arm platform using uclibc

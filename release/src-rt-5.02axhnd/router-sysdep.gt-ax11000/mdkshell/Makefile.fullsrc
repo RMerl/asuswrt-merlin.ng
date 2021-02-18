@@ -1,0 +1,104 @@
+#
+# In most cases, you only need to modify this first section.
+#
+EXE = mdkshell
+OBJS = mdkshell.o
+LIBS = 
+CDK_TARGETS = libc
+CDK_LIBNAMES = $(addprefix -lcdk,$(CDK_TARGETS))
+
+LIBS += $(BMD_LIBNAMES)
+LIBS += $(PHY_LIBNAMES)
+LIBS += $(CDK_LIBNAMES)
+
+all dynamic install : $(EXE) generic_exe_install
+
+clean: generic_clean
+	rm -f $(INSTALL_DIR)/bin/$(EXE)
+
+binaryonly_dist_clean: clean generic_binaryonly_dist_clean
+	rm -f Makefile.fullsrc
+
+
+#
+# Set our CommEngine directory (by splitting the pwd into two words
+# at /userspace and taking the first word only).
+# Then include the common defines under CommEngine.
+#
+CURR_DIR := $(shell pwd)
+BUILD_DIR:=$(HND_SRC)
+
+include $(BUILD_DIR)/make.common
+
+#
+# Private apps and libs are allowed to include header files from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+
+ALLOWED_INCLUDE_PATHS := -I.\
+                         -I$(BUILD_DIR)/userspace/public/include  \
+                         -I$(BUILD_DIR)/userspace/public/include/$(OALDIR) \
+                         -I$(BUILD_DIR)/userspace/private/include  \
+                         -I$(BUILD_DIR)/userspace/private/include/$(OALDIR) \
+            			 -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)  \
+                         -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD) \
+                         -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
+
+#
+# Private apps and libs are allowed to link with libraries from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+#
+ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
+
+CFLAGS += -Werror
+CFLAGS += -DCONFIG_BCM9$(BRCM_CHIP)
+
+#SWMDK_DIR = $(CURR_DIR)/../../libs/$(SWMDK_BASE)
+SWMDK_DIR = $(TOP_PLATFORM)/mdk
+
+CFLAGS +=-I$(SWMDK_DIR)/cdk/include
+
+ifndef SYS_NO_TTY
+CFLAGS += -DSYS_HAS_TTY
+endif
+
+ifneq ($(strip $(BUILD_BRCM_CMS)),)
+CFLAGS += -DBRCM_CMS_BUILD
+endif
+
+CFLAGS += -DCDK_INCLUDE_CUSTOM_CONFIG -DBMD_INCLUDE_CUSTOM_CONFIG -DUSE_SYSTEM_LIBC -DBMD_CONFIG_INCLUDE_DMA=0 -DBMD_SYS_USLEEP=_usleep -DPHY_SYS_USLEEP=_usleep
+
+#CFLAGS += -DBCM_MDK_OS_DEP=1
+
+#
+# Implicit rule will make the .c into a .o
+# Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
+# See Section 10.2 of Gnu Make manual
+# 
+ifneq ($(PREBUILT_BCMBIN),1)
+$(EXE): $(OBJS)
+	$(CC) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
+#	$(CC) $(BOBJS) $(BMD_BLIBS) $(PHY_BLIBS) $(CDK_BLIBS)  $(OSLIBS) $(LDFLAGS) -o $@  $(CMS_LIB_PATH) $(LIBS)
+else
+$(EXE):
+	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/$(PRBM_DIR)/$@ ./
+endif
+
+#
+# Include the rule for making dependency files.
+# The '-' in front of the second include suppresses
+# error messages when make cannot find the .d files.
+# It will just regenerate them.
+# See Section 4.14 of Gnu Make.
+#
+
+include $(BUILD_DIR)/make.deprules
+
+-include $(OBJS:.o=.d)
+
+

@@ -17325,6 +17325,13 @@ void setup_leds()
 		eval("et", "robowr", "0", "0x1a", "0x01ff");
 #endif
 
+#if defined(GTAX11000) || defined(GTAXE11000)
+#ifdef RTCONFIG_EXTPHY_BCM84880
+		eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x7fff0", "0x1");
+		eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a832", "0x6");
+#endif
+#endif
+
 #ifdef RTCONFIG_LAN4WAN_LED
 		LanWanLedCtrl();
 #endif
@@ -17342,7 +17349,7 @@ void setup_leds()
 			eval("wl", "-i", "eth2", "ledbh", "10", "7");
 #elif defined(RTCONFIG_BCM_7114) || defined(RTAC86U)
 			eval("wl", "ledbh", "9", "7");
-#elif defined(RTAX88U)
+#elif defined(RTAX88U) || defined(GTAX11000)
 			eval("wl", "-i", "eth6", "ledbh", "15", "7");
 #elif defined(RTAX58U) || defined(RTAX56U)
 			eval("wl", "-i", "eth5", "ledbh", "0", "25");
@@ -17367,7 +17374,7 @@ void setup_leds()
 #elif defined(RTAC87U)
 			qcsapi_wifi_run_script("router_command.sh", "wifi_led_on");
 			qcsapi_led_set(1, 1);
-#elif defined(RTAX88U) || defined(RTAX86U)
+#elif defined(RTAX88U) || defined(RTAX86U) || defined(GTAX11000)
 			eval("wl", "-i", "eth7", "ledbh", "15", "7");
 #elif defined(RTAX58U)
 			eval("wl", "-i", "eth6", "ledbh", "15", "7");
@@ -17376,12 +17383,14 @@ void setup_leds()
 #endif
 		}
 
-#if defined(RTAC3200) || defined(RTAC5300)
+#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAX11000)
 		if (nvram_match("wl2_radio", "1")) {
 #if defined(RTAC3200)
 			eval("wl", "-i", "eth3", "ledbh", "10", "7");
 #elif defined(RTAC5300)
 			eval("wl", "-i", "eth3", "ledbh", "9", "7");
+#elif defined(GTAX11000)
+			eval("wl", "-i", "eth8", "ledbh", "15", "7");
 #endif
 		}
 #endif

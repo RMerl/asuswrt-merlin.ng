@@ -2,6 +2,15 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.2 (xx-xxx-2021)
+  - NEW: Added support for the GT-AX11000.  Note that VPNFusion, as
+         well as the ROG-specific features such as the custom UI
+         are not supported.
+  - FIXED: Router could get stuck at boot time after the user
+           migrated from stock firmware, or just erased his
+           JFFS partition, requiring a factory default reset.
+
+
+386.1_2 (12-Feb-2021)
   - NEW: Added snmp support to the RT-AX86U.
   - UPDATED: inadyn to 2.8.1.
   - UPDATED: nano to 5.5.
@@ -27,6 +36,7 @@ Asuswrt-Merlin 386/NG Changelog
   - FIXED: Erasing the JFFS partition would often require a second
            reboot since the operation failed when encountering
            a bad block.  These are now properly skipped.
+  - FIXED: Parental Control's time scheduler not working properly.
 
 
 386.1 (30-Jan-2021)

@@ -9363,9 +9363,6 @@ start_services(void)
 	start_netool();
 #endif
 	start_telnetd();
-#ifdef RTCONFIG_SSH
-	start_sshd();
-#endif
 #ifdef CONFIG_BCMWL5
 	start_eapd();
 	start_nas();
@@ -9710,6 +9707,9 @@ start_services(void)
 #endif
 #if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
 	start_detect_plc();
+#endif
+#ifdef RTCONFIG_SSH
+	start_sshd();
 #endif
 
 	run_custom_script("services-start", 0, NULL, NULL);

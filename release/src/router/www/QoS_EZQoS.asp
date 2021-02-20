@@ -887,6 +887,7 @@ function determineActionScript(){
 
 function submitQoS(){
 	if(validForm()){
+		document.getElementById('qos_atm').value = (document.getElementById('qos_atm_x').checked ? 1 : 0);
 		if(document.form.qos_enable.value == "1" && document.form.qos_type.value == "1" && document.form.TM_EULA.value == "0"){
 			ASUS_EULA
 				.config(eula_confirm, cancel)

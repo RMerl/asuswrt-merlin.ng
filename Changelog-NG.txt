@@ -5,9 +5,17 @@ Asuswrt-Merlin 386/NG Changelog
   - NEW: Added support for the GT-AX11000.  Note that VPNFusion, as
          well as the ROG-specific features such as the custom UI
          are not supported.
+  - NEW: Added jittertimer-rngd daemon to HND routers.  This will
+         ensure sufficient entropy is generated early on at
+         boot time, reducing boot stalls caused by insufficient
+         entropy for the kernel's random number generator,
+         and also generally improves security related to
+         crypto operations by the router.
+  - UPDATED: Openssl to 1.1.1j.
   - FIXED: Router could get stuck at boot time after the user
            migrated from stock firmware, or just erased his
            JFFS partition, requiring a factory default reset.
+  - FIXED: ATM checkbox could not be enabled on QOS page.
 
 
 386.1_2 (12-Feb-2021)

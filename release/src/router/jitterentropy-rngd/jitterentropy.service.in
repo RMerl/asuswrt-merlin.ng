@@ -1,0 +1,49 @@
+# Systemd configuration file
+#
+# The Jitterentropy RNGd does not depend on any other system
+# services. Futhermore, we want to start it as early as possible
+# in the boot cycle so that other services requiring
+# random numbers (like SSHD, TLS-based services) benefit
+# from a properly seeded /dev/?random
+
+[Unit]
+Description=Jitterentropy Gatherer Daemon
+DefaultDependencies=no
+After=local-fs.target
+Before=sysinit.target
+
+[Service]
+CapabilityBoundingSet=CAP_SYS_ADMIN
+DeviceAllow=/dev/null rw
+DeviceAllow=/dev/random rw
+DevicePolicy=strict
+ExecStart=@PATH@/jitterentropy-rngd
+IPAddressDeny=any
+LimitMEMLOCK=0
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+MountFlags=private
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateMounts=yes
+PrivateNetwork=yes
+PrivateTmp=yes
+PrivateUsers=no
+ProtectControlGroups=yes
+ProtectHome=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectSystem=strict
+ReadOnlyPaths=-/
+RemoveIPC=yes
+RestrictAddressFamilies=
+RestrictNamespaces=yes
+RestrictRealtime=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@chown @clock @cpu-emulation @debug @ipc @module @mount @obsolete @privileged @raw-io @reboot @resources @swap memfd_create mincore mlock mlockall personality
+UMask=0077
+
+[Install]
+WantedBy=basic.target
+Alias=jitterentropy-rngd.service

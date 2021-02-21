@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+    rngd:
+        build:
+            context: .
+        cap_add:
+            - SYS_ADMIN
+        cap_drop:
+            - ALL
+        network_mode: none
+        restart: always

@@ -1469,6 +1469,9 @@ obj-$(RTCONFIG_DNSSEC) += $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl,) $(if $(RTCON
 obj-$(RTCONFIG_SAMBA36X) += libiconv-1.14
 obj-$(RTCONFIG_TELENET) += lanauth
 obj-y += wsdd2
+ifeq ($(HND_ROUTER),y)
+obj-y += jitterentropy-rngd
+endif
 #obj-$(RTCONFIG_BWDPI) += faketc
 
 ifneq ($(HND_ROUTER),y)
@@ -7741,6 +7744,14 @@ portmap-install:
 libovpn: shared nvram$(BCMEX)$(EX7)
 	@$(SEP)
 	$(MAKE) -C libovpn
+
+jitterentropy-rngd:
+	@$(SEP)
+	$(MAKE) CFLAGS+="-fPIC" -C $@
+
+jitterentropy-rngd-install:
+	install -D jitterentropy-rngd/jitterentropy-rngd $(INSTALLDIR)/jitterentropy-rngd/usr/sbin/jitterentropy-rngd
+	$(STRIP) $(INSTALLDIR)/jitterentropy-rngd/usr/sbin/jitterentropy-rngd
 
 wsdd2:
 	@$(SEP)

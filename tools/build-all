@@ -36,11 +36,13 @@ BAC86=y
 BGTAC2900=y
 
 BAX88=y
+BGTAX11000=y
 
 BAX58=y
 BAX56=y
 
 BAX86=y
+BAX68=y
 
 ### Branches for each model
 BRANCH_AC68=master
@@ -53,12 +55,13 @@ BRANCH_AC86=master
 BRANCH_GTAC2900=master
 
 BRANCH_AX88=master
+BRANCH_GTAX11000=master
 
 BRANCH_AX58=master
 BRANCH_AX56=master
 
 BRANCH_AX86=master
-
+BRANCH_AX68=rtax68
 
 ### Paths
 # Store built images there
@@ -85,10 +88,10 @@ build_fw()
 	cd "$HOME/$FWPATH" || exit 1
 	if make "$FWMODEL" > "output.txt" 2>&1; then
 		cd image || exit 1
-		if [ "$FWMODEL" = "rt-ac86u" ] || [ "$FWMODEL" = "gt-ac2900" ] || [ "$FWMODEL" = "rt-ax88u" ]; then
+		if [ "$FWMODEL" = "rt-ac86u" ] || [ "$FWMODEL" = "gt-ac2900" ] || [ "$FWMODEL" = "rt-ax88u" ] || [ "$FWMODEL" = "gt-ax11000" ] ; then
 			FWNAME="$(find -- *_cferom_ubi.w | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_cferom_ubi.w~~g').zip"
-		elif [ "$FWMODEL" = "rt-ax58u" ] || [ "$FWMODEL" = "rt-ax56u" ] || [ "$FWMODEL" = "rt-ax86u" ]; then
+		elif [ "$FWMODEL" = "rt-ax58u" ] || [ "$FWMODEL" = "rt-ax56u" ] || [ "$FWMODEL" = "rt-ax86u" ] || [ "$FWMODEL" = "rt-ax68u" ]; then
 			FWNAME="$(find -- *_cferom_pureubi.w | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_cferom_pureubi.w~~g').zip"
 		else
@@ -165,6 +168,9 @@ fi
 if [ "$BAX88" = "y" ]; then
 	clean_tree amng.ax88 release/src-rt-5.02axhnd rt-ax88u $BRANCH_AX88
 fi
+if [ "$BGTAX11000" = "y" ]; then
+	clean_tree amng.gt11000 release/src-rt-5.02axhnd gt-ax11000 $BRANCH_GTAX11000
+fi
 if [ "$BAX58" = "y" ]; then
 	clean_tree amng.ax58 release/src-rt-5.02axhnd.675x rt-ax58u $BRANCH_AX58
 fi
@@ -174,6 +180,9 @@ fi
 if [ "$BAX86" = "y" ]; then
 	clean_tree amng.ax86 release/src-rt-5.02p1axhnd.675x rt-ax86u $BRANCH_AX86
 fi
+if [ "$BAX68" = "y" ]; then
+        clean_tree amng.ax68 release/src-rt-5.02p1axhnd.675x rt-ax68u $BRANCH_AX68
+fi
 echo "--- $(date +%R) - All trees ready!"
 
 # Launch parallel builds
@@ -181,53 +190,53 @@ echo "--- $(date +%R) - All trees ready!"
 echo "--- $(date +%R) - Launching all builds"
 if [ "$BAC86" = "y" ]; then
 	build_fw amng.ac86/release/src-rt-5.02hnd rt-ac86u &
-	sleep 10
 fi
 
 if [ "$BGTAC2900" = "y" ]; then
 	build_fw amng.gt2900/release/src-rt-5.02hnd gt-ac2900 &
-	sleep 10
 fi
 
 if [ "$BAX88" = "y" ]; then
 	build_fw amng.ax88/release/src-rt-5.02axhnd rt-ax88u &
-	sleep 10
+fi
+
+if [ "$BGTAX11000" = "y" ]; then
+	build_fw amng.gt11000/release/src-rt-5.02axhnd gt-ax11000 &
 fi
 
 if [ "$BAX58" = "y" ]; then
 	build_fw amng.ax58/release/src-rt-5.02axhnd.675x rt-ax58u &
-	sleep 10
 fi
 
 if [ "$BAX56" = "y" ]; then
 	build_fw amng.ax56/release/src-rt-5.02axhnd.675x rt-ax56u &
-	sleep 10
 fi
 
 if [ "$BAX86" = "y" ]; then
 	build_fw amng.ax86/release/src-rt-5.02p1axhnd.675x rt-ax86u &
-	sleep 10
+fi
+
+if [ "$BAX68" = "y" ]; then
+	build_fw amng.ax68/release/src-rt-5.02p1axhnd.675x rt-ax68u &
 fi
 
 if [ "$BAC68" = "y" ]; then
 	build_fw amng.ac68/release/src-rt-6.x.4708 rt-ac68u &
-	sleep 10
 fi
 
 if [ "$BAC3100" = "y" ]; then
 	build_fw amng.ac3100/release/src-rt-7.14.114.x/src rt-ac3100 &
-	sleep 10
 fi
 
 if [ "$BAC88" = "y" ]; then
 	build_fw amng.ac88/release/src-rt-7.14.114.x/src rt-ac88u &
-	sleep 10
 fi
 
 if [ "$BAC5300" = "y" ]; then
 	build_fw amng.ac5300/release/src-rt-7.14.114.x/src rt-ac5300 &
-	sleep 10
 fi
+
+sleep 5\
 
 echo "--- $(date +%R) - All builds launched, please wait..."
 

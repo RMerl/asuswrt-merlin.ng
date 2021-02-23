@@ -113,7 +113,7 @@ then
 		cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-HND $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
 	fi
 
-elif [ "$BUILD_NAME" == "RT-AX88U" ] || [ "$BUILD_NAME" == "RT-AX92U" ]
+elif [ "$BUILD_NAME" == "RT-AX88U" ] || [ "$BUILD_NAME" == "RT-AX92U" ] || [ "$BUILD_NAME" == "GT-AX11000" ]
 then
 	SDK="_axhnd"
 	ARCH="_arm"
@@ -145,7 +145,7 @@ then
 		cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-AXHND $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
 	fi
 
-elif [ "$BUILD_NAME" == "RT-AX86U" ]
+elif [ "$BUILD_NAME" == "RT-AX86U" ] || [ "$BUILD_NAME" == "RT-AX68U" ]
 then
 	SDK="_axhnd"
 	ARCH="_arm"
@@ -225,7 +225,7 @@ then
 fi
 
 # On AX these are in router-sysdep
-if [ "$BUILD_NAME" != "RT-AX88U" ] && [ "$BUILD_NAME" != "RT-AX92U" ] && [ "$BUILD_NAME" != "RT-AX56U" ] && [ "$BUILD_NAME" != "RT-AX58U" ] && [ "$BUILD_NAME" != "RT-AX86U" ]
+if [ "$BUILD_NAME" != "RT-AX88U" ] && [ "$BUILD_NAME" != "RT-AX92U" ] && [ "$BUILD_NAME" != "RT-AX56U" ] && [ "$BUILD_NAME" != "RT-AX58U" ] && [ "$BUILD_NAME" != "RT-AX86U" ] || [ "$BUILD_NAME" == "GT-AX11000" ] || [ "$BUILD_NAME" == "RT-AX68U" ]
 then
 	cp release/src/router/acsd$ARCH$SDK/prebuilt/* $REPO/release/src/router/acsd$ARCH$SDK/prebuilt/
 	cp release/src/router/eapd$ARCH$SDK/linux/prebuilt/* $REPO/release/src/router/eapd$ARCH$SDK/linux/prebuilt/
@@ -243,7 +243,7 @@ if [ "$BUILD_NAME" == "RT-AC88U" ]
 then
 	cp release/src/router/rtl_bin/prebuilt/* $REPO/release/src/router/rtl_bin/prebuilt/
 fi
-if [ "$BUILD_NAME" == "GT-AC2900" ]
+if [ "$BUILD_NAME" == "GT-AC2900" ] || [ "$BUILD_NAME" == "GT-AX11000" ]
 then
         cp release/src/router/aura_sw/prebuild/* $REPO/release/src/router/aura_sw/prebuild/$BUILD_NAME/
 fi

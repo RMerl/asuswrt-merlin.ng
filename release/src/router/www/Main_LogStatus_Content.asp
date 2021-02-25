@@ -17,6 +17,8 @@
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script>
+var clockinterval;
+var bootinterval;
 function showclock(){
 	JS_timeObj.setTime(systime_millsec);
 	systime_millsec += 1000;
@@ -30,7 +32,6 @@ function showclock(){
 				  timezone;*/ // Viz remove GMT timezone 2011.08
 				  JS_timeObj.getFullYear();
 	document.getElementById("system_time").innerHTML = JS_timeObj2;
-	setTimeout("showclock()", 1000);
 	if(navigator.appName.indexOf("Microsoft") >= 0)
 		document.getElementById("textarea").style.width = "99%";
     //document.getElementById("banner3").style.height = "13";
@@ -47,7 +48,6 @@ function showbootTime(){
 	document.getElementById("boot_minutes").innerHTML = Minutes;
 	document.getElementById("boot_seconds").innerHTML = Seconds;
 	boottime += 1;
-	setTimeout("showbootTime()", 1000);
 }
 function clearLog(){
 	document.form1.target = "hidden_frame";
@@ -68,6 +68,8 @@ function initial(){
 	show_menu();
 	showclock();
 	showbootTime();
+	clockinterval = setInterval(showclock, 1000);
+	bootinterval = setInterval(showbootTime, 1000);
 	showDST();
 	document.getElementById('textarea').scrollTop = 9999999;//make Scroll_y bottom
 	setTimeout("get_log_data();", 100);

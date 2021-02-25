@@ -1524,7 +1524,6 @@ function check_sshd_enable(obj_value){
 
 	document.getElementById("remote_forwarding_tr").style.display = state;
 	document.getElementById("auth_keys_tr").style.display = state;
-	document.getElementById("sshd_bfp_field").style.display = state;
 	document.getElementById("sshd_password_tr").style.display = state;
 	document.getElementById("sshd_port_tr").style.display = state;
 	document.getElementById('SSH_Port_Suggestion1').style.display = state;
@@ -2373,13 +2372,6 @@ function pullNTPList(obj){
 					<td>
 						<input type="radio" name="sshd_pass" value="1" <% nvram_match("sshd_pass", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" name="sshd_pass" value="0" <% nvram_match("sshd_pass", "0", "checked"); %>><#checkbox_No#>
-					</td>
-				</tr>
-				<tr id="sshd_bfp_field">
-					<th>Enable SSH Brute Force Protection</th>
-					<td>
-						<input type="radio" name="sshd_bfp" value="1" <% nvram_match("sshd_bfp", "1", "checked"); %>><#checkbox_Yes#>
-						<input type="radio" name="sshd_bfp" value="0" <% nvram_match("sshd_bfp", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>
 				<tr id="auth_keys_tr">

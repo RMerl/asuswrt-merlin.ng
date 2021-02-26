@@ -2545,7 +2545,7 @@ reneg-sec max [min]
 <p>The effective <tt class="docutils literal"><span class="pre">--reneg-sec</span></tt> value used is per session
 pseudo-uniform-randomized between <tt class="docutils literal">min</tt> and <tt class="docutils literal">max</tt>.</p>
 <p>With the default value of <code>3600</code> this results in an effective per
-session value in the range of <code>3240</code>..:code:<cite>3600</cite> seconds for
+session value in the range of <code>3240</code> .. <code>3600</code> seconds for
 servers, or just 3600 for clients.</p>
 <p>When using dual-factor authentication, note that this default value may
 cause the end user to be challenged to reauthorize once per hour.</p>
@@ -2954,18 +2954,19 @@ interpretation.</p>
 <p>For OpenSSL, the <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt> is used for TLS 1.2 and below.</p>
 <p>Use <tt class="docutils literal"><span class="pre">--show-tls</span></tt> to see a list of TLS ciphers supported by your crypto
 library.</p>
-<p>The default for <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt> is to use mbed TLS's default cipher list
+<p class="last">The default for <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt> is to use mbed TLS's default cipher list
 when using mbed TLS or
 <code>DEFAULT:!EXP:!LOW:!MEDIUM:!kDH:!kECDH:!DSS:!PSK:!SRP:!kRSA</code> when
 using OpenSSL.</p>
-<p class="last">The default for <cite>--tls-ciphersuites</cite> is to use the crypto library's
-default.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--tls-ciphersuites <var>l</var></span></kbd></td>
 </tr>
-<tr><td>&nbsp;</td><td>Same as <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt> but for TLS 1.3 and up. mbed TLS has no
-TLS 1.3 support yet and only the <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt> setting is used.</td></tr>
+<tr><td>&nbsp;</td><td><p class="first">Same as <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt> but for TLS 1.3 and up. mbed TLS has no
+TLS 1.3 support yet and only the <tt class="docutils literal"><span class="pre">--tls-cipher</span></tt> setting is used.</p>
+<p class="last">The default for <cite>--tls-ciphersuites</cite> is to use the crypto library's
+default.</p>
+</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--tls-client</span></kbd></td>
 <td>Enable TLS and assume client role during TLS handshake.</td></tr>
@@ -3783,8 +3784,9 @@ otherwise will use <code>fe80::7</code> as source address.</p>
 <p>For this option to make sense you actually have to route traffic to the
 tun interface. The following example config block would send all IPv6
 traffic to OpenVPN and answer all requests with no route to host,
-effectively blocking IPv6.</p>
-<dl class="last docutils">
+effectively blocking IPv6 (to avoid IPv6 connections from dual-stacked
+clients leaking around IPv4-only VPN services).</p>
+<dl class="docutils">
 <dt><strong>Client config</strong></dt>
 <dd><pre class="first last literal-block">
 --ifconfig-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1
@@ -3801,6 +3803,11 @@ effectively blocking IPv6.</p>
 </pre>
 </dd>
 </dl>
+<p class="last">Note: this option does not influence traffic sent from the server
+towards the client (neither on the server nor on the client side).
+This is not seen as necessary, as such traffic can be most easily
+avoided by not configuring IPv6 on the server tun, or setting up a
+server-side firewall rule.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--dev <var>device</var></span></kbd></td>

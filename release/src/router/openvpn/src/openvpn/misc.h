@@ -64,7 +64,6 @@ struct user_pass
 {
     bool defined;
     bool nocache;
-    bool wait_for_push; /* true if this object is waiting for a push-reply */
 
 /* max length of username/password */
 #ifdef ENABLE_PKCS11
@@ -145,6 +144,17 @@ void fail_user_pass(const char *prefix,
 
 void purge_user_pass(struct user_pass *up, const bool force);
 
+/**
+ * Sets the auth-token to token if a username is available from either
+ * up or already present in tk. The method will also purge up if
+ * the auth-nocache option is active.
+ *
+ * @param up        (non Auth-token) Username/password
+ * @param tk        auth-token userpass to set
+ * @param token     token to use as password for the
+ *
+ * @note    all parameters to this function must not be null.
+ */
 void set_auth_token(struct user_pass *up, struct user_pass *tk,
                     const char *token);
 

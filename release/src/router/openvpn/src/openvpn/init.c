@@ -1606,7 +1606,7 @@ initialization_sequence_completed(struct context *c, const unsigned int flags)
      */
     if (c->options.mode == MODE_POINT_TO_POINT)
     {
-        delayed_auth_pass_purge();
+        ssl_clean_user_pass();
     }
 
     /* Test if errors */
@@ -2554,7 +2554,6 @@ key_schedule_free(struct key_schedule *ks, bool free_ssl_ctx)
     if (tls_ctx_initialised(&ks->ssl_ctx) && free_ssl_ctx)
     {
         tls_ctx_free(&ks->ssl_ctx);
-        free_key_ctx(&ks->tls_crypt_v2_server_key);
     }
     CLEAR(*ks);
 }
@@ -3617,6 +3616,7 @@ do_close_free_key_schedule(struct context *c, bool free_ssl_ctx)
      * always free the tls_auth/crypt key. If persist_key is true, the key will
      * be reloaded from memory (pre-cached)
      */
+    free_key_ctx(&c->c1.ks.tls_crypt_v2_server_key);
     free_key_ctx_bi(&c->c1.ks.tls_wrap_key);
     CLEAR(c->c1.ks.tls_wrap_key);
     buf_clear(&c->c1.ks.tls_crypt_v2_wkc);

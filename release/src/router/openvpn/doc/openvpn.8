@@ -2680,7 +2680,7 @@ The effective \fB\-\-reneg\-sec\fP value used is per session
 pseudo\-uniform\-randomized between \fBmin\fP and \fBmax\fP\&.
 .sp
 With the default value of \fB3600\fP this results in an effective per
-session value in the range of \fB3240\fP\&..:code:\fI3600\fP seconds for
+session value in the range of \fB3240\fP .. \fB3600\fP seconds for
 servers, or just 3600 for clients.
 .sp
 When using dual\-factor authentication, note that this default value may
@@ -3219,13 +3219,13 @@ The default for \fB\-\-tls\-cipher\fP is to use mbed TLS\(aqs default cipher lis
 when using mbed TLS or
 \fBDEFAULT:!EXP:!LOW:!MEDIUM:!kDH:!kECDH:!DSS:!PSK:!SRP:!kRSA\fP when
 using OpenSSL.
-.sp
-The default for \fI\-\-tls\-ciphersuites\fP is to use the crypto library\(aqs
-default.
 .TP
 .BI \-\-tls\-ciphersuites \ l
 Same as \fB\-\-tls\-cipher\fP but for TLS 1.3 and up. mbed TLS has no
 TLS 1.3 support yet and only the \fB\-\-tls\-cipher\fP setting is used.
+.sp
+The default for \fI\-\-tls\-ciphersuites\fP is to use the crypto library\(aqs
+default.
 .TP
 .B \-\-tls\-client
 Enable TLS and assume client role during TLS handshake.
@@ -4204,7 +4204,8 @@ otherwise will use \fBfe80::7\fP as source address.
 For this option to make sense you actually have to route traffic to the
 tun interface. The following example config block would send all IPv6
 traffic to OpenVPN and answer all requests with no route to host,
-effectively blocking IPv6.
+effectively blocking IPv6 (to avoid IPv6 connections from dual\-stacked
+clients leaking around IPv4\-only VPN services).
 .INDENT 7.0
 .TP
 .B \fBClient config\fP
@@ -4236,6 +4237,12 @@ Push a "valid" ipv6 config to the client and block on the server
 .UNINDENT
 .UNINDENT
 .UNINDENT
+.sp
+Note: this option does not influence traffic sent from the server
+towards the client (neither on the server nor on the client side).
+This is not seen as necessary, as such traffic can be most easily
+avoided by not configuring IPv6 on the server tun, or setting up a
+server\-side firewall rule.
 .TP
 .BI \-\-dev \ device
 TUN/TAP virtual network device which can be \fBtunX\fP, \fBtapX\fP,

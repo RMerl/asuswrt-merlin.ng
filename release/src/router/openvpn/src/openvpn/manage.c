@@ -2102,7 +2102,7 @@ man_io_error(struct management *man, const char *prefix)
 static ssize_t
 man_send_with_fd(int fd, void *ptr, size_t nbytes, int flags, int sendfd)
 {
-    struct msghdr msg;
+    struct msghdr msg = { 0 };
     struct iovec iov[1];
 
     union {
@@ -2134,7 +2134,7 @@ man_send_with_fd(int fd, void *ptr, size_t nbytes, int flags, int sendfd)
 static ssize_t
 man_recv_with_fd(int fd, void *ptr, size_t nbytes, int flags, int *recvfd)
 {
-    struct msghdr msghdr;
+    struct msghdr msghdr = { 0 };
     struct iovec iov[1];
     ssize_t n;
 
@@ -3613,7 +3613,6 @@ management_query_user_pass(struct management *man,
         {
             /* preserve caller's settings */
             man->connection.up_query.nocache = up->nocache;
-            man->connection.up_query.wait_for_push = up->wait_for_push;
             *up = man->connection.up_query;
         }
         secure_memzero(&man->connection.up_query, sizeof(man->connection.up_query));

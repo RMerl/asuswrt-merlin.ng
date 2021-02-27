@@ -3264,6 +3264,9 @@ CONFIG_BCM_IN_KERNEL=y
 #
 # Asuswrt-merlin configuration
 #
+# Cake Scheduler
+CONFIG_NET_SCH_CAKE=m
+
 # NFS
 
 CONFIG_NFS_FS=m

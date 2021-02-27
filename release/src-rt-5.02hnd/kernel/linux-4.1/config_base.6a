@@ -2534,6 +2534,9 @@ CONFIG_ARCH_HAS_SG_CHAIN=y
 #
 # Asuswrt-merlin configuration
 #
+# Cake Scheduler
+CONFIG_NET_SCH_CAKE=m
+
 # NFS
 CONFIG_NFSD=m
 CONFIG_NFSD_V3=y

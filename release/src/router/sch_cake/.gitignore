@@ -1,0 +1,8 @@
+.*.cmd
+.tmp_versions
+Module.symvers
+modules.order
+sch_cake.ko
+sch_cake.mod.c
+*.o
+*.dwo

@@ -1,0 +1,11 @@
+#+OPTIONS: ^:nil
+
+* Common Applications Kept Enhanced (CAKE) scheduler
+
+This is the out-of-tree version of [[https://www.bufferbloat.net/projects/codel/wiki/Cake/][CAKE]], the Linux qdisc that combines scheduler
+and traffic shaper for effective bufferbloat mitigation.
+
+Note that sch_cake is part of the upstream Linux kernel since kernel version
+4.19, so this repository exists only as a resource for building the qdisc with
+older versions of the kernel. If you're already on kernel 4.19 or newer, you can
+just load CAKE with =tc= and the kernel shipped by your distribution!

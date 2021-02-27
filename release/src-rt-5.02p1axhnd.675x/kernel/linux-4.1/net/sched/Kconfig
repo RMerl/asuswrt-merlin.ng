@@ -734,3 +734,5 @@ endif # NET_SCHED
 
 config NET_SCH_FIFO
 	bool
+
+source "net/sched/sch_cake/Kconfig"

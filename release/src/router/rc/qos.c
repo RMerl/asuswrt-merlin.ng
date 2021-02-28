@@ -1215,10 +1215,15 @@ static int start_tqos(void)
 			else s[0] = 0;
 		x = (i + 1) * 10;
 
-			fprintf(f, "# ingress %d: %u%%\n", i, rate);
-			fprintf(f,"\t$TCADL parent 2:1 classid 2:%d htb rate %ukbit %s prio %d quantum %u %s\n", x, calc(bw, rate), burst_leaf, (i >= 6) ? 7 : (i + 1), mtu, overheadstr);
-			fprintf(f,"\t$TQADL parent 2:%d handle %d: $SCH\n", x, x);
-			fprintf(f,"\t$TFADL parent 2: prio %d protocol ip u32 match mark %d 0x%x flowid 2:%d\n", x, i + 1, QOS_MASK, x);
+		fprintf(f,
+			"# upload 1:%d: %u-%u%%\n"
+			"\t$TCAUL parent 1:1 classid 1:%d htb rate %ukbit %s %s prio %d quantum %u %s\n"
+			"\t$TQAUL parent 1:%d handle %d: $SCH\n"
+			"\t$TFAUL parent 1: prio %d protocol ip handle %d fw flowid 1:%d\n",
+				i, rate, ceil,
+				x, calc(bw, rate), s, burst_leaf, (i >= 6) ? 7 : (i + 1), mtu, overheadstr,
+				x, x,
+				x, i + 1, x);
 	}
 	free(buf);
 

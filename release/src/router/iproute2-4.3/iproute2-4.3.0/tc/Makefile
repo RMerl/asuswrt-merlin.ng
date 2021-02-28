@@ -66,6 +66,7 @@ TCMODULES += q_pie.o
 TCMODULES += q_cake.o
 TCMODULES += q_hhf.o
 TCMODULES += e_bpf.o
+TCMODULES += f_matchall.o
 
 ifeq ($(TC_CONFIG_IPSET), y)
   ifeq ($(TC_CONFIG_XT), y)

@@ -95,6 +95,13 @@ enum {
 
 #define TCA_POLICE_MAX (__TCA_POLICE_MAX - 1)
 
+/* tca flags definitions */
+#define TCA_CLS_FLAGS_SKIP_HW	(1 << 0) /* don't offload filter to HW */
+#define TCA_CLS_FLAGS_SKIP_SW	(1 << 1) /* don't use filter in SW */
+#define TCA_CLS_FLAGS_IN_HW	(1 << 2) /* filter is offloaded to HW */
+#define TCA_CLS_FLAGS_NOT_IN_HW (1 << 3) /* filter isn't offloaded to HW */
+#define TCA_CLS_FLAGS_VERBOSE	(1 << 4) /* verbose logging */
+
 /* U32 filters */
 
 #define TC_U32_HTID(h) ((h)&0xFFF00000)
@@ -362,6 +369,24 @@ enum {
 };
 
 #define TCA_FLOWER_MAX (__TCA_FLOWER_MAX - 1)
+
+/* Match-all classifier */
+
+struct tc_matchall_pcnt {
+	__u64 rhit;
+};
+
+enum {
+	TCA_MATCHALL_UNSPEC,
+	TCA_MATCHALL_CLASSID,
+	TCA_MATCHALL_ACT,
+	TCA_MATCHALL_FLAGS,
+	TCA_MATCHALL_PCNT,
+	TCA_MATCHALL_PAD,
+	__TCA_MATCHALL_MAX,
+};
+
+#define TCA_MATCHALL_MAX (__TCA_MATCHALL_MAX - 1)
 
 /* Extended Matches */
 

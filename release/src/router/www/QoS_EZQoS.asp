@@ -292,15 +292,16 @@ var machine_name = '<% get_machine_name(); %>';
 var codel_support = (machine_name.search(/arm|aarch64/) == -1) ? false : true;
 
 /* ATM, overhead, pmu, label */
-var overhead_presets = [["0", "42", "84", "Ethernet with VLAN"],
+var overhead_presets = [["1", "48", "0", "Conservative default"],
+			["0", "42", "84", "Ethernet with VLAN"],
 			["0", "18", "64", "Cable (DOCSIS)"],
 			["0", "27", "0", "PPPoE VDSL"],
-			["0", "19", "0", "Bridged/IPoE VDSL"],
 			["1", "32", "0", "RFC2684/RFC1483 Bridged LLC/Snap"],
 			["1", "32", "0", "ADSL PPPoE VC/Mux"],
 			["1", "40", "0", "ADSL PPPoE LLC/Snap"],
-			["2", "30", "0", "VDSL2 pppoe-ptm"],
-			["2", "22", "0", "VDSL2 bridged-ptm"]
+			["0", "19", "0", "VDSL Bridged/IPoE"],
+			["2", "30", "0", "VDSL2 PPPoE PTM"],
+			["2", "22", "0", "VDSL2 Bridged PTM"]
 			];
 
 if(geforceNow_support){

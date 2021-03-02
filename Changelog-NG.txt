@@ -5,17 +5,27 @@ Asuswrt-Merlin 386/NG Changelog
   - NEW: Added support for the GT-AX11000.  Note that VPNFusion, as
          well as the ROG-specific features such as the custom UI
          are not supported.
+  - NEW: Added support for the RT-AX68U.
   - NEW: Added jittertimer-rngd daemon to HND routers.  This will
          ensure sufficient entropy is generated early on at
          boot time, reducing boot stalls caused by insufficient
          entropy for the kernel's random number generator,
          and also generally improves security related to
          crypto operations by the router.
+  - NEW: Added Cake QoS for HND routers.  Note that just like
+         Traditional QoS, this is not compatible with hardware
+         acceleration, and therefore might not be usable on
+         connections faster than around 350 Mbps.
   - UPDATED: Openssl to 1.1.1j.
+  - UPDATED: OpenVPN to 2.5.1.
   - FIXED: Router could get stuck at boot time after the user
            migrated from stock firmware, or just erased his
            JFFS partition, requiring a factory default reset.
   - FIXED: ATM checkbox could not be enabled on QOS page.
+  - FIXED: DST not getting applied to some timezones (snauton)
+  - FIXED: Traditional QoS was broken in 386.1 (dave14305)
+  - REMOVED: SSH Brute Force Protection option (already handled
+             by Asuswrt's protect service daemon)
 
 
 386.1_2 (12-Feb-2021)

@@ -1509,6 +1509,9 @@ extern void update_wan_state(char *prefix, int state, int reason);
 extern int update_resolvconf(void);
 
 /* qos.c */
+#ifdef HND_ROUTER
+extern int start_cake(void);
+#endif
 extern void set_codel_patch(void);
 extern void remove_codel_patch(void);
 extern int start_iQos(void);

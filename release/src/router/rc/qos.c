@@ -2598,6 +2598,11 @@ int start_iQos(void)
 		status = start_GeForce_QoS();
 	}
 #endif
+#ifdef HND_ROUTER
+	else if (IS_CAKE_QOS()) {
+		status = start_cake();
+	}
+#endif
 
 	if (status < 0) _dprintf("[%s] status = %d\n", __FUNCTION__, status);
 
@@ -2674,3 +2679,110 @@ void remove_codel_patch(void)
 #endif
 
 #endif
+
+#ifdef HND_ROUTER
+int start_cake(void)
+{
+	unsigned int ibw, obw;
+	FILE *f;
+	char overheadstr[32];
+	char ibwstr[32];
+	char obwstr[32];
+	char *mode;
+	char nvnat[16];
+	int nat;
+
+	if((f = fopen(qosfn, "w")) == NULL) return -2;
+
+	switch (nvram_get_int("qos_atm")) {
+		case 0:
+			mode = "";
+			break;
+		case 1:
+			mode = "atm";
+			break;
+		case 2:
+			mode = "ptm";
+			break;
+		default:
+			mode = "";
+	}
+
+	ibw = strtoul(nvram_safe_get("qos_ibw"), NULL, 10);
+	obw = strtoul(nvram_safe_get("qos_obw"), NULL, 10);
+
+	if (ibw == 0)
+		*ibwstr = '\0';
+	else
+		snprintf(ibwstr, sizeof(ibwstr), "bandwidth %dkbit", ibw);
+
+	if (obw == 0)
+		*obwstr = '\0';
+	else
+		snprintf(obwstr, sizeof(obwstr), "bandwidth %dkbit", obw);
+
+	snprintf(overheadstr, sizeof(overheadstr), "overhead %d mpu %d", nvram_get_int("qos_overhead"), nvram_get_int("qos_mpu"));
+
+	const char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
+
+	snprintf(nvnat, sizeof (nvnat), "wan%d_nat_x", wan_primary_ifunit());
+	nat = nvram_get_int(nvnat);
+
+	/* Start rules */
+	fprintf(f,
+		"#!/bin/sh\n"
+		"ULIF='%s'\n"
+		"DLIF='%s'\n"
+		"MIF='ifb4%s'\n"
+		"ULBW='%s'\n"
+		"DLBW='%s'\n"
+		"OVERHEAD='%s'\n"
+		"FRAMING='%s'\n\n"
+
+		"case \"$1\" in\n"
+		"start)\n"
+		"# Upload\n"
+		"\ttc qdisc add dev $ULIF root cake %s diffserv3 $ULBW $OVERHEAD $FRAMING 2>/dev/null\n\n"
+
+		"# Download\n"
+		"\tip link add name $MIF type ifb 2>/dev/null\n"
+		"\ttc qdisc add dev $DLIF handle ffff: ingress 2>/dev/null\n"
+		"\ttc qdisc add dev $MIF root cake %s wash $DLBW besteffort $OVERHEAD $FRAMING 2>/dev/null\n"
+		"\tip link set $MIF up 2>/dev/null\n"
+		"\ttc filter add dev $DLIF parent ffff: prio 10 matchall action mirred egress redirect dev $MIF 2>/dev/null\n\n",
+
+			wan_ifname,
+			wan_ifname,
+			wan_ifname,
+			obwstr,
+			ibwstr,
+			overheadstr,
+			mode,
+
+			(nat ? "nat" : ""),
+			(nat ? "nat" : "")
+	);
+
+
+	/* Stop rules */
+	fputs(	"\t;;\n"
+		"stop)\n"
+		"\ttc qdisc del dev $ULIF root 2>/dev/null\n"
+		"\ttc qdisc del dev $DLIF ingress 2>/dev/null\n"
+		"\ttc qdisc del dev $MIF root 2>/dev/null\n"
+		"\tip link set $MIF down 2>/dev/null\n"
+		"\tip link del dev $MIF 2>/dev/null\n"
+		"\t;;\n"
+		"*)\n"
+		"esac\n",
+		f);
+
+	fclose(f);
+	chmod(qosfn, 0700);
+	run_custom_script("qos-start", 0, "init", NULL);
+	eval((char *)qosfn, "start");
+
+	return 0;
+}
+#endif
+

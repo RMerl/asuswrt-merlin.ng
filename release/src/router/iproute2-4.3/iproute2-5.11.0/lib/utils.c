@@ -559,6 +559,7 @@ static int __get_addr_1(inet_prefix *addr, const char *name, int family)
 		return 0;
 	}
 
+#if 0 // brcm: not support
 	if (family == AF_PACKET) {
 		int len;
 
@@ -572,7 +573,7 @@ static int __get_addr_1(inet_prefix *addr, const char *name, int family)
 		addr->bitlen = len * 8;
 		return 0;
 	}
-
+#endif
 	if (strchr(name, ':')) {
 		addr->family = AF_INET6;
 		if (family != AF_UNSPEC && family != AF_INET6)
@@ -584,6 +585,7 @@ static int __get_addr_1(inet_prefix *addr, const char *name, int family)
 		return 0;
 	}
 
+#if 0 // brcm: not support
 	if (family == AF_MPLS) {
 		unsigned int maxlabels;
 		int i;
@@ -604,6 +606,7 @@ static int __get_addr_1(inet_prefix *addr, const char *name, int family)
 		}
 		return 0;
 	}
+#endif
 
 	addr->family = AF_INET;
 	if (family != AF_UNSPEC && family != AF_INET)
@@ -636,12 +639,14 @@ int af_bit_len(int af)
 		return 128;
 	case AF_INET:
 		return 32;
+#if 0 // brcm: not support
 	case AF_DECnet:
 		return 16;
 	case AF_IPX:
 		return 80;
 	case AF_MPLS:
 		return 20;
+#endif
 	}
 
 	return 0;
@@ -729,6 +734,7 @@ int get_addr_rta(inet_prefix *dst, const struct rtattr *rta, int family)
 		dst->bytelen = 16;
 		memcpy(dst->data, data, 16);
 		break;
+#if 0 // brcm: not support
 	case 2:
 		dst->family = AF_DECnet;
 		dst->bytelen = 2;
@@ -739,6 +745,7 @@ int get_addr_rta(inet_prefix *dst, const struct rtattr *rta, int family)
 		dst->bytelen = 10;
 		memcpy(dst->data, data, 10);
 		break;
+#endif
 	default:
 		return -1;
 	}
@@ -984,6 +991,7 @@ const char *rt_addr_n2a_r(int af, int len,
 	case AF_INET:
 	case AF_INET6:
 		return inet_ntop(af, addr, buf, buflen);
+#if 0 // brcm: not support
 	case AF_MPLS:
 		return mpls_ntop(af, addr, buf, buflen);
 	case AF_PACKET:
@@ -1007,6 +1015,7 @@ const char *rt_addr_n2a_r(int af, int len,
 
 		/* fallthrough */
 	}
+#endif
 	default:
 		return "???";
 	}
@@ -1029,10 +1038,12 @@ int read_family(const char *name)
 		family = AF_INET6;
 	else if (strcmp(name, "link") == 0)
 		family = AF_PACKET;
+#if 0 // brcm: not support
 	else if (strcmp(name, "ipx") == 0)
 		family = AF_IPX;
 	else if (strcmp(name, "mpls") == 0)
 		family = AF_MPLS;
+#endif
 	else if (strcmp(name, "bridge") == 0)
 		family = AF_BRIDGE;
 	return family;
@@ -1046,10 +1057,12 @@ const char *family_name(int family)
 		return "inet6";
 	if (family == AF_PACKET)
 		return "link";
+#if 0 // brcm: not support
 	if (family == AF_IPX)
 		return "ipx";
 	if (family == AF_MPLS)
 		return "mpls";
+#endif
 	if (family == AF_BRIDGE)
 		return "bridge";
 	return "???";

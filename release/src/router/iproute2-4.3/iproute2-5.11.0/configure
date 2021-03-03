@@ -492,26 +492,26 @@ fi
 echo -n "libc has setns: "
 check_setns
 
-echo -n "SELinux support: "
-check_selinux
+#echo -n "SELinux support: "
+#check_selinux
 
-echo -n "libbpf support: "
-check_libbpf
+#echo -n "libbpf support: "
+#check_libbpf
 
-echo -n "ELF support: "
-check_elf
+#echo -n "ELF support: "
+#check_elf
 
-echo -n "libmnl support: "
-check_mnl
+#echo -n "libmnl support: "
+#check_mnl
 
-echo -n "Berkeley DB: "
-check_berkeley_db
+#echo -n "Berkeley DB: "
+#check_berkeley_db
 
 echo -n "need for strlcpy: "
 check_strlcpy
 
-echo -n "libcap support: "
-check_cap
+#echo -n "libcap support: "
+#check_cap
 
 echo >> $CONFIG
 echo "%.o: %.c" >> $CONFIG

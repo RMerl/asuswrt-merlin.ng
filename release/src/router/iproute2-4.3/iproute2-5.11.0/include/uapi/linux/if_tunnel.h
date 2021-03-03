@@ -112,6 +112,7 @@ struct ip_tunnel_6rd {
 	__be32			relay_prefix;
 	__u16			prefixlen;
 	__u16			relay_prefixlen;
+        __be32                  br_addr; // brcm
 };
 
 enum {

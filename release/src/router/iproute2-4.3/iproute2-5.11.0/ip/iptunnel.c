@@ -502,6 +502,14 @@ static int do_6rd(int argc, char **argv)
 			cmd = SIOCADD6RD;
 			memcpy(&ip6rd.relay_prefix, prefix.data, 4);
 			ip6rd.relay_prefixlen = prefix.bitlen;
+// brcm: start
+		} else if (strcmp(*argv, "6rd-br_addr") == 0) {
+			NEXT_ARG();
+			if (get_prefix(&prefix, *argv, AF_INET))
+				invarg("invalid 6rd-br_addr\n", *argv);
+			cmd = SIOCADD6RD;
+			memcpy(&ip6rd.br_addr, prefix.data, 4);
+// brcm: end
 		} else if (strcmp(*argv, "6rd-reset") == 0) {
 			cmd = SIOCDEL6RD;
 		} else if (strcmp(*argv, "dev") == 0) {

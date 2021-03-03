@@ -123,7 +123,7 @@ static int can_parse_opt(struct link_util *lu, int argc, char **argv,
 			if (get_u32(&bt.bitrate, *argv, 0))
 				invarg("invalid \"bitrate\" value\n", *argv);
 		} else if (matches(*argv, "sample-point") == 0) {
-			float sp;
+			float sp=0.0f; // brcm
 
 			NEXT_ARG();
 			if (get_float(&sp, *argv))

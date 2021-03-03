@@ -14,8 +14,8 @@ endif
 
 PREFIX?=/usr
 LIBDIR?=$(PREFIX)/lib
-SBINDIR?=/sbin
-CONFDIR?=/etc/iproute2
+SBINDIR=$(INSTALL_DIR)/bin
+CONFDIR=$(INSTALL_DIR)/etc/iproute2
 NETNS_RUN_DIR?=/var/run/netns
 NETNS_ETC_DIR?=/etc/netns
 DATADIR?=$(PREFIX)/share
@@ -23,7 +23,9 @@ HDRDIR?=$(PREFIX)/include/iproute2
 DOCDIR?=$(DATADIR)/doc/iproute2
 MANDIR?=$(DATADIR)/man
 ARPDDIR?=/var/lib/arpd
-KERNEL_INCLUDE?=/usr/include
+# brcm: modify the KERNEL_INCLUDES and add LIBC_INCLUDE
+KERNEL_INCLUDES:=$(KERNEL_DIR)/include $(KERNEL_DIR)/arch/$(ARCH)/include
+LIBC_INCLUDE=$(KERNEL_DIR)/include/linux
 BASH_COMPDIR?=$(DATADIR)/bash-completion/completions
 
 # Path to db_185.h include
@@ -41,7 +43,8 @@ DEFINES+=-DCONFDIR=\"$(CONFDIR)\" \
          -DNETNS_ETC_DIR=\"$(NETNS_ETC_DIR)\"
 
 #options for mpls
-ADDLIB+=mpls_ntop.o mpls_pton.o
+# brcm: not support mpls
+#ADDLIB+=mpls_ntop.o mpls_pton.o
 
 CC := gcc
 HOSTCC ?= $(CC)
@@ -52,12 +55,13 @@ CCOPTS = -O2 -pipe
 WFLAGS := -Wall -Wstrict-prototypes  -Wmissing-prototypes
 WFLAGS += -Wmissing-declarations -Wold-style-definition -Wformat=2
 
-CFLAGS := $(WFLAGS) $(CCOPTS) -I../include -I../include/uapi $(DEFINES) $(CFLAGS)
+CFLAGS := $(WFLAGS) $(CCOPTS) -I../include -I../include/uapi $(DEFINES)
 YACCFLAGS = -d -t -v
 
-SUBDIRS=lib ip tc bridge misc netem genl tipc devlink rdma dcb man vdpa
+#bcm
+SUBDIRS=lib ip tc #bridge misc netem genl tipc devlink rdma dcb man vdpa
 
-LIBNETLINK=../lib/libutil.a ../lib/libnetlink.a
+LIBNETLINK=../lib/libipr2util.a ../lib/libnetlink.a
 LDLIBS += $(LIBNETLINK)
 
 all: config.mk

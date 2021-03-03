@@ -61,8 +61,8 @@ bin-clean: ${BIN}
 
 scripts-install: ${SCRIPTS}
 	@echo "wlan scripts-install: ${SCRIPTS}"    
-	@test -z "${SCRIPTS}" || install -Dp ${SCRIPTS} ${INSTALL_DIR}/opt/scripts
+	@test -z "${SCRIPTS}" || install -Dp ${SCRIPTS} ${INSTALL_DIR}/rom/rom/scripts
 scripts-clean: 
-	for f in ${SCRIPTS}; do rm -f ${INSTALL_DIR}/opt/scripts/$$f; done
+	for f in ${SCRIPTS}; do rm -f ${INSTALL_DIR}/rom/rom/scripts/$$f; done
 
 .PHONY: build dynamic install clean bin-install init-install rc3-install scripts-install bin-clean init-clean rc3-clean scripts-clean

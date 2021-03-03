@@ -13,7 +13,7 @@ BUILD_DIR:=$(HND_SRC)
 
 include $(BUILD_DIR)/make.common
 
-APP = iproute2-4.3.0
+APP = iproute2
 
 
 .PHONY: check_untar_patch_configure conditional_build check_versions

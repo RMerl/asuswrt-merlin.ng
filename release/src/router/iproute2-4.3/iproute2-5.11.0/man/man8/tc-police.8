@@ -1,0 +1,147 @@
+.TH "Policing action in tc" 8 "20 Jan 2015" "iproute2" "Linux"
+
+.SH NAME
+police - policing action
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " ... " "action police"
+.BI rate " RATE " burst
+.IR BYTES [\fB/ BYTES "] ["
+.B mtu
+.IR BYTES [\fB/ BYTES "] ] ["
+.BI peakrate " RATE"
+] [
+.BI overhead " BYTES"
+] [
+.BI linklayer " TYPE"
+] [
+.IR CONTROL " ]"
+
+.ti -8
+.BR tc " ... " filter " ... [ " estimator
+.IR "SAMPLE AVERAGE " ]
+.BR "action police avrate"
+.IR RATE " [ " CONTROL " ]"
+
+.ti -8
+.IR CONTROL " :="
+.BI conform-exceed " EXCEEDACT\fR[\fB/\fINOTEXCEEDACT"
+
+.ti -8
+.IR EXCEEDACT/NOTEXCEEDACT " := { "
+.BR pipe " | " ok " | " reclassify " | " drop " | " continue " | " goto " " chain " " CHAIN_INDEX " }"
+.SH DESCRIPTION
+The
+.B police
+action allows to limit bandwidth of traffic matched by the filter it is
+attached to. Basically there are two different algorithms available to measure
+the packet rate: The first one uses an internal dual token bucket and is
+configured using the
+.BR rate ", " burst ", " mtu ", " peakrate ", " overhead " and " linklayer
+parameters. The second one uses an in-kernel sampling mechanism. It can be
+fine-tuned using the
+.B estimator
+filter parameter.
+.SH OPTIONS
+.TP
+.BI rate " RATE"
+The maximum traffic rate of packets passing this action. Those exceeding it will
+be treated as defined by the
+.B conform-exceed
+option.
+.TP
+.BI burst " BYTES\fR[\fB/\fIBYTES\fR]"
+Set the maximum allowed burst in bytes, optionally followed by a slash ('/')
+sign and cell size which must be a power of 2.
+.TP
+.BI mtu " BYTES\fR[\fB/\fIBYTES\fR]"
+This is the maximum packet size handled by the policer (larger ones will be
+handled like they exceeded the configured rate). Setting this value correctly
+will improve the scheduler's precision.
+Value formatting is identical to
+.B burst
+above. Defaults to unlimited.
+.TP
+.BI peakrate " RATE"
+Set the maximum bucket depletion rate, exceeding
+.BR rate .
+.TP
+.BI avrate " RATE"
+Make use of an in-kernel bandwidth rate estimator and match the given
+.I RATE
+against it.
+.TP
+.BI overhead " BYTES"
+Account for protocol overhead of encapsulating output devices when computing
+.BR rate " and " peakrate .
+.TP
+.BI linklayer " TYPE"
+Specify the link layer type.
+.I TYPE
+may be one of
+.B ethernet
+(the default),
+.BR atm " or " adsl
+(which are synonyms). It is used to align the precomputed rate tables to ATM
+cell sizes, for
+.B ethernet
+no action is taken.
+.TP
+.BI estimator " SAMPLE AVERAGE"
+Fine-tune the in-kernel packet rate estimator.
+.IR SAMPLE " and " AVERAGE
+are time values and control the frequency in which samples are taken and over
+what timespan an average is built.
+.TP
+.BI conform-exceed " EXCEEDACT\fR[\fB/\fINOTEXCEEDACT\fR]"
+Define how to handle packets which exceed or conform the
+configured bandwidth limit. Possible values are:
+.RS
+.IP continue
+Don't do anything, just continue with the next action in line.
+.IP drop
+Drop the packet immediately.
+.IP shot
+This is a synonym to
+.BR drop .
+.IP ok
+Accept the packet. This is the default for conforming packets.
+.IP pass
+This is a synonym to
+.BR ok .
+.IP reclassify
+Treat the packet as non-matching to the filter this action is attached to and
+continue with the next filter in line (if any). This is the default for
+exceeding packets.
+.IP pipe
+Pass the packet to the next action in line.
+.RE
+.SH EXAMPLES
+A typical application of the police action is to enforce ingress traffic rate
+by dropping exceeding packets. Although better done on the sender's side,
+especially in scenarios with lack of peer control (e.g. with dial-up providers)
+this is often the best one can do in order to keep latencies low under high
+load. The following establishes input bandwidth policing to 1mbit/s using the
+.B ingress
+qdisc and
+.B u32
+filter:
+
+.RS
+.EX
+# tc qdisc add dev eth0 handle ffff: ingress
+# tc filter add dev eth0 parent ffff: u32 \\
+	match u32 0 0 \\
+	police rate 1mbit burst 100k
+.EE
+.RE
+
+As an action can not live on it's own, there always has to be a filter involved as link between qdisc and action. The example above uses
+.B u32
+for that, which is configured to effectively match any packet (passing it to the
+.B police
+action thereby).
+
+.SH SEE ALSO
+.BR tc (8)

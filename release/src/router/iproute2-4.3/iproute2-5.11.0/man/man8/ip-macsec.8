@@ -1,0 +1,133 @@
+.TH IP\-MACSEC 8 "07 Mar 2016" "iproute" "Linux"
+.SH NAME
+ip-macsec \- MACsec device configuration
+.SH "SYNOPSIS"
+.BI "ip link add link " DEVICE " name " NAME " type macsec "
+[ [
+.BI address " <lladdr>"
+]
+.BI port " PORT"
+|
+.BI sci " <u64>"
+] [
+.BR cipher " { " default " | " gcm-aes-128 " | "gcm-aes-256" } ] ["
+.BI icvlen " ICVLEN"
+] [
+.BR encrypt " { " on " | " off " } ] ["
+.BR send_sci " { " on " | " off " } ] ["
+.BR end_station " { " on " | " off " } ] ["
+.BR scb " { " on " | " off " } ] ["
+.BR protect " { " on " | " off " } ] ["
+.BR replay " { " on " | " off " } ] ["
+.BI window " WINDOW"
+] [
+.BR validate " { " strict " | " check " | " disabled " } ] ["
+.BI encodingsa " SA"
+] [
+.BR offload " { " off " | " phy " | " mac " }"
+]
+
+.BI "ip macsec add " DEV " tx sa"
+.RI "{ " 0..3 " } [ " OPTS " ]"
+.BI key " ID KEY"
+.br
+.BI "ip macsec set " DEV " tx sa"
+.RI "{ " 0..3 " } [ " OPTS " ]"
+.br
+.BI "ip macsec del " DEV " tx sa"
+.RI "{ " 0..3 " }"
+
+.BI "ip macsec add " DEV " rx " SCI
+.RB [ " on " | " off " ]
+.br
+.BI "ip macsec set " DEV " rx " SCI
+.RB [ " on " | " off " ]
+.br
+.BI "ip macsec del " DEV " rx " SCI
+
+.BI "ip macsec add " DEV " rx " SCI " sa"
+.RI "{ " 0..3 " } [ " OPTS " ]"
+.BI key " ID KEY"
+.br
+.BI "ip macsec set " DEV " rx " SCI " sa"
+.RI "{ " 0..3 " } [ " OPTS " ]"
+.br
+.BI "ip macsec del " DEV " rx " SCI " sa"
+.RI "{ " 0..3 " }"
+
+.BI "ip macsec offload " DEV
+.RB "{ " off " | " phy " | " mac " }"
+
+.B ip macsec show
+.RI [ " DEV " ]
+
+.IR OPTS " := [ "
+.BR pn " { "
+.IR 1..2^32-1 " } ] ["
+.BR on " | " off " ]"
+.br
+.IR SCI " := { "
+.B sci
+.IR <u64> " | "
+.BI port
+.IR PORT
+.BI address " <lladdr> "
+}
+.br
+.IR PORT " := { " 1..2^16-1 " } "
+
+
+.SH DESCRIPTION
+The
+.B ip macsec
+commands are used to configure transmit secure associations and receive secure channels and their secure associations on a MACsec device created with the
+.B ip link add
+command using the
+.I macsec
+type.
+
+.SH EXAMPLES
+.PP
+.SS Create a MACsec device on link eth0 (offload is disabled by default)
+.nf
+# ip link add link eth0 macsec0 type macsec port 11 encrypt on
+.PP
+.SS Configure a secure association on that device
+.nf
+# ip macsec add macsec0 tx sa 0 pn 1024 on key 01 81818181818181818181818181818181
+.PP
+.SS Configure a receive channel
+.nf
+# ip macsec add macsec0 rx port 1234 address c6:19:52:8f:e6:a0
+.PP
+.SS Configure a receive association
+.nf
+# ip macsec add macsec0 rx port 1234 address c6:19:52:8f:e6:a0 sa 0 pn 1 on key 00 82828282828282828282828282828282
+.PP
+.SS Display MACsec configuration
+.nf
+# ip macsec show
+.PP
+.SS Configure offloading on an interface
+.nf
+# ip macsec offload macsec0 phy
+.PP
+.SS Configure offloading upon MACsec device creation
+.nf
+# ip link add link eth0 macsec0 type macsec port 11 encrypt on offload mac
+
+.SH NOTES
+This tool can be used to configure the 802.1AE keys of the interface. Note that 802.1AE uses GCM-AES
+with a initialization vector (IV) derived from the packet number. The same key must not be used
+with the same IV more than once. Instead, keys must be frequently regenerated and distributed.
+This tool is thus mostly for debugging and testing, or in combination with a user-space application
+that reconfigures the keys. It is wrong to just configure the keys statically and assume them to work
+indefinitely. The suggested and standardized way for key management is 802.1X-2010, which is implemented
+by wpa_supplicant.
+
+.SH SEE ALSO
+.br
+.BR ip-link (8)
+.BR wpa_supplicant (8)
+.SH AUTHOR
+Sabrina Dubroca <sd@queasysnail.net>

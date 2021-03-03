@@ -1,0 +1,115 @@
+.TH RDMA\-RESOURCE 8 "26 Dec 2017" "iproute2" "Linux"
+.SH NAME
+rdma-resource \- rdma resource configuration
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B rdma
+.RI "[ " OPTIONS " ] " RESOURCE " { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.IR RESOURCE " := { "
+.BR cm_id " | " cq " | " mr " | " pd " | " qp " }"
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-j\fR[\fIson\fR] |
+\fB\-d\fR[\fIetails\fR] }
+
+.ti -8
+.B rdma resource show
+.RI "[ " DEV/PORT_INDEX " ]"
+
+.ti -8
+.B rdma resource help
+
+.SH "DESCRIPTION"
+.SS rdma resource show - display rdma resource tracking information
+
+.PP
+.I "DEV/PORT_INDEX"
+- specifies the RDMA link to show.
+If this argument is omitted all links are listed.
+
+.SH "EXAMPLES"
+.PP
+rdma resource show
+.RS 4
+Shows summary for all devices on the system.
+.RE
+.PP
+rdma resource show mlx5_2
+.RS 4
+Shows the state of specified rdma device.
+.RE
+.PP
+rdma res show qp link mlx5_4
+.RS 4
+Get all QPs for the specific device.
+.RE
+.PP
+rdma res show qp link mlx5_4/1
+.RS 4
+Get QPs of specific port.
+.RE
+.PP
+rdma res show qp link mlx5_4/0
+.RS 4
+Provide illegal port number (0 is illegal).
+.RE
+.PP
+rdma res show qp link mlx5_4/-
+.RS 4
+Get QPs which have not assigned port yet.
+.RE
+.PP
+rdma res show qp link mlx5_4/- -d
+.RS 4
+Detailed view.
+.RE
+.PP
+rdma res show qp link mlx5_4/- -dd
+.RS 4
+Detailed view including driver-specific details.
+.RE
+.PP
+rdma res show qp link mlx5_4/1 lqpn 0-6
+.RS 4
+Limit to specific Local QPNs.
+.RE
+.PP
+rdma res show qp link mlx5_4/1 lqpn 6 -r
+.RS 4
+Driver specific details in raw format.
+.RE
+.PP
+rdma resource show cm_id dst-port 7174
+.RS 4
+Show CM_IDs with destination ip port of 7174.
+.RE
+.PP
+rdma resource show cm_id src-addr 172.16.0.100
+.RS 4
+Show CM_IDs bound to local ip address 172.16.0.100
+.RE
+.PP
+rdma resource show cq pid 30489
+.RS 4
+Show CQs belonging to pid 30489
+.RE
+.PP
+
+.SH SEE ALSO
+.BR rdma (8),
+.BR rdma-dev (8),
+.BR rdma-link (8),
+.BR rdma-statistic (8),
+.br
+
+.SH AUTHOR
+Leon Romanovsky <leonro@mellanox.com>

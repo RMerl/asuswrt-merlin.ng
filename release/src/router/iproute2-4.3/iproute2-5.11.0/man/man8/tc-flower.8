@@ -1,0 +1,483 @@
+.TH "Flower filter in tc" 8 "22 Oct 2015" "iproute2" "Linux"
+
+.SH NAME
+flower \- flow based traffic control filter
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " " filter " ... " flower " [ "
+.IR MATCH_LIST " ] [ "
+.B action
+.IR ACTION_SPEC " ] [ "
+.B classid
+.IR CLASSID " ] [ "
+.B hw_tc
+.IR TCID " ]"
+
+
+.ti -8
+.IR MATCH_LIST " := [ " MATCH_LIST " ] " MATCH
+
+.ti -8
+.IR MATCH " := { "
+.B indev
+.IR ifname " | "
+.BR verbose
+.RI " | "
+.BR skip_sw " | " skip_hw
+.RI " | { "
+.BR dst_mac " | " src_mac " } "
+.IR MASKED_LLADDR " | "
+.B vlan_id
+.IR VID " | "
+.B vlan_prio
+.IR PRIORITY " | "
+.BR vlan_ethtype " { " ipv4 " | " ipv6 " | "
+.IR ETH_TYPE " } | "
+.B cvlan_id
+.IR VID " | "
+.B cvlan_prio
+.IR PRIORITY " | "
+.BR cvlan_ethtype " { " ipv4 " | " ipv6 " | "
+.IR ETH_TYPE " } | "
+.B mpls
+.IR LSE_LIST " | "
+.B mpls_label
+.IR LABEL " | "
+.B mpls_tc
+.IR TC " | "
+.B mpls_bos
+.IR BOS " | "
+.B mpls_ttl
+.IR TTL " | "
+.BR ip_proto " { " tcp " | " udp " | " sctp " | " icmp " | " icmpv6 " | "
+.IR IP_PROTO " } | "
+.B ip_tos
+.IR MASKED_IP_TOS " | "
+.B ip_ttl
+.IR MASKED_IP_TTL " | { "
+.BR dst_ip " | " src_ip " } "
+.IR PREFIX " | { "
+.BR dst_port " | " src_port " } { "
+.IR MASKED_NUMBER " | "
+.IR min_port_number-max_port_number " } | "
+.B tcp_flags
+.IR MASKED_TCP_FLAGS " | "
+.B type
+.IR MASKED_TYPE " | "
+.B code
+.IR MASKED_CODE " | { "
+.BR arp_tip " | " arp_sip " } "
+.IR IPV4_PREFIX " | "
+.BR arp_op " { " request " | " reply " | "
+.IR OP " } | { "
+.BR arp_tha " | " arp_sha " } "
+.IR MASKED_LLADDR " | "
+.B enc_key_id
+.IR KEY-ID " | {"
+.BR enc_dst_ip " | " enc_src_ip " } { "
+.IR ipv4_address " | " ipv6_address " } | "
+.B enc_dst_port
+.IR port_number " | "
+.B enc_tos
+.IR TOS " | "
+.B enc_ttl
+.IR TTL " | "
+{
+.B geneve_opts
+|
+.B vxlan_opts
+|
+.B erspan_opts
+}
+.IR OPTIONS " | "
+.BR ip_flags
+.IR IP_FLAGS " }"
+
+.ti -8
+.IR LSE_LIST " := [ " LSE_LIST " ] " LSE
+
+.ti -8
+.IR LSE " := "
+.B lse depth
+.IR DEPTH " { "
+.B label
+.IR LABEL " | "
+.B tc
+.IR TC " | "
+.B bos
+.IR BOS " | "
+.B ttl
+.IR TTL " }"
+
+.SH DESCRIPTION
+The
+.B flower
+filter matches flows to the set of keys specified and assigns an arbitrarily
+chosen class ID to packets belonging to them. Additionally (or alternatively) an
+action from the generic action framework may be called.
+.SH OPTIONS
+.TP
+.BI action " ACTION_SPEC"
+Apply an action from the generic actions framework on matching packets.
+.TP
+.BI classid " CLASSID"
+Specify a class to pass matching packets on to.
+.I CLASSID
+is in the form
+.BR X : Y ", while " X " and " Y
+are interpreted as numbers in hexadecimal format.
+.TP
+.BI hw_tc " TCID"
+Specify a hardware traffic class to pass matching packets on to. TCID is in the
+range 0 through 15.
+.TP
+.BI indev " ifname"
+Match on incoming interface name. Obviously this makes sense only for forwarded
+flows.
+.I ifname
+is the name of an interface which must exist at the time of
+.B tc
+invocation.
+.TP
+.BI verbose
+Enable verbose logging, including offloading errors when not using
+.B skip_sw
+flag.
+.TP
+.BI skip_sw
+Do not process filter by software. If hardware has no offload support for this
+filter, or TC offload is not enabled for the interface, operation will fail.
+.TP
+.BI skip_hw
+Do not process filter by hardware.
+.TP
+.BI dst_mac " MASKED_LLADDR"
+.TQ
+.BI src_mac " MASKED_LLADDR"
+Match on source or destination MAC address.  A mask may be optionally
+provided to limit the bits of the address which are matched. A mask is
+provided by following the address with a slash and then the mask. It may be
+provided in LLADDR format, in which case it is a bitwise mask, or as a
+number of high bits to match. If the mask is missing then a match on all
+bits is assumed.
+.TP
+.BI vlan_id " VID"
+Match on vlan tag id.
+.I VID
+is an unsigned 12bit value in decimal format.
+.TP
+.BI vlan_prio " PRIORITY"
+Match on vlan tag priority.
+.I PRIORITY
+is an unsigned 3bit value in decimal format.
+.TP
+.BI vlan_ethtype " VLAN_ETH_TYPE"
+Match on layer three protocol.
+.I VLAN_ETH_TYPE
+may be either
+.BR ipv4 ", " ipv6
+or an unsigned 16bit value in hexadecimal format. To match on QinQ packet, it must be 802.1Q or 802.1AD.
+.TP
+.BI cvlan_id " VID"
+Match on QinQ inner vlan tag id.
+.I VID
+is an unsigned 12bit value in decimal format.
+.TP
+.BI cvlan_prio " PRIORITY"
+Match on QinQ inner vlan tag priority.
+.I PRIORITY
+is an unsigned 3bit value in decimal format.
+.TP
+.BI cvlan_ethtype " VLAN_ETH_TYPE"
+Match on QinQ layer three protocol.
+.I VLAN_ETH_TYPE
+may be either
+.BR ipv4 ", " ipv6
+or an unsigned 16bit value in hexadecimal format.
+
+.TP
+.BI mpls " LSE_LIST"
+Match on the MPLS label stack.
+.I LSE_LIST
+is a list of Label Stack Entries, each introduced by the
+.BR lse " keyword."
+This option can't be used together with the standalone
+.BR mpls_label ", " mpls_tc ", " mpls_bos " and " mpls_ttl " options."
+.RS
+.TP
+.BI lse " LSE_OPTIONS"
+Match on an MPLS Label Stack Entry.
+.I LSE_OPTIONS
+is a list of options that describe the properties of the LSE to match.
+.RS
+.TP
+.BI depth " DEPTH"
+The depth of the Label Stack Entry to consider. Depth starts at 1 (the
+outermost Label Stack Entry). The maximum usable depth may be limited by the
+kernel. This option is mandatory.
+.I DEPTH
+is an unsigned 8 bit value in decimal format.
+.TP
+.BI label " LABEL"
+Match on the MPLS Label field at the specified
+.BR depth .
+.I LABEL
+is an unsigned 20 bit value in decimal format.
+.TP
+.BI tc " TC"
+Match on the MPLS Traffic Class field at the specified
+.BR depth .
+.I TC
+is an unsigned 3 bit value in decimal format.
+.TP
+.BI bos " BOS"
+Match on the MPLS Bottom Of Stack field at the specified
+.BR depth .
+.I BOS
+is a 1 bit value in decimal format.
+.TP
+.BI ttl " TTL"
+Match on the MPLS Time To Live field at the specified
+.BR depth .
+.I TTL
+is an unsigned 8 bit value in decimal format.
+.RE
+.RE
+
+.TP
+.BI mpls_label " LABEL"
+Match the label id in the outermost MPLS label stack entry.
+.I LABEL
+is an unsigned 20 bit value in decimal format.
+.TP
+.BI mpls_tc " TC"
+Match on the MPLS TC field, which is typically used for packet priority,
+in the outermost MPLS label stack entry.
+.I TC
+is an unsigned 3 bit value in decimal format.
+.TP
+.BI mpls_bos " BOS"
+Match on the MPLS Bottom Of Stack field in the outermost MPLS label stack
+entry.
+.I BOS
+is a 1 bit value in decimal format.
+.TP
+.BI mpls_ttl " TTL"
+Match on the MPLS Time To Live field in the outermost MPLS label stack
+entry.
+.I TTL
+is an unsigned 8 bit value in decimal format.
+.TP
+.BI ip_proto " IP_PROTO"
+Match on layer four protocol.
+.I IP_PROTO
+may be
+.BR tcp ", " udp ", " sctp ", " icmp ", " icmpv6
+or an unsigned 8bit value in hexadecimal format.
+.TP
+.BI ip_tos " MASKED_IP_TOS"
+Match on ipv4 TOS or ipv6 traffic-class - eight bits in hexadecimal format.
+A mask may be optionally provided to limit the bits which are matched. A mask
+is provided by following the value with a slash and then the mask. If the mask
+is missing then a match on all bits is assumed.
+.TP
+.BI ip_ttl " MASKED_IP_TTL"
+Match on ipv4 TTL or ipv6 hop-limit  - eight bits value in decimal or hexadecimal format.
+A mask may be optionally provided to limit the bits which are matched. Same
+logic is used for the mask as with matching on ip_tos.
+.TP
+.BI dst_ip " PREFIX"
+.TQ
+.BI src_ip " PREFIX"
+Match on source or destination IP address.
+.I PREFIX
+must be a valid IPv4 or IPv6 address, depending on the \fBprotocol\fR
+option to tc filter, optionally followed by a slash and the prefix length.
+If the prefix is missing, \fBtc\fR assumes a full-length host match.
+.TP
+.IR \fBdst_port " { "  MASKED_NUMBER " | " " MIN_VALUE-MAX_VALUE "  }
+.TQ
+.IR \fBsrc_port " { "  MASKED_NUMBER " | " " MIN_VALUE-MAX_VALUE "  }
+Match on layer 4 protocol source or destination port number, with an
+optional mask. Alternatively, the minimum and maximum values can be
+specified to match on a range of layer 4 protocol source or destination
+port numbers. Only available for
+.BR ip_proto " values " udp ", " tcp  " and " sctp
+which have to be specified in beforehand.
+.TP
+.BI tcp_flags " MASKED_TCP_FLAGS"
+Match on TCP flags represented as 12bit bitfield in in hexadecimal format.
+A mask may be optionally provided to limit the bits which are matched. A mask
+is provided by following the value with a slash and then the mask. If the mask
+is missing then a match on all bits is assumed.
+.TP
+.BI type " MASKED_TYPE"
+.TQ
+.BI code " MASKED_CODE"
+Match on ICMP type or code. A mask may be optionally provided to limit the
+bits of the address which are matched. A mask is provided by following the
+address with a slash and then the mask. The mask must be as a number which
+represents a bitwise mask If the mask is missing then a match on all bits
+is assumed.  Only available for
+.BR ip_proto " values " icmp  " and " icmpv6
+which have to be specified in beforehand.
+.TP
+.BI arp_tip " IPV4_PREFIX"
+.TQ
+.BI arp_sip " IPV4_PREFIX"
+Match on ARP or RARP sender or target IP address.
+.I IPV4_PREFIX
+must be a valid IPv4 address optionally followed by a slash and the prefix
+length. If the prefix is missing, \fBtc\fR assumes a full-length host
+match.
+.TP
+.BI arp_op " ARP_OP"
+Match on ARP or RARP operation.
+.I ARP_OP
+may be
+.BR request ", " reply
+or an integer value 0, 1 or 2.  A mask may be optionally provided to limit
+the bits of the operation which are matched. A mask is provided by
+following the address with a slash and then the mask. It may be provided as
+an unsigned 8 bit value representing a bitwise mask. If the mask is missing
+then a match on all bits is assumed.
+.TP
+.BI arp_sha " MASKED_LLADDR"
+.TQ
+.BI arp_tha " MASKED_LLADDR"
+Match on ARP or RARP sender or target MAC address.  A mask may be optionally
+provided to limit the bits of the address which are matched. A mask is
+provided by following the address with a slash and then the mask. It may be
+provided in LLADDR format, in which case it is a bitwise mask, or as a
+number of high bits to match. If the mask is missing then a match on all
+bits is assumed.
+.TP
+.BI enc_key_id " NUMBER"
+.TQ
+.BI enc_dst_ip " PREFIX"
+.TQ
+.BI enc_src_ip " PREFIX"
+.TQ
+.BI enc_dst_port " NUMBER"
+.TQ
+.BI enc_tos " NUMBER"
+.TQ
+.BI enc_ttl " NUMBER"
+.TQ
+.BR
+.TP
+.BI ct_state " CT_STATE"
+.TQ
+.BI ct_zone " CT_MASKED_ZONE"
+.TQ
+.BI ct_mark " CT_MASKED_MARK"
+.TQ
+.BI ct_label " CT_MASKED_LABEL"
+Matches on connection tracking info
+.RS
+.TP
+.I CT_STATE
+Match the connection state, and can be combination of [{+|-}flag] flags, where flag can be one of
+.RS
+.TP
+trk - Tracked connection.
+.TP
+new - New connection.
+.TP
+est - Established connection.
+.TP
+rpl - The packet is in the reply direction, meaning that it is in the opposite direction from the packet that initiated the connection.
+.TP
+inv - The state is invalid. The packet couldn't be associated to a connection.
+.TP
+Example: +trk+est
+.RE
+.TP
+.I CT_MASKED_ZONE
+Match the connection zone, and can be masked.
+.TP
+.I CT_MASKED_MARK
+32bit match on the connection mark, and can be masked.
+.TP
+.I CT_MASKED_LABEL
+128bit match on the connection label, and can be masked.
+.RE
+.TP
+.BI geneve_opts " OPTIONS"
+.TQ
+.BI vxlan_opts " OPTIONS"
+.TQ
+.BI erspan_opts " OPTIONS"
+Match on IP tunnel metadata. Key id
+.I NUMBER
+is a 32 bit tunnel key id (e.g. VNI for VXLAN tunnel).
+.I PREFIX
+must be a valid IPv4 or IPv6 address optionally followed by a slash and the
+prefix length. If the prefix is missing, \fBtc\fR assumes a full-length
+host match.  Dst port
+.I NUMBER
+is a 16 bit UDP dst port. Tos
+.I NUMBER
+is an 8 bit tos (dscp+ecn) value, ttl
+.I NUMBER
+is an 8 bit time-to-live value. geneve_opts
+.I OPTIONS
+must be a valid list of comma-separated geneve options where each option
+consists of a key optionally followed by a slash and corresponding mask. If
+the masks is missing, \fBtc\fR assumes a full-length match. The options can
+be described in the form CLASS:TYPE:DATA/CLASS_MASK:TYPE_MASK:DATA_MASK,
+where CLASS is represented as a 16bit hexadecimal value, TYPE as an 8bit
+hexadecimal value and DATA as a variable length hexadecimal value.
+vxlan_opts
+.I OPTIONS
+doesn't support multiple options, and it consists of a key followed by a slash
+and corresponding mask. If the mask is missing, \fBtc\fR assumes a full-length
+match. The option can be described in the form GBP/GBP_MASK, where GBP is
+represented as a 32bit number.
+erspan_opts
+.I OPTIONS
+doesn't support multiple options, and it consists of a key followed by a slash
+and corresponding mask. If the mask is missing, \fBtc\fR assumes a full-length
+match. The option can be described in the form
+VERSION:INDEX:DIR:HWID/VERSION:INDEX_MASK:DIR_MASK:HWID_MASK, where VERSION is
+represented as a 8bit number, INDEX as an 32bit number, DIR and HWID as a 8bit
+number. Multiple options is not supported. Note INDEX/INDEX_MASK is used when
+VERSION is 1, and DIR/DIR_MASK and HWID/HWID_MASK are used when VERSION is 2.
+.TP
+.BI ip_flags " IP_FLAGS"
+.I IP_FLAGS
+may be either
+.BR frag ", " nofrag ", " firstfrag " or " nofirstfrag
+where frag and nofrag could be used to match on fragmented packets or not,
+respectively. firstfrag and nofirstfrag can be used to further distinguish
+fragmented packet. firstfrag can be used to indicate the first fragmented
+packet. nofirstfrag can be used to indicates subsequent fragmented packets
+or non-fragmented packets.
+.SH NOTES
+As stated above where applicable, matches of a certain layer implicitly depend
+on the matches of the next lower layer. Precisely, layer one and two matches
+(\fBindev\fR,  \fBdst_mac\fR and \fBsrc_mac\fR)
+have no dependency,
+MPLS and layer three matches
+(\fBmpls\fR, \fBmpls_label\fR, \fBmpls_tc\fR, \fBmpls_bos\fR, \fBmpls_ttl\fR,
+\fBip_proto\fR, \fBdst_ip\fR, \fBsrc_ip\fR, \fBarp_tip\fR, \fBarp_sip\fR,
+\fBarp_op\fR, \fBarp_tha\fR, \fBarp_sha\fR and \fBip_flags\fR)
+depend on the
+.B protocol
+option of tc filter, layer four port matches
+(\fBdst_port\fR and \fBsrc_port\fR)
+depend on
+.B ip_proto
+being set to
+.BR tcp ", " udp " or " sctp,
+and finally ICMP matches (\fBcode\fR and \fBtype\fR) depend on
+.B ip_proto
+being set to
+.BR icmp " or " icmpv6.
+.P
+There can be only used one mask per one prio. If user needs to specify different
+mask, he has to use different prio.
+.SH SEE ALSO
+.BR tc (8),
+.BR tc-flow (8)

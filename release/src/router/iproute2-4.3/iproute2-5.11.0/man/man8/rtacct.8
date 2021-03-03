@@ -1,0 +1,61 @@
+.TH RTACCT 8 "27 June, 2007"
+
+.SH NAME
+nstat, rtacct - network statistics tools.
+
+.SH SYNOPSIS
+Usage: nstat [ -h?vVzrnasd:t:jp ] [ PATTERN [ PATTERN ] ]
+.br
+Usage: rtacct [ -h?vVzrnasd:t: ] [ ListOfRealms ]
+
+.SH DESCRIPTION
+.B nstat
+and
+.B rtacct
+are simple tools to monitor kernel snmp counters and network interface statistics.
+
+.B nstat
+can filter kernel snmp counters by name with one or several specified wildcards. Wildcards are case-insensitive and can include special symbols
+.B ?
+and
+.B *
+.
+
+.SH OPTIONS
+.B \-h, \-\-help
+Print help
+.TP
+.B \-V, \-\-version
+Print version
+.TP
+.B \-z, \-\-zeros
+Dump zero counters too. By default they are not shown.
+.TP
+.B \-r, \-\-reset
+Reset history.
+.TP
+.B \-n, \-\-nooutput
+Do not display anything, only update history.
+.TP
+.B \-a, \-\-ignore
+Dump absolute values of counters. The default is to calculate increments since the previous use.
+.TP
+.B \-s, \-\-noupdate
+Do not update history, so that the next time you will see counters including values accumulated to the moment of this measurement too.
+.TP
+.B \-j, \-\-json
+Display results in JSON format.
+.TP
+.B \-p, \-\-pretty
+When combined with
+.BR \-\-json ,
+pretty print the output.
+.TP
+.B \-d, \-\-scan <INTERVAL>
+Run in daemon mode collecting statistics. <INTERVAL> is interval between measurements in seconds.
+.TP
+.B \-t, \-\-interval <INTERVAL>
+Time interval to average rates. Default value is 60 seconds.
+
+.SH SEE ALSO
+lnstat(8)

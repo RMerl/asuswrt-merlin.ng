@@ -1,0 +1,156 @@
+.TH DCB 8 "19 October 2020" "iproute2" "Linux"
+.SH NAME
+dcb \- show / manipulate DCB (Data Center Bridging) settings
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+
+.ti -8
+.B dcb
+.RI "[ " OPTIONS " ] "
+.RB "{ " app " | " buffer " | " ets " | " maxrate " | " pfc " }"
+.RI "{ " COMMAND " | " help " }"
+.sp
+
+.ti -8
+.B dcb
+.RB "[ " -force " ] "
+.BI "-batch " filename
+.sp
+
+.ti -8
+.B dcb
+.RI "[ " OPTIONS " ] "
+.B help
+.sp
+
+.SH OPTIONS
+
+.TP
+.BR "\-n" , " \--netns " <NETNS>
+switches
+.B dcb
+to the specified network namespace
+.IR NETNS .
+
+.TP
+.BR "\-V" , " --Version"
+Print the version of the
+.B dcb
+utility and exit.
+
+.TP
+.BR "\-b", " --batch " <FILENAME>
+Read commands from provided file or standard input and invoke them. First
+failure will cause termination of dcb.
+
+.TP
+.BR "\-f", " --force"
+Don't terminate dcb on errors in batch mode. If there were any errors during
+execution of the commands, the application return code will be non zero.
+
+.TP
+.BR "\-i" , " --iec"
+When showing rates, use ISO/IEC 1024-based prefixes (Ki, Mi, Bi) instead of
+the 1000-based ones (K, M, B).
+
+.TP
+.BR "\-j" , " --json"
+Generate JSON output.
+
+.TP
+.BR "\-N" , " --Numeric"
+If the subtool in question translates numbers to symbolic names in some way,
+suppress this translation.
+
+.TP
+.BR "\-p" , " --pretty"
+When combined with -j generate a pretty JSON output.
+
+.TP
+.BR "\-s" , " --statistics"
+If the object in question contains any statistical counters, shown them as
+part of the "show" output.
+
+.SH OBJECTS
+
+.TP
+.B app
+- Configuration of application priority table
+
+.TP
+.B buffer
+- Configuration of port buffers
+
+.TP
+.B ets
+- Configuration of ETS (Enhanced Transmission Selection)
+
+.TP
+.B maxrate
+- Configuration of per-TC maximum transmit rate
+
+.TP
+.B pfc
+- Configuration of PFC (Priority-based Flow Control)
+
+.SH COMMANDS
+
+A \fICOMMAND\fR specifies the action to perform on the object. The set of
+possible actions depends on the object type. As a rule, it is possible to
+.B show
+objects and to invoke topical
+.B help,
+which prints a list of available commands and argument syntax conventions.
+
+.SH ARRAY PARAMETERS
+
+Like commands, specification of parameters is in the domain of individual
+objects (and their commands) as well. However, much of the DCB interface
+revolves around arrays of fixed size that specify one value per some key, such
+as per traffic class or per priority. There is therefore a single syntax for
+adjusting elements of these arrays. It consists of a series of
+\fIKEY\fB:\fIVALUE\fR pairs, where the meaning of the individual keys and values
+depends on the parameter.
+
+The elements are evaluated in order from left to right, and the latter ones
+override the earlier ones. The elements that are not specified on the command
+line are queried from the kernel and their current value is retained.
+
+As an example, take a made-up parameter tc-juju, which can be set to charm
+traffic in a given TC with either good luck or bad luck. \fIKEY\fR can therefore
+be 0..7 (as is usual for TC numbers in DCB), and \fIVALUE\fR either of
+\fBnone\fR, \fBgood\fR, and \fBbad\fR. An example of changing a juju value of
+TCs 0 and 7, while leaving all other intact, would then be:
+
+.P
+# dcb foo set dev eth0 tc-juju 0:good 7:bad
+
+A special key, \fBall\fR, is recognized which sets the same value to all array
+elements. This can be combined with the usual single-element syntax. E.g. in the
+following, the juju of all keys is set to \fBnone\fR, except 0 and 7, which have
+other values:
+
+.P
+# dcb foo set dev eth0 tc-juju all:none 0:good 7:bad
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR dcb-app (8),
+.BR dcb-buffer (8),
+.BR dcb-ets (8),
+.BR dcb-maxrate (8),
+.BR dcb-pfc (8)
+.br
+
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Petr Machata <me@pmachata.org>

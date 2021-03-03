@@ -1,0 +1,80 @@
+.TH "Cgroup classifier in tc" 8 " 21 Oct 2015" "iproute2" "Linux"
+
+.SH NAME
+cgroup \- control group based traffic control filter
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " " filter " ... " cgroup " [ " match
+.IR EMATCH_TREE " ] [ "
+.B action
+.IR ACTION_SPEC " ]"
+.SH DESCRIPTION
+This filter serves as a hint to
+.B tc
+that the assigned class ID of the net_cls control group the process the packet
+originates from belongs to should be used for classification. Obviously, it is
+useful for locally generated packets only.
+.SH OPTIONS
+.TP
+.BI action " ACTION_SPEC"
+Apply an action from the generic actions framework on matching packets.
+.TP
+.BI match " EMATCH_TREE"
+Match packets using the extended match infrastructure. See
+.BR tc-ematch (8)
+for a detailed description of the allowed syntax in
+.IR EMATCH_TREE .
+.SH EXAMPLES
+In order to use this filter, a net_cls control group has to be created first and
+class as well as process ID(s) assigned to it. The following creates a net_cls
+cgroup named "foobar":
+
+.RS
+.EX
+modprobe cls_cgroup
+mkdir /sys/fs/cgroup/net_cls
+mount -t cgroup -onet_cls net_cls /sys/fs/cgroup/net_cls
+mkdir /sys/fs/cgroup/net_cls/foobar
+.EE
+.RE
+
+To assign a class ID to the created cgroup, a file named
+.I net_cls.classid
+has to be created which contains the class ID to be assigned as a hexadecimal,
+64bit wide number. The upper 32bits are reserved for the major handle, the
+remaining hold the minor. So a class ID of e.g.
+.B ff:be
+has to be written like so:
+.B 0xff00be
+(leading zeroes may be omitted). To continue the above example, the following
+assigns class ID 1:2 to foobar cgroup:
+
+.RS
+.EX
+echo 0x10002 > /sys/fs/cgroup/net_cls/foobar/net_cls.classid
+.EE
+.RE
+
+Finally some PIDs can be assigned to the given cgroup:
+
+.RS
+.EX
+echo 1234 > /sys/fs/cgroup/net_cls/foobar/tasks
+echo 5678 > /sys/fs/cgroup/net_cls/foobar/tasks
+.EE
+.RE
+
+Now by simply attaching a
+.B cgroup
+filter to a
+.B qdisc
+makes packets from PIDs 1234 and 5678 be pushed into class 1:2.
+
+.SH SEE ALSO
+.BR tc (8),
+.BR tc-ematch (8),
+.br
+the file
+.I Documentation/cgroups/net_cls.txt
+of the Linux kernel tree

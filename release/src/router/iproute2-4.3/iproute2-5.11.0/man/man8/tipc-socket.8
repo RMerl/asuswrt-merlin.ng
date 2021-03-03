@@ -1,0 +1,59 @@
+.TH TIPC-SOCKET 8 "02 Jun 2015" "iproute2" "Linux"
+
+.\" For consistency, please keep padding right aligned.
+.\" For example '.B "foo " bar' and not '.B foo " bar"'
+
+.SH NAME
+tipc-socket \- show TIPC socket (port) information
+
+.SH SYNOPSIS
+.ad l
+.in +8
+
+.ti -8
+.B tipc socket list
+
+.SH OPTIONS
+Options (flags) that can be passed anywhere in the command chain.
+.TP
+.BR "\-h" , " --help"
+Show help about last valid command. For example
+.B tipc socket --help
+will show socket help and
+.B tipc --help
+will show general help. The position of the option in the string is irrelevant.
+
+.SH DESCRIPTION
+A TIPC socket is represented by an unsigned integer.
+
+.TP
+.SS Bound state
+A bound socket has a logical TIPC port name associated with it.
+
+.TP
+.SS Connected state
+A connected socket is directly connected to another socket creating a point
+to point connection between TIPC sockets. If the connection to X was made using
+a logical port name Y that name will show up as
+.BR "connected to " "X " "via " Y
+.
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR tipc (8),
+.BR tipc-bearer (8)
+.BR tipc-link (8),
+.BR tipc-media (8),
+.BR tipc-nametable (8),
+.BR tipc-node (8),
+.br
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Richard Alpe <richard.alpe@ericsson.com>

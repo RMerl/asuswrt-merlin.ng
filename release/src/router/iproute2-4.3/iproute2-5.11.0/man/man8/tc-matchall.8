@@ -1,0 +1,87 @@
+.TH "Match-all classifier in tc" 8 "21 Oct 2015" "iproute2" "Linux"
+
+.SH NAME
+matchall \- traffic control filter that matches every packet
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " " filter " ... " matchall " [ "
+.BR skip_sw " | " skip_hw
+.RI " ] [ "
+.B action
+.IR ACTION_SPEC " ] [ "
+.B classid
+.IR CLASSID " ]"
+.SH DESCRIPTION
+The
+.B matchall
+filter allows to classify every packet that flows on the port and run a
+action on it.
+.SH OPTIONS
+.TP
+.BI action " ACTION_SPEC"
+Apply an action from the generic actions framework on matching packets.
+.TP
+.BI classid " CLASSID"
+Push matching packets into the class identified by
+.IR CLASSID .
+.TP
+.BI skip_sw
+Do not process filter by software. If hardware has no offload support for this
+filter, or TC offload is not enabled for the interface, operation will fail.
+.TP
+.BI skip_hw
+Do not process filter by hardware.
+.SH EXAMPLES
+To create ingress mirroring from port eth1 to port eth2:
+.RS
+.EX
+
+tc qdisc  add dev eth1 handle ffff: ingress
+tc filter add dev eth1 parent ffff:           \\
+        matchall skip_sw                      \\
+        action mirred egress mirror           \\
+        dev eth2
+.EE
+.RE
+
+The first command creates an ingress qdisc with handle
+.BR ffff:
+on device
+.BR eth1
+where the second command attaches a matchall filters on it that mirrors the
+packets to device eth2.
+
+To create egress mirroring from port eth1 to port eth2:
+.RS
+.EX
+
+tc qdisc add dev eth1 handle 1: root prio
+tc filter add dev eth1 parent 1:               \\
+        matchall skip_sw                       \\
+        action mirred egress mirror            \\
+        dev eth2
+.EE
+.RE
+
+The first command creates an egress qdisc with handle
+.BR 1:
+that replaces the root qdisc on device
+.BR eth1
+where the second command attaches a matchall filters on it that mirrors the
+packets to device eth2.
+
+To sample one of every 100 packets flowing into interface eth0 to psample group
+12:
+.RS
+.EX
+
+tc qdisc add dev eth0 handle ffff: ingress
+tc filter add dev eth0 parent ffff: matchall \\
+     action sample rate 100 group 12
+.EE
+.RE
+
+.EE
+.SH SEE ALSO
+.BR tc (8),

@@ -1,0 +1,200 @@
+.TH RDMA\-STATISTIC 8 "27 June 2019" "iproute2" "Linux"
+.SH NAME
+rdma-statistic \- RDMA statistic counter configuration
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B rdma
+.RI "[ " OPTIONS " ]"
+.B statistic
+.RI  "{ " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.B rdma statistic
+.RI "{ " OBJECT " }"
+.B show
+
+.ti -8
+.B rdma statistic
+.RI "[ " OBJECT " ]"
+.B show link
+.RI "[ " DEV/PORT_INDX " ]"
+.RI "[ " FILTER_NAME " " FILTER_VALUE " ]"
+
+.ti -8
+.B rdma statistic
+.IR OBJECT
+.B mode
+
+.ti -8
+.B rdma statistic
+.IR OBJECT
+.B set
+.IR COUNTER_SCOPE
+.RI "[ " DEV/PORT_INDEX " ]"
+.B auto
+.RI "{ " CRITERIA " | "
+.BR off " }"
+
+.ti -8
+.B rdma statistic
+.IR OBJECT
+.B bind
+.IR COUNTER_SCOPE
+.RI "[ " DEV/PORT_INDEX " ]"
+.RI "[ " OBJECT-ID " ]"
+.RI "[ " COUNTER-ID " ]"
+
+.ti -8
+.B rdma statistic
+.IR OBJECT
+.B unbind
+.IR COUNTER_SCOPE
+.RI "[ " DEV/PORT_INDEX " ]"
+.RI "[ " COUNTER-ID " ]"
+.RI "[ " OBJECT-ID " ]"
+
+.ti -8
+.IR COUNTER_SCOPE " := "
+.RB "{ " link " | " dev " }"
+
+.ti -8
+.IR OBJECT " := "
+.RB "{ " qp " | " mr " }"
+
+.ti -8
+.IR CRITERIA " := "
+.RB "{ " type " | " pid " }"
+
+.ti -8
+.IR FILTER_NAME " := "
+.RB "{ " cntn " | " lqpn " | " pid " | " qp-type " }"
+
+.SH "DESCRIPTION"
+.SS rdma statistic [object] show - Queries the specified RDMA device for RDMA and driver-specific statistics. Show the default hw counters if object is not specified
+
+.PP
+.I "DEV"
+- specifies counters on this RDMA device to show.
+
+.I "PORT_INDEX"
+- specifies counters on this RDMA port to show.
+
+.I "FILTER_NAME
+- specifies a filter to show only the results matching it.
+
+.SS rdma statistic <object> set - configure counter statistic auto-mode for a specific device/port
+In auto mode all objects belong to one category are bind automatically to a single counter set. The "off" is global for all auto modes together. Not applicable for MR's.
+
+.SS rdma statistic <object> bind - manually bind an object (e.g., a qp) with a counter
+When bound the statistics of this object are available in this counter. Not applicable for MR's.
+
+.SS rdma statistic <object> unbind - manually unbind an object (e.g., a qp) from the counter previously bound
+When unbound the statistics of this object are no longer available in this counter; And if object id is not specified then all objects on this counter will be unbound. Not applicable for MR's.
+
+.I "COUNTER-ID"
+- specifies the id of the counter to be bound.
+If this argument is omitted then a new counter will be allocated.
+
+.SH "EXAMPLES"
+.PP
+rdma statistic show
+.RS 4
+Shows the state of the default counter of all RDMA devices on the system.
+.RE
+.PP
+rdma statistic show link mlx5_2/1
+.RS 4
+Shows the state of the default counter of specified RDMA port
+.RE
+.PP
+rdma statistic qp show
+.RS 4
+Shows the state of all qp counters of all RDMA devices on the system.
+.RE
+.PP
+rdma statistic qp show link mlx5_2/1
+.RS 4
+Shows the state of all qp counters of specified RDMA port.
+.RE
+.PP
+rdma statistic qp show link mlx5_2 pid 30489
+.RS 4
+Shows the state of all qp counters of specified RDMA port and belonging to pid 30489
+.RE
+.PP
+rdma statistic qp show link mlx5_2 qp-type UD
+.RS 4
+Shows the state of all qp counters of specified RDMA port and with QP type UD
+.RE
+.PP
+rdma statistic qp mode
+.RS 4
+List current counter mode on all devices
+.RE
+.PP
+rdma statistic qp mode link mlx5_2/1
+.RS 4
+List current counter mode of device mlx5_2 port 1
+.RE
+.PP
+rdma statistic qp set link mlx5_2/1 auto type on
+.RS 4
+On device mlx5_2 port 1, for each new user QP bind it with a counter automatically. Per counter for QPs with same qp type.
+.RE
+.PP
+rdma statistic qp set link mlx5_2/1 auto pid on
+.RS 4
+On device mlx5_2 port 1, for each new user QP bind it with a counter automatically. Per counter for QPs with same pid.
+.RE
+.PP
+rdma statistic qp set link mlx5_2/1 auto pid,type on
+.RS 4
+On device mlx5_2 port 1, for each new user QP bind it with a counter automatically. Per counter for QPs with same pid and same type.
+.RE
+.PP
+rdma statistic qp set link mlx5_2/1 auto off
+.RS 4
+Turn-off auto mode on device mlx5_2 port 1. The allocated counters can be manually accessed.
+.RE
+.PP
+rdma statistic qp bind link mlx5_2/1 lqpn 178
+.RS 4
+On device mlx5_2 port 1, allocate a counter and bind the specified qp on it
+.RE
+.PP
+rdma statistic qp unbind link mlx5_2/1 cntn 4 lqpn 178
+.RS 4
+On device mlx5_2 port 1, bind the specified qp on the specified counter
+.RE
+.PP
+rdma statistic qp unbind link mlx5_2/1 cntn 4
+.RS 4
+On device mlx5_2 port 1, unbind all QPs on the specified counter. After that this counter will be released automatically by the kernel.
+.RE
+.PP
+rdma statistic show mr
+.RS 4
+List all currently allocated MR's and their counters.
+.RE
+.PP
+rdma statistic show mr mrn 6
+.RS 4
+Dump a specific MR statistics with mrn 6. Dumps nothing if does not exists.
+.RE
+
+.SH SEE ALSO
+.BR rdma (8),
+.BR rdma-dev (8),
+.BR rdma-link (8),
+.BR rdma-resource (8),
+.br
+
+.SH AUTHORS
+Mark Zhang <markz@mellanox.com>
+.br
+Erez Alfasi <ereza@mellanox.com>

@@ -1,0 +1,104 @@
+.TH RDMA\-LINK 8 "06 Jul 2017" "iproute2" "Linux"
+.SH NAME
+rdma-link \- rdma link configuration
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B devlink
+.RI "[ " OPTIONS " ]"
+.B link
+.RI  " { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-V\fR[\fIersion\fR] |
+\fB\-d\fR[\fIetails\fR] }
+
+.ti -8
+.B rdma link show
+.RI "[ " DEV/PORT_INDEX " ]"
+
+.ti -8
+.B rdma link add
+.BR NAME
+.BR type
+.BR TYPE
+.BR netdev
+.BR NETDEV
+
+.ti -8
+.B rdma link delete
+.RI NAME
+
+.ti -8
+.B rdma link help
+
+.SH "DESCRIPTION"
+.SS rdma link show - display rdma link attributes
+
+.PP
+.I "DEV/PORT_INDEX"
+- specifies the RDMA link to show.
+If this argument is omitted all links are listed.
+
+.SS rdma link add NAME type TYPE netdev NETDEV - add an rdma link for the specified type to the network device
+.sp
+.BR NAME
+- specifies the new name of the rdma link to add
+
+.BR TYPE
+- specifies which rdma type to use.  Link types:
+.sp
+.in +8
+.B rxe
+- Soft RoCE driver
+.sp
+.B siw
+- Soft iWARP driver
+.in -8
+
+.BR NETDEV
+- specifies the network device to which the link is bound
+
+.SS rdma link delete NAME - delete an rdma link
+.PP
+.BR NAME
+- specifies the name of the rdma link to delete
+.PP
+
+.SH "EXAMPLES"
+.PP
+rdma link show
+.RS 4
+Shows the state of all rdma links on the system.
+.RE
+.PP
+rdma link show mlx5_2/1
+.RS 4
+Shows the state of specified rdma link.
+.RE
+.PP
+rdma link add rxe_eth0 type rxe netdev eth0
+.RS 4
+Adds a RXE link named rxe_eth0 to network device eth0
+.RE
+.PP
+rdma link del rxe_eth0
+.RS 4
+Removes RXE link rxe_eth0
+.RE
+.PP
+
+.SH SEE ALSO
+.BR rdma (8),
+.BR rdma-dev (8),
+.BR rdma-resource (8),
+.BR rdma-statistic (8),
+.br
+
+.SH AUTHOR
+Leon Romanovsky <leonro@mellanox.com>

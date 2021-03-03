@@ -1,0 +1,139 @@
+.TH DEVLINK 8 "14 Mar 2016" "iproute2" "Linux"
+.SH NAME
+devlink \- Devlink tool
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B devlink
+.RI "[ " OPTIONS " ] { " dev | port | monitor | sb | resource | region | health | trap " } { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.B devlink
+.RB "[ " -force " ] "
+.BI "-batch " filename
+.sp
+
+.SH OPTIONS
+
+.TP
+.BR "\-V" , " --Version"
+Print the version of the
+.B devlink
+utility and exit.
+
+.TP
+.BR "\-b", " \-batch " <FILENAME>
+Read commands from provided file or standard input and invoke them.
+First failure will cause termination of devlink.
+
+.TP
+.B \-force
+Don't terminate devlink on errors in batch mode.
+If there were any errors during execution of the commands, the application return code will be non zero.
+
+.TP
+.BR "\-n" , " --no-nice-names"
+Turn off printing out nice names, for example netdevice ifnames instead of devlink port identification.
+
+.TP
+.BR "\-j" , " --json"
+Generate JSON output.
+
+.TP
+.BR "\-p" , " --pretty"
+When combined with -j generate a pretty JSON output.
+
+.TP
+.BR "\-v" , " --verbose"
+Turn on verbose output.
+
+.TP
+.BR "\-s" , " --statistics"
+Output statistics.
+
+.TP
+.BR "\-N", " \-Netns " <NETNSNAME>
+Switches to the specified network namespace.
+
+.SS
+.I OBJECT
+
+.TP
+.B dev
+- devlink device.
+
+.TP
+.B port
+- devlink port.
+
+.TP
+.B monitor
+- watch for netlink messages.
+
+.TP
+.B sb
+- devlink shared buffer configuration.
+
+.TP
+.B resource
+- devlink device resource configuration.
+
+.TP
+.B region
+- devlink address region access
+
+.TP
+.B health
+- devlink reporting and recovery
+
+.TP
+.B trap
+- devlink trap configuration
+
+.SS
+.I COMMAND
+
+Specifies the action to perform on the object.
+The set of possible actions depends on the object type.
+As a rule, it is possible to
+.B show
+(or
+.B list
+) objects, but some objects do not allow all of these operations
+or have some additional commands. The
+.B help
+command is available for all objects. It prints
+out a list of available commands and argument syntax conventions.
+.sp
+If no command is given, some default command is assumed.
+Usually it is
+.B list
+or, if the objects of this class cannot be listed,
+.BR "help" .
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR devlink-dev (8),
+.BR devlink-port (8),
+.BR devlink-monitor (8),
+.BR devlink-sb (8),
+.BR devlink-resource (8),
+.BR devlink-region (8),
+.BR devlink-health (8),
+.BR devlink-trap (8),
+.br
+
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Jiri Pirko <jiri@mellanox.com>

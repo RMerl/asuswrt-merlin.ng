@@ -1,0 +1,308 @@
+.TH DEVLINK\-DEV 8 "14 Mar 2016" "iproute2" "Linux"
+.SH NAME
+devlink-dev \- devlink device configuration
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B devlink
+.RI "[ " OPTIONS " ]"
+.B dev
+.RI  " { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-V\fR[\fIersion\fR] |
+\fB\-n\fR[\fIno-nice-names\fR] }
+
+.ti -8
+.B devlink dev show
+.RI "[ " DEV " ]"
+
+.ti -8
+.B devlink dev help
+
+.ti -8
+.B devlink dev eswitch set
+.I DEV
+[
+.BR mode " { " legacy " | " switchdev " } "
+] [
+.BR inline-mode " { " none " | " link " | " network " | " transport " } "
+] [
+.BR encap-mode " { " none " | " basic " } "
+]
+
+.ti -8
+.B devlink dev eswitch show
+.I DEV
+
+.ti -8
+.B devlink dev param set
+.I DEV
+.B name
+.I PARAMETER
+.B value
+.I VALUE
+.BR cmode " { " runtime " | " driverinit " | " permanent " } "
+
+.ti -8
+.B devlink dev param show
+[
+.I DEV
+.B name
+.I PARAMETER
+]
+
+.ti -8
+.B devlink dev reload
+.I DEV
+[
+.B netns
+.RI "{ " PID " | " NAME " | " ID " }"
+] [
+.BR action " { " driver_reinit " | " fw_activate " }"
+] [
+.B limit no_reset
+]
+
+.ti -8
+.B devlink dev info
+[
+.I DEV
+]
+
+.ti -8
+.B devlink dev flash
+.I DEV
+.B file
+.I PATH
+[
+.B target
+.I ID
+]
+
+.SH "DESCRIPTION"
+.SS devlink dev show - display devlink device attributes
+
+.PP
+.I "DEV"
+- specifies the devlink device to show.
+If this argument is omitted all devices are listed.
+
+.in +4
+Format is:
+.in +2
+BUS_NAME/BUS_ADDRESS
+
+.SS devlink dev eswitch show - display devlink device eswitch attributes
+.SS devlink dev eswitch set  - sets devlink device eswitch attributes
+
+.TP
+.BR mode " { " legacy " | " switchdev " } "
+Set eswitch mode
+
+.I legacy
+- Legacy SRIOV
+
+.I switchdev
+- SRIOV switchdev offloads
+
+.TP
+.BR inline-mode " { " none " | " link " | " network " | " transport " } "
+Some HWs need the VF driver to put part of the packet headers on the TX descriptor so the e-switch can do proper matching and steering.
+
+.I none
+- None
+
+.I link
+- L2 mode
+
+.I network
+- L3 mode
+
+.I transport
+- L4 mode
+
+.TP
+.BR encap-mode " { " none " | " basic " } "
+Set eswitch encapsulation support
+
+.I none
+- Disable encapsulation support
+
+.I basic
+- Enable encapsulation support
+
+.SS devlink dev param set  - set new value to devlink device configuration parameter
+
+.TP
+.BI name " PARAMETER"
+Specify parameter name to set.
+
+.TP
+.BI value " VALUE"
+New value to set.
+
+.TP
+.BR cmode " { " runtime " | " driverinit " | " permanent " } "
+Configuration mode in which the new value is set.
+
+.I runtime
+- Set new value while driver is running. This configuration mode doesn't require any reset to apply the new value.
+
+.I driverinit
+- Set new value which will be applied during driver initialization. This configuration mode requires restart driver by devlink reload command to apply the new value.
+
+.I permanent
+- New value is written to device's non-volatile memory. This configuration mode requires hard reset to apply the new value.
+
+.SS devlink dev param show - display devlink device supported configuration parameters attributes
+
+.B name
+.I PARAMETER
+Specify parameter name to show.
+If this argument is omitted all parameters supported by devlink devices are listed.
+
+.SS devlink dev reload - perform hot reload of the driver.
+
+.PP
+.I "DEV"
+- Specifies the devlink device to reload.
+
+.B netns
+.RI { " PID " | " NAME " | " ID " }
+- Specifies the network namespace to reload into, either by pid, name or id.
+
+.BR action " { " driver_reinit " | " fw_activate " }"
+- Specifies the reload action required.
+If this argument is omitted
+.I driver_reinit
+action will be used.
+Note that even though user asks for a specific action, the driver implementation
+might require to perform another action alongside with it. For example, some
+driver do not support driver reinitialization being performed without fw
+activation. Therefore, the devlink reload command returns the list of actions
+which were actrually performed.
+
+.I driver_reinit
+- Driver entities re-initialization, applying devlink-param and
+devlink-resource values.
+
+.I fw_activate
+- Activates new firmware if such image is stored and pending activation. If no
+limitation specified this action may involve firmware reset. If no new image
+pending this action will reload current firmware image.
+
+.B limit no_reset
+- Specifies limitation on reload action.
+If this argument is omitted limit is unspecificed and the reload action is not
+limited. In such case driver implementation may include reset or downtime as
+needed to perform the actions.
+
+.I no_reset
+- No reset allowed, no down time allowed, no link flap and no configuration is
+lost.
+
+.SS devlink dev info - display device information.
+Display device information provided by the driver. This command can be used
+to query versions of the hardware components or device components which
+can't be updated (
+.I fixed
+) as well as device firmware which can be updated. For firmware components
+.I running
+displays the versions of firmware currently loaded into the device, while
+.I stored
+reports the versions in device's flash.
+.I Running
+and
+.I stored
+versions may differ after flash has been updated, but before reboot.
+
+.PP
+.I "DEV"
+- specifies the devlink device to show.
+If this argument is omitted all devices are listed.
+
+.SS devlink dev flash - write device's non-volatile memory.
+
+.PP
+.I "DEV"
+- specifies the devlink device to write to.
+
+.B file
+.I PATH
+- Path to the file which will be written into device's flash. The path needs
+to be relative to one of the directories searched by the kernel firmware loaded,
+such as /lib/firmware.
+
+.B component
+.I NAME
+- If device stores multiple firmware images in non-volatile memory, this
+parameter may be used to indicate which firmware image should be written.
+The value of
+.I NAME
+should match the component names from
+.B "devlink dev info"
+and may be driver-dependent.
+
+.SH "EXAMPLES"
+.PP
+devlink dev show
+.RS 4
+Shows the state of all devlink devices on the system.
+.RE
+.PP
+devlink dev show pci/0000:01:00.0
+.RS 4
+Shows the state of specified devlink device.
+.RE
+.PP
+devlink dev eswitch show pci/0000:01:00.0
+.RS 4
+Shows the eswitch mode of specified devlink device.
+.RE
+.PP
+devlink dev eswitch set pci/0000:01:00.0 mode switchdev
+.RS 4
+Sets the eswitch mode of specified devlink device to switchdev.
+.RE
+.PP
+devlink dev param show pci/0000:01:00.0 name max_macs
+.RS 4
+Shows the parameter max_macs attributes.
+.RE
+.PP
+devlink dev param set pci/0000:01:00.0 name internal_error_reset value true cmode runtime
+.RS 4
+Sets the parameter internal_error_reset of specified devlink device to true.
+.RE
+.PP
+devlink dev reload pci/0000:01:00.0
+.RS 4
+Performs hot reload of specified devlink device.
+.RE
+.PP
+devlink dev flash pci/0000:01:00.0 file firmware.bin
+.RS 4
+Flashes the specified devlink device with provided firmware file name. If the driver supports it, user gets updates about the flash status. For example:
+.br
+Preparing to flash
+.br
+Flashing 100%
+.br
+Flashing done
+.RE
+
+.SH SEE ALSO
+.BR devlink (8),
+.BR devlink-port (8),
+.BR devlink-sb (8),
+.BR devlink-monitor (8),
+.br
+
+.SH AUTHOR
+Jiri Pirko <jiri@mellanox.com>

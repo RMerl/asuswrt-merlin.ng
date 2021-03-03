@@ -1,0 +1,47 @@
+This is a set of utilities for Linux networking.
+
+Information:
+    https://wiki.linuxfoundation.org/networking/iproute2
+
+Download:
+    http://www.kernel.org/pub/linux/utils/net/iproute2/
+
+Stable version repository:
+    git://git.kernel.org/pub/scm/network/iproute2/iproute2.git
+
+Development repository:
+    git://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git
+
+How to compile this.
+--------------------
+1. libdbm
+
+arpd needs to have the berkeleydb development libraries. For Debian
+users this is the package with a name like libdbX.X-dev.
+DBM_INCLUDE points to the directory with db_185.h which
+is the include file used by arpd to get to the old format Berkeley
+database routines.  Often this is in the db-devel package.
+
+2. make
+
+The makefile will automatically build a config.mk file which
+contains definitions of libraries that may or may not be available
+on the system such as: ATM, ELF, MNL, and SELINUX.
+
+3. To make documentation, cd to doc/ directory , then
+   look at start of Makefile and set correct values for
+   PAGESIZE=a4		, ie: a4 , letter ...	(string)
+   PAGESPERPAGE=2	, ie: 1 , 2 ...		(numeric)
+   and make there. It assumes, that latex, dvips and psnup
+   are in your path.
+
+4. This package includes matching sanitized kernel headers because
+   the build environment may not have up to date versions. See Makefile
+   if you have special requirements and need to point at different
+   kernel include files.
+
+Stephen Hemminger
+stephen@networkplumber.org
+
+Alexey Kuznetsov
+kuznet@ms2.inr.ac.ru

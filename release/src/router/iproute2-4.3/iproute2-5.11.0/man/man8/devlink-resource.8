@@ -1,0 +1,79 @@
+.TH DEVLINK\-RESOURCE 8 "11 Feb 2018" "iproute2" "Linux"
+.SH NAME
+devlink-resource \- devlink device resource configuration
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B devlink
+.RI "[ " OPTIONS " ]"
+.B resource
+.RI  " { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-v\fR[\fIerbose\fR] }
+
+.ti -8
+.B devlink resource show
+.IR DEV
+
+.ti -8
+.B devlink resource help
+
+.ti -8
+.BR "devlink resource set"
+.IR DEV
+.BI path " RESOURCE_PATH"
+.BI size " RESOURCE_SIZE"
+
+.SH "DESCRIPTION"
+.SS devlink resource show - display devlink device's resosources
+
+.PP
+.I "DEV"
+- specifies the devlink device to show.
+
+.in +4
+Format is:
+.in +2
+BUS_NAME/BUS_ADDRESS
+
+.SS devlink resource set - sets resource size of specific resource
+
+.PP
+.I "DEV"
+- specifies the devlink device.
+
+.TP
+.BI path " RESOURCE_PATH"
+Resource's path.
+
+.TP
+.BI size " RESOURCE_SIZE"
+The new resource's size.
+
+.SH "EXAMPLES"
+.PP
+devlink resource show pci/0000:01:00.0
+.RS 4
+Shows the resources of the specified devlink device.
+.RE
+.PP
+devlink resource set pci/0000:01:00.0 /kvd/linear 98304
+.RS 4
+Sets the size of the specified resource for the specified devlink device.
+.RE
+
+.SH SEE ALSO
+.BR devlink (8),
+.BR devlink-port (8),
+.BR devlink-sb (8),
+.BR devlink-monitor (8),
+.br
+
+.SH AUTHOR
+Arkadi Sharshevsky <arkadis@mellanox.com>

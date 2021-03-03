@@ -1,0 +1,141 @@
+.TH IP\-MPTCP 8 "4 Apr 2020" "iproute2" "Linux"
+.SH "NAME"
+ip-mptcp \- MPTCP path manager configuration
+.SH "SYNOPSIS"
+.ad l
+.in +8
+.ti -8
+.B ip
+.RI "[ " OPTIONS " ]"
+.B mptcp
+.RB "{ "
+.B endpoint
+.RB " | "
+.B limits
+.RB " | "
+.B help
+.RB " }"
+.sp
+
+.ti -8
+.BR "ip mptcp endpoint add "
+.IR IFADDR
+.RB "[ " dev
+.IR IFNAME " ]"
+.RB "[ " id
+.I ID
+.RB "] [ "
+.I FLAG-LIST
+.RB "] "
+
+.ti -8
+.BR "ip mptcp endpoint del id "
+.I ID
+
+.ti -8
+.BR "ip mptcp endpoint show "
+.RB "[ " id
+.I ID
+.RB "]"
+
+.ti -8
+.BR "ip mptcp endpoint flush"
+
+.ti -8
+.IR FLAG-LIST " := [ "  FLAG-LIST " ] " FLAG
+
+.ti -8
+.IR FLAG " := ["
+.B signal
+.RB "|"
+.B subflow
+.RB "|"
+.B backup
+.RB  "]"
+
+.ti -8
+.BR "ip mptcp limits set "
+.RB "[ "
+.B subflow
+.IR SUBFLOW_NR " ]"
+.RB "[ "
+.B add_addr_accepted
+.IR  ADD_ADDR_ACCEPTED_NR " ]"
+
+.ti -8
+.BR "ip mptcp limits show"
+
+.SH DESCRIPTION
+
+MPTCP is a transport protocol built on top of TCP that allows TCP
+connections to use multiple paths to maximize resource usage and increase
+redundancy. The ip-mptcp sub-commands allow configuring several aspects of the
+MPTCP path manager, which is in charge of subflows creation:
+
+.P
+The
+.B endpoint
+object specifies the IP addresses that will be used and/or announced for
+additional subflows:
+
+.TS
+l l.
+ip mptcp endpoint add	add new MPTCP endpoint
+ip mptcp endpoint delete	delete existing MPTCP endpoint
+ip mptcp endpoint show	get existing MPTCP endpoint
+ip mptcp endpoint flush	flush all existing MPTCP endpoints
+.TE
+
+.TP
+.IR ID
+is a unique numeric identifier for the given endpoint
+
+.TP
+.BR signal
+the endpoint will be announced/signalled to each peer via an ADD_ADDR MPTCP
+sub-option
+
+.TP
+.BR subflow
+if additional subflow creation is allowed by MPTCP limits, the endpoint will
+be used as the source address to create an additional subflow after that
+the MPTCP connection is established.
+
+.TP
+.BR backup
+the endpoint will be announced as a backup address, if this is a
+.BR signal
+endpoint, or the subflow will be created as a backup one if this is a
+.BR subflow
+endpoint
+
+.sp
+.PP
+The
+.B limits
+object specifies the constraints for subflow creations:
+
+.TS
+l l.
+ip mptcp limits show	get current MPTCP subflow creation limits
+ip mptcp limits set	change the MPTCP subflow creation limits
+.TE
+
+.TP
+.IR SUBFLOW_NR
+specifies the maximum number of additional subflows allowed for each MPTCP
+connection. Additional subflows can be created due to: incoming accepted
+ADD_ADDR option, local
+.BR subflow
+endpoints, additional subflows started by the peer.
+
+.TP
+.IR ADD_ADDR_ACCEPTED_NR
+specifies the maximum number of ADD_ADDR suboptions accepted for each MPTCP
+connection. The MPTCP path manager will try to create a new subflow for
+each accepted ADD_ADDR option, respecting the
+.IR SUBFLOW_NR
+limit.
+
+.SH AUTHOR
+Original Manpage by Paolo Abeni <pabeni@redhat.com>

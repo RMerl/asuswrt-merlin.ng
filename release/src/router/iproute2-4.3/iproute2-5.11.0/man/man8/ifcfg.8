@@ -1,0 +1,48 @@
+.TH IFCFG 8 "September 24 2009" "iproute2" "Linux"
+.SH NAME
+ifcfg \- simplistic script which replaces ifconfig IP management
+.SH SYNOPSIS
+.ad l
+.in +8
+.ti -8
+.B ifcfg
+.RI "[ " DEVICE " ] [ " command " ] " ADDRESS " [ " PEER " ] "
+.sp
+
+.SH DESCRIPTION
+This manual page documents briefly the
+.B ifcfg
+command.
+.PP
+This is a simplistic script replacing one option of
+.B ifconfig
+, namely, IP address management. It not only adds
+addresses, but also carries out Duplicate Address Detection RFC-DHCP,
+sends unsolicited ARP to update the caches of other hosts sharing
+the interface, adds some control routes and restarts Router Discovery
+when it is necessary.
+
+.SH IFCONFIG - COMMAND SYNTAX
+
+.SS
+.TP
+.B DEVICE
+- it may have alias, suffix, separated by colon.
+
+.TP
+.B command
+- add, delete or stop.
+
+.TP
+.B ADDRESS
+- optionally followed by prefix length.
+
+.TP
+.B peer
+- optional peer address for pointpoint interfaces.
+
+.SH NOTES
+This script is not suitable for use with IPv6.
+
+.SH SEE ALSO
+.RB "IP Command reference " ip-cref.ps

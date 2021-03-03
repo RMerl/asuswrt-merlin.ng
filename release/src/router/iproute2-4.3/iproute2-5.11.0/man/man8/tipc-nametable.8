@@ -1,0 +1,110 @@
+.TH TIPC-NAMETABLE 8 "02 Jun 2015" "iproute2" "Linux"
+
+.\" For consistency, please keep padding right aligned.
+.\" For example '.B "foo " bar' and not '.B foo " bar"'
+
+.SH NAME
+tipc-nametable \- show TIPC nametable
+
+.SH SYNOPSIS
+.ad l
+.in +8
+
+.ti -8
+.B tipc nametable show
+.br
+
+.SH OPTIONS
+Options (flags) that can be passed anywhere in the command chain.
+.TP
+.BR "\-h" , " --help"
+
+.TP
+.BR "\-j", " \-json"
+Output results in JavaScript Object Notation (JSON).
+
+.TP
+.BR "\-p", " \-pretty"
+The default JSON format is compact and more efficient to parse but hard for most users to read.
+This flag adds indentation for readability.
+
+Show help about last valid command. For example
+.B tipc nametable --help
+will show nametable help and
+.B tipc --help
+will show general help. The position of the option in the string is irrelevant.
+
+.SH DESCRIPTION
+The nametable shows TIPC publication information.
+
+.SS Nametable format
+
+.TP
+.B Type
+.br
+The 32-bit type field of the port name. The type field often indicates the class of service
+provided by a port.
+
+.TP
+.B Lower
+.br
+The lower bound of the 32-bit instance field of the port name.
+The instance field is often used as as a sub-class indicator.
+
+.TP
+.B Upper
+.br
+The upper bound of the 32-bit instance field of the port name.
+The instance field is often used as as a sub-class indicator.
+A difference in
+.BR "lower " "and " upper
+means the socket is bound to the port name range [lower,upper]
+
+.TP
+.B Port Identity
+.br
+The unique socket (port) identifier within the TIPC cluster. The
+.B port identity
+consists of a node identity followed by a socket reference number.
+
+.TP
+.B Publication
+.br
+The
+.B publication
+ID is a random number used internally to represent a publication.
+
+.TP
+.B Scope
+.br
+The publication
+.B scope
+specifies the visibility of a bound port name.
+The
+.B scope
+can be specified to comprise three different domains:
+.BR node ", " "cluster " "and " zone.
+Applications residing within the specified
+.B scope
+can see and access the port using the displayed port name.
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR tipc (8),
+.BR tipc-bearer (8),
+.BR tipc-link (8),
+.BR tipc-media (8),
+.BR tipc-node (8),
+.BR tipc-peer (8),
+.BR tipc-socket (8)
+.br
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Richard Alpe <richard.alpe@ericsson.com>

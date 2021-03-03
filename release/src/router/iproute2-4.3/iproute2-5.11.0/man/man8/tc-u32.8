@@ -1,0 +1,674 @@
+.TH "Universal 32bit classifier in tc" 8 "25 Sep 2015" "iproute2" "Linux"
+
+.SH NAME
+u32 \- universal 32bit traffic control filter
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " " filter " ... [ " handle
+.IR HANDLE " ] "
+.B u32
+.IR OPTION_LIST " [ "
+.B offset
+.IR OFFSET " ] [ "
+.B hashkey
+.IR HASHKEY " ] [ "
+.B classid
+.IR CLASSID " ] [ "
+.B divisor
+.IR uint_value " ] [ "
+.B order
+.IR u32_value " ] [ "
+.B ht
+.IR HANDLE " ] [ "
+.B sample
+.IR SELECTOR " [ "
+.B divisor
+.IR uint_value " ] ] [ "
+.B link
+.IR HANDLE " ] [ "
+.B indev
+.IR ifname " ] [ "
+.BR skip_hw " | "
+.BR skip_sw " ] [ "
+.BR help " ]"
+
+.ti -8
+.IR HANDLE " := { "
+\fIu12_hex_htid\fB:\fR[\fIu8_hex_hash\fB:\fR[\fIu12_hex_nodeid\fR] | \fB0x\fIu32_hex_value\fR }
+
+.ti -8
+.IR OPTION_LIST " := [ " OPTION_LIST " ] " OPTION
+
+.ti -8
+.IR HASHKEY " := [ "
+.B mask
+.IR u32_hex_value " ] [ "
+.B at
+.IR 4*int_value " ]"
+
+.ti -8
+.IR CLASSID " := { "
+.BR root " | "
+.BR none " | "
+[\fIu16_major\fR]\fB:\fIu16_minor\fR | \fIu32_hex_value\fR }
+
+.ti -8
+.IR OFFSET " := [ "
+.B plus
+.IR int_value " ] [ "
+.B at
+.IR 2*int_value " ] [ "
+.B mask
+.IR u16_hex_value " ] [ "
+.B shift
+.IR int_value " ] [ "
+.BR eat " ]"
+
+.ti -8
+.IR OPTION " := { "
+.B match
+.IR SELECTOR " | "
+.B action
+.IR ACTION " } "
+
+.ti -8
+.IR SELECTOR " := { "
+.B u32
+.IR VAL_MASK_32 " | "
+.B u16
+.IR VAL_MASK_16 " | "
+.B u8
+.IR VAL_MASK_8 " | "
+.B ip
+.IR IP " | "
+.B ip6
+.IR IP6 " | { "
+.BR tcp " | " udp " } "
+.IR TCPUDP " | "
+.B icmp
+.IR ICMP " | "
+.B mark
+.IR VAL_MASK_32 " | "
+.B ether
+.IR ETHER " }"
+
+.ti -8
+.IR IP " := { { "
+.BR src " | " dst " } { " default " | " any " | " all " | "
+.IR ip_address " [ "
+.BR / " { "
+.IR prefixlen " | " netmask " } ] } " AT " | { "
+.BR dsfield " | " ihl " | " protocol " | " precedence " | "
+.BR icmp_type " | " icmp_code " } "
+.IR VAL_MASK_8 " | { "
+.BR sport " | " dport " } "
+.IR VAL_MASK_16 " | "
+.BR nofrag " | " firstfrag " | " df " | " mf " }"
+
+.ti -8
+.IR IP6 " := { { "
+.BR src " | " dst " } { " default " | " any " | " all " | "
+.IR ip6_address " [/" prefixlen " ] } " AT " | "
+.B priority
+.IR VAL_MASK_8 " | { "
+.BR protocol " | " icmp_type " | " icmp_code " } "
+.IR VAL_MASK_8 " | "
+.B flowlabel
+.IR VAL_MASK_32 " | { "
+.BR sport " | " dport " } "
+.IR VAL_MASK_16 " }"
+
+.ti -8
+.IR TCPUDP " := { "
+.BR src " | " dst " } "
+.I VAL_MASK_16
+
+.ti -8
+.IR ICMP " := { "
+.B type
+.IR VAL_MASK_8 " | "
+.B code
+.IR VAL_MASK_8 " }"
+
+.ti -8
+.IR ETHER " := { "
+.BR src " | " dst " } "
+.IR ether_address " " AT
+
+.ti -8
+.IR VAL_MASK_32 " := " u32_value " " u32_hex_mask " [ " AT " ]"
+
+.ti -8
+.IR VAL_MASK_16 " := " u16_value " " u16_hex_mask " [ " AT " ]"
+
+.ti -8
+.IR VAL_MASK_8 " := " u8_value " " u8_hex_mask " [ " AT " ]"
+
+.ti -8
+.IR AT " := [ "
+.BR at " [ " nexthdr+ " ] "
+.IR int_value " ]"
+.SH DESCRIPTION
+The Universal/Ugly 32bit filter allows to match arbitrary bitfields in the
+packet. Due to breaking everything down to values, masks and offsets, It is
+equally powerful and hard to use. Luckily many abstracting directives are
+present which allow defining rules on a higher level and therefore free the
+user from having to fiddle with bits and masks in many cases.
+
+There are two general modes of invocation: The first mode creates a new filter
+to delegate packets to different destinations. Apart from the obvious ones,
+namely classifying the packet by specifying a
+.I CLASSID
+or calling an
+.BR action ,
+one may
+.B link
+one filter to another one (or even a list of them), effectively organizing
+filters into a tree-like hierarchy.
+
+Typically filter delegation is done by means of a hash table, which leads to the
+second mode of invocation: it merely serves to set up these hash tables. Filters
+can select a hash table and provide a key selector from which a hash is to be
+computed and used as key to lookup the table's bucket which contains filters for
+further processing. This is useful if a high number of filters is in use, as the
+overhead of performing the hash operation and table lookup becomes negligible in
+that case. Using hashtables with
+.B u32
+basically involves the following pattern:
+.IP (1) 4
+Creating a new hash table, specifying it's size using the
+.B divisor
+parameter and ideally a handle by which the table can be identified. If the
+latter is not given, the kernel chooses one on it's own, which has to be
+guessed later.
+.IP (2) 4
+Creating filters which link to the created table in
+.I (1)
+using the
+.B link
+parameter and defining the packet data which the kernel will use to calculate
+the
+.BR hashkey .
+.IP (3) 4
+Adding filters to buckets in the hash table from
+.IR (1) .
+In order to avoid having to know how exactly the kernel creates the hash key,
+there is the
+.B sample
+parameter, which gives sample data to hash and thereby define the table bucket
+the filter should be added to.
+
+.RE
+In fact, even if not explicitly requested
+.B u32
+creates a hash table for every
+.B priority
+a filter is being added with. The table's size is 1 though, so it is in fact
+merely a linked list.
+.SH VALUES
+Options and selectors require values to be specified in a specific format, which
+is often non-intuitive. Therefore the terminals in
+.I SYNOPSIS
+have been given descriptive names to indicate the required format and/or maximum
+allowed numeric value: Prefixes
+.IR u32 ", " u16 " and " u8
+indicate four, two and single byte unsigned values. E.g.
+.I u16
+indicates a two byte-sized value in range between 0 and 65535 (0xFFFF)
+inclusive. A prefix of
+.I int
+indicates a four byte signed value. A middle part of
+.I _hex_
+indicates that the value is parsed in hexadecimal format. Otherwise, the
+value's base is automatically detected, i.e. values prefixed with
+.I 0x
+are considered hexadecimal, a leading
+.I 0
+indicates octal format and decimal format otherwise. There are some values with
+special formatting as well:
+.IR ip_address " and " netmask
+are in dotted-quad formatting as usual for IPv4 addresses. An
+.I ip6_address
+is specified in common, colon-separated hexadecimal format. Finally,
+.I prefixlen
+is an unsigned, decimal integer value in range from 0 to the address width in
+bits (32 for IPv4 and 128 for IPv6).
+
+Sometimes values need to be dividable by a certain number. In that case a name
+of the form
+.I N*val
+was chosen, indicating that
+.I val
+must be dividable by
+.IR N .
+Or the other way around: the resulting value must be a multiple of
+.IR N .
+.SH OPTIONS
+.B U32
+recognizes the following options:
+.TP
+.BI handle " HANDLE"
+The handle is used to reference a filter and therefore must be unique. It
+consists of a hash table identifier
+.B htid
+and optional
+.B hash
+(which identifies the hash table's bucket) and
+.BR nodeid .
+All these values are parsed as unsigned, hexadecimal numbers with length 12bits
+(
+.BR htid " and " nodeid )
+or 8bits (
+.BR hash ).
+Alternatively one may specify a single, 32bit long hex number which contains
+the three fields bits in concatenated form. Other than the fields themselves, it
+has to be prefixed by
+.BR 0x .
+.TP
+.BI offset " OFFSET"
+Set an offset which defines where matches of subsequent filters are applied to.
+Therefore this option is useful only when combined with
+.BR link " or a combination of " ht " and " sample .
+The offset may be given explicitly by using the
+.B plus
+keyword, or extracted from the packet data with
+.BR at .
+It is possible to mangle the latter using
+.BR mask " and/or " shift
+keywords. By default, this offset is recorded but not implicitly applied. It is
+used only to substitute the
+.B nexthdr+
+statement. Using the keyword
+.B eat
+though inverses this behaviour: the offset is applied always, and
+.B nexthdr+
+will fall back to zero.
+.TP
+.BI hashkey " HASHKEY"
+Spefify what packet data to use to calculate a hash key for bucket lookup. The
+kernel adjusts the value according to the hash table's size. For this to work,
+the option
+.B link
+must be given.
+.TP
+.BI classid " CLASSID"
+Classify matching packets into the given
+.IR CLASSID ,
+which consists of either 16bit
+.BR major " and " minor
+numbers or a single 32bit value combining both.
+.TP
+.BI divisor " u32_value"
+Specify a modulo value. Used when creating hash tables to define their size or
+for declaring a
+.B sample
+to calculate hash table keys from. Must be a power of two with exponent not
+exceeding eight.
+.TP
+.BI order " u32_value"
+A value to order filters by, ascending. Conflicts with
+.B handle
+which serves the same purpose.
+.TP
+.BI sample " SELECTOR"
+Used together with
+.B ht
+to specify which bucket to add this filter to. This allows one to avoid having
+to know how exactly the kernel calculates hashes. The additional
+.B divisor
+defaults to 256, so must be given for hash tables of different size.
+.TP
+.BI link " HANDLE"
+Delegate matching packets to filters in a hash table.
+.I HANDLE
+is used to only specify the hash table, so only
+.BR htid " may be given, " hash " and " nodeid
+have to be omitted. By default, bucket number 0 will be used and can be
+overridden by the
+.B hashkey
+option.
+.TP
+.BI indev " ifname"
+Filter on the incoming interface of the packet. Obviously works only for
+forwarded traffic.
+.TP
+.BI skip_sw
+Do not process filter by software. If hardware has no offload support for this
+filter, or TC offload is not enabled for the interface, operation will fail.
+.TP
+.BI skip_hw
+Do not process filter by hardware.
+.TP
+.BI help
+Print a brief help text about possible options.
+.SH SELECTORS
+Basically the only real selector is
+.B u32 .
+All others merely provide a higher level syntax and are internally translated
+into
+.B u32 .
+.TP
+.BI u32 " VAL_MASK_32"
+.TQ
+.BI u16 " VAL_MASK_16"
+.TQ
+.BI u8 " VAL_MASK_8"
+Match packet data to a given value. The selector name defines the sample length
+to extract (32bits for
+.BR u32 ,
+16bits for
+.B u16
+and 8bits for
+.BR u8 ).
+Before comparing, the sample is binary AND'ed with the given mask. This way
+uninteresting bits can be cleared before comparison. The position of the sample
+is defined by the offset specified in
+.IR AT .
+.TP
+.BI ip " IP"
+.TQ
+.BI ip6 " IP6"
+Assume packet starts with an IPv4 (
+.BR ip )
+or IPv6 (
+.BR ip6 )
+header.
+.IR IP / IP6
+then allows to match various header fields:
+.RS
+.TP
+.BI src " ADDR"
+.TQ
+.BI dst " ADDR"
+Compare Source or Destination Address fields against the value of
+.IR ADDR .
+The reserved words
+.BR default ", " any " and " all
+effectively match any address. Otherwise an IP address of the particular
+protocol is expected, optionally suffixed by a prefix length to match whole
+subnets. In case of IPv4 a netmask may also be given.
+.TP
+.BI dsfield " VAL_MASK_8"
+IPv4 only. Match the packet header's DSCP/ECN field. Synonyms to this are
+.BR tos " and " precedence .
+.TP
+.BI ihl " VAL_MASK_8"
+IPv4 only. Match the Internet Header Length field. Note that the value's unit is
+32bits, so to match a packet with 24byte header length
+.I u8_value
+has to be 6.
+.TP
+.BI protocol " VAL_MASK_8"
+Match the Protocol (IPv4) or Next Header (IPv6) field value, e.g. 6 for TCP.
+.TP
+.BI icmp_type " VAL_MASK_8"
+.TQ
+.BI icmp_code " VAL_MASK_8"
+Assume a next-header protocol of icmp or ipv6-icmp and match Type or Code
+field values. This is dangerous, as the code assumes minimal header size for
+IPv4 and lack of extension headers for IPv6.
+.TP
+.BI sport " VAL_MASK_16"
+.TQ
+.BI dport " VAL_MASK_16"
+Match layer four source or destination ports. This is dangerous as well, as it
+assumes a suitable layer four protocol is present (which has Source and
+Destination Port fields right at the start of the header and 16bit in size).
+Also minimal header size for IPv4 and lack of IPv6 extension headers is assumed.
+.TP
+.B nofrag
+.TQ
+.B firstfrag
+.TQ
+.B df
+.TQ
+.B mf
+IPv4 only, check certain flags and fragment offset values. Match if the packet
+is not a fragment
+.RB ( nofrag ),
+the first fragment
+.RB ( firstfrag ),
+if Don't Fragment
+.RB ( df )
+or More Fragments
+.RB ( mf )
+bits are set.
+.TP
+.BI priority " VAL_MASK_8"
+IPv6 only. Match the header's Traffic Class field, which has the same purpose
+and semantics of IPv4's ToS field since RFC 3168: upper six bits are DSCP, the
+lower two ECN.
+.TP
+.BI flowlabel " VAL_MASK_32"
+IPv6 only. Match the Flow Label field's value. Note that Flow Label itself is
+only 20bytes long, which are the least significant ones here. The remaining
+upper 12bytes match Version and Traffic Class fields.
+.RE
+.TP
+.BI tcp " TCPUDP"
+.TQ
+.BI udp " TCPUDP"
+Match fields of next header of protocol TCP or UDP. The possible values for
+.I TCPDUP
+are:
+.RS
+.TP
+.BI src " VAL_MASK_16"
+Match on Source Port field value.
+.TP
+.BI dst " VALMASK_16"
+Match on Destination Port field value.
+.RE
+.TP
+.BI icmp " ICMP"
+Match fields of next header of protocol ICMP. The possible values for
+.I ICMP
+are:
+.RS
+.TP
+.BI type " VAL_MASK_8"
+Match on ICMP Type field.
+.TP
+.BI code " VAL_MASK_8"
+Match on ICMP Code field.
+.RE
+.TP
+.BI mark " VAL_MASK_32"
+Match on netfilter fwmark value.
+.TP
+.BI ether " ETHER"
+Match on ethernet header fields. Possible values for
+.I ETHER
+are:
+.RS
+.TP
+.BI src " ether_address" " " AT
+.TQ
+.BI dst " ether_address" " " AT
+Match on source or destination ethernet address. This is dangerous: It assumes
+an ethernet header is present at the start of the packet. This will probably
+lead to unexpected things if used with layer three interfaces like e.g. tun or
+ppp.
+.RE
+.SH EXAMPLES
+.RS
+.EX
+tc filter add dev eth0 parent 999:0 prio 99 protocol ip u32 \\
+        match ip src 192.168.8.0/24 classid 1:1
+.EE
+.RE
+
+This attaches a filter to the qdisc identified by
+.BR 999:0.
+It's priority is
+.BR 99 ,
+which affects in which order multiple filters attached to the same
+.B parent
+are consulted (the lower the earlier). The filter handles packets of
+.B protocol
+type
+.BR ip ,
+and
+.BR match es
+if the IP header's source address is within the
+.B 192.168.8.0/24
+subnet. Matching packets are classified into class
+.BR 1.1 .
+The effect of this command might be surprising at first glance:
+
+.RS
+.EX
+filter parent 1: protocol ip pref 99 u32
+filter parent 1: protocol ip pref 99 u32 \\
+        fh 800: ht divisor 1
+filter parent 1: protocol ip pref 99 u32 \\
+        fh 800::800 order 2048 key ht 800 bkt 0 flowid 1:1 \\
+        match c0a80800/ffffff00 at 12
+.EE
+.RE
+
+So parent
+.B 1:
+is assigned a new
+.B u32
+filter, which contains a hash table of size 1 (as the
+.B divisor
+indicates). The table ID is
+.BR 800 .
+The third line then shows the actual filter which was added above: it sits in
+table
+.B 800
+and bucket
+.BR 0 ,
+classifies packets into class ID
+.B 1:1
+and matches the upper three bytes of the four byte value at offset
+.B 12
+to be
+.BR 0xc0a808 ,
+which is 192, 168 and 8.
+
+Now for something more complicated, namely creating a custom hash table:
+
+.RS
+.EX
+tc filter add dev eth0 prio 99 handle 1: u32 divisor 256
+.EE
+.RE
+
+This creates a table of size 256 with handle
+.B 1:
+in priority
+.BR 99 .
+The effect is as follows:
+
+.RS
+.EX
+filter parent 1: protocol all pref 99 u32
+filter parent 1: protocol all pref 99 u32 fh 1: ht divisor 256
+filter parent 1: protocol all pref 99 u32 fh 800: ht divisor 1
+.EE
+.RE
+
+So along with the requested hash table (handle
+.BR 1: ),
+the kernel has created his own table of size 1 to hold other filters of the same
+priority.
+
+The next step is to create a filter which links to the created hash table:
+
+.RS
+.EX
+tc filter add dev eth0 parent 1: prio 1 u32 \\
+        link 1: hashkey mask 0x0000ff00 at 12 \\
+        match ip src 192.168.0.0/16
+.EE
+.RE
+
+The filter is given a lower priority than the hash table itself so
+.B u32
+consults it before manually traversing the hash table. The options
+.BR link " and " hashkey
+determine which table and bucket to redirect to. In this case the hash key
+should be constructed out of the second byte at offset 12, which corresponds to
+an IP packet's third byte of the source address field. Along with the
+.B match
+statement, this effectively maps all class C networks below 192.168.0.0/16 to
+different buckets of the hash table.
+
+Filters for certain subnets can be created like so:
+
+.RS
+.EX
+tc filter add dev eth0 parent 1: prio 99 u32 \\
+        ht 1: sample u32 0x00000800 0x0000ff00 at 12 \\
+        match ip src 192.168.8.0/24 classid 1:1
+.EE
+.RE
+
+The bucket is defined using the
+.B sample
+option: In this case, the second byte at offset 12 must be 0x08, exactly. In
+this case, the resulting bucket ID is obviously 8, but as soon as
+.B sample
+selects an amount of data which could exceed the
+.BR divisor ,
+one would have to know the kernel-internal algorithm to deduce the destination
+bucket. This filter's
+.B match
+statement is redundant in this case, as the entropy for the hash key does not
+exceed the table size and therefore no collisions can occur. Otherwise it's
+necessary to prevent matching unwanted packets.
+
+Matching upper layer fields is problematic since IPv4 header length is variable
+and IPv6 supports extension headers which affect upper layer header offset. To
+overcome this, there is the possibility to specify
+.B nexthdr+
+when giving an offset, and to make things easier there are the
+.BR tcp " and " udp
+matches which use
+.B nexthdr+
+implicitly. This offset has to be calculated in beforehand though, and the only
+way to achieve that is by doing it in a separate filter which then links to the
+filter which wants to use it. Here is an example of doing so:
+
+.RS
+.EX
+tc filter add dev eth0 parent 1:0 protocol ip handle 1: \\
+        u32 divisor 1
+tc filter add dev eth0 parent 1:0 protocol ip \\
+        u32 ht 1: \\
+        match tcp src 22 FFFF \\
+        classid 1:2
+tc filter add dev eth0 parent 1:0 protocol ip \\
+        u32 ht 800: \\
+        match ip protocol 6 FF \\
+        match ip firstfrag \\
+        offset at 0 mask 0f00 shift 6 \\
+        link 1:
+.EE
+.RE
+
+This is what is being done: In the first call, a single element sized hash table
+is created so there is a place to hold the linked to filter and a known handle
+.RB ( 1: )
+to reference to it. The second call then adds the actual filter, which pushes
+packets with TCP source port 22 into class
+.BR 1:2 .
+Using
+.BR ht ,
+it is moved into the hash table created by the first call. The third call then
+does the actual magic: It matches IPv4 packets with next layer protocol 6 (TCP),
+only if it's the first fragment (usually TCP sets DF bit, but if it doesn't and
+the packet is fragmented, only the first one contains the TCP header), and then
+sets the offset based on the IP header's IHL field (right-shifting by 6
+eliminates the offset of the field and at the same time converts the value into
+byte unit). Finally, using
+.BR link ,
+the hash table from first call is referenced which holds the filter from second
+call.
+.SH SEE ALSO
+.BR tc (8),
+.br
+.BR cls_u32.txt " at " http://linux-tc-notes.sourceforge.net/

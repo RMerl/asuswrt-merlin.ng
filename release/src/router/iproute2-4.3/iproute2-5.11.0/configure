@@ -1,0 +1,518 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0
+# This is not an autoconf generated configure
+#
+# Influential LIBBPF environment variables:
+#   LIBBPF_FORCE={on,off}   on: require link against libbpf;
+#                           off: disable libbpf probing
+#   LIBBPF_DIR              Path to libbpf DESTDIR to use
+
+INCLUDE=${1:-"$PWD/include"}
+
+# Output file which is input to Makefile
+CONFIG=config.mk
+
+# Make a temp directory in build tree.
+TMPDIR=$(mktemp -d config.XXXXXX)
+trap 'status=$?; rm -rf $TMPDIR; exit $status' EXIT HUP INT QUIT TERM
+
+check_toolchain()
+{
+    : ${PKG_CONFIG:=pkg-config}
+    : ${AR=ar}
+    : ${CC=gcc}
+    : ${YACC=bison}
+    echo "PKG_CONFIG:=${PKG_CONFIG}" >>$CONFIG
+    echo "AR:=${AR}" >>$CONFIG
+    echo "CC:=${CC}" >>$CONFIG
+    echo "YACC:=${YACC}" >>$CONFIG
+}
+
+check_atm()
+{
+    cat >$TMPDIR/atmtest.c <<EOF
+#include <atm.h>
+int main(int argc, char **argv) {
+	struct atm_qos qos;
+	(void) text2qos("aal5,ubr:sdu=9180,rx:none",&qos,0);
+	return 0;
+}
+EOF
+
+    if $CC -I$INCLUDE -o $TMPDIR/atmtest $TMPDIR/atmtest.c -latm >/dev/null 2>&1; then
+	echo "TC_CONFIG_ATM:=y" >>$CONFIG
+	echo yes
+    else
+	echo no
+    fi
+    rm -f $TMPDIR/atmtest.c $TMPDIR/atmtest
+}
+
+check_xtables()
+{
+	if ! ${PKG_CONFIG} xtables --exists; then
+		echo "TC_CONFIG_NO_XT:=y" >>$CONFIG
+	fi
+}
+
+check_xt()
+{
+    #check if we have xtables from iptables >= 1.4.5.
+    cat >$TMPDIR/ipttest.c <<EOF
+#include <xtables.h>
+#include <linux/netfilter.h>
+static struct xtables_globals test_globals = {
+	.option_offset = 0,
+	.program_name = "tc-ipt",
+	.program_version = XTABLES_VERSION,
+	.orig_opts = NULL,
+	.opts = NULL,
+	.exit_err = NULL,
+};
+
+int main(int argc, char **argv)
+{
+	xtables_init_all(&test_globals, NFPROTO_IPV4);
+	return 0;
+}
+EOF
+
+    if $CC -I$INCLUDE $IPTC -o $TMPDIR/ipttest $TMPDIR/ipttest.c $IPTL \
+	$(${PKG_CONFIG} xtables --cflags --libs) -ldl >/dev/null 2>&1; then
+	echo "TC_CONFIG_XT:=y" >>$CONFIG
+	echo "using xtables"
+    fi
+    rm -f $TMPDIR/ipttest.c $TMPDIR/ipttest
+}
+
+check_xt_old()
+{
+    # bail if previous XT checks has already succeeded.
+    grep -q TC_CONFIG_XT $CONFIG && return
+
+    #check if we don't need our internal header ..
+    cat >$TMPDIR/ipttest.c <<EOF
+#include <xtables.h>
+char *lib_dir;
+unsigned int global_option_offset = 0;
+const char *program_version = XTABLES_VERSION;
+const char *program_name = "tc-ipt";
+struct afinfo afinfo = {
+	.libprefix      = "libxt_",
+};
+
+void exit_error(enum exittype status, const char *msg, ...)
+{
+}
+
+int main(int argc, char **argv) {
+
+	return 0;
+}
+
+EOF
+
+    if $CC -I$INCLUDE $IPTC -o $TMPDIR/ipttest $TMPDIR/ipttest.c $IPTL -ldl >/dev/null 2>&1; then
+	echo "TC_CONFIG_XT_OLD:=y" >>$CONFIG
+	echo "using old xtables (no need for xt-internal.h)"
+    fi
+    rm -f $TMPDIR/ipttest.c $TMPDIR/ipttest
+}
+
+check_xt_old_internal_h()
+{
+    # bail if previous XT checks has already succeeded.
+    grep -q TC_CONFIG_XT $CONFIG && return
+
+    #check if we need our own internal.h
+    cat >$TMPDIR/ipttest.c <<EOF
+#include <xtables.h>
+#include "xt-internal.h"
+char *lib_dir;
+unsigned int global_option_offset = 0;
+const char *program_version = XTABLES_VERSION;
+const char *program_name = "tc-ipt";
+struct afinfo afinfo = {
+	.libprefix      = "libxt_",
+};
+
+void exit_error(enum exittype status, const char *msg, ...)
+{
+}
+
+int main(int argc, char **argv) {
+
+	return 0;
+}
+
+EOF
+	if $CC -I$INCLUDE $IPTC -o $TMPDIR/ipttest $TMPDIR/ipttest.c $IPTL -ldl >/dev/null 2>&1; then
+	    echo "using old xtables with xt-internal.h"
+	    echo "TC_CONFIG_XT_OLD_H:=y" >>$CONFIG
+	fi
+	rm -f $TMPDIR/ipttest.c $TMPDIR/ipttest
+}
+
+check_ipt()
+{
+	if ! grep TC_CONFIG_XT $CONFIG > /dev/null; then
+		echo "using iptables"
+	fi
+}
+
+check_ipt_lib_dir()
+{
+	IPT_LIB_DIR=$(${PKG_CONFIG} --variable=xtlibdir xtables)
+	if [ -n "$IPT_LIB_DIR" ]; then
+		echo $IPT_LIB_DIR
+		echo "IPT_LIB_DIR:=$IPT_LIB_DIR" >> $CONFIG
+		return
+	fi
+
+	for dir in /lib /usr/lib /usr/local/lib; do
+		for file in "xtables" "iptables"; do
+			file="$dir/$file/lib*t_*so"
+			if [ -f $file ]; then
+				echo ${file%/*}
+				echo "IPT_LIB_DIR:=${file%/*}" >> $CONFIG
+				return
+			fi
+		done
+	done
+	echo "not found!"
+}
+
+check_setns()
+{
+    cat >$TMPDIR/setnstest.c <<EOF
+#include <sched.h>
+int main(int argc, char **argv)
+{
+	(void)setns(0,0);
+	return 0;
+}
+EOF
+    if $CC -I$INCLUDE -o $TMPDIR/setnstest $TMPDIR/setnstest.c >/dev/null 2>&1; then
+	echo "IP_CONFIG_SETNS:=y" >>$CONFIG
+	echo "yes"
+	echo "CFLAGS += -DHAVE_SETNS" >>$CONFIG
+    else
+	echo "no"
+    fi
+    rm -f $TMPDIR/setnstest.c $TMPDIR/setnstest
+}
+
+check_ipset()
+{
+    cat >$TMPDIR/ipsettest.c <<EOF
+#include <linux/netfilter/ipset/ip_set.h>
+#ifndef IP_SET_INVALID
+#define IPSET_DIM_MAX 3
+typedef unsigned short ip_set_id_t;
+#endif
+#include <linux/netfilter/xt_set.h>
+
+struct xt_set_info info;
+#if IPSET_PROTOCOL == 6 || IPSET_PROTOCOL == 7
+int main(void)
+{
+	return IPSET_MAXNAMELEN;
+}
+#else
+#error unknown ipset version
+#endif
+EOF
+
+    if $CC -I$INCLUDE -o $TMPDIR/ipsettest $TMPDIR/ipsettest.c >/dev/null 2>&1; then
+	echo "TC_CONFIG_IPSET:=y" >>$CONFIG
+	echo "yes"
+    else
+	echo "no"
+    fi
+    rm -f $TMPDIR/ipsettest.c $TMPDIR/ipsettest
+}
+
+check_elf()
+{
+    if ${PKG_CONFIG} libelf --exists; then
+	echo "HAVE_ELF:=y" >>$CONFIG
+	echo "yes"
+
+	echo 'CFLAGS += -DHAVE_ELF' `${PKG_CONFIG} libelf --cflags` >> $CONFIG
+	echo 'LDLIBS += ' `${PKG_CONFIG} libelf --libs` >>$CONFIG
+    else
+	echo "no"
+    fi
+}
+
+have_libbpf_basic()
+{
+    cat >$TMPDIR/libbpf_test.c <<EOF
+#include <bpf/libbpf.h>
+int main(int argc, char **argv) {
+    bpf_program__set_autoload(NULL, false);
+    bpf_map__ifindex(NULL);
+    bpf_map__set_pin_path(NULL, NULL);
+    bpf_object__open_file(NULL, NULL);
+    return 0;
+}
+EOF
+
+    $CC -o $TMPDIR/libbpf_test $TMPDIR/libbpf_test.c $LIBBPF_CFLAGS $LIBBPF_LDLIBS >/dev/null 2>&1
+    local ret=$?
+
+    rm -f $TMPDIR/libbpf_test.c $TMPDIR/libbpf_test
+    return $ret
+}
+
+have_libbpf_sec_name()
+{
+    cat >$TMPDIR/libbpf_sec_test.c <<EOF
+#include <bpf/libbpf.h>
+int main(int argc, char **argv) {
+    void *ptr;
+    bpf_program__section_name(NULL);
+    return 0;
+}
+EOF
+
+    $CC -o $TMPDIR/libbpf_sec_test $TMPDIR/libbpf_sec_test.c $LIBBPF_CFLAGS $LIBBPF_LDLIBS >/dev/null 2>&1
+    local ret=$?
+
+    rm -f $TMPDIR/libbpf_sec_test.c $TMPDIR/libbpf_sec_test
+    return $ret
+}
+
+check_force_libbpf_on()
+{
+    # if set LIBBPF_FORCE=on but no libbpf support, just exist the config
+    # process to make sure we don't build without libbpf.
+    if [ "$LIBBPF_FORCE" = on ]; then
+        echo "	LIBBPF_FORCE=on set, but couldn't find a usable libbpf"
+        exit 1
+    fi
+}
+
+check_libbpf()
+{
+    # if set LIBBPF_FORCE=off, disable libbpf entirely
+    if [ "$LIBBPF_FORCE" = off ]; then
+        echo "no"
+        return
+    fi
+
+    if ! ${PKG_CONFIG} libbpf --exists && [ -z "$LIBBPF_DIR" ] ; then
+        echo "no"
+        check_force_libbpf_on
+        return
+    fi
+
+    if [ $(uname -m) = x86_64 ]; then
+        local LIBBPF_LIBDIR="${LIBBPF_DIR}/usr/lib64"
+    else
+        local LIBBPF_LIBDIR="${LIBBPF_DIR}/usr/lib"
+    fi
+
+    if [ -n "$LIBBPF_DIR" ]; then
+        LIBBPF_CFLAGS="-I${LIBBPF_DIR}/usr/include"
+        LIBBPF_LDLIBS="${LIBBPF_LIBDIR}/libbpf.a -lz -lelf"
+        LIBBPF_VERSION=$(PKG_CONFIG_LIBDIR=${LIBBPF_LIBDIR}/pkgconfig ${PKG_CONFIG} libbpf --modversion)
+    else
+        LIBBPF_CFLAGS=$(${PKG_CONFIG} libbpf --cflags)
+        LIBBPF_LDLIBS=$(${PKG_CONFIG} libbpf --libs)
+        LIBBPF_VERSION=$(${PKG_CONFIG} libbpf --modversion)
+    fi
+
+    if ! have_libbpf_basic; then
+        echo "no"
+        echo "	libbpf version $LIBBPF_VERSION is too low, please update it to at least 0.1.0"
+        check_force_libbpf_on
+        return
+    else
+        echo "HAVE_LIBBPF:=y" >> $CONFIG
+        echo 'CFLAGS += -DHAVE_LIBBPF ' $LIBBPF_CFLAGS >> $CONFIG
+        echo "CFLAGS += -DLIBBPF_VERSION=\\\"$LIBBPF_VERSION\\\"" >> $CONFIG
+        echo 'LDLIBS += ' $LIBBPF_LDLIBS >> $CONFIG
+
+        if [ -z "$LIBBPF_DIR" ]; then
+            echo "CFLAGS += -DLIBBPF_DYNAMIC" >> $CONFIG
+        fi
+    fi
+
+    # bpf_program__title() is deprecated since libbpf 0.2.0, use
+    # bpf_program__section_name() instead if we support
+    if have_libbpf_sec_name; then
+        echo "HAVE_LIBBPF_SECTION_NAME:=y" >> $CONFIG
+        echo 'CFLAGS += -DHAVE_LIBBPF_SECTION_NAME ' >> $CONFIG
+    fi
+
+    echo "yes"
+    echo "	libbpf version $LIBBPF_VERSION"
+}
+
+check_selinux()
+# SELinux is a compile time option in the ss utility
+{
+	if ${PKG_CONFIG} libselinux --exists; then
+		echo "HAVE_SELINUX:=y" >>$CONFIG
+		echo "yes"
+
+		echo 'LDLIBS +=' `${PKG_CONFIG} --libs libselinux` >>$CONFIG
+		echo 'CFLAGS += -DHAVE_SELINUX' `${PKG_CONFIG} --cflags libselinux` >>$CONFIG
+	else
+		echo "no"
+	fi
+}
+
+check_mnl()
+{
+	if ${PKG_CONFIG} libmnl --exists; then
+		echo "HAVE_MNL:=y" >>$CONFIG
+		echo "yes"
+
+		echo 'CFLAGS += -DHAVE_LIBMNL' `${PKG_CONFIG} libmnl --cflags` >>$CONFIG
+		echo 'LDLIBS +=' `${PKG_CONFIG} libmnl --libs` >> $CONFIG
+	else
+		echo "no"
+	fi
+}
+
+check_berkeley_db()
+{
+    cat >$TMPDIR/dbtest.c <<EOF
+#include <fcntl.h>
+#include <stdlib.h>
+#include <db_185.h>
+int main(int argc, char **argv) {
+	dbopen("/tmp/xxx_test_db.db", O_CREAT|O_RDWR, 0644, DB_HASH, NULL);
+	return 0;
+}
+EOF
+    if $CC -I$INCLUDE -o $TMPDIR/dbtest $TMPDIR/dbtest.c -ldb >/dev/null 2>&1; then
+	echo "HAVE_BERKELEY_DB:=y" >>$CONFIG
+	echo "yes"
+    else
+	echo "no"
+    fi
+    rm -f $TMPDIR/dbtest.c $TMPDIR/dbtest
+}
+
+check_strlcpy()
+{
+    cat >$TMPDIR/strtest.c <<EOF
+#include <string.h>
+int main(int argc, char **argv) {
+	char dst[10];
+	strlcpy(dst, "test", sizeof(dst));
+	return 0;
+}
+EOF
+    if $CC -I$INCLUDE -o $TMPDIR/strtest $TMPDIR/strtest.c >/dev/null 2>&1; then
+	echo "no"
+    else
+	if ${PKG_CONFIG} libbsd --exists; then
+		echo 'CFLAGS += -DHAVE_LIBBSD' `${PKG_CONFIG} libbsd --cflags` >>$CONFIG
+		echo 'LDLIBS +=' `${PKG_CONFIG} libbsd --libs` >> $CONFIG
+		echo "no"
+	else
+		echo 'CFLAGS += -DNEED_STRLCPY' >>$CONFIG
+		echo "yes"
+	fi
+    fi
+    rm -f $TMPDIR/strtest.c $TMPDIR/strtest
+}
+
+check_cap()
+{
+	if ${PKG_CONFIG} libcap --exists; then
+		echo "HAVE_CAP:=y" >>$CONFIG
+		echo "yes"
+
+		echo 'CFLAGS += -DHAVE_LIBCAP' `${PKG_CONFIG} libcap --cflags` >>$CONFIG
+		echo 'LDLIBS +=' `${PKG_CONFIG} libcap --libs` >> $CONFIG
+	else
+		echo "no"
+	fi
+}
+
+quiet_config()
+{
+	cat <<EOF
+# user can control verbosity similar to kernel builds (e.g., V=1)
+ifeq ("\$(origin V)", "command line")
+  VERBOSE = \$(V)
+endif
+ifndef VERBOSE
+  VERBOSE = 0
+endif
+ifeq (\$(VERBOSE),1)
+  Q =
+else
+  Q = @
+endif
+
+ifeq (\$(VERBOSE), 0)
+    QUIET_CC       = @echo '    CC       '\$@;
+    QUIET_AR       = @echo '    AR       '\$@;
+    QUIET_LINK     = @echo '    LINK     '\$@;
+    QUIET_YACC     = @echo '    YACC     '\$@;
+    QUIET_LEX      = @echo '    LEX      '\$@;
+endif
+EOF
+}
+
+echo "# Generated config based on" $INCLUDE >$CONFIG
+quiet_config >> $CONFIG
+
+check_toolchain
+
+echo "TC schedulers"
+
+echo -n " ATM	"
+check_atm
+
+check_xtables
+if ! grep -q TC_CONFIG_NO_XT $CONFIG; then
+	echo -n " IPT	"
+	check_xt
+	check_xt_old
+	check_xt_old_internal_h
+	check_ipt
+
+	echo -n " IPSET  "
+	check_ipset
+fi
+
+echo
+if ! grep -q TC_CONFIG_NO_XT $CONFIG; then
+	echo -n "iptables modules directory: "
+	check_ipt_lib_dir
+fi
+
+echo -n "libc has setns: "
+check_setns
+
+echo -n "SELinux support: "
+check_selinux
+
+echo -n "libbpf support: "
+check_libbpf
+
+echo -n "ELF support: "
+check_elf
+
+echo -n "libmnl support: "
+check_mnl
+
+echo -n "Berkeley DB: "
+check_berkeley_db
+
+echo -n "need for strlcpy: "
+check_strlcpy
+
+echo -n "libcap support: "
+check_cap
+
+echo >> $CONFIG
+echo "%.o: %.c" >> $CONFIG
+echo '	$(QUIET_CC)$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(CPPFLAGS) -c -o $@ $<' >> $CONFIG

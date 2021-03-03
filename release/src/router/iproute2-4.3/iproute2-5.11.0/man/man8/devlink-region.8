@@ -1,0 +1,132 @@
+.TH DEVLINK\-REGION 8 "10 Jan 2018" "iproute2" "Linux"
+.SH NAME
+devlink-region \- devlink address region access
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B devlink
+.RI "[ " OPTIONS " ]"
+.B region
+.RI  " { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-V\fR[\fIersion\fR] |
+\fB\-n\fR[\fIno-nice-names\fR] }
+
+.ti -8
+.BR "devlink region show"
+.RI "[ " DEV/REGION " ]"
+
+.ti -8
+.BR "devlink region del"
+.RI "" DEV/REGION ""
+.BR "snapshot"
+.RI "" SNAPSHOT_ID ""
+
+.ti -8
+.BR "devlink region dump"
+.RI "" DEV/REGION ""
+.BR "snapshot"
+.RI "" SNAPSHOT_ID ""
+
+.ti -8
+.BR "devlink region read"
+.RI "" DEV/REGION ""
+.BR "[ "
+.BR "snapshot"
+.RI "" SNAPSHOT_ID ""
+.BR "]"
+.BR "address"
+.RI "" ADDRESS "
+.BR "length"
+.RI "" LENGTH ""
+
+.ti -8
+.B devlink region help
+
+.SH "DESCRIPTION"
+.SS devlink region show - Show all supported address regions names, snapshots and sizes
+
+.PP
+.I "DEV/REGION"
+- specifies the devlink device and address-region to query.
+
+.SS devlink region del - Delete a snapshot specified by address-region name and snapshot ID
+
+.PP
+.I "DEV/REGION"
+- specifies the devlink device and address-region to delete the snapshot from
+
+.PP
+snapshot
+.I "SNAPSHOT_ID"
+- specifies the snapshot ID to delete
+
+.SS devlink region dump - Dump all the available data from a region or from snapshot of a region
+
+.PP
+.I "DEV/REGION"
+- specifies the device and address-region to dump from.
+
+.PP
+snapshot
+.I "SNAPSHOT_ID"
+- specifies the snapshot-id of the region to dump.
+
+.SS devlink region read - Read from a specific region address for a given length
+
+.PP
+.I "DEV/REGION"
+- specifies the device and address-region to read from.
+
+.PP
+snapshot
+.I "SNAPSHOT_ID"
+- specifies the snapshot-id of the region to read.
+
+.PP
+address
+.I "ADDRESS"
+- specifies the address to read from.
+
+.PP
+length
+.I "LENGTH"
+- specifies the length of data to read.
+
+.SH "EXAMPLES"
+.PP
+devlink region show
+.RS 4
+List available address regions and snapshot.
+.RE
+.PP
+devlink region del pci/0000:00:05.0/cr-space snapshot 1
+.RS 4
+Delete snapshot id 1 from cr-space address region from device pci/0000:00:05.0.
+.RE
+.PP
+devlink region dump pci/0000:00:05.0/cr-space snapshot 1
+.RS 4
+Dump the snapshot taken from cr-space address region with ID 1
+.RE
+.PP
+devlink region read pci/0000:00:05.0/cr-space snapshot 1 address 0x10 legth 16
+.RS 4
+Read from address 0x10, 16 Bytes of snapshot ID 1 taken from cr-space address region
+.RE
+
+.SH SEE ALSO
+.BR devlink (8),
+.BR devlink-dev (8),
+.BR devlink-port (8),
+.BR devlink-monitor (8),
+.br
+
+.SH AUTHOR
+Alex Vesker <valex@mellanox.com>

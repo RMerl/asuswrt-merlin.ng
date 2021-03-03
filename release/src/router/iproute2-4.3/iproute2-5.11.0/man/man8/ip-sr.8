@@ -1,0 +1,58 @@
+.TH IP\-SR 8 "14 Apr 2017" "iproute2" "Linux"
+.SH "NAME"
+ip-sr \- IPv6 Segment Routing management
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B ip sr
+.RI " { " COMMAND " | "
+.BR help " }"
+.sp
+.ti -8
+
+.ti -8
+.B ip sr hmac show
+
+.ti -8
+.B ip sr hmac set
+.I KEYID ALGO
+
+.ti -8
+.B ip sr tunsrc show
+
+.ti -8
+.B ip sr tunsrc set
+.I ADDRESS
+
+.SH DESCRIPTION
+The \fBip sr\fR command is used to configure IPv6 Segment Routing (SRv6)
+internal parameters.
+.PP
+Those parameters include the mapping between an HMAC key ID and its associated
+hashing algorithm and secret, and the IPv6 address to use as source for encapsulated
+packets.
+.PP
+The \fBip sr hmac set\fR command prompts for a passphrase that will be used as the
+HMAC secret for the corresponding key ID. A blank passphrase removes the mapping.
+The currently supported algorithms for \fIALGO\fR are \fBsha1\fR and \fBsha256\fR.
+.PP
+If the tunnel source is set to the address :: (which is the default), then an address
+of the egress interface will be selected. As this operation may hinder performances,
+it is recommended to set a non-default address.
+
+.SH EXAMPLES
+.PP
+.SS Configure an HMAC mapping for key ID 42 and hashing algorithm SHA-256
+.nf
+# ip sr hmac set 42 sha256
+.PP
+.SS Set the tunnel source address to 2001:db8::1
+.nf
+# ip sr tunsrc set 2001:db8::1
+.SH SEE ALSO
+.br
+.BR ip-route (8)
+.SH AUTHOR
+David Lebrun <david.lebrun@uclouvain.be>

@@ -1,0 +1,42 @@
+.TH "iptables action in tc" 8 "3 Mar 2016" "iproute2" "Linux"
+
+.SH NAME
+xt - tc iptables action
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " ... " "action xt \-j"
+.IR TARGET " [ " TARGET_OPTS " ]"
+.SH DESCRIPTION
+The
+.B xt
+action allows to call arbitrary iptables targets for packets matching the filter
+this action is attached to.
+.SH OPTIONS
+.TP
+.BI -j " TARGET \fR[\fI TARGET_OPTS \fR]"
+Perform a jump to the given iptables target, optionally passing any target
+specific options in
+.IR TARGET_OPTS .
+.SH EXAMPLES
+The following will attach a
+.B u32
+filter to the
+.B ingress
+qdisc matching ICMP replies and using the
+.B xt
+action to make the kernel yell 'PONG' each time:
+
+.RS
+.EX
+tc qdisc add dev eth0 ingress
+tc filter add dev eth0 parent ffff: proto ip u32 \\
+	match ip protocol 1 0xff \\
+	match ip icmp_type 0 0xff \\
+	action xt -j LOG --log-prefix PONG
+.EE
+.RE
+.SH SEE ALSO
+.BR tc (8),
+.BR tc-u32 (8),
+.BR iptables-extensions (8)

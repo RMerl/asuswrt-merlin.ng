@@ -1,0 +1,218 @@
+.TH IP\-NEXTHOP 8 "30 May 2019" "iproute2" "Linux"
+.SH "NAME"
+ip-nexthop \- nexthop object management
+.SH "SYNOPSIS"
+.sp
+.ad l
+.in +8
+.ti -8
+.B ip
+.RI "[ " ip-OPTIONS " ]"
+.B nexthop
+.RI " { " COMMAND " | "
+.BR help " }"
+.sp
+.ti -8
+
+.ti -8
+.BR "ip nexthop" " { "
+.BR show " | " flush " } "
+.I  SELECTOR
+
+.ti -8
+.BR "ip nexthop" " { " add " | " replace " } id "
+.I ID
+.IR  NH
+
+.ti -8
+.BR "ip nexthop" " { " get " | " del " } id "
+.I  ID
+
+.ti -8
+.IR SELECTOR " := "
+.RB "[ " id
+.IR ID " ] [ "
+.B  dev
+.IR DEV " ] [ "
+.B  vrf
+.IR NAME " ] [ "
+.B  master
+.IR DEV " ] [ "
+.BR  groups " ] [ "
+.BR  fdb " ]"
+
+.ti -8
+.IR NH " := { "
+.BR blackhole " | [ "
+.B  via
+.IR ADDRESS " ] [ "
+.B  dev
+.IR DEV " ] [ "
+.BR onlink " ] [ "
+.B encap
+.IR ENCAP " ] [ "
+.BR fdb " ] | "
+.B  group
+.IR GROUP " [ "
+.BR fdb " ] } "
+
+.ti -8
+.IR ENCAP " := [ "
+.IR ENCAP_MPLS " ] "
+
+.ti -8
+.IR ENCAP_MPLS " := "
+.BR mpls " [ "
+.IR LABEL " ] ["
+.B  ttl
+.IR TTL " ]"
+
+.ti -8
+.IR GROUP " := "
+.BR id "[," weight "[/...]"
+
+.SH DESCRIPTION
+.B ip nexthop
+is used to manipulate entries in the kernel's nexthop tables.
+.TP
+ip nexthop add id ID
+add new nexthop entry
+.TP
+ip nexthop replace id ID
+change the configuration of a nexthop or add new one
+.RS
+.TP
+.BI via " [ FAMILY ] ADDRESS"
+the address of the nexthop router, in the address family FAMILY.
+Address family must match address family of nexthop instance.
+.TP
+.BI dev " NAME"
+is the output device.
+.TP
+.B onlink
+pretend that the nexthop is directly attached to this link,
+even if it does not match any interface prefix.
+.TP
+.BI encap " ENCAPTYPE ENCAPHDR"
+attach tunnel encapsulation attributes to this route.
+.sp
+.I ENCAPTYPE
+is a string specifying the supported encapsulation type. Namely:
+
+.in +8
+.BI mpls
+- encapsulation type MPLS
+.sp
+.in -8
+.I ENCAPHDR
+is a set of encapsulation attributes specific to the
+.I ENCAPTYPE.
+
+.in +8
+.B mpls
+.in +2
+.I MPLSLABEL
+- mpls label stack with labels separated by
+.I "/"
+.sp
+
+.B ttl
+.I TTL
+- TTL to use for MPLS header or 0 to inherit from IP header
+.in -2
+
+.TP
+.BI group " GROUP"
+create a nexthop group. Group specification is id with an optional
+weight (id,weight) and a '/' as a separator between entries.
+.TP
+.B blackhole
+create a blackhole nexthop
+.TP
+.B fdb
+nexthop and nexthop groups for use with layer-2 fdb entries.
+A fdb nexthop group can only have fdb nexthops.
+Example: Used to represent a vxlan remote vtep ip. layer-2 vxlan
+fdb entry pointing to an ecmp nexthop group containing multiple
+remote vtep ips.
+.RE
+
+.TP
+ip nexthop delete id ID
+delete nexthop with given id.
+
+.TP
+ip nexthop show
+show the contents of the nexthop table or the nexthops
+selected by some criteria.
+.RS
+.TP
+.BI dev " DEV "
+show the nexthops using the given device.
+.TP
+.BI vrf " NAME "
+show the nexthops using devices associated with the vrf name
+.TP
+.BI master " DEV "
+show the nexthops using devices enslaved to given master device
+.TP
+.BI groups
+show only nexthop groups
+.TP
+.BI fdb
+show only fdb nexthops and nexthop groups
+.RE
+.TP
+ip nexthop flush
+flushes nexthops selected by some criteria. Criteria options are the same
+as show.
+
+.TP
+ip nexthop get id ID
+get a single nexthop by id
+
+.SH EXAMPLES
+.PP
+ip nexthop ls
+.RS 4
+Show all nexthop entries in the kernel.
+.RE
+.PP
+ip nexthop add id 1 via 192.168.1.1 dev eth0
+.RS 4
+Adds an IPv4 nexthop with id 1 using the gateway 192.168.1.1 out device eth0.
+.RE
+.PP
+ip nexthop add id 2 encap mpls 200/300 via 10.1.1.1 dev eth0
+.RS 4
+Adds an IPv4 nexthop with mpls encapsulation attributes attached to it.
+.RE
+.PP
+ip nexthop add id 3 group 1/2
+.RS 4
+Adds a nexthop with id 3. The nexthop is a group using nexthops with ids
+1 and 2 at equal weight.
+.RE
+.PP
+ip nexthop add id 4 group 1,5/2,11
+.RS 4
+Adds a nexthop with id 4. The nexthop is a group using nexthops with ids
+1 and 2 with nexthop 1 at weight 5 and nexthop 2 at weight 11.
+.RE
+.PP
+ip nexthop add id 5 via 192.168.1.2 fdb
+.RS 4
+Adds a fdb nexthop with id 5.
+.RE
+.PP
+ip nexthop add id 7 group 5/6 fdb
+.RS 4
+Adds a fdb nexthop group with id 7. A fdb nexthop group can only have
+fdb nexthops.
+.RE
+.SH SEE ALSO
+.br
+.BR ip (8)
+
+.SH AUTHOR
+Original Manpage by David Ahern <dsahern@kernel.org>

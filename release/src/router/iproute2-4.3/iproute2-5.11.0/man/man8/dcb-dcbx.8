@@ -1,0 +1,108 @@
+.TH DCB-DCBX 8 "13 December 2020" "iproute2" "Linux"
+.SH NAME
+dcb-dcbx \- show / manipulate port DCBX (Data Center Bridging eXchange)
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+
+.ti -8
+.B dcb
+.RI "[ " OPTIONS " ] "
+.B dcbx
+.RI "{ " COMMAND " | " help " }"
+.sp
+
+.ti -8
+.B dcb dcbx show dev
+.RI DEV
+
+.ti -8
+.B dcb dcbx set dev
+.RI DEV
+.RB "[ " host " ]"
+.RB "[ " lld-managed " ]"
+.RB "[ " cee " ]"
+.RB "[ " ieee " ]"
+.RB "[ " static " ]"
+
+.SH DESCRIPTION
+
+Data Center Bridging eXchange (DCBX) is a protocol used by DCB devices to
+exchange configuration information with directly connected peers. The Linux DCBX
+object is a 1-byte bitfield of flags that configure whether DCBX is implemented
+in the device or in the host, and which version of the protocol should be used.
+.B dcb dcbx
+is used to access the per-port Linux DCBX object.
+
+There are two principal modes of operation: in
+.B host
+mode, DCBX protocol is implemented by the host LLDP agent, and the DCB
+interfaces are used to propagate the negotiate parameters to capable devices. In
+.B lld-managed
+mode, the configuration is handled by the device, and DCB interfaces are used
+for inspection of negotiated parameters, and can also be used to set initial
+parameters.
+
+.SH PARAMETERS
+
+When used with
+.B dcb dcbx set,
+the following keywords enable the corresponding configuration. The keywords that
+are not mentioned on the command line are considered disabled. When used with
+.B show,
+each enabled feature is shown by its corresponding keyword.
+
+.TP
+.B host
+.TQ
+.B lld-managed
+The device is in the host mode of operation and, respectively, the lld-managed
+mode of operation, as described above. In principle these two keywords are
+mutually exclusive, but
+.B dcb dcbx
+allows setting both and lets the driver handle it as appropriate.
+
+.TP
+.B cee
+.TQ
+.B ieee
+The device supports CEE (Converged Enhanced Ethernet) and, respecively, IEEE
+version of the DCB specification. Typically only one of these will be set, but
+.B dcb dcbx
+does not mandate this.
+
+.TP
+.B static
+indicates the engine supports static configuration. No actual negotiation is
+performed, negotiated parameters are always the initial configuration.
+
+.SH EXAMPLE & USAGE
+
+Put the DCB engine into the "host" mode of operation, and use IEEE-standardized
+DCB interfaces:
+
+.P
+# dcb dcbx set dev eth0 host ieee
+
+Show what was set:
+
+.P
+# dcb dcbx show dev eth0
+.br
+host ieee
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR dcb (8)
+
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Petr Machata <me@pmachata.org>

@@ -1,0 +1,22 @@
+#
+# This list is used by git-shortlog to fix a few botched name translations
+# in the git archive, either because the author's full name was messed up
+# and/or not always written the same way, making contributions from the
+# same person appearing not to be so or badly displayed.
+#
+# Format
+#  Full name <goodaddress> <badaddress> 
+Steve Wise <larrystevenwise@gmail.com> <swise@opengridcomputing.com>
+Steve Wise <larrystevenwise@gmail.com> <swise@chelsio.com>
+
+Stephen Hemminger <stephen@networkplumber.org> <sthemmin@microsoft.com>
+Stephen Hemminger <stephen@networkplumber.org> <shemming@brocade.com>
+Stephen Hemminger <stephen@networkplumber.org> <stephen.hemminger@vyatta.com>
+Stephen Hemminger <stephen@networkplumber.org> <shemminger@vyatta.com>
+Stephen Hemminger <stephen@networkplumber.org> <shemminger>
+Stephen Hemminger <stephen@networkplumber.org> <shemminger@linux-foundation.org>
+Stephen Hemminger <stephen@networkplumber.org> <shemminger@osdl.org>
+Stephen Hemminger <stephen@networkplumber.org> <osdl.org!shemminger>
+Stephen Hemminger <stephen@networkplumber.org> <osdl.net!shemminger>
+
+David Ahern <dsahern@gmail.com> <dsa@cumulusnetworks.com>

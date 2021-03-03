@@ -1,0 +1,237 @@
+.TH DCB-ETS 8 "6 December 2020" "iproute2" "Linux"
+.SH NAME
+dcb-app \- show / manipulate application priority table of
+the DCB (Data Center Bridging) subsystem
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+
+.ti -8
+.B dcb
+.RI "[ " OPTIONS " ] "
+.B app
+.RI "{ " COMMAND " | " help " }"
+.sp
+
+.ti -8
+.B dcb app " { " show " | " flush " } " dev
+.RI DEV
+.RB "[ " default-prio " ]"
+.RB "[ " ethtype-prio " ]"
+.RB "[ " stream-port-prio " ]"
+.RB "[ " dgram-port-prio " ]"
+.RB "[ " port-prio " ]"
+.RB "[ " dscp-prio " ]"
+
+.ti -8
+.B dcb ets " { " add " | " del " | " replace " } " dev
+.RI DEV
+.RB "[ " default-prio " " \fIPRIO-LIST\fB " ]"
+.RB "[ " ethtype-prio " " \fIET-MAP\fB " ]"
+.RB "[ " stream-port-prio " " \fIPORT-MAP\fB " ]"
+.RB "[ " dgram-port-prio " " \fIPORT-MAP\fB " ]"
+.RB "[ " port-prio " " \fIPORT-MAP\fB " ]"
+.RB "[ " dscp-prio " " \fIDSCP-MAP\fB " ]"
+
+.ti -8
+.IR PRIO-LIST " := [ " PRIO-LIST " ] " PRIO
+
+.ti -8
+.IR ET-MAP " := [ " ET-MAP " ] " ET-MAPPING
+
+.ti -8
+.IR ET-MAPPING " := " ET\fB:\fIPRIO\fR
+
+.ti -8
+.IR PORT-MAP " := [ " PORT-MAP " ] " PORT-MAPPING
+
+.ti -8
+.IR PORT-MAPPING " := " PORT\fB:\fIPRIO\fR
+
+.ti -8
+.IR DSCP-MAP " := [ " DSCP-MAP " ] " DSCP-MAPPING
+
+.ti -8
+.IR DSCP-MAPPING " := { " DSCP " | " \fBall " }" \fB:\fIPRIO\fR
+
+.ti -8
+.IR ET " := { " \fB0x600\fR " .. " \fB0xffff\fR " }"
+
+.ti -8
+.IR PORT " := { " \fB1\fR " .. " \fB65535\fR " }"
+
+.ti -8
+.IR DSCP " := { " \fB0\fR " .. " \fB63\fR " }"
+
+.ti -8
+.IR PRIO " := { " \fB0\fR " .. " \fB7\fR " }"
+
+.SH DESCRIPTION
+
+.B dcb app
+is used to configure APP table, or application priority table in the DCB (Data
+Center Bridging) subsystem. The APP table is used to assign priority to traffic
+based on value in one of several headers: EtherType, L4 destination port, or
+DSCP. It also allows configuration of port-default priority that is chosen if no
+other prioritization rule applies.
+
+DCB APP entries are 3-tuples of selector, protocol ID, and priority. Selector is
+an enumeration that picks one of the prioritization namespaces. Currently it
+mostly corresponds to configurable parameters described below. Protocol ID is a
+value in the selector namespace. E.g. for EtherType selector, protocol IDs are
+the individual EtherTypes, for DSCP they are individual code points. The
+priority is the priority that should be assigned to traffic that matches the
+selector and protocol ID.
+
+The APP table is a set of DCB APP entries. The only requirement is that
+duplicate entries are not added. Notably, it is valid to have conflicting
+priority assignment for the same selector and protocol ID. For example, the set
+of two APP entries (DSCP, 10, 1) and (DSCP, 10, 2), where packets with DSCP of
+10 should get priority of both 1 and 2, form a well-defined APP table. The
+.B dcb app
+tool allows low-level management of the app table by adding and deleting
+individual APP 3-tuples through
+.B add
+and
+.B del
+commands. On the other other hand, the command
+.B replace
+does what one would typically want in this situation--first adds the new
+configuration, and then removes the obsolete one, so that only one
+prioritization is in effect for a given selector and protocol ID.
+
+.SH COMMANDS
+
+.TP
+.B show
+Display all entries with a given selector. When no selector is given, shows all
+APP table entries categorized per selector.
+
+.TP
+.B flush
+Remove all entries with a given selector. When no selector is given, removes all
+APP table entries.
+
+.TP
+.B add
+.TQ
+.B del
+Add and, respectively, remove individual APP 3-tuples to and from the DCB APP
+table.
+
+.TP
+.B replace
+Take the list of entries mentioned as parameter, and add those that are not
+present in the APP table yet. Then remove those entries, whose selector and
+protocol ID have been mentioned as parameter, but not with the exact same
+priority. This has the effect of, for the given selector and protocol ID,
+causing that the table only contains the priority (or priorities) given as
+parameter.
+
+.SH PARAMETERS
+
+The following table shows parameters in a way that they would be used with
+\fBadd\fR, \fBdel\fR and \fBreplace\fR commands. For \fBshow\fR and \fBflush\fR,
+the parameter name is to be used as a simple keyword without further arguments.
+
+.TP
+.B default-prio \fIPRIO-LIST
+The priority to be used for traffic the priority of which is otherwise
+unspecified. The argument is a list of individual priorities. Note that
+.B default-prio
+rules are configured as triplets (\fBEtherType\fR, \fB0\fR, \fIPRIO\fR).
+.B dcb app
+translates these rules to the symbolic name
+.B default-prio
+and back.
+
+.TP
+.B ethtype-prio \fIET-MAP
+\fIET-MAP\fR uses the array parameter syntax, see
+.BR dcb (8)
+for details. Keys are EtherType values. Values are priorities to be assigned to
+traffic with the matching EtherType.
+
+.TP
+.B stream-port-prio \fIPORT-MAP
+.TQ
+.B dgram-port-prio \fIPORT-MAP
+.TQ
+.B port-prio \fIPORT-MAP
+\fIPORT-MAP\fR uses the array parameter syntax, see
+.BR dcb (8)
+for details. Keys are L4 destination port numbers that match on, respectively,
+TCP and SCTP traffic, UDP and DCCP traffic, and either of those. Values are
+priorities that should be assigned to matching traffic.
+
+.TP
+.B dscp-prio \fIDSCP-MAP
+\fIDSCP-MAP\fR uses the array parameter syntax, see
+.BR dcb (8)
+for details. Keys are DSCP points, values are priorities assigned to
+traffic with matching DSCP. DSCP points can be written either direcly as
+numeric values, or using symbolic names specified in
+.B /etc/iproute2/rt_dsfield
+(however note that that file specifies full 8-bit dsfield values, whereas
+.B dcb app
+will only use the higher six bits).
+.B dcb app show
+will similarly format DSCP values as symbolic names if possible. The
+command line option
+.B -N
+turns the show translation off.
+
+.SH EXAMPLE & USAGE
+
+Prioritize traffic with DSCP 0 to priority 0, 24 to 3 and 48 to 6:
+
+.P
+# dcb app add dev eth0 dscp-prio 0:0 24:3 48:6
+
+Add another rule to configure DSCP 24 to priority 2 and show the result:
+
+.P
+# dcb app add dev eth0 dscp-prio 24:2
+.br
+# dcb app show dev eth0 dscp-prio
+.br
+dscp-prio 0:0 CS3:2 CS3:3 CS6:6
+.br
+# dcb -N app show dev eth0 dscp-prio
+.br
+dscp-prio 0:0 24:2 24:3 48:6
+
+Reconfigure the table so that the only rule for DSCP 24 is for assignment of
+priority 4:
+
+.P
+# dcb app replace dev eth0 dscp-prio 24:4
+.br
+# dcb app show dev eth0 dscp-prio
+.br
+dscp-prio 0:0 24:4 48:6
+
+Flush all DSCP rules:
+
+.P
+# dcb app flush dev eth0 dscp-prio
+.br
+# dcb app show dev eth0 dscp-prio
+.br
+(nothing)
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR dcb (8)
+
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Petr Machata <me@pmachata.org>

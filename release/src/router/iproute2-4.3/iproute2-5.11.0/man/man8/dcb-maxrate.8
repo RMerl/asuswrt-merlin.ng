@@ -1,0 +1,94 @@
+.TH DCB-MAXRATE 8 "22 November 2020" "iproute2" "Linux"
+.SH NAME
+dcb-maxrate \- show / manipulate port maxrate settings of
+the DCB (Data Center Bridging) subsystem
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+
+.ti -8
+.B dcb
+.RI "[ " OPTIONS " ] "
+.B maxrate
+.RI "{ " COMMAND " | " help " }"
+.sp
+
+.ti -8
+.B dcb maxrate show dev
+.RI DEV
+.RB "[ " tc-maxrate " ]"
+
+.ti -8
+.B dcb maxrate set dev
+.RI DEV
+.RB "[ " tc-maxrate " " \fIRATE-MAP " ]"
+
+.ti -8
+.IR RATE-MAP " := [ " RATE-MAP " ] " RATE-MAPPING
+
+.ti -8
+.IR RATE-MAPPING " := { " TC " | " \fBall " }" \fB:\fIRATE\fR
+
+.ti -8
+.IR TC " := { " \fB0\fR " .. " \fB7\fR " }"
+
+.ti -8
+.IR RATE " := { " INTEGER "[" \fBbit\fR "] | " INTEGER\fBKbit\fR " | "
+.IR INTEGER\fBMib\fR " | " ... " }"
+
+.SH DESCRIPTION
+
+.B dcb maxrate
+is used to configure and inspect maximum rate at which traffic is allowed to
+egress from a given traffic class.
+
+.SH PARAMETERS
+
+The following describes only the write direction, i.e. as used with the
+\fBset\fR command. For the \fBshow\fR command, the parameter name is to be used
+as a simple keyword without further arguments. This instructs the tool to show
+the value of a given parameter. When no parameters are given, the tool shows the
+complete maxrate configuration.
+
+.TP
+.B tc-maxrate \fIRATE-MAP
+\fIRATE-MAP\fR uses the array parameter syntax, see
+.BR dcb (8)
+for details. Keys are TC indices, values are traffic rates in bits per second.
+The rates can use the notation documented in section PARAMETERS at
+.BR tc (8).
+Note that under that notation, "bit" stands for bits per second whereas "b"
+stands for bytes per second. When showing, the command line option
+.B -i
+toggles between using decadic and ISO/IEC prefixes.
+
+.SH EXAMPLE & USAGE
+
+Set rates of all traffic classes to 25Gbps, except for TC 6, which will
+have the rate of 100Gbps:
+
+.P
+# dcb maxrate set dev eth0 tc-maxrate all:25Gbit 6:100Gbit
+
+Show what was set:
+
+.P
+# dcb maxrate show dev eth0
+.br
+tc-maxrate 0:25Gbit 1:25Gbit 2:25Gbit 3:25Gbit 4:25Gbit 5:25Gbit 6:100Gbit 7:25Gbit
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR dcb (8)
+
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Petr Machata <me@pmachata.org>

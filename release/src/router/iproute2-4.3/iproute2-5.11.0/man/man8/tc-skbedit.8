@@ -1,0 +1,74 @@
+.TH "SKB editing action in tc" 8 "12 Jan 2015" "iproute2" "Linux"
+
+.SH NAME
+skbedit - SKB editing action
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " ... " "action skbedit " [ " queue_mapping
+.IR QUEUE_MAPPING " ] ["
+.B priority
+.IR PRIORITY " ] ["
+.BI mark " MARK\fR[\fB/\fIMASK] ] ["
+.B ptype
+.IR PTYPE " ] ["
+.BR inheritdsfield " ]"
+.SH DESCRIPTION
+The
+.B skbedit
+action allows to change a packet's associated meta data. It complements the
+.B pedit
+action, which in turn allows to change parts of the packet data itself.
+
+The most unique feature of
+.B skbedit
+is its ability to decide over which queue of an interface with multiple
+transmit queues the packet is to be sent out. The number of available transmit
+queues is reflected by sysfs entries within
+.I /sys/class/net/<interface>/queues
+with name
+.I tx-N
+(where
+.I N
+is the actual queue number).
+.SH OPTIONS
+.TP
+.BI queue_mapping " QUEUE_MAPPING"
+Override the packet's transmit queue. Useful when applied to packets transmitted
+over MQ-capable network interfaces.
+.I QUEUE_MAPPING
+is an unsigned 16bit value in decimal format.
+.TP
+.BI priority " PRIORITY"
+Override the packet classification decision.
+.I PRIORITY
+is either
+.BR root ", " none
+or a hexadecimal major class ID optionally followed by a colon
+.RB ( : )
+and a hexadecimal minor class ID.
+.TP
+.BI mark " MARK\fR[\fB/\fIMASK]"
+Change the packet's firewall mark value.
+.I MARK
+is an unsigned 32bit value in automatically detected format (i.e., prefix with
+.RB ' 0x '
+for hexadecimal interpretation, etc.).
+.I MASK
+defines the 32-bit mask selecting bits of mark value. Default is 0xffffffff.
+.TP
+.BI ptype " PTYPE"
+Override the packet's type. Useful for setting packet type to host when
+needing to allow ingressing packets with the wrong MAC address but
+correct IP address.
+.I PTYPE
+is one of: host, otherhost, broadcast, multicast
+.TP
+.BI inheritdsfield
+Override the packet classification decision, and any value specified with
+.BR priority ", "
+using the information stored in the Differentiated Services Field of the
+IPv6/IPv4 header (RFC2474).
+.SH SEE ALSO
+.BR tc (8),
+.BR tc-pedit (8)

@@ -1,0 +1,72 @@
+.TH "Checksum action in tc" 8 "11 Jan 2015" "iproute2" "Linux"
+
+.SH NAME
+csum - checksum update action
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " ... " "action csum"
+.I UPDATE
+
+.ti -8
+.IR UPDATE " := " TARGET " [ " UPDATE " ]"
+
+.ti -8
+.IR TARGET " := { "
+.BR ip4h " |"
+.BR icmp " |"
+.BR igmp " |"
+.BR tcp " |"
+.BR udp " |"
+.BR udplite " |"
+.BR sctp " |"
+.IR SWEETS " }"
+
+.ti -8
+.IR SWEETS " := { "
+.BR and " | " or " | " + " }"
+.SH DESCRIPTION
+The
+.B csum
+action triggers checksum recalculation of specified packet headers. It is
+commonly used to fix incorrect checksums after the
+.B pedit
+action has modified the packet content.
+.SH OPTIONS
+.TP
+.I TARGET
+Specify which headers to update: IPv4 header
+.RB ( ip4h ),
+ICMP header
+.RB ( icmp ),
+IGMP header
+.RB ( igmp ),
+TCP header
+.RB ( tcp ),
+UDP header
+.RB ( udp ),
+UDPLite header
+.RB ( udplite ") or"
+SCTP header
+.RB ( sctp ).
+.TP
+.B SWEETS
+These are merely syntactic sugar and ignored internally.
+.SH EXAMPLES
+The following performs stateless NAT for incoming packets from 192.0.2.100 to
+new destination 198.51.100.1. Assuming these are UDP
+packets, both IP and UDP checksums have to be recalculated:
+
+.RS
+.EX
+# tc qdisc add dev eth0 ingress handle ffff:
+# tc filter add dev eth0 prio 1 protocol ip parent ffff: \\
+	u32 match ip src 192.0.2.100/32 flowid :1 \\
+	action pedit munge ip dst set 198.51.100.1 pipe \\
+	csum ip and udp
+.EE
+.RE
+
+.SH SEE ALSO
+.BR tc (8),
+.BR tc-pedit (8)

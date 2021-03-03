@@ -1,0 +1,82 @@
+.TH RDMA\-SYSTEM 8 "06 Jul 2017" "iproute2" "Linux"
+.SH NAME
+rdma-system \- RDMA subsystem configuration
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B rdma
+.RI "[ " OPTIONS " ]"
+.B sys
+.RI  " { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-V\fR[\fIersion\fR] |
+\fB\-d\fR[\fIetails\fR] }
+
+.ti -8
+.B rdma system show
+
+.ti -8
+.B rdma system set
+.BR netns
+.BR NEWMODE
+
+.ti -8
+.B rdma system help
+
+.SH "DESCRIPTION"
+.SS rdma system set - set RDMA subsystem network namespace mode
+
+.SS rdma system show - display RDMA subsystem network namespace mode
+
+.PP
+.I "NEWMODE"
+- specifies the RDMA subsystem mode. Either exclusive or shared.
+When user wants to assign dedicated RDMA device to a particular
+network namespace, exclusive mode should be set before creating
+any network namespace. If there are active network namespaces and if
+one or more RDMA devices exist, changing mode from shared to
+exclusive returns error code EBUSY.
+
+When RDMA subsystem is in shared mode, RDMA device is accessible in
+all network namespace. When RDMA device isolation among multiple
+network namespaces is not needed, shared mode can be used.
+
+It is preferred to not change the subsystem mode when there is active
+RDMA traffic running, even though it is supported.
+
+.SH "EXAMPLES"
+.PP
+rdma system show
+.RS 4
+Shows the state of RDMA subsystem network namespace mode on the system.
+.RE
+.PP
+rdma system set netns exclusive
+.RS 4
+Sets the RDMA subsystem in network namespace exclusive mode. In this mode RDMA devices
+are visible only in single network namespace.
+.RE
+.PP
+rdma system set netns shared
+.RS 4
+Sets the RDMA subsystem in network namespace shared mode. In this mode RDMA devices
+are shared among network namespaces.
+.RE
+.PP
+
+.SH SEE ALSO
+.BR rdma (8),
+.BR rdma-link (8),
+.BR rdma-resource (8),
+.BR network_namespaces (7),
+.BR namespaces (7),
+.br
+
+.SH AUTHOR
+Parav Pandit <parav@mellanox.com>

@@ -1,0 +1,383 @@
+.TH TIPC-LINK 8 "22 Mar 2019" "iproute2" "Linux"
+
+.\" For consistency, please keep padding right aligned.
+.\" For example '.B "foo " bar' and not '.B foo " bar"'
+
+.SH NAME
+tipc-link \- show links or modify link properties
+
+.SH SYNOPSIS
+.ad l
+.in +8
+
+.ti -8
+
+.ti -8
+.B tipc link set
+.br
+.RB "[ " "{ " "priority "
+.IR PRIORITY
+.RB "| " tolerance
+.IR TOLERANCE
+.RB "| " window
+.IR "WINDOW " }
+.BI "link " LINK " ]"
+.RB "|"
+.br
+.RB "[ "
+.RB "{ " broadcast " [ "
+.IR BROADCAST
+.RB " | "
+.IR REPLICAST
+.RB " | "
+.IR AUTOSELECT
+.RB "[ " ratio
+.IR SIZE
+.RB "] " ] " } " "]"
+
+.ti -8
+.B tipc link get
+.br
+.RB "[ " "{ " "priority" " | " tolerance " | " window " } " link
+.IR LINK " ] "
+.RB "|"
+.br
+.RB "[ " { " broadcast " } " ]"
+.br
+
+.ti -8
+.B tipc link statistics
+.RB "{ " "show " "[ " link
+.I LINK
+.RB "] | " "reset
+.BI "link " "LINK "
+}
+
+.ti -8
+.B tipc link list
+.br
+
+.ti -8
+.B tipc link monitor set
+.RB "{ " "threshold" " } "
+
+.ti -8
+.B tipc link monitor get
+.RB "{ " "threshold" " } "
+
+.ti -8
+.B tipc link monitor summary
+.br
+
+.ti -8
+.B tipc link monitor list
+.br
+.RB "[ " "media " " { " eth " | " ib " } " device
+.IR "DEVICE" " ]"
+.RB "|"
+.br
+.RB "[ " "media udp name"
+.IR NAME " ]"
+.br
+
+.SH OPTIONS
+Options (flags) that can be passed anywhere in the command chain.
+.TP
+.BR "\-h" , " --help"
+Show help about last valid command. For example
+.B tipc link --help
+will show link help and
+.B tipc --help
+will show general help. The position of the option in the string is irrelevant.
+
+.TP
+.BR "\-j", " \-json"
+Output results in JavaScript Object Notation (JSON).
+
+.TP
+.BR "\-p", " \-pretty"
+The default JSON format is compact and more efficient to parse but hard for most users to read.
+This flag adds indentation for readability.
+
+.SH DESCRIPTION
+
+.SS Link statistics
+
+.TP
+.BR "ACTIVE " "link state"
+.br
+An
+.B ACTIVE
+link is serving traffic. Two links to the same node can become
+.B ACTIVE
+if they have the same link
+.BR priority .
+If there is more than two links with the same priority the additional links will
+be put in
+.B STANDBY
+state.
+
+.TP
+.BR "STANDBY " "link state"
+.br
+A
+.B STANDBY
+link has lower link priority than an
+.B ACTIVE
+link. A
+.B STANDBY
+link has control traffic flowing and is ready to take over should the
+.B ACTIVE
+link(s) go down.
+
+.TP
+.B MTU
+.br
+The Maximum Transmission Unit. The two endpoints advertise their default or
+configured
+.B MTU
+at initial link setup and will agree to use the lower of the two values should
+they differ.
+
+.TP
+.B Packets
+.br
+The total amount of transmitted or received TIPC packets on a link. Including
+.BR "fragmented " "and " "bundled " packets.
+
+.TP
+.B Fragments
+.br
+Represented in the form
+.BR fragments / fragmented .
+Where
+.B fragmented
+is the amount of data messages which have been broken into
+.BR fragments .
+Subsequently the
+.B fragments
+are the total amount of packets that the
+.B fragmented
+messages has been broken into.
+
+.TP
+.B Bundles
+.br
+Represented in the form
+.BR bundles / bundled .
+If a link becomes congested the link will attempt to bundle data from small
+.B bundled
+packets into
+.B bundles
+of full MTU size packets before they are transmitted.
+
+.TP
+.B Profile
+.br
+Shows the
+.B average
+packet size in octets/bytes for a
+.B sample
+of packets. It also shows the packet size distribution of the
+.B sampled
+packets in the intervals
+
+0-64 bytes
+.br
+64-256 bytes
+.br
+256-1024 bytes
+.br
+1024-4096 bytes
+.br
+4096-16384 bytes
+.br
+16384-32768 bytes
+.br
+32768-66000 bytes
+
+.TP
+.B Message counters
+
+.B states
+- Number of link state messages
+.sp
+
+.B probes
+- Link state messages with probe flag set. Typically sent when a link is idle
+.sp
+
+.B nacks
+- Number of negative acknowledgement (NACK) packets sent and received by the
+link
+.sp
+
+.B defs
+- Number of packets received out of order
+.sp
+
+.B dups
+- Number of duplicate packets received
+
+.TP
+.B Congestion link
+The number of times an application has tried to send data when the TIPC link
+was congested
+
+.TP
+.B Send queue
+.B Max
+is the maximum amount of messages that has resided in the out queue during the
+statistics collection period of a link.
+
+.B Avg
+is the average outqueue size during the lifetime of a link.
+
+.SS Link properties
+
+.TP
+.B priority
+.br
+The priority between logical TIPC links to a particular node. Link priority can
+range from 0 (lowest) to 31 (highest).
+
+.TP
+.B tolerance
+.br
+Link tolerance specifies the maximum time in milliseconds that TIPC will allow
+a communication problem to exist before taking the link down. The default value
+is 1500 milliseconds.
+
+.TP
+.B window
+.br
+The link window controls how many unacknowledged messages a link endpoint can
+have in its transmit queue before TIPC's congestion control mechanism is
+activated.
+
+.SS Monitor properties
+
+.TP
+.B threshold
+.br
+The threshold specifies the cluster size exceeding which the link monitoring
+algorithm will switch from "full-mesh" to "overlapping-ring".
+If set of 0 the overlapping-ring monitoring is always on and if set to a
+value larger than anticipated cluster size the overlapping-ring is disabled.
+The default value is 32.
+
+.SS Monitor information
+
+.TP
+.B table_generation
+.br
+Represents the event count in a node's local monitoring list. It steps every
+time something changes in the local monitor list, including changes in the
+local domain.
+
+.TP
+.B cluster_size
+.br
+Represents the current count of cluster members.
+
+.TP
+.B algorithm
+.br
+The current supervision algorithm used for neighbour monitoring for the bearer.
+Possible values are full-mesh or overlapping-ring.
+
+.TP
+.B status
+.br
+The node status derived by the local node.
+Possible status are up or down.
+
+.TP
+.B monitored
+.br
+Represent the type of monitoring chosen by the local node.
+Possible values are direct or indirect.
+
+.TP
+.B generation
+.br
+Represents the domain generation which is the event count in a node's local
+domain. Every time something changes (peer add/remove/up/down) the domain
+generation is stepped and a new version of node record is sent to inform
+the neighbors about this change. The domain generation helps the receiver
+of a domain record to know if it should ignore or process the record.
+
+.TP
+.B applied_node_status
+.br
+The node status reported by the peer node for the succeeding peers in
+the node list. The Node list is a circular list of ascending addresses
+starting with the local node.
+Possible status are: U or D. The status U implies up and D down.
+
+.TP
+.B [non_applied_node:status]
+.br
+Represents the nodes and their status as reported by the peer node.
+These nodes were not applied to the monitoring list for this peer node.
+They are usually transient and occur during the cluster startup phase
+or network reconfiguration.
+Possible status are: U or D. The status U implies up and D down.
+
+.SS Broadcast properties
+.TP
+.B  BROADCAST
+.br
+Forces all multicast traffic to be transmitted via broadcast only,
+irrespective of cluster size and number of destinations.
+
+.TP
+.B REPLICAST
+.br
+Forces all multicast traffic to be transmitted via replicast only,
+irrespective of cluster size and number of destinations.
+
+.TP
+.B AUTOSELECT
+.br
+Auto switching to broadcast or replicast depending on cluster size and
+destination node number.
+
+.TP
+.B ratio SIZE
+.br
+Set the AUTOSELECT criteria, percentage of destination nodes vs cluster
+size.
+
+.SH EXAMPLES
+.PP
+tipc link monitor list
+.RS 4
+Shows the link monitoring information for cluster members on device data0.
+.RE
+.PP
+tipc link monitor summary
+.RS 4
+The monitor summary command prints the basic attributes.
+.RE
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR tipc (8),
+.BR tipc-media (8),
+.BR tipc-bearer (8),
+.BR tipc-nametable (8),
+.BR tipc-node (8),
+.BR tipc-peer (8),
+.BR tipc-socket (8)
+.br
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Richard Alpe <richard.alpe@ericsson.com>

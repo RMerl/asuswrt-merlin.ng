@@ -1,0 +1,465 @@
+.TH "IP\-ADDRESS" 8 "20 Dec 2011" "iproute2" "Linux"
+.SH "NAME"
+ip-address \- protocol address management
+.SH "SYNOPSIS"
+.sp
+.ad l
+.in +8
+.ti -8
+.B ip
+.RI "[ " OPTIONS " ]"
+.B address
+.RI " { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.BR "ip address" " { " add " | " change " | " replace " } "
+.IB IFADDR " dev " IFNAME
+.RI "[ " LIFETIME " ] [ " CONFFLAG-LIST " ]"
+
+.ti -8
+.BR "ip address del"
+.IB IFADDR " dev " IFNAME " [ " mngtmpaddr " ]"
+
+.ti -8
+.BR "ip address" " { " save " | " flush " } [ " dev
+.IR IFNAME " ] [ "
+.B  scope
+.IR SCOPE-ID " ] [ "
+.B  metric
+.IR METRIC " ] [ "
+.B  to
+.IR PREFIX " ] [ " FLAG-LIST " ] [ "
+.B  label
+.IR PATTERN " ] [ " up " ]"
+
+.ti -8
+.BR "ip address" " [ " show  " [ " dev
+.IR IFNAME " ] [ "
+.B  scope
+.IR SCOPE-ID " ] [ "
+.B  to
+.IR PREFIX " ] [ " FLAG-LIST " ] [ "
+.B  label
+.IR PATTERN " ] [ "
+.B  master
+.IR DEVICE " ] [ "
+.B  type
+.IR TYPE " ] [ "
+.B vrf
+.IR NAME " ] [ "
+.BR up " ] ]"
+
+.ti -8
+.BR "ip address" " { " showdump " | " restore " }"
+
+.ti -8
+.IR IFADDR " := " PREFIX " | " ADDR
+.B  peer
+.IR PREFIX " [ "
+.B  broadcast
+.IR ADDR " ] [ "
+.B  anycast
+.IR ADDR " ] [ "
+.B  label
+.IR LABEL " ] [ "
+.B  scope
+.IR SCOPE-ID " ]"
+
+.ti -8
+.IR SCOPE-ID " := "
+.RB "[ " host " | " link " | " global " | "
+.IR NUMBER " ]"
+
+.ti -8
+.IR FLAG-LIST " := [ "  FLAG-LIST " ] " FLAG
+
+.ti -8
+.IR FLAG " := ["
+.RB [ - ] permanent " |"
+.RB [ - ] dynamic " |"
+.RB [ - ] secondary " |"
+.RB [ - ] primary " |"
+.RB [ - ] tentative " |"
+.RB [ - ] deprecated " |"
+.RB [ - ] dadfailed " |"
+.RB [ - ] temporary " |"
+.IR CONFFLAG-LIST " ]"
+
+.ti -8
+.IR CONFFLAG-LIST " := [ "  CONFFLAG-LIST " ] " CONFFLAG
+
+.ti -8
+.IR CONFFLAG " := "
+.RB "[ " home " | " mngtmpaddr " | " nodad " | " optimstic " | " noprefixroute " | " autojoin " ]"
+
+.ti -8
+.IR LIFETIME " := [ "
+.BI valid_lft " LFT"
+.RB "] [ " preferred_lft
+.IR  LFT " ]"
+
+.ti -8
+.IR LFT " := [ "
+.BR forever " |"
+.IR SECONDS " ]"
+
+.ti -8
+.IR TYPE " := [ "
+.BR bridge " | "
+.BR bridge_slave " |"
+.BR bond " | "
+.BR bond_slave " |"
+.BR can " | "
+.BR dummy " | "
+.BR hsr " | "
+.BR ifb " | "
+.BR ipoib " |"
+.BR macvlan  " | "
+.BR macvtap  " | "
+.BR vcan " | "
+.BR veth " | "
+.BR vlan " | "
+.BR vxlan " |"
+.BR ip6tnl " |"
+.BR ipip " |"
+.BR sit " |"
+.BR gre " |"
+.BR gretap " |"
+.BR erspan " |"
+.BR ip6gre " |"
+.BR ip6gretap " |"
+.BR ip6erspan " |"
+.BR vti " |"
+.BR vrf " |"
+.BR nlmon " |"
+.BR ipvlan " |"
+.BR lowpan " |"
+.BR geneve " |"
+.BR macsec " ]"
+
+.SH "DESCRIPTION"
+The
+.B address
+is a protocol (IPv4 or IPv6) address attached
+to a network device. Each device must have at least one address
+to use the corresponding protocol. It is possible to have several
+different addresses attached to one device. These addresses are not
+discriminated, so that the term
+.B alias
+is not quite appropriate for them and we do not use it in this document.
+.sp
+The
+.B ip address
+command displays addresses and their properties, adds new addresses
+and deletes old ones.
+
+.SS ip address add - add new protocol address.
+
+.TP
+.BI dev " IFNAME "
+the name of the device to add the address to.
+
+.TP
+.BI local " ADDRESS " (default)
+the address of the interface. The format of the address depends
+on the protocol. It is a dotted quad for IP and a sequence of
+hexadecimal halfwords separated by colons for IPv6. The
+.I ADDRESS
+may be followed by a slash and a decimal number which encodes
+the network prefix length.
+
+.TP
+.BI peer " ADDRESS"
+the address of the remote endpoint for pointopoint interfaces.
+Again, the
+.I ADDRESS
+may be followed by a slash and a decimal number, encoding the network
+prefix length. If a peer address is specified, the local address
+cannot have a prefix length. The network prefix is associated
+with the peer rather than with the local address.
+
+.TP
+.BI broadcast " ADDRESS"
+the broadcast address on the interface.
+.sp
+It is possible to use the special symbols
+.B '+'
+and
+.B '-'
+instead of the broadcast address. In this case, the broadcast address
+is derived by setting/resetting the host bits of the interface prefix.
+
+.TP
+.BI label " LABEL"
+Each address may be tagged with a label string.
+In order to preserve compatibility with Linux-2.0 net aliases,
+this string must coincide with the name of the device or must be prefixed
+with the device name followed by colon.
+The maximum allowed total length of label is 15 characters.
+
+.TP
+.BI scope " SCOPE_VALUE"
+the scope of the area where this address is valid.
+The available scopes are listed in file
+.BR "@SYSCONFDIR@/rt_scopes" .
+Predefined scope values are:
+
+.in +8
+.B global
+- the address is globally valid.
+.sp
+.B site
+- (IPv6 only, deprecated) the address is site local, i.e. it is
+valid inside this site.
+.sp
+.B link
+- the address is link local, i.e. it is valid only on this device.
+.sp
+.B host
+- the address is valid only inside this host.
+.in -8
+
+.TP
+.BI metric " NUMBER"
+priority of prefix route associated with address.
+
+.TP
+.BI valid_lft " LFT"
+the valid lifetime of this address; see section 5.5.4 of
+RFC 4862. When it expires, the address is removed by the kernel.
+Defaults to
+.BR "forever" .
+
+.TP
+.BI preferred_lft " LFT"
+the preferred lifetime of this address; see section 5.5.4
+of RFC 4862. When it expires, the address is no longer used for new
+outgoing connections. Defaults to
+.BR "forever" .
+
+.TP
+.B home
+(IPv6 only) designates this address the "home address" as defined in
+RFC 6275.
+
+.TP
+.B mngtmpaddr
+(IPv6 only) make the kernel manage temporary addresses created from this one as
+template on behalf of Privacy Extensions (RFC3041). For this to become active,
+the \fBuse_tempaddr\fP sysctl setting has to be set to a value greater than
+zero.  The given address needs to have a prefix length of 64. This flag allows
+to use privacy extensions in a manually configured network, just like if
+stateless auto-configuration was active.
+
+.TP
+.B nodad
+(IPv6 only) do not perform Duplicate Address Detection (RFC 4862) when
+adding this address.
+
+.TP
+.B optimistic
+(IPv6 only) When performing Duplicate Address Detection, use the RFC 4429
+optimistic variant.
+
+.TP
+.B noprefixroute
+Do not automatically create a route for the network prefix of the added
+address, and don't search for one to delete when removing the address. Changing
+an address to add this flag will remove the automatically added prefix route,
+changing it to remove this flag will create the prefix route automatically.
+
+.TP
+.B autojoin
+Joining multicast groups on Ethernet level via
+.B "ip maddr"
+command does not work if connected to an Ethernet switch that does IGMP
+snooping since the switch would not replicate multicast packets on ports that
+did not have IGMP reports for the multicast addresses.
+
+Linux VXLAN interfaces created via
+.B "ip link add vxlan"
+have the
+.B group
+option that enables them to do the required join.
+
+Using the
+.B autojoin
+flag when adding a multicast address enables similar functionality for
+Openvswitch VXLAN interfaces as well as other tunneling mechanisms that need to
+receive multicast traffic.
+
+.SS ip address delete - delete protocol address
+.B Arguments:
+coincide with the arguments of
+.B ip addr add.
+The device name is a required argument. The rest are optional.
+If no arguments are given, the first address is deleted.
+
+.SS ip address show - look at protocol addresses
+
+.TP
+.BI dev " IFNAME " (default)
+name of device.
+
+.TP
+.BI scope " SCOPE_VAL"
+only list addresses with this scope.
+
+.TP
+.BI to " PREFIX"
+only list addresses matching this prefix.
+
+.TP
+.BI label " PATTERN"
+only list addresses with labels matching the
+.IR "PATTERN" .
+.I PATTERN
+is a usual shell style pattern.
+
+.TP
+.BI master " DEVICE"
+only list interfaces enslaved to this master device.
+
+.TP
+.BI vrf " NAME "
+only list interfaces enslaved to this vrf.
+
+.TP
+.BI type " TYPE"
+only list interfaces of the given type.
+
+Note that the type name is not checked against the list of supported types -
+instead it is sent as-is to the kernel. Later it is used to filter the returned
+interface list by comparing it with the relevant attribute in case the kernel
+didn't filter already. Therefore any string is accepted, but may lead to empty
+output.
+
+.TP
+.B up
+only list running interfaces.
+
+.TP
+.BR dynamic " and " permanent
+(IPv6 only) only list addresses installed due to stateless
+address configuration or only list permanent (not dynamic)
+addresses. These two flags are inverses of each other, so
+.BR -dynamic " is equal to " permanent " and "
+.BR -permanent " is equal to " dynamic .
+
+.TP
+.B tentative
+(IPv6 only) only list addresses which have not yet passed duplicate
+address detection.
+
+.TP
+.B -tentative
+(IPv6 only) only list addresses which are not in the process of
+duplicate address detection currently.
+
+.TP
+.B deprecated
+(IPv6 only) only list deprecated addresses.
+
+.TP
+.B -deprecated
+(IPv6 only) only list addresses not being deprecated.
+
+.TP
+.B dadfailed
+(IPv6 only) only list addresses which have failed duplicate
+address detection.
+
+.TP
+.B -dadfailed
+(IPv6 only) only list addresses which have not failed duplicate
+address detection.
+
+.TP
+.BR temporary " or " secondary
+List temporary IPv6 or secondary IPv4 addresses only. The Linux kernel shares a
+single bit for those, so they are actually aliases for each other although the
+meaning differs depending on address family.
+
+.TP
+.BR -temporary " or " -secondary
+These flags are aliases for
+.BR primary .
+
+.TP
+.B primary
+List only primary addresses, in IPv6 exclude temporary ones. This flag is the
+inverse of
+.BR temporary " and " secondary .
+
+.TP
+.B -primary
+This is an alias for
+.BR temporary " or " secondary .
+
+.SS ip address flush - flush protocol addresses
+This command flushes the protocol addresses selected by some criteria.
+
+.PP
+This command has the same arguments as
+.BR show " except that " type " and " master " selectors are not supported."
+Another difference is that it does not run when no arguments are given.
+
+.PP
+.B Warning:
+This command and other
+.B flush
+commands are unforgiving. They will cruelly purge all the addresses.
+
+.PP
+With the
+.B -statistics
+option, the command becomes verbose. It prints out the number of deleted
+addresses and the number of rounds made to flush the address list.
+If this option is given twice,
+.B ip address flush
+also dumps all the deleted addresses in the format described in the
+previous subsection.
+
+.SH "EXAMPLES"
+.PP
+ip address show
+.RS 4
+Shows IPv4 and IPv6 addresses assigned to all network interfaces. The 'show'
+subcommand can be omitted.
+.RE
+.PP
+ip address show up
+.RS 4
+Same as above except that only addresses assigned to active network interfaces
+are shown.
+.RE
+.PP
+ip address show dev eth0
+.RS 4
+Shows IPv4 and IPv6 addresses assigned to network interface eth0.
+.RE
+.PP
+ip address add 2001:0db8:85a3::0370:7334/64 dev eth1
+.RS 4
+Adds an IPv6 address to network interface eth1.
+.RE
+.PP
+ip address delete 2001:0db8:85a3::0370:7334/64 dev eth1
+.RS 4
+Delete the IPv6 address added above.
+.RE
+.PP
+ip address flush dev eth4 scope global
+.RS 4
+Removes all global IPv4 and IPv6 addresses from device eth4. Without 'scope
+global' it would remove all addresses including IPv6 link-local ones.
+.RE
+
+.SH SEE ALSO
+.br
+.BR ip (8)
+
+.SH AUTHOR
+Original Manpage by Michail Litvak <mci@owl.openwall.com>

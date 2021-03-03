@@ -1,0 +1,99 @@
+.TH DEVLINK\-DPIPE 8 "4 Apr 2020" "iproute2" "Linux"
+.SH NAME
+devlink-dpipe \- devlink dataplane pipeline visualization
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B devlink
+.RI "[ " OPTIONS " ]"
+.B dpipe
+.RB "{ " table " | " header " }"
+.RI "{ " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-V\fR[\fIersion\fR] }
+
+.ti -8
+.BI "devlink dpipe table show " DEV
+.RB "[ "  name
+.IR TABLE_NAME " ]"
+
+.ti -8
+.BI "devlink dpipe table set " DEV
+.BI name " TABLE_NAME "
+
+.ti -8
+.BI "devlink dpipe table dump " DEV
+.BI name " TABLE_NAME "
+
+.ti -8
+.BI "devlink dpipe header show " DEV
+
+.ti -8
+.B devlink dpipe help
+
+.SH "DESCRIPTION"
+.SS devlink dpipe table show - display devlink dpipe table attributes
+
+.TP
+.BI name " TABLE_NAME"
+Specifies the table to operate on.
+
+.SS devlink dpipe table set - set devlink dpipe table attributes
+
+.TP
+.BI name " TABLE_NAME"
+Specifies the table to operate on.
+
+.SS devlink dpipe table dump - dump devlink dpipe table entries
+
+.TP
+.BI name " TABLE_NAME"
+Specifies the table to operate on.
+
+.SS devlink dpipe header show - display devlink dpipe header attributes
+
+.TP
+.BI name " TABLE_NAME"
+Specifies the table to operate on.
+
+.SH "EXAMPLES"
+.PP
+devlink dpipe table show pci/0000:01:00.0
+.RS 4
+Shows all dpipe tables on specified devlink device.
+.RE
+.PP
+devlink dpipe table show pci/0000:01:00.0 name mlxsw_erif
+.RS 4
+Shows mlxsw_erif dpipe table on specified devlink device.
+.RE
+.PP
+devlink dpipe table set pci/0000:01:00.0 name mlxsw_erif counters_enabled true
+.RS 4
+Turns on the counters on mlxsw_erif table.
+.RE
+.PP
+devlink dpipe table dump pci/0000:01:00.0 name mlxsw_erif
+.RS 4
+Dumps content of mlxsw_erif table.
+.RE
+.PP
+devlink dpipe header show pci/0000:01:00.0
+.RS 4
+Shows all dpipe headers on specified devlink device.
+.RE
+
+.SH SEE ALSO
+.BR devlink (8),
+.BR devlink-dev (8),
+.BR devlink-monitor (8),
+.br
+
+.SH AUTHOR
+Jiri Pirko <jiri@mellanox.com>

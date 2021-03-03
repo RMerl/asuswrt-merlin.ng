@@ -1,0 +1,143 @@
+.TH "IFE action in tc" 8 "22 Apr 2016" "iproute2" "Linux"
+
+.SH NAME
+IFE - encapsulate/decapsulate metadata
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " ... " " action ife"
+.IR DIRECTION " [ " ACTION " ] "
+.RB "[ " dst
+.IR DMAC " ] "
+.RB "[ " src
+.IR SMAC " ] "
+.RB "[ " type
+.IR TYPE " ] "
+.RI "[ "
+.IR CONTROL " ] "
+.RB "[ " index
+.IR INDEX " ] "
+
+.ti -8
+.IR DIRECTION " := { "
+.BR decode " | " encode " }"
+
+.ti -8
+.IR ACTION " := { "
+.BI allow " ATTR"
+.RB "| " use
+.IR "ATTR value" " }"
+
+.ti -8
+.IR ATTR " := { "
+.BR mark " | " prio " | " tcindex " }"
+
+.ti -8
+.IR CONTROL " := { "
+.BR reclassify " | " use " | " pipe " | " drop " | " continue " | " ok " | " goto " " chain " " CHAIN_INDEX " }"
+.SH DESCRIPTION
+The
+.B ife
+action allows for a sending side to encapsulate arbitrary metadata, which is
+then decapsulated by the receiving end. The sender runs in encoding mode and
+the receiver in decode mode. Both sender and receiver must specify the same
+ethertype. In the future, a registered ethertype may be available as a default.
+.SH OPTIONS
+.TP
+.B decode
+For the receiving side; decode the metadata if the packet matches.
+.TP
+.B encode
+For the sending side. Encode the specified metadata if the packet matches.
+.TP
+.B allow
+Encode direction only. Allows encoding specified metadata.
+.TP
+.B use
+Encode direction only. Enforce static encoding of specified metadata.
+.TP
+.BR mark " [ "
+.IR u32_value " ]"
+The value to set for the skb mark. The u32 value is required only when
+.BR use " is specified. If
+.BR mark " value is zero, it will not be encoded, instead
+"overlimits" statistics increment and
+.BR CONTROL " action is taken.
+.TP
+.BR prio " [ "
+.IR u32_value " ]"
+The value to set for priority in the skb structure. The u32 value is required
+only when
+.BR use " is specified."
+.TP
+.BR tcindex " ["
+.IR u16_value " ]"
+Value to set for the traffic control index in the skb structure. The u16 value
+is required only when
+.BR use " is specified."
+.TP
+.BI dmac " DMAC"
+.TQ
+.BI smac " SMAC"
+Optional six byte destination or source MAC address to encode.
+.TP
+.BI type " TYPE"
+Optional 16-bit ethertype to encode. If not specified value of 0xED3E will be used.
+.TP
+.BI CONTROL
+Action to take following an encode/decode.
+.TP
+.BI index " INDEX"
+Assign a unique ID to this action instead of letting the kernel choose one
+automatically.
+.I INDEX
+is a 32bit unsigned integer greater than zero.
+.SH EXAMPLES
+
+On the receiving side, match packets with ethertype 0xdead and restart
+classification so that it will match ICMP on the next rule, at prio 3:
+.RS
+.EX
+# tc qdisc add dev eth0 handle ffff: ingress
+# tc filter add dev eth0 parent ffff: prio 2 protocol 0xdead \\
+	u32 match u32 0 0 flowid 1:1 \\
+	action ife decode reclassify
+# tc filter add dev eth0 parent ffff: prio 3 protocol ip \\
+	u32 match ip protocol 0xff flowid 1:1 \\
+	action continue
+.EE
+.RE
+
+Match with skb mark of 17:
+
+.RS
+.EX
+# tc filter add dev eth0 parent ffff: prio 4 protocol ip \\
+	handle 0x11 fw flowid 1:1 \\
+	action ok
+.EE
+.RE
+
+Configure the sending side to encode for the filters above. Use a destination
+IP address of 192.168.122.237/24, then tag with skb mark of decimal 17. Encode
+the packaet with ethertype 0xdead, add skb->mark to whitelist of metadatum to
+send, and rewrite the destination MAC address to 02:15:15:15:15:15.
+
+.RS
+.EX
+# tc qdisc add dev eth0 root handle 1: prio
+# tc filter add dev eth0 parent 1: protocol ip prio 10 u32 \\
+	match ip dst 192.168.122.237/24 \\
+	match ip protocol 1 0xff \\
+	flowid 1:2 \\
+	action skbedit mark 17 \\
+	action ife encode \\
+	type 0xDEAD \\
+	allow mark \\
+	dst 02:15:15:15:15:15
+.EE
+.RE
+
+.SH SEE ALSO
+.BR tc (8),
+.BR tc-u32 (8)

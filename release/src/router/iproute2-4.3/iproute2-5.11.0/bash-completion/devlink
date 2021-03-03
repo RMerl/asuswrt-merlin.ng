@@ -1,0 +1,1006 @@
+# bash completion for devlink(8)                          -*- shell-script -*-
+
+# Get all the optional commands for devlink
+_devlink_get_optional_commands()
+{
+    local object=$1; shift
+
+    local filter_options=""
+    local options="$(devlink $object help 2>&1 \
+        | command sed -n -e "s/^.*devlink $object //p" \
+        | cut -d " " -f 1)"
+
+    # Remove duplicate options from "devlink $OBJECT help" command
+    local opt
+    for opt in $options; do
+        if [[ $filter_options =~ $opt ]]; then
+            continue
+        else
+            filter_options="$filter_options $opt"
+        fi
+    done
+
+    echo $filter_options
+}
+
+# Complete based on given word, for when an argument or an option name has
+# but a few possible arguments.
+_devlink_direct_complete()
+{
+    local dev port region value
+
+    case $1 in
+        dev)
+            value=$(devlink dev show 2>/dev/null)
+            ;;
+        param_name)
+            dev=${words[4]}
+            value=$(devlink -j dev param show 2>/dev/null \
+                    | jq ".param[\"$dev\"][].name")
+            ;;
+        port)
+            value=$(devlink -j port show 2>/dev/null \
+                    | jq '.port as $ports | $ports | keys[] as $key
+                    | ($ports[$key].netdev // $key)')
+            ;;
+        region)
+            value=$(devlink -j region show 2>/dev/null \
+                    | jq '.regions' | jq 'keys[]')
+            ;;
+        snapshot)
+            region=${words[3]}
+            value=$(devlink -j region show 2>/dev/null \
+                    | jq ".regions[\"$region\"].snapshot[]")
+            ;;
+        trap)
+            dev=${words[3]}
+            value=$(devlink -j trap show 2>/dev/null \
+                    | jq ".trap[\"$dev\"][].name")
+            ;;
+        trap_group)
+            dev=${words[4]}
+            value=$(devlink -j trap group show 2>/dev/null \
+                    | jq ".trap_group[\"$dev\"][].name")
+            ;;
+        trap_policer)
+            dev=${words[4]}
+            value=$(devlink -j trap policer show 2>/dev/null \
+                    | jq ".trap_policer[\"$dev\"][].policer")
+            ;;
+        health_dev)
+            value=$(devlink -j health show 2>/dev/null | jq '.health' \
+                    | jq 'keys[]')
+            ;;
+        reporter)
+            dev=${words[cword - 2]}
+            value=$(devlink -j health show 2>/dev/null \
+                    | jq ".health[\"$dev\"][].reporter")
+            ;;
+        pool)
+            dev=$pprev
+            value=$(devlink -j sb pool show 2>/dev/null \
+                    | jq ".pool[\"$dev\"][].pool")
+            ;;
+        port_pool)
+            port=${words[5]}
+            value=$(devlink -j sb port pool show 2>/dev/null \
+                    | jq ".port_pool[\"$port\"][].pool")
+            ;;
+        tc)
+            port=$pprev
+            value=$(devlink -j sb tc bind show 2>/dev/null \
+                    | jq ".tc_bind[\"$port\"][].tc")
+            ;;
+    esac
+
+    COMPREPLY+=( $( compgen -W "$value" -- "$cur" ) )
+    # Remove colon containing prefix from COMPREPLY items in order to avoid
+    # wordbreaks with colon.
+    __ltrim_colon_completions "$cur"
+}
+
+# Completion for devlink dev eswitch set
+_devlink_dev_eswitch_set()
+{
+    local -A settings=(
+        [mode]=notseen
+        [inline-mode]=notseen
+        [encap-mode]=notseen
+    )
+
+    if [[ $cword -eq 5 ]]; then
+        COMPREPLY=( $( compgen -W "mode inline-mode encap-mode" -- "$cur" ) )
+    fi
+
+    # Mark seen settings
+    local word
+    for word in "${words[@]:5:${#words[@]}-1}"; do
+        if [[ -n $word ]]; then
+            if [[ "${settings[$word]}" ]]; then
+                settings[$word]=seen
+            fi
+        fi
+    done
+
+    case $prev in
+        mode)
+            COMPREPLY=( $( compgen -W "legacy switchdev" -- "$cur" ) )
+            return
+            ;;
+        inline-mode)
+            COMPREPLY=( $( compgen -W "none link network transport" -- \
+                "$cur" ) )
+            return
+            ;;
+        encap-mode)
+            COMPREPLY=( $( compgen -W "none basic" -- "$cur" ) )
+            return
+            ;;
+    esac
+
+    local -a comp_words=()
+
+    # Add settings not seen to completions
+    local setting
+    for setting in "${!settings[@]}"; do
+        if [ "${settings[$setting]}" = notseen ]; then
+            comp_words+=( "$setting" )
+        fi
+    done
+
+    COMPREPLY=( $( compgen -W "${comp_words[*]}" -- "$cur" ) )
+}
+
+# Completion for devlink dev eswitch
+_devlink_dev_eswitch()
+{
+    case "$cword" in
+        3)
+            COMPREPLY=( $( compgen -W "show set" -- "$cur" ) )
+            return
+            ;;
+        4)
+            _devlink_direct_complete "dev"
+            return
+            ;;
+    esac
+
+    case "${words[3]}" in
+        set)
+            _devlink_dev_eswitch_set
+            return
+            ;;
+        show)
+            return
+            ;;
+    esac
+}
+
+# Completion for devlink dev param set
+_devlink_dev_param_set()
+{
+    case $cword in
+        7)
+            COMPREPLY=( $( compgen -W "value" -- "$cur" ) )
+            return
+            ;;
+        8)
+            # String argument
+            return
+            ;;
+        9)
+            COMPREPLY=( $( compgen -W "cmode" -- "$cur" ) )
+            return
+            ;;
+        10)
+            COMPREPLY=( $( compgen -W "runtime driverinit permanent" -- \
+                "$cur" ) )
+            return
+            ;;
+    esac
+}
+
+# Completion for devlink dev param
+_devlink_dev_param()
+{
+    case "$cword" in
+        3)
+            COMPREPLY=( $( compgen -W "show set" -- "$cur" ) )
+            return
+            ;;
+        4)
+            _devlink_direct_complete "dev"
+            return
+            ;;
+        5)
+            COMPREPLY=( $( compgen -W "name" -- "$cur" ) )
+            return
+            ;;
+        6)
+            _devlink_direct_complete "param_name"
+            return
+            ;;
+    esac
+
+    if [[ "${words[3]}" == "set" ]]; then
+        _devlink_dev_param_set
+    fi
+}
+
+# Completion for devlink dev reload
+_devlink_dev_reload()
+{
+    case "$cword" in
+        4)
+            COMPREPLY=( $( compgen -W "netns" -- "$cur" ) )
+            return
+            ;;
+        5)
+            local nslist=$( ip netns list 2>/dev/null )
+            COMPREPLY=( $( compgen -W "$nslist" -- "$cur" ) )
+            return
+            ;;
+    esac
+}
+
+# Completion for devlink dev flash
+_devlink_dev_flash()
+{
+    case "$cword" in
+        4)
+            COMPREPLY=( $( compgen -W "file" -- "$cur" ) )
+            return
+            ;;
+        5)
+            _filedir
+            return
+            ;;
+        6)
+            COMPREPLY=( $( compgen -W "component" -- "$cur" ) )
+            return
+            ;;
+     esac
+}
+
+# Completion for devlink dev
+_devlink_dev()
+{
+    case $command in
+        show|reload|info|flash)
+            if [[ $cword -le 3 ]]; then
+                _devlink_direct_complete "dev"
+            elif [[ $command == "reload" || $command == "flash" ]];then
+                _devlink_dev_$command
+            fi
+            return
+            ;;
+        eswitch|param)
+            _devlink_dev_$command
+            return
+            ;;
+    esac
+}
+
+# Completion for devlink port set
+_devlink_port_set()
+{
+    case "$cword" in
+        3)
+            _devlink_direct_complete "port"
+            return
+            ;;
+        4)
+            COMPREPLY=( $( compgen -W "type" -- "$cur" ) )
+            return
+            ;;
+        5)
+            COMPREPLY=( $( compgen -W "eth ib auto" -- "$cur" ) )
+            return
+            ;;
+    esac
+}
+
+# Completion for devlink port split
+_devlink_port_split()
+{
+    case "$cword" in
+        3)
+            _devlink_direct_complete "port"
+            return
+            ;;
+        4)
+            COMPREPLY=( $( compgen -W "count" -- "$cur" ) )
+            return
+            ;;
+        5)
+            # Integer argument
+            return
+            ;;
+    esac
+}
+
+# Completion for devlink port param set
+_devlink_port_param_set()
+{
+    case $cword in
+        7)
+            COMPREPLY=( $( compgen -W "value" -- "$cur" ) )
+            return
+            ;;
+        8)
+            # String argument
+            return
+            ;;
+        9)
+            COMPREPLY=( $( compgen -W "cmode" -- "$cur" ) )
+            return
+            ;;
+        10)
+            COMPREPLY=( $( compgen -W "runtime driverinit permanent" -- \
+                "$cur" ) )
+            return
+            ;;
+    esac
+}
+
+# Completion for devlink port param
+_devlink_port_param()
+{
+    case "$cword" in
+        3)
+            COMPREPLY=( $( compgen -W "show set" -- "$cur" ) )
+            return
+            ;;
+        4)
+            _devlink_direct_complete "port"
+            return
+            ;;
+        5)
+            COMPREPLY=( $( compgen -W "name" -- "$cur" ) )
+            return
+            ;;
+        6)
+            _devlink_direct_complete "param_name"
+            return
+            ;;
+    esac
+
+    if [[ "${words[3]}" == "set" ]]; then
+        _devlink_port_param_set
+    fi
+}
+
+# Completion for devlink port
+_devlink_port()
+{
+    case $command in
+        set)
+            _devlink_port_set
+            return
+            ;;
+        split)
+            _devlink_port_split
+            return
+            ;;
+        param)
+            _devlink_port_param
+            return
+            ;;
+        show|unsplit)
+            if [[ $cword -eq 3 ]]; then
+                _devlink_direct_complete "port"
+            fi
+            return
+            ;;
+    esac
+}
+
+# Completion for devlink dpipe
+_devlink_dpipe()
+{
+    local options="$(devlink dpipe help 2>&1 \
+                     | command sed -e '/OBJECT-LIST := /!d' \
+                     -e 's/.*{ //' -e 's/}.*//' -e 's/|//g' )"
+
+    if [[ $cword -eq 2 ]]; then
+        COMPREPLY+=( $( compgen -W "$options" -- "$cur" ) )
+    fi
+}
+
+# Completion for devlink monitor
+_devlink_monitor()
+{
+    local options="$(devlink monitor help 2>&1 \
+                     | command sed -e '/OBJECT-LIST := /!d' \
+                     -e 's/.*{ //' -e 's/}.*//' -e 's/|//g' )"
+
+    if [[ $cword -eq 2 ]]; then
+        COMPREPLY+=( $( compgen -W "all $options" -- "$cur" ) )
+    fi
+}
+
+# Completion for the rest of devlink sb $command
+_devlink_sb_command_options()
+{
+    local subcmd
+
+    case $command in
+        pool)
+            subcmd=${words[3]}
+            if [[ $cword -eq 5 ]]; then
+                COMPREPLY=( $( compgen -W "pool" -- "$cur" ) )
+            fi
+            if [[ $subcmd == "set" ]]; then
+                case $cword in
+                    7)
+                        COMPREPLY+=( $( compgen -W "size" -- "$cur" ) )
+                        ;;
+                    9)
+                        COMPREPLY+=( $( compgen -W "thtype" -- "$cur" ) )
+                        ;;
+                esac
+            fi
+            ;;
+        port)
+            subcmd=${words[4]}
+            if [[ $cword -eq 6 ]]; then
+                COMPREPLY+=( $( compgen -W "pool" -- "$cur" ) )
+            fi
+            if [[ $subcmd == "set" ]]; then
+                case $cword in
+                    8)
+                        COMPREPLY+=( $( compgen -W "th" -- "$cur" ) )
+                        ;;
+                esac
+            fi
+            ;;
+        tc)
+            subcmd=${words[4]}
+            case $cword in
+                6)
+                    COMPREPLY+=( $( compgen -W "tc" -- "$cur" ) )
+                    ;;
+                8)
+                    COMPREPLY+=( $( compgen -W "type" -- "$cur" ) )
+                    ;;
+            esac
+            if [[ $subcmd == "set" ]]; then
+                case $cword in
+                    10)
+                        COMPREPLY+=( $( compgen -W "pool" -- "$cur" ) )
+                        ;;
+                    12)
+                        COMPREPLY+=( $( compgen -W "th" -- "$cur" ) )
+                        ;;
+                esac
+            fi
+            ;;
+    esac
+}
+
+# Completion for devlink sb
+_devlink_sb()
+{
+    case $prev in
+        bind)
+            COMPREPLY=( $( compgen -W "set show" -- "$cur" ) )
+            ;;
+        occupancy)
+            COMPREPLY=( $( compgen -W "show snapshot clearmax" -- "$cur" ) )
+            ;;
+        pool)
+            if [[ $cword -eq 3 || $cword -eq 4 ]]; then
+                COMPREPLY=( $( compgen -W "set show" -- "$cur" ) )
+            elif [[ $command == "port" || $command == "tc" ]]; then
+                _devlink_direct_complete "port_pool"
+            else
+                _devlink_direct_complete "pool"
+            fi
+            ;;
+        port)
+            if [[ $cword -eq 3 ]]; then
+                COMPREPLY=( $( compgen -W "pool" -- "$cur" ) )
+            fi
+            ;;
+        show|set|snapshot|clearmax)
+            case $command in
+                show|pool|occupancy)
+                    _devlink_direct_complete "dev"
+                    if [[ $command == "occupancy" && $prev == "show" ]];then
+                        _devlink_direct_complete "port"
+                    fi
+                    ;;
+                port|tc)
+                    _devlink_direct_complete "port"
+                    ;;
+            esac
+            ;;
+        size)
+            # Integer argument
+            ;;
+        thtype)
+            COMPREPLY=( $( compgen -W "static dynamic" -- "$cur" ) )
+            ;;
+        th)
+            # Integer argument
+            ;;
+        tc)
+            if [[ $cword -eq 3 ]]; then
+                COMPREPLY=( $( compgen -W "bind" -- "$cur" ) )
+            else
+                _devlink_direct_complete "tc"
+            fi
+            ;;
+        type)
+            COMPREPLY=( $( compgen -W "ingress egress" -- "$cur" ) )
+            ;;
+    esac
+
+    _devlink_sb_command_options
+    return
+}
+
+# Completion for devlink resource set path argument
+_devlink_resource_path()
+{
+    local path parents parent all_path
+    local dev=${words[3]}
+    local -a path
+
+    local all_path=$(
+        devlink resource show $dev \
+            | sed -E '# Of resource lines, keep only the name itself.
+                    s/name ([^ ]*) .*/\1/
+                    # Drop headers.
+                    /:$/d
+                    # First layer is not aligned enough, align it.
+                    s/^/  /
+                    # Use slashes as unary code for resource depth.
+                    s,    ,/,g
+                    # Separate tally count from resource name.
+                    s,/*,&\t,' \
+            | while read d name; do
+                    while ((${#path[@]} > ${#d})); do
+                        unset path[$((${#path[@]} - 1))]
+                    done
+                    path[$((${#d} - 1))]=$name
+                    echo ${path[@]}
+              done \
+            | sed '# Convert paths to slash-separated
+                    s,^,/,;s, ,/,g;s,$,/,'
+    )
+    COMPREPLY=( ${COMPREPLY[@]:-} $( compgen -W "$all_path" -- "$cur" ) )
+}
+
+# Completion for devlink resource set
+_devlink_resource_set()
+{
+    case "$cword" in
+        3)
+            _devlink_direct_complete "dev"
+            return
+            ;;
+        4)
+            COMPREPLY=( $( compgen -W "path" -- "$cur" ) )
+            return
+            ;;
+        5)
+            _devlink_resource_path
+            return
+            ;;
+        6)
+            COMPREPLY=( $( compgen -W "size" -- "$cur" ) )
+            return
+            ;;
+        7)
+            # Integer argument
+            return
+            ;;
+    esac
+}
+
+# Completion for devlink resource
+_devlink_resource()
+{
+    case $command in
+        show)
+            if [[ $cword -eq 3 ]]; then
+                _devlink_direct_complete "dev"
+            fi
+            return
+            ;;
+        set)
+            _devlink_resource_set
+            return
+            ;;
+    esac
+}
+
+# Completion for devlink region read
+_devlink_region_read()
+{
+    case "$cword" in
+        6)
+            COMPREPLY=( $( compgen -W "address" -- "$cur" ) )
+            return
+            ;;
+        7)
+            # Address argument, for example: 0x10
+            return
+            ;;
+        8)
+            COMPREPLY=( $( compgen -W "length" -- "$cur" ) )
+            return
+            ;;
+        9)
+            # Integer argument
+            return
+            ;;
+    esac
+}
+
+# Completion for devlink region
+_devlink_region()
+{
+    if [[ $cword -eq 3 && $command != "help" ]]; then
+            _devlink_direct_complete "region"
+    fi
+
+    case $command in
+        show)
+            return
+            ;;
+        del|dump|read)
+            case "$cword" in
+                4)
+                    COMPREPLY=( $( compgen -W "snapshot" -- "$cur" ) )
+                    ;;
+                5)
+                    _devlink_direct_complete "snapshot"
+                    ;;
+            esac
+
+            if [[ $command == "read" ]]; then
+                _devlink_region_read
+            fi
+            return
+            ;;
+    esac
+}
+
+# Completion reporter for devlink health
+_devlink_health_reporter()
+{
+    local i=$1; shift
+
+    case $cword in
+        $((3 + $i)))
+            _devlink_direct_complete "health_dev"
+            ;;
+        $((4 + $i)))
+            COMPREPLY=( $( compgen -W "reporter" -- "$cur" ) )
+            ;;
+        $((5 + $i)))
+            _devlink_direct_complete "reporter"
+            ;;
+    esac
+}
+
+# Completion for devlink health
+_devlink_health()
+{
+    case $command in
+        show|recover|diagnose|set|test)
+            _devlink_health_reporter 0
+            if [[ $command == "set" ]]; then
+                case $cword in
+                    6)
+                        COMPREPLY=( $( compgen -W "grace_period auto_recover" \
+                                   -- "$cur" ) )
+                        ;;
+                    7)
+                        case $prev in
+                            grace_period)
+                                # Integer argument- msec
+                                ;;
+                            auto_recover)
+                                COMPREPLY=( $( compgen -W "true false" -- \
+                                    "$cur" ) )
+                                ;;
+                        esac
+                esac
+            fi
+            return
+            ;;
+        dump)
+            if [[ $cword -eq 3 ]]; then
+                COMPREPLY=( $( compgen -W "show clear" -- "$cur" ) )
+            fi
+
+            _devlink_health_reporter 1
+            return
+            ;;
+    esac
+}
+
+# Completion for action in devlink trap set
+_devlink_trap_set_action()
+{
+    local i=$1; shift
+
+    case $cword in
+        $((6 + $i)))
+            COMPREPLY=( $( compgen -W "action" -- "$cur" ) )
+            ;;
+        $((7 + $i)))
+            COMPREPLY=( $( compgen -W "trap drop mirror" -- "$cur" ) )
+            ;;
+    esac
+}
+
+# Completion for devlink trap group set
+_devlink_trap_group_set()
+{
+    local -A settings=(
+        [action]=notseen
+        [policer]=notseen
+        [nopolicer]=notseen
+    )
+
+    if [[ $cword -eq 7 ]]; then
+        COMPREPLY=( $( compgen -W "action policer nopolicer" -- "$cur" ) )
+    fi
+
+    # Mark seen settings
+    local word
+    for word in "${words[@]:7:${#words[@]}-1}"; do
+        if [[ -n $word ]]; then
+            if [[ "${settings[$word]}" ]]; then
+                settings[$word]=seen
+            fi
+        fi
+    done
+
+    case $prev in
+        action)
+            COMPREPLY=( $( compgen -W "trap drop mirror" -- "$cur" ) )
+            return
+            ;;
+        policer)
+            _devlink_direct_complete "trap_policer"
+            return
+            ;;
+    esac
+
+    local -a comp_words=()
+
+    # Add settings not seen to completions
+    local setting
+    for setting in "${!settings[@]}"; do
+        if [ "${settings[$setting]}" = notseen ]; then
+            comp_words+=( "$setting" )
+        fi
+    done
+
+    COMPREPLY=( $( compgen -W "${comp_words[*]}" -- "$cur" ) )
+}
+
+# Completion for devlink trap group
+_devlink_trap_group()
+{
+    case $cword in
+        3)
+            COMPREPLY=( $( compgen -W "set show" -- "$cur" ) )
+            return
+            ;;
+        4)
+            _devlink_direct_complete "dev"
+            return
+            ;;
+        5)
+            COMPREPLY=( $( compgen -W "group" -- "$cur" ) )
+            return
+            ;;
+        6)
+            _devlink_direct_complete "trap_group"
+            return
+            ;;
+    esac
+
+    if [[ ${words[3]} == "set" ]]; then
+        _devlink_trap_group_set
+    fi
+}
+
+# Completion for devlink trap policer set
+_devlink_trap_policer_set()
+{
+    local -A settings=(
+        [rate]=notseen
+        [burst]=notseen
+    )
+
+    if [[ $cword -eq 7 ]]; then
+        COMPREPLY=( $( compgen -W "rate burst" -- "$cur" ) )
+    fi
+
+    # Mark seen settings
+    local word
+    for word in "${words[@]:7:${#words[@]}-1}"; do
+        if [[ -n $word ]]; then
+            if [[ "${settings[$word]}" ]]; then
+                settings[$word]=seen
+            fi
+        fi
+    done
+
+    case $prev in
+        rate)
+            # Integer argument
+            return
+            ;;
+        burst)
+            # Integer argument
+            return
+            ;;
+    esac
+
+    local -a comp_words=()
+
+    # Add settings not seen to completions
+    local setting
+    for setting in "${!settings[@]}"; do
+        if [ "${settings[$setting]}" = notseen ]; then
+            comp_words+=( "$setting" )
+        fi
+    done
+
+    COMPREPLY=( $( compgen -W "${comp_words[*]}" -- "$cur" ) )
+}
+
+# Completion for devlink trap policer
+_devlink_trap_policer()
+{
+    case $cword in
+        3)
+            COMPREPLY=( $( compgen -W "set show" -- "$cur" ) )
+            return
+            ;;
+        4)
+            _devlink_direct_complete "dev"
+            return
+            ;;
+        5)
+            COMPREPLY=( $( compgen -W "policer" -- "$cur" ) )
+            return
+            ;;
+        6)
+            _devlink_direct_complete "trap_policer"
+            return
+            ;;
+    esac
+
+    if [[ ${words[3]} == "set" ]]; then
+        _devlink_trap_policer_set
+    fi
+}
+
+# Completion for devlink trap
+_devlink_trap()
+{
+    case $command in
+        show|set)
+            case $cword in
+                3)
+                    _devlink_direct_complete "dev"
+                    ;;
+                4)
+                    COMPREPLY=( $( compgen -W "trap" -- "$cur" ) )
+                    ;;
+                5)
+                    _devlink_direct_complete "trap"
+                    ;;
+            esac
+
+            if [[ $command == "set" ]]; then
+                _devlink_trap_set_action 0
+            fi
+            return
+            ;;
+        group)
+            _devlink_trap_$command
+            return
+            ;;
+        policer)
+            _devlink_trap_$command
+            return
+            ;;
+    esac
+}
+
+# Complete any devlink command
+_devlink()
+{
+    local cur prev words cword
+    local opt='--Version --no-nice-names --json --pretty --verbose \
+        --statistics --force --Netns --batch'
+    local objects="$(devlink help 2>&1 | command sed -e '/OBJECT := /!d' \
+		     -e 's/.*{//' -e 's/}.*//' -e \ 's/|//g' )"
+
+    _init_completion || return
+    # Gets the word-to-complete without considering the colon as word breaks
+    _get_comp_words_by_ref -n : cur prev words cword
+
+    if [[ $cword -eq 1 ]]; then
+	    case $cur in
+	        -*)
+		        COMPREPLY=( $( compgen -W "$opt" -- "$cur" ) )
+		        return 0
+		        ;;
+	        *)
+		        COMPREPLY=( $( compgen -W "$objects" -- "$cur" ) )
+		        return 0
+		        ;;
+	    esac
+    fi
+
+    # Deal with options
+    if [[ $prev == -* ]]; then
+	    case $prev in
+	        -V|--Version)
+		        return 0
+		        ;;
+	        -b|--batch)
+		        _filedir
+		        return 0
+		        ;;
+	        --force)
+                COMPREPLY=( $( compgen -W "--batch" -- "$cur" ) )
+		        return 0
+		        ;;
+	        -N|--Netns)
+		        local nslist=$( ip netns list 2>/dev/null )
+		        COMPREPLY=( $( compgen -W "$nslist" -- "$cur" ) )
+		        return 0
+		        ;;
+	        -j|--json)
+		        COMPREPLY=( $( compgen -W "--pretty $objects" -- "$cur" ) )
+		        return 0
+		        ;;
+            *)
+                COMPREPLY=( $( compgen -W "$objects" -- "$cur" ) )
+		        return 0
+		        ;;
+	    esac
+    fi
+
+    # Remove all options so completions don't have to deal with them.
+    local i
+    for (( i=1; i < ${#words[@]}; )); do
+        if [[ ${words[i]::1} == - ]]; then
+            words=( "${words[@]:0:i}" "${words[@]:i+1}" )
+            [[ $i -le $cword ]] && cword=$(( cword - 1 ))
+        else
+            i=$(( ++i ))
+        fi
+    done
+
+    local object=${words[1]}
+    local command=${words[2]}
+    local pprev=${words[cword - 2]}
+
+    if [[ $objects =~ $object ]]; then
+        if [[ $cword -eq 2 ]]; then
+            COMPREPLY=( $( compgen -W "help" -- "$cur") )
+            if [[ $object != "monitor" && $object != "dpipe" ]]; then
+                COMPREPLY+=( $( compgen -W \
+                    "$(_devlink_get_optional_commands $object)" -- "$cur" ) )
+            fi
+        fi
+        "_devlink_$object"
+    fi
+
+} &&
+complete -F _devlink devlink
+
+# ex: ts=4 sw=4 et filetype=sh

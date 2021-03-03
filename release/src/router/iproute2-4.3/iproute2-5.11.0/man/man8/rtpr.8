@@ -1,0 +1,25 @@
+.TH RTPR 8 "18 September, 2015"
+
+.SH NAME
+rtpr \- replace backslashes with newlines.
+
+.SH DESCRIPTION
+.B rtpr
+is a trivial shell script which converts backslashes in standard input to newlines. It's sole purpose is to be fed with input from
+.B ip
+when executed with it's
+.B --oneline
+flag.
+
+.SH EXAMPLES
+.TP
+ip --oneline address show | rtpr
+Undo oneline converted
+.B ip-address
+output.
+
+.SH SEE ALSO
+.BR ip (8)
+
+.SH AUTHORS
+Stephen Hemminger <shemming@brocade.com>

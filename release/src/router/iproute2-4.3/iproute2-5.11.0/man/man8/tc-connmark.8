@@ -1,0 +1,55 @@
+.TH "Connmark retriever action in tc" 8 "11 Jan 2016" "iproute2" "Linux"
+
+.SH NAME
+connmark - netfilter connmark retriever action
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " ... " "action connmark " [ " zone"
+.IR u16_zone_index " ] [ " CONTROL " ] ["
+.BI index " u32_index "
+]
+
+.ti -8
+.IR CONTROL " := { " reclassify " | " pipe " | " drop " | " continue " | " ok " }"
+.SH DESCRIPTION
+The connmark action is used to restore the connection's mark value into the
+packet's fwmark.
+.SH OPTIONS
+.TP
+.BI zone " u16_zone_index"
+Specify the conntrack zone when doing conntrack lookups for packets.
+.I u16_zone_index
+is a 16bit unsigned decimal value.
+.TP
+.I CONTROL
+How to continue after executing this action.
+.RS
+.TP
+.B reclassify
+Restarts classification by jumping back to the first filter attached to this
+action's parent.
+.TP
+.B pipe
+Continue with the next action, this is the default.
+.TP
+.B drop
+.TQ
+.B shot
+Packet will be dropped without running further actions.
+.TP
+.B continue
+Continue classification with next filter in line.
+.TP
+.B pass
+Return to calling qdisc for packet processing. This ends the classification
+process.
+.RE
+.TP
+.BI index " u32_index "
+Specify an index for this action in order to being able to identify it in later
+commands.
+.I u32_index
+is a 32bit unsigned decimal value.
+.SH SEE ALSO
+.BR tc (8)

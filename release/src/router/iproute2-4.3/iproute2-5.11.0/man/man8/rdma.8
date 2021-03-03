@@ -1,0 +1,137 @@
+.TH RDMA 8 "28 Mar 2017" "iproute2" "Linux"
+.SH NAME
+rdma \- RDMA tool
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B rdma
+.RI "[ " OPTIONS " ] " OBJECT " { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.B rdma
+.RB "[ " -force " ] "
+.BI "-batch " filename
+.sp
+
+.ti -8
+.IR OBJECT " := { "
+.BR dev " | " link " | " resource " | " system " | " statistic " }"
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-V\fR[\fIersion\fR] |
+\fB\-d\fR[\fIetails\fR] }
+\fB\-j\fR[\fIson\fR] }
+\fB\-p\fR[\fIretty\fR] }
+
+.SH OPTIONS
+
+.TP
+.BR "\-V" , " -Version"
+Print the version of the
+.B rdma
+tool and exit.
+
+.TP
+.BR "\-b", " \-batch " <FILENAME>
+Read commands from provided file or standard input and invoke them.
+First failure will cause termination of rdma.
+
+.TP
+.BR "\-force"
+Don't terminate rdma on errors in batch mode.
+If there were any errors during execution of the commands, the application return code will be non zero.
+
+.TP
+.BR "\-d" , " --details"
+Output detailed information.  Adding a second \-d includes driver-specific details.
+
+.TP
+.BR "\-r" , " --raw"
+Output includes driver-specific details in raw format.
+
+.TP
+.BR "\-p" , " --pretty"
+When combined with -j generate a pretty JSON output.
+
+.TP
+.BR "\-j" , " --json"
+Generate JSON output.
+
+.SS
+.I OBJECT
+
+.TP
+.B dev
+- RDMA device.
+
+.TP
+.B link
+- RDMA port related.
+
+.TP
+.B resource
+- RDMA resource configuration.
+
+.TP
+.B sys
+- RDMA subsystem related.
+
+.TP
+.B statistic
+- RDMA counter statistic related.
+
+.PP
+The names of all objects may be written in full or
+abbreviated form, for example
+.B stats
+can be abbreviated as
+.B stat
+or just
+.B s.
+
+.SS
+.I COMMAND
+
+Specifies the action to perform on the object.
+The set of possible actions depends on the object type.
+As a rule, it is possible to
+.B show
+(or
+.B list
+) objects, but some objects do not allow all of these operations
+or have some additional commands. The
+.B help
+command is available for all objects. It prints
+out a list of available commands and argument syntax conventions.
+.sp
+If no command is given, some default command is assumed.
+Usually it is
+.B list
+or, if the objects of this class cannot be listed,
+.BR "help" .
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR rdma-dev (8),
+.BR rdma-link (8),
+.BR rdma-resource (8),
+.BR rdma-system (8),
+.BR rdma-statistic (8),
+.br
+
+.SH REPORTING BUGS
+Report any bugs to the Linux RDMA mailing list
+.B <linux-rdma@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Leon Romanovsky <leonro@mellanox.com>

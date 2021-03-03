@@ -1,0 +1,396 @@
+.TH "Generic packet editor action in tc" 8 "12 Jan 2015" "iproute2" "Linux"
+
+.SH NAME
+pedit - generic packet editor action
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " ... " "action pedit [ex] munge " {
+.IR RAW_OP " | " LAYERED_OP " | " EXTENDED_LAYERED_OP " } [ " CONTROL " ]"
+
+.ti -8
+.IR RAW_OP " := "
+.BI offset " OFFSET"
+.RB "{ " u8 " | " u16 " | " u32 " } ["
+.IR AT_SPEC " ] " CMD_SPEC
+
+.ti -8
+.IR AT_SPEC " := "
+.BI at " AT " offmask " MASK " shift " SHIFT"
+
+.ti -8
+.IR LAYERED_OP " := { "
+.BI ip " IPHDR_FIELD"
+|
+.BI ip " BEYOND_IPHDR_FIELD"
+.RI } " CMD_SPEC"
+
+.ti -8
+.IR EXTENDED_LAYERED_OP " := { "
+.BI eth " ETHHDR_FIELD"
+|
+.BI ip " IPHDR_FIELD"
+|
+.BI ip " EX_IPHDR_FIELD"
+|
+.BI ip6 " IP6HDR_FIELD"
+|
+.BI tcp " TCPHDR_FIELD"
+|
+.BI udp " UDPHDR_FIELD"
+.RI } " CMD_SPEC"
+
+.ti -8
+.IR ETHHDR_FIELD " := { "
+.BR src " | " dst " | " type " }"
+
+.ti -8
+.IR IPHDR_FIELD " := { "
+.BR src " | " dst " | " tos " | " dsfield " | " ihl " | " protocol " |"
+.BR precedence " | " nofrag " | " firstfrag " | " ce " | " df " }"
+
+.ti -8
+.IR BEYOND_IPHDR_FIELD " := { "
+.BR dport " | " sport " | " icmp_type " | " icmp_code " }"
+
+.ti -8
+.IR EX_IPHDR_FIELD " := { "
+.BR ttl " }"
+
+
+.ti -8
+.IR IP6HDR_FIELD " := { "
+.BR src " | " dst " | " traffic_class " | " flow_lbl " | " payload_len " | "
+.BR nexthdr " | " hoplimit " }"
+
+.ti -8
+.IR TCPHDR_FIELD " := { "
+.BR sport " | " dport " | " flags " }"
+
+.ti -8
+.IR UDPHDR_FIELD " := { "
+.BR sport " | " dport " }"
+
+.ti -8
+.IR CMD_SPEC " := {"
+.BR clear " | " invert " | " set
+.IR VAL " | "
+.BR add
+.IR VAL " | "
+.BR preserve " } [ " retain
+.IR RVAL " ]"
+
+.ti -8
+.IR CONTROL " := {"
+.BR reclassify " | " pipe " | " drop " | " shot " | " continue " | " pass " | " goto " " chain " " CHAIN_INDEX " }"
+.SH DESCRIPTION
+The
+.B pedit
+action can be used to change arbitrary packet data. The location of data to
+change can either be specified by giving an offset and size as in
+.IR RAW_OP ,
+or for header values by naming the header and field to edit the size is then
+chosen automatically based on the header field size.
+.SH OPTIONS
+.TP
+.B ex
+Use extended pedit.
+.I EXTENDED_LAYERED_OP
+and the add
+.I CMD_SPEC
+are allowed only in this mode.
+.TP
+.BI offset " OFFSET " "\fR{ \fBu32 \fR| \fBu16 \fR| \fBu8 \fR}"
+Specify the offset at which to change data.
+.I OFFSET
+is a signed integer, it's base is automatically chosen (e.g. hex if prefixed by
+.B 0x
+or octal if prefixed by
+.BR 0 ).
+The second argument specifies the length of data to change, that is four bytes
+.RB ( u32 ),
+two bytes
+.RB ( u16 )
+or a single byte
+.RB ( u8 ).
+.TP
+.BI at " AT " offmask " MASK " shift " SHIFT"
+This is an optional part of
+.IR RAW_OP
+which allows to have a variable
+.I OFFSET
+depending on packet data at offset
+.IR AT ,
+which is binary ANDed with
+.I MASK
+and right-shifted by
+.I SHIFT
+before adding it to
+.IR OFFSET .
+.TP
+.BI eth " ETHHDR_FIELD"
+Change an ETH header field. The supported keywords for
+.I ETHHDR_FIELD
+are:
+.RS
+.TP
+.B src
+.TQ
+.B dst
+Source or destination MAC address in the standard format: XX:XX:XX:XX:XX:XX
+.TP
+.B type
+Ether-type in numeric value
+.RE
+.TP
+.BI ip " IPHDR_FIELD"
+Change an IPv4 header field. The supported keywords for
+.I IPHDR_FIELD
+are:
+.RS
+.TP
+.B src
+.TQ
+.B dst
+Source or destination IP address, a four-byte value.
+.TP
+.B tos
+.TQ
+.B dsfield
+.TQ
+.B precedence
+Type Of Service field, an eight-bit value.
+.TP
+.B ihl
+Change the IP Header Length field, a four-bit value.
+.TP
+.B protocol
+Next-layer Protocol field, an eight-bit value.
+.TP
+.B nofrag
+.TQ
+.B firstfrag
+.TQ
+.B ce
+.TQ
+.B df
+.TQ
+.B mf
+Change IP header flags. Note that the value to pass to the
+.B set
+command is not just a bit value, but the full byte including the flags field.
+Though only the relevant bits of that value are respected, the rest ignored.
+.RE
+.TP
+.BI ip " BEYOND_IPHDR_FIELD"
+Supported only for non-extended layered op. It is passed to the kernel as
+offsets relative to the beginning of the IP header and assumes the IP header is
+of minimum size (20 bytes). The supported keywords for
+.I BEYOND_IPHDR_FIELD
+are:
+.RS
+.TP
+.B dport
+.TQ
+.B sport
+Destination or source port numbers, a 16-bit value. Indeed, IPv4 headers don't
+contain this information. Instead, this will set an offset which suits at least
+TCP and UDP if the IP header is of minimum size (20 bytes). If not, this will do
+unexpected things.
+.TP
+.B icmp_type
+.TQ
+.B icmp_code
+Again, this allows to change data past the actual IP header itself. It assumes
+an ICMP header is present immediately following the (minimal sized) IP header.
+If it is not or the latter is bigger than the minimum of 20 bytes, this will do
+unexpected things. These fields are eight-bit values.
+.RE
+.TP
+.BI ip " EX_IPHDR_FIELD"
+Supported only when
+.I ex
+is used. The supported keywords for
+.I EX_IPHDR_FIELD
+are:
+.RS
+.TP
+.B ttl
+.RE
+.TP
+.BI ip6 " IP6HDR_FIELD"
+The supported keywords for
+.I IP6HDR_FIELD
+are:
+.RS
+.TP
+.B src
+.TQ
+.B dst
+.TQ
+.B traffic_class
+.TQ
+.B flow_lbl
+.TQ
+.B payload_len
+.TQ
+.B nexthdr
+.TQ
+.B hoplimit
+.RE
+.TP
+.BI tcp " TCPHDR_FIELD"
+The supported keywords for
+.I TCPHDR_FIELD
+are:
+.RS
+.TP
+.B sport
+.TQ
+.B dport
+Source or destination TCP port number, a 16-bit value.
+.TP
+.B flags
+.RE
+.TP
+.BI udp " UDPHDR_FIELD"
+The supported keywords for
+.I UDPHDR_FIELD
+are:
+.RS
+.TP
+.B sport
+.TQ
+.B dport
+Source or destination TCP port number, a 16-bit value.
+.RE
+.TP
+.B clear
+Clear the addressed data (i.e., set it to zero).
+.TP
+.B invert
+Swap every bit in the addressed data.
+.TP
+.BI set " VAL"
+Set the addressed data to a specific value. The size of
+.I VAL
+is defined by either one of the
+.BR u32 ", " u16 " or " u8
+keywords in
+.IR RAW_OP ,
+or the size of the addressed header field in
+.IR LAYERED_OP .
+.TP
+.BI add " VAL"
+Add the addressed data by a specific value. The size of
+.I VAL
+is defined by the size of the addressed header field in
+.IR EXTENDED_LAYERED_OP .
+This operation is supported only for extended layered op.
+.TP
+.B preserve
+Keep the addressed data as is.
+.TP
+.BI retain " RVAL"
+This optional extra part of
+.I CMD_SPEC
+allows to exclude bits from being changed. Supported only for 32 bits fields
+or smaller.
+.TP
+.I CONTROL
+The following keywords allow to control how the tree of qdisc, classes,
+filters and actions is further traversed after this action.
+.RS
+.TP
+.B reclassify
+Restart with the first filter in the current list.
+.TP
+.B pipe
+Continue with the next action attached to the same filter.
+.TP
+.B drop
+.TQ
+.B shot
+Drop the packet.
+.TP
+.B continue
+Continue classification with the next filter in line.
+.TP
+.B pass
+Finish classification process and return to calling qdisc for further packet
+processing. This is the default.
+.RE
+.SH EXAMPLES
+Being able to edit packet data, one could do all kinds of things, such as e.g.
+implementing port redirection. Certainly not the most useful application, but
+as an example it should do:
+
+First, qdiscs need to be set up to attach filters to. For the receive path, a simple
+.B ingress
+qdisc will do, for transmit path a classful qdisc
+.RB ( HTB
+in this case) is necessary:
+
+.RS
+.EX
+tc qdisc replace dev eth0 root handle 1: htb
+tc qdisc add dev eth0 ingress handle ffff:
+.EE
+.RE
+
+Finally, a filter with
+.B pedit
+action can be added for each direction. In this case,
+.B u32
+is used matching on the port number to redirect from, while
+.B pedit
+then does the actual rewriting:
+
+.RS
+.EX
+tc filter add dev eth0 parent 1: u32 \\
+	match ip dport 23 0xffff \\
+	action pedit pedit munge ip dport set 22
+tc filter add dev eth0 parent ffff: u32 \\
+	match ip sport 22 0xffff \\
+	action pedit pedit munge ip sport set 23
+tc filter add dev eth0 parent ffff: u32 \\
+	match ip sport 22 0xffff \\
+	action pedit ex munge ip dst set 192.168.1.199
+tc filter add dev eth0 parent ffff: u32 \\
+	match ip sport 22 0xffff \\
+	action pedit ex munge ip6 dst set fe80::dacb:8aff:fec7:320e
+tc filter add dev eth0 parent ffff: u32 \\
+	match ip sport 22 0xffff \\
+	action pedit ex munge eth dst set 11:22:33:44:55:66
+tc filter add dev eth0 parent ffff: u32 \\
+	match ip dport 23 0xffff \\
+	action pedit ex munge tcp dport set 22
+.EE
+.RE
+
+To rewrite just part of a field, use the
+.B retain
+directive. E.g. to overwrite the DSCP part of a dsfield with $DSCP, without
+touching ECN:
+
+.RS
+.EX
+tc filter add dev eth0 ingress flower ... \\
+	action pedit ex munge ip dsfield set $((DSCP << 2)) retain 0xfc
+.EE
+.RE
+
+And vice versa, to set ECN to e.g. 1 without impacting DSCP:
+
+.RS
+.EX
+tc filter add dev eth0 ingress flower ... \\
+	action pedit ex munge ip dsfield set 1 retain 0x3
+.EE
+.RE
+
+.SH SEE ALSO
+.BR tc (8),
+.BR tc-htb (8),
+.BR tc-u32 (8)

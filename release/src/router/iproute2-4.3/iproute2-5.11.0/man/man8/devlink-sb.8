@@ -1,0 +1,324 @@
+.TH DEVLINK\-SB 8 "14 Apr 2016" "iproute2" "Linux"
+.SH NAME
+devlink-sb \- devlink shared buffer configuration
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B devlink
+.RI "[ " OPTIONS " ]"
+.B sb
+.RI  " { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-V\fR[\fIersion\fR] |
+\fB\-n\fR[\fIno-nice-names\fR] }
+
+.ti -8
+.BR "devlink sb show "
+.RI "[ " DEV " [ "
+.B sb
+.IR SB_INDEX " ] ]"
+
+.ti -8
+.BR "devlink sb pool show "
+.RI "[ " DEV " [ "
+.B sb
+.IR SB_INDEX " ] "
+.br
+.B pool
+.IR POOL_INDEX " ]"
+
+.ti -8
+.BI "devlink sb pool set " DEV "
+.RB "[ " sb
+.IR SB_INDEX " ] "
+.br
+.BI pool " POOL_INDEX "
+.br
+.BI size " POOL_SIZE "
+.br
+.BR thtype " { " static " | " dynamic " }"
+
+.ti -8
+.BR "devlink sb port pool show "
+.RI "[ " DEV/PORT_INDEX " [ "
+.B sb
+.IR SB_INDEX " ] "
+.br
+.B pool
+.IR POOL_INDEX " ]"
+
+.ti -8
+.BI "devlink sb port pool set " DEV/PORT_INDEX "
+.RB "[ " sb
+.IR SB_INDEX " ] "
+.br
+.BI pool " POOL_INDEX "
+.br
+.BI th " THRESHOLD "
+
+.ti -8
+.BR "devlink sb tc bind show "
+.RI "[ " DEV/PORT_INDEX " [ "
+.B sb
+.IR SB_INDEX " ] "
+.br
+.BI tc " TC_INDEX "
+.br
+.B type
+.RB "{ " ingress " | " egress " } ]"
+
+.ti -8
+.BI "devlink sb tc bind set " DEV/PORT_INDEX "
+.RB "[ " sb
+.IR SB_INDEX " ] "
+.br
+.BI tc " TC_INDEX "
+.br
+.BR type " { " ingress " | " egress " }"
+.br
+.BI pool " POOL_INDEX "
+.br
+.BI th " THRESHOLD "
+
+.ti -8
+.BR "devlink sb occupancy show "
+.RI "{ " DEV " | " DEV/PORT_INDEX " } [ "
+.B sb
+.IR SB_INDEX " ] "
+
+.ti -8
+.BR "devlink sb occupancy snapshot "
+.IR DEV " [ "
+.B sb
+.IR SB_INDEX " ]"
+
+.ti -8
+.BR "devlink sb occupancy clearmax "
+.IR DEV " [ "
+.B sb
+.IR SB_INDEX " ]"
+
+.ti -8
+.B devlink sb help
+
+.SH "DESCRIPTION"
+.SS devlink sb show - display available shared buffers and their attributes
+
+.PP
+.I "DEV"
+- specifies the devlink device to show shared buffers.
+If this argument is omitted all shared buffers of all devices are listed.
+
+.PP
+.I "SB_INDEX"
+- specifies the shared buffer.
+If this argument is omitted shared buffer with index 0 is selected.
+Behaviour of this argument it the same for every command.
+
+.SS devlink sb pool show - display available pools and their attributes
+
+.PP
+.I "DEV"
+- specifies the devlink device to show pools.
+If this argument is omitted all pools of all devices are listed.
+
+Display available pools listing their
+.B type, size, thtype
+and
+.B cell_size. cell_size
+is the allocation granularity of memory within the shared buffer. Drivers
+may round up, round down or reject
+.B size
+passed to the set command if it is not multiple of
+.B cell_size.
+
+.SS devlink sb pool set - set attributes of pool
+
+.PP
+.I "DEV"
+- specifies the devlink device to set pool.
+
+.TP
+.BI size " POOL_SIZE"
+size of the pool in Bytes.
+
+.TP
+.BR thtype " { " static " | " dynamic " } "
+pool threshold type.
+
+.I static
+- Threshold values for the pool will be passed in Bytes.
+
+.I dynamic
+- Threshold values ("to_alpha") for the pool will be used to compute alpha parameter according to formula:
+.br
+.in +16
+alpha = 2 ^ (to_alpha - 10)
+.in -16
+
+.in +10
+The range of the passed value is between 0 to 20. The computed alpha is used to determine the maximum usage of the flow:
+.in -10
+.br
+.in +16
+max_usage = alpha / (1 + alpha) * Free_Buffer
+.in -16
+
+.SS devlink sb port pool show - display port-pool combinations and threshold for each
+.I "DEV/PORT_INDEX"
+- specifies the devlink port.
+
+.TP
+.BI pool " POOL_INDEX"
+pool index.
+
+.SS devlink sb port pool set - set port-pool threshold
+.I "DEV/PORT_INDEX"
+- specifies the devlink port.
+
+.TP
+.BI pool " POOL_INDEX"
+pool index.
+
+.TP
+.BI th " THRESHOLD"
+threshold value. Type of the value is either Bytes or "to_alpha", depends on
+.B thtype
+set for the pool.
+
+.SS devlink sb tc bind show - display port-TC to pool bindings and threshold for each
+
+.I "DEV/PORT_INDEX"
+- specifies the devlink port.
+
+.TP
+.BI tc " TC_INDEX"
+index of either ingress or egress TC, usually in range 0 to 8 (depends on device).
+
+.TP
+.BR type " { " ingress " | " egress " } "
+TC type.
+
+.SS devlink sb tc bind set - set port-TC to pool binding with specified threshold
+
+.I "DEV/PORT_INDEX"
+- specifies the devlink port.
+
+.TP
+.BI tc " TC_INDEX"
+index of either ingress or egress TC, usually in range 0 to 8 (depends on device).
+
+.TP
+.BR type " { " ingress " | " egress " } "
+TC type.
+
+.TP
+.BI pool " POOL_INDEX"
+index of pool to bind this to.
+
+.TP
+.BI th " THRESHOLD"
+threshold value. Type of the value is either Bytes or "to_alpha", depends on
+.B thtype
+set for the pool.
+
+.SS devlink sb occupancy show - display shared buffer occupancy values for device or port
+
+.PP
+This command is used to browse shared buffer occupancy values. Values are showed for every port-pool combination as well as for all port-TC combinations (with pool this port-TC is bound to). Format of value is:
+.br
+.in +16
+current_value/max_value
+.in -16
+Note that before showing values, one has to issue
+.B occupancy snapshot
+command first.
+
+.PP
+.I "DEV"
+- specifies the devlink device to show occupancy values for.
+
+.I "DEV/PORT_INDEX"
+- specifies the devlink port to show occupancy values for.
+
+.SS devlink sb occupancy snapshot - take occupancy snapshot of shared buffer for device
+This command is used to take a snapshot of shared buffer occupancy values. After that, the values can be showed using
+.B occupancy show
+command.
+
+.PP
+.I "DEV"
+- specifies the devlink device to take occupancy snapshot on.
+
+.SS devlink sb occupancy clearmax - clear occupancy watermarks of shared buffer for device
+This command is used to reset maximal occupancy values reached for whole device. Note that before browsing reset values, one has to issue
+.B occupancy snapshot
+command.
+
+.PP
+.I "DEV"
+- specifies the devlink device to clear occupancy watermarks on.
+
+.SH "EXAMPLES"
+.PP
+devlink sb show
+.RS 4
+List available share buffers.
+.RE
+.PP
+devlink sb pool show
+.RS 4
+List available pools and their config.
+.RE
+.PP
+devlink sb port pool show pci/0000:03:00.0/1 pool 0
+.RS 4
+Show port-pool setup for specified port and pool.
+.RE
+.PP
+sudo devlink sb port pool set pci/0000:03:00.0/1 pool 0 th 15
+.RS 4
+Change threshold for port specified port and pool.
+.RE
+.PP
+devlink sb tc bind show pci/0000:03:00.0/1 tc 0 type ingress
+.RS 4
+Show pool binding and threshold for specified port and TC.
+.RE
+.PP
+sudo devlink sb tc bind set pci/0000:03:00.0/1 tc 0 type ingress pool 0 th 9
+.RS 4
+Set pool binding and threshold for specified port and TC.
+.RE
+.PP
+sudo devlink sb occupancy snapshot pci/0000:03:00.0
+.RS 4
+Make a snapshot of occupancy of shared buffer for specified devlink device.
+.RE
+.PP
+devlink sb occupancy show pci/0000:03:00.0/1
+.RS 4
+Show occupancy for specified port from the snapshot.
+.RE
+.PP
+sudo devlink sb occupancy clearmax pci/0000:03:00.0
+.RS 4
+Clear watermarks for shared buffer of specified devlink device.
+.RE
+
+
+.SH SEE ALSO
+.BR devlink (8),
+.BR devlink-dev (8),
+.BR devlink-port (8),
+.BR devlink-monitor (8),
+.br
+
+.SH AUTHOR
+Jiri Pirko <jiri@mellanox.com>

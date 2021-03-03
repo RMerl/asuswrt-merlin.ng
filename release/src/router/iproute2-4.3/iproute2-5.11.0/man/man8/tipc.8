@@ -1,0 +1,109 @@
+.TH TIPC 8 "02 Jun 2015" "iproute2" "Linux"
+.SH NAME
+tipc \- a TIPC configuration and management tool
+.SH SYNOPSIS
+
+.ad l
+.in +8
+.ti -8
+.B tipc
+.RI "[ " OPTIONS " ] " COMMAND " " ARGUMENTS "
+.sp
+
+.ti -8
+.IR COMMAND " := { "
+.BR bearer " | " link " | " media " | " nametable " | " node " | " socket " }
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-h\fR[\fIhelp\fR] }
+
+.SH DESCRIPTION
+The Transparent Inter-Process Communication (TIPC) protocol offers total address
+transparency between processes which allows applications in a clustered computer
+environment to communicate quickly and reliably with each other, regardless of
+their location within the cluster.
+
+TIPC originated at the telecommunications manufacturer Ericsson. The first open
+source version of TIPC was created in 2000 when Ericsson released its first
+Linux version of TIPC. TIPC was introduced in the mainline Linux kernel in 2006
+and is now widely used both within and outside of Ericsson.
+
+.SH OPTIONS
+
+.TP
+.BR "\-h" , " --help"
+Show help about last given command. For example
+.B tipc bearer --help
+will show bearer help and
+.B tipc --help
+will show general help. The position of the option in the string is irrelevant.
+
+.TP
+.BR "\-j", " \-json"
+Output results in JavaScript Object Notation (JSON).
+
+.TP
+.BR "\-p", " \-pretty"
+The default JSON format is compact and more efficient to parse but hard for most users to read.
+This flag adds indentation for readability.
+
+.SH COMMANDS
+
+.TP
+.B BEARER
+- Show or modify TIPC bearers
+
+.TP
+.B LINK
+- Show or modify TIPC links
+
+.TP
+.B MEDIA
+- Show or modify TIPC media
+
+.TP
+.B NAMETABLE
+- Show TIPC nametable
+
+.TP
+.B NODE
+- Show or modify TIPC node parameters
+
+.TP
+.B SOCKET
+- Show TIPC sockets
+
+.SH ARGUMENTS
+
+Command arguments are described in a command specific man page and typically
+consists of nested commands along with key value pairs.
+If no arguments are given a command typically shows its help text. The explicit
+help option
+.B -h
+or
+.B --help
+can occur anywhere among the arguments and will show help for the last valid
+command given.
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR tipc-bearer (8),
+.BR tipc-link (8),
+.BR tipc-media (8),
+.BR tipc-nametable (8),
+.BR tipc-node (8),
+.BR tipc-peer (8),
+.BR tipc-socket (8)
+.br
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Richard Alpe <richard.alpe@ericsson.com>

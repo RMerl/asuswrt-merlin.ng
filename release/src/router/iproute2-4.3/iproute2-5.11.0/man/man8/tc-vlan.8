@@ -1,0 +1,164 @@
+.TH "VLAN manipulation action in tc" 8 "12 Jan 2015" "iproute2" "Linux"
+
+.SH NAME
+vlan - vlan manipulation module
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " ... " "action vlan" " { " pop " | " pop_eth " |"
+.IR PUSH " | " MODIFY " | " PUSH_ETH " } [ " CONTROL " ]"
+
+.ti -8
+.IR PUSH " := "
+.BR push " [ " protocol
+.IR VLANPROTO " ]"
+.BR " [ " priority
+.IR VLANPRIO " ] "
+.BI id " VLANID"
+
+.ti -8
+.IR MODIFY " := "
+.BR modify " [ " protocol
+.IR VLANPROTO " ]"
+.BR " [ " priority
+.IR VLANPRIO " ] "
+.BI id " VLANID"
+
+.ti -8
+.IR PUSH_ETH " := "
+.B push_eth
+.BI dst_mac " LLADDR " src_mac " LLADDR "
+
+.ti -8
+.IR CONTROL " := { "
+.BR reclassify " | " pipe " | " drop " | " continue " | " pass " | " goto " " chain " " CHAIN_INDEX " }"
+.SH DESCRIPTION
+The
+.B vlan
+action allows to perform 802.1Q en- or decapsulation on a packet, reflected by
+the operation modes
+.IR POP ", " PUSH " and " MODIFY .
+The
+.I POP
+mode is simple, as no further information is required to just drop the
+outer-most VLAN encapsulation. The
+.IR PUSH " and " MODIFY
+modes require at least a
+.I VLANID
+and allow to optionally choose the
+.I VLANPROTO
+to use.
+
+The
+.B vlan
+action can also be used to add or remove the base Ethernet header. The
+.B pop_eth
+mode, which takes no argument, is used to remove the base Ethernet header. All
+existing VLANs must have been previously dropped. The opposite operation,
+adding a base Ethernet header, is done with the
+.B push_eth
+mode. In that case, the packet must have no MAC header (stacking MAC headers is
+not permitted). This mode is mostly useful when a previous action has
+encapsulated the whole original frame behind a network header and one needs
+to prepend an Ethernet header before forwarding the resulting packet.
+
+.SH OPTIONS
+.TP
+.B pop
+Decapsulation mode, no further arguments allowed.
+.TP
+.B push
+Encapsulation mode. Requires at least
+.B id
+option.
+.TP
+.B modify
+Replace mode. Existing 802.1Q tag is replaced. Requires at least
+.B id
+option.
+.TP
+.B pop_eth
+Ethernet header decapsulation mode. Only works on a plain Ethernet header:
+VLANs, if any, must be removed first.
+.TP
+.B push_eth
+Ethernet header encapsulation mode. The Ethertype is automatically set
+using the network header type. Chaining Ethernet headers is not allowed: the
+packet must have no MAC header when using this mode. Requires the
+.BR "dst_mac " and " src_mac " options.
+.TP
+.BI id " VLANID"
+Specify the VLAN ID to encapsulate into.
+.I VLANID
+is an unsigned 16bit integer, the format is detected automatically (e.g. prefix
+with
+.RB ' 0x '
+for hexadecimal interpretation, etc.).
+.TP
+.BI protocol " VLANPROTO"
+Choose the VLAN protocol to use. At the time of writing, the kernel accepts only
+.BR 802.1Q " or " 802.1ad .
+.TP
+.BI priority " VLANPRIO"
+Choose the VLAN priority to use. Decimal number in range of 0-7.
+.TP
+.BI dst_mac " LLADDR"
+Choose the destination MAC address to use.
+.TP
+.BI src_mac " LLADDR"
+Choose the source MAC address to use.
+.TP
+.I CONTROL
+How to continue after executing this action.
+.RS
+.TP
+.B reclassify
+Restarts classification by jumping back to the first filter attached to this
+action's parent.
+.TP
+.B pipe
+Continue with the next action, this is the default.
+.TP
+.B drop
+Packet will be dropped without running further actions.
+.TP
+.B continue
+Continue classification with next filter in line.
+.TP
+.B pass
+Return to calling qdisc for packet processing. This ends the classification
+process.
+.RE
+.SH EXAMPLES
+The following example encapsulates incoming ICMP packets on eth0 from 10.0.0.2
+into VLAN ID 123:
+
+.RS
+.EX
+#tc qdisc add dev eth0 handle ffff: ingress
+#tc filter add dev eth0 parent ffff: pref 11 protocol ip \\
+	u32 match ip protocol 1 0xff flowid 1:1 \\
+	    match ip src 10.0.0.2 flowid 1:1 \\
+	action vlan push id 123
+.EE
+.RE
+
+Here is an example of the
+.B pop
+function: Incoming VLAN packets on eth0 are decapsulated and the classification
+process then restarted for the plain packet:
+
+.RS
+.EX
+#tc qdisc add dev eth0 handle ffff: ingress
+#tc filter add dev $ETH parent ffff: pref 1 protocol 802.1Q \\
+	u32 match u32 0 0 flowid 1:1 \\
+	action vlan pop reclassify
+.EE
+.RE
+
+For an example of the
+.BR pop_eth " and " push_eth " modes, see " tc-mpls (8).
+
+.SH SEE ALSO
+.BR tc "(8), " tc-mpls (8)

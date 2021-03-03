@@ -1,0 +1,34 @@
+.TH "Basic classifier in tc" 8 "21 Oct 2015" "iproute2" "Linux"
+
+.SH NAME
+basic \- basic traffic control filter
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " " filter " ... " basic " [ " match
+.IR EMATCH_TREE " ] [ "
+.B action
+.IR ACTION_SPEC " ] [ "
+.B classid
+.IR CLASSID " ]"
+.SH DESCRIPTION
+The
+.B basic
+filter allows to classify packets using the extended match infrastructure.
+.SH OPTIONS
+.TP
+.BI action " ACTION_SPEC"
+Apply an action from the generic actions framework on matching packets.
+.TP
+.BI classid " CLASSID"
+Push matching packets into the class identified by
+.IR CLASSID .
+.TP
+.BI match " EMATCH_TREE"
+Match packets using the extended match infrastructure. See
+.BR tc-ematch (8)
+for a detailed description of the allowed syntax in
+.IR EMATCH_TREE .
+.SH SEE ALSO
+.BR tc (8),
+.BR tc-ematch (8)

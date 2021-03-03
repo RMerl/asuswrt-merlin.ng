@@ -1,0 +1,194 @@
+.TH DCB-ETS 8 "19 October 2020" "iproute2" "Linux"
+.SH NAME
+dcb-ets \- show / manipulate ETS (Enhanced Transmission Selection) settings of
+the DCB (Data Center Bridging) subsystem
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+
+.ti -8
+.B dcb
+.RI "[ " OPTIONS " ] "
+.B ets
+.RI "{ " COMMAND " | " help " }"
+.sp
+
+.ti -8
+.B dcb ets show dev
+.RI DEV
+.RB "[ " willing " ]"
+.RB "[ " ets-cap " ]"
+.RB "[ " cbs " ]"
+.RB "[ " tc-tsa " ]"
+.RB "[ " reco-tc-tsa " ]"
+.RB "[ " pg-bw " ]"
+.RB "[ " tc-bw " ]"
+.RB "[ " reco-tc-bw " ]"
+.RB "[ " prio-tc " ]"
+.RB "[ " reco-prio-tc " ]"
+
+.ti -8
+.B dcb ets set dev
+.RI DEV
+.RB "[ " willing " { " on " | " off " } ]"
+.RB "[ { " tc-tsa " | " reco-tc-tsa " } " \fITSA-MAP\fB " ]"
+.RB "[ { " pg-bw " | " tc-bw " | " reco-tc-bw " } " \fIBW-MAP\fB " ]"
+.RB "[ { " prio-tc " | " reco-prio-tc " } " \fIPRIO-MAP\fB " ]"
+
+.ti -8
+.IR TSA-MAP " := [ " TSA-MAP " ] " TSA-MAPPING
+
+.ti -8
+.IR TSA-MAPPING " := { " TC " | " \fBall " }" \fB: "{ " \fBstrict\fR " | "
+.IR \fBcbs\fR " | " \fBets\fR " | " \fBvendor\fR " }"
+
+.ti -8
+.IR BW-MAP " := [ " BW-MAP " ] " BW-MAPPING
+
+.ti -8
+.IR BW-MAPPING " := { " TC " | " \fBall " }" \fB:\fIINTEGER\fR
+
+.ti -8
+.IR PRIO-MAP " := [ " PRIO-MAP " ] " PRIO-MAPPING
+
+.ti -8
+.IR PRIO-MAPPING " := { " PRIO " | " \fBall " }" \fB:\fITC\fR
+
+.ti -8
+.IR TC " := { " \fB0\fR " .. " \fB7\fR " }"
+
+.ti -8
+.IR PRIO " := { " \fB0\fR " .. " \fB7\fR " }"
+
+.SH DESCRIPTION
+
+.B dcb ets
+is used to configure Enhanced Transmission Selection attributes through Linux
+DCB (Data Center Bridging) interface. ETS permits configuration of mapping of
+priorities to traffic classes, traffic selection algorithm to use per traffic
+class, bandwidth allocation, etc.
+
+Two DCB TLVs are related to the ETS feature: a configuration and recommendation
+values. Recommendation values are named with a prefix
+.B reco-,
+while the configuration ones have plain names.
+
+.SH PARAMETERS
+
+For read-write parameters, the following describes only the write direction,
+i.e. as used with the \fBset\fR command. For the \fBshow\fR command, the
+parameter name is to be used as a simple keyword without further arguments. This
+instructs the tool to show the value of a given parameter. When no parameters
+are given, the tool shows the complete ETS configuration.
+
+.TP
+.B ets-cap
+A read-only property that shows the number of supported ETS traffic classes.
+
+.TP
+.B cbs
+A read-only property that is enabled if the driver and the hardware support the
+CBS Transmission Selection Algorithm.
+
+.TP
+.B willing \fR{ \fBon\fR | \fBoff\fR }
+Whether local host should accept configuration from peer TLVs.
+
+.TP
+.B prio-tc \fIPRIO-MAP
+.TQ
+.B reco-prio-tc \fIPRIO-MAP
+\fIPRIO-MAP\fR uses the array parameter syntax, see
+.BR dcb (8)
+for details. Keys are priorities, values are traffic classes. For each priority
+sets a TC where traffic with that priority is directed to.
+
+.TP
+.B tc-tsa \fITSA-MAP
+.TQ
+.B reco-tc-tsa \fITSA-MAP
+\fITSA-MAP\fR uses the array parameter syntax, see
+.BR dcb (8)
+for details. Keys are TCs, values are Transmission Selection Algorithm (TSA)
+keywords described below. For each TC sets an algorithm used for deciding how
+traffic queued up at this TC is scheduled for transmission. Supported TSAs are:
+
+.B strict
+- for strict priority, where traffic in higher-numbered TCs always takes
+precedence over traffic in lower-numbered TCs.
+.br
+.B ets
+- for Enhanced Traffic Selection, where available bandwidth is distributed among
+the ETS-enabled TCs according to the weights set by
+.B tc-bw
+and
+.B reco-tc-bw\fR,
+respectively.
+.br
+.B cbs
+- for Credit Based Shaper, where traffic is scheduled in a strict manner up to
+the limit set by a shaper.
+.br
+.B vendor
+- for vendor-specific traffic selection algorithm.
+
+.TP
+.B tc-bw \fIBW-MAP
+.TQ
+.B reco-tc-bw \fIBW-MAP
+\fIBW-MAP\fR uses the array parameter syntax, see
+.BR dcb (8)
+for details. Keys are TCs, values are integers representing percent of available
+bandwidth given to the traffic class in question. The value should be 0 for TCs
+whose TSA is not \fBets\fR, and the sum of all values shall be 100. As an
+exception to the standard wording, a configuration with no \fBets\fR TCs is
+permitted to sum up to 0 instead.
+.br
+
+.TP
+.B pg-bw \fIBW-MAP
+The precise meaning of \fBpg-bw\fR is not standardized, but the assumption seems
+to be that the same scheduling process as on the transmit side is applicable on
+receive side as well, and configures receive bandwidth allocation for \fBets\fR
+ingress traffic classes (priority groups).
+
+.SH EXAMPLE & USAGE
+
+Configure ETS priomap in a one-to-one fashion:
+
+.P
+# dcb ets set dev eth0 prio-tc 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:7
+
+Set TSA and transmit bandwidth configuration:
+
+.P
+# dcb ets set dev eth0 tc-tsa all:strict 0:ets 1:ets 2:ets \\
+.br
+                       tc-bw all:0 0:33 1:33 2:34
+
+Show what was set:
+
+.P
+# dcb ets show dev eth0 prio-tc tc-tsa tc-bw
+.br
+prio-tc 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:7
+.br
+tc-tsa 0:ets 1:ets 2:ets 3:strict 4:strict 5:strict 6:strict 7:strict
+.br
+tc-bw 0:33 1:33 2:34 3:0 4:0 5:0 6:0 7:0
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR dcb (8)
+
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Petr Machata <me@pmachata.org>

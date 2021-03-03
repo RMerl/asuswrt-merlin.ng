@@ -1,0 +1,250 @@
+.TH TIPC-BEARER 8 "02 Jun 2015" "iproute2" "Linux"
+
+.\" For consistency, please keep padding right aligned.
+.\" For example '.B "foo " bar' and not '.B foo " bar"'
+
+.SH NAME
+tipc-bearer \- show or modify TIPC bearers
+
+.SH SYNOPSIS
+.ad l
+.in +8
+
+.ti -8
+.B tipc bearer add media udp name
+.IB "NAME " "remoteip " REMOTEIP
+.br
+
+.ti -8
+.B tipc bearer enable
+.RB "[ " domain
+.IR DOMAIN " ]"
+.RB "[ " priority
+.IR PRIORITY " ]"
+.BR media
+.br
+.RB "{ { " eth " | " ib " } " device
+.IR "DEVICE" " }"
+.RB "|"
+.br
+.RB	"{ " udp
+.B name
+.IR NAME
+.B localip
+.IR LOCALIP
+.RB "[ " localport
+.IR LOCALPORT " ]"
+.RB "[ " remoteip
+.IR REMOTEIP " ]"
+.RB "[ " remoteport
+.IR REMOTEPORT " ] }"
+.br
+
+.ti -8
+.B tipc bearer disable media
+.br
+.RB "{ { " eth " | " ib " } " device
+.IR "DEVICE " }
+.RB "|"
+.br
+.RB "{ " udp
+.B name
+.IR NAME " }"
+.br
+
+.ti -8
+.B tipc bearer set
+.RB "{ " "priority "
+.IR PRIORITY
+.RB "| " tolerance
+.IR TOLERANCE
+.RB "| " window
+.IR WINDOW
+.RB "} " media
+.br
+.RB "{ { " eth " | " ib " } " device
+.IR "DEVICE" " }"
+.RB "|"
+.br
+.RB "{ " udp
+.B name
+.IR NAME " }"
+.br
+
+.ti -8
+.B tipc bearer get
+.RB "[ " "priority" " | " tolerance " | " window " ] " media
+.br
+.RB "{ { " eth " | " ib " } " device
+.IR "DEVICE" " }"
+.RB "|"
+.br
+.RB "{ " udp
+.B name
+.IR NAME
+.RB "[ " "localip " "| " "localport " "| " "remoteip " "| " "remoteport " "] }"
+.br
+
+.ti -8
+.B tipc bearer list
+.br
+
+.SH OPTIONS
+Options (flags) that can be passed anywhere in the command chain.
+.TP
+.BR "\-h" , " --help"
+Show help about last valid command. For example
+.B tipc bearer --help
+will show bearer help and
+.B tipc --help
+will show general help. The position of the option in the string is irrelevant.
+.SH DESCRIPTION
+
+.SS Bearer identification
+.TP
+.BI "media " MEDIA
+.br
+Specifies the TIPC media type for a particular bearer to operate on.
+Different media types have different ways of identifying a unique bearer.
+For example,
+.BR "ib " "and " eth
+identify a bearer with a
+.I DEVICE
+while
+.B udp
+identify a bearer with a
+.IR "LOCALIP " "and a " NAME
+
+.B ib
+- Infiniband
+.sp
+.B eth
+- Ethernet
+.sp
+.B udp
+- User Datagram Protocol (UDP)
+.sp
+
+.TP
+.BI "name " NAME
+.br
+Logical bearer identifier valid for bearers on
+.B udp
+media.
+
+.TP
+.BI "device " DEVICE
+.br
+Physical bearer device valid for bearers on
+.B eth
+and
+.B ib
+media.
+
+.SS Bearer properties
+
+.TP
+.B domain
+.br
+The addressing domain (region) in which a bearer will establish links and accept
+link establish requests.
+
+.TP
+.B priority
+.br
+Default link priority inherited by all links subsequently established over a
+bearer. A single bearer can only host one link to a particular node. This means
+the default link priority for a bearer typically affects which bearer to use
+when communicating with a particular node in an multi bearer setup. For more
+info about link priority see
+.BR tipc-link (8)
+
+.TP
+.B tolerance
+.br
+Default link tolerance inherited by all links subsequently established over a
+bearer. For more info about link tolerance see
+.BR tipc-link (8)
+
+.TP
+.B window
+.br
+Default link window inherited by all links subsequently established over a
+bearer. For more info about the link window size see
+.BR tipc-link (8)
+
+.SS UDP bearer options
+
+.TP
+.BI "localip " LOCALIP
+.br
+Specify a local IP v4/v6 address for a
+.B udp
+bearer.
+
+.TP
+.BI "localport " LOCALPORT
+.br
+Specify the local port for a
+.B udp
+bearer. The default port 6118 is used if no port is specified.
+
+.TP
+.BI "remoteip " REMOTEIP
+.br
+Specify a remote IP for a
+.B udp
+bearer. If no remote IP is specified a
+.B udp
+bearer runs in multicast mode and tries to auto-discover its neighbours.
+The multicast IP address is generated based on the TIPC network ID. If a remote
+IP is specified the
+.B udp
+bearer runs in point-to-point mode.
+
+Multiple
+.B remoteip
+addresses can be added via the
+.B bearer add
+command. Adding one or more unicast
+.B remoteip
+addresses to an existing
+.B udp
+bearer puts the bearer in replicast mode where IP
+multicast is emulated by sending multiple unicast messages to each configured
+.B remoteip.
+When a peer sees a TIPC discovery message from an unknown peer the peer address
+is automatically added to the
+.B remoteip
+(replicast) list, thus only one side of
+a link needs to be manually configured. A
+.B remoteip
+address cannot be added to a multicast bearer.
+
+.TP
+.BI "remoteport " REMOTEPORT
+.br
+Specify the remote port for a
+.B udp
+bearer. The default port 6118 is used if no port is specified.
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR tipc (8),
+.BR tipc-link (8),
+.BR tipc-media (8),
+.BR tipc-nametable (8),
+.BR tipc-node (8),
+.BR tipc-peer (8),
+.BR tipc-socket (8)
+.br
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Richard Alpe <richard.alpe@ericsson.com>

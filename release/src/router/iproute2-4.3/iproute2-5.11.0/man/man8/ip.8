@@ -1,0 +1,433 @@
+.TH IP 8 "20 Dec 2011" "iproute2" "Linux"
+.SH NAME
+ip \- show / manipulate routing, network devices, interfaces and tunnels
+.SH SYNOPSIS
+
+.ad l
+.in +8
+.ti -8
+.B ip
+.RI "[ " OPTIONS " ] " OBJECT " { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.B ip
+.RB "[ " -force " ] "
+.BI "-batch " filename
+.sp
+
+.ti -8
+.IR OBJECT " := { "
+.BR link " | " address " | " addrlabel " | " route " | " rule " | " neigh " | "\
+ ntable " | " tunnel " | " tuntap " | " maddress " | "  mroute " | " mrule " | "\
+ monitor " | " xfrm " | " netns " | "  l2tp " | "  tcp_metrics " | " token " | "\
+ macsec " | " vrf " | " mptcp " }"
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-V\fR[\fIersion\fR] |
+\fB\-h\fR[\fIuman-readable\fR] |
+\fB\-s\fR[\fItatistics\fR] |
+\fB\-d\fR[\fIetails\fR] |
+\fB\-r\fR[\fIesolve\fR] |
+\fB\-iec\fR |
+\fB\-f\fR[\fIamily\fR] {
+.BR inet " | " inet6 " | " link " } | "
+\fB-4\fR |
+\fB-6\fR |
+\fB-I\fR |
+\fB-D\fR |
+\fB-B\fR |
+\fB-0\fR |
+\fB-l\fR[\fIoops\fR] { \fBmaximum-addr-flush-attempts\fR } |
+\fB\-o\fR[\fIneline\fR] |
+\fB\-rc\fR[\fIvbuf\fR] [\fBsize\fR] |
+\fB\-t\fR[\fIimestamp\fR] |
+\fB\-ts\fR[\fIhort\fR] |
+\fB\-n\fR[\fIetns\fR] name |
+\fB\-N\fR[\fIumeric\fR] |
+\fB\-a\fR[\fIll\fR] |
+\fB\-c\fR[\fIolor\fR] |
+\fB\-br\fR[\fIief\fR] |
+\fB\-j\fR[son\fR] |
+\fB\-p\fR[retty\fR] }
+
+.SH OPTIONS
+
+.TP
+.BR "\-V" , " -Version"
+Print the version of the
+.B ip
+utility and exit.
+
+.TP
+.BR "\-h", " \-human", " \-human-readable"
+output statistics with human readable values followed by suffix.
+
+.TP
+.BR "\-b", " \-batch " <FILENAME>
+Read commands from provided file or standard input and invoke them.
+First failure will cause termination of ip.
+
+.TP
+.BR "\-force"
+Don't terminate ip on errors in batch mode.  If there were any errors
+during execution of the commands, the application return code will be
+non zero.
+
+.TP
+.BR "\-s" , " \-stats" , " \-statistics"
+Output more information. If the option
+appears twice or more, the amount of information increases.
+As a rule, the information is statistics or some time values.
+
+.TP
+.BR "\-d" , " \-details"
+Output more detailed information.
+
+.TP
+.BR "\-l" , " \-loops " <COUNT>
+Specify maximum number of loops the 'ip address flush' logic
+will attempt before giving up. The default is 10.
+Zero (0) means loop until all addresses are removed.
+
+.TP
+.BR "\-f" , " \-family " <FAMILY>
+Specifies the protocol family to use. The protocol family identifier
+can be one of
+.BR "inet" , " inet6" , " bridge" ,  " mpls"
+or
+.BR link .
+If this option is not present,
+the protocol family is guessed from other arguments. If the rest
+of the command line does not give enough information to guess the
+family,
+.B ip
+falls back to the default one, usually
+.B inet
+or
+.BR "any" .
+.B link
+is a special family identifier meaning that no networking protocol
+is involved.
+
+.TP
+.B \-4
+shortcut for
+.BR "-family inet" .
+
+.TP
+.B \-6
+shortcut for
+.BR "\-family inet6" .
+
+.TP
+.B \-B
+shortcut for
+.BR "\-family bridge" .
+
+.TP
+.B \-M
+shortcut for
+.BR "\-family mpls" .
+
+.TP
+.B \-0
+shortcut for
+.BR "\-family link" .
+
+.TP
+.BR "\-o" , " \-oneline"
+output each record on a single line, replacing line feeds
+with the
+.B '\e'
+character. This is convenient when you want to count records
+with
+.BR wc (1)
+or to
+.BR grep (1)
+the output.
+
+.TP
+.BR "\-r" , " \-resolve"
+use the system's name resolver to print DNS names instead of
+host addresses.
+
+.TP
+.BR "\-n" , " \-netns " <NETNS>
+switches
+.B ip
+to the specified network namespace
+.IR NETNS .
+Actually it just simplifies executing of:
+
+.B ip netns exec
+.IR NETNS
+.B ip
+.RI "[ " OPTIONS " ] " OBJECT " { " COMMAND " | "
+.BR help " }"
+
+to
+
+.B ip
+.RI "-n[etns] " NETNS " [ " OPTIONS " ] " OBJECT " { " COMMAND " | "
+.BR help " }"
+
+.TP
+.BR "\-N" , " \-Numeric"
+Print the number of protocol, scope, dsfield, etc directly instead of
+converting it to human readable name.
+
+.TP
+.BR "\-a" , " \-all"
+executes specified command over all objects, it depends if command
+supports this option.
+
+.TP
+.BR \-c [ color ][ = { always | auto | never }
+Configure color output. If parameter is omitted or
+.BR always ,
+color output is enabled regardless of stdout state. If parameter is
+.BR auto ,
+stdout is checked to be a terminal before enabling color output. If
+parameter is
+.BR never ,
+color output is disabled. If specified multiple times, the last one takes
+precedence. This flag is ignored if
+.B \-json
+is also given.
+
+Used color palette can be influenced by
+.BR COLORFGBG
+environment variable
+(see
+.BR ENVIRONMENT ).
+
+.TP
+.BR "\-t" , " \-timestamp"
+display current time when using monitor option.
+
+.TP
+.BR "\-ts" , " \-tshort"
+Like
+.BR \-timestamp ,
+but use shorter format.
+
+.TP
+.BR "\-rc" , " \-rcvbuf" <SIZE>
+Set the netlink socket receive buffer size, defaults to 1MB.
+
+.TP
+.BR "\-iec"
+print human readable rates in IEC units (e.g. 1Ki = 1024).
+
+.TP
+.BR "\-br" , " \-brief"
+Print only basic information in a tabular format for better
+readability. This option is currently only supported by
+.BR "ip addr show " and " ip link show " commands.
+
+.TP
+.BR "\-j", " \-json"
+Output results in JavaScript Object Notation (JSON).
+
+.TP
+.BR "\-p", " \-pretty"
+The default JSON format is compact and more efficient to parse but
+hard for most users to read.  This flag adds indentation for
+readability.
+
+.SH IP - COMMAND SYNTAX
+
+.SS
+.I OBJECT
+
+.TP
+.B address
+- protocol (IP or IPv6) address on a device.
+
+.TP
+.B addrlabel
+- label configuration for protocol address selection.
+
+.TP
+.B l2tp
+- tunnel ethernet over IP (L2TPv3).
+
+.TP
+.B link
+- network device.
+
+.TP
+.B maddress
+- multicast address.
+
+.TP
+.B monitor
+- watch for netlink messages.
+
+.TP
+.B mptcp
+- manage MPTCP path manager.
+
+.TP
+.B mroute
+- multicast routing cache entry.
+
+.TP
+.B mrule
+- rule in multicast routing policy database.
+
+.TP
+.B neighbour
+- manage ARP or NDISC cache entries.
+
+.TP
+.B netns
+- manage network namespaces.
+
+.TP
+.B ntable
+- manage the neighbor cache's operation.
+
+.TP
+.B route
+- routing table entry.
+
+.TP
+.B rule
+- rule in routing policy database.
+
+.TP
+.B tcp_metrics/tcpmetrics
+- manage TCP Metrics
+
+.TP
+.B token
+- manage tokenized interface identifiers.
+
+.TP
+.B tunnel
+- tunnel over IP.
+
+.TP
+.B tuntap
+- manage TUN/TAP devices.
+
+.TP
+.B vrf
+- manage virtual routing and forwarding devices.
+
+.TP
+.B xfrm
+- manage IPSec policies.
+
+.PP
+The names of all objects may be written in full or
+abbreviated form, for example
+.B address
+can be abbreviated as
+.B addr
+or just
+.B a.
+
+.SS
+.I COMMAND
+
+Specifies the action to perform on the object.
+The set of possible actions depends on the object type.
+As a rule, it is possible to
+.BR "add" , " delete"
+and
+.B show
+(or
+.B list
+) objects, but some objects do not allow all of these operations
+or have some additional commands. The
+.B help
+command is available for all objects. It prints
+out a list of available commands and argument syntax conventions.
+.sp
+If no command is given, some default command is assumed.
+Usually it is
+.B list
+or, if the objects of this class cannot be listed,
+.BR "help" .
+
+.SH ENVIRONMENT
+.TP
+.B COLORFGBG
+If set, it's value is used for detection whether background is dark or
+light and use contrast colors for it.
+
+COLORFGBG environment variable usually contains either two or three
+values separated by semicolons; we want the last value in either case.
+If this value is 0-6 or 8, chose colors suitable for dark background:
+
+COLORFGBG=";0" ip -c a
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful, and 1 if there is a syntax error.
+If an error was reported by the kernel exit status is 2.
+
+.SH "EXAMPLES"
+.PP
+ip addr
+.RS 4
+Shows addresses assigned to all network interfaces.
+.RE
+.PP
+ip neigh
+.RS 4
+Shows the current neighbour table in kernel.
+.RE
+.PP
+ip link set x up
+.RS 4
+Bring up interface x.
+.RE
+.PP
+ip link set x down
+.RS 4
+Bring down interface x.
+.RE
+.PP
+ip route
+.RS 4
+Show table routes.
+.RE
+
+.SH HISTORY
+.B ip
+was written by Alexey N. Kuznetsov and added in Linux 2.2.
+.SH SEE ALSO
+.BR ip-address (8),
+.BR ip-addrlabel (8),
+.BR ip-l2tp (8),
+.BR ip-link (8),
+.BR ip-maddress (8),
+.BR ip-monitor (8),
+.BR ip-mptcp (8),
+.BR ip-mroute (8),
+.BR ip-neighbour (8),
+.BR ip-netns (8),
+.BR ip-ntable (8),
+.BR ip-route (8),
+.BR ip-rule (8),
+.BR ip-tcp_metrics (8),
+.BR ip-token (8),
+.BR ip-tunnel (8),
+.BR ip-vrf (8),
+.BR ip-xfrm (8)
+.br
+.RB "IP Command reference " ip-cref.ps
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Original Manpage by Michail Litvak <mci@owl.openwall.com>

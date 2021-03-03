@@ -1,0 +1,126 @@
+.TH DCB-BUFFER 8 "12 November 2020" "iproute2" "Linux"
+.SH NAME
+dcb-buffer \- show / manipulate port buffer settings of
+the DCB (Data Center Bridging) subsystem
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+
+.ti -8
+.B dcb
+.RI "[ " OPTIONS " ] "
+.B buffer
+.RI "{ " COMMAND " | " help " }"
+.sp
+
+.ti -8
+.B dcb buffer show dev
+.RI DEV
+.RB "[ " prio-buffer " ]"
+.RB "[ " buffer-size " ]"
+.RB "[ " total-size " ]"
+
+.ti -8
+.B dcb buffer set dev
+.RI DEV
+.RB "[ " prio-buffer " " \fIPRIO-MAP " ]"
+.RB "[ " buffer-size " " \fISIZE-MAP " ]"
+
+.ti -8
+.IR PRIO-MAP " := [ " PRIO-MAP " ] " PRIO-MAPPING
+
+.ti -8
+.IR PRIO-MAPPING " := { " PRIO " | " \fBall " }" \fB:\fIBUFFER\fR
+
+.ti -8
+.IR SIZE-MAP " := [ " SIZE-MAP " ] " SIZE-MAPPING
+
+.ti -8
+.IR SIZE-MAPPING " := { " BUFFER " | " \fBall " }" \fB:\fISIZE\fR
+
+.ti -8
+.IR PRIO " := { " \fB0\fR " .. " \fB7\fR " }"
+
+.ti -8
+.IR BUFFER " := { " \fB0\fR " .. " \fB7\fR " }"
+
+.ti -8
+.IR SIZE " := { " INTEGER " | " INTEGER\fBK\fR " | " INTEGER\fBM\fR " | " ... " }"
+
+.SH DESCRIPTION
+
+.B dcb buffer
+is used to configure assignment of traffic to port buffers based on traffic
+priority, and sizes of those buffers. It can be also used to inspect the current
+configuration, as well as total device memory that the port buffers take.
+
+.SH PARAMETERS
+
+For read-write parameters, the following describes only the write direction,
+i.e. as used with the \fBset\fR command. For the \fBshow\fR command, the
+parameter name is to be used as a simple keyword without further arguments. This
+instructs the tool to show the value of a given parameter. When no parameters
+are given, the tool shows the complete buffer configuration.
+
+.TP
+.B total-size
+A read-only property that shows the total device memory taken up by port
+buffers. This might be more than a simple sum of individual buffer sizes if
+there are any hidden or internal buffers.
+
+.TP
+.B prio-buffer \fIPRIO-MAP
+\fIPRIO-MAP\fR uses the array parameter syntax, see
+.BR dcb (8)
+for details. Keys are priorities, values are buffer indices. For each priority
+sets a buffer where traffic with that priority is directed to.
+
+.TP
+.B buffer-size \fISIZE-MAP
+\fISIZE-MAP\fR uses the array parameter syntax, see
+.BR dcb (8)
+for details. Keys are buffer indices, values are sizes of that buffer in bytes.
+The sizes can use the notation documented in section PARAMETERS at
+.BR tc (8).
+Note that the size requested by the tool can be rounded or capped by the driver
+to satisfy the requirements of the device.
+
+.SH EXAMPLE & USAGE
+
+Configure the priomap in a one-to-one fashion:
+
+.P
+# dcb buffer set dev eth0 prio-buffer 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:7
+
+Set sizes of all buffers to 10KB, except for buffer 6, which will have the size
+1MB:
+
+.P
+# dcb buffer set dev eth0 buffer-size all:10K 6:1M
+
+Show what was set:
+
+.P
+# dcb buffer show dev eth0
+.br
+prio-buffer 0:0 1:1 2:2 3:3 4:4 5:5 6:6 7:7
+.br
+buffer-size 0:10Kb 1:10Kb 2:10Kb 3:10Kb 4:10Kb 5:10Kb 6:1Mb 7:10Kb
+.br
+total-size 1222Kb
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR dcb (8)
+
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Petr Machata <me@pmachata.org>

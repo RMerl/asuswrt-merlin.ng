@@ -1,0 +1,72 @@
+.TH TIPC-NODE 8 "02 Jun 2015" "iproute2" "Linux"
+
+.\" For consistency, please keep padding right aligned.
+.\" For example '.B "foo " bar' and not '.B foo " bar"'
+
+.SH NAME
+tipc-node \- modify and show local node parameters or list peer nodes
+
+.SH SYNOPSIS
+.ad l
+.in +8
+
+.ti -8
+.B tipc node set
+.RB "{ " "address "
+.IR ADDRESS
+.RB "| " netid
+.IR NETID
+.RB "} "
+
+.ti -8
+.B tipc node get
+.RB "{ " "address" " | " netid " } "
+
+.ti -8
+.B tipc node list
+.br
+
+.SH OPTIONS
+Options (flags) that can be passed anywhere in the command chain.
+.TP
+.BR "\-h" , " --help"
+Show help about last valid command. For example
+.B tipc node --help
+will show node help and
+.B tipc --help
+will show general help. The position of the option in the string is irrelevant.
+.SH DESCRIPTION
+
+.SS Node parameters
+.TP
+.BI address
+.br
+The TIPC logical address. On the form x.y.z where x, y and z are unsigned
+integers.
+
+.TP
+.BI netid
+.br
+Network identity. Can by used to create individual TIPC clusters on the same
+media.
+
+.SH EXIT STATUS
+Exit status is 0 if command was successful or a positive integer upon failure.
+
+.SH SEE ALSO
+.BR tipc (8),
+.BR tipc-bearer (8),
+.BR tipc-link (8),
+.BR tipc-media (8),
+.BR tipc-nametable (8),
+.BR tipc-peer (8),
+.BR tipc-socket (8)
+.br
+.SH REPORTING BUGS
+Report any bugs to the Network Developers mailing list
+.B <netdev@vger.kernel.org>
+where the development and maintenance is primarily done.
+You do not have to be subscribed to the list to send a message there.
+
+.SH AUTHOR
+Richard Alpe <richard.alpe@ericsson.com>

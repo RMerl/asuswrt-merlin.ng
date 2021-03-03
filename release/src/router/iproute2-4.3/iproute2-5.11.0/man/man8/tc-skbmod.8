@@ -1,0 +1,138 @@
+.TH "skbmod action in tc" 8 "21 Sep 2016" "iproute2" "Linux"
+
+.SH NAME
+skbmod - user-friendly packet editor action
+.SH SYNOPSIS
+.in +8
+.ti -8
+.BR tc " ... " "action skbmod " "{ [ " "set "
+.IR SETTABLE " ] [ "
+.BI swap " SWAPPABLE"
+.RI " ] [ " CONTROL " ] [ "
+.BI index " INDEX "
+] }
+
+.ti -8
+.IR SETTABLE " := "
+.RB " [ " dmac
+.IR DMAC " ] "
+.RB " [ " smac
+.IR SMAC " ] "
+.RB " [ " etype
+.IR ETYPE " ] "
+
+.ti -8
+.IR SWAPPABLE " := "
+.B mac
+.ti -8
+.IR CONTROL " := {"
+.BR reclassify " | " pipe " | " drop " | " shot " | " continue " | " pass " }"
+.SH DESCRIPTION
+The
+.B skbmod
+action is intended as a usability upgrade to the existing
+.B pedit
+action. Instead of having to manually edit 8-, 16-, or 32-bit chunks of an
+ethernet header,
+.B skbmod
+allows complete substitution of supported elements.
+.SH OPTIONS
+.TP
+.BI dmac " DMAC"
+Change the destination mac to the specified address.
+.TP
+.BI smac " SMAC"
+Change the source mac to the specified address.
+.TP
+.BI etype " ETYPE"
+Change the ethertype to the specified value.
+.TP
+.BI mac
+Used to swap mac addresses. The
+.B swap mac
+directive is performed
+after any outstanding D/SMAC changes.
+.TP
+.I CONTROL
+The following keywords allow to control how the tree of qdisc, classes,
+filters and actions is further traversed after this action.
+.RS
+.TP
+.B reclassify
+Restart with the first filter in the current list.
+.TP
+.B pipe
+Continue with the next action attached to the same filter.
+.TP
+.B drop
+.TQ
+.B shot
+Drop the packet.
+.TP
+.B continue
+Continue classification with the next filter in line.
+.TP
+.B pass
+Finish classification process and return to calling qdisc for further packet
+processing. This is the default.
+.RE
+.SH EXAMPLES
+To start, observe the following filter with a pedit action:
+
+.RS
+.EX
+tc filter add dev eth1 parent 1: protocol ip prio 10 \\
+	u32 match ip protocol 1 0xff flowid 1:2 \\
+	action pedit munge offset -14 u8 set 0x02 \\
+	munge offset -13 u8 set 0x15 \\
+	munge offset -12 u8 set 0x15 \\
+	munge offset -11 u8 set 0x15 \\
+	munge offset -10 u16 set 0x1515 \\
+	pipe
+.EE
+.RE
+
+Using the skbmod action, this command can be simplified to:
+
+.RS
+.EX
+tc filter add dev eth1 parent 1: protocol ip prio 10 \\
+	u32 match ip protocol 1 0xff flowid 1:2 \\
+	action skbmod set dmac 02:15:15:15:15:15 \\
+	pipe
+.EE
+.RE
+
+Complexity will increase if source mac and ethertype are also being edited
+as part of the action. If all three fields are to be changed with skbmod:
+
+.RS
+.EX
+tc filter add dev eth5 parent 1: protocol ip prio 10 \\
+	u32 match ip protocol 1 0xff flowid 1:2 \\
+	action skbmod \\
+	set etype 0xBEEF \\
+	set dmac 02:12:13:14:15:16 \\
+	set smac 02:22:23:24:25:26
+.EE
+.RE
+
+Finally, swap the destination and source mac addresses in the header:
+
+.RS
+.EX
+tc filter add dev eth3 parent 1: protocol ip prio 10 \\
+	u32 match ip protocol 1 0xff flowid 1:2 \\
+	action skbmod \\
+	swap mac
+.EE
+.RE
+
+As mentioned above, the swap action will occur after any
+.B " smac/dmac "
+substitutions are executed, if they are present.
+
+.SH SEE ALSO
+.BR tc (8),
+.BR tc-u32 (8),
+.BR tc-pedit (8)

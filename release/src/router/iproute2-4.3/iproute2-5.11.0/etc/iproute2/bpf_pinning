@@ -1,0 +1,6 @@
+#
+# subpath mappings from mount point for pinning
+#
+#3	tracing
+#4	foo/bar
+#5	tc/cls1

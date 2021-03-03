@@ -1,0 +1,62 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "description": "bridge fdb show",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "dev": {
+                "type": "string"
+            },
+            "dst": {
+                "description" : "host name or ip address",
+                "type": "string"
+            },
+            "flags": {
+                "type": "array",
+                "items": {
+                    "enum": ["self", "master", "router", "offload"]
+                },
+                "uniqueItems": true
+            },
+            "linkNetNsId": {
+                "type": "integer"
+            },
+            "mac": {
+                "type": "string"
+            },
+            "master": {
+                "type": "string"
+            },
+            "opCode": {
+                "description" : "used to indicate fdb entry del",
+                "enum": ["deleted"]
+            },
+            "port": {
+                "type": "integer"
+            },
+            "state": {
+                "description" : "permanent, static, stale, state=#x",
+                "type": "string"
+            },
+            "updated": {
+                "type": "integer"
+            },
+            "used": {
+                "type": "integer"
+            },
+            "viaIf": {
+                "type": "string"
+            },
+            "viaIfIndex": {
+                "type": "integer"
+            },
+            "vlan": {
+                "type": "integer"
+            },
+            "vni": {
+                "type": "integer"
+            }
+        }
+    }
+}

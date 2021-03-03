@@ -1,0 +1,915 @@
+.TH TC 8 "16 December 2001" "iproute2" "Linux"
+.SH NAME
+tc \- show / manipulate traffic control settings
+.SH SYNOPSIS
+.B tc
+.RI "[ " OPTIONS " ]"
+.B qdisc [ add | change | replace | link | delete ] dev
+\fIDEV\fR
+.B
+[ parent
+\fIqdisc-id\fR
+.B | root ]
+.B [ handle
+\fIqdisc-id\fR ]
+.B [ ingress_block
+\fIBLOCK_INDEX\fR ]
+.B [ egress_block
+\fIBLOCK_INDEX\fR ] qdisc
+[ qdisc specific parameters ]
+.P
+
+.B tc
+.RI "[ " OPTIONS " ]"
+.B class [ add | change | replace | delete ] dev
+\fIDEV\fR
+.B parent
+\fIqdisc-id\fR
+.B [ classid
+\fIclass-id\fR ] qdisc
+[ qdisc specific parameters ]
+.P
+
+.B tc
+.RI "[ " OPTIONS " ]"
+.B filter [ add | change | replace | delete | get ] dev
+\fIDEV\fR
+.B [ parent
+\fIqdisc-id\fR
+.B | root ] [ handle \fIfilter-id\fR ]
+.B protocol
+\fIprotocol\fR
+.B prio
+\fIpriority\fR filtertype
+[ filtertype specific parameters ]
+.B flowid
+\fIflow-id\fR
+
+.B tc
+.RI "[ " OPTIONS " ]"
+.B filter [ add | change | replace | delete | get ] block
+\fIBLOCK_INDEX\fR
+.B [ handle \fIfilter-id\fR ]
+.B protocol
+\fIprotocol\fR
+.B prio
+\fIpriority\fR filtertype
+[ filtertype specific parameters ]
+.B flowid
+\fIflow-id\fR
+
+.B tc
+.RI "[ " OPTIONS " ]"
+.B chain [ add | delete | get ] dev
+\fIDEV\fR
+.B [ parent
+\fIqdisc-id\fR
+.B | root ]\fR filtertype
+[ filtertype specific parameters ]
+
+.B tc
+.RI "[ " OPTIONS " ]"
+.B chain [ add | delete | get ] block
+\fIBLOCK_INDEX\fR filtertype
+[ filtertype specific parameters ]
+
+
+.B tc
+.RI "[ " OPTIONS " ]"
+.RI "[ " FORMAT " ]"
+.B qdisc { show | list } [ dev
+\fIDEV\fR
+.B ] [ root | ingress | handle
+\fIQHANDLE\fR
+.B | parent
+\fICLASSID\fR
+.B ] [ invisible ]
+.P
+.B tc
+.RI "[ " OPTIONS " ]"
+.RI "[ " FORMAT " ]"
+.B class show dev
+\fIDEV\fR
+.P
+.B tc
+.RI "[ " OPTIONS " ]"
+.B filter show dev
+\fIDEV\fR
+.P
+.B tc
+.RI "[ " OPTIONS " ]"
+.B filter show block
+\fIBLOCK_INDEX\fR
+.P
+.B tc
+.RI "[ " OPTIONS " ]"
+.B chain show dev
+\fIDEV\fR
+.P
+.B tc
+.RI "[ " OPTIONS " ]"
+.B chain show block
+\fIBLOCK_INDEX\fR
+
+.P
+.B tc
+.RI "[ " OPTIONS " ]"
+.B monitor [ file
+\fIFILENAME\fR
+.B ]
+
+.P
+.ti 8
+.IR OPTIONS " := {"
+\fB[ -force ] -b\fR[\fIatch\fR] \fB[ filename ] \fR|
+\fB[ \fB-n\fR[\fIetns\fR] name \fB] \fR|
+\fB[ \fB-N\fR[\fIumeric\fR] \fB] \fR|
+\fB[ \fB-nm \fR| \fB-nam\fR[\fIes\fR] \fB] \fR|
+\fB[ \fR{ \fB-cf \fR| \fB-c\fR[\fIonf\fR] \fR} \fB[ filename ] \fB] \fR
+\fB[ -t\fR[imestamp\fR] \fB\] \fR| \fB[ -t\fR[short\fR] \fR| \fB[
+-o\fR[neline\fR] \fB]\fR }
+
+.ti 8
+.IR FORMAT " := {"
+\fB\-s\fR[\fItatistics\fR] |
+\fB\-d\fR[\fIetails\fR] |
+\fB\-r\fR[\fIaw\fR] |
+\fB\-i\fR[\fIec\fR] |
+\fB\-g\fR[\fIraph\fR] |
+\fB\-j\fR[\fIjson\fR] |
+\fB\-p\fR[\fIretty\fR] |
+\fB\-col\fR[\fIor\fR] }
+
+.SH DESCRIPTION
+.B Tc
+is used to configure Traffic Control in the Linux kernel. Traffic Control consists
+of the following:
+
+.TP
+SHAPING
+When traffic is shaped, its rate of transmission is under control. Shaping may
+be more than lowering the available bandwidth - it is also used to smooth out
+bursts in traffic for better network behaviour. Shaping occurs on egress.
+
+.TP
+SCHEDULING
+By scheduling the transmission of packets it is possible to improve interactivity
+for traffic that needs it while still guaranteeing bandwidth to bulk transfers. Reordering
+is also called prioritizing, and happens only on egress.
+
+.TP
+POLICING
+Whereas shaping deals with transmission of traffic, policing pertains to traffic
+arriving. Policing thus occurs on ingress.
+
+.TP
+DROPPING
+Traffic exceeding a set bandwidth may also be dropped forthwith, both on
+ingress and on egress.
+
+.P
+Processing of traffic is controlled by three kinds of objects: qdiscs,
+classes and filters.
+
+.SH QDISCS
+.B qdisc
+is short for 'queueing discipline' and it is elementary to
+understanding traffic control. Whenever the kernel needs to send a
+packet to an interface, it is
+.B enqueued
+to the qdisc configured for that interface. Immediately afterwards, the kernel
+tries to get as many packets as possible from the qdisc, for giving them
+to the network adaptor driver.
+
+A simple QDISC is the 'pfifo' one, which does no processing at all and is a pure
+First In, First Out queue. It does however store traffic when the network interface
+can't handle it momentarily.
+
+.SH CLASSES
+Some qdiscs can contain classes, which contain further qdiscs - traffic may
+then be enqueued in any of the inner qdiscs, which are within the
+.B classes.
+When the kernel tries to dequeue a packet from such a
+.B classful qdisc
+it can come from any of the classes. A qdisc may for example prioritize
+certain kinds of traffic by trying to dequeue from certain classes
+before others.
+
+.SH FILTERS
+A
+.B filter
+is used by a classful qdisc to determine in which class a packet will
+be enqueued. Whenever traffic arrives at a class with subclasses, it needs
+to be classified. Various methods may be employed to do so, one of these
+are the filters. All filters attached to the class are called, until one of
+them returns with a verdict. If no verdict was made, other criteria may be
+available. This differs per qdisc.
+
+It is important to notice that filters reside
+.B within
+qdiscs - they are not masters of what happens.
+
+The available filters are:
+.TP
+basic
+Filter packets based on an ematch expression. See
+.BR tc-ematch (8)
+for details.
+.TP
+bpf
+Filter packets using (e)BPF, see
+.BR tc-bpf (8)
+for details.
+.TP
+cgroup
+Filter packets based on the control group of their process. See
+. BR tc-cgroup (8)
+for details.
+.TP
+flow, flower
+Flow-based classifiers, filtering packets based on their flow (identified by selectable keys). See
+.BR tc-flow "(8) and"
+.BR tc-flower (8)
+for details.
+.TP
+fw
+Filter based on fwmark. Directly maps fwmark value to traffic class. See
+.BR tc-fw (8).
+.TP
+route
+Filter packets based on routing table. See
+.BR tc-route (8)
+for details.
+.TP
+rsvp
+Match Resource Reservation Protocol (RSVP) packets.
+.TP
+tcindex
+Filter packets based on traffic control index. See
+.BR tc-tcindex (8).
+.TP
+u32
+Generic filtering on arbitrary packet data, assisted by syntax to abstract common operations. See
+.BR tc-u32 (8)
+for details.
+.TP
+matchall
+Traffic control filter that matches every packet. See
+.BR tc-matchall (8)
+for details.
+
+.SH QEVENTS
+Qdiscs may invoke user-configured actions when certain interesting events
+take place in the qdisc. Each qevent can either be unused, or can have a
+block attached to it. To this block are then attached filters using the "tc
+block BLOCK_IDX" syntax. The block is executed when the qevent associated
+with the attachment point takes place. For example, packet could be
+dropped, or delayed, etc., depending on the qdisc and the qevent in
+question.
+
+For example:
+.PP
+.RS
+tc qdisc add dev eth0 root handle 1: red limit 500K avpkt 1K \\
+   qevent early_drop block 10
+.RE
+.RS
+tc filter add block 10 matchall action mirred egress mirror dev eth1
+.RE
+
+.SH CLASSLESS QDISCS
+The classless qdiscs are:
+.TP
+choke
+CHOKe (CHOose and Keep for responsive flows, CHOose and Kill for unresponsive
+flows) is a classless qdisc designed to both identify and penalize flows that
+monopolize the queue. CHOKe is a variation of RED, and the configuration is
+similar to RED.
+.TP
+codel
+CoDel (pronounced "coddle") is an adaptive "no-knobs" active queue management
+algorithm (AQM) scheme that was developed to address the shortcomings of
+RED and its variants.
+.TP
+[p|b]fifo
+Simplest usable qdisc, pure First In, First Out behaviour. Limited in
+packets or in bytes.
+.TP
+fq
+Fair Queue Scheduler realises TCP pacing and scales to millions of concurrent
+flows per qdisc.
+.TP
+fq_codel
+Fair Queuing Controlled Delay is queuing discipline that combines Fair
+Queuing with the CoDel AQM scheme. FQ_Codel uses a stochastic model to classify
+incoming packets into different flows and is used to provide a fair share of the
+bandwidth to all the flows using the queue. Each such flow is managed by the
+CoDel queuing discipline. Reordering within a flow is avoided since Codel
+internally uses a FIFO queue.
+.TP
+fq_pie
+FQ-PIE (Flow Queuing with Proportional Integral controller Enhanced) is a
+queuing discipline that combines Flow Queuing with the PIE AQM scheme. FQ-PIE
+uses a Jenkins hash function to classify incoming packets into different flows
+and is used to provide a fair share of the bandwidth to all the flows using the
+qdisc. Each such flow is managed by the PIE algorithm.
+.TP
+gred
+Generalized Random Early Detection combines multiple RED queues in order to
+achieve multiple drop priorities. This is required to realize Assured
+Forwarding (RFC 2597).
+.TP
+hhf
+Heavy-Hitter Filter differentiates between small flows and the opposite,
+heavy-hitters. The goal is to catch the heavy-hitters and move them to a
+separate queue with less priority so that bulk traffic does not affect the
+latency of critical traffic.
+.TP
+ingress
+This is a special qdisc as it applies to incoming traffic on an interface, allowing for it to be filtered and policed.
+.TP
+mqprio
+The Multiqueue Priority Qdisc is a simple queuing discipline that allows
+mapping traffic flows to hardware queue ranges using priorities and a
+configurable priority to traffic class mapping. A traffic class in this context
+is a set of contiguous qdisc classes which map 1:1 to a set of hardware exposed
+queues.
+.TP
+multiq
+Multiqueue is a qdisc optimized for devices with multiple Tx queues. It has
+been added for hardware that wishes to avoid head-of-line blocking.  It will
+cycle though the bands and verify that the hardware queue associated with the
+band is not stopped prior to dequeuing a packet.
+.TP
+netem
+Network Emulator is an enhancement of the Linux traffic control facilities that
+allow to add delay, packet loss, duplication and more other characteristics to
+packets outgoing from a selected network interface.
+.TP
+pfifo_fast
+Standard qdisc for 'Advanced Router' enabled kernels. Consists of a three-band
+queue which honors Type of Service flags, as well as the priority that may be
+assigned to a packet.
+.TP
+pie
+Proportional Integral controller-Enhanced (PIE) is a control theoretic active
+queue management scheme. It is based on the proportional integral controller but
+aims to control delay.
+.TP
+red
+Random Early Detection simulates physical congestion by randomly dropping
+packets when nearing configured bandwidth allocation. Well suited to very
+large bandwidth applications.
+.TP
+rr
+Round-Robin qdisc with support for multiqueue network devices. Removed from
+Linux since kernel version 2.6.27.
+.TP
+sfb
+Stochastic Fair Blue is a classless qdisc to manage congestion based on
+packet loss and link utilization history while trying to prevent
+non-responsive flows (i.e. flows that do not react to congestion marking
+or dropped packets) from impacting performance of responsive flows.
+Unlike RED, where the marking probability has to be configured, BLUE
+tries to determine the ideal marking probability automatically.
+.TP
+sfq
+Stochastic Fairness Queueing reorders queued traffic so each 'session'
+gets to send a packet in turn.
+.TP
+tbf
+The Token Bucket Filter is suited for slowing traffic down to a precisely
+configured rate. Scales well to large bandwidths.
+.SH CONFIGURING CLASSLESS QDISCS
+In the absence of classful qdiscs, classless qdiscs can only be attached at
+the root of a device. Full syntax:
+.P
+.B tc qdisc add dev
+\fIDEV\fR
+.B root
+QDISC QDISC-PARAMETERS
+
+To remove, issue
+.P
+.B tc qdisc del dev
+\fIDEV\fR
+.B root
+
+The
+.B pfifo_fast
+qdisc is the automatic default in the absence of a configured qdisc.
+
+.SH CLASSFUL QDISCS
+The classful qdiscs are:
+.TP
+ATM
+Map flows to virtual circuits of an underlying asynchronous transfer mode
+device.
+.TP
+CBQ
+Class Based Queueing implements a rich linksharing hierarchy of classes.
+It contains shaping elements as well as prioritizing capabilities. Shaping is
+performed using link idle time calculations based on average packet size and
+underlying link bandwidth. The latter may be ill-defined for some interfaces.
+.TP
+DRR
+The Deficit Round Robin Scheduler is a more flexible replacement for Stochastic
+Fairness Queuing. Unlike SFQ, there are no built-in queues \-\- you need to add
+classes and then set up filters to classify packets accordingly.  This can be
+useful e.g. for using RED qdiscs with different settings for particular
+traffic. There is no default class \-\- if a packet cannot be classified, it is
+dropped.
+.TP
+DSMARK
+Classify packets based on TOS field, change TOS field of packets based on
+classification.
+.TP
+ETS
+The ETS qdisc is a queuing discipline that merges functionality of PRIO and DRR
+qdiscs in one scheduler. ETS makes it easy to configure a set of strict and
+bandwidth-sharing bands to implement the transmission selection described in
+802.1Qaz.
+.TP
+HFSC
+Hierarchical Fair Service Curve guarantees precise bandwidth and delay allocation for leaf classes and allocates excess bandwidth fairly. Unlike HTB, it makes use of packet dropping to achieve low delays which interactive sessions benefit from.
+.TP
+HTB
+The Hierarchy Token Bucket implements a rich linksharing hierarchy of
+classes with an emphasis on conforming to existing practices. HTB facilitates
+guaranteeing bandwidth to classes, while also allowing specification of upper
+limits to inter-class sharing. It contains shaping elements, based on TBF and
+can prioritize classes.
+.TP
+PRIO
+The PRIO qdisc is a non-shaping container for a configurable number of
+classes which are dequeued in order. This allows for easy prioritization
+of traffic, where lower classes are only able to send if higher ones have
+no packets available. To facilitate configuration, Type Of Service bits are
+honored by default.
+.TP
+QFQ
+Quick Fair Queueing is an O(1) scheduler that provides near-optimal guarantees,
+and is the first to achieve that goal with a constant cost also with respect to
+the number of groups and the packet length. The QFQ algorithm has no loops, and
+uses very simple instructions and data structures that lend themselves very
+well to a hardware implementation.
+.SH THEORY OF OPERATION
+Classes form a tree, where each class has a single parent.
+A class may have multiple children. Some qdiscs allow for runtime addition
+of classes (CBQ, HTB) while others (PRIO) are created with a static number of
+children.
+
+Qdiscs which allow dynamic addition of classes can have zero or more
+subclasses to which traffic may be enqueued.
+
+Furthermore, each class contains a
+.B leaf qdisc
+which by default has
+.B pfifo
+behaviour, although another qdisc can be attached in place. This qdisc may again
+contain classes, but each class can have only one leaf qdisc.
+
+When a packet enters a classful qdisc it can be
+.B classified
+to one of the classes within. Three criteria are available, although not all
+qdiscs will use all three:
+.TP
+tc filters
+If tc filters are attached to a class, they are consulted first
+for relevant instructions. Filters can match on all fields of a packet header,
+as well as on the firewall mark applied by iptables.
+.TP
+Type of Service
+Some qdiscs have built in rules for classifying packets based on the TOS field.
+.TP
+skb->priority
+Userspace programs can encode a \fIclass-id\fR in the 'skb->priority' field using
+the SO_PRIORITY option.
+.P
+Each node within the tree can have its own filters but higher level filters
+may also point directly to lower classes.
+
+If classification did not succeed, packets are enqueued to the leaf qdisc
+attached to that class. Check qdisc specific manpages for details, however.
+
+.SH NAMING
+All qdiscs, classes and filters have IDs, which can either be specified
+or be automatically assigned.
+
+IDs consist of a
+.BR major " number and a " minor
+number, separated by a colon -
+.BR major ":" minor "."
+Both
+.BR major " and " minor
+are hexadecimal numbers and are limited to 16 bits. There are two special
+values: root is signified by
+.BR major " and " minor
+of all ones, and unspecified is all zeros.
+
+.TP
+QDISCS
+A qdisc, which potentially can have children, gets assigned a
+.B major
+number, called a 'handle', leaving the
+.B minor
+number namespace available for classes. The handle is expressed as '10:'.
+It is customary to explicitly assign a handle to qdiscs expected to have children.
+
+.TP
+CLASSES
+Classes residing under a qdisc share their qdisc
+.B major
+number, but each have a separate
+.B minor
+number called a 'classid' that has no relation to their
+parent classes, only to their parent qdisc. The same naming custom as for
+qdiscs applies.
+
+.TP
+FILTERS
+Filters have a three part ID, which is only needed when using a hashed
+filter hierarchy.
+
+.SH PARAMETERS
+The following parameters are widely used in TC. For other parameters,
+see the man pages for individual qdiscs.
+
+.TP
+RATES
+Bandwidths or rates.
+These parameters accept a floating point number, possibly followed by
+either a unit (both SI and IEC units supported), or a float followed by a '%'
+character to specify the rate as a percentage of the device's speed
+(e.g. 5%, 99.5%). Warning: specifying the rate as a percentage means a fraction
+of the current speed; if the speed changes, the value will not be recalculated.
+.RS
+.TP
+bit or a bare number
+Bits per second
+.TP
+kbit
+Kilobits per second
+.TP
+mbit
+Megabits per second
+.TP
+gbit
+Gigabits per second
+.TP
+tbit
+Terabits per second
+.TP
+bps
+Bytes per second
+.TP
+kbps
+Kilobytes per second
+.TP
+mbps
+Megabytes per second
+.TP
+gbps
+Gigabytes per second
+.TP
+tbps
+Terabytes per second
+
+.P
+To specify in IEC units, replace the SI prefix (k-, m-, g-, t-) with
+IEC prefix (ki-, mi-, gi- and ti-) respectively.
+
+.P
+TC store rates as a 32-bit unsigned integer in bps internally,
+so we can specify a max rate of 4294967295 bps.
+.RE
+
+.TP
+TIMES
+Length of time. Can be specified as a floating point number
+followed by an optional unit:
+.RS
+.TP
+s, sec or secs
+Whole seconds
+.TP
+ms, msec or msecs
+Milliseconds
+.TP
+us, usec, usecs or a bare number
+Microseconds.
+
+.P
+TC defined its own time unit (equal to microsecond) and stores
+time values as 32-bit unsigned integer, thus we can specify a max time value
+of 4294967295 usecs.
+.RE
+
+.TP
+SIZES
+Amounts of data. Can be specified as a floating point number
+followed by an optional unit:
+.RS
+.TP
+b or a bare number
+Bytes.
+.TP
+kbit
+Kilobits
+.TP
+kb or k
+Kilobytes
+.TP
+mbit
+Megabits
+.TP
+mb or m
+Megabytes
+.TP
+gbit
+Gigabits
+.TP
+gb or g
+Gigabytes
+
+.P
+TC stores sizes internally as 32-bit unsigned integer in byte,
+so we can specify a max size of 4294967295 bytes.
+.RE
+
+.TP
+VALUES
+Other values without a unit.
+These parameters are interpreted as decimal by default, but you can
+indicate TC to interpret them as octal and hexadecimal by adding a '0'
+or '0x' prefix respectively.
+
+.SH TC COMMANDS
+The following commands are available for qdiscs, classes and filter:
+.TP
+add
+Add a qdisc, class or filter to a node. For all entities, a
+.B parent
+must be passed, either by passing its ID or by attaching directly to the root of a device.
+When creating a qdisc or a filter, it can be named with the
+.B handle
+parameter. A class is named with the
+.B \fBclassid\fR
+parameter.
+
+.TP
+delete
+A qdisc can be deleted by specifying its handle, which may also be 'root'. All subclasses and their leaf qdiscs
+are automatically deleted, as well as any filters attached to them.
+
+.TP
+change
+Some entities can be modified 'in place'. Shares the syntax of 'add', with the exception
+that the handle cannot be changed and neither can the parent. In other words,
+.B
+change
+cannot move a node.
+
+.TP
+replace
+Performs a nearly atomic remove/add on an existing node id. If the node does not exist yet
+it is created.
+
+.TP
+get
+Displays a single filter given the interface \fIDEV\fR, \fIqdisc-id\fR,
+\fIpriority\fR, \fIprotocol\fR and \fIfilter-id\fR.
+
+.TP
+show
+Displays all filters attached to the given interface. A valid parent ID must be passed.
+
+.TP
+link
+Only available for qdiscs and performs a replace where the node
+must exist already.
+
+.SH MONITOR
+The\fB\ tc\fR\ utility can monitor events generated by the kernel such as
+adding/deleting qdiscs, filters or actions, or modifying existing ones.
+
+The following command is available for\fB\ monitor\fR\ :
+.TP
+\fBfile\fR
+If the file option is given, the \fBtc\fR does not listen to kernel events, but opens
+the given file and dumps its contents. The file has to be in binary
+format and contain netlink messages.
+
+.SH OPTIONS
+
+.TP
+.BR "\-b", " \-b filename", " \-batch", " \-batch filename"
+read commands from provided file or standard input and invoke them.
+First failure will cause termination of tc.
+
+.TP
+.BR "\-force"
+don't terminate tc on errors in batch mode.
+If there were any errors during execution of the commands, the application return code will be non zero.
+
+.TP
+.BR "\-o" , " \-oneline"
+output each record on a single line, replacing line feeds
+with the
+.B '\e'
+character. This is convenient when you want to count records
+with
+.BR wc (1)
+or to
+.BR grep (1)
+the output.
+
+.TP
+.BR "\-n" , " \-net" , " \-netns " <NETNS>
+switches
+.B tc
+to the specified network namespace
+.IR NETNS .
+Actually it just simplifies executing of:
+
+.B ip netns exec
+.IR NETNS
+.B tc
+.RI "[ " OPTIONS " ] " OBJECT " { " COMMAND " | "
+.BR help " }"
+
+to
+
+.B tc
+.RI "-n[etns] " NETNS " [ " OPTIONS " ] " OBJECT " { " COMMAND " | "
+.BR help " }"
+
+.TP
+.BR "\-N" , " \-Numeric"
+Print the number of protocol, scope, dsfield, etc directly instead of
+converting it to human readable name.
+
+.TP
+.BR "\-cf" , " \-conf " <FILENAME>
+specifies path to the config file. This option is used in conjunction with other options (e.g.
+.BR -nm ")."
+
+.TP
+.BR "\-t", " \-timestamp"
+When\fB\ tc monitor\fR\ runs, print timestamp before the event message in format:
+   Timestamp: <Day> <Month> <DD> <hh:mm:ss> <YYYY> <usecs> usec
+
+.TP
+.BR "\-ts", " \-tshort"
+When\fB\ tc monitor\fR\ runs, prints short timestamp before the event message in format:
+   [<YYYY>-<MM>-<DD>T<hh:mm:ss>.<ms>]
+
+.SH FORMAT
+The show command has additional formatting options:
+
+.TP
+.BR "\-s" , " \-stats", " \-statistics"
+output more statistics about packet usage.
+
+.TP
+.BR "\-d", " \-details"
+output more detailed information about rates and cell sizes.
+
+.TP
+.BR "\-r", " \-raw"
+output raw hex values for handles.
+
+.TP
+.BR "\-p", " \-pretty"
+for u32 filter, decode offset and mask values to equivalent filter commands based on TCP/IP.
+In JSON output, add whitespace to improve readability.
+
+.TP
+.BR "\-iec"
+print rates in IEC units (ie. 1K = 1024).
+
+.TP
+.BR "\-g", " \-graph"
+shows classes as ASCII graph. Prints generic stats info under each class if
+.BR "-s"
+option was specified. Classes can be filtered only by
+.BR "dev"
+option.
+
+.TP
+.BR \-c [ color ][ = { always | auto | never }
+Configure color output. If parameter is omitted or
+.BR always ,
+color output is enabled regardless of stdout state. If parameter is
+.BR auto ,
+stdout is checked to be a terminal before enabling color output. If parameter is
+.BR never ,
+color output is disabled. If specified multiple times, the last one takes
+precedence. This flag is ignored if
+.B \-json
+is also given.
+
+.TP
+.BR "\-j", " \-json"
+Display results in JSON format.
+
+.TP
+.BR "\-nm" , " \-name"
+resolve class name from
+.B /etc/iproute2/tc_cls
+file or from file specified by
+.B -cf
+option. This file is just a mapping of
+.B classid
+to class name:
+
+.RS 10
+# Here is comment
+.RE
+.RS 10
+1:40   voip # Here is another comment
+.RE
+.RS 10
+1:50   web
+.RE
+.RS 10
+1:60   ftp
+.RE
+.RS 10
+1:2    home
+.RE
+
+.RS
+.B tc
+will not fail if
+.B -nm
+was specified without
+.B -cf
+option but
+.B /etc/iproute2/tc_cls
+file does not exist, which makes it possible to pass
+.B -nm
+option for creating
+.B tc
+alias.
+.RE
+
+.TP
+.BR "\-br" , " \-brief"
+Print only essential data needed to identify the filter and action (handle,
+cookie, etc.) and stats. This option is currently only supported by
+.BR "tc filter show " and " tc actions ls " commands.
+
+.SH "EXAMPLES"
+.PP
+tc -g class show dev eth0
+.RS 4
+Shows classes as ASCII graph on eth0 interface.
+.RE
+.PP
+tc -g -s class show dev eth0
+.RS 4
+Shows classes as ASCII graph with stats info under each class.
+.RE
+
+.SH HISTORY
+.B tc
+was written by Alexey N. Kuznetsov and added in Linux 2.2.
+.SH SEE ALSO
+.BR tc-basic (8),
+.BR tc-bfifo (8),
+.BR tc-bpf (8),
+.BR tc-cake (8),
+.BR tc-cbq (8),
+.BR tc-cgroup (8),
+.BR tc-choke (8),
+.BR tc-codel (8),
+.BR tc-drr (8),
+.BR tc-ematch (8),
+.BR tc-ets (8),
+.BR tc-flow (8),
+.BR tc-flower (8),
+.BR tc-fq (8),
+.BR tc-fq_codel (8),
+.BR tc-fq_pie (8),
+.BR tc-fw (8),
+.BR tc-hfsc (7),
+.BR tc-hfsc (8),
+.BR tc-htb (8),
+.BR tc-mqprio (8),
+.BR tc-pfifo (8),
+.BR tc-pfifo_fast (8),
+.BR tc-pie (8),
+.BR tc-red (8),
+.BR tc-route (8),
+.BR tc-sfb (8),
+.BR tc-sfq (8),
+.BR tc-stab (8),
+.BR tc-tbf (8),
+.BR tc-tcindex (8),
+.BR tc-u32 (8),
+.br
+.RB "User documentation at " http://lartc.org/ ", but please direct bugreports and patches to: " <netdev@vger.kernel.org>
+
+.SH AUTHOR
+Manpage maintained by bert hubert (ahu@ds9a.nl)

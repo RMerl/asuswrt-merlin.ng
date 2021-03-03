@@ -1,0 +1,122 @@
+.TH "Packet sample action in tc" 8 "31 Jan 2017" "iproute2" "Linux"
+
+.SH NAME
+sample - packet sampling tc action
+.SH SYNOPSIS
+.in +8
+.ti -8
+
+.BR tc " ... " "action sample rate"
+.I RATE
+.BR "group"
+.I GROUP
+.RB "[ " trunc
+.IR SIZE " ] "
+.RB "[ " index
+.IR INDEX " ] "
+.ti -8
+
+.BR tc " ... " "action sample index "
+.I INDEX
+.ti -8
+
+.SH DESCRIPTION
+The
+.B sample
+action allows sampling packets matching classifier.
+
+The packets are chosen randomly according to the
+.B rate
+parameter, and are sampled using the
+.B psample
+generic netlink channel. The user can also specify packet truncation to save
+user-kernel traffic. Each sample includes some informative metadata about the
+original packet, which is sent using netlink attributes, alongside the original
+packet data.
+
+The user can either specify the sample action parameters as presented in the
+first form above, or use an existing sample action using its index, as presented
+in the second form.
+
+.SH SAMPLED PACKETS METADATA FIELDS
+The metadata are delivered to userspace applications using the
+.B psample
+generic netlink channel, where each sample includes the following netlink
+attributes:
+.TP
+.BI PSAMPLE_ATTR_IIFINDEX
+The input interface index of the packet, if there is one.
+.TP
+.BI PSAMPLE_ATTR_OIFINDEX
+The output interface index of the packet. This field is not relevant on ingress
+sampling
+.TP
+.BI PSAMPLE_ATTR_ORIGSIZE
+The size of the original packet (before truncation)
+.TP
+.BI PSAMPLE_ATTR_SAMPLE_GROUP
+The
+.B psample
+group the packet was sent to
+.TP
+.BI PSAMPLE_ATTR_GROUP_SEQ
+A sequence number of the sampled packet. This number is incremented with each
+sampled packet of the current
+.B psample
+group
+.TP
+.BI PSAMPLE_ATTR_SAMPLE_RATE
+The rate the packet was sampled with
+
+.SH OPTIONS
+.TP
+.BI rate " RATE"
+The packet sample rate.
+.I "RATE"
+is the expected ratio between observed packets and sampled packets. For example,
+.I "RATE"
+of 100 will lead to an average of one sampled packet out of every 100 observed.
+.TP
+.BI trunc " SIZE"
+Upon set, defines the maximum size of the sampled packets, and causes truncation
+if needed
+.TP
+.BI group " GROUP"
+The
+.B psample
+group the packet will be sent to. The
+.B psample
+module defines the concept of groups, which allows the user to match specific
+sampled packets in the case of multiple sampling rules, thus identify only the
+packets that came from a specific rule.
+.TP
+.BI index " INDEX"
+Is a unique ID for an action. When creating new action instance, this parameter
+allows to set the new action index. When using existing action, this parameter
+allows to specify the existing action index.  The index must 32bit unsigned
+integer greater than zero.
+.SH EXAMPLES
+Sample one of every 100 packets flowing into interface eth0 to psample group 12:
+
+.RS
+.EX
+tc qdisc add dev eth0 handle ffff: ingress
+tc filter add dev eth0 parent ffff: matchall \\
+     action sample rate 100 group 12 index 19
+.EE
+.RE
+
+Use the same action instance to sample eth1 too:
+
+.RS
+.EX
+tc qdisc add dev eth1 handle ffff: ingress
+tc filter add dev eth1 parent ffff: matchall \\
+     action sample index 19
+.EE
+.RE
+
+.SH SEE ALSO
+.BR tc (8),
+.BR tc-matchall (8)
+.BR psample (1)

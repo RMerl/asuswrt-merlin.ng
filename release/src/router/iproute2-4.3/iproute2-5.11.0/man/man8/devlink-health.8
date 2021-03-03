@@ -1,0 +1,256 @@
+.TH DEVLINK\-HEALTH 8 "20 Feb 2019" "iproute2" "Linux"
+.SH NAME
+devlink-health \- devlink health reporting and recovery
+.SH SYNOPSIS
+.sp
+.ad l
+.in +8
+.ti -8
+.B devlink
+.RI "[ " OPTIONS " ]"
+.B health
+.RI  " { " COMMAND " | "
+.BR help " }"
+.sp
+
+.ti -8
+.IR OPTIONS " := { "
+\fB\-V\fR[\fIersion\fR] }
+
+.ti -8
+.B devlink health show
+.RI "[ { " DEV " | " DEV/PORT_INDEX " }"
+.B reporter
+.RI ""REPORTER " ] "
+
+.ti -8
+.B devlink health recover
+.RI "{ " DEV " | " DEV/PORT_INDEX " }"
+.B reporter
+.RI "" REPORTER ""
+
+.ti -8
+.B devlink health diagnose
+.RI "{ " DEV " | " DEV/PORT_INDEX " }"
+.B reporter
+.RI "" REPORTER ""
+
+.ti -8
+.B devlink health dump show
+.RI "{ " DEV " | " DEV/PORT_INDEX " }"
+.B  reporter
+.RI "" REPORTER ""
+
+.ti -8
+.BR "devlink health test"
+.RI "{ " DEV " | " DEV/PORT_INDEX " }"
+.B reporter
+.RI "" REPORTER ""
+
+.ti -8
+.B devlink health dump clear
+.RI "{ " DEV " | " DEV/PORT_INDEX " }"
+.B reporter
+.RI "" REPORTER ""
+
+.ti -8
+.B devlink health set
+.RI "{ " DEV " | " DEV/PORT_INDEX " }"
+.B reporter
+.RI "" REPORTER ""
+[
+.BI "grace_period " MSEC "
+] [
+.BR auto_recover " { " true " | " false " } "
+] [
+.BR auto_dump " { " true " | " false " } "
+]
+
+.ti -8
+.B devlink health help
+
+.SH "DESCRIPTION"
+.SS devlink health show - Show status and configuration on all supported reporters.
+Displays info about reporters registered on devlink devices and ports.
+
+.PP
+.I "DEV"
+- specifies the devlink device.
+.br
+.I DEV/PORT_INDEX
+- specifies the devlink port.
+
+.PP
+.I "REPORTER"
+- specifies the reporter's name registered on specified devlink device or port.
+
+.SS devlink health recover - Initiate a recovery operation on a reporter.
+This action performs a recovery and increases the recoveries counter on success.
+
+.PP
+.I "DEV"
+- specifies the devlink device.
+.br
+.I DEV/PORT_INDEX
+- specifies the devlink port.
+
+.PP
+.I "REPORTER"
+- specifies the reporter's name registered on specified devlink device or port.
+
+.SS devlink health diagnose - Retrieve diagnostics data on a reporter.
+
+.PP
+.I DEV
+- specifies the devlink device.
+.br
+.I DEV/PORT_INDEX
+- specifies the devlink port.
+
+.PP
+.I "REPORTER"
+- specifies the reporter's name registered on specified devlink device or port.
+
+.SS devlink health test - Trigger a test event on a reporter.
+
+.PP
+.I "DEV"
+- specifies the devlink device.
+
+.PP
+.I "REPORTER"
+- specifies the reporter's name registered on the devlink device.
+
+.SS devlink health dump show - Display the last saved dump.
+
+.PD 0
+.P
+devlink health saves a single dump per reporter. If an dump is
+.P
+not already stored by the Devlink, this command will generate a new
+.P
+dump. The dump can be generated either automatically when a
+.P
+reporter reports on an error or manually at the user's request.
+.PD
+
+.PP
+.I "DEV"
+- specifies the devlink device.
+.br
+.I DEV/PORT_INDEX
+- specifies the devlink port.
+
+.PP
+.I "REPORTER"
+- specifies the reporter's name registered on specified devlink device or port.
+
+.SS devlink health dump clear - Delete the saved dump.
+Deleting the saved dump enables a generation of a new dump on
+.PD 0
+.P
+the next "devlink health dump show" command.
+.PD
+
+.PP
+.I "DEV"
+- specifies the devlink device.
+.br
+.I DEV/PORT_INDEX
+- specifies the devlink port.
+
+.PP
+.I "REPORTER"
+- specifies the reporter's name registered on specified devlink device or port.
+
+.SS devlink health set - Configure health reporter.
+Please note that some params are not supported on a reporter which
+doesn't support a recovery or dump method.
+
+.PP
+.I "DEV"
+- specifies the devlink device.
+.br
+.I DEV/PORT_INDEX
+- specifies the devlink port.
+
+.PP
+.I "REPORTER"
+- specifies the reporter's name registered on specified devlink device or port.
+
+.TP
+.BI grace_period " MSEC "
+Time interval between consecutive auto recoveries.
+
+.TP
+.BR auto_recover " { " true " | " false " } "
+Indicates whether the devlink should execute automatic recover on error.
+
+.TP
+.BR auto_dump " { " true " | " false " } "
+Indicates whether the devlink should execute automatic dump on error.
+
+.SH "EXAMPLES"
+.PP
+devlink health show
+.RS 4
+List status and configuration of available reporters on devices and ports.
+.RE
+.PP
+devlink health show pci/0000:00:09.0/1 reporter tx
+.RS 4
+List status and configuration of tx reporter registered on port on pci/0000:00:09.0/1
+.RE
+.PP
+devlink health recover pci/0000:00:09.0 reporter fw_fatal
+.RS 4
+Initiate recovery on fw_fatal reporter registered on device on pci/0000:00:09.0.
+.RE
+.PP
+devlink health recover pci/0000:00:09.0/1 reporter tx
+.RS 4
+Initiate recovery on tx reporter registered on port on pci/0000:00:09.0/1.
+.RE
+.PP
+devlink health diagnose pci/0000:00:09.0 reporter fw
+.RS 4
+List diagnostics data on the specified device and reporter.
+.RE
+.PP
+devlink health dump show pci/0000:00:09.0/1 reporter tx
+.RS 4
+Display the last saved dump on the specified port and reporter.
+.RE
+.PP
+devlink health dump clear pci/0000:00:09.0/1 reporter tx
+.RS 4
+Delete saved dump on the specified port and reporter.
+.RE
+.PP
+devlink health set pci/0000:00:09.0 reporter fw_fatal grace_period 3500
+.RS 4
+Set time interval between auto recoveries to minimum of 3500 msec on
+the specified device and reporter.
+.RE
+.PP
+devlink health set pci/0000:00:09.0/1 reporter tx grace_period 3500
+.RS 4
+Set time interval between auto recoveries to minimum of 3500 msec on
+the specified port and reporter.
+.RE
+.PP
+devlink health set pci/0000:00:09.0 reporter fw_fatal auto_recover false
+.RS 4
+Turn off auto recovery on the specified device and reporter.
+
+.RE
+.SH SEE ALSO
+.BR devlink (8),
+.BR devlink-dev (8),
+.BR devlink-port (8),
+.BR devlink-param (8),
+.BR devlink-region (8),
+.br
+
+.SH AUTHOR
+Aya Levin <ayal@mellanox.com>

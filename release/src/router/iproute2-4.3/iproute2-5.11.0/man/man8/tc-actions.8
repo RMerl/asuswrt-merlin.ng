@@ -1,0 +1,288 @@
+.TH "actions in tc" 8 "1 Aug 2017" "iproute2" "Linux"
+
+.SH NAME
+actions \- independently defined actions in tc
+.SH SYNOPSIS
+.B tc
+[
+.I TC_OPTIONS
+]
+.B actions
+.BR add " | " change " | " replace
+.I ACTSPEC
+
+.B tc
+[
+.I TC_OPTIONS
+]
+.B actions
+.BR get " | " delete
+.I ACTISPEC
+
+.B tc
+[
+.I TC_OPTIONS
+]
+.B actions flush
+.I ACTNAMESPEC
+
+.B tc
+[
+.I TC_OPTIONS
+]
+.B actions
+.BR ls " | " list
+.I ACTNAMESPEC
+[
+.I ACTFILTER
+]
+
+.in +8
+.I ACTSPEC
+:=
+.B action
+.I ACTDETAIL
+[
+.I INDEXSPEC
+] [
+.I COOKIESPEC
+] [
+.I FLAGS
+] [
+.I HWSTATSSPEC
+] [
+.I CONTROL
+]
+
+.I ACTISPEC
+:=
+.I ACTNAMESPEC INDEXSPEC
+
+.I ACTNAMESPEC
+:=
+.B action
+ACTNAME
+
+.I INDEXSPEC
+:=
+.BI index " INDEX"
+
+.I ACTFILTER
+:=
+.BI since " MSTIME"
+
+.I COOKIESPEC
+:=
+.BI cookie " COOKIE"
+
+.I FLAGS
+:=
+.I no_percpu
+
+.I HWSTATSSPEC
+:=
+.BR hw_stats " {"
+.IR immediate " | " delayed " | " disabled " }"
+
+.I ACTDETAIL
+:=
+.I ACTNAME ACTPARAMS
+
+.I ACTNAME
+may be any valid action type: gact, mirred, bpf, connmark, csum, police, etc.
+
+.I MSTIME
+Time since last update.
+
+.I CONTROL
+:= {
+.IR reclassify " | " pipe " | " drop " | " continue " | " ok
+}
+
+.I TC_OPTIONS
+These are the options that are specific to
+.B tc
+and not only the options. Refer to
+.BR tc(8)
+for more information.
+.in
+
+.SH DESCRIPTION
+
+The
+.B actions
+object in
+.B tc
+allows a user to define actions independently of a classifier (filter). These
+actions can then be assigned to one or more filters, with any
+packets matching the classifier's criteria having that action performed
+on them.
+
+Each action type (mirred, police, etc.) will have its own table to store
+all created actions.
+
+.SH OPERATIONS
+.TP
+.B add
+Create a new action in that action's table.
+
+.TP
+.B change
+.TQ
+.B replace
+Make modifications to an existing action.
+.TP
+.B get
+Display the action with the specified index value. When combined with the
+.B -s
+option for
+.BR tc ","
+display the statistics for that action.
+.TP
+.B delete
+Delete the action with the specified index value. If the action is already
+associated with a classifier, it does not delete the classifier.
+.TP
+.B ls
+.TQ
+.B list
+List all the actions in the specified table. When combined with the
+.B -s
+option for
+.BR tc ","
+display the statistics for all actions in the specified table.
+When combined with the option
+.B since
+allows doing a millisecond time-filter since the last time an
+action was used in the datapath.
+.TP
+.B flush
+Delete all actions stored in the specified table.
+
+.SH ACTION OPTIONS
+Note that these options are available to all action types.
+.TP
+.BI index " INDEX"
+Specify the table index value of an action.
+.I INDEX
+is a 32-bit value that is unique to the specific type of action referenced.
+
+.RS
+For
+.BR add ", " change ", and"
+.B replace
+operations, the index is
+.BR optional.
+When adding a new action,
+specifying an index value will assign the action to that index unless that
+index value has already been assigned. Omitting the index value for an add
+operation will cause the kernel to assign a value to the new action.
+.RE
+
+.RS
+For
+.BR get " and " delete
+operations, the index is
+.B required
+to identify the specific action to be displayed or deleted.
+.RE
+
+.TP
+.BI cookie " COOKIE"
+In addition to the specific action, mark the matching packet with the value
+specified by
+.IR COOKIE "."
+The
+.I COOKIE
+is a 128-bit value that will not be interpreted by the kernel whatsoever.
+As such, it can be used as a correlating value for maintaining user state.
+The value to be stored is completely arbitrary and does not require a specific
+format. It is stored inside the action structure itself.
+
+.TP
+.I FLAGS
+Action-specific flags. Currently, the only supported flag is
+.I no_percpu
+which indicates that action is expected to have minimal software data-path
+traffic and doesn't need to allocate stat counters with percpu allocator.
+This option is intended to be used by hardware-offloaded actions.
+
+.TP
+.BI hw_stats " HW_STATS"
+Specifies the type of HW stats of new action. If omitted, any stats counter type
+is going to be used, according to driver and its resources.
+The
+.I HW_STATS
+indicates the type. Any of the following are valid:
+.RS
+.TP
+.B immediate
+Means that in dump, user gets the current HW stats state from the device
+queried at the dump time.
+.TP
+.B delayed
+Means that in dump, user gets HW stats that might be out of date for
+some time, maybe couple of seconds. This is the case when driver polls
+stats updates periodically or when it gets async stats update
+from the device.
+.TP
+.B disabled
+No HW stats are going to be available in dump.
+.RE
+
+.TP
+.BI since " MSTIME"
+When dumping large number of actions, a millisecond time-filter can be
+specified
+.IR MSTIME "."
+The
+.I MSTIME
+is a millisecond count since last time a packet hit the action.
+As an example specifying "since 20000" implies to dump all actions
+that have seen packets in the last 20 seconds. This option is useful
+when the kernel has a large number of actions and you are only interested
+in recently used actions.
+
+.TP
+.I CONTROL
+The
+.I CONTROL
+indicates how
+.B tc
+should proceed after executing the action. Any of the following are valid:
+.RS
+.TP
+.B reclassify
+Restart the classifiction by jumping back to the first filter attached to
+the action's parent.
+.TP
+.B pipe
+Continue with the next action. This is the default control.
+.TP
+.B drop
+Drop the packed without running any further actions.
+.TP
+.B continue
+Continue the classification with the next filter.
+.TP
+.B pass
+Return to the calling qdisc for packet processing, and end classification of
+this packet.
+.RE
+
+.SH SEE ALSO
+.BR tc (8),
+.BR tc-bpf (8),
+.BR tc-connmark (8),
+.BR tc-csum (8),
+.BR tc-ife (8),
+.BR tc-mirred (8),
+.BR tc-nat (8),
+.BR tc-pedit (8),
+.BR tc-police (8),
+.BR tc-simple (8),
+.BR tc-skbedit (8),
+.BR tc-skbmod (8),
+.BR tc-tunnel_key (8),
+.BR tc-vlan (8),
+.BR tc-xt (8)

@@ -675,7 +675,7 @@ static int cake_print_xstats(struct qdisc_util *qu, FILE *f,
 
 	/* class stats */
 	if (st[TCA_CAKE_STATS_DEFICIT])
-		print_int(PRINT_ANY, "deficit", "  deficit %u",
+		print_int(PRINT_ANY, "deficit", "  deficit %d",
 			  GET_STAT_S32(DEFICIT));
 	if (st[TCA_CAKE_STATS_COBALT_COUNT])
 		print_uint(PRINT_ANY, "count", " count %u",
@@ -688,7 +688,7 @@ static int cake_print_xstats(struct qdisc_util *qu, FILE *f,
 
 			if (drop_next < 0) {
 				print_string(PRINT_FP, NULL, " drop_next -%s",
-					sprint_time(drop_next, b1));
+					sprint_time(-drop_next, b1));
 			} else {
 				print_uint(PRINT_JSON, "drop_next", NULL,
 					drop_next);

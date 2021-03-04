@@ -2768,7 +2768,7 @@ int start_cake(void)
 		"\ttc qdisc add dev $DLIF handle ffff: ingress 2>/dev/null\n"
 		"\ttc qdisc add dev $MIF root cake %s wash $DLBW besteffort $OVERHEAD $FRAMING 2>/dev/null\n"
 		"\tip link set $MIF up 2>/dev/null\n"
-		"\ttc filter add dev $DLIF parent ffff: prio 10 matchall action mirred egress redirect dev $MIF 2>/dev/null\n\n",
+		"\ttc filter add dev $DLIF parent ffff: prio 10 matchall action mirred egress redirect dev $MIF 2>/dev/null\n\n"
 
 		"\t;;\n"
 		"stop)\n"

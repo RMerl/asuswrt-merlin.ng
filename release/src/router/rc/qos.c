@@ -2681,6 +2681,7 @@ void remove_codel_patch(void)
 #endif
 
 #ifdef HND_ROUTER
+
 int start_cake(void)
 {
 	unsigned int ibw, obw;
@@ -2692,7 +2693,7 @@ int start_cake(void)
 	char nvnat[16];
 	int nat;
 
-	if((f = fopen(qosfn, "w")) == NULL) return -2;
+	if((f = fopen("/etc/cake-qos.conf", "w")) == NULL) return -2;
 
 	switch (nvram_get_int("qos_atm")) {
 		case 0:
@@ -2728,16 +2729,34 @@ int start_cake(void)
 	snprintf(nvnat, sizeof (nvnat), "wan%d_nat_x", wan_primary_ifunit());
 	nat = nvram_get_int(nvnat);
 
-	/* Start rules */
+	/* Config parameters */
 	fprintf(f,
-		"#!/bin/sh\n"
+		"#!/bin/sh\n\n"
 		"ULIF='%s'\n"
 		"DLIF='%s'\n"
 		"MIF='ifb4%s'\n"
 		"ULBW='%s'\n"
 		"DLBW='%s'\n"
 		"OVERHEAD='%s'\n"
-		"FRAMING='%s'\n\n"
+		"FRAMING='%s'\n",
+
+		wan_ifname,
+		wan_ifname,
+		wan_ifname,
+		obwstr,
+		ibwstr,
+		overheadstr,
+		mode);
+
+	fclose(f);
+
+
+	if((f = fopen(qosfn, "w")) == NULL) return -2;
+
+	/* Stop/start rules */
+	fprintf(f,
+		"#!/bin/sh\n"
+		"source /etc/cake-qos.conf\n\n"
 
 		"case \"$1\" in\n"
 		"start)\n"
@@ -2751,21 +2770,7 @@ int start_cake(void)
 		"\tip link set $MIF up 2>/dev/null\n"
 		"\ttc filter add dev $DLIF parent ffff: prio 10 matchall action mirred egress redirect dev $MIF 2>/dev/null\n\n",
 
-			wan_ifname,
-			wan_ifname,
-			wan_ifname,
-			obwstr,
-			ibwstr,
-			overheadstr,
-			mode,
-
-			(nat ? "nat" : ""),
-			(nat ? "nat" : "")
-	);
-
-
-	/* Stop rules */
-	fputs(	"\t;;\n"
+		"\t;;\n"
 		"stop)\n"
 		"\ttc qdisc del dev $ULIF root 2>/dev/null\n"
 		"\ttc qdisc del dev $DLIF ingress 2>/dev/null\n"
@@ -2775,9 +2780,12 @@ int start_cake(void)
 		"\t;;\n"
 		"*)\n"
 		"esac\n",
-		f);
+
+		(nat ? "nat" : ""),
+		(nat ? "nat" : ""));
 
 	fclose(f);
+	chmod("/etc/cake-qos.conf", 0700);
 	chmod(qosfn, 0700);
 	run_custom_script("qos-start", 0, "init", NULL);
 	eval((char *)qosfn, "start");
@@ -2785,4 +2793,3 @@ int start_cake(void)
 	return 0;
 }
 #endif
-

@@ -1,0 +1,132 @@
+#***********************************************************************
+#
+#  Copyright (c) 2006  Broadcom Corporation
+#  All Rights Reserved
+#  No portions of this material may be reproduced in any form without the
+#  written permission of:
+#          Broadcom Corporation
+#          16215 Alton Parkway
+#          Irvine, California 92619
+#  All information contained in this document is Broadcom Corporation
+#  company private, proprietary, and trade secret.
+#
+#***********************************************************************/
+
+#
+# In most cases, you only need to modify this first section.
+#
+EXE  = xtmctl
+LN   = xtm
+
+OBJS = $(EXE).o
+LIBNAME = atmctl
+
+all dynamic install: conditional_build
+
+clean: generic_clean
+	rm -f $(INSTALL_DIR)/bin/$(EXE)
+	rm -f $(INSTALL_DIR)/bin/$(LN)
+	rm -f $(INSTALL_DIR)/bin/dumpmem
+	rm -f $(INSTALL_DIR)/bin/setmem
+
+binaryonly_dist_clean: clean generic_binaryonly_dist_clean
+	rm -f Makefile.fullsrc
+
+
+#
+# Set our CommEngine directory (by splitting the pwd into two words
+# at /userspace and taking the first word only).
+# Then include the common defines under CommEngine.
+#
+CURR_DIR := $(shell pwd)
+BUILD_DIR:=$(HND_SRC)
+
+include $(BUILD_DIR)/make.common
+
+
+
+#
+# Private apps and libs are allowed to include header files from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+#
+ALLOWED_INCLUDE_PATHS := -I.\
+                         -I$(BUILD_DIR)/userspace/public/include  \
+                         -I$(BUILD_DIR)/userspace/public/include/$(OALDIR) \
+                         -I$(BUILD_DIR)/userspace/private/include  \
+                         -I$(BUILD_DIR)/userspace/private/include/$(OALDIR)
+
+
+# obviously, this app needs to access kernel headers
+ALLOWED_INCLUDE_PATHS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)  \
+                         -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD) \
+                         -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
+
+
+
+#
+# Private apps and libs are allowed to link with libraries from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+#
+ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
+
+
+#
+# This is legacy stuff.  Do we even support static mode anymore?
+#
+ifeq ($(strip $(BUILD_ATMCTL)), static)
+CFLAGS += -DBUILD_STATIC
+endif
+
+LIBS = -l$(LIBNAME) -lgen_util -lbcm_util -lbcm_flashutil -lbcm_boardctl -lsys_util -lrt
+LIBS += -L$(HND_SRC)/router-sysdep/gen_util -lgen_util
+LIBS += -L$(HND_SRC)/router-sysdep/bcm_util -lbcm_util
+LIBS += -L$(HND_SRC)/router-sysdep/bcm_flashutil -lbcm_flashutil
+LIBS += -L$(HND_SRC)/router-sysdep/bcm_boardctl -lbcm_boardctl
+LIBS += -L$(HND_SRC)/router-sysdep/sys_util -lsys_util
+LIBS += -L$(HND_SRC)/router-sysdep/atmctl_lib -latmctl
+
+ifneq ($(strip $(BUILD_XTMCTL)),)
+conditional_build: $(EXE)
+	install -m 755 $(EXE) $(INSTALL_DIR)/bin
+	ln -sf $(EXE) $(INSTALL_DIR)/bin/$(LN)
+	ln -sf $(EXE) $(INSTALL_DIR)/bin/dumpmem
+	ln -sf $(EXE) $(INSTALL_DIR)/bin/setmem
+else
+conditional_build:
+	@echo "skipping atmctl (not configured)"
+endif
+
+static: $(EXE).a
+
+$(EXE).a: $(OBJS)
+	$(AR) rcs $(EXE).a $^
+
+
+
+#
+# Implicit rule will make the .c into a .o
+# Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
+# See Section 10.2 of Gnu Make manual
+# 
+$(EXE): $(OBJS)
+	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
+
+
+
+#
+# Include the rule for making dependency files.
+# The '-' in front of the second include suppresses
+# error messages when make cannot find the .d files.
+# It will just regenerate them.
+# See Section 4.14 of Gnu Make.
+#
+
+include $(BUILD_DIR)/make.deprules
+
+-include $(OBJS:.o=.d)

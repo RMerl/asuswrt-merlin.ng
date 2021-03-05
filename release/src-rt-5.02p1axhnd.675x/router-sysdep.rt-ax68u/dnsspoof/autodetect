@@ -1,0 +1,4 @@
+
+condition: ifneq ($(strip $(BUILD_DNSSPOOF)),)
+makeflags: $(BUILD_DNSSPOOF)
+

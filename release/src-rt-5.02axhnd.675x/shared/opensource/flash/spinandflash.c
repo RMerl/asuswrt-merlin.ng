@@ -153,6 +153,7 @@
 #define ID_W25N01GV_2       0x21
 #define ID_W25M02GV_1       0xAB
 #define ID_W25M02GV_2       0x21
+#define ID_W25N02KV_2       0x22
 
 /* MXIC Macronix manufacturer ID */
 #define MACRONIXPART        0xC2
@@ -816,6 +817,10 @@ static int spi_nand_read_cfg(PCFE_SPI_NAND_CHIP pchip)
         break;
 
     case SPI_MAKE_ID_3_BYTE(WINBONDPART, ID_W25N01GV_1, ID_W25N01GV_2): // 1Gb, 128MB, default part
+        break;
+
+    case SPI_MAKE_ID_3_BYTE(WINBONDPART, ID_W25N01GV_1, ID_W25N02KV_2): // 2Gb, 256MB
+        pchip->chip_num_blocks = 0x800;  // 2048 blocks total
         break;
 
     case SPI_MAKE_ID_3_BYTE(WINBONDPART, ID_W25M02GV_1, ID_W25M02GV_2): // 2Gb, 256MB

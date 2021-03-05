@@ -394,6 +394,17 @@ export SECURE_BOOT_ARCH SECURE_BOOT_KEY_DIR SECURE_BOOT_TURNKEY SECURE_BOOT_TK_A
 endif # PROFILE
 endif #menuconfig
 
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), DSL-AX53))
+SINGLE_IMAGE := 1
+endif
+export SINGLE_IMAGE
+
+ifneq ($(strip $(SINGLE_IMAGE)),)
+BLD_BRCM_SINGLE_IMAGE := $(SINGLE_IMAGE)
+endif
+
+export BLD_BRCM_SINGLE_IMAGE
+
 ###########################################
 # Define Basic Variables
 #
@@ -571,7 +582,7 @@ BUILD_SBI_SIGN=$(HOSTTOOLS_DIR)/SecureBootUtils/build_sbi.pl --sec_mode "$(SEC_M
 BUILD_SBI=$(HOSTTOOLS_DIR)/SecureBootUtils/build_sbi.pl --sec_mode "$(SEC_MODE)" --sec_arch "$(SECURE_BOOT_ARCH)" --cred_dir "$(SEC_CRED_DIR)" --byteorder "$(ARCH_ENDIAN)" --chip "$(BRCM_CHIP)"
 BUILD_SBI_NOHDR=$(HOSTTOOLS_DIR)/SecureBootUtils/build_sbi.pl --sec_arch "$(SECURE_BOOT_ARCH)" --build_top "$(BUILD_DIR)" --sec_mode "$(SEC_MODE)" --cred_dir "$(SEC_CRED_DIR)" --byteorder "$(ARCH_ENDIAN)" --chip "$(BRCM_CHIP)" --sec_opt "$(NOHDR_SECOPT)"
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_4908_6838_6848_6858_63158_6856_6878_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_4908_6838_6848_6858_63158_6856_6878_47622_63178_),)
 CFESEC_ROM_FILE = $(CFE_ROM_FILE)
 CFESEC_RAM_FILE = $(CFE_RAM_FILE)
 else

@@ -38,6 +38,7 @@
 #include <asm/system_misc.h>
 #include <asm/opcodes.h>
 
+#define CATHY_DUMP_MEM_AROUND_REGS
 
 static const char *handler[]= {
 	"prefetch abort",
@@ -242,6 +243,39 @@ void show_stack(struct task_struct *tsk, unsigned long *sp)
 #define S_ISA " ARM"
 #endif
 
+#ifdef CATHY_DUMP_MEM_AROUND_REGS
+#include <linux/memblock.h>
+static void dump_mem_pointed_by_regs(struct pt_regs *regs, unsigned int range)
+{
+	int i, reg_num;
+	char msg[64];
+	phys_addr_t mem_start, mem_end;
+
+	if (!regs)
+		return;
+
+	mem_start = memblock_start_of_DRAM();
+	mem_end = memblock_end_of_DRAM();
+	printk(KERN_EMERG "%s: PAGE_OFFSET 0x%lx hi 0x%lx start 0x%x end 0x%x\n",
+		__FUNCTION__, PAGE_OFFSET, (unsigned long)high_memory, mem_start, mem_end);
+
+	reg_num = sizeof(struct pt_regs)/sizeof(regs->uregs[0]);
+	for (i = 0; i < reg_num; i++) {
+		if (!virt_addr_valid((void *)(regs->uregs[i]))) {
+			printk(KERN_EMERG "%s: r%d %08lx is not a valid address\n",
+				__FUNCTION__, i, regs->uregs[i]);
+		}
+		else if (virt_addr_valid((void *)(regs->uregs[i] - range)) &&
+			virt_addr_valid((void *)(regs->uregs[i] + range))) {
+			snprintf(msg, sizeof(msg), "%s: r%d %08lx",
+				__FUNCTION__, i, regs->uregs[i]);
+			dump_mem(KERN_EMERG, (const char *)&msg,
+				(regs->uregs[i] - range), (regs->uregs[i] + range));
+		}
+	}
+}
+#endif /* CATHY_DUMP_MEM_AROUND_REGS */
+
 static int __die(const char *str, int err, struct pt_regs *regs)
 {
 	struct task_struct *tsk = current;
@@ -266,6 +300,10 @@ static int __die(const char *str, int err, struct pt_regs *regs)
 			 THREAD_SIZE + (unsigned long)task_stack_page(tsk));
 		dump_backtrace(regs, tsk);
 		dump_instr(KERN_EMERG, regs);
+#ifdef CATHY_DUMP_MEM_AROUND_REGS
+		/* dump a memory range pointed by registers */
+		dump_mem_pointed_by_regs(regs, 0x80);
+#endif /* CATHY_DUMP_MEM_AROUND_REGS */
 	}
 
 	return 0;

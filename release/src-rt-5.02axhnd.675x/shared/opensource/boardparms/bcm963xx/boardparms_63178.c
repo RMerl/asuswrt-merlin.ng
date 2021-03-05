@@ -961,7 +961,11 @@ static bp_elem_t g_bcm96750ref4[] = {
 #endif
   {bp_usButtonIdx,             .u.us = 1},
   {bp_usButtonExtIntr,         .u.us = BP_EXT_INTR_1|BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE|BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL},
+#ifdef TUFAX5400
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_21_AL},
+#else
   {bp_usGpio_Intr,             .u.us = BP_GPIO_1_AL},
+#endif
 #if defined(_CFE_)
   {bp_usButtonAction,          .u.us = BP_BTN_ACTION_SES | BP_BTN_TRIG_PRESS  },
 #endif
@@ -974,8 +978,21 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usGpioWlanReserved,      .u.us = BP_GPIO_42_AH},
   {bp_usGpioWlanReserved,      .u.us = BP_GPIO_44_AH},
 
+#ifdef RTAX82_XD6
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_29_AL},	// BT RESET
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_33_AL},	// BT DISABLE
+#else
+#ifdef TUFAX5400
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_13_AL},	// LOGO LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_14_AL},	// LOGO LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_15_AL},	// LOGO LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_53_AL},	// WAN RED LED
+  {bp_usGpioLedBlPowerOn,      .u.us = BP_GPIO_57_AL},
+#else
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_30_AL},	// WAN RED LED
   {bp_usGpioLedBlPowerOn,      .u.us = BP_GPIO_23_AL},
+#endif
+#endif
 
 #ifdef RTAX82U
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_2_AH},	// LED Group2 Red
@@ -990,8 +1007,15 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_24_AH},	// LED Group3 Blue
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_25_AH},	// LED Group4 Blue
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_29_AH},	// LED Group4 Green
+#elif defined(RTAX82_XD6)
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_2_AL},	// LED Group Red
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_3_AL},	// LED Group Green
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_4_AL},	// LED Group Blue
 #endif
 
+#ifdef TUFAX5400
+  {bp_usGpioLedWL0Act,         .u.us = BP_GPIO_52_AL | BP_LED_USE_GPIO},  /* WLAN_2G_ACT, must use BP_LED_USE_GPIO */
+#else
   {bp_usGpioLedWL0Act,         .u.us = BP_GPIO_31_AL | BP_LED_USE_GPIO},  /* WLAN_2G_ACT, must use BP_LED_USE_GPIO */
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_84_AL},	// USB power
   {bp_usButtonIdx,             .u.us = 2},
@@ -1002,7 +1026,7 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usButtonIdx,             .u.us = 4},
   {bp_usGpio_Intr,             .u.us = BP_GPIO_10_AL},	// LED button
 #endif
-
+#endif
 
   {bp_usGphyBaseAddress,       .u.us = BCM963178_PHY_BASE},  // use phy addressses on SF2 with base address 0x8
   {bp_ucPhyType0,              .u.uc = BP_ENET_EXTERNAL_SWITCH},
@@ -1013,36 +1037,56 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_ulPhyId2,                .u.ul = (BCM963178_PHY_BASE + 0x02) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
   {bp_ulPhyId3,                .u.ul = (BCM963178_PHY_BASE + 0x03) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
   {bp_ulPhyId4,                .u.ul = (BCM963178_PHY_BASE + 0x04) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
-#if defined(RTAX58U) || defined(TUFAX3000)
+#if defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400)
   {bp_usIntfId,                .u.us = 0},
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 0},
+#ifdef TUFAX5400
+  {bp_usNetLed3,               .u.us = BP_GPIO_47_AL},	// P0
+#else
   {bp_usNetLed3,               .u.us = BP_GPIO_24_AL},	// P0
+#endif
   {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},
   {bp_usIntfEnd},
   {bp_usIntfId,                .u.us = 1},
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 1},
+#ifdef TUFAX5400
+  {bp_usNetLed3,               .u.us = BP_GPIO_50_AL},	// P1
+#else
   {bp_usNetLed3,               .u.us = BP_GPIO_25_AL},	// P1
+#endif
   {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},
   {bp_usIntfEnd},
   {bp_usIntfId,                .u.us = 2},
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 2},
+#ifdef TUFAX5400
+  {bp_usNetLed3,               .u.us = BP_GPIO_51_AL},	// P2
+#else
   {bp_usNetLed3,               .u.us = BP_GPIO_29_AL},	// P2
+#endif
   {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},
   {bp_usIntfEnd},
   {bp_usIntfId,                .u.us = 3},
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 3},
+#ifdef TUFAX5400
+  {bp_usNetLed3,               .u.us = BP_GPIO_55_AL},	// P3
+#else
   {bp_usNetLed3,               .u.us = BP_GPIO_10_AL},	// P3
+#endif
   {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},
   {bp_usIntfEnd},
 #endif
   {bp_usIntfId,                .u.us = 4},
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 4},
+#ifdef TUFAX5400
+  {bp_usNetLed3,               .u.us = BP_GPIO_49_AL},	// WAN
+#else
   {bp_usNetLed3,               .u.us = BP_GPIO_21_AL},	// WAN
+#endif
   {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},
   {bp_usIntfEnd},
 
@@ -1067,7 +1111,11 @@ static bp_elem_t g_bcm96750ref4[] = {
 #endif
   {bp_usButtonIdx,             .u.us = 1},
   {bp_usButtonExtIntr,         .u.us = BP_EXT_INTR_1|BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE|BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL},
+#ifdef TUFAX5400
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_21_AL},
+#else
   {bp_usGpio_Intr,             .u.us = BP_GPIO_1_AL},
+#endif
 #if defined(_CFE_)
   {bp_usButtonAction,          .u.us = BP_BTN_ACTION_SES | BP_BTN_TRIG_PRESS  },
 #endif
@@ -1084,11 +1132,19 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_29_AL},	// BT RESET
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_33_AL},	// BT DISABLE
 #else
+#ifdef TUFAX5400
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_13_AL},	// LOGO LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_14_AL},	// LOGO LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_15_AL},	// LOGO LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_53_AL},	// WAN RED LED
+  {bp_usGpioLedBlPowerOn,      .u.us = BP_GPIO_57_AL},
+#else
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_30_AL},	// WAN RED LED
 #ifdef RTAX82U
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_31_AL},	// fake 5G LED
 #endif
   {bp_usGpioLedBlPowerOn,      .u.us = BP_GPIO_23_AL},
+#endif
 #endif
 
 #ifdef RTAX82U
@@ -1105,12 +1161,14 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_25_AH},	// LED Group4 Blue
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_29_AH},	// LED Group4 Green
 #elif defined(RTAX82_XD6)
-  {bp_usGpioLedReserved,       .u.us = BP_GPIO_2_AL},   // LED Group Red
-  {bp_usGpioLedReserved,       .u.us = BP_GPIO_3_AL},   // LED Group Green
-  {bp_usGpioLedReserved,       .u.us = BP_GPIO_4_AL},   // LED Group Blue
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_2_AL},	// LED Group Red
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_3_AL},	// LED Group Green
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_4_AL},	// LED Group Blue
 #endif
 
-#ifdef RTAX82U
+#ifdef TUFAX5400
+  {bp_usGpioLedWL0Act,         .u.us = BP_GPIO_52_AL | BP_LED_USE_GPIO},  /* WLAN_2G_ACT, must use BP_LED_USE_GPIO */
+#elif defined(RTAX82U)
   {bp_usGpioLedWL0Act,         .u.us = BP_GPIO_21_AL | BP_LED_USE_GPIO},  /* fake WLAN_2G_ACT, must use BP_LED_USE_GPIO */
 #else
   {bp_usGpioLedWL0Act,         .u.us = BP_GPIO_31_AL | BP_LED_USE_GPIO},  /* WLAN_2G_ACT, must use BP_LED_USE_GPIO */
@@ -1126,46 +1184,66 @@ static bp_elem_t g_bcm96750ref4[] = {
 #endif
 
 
-  {bp_usGphyBaseAddress,       .u.us = BCM963178_PHY_BASE},  // use phy addressses on SF2 with base address 0x8 
-  {bp_ucPhyType0,              .u.uc = BP_ENET_EXTERNAL_SWITCH}, 
-  {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP}, // Accessing SF2 as MMapped external switch 
-  {bp_ulPortMap,               .u.ul = 0x1f}, 
-  {bp_ulPhyId0,                .u.ul = (BCM963178_PHY_BASE + 0x00) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)}, 
-  {bp_ulPhyId1,                .u.ul = (BCM963178_PHY_BASE + 0x01) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)}, 
-  {bp_ulPhyId2,                .u.ul = (BCM963178_PHY_BASE + 0x02) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)}, 
-  {bp_ulPhyId3,                .u.ul = (BCM963178_PHY_BASE + 0x03) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)}, 
-  {bp_ulPhyId4,                .u.ul = (BCM963178_PHY_BASE + 0x04) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)}, 
-#if defined(RTAX58U) || defined(TUFAX3000)
+  {bp_usGphyBaseAddress,       .u.us = BCM963178_PHY_BASE},  // use phy addressses on SF2 with base address 0x8
+  {bp_ucPhyType0,              .u.uc = BP_ENET_EXTERNAL_SWITCH},
+  {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP}, // Accessing SF2 as MMapped external switch
+  {bp_ulPortMap,               .u.ul = 0x1f},
+  {bp_ulPhyId0,                .u.ul = (BCM963178_PHY_BASE + 0x00) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_ulPhyId1,                .u.ul = (BCM963178_PHY_BASE + 0x01) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_ulPhyId2,                .u.ul = (BCM963178_PHY_BASE + 0x02) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_ulPhyId3,                .u.ul = (BCM963178_PHY_BASE + 0x03) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_ulPhyId4,                .u.ul = (BCM963178_PHY_BASE + 0x04) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+#if defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400)
   {bp_usIntfId,                .u.us = 0},
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 0},
+#ifdef TUFAX5400
+  {bp_usNetLed3,               .u.us = BP_GPIO_47_AL},	// P0
+#else
   {bp_usNetLed3,               .u.us = BP_GPIO_24_AL},	// P0
+#endif
   {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},
   {bp_usIntfEnd},
   {bp_usIntfId,                .u.us = 1},
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 1},
+#ifdef TUFAX5400
+  {bp_usNetLed3,               .u.us = BP_GPIO_50_AL},	// P1
+#else
   {bp_usNetLed3,               .u.us = BP_GPIO_25_AL},	// P1
+#endif
   {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},
   {bp_usIntfEnd},
   {bp_usIntfId,                .u.us = 2},
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 2},
+#ifdef TUFAX5400
+  {bp_usNetLed3,               .u.us = BP_GPIO_51_AL},	// P2
+#else
   {bp_usNetLed3,               .u.us = BP_GPIO_29_AL},	// P2
+#endif
   {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},
   {bp_usIntfEnd},
   {bp_usIntfId,                .u.us = 3},
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 3},
+#ifdef TUFAX5400
+  {bp_usNetLed3,               .u.us = BP_GPIO_55_AL},	// P3
+#else
   {bp_usNetLed3,               .u.us = BP_GPIO_10_AL},	// P3
+#endif
   {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},
-  {bp_usIntfEnd}, 
+  {bp_usIntfEnd},
 #endif
   {bp_usIntfId,                .u.us = 4},
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 4},
 #if !defined(RTAX82U) && !defined(RTAX82_XD6)
+#ifdef TUFAX5400
+  {bp_usNetLed3,               .u.us = BP_GPIO_49_AL},	// WAN
+#else
   {bp_usNetLed3,               .u.us = BP_GPIO_21_AL},	// WAN
+#endif
   {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},
 #endif
   {bp_usIntfEnd},

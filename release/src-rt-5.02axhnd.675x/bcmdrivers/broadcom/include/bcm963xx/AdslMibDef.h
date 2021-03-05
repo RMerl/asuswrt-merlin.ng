@@ -167,6 +167,7 @@ extern "C" {
 #if defined(CONFIG_BCM963268) || defined(CHIP_63268) || defined(CONFIG_BCM963138) || defined(CHIP_63138) ||  \
 	  defined(CONFIG_BCM963148) || defined(CHIP_63148) || defined(CONFIG_BCM963381) || defined(CHIP_63381) || \
 	  defined(CONFIG_BCM963158) || defined(CHIP_63158) || defined(CONFIG_BCM963178) || defined(CHIP_63178) || \
+	  defined(CONFIG_BCM963146) || defined(CHIP_63146) || \
 	  defined(DMP_VDSL2WAN_1)
 #define CONFIG_VDSL_SUPPORTED
 #endif
@@ -591,6 +592,9 @@ typedef struct _adslVersionInfo {
 #define kOidAdslPrivGetMrefPsdInfo          56
 #define kOidAdslPrivGetExtraSkbCnt          57
 #define kOidAdslPrivGetLineFeatures         58
+#define kOidAdslPrivGetnToneRmc             59
+#define kOidAdslPrivGetRmcBitAlloc          60
+#define kOidAdslPrivGetRts                  61
 
 
 #define kOidAdslExtraPLNInfo						11
@@ -1063,13 +1067,17 @@ typedef struct {
     gfastOlrCounterInfo    cntUS;
 } gfastOlrCounterInfoEntry;
 
+#define MAX_LAST_Mds  8
 typedef struct {
     unsigned int       dsCurRate;
     unsigned int       usCurRate;
-    unsigned char      dtaFlags;         
-    unsigned char      curMds;         
-    unsigned char      maxMds;         
-    unsigned char      hsMds;         
+    unsigned char      dtaFlags;
+    unsigned char      curMds;
+    unsigned char      maxMds;
+    unsigned char      hsMds;
+    unsigned int       dtaEventCnt;
+    int                lastMdsIdx;
+    unsigned char      lastMds[MAX_LAST_Mds];
 } gfastDtaInfo;
 #endif
 
@@ -1888,7 +1896,7 @@ typedef struct {
 
 #define RX_DIRECTION  0   /* Use to index xdslInfo->dirInfo[] */
 #define TX_DIRECTION  1
-#ifdef PHY_CO
+#if defined(PHY_CO) || defined(BRCM_PHY_CO)
 #define US_DIRECTION  RX_DIRECTION
 #define DS_DIRECTION  TX_DIRECTION
 #else

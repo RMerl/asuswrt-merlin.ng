@@ -796,13 +796,15 @@ struct pjsip_msg
 	struct pjsip_status_line    status;
     } line;
 
-    /** List of message headers. */
-    pjsip_hdr hdr;
+	/** List of message headers. */
+	pjsip_hdr hdr;
 
     /** Pointer to message body, or NULL if no message body is attached to
      *	this mesage. 
      */
-    pjsip_msg_body *body;
+	pjsip_msg_body *body;
+
+	int retry_cnt;
 };
 
 

@@ -1592,6 +1592,10 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	gst.s_addr = htonl(dip);
 	strcpy(g_lan_ip, inet_ntoa(gst));
 #endif
+#ifdef RTCONFIG_MULTISERVICE_WAN
+	wan_unit = wan_ifunit(wan_if);
+	if (wan_unit > WAN_UNIT_MULTISRV_BASE) return;
+#endif
 
 	sprintf(name, "%s_%s_%s", NAT_RULES, wan_if, wanx_if);
 	remove_slash(name + strlen(NAT_RULES));
@@ -3863,7 +3867,7 @@ TRACE_PT("writing Parental Control\n");
 #endif
 
 #ifdef RTCONFIG_AMAS_WGN
-	wgn_filter_forward(fp);
+	wgn_filter_forward(fp, wan_if);
 #endif
 
 	if(nvram_match("wifison_ready", "1"))
@@ -3977,6 +3981,7 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp_ipv6, "-A FORWARD -p ipv6-nonxt -m length --length 40 -j ACCEPT\n");
 
 		// ICMPv6 rules
+		fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp --icmpv6-type %i -m limit --limit 1/s -j %s\n", 128, logdrop);
 		for (i = 0; i < sizeof(allowed_icmpv6)/sizeof(int); ++i) {
 			fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp --icmpv6-type %i -j %s\n", allowed_icmpv6[i], logaccept);
 		}
@@ -5236,7 +5241,7 @@ TRACE_PT("writing Parental Control\n");
 #endif
 
 #ifdef RTCONFIG_AMAS_WGN
-	wgn_filter_forward(fp);
+	wgn_filter_forward(fp, wan_if);
 #endif
 // ~ oleg patch
 		/* Filter out invalid WAN->WAN connections */
@@ -5313,6 +5318,7 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp_ipv6, "-A FORWARD -p ipv6-nonxt -m length --length 40 -j ACCEPT\n");
 
 		// ICMPv6 rules
+		fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp --icmpv6-type %i -m limit --limit 1/s -j %s\n", 128, logdrop);
 		for (i = 0; i < sizeof(allowed_icmpv6)/sizeof(int); ++i) {
 			fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp --icmpv6-type %i -j %s\n", allowed_icmpv6[i], logaccept);
 		}
@@ -6514,6 +6520,8 @@ void add_mswan_rules(char *logaccept, char *logdrop)
 				eval("iptables", "-A", "INPUT_PING"
 					, "-i", wan_ifname, "-p", "icmp", "-j", logdrop);
 			}
+			eval("iptables", "-I", "FORWARD"
+					, "-o", wan_ifname, "-j", logaccept);
 
 			// nat
 			if (nvram_pf_get_int(wan_prefix, "nat_x"))

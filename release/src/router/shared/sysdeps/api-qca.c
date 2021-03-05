@@ -367,6 +367,10 @@ void set_radio(int on, int unit, int subunit)
 	int sub = (subunit >= 0) ? subunit : 0;
 	char tmp[100], prefix[] = "wlXXXXXXXXXXXXXX", athfix[]="athXXXXXX";
 	char path[sizeof(NAWDS_SH_FMT) + 6], wds_iface[IFNAMSIZ] = "";
+#if defined(RTCONFIG_SOC_IPQ8074) && defined(RTCONFIG_SINGLE_HOSTAPD)
+	char *radio_on[] = { "hostapd_cli", "-p", "/var/run/hostapd", "-i", wds_iface, "enable", NULL };
+	char *radio_off[] = { "hostapd_cli", "-p", "/var/run/hostapd", "-i", wds_iface, "disable", NULL };
+#endif
 
 	if (unit < WL_2G_BAND || unit >= WL_NR_BANDS) {
 		dbg("%s: wl%d is not supported!\n", __func__, unit);
@@ -384,12 +388,9 @@ void set_radio(int on, int unit, int subunit)
 #if defined(RTCONFIG_SOC_IPQ8074)
 #if defined(RTCONFIG_SINGLE_HOSTAPD)
 		if (on) {
-			char bss_cfg[sizeof("bss_config=") + IFNAMSIZ + sizeof(":/etc/Wireless/conf/hostapd_XXX.conf") + IFNAMSIZ];
-
-			snprintf(bss_cfg, sizeof(bss_cfg), "bss_config=%s:/etc/Wireless/conf/hostapd_%s.conf", wds_iface, wds_iface);
-			eval(QWPA_CLI, "-g", QHOSTAPD_CTRL_IFACE, "raw", "ADD", bss_cfg);
+			_eval(radio_on, ">/dev/console", 0, NULL);
 		} else {
-			eval(QWPA_CLI, "-g", QHOSTAPD_CTRL_IFACE, "raw", "REMOVE", wds_iface);
+			_eval(radio_off, ">/dev/console", 0, NULL);
 		}
 #else
 		char conf_path[sizeof("/etc/Wireless/conf/hostapd_athXXX.confYYYYYY")];
@@ -407,6 +408,16 @@ void set_radio(int on, int unit, int subunit)
 #endif
 #else // NOT IPQ8074
 #if defined(RTCONFIG_CFG80211) && defined(RTCONFIG_SINGLE_HOSTAPD)
+#if defined(RTCONFIG_SOC_IPQ60XX)
+		{
+			const char *act;
+			if (on)
+				act = "enable";
+			else
+				act = "disable";
+			eval("hostapd_cli", "-i", wds_iface, act);
+		}
+#else
 		if (on) {
 			char bss_cfg[sizeof("bss_config=") + IFNAMSIZ + sizeof(":/etc/Wireless/conf/hostapd_XXX.conf") + IFNAMSIZ];
 
@@ -415,6 +426,7 @@ void set_radio(int on, int unit, int subunit)
 		} else {
 			eval(QWPA_CLI, "-g", QHOSTAPD_CTRL_IFACE, "raw", "REMOVE", wds_iface);
 		}
+#endif
 #endif
 #endif
 	do {
@@ -2778,9 +2790,9 @@ static int generate_bt_bscp_conf()
 		plus = 2;
 		buf[5] += plus;
 
-		snprintf(bt_mac, sizeof(bt_mac), "00%x %x%x 00%x %x%x\n", buf[3], buf[4], buf[5], buf[2], buf[0], buf[1]);
+		snprintf(bt_mac, sizeof(bt_mac), "00%02x %02x%02x 00%02x %02x%02x\n", buf[3], buf[4], buf[5], buf[2], buf[0], buf[1]);
 	}
-	_dprintf("BT mac(%02x:%02x:%02x:%02x:%02x:%02x)\n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
+	_dprintf("BT mac(%s)\n", bt_mac);
 
 	// BT BSCP CONF
 	fprintf(fp, "// # explicit, PSKEY_HCI_LMP_LOCAL_VERSION (0x010d, 269), 1 words\n");

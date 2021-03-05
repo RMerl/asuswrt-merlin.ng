@@ -128,7 +128,7 @@ function getVariable(){
 		_array.push.apply(_array, _element);
 	}
 
-	if(dwb_info.mode == "1" && isSupport("amas_fronthaul_network"))
+	if(isSupport("amas_fronthaul_network"))
 		_array.push('fh_ap_enabled');
 
 	nvram = httpApi.nvramGet(_array);
@@ -147,6 +147,7 @@ function getInterface(){
 	var _temp = new Array();
 	var typeObj = {
 		'triBandSmartConnect': [['0', 'Tri-Band Smart Connect', '0']],
+		'dualBand6GHzSmartConnect': [['0', '2.4 / 5 GHz', '0'], ['2', '6 GHz', '2']],
 		'dualBandSmartConnect': [['0', 'Dual-Band Smart Connect', '0']],
 		'triBand5GHzSmartConnect': [['0', '2.4 GHz', '0'], ['1', '5GHz Smart Connect', '1']],
 		'triBandMeshSmartConnect': [['0', 'Dual-Band Smart Connect', '0'], ['2', '5 GHz-2', '2']],
@@ -159,12 +160,14 @@ function getInterface(){
 		'60G': [['3', '60 GHz','3']]
 	}
 
+
 	if(system.smartConnectSupport && variable.smart_connect_x != '0'){		// Smart Connect
 		if(variable.smart_connect_x == '1'){	// Tri/Dual-Band Smart Connect		
 			if(system.band5g2Support){
 				if(dwb_info.mode == '1'){
 					if(system.band6gSupport){
-						_temp = typeObj['triBand6GHzMeshSmartConnect'];
+						//_temp = typeObj['triBand6GHzMeshSmartConnect'];
+						_temp = typeObj['triBandSmartConnect'];
 					}
 					else{
 						_temp = typeObj['triBandMeshSmartConnect'];
@@ -177,6 +180,9 @@ function getInterface(){
 			else{
 				_temp = typeObj['dualBandSmartConnect'];
 			}	
+		}
+		else if(variable.smart_connect_x == '3'){
+			_temp = typeObj['dualBand6GHzSmartConnect'];
 		}
 		else{		// 5 GHz Smart Connect
 			_temp = typeObj['triBand5GHzSmartConnect'];
@@ -271,14 +277,17 @@ function genElement(){
 		code += '<div class="unit-block"><div class="division-block">'+ wlInterface[i][1] +'</div>';
 		if(dwb_info.mode == '1' && (dwb_info.band == UNIT)){
 			if(band6g_support){
-				code += '<div class="dwb_hint">6 GHz <#AiMesh_backhaul_band_5GHz-2_desc1#></div>';
+				if(isSupport("amas_fronthaul_network") && variable.fh_ap_enabled == '0'){
+					code += '<div class="dwb_hint">6 GHz <#AiMesh_backhaul_band_5GHz-2_desc1#></div>';
+					code += '<div class="dwb_hint"><#AiMesh_backhaul_band_5GHz-2_desc2#></div>';
+					break;
+				}
 			}
 			else{
 				code += '<div class="dwb_hint">5 GHz-2 <#AiMesh_backhaul_band_5GHz-2_desc1#></div>';
+				code += '<div class="dwb_hint"><#AiMesh_backhaul_band_5GHz-2_desc2#></div>';
+				break;
 			}
-			
-			code += '<div class="dwb_hint"><#AiMesh_backhaul_band_5GHz-2_desc2#></div>';
-			break;
 		}
 
 		// SSID
@@ -302,7 +311,7 @@ function genElement(){
 		var _authMode = variable['wl'+ unit +'_auth_mode_x'];
 		var nmode_x = variable['wl'+ unit + '_nmode_x'];
 		var wepEncryption = variable['wl'+ unit +'_wep_x'];
-		if(_authMode == 'psk' || _authMode == 'psk2' || _authMode == 'sae' || _authMode == 'pskpsk2' || _authMode == 'psk2sae'){
+		if(_authMode == 'psk' || _authMode == 'psk2' || _authMode == 'sae' || _authMode == 'pskpsk2' || _authMode == 'psk2sae' || _authMode == 'owe'){
 			// WPA Encryption
 			if(!system.lyraHideSupport){
 				code += '<div class="info-block">';
@@ -311,13 +320,14 @@ function genElement(){
 				code += '</div>';
 			}
 
-			// WPA key
-			code += '<div class="info-block">';
-			code += '<div class="info-title"><#WPA-PSKKey#></div>';
-			code += '<div><input class="input-size-25" id="wl'+ unit +'_wpa_psk" type="password" onBlur="switchType(this, false);" onFocus="switchType(this, true);" oninput="updateVariable(this.id, value, false)"></div>';
-			code += '<input style="display:none" type="password" name="fakepassword"/>';
-
-			code += '</div>';
+            // WPA key
+            if(_authMode != 'owe'){            
+                code += '<div class="info-block">';
+                code += '<div class="info-title"><#WPA-PSKKey#></div>';
+                code += '<div><input type="text" class="input-size-25" id="wl'+ unit +'_wpa_psk" type="password" onBlur="switchType(this, false);" onFocus="switchType(this, true); oninput="updateVariable(this.id, value, false)"></div>';
+                code += '<input style="display:none" type="password" name="fakepassword"/>';
+                code += '</div>';
+            }
 		}
 		else if(_authMode == 'shared' || (_authMode == 'open' && nmode_x == '2')){
 			if(_authMode == 'shared' || (_authMode == 'open' && wepEncryption != '0')){
@@ -361,13 +371,20 @@ function genSmartConnect(){
 	var _smart_connect_x = variable['smart_connect_x']
 	if(system.band5g2Support){
 		if(dwb_info.mode == '1'){
-			_optionArray = [['<#wl_securitylevel_0#>', '0'], ['Dual-Band Smart Connect', '1']];
+			if(isSupport("wifi6e")){
+				_optionArray = [['<#wl_securitylevel_0#>', '0'], ['Tri-Band Smart Connect', '1'], ['Dual-Band Smart Connect', '3']];
+			}
+			else{
+				_optionArray = [['<#wl_securitylevel_0#>', '0'], ['Dual-Band Smart Connect', '1']];
+			}	
 		}
 		else{
-			if(isSupport("wifi6e"))
-				_optionArray = [['<#wl_securitylevel_0#>', '0'], ['Tri-Band Smart Connect', '1']];
-			else
-			_optionArray = [['<#wl_securitylevel_0#>', '0'], ['Tri-Band Smart Connect', '1'], ['5GHz Smart Connect', '2']];
+			if(isSupport("wifi6e")){
+				_optionArray = [['<#wl_securitylevel_0#>', '0'], ['Tri-Band Smart Connect', '1'], ['Dual-Band Smart Connect', '3']];
+			}				
+			else{
+				_optionArray = [['<#wl_securitylevel_0#>', '0'], ['Tri-Band Smart Connect', '1'], ['5GHz Smart Connect', '2']];
+			}
 		}		
 	}
 	else{
@@ -540,7 +557,10 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 		genWEPEncryption(unit, 'wl'+ unit +'_wep_x');
 		genWEPKeyIndex(unit, 'wl'+ unit +'_key');
 		getWEPKey(unit, 'wl'+ unit +'_wep_key', variable['wl'+ unit +'_key']);
-	}
+    }
+    else if(auth_mode_x == 'owe'){
+        genWPAEncryption(unit, 'wl'+ unit +'_crypto', auth_mode_x);
+    }
 	else if(auth_mode_x == 'open'){
 		if(nmode_x == '2'){
 			if(wepEncryption != '0'){
@@ -567,7 +587,7 @@ function genWPAEncryption(unit, id, auth_mode_x){
 	}
 	var wpaEncryptArray = new Array();
 	var _temp = new Array();
-	if(auth_mode_x == 'psk2' || auth_mode_x == 'sae' || auth_mode_x == 'psk2sae' || auth_mode_x == 'wpa2'){		// WPA2-Personal, WPA3-Personal, WPA2/WPA3-Personal, WPA2-Enterprise
+	if(auth_mode_x == 'psk2' || auth_mode_x == 'sae' || auth_mode_x == 'psk2sae' || auth_mode_x == 'wpa2' || auth_mode_x == 'owe'){		// WPA2-Personal, WPA3-Personal, WPA2/WPA3-Personal, WPA2-Enterprise
 		wpaEncryptArray.push.apply(wpaEncryptArray, wpaEncryptObj['aes']);
 	}
 	else if(auth_mode_x == 'pskpsk2' || auth_mode_x == 'wpawpa2'){		// WPA/WPA2-Personal, WPA/WPA2-Enterprise
@@ -575,8 +595,8 @@ function genWPAEncryption(unit, id, auth_mode_x){
 	}
 	else if(auth_mode_x == 'psk' || auth_mode_x == 'wpa'){		// WPA-Personal, WPA-Enterprise
 		wpaEncryptArray.push.apply(wpaEncryptArray, wpaEncryptObj['tkip']);
-	}
-
+    }
+    
 	var code = '';
 	var wpaCryption = variable['wl'+ unit +'_crypto'];
 	for(var i=0; i<wpaEncryptArray.length; i++){
@@ -693,7 +713,7 @@ function updateVariable(id, value, flag){
 		variable['wps_enable'] = nvram['wps_enable'];
 	}
 
-	if(dwb_info.mode == "1" && isSupport("amas_fronthaul_network")){
+	if(isSupport("amas_fronthaul_network")){
 		if(variable['smart_connect_x'] == "1")
 			variable['fh_ap_enabled'] = httpApi.nvramDefaultGet(["fh_ap_enabled"]).fh_ap_enabled;
 		else

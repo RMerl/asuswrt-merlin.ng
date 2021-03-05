@@ -1,4 +1,9 @@
-﻿2019-05-28: 2.1.0.127
+﻿2020-05-15: 2.1.0.128
+==> SDK : 1. Fine tune tunnel session flow. Lower the time consuming for tunnel session creating.
+          2. Update OpenSSL 1.1.1d.
+          3. Udpate Android NDK to r20.
+
+2019-05-28: 2.1.0.127
 ==> SDK : Enhance SIP retry mechanism. Let retry period get longer for every retry to avoid DDoS attack to SIP server.
 
 2018:01-08: 2.1.0.126

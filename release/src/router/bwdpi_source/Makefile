@@ -13,8 +13,10 @@ CFLAGS += -I$(TOP)/libasuslog
 LIBS += -L$(TOP)/libasuslog -lasuslog
 endif
 
+CFLAGS += -I$(TOP)/json-c
+
 # BCM6750 : seperate bin / header / modules from bcm675x
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX58U TUF-AX3000 RT-AX82U RT-AX82_XD6 GS-AX3000 GS-AX5400 DSL-AX82U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX58U TUF-AX3000 TUF-AX5400 RT-AX82U RT-AX82_XD6 GS-AX3000 GS-AX5400 DSL-AX82U))
 export BWDPI_BCM6750 := y
 endif
 

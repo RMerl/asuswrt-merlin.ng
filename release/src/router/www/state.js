@@ -977,8 +977,9 @@ function show_banner(L3){// L3 = The third Level of Menu
 
 	if(radio_all_disabled && !radioHintIgnored){
 		banner_code += '<div style="padding: 2px 8px;margin: 0 0 2px 230px;width:735px;display:flex;justify-content:space-between;" class="radio_hint">';
-		banner_code += '<div style="font-size: 14px;">Your Wi-Fi radio is currently disabled</div>';
-		banner_code += '<div style="background-image: url(\'images/New_ui/arrow_right.svg\');width:16px;height:16px;background-size: 60%;background-repeat:no-repeat;cursor: pointer" onclick="radio_hint();"></div>';
+		banner_code += '<div style="background-image: url(\'images/New_ui/exclamationmark.svg\');width:16px;height:16px;background-size: 100%;background-repeat:no-repeat;cursor: pointer"></div>';
+		banner_code += '<div style="font-size: 14px;margin-left:12px;">Your Wi-Fi radio is currently turned off. Please turn on now.</div>';
+		banner_code += '<div style="background-image: url(\'images/New_ui/arrow_right.svg\');width:16px;height:16px;background-size: 60%;background-repeat:no-repeat;cursor: pointer;margin-left: auto" onclick="radio_hint();"></div>';
 		banner_code += '</div>';
 	}
 	

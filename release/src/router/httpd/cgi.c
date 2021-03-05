@@ -273,7 +273,7 @@ void webcgi_init(char *query)
        }
 }
 
-FILE *connfp = NULL;
+static FILE *connfp = NULL;
 int web_read(void *buffer, int len)
 {
        int r;

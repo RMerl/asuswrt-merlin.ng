@@ -2423,3 +2423,10 @@ config RTCONFIG_BHSWITCH_RE_SELFOPT
 config RTCONFIG_PREFERAP_RE_SELFOPT
 	bool "Notify RE do self optimization based on prefer ap condition"
 	default n
+
+config RTCONFIG_FRONTHAUL_DBG
+	bool "enable AiMesh RE fronthaul for debug purpose"
+
+config RTCONFIG_MAX_RE_32
+	bool "max number of RE is 32"
+	default n

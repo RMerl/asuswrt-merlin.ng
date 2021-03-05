@@ -29,6 +29,7 @@
 #endif
 #endif
 
+#include <shutils.h>
 #ifdef RTCONFIG_REALTEK
 #include "realtek_common.h"
 #include <time.h>
@@ -1061,6 +1062,11 @@ enum led_id {
 #ifdef RTCONFIG_LOGO_LED
 	LED_LOGO,
 #endif
+#ifdef TUFAX5400
+	LED_LOGO1,
+	LED_LOGO2,
+	LED_LOGO3,
+#endif
 	LED_WAN_RED,
 #if defined(RTCONFIG_WANLEDX2) && defined(RTCONFIG_WANRED_LED)
 	LED_WAN2_RED,
@@ -1613,7 +1619,28 @@ static inline int client_mode(void)
 #ifdef RTCONFIG_DPSTA
 static inline int dpsta_mode()
 {
-	return ((sw_mode() == SW_MODE_AP) && (nvram_get_int("wlc_psta") == 2) && (nvram_get_int("wlc_dpsta") == 1));
+	int ret=0;
+
+	ret = ((sw_mode() == SW_MODE_AP) && (nvram_get_int("wlc_psta") == 2) && (nvram_get_int("wlc_dpsta") == 1));
+#ifdef RPAX56
+	if(nvram_match("x_Setting", "0"))
+		return 1;
+
+	int unit;
+	int max_units = num_of_wl_if();
+	char tmp[100], prefix[]="wlXXXXXXX_";
+
+	if(ret) {
+		for(unit = 0; unit < max_units; ++unit) {
+			snprintf(prefix, sizeof(prefix), "wlc%d_", unit);
+			if(!*nvram_safe_get(strcat_r(prefix, "ssid", tmp))) {
+				ret = 0;
+				break;
+			}
+		}
+	}
+#endif
+	return ret;
 }
 #else
 static inline int dpsta_mode()
@@ -1621,6 +1648,25 @@ static inline int dpsta_mode()
 	return 0;
 }
 #endif
+
+static inline int rp_mode()
+{
+	return ((sw_mode() == SW_MODE_AP) && (nvram_get_int("wlc_psta") == 2) && (nvram_get_int("wlc_dpsta") == 1));
+}
+
+static inline int is_rp_unit(int unit)
+{
+	char tmp[100], prefix[]="wlXXXXXXX_";
+
+	if(!rp_mode())
+		return 0;
+
+	snprintf(prefix, sizeof(prefix), "wlc%d_", unit);
+	if(!*nvram_safe_get(strcat_r(prefix, "ssid", tmp)))
+		return 0;
+
+	return 1;
+}
 
 static inline int mb_mode() /* psta_mode */
 {
@@ -1914,7 +1960,7 @@ extern int led_control(int which, int mode);
 extern uint32_t gpio_dir(uint32_t gpio, int dir);
 extern uint32_t set_gpio(uint32_t gpio, uint32_t value);
 extern uint32_t get_gpio(uint32_t gpio);
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(GSAX3000) || defined(GSAX5400)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(GSAX3000) || defined(GSAX5400)
 extern uint32_t get_gpio2(uint32_t gpio);
 #endif
 extern int get_switch_model(void);
@@ -2257,10 +2303,8 @@ extern int led_ctrl(void);
 #endif
 extern unsigned int rtkswitch_Port_phyStatus(unsigned int port_mask);
 extern unsigned int rtkswitch_Port_phyLinkRate(unsigned int port_mask);
-#if defined(RTCONFIG_SOC_IPQ40XX)
 extern int get_channel_list_via_driver(int unit, char *buffer, int len);
 extern int get_channel_list_via_country(int unit, const char *country_code, char *buffer, int len);
-#endif
 extern unsigned int __rtkswitch_WanPort_phySpeed(int wan_unit);
 extern void ATE_port_status(phy_info_list *list);
 #elif defined(RTCONFIG_ALPINE)

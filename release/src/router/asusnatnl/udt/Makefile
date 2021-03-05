@@ -55,7 +55,7 @@ endif
 
 
 ifeq ($(arch), ARM)
-   CPPFLAGS += -frtti -fexceptions 
+   CPPFLAGS += -frtti -fexceptions -fPIC
   # LDLIBS += -L/home/charles0000/android-toolchain/arm-linux-androideabi/lib 
    LDFLAGS = -lstdc++
    ANDROID_ARCH=arm

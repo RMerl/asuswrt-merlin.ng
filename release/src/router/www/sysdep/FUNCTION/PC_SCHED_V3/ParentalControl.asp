@@ -143,6 +143,16 @@ function initial(){
 		if(isSupport("webs_filter") && isSupport("apps_filter"))
 			document.getElementById('switch_menu').style.display = "";
 	}
+	if(isSupport("PC_SCHED_V3")){
+		$("#desc_title").html("This feature allows you to set up a scheduled time for specific devices' Internet access.");/* untranslated */
+		$("#desc_title").nextAll("ol:first").find("li:eq(0)").html("In [Client Name] column, select a device you would like to manage. You can also manually key in MAC address in this column.");/* untranslated */
+		$("#desc_title").nextAll("ol:first").find("li:eq(2)").html("In [Time Management] column, click the edit icon to set a schedule.");/* untranslated */
+		$("#desc_title").nextAll("ol:first").find("li:eq(4)").html("Click [Apply] to save the configurations.");/* untranslated */
+		$("#desc_title").nextAll("ol:first").find("li:eq(3)").remove();
+		$("#desc_note").nextAll("ol:first").find("li:eq(0)").remove();
+		if($("#nat_desc").css("display") == "none")
+			$("#desc_note").hide();
+	}
 	document.getElementById('disable_NAT').href = "Advanced_SwitchCtrl_Content.asp?af=ctf_disable_force";	//this id is include in string : #ParentalCtrl_disable_NAT#
 
 	show_footer();
@@ -615,7 +625,7 @@ function show_inner_tab(){
 						<div id="guest_image" style="background: url(images/New_ui/parental-control.png);width: 130px;height: 87px;"></div>
 					</td>
 					<td>&nbsp;&nbsp;</td>
-					<td style="font-style: italic;font-size: 14px;">
+					<td style="font-size: 14px;">
 						<span id="desc_title"><#ParentalCtrl_Desc#></span>
 						<ol>	
 							<li><#ParentalCtrl_Desc1#></li>

@@ -693,6 +693,9 @@
 	height: 58px;
 	position: relative;
 }
+.wan_status_bg:not(:last-child){
+	margin-bottom: 18px;
+}
 .wan_status_bg > div{
 	height: 60px;
 	position: relative;
@@ -849,7 +852,7 @@
 	right: 12px;
 	top: 6px;
 }
-.wan_status_bg div.connect_icon_bg.disconnected > .router{
+.wan_status_bg div.connect_icon_bg.disconnected > .router, .wan_status_bg div.connect_icon_bg.standby > .router{
 	background-position: -78px 6px;
 }
 .wan_status_bg div.connect_icon_bg > .connect_line{
@@ -871,6 +874,9 @@
 }
 .wan_status_bg div.connect_icon_bg.disconnected > .connect_status{
 	background-position: 2px -224px;
+}
+.wan_status_bg div.connect_icon_bg.standby > .connect_status{
+	background: initial;
 }
 .wan_status_bg div.connect_icon_bg{
 	position: absolute;
@@ -1223,11 +1229,16 @@
 }
 .manage_settings_bg .sub_item_bg{
 	height: auto;
-	padding: 10px 0px 4px 0px;
 }
 .manage_settings_bg .sub_item_bg > div{
-	margin-left: 22px;
 	position: relative;
+}
+.manage_settings_bg .sub_item_bg > div:nth-child(1){
+	height: 60px;
+}
+.manage_settings_bg .sub_item_bg > div:nth-child(2){
+	margin-left: 22px;
+	padding-bottom: 2px;
 }
 .manage_sub_item_bg .manage_common_title .wifi_title{
 	position: relative;
@@ -1256,7 +1267,6 @@
 .manage_settings_bg .sub_item_bg .manage_sub_item_bg > div{
 	height: 36px;
 	position: relative;
-	margin-top: 8px;
 	line-height: 36px;
 }
 .manage_settings_bg .sub_item_bg .manage_sub_item_bg > div .manage_common_title{
@@ -1266,7 +1276,6 @@
 	content: "";
 	position: absolute;
 	left: 5%;
-	top: -4px;
 	height: 1px;
 	width: 90%;
 	border-top: 1px solid #3E4E59;
@@ -1361,19 +1370,37 @@
 	margin-top: 3px;
 	margin-right: 6px;
 }
-.arrow_right_icon{
+.arrow_icon{
 	position: relative;
 	right: 8px;
 	width: 10px;
 	height: 10px;
 	border-top: 3px solid #ffffff;
 	border-right: 3px solid #ffffff;
+	cursor: pointer;
+}
+.arrow_icon.right{
 	-o-transform: rotate(45deg);
 	-ms-transform: rotate(45deg);
 	-moz-transform: rotate(45deg);
 	-webkit-transform: rotate(45deg);
 	transform: rotate(45deg);
-	cursor: pointer;
+}
+.arrow_icon.down{
+	-o-transform: rotate(135deg);
+	-ms-transform: rotate(135deg);
+	-moz-transform: rotate(135deg);
+	-webkit-transform: rotate(135deg);
+	transform: rotate(135deg);
+	right: 6px;
+}
+.arrow_icon.up{
+	-o-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+	-moz-transform: rotate(-45deg);
+	-webkit-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+	right: 6px;
 }
 .client_num_bg{
 	font-family: Roboto-Regular, "Microsoft JhengHei";
@@ -1458,22 +1485,19 @@
 	float: left;
 	position: relative;
 }
-.client_list_bg .client_icon_bg.default_icon{
-	background-image: url(/images/New_ui/networkmap/client-list.svg);
+.client_list_bg .client_icon_bg.default_icon, .client_list_bg .client_icon_bg.user_icon{
 	background-repeat: no-repeat;
-	background-size: 900%;
+	background-size: 100%;
 	border-radius: 8px;
-	background-color: #788D94;
+	background-color: #596E74;
+	box-shadow: 0px 0px 0px 1px #3E4243;
+	background-position: 50%;
 }
 .client_list_bg .client_icon_bg.vender_icon{
 	background-image: url(/images/New_ui/networkmap/vender-list.png);
 	background-repeat: no-repeat;
 	background-size: 180%;
 	top: 1px;
-}
-.client_list_bg .client_icon_bg.user_icon{
-	background-size: cover;
-	border-radius: 8px;
 }
 .client_list_bg .client_action_bg{
 	right: 0;
@@ -1509,10 +1533,6 @@
 	cursor: initial;
 	background-color: initial;
 	margin-left: initial;
-}
-.type0{
-	background-image:url('/images/New_ui/networkmap/client.svg') !important;
-	background-size: 100% !important;
 }
 .client_list_bg .client_content_bg{
 	float: left;

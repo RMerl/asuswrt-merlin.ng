@@ -385,6 +385,20 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "check_action")==0) {
 		_dprintf("check: %d\n", check_action());
 	}
+#ifdef RPAX56
+	else if (strcmp(argv[1], "is_client") == 0) {
+		printf("client_mode=%d\n", client_mode());
+	}
+	else if (strcmp(argv[1], "is_psr") == 0) {
+		printf("is_psr(0:%d)(1:%d)\n", is_psr(0), is_psr(1));
+	}
+	else if (strcmp(argv[1], "is_dpsta") == 0) {
+		printf("dpsta_mode=%d\n", dpsta_mode());
+	}
+	else if (strcmp(argv[1], "is_rp") == 0) {
+		printf("rp_mode=%d(0:%d,1:%d)\n", rp_mode(), is_rp_unit(0), is_rp_unit(1));
+	}
+#endif
 	else if (strcmp(argv[1], "nvramhex")==0) {
 		int i;
 		char *nv;
@@ -598,7 +612,7 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "gpior") == 0) {
 			printf("%d\n", get_gpio(atoi(argv[2])));
 		}
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(GSAX3000) || defined(GSAX5400)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(GSAX3000) || defined(GSAX5400)
 		else if (strcmp(argv[1], "gpio2r") == 0) {
 			printf("%d\n", get_gpio2(atoi(argv[2])));
 		}
@@ -1337,7 +1351,7 @@ static const applets_t applets[] = {
 	{ "delay_exec",			delay_main			},
 
 	{ "wanduck",			wanduck_main			},
-#ifdef RTCONFIG_CONNDIAG
+#if defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_ADV_RAST)
 	{ "conn_diag",			conn_diag_main			},
 	{ "diag_data",			diag_data_main			},
 #endif
@@ -2377,9 +2391,11 @@ int main(int argc, char **argv)
                 nvram_set_int("hndwr", ret);
                 return ret;
 	}
+#ifndef RTAC68U_V4
 	else if (!strcmp(base, "mtd_erase_image_update")) {
 		return mtd_erase_image_update();
 	}
+#endif
 	else if (!strcmp(base, "mtd_erase_misc2")) {
 		return mtd_erase_misc2();
 	}

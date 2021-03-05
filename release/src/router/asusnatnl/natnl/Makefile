@@ -59,18 +59,21 @@ ifeq ("$(MAKECMDGOALS)", $(filter "$(MAKECMDGOALS)", "android-lib"))
 ifeq ($(findstring i686, $(PJ_CC)), i686)
 ARCH=i686
 STL_DIR=x86
-LDLIBS +=~/android-toolchain-x86/i686-linux-android/lib/libstdc++.a
+LDFLAGS +=-static-libstdc++
+LDLIBS +=/opt/android-toolchain/x86/sysroot/usr/lib/i686-linux-android/libc++_static.a
 endif
 ifeq ($(findstring aarch64, $(PJ_CC)), aarch64)
 ARCH=aarch64
 STL_DIR=arm64
-LDLIBS +=~/android-toolchain-arm64/aarch64-linux-android/lib/libstdc++.a
+LDFLAGS +=-static-libstdc++
+LDLIBS +=/opt/android-toolchains/arm64/sysroot/usr/lib/aarch64-linux-android/libc++_static.a
 endif
 ifeq ($(findstring arm, $(PJ_CC)), arm)
 ARCH=arm
 EABI=eabi
 STL_DIR=arm
-LDLIBS += ~/android-toolchain-arm/arm-linux-androideabi/lib/libstdc++.a
+LDFLAGS +=-static-libstdc++
+LDLIBS +=/opt/android-toolchains/arm/sysroot/usr/lib/arm-linux-androideabi/libc++_static.a
 endif
 ANDROID_CROSS=$(ARCH)-linux-android$(EABI)
 ANDROID_GCC=$(ANDROID_CROSS)-gcc

@@ -126,8 +126,6 @@ MUSL_CFLAGS += -Dloff_t=off_t
 endif
 
 # New Broadcom/Ralink/MTK/QCA/RTK platform.
-KPATH_2636 = $(if $(findstring linux-2.6.36,$(LINUXDIR)),y)
-
 KPATH_2636_OR_3X = $(if $(or $(findstring linux-2.6.36,$(LINUXDIR)),$(findstring linux-3.x,$(LINUXDIR)),$(findstring linux-3.3.x,$(LINUXDIR)),$(findstring linux-3.3.8,$(LINUXDIR)),$(findstring linux-3.4.x,$(LINUXDIR)),$(findstring linux-4.1,$(LINUXDIR)),$(findstring linux-3.10,$(LINUXDIR)),$(findstring linux-3.14.x,$(LINUXDIR)),$(findstring linux-4.4.x,$(LINUXDIR))),y)
 
 # New Ralink/MTK/QCA platform.
@@ -204,7 +202,7 @@ export BCMEX :=
 export DHD_MONITOR := debug_monitor
 export LIBNL_PLT := arm
 export LIBNL_BUILD := i386-pc-linux-gnu
-ifeq (67,$(BCM_WLIMPL))
+ifeq ($(RTCONFIG_WIFI6E),y)
 export DONGLE_SRC := main
 else
 export DONGLE_SRC := 43684
@@ -1112,7 +1110,13 @@ obj-y += libdisk
 
 #obj-y += dosfstools
 #obj-$(RTCONFIG_FTP) += $(if $(RTCONFIG_QCA),vsftpd-3.x,vsftpd)
-obj-$(RTCONFIG_FTP) += vsftpd-3.x
+ifeq ($(RTCONFIG_FTP),y)
+ifeq ($(or $(RTCONFIG_FTP_SSL),$(RTCONFIG_QCA)),y)
+obj-y += vsftpd-3.x
+else
+obj-y += vsftpd
+endif
+endif
 
 ifeq ($(CONFIG_LINUX26),y)
 ifeq ($(RTCONFIG_SAMBASRV),y)
@@ -1421,14 +1425,6 @@ endif
 
 obj-$(RTCONFIG_QUICKSEC) += quicksec-7.0
 obj-$(RTCONFIG_STRONGSWAN) += strongswan
-# For Linux kernel 2.6.36, the GCC optimization option should not use '-O2', we should use '-O0' instead, for strongSwan 5.7.2 and 5.9.1.
-# If using -O2, there will be 'segmentation fault' when using 'pki' command to generate self-signed certificate.
-# So we use '-O0' for these models. It includes RT-AC3100 and RT-AC88U.
-ifeq ($(KPATH_2636),y)
-gcc_optimization_for_strongSwan := 0
-else
-gcc_optimization_for_strongSwan := 2
-endif
 
 ifneq ($(RTCONFIG_4M_SFP),y)
 obj-y += netstat-nat
@@ -6187,7 +6183,7 @@ strongswan/Makefile: strongswan/configure
 	--with-ipsecdir=/usr/lib/ipsec \
 	--with-strongswan-conf=/etc/strongswan.conf \
 	--with-user=admin \
-	CFLAGS="-O$(gcc_optimization_for_strongSwan) -Wall -Wno-format -Wno-format-security -Wno-pointer-sign \
+	CFLAGS="-O0 -Wall -Wno-format -Wno-format-security -Wno-pointer-sign \
 		-I$(TOP)/openssl/include -I$(STAGEDIR)/usr/include $(EXTRACFLAGS) \
 		$(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
 	LDFLAGS="-L$(TOP)/openssl -L$(STAGEDIR)/usr/lib $(EXTRALDFLAGS)" \

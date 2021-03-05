@@ -68,8 +68,8 @@ extern "C" {
 
 	void rtsp_free(rtsp_line **line);
 #ifdef HANDLE_REPLY
-	int rtsp_handle_describe_reply(void *pkt, int *pkt_len);
-	int rtsp_handle_setup_reply(void *pkt, int *pkt_len);
+	int rtsp_handle_describe_reply(int inst_id, int call_id, void *pkt, int *pkt_len);
+	int rtsp_handle_setup_reply(int inst_id, int call_id, void *pkt, int *pkt_len);
 #endif
 	int add_rtsp_tnl_ports(int inst_id, int call_id, char *port1, char *port2, int parent_client_id);
 	int rtsp_handle_setup_request(client_t *c, void *pkt, int *pkt_len);

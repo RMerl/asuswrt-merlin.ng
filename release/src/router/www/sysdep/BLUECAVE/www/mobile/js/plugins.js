@@ -90,19 +90,22 @@ function getAllWlArray(){
 		if(isSupport('wifi6e')){
 			document.querySelector('label[for="wireless_checkbox"]').innerHTML = '<#qis_wireless_setting_separate1#>';
 			wlArrayRet.push({"title":"5 GHz", "ifname":"1", "suffix": "_5G"});
+			wlArrayRet.push({"title":"6 GHz", "ifname":"2", "suffix": "_6G"});
 		}
 		else{
 			wlArrayRet.push({"title":"5 GHz-1", "ifname":"1", "suffix": "_5G-1"});
+			wlArrayRet.push({"title":"5 GHz-2", "ifname":"2", "suffix": "_5G-2"});
 		}
-		
-		if(amas_bdlkey.length == 0 || (!isSwMode("RT") && !isSwMode("AP"))){
-			if(isSupport('wifi6e')){			
-				wlArrayRet.push({"title":"6 GHz", "ifname":"2", "suffix": "_6G"});
+
+		if(isSupport("prelink") && amas_bdlkey.length > 0){
+			if(!isSupport("prelink_mssid")){
+				if(isSwMode("RT") || isSwMode("AP")){
+					var prelink_unit = isSupport("prelink_unit");
+					if(prelink_unit >= 0)
+						wlArrayRet.splice(prelink_unit, 1);
+				}
 			}
-			else{
-				wlArrayRet.push({"title":"5 GHz-2", "ifname":"2", "suffix": "_5G-2"});
-			}
-		}			
+		}
 	}
 	else if(isSupport("dualband") || isSupport('5G')){
 		wlArrayRet.push({"title":"5 GHz", "ifname":"1", "suffix": "_5G"})
@@ -873,13 +876,13 @@ function setupWLCNvram(apProfileID) {
 function setupFronthaulNetwork(_smart_connect){
 	if(isSupport("FRONTHAUL_NETWORK")){
 		postDataModel.insert(fronthaulNetworkObj);
-		switch(_smart_connect){
-			case "0":
-			case "2":
-			case "3":
+		switch(parseInt(_smart_connect)){
+			case 0:
+			case 2:
+			case 3:
 				qisPostData.fh_ap_enabled = "0";
 				break;
-			case "1":
+			case 1:
 				qisPostData.fh_ap_enabled = httpApi.nvramDefaultGet(["fh_ap_enabled"]).fh_ap_enabled;
 				break;
 		}

@@ -65,6 +65,9 @@
 	(uint8_t) o[8], (uint8_t) o[9], (uint8_t) o[10], (uint8_t) o[11], 	\
 	(uint8_t) o[12], (uint8_t) o[13], (uint8_t) o[14], (uint8_t) o[15]
 
+#if defined(DBG)
+#undef DBG
+#endif
 #define DBG(fmt, args...)
 //#define DBG(fmt, args...) 	fprintf(stderr, fmt, ##args);
 #define ERR(fmt, args...) 	fprintf(stderr, "Error: " fmt, ##args);

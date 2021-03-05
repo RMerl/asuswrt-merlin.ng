@@ -2791,7 +2791,7 @@ void write_ftpd_conf()
 		fprintf(fp, "xferlog_file=/var/log/vsftpd.log\n");
 	}
 
-#ifdef RTCONFIG_HTTPS
+#if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_FTP_SSL)
 	if(nvram_get_int("ftp_tls")){
 		fprintf(fp, "ssl_enable=YES\n");
 		fprintf(fp, "rsa_cert_file=%s\n", HTTPD_CERT);

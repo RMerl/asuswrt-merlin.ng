@@ -25,14 +25,6 @@
 <script>
 var wollist_array = "<% nvram_get("wollist"); %>";
 var manually_wol_list_array = new Array();
-Object.prototype.getKey = function(value) {
-	for(var key in this) {
-		if(this[key] == value) {
-			return key;
-		}
-	}
-	return null;
-};
 function initial(){
 	show_menu();
 	//	https://www.asus.com/support/FAQ/1011268

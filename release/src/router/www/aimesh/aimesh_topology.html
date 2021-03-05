@@ -756,7 +756,7 @@ function client_reconnect(parm){
 	$("#aimesh_hint_msg").empty();
 	$("#aimesh_hint_msg").append(popup_hint_api.get_component_text());
 	$("#aimesh_hint_msg .hint_text").append(popup_hint_api.get_component_loading());
-	$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("client_reconnect_loading_text").html("<#AiMesh_Client_Reconnect#>".replace("#CLIENTNAME", client_info.name)));
+	$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("client_reconnect_loading_text").html(htmlEnDeCode.htmlEncode("<#AiMesh_Client_Reconnect#>".replace("#CLIENTNAME", client_info.name))));
 	$("#aimesh_hint_msg").show();
 	adjust_panel_block_top("aimesh_hint_msg", 100);
 
@@ -773,7 +773,7 @@ function client_reconnect(parm){
 			if(specific_node_data != undefined){
 				var location = transform_location(specific_client.amesh_papMac, specific_node_data);
 				var hint = "<#AiMesh_Client_Reconnect_Result#>".replace("#CLIENTNAME", client_info.name).replace("#MODELNAME", handle_ui_model_name(specific_node_data.model_name, specific_node_data.ui_model_name)).replace("#LOCATION", location.location_text);
-				$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("notice_text").html(hint));
+				$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("notice_text").html(htmlEnDeCode.htmlEncode(hint)));
 			}
 			else
 				$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("notice_text").html("<#Clientlist_OffLine_Hint#> " + client_info.name));
@@ -808,7 +808,7 @@ function client_bind(parm){
 		remove_mask();
 		remove_action_other();
 		$("#aimesh_hint_msg .hint_text").empty();
-		$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("notice_text").html("<#AiMesh_Client_Select_Node_Bind#>".replace("#CLIENTNAME", client_info.name)));
+		$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("notice_text").html(htmlEnDeCode.htmlEncode("<#AiMesh_Client_Select_Node_Bind#>".replace("#CLIENTNAME", client_info.name))));
 		$("#aimesh_hint_msg .hint_text").append($("<div>").attr("id","not_support_bind_hint").addClass("notice_text hint").html("* <#AiMesh_Device_Not_Support_Binding01#> <#AiMesh_Device_Not_Support_Binding02#>"));
 		var gen_bind_node_component = function(_bind_support, _each_node_info){
 			var location = transform_location(_each_node_info.mac, _each_node_info);
@@ -913,7 +913,7 @@ function client_bind(parm){
 				var location = transform_location(_parm.target_mac, specific_target_data);
 				var result_text = "<#AiMesh_Client_Bind_Success#>".replace("#CLIENTNAME", specific_client.name).replace("#MODELNAME", handle_ui_model_name(specific_target_data.model_name, specific_target_data.ui_model_name)).replace("#LOCATION", location.location_text);
 				$("#aimesh_hint_msg .hint_text").empty();
-				$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("notice_text").html(result_text));
+				$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("notice_text").html(htmlEnDeCode.htmlEncode(result_text)));
 				remove_sta_binding_list_json(_parm.client_mac);
 				handle_sta_binding_list_json(_parm.target_mac, _parm.target_online, _parm.target_band_num, _parm.client_mac);
 
@@ -945,7 +945,7 @@ function client_bind(parm){
 				result_text += "<br>";
 				result_text += "<#AiMesh_Client_Bind_Fail02#>".replace("#CLIENTNAME", specific_client.name);
 				result_text += "<#AiMesh_Are_U_Sure_Proceed#>";
-				$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("notice_text").html(result_text));
+				$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("notice_text").html(htmlEnDeCode.htmlEncode(result_text)));
 				$("#aimesh_hint_msg #action_ok").unbind("click");
 				$("#aimesh_hint_msg #action_ok").click(function(e){
 					e = e || event;
@@ -973,7 +973,7 @@ function client_bind(parm){
 					hint += "<#AiMesh_Retry_Hint01#>".replace("#CLIENTNAME", specific_client.name).replace("#MODELNAME", handle_ui_model_name(specific_target_data.model_name, specific_target_data.ui_model_name));
 					hint += "<br>";
 					hint += '<#AiMesh_Retry_Hint02#>';
-					$("#aimesh_hint_msg .hint_text").html(hint);
+					$("#aimesh_hint_msg .hint_text").html(htmlEnDeCode.htmlEncode(hint));
 					$("#aimesh_hint_msg #action_ok").unbind("click");
 					$("#aimesh_hint_msg #action_ok").click(function(e){
 						e = e || event;
@@ -1090,7 +1090,7 @@ function client_bind(parm){
 		else
 			hint = "<#AiMesh_Client_Unbind#> <#AiMesh_confirm_msg0#>".replace("#CLIENTNAME", client_name).replace("#MODELNAME", clientList[client_info.mac].amesh_bind_mac).replace("(#LOCATION)", "");
 
-		$("#aimesh_hint_msg .hint_text").html(hint);
+		$("#aimesh_hint_msg .hint_text").html(htmlEnDeCode.htmlEncode(hint));
 		$("#aimesh_hint_msg #action_canacl").show();
 		$("#aimesh_hint_msg #action_canacl").click(function(e){
 			e = e || event;
@@ -1243,49 +1243,65 @@ function display_network_block(){
 		$("#network_block").hide();
 }
 function network_set_wan_info(){
-	var connect_status = false;
-	var connect_ip_title = "<#WAN_IP#>";
-	var connect_ip = "";
-	var connect_proto = "";
+	$("#network_block .wan_status_bg.wan1").hide();
+	var connect_attr = function(){
+		this.status = "disconnected";
+		this.status_title = "<#Disconnected#>";
+		this.ip = "- -. - -. - -. - -";
+		this.ip_title = "<#WAN_IP#>";
+		this.proto_title = "- -";
+		this.wan_title = "<#AiMesh_WAN_Status#>";
+	};
+	var set_wan_connect_info = function(_connect_info, _index){
+		var $wan_info_bg = $("#network_block .wan_status_bg.wan" + _index + "");
+		$wan_info_bg.find("#wan_connect_status").removeClass().addClass("connect_status");
+		$wan_info_bg.find(".connect_icon_bg").removeClass().addClass("connect_icon_bg");
+		$wan_info_bg.find(".connect_title").html(_connect_info.wan_title);
+		$wan_info_bg.find("#wan_connect_status").html(_connect_info.status_title);
+		$wan_info_bg.find("#wan_connect_status").addClass(_connect_info.status);
+		$wan_info_bg.find(".connect_icon_bg").addClass(_connect_info.status);
+		$wan_info_bg.find("#wan_connect_ip_title").html(_connect_info.ip_title);
+		$wan_info_bg.find("#wan_connect_ip").html(_connect_info.ip);
+		$wan_info_bg.find("#wan_connect_type").html(_connect_info.proto_title);
+	}
+
 	if(isSwMode("rt")){
-		connect_status = (httpApi.isConnected()) ? true : false;
-		connect_ip_title = "<#WAN_IP#>";
-		connect_ip = httpApi.nvramGet(["wan0_ipaddr"], true).wan0_ipaddr;
-		connect_proto = httpApi.nvramGet(["wan0_proto"], true).wan0_proto;
+		var wan_array = [0];
+		if(dualwan_enabled){
+			wan_array.push(1);
+			$("#network_block .wan_status_bg.wan1").show();
+		}
+
+		$.each(wan_array, function(index, value){
+			var connect_info =new connect_attr();
+			var wan_index = value;
+			var wanInfo = httpApi.getWanInfo(wan_index);
+			if(dualwan_enabled)
+				connect_info.wan_title = (value == 0) ? "<#dualwan_primary#>" : "<#dualwan_secondary#>";
+			else
+				connect_info.wan_title = "<#AiMesh_WAN_Status#>";
+			connect_info.status =  wanInfo.status;
+			connect_info.status_title =  wanInfo.status_text;
+			if(wanInfo.status == "connected"){
+				connect_info.ip = wanInfo.ipaddr;
+				connect_info.proto_title = wanInfo.proto_text;
+			}
+			set_wan_connect_info(connect_info, value);
+
+		});
 	}
 	else if(isSwMode("ap")){
-		connect_status = true;
-		connect_ip_title = "<#LAN_IP#>";
-		connect_ip = httpApi.nvramGet(["lan_ipaddr"], true).lan_ipaddr;
-		connect_proto = httpApi.nvramGet(["lan_proto"], true).lan_proto;
+		var connect_proto_array = {"dhcp":"<#BOP_ctype_title1#>", "static": "<#BOP_ctype_title5#>", "pppoe": "PPPoE","pptp": "PPTP","l2tp": "L2TP"};
+		var connect_info = new connect_attr();
+		connect_info.status = "connect";
+		connect_info.status_title = "<#WLANConfig11b_x_APMode_itemname#>";
+		connect_info.ip = httpApi.nvramGet(["lan_ipaddr"], true).lan_ipaddr;
+		connect_info.ip_title = "<#LAN_IP#>";
+		var lan_proto = httpApi.nvramGet(["lan_proto"], true).lan_proto;
+		if(lan_proto != "")
+			connect_info.proto_title = connect_proto_array[lan_proto];
+		set_wan_connect_info(connect_info, 0);
 	}
-
-	$("#network_block #wan_connect_status").removeClass("disconnected connected");
-	$("#network_block .connect_icon_bg").removeClass("disconnected connected");
-	if(connect_status){
-		$("#network_block #wan_connect_status").html("<#Connected#>");
-		$("#network_block #wan_connect_status").addClass("connected");
-		$("#network_block .connect_icon_bg").addClass("connected");
-	}
-	else{
-		$("#network_block #wan_connect_status").html("<#Disconnected#>");
-		$("#network_block #wan_connect_status").addClass("disconnected");
-		$("#network_block .connect_icon_bg").addClass("disconnected");
-	}
-	if(isSwMode("ap"))
-		$("#network_block #wan_connect_status").html("<#WLANConfig11b_x_APMode_itemname#>");
-
-	$("#network_block .wan_connect_info #wan_connect_ip_title").html(connect_ip_title);
-	if(connect_ip != "" && connect_status)
-		$("#network_block .wan_connect_info #wan_connect_ip").html(connect_ip);
-	else
-		$("#network_block .wan_connect_info #wan_connect_ip").html("- -. - -. - -. - -");
-
-	var connect_proto_array = {"dhcp":"<#BOP_ctype_title1#>", "static": "<#BOP_ctype_title5#>", "pppoe": "PPPoE","pptp": "PPTP","l2tp": "L2TP"};
-	if(connect_proto != "")
-		$("#network_block .wan_connect_info #wan_connect_type").html(connect_proto_array[connect_proto]);
-	else
-		$("#network_block .wan_connect_info #wan_connect_type").html("<#BOP_ctype_title1#>");
 }
 function network_set_uplink_info(_node_info, _signal_quality){
 	$("#network_block .uplink_info #uplink_connect_type").removeClass().addClass("uplink_type_title " + _signal_quality.type + " " + _signal_quality.css + "");
@@ -1301,191 +1317,195 @@ function network_set_uplink_info(_node_info, _signal_quality){
 }
 function get_connect_quality(_node_info){
 	var _re_online = _node_info.online;
-	var _re_path = _node_info.re_path;
+	var _re_path = handle_re_path(_node_info.re_path);
 	var _quality_info = "";
 	//_re_path, 1:wired, 2:2G, 4:5G, 8:5G2, 6:2G+5G, 10:2G+5G2
 	var result = {"type":"wired", "quality":0, "css":"wired disconnected", "type_text":"<#wan_ethernet#>", "quality_text":"<#Disconnected#>", "type_mode":""};
 	//result.quality, 0:disconnected, 1:weak, 2:ok, 3:great
-	if(_re_path == "1" || _re_path == "16" || _re_path == "32" || _re_path == "64"){
-		var real_port_type = gen_real_port_type(_node_info);
-		if(real_port_type.type == "eth"){
-			result.type = "wired";
-			result.type_text = "<#wan_ethernet#>";
-		}
-		else if(real_port_type.type == "plc"){
-			result.type = "plc";
-			result.type_text = "Powerline";/* untranslated */
-		}
-		_quality_info = _node_info.wired_port;
-		if(_re_online == "1"){
+	if(_re_path <= 0 && _re_online == "1")
+		return result;
+	else{
+		if(_re_path == "1" || _re_path == "16" || _re_path == "32" || _re_path == "64"){
+			var real_port_type = gen_real_port_type(_node_info);
 			if(real_port_type.type == "eth"){
-				result.quality = 3;
-				result.css = "wired great G";
-				result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
-				var wired_map = {"T":3,"F":3,"Q":3,"G":3,"M":1,"X":0};
-				if(_quality_info != undefined){
-					if("wan_port" in _quality_info) {
-						if("WAN 0" in _quality_info.wan_port) {
-							if("link_rate" in _quality_info.wan_port["WAN 0"]) {
-								var link_rate = _quality_info.wan_port["WAN 0"].link_rate;
-								if(link_rate != ""){
-									result.css = "wired " + link_rate;
-									result.quality = wired_map[link_rate];
-									if(result.quality == 3){
-										result.css += " great";
-										result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
-									}
-									else if(result.quality == 1){
-										result.css += " weak";
-										result.quality_text = "<#AiMesh_Conn_Quality_Normal#>";
+				result.type = "wired";
+				result.type_text = "<#wan_ethernet#>";
+			}
+			else if(real_port_type.type == "plc"){
+				result.type = "plc";
+				result.type_text = "<#Powerline#>";
+			}
+			_quality_info = _node_info.wired_port;
+			if(_re_online == "1"){
+				if(real_port_type.type == "eth"){
+					result.quality = 3;
+					result.css = "wired great G";
+					result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
+					var wired_map = {"T":3,"F":3,"Q":3,"G":3,"M":1,"X":0};
+					if(_quality_info != undefined){
+						if("wan_port" in _quality_info) {
+							if("WAN 0" in _quality_info.wan_port) {
+								if("link_rate" in _quality_info.wan_port["WAN 0"]) {
+									var link_rate = _quality_info.wan_port["WAN 0"].link_rate;
+									if(link_rate != ""){
+										result.css = "wired " + link_rate;
+										result.quality = wired_map[link_rate];
+										if(result.quality == 3){
+											result.css += " great";
+											result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
+										}
+										else if(result.quality == 1){
+											result.css += " weak";
+											result.quality_text = "<#AiMesh_Conn_Quality_Normal#>";
+										}
 									}
 								}
 							}
 						}
 					}
 				}
-			}
-			else if(real_port_type.type == "plc"){
-				result.quality = 3;
-				result.css = "plc great";
-				result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
-				if("plc_status" in _node_info) {
-					var _mode = _node_info.plc_status.mode;
-					var _link_rate = parseInt(_node_info.plc_status.link_rate);
-					if(_mode != undefined && _mode != "" && _link_rate != undefined && _link_rate != NaN){
-						result.type_mode = _mode;
-						if(_link_rate < 100){
-							result.quality = 1;
-							result.css = "plc weak";
-							result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
-						}
-						else{
-							if(_mode == "MIMO"){
-								if(_link_rate >= 800)
-									result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
-								else if(_link_rate < 800 && _link_rate >= 400)
-									result.quality_text = "<#AiMesh_Conn_Quality_OK#>";
-								else if(_link_rate < 400 && _link_rate >= 100)
-									result.quality_text = "<#AiMesh_Conn_Quality_Normal#>";
+				else if(real_port_type.type == "plc"){
+					result.quality = 3;
+					result.css = "plc great";
+					result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
+					if("plc_status" in _node_info) {
+						var _mode = _node_info.plc_status.mode;
+						var _link_rate = parseInt(_node_info.plc_status.link_rate);
+						if(_mode != undefined && _mode != "" && _link_rate != undefined && _link_rate != NaN){
+							result.type_mode = _mode;
+							if(_link_rate < 100){
+								result.quality = 1;
+								result.css = "plc weak";
+								result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
 							}
-							else if(_mode == "SISO"){
-								if(_link_rate < 800 && _link_rate >= 100)
-									result.quality_text = "<#AiMesh_Conn_Quality_Normal#>";
+							else{
+								if(_mode == "MIMO"){
+									if(_link_rate >= 800)
+										result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
+									else if(_link_rate < 800 && _link_rate >= 400)
+										result.quality_text = "<#AiMesh_Conn_Quality_OK#>";
+									else if(_link_rate < 400 && _link_rate >= 100)
+										result.quality_text = "<#AiMesh_Conn_Quality_Normal#>";
+								}
+								else if(_mode == "SISO"){
+									if(_link_rate < 800 && _link_rate >= 100)
+										result.quality_text = "<#AiMesh_Conn_Quality_Normal#>";
+								}
 							}
 						}
 					}
 				}
 			}
-		}
-		else{
-			result.quality = 0;
-			if(real_port_type.type == "eth")
-				result.css = "wired disconnected";
-			else if(real_port_type.type == "plc")
-				result.css = "plc disconnected";
-			result.quality_text = "<#Disconnected#>";
-		}
-	}
-	else if(_re_path == "2"){
-		_quality_info = _node_info.rssi2g
-		result.type = "wireless";
-		result.type_text = "<#menu5_1#> - 2.4GHz";
-		if(_re_online == "1"){
-			result.quality = 1;
-			result.css = "wl_2g weak";
-			result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
-		}
-		else{
-			result.quality = 0;
-			result.css = "disconnected";
-			result.quality_text = "<#Disconnected#>";
-		}
-	}
-	else if(_re_path == "128"){
-		_quality_info = _node_info.rssi6g
-		result.type = "wireless";
-		result.type_text = "<#menu5_1#> - 6GHz";
-		if(_re_online == "1"){
-			var rssi = parseInt(_quality_info);
-			var css = "weak";
-			result.quality = 1;
-			result.css = "wl_6g " + css;
-			result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
-			if(!isNaN(rssi)){
-				if(rssi > -70){
-					result.quality = 3;
-					css = "great";
-					result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
-				}
-				else if(rssi <= -70 && rssi >= -80){
-					result.quality = 2;
-					css = "ok";
-					result.quality_text = "<#AiMesh_Conn_Quality_OK#>";
-				}
-				else if(rssi < -80){
-					result.quality = 1;
-					css = "weak";
-					result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
-				}
-				result.css = "wl_6g " + css;
+			else{
+				result.quality = 0;
+				if(real_port_type.type == "eth")
+					result.css = "wired disconnected";
+				else if(real_port_type.type == "plc")
+					result.css = "plc disconnected";
+				result.quality_text = "<#Disconnected#>";
 			}
 		}
-		else{
-			result.quality = 0;
-			result.css = "disconnected";
-			result.quality_text = "<#Disconnected#>";
-		}
-	}
-	else{
-		_quality_info = _node_info.rssi5g
-		result.type = "wireless";
-		result.type_text = "<#menu5_1#> - 5GHz";
-		if(_re_online == "1"){
-			var rssi = parseInt(_quality_info);
-			var css = "weak";
-			result.quality = 1;
-			result.css = "wl_5g " + css;
-			result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
-			if(!isNaN(rssi)){
-				if(rssi > -70){
-					result.quality = 3;
-					css = "great";
-					result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
-				}
-				else if(rssi <= -70 && rssi >= -80){
-					result.quality = 2;
-					css = "ok";
-					result.quality_text = "<#AiMesh_Conn_Quality_OK#>";
-				}
-				else if(rssi < -80){
-					result.quality = 1;
-					css = "weak";
-					result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
-				}
-			}
-			
-			if(_re_path == "4" || _re_path == "6"){
-				result.type_text = "<#menu5_1#> - 5GHz";
-				result.css = "wl_5g " + css;
-			}
-			else if(_re_path == "8" || _re_path == "10"){
-				/*result.type_text = "<#menu5_1#> - 5GHz-2";
-				result.css = "wl_5g_2 " + css;*/
-				result.type_text = "<#menu5_1#> - 5GHz";
-				result.css = "wl_5g " + css;
+		else if(_re_path == "2"){
+			_quality_info = _node_info.rssi2g
+			result.type = "wireless";
+			result.type_text = "<#menu5_1#> - 2.4GHz";
+			if(_re_online == "1"){
+				result.quality = 1;
+				result.css = "wl_2g weak";
+				result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
 			}
 			else{
-				result.type_text = "<#menu5_1#> - 5GHz";
-				result.css = "wl_5g " + css;
+				result.quality = 0;
+				result.css = "disconnected";
+				result.quality_text = "<#Disconnected#>";
+			}
+		}
+		else if(_re_path == "128"){
+			_quality_info = _node_info.rssi6g
+			result.type = "wireless";
+			result.type_text = "<#menu5_1#> - 6GHz";
+			if(_re_online == "1"){
+				var rssi = parseInt(_quality_info);
+				var css = "weak";
+				result.quality = 1;
+				result.css = "wl_6g " + css;
+				result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
+				if(!isNaN(rssi)){
+					if(rssi > -70){
+						result.quality = 3;
+						css = "great";
+						result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
+					}
+					else if(rssi <= -70 && rssi >= -80){
+						result.quality = 2;
+						css = "ok";
+						result.quality_text = "<#AiMesh_Conn_Quality_OK#>";
+					}
+					else if(rssi < -80){
+						result.quality = 1;
+						css = "weak";
+						result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
+					}
+					result.css = "wl_6g " + css;
+				}
+			}
+			else{
+				result.quality = 0;
+				result.css = "disconnected";
+				result.quality_text = "<#Disconnected#>";
 			}
 		}
 		else{
-			result.quality = 0;
-			result.css = "disconnected";
-			result.quality_text = "<#Disconnected#>";
+			_quality_info = _node_info.rssi5g
+			result.type = "wireless";
+			result.type_text = "<#menu5_1#> - 5GHz";
+			if(_re_online == "1"){
+				var rssi = parseInt(_quality_info);
+				var css = "weak";
+				result.quality = 1;
+				result.css = "wl_5g " + css;
+				result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
+				if(!isNaN(rssi)){
+					if(rssi > -70){
+						result.quality = 3;
+						css = "great";
+						result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
+					}
+					else if(rssi <= -70 && rssi >= -80){
+						result.quality = 2;
+						css = "ok";
+						result.quality_text = "<#AiMesh_Conn_Quality_OK#>";
+					}
+					else if(rssi < -80){
+						result.quality = 1;
+						css = "weak";
+						result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
+					}
+				}
+				
+				if(_re_path == "4" || _re_path == "6"){
+					result.type_text = "<#menu5_1#> - 5GHz";
+					result.css = "wl_5g " + css;
+				}
+				else if(_re_path == "8" || _re_path == "10"){
+					/*result.type_text = "<#menu5_1#> - 5GHz-2";
+					result.css = "wl_5g_2 " + css;*/
+					result.type_text = "<#menu5_1#> - 5GHz";
+					result.css = "wl_5g " + css;
+				}
+				else{
+					result.type_text = "<#menu5_1#> - 5GHz";
+					result.css = "wl_5g " + css;
+				}
+			}
+			else{
+				result.quality = 0;
+				result.css = "disconnected";
+				result.quality_text = "<#Disconnected#>";
+			}
 		}
+		return result;
 	}
-	return result;
 }
 function gen_real_port_type(_node_info){
 	var result = {type:"eth", speed:"G"};
@@ -1538,7 +1558,7 @@ function gen_real_port_type(_node_info){
 	return result;
 }
 function network_set_backhaul_info(_node_info, _signal_quality){
-	var re_path = _node_info.re_path;
+	var re_path = handle_re_path(_node_info.re_path);
 	var backhaul_parm = {"css":"wired", "band_text":"<#wan_ethernet#>", "mac":"", "ssid":"", "band":""};
 	backhaul_parm.mac = cap_mac;
 	if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64"){
@@ -1555,7 +1575,7 @@ function network_set_backhaul_info(_node_info, _signal_quality){
 		backhaul_parm.band = "wired";
 		backhaul_parm.sta_mac = _node_info.mac;
 		if(_signal_quality.type == "plc")
-			backhaul_parm.band_text = "Powerline";
+			backhaul_parm.band_text = "<#Powerline#>";
 	}
 	else if(re_path == "2"){
 		backhaul_parm.css = "wl_2g";
@@ -1585,6 +1605,13 @@ function network_set_backhaul_info(_node_info, _signal_quality){
 		backhaul_parm.band = "6G";
 		backhaul_parm.sta_mac = _node_info.sta6g;
 	}
+	else if(re_path <= 0){
+		backhaul_parm.css = "wired";
+		backhaul_parm.band_text = "<#wan_ethernet#>";
+		backhaul_parm.band = "wired";
+		backhaul_parm.mac = cap_mac;
+		backhaul_parm.sta_mac = _node_info.mac;
+	}
 	else{
 		backhaul_parm.css = "wl_5g";
 		backhaul_parm.band_text = "<#menu5_1#> - 5GHz";
@@ -1607,7 +1634,7 @@ function network_set_backhaul_info(_node_info, _signal_quality){
 		_obj.find("#backhaul_connect_title").removeClass().addClass("connect_title horizontal_line");
 		_obj.find("#backhaul_connect_title").html(backhaul_parm.band_text);
 		_obj.find("#backhaul_mac").html(backhaul_parm.mac);
-		if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64"){
+		if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64" || re_path <= 0){
 			_obj.find(".wired_hide").hide();
 			_obj.find("#backhaul_mac_title").html("<#MAC_Address#>");
 		}
@@ -1635,7 +1662,7 @@ function network_set_backhaul_info(_node_info, _signal_quality){
 			var set_backhaul_traffic = function(_data){
 				var traffic_data_rate = "";
 				_obj.find(".conndiag_data").show();
-				if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64"){
+				if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64" || re_path <= 0){
 					traffic_data_rate = diagnosticApi.get_ethinfo_traffic(backhaul_parm.sta_mac, "BH", _node_info.online, _data);
 					_obj.find(".wired_hide").hide();
 				}
@@ -1661,10 +1688,10 @@ function network_set_backhaul_info(_node_info, _signal_quality){
 				_obj.find("#data_rate_avg_rx").next(".transmit_unit").html(data_rate_avg_rx.unit);
 			};
 
-			if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64")
+			if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64" || re_path <= 0)
 				diagnosticApi.get_DB(backhaul_parm.sta_mac, "ethinfo", set_backhaul_traffic);
 			else
-				diagnosticApi.get_DB(backhaul_parm.mac, "backhal", set_backhaul_traffic);
+				diagnosticApi.get_DB(backhaul_parm.mac, "backhaul", set_backhaul_traffic);
 		}
 		else
 			_obj.find(".conndiag_data").hide();
@@ -1890,7 +1917,8 @@ function display_manage_block(){
 		$("#manage_block").show();
 		var isReNode = (current_click_mac != cap_mac) ? true : false;
 		var online = (specific_node_data.online == "1") ? true : false;
-		if(isReNode && online){
+		var re_path = (handle_re_path(specific_node_data.re_path) > 0) ? true : false;
+		if(isReNode && online && re_path){
 			$("#manage_block").find(".manage_disconnected").hide();
 			var connection_priority = manage_get_connection_priority(specific_node_data);
 			if(connection_priority.support){
@@ -1907,17 +1935,17 @@ function display_manage_block(){
 					},
 					"eth": {
 						"title":"<#AiMesh_Node_ConnPrio_Eth_First_Title#>",
-						"desc":"The system will prioritize #CONNTYPE connection. It will switch to Wi-Fi backhaul when #CONNTYPE connection is no longer available.".replace(/#CONNTYPE/g, "<#wan_ethernet#>"),/* untranslated */
+						"desc":"<#AiMesh_BackhaulConnPrio_eth_desc#> <#AiMesh_BackhaulConnPrio_eth_desc01#>".replace(/#CONNTYPE/g, "<#wan_ethernet#>"),
 						"support":false
 					},
 					"wifi": {
 						"title":"Wi-Fi first",/* untranslated */
-						"desc":"The system will always prioritize Wi-Fi backhaul connection even when Ethernet backhaul is available.",/* untranslated */
+						"desc":"<#AiMesh_BackhaulConnPrio_wifi_desc#>",
 						"support":false
 					},
 					"plc": {
-						"title":"Powerline first",/* untranslated */
-						"desc":"The system will prioritize #CONNTYPE connection. It will switch to Wi-Fi backhaul when #CONNTYPE connection is no longer available.".replace(/#CONNTYPE/g, "Powerline"),/* untranslated */
+						"title":"<#Powerline#> first",/* untranslated */
+						"desc":"<#AiMesh_BackhaulConnPrio_eth_desc#> <#AiMesh_BackhaulConnPrio_eth_desc01#>".replace(/#CONNTYPE/g, "<#Powerline#>"),
 						"support":false
 					}
 				};
@@ -2177,8 +2205,17 @@ function display_manage_block(){
 			if(wifi_radio_control.length == 0)
 				$("#manage_block").find(".manage_switch_wifi").hide();
 			else {
+				if($("#manage_block").find(".manage_switch_wifi .manage_sub_item_bg").attr("current_mac") != current_click_mac){
+					$("#manage_block").find(".manage_switch_wifi .manage_sub_item_bg").hide();
+					$("#manage_block").find(".manage_switch_wifi #switch_wifi").unbind("click").removeClass("down  up").addClass("down");
+					$("#manage_block").find(".manage_switch_wifi #switch_wifi").click(function(){
+						$("#manage_block").find(".manage_switch_wifi .manage_sub_item_bg").slideToggle();
+						$("#manage_block").find(".manage_switch_wifi #switch_wifi").toggleClass("down  up");
+					});
+				}
+
 				$("#manage_block").find(".manage_switch_wifi").show();
-				$("#manage_block").find(".manage_switch_wifi .manage_sub_item_bg").empty().removeClass("loading");
+				$("#manage_block").find(".manage_switch_wifi .manage_sub_item_bg").empty().removeClass("loading").attr("current_mac", current_click_mac);
 				var wl_radio_enable_count = 0;
 				$.each(wifi_radio_control, function( index, value ) {
 					var item = value;
@@ -2394,7 +2431,7 @@ function manage_set_reconnect_control(_node_info){
 		adjust_panel_block_top("aimesh_hint_msg", 100);
 	};
 	if(aimesh_data.cfg_clientlist.length == "1"){
-		var hint = "This function optimizes your network only when there are node(s) existing and using wireless connection.";/* untranslated */
+		var hint = "<#AiMesh_Optimization_hint#>";
 		show_hint(hint);
 		return false;
 	}
@@ -2577,7 +2614,7 @@ function manage_set_preferable_backhaul(_node_info, _pref_info){
 		}
 	}
 
-	var hint = "Select an uplink AP your #MODELNAME prefers to connect:".replace("#MODELNAME", node_name_location);
+	var hint = "<#AiMesh_Prefer_AP_Select_node#>".replace("#MODELNAME", node_name_location);
 	$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("notice_text").html(hint));
 	if(_pref_info.pref_mac != "" && !_pref_info.pref_node_exist)
 		$("#aimesh_hint_msg .hint_text").append($("<div>").addClass("notice_text hint").html("* <#AiMesh_PB_AP_Removed#>"));
@@ -2943,13 +2980,14 @@ function get_topology_data(){
 		aimesh_data.cfg_clientlist.forEach(function(item, index, array){
 			var id = "topo_" + item.mac.replace(/:/g, '-');
 			var parent = "";
+			var re_path = handle_re_path(item.re_path);
 			parent = (function(){
 				if(index == 0)
 					return "#";
 				else{
-					if(item.re_path == 0)
+					if(re_path <= 0)
 						return parent;
-					else if(item.re_path == 1 || item.re_path == 16 || item.re_path == 32 || item.re_path == 64){
+					else if(re_path == 1 || re_path == 16 || re_path == 32 || re_path == 64){
 						var wired_mac = item.mac;
 						var papObj = aimesh_data.cfg_clientlist.filter(function(item, index, array){
 								return ($.inArray(wired_mac, item.wired_mac) != -1)
@@ -2958,7 +2996,7 @@ function get_topology_data(){
 						if(lastPapObj != undefined)
 							return lastPapObj.mac;
 					}
-					else if(item.re_path == 2){
+					else if(re_path == 2){
 						var pap2g = item.pap2g;
 						var papObj = aimesh_data.cfg_clientlist.filter(function(item, index, array){
 								return item.ap2g == pap2g;
@@ -2966,7 +3004,7 @@ function get_topology_data(){
 						if(papObj != undefined)
 							return papObj.mac;
 					}
-					else if(item.re_path == 128){
+					else if(re_path == 128){
 						var pap6g = item.pap6g;
 						var papObj = aimesh_data.cfg_clientlist.filter(function(item, index, array){
 							return (item.ap6g == pap6g);
@@ -3098,21 +3136,25 @@ function initial_AiMesh(){
 		"plugins" : [ "noclose", "wholerow", "node_customize", "sort"],
 		'sort' : function(a, b) {// sort order online(wired/5G/2G), offline
 			var get_node_order = function(_node_id){
-				var mac = _node_id.replace("topo_", "").replace(/-/g, ':');
+				var node_mac = _node_id.replace("topo_", "").replace(/-/g, ':');
 				var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
-					return (item.mac == mac);
+					return (item.mac == node_mac);
 				})[0];
 				var num = 0;//online+1, 2.4G+1, 5G+2, 6G+3, wired+4
+				var node_online = specific_node_data.online;
+				var re_path = handle_re_path(specific_node_data.re_path);
+				if((node_mac != cap_mac) && re_path <= 0)
+					node_online = "0";
 				if(specific_node_data != undefined){
-					if(specific_node_data.online == "1"){//online
+					if(node_online == "1"){//online
 						num += 1;
-						if(specific_node_data.re_path == "0")//not connect
+						if(re_path <= 0)//not connect
 							num += 0;
-						else if(specific_node_data.re_path == "1" || specific_node_data.re_path == "16" || specific_node_data.re_path == "32" || specific_node_data.re_path == "64")//wired
+						else if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64")//wired
 							num += 4;
-						else if(specific_node_data.re_path == "2")//2.4G
+						else if(re_path == "2")//2.4G
 							num += 1;
-						else if(specific_node_data.re_path == "128")//6G
+						else if(re_path == "128")//6G
 							num += 3;
 						else//5G
 							num += 2;
@@ -3129,13 +3171,16 @@ function initial_AiMesh(){
 				var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
 					return (item.mac == node_mac);
 				})[0];
-
+				var node_online = specific_node_data.online;
+				var re_path = handle_re_path(specific_node_data.re_path);
+				if((node_mac != cap_mac) && re_path <= 0)
+					node_online = "0";
 				var $node_icon = $(el).find(".jstree-icon.jstree-themeicon").eq(0);
 				$node_icon.removeClass().addClass("jstree-icon jstree-themeicon");
 				var $node_connect_type = $(el).find(".jstree-anchor").eq(0);
 				$node_connect_type.removeClass().addClass("jstree-anchor");
 				var _signal_quality = "";
-				if(specific_node_data.online == "0"){
+				if(node_online == "0"){
 					$node_icon.addClass("offline");//node circle icon
 					$node_connect_type.addClass("disconnected");//node connect line
 					$(el).attr("custom_connect_quality", "disconnected");//add custom attr for quality, used at re_draw_connect_line()
@@ -3153,17 +3198,17 @@ function initial_AiMesh(){
 					$(el).attr("custom_connect_quality", quality_css);//add custom attr for quality, used at re_draw_connect_line()
 				}
 				
-				if(specific_node_data.re_path == "1" || specific_node_data.re_path == "16" || specific_node_data.re_path == "32" || specific_node_data.re_path == "64"){//node connect type
+				if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64"){//node connect type
 					$node_connect_type.addClass(_signal_quality.type);
 					$(el).attr("custom_connect_type", (_signal_quality.type));
 				}
-				else if(specific_node_data.re_path == "2"){
+				else if(re_path == "2"){
 					$node_connect_type.addClass("wireless wl_2g");
 					$(el).attr("custom_connect_type", "wireless");
 					if(node.parent != "#")
 						all_node_is_eth_backhaul = false;
 				}
-				else if(specific_node_data.re_path == "128"){
+				else if(re_path == "128"){
 					$node_connect_type.addClass("wireless wl_6g");
 					$(el).attr("custom_connect_type", "wireless");
 					if(node.parent != "#")
@@ -3180,7 +3225,7 @@ function initial_AiMesh(){
 				$node_icon.addClass("topology_icon");
 
 				$node_icon.addClass(location.location_active_css);//node location icon
-				if(node.parent != "#" && re_reconnect_flag != "" && specific_node_data.online == "0" && (re_reconnect_flag == "all" || re_reconnect_flag == node_mac)){
+				if(node.parent != "#" && re_reconnect_flag != "" && node_online == "0" && (re_reconnect_flag == "all" || re_reconnect_flag == node_mac)){
 					$node_icon.append(popup_hint_api.get_component_loading());
 					$node_icon.find(".cssload-bellContainer").addClass("topology_node");
 					$node_icon.find(".cssload-bell").addClass("topology_node");
@@ -3347,9 +3392,7 @@ function initial_AiMesh(){
 }
 var pop_win;
 function add_node(){
-	var get_onboardingstatus = httpApi.hookGet("get_onboardingstatus", true);
-	var cfg_ready = get_onboardingstatus.cfg_ready;
-	if(cfg_ready == "1"){
+	var popup_onboarding = function(){
 		var cfg_re_maxnum = parseInt(get_onboardingstatus.cfg_re_maxnum);
 		var cfg_recount = parseInt(get_onboardingstatus.cfg_recount);
 		if(cfg_recount >= cfg_re_maxnum){
@@ -3386,9 +3429,40 @@ function add_node(){
 				pop_win.resizeTo(screen.width, screen.height);
 			}
 		}
-	}
-	else
+	};
+
+	var get_onboardingstatus = httpApi.hookGet("get_onboardingstatus", true);
+	if(get_onboardingstatus.cfg_ready != "1"){
 		alert("<#usb_initializing#>");
+		return false;
+	}
+
+	if(httpApi.nvramGet(["wps_enable"], true).wps_enable != "1"){
+		if(confirm("<#AiMesh_FindNode_confirm_WPS#>\n<#WiFi_temp_unavailable#>")){
+			httpApi.nvramSet({
+				"wps_enable" : "1",
+				"action_mode" : "apply",
+				"rc_service" : "restart_wireless"
+			}, function(){
+				var count = 0;
+				var timer = 10;
+				var interval_check = setInterval(function(){
+					if(httpApi.nvramGet(["wps_enable"], true).wps_enable == "1"){
+						popup_onboarding();
+						clearInterval(interval_check);
+					}
+					else if(count >= timer){
+						alert("<#Status_Inactive#>");
+						clearInterval(interval_check);
+					}
+					count++;
+				},100);
+			});
+		}
+		return false;
+	}
+
+	popup_onboarding();
 }
 function child_window_callback(){
 	pop_win.close();
@@ -3576,6 +3650,10 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 
 	return option_array;
 }
+function handle_re_path(_re_path){
+	var result = parseInt(_re_path);
+	return ((isNaN(result)) ? 0 : result);
+}
 var popup_hint_api = {
 	"get_component_text": function(){
 		return $("<div>").addClass("hint_text");
@@ -3697,7 +3775,39 @@ $(document).ready(initial_AiMesh);
 				<i></i>
 				<p><#AiMesh_WAN_Info#></p>
 			</div>
-			<div class="card_block_bg wan_status_bg">
+			<div class="card_block_bg wan_status_bg wan0">
+				<div>
+					<span class="connect_title horizontal_line"><#AiMesh_WAN_Status#></span>
+					<div class="connect_icon_bg disconnected">
+						<div class="router"></div>
+						<div class="connect_line"></div>
+						<div class="internet"></div>
+						<div class="connect_status"></div>
+					</div>
+				</div>
+				<div>
+					<span id="wan_connect_status" class="connect_status disconnected"><#Disconnected#></span>
+				</div>
+				<div class="wan_connect_info">
+					<div>
+						<div id="wan_connect_ip_title" class="connect_info_title">
+							<#WAN_IP#>
+						</div>
+						<div id="wan_connect_ip" class="connect_info_text">
+							- -. - -. - -. - -
+						</div>
+					</div>
+					<div>
+						<div class="connect_info_title">
+							<#Connectiontype#>
+						</div>
+						<div id="wan_connect_type" class="connect_info_text">
+							<#BOP_ctype_title1#>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card_block_bg wan_status_bg wan1">
 				<div>
 					<span class="connect_title horizontal_line"><#AiMesh_WAN_Status#></span>
 					<div class="connect_icon_bg disconnected">
@@ -3749,7 +3859,7 @@ $(document).ready(initial_AiMesh);
 					</div>
 				</div>
 				<div id="uplink_type_mode_bg">
-					<span class="uplink_type_mode_title">Powerline Mode</span>
+					<span class="uplink_type_mode_title"><#Powerline_Mode#></span>
 					<br>
 					<span id="uplink_type_mode" class="uplink_type_title"></span>
 				</div>
@@ -3794,13 +3904,8 @@ $(document).ready(initial_AiMesh);
 					</div>
 				</div>
 
-				<div class="manage_switch_wifi horizontal_line sub_item_bg manage_function_item">
-					<div class="manage_common_title"><#WLANConfig11b_x_RadioEnable_itemname#></div>
-					<div class="manage_sub_item_bg"></div>
-				</div>
-
 				<div class="manage_conn_priority horizontal_line dropdown_item_bg manage_function_item">
-					<div class="manage_common_title"><#AiMesh_Node_ConnPrio#><span id="conn_priority_icon" class="bubble_icon info"></span></div>
+					<div class="manage_common_title"><#AiMesh_BackhaulConnPrio#><span id="conn_priority_icon" class="bubble_icon info"></span></div>
 					<div>
 						<select id="conn_priority_select" class="dropdown_select">
 							<option value="3"><#Auto#></option>
@@ -3810,7 +3915,7 @@ $(document).ready(initial_AiMesh);
 				</div>
 
 				<div class="manage_preferable_backhaul horizontal_line manage_function_item">
-					<div class="manage_common_title manage_common_separate_bg left"><#AiMesh_Preferable_Backhaul#></div>
+					<div class="manage_common_title manage_common_separate_bg left"><#AiMesh_Prefer_AP#></div>
 					<div class="manage_common_separate_bg right">
 						<span class="preferable_backhaul_text"><#Auto#></span>
 						<div class="managment_icon preferable_backhaul_icon float_right"></div>
@@ -3827,10 +3932,20 @@ $(document).ready(initial_AiMesh);
 					</div>
 				</div>
 
+				<div class="manage_switch_wifi horizontal_line manage_function_item sub_item_bg">
+					<div>
+						<div class="manage_common_title manage_common_separate_bg left"><#WLANConfig11b_x_RadioEnable_itemname#></div>
+						<div class="manage_common_separate_bg right">
+							<div id="switch_wifi" class="arrow_icon down"></div>
+						</div>
+					</div>
+					<div class="manage_sub_item_bg"></div>
+				</div>
+
 				<div class="manage_usb_app horizontal_line manage_function_item">
 					<div class="manage_common_title manage_common_separate_bg left"><#Menu_usb_application#></div>
 					<div class="manage_common_separate_bg right">
-						<div id="usb_app" class="arrow_right_icon"></div>
+						<div id="usb_app" class="arrow_icon right"></div>
 					</div>
 				</div>
 

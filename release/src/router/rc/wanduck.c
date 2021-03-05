@@ -2163,6 +2163,11 @@ _dprintf("nat_rule: start_nat_rules 3.\n");
 	else{ // conn_changed_state[wan_unit] == PHY_RECONN
 		nat_state = stop_nat_rules();
 
+#ifdef RT4GAC86U
+		if(get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_USB)
+			system("/usr/sbin/modem_status.sh init_sms");
+#endif
+
 		_dprintf("\n# wanduck(%d): Try to restart_wan_if.\n", wan_unit);
 		snprintf(cmd, sizeof(cmd), "restart_wan_if %d", wan_unit);
 		notify_rc_and_wait(cmd);
@@ -2484,14 +2489,6 @@ void handle_dns_req(int sfd, unsigned char *request, int maxlen, struct sockaddr
 			/* non existent domain */
 			d_reply->flag_set.flag_num = htons(0x8183);
 			d_reply->auth_rrs = htons(1);
-#endif
-#ifdef RTCONFIG_DSL
-		} else if (strcasecmp(queries.name, "ntp01.mvp.tivibu.com.tr") == 0) {
-			d_reply->answer_rrs = htons(1);
-			answer.addr = htonl(0xc0a87946);
-		} else if (strcasecmp(queries.name, "ntp02.mvp.tivibu.com.tr") == 0) {
-			d_reply->answer_rrs = htons(1);
-			answer.addr = htonl(0xc0a87947);
 #endif
 		} else if (*queries.name) {
 			/* no error */

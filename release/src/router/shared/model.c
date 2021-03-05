@@ -120,6 +120,7 @@ static const struct model_s model_list[] = {
 	{ "CT-AX56_XD4",	MODEL_CTAX56_XD4	},
 	{ "RT-AX58U",		MODEL_RTAX58U		},
 	{ "TUF-AX3000",		MODEL_RTAX58U		},
+	{ "TUF-AX5400",         MODEL_RTAX58U		},
 	{ "RT-AX82U",           MODEL_RTAX58U		},
 	{ "RT-AX82_XD6",	MODEL_RTAX58U		},
 	{ "GS-AX3000",		MODEL_RTAX58U		},

@@ -746,6 +746,9 @@ extern int get_integer_parameter_from_ini_file(const char *param_name, int *para
 extern int get_channf(int band, const char *ifname);
 extern int __get_qca_sta_info_by_ifname(const char *ifname, char subunit_id, int (*handler)(const WLANCONFIG_LIST *rptr, void *arg), void *arg);
 extern int get_qca_sta_info_by_ifname(const char *ifname, char subunit_id, WIFI_STA_TABLE *sta_info);
+#if defined(RTCONFIG_AMAS_WGN)
+extern char* get_all_lan_ifnames(void);
+#endif
 
 #if defined(RTCONFIG_WIFI_QCA9990_QCA9990) \
  || defined(RTCONFIG_WIFI_QCA9994_QCA9994) \

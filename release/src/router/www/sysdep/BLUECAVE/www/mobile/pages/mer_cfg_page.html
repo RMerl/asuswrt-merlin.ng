@@ -222,13 +222,13 @@ if (vpi_val == "0" && vci_val == "35" && encap_val == "0" && detect_status == "p
 		qisPostData.dsl_dns2 = "";
  		if (vpi_val == "0" && vci_val == "40" && encap_val == "1")
 		{
-			qisPostData.dslx_dhcp_clientid = mac_addr_last_3bytes;
-			qisPostData.dslx_dhcp_hostname = model_name;
+			qisPostData.dsl_dhcp_clientid = mac_addr_last_3bytes;
+			qisPostData.dsl_dhcp_hostname = model_name;
 		}
 		else
 		{
-			qisPostData.dslx_dhcp_clientid = "";
-			qisPostData.dslx_dhcp_hostname = "";
+			qisPostData.dsl_dhcp_clientid = "";
+			qisPostData.dsl_dhcp_hostname = "";
 		}
 		// ------------------------------------------------------- dslDHCPObj
 

@@ -2064,6 +2064,7 @@ wl_wlif_wps_stop_session(char *wps_ifname)
 		dprintf("Info: shared %s cli cmd %s failed for interface %s ret = %d\n", __func__,
 			cmd, wps_ifname, ret);
 	}
+
 	wl_wlif_update_wps_ui(WLIF_WPS_UI_INIT);
 end:
 	return ret;

@@ -208,9 +208,7 @@ function update_ipsec_conn(){
 									<div>&nbsp;</div>
 									<div class="formfonttitle">Instant Guard</div><!-- untranslated -->
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-									<div class="formfontdesc">
-										Instant Guard allows you to build up VPN connection with just one click via ASUS Router apps. You can monitor who connect to your VPN Server with Instant Guard.<!-- untranslated -->
-									</div>
+									<div class="formfontdesc"><#Instant_Guard_desc#></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 										<thead>
 										<tr>

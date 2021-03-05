@@ -1065,7 +1065,7 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 	if(num == 1 && nvram_get_int("enable_tcpdump"))
 	{
 		pid_t pid;
-		char *tcpdump_argv[] = { "/usr/sbin/tcpdump", "-i", current_wan_ifnames[0], "-nnXw", "/jffs/discover.pcap", NULL};
+		char *tcpdump_argv[] = { "/usr/sbin/tcpdump", "-i", (char*) current_wan_ifnames[0], "-nnXw", "/jffs/discover.pcap", NULL};
 		_eval(tcpdump_argv, NULL, 0, &pid);
 		sleep(1);
 	}

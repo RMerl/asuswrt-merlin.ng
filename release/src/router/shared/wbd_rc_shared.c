@@ -2,7 +2,7 @@
  * Broadcom Home Gateway Reference Design
  * Broadcom Wi-Fi Blanket shared functions
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -49,6 +49,7 @@
 #include "wbd_rc_shared.h"
 
 /* Wi-Fi Blanket Buffer Lengths */
+#define WBD_MAX_BUF_16			16
 #define WBD_MAX_BUF_256			256
 #define WBD_MIN_PSK_LEN			8
 #define WBD_MAX_PSK_LEN			63
@@ -993,7 +994,6 @@ wbd_get_r0khid(char *prefix, char *r0khid, int r0khid_len, int set_nvram)
 
 		if (set_nvram) {
 			wbd_nvram_prefix_set(prefix, NVRAM_FBT_R0KH_ID, r0khid);
-			nvram_commit();
 		}
 	} else {
 		WBDSTRNCPY(r0khid, nvval, r0khid_len);
@@ -1018,7 +1018,6 @@ wbd_get_r0khkey(char *prefix, char *r0khkey, int r0khkey_len, int set_nvram)
 
 		if (set_nvram) {
 			wbd_nvram_prefix_set(prefix, NVRAM_FBT_R0KH_KEY, r0khkey);
-			nvram_commit();
 		}
 	} else {
 		WBDSTRNCPY(r0khkey, nvval, r0khkey_len);
@@ -1042,7 +1041,6 @@ wbd_get_r1khid(char *prefix, char *r1khid, int r1khid_len, int set_nvram)
 
 		if (set_nvram) {
 			wbd_nvram_prefix_set(prefix, NVRAM_FBT_R1KH_ID, r1khid);
-			nvram_commit();
 		}
 	} else {
 		WBDSTRNCPY(r1khid, nvval, r1khid_len);

@@ -566,6 +566,44 @@ var httpApi ={
 		return retData;
 	},
 
+	"getWanInfo": function(_index){
+		var connect_proto_array = {"dhcp":"<#BOP_ctype_title1#>", "static": "<#BOP_ctype_title5#>", "pppoe": "PPPoE","pptp": "PPTP","l2tp": "L2TP"};
+		var result = {
+			"status": "",
+			"status_text": "",
+			"ipaddr": "",
+			"proto": "",
+			"proto_text": ""
+		};
+
+		var wan_index = (_index == undefined) ? 0 : _index;
+		if(dualwan_enabled){
+			if(active_wan_unit != wan_index && (wans_mode == "fo" || wans_mode == "fb")){
+				result.status = "standby";
+				result.status_text = "<#Standby_str_cold#>";
+
+			}
+			else{//lb
+				result.status = (httpApi.isConnected(wan_index)) ? "connected" : "disconnected";
+				result.status_text = (result.status == "connected") ? "<#Connected#>" : "<#Disconnected#>";
+			}
+		}
+		else{
+			result.status = (httpApi.isConnected(wan_index)) ? "connected" : "disconnected";
+			result.status_text = (result.status == "connected") ? "<#Connected#>" : "<#Disconnected#>";
+		}
+		if(result.status == "connected"){
+			var wanInfo = httpApi.nvramGet(["wan" + wan_index + "_ipaddr", "wan" + wan_index + "_proto"], true);
+			result.ipaddr = wanInfo["wan" + wan_index + "_ipaddr"];
+			result.proto = wanInfo["wan" + wan_index + "_proto"];
+			if(result.proto != "")
+				result.proto_text = connect_proto_array[result.proto];
+			if(usb_index == wan_index)
+				result.proto_text = "USB Modem";
+		}
+		return result;
+	},
+
 	"isPppAuthFail": function(){
 		if(window.pppAuthFailChecked) return false;
 
@@ -582,13 +620,14 @@ var httpApi ={
 		return result;
 	},
 
-	"isConnected": function(){
-		var wanInfo = httpApi.nvramGet(["wan0_state_t", "wan0_sbstate_t", "wan0_auxstate_t", "link_internet"], true);
+	"isConnected": function(_index){
+		var wan_index = (_index == undefined) ? 0 : _index;
+		var wanInfo = httpApi.nvramGet(["wan" + wan_index + "_state_t", "wan" + wan_index + "_sbstate_t", "wan" + wan_index + "_auxstate_t", "link_internet"], true);
 		return (
-			wanInfo.link_internet   == "2" &&
-			wanInfo.wan0_state_t    == "2" &&
-			wanInfo.wan0_sbstate_t  == "0" &&
-			wanInfo.wan0_auxstate_t == "0"
+			wanInfo.link_internet == "2" &&
+			wanInfo["wan" + wan_index + "_state_t"] == "2" &&
+			wanInfo["wan" + wan_index + "_sbstate_t"] == "0" &&
+			wanInfo["wan" + wan_index + "_auxstate_t"] == "0"
 		)
 	},
 

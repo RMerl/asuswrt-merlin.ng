@@ -98,8 +98,8 @@ CFLAGS += -I$(HND_SRC)/bcmdrivers/opensource/include/bcm963xx -I$(HND_SRC)/share
 CFLAGS += -I$(WPA_SUPPLICANT_DIR)/src/common
 LDFLAGS += -L$(WPA_SUPPLICANT_DIR)/wpa_supplicant -L$(INSTALLDIR)/wpa_supplicant/usr/lib
 WPS_PBCD := wps_pbcd
-ifeq (67,$(BCM_WLIMPL))
-OBJS_WPS_PBCD := $(if $(wildcard sysdeps/broadcom/wps_pbcd_impl67.c),wps_pbcd_impl67.o,prebuild/wps_pbcd_impl67.o) $(if $(wildcard sysdeps/broadcom/hostapd_config_impl67.c),hostapd_config_impl67.o,prebuild/hostapd_config_impl67.o)
+ifeq ($(RTCONFIG_WIFI6E),y)
+OBJS_WPS_PBCD := $(if $(wildcard sysdeps/broadcom/wps_pbcd_6e.c),wps_pbcd_6e.o,prebuild/wps_pbcd_6e.o) $(if $(wildcard sysdeps/broadcom/hostapd_config_6e.c),hostapd_config_6e.o,prebuild/hostapd_config_6e.o)
 ifeq ($(RTCONFIG_AMAS_WGN), y)
 OBJS_WPS_PBCD += $(if $(wildcard amas_wgn.c),amas_wgn.o,prebuild/amas_wgn.o)
 endif
@@ -107,8 +107,7 @@ else
 OBJS_WPS_PBCD := $(if $(wildcard sysdeps/broadcom/wps_pbcd.c),wps_pbcd.o,prebuild/wps_pbcd.o)
 endif
 LDFLAGS += -lwpa_client
-ifeq (67,$(BCM_WLIMPL))
-CFLAGS += -DIMPL67
+ifeq ($(RTCONFIG_WIFI6E),y)
 # For now, enable HAPD_WDS only for router builds
 # CFLAGS += -DHAPD_WDS_DRAFT
 # For now, enable HAPD_WDS_HOTPLUG only for router builds
@@ -803,8 +802,8 @@ CFLAGS += -I$(TOP)/libasuslog
 endif
 
 ifeq ($(RTCONFIG_BRCM_HOSTAPD),y)
-ifeq (67,$(BCM_WLIMPL))
-OBJS += $(if $(wildcard sysdeps/broadcom/hostapd_config_impl67.c),hostapd_config_impl67.o,prebuild/hostapd_config_impl67.o)
+ifeq ($(RTCONFIG_WIFI6E),y)
+OBJS += $(if $(wildcard sysdeps/broadcom/hostapd_config_6e.c),hostapd_config_6e.o,prebuild/hostapd_config_6e.o)
 else
 OBJS += $(if $(wildcard sysdeps/broadcom/hostapd_config.c),hostapd_config.o,prebuild/hostapd_config.o)
 endif
@@ -929,7 +928,9 @@ endif
 ifeq ($(HND_ROUTER),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hnd-write
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hnd-erase
+ifneq ($(BUILD_NAME), RT-AC68U_V4)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc mtd_erase_image_update
+endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc mtd_erase_misc2
 else
 	@cd $(INSTALLDIR)/sbin && ln -sf rc nvram_erase

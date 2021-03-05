@@ -172,7 +172,7 @@ char *get_device_type_by_interface(const char *usb_interface, char *type, const 
 			snprintf(type, type_size, "printer");
 
 		snprintf(new_path, sizeof(new_path), "%s/usbmisc", buf);
-		if(d_exists(new_path)){
+		if(test_if_d_exist(new_path)){
 			if((dir = opendir(new_path)) == NULL)
 				return ret;
 
@@ -280,7 +280,7 @@ char *get_device_type_by_interface(const char *usb_interface, char *type, const 
 			snprintf(type, type_size, "modem");
 
 		snprintf(new_path, sizeof(new_path), "%s/net", buf);
-		if(d_exists(new_path)){
+		if(test_if_d_exist(new_path)){
 			if((dir = opendir(new_path)) == NULL)
 				return ret;
 
@@ -400,7 +400,7 @@ char *get_device_type_by_node(const char *usb_node, char *type, const int type_s
 		snprintf(interface_name, sizeof(interface_name), "%s:1.%d", usb_node, interface_count);
 
 		snprintf(buf, sizeof(buf), "%s/%s", USB_DEVICE_PATH, interface_name);
-		if(!d_exists(buf))
+		if(!test_if_d_exist(buf))
 			continue;
 
 #ifdef RTCONFIG_USB_PRINTER
@@ -1357,7 +1357,7 @@ int set_usb_common_nvram(const char *action, const char *device_name, const char
 #ifdef RTCONFIG_USB_PRINTER
 		if(!strcmp(dyn_type, "printer")){
 			snprintf(cmd, sizeof(cmd), "%s/%s", SYS_USB, device_name);
-			if(d_exists(cmd)){
+			if(test_if_d_exist(cmd)){
 				snprintf(tmp, sizeof(tmp), "usb_path_%s", device_name);
 				nvram_set(tmp, usb_node);
 			}
@@ -1414,7 +1414,7 @@ int set_usb_common_nvram(const char *action, const char *device_name, const char
 		if(!strcmp(dyn_type, "storage")){
 			// for ATE.
 			snprintf(cmd, sizeof(cmd), "%s/%s", SYS_BLOCK, device_name);
-			if(d_exists(cmd)){
+			if(test_if_d_exist(cmd)){
 				snprintf(tmp, sizeof(tmp), "usb_path_%s", device_name);
 				nvram_set(tmp, usb_node);
 
@@ -2078,11 +2078,11 @@ int isACMInterface(const char *interface_name, const int specifics, const unsign
 	}
 
 	snprintf(buf, sizeof(buf), "%s/cdc_acm/%s", USB_DRIVER_PATH, interface_name);
-	if(l_exists(buf))
+	if(test_if_o_exist(buf))
 		return 1;
 
 	snprintf(buf, sizeof(buf), "%s/acm/%s", USB_DRIVER_PATH, interface_name);
-	if(l_exists(buf))
+	if(test_if_o_exist(buf))
 		return 1;
 
 	return 0;
@@ -2096,7 +2096,7 @@ int isRNDISInterface(const char *interface_name, const unsigned int vid, const u
 		return 1;
 
 	snprintf(buf, sizeof(buf), "%s/rndis_host/%s", USB_DRIVER_PATH, interface_name);
-	if(l_exists(buf))
+	if(test_if_o_exist(buf))
 		return 1;
 
 	return 0;
@@ -2107,7 +2107,7 @@ int isQMIInterface(const char *interface_name)
 	char buf[PATH_MAX];
 
 	snprintf(buf, sizeof(buf), "%s/qmi_wwan/%s", USB_DRIVER_PATH, interface_name);
-	if(l_exists(buf))
+	if(test_if_o_exist(buf))
 		return 1;
 
 	return 0;
@@ -2118,7 +2118,7 @@ int isGOBIInterface(const char *interface_name)
 	char buf[PATH_MAX];
 
 	snprintf(buf, sizeof(buf), "%s/GobiNet/%s", USB_DRIVER_PATH, interface_name);
-	if(l_exists(buf))
+	if(test_if_o_exist(buf))
 		return 1;
 
 	return 0;
@@ -2129,7 +2129,7 @@ int isCDCETHInterface(const char *interface_name)
 	char buf[PATH_MAX];
 
 	snprintf(buf, sizeof(buf), "%s/cdc_ether/%s", USB_DRIVER_PATH, interface_name);
-	if(l_exists(buf))
+	if(test_if_o_exist(buf))
 		return 1;
 
 	return 0;
@@ -2140,7 +2140,7 @@ int isNCMInterface(const char *interface_name)
 	char buf[PATH_MAX];
 
 	snprintf(buf, sizeof(buf), "%s/cdc_ncm/%s", USB_DRIVER_PATH, interface_name);
-	if(l_exists(buf))
+	if(test_if_o_exist(buf))
 		return 1;
 
 	return 0;
@@ -2151,11 +2151,11 @@ int isASIXInterface(const char *interface_name)
 	char buf[PATH_MAX];
 
 	snprintf(buf, sizeof(buf), "%s/asix/%s", USB_DRIVER_PATH, interface_name);
-	if(l_exists(buf))
+	if(test_if_o_exist(buf))
 		return 1;
 
 	snprintf(buf, sizeof(buf), "%s/ax88179_178a/%s", USB_DRIVER_PATH, interface_name);
-	if(l_exists(buf))
+	if(test_if_o_exist(buf))
 		return 1;
 
 	return 0;
@@ -2178,7 +2178,6 @@ int isGCTInterface(const char *interface_name){
 // 0: no modem, 1: has modem
 int is_usb_modem_ready(int wan_type)
 {
-	int unit_wan;
 	char prefix[32], tmp[100];
 	int unit;
 	char prefix2[32], tmp2[100];
@@ -2190,7 +2189,6 @@ int is_usb_modem_ready(int wan_type)
 		return 0;
 
 	unit = get_modemunit_by_type(wan_type);
-	unit_wan = get_wanunit_by_type(wan_type);
 	usb_modem_prefix(unit, prefix2, sizeof(prefix2));
 
 	find_port_paths_by_nvram("modem", port_paths_nvram, sizeof(port_paths_nvram));

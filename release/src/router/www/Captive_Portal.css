@@ -317,7 +317,7 @@
 	border-bottom-style: solid;
 	border-bottom-width: 1px;
 	padding-bottom: 5px;
-	word-break: break-word;
+	word-break: break-all;
 }
 .splash_template_terms_service {
 	color: #757575;

@@ -1196,21 +1196,64 @@ elif [ "$1" == "gnws" ]; then
 		echo " ISP Short=$isp_short."
 		echo "done."
 	fi
-elif [ "$1" == "send_sms" ]; then
-	# $2: phone number, $3: sended message.
-	at_ret=`/usr/sbin/modem_at.sh +CMGF? 2>&1`
-	at_ret_ok=`echo -n "$at_ret" |grep "OK" 2>/dev/null`
-	msg_format=`echo -n "$at_ret" |grep "+CMGF:" |awk 'BEGIN{FS=" "}{print $2}' 2>/dev/null`
-	if [ -z "$at_ret_ok" ] || [ "$msg_format" != "1" ]; then
-		#echo "Changing the message format to the Text mode..."
-		at_ret=`/usr/sbin/modem_at.sh +CMGF=1 2>&1`
-		ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
-		if [ -z "$ret" ]; then
-			echo "40:Fail to set the message format to the Text mode."
-			exit 40
-		fi
+elif [ "$1" == "init_sms" ]; then
+	nvram set freeze_duck=$wandog_interval
+
+	at_ret=`/usr/sbin/modem_at.sh +CMGF=1 2>&1`
+	ret=`echo -n "$at_ret" |grep "OK" 2>/dev/null`
+	if [ -z "$ret" ]; then
+		echo "Fail to set the Text mode."
+		exit 0
 	fi
 
+	at_ret=`/usr/sbin/modem_at.sh +CSCS=\"UCS2\" 2>&1`
+	ret=`echo -n "$at_ret" |grep "OK" 2>/dev/null`
+	if [ -z "$ret" ]; then
+		echo "Fail to set the IRA character set."
+		exit 0
+	fi
+
+	at_ret=`/usr/sbin/modem_at.sh +CSDH=1 2>&1`
+	ret=`echo -n "$at_ret" |grep "OK" 2>/dev/null`
+	if [ -z "$ret" ]; then
+		echo "Fail to get the header values."
+		exit 0
+	fi
+
+	echo "done."
+elif [ "$1" == "read_sms_all" ]; then
+	# $2: saved file
+	nvram set freeze_duck=$wandog_interval
+
+	at_ret=`/usr/sbin/modem_at.sh +CPMS=\"SM\",\"SM\",\"SM\" 2>&1`
+	ret=`echo -n "$at_ret" |grep "OK" 2>/dev/null`
+		if [ -z "$ret" ]; then
+		echo "Fail to set SM as the preferred message storage."
+		exit 0
+	fi
+	sms_num=`echo -n "$at_ret" |grep "+CPMS: " |awk 'BEGIN{FS=" "}{print $2}' |awk 'BEGIN{FS=","}{print $1}' 2>/dev/null`
+		if [ -z "$sms_num" ]; then
+		echo "Fail to get the message number."
+		exit 0
+	fi
+
+	at_ret=`/usr/sbin/modem_at.sh +CMGL=\"ALL\" 2>&1`
+	ret=`echo -n "$at_ret" |grep "OK" 2>/dev/null`
+	if [ -z "ret" ]; then
+		echo "Fail to get the SMS list."
+		exit 0
+	fi
+
+	if [ -n "$2" ]; then
+		echo "$at_ret" > $2
+	fi
+	echo "----------"
+	echo "$at_ret"
+	echo "----------"
+
+	echo "done."
+elif [ "$1" == "send_sms" ]; then
+	# $2: phone number, $3: sended message.
 	if [ -z "$2" -o -z "$3" ]; then
 		echo "41:Usage: $0 $1 <phone number> <sended message>"
 		exit 41
@@ -1227,10 +1270,39 @@ elif [ "$1" == "send_sms" ]; then
 	wait_time=`expr $wait_time1 + 10`
 	nvram set freeze_duck=$wait_time
 	at_ret=`$at_lock chat -t 10 -e '' "$3^z" OK >> /dev/$modem_act_node < /dev/$modem_act_node`
-	at_ret_ok=`echo -n "$at_ret" |grep "OK" 2>/dev/null`
-	if [ -z "at_ret_ok" ]; then
+	ret=`echo -n "$at_ret" |grep "OK" 2>/dev/null`
+	if [ -z "ret" ]; then
 		echo "43:Fail to send the message: $3."
 		exit 43
+	fi
+
+	echo "done."
+elif [ "$1" == "del_sms" ]; then
+	# $2: the index of messages
+
+	if [ -z "$2" ]; then
+		echo "Usage: $0 $1 <the index of messages>"
+		exit 0
+	fi
+
+	nvram set freeze_duck=$wandog_interval
+
+	at_ret=`/usr/sbin/modem_at.sh +CMGD=$2 2>&1`
+	ret=`echo -n "$at_ret" |grep "OK" 2>/dev/null`
+	if [ -z "$ret" ]; then
+		echo "Fail to delete the $2th message."
+		exit 0
+	fi
+
+	echo "done."
+elif [ "$1" == "del_sms_all" ]; then
+	nvram set freeze_duck=$wandog_interval
+
+	at_ret=`/usr/sbin/modem_at.sh +CMGD=0,4 2>&1`
+	ret=`echo -n "$at_ret" |grep "OK" 2>/dev/null`
+	if [ -z "$ret" ]; then
+		echo "Fail to delete all messages."
+		exit 0
 	fi
 
 	echo "done."

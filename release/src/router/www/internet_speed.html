@@ -2541,7 +2541,7 @@ function create_server_list(){
 				$("<div>")
 				.attr({"title": speedTest_servers[key]["location"].length > 20? speedTest_servers[key]["location"] : ""})
 				.addClass("location_font text_ellipsis")
-				.html(speedTest_servers[key]["location"])
+				.html(htmlEnDeCode.htmlEncode(speedTest_servers[key]["location"]))
 				.appendTo(serverObj);
 
 		var checkObj =
@@ -2696,7 +2696,7 @@ function build_interface_list(){
 							<div class="sub_server_container">
 								<div class="server_brick_container"><div class="server_list_brick"></div></div>
 								<div style="flex-grow: 1; display: flex; flex-direction: column;">
-									<div class="sub_server_title">Servers Nearby</div>
+									<div class="sub_server_title"><#InternetSpeed_Servers_Nearby#></div>
 									<div id="server_list"></div>
 								</div>
 							</div>

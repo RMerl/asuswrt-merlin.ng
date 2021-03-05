@@ -717,34 +717,15 @@ static void mdio_write(int skfd, struct ifreq *ifr, int phy_id, int location, in
 int ethctl_get_link_status(char *ifname)
 {
 #ifdef RTCONFIG_HND_ROUTER_AX_6710
-	char *cmd[] = {"ethctl", ifname, "media-type", NULL};
-	char *output = "/tmp/ethctl_get_link_status.txt";
-	char *str;
-	int ret;
-	int lock;
+	char tmp[100], buf[32];
 
-	lock = file_lock("ethctl_link");
+	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/operstate", ifname);
 
-	unlink(output);
-	_eval(cmd, output, 0, NULL);
-
-	str = file2str(output);
-	//_dprintf("%s", str);
-	if(!strstr(str, "Enabled"))
-		ret = -1;
-	else{
-		if(strstr(str, "Up"))
-			ret = 1;
-		else
-			ret = 0;
-	}
-
-	free(str);
-	unlink(output);
-
-	file_unlock(lock);
-
-	return ret;
+	f_read_string(tmp, buf, sizeof(buf));
+	if(!strncmp(buf, "up", 2))
+		return 1;
+	else
+		return 0;
 #else
 	int skfd=0, err, bmsr;
 	struct ethswctl_data ifdata;
@@ -2547,7 +2528,7 @@ int get_bonding_port_status(int port)
 	int ports[lan_ports+1];
 	/* 7 3	W0 L1 */
 	ports[0]=7; ports[1]=3;
-#elif defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400)
+#elif defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400)
 	int lan_ports=4;
 	int ports[lan_ports+1];
 	/* 4 3 2 1 0	W0 L1 L2 L3 L4 */
@@ -2657,6 +2638,13 @@ int wl_max_no_vifs(int unit)
 #ifdef RTCONFIG_MSSID_PRELINK
 	base_no_vifs++;
 #endif
+#ifdef RTCONFIG_VIF_ONBOARDING
+	base_no_vifs++;
+#endif
+#ifdef RTCONFIG_FRONTHAUL_DBG
+	if(!unit)
+		base_no_vifs++;
+#endif
 #endif
 
 
@@ -2686,6 +2674,11 @@ int wl_max_no_vifs(int unit)
 				max_no_vifs = 4;
 		}
 	}
+
+#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_MSSID_PRELINK) || defined(RTCONFIG_FRONTHAUL_DBG))
+	if (nvram_match("re_mode", "1"))
+		return min(max_no_vifs, base_no_vifs);
+#endif
 
 #ifdef RTCONFIG_PSR_GUEST
 #ifdef RTCONFIG_HND_ROUTER_AX

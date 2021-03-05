@@ -38,6 +38,13 @@
 #include <shutils.h>
 #include <shared.h>
 
+#ifdef TRANSLATE_ON_FLY
+#include <json_object.h>
+
+extern char *get_cgi_json(char *name, json_object *root);
+extern void do_json_decode(struct json_object **root);
+#endif
+
 struct REPLACE_PRODUCTID_S replace_productid_t[] =
 {
 	{"LYRA_VOICE", "LYRA VOICE", "global"},
@@ -68,7 +75,7 @@ unqstrstr(const char *haystack, const char *needle)
 	char *cur;
 	int q;
 
-	for (cur = haystack, q = 0;
+	for (cur = (char*) haystack, q = 0;
 	     cur < (haystack + strlen(haystack)) && !(!q && !strncmp(needle, cur, strlen(needle)));
 	     cur++) {
 		if (*cur == '"')

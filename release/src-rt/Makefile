@@ -59,12 +59,15 @@ include ./chip_profile.tmp
 export CUR_CHIP_PROFILE
 endif
 
+-include .config
 # declare the init var here. Don't include router's arch related var here due to it will break the multi-arch rules
 ifeq ($(HND_ROUTER),y)
+export BUILD_NAME ?= $(shell echo $(MAKECMDGOALS) | tr a-z A-Z)
 export HND_SRC := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1/')
 export BCM_WLIMPL
 ifeq ($(HND_ROUTER_AX_675X),y)
 export PROFILE ?= 9$(CUR_CHIP_PROFILE)GW
+$(shell cd $(HND_SRC)/targets/$(PROFILE) && ln -sf $(PROFILE).$(BUILD_NAME) $(PROFILE) && cd $(HND_SRC))
 include $(HND_SRC)/targets/$(PROFILE)/$(PROFILE)
 ifeq ($(BRCM_CHIP),4908)
 export HND_ROUTER_AX_6710 := y
@@ -79,7 +82,8 @@ export PROFILE ?= 94908HND
 export BRCM_CHIP := 4908
 export BCM_CHIP := 4908
 endif # HND_ROUTER_AX_675X
-export SRCBASE := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1\/bcmdrivers\/broadcom\/net\/wl\/bcm9$(BCM_CHIP)\/main\/src/')
+$(shell cd $(HND_SRC)/bcmdrivers/broadcom/net/wl && ln -sf impl$(BCM_WLIMPL) bcm9$(BCM_CHIP) && cd $(HND_SRC))
+export SRCBASE := $(HND_SRC)/bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src
 export SRC_ROOT := $(HND_SRC)/../src
 export BUSYBOX := busybox
 export BUSYBOX_DIR := $(SRCBASE)/router/busybox
@@ -180,7 +184,7 @@ endif
 ifneq ($(BUILDREV),)
 export BUILDREV := -g$(shell git log --pretty=format:'%h' -n 1)
 endif
--include .config
+#-include .config
 #
 # include platform.mak after include .config
 # some definitions in platform.mak may be defined as different value, if .config exist.
@@ -189,7 +193,6 @@ include ./platform.mak
 -include ./dsl.mak
 
 ifeq ($(HND_ROUTER),y)
-export BUILD_NAME ?= $(shell echo $(MAKECMDGOALS) | tr a-z A-Z)
 ifeq ($(HND_ROUTER_AX_675X),y)
 include ./build/Makefile
 else
@@ -438,6 +441,9 @@ cfe_sysdep:
 				cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/precfe${BRCM_CHIP}rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 			fi; \
 		fi; \
+	elif [ -d $(SRCBASE)/../../../../../../../targets/cfe/prebuilt ]; then \
+		cp -f $(SRCBASE)/../../../../../../../targets/cfe/prebuilt/cfe* $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		cp -f $(SRCBASE)/../../../../../../../targets/cfe/prebuilt/precfe* $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 	else \
 		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908ram.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
@@ -465,6 +471,7 @@ wl_sysdep:
 		fi; \
 	elif [ -d $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/sysdeps/$(BUILD_NAME) ]; then \
 		cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/sysdeps/$(BUILD_NAME)/clm-api/src/wlc_clm_data.c $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/src/. ; \
+		cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/sysdeps/$(BUILD_NAME)/clm-api/src/wlc_clm.c $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/src/. ; \
 		if [ -d $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/sysdeps/$(BUILD_NAME)/clm-api/include ]; then \
 			cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/sysdeps/$(BUILD_NAME)/clm-api/include/wlc_clm_data.h $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/include/. ; \
 			cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/sysdeps/$(BUILD_NAME)/clm-api/include/wlc_clm.h $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(DONGLE_DIR)/components/clm-api/include/. ; \
@@ -478,6 +485,7 @@ wl_sysdep:
 	fi;
 	if [ -d $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/sysdeps/$(BUILD_NAME) ]; then \
                 cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/sysdeps/$(BUILD_NAME)/clm-api/src/wlc_clm_data.c $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/src/. ; \
+                cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/sysdeps/$(BUILD_NAME)/clm-api/src/wlc_clm.c $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/src/. ; \
 		if [ -d $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/sysdeps/$(BUILD_NAME)/clm-api/include ]; then \
                 	cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/sysdeps/$(BUILD_NAME)/clm-api/include/wlc_clm_data.h $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/include/. ; \
                 	cp -f $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/sysdeps/$(BUILD_NAME)/clm-api/include/wlc_clm.h $(SRCBASE)/../../../bcm9$(BRCM_CHIP)/$(NIC_DIR)/components/clm-api/include/. ; \
@@ -658,11 +666,14 @@ endif
 	$(eval COMBINE_NAME := $(shell echo $* | tr a-z A-Z))
 	@if [ "$(COMBINE_NAME)" = "RT-AC59_CD6" ]; then \
 		`$(eval COMBINE_MODEL := RT-AC59_CD6R RT-AC59_CD6N)`; \
+	elif [ "$(COMBINE_NAME)" = "RT-AC68U" ]; then \
+		echo "Try to combine RT-AC68U FW..."; \
 	else \
 		echo "Unknown model! Need define COMBINE_MODEL..."; \
 		exit 1; \
 	fi
 	$(eval IMAGEVER := $(KERNEL_VER).$(FS_VER)_$(SERIALNO)_$(SWPJVER)$(EXTENDNO))
+ifeq ($(QCA),y)
 	@rm -f $(IMAGEDIR)/mix.trx
 	@for var in $(COMBINE_MODEL); do \
 		if [ ! -f "$(IMAGEDIR)/$${var}_$(IMAGEVER).trx" ]; then \
@@ -671,11 +682,21 @@ endif
 		fi; \
 		cat $(IMAGEDIR)/$${var}_$(IMAGEVER).trx >> $(IMAGEDIR)/mix.trx; \
 	done
-ifeq ($(QCA),y)
 	@asustools/mkimage -A $(ARCH) -O linux -T kernel -C lzma \
 			-a $(LOADADDR) -e $(ENTRYADDR) -r "0" \
 			-n MULTIFW -V "$(KERNEL_VER)" "$(FS_VER)" "$(SERIALNO)" "$(EXTENDNO)" "0" "0" "0" "0" "0" "0" \
 			-d $(IMAGEDIR)/mix.trx $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER).trx
+endif
+ifeq ($(BCM),y)
+	@if [ ! -f "$(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx" ]; then \
+		echo "RT-AC68U_$(IMAGEVER).trx not found!"; \
+		exit 1; \
+	elif [ ! -f "$(IMAGEDIR)/RT-AC68U_V4_$(IMAGEVER)_cferom_puresqubi.w" ]; then \
+		echo "RT-AC68U_V4_$(IMAGEVER)_cferom_puresqubi.w not found!"; \
+		exit 1; \
+	fi;
+	mv $(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx $(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx_v123
+	cat $(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx_v123  $(IMAGEDIR)/RT-AC68U_V4_$(IMAGEVER)_cferom_puresqubi.w > $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER).trx;
 endif
 	md5sum $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER).trx > $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER).md5
 ifneq ($(LIVE_UPDATE_RSA),)
@@ -2036,6 +2057,10 @@ define RouterOptions
 			sed -i "/RTCONFIG_NFS/d" $(1); \
 			echo "RTCONFIG_NFS=y" >>$(1); \
 		fi; \
+		if [ "$(FTP_SSL)" = "y" ] && [ "$(NO_FTP)" != "y" ]; then \
+			sed -i "/RTCONFIG_FTP_SSL/d" $(1); \
+			echo "RTCONFIG_FTP_SSL=y" >>$(1); \
+		fi; \
 	else \
 		sed -i "/RTCONFIG_USB\b/d" $(1); \
 		echo "# RTCONFIG_USB is not set" >>$(1); \
@@ -2797,6 +2822,8 @@ define RouterOptions
 		echo "RTCONFIG_TUNNEL=y" >>$(1); \
 		sed -i "/RTCONFIG_AIHOME_TUNNEL/d" $(1); \
 		echo "RTCONFIG_AIHOME_TUNNEL=y" >>$(1); \
+		sed -i "/RTCONFIG_INTERNETCTRL/d" $(1); \
+		echo "RTCONFIG_INTERNETCTRL=y" >>$(1); \
 	fi; \
 	if [ "$(UTF8_SSID)" = "y" ]; then \
 		sed -i "/RTCONFIG_UTF8_SSID/d" $(1); \
@@ -3237,6 +3264,11 @@ define RouterOptions
 		else \
 			echo "# RTCONFIG_AMAS_ETHDETECT is not set" >>$(1); \
 		fi; \
+		if [ "$(FRONTHAUL_DBG)" = "y" ]; then \
+			echo "RTCONFIG_FRONTHAUL_DBG=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_FRONTHAUL_DBG is not set" >>$(1); \
+		fi; \
 		if [ "$(AMAS_QCA_WDS)" = "y" ]; then \
 			echo "RTCONFIG_AMAS_QCA_WDS=y" >>$(1); \
 		else \
@@ -3283,6 +3315,11 @@ define RouterOptions
 		echo "RTCONFIG_BHSWITCH_RE_SELFOPT=y" >>$(1); \
 		sed -i "/RTCONFIG_PREFERAP_RE_SELFOPT/d" $(1); \
 		echo "RTCONFIG_PREFERAP_RE_SELFOPT=y" >>$(1); \
+		if [ "$(MAX_RE_32)" = "y" ]; then \
+			echo "RTCONFIG_MAX_RE_32=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_MAX_RE_32 is not set" >>$(1); \
+		fi; \
 	fi; \
 	sed -i "/RTCONFIG_BATMAN_ADV/d" $(1); \
 	if [ "$(BATMAN)" = "y" ]; then \
@@ -5135,8 +5172,9 @@ endif
 endif
 ifeq ($(HND_ROUTER),y)
 	@echo BRCM_BOARD_ID=$(BRCM_BOARD_ID)
-	@cd bcmdrivers/broadcom/net/wl/ && ln -sf impl$(BCM_WLIMPL) bcm9$(BRCM_CHIP) && cd $(HND_SRC)
+ifneq ($(HND_ROUTER_AX_675X),y)
 	@rm -f $(PROFILE_FILE_PUB) && ln -sf $(PROFILE_FILE) $(PROFILE_FILE_PUB)
+endif
 	@rm -f $(SRCBASE)/.config && ln -sf $(HND_SRC)/.config $(SRCBASE)/.config
 	@rm -f $(LINUXDIR)/.config
 	@echo '#define BBOARD_ID $(BOARD_ID)' > router/shared/bbid.h

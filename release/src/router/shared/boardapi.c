@@ -143,6 +143,11 @@ static const struct led_btn_table_s {
 #ifdef RTCONFIG_LOGO_LED
 	{ "led_logo_gpio",	&led_gpio_table[LED_LOGO] },
 #endif
+#ifdef TUFAX5400
+	{ "led_logo1_gpio",	&led_gpio_table[LED_LOGO1] },
+	{ "led_logo2_gpio",	&led_gpio_table[LED_LOGO2] },
+	{ "led_logo3_gpio",	&led_gpio_table[LED_LOGO3] },
+#endif
 	{ "led_wan_red_gpio",	&led_gpio_table[LED_WAN_RED] },
 #if defined(RTCONFIG_WANLEDX2) && defined(RTCONFIG_WANRED_LED)
 	{ "led_wan2_red_gpio",	&led_gpio_table[LED_WAN2_RED] },

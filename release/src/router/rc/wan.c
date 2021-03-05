@@ -1295,11 +1295,13 @@ _dprintf("start_wan_if: USB modem is scanning...\n");
 			write_3g_ppp_conf(get_modemunit_by_type(wan_type));
 		}
 		else if(strcmp(modem_type, "wimax")){
-			char *modem_argv[] = {"/usr/sbin/modem_enable.sh", NULL};
-			int sim_state;
-
 			putenv(env_unit);
+#ifdef RT4GAC86U
+			system("/usr/sbin/modem_enable.sh >> /tmp/usb.log");
+#else
+			char *modem_argv[] = {"/usr/sbin/modem_enable.sh", NULL};
 			_eval(modem_argv, ">>/tmp/usb.log", 0, NULL);
+#endif
 			unsetenv("unit");
 
 			if(strcmp(modem_type, "rndis")){ // Android phone's shared network don't need to check SIM
@@ -1311,7 +1313,7 @@ _dprintf("start_wan_if: USB modem is scanning...\n");
 
 				snprintf(tmp, sizeof(tmp), "%s", nvram_safe_get(strcat_r(prefix2, "act_sim", tmp2)));
 				if(strlen(tmp) > 0){
-					sim_state = atoi(tmp);
+					int sim_state = atoi(tmp);
 					if(sim_state == 2 || sim_state == 3){
 						TRACE_PT("3g end: Need to input PIN or PUK.\n");
 						update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_PINCODE_ERR);
@@ -2029,7 +2031,6 @@ stop_wan_if(int unit)
 	unsigned int uvid, upid;
 #endif
 #ifdef RTCONFIG_INTERNAL_GOBI
-	char *const modem_argv[] = {"/usr/sbin/modem_stop.sh", NULL};
 	int modem_unit;
 	char tmp2[100], prefix2[32];
 	char env_unit[32];
@@ -2232,7 +2233,12 @@ stop_wan_if(int unit)
 
 		if(!strcmp(nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)), "gobi")){
 			putenv(env_unit);
+#ifdef RT4GAC86U
+			system("/usr/sbin/modem_stop.sh >> /tmp/usb.log");
+#else
+			char *const modem_argv[] = {"/usr/sbin/modem_stop.sh", NULL};
 			_eval(modem_argv, ">>/tmp/usb.log", 0, NULL);
+#endif
 			unsetenv("unit");
 		}
 #endif
@@ -2380,6 +2386,26 @@ int update_resolvconf(void)
 #endif
 			}
 		}
+
+#ifdef RTCONFIG_MULTISERVICE_WAN
+		for (unit = 1; unit < WAN_MULTISRV_MAX; unit++) {
+			snprintf(prefix, sizeof(prefix), "wan%d_", get_ms_wan_unit(primary_unit, unit));
+			wan_dns = nvram_safe_get_r(strcat_r(prefix, "dns", tmp), wan_dns_buf, sizeof(wan_dns_buf));
+			wan_xdns = nvram_safe_get_r(strcat_r(prefix, "xdns", tmp), wan_xdns_buf, sizeof(wan_xdns_buf));
+
+			if (!*wan_dns && !*wan_xdns)
+				continue;
+
+			foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next) {
+				fprintf(fp, "nameserver %s\n", tmp);
+				fprintf(fp_servers, "server=%s\n", tmp);
+#ifdef RTCONFIG_YANDEXDNS
+				if (yadns_mode != YADNS_DISABLED)
+					fprintf(fp_servers, "server=/%s/%s\n", "local", tmp);
+#endif
+			}
+		}
+#endif
 	}
 
 /* Add DNS from VPN clients - add at the end since config is read backward by dnsmasq */
@@ -2759,6 +2785,8 @@ wan_up(const char *pwan_ifname)
 	char ppa_cmd[255] = {0};
 #endif
 	FILE *fp;
+	char word[100], *next;
+	in_addr_t addr, mask;
 	int i=0;
 	int first_ntp_sync = 0;
 
@@ -2807,9 +2835,8 @@ wan_up(const char *pwan_ifname)
 		/* and default route with metric 1 */
 		snprintf(gateway, sizeof(gateway), "%s", nvram_safe_get(strcat_r(prefix_x, "gateway", tmp)));
 		if (inet_addr_(gateway) != INADDR_ANY) {
-			char word[100], *next;
-			in_addr_t addr = inet_addr(nvram_safe_get(strcat_r(prefix_x, "ipaddr", tmp)));
-			in_addr_t mask = inet_addr(nvram_safe_get(strcat_r(prefix_x, "netmask", tmp)));
+			addr = inet_addr(nvram_safe_get(strcat_r(prefix_x, "ipaddr", tmp)));
+			mask = inet_addr(nvram_safe_get(strcat_r(prefix_x, "netmask", tmp)));
 
 			/* the gateway is out of the local network */
 			if ((inet_addr(gateway) & mask) != (addr & mask))
@@ -2893,6 +2920,16 @@ wan_up(const char *pwan_ifname)
 	/* and one supplied via DHCP */
 	if (strcmp(wan_proto, "dhcp") == 0)
 		add_dhcp_routes(prefix, wan_ifname, 0);
+
+	/* add wan dns route via wan interface */
+	addr = inet_addr(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)));
+	mask = inet_addr(nvram_safe_get(strcat_r(prefix, "netmask", tmp)));
+	nvram_safe_get_r(strcat_r(prefix, "dns", tmp), dns, sizeof(dns));
+	foreach(word, dns, next) {
+		if ((inet_addr(word) != inet_addr(gateway)) &&
+			(inet_addr(word) & mask) != (addr & mask))
+			route_add(wan_ifname, 2, word, gateway, "255.255.255.255");
+	}
 
 #ifdef RTCONFIG_IPV6
 	if (wan_unit == wan_primary_ifunit_ipv6()) {

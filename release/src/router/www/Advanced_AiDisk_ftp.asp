@@ -677,7 +677,7 @@ function onEvent(){
 		document.getElementById("deleteFolderBtn").onclick = function(){};
 		document.getElementById("deleteFolderBtn").onmouseover = function(){};
 		document.getElementById("deleteFolderBtn").onmouseout = function(){};
- 		
+		
 		document.getElementById("modifyFolderBtn").onclick = function(){};
 		document.getElementById("modifyFolderBtn").onmouseover = function(){};
 		document.getElementById("modifyFolderBtn").onmouseout = function(){};
@@ -866,7 +866,7 @@ function switchUserType(flag){
 							<span id="loginMethod" style="color:#FC0"></span>
 						</div>	
 					</td>
-				</tr>										
+				</tr>
 				<tr>
 					<th>Enable TLS support</th>
 					<td>
@@ -896,9 +896,9 @@ function switchUserType(flag){
 								<option value="CZ" <% nvram_match("ftp_lang", "CZ", "selected"); %>><#ShareNode_FTPLANG_optionname5#></option>
 						</select>
 					</td>
-				</tr>
+				</tr>				
 			</table>
-
+			
 			<div id="apply_btn">
 					<input type="button" class="button_gen" value="<#CTL_apply#>" onclick="applyRule();">
 			</div>

@@ -119,7 +119,7 @@ function register_event(){
 												<img src="/images/New_ui/Web_Apps_Restriction.png">
 											</td>
 											<td>&nbsp;&nbsp;</td>
-											<td style="font-style: italic;font-size: 14px;">
+											<td style="font-size: 14px;">
 												<span>Ad Blocking helps you to block advertisement on the web and streaming video page. You can enjoy the content you visit, and spend less time on waiting.</span>
 											</td>
 										</tr>

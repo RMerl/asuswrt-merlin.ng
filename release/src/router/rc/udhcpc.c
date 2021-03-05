@@ -1144,7 +1144,7 @@ _dprintf("%s: IFUP.\n", __FUNCTION__);
 
 	if ((repeater_mode()
 #ifdef RTCONFIG_DPSTA
-		|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
+		|| ((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
 #endif
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 		|| psr_mode() || mediabridge_mode()

@@ -1,11 +1,16 @@
 #ifndef __PC_H__
 #define __PC_H__ 1
 
-#define MIN_DAY 1
-#define MAX_DAY 7
+#define MIN_DAY 0
+#define MAX_DAY 6
 
 #define MIN_HOUR 0
 #define MAX_HOUR 23
+
+#ifdef RTCONFIG_PC_SCHED_V3
+#define MIN_MIN 0
+#define MAX_MIN 59
+#endif
 
 //#define BLOCKLOCAL
 
@@ -64,15 +69,24 @@ extern void print_event_list(pc_event_s *e_list);
 extern pc_s *initial_pc(pc_s **target_pc);
 extern void free_pc_list(pc_s **target_list);
 extern pc_s *cp_pc(pc_s **dest, const pc_s *src);
+extern int is_same_pc_list(pc_s *pc_list1, pc_s *pc_list2);
 extern void print_pc_list(pc_s *pc_list);
 
 extern pc_s *match_enabled_pc_list(pc_s *pc_list, pc_s **target_list, int enabled);
-extern pc_s *match_day_pc_list(pc_s *pc_list, pc_s **target_list, int target_day);
+#ifdef RTCONFIG_PC_SCHED_V3
+extern pc_s *match_daytime_pc_list(pc_s *pc_list, pc_s **target_list, int target_day, int target_hour, int target_min);
+#else
 extern pc_s *match_daytime_pc_list(pc_s *pc_list, pc_s **target_list, int target_day, int target_hour);
+#endif
 #ifdef RTCONFIG_CONNTRACK
+#ifdef RTCONFIG_PC_SCHED_V3
+extern int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, int target_min, int verb);
+#else
 extern int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, int verb);
+#endif
 #endif
 extern void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
 extern void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
 extern int count_pc_rules(pc_s *pc_list, int enabled);
+extern int count_event_rules(pc_event_s *event_list);
 #endif // #ifndef __PC_H__

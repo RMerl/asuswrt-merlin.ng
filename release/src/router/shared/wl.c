@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wl.c 787328 2020-05-26 20:17:46Z $
+ * $Id: wl.c 793902 2020-12-14 17:36:59Z $
  */
 #include <typedefs.h>
 #include <string.h>
@@ -49,6 +49,8 @@ typedef struct {
 	uint16 len;
 	uint32 val;
 } he_xtlv_v32;
+
+typedef he_xtlv_v32 twt_xtlv_v32;
 
 /* Global swap variable */
 bool gg_swap = FALSE;
@@ -654,6 +656,7 @@ wl_heiovar_setint(char *ifname, char *iovar, char *subcmd, int val)
 
 		subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
 	} else {
+		/* Other he subcommands not yet supported */
 		return BCME_UNSUPPORTED;
 	}
 
@@ -669,6 +672,54 @@ wl_heiovar_setint(char *ifname, char *iovar, char *subcmd, int val)
 	p += namelen;
 
 	/* copy he subcommand structure */
+	memcpy(p, (void *)&v32, subcmd_len);
+
+	return wl_ioctl(ifname, WLC_SET_VAR, (void *)smbuf, iolen);
+}
+
+/*
+ * Set twt subcommand to int value
+ */
+int
+wl_twtiovar_setint(char *ifname, char *iovar, char *subcmd, int val)
+{
+	char smbuf[WLC_IOCTL_SMLEN] = {0};
+	twt_xtlv_v32 v32;
+	char *p = smbuf;
+	int namelen, subcmd_len, iolen;
+
+	if (strcmp(iovar, "twt") != 0) {
+		return BCME_BADARG;
+	}
+
+	/* length of iovar name + null */
+	namelen = strlen(iovar) + 1;
+
+	memset(&v32, 0, sizeof(v32));
+
+	if (strcmp(subcmd, "enab") == 0) {
+		v32.id = WL_TWT_CMD_ENAB;
+		v32.len = 4;
+		v32.val = (uint32)val;
+
+		subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
+	} else {
+		/* Other twt subcommands not yet supported */
+		return BCME_UNSUPPORTED;
+	}
+
+	iolen = namelen + subcmd_len;
+
+	/* check for overflow */
+	if (iolen > sizeof(smbuf)) {
+		return BCME_BUFTOOSHORT;
+	}
+
+	/* copy iovar name including null */
+	memcpy(p, iovar, namelen);
+	p += namelen;
+
+	/* copy twt subcommand structure */
 	memcpy(p, (void *)&v32, subcmd_len);
 
 	return wl_ioctl(ifname, WLC_SET_VAR, (void *)smbuf, iolen);
@@ -776,4 +827,79 @@ wl_iovar_xtlv_setint(char *ifname, char *iovar, int32 val, uint16 version,
 	return wl_iovar_xtlv_set(ifname, iovar, (uint8*)&val, sizeof(val), version,
 		cmd_id, xtlv_id, BCM_XTLV_OPTION_ALIGN32);
 }
+
+int
+wl_iovar_xtlv_getint(char *ifname, char *iovar, uint16 iov_version, uint16 cmd_id,
+	uint16 xtlv_id, bcm_xtlv_opts_t opts)
+{
+	int ret = BCME_OK;
+	bcm_iov_buf_t *iov_buf = NULL;
+	bcm_iov_buf_t *p_resp = NULL;
+	uint8 *iov_resp = NULL;
+	//uint16 version;
+	uint16 datalen = 0;
+	int result = -1;
+	const uint8 *data = NULL;
+	uint16 iovar_len = 0;
+
+	iov_buf = (bcm_iov_buf_t *)calloc(1, WLC_IOCTL_SMLEN);
+	if (iov_buf == NULL) {
+		ret = BCME_NOMEM;
+		goto fail;
+	}
+	iov_resp = (uint8 *)calloc(1, WLC_IOCTL_MAXLEN);
+	if (iov_resp == NULL) {
+		ret = BCME_NOMEM;
+		goto fail;
+	}
+	/* fill header */
+	iov_buf->version = iov_version;
+	iov_buf->id = cmd_id;
+
+	iovar_len = strlen(iovar) + 1;
+
+	memmove(&iov_resp[iovar_len], iov_buf, WLC_IOCTL_SMLEN);
+
+	/* copy the name to the beginning of the buffer */
+	strncpy(iov_resp, iovar, strlen(iovar));
+	iov_resp[strlen(iovar)] = '\0';
+
+	wl_ioctl(ifname, WLC_GET_VAR, iov_resp, WLC_IOCTL_MAXLEN);
+
+	p_resp = (bcm_iov_buf_t *)iov_resp;
+	if (p_resp->id == cmd_id) {
+		data = bcm_get_data_from_xtlv_buf((uint8*)p_resp->data, p_resp->len, xtlv_id,
+			&datalen, opts);
+
+		if (!data) {
+			goto fail;
+		} else {
+			result = *data;
+		}
+	}
+fail:
+	if (iov_buf) {
+		free(iov_buf);
+	}
+	if (iov_resp) {
+		free(iov_resp);
+	}
+
+	(void)(ret);
+	return result;
+}
+/*
+void
+wl_printlasterror(char *name)
+{
+	char err_buf[WLC_IOCTL_SMLEN];
+	strcpy(err_buf, "bcmerrstr");
+
+	fprintf(stderr, "Error: ");
+	if ( wl_ioctl(name, WLC_GET_VAR, err_buf, sizeof (err_buf)) != 0)
+		fprintf(stderr, "Error getting the Errorstring from driver\n");
+	else
+		fprintf(stderr, err_buf);
+}
+*/
 #endif

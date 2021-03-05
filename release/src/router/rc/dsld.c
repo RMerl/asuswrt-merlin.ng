@@ -14,9 +14,206 @@
 
 int g_running = 1;
 
-#define LINK_UP            1
-#define LINK_DOWN          0
+static XDSL_LOG_RECORD *log_record = NULL;
+static unsigned int log_count = 0;
+static unsigned int log_head = 0;
+static unsigned int log_tail = 0;
+
 #define DSL_LOSS_TIME_TH   18000
+#define DSLD_ALARM_SECS    5
+#define LOG_RECORD_MAX     6000
+#define LOG_RECORD_PERIOD  6 //6 x 5 sec
+
+static void log_sync_time(long uptime, time_t secs, int xdsl_link_status)
+{
+	FILE *fp = NULL;
+	static long last_loss_time = 0;
+	static long pre_uptime = 0;
+	unsigned long diff_time = 0;
+	char timestamp[32] = {0};
+	int setting_apply = nvram_get_int("dsltmp_syncloss_apply");
+
+	diff_time = uptime - pre_uptime;
+	pre_uptime = uptime;
+
+	snprintf(timestamp, sizeof(timestamp), "%s", asctime(localtime(&secs)));
+	timestamp[strlen(timestamp)-1] = '\0';
+
+	if(setting_apply)
+	{
+		last_loss_time = 0;
+		nvram_set("dsltmp_syncloss_apply", "0");
+		nvram_set("dsltmp_syncloss", "0");
+	}
+	else
+	{
+		if(xdsl_link_status != DSL_LINK_UP)
+		{
+			if(!last_loss_time)
+				last_loss_time = uptime;
+			else
+			{
+				if(uptime - last_loss_time < DSL_LOSS_TIME_TH)
+				{
+					if(nvram_invmatch("dsltmp_syncloss", "2")) // feedback not submit yet
+						nvram_set("dsltmp_syncloss", "1"); //notify to feedback
+				}
+				else
+					last_loss_time = uptime;
+			}
+		}
+	}
+
+	fp = fopen(SYNC_LOG_FILE, "a");
+	if(fp)
+	{
+		fprintf(fp, "[%s] %s: %8ld %8ld"
+			, timestamp, (xdsl_link_status == DSL_LINK_UP) ? "Up   time" : "Down time"
+			, uptime, diff_time);
+		if(xdsl_link_status != DSL_LINK_UP)
+		{
+			if(setting_apply)
+				fputs(" (apply manually)\n", fp);
+			else
+				fputs("\n", fp);
+		}
+		else
+			fputs("\n", fp);
+
+		fclose(fp);
+	}
+}
+
+static int dump_log_record(void)
+{
+	FILE *fp = NULL;
+	XDSL_LOG_RECORD *current = NULL;
+	XDSL_LOG_RECORD *prev = NULL;
+	int count = 0;
+	int down_diff = 0, up_diff = 0;
+	char timebuf[32] = {0};
+
+	fp = fopen(LOG_RECORD_FILE, "w");
+	if(!fp)
+		return -1;
+
+	current = log_record + log_head;
+	while(count < log_count)
+	{
+		if(prev)
+		{
+			down_diff = current->crc_down - prev->crc_down;
+			up_diff = current->crc_up - prev->crc_up;
+		}
+		sprintf(timebuf, "%s", asctime(localtime(&current->cur_time)));
+		timebuf[strlen(timebuf)-1] = '\0';	//remove '\n'
+		fprintf(fp, "[%s] ", timebuf);
+		if(current->link_status == DSL_LINK_UP)
+		{
+			fprintf(fp, "SNRD:%4.1f(%3d) CRCD:%8u %8d CRCU:%8u %8d\n"
+				, current->snr_down
+				, current->snrm/512
+				, current->crc_down, down_diff
+				, current->crc_up, up_diff
+			);
+		}
+		else
+		{
+			fputs("Link down\n", fp);
+		}
+		prev = current;
+		if (current + 1 == log_record + LOG_RECORD_MAX)
+			current = log_record;
+		else
+			current = current + 1;
+		count++;
+	}
+	fclose(fp);
+	return 0;
+}
+
+static void add_log_record(time_t secs, XDSL_INFO* info)
+{
+	XDSL_LOG_RECORD* cur_record = NULL;
+
+	if (log_count)
+	{
+		log_tail++;
+		if (log_tail == LOG_RECORD_MAX)
+			log_tail = 0;
+		if (log_tail == log_head)
+		{
+			log_head++;
+			if (log_head == LOG_RECORD_MAX)
+				log_head = 0;
+		}
+	}
+	cur_record = log_record + log_tail;
+
+	cur_record->link_status = info->line_state;
+	cur_record->cur_time = secs;
+	cur_record->snr_down = atof(info->snrm_down);
+	cur_record->snrm = nvram_get_int("dslx_snrm_offset");
+	cur_record->crc_down = info->crc_down;
+	cur_record->crc_up = info->crc_up;
+
+	log_count++;
+	if (log_count > LOG_RECORD_MAX)
+		log_count = LOG_RECORD_MAX;
+}
+
+static void line_monitor(XDSL_INFO* info)
+{
+	static int last_status = 0;
+	static unsigned int syncup_counter = 0;
+	static unsigned int uCnt = 0;
+	struct sysinfo sys_info;
+	time_t secs = 0;
+
+	sysinfo(&sys_info);
+	time(&secs);
+	uCnt++;
+
+	if (info->line_state == DSL_LINK_UP)
+	{
+		if(last_status != DSL_LINK_UP)
+		{	//down->up
+			logmessage("DSL", "Link down -> up");
+
+			//snr crc .. history
+			add_log_record(secs, info);
+
+			//link history
+			log_sync_time(sys_info.uptime, secs, DSL_LINK_UP);
+
+			last_status = DSL_LINK_UP;
+			nvram_set_int("dsltmp_syncup_cnt", ++syncup_counter);
+		}
+		else if(!(uCnt % LOG_RECORD_PERIOD))
+		{
+			add_log_record(secs, info);
+		}
+	}
+	else
+	{ //non DSL_LINK_UP, (DSL_LINK_INIT considered as DSL_LINK_DOWN)
+		if(last_status == DSL_LINK_UP)
+		{	//up->down
+			logmessage("DSL", "Link up -> down");
+
+			//snr crc .. history
+			add_log_record(secs, info);
+
+			//link history, includes user modified
+			log_sync_time(sys_info.uptime, secs, DSL_LINK_DOWN);
+
+			last_status = DSL_LINK_DOWN;
+		}
+		else if(!(uCnt % LOG_RECORD_PERIOD))
+		{
+			add_log_record(secs, info);
+		}
+	}
+}
 
 #if 0
 static void dump_hex(uint8_t *data, size_t len, const char* msg)
@@ -112,7 +309,7 @@ static void update_xdsl_status()
 	get_xdsl_info(&info);
 
 	//update nvram
-	if (info.line_state > 1) {
+	if (info.line_state == DSL_LINK_UP) {
 		if (!nvram_match("dsltmp_adslsyncsts", "up")) {
 			struct sysinfo si;
 			char timestampstr[32] = {0};
@@ -122,7 +319,7 @@ static void update_xdsl_status()
 			nvram_set("dsltmp_adslsyncsts", "up");
 		}
 	}
-	else if (info.line_state == 1) {
+	else if (info.line_state == DSL_LINK_INIT) {
 		if (!nvram_match("dsltmp_adslsyncsts", "init")) {
 			nvram_set("adsl_timestamp", "");
 			nvram_set("dsltmp_adslsyncsts", "init");
@@ -178,6 +375,8 @@ static void update_xdsl_status()
 	nvram_set("dsllog_latnup", info.latn_pb_up);
 	nvram_set("dsllog_satndown", info.satn_pb_down);
 	nvram_set("dsllog_satnup", info.satn_pb_up);
+
+	line_monitor(&info);
 }
 
 static void update_xdsl_spectrum_data()
@@ -237,105 +436,6 @@ static void update_xdsl_spectrum_data()
 	nvram_set("spectrum_hook_is_running","0");
 }
 
-static void log_sync_time(long uptime, time_t secs, int xdsl_link_status)
-{
-	FILE *fp = NULL;
-	static long last_loss_time = 0;
-	static long pre_uptime = 0;
-	unsigned long diff_time = 0;
-	char timestamp[32] = {0};
-	int setting_apply = nvram_get_int("dsltmp_syncloss_apply");
-
-	diff_time = uptime - pre_uptime;
-	pre_uptime = uptime;
-
-	snprintf(timestamp, sizeof(timestamp), "%s", ctime(&secs));
-	timestamp[strlen(timestamp)-1] = '\0';
-
-	if(setting_apply)
-	{
-		last_loss_time = 0;
-		nvram_set("dsltmp_syncloss_apply", "0");
-		nvram_set("dsltmp_syncloss", "0");
-	}
-	else
-	{
-		if(!xdsl_link_status)
-		{
-			if(!last_loss_time)
-				last_loss_time = uptime;
-			else
-			{
-				if(uptime - last_loss_time < DSL_LOSS_TIME_TH)
-				{
-					if(nvram_invmatch("dsltmp_syncloss", "2")) // feedback not submit yet
-						nvram_set("dsltmp_syncloss", "1"); //notify to feedback
-				}
-				else
-					last_loss_time = uptime;
-			}
-		}
-	}
-
-	fp = fopen(SYNC_LOG_FILE, "a");
-	if(fp)
-	{
-		fprintf(fp, "[%s] %s: %8ld %8ld"
-			, timestamp, xdsl_link_status ? "Up   time" : "Down time"
-			, uptime, diff_time);
-		if(!xdsl_link_status)
-		{
-			if(setting_apply)
-				fputs(" (apply manually)\n", fp);
-			else
-				fputs("\n", fp);
-		}
-		else
-			fputs("\n", fp);
-
-		fclose(fp);
-	}
-}
-
-static void line_monitor()
-{
-	static int last_status = 0;
-	static unsigned int syncup_counter = 0;
-	static unsigned int uCnt = 0;
-	struct sysinfo sys_info;
-	time_t secs = 0;
-
-	sysinfo(&sys_info);
-	time(&secs);
-	uCnt++;
-
-	if(nvram_match("dsltmp_adslsyncsts", "up"))
-	{
-		if(!last_status)
-		{	//down->up
-			logmessage("DSL", "Link down -> up");
-
-			//link history
-			log_sync_time(sys_info.uptime, secs, LINK_UP);
-
-			last_status = LINK_UP;
-			nvram_set_int("dsltmp_syncup_cnt", ++syncup_counter);
-		}
-	}
-	else
-	{
-		if(last_status)
-		{	//up->down
-			logmessage("DSL", "Link up -> down");
-
-			//link history, includes user modified
-			log_sync_time(sys_info.uptime, secs, LINK_DOWN);
-
-			last_status = LINK_DOWN;
-		}
-	}
-}
-
 void dsld_sig(int signum)
 {
 	switch (signum)
@@ -343,10 +443,11 @@ void dsld_sig(int signum)
 		case SIGTERM:
 			g_running = 0;
 			break;
-		case SIGUSR1:
 		case SIGALRM:
 			update_xdsl_status();
-			line_monitor();
+			break;
+		case SIGUSR1:
+			dump_log_record();
 			break;
 		case SIGUSR2:
 			update_xdsl_spectrum_data();
@@ -378,10 +479,20 @@ static void init_time()
 {
 	struct itimerval value;
 
-	value.it_value.tv_sec = 5;
+	value.it_value.tv_sec = DSLD_ALARM_SECS;
 	value.it_value.tv_usec = 0;
 	value.it_interval = value.it_value;
 	setitimer(ITIMER_REAL, &value, NULL);
+}
+
+static void init_log()
+{
+	log_record = calloc(LOG_RECORD_MAX, sizeof(XDSL_LOG_RECORD));
+}
+
+static void destroy()
+{
+	if (log_record) free(log_record);
 }
 
 static void update_params()
@@ -423,6 +534,7 @@ int dsld_main(int argc, char **argv)
 	init_sigaction();
 
 	init_time();
+	init_log();
 
 	if (get_xdsl_ver(buf, sizeof(buf)) == 0)
 		nvram_set("dsllog_drvver", buf);
@@ -433,6 +545,8 @@ int dsld_main(int argc, char **argv)
 	{
 		pause();
 	}
+
+	destroy();
 
 	return 0;
 

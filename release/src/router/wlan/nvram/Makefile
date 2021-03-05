@@ -32,7 +32,7 @@ endif
 ifneq ($(strip $(CONFIG_MTD_NAND)),)
 CFLAGS += -DNAND_SYS
 endif
-IMPL=$(shell readlink $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP) | sed 's/[^0-9]//g')
+IMPL=$(shell readlink $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP) | awk 'BEGIN{FS="impl"}{print $$2}' | sed 's/[^0-9]//g')
 ifeq ($(IMPL),)
 # the symbolic link of bcm9$(BRCM_CHIP) has been removed/cleaned, set IMPL to an integer to avoid warning message
 IMPL=0

@@ -569,7 +569,7 @@ function check_wifi_backhaul_node() {
 	var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
 	get_cfg_clientlist.forEach(function(item, index, array){
 		var isReNode = (index == 0) ? false : true;
-		if(isReNode && item.online == "1" && (item.re_path != "1" && item.re_path != "16" && item.re_path != "32" && item.re_path != "64")){
+		if(isReNode && item.online == "1" && (item.re_path != "1" && item.re_path != "16" && item.re_path != "32" && item.re_path != "64") && handle_re_path(item.re_path) > 0){
 			if(wifi_backhaul_list != "")
 				wifi_backhaul_list += ", ";
 			if(item.ui_model_name == undefined || item.ui_model_name == "")
@@ -627,6 +627,10 @@ function node_location_translate(_node_info, _isReNode){
 		result = location;
 	}
 	return result;
+}
+function handle_re_path(_re_path){
+	var result = parseInt(_re_path);
+	return ((isNaN(result)) ? 0 : result);
 }
 $(document).ready(initial_system_settings);
 </script>

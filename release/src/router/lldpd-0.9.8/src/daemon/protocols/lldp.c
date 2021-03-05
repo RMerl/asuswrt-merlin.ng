@@ -727,11 +727,16 @@ lldp_decode(struct lldpd *cfg, char *frame, int s,
 				goto malformed;
 			}
 			PEEK_BYTES(b, tlv_size);
-			if (tlv_type == LLDP_TLV_PORT_DESCR)
+			if (tlv_type == LLDP_TLV_PORT_DESCR) {
+				free(port->p_descr);
 				port->p_descr = b;
-			else if (tlv_type == LLDP_TLV_SYSTEM_NAME)
+			} else if (tlv_type == LLDP_TLV_SYSTEM_NAME) {
+				free(chassis->c_name);
 				chassis->c_name = b;
-			else chassis->c_descr = b;
+			} else {
+				free(chassis->c_descr);
+				chassis->c_descr = b;
+			}
 			break;
 		case LLDP_TLV_SYSTEM_CAP:
 			CHECK_TLV_SIZE(4, "System capabilities");

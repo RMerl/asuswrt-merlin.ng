@@ -247,13 +247,13 @@ function showMAC(){
 
 		if (country_str == "United Kingdom" && (ispname_str == "SKY (MER)" || ispname_str == "Sky - Fibre Broadband"))
 		{
-			qisPostData.dslx_dhcp_clientid = mac_addr_last_3bytes;
-			qisPostData.dslx_dhcp_hostname = model_name;
+			qisPostData.dsl_dhcp_clientid = mac_addr_last_3bytes;
+			qisPostData.dsl_dhcp_hostname = model_name;
 		}
 		else
 		{
-			qisPostData.dslx_dhcp_clientid = "";
-			qisPostData.dslx_dhcp_hostname = "";
+			qisPostData.dsl_dhcp_clientid = "";
+			qisPostData.dsl_dhcp_hostname = "";
 		}
 		
 		if (country_str == "Denmark"){

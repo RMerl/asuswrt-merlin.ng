@@ -256,7 +256,7 @@ int client_rtsp_response_check(client_t *c);
 #define p_packet_cmp ((int (*)(const void *, const void *, size_t))&packet_cmp)
 #define p_packet_free ((void (*)(void **))&packet_free)
 
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#define my_max(a,b)            (((a) > (b)) ? (a) : (b))
 
 extern PJ_DEF(int) natnl_get_im_nfds(int inst_id);
 extern PJ_DEF(void) natnl_set_im_nfds(int inst_id, int nfds);
@@ -271,10 +271,10 @@ static _inline_ void client_add_fd_to_set(client_t *c, fd_set *set, struct call_
 			uint16_t port;
 			FD_SET(SOCK_FD(c->sock), set);
 			if (cd)
-				cd->nfds = max(cd->nfds, SOCK_FD(c->sock));
+				cd->nfds = my_max(cd->nfds, SOCK_FD(c->sock));
 			else {
 				int nfds = natnl_get_im_nfds(c->inst_id);
-				natnl_set_im_nfds(c->inst_id, max(nfds, SOCK_FD(c->sock)));
+				natnl_set_im_nfds(c->inst_id, my_max(nfds, SOCK_FD(c->sock)));
 			}
 
 			port = sock_get_port(c->sock);

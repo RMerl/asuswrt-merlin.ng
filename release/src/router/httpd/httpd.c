@@ -1151,7 +1151,7 @@ handle_request(void)
 		return;
 	}
 
-	if(HTS == 1){
+	if(HTS == 1 && strcmp(inet_ntoa(login_usa_tmp.sa_in.sin_addr), "127.0.0.1")){ //allow tunnel pass
 		snprintf(inviteCode, sizeof(inviteCode), "<meta http-equiv=\"refresh\" content=\"0; https://%s:%d\">\r\n", gethost(), nvram_get_int("https_lanport"));
 		send_page( 307, "Temporary Redirect", (char*) 0, inviteCode, 0);
 		return;

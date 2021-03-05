@@ -177,7 +177,9 @@ pc_event_s *cp_event(pc_event_s **dest, const pc_event_s *src){
 void print_event_list(pc_event_s *e_list){
 	pc_event_s *follow_e;
 	int i;
-
+#ifdef RTCONFIG_PC_SCHED_V3
+	char date_buf[64];
+#endif
 	if(e_list == NULL)
 		return;
 
@@ -186,8 +188,13 @@ void print_event_list(pc_event_s *e_list){
 		++i;
 		_dprintf("   %3dth event:\n", i);
 		_dprintf("        e_name: %s.\n", follow_e->e_name);
+#ifdef RTCONFIG_PC_SCHED_V3
+		_dprintf("         start: %2d:%2d on %s.\n", follow_e->start_hour, follow_e->start_min, get_pc_date_str(follow_e->day_of_week, 0, date_buf, sizeof(date_buf)));
+		_dprintf("           end: %2d:%2d on %s.\n", follow_e->end_hour, follow_e->end_min, get_pc_date_str(follow_e->day_of_week, 0, date_buf, sizeof(date_buf)));
+#else
 		_dprintf("         start: %2d:%2d on %s.\n", follow_e->start_hour, follow_e->start_min, datestr[follow_e->start_day]);
 		_dprintf("           end: %2d:%2d on %s.\n", follow_e->end_hour, follow_e->end_min, datestr[follow_e->end_day]);
+#endif
 		if(follow_e->next != NULL)
 			_dprintf("------------------------------\n");
 	}
@@ -257,6 +264,68 @@ pc_s *cp_pc(pc_s **dest, const pc_s *src){
 	}
 
 	return *dest;
+}
+
+int is_same_event_list(pc_event_s *pc_event1, pc_event_s *pc_event2) {
+	pc_event_s *follow_e1, *follow_e2;
+	int count, count1 = count_event_rules(pc_event1), count2 = count_event_rules(pc_event2);
+
+	if (!count1 || !count2 || count1 != count2) {
+		return 0;
+	}
+
+	for(count = 0, follow_e1 = pc_event1, follow_e2 = pc_event2; 
+		follow_e1 != NULL && follow_e2 != NULL; 
+		follow_e1 = follow_e1->next, follow_e2 = follow_e2->next, ++count) {
+		if(
+#ifdef RTCONFIG_PC_SCHED_V3
+			follow_e1->day_of_week != follow_e2->day_of_week ||
+#else
+			follow_e1->start_day != follow_e2->start_day ||
+			follow_e1->end_day != follow_e2->end_day ||
+#endif
+			follow_e1->start_hour != follow_e2->start_hour ||
+			follow_e1->end_hour != follow_e2->end_hour ||
+			follow_e1->start_min != follow_e2->start_min ||
+			follow_e1->end_min != follow_e2->end_min) {
+			//fprintf(stderr, "is_same_event_list data is not same.\n");
+			return 0;
+		}
+	}
+
+	//fprintf(stderr, "is_same_event_list count1=%d, count2=%d\n", count1, count2);
+
+	if (count > 0)
+		return 1;
+	else
+		return 0;
+}
+
+int is_same_pc_list(pc_s *pc_list1, pc_s *pc_list2) {
+	pc_s *follow_pc1, *follow_pc2;
+	int count, count1 = count_pc_rules(pc_list1, -1), count2 = count_pc_rules(pc_list2, -1);
+
+	if (!count1 || !count2 || count1 != count2) {
+		return 0;
+	}
+
+	for(count = 0, follow_pc1 = pc_list1, follow_pc2 = pc_list2; 
+		follow_pc1 != NULL && follow_pc2 != NULL; 
+		follow_pc1 = follow_pc1->next, follow_pc2 = follow_pc2->next, ++count) {
+		if(follow_pc1->enabled != follow_pc2->enabled ||
+			strcmp(follow_pc1->mac, follow_pc2->mac) ||
+			!is_same_event_list(follow_pc1->events, follow_pc2->events)) {
+			//fprintf(stderr, "is_same_pc_list data is not same.\n");
+			return 0;
+		}
+	}
+
+	//fprintf(stderr, "is_same_pc_list count1=%d, count2=%d\n", count1, count2);
+
+	if (count > 0)
+		return 1;
+	else
+		return 0;
 }
 
 #ifdef RTCONFIG_PC_SCHED_V3
@@ -518,12 +587,12 @@ pc_s *match_enabled_pc_list(pc_s *pc_list, pc_s **target_list, int enabled){
 	if(pc_list == NULL || target_list == NULL)
 		return NULL;
 
-	if(enabled != 0 && enabled != 1 && enabled != 2)
+	if(enabled != -1 && enabled != 0 && enabled != 1 && enabled != 2)
 		return NULL;
 
 	follow_target_list = target_list;
 	for(follow_pc = pc_list; follow_pc != NULL; follow_pc = follow_pc->next){
-		if(follow_pc->enabled == enabled){
+		if(enabled == -1 || follow_pc->enabled == enabled){
 			cp_pc(follow_target_list, follow_pc);
 
 			while(*follow_target_list != NULL)
@@ -562,12 +631,92 @@ pc_s *match_day_pc_list(pc_s *pc_list, pc_s **target_list, int target_day){
 }
 
 #ifdef RTCONFIG_CONNTRACK
+#ifdef RTCONFIG_PC_SCHED_V3
+int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, int target_min, int verb){
+	pc_s *follow_pc;
+	pc_event_s *follow_e;
+	int target_num, s_min, e_min;
+	int fcf = nvram_get_int("forcedcf")? : 0;	/* force delete pclist conntracks */
+
+	if(pc_list == NULL)
+		return -1;
+
+	if(target_day < MIN_DAY || target_day > MAX_DAY)
+		return -1;
+
+	if(target_hour < MIN_HOUR || target_hour > MAX_HOUR)
+		return -1;
+
+	if(target_min < MIN_MIN || target_min > MAX_MIN)
+		return -1;
+
+	target_num = target_hour*60+target_min;
+
+	for(follow_pc = pc_list; follow_pc != NULL; follow_pc = follow_pc->next){
+		int in_period = 0;
+		if(!follow_pc->enabled)
+			continue;
+
+		follow_pc->prev_state = follow_pc->state;
+		for(follow_e = follow_pc->events; follow_e != NULL; follow_e = follow_e->next){
+			s_min = follow_e->start_hour*60+follow_e->start_min;
+			e_min = follow_e->end_hour*60+follow_e->end_min;
+			follow_pc->state = NONBLOCK;
+			if (s_min >= e_min) {
+				if ((((follow_e->day_of_week & (1 << target_day)) > 0) && target_num >= s_min) ||
+					(((follow_e->day_of_week & (1 << (target_day+1))) > 0) && target_num < e_min)) {
+					in_period = 1;
+					break;
+				}
+			} else {
+				if (((follow_e->day_of_week & (1 << target_day)) > 0) && target_num >= s_min && target_num < e_min) {
+					in_period = 1;
+					break;
+				}
+			}
+		}
+		if (in_period) {
+			follow_pc->state = BLOCKED;
+			follow_pc->dtimes = nvram_get_int("questcf")?:0;
+		}
+
+		if(verb) {
+			_dprintf("\nCHK [%s] pc pre/now state:[%d][%d], dtimes=%d, fcf=%d\n", follow_pc->mac, follow_pc->prev_state, follow_pc->state, follow_pc->dtimes, fcf);
+			_dprintf("now_day/hr/min:%d/%d/%d\n", target_day, target_hour, target_min);
+		}
+		/* denial zone critical zone */
+		if(((follow_pc->prev_state==NONBLOCK||follow_pc->prev_state==INITIAL) && follow_pc->state==BLOCKED) ||
+		   (follow_pc->prev_state==DTIME) ||
+		   fcf ) {
+			char tip[16];
+			if(verb)
+				_dprintf("\n[pc] (%d)change to a denial zone [%s]\n", fcf, follow_pc->mac);
+			/* go clean denial-mac's conntracks */
+			if(arpcache(follow_pc->mac, tip)==0) {
+				_dprintf("\n[pc] delete conntracks of %s\n", tip);
+				eval("conntrack", "-D", "-s", tip);
+			}
+#ifdef HND_ROUTER
+			eval("fc", "flush");
+#elif defined(RTCONFIG_BCMARM)
+			/* TBD. ctf ipct entries cleanup. */
+#endif
+			if(follow_pc->dtimes-- > 0)
+				follow_pc->state = DTIME;
+			else
+				follow_pc->state = BLOCKED;
+		}
+	}
+
+	return 0;
+}
+#else
 int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, int verb){
 	pc_s *follow_pc;
 	pc_event_s *follow_e;
 	int target_num, com_start, com_end;
 	int fcf = nvram_get_int("forcedcf")? : 0;	/* force delete pclist conntracks */
-	
+
 	if(pc_list == NULL)
 		return -1;
 
@@ -595,7 +744,7 @@ int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, i
 				break;
 			}
 		}
-		
+
 		if(verb) {
 			_dprintf("\nCHK [%s] pc pre/now state:[%d][%d], dtimes=%d, fcf=%d\n", follow_pc->mac, follow_pc->prev_state, follow_pc->state, follow_pc->dtimes, fcf);
 			_dprintf("now_day/hr:%d/%d\n", target_day, target_hour);
@@ -617,7 +766,7 @@ int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, i
 #elif defined(RTCONFIG_BCMARM)
 			/* TBD. ctf ipct entries cleanup. */
 #endif
-			if(follow_pc->dtimes-- > 0) 
+			if(follow_pc->dtimes-- > 0)
 				follow_pc->state = DTIME;
 			else
 				follow_pc->state = BLOCKED;
@@ -627,7 +776,59 @@ int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, i
 	return 0;
 }
 #endif
+#endif
 
+#ifdef RTCONFIG_PC_SCHED_V3
+pc_s *match_daytime_pc_list(pc_s *pc_list, pc_s **target_list, int target_day, int target_hour, int target_min){
+	pc_s *follow_pc, **follow_target_list;
+	pc_event_s *follow_e;
+	int target_num, s_min, e_min;
+
+	if(pc_list == NULL || target_list == NULL)
+		return NULL;
+
+	if(target_day < MIN_DAY || target_day > MAX_DAY)
+		return NULL;
+
+	if(target_hour < MIN_HOUR || target_hour > MAX_HOUR)
+		return NULL;
+
+	if(target_hour < MIN_MIN || target_hour > MAX_MIN)
+		return NULL;
+
+	target_num = target_hour*60+target_min;
+
+	follow_target_list = target_list;
+	for(follow_pc = pc_list; follow_pc != NULL; follow_pc = follow_pc->next){
+		int in_period = 0;
+		for(follow_e = follow_pc->events; follow_e != NULL; follow_e = follow_e->next){
+			s_min = follow_e->start_hour*60+follow_e->start_min;
+			e_min = follow_e->end_hour*60+follow_e->end_min;
+			follow_pc->state = NONBLOCK;
+			if (s_min >= e_min) {
+				if ((((follow_e->day_of_week & (1 << target_day)) > 0) && target_num >= s_min) ||
+					(((follow_e->day_of_week & (1 << (target_day+1))) > 0) && target_num < e_min)) {
+					in_period = 1;
+					break;
+				}
+			} else {
+				if (((follow_e->day_of_week & (1 << target_day)) > 0) && target_num >= s_min && target_num < e_min) {
+					in_period = 1;
+					break;
+				}
+			}
+		}
+		if (in_period) {
+			cp_pc(follow_target_list, follow_pc);
+
+			while(*follow_target_list != NULL)
+				follow_target_list = &((*follow_target_list)->next);
+		}
+	}
+
+	return *target_list;
+}
+#else
 pc_s *match_daytime_pc_list(pc_s *pc_list, pc_s **target_list, int target_day, int target_hour){
 	pc_s *follow_pc, **follow_target_list;
 	pc_event_s *follow_e;
@@ -663,6 +864,7 @@ pc_s *match_daytime_pc_list(pc_s *pc_list, pc_s **target_list, int target_day, i
 
 	return *target_list;
 }
+#endif
 
 #ifdef RTCONFIG_PC_SCHED_V3
 // Parental Control:
@@ -1087,6 +1289,21 @@ int count_pc_rules(pc_s *pc_list, int enabled){
 	return count;
 }
 
+int count_event_rules(pc_event_s *event_list){
+	pc_event_s *follow_e;
+	int count;
+
+	if(event_list == NULL){
+		_dprintf("Couldn't get the rules of Parental-control correctly!\n");
+		return 0;
+	}
+
+	for(count = 0, follow_e = event_list; follow_e != NULL; follow_e = follow_e->next)
+		++count;
+
+	return count;
+}
+
 int pc_main(int argc, char *argv[]){
 	pc_s *pc_list = NULL, *enabled_list = NULL, *daytime_list = NULL;
 
@@ -1106,6 +1323,19 @@ int pc_main(int argc, char *argv[]){
 
 		free_pc_list(&enabled_list);
 	}
+#ifdef RTCONFIG_PC_SCHED_V3
+	else if(argc == 5 && !strcmp(argv[1], "daytime")
+			&& (atoi(argv[2]) >= MIN_DAY && atoi(argv[2]) <= MAX_DAY)
+			&& (atoi(argv[3]) >= MIN_HOUR && atoi(argv[3]) <= MAX_HOUR)
+			&& (atoi(argv[4]) >= MIN_MIN && atoi(argv[4]) <= MAX_MIN)
+			){
+		match_daytime_pc_list(pc_list, &daytime_list, atoi(argv[2]), atoi(argv[3]), atoi(argv[4]));
+
+		print_pc_list(daytime_list);
+
+		free_pc_list(&daytime_list);
+	}
+#else
 	else if(argc == 4 && !strcmp(argv[1], "daytime")
 			&& (atoi(argv[2]) >= MIN_DAY && atoi(argv[2]) <= MAX_DAY)
 			&& (atoi(argv[3]) >= MIN_HOUR && atoi(argv[3]) <= MAX_HOUR)
@@ -1116,6 +1346,7 @@ int pc_main(int argc, char *argv[]){
 
 		free_pc_list(&daytime_list);
 	}
+#endif
 	else if(argc == 2 && !strcmp(argv[1], "apply")){
 		int wan_unit = wan_primary_ifunit();
 		char *lan_if = nvram_safe_get("lan_ifname");

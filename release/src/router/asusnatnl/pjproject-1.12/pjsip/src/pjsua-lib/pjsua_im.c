@@ -23,6 +23,7 @@
 
 #define THIS_FILE   "pjsua_im.h"
 
+#define MAX_RETRY_CNT 3
 
 /* Declare MESSAGE method */
 /* We put PJSIP_MESSAGE_METHOD as the enum here, so that when
@@ -444,6 +445,11 @@ static void im_callback(void *token, pjsip_event *e)
 					       &tdata);
 	    if (status == PJ_SUCCESS) {
 		pjsua_im_data *im_data2;
+	
+		if (tdata->msg->retry_cnt >= MAX_RETRY_CNT)
+			goto DONE;
+
+		tdata->msg->retry_cnt++;
 
 		/* Must duplicate im_data */
 		im_data2 = pjsua_im_data_dup(tdata->pool, im_data);
@@ -461,6 +467,7 @@ static void im_callback(void *token, pjsip_event *e)
 	    }
 	}
 
+DONE:
 	if (tsx->status_code/100 == 2) {
 	    PJ_LOG(4,(THIS_FILE, 
 		      "Message \'%s\' delivered successfully",
@@ -549,6 +556,11 @@ static void typing_callback(void *token, pjsip_event *e)
 					       &tdata);
 	    if (status == PJ_SUCCESS) {
 		pjsua_im_data *im_data2;
+	
+		if (tdata->msg->retry_cnt >= MAX_RETRY_CNT)
+			return;
+
+		tdata->msg->retry_cnt++;
 
 		/* Must duplicate im_data */
 		im_data2 = pjsua_im_data_dup(tdata->pool, im_data);
@@ -637,6 +649,8 @@ PJ_DEF(pj_status_t) pjsua_im_send( pjsua_inst_id inst_id,
 	/* Add timeout header. */
 	pjsip_msg_add_hdr( tdata->msg, 
 		(pjsip_hdr*)pjsua_im_create_timtout(tdata->pool, &timeout));
+
+	tdata->msg->retry_cnt = 1;
 
     /* Create suitable Contact header unless a Contact header has been
      * set in the account.
@@ -775,6 +789,8 @@ PJ_DEF(pj_status_t) pjsua_im_typing( pjsua_inst_id inst_id,
 
     /* Add route set */
     pjsua_set_msg_route_set(tdata, &acc->route_set);
+
+	tdata->msg->retry_cnt = 1;
 
     /* Create data to reauthenticate */
 	im_data = PJ_POOL_ZALLOC_T(tdata->pool, pjsua_im_data);

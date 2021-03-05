@@ -22,6 +22,7 @@
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="js/gameProfile.js"></script>
+<script type="text/javascript" src="js/searchOpenNatProfile.js"></script>
 
 <script>
 var wItem2 = new Array();

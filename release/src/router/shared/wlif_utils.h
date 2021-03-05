@@ -235,7 +235,11 @@ int wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds);
 
 int wl_wlif_wps_pbc_hdlr(char *wps_ifname, char *bh_ifname);
 /* Stops the hostapd/wpa_supplicant wps session */
+#if defined(RTCONFIG_WIFI6E)
+int wl_wlif_wps_stop_session(char *wps_ifname, bool bUpdateUI);
+#else
 int wl_wlif_wps_stop_session(char *wps_ifname);
+#endif
 /* Function pointer to be provided to the thread creation routine */
 typedef void* (*wlif_thrd_func)(void *arg);
 /* Thread creation routine */

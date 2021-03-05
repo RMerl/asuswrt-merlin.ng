@@ -30,7 +30,6 @@ td.sidenav { width:200px;}
 .app_desc{
 	margin-left:10px;
 	margin-top:10px;
-	font-style: italic;
 }
 .app_ver{
 	font-size: 10px;
@@ -64,7 +63,6 @@ td.sidenav { width:200px;}
 }
 .MethodDesc{
 	margin-top: -10px;	
-	font-style: italic;
 	color: #999;
 }
 .imdShade{

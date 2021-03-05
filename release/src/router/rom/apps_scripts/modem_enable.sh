@@ -402,32 +402,16 @@ if [ "$modem_type" == "tty" -o "$modem_type" == "qmi" -o "$modem_type" == "mbim"
 				nvram unset ${prefix}act_reboot
 				nvram commit
 			fi
-		fi
-
-		ret=`echo -n $at_ret |grep "+CFUN: 1" 2>/dev/null`
-		if [ -z "$ret" ]; then
-			echo "CFUN: Set full functionality."
-			at_ret=`/usr/sbin/modem_at.sh '+CFUN=1' 2>&1`
-			ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
-			if [ -n "$ret" ]; then
-				tries=1
-				ret=""
-				while [ $tries -le 30 ] && [ -z "$ret" ]; do
-					echo "CFUN: wait for setting CFUN...$tries"
-					sleep 1
-
-					at_ret=`/usr/sbin/modem_at.sh '+CFUN?' 2>&1`
-					ret=`echo -n $at_ret |grep "+CFUN: 1" 2>/dev/null`
-					tries=`expr $tries + 1`
-				done
-
-				if [ "$at_ret" == "" ]; then
-					echo "CFUN: Fail to set full functionality."
-					exit 4
+		else
+			ret=`echo -n $at_ret |grep "+CFUN: 1" 2>/dev/null`
+			if [ -z "$ret" ]; then
+				echo "CFUN: Set full functionality."
+				at_ret=`/usr/sbin/modem_at.sh '+CFUN=1' "$modem_reg_time" 2>&1`
+				ret=`echo -n $at_ret |grep "OK" 2>/dev/null`
+				if [ -z "$ret" ]; then
+					echo "CFUN: Fail to set +CFUN=1."
+					#exit 5
 				fi
-			else
-				echo "CFUN: Fail to set +CFUN=1."
-				exit 5
 			fi
 		fi
 	fi

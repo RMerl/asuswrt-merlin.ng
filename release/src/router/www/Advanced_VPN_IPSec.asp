@@ -551,7 +551,7 @@ function validForm() {
 }
 function applyRule() {
 	if(validForm()) {
-		var confirmFlag = confirm("<#vpn_ipsec_clients_reconnect_hint#>");
+		var confirmFlag = confirm('<#vpn_ipsec_clients_reconnect_hint#>');
 		if(!confirmFlag)
 			return false;
 

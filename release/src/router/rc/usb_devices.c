@@ -25,9 +25,9 @@
 #include <rtstate.h>	/* for get_wanunit_by_type inline function */
 
 #define MAX_RETRY_LOCK 1
+#define MAX_WAIT_MODULE 7
 
 #ifdef RTCONFIG_USB_PRINTER
-#define MAX_WAIT_PRINTER_MODULE 5
 #define U2EC_FIFO "/var/u2ec_fifo"
 #endif
 
@@ -3067,12 +3067,11 @@ int asus_sd(const char *device_name, const char *action)
 #endif
 	char *ptr;
 	int model = get_model();
-#ifdef RTCONFIG_USB_PRINTER
+#if defined(RTCONFIG_USB) || defined(RTCONFIG_USB_PRINTER) || defined(RTCONFIG_USB_MODEM)
 	int retry;
 #endif
 	int modem_unit;
 	char tmp2[100], prefix2[32];
-	int intr_num;
 
 	usb_dbg("(%s): action=%s.\n", device_name, action);
 
@@ -3273,47 +3272,37 @@ int asus_sd(const char *device_name, const char *action)
 after_change_xhcimode:
 #endif
 
-#ifdef RTCONFIG_USB_PRINTER
-	// Wait if there is the printer interface.
+	// Wait if there is the printer/modem interface.
+	snprintf(prefix, sizeof(prefix), "usb_path%s", port_path);
+	snprintf(nvram_value, sizeof(nvram_value), "%s", nvram_safe_get(prefix));
+
+#if defined(RTCONFIG_USB) || defined(RTCONFIG_USB_PRINTER) || defined(RTCONFIG_USB_MODEM)
 	retry = 0;
-	while(!hadPrinterModule() && retry < MAX_WAIT_PRINTER_MODULE){
+	while(strcmp(nvram_value, "printer") && strcmp(nvram_value, "modem") && retry < MAX_WAIT_MODULE){
 		++retry;
-		usb_dbg("(%s): wait %d second for the printer module on Port %s.\n", device_name, retry, usb_node);
-		sleep(1); // Wait the printer module to be ready.
+		usb_dbg("(%s): wait %d second for the printer/modem on Port %s.\n", device_name, retry, usb_node);
+		sleep(1);
+		snprintf(nvram_value, sizeof(nvram_value), "%s", nvram_safe_get(prefix));
 	}
-#ifdef REMOVE
-	// When the dongle was plugged off during changing the mode, this delay will confuse the procedure.
-	// TODO: Find the strange printers which need this delay. Will let them be the special case.
-	sleep(1); // Wait the printer interface to be ready.
 #endif
 
+#ifdef RTCONFIG_USB_PRINTER
 	if(hadPrinterInterface(usb_node)){
 		usb_dbg("(%s): Had Printer interface on Port %s.\n", device_name, usb_node);
 		file_unlock(isLock);
 		return 0;
 	}
+	else
 #endif
-
-	intr_num = get_usb_interface_number(usb_node);
-	usb_dbg("(%s): Had %d interface on Port %s.\n", device_name, intr_num, usb_node);
-	if(intr_num > 0){
-#if 0
-		for(retry = 0; retry < intr_num; ++retry)
-			sleep(1);
-#else
-		sleep(intr_num);
-#endif
-	}
-
-	snprintf(prefix, sizeof(prefix), "usb_path%s", port_path);
-
-	memset(nvram_value, 0, 32);
-	strcpy(nvram_value, nvram_safe_get(prefix));
-	if(strcmp(nvram_value, "") && strcmp(nvram_value, "storage")){
-		usb_dbg("(%s): Had other interfaces(%s) on Port %s.\n", device_name, nvram_value, usb_port);
+#ifdef RTCONFIG_USB_MODEM
+	if(!strcmp(nvram_value, "modem")){
+		usb_dbg("(%s): Had Modem interface on Port %s.\n", device_name, usb_node);
 		file_unlock(isLock);
 		return 0;
 	}
+	else
+#endif
+		usb_dbg("(%s): Had Storage interfaces(%s) on Port %s.\n", device_name, nvram_value, usb_port);
 
 	if(!isdigit(*ptr)){ // disk
 #if defined(RTCONFIG_NOTIFICATION_CENTER) && defined(RTCONFIG_CLOUDSYNC)
@@ -3577,7 +3566,7 @@ int asus_sg(const char *device_name, const char *action)
 #endif // RTCONFIG_USB_MODEM
 
 	if(get_path_by_node(usb_node, port_path, sizeof(port_path)) == NULL){
-		usb_dbg("(%s): Fail to get usb path.\n", usb_node);
+		usb_dbg("(%s): Fail to get usb path.\n", device_name);
 		file_unlock(isLock);
 		return 0;
 	}
@@ -3592,7 +3581,7 @@ int asus_sg(const char *device_name, const char *action)
 	memset(switch_file, 0, 32);
 	sprintf(switch_file, "%s.%s", USB_MODESWITCH_CONF, port_path);
 	if(strcmp(nvram_value, "") && check_if_file_exist(switch_file)){
-		usb_dbg("(%s): Already there was a other interface(%s).\n", usb_node, nvram_value);
+		usb_dbg("(%s): Already there was a other interface(%s).\n", device_name, nvram_value);
 		file_unlock(isLock);
 		return 0;
 	}
@@ -3718,7 +3707,7 @@ int asus_sr(const char *device_name, const char *action)
 		snprintf(usb_node, sizeof(usb_node), "%s", nvram_safe_get(nvram_name));
 
 		if(get_path_by_node(usb_node, port_path, sizeof(port_path)) == NULL){
-			usb_dbg("(%s): Fail to get usb path.\n", usb_node);
+			usb_dbg("(%s): Fail to get usb path.\n", device_name);
 			file_unlock(isLock);
 			return 0;
 		}
@@ -3790,7 +3779,7 @@ int asus_sr(const char *device_name, const char *action)
 #endif // RTCONFIG_USB_MODEM
 
 	if(get_path_by_node(usb_node, port_path, sizeof(port_path)) == NULL){
-		usb_dbg("(%s): Fail to get usb path.\n", usb_node);
+		usb_dbg("(%s): Fail to get usb path.\n", device_name);
 		file_unlock(isLock);
 		return 0;
 	}
@@ -3800,18 +3789,15 @@ int asus_sr(const char *device_name, const char *action)
 
 	// Storage interface is first up with some composite devices,
 	// so needs to wait that other interfaces wake up.
-	int i;
-	for(i = 0; i < 3; ++i){
-		if(strcmp(nvram_value, "printer") && strcmp(nvram_value, "modem")){
-			usb_dbg("wait for the printer/modem interface...\n");
-			sleep(1);
-			snprintf(nvram_value, sizeof(nvram_value), "%s", nvram_safe_get(nvram_name));
-		}
-		else
-			break;
+	int retry = 0;
+	while(strcmp(nvram_value, "printer") && strcmp(nvram_value, "modem") && retry < MAX_WAIT_MODULE){
+		++retry;
+		usb_dbg("(%s): wait %d second for the printer/modem on Port %s.\n", device_name, retry, usb_node);
+		sleep(1);
+		snprintf(nvram_value, sizeof(nvram_value), "%s", nvram_safe_get(nvram_name));
 	}
 	if(!strcmp(nvram_value, "printer") || !strcmp(nvram_value, "modem")){
-		usb_dbg("(%s): Already there was a other interface(%s).\n", usb_node, nvram_value);
+		usb_dbg("(%s): Already there was a other interface(%s).\n", device_name, nvram_value);
 		file_unlock(isLock);
 		return 0;
 	}
@@ -3830,7 +3816,7 @@ int asus_sr(const char *device_name, const char *action)
 #ifdef RTCONFIG_USB_CDROM
 		// Get USB port.
 		if(get_usb_port_by_string(usb_node, usb_port, 32) == NULL){
-			usb_dbg("(%s): Fail to get usb port.\n", usb_node);
+			usb_dbg("(%s): Fail to get usb port.\n", device_name);
 			file_unlock(isLock);
 			return 0;
 		}
@@ -4472,11 +4458,11 @@ int asus_usb_interface(const char *device_name, const char *action)
 {
 #if defined(RTCONFIG_USB) || defined(RTCONFIG_USB_PRINTER) || defined(RTCONFIG_USB_MODEM)
 	char usb_node[32], usb_port[32];
-#ifdef RTCONFIG_USB_MODEM
+#if defined(RTCONFIG_USB) || defined(RTCONFIG_USB_MODEM)
 	unsigned int vid, pid;
 	char modem_cmd[128], buf[128];
 #endif
-#if defined(RTCONFIG_USB_PRINTER) || defined(RTCONFIG_USB_BECEEM)
+#if defined(RTCONFIG_USB) || defined(RTCONFIG_USB_PRINTER) || defined(RTCONFIG_USB_MODEM)
 	int retry;
 #endif
 	int isLock;
@@ -4649,7 +4635,63 @@ int asus_usb_interface(const char *device_name, const char *action)
 			return 0;
 		}
 	}
+#endif
 
+#ifdef RTCONFIG_INTERNAL_GOBI
+	if(is_gobi_dongle(vid, pid)){
+		if(get_usb_interface_order(device_name) != 2){
+			usb_dbg("(%s): skip this interface of Gobi...\n", device_name);
+			file_unlock(isLock);
+			return 0;
+		}
+	}
+	else
+#endif
+	{
+#ifdef RTCONFIG_USB_PRINTER
+		if (nvram_get_int("usb_printer") && !module_loaded(USBPRINTER_MOD)) {
+			symlink("/dev/usb", "/dev/printers");
+			modprobe(USBPRINTER_MOD);
+		}
+#endif
+
+		// Wait if there is the printer/modem interface.
+#if defined(RTCONFIG_USB) || defined(RTCONFIG_USB_PRINTER) || defined(RTCONFIG_USB_MODEM)
+		retry = 0;
+		while(retry < MAX_WAIT_MODULE){
+#ifdef RTCONFIG_USB_PRINTER
+			if(hadPrinterInterface(usb_node)){
+				usb_dbg("(%s): Had Printer interface on Port %s.\n", device_name, usb_node);
+				file_unlock(isLock);
+				return 0;
+			}
+#endif
+#ifdef RTCONFIG_USB_MODEM
+			if(isSerialInterface(device_name, 1, vid, pid)
+					|| isACMInterface(device_name, 1, vid, pid)
+					|| isRNDISInterface(device_name, vid, pid)
+					|| isQMIInterface(device_name)
+					|| isGOBIInterface(device_name)
+					|| isCDCETHInterface(device_name)
+					|| isNCMInterface(device_name)
+					|| isASIXInterface(device_name)
+#ifdef RTCONFIG_USB_BECEEM
+					|| isGCTInterface(device_name)
+#endif
+					){
+				usb_dbg("(%s): Had Modem interface on Port %s.\n", device_name, usb_node);
+				break;
+			}
+#endif
+
+			++retry;
+			usb_dbg("(%s): wait %d second for the printer/modem on Port %s.\n", device_name, retry, usb_node);
+			sleep(1); // Wait the printer module to be ready.
+		}
+#endif
+	}
+
+#ifdef RTCONFIG_USB_MODEM
 	if(!isSerialInterface(device_name, 1, vid, pid)
 			&& !isACMInterface(device_name, 1, vid, pid)
 			&& !isRNDISInterface(device_name, vid, pid)
@@ -4665,39 +4707,6 @@ int asus_usb_interface(const char *device_name, const char *action)
 		usb_dbg("(%s): Not modem interface.\n", device_name);
 		file_unlock(isLock);
 		return 0;
-	}
-#endif
-
-#ifdef RTCONFIG_INTERNAL_GOBI
-	if(is_gobi_dongle(vid, pid)){
-		if(get_usb_interface_order(device_name) != 2){
-			usb_dbg("(%s): skip this interface of Gobi...\n", device_name);
-			file_unlock(isLock);
-			return 0;
-		}
-	}
-	else
-#endif
-#ifdef RTCONFIG_USB_PRINTER
-	{
-		if (nvram_get_int("usb_printer") && !module_loaded(USBPRINTER_MOD)) {
-			symlink("/dev/usb", "/dev/printers");
-			modprobe(USBPRINTER_MOD);
-		}
-		// Wait if there is the printer interface.
-		retry = 0;
-		while(!hadPrinterModule() && retry < MAX_WAIT_PRINTER_MODULE){
-			++retry;
-			usb_dbg("(%s): wait %d second for the printer module on Port %s.\n", device_name, retry, usb_node);
-			sleep(1); // Wait the printer module to be ready.
-		}
-		sleep(1); // Wait the printer interface to be ready.
-
-		if(hadPrinterInterface(usb_node)){
-			usb_dbg("(%s): Had Printer interface on Port %s.\n", device_name, usb_node);
-			file_unlock(isLock);
-			return 0;
-		}
 	}
 #endif
 

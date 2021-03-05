@@ -35,15 +35,8 @@ p{
 	padding: 2px 3px;
 	border-radius: 3px;
 }
-.imgUserIcon{
-	cursor: pointer;
-	position: relative; 
+.imgUserIcon_card{
 	left: 17px; 
-	width: 52px;
-	height: 52px;
-	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px;
-	border-radius: 10px;
 }
 </style>
 <script type="text/javascript" src="/state.js"></script>
@@ -160,7 +153,7 @@ function drawClientList(tab){
 		}
 		else if(userIconBase64 != "NoIcon") {
 			clientHtmlTd += '<div title="'+ deviceTitle + '"">';
-			clientHtmlTd += '<img id="imgUserIcon_'+ i +'" class="imgUserIcon" src="' + userIconBase64 + '"';
+			clientHtmlTd += '<img id="imgUserIcon_'+ i +'" class="imgUserIcon_card" src="' + userIconBase64 + '"';
 			clientHtmlTd += '</div>';
 		}
 		else if(clientObj.type != "0" || clientObj.vendor == "") {

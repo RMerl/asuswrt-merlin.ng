@@ -365,7 +365,7 @@ function genMain_table(){
 		}
 
 		code += '</div>';
-		code += '<div style="margin-left:25px;color:#FC0;font-style:italic;font-size:12px;font-weight:normal;">'+ category_desc[i] +'</div>';
+		code += '<div style="margin-left:25px;color:#FC0;font-size:12px;font-weight:normal;">'+ category_desc[i] +'</div>';
 		code += '</div>';
 	}
 
@@ -876,7 +876,7 @@ function switch_control(_status){
 												<img id="guest_image" src="/images/New_ui/Web_Apps_Restriction.png">
 											</td>
 											<td>&nbsp;&nbsp;</td>
-											<td style="font-style: italic;font-size: 14px;">
+											<td style="font-size: 14px;">
 												<span><#AiProtection_filter_desc1#></span>
 												<ol>
 													<li><#AiProtection_filter_desc2#></li>

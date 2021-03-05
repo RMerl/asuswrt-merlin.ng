@@ -503,7 +503,9 @@ int update_dsl_iptv_variables()
 
 	//vlan tag
 	_dprintf("dsltmp_cfg_iptv_rmvlan=%s\n", nvram_safe_get("dsltmp_cfg_iptv_rmvlan"));
-	if(nvram_get_int("dsltmp_cfg_iptv_rmvlan") > 0) {
+	if(nvram_get_int("dsltmp_cfg_iptv_rmvlan") > 0
+	 || (unit > 0 && is_stb_bridge == 0)
+	) {
 		nvram_set("dslx_rmvlan", "1");
 	}
 	else {

@@ -174,7 +174,7 @@ function initial(){
 		document.form.wans_lanport1.remove(2);
 		document.form.wans_lanport2.remove(3);
 		document.form.wans_lanport2.remove(2);
-	}else if(based_modelid == "RT-AC95U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q"){
+	}else if(based_modelid == "RT-AC95U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q" || based_modelid == "RT-AX82_XD6"){
 		document.form.wans_lanport1.remove(3);
 		document.form.wans_lanport2.remove(3);
 	}
@@ -579,7 +579,7 @@ function applyRule(){
 
 	if(wans_dualwan_orig != document.form.wans_dualwan.value &&　qos_enable_orig == 1){
 		if(qos_type_orig == 1 || qos_type_orig == 0 || qos_type_orig == 3){		//(qos_type_orig == 1 && document.form.bw_setting_name[1].checked == true ) || 
-			if( !confirm("Since QoS setting was applied before Dual WAN setting is changed, you need to re-configure QoS again.")){	/*Untranslated*/
+			if( !confirm("After applying settings, please double check your download/upload bandwidth configurations in QoS page.")){	/*Untranslated*/
 				return false;
 			}
 		}

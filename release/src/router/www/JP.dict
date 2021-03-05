@@ -1042,6 +1042,7 @@ AiMesh_FindNode_Not_advB=<span style='color:#569AC7;'>AiMesh ノード</span> �
 AiMesh_FindNode_Not_advB1=AiMesh ノードのリセットボタンを3秒以上押し、工場出荷時の状態にして、起動中であることをご確認ください
 AiMesh_FindNode_Not_advB2=AiMesh ルーターの管理画面にログインし、ネットワークマップ内の AiMesh アイコンをクリックしてください
 AiMesh_FindNode_Not_advB3=AiMesh アイコンが表示されない場合、AiMesh ルーターのファームウェアが最新であることをご確認ください
+AiMesh_FindNode_Search_Btn=近くにある利用可能なAiMeshノードを見つけたい場合は、「検索」をクリックしてください。
 AiMesh_info_waiting=このノード (<span id='newReMac'></span>) の準備ができるまでお待ちください。
 AiMesh_info_weak=AiMeshルーターとAiMeshノード間の信号強度が低くなっています。接続品質が低いかインターネットが不安定なことが原因の可能性があります。ノードをAiMeshルーターに近づけ、再度お試しください。
 AiMesh_info_unabled=お使いのAiMeshのノード <span class='amesh_device_info'></span> をAiMeshシステムに追加できません。次のような原因が考えられます。ご確認ください。
@@ -1066,6 +1067,13 @@ AiMesh_Node_ConnPrio_EAP_Enabled01=イーサネットバックホールモード
 AiMesh_Node_ConnPrio_EAP_Enabled02=WAN のひとつまたは有線 WAN ポートを使用するためには、自動 [イーサネットベース] を選択できます。
 AiMesh_Node_ConnPrio_Eth_Only_Title=イーサネットのみ
 AiMesh_Node_ConnPrio_Eth_Based_Title=イーサネットベース
+AiMesh_BackhaulConnPrio=バックホール接続優先度
+AiMesh_BackhaulConnPrio_wifi_desc=このシステムは、Ethernetバックホールが使える場合でも常にWi-Fiバックホール接続を優先します。
+AiMesh_BackhaulConnPrio_eth_desc=システムは #CONNTYPE 接続を優先します。
+AiMesh_BackhaulConnPrio_eth_desc01=#CONNTYPE 接続が使用できない場合にはWi-Fiバックホールに切り替わります。
+AiMesh_WiFi_Backhaul=AiMeshワイヤレスバックホール
+AiMesh_WiFi_Backhaul_both=バックホールとフロントホイール両方の接続を利用
+AiMesh_WiFi_Backhaul_dedicated_backhaul=専用ワイヤレスバックホールとして利用
 AiMesh_Node_RemoveConfirm=AiMesh ノードを AiMesh システムから切り離しますか？
 AiMesh_Node_RemoveDesc=ノードは工場出荷時の状態にリセットされ、AiMeshシステムから削除されます。続行しますか？
 AiMesh_Node_RemoveDesc01=システムから削除するノードを、手動でリセットしてください。
@@ -1143,6 +1151,9 @@ AiMesh_Optimization_Desc02=その間、ワイヤレス接続を使用してい�
 AiMesh_Optimization_Loading_All01=お使いのAiMeshシステムは最新化中です。
 AiMesh_Optimization_Loading_All02=各AiMeshノードは順に再接続します。
 AiMesh_Optimization_Loading_Each_Node=お使いの#MODELNAMEは最適化パスで再接続中です。
+AiMesh_Optimization_hint=この機能は、ノードが存在し、ワイヤレス接続を使用している場合にだけネットワークを最適化します。
+AiMesh_Prefer_AP=優先アップリンクAP
+AiMesh_Prefer_AP_Select_node=#MODELNAME が優先接続するアップリンクAPを選択。
 AiMesh_Never_Ask_Again=今後表示しない
 AiMesh_Client_Reconnect=お使いの#CLIENTNAMEがAiMeshシステムに追加されました。
 AiMesh_Client_Reconnect_Result=#CLIENTNAMEが #MODELNAME (#LOCATION) に再接続されました。
@@ -1164,7 +1175,7 @@ AiMesh_PB_AP_Auto=システムは、任意の AP への自動接続を利用で�
 AiMesh_PB_Apply_Rule01=このルールが有効になるまで数秒かかります。
 AiMesh_PB_Apply_Rule02=このルールにもかかわらず、#MODELNAME が優先 AP に接続できない場合、システムは、任意の AP への自動接続が利用できるようにします。
 AiMesh_EAP_Enable_Hint01=お使いの #MODELNAME は、EthernetバックホールでアップリンクAPに接続されています。
-AiMesh_EAP_Enable_Hint02=接続を最適化するために、優先バックホールは一時的に無効になります。
+AiMesh_EAP_Enable_Hint02=接続を最適化するために、優先アップリンクAPは一時的に無効になります。
 AiMesh_EAP_Enable_Hint03=このルールは、無線バックホール使用時には自動的に有効になります。
 AiMesh_Unable_Add_Nodes=AiMeshシステムにノードを追加できません。
 AiMesh_Limit_RE_Maximum=AiMeshノードの最大数は#RE_MAXNUMです。
@@ -2231,6 +2242,7 @@ InternetSpeed_Normal_desc=複数台によるデータ量を伴うコンテンツ
 InternetSpeed_Pause=インターネットに接続できないため、本機能はご利用いただけません。
 InternetSpeed_More_Info=こちらより詳細内容をご確認ください。
 InternetSpeed_Notice=通知
+InternetSpeed_Servers_Nearby=近くのサーバー
 InternetSpeed_WAN_Discon_Hint=インターネット接続に何らかの障害があります。インターネットスピードテストは一時的に無効になっています。お使いのインターネットの状態を<a class='alert_notification_text' href='/index.asp' target='_parent'>ネットワークマップ</a>で調べてから再度お試しください。
 InternetSpeed_Failure_Hint=インターネットスピードテストを完了できませんでした。お使いのインターネットの状態を <a class='alert_notification_text' href='/index.asp' target='_parent'>ネットワークマップ</a>で詳しく調べてから再度お試しください。
 IP_format=送信元 IP、または宛先 IP の入力は 3 通りの方法があります。a) 特定の IP アドレスを入力（\"192.168.122.1\"）、b) 同じサブネットマスク内や同じ IP プール内（\"192.168.123.*\"、または \"192.168.*.*\"）を入力、c) 全て*を入力「\"*.*.*.*\"」。
@@ -2337,8 +2349,8 @@ JS_validportrange=は有効なポート範囲ではありません！
 JS_valid_FQDN=これは、Fully Qualified Domain Name (FQDN、完全修飾ドメイン名) 規則には準拠していません。
 JS_valid_host_name=使用できるのは、英数字、アンダースコア、ダッシュ記号のみです。
 JS_valid_host_name_first_char=先頭文字は 、ダッシュ「-」、アンダースコア 「_」 のいずれかであってはなりません。
-JS_valid_account_name=使用できるのは、英数字、ダッシュ記号のみです。
-JS_valid_account_name_first_char=先頭文字は 、ダッシュ「-」のいずれかであってはなりません。
+JS_valid_account_name=このフィールドには、アルファベット、数字、ダッシュだけが使えます。
+JS_valid_account_name_first_char=先頭にはアルファベットだけが使えます。
 JSMBSInvalid=MBS 値は整数である必要があります。
 JSMBSSizeInvalid=MBS 値の範囲 : 0≦PCR≦65535
 JSPCRInvalid=PCR 値は整数である必要があります。
@@ -2382,6 +2394,9 @@ LANHostConfig_x_DDNS_alarm_12=DDNS サーバーが応答しません
 LANHostConfig_x_DDNS_alarm_13=ドメイン名の不適切な文字は
 LANHostConfig_x_DDNS_alarm_14=ホスト名は必ず入力します。
 LANHostConfig_x_DDNS_alarm_15=登録はブロックされました。ファームウェアを最新バージョンに更新してください。
+LANHostConfig_x_DDNS_alarm_16=登録解除ができました。
+LANHostConfig_x_DDNS_alarm_17=不正な登録解除要求です。
+LANHostConfig_x_DDNS_alarm_18=一時的に登録解除できない状況です。お使いのファームウェアを最新バージョンにアップデートしてからもう一度お試しください。
 LANHostConfig_x_DDNS_alarm_2=リクエストエラー！再試行してください
 LANHostConfig_x_DDNS_alarm_3=登録成功
 LANHostConfig_x_DDNS_alarm_4=オリジナルのホスト名を登録しました
@@ -3862,7 +3877,7 @@ FreeWiFi_Welcome=ようこそ
 FreeWiFi_Agree_Terms_Service=<span id='terms_service_hyperlink'>利用規約</span>に同意する
 FreeWiFi_Continue=続ける
 VPN_Fusion=VPN フュージョン
-[###MODEL_DEP###][GT-AX11000][GT-AXY16000][GT-AC5300][GT-AC2900][GT-AXE11000]VPN_Fusion=VPN フュージョン
+[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000][GT-AC5300][TUF-AX3000][GT-AC2900_SH][GT-AC2900][GT-AXY16000]VPN_Fusion=VPN フュージョン
 VPN_Fusion_desc1=は、クライアントデバイスごとに異なる VPN サーバーへの同時接続を可能にする機能です。クライアントデバイスには VPN ソフトウェアをインストールする必要はなく、また、VPN ソフトウェアをインストールできないセットトップボックス、スマートテレビ、Blu-ray プレーヤーなどに対しても有効です。この機能によって、特定のクライアントは VPN を経由しないインターネット回線の利用も可能です。
 VPN_Fusion_desc2=ゲーミング時に万が一 DDos 攻撃があった場合などに PC ゲームやゲームサーバーの断線を防ぐこともできます。ゲームサーバーが配置されている地域に接続することもできるため、ゲームサーバーへの ping を向上させることも可能です。
 VPN_Fusion_desc_step=次の手順で設定を行ないます。
@@ -3885,7 +3900,7 @@ VPN_Fusion_Exception_Policies_Delete_Alert=VPN プロファイルに設定され
 VPN_Fusion_Delete_Alert=このプロファイルを削除してもよろしいですか？
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=例外リストでクライアントのポリシーを削除すると、DHCP サーバーのクライアントの IP バインディングも削除されます。このクライアントポリシーを削除してもよろしいですか？
 VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][GT-AX11000][GT-AXY16000][GT-AC5300][GT-AC2900][GT-AXE11000]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN フュージョンに関する FAQ</a>
+[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000][GT-AC5300][TUF-AX3000][GT-AC2900_SH][GT-AC2900][GT-AXY16000]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN フュージョンに関する FAQ</a>
 VPN_Fusion_Default_Alert=ターゲットポリシー用のデフォルト接続としては設定できません。
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -3961,3 +3976,6 @@ elink_mode=E-link Mode
 elink_change_elink_hint=Using China Telecom E-link Mode, "e surfing gateway" needs to support E-link. Please set "Synchronize wireless configuration with smart gateway" in "Administration - System" properly, in order to control whether "e surfing gateway” delivers the configuration to router or not.
 elink_change_aimesh_hint=Please turn off the "One Button Configuration" and "One Button Switch" functions in "e surfing gateway" first. Then the router will reset automatically. Please follow the on-screen instructions to complete the QIS related settings.
 Elink_Gateway_Sync=Synchronize wireless configuration with smart gateway
+Instant_Guard_desc=Instant Guardにより、ASUS Routerアプリからわずか1クリックでVPNトンネルを作成できます。Instant Guardアプリで、VPNサーバーに誰が接続しているかを監視できます。
+Powerline=パワーライン
+Powerline_Mode=パワーラインモード

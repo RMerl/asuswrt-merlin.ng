@@ -381,7 +381,14 @@ extern void do_f(char *path, webs_t wp);
 
 /* cgi.c */
 extern int web_read(void *buffer, int len);
+extern void unescape(char *s);
+extern char *get_cgi(char *name);
 extern void set_cgi(char *name, char *value);
+extern void init_cgi(char *query);
+extern char *webcgi_get(const char *name);
+extern void webcgi_set(char *name, char *value);
+extern void webcgi_init(char *query);
+extern int web_read(void *buffer, int len);
 
 /* httpd.c */
 extern int json_support;
@@ -403,6 +410,8 @@ extern int ej_lan_leases(int eid, webs_t wp, int argc, char_t **argv);
 extern int get_nat_vserver_table(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_route_table(int eid, webs_t wp, int argc, char_t **argv);
 extern void copy_index_to_unindex(char *prefix, int unit, int subunit);
+extern void json_unescape(char *s);
+extern void decode_json_buffer(char *query);
 extern void logmessage(char *logheader, char *fmt, ...);
 extern int is_private_subnet(const char *ip);
 extern char* INET6_rresolve(struct sockaddr_in6 *sin6, int numeric);

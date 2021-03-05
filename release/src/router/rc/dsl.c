@@ -893,6 +893,11 @@ void config_xtm()
 	mparam.base_wan_unit = WAN_UNIT_FIRST;
 #endif
 
+#ifdef DSL_AX82U
+	if (!is_ax5400_i1())
+		mparam.dscp = -1;
+#endif
+
 #ifdef RTCONFIG_BCM_OAM
 	if (mparam.base_wan_unit == WAN_UNIT_FIRST)
 		stop_oam();

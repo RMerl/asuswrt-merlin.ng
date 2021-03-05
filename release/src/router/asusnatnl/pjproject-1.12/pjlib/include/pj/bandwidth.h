@@ -39,22 +39,17 @@ PJ_BEGIN_DECL
 /** Align a value to the boundary of mask */
 #define ALIGN_MASK(x, mask)    (((x)+(mask))&~(mask))
 
-
 /** Get the minimal value */
-#undef MIN
-#define MIN(a,b) (((a)<(b)) ? (a) : (b))
+#define MY_MIN(a,b) (((a)<(b)) ? (a) : (b))
 
 /** Get the maximal value */
-#undef MAX
-#define MAX(a,b) (((a)>(b)) ? (a) : (b))
+#define MY_MAX(a,b) (((a)>(b)) ? (a) : (b))
 
 /** Get the minimal value */
-#undef min
-#define min(x,y) MIN(x, y)
+#define my_min(x,y) MIN(x, y)
 
 /** Get the maximal value */
-#undef max
-#define max(x,y) MAX(x, y)
+#define my_max(x,y) MAX(x, y)
 
 /**
  * @addtogroup networked_io Networked IO

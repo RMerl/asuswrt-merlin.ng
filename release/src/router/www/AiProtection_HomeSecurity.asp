@@ -84,7 +84,7 @@ function initial(){
 						</tr>
 						<tr>
 							<td>
-								<div class="formfontdesc" style="font-size:14px;font-style:italic;"><#AiProtection_desc#></div>
+								<div class="formfontdesc" style="font-size:14px;"><#AiProtection_desc#></div>
 							</td> 
 						</tr>					
 					<!-- Service table -->

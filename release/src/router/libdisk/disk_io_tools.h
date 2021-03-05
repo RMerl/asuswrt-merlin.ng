@@ -42,6 +42,9 @@ typedef unsigned long long u64;
 
 #define WWW_MOUNT_ROOT "/www"
 
+extern int test_if_f_exist(const char *path);
+extern int test_if_d_exist(const char *path);
+extern int test_if_o_exist(const char *path);
 extern int mkdir_if_none(const char *dir);
 extern int delete_file_or_dir(char *target);
 

@@ -30,26 +30,41 @@
 #include "usb_info.h"
 #include "disk_io_tools.h"
 
-/*extern int mkdir_if_none(char *dir){
-	DIR *dp = opendir(dir);
-	if(dp != NULL){
-		closedir(dp);
-		return 0;
-	}
+int test_if_f_exist(const char *path){
+	FILE *fp;
 
-	umask(0000);
-	return (!mkdir(dir, 0777))?1:0;
-}//*/
-extern int mkdir_if_none(const char *path){
+	if((fp = fopen(path, "r")) == NULL)
+		return 0;
+
+	fclose(fp);
+	return 1;
+}
+
+int test_if_d_exist(const char *path){
 	DIR *dp;
+
+	if((dp = opendir(path)) == NULL)
+		return 0;
+
+	closedir(dp);
+	return 1;
+}
+
+int test_if_o_exist(const char *path){
+	if(!test_if_f_exist(path) && !test_if_d_exist(path))
+		return 0;
+
+	return 1;
+}
+
+extern int mkdir_if_none(const char *path){
 	char cmd[PATH_MAX];
 
-	if(!(dp = opendir(path))){
+	if(!test_if_d_exist(path)){
 		snprintf(cmd, sizeof(cmd), "mkdir -m 0777 -p '%s'", (char *)path);
 		system(cmd);
 		return 1;
 	}
-	closedir(dp);
 
 	return 0;
 }

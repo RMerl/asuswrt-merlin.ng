@@ -849,11 +849,19 @@ static int check_bonding_policy(const char *policy)
 static int add_slaves_to_bonding_iface(const char *bond_if, char *slaves)
 {
 	const char *bonding_entry = "/sys/class/net/%s/bonding/%s";
-	char *next, path[256], iface[IFNAMSIZ], value[IFNAMSIZ + 1], slave_ifs[20 * IFNAMSIZ];
+	char *p, *next, path[256], iface[IFNAMSIZ], value[IFNAMSIZ + 1], slave_ifs[20 * IFNAMSIZ];
+	char mac[sizeof("00:00:00:00:00:00")] = { 0 };
+	unsigned char ea[ETHER_ADDR_LEN];
 	int r = 0;
 
 	if (!bond_if || *bond_if == '\0' || !slaves || *slaves == '\0')
 		return -1;
+
+	if ((p = get_hwaddr(bond_if)) != NULL) {
+		strlcpy(mac, p, sizeof(mac));
+		ether_atoe(mac, ea);
+		free(p);
+	}
 
 	snprintf(path, sizeof(path), bonding_entry, bond_if, "slaves");
 	*slave_ifs = '\0';
@@ -863,6 +871,11 @@ static int add_slaves_to_bonding_iface(const char *bond_if, char *slaves)
 		if (find_word(slave_ifs, iface))
 			continue;
 		ifconfig(iface, 0, NULL, NULL);
+		if (*mac != '\0') {
+			set_hwaddr(iface, mac);
+			ether_inc(ea, 1);
+			ether_etoa(ea, mac);
+		}
 		snprintf(value, sizeof(value), "+%s", iface);
 		if (f_write_string(path, value, 0, 0) <= 0)
 			r++;
@@ -1215,7 +1228,7 @@ void start_lan(void)
 		|| mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-		|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
+		|| ((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
 #endif
 	)
 	{
@@ -1928,7 +1941,8 @@ void start_lan(void)
 							;
 						else
 #endif
-#if defined(RTCONFIG_QCA) && defined(RTCONFIG_AMAS_ETHDETECT)
+#if defined(RTCONFIG_QCA) && defined(RTCONFIG_AMAS_ETHDETECT) \
+ && !defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
 						if (!strstr(nvram_safe_get("eth_ifnames"), ifname))
 #endif
 							eval("brctl", "addif", lan_ifname, ifname);
@@ -2148,7 +2162,7 @@ gmac3_no_swbr:
 			&& !psr_mode() && !mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-			&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
+			&& !((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
 #endif
 	) {
 		char *dhcp_argv[] = { "udhcpc",
@@ -2581,7 +2595,7 @@ skip_br:
 		&& !psr_mode() && !mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-		&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
+		&& !((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
 #endif
 	) {
 		if (pids("udhcpc")) {
@@ -3003,13 +3017,16 @@ NEITHER_WDS_OR_PSTA:
 
 #ifdef RTCONFIG_MODEM_BRIDGE
 			if(sw_mode() == SW_MODE_AP && nvram_get_int("modem_bridge")){
-				char *modem_argv[] = {"/usr/sbin/modem_enable.sh", NULL};
-
 				eval("brctl", "addif", lan_ifname, interface);
 
 				snprintf(buf, sizeof(buf), "unit=%d", modem_unit);
 				putenv(buf);
+#ifdef RT4GAC86U
+				system("/usr/sbin/modem_enable.sh >> /tmp/usb.log");
+#else
+				char *modem_argv[] = {"/usr/sbin/modem_enable.sh", NULL};
 				_eval(modem_argv, ">>/tmp/usb.log", 0, NULL);
+#endif
 				unsetenv("unit");
 
 				return;
@@ -3687,7 +3704,7 @@ update_lan_resolvconf(void)
 		|| mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-		|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
+		|| ((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
 #endif
 		) && nvram_get_int("wlc_state") != WLC_STATE_CONNECTED)
 		fprintf(fp, "nameserver %s\n", nvram_default_get("lan_ipaddr"));
@@ -3820,7 +3837,7 @@ lan_up(char *lan_ifname)
 			|| mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-			|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
+			|| ((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
 #endif
 		    ) && nvram_get_int("wlc_state") == WLC_STATE_CONNECTED)
 #if defined(RTCONFIG_AMAS)
@@ -3942,7 +3959,7 @@ lan_up(char *lan_ifname)
 #endif
 #endif
 
-#if defined(RTCONFIG_SAMBASRV) && defined(RTCONFIG_AMAS)
+#if defined(RTCONFIG_MEDIA_SERVER) && defined(RTCONFIG_SAMBASRV) && defined(RTCONFIG_AMAS)
 	if(aimesh_re_node() && get_invoke_later()&INVOKELATER_DMS)
 		notify_rc("restart_samba");
 #endif
@@ -4371,7 +4388,7 @@ void start_lan_wl(void)
 		|| mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-		|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
+		|| ((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
 #endif
 	)
 	{
@@ -5399,9 +5416,6 @@ void restart_wireless(void)
 #ifdef RTCONFIG_WIRELESSREPEATER
 	char domain_mapping[64];
 #endif
-#if defined(RTCONFIG_AMAS)
-	char beacon_vsie[256] = {0};
-#endif
 	int lock = file_lock("wireless");
 #ifdef RTCONFIG_WIFI_SON
 	if ((sw_mode()!=SW_MODE_REPEATER && (nvram_get_int("sw_mode")==SW_MODE_ROUTER || nvram_match("cfg_master", "1")) && nvram_get_int("x_Setting") && start_cap(1)==0) && nvram_match("wifison_ready", "1")) {
@@ -5892,7 +5906,7 @@ void start_lan_wlport(void)
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 		&& !psr_mode()
 #ifdef RTCONFIG_DPSTA
-		&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
+		&& !((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
 #endif
 #endif
 	) return;
@@ -5972,7 +5986,7 @@ void stop_lan_wlport(void)
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 		&& !psr_mode()
 #ifdef RTCONFIG_DPSTA
-		&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
+		&& !((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
 #endif
 #endif
 	) return;

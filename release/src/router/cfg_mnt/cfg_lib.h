@@ -3,6 +3,9 @@
 
 #define MAX_2G_CHANNEL_LIST_NUM	16
 #define MAX_5G_CHANNEL_LIST_NUM	32
+#ifdef _RTCONFIG_WIFI6E
+#define MAX_6G_CHANNEL_LIST_NUM	64
+#endif
 
 typedef struct _avbl_chanspec_t
 {

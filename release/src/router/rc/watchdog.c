@@ -404,6 +404,11 @@ void led_control_normal(void)
 #if defined(RTCONFIG_LOGO_LED) && !defined(GTAX11000) && !defined(GTAXE11000)
 	led_control(LED_LOGO, LED_ON);
 #endif
+#ifdef TUFAX5400
+	led_control(LED_LOGO1, LED_ON);
+	led_control(LED_LOGO2, LED_ON);
+	led_control(LED_LOGO3, LED_ON);
+#endif
 
 #if defined(RTN11P) || defined(RTN300) || defined(RTN11P_B1)
 	led_control(LED_WPS, LED_ON);	//wps led is also 2g led. and NO power led.
@@ -3753,6 +3758,11 @@ void btn_check(void)
 #ifdef RTCONFIG_LOGO_LED
 			led_control(LED_LOGO, LED_ON);
 #endif
+#ifdef TUFAX5400
+			led_control(LED_LOGO1, LED_ON);
+			led_control(LED_LOGO2, LED_ON);
+			led_control(LED_LOGO3, LED_ON);
+#endif
 			kill_pidfile_s("/var/run/usbled.pid", SIGTSTP); // inform usbled to reset status
 #if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400)
 			kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
@@ -3813,7 +3823,7 @@ void btn_check(void)
 	if ((psta_exist() || psr_exist())
 		&& !dpsr_mode()
 #ifdef RTCONFIG_DPSTA
-		&& !dpsta_mode()
+		&& !(dpsta_mode()||rp_mode())
 #endif
 	)
 		return;
@@ -4411,7 +4421,7 @@ void timecheck(void)
 	char lan_ifname[16];
 	char wl_vifs[256], nv[40];
 	int expire, need_commit = 0;
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_QCA)
+#if !defined(RTCONFIG_WL_SCHED_V2) && defined(RTCONFIG_AMAS) && defined(RTCONFIG_QCA)
        char sctmp[20];
 #endif 
 
@@ -4518,8 +4528,8 @@ void timecheck(void)
 		unit++;
 
 	}
-#endif // ifndef RTCONFIG_WL_SCHED_V2
 end_of_wl_sched:
+#endif // ifndef RTCONFIG_WL_SCHED_V2
 
 	// guest ssid expire check
 	if ((is_router_mode() || access_point_mode()) &&

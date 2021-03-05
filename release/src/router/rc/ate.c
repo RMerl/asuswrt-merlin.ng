@@ -385,6 +385,11 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 				LED_LAN1, LED_LAN2, LED_LAN3, LED_LAN4,
 #endif
 				LED_WAN_NORMAL,
+#ifdef TUFAX5400
+				LED_LOGO1,
+				LED_LOGO2,
+				LED_LOGO3,
+#endif
 				LED_ID_MAX
 			};
 			static enum led_id red_led[] = {
@@ -684,6 +689,13 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 				LED_RED,
 				LED_ID_MAX
 			};
+#if defined(RTAC59_CD6R) || defined(RTAC59_CD6N) || defined(PLAX56_XP4)
+			static enum led_id white_led[] = {
+				LED_WHITE,
+				LED_ID_MAX
+			};
+			all_led[LED_COLOR_WHITE] = white_led;
+#endif
 			all_led[LED_COLOR_BLUE] = blue_led;
 			all_led[LED_COLOR_GREEN] = green_led;
 			all_led[LED_COLOR_RED] = red_led;

@@ -85,19 +85,19 @@ wl -i eth6 mbss 0
 wl -i eth6 ampdu 0
 wl -i eth6 PM 0
 wl -i eth6 stbc_tx 0
-wl -i eth6 bw_cap 5g 1
+wl -i eth6 bw_cap 6g 1
 wl -i eth6 bi 65535
 wl -i eth6 mimo_txbw -1
 wl -i eth6 frameburst 1
 wl -i eth6 spatial_policy 1
 wl -i eth6 txcore  -s 1 -c 15
 wl -i eth6 band a
-wl -i eth6 chanspec 165/20
+wl -i eth6 chanspec 6g161/20
 wl -i eth6 he features 3
 wl -i eth6 up
 wl -i eth6 phy_forcecal 1
 wl -i eth6 phy_watchdog 0
-wl -i eth6 5g_rate -e 7 -s 1 -i 1 --ldpc -b 20
+wl -i eth6 6g_rate -e 7 -s 1 -i 1 --ldpc -b 20
 wl -i eth6 txpwr1 -1
 wl -i eth6 phy_forcecal 1
 wl -i eth6 pkteng_start 00:11:22:33:44:55 tx 100 400 0 00:22:44:66:88:04

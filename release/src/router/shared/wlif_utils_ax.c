@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlif_utils.c 790839 2020-09-04 11:22:55Z $
+ * $Id: wlif_utils.c 792784 2020-11-03 23:06:49Z $
  */
 
 #include <typedefs.h>
@@ -1298,13 +1298,29 @@ int wl_wlif_unblock_mac(char *ifname, struct ether_addr addr, int flag)
 
 /* get the Max NSS */
 int
-wl_wlif_get_max_nss(wl_bss_info_t *bi)
+wl_wlif_get_max_nss(wl_bss_info_t *bi_in)
 {
 	int i = 0, mcs_idx = 0;
 	int mcs = 0, isht = 0;
 	int nss = 0;
+	//XXX: remove this typecast once the wl_bss_info_t is updated to v109_1
+	wl_bss_info_v109_1_t *bi = (wl_bss_info_v109_1_t *)bi_in;
 
-	if (dtoh32(bi->version) != LEGACY_WL_BSS_INFO_VERSION && bi->n_cap) {
+	if (dtoh32(bi->version) != LEGACY_WL_BSS_INFO_VERSION && (bi->n_cap || bi->he_cap)) {
+		if (bi->he_cap) {
+			uint mcs_cap = 0;
+
+			for (i = 1; i <= HE_CAP_MCS_MAP_NSS_MAX; i++) {
+				mcs_cap = HE_CAP_MAX_MCS_NSS_GET_MCS(i,
+					dtoh16(bi->he_sup_bw80_tx_mcs));
+				if (mcs_cap != HE_CAP_MAX_MCS_NONE) {
+					nss++; /* Calculate the number of streams */
+				}
+			}
+			if (nss) {
+				return nss;
+			}
+		}
 		if (bi->vht_cap) {
 			uint mcs_cap = 0;
 
@@ -2319,7 +2335,11 @@ end:
 
 // Stops the ongoing wps session for the interface provided in wps_ifname
 int
+#ifdef RTCONFIG_WIFI6E
+wl_wlif_wps_stop_session(char *wps_ifname, bool bUpdateUI)
+#else
 wl_wlif_wps_stop_session(char *wps_ifname)
+#endif
 {
 	char cmd[WLIF_MAX_BUF] = {0};
 	char mode[WLIF_MIN_BUF] = {0};
@@ -2350,8 +2370,12 @@ wl_wlif_wps_stop_session(char *wps_ifname)
 		dprintf("Info: shared %s cli cmd %s failed for interface %s ret = %d\n", __func__,
 			cmd, wps_ifname, ret);
 	}
-
-	wl_wlif_update_wps_ui(WLIF_WPS_UI_INIT);
+#ifdef RTCONFIG_WIFI6E
+	if (bUpdateUI)
+#endif
+	{
+		wl_wlif_update_wps_ui(WLIF_WPS_UI_INIT);
+	}
 end:
 	return ret;
 }

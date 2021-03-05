@@ -477,7 +477,7 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 				var rssi5g = _onboardingList[idx].rssi5g;
 				var rssi6g = _onboardingList[idx].rssi6g;
 				var online = _onboardingList[idx].online;
-				var connect_type = _onboardingList[idx].re_path;
+				var connect_type = handle_re_path(_onboardingList[idx].re_path);
 				var tcode = _onboardingList[idx].tcode;
 				var wireless_band = 0;
 				var wireless_band_array = ["2.4G", "5G", "6G"];
@@ -527,6 +527,10 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 				else if(connect_type == "128") {
 					wireless_band = 2;
 					wireless_rssi = client_convRSSI(rssi6g);
+				}
+				else if(connect_type <= 0) {
+					online = 0;
+					wireless_rssi = "wired";
 				}
 				else {
 					wireless_band = 1;
@@ -1574,6 +1578,7 @@ function popAMeshClientListEditTable(event) {
 	var node_info = event.data.node_info;
 	var wl_client = event.data.wl_client;
 	var wired_client = event.data.wired_client;
+	var re_path = handle_re_path(node_info.re_path);
 	var node_capability = httpApi.aimesh_get_node_capability(node_info);
 	initial_amesh_obj();
 
@@ -1627,7 +1632,7 @@ function popAMeshClientListEditTable(event) {
 	code += "</div>";
 
 	code += "<div style='margin-top:10px;'>";
-	code += "<div class='aimesh_node_setting_info_title'><#AiMesh_Node_ConnPrio#></div>";
+	code += "<div class='aimesh_node_setting_info_title'><#AiMesh_BackhaulConnPrio#></div>";
 	code += "<select id='aimesh_node_connection_priority' class='aimesh_node_input_select'>";
 	code += "<option value='3' class='aimesh_node_input_select_option'><#Auto#></option>";
 	code += "<option value='2' class='aimesh_node_input_select_option'><#AiMesh_Node_ConnPrio_Eth_First_Title#></option>";
@@ -1677,7 +1682,7 @@ function popAMeshClientListEditTable(event) {
 
 	/* handle node client start */
 	aimesh_node_client_list = [];
-	if(node_info.online == "1")
+	if(node_info.online == "1" && re_path > 0)
 		aimesh_node_client_list = get_aimesh_node_client_list(wired_client, wl_client, node_info.mac);
 	//set default sort property
 	sorterApi.method = "increase";
@@ -1943,7 +1948,7 @@ function popAMeshClientListEditTable(event) {
 	);
 	$popupBgHtml.find("#aimesh_node_moreconfig").click(
 		function() {
-			if(node_info.online == "1") {
+			if(node_info.online == "1" && re_path > 0) {
 				var moreConfig = ($popupBgHtml.find(".aimesh_node_setting_bg").css("display") == "none") ? "<#CTL_close#>" : "<#MoreConfig#>";
 				$popupBgHtml.find("#aimesh_node_moreconfig").html(moreConfig);
 				var display_state = $popupBgHtml.find(".aimesh_node_setting_bg").css("display");
@@ -2275,8 +2280,9 @@ function ajax_AiMesh_node_clients(_nodeMac){
 				var node_info = getNodeInfo(get_cfg_clientlist, ["mac", _nodeMac]);
 				var wired_client = get_wiredclientlist[_nodeMac];
 				var wl_client = get_wclientlist[_nodeMac];
+				var re_path = handle_re_path(node_info.re_path);
 				aimesh_node_client_list = [];
-				if(node_info.online == "1")
+				if(node_info.online == "1" && re_path > 0)
 					aimesh_node_client_list = get_aimesh_node_client_list(wired_client, wl_client, _nodeMac);
 				aimesh_node_client_list = sorterApi.sortJson(aimesh_node_client_list, sorterApi.key, sorterApi.type);
 				parent.$("#edit_amesh_client_block").children().find("#aimesh_node_client_header_tr").after(gen_AiMesh_node_client(aimesh_node_client_list));
@@ -2340,9 +2346,6 @@ function gen_AiMesh_node_client(_nodeClient_array) {
 			}
 			else if( nodeClientObj.type != "0" || nodeClientObj.vendor == "") {
 				var icon_type = "type" + nodeClientObj.type;
-				if(nodeClientObj.type == "0") {
-					icon_type = "type0_viewMode";
-				}
 				nodeClientHtml += "<div class='clientIcon_no_hover " + icon_type + " aimesh_node_client_icon_default'></div>";
 			}
 			else if(nodeClientObj.vendor != "" ) {
@@ -2352,9 +2355,6 @@ function gen_AiMesh_node_client(_nodeClient_array) {
 				}
 				else {
 					var icon_type = "type" + nodeClientObj.type;
-					if(nodeClientObj.type == "0") {
-						icon_type = "type0_viewMode";
-					}
 					nodeClientHtml += "<div class='clientIcon_no_hover " + icon_type + " aimesh_node_client_icon_default'></div>";
 				}
 			}
@@ -2420,7 +2420,7 @@ function get_aimesh_node_client_list(_wired_client, _wl_client, _node_mac) {
 }
 function get_connect_type(_node_info) {
 	var component = {"text":"", "icon":""};
-	if(_node_info.online == "1"){
+	if(_node_info.online == "1" && handle_re_path(_node_info.re_path) > 0){
 		if(_node_info.re_path == "1" || _node_info.re_path == "16" || _node_info.re_path == "32" || _node_info.re_path == "64") {
 			var real_port_type = gen_real_port_type(_node_info);
 			if(real_port_type.type == "eth"){
@@ -2428,7 +2428,7 @@ function get_connect_type(_node_info) {
 				component.icon = "<div class='radioIcon radio_wired'></div>";
 			}
 			else if(real_port_type.type == "plc"){
-				component.text = "Powerline";/* untranslated */
+				component.text = "<#Powerline#>";
 				component.icon = "<div class='radioIcon radio_plc'></div>";
 			}
 		}
@@ -2604,6 +2604,10 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 		option_array.push(gen_option_attr("2", ((_eap_flag) ? "<#AiMesh_Node_ConnPrio_Eth_Only_Title#>" : "<#AiMesh_Node_ConnPrio_Eth_First_Title#>"), "eth"));
 
 	return option_array;
+}
+function handle_re_path(_re_path){
+	var result = parseInt(_re_path);
+	return ((isNaN(result)) ? 0 : result);
 }
 </script>
 </head>

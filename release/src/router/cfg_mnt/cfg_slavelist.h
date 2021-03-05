@@ -17,7 +17,11 @@
 #define MODEL_NAME_LEN		33
 #define TERRITORY_CODE_LEN	33
 #define RE_LIST_JSON_FILE	"/tmp/relist.json"
+#ifdef RTCONFIG_MAX_RE_32
+#define MAX_RELIST_COUNT	32
+#else
 #define MAX_RELIST_COUNT	9
+#endif
 #define SSID_LEN				33
 #define LLDP_STAT_LEN       128
 #define RE_LIST_MAX_LEN		(MAX_RELIST_COUNT * 128)

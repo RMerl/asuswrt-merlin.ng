@@ -434,7 +434,6 @@ function getUploadIconList() {
 	return list
 }
 
-
 function getVenderIconClassName(venderName) {
 	var vender_class_name = "";
 	var match_data = venderName.match(venderArrayRE);
@@ -482,6 +481,8 @@ var card_client_variable = {
 	"firstTimeOpenBlock" : false,
 	"custom_usericon_del" : "",
 	"userIconBase64" : "NoIcon",
+	"userIconBase64_ori" : "NoIcon",
+	"userUploadFlag" : false,
 	"ipBindingFlag" : false,
 	"timeSchedulingFlag" : false,
 	"blockInternetFlag" : false,
@@ -638,9 +639,7 @@ function popClientListEditTable(event) {
 	//device icon list start
 	code += '<tr>';
 	code += '<td colspan="3">';
-	code += '<div id="card_custom_image" class="client_icon_list" style="display:none;">';
-	code += '<table width="99%;" id="tbCardClientListIcon" border="1" align="center" cellpadding="4" cellspacing="0">';
-	code += '</table>';
+	code += '<div id="card_custom_image" class="custom_icon_list_bg" style="display:none;"></div>';
 	code += '</td>';
 	code += '</tr>';
 	//device icon list end
@@ -730,38 +729,21 @@ function popClientListEditTable(event) {
 	document.getElementById("edit_client_block").onclick = function() {show_edit_client_block();}
 
 	//build device icon list start
-	var clientListIconArray = [["Windows device", "1"], ["Router", "2"], ["NAS/Server", "4"], ["IP Cam", "5"], ["Macbook", "6"], ["Game Console", "7"], ["Android Phone", "9"], ["iPhone", "10"], 
-	["Apple TV", "11"], ["Set-top Box", "12"], ["iMac", "14"], ["ROG", "15"], ["Printer", "18"], ["Windows Phone", "19"], ["Android Tablet", "20"], ["iPad", "21"], ["Linux Device", "22"], 
-	["Smart TV", "23"], ["Repeater", "24"], ["Kindle", "25"], ["Scanner", "26"], ["Chromecast", "27"], ["ASUS smartphone", "28"], ["ASUS Pad", "29"], ["Windows", "30"], ["Android", "31"], ["Mac OS", "32"],
-	["Windows laptop", "35"]];
-
-	var eachColCount = 7;
-	var colCount = parseInt(clientListIconArray.length / eachColCount);
-	if(usericon_support)
-		colCount++;
-
-	for(var rowIndex = 0; rowIndex < colCount; rowIndex += 1) {
-		var row = document.getElementById("tbCardClientListIcon").insertRow(rowIndex);
-		row.id = "trCardClientListIcon" + rowIndex;
-		for(var colIndex = 0; colIndex < eachColCount; colIndex += 1) {
-			var cell = row.insertCell(-1);
-			cell.id = "tbCardClientListIcon" + (colIndex + (rowIndex * 7));
-			var idx = (colIndex + (rowIndex * eachColCount));
-			if(clientListIconArray[colIndex + (rowIndex * eachColCount)] != undefined) {
-				cell.innerHTML = '<div class="type' + clientListIconArray[idx][1] + '" onclick="select_image(this.className,\''+clientInfo.vendor.replace("'","\\'")+'\');"  title="' + clientListIconArray[idx][0] + '"></div>';
+	if(!downsize_4m_support) {
+		custom_icon_list_api.paramObj.container = $('#edit_client_block').find("#card_custom_image");
+		custom_icon_list_api.paramObj.source = "local";
+		custom_icon_list_api.paramObj.select_icon_callBack = card_select_custom_icon;
+		custom_icon_list_api.paramObj.upload_callBack = previewCardUploadIcon;
+		custom_icon_list_api.gen_component(custom_icon_list_api.paramObj);
+		$.getJSON("http://nw-dlcdnet.asus.com/plugin/js/extend_custom_icon.json",
+			function(data){
+				custom_icon_list_api.paramObj.container = $('#edit_client_block').find("#card_custom_image");
+				custom_icon_list_api.paramObj.source = "cloud";
+				custom_icon_list_api.paramObj.db = data;
+				custom_icon_list_api.paramObj.select_icon_callBack = card_select_custom_icon;
+				custom_icon_list_api.gen_component(custom_icon_list_api.paramObj);
 			}
-			else {
-				if(usericon_support) {
-					if(document.getElementById("tdCardUserIcon") == null) {
-						cell.id = "tdCardUserIcon";
-						cell.className = "client_icon_list_td";
-						cell.innerHTML = '<div id="divCardUserIcon" class="client_upload_div" style="display:none;">+' +
-						'<input type="file" name="cardUploadIcon" id="cardUploadIcon" class="client_upload_file" onchange="previewCardUploadIcon(this);" title="Upload client icon" /></div>';/*untranslated*/
-						break;
-					}
-				}
-			}
-		}
+		);
 	}
 	//build device icon list end
 
@@ -1030,7 +1012,6 @@ function popClientListEditTable(event) {
 	if(usericon_support) {
 		//2.check browswer support File Reader and Canvas or not.
 		if(isSupportFileReader() && isSupportCanvas()) {
-			document.getElementById("divCardUserIcon").style.display = "";
 			//Setting drop event
 			var holder = document.getElementById("card_client_preview_icon");
 			holder.ondragover = function () { return false; };
@@ -1059,6 +1040,7 @@ function popClientListEditTable(event) {
 							}, 100); //for firefox FPS(Frames per Second) issue need delay
 						};
 						reader.readAsDataURL(file);
+						card_client_variable.userUploadFlag = true;
 						return false;
 					}
 					else {
@@ -1094,6 +1076,7 @@ function popClientListEditTable(event) {
 	formHTML += '<input type="hidden" name="action_wait" value="1">';
 	formHTML += '<input type="hidden" name="custom_clientlist" value="">';
 	formHTML += '<input type="hidden" name="custom_usericon" value="">';
+	formHTML += '<input type="hidden" name="usericon_mac" value="" disabled>';
 	formHTML += '<input type="hidden" name="custom_usericon_del" value="" disabled>';
 	if(adv_setting) {
 		formHTML += '<input type="hidden" name="dhcp_staticlist" value="" disabled>';
@@ -1111,7 +1094,7 @@ function popClientListEditTable(event) {
 	formObj.innerHTML = formHTML;
 	card_client_variable.firstTimeOpenBlock = true;
 }
-function previewCardUploadIcon(imageObj) {
+function previewCardUploadIcon($obj) {
 	var userIconLimitFlag = userIconNumLimit(document.getElementById("card_client_macaddr_field").value);
 
 	if(userIconLimitFlag) {	//not over 100
@@ -1124,10 +1107,8 @@ function previewCardUploadIcon(imageObj) {
 		};
 
 		//1.check image extension
-		if (!checkImageExtension(imageObj.value)) {
+		if (!checkImageExtension($obj.val()))
 			alert("<#Setting_upload_hint#>");
-			imageObj.focus();
-		}
 		else {
 			//2.Re-drow image
 			var fileReader = new FileReader(); 
@@ -1138,6 +1119,7 @@ function previewCardUploadIcon(imageObj) {
 				var canvas = document.getElementById("card_canvas_user_icon");
 				var ctx = canvas.getContext("2d");
 				ctx.clearRect(0,0,85,85);
+				$("#card_client_image").find(".flash").remove();
 				document.getElementById("card_client_image").style.display = "none";
 				document.getElementById("card_canvas_user_icon").style.display = "";
 				setTimeout(function() {
@@ -1146,8 +1128,8 @@ function previewCardUploadIcon(imageObj) {
 					card_client_variable.userIconBase64 = dataURL;
 				}, 100); //for firefox FPS(Frames per Second) issue need delay
 			}
-			fileReader.readAsDataURL(imageObj.files[0]);
-			userIconHideFlag = true;
+			fileReader.readAsDataURL($obj.prop("files")[0]);
+			card_client_variable.userUploadFlag = true;
 		}
 	}
 	else {	//over 100 then let usee select delete icon or nothing
@@ -1260,9 +1242,6 @@ function card_confirm(event) {
 		}
 		else {
 			clientTypeNum = document.getElementById("card_client_image").className.replace("clientIcon_no_hover type", "");
-			if(clientTypeNum == "0_viewMode") {
-				clientTypeNum = "0";
-			}
 		}
 
 		var clientName = document.getElementById("card_client_name").value.trim();
@@ -1438,13 +1417,23 @@ function card_confirm(event) {
 		// handle user image
 		document.card_clientlist_form.custom_usericon.disabled = true;
 		if(usericon_support) {
-			document.card_clientlist_form.custom_usericon.disabled = false;
 			var clientMac = document.getElementById("card_client_macaddr_field").value.replace(/\:/g, "");
-			if(card_client_variable.userIconBase64 != "NoIcon") {
-				document.card_clientlist_form.custom_usericon.value = clientMac + ">" + card_client_variable.userIconBase64;
+			document.card_clientlist_form.custom_usericon.disabled = false;
+			if(card_client_variable.userIconBase64 != "NoIcon" && (card_client_variable.userIconBase64 != card_client_variable.userIconBase64_ori)) {
+				if(card_client_variable.userUploadFlag)
+					document.card_clientlist_form.custom_usericon.value = clientMac + ">" + card_client_variable.userIconBase64;
+				else{
+					document.card_clientlist_form.custom_usericon.value = clientTypeNum + ">" + card_client_variable.userIconBase64;
+					document.card_clientlist_form.usericon_mac.disabled = false;
+					document.card_clientlist_form.usericon_mac.value = clientMac;
+				}
 			}
-			else {
+			else if(card_client_variable.userIconBase64 == "NoIcon"){
 				document.card_clientlist_form.custom_usericon.value = clientMac + ">noupload";
+			}
+			else{
+				document.card_clientlist_form.custom_usericon.disabled = true;
+				document.card_clientlist_form.usericon_mac.disabled = true;
 			}
 		}
 
@@ -1670,17 +1659,25 @@ function uploadIcon_cancel() {
 	card_client_variable.custom_usericon_del = "";
 	document.getElementById("edit_uploadicons_block").style.display = "none";
 }
-
+function card_select_custom_icon($obj){
+	var type = $obj.attr("class")
+	var icon_rul = $obj.css('background-image').replace('url(','').replace(')','').replace(/\"/gi, "");
+	$("#card_client_image").css("background-image","url(" + icon_rul + ")");
+	$("#card_client_image").find(".flash").remove();
+	$("#card_client_image").removeClass().addClass("clientIcon_no_hover").addClass(type).css("background-size", "");
+	$("#card_client_image").show();
+	$("#card_canvas_user_icon").hide();
+	card_client_variable.userIconBase64 = icon_rul;
+	card_client_variable.userUploadFlag = false;
+}
 function select_image(type,  vender) {
 	var sequence = type.substring(4,type.length);
+	$("#card_client_image").find(".flash").remove();
+	$("#card_client_image").css("background-image","");
 	document.getElementById("card_client_image").style.display = "none";
 	document.getElementById("card_canvas_user_icon").style.display = "none";
-	var icon_type = type;
-	if(type == "type0") {
-		icon_type = "type0_viewMode";
-	}
 	document.getElementById("card_client_image").style.backgroundSize = "";
-	document.getElementById("card_client_image").className = "clientIcon_no_hover "+ icon_type;
+	document.getElementById("card_client_image").className = "clientIcon_no_hover "+ type;
 	if(vender != "" && type == "type0" && !downsize_4m_support) {
 		var venderIconClassName = getVenderIconClassName(vender.toLowerCase());
 		if(venderIconClassName != "") {
@@ -1694,6 +1691,7 @@ function select_image(type,  vender) {
 		if(usericon_support) {
 			var clientMac = document.getElementById('card_client_macaddr_field').value.replace(/\:/g, "");
 			card_client_variable.userIconBase64 = getUploadIcon(clientMac);
+			card_client_variable.userIconBase64_ori = card_client_variable.userIconBase64 ;
 			if(card_client_variable.userIconBase64 != "NoIcon") {
 				var img = document.createElement("img");
 				img.src = card_client_variable.userIconBase64;
@@ -1711,12 +1709,13 @@ function select_image(type,  vender) {
 	if(!userImageFlag) {
 		card_client_variable.userIconBase64 = "NoIcon";
 		document.getElementById("card_client_image").style.display = "";
+		if(type == "type36")
+			$("#card_client_image").append($("<div>").addClass("flash"));
 	}
 }
 
- function oui_query_card(mac) {
+function oui_query_card(mac) {
 	var queryStr = mac.replace(/\:/g, "").splice(6,6,"");
-
 	if(mac != document.getElementById("card_client_macaddr_field").value) //avoid click two device quickly
 		oui_query_card(document.getElementById("card_client_macaddr_field").value);
 	else{
@@ -2023,12 +2022,12 @@ var sorter = {
 		}
 		else if(clienlistViewMode == "ByInterface") {
 			if(_arrayName == "wired_list")
-					eval(""+_arrayName+".sort(sorter."+_Method+"_"+sorter.sortingMethod_wired+");");
+				eval(""+_arrayName+".sort(sorter."+_Method+"_"+sorter.sortingMethod_wired+");");
 			else if(_arrayName.substr(0,2) == "wl")
 				eval("wl_list['"+_arrayName.substr(0,3)+"'].sort(sorter."+_Method+"_"+sorter["sortingMethod_"+_arrayName.substr(0,3)+""]+");");
 			else if(isSupport("amas") && _arrayName.substr(0,2) == "gn")
 				eval("gn_list['"+_arrayName.substr(0,3)+"'].sort(sorter."+_Method+"_"+sorter["sortingMethod_"+_arrayName.substr(0,3)+""]+");");
-			}
+		}
 		drawClientListBlock(_arrayName);
 		sorter.drawBorder(_arrayName);
 	}
@@ -2195,7 +2194,7 @@ function exportClientListLog() {
 		case "ByInterface" :
 			$.each(isWL_map, function(index, value){
 				if(index == "0")
-			setArray(wired_list);
+					setArray(wired_list);
 				else
 					setArray(wl_list["wl"+index+""]);
 			});
@@ -2245,7 +2244,7 @@ function exportClientListLog() {
 
 function sorterClientList() {
 	//initial sort ip
-	var indexMapType = ["", "", "str", "num", "str", "num", "num", "num", "num"];
+	var indexMapType = ["", "", "str", "num", "str", "num", "num", "num", "str"];
 	switch (clienlistViewMode) {
 		case "All" :
 			sorter.doSorter(sorter.all_index, indexMapType[sorter.all_index], 'all_list');
@@ -2253,7 +2252,7 @@ function sorterClientList() {
 		case "ByInterface" :
 			$.each(isWL_map, function(index, value){
 				if(index == "0")
-			sorter.doSorter(sorter.wired_index, indexMapType[sorter.wired_index], 'wired_list');
+					sorter.doSorter(sorter.wired_index, indexMapType[sorter.wired_index], 'wired_list');
 				else{
 					if($("#clientlist_wl" + index + "_list_Block").length > 0)
 						sorter.doSorter(sorter["wl" + index + "_index"], indexMapType[sorter["wl" + index + "_index"]], "wl" + index + "_list");
@@ -2271,7 +2270,7 @@ function create_clientlist_listview() {
 	all_list = [];
 	$.each(isWL_map, function(index, value){
 		if(index == "0")
-	wired_list = [];
+			wired_list = [];
 		else
 			wl_list["wl"+index+""] = [];
 	});
@@ -2465,7 +2464,7 @@ function create_clientlist_listview() {
 					if(isSupport("amas") && clientList[clientList[i]].isWL != 0 && clientList[clientList[i]].isGN != "")
 						gn_list["gn"+clientList[clientList[i]].isGN+""].push(tempArray);
 					else if(clientList[clientList[i]].isWL == 0)
-								wired_list.push(tempArray);
+						wired_list.push(tempArray);
 					else
 						wl_list["wl"+clientList[clientList[i]].isWL+""].push(tempArray);
 					break;
@@ -2483,10 +2482,10 @@ function create_clientlist_listview() {
 		$.each(isWL_map, function(index, value){
 			if(index == "0"){
 				if(!sorter.wired_display){
-			document.getElementById("clientlist_wired_list_Block").style.display = "none";
-			document.getElementById("wired_expander").innerHTML = "[ <#Clientlist_Show#> ]";
-		}
-		}
+					document.getElementById("clientlist_wired_list_Block").style.display = "none";
+					document.getElementById("wired_expander").innerHTML = "[ <#Clientlist_Show#> ]";
+				}
+			}
 			else{
 				if(!sorter["wl"+index+"_display"]){
 					document.getElementById("clientlist_wl"+index+"_list_Block").style.display = "none";
@@ -2612,9 +2611,6 @@ function drawClientListBlock(objID) {
 				}
 				else if( clientlist_sort[j].type != "0" || clientlist_sort[j].vender == "") {
 					var icon_type = "type" + clientlist_sort[j].type;
-					if(clientlist_sort[j].type == "0") {
-						icon_type = "type0_viewMode";
-					}
 					clientListCode += "<div style='height:40px;width:40px;cursor:default;' class='clientIcon_no_hover " + icon_type + "' title='"+ clientlist_sort[j].deviceTypeName +"'>";
 					if(clientlist_sort[j].type == "36")
 						clientListCode += "<div class='flash'></div>";
@@ -2627,9 +2623,6 @@ function drawClientListBlock(objID) {
 					}
 					else {
 						var icon_type = "type" + clientlist_sort[j].type;
-						if(clientlist_sort[j].type == "0") {
-							icon_type = "type0_viewMode";
-						}
 						clientListCode += "<div style='height:40px;width:40px;cursor:default;' class='clientIcon_no_hover " + icon_type + "' title='"+ clientlist_sort[j].deviceTypeName +"'></div>";
 					}				
 				}
@@ -2700,7 +2693,7 @@ function showHideContent(objnmae, thisObj) {
 				sorter.all_display = true;
 			else {
 				if(clickItem == "wired")
-						sorter.wired_display = true;
+					sorter.wired_display = true;
 				else
 					sorter["" + clickItem + "_display"] = true;
 			}
@@ -2713,7 +2706,7 @@ function showHideContent(objnmae, thisObj) {
 				sorter.all_display = false;
 			else {
 				if(clickItem == "wired")
-						sorter.wired_display = false;
+					sorter.wired_display = false;
 				else
 					sorter["" + clickItem + "_display"] = false;
 			}
@@ -3012,7 +3005,7 @@ function showDropdownClientList(_callBackFun, _callBackFunParam, _interfaceMode,
 				}
 				break;
 			case "name" :
-				attribute_value = (clientObj.nickName == "") ? clientObj.name.replace(/'/g, "\\'") : clientObj.nickName.replace(/'/g, "\\'");
+				attribute_value = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
 				break;
 			default :
 				attribute_value = _attribute;
@@ -3129,6 +3122,525 @@ function showDropdownClientList(_callBackFun, _callBackFunParam, _interfaceMode,
 function redirectTimeScheduling(_mac) {
 	cookie.set("time_scheduling_mac", _mac, 1);
 	location.href = "ParentalControl.asp" ;
+}
+
+var custom_icon_list_api = {
+	"paramObj": {
+		"container":"",
+		"source":"",//local or cloud
+		"db":"",//custom_icon_list_api.db or cloud response data
+		"select_icon_callBack":"",//call back fun.
+		"upload_callBack":""//call back fun.
+	},
+	"db": {
+		"electronic_product": {
+			"title": "Electronic Devices",
+			"translation": "",
+			"list": [
+				{
+					"num": 0,
+					"title": "Device",
+					"translation": "#CLIENTLIST_DEVICE"
+				},
+				{
+					"num": 34,
+					"title": "Desktop",
+					"translation": ""
+				},
+				{
+					"num": 14,
+					"title": "iMac",
+					"translation": ""
+				},
+				{
+					"num": 1,
+					"title": "Windows Desktop",
+					"translation": ""
+				},
+				{
+					"num": 72,
+					"title": "Linux Desktop",
+					"translation": ""
+				},
+				{
+					"num": 22,
+					"title": "Linux Device",
+					"translation": ""
+				},
+				{
+					"num": 33,
+					"title": "Smartphone",
+					"translation": ""
+				},
+				{
+					"num": 10,
+					"title": "iPhone",
+					"translation": ""
+				},
+				{
+					"num": 28,
+					"title": "ASUS smartphone",
+					"translation": ""
+				},
+				{
+					"num": 19,
+					"title": "Windows Phone",
+					"translation": ""
+				},
+				{
+					"num": 9,
+					"title": "Android Phone",
+					"translation": ""
+				},
+				{
+					"num": 73,
+					"title": "Pad",
+					"translation": ""
+				},
+				{
+					"num": 21,
+					"title": "iPad",
+					"translation": ""
+				},
+				{
+					"num": 29,
+					"title": "ASUS Pad",
+					"translation": ""
+				},
+				{
+					"num": 20,
+					"title": "Android Tablet",
+					"translation": ""
+				},
+				{
+					"num": 2,
+					"title": "Router",
+					"translation": "#ROUTER"
+				},
+				{
+					"num": 24,
+					"title": "Repeater",
+					"translation": ""
+				},
+				{
+					"num": 4,
+					"title": "NAS/Server",
+					"translation": "#NAS"
+				},
+				{
+					"num": 37,
+					"title": "Notebook",
+					"translation": ""
+				},
+				{
+					"num": 35,
+					"title": "Windows NB",
+					"translation": ""
+				},
+				{
+					"num": 6,
+					"title": "Macbook",
+					"translation": ""
+				},
+				{
+					"num": 38,
+					"title": "ASUS Notebook",
+					"translation": ""
+				},
+				{
+					"num": 39,
+					"title": "SD Card",
+					"translation": ""
+				},
+				{
+					"num": 40,
+					"title": "USB",
+					"translation": ""
+				},
+				{
+					"num": 18,
+					"title": "Printer",
+					"translation": "#PRINTER"
+				},
+				{
+					"num": 41,
+					"title": "Camera",
+					"translation": ""
+				},
+				{
+					"num": 15,
+					"title": "ROG Device",
+					"translation": ""
+				},
+				{
+					"num": 25,
+					"title": "Kindle",
+					"translation": ""
+				},
+				{
+					"num": 26,
+					"title": "Scanner",
+					"translation": ""
+				},
+				{
+					"num": 32,
+					"title": "Apple Device",
+					"translation": ""
+				},
+				{
+					"num": 31,
+					"title": "Android Device",
+					"translation": ""
+				},
+				{
+					"num": 30,
+					"title": "Windows Device",
+					"translation": ""
+				},
+				{
+					"num": 42,
+					"title": "ASUS Device",
+					"translation": ""
+				}
+			]
+		},
+		"media_and_entertainment": {
+			"title": "Media and Entertainment",
+			"translation": "",
+			"list": [
+				{
+					"num": 43,
+					"title": "Google Home",
+					"translation": ""
+				},
+				{
+					"num": 44,
+					"title": "Amazon Alexa",
+					"translation": ""
+				},
+				{
+					"num": 45,
+					"title": "Apple HomePod",
+					"translation": ""
+				},
+				{
+					"num": 11,
+					"title": "Apple TV",
+					"translation": ""
+				},
+				{
+					"num": 46,
+					"title": "DLINA",
+					"translation": ""
+				},
+				{
+					"num": 47,
+					"title": "Home Cinema",
+					"translation": ""
+				},
+				{
+					"num": 48,
+					"title": "Wireless Headphone",
+					"translation": ""
+				},
+				{
+					"num": 7,
+					"title": "Game Console",
+					"translation": ""
+				},
+				{
+					"num": 12,
+					"title": "Set-top Box",
+					"translation": ""
+				},
+				{
+					"num": 27,
+					"title": "Chromecast",
+					"translation": ""
+				},
+				{
+					"num": 74,
+					"title": "PlayStation",
+					"translation": ""
+				},
+				{
+					"num": 75,
+					"title": "PlayStation 4",
+					"translation": ""
+				},
+				{
+					"num": 76,
+					"title": "XBox",
+					"translation": ""
+				},
+				{
+					"num": 77,
+					"title": "Xbox One",
+					"translation": ""
+				}
+			]
+		},
+		"electronic_equipment": {
+			"title": "Electronic equipment",
+			"translation": "",
+			"list": [
+				{
+					"num": 49,
+					"title": "Air Conditioner",
+					"translation": ""
+				},
+				{
+					"num": 50,
+					"title": "Refrigerator",
+					"translation": ""
+				},
+				{
+					"num": 51,
+					"title": "Weight scale",
+					"translation": ""
+				},
+				{
+					"num": 52,
+					"title": "Electric pot",
+					"translation": ""
+				},
+				{
+					"num": 53,
+					"title": "Microwave oven",
+					"translation": ""
+				},
+				{
+					"num": 54,
+					"title": "Air Purifier",
+					"translation": ""
+				},
+				{
+					"num": 55,
+					"title": "Fan",
+					"translation": ""
+				},
+				{
+					"num": 56,
+					"title": "Dehumidifier",
+					"translation": ""
+				},
+				{
+					"num": 57,
+					"title": "Washing Machine",
+					"translation": ""
+				},
+				{
+					"num": 58,
+					"title": "Water Heater",
+					"translation": ""
+				},
+				{
+					"num": 59,
+					"title": "Electric Kettle",
+					"translation": ""
+				},
+				{
+					"num": 60,
+					"title": "Smart Bulb",
+					"translation": ""
+				},
+				{
+					"num": 23,
+					"title": "TV",
+					"translation": ""
+				},
+				{
+					"num": 61,
+					"title": "Cleaning Robot",
+					"translation": ""
+				}
+			]
+		},
+		"security": {
+			"title": "Security",
+			"translation": "",
+			"list": [
+				{
+					"num": 62,
+					"title": "Seismograph",
+					"translation": ""
+				},
+				{
+					"num": 63,
+					"title": "Smart Door Lock",
+					"translation": ""
+				},
+				{
+					"num": 5,
+					"title": "IP Cam",
+					"translation": "#IPCAM"
+				}
+			]
+		},
+		"warables": {
+			"title": "Wearables",
+			"translation": "",
+			"list": [
+				{
+					"num": 64,
+					"title": "Smart Bracelet",
+					"translation": ""
+				},
+				{
+					"num": 65,
+					"title": "Smart Watch",
+					"translation": ""
+				}
+			]
+		},
+		"others": {
+			"title": "Others",
+			"translation": "#OTHERS",
+			"list": [
+				{
+					"num": 66,
+					"title": "Wall Switch",
+					"translation": ""
+				},
+				{
+					"num": 67,
+					"title": "Smart Door Lock",
+					"translation": ""
+				},
+				{
+					"num": 68,
+					"title": "Temperature Humidity Sensor",
+					"translation": ""
+				},
+				{
+					"num": 69,
+					"title": "Human Body Sensor",
+					"translation": ""
+				},
+				{
+					"num": 70,
+					"title": "Smart Socket",
+					"translation": ""
+				},
+				{
+					"num": 71,
+					"title": "Robot",
+					"translation": ""
+				}
+			]
+		}
+	},
+	gen_component : function(_paramObj){
+		var custom_icon_db_translation_mapping = [
+			{tag:"#PRINTER",text:"<#Clientlist_Printer#>"},
+			{tag:"#ROUTER",text:"<#Device_type_02_RT#>"},
+			{tag:"#NAS",text:"<#Device_type_04_NS#>"},
+			{tag:"#IPCAM",text:"<#Device_type_05_IC#>"}
+		];
+		var $container = _paramObj.container;
+		var json_data = custom_icon_list_api.db;
+		if(_paramObj.source == "cloud")
+			json_data = _paramObj.db;
+		$.each(json_data, function( index, value ) {
+			var category = value;
+			if(category.list != undefined){
+				var $category_obj = "";
+				if($container.find("#" + index + "").length == 0){
+					$category_obj = $("<div>").addClass("custom_icon_category").attr("id",index);
+					if(_paramObj.source == "cloud"){
+						if($container.find(".custom_icon_category.upload").length > 0)
+							$category_obj.insertBefore($container.find(".custom_icon_category.upload"));
+						else
+							$category_obj.appendTo($container);
+					}
+					else
+						$category_obj.appendTo($container);
+					var $title_obj = $("<div>").addClass("category_title");
+					$title_obj.appendTo($category_obj);
+					if(category.title != "")
+						$title_obj.html(category.title);
+					if(category.translation != "") {
+						var specific_translation = custom_icon_db_translation_mapping.filter(function(item, index, _array){
+							return (item.tag == category.translation);
+						})[0];
+						if(specific_translation != undefined)
+							$title_obj.html(specific_translation.text);
+					}
+				}
+				else
+					$category_obj = $container.find("#" + index + "");
+
+				if(category.list.length > 0){
+					var total_count = category.list.length;
+					var maxi_count = 7;
+
+					var row_idx = $category_obj.children(".category_content").last().attr("row_idx");
+					if(row_idx == undefined)
+						row_idx = 0;
+
+					$.each(category.list, function( index, value ){
+						var $content_obj = "";
+						if($category_obj.find(".category_content[row_idx=" + row_idx + "]").length == 0){
+							$content_obj = $("<div>").addClass("category_content").attr("row_idx", row_idx);
+						}
+						else{
+							$content_obj = $category_obj.find(".category_content[row_idx=" + row_idx + "]");
+							if($content_obj.children().length >= maxi_count){
+								row_idx++;
+								$content_obj = $("<div>").addClass("category_content").attr("row_idx", row_idx);
+							}
+						}
+
+						var icon = value;
+						var src = "";
+						if(_paramObj.source == "cloud"){
+							if(icon.src != undefined && icon.src != "")
+								src = icon.src
+							else
+								return;
+						}
+						if($category_obj.children(".category_content").children(".type" + icon.num + "").length > 0)
+							return;
+
+						var $item_obj = $("<div>").addClass("type" + icon.num + "");
+						if(icon.title != "")
+							$item_obj.attr("title", icon.title);
+						if(icon.translation != ""){
+							var specific_translation = custom_icon_db_translation_mapping.filter(function(item, index, _array){
+								return (item.tag == icon.translation);
+							})[0];
+							if(specific_translation != undefined){
+								$item_obj.attr("title", specific_translation.text);
+							}
+						}
+						if(_paramObj.source == "cloud" && src != ""){
+							$item_obj.css("background-image", "url(" + src + ")");
+						}
+
+						$content_obj.appendTo($category_obj);
+						$item_obj.appendTo($content_obj);
+						$item_obj.unbind("click");
+						$item_obj.click(function(e){
+							e = e || event;
+							if(_paramObj.select_icon_callBack)
+								_paramObj.select_icon_callBack($(this));
+						});
+					});
+				}
+			}
+		});
+
+		if((_paramObj.source == "local") && isSupport("usericon") && !isSupport("sfp4m")) {
+			$upload_category = $("<div>").addClass("custom_icon_category upload");
+			$upload_category.appendTo($container);
+			$upload_category.append($("<div>").addClass("category_title").html("<#option_upload#>"));
+			var $upload_icon = $("<div>").addClass("client_upload_div").html("+");
+			var $input_file = $("<input/>").attr({"type":"file", "title":"Upload client icon"}).addClass("client_upload_file");/* untranslated */
+			$input_file.appendTo($upload_icon);
+			$upload_category.append($("<div>").addClass("category_content").append($upload_icon));
+			$input_file.on("change", function(){if(_paramObj.upload_callBack) _paramObj.upload_callBack($(this));});
+		}
+	}
 }
 
 /* Exported from device-map/clients.asp */

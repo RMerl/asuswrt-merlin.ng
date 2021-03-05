@@ -169,7 +169,7 @@ function initial(){
 			document.getElementById('acs_band3_checkbox').style.display = "";
 		}		
 	}
-	else if(based_modelid == 'RT-AX88U' || based_modelid == 'GT-AX11000' || (based_modelid == 'RT-AX92U' && wl_unit == '2') || (based_modelid == 'GT-AC2900' && wl_unit == '1') || ((based_modelid == 'RT-AX58U' || based_modelid == 'TUF-AX3000' || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400") && wl_unit == '1') || based_modelid == 'GT-AXE11000'){
+	else if(based_modelid == 'RT-AX88U' || based_modelid == 'GT-AX11000' || (based_modelid == 'RT-AX92U' && wl_unit == '2') || (based_modelid == 'GT-AC2900' && wl_unit == '1') || ((based_modelid == 'RT-AX58U' || based_modelid == 'TUF-AX3000' || based_modelid == 'TUF-AX5400' || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400") && wl_unit == '1') || based_modelid == 'GT-AXE11000'){
 		if(bw_160_support){
 			document.getElementById('enable_160_field').style.display = "";
 			$("#enable_160mhz").attr("checked", enable_bw_160);
@@ -493,7 +493,7 @@ function genBWTable(_unit){
 				based_modelid == "RT-AC66U" || 
 				based_modelid == "RT-AC3200" || 
 				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q" || based_modelid == "RT-AX56_XD4" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q" || based_modelid == "RT-AX56_XD4" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == 'TUF-AX5400' || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
 				based_modelid == "RT-AC53U") && document.form.wl_nmode_x.value == 1){		//N only
 				bws = [0, 1, 2];
 				bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];
@@ -1747,7 +1747,7 @@ function separateGenChannel(unit, channel, bandwidth){
 				var _reg = new RegExp("^" + _cur_channel);
 				for (j = 0; j < wl1.channel_160m.length; j++) {
 					if (wl1.channel_160m[j].match(_reg) != null) {
-						_wl_channel.push(_cur_channel);
+						_wl_channel.push(_cur_channel.toString());
 						channel_5g_1_val.push(_cur_channel + "/160");
 					}
 				}
@@ -1763,7 +1763,7 @@ function separateGenChannel(unit, channel, bandwidth){
 				var _reg = new RegExp("^" + _cur_channel);
 				for (j = 0; j < wl1.channel_80m.length; j++) {
 					if (wl1.channel_80m[j].match(_reg) != null) {
-						_wl_channel.push(_cur_channel);
+						_wl_channel.push(_cur_channel.toString());
 						channel_5g_1_val.push(_cur_channel + "/80");
 					}
 				}
@@ -1779,7 +1779,7 @@ function separateGenChannel(unit, channel, bandwidth){
 				var _reg = new RegExp("^" + _cur_channel);
 				for (j = 0; j < wl1.channel_40m.length; j++) {
 					if (wl1.channel_40m[j].match(_reg) != null) {
-						_wl_channel.push(_cur_channel);
+						_wl_channel.push(_cur_channel.toString());
 						channel_5g_1_val.push(wlextchannel_fourty(_cur_channel));
 					}
 				}
@@ -1792,7 +1792,7 @@ function separateGenChannel(unit, channel, bandwidth){
 			_wl_channel = new Array();
 			for (i = 0; i < channel_5g_1.length; i++) {
 				var _cur_channel = parseInt(channel_5g_1[i]);
-				_wl_channel.push(_cur_channel);
+				_wl_channel.push(_cur_channel.toString());
 				channel_5g_1_val.push(_cur_channel);;
 			}
 		}
@@ -1803,6 +1803,13 @@ function separateGenChannel(unit, channel, bandwidth){
 		if (document.form.band1_channel.value == '0') {
 			if(channel_5g_1.indexOf('56') != -1 || channel_5g_1.indexOf('100') != -1){
 				$('#band1_acsDFS').show();
+				if(curBandwidth == '5'){
+					document.form.band1_acsDFS_checkbox.checked = true;
+					document.form.band1_acsDFS_checkbox.disabled = true;
+				}
+				else{
+					document.form.band1_acsDFS_checkbox.disabled = false;
+				}
 			}
 			else{
 				$('#band1_acsDFS').hide();
@@ -1896,13 +1903,13 @@ function separateGenChannel(unit, channel, bandwidth){
 				for (j = 0; j < wl2.channel_160m.length; j++) {
 					if(band6g_support){
 						if (wl2.channel_160m[j].includes('6g' + _cur_channel + '/160')) {
-							_wl_channel.push(_cur_channel);		
+							_wl_channel.push(_cur_channel.toString());		
 							channel_5g_2_val.push("6g" + _cur_channel + "/160");											
 						}
 					}
 					else{
 						if (wl2.channel_160m[j].match(_reg) != null) {
-							_wl_channel.push(_cur_channel);		
+							_wl_channel.push(_cur_channel.toString());		
 							channel_5g_2_val.push(_cur_channel + "/160");											
 						}	
 					}													
@@ -1920,13 +1927,13 @@ function separateGenChannel(unit, channel, bandwidth){
 				for (j = 0; j < wl2.channel_80m.length; j++) {
 					if(band6g_support){
 						if (wl2.channel_80m[j].includes('6g' + _cur_channel + '/80')) {
-							_wl_channel.push(_cur_channel);		
+							_wl_channel.push(_cur_channel.toString());		
 							channel_5g_2_val.push("6g" + _cur_channel + "/80");
 						}						
 					}
 					else{
 						if (wl2.channel_80m[j].match(_reg) != null) {
-							_wl_channel.push(_cur_channel);					
+							_wl_channel.push(_cur_channel.toString());					
 							channel_5g_2_val.push(_cur_channel + "/80");											
 						}
 					}					
@@ -1944,13 +1951,13 @@ function separateGenChannel(unit, channel, bandwidth){
 				for (j = 0; j < wl2.channel_40m.length; j++) {
 					if(band6g_support){
 						if (wl2.channel_40m[j].includes('6g' + _cur_channel + '/40')) {
-							_wl_channel.push(_cur_channel);		
+							_wl_channel.push(_cur_channel.toString());		
 							channel_5g_2_val.push("6g" + _cur_channel + "/40");
 						}						
 					}
 					else{
 						if (wl2.channel_40m[j].match(_reg) != null) {
-							_wl_channel.push(_cur_channel);		
+							_wl_channel.push(_cur_channel.toString());		
 							channel_5g_2_val.push(wlextchannel_fourty(_cur_channel));												
 						}
 					}				
@@ -1964,12 +1971,12 @@ function separateGenChannel(unit, channel, bandwidth){
 			_wl_channel = new Array();
 			for (i = 0; i < channel_5g_2.length; i++) {
 				var _cur_channel = parseInt(channel_5g_2[i]);
-				_wl_channel.push(_cur_channel);
+				_wl_channel.push(_cur_channel.toString());
 				if(band6g_support){
 					channel_5g_2_val.push("6g" + _cur_channel);
 				}
 				else{
-					channel_5g_2_val.push(_cur_channel);
+					channel_5g_2_val.push(_cur_channel.toString());
 				}				
 			}
 		}
@@ -1980,6 +1987,13 @@ function separateGenChannel(unit, channel, bandwidth){
 		if (document.form.band2_channel.value == '0') {
 			if(channel_5g_2.indexOf('100') != -1){
 				$('#band2_acsDFS').show();
+				if(document.form.band2_bw.value == '5'){
+					document.form.band2_acsDFS_checkbox.checked = true;
+					document.form.band2_acsDFS_checkbox.disabled = true;
+				}
+				else{
+					document.form.band2_acsDFS_checkbox.disabled = false;
+				}
 			}
 			else{
 				$('#band2_acsDFS').hide();
@@ -2079,6 +2093,13 @@ function separateChannelHandler(unit, channel){
 		if (curCtrlChannel == '0') {
 			if(channel_5g_1.indexOf('56') != -1 || channel_5g_1.indexOf('100') != -1){
 				$('#band1_acsDFS').show();
+				if(document.form.band1_bw.value == '5'){
+					document.form.band1_acsDFS_checkbox.checked = true;
+					document.form.band1_acsDFS_checkbox.disabled = true;
+				}
+				else{
+					document.form.band1_acsDFS_checkbox.disabled = false;
+				}
 			}
 			else{
 				$('#band1_acsDFS').hide();
@@ -2092,6 +2113,13 @@ function separateChannelHandler(unit, channel){
 		if (curCtrlChannel == '0') {
 			if(channel_5g_2.indexOf('100') != -1){
 				$('#band2_acsDFS').show();
+				if(document.form.band2_bw.value == '5'){
+					document.form.band2_acsDFS_checkbox.checked = true;
+					document.form.band2_acsDFS_checkbox.disabled = true;
+				}
+				else{
+					document.form.band2_acsDFS_checkbox.disabled = false;
+				}
 			}
 			else{
 				$('#band2_acsDFS').hide();

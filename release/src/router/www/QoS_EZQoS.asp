@@ -262,6 +262,11 @@
 var wans_dualwan_orig = '<% nvram_get("wans_dualwan"); %>';
 var dualwan_type = wans_dualwan_orig.split(" ");
 var wans_flag = (wans_dualwan_orig.search("none") != -1 || !parent.dualWAN_support) ? 0 : 1;
+var dualwan_primary = dualwan_type[0].toUpperCase();
+var dualwan_primary_display = (dualwan_primary=="LAN") ? "Ethernet LAN":dualwan_primary; 
+var dualwan_secondary = dualwan_type[1].toUpperCase();
+var dualwan_secondary_display = (dualwan_secondary=="LAN") ? "Ethernet LAN":dualwan_secondary;
+var wans_lanport_orig = httpApi.nvramGet(["wans_lanport"]).wans_lanport;
 var dsllink_statusstr = "";
 var dsllink_statusstr_secondary = "";
 if(wans_flag == 1){	//dual_wan enabled
@@ -314,12 +319,24 @@ function show_up_down(value){
 		document.getElementById('download_tr').style.display = "";
 		if(mtwancfg_support){
 			document.getElementById('wan_1_tr').style.display = "";
+			if(dualwan_primary_display=="Ethernet LAN"){
+				$("#dualwan_primary_title").html("<#dualwan_primary#> - "+dualwan_primary_display+" (LAN Port "+wans_lanport_orig+")");
+			}
+			else{
+				$("#dualwan_primary_title").html("<#dualwan_primary#> - "+dualwan_primary_display);
+			}
 			if(dualwan_type[1].toLowerCase() == "none"){
 				document.getElementById('wan_2_tr').style.display = "none";
 				document.getElementById('upload2_tr').style.display = "none";
 				document.getElementById('download2_tr').style.display = "none";
 			}else{
 				document.getElementById('wan_2_tr').style.display = "";
+				if(dualwan_secondary_display=="Ethernet LAN"){
+					$("#dualwan_secondary_title").html("<#dualwan_secondary#> - "+dualwan_secondary_display+" (LAN Port "+wans_lanport_orig+")");
+				}
+				else{
+					$("#dualwan_secondary_title").html("<#dualwan_secondary#> - "+dualwan_secondary_display);
+				}
 				document.getElementById('upload2_tr').style.display = "";
 				document.getElementById('download2_tr').style.display = "";
 			}
@@ -648,7 +665,7 @@ function validForm(){
 		if(qos_type != 2){	//not Bandwidth Limiter
 
 			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.obw.value.length == 0 || document.form.obw.value == 0)){		// To check field is 0 && Traditional QoS
-				alert("Upload Bandwidth can not be 0");	/* untranslated */
+				alert("Download/Upload Bandwidth cannot be 0.");	/* untranslated */
 				document.form.obw.focus();
 				document.form.obw.select();
 				error_obw++;
@@ -683,7 +700,7 @@ function validForm(){
 			}
 
 			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.ibw.value.length == 0 || document.form.ibw.value == 0)){		// To check field is 0 && Traditional QoS
-				alert("Download Bandwidth can not be 0");	/* untranslated */
+				alert("Download/Upload Bandwidth cannot be 0.");	/* untranslated */
 				document.form.ibw.focus();
 				document.form.ibw.select();
 				error_ibw++;
@@ -736,7 +753,7 @@ function validForm(){
 			if(mtwancfg_support && wans_flag == "1") {
 
 				if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.obw1.value.length == 0 || document.form.obw1.value == 0)){		// To check field is 0 && Traditional QoS
-					alert("Upload Bandwidth can not be 0");	/* untranslated */
+					alert("Download/Upload Bandwidth cannot be 0.");	/* untranslated */
 					document.form.obw1.focus();
 					document.form.obw1.select();
 					error_obw1++;
@@ -771,7 +788,7 @@ function validForm(){
 				}
 
 				if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.ibw1.value.length == 0 || document.form.ibw1.value == 0)){		// To check field is 0 && Traditional QoS
-					alert("Download Bandwidth can not be 0");	/* untranslated */
+					alert("Download/Upload Bandwidth cannot be 0.");	/* untranslated */
 					document.form.ibw1.focus();
 					document.form.ibw1.select();
 					error_ibw1++;
@@ -2043,7 +2060,7 @@ function set_overhead(entry) {
 											</td>
 										</tr>		
 										<tr id="wan_1_tr" style="display:none">
-											<th colspan=3><#dualwan_primary#></th>
+											<th colspan=3 id="dualwan_primary_title"></th>
 										</tr>
 										<tr id="upload_tr">
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 2);"><#upload_bandwidth#></a></th>
@@ -2068,7 +2085,7 @@ function set_overhead(entry) {
 											</td>
 										</tr>
 										<tr id="wan_2_tr" style="display:none">
-											<th colspan=3><#dualwan_secondary#></th>
+											<th colspan=3 id="dualwan_secondary_title"></th>
 										</tr>
 										<tr id="upload2_tr" style="display:none">
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 2);"><#upload_bandwidth#></a></th>

@@ -50,15 +50,6 @@ var captive_portal_used_wl_array = new Array();
 
 var manually_maclist_list_array = new Array();
 var all_gn_status = [];
-Object.prototype.getKey = function(value) {
-	for(var key in this) {
-		if(this[key] == value) {
-			return key;
-		}
-	}
-	return null;
-};
-
 function initial(){
 	show_menu();	
 

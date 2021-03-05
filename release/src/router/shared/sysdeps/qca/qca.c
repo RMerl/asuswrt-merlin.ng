@@ -1043,8 +1043,8 @@ void Pty_stop_wlc_connect(int band)
 
 //Aimesh RE: vport to eth name
 static const char *query_ifname[PORT_UNITS] = { //Aimesh RE
-#if defined(RTAX89U)
-//	P0	P1	P2	P3	P4	P5	P6	P7	P8	P9	P10
+#if defined(RTAX89U) || (GTAXY16000)
+//	L1	L2	L3	L4	L5	L6	L7	L8	WAN1	WAN2	SFP+
 	"eth2", "eth1", "eth0", "eth0", "eth0", "eth0", "eth0", "eth0", "eth3", "eth5", "eth4"
 #elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
 //	P0	P1	P2	P3	P4	P5
@@ -1087,7 +1087,15 @@ void Pty_start_wlc_connect(int band, char *bssid)
  */
 int amas_dfs_status(int band)
 {
-	return 0;
+	int cac = 0;
+	char vap[IFNAMSIZ];
+
+	if (band != WL_5G_BAND && band != WL_5G_2_BAND)
+		return 0;
+	strlcpy(vap, get_wififname(band), sizeof(vap));
+	if (iwpriv_get_int(vap, "get_cac_state", &cac) < 0)
+		return 0;
+	return !!cac;
 }
 
 #ifdef RTCONFIG_AMAS_ETHDETECT

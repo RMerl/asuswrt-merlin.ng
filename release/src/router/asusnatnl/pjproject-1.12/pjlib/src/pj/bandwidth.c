@@ -21,6 +21,7 @@
 #include <pj/timer.h>
 #include <pj/bandwidth.h>
 #include <pj/os.h>
+
 pj_uint64_t time_msec( void )
 {
     //struct timeval tv;
@@ -119,7 +120,7 @@ bandwidthClamp( pj_band_t  * b,
                 allocateBandwidth( b, BANDWIDTH_PERIOD_MSEC);
             }
 
-            byteCount = byteCount==0 ? b->bytesLeft : MIN( byteCount, b->bytesLeft );
+            byteCount = byteCount==0 ? b->bytesLeft : MY_MIN( byteCount, b->bytesLeft );
 
             /* if we're getting close to exceeding the speed limit,
              * clamp down harder on the bytes available */
@@ -170,7 +171,7 @@ pj_bandwidthUsed( pj_band_t  * b,
     band = b;
 
     if ( band->isLimited) {
-        band->bytesLeft -= MIN( band->bytesLeft, byteCount );
+        band->bytesLeft -= MY_MIN( band->bytesLeft, byteCount );
     }
     bytesUsed( now, &band->raw, byteCount );
 }

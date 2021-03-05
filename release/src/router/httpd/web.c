@@ -178,6 +178,7 @@ typedef unsigned long long u64;
 #include <cfg_lib.h>
 #include <cfg_clientlist.h>
 #include <cfg_onboarding.h>
+#include <cfg_capability.h>
 #endif
 
 #if defined(HND_ROUTER) && defined(RTCONFIG_VISUALIZATION)
@@ -198,6 +199,7 @@ static void do_jffsupload_post(char *url, FILE *stream, int len, char *boundary)
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 #include <openssl/pem.h>
+#include <openssl/md5.h>
 #include <openssl/opensslconf.h>
 #include <openssl/opensslv.h>
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
@@ -449,6 +451,7 @@ extern char cloud_file[256];
 
 #ifdef RTCONFIG_JFFS2USERICON
 #define JFFS_USERICON		"/jffs/usericon/"
+#define USERICON_MD5_FILE	"/jffs/usericon/usericon_md5.json"
 #endif
 
 #ifdef RTCONFIG_IPSEC
@@ -479,6 +482,9 @@ static int is_cfg_client_by_unique_mac(P_CM_CLIENT_TABLE p_client_tbl, char *mac
 static int is_cfg_client_by_sta_mac(P_CM_CLIENT_TABLE p_client_tbl, char *staMac);
 static void gen_wired_client_info(P_CM_CLIENT_TABLE p_client_tbl, json_object *wiredClietListObj, json_object *wiredInfoObj);
 static int check_wired_client_connected_node(char *nodeMac, char *wiredMac, json_object *wiredClietListObj, json_object *wiredInfoObj);
+#ifdef RTCONFIG_FRONTHAUL_DWB
+int get_fronthaul_network_capability_val();
+#endif
 #endif
 
 #define FB_FILE_WEB "/tmp/xdslissuestracking_web"
@@ -2808,35 +2814,13 @@ void save_interface_to_index(char *wans_dualwan){
 #endif
 
 #ifdef RTCONFIG_JFFS2USERICON
-void handle_upload_icon(char *value) {
-	char *mac, *uploadicon;
-	char filename[32];
-	memset(filename, 0, 32);
-
-	//Check folder exist or not
-	if(!check_if_dir_exist(JFFS_USERICON))
-		mkdir(JFFS_USERICON, 0755);
-
-	if((vstrsep(value, ">", &mac, &uploadicon) == 2)) {
-		snprintf(filename, sizeof(filename), "/jffs/usericon/%s.log", mac);
-
-		//Delete exist file
-		if(check_if_file_exist(filename)) {
-			unlink(filename);
-		}
-		//If upload icon string is not noupload, then write to file.
-		if(strcmp(uploadicon, "noupload")) {
-			FILE *fp;
-			if((fp = fopen(filename, "w")) != NULL) {
-				fprintf(fp, "%s", uploadicon);
-				fclose(fp);
-			}
-		}
-	}
-}
 void del_upload_icon(char *value) {
+
 	char *buf, *g, *p;
 	char filename[48]={0}, mac_str[32]={0};
+	struct json_object *md5_obj = NULL;
+
+	md5_obj = json_object_from_file(USERICON_MD5_FILE);
 
 	g = buf = strdup(value);
 
@@ -2847,13 +2831,85 @@ void del_upload_icon(char *value) {
 			toUpperCase(mac_str);
 			trim_colon(mac_str);
 			snprintf(filename, sizeof(filename), "/jffs/usericon/%s.log", mac_str);
+
 			//Delete exist file
-			if(check_if_file_exist(filename)) {
+			if(check_if_file_exist(filename))
 				unlink(filename);
+
+			if(md5_obj)
+				json_object_object_del(md5_obj, mac_str);
+		}
+	}
+
+	free(buf);
+
+	if(md5_obj){
+		json_object_to_file(USERICON_MD5_FILE, md5_obj);
+		json_object_put(md5_obj);
+	}
+}
+
+void handle_upload_icon(char *value, char *usericon_mac) {
+
+	int upload_mac = 0;
+	char *name = NULL, *uploadicon = NULL;
+	char filename[32] = {0};
+	struct json_object *md5_obj = NULL;
+
+	//Check folder exist or not
+	if(!check_if_dir_exist(JFFS_USERICON))
+		mkdir(JFFS_USERICON, 0755);
+
+	if(vstrsep(value, ">", &name, &uploadicon) == 2) {
+		if(strlen(name) == 12 && isValidMacAddress(name)){
+			upload_mac = 1;
+			HTTPD_DBG("upload user mac file\n");
+		}
+		else if(strlen(name) < 12 && isValid_digit_string(name)){
+			HTTPD_DBG("upload device type file\n");
+		}
+		else{
+			HTTPD_DBG("invalid input\n");
+			return;
+		}
+
+		snprintf(filename, sizeof(filename), "/jffs/usericon/%s.log", name);
+
+		//Delete exist file
+		if(isValidMacAddress(usericon_mac)){
+			del_upload_icon(usericon_mac);
+		}else if(upload_mac == 1){
+			del_upload_icon(name);
+		}
+
+		//If upload icon string is not noupload, then write to file.
+		if(strcmp(uploadicon, "noupload")) {
+			if(upload_mac == 1){
+				int i = 0;
+				char md5string[33] = {0};
+				unsigned char key[MD5_DIGEST_LENGTH] = {0};
+				MD5_CTX mdContext;
+
+				MD5_Init(&mdContext);
+				MD5_Update(&mdContext, uploadicon, strlen(uploadicon));
+				MD5_Final(key,&mdContext);
+
+				for(i = 0; i < 16; ++i)
+					sprintf(&md5string[i*2], "%02x", (unsigned int)key[i]);
+
+				if((md5_obj = json_object_from_file(USERICON_MD5_FILE)) == NULL)
+					md5_obj = json_object_new_object();
+
+				json_object_object_add(md5_obj, name, json_object_new_string(md5string));
+				json_object_to_file(USERICON_MD5_FILE, md5_obj);
+			}
+			FILE *fp;
+			if((fp = fopen(filename, "w")) != NULL) {
+				fprintf(fp, "%s", uploadicon);
+				fclose(fp);
 			}
 		}
 	}
-	free(buf);
 }
 #endif
 
@@ -3300,8 +3356,23 @@ static
 int nvram_check(char *name, char *value, struct nvram_tuple *t, char *output)
 {
 	int ret = 0;
+
+	if(!strcmp(name, "vpn_serverx_clientlist") || !strcmp(name, "pptpd_clientlist"))
+	{
+		char *str1 = NULL, *str2 = NULL;
+		str1 = strtok(value, "<");
+		while (str1 != NULL) {
+			str2 = strchr(str1, '>');
+			if(str2-str1 > 64 || strlen(str2)-1 > 110){
+				_dprintf("nvram_check fail: nvram acc %s over length\n", name);
+				ret = 1;
+				break;
+			}
+			str1 = strtok(NULL, "<");
+		}
+	}
 	//_dprintf("nvram_check: t->name = %s, t->len = %d, t->type = %d, value = %s, strlen(value) = %d\n", t->name, t->len, t->type, value, strlen(value));
-	if(strlen(value) > t->len)
+	else if(strlen(value) > t->len)
 	{
 		ret=1;
 		_dprintf("nvram_check fail: nvram %s over length\n", t->name);
@@ -3413,6 +3484,9 @@ int validate_apply(webs_t wp, json_object *root) {
 
 	memset(cfg_action_script, 0, sizeof(cfg_action_script));
 	memset(acc_action_script, 0, sizeof(acc_action_script));
+#endif
+#ifdef RTCONFIG_DSL_BCM
+	char *action_para = get_cgi_json("rc_service",root);
 #endif
 
 	/* go through each nvram value */
@@ -3770,7 +3844,8 @@ int validate_apply(webs_t wp, json_object *root) {
 #endif
 #ifdef RTCONFIG_JFFS2USERICON
 			else if(!strcmp(name, "custom_usericon")) {
-				(void)handle_upload_icon(value);
+				char *usericon_mac = safe_get_cgi_json("usericon_mac", root);
+				(void)handle_upload_icon(value, usericon_mac);
 				nvram_set(name, "");
 				nvram_modified = 1;
 			}
@@ -4018,7 +4093,7 @@ int validate_apply(webs_t wp, json_object *root) {
 
 #ifdef RTCONFIG_DSL
 #ifdef RTCONFIG_DSL_BCM //new qis
-	if(strstr(action_script, "restart_dslwan_qis"))
+	if(action_para && strstr(action_para, "restart_dslwan_qis"))
 #else
 	if(nvram_match("dsltmp_qis_dsl_pvc_set", "1"))
 #endif
@@ -9178,17 +9253,24 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 
 			struct json_object *isOnline = NULL;
 			json_object_object_get_ex(client, "isOnline", &isOnline);
-			//handle wired client isOnline by networkmap
-			if(!memcmp(wireless, "0", 1)) {
-				if(p_client_info_tab->device_flag[i]&(1<<FLAG_EXIST)) {
-					json_object_object_add(client, "isOnline", json_object_new_string("1"));
-					json_object_array_add(macArray, json_object_new_string(mac_buf));
+			//check isOnline attribute only on amas support(not when RTCONFIG_AMAS defined)
+			if(is_amas_support()) {
+				//handle wired client isOnline by networkmap
+				if(!memcmp(wireless, "0", 1)) {
+					if(p_client_info_tab->device_flag[i]&(1<<FLAG_EXIST)) {
+						json_object_object_add(client, "isOnline", json_object_new_string("1"));
+						json_object_array_add(macArray, json_object_new_string(mac_buf));
+					}
+					else
+						json_object_object_add(client, "isOnline", json_object_new_string("0"));
 				}
-				else
-					json_object_object_add(client, "isOnline", json_object_new_string("0"));
+				else if(isOnline && !strcmp(json_object_get_string(isOnline), "1"))
+					json_object_array_add(macArray, json_object_new_string(mac_buf));
 			}
-			else if(isOnline && !strcmp(json_object_get_string(isOnline), "1"))
+			else {
+				json_object_object_add(client, "isOnline", json_object_new_string("1"));
 				json_object_array_add(macArray, json_object_new_string(mac_buf));
+			}
 #endif
 
 			json_object_object_add(clients, mac_buf, client);
@@ -14997,7 +15079,7 @@ do_ipsec_cert_info_cgi(char *url, FILE *stream)
 	fp = fopen(cert_path, "r");
 	if (fp == NULL){
 		websWrite(stream, "{\"issueTo\":\"\",\"issueBy\":\"\",\"from\":\"\",\"expire\":\"\",\"update_state\":\"1\"}");
-		return FALSE;
+		return;
 	}
 	if(!PEM_read_X509(fp, &x509data, NULL, NULL))
 	{
@@ -15007,7 +15089,7 @@ do_ipsec_cert_info_cgi(char *url, FILE *stream)
 	fclose(fp);
 	if(x509data == NULL){
 		websWrite(stream, "{\"issueTo\":\"\",\"issueBy\":\"\",\"from\":\"\",\"expire\":\"\",\"update_state\":\"1\"}");
-		return FALSE;
+		return;
 	}
 
 	X509_NAME_oneline(X509_get_issuer_name(x509data), buf, sizeof(buf));
@@ -19361,7 +19443,7 @@ delete_client_in_group_list(char *del_maclist, int del_idx, char *in_group_list,
 static void
 do_del_client_data_cgi(char *url, FILE *stream) {
 
-	int ret=0, i=0;
+	int ret __attribute__((unused)) =0, i=0;
 	int shm_client_info_id=0, lock=0;
 	int pc_ret=0, custom_clientlist_ret=0, qos_bw_rulelist_ret=0, wl_maclist_ret=0, wl_maclist_tmp_ret=0, wollist_ret=0, sta_binding_list_ret=0;
 	char rc_service[256]={0};
@@ -19676,6 +19758,43 @@ FINISH:
 }
 #endif
 
+#ifdef RTCONFIG_JFFS2USERICON
+static void
+do_get_usericon_md5_cgi(char *url, FILE *stream) {
+
+	char word[4096] = {0}, *word_next;
+	struct json_object *root = NULL, *md5_obj = NULL, *md5_mac_obj = NULL, *md5_word = NULL;
+	char *maclist = NULL;
+
+	do_json_decode(&root);
+
+	md5_obj = json_object_from_file(USERICON_MD5_FILE);
+
+	maclist = safe_get_cgi_json("maclist", root);
+
+	if(md5_obj){
+		if(strlen(maclist) > 0){
+			md5_mac_obj = json_object_new_object();
+			foreach_62(word, maclist, word_next){
+				if(json_object_object_get_ex(md5_obj, word, &md5_word))
+					json_object_object_add(md5_mac_obj, word, md5_word);
+			}
+			websWrite(stream, "%s", json_object_to_json_string(md5_mac_obj));
+		}else
+			websWrite(stream, "%s", json_object_to_json_string(md5_obj));
+	}
+	else
+		websWrite(stream, "{}");
+
+	if(root)
+		json_object_put(root);
+	if(md5_obj)
+		json_object_put(md5_obj);
+	if(md5_mac_obj)
+		json_object_put(md5_mac_obj);
+}
+#endif
+
 //2008.08 magic{
 struct mime_handler mime_handlers[] = {
 	{ "Main_Login.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
@@ -19941,6 +20060,9 @@ struct mime_handler mime_handlers[] = {
 	{ "del_client_data.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_del_client_data_cgi, do_auth },
 #if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 	{ "set_ledg.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ledg_cgi, do_auth },
+#endif
+#ifdef RTCONFIG_JFFS2USERICON
+	{ "get_usericon_md5.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_usericon_md5_cgi, do_auth },
 #endif
 	{ NULL, NULL, NULL, NULL, NULL, NULL }
 };
@@ -24223,7 +24345,7 @@ ookla_exec(char *type, char *id, char *iface)
 static void
 do_ookla_speedtest_exe_cgi(char *url, FILE *stream)
 {
-	int retval = 0;
+	int retval __attribute__((unused)) = 0;
 	struct json_object *root = NULL;
 	char *type = NULL, *id = NULL, *iface = NULL;
 
@@ -24820,46 +24942,64 @@ ej_geoiplookup_eg(int eid, webs_t wp, int argc, char_t **argv)
 #ifdef RTCONFIG_JFFS2USERICON
 static int
 ej_get_upload_icon(int eid, webs_t wp, int argc, char **argv) {
-	char *client_mac = websGetVar(wp, "clientmac", "");
-	int from_app = 0;
+
+	int ret = 0, from_app = 0;
+	char file_name[32] = {0}, mac_str[32] = {0};
+	char *client_mac = NULL;
+	char word[1024]={0}, *word_next = NULL;
+	char custom_clientlist[CKN_STR_MAX] = {0}, deice_type[8] = {0}, word_tmp[256] = {0};
+	struct json_object *root=NULL;
+
+	do_json_decode(&root);
 
 	from_app = check_user_agent(user_agent);
+	client_mac = safe_get_cgi_json("clientmac", root);
 
-	if(client_mac != NULL) {
-		if(strcmp(client_mac, "") && strlen(client_mac) == 12) {
-			char file_name[32];
-			memset(file_name, 0, 32);
+	if(strcmp(client_mac, "") == 0)
+		goto FINISH;
 
-			//Check folder exist or not
-			if(!check_if_dir_exist(JFFS_USERICON))
-				mkdir(JFFS_USERICON, 0755);
+	if(strlen(client_mac) == 12 && isValidMacAddress(client_mac)){
+		//dbg("get user icon\n");
+	}
+	else if(strlen(client_mac) < 12 && isValid_digit_string(client_mac)){
+		//dbg("get device type icon\n");
+	}else
+		goto FINISH;
 
-			//Write upload icon value
-			snprintf(file_name, sizeof(file_name), "/jffs/usericon/%s.log", client_mac);
-			if(check_if_file_exist(file_name)) {
-				if(from_app != 0)
-					websWrite(wp, "\"");
-				dump_file(wp, file_name);
-				if(from_app != 0)
-					websWrite(wp, "\"");
+	//Check folder exist or not
+	if(!check_if_dir_exist(JFFS_USERICON))
+		mkdir(JFFS_USERICON, 0755);
+
+	//Write upload icon value
+	snprintf(file_name, sizeof(file_name), "/jffs/usericon/%s.log", client_mac);
+
+	//find type file in custom_clientlist
+	if(!check_if_file_exist(file_name)){
+		strlcpy(custom_clientlist, nvram_safe_get("custom_clientlist"), sizeof(custom_clientlist));
+		foreach_60(word, custom_clientlist, word_next){
+			strlcpy(word_tmp, word, sizeof(word_tmp));
+			get_string_in_62(word_tmp, 1, mac_str, sizeof(mac_str));
+			trim_colon(mac_str);
+			if(!strcasecmp(client_mac, mac_str)){
+				get_string_in_62(word, 3, deice_type, sizeof(deice_type));
+				snprintf(file_name, sizeof(file_name), "/jffs/usericon/%s.log", deice_type);
+				break;
 			}
-			else {
-				if(from_app != 0)
-					websWrite(wp, "\"");
-				websWrite(wp, "NoIcon");
-				if(from_app != 0)
-					websWrite(wp, "\"");
-			}
-		}
-		else {
-			if(from_app != 0)
-				websWrite(wp, "\"");
-			websWrite(wp, "NoIcon");
-			if(from_app != 0)
-				websWrite(wp, "\"");
 		}
 	}
-	else {
+
+	if(check_if_file_exist(file_name)) {
+		ret = 1; //find file
+		if(from_app != 0)
+			websWrite(wp, "\"");
+		dump_file(wp, file_name);
+		if(from_app != 0)
+			websWrite(wp, "\"");
+	}else
+		goto FINISH;
+
+FINISH:
+	if(ret == 0){ //no file
 		if(from_app != 0)
 			websWrite(wp, "\"");
 		websWrite(wp, "NoIcon");
@@ -24867,15 +25007,18 @@ ej_get_upload_icon(int eid, webs_t wp, int argc, char **argv) {
 			websWrite(wp, "\"");
 	}
 
+	if(root)
+		json_object_put(root);
+
 	return 0;
 }
+
 static int
 ej_get_upload_icon_count_list(int eid, webs_t wp, int argc, char **argv) {
 	int file_count = 0;
 	DIR *dirp;
 	struct dirent * entry;
-	char allMacList[1500];
-	memset(allMacList, 0, 1500);
+	char allMacList[1500] = {0}, filename[64] = {0};
 	int from_app = 0;
 
 	from_app = check_user_agent(user_agent);
@@ -24890,9 +25033,14 @@ ej_get_upload_icon_count_list(int eid, webs_t wp, int argc, char **argv) {
 
 	while ((entry = readdir(dirp)) != NULL) {
 		if (entry->d_type == DT_REG) { /* If the entry is a regular file */
-			strcat(allMacList, entry->d_name);
-			strcat(allMacList, ">");
-			file_count++;
+			if(strlen(entry->d_name) == 16){
+				strncpy(filename, entry->d_name, 12);
+				if(isValidMacAddress(filename)){
+					strcat(allMacList, entry->d_name);
+					strcat(allMacList, ">");
+					file_count++;
+				}
+			}
 		}
 	}
 	closedir(dirp);
@@ -26253,6 +26401,27 @@ void covert_bitmap_describe(json_object *capabilityObj) {
     }
     return;
 }
+
+#ifdef RTCONFIG_FRONTHAUL_DWB
+/**
+ * @brief Get the fronthaul network capability val object
+ *
+ * @return int Capability Value
+ */
+int get_fronthaul_network_capability_val() {
+    int i;
+    int fronthaul_capability = 0;
+
+    for (i = 0;  capability_list[i].type != 0; i++) {
+        if (capability_list[i].type  == FRONTHAUL_AP_CTL) {
+            fronthaul_capability = capability_list[i].subtype;
+            break;
+        }
+    }
+
+    return fronthaul_capability;
+}
+#endif
 #endif
 
 static int

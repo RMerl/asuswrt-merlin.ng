@@ -1017,7 +1017,7 @@ function show_inner_tab(){
 						<div id="guest_image" style="background: url(images/New_ui/parental-control.png);width: 130px;height: 87px;"></div>
 					</td>
 					<td>&nbsp;&nbsp;</td>
-					<td style="font-style: italic;font-size: 14px;">
+					<td style="font-size: 14px;">
 						<span id="desc_title"><#ParentalCtrl_Desc#></span>
 						<ol>	
 							<li><#ParentalCtrl_Desc1#></li>

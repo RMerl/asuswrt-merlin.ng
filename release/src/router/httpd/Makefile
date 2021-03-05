@@ -295,6 +295,7 @@ LIBS += -L $(TOP)/sqlCipher/.libs -lsqlcipher
 endif
 
 ifeq ($(RTCONFIG_CFGSYNC),y)
+CFLAGS += -I$(TOP)/shared/sysdeps/amas
 CFLAGS += -I$(TOP)/cfg_mnt
 LIBS += -L$(TOP)/cfg_mnt -lcfgmnt
 endif

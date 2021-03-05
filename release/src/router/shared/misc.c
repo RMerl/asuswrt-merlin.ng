@@ -3090,7 +3090,7 @@ int is_psr(int unit)
 		(
 		is_dpsr(unit) ||
 #ifdef RTCONFIG_DPSTA
-		is_dpsta(unit) ||
+		is_dpsta(unit) || is_rp_unit(unit) ||
 #ifdef RTCONFIG_AMAS
 		dpsta_mode() ||
 #endif
@@ -4372,7 +4372,7 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 				if ((repeater_mode()
 					|| dpsr_mode()
 #if defined(RTCONFIG_PROXYSTA) && defined(RTCONFIG_DPSTA)
-					|| dpsta_mode()
+					|| dpsta_mode() || rp_mode()
 #endif
 					) && subunit == 1)
 					snprintf(alias, alias_len, "%s", unit ? (unit == 2 ? "5G1" : "5G") : "2G");

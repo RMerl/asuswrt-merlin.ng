@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlutils.h 779706 2019-10-04 13:58:11Z $
+ * $Id: wlutils.h 793902 2020-12-14 17:36:59Z $
  */
 
 #ifndef _wlutils_h_
@@ -168,6 +168,16 @@ extern int wl_endian_probe(char *name);
 extern int wl_heiovar_setint(char *ifname, char *iovar, char *subcmd, int val);
 
 /*
+ * Set TWT related commands
+ * @param	ifname		interface name
+ * @param	iovar		variable name
+ * @param	subcmd		twt subcommand
+ * @param	val		val or val pointer for int routines
+ * @return	success == 0, failure != 0
+ */
+extern int wl_twtiovar_setint(char *ifname, char *iovar, char *subcmd, int val);
+
+/*
  * Set msched/umsched related commands
  * @param	ifname		interface name
  * @param	iovar		variable name
@@ -216,10 +226,21 @@ extern int wl_iovar_xtlv_setint(char *ifname, char *iovar, int32 val, uint16 ver
  * @return     success == 0, failure != 0
  */
 extern int wl_iovar_xtlv_setbuf(char *ifname, char *iovar, uint8 *param, uint16 paramlen,
-               uint16 version, uint16 cmd_id, uint16 xtlv_id, bcm_xtlv_opts_t opts,
-               uint8 *buf, uint16 buflen);
+		uint16 version, uint16 cmd_id, uint16 xtlv_id, bcm_xtlv_opts_t opts,
+		uint8 *buf, uint16 buflen);
+/*
+ * Get xtlv buf related iovar commands
+ * @param	ifname		interface name
+ * @param	iovar		variable name
+ * @param	version		iovar version
+ * @param	cmd_id
+ * @param	xtlv_id
+ * @param	xtlv_option	int/buf etc
+ * @return	success == 0, failure != 0
+ */
+extern int wl_iovar_xtlv_getint(char *ifname, char *iovar, uint16 version, uint16 cmd_id,
+		uint16 xtlv_id, bcm_xtlv_opts_t opts);
 #endif
-
 #ifdef __CONFIG_DHDAP__
 extern int dhd_probe(char *name);
 #endif

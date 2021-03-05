@@ -109,6 +109,11 @@ time_mapping_get(char *model_name, struct time_mapping_s *time_mapping)
 			}
 		}
 	}
+
+#ifdef RTCONFIG_HND_ROUTER_AX
+	time_mapping->connection_timeout = CONNECTION_DEF_TIMEOUT * 2;
+#endif	/* RTCONFIG_HND_ROUTER_AX */
+
 #ifdef RTCONFIG_PRELINK
 #if defined(RTCONFIG_QCA)
 	if (has_dfs_channel())

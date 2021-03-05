@@ -1155,7 +1155,7 @@ apply.amasonboarding = function(){
 				result_text += "<li><#AiMesh_FindNode_Not_advA3#></li>";
 				result_text += "</ol>";
 			}
-			result_text += 'If you want to find another available AiMesh node nearby, please click "Search".';/* untranslated */
+			result_text += '<#AiMesh_FindNode_Search_Btn#>';
 			$("#amasonboarding_page").find("#result").html(result_text);
 			$("#amasonboarding_page").find("#result").find(".amesh_device_info").html(handle_ui_model_name(_model_name, _ui_model_name) + " (" + labelMac + ")");
 			$("#amasonboarding_page").find("#result").show();

@@ -2003,8 +2003,13 @@ PJ_DEF(pj_status_t) pj_ssl_sock_create (pj_pool_t *pool,
 			   sizeof(pj_ioqueue_op_key_t));
 
     /* Create secure socket mutex */
-    status = pj_lock_create_recursive_mutex(pool, pool->obj_name,
+#if defined(ROUTER) && !(defined(__GLIBC__) || defined(__UCLIBC__))
+    status = pj_lock_create_simple_mutex(pool, pool->obj_name,
 					    &ssock->write_mutex);
+#else
+    status = pj_lock_create_recursive_mutex(pool, pool->obj_name,
+                        &ssock->write_mutex);
+#endif
     if (status != PJ_SUCCESS)
 	return status;
 

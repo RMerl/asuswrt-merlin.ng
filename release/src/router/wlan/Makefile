@@ -27,7 +27,7 @@ ifneq ("$(wildcard $(KERNEL_DIR)/.config)","")
 include $(KERNEL_DIR)/.config
 endif
 
-IMPL=$(strip $(shell readlink $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP) | sed 's/[^0-9]//g'))
+IMPL=$(strip $(shell readlink $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP) | awk 'BEGIN{FS="impl"}{print $$2}' | sed 's/[^0-9]//g'))
 ifeq ($(IMPL),)
 # the symbolic link of bcm9$(BRCM_CHIP) has been removed/cleaned, set IMPL to an integer to avoid warning message
 IMPL=0

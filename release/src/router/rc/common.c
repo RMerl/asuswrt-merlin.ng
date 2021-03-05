@@ -766,6 +766,18 @@ void setup_conntrack(void)
 		if (atoi(buf) > 0) nvram_set("ct_max", buf);
 	}
 #endif
+#ifdef LINUX26
+	if (f_exists("/proc/sys/net/netfilter/nf_conntrack_expect_max")) {
+		snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_expect_max"));
+		i = atoi(p);
+		if (i >= 1) {
+			f_write_string("/proc/sys/net/netfilter/nf_conntrack_expect_max", p, 0, 0);
+		}
+		else if (f_read_string("/proc/sys/net/netfilter/nf_conntrack_expect_max", buf, sizeof(buf)) > 0) {
+			if (atoi(buf) > 0) nvram_set("ct_expect_max", buf);
+		}
+	}
+#endif
 #if 0
 	if (!nvram_match("nf_rtsp", "0")) {
 		ct_modprobe("rtsp");

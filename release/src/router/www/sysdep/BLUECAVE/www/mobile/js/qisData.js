@@ -346,8 +346,8 @@ var dsl_wanObj = {
 		"dsl_dnsenable": "1",
 		"dsl_dns1": "",
 		"dsl_dns2": "",
-		"dslx_dhcp_clientid": "",
-		"dslx_dhcp_hostname": ""
+		"dsl_dhcp_clientid": "",
+		"dsl_dhcp_hostname": ""
 	},
 
 	"atm_all" : {
@@ -380,8 +380,8 @@ var dsl_wanObj = {
 		"dsl_dnsenable": "",
 		"dsl_dns1": "",
 		"dsl_dns2": "",
-		"dslx_dhcp_clientid": "",
-		"dslx_dhcp_hostname": ""
+		"dsl_dhcp_clientid": "",
+		"dsl_dhcp_hostname": ""
 	},
 
 	"ptm_all" : {
@@ -406,8 +406,8 @@ var dsl_wanObj = {
 		"dsl_dnsenable": "",
 		"dsl_dns1": "",
 		"dsl_dns2": "",
-		"dslx_dhcp_clientid": "",
-		"dslx_dhcp_hostname": ""
+		"dsl_dhcp_clientid": "",
+		"dsl_dhcp_hostname": ""
 	}
 }
 

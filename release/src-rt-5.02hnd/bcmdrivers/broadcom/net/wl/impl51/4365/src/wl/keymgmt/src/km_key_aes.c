@@ -9,6 +9,7 @@
 #ifdef WLFIPS
 #include <wl_ndfips.h>
 #endif /* WLFIPS */
+#include <wlc_rx.h>
 
 /* internal interface */
 
@@ -447,17 +448,18 @@ key_aes_rx_mpdu(wlc_key_t *key, void *pkt, struct dot11_header *hdr,
 	int err = BCME_OK;
 	uint8 rx_seq[AES_KEY_SEQ_SIZE];
 	key_seq_id_t ins = 0;
+	scb_t *scb;
 	uint16 fc;
 	uint16 qc;
 
 	KM_DBG_ASSERT(AES_KEY_VALID(key) && hw_rxi != NULL);
 
 	aes_key = (aes_key_t *)key->algo_impl.ctx;
+	scb = WLPKTTAGSCBGET(pkt);
 
 	fc =  ltoh16(hdr->fc);
 	if ((FC_TYPE(fc) == FC_TYPE_MNG) && ETHER_ISMULTI(&hdr->a1)) {
 #if defined(MFP) || (defined(BCMCCX) && defined(CCX_SDK))
-		scb_t *scb = WLPKTTAGSCBGET(pkt);
 #ifdef MFP
 		if (KM_SCB_MFP(scb)) {
 			err = km_key_aes_rx_mmpdu_mcmfp(key, pkt, hdr, body, body_len, hw_rxi);
@@ -488,6 +490,8 @@ key_aes_rx_mpdu(wlc_key_t *key, void *pkt, struct dot11_header *hdr,
 
 	KM_ASSERT(!WLC_KEY_IS_MGMT_GROUP(&key->info));
 
+	key_aes_seq_from_body(key, rx_seq, body);
+
 	/* check replay with applicable counter */
 	if (FC_TYPE(fc) == FC_TYPE_MNG) {
 #ifdef MFP
@@ -498,13 +502,35 @@ key_aes_rx_mpdu(wlc_key_t *key, void *pkt, struct dot11_header *hdr,
 		goto done;
 #endif
 	} else {
+		uint8 first_rx_seq[AES_KEY_SEQ_SIZE] = {0};
+		uint8 *first_body = NULL;
+		uint8 frag = ltoh16(hdr->seq) & FRAGNUM_MASK;
+		uint64 first_seq, seq;
+
 		qc =  ((fc & FC_KIND_MASK) == FC_QOS_DATA) ?
 			ltoh16_ua(body - DOT11_QOS_LEN) : 0;
 		ins = PRIO2IVIDX(QOS_PRIO(qc));
 		KM_DBG_ASSERT(ins < KEY_NUM_RX_SEQ(key));
+
+		if (frag) {
+			first_body = wlc_defrag_first_frag_body_get(key->wlc, scb, QOS_PRIO(qc));
+			if (first_body) {
+				first_body -= key->info.iv_len;
+				key_aes_seq_from_body(key, first_rx_seq, first_body);
+				seq = KM_SEQ_TO_U64(rx_seq);
+				first_seq = KM_SEQ_TO_U64(first_rx_seq);
+
+				if (seq != (first_seq + frag)) {
+					err = BCME_EPERM;
+					goto done;
+				}
+			} else {
+				err = BCME_EPERM;
+				goto done;
+			}
+		}
 	}
 
-	key_aes_seq_from_body(key, rx_seq, body);
 	if (km_is_replay(KEY_KM(key), &key->info, ins,
 			AES_KEY_SEQ(key, aes_key, FALSE /* rx */, ins), rx_seq, AES_KEY_SEQ_SIZE)) {
 		err = BCME_REPLAY;

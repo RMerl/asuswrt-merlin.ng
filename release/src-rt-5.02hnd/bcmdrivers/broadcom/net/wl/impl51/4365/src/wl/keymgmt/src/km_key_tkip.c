@@ -10,6 +10,8 @@
 #include <bcmcrypto/tkmic.h>
 #include <bcmcrypto/tkhash.h>
 
+#include <wlc_rx.h>
+
 /* internal interface */
 
 #define TKIP_KEY_TK_SIZE TKIP_TK_SIZE
@@ -529,6 +531,7 @@ tkip_rx_mpdu(wlc_key_t *key, void *pkt, struct dot11_header *hdr,
 	uint8 rx_seq[TKIP_KEY_SEQ_SIZE];
 	key_seq_id_t ins = 0;
 	uint16 fc;
+	scb_t *scb;
 
 	KM_ASSERT(TKIP_KEY_VALID(key));
 	KM_DBG_ASSERT(hw_rxi != NULL);
@@ -536,6 +539,8 @@ tkip_rx_mpdu(wlc_key_t *key, void *pkt, struct dot11_header *hdr,
 	tkip_key = (tkip_key_t *)key->algo_impl.ctx;
 
 	fc =  ltoh16(hdr->fc);
+	scb = WLPKTTAGSCBGET(pkt);
+	KM_ASSERT(scb != NULL);
 
 #if !defined(BCMCCX) || !defined(CCX_SDK)
 	if ((FC_TYPE(fc) == FC_TYPE_MNG)) {
@@ -563,8 +568,9 @@ tkip_rx_mpdu(wlc_key_t *key, void *pkt, struct dot11_header *hdr,
 	}
 #endif /* BCMDBG */
 
-	/* check for replay */
+	TKIP_KEY_SEQ_FROM_BODY(rx_seq, body);
 
+	/* check for replay */
 	if (FC_TYPE(fc) == FC_TYPE_MNG) {
 #ifdef MFP
 		ins = KEY_NUM_RX_SEQ(key) - 1;
@@ -574,12 +580,36 @@ tkip_rx_mpdu(wlc_key_t *key, void *pkt, struct dot11_header *hdr,
 #endif
 	} else {
 		uint16 qc;
+		uint8 frag = ltoh16(hdr->seq) & FRAGNUM_MASK;
+		uint8 *first_body = NULL;
+		uint64 first_seq, seq;
+		uint8 first_rx_seq[TKIP_KEY_SEQ_SIZE];
+
 		qc =  ((fc & FC_KIND_MASK) == FC_QOS_DATA) ?  ltoh16_ua(body - DOT11_QOS_LEN) : 0;
 		ins = PRIO2IVIDX(QOS_PRIO(qc));
 		KM_ASSERT(ins < KEY_NUM_RX_SEQ(key));
+
+		if (frag) {
+			first_body = wlc_defrag_first_frag_body_get(key->wlc,
+				scb, QOS_PRIO(qc));
+
+			if (first_body) {
+				first_body -= key->info.iv_len;
+				TKIP_KEY_SEQ_FROM_BODY(first_rx_seq, first_body);
+				seq = KM_SEQ_TO_U64(rx_seq);
+				first_seq = KM_SEQ_TO_U64(first_rx_seq);
+
+				if (seq != (first_seq + frag)) {
+				    err = BCME_EPERM;
+				    goto done;
+				}
+			} else {
+				err = BCME_EPERM;
+				goto done;
+			}
+		}
 	}
 
-	TKIP_KEY_SEQ_FROM_BODY(rx_seq, body);
 	if (km_is_replay(KEY_KM(key), &key->info, ins,
 			TKIP_KEY_SEQ(tkip_key, FALSE /* rx */, ins),
 			rx_seq, TKIP_KEY_SEQ_SIZE)) {
@@ -597,11 +627,7 @@ tkip_rx_mpdu(wlc_key_t *key, void *pkt, struct dot11_header *hdr,
 		((KEY_SEQ_HI32(rx_seq) != KEY_SEQ_HI32(TKIP_KEY_SEQ(tkip_key, FALSE, ins))) &&
 		(ins != tkip_key->rx_state.cur_seq_id))) {
 
-		scb_t *scb;
 		wlc_bsscfg_t *bsscfg;
-
-		scb = WLPKTTAGSCBGET(pkt);
-		KM_ASSERT(scb != NULL);
 
 		bsscfg = SCB_BSSCFG(scb);
 		KM_DBG_ASSERT(bsscfg != NULL);

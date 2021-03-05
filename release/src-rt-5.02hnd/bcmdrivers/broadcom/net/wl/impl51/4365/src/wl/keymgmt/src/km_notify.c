@@ -191,6 +191,7 @@ km_handle_key_update(keymgmt_t *km, wlc_key_t *key, wlc_key_info_t *key_info)
 	if (km_pvt_key->flags & KM_FLAG_SCB_KEY) {
 		scb_t *scb;
 		int bandunit;
+		uint8 prio;
 
 		scb = km_pvt_key->u.scb;
 		bsscfg = SCB_BSSCFG(scb);
@@ -218,7 +219,18 @@ km_handle_key_update(keymgmt_t *km, wlc_key_t *key, wlc_key_info_t *key_info)
 			wlc_scb_pktc_enable(scb, key_info);
 		}
 #endif /* PKTC || PKTC_DONGLE */
-
+		/* free any frame reassembly buffer */
+		for (prio = 0; prio < NUMPRIO; prio++) {
+			if (scb->fragbuf[prio]) {
+				WL_ERROR(("wl%d: %s: discarding partial "
+					    "MSDU received from "MACF"\n",
+					    km->wlc->pub->unit, __FUNCTION__,
+					    ETHERP_TO_MACF(&scb->ea)));
+				PKTFREE(km->wlc->osh, scb->fragbuf[prio], FALSE);
+				scb->fragbuf[prio] = NULL;
+				scb->fragresid[prio] = 0;
+			}
+		}
 	} else {
 		bsscfg = km_pvt_key->u.bsscfg;
 	}

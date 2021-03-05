@@ -52,6 +52,10 @@ DECL_KEY_ALGO_INIT(wapi);
 
 #undef DECL_KEY_ALGO_INIT
 
+typedef unsigned long long km_uint64_t;
+#define KM_SEQ_TO_U64(_seq) ((km_uint64_t)(uint32)ltoh32_ua(_seq) | \
+	((km_uint64_t)(ltoh16_ua((const uint8 *)(_seq) + 4)) << 32))
+
 /* a key algorithm is implemented via follwing callbacks */
 
 /* destroy algorithm specific key */

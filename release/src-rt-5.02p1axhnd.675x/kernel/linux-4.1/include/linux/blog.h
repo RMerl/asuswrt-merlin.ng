@@ -628,7 +628,6 @@ typedef enum {
         BLOG_DECL(BRIDGEFDB_KEY_SET)    /* Set Client key into bridge FDB     */
         BLOG_DECL(BRIDGEFDB_KEY_GET)    /* Get Client key into bridge FDB     */
         BLOG_DECL(BRIDGEFDB_TIME_SET)   /* Refresh bridge FDB time            */
-        BLOG_DECL(BRIDGEFDB_IFIDX_GET)  /* Get bridge FDB's device ifindex    */
         BLOG_DECL(SYS_TIME_GET)         /* Get the system time in jiffies     */
         BLOG_DECL(GRE_TUNL_XMIT)        /* GRE Tunnel tx                      */
         BLOG_DECL(GRE6_TUNL_XMIT)       /* GRE6 Tunnel tx                      */
@@ -2209,6 +2208,7 @@ struct blog_t {
     /* --- [ARM64]64 byte cacheline boundary --- */
 
     void                * fdb[2];       /* fdb_src and fdb_dst */
+    uint32_t            ifidx[2];       /* fdb src and fdb dst bridge ifidx */
     int8_t              delta[MAX_VIRT_DEV];  /* octet delta info */
     int8_t              tx_dev_delta; /* octet delta of TX dev */
     uint8_t             l2_dirty_offset;
@@ -2917,6 +2917,8 @@ typedef struct {
     wait_queue_head_t   wqh;
     unsigned long       work_avail;
 #define BLOG_WORK_AVAIL               (1<<0)
+    spinlock_t		wakeup_lock;
+    bool wakeup_done;
 } wq_info_t;
 
 #define BLOG_WAKEUP_WORKER_THREAD(x, mask)                              \
@@ -2927,6 +2929,16 @@ do {                                                                    \
     }                                                                   \
 } while (0)
 
+/*wake up with spinlock to avoid preemption/bh processing between
+ *setting work_avail & wakeup
+ */
+#define BLOG_WAKEUP_WORKER_THREAD_NO_PREEMPT(x, mask)               \
+do {                                                                \
+    spin_lock_bh(&((x)->wakeup_lock));								\
+    BLOG_WAKEUP_WORKER_THREAD(x, mask);	                         	\
+    (x)->wakeup_done = true;                                        \
+    spin_unlock_bh(&((x)->wakeup_lock));                            \
+} while (0)
 
 #endif /* defined(__BLOG_H_INCLUDED__) */
 

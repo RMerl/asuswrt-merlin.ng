@@ -128,8 +128,8 @@ typedef struct dhd_pktfwd_keymap        dhd_pktfwd_keymap_t;
 extern char * nvram_get(const char *name);
 #define NVRAM_DWDS_AP_PKTFWD_ACCEL	"dhd_dwds_ap_pktfwd"  /* 0: disable, 1: enable */
 #define NVRAM_DWDS_STA_PKTFWD_ACCEL	"dhd_dwds_sta_pktfwd"  /* 0: disable, 1: enable */
-bool dhd_dwds_ap_pktfwd_accel = false; /* default dwds ap pktfwd accel */
-bool dhd_dwds_sta_pktfwd_accel = false; /* default dwds sta pktfwd accel */
+bool dhd_dwds_ap_pktfwd_accel = true; /* default dwds ap pktfwd accel */
+bool dhd_dwds_sta_pktfwd_accel = true; /* default dwds sta pktfwd accel */
 
 /**
  * =============================================================================
@@ -786,25 +786,29 @@ dhd_pktfwd_cache(uint8_t * d3addr, struct net_device * net_device)
 {
     bool is_wlan, cache_eligible;
     d3lut_elem_t * d3lut_elem;
+    struct net_device * root_net_device = net_device;
 
     PKTFWD_PTRACE(D3LUT_SYM_FMT "%s", D3LUT_SYM_VAL(d3addr), net_device->name);
 
-    is_wlan = is_netdev_wlan(net_device);
+    /* Get the root net device for further processing */
+    root_net_device = netdev_path_get_root(net_device);
+
+    is_wlan = is_netdev_wlan(root_net_device);
     if (is_wlan)
     {
     	dhd_pktfwd_priv_t *dhd_pktfwd_priv;
 
     	/* check if wlan virtual device */
-    	if (check_virt_wlan(net_device))
+    	if (check_virt_wlan(root_net_device))
     		goto dhd_pktfwd_cache_failure;
 
-    	dhd_pktfwd_priv = dhd_pktfwd_get_priv(net_device);
+    	dhd_pktfwd_priv = dhd_pktfwd_get_priv(root_net_device);
     	ASSERT(dhd_pktfwd_priv);
 
     	cache_eligible = (dhd_pktfwd_priv->ifp &&
     		(dhd_pktfwd_priv->d3fwd_wlif != D3FWD_WLIF_NULL)) ?
     		true : false; /* only WLAN NIC endpoints, exclude DHD endpoints */
-
+    
     	if ((dhd_dwds_ap_pktfwd_accel == false) && dhd_pktfwd_priv->d3fwd_wlif &&
     		is_netdev_wlan_dwds_ap(dhd_pktfwd_priv->d3fwd_wlif))
     			goto dhd_pktfwd_cache_failure;
@@ -820,7 +824,7 @@ dhd_pktfwd_cache(uint8_t * d3addr, struct net_device * net_device)
 	    goto dhd_pktfwd_cache_failure;
 
     /* Insert into D3LUT */
-    d3lut_elem = dhd_pktfwd_lut_ins(d3addr, net_device, is_wlan);
+    d3lut_elem = dhd_pktfwd_lut_ins(d3addr, root_net_device, is_wlan);
 
     if (d3lut_elem == D3LUT_ELEM_NULL) /* collision maybe or a D3LUT error */
     	goto dhd_pktfwd_cache_failure;
@@ -834,6 +838,10 @@ dhd_pktfwd_cache(uint8_t * d3addr, struct net_device * net_device)
 
     PKTFWD_PTRACE(D3LUT_ELEM_FMT, D3LUT_ELEM_VAL(d3lut_elem));
 
+    /* Save the virtual device pointer so that we
+     * can derive the upper layer bridge later
+     */
+    d3lut_elem->ext.virt_net_device = net_device;
     /* 2b wfdidx | 16 chainidx (2b domain, 2b incarn, 12b index) */
     return (unsigned long) PKTC_WFD_CHAIN_IDX(d3lut_elem->key.domain, d3lut_elem->key.v16);
 
@@ -1002,9 +1010,14 @@ dhd_pktfwd_lut_ins(uint8_t * d3addr,
 	    }
 
 	    /* if d3lut_elem exists for dwds, just return it */
-	    if ((is_netdev_wlan_dwds_ap(d3fwd_wlif) || is_netdev_wlan_dwds_client(d3fwd_wlif)) && 
-                        (d3fwd_wlif->wds_d3lut_elem != NULL)) {
-	         return (void *) d3fwd_wlif->wds_d3lut_elem;
+	    if ((is_netdev_wlan_dwds_ap(d3fwd_wlif) || is_netdev_wlan_dwds_client(d3fwd_wlif))) {
+	        if (d3fwd_wlif->wds_d3lut_elem != NULL) {
+	            return (void *) d3fwd_wlif->wds_d3lut_elem;
+	        } else {
+#if defined(BCM_PKTFWD_DWDS)
+	            dhd_alloc_dwds_idx(dhdp, ssid /*ifidx*/);
+#endif
+	        }
 	    }
 
 	    d3domain = radio_idx;
@@ -1174,7 +1187,7 @@ dhd_pktfwd_lut_del(uint8_t * d3addr, struct net_device * net_device)
     
     	    if (lut_del_eligible == false)
     		    return;
-
+    
    	    if ((dhd_dwds_ap_pktfwd_accel == false) && dhd_pktfwd_priv->d3fwd_wlif &&
  	       	is_netdev_wlan_dwds_ap(dhd_pktfwd_priv->d3fwd_wlif))
     		    return;
@@ -2140,7 +2153,7 @@ dhd_pktfwd_pktlist_xmit_done:
  */
 
 int
-dhd_pktfwd_pktqueue_add_pkt(dhd_pub_t * dhd_pub, struct net_device * net_device,
+dhd_pktfwd_pktqueue_add_pkt(dhd_pub_t * dhd_pub, struct net_device * rx_net_device,
                             void * pkt)
 {
     int ret = BCME_OK;
@@ -2174,6 +2187,24 @@ dhd_pktfwd_pktqueue_add_pkt(dhd_pub_t * dhd_pub, struct net_device * net_device,
 
     d3lut_elem = d3lut_lkup(dhd_pktfwd->d3lut, d3_addr, D3LUT_LKUP_GLOBAL_POOL);
     prio       = PKTPRIO(pkt);
+
+    /* Check if the packet is destined to different bridge interface
+     * Pass it trough the network stack in that case
+     */
+    if (d3lut_elem != D3LUT_ELEM_NULL) {
+        struct net_device *rx_br_dev = NULL, *dst_br_dev = NULL;
+
+        if (rtnl_trylock()) {
+            rx_br_dev = netdev_master_upper_dev_get(rx_net_device);
+            dst_br_dev =
+                netdev_master_upper_dev_get(d3lut_elem->ext.virt_net_device);
+            rtnl_unlock();
+        }
+
+        if ((rx_br_dev == NULL) || (dst_br_dev != rx_br_dev)) {
+            d3lut_elem = D3LUT_ELEM_NULL;
+        }
+    }
 
     if ( likely(d3lut_elem != D3LUT_ELEM_NULL) &&
          (eh->ether_type != hton16(ETHER_TYPE_8021Q)))
@@ -2243,7 +2274,7 @@ dhd_pktfwd_pktqueue_add_pkt_bypass:
         dhd_pktfwd_priv_t * dhd_pktfwd_priv;
         d3fwd_wlif_t      * d3fwd_wlif;
 
-        dhd_pktfwd_priv = dhd_pktfwd_get_priv(net_device);
+        dhd_pktfwd_priv = dhd_pktfwd_get_priv(rx_net_device);
         d3fwd_wlif      = dhd_pktfwd_priv->d3fwd_wlif;
 
         D3FWD_STATS_ADD(d3fwd_wlif->stats[prio].rx_tot_pkts, 1);
@@ -2395,6 +2426,26 @@ dhd_pktfwd_upstream(dhd_pub_t *dhdp, pNBuff_t pNBuff)
         	}
         	else
         	net_device = (struct net_device *) NULL;
+        }
+
+        if (net_device != NULL) {
+            struct net_device *rx_br_dev = NULL, *dst_br_dev = NULL;
+            struct sk_buff *skb = PNBUFF_2_SKBUFF(pNBuff);
+
+            /* Check if the packet is destined to different bridge interface
+             * Pass it trough the network stack in that case
+             */
+            if (rtnl_trylock()) {
+                rx_br_dev = netdev_master_upper_dev_get(skb->dev);
+                dst_br_dev =
+                    netdev_master_upper_dev_get(d3lut_elem->ext.virt_net_device);
+                rtnl_unlock();
+            }
+
+            if ((rx_br_dev == NULL) || (dst_br_dev != rx_br_dev)) {
+                d3lut_elem = D3LUT_ELEM_NULL;
+                net_device = NULL;
+            }
         }
     }
     else

@@ -1,3 +1,0 @@
-dependson: private/libs/seltctl private/libs/xdslctl
-condition: ifneq ($(strip $(BUILD_DSL_SELT_TEST)),)
-

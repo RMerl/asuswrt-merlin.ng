@@ -4,6 +4,9 @@
 obj-$(CONFIG_ARM64) += bcm_legacy_io_map.o
 obj-$(CONFIG_ARM64) += bcm_arm_irq.o
 obj-$(CONFIG_ARM64) += bcm_arm64_setup.o
+ifeq ($(PREBUILT_EXTRAMOD),1)
+bcm_thermal-objs := bcm_thermal_preb.o
+endif
 obj-$(CONFIG_ARM64) += bcm_memc_irq.o
 obj-$(CONFIG_BCM_THERMAL) += bcm_thermal.o
 obj-$(CONFIG_BCM_ARM_CPUIDLE) += bcm_arm_cpuidle.o
@@ -50,6 +53,9 @@ endif
 
 # mips platforms are still not modified to use these drivers
 ifeq ($(filter-out 63138 63148 4908 6858 63158 6846 6878 47622 47189 6856 63178 47622,${BRCM_CHIP}),)
+ifeq ($(PREBUILT_EXTRAMOD),1)
+bcm_usb-objs := bcm_usb_preb.o
+endif
 obj-$(CONFIG_USB_EHCI_HCD) += bcm_usb.o
 obj-$(CONFIG_SATA_AHCI_PLATFORM) += bcm_sata.o
 endif

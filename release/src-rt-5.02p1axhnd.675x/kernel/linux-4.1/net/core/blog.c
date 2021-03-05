@@ -432,7 +432,6 @@ const char * strBlogRequest[BLOG_REQUEST_MAX] =
     BLOG_ARY_INIT(BRIDGEFDB_KEY_SET)
     BLOG_ARY_INIT(BRIDGEFDB_KEY_GET)
     BLOG_ARY_INIT(BRIDGEFDB_TIME_SET)
-    BLOG_ARY_INIT(BRIDGEFDB_IFIDX_GET)
     BLOG_ARY_INIT(SYS_TIME_GET) 
     BLOG_ARY_INIT(GRE_TUNL_XMIT)
     BLOG_ARY_INIT(GRE6_TUNL_XMIT)
@@ -756,7 +755,7 @@ static void blog_put_dev_stats(struct net_device *dev_p,
  */
 static void blog_notify_callback(void *data)
 {
-    BLOG_WAKEUP_WORKER_THREAD((wq_info_t *)data, BLOG_WORK_AVAIL);
+    BLOG_WAKEUP_WORKER_THREAD_NO_PREEMPT((wq_info_t *)data, BLOG_WORK_AVAIL);
 }
 
 int blog_preemptible_task(void)
@@ -788,6 +787,8 @@ void blog_notify_async_wait(BlogNotify_t event, void *net_p,
     int ret_val;
     wq_info_t   blog_notify_thread; /* blog_notify_async() caller thread */
     blog_notify_thread.work_avail = 0;
+    blog_notify_thread.wakeup_done = false;
+    spin_lock_init(&blog_notify_thread.wakeup_lock);
     init_waitqueue_head(&blog_notify_thread.wqh);
 
     if (blog_preemptible_task())
@@ -803,7 +804,14 @@ void blog_notify_async_wait(BlogNotify_t event, void *net_p,
                 wait_event_interruptible(blog_notify_thread.wqh,
                         blog_notify_thread.work_avail);
             } while (!(blog_notify_thread.work_avail & BLOG_WORK_AVAIL));
-            blog_notify_thread.work_avail &= (~BLOG_WORK_AVAIL);
+
+	    /* here spinlock ensures no race condition on wait_event,
+	     * in between setting work_avail and wakeup
+	     */
+	    spin_lock_bh(&blog_notify_thread.wakeup_lock);
+	    if(blog_notify_thread.wakeup_done == false)
+		WARN(1, "blog_notify_async improrper wakeup\n");
+	    spin_unlock_bh(&blog_notify_thread.wakeup_lock);
         }
     }
     else
@@ -1692,6 +1700,7 @@ void blog_link( BlogNetEntity_t entity_type, Blog_t * blog_p,
             }
 
             blog_p->fdb[param1] = net_p;
+            blog_p->ifidx[param1] = param2;
             break;
         }
 
@@ -2209,16 +2218,6 @@ unsigned long blog_request( BlogRequest_t request, void * net_p,
         case BRIDGEFDB_TIME_SET:
             ((struct net_bridge_fdb_entry *)net_p)->updated = param2;
             return 0;
-
-        case BRIDGEFDB_IFIDX_GET:
-        {
-            struct net_bridge_fdb_entry *fdb_p = (struct net_bridge_fdb_entry *)net_p;
-            if (fdb_p && fdb_p->dst && fdb_p->dst->dev)
-                ret = fdb_p->dst->dev->ifindex;
-            else
-                ret = 0;
-            break;
-        }
 
         case NETIF_PUT_STATS:
         {

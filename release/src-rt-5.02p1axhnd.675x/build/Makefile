@@ -868,6 +868,8 @@ $(if $(findstring sy, $(8)), \
        [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || [ ! -f $(HND_SRC)/../../buildtools/private.pem ] || openssl sha1 -sign $(HND_SRC)/../../buildtools/private.pem -out $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w; \
        [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || rm -rf $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_pureubi*; \
        [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || rm -rf $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi*; \
+       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || rm -rf $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))*_squbi*; \
+       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || rm -rf $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND__FS_IMAGE_NAME_$(3))*_ubi*; \
   )
 endef
 

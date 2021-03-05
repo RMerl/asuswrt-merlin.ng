@@ -2974,6 +2974,10 @@ static int nl80211_set_key(struct sk_buff *skb, struct genl_info *info)
 #ifndef CONFIG_BCM_KF_CFG80211_BACKPORT
 	if (!key.def && !key.defmgmt)
 #else
+	if (WARN(!dev->ieee80211_ptr, "ndev %s (%s) has no wdev",
+		netdev_name(dev), netdev_reg_state(dev)))
+		return -ENODEV;
+
 	if (!key.def && !key.defmgmt && !key.defbeacon)
 #endif /* CONFIG_BCM_KF_CFG80211_BACKPORT */
 		return -EINVAL;

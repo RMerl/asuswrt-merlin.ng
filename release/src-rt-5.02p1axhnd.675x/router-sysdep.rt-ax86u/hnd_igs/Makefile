@@ -45,7 +45,7 @@ else
 REBUILD_IGS_MODULE=$(shell if [ -d "$(src)/$(IGSSRCDIR)" -a "$(REUSE_PREBUILT_IGS)" != "1" ]; then echo 1; else echo 0; fi)
 endif
 
-ifneq ($(wildcard $(src)/../../router-sysdep/hnd_igs/prebuilt/igs.o),)
+ifneq ($(wildcard $(src)/../../router-sysdep/hnd_igs/../hnd_extra/prebuilt/igs.o),)
 REBUILD_IGS_MODULE=0
 endif
 
@@ -76,8 +76,8 @@ obj-$(CONFIG_BCM_WLAN) := igs.o
 else # IGSSRCDIR doesn't exist
     # Otherwise, assume prebuilt object module(s) in src/igs/linux directory
     prebuilt := igs.o
-    igs-objs := prebuilt/$(prebuilt)
-    obj-$(CONFIG_BCM_WLAN) := igs.o
+    igs-objs := ../hnd_extra/prebuilt/$(prebuilt)
+    obj-$(CONFIG_BCM_WLAN) := $(prebuilt)
 endif
 
 clean-files += $(IGSCSRCDIR)/*.o $(IGSSRCDIR)/*.o $(IGSCSRCDIR)/.*.o.cmd $(IGSSRCDIR)/.*.o.cmd

@@ -31,12 +31,16 @@
 # Makefile for the Runner FPM driver based on BCM3390's FPM driver
 #
 
+ifneq ($(PREBUILT_EXTRAMOD),1)
 rdp_fpm-objs := fpm_core.o fpm_proc.o
 ifneq ($(CONFIG_BCM_FPM_DT),)
 rdp_fpm-objs += fpm_dt.o
 endif
 ifneq ($(CONFIG_BCM_FPM_TOKEN_HIST),)
 rdp_fpm-objs += fpm_hist.o
+endif
+else
+rdp_fpm-objs += rdp_fpm_preb.o
 endif
 obj-$(CONFIG_BCM_FPM) += rdp_fpm.o
 

@@ -127,6 +127,18 @@ typedef struct _FILE_TAG
 #define WFI_FLAG_DDR_TYPE_DDR3      (0x1<<WFI_FLAG_DDR_TYPE_SHIFT)
 #define WFI_FLAG_DDR_TYPE_DDR4      (0x2<<WFI_FLAG_DDR_TYPE_SHIFT)
 
+#if defined(_CFE_) && defined(RTAC68U_V4)
+struct trx_header {
+	unsigned int magic;		/* "HDR0" */
+	unsigned int len;		/* Length of file including header */
+	unsigned int crc32;		/* 32-bit CRC from flag_version to end of file */
+	unsigned int flag_version;	/* 0:15 flags, 16:31 version */
+	unsigned int offsets[3];	/* Offsets of partitions from start of header */
+};
+
+#define TRX_MAGIC	0x30524448	/* "HDR0" */
+#endif
+
 /* TAG at end of whole flash ".w" image.  Size must be TOKEN_LEN. */
 typedef struct _WFI_TAG
 {

@@ -33,11 +33,16 @@
 #
 MODULE_NAME=wfd
 
+ifneq ($(PREBUILT_EXTRAMOD),1)
+
 $(MODULE_NAME)-objs += wfd_dev.o
 ifneq ($(strip $(CONFIG_BCM_WFD_RATE_LIMITER)),)
 $(MODULE_NAME)-objs += rate_limiter.o
 endif
 
+else
+$(MODULE_NAME)-objs := $(MODULE_NAME)$(PRBM_EXT).o
+endif
 
 obj-$(CONFIG_BCM_WIFI_FORWARDING_DRV) += $(MODULE_NAME).o
 

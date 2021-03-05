@@ -49,6 +49,9 @@
 extern void* wl_awl_attach(struct wl_info *wl, uint unit);
 extern void wl_awl_detach(struct wl_info *wl, void *awl);
 
+extern void wl_awl_register_dev(struct net_device *dev);
+extern void wl_awl_unregister_dev(struct net_device *dev);
+
 /**
  * Downstream (Tx) Path Interface
  */

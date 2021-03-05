@@ -422,6 +422,38 @@ wl_awl_pktlist_free(struct wl_info *wl, pktlist_t *pktlist)
 
 /**
  * -----------------------------------------------------------------------------
+ * Function : free skb's from SLL by the given net_device
+ *            unlink and free the packets
+ *
+ * -----------------------------------------------------------------------------
+ */
+void
+wl_awl_pktlist_flush(pktlist_t *pktlist, struct net_device *dev)
+{
+	struct sk_buff *skb;
+	int pkts;
+
+	pkts = pktlist->len;
+	if (pkts != 0) {
+		skb = (struct sk_buff*)pktlist->head;
+		PKTLIST_RESET(pktlist);
+
+		while (pkts--) {
+			struct sk_buff* nskb = skb->prev;
+			skb->next = skb->prev = NULL;
+
+			if (skb->dev == dev) {
+				PKTFREE(PKT_OSH_NA, skb, FALSE);
+			} else {
+				wl_awl_pktlist_add(pktlist, skb);
+			}
+			skb = nskb;
+		}
+	}
+}
+
+/**
+ * -----------------------------------------------------------------------------
  * Function : wl_sendup essential processing for flow-miss packets from Archer
  *            Filters packets for spdsvc, blog and sends the packet to network
  *            stack.
@@ -1148,4 +1180,45 @@ wl_awl_detach(struct wl_info *wl, void *ctxt)
 	WL_AWL_LOG("wl%d_awl detach complete", wl->unit);
 
 	return;
+}
+
+/**
+ * -----------------------------------------------------------------------------
+ * Function : Function to register net device
+ * -----------------------------------------------------------------------------
+ */
+void
+wl_awl_register_dev(struct net_device *dev)
+{
+}
+
+/**
+ * -----------------------------------------------------------------------------
+ * Function : Function to unregister net device
+ * -----------------------------------------------------------------------------
+ */
+void
+wl_awl_unregister_dev(struct net_device *dev)
+{
+	wl_if_t *wlif;
+	wl_awl_t *awl;
+
+	if (dev && is_netdev_wlan(dev)) {
+		WL_AWL_LOG("Flushing net_device %s.\n", dev->name);
+
+		wlif = WL_DEV_IF(dev);
+		if (wlif && wlif->wl) {
+			awl = WL_AWL_CB(wlif->wl);
+
+			/* Flush A2W packet SLL under lock */
+			WL_AWL_PKTLIST_LOCK(awl->rx.a2w_pktl_lock);
+			wl_awl_pktlist_flush(WL_AWL_RX_A2W_PKTL(awl), dev);
+			WL_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
+
+			/* Flush W2A packet SLL */
+			WL_LOCK(wlif->wl);
+			wl_awl_pktlist_flush(WL_AWL_RX_W2A_PKTL(awl), dev);
+			WL_UNLOCK(wlif->wl);
+		}
+	}
 }

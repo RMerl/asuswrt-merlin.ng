@@ -1597,11 +1597,12 @@ static void pmc_patch_4908(void)
 		uint32 slow, fast; // margin
 
 		if ((cap & 15) != 0) {
-			slow =  80, fast =  55;
+//			slow =  80, fast =  55;
+			slow =  90, fast =  70;
 		} else {
 			slow = 100, fast = 100;
 		}
-
+printk("%s:avs default margin => slow[%d] fast[%d]\n", __func__, slow, fast);
 		if (SendCommand(96, 0, 0, 0, slow, fast, &rsp)
 			|| rsp.word0.Bits.error)
 			printk("%s:%d %d %x %x %x\n", __func__,

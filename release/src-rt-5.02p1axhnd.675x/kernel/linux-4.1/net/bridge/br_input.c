@@ -262,10 +262,10 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 		src = __br_fdb_get(br, eth_hdr(skb)->h_source, vid);
 		blog_lock();
 		if (src)
-			blog_link(BRIDGEFDB, blog_ptr(skb), (void*)src, BLOG_PARAM1_SRCFDB, 0);
+			blog_link(BRIDGEFDB, blog_ptr(skb), (void*)src, BLOG_PARAM1_SRCFDB, br->dev->ifindex);
 
 		if (dst)
-			blog_link(BRIDGEFDB, blog_ptr(skb), (void*)dst, BLOG_PARAM1_DSTFDB, 0);
+			blog_link(BRIDGEFDB, blog_ptr(skb), (void*)dst, BLOG_PARAM1_DSTFDB, br->dev->ifindex);
 
 		blog_unlock();
 
@@ -343,12 +343,7 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 			 * Get the root dest device and make sure that we 
 			 * are always transmitting to a root device */
 
-				struct net_device *root_dst_dev_p = dst->dst->dev;
-				/* Get the root destination device */
-				while (!netdev_path_is_root(root_dst_dev_p)) {
-					root_dst_dev_p = netdev_path_next_dev(root_dst_dev_p);
-				}
- 
+				struct net_device *dst_dev_p = dst->dst->dev;	
 				/* Update chaining table for DHD on the wl to switch direction only */
 				if ( (    from_wl_to_switch
 #if defined(CONFIG_BCM947189)
@@ -359,14 +354,14 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 				{
 					dhd_pktc_req_hook(PKTC_TBL_UPDATE,
 								     (unsigned long)&(dst->addr.addr[0]),
-								     (unsigned long)root_dst_dev_p, 0);
+								     (unsigned long)dst_dev_p, 0);
 				}
 			 
 			 	/* Update chaining table for WL (NIC driver) */
 				chainIdx = wl_pktc_req_hook ? 
 								wl_pktc_req_hook(PKTC_TBL_UPDATE,
 								     (unsigned long)&(dst->addr.addr[0]),
-								     (unsigned long)root_dst_dev_p, 0) : PKTC_INVALID_CHAIN_IDX;
+								     (unsigned long)dst_dev_p, 0) : PKTC_INVALID_CHAIN_IDX;
 				if (chainIdx != PKTC_INVALID_CHAIN_IDX) {
 					/* Update chainIdx in blog
 					 * chainEntry->tx_dev will always be NOT 

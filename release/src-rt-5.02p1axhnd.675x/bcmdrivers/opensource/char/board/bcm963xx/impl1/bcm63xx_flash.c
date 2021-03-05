@@ -1478,7 +1478,7 @@ int crashFileSet(const char* filename)
 		ret, retlen, pbuffer[0], pbuffer[1], pbuffer[2]);
         //size = 0; /* zero-length file */
     } else {
-    kerSysFsFileSet(filename, pbuffer, size);
+        kerSysFsFileSet(filename, pbuffer, size);
         crashLogErase();
     }
 

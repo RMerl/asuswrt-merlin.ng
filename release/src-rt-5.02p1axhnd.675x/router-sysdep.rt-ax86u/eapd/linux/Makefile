@@ -144,6 +144,10 @@ CFLAGS += -DBCM_WLEVENT
 OBJS += wlceventd_eap.o
 CFLAGS += -DBCM_WLCEVENTD
 
+ifeq ($(wildcard $(SRCBASE)/router-sysdep/eapd${BCMEX}$(EX7)/*.c),)
+all:
+	cp -f prebuilt/eapd eapd
+else
 all: eapd
 
 ifneq ($(PREBUILT_BCMBIN),1)
@@ -152,6 +156,7 @@ eapd: $(OBJS)
 else
 eapd:
 	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/$(PRBM_DIR)/$@ ./
+endif
 endif
 
 

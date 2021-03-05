@@ -45,7 +45,7 @@ endif
 
 REBUILD_HND_MODULE=$(shell if [ -d "$(src)/$(HND_DIR)" -a "$(REUSE_PREBUILT_HND)" != "1" ]; then echo 1; else echo 0; fi)
 
-ifneq ($(wildcard $(src)/$(HND_DIR)/prebuilt/hnd.o),)
+ifneq ($(wildcard $(src)/$(HND_DIR)/../hnd_extra/prebuilt/hnd.o),)
 REBUILD_HND_MODULE=0
 endif
 
@@ -92,7 +92,10 @@ endif
 
     ifeq ($(strip $(WLWFD)), 1)
         EXTRA_CFLAGS += -DBCM_WFD
-        EXTRA_CFLAGS += -DPKTC -DPKTC_TBL
+        EXTRA_CFLAGS += -DPKTC_TBL
+        ifneq ($(BUILD_HND_EAP_AP1),y)
+            EXTRA_CFLAGS += -DPKTC
+        endif
         EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
     endif
 
@@ -162,8 +165,8 @@ else # HND_DIR doesn't exist
 
     # Otherwise, assume prebuilt object module(s) in src/hnd/linux directory
     prebuilt := hnd.o
-    hnd-objs := prebuilt/$(prebuilt)
-    obj-$(CONFIG_BCM_WLAN) := hnd.o
+    hnd-objs := ../hnd_extra/prebuilt/$(prebuilt)
+    obj-$(CONFIG_BCM_WLAN) := $(prebuilt)
 endif
 
 clean-files += $(HND_DIR)/*.o $(HNDFILES_SRC)/*.o $(HND_DIR)/shared_ksyms.c

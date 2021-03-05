@@ -2089,6 +2089,7 @@ struct d3fwd_ext                        /* d3fwd_ext_t */
     };
     uint16_t            ssid;           /* WLAN interface index */
     uint16_t            rsvd16;         /* pad a D3LUT element to 16 B */
+    struct net_device * virt_net_device; /* virtual interface's net_device */
 };
 
 void d3fwd_ext_dump(d3fwd_ext_t *d3fwd_ext);

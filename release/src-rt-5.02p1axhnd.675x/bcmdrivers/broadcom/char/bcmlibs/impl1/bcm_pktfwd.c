@@ -367,7 +367,7 @@ pktlist_context_fini(pktlist_context_t * pktlist_context)
 static inline void
 __pktlist_context_dump(pktlist_context_t * pktlist_context)
 {
-    printk("%s pktlist%u <%u:%u> dispatch<%u> list<%u> pkts<%u> peer<%p,%pS>\n",
+    printk("%s pktlist%u <%u:%u> dispatch<%u> list<%u> pkts<%u> peer<%px,%pS>\n",  
         pktlist_context->driver_name, pktlist_context->unit,
         PKTLIST_PRIO_MAX, PKTLIST_DEST_MAX,
         pktlist_context->dispatches, pktlist_context->list_stats,
@@ -444,7 +444,7 @@ pktlist_context_dump_all(void)
     bool dump_peer    = false;
     bool dump_verbose = false;
 
-#if defined(CC_PKTLIST_DEBUG)
+#if 1 //defined(CC_PKTLIST_DEBUG)
     dump_verbose = true;
 #endif
 
@@ -721,11 +721,10 @@ d3fwd_wlif_dump(d3fwd_wlif_t *d3fwd_wlif)
 
     net_device = d3fwd_wlif->net_device; /* no lock is taken: read name */
     if (net_device == (struct net_device *)NULL) {
-        printk("d3fwd_wlif net_device NULL\n");
         return;
     }
 
-    printk("\t\t d3fwd_wlif <%s:%p,%p,%p> unit %u wfd_idx %u stations %u\n",
+    printk("\t\t d3fwd_wlif <%s:%px,%px,%px> unit %u wfd_idx %u stations %u\n",
             net_device->name, net_device, d3fwd_wlif->wlif, d3fwd_wlif,
             d3fwd_wlif->unit, d3fwd_wlif->wfd_idx, d3fwd_wlif->stations);
 
@@ -1647,7 +1646,7 @@ d3lut_dump(d3lut_t * d3lut)
     d3lut_pool_t * d3lut_pool;
     bool dump_verbose = false;
 
-#if (CC_D3LUT_DEBUG >= 1)
+#if 1 //(CC_D3LUT_DEBUG >= 1)
     dump_verbose = true;
 #endif
 
@@ -1840,6 +1839,11 @@ d3lut_ins(d3lut_t * d3lut, uint8_t * sym, uint32_t pool,
         }   /* else check whether it is a duplicate */
         else if (__d3lut_cmp(d3lut_elem->sym.v16, (uint16_t *)sym) == 0)
         {
+	    if (d3lut_elem->key.domain != pool)
+	    {
+		/* roaming, let the packet go through slow path */
+		return D3LUT_ELEM_NULL;
+	    }
             /* permit duplicates: no change to incarnation */
             goto d3lut_ins_found_duplicate;
         }

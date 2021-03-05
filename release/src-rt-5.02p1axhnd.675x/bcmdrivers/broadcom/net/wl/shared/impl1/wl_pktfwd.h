@@ -55,10 +55,8 @@
  * */
 //#define WL_PKTFWD_TXEVAL
 
-#if defined(WLATF)
-/** In classic ATF, bound number of pktlists transmitted per wl_thread loop */
+/** Bound number of pktlists transmitted per wl_thread loop */
 #define WL_PKTFWD_RUNQ              (16) /* budget in units of pktlists */
-#endif
 #endif /* WL_PKTFWD_VERSION >= 1.1.0 */
 
 #define WL_PKTFWD_FAILURE           (-1)

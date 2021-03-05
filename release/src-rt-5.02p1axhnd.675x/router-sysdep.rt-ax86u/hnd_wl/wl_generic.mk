@@ -267,7 +267,10 @@ endif
 	# Makefile. Will be fixed later when that one build enables WFD.
         ifneq ($(filter 1,$(WLWFD) $(WLEAPBLD)),)
 		ifneq ($(strip $(CONFIG_BCM_PKTFWD)),)
-			EXTRA_CFLAGS += -DBCM_PKTFWD -DWL_PKTQUEUE_RXCHAIN
+			EXTRA_CFLAGS += -DBCM_PKTFWD
+			ifneq ($(BUILD_HND_EAP_AP1),y)
+				EXTRA_CFLAGS += -DWL_PKTQUEUE_RXCHAIN
+			endif
 			EXTRA_CFLAGS += -DWL_PKTFWD_INTRABSS
 
 			# Enable credit based Host Flow Control
@@ -283,8 +286,12 @@ endif
 		ifneq ($(strip $(CONFIG_BCM_EAPFWD)),)
 			EXTRA_CFLAGS += -DBCM_EAPFWD
 		endif
-		 EXTRA_CFLAGS += -I$(WLSRC_BASE)/../../../shared/impl1
-		 EXTRA_CFLAGS += -DPKTC -DPKTC_TBL
+		EXTRA_CFLAGS += -I$(WLSRC_BASE)/../../../shared/impl1
+		EXTRA_CFLAGS += -DPKTC_TBL
+		ifneq ($(BUILD_HND_EAP_AP1),y)
+			EXTRA_CFLAGS += -DPKTC
+		endif
+
 		 WLFILES_SRC += ../../shared/impl1/wl_thread.c
 	 endif
 
@@ -356,8 +363,7 @@ else # SRCBASE/wl/sys doesn't exist
     else
 	prebuilt := wl.o
     endif
-#    $(TARGET)-objs := $(SRCBASE_OFFSET)/wl/linux/prebuilt/$(prebuilt)
-    $(TARGET)-objs := prebuilt/$(prebuilt)
+    $(TARGET)-objs := $(SRCBASE_OFFSET)/wl/linux/prebuilt/$(prebuilt)
     obj-$(CONFIG_BCM_WLAN) := $(TARGET).o
 
 endif

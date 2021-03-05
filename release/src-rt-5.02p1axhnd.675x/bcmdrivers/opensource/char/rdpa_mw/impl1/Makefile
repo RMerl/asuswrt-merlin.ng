@@ -31,7 +31,11 @@
 obj-$(CONFIG_BCM_RDPA_MW) := rdpa_mw.o
 
 SRCS := $(subst rdpa_mw.mod.c,,$(notdir $(shell ls $(src)/*.c)))
+ifeq ($(PREBUILT_EXTRAMOD),1)
+OBJS := rdpa_mw_preb.o
+else
 OBJS := $(SRCS:.c=.o)
+endif
 rdpa_mw-objs += $(OBJS)
 
 EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/char/time_sync/impl$(CONFIG_BCM_TIME_SYNC_IMPL)

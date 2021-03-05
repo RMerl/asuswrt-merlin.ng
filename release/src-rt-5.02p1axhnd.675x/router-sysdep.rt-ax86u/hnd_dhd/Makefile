@@ -49,7 +49,7 @@ REBUILD_DHD_MODULE=$(shell if [ -d "$(SRCBASE)/../../$(SRCBASE_DHD)/dhd/sys" ]; 
 endif
 $(info "module : $(REBUILD_DHD_MODULE)")
 
-ifneq ($(wildcard $(src)/../../router-sysdep/hnd_dhd/prebuilt/dhd.o),)
+ifneq ($(wildcard $(src)/../../router-sysdep/hnd_dhd/../hnd_extra/prebuilt/dhd.o),)
 REBUILD_DHD_MODULE=0
 endif
 
@@ -95,8 +95,8 @@ ifeq ($(REBUILD_DHD_MODULE),1)
 
 else # Use prebuilt modules
 
-    prebuilt := dhd.o
-    $(TARGET)-objs := prebuilt/$(prebuilt)
-    obj-$(CONFIG_BCM_WLAN) := $(TARGET).o
+    prebuilt := $(TARGET).o
+    $(TARGET)-objs := ../hnd_extra/prebuilt/$(prebuilt)
+    obj-$(CONFIG_BCM_WLAN) := $(prebuilt)
 
 endif

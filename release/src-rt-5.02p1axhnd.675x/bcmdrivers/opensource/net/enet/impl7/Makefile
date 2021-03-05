@@ -30,6 +30,7 @@ endif
 
 endif
 
+ifneq ($(PREBUILT_EXTRAMOD),1)
 ifneq ($(CONFIG_BCM_ARCHER),)
 $(NAME)-objs += archer.o
 else
@@ -198,6 +199,10 @@ EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP)/main/src/i
 EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/net/wl/shared/impl1
 EXTRA_CFLAGS += -DDSLCPE -DBCMDRIVER -DPKTC
 endif
+
+else
+bcm_enet-objs += bcm_enet$(PRBM_EXT).o
+endif   ## PREBUILT_EXTRAMOD
 
 -include $(TOPDIR)/Rules.make
 

@@ -75,6 +75,7 @@
 						<option>20</option>
 						<option>40</option>
 						<option>80</option>
+						<option>160</option>
 						</select>
 					</fieldset>
 					<button id="scanbutton" type="button" class="cmnbtnclass">Scan</button>

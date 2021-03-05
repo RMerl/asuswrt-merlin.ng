@@ -106,6 +106,12 @@ endif
 EXTRA_CFLAGS += -DCONFIG_CMDLIST_SPE
 endif
 
+ifneq ($(PREBUILT_EXTRAMOD),1)
+bcmcmdlist-objs += cmdlist.o
+else
+cmdlist-objs := cmdlist$(PRBM_EXT).o
+endif
+
 obj-$(CONFIG_BCM_CMDLIST) += cmdlist.o
 
 EXTRA_CFLAGS += -I$(INC_BRCMBOARDPARMS_PATH)/$(BRCM_BOARD)

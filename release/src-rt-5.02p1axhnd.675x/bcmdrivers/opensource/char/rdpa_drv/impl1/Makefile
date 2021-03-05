@@ -28,6 +28,7 @@
 #
 # Makefile for the RDPA CMD
 #
+ifneq ($(PREBUILT_EXTRAMOD),1)
 rdpa_cmd-objs := rdpa_cmd_sys.o rdpa_cmd_drv.o rdpa_cmd_tm.o rdpa_cmd_misc.o rdpa_cmd_ic.o rdpa_cmd_filter.o rdpa_cmd_cpu.o
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_4908_),)
 rdpa_cmd-objs += rdpa_cmd_ds_wan_udp_filter.o
@@ -35,6 +36,9 @@ else ifeq ("$(CONFIG_BCM963158)" ,"y")
 rdpa_cmd-objs += rdpa_cmd_llid.o 
 else
 rdpa_cmd-objs += rdpa_cmd_iptv.o rdpa_cmd_port.o rdpa_cmd_br.o rdpa_cmd_llid.o rdpa_cmd_dscp_to_pbit.o rdpa_cmd_pbit_to_q.o
+endif
+else
+rdpa_cmd-objs := rdpa_cmd$(PRBM_EXT).o
 endif
 
 obj-$(CONFIG_BCM_RDPA_DRV) += rdpa_cmd.o

@@ -812,7 +812,7 @@ struct fdbEnt_t {
 
     uint16_t        hashix;         /* FDB hash index                         */
     FcMac_t         mac;
-    uint32_t        ifidx;          /* mac dev ifindex                        */
+    uint32_t        ifidx;          /* br dev ifindex                         */
     unsigned long   upd_time;       /* last update time in jiffies            */
     void            *nwe_p;         /* ptr to Linux FDB                       */
 

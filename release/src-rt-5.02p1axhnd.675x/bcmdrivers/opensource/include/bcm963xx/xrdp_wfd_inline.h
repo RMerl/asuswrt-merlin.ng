@@ -245,7 +245,10 @@ static inline void wfd_mcast_forward(void **packets, uint32_t count, wfd_object_
             /* Check if device was initialized */
             if (unlikely(!wfd_p->wl_if_dev[ifid]))
             {
-                printk("%s wifi_net_devices[%d] returned NULL\n", __FUNCTION__, ifid);
+		if (printk_ratelimit())
+		{
+		    printk("%s wifi_net_devices[%d] returned NULL\n", __FUNCTION__, ifid);
+		}
                 continue;
             }
 

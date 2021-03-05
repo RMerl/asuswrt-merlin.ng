@@ -20,6 +20,11 @@
 # $Id: Makefile 693762 2017-04-05 02:06:54Z $
 #
 
+ifneq ($(strip $(KTOOLCHAIN_SYSROOT)),)
+SYSROOT_CC :=$(CC) --sysroot=$(KTOOLCHAIN_SYSROOT)
+CC := $(SYSROOT_CC)
+endif
+
 ifneq ($(strip $(BUILD_HND_NIC)),)
 $(warning hnd_wl/Makefile BUILD_HND_NIC IS set)
 SRCBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src
@@ -27,7 +32,7 @@ else
 SRCBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src
 endif
 
-ROUTERBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/components/router
+ROUTERBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/components/router-sysdep
 
 TARGET := wl
 WLCONF_H := wlconf.h
@@ -36,10 +41,6 @@ WLCONF_O := wlconf.o
 ifeq ($(RTCONFIG_BRCM_HOSTAPD),y)
 export CONFIG_BCM_HOSTAPD=y
 endif
-
-ifeq ($(CONFIG_BUZZZ_FUNC),y)
-subdir-ccflags-y += -O0 -fno-inline -finstrument-functions
-endif # CONFIG_BUZZZ_FUNC
 
 ifneq ($(BUILD_HND_MFG),)
 export BUILD_MFG := 1
@@ -86,5 +87,5 @@ $(info "wlsubdirs: $(wlsubdirs)")
 #subdir-y += $(wlsubdirs)
 #subdir-m += $(wlsubdirs)
 
-.NOTPARALLEL:
+${BRCM_DO_PARALLEL}.NOTPARALLEL:
 include $(src)/wl_generic.mk

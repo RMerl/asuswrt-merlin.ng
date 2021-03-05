@@ -46,7 +46,7 @@ else
 REBUILD_EMF_MODULE=$(shell if [ -d "$(src)/$(EMFSRCDIR)" -a "$(REUSE_PREBUILT_EMF)" != "1" ]; then echo 1; else echo 0; fi)
 endif
 
-ifneq ($(wildcard $(src)/../../router-sysdep/hnd_emf/prebuilt/emf.o),)
+ifneq ($(wildcard $(src)/../../router-sysdep/hnd_emf/../hnd_extra/prebuilt/emf.o),)
 REBUILD_EMF_MODULE=0
 endif
 
@@ -76,8 +76,8 @@ obj-$(CONFIG_BCM_WLAN) := emf.o
 else # EMFSRCDIR doesn't exist
     # Otherwise, assume prebuilt object module(s) in src/emf/linux directory
     prebuilt := emf.o
-    emf-objs := prebuilt/$(prebuilt)
-    obj-$(CONFIG_BCM_WLAN) := emf.o
+    emf-objs := ../hnd_extra/prebuilt/$(prebuilt)
+    obj-$(CONFIG_BCM_WLAN) := $(prebuilt)
 endif
 
 clean-files += $(EMFCSRCDIR)/*.o $(EMFSRCDIR)/*.o $(EMFCSRCDIR)/.*.o.cmd $(EMFSRCDIR)/.*.o.cmd

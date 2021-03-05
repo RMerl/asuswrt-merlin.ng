@@ -17,6 +17,7 @@ Asuswrt-Merlin 386/NG Changelog
          acceleration, and therefore might not be usable on
          connections faster than around 350 Mbps (may vary based
          on router models).
+  - UPDATED: Merged GPL 386_42095.
   - UPDATED: Openssl to 1.1.1j.
   - UPDATED: OpenVPN to 2.5.1.
   - UPDATED: iproute2 to 5.11.0.

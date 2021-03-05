@@ -71,6 +71,7 @@ extern uint8 osl_get_wlunit(osl_t *osh);
 
 typedef int (*HardStartXmitFuncP)(struct sk_buff *skb, struct net_device *dev);
 int wl_dump_pktc(wl_info_t *wl, struct bcmstrbuf *b);
+int wl_dump_pktc_clear(wl_info_t *wl);
 
 /*
  * Global variables
@@ -557,7 +558,8 @@ wl_pktc_tbl_t *wl_pktc_attach(struct wl_info *wl, struct wl_if *wlif)
 	/* init tx work queue for processing chained packets  */
 	wl->txq_txchain_dispatched = FALSE;
 
-	wlc_dump_register(wl->pub, "pktc", (dump_fn_t)wl_dump_pktc, (void *)wl);
+	wlc_dump_add_fns(wl->pub, "pktc", (dump_fn_t)wl_dump_pktc,
+		(clr_fn_t)wl_dump_pktc_clear, (void *)wl);
 	fdb_check_expired_wl_hook = wl_check_fdb_expired;
 	wl_pktc_req_hook = wl_pktc_req_with_lock;
 	wl_pktc_del_hook = wl_pktc_del;
@@ -710,9 +712,7 @@ void wl_pktc_clear_entry(wl_pktc_tbl_t *pt)
 		pt->prio_bitmap = 0;
 		pt->idx = 0;
 		pt->sta_assoc = 0;
-		if (pt->pktci != NULL) {
-			bzero(&pt->pktci->stats, sizeof(struct pktc_stats));
-		}
+		pt->pktci = NULL;
 		bzero(&pt->ea, sizeof(struct _mac_address));
 		bzero(&pt->chain[0], sizeof(pt->chain));
 	}
@@ -729,6 +729,29 @@ int wl_pktc_get_sta_num(void)
 		}
 	}
 	return sta_cnt;
+}
+
+static void wl_pktc_delete_wlan_handle(unsigned long wl_handle)
+{
+	int i, j;
+	wl_pktc_tbl_t *pt;
+
+	if (wl_handle == 0)
+		return;
+
+	spin_lock_bh(&pktctbl_lock);
+	for (i = 0; i < CHAIN_ENTRY_NUM; i++) {
+		pt = &g_pktc_tbl[i];
+		if ((pt->in_use) && (pt->wl_handle == wl_handle)) {
+			for (j = 0; j < PKT_PRIO_LVL_CNT; j++) {
+				if (pt->chain[j].chead != NULL) {
+					PKTCFREE(pt->pktci->osh, pt->chain[j].chead, TRUE);
+				}
+			}
+			wl_pktc_clear_entry(pt);
+		}
+	}
+	spin_unlock_bh(&pktctbl_lock);
 }
 
 /* for packet chaining */
@@ -889,6 +912,7 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 				pktc_wldev[i].handle = 0;
 			}
 		}
+		wl_pktc_delete_wlan_handle(param0);
 		return 0;
 
 	case PKTC_TBL_FLUSH:
@@ -1067,6 +1091,33 @@ unsigned long pktc_tbl_lookup_fn(wl_pktc_tbl_t *tbl, uint8_t *da)
 	if (pt->in_use && _eacmp(pt->ea.octet, (da)) == 0) {
 		return (unsigned long)pt;
 	}
+	return 0;
+}
+
+int wl_dump_pktc_clear(wl_info_t *wl)
+{
+	int i;
+	pktc_info_t *pktci;
+
+	if (!g_pktc_tbl || !wl->pub->pktc_tbl->g_stats)
+		return -1;
+
+	for (i = 0; i < CHAIN_ENTRY_NUM; i++) {
+		g_pktc_tbl[i].hits = 0;
+	}
+
+	for (i = 0; i < WLAN_DEVICE_MAX; i++) {
+		if (pktc_wldev[i].handle) {
+			pktci = (pktc_info_t *)(pktc_wldev[i].handle);
+			bzero(&pktci->stats.total_pkts, sizeof(pktci->stats.total_pkts));
+			bzero(&pktci->stats.txdrop, sizeof(pktci->stats.txdrop));
+		}
+	}
+
+	wl->pub->pktc_tbl->g_stats->tx_slowpath_skb = 0;
+	wl->pub->pktc_tbl->g_stats->tx_slowpath_fkb = 0;
+	wl->pub->pktc_tbl->g_stats->rx_slowpath_skb = 0;
+
 	return 0;
 }
 

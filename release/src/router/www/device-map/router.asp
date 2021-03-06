@@ -324,7 +324,7 @@ function genElement(){
             if(_authMode != 'owe'){            
                 code += '<div class="info-block">';
                 code += '<div class="info-title"><#WPA-PSKKey#></div>';
-                code += '<div><input type="text" class="input-size-25" id="wl'+ unit +'_wpa_psk" type="password" onBlur="switchType(this, false);" onFocus="switchType(this, true); oninput="updateVariable(this.id, value, false)"></div>';
+                code += '<div><input type="password" class="input-size-25" id="wl'+ unit +'_wpa_psk" onBlur="switchType(this, false);" onFocus="switchType(this, true);" oninput="updateVariable(this.id, value, false)"></div>';
                 code += '<input style="display:none" type="password" name="fakepassword"/>';
                 code += '</div>';
             }

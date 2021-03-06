@@ -519,7 +519,10 @@ function initial(){
 		$('label[for="trad_type"]').html('<#EzQoS_type_QoS#>')
 		$('#bandwidth_setting_tr').hide();
 	}
-	if(!hnd_support){
+	if(hnd_support){
+		document.getElementById('cake_type').style.display = "";
+		document.getElementById('cake_type_link').style.display = "";
+	} else {
 		$('#cake_desc').hide();
 		$('#bandwidth_setting_tr').hide();
 	}
@@ -2031,7 +2034,7 @@ function set_overhead(entry) {
 												<input id="trad_type" name="qos_type_radio" value="0" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "0","checked"); %>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 6);"><label for="trad_type"><#EzQoS_type_traditional#></label></a>
 												<input id="bw_limit_type" name="qos_type_radio" value="2" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "2","checked"); %>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 7)"><label for="bw_limit_type"><#Bandwidth_Limiter#></label></a>
 												<span id="GeForceNow_item" style="white-space: nowrap;display: none;"><input id="GeForce_type" name="qos_type_radio" value="3" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "3","checked"); %>><a class="hintstyle" href="javascript:void(0);"><label for="GeForce_type">GeForce NOW QoS</label></a></span>
-												<input id="cake_type" name="qos_type_radio" value="9" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "9","checked"); %>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 0);"><label for="cake_type">Cake</label></a>
+												<input id="cake_type" name="qos_type_radio" value="9" onClick="change_qos_type(this.value);" style="display:none;" type="radio" <% nvram_match("qos_type", "9","checked"); %>><a id="cake_type_link" style="display:none;" class="hintstyle" href="javascript:void(0);" onClick="openHint(50, 32);"><label for="cake_type">Cake</label></a>
 											</td>
 										</tr>
 										<tr id="qos_overhead_tr" style="display:none">
@@ -2043,7 +2046,7 @@ function set_overhead(entry) {
 												<label id="qos_mpu_label" style="display:none;float:left;margin-left:25px;margin-right:5px;">MPU:</label>
 												<input type="text" maxlength="4" class="input_6_table" name="qos_mpu" id="qos_mpu" onKeyPress="return validator.isNumber(this,event);" onblur="validator.numberRange(this, 0, 256);" value="<% nvram_get("qos_mpu"); %>" style="display:none;float:left;">
 												<label id="qos_atm_label" style="float:left;margin-left:25px;margin-right:5px;">Mode:</label>
-												<select id="qos_atm" class="input_option">
+												<select name="qos_atm" id="qos_atm" class="input_option">
 													<option <% nvram_match("qos_atm","0","selected"); %> value="0">Normal</option>
 													<option <% nvram_match("qos_atm","1","selected"); %> value="1">ATM</option>
 													<option <% nvram_match("qos_atm","2","selected"); %> value="2">PTM</option>

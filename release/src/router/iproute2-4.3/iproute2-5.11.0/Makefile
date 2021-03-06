@@ -15,7 +15,7 @@ endif
 PREFIX?=/usr
 LIBDIR?=$(PREFIX)/lib
 SBINDIR=$(INSTALL_DIR)/bin
-CONFDIR=$(INSTALL_DIR)/etc/iproute2
+CONFDIR=/etc/iproute2
 NETNS_RUN_DIR?=/var/run/netns
 NETNS_ETC_DIR?=/etc/netns
 DATADIR?=$(PREFIX)/share

@@ -410,8 +410,8 @@ for f in $MODULE_CLEAN_UP; do \
 done
 eval "find $TARGETS_DIR/$ROOTFS/lib/modules -name wlobj-*.ko | xargs rm -f"
 
-$BUSYBOX_DIR/examples/depmod.pl -k $LINUXDIR/vmlinux -b $INSTALL_DIR/../modules/lib/modules/$LINUX_VER_STR
-$BUSYBOX_DIR/examples/depmod.pl -k $LINUXDIR/vmlinux -b $INSTALL_DIR/../fs/lib/modules/$LINUX_VER_STR
+#$BUSYBOX_DIR/examples/depmod.pl -k $LINUXDIR/vmlinux -b $INSTALL_DIR/../modules/lib/modules/$LINUX_VER_STR
+#$BUSYBOX_DIR/examples/depmod.pl -k $LINUXDIR/vmlinux -b $INSTALL_DIR/../fs/lib/modules/$LINUX_VER_STR
 
 # put rtecdc.bin to file system
 mkdir -p ${TARGET_FS}/rom/etc/wlan/dhd/43684b0

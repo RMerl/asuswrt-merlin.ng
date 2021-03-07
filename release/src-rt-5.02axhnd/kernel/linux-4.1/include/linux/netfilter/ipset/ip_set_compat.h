@@ -33,7 +33,6 @@
 #define HAVE_NLA_PUT_IN_ADDR
 #undef HAVE_NET_IN_NFNL_CALLBACK_FN
 #define HAVE_EXPORT_SYMBOL_GPL_IN_MODULE_H
-#undef HAVE_TC_SKB_PROTOCOL
 #undef HAVE_NET_IN_XT_ACTION_PARAM
 
 #ifdef HAVE_EXPORT_SYMBOL_GPL_IN_MODULE_H
@@ -273,18 +272,6 @@ static inline int nla_put_in6_addr(struct sk_buff *skb, int attrtype,
 #else
 #define IPSET_CBFN(fn, net, nl, skb, nlh, cda)	fn(nl, skb, nlh, cda)
 #define IPSET_SOCK_NET(net, ctnl)		sock_net(ctnl)
-#endif
-
-#ifndef HAVE_TC_SKB_PROTOCOL
-#include <linux/if_vlan.h>
-static inline __be16 tc_skb_protocol(const struct sk_buff *skb)
-{
-/*
-	if (vlan_tx_tag_present(skb))
-		return skb->vlan_proto;
-*/
-	return skb->protocol;
-}
 #endif
 
 #ifdef HAVE_NET_IN_XT_ACTION_PARAM

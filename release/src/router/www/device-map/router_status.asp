@@ -172,7 +172,7 @@ function genElement(){
 	$('#hw_information_field').html(code);
 
 	//YADEX DNS
-	if(system.yadnsSupport &&　parent.sw_mode == 1){
+/*	if(system.yadnsSupport &&　parent.sw_mode == 1){
 		code = '';
 		var yadns_enable = variable.yadns_enable_x;
 		var yadns_mode = variable.yadns_mode;
@@ -195,6 +195,7 @@ function genElement(){
 			$('#yadns_field').show();
 		}
 	}
+*/
 }
 
 function register_event(){

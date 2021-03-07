@@ -674,7 +674,7 @@ function validForm(){
 				error_obw++;
 
 			}
-			else if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3 || qos_type == 9) && !validator.rangeFloat(document.form.obw, 0, 9999999999, "")){
+			else if( (((qos_type == 1 || qos_type == 9) && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.obw, 0, 9999999999, "")){
 				error_obw++;
 			}
 
@@ -708,7 +708,7 @@ function validForm(){
 				document.form.ibw.select();
 				error_ibw++;
 			}
-			else if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3 || qos_type == 9) && !validator.rangeFloat(document.form.ibw, 0, 9999999999, "")){
+			else if( (((qos_type == 1 || qos_type == 9) && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.ibw, 0, 9999999999, "")){
 				error_ibw++;
 			}
 
@@ -762,7 +762,7 @@ function validForm(){
 					error_obw1++;
 
 				}
-				else if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3 || qos_type == 9) && !validator.rangeFloat(document.form.obw1, 0, 9999999999, "")){
+				else if( (((qos_type == 1 || qos_type == 9) && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.obw1, 0, 9999999999, "")){
 					error_obw1++;
 				}
 
@@ -796,7 +796,7 @@ function validForm(){
 					document.form.ibw1.select();
 					error_ibw1++;
 				}
-				else if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3 || qos_type == 9) && !validator.rangeFloat(document.form.ibw1, 0, 9999999999, "")){
+				else if( (((qos_type == 1 || qos_type == 9) && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.ibw1, 0, 9999999999, "")){
 					error_ibw1++;
 				}
 

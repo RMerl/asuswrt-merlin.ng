@@ -12,6 +12,8 @@ CURR_DIR := $(shell pwd)
 BUILD_DIR:=$(HND_SRC)
 
 include $(BUILD_DIR)/make.common
+#PKG_CONFIG:=$(CROSS_COMPILE)/pkg-config
+PKG_CONFIG_PATH:=$(TOP)/iptables-1.4.x/iptables/
 
 APP = iproute2
 

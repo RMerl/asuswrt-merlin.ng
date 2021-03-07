@@ -4773,6 +4773,11 @@ iproute2-4.3-install:
 #	$(STRIP) $(INSTALLDIR)/iproute2-4.3/usr/sbin/realtc
 	install -D iproute2-4.3/iproute2/ip/ip $(INSTALLDIR)/iproute2-4.3/usr/sbin/ip
 	$(STRIP) $(INSTALLDIR)/iproute2-4.3/usr/sbin/ip
+	@if [ -e iproute2-4.3/iproute2/tc/m_xt.so ] ; then \
+		install -D iproute2-4.3/iproute2/tc/m_xt.so $(INSTALLDIR)/iproute2-4.3/usr/lib/tc/m_xt.so ; \
+		ln -sf m_xt.so $(INSTALLDIR)/iproute2-4.3/usr/lib/tc/m_ipt.so ; \
+		$(STRIP) $(INSTALLDIR)/iproute2-4.3/usr/lib/tc/*.so ; \
+	fi
 
 iproute2-4.3-clean:
 	-@$(MAKE) -C iproute2-4.3 clean

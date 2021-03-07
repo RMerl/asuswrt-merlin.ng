@@ -26,6 +26,8 @@ check_toolchain()
     echo "AR:=${AR}" >>$CONFIG
     echo "CC:=${CC}" >>$CONFIG
     echo "YACC:=${YACC}" >>$CONFIG
+    echo "CFLAGS+=-I${TOP}/iptables-1.4.x/include" >> $CONFIG
+    echo "LDFLAGS+=-L${TOP}/iptables-1.4.x/libxtables/.libs" >> $CONFIG
 }
 
 check_atm()
@@ -39,7 +41,8 @@ int main(int argc, char **argv) {
 }
 EOF
 
-    if $CC -I$INCLUDE -o $TMPDIR/atmtest $TMPDIR/atmtest.c -latm >/dev/null 2>&1; then
+#    if $CC -I$INCLUDE -o $TMPDIR/atmtest $TMPDIR/atmtest.c -latm >/dev/null 2>&1; then
+    if [ "0" == "1" ]; then
 	echo "TC_CONFIG_ATM:=y" >>$CONFIG
 	echo yes
     else
@@ -77,8 +80,9 @@ int main(int argc, char **argv)
 }
 EOF
 
-    if $CC -I$INCLUDE $IPTC -o $TMPDIR/ipttest $TMPDIR/ipttest.c $IPTL \
-	$(${PKG_CONFIG} xtables --cflags --libs) -ldl >/dev/null 2>&1; then
+#    if $CC -I$INCLUDE $IPTC -o $TMPDIR/ipttest $TMPDIR/ipttest.c $IPTL \
+#	$(${PKG_CONFIG} xtables --cflags --libs) -ldl >/dev/null 2>&1; then
+    if [ "1" == "1" ]; then
 	echo "TC_CONFIG_XT:=y" >>$CONFIG
 	echo "using xtables"
     fi
@@ -223,7 +227,8 @@ int main(void)
 #endif
 EOF
 
-    if $CC -I$INCLUDE -o $TMPDIR/ipsettest $TMPDIR/ipsettest.c >/dev/null 2>&1; then
+#    if $CC -I$INCLUDE -o $TMPDIR/ipsettest $TMPDIR/ipsettest.c >/dev/null 2>&1; then
+    if [ "1" == "1" ]; then
 	echo "TC_CONFIG_IPSET:=y" >>$CONFIG
 	echo "yes"
     else
@@ -474,6 +479,8 @@ check_atm
 check_xtables
 if ! grep -q TC_CONFIG_NO_XT $CONFIG; then
 	echo -n " IPT	"
+	echo "#define XTABLES_VERSION \"libxtables.so.7\"" > include/xtables-version.h
+	echo "#define XTABLES_VERSION_CODE 7" >> include/xtables-version.h
 	check_xt
 	check_xt_old
 	check_xt_old_internal_h

@@ -1942,7 +1942,7 @@ function set_overhead(entry) {
 															<li id="function_int_desc"><#EzQoS_desc_Adaptive#></li>
 															<li id="qos_desc"><#EzQoS_desc_Traditional#></li>
 															<li><#EzQoS_desc_Bandwidth_Limiter#></li>
-															<li id="cake_desc">Cake is an automatic queue management algorithm that takes care of ensuring fairness in traffic queueing without requiring manual configuration.</li>
+															<li id="cake_desc"><span style="font-weight:bolder;font-size:14px;">Cake</span> is an automatic queue management algorithm that takes care of ensuring fairness in traffic queueing without requiring manual configuration.</li>
 														</ul>
 														<#EzQoS_desc_note#>
 													</div>

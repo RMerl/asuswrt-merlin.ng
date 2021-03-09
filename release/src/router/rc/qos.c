@@ -2739,8 +2739,8 @@ int start_cake(void)
 		"DLBW='%s'\n"
 		"OVERHEAD='%s'\n"
 		"FRAMING='%s'\n"
-		"ULFLOWPRIO='diffserv3'\n"
-		"DLFLOWPRIO='besteffort'\n"
+		"ULPRIOQUEUE='diffserv3'\n"
+		"DLPRIOQUEUE='besteffort'\n"
 		"ULOPTIONS='%s dual-srchost'\n"
 		"DLOPTIONS='%s wash dual-dsthost ingress'\n",
 
@@ -2769,12 +2769,12 @@ int start_cake(void)
 		"case \"$1\" in\n"
 		"start)\n"
 		"# Upload\n"
-		"\ttc qdisc add dev $ULIF root cake $ULFLOWPRIO $ULOPTIONS $ULBW $OVERHEAD $FRAMING 2>/dev/null\n\n"
+		"\ttc qdisc add dev $ULIF root cake $ULPRIOQUEUE $ULOPTIONS $ULBW $OVERHEAD $FRAMING 2>/dev/null\n\n"
 
 		"# Download\n"
 		"\tip link add name $MIF type ifb 2>/dev/null\n"
 		"\ttc qdisc add dev $DLIF handle ffff: ingress 2>/dev/null\n"
-		"\ttc qdisc add dev $MIF root cake $DLFLOWPRIO $DLOPTIONS $DLBW $OVERHEAD $FRAMING 2>/dev/null\n"
+		"\ttc qdisc add dev $MIF root cake $DLPRIOQUEUE $DLOPTIONS $DLBW $OVERHEAD $FRAMING 2>/dev/null\n"
 		"\tip link set $MIF up 2>/dev/null\n"
 		"\ttc filter add dev $DLIF parent ffff: prio 10 matchall action mirred egress redirect dev $MIF 2>/dev/null\n\n"
 

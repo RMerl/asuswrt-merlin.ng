@@ -1880,6 +1880,15 @@ recv_and_process_peer_pkt(peer_t *p)
 
 	offset = 0;
 
+	/* The below can happen as follows:
+	 * = we receive two peer rsponses at once.
+	 * = recv_and_process_peer_pkt(PEER1) -> update_local_clock()
+	 *   -> step_time() and it closes all other fds, sets all ->fd to -1.
+	 * = recv_and_process_peer_pkt(PEER2) sees PEER2->fd == -1
+	 */
+	if (p->p_fd < 0)
+		return;
+
 	/* We can recvfrom here and check from.IP, but some multihomed
 	 * ntp servers reply from their *other IP*.
 	 * TODO: maybe we should check at least what we can: from.port == 123?

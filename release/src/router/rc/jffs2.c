@@ -269,10 +269,12 @@ void format_mount_2nd_jffs2(void)
 
 void start_jffs2(void)
 {
+#if 0
 	if (!nvram_match("jffs2_on", "1")) {
 		notice_set("jffs", "");
 		return;
 	}
+#endif
 
 	int format = 0;
 	char s[256];

@@ -131,7 +131,7 @@
 #define RETRY_INTERVAL    32    /* on send/recv error, retry in N secs (need to be power of 2) */
 #define NOREPLY_INTERVAL 512    /* sent, but got no reply: cap next query by this many seconds */
 #define RESPONSE_INTERVAL 16    /* wait for reply up to N secs */
-#define HOSTNAME_INTERVAL  4    /* hostname lookup failed. Wait N * peer->dns_errors secs for next try */
+#define HOSTNAME_INTERVAL  2    /* hostname lookup failed. Wait N * peer->dns_errors secs for next try */
 #define DNS_ERRORS_CAP  0x3f    /* peer->dns_errors is in [0..63] */
 
 /* Step threshold (sec). std ntpd uses 0.128.

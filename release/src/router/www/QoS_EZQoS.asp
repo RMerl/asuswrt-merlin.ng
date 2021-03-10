@@ -420,7 +420,7 @@ function initial(){
 		document.getElementById("manu").checked = true;
 	}
 
-	if(codel_support || hnd_support) {
+	if(codel_support || cake_support) {
 		build_overhead_presets()
 	}
 
@@ -441,7 +441,7 @@ function initial(){
 		document.getElementById('settingSelection').style.display = "none";
 		show_up_down(0);
 		document.getElementById('qos_type_tr').style.display = "none";
-		if(hnd_support || adaptiveqos_support){
+		if(cake_support || adaptiveqos_support){
 			document.getElementById('bandwidth_setting_tr').style.display = "none";
 		}
 		if(adaptiveqos_support){
@@ -462,10 +462,10 @@ function initial(){
 				document.getElementById('settingSelection').style.display = "none";
 			}
 
-			if((hnd_support && (qos_type == 9)) || (codel_support && (qos_type != 1))){
+			if((cake_support && (qos_type == 9)) || (codel_support && (qos_type != 1))){
 				document.getElementById('qos_overhead_tr').style.display = "";
 			}
-			if((hnd_support) && (qos_type == 9)){
+			if((cake_support) && (qos_type == 9)){
 				document.getElementById('qos_mpu').style.display = "";
 				document.getElementById('qos_mpu_label').style.display = "";
 			}
@@ -519,7 +519,7 @@ function initial(){
 		$('label[for="trad_type"]').html('<#EzQoS_type_QoS#>')
 		$('#bandwidth_setting_tr').hide();
 	}
-	if(hnd_support){
+	if(cake_support){
 		document.getElementById('cake_type').style.display = "";
 		document.getElementById('cake_type_link').style.display = "";
 	} else {
@@ -989,7 +989,7 @@ function change_qos_type(value){
 		if (codel_support) {
 			document.getElementById('qos_overhead_tr').style.display = "";
 		}
-		if (hnd_support) {
+		if (cake_support) {
 			document.getElementById('qos_mpu').style.display = "none";
 			document.getElementById('qos_mpu_label').style.display = "none";
 		}
@@ -1012,10 +1012,10 @@ function change_qos_type(value){
 		if(geforceNow_support)
 			document.getElementById('GeForce_type').checked = false;
 		document.getElementById('list_table').style.display = "none";
-		if (codel_support || hnd_support) {
+		if (codel_support || cake_support) {
 			document.getElementById('qos_overhead_tr').style.display = "none";
 		}
-		if (hnd_support) {
+		if (cake_support) {
 			document.getElementById('qos_mpu').style.display = "none";
 			document.getElementById('qos_mpu_label').style.display = "none";
 		}
@@ -1045,10 +1045,10 @@ function change_qos_type(value){
 		document.getElementById('bandwidth_setting_tr').style.display = "none";
 		show_up_down(0);
 		document.getElementById('list_table').style.display = "block";
-		if (codel_support || hnd_support) {
+		if (codel_support || cake_support) {
 			document.getElementById('qos_overhead_tr').style.display = "";
 		}
-		if (hnd_support) {
+		if (cake_support) {
 			document.getElementById('qos_mpu').style.display = "none";
 			document.getElementById('qos_mpu_label').style.display = "none";
 		}
@@ -1075,7 +1075,7 @@ function change_qos_type(value){
 		if (codel_support) {
 			document.getElementById('qos_overhead_tr').style.display = "";
 		}
-		if (hnd_support) {
+		if (cake_support) {
 			document.getElementById('qos_mpu').style.display = "none";
 			document.getElementById('qos_mpu_label').style.display = "none";
 		}
@@ -1097,7 +1097,7 @@ function change_qos_type(value){
 		document.getElementById('bandwidth_setting_tr').style.display = "";
 		show_up_down(1);
 		document.getElementById('list_table').style.display = "none";
-		if (hnd_support) {
+		if (cake_support) {
 			document.getElementById('qos_overhead_tr').style.display = "";
 			document.getElementById('qos_mpu').style.display = "";
 			document.getElementById('qos_mpu_label').style.display = "";
@@ -2011,10 +2011,10 @@ function set_overhead(entry) {
 																if(alert_hint != "")
 																	alert(alert_hint);
 
-																if(codel_support || hnd_support) {
+																if(codel_support || cake_support) {
 																	document.getElementById('qos_overhead_tr').style.display = "none";
 																}
-																if(hnd_support) {
+																if(cake_support) {
 																	document.getElementById('qos_mpu').style.display = "none";
 																}
 																if(adaptiveqos_support){

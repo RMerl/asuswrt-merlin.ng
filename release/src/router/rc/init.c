@@ -12696,6 +12696,9 @@ int init_nvram(void)
 #endif
 
 	add_rc_support("am_addons");
+#ifdef HND_ROUTER
+	add_rc_support("cake");
+#endif
 
 #ifdef RTCONFIG_NTPD
 	add_rc_support("ntpd");

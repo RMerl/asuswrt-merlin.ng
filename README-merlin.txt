@@ -44,6 +44,7 @@ Fully supported devices:
  * RT-AX86U
  * GT-AC2900 (a few ROG-specific features are not available)
  * GT-AX11000 (A few ROG-specific features are not available)
+ * RT-AX68U
 
 No longer supported:
  * RT-N16

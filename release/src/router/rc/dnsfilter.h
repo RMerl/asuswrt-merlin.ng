@@ -15,12 +15,9 @@
  * MA 02111-1307 USA
  *
  *
- * Copyright 2014-2020 Eric Sauvageau.
+ * Copyright 2014-2021 Eric Sauvageau.
  *
  */
-
-extern int get_dns_filter(int proto, int mode, char **server);
-extern int dnsfilter_support_dot(int mode);
 
 /* DNSFilter Services */
 enum {
@@ -43,3 +40,12 @@ enum {
 	DNSF_SRV_CLEANBROWSING_FAMILY,
 	DNSF_SRV_LAST
 };
+
+typedef struct {
+	char server1[46];
+	char server2[46];
+} dnsf_srv_entry_t;
+
+
+extern int get_dns_filter(int proto, int mode, dnsf_srv_entry_t *dnsfsrv);
+extern int dnsfilter_support_dot(int mode);

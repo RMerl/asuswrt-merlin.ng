@@ -3145,7 +3145,7 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 #else
 	char macaccept[32];
 #endif
-	char prefix[32], tmp[100], *wan_proto;
+	char prefix[32], tmp[100], wan_proto[16];
 #ifdef RTCONFIG_IPV6
 	int i;
 	FILE *fp_ipv6 = NULL;
@@ -3162,8 +3162,8 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 	char timef[256], *filterstr;
 #endif
 //2008.09 magic}
-	char *wan_if, *wan_ip;
-	char *wanx_if, *wanx_ip;
+	char wan_if[IFNAMSIZ+1], wan_ip[32];
+	char wanx_if[IFNAMSIZ+1], wanx_ip[32];
 #ifdef RTCONFIG_WIFI_SON
 	char lan_class[32];
 
@@ -3173,13 +3173,13 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 
-	wan_proto = nvram_safe_get(strcat_r(prefix, "proto", tmp));
-	wan_if = get_wan_ifname(wan_unit);
+	strlcpy(wan_proto, nvram_safe_get(strcat_r(prefix, "proto", tmp)), sizeof(wan_proto));
+	strlcpy(wan_if, get_wan_ifname(wan_unit), sizeof (wan_if));
 	if (*wan_if == '\0')
-		wan_if = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
-	wan_ip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
-	wanx_if = get_wanx_ifname(wan_unit);
-	wanx_ip = nvram_safe_get(strcat_r(prefix, "xipaddr", tmp));
+		strlcpy(wan_if, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(wan_if));
+	strlcpy(wan_ip, nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)), sizeof(wan_ip));
+	strlcpy(wanx_if, get_wanx_ifname(wan_unit), sizeof(wanx_if));
+	strlcpy(wanx_ip, nvram_safe_get(strcat_r(prefix, "xipaddr", tmp)), sizeof(wanx_ip));
 
 	//if(!strlen(wan_proto)) return;
 

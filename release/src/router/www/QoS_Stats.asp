@@ -54,29 +54,20 @@ span.catrow{
 </style>
 
 <script>
-var qos_type ="<% nvram_get("qos_type"); %>";
+var qos_type = parseInt("<% nvram_get("qos_type"); %>");
+var qos_default = 0;
 
 if ("<% nvram_get("qos_enable"); %>" == 0) {	// QoS disabled
-	var qos_mode = 0;
-	var qos_default = 0;
-}else if (bwdpi_support && (qos_type == "1")) {	// aQoS
-	var qos_mode = 2;
-	var qos_default = 4;
-} else if (qos_type == "0") {			// tQoS
-	var qos_mode = 1;
-	var qos_default = "<% nvram_get("qos_default"); %>";
-} else if (qos_type == "2") {			// BW limiter
-	var qos_mode = 3;
-	var qos_default = 0;
-} else if (qos_type == "3") {			// GeForce Now
-	var qos_mode = 4;
-	var qos_default = 4;
-} else {					// invalid mode
-	var qos_mode = 0;
-	var qos_default = 0;
+	qos_type = -1;
+}else if (bwdpi_support && (qos_type == 1)) {	// aQoS
+	qos_default = 4;
+} else if (qos_type == 0) {			// tQoS
+	qos_default = parseInt("<% nvram_get("qos_default"); %>");
+} else if (qos_type == 3) {			// GeForce Now
+	qos_default = 4;
 }
 
-if (qos_mode == 2) {
+if (qos_type == 1) {
 	var bwdpi_app_rulelist = "<% nvram_get("bwdpi_app_rulelist"); %>".replace(/&#60/g, "<");
 	var bwdpi_app_rulelist_row = bwdpi_app_rulelist.split("<");
 	if (bwdpi_app_rulelist == "" || bwdpi_app_rulelist_row.length != 9){
@@ -377,32 +368,35 @@ function table_sort(a, b){
 function redraw(){
 	var code;
 
-	switch (qos_mode) {
-		case 0:		// Disabled
-			document.getElementById('dl_tr').style.display = "none";
-			document.getElementById('ul_tr').style.display = "none";
-			document.getElementById('no_qos_notice').style.display = "";
-			return;
-
-		case 3:		// Bandwith Limiter
+	switch (qos_type) {
+		case 2:		// Bandwith Limiter
 			document.getElementById('dl_tr').style.display = "none";
 			document.getElementById('ul_tr').style.display = "none";
 			document.getElementById('limiter_notice').style.display = "";
 			return;
-
-		case 1:         // Traditional
+		case 0:         // Traditional
 			document.getElementById('dl_tr').style.display = "none";
 			document.getElementById('tqos_notice').style.display = "";
 			break;
-
-		case 2:		// Adaptive
-		case 4:		// GeForce Now
+		case 1:		// Adaptive
+		case 3:		// GeForce Now
 			if (pie_obj_dl != undefined) pie_obj_dl.destroy();
 			var ctx_dl = document.getElementById("pie_chart_dl").getContext("2d");
 			tcdata_lan_array.sort(function(a,b) {return a[0]-b[0]} );
 			code = draw_chart(tcdata_lan_array, ctx_dl, "dl");
 			document.getElementById('legend_dl').innerHTML = code;
 			break;
+		case 9:		// Cake
+			document.getElementById('dl_tr').style.display = "none";
+			document.getElementById('ul_tr').style.display = "none";
+			document.getElementById('cake_notice').style.display = "";
+			return;
+		case -1:	// Disabled - fallthrough
+		default:	// Unknown mode
+			document.getElementById('dl_tr').style.display = "none";
+			document.getElementById('ul_tr').style.display = "none";
+			document.getElementById('no_qos_notice').style.display = "";
+			return;
 	}
 
 	if (pie_obj_ul != undefined) pie_obj_ul.destroy();
@@ -429,7 +423,7 @@ function get_data() {
 		},
 		success: function(response){
 			redraw();
-			if (qos_mode == 2) draw_conntrack_table();
+			if (qos_type == 1) draw_conntrack_table();
 			if (refreshRate > 0)
 				timedEvent = setTimeout("get_data();", refreshRate * 1000);
 		}
@@ -449,7 +443,7 @@ function draw_chart(data_array, ctx, pie) {
 		var tcclass = parseInt(data_array[i][0]);
 		var rate, label;
 
-		if (qos_mode == 2) {
+		if (qos_type == 1) {
 			for(index=0;index<cat_id_array.length;index++){
 				if(cat_id_array[index] == bwdpi_app_rulelist_row[i]){
 					break;
@@ -469,8 +463,8 @@ function draw_chart(data_array, ctx, pie) {
 		labels_array.push(label);
 		values_array.push(value);
 
-		if ((qos_mode == 2 && i == qos_default) ||
-		    ((qos_mode == 1 || qos_mode == 4) && tcclass-1 == qos_default))
+		if ((qos_type == 1 && i == qos_default) ||
+		    ((qos_type == 0 || qos_type == 3) && tcclass-1 == qos_default))
 			label = label + "<span style=\"font-size: 75%; font-style: italic;\"> (Default)</span>";
 
 		var unit = " Bytes";
@@ -575,6 +569,7 @@ function draw_chart(data_array, ctx, pie) {
 
 			<div id="limiter_notice" style="display:none;font-size:125%;color:#FFCC00;">Note: Statistics not available in Bandwidth Limiter mode.</div>
 			<div id="no_qos_notice" style="display:none;font-size:125%;color:#FFCC00;">Note: QoS is not enabled.</div>
+			<div id="cake_notice" style="display:none;font-size:125%;color:#FFCC00;">Note: Statistics not available in Cake mode.</div>
 			<div id="tqos_notice" style="display:none;font-size:125%;color:#FFCC00;">Note: Traditional QoS only classifies uploaded traffic.</div>
 			<table>
 				<tr id="dl_tr">

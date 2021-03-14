@@ -2922,13 +2922,15 @@ wan_up(const char *pwan_ifname)
 		add_dhcp_routes(prefix, wan_ifname, 0);
 
 	/* add wan dns route via wan interface */
-	addr = inet_addr(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)));
-	mask = inet_addr(nvram_safe_get(strcat_r(prefix, "netmask", tmp)));
-	nvram_safe_get_r(strcat_r(prefix, "dns", tmp), dns, sizeof(dns));
-	foreach(word, dns, next) {
-		if ((inet_addr(word) != inet_addr(gateway)) &&
-			(inet_addr(word) & mask) != (addr & mask))
-			route_add(wan_ifname, 2, word, gateway, "255.255.255.255");
+	if (nvram_get_int("wan_dns_route")) {
+		addr = inet_addr(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)));
+		mask = inet_addr(nvram_safe_get(strcat_r(prefix, "netmask", tmp)));
+		nvram_safe_get_r(strcat_r(prefix, "dns", tmp), dns, sizeof(dns));
+		foreach(word, dns, next) {
+			if ((inet_addr(word) != inet_addr(gateway)) &&
+				(inet_addr(word) & mask) != (addr & mask))
+				route_add(wan_ifname, 2, word, gateway, "255.255.255.255");
+		}
 	}
 
 #ifdef RTCONFIG_IPV6

@@ -1395,7 +1395,7 @@ static int start_tqos(void)
 
 	fclose(f);
 	chmod(qosfn, 0700);
-	run_custom_script("qos-start", 0, "init", NULL);
+	run_custom_script("qos-start", 120, "init", NULL);
 	eval((char *)qosfn, "start");
 	QOSDBG("[qos] tc done!\n");
 
@@ -2792,7 +2792,7 @@ int start_cake(void)
 	fclose(f);
 	chmod("/etc/cake-qos.conf", 0755);
 	chmod(qosfn, 0755);
-	run_custom_script("qos-start", 0, "init", NULL);
+	run_custom_script("qos-start", 120, "init", NULL);
 	eval((char *)qosfn, "start");
 
 	return 0;

@@ -179,7 +179,7 @@ var orig_http_enable = '<% nvram_get("http_enable"); %>';
 var captcha_support = isSupport("captcha");
 
 var tz_table = {}
-$.getJSON("http://nw-dlcdnet.asus.com/plugin/js/tz_db.json", function(data){tz_table = data;})
+$.getJSON("/ajax/tz_db.json", function(data){tz_table = data;})
 
 function initial(){	
 	//parse nvram to array

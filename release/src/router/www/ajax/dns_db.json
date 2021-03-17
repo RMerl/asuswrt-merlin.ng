@@ -1,0 +1,98 @@
+{
+    "level3": {
+        "name": "Level3",
+        "server": ["209.244.0.3", "209.244.0.4"],
+        "desc": "",
+        "translation": ""
+    },
+    "google": {
+        "name": "Google",
+        "server": ["8.8.8.8", "8.8.4.4"],
+        "desc": "",
+        "translation": ""
+    },
+    "dns_watch": {
+        "name": "DNS Watch",
+        "server": ["84.200.69.80", "84.200.70.40"],
+        "desc": "",
+        "translation": ""
+    },
+    "comodo": {
+        "name": "COMODO",
+        "server": ["8.26.56.26", "8.20.247.20"],
+        "desc": "",
+        "translation": ""
+    },
+    "opendns": {
+        "name": "OpenDNS",
+        "server": ["208.67.222.222", "208.67.220.220"],
+        "desc": "",
+        "translation": ""
+    },
+    "neustar": {
+        "name": "Neustar",
+        "server": ["156.154.70.1", "156.154.71.1"],
+        "desc": "",
+        "translation": ""
+    },
+    "symantec": {
+        "name": "Symantec",
+        "server": ["199.85.126.10", "199.85.127.10"],
+        "desc": "",
+        "translation": ""
+    },
+    "safedns": {
+        "name": "SAFEDNS",
+        "server": ["195.46.39.39", "195.46.39.40"],
+        "desc": "",
+        "translation": ""
+    },
+    "dyn": {
+        "name": "Dyn",
+        "server": ["216.146.35.35", "216.146.36.36"],
+        "desc": "",
+        "translation": ""
+    },
+    "freedns": {
+        "name": "FreeDNS",
+        "server": ["37.235.1.174", "37.235.1.177"],
+        "desc": "",
+        "translation": ""
+    },
+    "yandex": {
+        "name": "Yandex",
+        "server": ["77.88.8.88", "77.88.8.2"],
+        "desc": "",
+        "translation": ""
+    },
+    "adguard_1": {
+        "name": "AdGuard",
+        "server": ["94.140.14.14", "94.140.15.15"],
+        "desc": "Select this DNS server to block Internet ads.",
+        "translation": "#ADGUARD_1"
+    },
+    "adguard_2": {
+        "name": "AdGuard",
+        "server": ["94.140.14.15", "94.140.15.16"],
+        "desc": "Select this DNS server to block access to all websites with adult content and enforce safe search in the browser.",
+        "translation": "#ADGUARD_2"
+    },
+    "cloudflare_1": {
+        "name": "Cloudflare",
+        "server": ["1.1.1.1", "1.0.0.1"],
+        "desc": "Select this DNS server to have a fast and private way to browse the internet.",
+        "translation": "#CLOUDFLARE_1"
+    },
+    "cloudflare_2": {
+        "name": "Cloudflare",
+        "server": ["1.1.1.2", "1.0.0.2"],
+        "desc": "Select this DNS server to block malicious content.",
+        "translation": "#CLOUDFLARE_2"
+    },
+    "cloudflare_3": {
+        "name": "Cloudflare",
+        "server": ["1.1.1.3", "1.0.0.3"],
+        "desc": "Select this DNS server to block malicious and adult content.",
+        "translation": "#CLOUDFLARE_3"
+    }        
+}

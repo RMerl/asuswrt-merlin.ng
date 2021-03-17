@@ -1719,7 +1719,7 @@ function oui_query_card(mac) {
 	if(mac != document.getElementById("card_client_macaddr_field").value) //avoid click two device quickly
 		oui_query_card(document.getElementById("card_client_macaddr_field").value);
 	else{
-		$.getJSON("http://nw-dlcdnet.asus.com/plugin/js/ouiDB.json", function(data){
+		$.getJSON("/ajax/ouiDB.json", function(data){
 			if(data != "" && data[queryStr] != undefined){
         if(document.getElementById("edit_client_block") == null) return true;
 				var vendor_name = data[queryStr].trim();
@@ -3695,7 +3695,7 @@ function oui_query_full_vendor(mac){
 				var overlibStrTmp = retOverLibStr(clientList[mac]);
 			else
 				var overlibStrTmp = "<p><#MAC_Address#>:</p>" + mac.toUpperCase();
-			$.getJSON("/js/ouiDB.json", function(data){
+			$.getJSON("/ajax/ouiDB.json", function(data){
 				if(data != "" && data[queryStr] != undefined){
 					if(overlib.isOut) return nd();
 					var vendor_name = data[queryStr].trim();

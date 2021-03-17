@@ -1458,7 +1458,7 @@ function hideEditBlock(){
 function oui_query(mac){
 	var queryStr = mac.replace(/\:/g, "").splice(6,6,"");
 
-	$.getJSON("http://nw-dlcdnet.asus.com/plugin/js/ouiDB.json", function(data){
+	$.getJSON("/ajax/ouiDB.json", function(data){
 		if(data != "" && data[queryStr] != undefined){
 			if(document.getElementById("edit_client_block").style.display == "none") return true;
 			var vendor_name = data[queryStr].trim();

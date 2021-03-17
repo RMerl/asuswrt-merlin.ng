@@ -203,7 +203,7 @@ function initial(){
 	if(wan_bonding_support)
 		httpApi.faqURL("1039053", function(url){console.log(url); document.getElementById("wanAgg_faq").href=url;});
 
-	$.getJSON("http://nw-dlcdnet.asus.com/plugin/js/dns_db.json",
+	$.getJSON("/ajax/dns_db.json",
 		function(data){
 			var dns_db_translation_mapping = [
 				{tag:"#ADGUARD_1",text:"<#IPConnection_x_DNS_DB_ADGUARD_1#>"},

@@ -967,3 +967,9 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), TUF-AX3000 TUF-AX5400))
 	cp -rf $(INSTALLDIR)/www/css/TUF/* $(INSTALLDIR)/www/css/
 	rm -rf $(INSTALLDIR)/www/css/TUF
 endif
+
+update:
+	wget http://nw-dlcdnet.asus.com/plugin/js/tz_db.json -O ajax/tz_db.json
+	wget http://nw-dlcdnet.asus.com/plugin/js/dns_db.json -O ajax/dns_db.json
+	wget http://nw-dlcdnet.asus.com/plugin/js/ouiDB.json -O ajax/ouiDB.json
+	wget http://nw-dlcdnet.asus.com/plugin/js/gameList.json -O ajax/gameList.json

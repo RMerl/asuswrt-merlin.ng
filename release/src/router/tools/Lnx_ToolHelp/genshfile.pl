@@ -56,6 +56,9 @@ sub excludelist {
 	if ($fn eq "coda-slider.1.1.1.pack.js") { return 1; }
 	if ($fn eq "jquery-easing-compatibility.1.2.pack.js") { return 1; }
 	if ($fn eq "jquery-easing.1.2.pack.js") { return 1; }
+	if ($fn eq "Captive_Portal_Advanced_template.js") { return 1; }
+	if ($fn eq "chart.min.js") { return 1; }
+	if ($fn eq "Captive_Portal_template.js") { return 1; }
 	return 0;
 }
 

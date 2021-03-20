@@ -2526,8 +2526,8 @@ char *get_lan_hostname(void)
 	return get_productid();
 }
 
-int backup_rx;
-int backup_tx;
+unsigned long long backup_rx;
+unsigned long long backup_tx;
 int backup_set = 0;
 
 /* Looking for a ifino_s by interface name.

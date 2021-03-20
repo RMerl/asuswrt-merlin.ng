@@ -2,9 +2,14 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.2 (xx-xxx-2021)
-  - NEW: Added support for the GT-AX11000.  Note that VPNFusion, as
-         well as the ROG-specific features such as the custom UI
-         are not supported.
+  - NOTE: due to changes in how custom device icons are handled,
+          first time you boot with 386.2 you need to either
+          shift-reload the main index page, or clear your
+          browser cache.
+
+  - NEW: Added support for the GT-AX11000.  Note that VPN Fusion,
+         as well as the ROG-specific features such as the custom
+         UI are not supported.
   - NEW: Added support for the RT-AX68U.
   - NEW: Added jittertimer-rngd daemon to HND routers.  This will
          ensure sufficient entropy is generated early on at
@@ -22,6 +27,10 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: OpenVPN to 2.5.1.
   - UPDATED: iproute2 to 5.11.0 (HND models).
   - UPDATED: root certificate bundle to March 9th 2021.
+  - CHANGED: qos-start "init" user script now runs in blocking
+             mode to ensure it's able to complete any changes
+             it may apply to qos configs before these
+             configs get applied.
   - FIXED: Router could get stuck at boot time after the user
            migrated from stock firmware, or just erased his
            JFFS partition, requiring a factory default reset.

@@ -94,34 +94,34 @@ int get_dns_filter(int proto, int mode, dnsf_srv_entry_t *dnsfsrv)
 // Initialize
 	if (mode >= (sizeof(server_table)/sizeof(server_table[0]))) mode = 0;
 
-	switch (mode) {
-		case DNSF_SRV_CUSTOM1:
-			strlcpy(dnsfsrv->server1, nvram_safe_get("dnsfilter_custom1"), 46);
-			dnsfsrv->server2[0] = '\0';
-			break;
-		case DNSF_SRV_CUSTOM2:
-			strlcpy(dnsfsrv->server1, nvram_safe_get("dnsfilter_custom2"), 46);
-			dnsfsrv->server2[0] = '\0';
-			break;
-		case DNSF_SRV_CUSTOM3:
-			strlcpy(dnsfsrv->server1, nvram_safe_get("dnsfilter_custom3"), 46);
-			dnsfsrv->server2[0] = '\0';
-			break;
-		case DNSF_SRV_ROUTER:
-			strlcpy(dnsfsrv->server1, nvram_safe_get("dhcp_dns1_x"), 46);
-			dnsfsrv->server2[0] = '\0';
-			break;
-		default:
 #ifdef RTCONFIG_IPV6
-			if (proto == AF_INET6) {
-				strlcpy(dnsfsrv->server1, server6_table[mode][0], 46);
-				strlcpy(dnsfsrv->server2, server6_table[mode][1], 46);
-			} else
+	if (proto == AF_INET6) {
+		strlcpy(dnsfsrv->server1, server6_table[mode][0], 46);
+		strlcpy(dnsfsrv->server2, server6_table[mode][1], 46);
+	} else
 #endif
-			{
+	{
+		switch (mode) {
+			case DNSF_SRV_CUSTOM1:
+				strlcpy(dnsfsrv->server1, nvram_safe_get("dnsfilter_custom1"), 46);
+				dnsfsrv->server2[0] = '\0';
+				break;
+			case DNSF_SRV_CUSTOM2:
+				strlcpy(dnsfsrv->server1, nvram_safe_get("dnsfilter_custom2"), 46);
+				dnsfsrv->server2[0] = '\0';
+				break;
+			case DNSF_SRV_CUSTOM3:
+				strlcpy(dnsfsrv->server1, nvram_safe_get("dnsfilter_custom3"), 46);
+				dnsfsrv->server2[0] = '\0';
+				break;
+			case DNSF_SRV_ROUTER:
+				strlcpy(dnsfsrv->server1, nvram_safe_get("dhcp_dns1_x"), 46);
+				dnsfsrv->server2[0] = '\0';
+				break;
+			default:
 				strlcpy(dnsfsrv->server1, server_table[mode][0], 46);
 				strlcpy(dnsfsrv->server2, server_table[mode][1], 46);
-			}
+		}
 	}
 
 // Ensure that custom and DHCP-provided DNS do contain something

@@ -2769,12 +2769,12 @@ int start_cake(void)
 		"case \"$1\" in\n"
 		"start)\n"
 		"# Upload\n"
-		"\ttc qdisc add dev $ULIF root cake $ULPRIOQUEUE $ULOPTIONS $ULBW $OVERHEAD $FRAMING 2>/dev/null\n\n"
+		"\ttc qdisc add dev $ULIF root cake $ULPRIOQUEUE $ULBW $OVERHEAD $FRAMING $ULOPTIONS 2>/dev/null\n\n"
 
 		"# Download\n"
 		"\tip link add name $MIF type ifb 2>/dev/null\n"
 		"\ttc qdisc add dev $DLIF handle ffff: ingress 2>/dev/null\n"
-		"\ttc qdisc add dev $MIF root cake $DLPRIOQUEUE $DLOPTIONS $DLBW $OVERHEAD $FRAMING 2>/dev/null\n"
+		"\ttc qdisc add dev $MIF root cake $DLPRIOQUEUE $DLBW $OVERHEAD $FRAMING $DLOPTIONS 2>/dev/null\n"
 		"\tip link set $MIF up 2>/dev/null\n"
 		"\ttc filter add dev $DLIF parent ffff: prio 10 matchall action mirred egress redirect dev $MIF 2>/dev/null\n\n"
 

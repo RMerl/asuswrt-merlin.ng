@@ -407,19 +407,19 @@ function parseStatus(text, block, ipaddress, ripaddress){
 
 
 function parseIPSecData(profileName){
-	var code = "<table width='100%' border='1' align='center' cellpadding='4' cellspacing='0' bordercolor='#6b8fa3' class='FormTable_table'><thead><tr><td colspan='5'>Connected Clients</td></tr></thead><tr>";
+	var ikeversion = (profileName == "Host-to-Netv2" ? "IKEv2" : "IKEv1")
+	var code = "<table width='100%' border='1' align='center' cellpadding='4' cellspacing='0' bordercolor='#6b8fa3' class='FormTable_table'><thead><tr><td colspan='5'>Connected Clients - " + ikeversion + "</td></tr></thead><tr>";
 	code += "<th style='text-align:left;white-space:nowrap;'>Remote IP</th>";
 	code += "<th style='text-align:left;white-space:nowrap;'><#statusTitle_Client#></th>";
 	code += "<th style='text-align:left;white-space:nowrap;'><#Access_Time#></th>";
 	code += "<th style='text-align:left;white-space:nowrap;'><#vpn_ipsec_XAUTH#> <#Permission_Management_Users#></th>";
 	code += "<th style='text-align:left;white-space:nowrap;'>PSKR Auth Time</th>";
 
-	var statusText = [[""], ["<#Connected#>"], ["<#Connecting_str#>"], ["<#Connecting_str#>"]]
+	var statusText = [[""], ["<#Connected#>"], ["<#Connecting_str#>"], ["<#Connecting_str#>"]];
 	var profileName_array = ipsec_connect_status_array[profileName].split("<");
 	for (i = 0; i < profileName_array.length; i += 1) {
 		if(profileName_array[i] != "") {
 			var profileName_col = profileName_array[i].split(">");
-
 			code += "<tr><td style='text-align:left;'>" + profileName_col[0] + "</td>";
 			code += "<td style='text-align:left;'>" + statusText[profileName_col[1]] + "</td>";
 			code += "<td style='text-align:left;'>" + profileName_col[2] + "</td>";
@@ -429,7 +429,7 @@ function parseIPSecData(profileName){
 	}
 
 	code +='</table>';
-	document.getElementById('ipsec_srv_Block').innerHTML = code;
+	document.getElementById('ipsec_srv_Block').innerHTML += code;
 }
 
 function show_vpnc_rulelist(){
@@ -493,20 +493,22 @@ function refresh_ipsec_data() {
 		dataType: 'script',
 		timeout: 1500,
 		success: function() {
+			document.getElementById('ipsec_srv_Block').innerHTML = "";
 			ipsec_connect_status_array = [];
 			for(var i = 0; i < ipsec_connect_status.length; i += 1) {
-				ipsec_connect_status_array["Host-to-Net"] = ipsec_connect_status[i][1];
+				ipsec_connect_status_array[ipsec_connect_status[i][0]] = ipsec_connect_status[i][1];
 			}
 			if(ipsec_connect_status_array["Host-to-Net"] != undefined) {
-				var connected_count = (ipsec_connect_status_array["Host-to-Net"].split("<").length - 1);
+				var connected_count = (ipsec_connect_status_array["Host-to-Net"].split("<").length);
 				if(connected_count > 0) {
 					parseIPSecData("Host-to-Net");
 				}
-				else
-					document.getElementById('ipsec_srv_Block').innerHTML = "";
+			}
+			if(ipsec_connect_status_array["Host-to-Netv2"] != undefined) {
+				var connected_count = (ipsec_connect_status_array["Host-to-Netv2"].split("<").length);
+				if(connected_count > 0) {
+					parseIPSecData("Host-to-Netv2");
 				}
-			else {
-				document.getElementById('ipsec_srv_Block').innerHTML = "";
 			}
 		}
 	});

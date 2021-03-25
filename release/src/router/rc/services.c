@@ -803,13 +803,13 @@ void create_passwd(void)
 		p = crypt(p, salt);
 		fprintf(f,
 				"%s:%s::0:99999:7:0::\n"
-#ifdef RTCONFIG_TOR
-				"tor:*::0:99999:7:0::\n"
-#endif
 #ifdef RTCONFIG_SAMBASRV	//!!TB
 				"%s:*::0:99999:7:0::\n"
 #endif
 				"nobody:*::0:99999:7:0::\n"
+#ifdef RTCONFIG_TOR
+				"tor:*::0:99999:7:0::\n"
+#endif
 				, http_user, p
 #ifdef RTCONFIG_SAMBASRV	//!!TB
 				, smbd_user

@@ -2033,13 +2033,20 @@ unsigned long blog_request( BlogRequest_t request, void * net_p,
                        sw_bstats_p->tx_packets+hw_bstats_p->tx_packets, 
                        sw_bstats_p->tx_bytes+hw_bstats_p->tx_bytes,
                        sw_bstats_p->multicast+hw_bstats_p->multicast);
+
+            if (dev_p->reg_state != NETREG_REGISTERED)
+                return 0;
+
             /* Work-around : put_stats only used by WLAN for backward compatibility */
-            if ( dev_p->put_stats )
-            {
-                BlogStats_t bstats; 
-                memcpy(&bstats, sw_bstats_p, sizeof(bstats)); 
-                blog_fold_stats(&bstats, hw_bstats_p);
-                dev_p->put_stats( dev_p, &bstats );
+            if (dev_p->put_stats) {
+                unsigned long addr = (unsigned long)(dev_p->put_stats);
+                if (virt_addr_valid(dev_p->put_stats) || (addr >= MODULES_VADDR && addr < MODULES_END))
+                {
+                    BlogStats_t bstats;
+                    memcpy(&bstats, sw_bstats_p, sizeof(bstats));
+                    blog_fold_stats(&bstats, hw_bstats_p);
+                    dev_p->put_stats( dev_p, &bstats );
+                }
             }
             else
             {

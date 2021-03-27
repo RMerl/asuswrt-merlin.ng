@@ -982,6 +982,8 @@ function show_banner(L3){// L3 = The third Level of Menu
 		banner_code += '<div style="font-size: 14px;margin-left:12px;">Your Wi-Fi radio is currently turned off. Please turn on now.</div>';
 		banner_code += '<div style="background-image: url(\'images/New_ui/arrow_right.svg\');width:16px;height:16px;background-size: 60%;background-repeat:no-repeat;cursor: pointer;margin-left: auto" onclick="radio_hint();"></div>';
 		banner_code += '</div>';
+		if (current_url.indexOf("index.asp") != -1)
+			document.getElementById('NM_shift').style.margin="0 -160px";
 	}
 	
  	if(rog_support && current_url.indexOf("GameDashboard") != -1){

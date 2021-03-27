@@ -1184,7 +1184,7 @@ function hide_https_lanport(_value){
 		return false;
 	}
 
-	if(sw_mode == '1' || sw_mode == '2'){
+	if(sw_mode == '1' || sw_mode == '2' || sw_mode == '3'){
 		var https_lanport_num = "<% nvram_get("https_lanport"); %>";
 		document.getElementById("https_lanport").style.display = (_value == "0") ? "none" : "";
 		document.form.https_lanport.disabled = (_value == "0") ? true : false;

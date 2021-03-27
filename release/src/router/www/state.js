@@ -3619,7 +3619,6 @@ function switchType(obj, showText, chkBox){
 
 function corrected_timezone(){
 	var today = new Date();
-	var StrIndex;	
 	var StrIndex;
 	var startPos = today.toString().indexOf("(");
 	if ( startPos < 0 )

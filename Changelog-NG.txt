@@ -23,7 +23,7 @@ Asuswrt-Merlin 386/NG Changelog
          connections faster than around 350 Mbps (may vary based
          on router models).
   - UPDATED: Merged GPL 386_42095.
-  - UPDATED: Openssl to 1.1.1j.
+  - UPDATED: Openssl to 1.1.1k.
   - UPDATED: OpenVPN to 2.5.1.
   - UPDATED: iproute2 to 5.11.0 (HND models).
   - UPDATED: root certificate bundle to March 9th 2021.
@@ -37,6 +37,13 @@ Asuswrt-Merlin 386/NG Changelog
   - FIXED: ATM checkbox could not be enabled on QOS page.
   - FIXED: DST not getting applied to some timezones (snauton)
   - FIXED: Traditional QoS was broken in 386.1 (dave14305)
+  - FIXED: Connected IPSEC clients weren't shown on the VPN Status
+           page.
+  - FIXED: Userspace conntrack tool was no longer working
+  - FIXED: Traffic Monitor spikes for HND models.  Older models
+           are still unpatched. (Asus backport).
+  - FIXED: webui incorrectly complaining about mismatched timezone
+           between browser and webui for some timezones (dave14305)
   - REMOVED: SSH Brute Force Protection option (already handled
              by Asuswrt's protect service daemon)
 

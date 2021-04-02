@@ -17634,7 +17634,7 @@ NO_USB_CAP:
 #ifdef RTCONFIG_BCMWL6
 	add_rc_support("wl6");
 #endif
-#if defined(RTN66U) || defined(RTAC66U) || defined(RTAC68U) || defined(DSL_AC68U) || defined(RTAC68U_V4) || defined(RTCONFIG_QCA)
+#if defined(RTN66U) || defined(RTAC66U) || defined(RTAC68U) || defined(DSL_AC68U) || defined(RTAC68U_V4) || defined(RTCONFIG_QCA) || defined(RTAC3100)
 #ifdef RTCONFIG_OPTIMIZE_XBOX
 	add_rc_support("optimize_xbox");
 #endif

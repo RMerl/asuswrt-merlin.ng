@@ -78,6 +78,8 @@ wl_dhd() {
 	rmmod dhd24
 	modprobe dhd
 	echo "已更换无线驱动为dhd"
+	sleep 1
+	reboot
 }
 
 wl_dhd24() {
@@ -91,6 +93,8 @@ wl_dhd24() {
 	rmmod dhd
 	modprobe dhd24
 	echo "已更换无线驱动为dhd24"
+	sleep 1
+	reboot
 }
 
 erase_mtd() {
@@ -163,8 +167,8 @@ do
 	echo "1) 修改LAN MAC"
 	echo "2) 修改2.4G MAC"
 	echo "3) 修改5G MAC"
-	echo "4) 无线驱动更换成dhd24.ko"
-	echo "5) 无线驱动更换成dhd.ko"
+	echo "4) 无线驱动更换成dhd24.ko并重启"
+	echo "5) 无线驱动更换成dhd.ko并重启"
 	echo "6）格式化/dev/mtd5"
 	echo "7）软件中心去检测、兼容旧版安装包"
 	echo "8）重置软件中心为固件版本"

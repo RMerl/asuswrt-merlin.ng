@@ -26,7 +26,7 @@
 #include <auth_common.h>
 #include <sys/reboot.h>
 
-#define ROMCFE "/rom/cfe"
+#define ROMCFE "/rom/cfe/cfe_rt-k3.bin"
 
 void envram_set(char *key, char *val)
 {
@@ -121,7 +121,8 @@ void update_cfe_k3(void)
 		usleep(100000);
 	}
 
-	doSystem("dd if=%s of=/dev/mtdblock0 2>/dev/null", ROMCFE);
+	doSystem("/rom/cfe/mtd-write %s boot", ROMCFE);
+	usleep(100000);
 
 	envram_set("et0macaddr", et0mac);
 	envram_set("0:macaddr", et0mac); // 2.4G MAC is the same as LAN MAC in Merlin

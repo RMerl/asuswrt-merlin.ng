@@ -2420,7 +2420,7 @@ else
 endif
 
 ifeq ($(RTCONFIG_ROMCFE),y)
-	-cp $(SRCBASE)/cfe/cfe_`echo $(BUILD_NAME)|tr A-Z a-z`.bin $(TARGETDIR)/rom/cfe
+	-cp $(SRCBASE)/cfe/cfe_`echo $(BUILD_NAME)|tr A-Z a-z`.bin $(TARGETDIR)/rom/cfe/
 endif
 ifeq ($(RTCONFIG_ROMATECCODEFIX),y)
 	-cp $(SRCBASE)/router/rom/cfe/`echo $(BUILD_NAME)|tr A-Z a-z`_fixlist.txt $(TARGETDIR)/rom/mac_chklist.txt

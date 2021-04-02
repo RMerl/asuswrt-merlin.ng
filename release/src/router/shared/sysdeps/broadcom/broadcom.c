@@ -993,6 +993,9 @@ get_uplinkports_linkrate(char *ifname)
 		lan_ports = 0;
 	}
 #endif
+#if defined(RTK3)
+		lan_ports = 3;
+#endif
 	int ports[lan_ports+1];
 	int lrate[lan_ports+1];
 	char pif[lan_ports+1][8];
@@ -1048,7 +1051,11 @@ get_uplinkports_linkrate(char *ifname)
 	case MODEL_RTAC88U:
 	case MODEL_RTAC3100:
 		/* WAN L1 L2 L3 L4 */
+#ifdef RTK3
+		ports[0]=3; ports[1]=1; ports[2]=0; ports[3]=2;
+#else
 		ports[0]=4; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+#endif
 #if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
 		ext = 1;
 #endif
@@ -1869,7 +1876,7 @@ phy_port_mapping get_phy_port_mapping(void)
 		.port[6] = { .phy_port_id = S_RTL8365MB+1, .label_name = "L6", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
 		.port[7] = { .phy_port_id = S_RTL8365MB+2, .label_name = "L7", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
 		.port[8] = { .phy_port_id = S_RTL8365MB+3, .label_name = "L8", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" }
-#elif RTCONFIG_EXT_RTL8370MB
+#elif defined(RTCONFIG_EXT_RTL8370MB)
 		.count = 9,
 		.port[0] = { .phy_port_id = 0, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
 		.port[1] = { .phy_port_id = S_RTL8365MB+2, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
@@ -1880,6 +1887,12 @@ phy_port_mapping get_phy_port_mapping(void)
 		.port[6] = { .phy_port_id = S_RTL8365MB+5, .label_name = "L6", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
 		.port[7] = { .phy_port_id = S_RTL8365MB+6, .label_name = "L7", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
 		.port[8] = { .phy_port_id = S_RTL8365MB+7, .label_name = "L8", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" }
+#elif defined(RTK3)
+		.count = 4,
+		.port[0] = { .phy_port_id = 3, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },
+		.port[1] = { .phy_port_id = 1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[2] = { .phy_port_id = 0, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
+		.port[3] = { .phy_port_id = 2, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = "vlan1" },
 #else
 		.count = 5,
 		.port[0] = { .phy_port_id = 4, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = "eth0" },

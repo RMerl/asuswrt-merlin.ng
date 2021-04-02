@@ -25,7 +25,6 @@
 #include <siutils.h>
 #include <auth_common.h>
 #include <sys/reboot.h>
-#include "k3.h"
 
 #define ROMCFE "/rom/cfe"
 
@@ -210,24 +209,49 @@ void start_k3screen(void)
 	kprintf("k3screen: ok\n");
 }
 
-int GetPhyStatusk3(int verbose)
+int GetPhyStatus(int verbose, phy_info_list *list)
 {
 	int port[] = { 3, 1, 0, 2 };
-	int i, ret, lret = 0, mask;
-	char out_buf[20];
+	int i, ret, lret = 0, mask, ret_code = 0;
+	char out_buf[21];
 
 	bzero(out_buf, sizeof(out_buf));
 	for (i = 0; i < 4; i++)
 	{
 		mask = 0;
 		mask |= 0x0001 << port[i];
+		if (list)
+		{
+			list->count++;
+			list->phy_info[i].phy_port_id = port[i];
+			if (i == 0)
+			{
+				snprintf(list->phy_info[i].label_name, sizeof(list->phy_info[i].label_name), "W0");
+				snprintf(list->phy_info[i].cap_name, sizeof(list->phy_info[i].cap_name), "wan");
+			}
+			else
+			{
+				snprintf(list->phy_info[i].label_name, sizeof(list->phy_info[i].label_name), "L%d", i);
+				snprintf(list->phy_info[i].cap_name, sizeof(list->phy_info[i].cap_name), "lan");
+			}
+			list->phy_info[i].tx_packets = get_phy_mib(port[i], "tx_packets");
+			list->phy_info[i].rx_packets = get_phy_mib(port[i], "rx_packets");
+			list->phy_info[i].tx_bytes = get_phy_mib(port[i], "tx_bytes");
+			list->phy_info[i].rx_bytes = get_phy_mib(port[i], "rx_bytes");
+			list->phy_info[i].crc_errors = get_phy_mib(port[i], "crc_errors");
+		}
 		if (get_phy_status(mask) == 0)
 		{ /*Disconnect*/
 			if (i == 0)
 				snprintf(out_buf, sizeof(out_buf), "W0=X;");
 			else
-			{
 				snprintf(out_buf, sizeof(out_buf), "%sL%d=X;", out_buf, i);
+
+			if (list)
+			{
+				snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "down");
+				snprintf(list->phy_info[i].duplex, sizeof(list->phy_info[i].duplex), "none");
+				list->phy_info[i].link_rate = 0;
 			}
 		}
 		else
@@ -241,13 +265,22 @@ int GetPhyStatusk3(int verbose)
 			else
 			{
 				lret = 1;
+				ret_code |= 0x0001 << i;
 				snprintf(out_buf, sizeof(out_buf), "%sL%d=%s;", out_buf, i, (ret & 2) ? "G" : "M");
+			}
+			if (list)
+			{
+				snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "up");
+				snprintf(list->phy_info[i].duplex, sizeof(list->phy_info[i].duplex), (get_phy_duplex(1 << port[i])) ? "full" : "half");
+				list->phy_info[i].link_rate = (ret & 2) ? 1000 : 100;
 			}
 		}
 	}
 
 	if (verbose)
 		puts(out_buf);
+	if (verbose != 53134 && verbose != 8365)
+		lret = ret_code;
 
 	return lret;
 }

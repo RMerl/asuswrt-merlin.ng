@@ -103,7 +103,7 @@ void _switch_gen_config(char *buf, const int ports[SWPORT_COUNT], int swmask, ch
 
 	if (wan && !cputag) {
             for (n = i = count = 0; i < SWPORT_COUNT && mask; mask >>= 1, i++) {
-                if ((mask & 1U) == 0)
+                if ((mask & 1U) == 0 || ports[i] < 0)
                         continue;
                 res[n].port = ports[i];
                 res[n].tag = (i == SWPORT_CPU) ? cputag : "";
@@ -113,7 +113,7 @@ void _switch_gen_config(char *buf, const int ports[SWPORT_COUNT], int swmask, ch
 	}
 	else {
 	    for (i = count = 0; i < SWPORT_COUNT && mask; mask >>= 1, i++) {
-		if ((mask & 1U) == 0)
+		if ((mask & 1U) == 0 || ports[i] < 0)
 			continue;
 		for (n = count; n > 0 && ports[i] < res[n - 1].port; n--)
 			res[n] = res[n - 1];

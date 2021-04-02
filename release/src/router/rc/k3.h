@@ -22,4 +22,3 @@ extern void update_cfe_k3(void);
 extern void k3_init(void);
 extern void k3_init_done(void);
 extern void start_k3screen(void);
-extern int GetPhyStatusk3(int verbose);

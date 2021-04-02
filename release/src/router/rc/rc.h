@@ -38,6 +38,9 @@
 
 #include "sysdeps.h"
 #include <linux/version.h>
+#ifdef RTK3
+#include <k3.h>
+#endif
 #ifdef HND_ROUTER
 #include <cms_image.h>
 #include <bcm_imgif.h>

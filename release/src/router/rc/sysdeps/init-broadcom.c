@@ -14,7 +14,6 @@
 #include "shared.h"
 #include "version.h"
 #include "interface.h"
-#include "k3.h"
 
 #include <sched.h>
 #include <termios.h>
@@ -1439,7 +1438,7 @@ void generate_switch_para(void)
 #else	// RTCONFIG_EXT_RTL8365MB
 			/* WAN L1 L2 L3 L4 CPU */	/*vision: WAN L1 L2 L3 L4 */
 #ifdef RTK3
-			int ports[SWPORT_COUNT] = { 3, 1, 0, 2, 4, 5 };
+			int ports[SWPORT_COUNT] = { 3, 1, 0, 2, -1, 5 };
 #else
 			int ports[SWPORT_COUNT] = { 4, 3, 2, 1, 0, 5 };
 #endif

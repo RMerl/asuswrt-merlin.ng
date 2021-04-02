@@ -111,8 +111,6 @@
 
 #if defined(RTCONFIG_QCA_PLC_UTILS) || defined(RTCONFIG_QCA_PLC2)
 #include <plc_utils.h>
-#ifdef RTK3
-#include "k3.h"
 #endif
 
 #define BCM47XX_SOFTWARE_RESET	0x40		/* GPIO 6 */
@@ -5518,9 +5516,6 @@ void fake_etlan_led(void)
 #if defined(RTAX86U)
 	phystatus = hnd_get_phy_status("eth5");
 	if (!phystatus)
-#else
-#ifdef RTK3
-	phystatus = GetPhyStatusk3(0);
 #else
 	phystatus = GetPhyStatus(0, NULL);
 

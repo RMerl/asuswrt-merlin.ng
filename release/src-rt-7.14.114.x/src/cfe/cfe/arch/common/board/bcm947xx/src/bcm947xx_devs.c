@@ -952,7 +952,7 @@ board_final_init(void)
 			sprintf(buf, "ifconfig eth0 -addr=%s -mask=%s",
 			        addr, mask);
 		else
-			sprintf(buf, "ifconfig eth0 -auto");
+			sprintf(buf, "ifconfig eth0 -addr=192.168.1.1 -mask=255.255.255.0");
 
 		res = ui_docommand(buf);
 

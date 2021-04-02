@@ -401,13 +401,13 @@ void exec_tcplugin(void)
 			fprintf(fpmodel, nvram_get("productid"));
 			fclose(fpmodel);
 		}
-	}
-	if ((fpmac = fopen("/var/label_macaddr", "w")))
-	{
-		char *etmac = get_label_mac();
-		toLowerCase(etmac);
-		fprintf(fpmac, etmac);
-		fclose(fpmac);
+		if ((fpmac = fopen("/var/label_macaddr", "w")))
+		{
+			char *etmac = get_label_mac();
+			toLowerCase(etmac);
+			fprintf(fpmac, etmac);
+			fclose(fpmac);
+		}
 	}
 }
 #endif

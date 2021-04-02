@@ -1,7 +1,7 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
-386.2 (xx-xxx-2021)
+386.2 (2-Apr-2021)
   - NOTE: due to changes in how custom device icons are handled,
           first time you boot with 386.2 you need to either
           shift-reload the main index page, or clear your
@@ -11,7 +11,7 @@ Asuswrt-Merlin 386/NG Changelog
          as well as the ROG-specific features such as the custom
          UI are not supported.
   - NEW: Added support for the RT-AX68U.
-  - NEW: Added jittertimer-rngd daemon to HND routers.  This will
+  - NEW: Added jitterentropy-rngd daemon to HND routers.  This will
          ensure sufficient entropy is generated early on at
          boot time, reducing boot stalls caused by insufficient
          entropy for the kernel's random number generator,
@@ -40,8 +40,7 @@ Asuswrt-Merlin 386/NG Changelog
   - FIXED: Connected IPSEC clients weren't shown on the VPN Status
            page.
   - FIXED: Userspace conntrack tool was no longer working
-  - FIXED: Traffic Monitor spikes for HND models.  Older models
-           are still unpatched. (Asus backport).
+  - FIXED: Traffic Monitor spikes for HND models.  (Asus backport)
   - FIXED: webui incorrectly complaining about mismatched timezone
            between browser and webui for some timezones (dave14305)
   - REMOVED: SSH Brute Force Protection option (already handled

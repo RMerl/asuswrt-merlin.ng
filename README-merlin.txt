@@ -116,6 +116,7 @@ Networking:
    - DNS-over-TLS
    - Redirect NTP client queries to the router's own NTP daemon
    - WS-Discovery support (alternative to SMBv1 network discovery)
+   - Cake QoS (HND devices only)
 
 
 Web interface:
@@ -185,13 +186,12 @@ AddOns support: https://www.snbforums.com/forums/asuswrt-merlin-addons.60/
 
 Source code
 -----------
-The source code can be found on Github.
+The source code can be found on Github:
 
-Original legacy branch:
-https://github.com/RMerl/asuswrt-merlin
-
-New generation/current branch (382.xx and newer):
 https://github.com/RMerl/asuswrt-merlin.ng
+
+Original pre-382.xx legacy code (now archived):
+https://github.com/RMerl/asuswrt-merlin
 
    
 Contact information

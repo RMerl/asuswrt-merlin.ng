@@ -22,3 +22,6 @@ extern void update_cfe_k3(void);
 extern void k3_init(void);
 extern void k3_init_done(void);
 extern void start_k3screen(void);
+#ifdef RTCONFIG_UUPLUGIN
+void exec_uu_k3(void);
+#endif

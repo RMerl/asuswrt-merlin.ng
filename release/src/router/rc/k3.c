@@ -166,6 +166,7 @@ void k3_init(void)
 		nvram_set("location_code", "AU");
 		isChange = 1;
 	}
+	nvram_set("netease_uu_md5", "");
 
 	if (isChange)
 	{
@@ -288,14 +289,18 @@ int GetPhyStatus(int verbose, phy_info_list *list)
 #ifdef RTCONFIG_UUPLUGIN
 void exec_uu_k3(void)
 {
-	FILE *fpmodel, *fpmac, *fpuu, *fpurl, *fpmd5, *fpcfg;
+	FILE *fpmodel, *fpmac, *fpdir, *fpurl, *fpmd5, *fpcfg;
 	char buf[128];
-	int download, i;
 	char *dup, *url, *md5;
+	int result;
 
-	if(nvram_get_int("sw_mode") == 1)
+	if (!nvram_match("netease_uu_enable", "1"))
 	{
-		add_rc_support("uu_accel");
+		system("killall uuplugin_monitor.sh");
+		system("killall uuplugin");
+	}
+	else if (nvram_get_int("ntp_ready") && nvram_get_int("sw_mode") == 1)
+	{
 		if ((fpmodel = fopen("/var/model", "w")))
 		{
 			fprintf(fpmodel, nvram_get("productid"));
@@ -308,17 +313,19 @@ void exec_uu_k3(void)
 			fprintf(fpmac, etmac);
 			fclose(fpmac);
 		}
-		if ((fpuu = fopen("/var/uu_plugin_dir", "w")))
+		if ((fpdir = fopen("/var/uu_plugin_dir", "w")))
 		{
-			fprintf(fpuu, "/jffs");
-			fclose(fpuu);
+			fprintf(fpdir, "/jffs");
+			fclose(fpdir);
 		}
-		system("mkdir -p /tmp/uu");
-		download = system("wget -t 2 -T 30 --dns-timeout=120 --header=Accept:text/plain -q --no-check-certificate 'https://router.uu.163.com/api/script/monitor?type=asuswrt-merlin' -O /tmp/uu/script_url");
-		if (!download)
+		mkdir_if_none("/tmp/uu");
+		result = system("wget -t 2 -T 30 --dns-timeout=120 --header=Accept:text/plain \
+			-q --no-check-certificate 'https://router.uu.163.com/api/script/monitor?type=asuswrt-merlin' \
+			-O /tmp/uu/script_url");
+		if (!result)
 		{
 			kprintf("download uuplugin script info successfully\n");
-			if (fpurl = fopen("/tmp/uu/script_url", "r"))
+			if ((fpurl = fopen("/tmp/uu/script_url", "r")))
 			{
 				fgets(buf, 128, fpurl);
 				fclose(fpurl);
@@ -328,18 +335,35 @@ void exec_uu_k3(void)
 				md5 = strsep(&dup, ",");
 				if (md5 != NULL)
 				{
-					kprintf("URL: %s\n", url);
-					kprintf("MD5: %s\n", md5);
-					if (!doSystem("wget -t 2 -T 30 --dns-timeout=120 --header=Accept:text/plain -q --no-check-certificate %s -O /tmp/uu/uuplugin_monitor.sh", url))
+					if (nvram_match("netease_uu_md5", md5))
+					{
+						kprintf("MD5: %s is the same. skip download.\n", md5);
+						if (pids("uuplugin"))
+							result = 1;
+						else
+							result = 0;
+					}
+					else
+					{
+						kprintf("URL: %s\n", url);
+						kprintf("MD5: %s\n", md5);
+						mkdir_if_none("/jffs/uu");
+						result = doSystem("wget -t 2 -T 30 --dns-timeout=120 --header=Accept:text/plain \
+							-q --no-check-certificate %s -O /jffs/uu/uuplugin_monitor.sh", url);
+					}
+
+					if (!result)
 					{
 						kprintf("download uuplugin script successfully\n");
-						if ((fpcfg = fopen("/tmp/uu/uuplugin_monitor.config", "w")))
+						nvram_set("netease_uu_md5", md5);
+						if ((fpcfg = fopen("/jffs/uu/uuplugin_monitor.config", "w")))
 						{
 							fprintf(fpcfg, "router=asuswrt-merlin\n");
-							fprintf(fpcfg, "model=RT-AC3100\n");
+							fprintf(fpcfg, "model=\n");
 							fclose(fpcfg);
 						}
-						if ((fpmd5=popen("md5sum /tmp/uu/uuplugin_monitor.sh | awk '{print $1}'", "r")))
+
+						if ((fpmd5=popen("md5sum /jffs/uu/uuplugin_monitor.sh | awk '{print $1}'", "r")))
 						{
 							bzero(buf, sizeof(buf));
 							if((fread(buf, 1, 128, fpmd5)))
@@ -347,9 +371,11 @@ void exec_uu_k3(void)
 								if (!strncasecmp(buf, md5, 32))
 								{
 									pid_t pid;
-									char *uu_argv[] = { "/tmp/uu/uuplugin_monitor.sh", NULL };
+									char *uu_argv[] = { "/jffs/uu/uuplugin_monitor.sh", NULL };
 									kprintf("prepare to execute uuplugin stript...\n");
-									chmod("/tmp/uu/uuplugin_monitor.sh", 0755);
+									system("killall uuplugin_monitor.sh");
+									system("killall uuplugin");
+									chmod("/jffs/uu/uuplugin_monitor.sh", 0755);
 									_eval(uu_argv, NULL, 0, &pid);
 								}
 							}

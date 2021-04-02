@@ -15887,6 +15887,14 @@ check_ddr_done:
 			eval("iptables", "-t", "mangle", "-D", "BWDPI_FILTER", "-i", dev_wan, "-p", "udp", "--sport", "67", "--dport", "68", "-j", "DROP");
 		}
 	}
+#if defined(RTCONFIG_UUPLUGIN)
+	else if (strcmp(script, "uu_check") == 0)
+	{
+		if(action & RC_SERVICE_START){
+			exec_uu_k3();
+		}
+	}
+#endif
 	else if (strcmp(script, "dpi_disable") == 0)
 	{
 		disable_dpi_engine_setting();

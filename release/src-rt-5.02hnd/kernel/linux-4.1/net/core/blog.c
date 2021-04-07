@@ -1498,8 +1498,8 @@ unsigned long blog_request( BlogRequest_t request, void * net_p,
                 unsigned long addr = (unsigned long)(dev_p->put_stats);
                 if (virt_addr_valid(dev_p->put_stats) || (addr >= MODULES_VADDR && addr < MODULES_END))
                     dev_p->put_stats( dev_p, bstats_p );
-                else
-                    printk("%s %d: dev %s put_stats %p\n", __FUNCTION__, __LINE__, dev_p->name, dev_p->put_stats);
+//                else
+//                    printk("%s %d: dev %s put_stats %p\n", __FUNCTION__, __LINE__, dev_p->name, dev_p->put_stats);
             }
 
             return 0;

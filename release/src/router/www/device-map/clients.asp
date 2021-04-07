@@ -329,7 +329,7 @@ function drawClientList(tab){
 		document.getElementById("searchingBar").placeholder = 'Search';
 	}
 	else{
-		document.getElementById("searchingBar").placeholder = '[' + wl_nband_title[tab.split("wireless")[1]] + '](' + totalClientNum.wireless_ifnames[tab.split("wireless")[1]] + ')';
+		document.getElementById("searchingBar").placeholder = '[' + wl_nband_title[tab.split("wireless")[1]-1] + '](' + totalClientNum.wireless_ifnames[tab.split("wireless")[1]-1] + ')';
 	}
 
 	if(pagesVar.curTab != tab){

@@ -1757,7 +1757,7 @@ var validator = {
 	},
 
 	rangeFloat: function(o, _min, _max, def){
-        if(isNaN(o.value) || o.value <= _min || o.value > _max) {
+        if(isNaN(o.value) || o.value < _min || o.value > _max) {
             alert('<#JS_validrange#> ' + _min + ' <#JS_validrange_to#> ' + _max + '.');
 			o.value = def;
 			o.focus();

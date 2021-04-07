@@ -3981,7 +3981,7 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp_ipv6, "-A FORWARD -p ipv6-nonxt -m length --length 40 -j ACCEPT\n");
 
 		// ICMPv6 rules
-		fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp --icmpv6-type %i -m limit --limit 1/s -j %s\n", 128, logdrop);
+		fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp --icmpv6-type %i -m limit --limit 1/s -j %s\n", 128, logaccept);
 		for (i = 0; i < sizeof(allowed_icmpv6)/sizeof(int); ++i) {
 			fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp --icmpv6-type %i -j %s\n", allowed_icmpv6[i], logaccept);
 		}
@@ -5318,7 +5318,7 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp_ipv6, "-A FORWARD -p ipv6-nonxt -m length --length 40 -j ACCEPT\n");
 
 		// ICMPv6 rules
-		fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp --icmpv6-type %i -m limit --limit 1/s -j %s\n", 128, logdrop);
+		fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp --icmpv6-type %i -m limit --limit 1/s -j %s\n", 128, logaccept);
 		for (i = 0; i < sizeof(allowed_icmpv6)/sizeof(int); ++i) {
 			fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp --icmpv6-type %i -j %s\n", allowed_icmpv6[i], logaccept);
 		}

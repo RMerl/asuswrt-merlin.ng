@@ -114,12 +114,9 @@ if(cfg_sync_support){
 	var cfg_check = '<% nvram_get("cfg_check"); %>';
 	var cfg_upgrade = '<% nvram_get("cfg_upgrade"); %>';
 }
-var download_srv = '<% nvram_get("firmware_server"); %>';
-if (download_srv == "") {
-	download_url = "https://www.asuswrt-merlin.net/download";
-} else {
-	download_url = download_srv + "/" + based_modelid;
-}
+download_url_redir = "https://fwupdate.asuswrt-merlin.net/" + based_modelid;
+download_url = "https://www.asuswrt-merlin.net/download";
+
 if(pipefw_support || urlfw_support){
 	var hndwr_status = '<% nvram_get("hndwr"); %>';
 }
@@ -278,7 +275,6 @@ function initial(){
 			startDownloading();
 		}
 	}
-
 	if(no_update_support){	//no live update
 		document.getElementById("update_div").style.display = "none";
 		document.getElementById("fw_tr").style.display = "none";
@@ -473,11 +469,11 @@ function do_show_confirm(flag){
          					right_button: "Visit download site",
 							right_button_callback: function(){
 										if(cfg_sync_support){
-											window.open(download_url);
+											window.open(download_url_redir);
 											//cfgsync_firmware_upgrade();
 										}
 										else{
-											window.open(download_url);
+											window.open(download_url_redir);
 											//document.start_update.action_mode.value="apply";
 											//document.start_update.action_script.value="stop_upgrade;start_webs_upgrade";
 											//document.start_update.submit();
@@ -1031,14 +1027,14 @@ function show_amas_fw_result() {
 					$("#amas_" + mac_id + "").children().find(".checkFWResult").html(ck_fw_result);
 					if(newfwver != "") {
 						if (check_is_merlin_fw(fwver)) {
-							ck_fw_result = newfwver.replace("3.0.0.4.","");
+							ck_fw_result = newfwver.replace("3.0.0.4.","").replace("_",".").replace("_0","");
 						} else {
 							ck_fw_result = newfwver;
 							$("#amas_update").css("display", "");
 						}
 						$("#amas_" + mac_id + "").children().find(".checkFWResult").addClass("aimesh_fw_release_note");
 						$("#amas_" + mac_id + "").children().find(".checkFWResult").html(ck_fw_result);
-						$("#amas_" + mac_id + "").children().find(".checkFWResult").click({"isMerlin" : check_is_merlin_fw(newfwver), "model_name": model_name, "newfwver": newfwver}, show_fw_release_note);
+						$("#amas_" + mac_id + "").children().find(".checkFWResult").click({"isMerlin" : check_is_merlin_fw(fwver), "model_name": model_name, "newfwver": newfwver}, show_fw_release_note);
 					}
 					if(online == "1")
 						$("#amas_" + mac_id + "").children("#checkNewFW").css("display", "");
@@ -1052,17 +1048,24 @@ function show_fw_release_note(event) {
 		$(".confirm_block").remove();
 
 	document.amas_release_note.model.value = event.data.model_name;
-	if (event.data.isMerlin)
+	if (event.data.isMerlin) {
 		document.amas_release_note.version.value = event.data.newfwver.replace("3.0.0.4.","");
-	else
+		if (event.data.model_name == based_modelid)
+			siteurl = download_url_redir;
+		else
+			siteurl = download_url;
+	} else {
 		document.amas_release_note.version.value = event.data.newfwver;
+		siteurl = "";
+	}
+
 	document.amas_release_note.submit();
 	confirm_asus({
 		title: "New Firmware Available",
 		contentA: "<#exist_new#><br>",
 		contentC: "<br><#ADSL_FW_note#> <#Main_alert_proceeding_desc5#>",
-		left_button: "",
-		left_button_callback: {},
+		left_button: (event.data.isMerlin ? "Visit download site" : ""),
+		left_button_callback: function(){window.open(siteurl);},
 		left_button_args: {},
 		right_button: "<#CTL_close#>",
 		right_button_callback: function(){confirm_cancel();},

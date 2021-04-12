@@ -3984,7 +3984,8 @@ TRACE_PT("writing Parental Control\n");
 
 		// ICMPv6 rules
 		fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp -j ICMP_V6\n");
-		fprintf(fp_ipv6, "-A ICMP_V6 -p ipv6-icmp --icmpv6-type 128 -m limit --limit 1/s -j %s\n", logaccept);
+		fprintf(fp_ipv6, "-A ICMP_V6 -p ipv6-icmp --icmpv6-type 128 %s -j %s\n",
+		                  (nvram_get_int("fw_dos_x") ? "-m limit --limit 1/s" : ""), logaccept);
 		for (i = 0; i < sizeof(allowed_icmpv6)/sizeof(int); ++i) {
 			fprintf(fp_ipv6, "-A ICMP_V6 -p ipv6-icmp --icmpv6-type %i -j %s\n", allowed_icmpv6[i], logaccept);
 		}
@@ -5323,7 +5324,8 @@ TRACE_PT("writing Parental Control\n");
 
 		// ICMPv6 rules
 		fprintf(fp_ipv6, "-A FORWARD -p ipv6-icmp -j ICMP_V6\n");
-		fprintf(fp_ipv6, "-A ICMP_V6 -p ipv6-icmp --icmpv6-type 128 -m limit --limit 1/s -j %s\n", logaccept);
+		fprintf(fp_ipv6, "-A ICMP_V6 -p ipv6-icmp --icmpv6-type 128 %s -j %s\n",
+		                  (nvram_get_int("fw_dos_x") ? "-m limit --limit 1/s" : ""), logaccept);
 		for (i = 0; i < sizeof(allowed_icmpv6)/sizeof(int); ++i) {
 			fprintf(fp_ipv6, "-A ICMP_V6 -p ipv6-icmp --icmpv6-type %i -j %s\n", allowed_icmpv6[i], logaccept);
 		}

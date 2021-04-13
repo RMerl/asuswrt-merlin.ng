@@ -1,6 +1,20 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+386.2_2 (xx-xxx-2021)
+  - FIXED: IPv6 pings were blocked if sent below the rate limit
+           instead of above (issue introduced in 42095)
+  - FIXED: kernel debuging log entry (was removed) (RT-AC86U)
+  - FIXED: Field that accepted a float value would reject
+           values equal to the allowed minimum (for example
+           the QoS bandwidth limits)
+  - FIXED: QoS Bandwidth settings were hidden on
+           non-HND models when accessing the QoS page.
+  - CHANGED: Tweaks to the Firmware Upgrade page display.
+  - CHANGED: Enabling DOS protection will now also rate limit
+             ICMPV6 echo (type 128) packets, like with IPv4.
+
+
 386.2 (2-Apr-2021)
   - NOTE: due to changes in how custom device icons are handled,
           first time you boot with 386.2 you need to either

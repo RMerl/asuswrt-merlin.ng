@@ -1,7 +1,7 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
-386.2_2 (xx-xxx-2021)
+386.2_2 (13-Apr-2021)
   - FIXED: IPv6 pings were blocked if sent below the rate limit
            instead of above (issue introduced in 42095)
   - FIXED: kernel debuging log entry (was removed) (RT-AC86U)

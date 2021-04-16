@@ -250,7 +250,7 @@ var notification = {
 			notification.acpw = 0;
 
 		if(amesh_support && ameshRouter_support) {
-			if(aimesh_system_new_fw_flag) {
+			if(aimesh_system_new_fw_flag || webs_state_flag == 1 || webs_state_flag == 2) {
 				notification.array[1] = 'noti_upgrade';
 				notification.upgrade = 1;
 				notification.desc[1] = '<#ASUSGATE_note2#>';

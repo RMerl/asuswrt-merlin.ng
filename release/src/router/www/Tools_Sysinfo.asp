@@ -68,8 +68,11 @@ function initial(){
 
 	showbootTime();
 
-	if (odmpid != "")
-		document.getElementById("model_id").innerHTML = odmpid;
+	if (odmpid != "") {
+		document.getElementById("model_id").innerHTML = "<span>" + odmpid + "</span>";
+		if (odmpid != based_modelid)
+			document.getElementById("model_id").innerHTML += " (base model: <span>" + based_modelid + "</span>)";
+	}
 	else
 		document.getElementById("model_id").innerHTML = productid;
 

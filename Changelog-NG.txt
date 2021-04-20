@@ -1,6 +1,17 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+386.3 (xx-xxx-2021)
+  - NEW: Added jitterentropy-rngd to non-HND models, in addition
+         to HND models.
+  - FIXED: Scheduled new FW checks wouldn't display the webui
+           notification icon when the local router had a
+           new release available.
+  - FIXED: OpenVPN server would flip into an error state (being
+           shown as "initializing" on the webui) whenever an
+           inbound client failed to connect to it.
+
+
 386.2_2 (13-Apr-2021)
   - FIXED: IPv6 pings were blocked if sent below the rate limit
            instead of above (issue introduced in 42095)

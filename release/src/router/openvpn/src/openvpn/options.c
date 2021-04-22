@@ -1700,7 +1700,7 @@ show_settings(const struct options *o)
     SHOW_BOOL(tls_client);
     SHOW_STR_INLINE(ca_file);
     SHOW_STR(ca_path);
-    SHOW_STR(dh_file);
+    SHOW_STR_INLINE(dh_file);
 #ifdef ENABLE_MANAGEMENT
     if ((o->management_flags & MF_EXTERNAL_CERT))
     {
@@ -3328,14 +3328,8 @@ check_file_access_chroot(const char *chroot, const int type, const char *file, c
     {
         struct gc_arena gc = gc_new();
         struct buffer chroot_file;
-        int len = 0;
 
-        /* Build up a new full path including chroot directory */
-        len = strlen(chroot) + strlen(PATH_SEPARATOR_STR) + strlen(file) + 1;
-        chroot_file = alloc_buf_gc(len, &gc);
-        buf_printf(&chroot_file, "%s%s%s", chroot, PATH_SEPARATOR_STR, file);
-        ASSERT(chroot_file.len > 0);
-
+        chroot_file = prepend_dir(chroot, file, &gc);
         ret = check_file_access(type, BSTR(&chroot_file), mode, opt);
         gc_free(&gc);
     }
@@ -3597,6 +3591,14 @@ pre_pull_save(struct options *o)
             o->pre_pull->client_nat = clone_client_nat_option_list(o->client_nat, &o->gc);
             o->pre_pull->client_nat_defined = true;
         }
+
+        o->pre_pull->route_default_gateway = o->route_default_gateway;
+        o->pre_pull->route_ipv6_default_gateway = o->route_ipv6_default_gateway;
+
+        /* Ping related options should be reset to the config values on reconnect */
+        o->pre_pull->ping_rec_timeout = o->ping_rec_timeout;
+        o->pre_pull->ping_rec_timeout_action = o->ping_rec_timeout_action;
+        o->pre_pull->ping_send_timeout = o->ping_send_timeout;
     }
 }
 
@@ -3632,6 +3634,9 @@ pre_pull_restore(struct options *o, struct gc_arena *gc)
             o->routes_ipv6 = NULL;
         }
 
+        o->route_default_gateway = pp->route_default_gateway;
+        o->route_ipv6_default_gateway = pp->route_ipv6_default_gateway;
+
         if (pp->client_nat_defined)
         {
             cnol_check_alloc(o);
@@ -3643,6 +3648,10 @@ pre_pull_restore(struct options *o, struct gc_arena *gc)
         }
 
         o->foreign_option_index = pp->foreign_option_index;
+
+        o->ping_rec_timeout = pp->ping_rec_timeout;
+        o->ping_rec_timeout_action = pp->ping_rec_timeout_action;
+        o->ping_send_timeout = pp->ping_send_timeout;
     }
 
     o->push_continuation = 0;
@@ -6008,6 +6017,12 @@ add_option(struct options *options,
     {
         VERIFY_PERMISSION(OPT_P_MESSAGES);
         options->verbosity = positive_atoi(p[1]);
+        if (options->verbosity >= (D_TLS_DEBUG_MED & M_DEBUG_LEVEL))
+        {
+            /* We pass this flag to the SSL library to avoid
+             * mbed TLS always generating debug level logging */
+            options->ssl_flags |= SSLF_TLS_DEBUG_ENABLED;
+        }
 #if !defined(ENABLE_DEBUG) && !defined(ENABLE_SMALL)
         /* Warn when a debug verbosity is supplied when built without debug support */
         if (options->verbosity >= 7)

@@ -58,7 +58,7 @@
 #define MINVERSION 0 /* API compatible, ABI may change, functional
 		      * enhancements only, consumer can be left unchanged if
 		      * enhancements are not considered */
-#define PATCHLEVEL 1 /* API / ABI compatible, no functional changes, no
+#define PATCHLEVEL 2 /* API / ABI compatible, no functional changes, no
 		      * enhancements, bug fixes only */
 
 /***************************************************************************
@@ -66,6 +66,10 @@
  *
  * None of the following should be altered
  ***************************************************************************/
+
+#ifdef __OPTIMIZE__
+ #error "The CPU Jitter random number generator must not be compiled with optimizations. See documentation. Use the compiler switch -O0 for compiling jitterentropy.c."
+#endif
 
 /*
  * JENT_POWERUP_TESTLOOPCOUNT needs some loops to identify edge
@@ -113,11 +117,11 @@ unsigned int jent_version(void)
  *
  * @ec [in] Reference to entropy collector
  */
-static void jent_apt_reset(struct rand_data *ec, unsigned int delta_masked)
+static void jent_apt_reset(struct rand_data *ec, uint64_t current_delta)
 {
 	/* Reset APT counter */
 	ec->apt_count = 0;
-	ec->apt_base = delta_masked;
+	ec->apt_base = current_delta;
 	ec->apt_observations = 0;
 }
 
@@ -125,18 +129,18 @@ static void jent_apt_reset(struct rand_data *ec, unsigned int delta_masked)
  * Insert a new entropy event into APT
  *
  * @ec [in] Reference to entropy collector
- * @delta_masked [in] Masked time delta to process
+ * @current_delta [in] Current time delta
  */
-static void jent_apt_insert(struct rand_data *ec, unsigned int delta_masked)
+static void jent_apt_insert(struct rand_data *ec, uint64_t current_delta)
 {
 	/* Initialize the base reference */
 	if (!ec->apt_base_set) {
-		ec->apt_base = delta_masked;
+		ec->apt_base = current_delta;
 		ec->apt_base_set = 1;
 		return;
 	}
 
-	if (delta_masked == ec->apt_base) {
+	if (current_delta == ec->apt_base) {
 		ec->apt_count++;
 
 		if (ec->apt_count >= JENT_APT_CUTOFF)
@@ -146,7 +150,7 @@ static void jent_apt_insert(struct rand_data *ec, unsigned int delta_masked)
 	ec->apt_observations++;
 
 	if (ec->apt_observations >= JENT_APT_WINDOW_SIZE)
-		jent_apt_reset(ec, delta_masked);
+		jent_apt_reset(ec, current_delta);
 }
 
 /***************************************************************************
@@ -246,7 +250,6 @@ static unsigned int jent_stuck(struct rand_data *ec, uint64_t current_delta)
 {
 	uint64_t delta2 = jent_delta(ec->last_delta, current_delta);
 	uint64_t delta3 = jent_delta(ec->last_delta2, delta2);
-	unsigned int delta_masked = current_delta & JENT_APT_WORD_MASK;
 
 	ec->last_delta = current_delta;
 	ec->last_delta2 = delta2;
@@ -255,7 +258,7 @@ static unsigned int jent_stuck(struct rand_data *ec, uint64_t current_delta)
 	 * Insert the result of the comparison of two back-to-back time
 	 * deltas.
 	 */
-	jent_apt_insert(ec, delta_masked);
+	jent_apt_insert(ec, current_delta);
 
 	if (!current_delta || !delta2 || !delta3) {
 		/* RCT with a stuck bit */
@@ -303,10 +306,14 @@ struct sha_ctx {
 	uint8_t partial[SHA3_MAX_SIZE_BLOCK];
 };
 
+#define aligned(val)	__attribute__((aligned(val)))
+#define ALIGNED_BUFFER(name, size, type)				       \
+	type name[(size + sizeof(type)-1) / sizeof(type)] aligned(sizeof(type));
+
 /* CTX size allows any hash type up to SHA3-224 */
 #define SHA_MAX_CTX_SIZE	368
-#define HASH_CTX_ON_STACK(name)						\
-	uint8_t name ## _ctx_buf[SHA_MAX_CTX_SIZE];			\
+#define HASH_CTX_ON_STACK(name)						       \
+	ALIGNED_BUFFER(name ## _ctx_buf, SHA_MAX_CTX_SIZE, uint64_t)	       \
 	struct sha_ctx *name = (struct sha_ctx *) name ## _ctx_buf
 
 /*
@@ -822,6 +829,15 @@ static inline void jent_notime_unsettick(struct rand_data *ec) { (void)ec; }
 static uint64_t jent_loop_shuffle(struct rand_data *ec,
 				  unsigned int bits, unsigned int min)
 {
+#ifdef JENT_CONF_DISABLE_LOOP_SHUFFLE
+
+	(void)ec;
+	(void)bits;
+
+	return (1<<min);
+
+#else /* JENT_CONF_DISABLE_LOOP_SHUFFLE */
+
 	uint64_t time = 0;
 	uint64_t shuffle = 0;
 	unsigned int i = 0;
@@ -850,6 +866,8 @@ static uint64_t jent_loop_shuffle(struct rand_data *ec,
 	 * RNG loop count.
 	 */
 	return (shuffle + (1<<min));
+
+#endif /* JENT_CONF_DISABLE_LOOP_SHUFFLE */
 }
 
 /**
@@ -872,10 +890,11 @@ static void jent_hash_time(struct rand_data *ec, uint64_t time,
 			   uint64_t loop_cnt, unsigned int stuck)
 {
 	HASH_CTX_ON_STACK(ctx);
+	uint8_t itermediary[SHA3_256_SIZE_DIGEST];
 	uint64_t j = 0;
 #define MAX_HASH_LOOP 3
 #define MIN_HASH_LOOP 0
-	uint64_t lfsr_loop_cnt =
+	uint64_t hash_loop_cnt =
 		jent_loop_shuffle(ec, MAX_HASH_LOOP, MIN_HASH_LOOP);
 
 	sha3_256_init(ctx);
@@ -885,8 +904,14 @@ static void jent_hash_time(struct rand_data *ec, uint64_t time,
 	 * needed during runtime
 	 */
 	if (loop_cnt)
-		lfsr_loop_cnt = loop_cnt;
-	for (j = 0; j < lfsr_loop_cnt; j++) {
+		hash_loop_cnt = loop_cnt;
+
+	/*
+	 * This loop basically slows down the SHA-3 operation depending
+	 * on the hash_loop_cnt. Each iteration of the loop generates the
+	 * same result.
+	 */
+	for (j = 0; j < hash_loop_cnt; j++) {
 		sha3_update(ctx, ec->data, SHA3_256_SIZE_DIGEST);
 		sha3_update(ctx, (uint8_t *)&time, sizeof(uint64_t));
 		sha3_update(ctx, (uint8_t *)&j, sizeof(uint64_t));
@@ -898,13 +923,19 @@ static void jent_hash_time(struct rand_data *ec, uint64_t time,
 		 * requires that any conditioning operation to have an identical
 		 * amount of input data according to section 3.1.5.
 		 */
-		if (stuck)
-			sha3_init(ctx);
+
+		/*
+		 * The sha3_final operations re-initialize the context for the
+		 * next loop iteration.
+		 */
+		if (stuck || (j < hash_loop_cnt - 1))
+			sha3_final(ctx, itermediary);
 		else
 			sha3_final(ctx, ec->data);
 	}
 
 	jent_memset_secure(ctx, SHA_MAX_CTX_SIZE);
+	jent_memset_secure(itermediary, sizeof(itermediary));
 }
 
 /**
@@ -950,7 +981,6 @@ static void jent_memaccess(struct rand_data *ec, uint64_t loop_cnt)
 	 */
 	if (loop_cnt)
 		acc_loop_cnt = loop_cnt;
-
 	for (i = 0; i < (ec->memaccessloops + acc_loop_cnt); i++) {
 		unsigned char *tmpval = ec->mem + ec->memlocation;
 		/*
@@ -983,17 +1013,21 @@ static void jent_memaccess(struct rand_data *ec, uint64_t loop_cnt)
  * 	    and not using its result.
  *
  * @ec [in] Reference to entropy collector
+ * @loop_cnt [in] see jent_hash_time
+ * @ret_current_delta [out] Test interface: return time delta - may be NULL
  *
  * @return: result of stuck test
  */
-static unsigned int jent_measure_jitter(struct rand_data *ec)
+static unsigned int jent_measure_jitter(struct rand_data *ec,
+					uint64_t loop_cnt,
+					uint64_t *ret_current_delta)
 {
 	uint64_t time = 0;
 	uint64_t current_delta = 0;
 	unsigned int stuck;
 
 	/* Invoke one noise source before time measurement to add variations */
-	jent_memaccess(ec, 0);
+	jent_memaccess(ec, loop_cnt);
 
 	/*
 	 * Get time stamp and calculate time delta to previous
@@ -1007,7 +1041,11 @@ static unsigned int jent_measure_jitter(struct rand_data *ec)
 	stuck = jent_stuck(ec, current_delta);
 
 	/* Now call the next noise sources which also injects the data */
-	jent_hash_time(ec, current_delta, 0, stuck);
+	jent_hash_time(ec, current_delta, loop_cnt, stuck);
+
+	/* return the raw entropy value */
+	if (ret_current_delta)
+		*ret_current_delta = current_delta;
 
 	return stuck;
 }
@@ -1023,11 +1061,11 @@ static void jent_random_data(struct rand_data *ec)
 	unsigned int k = 0;
 
 	/* priming of the ->prev_time value */
-	jent_measure_jitter(ec);
+	jent_measure_jitter(ec, 0, NULL);
 
 	while (1) {
 		/* If a stuck measurement is received, repeat measurement */
-		if (jent_measure_jitter(ec))
+		if (jent_measure_jitter(ec, 0, NULL))
 			continue;
 
 		/*
@@ -1138,6 +1176,22 @@ struct rand_data *jent_entropy_collector_alloc(unsigned int osr,
 {
 	struct rand_data *entropy_collector;
 
+	/*
+	 * Requesting disabling and forcing of internal timer
+	 * makes no sense.
+	 */
+	if ((flags & JENT_DISABLE_INTERNAL_TIMER) &&
+	    (flags & JENT_FORCE_INTERNAL_TIMER))
+		return NULL;
+
+	/*
+	 * If the initial test code concludes to force the internal timer
+	 * and the user requests it not to be used, do not allocate
+	 * the Jitter RNG instance.
+	 */
+	if (jent_force_internal_timer && (flags & JENT_DISABLE_INTERNAL_TIMER))
+		return NULL;
+
 	entropy_collector = jent_zalloc(sizeof(struct rand_data));
 	if (NULL == entropy_collector)
 		return NULL;
@@ -1157,16 +1211,18 @@ struct rand_data *jent_entropy_collector_alloc(unsigned int osr,
 	}
 
 	/* verify and set the oversampling rate */
-	if (osr == 0)
-		osr = 1; /* minimum sampling rate is 1 */
+	if (osr < JENT_MIN_OSR)
+		osr = JENT_MIN_OSR;
 	entropy_collector->osr = osr;
 
-	if (jent_fips_enabled())
+	if (jent_fips_enabled() || (flags & JENT_FORCE_FIPS))
 		entropy_collector->fips_enabled = 1;
 
 	/* Use timer-less noise source */
-	if (jent_notime_enable(entropy_collector, flags))
-		goto err;
+	if (!(flags & JENT_DISABLE_INTERNAL_TIMER)) {
+		if (jent_notime_enable(entropy_collector, flags))
+			goto err;
+	}
 
 	/* fill the data pad with non-zero values */
 	if (jent_notime_settick(entropy_collector))
@@ -1350,7 +1406,7 @@ static int jent_time_entropy_init(unsigned int enable_notime)
 	 * than 1 to ensure the entropy estimation
 	 * implied with 1 is preserved
 	 */
-	if ((delta_sum) <= 1) {
+	if ((delta_sum) <= JENT_POWERUP_TESTLOOPCOUNT) {
 		ret = EMINVARVAR;
 		goto out;
 	}
@@ -1360,7 +1416,7 @@ static int jent_time_entropy_init(unsigned int enable_notime)
 	 * least 10% of all checks -- on some platforms, the counter increments
 	 * in multiples of 100, but not always
 	 */
-	if ((JENT_POWERUP_TESTLOOPCOUNT/10 * 9) < count_mod) {
+	if (JENT_STUCK_INIT_THRES(JENT_POWERUP_TESTLOOPCOUNT) < count_mod) {
 		ret = ECOARSETIME;
 		goto out;
 	}
@@ -1369,7 +1425,7 @@ static int jent_time_entropy_init(unsigned int enable_notime)
 	 * If we have more than 90% stuck results, then this Jitter RNG is
 	 * likely to not work well.
 	 */
-	if ((JENT_POWERUP_TESTLOOPCOUNT/10 * 9) < count_stuck)
+	if (JENT_STUCK_INIT_THRES(JENT_POWERUP_TESTLOOPCOUNT) < count_stuck)
 		ret = ESTUCK;
 
 out:

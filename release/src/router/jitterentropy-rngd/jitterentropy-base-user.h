@@ -132,9 +132,8 @@ static inline void jent_get_nstime(uint64_t *out)
 	struct timespec time;
 	if (clock_gettime(CLOCK_REALTIME, &time) == 0)
 	{
-		tmp = (uint32_t)time.tv_sec;
-		tmp = tmp << 32;
-		tmp = tmp | (uint32_t)time.tv_nsec;
+		tmp = ((uint64_t)time.tv_sec & 0xFFFFFFFF) * 1000000000UL;
+		tmp = tmp + (uint64_t)time.tv_nsec;
 	}
 	*out = tmp;
 # endif /* __MACH__ */

@@ -2,7 +2,7 @@
 
 CC ?= $(CROSS_COMPILE)gcc
 STRIP ?= $(CROSS_COMPILE)strip
-CFLAGS ?=-Wextra -Wall -pedantic -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fwrapv --param ssp-buffer-size=4 -fvisibility=hidden -fPIE -Wcast-align -Wmissing-field-initializers -Wshadow -Wswitch-enum -O2
+CFLAGS ?=-Wextra -Wall -pedantic -fwrapv --param ssp-buffer-size=4 -fvisibility=hidden -fPIE -Wcast-align -Wmissing-field-initializers -Wshadow -Wswitch-enum -O0
 LDFLAGS ?=-Wl,-z,relro,-z,now -pie
 
 GCCVERSIONFORMAT := $(shell echo `$(CC) -dumpversion | sed 's/\./\n/g' | wc -l`)

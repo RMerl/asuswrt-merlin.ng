@@ -1,3 +1,10 @@
+1.2.2:
+ * enhancement: Add SP800-90B compliant entropy injection
+ * fix: proper use of the RNDRESEEDCRNG IOCTL which otherwise causes an
+   endless loop due to kernel change 11a0b5e0ec8c13bef06f7414f9e914506140d5cb
+ * enhancement: Catch runtime FIPS health failures
+ * enhancement: use Jitter RNG library 3.0.2
+
 1.2.1:
   * on older GCC versions use -fstack-protector as suggested by Warszawski,
    Diego

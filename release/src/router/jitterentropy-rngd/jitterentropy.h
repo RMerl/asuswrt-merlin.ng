@@ -61,6 +61,25 @@
  */
 #define JENT_CONF_ENABLE_INTERNAL_TIMER
 
+/*
+ * Disable the loop shuffle operation
+ *
+ * The shuffle operation enlarges the timing of the conditioning function
+ * by a variable length defined by the LSB of a time stamp. Some mathematicians
+ * are concerned that this pseudo-random selection of the loop iteration count
+ * may create some form of dependency between the different loop counts
+ * and the associated time duration of the conditioning function. It
+ * also complicates entropy assessment because it effectively combines a bunch
+ * of shifted/scaled copies the same distribution and masks failures from the
+ * health testing.
+ *
+ * By enabling this flag, the loop shuffle operation is disabled and
+ * the entropy collection operates in a way that honor the concerns.
+ *
+ * By enabling this flag, the time of collecting entropy may be enlarged.
+ */
+#define JENT_CONF_DISABLE_LOOP_SHUFFLE
+
 /***************************************************************************
  * Jitter RNG State Definition Section
  ***************************************************************************/
@@ -106,7 +125,7 @@ struct rand_data
 #define JENT_APT_WORD_MASK	(JENT_APT_LSB - 1)
 	unsigned int apt_observations;	/* Number of collected observations */
 	unsigned int apt_count;		/* APT counter */
-	unsigned int apt_base;		/* APT base reference */
+	uint64_t apt_base;		/* APT base reference */
 	unsigned int apt_base_set:1;	/* APT base reference set? */
 
 	unsigned int fips_enabled:1;
@@ -130,6 +149,17 @@ struct rand_data
 					     entropy collector */
 #define JENT_FORCE_INTERNAL_TIMER (1<<3)  /* Force the use of the internal
 					     timer */
+#define JENT_DISABLE_INTERNAL_TIMER (1<<4)  /* Disable the potential use of
+					       the internal timer. */
+#define JENT_FORCE_FIPS (1<<5)		  /* Force FIPS compliant mode
+					     including full SP800-90B
+					     compliance. */
+
+#ifdef JENT_CONF_DISABLE_LOOP_SHUFFLE
+# define JENT_MIN_OSR	3
+#else
+# define JENT_MIN_OSR	1
+#endif
 
 /* -- BEGIN Main interface functions -- */
 
@@ -140,7 +170,7 @@ struct rand_data
  *
  * It is allowed to change this value as required for the intended environment.
  */
-#define JENT_STUCK_INIT_THRES(x) (x/10 * 9)
+#define JENT_STUCK_INIT_THRES(x) ((x*9) / 10)
 #endif
 
 #ifdef JENT_PRIVATE_COMPILE

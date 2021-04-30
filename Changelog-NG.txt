@@ -1,9 +1,11 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
-386.3 (xx-xxx-2021)
+386.2_4 (30-Apr-2021)
   - NEW: Added jitterentropy-rngd to non-HND models, in addition
          to HND models.
+  - UPDATED: OpenVPN to 2.5.2.
+  - UPDATED: jitterentropy-rngd to 1.2.2 (library 3.0.3)
   - FIXED: Scheduled new FW checks wouldn't display the webui
            notification icon when the local router had a
            new release available.

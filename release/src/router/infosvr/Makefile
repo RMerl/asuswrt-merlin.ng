@@ -54,7 +54,7 @@ install: all
 	install infosvr $(INSTALLDIR)/usr/sbin
 
 
-infosvr: ./infosvr.o ./common.o ./packet.o ./interface.o ./storage.o
+infosvr: ./infosvr.o ./common.o ./packet.o ./storage.o
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 	$(STRIP) $@
 

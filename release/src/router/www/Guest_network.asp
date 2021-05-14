@@ -23,6 +23,7 @@
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="js/httpApi.js"></script>
+<script src="js/qrcode.min.js"></script>
 <style>
 </style>
 <script>
@@ -257,6 +258,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 	if(sw_mode != "3"){
 			htmlcode += '<tr><th align="left" style="width:20%;height:28px;"><#Access_Intranet#></th></tr>';
 	}
+	htmlcode += '<tr><th align="left" style="height:40px;"></th></tr>';
 	htmlcode += '<tr><th align="left" style="height:40px;"></th></tr>';		
 	htmlcode += '</table></th>';
 	
@@ -408,7 +410,16 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 				if(gn_array[i][0] == "1" && control_setting_flag){
 					if(captive_portal_used_wl_array["wl" + unit_subunit] == undefined) {
 						htmlcode += '<tr><td align="center" class="gninfo_table_bottom"></td></tr>';
-						htmlcode += '<tfoot><tr><td align="center"><input type="button" class="button_gen" value="<#btn_remove#>" onclick="close_guest_unit('+ unit +','+ subunit +');"></td></tr></tfoot>';
+
+						htmlcode += '<tfoot><div id="qrcodepanel' + unit + subunit + '" style="position:absolute; display:none; box-shadow: 3px 3px 10px #000; width:160px; margin-left:15px; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; z-index:200; background-color:#2B373B;">';
+						htmlcode += '<div style="padding:10px;"><div style="text-align:center;">Scan to connect:</div>';
+						htmlcode += '<div style="margin:10px 0 10px 0px;height:2px;width:100%;padding:0;" class="splitLine"></div>';
+						htmlcode += '<div id="qr' + unit + subunit + '"></div><input style="margin-top:10px; width:100%;" type="button" class="button_gen" value="Close" onclick="hide_qr_code(\'' + unit + subunit + '\');"></div></div>';
+
+						htmlcode += '<tfoot><tr><td align="center" class="gninfo_table_bottom"><div id="showqrdiv' + unit + subunit + '"><span style="color:#FFCC00;cursor:pointer;text-decoration:underline" onclick="show_qr_code(\'' + unit + subunit + '\');">Show QR code</span></div>';
+						htmlcode += '</td></tr>';
+
+						htmlcode += '<tr><td align="center"><input type="button" class="button_gen" value="<#btn_remove#>" onclick="close_guest_unit('+ unit +','+ subunit +');"></td></tr></tfoot>';
 					}
 					else {
 						if(captive_portal_used_wl_array["wl" + unit_subunit] != "Facebook Wi-Fi")
@@ -493,6 +504,7 @@ function gen_gntable(){
 		htmlcode += '</table>';
 		document.getElementById("guest_table2").innerHTML = htmlcode;
 		check_bw_status(gn_array_2g_tmp);
+		genQRCodes(gn_array_2g_tmp, 0);
 	}
 	
 	if(gn_array_5g_tmp.length > 0){
@@ -524,6 +536,7 @@ function gen_gntable(){
 		htmlcode5 += '</table>';
 		document.getElementById("guest_table5").innerHTML = htmlcode5;
 		check_bw_status(gn_array_5g_tmp);
+		genQRCodes(gn_array_5g_tmp, 1);
 	}
 
   	if((wl_info.band5g_2_support || wl_info.band6g_support)&& gn_array_5g_2_tmp.length > 0){
@@ -550,6 +563,7 @@ function gen_gntable(){
 		htmlcode5_2 += '</table>';
 		document.getElementById("guest_table5_2").innerHTML = htmlcode5_2;
 		check_bw_status(gn_array_5g_2_tmp);
+		genQRCodes(gn_array_5g_2_tmp, 2);
 	}
 
 	if(wl_info.band60g_support) {
@@ -1416,6 +1430,55 @@ function apply_amazon_wss(){
 	apply_amazon_wss_flag = true;
 	document.form.wl_bss_enabled.value = "1";
 	applyRule();
+}
+
+function genQRCodes(gn_array, unit){
+	for(var i=0; i < gn_array.length; i++){
+		var gn_entry = gn_array[i];
+
+		if (gn_entry[0] != 1)
+			continue;
+
+		subunit = i + 1;
+		var ssid = "S:" + decodeURIComponent(gn_entry[1]).replace(/[\\":;,]/g, '\\$&') + ";";
+
+		var _authMode = gn_entry[2];
+		if(_authMode == 'psk' || _authMode == 'psk2' || _authMode == 'sae' || _authMode == 'pskpsk2' || _authMode == 'psk2sae'){
+			var type = "T:WPA;";
+			var pass = "P:" + decodeURIComponent(gn_entry[4]).replace(/[\\":;,]/g, '\\$&') + ";";
+		} else if (_authMode == "open" && gn_entry[5] == "0") {
+			var type = "T:;";
+			var pass = "P:;";
+		} else if (_authMode == "shared" || _authMode == "open") {
+			var type = "T:WEP;";
+			var keyindex = parseInt(gn_entry[6]) + 6;
+			var pass = "P:" + gn_entry[keyindex] + ";";
+		} else {
+			ssid = "";	// Unsupported
+		}
+
+		if (gn_entry[22] == "1")
+			var hide = "H:true;"
+		else
+			var hide = "";
+
+		if (ssid != "") {
+			document.getElementById("showqrdiv" + unit + subunit).style.display = "";
+			new QRCode(document.getElementById("qr" + unit + subunit),  {
+			        text: 'WIFI:'+ type + ssid + pass + hide + ';',
+			        width: 140,
+			        height: 140,
+			});
+		}
+	}
+}
+
+function show_qr_code(unit) {
+	$("#qrcodepanel"+unit).fadeIn(300);
+}
+
+function hide_qr_code(unit) {
+	$("#qrcodepanel"+unit).fadeOut(300);
 }
 </script>
 </head>

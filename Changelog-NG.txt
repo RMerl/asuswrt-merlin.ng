@@ -1,6 +1,15 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+386.3 (xx-xxx-xxxx)
+  - NEW: Added QR codes to the networkmap as well as the Guest
+         Network page, to allow easily connecting a mobile
+         device just by scanning the QR code.
+         The generated QR code can also be saved as a file
+         if you'd like to print it.
+  - UPDATED: chart.js to 2.9.4.
+
+
 386.2_4 (30-Apr-2021)
   - NEW: Added jitterentropy-rngd to non-HND models, in addition
          to HND models.

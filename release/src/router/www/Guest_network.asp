@@ -411,7 +411,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 					if(captive_portal_used_wl_array["wl" + unit_subunit] == undefined) {
 						htmlcode += '<tr><td align="center" class="gninfo_table_bottom"></td></tr>';
 
-						htmlcode += '<tfoot><div id="qrcodepanel' + unit + subunit + '" style="position:absolute; display:none; box-shadow: 3px 3px 10px #000; width:160px; margin-left:15px; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; z-index:200; background-color:#2B373B;">';
+						htmlcode += '<tfoot><div id="qrcodepanel' + unit + subunit + '" class="qrcodepanel" style="display:none; margin-left:15px;">';
 						htmlcode += '<div style="padding:10px;"><div style="text-align:center;">Scan to connect:</div>';
 						htmlcode += '<div style="margin:10px 0 10px 0px;height:2px;width:100%;padding:0;" class="splitLine"></div>';
 						htmlcode += '<div id="qr' + unit + subunit + '"></div><input style="margin-top:10px; width:100%;" type="button" class="button_gen" value="Close" onclick="hide_qr_code(\'' + unit + subunit + '\');"></div></div>';

@@ -362,7 +362,7 @@ function genElement(){
 			code += '</div>';
 		}
 
-		code += '<div id="qrcodepanel' + unit + '" style="position:absolute; display:none; box-shadow: 3px 3px 10px #000; width:160px; margin-top:-200px; margin-left:0px; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; z-index:200; background-color:#2B373B;">';
+		code += '<div id="qrcodepanel' + unit + '" class="qrcodepanel" style="display:none; margin-top:-200px; margin-left:0px;">';
 		code += '<div style="padding:10px;"><div style="text-align:center;">Scan to connect:</div>';
 		code += '<div style="margin:10px 0 10px 0px;height:2px;width:100%;padding:0;" class="splitLine"></div>';
 		code += '<div id="qr' + unit +'"></div><input style="margin-top:10px; width:100%;" type="button" class="button_gen" value="Close" onclick="hide_qr_code(' + unit + ');"></div></div>';

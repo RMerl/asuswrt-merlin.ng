@@ -2233,3 +2233,14 @@ padding-top:1px;
 	width: 14px;
 	display: none;
 }
+/* QR codes panel */
+.qrcodepanel{
+	position:absolute;
+	box-shadow: 3px 3px 10px #000;
+	width:160px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	z-index:200;
+	background-color:#2B373B;
+}

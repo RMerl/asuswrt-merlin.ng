@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -49,10 +49,12 @@ typedef struct onion_queue_t {
 /** 5 seconds on the onion queue til we just send back a destroy */
 #define ONIONQUEUE_WAIT_CUTOFF 5
 
+TOR_TAILQ_HEAD(onion_queue_head_t, onion_queue_t);
+typedef struct onion_queue_head_t onion_queue_head_t;
+
 /** Array of queues of circuits waiting for CPU workers. An element is NULL
  * if that queue is empty.*/
-static TOR_TAILQ_HEAD(onion_queue_head_t, onion_queue_t)
-              ol_list[MAX_ONION_HANDSHAKE_TYPE+1] =
+static onion_queue_head_t ol_list[MAX_ONION_HANDSHAKE_TYPE+1] =
 { TOR_TAILQ_HEAD_INITIALIZER(ol_list[0]), /* tap */
   TOR_TAILQ_HEAD_INITIALIZER(ol_list[1]), /* fast */
   TOR_TAILQ_HEAD_INITIALIZER(ol_list[2]), /* ntor */

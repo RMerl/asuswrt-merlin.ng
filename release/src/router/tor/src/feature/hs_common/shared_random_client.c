@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -8,17 +8,18 @@
  *        as part of the dirauth module.
  **/
 
-#define SHARED_RANDOM_CLIENT_PRIVATE
 #include "feature/hs_common/shared_random_client.h"
 
 #include "app/config/config.h"
-#include "feature/dircommon/voting_schedule.h"
+#include "feature/dirauth/authmode.h"
+#include "feature/dirauth/voting_schedule.h"
+#include "feature/nodelist/microdesc.h"
 #include "feature/nodelist/networkstatus.h"
 #include "lib/encoding/binascii.h"
 
 #include "feature/nodelist/networkstatus_st.h"
 
-/* Convert a given srv object to a string for the control port. This doesn't
+/** Convert a given srv object to a string for the control port. This doesn't
  * fail and the srv object MUST be valid. */
 static char *
 srv_to_control_string(const sr_srv_t *srv)
@@ -32,53 +33,60 @@ srv_to_control_string(const sr_srv_t *srv)
   return srv_str;
 }
 
-/* Return the voting interval of the tor vote subsystem. */
+/**
+ * If we have no consensus and we are not an authority, assume that this is
+ * the voting interval.  We should never actually use this: only authorities
+ * should be trying to figure out the schedule when they don't have a
+ * consensus.
+ **/
+#define DEFAULT_NETWORK_VOTING_INTERVAL (3600)
+
+/* This is an unpleasing workaround for tests.  Our unit tests assume that we
+ * are scheduling all of our shared random stuff as if we were a directory
+ * authority, but they do not always set V3AuthoritativeDir.
+ */
+#ifdef TOR_UNIT_TESTS
+#define ASSUME_AUTHORITY_SCHEDULING 1
+#else
+#define ASSUME_AUTHORITY_SCHEDULING 0
+#endif
+
+/** Return the voting interval of the tor vote subsystem. */
 int
 get_voting_interval(void)
 {
   int interval;
-  networkstatus_t *consensus = networkstatus_get_live_consensus(time(NULL));
+  networkstatus_t *consensus =
+    networkstatus_get_reasonably_live_consensus(time(NULL),
+                                                usable_consensus_flavor());
 
   if (consensus) {
+    /* Ideally we have a live consensus and we can just use that. */
+    interval = (int)(consensus->fresh_until - consensus->valid_after);
+  } else if (authdir_mode(get_options()) || ASSUME_AUTHORITY_SCHEDULING) {
+    /* If we don't have a live consensus and we're an authority,
+     * we should believe our own view of what the schedule ought to be. */
+    interval = dirauth_sched_get_configured_interval();
+  } else if ((consensus = networkstatus_get_latest_consensus())) {
+    /* If we're a client, then maybe a latest consensus is good enough?
+     * It's better than falling back to the non-consensus case. */
     interval = (int)(consensus->fresh_until - consensus->valid_after);
   } else {
-    /* Same for both a testing and real network. We voluntarily ignore the
-     * InitialVotingInterval since it complexifies things and it doesn't
-     * affect the SR protocol. */
-    interval = get_options()->V3AuthVotingInterval;
+    /* We should never be reaching this point, since a client should never
+     * call this code unless they have some kind of a consensus. All we can
+     * do is hope that this network is using the default voting interval. */
+    tor_assert_nonfatal_unreached_once();
+    interval = DEFAULT_NETWORK_VOTING_INTERVAL;
   }
   tor_assert(interval > 0);
   return interval;
-}
-
-/* Given the current consensus, return the start time of the current round of
- * the SR protocol. For example, if it's 23:47:08, the current round thus
- * started at 23:47:00 for a voting interval of 10 seconds.
- *
- * This function uses the consensus voting schedule to derive its results,
- * instead of the actual consensus we are currently using, so it should be used
- * for voting purposes. */
-time_t
-get_start_time_of_current_round(void)
-{
-  const or_options_t *options = get_options();
-  int voting_interval = get_voting_interval();
-  /* First, get the start time of the next round */
-  time_t next_start = voting_schedule_get_next_valid_after_time();
-  /* Now roll back next_start by a voting interval to find the start time of
-     the current round. */
-  time_t curr_start = voting_schedule_get_start_of_next_interval(
-                                     next_start - voting_interval - 1,
-                                     voting_interval,
-                                     options->TestingV3AuthVotingStartOffset);
-  return curr_start;
 }
 
 /*
  * Public API
  */
 
-/* Encode the given shared random value and put it in dst. Destination
+/** Encode the given shared random value and put it in dst. Destination
  * buffer must be at least SR_SRV_VALUE_BASE64_LEN plus the NULL byte. */
 void
 sr_srv_encode(char *dst, size_t dst_len, const sr_srv_t *srv)
@@ -99,7 +107,7 @@ sr_srv_encode(char *dst, size_t dst_len, const sr_srv_t *srv)
   strlcpy(dst, buf, dst_len);
 }
 
-/* Return the current SRV string representation for the control port. Return a
+/** Return the current SRV string representation for the control port. Return a
  * newly allocated string on success containing the value else "" if not found
  * or if we don't have a valid consensus yet. */
 char *
@@ -115,7 +123,7 @@ sr_get_current_for_control(void)
   return srv_str;
 }
 
-/* Return the previous SRV string representation for the control port. Return
+/** Return the previous SRV string representation for the control port. Return
  * a newly allocated string on success containing the value else "" if not
  * found or if we don't have a valid consensus yet. */
 char *
@@ -131,7 +139,7 @@ sr_get_previous_for_control(void)
   return srv_str;
 }
 
-/* Return current shared random value from the latest consensus. Caller can
+/** Return current shared random value from the latest consensus. Caller can
  * NOT keep a reference to the returned pointer. Return NULL if none. */
 const sr_srv_t *
 sr_get_current(const networkstatus_t *ns)
@@ -142,7 +150,8 @@ sr_get_current(const networkstatus_t *ns)
   if (ns) {
     consensus = ns;
   } else {
-    consensus = networkstatus_get_live_consensus(approx_time());
+    consensus = networkstatus_get_reasonably_live_consensus(approx_time(),
+                                                  usable_consensus_flavor());
   }
   /* Ideally we would never be asked for an SRV without a live consensus. Make
    * sure this assumption is correct. */
@@ -154,7 +163,7 @@ sr_get_current(const networkstatus_t *ns)
   return NULL;
 }
 
-/* Return previous shared random value from the latest consensus. Caller can
+/** Return previous shared random value from the latest consensus. Caller can
  * NOT keep a reference to the returned pointer. Return NULL if none. */
 const sr_srv_t *
 sr_get_previous(const networkstatus_t *ns)
@@ -165,7 +174,8 @@ sr_get_previous(const networkstatus_t *ns)
   if (ns) {
     consensus = ns;
   } else {
-    consensus = networkstatus_get_live_consensus(approx_time());
+    consensus = networkstatus_get_reasonably_live_consensus(approx_time(),
+                                                  usable_consensus_flavor());
   }
   /* Ideally we would never be asked for an SRV without a live consensus. Make
    * sure this assumption is correct. */
@@ -177,7 +187,7 @@ sr_get_previous(const networkstatus_t *ns)
   return NULL;
 }
 
-/* Parse a list of arguments from a SRV value either from a vote, consensus
+/** Parse a list of arguments from a SRV value either from a vote, consensus
  * or from our disk state and return a newly allocated srv object. NULL is
  * returned on error.
  *
@@ -237,14 +247,29 @@ sr_state_get_start_time_of_current_protocol_run(void)
   int voting_interval = get_voting_interval();
   time_t beginning_of_curr_round;
 
-  /* This function is not used for voting purposes, so if we have a live
-     consensus, use its valid-after as the beginning of the current round,
-     otherwise resort to the voting schedule which should always exist. */
-  networkstatus_t *ns = networkstatus_get_live_consensus(approx_time());
+  /* This function is not used for voting purposes, so if we have a reasonably
+   * live consensus, use its valid-after as the beginning of the current
+   * round. If we have no consensus but we're an authority, use our own
+   * schedule. Otherwise, try using our view of the voting interval to figure
+   * out when the current round _should_ be starting. */
+  networkstatus_t *ns =
+    networkstatus_get_reasonably_live_consensus(approx_time(),
+                                                usable_consensus_flavor());
   if (ns) {
     beginning_of_curr_round = ns->valid_after;
+  } else if (authdir_mode(get_options()) || ASSUME_AUTHORITY_SCHEDULING) {
+    beginning_of_curr_round = dirauth_sched_get_cur_valid_after_time();
   } else {
-    beginning_of_curr_round = get_start_time_of_current_round();
+    /* voting_interval comes from get_voting_interval(), so if we're in
+     * this case as a client, we already tried to get the voting interval
+     * from the latest_consensus and gave a bug warning if we couldn't.
+     *
+     * We wouldn't want to look at the latest consensus's valid_after time,
+     * since that would be out of date. */
+    beginning_of_curr_round = voting_sched_get_start_of_interval_after(
+                                             approx_time() - voting_interval,
+                                             voting_interval,
+                                             0);
   }
 
   /* Get current SR protocol round */
@@ -254,10 +279,6 @@ sr_state_get_start_time_of_current_protocol_run(void)
   /* Get start time by subtracting the time elapsed from the beginning of the
      protocol run */
   time_t time_elapsed_since_start_of_run = curr_round_slot * voting_interval;
-
-  log_debug(LD_GENERAL, "Current SRV proto run: Start of current round: %u. "
-            "Time elapsed: %u (%d)", (unsigned) beginning_of_curr_round,
-            (unsigned) time_elapsed_since_start_of_run, voting_interval);
 
   return beginning_of_curr_round - time_elapsed_since_start_of_run;
 }
@@ -290,4 +311,3 @@ sr_state_get_protocol_run_duration(void)
   int total_protocol_rounds = SHARED_RANDOM_N_ROUNDS * SHARED_RANDOM_N_PHASES;
   return total_protocol_rounds * get_voting_interval();
 }
-

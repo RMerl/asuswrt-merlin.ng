@@ -33,8 +33,8 @@
 
 /**
  * Return a pseudorandom integer chosen uniformly from the values between 0
- * and <b>limit</b>-1 inclusive. limit must be strictly between 0 and
- * UINT_MAX. */
+ * and <b>limit</b>-1 inclusive. limit must be strictly greater than 0, and
+ * less than UINT_MAX. */
 unsigned
 crypto_rand_uint(unsigned limit)
 {

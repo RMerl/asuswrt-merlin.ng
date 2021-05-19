@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -40,7 +40,7 @@ void tor_log_err_sigsafe(const char *m, ...);
 int tor_log_get_sigsafe_err_fds(const int **out);
 void tor_log_set_sigsafe_err_fds(const int *fds, int n);
 void tor_log_reset_sigsafe_err_fds(void);
-void tor_log_close_sigsafe_err_fds(void);
+void tor_log_flush_sigsafe_err_fds(void);
 void tor_log_sigsafe_err_set_granularity(int ms);
 
 void tor_raw_abort_(void) ATTR_NORETURN;

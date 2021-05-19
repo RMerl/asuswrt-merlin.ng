@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -52,14 +52,15 @@
 #include <math.h>
 #include <stddef.h>
 
+#ifndef COCCI
 /** Declare a function that downcasts from a generic dist struct to the actual
  *  subtype probablity distribution it represents. */
 #define DECLARE_PROB_DISTR_DOWNCAST_FN(name) \
   static inline                           \
-  const struct name *                             \
-  dist_to_const_##name(const struct dist *obj) {    \
+  const struct name##_t *                             \
+  dist_to_const_##name(const struct dist_t *obj) {    \
     tor_assert(obj->ops == &name##_ops);            \
-    return SUBTYPE_P(obj, struct name, base);   \
+    return SUBTYPE_P(obj, struct name ## _t, base);   \
   }
 DECLARE_PROB_DISTR_DOWNCAST_FN(uniform)
 DECLARE_PROB_DISTR_DOWNCAST_FN(geometric)
@@ -67,6 +68,7 @@ DECLARE_PROB_DISTR_DOWNCAST_FN(logistic)
 DECLARE_PROB_DISTR_DOWNCAST_FN(log_logistic)
 DECLARE_PROB_DISTR_DOWNCAST_FN(genpareto)
 DECLARE_PROB_DISTR_DOWNCAST_FN(weibull)
+#endif /* !defined(COCCI) */
 
 /**
  * Count number of one bits in 32-bit word.
@@ -178,8 +180,8 @@ clz32(uint32_t x)
 
 /**
  * Compute the logistic function: f(x) = 1/(1 + e^{-x}) = e^x/(1 + e^x).
- * Maps a log-odds-space probability in [-\infty, +\infty] into a direct-space
- * probability in [0,1].  Inverse of logit.
+ * Maps a log-odds-space probability in [-infinity, +infinity] into a
+ * direct-space probability in [0,1].  Inverse of logit.
  *
  * Ill-conditioned for large x; the identity logistic(-x) = 1 -
  * logistic(x) and the function logistichalf(x) = logistic(x) - 1/2 may
@@ -266,7 +268,7 @@ logistic(double x)
 /**
  * Compute the logit function: log p/(1 - p).  Defined on [0,1].  Maps
  * a direct-space probability in [0,1] to a log-odds-space probability
- * in [-\infty, +\infty].  Inverse of logistic.
+ * in [-infinity, +infinity].  Inverse of logistic.
  *
  * Ill-conditioned near 1/2 and 1; the identity logit(1 - p) =
  * -logit(p) and the function logithalf(p0) = logit(1/2 + p0) may help
@@ -488,7 +490,7 @@ random_uniform_01(void)
 /* Functions for specific probability distributions start here: */
 
 /*
- * Logistic(mu, sigma) distribution, supported on (-\infty,+\infty)
+ * Logistic(mu, sigma) distribution, supported on (-infinity,+infinity)
  *
  * This is the uniform distribution on [0,1] mapped into log-odds
  * space, scaled by sigma and translated by mu.
@@ -546,7 +548,7 @@ isf_logistic(double p, double mu, double sigma)
 }
 
 /*
- * LogLogistic(alpha, beta) distribution, supported on (0, +\infty).
+ * LogLogistic(alpha, beta) distribution, supported on (0, +infinity).
  *
  * This is the uniform distribution on [0,1] mapped into odds space,
  * scaled by positive alpha and shaped by positive beta.
@@ -687,7 +689,7 @@ isf_log_logistic(double p, double alpha, double beta)
 }
 
 /*
- * Weibull(lambda, k) distribution, supported on (0, +\infty).
+ * Weibull(lambda, k) distribution, supported on (0, +infinity).
  *
  * pdf(x) = (k/lambda) (x/lambda)^{k - 1} e^{-(x/lambda)^k}
  * cdf(x) = 1 - e^{-(x/lambda)^k}
@@ -753,7 +755,7 @@ isf_weibull(double p, double lambda, double k)
 }
 
 /*
- * GeneralizedPareto(mu, sigma, xi), supported on (mu, +\infty) for
+ * GeneralizedPareto(mu, sigma, xi), supported on (mu, +infinity) for
  * nonnegative xi, or (mu, mu - sigma/xi) for negative xi.
  *
  * Samples:
@@ -793,19 +795,19 @@ cdf_genpareto(double x, double mu, double sigma, double xi)
 
   /*
    * log(1 + xi x_0)/xi
-   * = (-1/xi) \sum_{n=1}^\infty (-xi x_0)^n/n
-   * = (-1/xi) (-xi x_0 + \sum_{n=2}^\infty (-xi x_0)^n/n)
-   * = x_0 - (1/xi) \sum_{n=2}^\infty (-xi x_0)^n/n
-   * = x_0 - x_0 \sum_{n=2}^\infty (-xi x_0)^{n-1}/n
+   * = (-1/xi) \sum_{n=1}^infinity (-xi x_0)^n/n
+   * = (-1/xi) (-xi x_0 + \sum_{n=2}^infinity (-xi x_0)^n/n)
+   * = x_0 - (1/xi) \sum_{n=2}^infinity (-xi x_0)^n/n
+   * = x_0 - x_0 \sum_{n=2}^infinity (-xi x_0)^{n-1}/n
    * = x_0 (1 - d),
    *
-   * where d = \sum_{n=2}^\infty (-xi x_0)^{n-1}/n.  If |xi| <
+   * where d = \sum_{n=2}^infinity (-xi x_0)^{n-1}/n.  If |xi| <
    * eps/4|x_0|, then
    *
-   * |d| <= \sum_{n=2}^\infty (eps/4)^{n-1}/n
-   *     <= \sum_{n=2}^\infty (eps/4)^{n-1}
-   *      = \sum_{n=1}^\infty (eps/4)^n
-   *      = (eps/4) \sum_{n=0}^\infty (eps/4)^n
+   * |d| <= \sum_{n=2}^infinity (eps/4)^{n-1}/n
+   *     <= \sum_{n=2}^infinity (eps/4)^{n-1}
+   *      = \sum_{n=1}^infinity (eps/4)^n
+   *      = (eps/4) \sum_{n=0}^infinity (eps/4)^n
    *      = (eps/4)/(1 - eps/4)
    *      < eps/2
    *
@@ -855,20 +857,20 @@ icdf_genpareto(double p, double mu, double sigma, double xi)
    * for xi near zero (note f(xi) --> -log U as xi --> 0), write
    * the absolutely convergent Taylor expansion
    *
-   * f(xi) = (1/xi)*(-xi log U + \sum_{n=2}^\infty (-xi log U)^n/n!
-   *       = -log U + (1/xi)*\sum_{n=2}^\infty (-xi log U)^n/n!
-   *       = -log U + \sum_{n=2}^\infty xi^{n-1} (-log U)^n/n!
-   *       = -log U - log U \sum_{n=2}^\infty (-xi log U)^{n-1}/n!
-   *       = -log U (1 + \sum_{n=2}^\infty (-xi log U)^{n-1}/n!).
+   * f(xi) = (1/xi)*(-xi log U + \sum_{n=2}^infinity (-xi log U)^n/n!
+   *       = -log U + (1/xi)*\sum_{n=2}^infinity (-xi log U)^n/n!
+   *       = -log U + \sum_{n=2}^infinity xi^{n-1} (-log U)^n/n!
+   *       = -log U - log U \sum_{n=2}^infinity (-xi log U)^{n-1}/n!
+   *       = -log U (1 + \sum_{n=2}^infinity (-xi log U)^{n-1}/n!).
    *
-   * Let d = \sum_{n=2}^\infty (-xi log U)^{n-1}/n!.  What do we
+   * Let d = \sum_{n=2}^infinity (-xi log U)^{n-1}/n!.  What do we
    * lose if we discard it and use -log U as an approximation to
    * f(xi)?  If |xi| < eps/-4log U, then
    *
-   * |d| <= \sum_{n=2}^\infty |xi log U|^{n-1}/n!
-   *     <= \sum_{n=2}^\infty (eps/4)^{n-1}/n!
-   *     <= \sum_{n=1}^\infty (eps/4)^n
-   *      = (eps/4) \sum_{n=0}^\infty (eps/4)^n
+   * |d| <= \sum_{n=2}^infinity |xi log U|^{n-1}/n!
+   *     <= \sum_{n=2}^infinity (eps/4)^{n-1}/n!
+   *     <= \sum_{n=1}^infinity (eps/4)^n
+   *      = (eps/4) \sum_{n=0}^infinity (eps/4)^n
    *      = (eps/4)/(1 - eps/4)
    *      < eps/2,
    *
@@ -889,7 +891,7 @@ icdf_genpareto(double p, double mu, double sigma, double xi)
 
 /**
  * Compute the inverse of the SF of the GeneralizedPareto(mu, sigma,
- * xi) distribution.  Ill-conditioned for p near 1; conditon number is
+ * xi) distribution.  Ill-conditioned for p near 1; condition number is
  *
  *      -xi/(1 - p^{-xi})
  */
@@ -998,7 +1000,7 @@ sample_uniform_interval(double p0, double a, double b)
      * since if we treat subnormals as having an implicit
      * zero bit before the `binary' point, their exponents
      * are all the same.  There is at most one carry/borrow
-     * bit, which can always be acommodated either in a
+     * bit, which can always be accommodated either in a
      * subnormal, or, at largest, in the implicit one bit
      * of a normal.
      *
@@ -1098,10 +1100,10 @@ sample_logistic(uint32_t s, double t, double p0)
    * We carve up the interval (0, 1) into subregions to compute
    * the inverse CDF precisely:
    *
-   * A = (0, 1/(1 + e)] ---> (-\infty, -1]
+   * A = (0, 1/(1 + e)] ---> (-infinity, -1]
    * B = [1/(1 + e), 1/2] ---> [-1, 0]
    * C = [1/2, 1 - 1/(1 + e)] ---> [0, 1]
-   * D = [1 - 1/(1 + e), 1) ---> [1, +\infty)
+   * D = [1 - 1/(1 + e), 1) ---> [1, +infinity)
    *
    * Cases D and C are mirror images of cases A and B,
    * respectively, so we choose between them by the sign chosen
@@ -1234,19 +1236,19 @@ sample_genpareto(uint32_t s, double p0, double xi)
    * Write f(xi) = (e^{xi x} - 1)/xi for xi near zero as the
    * absolutely convergent Taylor series
    *
-   * f(x) = (1/xi) (xi x + \sum_{n=2}^\infty (xi x)^n/n!)
-   *      = x + (1/xi) \sum_{n=2}^\inty (xi x)^n/n!
-   *      = x + \sum_{n=2}^\infty xi^{n-1} x^n/n!
-   *      = x + x \sum_{n=2}^\infty (xi x)^{n-1}/n!
-   *      = x (1 + \sum_{n=2}^\infty (xi x)^{n-1}/n!).
+   * f(x) = (1/xi) (xi x + \sum_{n=2}^infinity (xi x)^n/n!)
+   *      = x + (1/xi) \sum_{n=2}^infinity (xi x)^n/n!
+   *      = x + \sum_{n=2}^infinity xi^{n-1} x^n/n!
+   *      = x + x \sum_{n=2}^infinity (xi x)^{n-1}/n!
+   *      = x (1 + \sum_{n=2}^infinity (xi x)^{n-1}/n!).
    *
-   * d = \sum_{n=2}^\infty (xi x)^{n-1}/n! is the relative error
+   * d = \sum_{n=2}^infinity (xi x)^{n-1}/n! is the relative error
    * of f(x) from x.  If |xi| < eps/4x, then
    *
-   * |d| <= \sum_{n=2}^\infty |xi x|^{n-1}/n!
-   *     <= \sum_{n=2}^\infty (eps/4)^{n-1}/n!
-   *     <= \sum_{n=1}^\infty (eps/4)
-   *      = (eps/4) \sum_{n=0}^\infty (eps/4)^n
+   * |d| <= \sum_{n=2}^infinity |xi x|^{n-1}/n!
+   *     <= \sum_{n=2}^infinity (eps/4)^{n-1}/n!
+   *     <= \sum_{n=1}^infinity (eps/4)
+   *      = (eps/4) \sum_{n=0}^infinity (eps/4)^n
    *      = (eps/4)/(1 - eps/4)
    *      < eps/2,
    *
@@ -1282,15 +1284,16 @@ sample_genpareto_locscale(uint32_t s, double p0, double mu, double sigma,
 /**
  * Deterministically sample from the geometric distribution with
  * per-trial success probability p.
- *
+ **/
+// clang-format off
+/*
  * XXX Quantify the error (KL divergence?) of this
  * ceiling-of-exponential sampler from a true geometric distribution,
  * which we could get by rejection sampling.  Relevant papers:
  *
  *      John F. Monahan, `Accuracy in Random Number Generation',
  *      Mathematics of Computation 45(172), October 1984, pp. 559--568.
-*https://pdfs.semanticscholar.org/aca6/74b96da1df77b2224e8cfc5dd6d61a471632.pdf
- *
+https://pdfs.semanticscholar.org/aca6/74b96da1df77b2224e8cfc5dd6d61a471632.pdf
  *      Karl Bringmann and Tobias Friedrich, `Exact and Efficient
  *      Generation of Geometric Random Variates and Random Graphs', in
  *      Proceedings of the 40th International Colloaquium on Automata,
@@ -1299,6 +1302,7 @@ sample_genpareto_locscale(uint32_t s, double p0, double mu, double sigma,
  *      https://doi.org/10.1007/978-3-642-39206-1_23
  *      https://people.mpi-inf.mpg.de/~kbringma/paper/2013ICALP-1.pdf
  */
+// clang-format on
 static double
 sample_geometric(uint32_t s, double p0, double p)
 {
@@ -1324,42 +1328,42 @@ sample_geometric(uint32_t s, double p0, double p)
 
 /** Returns the name of the distribution in <b>dist</b>. */
 const char *
-dist_name(const struct dist *dist)
+dist_name(const struct dist_t *dist)
 {
   return dist->ops->name;
 }
 
 /* Sample a value from <b>dist</b> and return it. */
 double
-dist_sample(const struct dist *dist)
+dist_sample(const struct dist_t *dist)
 {
   return dist->ops->sample(dist);
 }
 
 /** Compute the CDF of <b>dist</b> at <b>x</b>. */
 double
-dist_cdf(const struct dist *dist, double x)
+dist_cdf(const struct dist_t *dist, double x)
 {
   return dist->ops->cdf(dist, x);
 }
 
 /** Compute the SF (Survival function) of <b>dist</b> at <b>x</b>. */
 double
-dist_sf(const struct dist *dist, double x)
+dist_sf(const struct dist_t *dist, double x)
 {
   return dist->ops->sf(dist, x);
 }
 
 /** Compute the iCDF (Inverse CDF) of <b>dist</b> at <b>x</b>. */
 double
-dist_icdf(const struct dist *dist, double p)
+dist_icdf(const struct dist_t *dist, double p)
 {
   return dist->ops->icdf(dist, p);
 }
 
 /** Compute the iSF (Inverse Survival function) of <b>dist</b> at <b>x</b>. */
 double
-dist_isf(const struct dist *dist, double p)
+dist_isf(const struct dist_t *dist, double p)
 {
   return dist->ops->isf(dist, p);
 }
@@ -1367,18 +1371,18 @@ dist_isf(const struct dist *dist, double p)
 /** Functions for uniform distribution */
 
 static double
-uniform_sample(const struct dist *dist)
+uniform_sample(const struct dist_t *dist)
 {
-  const struct uniform *U = dist_to_const_uniform(dist);
+  const struct uniform_t *U = dist_to_const_uniform(dist);
   double p0 = random_uniform_01();
 
   return sample_uniform_interval(p0, U->a, U->b);
 }
 
 static double
-uniform_cdf(const struct dist *dist, double x)
+uniform_cdf(const struct dist_t *dist, double x)
 {
-  const struct uniform *U = dist_to_const_uniform(dist);
+  const struct uniform_t *U = dist_to_const_uniform(dist);
   if (x < U->a)
     return 0;
   else if (x < U->b)
@@ -1388,9 +1392,9 @@ uniform_cdf(const struct dist *dist, double x)
 }
 
 static double
-uniform_sf(const struct dist *dist, double x)
+uniform_sf(const struct dist_t *dist, double x)
 {
-  const struct uniform *U = dist_to_const_uniform(dist);
+  const struct uniform_t *U = dist_to_const_uniform(dist);
 
   if (x > U->b)
     return 0;
@@ -1401,24 +1405,24 @@ uniform_sf(const struct dist *dist, double x)
 }
 
 static double
-uniform_icdf(const struct dist *dist, double p)
+uniform_icdf(const struct dist_t *dist, double p)
 {
-  const struct uniform *U = dist_to_const_uniform(dist);
+  const struct uniform_t *U = dist_to_const_uniform(dist);
   double w = U->b - U->a;
 
   return (p < 0.5 ? (U->a + w*p) : (U->b - w*(1 - p)));
 }
 
 static double
-uniform_isf(const struct dist *dist, double p)
+uniform_isf(const struct dist_t *dist, double p)
 {
-  const struct uniform *U = dist_to_const_uniform(dist);
+  const struct uniform_t *U = dist_to_const_uniform(dist);
   double w = U->b - U->a;
 
   return (p < 0.5 ? (U->b - w*p) : (U->a + w*(1 - p)));
 }
 
-const struct dist_ops uniform_ops = {
+const struct dist_ops_t uniform_ops = {
   .name = "uniform",
   .sample = uniform_sample,
   .cdf = uniform_cdf,
@@ -1434,9 +1438,9 @@ const struct dist_ops uniform_ops = {
 /** Functions for logistic distribution: */
 
 static double
-logistic_sample(const struct dist *dist)
+logistic_sample(const struct dist_t *dist)
 {
-  const struct logistic *L = dist_to_const_logistic(dist);
+  const struct logistic_t *L = dist_to_const_logistic(dist);
   uint32_t s = crypto_fast_rng_get_u32(get_thread_fast_rng());
   double t = random_uniform_01();
   double p0 = random_uniform_01();
@@ -1445,34 +1449,34 @@ logistic_sample(const struct dist *dist)
 }
 
 static double
-logistic_cdf(const struct dist *dist, double x)
+logistic_cdf(const struct dist_t *dist, double x)
 {
-  const struct logistic *L = dist_to_const_logistic(dist);
+  const struct logistic_t *L = dist_to_const_logistic(dist);
   return cdf_logistic(x, L->mu, L->sigma);
 }
 
 static double
-logistic_sf(const struct dist *dist, double x)
+logistic_sf(const struct dist_t *dist, double x)
 {
-  const struct logistic *L = dist_to_const_logistic(dist);
+  const struct logistic_t *L = dist_to_const_logistic(dist);
   return sf_logistic(x, L->mu, L->sigma);
 }
 
 static double
-logistic_icdf(const struct dist *dist, double p)
+logistic_icdf(const struct dist_t *dist, double p)
 {
-  const struct logistic *L = dist_to_const_logistic(dist);
+  const struct logistic_t *L = dist_to_const_logistic(dist);
   return icdf_logistic(p, L->mu, L->sigma);
 }
 
 static double
-logistic_isf(const struct dist *dist, double p)
+logistic_isf(const struct dist_t *dist, double p)
 {
-  const struct logistic *L = dist_to_const_logistic(dist);
+  const struct logistic_t *L = dist_to_const_logistic(dist);
   return isf_logistic(p, L->mu, L->sigma);
 }
 
-const struct dist_ops logistic_ops = {
+const struct dist_ops_t logistic_ops = {
   .name = "logistic",
   .sample = logistic_sample,
   .cdf = logistic_cdf,
@@ -1484,9 +1488,9 @@ const struct dist_ops logistic_ops = {
 /** Functions for log-logistic distribution: */
 
 static double
-log_logistic_sample(const struct dist *dist)
+log_logistic_sample(const struct dist_t *dist)
 {
-  const struct log_logistic *LL = dist_to_const_log_logistic(dist);
+  const struct log_logistic_t *LL = dist_to_const_log_logistic(dist);
   uint32_t s = crypto_fast_rng_get_u32(get_thread_fast_rng());
   double p0 = random_uniform_01();
 
@@ -1494,34 +1498,34 @@ log_logistic_sample(const struct dist *dist)
 }
 
 static double
-log_logistic_cdf(const struct dist *dist, double x)
+log_logistic_cdf(const struct dist_t *dist, double x)
 {
-  const struct log_logistic *LL = dist_to_const_log_logistic(dist);
+  const struct log_logistic_t *LL = dist_to_const_log_logistic(dist);
   return cdf_log_logistic(x, LL->alpha, LL->beta);
 }
 
 static double
-log_logistic_sf(const struct dist *dist, double x)
+log_logistic_sf(const struct dist_t *dist, double x)
 {
-  const struct log_logistic *LL = dist_to_const_log_logistic(dist);
+  const struct log_logistic_t *LL = dist_to_const_log_logistic(dist);
   return sf_log_logistic(x, LL->alpha, LL->beta);
 }
 
 static double
-log_logistic_icdf(const struct dist *dist, double p)
+log_logistic_icdf(const struct dist_t *dist, double p)
 {
-  const struct log_logistic *LL = dist_to_const_log_logistic(dist);
+  const struct log_logistic_t *LL = dist_to_const_log_logistic(dist);
   return icdf_log_logistic(p, LL->alpha, LL->beta);
 }
 
 static double
-log_logistic_isf(const struct dist *dist, double p)
+log_logistic_isf(const struct dist_t *dist, double p)
 {
-  const struct log_logistic *LL = dist_to_const_log_logistic(dist);
+  const struct log_logistic_t *LL = dist_to_const_log_logistic(dist);
   return isf_log_logistic(p, LL->alpha, LL->beta);
 }
 
-const struct dist_ops log_logistic_ops = {
+const struct dist_ops_t log_logistic_ops = {
   .name = "log logistic",
   .sample = log_logistic_sample,
   .cdf = log_logistic_cdf,
@@ -1533,9 +1537,9 @@ const struct dist_ops log_logistic_ops = {
 /** Functions for Weibull distribution */
 
 static double
-weibull_sample(const struct dist *dist)
+weibull_sample(const struct dist_t *dist)
 {
-  const struct weibull *W = dist_to_const_weibull(dist);
+  const struct weibull_t *W = dist_to_const_weibull(dist);
   uint32_t s = crypto_fast_rng_get_u32(get_thread_fast_rng());
   double p0 = random_uniform_01();
 
@@ -1543,34 +1547,34 @@ weibull_sample(const struct dist *dist)
 }
 
 static double
-weibull_cdf(const struct dist *dist, double x)
+weibull_cdf(const struct dist_t *dist, double x)
 {
-  const struct weibull *W = dist_to_const_weibull(dist);
+  const struct weibull_t *W = dist_to_const_weibull(dist);
   return cdf_weibull(x, W->lambda, W->k);
 }
 
 static double
-weibull_sf(const struct dist *dist, double x)
+weibull_sf(const struct dist_t *dist, double x)
 {
-  const struct weibull *W = dist_to_const_weibull(dist);
+  const struct weibull_t *W = dist_to_const_weibull(dist);
   return sf_weibull(x, W->lambda, W->k);
 }
 
 static double
-weibull_icdf(const struct dist *dist, double p)
+weibull_icdf(const struct dist_t *dist, double p)
 {
-  const struct weibull *W = dist_to_const_weibull(dist);
+  const struct weibull_t *W = dist_to_const_weibull(dist);
   return icdf_weibull(p, W->lambda, W->k);
 }
 
 static double
-weibull_isf(const struct dist *dist, double p)
+weibull_isf(const struct dist_t *dist, double p)
 {
-  const struct weibull *W = dist_to_const_weibull(dist);
+  const struct weibull_t *W = dist_to_const_weibull(dist);
   return isf_weibull(p, W->lambda, W->k);
 }
 
-const struct dist_ops weibull_ops = {
+const struct dist_ops_t weibull_ops = {
   .name = "Weibull",
   .sample = weibull_sample,
   .cdf = weibull_cdf,
@@ -1582,9 +1586,9 @@ const struct dist_ops weibull_ops = {
 /** Functions for generalized Pareto distributions */
 
 static double
-genpareto_sample(const struct dist *dist)
+genpareto_sample(const struct dist_t *dist)
 {
-  const struct genpareto *GP = dist_to_const_genpareto(dist);
+  const struct genpareto_t *GP = dist_to_const_genpareto(dist);
   uint32_t s = crypto_fast_rng_get_u32(get_thread_fast_rng());
   double p0 = random_uniform_01();
 
@@ -1592,34 +1596,34 @@ genpareto_sample(const struct dist *dist)
 }
 
 static double
-genpareto_cdf(const struct dist *dist, double x)
+genpareto_cdf(const struct dist_t *dist, double x)
 {
-  const struct genpareto *GP = dist_to_const_genpareto(dist);
+  const struct genpareto_t *GP = dist_to_const_genpareto(dist);
   return cdf_genpareto(x, GP->mu, GP->sigma, GP->xi);
 }
 
 static double
-genpareto_sf(const struct dist *dist, double x)
+genpareto_sf(const struct dist_t *dist, double x)
 {
-  const struct genpareto *GP = dist_to_const_genpareto(dist);
+  const struct genpareto_t *GP = dist_to_const_genpareto(dist);
   return sf_genpareto(x, GP->mu, GP->sigma, GP->xi);
 }
 
 static double
-genpareto_icdf(const struct dist *dist, double p)
+genpareto_icdf(const struct dist_t *dist, double p)
 {
-  const struct genpareto *GP = dist_to_const_genpareto(dist);
+  const struct genpareto_t *GP = dist_to_const_genpareto(dist);
   return icdf_genpareto(p, GP->mu, GP->sigma, GP->xi);
 }
 
 static double
-genpareto_isf(const struct dist *dist, double p)
+genpareto_isf(const struct dist_t *dist, double p)
 {
-  const struct genpareto *GP = dist_to_const_genpareto(dist);
+  const struct genpareto_t *GP = dist_to_const_genpareto(dist);
   return isf_genpareto(p, GP->mu, GP->sigma, GP->xi);
 }
 
-const struct dist_ops genpareto_ops = {
+const struct dist_ops_t genpareto_ops = {
   .name = "generalized Pareto",
   .sample = genpareto_sample,
   .cdf = genpareto_cdf,
@@ -1631,9 +1635,9 @@ const struct dist_ops genpareto_ops = {
 /** Functions for geometric distribution on number of trials before success */
 
 static double
-geometric_sample(const struct dist *dist)
+geometric_sample(const struct dist_t *dist)
 {
-  const struct geometric *G = dist_to_const_geometric(dist);
+  const struct geometric_t *G = dist_to_const_geometric(dist);
   uint32_t s = crypto_fast_rng_get_u32(get_thread_fast_rng());
   double p0 = random_uniform_01();
 
@@ -1641,9 +1645,9 @@ geometric_sample(const struct dist *dist)
 }
 
 static double
-geometric_cdf(const struct dist *dist, double x)
+geometric_cdf(const struct dist_t *dist, double x)
 {
-  const struct geometric *G = dist_to_const_geometric(dist);
+  const struct geometric_t *G = dist_to_const_geometric(dist);
 
   if (x < 1)
     return 0;
@@ -1652,9 +1656,9 @@ geometric_cdf(const struct dist *dist, double x)
 }
 
 static double
-geometric_sf(const struct dist *dist, double x)
+geometric_sf(const struct dist_t *dist, double x)
 {
-  const struct geometric *G = dist_to_const_geometric(dist);
+  const struct geometric_t *G = dist_to_const_geometric(dist);
 
   if (x < 1)
     return 0;
@@ -1663,22 +1667,22 @@ geometric_sf(const struct dist *dist, double x)
 }
 
 static double
-geometric_icdf(const struct dist *dist, double p)
+geometric_icdf(const struct dist_t *dist, double p)
 {
-  const struct geometric *G = dist_to_const_geometric(dist);
+  const struct geometric_t *G = dist_to_const_geometric(dist);
 
   return log1p(-p)/log1p(-G->p);
 }
 
 static double
-geometric_isf(const struct dist *dist, double p)
+geometric_isf(const struct dist_t *dist, double p)
 {
-  const struct geometric *G = dist_to_const_geometric(dist);
+  const struct geometric_t *G = dist_to_const_geometric(dist);
 
   return log(p)/log1p(-G->p);
 }
 
-const struct dist_ops geometric_ops = {
+const struct dist_ops_t geometric_ops = {
   .name = "geometric (1-based)",
   .sample = geometric_sample,
   .cdf = geometric_cdf,

@@ -1,9 +1,9 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
  * \file hs_config.h
- * \brief Header file containing configuration ABI/API for the HS subsytem.
+ * \brief Header file containing configuration ABI/API for the HS subsystem.
  **/
 
 #ifndef TOR_HS_CONFIG_H
@@ -30,5 +30,6 @@
 int hs_config_service_all(const or_options_t *options, int validate_only);
 int hs_config_client_auth_all(const or_options_t *options, int validate_only);
 
-#endif /* !defined(TOR_HS_CONFIG_H) */
+void hs_config_free_all(void);
 
+#endif /* !defined(TOR_HS_CONFIG_H) */

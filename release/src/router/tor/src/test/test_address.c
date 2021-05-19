@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2019, The Tor Project, Inc. */
+/* Copyright (c) 2014-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define ADDRESS_PRIVATE
@@ -460,7 +460,7 @@ test_address_ifreq_to_smartlist(void *arg)
   ifc->ifc_len = sizeof(struct ifreq);
   ifc->ifc_ifcu.ifcu_req = ifr;
 
-  results = ifreq_to_smartlist(ifc->ifc_buf,ifc->ifc_len);
+  results = ifreq_to_smartlist((const uint8_t *)ifc->ifc_buf,ifc->ifc_len);
   tt_int_op(smartlist_len(results),OP_EQ,1);
 
   tor_addr = smartlist_get(results, 0);
@@ -483,7 +483,7 @@ test_address_ifreq_to_smartlist(void *arg)
   SMARTLIST_FOREACH(results, tor_addr_t *, t, tor_free(t));
   smartlist_free(results);
 
-  results = ifreq_to_smartlist(ifc->ifc_buf,ifc->ifc_len);
+  results = ifreq_to_smartlist((const uint8_t *)ifc->ifc_buf,ifc->ifc_len);
   tt_int_op(smartlist_len(results),OP_EQ,2);
 
   tor_addr = smartlist_get(results, 0);
@@ -713,7 +713,7 @@ test_address_udp_socket_trick_blackbox(void *arg)
 
 #else /* !(0) */
   /* Both of the blackbox test cases fail horribly if:
-   *  * The host has no external addreses.
+   *  * The host has no external addresses.
    *  * There are multiple interfaces with either AF_INET or AF_INET6.
    *  * The last address isn't the one associated with the default route.
    *
@@ -1152,23 +1152,23 @@ test_address_tor_addr_in_same_network_family(void *ignored)
 
   tor_addr_parse(&a, "8.8.8.8");
   tor_addr_parse(&b, "8.8.4.4");
-  tt_int_op(addrs_in_same_network_family(&a, &b), OP_EQ, 1);
+  tt_int_op(router_addrs_in_same_network(&a, &b), OP_EQ, 1);
 
   tor_addr_parse(&a, "8.8.8.8");
   tor_addr_parse(&b, "1.1.1.1");
-  tt_int_op(addrs_in_same_network_family(&a, &b), OP_EQ, 0);
+  tt_int_op(router_addrs_in_same_network(&a, &b), OP_EQ, 0);
 
   tor_addr_parse(&a, "8.8.8.8");
   tor_addr_parse(&b, "2001:4860:4860::8844");
-  tt_int_op(addrs_in_same_network_family(&a, &b), OP_EQ, 0);
+  tt_int_op(router_addrs_in_same_network(&a, &b), OP_EQ, 0);
 
   tor_addr_parse(&a, "2001:4860:4860::8888");
   tor_addr_parse(&b, "2001:4860:4860::8844");
-  tt_int_op(addrs_in_same_network_family(&a, &b), OP_EQ, 1);
+  tt_int_op(router_addrs_in_same_network(&a, &b), OP_EQ, 1);
 
   tor_addr_parse(&a, "2001:4860:4860::8888");
   tor_addr_parse(&b, "2001:470:20::2");
-  tt_int_op(addrs_in_same_network_family(&a, &b), OP_EQ, 0);
+  tt_int_op(router_addrs_in_same_network(&a, &b), OP_EQ, 0);
 
  done:
   return;
@@ -1194,16 +1194,14 @@ helper_free_mock_node(node_t *node)
   tor_free(node);
 }
 
-#define NODE_SET_IPV4(node, ipv4_addr, ipv4_port) { \
-    tor_addr_t addr; \
-    tor_addr_parse(&addr, ipv4_addr); \
-    node->ri->addr = tor_addr_to_ipv4h(&addr); \
-    node->ri->or_port = ipv4_port; \
+#define NODE_SET_IPV4(node, ipv4_addr_str, ipv4_port) { \
+    tor_addr_parse(&(node)->ri->ipv4_addr, ipv4_addr_str); \
+    node->ri->ipv4_orport = ipv4_port; \
   }
 
 #define NODE_CLEAR_IPV4(node) { \
-    node->ri->addr = 0; \
-    node->ri->or_port = 0; \
+    tor_addr_make_unspec(&node->ri->ipv4_addr); \
+    node->ri->ipv4_orport = 0; \
   }
 
 #define NODE_SET_IPV6(node, ipv6_addr_str, ipv6_port) { \
@@ -1260,9 +1258,7 @@ mock_get_options(void)
 #define TEST_ROUTER_VALID_ADDRESS_HELPER(ipv4_addr_str, ipv6_addr_str, rv) \
   STMT_BEGIN \
     ri = tor_malloc_zero(sizeof(routerinfo_t)); \
-    tor_addr_t addr; \
-    tor_addr_parse(&addr, (ipv4_addr_str));   \
-    ri->addr = tor_addr_to_ipv4h(&addr); \
+    tor_addr_parse(&ri->ipv4_addr, (ipv4_addr_str));   \
     tor_addr_parse(&ri->ipv6_addr, (ipv6_addr_str)); \
     tt_int_op(dirserv_router_has_valid_address(ri), OP_EQ, (rv)); \
     tor_free(ri); \
@@ -1320,7 +1316,7 @@ test_address_dirserv_router_addr_private(void *opt_dir_allow_private)
   /* IPv6 null succeeds, because IPv4 is not internal */
   {
     ri = tor_malloc_zero(sizeof(routerinfo_t));
-    ri->addr = 16777217; /* 1.0.0.1 */
+    tor_addr_parse(&ri->ipv4_addr, "1.0.0.1");
     tt_int_op(dirserv_router_has_valid_address(ri), OP_EQ, 0);
     tor_free(ri);
   }

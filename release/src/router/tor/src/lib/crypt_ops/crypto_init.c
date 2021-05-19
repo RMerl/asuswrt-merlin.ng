@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -23,6 +23,9 @@
 #include "lib/crypt_ops/crypto_nss_mgt.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_sys.h"
+#include "lib/crypt_ops/crypto_options_st.h"
+#include "lib/conf/conftypes.h"
+#include "lib/log/util_bug.h"
 
 #include "lib/subsys/subsys.h"
 
@@ -252,8 +255,69 @@ subsys_crypto_thread_cleanup(void)
   crypto_thread_cleanup();
 }
 
+/** Magic number for crypto_options_t. */
+#define CRYPTO_OPTIONS_MAGIC 0x68757368
+
+/**
+ * Return 0 if <b>arg</b> is a valid crypto_options_t.  Otherwise return -1
+ * and set *<b>msg_out</b> to a freshly allocated error string.
+ **/
+static int
+crypto_options_validate(const void *arg, char **msg_out)
+{
+  const crypto_options_t *opt = arg;
+  tor_assert(opt->magic == CRYPTO_OPTIONS_MAGIC);
+  tor_assert(msg_out);
+
+  if (opt->AccelDir && !opt->AccelName) {
+    *msg_out = tor_strdup("Can't use hardware crypto accelerator dir "
+                          "without engine name.");
+    return -1;
+  }
+
+  return 0;
+}
+
+/* Declare the options field table for crypto_options */
+#define CONF_CONTEXT LL_TABLE
+#include "lib/crypt_ops/crypto_options.inc"
+#undef CONF_CONTEXT
+
+/**
+ * Declares the configuration options for this module.
+ **/
+static const config_format_t crypto_options_fmt = {
+  .size = sizeof(crypto_options_t),
+  .magic = { "crypto_options_t",
+             CRYPTO_OPTIONS_MAGIC,
+             offsetof(crypto_options_t, magic) },
+  .vars = crypto_options_t_vars,
+  .validate_fn = crypto_options_validate,
+};
+
+/**
+ * Invoked from subsysmgr.c when a new set of options arrives.
+ **/
+static int
+crypto_set_options(void *arg)
+{
+  const crypto_options_t *options = arg;
+  const bool hardware_accel = options->HardwareAccel || options->AccelName;
+
+  // This call already checks for crypto_global_initialized_, so it
+  // will only initialize the subsystem the first time it's called.
+  if (crypto_global_init(hardware_accel,
+                         options->AccelName,
+                         options->AccelDir)) {
+    log_err(LD_BUG, "Unable to initialize the crypto subsystem. Exiting.");
+    return -1;
+  }
+  return 0;
+}
+
 const struct subsys_fns_t sys_crypto = {
   .name = "crypto",
+  SUBSYS_DECLARE_LOCATION(),
   .supported = true,
   .level = -60,
   .initialize = subsys_crypto_initialize,
@@ -261,4 +325,7 @@ const struct subsys_fns_t sys_crypto = {
   .prefork = subsys_crypto_prefork,
   .postfork = subsys_crypto_postfork,
   .thread_cleanup = subsys_crypto_thread_cleanup,
+
+  .options_format = &crypto_options_fmt,
+  .set_options = crypto_set_options,
 };

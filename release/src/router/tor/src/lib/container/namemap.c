@@ -1,7 +1,12 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2018, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file namemap.c
+ * @brief Mappings between identifiers and 16-bit ints.
+ **/
 
 #include "orconfig.h"
 #include "lib/container/smartlist.h"
@@ -30,9 +35,9 @@ mapped_name_hash(const mapped_name_t *a)
 }
 
 HT_PROTOTYPE(namemap_ht, mapped_name_t, node, mapped_name_hash,
-             mapped_name_eq)
+             mapped_name_eq);
 HT_GENERATE2(namemap_ht, mapped_name_t, node, mapped_name_hash,
-             mapped_name_eq, 0.6, tor_reallocarray_, tor_free_)
+             mapped_name_eq, 0.6, tor_reallocarray_, tor_free_);
 
 /** Set up an uninitialized <b>map</b>. */
 void
@@ -77,7 +82,7 @@ namemap_fmt_name(const namemap_t *map, unsigned id)
 
 /**
  * Helper: As namemap_get_id(), but requires that <b>name</b> is
- * <b>namelen</b> charaters long, and that <b>namelen</b> is no more than
+ * <b>namelen</b> characters long, and that <b>namelen</b> is no more than
  * MAX_NAMEMAP_NAME_LEN.
  */
 static unsigned

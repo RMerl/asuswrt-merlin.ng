@@ -1,4 +1,4 @@
-#define TOR_CHANNEL_INTERNAL_
+#define CHANNEL_OBJECT_PRIVATE
 #define TOR_TIMERS_PRIVATE
 #define CIRCUITPADDING_PRIVATE
 #define CIRCUITPADDING_MACHINES_PRIVATE
@@ -23,11 +23,11 @@
 #include "core/or/circuitbuild.h"
 #include "core/or/circuitpadding.h"
 #include "core/or/circuitpadding_machines.h"
+#include "core/or/extendinfo.h"
 #include "core/mainloop/netstatus.h"
 #include "core/crypto/relay_crypto.h"
 #include "core/or/protover.h"
 #include "feature/nodelist/nodelist.h"
-#include "lib/evloop/compat_libevent.h"
 #include "app/config/config.h"
 
 #include "feature/nodelist/routerstatus_st.h"
@@ -38,6 +38,7 @@
 #include "core/or/or_circuit_st.h"
 #include "core/or/origin_circuit_st.h"
 
+#include "test/fakecircs.h"
 #include "test/rng_test_helpers.h"
 
 /* Start our monotime mocking at 1 second past whatever monotime_init()
@@ -53,7 +54,6 @@ circid_t get_unique_circ_id_by_chan(channel_t *chan);
 void helper_create_basic_machine(void);
 static void helper_create_conditional_machines(void);
 
-static or_circuit_t * new_fake_orcirc(channel_t *nchan, channel_t *pchan);
 channel_t *new_fake_channel(void);
 void test_circuitpadding_negotiation(void *arg);
 void test_circuitpadding_wronghop(void *arg);
@@ -67,7 +67,6 @@ void test_circuitpadding_state_length(void *arg);
 static void
 simulate_single_hop_extend(circuit_t *client, circuit_t *mid_relay,
                            int padding);
-void free_fake_orcirc(circuit_t *circ);
 void free_fake_origin_circuit(origin_circuit_t *circ);
 
 static int deliver_negotiated = 1;
@@ -125,62 +124,6 @@ circuit_get_nth_node_mock(origin_circuit_t *circ, int hop)
   (void) hop;
 
   return &padding_node;
-}
-
-static or_circuit_t *
-new_fake_orcirc(channel_t *nchan, channel_t *pchan)
-{
-  or_circuit_t *orcirc = NULL;
-  circuit_t *circ = NULL;
-  crypt_path_t tmp_cpath;
-  char whatevs_key[CPATH_KEY_MATERIAL_LEN];
-
-  orcirc = tor_malloc_zero(sizeof(*orcirc));
-  circ = &(orcirc->base_);
-  circ->magic = OR_CIRCUIT_MAGIC;
-
-  //circ->n_chan = nchan;
-  circ->n_circ_id = get_unique_circ_id_by_chan(nchan);
-  cell_queue_init(&(circ->n_chan_cells));
-  circ->n_hop = NULL;
-  circ->streams_blocked_on_n_chan = 0;
-  circ->streams_blocked_on_p_chan = 0;
-  circ->n_delete_pending = 0;
-  circ->p_delete_pending = 0;
-  circ->received_destroy = 0;
-  circ->state = CIRCUIT_STATE_OPEN;
-  circ->purpose = CIRCUIT_PURPOSE_OR;
-  circ->package_window = CIRCWINDOW_START_MAX;
-  circ->deliver_window = CIRCWINDOW_START_MAX;
-  circ->n_chan_create_cell = NULL;
-
-  //orcirc->p_chan = pchan;
-  orcirc->p_circ_id = get_unique_circ_id_by_chan(pchan);
-  cell_queue_init(&(orcirc->p_chan_cells));
-
-  circuit_set_p_circid_chan(orcirc, orcirc->p_circ_id, pchan);
-  circuit_set_n_circid_chan(circ, circ->n_circ_id, nchan);
-
-  memset(&tmp_cpath, 0, sizeof(tmp_cpath));
-  if (cpath_init_circuit_crypto(&tmp_cpath, whatevs_key,
-                                sizeof(whatevs_key), 0, 0)<0) {
-    log_warn(LD_BUG,"Circuit initialization failed");
-    return NULL;
-  }
-  orcirc->crypto = tmp_cpath.pvt_crypto;
-
-  return orcirc;
-}
-
-void
-free_fake_orcirc(circuit_t *circ)
-{
-  or_circuit_t *orcirc = TO_OR_CIRCUIT(circ);
-
-  relay_crypto_clear(&orcirc->crypto);
-
-  circpad_circuit_free_all_machineinfos(circ);
-  tor_free(circ);
 }
 
 void
@@ -413,7 +356,7 @@ test_circuitpadding_rtt(void *arg)
             circpad_machine_current_state(
                 client_side->padding_info[0])->histogram_edges[0]);
  done:
-  free_fake_orcirc(relay_side);
+  free_fake_orcirc(TO_OR_CIRCUIT(relay_side));
   circuitmux_detach_all_circuits(dummy_channel.cmux, NULL);
   circuitmux_free(dummy_channel.cmux);
   timers_shutdown();
@@ -1419,7 +1362,7 @@ test_circuitpadding_wronghop(void *arg)
 
   /* 5. Test that asking to stop the wrong machine does nothing */
   circpad_negotiate_padding(TO_ORIGIN_CIRCUIT(client_side),
-                            255, 2, CIRCPAD_COMMAND_STOP);
+                            255, 2, CIRCPAD_COMMAND_STOP, 0);
   tt_ptr_op(client_side->padding_machine[0], OP_NE, NULL);
   tt_ptr_op(client_side->padding_info[0], OP_NE, NULL);
   tt_ptr_op(relay_side->padding_machine[0], OP_NE, NULL);
@@ -1431,7 +1374,7 @@ test_circuitpadding_wronghop(void *arg)
   ret = circpad_handle_padding_negotiated(relay_side, &cell, NULL);
   tt_int_op(ret, OP_EQ, -1);
 
-  /* 7. Test garbled negotated cell (bad command 255) */
+  /* 7. Test garbled negotiated cell (bad command 255) */
   memset(&cell, 0, sizeof(cell));
   ret = circpad_handle_padding_negotiate(relay_side, &cell);
   tt_int_op(ret, OP_EQ, -1);
@@ -1439,7 +1382,7 @@ test_circuitpadding_wronghop(void *arg)
 
   /* Test 2: Test no padding */
   free_fake_origin_circuit(TO_ORIGIN_CIRCUIT(client_side));
-  free_fake_orcirc(relay_side);
+  free_fake_orcirc(TO_OR_CIRCUIT(relay_side));
 
   client_side = TO_CIRCUIT(origin_circuit_new());
   relay_side = TO_CIRCUIT(new_fake_orcirc(&dummy_channel,
@@ -1467,7 +1410,7 @@ test_circuitpadding_wronghop(void *arg)
   circpad_padding_negotiated(relay_side,
                              CIRCPAD_MACHINE_CIRC_SETUP,
                              CIRCPAD_COMMAND_START,
-                             CIRCPAD_RESPONSE_OK);
+                             CIRCPAD_RESPONSE_OK, 0);
 
   /* verify no padding was negotiated */
   tt_ptr_op(relay_side->padding_machine[0], OP_EQ, NULL);
@@ -1476,7 +1419,7 @@ test_circuitpadding_wronghop(void *arg)
   circpad_padding_negotiated(relay_side,
                              CIRCPAD_MACHINE_CIRC_SETUP,
                              CIRCPAD_COMMAND_START,
-                             CIRCPAD_RESPONSE_ERR);
+                             CIRCPAD_RESPONSE_ERR, 0);
 
   /* verify no padding was negotiated */
   tt_ptr_op(relay_side->padding_machine[0], OP_EQ, NULL);
@@ -1484,7 +1427,7 @@ test_circuitpadding_wronghop(void *arg)
 
  done:
   free_fake_origin_circuit(TO_ORIGIN_CIRCUIT(client_side));
-  free_fake_orcirc(relay_side);
+  free_fake_orcirc(TO_OR_CIRCUIT(relay_side));
   circuitmux_detach_all_circuits(dummy_channel.cmux, NULL);
   circuitmux_free(dummy_channel.cmux);
   monotime_disable_test_mocking();
@@ -1553,7 +1496,7 @@ test_circuitpadding_negotiation(void *arg)
 
   /* Test 2: Test no padding */
   free_fake_origin_circuit(TO_ORIGIN_CIRCUIT(client_side));
-  free_fake_orcirc(relay_side);
+  free_fake_orcirc(TO_OR_CIRCUIT(relay_side));
 
   client_side = TO_CIRCUIT(origin_circuit_new());
   relay_side = TO_CIRCUIT(new_fake_orcirc(&dummy_channel, &dummy_channel));
@@ -1579,7 +1522,7 @@ test_circuitpadding_negotiation(void *arg)
   /* Force negotiate padding. */
   circpad_negotiate_padding(TO_ORIGIN_CIRCUIT(client_side),
                             CIRCPAD_MACHINE_CIRC_SETUP,
-                            2, CIRCPAD_COMMAND_START);
+                            2, CIRCPAD_COMMAND_START, 0);
 
   /* verify no padding was negotiated */
   tt_ptr_op(relay_side->padding_machine[0], OP_EQ, NULL);
@@ -1591,7 +1534,7 @@ test_circuitpadding_negotiation(void *arg)
 
   /* 3. Test failure to negotiate a machine due to desync */
   free_fake_origin_circuit(TO_ORIGIN_CIRCUIT(client_side));
-  free_fake_orcirc(relay_side);
+  free_fake_orcirc(TO_OR_CIRCUIT(relay_side));
 
   client_side = TO_CIRCUIT(origin_circuit_new());
   relay_side = TO_CIRCUIT(new_fake_orcirc(&dummy_channel, &dummy_channel));
@@ -1619,7 +1562,7 @@ test_circuitpadding_negotiation(void *arg)
 
  done:
   free_fake_origin_circuit(TO_ORIGIN_CIRCUIT(client_side));
-  free_fake_orcirc(relay_side);
+  free_fake_orcirc(TO_OR_CIRCUIT(relay_side));
   circuitmux_detach_all_circuits(dummy_channel.cmux, NULL);
   circuitmux_free(dummy_channel.cmux);
   monotime_disable_test_mocking();
@@ -1790,9 +1733,9 @@ helper_create_conditional_machines(void)
 
   add->conditions.requires_vanguards = 0;
   add->conditions.min_hops = 2;
-  add->conditions.state_mask = CIRCPAD_CIRC_BUILDING|
+  add->conditions.apply_state_mask = CIRCPAD_CIRC_BUILDING|
            CIRCPAD_CIRC_NO_STREAMS|CIRCPAD_CIRC_HAS_RELAY_EARLY;
-  add->conditions.purpose_mask = CIRCPAD_PURPOSE_ALL;
+  add->conditions.apply_purpose_mask = CIRCPAD_PURPOSE_ALL;
   circpad_register_padding_machine(add, origin_padding_machines);
 
   add = helper_create_conditional_machine();
@@ -1809,9 +1752,9 @@ helper_create_conditional_machines(void)
 
   add->conditions.requires_vanguards = 1;
   add->conditions.min_hops = 3;
-  add->conditions.state_mask = CIRCPAD_CIRC_OPENED|
+  add->conditions.apply_state_mask = CIRCPAD_CIRC_OPENED|
            CIRCPAD_CIRC_STREAMS|CIRCPAD_CIRC_HAS_NO_RELAY_EARLY;
-  add->conditions.purpose_mask = CIRCPAD_PURPOSE_ALL;
+  add->conditions.apply_purpose_mask = CIRCPAD_PURPOSE_ALL;
   circpad_register_padding_machine(add, origin_padding_machines);
 
   add = helper_create_conditional_machine();
@@ -1939,7 +1882,7 @@ test_circuitpadding_state_length(void *arg)
   tor_free(client_machine);
 
   free_fake_origin_circuit(TO_ORIGIN_CIRCUIT(client_side));
-  free_fake_orcirc(relay_side);
+  free_fake_orcirc(TO_OR_CIRCUIT(relay_side));
 
   circuitmux_detach_all_circuits(dummy_channel.cmux, NULL);
   circuitmux_free(dummy_channel.cmux);
@@ -2312,7 +2255,7 @@ test_circuitpadding_circuitsetup_machine(void *arg)
   tt_u64_op(relay_side->padding_info[0]->padding_scheduled_at_usec,
             OP_NE, 0);
   circuit_mark_for_close(client_side, END_CIRC_REASON_FLAG_REMOTE);
-  free_fake_orcirc(relay_side);
+  free_fake_orcirc(TO_OR_CIRCUIT(relay_side));
   timers_advance_and_run(5000);
 
   /* No cells sent */
@@ -2395,7 +2338,7 @@ helper_circpad_circ_distribution_machine_setup(int min, int max)
 }
 
 /** Simple test that the padding delays sampled from a uniform distribution
- *  actually faill within the uniform distribution range. */
+ *  actually fail within the uniform distribution range. */
 static void
 test_circuitpadding_sample_distribution(void *arg)
 {
@@ -2616,7 +2559,7 @@ test_circuitpadding_global_rate_limiting(void *arg)
   tt_int_op(retval, OP_EQ, 0);
 
  done:
-  free_fake_orcirc(relay_side);
+  free_fake_orcirc(TO_OR_CIRCUIT(relay_side));
   circuitmux_detach_all_circuits(dummy_channel.cmux, NULL);
   circuitmux_free(dummy_channel.cmux);
   SMARTLIST_FOREACH(vote1.net_params, char *, cp, tor_free(cp));
@@ -2769,7 +2712,7 @@ test_circuitpadding_reduce_disable(void *arg)
   tt_ptr_op(relay_side->padding_machine[0], OP_EQ, NULL);
 
  done:
-  free_fake_orcirc(relay_side);
+  free_fake_orcirc(TO_OR_CIRCUIT(relay_side));
   circuitmux_detach_all_circuits(dummy_channel.cmux, NULL);
   circuitmux_free(dummy_channel.cmux);
   testing_disable_reproducible_rng();
@@ -2785,8 +2728,8 @@ helper_create_ender_machine(void)
   circ_client_machine.states[CIRCPAD_STATE_START].
       next_state[CIRCPAD_EVENT_NONPADDING_RECV] = CIRCPAD_STATE_END;
 
-  circ_client_machine.conditions.state_mask = CIRCPAD_STATE_ALL;
-  circ_client_machine.conditions.purpose_mask = CIRCPAD_PURPOSE_ALL;
+  circ_client_machine.conditions.apply_state_mask = CIRCPAD_STATE_ALL;
+  circ_client_machine.conditions.apply_purpose_mask = CIRCPAD_PURPOSE_ALL;
 }
 
 static time_t mocked_timeofday;
@@ -3075,7 +3018,7 @@ helper_test_hs_machines(bool test_intro_circs)
   }
 
  done:
-  free_fake_orcirc(relay_side);
+  free_fake_orcirc(TO_OR_CIRCUIT(relay_side));
   circuitmux_detach_all_circuits(dummy_channel.cmux, NULL);
   circuitmux_free(dummy_channel.cmux);
   free_fake_origin_circuit(TO_ORIGIN_CIRCUIT(client_side));
@@ -3089,7 +3032,7 @@ test_circuitpadding_hs_machines(void *arg)
 
   /* Test logic:
    *
-   * 1) Register the HS machines, which aim to hide the presense of
+   * 1) Register the HS machines, which aim to hide the presence of
    *    onion service traffic on the client-side
    *
    * 2) Call helper_test_hs_machines() to perform tests for the intro circuit

@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -244,6 +244,8 @@ orconn_end_reason_to_control_string(int r)
       return "IOERROR";
     case END_OR_CONN_REASON_RESOURCE_LIMIT:
       return "RESOURCELIMIT";
+    case END_OR_CONN_REASON_TLS_ERROR:
+      return "TLS_ERROR";
     case END_OR_CONN_REASON_MISC:
       return "MISC";
     case END_OR_CONN_REASON_PT_MISSING:
@@ -276,6 +278,8 @@ tls_error_to_orconn_end_reason(int e)
     case TOR_TLS_CLOSE:
     case TOR_TLS_DONE:
       return END_OR_CONN_REASON_DONE;
+    case TOR_TLS_ERROR_MISC:
+      return END_OR_CONN_REASON_TLS_ERROR;
     default:
       return END_OR_CONN_REASON_MISC;
   }
@@ -489,7 +493,7 @@ end_reason_to_http_connect_response_line(int endreason)
       return "HTTP/1.0 502 Bad Gateway (tor protocol violation)\r\n\r\n";
     case END_STREAM_REASON_ENTRYPOLICY:
       return "HTTP/1.0 403 Forbidden (entry policy violation)\r\n\r\n";
-    case END_STREAM_REASON_NOTDIRECTORY: /* Fall Through */
+    case END_STREAM_REASON_NOTDIRECTORY: FALLTHROUGH;
     default:
       tor_assert_nonfatal_unreached();
       return "HTTP/1.0 500 Internal Server Error (weird end reason)\r\n\r\n";

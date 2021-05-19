@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -42,7 +42,7 @@ static inline int strcasecmp(const char *a, const char *b) {
  * (If --enable-fragile-hardening is passed to configure, we use the hardened
  * variants, which do not suffer from this issue.)
  *
- * See https://trac.torproject.org/projects/tor/ticket/15205
+ * See https://bugs.torproject.org/tpo/core/tor/15205.
  */
 #undef strlcat
 #undef strlcpy

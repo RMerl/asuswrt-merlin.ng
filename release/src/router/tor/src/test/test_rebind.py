@@ -1,4 +1,7 @@
+# Future imports for Python 2.7, mandatory in 3.0
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import errno
 import logging
@@ -113,7 +116,7 @@ tor_process = subprocess.Popen([tor_path,
 if tor_process == None:
     fail('ERROR: running tor failed')
 
-wait_for_log('Opened Control listener on')
+wait_for_log('Opened Control listener')
 
 try_connecting_to_socksport()
 

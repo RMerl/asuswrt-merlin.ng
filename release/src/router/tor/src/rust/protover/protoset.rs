@@ -294,6 +294,10 @@ impl ProtoSet {
     }
 }
 
+/// Largest allowed protocol version.
+/// C_RUST_COUPLED: protover.c `MAX_PROTOCOL_VERSION`
+const MAX_PROTOCOL_VERSION: Version = 63;
+
 impl FromStr for ProtoSet {
     type Err = ProtoverError;
 
@@ -370,7 +374,7 @@ impl FromStr for ProtoSet {
         let pieces: ::std::str::Split<char> = version_string.split(',');
 
         for p in pieces {
-            if p.contains('-') {
+            let (lo,hi) = if p.contains('-') {
                 let mut pair = p.splitn(2, '-');
 
                 let low = pair.next().ok_or(ProtoverError::Unparseable)?;
@@ -379,12 +383,17 @@ impl FromStr for ProtoSet {
                 let lo: Version = low.parse().or(Err(ProtoverError::Unparseable))?;
                 let hi: Version = high.parse().or(Err(ProtoverError::Unparseable))?;
 
-                pairs.push((lo, hi));
+                (lo,hi)
             } else {
                 let v: u32 = p.parse().or(Err(ProtoverError::Unparseable))?;
 
-                pairs.push((v, v));
+                (v, v)
+            };
+
+            if lo > MAX_PROTOCOL_VERSION || hi > MAX_PROTOCOL_VERSION {
+                return Err(ProtoverError::ExceedsMax);
             }
+            pairs.push((lo, hi));
         }
 
         ProtoSet::from_slice(&pairs[..])
@@ -674,12 +683,11 @@ mod test {
 
     #[test]
     fn test_protoset_into_vec() {
-        let ps: ProtoSet = "1-13,42,9001,4294967294".parse().unwrap();
+        let ps: ProtoSet = "1-13,42".parse().unwrap();
         let v: Vec<Version> = ps.into();
 
         assert!(v.contains(&7));
-        assert!(v.contains(&9001));
-        assert!(v.contains(&4294967294));
+        assert!(v.contains(&42));
     }
 }
 

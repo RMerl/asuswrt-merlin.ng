@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -245,6 +245,22 @@ file_status(const char *fname)
   } else {
     return FN_ERROR;
   }
+}
+
+/** Returns true if <b>file_type</b> represents an existing file (even if
+ * empty). Returns false otherwise. */
+bool
+is_file(file_status_t file_type)
+{
+  return file_type != FN_ERROR && file_type != FN_NOENT && file_type != FN_DIR;
+}
+
+/** Returns true if <b>file_type</b> represents an existing directory. Returns
+ * false otherwise. */
+bool
+is_dir(file_status_t file_type)
+{
+  return file_type == FN_DIR;
 }
 
 /** Create a file named <b>fname</b> with the contents <b>str</b>.  Overwrite
@@ -607,6 +623,9 @@ read_file_to_str_until_eof(int fd, size_t max_bytes_to_read, size_t *sz_out)
  * If <b>flags</b> &amp; RFTS_BIN, open the file in binary mode.
  * If <b>flags</b> &amp; RFTS_IGNORE_MISSING, don't warn if the file
  * doesn't exist.
+ *
+ * Unless the RFTS_BIN flag is set in <b>flags</b>, this function will strip
+ * any CR characters in the return value on all platforms.
  */
 /*
  * This function <em>may</em> return an erroneous result if the file
@@ -685,7 +704,6 @@ read_file_to_str, (const char *filename, int flags, struct stat *stat_out))
   }
   string[r] = '\0'; /* NUL-terminate the result. */
 
-#if defined(_WIN32) || defined(__CYGWIN__)
   if (!bin && strchr(string, '\r')) {
     log_debug(LD_FS, "We didn't convert CRLF to LF as well as we hoped "
               "when reading %s. Coping.",
@@ -695,8 +713,7 @@ read_file_to_str, (const char *filename, int flags, struct stat *stat_out))
   }
   if (!bin) {
     statbuf.st_size = (size_t) r;
-  } else
-#endif /* defined(_WIN32) || defined(__CYGWIN__) */
+  } else {
     if (r != statbuf.st_size) {
       /* Unless we're using text mode on win32, we'd better have an exact
        * match for size. */
@@ -708,12 +725,33 @@ read_file_to_str, (const char *filename, int flags, struct stat *stat_out))
       errno = save_errno;
       return NULL;
     }
+  }
   close(fd);
   if (stat_out) {
     memcpy(stat_out, &statbuf, sizeof(struct stat));
   }
 
   return string;
+}
+
+/** Attempt to read a file <b>fname</b>. If the file's contents is
+ * equal to the string <b>str</b>, return 0. Otherwise, attempt to
+ * overwrite the file with the contents of <b>str</b> and return
+ * the value of write_str_to_file().
+ */
+int
+write_str_to_file_if_not_equal(const char *fname, const char *str)
+{
+  char *fstr = read_file_to_str(fname, RFTS_IGNORE_MISSING, NULL);
+  int rv;
+
+  if (!fstr || strcmp(str, fstr)) {
+    rv = write_str_to_file(fname, str, 0);
+  } else {
+    rv = 0;
+  }
+  tor_free(fstr);
+  return rv;
 }
 
 #if !defined(HAVE_GETDELIM) || defined(TOR_UNIT_TESTS)

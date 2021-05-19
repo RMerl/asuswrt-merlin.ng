@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -27,6 +27,17 @@ typedef enum {
   SOCKS5_TTL_EXPIRED                = 0x06,
   SOCKS5_COMMAND_NOT_SUPPORTED      = 0x07,
   SOCKS5_ADDRESS_TYPE_NOT_SUPPORTED = 0x08,
+
+  /* Extended error code (see prop304). Only used if the SocksPort flag
+   * "ExtendedErrors" is set. */
+  SOCKS5_HS_NOT_FOUND               = 0xF0,
+  SOCKS5_HS_IS_INVALID              = 0xF1,
+  SOCKS5_HS_INTRO_FAILED            = 0xF2,
+  SOCKS5_HS_REND_FAILED             = 0xF3,
+  SOCKS5_HS_MISSING_CLIENT_AUTH     = 0xF4,
+  SOCKS5_HS_BAD_CLIENT_AUTH         = 0xF5,
+  SOCKS5_HS_BAD_ADDRESS             = 0xF6,
+  SOCKS5_HS_INTRO_TIMEDOUT          = 0xF7,
 } socks5_reply_status_t;
 
 #endif /* !defined(TOR_SOCKS5_STATUS_H) */

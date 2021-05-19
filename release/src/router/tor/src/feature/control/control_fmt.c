@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -156,6 +156,101 @@ circuit_describe_status_for_controller(origin_circuit_t *circ)
                            socks_password_escaped);
     tor_free(socks_password_escaped);
   }
+
+  rv = smartlist_join_strings(descparts, " ", 0, NULL);
+
+  SMARTLIST_FOREACH(descparts, char *, cp, tor_free(cp));
+  smartlist_free(descparts);
+
+  return rv;
+}
+
+/** Allocate and return a description of <b>conn</b>'s current status. */
+char *
+entry_connection_describe_status_for_controller(const entry_connection_t *conn)
+{
+  char *rv;
+  smartlist_t *descparts = smartlist_new();
+
+  if (conn->socks_request != NULL) {
+    // Show username and/or password if available; used by IsolateSOCKSAuth.
+    if (conn->socks_request->usernamelen > 0) {
+      char* username_escaped = esc_for_log_len(conn->socks_request->username,
+                                 (size_t) conn->socks_request->usernamelen);
+      smartlist_add_asprintf(descparts, "SOCKS_USERNAME=%s",
+                             username_escaped);
+      tor_free(username_escaped);
+    }
+    if (conn->socks_request->passwordlen > 0) {
+      char* password_escaped = esc_for_log_len(conn->socks_request->password,
+                                 (size_t) conn->socks_request->passwordlen);
+      smartlist_add_asprintf(descparts, "SOCKS_PASSWORD=%s",
+                             password_escaped);
+      tor_free(password_escaped);
+    }
+
+    const char *client_protocol;
+    // Show the client protocol; used by IsolateClientProtocol.
+    switch (conn->socks_request->listener_type)
+      {
+      case CONN_TYPE_AP_LISTENER:
+        switch (conn->socks_request->socks_version)
+          {
+          case 4: client_protocol = "SOCKS4"; break;
+          case 5: client_protocol = "SOCKS5"; break;
+          default: client_protocol = "UNKNOWN";
+          }
+        break;
+      case CONN_TYPE_AP_TRANS_LISTENER: client_protocol = "TRANS"; break;
+      case CONN_TYPE_AP_NATD_LISTENER: client_protocol = "NATD"; break;
+      case CONN_TYPE_AP_DNS_LISTENER: client_protocol = "DNS"; break;
+      case CONN_TYPE_AP_HTTP_CONNECT_LISTENER:
+        client_protocol = "HTTPCONNECT"; break;
+      case CONN_TYPE_METRICS_LISTENER:
+        client_protocol = "METRICS"; break;
+      default: client_protocol = "UNKNOWN";
+      }
+    smartlist_add_asprintf(descparts, "CLIENT_PROTOCOL=%s",
+                           client_protocol);
+  }
+
+  // Show newnym epoch; used for stream isolation when NEWNYM is used.
+  smartlist_add_asprintf(descparts, "NYM_EPOCH=%u",
+                         conn->nym_epoch);
+
+  // Show session group; used for stream isolation of multiple listener ports.
+  smartlist_add_asprintf(descparts, "SESSION_GROUP=%d",
+                         conn->entry_cfg.session_group);
+
+  // Show isolation flags.
+  smartlist_t *isoflaglist = smartlist_new();
+  char *isoflaglist_joined;
+  if (conn->entry_cfg.isolation_flags & ISO_DESTPORT) {
+    smartlist_add(isoflaglist, (void *)"DESTPORT");
+  }
+  if (conn->entry_cfg.isolation_flags & ISO_DESTADDR) {
+    smartlist_add(isoflaglist, (void *)"DESTADDR");
+  }
+  if (conn->entry_cfg.isolation_flags & ISO_SOCKSAUTH) {
+    smartlist_add(isoflaglist, (void *)"SOCKS_USERNAME");
+    smartlist_add(isoflaglist, (void *)"SOCKS_PASSWORD");
+  }
+  if (conn->entry_cfg.isolation_flags & ISO_CLIENTPROTO) {
+    smartlist_add(isoflaglist, (void *)"CLIENT_PROTOCOL");
+  }
+  if (conn->entry_cfg.isolation_flags & ISO_CLIENTADDR) {
+    smartlist_add(isoflaglist, (void *)"CLIENTADDR");
+  }
+  if (conn->entry_cfg.isolation_flags & ISO_SESSIONGRP) {
+    smartlist_add(isoflaglist, (void *)"SESSION_GROUP");
+  }
+  if (conn->entry_cfg.isolation_flags & ISO_NYM_EPOCH) {
+    smartlist_add(isoflaglist, (void *)"NYM_EPOCH");
+  }
+  isoflaglist_joined = smartlist_join_strings(isoflaglist, ",", 0, NULL);
+  smartlist_add_asprintf(descparts, "ISO_FIELDS=%s", isoflaglist_joined);
+  tor_free(isoflaglist_joined);
+  smartlist_free(isoflaglist);
 
   rv = smartlist_join_strings(descparts, " ", 0, NULL);
 

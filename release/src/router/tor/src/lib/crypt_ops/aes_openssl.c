@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -28,7 +28,7 @@
 #error "We require OpenSSL >= 1.0.0"
 #endif
 
-DISABLE_GCC_WARNING(redundant-decls)
+DISABLE_GCC_WARNING("-Wredundant-decls")
 
 #include <stdlib.h>
 #include <string.h>
@@ -37,9 +37,8 @@ DISABLE_GCC_WARNING(redundant-decls)
 #include <openssl/engine.h>
 #include <openssl/modes.h>
 
-ENABLE_GCC_WARNING(redundant-decls)
+ENABLE_GCC_WARNING("-Wredundant-decls")
 
-#include "lib/crypt_ops/aes.h"
 #include "lib/log/log.h"
 #include "lib/ctime/di_ops.h"
 
@@ -154,7 +153,7 @@ evaluate_ctr_for_aes(void)
 /* Interface to AES code, and counter implementation */
 
 /** Implements an AES counter-mode cipher. */
-struct aes_cnt_cipher {
+struct aes_cnt_cipher_t {
 /** This next element (however it's defined) is the AES key. */
   union {
     EVP_CIPHER_CTX evp;

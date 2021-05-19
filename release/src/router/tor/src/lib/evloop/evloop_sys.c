@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -41,6 +41,7 @@ subsys_evloop_shutdown(void)
 
 const struct subsys_fns_t sys_evloop = {
   .name = "evloop",
+  SUBSYS_DECLARE_LOCATION(),
   .supported = true,
   .level = -20,
   .initialize = subsys_evloop_initialize,

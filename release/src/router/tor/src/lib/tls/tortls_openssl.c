@@ -1,6 +1,6 @@
 /* Copyright (c) 2003, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -37,7 +37,7 @@
 
 /* Some versions of OpenSSL declare SSL_get_selected_srtp_profile twice in
  * srtp.h. Suppress the GCC warning so we can build with -Wredundant-decl. */
-DISABLE_GCC_WARNING(redundant-decls)
+DISABLE_GCC_WARNING("-Wredundant-decls")
 
 #include <openssl/opensslv.h>
 
@@ -54,7 +54,7 @@ DISABLE_GCC_WARNING(redundant-decls)
 #include <openssl/bn.h>
 #include <openssl/rsa.h>
 
-ENABLE_GCC_WARNING(redundant-decls)
+ENABLE_GCC_WARNING("-Wredundant-decls")
 
 #include "lib/tls/tortls.h"
 #include "lib/tls/tortls_st.h"
@@ -245,8 +245,28 @@ tls_log_errors(tor_tls_t *tls, int severity, int domain, const char *doing)
   unsigned long err;
 
   while ((err = ERR_get_error()) != 0) {
+    if (tls)
+      tls->last_error = err;
     tor_tls_log_one_error(tls, err, severity, domain, doing);
   }
+}
+
+/**
+ * Return a string representing more detail about the last error received
+ * on TLS.
+ *
+ * May return null if no error was found.
+ **/
+const char *
+tor_tls_get_last_error_msg(const tor_tls_t *tls)
+{
+  IF_BUG_ONCE(!tls) {
+    return NULL;
+  }
+  if (tls->last_error == 0) {
+    return NULL;
+  }
+  return (const char*)ERR_reason_error_string(tls->last_error);
 }
 
 #define CATCH_SYSCALL 1
@@ -322,7 +342,7 @@ tor_tls_init(void)
 
 #if (SIZEOF_VOID_P >= 8 &&                              \
      OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,0,1))
-    long version = OpenSSL_version_num();
+    long version = tor_OpenSSL_version_num();
 
     /* LCOV_EXCL_START : we can't test these lines on the same machine */
     if (version >= OPENSSL_V_SERIES(1,0,1)) {
@@ -464,7 +484,9 @@ static const char UNRESTRICTED_SERVER_CIPHER_LIST[] =
 /** List of ciphers that clients should advertise, omitting items that
  * our OpenSSL doesn't know about. */
 static const char CLIENT_CIPHER_LIST[] =
+#ifndef COCCI
 #include "lib/tls/ciphers.inc"
+#endif
   /* Tell it not to use SSLv2 ciphers, so that it can select an SSLv3 version
    * of any cipher we say. */
   "!SSLv2"

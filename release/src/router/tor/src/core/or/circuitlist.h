@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -12,6 +12,7 @@
 #ifndef TOR_CIRCUITLIST_H
 #define TOR_CIRCUITLIST_H
 
+#include "lib/container/handles.h"
 #include "lib/testsupport/testsupport.h"
 #include "feature/hs/hs_ident.h"
 #include "core/or/ocirc_event.h"
@@ -113,9 +114,12 @@
 #define CIRCUIT_PURPOSE_S_HSDIR_POST 20
 #define CIRCUIT_PURPOSE_S_HS_MAX_ 20
 
-/** A testing circuit; not meant to be used for actual traffic. */
+/** A testing circuit; not meant to be used for actual traffic. It is used for
+ * bandwidth measurement, reachability test and address discovery from an
+ * authority using the NETINFO cell. */
 #define CIRCUIT_PURPOSE_TESTING 21
-/** A controller made this circuit and Tor should not use it. */
+/** A controller made this circuit and Tor should not cannibalize it or attach
+ * streams to it without explicitly being told. */
 #define CIRCUIT_PURPOSE_CONTROLLER 22
 /** This circuit is used for path bias probing only */
 #define CIRCUIT_PURPOSE_PATH_BIAS_TESTING 23
@@ -241,6 +245,11 @@ MOCK_DECL(void, channel_note_destroy_not_pending,
           (channel_t *chan, circid_t id));
 
 smartlist_t *circuit_find_circuits_to_upgrade_from_guard_wait(void);
+
+/* Declare the handle helpers */
+HANDLE_DECL(circuit, circuit_t, )
+#define circuit_handle_free(h)    \
+    FREE_AND_NULL(circuit_handle_t, circuit_handle_free_, (h))
 
 #ifdef CIRCUITLIST_PRIVATE
 STATIC void circuit_free_(circuit_t *circ);

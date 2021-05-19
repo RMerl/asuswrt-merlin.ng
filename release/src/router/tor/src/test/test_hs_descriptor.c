@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -14,6 +14,7 @@
 #include "lib/crypt_ops/crypto_rand.h"
 #include "trunnel/ed25519_cert.h"
 #include "core/or/or.h"
+#include "app/config/config.h"
 #include "feature/hs/hs_descriptor.h"
 #include "test/test.h"
 #include "feature/nodelist/torcert.h"
@@ -24,12 +25,12 @@
 #include "test/rng_test_helpers.h"
 
 #ifdef HAVE_CFLAG_WOVERLENGTH_STRINGS
-DISABLE_GCC_WARNING(overlength-strings)
+DISABLE_GCC_WARNING("-Woverlength-strings")
 /* We allow huge string constants in the unit tests, but not in the code
  * at large. */
 #endif
 #include "test_hs_descriptor.inc"
-ENABLE_GCC_WARNING(overlength-strings)
+ENABLE_GCC_WARNING("-Woverlength-strings")
 
 /* Test certificate encoding put in a descriptor. */
 static void
@@ -37,13 +38,16 @@ test_cert_encoding(void *arg)
 {
   int ret;
   char *encoded = NULL;
-  time_t now = time(NULL);
   ed25519_keypair_t kp;
   ed25519_public_key_t signed_key;
   ed25519_secret_key_t secret_key;
   tor_cert_t *cert = NULL;
 
   (void) arg;
+
+  /* Change time to 03-01-2002 23:36 UTC */
+  update_approx_time(1010101010);
+  time_t now = approx_time();
 
   ret = ed25519_keypair_generate(&kp, 0);
   tt_int_op(ret, == , 0);
@@ -52,7 +56,7 @@ test_cert_encoding(void *arg)
   ret = ed25519_public_key_generate(&signed_key, &secret_key);
   tt_int_op(ret, == , 0);
 
-  cert = tor_cert_create(&kp, CERT_TYPE_SIGNING_AUTH, &signed_key,
+  cert = tor_cert_create_ed25519(&kp, CERT_TYPE_SIGNING_AUTH, &signed_key,
                          now, 3600 * 2, CERT_FLAG_INCLUDE_SIGNING_KEY);
   tt_assert(cert);
 
@@ -88,13 +92,31 @@ test_cert_encoding(void *arg)
     /* The cert did have the signing key? */
     ret= ed25519_pubkey_eq(&parsed_cert->signing_key, &kp.pubkey);
     tt_int_op(ret, OP_EQ, 1);
-    tor_cert_free(parsed_cert);
 
     /* Get to the end part of the certificate. */
     pos += b64_cert_len;
     tt_int_op(strcmpstart(pos, "-----END ED25519 CERT-----"), OP_EQ, 0);
     pos += strlen("-----END ED25519 CERT-----");
     tt_str_op(pos, OP_EQ, "");
+
+    /* Check that certificate expiry works properly and emits the right log
+       message */
+    const char *msg = "fire";
+    /* Move us forward 4 hours so that the the certificate is definitely
+       expired */
+    update_approx_time(approx_time() + 3600*4);
+    setup_full_capture_of_logs(LOG_PROTOCOL_WARN);
+    ret = cert_is_valid(parsed_cert, CERT_TYPE_SIGNING_AUTH, msg);
+    tt_int_op(ret, OP_EQ, 0);
+    /* Since the current time at the creation of the cert was "03-01-2002
+     * 23:36", and the expiration date of the cert was two hours, the Tor code
+     * will ceiling that and make it 02:00. Make sure that the right log
+     * message is emitted */
+    expect_log_msg_containing("Invalid signature for fire: expired"
+                              " (2002-01-04 02:00:00)");
+    teardown_capture_of_logs();
+
+    tor_cert_free(parsed_cert);
   }
 
  done:
@@ -221,7 +243,7 @@ test_decode_descriptor(void *arg)
   hs_descriptor_t *desc = NULL;
   hs_descriptor_t *decoded = NULL;
   hs_descriptor_t *desc_no_ip = NULL;
-  uint8_t subcredential[DIGEST256_LEN];
+  hs_subcredential_t subcredential;
 
   (void) arg;
 
@@ -230,19 +252,19 @@ test_decode_descriptor(void *arg)
   desc = hs_helper_build_hs_desc_with_ip(&signing_kp);
 
   hs_helper_get_subcred_from_identity_keypair(&signing_kp,
-                                              subcredential);
+                                              &subcredential);
 
   /* Give some bad stuff to the decoding function. */
-  ret = hs_desc_decode_descriptor("hladfjlkjadf", subcredential,
+  ret = hs_desc_decode_descriptor("hladfjlkjadf", &subcredential,
                                   NULL, &decoded);
-  tt_int_op(ret, OP_EQ, -1);
+  tt_int_op(ret, OP_EQ, HS_DESC_DECODE_PLAINTEXT_ERROR);
 
   ret = hs_desc_encode_descriptor(desc, &signing_kp, NULL, &encoded);
-  tt_int_op(ret, OP_EQ, 0);
+  tt_int_op(ret, OP_EQ, HS_DESC_DECODE_OK);
   tt_assert(encoded);
 
-  ret = hs_desc_decode_descriptor(encoded, subcredential, NULL, &decoded);
-  tt_int_op(ret, OP_EQ, 0);
+  ret = hs_desc_decode_descriptor(encoded, &subcredential, NULL, &decoded);
+  tt_int_op(ret, OP_EQ, HS_DESC_DECODE_OK);
   tt_assert(decoded);
 
   hs_helper_desc_equal(desc, decoded);
@@ -253,7 +275,7 @@ test_decode_descriptor(void *arg)
     ret = ed25519_keypair_generate(&signing_kp_no_ip, 0);
     tt_int_op(ret, OP_EQ, 0);
     hs_helper_get_subcred_from_identity_keypair(&signing_kp_no_ip,
-                                                subcredential);
+                                                &subcredential);
     desc_no_ip = hs_helper_build_hs_desc_no_ip(&signing_kp_no_ip);
     tt_assert(desc_no_ip);
     tor_free(encoded);
@@ -262,8 +284,8 @@ test_decode_descriptor(void *arg)
     tt_int_op(ret, OP_EQ, 0);
     tt_assert(encoded);
     hs_descriptor_free(decoded);
-    ret = hs_desc_decode_descriptor(encoded, subcredential, NULL, &decoded);
-    tt_int_op(ret, OP_EQ, 0);
+    ret = hs_desc_decode_descriptor(encoded, &subcredential, NULL, &decoded);
+    tt_int_op(ret, OP_EQ, HS_DESC_DECODE_OK);
     tt_assert(decoded);
   }
 
@@ -286,14 +308,14 @@ test_decode_descriptor(void *arg)
            &auth_ephemeral_kp.pubkey, CURVE25519_PUBKEY_LEN);
 
     hs_helper_get_subcred_from_identity_keypair(&signing_kp,
-                                                subcredential);
+                                                &subcredential);
 
     /* Build and add the auth client to the descriptor. */
     clients = desc->superencrypted_data.clients;
     if (!clients) {
       clients = smartlist_new();
     }
-    hs_desc_build_authorized_client(subcredential,
+    hs_desc_build_authorized_client(&subcredential,
                                     &client_kp.pubkey,
                                     &auth_ephemeral_kp.seckey,
                                     descriptor_cookie, client);
@@ -315,23 +337,23 @@ test_decode_descriptor(void *arg)
 
     /* If we do not have the client secret key, the decoding must fail. */
     hs_descriptor_free(decoded);
-    ret = hs_desc_decode_descriptor(encoded, subcredential,
+    ret = hs_desc_decode_descriptor(encoded, &subcredential,
                                     NULL, &decoded);
-    tt_int_op(ret, OP_LT, 0);
+    tt_int_op(ret, OP_EQ, HS_DESC_DECODE_NEED_CLIENT_AUTH);
     tt_assert(!decoded);
 
     /* If we have an invalid client secret key, the decoding must fail. */
     hs_descriptor_free(decoded);
-    ret = hs_desc_decode_descriptor(encoded, subcredential,
+    ret = hs_desc_decode_descriptor(encoded, &subcredential,
                                     &invalid_client_kp.seckey, &decoded);
-    tt_int_op(ret, OP_LT, 0);
+    tt_int_op(ret, OP_EQ, HS_DESC_DECODE_BAD_CLIENT_AUTH);
     tt_assert(!decoded);
 
     /* If we have the client secret key, the decoding must succeed and the
      * decoded descriptor must be correct. */
-    ret = hs_desc_decode_descriptor(encoded, subcredential,
+    ret = hs_desc_decode_descriptor(encoded, &subcredential,
                                     &client_kp.seckey, &decoded);
-    tt_int_op(ret, OP_EQ, 0);
+    tt_int_op(ret, OP_EQ, HS_DESC_DECODE_OK);
     tt_assert(decoded);
 
     hs_helper_desc_equal(desc, decoded);
@@ -567,7 +589,7 @@ test_decode_bad_signature(void *arg)
 
   setup_full_capture_of_logs(LOG_WARN);
   ret = hs_desc_decode_plaintext(HS_DESC_BAD_SIG, &desc_plaintext);
-  tt_int_op(ret, OP_EQ, -1);
+  tt_int_op(ret, OP_EQ, HS_DESC_DECODE_PLAINTEXT_ERROR);
   expect_log_msg_containing("Malformed signature line. Rejecting.");
   teardown_capture_of_logs();
 
@@ -607,14 +629,14 @@ test_decode_plaintext(void *arg)
     tor_asprintf(&plaintext, template, bad_value, "180", "42", "MESSAGE");
     ret = hs_desc_decode_plaintext(plaintext, &desc_plaintext);
     tor_free(plaintext);
-    tt_int_op(ret, OP_EQ, -1);
+    tt_int_op(ret, OP_EQ, HS_DESC_DECODE_PLAINTEXT_ERROR);
   }
 
   /* Missing fields. */
   {
     const char *plaintext = "hs-descriptor 3\n";
     ret = hs_desc_decode_plaintext(plaintext, &desc_plaintext);
-    tt_int_op(ret, OP_EQ, -1);
+    tt_int_op(ret, OP_EQ, HS_DESC_DECODE_PLAINTEXT_ERROR);
   }
 
   /* Max length. */
@@ -627,7 +649,7 @@ test_decode_plaintext(void *arg)
     plaintext[big - 1] = '\0';
     ret = hs_desc_decode_plaintext(plaintext, &desc_plaintext);
     tor_free(plaintext);
-    tt_int_op(ret, OP_EQ, -1);
+    tt_int_op(ret, OP_EQ, HS_DESC_DECODE_PLAINTEXT_ERROR);
   }
 
   /* Bad lifetime value. */
@@ -636,7 +658,7 @@ test_decode_plaintext(void *arg)
     tor_asprintf(&plaintext, template, "3", bad_value, "42", "MESSAGE");
     ret = hs_desc_decode_plaintext(plaintext, &desc_plaintext);
     tor_free(plaintext);
-    tt_int_op(ret, OP_EQ, -1);
+    tt_int_op(ret, OP_EQ, HS_DESC_DECODE_PLAINTEXT_ERROR);
   }
 
   /* Huge lifetime value. */
@@ -645,7 +667,7 @@ test_decode_plaintext(void *arg)
     tor_asprintf(&plaintext, template, "3", "7181615", "42", "MESSAGE");
     ret = hs_desc_decode_plaintext(plaintext, &desc_plaintext);
     tor_free(plaintext);
-    tt_int_op(ret, OP_EQ, -1);
+    tt_int_op(ret, OP_EQ, HS_DESC_DECODE_PLAINTEXT_ERROR);
   }
 
   /* Invalid encrypted section. */
@@ -654,7 +676,7 @@ test_decode_plaintext(void *arg)
     tor_asprintf(&plaintext, template, "3", "180", "42", bad_value);
     ret = hs_desc_decode_plaintext(plaintext, &desc_plaintext);
     tor_free(plaintext);
-    tt_int_op(ret, OP_EQ, -1);
+    tt_int_op(ret, OP_EQ, HS_DESC_DECODE_PLAINTEXT_ERROR);
   }
 
   /* Invalid revision counter. */
@@ -663,7 +685,7 @@ test_decode_plaintext(void *arg)
     tor_asprintf(&plaintext, template, "3", "180", bad_value, "MESSAGE");
     ret = hs_desc_decode_plaintext(plaintext, &desc_plaintext);
     tor_free(plaintext);
-    tt_int_op(ret, OP_EQ, -1);
+    tt_int_op(ret, OP_EQ, HS_DESC_DECODE_PLAINTEXT_ERROR);
   }
 
  done:
@@ -684,7 +706,7 @@ test_validate_cert(void *arg)
   tt_int_op(ret, OP_EQ, 0);
 
   /* Cert of type CERT_TYPE_AUTH_HS_IP_KEY. */
-  cert = tor_cert_create(&kp, CERT_TYPE_AUTH_HS_IP_KEY,
+  cert = tor_cert_create_ed25519(&kp, CERT_TYPE_AUTH_HS_IP_KEY,
                                      &kp.pubkey, now, 3600,
                                      CERT_FLAG_INCLUDE_SIGNING_KEY);
   tt_assert(cert);
@@ -704,8 +726,9 @@ test_validate_cert(void *arg)
   tor_cert_free(cert);
 
   /* Try a cert without including the signing key. */
-  cert = tor_cert_create(&kp, CERT_TYPE_AUTH_HS_IP_KEY, &kp.pubkey, now,
-                         3600, 0);
+  cert = tor_cert_create_ed25519(&kp, CERT_TYPE_AUTH_HS_IP_KEY,
+                                 &kp.pubkey, now, 3600, 0);
+
   tt_assert(cert);
   /* Test with a bad type. */
   ret = cert_is_valid(cert, CERT_TYPE_AUTH_HS_IP_KEY, "unicorn");
@@ -762,7 +785,7 @@ test_build_authorized_client(void *arg)
     "07d087f1d8c68393721f6e70316d3b29";
   const char client_pubkey_b16[] =
     "8c1298fa6050e372f8598f6deca32e27b0ad457741422c2629ebb132cf7fae37";
-  uint8_t subcredential[DIGEST256_LEN];
+  hs_subcredential_t subcredential;
   char *mem_op_hex_tmp=NULL;
 
   (void) arg;
@@ -774,7 +797,7 @@ test_build_authorized_client(void *arg)
   tt_int_op(ret, OP_EQ, 0);
   curve25519_public_key_generate(&client_auth_pk, &client_auth_sk);
 
-  memset(subcredential, 42, sizeof(subcredential));
+  memset(subcredential.subcred, 42, sizeof(subcredential));
 
   desc_client = tor_malloc_zero(sizeof(hs_desc_authorized_client_t));
 
@@ -795,7 +818,7 @@ test_build_authorized_client(void *arg)
 
   testing_enable_prefilled_rng("\x01", 1);
 
-  hs_desc_build_authorized_client(subcredential,
+  hs_desc_build_authorized_client(&subcredential,
                                   &client_auth_pk, &auth_ephemeral_sk,
                                   descriptor_cookie, desc_client);
 

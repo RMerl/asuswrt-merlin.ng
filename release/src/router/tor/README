@@ -19,14 +19,13 @@ Documentation, including links to installation and setup instructions:
         https://www.torproject.org/docs/documentation.html
 
 Making applications work with Tor:
-        https://wiki.torproject.org/projects/tor/wiki/doc/TorifyHOWTO
+        https://gitlab.torproject.org/legacy/trac/-/wikis/doc/TorifyHOWTO
 
 Frequently Asked Questions:
         https://www.torproject.org/docs/faq.html
 
+Release timeline:
+        https://gitlab.torproject.org/tpo/core/team/-/wikis/NetworkTeam/CoreTorReleases
 
 To get started working on Tor development:
         See the doc/HACKING directory.
-
-Release timeline:
-         https://trac.torproject.org/projects/tor/wiki/org/teams/NetworkTeam/CoreTorReleases

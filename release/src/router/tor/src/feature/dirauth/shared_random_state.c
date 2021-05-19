@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -12,7 +12,7 @@
 
 #include "core/or/or.h"
 #include "app/config/config.h"
-#include "lib/confmgt/confparse.h"
+#include "lib/confmgt/confmgt.h"
 #include "lib/crypt_ops/crypto_util.h"
 #include "feature/dirauth/dirvote.h"
 #include "feature/nodelist/networkstatus.h"
@@ -20,24 +20,24 @@
 #include "feature/dirauth/shared_random.h"
 #include "feature/hs_common/shared_random_client.h"
 #include "feature/dirauth/shared_random_state.h"
-#include "feature/dircommon/voting_schedule.h"
+#include "feature/dirauth/voting_schedule.h"
 #include "lib/encoding/confline.h"
 #include "lib/version/torversion.h"
 
 #include "app/config/or_state_st.h"
 
-/* Default filename of the shared random state on disk. */
+/** Default filename of the shared random state on disk. */
 static const char default_fname[] = "sr-state";
 
-/* String representation of a protocol phase. */
+/** String representation of a protocol phase. */
 static const char *phase_str[] = { "unknown", "commit", "reveal" };
 
-/* Our shared random protocol state. There is only one possible state per
+/** Our shared random protocol state. There is only one possible state per
  * protocol run so this is the global state which is reset at every run once
  * the shared random value has been computed. */
 static sr_state_t *sr_state = NULL;
 
-/* Representation of our persistent state on disk. The sr_state above
+/** Representation of our persistent state on disk. The sr_state above
  * contains the data parsed from this state. When we save to disk, we
  * translate the sr_state to this sr_disk_state. */
 static sr_disk_state_t *sr_disk_state = NULL;
@@ -56,14 +56,11 @@ DUMMY_TYPECHECK_INSTANCE(sr_disk_state_t);
 #define V(member,conftype,initvalue)            \
   VAR(#member, conftype, member, initvalue)
 
-/* Our persistent state magic number. */
+/** Our persistent state magic number. */
 #define SR_DISK_STATE_MAGIC 0x98AB1254
 
-static int
-disk_state_validate_cb(void *old_state, void *state, void *default_state,
-                       int from_setconf, char **msg);
-
-/* Array of variables that are saved to disk as a persistent state. */
+/** Array of variables that are saved to disk as a persistent state. */
+// clang-format off
 static const config_var_t state_vars[] = {
   V(Version,                    POSINT, "0"),
   V(TorVersion,                 STRING, NULL),
@@ -77,8 +74,9 @@ static const config_var_t state_vars[] = {
   VAR("SharedRandCurrentValue", LINELIST_S, SharedRandValues, NULL),
   END_OF_CONFIG_VARS
 };
+// clang-format on
 
-/* "Extra" variable in the state that receives lines we can't parse. This
+/** "Extra" variable in the state that receives lines we can't parse. This
  * lets us preserve options from versions of Tor newer than us. */
 static const struct_member_t state_extra_var = {
   .name = "__extra",
@@ -86,24 +84,19 @@ static const struct_member_t state_extra_var = {
   .offset = offsetof(sr_disk_state_t, ExtraLines),
 };
 
-/* Configuration format of sr_disk_state_t. */
+/** Configuration format of sr_disk_state_t. */
 static const config_format_t state_format = {
-  sizeof(sr_disk_state_t),
-  {
+  .size = sizeof(sr_disk_state_t),
+  .magic = {
    "sr_disk_state_t",
    SR_DISK_STATE_MAGIC,
    offsetof(sr_disk_state_t, magic_),
   },
-  NULL,
-  NULL,
-  state_vars,
-  disk_state_validate_cb,
-  NULL,
-  &state_extra_var,
-  -1,
+  .vars = state_vars,
+  .extra = &state_extra_var,
 };
 
-/* Global configuration manager for the shared-random state file */
+/** Global configuration manager for the shared-random state file */
 static config_mgr_t *shared_random_state_mgr = NULL;
 
 /** Return the configuration manager for the shared-random state file. */
@@ -119,7 +112,7 @@ get_srs_mgr(void)
 
 static void state_query_del_(sr_state_object_t obj_type, void *data);
 
-/* Return a string representation of a protocol phase. */
+/** Return a string representation of a protocol phase. */
 STATIC const char *
 get_phase_str(sr_phase_t phase)
 {
@@ -137,7 +130,7 @@ get_phase_str(sr_phase_t phase)
 
   return the_string;
 }
-/* Return the time we should expire the state file created at <b>now</b>.
+/** Return the time we should expire the state file created at <b>now</b>.
  * We expire the state file in the beginning of the next protocol run. */
 STATIC time_t
 get_state_valid_until_time(time_t now)
@@ -148,7 +141,7 @@ get_state_valid_until_time(time_t now)
 
   voting_interval = get_voting_interval();
   /* Find the time the current round started. */
-  beginning_of_current_round = get_start_time_of_current_round();
+  beginning_of_current_round = dirauth_sched_get_cur_valid_after_time();
 
   /* Find how many rounds are left till the end of the protocol run */
   current_round = (now / voting_interval) % total_rounds;
@@ -168,7 +161,7 @@ get_state_valid_until_time(time_t now)
   return valid_until;
 }
 
-/* Given the consensus 'valid-after' time, return the protocol phase we should
+/** Given the consensus 'valid-after' time, return the protocol phase we should
  * be in. */
 STATIC sr_phase_t
 get_sr_protocol_phase(time_t valid_after)
@@ -188,7 +181,7 @@ get_sr_protocol_phase(time_t valid_after)
   }
 }
 
-/* Add the given <b>commit</b> to <b>state</b>. It MUST be a valid commit
+/** Add the given <b>commit</b> to <b>state</b>. It MUST be a valid commit
  * and there shouldn't be a commit from the same authority in the state
  * already else verification hasn't been done prior. This takes ownership of
  * the commit once in our state. */
@@ -213,7 +206,7 @@ commit_add_to_state(sr_commit_t *commit, sr_state_t *state)
   }
 }
 
-/* Helper: deallocate a commit object. (Used with digestmap_free(), which
+/** Helper: deallocate a commit object. (Used with digestmap_free(), which
  * requires a function pointer whose argument is void *). */
 static void
 commit_free_(void *p)
@@ -224,7 +217,7 @@ commit_free_(void *p)
 #define state_free(val) \
   FREE_AND_NULL(sr_state_t, state_free_, (val))
 
-/* Free a state that was allocated with state_new(). */
+/** Free a state that was allocated with state_new(). */
 static void
 state_free_(sr_state_t *state)
 {
@@ -238,7 +231,7 @@ state_free_(sr_state_t *state)
   tor_free(state);
 }
 
-/* Allocate an sr_state_t object and returns it. If no <b>fname</b>, the
+/** Allocate an sr_state_t object and returns it. If no <b>fname</b>, the
  * default file name is used. This function does NOT initialize the state
  * timestamp, phase or shared random value. NULL is never returned. */
 static sr_state_t *
@@ -257,7 +250,7 @@ state_new(const char *fname, time_t now)
   return new_state;
 }
 
-/* Set our global state pointer with the one given. */
+/** Set our global state pointer with the one given. */
 static void
 state_set(sr_state_t *state)
 {
@@ -271,7 +264,7 @@ state_set(sr_state_t *state)
 #define disk_state_free(val) \
   FREE_AND_NULL(sr_disk_state_t, disk_state_free_, (val))
 
-/* Free an allocated disk state. */
+/** Free an allocated disk state. */
 static void
 disk_state_free_(sr_disk_state_t *state)
 {
@@ -281,7 +274,7 @@ disk_state_free_(sr_disk_state_t *state)
   config_free(get_srs_mgr(), state);
 }
 
-/* Allocate a new disk state, initialize it and return it. */
+/** Allocate a new disk state, initialize it and return it. */
 static sr_disk_state_t *
 disk_state_new(time_t now)
 {
@@ -297,7 +290,7 @@ disk_state_new(time_t now)
   return new_state;
 }
 
-/* Set our global disk state with the given state. */
+/** Set our global disk state with the given state. */
 static void
 disk_state_set(sr_disk_state_t *state)
 {
@@ -308,7 +301,7 @@ disk_state_set(sr_disk_state_t *state)
   sr_disk_state = state;
 }
 
-/* Return -1 if the disk state is invalid (something in there that we can't or
+/** Return -1 if the disk state is invalid (something in there that we can't or
  * shouldn't use). Return 0 if everything checks out. */
 static int
 disk_state_validate(const sr_disk_state_t *state)
@@ -343,25 +336,7 @@ disk_state_validate(const sr_disk_state_t *state)
   return -1;
 }
 
-/* Validate the disk state (NOP for now). */
-static int
-disk_state_validate_cb(void *old_state, void *state, void *default_state,
-                       int from_setconf, char **msg)
-{
-  /* We don't use these; only options do. */
-  (void) from_setconf;
-  (void) default_state;
-  (void) old_state;
-
-  /* This is called by config_dump which is just before we are about to
-   * write it to disk. At that point, our global memory state has been
-   * copied to the disk state so it's fair to assume it's trustable. */
-  (void) state;
-  (void) msg;
-  return 0;
-}
-
-/* Parse the Commit line(s) in the disk state and translate them to the
+/** Parse the Commit line(s) in the disk state and translate them to the
  * the memory state. Return 0 on success else -1 on error. */
 static int
 disk_state_parse_commits(sr_state_t *state,
@@ -416,7 +391,7 @@ disk_state_parse_commits(sr_state_t *state,
   return -1;
 }
 
-/* Parse a share random value line from the disk state and save it to dst
+/** Parse a share random value line from the disk state and save it to dst
  * which is an allocated srv object. Return 0 on success else -1. */
 static int
 disk_state_parse_srv(const char *value, sr_srv_t *dst)
@@ -451,7 +426,7 @@ disk_state_parse_srv(const char *value, sr_srv_t *dst)
   return ret;
 }
 
-/* Parse both SharedRandCurrentValue and SharedRandPreviousValue line from
+/** Parse both SharedRandCurrentValue and SharedRandPreviousValue line from
  * the state. Return 0 on success else -1. */
 static int
 disk_state_parse_sr_values(sr_state_t *state,
@@ -502,7 +477,7 @@ disk_state_parse_sr_values(sr_state_t *state,
   return -1;
 }
 
-/* Parse the given disk state and set a newly allocated state. On success,
+/** Parse the given disk state and set a newly allocated state. On success,
  * return that state else NULL. */
 static sr_state_t *
 disk_state_parse(const sr_disk_state_t *new_disk_state)
@@ -536,7 +511,7 @@ disk_state_parse(const sr_disk_state_t *new_disk_state)
   return NULL;
 }
 
-/* From a valid commit object and an allocated config line, set the line's
+/** From a valid commit object and an allocated config line, set the line's
  * value to the state string representation of a commit. */
 static void
 disk_state_put_commit_line(const sr_commit_t *commit, config_line_t *line)
@@ -563,7 +538,7 @@ disk_state_put_commit_line(const sr_commit_t *commit, config_line_t *line)
   }
 }
 
-/* From a valid srv object and an allocated config line, set the line's
+/** From a valid srv object and an allocated config line, set the line's
  * value to the state string representation of a shared random value. */
 static void
 disk_state_put_srv_line(const sr_srv_t *srv, config_line_t *line)
@@ -581,7 +556,7 @@ disk_state_put_srv_line(const sr_srv_t *srv, config_line_t *line)
   tor_asprintf(&line->value, "%" PRIu64 " %s", srv->num_reveals, encoded);
 }
 
-/* Reset disk state that is free allocated memory and zeroed the object. */
+/** Reset disk state that is free allocated memory and zeroed the object. */
 static void
 disk_state_reset(void)
 {
@@ -600,7 +575,7 @@ disk_state_reset(void)
   sr_disk_state->TorVersion = tor_strdup(get_version());
 }
 
-/* Update our disk state based on our global SR state. */
+/** Update our disk state based on our global SR state. */
 static void
 disk_state_update(void)
 {
@@ -644,7 +619,7 @@ disk_state_update(void)
   } DIGESTMAP_FOREACH_END;
 }
 
-/* Load state from disk and put it into our disk state. If the state passes
+/** Load state from disk and put it into our disk state. If the state passes
  * validation, our global state will be updated with it. Return 0 on
  * success. On error, -EINVAL is returned if the state on disk did contained
  * something malformed or is unreadable. -ENOENT is returned indicating that
@@ -662,7 +637,7 @@ disk_state_load_from_disk(void)
   return ret;
 }
 
-/* Helper for disk_state_load_from_disk(). */
+/** Helper for disk_state_load_from_disk(). */
 STATIC int
 disk_state_load_from_disk_impl(const char *fname)
 {
@@ -724,7 +699,7 @@ disk_state_load_from_disk_impl(const char *fname)
   return ret;
 }
 
-/* Save the disk state to disk but before that update it from the current
+/** Save the disk state to disk but before that update it from the current
  * state so we always have the latest. Return 0 on success else -1. */
 static int
 disk_state_save_to_disk(void)
@@ -768,7 +743,7 @@ disk_state_save_to_disk(void)
   return ret;
 }
 
-/* Reset our state to prepare for a new protocol run. Once this returns, all
+/** Reset our state to prepare for a new protocol run. Once this returns, all
  * commits in the state will be removed and freed. */
 STATIC void
 reset_state_for_new_protocol_run(time_t valid_after)
@@ -789,7 +764,7 @@ reset_state_for_new_protocol_run(time_t valid_after)
   sr_state_delete_commits();
 }
 
-/* This is the first round of the new protocol run starting at
+/** This is the first round of the new protocol run starting at
  * <b>valid_after</b>. Do the necessary housekeeping. */
 STATIC void
 new_protocol_run(time_t valid_after)
@@ -805,7 +780,7 @@ new_protocol_run(time_t valid_after)
     sr_compute_srv();
   }
 
-  /* Prepare for the new protocol run by reseting the state */
+  /* Prepare for the new protocol run by resetting the state */
   reset_state_for_new_protocol_run(valid_after);
 
   /* Do some logging */
@@ -823,7 +798,7 @@ new_protocol_run(time_t valid_after)
   }
 }
 
-/* Return 1 iff the <b>next_phase</b> is a phase transition from the current
+/** Return 1 iff the <b>next_phase</b> is a phase transition from the current
  * phase that is it's different. */
 STATIC int
 is_phase_transition(sr_phase_t next_phase)
@@ -831,7 +806,7 @@ is_phase_transition(sr_phase_t next_phase)
   return sr_state->phase != next_phase;
 }
 
-/* Helper function: return a commit using the RSA fingerprint of the
+/** Helper function: return a commit using the RSA fingerprint of the
  * authority or NULL if no such commit is known. */
 static sr_commit_t *
 state_query_get_commit(const char *rsa_fpr)
@@ -840,7 +815,7 @@ state_query_get_commit(const char *rsa_fpr)
   return digestmap_get(sr_state->commits, rsa_fpr);
 }
 
-/* Helper function: This handles the GET state action using an
+/** Helper function: This handles the GET state action using an
  * <b>obj_type</b> and <b>data</b> needed for the action. */
 static void *
 state_query_get_(sr_state_object_t obj_type, const void *data)
@@ -875,7 +850,7 @@ state_query_get_(sr_state_object_t obj_type, const void *data)
   return obj;
 }
 
-/* Helper function: This handles the PUT state action using an
+/** Helper function: This handles the PUT state action using an
  * <b>obj_type</b> and <b>data</b> needed for the action.
  * PUT frees the previous data before replacing it, if needed. */
 static void
@@ -928,7 +903,7 @@ state_query_put_(sr_state_object_t obj_type, void *data)
   }
 }
 
-/* Helper function: This handles the DEL_ALL state action using an
+/** Helper function: This handles the DEL_ALL state action using an
  * <b>obj_type</b> and <b>data</b> needed for the action. */
 static void
 state_query_del_all_(sr_state_object_t obj_type)
@@ -957,7 +932,7 @@ state_query_del_all_(sr_state_object_t obj_type)
   }
 }
 
-/* Helper function: This handles the DEL state action using an
+/** Helper function: This handles the DEL state action using an
  * <b>obj_type</b> and <b>data</b> needed for the action. */
 static void
 state_query_del_(sr_state_object_t obj_type, void *data)
@@ -983,7 +958,7 @@ state_query_del_(sr_state_object_t obj_type, void *data)
   }
 }
 
-/* Query state using an <b>action</b> for an object type <b>obj_type</b>.
+/** Query state using an <b>action</b> for an object type <b>obj_type</b>.
  * The <b>data</b> pointer needs to point to an object that the action needs
  * to use and if anything is required to be returned, it is stored in
  * <b>out</b>.
@@ -1025,7 +1000,7 @@ state_query(sr_state_action_t action, sr_state_object_t obj_type,
   }
 }
 
-/* Delete the current SRV value from the state freeing it and the value is set
+/** Delete the current SRV value from the state freeing it and the value is set
  * to NULL meaning empty. */
 STATIC void
 state_del_current_srv(void)
@@ -1033,7 +1008,7 @@ state_del_current_srv(void)
   state_query(SR_STATE_ACTION_DEL, SR_STATE_OBJ_CURSRV, NULL, NULL);
 }
 
-/* Delete the previous SRV value from the state freeing it and the value is
+/** Delete the previous SRV value from the state freeing it and the value is
  * set to NULL meaning empty. */
 STATIC void
 state_del_previous_srv(void)
@@ -1041,7 +1016,7 @@ state_del_previous_srv(void)
   state_query(SR_STATE_ACTION_DEL, SR_STATE_OBJ_PREVSRV, NULL, NULL);
 }
 
-/* Rotate SRV value by setting the previous SRV to the current SRV, and
+/** Rotate SRV value by setting the previous SRV to the current SRV, and
  * clearing the current SRV. */
 STATIC void
 state_rotate_srv(void)
@@ -1054,7 +1029,7 @@ state_rotate_srv(void)
   sr_state_set_current_srv(NULL);
 }
 
-/* Set valid after time in the our state. */
+/** Set valid after time in the our state. */
 void
 sr_state_set_valid_after(time_t valid_after)
 {
@@ -1062,16 +1037,17 @@ sr_state_set_valid_after(time_t valid_after)
               (void *) &valid_after, NULL);
 }
 
-/* Return the phase we are currently in according to our state. */
+/** Return the phase we are currently in according to our state. */
 sr_phase_t
 sr_state_get_phase(void)
 {
-  void *ptr;
+  void *ptr=NULL;
   state_query(SR_STATE_ACTION_GET, SR_STATE_OBJ_PHASE, NULL, &ptr);
+  tor_assert(ptr);
   return *(sr_phase_t *) ptr;
 }
 
-/* Return the previous SRV value from our state. Value CAN be NULL.
+/** Return the previous SRV value from our state. Value CAN be NULL.
  * The state object owns the SRV, so the calling code should not free the SRV.
  * Use sr_srv_dup() if you want to keep a copy of the SRV. */
 const sr_srv_t *
@@ -1083,7 +1059,7 @@ sr_state_get_previous_srv(void)
   return srv;
 }
 
-/* Set the current SRV value from our state. Value CAN be NULL. The srv
+/** Set the current SRV value from our state. Value CAN be NULL. The srv
  * object ownership is transferred to the state object. */
 void
 sr_state_set_previous_srv(const sr_srv_t *srv)
@@ -1092,7 +1068,7 @@ sr_state_set_previous_srv(const sr_srv_t *srv)
               NULL);
 }
 
-/* Return the current SRV value from our state. Value CAN be NULL.
+/** Return the current SRV value from our state. Value CAN be NULL.
  * The state object owns the SRV, so the calling code should not free the SRV.
  * Use sr_srv_dup() if you want to keep a copy of the SRV. */
 const sr_srv_t *
@@ -1104,7 +1080,7 @@ sr_state_get_current_srv(void)
   return srv;
 }
 
-/* Set the current SRV value from our state. Value CAN be NULL. The srv
+/** Set the current SRV value from our state. Value CAN be NULL. The srv
  * object ownership is transferred to the state object. */
 void
 sr_state_set_current_srv(const sr_srv_t *srv)
@@ -1113,7 +1089,7 @@ sr_state_set_current_srv(const sr_srv_t *srv)
               NULL);
 }
 
-/* Clean all the SRVs in our state. */
+/** Clean all the SRVs in our state. */
 void
 sr_state_clean_srvs(void)
 {
@@ -1122,7 +1098,7 @@ sr_state_clean_srvs(void)
   state_del_current_srv();
 }
 
-/* Return a pointer to the commits map from our state. CANNOT be NULL. */
+/** Return a pointer to the commits map from our state. CANNOT be NULL. */
 digestmap_t *
 sr_state_get_commits(void)
 {
@@ -1133,7 +1109,7 @@ sr_state_get_commits(void)
   return commits;
 }
 
-/* Update the current SR state as needed for the upcoming voting round at
+/** Update the current SR state as needed for the upcoming voting round at
  * <b>valid_after</b>. */
 void
 sr_state_update(time_t valid_after)
@@ -1197,7 +1173,7 @@ sr_state_update(time_t valid_after)
   }
 }
 
-/* Return commit object from the given authority digest <b>rsa_identity</b>.
+/** Return commit object from the given authority digest <b>rsa_identity</b>.
  * Return NULL if not found. */
 sr_commit_t *
 sr_state_get_commit(const char *rsa_identity)
@@ -1211,7 +1187,7 @@ sr_state_get_commit(const char *rsa_identity)
   return commit;
 }
 
-/* Add <b>commit</b> to the permanent state. The commit object ownership is
+/** Add <b>commit</b> to the permanent state. The commit object ownership is
  * transferred to the state so the caller MUST not free it. */
 void
 sr_state_add_commit(sr_commit_t *commit)
@@ -1226,14 +1202,14 @@ sr_state_add_commit(sr_commit_t *commit)
             sr_commit_get_rsa_fpr(commit));
 }
 
-/* Remove all commits from our state. */
+/** Remove all commits from our state. */
 void
 sr_state_delete_commits(void)
 {
   state_query(SR_STATE_ACTION_DEL_ALL, SR_STATE_OBJ_COMMIT, NULL, NULL);
 }
 
-/* Copy the reveal information from <b>commit</b> into <b>saved_commit</b>.
+/** Copy the reveal information from <b>commit</b> into <b>saved_commit</b>.
  * This <b>saved_commit</b> MUST come from our current SR state. Once modified,
  * the disk state is updated. */
 void
@@ -1254,7 +1230,7 @@ sr_state_copy_reveal_info(sr_commit_t *saved_commit, const sr_commit_t *commit)
             sr_commit_get_rsa_fpr(saved_commit));
 }
 
-/* Set the fresh SRV flag from our state. This doesn't need to trigger a
+/** Set the fresh SRV flag from our state. This doesn't need to trigger a
  * disk state synchronization so we directly change the state. */
 void
 sr_state_set_fresh_srv(void)
@@ -1262,7 +1238,7 @@ sr_state_set_fresh_srv(void)
   sr_state->is_srv_fresh = 1;
 }
 
-/* Unset the fresh SRV flag from our state. This doesn't need to trigger a
+/** Unset the fresh SRV flag from our state. This doesn't need to trigger a
  * disk state synchronization so we directly change the state. */
 void
 sr_state_unset_fresh_srv(void)
@@ -1270,14 +1246,14 @@ sr_state_unset_fresh_srv(void)
   sr_state->is_srv_fresh = 0;
 }
 
-/* Return the value of the fresh SRV flag. */
+/** Return the value of the fresh SRV flag. */
 unsigned int
 sr_state_srv_is_fresh(void)
 {
   return sr_state->is_srv_fresh;
 }
 
-/* Cleanup and free our disk and memory state. */
+/** Cleanup and free our disk and memory state. */
 void
 sr_state_free_all(void)
 {
@@ -1289,7 +1265,7 @@ sr_state_free_all(void)
   config_mgr_free(shared_random_state_mgr);
 }
 
-/* Save our current state in memory to disk. */
+/** Save our current state in memory to disk. */
 void
 sr_state_save(void)
 {
@@ -1297,7 +1273,7 @@ sr_state_save(void)
   state_query(SR_STATE_ACTION_SAVE, 0, NULL, NULL);
 }
 
-/* Return 1 iff the state has been initialized that is it exists in memory.
+/** Return 1 iff the state has been initialized that is it exists in memory.
  * Return 0 otherwise. */
 int
 sr_state_is_initialized(void)
@@ -1305,7 +1281,7 @@ sr_state_is_initialized(void)
   return sr_state == NULL ? 0 : 1;
 }
 
-/* Initialize the disk and memory state.
+/** Initialize the disk and memory state.
  *
  * If save_to_disk is set to 1, the state is immediately saved to disk after
  * creation else it's not thus only kept in memory.
@@ -1357,7 +1333,7 @@ sr_state_init(int save_to_disk, int read_from_disk)
   /* We have a state in memory, let's make sure it's updated for the current
    * and next voting round. */
   {
-    time_t valid_after = voting_schedule_get_next_valid_after_time();
+    time_t valid_after = dirauth_sched_get_next_valid_after_time();
     sr_state_update(valid_after);
   }
   return 0;
@@ -1368,7 +1344,7 @@ sr_state_init(int save_to_disk, int read_from_disk)
 
 #ifdef TOR_UNIT_TESTS
 
-/* Set the current phase of the protocol. Used only by unit tests. */
+/** Set the current phase of the protocol. Used only by unit tests. */
 void
 set_sr_phase(sr_phase_t phase)
 {
@@ -1377,7 +1353,7 @@ set_sr_phase(sr_phase_t phase)
   sr_state->phase = phase;
 }
 
-/* Get the SR state. Used only by unit tests */
+/** Get the SR state. Used only by unit tests */
 sr_state_t *
 get_sr_state(void)
 {

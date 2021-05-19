@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define ADDRESSMAP_PRIVATE
@@ -52,6 +52,7 @@ test_addr_basic(void *arg)
   ;
 }
 
+#ifndef COCCI
 #define test_op_ip6_(a,op,b,e1,e2)                               \
   STMT_BEGIN                                                     \
   tt_assert_test_fmt_type(a,b,e1" "#op" "e2,struct in6_addr*,    \
@@ -69,6 +70,7 @@ test_addr_basic(void *arg)
     TT_EXIT_TEST_FUNCTION                                        \
   );                                                             \
   STMT_END
+#endif /* !defined(COCCI) */
 
 /** Helper: Assert that two strings both decode as IPv6 addresses with
  * tor_inet_pton(), and both decode to the same address. */
@@ -108,9 +110,10 @@ test_addr_basic(void *arg)
     tt_int_op(tor_inet_pton(AF_INET6, a, &t1.addr.in6_addr), OP_EQ, 1); \
     t1.family = AF_INET6;                                      \
     if (tor_addr_is_internal(&t1, for_listening))              \
-      TT_DIE(("%s was not internal", a));                      \
+      TT_DIE(("%s was internal", a));                      \
   STMT_END
 
+#ifndef COCCI
 /** Helper: Assert that <b>a</b> and <b>b</b>, when parsed by
  * tor_inet_pton(), give addresses that compare in the order defined by
  * <b>op</b> with tor_addr_compare(). */
@@ -135,6 +138,7 @@ test_addr_basic(void *arg)
       TT_DIE(("Failed: tor_addr_compare_masked(%s,%s,%d) %s 0", \
               a, b, m, #op));                                   \
   STMT_END
+#endif /* !defined(COCCI) */
 
 /** Helper: assert that <b>xx</b> is parseable as a masked IPv6 address with
  * ports by tor_parse_mask_addr_ports(), with family <b>f</b>, IP address
@@ -337,6 +341,7 @@ test_addr_ip6_helpers(void *arg)
   test_pton6_bad("0XYXXY");
   test_pton6_bad("0x");
   test_pton6_bad("0X");
+  test_pton6_bad("2000::1a00::1000:fc098");
 
   /* test internal checking */
   test_external_ip("fbff:ffff::2:7", 0);
@@ -655,12 +660,7 @@ test_addr_ip6_helpers(void *arg)
   tt_int_op(tor_addr_family(&t1),OP_EQ,AF_INET);
   tt_int_op(tor_addr_to_ipv4h(&t1),OP_EQ,0x01010202);
   r=tor_addr_parse_mask_ports("3.4.16.032:1-2",0,&t1, &mask, &port1, &port2);
-  tt_int_op(r, OP_EQ, AF_INET);
-  tt_int_op(mask,OP_EQ,32);
-  tt_int_op(tor_addr_family(&t1),OP_EQ,AF_INET);
-  tt_int_op(tor_addr_to_ipv4h(&t1),OP_EQ,0x03041020);
-  tt_uint_op(port1, OP_EQ, 1);
-  tt_uint_op(port2, OP_EQ, 2);
+  tt_int_op(r, OP_EQ, -1);
   r=tor_addr_parse_mask_ports("1.1.2.3/255.255.128.0",0,&t1, &mask,NULL,NULL);
   tt_int_op(r, OP_EQ, AF_INET);
   tt_int_op(mask,OP_EQ,17);
@@ -1649,8 +1649,163 @@ test_addr_rfc6598(void *arg)
   ;
 }
 
+#define TEST_ADDR_ATON(a, rv) STMT_BEGIN \
+    struct in_addr addr; \
+    tt_int_op(tor_inet_aton(a, &addr), OP_EQ, rv); \
+  STMT_END;
+
+static void
+test_addr_octal(void *arg)
+{
+  (void)arg;
+
+  /* Test non-octal IP addresses. */
+  TEST_ADDR_ATON("0.1.2.3", 1);
+  TEST_ADDR_ATON("1.0.2.3", 1);
+  TEST_ADDR_ATON("1.2.3.0", 1);
+
+  /* Test octal IP addresses. */
+  TEST_ADDR_ATON("01.1.2.3", 0);
+  TEST_ADDR_ATON("1.02.3.4", 0);
+  TEST_ADDR_ATON("1.2.3.04", 0);
+ done:
+  ;
+}
+
+#define get_ipv4(test_addr, str, iprv) STMT_BEGIN               \
+    test_addr = tor_malloc(sizeof(tor_addr_t));                 \
+    test_addr->family = AF_INET;                                \
+    iprv = tor_inet_aton(str, &test_addr->addr.in_addr);        \
+    tor_assert(iprv);                                           \
+  STMT_END;
+
+#define get_ipv6(test_addr, str, iprv) STMT_BEGIN                       \
+    test_addr = tor_malloc(sizeof(tor_addr_t));                         \
+    test_addr->family = AF_INET6;                                       \
+    iprv = tor_inet_pton(AF_INET6, str, &test_addr->addr.in6_addr);     \
+    tor_assert(iprv);                                                   \
+  STMT_END;
+
+#define get_af_unix(test_addr) STMT_BEGIN                       \
+    test_addr = tor_malloc_zero(sizeof(tor_addr_t));            \
+    test_addr->family = AF_UNIX;                                \
+  STMT_END;
+
+#define get_af_unspec(test_addr) STMT_BEGIN                     \
+    test_addr = tor_malloc_zero(sizeof(tor_addr_t));            \
+    test_addr->family = AF_UNSPEC;                              \
+  STMT_END;
+
+#define TEST_ADDR_VALIDITY(a, lis, rv) STMT_BEGIN               \
+    tor_assert(a);                                              \
+    tt_int_op(tor_addr_is_valid(a, lis), OP_EQ, rv);            \
+  STMT_END;
+
+/* Here we can change the addresses we are testing for. */
+#define IP4_TEST_ADDR "123.98.45.1"
+#define IP6_TEST_ADDR "2001:0DB8:AC10:FE01::"
+
+static void
+test_addr_is_valid(void *arg)
+{
+  (void)arg;
+  tor_addr_t *test_addr;
+  int iprv;
+
+  /* Tests for IPv4 addresses. */
+
+  /* Test for null IPv4 address. */
+  get_ipv4(test_addr, "0.0.0.0", iprv);
+  TEST_ADDR_VALIDITY(test_addr, 0, 0);
+  TEST_ADDR_VALIDITY(test_addr, 1, 1);
+  tor_free(test_addr);
+
+  /* Test for non-null IPv4 address. */
+  get_ipv4(test_addr, IP4_TEST_ADDR, iprv);
+  TEST_ADDR_VALIDITY(test_addr, 0, 1);
+  TEST_ADDR_VALIDITY(test_addr, 1, 1);
+  tor_free(test_addr);
+
+  /* Tests for IPv6 addresses. */
+
+  /* Test for null IPv6 address. */
+  get_ipv6(test_addr, "::", iprv);
+  TEST_ADDR_VALIDITY(test_addr, 0, 0);
+  TEST_ADDR_VALIDITY(test_addr, 1, 1);
+  tor_free(test_addr);
+
+  /* Test for non-null IPv6 address. */
+  get_ipv6(test_addr, IP6_TEST_ADDR, iprv);
+  TEST_ADDR_VALIDITY(test_addr, 0, 1);
+  TEST_ADDR_VALIDITY(test_addr, 1, 1);
+  tor_free(test_addr);
+
+  /* Test for address of type AF_UNIX. */
+
+  get_af_unix(test_addr);
+  TEST_ADDR_VALIDITY(test_addr, 0, 0);
+  TEST_ADDR_VALIDITY(test_addr, 1, 0);
+  tor_free(test_addr);
+
+  /* Test for address of type AF_UNSPEC. */
+
+  get_af_unspec(test_addr);
+  TEST_ADDR_VALIDITY(test_addr, 0, 0);
+  TEST_ADDR_VALIDITY(test_addr, 1, 0);
+
+ done:
+  tor_free(test_addr);
+}
+
+#define TEST_ADDR_IS_NULL(a, rv) STMT_BEGIN                 \
+    tor_assert(a);                                          \
+    tt_int_op(tor_addr_is_null(a), OP_EQ, rv);              \
+  STMT_END;
+
+static void
+test_addr_is_null(void *arg)
+{
+  (void)arg;
+  tor_addr_t *test_addr;
+  int iprv;
+
+  /* Test for null IPv4. */
+  get_ipv4(test_addr, "0.0.0.0", iprv);
+  TEST_ADDR_IS_NULL(test_addr, 1);
+  tor_free(test_addr);
+
+  /* Test for non-null IPv4. */
+  get_ipv4(test_addr, IP4_TEST_ADDR, iprv);
+  TEST_ADDR_IS_NULL(test_addr, 0);
+  tor_free(test_addr);
+
+  /* Test for null IPv6. */
+  get_ipv6(test_addr, "::", iprv);
+  TEST_ADDR_IS_NULL(test_addr, 1);
+  tor_free(test_addr);
+
+  /* Test for non-null IPv6. */
+  get_ipv6(test_addr, IP6_TEST_ADDR, iprv);
+  TEST_ADDR_IS_NULL(test_addr, 0);
+  tor_free(test_addr);
+
+  /* Test for address family AF_UNIX. */
+  get_af_unix(test_addr);
+  TEST_ADDR_IS_NULL(test_addr, 1);
+  tor_free(test_addr);
+
+  /* Test for address family AF_UNSPEC. */
+  get_af_unspec(test_addr);
+  TEST_ADDR_IS_NULL(test_addr, 1);
+
+ done:
+  tor_free(test_addr);
+}
+
+#ifndef COCCI
 #define ADDR_LEGACY(name)                                               \
   { #name, test_addr_ ## name , 0, NULL, NULL }
+#endif
 
 struct testcase_t addr_tests[] = {
   ADDR_LEGACY(basic),
@@ -1665,5 +1820,8 @@ struct testcase_t addr_tests[] = {
   { "is_loopback", test_addr_is_loopback, 0, NULL, NULL },
   { "make_null", test_addr_make_null, 0, NULL, NULL },
   { "rfc6598", test_addr_rfc6598, 0, NULL, NULL },
+  { "octal", test_addr_octal, 0, NULL, NULL },
+  { "address_validity", test_addr_is_valid, 0, NULL, NULL },
+  { "address_is_null", test_addr_is_null, 0, NULL, NULL },
   END_OF_TESTCASES
 };

@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2019, The Tor Project, Inc. */
+/* Copyright (c) 2012-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -33,7 +33,7 @@ int a_tangled_web(int x) NOINLINE;
 int we_weave(int x) NOINLINE;
 
 #ifdef HAVE_CFLAG_WNULL_DEREFERENCE
-DISABLE_GCC_WARNING(null-dereference)
+DISABLE_GCC_WARNING("-Wnull-dereference")
 #endif
 int
 crash(int x)
@@ -55,7 +55,7 @@ crash(int x)
   return crashtype;
 }
 #ifdef HAVE_CFLAG_WNULL_DEREFERENCE
-ENABLE_GCC_WARNING(null-dereference)
+ENABLE_GCC_WARNING("-Wnull-dereference")
 #endif
 
 int

@@ -1,0 +1,45 @@
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+LIBTOR_APP_A_SOURCES += 				\
+	src/feature/hs/hs_cache.c		\
+	src/feature/hs/hs_cell.c		\
+	src/feature/hs/hs_circuit.c		\
+	src/feature/hs/hs_circuitmap.c		\
+	src/feature/hs/hs_client.c		\
+	src/feature/hs/hs_common.c		\
+	src/feature/hs/hs_config.c		\
+	src/feature/hs/hs_control.c		\
+	src/feature/hs/hs_descriptor.c		\
+	src/feature/hs/hs_dos.c			\
+	src/feature/hs/hs_ident.c		\
+	src/feature/hs/hs_intropoint.c		\
+	src/feature/hs/hs_metrics.c			\
+	src/feature/hs/hs_ob.c			\
+	src/feature/hs/hs_service.c		\
+	src/feature/hs/hs_stats.c		\
+	src/feature/hs/hs_sys.c		\
+	src/feature/hs/hs_metrics_entry.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/feature/hs/hs_cache.h			\
+	src/feature/hs/hs_cell.h			\
+	src/feature/hs/hs_circuit.h			\
+	src/feature/hs/hs_circuitmap.h			\
+	src/feature/hs/hs_client.h			\
+	src/feature/hs/hs_common.h			\
+	src/feature/hs/hs_config.h			\
+	src/feature/hs/hs_control.h			\
+	src/feature/hs/hs_descriptor.h			\
+	src/feature/hs/hs_dos.h				\
+	src/feature/hs/hs_ident.h			\
+	src/feature/hs/hs_intropoint.h			\
+	src/feature/hs/hs_metrics.h				\
+	src/feature/hs/hs_ob.h				\
+	src/feature/hs/hs_opts_st.h			\
+	src/feature/hs/hs_options.inc			\
+	src/feature/hs/hs_service.h			\
+	src/feature/hs/hs_stats.h			\
+	src/feature/hs/hsdir_index_st.h			\
+	src/feature/hs/hs_sys.h			\
+	src/feature/hs/hs_metrics_entry.h

@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2019, The Tor Project, Inc. */
+/* Copyright (c) 2010-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -20,8 +20,6 @@
 
 #include "test/rend_test_helpers.h"
 #include "test/log_test_helpers.h"
-
-#define NS_MODULE rend_cache
 
 static const int RECENT_TIME = -10;
 static const int TIME_IN_THE_PAST = -(REND_CACHE_MAX_AGE + \
@@ -369,13 +367,12 @@ test_rend_cache_store_v2_desc_as_client_with_different_time(void *data)
   rend_data_free(mock_rend_query);
 }
 
-#define NS_SUBMODULE lookup_v2_desc_as_dir
-NS_DECL(const routerinfo_t *, router_get_my_routerinfo, (void));
+static const routerinfo_t *rcache_lookup_v2_as_dir_get_my_routerinfo(void);
 
 static routerinfo_t *mock_routerinfo;
 
 static const routerinfo_t *
-NS(router_get_my_routerinfo)(void)
+rcache_lookup_v2_as_dir_get_my_routerinfo(void)
 {
   if (!mock_routerinfo) {
     mock_routerinfo = tor_malloc(sizeof(routerinfo_t));
@@ -395,7 +392,8 @@ test_rend_cache_lookup_v2_desc_as_dir(void *data)
 
   (void)data;
 
-  NS_MOCK(router_get_my_routerinfo);
+  MOCK(router_get_my_routerinfo,
+       rcache_lookup_v2_as_dir_get_my_routerinfo);
 
   rend_cache_init();
 
@@ -418,20 +416,17 @@ test_rend_cache_lookup_v2_desc_as_dir(void *data)
   tt_assert(ret_desc);
 
  done:
-  NS_UNMOCK(router_get_my_routerinfo);
+  UNMOCK(router_get_my_routerinfo);
   tor_free(mock_routerinfo);
   rend_cache_free_all();
   rend_encoded_v2_service_descriptor_free(desc_holder);
   tor_free(service_id);
 }
 
-#undef NS_SUBMODULE
-
-#define NS_SUBMODULE store_v2_desc_as_dir
-NS_DECL(const routerinfo_t *, router_get_my_routerinfo, (void));
+static const routerinfo_t *rcache_store_v2_as_dir_get_my_routerinfo(void);
 
 static const routerinfo_t *
-NS(router_get_my_routerinfo)(void)
+rcache_store_v2_as_dir_get_my_routerinfo(void)
 {
   return mock_routerinfo;
 }
@@ -444,7 +439,8 @@ test_rend_cache_store_v2_desc_as_dir(void *data)
   rend_encoded_v2_service_descriptor_t *desc_holder = NULL;
   char *service_id = NULL;
 
-  NS_MOCK(router_get_my_routerinfo);
+  MOCK(router_get_my_routerinfo,
+       rcache_store_v2_as_dir_get_my_routerinfo);
 
   rend_cache_init();
 
@@ -485,7 +481,7 @@ test_rend_cache_store_v2_desc_as_dir(void *data)
   tt_int_op(ret, OP_EQ, 0);
 
  done:
-  NS_UNMOCK(router_get_my_routerinfo);
+  UNMOCK(router_get_my_routerinfo);
   rend_encoded_v2_service_descriptor_free(desc_holder);
   tor_free(service_id);
   rend_cache_free_all();
@@ -505,7 +501,8 @@ test_rend_cache_store_v2_desc_as_dir_with_different_time(void *data)
   rend_encoded_v2_service_descriptor_t *desc_holder_newer;
   rend_encoded_v2_service_descriptor_t *desc_holder_older;
 
-  NS_MOCK(router_get_my_routerinfo);
+  MOCK(router_get_my_routerinfo,
+       rcache_store_v2_as_dir_get_my_routerinfo);
 
   rend_cache_init();
 
@@ -543,7 +540,7 @@ test_rend_cache_store_v2_desc_as_dir_with_different_time(void *data)
   tt_int_op(ret, OP_EQ, 0);
 
  done:
-  NS_UNMOCK(router_get_my_routerinfo);
+  UNMOCK(router_get_my_routerinfo);
   rend_cache_free_all();
   rend_service_descriptor_free(generated);
   tor_free(service_id);
@@ -568,7 +565,8 @@ test_rend_cache_store_v2_desc_as_dir_with_different_content(void *data)
   rend_encoded_v2_service_descriptor_t *desc_holder_one = NULL;
   rend_encoded_v2_service_descriptor_t *desc_holder_two = NULL;
 
-  NS_MOCK(router_get_my_routerinfo);
+  MOCK(router_get_my_routerinfo,
+       rcache_store_v2_as_dir_get_my_routerinfo);
 
   rend_cache_init();
 
@@ -602,7 +600,7 @@ test_rend_cache_store_v2_desc_as_dir_with_different_content(void *data)
   tt_int_op(ret, OP_EQ, 0);
 
  done:
-  NS_UNMOCK(router_get_my_routerinfo);
+  UNMOCK(router_get_my_routerinfo);
   rend_cache_free_all();
   rend_service_descriptor_free(generated);
   tor_free(service_id);
@@ -612,8 +610,6 @@ test_rend_cache_store_v2_desc_as_dir_with_different_content(void *data)
   rend_encoded_v2_service_descriptor_free(desc_holder_one);
   rend_encoded_v2_service_descriptor_free(desc_holder_two);
 }
-
-#undef NS_SUBMODULE
 
 static void
 test_rend_cache_init(void *data)
@@ -954,6 +950,7 @@ test_rend_cache_free_all(void *data)
   one->parsed = desc_one;
   desc_one->timestamp = time(NULL) + TIME_IN_THE_PAST;
   desc_one->pk = pk_generate(0);
+  rend_cache_increment_allocation(rend_cache_entry_allocation(one));
   strmap_set_lc(rend_cache, "foo1", one);
 
   rend_cache_free_all();
@@ -978,11 +975,13 @@ test_rend_cache_entry_free(void *data)
 
   // Handles NULL descriptor correctly
   e = tor_malloc_zero(sizeof(rend_cache_entry_t));
+  rend_cache_increment_allocation(rend_cache_entry_allocation(e));
   rend_cache_entry_free(e);
 
   // Handles non-NULL descriptor correctly
   e = tor_malloc_zero(sizeof(rend_cache_entry_t));
   e->desc = tor_malloc(10);
+  rend_cache_increment_allocation(rend_cache_entry_allocation(e));
   rend_cache_entry_free(e);
 
  /* done: */
@@ -1074,8 +1073,6 @@ test_rend_cache_intro_failure_note(void *data)
   rend_cache_free_all();
 }
 
-#define NS_SUBMODULE clean_v2_descs_as_dir
-
 static void
 test_rend_cache_clean_v2_descs_as_dir(void *data)
 {
@@ -1101,6 +1098,7 @@ test_rend_cache_clean_v2_descs_as_dir(void *data)
   desc->timestamp = now;
   desc->pk = pk_generate(0);
   e->parsed = desc;
+  rend_cache_increment_allocation(rend_cache_entry_allocation(e));
   digestmap_set(rend_cache_v2_dir, key, e);
 
   /* Set the cutoff to minus 10 seconds. */
@@ -1115,8 +1113,6 @@ test_rend_cache_clean_v2_descs_as_dir(void *data)
  done:
   rend_cache_free_all();
 }
-
-#undef NS_SUBMODULE
 
 static void
 test_rend_cache_entry_allocation(void *data)
@@ -1250,4 +1246,3 @@ struct testcase_t rend_cache_tests[] = {
     test_rend_cache_validate_intro_point_failure, 0, NULL, NULL },
   END_OF_TESTCASES
 };
-

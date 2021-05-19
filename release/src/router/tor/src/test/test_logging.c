@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2019, The Tor Project, Inc. */
+/* Copyright (c) 2013-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define CONFIG_PRIVATE
@@ -160,6 +160,7 @@ test_ratelim(void *arg)
   tor_free(msg);
 
   int i;
+  time_t first_suppressed_at = now + 60;
   for (i = 0; i < 9; ++i) {
     now += 60; /* one minute has passed. */
     msg = rate_limit_log(&ten_min, now);
@@ -167,12 +168,15 @@ test_ratelim(void *arg)
     tt_int_op(ten_min.last_allowed, OP_EQ, start);
     tt_int_op(ten_min.n_calls_since_last_time, OP_EQ, i + 1);
   }
+  tt_i64_op(ten_min.started_limiting, OP_EQ, first_suppressed_at);
 
   now += 240; /* Okay, we can be done. */
   msg = rate_limit_log(&ten_min, now);
   tt_ptr_op(msg, OP_NE, NULL);
   tt_str_op(msg, OP_EQ,
-            " [9 similar message(s) suppressed in last 600 seconds]");
+            " [9 similar message(s) suppressed in last 720 seconds]");
+  tt_i64_op(now, OP_EQ, first_suppressed_at + 720);
+
  done:
   tor_free(msg);
 }

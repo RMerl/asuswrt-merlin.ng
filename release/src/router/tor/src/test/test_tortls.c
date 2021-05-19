@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2019, The Tor Project, Inc. */
+/* Copyright (c) 2010-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define TORTLS_PRIVATE
@@ -104,6 +104,17 @@ const char* caCertString = "-----BEGIN CERTIFICATE-----\n"
   "u/8lAkbOy6B9xGmSvr0Kk1oq9P2NshA6kalxp1Oz/DTNDdL4AeBXV3JmM6WWCjGn\n"
   "Yy1RT69d0rwYc5u/vnqODz1IjvT90smsrkBumGt791FAFeg=\n"
   "-----END CERTIFICATE-----\n";
+
+static tor_x509_cert_t *fixed_x509_cert = NULL;
+static tor_x509_cert_t *
+get_peer_cert_mock_return_fixed(tor_tls_t *tls)
+{
+  (void)tls;
+  if (fixed_x509_cert)
+    return tor_x509_cert_dup(fixed_x509_cert);
+  else
+    return NULL;
+}
 
 tor_x509_cert_impl_t *
 read_cert_from(const char *str)
@@ -214,7 +225,7 @@ test_tortls_tor_tls_get_error(void *data)
 
  done:
   UNMOCK(tor_tls_cert_matches_key);
-  NS_UNMOCK(logv);
+  UNMOCK(logv);
   crypto_pk_free(key1);
   crypto_pk_free(key2);
   tor_tls_free(tls);
@@ -513,6 +524,67 @@ test_tortls_verify(void *ignored)
   crypto_pk_free(k);
 }
 
+static void
+test_tortls_cert_matches_key(void *ignored)
+{
+  (void)ignored;
+
+  tor_x509_cert_impl_t *cert1 = NULL,
+                       *cert2 = NULL,
+                       *cert3 = NULL,
+                       *cert4 = NULL;
+  tor_x509_cert_t *c1 = NULL, *c2 = NULL, *c3 = NULL, *c4 = NULL;
+  crypto_pk_t *k1 = NULL, *k2 = NULL, *k3 = NULL;
+
+  k1 = pk_generate(1);
+  k2 = pk_generate(2);
+  k3 = pk_generate(3);
+
+  cert1 = tor_tls_create_certificate(k1, k2, "A", "B", 1000);
+  cert2 = tor_tls_create_certificate(k1, k3, "C", "D", 1000);
+  cert3 = tor_tls_create_certificate(k2, k3, "C", "D", 1000);
+  cert4 = tor_tls_create_certificate(k3, k2, "E", "F", 1000);
+
+  tt_assert(cert1 && cert2 && cert3 && cert4);
+
+  c1 = tor_x509_cert_new(cert1); cert1 = NULL;
+  c2 = tor_x509_cert_new(cert2); cert2 = NULL;
+  c3 = tor_x509_cert_new(cert3); cert3 = NULL;
+  c4 = tor_x509_cert_new(cert4); cert4 = NULL;
+
+  tt_assert(c1 && c2 && c3 && c4);
+
+  MOCK(tor_tls_get_peer_cert, get_peer_cert_mock_return_fixed);
+
+  fixed_x509_cert = NULL;
+  /* If the peer has no certificate, it shouldn't match anything. */
+  tt_assert(! tor_tls_cert_matches_key(NULL, c1));
+  tt_assert(! tor_tls_cert_matches_key(NULL, c2));
+  tt_assert(! tor_tls_cert_matches_key(NULL, c3));
+  tt_assert(! tor_tls_cert_matches_key(NULL, c4));
+  fixed_x509_cert = c1;
+  /* If the peer has a certificate, it should match every cert with the same
+   * subject key. */
+  tt_assert(tor_tls_cert_matches_key(NULL, c1));
+  tt_assert(tor_tls_cert_matches_key(NULL, c2));
+  tt_assert(! tor_tls_cert_matches_key(NULL, c3));
+  tt_assert(! tor_tls_cert_matches_key(NULL, c4));
+
+ done:
+  tor_x509_cert_free(c1);
+  tor_x509_cert_free(c2);
+  tor_x509_cert_free(c3);
+  tor_x509_cert_free(c4);
+  if (cert1) tor_x509_cert_impl_free(cert1);
+  if (cert2) tor_x509_cert_impl_free(cert2);
+  if (cert3) tor_x509_cert_impl_free(cert3);
+  if (cert4) tor_x509_cert_impl_free(cert4);
+  crypto_pk_free(k1);
+  crypto_pk_free(k2);
+  crypto_pk_free(k3);
+  UNMOCK(tor_tls_get_peer_cert);
+}
+
 #define LOCAL_TEST_CASE(name, flags)                            \
   { #name, test_tortls_##name, (flags|TT_FORK), NULL, NULL }
 
@@ -533,5 +605,6 @@ struct testcase_t tortls_tests[] = {
   LOCAL_TEST_CASE(is_server, 0),
   LOCAL_TEST_CASE(bridge_init, TT_FORK),
   LOCAL_TEST_CASE(verify, TT_FORK),
+  LOCAL_TEST_CASE(cert_matches_key, 0),
   END_OF_TESTCASES
 };

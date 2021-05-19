@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -16,33 +16,33 @@
  * To enable a type to have handles, add a HANDLE_ENTRY() field in its
  * definition, as in:
  *
- *     struct walrus {
- *         HANDLE_ENTRY(wlr, walrus);
+ *     struct walrus_t {
+ *         HANDLE_ENTRY(wlr, walrus_t);
  *         // ...
  *     };
  *
- * And invoke HANDLE_DECL(wlr, walrus, [static]) to declare the handle
+ * And invoke HANDLE_DECL(wlr, walrus_t, [static]) to declare the handle
  * manipulation functions (typically in a header):
  *
  *     // opaque handle to walrus.
  *     typedef struct wlr_handle_t wlr_handle_t;
  *
  *     // make a new handle
- *     struct wlr_handle_t *wlr_handle_new(struct walrus *);
+ *     struct wlr_handle_t *wlr_handle_new(struct walrus_t *);
  *
  *     // release a handle
  *     void wlr_handle_free(wlr_handle_t *);
  *
  *     // return the pointed-to walrus, or NULL.
- *     struct walrus *wlr_handle_get(wlr_handle_t *).
+ *     struct walrus_t *wlr_handle_get(wlr_handle_t *).
  *
  *     // call this function when you're about to free the walrus;
  *     // it invalidates all handles. (IF YOU DON'T, YOU WILL HAVE
  *     // DANGLING REFERENCES)
- *     void wlr_handles_clear(struct walrus *);
+ *     void wlr_handles_clear(struct walrus_t *);
  *
  * Finally, use HANDLE_IMPL() to define the above functions in some
- * appropriate C file: HANDLE_IMPL(wlr, walrus, [static])
+ * appropriate C file: HANDLE_IMPL(wlr, walrus_t, [static])
  *
  **/
 
@@ -57,12 +57,13 @@
 #define HANDLE_ENTRY(name, structname)         \
   struct name ## _handle_head_t *handle_head
 
-#define HANDLE_DECL(name, structname, linkage)                          \
+#define HANDLE_DECL(name, structname_t, linkage)                        \
   typedef struct name ## _handle_t name ## _handle_t;                   \
-  linkage  name ## _handle_t *name ## _handle_new(struct structname *object); \
+  linkage name ## _handle_t *name ## _handle_new(                       \
+                                          struct structname_t *object); \
   linkage void name ## _handle_free_(name ## _handle_t *);              \
-  linkage struct structname *name ## _handle_get(name ## _handle_t *);  \
-  linkage void name ## _handles_clear(struct structname *object);
+  linkage struct structname_t *name ## _handle_get(name ## _handle_t *); \
+  linkage void name ## _handles_clear(struct structname_t *object);
 
 /*
  * Implementation notes: there are lots of possible implementations here.  We

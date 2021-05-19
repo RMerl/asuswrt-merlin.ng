@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -150,6 +150,9 @@ struct crypto_xof_t {
    */
   EVP_MD_CTX *ctx;
 #else /* !defined(OPENSSL_HAS_SHAKE3_EVP) */
+  /**
+   * State of the Keccak sponge for the SHAKE-256 computation.
+   **/
   keccak_state s;
 #endif /* defined(OPENSSL_HAS_SHAKE3_EVP) */
 };

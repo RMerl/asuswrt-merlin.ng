@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -27,10 +27,6 @@
  * allocated character buffer.  Use the same format as in network-status
  * documents.  If <b>version</b> is non-NULL, add a "v" line for the platform.
  *
- * consensus_method is the current consensus method when format is
- * NS_V3_CONSENSUS or NS_V3_CONSENSUS_MICRODESC. It is ignored for other
- * formats: pass ROUTERSTATUS_FORMAT_NO_CONSENSUS_METHOD.
- *
  * Return 0 on success, -1 on failure.
  *
  * The format argument has one of the following values:
@@ -47,7 +43,6 @@ char *
 routerstatus_format_entry(const routerstatus_t *rs, const char *version,
                           const char *protocols,
                           routerstatus_format_type_t format,
-                          int consensus_method,
                           const vote_routerstatus_t *vrs)
 {
   char *summary;
@@ -58,31 +53,29 @@ routerstatus_format_entry(const routerstatus_t *rs, const char *version,
   char digest64[BASE64_DIGEST_LEN+1];
   smartlist_t *chunks = smartlist_new();
 
+  const char *ip_str = fmt_addr(&rs->ipv4_addr);
+  if (ip_str[0] == '\0')
+    goto err;
+
   format_iso_time(published, rs->published_on);
   digest_to_base64(identity64, rs->identity_digest);
   digest_to_base64(digest64, rs->descriptor_digest);
 
   smartlist_add_asprintf(chunks,
-                   "r %s %s %s%s%s %s %d %d\n",
+                   "r %s %s %s%s%s %s %" PRIu16 " %" PRIu16 "\n",
                    rs->nickname,
                    identity64,
                    (format==NS_V3_CONSENSUS_MICRODESC)?"":digest64,
                    (format==NS_V3_CONSENSUS_MICRODESC)?"":" ",
                    published,
-                   fmt_addr32(rs->addr),
-                   (int)rs->or_port,
-                   (int)rs->dir_port);
+                   ip_str,
+                   rs->ipv4_orport,
+                   rs->ipv4_dirport);
 
   /* TODO: Maybe we want to pass in what we need to build the rest of
    * this here, instead of in the caller. Then we could use the
    * networkstatus_type_t values, with an additional control port value
    * added -MP */
-
-  /* V3 microdesc consensuses only have "a" lines in later consensus methods
-   */
-  if (format == NS_V3_CONSENSUS_MICRODESC &&
-      consensus_method < MIN_METHOD_FOR_A_LINES_IN_MICRODESC_CONSENSUS)
-    goto done;
 
   /* Possible "a" line. At most one for now. */
   if (!tor_addr_is_null(&rs->ipv6_addr)) {
@@ -124,6 +117,8 @@ routerstatus_format_entry(const routerstatus_t *rs, const char *version,
     if (format != NS_CONTROL_PORT) {
       /* Blow up more or less nicely if we didn't get anything or not the
        * thing we expected.
+       * This should be kept in sync with the function
+       * routerstatus_has_visibly_changed and the struct routerstatus_t
        */
       if (!desc) {
         char id[HEX_DIGEST_LEN+1];

@@ -1,0 +1,34 @@
+// Copyright (c) The Tor Project, Inc.
+// See LICENSE for licensing information
+// This is an asciidoc file used to generate the manpage/html reference.
+// Learn asciidoc on https://www.methods.co.nz/asciidoc/userguide.html
+:man source:   Tor
+:man manual:   Tor Manual
+tor-print-ed-signing-cert(1)
+============================
+Tor Project, Inc.
+
+NAME
+----
+tor-print-ed-signing-cert - print expiration date of ed25519 signing certificate
+
+SYNOPSIS
+--------
+**tor-print-ed-signing-cert** __<path to ed25519_signing_cert file>__
+
+DESCRIPTION
+-----------
+**tor-print-ed-signing-cert** is utility program for Tor relay operators to
+check expiration date of ed25519 signing certificate.
+
+Expiration date is printed in three formats:
+
+* Human-readable timestamp, localized to current timezone.
+* RFC 1123 timestamp (at GMT timezone).
+* Unix time value.
+
+SEE ALSO
+--------
+**tor**(1) +
+
+https://spec.torproject.org/cert-spec

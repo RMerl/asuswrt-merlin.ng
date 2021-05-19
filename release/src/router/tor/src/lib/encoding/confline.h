@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -50,6 +50,7 @@ const config_line_t *config_line_find(const config_line_t *lines,
                                       const char *key);
 const config_line_t *config_line_find_case(const config_line_t *lines,
                                            const char *key);
+config_line_t *config_lines_partition(config_line_t *inp, const char *header);
 int config_lines_eq(const config_line_t *a, const config_line_t *b);
 int config_count_key(const config_line_t *a, const char *key);
 void config_free_lines_(config_line_t *front);

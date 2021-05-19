@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2019, The Tor Project, Inc. */
+/* Copyright (c) 2014-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -6,8 +6,8 @@
 #include <math.h>
 
 #define SCHEDULER_KIST_PRIVATE
-#define TOR_CHANNEL_INTERNAL_
-#define CHANNEL_PRIVATE_
+#define CHANNEL_OBJECT_PRIVATE
+#define CHANNEL_FILE_PRIVATE
 #include "core/or/or.h"
 #include "app/config/config.h"
 #include "lib/evloop/compat_libevent.h"
@@ -15,7 +15,7 @@
 #include "core/or/channeltls.h"
 #include "core/mainloop/connection.h"
 #include "feature/nodelist/networkstatus.h"
-#define SCHEDULER_PRIVATE_
+#define SCHEDULER_PRIVATE
 #include "core/or/scheduler.h"
 
 /* Test suite stuff */
@@ -848,8 +848,8 @@ test_scheduler_initfree(void *arg)
 {
   (void)arg;
 
-  tt_ptr_op(channels_pending, ==, NULL);
-  tt_ptr_op(run_sched_ev, ==, NULL);
+  tt_ptr_op(channels_pending, OP_EQ, NULL);
+  tt_ptr_op(run_sched_ev, OP_EQ, NULL);
 
   MOCK(get_options, mock_get_options);
   set_scheduler_options(SCHEDULER_KIST);
@@ -858,17 +858,17 @@ test_scheduler_initfree(void *arg)
 
   scheduler_init();
 
-  tt_ptr_op(channels_pending, !=, NULL);
-  tt_ptr_op(run_sched_ev, !=, NULL);
+  tt_ptr_op(channels_pending, OP_NE, NULL);
+  tt_ptr_op(run_sched_ev, OP_NE, NULL);
   /* We have specified nothing in the torrc and there's no consensus so the
    * KIST scheduler is what should be in use */
-  tt_ptr_op(the_scheduler, ==, get_kist_scheduler());
-  tt_int_op(sched_run_interval, ==, 10);
+  tt_ptr_op(the_scheduler, OP_EQ, get_kist_scheduler());
+  tt_int_op(sched_run_interval, OP_EQ, 10);
 
   scheduler_free_all();
 
-  tt_ptr_op(channels_pending, ==, NULL);
-  tt_ptr_op(run_sched_ev, ==, NULL);
+  tt_ptr_op(channels_pending, OP_EQ, NULL);
+  tt_ptr_op(run_sched_ev, OP_EQ, NULL);
 
  done:
   UNMOCK(get_options);
@@ -890,11 +890,11 @@ test_scheduler_can_use_kist(void *arg)
   res_should = scheduler_can_use_kist();
   res_freq = kist_scheduler_run_interval();
 #ifdef HAVE_KIST_SUPPORT
-  tt_int_op(res_should, ==, 1);
+  tt_int_op(res_should, OP_EQ, 1);
 #else /* HAVE_KIST_SUPPORT */
-  tt_int_op(res_should, ==, 0);
+  tt_int_op(res_should, OP_EQ, 0);
 #endif /* HAVE_KIST_SUPPORT */
-  tt_int_op(res_freq, ==, 1234);
+  tt_int_op(res_freq, OP_EQ, 1234);
 
   /* Test defer to consensus, but no consensus available */
   clear_options();
@@ -902,11 +902,11 @@ test_scheduler_can_use_kist(void *arg)
   res_should = scheduler_can_use_kist();
   res_freq = kist_scheduler_run_interval();
 #ifdef HAVE_KIST_SUPPORT
-  tt_int_op(res_should, ==, 1);
+  tt_int_op(res_should, OP_EQ, 1);
 #else /* HAVE_KIST_SUPPORT */
-  tt_int_op(res_should, ==, 0);
+  tt_int_op(res_should, OP_EQ, 0);
 #endif /* HAVE_KIST_SUPPORT */
-  tt_int_op(res_freq, ==, 10);
+  tt_int_op(res_freq, OP_EQ, 10);
 
   /* Test defer to consensus, and kist consensus available */
   MOCK(networkstatus_get_param, mock_kist_networkstatus_get_param);
@@ -915,11 +915,11 @@ test_scheduler_can_use_kist(void *arg)
   res_should = scheduler_can_use_kist();
   res_freq = kist_scheduler_run_interval();
 #ifdef HAVE_KIST_SUPPORT
-  tt_int_op(res_should, ==, 1);
+  tt_int_op(res_should, OP_EQ, 1);
 #else /* HAVE_KIST_SUPPORT */
-  tt_int_op(res_should, ==, 0);
+  tt_int_op(res_should, OP_EQ, 0);
 #endif /* HAVE_KIST_SUPPORT */
-  tt_int_op(res_freq, ==, 12);
+  tt_int_op(res_freq, OP_EQ, 12);
   UNMOCK(networkstatus_get_param);
 
   /* Test defer to consensus, and vanilla consensus available */
@@ -928,8 +928,8 @@ test_scheduler_can_use_kist(void *arg)
   mocked_options.KISTSchedRunInterval = 0;
   res_should = scheduler_can_use_kist();
   res_freq = kist_scheduler_run_interval();
-  tt_int_op(res_should, ==, 0);
-  tt_int_op(res_freq, ==, 0);
+  tt_int_op(res_should, OP_EQ, 0);
+  tt_int_op(res_freq, OP_EQ, 0);
   UNMOCK(networkstatus_get_param);
 
  done:
@@ -956,7 +956,7 @@ test_scheduler_ns_changed(void *arg)
   set_scheduler_options(SCHEDULER_KIST);
   set_scheduler_options(SCHEDULER_VANILLA);
 
-  tt_ptr_op(the_scheduler, ==, NULL);
+  tt_ptr_op(the_scheduler, OP_EQ, NULL);
 
   /* Change from vanilla to kist via consensus */
   the_scheduler = get_vanilla_scheduler();
@@ -964,9 +964,9 @@ test_scheduler_ns_changed(void *arg)
   scheduler_notify_networkstatus_changed();
   UNMOCK(networkstatus_get_param);
 #ifdef HAVE_KIST_SUPPORT
-  tt_ptr_op(the_scheduler, ==, get_kist_scheduler());
+  tt_ptr_op(the_scheduler, OP_EQ, get_kist_scheduler());
 #else
-  tt_ptr_op(the_scheduler, ==, get_vanilla_scheduler());
+  tt_ptr_op(the_scheduler, OP_EQ, get_vanilla_scheduler());
 #endif
 
   /* Change from kist to vanilla via consensus */
@@ -974,7 +974,7 @@ test_scheduler_ns_changed(void *arg)
   MOCK(networkstatus_get_param, mock_vanilla_networkstatus_get_param);
   scheduler_notify_networkstatus_changed();
   UNMOCK(networkstatus_get_param);
-  tt_ptr_op(the_scheduler, ==, get_vanilla_scheduler());
+  tt_ptr_op(the_scheduler, OP_EQ, get_vanilla_scheduler());
 
   /* Doesn't change when using KIST */
   the_scheduler = get_kist_scheduler();
@@ -982,9 +982,9 @@ test_scheduler_ns_changed(void *arg)
   scheduler_notify_networkstatus_changed();
   UNMOCK(networkstatus_get_param);
 #ifdef HAVE_KIST_SUPPORT
-  tt_ptr_op(the_scheduler, ==, get_kist_scheduler());
+  tt_ptr_op(the_scheduler, OP_EQ, get_kist_scheduler());
 #else
-  tt_ptr_op(the_scheduler, ==, get_vanilla_scheduler());
+  tt_ptr_op(the_scheduler, OP_EQ, get_vanilla_scheduler());
 #endif
 
   /* Doesn't change when using vanilla */
@@ -992,7 +992,7 @@ test_scheduler_ns_changed(void *arg)
   MOCK(networkstatus_get_param, mock_vanilla_networkstatus_get_param);
   scheduler_notify_networkstatus_changed();
   UNMOCK(networkstatus_get_param);
-  tt_ptr_op(the_scheduler, ==, get_vanilla_scheduler());
+  tt_ptr_op(the_scheduler, OP_EQ, get_vanilla_scheduler());
 
  done:
   UNMOCK(get_options);

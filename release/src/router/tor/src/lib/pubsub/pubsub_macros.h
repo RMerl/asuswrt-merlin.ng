@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2018, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -135,7 +135,7 @@
 #include "lib/pubsub/pubsub_flags.h"
 #include "lib/pubsub/pubsub_publish.h"
 
-/* Implemenation notes:
+/* Implementation notes:
  *
  * For a messagename "foo", the DECLARE_MESSAGE*() macros must declare:
  *
@@ -163,7 +163,7 @@
  *      hookfn with the appropriate arguments.
  */
 
-/* Macro to declare common elements shared by DECLARE_MESSAGE and
+/** Macro to declare common elements shared by DECLARE_MESSAGE and
  * DECLARE_MESSAGE_INT.  Don't call this directly.
  *
  * Note that the "msg_arg_name" string constant is defined in each
@@ -288,7 +288,7 @@
   ( 0 ? (publish_fn__ ##messagename((msg_arg_type__##messagename)0), 1) \
     : 1)
 
-/*
+/**
  * This macro is for internal use.  It backs DISPATCH_ADD_PUB*()
  */
 #define DISPATCH_ADD_PUB_(connector, channel, messagename, flags)       \
@@ -322,7 +322,7 @@
 #define DISPATCH_ADD_PUB_EXCL(connector, channel, messagename)  \
     DISPATCH_ADD_PUB_(connector, channel, messagename, DISP_FLAG_EXCL)
 
-/*
+/**
  * This macro is for internal use. It backs DISPATCH_ADD_SUB*()
  */
 #define DISPATCH_ADD_SUB_(connector, channel, messagename, flags)       \
@@ -334,7 +334,7 @@
                     (flags),                                            \
                     __FILE__,                                           \
                     __LINE__)
-/*
+/**
  * Use a given connector and channel name to declare that this subsystem will
  * receive a given message type.
  *

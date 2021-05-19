@@ -1,8 +1,13 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file unparseable.c
+ * @brief Dump unparseable objects to disk.
+ **/
 
 #define UNPARSEABLE_PRIVATE
 
@@ -492,6 +497,15 @@ dump_desc,(const char *desc, const char *type))
 {
   tor_assert(desc);
   tor_assert(type);
+#ifndef TOR_UNIT_TESTS
+  /* For now, we are disabling this function, since it can be called with
+   * strings that are far too long.  We can turn it back on if we fix it
+   * someday, but we'd need to give it a length argument. A likelier
+   * resolution here is simply to remove this module entirely.  See tor#40286
+   * for background. */
+  if (1)
+    return;
+#endif
   size_t len;
   /* The SHA256 of the string */
   uint8_t digest_sha256[DIGEST256_LEN];

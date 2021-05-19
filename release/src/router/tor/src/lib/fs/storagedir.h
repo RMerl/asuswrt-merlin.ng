@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Tor Project, Inc. */
+/* Copyright (c) 2017-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -15,7 +15,7 @@
 
 typedef struct storage_dir_t storage_dir_t;
 struct config_line_t;
-struct sandbox_cfg_elem;
+struct sandbox_cfg_elem_t;
 struct tor_mmap_t;
 struct smartlist_t;
 
@@ -25,7 +25,7 @@ void storage_dir_free_(storage_dir_t *d);
   FREE_AND_NULL(storage_dir_t, storage_dir_free_, (d))
 
 int storage_dir_register_with_sandbox(storage_dir_t *d,
-                                      struct sandbox_cfg_elem **cfg);
+                                      struct sandbox_cfg_elem_t **cfg);
 const struct smartlist_t *storage_dir_list(storage_dir_t *d);
 uint64_t storage_dir_get_usage(storage_dir_t *d);
 struct tor_mmap_t *storage_dir_map(storage_dir_t *d, const char *fname);

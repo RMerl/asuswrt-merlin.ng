@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -25,8 +25,14 @@ int router_digest_is_fallback_dir(const char *digest);
 MOCK_DECL(dir_server_t *, trusteddirserver_get_by_v3_auth_digest,
           (const char *d));
 
-int router_digest_is_trusted_dir_type(const char *digest,
-                                      dirinfo_type_t type);
+MOCK_DECL(int, router_digest_is_trusted_dir_type,
+        (const char *digest, dirinfo_type_t type));
+
+bool router_addr_is_trusted_dir_type(const tor_addr_t *addr,
+                                     dirinfo_type_t type);
+#define router_addr_is_trusted_dir(d) \
+  router_addr_is_trusted_dir_type((d), NO_DIRINFO)
+
 #define router_digest_is_trusted_dir(d) \
   router_digest_is_trusted_dir_type((d), NO_DIRINFO)
 
@@ -43,5 +49,7 @@ void dir_server_add(dir_server_t *ent);
 
 void clear_dir_servers(void);
 void dirlist_free_all(void);
+
+MOCK_DECL(void, dirlist_add_trusted_dir_addresses, (void));
 
 #endif /* !defined(TOR_DIRLIST_H) */

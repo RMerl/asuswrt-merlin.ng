@@ -1,0 +1,14 @@
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+LIBTOR_APP_A_SOURCES += 			\
+	src/feature/dirclient/dirclient.c	\
+	src/feature/dirclient/dirclient_modes.c	\
+	src/feature/dirclient/dlstatus.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/feature/dirclient/dir_server_st.h		\
+	src/feature/dirclient/dirclient.h		\
+	src/feature/dirclient/dirclient_modes.h		\
+	src/feature/dirclient/dlstatus.h		\
+	src/feature/dirclient/download_status_st.h

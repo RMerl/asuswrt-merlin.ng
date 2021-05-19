@@ -1,6 +1,6 @@
 /* Copyright (c) 2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -694,7 +694,8 @@ subsys_compress_initialize(void)
 
 const subsys_fns_t sys_compress = {
   .name = "compress",
+  SUBSYS_DECLARE_LOCATION(),
   .supported = true,
-  .level = -70,
+  .level = -55,
   .initialize = subsys_compress_initialize,
 };

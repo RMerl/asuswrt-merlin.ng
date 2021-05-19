@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -11,6 +11,7 @@
 #include "lib/log/ratelim.h"
 #include "lib/malloc/malloc.h"
 #include "lib/string/printf.h"
+#include "lib/intmath/muldiv.h"
 
 /** If the rate-limiter <b>lim</b> is ready at <b>now</b>, return the number
  * of calls to rate_limit_is_ready (including this one!) since the last time
@@ -42,19 +43,24 @@ rate_limit_log(ratelim_t *lim, time_t now)
 {
   int n;
   if ((n = rate_limit_is_ready(lim, now))) {
+    time_t started_limiting = lim->started_limiting;
+    lim->started_limiting = 0;
     if (n == 1) {
       return tor_strdup("");
     } else {
       char *cp=NULL;
       const char *opt_over = (n >= RATELIM_TOOMANY) ? "over " : "";
-      /* XXXX this is not exactly correct: the messages could have occurred
-       * any time between the old value of lim->allowed and now. */
+      unsigned difference = (unsigned)(now - started_limiting);
+      difference = round_to_next_multiple_of(difference, 60);
       tor_asprintf(&cp,
                    " [%s%d similar message(s) suppressed in last %d seconds]",
-                   opt_over, n-1, lim->rate);
+                   opt_over, n-1, (int)difference);
       return cp;
     }
   } else {
+    if (lim->started_limiting == 0) {
+      lim->started_limiting = now;
+    }
     return NULL;
   }
 }

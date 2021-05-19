@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -14,6 +14,8 @@
 #include "orconfig.h"
 #include "lib/malloc/malloc.h"
 #include "lib/string/printf.h"
+
+#include <stdbool.h>
 
 /** Maximum number of bytes to write to a process' stdin. */
 #define PROCESS_MAX_WRITE (1024)
@@ -35,8 +37,8 @@ typedef enum {
 const char *process_status_to_string(process_status_t status);
 
 typedef enum {
-  /** Pass complete \n-terminated lines to the
-   *  callback (with the \n or \r\n removed). */
+  /** Pass complete newline-terminated lines to the
+   *  callback (with the LF or CRLF removed). */
   PROCESS_PROTOCOL_LINE,
 
   /** Pass the raw response from read() to the callback. */
@@ -127,18 +129,19 @@ void process_notify_event_exit(process_t *process,
                                process_exit_code_t);
 
 #ifdef PROCESS_PRIVATE
-MOCK_DECL(STATIC int, process_read_stdout, (process_t *, buf_t *));
-MOCK_DECL(STATIC int, process_read_stderr, (process_t *, buf_t *));
-MOCK_DECL(STATIC void, process_write_stdin, (process_t *, buf_t *));
+struct buf_t;
+MOCK_DECL(STATIC int, process_read_stdout, (process_t *, struct buf_t *));
+MOCK_DECL(STATIC int, process_read_stderr, (process_t *, struct buf_t *));
+MOCK_DECL(STATIC void, process_write_stdin, (process_t *, struct buf_t *));
 
 STATIC void process_read_data(process_t *process,
-                              buf_t *buffer,
+                              struct buf_t *buffer,
                               process_read_callback_t callback);
 STATIC void process_read_buffer(process_t *process,
-                                buf_t *buffer,
+                                struct buf_t *buffer,
                                 process_read_callback_t callback);
 STATIC void process_read_lines(process_t *process,
-                               buf_t *buffer,
+                               struct buf_t *buffer,
                                process_read_callback_t callback);
 #endif /* defined(PROCESS_PRIVATE) */
 

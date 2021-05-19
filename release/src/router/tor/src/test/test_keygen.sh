@@ -6,6 +6,20 @@
 umask 077
 set -e
 
+# emulate realpath(), in case coreutils or equivalent is not installed.
+abspath() {
+    f="$*"
+    if [ -d "$f" ]; then
+        dir="$f"
+        base=""
+    else
+        dir="$(dirname "$f")"
+        base="/$(basename "$f")"
+    fi
+    dir="$(cd "$dir" && pwd)"
+    echo "$dir$base"
+}
+
 if [ $# -eq 0 ] || [ ! -f "${1}" ] || [ ! -x "${1}" ]; then
   if [ "$TESTING_TOR_BINARY" = "" ] ; then
     echo "Usage: ${0} PATH_TO_TOR [case-number]"
@@ -21,14 +35,22 @@ if test "$UNAME_OS" = 'CYGWIN' || \
   exit 77
 fi
 
+# find the tor binary
 if [ $# -ge 1 ]; then
   TOR_BINARY="${1}"
   shift
 else
-  TOR_BINARY="${TESTING_TOR_BINARY}"
+  TOR_BINARY="${TESTING_TOR_BINARY:-./src/app/tor}"
 fi
 
+TOR_BINARY="$(abspath "$TOR_BINARY")"
 
+echo "TOR BINARY IS ${TOR_BINARY}"
+
+if "$TOR_BINARY" --list-modules | grep -q "relay: no"; then
+  echo "This test requires the relay module. Skipping." >&2
+  exit 77
+fi
 
   if [ $# -ge 1 ]; then
       dflt=0

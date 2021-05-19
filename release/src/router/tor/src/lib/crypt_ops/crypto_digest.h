@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -38,6 +38,9 @@
 /** Length of hex encoding of SHA512 digest, not including final NUL. */
 #define HEX_DIGEST512_LEN 128
 
+/**
+ * An identifier for a cryptographic digest algorithm.
+ **/
 typedef enum {
   DIGEST_SHA1 = 0,
   DIGEST_SHA256 = 1,
@@ -45,16 +48,31 @@ typedef enum {
   DIGEST_SHA3_256 = 3,
   DIGEST_SHA3_512 = 4,
 } digest_algorithm_t;
+/** Number of digest algorithms that we know */
 #define  N_DIGEST_ALGORITHMS (DIGEST_SHA3_512+1)
+/** Number of digest algorithms to compute when computing "all the
+ * commonly used digests."
+ *
+ * (This is used in common_digests_t and related functions.)
+ */
 #define  N_COMMON_DIGEST_ALGORITHMS (DIGEST_SHA256+1)
 
+/**
+ * Bytes of storage needed to record the state of an in-progress SHA-1 digest.
+ *
+ * This is a deliberate overestimate.
+ **/
 #define DIGEST_CHECKPOINT_BYTES (SIZEOF_VOID_P + 512)
+
 /** Structure used to temporarily save the a digest object. Only implemented
  * for SHA1 digest for now. */
 typedef struct crypto_digest_checkpoint_t {
 #ifdef ENABLE_NSS
+  /** The number of bytes used in <b>mem</b>. */
   unsigned int bytes_used;
 #endif
+  /** A buffer to store the SHA1 state. Its contents are unspecified, and
+   * are managed by the underlying crypto library.*/
   uint8_t mem[DIGEST_CHECKPOINT_BYTES];
 } crypto_digest_checkpoint_t;
 
@@ -67,10 +85,19 @@ typedef struct crypto_digest_checkpoint_t {
  * once.
  **/
 typedef struct {
+  /** An array of digest outputs, one for each "common" digest algorithm. */
   char d[N_COMMON_DIGEST_ALGORITHMS][DIGEST256_LEN];
 } common_digests_t;
 
+/**
+ * State for computing a digest over a stream of data.
+ **/
 typedef struct crypto_digest_t crypto_digest_t;
+
+/**
+ * State for computing an "extendable-output function" (like SHAKE) over a
+ * stream of data, and/or streaming the output.
+ **/
 typedef struct crypto_xof_t crypto_xof_t;
 
 struct smartlist_t;
@@ -97,6 +124,9 @@ crypto_digest_t *crypto_digest_new(void);
 crypto_digest_t *crypto_digest256_new(digest_algorithm_t algorithm);
 crypto_digest_t *crypto_digest512_new(digest_algorithm_t algorithm);
 void crypto_digest_free_(crypto_digest_t *digest);
+/**
+ * Release all storage held in <b>d</b>, and set it to NULL.
+ **/
 #define crypto_digest_free(d) \
   FREE_AND_NULL(crypto_digest_t, crypto_digest_free_, (d))
 void crypto_digest_add_bytes(crypto_digest_t *digest, const char *data,
@@ -122,6 +152,9 @@ crypto_xof_t *crypto_xof_new(void);
 void crypto_xof_add_bytes(crypto_xof_t *xof, const uint8_t *data, size_t len);
 void crypto_xof_squeeze_bytes(crypto_xof_t *xof, uint8_t *out, size_t len);
 void crypto_xof_free_(crypto_xof_t *xof);
+/**
+ * Release all storage held in <b>xof</b>, and set it to NULL.
+ **/
 #define crypto_xof_free(xof) \
   FREE_AND_NULL(crypto_xof_t, crypto_xof_free_, (xof))
 void crypto_xof(uint8_t *output, size_t output_len,

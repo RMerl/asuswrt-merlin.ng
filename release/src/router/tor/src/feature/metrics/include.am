@@ -1,0 +1,10 @@
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+LIBTOR_APP_A_SOURCES +=		\
+	src/feature/metrics/metrics.c		\
+	src/feature/metrics/metrics_sys.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=		\
+	src/feature/metrics/metrics.h		\
+	src/feature/metrics/metrics_sys.h

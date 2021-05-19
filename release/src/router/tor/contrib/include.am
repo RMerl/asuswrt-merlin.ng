@@ -2,8 +2,6 @@
 EXTRA_DIST+= \
 	contrib/README					\
 	contrib/client-tools/torify			\
-	contrib/dist/rc.subr				\
-	contrib/dist/tor.service.in			\
 	contrib/operator-tools/tor-exit-notice.html	\
 	contrib/or-tools/exitlist			\
 	contrib/win32build/tor-mingw.nsi.in		\

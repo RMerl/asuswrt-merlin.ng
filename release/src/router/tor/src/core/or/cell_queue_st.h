@@ -1,8 +1,13 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file cell_queue_st.h
+ * @brief Cell queue structures
+ **/
 
 #ifndef PACKED_CELL_ST_H
 #define PACKED_CELL_ST_H
@@ -22,7 +27,7 @@ struct packed_cell_t {
  * or_connection_t's outbuf. */
 struct cell_queue_t {
   /** Linked list of packed_cell_t*/
-  TOR_SIMPLEQ_HEAD(cell_simpleq, packed_cell_t) head;
+  TOR_SIMPLEQ_HEAD(cell_simpleq_t, packed_cell_t) head;
   int n; /**< The number of cells in the queue. */
 };
 

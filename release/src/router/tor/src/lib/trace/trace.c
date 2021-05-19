@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Tor Project, Inc. */
+/* Copyright (c) 2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -13,5 +13,11 @@
 /** Initialize the tracing library. */
 void
 tor_trace_init(void)
+{
+}
+
+/** Free all the tracing library. */
+void
+tor_trace_free_all(void)
 {
 }

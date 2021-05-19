@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -52,12 +52,9 @@ struct var_type_fns_t {
    * type.  On success, adjust the lvalue pointed to by <b>target</b> to hold
    * that value, and return 0.  On failure, set *<b>errmsg</b> to a newly
    * allocated string holding an error message, and return -1.
-   *
-   * If not NULL, <b>key</b> is the name of the option, which may be used for
-   * logging.
    **/
   int (*parse)(void *target, const char *value, char **errmsg,
-               const void *params, const char *key);
+               const void *params);
   /**
    * Try to parse a single line from the head of<b>line</b> that encodes
    * an object of this type.  On success and failure, behave as in the parse()

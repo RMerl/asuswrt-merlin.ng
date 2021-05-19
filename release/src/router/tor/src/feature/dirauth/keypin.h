@@ -1,5 +1,10 @@
-/* Copyright (c) 2014-2019, The Tor Project, Inc. */
+/* Copyright (c) 2014-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file keypin.h
+ * @brief Header for keypin.c
+ **/
 
 #ifndef TOR_KEYPIN_H
 #define TOR_KEYPIN_H
@@ -39,6 +44,8 @@ int keypin_check_lone_rsa(const uint8_t *rsa_id_digest);
 #define KEYPIN_NOT_FOUND -2
 
 #ifdef KEYPIN_PRIVATE
+
+#include "ext/ht.h"
 
 /**
  * In-memory representation of a key-pinning table entry.

@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson
- * Copyright (c) 2007-2019, The Tor Project, Inc.
+ * Copyright (c) 2007-2020, The Tor Project, Inc.
  */
 /* See LICENSE for licensing information */
 
@@ -45,8 +45,10 @@
 
 #define RESPONSE_LEN_4 8
 #define log_sock_error(act, _s)                                         \
-  STMT_BEGIN log_fn(LOG_ERR, LD_NET, "Error while %s: %s", act,         \
-              tor_socket_strerror(tor_socket_errno(_s))); STMT_END
+  STMT_BEGIN                                                            \
+    log_fn(LOG_ERR, LD_NET, "Error while %s: %s", act,                  \
+    tor_socket_strerror(tor_socket_errno(_s)));                         \
+  STMT_END
 
 static void usage(void) ATTR_NORETURN;
 
@@ -507,7 +509,7 @@ do_resolve(const char *hostname,
     } else if (atype == SOCKS5_ATYPE_IPV6) {
       /* IPv6 address */
       tor_addr_from_ipv6_bytes(result_addr,
-        (const char *)socks5_server_reply_getarray_bind_addr_ipv6(reply));
+        socks5_server_reply_getarray_bind_addr_ipv6(reply));
     } else if (atype == SOCKS5_ATYPE_HOSTNAME) {
       /* Domain name */
       domainname_t *dn =

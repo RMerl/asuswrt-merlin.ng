@@ -1,13 +1,19 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file dircache.c
+ * @brief Cache directories and serve them to clients.
+ **/
 
 #define DIRCACHE_PRIVATE
 
 #include "core/or/or.h"
 
 #include "app/config/config.h"
+#include "app/config/resolve_addr.h"
 #include "core/mainloop/connection.h"
 #include "core/or/relay.h"
 #include "feature/dirauth/dirvote.h"
@@ -23,6 +29,7 @@
 #include "feature/nodelist/authcert.h"
 #include "feature/nodelist/networkstatus.h"
 #include "feature/nodelist/routerlist.h"
+#include "feature/relay/relay_config.h"
 #include "feature/relay/routermode.h"
 #include "feature/rend/rendcache.h"
 #include "feature/stats/geoip_stats.h"
@@ -135,7 +142,7 @@ write_http_response_header_impl(dir_connection_t *conn, ssize_t length,
   if (type) {
     buf_add_printf(buf, "Content-Type: %s\r\n", type);
   }
-  if (!is_local_addr(&conn->base_.addr)) {
+  if (!is_local_to_resolve_addr(&conn->base_.addr)) {
     /* Don't report the source address for a nearby/private connection.
      * Otherwise we tend to mis-report in cases where incoming ports are
      * being forwarded to a Tor server running behind the firewall. */
@@ -328,7 +335,7 @@ typedef struct get_handler_args_t {
  * an arguments structure, and must return 0 on success or -1 if we should
  * close the connection.
  **/
-typedef struct url_table_ent_s {
+typedef struct url_table_ent_t {
   const char *string;
   int is_prefix;
   int (*handler)(dir_connection_t *conn, const get_handler_args_t *args);
@@ -473,7 +480,7 @@ static int
 handle_get_frontpage(dir_connection_t *conn, const get_handler_args_t *args)
 {
   (void) args; /* unused */
-  const char *frontpage = get_dirportfrontpage();
+  const char *frontpage = relay_get_dirportfrontpage();
 
   if (frontpage) {
     size_t dlen;
@@ -560,7 +567,7 @@ parse_one_diff_hash(uint8_t *digest, const char *hex, const char *location,
 }
 
 /** If there is an X-Or-Diff-From-Consensus header included in <b>headers</b>,
- * set <b>digest_out<b> to a new smartlist containing every 256-bit
+ * set <b>digest_out</b> to a new smartlist containing every 256-bit
  * hex-encoded digest listed in that header and return 0.  Otherwise return
  * -1.  */
 static int
@@ -728,7 +735,7 @@ digest_list_contains_best_consensus(consensus_flavor_t flavor,
 typedef struct {
   /** name of the flavor to retrieve. */
   char *flavor;
-  /** flavor to retrive, as enum. */
+  /** flavor to retrieve, as enum. */
   consensus_flavor_t flav;
   /** plus-separated list of authority fingerprints; see
    * client_likes_consensus(). Aliases the URL in the request passed to
@@ -951,7 +958,7 @@ handle_get_current_consensus(dir_connection_t *conn,
     goto done;
   }
 
-  if (global_write_bucket_low(TO_CONN(conn), size_guess, 2)) {
+  if (connection_dir_is_global_write_low(TO_CONN(conn), size_guess)) {
     log_debug(LD_DIRSERV,
               "Client asked for network status lists, but we've been "
               "writing too many bytes lately. Sending 503 Dir busy.");
@@ -1060,7 +1067,7 @@ handle_get_status_vote(dir_connection_t *conn, const get_handler_args_t *args)
         }
       });
 
-    if (global_write_bucket_low(TO_CONN(conn), estimated_len, 2)) {
+    if (connection_dir_is_global_write_low(TO_CONN(conn), estimated_len)) {
       write_short_http_response(conn, 503, "Directory busy, try again later");
       goto vote_done;
     }
@@ -1119,7 +1126,7 @@ handle_get_microdesc(dir_connection_t *conn, const get_handler_args_t *args)
       write_short_http_response(conn, 404, "Not found");
       goto done;
     }
-    if (global_write_bucket_low(TO_CONN(conn), size_guess, 2)) {
+    if (connection_dir_is_global_write_low(TO_CONN(conn), size_guess)) {
       log_info(LD_DIRSERV,
                "Client asked for server descriptors, but we've been "
                "writing too many bytes lately. Sending 503 Dir busy.");
@@ -1217,7 +1224,7 @@ handle_get_descriptor(dir_connection_t *conn, const get_handler_args_t *args)
         msg = "Not found";
       write_short_http_response(conn, 404, msg);
     } else {
-      if (global_write_bucket_low(TO_CONN(conn), size_guess, 2)) {
+      if (connection_dir_is_global_write_low(TO_CONN(conn), size_guess)) {
         log_info(LD_DIRSERV,
                  "Client asked for server descriptors, but we've been "
                  "writing too many bytes lately. Sending 503 Dir busy.");
@@ -1313,9 +1320,8 @@ handle_get_keys(dir_connection_t *conn, const get_handler_args_t *args)
     SMARTLIST_FOREACH(certs, authority_cert_t *, c,
                       len += c->cache_info.signed_descriptor_len);
 
-    if (global_write_bucket_low(TO_CONN(conn),
-                                compress_method != NO_METHOD ? len/2 : len,
-                                2)) {
+    if (connection_dir_is_global_write_low(TO_CONN(conn),
+                                compress_method != NO_METHOD ? len/2 : len)) {
       write_short_http_response(conn, 503, "Directory busy, try again later");
       goto keys_done;
     }
@@ -1379,7 +1385,7 @@ handle_get_hs_descriptor_v2(dir_connection_t *conn,
   return 0;
 }
 
-/** Helper function for GET /tor/hs/3/<z>. Only for version 3.
+/** Helper function for GET `/tor/hs/3/...`. Only for version 3.
  */
 STATIC int
 handle_get_hs_descriptor_v3(dir_connection_t *conn,
@@ -1608,7 +1614,8 @@ directory_handle_command_post,(dir_connection_t *conn, const char *headers,
 
   if (!public_server_mode(options)) {
     log_info(LD_DIR, "Rejected dir post request from %s "
-             "since we're not a public relay.", conn->base_.address);
+             "since we're not a public relay.",
+             connection_describe_peer(TO_CONN(conn)));
     write_short_http_response(conn, 503, "Not acting as a public relay");
     goto done;
   }
@@ -1624,7 +1631,8 @@ directory_handle_command_post,(dir_connection_t *conn, const char *headers,
       !strcmpstart(url,"/tor/rendezvous2/publish")) {
     if (rend_cache_store_v2_desc_as_dir(body) < 0) {
       log_warn(LD_REND, "Rejected v2 rend descriptor (body size %d) from %s.",
-               (int)body_len, conn->base_.address);
+               (int)body_len,
+               connection_describe_peer(TO_CONN(conn)));
       write_short_http_response(conn, 400,
                              "Invalid v2 service descriptor rejected");
     } else {
@@ -1667,6 +1675,15 @@ directory_handle_command_post,(dir_connection_t *conn, const char *headers,
     const char *msg = "[None]";
     uint8_t purpose = authdir_mode_bridge(options) ?
                       ROUTER_PURPOSE_BRIDGE : ROUTER_PURPOSE_GENERAL;
+
+    {
+      char *genreason = http_get_header(headers, "X-Desc-Gen-Reason: ");
+      log_info(LD_DIRSERV,
+               "New descriptor post, because: %s",
+               genreason ? genreason : "not specified");
+      tor_free(genreason);
+    }
+
     was_router_added_t r = dirserv_add_multiple_descriptors(body, body_len,
                                            purpose, conn->base_.address, &msg);
     tor_assert(msg);
@@ -1680,7 +1697,8 @@ directory_handle_command_post,(dir_connection_t *conn, const char *headers,
       log_info(LD_DIRSERV,
                "Rejected router descriptor or extra-info from %s "
                "(\"%s\").",
-               conn->base_.address, msg);
+               connection_describe_peer(TO_CONN(conn)),
+               msg);
       write_short_http_response(conn, 400, msg);
     }
     goto done;
@@ -1690,12 +1708,14 @@ directory_handle_command_post,(dir_connection_t *conn, const char *headers,
       !strcmp(url,"/tor/post/vote")) { /* v3 networkstatus vote */
     const char *msg = "OK";
     int status;
-    if (dirvote_add_vote(body, &msg, &status)) {
+    if (dirvote_add_vote(body, approx_time(), TO_CONN(conn)->address,
+                         &msg, &status)) {
       write_short_http_response(conn, status, "Vote stored");
     } else {
       tor_assert(msg);
       log_warn(LD_DIRSERV, "Rejected vote from %s (\"%s\").",
-               conn->base_.address, msg);
+               connection_describe_peer(TO_CONN(conn)),
+               msg);
       write_short_http_response(conn, status, msg);
     }
     goto done;
@@ -1708,7 +1728,8 @@ directory_handle_command_post,(dir_connection_t *conn, const char *headers,
       write_short_http_response(conn, 200, msg?msg:"Signatures stored");
     } else {
       log_warn(LD_DIR, "Unable to store signatures posted by %s: %s",
-               conn->base_.address, msg?msg:"???");
+               connection_describe_peer(TO_CONN(conn)),
+               msg?msg:"???");
       write_short_http_response(conn, 400,
                                 msg?msg:"Unable to store signatures");
     }
@@ -1769,8 +1790,8 @@ directory_handle_command(dir_connection_t *conn)
                               &body, &body_len, MAX_DIR_UL_SIZE, 0)) {
     case -1: /* overflow */
       log_warn(LD_DIRSERV,
-               "Request too large from address '%s' to DirPort. Closing.",
-               safe_str(conn->base_.address));
+               "Request too large from %s to DirPort. Closing.",
+               connection_describe_peer(TO_CONN(conn)));
       return -1;
     case 0:
       log_debug(LD_DIRSERV,"command not all here yet.");

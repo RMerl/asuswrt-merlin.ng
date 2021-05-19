@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -10,6 +10,7 @@
  **/
 
 #include "core/or/or.h"
+#include "core/or/extendinfo.h"
 #include "feature/dirparse/parsecommon.h"
 #include "feature/dirparse/sigcommon.h"
 #include "feature/rend/rendcommon.h"
@@ -428,7 +429,8 @@ rend_parse_introduction_points(rend_service_descriptor_t *parsed,
     }
     /* Allocate new intro point and extend info. */
     intro = tor_malloc_zero(sizeof(rend_intro_point_t));
-    info = intro->extend_info = tor_malloc_zero(sizeof(extend_info_t));
+    info = intro->extend_info =
+      extend_info_new(NULL, NULL, NULL, NULL, NULL, NULL, 0);
     /* Parse identifier. */
     tok = find_by_keyword(tokens, R_IPO_IDENTIFIER);
     if (base32_decode(info->identity_digest, DIGEST_LEN,
@@ -446,12 +448,13 @@ rend_parse_introduction_points(rend_service_descriptor_t *parsed,
                   info->identity_digest, DIGEST_LEN);
     /* Parse IP address. */
     tok = find_by_keyword(tokens, R_IPO_IP_ADDRESS);
-    if (tor_addr_parse(&info->addr, tok->args[0])<0) {
+    tor_addr_t addr;
+    if (tor_addr_parse(&addr, tok->args[0])<0) {
       log_warn(LD_REND, "Could not parse introduction point address.");
       rend_intro_point_free(intro);
       goto err;
     }
-    if (tor_addr_family(&info->addr) != AF_INET) {
+    if (tor_addr_family(&addr) != AF_INET) {
       log_warn(LD_REND, "Introduction point address was not ipv4.");
       rend_intro_point_free(intro);
       goto err;
@@ -459,14 +462,18 @@ rend_parse_introduction_points(rend_service_descriptor_t *parsed,
 
     /* Parse onion port. */
     tok = find_by_keyword(tokens, R_IPO_ONION_PORT);
-    info->port = (uint16_t) tor_parse_long(tok->args[0],10,1,65535,
+    uint16_t port = (uint16_t) tor_parse_long(tok->args[0],10,1,65535,
                                            &num_ok,NULL);
-    if (!info->port || !num_ok) {
+    if (!port || !num_ok) {
       log_warn(LD_REND, "Introduction point onion port %s is invalid",
                escaped(tok->args[0]));
       rend_intro_point_free(intro);
       goto err;
     }
+
+    /* Add the address and port. */
+    extend_info_add_orport(info, &addr, port);
+
     /* Parse onion key. */
     tok = find_by_keyword(tokens, R_IPO_ONION_KEY);
     if (!crypto_pk_public_exponent_ok(tok->key)) {

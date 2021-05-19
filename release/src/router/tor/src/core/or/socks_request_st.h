@@ -1,11 +1,18 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file socks_request_st.h
+ * @brief Client request structure.
+ **/
 
 #ifndef SOCKS_REQUEST_ST_H
 #define SOCKS_REQUEST_ST_H
+
+#include "lib/net/socks5_status.h"
 
 #define MAX_SOCKS_REPLY_LEN 1024
 
@@ -58,6 +65,11 @@ struct socks_request_t {
    * "username/password" authentication if both are offered. Used as input to
    * parse_socks. */
   unsigned int socks_prefer_no_auth : 1;
+  /** If set, we can send back the extended error code in the reply. */
+  unsigned int socks_use_extended_errors : 1;
+  /** If non zero, this contains the extended error code that should be used
+   * if the port was configured to use them. */
+  socks5_reply_status_t socks_extended_error_code;
 
   /** Number of bytes in username; 0 if username is NULL */
   size_t usernamelen;

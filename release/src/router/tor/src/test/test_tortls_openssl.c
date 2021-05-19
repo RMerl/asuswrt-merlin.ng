@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2019, The Tor Project, Inc. */
+/* Copyright (c) 2010-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define TORTLS_PRIVATE
@@ -16,7 +16,7 @@
 
 /* Some versions of OpenSSL declare SSL_get_selected_srtp_profile twice in
  * srtp.h. Suppress the GCC warning so we can build with -Wredundant-decl. */
-DISABLE_GCC_WARNING(redundant-decls)
+DISABLE_GCC_WARNING("-Wredundant-decls")
 
 #include <openssl/opensslv.h>
 
@@ -29,7 +29,7 @@ DISABLE_GCC_WARNING(redundant-decls)
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 
-ENABLE_GCC_WARNING(redundant-decls)
+ENABLE_GCC_WARNING("-Wredundant-decls")
 
 #include "core/or/or.h"
 #include "lib/log/log.h"
@@ -45,8 +45,6 @@ ENABLE_GCC_WARNING(redundant-decls)
 #include "test/test.h"
 #include "test/log_test_helpers.h"
 #include "test/test_tortls.h"
-
-#define NS_MODULE tortls
 
 #ifndef HAVE_SSL_STATE
 #define OPENSSL_OPAQUE
@@ -122,8 +120,6 @@ test_tortls_tor_tls_new(void *data)
   tor_free(method);
   tor_tls_free_all();
 }
-
-#define NS_MODULE tortls
 
 static void
 library_init(void)
@@ -283,8 +279,7 @@ test_tortls_log_one_error(void *ignored)
 
   mock_clean_saved_logs();
   tor_tls_log_one_error(tls, ERR_PACK(1, 2, 3), LOG_WARN, 0, NULL);
-  expect_log_msg("TLS error with 127.hello: "
-            "BN lib (in unknown library:(null):---)\n");
+  expect_log_msg_containing("TLS error with 127.hello");
 
   mock_clean_saved_logs();
   tor_tls_log_one_error(tls, ERR_PACK(1, 2, SSL_R_HTTP_REQUEST),
@@ -478,75 +473,6 @@ fake_x509_free(X509 *cert)
   }
 }
 #endif /* !defined(OPENSSL_OPAQUE) */
-
-static tor_x509_cert_t *fixed_x509_cert = NULL;
-static tor_x509_cert_t *
-get_peer_cert_mock_return_fixed(tor_tls_t *tls)
-{
-  (void)tls;
-  if (fixed_x509_cert)
-    return tor_x509_cert_dup(fixed_x509_cert);
-  else
-    return NULL;
-}
-
-static void
-test_tortls_cert_matches_key(void *ignored)
-{
-  (void)ignored;
-
-  X509 *cert1 = NULL, *cert2 = NULL, *cert3 = NULL, *cert4 = NULL;
-  tor_x509_cert_t *c1 = NULL, *c2 = NULL, *c3 = NULL, *c4 = NULL;
-  crypto_pk_t *k1 = NULL, *k2 = NULL, *k3 = NULL;
-
-  k1 = pk_generate(1);
-  k2 = pk_generate(2);
-  k3 = pk_generate(3);
-
-  cert1 = tor_tls_create_certificate(k1, k2, "A", "B", 1000);
-  cert2 = tor_tls_create_certificate(k1, k3, "C", "D", 1000);
-  cert3 = tor_tls_create_certificate(k2, k3, "C", "D", 1000);
-  cert4 = tor_tls_create_certificate(k3, k2, "E", "F", 1000);
-
-  tt_assert(cert1 && cert2 && cert3 && cert4);
-
-  c1 = tor_x509_cert_new(cert1); cert1 = NULL;
-  c2 = tor_x509_cert_new(cert2); cert2 = NULL;
-  c3 = tor_x509_cert_new(cert3); cert3 = NULL;
-  c4 = tor_x509_cert_new(cert4); cert4 = NULL;
-
-  tt_assert(c1 && c2 && c3 && c4);
-
-  MOCK(tor_tls_get_peer_cert, get_peer_cert_mock_return_fixed);
-
-  fixed_x509_cert = NULL;
-  /* If the peer has no certificate, it shouldn't match anything. */
-  tt_assert(! tor_tls_cert_matches_key(NULL, c1));
-  tt_assert(! tor_tls_cert_matches_key(NULL, c2));
-  tt_assert(! tor_tls_cert_matches_key(NULL, c3));
-  tt_assert(! tor_tls_cert_matches_key(NULL, c4));
-  fixed_x509_cert = c1;
-  /* If the peer has a certificate, it should match every cert with the same
-   * subject key. */
-  tt_assert(tor_tls_cert_matches_key(NULL, c1));
-  tt_assert(tor_tls_cert_matches_key(NULL, c2));
-  tt_assert(! tor_tls_cert_matches_key(NULL, c3));
-  tt_assert(! tor_tls_cert_matches_key(NULL, c4));
-
- done:
-  tor_x509_cert_free(c1);
-  tor_x509_cert_free(c2);
-  tor_x509_cert_free(c3);
-  tor_x509_cert_free(c4);
-  if (cert1) X509_free(cert1);
-  if (cert2) X509_free(cert2);
-  if (cert3) X509_free(cert3);
-  if (cert4) X509_free(cert4);
-  crypto_pk_free(k1);
-  crypto_pk_free(k2);
-  crypto_pk_free(k3);
-  UNMOCK(tor_tls_get_peer_cert);
-}
 
 #ifndef OPENSSL_OPAQUE
 static void
@@ -2279,7 +2205,6 @@ struct testcase_t tortls_openssl_tests[] = {
   INTRUSIVE_TEST_CASE(get_error, TT_FORK),
   LOCAL_TEST_CASE(always_accept_verify_cb, 0),
   INTRUSIVE_TEST_CASE(x509_cert_free, 0),
-  LOCAL_TEST_CASE(cert_matches_key, 0),
   INTRUSIVE_TEST_CASE(cert_get_key, 0),
   LOCAL_TEST_CASE(get_my_client_auth_key, TT_FORK),
   INTRUSIVE_TEST_CASE(get_ciphersuite_name, 0),

@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -29,9 +29,9 @@
 
 #if defined(ENABLE_OPENSSL)
 #include "lib/crypt_ops/compat_openssl.h"
-DISABLE_GCC_WARNING(redundant-decls)
+DISABLE_GCC_WARNING("-Wredundant-decls")
 #include <openssl/dh.h>
-ENABLE_GCC_WARNING(redundant-decls)
+ENABLE_GCC_WARNING("-Wredundant-decls")
 #endif /* defined(ENABLE_OPENSSL) */
 
 /** Run unit tests for Diffie-Hellman functionality. */
@@ -1336,6 +1336,44 @@ test_crypto_pk_pem_encrypted(void *arg)
 }
 
 static void
+test_crypto_pk_bad_size(void *arg)
+{
+  (void)arg;
+  crypto_pk_t *pk1 = pk_generate(0);
+  crypto_pk_t *pk2 = NULL;
+  char buf[2048];
+  int n = crypto_pk_asn1_encode_private(pk1, buf, sizeof(buf));
+  tt_int_op(n, OP_GT, 0);
+
+  /* Set the max bit count smaller: we should refuse to decode the key.*/
+  pk2 = crypto_pk_asn1_decode_private(buf, n, 1020);
+  tt_assert(! pk2);
+
+  /* Set the max bit count one bit smaller: we should refuse to decode the
+     key.*/
+  pk2 = crypto_pk_asn1_decode_private(buf, n, 1023);
+  tt_assert(! pk2);
+
+  /* Correct size: should work. */
+  pk2 = crypto_pk_asn1_decode_private(buf, n, 1024);
+  tt_assert(pk2);
+  crypto_pk_free(pk2);
+
+  /* One bit larger: should work. */
+  pk2 = crypto_pk_asn1_decode_private(buf, n, 1025);
+  tt_assert(pk2);
+  crypto_pk_free(pk2);
+
+  /* Set the max bit count larger: it should decode fine. */
+  pk2 = crypto_pk_asn1_decode_private(buf, n, 2048);
+  tt_assert(pk2);
+
+ done:
+  crypto_pk_free(pk1);
+  crypto_pk_free(pk2);
+}
+
+static void
 test_crypto_pk_invalid_private_key(void *arg)
 {
   (void)arg;
@@ -2069,21 +2107,21 @@ test_crypto_curve25519_encode(void *arg)
 {
   curve25519_secret_key_t seckey;
   curve25519_public_key_t key1, key2, key3;
-  char buf[64];
+  char buf[64], buf_nopad[64];
 
   (void)arg;
 
   curve25519_secret_key_generate(&seckey, 0);
   curve25519_public_key_generate(&key1, &seckey);
-  curve25519_public_to_base64(buf, &key1);
+  curve25519_public_to_base64(buf, &key1, true);
   tt_int_op(CURVE25519_BASE64_PADDED_LEN, OP_EQ, strlen(buf));
 
   tt_int_op(0, OP_EQ, curve25519_public_from_base64(&key2, buf));
   tt_mem_op(key1.public_key,OP_EQ, key2.public_key, CURVE25519_PUBKEY_LEN);
 
-  buf[CURVE25519_BASE64_PADDED_LEN - 1] = '\0';
-  tt_int_op(CURVE25519_BASE64_PADDED_LEN-1, OP_EQ, strlen(buf));
-  tt_int_op(0, OP_EQ, curve25519_public_from_base64(&key3, buf));
+  curve25519_public_to_base64(buf_nopad, &key1, false);
+  tt_int_op(CURVE25519_BASE64_LEN, OP_EQ, strlen(buf_nopad));
+  tt_int_op(0, OP_EQ, curve25519_public_from_base64(&key3, buf_nopad));
   tt_mem_op(key1.public_key,OP_EQ, key3.public_key, CURVE25519_PUBKEY_LEN);
 
   /* Now try bogus parses. */
@@ -2971,6 +3009,7 @@ test_crypto_failure_modes(void *arg)
   ;
 }
 
+#ifndef COCCI
 #define CRYPTO_LEGACY(name)                                            \
   { #name, test_crypto_ ## name , 0, NULL, NULL }
 
@@ -2981,6 +3020,7 @@ test_crypto_failure_modes(void *arg)
 #define ED25519_TEST(name, fl)                  \
   ED25519_TEST_ONE(name, (fl), "donna"),        \
   ED25519_TEST_ONE(name, (fl), "ref10")
+#endif /* !defined(COCCI) */
 
 struct testcase_t crypto_tests[] = {
   CRYPTO_LEGACY(formats),
@@ -2998,6 +3038,7 @@ struct testcase_t crypto_tests[] = {
   { "pk_fingerprints", test_crypto_pk_fingerprints, TT_FORK, NULL, NULL },
   { "pk_base64", test_crypto_pk_base64, TT_FORK, NULL, NULL },
   { "pk_pem_encrypted", test_crypto_pk_pem_encrypted, TT_FORK, NULL, NULL },
+  { "pk_bad_size", test_crypto_pk_bad_size, 0, NULL, NULL },
   { "pk_invalid_private_key", test_crypto_pk_invalid_private_key, 0,
     NULL, NULL },
   CRYPTO_LEGACY(digests),

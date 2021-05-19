@@ -79,7 +79,7 @@ const N_COMMON_DIGEST_ALGORITHMS: usize = DIGEST_SHA256 as usize + 1;
 #[allow(non_camel_case_types)]
 struct crypto_digest_t {
     // This private, zero-length field forces the struct to be treated the same
-    // as its opaque C couterpart.
+    // as its opaque C counterpart.
     _unused: [u8; 0],
 }
 
@@ -89,7 +89,7 @@ struct crypto_digest_t {
 #[allow(non_camel_case_types)]
 struct crypto_xof_t {
     // This private, zero-length field forces the struct to be treated the same
-    // as its opaque C couterpart.
+    // as its opaque C counterpart.
     _unused: [u8; 0],
 }
 
@@ -254,7 +254,7 @@ impl CryptoDigest {
     /// * `crypto_digest256_new`
     /// * `crypto_digest512_new`
     /// * `tor_malloc` (called by `crypto_digest256_new`, but we make
-    ///    assumptions about its behvaiour and return values here)
+    ///    assumptions about its behaviour and return values here)
     pub fn new(algorithm: Option<DigestAlgorithm>) -> CryptoDigest {
         let digest: *mut crypto_digest_t;
 

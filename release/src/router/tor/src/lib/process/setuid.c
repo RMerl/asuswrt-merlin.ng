@@ -1,6 +1,6 @@
 /* Copyright (c) 2003, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -64,7 +64,7 @@ log_credential_status(void)
 
   /* log UIDs */
 #ifdef HAVE_GETRESUID
-  if (getresuid(&ruid, &euid, &suid) != 0 ) {
+  if (getresuid(&ruid, &euid, &suid) != 0) {
     log_warn(LD_GENERAL, "Error getting changed UIDs: %s", strerror(errno));
     return -1;
   } else {
@@ -85,7 +85,7 @@ log_credential_status(void)
 
   /* log GIDs */
 #ifdef HAVE_GETRESGID
-  if (getresgid(&rgid, &egid, &sgid) != 0 ) {
+  if (getresgid(&rgid, &egid, &sgid) != 0) {
     log_warn(LD_GENERAL, "Error getting changed GIDs: %s", strerror(errno));
     return -1;
   } else {

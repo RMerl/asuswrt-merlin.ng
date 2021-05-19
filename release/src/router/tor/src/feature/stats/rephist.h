@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -14,18 +14,9 @@
 
 void rep_hist_init(void);
 void rep_hist_dump_stats(time_t now, int severity);
-void rep_hist_note_bytes_read(uint64_t num_bytes, time_t when);
-void rep_hist_note_bytes_written(uint64_t num_bytes, time_t when);
 
 void rep_hist_make_router_pessimal(const char *id, time_t when);
 
-void rep_hist_note_dir_bytes_read(uint64_t num_bytes, time_t when);
-void rep_hist_note_dir_bytes_written(uint64_t num_bytes, time_t when);
-
-MOCK_DECL(int, rep_hist_bandwidth_assess, (void));
-char *rep_hist_get_bandwidth_lines(void);
-void rep_hist_update_state(or_state_t *state);
-int rep_hist_load_state(or_state_t *state, char **err);
 void rep_history_clean(time_t before);
 
 void rep_hist_note_router_reachable(const char *id, const tor_addr_t *at_addr,
@@ -65,17 +56,12 @@ void rep_hist_note_desc_served(const char * desc);
 void rep_hist_desc_stats_term(void);
 time_t rep_hist_desc_stats_write(time_t now);
 
-void rep_hist_conn_stats_init(time_t now);
-void rep_hist_note_or_conn_bytes(uint64_t conn_id, size_t num_read,
-                                 size_t num_written, time_t when);
-void rep_hist_reset_conn_stats(time_t now);
-char *rep_hist_format_conn_stats(time_t now);
-time_t rep_hist_conn_stats_write(time_t now);
-void rep_hist_conn_stats_term(void);
-
 void rep_hist_note_circuit_handshake_requested(uint16_t type);
 void rep_hist_note_circuit_handshake_assigned(uint16_t type);
 void rep_hist_log_circuit_handshake_stats(time_t now);
+
+MOCK_DECL(int, rep_hist_get_circuit_handshake_requested, (uint16_t type));
+MOCK_DECL(int, rep_hist_get_circuit_handshake_assigned, (uint16_t type));
 
 void rep_hist_hs_stats_init(time_t now);
 void rep_hist_hs_stats_term(void);
@@ -95,15 +81,7 @@ extern uint32_t rephist_total_num;
 #ifdef TOR_UNIT_TESTS
 extern int onion_handshakes_requested[MAX_ONION_HANDSHAKE_TYPE+1];
 extern int onion_handshakes_assigned[MAX_ONION_HANDSHAKE_TYPE+1];
-extern struct bw_array_t *write_array;
 #endif
-
-#ifdef REPHIST_PRIVATE
-typedef struct bw_array_t bw_array_t;
-STATIC uint64_t find_largest_max(bw_array_t *b);
-STATIC void commit_max(bw_array_t *b);
-STATIC void advance_obs(bw_array_t *b);
-#endif /* defined(REPHIST_PRIVATE) */
 
 /**
  * Represents the type of a cell for padding accounting

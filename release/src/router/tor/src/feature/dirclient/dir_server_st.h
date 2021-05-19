@@ -1,8 +1,13 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file dir_server_st.h
+ * @brief Trusted/fallback directory server structure.
+ **/
 
 #ifndef DIR_SERVER_ST_H
 #define DIR_SERVER_ST_H
@@ -19,10 +24,10 @@ struct dir_server_t {
   char *address; /**< Hostname. */
   /* XX/teor - why do we duplicate the address and port fields here and in
    *           fake_status? Surely we could just use fake_status (#17867). */
+  tor_addr_t ipv4_addr;
+  uint16_t ipv4_dirport; /**< Directory port. */
+  uint16_t ipv4_orport; /**< OR port: Used for tunneling connections. */
   tor_addr_t ipv6_addr; /**< IPv6 address if present; AF_UNSPEC if not */
-  uint32_t addr; /**< IPv4 address. */
-  uint16_t dir_port; /**< Directory port. */
-  uint16_t or_port; /**< OR port: Used for tunneling connections. */
   uint16_t ipv6_orport; /**< OR port corresponding to ipv6_addr. */
   double weight; /** Weight used when selecting this node at random */
   char digest[DIGEST_LEN]; /**< Digest of identity key. */

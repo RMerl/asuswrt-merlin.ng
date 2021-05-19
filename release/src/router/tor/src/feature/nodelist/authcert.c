@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -46,7 +46,7 @@
 #include "feature/nodelist/networkstatus_voter_info_st.h"
 #include "feature/nodelist/node_st.h"
 
-DECLARE_TYPED_DIGESTMAP_FNS(dsmap_, digest_ds_map_t, download_status_t)
+DECLARE_TYPED_DIGESTMAP_FNS(dsmap, digest_ds_map_t, download_status_t)
 #define DSMAP_FOREACH(map, keyvar, valvar) \
   DIGESTMAP_FOREACH(dsmap_to_digestmap(map), keyvar, download_status_t *, \
                     valvar)
@@ -460,17 +460,15 @@ trusted_dirs_load_certs_from_string(const char *contents, int source,
     if (ds && cert->cache_info.published_on > ds->addr_current_at) {
       /* Check to see whether we should update our view of the authority's
        * address. */
-      if (cert->addr && cert->dir_port &&
-          (ds->addr != cert->addr ||
-           ds->dir_port != cert->dir_port)) {
-        char *a = tor_dup_ip(cert->addr);
+      if (!tor_addr_is_null(&cert->ipv4_addr) && cert->ipv4_dirport &&
+          (!tor_addr_eq(&ds->ipv4_addr, &cert->ipv4_addr) ||
+           ds->ipv4_dirport != cert->ipv4_dirport)) {
         log_notice(LD_DIR, "Updating address for directory authority %s "
-                   "from %s:%d to %s:%d based on certificate.",
-                   ds->nickname, ds->address, (int)ds->dir_port,
-                   a, cert->dir_port);
-        tor_free(a);
-        ds->addr = cert->addr;
-        ds->dir_port = cert->dir_port;
+                   "from %s:%"PRIu16" to %s:%"PRIu16" based on certificate.",
+                   ds->nickname, ds->address, ds->ipv4_dirport,
+                   fmt_addr(&cert->ipv4_addr), cert->ipv4_dirport);
+        tor_addr_copy(&ds->ipv4_addr, &cert->ipv4_addr);
+        ds->ipv4_dirport = cert->ipv4_dirport;
       }
       ds->addr_current_at = cert->cache_info.published_on;
     }
@@ -743,7 +741,7 @@ static const char *BAD_SIGNING_KEYS[] = {
  * which, because of the old openssl heartbleed vulnerability, should
  * never be trusted. */
 int
-authority_cert_is_blacklisted(const authority_cert_t *cert)
+authority_cert_is_denylisted(const authority_cert_t *cert)
 {
   char hex_digest[HEX_DIGEST_LEN+1];
   int i;
@@ -810,7 +808,7 @@ authority_certs_fetch_resource_impl(const char *resource,
     /* clients always make OR connections to bridges */
     tor_addr_port_t or_ap;
     /* we are willing to use a non-preferred address if we need to */
-    fascist_firewall_choose_address_node(node, FIREWALL_OR_CONNECTION, 0,
+    reachable_addr_choose_from_node(node, FIREWALL_OR_CONNECTION, 0,
                                          &or_ap);
 
     req = directory_request_new(DIR_PURPOSE_FETCH_CERTIFICATE);

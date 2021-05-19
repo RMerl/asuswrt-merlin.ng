@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -65,6 +65,9 @@
 #include "app/config/config.h"
 #include "core/mainloop/connection.h"
 #include "core/mainloop/mainloop.h"
+#include "core/or/circuitlist.h"
+#include "core/or/circuituse.h"
+#include "core/or/extendinfo.h"
 #include "core/or/policies.h"
 #include "feature/client/bridges.h"
 #include "feature/control/control_events.h"
@@ -73,6 +76,7 @@
 #include "feature/dirauth/reachability.h"
 #include "feature/dircache/dirserv.h"
 #include "feature/dirclient/dirclient.h"
+#include "feature/dirclient/dirclient_modes.h"
 #include "feature/dirclient/dlstatus.h"
 #include "feature/dircommon/directory.h"
 #include "feature/nodelist/authcert.h"
@@ -88,6 +92,7 @@
 #include "feature/nodelist/routerset.h"
 #include "feature/nodelist/torcert.h"
 #include "feature/relay/routermode.h"
+#include "feature/relay/relay_find_addr.h"
 #include "feature/stats/rephist.h"
 #include "lib/crypt_ops/crypto_format.h"
 #include "lib/crypt_ops/crypto_rand.h"
@@ -116,9 +121,9 @@
 /* Typed wrappers for different digestmap types; used to avoid type
  * confusion. */
 
-DECLARE_TYPED_DIGESTMAP_FNS(sdmap_, digest_sd_map_t, signed_descriptor_t)
-DECLARE_TYPED_DIGESTMAP_FNS(rimap_, digest_ri_map_t, routerinfo_t)
-DECLARE_TYPED_DIGESTMAP_FNS(eimap_, digest_ei_map_t, extrainfo_t)
+DECLARE_TYPED_DIGESTMAP_FNS(sdmap, digest_sd_map_t, signed_descriptor_t)
+DECLARE_TYPED_DIGESTMAP_FNS(rimap, digest_ri_map_t, routerinfo_t)
+DECLARE_TYPED_DIGESTMAP_FNS(eimap, digest_ei_map_t, extrainfo_t)
 #define SDMAP_FOREACH(map, keyvar, valvar)                              \
   DIGESTMAP_FOREACH(sdmap_to_digestmap(map), keyvar, signed_descriptor_t *, \
                     valvar)
@@ -135,8 +140,6 @@ static int signed_desc_digest_is_recognized(signed_descriptor_t *desc);
 static const char *signed_descriptor_get_body_impl(
                                               const signed_descriptor_t *desc,
                                               int with_annotations);
-static void launch_dummy_descriptor_download_as_needed(time_t now,
-                                   const or_options_t *options);
 
 /****************************************************************************/
 
@@ -464,11 +467,20 @@ router_reload_router_list(void)
   return 0;
 }
 
-/* When iterating through the routerlist, can OR address/port preference
- * and reachability checks be skipped?
+/* When selecting a router for a direct connection, can OR address/port
+ * preference and reachability checks be skipped?
+ *
+ * Servers never check ReachableAddresses or ClientPreferIPv6. Returns
+ * true for servers.
+ *
+ * Otherwise, if <b>try_ip_pref</b> is true, returns false. Used to make
+ * clients check ClientPreferIPv6, even if ReachableAddresses is not set.
+ * Finally, return true if ReachableAddresses is set.
  */
 int
-router_skip_or_reachability(const or_options_t *options, int try_ip_pref)
+router_or_conn_should_skip_reachable_address_check(
+                                   const or_options_t *options,
+                                   int try_ip_pref)
 {
   /* Servers always have and prefer IPv4.
    * And if clients are checking against the firewall for reachability only,
@@ -476,11 +488,15 @@ router_skip_or_reachability(const or_options_t *options, int try_ip_pref)
   return server_mode(options) || (!try_ip_pref && !firewall_is_fascist_or());
 }
 
-/* When iterating through the routerlist, can Dir address/port preference
+/* When selecting a router for a direct connection, can Dir address/port
  * and reachability checks be skipped?
+ *
+ * This function is obsolete, because clients only use ORPorts.
  */
 int
-router_skip_dir_reachability(const or_options_t *options, int try_ip_pref)
+router_dir_conn_should_skip_reachable_address_check(
+                                    const or_options_t *options,
+                                    int try_ip_pref)
 {
   /* Servers always have and prefer IPv4.
    * And if clients are checking against the firewall for reachability only,
@@ -492,45 +508,115 @@ router_skip_dir_reachability(const or_options_t *options, int try_ip_pref)
 int
 routers_have_same_or_addrs(const routerinfo_t *r1, const routerinfo_t *r2)
 {
-  return r1->addr == r2->addr && r1->or_port == r2->or_port &&
+  return tor_addr_eq(&r1->ipv4_addr, &r2->ipv4_addr) &&
+    r1->ipv4_orport == r2->ipv4_orport &&
     tor_addr_eq(&r1->ipv6_addr, &r2->ipv6_addr) &&
     r1->ipv6_orport == r2->ipv6_orport;
 }
 
+/* Returns true if <b>node</b> can be chosen based on <b>flags</b>.
+ *
+ * The following conditions are applied to all nodes:
+ *  - is running;
+ *  - is valid;
+ *  - supports EXTEND2 cells;
+ *  - has an ntor circuit crypto key; and
+ *  - does not allow single-hop exits.
+ *
+ * If the node has a routerinfo, we're checking for a direct connection, and
+ * we're using bridges, the following condition is applied:
+ *  - has a bridge-purpose routerinfo;
+ * and for all other nodes:
+ *  - has a general-purpose routerinfo (or no routerinfo).
+ *
+ * Nodes that don't have a routerinfo must be general-purpose nodes, because
+ * routerstatuses and microdescriptors only come via consensuses.
+ *
+ * The <b>flags</b> check that <b>node</b>:
+ *  - <b>CRN_NEED_UPTIME</b>: has more than a minimum uptime;
+ *  - <b>CRN_NEED_CAPACITY</b>: has more than a minimum capacity;
+ *  - <b>CRN_NEED_GUARD</b>: is a Guard;
+ *  - <b>CRN_NEED_DESC</b>: has a routerinfo or microdescriptor -- that is,
+ *                          enough info to be used to build a circuit;
+ *  - <b>CRN_DIRECT_CONN</b>: is suitable for direct connections. Checks
+ *                            for the relevant descriptors. Checks the address
+ *                            against ReachableAddresses, ClientUseIPv4 0, and
+ *                            reachable_addr_use_ipv6() == 0);
+ *  - <b>CRN_PREF_ADDR</b>: if we are connecting directly to the node, it has
+ *                          an address that is preferred by the
+ *                          ClientPreferIPv6ORPort setting;
+ *  - <b>CRN_RENDEZVOUS_V3</b>: can become a v3 onion service rendezvous point;
+ *  - <b>CRN_INITIATE_IPV6_EXTEND</b>: can initiate IPv6 extends.
+ */
+bool
+router_can_choose_node(const node_t *node, int flags)
+{
+  /* The full set of flags used for node selection. */
+  const bool need_uptime = (flags & CRN_NEED_UPTIME) != 0;
+  const bool need_capacity = (flags & CRN_NEED_CAPACITY) != 0;
+  const bool need_guard = (flags & CRN_NEED_GUARD) != 0;
+  const bool need_desc = (flags & CRN_NEED_DESC) != 0;
+  const bool pref_addr = (flags & CRN_PREF_ADDR) != 0;
+  const bool direct_conn = (flags & CRN_DIRECT_CONN) != 0;
+  const bool rendezvous_v3 = (flags & CRN_RENDEZVOUS_V3) != 0;
+  const bool initiate_ipv6_extend = (flags & CRN_INITIATE_IPV6_EXTEND) != 0;
+
+  const or_options_t *options = get_options();
+  const bool check_reach =
+    !router_or_conn_should_skip_reachable_address_check(options, pref_addr);
+  const bool direct_bridge = direct_conn && options->UseBridges;
+
+  if (!node->is_running || !node->is_valid)
+    return false;
+  if (need_desc && !node_has_preferred_descriptor(node, direct_conn))
+    return false;
+  if (node->ri) {
+    if (direct_bridge && node->ri->purpose != ROUTER_PURPOSE_BRIDGE)
+      return false;
+    else if (node->ri->purpose != ROUTER_PURPOSE_GENERAL)
+      return false;
+  }
+  if (node_is_unreliable(node, need_uptime, need_capacity, need_guard))
+    return false;
+  /* Don't choose nodes if we are certain they can't do EXTEND2 cells */
+  if (node->rs && !routerstatus_version_supports_extend2_cells(node->rs, 1))
+    return false;
+  /* Don't choose nodes if we are certain they can't do ntor. */
+  if ((node->ri || node->md) && !node_has_curve25519_onion_key(node))
+    return false;
+  /* Exclude relays that allow single hop exit circuits. This is an
+   * obsolete option since 0.2.9.2-alpha and done by default in
+   * 0.3.1.0-alpha. */
+  if (node_allows_single_hop_exits(node))
+    return false;
+  /* Exclude relays that can not become a rendezvous for a hidden service
+   * version 3. */
+  if (rendezvous_v3 &&
+      !node_supports_v3_rendezvous_point(node))
+    return false;
+  /* Choose a node with an OR address that matches the firewall rules */
+  if (direct_conn && check_reach &&
+      !reachable_addr_allows_node(node,
+                                    FIREWALL_OR_CONNECTION,
+                                    pref_addr))
+    return false;
+  if (initiate_ipv6_extend && !node_supports_initiating_ipv6_extends(node))
+    return false;
+
+  return true;
+}
+
 /** Add every suitable node from our nodelist to <b>sl</b>, so that
- * we can pick a node for a circuit.
+ * we can pick a node for a circuit based on <b>flags</b>.
+ *
+ * See router_can_choose_node() for details of <b>flags</b>.
  */
 void
-router_add_running_nodes_to_smartlist(smartlist_t *sl, int need_uptime,
-                                      int need_capacity, int need_guard,
-                                      int need_desc, int pref_addr,
-                                      int direct_conn)
+router_add_running_nodes_to_smartlist(smartlist_t *sl, int flags)
 {
-  const int check_reach = !router_skip_or_reachability(get_options(),
-                                                       pref_addr);
-  /* XXXX MOVE */
   SMARTLIST_FOREACH_BEGIN(nodelist_get_list(), const node_t *, node) {
-    if (!node->is_running || !node->is_valid)
+    if (!router_can_choose_node(node, flags))
       continue;
-    if (need_desc && !node_has_preferred_descriptor(node, direct_conn))
-      continue;
-    if (node->ri && node->ri->purpose != ROUTER_PURPOSE_GENERAL)
-      continue;
-    if (node_is_unreliable(node, need_uptime, need_capacity, need_guard))
-      continue;
-    /* Don't choose nodes if we are certain they can't do EXTEND2 cells */
-    if (node->rs && !routerstatus_version_supports_extend2_cells(node->rs, 1))
-      continue;
-    /* Don't choose nodes if we are certain they can't do ntor. */
-    if ((node->ri || node->md) && !node_has_curve25519_onion_key(node))
-      continue;
-    /* Choose a node with an OR address that matches the firewall rules */
-    if (direct_conn && check_reach &&
-        !fascist_firewall_allows_node(node,
-                                      FIREWALL_OR_CONNECTION,
-                                      pref_addr))
-      continue;
-
     smartlist_add(sl, (void *)node);
   } SMARTLIST_FOREACH_END(node);
 }
@@ -1087,7 +1173,11 @@ extrainfo_insert,(routerlist_t *rl, extrainfo_t *ei, int warn_if_incompatible))
      * This just won't work. */;
     static ratelim_t no_sd_ratelim = RATELIM_INIT(1800);
     r = ROUTER_BAD_EI;
-    log_fn_ratelim(&no_sd_ratelim, severity, LD_BUG,
+    /* This is a DEBUG because it can happen naturally, if we tried
+     * to add an extrainfo for which we no longer have the
+     * corresponding routerinfo.
+     */
+    log_fn_ratelim(&no_sd_ratelim, LOG_DEBUG, LD_DIR,
                    "No entry found in extrainfo map.");
     goto done;
   }
@@ -1936,9 +2026,7 @@ routerlist_descriptors_added(smartlist_t *sl, int from_cache)
       learned_bridge_descriptor(ri, from_cache);
     if (ri->needs_retest_if_added) {
       ri->needs_retest_if_added = 0;
-#ifdef HAVE_MODULE_DIRAUTH
       dirserv_single_reachability_test(approx_time(), ri);
-#endif
     }
   } SMARTLIST_FOREACH_END(ri);
 }
@@ -2219,7 +2307,6 @@ update_all_descriptor_downloads(time_t now)
     return;
   update_router_descriptor_downloads(now);
   update_microdesc_downloads(now);
-  launch_dummy_descriptor_download_as_needed(now, get_options());
 }
 
 /** Clear all our timeouts for fetching v3 directory stuff, and then
@@ -2406,7 +2493,7 @@ max_dl_per_request(const or_options_t *options, int purpose)
   }
   /* If we're going to tunnel our connections, we can ask for a lot more
    * in a request. */
-  if (directory_must_use_begindir(options)) {
+  if (dirclient_must_use_begindir(options)) {
     max = 500;
   }
   return max;
@@ -2449,7 +2536,7 @@ launch_descriptor_downloads(int purpose,
   if (!n_downloadable)
     return;
 
-  if (!directory_fetches_dir_info_early(options)) {
+  if (!dirclient_fetches_dir_info_early(options)) {
     if (n_downloadable >= MAX_DL_TO_DELAY) {
       log_debug(LD_DIR,
                 "There are enough downloadable %ss to launch requests.",
@@ -2540,7 +2627,7 @@ update_consensus_router_descriptor_downloads(time_t now, int is_vote,
   int n_delayed=0, n_have=0, n_would_reject=0, n_wouldnt_use=0,
     n_inprogress=0, n_in_oldrouters=0;
 
-  if (directory_too_idle_to_fetch_descriptors(options, now))
+  if (dirclient_too_idle_to_fetch_descriptors(options, now))
     goto done;
   if (!consensus)
     goto done;
@@ -2560,8 +2647,15 @@ update_consensus_router_descriptor_downloads(time_t now, int is_vote,
   map = digestmap_new();
   list_pending_descriptor_downloads(map, 0);
   SMARTLIST_FOREACH_BEGIN(consensus->routerstatus_list, void *, rsp) {
-      routerstatus_t *rs =
-        is_vote ? &(((vote_routerstatus_t *)rsp)->status) : rsp;
+      routerstatus_t *rs;
+      vote_routerstatus_t *vrs;
+      if (is_vote) {
+        rs = &(((vote_routerstatus_t *)rsp)->status);
+        vrs = rsp;
+      } else {
+        rs = rsp;
+        vrs = NULL;
+      }
       signed_descriptor_t *sd;
       if ((sd = router_get_by_descriptor_digest(rs->descriptor_digest))) {
         const routerinfo_t *ri;
@@ -2586,7 +2680,7 @@ update_consensus_router_descriptor_downloads(time_t now, int is_vote,
         ++n_delayed; /* Not ready for retry. */
         continue;
       }
-      if (authdir && dirserv_would_reject_router(rs)) {
+      if (authdir && is_vote && dirserv_would_reject_router(rs, vrs)) {
         ++n_would_reject;
         continue; /* We would throw it out immediately. */
       }
@@ -2664,39 +2758,6 @@ update_consensus_router_descriptor_downloads(time_t now, int is_vote,
  done:
   smartlist_free(downloadable);
   smartlist_free(no_longer_old);
-}
-
-/** How often should we launch a server/authority request to be sure of getting
- * a guess for our IP? */
-/*XXXX+ this info should come from netinfo cells or something, or we should
- * do this only when we aren't seeing incoming data. see bug 652. */
-#define DUMMY_DOWNLOAD_INTERVAL (20*60)
-
-/** As needed, launch a dummy router descriptor fetch to see if our
- * address has changed. */
-static void
-launch_dummy_descriptor_download_as_needed(time_t now,
-                                           const or_options_t *options)
-{
-  static time_t last_dummy_download = 0;
-  /* XXXX+ we could be smarter here; see notes on bug 652. */
-  /* If we're a server that doesn't have a configured address, we rely on
-   * directory fetches to learn when our address changes.  So if we haven't
-   * tried to get any routerdescs in a long time, try a dummy fetch now. */
-  if (!options->Address &&
-      server_mode(options) &&
-      last_descriptor_download_attempted + DUMMY_DOWNLOAD_INTERVAL < now &&
-      last_dummy_download + DUMMY_DOWNLOAD_INTERVAL < now) {
-    last_dummy_download = now;
-    /* XX/teor - do we want an authority here, because they are less likely
-     * to give us the wrong address? (See #17782)
-     * I'm leaving the previous behaviour intact, because I don't like
-     * the idea of some relays contacting an authority every 20 minutes. */
-    directory_get_from_dirserver(DIR_PURPOSE_FETCH_SERVERDESC,
-                                 ROUTER_PURPOSE_GENERAL, "authority.z",
-                                 PDS_RETRY_IF_NO_SERVERS,
-                                 DL_WANT_ANY_DIRSERVER);
-  }
 }
 
 /** Launch downloads for router status as needed. */
@@ -2872,12 +2933,12 @@ router_differences_are_cosmetic(const routerinfo_t *r1, const routerinfo_t *r2)
   }
 
   /* If any key fields differ, they're different. */
-  if (r1->addr != r2->addr ||
+  if (!tor_addr_eq(&r1->ipv4_addr, &r2->ipv4_addr) ||
       strcasecmp(r1->nickname, r2->nickname) ||
-      r1->or_port != r2->or_port ||
+      r1->ipv4_orport != r2->ipv4_orport ||
       !tor_addr_eq(&r1->ipv6_addr, &r2->ipv6_addr) ||
       r1->ipv6_orport != r2->ipv6_orport ||
-      r1->dir_port != r2->dir_port ||
+      r1->ipv4_dirport != r2->ipv4_dirport ||
       r1->purpose != r2->purpose ||
       r1->onion_pkey_len != r2->onion_pkey_len ||
       !tor_memeq(r1->onion_pkey, r2->onion_pkey, r1->onion_pkey_len) ||
@@ -2916,7 +2977,7 @@ router_differences_are_cosmetic(const routerinfo_t *r1, const routerinfo_t *r2)
       (r1->bandwidthburst != r2->bandwidthburst))
     return 0;
 
-  /* Did more than 12 hours pass? */
+  /* Has enough time passed between the publication times? */
   if (r1->cache_info.published_on + ROUTER_MAX_COSMETIC_TIME_DIFFERENCE
       < r2->cache_info.published_on)
     return 0;

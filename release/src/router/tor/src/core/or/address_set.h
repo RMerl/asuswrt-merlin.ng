@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -13,13 +13,14 @@
 #include "lib/cc/torint.h"
 #include "lib/container/bloomfilt.h"
 
+struct tor_addr_t;
+
 /**
  * An address_set_t represents a set of tor_addr_t values. The implementation
  * is probabilistic: false negatives cannot occur but false positives are
  * possible.
  */
 typedef struct bloomfilt_t address_set_t;
-struct tor_addr_t;
 
 address_set_t *address_set_new(int max_addresses_guess);
 #define address_set_free(set) bloomfilt_free(set)

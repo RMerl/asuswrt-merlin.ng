@@ -1,12 +1,19 @@
-/* Copyright (c) 2014-2019, The Tor Project, Inc. */
+/* Copyright (c) 2014-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file torcert.h
+ * @brief Header for torcert.c
+ **/
 
 #ifndef TORCERT_H_INCLUDED
 #define TORCERT_H_INCLUDED
 
 #include "lib/crypt_ops/crypto_ed25519.h"
 
-#define SIGNED_KEY_TYPE_ED25519     0x01
+#define SIGNED_KEY_TYPE_ED25519        0x01
+#define SIGNED_KEY_TYPE_SHA256_OF_RSA  0x02
+#define SIGNED_KEY_TYPE_SHA256_OF_X509 0x03
 
 #define CERT_TYPE_ID_SIGNING        0x04
 #define CERT_TYPE_SIGNING_LINK      0x05
@@ -51,11 +58,17 @@ typedef struct tor_cert_st {
 
 struct tor_tls_t;
 
-tor_cert_t *tor_cert_create(const ed25519_keypair_t *signing_key,
+tor_cert_t *tor_cert_create_ed25519(const ed25519_keypair_t *signing_key,
                             uint8_t cert_type,
                             const ed25519_public_key_t *signed_key,
                             time_t now, time_t lifetime,
                             uint32_t flags);
+tor_cert_t * tor_cert_create_raw(const ed25519_keypair_t *signing_key,
+                      uint8_t cert_type,
+                      uint8_t signed_key_type,
+                      const uint8_t signed_key_info[32],
+                      time_t now, time_t lifetime,
+                      uint32_t flags);
 
 tor_cert_t *tor_cert_parse(const uint8_t *cert, size_t certlen);
 

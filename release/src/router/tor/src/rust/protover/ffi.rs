@@ -84,7 +84,7 @@ pub extern "C" fn protocol_list_supports_protocol(
     version: uint32_t,
 ) -> c_int {
     if c_protocol_list.is_null() {
-        return 1;
+        return 0;
     }
 
     // Require an unsafe block to read the version from a C string. The pointer
@@ -93,7 +93,7 @@ pub extern "C" fn protocol_list_supports_protocol(
 
     let protocol_list = match c_str.to_str() {
         Ok(n) => n,
-        Err(_) => return 1,
+        Err(_) => return 0,
     };
     let proto_entry: UnvalidatedProtoEntry = match protocol_list.parse() {
         Ok(n) => n,
@@ -140,7 +140,7 @@ pub extern "C" fn protocol_list_supports_protocol_or_later(
     version: uint32_t,
 ) -> c_int {
     if c_protocol_list.is_null() {
-        return 1;
+        return 0;
     }
 
     // Require an unsafe block to read the version from a C string. The pointer
@@ -149,7 +149,7 @@ pub extern "C" fn protocol_list_supports_protocol_or_later(
 
     let protocol_list = match c_str.to_str() {
         Ok(n) => n,
-        Err(_) => return 1,
+        Err(_) => return 0,
     };
 
     let protocol = match translate_to_rust(c_protocol) {
@@ -159,7 +159,7 @@ pub extern "C" fn protocol_list_supports_protocol_or_later(
 
     let proto_entry: UnvalidatedProtoEntry = match protocol_list.parse() {
         Ok(n) => n,
-        Err(_) => return 1,
+        Err(_) => return 0,
     };
 
     if proto_entry.supports_protocol_or_later(&protocol.into(), &version) {

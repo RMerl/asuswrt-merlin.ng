@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2019, The Tor Project, Inc. */
+/* Copyright (c) 2011-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -72,10 +72,10 @@ tor_memcmp(const void *a, const void *b, size_t len)
      * actually implementation-defined in standard C.  So how do we
      * get away with assuming it?  Easy.  We check.) */
 #if ((-60 >> 8) != -1)
-#error "According to cpp, right-shift doesn't perform sign-extension."
+#error "cpp says right-shift doesn't perform sign-extension."
 #endif
 #ifndef RSHIFT_DOES_SIGN_EXTEND
-#error "According to configure, right-shift doesn't perform sign-extension."
+#error "configure says right-shift doesn't perform sign-extension."
 #endif
 
     /* If v1 == v2, equal_p is ~0, so this will leave retval
@@ -145,8 +145,11 @@ tor_memeq(const void *a, const void *b, size_t sz)
 
 /* Implement di_digest256_map_t as a linked list of entries. */
 struct di_digest256_map_t {
+  /** Pointer to the next entry in the list. */
   struct di_digest256_map_t *next;
+  /** Key for this entry. */
   uint8_t key[32];
+  /** Value for this entry. */
   void *val;
 };
 
@@ -275,4 +278,31 @@ select_array_member_cumulative_timei(const uint64_t *entries, int n_entries,
   raw_assert(i_chosen < n_entries);
 
   return i_chosen;
+}
+
+/**
+ * If <b>s</b> is true, then copy <b>n</b> bytes from <b>src</b> to
+ * <b>dest</b>.  Otherwise leave <b>dest</b> alone.
+ *
+ * This function behaves the same as
+ *
+ *      if (s)
+ *         memcpy(dest, src, n);
+ *
+ * except that it tries to run in the same amount of time whether <b>s</b> is
+ * true or not.
+ **/
+void
+memcpy_if_true_timei(bool s, void *dest, const void *src, size_t n)
+{
+  // If s is true, mask will be ~0.  If s is false, mask will be 0.
+  const char mask = (char) -(signed char)s;
+
+  char *destp = dest;
+  const char *srcp = src;
+  for (size_t i = 0; i < n; ++i) {
+    *destp = (*destp & ~mask) | (*srcp & mask);
+    ++destp;
+    ++srcp;
+  }
 }

@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -16,7 +16,6 @@
 #include "lib/container/smartlist.h"
 #include "lib/log/util_bug.h"
 #include "lib/log/log.h"
-#include "lib/malloc/malloc.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>

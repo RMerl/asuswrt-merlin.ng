@@ -1,6 +1,6 @@
 /* Copyright (c) 2003, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -74,7 +74,7 @@ clamp_double_to_int64(double number)
   branches that are not taken.
 */
 #define PROBLEMATIC_FLOAT_CONVERSION_WARNING
-DISABLE_GCC_WARNING(float-conversion)
+DISABLE_GCC_WARNING("-Wfloat-conversion")
 #endif /* (defined(MINGW_ANY)||defined(__FreeBSD__)) && GCC_VERSION >= 409 */
 
 /*
@@ -84,7 +84,7 @@ DISABLE_GCC_WARNING(float-conversion)
 #if defined(__clang__)
 #if __has_warning("-Wdouble-promotion")
 #define PROBLEMATIC_DOUBLE_PROMOTION_WARNING
-DISABLE_GCC_WARNING(double-promotion)
+DISABLE_GCC_WARNING("-Wdouble-promotion")
 #endif
 #endif /* defined(__clang__) */
 
@@ -115,10 +115,10 @@ DISABLE_GCC_WARNING(double-promotion)
   return signbit(number) ? INT64_MIN : INT64_MAX;
 
 #ifdef PROBLEMATIC_DOUBLE_PROMOTION_WARNING
-ENABLE_GCC_WARNING(double-promotion)
+ENABLE_GCC_WARNING("-Wdouble-promotion")
 #endif
 #ifdef PROBLEMATIC_FLOAT_CONVERSION_WARNING
-ENABLE_GCC_WARNING(float-conversion)
+ENABLE_GCC_WARNING("-Wfloat-conversion")
 #endif
 }
 
@@ -128,16 +128,16 @@ tor_isinf(double x)
 {
   /* Same as above, work around the "double promotion" warnings */
 #ifdef PROBLEMATIC_FLOAT_CONVERSION_WARNING
-DISABLE_GCC_WARNING(float-conversion)
+DISABLE_GCC_WARNING("-Wfloat-conversion")
 #endif
 #ifdef PROBLEMATIC_DOUBLE_PROMOTION_WARNING
-DISABLE_GCC_WARNING(double-promotion)
+DISABLE_GCC_WARNING("-Wdouble-promotion")
 #endif
   return isinf(x);
 #ifdef PROBLEMATIC_DOUBLE_PROMOTION_WARNING
-ENABLE_GCC_WARNING(double-promotion)
+ENABLE_GCC_WARNING("-Wdouble-promotion")
 #endif
 #ifdef PROBLEMATIC_FLOAT_CONVERSION_WARNING
-ENABLE_GCC_WARNING(float-conversion)
+ENABLE_GCC_WARNING("-Wfloat-conversion")
 #endif
 }

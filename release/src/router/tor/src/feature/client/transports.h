@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -41,6 +41,7 @@ void transport_free_(transport_t *transport);
 #define transport_free(tr) FREE_AND_NULL(transport_t, transport_free_, (tr))
 
 MOCK_DECL(transport_t*, transport_get_by_name, (const char *name));
+bool managed_proxy_has_transport(const char *transport_name);
 
 MOCK_DECL(void, pt_kickstart_proxy,
           (const smartlist_t *transport_list, char **proxy_argv,
@@ -149,6 +150,8 @@ STATIC void managed_proxy_stderr_callback(process_t *, const char *, size_t);
 STATIC bool managed_proxy_exit_callback(process_t *, process_exit_code_t);
 
 STATIC int managed_proxy_severity_parse(const char *);
+STATIC const tor_addr_t *managed_proxy_outbound_address(const or_options_t *,
+                                                        sa_family_t);
 
 #endif /* defined(PT_PRIVATE) */
 

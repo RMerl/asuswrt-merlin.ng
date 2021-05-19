@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -56,6 +56,7 @@
 #include "core/or/circuitlist.h"
 #include "core/or/circuituse.h"
 #include "core/or/circuitpadding.h"
+#include "core/or/extendinfo.h"
 #include "lib/compress/compress.h"
 #include "app/config/config.h"
 #include "core/mainloop/connection.h"
@@ -66,6 +67,7 @@
 #include "lib/crypt_ops/crypto_util.h"
 #include "feature/dircommon/directory.h"
 #include "feature/relay/dns.h"
+#include "feature/relay/circuitbuild_relay.h"
 #include "feature/stats/geoip_stats.h"
 #include "feature/hs/hs_cache.h"
 #include "core/mainloop/mainloop.h"
@@ -81,6 +83,7 @@
 #include "feature/nodelist/describe.h"
 #include "feature/nodelist/routerlist.h"
 #include "core/or/scheduler.h"
+#include "feature/hs/hs_metrics.h"
 
 #include "core/or/cell_st.h"
 #include "core/or/cell_queue_st.h"
@@ -866,7 +869,7 @@ connection_ap_process_end_not_open(
               ttl = (int)ntohl(get_uint32(cell->payload+RELAY_HEADER_SIZE+5));
           } else if (rh->length == 17 || rh->length == 21) {
             tor_addr_from_ipv6_bytes(&addr,
-                                (char*)(cell->payload+RELAY_HEADER_SIZE+1));
+                                     (cell->payload+RELAY_HEADER_SIZE+1));
             if (rh->length == 21)
               ttl = (int)ntohl(get_uint32(cell->payload+RELAY_HEADER_SIZE+17));
           }
@@ -940,7 +943,7 @@ connection_ap_process_end_not_open(
           break; /* break means it'll close, below */
         /* Else fall through: expire this circuit, clear the
          * chosen_exit_name field, and try again. */
-        /* Falls through. */
+        FALLTHROUGH;
       case END_STREAM_REASON_RESOLVEFAILED:
       case END_STREAM_REASON_TIMEOUT:
       case END_STREAM_REASON_MISC:
@@ -1091,7 +1094,7 @@ connected_cell_parse(const relay_header_t *rh, const cell_t *cell,
       return -1;
     if (get_uint8(payload + 4) != 6)
       return -1;
-    tor_addr_from_ipv6_bytes(addr_out, (char*)(payload + 5));
+    tor_addr_from_ipv6_bytes(addr_out, (payload + 5));
     bytes = ntohl(get_uint32(payload + 21));
     if (bytes <= INT32_MAX)
       *ttl_out = (int) bytes;
@@ -1164,7 +1167,7 @@ resolved_cell_parse(const cell_t *cell, const relay_header_t *rh,
       if (answer_len != 16)
         goto err;
       addr = tor_malloc_zero(sizeof(*addr));
-      tor_addr_from_ipv6_bytes(&addr->addr, (const char*) cp);
+      tor_addr_from_ipv6_bytes(&addr->addr, cp);
       cp += 16;
       addr->ttl = ntohl(get_uint32(cp));
       cp += 4;
@@ -1685,6 +1688,13 @@ handle_relay_cell_command(cell_t *cell, circuit_t *circ,
       /* Total all valid application bytes delivered */
       if (CIRCUIT_IS_ORIGIN(circ) && rh->length > 0) {
         circuit_read_valid_data(TO_ORIGIN_CIRCUIT(circ), rh->length);
+      }
+
+      /* For onion service connection, update the metrics. */
+      if (conn->hs_ident) {
+        hs_metrics_app_write_bytes(&conn->hs_ident->identity_pk,
+                                   conn->hs_ident->orig_virtual_port,
+                                   rh->length);
       }
 
       stats_n_data_bytes_received += rh->length;
@@ -3216,7 +3226,7 @@ decode_address_from_payload(tor_addr_t *addr_out, const uint8_t *payload,
   case RESOLVED_TYPE_IPV6:
     if (payload[1] != 16)
       return NULL;
-    tor_addr_from_ipv6_bytes(addr_out, (char*)(payload+2));
+    tor_addr_from_ipv6_bytes(addr_out, (payload+2));
     break;
   default:
     tor_addr_make_unspec(addr_out);

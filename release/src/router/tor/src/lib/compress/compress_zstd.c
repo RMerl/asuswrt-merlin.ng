@@ -1,6 +1,6 @@
 /* Copyright (c) 2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -29,11 +29,11 @@
 
 #ifdef HAVE_ZSTD
 #ifdef HAVE_CFLAG_WUNUSED_CONST_VARIABLE
-DISABLE_GCC_WARNING(unused-const-variable)
+DISABLE_GCC_WARNING("-Wunused-const-variable")
 #endif
 #include <zstd.h>
 #ifdef HAVE_CFLAG_WUNUSED_CONST_VARIABLE
-ENABLE_GCC_WARNING(unused-const-variable)
+ENABLE_GCC_WARNING("-Wunused-const-variable")
 #endif
 #endif /* defined(HAVE_ZSTD) */
 

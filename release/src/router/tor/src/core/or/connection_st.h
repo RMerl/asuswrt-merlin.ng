@@ -1,8 +1,13 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file connection_st.h
+ * @brief Base connection structure.
+ **/
 
 #ifndef CONNECTION_ST_H
 #define CONNECTION_ST_H
@@ -64,6 +69,9 @@ struct connection_t {
   /** True if connection_handle_write is currently running on this connection.
    */
   unsigned int in_connection_handle_write:1;
+  /** If true, then we treat this connection as remote for the purpose of
+   * rate-limiting, no matter what its address is. */
+  unsigned int always_rate_limit_as_remote:1;
 
   /* For linked connections:
    */
@@ -93,8 +101,6 @@ struct connection_t {
   struct buf_t *inbuf; /**< Buffer holding data read over this connection. */
   struct buf_t *outbuf; /**< Buffer holding data to write over this
                          * connection. */
-  size_t outbuf_flushlen; /**< How much data should we try to flush from the
-                           * outbuf? */
   time_t timestamp_last_read_allowed; /**< When was the last time libevent said
                                        * we could read? */
   time_t timestamp_last_write_allowed; /**< When was the last time libevent
@@ -104,10 +110,39 @@ struct connection_t {
 
   int socket_family; /**< Address family of this connection's socket.  Usually
                       * AF_INET, but it can also be AF_UNIX, or AF_INET6 */
-  tor_addr_t addr; /**< IP that socket "s" is directly connected to;
-                    * may be the IP address for a proxy or pluggable transport,
-                    * see "address" for the address of the final destination.
-                    */
+  /**
+   * IP address on the internet of this connection's peer, usually.
+   *
+   * This address may come from several sources.  If this is an outbound
+   * connection, it is the address we are trying to connect to--either
+   * directly through `s`, or via a proxy.  (If we used a proxy, then
+   * `getpeername(s)` will not give this address.)
+   *
+   * For incoming connections, this field is the address we got from
+   * getpeername() or accept(), as updated by any proxy that we
+   * are using (for example, an ExtORPort proxy).
+   *
+   * For listeners, this is the address we are trying to bind to.
+   *
+   * If this connection is using a unix socket, then this address is a null
+   * address, and the real address is in the `address` field.
+   *
+   * If this connection represents a request made somewhere other than via
+   * TCP (for example, a UDP dns request, or a controller resolve request),
+   * then this address is the address that originated the request.
+   *
+   * TECHNICAL DEBT:
+   *
+   * There are a few places in the code that modify this address,
+   * or use it in other ways that we don't currently like.  Please don't add
+   * any more!
+   *
+   * The misuses of this field include:
+   *    * Setting it on linked connections, possibly.
+   *    * Updating it based on the Forwarded-For header-- Forwarded-For is
+   *      set by a proxy, but not a local trusted proxy.
+   **/
+  tor_addr_t addr;
   uint16_t port; /**< If non-zero, port that socket "s" is directly connected
                   * to; may be the port for a proxy or pluggable transport,
                   * see "address" for the port at the final destination. */
@@ -117,12 +152,18 @@ struct connection_t {
                               * marked.) */
   const char *marked_for_close_file; /**< For debugging: in which file were
                                       * we marked for close? */
-  char *address; /**< FQDN (or IP) and port of the final destination for this
-                  * connection; this is always the remote address, it is
-                  * passed to a proxy or pluggable transport if one in use.
-                  * See "addr" and "port" for the address that socket "s" is
-                  * directly connected to.
-                  * strdup into this, because free_connection() frees it. */
+  /**
+   * String address of the peer of this connection.
+   *
+   * TECHNICAL DEBT:
+   *
+   * This field serves many purposes, and they're not all pretty.  In addition
+   * to describing the peer we're connected to, it can also hold:
+   *
+   *    * An address we're trying to resolve (as an exit).
+   *    * A unix address we're trying to bind to (as a listener).
+   **/
+  char *address;
   /** Another connection that's connected to this one in lieu of a socket. */
   struct connection_t *linked_conn;
 

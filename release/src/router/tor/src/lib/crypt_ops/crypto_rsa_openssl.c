@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -16,7 +16,7 @@
 #include "lib/log/util_bug.h"
 #include "lib/fs/files.h"
 
-DISABLE_GCC_WARNING(redundant-decls)
+DISABLE_GCC_WARNING("-Wredundant-decls")
 
 #include <openssl/err.h>
 #include <openssl/rsa.h>
@@ -27,12 +27,13 @@ DISABLE_GCC_WARNING(redundant-decls)
 #include <openssl/bn.h>
 #include <openssl/conf.h>
 
-ENABLE_GCC_WARNING(redundant-decls)
+ENABLE_GCC_WARNING("-Wredundant-decls")
 
 #include "lib/log/log.h"
 #include "lib/encoding/binascii.h"
 
 #include <string.h>
+#include <stdbool.h>
 
 /** Declaration for crypto_pk_t structure. */
 struct crypto_pk_t
@@ -564,11 +565,71 @@ crypto_pk_asn1_encode_private(const crypto_pk_t *pk, char *dest,
   return len;
 }
 
+/** Check whether any component of a private key is too large in a way that
+ * seems likely to make verification too expensive. Return true if it's too
+ * long, and false otherwise. */
+static bool
+rsa_private_key_too_long(RSA *rsa, int max_bits)
+{
+  const BIGNUM *n, *e, *p, *q, *d, *dmp1, *dmq1, *iqmp;
+#ifdef OPENSSL_1_1_API
+
+#if OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,1,1)
+  n = RSA_get0_n(rsa);
+  e = RSA_get0_e(rsa);
+  p = RSA_get0_p(rsa);
+  q = RSA_get0_q(rsa);
+  d = RSA_get0_d(rsa);
+  dmp1 = RSA_get0_dmp1(rsa);
+  dmq1 = RSA_get0_dmq1(rsa);
+  iqmp = RSA_get0_iqmp(rsa);
+#else /* !(OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,1,1)) */
+  /* The accessors above did not exist in openssl 1.1.0. */
+  p = q = dmp1 = dmq1 = iqmp = NULL;
+  RSA_get0_key(rsa, &n, &e, &d);
+#endif /* OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,1,1) */
+
+  if (RSA_bits(rsa) > max_bits)
+    return true;
+#else /* !defined(OPENSSL_1_1_API) */
+  n = rsa->n;
+  e = rsa->e;
+  p = rsa->p;
+  q = rsa->q;
+  d = rsa->d;
+  dmp1 = rsa->dmp1;
+  dmq1 = rsa->dmq1;
+  iqmp = rsa->iqmp;
+#endif /* defined(OPENSSL_1_1_API) */
+
+  if (n && BN_num_bits(n) > max_bits)
+    return true;
+  if (e && BN_num_bits(e) > max_bits)
+    return true;
+  if (p && BN_num_bits(p) > max_bits)
+    return true;
+  if (q && BN_num_bits(q) > max_bits)
+    return true;
+  if (d && BN_num_bits(d) > max_bits)
+    return true;
+  if (dmp1 && BN_num_bits(dmp1) > max_bits)
+    return true;
+  if (dmq1 && BN_num_bits(dmq1) > max_bits)
+    return true;
+  if (iqmp && BN_num_bits(iqmp) > max_bits)
+    return true;
+
+  return false;
+}
+
 /** Decode an ASN.1-encoded private key from <b>str</b>; return the result on
  * success and NULL on failure.
+ *
+ * If <b>max_bits</b> is nonnegative, reject any key longer than max_bits
+ * without performing any expensive validation on it.
  */
 crypto_pk_t *
-crypto_pk_asn1_decode_private(const char *str, size_t len)
+crypto_pk_asn1_decode_private(const char *str, size_t len, int max_bits)
 {
   RSA *rsa;
   unsigned char *buf;
@@ -578,7 +639,12 @@ crypto_pk_asn1_decode_private(const char *str, size_t len)
   rsa = d2i_RSAPrivateKey(NULL, &cp, len);
   tor_free(buf);
   if (!rsa) {
-    crypto_openssl_log_errors(LOG_WARN,"decoding public key");
+    crypto_openssl_log_errors(LOG_WARN,"decoding private key");
+    return NULL;
+  }
+  if (max_bits >= 0 && rsa_private_key_too_long(rsa, max_bits)) {
+    log_info(LD_CRYPTO, "Private key longer than expected.");
+    RSA_free(rsa);
     return NULL;
   }
   crypto_pk_t *result = crypto_new_pk_from_openssl_rsa_(rsa);

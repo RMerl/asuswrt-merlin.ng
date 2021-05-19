@@ -1,12 +1,18 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file netstatus.c
+ * @brief Track whether the network is disabled, dormant, etc.
+ **/
 
 #include "core/or/or.h"
 #include "core/mainloop/netstatus.h"
 #include "core/mainloop/mainloop.h"
+#include "core/mainloop/mainloop_state_st.h"
 #include "app/config/config.h"
 #include "feature/hibernate/hibernate.h"
 
@@ -66,7 +72,7 @@ note_user_activity(time_t now)
 }
 
 /**
- * Change the time at which "user activitiy" was last seen to <b>now</b>.
+ * Change the time at which "user activity" was last seen to <b>now</b>.
  *
  * Unlike note_user_actity, this function sets the time without checking
  * whether it is in the past, and without causing any rescan of periodic events
@@ -110,7 +116,7 @@ is_participating_on_network(void)
  * Update 'state' with the last time at which we were active on the network.
  **/
 void
-netstatus_flush_to_state(or_state_t *state, time_t now)
+netstatus_flush_to_state(mainloop_state_t *state, time_t now)
 {
   state->Dormant = ! participating_on_network;
   if (participating_on_network) {
@@ -125,7 +131,7 @@ netstatus_flush_to_state(or_state_t *state, time_t now)
  * Update our current view of network participation from an or_state_t object.
  **/
 void
-netstatus_load_from_state(const or_state_t *state, time_t now)
+netstatus_load_from_state(const mainloop_state_t *state, time_t now)
 {
   time_t last_activity;
   if (state->Dormant == -1) { // Initial setup.

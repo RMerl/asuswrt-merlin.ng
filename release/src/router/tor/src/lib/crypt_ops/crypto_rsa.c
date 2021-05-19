@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -490,7 +490,7 @@ crypto_pk_write_private_key_to_string(crypto_pk_t *env,
 static int
 crypto_pk_read_from_string_generic(crypto_pk_t *env, const char *src,
                                    size_t len, int severity,
-                                   bool private_key)
+                                   bool private_key, int max_bits)
 {
   if (len == (size_t)-1) // "-1" indicates "use the length of the string."
     len = strlen(src);
@@ -510,7 +510,7 @@ crypto_pk_read_from_string_generic(crypto_pk_t *env, const char *src,
   }
 
   crypto_pk_t *pk = private_key
-    ? crypto_pk_asn1_decode_private((const char*)buf, n)
+    ? crypto_pk_asn1_decode_private((const char*)buf, n, max_bits)
     : crypto_pk_asn1_decode((const char*)buf, n);
   if (! pk) {
     log_fn(severity, LD_CRYPTO,
@@ -539,7 +539,8 @@ int
 crypto_pk_read_public_key_from_string(crypto_pk_t *env,
                                       const char *src, size_t len)
 {
-  return crypto_pk_read_from_string_generic(env, src, len, LOG_INFO, false);
+  return crypto_pk_read_from_string_generic(env, src, len, LOG_INFO, false,
+                                            -1);
 }
 
 /** Read a PEM-encoded private key from the <b>len</b>-byte string <b>src</b>
@@ -550,7 +551,21 @@ int
 crypto_pk_read_private_key_from_string(crypto_pk_t *env,
                                        const char *src, ssize_t len)
 {
-  return crypto_pk_read_from_string_generic(env, src, len, LOG_INFO, true);
+  return crypto_pk_read_from_string_generic(env, src, len, LOG_INFO, true,
+                                            -1);
+}
+
+/**
+ * As crypto_pk_read_private_key_from_string(), but reject any key
+ * with a modulus longer than 1024 bits before doing any expensive
+ * validation on it.
+ */
+int
+crypto_pk_read_private_key1024_from_string(crypto_pk_t *env,
+                                           const char *src, ssize_t len)
+{
+  return crypto_pk_read_from_string_generic(env, src, len, LOG_INFO, true,
+                                            1024);
 }
 
 /** If a file is longer than this, we won't try to decode its private key */
@@ -578,7 +593,7 @@ crypto_pk_read_private_key_from_filename(crypto_pk_t *env,
   }
 
   int rv = crypto_pk_read_from_string_generic(env, buf, (ssize_t)st.st_size,
-                                              LOG_WARN, true);
+                                              LOG_WARN, true, -1);
   if (rv < 0) {
     log_warn(LD_CRYPTO, "Unable to decode private key from file %s",
              escaped(keyfile));
@@ -662,7 +677,7 @@ crypto_pk_base64_decode_private(const char *str, size_t len)
     goto out;
   }
 
-  pk = crypto_pk_asn1_decode_private(der, der_len);
+  pk = crypto_pk_asn1_decode_private(der, der_len, -1);
 
  out:
   memwipe(der, 0, len+1);

@@ -29,10 +29,8 @@ should probably use src/tools/tor-resolve instead.
 dist/ -- Scripts and files for use when packaging Tor
 -----------------------------------------------------
 
-torctl, rc.subr, and tor.sh are init scripts for use with SysV-style init
+torctl and tor.sh are init scripts for use with SysV-style init
 tools.  Everybody likes to write init scripts differently, it seems.
-
-tor.service is a sample service file for use with systemd.
 
 operator-tools/ -- Tools for Tor relay operators
 ------------------------------------------------

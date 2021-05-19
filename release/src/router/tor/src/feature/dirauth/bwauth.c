@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -13,10 +13,12 @@
 #include "feature/dirauth/bwauth.h"
 
 #include "app/config/config.h"
+#include "feature/dirauth/dirauth_sys.h"
 #include "feature/nodelist/networkstatus.h"
 #include "feature/nodelist/routerlist.h"
 #include "feature/dirparse/ns_parse.h"
 
+#include "feature/dirauth/dirauth_options_st.h"
 #include "feature/nodelist/routerinfo_st.h"
 #include "feature/nodelist/vote_routerstatus_st.h"
 
@@ -56,7 +58,7 @@ dirserv_get_last_n_measured_bws(void)
 }
 
 /** Measured bandwidth cache entry */
-typedef struct mbw_cache_entry_s {
+typedef struct mbw_cache_entry_t {
   long mbw_kb;
   time_t as_of;
 } mbw_cache_entry_t;
@@ -182,7 +184,7 @@ dirserv_get_credible_bandwidth_kb(const routerinfo_t *ri)
   /* Check if we have a measured bandwidth, and check the threshold if not */
   if (!(dirserv_query_measured_bw_cache_kb(ri->cache_info.identity_digest,
                                        &mbw_kb, NULL))) {
-    threshold = get_options()->MinMeasuredBWsForAuthToIgnoreAdvertised;
+    threshold = dirauth_get_options()->MinMeasuredBWsForAuthToIgnoreAdvertised;
     if (routers_with_measured_bw > threshold) {
       /* Return zero for unmeasured bandwidth if we are above threshold */
       bw_kb = 0;

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -25,12 +25,12 @@
 
 #include "lib/crypt_ops/crypto_openssl_mgt.h"
 
-DISABLE_GCC_WARNING(redundant-decls)
+DISABLE_GCC_WARNING("-Wredundant-decls")
 
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
 
-ENABLE_GCC_WARNING(redundant-decls)
+ENABLE_GCC_WARNING("-Wredundant-decls")
 
 /* Crypto digest functions */
 
@@ -147,9 +147,9 @@ crypto_digest_get_algorithm(crypto_digest_t *digest)
 static size_t
 crypto_digest_alloc_bytes(digest_algorithm_t alg)
 {
-  /* Helper: returns the number of bytes in the 'f' field of 'st' */
+  /** Helper: returns the number of bytes in the 'f' field of 'st' */
 #define STRUCT_FIELD_SIZE(st, f) (sizeof( ((st*)0)->f ))
-  /* Gives the length of crypto_digest_t through the end of the field 'd' */
+  /** Gives the length of crypto_digest_t through the end of the field 'd' */
 #define END_OF_FIELD(f) (offsetof(crypto_digest_t, f) + \
                          STRUCT_FIELD_SIZE(crypto_digest_t, f))
   switch (alg) {
@@ -160,11 +160,11 @@ crypto_digest_alloc_bytes(digest_algorithm_t alg)
     case DIGEST_SHA512:
       return END_OF_FIELD(d.sha512);
 #ifdef OPENSSL_HAS_SHA3
-    case DIGEST_SHA3_256: /* Fall through */
+    case DIGEST_SHA3_256: FALLTHROUGH;
     case DIGEST_SHA3_512:
       return END_OF_FIELD(d.md);
 #else
-    case DIGEST_SHA3_256: /* Fall through */
+    case DIGEST_SHA3_256: FALLTHROUGH;
     case DIGEST_SHA3_512:
       return END_OF_FIELD(d.sha3);
 #endif /* defined(OPENSSL_HAS_SHA3) */
@@ -304,14 +304,14 @@ crypto_digest_add_bytes(crypto_digest_t *digest, const char *data,
       SHA512_Update(&digest->d.sha512, (void*)data, len);
       break;
 #ifdef OPENSSL_HAS_SHA3
-    case DIGEST_SHA3_256: /* FALLSTHROUGH */
+    case DIGEST_SHA3_256: FALLTHROUGH;
     case DIGEST_SHA3_512: {
       int r = EVP_DigestUpdate(digest->d.md, data, len);
       tor_assert(r);
   }
       break;
 #else /* !defined(OPENSSL_HAS_SHA3) */
-    case DIGEST_SHA3_256: /* FALLSTHROUGH */
+    case DIGEST_SHA3_256: FALLTHROUGH;
     case DIGEST_SHA3_512:
       keccak_digest_update(&digest->d.sha3, (const uint8_t *)data, len);
       break;
@@ -377,7 +377,7 @@ crypto_digest_get_digest(crypto_digest_t *digest,
       SHA512_Final(r, &tmpenv.d.sha512);
       break;
 //LCOV_EXCL_START
-    case DIGEST_SHA3_256: /* FALLSTHROUGH */
+    case DIGEST_SHA3_256: FALLTHROUGH;
     case DIGEST_SHA3_512:
     default:
       log_warn(LD_BUG, "Handling unexpected algorithm %d", digest->algorithm);
@@ -519,4 +519,3 @@ crypto_hmac_sha256(char *hmac_out,
             (unsigned char*)hmac_out, NULL);
   tor_assert(rv);
 }
-

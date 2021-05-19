@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -17,8 +17,14 @@
  * "recursive" mutexes (i.e., once we can re-lock if we're already holding
  * them.) */
 static pthread_mutexattr_t attr_recursive;
+/**
+ * True iff <b>attr_recursive</b> has been initialized.
+ **/
 static int attr_initialized = 0;
 
+/**
+ * Initialize the locking module, if it is not already initialized.
+ **/
 void
 tor_locking_init(void)
 {

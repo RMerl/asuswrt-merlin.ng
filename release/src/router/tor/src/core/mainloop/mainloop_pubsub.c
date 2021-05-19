@@ -1,8 +1,17 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2018, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file mainloop_pubsub.c
+ * @brief Connect the publish-subscribe code to the main-loop.
+ *
+ * This module is responsible for instantiating all the channels used by the
+ * publish-subscribe code, and making sure that each one's messages are
+ * processed when appropriate.
+ **/
 
 #include "orconfig.h"
 

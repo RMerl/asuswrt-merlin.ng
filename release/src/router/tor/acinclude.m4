@@ -166,7 +166,7 @@ AC_CACHE_CHECK([for $1 directory], tor_cv_library_$1_dir, [
 
   for tor_trydir in "$try$1dir" "(system)" "$prefix" /usr/local /usr/pkg $8; do
     LDFLAGS="$tor_saved_LDFLAGS"
-    LIBS="$tor_saved_LIBS $3"
+    LIBS="$3 $tor_saved_LIBS"
     CPPFLAGS="$tor_saved_CPPFLAGS"
 
     if test -z "$tor_trydir" ; then
@@ -219,7 +219,7 @@ AC_CACHE_CHECK([for $1 directory], tor_cv_library_$1_dir, [
   CPPFLAGS="$tor_saved_CPPFLAGS"
 ]) dnl end cache check
 
-LIBS="$LIBS $3"
+LIBS="$3 $LIBS"
 if test "$tor_cv_library_$1_dir" != "(system)"; then
    TOR_EXTEND_CODEPATH($tor_cv_library_$1_dir)
 fi

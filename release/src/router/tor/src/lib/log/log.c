@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -51,10 +51,6 @@
 #include "lib/fdio/fdio.h"
 #include "lib/cc/ctassert.h"
 
-#ifdef HAVE_ANDROID_LOG_H
-#include <android/log.h>
-#endif // HAVE_ANDROID_LOG_H.
-
 /** @{ */
 /** The string we stick at the end of a log message when it is too long,
  * and its length. */
@@ -78,8 +74,6 @@ typedef struct logfile_t {
   int needs_close; /**< Boolean: true if the stream gets closed on shutdown. */
   int is_temporary; /**< Boolean: close after initializing logging subsystem.*/
   int is_syslog; /**< Boolean: send messages to syslog. */
-  int is_android; /**< Boolean: send messages to Android's log subsystem. */
-  char *android_tag; /**< Identity Tag used in Android's log subsystem. */
   log_callback callback; /**< If not NULL, send messages to this function. */
   log_severity_list_t *severities; /**< Which severity of messages should we
                                     * log for each log domain? */
@@ -125,33 +119,6 @@ should_log_function_name(log_domain_mask_t domain, int severity)
       raw_assert(0); return 0; // LCOV_EXCL_LINE
   }
 }
-
-#ifdef HAVE_ANDROID_LOG_H
-/** Helper function to convert Tor's log severity into the matching
- * Android log priority.
- */
-static int
-severity_to_android_log_priority(int severity)
-{
-  switch (severity) {
-    case LOG_DEBUG:
-      return ANDROID_LOG_VERBOSE;
-    case LOG_INFO:
-      return ANDROID_LOG_DEBUG;
-    case LOG_NOTICE:
-      return ANDROID_LOG_INFO;
-    case LOG_WARN:
-      return ANDROID_LOG_WARN;
-    case LOG_ERR:
-      return ANDROID_LOG_ERROR;
-    default:
-      // LCOV_EXCL_START
-      raw_assert(0);
-      return 0;
-      // LCOV_EXCL_STOP
-  }
-}
-#endif /* defined(HAVE_ANDROID_LOG_H) */
 
 /** A mutex to guard changes to logfiles and logging. */
 static tor_mutex_t log_mutex;
@@ -276,8 +243,8 @@ static int log_time_granularity = 1;
 
 /** Define log time granularity for all logs to be <b>granularity_msec</b>
  * milliseconds. */
-void
-set_log_time_granularity(int granularity_msec)
+MOCK_IMPL(void,
+set_log_time_granularity,(int granularity_msec))
 {
   log_time_granularity = granularity_msec;
   tor_log_sigsafe_err_set_granularity(granularity_msec);
@@ -475,13 +442,13 @@ pending_log_message_free_(pending_log_message_t *msg)
 }
 
 /** Helper function: returns true iff the log file, given in <b>lf</b>, is
- * handled externally via the system log API, the Android logging API, or is an
+ * handled externally via the system log API, or is an
  * external callback function. */
 static inline int
 logfile_is_external(const logfile_t *lf)
 {
   raw_assert(lf);
-  return lf->is_syslog || lf->is_android || lf->callback;
+  return lf->is_syslog || lf->callback;
 }
 
 /** Return true iff <b>lf</b> would like to receive a message with the
@@ -523,7 +490,7 @@ logfile_deliver(logfile_t *lf, const char *buf, size_t msg_len,
      * pass them, and some very old ones do not detect overflow so well.
      * Regrettably, they call their maximum line length MAXLINE. */
 #if MAXLINE < 64
-#warn "MAXLINE is a very low number; it might not be from syslog.h after all"
+#warning "MAXLINE is very low; it might not be from syslog.h."
 #endif
     char *m = msg_after_prefix;
     if (msg_len >= MAXLINE)
@@ -537,11 +504,6 @@ logfile_deliver(logfile_t *lf, const char *buf, size_t msg_len,
     syslog(severity, "%s", msg_after_prefix);
 #endif /* defined(MAXLINE) */
 #endif /* defined(HAVE_SYSLOG_H) */
-  } else if (lf->is_android) {
-#ifdef HAVE_ANDROID_LOG_H
-    int priority = severity_to_android_log_priority(severity);
-    __android_log_write(priority, lf->android_tag, msg_after_prefix);
-#endif // HAVE_ANDROID_LOG_H.
   } else if (lf->callback) {
     if (domain & LD_NOCB) {
       if (!*callbacks_deferred && pending_cb_messages) {
@@ -665,28 +627,19 @@ tor_log_update_sigsafe_err_fds(void)
   const logfile_t *lf;
   int found_real_stderr = 0;
 
-  /* log_fds and err_fds contain matching entries: log_fds are the fds used by
-   * the log module, and err_fds are the fds used by the err module.
-   * For stdio logs, the log_fd and err_fd values are identical,
-   * and the err module closes the fd on shutdown.
-   * For file logs, the err_fd is a dup() of the log_fd,
-   * and the log and err modules both close their respective fds on shutdown.
-   * (Once all fds representing a file are closed, the underlying file is
-   * closed.)
-   */
-  int log_fds[TOR_SIGSAFE_LOG_MAX_FDS];
-  int err_fds[TOR_SIGSAFE_LOG_MAX_FDS];
+  /* The fds are the file descriptors of tor's stdout, stderr, and file
+   * logs. The log and err modules flush these fds during their shutdowns. */
+  int fds[TOR_SIGSAFE_LOG_MAX_FDS];
   int n_fds;
 
   LOCK_LOGS();
   /* Reserve the first one for stderr. This is safe because when we daemonize,
-   * we dup2 /dev/null to stderr.
-   * For stderr, log_fds and err_fds are the same. */
-  log_fds[0] = err_fds[0] = STDERR_FILENO;
+   * we dup2 /dev/null to stderr. */
+  fds[0] = STDERR_FILENO;
   n_fds = 1;
 
   for (lf = logfiles; lf; lf = lf->next) {
-     /* Don't try callback to the control port, syslogs, android logs, or any
+     /* Don't try callback to the control port, syslogs, or any
       * other non-file descriptor log: We can't call arbitrary functions from a
       * signal handler.
       */
@@ -697,21 +650,11 @@ tor_log_update_sigsafe_err_fds(void)
         (LD_BUG|LD_GENERAL)) {
       if (lf->fd == STDERR_FILENO)
         found_real_stderr = 1;
-      /* Avoid duplicates by checking the log module fd against log_fds */
-      if (int_array_contains(log_fds, n_fds, lf->fd))
+      /* Avoid duplicates by checking the log module fd against fds */
+      if (int_array_contains(fds, n_fds, lf->fd))
         continue;
-      /* Update log_fds using the log module's fd */
-      log_fds[n_fds] = lf->fd;
-      if (lf->needs_close) {
-        /* File log fds are duplicated, because close_log() closes the log
-         * module's fd, and tor_log_close_sigsafe_err_fds() closes the err
-         * module's fd. Both refer to the same file. */
-        err_fds[n_fds] = dup(lf->fd);
-      } else {
-        /* stdio log fds are not closed by the log module.
-         * tor_log_close_sigsafe_err_fds() closes stdio logs.  */
-        err_fds[n_fds] = lf->fd;
-      }
+      /* Update fds using the log module's fd */
+      fds[n_fds] = lf->fd;
       n_fds++;
       if (n_fds == TOR_SIGSAFE_LOG_MAX_FDS)
         break;
@@ -719,20 +662,19 @@ tor_log_update_sigsafe_err_fds(void)
   }
 
   if (!found_real_stderr &&
-      int_array_contains(log_fds, n_fds, STDOUT_FILENO)) {
+      int_array_contains(fds, n_fds, STDOUT_FILENO)) {
     /* Don't use a virtual stderr when we're also logging to stdout.
      * If we reached max_fds logs, we'll now have (max_fds - 1) logs.
      * That's ok, max_fds is large enough that most tor instances don't exceed
      * it. */
     raw_assert(n_fds >= 2); /* Don't tor_assert inside log fns */
     --n_fds;
-    log_fds[0] = log_fds[n_fds];
-    err_fds[0] = err_fds[n_fds];
+    fds[0] = fds[n_fds];
   }
 
   UNLOCK_LOGS();
 
-  tor_log_set_sigsafe_err_fds(err_fds, n_fds);
+  tor_log_set_sigsafe_err_fds(fds, n_fds);
 }
 
 /** Add to <b>out</b> a copy of every currently configured log file name. Used
@@ -795,7 +737,6 @@ log_free_(logfile_t *victim)
     return;
   tor_free(victim->severities);
   tor_free(victim->filename);
-  tor_free(victim->android_tag);
   tor_free(victim);
 }
 
@@ -841,16 +782,16 @@ logs_free_all(void)
    * log mutex. */
 }
 
-/** Close signal-safe log files.
- * Closing the log files makes the process and OS flush log buffers.
+/** Flush the signal-safe log files.
  *
- * This function is safe to call from a signal handler. It should only be
- * called when shutting down the log or err modules. It is currenly called
- * by the err module, when terminating the process on an abnormal condition.
+ * This function is safe to call from a signal handler. It is currently called
+ * by the BUG() macros, when terminating the process on an abnormal condition.
  */
 void
-logs_close_sigsafe(void)
+logs_flush_sigsafe(void)
 {
+  /* If we don't have fsync() in unistd.h, we can't flush the logs. */
+#ifdef HAVE_FSYNC
   logfile_t *victim, *next;
   /* We can't LOCK_LOGS() in a signal handler, because it may call
    * signal-unsafe functions. And we can't deallocate memory, either. */
@@ -860,9 +801,11 @@ logs_close_sigsafe(void)
     victim = next;
     next = next->next;
     if (victim->needs_close) {
-      close_log_sigsafe(victim);
+      /* We can't do anything useful if the flush fails. */
+      (void)fsync(victim->fd);
     }
   }
+#endif /* defined(HAVE_FSYNC) */
 }
 
 /** Remove and free the log entry <b>victim</b> from the linked-list
@@ -937,9 +880,9 @@ set_log_severity_config(int loglevelMin, int loglevelMax,
 
 /** Add a log handler named <b>name</b> to send all messages in <b>severity</b>
  * to <b>fd</b>. Copies <b>severity</b>. Helper: does no locking. */
-static void
-add_stream_log_impl(const log_severity_list_t *severity,
-                    const char *name, int fd)
+MOCK_IMPL(STATIC void,
+add_stream_log_impl,(const log_severity_list_t *severity,
+                     const char *name, int fd))
 {
   logfile_t *lf;
   lf = tor_malloc_zero(sizeof(logfile_t));
@@ -995,18 +938,16 @@ logs_set_domain_logging(int enabled)
   UNLOCK_LOGS();
 }
 
-/** Add a log handler to receive messages during startup (before the real
- * logs are initialized).
+/** Add a log handler to accept messages when no other log is configured.
  */
 void
-add_temp_log(int min_severity)
+add_default_log(int min_severity)
 {
   log_severity_list_t *s = tor_malloc_zero(sizeof(log_severity_list_t));
   set_log_severity_config(min_severity, LOG_ERR, s);
   LOCK_LOGS();
-  add_stream_log_impl(s, "<temp>", fileno(stdout));
+  add_stream_log_impl(s, "<default>", fileno(stdout));
   tor_free(s);
-  logfiles->is_temporary = 1;
   UNLOCK_LOGS();
 }
 
@@ -1149,8 +1090,7 @@ flush_log_messages_from_startup(void)
   UNLOCK_LOGS();
 }
 
-/** Close any log handlers added by add_temp_log() or marked by
- * mark_logs_temp(). */
+/** Close any log handlers marked by mark_logs_temp(). */
 void
 close_temp_logs(void)
 {
@@ -1202,10 +1142,10 @@ mark_logs_temp(void)
  * opening the logfile failed, -1 is returned and errno is set appropriately
  * (by open(2)).  Takes ownership of fd.
  */
-int
-add_file_log(const log_severity_list_t *severity,
-             const char *filename,
-             int fd)
+MOCK_IMPL(int,
+add_file_log,(const log_severity_list_t *severity,
+              const char *filename,
+              int fd))
 {
   logfile_t *lf;
 
@@ -1268,39 +1208,6 @@ add_syslog_log(const log_severity_list_t *severity,
 }
 #endif /* defined(HAVE_SYSLOG_H) */
 
-#ifdef HAVE_ANDROID_LOG_H
-/**
- * Add a log handler to send messages to the Android platform log facility.
- */
-int
-add_android_log(const log_severity_list_t *severity,
-                const char *android_tag)
-{
-  logfile_t *lf = NULL;
-
-  lf = tor_malloc_zero(sizeof(logfile_t));
-  lf->fd = -1;
-  lf->severities = tor_memdup(severity, sizeof(log_severity_list_t));
-  lf->filename = tor_strdup("<android>");
-  lf->is_android = 1;
-
-  if (android_tag == NULL)
-    lf->android_tag = tor_strdup("Tor");
-  else {
-    char buf[256];
-    tor_snprintf(buf, sizeof(buf), "Tor-%s", android_tag);
-    lf->android_tag = tor_strdup(buf);
-  }
-
-  LOCK_LOGS();
-  lf->next = logfiles;
-  logfiles = lf;
-  log_global_min_severity_ = get_min_log_level();
-  UNLOCK_LOGS();
-  return 0;
-}
-#endif /* defined(HAVE_ANDROID_LOG_H) */
-
 /** If <b>level</b> is a valid log severity, return the corresponding
  * numeric value.  Otherwise, return -1. */
 int
@@ -1329,7 +1236,7 @@ log_level_to_string(int level)
 /** NULL-terminated array of names for log domains such that domain_list[dom]
  * is a description of <b>dom</b>.
  *
- * Remember to update doc/tor.1.txt if you modify this list.
+ * Remember to update doc/man/tor.1.txt if you modify this list.
  * */
 static const char *domain_list[] = {
   "GENERAL", "CRYPTO", "NET", "CONFIG", "FS", "PROTOCOL", "MM",
@@ -1478,8 +1385,7 @@ parse_log_severity_config(const char **cfg_ptr,
     if (!strcasecmpstart(cfg, "file") ||
         !strcasecmpstart(cfg, "stderr") ||
         !strcasecmpstart(cfg, "stdout") ||
-        !strcasecmpstart(cfg, "syslog") ||
-        !strcasecmpstart(cfg, "android")) {
+        !strcasecmpstart(cfg, "syslog")) {
       goto done;
     }
     if (got_an_unqualified_range > 1)

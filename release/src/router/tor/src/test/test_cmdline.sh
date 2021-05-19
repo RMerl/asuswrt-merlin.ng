@@ -3,12 +3,29 @@
 umask 077
 set -e
 
+# emulate realpath(), in case coreutils or equivalent is not installed.
+abspath() {
+    f="$*"
+    if [ -d "$f" ]; then
+        dir="$f"
+        base=""
+    else
+        dir="$(dirname "$f")"
+        base="/$(basename "$f")"
+    fi
+    dir="$(cd "$dir" && pwd)"
+    echo "$dir$base"
+}
+
+# find the tor binary
 if [ $# -ge 1 ]; then
   TOR_BINARY="${1}"
   shift
 else
   TOR_BINARY="${TESTING_TOR_BINARY:-./src/app/tor}"
 fi
+
+TOR_BINARY="$(abspath "$TOR_BINARY")"
 
 echo "TOR BINARY IS ${TOR_BINARY}"
 

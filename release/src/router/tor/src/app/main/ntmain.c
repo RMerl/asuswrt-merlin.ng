@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -66,7 +66,7 @@ static int nt_service_cmd_stop(void);
 
 /** Struct to hold dynamically loaded NT-service related function pointers.
  */
-struct service_fns {
+struct {
   int loaded;
 
   /** @{ */
@@ -347,6 +347,7 @@ nt_service_main(void)
                "or --key-expiration) in NT service.");
         break;
       case CMD_RUN_UNITTESTS:
+      case CMD_IMMEDIATE:
       default:
         log_err(LD_CONFIG, "Illegal command number %d: internal error.",
                 get_options()->command);
@@ -602,7 +603,7 @@ nt_service_install(int argc, char **argv)
       /* Genericity is apparently _so_ last year in Redmond, where some
        * accounts are accounts that you can look up, and some accounts
        * are magic and undetectable via the security subsystem. See
-       * http://msdn2.microsoft.com/en-us/library/ms684188.aspx
+       * https://msdn2.microsoft.com/en-us/library/ms684188.aspx
        */
       printf("Running on a Post-Win2K OS, so we'll assume that the "
              "LocalService account exists.\n");

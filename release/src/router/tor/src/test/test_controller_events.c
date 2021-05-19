@@ -1,8 +1,8 @@
-/* Copyright (c) 2013-2019, The Tor Project, Inc. */
+/* Copyright (c) 2013-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define CONNECTION_PRIVATE
-#define TOR_CHANNEL_INTERNAL_
+#define CHANNEL_OBJECT_PRIVATE
 #define CONTROL_PRIVATE
 #define CONTROL_EVENTS_PRIVATE
 #define OCIRC_EVENT_PRIVATE
@@ -16,11 +16,15 @@
 #include "core/or/orconn_event.h"
 #include "core/mainloop/connection.h"
 #include "feature/control/control_events.h"
+#include "feature/control/control_fmt.h"
 #include "test/test.h"
 #include "test/test_helpers.h"
+#include "test/log_test_helpers.h"
 
+#include "core/or/entry_connection_st.h"
 #include "core/or/or_circuit_st.h"
 #include "core/or/origin_circuit_st.h"
+#include "core/or/socks_request_st.h"
 
 static void
 add_testing_cell_stats_entry(circuit_t *circ, uint8_t command,
@@ -396,6 +400,70 @@ test_cntev_dirboot_defer_orconn(void *arg)
 }
 
 static void
+test_cntev_signal(void *arg)
+{
+  (void)arg;
+  int rv;
+
+  MOCK(queue_control_event_string, mock_queue_control_event_string);
+
+  /* Nothing is listening for signals, so no event should be queued. */
+  rv = control_event_signal(SIGHUP);
+  tt_int_op(0, OP_EQ, rv);
+  tt_ptr_op(saved_event_str, OP_EQ, NULL);
+
+  /* Now try with signals included in the event mask. */
+  control_testing_set_global_event_mask(EVENT_MASK_(EVENT_GOT_SIGNAL));
+  rv = control_event_signal(SIGHUP);
+  tt_int_op(0, OP_EQ, rv);
+  tt_str_op(saved_event_str, OP_EQ, "650 SIGNAL RELOAD\r\n");
+
+  rv = control_event_signal(SIGACTIVE);
+  tt_int_op(0, OP_EQ, rv);
+  tt_str_op(saved_event_str, OP_EQ, "650 SIGNAL ACTIVE\r\n");
+
+  /* Try a signal that doesn't exist. */
+  setup_full_capture_of_logs(LOG_WARN);
+  tor_free(saved_event_str);
+  rv = control_event_signal(99999);
+  tt_int_op(-1, OP_EQ, rv);
+  tt_ptr_op(saved_event_str, OP_EQ, NULL);
+  expect_single_log_msg_containing("Unrecognized signal 99999");
+
+ done:
+  tor_free(saved_event_str);
+ teardown_capture_of_logs();
+  UNMOCK(queue_control_event_string);
+}
+
+static void
+test_cntev_log_fmt(void *arg)
+{
+  (void) arg;
+  char *result = NULL;
+#define CHECK(pre, post) \
+  do {                                            \
+    result = tor_strdup((pre));                   \
+    control_logmsg_strip_newlines(result);        \
+    tt_str_op(result, OP_EQ, (post));             \
+    tor_free(result);                             \
+  } while (0)
+
+  CHECK("There is a ", "There is a");
+  CHECK("hello", "hello");
+  CHECK("", "");
+  CHECK("Put    spaces at the end   ", "Put    spaces at the end");
+  CHECK("         ", "");
+  CHECK("\n\n\n", "");
+  CHECK("Testing\r\n", "Testing");
+  CHECK("T e s t\ni n g\n", "T e s t i n g");
+
+ done:
+  tor_free(result);
+#undef CHECK
+}
+
+static void
 setup_orconn_state(orconn_state_msg_t *msg, uint64_t gid, uint64_t chan,
                    int proxy_type)
 {
@@ -537,6 +605,133 @@ test_cntev_orconn_state_proxy(void *arg)
   UNMOCK(queue_control_event_string);
 }
 
+static void
+test_cntev_format_stream(void *arg)
+{
+  entry_connection_t *ec = NULL;
+  char *conndesc = NULL;
+  (void)arg;
+
+  ec = entry_connection_new(CONN_TYPE_AP, AF_INET);
+
+  char *username = tor_strdup("jeremy");
+  char *password = tor_strdup("letmein");
+  ec->socks_request->username = username; // steal reference
+  ec->socks_request->usernamelen = strlen(username);
+  ec->socks_request->password = password; // steal reference
+  ec->socks_request->passwordlen = strlen(password);
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "SOCKS_USERNAME=\"jeremy\""));
+  tt_assert(strstr(conndesc, "SOCKS_PASSWORD=\"letmein\""));
+  tor_free(conndesc);
+
+  ec->socks_request->listener_type = CONN_TYPE_AP_LISTENER;
+  ec->socks_request->socks_version = 4;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "CLIENT_PROTOCOL=SOCKS4"));
+  tor_free(conndesc);
+
+  ec->socks_request->listener_type = CONN_TYPE_AP_LISTENER;
+  ec->socks_request->socks_version = 5;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "CLIENT_PROTOCOL=SOCKS5"));
+  tor_free(conndesc);
+
+  ec->socks_request->listener_type = CONN_TYPE_AP_LISTENER;
+  ec->socks_request->socks_version = 6;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "CLIENT_PROTOCOL=UNKNOWN"));
+  tor_free(conndesc);
+
+  ec->socks_request->listener_type = CONN_TYPE_AP_TRANS_LISTENER;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "CLIENT_PROTOCOL=TRANS"));
+  tor_free(conndesc);
+
+  ec->socks_request->listener_type = CONN_TYPE_AP_NATD_LISTENER;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "CLIENT_PROTOCOL=NATD"));
+  tor_free(conndesc);
+
+  ec->socks_request->listener_type = CONN_TYPE_AP_DNS_LISTENER;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "CLIENT_PROTOCOL=DNS"));
+  tor_free(conndesc);
+
+  ec->socks_request->listener_type = CONN_TYPE_AP_HTTP_CONNECT_LISTENER;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "CLIENT_PROTOCOL=HTTPCONNECT"));
+  tor_free(conndesc);
+
+  ec->socks_request->listener_type = CONN_TYPE_OR;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "CLIENT_PROTOCOL=UNKNOWN"));
+  tor_free(conndesc);
+
+  ec->nym_epoch = 1337;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "NYM_EPOCH=1337"));
+  tor_free(conndesc);
+
+  ec->entry_cfg.session_group = 4321;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "SESSION_GROUP=4321"));
+  tor_free(conndesc);
+
+  ec->entry_cfg.isolation_flags = ISO_DESTPORT;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "ISO_FIELDS=DESTPORT"));
+  tt_assert(!strstr(conndesc, "ISO_FIELDS=DESTPORT,"));
+  tor_free(conndesc);
+
+  ec->entry_cfg.isolation_flags = ISO_DESTADDR;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "ISO_FIELDS=DESTADDR"));
+  tt_assert(!strstr(conndesc, "ISO_FIELDS=DESTADDR,"));
+  tor_free(conndesc);
+
+  ec->entry_cfg.isolation_flags = ISO_SOCKSAUTH;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "ISO_FIELDS=SOCKS_USERNAME,SOCKS_PASSWORD"));
+  tt_assert(!strstr(conndesc, "ISO_FIELDS=SOCKS_USERNAME,SOCKS_PASSWORD,"));
+  tor_free(conndesc);
+
+  ec->entry_cfg.isolation_flags = ISO_CLIENTPROTO;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "ISO_FIELDS=CLIENT_PROTOCOL"));
+  tt_assert(!strstr(conndesc, "ISO_FIELDS=CLIENT_PROTOCOL,"));
+  tor_free(conndesc);
+
+  ec->entry_cfg.isolation_flags = ISO_CLIENTADDR;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "ISO_FIELDS=CLIENTADDR"));
+  tt_assert(!strstr(conndesc, "ISO_FIELDS=CLIENTADDR,"));
+  tor_free(conndesc);
+
+  ec->entry_cfg.isolation_flags = ISO_SESSIONGRP;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "ISO_FIELDS=SESSION_GROUP"));
+  tt_assert(!strstr(conndesc, "ISO_FIELDS=SESSION_GROUP,"));
+  tor_free(conndesc);
+
+  ec->entry_cfg.isolation_flags = ISO_NYM_EPOCH;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc, "ISO_FIELDS=NYM_EPOCH"));
+  tt_assert(!strstr(conndesc, "ISO_FIELDS=NYM_EPOCH,"));
+  tor_free(conndesc);
+
+  ec->entry_cfg.isolation_flags = ISO_DESTPORT | ISO_SOCKSAUTH | ISO_NYM_EPOCH;
+  conndesc = entry_connection_describe_status_for_controller(ec);
+  tt_assert(strstr(conndesc,
+    "ISO_FIELDS=DESTPORT,SOCKS_USERNAME,SOCKS_PASSWORD,NYM_EPOCH"));
+  tt_assert(!strstr(conndesc,
+    "ISO_FIELDS=DESTPORT,SOCKS_USERNAME,SOCKS_PASSWORD,NYM_EPOCH,"));
+
+ done:
+  tor_free(conndesc);
+  connection_free_minimal(ENTRY_TO_CONN(ec));
+}
+
 #define TEST(name, flags)                               \
   { #name, test_cntev_ ## name, flags, 0, NULL }
 
@@ -548,6 +743,9 @@ struct testcase_t controller_event_tests[] = {
   TEST(append_cell_stats, TT_FORK),
   TEST(format_cell_stats, TT_FORK),
   TEST(event_mask, TT_FORK),
+  TEST(format_stream, TT_FORK),
+  TEST(signal, TT_FORK),
+  TEST(log_fmt, 0),
   T_PUBSUB(dirboot_defer_desc, TT_FORK),
   T_PUBSUB(dirboot_defer_orconn, TT_FORK),
   T_PUBSUB(orconn_state, TT_FORK),

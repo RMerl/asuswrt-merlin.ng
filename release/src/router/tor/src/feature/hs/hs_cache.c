@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -17,6 +17,7 @@
 #include "feature/hs/hs_common.h"
 #include "feature/hs/hs_client.h"
 #include "feature/hs/hs_descriptor.h"
+#include "feature/nodelist/microdesc.h"
 #include "feature/nodelist/networkstatus.h"
 #include "feature/rend/rendcache.h"
 
@@ -27,12 +28,27 @@
 static int cached_client_descriptor_has_expired(time_t now,
            const hs_cache_client_descriptor_t *cached_desc);
 
+/** Helper function: Return true iff the cache entry has a decrypted
+ * descriptor.
+ *
+ * A NULL desc object in the entry means that we were not able to decrypt the
+ * descriptor because we are likely lacking client authorization.  It is still
+ * a valid entry but some operations can't be done without the decrypted
+ * descriptor thus this function MUST be used to safe guard access to the
+ * decrypted desc object. */
+static inline bool
+entry_has_decrypted_descriptor(const hs_cache_client_descriptor_t *entry)
+{
+  tor_assert(entry);
+  return (entry->desc != NULL);
+}
+
 /********************** Directory HS cache ******************/
 
-/* Directory descriptor cache. Map indexed by blinded key. */
+/** Directory descriptor cache. Map indexed by blinded key. */
 static digest256map_t *hs_cache_v3_dir;
 
-/* Remove a given descriptor from our cache. */
+/** Remove a given descriptor from our cache. */
 static void
 remove_v3_desc_as_dir(const hs_cache_dir_descriptor_t *desc)
 {
@@ -40,7 +56,7 @@ remove_v3_desc_as_dir(const hs_cache_dir_descriptor_t *desc)
   digest256map_remove(hs_cache_v3_dir, desc->key);
 }
 
-/* Store a given descriptor in our cache. */
+/** Store a given descriptor in our cache. */
 static void
 store_v3_desc_as_dir(hs_cache_dir_descriptor_t *desc)
 {
@@ -48,7 +64,7 @@ store_v3_desc_as_dir(hs_cache_dir_descriptor_t *desc)
   digest256map_set(hs_cache_v3_dir, desc->key, desc);
 }
 
-/* Query our cache and return the entry or NULL if not found. */
+/** Query our cache and return the entry or NULL if not found. */
 static hs_cache_dir_descriptor_t *
 lookup_v3_desc_as_dir(const uint8_t *key)
 {
@@ -59,7 +75,7 @@ lookup_v3_desc_as_dir(const uint8_t *key)
 #define cache_dir_desc_free(val) \
   FREE_AND_NULL(hs_cache_dir_descriptor_t, cache_dir_desc_free_, (val))
 
-/* Free a directory descriptor object. */
+/** Free a directory descriptor object. */
 static void
 cache_dir_desc_free_(hs_cache_dir_descriptor_t *desc)
 {
@@ -71,7 +87,7 @@ cache_dir_desc_free_(hs_cache_dir_descriptor_t *desc)
   tor_free(desc);
 }
 
-/* Helper function: Use by the free all function using the digest256map
+/** Helper function: Use by the free all function using the digest256map
  * interface to cache entries. */
 static void
 cache_dir_desc_free_void(void *ptr)
@@ -79,7 +95,7 @@ cache_dir_desc_free_void(void *ptr)
   cache_dir_desc_free_(ptr);
 }
 
-/* Create a new directory cache descriptor object from a encoded descriptor.
+/** Create a new directory cache descriptor object from a encoded descriptor.
  * On success, return the heap-allocated cache object, otherwise return NULL if
  * we can't decode the descriptor. */
 static hs_cache_dir_descriptor_t *
@@ -109,7 +125,7 @@ cache_dir_desc_new(const char *desc)
   return NULL;
 }
 
-/* Return the size of a cache entry in bytes. */
+/** Return the size of a cache entry in bytes. */
 static size_t
 cache_get_dir_entry_size(const hs_cache_dir_descriptor_t *entry)
 {
@@ -117,7 +133,7 @@ cache_get_dir_entry_size(const hs_cache_dir_descriptor_t *entry)
           + strlen(entry->encoded_desc));
 }
 
-/* Try to store a valid version 3 descriptor in the directory cache. Return 0
+/** Try to store a valid version 3 descriptor in the directory cache. Return 0
  * on success else a negative value is returned indicating that we have a
  * newer version in our cache. On error, caller is responsible to free the
  * given descriptor desc. */
@@ -167,7 +183,7 @@ cache_store_v3_as_dir(hs_cache_dir_descriptor_t *desc)
   return -1;
 }
 
-/* Using the query which is the base64 encoded blinded key of a version 3
+/** Using the query which is the base64 encoded blinded key of a version 3
  * descriptor, lookup in our directory cache the entry. If found, 1 is
  * returned and desc_out is populated with a newly allocated string being the
  * encoded descriptor. If not found, 0 is returned and desc_out is untouched.
@@ -202,7 +218,7 @@ cache_lookup_v3_as_dir(const char *query, const char **desc_out)
   return -1;
 }
 
-/* Clean the v3 cache by removing any entry that has expired using the
+/** Clean the v3 cache by removing any entry that has expired using the
  * <b>global_cutoff</b> value. If <b>global_cutoff</b> is 0, the cleaning
  * process will use the lifetime found in the plaintext data section. Return
  * the number of bytes cleaned. */
@@ -252,7 +268,7 @@ cache_clean_v3_as_dir(time_t now, time_t global_cutoff)
   return bytes_removed;
 }
 
-/* Given an encoded descriptor, store it in the directory cache depending on
+/** Given an encoded descriptor, store it in the directory cache depending on
  * which version it is. Return a negative value on error. On success, 0 is
  * returned. */
 int
@@ -287,7 +303,7 @@ hs_cache_store_as_dir(const char *desc)
   return -1;
 }
 
-/* Using the query, lookup in our directory cache the entry. If found, 1 is
+/** Using the query, lookup in our directory cache the entry. If found, 1 is
  * returned and desc_out is populated with a newly allocated string being
  * the encoded descriptor. If not found, 0 is returned and desc_out is
  * untouched. On error, a negative value is returned and desc_out is
@@ -312,7 +328,7 @@ hs_cache_lookup_as_dir(uint32_t version, const char *query,
   return found;
 }
 
-/* Clean all directory caches using the current time now. */
+/** Clean all directory caches using the current time now. */
 void
 hs_cache_clean_as_dir(time_t now)
 {
@@ -329,99 +345,13 @@ hs_cache_clean_as_dir(time_t now)
 
 /********************** Client-side HS cache ******************/
 
-/* Client-side HS descriptor cache. Map indexed by service identity key. */
+/** Client-side HS descriptor cache. Map indexed by service identity key. */
 static digest256map_t *hs_cache_v3_client;
 
-/* Client-side introduction point state cache. Map indexed by service public
+/** Client-side introduction point state cache. Map indexed by service public
  * identity key (onion address). It contains hs_cache_client_intro_state_t
  * objects all related to a specific service. */
 static digest256map_t *hs_cache_client_intro_state;
-
-/* Return the size of a client cache entry in bytes. */
-static size_t
-cache_get_client_entry_size(const hs_cache_client_descriptor_t *entry)
-{
-  return sizeof(*entry) +
-         strlen(entry->encoded_desc) + hs_desc_obj_size(entry->desc);
-}
-
-/* Remove a given descriptor from our cache. */
-static void
-remove_v3_desc_as_client(const hs_cache_client_descriptor_t *desc)
-{
-  tor_assert(desc);
-  digest256map_remove(hs_cache_v3_client, desc->key.pubkey);
-  /* Update cache size with this entry for the OOM handler. */
-  rend_cache_decrement_allocation(cache_get_client_entry_size(desc));
-}
-
-/* Store a given descriptor in our cache. */
-static void
-store_v3_desc_as_client(hs_cache_client_descriptor_t *desc)
-{
-  tor_assert(desc);
-  digest256map_set(hs_cache_v3_client, desc->key.pubkey, desc);
-  /* Update cache size with this entry for the OOM handler. */
-  rend_cache_increment_allocation(cache_get_client_entry_size(desc));
-}
-
-/* Query our cache and return the entry or NULL if not found or if expired. */
-STATIC hs_cache_client_descriptor_t *
-lookup_v3_desc_as_client(const uint8_t *key)
-{
-  time_t now = approx_time();
-  hs_cache_client_descriptor_t *cached_desc;
-
-  tor_assert(key);
-
-  /* Do the lookup */
-  cached_desc = digest256map_get(hs_cache_v3_client, key);
-  if (!cached_desc) {
-    return NULL;
-  }
-
-  /* Don't return expired entries */
-  if (cached_client_descriptor_has_expired(now, cached_desc)) {
-    return NULL;
-  }
-
-  return cached_desc;
-}
-
-/* Parse the encoded descriptor in <b>desc_str</b> using
- * <b>service_identity_pk<b> to decrypt it first.
- *
- * If everything goes well, allocate and return a new
- * hs_cache_client_descriptor_t object. In case of error, return NULL. */
-static hs_cache_client_descriptor_t *
-cache_client_desc_new(const char *desc_str,
-                      const ed25519_public_key_t *service_identity_pk)
-{
-  hs_descriptor_t *desc = NULL;
-  hs_cache_client_descriptor_t *client_desc = NULL;
-
-  tor_assert(desc_str);
-  tor_assert(service_identity_pk);
-
-  /* Decode the descriptor we just fetched. */
-  if (hs_client_decode_descriptor(desc_str, service_identity_pk, &desc) < 0) {
-    goto end;
-  }
-  tor_assert(desc);
-
-  /* All is good: make a cache object for this descriptor */
-  client_desc = tor_malloc_zero(sizeof(hs_cache_client_descriptor_t));
-  ed25519_pubkey_copy(&client_desc->key, service_identity_pk);
-  /* Set expiration time for this cached descriptor to be the start of the next
-   * time period since that's when clients need to start using the next blinded
-   * pk of the service (and hence will need its next descriptor). */
-  client_desc->expiration_ts = hs_get_start_time_of_next_time_period(0);
-  client_desc->desc = desc;
-  client_desc->encoded_desc = tor_strdup(desc_str);
-
- end:
-  return client_desc;
-}
 
 #define cache_client_desc_free(val) \
   FREE_AND_NULL(hs_cache_client_descriptor_t, cache_client_desc_free_, (val))
@@ -448,7 +378,138 @@ cache_client_desc_free_void(void *ptr)
   cache_client_desc_free(desc);
 }
 
-/* Return a newly allocated and initialized hs_cache_intro_state_t object. */
+/** Return the size of a client cache entry in bytes. */
+static size_t
+cache_get_client_entry_size(const hs_cache_client_descriptor_t *entry)
+{
+  size_t size = 0;
+
+  if (entry == NULL) {
+    goto end;
+  }
+  size += sizeof(*entry);
+
+  if (entry->encoded_desc) {
+    size += strlen(entry->encoded_desc);
+  }
+
+  if (entry_has_decrypted_descriptor(entry)) {
+    size += hs_desc_obj_size(entry->desc);
+  }
+
+ end:
+  return size;
+}
+
+/** Remove a given descriptor from our cache. */
+static void
+remove_v3_desc_as_client(const hs_cache_client_descriptor_t *desc)
+{
+  tor_assert(desc);
+  digest256map_remove(hs_cache_v3_client, desc->key.pubkey);
+  /* Update cache size with this entry for the OOM handler. */
+  rend_cache_decrement_allocation(cache_get_client_entry_size(desc));
+}
+
+/** Store a given descriptor in our cache. */
+static void
+store_v3_desc_as_client(hs_cache_client_descriptor_t *desc)
+{
+  hs_cache_client_descriptor_t *cached_desc;
+
+  tor_assert(desc);
+
+  /* Because the lookup function doesn't return an expired entry, it can linger
+   * in the cache until we clean it up or a new descriptor is stored. So,
+   * before adding, we'll make sure we are not overwriting an old descriptor
+   * (which is OK in terms of semantic) but leads to memory leak. */
+  cached_desc = digest256map_get(hs_cache_v3_client, desc->key.pubkey);
+  if (cached_desc) {
+    cache_client_desc_free(cached_desc);
+  }
+  digest256map_set(hs_cache_v3_client, desc->key.pubkey, desc);
+  /* Update cache size with this entry for the OOM handler. */
+  rend_cache_increment_allocation(cache_get_client_entry_size(desc));
+}
+
+/** Query our cache and return the entry or NULL if not found or if expired. */
+STATIC hs_cache_client_descriptor_t *
+lookup_v3_desc_as_client(const uint8_t *key)
+{
+  time_t now = approx_time();
+  hs_cache_client_descriptor_t *cached_desc;
+
+  tor_assert(key);
+
+  /* Do the lookup */
+  cached_desc = digest256map_get(hs_cache_v3_client, key);
+  if (!cached_desc) {
+    return NULL;
+  }
+
+  /* Don't return expired entries */
+  if (cached_client_descriptor_has_expired(now, cached_desc)) {
+    return NULL;
+  }
+
+  return cached_desc;
+}
+
+/** Parse the encoded descriptor in <b>desc_str</b> using
+ * <b>service_identity_pk</b> to decrypt it first.
+ *
+ * If everything goes well, allocate and return a new
+ * hs_cache_client_descriptor_t object. In case of error, return NULL. */
+static hs_cache_client_descriptor_t *
+cache_client_desc_new(const char *desc_str,
+                      const ed25519_public_key_t *service_identity_pk,
+                      hs_desc_decode_status_t *decode_status_out)
+{
+  hs_desc_decode_status_t ret;
+  hs_descriptor_t *desc = NULL;
+  hs_cache_client_descriptor_t *client_desc = NULL;
+
+  tor_assert(desc_str);
+  tor_assert(service_identity_pk);
+
+  /* Decode the descriptor we just fetched. */
+  ret = hs_client_decode_descriptor(desc_str, service_identity_pk, &desc);
+  if (ret != HS_DESC_DECODE_OK &&
+      ret != HS_DESC_DECODE_NEED_CLIENT_AUTH &&
+      ret != HS_DESC_DECODE_BAD_CLIENT_AUTH) {
+    /* In the case of a missing or bad client authorization, we'll keep the
+     * descriptor in the cache because those credentials can arrive later. */
+    goto end;
+  }
+  /* Make sure we do have a descriptor if decoding was successful. */
+  if (ret == HS_DESC_DECODE_OK) {
+    tor_assert(desc);
+  } else {
+    if (BUG(desc != NULL)) {
+      /* We are not suppose to have a descriptor if the decoding code is not
+       * indicating success. Just in case, bail early to recover. */
+      goto end;
+    }
+  }
+
+  /* All is good: make a cache object for this descriptor */
+  client_desc = tor_malloc_zero(sizeof(hs_cache_client_descriptor_t));
+  ed25519_pubkey_copy(&client_desc->key, service_identity_pk);
+  /* Set expiration time for this cached descriptor to be the start of the next
+   * time period since that's when clients need to start using the next blinded
+   * pk of the service (and hence will need its next descriptor). */
+  client_desc->expiration_ts = hs_get_start_time_of_next_time_period(0);
+  client_desc->desc = desc;
+  client_desc->encoded_desc = tor_strdup(desc_str);
+
+ end:
+  if (decode_status_out) {
+    *decode_status_out = ret;
+  }
+  return client_desc;
+}
+
+/** Return a newly allocated and initialized hs_cache_intro_state_t object. */
 static hs_cache_intro_state_t *
 cache_intro_state_new(void)
 {
@@ -460,21 +521,21 @@ cache_intro_state_new(void)
 #define cache_intro_state_free(val) \
   FREE_AND_NULL(hs_cache_intro_state_t, cache_intro_state_free_, (val))
 
-/* Free an hs_cache_intro_state_t object. */
+/** Free an hs_cache_intro_state_t object. */
 static void
 cache_intro_state_free_(hs_cache_intro_state_t *state)
 {
   tor_free(state);
 }
 
-/* Helper function: used by the free all function. */
+/** Helper function: used by the free all function. */
 static void
 cache_intro_state_free_void(void *state)
 {
   cache_intro_state_free_(state);
 }
 
-/* Return a newly allocated and initialized hs_cache_client_intro_state_t
+/** Return a newly allocated and initialized hs_cache_client_intro_state_t
  * object. */
 static hs_cache_client_intro_state_t *
 cache_client_intro_state_new(void)
@@ -488,7 +549,7 @@ cache_client_intro_state_new(void)
   FREE_AND_NULL(hs_cache_client_intro_state_t,          \
                 cache_client_intro_state_free_, (val))
 
-/* Free a cache_client_intro_state object. */
+/** Free a cache_client_intro_state object. */
 static void
 cache_client_intro_state_free_(hs_cache_client_intro_state_t *cache)
 {
@@ -499,14 +560,14 @@ cache_client_intro_state_free_(hs_cache_client_intro_state_t *cache)
   tor_free(cache);
 }
 
-/* Helper function: used by the free all function. */
+/** Helper function: used by the free all function. */
 static void
 cache_client_intro_state_free_void(void *entry)
 {
   cache_client_intro_state_free_(entry);
 }
 
-/* For the given service identity key service_pk and an introduction
+/** For the given service identity key service_pk and an introduction
  * authentication key auth_key, lookup the intro state object. Return 1 if
  * found and put it in entry if not NULL. Return 0 if not found and entry is
  * untouched. */
@@ -541,7 +602,7 @@ cache_client_intro_state_lookup(const ed25519_public_key_t *service_pk,
   return 0;
 }
 
-/* Note the given failure in state. */
+/** Note the given failure in state. */
 static void
 cache_client_intro_state_note(hs_cache_intro_state_t *state,
                               rend_intro_point_failure_t failure)
@@ -563,7 +624,7 @@ cache_client_intro_state_note(hs_cache_intro_state_t *state,
   }
 }
 
-/* For the given service identity key service_pk and an introduction
+/** For the given service identity key service_pk and an introduction
  * authentication key auth_key, add an entry in the client intro state cache
  * If no entry exists for the service, it will create one. If state is non
  * NULL, it will point to the new intro state entry. */
@@ -597,7 +658,7 @@ cache_client_intro_state_add(const ed25519_public_key_t *service_pk,
   }
 }
 
-/* Remove every intro point state entry from cache that has been created
+/** Remove every intro point state entry from cache that has been created
  * before or at the cutoff. */
 static void
 cache_client_intro_state_clean(time_t cutoff,
@@ -614,7 +675,7 @@ cache_client_intro_state_clean(time_t cutoff,
   } DIGEST256MAP_FOREACH_END;
 }
 
-/* Return true iff no intro points are in this cache. */
+/** Return true iff no intro points are in this cache. */
 static int
 cache_client_intro_state_is_empty(const hs_cache_client_intro_state_t *cache)
 {
@@ -635,9 +696,25 @@ cache_store_as_client(hs_cache_client_descriptor_t *client_desc)
   tor_assert(client_desc);
 
   /* Check if we already have a descriptor from this HS in cache. If we do,
-   * check if this descriptor is newer than the cached one */
+   * check if this descriptor is newer than the cached one only if we have a
+   * decoded descriptor. We do keep non-decoded descriptor that requires
+   * client authorization. */
   cache_entry = lookup_v3_desc_as_client(client_desc->key.pubkey);
   if (cache_entry != NULL) {
+    /* If the current or the new cache entry don't have a decrypted descriptor
+     * (missing client authorization), we always replace the current one with
+     * the new one. Reason is that we can't inspect the revision counter
+     * within the plaintext data so we blindly replace. */
+    if (!entry_has_decrypted_descriptor(cache_entry) ||
+        !entry_has_decrypted_descriptor(client_desc)) {
+      remove_v3_desc_as_client(cache_entry);
+      cache_client_desc_free(cache_entry);
+      goto store;
+    }
+
+    /* From this point on, we know that the decrypted descriptor is in the
+     * current entry and new object thus safe to access. */
+
     /* If we have an entry in our cache that has a revision counter greater
      * than the one we just fetched, discard the one we fetched. */
     if (cache_entry->desc->plaintext_data.revision_counter >
@@ -657,6 +734,7 @@ cache_store_as_client(hs_cache_client_descriptor_t *client_desc)
     cache_client_desc_free(cache_entry);
   }
 
+ store:
   /* Store descriptor in cache */
   store_v3_desc_as_client(client_desc);
 
@@ -664,7 +742,7 @@ cache_store_as_client(hs_cache_client_descriptor_t *client_desc)
   return 0;
 }
 
-/* Return true iff the cached client descriptor at <b>cached_desc</b has
+/** Return true iff the cached client descriptor at <b>cached_desc</b> has
  * expired. */
 static int
 cached_client_descriptor_has_expired(time_t now,
@@ -673,7 +751,9 @@ cached_client_descriptor_has_expired(time_t now,
   /* We use the current consensus time to see if we should expire this
    * descriptor since we use consensus time for all other parts of the protocol
    * as well (e.g. to build the blinded key and compute time periods). */
-  const networkstatus_t *ns = networkstatus_get_live_consensus(now);
+  const networkstatus_t *ns =
+    networkstatus_get_reasonably_live_consensus(now,
+      usable_consensus_flavor());
   /* If we don't have a recent consensus, consider this entry expired since we
    * will want to fetch a new HS desc when we get a live consensus. */
   if (!ns) {
@@ -687,7 +767,7 @@ cached_client_descriptor_has_expired(time_t now,
   return 0;
 }
 
-/* clean the client cache using now as the current time. Return the total size
+/** clean the client cache using now as the current time. Return the total size
  * of removed bytes from the cache. */
 static size_t
 cache_clean_v3_as_client(time_t now)
@@ -710,11 +790,15 @@ cache_clean_v3_as_client(time_t now)
     MAP_DEL_CURRENT(key);
     entry_size = cache_get_client_entry_size(entry);
     bytes_removed += entry_size;
+
     /* We just removed an old descriptor. We need to close all intro circuits
-     * so we don't have leftovers that can be selected while lacking a
-     * descriptor. We leave the rendezvous circuits opened because they could
-     * be in use. */
-    hs_client_close_intro_circuits_from_desc(entry->desc);
+     * if the descriptor is decrypted so we don't have leftovers that can be
+     * selected while lacking a descriptor. Circuits are selected by intro
+     * authentication key thus we need the descriptor. We leave the rendezvous
+     * circuits opened because they could be in use. */
+    if (entry_has_decrypted_descriptor(entry)) {
+      hs_client_close_intro_circuits_from_desc(entry->desc);
+    }
     /* Entry is not in the cache anymore, destroy it. */
     cache_client_desc_free(entry);
     /* Update our OOM. We didn't use the remove() function because we are in
@@ -752,7 +836,9 @@ hs_cache_lookup_encoded_as_client(const ed25519_public_key_t *key)
 }
 
 /** Public API: Given the HS ed25519 identity public key in <b>key</b>, return
- *  its HS descriptor if it's stored in our cache, or NULL if not. */
+ *  its HS descriptor if it's stored in our cache, or NULL if not or if the
+ *  descriptor was never decrypted. The later can happen if we are waiting for
+ *  client authorization to be added. */
 const hs_descriptor_t *
 hs_cache_lookup_as_client(const ed25519_public_key_t *key)
 {
@@ -761,27 +847,41 @@ hs_cache_lookup_as_client(const ed25519_public_key_t *key)
   tor_assert(key);
 
   cached_desc = lookup_v3_desc_as_client(key->pubkey);
-  if (cached_desc) {
-    tor_assert(cached_desc->desc);
+  if (cached_desc && entry_has_decrypted_descriptor(cached_desc)) {
     return cached_desc->desc;
   }
 
   return NULL;
 }
 
-/** Public API: Given an encoded descriptor, store it in the client HS
- *  cache. Return -1 on error, 0 on success .*/
-int
+/** Public API: Given an encoded descriptor, store it in the client HS cache.
+ *  Return a decode status which changes how we handle the SOCKS connection
+ *  depending on its value:
+ *
+ *  HS_DESC_DECODE_OK: Returned on success. Descriptor was properly decoded
+ *                     and is now stored.
+ *
+ *  HS_DESC_DECODE_NEED_CLIENT_AUTH: Client authorization is needed but the
+ *                                   descriptor was still stored.
+ *
+ *  HS_DESC_DECODE_BAD_CLIENT_AUTH: Client authorization for this descriptor
+ *                                  was not usable but the descriptor was
+ *                                  still stored.
+ *
+ *  Any other codes means indicate where the error occurred and the descriptor
+ *  was not stored. */
+hs_desc_decode_status_t
 hs_cache_store_as_client(const char *desc_str,
                          const ed25519_public_key_t *identity_pk)
 {
+  hs_desc_decode_status_t ret;
   hs_cache_client_descriptor_t *client_desc = NULL;
 
   tor_assert(desc_str);
   tor_assert(identity_pk);
 
   /* Create client cache descriptor object */
-  client_desc = cache_client_desc_new(desc_str, identity_pk);
+  client_desc = cache_client_desc_new(desc_str, identity_pk, &ret);
   if (!client_desc) {
     log_warn(LD_GENERAL, "HSDesc parsing failed!");
     log_debug(LD_GENERAL, "Failed to parse HSDesc: %s.", escaped(desc_str));
@@ -790,17 +890,54 @@ hs_cache_store_as_client(const char *desc_str,
 
   /* Push it to the cache */
   if (cache_store_as_client(client_desc) < 0) {
+    ret = HS_DESC_DECODE_GENERIC_ERROR;
     goto err;
   }
 
-  return 0;
+  return ret;
 
  err:
   cache_client_desc_free(client_desc);
-  return -1;
+  return ret;
 }
 
-/* Clean all client caches using the current time now. */
+/** Remove and free a client cache descriptor entry for the given onion
+ * service ed25519 public key. If the descriptor is decoded, the intro
+ * circuits are closed if any.
+ *
+ * This does nothing if no descriptor exists for the given key. */
+void
+hs_cache_remove_as_client(const ed25519_public_key_t *key)
+{
+  hs_cache_client_descriptor_t *cached_desc = NULL;
+
+  tor_assert(key);
+
+  cached_desc = lookup_v3_desc_as_client(key->pubkey);
+  if (!cached_desc) {
+    return;
+  }
+  /* If we have a decrypted/decoded descriptor, attempt to close its
+   * introduction circuit(s). We shouldn't have circuit(s) without a
+   * descriptor else it will lead to a failure. */
+  if (entry_has_decrypted_descriptor(cached_desc)) {
+    hs_client_close_intro_circuits_from_desc(cached_desc->desc);
+  }
+  /* Remove and free. */
+  remove_v3_desc_as_client(cached_desc);
+  cache_client_desc_free(cached_desc);
+
+  /* Logging. */
+  {
+    char key_b64[BASE64_DIGEST256_LEN + 1];
+    digest256_to_base64(key_b64, (const char *) key);
+    log_info(LD_REND, "Onion service v3 descriptor '%s' removed "
+                      "from client cache",
+             safe_str_client(key_b64));
+  }
+}
+
+/** Clean all client caches using the current time now. */
 void
 hs_cache_clean_as_client(time_t now)
 {
@@ -811,7 +948,7 @@ hs_cache_clean_as_client(time_t now)
   cache_clean_v3_as_client(now);
 }
 
-/* Purge the client descriptor cache. */
+/** Purge the client descriptor cache. */
 void
 hs_cache_purge_as_client(void)
 {
@@ -828,7 +965,7 @@ hs_cache_purge_as_client(void)
   log_info(LD_REND, "Hidden service client descriptor cache purged.");
 }
 
-/* For a given service identity public key and an introduction authentication
+/** For a given service identity public key and an introduction authentication
  * key, note the given failure in the client intro state cache. */
 void
 hs_cache_client_intro_state_note(const ed25519_public_key_t *service_pk,
@@ -850,7 +987,7 @@ hs_cache_client_intro_state_note(const ed25519_public_key_t *service_pk,
   cache_client_intro_state_note(entry, failure);
 }
 
-/* For a given service identity public key and an introduction authentication
+/** For a given service identity public key and an introduction authentication
  * key, return true iff it is present in the failure cache. */
 const hs_cache_intro_state_t *
 hs_cache_client_intro_state_find(const ed25519_public_key_t *service_pk,
@@ -861,7 +998,7 @@ hs_cache_client_intro_state_find(const ed25519_public_key_t *service_pk,
   return state;
 }
 
-/* Cleanup the client introduction state cache. */
+/** Cleanup the client introduction state cache. */
 void
 hs_cache_client_intro_state_clean(time_t now)
 {
@@ -881,7 +1018,7 @@ hs_cache_client_intro_state_clean(time_t now)
   } DIGEST256MAP_FOREACH_END;
 }
 
-/* Purge the client introduction state cache. */
+/** Purge the client introduction state cache. */
 void
 hs_cache_client_intro_state_purge(void)
 {
@@ -895,9 +1032,41 @@ hs_cache_client_intro_state_purge(void)
                     "cache purged.");
 }
 
+/* This is called when new client authorization was added to the global state.
+ * It attempts to decode the descriptor of the given service identity key.
+ *
+ * Return true if decoding was successful else false. */
+bool
+hs_cache_client_new_auth_parse(const ed25519_public_key_t *service_pk)
+{
+  bool ret = false;
+  hs_cache_client_descriptor_t *cached_desc = NULL;
+
+  tor_assert(service_pk);
+
+  if (!hs_cache_v3_client) {
+    return false;
+  }
+
+  cached_desc = lookup_v3_desc_as_client(service_pk->pubkey);
+  if (cached_desc == NULL || entry_has_decrypted_descriptor(cached_desc)) {
+    /* No entry for that service or the descriptor is already decoded. */
+    goto end;
+  }
+
+  /* Attempt a decode. If we are successful, inform the caller. */
+  if (hs_client_decode_descriptor(cached_desc->encoded_desc, service_pk,
+                                  &cached_desc->desc) == HS_DESC_DECODE_OK) {
+    ret = true;
+  }
+
+ end:
+  return ret;
+}
+
 /**************** Generics *********************************/
 
-/* Do a round of OOM cleanup on all directory caches. Return the amount of
+/** Do a round of OOM cleanup on all directory caches. Return the amount of
  * removed bytes. It is possible that the returned value is lower than
  * min_remove_bytes if the caches get emptied out so the caller should be
  * aware of this. */
@@ -951,7 +1120,7 @@ hs_cache_handle_oom(time_t now, size_t min_remove_bytes)
   return bytes_removed;
 }
 
-/* Return the maximum size of a v3 HS descriptor. */
+/** Return the maximum size of a v3 HS descriptor. */
 unsigned int
 hs_cache_get_max_descriptor_size(void)
 {
@@ -960,7 +1129,7 @@ hs_cache_get_max_descriptor_size(void)
                                             HS_DESC_MAX_LEN, 1, INT32_MAX);
 }
 
-/* Initialize the hidden service cache subsystem. */
+/** Initialize the hidden service cache subsystem. */
 void
 hs_cache_init(void)
 {
@@ -975,7 +1144,7 @@ hs_cache_init(void)
   hs_cache_client_intro_state = digest256map_new();
 }
 
-/* Cleanup the hidden service cache subsystem. */
+/** Cleanup the hidden service cache subsystem. */
 void
 hs_cache_free_all(void)
 {

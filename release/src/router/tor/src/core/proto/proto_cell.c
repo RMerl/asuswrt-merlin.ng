@@ -1,8 +1,15 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file proto_cell.c
+ * @brief Decodes Tor cells from buffers.
+ **/
+/* Right now it only handles variable-length cells, but eventually
+ * we should refactor other cell-reading code into here. */
 
 #include "core/or/or.h"
 #include "lib/buf/buffers.h"
@@ -83,4 +90,3 @@ fetch_var_cell_from_buf(buf_t *buf, var_cell_t **out, int linkproto)
   *out = result;
   return 1;
 }
-

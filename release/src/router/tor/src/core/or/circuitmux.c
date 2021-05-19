@@ -1,4 +1,4 @@
-/* * Copyright (c) 2012-2019, The Tor Project, Inc. */
+/* * Copyright (c) 2012-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -69,25 +69,21 @@
  *     made to attach all existing circuits to the new policy.
  **/
 
+#define CIRCUITMUX_PRIVATE
+
 #include "core/or/or.h"
 #include "core/or/channel.h"
 #include "core/or/circuitlist.h"
 #include "core/or/circuitmux.h"
 #include "core/or/relay.h"
 
-#include "core/or/cell_queue_st.h"
-#include "core/or/destroy_cell_queue_st.h"
 #include "core/or/or_circuit_st.h"
+
+#include "lib/crypt_ops/crypto_util.h"
 
 /*
  * Private typedefs for circuitmux.c
  */
-
-/*
- * Map of muxinfos for circuitmux_t to use; struct is defined below (name
- * of struct must match HT_HEAD line).
- */
-typedef struct chanid_circid_muxinfo_map chanid_circid_muxinfo_map_t;
 
 /*
  * Hash table entry (yeah, calling it chanid_circid_muxinfo_s seems to
@@ -100,57 +96,14 @@ typedef struct chanid_circid_muxinfo_t chanid_circid_muxinfo_t;
  * a count of queued cells.
  */
 
-typedef struct circuit_muxinfo_s circuit_muxinfo_t;
-
-/*
- * Structures for circuitmux.c
- */
-
-struct circuitmux_s {
-  /* Keep count of attached, active circuits */
-  unsigned int n_circuits, n_active_circuits;
-
-  /* Total number of queued cells on all circuits */
-  unsigned int n_cells;
-
-  /*
-   * Map from (channel ID, circuit ID) pairs to circuit_muxinfo_t
-   */
-  chanid_circid_muxinfo_map_t *chanid_circid_map;
-
-  /** List of queued destroy cells */
-  destroy_cell_queue_t destroy_cell_queue;
-  /** Boolean: True iff the last cell to circuitmux_get_first_active_circuit
-   * returned the destroy queue. Used to force alternation between
-   * destroy/non-destroy cells.
-   *
-   * XXXX There is no reason to think that alternating is a particularly good
-   * approach -- it's just designed to prevent destroys from starving other
-   * cells completely.
-   */
-  unsigned int last_cell_was_destroy : 1;
-  /** Destroy counter: increment this when a destroy gets queued, decrement
-   * when we unqueue it, so we can test to make sure they don't starve.
-   */
-  int64_t destroy_ctr;
-
-  /*
-   * Circuitmux policy; if this is non-NULL, it can override the built-
-   * in round-robin active circuits behavior.  This is how EWMA works in
-   * the new circuitmux_t world.
-   */
-  const circuitmux_policy_t *policy;
-
-  /* Policy-specific data */
-  circuitmux_policy_data_t *policy_data;
-};
+typedef struct circuit_muxinfo_t circuit_muxinfo_t;
 
 /*
  * This struct holds whatever we want to store per attached circuit on a
  * circuitmux_t; right now, just the count of queued cells and the direction.
  */
 
-struct circuit_muxinfo_s {
+struct circuit_muxinfo_t {
   /* Count of cells on this circuit at last update */
   unsigned int cell_count;
   /* Direction of flow */
@@ -221,15 +174,12 @@ chanid_circid_entry_hash(chanid_circid_muxinfo_t *a)
             ((unsigned int)(a->chan_id & 0xffffffff)));
 }
 
-/* Declare the struct chanid_circid_muxinfo_map type */
-HT_HEAD(chanid_circid_muxinfo_map, chanid_circid_muxinfo_t);
-
 /* Emit a bunch of hash table stuff */
 HT_PROTOTYPE(chanid_circid_muxinfo_map, chanid_circid_muxinfo_t, node,
-             chanid_circid_entry_hash, chanid_circid_entries_eq)
+             chanid_circid_entry_hash, chanid_circid_entries_eq);
 HT_GENERATE2(chanid_circid_muxinfo_map, chanid_circid_muxinfo_t, node,
              chanid_circid_entry_hash, chanid_circid_entries_eq, 0.6,
-             tor_reallocarray_, tor_free_)
+             tor_reallocarray_, tor_free_);
 
 /*
  * Circuitmux alloc/free functions
@@ -973,7 +923,10 @@ circuitmux_detach_circuit,(circuitmux_t *cmux, circuit_t *circ))
     /* Now remove it from the map */
     HT_REMOVE(chanid_circid_muxinfo_map, cmux->chanid_circid_map, hashent);
 
-    /* Free the hash entry */
+    /* Wipe and free the hash entry */
+    // This isn't sensitive, but we want to be sure to know if we're accessing
+    // this accidentally.
+    memwipe(hashent, 0xef, sizeof(*hashent));
     tor_free(hashent);
   }
 }
@@ -1334,4 +1287,3 @@ circuitmux_compare_muxes, (circuitmux_t *cmux_1, circuitmux_t *cmux_2))
     return 0;
   }
 }
-

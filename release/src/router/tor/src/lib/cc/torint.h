@@ -1,6 +1,6 @@
 /* Copyright (c) 2003, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -49,7 +49,7 @@ typedef int32_t ssize_t;
  * aren't 2's complement, and you don't define LONG_MAX, then you're so
  * bizarre that I want nothing to do with you. */
 #ifndef USING_TWOS_COMPLEMENT
-#error "Seems that your platform doesn't use 2's complement arithmetic. Argh."
+#error "Your platform doesn't use 2's complement arithmetic."
 #endif
 
 #ifndef TIME_MAX
@@ -126,12 +126,11 @@ typedef int32_t ssize_t;
 #define SIZE_T_CEILING  ((size_t)(SSIZE_MAX-16))
 
 #if SIZEOF_INT > SIZEOF_VOID_P
-#error "sizeof(int) > sizeof(void *) - Tor cannot be built on this platform!"
+#error "sizeof(int) > sizeof(void *) - Can't build Tor here."
 #endif
 
 #if SIZEOF_UNSIGNED_INT > SIZEOF_VOID_P
-#error "sizeof(unsigned int) > sizeof(void *) - Tor cannot be built on this \
-platform!"
+#error "sizeof(unsigned int) > sizeof(void *) - Can't build Tor here."
 #endif
 
 #endif /* !defined(TOR_TORINT_H) */

@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #ifndef TOR_MAP_H
@@ -17,34 +17,35 @@
 
 #include "ext/siphash.h"
 
-#define DECLARE_MAP_FNS(maptype, keytype, prefix)                       \
-  typedef struct maptype maptype;                                       \
-  typedef struct prefix##entry_t *prefix##iter_t;                       \
-  MOCK_DECL(maptype*, prefix##new, (void));                             \
-  void* prefix##set(maptype *map, keytype key, void *val);              \
-  void* prefix##get(const maptype *map, keytype key);                   \
-  void* prefix##remove(maptype *map, keytype key);                      \
-  MOCK_DECL(void, prefix##free_, (maptype *map, void (*free_val)(void*))); \
-  int prefix##isempty(const maptype *map);                              \
-  int prefix##size(const maptype *map);                                 \
-  prefix##iter_t *prefix##iter_init(maptype *map);                      \
-  prefix##iter_t *prefix##iter_next(maptype *map, prefix##iter_t *iter); \
-  prefix##iter_t *prefix##iter_next_rmv(maptype *map, prefix##iter_t *iter); \
-  void prefix##iter_get(prefix##iter_t *iter, keytype *keyp, void **valp); \
-  int prefix##iter_done(prefix##iter_t *iter);                          \
-  void prefix##assert_ok(const maptype *map)
+#define DECLARE_MAP_FNS(mapname_t, keytype, prefix)                     \
+  typedef struct mapname_t mapname_t;                                   \
+  typedef struct prefix##_entry_t *prefix##_iter_t;                       \
+  MOCK_DECL(mapname_t*, prefix##_new, (void));                           \
+  void* prefix##_set(mapname_t *map, keytype key, void *val);            \
+  void* prefix##_get(const mapname_t *map, keytype key);                 \
+  void* prefix##_remove(mapname_t *map, keytype key);                    \
+  MOCK_DECL(void, prefix##_free_, (mapname_t *map, void (*free_val)(void*))); \
+  int prefix##_isempty(const mapname_t *map);                            \
+  int prefix##_size(const mapname_t *map);                               \
+  prefix##_iter_t *prefix##_iter_init(mapname_t *map);                    \
+  prefix##_iter_t *prefix##_iter_next(mapname_t *map, prefix##_iter_t *iter); \
+  prefix##_iter_t *prefix##_iter_next_rmv(mapname_t *map,                 \
+                                        prefix##_iter_t *iter);          \
+  void prefix##_iter_get(prefix##_iter_t *iter, keytype *keyp, void **valp); \
+  int prefix##_iter_done(prefix##_iter_t *iter);                          \
+  void prefix##_assert_ok(const mapname_t *map)
 
 /* Map from const char * to void *. Implemented with a hash table. */
-DECLARE_MAP_FNS(strmap_t, const char *, strmap_);
+DECLARE_MAP_FNS(strmap_t, const char *, strmap);
 /* Map from const char[DIGEST_LEN] to void *. Implemented with a hash table. */
-DECLARE_MAP_FNS(digestmap_t, const char *, digestmap_);
+DECLARE_MAP_FNS(digestmap_t, const char *, digestmap);
 /* Map from const uint8_t[DIGEST256_LEN] to void *. Implemented with a hash
  * table. */
-DECLARE_MAP_FNS(digest256map_t, const uint8_t *, digest256map_);
+DECLARE_MAP_FNS(digest256map_t, const uint8_t *, digest256map);
 
-#define MAP_FREE_AND_NULL(maptype, map, fn)     \
+#define MAP_FREE_AND_NULL(mapname_t, map, fn)     \
   do {                                          \
-    maptype ## _free_((map), (fn));             \
+    mapname_t ## _free_((map), (fn));             \
     (map) = NULL;                               \
   } while (0)
 
@@ -55,12 +56,12 @@ DECLARE_MAP_FNS(digest256map_t, const uint8_t *, digest256map_);
 #undef DECLARE_MAP_FNS
 
 /** Iterates over the key-value pairs in a map <b>map</b> in order.
- * <b>prefix</b> is as for DECLARE_MAP_FNS (i.e., strmap_ or digestmap_).
+ * <b>prefix</b> is as for DECLARE_MAP_FNS (i.e., strmap or digestmap).
  * The map's keys and values are of type keytype and valtype respectively;
  * each iteration assigns them to keyvar and valvar.
  *
  * Example use:
- *   MAP_FOREACH(digestmap_, m, const char *, k, routerinfo_t *, r) {
+ *   MAP_FOREACH(digestmap, m, const char *, k, routerinfo_t *, r) {
  *     // use k and r
  *   } MAP_FOREACH_END.
  */
@@ -80,21 +81,21 @@ DECLARE_MAP_FNS(digest256map_t, const uint8_t *, digest256map_);
  */
 #define MAP_FOREACH(prefix, map, keytype, keyvar, valtype, valvar)      \
   STMT_BEGIN                                                            \
-    prefix##iter_t *keyvar##_iter;                                      \
-    for (keyvar##_iter = prefix##iter_init(map);                        \
-         !prefix##iter_done(keyvar##_iter);                             \
-         keyvar##_iter = prefix##iter_next(map, keyvar##_iter)) {       \
+    prefix##_iter_t *keyvar##_iter;                                      \
+    for (keyvar##_iter = prefix##_iter_init(map);                        \
+         !prefix##_iter_done(keyvar##_iter);                             \
+         keyvar##_iter = prefix##_iter_next(map, keyvar##_iter)) {       \
       keytype keyvar;                                                   \
       void *valvar##_voidp;                                             \
       valtype valvar;                                                   \
-      prefix##iter_get(keyvar##_iter, &keyvar, &valvar##_voidp);        \
+      prefix##_iter_get(keyvar##_iter, &keyvar, &valvar##_voidp);        \
       valvar = valvar##_voidp;
 
 /** As MAP_FOREACH, except allows members to be removed from the map
  * during the iteration via MAP_DEL_CURRENT.  Example use:
  *
  * Example use:
- *   MAP_FOREACH(digestmap_, m, const char *, k, routerinfo_t *, r) {
+ *   MAP_FOREACH(digestmap, m, const char *, k, routerinfo_t *, r) {
  *      if (is_very_old(r))
  *       MAP_DEL_CURRENT(k);
  *   } MAP_FOREACH_END.
@@ -120,18 +121,18 @@ DECLARE_MAP_FNS(digest256map_t, const uint8_t *, digest256map_);
  */
 #define MAP_FOREACH_MODIFY(prefix, map, keytype, keyvar, valtype, valvar) \
   STMT_BEGIN                                                            \
-    prefix##iter_t *keyvar##_iter;                                      \
+    prefix##_iter_t *keyvar##_iter;                                      \
     int keyvar##_del=0;                                                 \
-    for (keyvar##_iter = prefix##iter_init(map);                        \
-         !prefix##iter_done(keyvar##_iter);                             \
+    for (keyvar##_iter = prefix##_iter_init(map);                        \
+         !prefix##_iter_done(keyvar##_iter);                             \
          keyvar##_iter = keyvar##_del ?                                 \
-           prefix##iter_next_rmv(map, keyvar##_iter) :                  \
-           prefix##iter_next(map, keyvar##_iter)) {                     \
+           prefix##_iter_next_rmv(map, keyvar##_iter) :                  \
+           prefix##_iter_next(map, keyvar##_iter)) {                     \
       keytype keyvar;                                                   \
       void *valvar##_voidp;                                             \
       valtype valvar;                                                   \
       keyvar##_del=0;                                                   \
-      prefix##iter_get(keyvar##_iter, &keyvar, &valvar##_voidp);        \
+      prefix##_iter_get(keyvar##_iter, &keyvar, &valvar##_voidp);        \
       valvar = valvar##_voidp;
 
 /** Used with MAP_FOREACH_MODIFY to remove the currently-iterated-upon
@@ -151,7 +152,7 @@ DECLARE_MAP_FNS(digest256map_t, const uint8_t *, digest256map_);
  *   } DIGESTMAP_FOREACH_END.
  */
 #define DIGESTMAP_FOREACH(map, keyvar, valtype, valvar)                 \
-  MAP_FOREACH(digestmap_, map, const char *, keyvar, valtype, valvar)
+  MAP_FOREACH(digestmap, map, const char *, keyvar, valtype, valvar)
 
 /** As MAP_FOREACH_MODIFY, but does not require declaration of prefix or
  * keytype.
@@ -162,89 +163,89 @@ DECLARE_MAP_FNS(digest256map_t, const uint8_t *, digest256map_);
  *   } DIGESTMAP_FOREACH_END.
  */
 #define DIGESTMAP_FOREACH_MODIFY(map, keyvar, valtype, valvar)          \
-  MAP_FOREACH_MODIFY(digestmap_, map, const char *, keyvar, valtype, valvar)
+  MAP_FOREACH_MODIFY(digestmap, map, const char *, keyvar, valtype, valvar)
 /** Used to end a DIGESTMAP_FOREACH() block. */
 #define DIGESTMAP_FOREACH_END MAP_FOREACH_END
 
 #define DIGEST256MAP_FOREACH(map, keyvar, valtype, valvar)               \
-  MAP_FOREACH(digest256map_, map, const uint8_t *, keyvar, valtype, valvar)
+  MAP_FOREACH(digest256map, map, const uint8_t *, keyvar, valtype, valvar)
 #define DIGEST256MAP_FOREACH_MODIFY(map, keyvar, valtype, valvar)       \
-  MAP_FOREACH_MODIFY(digest256map_, map, const uint8_t *,               \
+  MAP_FOREACH_MODIFY(digest256map, map, const uint8_t *,               \
                      keyvar, valtype, valvar)
 #define DIGEST256MAP_FOREACH_END MAP_FOREACH_END
 
 #define STRMAP_FOREACH(map, keyvar, valtype, valvar)                 \
-  MAP_FOREACH(strmap_, map, const char *, keyvar, valtype, valvar)
+  MAP_FOREACH(strmap, map, const char *, keyvar, valtype, valvar)
 #define STRMAP_FOREACH_MODIFY(map, keyvar, valtype, valvar)          \
-  MAP_FOREACH_MODIFY(strmap_, map, const char *, keyvar, valtype, valvar)
+  MAP_FOREACH_MODIFY(strmap, map, const char *, keyvar, valtype, valvar)
 #define STRMAP_FOREACH_END MAP_FOREACH_END
 
 void* strmap_set_lc(strmap_t *map, const char *key, void *val);
 void* strmap_get_lc(const strmap_t *map, const char *key);
 void* strmap_remove_lc(strmap_t *map, const char *key);
 
-#define DECLARE_TYPED_DIGESTMAP_FNS(prefix, maptype, valtype)           \
-  typedef struct maptype maptype;                                       \
-  typedef struct prefix##iter_t *prefix##iter_t;                        \
-  ATTR_UNUSED static inline maptype*                                    \
-  prefix##new(void)                                                     \
+#define DECLARE_TYPED_DIGESTMAP_FNS(prefix, mapname_t, valtype)           \
+  typedef struct mapname_t mapname_t;                                   \
+  typedef struct prefix##_iter_t *prefix##_iter_t;                        \
+  ATTR_UNUSED static inline mapname_t*                                  \
+  prefix##_new(void)                                                     \
   {                                                                     \
-    return (maptype*)digestmap_new();                                   \
+    return (mapname_t*)digestmap_new();                                 \
   }                                                                     \
   ATTR_UNUSED static inline digestmap_t*                                \
-  prefix##to_digestmap(maptype *map)                                    \
+  prefix##_to_digestmap(mapname_t *map)                                  \
   {                                                                     \
     return (digestmap_t*)map;                                           \
   }                                                                     \
   ATTR_UNUSED static inline valtype*                                    \
-  prefix##get(maptype *map, const char *key)     \
+  prefix##_get(mapname_t *map, const char *key)                          \
   {                                                                     \
     return (valtype*)digestmap_get((digestmap_t*)map, key);             \
   }                                                                     \
   ATTR_UNUSED static inline valtype*                                    \
-  prefix##set(maptype *map, const char *key, valtype *val)              \
+  prefix##_set(mapname_t *map, const char *key, valtype *val)            \
   {                                                                     \
     return (valtype*)digestmap_set((digestmap_t*)map, key, val);        \
   }                                                                     \
   ATTR_UNUSED static inline valtype*                                    \
-  prefix##remove(maptype *map, const char *key)                         \
+  prefix##_remove(mapname_t *map, const char *key)                       \
   {                                                                     \
     return (valtype*)digestmap_remove((digestmap_t*)map, key);          \
   }                                                                     \
   ATTR_UNUSED static inline void                                        \
-  prefix##f##ree_(maptype *map, void (*free_val)(void*))                \
+  prefix##_f##ree_(mapname_t *map, void (*free_val)(void*))              \
   {                                                                     \
     digestmap_free_((digestmap_t*)map, free_val);                       \
   }                                                                     \
   ATTR_UNUSED static inline int                                         \
-  prefix##isempty(maptype *map)                                         \
+  prefix##_isempty(mapname_t *map)                                       \
   {                                                                     \
     return digestmap_isempty((digestmap_t*)map);                        \
   }                                                                     \
   ATTR_UNUSED static inline int                                         \
-  prefix##size(maptype *map)                                            \
+  prefix##_size(mapname_t *map)                                          \
   {                                                                     \
     return digestmap_size((digestmap_t*)map);                           \
   }                                                                     \
   ATTR_UNUSED static inline                                             \
-  prefix##iter_t *prefix##iter_init(maptype *map)                       \
+  prefix##_iter_t *prefix##_iter_init(mapname_t *map)                     \
   {                                                                     \
-    return (prefix##iter_t*) digestmap_iter_init((digestmap_t*)map);    \
+    return (prefix##_iter_t*) digestmap_iter_init((digestmap_t*)map);    \
   }                                                                     \
   ATTR_UNUSED static inline                                             \
-  prefix##iter_t *prefix##iter_next(maptype *map, prefix##iter_t *iter) \
+  prefix##_iter_t *prefix##_iter_next(mapname_t *map, prefix##_iter_t *iter) \
   {                                                                     \
-    return (prefix##iter_t*) digestmap_iter_next(                       \
+    return (prefix##_iter_t*) digestmap_iter_next(                       \
                        (digestmap_t*)map, (digestmap_iter_t*)iter);     \
   }                                                                     \
-  ATTR_UNUSED static inline prefix##iter_t*                             \
-  prefix##iter_next_rmv(maptype *map, prefix##iter_t *iter)             \
+  ATTR_UNUSED static inline prefix##_iter_t*                             \
+  prefix##_iter_next_rmv(mapname_t *map, prefix##_iter_t *iter)           \
   {                                                                     \
-    return (prefix##iter_t*) digestmap_iter_next_rmv(                   \
+    return (prefix##_iter_t*) digestmap_iter_next_rmv(                   \
                        (digestmap_t*)map, (digestmap_iter_t*)iter);     \
   }                                                                     \
   ATTR_UNUSED static inline void                                        \
-  prefix##iter_get(prefix##iter_t *iter,                                \
+  prefix##_iter_get(prefix##_iter_t *iter,                                \
                    const char **keyp,                                   \
                    valtype **valp)                                      \
   {                                                                     \
@@ -253,7 +254,7 @@ void* strmap_remove_lc(strmap_t *map, const char *key);
     *valp = v;                                                          \
   }                                                                     \
   ATTR_UNUSED static inline int                                         \
-  prefix##iter_done(prefix##iter_t *iter)                               \
+  prefix##_iter_done(prefix##_iter_t *iter)                               \
   {                                                                     \
     return digestmap_iter_done((digestmap_iter_t*)iter);                \
   }

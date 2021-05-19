@@ -1,0 +1,54 @@
+
+# The Directory Authority module.
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+MODULE_DIRAUTH_SOURCES =					\
+	src/feature/dirauth/authmode.c				\
+	src/feature/dirauth/bridgeauth.c			\
+	src/feature/dirauth/bwauth.c				\
+	src/feature/dirauth/dirauth_config.c			\
+	src/feature/dirauth/dirauth_periodic.c			\
+	src/feature/dirauth/dirauth_sys.c			\
+	src/feature/dirauth/dircollate.c			\
+	src/feature/dirauth/dirvote.c				\
+	src/feature/dirauth/dsigs_parse.c			\
+	src/feature/dirauth/guardfraction.c			\
+	src/feature/dirauth/keypin.c				\
+	src/feature/dirauth/process_descs.c			\
+	src/feature/dirauth/reachability.c			\
+	src/feature/dirauth/recommend_pkg.c			\
+	src/feature/dirauth/shared_random.c			\
+	src/feature/dirauth/shared_random_state.c		\
+	src/feature/dirauth/voteflags.c				\
+	src/feature/dirauth/voting_schedule.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/feature/dirauth/authmode.h			\
+	src/feature/dirauth/bridgeauth.h		\
+	src/feature/dirauth/bwauth.h			\
+	src/feature/dirauth/dirauth_config.h		\
+	src/feature/dirauth/dirauth_options.inc		\
+	src/feature/dirauth/dirauth_options_st.h	\
+	src/feature/dirauth/dirauth_periodic.h		\
+	src/feature/dirauth/dirauth_sys.h		\
+	src/feature/dirauth/dircollate.h		\
+	src/feature/dirauth/dirvote.h			\
+	src/feature/dirauth/dsigs_parse.h		\
+	src/feature/dirauth/guardfraction.h		\
+	src/feature/dirauth/keypin.h			\
+	src/feature/dirauth/ns_detached_signatures_st.h	\
+	src/feature/dirauth/reachability.h		\
+	src/feature/dirauth/recommend_pkg.h		\
+	src/feature/dirauth/process_descs.h		\
+	src/feature/dirauth/shared_random.h		\
+	src/feature/dirauth/shared_random_state.h	\
+	src/feature/dirauth/vote_microdesc_hash_st.h	\
+	src/feature/dirauth/voteflags.h			\
+	src/feature/dirauth/voting_schedule.h
+
+if BUILD_MODULE_DIRAUTH
+LIBTOR_APP_A_SOURCES += $(MODULE_DIRAUTH_SOURCES)
+else
+LIBTOR_APP_A_STUB_SOURCES += src/feature/dirauth/dirauth_stub.c
+endif

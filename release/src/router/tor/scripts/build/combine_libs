@@ -1,0 +1,35 @@
+#!/bin/sh
+
+set -e
+
+TMPDIR="$(mktemp -d -t tor_lib_combining.XXXXXX)"
+ORIGDIR="$(pwd)"
+
+trap 'cd "$ORIGDIR" && rm -rf "$TMPDIR"' 0
+
+abspath() {
+          echo "$(cd "$(dirname "$1")">/dev/null && pwd)/$(basename "$1")"
+}
+
+TARGET=$(abspath "$1")
+
+#echo ORIGDIR="$ORIGDIR"
+#echo AR="$AR"
+#echo ARFLAGS="$AFLAGS"
+
+shift
+
+for input in "$@"; do
+    cd "$ORIGDIR"
+    abs=$(abspath "$input")
+    dir="$TMPDIR"/$(basename "$input" .a)
+    mkdir "$dir"
+    cd "$dir">/dev/null
+    "${AR:-ar}" x "$abs"
+done
+
+cd "$TMPDIR" >/dev/null
+#echo "${AR:-ar}" "${ARFLAGS:-cru}" library.tmp.a ./*/**
+"${AR:-ar}" "${ARFLAGS:-cru}" library.tmp.a ./*/**
+"${RANLIB:-ranlib}" library.tmp.a
+mv -f library.tmp.a "$TARGET"

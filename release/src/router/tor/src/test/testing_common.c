@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -18,6 +18,7 @@
 #include "lib/crypt_ops/crypto_ed25519.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "feature/stats/predict_ports.h"
+#include "feature/stats/bwhist.h"
 #include "feature/stats/rephist.h"
 #include "lib/err/backtrace.h"
 #include "test/test.h"
@@ -89,6 +90,17 @@ setup_directory(void)
                  (int)getpid(), rnd32);
     r = mkdir(temp_dir);
   }
+#elif defined(__ANDROID__)
+  /* tor might not like the default perms, so create a subdir */
+  tor_snprintf(temp_dir, sizeof(temp_dir),
+               "/data/local/tmp/tor_%d_%d_%s",
+               (int) getuid(), (int) getpid(), rnd32);
+  r = mkdir(temp_dir, 0700);
+  if (r) {
+    fprintf(stderr, "Can't create directory %s:", temp_dir);
+    perror("");
+    exit(1);
+  }
 #else /* !defined(_WIN32) */
   tor_snprintf(temp_dir, sizeof(temp_dir), "/tmp/tor_test_%d_%s",
                (int) getpid(), rnd32);
@@ -97,7 +109,7 @@ setup_directory(void)
     /* undo sticky bit so tests don't get confused. */
     r = chown(temp_dir, getuid(), getgid());
   }
-#endif /* defined(_WIN32) */
+#endif /* defined(_WIN32) || ... */
   if (r) {
     fprintf(stderr, "Can't create directory %s:", temp_dir);
     perror("");
@@ -262,15 +274,20 @@ main(int c, const char **v)
   int loglevel = LOG_ERR;
   int accel_crypto = 0;
 
-  subsystems_init_upto(SUBSYS_LEVEL_LIBS);
+  subsystems_init();
 
   options = options_new();
 
-  struct tor_libevent_cfg cfg;
+  struct tor_libevent_cfg_t cfg;
   memset(&cfg, 0, sizeof(cfg));
   tor_libevent_initialize(&cfg);
 
   control_initialize_event_queue();
+
+  /* Don't add default logs; the tests manage their own. */
+  quiet_level = QUIET_SILENT;
+
+  unsigned num=1, den=1;
 
   for (i_out = i = 1; i < c; ++i) {
     if (!strcmp(v[i], "--warn")) {
@@ -283,6 +300,19 @@ main(int c, const char **v)
       loglevel = LOG_DEBUG;
     } else if (!strcmp(v[i], "--accel")) {
       accel_crypto = 1;
+    } else if (!strcmp(v[i], "--fraction")) {
+      if (i+1 == c) {
+        printf("--fraction needs an argument.\n");
+        return 1;
+      }
+      const char *fracstr = v[++i];
+      char ch;
+      if (sscanf(fracstr, "%u/%u%c", &num, &den, &ch) != 2) {
+        printf("--fraction expects a fraction as an input.\n");
+      }
+      if (den == 0 || num == 0 || num > den) {
+        printf("--fraction expects a valid fraction as an input.\n");
+      }
     } else {
       v[i_out++] = v[i];
     }
@@ -319,10 +349,12 @@ main(int c, const char **v)
     return 1;
   }
   rep_hist_init();
+  bwhist_init();
   setup_directory();
   initialize_mainloop_events();
   options_init(options);
   options->DataDirectory = tor_strdup(temp_dir);
+  options->DataDirectory_option = tor_strdup(temp_dir);
   tor_asprintf(&options->KeyDirectory, "%s"PATH_SEPARATOR"keys",
                options->DataDirectory);
   options->CacheDirectory = tor_strdup(temp_dir);
@@ -342,6 +374,48 @@ main(int c, const char **v)
   predicted_ports_init();
 
   atexit(remove_directory);
+
+  /* Look for TOR_SKIP_TESTCASES: a space-separated list of tests to skip. */
+  const char *skip_tests = getenv("TOR_SKIP_TESTCASES");
+  if (skip_tests) {
+    smartlist_t *skip = smartlist_new();
+    smartlist_split_string(skip, skip_tests, NULL,
+                           SPLIT_IGNORE_BLANK, -1);
+    int n = 0;
+    SMARTLIST_FOREACH_BEGIN(skip, char *, cp) {
+      n += tinytest_skip(testgroups, cp);
+      tor_free(cp);
+    } SMARTLIST_FOREACH_END(cp);
+    printf("Skipping %d testcases.\n", n);
+    smartlist_free(skip);
+  }
+
+  if (den != 1) {
+    // count the tests. Linear but fast.
+    unsigned n_tests = 0;
+    struct testgroup_t *tg;
+    struct testcase_t *tc;
+    for (tg = testgroups; tg->prefix != NULL; ++tg) {
+      for (tc = tg->cases; tc->name != NULL; ++tc) {
+        ++n_tests;
+      }
+    }
+    // Which tests should we run?  This can give iffy results if den is huge
+    // but it doesn't actually matter in practice.
+    unsigned tests_per_chunk = CEIL_DIV(n_tests, den);
+    unsigned start_at = (num-1) * tests_per_chunk;
+
+    // Skip the tests that are outside of the range.
+    unsigned idx = 0;
+    for (tg = testgroups; tg->prefix != NULL; ++tg) {
+      for (tc = tg->cases; tc->name != NULL; ++tc) {
+        if (idx < start_at || idx >= start_at + tests_per_chunk) {
+          tc->flags |= TT_SKIP;
+        }
+        ++idx;
+      }
+    }
+  }
 
   int have_failed = (tinytest_main(c, v, testgroups) != 0);
 

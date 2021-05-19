@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -14,6 +14,7 @@ typedef HT_HEAD(hs_circuitmap_ht, circuit_t) hs_circuitmap_ht;
 typedef struct hs_token_t hs_token_t;
 struct or_circuit_t;
 struct origin_circuit_t;
+struct ed25519_public_key_t;
 
 /** Public HS circuitmap API: */
 
@@ -21,7 +22,7 @@ struct origin_circuit_t;
 
 struct or_circuit_t *
 hs_circuitmap_get_intro_circ_v3_relay_side(const
-                                           ed25519_public_key_t *auth_key);
+                                   struct ed25519_public_key_t *auth_key);
 struct or_circuit_t *
 hs_circuitmap_get_intro_circ_v2_relay_side(const uint8_t *digest);
 struct or_circuit_t *
@@ -32,7 +33,7 @@ void hs_circuitmap_register_rend_circ_relay_side(struct or_circuit_t *circ,
 void hs_circuitmap_register_intro_circ_v2_relay_side(struct or_circuit_t *circ,
                                                      const uint8_t *digest);
 void hs_circuitmap_register_intro_circ_v3_relay_side(struct or_circuit_t *circ,
-                                         const ed25519_public_key_t *auth_key);
+                                 const struct ed25519_public_key_t *auth_key);
 
 smartlist_t *hs_circuitmap_get_all_intro_circ_relay_side(void);
 
@@ -40,7 +41,7 @@ smartlist_t *hs_circuitmap_get_all_intro_circ_relay_side(void);
 
 struct origin_circuit_t *
 hs_circuitmap_get_intro_circ_v3_service_side(const
-                                             ed25519_public_key_t *auth_key);
+                                     struct ed25519_public_key_t *auth_key);
 struct origin_circuit_t *
 hs_circuitmap_get_intro_circ_v2_service_side(const uint8_t *digest);
 struct origin_circuit_t *
@@ -54,8 +55,8 @@ void hs_circuitmap_register_intro_circ_v2_service_side(
                                         struct origin_circuit_t *circ,
                                         const uint8_t *digest);
 void hs_circuitmap_register_intro_circ_v3_service_side(
-                                        struct origin_circuit_t *circ,
-                                        const ed25519_public_key_t *auth_key);
+                                 struct origin_circuit_t *circ,
+                                 const struct ed25519_public_key_t *auth_key);
 void hs_circuitmap_register_rend_circ_service_side(
                                         struct origin_circuit_t *circ,
                                         const uint8_t *cookie);

@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -129,9 +129,8 @@ subsys_threads_initialize(void)
 
 const subsys_fns_t sys_threads = {
   .name = "threads",
+  SUBSYS_DECLARE_LOCATION(),
   .supported = true,
-  /* Threads is used by logging, which is a diagnostic feature, we want it to
-   * init right after low-level error handling and approx time. */
-  .level = -95,
+  .level = -89,
   .initialize = subsys_threads_initialize,
 };

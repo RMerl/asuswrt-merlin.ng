@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -48,7 +48,7 @@ typedef enum {
   /** We are hibernating, and we won't wake up till there's more bandwidth to
    * use. */
   HIBERNATE_STATE_DORMANT=4,
-  /** We start out in state default, which means we havent decided which state
+  /** We start out in state default, which means we haven't decided which state
    * we're in. */
   HIBERNATE_STATE_INITIAL=5
 } hibernate_state_t;

@@ -1,0 +1,106 @@
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+LIBTOR_APP_A_SOURCES += 				\
+	src/core/or/address_set.c		\
+	src/core/or/channel.c			\
+	src/core/or/channelpadding.c		\
+	src/core/or/channeltls.c		\
+	src/core/or/circuitbuild.c		\
+	src/core/or/circuitlist.c		\
+	src/core/or/circuitmux.c		\
+	src/core/or/circuitmux_ewma.c		\
+	src/core/or/circuitpadding.c		\
+	src/core/or/circuitpadding_machines.c	\
+	src/core/or/circuitstats.c		\
+	src/core/or/circuituse.c		\
+	src/core/or/crypt_path.c		\
+	src/core/or/command.c			\
+	src/core/or/connection_edge.c		\
+	src/core/or/connection_or.c		\
+	src/core/or/dos.c			\
+	src/core/or/extendinfo.c			\
+	src/core/or/onion.c			\
+	src/core/or/ocirc_event.c		\
+	src/core/or/or_periodic.c		\
+	src/core/or/or_sys.c			\
+	src/core/or/orconn_event.c		\
+	src/core/or/policies.c			\
+	src/core/or/protover.c			\
+	src/core/or/protover_rust.c		\
+	src/core/or/reasons.c			\
+	src/core/or/relay.c			\
+	src/core/or/scheduler.c			\
+	src/core/or/scheduler_kist.c		\
+	src/core/or/scheduler_vanilla.c		\
+	src/core/or/sendme.c			\
+	src/core/or/status.c			\
+	src/core/or/versions.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/core/or/addr_policy_st.h			\
+	src/core/or/address_set.h			\
+	src/core/or/cell_queue_st.h			\
+	src/core/or/cell_st.h				\
+	src/core/or/channel.h				\
+	src/core/or/channelpadding.h			\
+	src/core/or/channeltls.h			\
+	src/core/or/circuit_st.h			\
+	src/core/or/circuitbuild.h			\
+	src/core/or/circuitlist.h			\
+	src/core/or/circuitmux.h			\
+	src/core/or/circuitmux_ewma.h			\
+	src/core/or/circuitstats.h			\
+	src/core/or/circuitpadding.h			\
+	src/core/or/circuitpadding_machines.h		\
+	src/core/or/circuituse.h			\
+	src/core/or/command.h				\
+	src/core/or/connection_edge.h			\
+	src/core/or/connection_or.h			\
+	src/core/or/connection_st.h			\
+	src/core/or/crypt_path.h			\
+	src/core/or/cpath_build_state_st.h		\
+	src/core/or/crypt_path_reference_st.h		\
+	src/core/or/crypt_path_st.h			\
+	src/core/or/destroy_cell_queue_st.h		\
+	src/core/or/dos.h				\
+	src/core/or/edge_connection_st.h		\
+	src/core/or/extendinfo.h			\
+	src/core/or/half_edge_st.h			\
+	src/core/or/entry_connection_st.h		\
+	src/core/or/entry_port_cfg_st.h			\
+	src/core/or/extend_info_st.h			\
+	src/core/or/listener_connection_st.h		\
+	src/core/or/lttng_circuit.inc			\
+	src/core/or/onion.h				\
+	src/core/or/or.h				\
+	src/core/or/or_periodic.h			\
+	src/core/or/or_sys.h				\
+	src/core/or/orconn_event.h			\
+	src/core/or/or_circuit_st.h			\
+	src/core/or/or_connection_st.h			\
+	src/core/or/or_handshake_certs_st.h		\
+	src/core/or/or_handshake_state_st.h		\
+	src/core/or/ocirc_event.h			\
+	src/core/or/origin_circuit_st.h			\
+	src/core/or/policies.h				\
+	src/core/or/port_cfg_st.h			\
+	src/core/or/protover.h				\
+	src/core/or/reasons.h				\
+	src/core/or/relay.h				\
+	src/core/or/relay_crypto_st.h			\
+	src/core/or/scheduler.h				\
+	src/core/or/sendme.h				\
+	src/core/or/server_port_cfg_st.h		\
+	src/core/or/socks_request_st.h			\
+	src/core/or/status.h				\
+	src/core/or/tor_version_st.h			\
+	src/core/or/var_cell_st.h			\
+	src/core/or/versions.h
+
+if USE_TRACING_INSTRUMENTATION_LTTNG
+LIBTOR_APP_A_SOURCES += \
+	src/core/or/trace_probes_circuit.c
+noinst_HEADERS += \
+	src/core/or/trace_probes_circuit.h
+endif

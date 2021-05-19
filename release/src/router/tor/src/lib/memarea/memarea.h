@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2019, The Tor Project, Inc. */
+/* Copyright (c) 2008-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -16,6 +16,9 @@ typedef struct memarea_t memarea_t;
 
 memarea_t *memarea_new(void);
 void memarea_drop_all_(memarea_t *area);
+/** @copydoc memarea_drop_all_
+ *
+ * Additionally, set <b>area</b> to NULL. */
 #define memarea_drop_all(area) \
   do {                                          \
     memarea_drop_all_(area);                    \

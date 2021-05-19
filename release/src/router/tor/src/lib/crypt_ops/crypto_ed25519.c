@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2019, The Tor Project, Inc. */
+/* Copyright (c) 2013-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -795,7 +795,7 @@ ed25519_point_is_identity_element(const uint8_t *point)
 int
 ed25519_validate_pubkey(const ed25519_public_key_t *pubkey)
 {
-  uint8_t result[32] = {9};
+  uint8_t result[32] = {0};
 
   /* First check that we were not given the identity element */
   if (ed25519_point_is_identity_element(pubkey->pubkey)) {

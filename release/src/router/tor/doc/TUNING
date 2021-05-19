@@ -1,23 +1,23 @@
-Most operating systems limit an amount of TCP sockets that can be used 
+Most operating systems limit an amount of TCP sockets that can be used
 simultaneously. It is possible for a busy Tor relay to run into these
-limits, thus being unable to fully utilize the bandwidth resources it 
+limits, thus being unable to fully utilize the bandwidth resources it
 has at its disposal. Following system-specific tips might be helpful
 to alleviate the aforementioned problem.
 
 Linux
 -----
 
-Use 'ulimit -n' to raise an allowed number of file descriptors to be 
+Use 'ulimit -n' to raise an allowed number of file descriptors to be
 opened on your host at the same time.
 
 FreeBSD
 -------
 
-Tune the followind sysctl(8) variables:
+Tune the following sysctl(8) variables:
  * kern.maxfiles - maximum allowed file descriptors (for entire system)
  * kern.maxfilesperproc - maximum file descriptors one process is allowed
    to use
- * kern.ipc.maxsockets - overall maximum numbers of sockets for entire 
+ * kern.ipc.maxsockets - overall maximum numbers of sockets for entire
    system
  * kern.ipc.somaxconn - size of listen queue for incoming TCP connections
    for entire system
@@ -31,8 +31,8 @@ Mac OS X
 
 Since Mac OS X is BSD-based system, most of the above hold for OS X as well.
 However, launchd(8) is known to modify kern.maxfiles and kern.maxfilesperproc
-when it launches tor service (see launchd.plist(5) manpage). Also, 
-kern.ipc.maxsockets is determined dynamically by the system and thus is 
+when it launches tor service (see launchd.plist(5) manpage). Also,
+kern.ipc.maxsockets is determined dynamically by the system and thus is
 read-only on OS X.
 
 OpenBSD
@@ -79,8 +79,7 @@ Disclaimer
 
 Do note that this document is a draft and above information may be
 technically incorrect and/or incomplete. If so, please open a ticket
-on https://trac.torproject.org or post to tor-relays mailing list.
+on https://gitlab.torproject.org or post to tor-relays mailing list.
 
 Are you running a busy Tor relay? Let us know how you are solving
 the out-of-sockets problem on your system.
-

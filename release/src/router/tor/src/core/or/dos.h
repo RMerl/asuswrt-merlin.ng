@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /*
@@ -53,7 +53,8 @@ int dos_enabled(void);
 void dos_log_heartbeat(void);
 void dos_geoip_entry_about_to_free(const struct clientmap_entry_t *geoip_ent);
 
-void dos_new_client_conn(or_connection_t *or_conn);
+void dos_new_client_conn(or_connection_t *or_conn,
+                         const char *transport_name);
 void dos_close_client_conn(const or_connection_t *or_conn);
 
 int dos_should_refuse_single_hop_client(void);

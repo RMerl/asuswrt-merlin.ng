@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2019, The Tor Project, Inc. */
+/* Copyright (c) 2014-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -51,8 +51,6 @@
 #include "test/test.h"
 #include "test/test_dir_common.h"
 #include "test/log_test_helpers.h"
-
-void construct_consensus(char **consensus_text_md, time_t now);
 
 static authority_cert_t *mock_cert;
 
@@ -150,7 +148,7 @@ test_routerlist_launch_descriptor_downloads(void *arg)
   smartlist_free(downloadable);
 }
 
-void
+static void
 construct_consensus(char **consensus_text_md, time_t now)
 {
   networkstatus_t *vote = NULL;
@@ -341,18 +339,18 @@ test_router_pick_directory_server_impl(void *arg)
 
   node_router1->rs->is_v2_dir = 0;
   node_router3->rs->is_v2_dir = 0;
-  tmp_dirport1 = node_router1->rs->dir_port;
-  tmp_dirport3 = node_router3->rs->dir_port;
-  node_router1->rs->dir_port = 0;
-  node_router3->rs->dir_port = 0;
+  tmp_dirport1 = node_router1->rs->ipv4_dirport;
+  tmp_dirport3 = node_router3->rs->ipv4_dirport;
+  node_router1->rs->ipv4_dirport = 0;
+  node_router3->rs->ipv4_dirport = 0;
   rs = router_pick_directory_server_impl(V3_DIRINFO, flags, NULL);
   tt_ptr_op(rs, OP_NE, NULL);
   tt_assert(tor_memeq(rs->identity_digest, router2_id, DIGEST_LEN));
   rs = NULL;
   node_router1->rs->is_v2_dir = 1;
   node_router3->rs->is_v2_dir = 1;
-  node_router1->rs->dir_port = tmp_dirport1;
-  node_router3->rs->dir_port = tmp_dirport3;
+  node_router1->rs->ipv4_dirport = tmp_dirport1;
+  node_router3->rs->ipv4_dirport = tmp_dirport3;
 
   node_router1->is_valid = 0;
   node_router3->is_valid = 0;
@@ -381,23 +379,23 @@ test_router_pick_directory_server_impl(void *arg)
   options->ReachableORAddresses = policy_line;
   policies_parse_from_options(options);
 
-  node_router1->rs->or_port = 444;
-  node_router2->rs->or_port = 443;
-  node_router3->rs->or_port = 442;
+  node_router1->rs->ipv4_orport = 444;
+  node_router2->rs->ipv4_orport = 443;
+  node_router3->rs->ipv4_orport = 442;
   rs = router_pick_directory_server_impl(V3_DIRINFO, flags, NULL);
   tt_ptr_op(rs, OP_NE, NULL);
   tt_assert(tor_memeq(rs->identity_digest, router3_id, DIGEST_LEN));
-  node_router1->rs->or_port = 442;
-  node_router2->rs->or_port = 443;
-  node_router3->rs->or_port = 444;
+  node_router1->rs->ipv4_orport = 442;
+  node_router2->rs->ipv4_orport = 443;
+  node_router3->rs->ipv4_orport = 444;
   rs = router_pick_directory_server_impl(V3_DIRINFO, flags, NULL);
   tt_ptr_op(rs, OP_NE, NULL);
   tt_assert(tor_memeq(rs->identity_digest, router1_id, DIGEST_LEN));
 
   /* Fascist firewall and overloaded */
-  node_router1->rs->or_port = 442;
-  node_router2->rs->or_port = 443;
-  node_router3->rs->or_port = 442;
+  node_router1->rs->ipv4_orport = 442;
+  node_router2->rs->ipv4_orport = 443;
+  node_router3->rs->ipv4_orport = 442;
   node_router3->rs->last_dir_503_at = now;
   rs = router_pick_directory_server_impl(V3_DIRINFO, flags, NULL);
   tt_ptr_op(rs, OP_NE, NULL);
@@ -410,12 +408,12 @@ test_router_pick_directory_server_impl(void *arg)
   policy_line->value = tor_strdup("accept *:80, reject *:*");
   options->ReachableDirAddresses = policy_line;
   policies_parse_from_options(options);
-  node_router1->rs->or_port = 442;
-  node_router2->rs->or_port = 441;
-  node_router3->rs->or_port = 443;
-  node_router1->rs->dir_port = 80;
-  node_router2->rs->dir_port = 80;
-  node_router3->rs->dir_port = 81;
+  node_router1->rs->ipv4_orport = 442;
+  node_router2->rs->ipv4_orport = 441;
+  node_router3->rs->ipv4_orport = 443;
+  node_router1->rs->ipv4_dirport = 80;
+  node_router2->rs->ipv4_dirport = 80;
+  node_router3->rs->ipv4_dirport = 81;
   node_router1->rs->last_dir_503_at = now;
   rs = router_pick_directory_server_impl(V3_DIRINFO, flags, NULL);
   tt_ptr_op(rs, OP_NE, NULL);

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -151,29 +151,27 @@ tor_log_reset_sigsafe_err_fds(void)
 }
 
 /**
- * Close the list of fds that get errors from inside a signal handler or
+ * Flush the list of fds that get errors from inside a signal handler or
  * other emergency condition. These fds are shared with the logging code:
- * closing them flushes the log buffers, and prevents any further logging.
+ * flushing them also flushes the log buffers.
  *
- * This function closes stderr, so it should only be called immediately before
- * process shutdown.
+ * This function is safe to call during signal handlers.
  */
 void
-tor_log_close_sigsafe_err_fds(void)
+tor_log_flush_sigsafe_err_fds(void)
 {
+  /* If we don't have fsync() in unistd.h, we can't flush the logs. */
+#ifdef HAVE_FSYNC
   int n_fds, i;
   const int *fds = NULL;
 
   n_fds = tor_log_get_sigsafe_err_fds(&fds);
   for (i = 0; i < n_fds; ++i) {
-    /* tor_log_close_sigsafe_err_fds_on_error() is called on error and on
-     * shutdown, so we can't log or take any useful action if close()
-     * fails. */
-    (void)close(fds[i]);
+    /* This function is called on error and on shutdown, so we don't log, or
+     * take any other action, if fsync() fails. */
+    (void)fsync(fds[i]);
   }
-
-  /* Don't even try logging, we've closed all the log fds. */
-  tor_log_set_sigsafe_err_fds(NULL, 0);
+#endif /* defined(HAVE_FSYNC) */
 }
 
 /**
@@ -217,13 +215,13 @@ tor_raw_assertion_failed_msg_(const char *file, int line, const char *expr,
 
 /**
  * Call the abort() function to kill the current process with a fatal
- * error. But first, close the raw error file descriptors, so error messages
+ * error. But first, flush the raw error file descriptors, so error messages
  * are written before process termination.
  **/
 void
 tor_raw_abort_(void)
 {
-  tor_log_close_sigsafe_err_fds();
+  tor_log_flush_sigsafe_err_fds();
   abort();
 }
 

@@ -1,14 +1,11 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
-#define COMPAT_PRIVATE
 #define COMPAT_TIME_PRIVATE
-#define UTIL_PRIVATE
 #define UTIL_MALLOC_PRIVATE
-#define SOCKET_PRIVATE
 #define PROCESS_WIN32_PRIVATE
 #include "lib/testsupport/testsupport.h"
 #include "core/or/or.h"
@@ -21,6 +18,7 @@
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/defs/time.h"
 #include "test/test.h"
+#include "test/test_helpers.h"
 #include "lib/memarea/memarea.h"
 #include "lib/process/waitpid.h"
 #include "lib/process/process_win32.h"
@@ -33,6 +31,7 @@
 #include "lib/process/env.h"
 #include "lib/process/pidfile.h"
 #include "lib/intmath/weakrng.h"
+#include "lib/intmath/muldiv.h"
 #include "lib/thread/numcpus.h"
 #include "lib/math/fp.h"
 #include "lib/math/laplace.h"
@@ -73,6 +72,13 @@
 #include <math.h>
 #include <ctype.h>
 #include <float.h>
+
+/* These platforms don't have meaningful pwdb or homedirs. */
+#if defined(_WIN32) || defined(__ANDROID__)
+#define DISABLE_PWDB_TESTS
+#endif
+
+static void set_file_mtime(const char *fname, time_t when);
 
 #define INFINITY_DBL ((double)INFINITY)
 #define NAN_DBL ((double)NAN)
@@ -203,6 +209,54 @@ test_util_read_file_eof_zero_bytes(void *arg)
   test_util_read_until_eof_impl("tor_test_fifo_empty", 0, 10000);
 }
 
+static void
+test_util_read_file_endlines(void *arg)
+{
+  (void)arg;
+
+  char *fname = NULL;
+  char *read_content = NULL;
+  int r = -1;
+
+  /* Write a file that contains both \n and \r\n as line ending. */
+  const char *file_content = "foo bar\n"
+                             "foo bar baz\r\n"
+                             "foo bar\r\n";
+
+  const char *expected_file_content = "foo bar\n"
+                                      "foo bar baz\n"
+                                      "foo bar\n";
+
+  fname = tor_strdup(get_fname("file_with_crlf_ending"));
+
+  r = write_bytes_to_file(fname, file_content, strlen(file_content), 1);
+  tt_int_op(r, OP_EQ, 0);
+
+  /* Read the file in text mode: we strip \r's from the files on both Windows
+   * and UNIX. */
+  read_content = read_file_to_str(fname, 0, NULL);
+
+  tt_ptr_op(read_content, OP_NE, NULL);
+  tt_int_op(strlen(read_content), OP_EQ, strlen(expected_file_content));
+  tt_str_op(read_content, OP_EQ, expected_file_content);
+
+  tor_free(read_content);
+
+  /* Read the file in binary mode: we should preserve the \r here. */
+  read_content = read_file_to_str(fname, RFTS_BIN, NULL);
+
+  tt_ptr_op(read_content, OP_NE, NULL);
+  tt_int_op(strlen(read_content), OP_EQ, strlen(file_content));
+  tt_str_op(read_content, OP_EQ, file_content);
+
+  tor_free(read_content);
+
+ done:
+  unlink(fname);
+  tor_free(fname);
+  tor_free(read_content);
+}
+
 /* Test the basic expected behaviour for write_chunks_to_file.
  * NOTE: This will need to be updated if we ever change the tempfile location
  * or extension */
@@ -304,6 +358,56 @@ test_util_write_chunks_to_file(void *arg)
   tor_free(temp_str);
 }
 
+/* Test write_str_to_file_if_not_equal(). */
+static void
+test_util_write_str_if_changed(void *arg)
+{
+  (void)arg;
+  char *fname = tor_strdup(get_fname("write_if_changed"));
+  char *s = NULL;
+  int rv;
+  const char str1[] = "The wombat lives across the seas";
+  const char str2[] = "Among the far Antipodes"; /* -- Ogden Nash */
+
+  /* We can create files. */
+  rv = write_str_to_file_if_not_equal(fname, str1);
+  tt_int_op(rv, OP_EQ, 0);
+  s = read_file_to_str(fname, 0, NULL);
+  tt_str_op(s, OP_EQ, str1);
+  tor_free(s);
+
+  /* We can replace files. */
+  rv = write_str_to_file_if_not_equal(fname, str2);
+  tt_int_op(rv, OP_EQ, 0);
+  s = read_file_to_str(fname, 0, NULL);
+  tt_str_op(s, OP_EQ, str2);
+  tor_free(s);
+
+  /* Make sure we don't replace files when they're equal. (That's the whole
+   * point of the function we're testing. */
+  /* First, change the mtime of the file so that we can tell whether we
+   * replaced it. */
+  const time_t now = time(NULL);
+  const time_t five_sec_ago = now - 5;
+  set_file_mtime(fname, five_sec_ago);
+  rv = write_str_to_file_if_not_equal(fname, str2);
+  tt_int_op(rv, OP_EQ, 0);
+  /* Make sure that the file's mtime is unchanged... */
+  struct stat st;
+  rv = stat(fname, &st);
+  tt_int_op(rv, OP_EQ, 0);
+  tt_i64_op(st.st_mtime, OP_EQ, five_sec_ago);
+  /* And make sure its contents are unchanged. */
+  s = read_file_to_str(fname, 0, NULL);
+  tt_str_op(s, OP_EQ, str2);
+  tor_free(s);
+
+ done:
+  tor_free(fname);
+  tor_free(s);
+}
+
+#ifndef COCCI
 #define _TFE(a, b, f)  tt_int_op((a).f, OP_EQ, (b).f)
 /** test the minimum set of struct tm fields needed for a unique epoch value
  * this is also the set we use to test tor_timegm */
@@ -316,6 +420,7 @@ test_util_write_chunks_to_file(void *arg)
             _TFE(a, b, tm_min ); \
             _TFE(a, b, tm_sec ); \
           TT_STMT_END
+#endif /* !defined(COCCI) */
 
 static void
 test_util_time(void *arg)
@@ -1845,7 +1950,57 @@ test_util_config_line_crlf(void *arg)
   tor_free(k); tor_free(v);
 }
 
-#ifndef _WIN32
+static void
+test_util_config_line_partition(void *arg)
+{
+  (void)arg;
+  config_line_t *lines = NULL, *orig, *rest = NULL;
+
+  config_line_append(&lines, "Header", "X");
+  config_line_append(&lines, "Item", "Y");
+  config_line_append(&lines, "Thing", "Z");
+
+  config_line_append(&lines, "HEADER", "X2");
+
+  config_line_append(&lines, "header", "X3");
+  config_line_append(&lines, "Item3", "Foob");
+
+  /* set up h2 and h3 to point to the places where we hope the headers will
+     be. */
+  config_line_t *h2 = lines->next->next->next;
+  config_line_t *h3 = h2->next;
+  tt_str_op(h2->key, OP_EQ, "HEADER");
+  tt_str_op(h3->key, OP_EQ, "header");
+
+  orig = lines;
+  rest = config_lines_partition(lines, "Header");
+  tt_ptr_op(lines, OP_EQ, orig);
+  tt_ptr_op(rest, OP_EQ, h2);
+  tt_str_op(lines->next->key, OP_EQ, "Item");
+  tt_str_op(lines->next->next->key, OP_EQ, "Thing");
+  tt_ptr_op(lines->next->next->next, OP_EQ, NULL);
+  config_free_lines(lines);
+
+  orig = lines = rest;
+  rest = config_lines_partition(lines, "Header");
+  tt_ptr_op(lines, OP_EQ, orig);
+  tt_ptr_op(rest, OP_EQ, h3);
+  tt_ptr_op(lines->next, OP_EQ, NULL);
+  config_free_lines(lines);
+
+  orig = lines = rest;
+  rest = config_lines_partition(lines, "Header");
+  tt_ptr_op(lines, OP_EQ, orig);
+  tt_ptr_op(rest, OP_EQ, NULL);
+  tt_str_op(lines->next->key, OP_EQ, "Item3");
+  tt_ptr_op(lines->next->next, OP_EQ, NULL);
+
+ done:
+  config_free_lines(lines);
+  config_free_lines(rest);
+}
+
+#ifndef DISABLE_PWDB_TESTS
 static void
 test_util_expand_filename(void *arg)
 {
@@ -1942,7 +2097,7 @@ test_util_expand_filename(void *arg)
  done:
   tor_free(str);
 }
-#endif /* !defined(_WIN32) */
+#endif /* !defined(DISABLE_PWDB_TESTS) */
 
 /** Test tor_escape_str_for_pt_args(). */
 static void
@@ -4030,6 +4185,31 @@ test_util_find_str_at_start_of_line(void *ptr)
 }
 
 static void
+test_util_tor_strreplacechar(void *ptr)
+{
+  (void)ptr;
+  char empty[] = "";
+  char not_contain[] = "bbb";
+  char contains[] = "bab";
+  char contains_all[] = "aaa";
+
+  tor_strreplacechar(empty, 'a', 'b');
+  tt_str_op(empty, OP_EQ, "");
+
+  tor_strreplacechar(not_contain, 'a', 'b');
+  tt_str_op(not_contain, OP_EQ, "bbb");
+
+  tor_strreplacechar(contains, 'a', 'b');
+  tt_str_op(contains, OP_EQ, "bbb");
+
+  tor_strreplacechar(contains_all, 'a', 'b');
+  tt_str_op(contains_all, OP_EQ, "bbb");
+
+ done:
+  ;
+}
+
+static void
 test_util_string_is_C_identifier(void *ptr)
 {
   (void)ptr;
@@ -4104,9 +4284,42 @@ test_util_string_is_utf8(void *ptr)
   tt_int_op(0, OP_EQ, string_is_utf8("\xed\xbf\xbf", 3));
   tt_int_op(1, OP_EQ, string_is_utf8("\xee\x80\x80", 3));
 
-  // The maximum legal codepoint, 10FFFF.
+  // The minimum legal codepoint, 0x00.
+  tt_int_op(1, OP_EQ, string_is_utf8("\0", 1));
+
+  // The maximum legal codepoint, 0x10FFFF.
   tt_int_op(1, OP_EQ, string_is_utf8("\xf4\x8f\xbf\xbf", 4));
   tt_int_op(0, OP_EQ, string_is_utf8("\xf4\x90\x80\x80", 4));
+
+  /* Test cases that vary between programming languages /
+   * UTF-8 implementations.
+   * Source: POC||GTFO 19, page 43
+   * https://www.alchemistowl.org/pocorgtfo/
+   */
+
+  // Invalid (in most implementations)
+  // surrogate
+  tt_int_op(0, OP_EQ, string_is_utf8("\xed\xa0\x81", 3));
+  // nullsurrog
+  tt_int_op(0, OP_EQ, string_is_utf8("\x30\x00\xed\xa0\x81", 5));
+  // threehigh
+  tt_int_op(0, OP_EQ, string_is_utf8("\xed\xbf\xbf", 3));
+  // fourhigh
+  tt_int_op(0, OP_EQ, string_is_utf8("\xf4\x90\xbf\xbf", 4));
+  // fivebyte
+  tt_int_op(0, OP_EQ, string_is_utf8("\xfb\x80\x80\x80\x80", 5));
+  // sixbyte
+  tt_int_op(0, OP_EQ, string_is_utf8("\xfd\x80\x80\x80\x80", 5));
+  // sixhigh
+  tt_int_op(0, OP_EQ, string_is_utf8("\xfd\xbf\xbf\xbf\xbf", 5));
+
+  // Valid (in most implementations)
+  // fourbyte
+  tt_int_op(1, OP_EQ, string_is_utf8("\xf0\x90\x8d\x88", 4));
+  // fourbyte2
+  tt_int_op(1, OP_EQ, string_is_utf8("\xf0\xbf\xbf\xbf", 4));
+  // nullbyte
+  tt_int_op(1, OP_EQ, string_is_utf8("\x30\x31\x32\x00\x33", 5));
 
  done:
   ;
@@ -4220,6 +4433,438 @@ test_util_listdir(void *ptr)
     SMARTLIST_FOREACH(dir_contents, char *, cp, tor_free(cp));
     smartlist_free(dir_contents);
   }
+}
+
+static void
+test_util_glob(void *ptr)
+{
+  (void)ptr;
+
+#ifdef HAVE_GLOB
+  smartlist_t *results = NULL;
+  int r, i;
+  char *dir1 = NULL, *dir2 = NULL, *forbidden = NULL, *dirname = NULL;
+  char *expected = NULL, *pattern = NULL;
+  // used for cleanup
+  char *dir1_forbidden = NULL, *dir2_forbidden = NULL;
+  char *forbidden_forbidden = NULL;
+
+  dirname = tor_strdup(get_fname("test_glob"));
+  tt_ptr_op(dirname, OP_NE, NULL);
+
+#ifdef _WIN32
+  r = mkdir(dirname);
+#else
+  r = mkdir(dirname, 0700);
+#endif
+  if (r) {
+    fprintf(stderr, "Can't create directory %s:", dirname);
+    perror("");
+    exit(1);
+  }
+
+  tt_int_op(0, OP_EQ, create_test_directory_structure(dirname));
+  tor_asprintf(&dir1, "%s"PATH_SEPARATOR"dir1", dirname);
+  tor_asprintf(&dir1_forbidden,
+               "%s"PATH_SEPARATOR"dir1"PATH_SEPARATOR"forbidden", dirname);
+  tt_int_op(0, OP_EQ, create_test_directory_structure(dir1));
+  tor_asprintf(&dir2, "%s"PATH_SEPARATOR"dir2", dirname);
+  tor_asprintf(&dir2_forbidden,
+               "%s"PATH_SEPARATOR"dir2"PATH_SEPARATOR"forbidden", dirname);
+  tt_int_op(0, OP_EQ, create_test_directory_structure(dir2));
+  tor_asprintf(&forbidden, "%s"PATH_SEPARATOR"forbidden", dirname);
+  tor_asprintf(&forbidden_forbidden,
+               "%s"PATH_SEPARATOR"forbidden"PATH_SEPARATOR"forbidden",dirname);
+#ifndef _WIN32
+  tt_int_op(0, OP_EQ, chmod(forbidden, 0700));
+#endif
+  tt_int_op(0, OP_EQ, create_test_directory_structure(forbidden));
+#ifndef _WIN32
+  tt_int_op(0, OP_EQ, chmod(forbidden, 0));
+#endif
+
+#define TEST(input) \
+  do { \
+    tor_asprintf(&pattern, "%s"PATH_SEPARATOR"%s", dirname, input); \
+    results = tor_glob(pattern); \
+    tor_free(pattern); \
+    tt_assert(results); \
+    smartlist_sort_strings(results); \
+  } while (0);
+
+#define EXPECT(result) \
+  do { \
+    tt_int_op(smartlist_len(results), OP_EQ, \
+                            sizeof(result)/sizeof(*result)); \
+    i = 0; \
+    SMARTLIST_FOREACH_BEGIN(results, const char *, f) { \
+      tor_asprintf(&expected, "%s"PATH_SEPARATOR"%s", dirname, result[i]); \
+      tt_str_op(f, OP_EQ, expected); \
+      i++; \
+      tor_free(expected); \
+    } SMARTLIST_FOREACH_END(f); \
+    SMARTLIST_FOREACH(results, char *, f, tor_free(f)); \
+    smartlist_free(results); \
+  } while (0);
+
+#define EXPECT_EMPTY() \
+  do { \
+    tt_int_op(smartlist_len(results), OP_EQ, 0); \
+    SMARTLIST_FOREACH(results, char *, f, tor_free(f)); \
+    smartlist_free(results); \
+  } while (0);
+
+  // wildcards at beginning
+  const char *results_test1[] = {"dir2", "file2"};
+  TEST("*2");
+  EXPECT(results_test1);
+
+  // wildcards at end
+  const char *results_test2[] = {"dir1", "dir2"};
+  TEST("d*");
+  EXPECT(results_test2);
+
+  // wildcards at beginning and end
+#ifdef _WIN32
+  // dot files are not ignored on Windows
+  const char *results_test3[] = {".test-hidden", "dir1", "dir2", "file1",
+                                 "file2", "forbidden"};
+#else
+  const char *results_test3[] = {"dir1", "dir2", "file1", "file2",
+                                 "forbidden"};
+#endif
+  TEST("*i*");
+  EXPECT(results_test3);
+
+  // wildcards in middle
+  const char *results_test4[] = {"dir1", "dir2"};
+  TEST("d?r*");
+  EXPECT(results_test4);
+
+  // test file that does not exist
+  TEST("not-exist");
+  EXPECT_EMPTY();
+
+  // test wildcard that matches nothing
+  TEST("*not-exist*");
+  EXPECT_EMPTY();
+
+  // test path separator at end - no wildcards
+  const char *results_test7[] = {"dir1"};
+  TEST("dir1");
+  EXPECT(results_test7);
+
+  const char *results_test8[] = {"dir1"};
+  TEST("dir1"PATH_SEPARATOR);
+  EXPECT(results_test8);
+
+  const char *results_test9[] = {"file1"};
+  TEST("file1");
+  EXPECT(results_test9);
+
+#if defined(__APPLE__) || defined(__darwin__) || \
+  defined(__FreeBSD__) || defined(__NetBSD__) || defined(OpenBSD)
+  TEST("file1"PATH_SEPARATOR);
+  EXPECT_EMPTY();
+#else
+  const char *results_test10[] = {"file1"};
+  TEST("file1"PATH_SEPARATOR);
+  EXPECT(results_test10);
+#endif
+
+  // test path separator at end - with wildcards and linux path separator
+  const char *results_test11[] = {"dir1", "dir2", "forbidden"};
+  TEST("*/");
+  EXPECT(results_test11);
+
+#ifdef _WIN32
+  // dot files are not ignored on Windows
+  const char *results_test12[] = {".test-hidden", "dir1", "dir2", "empty",
+                                  "file1", "file2", "forbidden"};
+#else
+  const char *results_test12[] = {"dir1", "dir2", "empty", "file1", "file2",
+                                  "forbidden"};
+#endif
+  TEST("*");
+  EXPECT(results_test12);
+
+  // wildcards on folder and file and linux path separator
+  const char *results_test13[] = {"dir1"PATH_SEPARATOR"dir1",
+                                  "dir1"PATH_SEPARATOR"dir2",
+                                  "dir1"PATH_SEPARATOR"file1",
+                                  "dir1"PATH_SEPARATOR"file2",
+                                  "dir2"PATH_SEPARATOR"dir1",
+                                  "dir2"PATH_SEPARATOR"dir2",
+                                  "dir2"PATH_SEPARATOR"file1",
+                                  "dir2"PATH_SEPARATOR"file2"};
+  TEST("?i*/?i*");
+  EXPECT(results_test13);
+
+  // wildcards on file only
+  const char *results_test14[] = {"dir1"PATH_SEPARATOR"dir1",
+                                  "dir1"PATH_SEPARATOR"dir2",
+                                  "dir1"PATH_SEPARATOR"file1",
+                                  "dir1"PATH_SEPARATOR"file2"};
+  TEST("dir1"PATH_SEPARATOR"?i*");
+  EXPECT(results_test14);
+
+  // wildcards on folder only
+  const char *results_test15[] = {"dir1"PATH_SEPARATOR"file1",
+                                  "dir2"PATH_SEPARATOR"file1"};
+  TEST("?i*"PATH_SEPARATOR"file1");
+  EXPECT(results_test15);
+
+  // wildcards after file name
+  TEST("file1"PATH_SEPARATOR"*");
+  EXPECT_EMPTY();
+
+#ifndef _WIN32
+  // test wildcard escaping
+  TEST("\\*");
+  EXPECT_EMPTY();
+
+  if (getuid() != 0) {
+    // test forbidden directory, if we're not root.
+    // (Root will be able to see this directory anyway.)
+    tor_asprintf(&pattern, "%s"PATH_SEPARATOR"*"PATH_SEPARATOR"*", dirname);
+    results = tor_glob(pattern);
+    tor_free(pattern);
+    tt_assert(!results);
+  }
+#endif
+
+#undef TEST
+#undef EXPECT
+#undef EXPECT_EMPTY
+
+ done:
+#ifndef _WIN32
+  (void) chmod(forbidden, 0700);
+  (void) chmod(dir1_forbidden, 0700);
+  (void) chmod(dir2_forbidden, 0700);
+  (void) chmod(forbidden_forbidden, 0700);
+#endif
+  tor_free(dir1);
+  tor_free(dir2);
+  tor_free(forbidden);
+  tor_free(dirname);
+  tor_free(dir1_forbidden);
+  tor_free(dir2_forbidden);
+  tor_free(forbidden_forbidden);
+  tor_free(expected);
+  tor_free(pattern);
+  if (results) {
+    SMARTLIST_FOREACH(results, char *, f, tor_free(f));
+    smartlist_free(results);
+  }
+#else
+  tt_skip();
+ done:
+  return;
+#endif
+}
+
+static void
+test_util_get_glob_opened_files(void *ptr)
+{
+  (void)ptr;
+
+#ifdef HAVE_GLOB
+  smartlist_t *results = NULL;
+  int r, i;
+  char *dir1 = NULL, *dir2 = NULL, *forbidden = NULL, *dirname = NULL;
+  char *expected = NULL, *pattern = NULL;
+  // used for cleanup
+  char *dir1_forbidden = NULL, *dir2_forbidden = NULL;
+  char *forbidden_forbidden = NULL;
+
+  dirname = tor_strdup(get_fname("test_get_glob_opened_files"));
+  tt_ptr_op(dirname, OP_NE, NULL);
+
+#ifdef _WIN32
+  r = mkdir(dirname);
+#else
+  r = mkdir(dirname, 0700);
+#endif
+  if (r) {
+    fprintf(stderr, "Can't create directory %s:", dirname);
+    perror("");
+    exit(1);
+  }
+
+  tt_int_op(0, OP_EQ, create_test_directory_structure(dirname));
+  tor_asprintf(&dir1, "%s"PATH_SEPARATOR"dir1", dirname);
+  tor_asprintf(&dir1_forbidden,
+               "%s"PATH_SEPARATOR"dir1"PATH_SEPARATOR"forbidden", dirname);
+  tt_int_op(0, OP_EQ, create_test_directory_structure(dir1));
+  tor_asprintf(&dir2, "%s"PATH_SEPARATOR"dir2", dirname);
+  tor_asprintf(&dir2_forbidden,
+               "%s"PATH_SEPARATOR"dir2"PATH_SEPARATOR"forbidden", dirname);
+  tt_int_op(0, OP_EQ, create_test_directory_structure(dir2));
+  tor_asprintf(&forbidden, "%s"PATH_SEPARATOR"forbidden", dirname);
+  tor_asprintf(&forbidden_forbidden,
+               "%s"PATH_SEPARATOR"forbidden"PATH_SEPARATOR"forbidden",dirname);
+#ifndef _WIN32
+  chmod(forbidden, 0700);
+#endif
+  tt_int_op(0, OP_EQ, create_test_directory_structure(forbidden));
+#ifndef _WIN32
+  chmod(forbidden, 0);
+#endif
+
+#define TEST(input) \
+  do { \
+    if (*input) { \
+      tor_asprintf(&pattern, "%s"PATH_SEPARATOR"%s", dirname, input); \
+    } else { /* do not add path separator if empty string */ \
+      tor_asprintf(&pattern, "%s", dirname); \
+    } \
+    results = get_glob_opened_files(pattern); \
+    tor_free(pattern); \
+    tt_assert(results); \
+    smartlist_sort_strings(results); \
+  } while (0);
+
+#define EXPECT(result) \
+  do { \
+    tt_int_op(smartlist_len(results), OP_EQ, \
+                          sizeof(result)/sizeof(*result)); \
+    i = 0; \
+    SMARTLIST_FOREACH_BEGIN(results, const char *, f) { \
+      if (*result[i]) { \
+        tor_asprintf(&expected, "%s"PATH_SEPARATOR"%s", dirname, result[i]); \
+      } else { /* do not add path separator if empty string */ \
+        tor_asprintf(&expected, "%s", dirname); \
+      } \
+      tt_str_op(f, OP_EQ, expected); \
+      i++; \
+      tor_free(expected); \
+    } SMARTLIST_FOREACH_END(f); \
+    SMARTLIST_FOREACH(results, char *, f, tor_free(f)); \
+    smartlist_free(results); \
+  } while (0);
+
+#define EXPECT_EMPTY() \
+  do { \
+    tt_int_op(smartlist_len(results), OP_EQ, 0); \
+    SMARTLIST_FOREACH(results, char *, f, tor_free(f)); \
+    smartlist_free(results); \
+  } while (0);
+
+  // all files on folder
+  const char *results_test1[] = {""}; // only the folder is read
+  TEST("*");
+  EXPECT(results_test1);
+
+  // same as before but ending in path separator
+  const char *results_test2[] = {""}; // only the folder is read
+  TEST("*"PATH_SEPARATOR);
+  EXPECT(results_test2);
+
+  // wildcards in multiple path components
+#ifndef _WIN32
+  const char *results_test3[] = {"", "dir1", "dir2", "empty", "file1", "file2",
+                                 "forbidden"};
+#else
+  // dot files are not special on windows
+  const char *results_test3[] = {"", ".test-hidden", "dir1", "dir2", "empty",
+                                 "file1", "file2", "forbidden"};
+#endif
+  TEST("*"PATH_SEPARATOR"*");
+  EXPECT(results_test3);
+
+  // same as before but ending in path separator
+#ifndef _WIN32
+  const char *results_test4[] = {"", "dir1", "dir2", "empty", "file1", "file2",
+                                 "forbidden"};
+#else
+  // dot files are not special on windows
+  const char *results_test4[] = {"", ".test-hidden", "dir1", "dir2", "empty",
+                                 "file1", "file2", "forbidden"};
+#endif
+  TEST("*"PATH_SEPARATOR"*"PATH_SEPARATOR);
+  EXPECT(results_test4);
+
+  // no glob - folder
+  TEST("");
+  EXPECT_EMPTY();
+
+  // same as before but ending in path separator
+  TEST(PATH_SEPARATOR);
+  EXPECT_EMPTY();
+
+  // no glob - file
+  TEST("file1");
+  EXPECT_EMPTY();
+
+  // same as before but ending in path separator and linux path separator
+  TEST("file1/");
+  EXPECT_EMPTY();
+
+  // file but with wildcard after
+  const char *results_test9[] = {"file1"};
+  TEST("file1"PATH_SEPARATOR"*");
+  EXPECT(results_test9);
+
+  // dir inside dir and linux path separator
+  TEST("dir1/dir1");
+  EXPECT_EMPTY();
+
+  // same as before but ending in path separator
+  TEST("dir1"PATH_SEPARATOR"dir1"PATH_SEPARATOR);
+  EXPECT_EMPTY();
+
+  // no glob - empty
+  TEST("empty");
+  EXPECT_EMPTY();
+
+  // same as before but ending in path separator
+  TEST("empty"PATH_SEPARATOR);
+  EXPECT_EMPTY();
+
+  // no glob - does not exist
+  TEST("not_exist");
+  EXPECT_EMPTY();
+
+#undef TEST
+#undef EXPECT
+#undef EXPECT_EMPTY
+
+ done:
+#ifndef _WIN32
+  {
+    int chmod_failed = 0;
+    if (forbidden)
+    chmod_failed |= chmod(forbidden, 0700);
+    if (dir1_forbidden)
+      chmod_failed |= chmod(dir1_forbidden, 0700);
+    if (dir2_forbidden)
+      chmod_failed |= chmod(dir2_forbidden, 0700);
+    if (forbidden_forbidden)
+      chmod_failed |= chmod(forbidden_forbidden, 0700);
+    if (chmod_failed) {
+      TT_FAIL(("unable to chmod a file on cleanup: %s", strerror(errno)));
+    }
+  }
+#endif
+  tor_free(dir1);
+  tor_free(dir2);
+  tor_free(forbidden);
+  tor_free(dirname);
+  tor_free(dir1_forbidden);
+  tor_free(dir2_forbidden);
+  tor_free(forbidden_forbidden);
+  tor_free(expected);
+  tor_free(pattern);
+  if (results) {
+    SMARTLIST_FOREACH(results, char *, f, tor_free(f));
+    smartlist_free(results);
+  }
+#else
+  tt_skip();
+ done:
+  return;
+#endif
 }
 
 static void
@@ -4529,6 +5174,35 @@ test_util_di_ops(void *arg)
   tt_int_op(1, OP_EQ, safe_mem_is_zero("\0\0\0\0\0\0\0\0a", 8));
   tt_int_op(0, OP_EQ, safe_mem_is_zero("\0\0\0\0\0\0\0\0a", 9));
 
+ done:
+  ;
+}
+
+static void
+test_util_memcpy_iftrue_timei(void *arg)
+{
+  (void)arg;
+  char buf1[25];
+  char buf2[25];
+  char buf3[25];
+
+  for (int i = 0; i < 100; ++i) {
+    crypto_rand(buf1, sizeof(buf1));
+    crypto_rand(buf2, sizeof(buf2));
+    memcpy(buf3, buf1, sizeof(buf1));
+
+    /* We just copied buf1 into buf3.  Now we're going to copy buf2 into buf2,
+       iff our coin flip comes up heads. */
+    bool coinflip = crypto_rand_int(2) == 0;
+
+    memcpy_if_true_timei(coinflip, buf3, buf2, sizeof(buf3));
+
+    if (coinflip) {
+      tt_mem_op(buf3, OP_EQ, buf2, sizeof(buf2));
+    } else {
+      tt_mem_op(buf3, OP_EQ, buf1, sizeof(buf1));
+    }
+  }
  done:
   ;
 }
@@ -5519,7 +6193,7 @@ test_util_hostname_validation(void *arg)
 
   // XXX: do we allow single-label DNS names?
   // We shouldn't for SOCKS (spec says "contains a fully-qualified domain name"
-  // but only test pathologically malformed traling '.' cases for now.
+  // but only test pathologically malformed trailing '.' cases for now.
   tt_assert(!string_is_valid_nonrfc_hostname("."));
   tt_assert(!string_is_valid_nonrfc_hostname(".."));
 
@@ -5534,7 +6208,7 @@ test_util_hostname_validation(void *arg)
   tt_assert(string_is_valid_nonrfc_hostname("luck.y13."));
 
   // We allow punycode TLDs. For examples, see
-  // http://data.iana.org/TLD/tlds-alpha-by-domain.txt
+  // https://data.iana.org/TLD/tlds-alpha-by-domain.txt
   tt_assert(string_is_valid_nonrfc_hostname("example.xn--l1acc"));
 
   done:
@@ -5621,6 +6295,20 @@ test_util_get_avail_disk_space(void *arg)
   ;
 }
 
+/** Helper: Change the atime and mtime of a file. */
+static void
+set_file_mtime(const char *fname, time_t when)
+{
+  struct utimbuf u = { when, when };
+  struct stat st;
+  tt_int_op(0, OP_EQ, utime(fname, &u));
+  tt_int_op(0, OP_EQ, stat(fname, &st));
+  /* Let's hope that utime/stat give the same second as a round-trip? */
+  tt_i64_op(st.st_mtime, OP_EQ, when);
+done:
+  ;
+}
+
 static void
 test_util_touch_file(void *arg)
 {
@@ -5638,11 +6326,7 @@ test_util_touch_file(void *arg)
   tt_i64_op(st.st_mtime, OP_GE, now - 1);
 
   const time_t five_sec_ago = now - 5;
-  struct utimbuf u = { five_sec_ago, five_sec_ago };
-  tt_int_op(0, OP_EQ, utime(fname, &u));
-  tt_int_op(0, OP_EQ, stat(fname, &st));
-  /* Let's hope that utime/stat give the same second as a round-trip? */
-  tt_i64_op(st.st_mtime, OP_EQ, five_sec_ago);
+  set_file_mtime(fname, five_sec_ago);
 
   /* Finally we can touch the file */
   tt_int_op(0, OP_EQ, touch_file(fname));
@@ -5653,7 +6337,7 @@ test_util_touch_file(void *arg)
   ;
 }
 
-#ifndef _WIN32
+#ifndef DISABLE_PWDB_TESTS
 static void
 test_util_pwdb(void *arg)
 {
@@ -5725,7 +6409,7 @@ test_util_pwdb(void *arg)
   tor_free(dir);
   teardown_capture_of_logs();
 }
-#endif /* !defined(_WIN32) */
+#endif /* !defined(DISABLE_PWDB_TESTS) */
 
 static void
 test_util_calloc_check(void *arg)
@@ -5973,6 +6657,14 @@ test_util_nowrap_math(void *arg)
   tt_u64_op(UINT32_MAX, OP_EQ, tor_add_u32_nowrap(2, UINT32_MAX-1));
   tt_u64_op(UINT32_MAX, OP_EQ, tor_add_u32_nowrap(UINT32_MAX, UINT32_MAX));
 
+  tt_u64_op(0, OP_EQ, tor_mul_u64_nowrap(0, 0));
+  tt_u64_op(1, OP_EQ, tor_mul_u64_nowrap(1, 1));
+  tt_u64_op(2, OP_EQ, tor_mul_u64_nowrap(2, 1));
+  tt_u64_op(4, OP_EQ, tor_mul_u64_nowrap(2, 2));
+  tt_u64_op(UINT64_MAX, OP_EQ, tor_mul_u64_nowrap(UINT64_MAX, 1));
+  tt_u64_op(UINT64_MAX, OP_EQ, tor_mul_u64_nowrap(2, UINT64_MAX));
+  tt_u64_op(UINT64_MAX, OP_EQ, tor_mul_u64_nowrap(UINT64_MAX, UINT64_MAX));
+
  done:
   ;
 }
@@ -6080,57 +6772,6 @@ test_util_get_unquoted_path(void *arg)
 
  done:
   tor_free(r);
-}
-
-static void
-test_util_log_mallinfo(void *arg)
-{
-  (void)arg;
-  char *log1 = NULL, *log2 = NULL, *mem = NULL;
-#ifdef HAVE_MALLINFO
-  setup_capture_of_logs(LOG_INFO);
-  tor_log_mallinfo(LOG_INFO);
-  expect_single_log_msg_containing("mallinfo() said: ");
-  mock_saved_log_entry_t *lg = smartlist_get(mock_saved_logs(), 0);
-  log1 = tor_strdup(lg->generated_msg);
-
-  mock_clean_saved_logs();
-  mem = tor_malloc(8192);
-  tor_log_mallinfo(LOG_INFO);
-  expect_single_log_msg_containing("mallinfo() said: ");
-  lg = smartlist_get(mock_saved_logs(), 0);
-  log2 = tor_strdup(lg->generated_msg);
-
-  /* Make sure that the amount of used memory increased. */
-  const char *used1 = strstr(log1, "uordblks=");
-  const char *used2 = strstr(log2, "uordblks=");
-  tt_assert(used1);
-  tt_assert(used2);
-  used1 += strlen("uordblks=");
-  used2 += strlen("uordblks=");
-
-  int ok1, ok2;
-  char *next1 = NULL, *next2 = NULL;
-  uint64_t mem1 = tor_parse_uint64(used1, 10, 0, UINT64_MAX, &ok1, &next1);
-  uint64_t mem2 = tor_parse_uint64(used2, 10, 0, UINT64_MAX, &ok2, &next2);
-  tt_assert(ok1);
-  tt_assert(ok2);
-  tt_assert(next1);
-  tt_assert(next2);
-  if (mem2 == 0) {
-    /* This is a fake mallinfo that doesn't actually fill in its outputs. */
-    tt_u64_op(mem1, OP_EQ, 0);
-  } else {
-    tt_u64_op(mem1, OP_LT, mem2);
-  }
-#else /* !defined(HAVE_MALLINFO) */
-  tt_skip();
-#endif /* defined(HAVE_MALLINFO) */
- done:
-  teardown_capture_of_logs();
-  tor_free(log1);
-  tor_free(log2);
-  tor_free(mem);
 }
 
 static void
@@ -6257,40 +6898,44 @@ test_util_map_anon_nofork(void *arg)
 #endif /* defined(_WIN32) */
 }
 
+#ifndef COCCI
 #define UTIL_LEGACY(name)                                               \
-  { #name, test_util_ ## name , 0, NULL, NULL }
+  { (#name), test_util_ ## name , 0, NULL, NULL }
 
 #define UTIL_TEST(name, flags)                          \
-  { #name, test_util_ ## name, flags, NULL, NULL }
+  { (#name), test_util_ ## name, flags, NULL, NULL }
 
 #define COMPRESS(name, identifier)              \
-  { "compress/" #name, test_util_compress, 0, &compress_setup,          \
+  { ("compress/" #name), test_util_compress, 0, &compress_setup,        \
     (char*)(identifier) }
 
 #define COMPRESS_CONCAT(name, identifier)                               \
-  { "compress_concat/" #name, test_util_decompress_concatenated, 0,     \
+  { ("compress_concat/" #name), test_util_decompress_concatenated, 0,   \
     &compress_setup,                                                    \
     (char*)(identifier) }
 
 #define COMPRESS_JUNK(name, identifier)                                 \
-  { "compress_junk/" #name, test_util_decompress_junk, 0,               \
+  { ("compress_junk/" #name), test_util_decompress_junk, 0,             \
     &compress_setup,                                                    \
     (char*)(identifier) }
 
 #define COMPRESS_DOS(name, identifier)                                  \
-  { "compress_dos/" #name, test_util_decompress_dos, 0,                 \
+  { ("compress_dos/" #name), test_util_decompress_dos, 0,               \
     &compress_setup,                                                    \
     (char*)(identifier) }
 
 #ifdef _WIN32
-#define UTIL_TEST_NO_WIN(n, f) { #n, NULL, TT_SKIP, NULL, NULL }
 #define UTIL_TEST_WIN_ONLY(n, f) UTIL_TEST(n, (f))
-#define UTIL_LEGACY_NO_WIN(n) UTIL_TEST_NO_WIN(n, 0)
 #else
-#define UTIL_TEST_NO_WIN(n, f) UTIL_TEST(n, (f))
-#define UTIL_TEST_WIN_ONLY(n, f) { #n, NULL, TT_SKIP, NULL, NULL }
-#define UTIL_LEGACY_NO_WIN(n) UTIL_LEGACY(n)
-#endif /* defined(_WIN32) */
+#define UTIL_TEST_WIN_ONLY(n, f) { (#n), NULL, TT_SKIP, NULL, NULL }
+#endif
+
+#ifdef DISABLE_PWDB_TESTS
+#define UTIL_TEST_PWDB(n, f) { (#n), NULL, TT_SKIP, NULL, NULL }
+#else
+#define UTIL_TEST_PWDB(n, f) UTIL_TEST(n, (f))
+#endif
+#endif /* !defined(COCCI) */
 
 struct testcase_t util_tests[] = {
   UTIL_LEGACY(time),
@@ -6300,7 +6945,8 @@ struct testcase_t util_tests[] = {
   UTIL_LEGACY(config_line_comment_character),
   UTIL_LEGACY(config_line_escaped_content),
   UTIL_LEGACY(config_line_crlf),
-  UTIL_LEGACY_NO_WIN(expand_filename),
+  UTIL_TEST(config_line_partition, 0),
+  UTIL_TEST_PWDB(expand_filename, 0),
   UTIL_LEGACY(escape_string_socks),
   UTIL_LEGACY(string_is_key_value),
   UTIL_LEGACY(strmisc),
@@ -6336,15 +6982,19 @@ struct testcase_t util_tests[] = {
   UTIL_LEGACY(path_is_relative),
   UTIL_LEGACY(strtok),
   UTIL_LEGACY(di_ops),
+  UTIL_TEST(memcpy_iftrue_timei, 0),
   UTIL_TEST(di_map, 0),
   UTIL_TEST(round_to_next_multiple_of, 0),
   UTIL_TEST(laplace, 0),
   UTIL_TEST(clamp_double_to_int64, 0),
   UTIL_TEST(find_str_at_start_of_line, 0),
+  UTIL_TEST(tor_strreplacechar, 0),
   UTIL_TEST(string_is_C_identifier, 0),
   UTIL_TEST(string_is_utf8, 0),
   UTIL_TEST(asprintf, 0),
   UTIL_TEST(listdir, 0),
+  UTIL_TEST(glob, 0),
+  UTIL_TEST(get_glob_opened_files, 0),
   UTIL_TEST(parent_dir, 0),
   UTIL_TEST(ftruncate, 0),
   UTIL_TEST(nowrap_math, 0),
@@ -6364,7 +7014,9 @@ struct testcase_t util_tests[] = {
   UTIL_TEST(read_file_eof_two_loops, 0),
   UTIL_TEST(read_file_eof_two_loops_b, 0),
   UTIL_TEST(read_file_eof_zero_bytes, 0),
+  UTIL_TEST(read_file_endlines, 0),
   UTIL_TEST(write_chunks_to_file, 0),
+  UTIL_TEST(write_str_if_changed, 0),
   UTIL_TEST(mathlog, 0),
   UTIL_TEST(fraction, 0),
   UTIL_TEST(weak_random, 0),
@@ -6385,7 +7037,7 @@ struct testcase_t util_tests[] = {
   UTIL_TEST(writepid, 0),
   UTIL_TEST(get_avail_disk_space, 0),
   UTIL_TEST(touch_file, 0),
-  UTIL_TEST_NO_WIN(pwdb, TT_FORK),
+  UTIL_TEST_PWDB(pwdb, TT_FORK),
   UTIL_TEST(calloc_check, 0),
   UTIL_TEST(monotonic_time, 0),
   UTIL_TEST(monotonic_time_ratchet, TT_FORK),
@@ -6393,7 +7045,6 @@ struct testcase_t util_tests[] = {
   UTIL_TEST(monotonic_time_add_msec, 0),
   UTIL_TEST(htonll, 0),
   UTIL_TEST(get_unquoted_path, 0),
-  UTIL_TEST(log_mallinfo, 0),
   UTIL_TEST(map_anon, 0),
   UTIL_TEST(map_anon_nofork, 0),
   END_OF_TESTCASES

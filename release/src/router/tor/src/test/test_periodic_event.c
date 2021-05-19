@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -17,6 +17,7 @@
 #include "core/or/or.h"
 #include "app/config/config.h"
 #include "feature/hibernate/hibernate.h"
+#include "feature/hs/hs_metrics.h"
 #include "feature/hs/hs_service.h"
 #include "core/mainloop/mainloop.h"
 #include "core/mainloop/netstatus.h"
@@ -100,7 +101,7 @@ test_pe_launch(void *arg)
   periodic_events_on_new_options(options);
 
 #if 0
-  /* Lets make sure that before intialization, we can't scan the periodic
+  /* Lets make sure that before initialization, we can't scan the periodic
    * events list and launch them. Lets try by being a Client. */
   /* XXXX We make sure these events are initialized now way earlier than we
    * did before. */
@@ -187,6 +188,7 @@ test_pe_launch(void *arg)
 
  done:
   if (to_remove) {
+    hs_metrics_service_free(&service);
     remove_service(get_hs_service_map(), to_remove);
   }
   hs_free_all();
@@ -279,6 +281,7 @@ test_pe_get_roles(void *arg)
   roles = get_my_roles(options);
   /* Remove it now so the hs_free_all() doesn't try to free stack memory. */
   remove_service(get_hs_service_map(), &service);
+  hs_metrics_service_free(&service);
   tt_int_op(roles, OP_EQ,
             (PERIODIC_EVENT_ROLE_BRIDGEAUTH | PERIODIC_EVENT_ROLE_RELAY |
              PERIODIC_EVENT_ROLE_HS_SERVICE | PERIODIC_EVENT_ROLE_DIRSERVER |
@@ -332,6 +335,7 @@ test_pe_hs_service(void *arg)
   /* Remove the service from the global map, it should trigger a rescan and
    * disable the HS service events. */
   remove_service(get_hs_service_map(), &service);
+  hs_metrics_service_free(&service);
   for (int i = 0; mainloop_periodic_events[i].name; ++i) {
     periodic_event_item_t *item = &mainloop_periodic_events[i];
     if (item->roles & PERIODIC_EVENT_ROLE_HS_SERVICE) {
@@ -341,6 +345,7 @@ test_pe_hs_service(void *arg)
 
  done:
   if (to_remove) {
+    hs_metrics_service_free(&service);
     remove_service(get_hs_service_map(), to_remove);
   }
   hs_free_all();

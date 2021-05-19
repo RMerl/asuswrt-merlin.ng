@@ -1,11 +1,13 @@
-problem file-size a.c 38
-problem include-count a.c 4
+Unusual pattern permitted.h in scripts/maint/practracker/testdata
+problem file-size a.c 41
+problem include-count a.c 6
 problem function-size a.c:i_am_a_function() 9
 problem function-size a.c:another_function() 12
-problem dependency-violation a.c 3
+problem dependency-violation a.c 4
 problem file-size b.c 15
 problem function-size b.c:foo() 4
 problem function-size b.c:bar() 5
 problem file-size header.h 8
 problem include-count header.h 4
 problem dependency-violation header.h 3
+practracker exit status: 11

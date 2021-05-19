@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -713,16 +713,20 @@ test_cfmt_extend_cells(void *arg)
   tt_mem_op(cc->onionskin,OP_EQ, b, 99+20);
   tt_int_op(0, OP_EQ, extend_cell_format(&p2_cmd, &p2_len, p2, &ec));
   tt_int_op(p2_cmd, OP_EQ, RELAY_COMMAND_EXTEND2);
-  /* We'll generate it minus the IPv6 address and minus the konami code */
-  tt_int_op(p2_len, OP_EQ, 89+99-34-20);
+  /* We'll generate it minus the konami code */
+  tt_int_op(p2_len, OP_EQ, 89+99-34);
   test_memeq_hex(p2,
-                 /* Two items: one that same darn IP address. */
-                 "02000612F40001F0F1"
-                 /* The next is a digest : anthropomorphization */
-                 "0214616e7468726f706f6d6f727068697a6174696f6e"
+                 /* Three items */
+                 "03"
+                 /* IPv4 address */
+                 "0006" "12F40001" "F0F1"
+                 /* The next is an RSA digest: anthropomorphization */
+                 "0214" "616e7468726f706f6d6f727068697a6174696f6e"
+                 /*IPv6 address */
+                 "0112" "20020000000000000000000000f0c51e" "1112"
                  /* Now the handshake prologue */
                  "01050063");
-  tt_mem_op(p2+1+8+22+4,OP_EQ, b, 99+20);
+  tt_mem_op(p2+1+8+22+20+4, OP_EQ, b, 99+20);
   tt_int_op(0, OP_EQ, create_cell_format_relayed(&cell, cc));
 
   /* Now let's add an ed25519 key to that extend2 cell. */
@@ -732,22 +736,31 @@ test_cfmt_extend_cells(void *arg)
   /* As before, since we aren't extending by ed25519. */
   get_options_mutable()->ExtendByEd25519ID = 0;
   tt_int_op(0, OP_EQ, extend_cell_format(&p2_cmd, &p2_len, p2, &ec));
-  tt_int_op(p2_len, OP_EQ, 89+99-34-20);
+  tt_int_op(p2_len, OP_EQ, 89+99-34);
   test_memeq_hex(p2,
-                 "02000612F40001F0F1"
+                 "03"
+                 "000612F40001F0F1"
                  "0214616e7468726f706f6d6f727068697a6174696f6e"
+                 "011220020000000000000000000000f0c51e1112"
                  "01050063");
 
   /* Now try with the ed25519 ID. */
   get_options_mutable()->ExtendByEd25519ID = 1;
   tt_int_op(0, OP_EQ, extend_cell_format(&p2_cmd, &p2_len, p2, &ec));
-  tt_int_op(p2_len, OP_EQ, 89+99-34-20 + 34);
+  tt_int_op(p2_len, OP_EQ, 89+99);
   test_memeq_hex(p2,
-                 "03000612F40001F0F1"
+                 /* Four items */
+                 "04"
+                 /* IPv4 address */
+                 "0006" "12F40001" "F0F1"
+                 /* The next is an RSA digest: anthropomorphization */
                  "0214616e7468726f706f6d6f727068697a6174696f6e"
-                 // ed digest follows:
+                 /* Then an ed public key: brownshoesdontmakeit/brownshoesd */
                  "0320" "62726f776e73686f6573646f6e746d616b656"
                         "9742f62726f776e73686f657364"
+                 /*IPv6 address */
+                 "0112" "20020000000000000000000000f0c51e" "1112"
+                 /* Now the handshake prologue */
                  "01050063");
   /* Can we parse that? Did the key come through right? */
   memset(&ec, 0, sizeof(ec));
@@ -755,6 +768,40 @@ test_cfmt_extend_cells(void *arg)
                                         p2, p2_len));
   tt_mem_op("brownshoesdontmakeit/brownshoesd", OP_EQ,
             ec.ed_pubkey.pubkey, 32);
+
+  /* Now try IPv6 without IPv4 */
+  memset(p, 0, sizeof(p));
+  memcpy(p, "\x02", 1);
+  memcpy(p+1, "\x02\x14" "anthropomorphization", 22);
+  memcpy(p+23, "\x01\x12" "xxxxxxxxxxxxxxxxYY", 20);
+  memcpy(p+43, "\xff\xff\x00\x20", 4);
+  tt_int_op(0, OP_EQ, extend_cell_parse(&ec, RELAY_COMMAND_EXTEND2,
+                                         p, sizeof(p)));
+  tt_int_op(RELAY_COMMAND_EXTEND2, OP_EQ, ec.cell_type);
+  tt_assert(fast_mem_is_zero((const char *)&ec.orport_ipv4.addr,
+                             sizeof(tor_addr_t)));
+  tt_int_op(0, OP_EQ, ec.orport_ipv4.port);
+  tt_str_op("7878:7878:7878:7878:7878:7878:7878:7878",
+            OP_EQ, fmt_addr(&ec.orport_ipv6.addr));
+  tt_int_op(22873, OP_EQ, ec.orport_ipv6.port);
+  tt_assert(ed25519_public_key_is_zero(&ec.ed_pubkey));
+  tt_mem_op(ec.node_id,OP_EQ, "anthropomorphization", 20);
+  tt_int_op(cc->cell_type, OP_EQ, CELL_CREATE2);
+  tt_int_op(cc->handshake_type, OP_EQ, 0xffff);
+  tt_int_op(cc->handshake_len, OP_EQ, 32);
+  tt_int_op(0, OP_EQ, extend_cell_format(&p2_cmd, &p2_len, p2, &ec));
+  tt_int_op(p2_cmd, OP_EQ, RELAY_COMMAND_EXTEND2);
+  tt_int_op(p2_len, OP_EQ, 47+32);
+  test_memeq_hex(p2,
+                 /* Two items */
+                 "02"
+                 /* The next is an RSA digest: anthropomorphization */
+                 "0214" "616e7468726f706f6d6f727068697a6174696f6e"
+                 /*IPv6 address */
+                 "0112" "78787878787878787878787878787878" "5959"
+                 /* Now the handshake prologue */
+                 "ffff0020");
+  tt_int_op(0, OP_EQ, create_cell_format_relayed(&cell, cc));
 
   /* == Now try parsing some junk */
 
@@ -809,13 +856,6 @@ test_cfmt_extend_cells(void *arg)
   memcpy(p+9, "\x02\x14" "anarchoindividualist", 22);
   memcpy(p+31, "\x01\x11" "xxxxxxxxxxxxxxxxY", 17);
   memcpy(p+48, "\xff\xff\x00\x20", 4);
-  tt_int_op(-1, OP_EQ, extend_cell_parse(&ec, RELAY_COMMAND_EXTEND2,
-                                      p, sizeof(p)));
-  memset(p, 0, sizeof(p));
-  memcpy(p, "\x02", 1);
-  memcpy(p+1, "\x02\x14" "anarchoindividualist", 22);
-  memcpy(p+23, "\x01\x12" "xxxxxxxxxxxxxxxxYY", 18);
-  memcpy(p+41, "\xff\xff\x00\x20", 4);
   tt_int_op(-1, OP_EQ, extend_cell_parse(&ec, RELAY_COMMAND_EXTEND2,
                                       p, sizeof(p)));
 

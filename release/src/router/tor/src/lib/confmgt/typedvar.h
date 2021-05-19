@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -21,7 +21,7 @@ typedef struct var_type_fns_t var_type_fns_t;
 typedef struct var_type_def_t var_type_def_t;
 
 int typed_var_assign(void *target, const char *value, char **errmsg,
-                     const var_type_def_t *def, const char *key);
+                        const var_type_def_t *def);
 void typed_var_free(void *target, const var_type_def_t *def);
 char *typed_var_encode(const void *value, const var_type_def_t *def);
 int typed_var_copy(void *dest, const void *src, const var_type_def_t *def);

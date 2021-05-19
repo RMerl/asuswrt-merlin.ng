@@ -1,4 +1,4 @@
-/* Tor: Removed, file is inclued in ed25519.c instead. */
+/* Tor: Removed, file is included in ed25519.c instead. */
 /* #include <stdio.h> */
 /* #include "ed25519-donna.h" */
 

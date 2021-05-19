@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #ifndef TOR_BYTES_H
@@ -16,12 +16,17 @@
 #include <string.h>
 #include "lib/cc/torint.h"
 
-/* The uint8 variants are defined to make the code more uniform. */
+/**
+ * Read an 8-bit from <b>cp</b>.
+ */
 static inline uint8_t
 get_uint8(const void *cp)
 {
   return *(const uint8_t*)(cp);
 }
+/**
+ * Store an 8-bit value from <b>v</b> to <b>cp</b>.
+ */
 static inline void
 set_uint8(void *cp, uint8_t v)
 {
@@ -93,7 +98,7 @@ set_uint64(void *cp, uint64_t v)
   memcpy(cp,&v,8);
 }
 
-#ifdef WORDS_BIGENDIAN
+#if defined(WORDS_BIGENDIAN)
 static inline uint16_t
 tor_htons(uint32_t a)
 {
@@ -130,6 +135,9 @@ tor_ntohll(uint64_t a)
   return a;
 }
 #else /* !defined(WORDS_BIGENDIAN) */
+/**
+ * Convert a 16-bit value from host order to network order (big-endian).
+ **/
 static inline uint16_t
 tor_htons(uint16_t a)
 {
@@ -139,12 +147,18 @@ tor_htons(uint16_t a)
     ((a & 0xff00) >> 8);
 }
 
+/**
+ * Convert a 16-bit value from network order (big-endian) to host order.
+ **/
 static inline uint16_t
 tor_ntohs(uint16_t a)
 {
   return tor_htons(a);
 }
 
+/**
+ * Convert a 32-bit value from host order to network order (big-endian).
+ **/
 static inline uint32_t
 tor_htonl(uint32_t a)
 {
@@ -156,6 +170,9 @@ tor_htonl(uint32_t a)
     ((a & 0xff000000) >>24);
 }
 
+/**
+ * Convert a 32-bit value from network order (big-endian) to host order.
+ **/
 static inline uint32_t
 tor_ntohl(uint32_t a)
 {

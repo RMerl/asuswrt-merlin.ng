@@ -33,7 +33,7 @@ mod internal {
     /// A wrapper around OpenSSL's RNG.
     pub struct TorRng {
         // This private, zero-length field forces the struct to be treated the
-        // same as its opaque C couterpart.
+        // same as its opaque C counterpart.
         _unused: [u8; 0],
     }
 
@@ -83,7 +83,7 @@ mod internal {
     /// obtained from the operating system.
     pub struct TorStrongestRng {
         // This private, zero-length field forces the struct to be treated the
-        // same as its opaque C couterpart.
+        // same as its opaque C counterpart.
         _unused: [u8; 0],
     }
 

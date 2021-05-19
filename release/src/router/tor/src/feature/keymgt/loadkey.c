@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -33,7 +33,7 @@
 /** Try to read an RSA key from <b>fname</b>.  If <b>fname</b> doesn't exist
  * and <b>generate</b> is true, create a new RSA key and save it in
  * <b>fname</b>.  Return the read/created key, or NULL on error.  Log all
- * errors at level <b>severity</b>. If <b>created_out/b> is non-NULL and a
+ * errors at level <b>severity</b>. If <b>created_out</b> is non-NULL and a
  * new key was created, set *<b>created_out</b> to true.
  */
 crypto_pk_t *
@@ -638,7 +638,7 @@ ed_key_init_from_file(const char *fname, uint32_t flags,
     bad_cert = 1;
   } else if (signing_key && cert->signing_key_included &&
              ! ed25519_pubkey_eq(&signing_key->pubkey, &cert->signing_key)) {
-    tor_log(severity, LD_OR, "Certificate signed by unexpectd key!");
+    tor_log(severity, LD_OR, "Certificate signed by unexpected key!");
     bad_cert = 1;
   }
 
@@ -661,7 +661,7 @@ ed_key_init_from_file(const char *fname, uint32_t flags,
   uint32_t cert_flags = 0;
   if (flags & INIT_ED_KEY_INCLUDE_SIGNING_KEY_IN_CERT)
     cert_flags |= CERT_FLAG_INCLUDE_SIGNING_KEY;
-  cert = tor_cert_create(signing_key, cert_type,
+  cert = tor_cert_create_ed25519(signing_key, cert_type,
                          &keypair->pubkey,
                          now, lifetime,
                          cert_flags);
@@ -739,7 +739,7 @@ ed_key_new(const ed25519_keypair_t *signing_key,
   uint32_t cert_flags = 0;
   if (flags & INIT_ED_KEY_INCLUDE_SIGNING_KEY_IN_CERT)
     cert_flags |= CERT_FLAG_INCLUDE_SIGNING_KEY;
-  tor_cert_t *cert = tor_cert_create(signing_key, cert_type,
+  tor_cert_t *cert = tor_cert_create_ed25519(signing_key, cert_type,
                                      &keypair->pubkey,
                                      now, lifetime,
                                      cert_flags);

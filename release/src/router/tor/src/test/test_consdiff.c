@@ -1,5 +1,5 @@
 /* Copyright (c) 2014, Daniel Martí
- * Copyright (c) 2014-2019, The Tor Project, Inc. */
+ * Copyright (c) 2014-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define CONSDIFF_PRIVATE
@@ -1030,7 +1030,7 @@ test_consdiff_apply_diff(void *arg)
   /* diff doesn't have enough lines. */
   cons2 = consdiff_apply_diff(cons1, diff, &digests1);
   tt_ptr_op(NULL, OP_EQ, cons2);
-  expect_single_log_msg_containing("too short")
+  expect_single_log_msg_containing("too short");
 
   /* first line doesn't match format-version string. */
   smartlist_add_linecpy(diff, area, "foo-bar");
@@ -1038,7 +1038,7 @@ test_consdiff_apply_diff(void *arg)
   mock_clean_saved_logs();
   cons2 = consdiff_apply_diff(cons1, diff, &digests1);
   tt_ptr_op(NULL, OP_EQ, cons2);
-  expect_single_log_msg_containing("format is not known")
+  expect_single_log_msg_containing("format is not known");
 
   /* The first word of the second header line is not "hash". */
   smartlist_clear(diff);
@@ -1048,7 +1048,7 @@ test_consdiff_apply_diff(void *arg)
   mock_clean_saved_logs();
   cons2 = consdiff_apply_diff(cons1, diff, &digests1);
   tt_ptr_op(NULL, OP_EQ, cons2);
-  expect_single_log_msg_containing("does not include the necessary digests")
+  expect_single_log_msg_containing("does not include the necessary digests");
 
   /* Wrong number of words after "hash". */
   smartlist_clear(diff);
@@ -1057,7 +1057,7 @@ test_consdiff_apply_diff(void *arg)
   mock_clean_saved_logs();
   cons2 = consdiff_apply_diff(cons1, diff, &digests1);
   tt_ptr_op(NULL, OP_EQ, cons2);
-  expect_single_log_msg_containing("does not include the necessary digests")
+  expect_single_log_msg_containing("does not include the necessary digests");
 
   /* base16 digests do not have the expected length. */
   smartlist_clear(diff);
@@ -1067,7 +1067,7 @@ test_consdiff_apply_diff(void *arg)
   cons2 = consdiff_apply_diff(cons1, diff, &digests1);
   tt_ptr_op(NULL, OP_EQ, cons2);
   expect_single_log_msg_containing("includes base16-encoded digests of "
-                                   "incorrect size")
+                                   "incorrect size");
 
   /* base16 digests contain non-base16 characters. */
   smartlist_clear(diff);
@@ -1078,7 +1078,7 @@ test_consdiff_apply_diff(void *arg)
   mock_clean_saved_logs();
   cons2 = consdiff_apply_diff(cons1, diff, &digests1);
   tt_ptr_op(NULL, OP_EQ, cons2);
-  expect_single_log_msg_containing("includes malformed digests")
+  expect_single_log_msg_containing("includes malformed digests");
 
   /* Invalid ed diff.
    * As tested in apply_ed_diff, but check that apply_diff does return NULL if
@@ -1095,7 +1095,7 @@ test_consdiff_apply_diff(void *arg)
   cons2 = consdiff_apply_diff(cons1, diff, &digests1);
   tt_ptr_op(NULL, OP_EQ, cons2);
   expect_single_log_msg_containing("because an ed command was missing a line "
-                                   "number")
+                                   "number");
 
   /* Base consensus doesn't match its digest as found in the diff. */
   smartlist_clear(diff);

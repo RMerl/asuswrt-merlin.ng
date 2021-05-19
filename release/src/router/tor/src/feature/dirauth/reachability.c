@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -17,6 +17,7 @@
 #include "core/or/channeltls.h"
 #include "core/or/command.h"
 #include "feature/dirauth/authmode.h"
+#include "feature/dirauth/dirauth_sys.h"
 #include "feature/nodelist/describe.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/nodelist/routerinfo.h"
@@ -24,6 +25,7 @@
 #include "feature/nodelist/torcert.h"
 #include "feature/stats/rephist.h"
 
+#include "feature/dirauth/dirauth_options_st.h"
 #include "feature/nodelist/node_st.h"
 #include "feature/nodelist/routerinfo_st.h"
 #include "feature/nodelist/routerlist_st.h"
@@ -53,7 +55,7 @@ dirserv_orconn_tls_done(const tor_addr_t *addr,
 
   ri = node->ri;
 
-  if (get_options()->AuthDirTestEd25519LinkKeys &&
+  if (dirauth_get_options()->AuthDirTestEd25519LinkKeys &&
       node_supports_ed25519_link_authentication(node, 1) &&
       ri->cache_info.signing_key_cert) {
     /* We allow the node to have an ed25519 key if we haven't been told one in
@@ -82,7 +84,7 @@ dirserv_orconn_tls_done(const tor_addr_t *addr,
       log_info(LD_DIRSERV, "Found router %s to be reachable at %s:%d. Yay.",
                router_describe(ri),
                tor_addr_to_str(addrstr, addr, sizeof(addrstr), 1),
-               ri->or_port);
+               ri->ipv4_orport);
       if (tor_addr_family(addr) == AF_INET) {
         rep_hist_note_router_reachable(digest_rcvd, addr, or_port, now);
         node->last_reachable = now;
@@ -103,17 +105,23 @@ dirserv_should_launch_reachability_test(const routerinfo_t *ri,
 {
   if (!authdir_mode_handles_descs(get_options(), ri->purpose))
     return 0;
+  if (! dirauth_get_options()->AuthDirTestReachability)
+    return 0;
   if (!ri_old) {
     /* New router: Launch an immediate reachability test, so we will have an
      * opinion soon in case we're generating a consensus soon */
+    log_info(LD_DIR, "descriptor for new router %s", router_describe(ri));
     return 1;
   }
   if (ri_old->is_hibernating && !ri->is_hibernating) {
     /* It just came out of hibernation; launch a reachability test */
+    log_info(LD_DIR, "out of hibernation: router %s", router_describe(ri));
     return 1;
   }
   if (! routers_have_same_or_addrs(ri, ri_old)) {
     /* Address or port changed; launch a reachability test */
+    log_info(LD_DIR, "address or port changed: router %s",
+             router_describe(ri));
     return 1;
   }
   return 0;
@@ -125,10 +133,9 @@ dirserv_should_launch_reachability_test(const routerinfo_t *ri,
 void
 dirserv_single_reachability_test(time_t now, routerinfo_t *router)
 {
-  const or_options_t *options = get_options();
+  const dirauth_options_t *dirauth_options = dirauth_get_options();
   channel_t *chan = NULL;
   const node_t *node = NULL;
-  tor_addr_t router_addr;
   const ed25519_public_key_t *ed_id_key;
   (void) now;
 
@@ -136,7 +143,7 @@ dirserv_single_reachability_test(time_t now, routerinfo_t *router)
   node = node_get_by_id(router->cache_info.identity_digest);
   tor_assert(node);
 
-  if (options->AuthDirTestEd25519LinkKeys &&
+  if (dirauth_options->AuthDirTestEd25519LinkKeys &&
       node_supports_ed25519_link_authentication(node, 1) &&
       router->cache_info.signing_key_cert) {
     ed_id_key = &router->cache_info.signing_key_cert->signing_key;
@@ -145,22 +152,22 @@ dirserv_single_reachability_test(time_t now, routerinfo_t *router)
   }
 
   /* IPv4. */
-  log_debug(LD_OR,"Testing reachability of %s at %s:%u.",
-            router->nickname, fmt_addr32(router->addr), router->or_port);
-  tor_addr_from_ipv4h(&router_addr, router->addr);
-  chan = channel_tls_connect(&router_addr, router->or_port,
+  log_info(LD_OR,"Testing reachability of %s at %s:%u.",
+            router->nickname, fmt_addr(&router->ipv4_addr),
+            router->ipv4_orport);
+  chan = channel_tls_connect(&router->ipv4_addr, router->ipv4_orport,
                              router->cache_info.identity_digest,
                              ed_id_key);
   if (chan) command_setup_channel(chan);
 
   /* Possible IPv6. */
-  if (get_options()->AuthDirHasIPv6Connectivity == 1 &&
+  if (dirauth_get_options()->AuthDirHasIPv6Connectivity == 1 &&
       !tor_addr_is_null(&router->ipv6_addr)) {
     char addrstr[TOR_ADDR_BUF_LEN];
-    log_debug(LD_OR, "Testing reachability of %s at %s:%u.",
-              router->nickname,
-              tor_addr_to_str(addrstr, &router->ipv6_addr, sizeof(addrstr), 1),
-              router->ipv6_orport);
+    log_info(LD_OR, "Testing reachability of %s at %s:%u.",
+             router->nickname,
+             tor_addr_to_str(addrstr, &router->ipv6_addr, sizeof(addrstr), 1),
+             router->ipv6_orport);
     chan = channel_tls_connect(&router->ipv6_addr, router->ipv6_orport,
                                router->cache_info.identity_digest,
                                ed_id_key);
@@ -187,6 +194,9 @@ dirserv_test_reachability(time_t now)
    * the testing, and directory authorities are easy to upgrade. Let's
    * wait til 0.2.0. -RD */
 //  time_t cutoff = now - ROUTER_MAX_AGE_TO_PUBLISH;
+  if (! dirauth_get_options()->AuthDirTestReachability)
+    return;
+
   routerlist_t *rl = router_get_routerlist();
   static char ctr = 0;
   int bridge_auth = authdir_mode_bridge(get_options());

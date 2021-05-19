@@ -11,7 +11,7 @@ src_tools_tor_resolve_LDADD = \
 	$(TOR_UTIL_LIBS) \
         $(TOR_CRYPTO_LIBS) $(TOR_LIBS_CRYPTLIB)\
 	$(rust_ldadd) \
-	@TOR_LIB_MATH@ @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_USERENV@
+	@TOR_LIB_MATH@ @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_USERENV@
 
 if COVERAGE_ENABLED
 src_tools_tor_cov_resolve_SOURCES = src/tools/tor-resolve.c
@@ -36,7 +36,7 @@ src_tools_tor_gencert_LDADD = \
 	$(TOR_UTIL_LIBS) \
 	$(rust_ldadd) \
 	@TOR_LIB_MATH@ @TOR_ZLIB_LIBS@ $(TOR_LIBS_CRYPTLIB) \
-	@TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ @CURVE25519_LIBS@
+	@TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ @CURVE25519_LIBS@
 endif
 
 src_tools_tor_print_ed_signing_cert_SOURCES = src/tools/tor-print-ed-signing-cert.c
@@ -46,7 +46,7 @@ src_tools_tor_print_ed_signing_cert_LDADD = \
         $(TOR_CRYPTO_LIBS) \
         $(TOR_UTIL_LIBS) \
 	@TOR_LIB_MATH@ $(TOR_LIBS_CRYPTLIB) \
-	@TOR_LIB_WS32@ @TOR_LIB_USERENV@ @TOR_LIB_GDI@
+	@TOR_LIB_WS32@ @TOR_LIB_USERENV@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@
 
 if USE_NSS
 # ...
@@ -61,7 +61,7 @@ src_tools_tor_cov_gencert_LDADD = \
     $(TOR_CRYPTO_TESTING_LIBS) \
     $(TOR_UTIL_TESTING_LIBS) \
     @TOR_LIB_MATH@ @TOR_ZLIB_LIBS@ $(TOR_LIBS_CRYPTLIB) \
-    @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
+    @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@ @CURVE25519_LIBS@
 endif
 endif
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2019, The Tor Project, Inc. */
+/* Copyright (c) 2019-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -293,7 +293,7 @@ send_circuit_level_sendme(circuit_t *circ, crypt_path_t *layer_hint,
     log_debug(LD_PROTOCOL, "Emitting SENDME version 1 cell.");
     break;
   case 0x00:
-    /* Fallthrough because default is to use v0. */
+    FALLTHROUGH;
   default:
     /* Unknown version, fallback to version 0 meaning no payload. */
     payload_len = 0;
@@ -394,12 +394,12 @@ sendme_connection_edge_consider_sending(edge_connection_t *conn)
   while (conn->deliver_window <=
          (STREAMWINDOW_START - STREAMWINDOW_INCREMENT)) {
     log_debug(log_domain, "Outbuf %" TOR_PRIuSZ ", queuing stream SENDME.",
-              TO_CONN(conn)->outbuf_flushlen);
+              buf_datalen(TO_CONN(conn)->outbuf));
     conn->deliver_window += STREAMWINDOW_INCREMENT;
     if (connection_edge_send_command(conn, RELAY_COMMAND_SENDME,
                                      NULL, 0) < 0) {
-      log_warn(LD_BUG, "connection_edge_send_command failed while sending "
-                       "a SENDME. Circuit probably closed, skipping.");
+      log_debug(LD_CIRC, "connection_edge_send_command failed while sending "
+                         "a SENDME. Circuit probably closed, skipping.");
       goto end; /* The circuit's closed, don't continue */
     }
   }
@@ -678,7 +678,7 @@ sendme_record_received_cell_digest(circuit_t *circ, crypt_path_t *cpath)
     /* Record incoming digest. */
     cpath_sendme_record_cell_digest(cpath, false);
   } else {
-    /* Record foward digest. */
+    /* Record forward digest. */
     relay_crypto_record_sendme_digest(&TO_OR_CIRCUIT(circ)->crypto, true);
   }
 }

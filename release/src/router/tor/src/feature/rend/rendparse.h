@@ -1,12 +1,12 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
- * \file rend_parse.h
- * \brief Header file for rend_parse.c.
+ * \file rendparse.h
+ * \brief Header file for rendparse.c.
  **/
 
 #ifndef TOR_REND_PARSE_H

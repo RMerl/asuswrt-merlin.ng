@@ -1,8 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # Implementation of various source code metrics.
 # These are currently ad-hoc string operations and regexps.
 # We might want to use a proper static analysis library in the future, if we want to get more advanced metrics.
+
+# Future imports for Python 2.7, mandatory in 3.0
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import re
 

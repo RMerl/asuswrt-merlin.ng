@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "core/or/or.h"
@@ -399,6 +399,43 @@ test_socks_5_supported_commands(void *ptr)
 
   tt_int_op(0,OP_EQ, buf_datalen(buf));
 
+  socks_request_clear(socks);
+
+  /* SOCKS 5 Send RESOLVE_PTR [F1] for an IPv6 address */
+  ADD_DATA(buf, "\x05\x01\x00");
+  ADD_DATA(buf, "\x05\xF1\x00\x04"
+           "\x20\x01\x0d\xb8\x85\xa3\x00\x00\x00\x00\x8a\x2e\x03\x70\x73\x34"
+           "\x12\x34");
+  tt_int_op(fetch_from_buf_socks(buf, socks, get_options()->TestSocks,
+                                 get_options()->SafeSocks),
+            OP_EQ, 1);
+  tt_int_op(5,OP_EQ, socks->socks_version);
+  tt_int_op(2,OP_EQ, socks->replylen);
+  tt_int_op(5,OP_EQ, socks->reply[0]);
+  tt_int_op(0,OP_EQ, socks->reply[1]);
+  tt_str_op("[2001:db8:85a3::8a2e:370:7334]",OP_EQ, socks->address);
+
+  tt_int_op(0,OP_EQ, buf_datalen(buf));
+
+  socks_request_clear(socks);
+
+  /* SOCKS 5 Send RESOLVE_PTR [F1] for a an IPv6 address written as a
+   * string with brackets */
+  ADD_DATA(buf, "\x05\x01\x00");
+  ADD_DATA(buf, "\x05\xF1\x00\x03\x1e");
+  ADD_DATA(buf, "[2001:db8:85a3::8a2e:370:7334]");
+  ADD_DATA(buf, "\x12\x34");
+  tt_int_op(fetch_from_buf_socks(buf, socks, get_options()->TestSocks,
+                                 get_options()->SafeSocks),
+            OP_EQ, 1);
+  tt_int_op(5,OP_EQ, socks->socks_version);
+  tt_int_op(2,OP_EQ, socks->replylen);
+  tt_int_op(5,OP_EQ, socks->reply[0]);
+  tt_int_op(0,OP_EQ, socks->reply[1]);
+  tt_str_op("[2001:db8:85a3::8a2e:370:7334]",OP_EQ, socks->address);
+
+  tt_int_op(0,OP_EQ, buf_datalen(buf));
+
  done:
   ;
 }
@@ -778,7 +815,7 @@ test_socks_truncated(void *ptr)
   for (i = 0; i < ARRAY_LENGTH(commands); ++i) {
     for (j = 0; j < commands[i].len; ++j) {
       switch (commands[i].setup) {
-        default: /* Falls through */
+        default: FALLTHROUGH;
         case NONE:
           /* This test calls for no setup on the socks state. */
           break;

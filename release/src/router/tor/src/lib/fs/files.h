@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -55,6 +55,8 @@ MOCK_DECL(int,tor_unlink,(const char *pathname));
 typedef enum { FN_ERROR, FN_NOENT, FN_FILE, FN_DIR, FN_EMPTY } file_status_t;
 
 file_status_t file_status(const char *filename);
+bool is_file(file_status_t file_type);
+bool is_dir(file_status_t file_type);
 
 int64_t tor_get_avail_disk_space(const char *path);
 
@@ -90,6 +92,8 @@ int append_bytes_to_file(const char *fname, const char *str, size_t len,
                          int bin);
 int write_bytes_to_new_file(const char *fname, const char *str, size_t len,
                             int bin);
+
+int write_str_to_file_if_not_equal(const char *fname, const char *str);
 
 /** Flag for read_file_to_str: open the file in binary mode. */
 #define RFTS_BIN            1

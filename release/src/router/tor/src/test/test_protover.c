@@ -1,16 +1,23 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define PROTOVER_PRIVATE
+#define DIRVOTE_PRIVATE
 
 #include "orconfig.h"
 #include "test/test.h"
 
-#include "core/or/protover.h"
+#include "lib/tls/tortls.h"
 
 #include "core/or/or.h"
+
 #include "core/or/connection_or.h"
-#include "lib/tls/tortls.h"
+#include "core/or/protover.h"
+#include "core/or/versions.h"
+
+#include "feature/dirauth/dirvote.h"
+
+#include "feature/relay/relay_handshake.h"
 
 static void
 test_protover_parse(void *arg)
@@ -25,64 +32,32 @@ test_protover_parse(void *arg)
 #else /* !defined(HAVE_RUST) */
   char *re_encoded = NULL;
 
-  const char *orig = "Foo=1,3 Bar=3 Baz= Quux=9-12,14,15-16,900";
+  const char *orig = "Foo=1,3 Bar=3 Baz= Quux=9-12,14,15-16";
   smartlist_t *elts = parse_protocol_list(orig);
 
   tt_assert(elts);
   tt_int_op(smartlist_len(elts), OP_EQ, 4);
 
   const proto_entry_t *e;
-  const proto_range_t *r;
   e = smartlist_get(elts, 0);
   tt_str_op(e->name, OP_EQ, "Foo");
-  tt_int_op(smartlist_len(e->ranges), OP_EQ, 2);
-  {
-    r = smartlist_get(e->ranges, 0);
-    tt_int_op(r->low, OP_EQ, 1);
-    tt_int_op(r->high, OP_EQ, 1);
-
-    r = smartlist_get(e->ranges, 1);
-    tt_int_op(r->low, OP_EQ, 3);
-    tt_int_op(r->high, OP_EQ, 3);
-  }
+  tt_int_op(e->bitmask, OP_EQ, 0x0a);
 
   e = smartlist_get(elts, 1);
   tt_str_op(e->name, OP_EQ, "Bar");
-  tt_int_op(smartlist_len(e->ranges), OP_EQ, 1);
-  {
-    r = smartlist_get(e->ranges, 0);
-    tt_int_op(r->low, OP_EQ, 3);
-    tt_int_op(r->high, OP_EQ, 3);
-  }
+  tt_int_op(e->bitmask, OP_EQ, 0x08);
 
   e = smartlist_get(elts, 2);
   tt_str_op(e->name, OP_EQ, "Baz");
-  tt_int_op(smartlist_len(e->ranges), OP_EQ, 0);
+  tt_int_op(e->bitmask, OP_EQ, 0x00);
 
   e = smartlist_get(elts, 3);
   tt_str_op(e->name, OP_EQ, "Quux");
-  tt_int_op(smartlist_len(e->ranges), OP_EQ, 4);
-  {
-    r = smartlist_get(e->ranges, 0);
-    tt_int_op(r->low, OP_EQ, 9);
-    tt_int_op(r->high, OP_EQ, 12);
-
-    r = smartlist_get(e->ranges, 1);
-    tt_int_op(r->low, OP_EQ, 14);
-    tt_int_op(r->high, OP_EQ, 14);
-
-    r = smartlist_get(e->ranges, 2);
-    tt_int_op(r->low, OP_EQ, 15);
-    tt_int_op(r->high, OP_EQ, 16);
-
-    r = smartlist_get(e->ranges, 3);
-    tt_int_op(r->low, OP_EQ, 900);
-    tt_int_op(r->high, OP_EQ, 900);
-  }
+  tt_int_op(e->bitmask, OP_EQ, 0x1de00);
 
   re_encoded = encode_protocol_list(elts);
   tt_assert(re_encoded);
-  tt_str_op(re_encoded, OP_EQ, orig);
+  tt_str_op(re_encoded, OP_EQ, "Foo=1,3 Bar=3 Baz= Quux=9-12,14-16");
 
  done:
   if (elts)
@@ -149,14 +124,14 @@ test_protover_vote(void *arg)
   tt_str_op(result, OP_EQ, "");
   tor_free(result);
 
-  smartlist_add(lst, (void*) "Foo=1-10,500 Bar=1,3-7,8");
+  smartlist_add(lst, (void*) "Foo=1-10,63 Bar=1,3-7,8");
   result = protover_compute_vote(lst, 1);
-  tt_str_op(result, OP_EQ, "Bar=1,3-8 Foo=1-10,500");
+  tt_str_op(result, OP_EQ, "Bar=1,3-8 Foo=1-10,63");
   tor_free(result);
 
-  smartlist_add(lst, (void*) "Quux=123-456,78 Bar=2-6,8 Foo=9");
+  smartlist_add(lst, (void*) "Quux=12-45 Bar=2-6,8 Foo=9");
   result = protover_compute_vote(lst, 1);
-  tt_str_op(result, OP_EQ, "Bar=1-8 Foo=1-10,500 Quux=78,123-456");
+  tt_str_op(result, OP_EQ, "Bar=1-8 Foo=1-10,63 Quux=12-45");
   tor_free(result);
 
   result = protover_compute_vote(lst, 2);
@@ -194,45 +169,16 @@ test_protover_vote(void *arg)
 
   /* Just below the threshold: Rust */
   smartlist_clear(lst);
-  smartlist_add(lst, (void*) "Sleen=1-500");
+  smartlist_add(lst, (void*) "Sleen=1-50");
   result = protover_compute_vote(lst, 1);
-  tt_str_op(result, OP_EQ, "Sleen=1-500");
+  tt_str_op(result, OP_EQ, "Sleen=1-50");
   tor_free(result);
 
   /* Just below the threshold: C */
   smartlist_clear(lst);
-  smartlist_add(lst, (void*) "Sleen=1-65536");
+  smartlist_add(lst, (void*) "Sleen=1-63");
   result = protover_compute_vote(lst, 1);
-  tt_str_op(result, OP_EQ, "Sleen=1-65536");
-  tor_free(result);
-
-  /* Large protover lists that exceed the threshold */
-
-  /* By adding two votes, C allows us to exceed the limit */
-  smartlist_add(lst, (void*) "Sleen=1-65536");
-  smartlist_add(lst, (void*) "Sleen=100000");
-  result = protover_compute_vote(lst, 1);
-  tt_str_op(result, OP_EQ, "Sleen=1-65536,100000");
-  tor_free(result);
-
-  /* Large integers */
-  smartlist_clear(lst);
-  smartlist_add(lst, (void*) "Sleen=4294967294");
-  result = protover_compute_vote(lst, 1);
-  tt_str_op(result, OP_EQ, "Sleen=4294967294");
-  tor_free(result);
-
-  /* This parses, but fails at the vote stage */
-  smartlist_clear(lst);
-  smartlist_add(lst, (void*) "Sleen=4294967295");
-  result = protover_compute_vote(lst, 1);
-  tt_str_op(result, OP_EQ, "");
-  tor_free(result);
-
-  smartlist_clear(lst);
-  smartlist_add(lst, (void*) "Sleen=4294967296");
-  result = protover_compute_vote(lst, 1);
-  tt_str_op(result, OP_EQ, "");
+  tt_str_op(result, OP_EQ, "Sleen=1-63");
   tor_free(result);
 
   /* Protocol name too long */
@@ -272,8 +218,8 @@ test_protover_all_supported(void *arg)
   tt_assert(! protover_all_supported("Wombat=9", &msg));
   tt_str_op(msg, OP_EQ, "Wombat=9");
   tor_free(msg);
-  tt_assert(! protover_all_supported("Link=999", &msg));
-  tt_str_op(msg, OP_EQ, "Link=999");
+  tt_assert(! protover_all_supported("Link=60", &msg));
+  tt_str_op(msg, OP_EQ, "Link=60");
   tor_free(msg);
 
   // Mix of things we support and things we don't
@@ -283,11 +229,11 @@ test_protover_all_supported(void *arg)
 
   /* Mix of things we support and don't support within a single protocol
    * which we do support */
-  tt_assert(! protover_all_supported("Link=3-999", &msg));
-  tt_str_op(msg, OP_EQ, "Link=6-999");
+  tt_assert(! protover_all_supported("Link=3-60", &msg));
+  tt_str_op(msg, OP_EQ, "Link=6-60");
   tor_free(msg);
-  tt_assert(! protover_all_supported("Link=1-3,345-666", &msg));
-  tt_str_op(msg, OP_EQ, "Link=345-666");
+  tt_assert(! protover_all_supported("Link=1-3,50-63", &msg));
+  tt_str_op(msg, OP_EQ, "Link=50-63");
   tor_free(msg);
   tt_assert(! protover_all_supported("Link=1-3,5-12", &msg));
   tt_str_op(msg, OP_EQ, "Link=6-12");
@@ -295,18 +241,8 @@ test_protover_all_supported(void *arg)
 
   /* Mix of protocols we do support and some we don't, where the protocols
    * we do support have some versions we don't support. */
-  tt_assert(! protover_all_supported("Link=1-3,5-12 Quokka=9000-9001", &msg));
-  tt_str_op(msg, OP_EQ, "Link=6-12 Quokka=9000-9001");
-  tor_free(msg);
-
-  /* We shouldn't be able to DoS ourselves parsing a large range. */
-  tt_assert(! protover_all_supported("Sleen=1-2147483648", &msg));
-  tt_str_op(msg, OP_EQ, "Sleen=1-2147483648");
-  tor_free(msg);
-
-  /* This case is allowed. */
-  tt_assert(! protover_all_supported("Sleen=1-4294967294", &msg));
-  tt_str_op(msg, OP_EQ, "Sleen=1-4294967294");
+  tt_assert(! protover_all_supported("Link=1-3,5-12 Quokka=40-41", &msg));
+  tt_str_op(msg, OP_EQ, "Link=6-12 Quokka=40-41");
   tor_free(msg);
 
   /* If we get a (barely) valid (but unsupported list, we say "yes, that's
@@ -314,6 +250,7 @@ test_protover_all_supported(void *arg)
   tt_assert(protover_all_supported("Fribble=", &msg));
   tt_ptr_op(msg, OP_EQ, NULL);
 
+#ifndef ALL_BUGS_ARE_FATAL
   /* If we get a completely unparseable list, protover_all_supported should
    * hit a fatal assertion for BUG(entries == NULL). */
   tor_capture_bugs_(1);
@@ -325,9 +262,10 @@ test_protover_all_supported(void *arg)
   tor_capture_bugs_(1);
   tt_assert(protover_all_supported("Sleen=1-4294967295", &msg));
   tor_end_capture_bugs_();
+#endif /* !defined(ALL_BUGS_ARE_FATAL) */
 
   /* Protocol name too long */
-#ifndef HAVE_RUST // XXXXXX ?????
+#if !defined(HAVE_RUST) && !defined(ALL_BUGS_ARE_FATAL)
   tor_capture_bugs_(1);
   tt_assert(protover_all_supported(
                  "DoSaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -335,7 +273,7 @@ test_protover_all_supported(void *arg)
                  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                  "aaaaaaaaaaaa=1-65536", &msg));
   tor_end_capture_bugs_();
-#endif /* !defined(HAVE_RUST) */
+#endif /* !defined(HAVE_RUST) && !defined(ALL_BUGS_ARE_FATAL) */
 
  done:
   tor_end_capture_bugs_();
@@ -404,23 +342,21 @@ test_protover_supports_version(void *arg)
  * Hard-coded here, because they are not in the code, or not exposed in the
  * headers. */
 #define PROTOVER_LINKAUTH_V1 1
-#define PROTOVER_LINKAUTH_V3 3
-
+#define PROTOVER_LINKAUTH_V2 2
 #define PROTOVER_RELAY_V1 1
-#define PROTOVER_RELAY_V2 2
 
+/* Deprecated HSIntro versions */
+#define PROTOVER_HS_INTRO_DEPRECATED_1 1
+#define PROTOVER_HS_INTRO_DEPRECATED_2 2
 /* Highest supported HSv2 introduce protocol version.
- * Hard-coded here, because it does not appear anywhere in the code.
  * It's not clear if we actually support version 2, see #25068. */
-#define PROTOVER_HSINTRO_V2 3
+#define PROTOVER_HS_INTRO_V2 3
 
-/* HSv2 Rend and HSDir protocol versions.
- * Hard-coded here, because they do not appear anywhere in the code. */
+/* HSv2 Rend and HSDir protocol versions. */
 #define PROTOVER_HS_RENDEZVOUS_POINT_V2 1
 #define PROTOVER_HSDIR_V2 1
 
-/* DirCache, Desc, Microdesc, and Cons protocol versions.
- * Hard-coded here, because they do not appear anywhere in the code. */
+/* DirCache, Desc, Microdesc, and Cons protocol versions. */
 #define PROTOVER_DIRCACHE_V1 1
 #define PROTOVER_DIRCACHE_V2 2
 
@@ -432,6 +368,10 @@ test_protover_supports_version(void *arg)
 
 #define PROTOVER_CONS_V1 1
 #define PROTOVER_CONS_V2 2
+
+#define PROTOVER_PADDING_V1 1
+
+#define PROTOVER_FLOWCTRL_V1 1
 
 /* Make sure we haven't forgotten any supported protocols */
 static void
@@ -447,24 +387,27 @@ test_protover_supported_protocols(void *arg)
                                             PRT_LINK,
                                             MAX_LINK_PROTO));
   for (uint16_t i = 0; i < MAX_PROTOCOLS_TO_TEST; i++) {
-    if (is_or_protocol_version_known(i)) {
-      tt_assert(protocol_list_supports_protocol(supported_protocols,
+      tt_int_op(protocol_list_supports_protocol(supported_protocols,
                                                 PRT_LINK,
-                                                i));
-    }
+                                                i),
+                OP_EQ,
+                is_or_protocol_version_known(i));
   }
 
-#ifdef HAVE_WORKING_TOR_TLS_GET_TLSSECRETS
-  /* Legacy LinkAuth does not appear anywhere in the code. */
-  tt_assert(protocol_list_supports_protocol(supported_protocols,
+  /* Legacy LinkAuth is only supported on OpenSSL and similar. */
+  tt_int_op(protocol_list_supports_protocol(supported_protocols,
                                             PRT_LINKAUTH,
-                                            PROTOVER_LINKAUTH_V1));
-#endif /* defined(HAVE_WORKING_TOR_TLS_GET_TLSSECRETS) */
-  /* Latest LinkAuth is not exposed in the headers. */
-  tt_assert(protocol_list_supports_protocol(supported_protocols,
-                                            PRT_LINKAUTH,
-                                            PROTOVER_LINKAUTH_V3));
-  /* Is there any way to test for new LinkAuth? */
+                                            PROTOVER_LINKAUTH_V1),
+            OP_EQ,
+            authchallenge_type_is_supported(AUTHTYPE_RSA_SHA256_TLSSECRET));
+  /* LinkAuth=2 is unused */
+  tt_assert(!protocol_list_supports_protocol(supported_protocols,
+                                             PRT_LINKAUTH,
+                                             PROTOVER_LINKAUTH_V2));
+  tt_assert(
+      protocol_list_supports_protocol(supported_protocols,
+                                     PRT_LINKAUTH,
+                                     PROTOVER_LINKAUTH_ED25519_HANDSHAKE));
 
   /* Relay protovers do not appear anywhere in the code. */
   tt_assert(protocol_list_supports_protocol(supported_protocols,
@@ -472,20 +415,38 @@ test_protover_supported_protocols(void *arg)
                                             PROTOVER_RELAY_V1));
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_RELAY,
-                                            PROTOVER_RELAY_V2));
-  /* Is there any way to test for new Relay? */
+                                            PROTOVER_RELAY_EXTEND2));
+  tt_assert(protocol_list_supports_protocol(supported_protocols,
+                                            PRT_RELAY,
+                                            PROTOVER_RELAY_ACCEPT_IPV6));
+  tt_assert(protocol_list_supports_protocol(supported_protocols,
+                                            PRT_RELAY,
+                                            PROTOVER_RELAY_EXTEND_IPV6));
+  tt_assert(protocol_list_supports_protocol(supported_protocols,
+                                            PRT_RELAY,
+                                            PROTOVER_RELAY_CANONICAL_IPV6));
 
+  /* These HSIntro versions are deprecated */
+  tt_assert(!protocol_list_supports_protocol(supported_protocols,
+                                            PRT_HSINTRO,
+                                            PROTOVER_HS_INTRO_DEPRECATED_1));
+  tt_assert(!protocol_list_supports_protocol(supported_protocols,
+                                            PRT_HSINTRO,
+                                            PROTOVER_HS_INTRO_DEPRECATED_2));
   /* We could test legacy HSIntro by calling rend_service_update_descriptor(),
    * and checking the protocols field. But that's unlikely to change, so
    * we just use a hard-coded value. */
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_HSINTRO,
-                                            PROTOVER_HSINTRO_V2));
+                                            PROTOVER_HS_INTRO_V2));
   /* Test for HSv3 HSIntro */
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_HSINTRO,
                                             PROTOVER_HS_INTRO_V3));
-  /* Is there any way to test for new HSIntro? */
+  /* Test for HSIntro DoS */
+  tt_assert(protocol_list_supports_protocol(supported_protocols,
+                                            PRT_HSINTRO,
+                                            PROTOVER_HS_INTRO_DOS));
 
   /* Legacy HSRend does not appear anywhere in the code. */
   tt_assert(protocol_list_supports_protocol(supported_protocols,
@@ -495,7 +456,6 @@ test_protover_supported_protocols(void *arg)
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_HSREND,
                                             PROTOVER_HS_RENDEZVOUS_POINT_V3));
-  /* Is there any way to test for new HSRend? */
 
   /* Legacy HSDir does not appear anywhere in the code. */
   tt_assert(protocol_list_supports_protocol(supported_protocols,
@@ -505,16 +465,11 @@ test_protover_supported_protocols(void *arg)
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_HSDIR,
                                             PROTOVER_HSDIR_V3));
-  /* Is there any way to test for new HSDir? */
 
   /* No DirCache versions appear anywhere in the code. */
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_DIRCACHE,
-                                            PROTOVER_DIRCACHE_V1));
-  tt_assert(protocol_list_supports_protocol(supported_protocols,
-                                            PRT_DIRCACHE,
                                             PROTOVER_DIRCACHE_V2));
-  /* Is there any way to test for new DirCache? */
 
   /* No Desc versions appear anywhere in the code. */
   tt_assert(protocol_list_supports_protocol(supported_protocols,
@@ -532,7 +487,6 @@ test_protover_supported_protocols(void *arg)
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_MICRODESC,
                                             PROTOVER_MICRODESC_V2));
-  /* Is there any way to test for new Microdesc? */
 
   /* No Cons versions appear anywhere in the code. */
   tt_assert(protocol_list_supports_protocol(supported_protocols,
@@ -541,7 +495,19 @@ test_protover_supported_protocols(void *arg)
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_CONS,
                                             PROTOVER_CONS_V2));
-  /* Is there any way to test for new Cons? */
+
+  /* Padding=1 is deprecated. */
+  tt_assert(!protocol_list_supports_protocol(supported_protocols,
+                                             PRT_PADDING,
+                                             PROTOVER_PADDING_V1));
+  tt_assert(protocol_list_supports_protocol(supported_protocols,
+                                            PRT_PADDING,
+                                            PROTOVER_HS_SETUP_PADDING));
+
+  /* FlowCtrl */
+  tt_assert(protocol_list_supports_protocol(supported_protocols,
+                                            PRT_FLOWCTRL,
+                                            PROTOVER_FLOWCTRL_V1));
 
  done:
  ;
@@ -566,12 +532,16 @@ test_protover_vote_roundtrip(void *args)
     /* Will fail because of 4294967295. */
     { "Foo=1,3 Bar=3 Baz= Quux=9-12,14,15-16,900 Zn=1,4294967295",
        NULL },
-    { "Foo=1,3 Bar=3 Baz= Quux=9-12,14,15-16,900 Zn=1,4294967294",
-      "Bar=3 Foo=1,3 Quux=9-12,14-16,900 Zn=1,4294967294" },
-    { "Zu16=1,65536", "Zu16=1,65536" },
+    { "Foo=1,3 Bar=3 Baz= Quux=9-12,14,15-16,50 Zn=1,42",
+      "Bar=3 Foo=1,3 Quux=9-12,14-16,50 Zn=1,42" },
+    { "Zu16=1,63", "Zu16=1,63" },
     { "N-1=1,2", "N-1=1-2" },
     { "-1=4294967295", NULL },
     { "-1=3", "-1=3" },
+    { "Foo=,", NULL },
+    { "Foo=,1", NULL },
+    { "Foo=1,,3", NULL },
+    { "Foo=1,3,", NULL },
     /* junk. */
     { "!!3@*", NULL },
     /* Missing equals sign */
@@ -602,12 +572,8 @@ test_protover_vote_roundtrip(void *args)
     /* Large integers */
     { "Link=4294967296", NULL },
     /* Large range */
-    { "Sleen=1-501", "Sleen=1-501" },
+    { "Sleen=1-63", "Sleen=1-63" },
     { "Sleen=1-65537", NULL },
-    /* Both C/Rust implementations should be able to handle this mild DoS. */
-    { "Sleen=1-2147483648", NULL },
-    /* Rust tests are built in debug mode, so ints are bounds-checked. */
-    { "Sleen=1-4294967295", NULL },
   };
   unsigned u;
   smartlist_t *votes = smartlist_new();
@@ -634,6 +600,265 @@ test_protover_vote_roundtrip(void *args)
   tor_free(result);
 }
 
+static void
+test_protover_vote_roundtrip_ours(void *args)
+{
+  (void) args;
+  const char *examples[] = {
+    protover_get_supported_protocols(),
+    DIRVOTE_RECOMMEND_RELAY_PROTO,
+    DIRVOTE_RECOMMEND_CLIENT_PROTO,
+    DIRVOTE_REQUIRE_RELAY_PROTO,
+    DIRVOTE_REQUIRE_CLIENT_PROTO,
+  };
+  unsigned u;
+  smartlist_t *votes = smartlist_new();
+  char *result = NULL;
+
+  for (u = 0; u < ARRAY_LENGTH(examples); ++u) {
+    tt_assert(examples[u]);
+    const char *input = examples[u];
+    const char *expected_output = examples[u];
+
+    smartlist_add(votes, (void*)input);
+    result = protover_compute_vote(votes, 1);
+    if (expected_output != NULL) {
+      tt_str_op(result, OP_EQ, expected_output);
+    } else {
+      tt_str_op(result, OP_EQ, "");
+    }
+
+    smartlist_clear(votes);
+    tor_free(result);
+  }
+
+ done:
+  smartlist_free(votes);
+  tor_free(result);
+}
+
+/* Stringifies its argument.
+ * 4 -> "4" */
+#define STR(x) #x
+
+#ifdef COCCI
+#define PROTOVER(proto_string, version_macro)
+#else
+/* Generate a protocol version string using proto_string and version_macro.
+ * PROTOVER("HSIntro", PROTOVER_HS_INTRO_DOS) -> "HSIntro" "=" "5"
+ * Uses two levels of macros to turn PROTOVER_HS_INTRO_DOS into "5".
+ */
+#define PROTOVER(proto_string, version_macro) \
+  (proto_string "=" STR(version_macro))
+#endif
+
+#define DEBUG_PROTOVER(flags) \
+  STMT_BEGIN \
+  log_debug(LD_GENERAL, \
+            "protovers:\n" \
+            "protocols_known: %d,\n" \
+            "supports_extend2_cells: %d,\n" \
+            "supports_accepting_ipv6_extends: %d,\n" \
+            "supports_initiating_ipv6_extends: %d,\n" \
+            "supports_canonical_ipv6_conns: %d,\n" \
+            "supports_ed25519_link_handshake_compat: %d,\n" \
+            "supports_ed25519_link_handshake_any: %d,\n" \
+            "supports_ed25519_hs_intro: %d,\n" \
+            "supports_establish_intro_dos_extension: %d,\n" \
+            "supports_v3_hsdir: %d,\n" \
+            "supports_v3_rendezvous_point: %d,\n" \
+            "supports_hs_setup_padding: %d.", \
+            (flags).protocols_known, \
+            (flags).supports_extend2_cells, \
+            (flags).supports_accepting_ipv6_extends, \
+            (flags).supports_initiating_ipv6_extends, \
+            (flags).supports_canonical_ipv6_conns, \
+            (flags).supports_ed25519_link_handshake_compat, \
+            (flags).supports_ed25519_link_handshake_any, \
+            (flags).supports_ed25519_hs_intro, \
+            (flags).supports_establish_intro_dos_extension, \
+            (flags).supports_v3_hsdir, \
+            (flags).supports_v3_rendezvous_point, \
+            (flags).supports_hs_setup_padding); \
+    STMT_END
+
+/* Test that the proto_string version version_macro sets summary_flag. */
+#define TEST_PROTOVER(proto_string, version_macro, summary_flag) \
+  STMT_BEGIN \
+  memset(&flags, 0, sizeof(flags)); \
+  summarize_protover_flags(&flags, \
+                           PROTOVER(proto_string, version_macro), \
+                           NULL); \
+  DEBUG_PROTOVER(flags); \
+  tt_int_op(flags.protocols_known, OP_EQ, 1); \
+  tt_int_op(flags.summary_flag, OP_EQ, 1); \
+  flags.protocols_known = 0; \
+  flags.summary_flag = 0; \
+  tt_mem_op(&flags, OP_EQ, &zero_flags, sizeof(flags)); \
+  STMT_END
+
+static void
+test_protover_summarize_flags(void *args)
+{
+  (void) args;
+  char pv[30];
+  memset(&pv, 0, sizeof(pv));
+
+  protover_summary_cache_free_all();
+
+  protover_summary_flags_t zero_flags;
+  memset(&zero_flags, 0, sizeof(zero_flags));
+  protover_summary_flags_t flags;
+
+  memset(&flags, 0, sizeof(flags));
+  summarize_protover_flags(&flags, NULL, NULL);
+  DEBUG_PROTOVER(flags);
+  tt_mem_op(&flags, OP_EQ, &zero_flags, sizeof(flags));
+
+  memset(&flags, 0, sizeof(flags));
+  summarize_protover_flags(&flags, "", "");
+  DEBUG_PROTOVER(flags);
+  tt_mem_op(&flags, OP_EQ, &zero_flags, sizeof(flags));
+
+  /* Now check version exceptions */
+
+  /* EXTEND2 cell support */
+  memset(&flags, 0, sizeof(flags));
+  summarize_protover_flags(&flags, NULL, "Tor 0.2.4.8-alpha");
+  DEBUG_PROTOVER(flags);
+  tt_int_op(flags.protocols_known, OP_EQ, 1);
+  tt_int_op(flags.supports_extend2_cells, OP_EQ, 1);
+  /* Now clear those flags, and check the rest are zero */
+  flags.protocols_known = 0;
+  flags.supports_extend2_cells = 0;
+  tt_mem_op(&flags, OP_EQ, &zero_flags, sizeof(flags));
+
+  /* disabling HSDir v3 support for buggy versions */
+  memset(&flags, 0, sizeof(flags));
+  summarize_protover_flags(&flags,
+                           PROTOVER("HSDir", PROTOVER_HSDIR_V3),
+                           NULL);
+  DEBUG_PROTOVER(flags);
+  tt_int_op(flags.protocols_known, OP_EQ, 1);
+  tt_int_op(flags.supports_v3_hsdir, OP_EQ, 1);
+  /* Now clear those flags, and check the rest are zero */
+  flags.protocols_known = 0;
+  flags.supports_v3_hsdir = 0;
+  tt_mem_op(&flags, OP_EQ, &zero_flags, sizeof(flags));
+
+  memset(&flags, 0, sizeof(flags));
+  summarize_protover_flags(&flags,
+                           PROTOVER("HSDir", PROTOVER_HSDIR_V3),
+                           "Tor 0.3.0.7");
+  DEBUG_PROTOVER(flags);
+  tt_int_op(flags.protocols_known, OP_EQ, 1);
+  /* Now clear that flag, and check the rest are zero */
+  flags.protocols_known = 0;
+  tt_mem_op(&flags, OP_EQ, &zero_flags, sizeof(flags));
+
+  /* Now check standard summaries */
+
+  /* LinkAuth */
+  memset(&flags, 0, sizeof(flags));
+  summarize_protover_flags(&flags,
+                           PROTOVER("LinkAuth",
+                                    PROTOVER_LINKAUTH_ED25519_HANDSHAKE),
+                           NULL);
+  DEBUG_PROTOVER(flags);
+  tt_int_op(flags.protocols_known, OP_EQ, 1);
+  tt_int_op(flags.supports_ed25519_link_handshake_compat, OP_EQ, 1);
+  tt_int_op(flags.supports_ed25519_link_handshake_any, OP_EQ, 1);
+  /* Now clear those flags, and check the rest are zero */
+  flags.protocols_known = 0;
+  flags.supports_ed25519_link_handshake_compat = 0;
+  flags.supports_ed25519_link_handshake_any = 0;
+  tt_mem_op(&flags, OP_EQ, &zero_flags, sizeof(flags));
+
+  /* Test one greater */
+  memset(&flags, 0, sizeof(flags));
+  snprintf(pv, sizeof(pv),
+           "%s=%d", "LinkAuth", PROTOVER_LINKAUTH_ED25519_HANDSHAKE + 1);
+  summarize_protover_flags(&flags, pv, NULL);
+  DEBUG_PROTOVER(flags);
+  tt_int_op(flags.protocols_known, OP_EQ, 1);
+  tt_int_op(flags.supports_ed25519_link_handshake_compat, OP_EQ, 0);
+  tt_int_op(flags.supports_ed25519_link_handshake_any, OP_EQ, 1);
+  /* Now clear those flags, and check the rest are zero */
+  flags.protocols_known = 0;
+  flags.supports_ed25519_link_handshake_compat = 0;
+  flags.supports_ed25519_link_handshake_any = 0;
+  tt_mem_op(&flags, OP_EQ, &zero_flags, sizeof(flags));
+
+  /* Test one less */
+  memset(&flags, 0, sizeof(flags));
+  snprintf(pv, sizeof(pv),
+           "%s=%d", "LinkAuth", PROTOVER_LINKAUTH_ED25519_HANDSHAKE - 1);
+  summarize_protover_flags(&flags, pv, NULL);
+  DEBUG_PROTOVER(flags);
+  tt_int_op(flags.protocols_known, OP_EQ, 1);
+  tt_int_op(flags.supports_ed25519_link_handshake_compat, OP_EQ, 0);
+  tt_int_op(flags.supports_ed25519_link_handshake_any, OP_EQ, 0);
+  /* Now clear those flags, and check the rest are zero */
+  flags.protocols_known = 0;
+  flags.supports_ed25519_link_handshake_compat = 0;
+  flags.supports_ed25519_link_handshake_any = 0;
+  tt_mem_op(&flags, OP_EQ, &zero_flags, sizeof(flags));
+
+  /* We don't test "one more" and "one less" for each protocol version.
+   * But that could be a useful thing to add. */
+
+  /* Relay */
+  memset(&flags, 0, sizeof(flags));
+  /* This test relies on these versions being equal */
+  tt_int_op(PROTOVER_RELAY_EXTEND2, OP_EQ, PROTOVER_RELAY_ACCEPT_IPV6);
+  summarize_protover_flags(&flags,
+                           PROTOVER("Relay", PROTOVER_RELAY_EXTEND2), NULL);
+  DEBUG_PROTOVER(flags);
+  tt_int_op(flags.protocols_known, OP_EQ, 1);
+  tt_int_op(flags.supports_extend2_cells, OP_EQ, 1);
+  tt_int_op(flags.supports_accepting_ipv6_extends, OP_EQ, 1);
+  /* Now clear those flags, and check the rest are zero */
+  flags.protocols_known = 0;
+  flags.supports_extend2_cells = 0;
+  flags.supports_accepting_ipv6_extends = 0;
+  tt_mem_op(&flags, OP_EQ, &zero_flags, sizeof(flags));
+
+  memset(&flags, 0, sizeof(flags));
+  /* This test relies on these versions being equal */
+  tt_int_op(PROTOVER_RELAY_EXTEND_IPV6, OP_EQ, PROTOVER_RELAY_CANONICAL_IPV6);
+  summarize_protover_flags(&flags,
+                           PROTOVER("Relay", PROTOVER_RELAY_EXTEND_IPV6),
+                           NULL);
+  DEBUG_PROTOVER(flags);
+  tt_int_op(flags.protocols_known, OP_EQ, 1);
+  tt_int_op(flags.supports_accepting_ipv6_extends, OP_EQ, 1);
+  tt_int_op(flags.supports_initiating_ipv6_extends, OP_EQ, 1);
+  tt_int_op(flags.supports_canonical_ipv6_conns, OP_EQ, 1);
+  /* Now clear those flags, and check the rest are zero */
+  flags.protocols_known = 0;
+  flags.supports_accepting_ipv6_extends = 0;
+  flags.supports_initiating_ipv6_extends = 0;
+  flags.supports_canonical_ipv6_conns = 0;
+  tt_mem_op(&flags, OP_EQ, &zero_flags, sizeof(flags));
+
+  TEST_PROTOVER("HSIntro", PROTOVER_HS_INTRO_V3,
+                supports_ed25519_hs_intro);
+  TEST_PROTOVER("HSIntro", PROTOVER_HS_INTRO_DOS,
+                supports_establish_intro_dos_extension);
+
+  TEST_PROTOVER("HSRend", PROTOVER_HS_RENDEZVOUS_POINT_V3,
+                supports_v3_rendezvous_point);
+
+  TEST_PROTOVER("HSDir", PROTOVER_HSDIR_V3,
+                supports_v3_hsdir);
+
+  TEST_PROTOVER("Padding", PROTOVER_HS_SETUP_PADDING,
+                supports_hs_setup_padding);
+
+ done:
+  ;
+}
+
 #define PV_TEST(name, flags)                       \
   { #name, test_protover_ ##name, (flags), NULL, NULL }
 
@@ -647,5 +872,8 @@ struct testcase_t protover_tests[] = {
   PV_TEST(supports_version, 0),
   PV_TEST(supported_protocols, 0),
   PV_TEST(vote_roundtrip, 0),
+  PV_TEST(vote_roundtrip_ours, 0),
+  /* fork, because we memoize flags internally */
+  PV_TEST(summarize_flags, TT_FORK),
   END_OF_TESTCASES
 };

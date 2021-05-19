@@ -1,0 +1,30 @@
+    fn() {:./dubious.c:4
+       KW(:./dubious.c:6
+   UnnecNL:./dubious.c:10
+  DoubleNL:./dubious.c:12
+   tp fn():./dubious.c:15
+      Wide:./dubious.c:17
+       TAB:./dubious.c:24
+        CR:./dubious.c:30
+ Space@EOL:./dubious.c:32
+ non-K&R {:./dubious.c:39
+        ;;:./dubious.c:41
+   }\nelse:./dubious.c:43
+  #else#if:./dubious.c:52
+        o{:./dubious.c:58
+    fn() {:./dubious.c:58
+     fn ():./dubious.c:65
+    assert:./dubious.c:72   (use tor_assert)
+    memcmp:./dubious.c:73   (use {tor,fast}_mem{eq,neq,cmp}
+   strcat(:./dubious.c:74
+   strcpy(:./dubious.c:75
+  sprintf(:./dubious.c:76
+   malloc(:./dubious.c:77    (use tor_malloc, tor_free, etc)
+     free(:./dubious.c:78    (use tor_malloc, tor_free, etc)
+  realloc(:./dubious.c:79    (use tor_malloc, tor_free, etc)
+   strdup(:./dubious.c:80    (use tor_malloc, tor_free, etc)
+  strndup(:./dubious.c:81    (use tor_malloc, tor_free, etc)
+   calloc(:./dubious.c:82    (use tor_malloc, tor_free, etc)
+   noguard:./dubious.h (No #ifndef/#define header guard pair found)
+  dupguard:./same_guard.h (Guard macro GUARD_MACRO_H also used in ./good_guard.h)
+ dup fname:./subdir/dubious.c (same as ./dubious.c).

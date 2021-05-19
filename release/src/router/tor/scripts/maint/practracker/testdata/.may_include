@@ -1,3 +1,4 @@
 !advisory
 
 permitted.h
+ext/good.c

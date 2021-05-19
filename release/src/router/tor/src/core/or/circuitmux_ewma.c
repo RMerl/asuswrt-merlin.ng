@@ -1,4 +1,4 @@
-/* * Copyright (c) 2012-2019, The Tor Project, Inc. */
+/* * Copyright (c) 2012-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -38,6 +38,7 @@
 #include "core/or/circuitmux.h"
 #include "core/or/circuitmux_ewma.h"
 #include "lib/crypt_ops/crypto_rand.h"
+#include "lib/crypt_ops/crypto_util.h"
 #include "feature/nodelist/networkstatus.h"
 #include "app/config/or_options_st.h"
 
@@ -57,115 +58,6 @@
 #define EPSILON 0.00001
 /** The natural logarithm of 0.5. */
 #define LOG_ONEHALF -0.69314718055994529
-
-/*** EWMA structures ***/
-
-typedef struct cell_ewma_s cell_ewma_t;
-typedef struct ewma_policy_data_s ewma_policy_data_t;
-typedef struct ewma_policy_circ_data_s ewma_policy_circ_data_t;
-
-/**
- * The cell_ewma_t structure keeps track of how many cells a circuit has
- * transferred recently.  It keeps an EWMA (exponentially weighted moving
- * average) of the number of cells flushed from the circuit queue onto a
- * connection in channel_flush_from_first_active_circuit().
- */
-
-struct cell_ewma_s {
-  /** The last 'tick' at which we recalibrated cell_count.
-   *
-   * A cell sent at exactly the start of this tick has weight 1.0. Cells sent
-   * since the start of this tick have weight greater than 1.0; ones sent
-   * earlier have less weight. */
-  unsigned int last_adjusted_tick;
-  /** The EWMA of the cell count. */
-  double cell_count;
-  /** True iff this is the cell count for a circuit's previous
-   * channel. */
-  unsigned int is_for_p_chan : 1;
-  /** The position of the circuit within the OR connection's priority
-   * queue. */
-  int heap_index;
-};
-
-struct ewma_policy_data_s {
-  circuitmux_policy_data_t base_;
-
-  /**
-   * Priority queue of cell_ewma_t for circuits with queued cells waiting
-   * for room to free up on the channel that owns this circuitmux.  Kept
-   * in heap order according to EWMA.  This was formerly in channel_t, and
-   * in or_connection_t before that.
-   */
-  smartlist_t *active_circuit_pqueue;
-
-  /**
-   * The tick on which the cell_ewma_ts in active_circuit_pqueue last had
-   * their ewma values rescaled.  This was formerly in channel_t, and in
-   * or_connection_t before that.
-   */
-  unsigned int active_circuit_pqueue_last_recalibrated;
-};
-
-struct ewma_policy_circ_data_s {
-  circuitmux_policy_circ_data_t base_;
-
-  /**
-   * The EWMA count for the number of cells flushed from this circuit
-   * onto this circuitmux.  Used to determine which circuit to flush
-   * from next.  This was formerly in circuit_t and or_circuit_t.
-   */
-  cell_ewma_t cell_ewma;
-
-  /**
-   * Pointer back to the circuit_t this is for; since we're separating
-   * out circuit selection policy like this, we can't attach cell_ewma_t
-   * to the circuit_t any more, so we can't use SUBTYPE_P directly to a
-   * circuit_t like before; instead get it here.
-   */
-  circuit_t *circ;
-};
-
-#define EWMA_POL_DATA_MAGIC 0x2fd8b16aU
-#define EWMA_POL_CIRC_DATA_MAGIC 0x761e7747U
-
-/*** Downcasts for the above types ***/
-
-static ewma_policy_data_t *
-TO_EWMA_POL_DATA(circuitmux_policy_data_t *);
-
-static ewma_policy_circ_data_t *
-TO_EWMA_POL_CIRC_DATA(circuitmux_policy_circ_data_t *);
-
-/**
- * Downcast a circuitmux_policy_data_t to an ewma_policy_data_t and assert
- * if the cast is impossible.
- */
-
-static inline ewma_policy_data_t *
-TO_EWMA_POL_DATA(circuitmux_policy_data_t *pol)
-{
-  if (!pol) return NULL;
-  else {
-    tor_assert(pol->magic == EWMA_POL_DATA_MAGIC);
-    return DOWNCAST(ewma_policy_data_t, pol);
-  }
-}
-
-/**
- * Downcast a circuitmux_policy_circ_data_t to an ewma_policy_circ_data_t
- * and assert if the cast is impossible.
- */
-
-static inline ewma_policy_circ_data_t *
-TO_EWMA_POL_CIRC_DATA(circuitmux_policy_circ_data_t *pol)
-{
-  if (!pol) return NULL;
-  else {
-    tor_assert(pol->magic == EWMA_POL_CIRC_DATA_MAGIC);
-    return DOWNCAST(ewma_policy_circ_data_t, pol);
-  }
-}
 
 /*** Static declarations for circuitmux_ewma.c ***/
 
@@ -295,6 +187,7 @@ ewma_free_cmux_data(circuitmux_t *cmux,
   pol = TO_EWMA_POL_DATA(pol_data);
 
   smartlist_free(pol->active_circuit_pqueue);
+  memwipe(pol, 0xda, sizeof(ewma_policy_data_t));
   tor_free(pol);
 }
 
@@ -361,7 +254,7 @@ ewma_free_circ_data(circuitmux_t *cmux,
   if (!pol_circ_data) return;
 
   cdata = TO_EWMA_POL_CIRC_DATA(pol_circ_data);
-
+  memwipe(cdata, 0xdc, sizeof(ewma_policy_circ_data_t));
   tor_free(cdata);
 }
 
@@ -530,7 +423,7 @@ ewma_cmp_cmux(circuitmux_t *cmux_1, circuitmux_policy_data_t *pol_data_1,
       /* Pick whichever one has the better best circuit */
       return compare_cell_ewma_counts(ce1, ce2);
     } else {
-      if (ce1 != NULL ) {
+      if (ce1 != NULL) {
         /* We only have a circuit on cmux_1, so prefer it */
         return -1;
       } else if (ce2 != NULL) {
@@ -716,7 +609,7 @@ cmux_ewma_set_options(const or_options_t *options,
   /* convert halflife into halflife-per-tick. */
   halflife /= EWMA_TICK_LEN;
   /* compute per-tick scale factor. */
-  ewma_scale_factor = exp( LOG_ONEHALF / halflife );
+  ewma_scale_factor = exp(LOG_ONEHALF / halflife);
   log_info(LD_OR,
            "Enabled cell_ewma algorithm because of value in %s; "
            "scale factor is %f per %d seconds",

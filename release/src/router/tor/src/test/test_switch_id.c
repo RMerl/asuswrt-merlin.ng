@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2019, The Tor Project, Inc. */
+/* Copyright (c) 2015-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "core/or/or.h"
@@ -32,6 +32,46 @@ static const struct {
 };
 
 #if !defined(_WIN32)
+
+/* Returns the first port that we think we can bind to without special
+ * permissions. Usually this function returns 1024. */
+static uint16_t
+unprivileged_port_range_start(void)
+{
+  uint16_t result = 1024;
+
+#if defined(__linux__)
+  char *content = NULL;
+
+  content = read_file_to_str(
+              "/proc/sys/net/ipv4/ip_unprivileged_port_start",
+              0,
+              NULL);
+
+  if (content != NULL) {
+    int ok = 1;
+    uint16_t tmp_result;
+
+    tmp_result = (uint16_t)tor_parse_long(content, 10, 0, 65535, &ok, NULL);
+
+    if (ok) {
+      result = tmp_result;
+    } else {
+      fprintf(stderr,
+              "Unable to convert ip_unprivileged_port_start to integer: %s\n",
+              content);
+    }
+  }
+
+  tor_free(content);
+#endif /* defined(__linux__) */
+
+  return result;
+}
+
+#define PORT_TEST_RANGE_START 600
+#define PORT_TEST_RANGE_END   1024
+
 /* 0 on no, 1 on yes, -1 on failure. */
 static int
 check_can_bind_low_ports(void)
@@ -41,7 +81,7 @@ check_can_bind_low_ports(void)
   memset(&sin, 0, sizeof(sin));
   sin.sin_family = AF_INET;
 
-  for (port = 600; port < 1024; ++port) {
+  for (port = PORT_TEST_RANGE_START; port < PORT_TEST_RANGE_END; ++port) {
     sin.sin_port = htons(port);
     tor_socket_t fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (! SOCKET_OK(fd)) {
@@ -149,10 +189,24 @@ main(int argc, char **argv)
       /* Succeed if we can do a setuid with capability retention, and doing so
        * does not make us lose the ability to bind low ports */
     {
-      int keepcaps = (test_id == TEST_SETUID_KEEPCAPS);
+      const int keepcaps = (test_id == TEST_SETUID_KEEPCAPS);
       okay = switch_id(username, keepcaps ? SWITCH_ID_KEEP_BINDLOW : 0) == 0;
+
       if (okay) {
-        okay = check_can_bind_low_ports() == keepcaps;
+        /* Only run this check if there are ports we may not be able to bind
+         * to. */
+        const uint16_t min_port = unprivileged_port_range_start();
+
+        if (min_port >= PORT_TEST_RANGE_START &&
+            min_port < PORT_TEST_RANGE_END) {
+          okay = check_can_bind_low_ports() == keepcaps;
+        } else {
+          fprintf(stderr,
+                  "Skipping check for whether we can bind to any "
+                  "privileged ports as the user system seems to "
+                  "allow us to bind to ports even without any "
+                  "capabilities set.\n");
+        }
       }
       break;
     }

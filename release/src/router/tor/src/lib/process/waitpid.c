@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -58,9 +58,9 @@ process_map_entries_eq_(const waitpid_callback_t *a,
 static HT_HEAD(process_map, waitpid_callback_t) process_map = HT_INITIALIZER();
 
 HT_PROTOTYPE(process_map, waitpid_callback_t, node, process_map_entry_hash_,
-             process_map_entries_eq_)
+             process_map_entries_eq_);
 HT_GENERATE2(process_map, waitpid_callback_t, node, process_map_entry_hash_,
-             process_map_entries_eq_, 0.6, tor_reallocarray_, tor_free_)
+             process_map_entries_eq_, 0.6, tor_reallocarray_, tor_free_);
 
 /**
  * Begin monitoring the child pid <b>pid</b> to see if we get a SIGCHLD for
@@ -113,7 +113,7 @@ clear_waitpid_callback(waitpid_callback_t *ent)
   tor_free(ent);
 }
 
-/** Helper: find the callack for <b>pid</b>; if there is one, run it,
+/** Helper: find the callback for <b>pid</b>; if there is one, run it,
  * reporting the exit status as <b>status</b>. */
 static void
 notify_waitpid_callback_by_pid(pid_t pid, int status)

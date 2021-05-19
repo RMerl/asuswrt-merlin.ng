@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -48,16 +48,15 @@ typedef struct extend_cell_t {
   uint8_t cell_type;
   /** An IPv4 address and port for the node we're connecting to. */
   tor_addr_port_t orport_ipv4;
-  /** An IPv6 address and port for the node we're connecting to. Not currently
-   * used. */
+  /** An IPv6 address and port for the node we're connecting to. */
   tor_addr_port_t orport_ipv6;
-  /** Identity fingerprint of the node we're conecting to.*/
+  /** Identity fingerprint of the node we're connecting to.*/
   uint8_t node_id[DIGEST_LEN];
   /** Ed25519 public identity key. Zero if not set. */
   struct ed25519_public_key_t ed_pubkey;
   /** The "create cell" embedded in this extend cell. Note that unlike the
-   * create cells we generate ourself, this once can have a handshake type we
-   * don't recognize. */
+   * create cells we generate ourselves, this create cell can have a handshake
+   * type we don't recognize. */
   create_cell_t create_cell;
 } extend_cell_t;
 
@@ -74,8 +73,10 @@ void create_cell_init(create_cell_t *cell_out, uint8_t cell_type,
                       const uint8_t *onionskin);
 int create_cell_parse(create_cell_t *cell_out, const cell_t *cell_in);
 int created_cell_parse(created_cell_t *cell_out, const cell_t *cell_in);
-int extend_cell_parse(extend_cell_t *cell_out, const uint8_t command,
-                      const uint8_t *payload_in, size_t payload_len);
+MOCK_DECL(int,extend_cell_parse,(extend_cell_t *cell_out,
+                                 const uint8_t command,
+                                 const uint8_t *payload_in,
+                                 size_t payload_len));
 int extended_cell_parse(extended_cell_t *cell_out, const uint8_t command,
                         const uint8_t *payload_in, size_t payload_len);
 

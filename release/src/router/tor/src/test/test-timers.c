@@ -1,4 +1,4 @@
-/* Copyright 2016-2019, The Tor Project, Inc. */
+/* Copyright 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -59,7 +59,7 @@ main(int argc, char **argv)
 {
   (void)argc;
   (void)argv;
-  tor_libevent_cfg cfg;
+  tor_libevent_cfg_t cfg;
   memset(&cfg, 0, sizeof(cfg));
   tor_libevent_initialize(&cfg);
   timers_initialize();

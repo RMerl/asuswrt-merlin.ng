@@ -7,7 +7,10 @@ problem is worse than a registered exception so that it only warns when things
 get worse.
 """
 
+# Future imports for Python 2.7, mandatory in 3.0
+from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import os.path
 import re
@@ -26,6 +29,8 @@ class ProblemVault(object):
     def __init__(self, exception_fname=None):
         # Exception dictionary: { problem.key() : Problem object }
         self.exceptions = {}
+        # Exception list: list of Problem objects, in the order added.
+        self.exception_list = []
         # Exception dictionary: maps key to the problem it was used to
         # suppress.
         self.used_exception_for = {}
@@ -60,6 +65,7 @@ class ProblemVault(object):
                 sys.exit(1)
 
             self.exceptions[problem.key()] = problem
+            self.exception_list.append(problem)
             #print "Registering exception: %s" % problem
 
     def register_problem(self, problem):
@@ -94,6 +100,24 @@ class ProblemVault(object):
             p = self.used_exception_for.get(k)
             if p is None or e.is_worse_than(p):
                 yield (e, p)
+
+    def list_exceptions_without_overbroad(self):
+        """Return an iterator of new problems, such that overbroad
+           exceptions are replaced with minimally broad versions, or removed.
+        """
+        for e in self.exception_list:
+            p = self.used_exception_for.get(e.key())
+            if p is None:
+                # This exception wasn't needed at all.
+                continue
+            if e.is_worse_than(p):
+                # The exception is worse than the problem we found.
+                # Yield the problem as the new exception value.
+                yield p
+            else:
+                # The problem is as bad as the exception, or worse.
+                # Yield the exception.
+                yield e
 
     def set_tolerances(self, fns):
         """Adjust the tolerances for the exceptions in this vault.  Takes

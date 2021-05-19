@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -131,9 +131,10 @@ crypto_read_tagged_contents_from_file(const char *fname,
   return r;
 }
 
-/** Encode <b>pkey</b> as a base64-encoded string, including trailing "="
- * characters, in the buffer <b>output</b>, which must have at least
- * CURVE25519_BASE64_PADDED_LEN+1 bytes available.
+/** Encode <b>pkey</b> as a base64-encoded string in the buffer <b>output</b>.
+ * If <b>pad</b> is false do not include trailing "=" characters, otherwise
+ * include them. <b>output</b> must have at least
+ * CURVE25519_BASE64_PADDED_LEN+1 bytes available, even if <b>pad</b> is false.
  * Can not fail.
  *
  * Careful! CURVE25519_BASE64_PADDED_LEN is one byte longer than
@@ -141,17 +142,25 @@ crypto_read_tagged_contents_from_file(const char *fname,
  */
 void
 curve25519_public_to_base64(char *output,
-                            const curve25519_public_key_t *pkey)
+                            const curve25519_public_key_t *pkey, bool pad)
 {
-  char buf[128];
-  int n = base64_encode(buf, sizeof(buf),
-                        (const char*)pkey->public_key,
-                        CURVE25519_PUBKEY_LEN, 0);
+  int n, expected_len;
+  if (pad) {
+    n = base64_encode(output, CURVE25519_BASE64_PADDED_LEN+1,
+                      (const char*)pkey->public_key,
+                      CURVE25519_PUBKEY_LEN, 0);
+    expected_len = CURVE25519_BASE64_PADDED_LEN;
+  } else {
+    n = base64_encode_nopad(output, CURVE25519_BASE64_PADDED_LEN+1,
+                            (const uint8_t*)pkey->public_key,
+                            CURVE25519_PUBKEY_LEN);
+    expected_len = CURVE25519_BASE64_LEN;
+  }
+
   /* These asserts should always succeed, unless there is a bug in
    * base64_encode(). */
-  tor_assert(n == CURVE25519_BASE64_PADDED_LEN);
-  tor_assert(buf[CURVE25519_BASE64_PADDED_LEN] == '\0');
-  memcpy(output, buf, CURVE25519_BASE64_PADDED_LEN+1);
+  tor_assert(n == expected_len);
+  tor_assert(output[expected_len] == '\0');
 }
 
 /** Try to decode a base64-encoded curve25519 public key from <b>input</b>
@@ -162,11 +171,11 @@ curve25519_public_from_base64(curve25519_public_key_t *pkey,
                               const char *input)
 {
   size_t len = strlen(input);
-  if (len == CURVE25519_BASE64_PADDED_LEN - 1) {
+  if (len == CURVE25519_BASE64_LEN) {
     /* not padded */
     return digest256_from_base64((char*)pkey->public_key, input);
   } else if (len == CURVE25519_BASE64_PADDED_LEN) {
-    char buf[128];
+    char buf[CURVE25519_BASE64_PADDED_LEN+1];
     if (base64_decode(buf, sizeof(buf), input, len) != CURVE25519_PUBKEY_LEN)
       return -1;
     memcpy(pkey->public_key, buf, CURVE25519_PUBKEY_LEN);

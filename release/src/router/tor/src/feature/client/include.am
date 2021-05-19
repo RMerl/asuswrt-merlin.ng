@@ -1,0 +1,20 @@
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+LIBTOR_APP_A_SOURCES += 				\
+	src/feature/client/addressmap.c		\
+	src/feature/client/bridges.c		\
+	src/feature/client/circpathbias.c	\
+	src/feature/client/dnsserv.c		\
+	src/feature/client/entrynodes.c		\
+	src/feature/client/proxymode.c		\
+	src/feature/client/transports.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/feature/client/addressmap.h			\
+	src/feature/client/bridges.h			\
+	src/feature/client/circpathbias.h		\
+	src/feature/client/dnsserv.h			\
+	src/feature/client/entrynodes.h			\
+	src/feature/client/proxymode.h			\
+	src/feature/client/transports.h

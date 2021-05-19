@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -222,7 +222,7 @@ token_check_object(memarea_t *area, const char *kwd,
                      kwd, crypto_pk_num_bits(tok->key));
         RET_ERR(ebuf);
       }
-      /* fall through */
+      FALLTHROUGH;
     case NEED_KEY: /* There must be some kind of key. */
       if (!tok->key) {
         tor_snprintf(ebuf, sizeof(ebuf), "Missing public key for %s", kwd);
@@ -403,12 +403,19 @@ get_next_token(memarea_t *area,
   }
 
   if (!strcmp(tok->object_type, "RSA PUBLIC KEY")) { /* If it's a public key */
+    if (o_syn != NEED_KEY && o_syn != NEED_KEY_1024 && o_syn != OBJ_OK) {
+      RET_ERR("Unexpected public key.");
+    }
     tok->key = crypto_pk_asn1_decode(tok->object_body, tok->object_size);
     if (! tok->key)
       RET_ERR("Couldn't parse public key.");
   } else if (!strcmp(tok->object_type, "RSA PRIVATE KEY")) { /* private key */
+    if (o_syn != NEED_SKEY_1024 && o_syn != OBJ_OK) {
+      RET_ERR("Unexpected private key.");
+    }
     tok->key = crypto_pk_asn1_decode_private(tok->object_body,
-                                             tok->object_size);
+                                             tok->object_size,
+                                             1024);
     if (! tok->key)
       RET_ERR("Couldn't parse private key.");
   }

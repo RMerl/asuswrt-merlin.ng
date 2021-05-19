@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -62,8 +62,9 @@ test_invalid_service(void *arg)
     setup_full_capture_of_logs(LOG_WARN);
     ret = helper_config_service(conf, 1);
     tt_int_op(ret, OP_EQ, -1);
-    expect_log_msg_containing("HiddenServiceAllowUnknownPorts must be "
-                              "between 0 and 1, not 2");
+    expect_log_msg_containing("Could not parse "
+                              "HiddenServiceAllowUnknownPorts: Unrecognized "
+                              "value 2. Allowed values are 0 and 1.");
     teardown_capture_of_logs();
   }
 
@@ -76,8 +77,9 @@ test_invalid_service(void *arg)
     setup_full_capture_of_logs(LOG_WARN);
     ret = helper_config_service(conf, 1);
     tt_int_op(ret, OP_EQ, -1);
-    expect_log_msg_containing("HiddenServiceDirGroupReadable must be "
-                              "between 0 and 1, not 2");
+    expect_log_msg_containing("Could not parse "
+                              "HiddenServiceDirGroupReadable: "
+                              "Unrecognized value 2.");
     teardown_capture_of_logs();
   }
 
@@ -90,8 +92,9 @@ test_invalid_service(void *arg)
     setup_full_capture_of_logs(LOG_WARN);
     ret = helper_config_service(conf, 1);
     tt_int_op(ret, OP_EQ, -1);
-    expect_log_msg_containing("HiddenServiceMaxStreamsCloseCircuit must "
-                              "be between 0 and 1, not 2");
+    expect_log_msg_containing("Could not parse "
+                              "HiddenServiceMaxStreamsCloseCircuit: "
+                              "Unrecognized value 2");
     teardown_capture_of_logs();
   }
 
@@ -228,8 +231,8 @@ test_invalid_service_v2(void *arg)
     setup_full_capture_of_logs(LOG_WARN);
     ret = helper_config_service(conf, validate_only);
     tt_int_op(ret, OP_EQ, -1);
-    expect_log_msg_containing("HiddenServiceNumIntroductionPoints should "
-                              "be between 0 and 10, not 11");
+    expect_log_msg_containing("HiddenServiceNumIntroductionPoints must "
+                              "be between 0 and 10, not 11.");
     teardown_capture_of_logs();
   }
 
@@ -243,8 +246,9 @@ test_invalid_service_v2(void *arg)
     setup_full_capture_of_logs(LOG_WARN);
     ret = helper_config_service(conf, validate_only);
     tt_int_op(ret, OP_EQ, -1);
-    expect_log_msg_containing("HiddenServiceNumIntroductionPoints should "
-                              "be between 0 and 10, not -1");
+    expect_log_msg_containing("Could not parse "
+                              "HiddenServiceNumIntroductionPoints: "
+                              "Integer -1 is malformed or out of bounds.");
     teardown_capture_of_logs();
   }
 
@@ -532,9 +536,10 @@ test_dos_parameters(void *arg)
     setup_full_capture_of_logs(LOG_WARN);
     ret = helper_config_service(conf, 0);
     tt_int_op(ret, OP_EQ, -1);
-    expect_log_msg_containing("HiddenServiceEnableIntroDoSRatePerSec must "
-                              "be between 0 and 2147483647, "
-                              "not 137438953472");
+    expect_log_msg_containing("Could not parse "
+                              "HiddenServiceEnableIntroDoSRatePerSec: "
+                              "Integer 137438953472 is malformed or out of "
+                              "bounds.");
     teardown_capture_of_logs();
   }
 
@@ -551,9 +556,10 @@ test_dos_parameters(void *arg)
     setup_full_capture_of_logs(LOG_WARN);
     ret = helper_config_service(conf, 0);
     tt_int_op(ret, OP_EQ, -1);
-    expect_log_msg_containing("HiddenServiceEnableIntroDoSBurstPerSec must "
-                              "be between 0 and 2147483647, "
-                              "not 274877906944");
+    expect_log_msg_containing("Could not parse "
+                              "HiddenServiceEnableIntroDoSBurstPerSec: "
+                              "Integer 274877906944 is malformed or out "
+                              "of bounds.");
     teardown_capture_of_logs();
   }
 
@@ -588,8 +594,9 @@ test_dos_parameters(void *arg)
     setup_full_capture_of_logs(LOG_WARN);
     ret = helper_config_service(conf, 0);
     tt_int_op(ret, OP_EQ, -1);
-    expect_log_msg_containing("HiddenServiceEnableIntroDoSRatePerSec must be "
-                              "between 0 and 2147483647, not -1");
+    expect_log_msg_containing("Could not parse "
+                              "HiddenServiceEnableIntroDoSRatePerSec: "
+                              "Integer -1 is malformed or out of bounds.");
     teardown_capture_of_logs();
   }
 

@@ -226,10 +226,15 @@ ht_string_hash(const char *s)
        (x) = HT_NEXT(name, head, x))
 
 #ifndef HT_NDEBUG
-#define HT_ASSERT_(x) tor_assert(x)
+#include "lib/err/torerr.h"
+#define HT_ASSERT_(x) raw_assert(x)
 #else
 #define HT_ASSERT_(x) (void)0
 #endif
+
+/* Macro put at the end of the end of a macro definition so that it
+ * consumes the following semicolon at file scope. Used only inside ht.h. */
+#define HT_EAT_SEMICOLON__ struct ht_semicolon_eater
 
 #define HT_PROTOTYPE(name, type, field, hashfn, eqfn)                   \
   int name##_HT_GROW(struct name *ht, unsigned min_capacity);           \
@@ -370,7 +375,8 @@ ht_string_hash(const char *s)
   /* Return the next element in 'head' after 'elm', under the arbitrary \
    * order used by HT_START.  If there are no more elements, return     \
    * NULL.  If 'elm' is to be removed from the table, you must call     \
-   * this function for the next value before you remove it.             \
+   * this function for the next value before you remove it, or use      \
+   * HT_NEXT_RMV instead.                                               \
    */                                                                   \
   ATTR_UNUSED static inline struct type **                              \
   name##_HT_NEXT(struct name *head, struct type **elm)                  \
@@ -392,6 +398,8 @@ ht_string_hash(const char *s)
       return NULL;                                                      \
     }                                                                   \
   }                                                                     \
+  /* As HT_NEXT, but also remove the current element 'elm' from the     \
+   * table. */                                                          \
   ATTR_UNUSED static inline struct type **                              \
   name##_HT_NEXT_RMV(struct name *head, struct type **elm)              \
   {                                                                     \
@@ -409,7 +417,8 @@ ht_string_hash(const char *s)
       }                                                                 \
       return NULL;                                                      \
     }                                                                   \
-  }
+  }                                                                     \
+  HT_EAT_SEMICOLON__
 
 #define HT_GENERATE2(name, type, field, hashfn, eqfn, load, reallocarrayfn, \
                      freefn)                                            \
@@ -534,7 +543,8 @@ ht_string_hash(const char *s)
     if (n != head->hth_n_entries)                                       \
       return 6;                                                         \
     return 0;                                                           \
-  }
+  }                                                                     \
+  HT_EAT_SEMICOLON__
 
 #define HT_GENERATE(name, type, field, hashfn, eqfn, load, mallocfn,    \
                     reallocfn, freefn)                                  \
@@ -617,4 +627,3 @@ ht_string_hash(const char *s)
 */
 
 #endif
-

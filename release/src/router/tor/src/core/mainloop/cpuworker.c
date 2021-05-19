@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -19,7 +19,6 @@
  **/
 #include "core/or/or.h"
 #include "core/or/channel.h"
-#include "core/or/circuitbuild.h"
 #include "core/or/circuitlist.h"
 #include "core/or/connection_or.h"
 #include "app/config/config.h"
@@ -27,6 +26,7 @@
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
 #include "core/or/onion.h"
+#include "feature/relay/circuitbuild_relay.h"
 #include "feature/relay/onion_queue.h"
 #include "feature/stats/rephist.h"
 #include "feature/relay/router.h"
@@ -37,7 +37,7 @@
 
 static void queue_pending_tasks(void);
 
-typedef struct worker_state_s {
+typedef struct worker_state_t {
   int generation;
   server_onion_keys_t *onion_keys;
 } worker_state_t;
@@ -160,7 +160,7 @@ typedef struct cpuworker_reply_t {
   uint8_t rend_auth_material[DIGEST_LEN];
 } cpuworker_reply_t;
 
-typedef struct cpuworker_job_u {
+typedef struct cpuworker_job_u_t {
   or_circuit_t *circ;
   union {
     cpuworker_request_t request;
@@ -246,7 +246,7 @@ estimated_usec_for_onionskins(uint32_t n_requests, uint16_t onionskin_type)
   if (onionskin_type > MAX_ONION_HANDSHAKE_TYPE) /* should be impossible */
     return 1000 * (uint64_t)n_requests;
   if (PREDICT_UNLIKELY(onionskins_n_processed[onionskin_type] < 100)) {
-    /* Until we have 100 data points, just asssume everything takes 1 msec. */
+    /* Until we have 100 data points, just assume everything takes 1 msec. */
     return 1000 * (uint64_t)n_requests;
   } else {
     /* This can't overflow: we'll never have more than 500000 onionskins

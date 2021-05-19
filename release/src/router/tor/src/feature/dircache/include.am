@@ -1,0 +1,21 @@
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+MODULE_DIRCACHE_SOURCES = 			\
+	src/feature/dircache/conscache.c	\
+	src/feature/dircache/consdiffmgr.c	\
+	src/feature/dircache/dircache.c		\
+	src/feature/dircache/dirserv.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/feature/dircache/cached_dir_st.h		\
+	src/feature/dircache/conscache.h		\
+	src/feature/dircache/consdiffmgr.h		\
+	src/feature/dircache/dircache.h			\
+	src/feature/dircache/dirserv.h
+
+if BUILD_MODULE_DIRCACHE
+LIBTOR_APP_A_SOURCES += $(MODULE_DIRCACHE_SOURCES)
+else
+LIBTOR_APP_A_STUB_SOURCES += src/feature/dircache/dircache_stub.c
+endif

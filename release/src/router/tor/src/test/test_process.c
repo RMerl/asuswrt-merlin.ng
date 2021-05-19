@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -156,7 +156,7 @@ test_default_values(void *arg)
   /* Our command was given to the process_t's constructor in process_new(). */
   tt_str_op("/path/to/nothing", OP_EQ, process_get_command(process));
 
-  /* Make sure we are listed in the list of proccesses. */
+  /* Make sure we are listed in the list of processes. */
   tt_assert(smartlist_contains(process_get_all_processes(),
                                process));
 

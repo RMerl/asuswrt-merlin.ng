@@ -1,0 +1,25 @@
+
+noinst_LIBRARIES += src/lib/libtor-metrics.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-metrics-testing.a
+endif
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+src_lib_libtor_metrics_a_SOURCES =		\
+	src/lib/metrics/metrics_store.c		\
+	src/lib/metrics/metrics_store_entry.c		\
+	src/lib/metrics/metrics_common.c		\
+	src/lib/metrics/prometheus.c
+
+src_lib_libtor_metrics_testing_a_SOURCES = \
+	$(src_lib_libtor_metrics_a_SOURCES)
+src_lib_libtor_metrics_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_metrics_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=		\
+	src/lib/metrics/metrics_store.h		\
+	src/lib/metrics/metrics_store_entry.h		\
+	src/lib/metrics/metrics_common.h		\
+	src/lib/metrics/prometheus.h

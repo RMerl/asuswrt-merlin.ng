@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -67,6 +67,20 @@ gcd64(uint64_t a, uint64_t b)
     a = t;
   }
   return a;
+}
+
+/** Return the unsigned integer product of <b>a</b> and <b>b</b>. If overflow
+ * is detected, return UINT64_MAX instead. */
+uint64_t
+tor_mul_u64_nowrap(uint64_t a, uint64_t b)
+{
+  if (a == 0 || b == 0) {
+    return 0;
+  } else if (PREDICT_UNLIKELY(UINT64_MAX / a < b)) {
+    return UINT64_MAX;
+  } else {
+    return a*b;
+  }
 }
 
 /* Given a fraction *<b>numer</b> / *<b>denom</b>, simplify it.

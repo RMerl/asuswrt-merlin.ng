@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -115,8 +115,38 @@ test_crypto_pem_decode(void *arg)
   ;
 }
 
+static void
+test_crypto_pem_decode_crlf(void *arg)
+{
+  (void)arg;
+  char crlf_version[4096];
+  uint8_t buf[4096];
+
+  /* Convert 'expected' to a version with CRLF instead of LF. */
+  const char *inp = expected;
+  char *outp = crlf_version;
+  while (*inp) {
+    if (*inp == '\n') {
+      *outp++ = '\r';
+    }
+    *outp++ = *inp++;
+  }
+  *outp = 0;
+
+  /* Decoding should succeed (or else we have bug 33032 again) */
+  int n = pem_decode(buf, sizeof(buf),
+                     crlf_version, strlen(crlf_version),
+                     "WOMBAT QUOTE");
+  tt_int_op(n, OP_EQ, strlen(example_pre));
+  tt_mem_op(buf, OP_EQ, example_pre, n);
+
+ done:
+  ;
+}
+
 struct testcase_t pem_tests[] = {
   { "encode", test_crypto_pem_encode, 0, NULL, NULL },
   { "decode", test_crypto_pem_decode, 0, NULL, NULL },
+  { "decode_crlf", test_crypto_pem_decode_crlf, 0, NULL, NULL },
   END_OF_TESTCASES
 };

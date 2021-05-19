@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /*
@@ -15,6 +15,7 @@
 #include "core/or/channel.h"
 #include "core/or/connection_or.h"
 #include "core/or/relay.h"
+#include "feature/hs/hs_dos.h"
 #include "feature/nodelist/networkstatus.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/relay/routermode.h"
@@ -583,7 +584,7 @@ dos_geoip_entry_about_to_free(const clientmap_entry_t *geoip_ent)
   SMARTLIST_FOREACH_BEGIN(get_connection_array(), connection_t *, conn) {
     if (conn->type == CONN_TYPE_OR) {
       or_connection_t *or_conn = TO_OR_CONN(conn);
-      if (!tor_addr_compare(&geoip_ent->addr, &or_conn->real_addr,
+      if (!tor_addr_compare(&geoip_ent->addr, &TO_CONN(or_conn)->addr,
                             CMP_EXACT)) {
         or_conn->tracked_for_dos_mitigation = 0;
       }
@@ -629,6 +630,7 @@ dos_log_heartbeat(void)
   char *cc_msg = NULL;
   char *single_hop_client_msg = NULL;
   char *circ_stats_msg = NULL;
+  char *hs_dos_intro2_msg = NULL;
 
   /* Stats number coming from relay.c append_cell_to_circuit_queue(). */
   tor_asprintf(&circ_stats_msg,
@@ -654,24 +656,31 @@ dos_log_heartbeat(void)
                  num_single_hop_client_refused);
   }
 
+  /* HS DoS stats. */
+  tor_asprintf(&hs_dos_intro2_msg,
+               " %" PRIu64 " INTRODUCE2 rejected.",
+               hs_dos_get_intro2_rejected_count());
+
   log_notice(LD_HEARTBEAT,
-             "DoS mitigation since startup:%s%s%s%s",
+             "DoS mitigation since startup:%s%s%s%s%s",
              circ_stats_msg,
              (cc_msg != NULL) ? cc_msg : " [cc not enabled]",
              (conn_msg != NULL) ? conn_msg : " [conn not enabled]",
-             (single_hop_client_msg != NULL) ? single_hop_client_msg : "");
+             (single_hop_client_msg != NULL) ? single_hop_client_msg : "",
+             (hs_dos_intro2_msg != NULL) ? hs_dos_intro2_msg : "");
 
   tor_free(conn_msg);
   tor_free(cc_msg);
   tor_free(single_hop_client_msg);
   tor_free(circ_stats_msg);
+  tor_free(hs_dos_intro2_msg);
   return;
 }
 
 /* Called when a new client connection has been established on the given
  * address. */
 void
-dos_new_client_conn(or_connection_t *or_conn)
+dos_new_client_conn(or_connection_t *or_conn, const char *transport_name)
 {
   clientmap_entry_t *entry;
 
@@ -687,12 +696,12 @@ dos_new_client_conn(or_connection_t *or_conn)
    * reason to do so is because network reentry is possible where a client
    * connection comes from an Exit node. Even when we'll fix reentry, this is
    * a robust defense to keep in place. */
-  if (nodelist_probably_contains_address(&or_conn->real_addr)) {
+  if (nodelist_probably_contains_address(&TO_CONN(or_conn)->addr)) {
     goto end;
   }
 
   /* We are only interested in client connection from the geoip cache. */
-  entry = geoip_lookup_client(&or_conn->real_addr, NULL,
+  entry = geoip_lookup_client(&TO_CONN(or_conn)->addr, transport_name,
                               GEOIP_CLIENT_CONNECT);
   if (BUG(entry == NULL)) {
     /* Should never happen because we note down the address in the geoip
@@ -703,7 +712,7 @@ dos_new_client_conn(or_connection_t *or_conn)
   entry->dos_stats.concurrent_count++;
   or_conn->tracked_for_dos_mitigation = 1;
   log_debug(LD_DOS, "Client address %s has now %u concurrent connections.",
-            fmt_addr(&or_conn->real_addr),
+            fmt_addr(&TO_CONN(or_conn)->addr),
             entry->dos_stats.concurrent_count);
 
  end:
@@ -726,7 +735,7 @@ dos_close_client_conn(const or_connection_t *or_conn)
   }
 
   /* We are only interested in client connection from the geoip cache. */
-  entry = geoip_lookup_client(&or_conn->real_addr, NULL,
+  entry = geoip_lookup_client(&TO_CONN(or_conn)->addr, NULL,
                               GEOIP_CLIENT_CONNECT);
   if (entry == NULL) {
     /* This can happen because we can close a connection before the channel
@@ -744,7 +753,7 @@ dos_close_client_conn(const or_connection_t *or_conn)
   entry->dos_stats.concurrent_count--;
   log_debug(LD_DOS, "Client address %s has lost a connection. Concurrent "
                     "connections are now at %u",
-            fmt_addr(&or_conn->real_addr),
+            fmt_addr(&TO_CONN(or_conn)->addr),
             entry->dos_stats.concurrent_count);
 
  end:

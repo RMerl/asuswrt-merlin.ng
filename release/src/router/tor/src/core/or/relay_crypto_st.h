@@ -1,13 +1,18 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file relay_crypto_st.h
+ * @brief Relay-cell encryption state structure.
+ **/
 
 #ifndef RELAY_CRYPTO_ST_H
 #define RELAY_CRYPTO_ST_H
 
-#define crypto_cipher_t aes_cnt_cipher
+#define crypto_cipher_t aes_cnt_cipher_t
 struct crypto_cipher_t;
 struct crypto_digest_t;
 

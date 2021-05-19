@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -30,7 +30,7 @@ tv_secdiff_impl(const struct timeval *start, const struct timeval *end)
   const int64_t s = (int64_t)start->tv_sec;
   const int64_t e = (int64_t)end->tv_sec;
 
-  /* This may not be the most efficient way of implemeting this check,
+  /* This may not be the most efficient way of implementing this check,
    * but it's easy to see that it's correct and doesn't overflow */
 
   if (s > 0 && e < INT64_MIN + s) {

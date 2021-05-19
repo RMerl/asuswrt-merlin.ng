@@ -1,8 +1,13 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file or_connection_st.h
+ * @brief OR connection structure.
+ **/
 
 #ifndef OR_CONNECTION_ST_H
 #define OR_CONNECTION_ST_H
@@ -26,7 +31,7 @@ struct or_connection_t {
   /** This is the ClientHash value we expect to receive from the
    *  client during the Extended ORPort authentication protocol. We
    *  compute it upon receiving the ClientNoce from the client, and we
-   *  compare it with the acual ClientHash value sent by the
+   *  compare it with the actual ClientHash value sent by the
    *  client. */
   char *ext_or_auth_correct_client_hash;
   /** String carrying the name of the pluggable transport
@@ -44,10 +49,19 @@ struct or_connection_t {
   /* Channel using this connection */
   channel_tls_t *chan;
 
-  tor_addr_t real_addr; /**< The actual address that this connection came from
-                       * or went to.  The <b>addr</b> field is prone to
-                       * getting overridden by the address from the router
-                       * descriptor matching <b>identity_digest</b>. */
+  /**
+   * The "canonical" address and port for this relay's ORPort, if this is
+   * a known relay.
+   *
+   * An ORPort is "canonical" in this sense only if it is the same ORPort
+   * that is listed for this identity in the consensus we have.
+   *
+   * This field may be set on outbound connections for _any_ relay, and on
+   * inbound connections after authentication.  If we don't know the relay's
+   * identity, or if we don't have the relay's identity in our consensus, we
+   * leave this address as UNSPEC.
+   **/
+  tor_addr_port_t canonical_orport;
 
   /** Should this connection be used for extending circuits to the server
    * matching the <b>identity_digest</b> field?  Set to true if we're pretty
@@ -58,8 +72,13 @@ struct or_connection_t {
 
   /** True iff this is an outgoing connection. */
   unsigned int is_outgoing:1;
-  unsigned int proxy_type:2; /**< One of PROXY_NONE...PROXY_SOCKS5 */
+  unsigned int proxy_type:3; /**< One of PROXY_NONE...PROXY_HAPROXY */
   unsigned int wide_circ_ids:1;
+  /** True iff a failure on this connection indicates a possible
+   * bootstrapping problem.  We set this as true if we notice that this
+   * connection could handle a pending origin circuit, or if we launch it to
+   * handle an origin circuit. */
+  unsigned int potentially_used_for_bootstrapping:1;
   /** True iff this connection has had its bootstrap failure logged with
    * control_event_bootstrap_problem. */
   unsigned int have_noted_bootstrap_problem:1;

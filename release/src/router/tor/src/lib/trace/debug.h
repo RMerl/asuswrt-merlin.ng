@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Tor Project, Inc. */
+/* Copyright (c) 2017-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -6,8 +6,10 @@
  * \brief Macros for debugging our event-trace support.
  **/
 
-#ifndef TOR_TRACE_LOG_DEBUG_H
-#define TOR_TRACE_LOG_DEBUG_H
+#ifndef TOR_TRACE_DEBUG_H
+#define TOR_TRACE_DEBUG_H
+
+#ifdef USE_TRACING_INSTRUMENTATION_LOG_DEBUG
 
 #include "lib/log/log.h"
 
@@ -17,14 +19,20 @@
 
 /* Send every event to a debug log level. This is useful to debug new trace
  * events without implementing them for a specific event tracing framework.
- * Note that the arguments are ignored since at this step we do not know the
- * types and amount there is. */
+ *
+ * NOTE: arguments can't be used because there is no easy generic ways to learn
+ * their type and amount. It is probably doable with massive C pre-processor
+ * trickery but this is meant to be simple. */
 
-/* Example on how to map a tracepoint to log_debug(). */
-#undef tor_trace
-#define tor_trace(subsystem, name, args...) \
-  log_debug(LD_GENERAL, "Trace event \"" XSTR(name) "\" from " \
-                        "\"" XSTR(subsystem) "\" hit. " \
-                        "(line "XSTR(__LINE__) ")")
+#define TOR_TRACE_LOG_DEBUG(subsystem, event_name, ...)             \
+  log_debug(LD_GENERAL, "Tracepoint \"" XSTR(event_name) "\" from " \
+                        "subsystem \"" XSTR(subsystem) "\" hit.")
 
-#endif /* !defined(TOR_TRACE_LOG_DEBUG_H) */
+#else /* defined(USE_TRACING_INSTRUMENTATION_LOG_DEBUG) */
+
+/* NOP the debug event. */
+#define TOR_TRACE_LOG_DEBUG(subsystem, name, ...)
+
+#endif /* defined(USE_TRACING_INSTRUMENTATION_LOG_DEBUG) */
+
+#endif /* !defined(TOR_TRACE_DEBUG_H) */

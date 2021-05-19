@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Tor Project, Inc. */
+/* Copyright (c) 2017-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /** This is a wrapper over the little-t-tor HS ntor functions. The wrapper is
@@ -53,7 +53,7 @@ client1(int argc, char **argv)
   curve25519_public_key_t intro_enc_pubkey;
   ed25519_public_key_t intro_auth_pubkey;
   curve25519_keypair_t client_ephemeral_enc_keypair;
-  uint8_t subcredential[DIGEST256_LEN];
+  hs_subcredential_t subcredential;
 
   /* Output */
   hs_ntor_intro_cell_keys_t hs_ntor_intro_cell_keys;
@@ -65,7 +65,7 @@ client1(int argc, char **argv)
   BASE16(3, intro_enc_pubkey.public_key, CURVE25519_PUBKEY_LEN);
   BASE16(4, client_ephemeral_enc_keypair.seckey.secret_key,
          CURVE25519_SECKEY_LEN);
-  BASE16(5, subcredential, DIGEST256_LEN);
+  BASE16(5, subcredential.subcred, DIGEST256_LEN);
 
   /* Generate keypair */
   curve25519_public_key_generate(&client_ephemeral_enc_keypair.pubkey,
@@ -74,7 +74,7 @@ client1(int argc, char **argv)
   retval = hs_ntor_client_get_introduce1_keys(&intro_auth_pubkey,
                                               &intro_enc_pubkey,
                                               &client_ephemeral_enc_keypair,
-                                              subcredential,
+                                              &subcredential,
                                               &hs_ntor_intro_cell_keys);
   if (retval < 0) {
     goto done;
@@ -106,7 +106,7 @@ server1(int argc, char **argv)
   curve25519_keypair_t intro_enc_keypair;
   ed25519_public_key_t intro_auth_pubkey;
   curve25519_public_key_t client_ephemeral_enc_pubkey;
-  uint8_t subcredential[DIGEST256_LEN];
+  hs_subcredential_t subcredential;
 
   /* Output */
   hs_ntor_intro_cell_keys_t hs_ntor_intro_cell_keys;
@@ -119,7 +119,7 @@ server1(int argc, char **argv)
   BASE16(2, intro_auth_pubkey.pubkey, ED25519_PUBKEY_LEN);
   BASE16(3, intro_enc_keypair.seckey.secret_key, CURVE25519_SECKEY_LEN);
   BASE16(4, client_ephemeral_enc_pubkey.public_key, CURVE25519_PUBKEY_LEN);
-  BASE16(5, subcredential, DIGEST256_LEN);
+  BASE16(5, subcredential.subcred, DIGEST256_LEN);
 
   /* Generate keypair */
   curve25519_public_key_generate(&intro_enc_keypair.pubkey,
@@ -130,7 +130,7 @@ server1(int argc, char **argv)
   retval = hs_ntor_service_get_introduce1_keys(&intro_auth_pubkey,
                                                &intro_enc_keypair,
                                                &client_ephemeral_enc_pubkey,
-                                               subcredential,
+                                               &subcredential,
                                                &hs_ntor_intro_cell_keys);
   if (retval < 0) {
     goto done;
@@ -188,7 +188,7 @@ client2(int argc, char **argv)
   ed25519_public_key_t intro_auth_pubkey;
   curve25519_keypair_t client_ephemeral_enc_keypair;
   curve25519_public_key_t service_ephemeral_rend_pubkey;
-  uint8_t subcredential[DIGEST256_LEN];
+  hs_subcredential_t subcredential;
 
   /* Output */
   hs_ntor_rend_cell_keys_t hs_ntor_rend_cell_keys;
@@ -201,7 +201,7 @@ client2(int argc, char **argv)
          CURVE25519_SECKEY_LEN);
   BASE16(4, intro_enc_pubkey.public_key, CURVE25519_PUBKEY_LEN);
   BASE16(5, service_ephemeral_rend_pubkey.public_key, CURVE25519_PUBKEY_LEN);
-  BASE16(6, subcredential, DIGEST256_LEN);
+  BASE16(6, subcredential.subcred, DIGEST256_LEN);
 
   /* Generate keypair */
   curve25519_public_key_generate(&client_ephemeral_enc_keypair.pubkey,

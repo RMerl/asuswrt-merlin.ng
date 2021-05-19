@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Tor Project, Inc. */
+/* Copyright (c) 2017-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -23,7 +23,7 @@ test_hs_ntor(void *arg)
 {
   int retval;
 
-  uint8_t subcredential[DIGEST256_LEN];
+  hs_subcredential_t subcredential;
 
   ed25519_keypair_t service_intro_auth_keypair;
   curve25519_keypair_t service_intro_enc_keypair;
@@ -42,7 +42,7 @@ test_hs_ntor(void *arg)
   /* Generate fake data for this unittest */
   {
     /* Generate fake subcredential */
-    memset(subcredential, 'Z', DIGEST256_LEN);
+    memset(subcredential.subcred, 'Z', DIGEST256_LEN);
 
     /* service */
     curve25519_keypair_generate(&service_intro_enc_keypair, 0);
@@ -57,7 +57,7 @@ test_hs_ntor(void *arg)
     hs_ntor_client_get_introduce1_keys(&service_intro_auth_keypair.pubkey,
                                        &service_intro_enc_keypair.pubkey,
                                        &client_ephemeral_enc_keypair,
-                                       subcredential,
+                                       &subcredential,
                                        &client_hs_ntor_intro_cell_keys);
   tt_int_op(retval, OP_EQ, 0);
 
@@ -66,7 +66,7 @@ test_hs_ntor(void *arg)
     hs_ntor_service_get_introduce1_keys(&service_intro_auth_keypair.pubkey,
                                         &service_intro_enc_keypair,
                                         &client_ephemeral_enc_keypair.pubkey,
-                                        subcredential,
+                                        &subcredential,
                                         &service_hs_ntor_intro_cell_keys);
   tt_int_op(retval, OP_EQ, 0);
 

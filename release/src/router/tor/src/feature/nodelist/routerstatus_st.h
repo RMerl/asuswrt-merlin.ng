@@ -1,8 +1,13 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file routerstatus_st.h
+ * @brief Routerstatus (consensus entry) structure
+ **/
 
 #ifndef ROUTERSTATUS_ST_H
 #define ROUTERSTATUS_ST_H
@@ -12,6 +17,10 @@
 /** Contents of a single router entry in a network status object.
  */
 struct routerstatus_t {
+ /* This should be kept in sync with the function
+ * routerstatus_has_visibly_changed and the printing function
+ * routerstatus_format_entry in NS_CONTROL_PORT mode.
+ */
   time_t published_on; /**< When was this router published? */
   char nickname[MAX_NICKNAME_LEN+1]; /**< The nickname this router says it
                                       * has. */
@@ -20,9 +29,9 @@ struct routerstatus_t {
   /** Digest of the router's most recent descriptor or microdescriptor.
    * If it's a descriptor, we only use the first DIGEST_LEN bytes. */
   char descriptor_digest[DIGEST256_LEN];
-  uint32_t addr; /**< IPv4 address for this router, in host order. */
-  uint16_t or_port; /**< IPv4 OR port for this router. */
-  uint16_t dir_port; /**< Directory port for this router. */
+  tor_addr_t ipv4_addr;
+  uint16_t ipv4_orport; /**< IPv4 OR port for this router. */
+  uint16_t ipv4_dirport; /**< Directory port for this router. */
   tor_addr_t ipv6_addr; /**< IPv6 address for this router. */
   uint16_t ipv6_orport; /**< IPv6 OR port for this router. */
   unsigned int is_authority:1; /**< True iff this router is an authority. */
@@ -79,4 +88,3 @@ struct routerstatus_t {
 };
 
 #endif /* !defined(ROUTERSTATUS_ST_H) */
-

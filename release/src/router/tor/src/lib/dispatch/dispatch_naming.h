@@ -1,8 +1,13 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2018, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file dispatch_naming.h
+ * @brief Header for dispatch_naming.c
+ **/
 
 #ifndef TOR_DISPATCH_NAMING_H
 #define TOR_DISPATCH_NAMING_H

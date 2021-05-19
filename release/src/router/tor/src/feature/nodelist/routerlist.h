@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -50,14 +50,16 @@ typedef enum was_router_added_t {
 
 int router_reload_router_list(void);
 
-int router_skip_or_reachability(const or_options_t *options, int try_ip_pref);
-int router_skip_dir_reachability(const or_options_t *options, int try_ip_pref);
+int router_or_conn_should_skip_reachable_address_check(
+                                       const or_options_t *options,
+                                       int try_ip_pref);
+int router_dir_conn_should_skip_reachable_address_check(
+                                       const or_options_t *options,
+                                       int try_ip_pref);
 void router_reset_status_download_failures(void);
 int routers_have_same_or_addrs(const routerinfo_t *r1, const routerinfo_t *r2);
-void router_add_running_nodes_to_smartlist(smartlist_t *sl, int need_uptime,
-                                           int need_capacity, int need_guard,
-                                           int need_desc, int pref_addr,
-                                           int direct_conn);
+bool router_can_choose_node(const node_t *node, int flags);
+void router_add_running_nodes_to_smartlist(smartlist_t *sl, int flags);
 
 const routerinfo_t *routerlist_find_my_routerinfo(void);
 uint32_t router_get_advertised_bandwidth(const routerinfo_t *router);

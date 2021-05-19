@@ -1,6 +1,6 @@
 /* Copyright (c) 2003, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -366,7 +366,7 @@ process_win32_write(struct process_t *process, buf_t *buffer)
 
   /* Because of the slightly weird API for WriteFileEx() we must set this to 0
    * before we call WriteFileEx() because WriteFileEx() does not reset the last
-   * error itself when it's succesful. See comment below after the call to
+   * error itself when it's successful. See comment below after the call to
    * GetLastError(). */
   SetLastError(0);
 
@@ -479,9 +479,9 @@ process_win32_trigger_completion_callbacks(void)
   }
 }
 
-/** Start the periodic timer which is reponsible for checking whether processes
- * are still alive and to make sure that the Tor process is periodically being
- * moved into an alertable state. */
+/** Start the periodic timer which is responsible for checking whether
+ * processes are still alive and to make sure that the Tor process is
+ * periodically being moved into an alertable state. */
 void
 process_win32_timer_start(void)
 {
@@ -547,7 +547,7 @@ process_win32_timer_callback(periodic_timer_t *timer, void *data)
       /* If process_win32_timer_test_process() returns true, it means that
        * smartlist_remove() might have been called on the list returned by
        * process_get_all_processes(). We start the loop over again until we
-       * have a succesful run over the entire list where the list was not
+       * have a successful run over the entire list where the list was not
        * modified. */
       if (process_win32_timer_test_process(process)) {
         done = false;
@@ -573,7 +573,7 @@ process_win32_timer_test_process(process_t *process)
   BOOL ret = FALSE;
   DWORD exit_code = 0;
 
-  /* Sometimes the Windows kernel wont give us the EOF/Broken Pipe error
+  /* Sometimes the Windows kernel won't give us the EOF/Broken Pipe error
    * message until some time after the process have actually terminated. We
    * make sure that our ReadFileEx() calls for the process have *all* returned
    * and both standard out and error have been marked as EOF before we try to
@@ -619,7 +619,7 @@ process_win32_timer_test_process(process_t *process)
 
 /** Create a new overlapped named pipe. This function creates a new connected,
  * named, pipe in <b>*read_pipe</b> and <b>*write_pipe</b> if the function is
- * succesful. Returns true on sucess, false on failure. */
+ * successful. Returns true on success, false on failure. */
 STATIC bool
 process_win32_create_pipe(HANDLE *read_pipe,
                           HANDLE *write_pipe,
@@ -840,7 +840,7 @@ process_win32_stdin_write_done(DWORD error_code,
     return;
 
   if (error_code == 0) {
-    /** Our data have been succesfully written. Clear our state and schedule
+    /** Our data have been successfully written. Clear our state and schedule
      * the next write. */
     win32_process->stdin_handle.data_available = 0;
     memset(win32_process->stdin_handle.buffer, 0,
@@ -850,7 +850,7 @@ process_win32_stdin_write_done(DWORD error_code,
     process_notify_event_stdin(process);
   } else if (error_code == ERROR_HANDLE_EOF ||
              error_code == ERROR_BROKEN_PIPE) {
-    /* Our WriteFileEx() call was succesful, but we reached the end of our
+    /* Our WriteFileEx() call was successful, but we reached the end of our
      * file.  We mark our handle as having reached EOF and returns. */
     tor_assert(byte_count == 0);
 
@@ -906,7 +906,7 @@ process_win32_read_from_handle(process_win32_handle_t *handle,
 
   /* Because of the slightly weird API for ReadFileEx() we must set this to 0
    * before we call ReadFileEx() because ReadFileEx() does not reset the last
-   * error itself when it's succesful. See comment below after the call to
+   * error itself when it's successful. See comment below after the call to
    * GetLastError(). */
   SetLastError(0);
 
@@ -972,7 +972,7 @@ process_win32_handle_read_completion(process_win32_handle_t *handle,
   handle->busy = false;
 
   if (error_code == 0) {
-    /* Our ReadFileEx() call was succesful and there is data for us. */
+    /* Our ReadFileEx() call was successful and there is data for us. */
 
     /* This cast should be safe since byte_count should never be larger than
      * BUFFER_SIZE. */

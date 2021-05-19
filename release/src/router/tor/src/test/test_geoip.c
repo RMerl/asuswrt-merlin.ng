@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -402,7 +402,7 @@ test_geoip_load_file(void *arg)
   char *contents = NULL;
   char *dhex = NULL;
 
-  /* A nonexistant filename should fail. */
+  /* A nonexistent filename should fail. */
   tt_int_op(-1, OP_EQ,
             geoip_load_file(AF_INET, "/you/did/not/put/a/file/here/I/hope",
                             LOG_INFO));
@@ -412,7 +412,7 @@ test_geoip_load_file(void *arg)
   tt_str_op("??", OP_EQ, geoip_get_country_name(0));
   /* Any lookup attempt should say "-1" because we have no info */
   tt_int_op(-1, OP_EQ, geoip_get_country_by_ipv4(0x01020304));
-  /* There should be no 'digest' for a nonexistant file */
+  /* There should be no 'digest' for a nonexistent file */
   tt_str_op("0000000000000000000000000000000000000000", OP_EQ,
             geoip_db_digest(AF_INET));
 
@@ -467,7 +467,7 @@ test_geoip6_load_file(void *arg)
   char *contents = NULL;
   char *dhex = NULL;
 
-  /* A nonexistant filename should fail. */
+  /* A nonexistent filename should fail. */
   tt_int_op(-1, OP_EQ,
             geoip_load_file(AF_INET6, "/you/did/not/put/a/file/here/I/hope",
                             LOG_INFO));

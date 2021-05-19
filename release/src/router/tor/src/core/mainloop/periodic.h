@@ -1,5 +1,10 @@
-/* Copyright (c) 2015-2019, The Tor Project, Inc. */
+/* Copyright (c) 2015-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file periodic.h
+ * @brief Header for periodic.c
+ **/
 
 #ifndef TOR_PERIODIC_H
 #define TOR_PERIODIC_H
@@ -71,8 +76,10 @@ typedef struct periodic_event_item_t {
 } periodic_event_item_t;
 
 /** events will get their interval from first execution */
+#ifndef COCCI
 #define PERIODIC_EVENT(fn, r, f) { fn##_callback, 0, NULL, #fn, r, f, 0 }
 #define END_OF_PERIODIC_EVENTS { NULL, 0, NULL, NULL, 0, 0, 0 }
+#endif
 
 /* Return true iff the given event was setup before thus is enabled to be
  * scheduled. */

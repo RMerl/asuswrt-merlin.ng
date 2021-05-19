@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -16,7 +16,7 @@
 #include "lib/log/util_bug.h"
 #include "lib/string/printf.h"
 
-DISABLE_GCC_WARNING(strict-prototypes)
+DISABLE_GCC_WARNING("-Wstrict-prototypes")
 #include <nss.h>
 #include <pk11func.h>
 #include <ssl.h>
@@ -24,7 +24,7 @@ DISABLE_GCC_WARNING(strict-prototypes)
 #include <prerror.h>
 #include <prtypes.h>
 #include <prinit.h>
-ENABLE_GCC_WARNING(strict-prototypes)
+ENABLE_GCC_WARNING("-Wstrict-prototypes")
 
 const char *
 crypto_nss_get_version_str(void)

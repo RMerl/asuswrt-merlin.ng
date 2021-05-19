@@ -1,0 +1,46 @@
+# Welcome to the exceptions file for Tor's best-practices tracker!
+#
+# Each line of this file represents a single violation of Tor's best
+# practices -- typically, a violation that we had before practracker.py
+# first existed.
+#
+# There are three kinds of problems that we recognize right now:
+#   function-size -- a function of more than 100 lines.
+#   file-size -- a .c file of more than 3000 lines, or a .h
+#      file with more than 500 lines.
+#   include-count -- a .c file with more than 50 #includes,
+#      or a .h file with more than 15 #includes.
+#   dependency-violation -- a file includes a header that it should
+#      not, according to an advisory .may_include file.
+#
+# Each line below represents a single exception that practracker should
+# _ignore_. Each line has four parts:
+#  1. The word "problem".
+#  2. The kind of problem.
+#  3. The location of the problem: either a filename, or a
+#     filename:functionname pair.
+#  4. The magnitude of the problem to ignore.
+#
+# So for example, consider this line:
+#    problem file-size /src/core/or/connection_or.c 3200
+#
+# It tells practracker to allow the mentioned file to be up to 3200 lines
+# long, even though ordinarily it would warn about any file with more than
+# 3000 lines.
+#
+# You can either edit this file by hand, or regenerate it completely by
+# running `make practracker-regen`.
+#
+# Remember: It is better to fix the problem than to add a new exception!
+
+problem file-size a.c 41
+problem include-count a.c 6
+problem function-size a.c:i_am_a_function() 9
+problem function-size a.c:another_function() 12
+problem dependency-violation a.c 4
+problem file-size b.c 15
+problem function-size b.c:foo() 4
+problem function-size b.c:bar() 5
+problem file-size header.h 8
+problem include-count header.h 4
+problem dependency-violation header.h 3

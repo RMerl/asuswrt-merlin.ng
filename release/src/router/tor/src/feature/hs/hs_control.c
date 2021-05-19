@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Tor Project, Inc. */
+/* Copyright (c) 2017-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -20,7 +20,7 @@
 #include "feature/nodelist/node_st.h"
 #include "feature/nodelist/routerstatus_st.h"
 
-/* Send on the control port the "HS_DESC REQUESTED [...]" event.
+/** Send on the control port the "HS_DESC REQUESTED [...]" event.
  *
  * The onion_pk is the onion service public key, base64_blinded_pk is the
  * base64 encoded blinded key for the service and hsdir_rs is the routerstatus
@@ -57,7 +57,7 @@ hs_control_desc_event_requested(const ed25519_public_key_t *onion_pk,
   memwipe(onion_address, 0, sizeof(onion_address));
 }
 
-/* Send on the control port the "HS_DESC FAILED [...]" event.
+/** Send on the control port the "HS_DESC FAILED [...]" event.
  *
  * Using a directory connection identifier, the HSDir identity digest and a
  * reason for the failure. None can be NULL. */
@@ -81,7 +81,7 @@ hs_control_desc_event_failed(const hs_ident_dir_conn_t *ident,
                                        hsdir_id_digest, reason);
 }
 
-/* Send on the control port the "HS_DESC RECEIVED [...]" event.
+/** Send on the control port the "HS_DESC RECEIVED [...]" event.
  *
  * Using a directory connection identifier and the HSDir identity digest.
  * None can be NULL. */
@@ -103,7 +103,7 @@ hs_control_desc_event_received(const hs_ident_dir_conn_t *ident,
                                          hsdir_id_digest);
 }
 
-/* Send on the control port the "HS_DESC CREATED [...]" event.
+/** Send on the control port the "HS_DESC CREATED [...]" event.
  *
  * Using the onion address of the descriptor's service and the blinded public
  * key of the descriptor as a descriptor ID. None can be NULL. */
@@ -124,7 +124,7 @@ hs_control_desc_event_created(const char *onion_address,
   control_event_hs_descriptor_created(onion_address, base64_blinded_pk, -1);
 }
 
-/* Send on the control port the "HS_DESC UPLOAD [...]" event.
+/** Send on the control port the "HS_DESC UPLOAD [...]" event.
  *
  * Using the onion address of the descriptor's service, the HSDir identity
  * digest, the blinded public key of the descriptor as a descriptor ID and the
@@ -151,7 +151,7 @@ hs_control_desc_event_upload(const char *onion_address,
                                              DIGEST256_LEN));
 }
 
-/* Send on the control port the "HS_DESC UPLOADED [...]" event.
+/** Send on the control port the "HS_DESC UPLOADED [...]" event.
  *
  * Using the directory connection identifier and the HSDir identity digest.
  * None can be NULL. */
@@ -169,7 +169,7 @@ hs_control_desc_event_uploaded(const hs_ident_dir_conn_t *ident,
   control_event_hs_descriptor_uploaded(hsdir_id_digest, onion_address);
 }
 
-/* Send on the control port the "HS_DESC_CONTENT [...]" event.
+/** Send on the control port the "HS_DESC_CONTENT [...]" event.
  *
  * Using the directory connection identifier, the HSDir identity digest and
  * the body of the descriptor (as it was received from the directory). None
@@ -193,7 +193,7 @@ hs_control_desc_event_content(const hs_ident_dir_conn_t *ident,
                                       hsdir_id_digest, body);
 }
 
-/* Handle the "HSPOST [...]" command. The body is an encoded descriptor for
+/** Handle the "HSPOST [...]" command. The body is an encoded descriptor for
  * the given onion_address. The descriptor will be uploaded to each directory
  * in hsdirs_rs. If NULL, the responsible directories for the current time
  * period will be selected.
@@ -248,7 +248,7 @@ hs_control_hspost_command(const char *body, const char *onion_address,
   return ret;
 }
 
-/* With a given <b>onion_identity_pk</b>, fetch its descriptor, optionally
+/** With a given <b>onion_identity_pk</b>, fetch its descriptor, optionally
  * using the list of directory servers given in <b>hsdirs</b>, or a random
  * server if it is NULL. This function calls hs_client_launch_v3_desc_fetch().
  */

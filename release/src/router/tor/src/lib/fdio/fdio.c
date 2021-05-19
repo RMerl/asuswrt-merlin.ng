@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -28,9 +28,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-/** @{ */
-/** Some old versions of Unix didn't define constants for these values,
+/* Some old versions of Unix didn't define constants for these values,
  * and instead expect you to say 0, 1, or 2. */
+
+/** @cond */
 #ifndef SEEK_SET
 #define SEEK_SET 0
 #endif
@@ -40,14 +41,14 @@
 #ifndef SEEK_END
 #define SEEK_END 2
 #endif
-/** @} */
+/** @endcond */
 
 /** Return the position of <b>fd</b> with respect to the start of the file. */
 off_t
 tor_fd_getpos(int fd)
 {
 #ifdef _WIN32
-  return (off_t) _lseek(fd, 0, SEEK_CUR);
+  return (off_t) _lseeki64(fd, 0, SEEK_CUR);
 #else
   return (off_t) lseek(fd, 0, SEEK_CUR);
 #endif
@@ -60,7 +61,7 @@ int
 tor_fd_seekend(int fd)
 {
 #ifdef _WIN32
-  return _lseek(fd, 0, SEEK_END) < 0 ? -1 : 0;
+  return _lseeki64(fd, 0, SEEK_END) < 0 ? -1 : 0;
 #else
   off_t rc = lseek(fd, 0, SEEK_END) < 0 ? -1 : 0;
 #ifdef ESPIPE
@@ -79,7 +80,7 @@ int
 tor_fd_setpos(int fd, off_t pos)
 {
 #ifdef _WIN32
-  return _lseek(fd, pos, SEEK_SET) < 0 ? -1 : 0;
+  return _lseeki64(fd, pos, SEEK_SET) < 0 ? -1 : 0;
 #else
   return lseek(fd, pos, SEEK_SET) < 0 ? -1 : 0;
 #endif

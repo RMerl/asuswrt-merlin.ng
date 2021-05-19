@@ -1,9 +1,8 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
-#define DIRSERV_PRIVATE
 #include "core/or/or.h"
 
 #include "app/config/config.h"
@@ -69,55 +68,7 @@ static cached_dir_t *lookup_cached_dir_by_fp(const uint8_t *fp);
 /********************************************************************/
 
 /* A set of functions to answer questions about how we'd like to behave
- * as a directory mirror/client. */
-
-/** Return 1 if we fetch our directory material directly from the
- * authorities, rather than from a mirror. */
-int
-directory_fetches_from_authorities(const or_options_t *options)
-{
-  const routerinfo_t *me;
-  uint32_t addr;
-  int refuseunknown;
-  if (options->FetchDirInfoEarly)
-    return 1;
-  if (options->BridgeRelay == 1)
-    return 0;
-  if (server_mode(options) &&
-      router_pick_published_address(options, &addr, 1) < 0)
-    return 1; /* we don't know our IP address; ask an authority. */
-  refuseunknown = ! router_my_exit_policy_is_reject_star() &&
-    should_refuse_unknown_exits(options);
-  if (!dir_server_mode(options) && !refuseunknown)
-    return 0;
-  if (!server_mode(options) || !advertised_server_mode())
-    return 0;
-  me = router_get_my_routerinfo();
-  if (!me || (!me->supports_tunnelled_dir_requests && !refuseunknown))
-    return 0; /* if we don't service directory requests, return 0 too */
-  return 1;
-}
-
-/** Return 1 if we should fetch new networkstatuses, descriptors, etc
- * on the "mirror" schedule rather than the "client" schedule.
- */
-int
-directory_fetches_dir_info_early(const or_options_t *options)
-{
-  return directory_fetches_from_authorities(options);
-}
-
-/** Return 1 if we should fetch new networkstatuses, descriptors, etc
- * on a very passive schedule -- waiting long enough for ordinary clients
- * to probably have the info we want. These would include bridge users,
- * and maybe others in the future e.g. if a Tor client uses another Tor
- * client as a directory guard.
- */
-int
-directory_fetches_dir_info_later(const or_options_t *options)
-{
-  return options->UseBridges != 0;
-}
+ * as a directory mirror */
 
 /** Return true iff we want to serve certificates for authorities
  * that we don't acknowledge as authorities ourself.
@@ -159,19 +110,6 @@ int
 directory_permits_begindir_requests(const or_options_t *options)
 {
   return options->BridgeRelay != 0 || dir_server_mode(options);
-}
-
-/** Return 1 if we have no need to fetch new descriptors. This generally
- * happens when we're not a dir cache and we haven't built any circuits
- * lately.
- */
-int
-directory_too_idle_to_fetch_descriptors(const or_options_t *options,
-                                        time_t now)
-{
-  return !directory_caches_dir_info(options) &&
-         !options->FetchUselessDescriptors &&
-         rep_hist_circbuilding_dormant(now);
 }
 
 /********************************************************************/
@@ -259,12 +197,43 @@ dirserv_set_cached_consensus_networkstatus(const char *networkstatus,
 
 /** Return the latest downloaded consensus networkstatus in encoded, signed,
  * optionally compressed format, suitable for sending to clients. */
-cached_dir_t *
-dirserv_get_consensus(const char *flavor_name)
+MOCK_IMPL(cached_dir_t *,
+dirserv_get_consensus,(const char *flavor_name))
 {
   if (!cached_consensuses)
     return NULL;
   return strmap_get(cached_consensuses, flavor_name);
+}
+
+/** As dir_split_resource_into_fingerprints, but instead fills
+ * <b>spool_out</b> with a list of spoolable_resource_t for the resource
+ * identified through <b>source</b>. */
+int
+dir_split_resource_into_spoolable(const char *resource,
+                                  dir_spool_source_t source,
+                                  smartlist_t *spool_out,
+                                  int *compressed_out,
+                                  int flags)
+{
+  smartlist_t *fingerprints = smartlist_new();
+
+  tor_assert(flags & (DSR_HEX|DSR_BASE64));
+  const size_t digest_len =
+    (flags & DSR_DIGEST256) ? DIGEST256_LEN : DIGEST_LEN;
+
+  int r = dir_split_resource_into_fingerprints(resource, fingerprints,
+                                               compressed_out, flags);
+  /* This is not a very efficient implementation XXXX */
+  SMARTLIST_FOREACH_BEGIN(fingerprints, uint8_t *, digest) {
+    spooled_resource_t *spooled =
+      spooled_resource_new(source, digest, digest_len);
+    if (spooled)
+      smartlist_add(spool_out, spooled);
+    tor_free(digest);
+  } SMARTLIST_FOREACH_END(digest);
+
+  smartlist_free(fingerprints);
+  return r;
 }
 
 /** As dirserv_get_routerdescs(), but instead of getting signed_descriptor_t
@@ -328,87 +297,6 @@ dirserv_get_routerdesc_spool(smartlist_t *spool_out,
 
   if (!smartlist_len(spool_out)) {
     *msg_out = "Servers unavailable";
-    return -1;
-  }
-  return 0;
-}
-
-/** Add a signed_descriptor_t to <b>descs_out</b> for each router matching
- * <b>key</b>.  The key should be either
- *   - "/tor/server/authority" for our own routerinfo;
- *   - "/tor/server/all" for all the routerinfos we have, concatenated;
- *   - "/tor/server/fp/FP" where FP is a plus-separated sequence of
- *     hex identity digests; or
- *   - "/tor/server/d/D" where D is a plus-separated sequence
- *     of server descriptor digests, in hex.
- *
- * Return 0 if we found some matching descriptors, or -1 if we do not
- * have any descriptors, no matching descriptors, or if we did not
- * recognize the key (URL).
- * If -1 is returned *<b>msg</b> will be set to an appropriate error
- * message.
- *
- * XXXX rename this function.  It's only called from the controller.
- * XXXX in fact, refactor this function, merging as much as possible.
- */
-int
-dirserv_get_routerdescs(smartlist_t *descs_out, const char *key,
-                        const char **msg)
-{
-  *msg = NULL;
-
-  if (!strcmp(key, "/tor/server/all")) {
-    routerlist_t *rl = router_get_routerlist();
-    SMARTLIST_FOREACH(rl->routers, routerinfo_t *, r,
-                      smartlist_add(descs_out, &(r->cache_info)));
-  } else if (!strcmp(key, "/tor/server/authority")) {
-    const routerinfo_t *ri = router_get_my_routerinfo();
-    if (ri)
-      smartlist_add(descs_out, (void*) &(ri->cache_info));
-  } else if (!strcmpstart(key, "/tor/server/d/")) {
-    smartlist_t *digests = smartlist_new();
-    key += strlen("/tor/server/d/");
-    dir_split_resource_into_fingerprints(key, digests, NULL,
-                                         DSR_HEX|DSR_SORT_UNIQ);
-    SMARTLIST_FOREACH(digests, const char *, d,
-       {
-         signed_descriptor_t *sd = router_get_by_descriptor_digest(d);
-         if (sd)
-           smartlist_add(descs_out,sd);
-       });
-    SMARTLIST_FOREACH(digests, char *, d, tor_free(d));
-    smartlist_free(digests);
-  } else if (!strcmpstart(key, "/tor/server/fp/")) {
-    smartlist_t *digests = smartlist_new();
-    time_t cutoff = time(NULL) - ROUTER_MAX_AGE_TO_PUBLISH;
-    key += strlen("/tor/server/fp/");
-    dir_split_resource_into_fingerprints(key, digests, NULL,
-                                         DSR_HEX|DSR_SORT_UNIQ);
-    SMARTLIST_FOREACH_BEGIN(digests, const char *, d) {
-         if (router_digest_is_me(d)) {
-           /* calling router_get_my_routerinfo() to make sure it exists */
-           const routerinfo_t *ri = router_get_my_routerinfo();
-           if (ri)
-             smartlist_add(descs_out, (void*) &(ri->cache_info));
-         } else {
-           const routerinfo_t *ri = router_get_by_id_digest(d);
-           /* Don't actually serve a descriptor that everyone will think is
-            * expired.  This is an (ugly) workaround to keep buggy 0.1.1.10
-            * Tors from downloading descriptors that they will throw away.
-            */
-           if (ri && ri->cache_info.published_on > cutoff)
-             smartlist_add(descs_out, (void*) &(ri->cache_info));
-         }
-    } SMARTLIST_FOREACH_END(d);
-    SMARTLIST_FOREACH(digests, char *, d, tor_free(d));
-    smartlist_free(digests);
-  } else {
-    *msg = "Key not recognized";
-    return -1;
-  }
-
-  if (!smartlist_len(descs_out)) {
-    *msg = "Servers unavailable";
     return -1;
   }
   return 0;

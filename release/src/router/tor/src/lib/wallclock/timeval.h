@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -69,6 +69,7 @@
   } while (0)
 #endif /* !defined(timersub) */
 
+#ifndef COCCI
 #ifndef timercmp
 /** Replacement for timercmp on platforms that do not have it: returns true
  * iff the relational operator "op" makes the expression tv1 op tv2 true.
@@ -82,5 +83,6 @@
    ((tv1)->tv_usec op (tv2)->tv_usec) :         \
    ((tv1)->tv_sec op (tv2)->tv_sec))
 #endif /* !defined(timercmp) */
+#endif /* !defined(COCCI) */
 
 #endif /* !defined(TOR_TIMEVAL_H) */

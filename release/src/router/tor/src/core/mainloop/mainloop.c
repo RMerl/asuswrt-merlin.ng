@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -71,12 +71,13 @@
 #include "feature/client/bridges.h"
 #include "feature/client/dnsserv.h"
 #include "feature/client/entrynodes.h"
+#include "feature/client/proxymode.h"
 #include "feature/client/transports.h"
 #include "feature/control/control.h"
 #include "feature/control/control_events.h"
 #include "feature/dirauth/authmode.h"
 #include "feature/dircache/consdiffmgr.h"
-#include "feature/dircache/dirserv.h"
+#include "feature/dirclient/dirclient_modes.h"
 #include "feature/dircommon/directory.h"
 #include "feature/hibernate/hibernate.h"
 #include "feature/hs/hs_cache.h"
@@ -94,6 +95,7 @@
 #include "feature/rend/rendservice.h"
 #include "feature/stats/geoip_stats.h"
 #include "feature/stats/predict_ports.h"
+#include "feature/stats/connstats.h"
 #include "feature/stats/rephist.h"
 #include "lib/buf/buffers.h"
 #include "lib/crypt_ops/crypto_rand.h"
@@ -965,7 +967,6 @@ conn_close_if_marked(int i)
     return 0; /* nothing to see here, move along */
   now = time(NULL);
   assert_connection_ok(conn, now);
-  /* assert_all_pending_dns_resolves_ok(); */
 
   log_debug(LD_NET,"Cleaning up connection (fd "TOR_SOCKET_T_FORMAT").",
             conn->s);
@@ -984,33 +985,29 @@ conn_close_if_marked(int i)
     if (!conn->hold_open_until_flushed)
       log_info(LD_NET,
                "Conn (addr %s, fd %d, type %s, state %d) marked, but wants "
-               "to flush %d bytes. (Marked at %s:%d)",
+               "to flush %"TOR_PRIuSZ" bytes. (Marked at %s:%d)",
                escaped_safe_str_client(conn->address),
                (int)conn->s, conn_type_to_string(conn->type), conn->state,
-               (int)conn->outbuf_flushlen,
-                conn->marked_for_close_file, conn->marked_for_close);
+               connection_get_outbuf_len(conn),
+               conn->marked_for_close_file, conn->marked_for_close);
     if (conn->linked_conn) {
-      retval = buf_move_to_buf(conn->linked_conn->inbuf, conn->outbuf,
-                               &conn->outbuf_flushlen);
+      retval = (int) buf_move_all(conn->linked_conn->inbuf, conn->outbuf);
       if (retval >= 0) {
         /* The linked conn will notice that it has data when it notices that
          * we're gone. */
         connection_start_reading_from_linked_conn(conn->linked_conn);
       }
       log_debug(LD_GENERAL, "Flushed last %d bytes from a linked conn; "
-               "%d left; flushlen %d; wants-to-flush==%d", retval,
+               "%d left; wants-to-flush==%d", retval,
                 (int)connection_get_outbuf_len(conn),
-                (int)conn->outbuf_flushlen,
                 connection_wants_to_flush(conn));
     } else if (connection_speaks_cells(conn)) {
       if (conn->state == OR_CONN_STATE_OPEN) {
-        retval = buf_flush_to_tls(conn->outbuf, TO_OR_CONN(conn)->tls, sz,
-                               &conn->outbuf_flushlen);
+        retval = buf_flush_to_tls(conn->outbuf, TO_OR_CONN(conn)->tls, sz);
       } else
         retval = -1; /* never flush non-open broken tls connections */
     } else {
-      retval = buf_flush_to_socket(conn->outbuf, conn->s, sz,
-                                   &conn->outbuf_flushlen);
+      retval = buf_flush_to_socket(conn->outbuf, conn->s, sz);
     }
     if (retval >= 0 && /* Technically, we could survive things like
                           TLS_WANT_WRITE here. But don't bother for now. */
@@ -1132,14 +1129,14 @@ directory_info_has_arrived(time_t now, int from_cache, int suppress_logs)
 
   if (!router_have_minimum_dir_info()) {
     int quiet = suppress_logs || from_cache ||
-                directory_too_idle_to_fetch_descriptors(options, now);
+                dirclient_too_idle_to_fetch_descriptors(options, now);
     tor_log(quiet ? LOG_INFO : LOG_NOTICE, LD_DIR,
         "I learned some more directory information, but not enough to "
         "build a circuit: %s", get_dir_info_status_string());
     update_all_descriptor_downloads(now);
     return;
   } else {
-    if (directory_fetches_from_authorities(options)) {
+    if (dirclient_fetches_from_authorities(options)) {
       update_all_descriptor_downloads(now);
     }
 
@@ -1352,9 +1349,11 @@ get_signewnym_epoch(void)
 static int periodic_events_initialized = 0;
 
 /* Declare all the timer callback functions... */
+#ifndef COCCI
 #undef CALLBACK
 #define CALLBACK(name) \
   static int name ## _callback(time_t, const or_options_t *)
+
 CALLBACK(add_entropy);
 CALLBACK(check_expired_networkstatus);
 CALLBACK(clean_caches);
@@ -1377,9 +1376,10 @@ CALLBACK(second_elapsed);
 #undef CALLBACK
 
 /* Now we declare an array of periodic_event_item_t for each periodic event */
-#define CALLBACK(name, r, f) \
+#define CALLBACK(name, r, f)                            \
   PERIODIC_EVENT(name, PERIODIC_EVENT_ROLE_ ## r, f)
 #define FL(name) (PERIODIC_EVENT_FLAG_ ## name)
+#endif /* !defined(COCCI) */
 
 STATIC periodic_event_item_t mainloop_periodic_events[] = {
 
@@ -1430,8 +1430,10 @@ STATIC periodic_event_item_t mainloop_periodic_events[] = {
 
   END_OF_PERIODIC_EVENTS
 };
+#ifndef COCCI
 #undef CALLBACK
 #undef FL
+#endif
 
 /* These are pointers to members of periodic_events[] that are used to
  * implement particular callbacks.  We keep them separate here so that we
@@ -1473,7 +1475,7 @@ get_my_roles(const or_options_t *options)
 
   /* We also consider tor to have the role of a client if the ControlPort is
    * set because a lot of things can be done over the control port which
-   * requires tor to have basic functionnalities. */
+   * requires tor to have basic functionalities. */
   int is_client = options_any_client_port_set(options) ||
                   options->ControlPort_set ||
                   options->OwningControllerFD != UINT64_MAX;
@@ -1530,8 +1532,10 @@ initialize_periodic_events(void)
 
   /* Set up all periodic events. We'll launch them by roles. */
 
+#ifndef COCCI
 #define NAMED_CALLBACK(name) \
   STMT_BEGIN name ## _event = periodic_events_find( #name ); STMT_END
+#endif
 
   NAMED_CALLBACK(prune_old_routers);
   NAMED_CALLBACK(fetch_networkstatus);
@@ -1943,7 +1947,7 @@ write_stats_file_callback(time_t now, const or_options_t *options)
       next_time_to_write_stats_files = next_write;
   }
   if (options->ConnDirectionStatistics) {
-    time_t next_write = rep_hist_conn_stats_write(now);
+    time_t next_write = conn_stats_save(now);
     if (next_write && next_write < next_time_to_write_stats_files)
       next_time_to_write_stats_files = next_write;
   }
@@ -2061,7 +2065,7 @@ fetch_networkstatus_callback(time_t now, const or_options_t *options)
    * documents? */
   const int we_are_bootstrapping = networkstatus_consensus_is_bootstrapping(
                                                                         now);
-  const int prefer_mirrors = !directory_fetches_from_authorities(
+  const int prefer_mirrors = !dirclient_fetches_from_authorities(
                                                               get_options());
   int networkstatus_dl_check_interval = 60;
   /* check more often when testing, or when bootstrapping from mirrors
@@ -2147,7 +2151,8 @@ hs_service_callback(time_t now, const or_options_t *options)
   /* We need to at least be able to build circuits and that we actually have
    * a working network. */
   if (!have_completed_a_circuit() || net_is_disabled() ||
-      networkstatus_get_live_consensus(now) == NULL) {
+      !networkstatus_get_reasonably_live_consensus(now,
+                                         usable_consensus_flavor())) {
     goto end;
   }
 
@@ -2265,18 +2270,23 @@ systemd_watchdog_callback(periodic_timer_t *timer, void *arg)
 
 #define UPTIME_CUTOFF_FOR_NEW_BANDWIDTH_TEST (6*60*60)
 
-/** Called when our IP address seems to have changed. <b>at_interface</b>
- * should be true if we detected a change in our interface, and false if we
- * detected a change in our published address. */
+/** Called when our IP address seems to have changed. <b>on_client_conn</b>
+ * should be true if:
+ *   - we detected a change in our interface address, using an outbound
+ *     connection, and therefore
+ *   - our client TLS keys need to be rotated.
+ * Otherwise, it should be false, and:
+ *   - we detected a change in our published address
+ *     (using some other method), and therefore
+ *   - the published addresses in our descriptor need to change.
+ */
 void
-ip_address_changed(int at_interface)
+ip_address_changed(int on_client_conn)
 {
   const or_options_t *options = get_options();
   int server = server_mode(options);
-  int exit_reject_interfaces = (server && options->ExitRelay
-                                && options->ExitPolicyRejectLocalInterfaces);
 
-  if (at_interface) {
+  if (on_client_conn) {
     if (! server) {
       /* Okay, change our keys. */
       if (init_keys_client() < 0)
@@ -2288,13 +2298,12 @@ ip_address_changed(int at_interface)
         reset_bandwidth_test();
       reset_uptime();
       router_reset_reachability();
+      /* All relays include their IP addresses as their ORPort addresses in
+       * their descriptor.
+       * Exit relays also incorporate interface addresses in their exit
+       * policies, when ExitPolicyRejectLocalInterfaces is set. */
+      mark_my_descriptor_dirty("IP address changed");
     }
-  }
-
-  /* Exit relays incorporate interface addresses in their exit policies when
-   * ExitPolicyRejectLocalInterfaces is set */
-  if (exit_reject_interfaces || (server && !at_interface)) {
-    mark_my_descriptor_dirty("IP address changed");
   }
 
   dns_servers_relaunch_checks();

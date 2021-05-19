@@ -28,7 +28,7 @@ color magenta "\<(break|continue|goto|return)\>"
 color brightyellow ""(\.|[^"])*"" "'(\.|[^'])*'"
 
 # Comments.
-color brightblue "(^|[[:space:]]+)//.*"
+color brightblue "(^|[[:blank:]]+)//.*"
 color brightblue start="/\*" end="\*/"
 
 # Trailing whitespace.

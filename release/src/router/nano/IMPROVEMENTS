@@ -2,8 +2,8 @@ Improvements in GNU nano
 ========================
 
 Since 5.0:
+  - A search highlights the found text, in black on yellow by default.
   - Option --minibar reduces the interface to a bottom bar with basic info.
-  - Option --markmatch marks the search result, for better visibility.
   - The cursor skips over combining characters, <Del> deletes them together
     with the character they combine with, but <Bsp> deletes them separately.
   - For using libmagic the option --magic or -! or 'set magic' is required.

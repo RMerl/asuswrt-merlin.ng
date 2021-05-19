@@ -13,7 +13,7 @@ color brightmagenta "\\f(.|\(..)" "\\s(\+|\-)?[0-9]"
 color cyan "\\(\\)?n(.|\(..)"
 color cyan start="\\(\\)?n\[" end="]"
 # Requests
-color brightgreen "^\.[[:space:]]*[^[:space:]]*"
+color brightgreen "^\.[[:blank:]]*[^[:space:]]*"
 # Comments
 color yellow "^\.\\".*"
 # Strings

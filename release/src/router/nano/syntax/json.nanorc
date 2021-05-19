@@ -8,18 +8,18 @@ syntax json "\.json$"
 comment ""
 
 # Numbers (used as value).
-color green ":[[:space:]]*\-?(0|[1-9][0-9]*)(\.[0-9]+)?([Ee]?[-+]?[0-9]+)?"
+color green ":[[:blank:]]*\-?(0|[1-9][0-9]*)(\.[0-9]+)?([Ee]?[-+]?[0-9]+)?"
 # Values (well, any string).
 color brightmagenta "".+""
 # Hex numbers (used as value).
-color green ":[[:space:]]*"#[0-9abcdefABCDEF]+""
+color green ":[[:blank:]]*"#[0-9abcdefABCDEF]+""
 # Escapes.
 color green "\\\\" "\\"" "\\[bfnrt]" "\\u[0-9abcdefABCDEF]{4})"
 # Special words.
 color green "\<(true|false|null)\>"
 
 # Names (very unlikely to contain a quote).
-color brightblue ""[^"]+"[[:space:]]*:"
+color brightblue ""[^"]+"[[:blank:]]*:"
 
 # Brackets, braces, and separators.
 color brightblue "\[" "\]"
@@ -27,7 +27,7 @@ color brightred "\{" "\}"
 color brightred "," ":"
 
 # Comments.
-color cyan "(^|[[:space:]]+)(//|#).*"
+color cyan "(^|[[:blank:]]+)(//|#).*"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

@@ -21,7 +21,7 @@
    optimizes away the pattern == NULL test below.  */
 # define _GL_ARG_NONNULL(params)
 
-# include <config.h>
+# include <libc-config.h>
 
 #endif
 
@@ -743,6 +743,8 @@ __glob (const char *pattern, int flags, int (*errfunc) (const char *, int),
       else
         {
 #ifndef WINDOWS32
+          /* Recognize ~user as a shorthand for the specified user's home
+             directory.  */
           char *end_name = strchr (dirname, '/');
           char *user_name;
           int malloc_user_name = 0;
@@ -881,7 +883,22 @@ __glob (const char *pattern, int flags, int (*errfunc) (const char *, int),
               }
             scratch_buffer_free (&pwtmpbuf);
           }
-#endif /* !WINDOWS32 */
+#else /* WINDOWS32 */
+          /* On native Windows, access to a user's home directory
+             (via GetUserProfileDirectory) or to a user's environment
+             variables (via ExpandEnvironmentStringsForUser) requires
+             the credentials of the user.  Therefore we cannot support
+             the ~user syntax on this platform.
+             Handling ~user specially (and treat it like plain ~) if
+             user is getenv ("USERNAME") would not be a good idea,
+             since it would make people think that ~user is supported
+             in general.  */
+          if (flags & GLOB_TILDE_CHECK)
+            {
+              retval = GLOB_NOMATCH;
+              goto out;
+            }
+#endif /* WINDOWS32 */
         }
     }
 

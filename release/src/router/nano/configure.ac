@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses/.
 
-AC_INIT([GNU nano], [5.5], [nano-devel@gnu.org], [nano])
+AC_INIT([GNU nano], [5.7], [nano-devel@gnu.org], [nano])
 AC_CONFIG_SRCDIR([src/nano.c])
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE([1.14])
@@ -59,7 +59,7 @@ AC_DEFINE_DIR([PKGDATADIR], [pkgdatadir], [Where data are placed to.])
 dnl Whether this is a git repository.
 
 AC_MSG_CHECKING([whether building from git])
-if test -f roll-a-release.sh ; then
+if test -f "$srcdir/roll-a-release.sh" ; then
 	AC_MSG_RESULT([yes])
 	from_git=yes
 else
@@ -350,7 +350,7 @@ fi])
 dnl Checks for functions.
 
 if test "x$enable_utf8" != xno; then
-	AC_CHECK_FUNCS(iswalnum iswpunct mblen mbstowcs mbtowc wctomb)
+	AC_CHECK_FUNCS(iswalpha iswalnum iswpunct mbstowcs wctomb)
 fi
 
 dnl Checks for available flags.
@@ -435,11 +435,10 @@ AC_SUBST(CURSES_LIB)
 
 if test "x$enable_utf8" != xno && \
 	test x$CURSES_LIB_WIDE = xyes && \
+	test x$ac_cv_func_iswalpha = xyes && \
 	test x$ac_cv_func_iswalnum = xyes && \
 	test x$ac_cv_func_iswpunct = xyes && \
-	test x$ac_cv_func_mblen = xyes && \
 	test x$ac_cv_func_mbstowcs = xyes && \
-	test x$ac_cv_func_mbtowc = xyes && \
 	test x$ac_cv_func_wctomb = xyes; then
 		AC_DEFINE(ENABLE_UTF8, 1, [Define this if your system has sufficient UTF-8 support.])
 else

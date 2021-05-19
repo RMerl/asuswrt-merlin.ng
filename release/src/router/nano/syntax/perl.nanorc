@@ -12,13 +12,13 @@ color magenta "\<(continue|else|elsif|do|for|foreach|if|unless|until|while|eq|ne
 color cyan "[$%&@]([A-Za-z_][0-9A-Za-z_]*|\^[][A-Z?\^_]|[0-9]+)\>"
 color cyan "[$%&@]\{(\^?[A-Za-z_][0-9A-Za-z_]*|\^[][?\^][0-9]+)\}"
 color cyan "[$%&@]([][!"#'()*+,.:;<=>?`|~-]|\{[][!-/:-@\`|~]\})|\$[$%&@]"
-color cyan "(^|[[:space:]])[$%@][/\]"
+color cyan "(^|[[:blank:]])[$%@][/\]"
 
 color yellow "".*"|qq\|.*\|"
 color white "[sm]/.*/"
 color white start="(^use| = new)" end=";"
 
 # Comments.
-color green "(^|[[:space:]])#.*"
+color green "(^|[[:blank:]])#.*"
 
 color yellow start="<< 'STOP'" end="STOP"

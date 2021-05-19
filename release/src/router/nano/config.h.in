@@ -22,7 +22,7 @@
    non-IEEE-754 'long double' values. */
 #undef CHECK_PRINTF_SAFE
 
-/* Define to 1 if using `alloca.c'. */
+/* Define to 1 if using 'alloca.c'. */
 #undef C_ALLOCA
 
 /* Define as the bit index in the word where to find bit 0 of the exponent of
@@ -173,8 +173,29 @@
 /* Define to 1 when the gnulib module dirfd should be tested. */
 #undef GNULIB_TEST_DIRFD
 
+/* Define to 1 when the gnulib module fgetc should be tested. */
+#undef GNULIB_TEST_FGETC
+
+/* Define to 1 when the gnulib module fgets should be tested. */
+#undef GNULIB_TEST_FGETS
+
 /* Define to 1 when the gnulib module fnmatch should be tested. */
 #undef GNULIB_TEST_FNMATCH
+
+/* Define to 1 when the gnulib module fprintf should be tested. */
+#undef GNULIB_TEST_FPRINTF
+
+/* Define to 1 when the gnulib module fputc should be tested. */
+#undef GNULIB_TEST_FPUTC
+
+/* Define to 1 when the gnulib module fputs should be tested. */
+#undef GNULIB_TEST_FPUTS
+
+/* Define to 1 when the gnulib module fread should be tested. */
+#undef GNULIB_TEST_FREAD
+
+/* Define to 1 when the gnulib module free-posix should be tested. */
+#undef GNULIB_TEST_FREE_POSIX
 
 /* Define to 1 when the gnulib module frexp should be tested. */
 #undef GNULIB_TEST_FREXP
@@ -182,11 +203,23 @@
 /* Define to 1 when the gnulib module frexpl should be tested. */
 #undef GNULIB_TEST_FREXPL
 
+/* Define to 1 when the gnulib module fscanf should be tested. */
+#undef GNULIB_TEST_FSCANF
+
 /* Define to 1 when the gnulib module fstat should be tested. */
 #undef GNULIB_TEST_FSTAT
 
 /* Define to 1 when the gnulib module futimens should be tested. */
 #undef GNULIB_TEST_FUTIMENS
+
+/* Define to 1 when the gnulib module fwrite should be tested. */
+#undef GNULIB_TEST_FWRITE
+
+/* Define to 1 when the gnulib module getc should be tested. */
+#undef GNULIB_TEST_GETC
+
+/* Define to 1 when the gnulib module getchar should be tested. */
+#undef GNULIB_TEST_GETCHAR
 
 /* Define to 1 when the gnulib module getdelim should be tested. */
 #undef GNULIB_TEST_GETDELIM
@@ -242,11 +275,29 @@
 /* Define to 1 when the gnulib module opendir should be tested. */
 #undef GNULIB_TEST_OPENDIR
 
+/* Define to 1 when the gnulib module printf should be tested. */
+#undef GNULIB_TEST_PRINTF
+
+/* Define to 1 when the gnulib module putc should be tested. */
+#undef GNULIB_TEST_PUTC
+
+/* Define to 1 when the gnulib module putchar should be tested. */
+#undef GNULIB_TEST_PUTCHAR
+
+/* Define to 1 when the gnulib module puts should be tested. */
+#undef GNULIB_TEST_PUTS
+
 /* Define to 1 when the gnulib module raise should be tested. */
 #undef GNULIB_TEST_RAISE
 
 /* Define to 1 when the gnulib module readdir should be tested. */
 #undef GNULIB_TEST_READDIR
+
+/* Define to 1 when the gnulib module realloc-posix should be tested. */
+#undef GNULIB_TEST_REALLOC_POSIX
+
+/* Define to 1 when the gnulib module scanf should be tested. */
+#undef GNULIB_TEST_SCANF
 
 /* Define to 1 when the gnulib module setlocale_null should be tested. */
 #undef GNULIB_TEST_SETLOCALE_NULL
@@ -274,6 +325,12 @@
 
 /* Define to 1 when the gnulib module utime should be tested. */
 #undef GNULIB_TEST_UTIME
+
+/* Define to 1 when the gnulib module vfprintf should be tested. */
+#undef GNULIB_TEST_VFPRINTF
+
+/* Define to 1 when the gnulib module vprintf should be tested. */
+#undef GNULIB_TEST_VPRINTF
 
 /* Define to 1 when the gnulib module vsnprintf should be tested. */
 #undef GNULIB_TEST_VSNPRINTF
@@ -476,6 +533,9 @@
 /* Define to 1 if you have the <fnmatch.h> header file. */
 #undef HAVE_FNMATCH_H
 
+/* Define if the 'free' function is guaranteed to preserve errno. */
+#undef HAVE_FREE_POSIX
+
 /* Define if the frexpl function is available in libc. */
 #undef HAVE_FREXPL_IN_LIBC
 
@@ -552,6 +612,9 @@
 /* Define to 1 if you have the `iswalnum' function. */
 #undef HAVE_ISWALNUM
 
+/* Define to 1 if you have the `iswalpha' function. */
+#undef HAVE_ISWALPHA
+
 /* Define to 1 if you have the `iswblank' function. */
 #undef HAVE_ISWBLANK
 
@@ -606,7 +669,7 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 #undef HAVE_MALLOC_H
 
-/* Define if the 'malloc' function is POSIX compliant. */
+/* Define if malloc, realloc, and calloc set errno on allocation failure. */
 #undef HAVE_MALLOC_POSIX
 
 /* Define to 1 if mmap()'s MAP_ANONYMOUS flag is available after including
@@ -615,9 +678,6 @@
 
 /* Define to 1 if you have the <math.h> header file. */
 #undef HAVE_MATH_H
-
-/* Define to 1 if you have the `mblen' function. */
-#undef HAVE_MBLEN
 
 /* Define to 1 if you have the `mbrtowc' function. */
 #undef HAVE_MBRTOWC
@@ -1315,11 +1375,12 @@
        this syntax with 'extern'.  */
 #  define _Noreturn [[noreturn]]
 # elif ((!defined __cplusplus || defined __clang__) \
-        && (201112 <= (defined __STDC_VERSION__ ? __STDC_VERSION__ : 0)  \
-            || _GL_GNUC_PREREQ (4, 7) \
-            || (defined __apple_build_version__ \
-                ? 6000000 <= __apple_build_version__ \
-                : 3 < __clang_major__ + (5 <= __clang_minor__))))
+        && (201112 <= (defined __STDC_VERSION__ ? __STDC_VERSION__ : 0) \
+            || (!defined __STRICT_ANSI__ \
+                && (_GL_GNUC_PREREQ (4, 7) \
+                    || (defined __apple_build_version__ \
+                        ? 6000000 <= __apple_build_version__ \
+                        : 3 < __clang_major__ + (5 <= __clang_minor__))))))
    /* _Noreturn works as-is.  */
 # elif _GL_GNUC_PREREQ (2, 8) || defined __clang__ || 0x5110 <= __SUNPRO_C
 #  define _Noreturn __attribute__ ((__noreturn__))
@@ -1379,7 +1440,9 @@
 
 
 /* Attributes.  */
-#ifdef __has_attribute
+#if (defined __has_attribute \
+     && (!defined __clang_minor__ \
+         || 3 < __clang_major__ + (5 <= __clang_minor__)))
 # define _GL_HAS_ATTRIBUTE(attr) __has_attribute (__##attr##__)
 #else
 # define _GL_HAS_ATTRIBUTE(attr) _GL_ATTR_##attr

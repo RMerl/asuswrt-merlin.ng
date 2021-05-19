@@ -126,14 +126,14 @@ validate_timespec (struct timespec timespec[2])
   return result + (utime_omit_count == 1);
 }
 
-/* Normalize any UTIME_NOW or UTIME_OMIT values in *TS, using stat
-   buffer STATBUF to obtain the current timestamps of the file.  If
+/* Normalize any UTIME_NOW or UTIME_OMIT values in (*TS)[0] and (*TS)[1],
+   using STATBUF to obtain the current timestamps of the file.  If
    both times are UTIME_NOW, set *TS to NULL (as this can avoid some
    permissions issues).  If both times are UTIME_OMIT, return true
    (nothing further beyond the prior collection of STATBUF is
    necessary); otherwise return false.  */
 static bool
-update_timespec (struct stat const *statbuf, struct timespec *ts[2])
+update_timespec (struct stat const *statbuf, struct timespec **ts)
 {
   struct timespec *timespec = *ts;
   if (timespec[0].tv_nsec == UTIME_OMIT

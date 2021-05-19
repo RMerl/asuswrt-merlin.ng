@@ -1695,11 +1695,13 @@ calc_eclosure_iter (re_node_set *new_set, re_dfa_t *dfa, Idx node, bool root)
   reg_errcode_t err;
   Idx i;
   re_node_set eclosure;
-  bool ok;
   bool incomplete = false;
   err = re_node_set_alloc (&eclosure, dfa->edests[node].nelem + 1);
   if (__glibc_unlikely (err != REG_NOERROR))
     return err;
+
+  /* An epsilon closure includes itself.  */
+  eclosure.elems[eclosure.nelem++] = node;
 
   /* This indicates that we are calculating this node now.
      We reference this value to avoid infinite loop.  */
@@ -1753,10 +1755,6 @@ calc_eclosure_iter (re_node_set *new_set, re_dfa_t *dfa, Idx node, bool root)
 	  }
       }
 
-  /* An epsilon closure includes itself.  */
-  ok = re_node_set_insert (&eclosure, node);
-  if (__glibc_unlikely (! ok))
-    return REG_ESPACE;
   if (incomplete && !root)
     dfa->eclosures[node].nelem = 0;
   else

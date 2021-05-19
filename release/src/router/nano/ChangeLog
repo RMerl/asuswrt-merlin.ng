@@ -1,3 +1,145 @@
+Changes between v5.6.1 and v5.7:
+--------------------------------
+
+Benno Schulenberg (62):
+      build: drop the check for two functions that we don't use any more
+      build: fix compilation for --enable-tiny plus --enable-multibuffer
+      build: fix compilation when configured with --disable-multibuffer
+      build: fix compilation when configured with --enable-tiny
+      bump version numbers and add a news item for the 5.7 release
+      chars: implement mblen() ourselves, for efficiency
+      chars: implement mbtowc() ourselves, for more efficiency
+      chars: work around a UTF-8 bug in glibc, to display invalid codes right
+      chars: work around the wrong private-use-character widths on OpenBSD
+      display: avoid determining twice from and until where to draw each row
+      display: make the output of --constantshow less jittery
+      editing: prevent the pointer for the top row from becoming dangling
+      feedback: upon first switch to a buffer, show its error message (if any)
+      files: always register the format, also when the file is unwritable
+      files: create a new buffer earlier, so that error messages can be stored
+      files: when Mac format has been detected, stay with it
+      gnulib: pull in the fix for a build problem on older Debian
+      gnulib: update to its current upstream state
+      indicator: adjust the size to the number of visible lines, not chunks
+      input: accept Unicode codes for non-characters as valid, since they are
+      memory: do not allocate space for multidata when it's already allocated
+      memory: fix an off-by-one error to free also the last line in a group
+      memory: prevent a use-after-free when the user respects a lock file
+      oops: that doesn't work -- you can't break out of two for loops at once
+      options: retire the obsolete 'smooth', 'morespace', and 'nopauses'
+      softwrap: avoid time-consuming computations, to burden large files less
+      startup: do not crash when trying to open a device or directory
+      startup: do not store an error message in the record of another buffer
+      startup: save the compiled file-matching regexes, to avoid recompiling
+      startup: show the helpful message only when ^G has not been rebound
+      syntax: c: colorize also labels that contain digits, and uncolorize colon
+      syntax: po: improve the coloring of format specifiers
+      syntaxes: replace [[:space:]] with [[:blank:]] to exclude carriage return
+      tweaks: adjust and improve one comment, and frob another
+      tweaks: adjust two comments, and reshuffle two fragments
+      tweaks: avoid a warning on newer compilers, by writing an extra byte
+      tweaks: avoid calling extra_chunks_in() when not softwrapping
+      tweaks: avoid converting a file name for more than will fit on screen
+      tweaks: avoid parsing a multibyte character twice
+      tweaks: condense three comments, drop another, and rewrap a line
+      tweaks: drop unneeded braces and adjust indentation after previous change
+      tweaks: elide a call of strlen() for every row
+      tweaks: elide a function that is now basically just two lines
+      tweaks: elide an unneeded resetting NULL call to wctomb()
+      tweaks: elide a small function that is used just once
+      tweaks: elide the pointless is_valid_unicode() function
+      tweaks: elide two more instances of useless character copying
+      tweaks: improve a couple of comments
+      tweaks: morph a function into what it is actually used for
+      tweaks: normalize the indentation after an earlier change
+      tweaks: put the most likely condition first, for a quicker return
+      tweaks: reduce the maximum character length from six bytes to four
+      tweaks: remove a misplaced (and nested) #ifdef
+      tweaks: rename a variable, away from an abbreviation
+      tweaks: rename a variable, for contrast with another
+      tweaks: reshuffle a comment, and put the main extension first
+      tweaks: reshuffle a fragment of code, to prepare for the next change
+      tweaks: reshuffle two conditions, to have the most unlikely one first
+      tweaks: set the file format only when unset, so it doesn't need saving
+      tweaks: shorten a comment and trim an #ifdef
+      tweaks: simplify two fragments of code
+      tweaks: simplify two fragments of code, eliding useless character copying
+
+Hussam al-Homsi (1):
+      syntax: c: make the highlighting of '#include <...>' more compliant
+
+Mike Frysinger (1):
+      syntax: tcl: support Expect scripts too
+
+
+Changes between v5.6 and v5.6.1:
+--------------------------------
+
+Benno Schulenberg (4):
+      bump version numbers and add a news item for the 5.6.1 release
+      options: rename 'highlightcolor' to the more distinct 'spotlightcolor'
+      search: correctly colorize a match also when softwrapping is active
+      tweaks: rename a symbol, to better match the corresponding option
+
+
+Changes between v5.5 and v5.6:
+------------------------------
+
+Benno Schulenberg (52):
+      build: avoid a warning about duplicate symbol when building from tarball
+      build: detect a build from git also when building out of tree
+      build: include a workaround only for versions of ncurses that need it
+      bump version numbers and add a news item for the 5.6 release
+      color: do not look for another 'end' match after already finding one
+      color: give highlighted text its own color, to not look like marked text
+      color: recompile the file-probing regexes a little faster with REG_NOSUB
+      color: use bright yellow to highlight a search match
+      color: use inverse video for highlighting when there are no colors
+      debug: add timing instruments to cache precalculation and screen refresh
+      display: for a large paste or insertion, recalculate the multiline cache
+      docs: correct the description of --quickblank for the changed base value
+      docs: correct the formatting of a comment in the sample nanorc
+      docs: correct the word order for Alt+D in the cheat sheet -- it changed
+      docs: mention the new 'set highlightcolor' option
+      docs: remove all mentions of --markmatch and 'set markmatch'
+      docs: say that --minibar is modified by --constantshow and --stateflags
+      feedback: make Full Justify show a message also when using --minibar
+      gnulib: update to its current upstream state
+      minibar: show a message a little longer when --quickblank isn't used
+      minibar: show cursor position + character code only with --constantshow
+      minibar: show the state flags only when --stateflags is used
+      minibar: suppress the toggling feedback for M-C, but show it for M-Y/M-P
+      options: remove --markmatch and 'set markmatch', as the behavior is gone
+      painting: always do backtracking for the first row of the screen
+      painting: trigger a refresh when a second start match appears on a line
+      painting: trigger fewer unneeded full-screen refreshes
+      painting: when finding an end match, set its multidata right away
+      scrolling: keep centering after large paste, also when line numbers widen
+      search: just highlight the found occurrence, instead of marking it
+      search: make highlighting the standard, non-changeable behavior
+      tweaks: avoid the vague possibility of advancing beyond end-of-line
+      tweaks: be slightly more efficient in marking lines as WOULDBE
+      tweaks: call wattron()/wattroff() only when actually painting something
+      tweaks: correct a comment, improve another, and trim some verbosity
+      tweaks: don't bother comparing virgin multidata with current situation
+      tweaks: don't bother initializing freshly allocated multidata
+      tweaks: don't bother wiping the multidata before recomputing it
+      tweaks: elide a function that is now just one line
+      tweaks: frob a condition, to be more concise, and reshuffle another
+      tweaks: frob some comments, and adjust indentation after previous change
+      tweaks: frob some comments, and reshuffle two fragments of code
+      tweaks: frob two fragments of code, to be more readable
+      tweaks: make a skipping condition more precise
+      tweaks: remove an old fix that was made superfluous by a recent fix
+      tweaks: remove a strangely placed warning
+      tweaks: rename six symbols, to be more straightforward
+      tweaks: reshuffle some code, and reduce the scope of a variable
+      tweaks: reshuffle three conditions into a better order
+      tweaks: rewrap and reindent a few lines
+      tweaks: rewrap two lines, for esthetics
+      tweaks: stop evaluating a rule when the match is offscreen to the right
+
+
 Changes between v5.4 and v5.5:
 ------------------------------
 

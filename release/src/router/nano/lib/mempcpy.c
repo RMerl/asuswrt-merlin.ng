@@ -19,6 +19,9 @@
 /* Specification.  */
 #include <string.h>
 
+/* A function definition is only needed if HAVE_MEMPCPY is not defined.  */
+#if !HAVE_MEMPCPY
+
 /* Copy N bytes of SRC to DEST, return pointer to bytes after the
    last written byte.  */
 void *
@@ -26,3 +29,5 @@ mempcpy (void *dest, const void *src, size_t n)
 {
   return (char *) memcpy (dest, src, n) + n;
 }
+
+#endif

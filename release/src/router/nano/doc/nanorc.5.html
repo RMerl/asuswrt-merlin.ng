@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Thu Jan 14 11:12:28 2021 -->
+<!-- CreationDate: Thu Apr 29 11:50:46 2021 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -280,13 +280,6 @@ determine the applicable syntax. (Calling libmagic can be
 relatively time consuming. It is therefore not done by
 default.)</p>
 
-<p style="margin-left:11%;"><b>set markmatch</b></p>
-
-<p style="margin-left:15%;">After a search, set the mark at
-the end of the found match (if there is any) so that it gets
-highlighted. This makes the match more visible, but also
-allows deleting the match with a single keystroke.</p>
-
 <p style="margin-left:11%;"><b>set matchbrackets
 &quot;</b><i>characters</i><b>&quot;</b></p>
 
@@ -311,13 +304,11 @@ cursor is into the file (linewise). When a file is loaded or
 saved, and also when switching between buffers, the number
 of lines in the buffer is displayed after the file name.
 This number is cleared upon the next keystroke, or replaced
-with an [i/n] counter when multiple buffers are open.</p>
-
-<p style="margin-left:11%;"><b>set morespace</b></p>
-
-<p style="margin-left:15%;">Deprecated option since it has
-become the default setting. When needed, use <b>unset
-emptyline</b> instead.</p>
+with an [i/n] counter when multiple buffers are open. The
+line plus column numbers and the character code are
+displayed only when <b>set constantshow</b> is used, and can
+be toggled on and off with <b>M-C</b>. The state flags are
+displayed only when <b>set stateflags</b> is used.</p>
 
 <p style="margin-left:11%;"><b>set mouse</b></p>
 
@@ -349,10 +340,6 @@ help lines at the bottom of the screen.</p>
 <p style="margin-left:15%;">Don&rsquo;t automatically add a
 newline when a text does not end with one. (This can cause
 you to save non-POSIX text files.)</p>
-
-<p style="margin-left:11%;"><b>set nopauses</b></p>
-
-<p style="margin-left:15%;">Obsolete option. Ignored.</p>
 
 <p style="margin-left:11%;"><b>set nowrap</b></p>
 
@@ -407,9 +394,10 @@ punctuation, optionally followed by closing brackets (see
 
 <p style="margin-left:11%;"><b>set quickblank</b></p>
 
-<p style="margin-left:15%;">Do quick status-bar blanking:
-status-bar messages will disappear after 1 keystroke instead
-of 25. The option <b>constantshow</b> overrides this.</p>
+<p style="margin-left:15%;">Make status-bar messages
+disappear after 1 keystroke instead of after 20. Note that
+options <b>constantshow</b> and <b>minibar</b> override
+this.</p>
 
 <p style="margin-left:11%;"><b>set quotestr
 &quot;</b><i>regex</i><b>&quot;</b></p>
@@ -482,12 +470,6 @@ that beginning (either forwards or backwards). If the cursor
 is already at that position, it will jump to the true
 beginning of the line.</p>
 
-<p style="margin-left:11%;"><b>set smooth</b></p>
-
-<p style="margin-left:15%;">Deprecated option since it has
-become the default setting. When needed, use <b>unset
-jumpyscrolling</b> instead.</p>
-
 <p style="margin-left:11%;"><b>set softwrap</b></p>
 
 <p style="margin-left:15%;">Display lines that exceed the
@@ -504,6 +486,14 @@ atblanks</b>.)</p>
 do spell checking and correcting, instead of using the
 built-in corrector that calls <b>hunspell</b>(1) or
 <b>spell</b>(1).</p>
+
+<p style="margin-left:11%;"><b>set spotlightcolor</b>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
+
+<p style="margin-left:15%;">Use this color combination for
+highlighting a search match. The default value is
+<b>black,lightyellow</b>. See <b>set titlecolor</b> for
+valid color names.</p>
 
 <p style="margin-left:11%;"><b>set stateflags</b></p>
 

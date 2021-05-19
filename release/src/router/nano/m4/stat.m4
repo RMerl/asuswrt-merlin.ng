@@ -1,4 +1,4 @@
-# serial 17
+# serial 18
 
 # Copyright (C) 2009-2021 Free Software Foundation, Inc.
 #
@@ -69,7 +69,7 @@ AC_DEFUN([gl_FUNC_STAT],
 
 # Prerequisites of lib/stat.c and lib/stat-w32.c.
 AC_DEFUN([gl_PREREQ_STAT], [
-  AC_REQUIRE([gl_HEADER_SYS_STAT_H])
+  AC_REQUIRE([gl_SYS_STAT_H])
   AC_REQUIRE([gl_PREREQ_STAT_W32])
   :
 ])

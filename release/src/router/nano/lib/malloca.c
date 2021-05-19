@@ -21,6 +21,8 @@
 /* Specification.  */
 #include "malloca.h"
 
+#include "idx.h"
+#include "intprops.h"
 #include "verify.h"
 
 /* The speed critical point in this file is freea() applied to an alloca()
@@ -45,9 +47,9 @@ mmalloca (size_t n)
 #if HAVE_ALLOCA
   /* Allocate one more word, used to determine the address to pass to freea(),
      and room for the alignment ≡ sa_alignment_max mod 2*sa_alignment_max.  */
-  size_t nplus = n + sizeof (small_t) + 2 * sa_alignment_max - 1;
-
-  if (nplus >= n)
+  int plus = sizeof (small_t) + 2 * sa_alignment_max - 1;
+  idx_t nplus;
+  if (!INT_ADD_WRAPV (n, plus, &nplus) && !xalloc_oversized (nplus, 1))
     {
       char *mem = (char *) malloc (nplus);
 

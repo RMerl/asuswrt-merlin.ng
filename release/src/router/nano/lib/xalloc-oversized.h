@@ -21,34 +21,39 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* True if N * S would overflow in a size_t calculation,
-   or would generate a value larger than PTRDIFF_MAX.
+/* True if N * S does not fit into both ptrdiff_t and size_t.
+   N and S should be nonnegative and free of side effects.
    This expands to a constant expression if N and S are both constants.
-   By gnulib convention, SIZE_MAX represents overflow in size
+   By gnulib convention, SIZE_MAX represents overflow in size_t
    calculations, so the conservative size_t-based dividend to use here
    is SIZE_MAX - 1.  */
 #define __xalloc_oversized(n, s) \
-  ((size_t) (PTRDIFF_MAX < SIZE_MAX ? PTRDIFF_MAX : SIZE_MAX - 1) / (s) < (n))
+  ((s) != 0 \
+   && ((size_t) (PTRDIFF_MAX < SIZE_MAX ? PTRDIFF_MAX : SIZE_MAX - 1) / (s) \
+       < (n)))
 
-#if PTRDIFF_MAX < SIZE_MAX
-typedef ptrdiff_t __xalloc_count_type;
-#else
-typedef size_t __xalloc_count_type;
-#endif
+/* Return 1 if and only if an array of N objects, each of size S,
+   cannot exist reliably because its total size in bytes would exceed
+   MIN (PTRDIFF_MAX, SIZE_MAX - 1).
 
-/* Return 1 if an array of N objects, each of size S, cannot exist
-   reliably due to size or ptrdiff_t arithmetic overflow.  S must be
-   positive and N must be nonnegative.  This is a macro, not a
-   function, so that it works correctly even when SIZE_MAX < N.  */
+   N and S should be nonnegative and free of side effects.
 
-#if 7 <= __GNUC__ && !defined __clang__
+   Warning: (xalloc_oversized (N, S) ? NULL : malloc (N * S)) can
+   misbehave if N and S are both narrower than ptrdiff_t and size_t,
+   and can be rewritten as (xalloc_oversized (N, S) ?  NULL
+   : malloc (N * (size_t) S)).
+
+   This is a macro, not a function, so that it works even if an
+   argument exceeds MAX (PTRDIFF_MAX, SIZE_MAX).  */
+#if 7 <= __GNUC__ && !defined __clang__ && PTRDIFF_MAX < SIZE_MAX
 # define xalloc_oversized(n, s) \
-   __builtin_mul_overflow_p (n, s, (__xalloc_count_type) 1)
-#elif 5 <= __GNUC__ && !defined __ICC && !__STRICT_ANSI__
+   __builtin_mul_overflow_p (n, s, (ptrdiff_t) 1)
+#elif (5 <= __GNUC__ && !defined __ICC && !__STRICT_ANSI__ \
+       && PTRDIFF_MAX < SIZE_MAX)
 # define xalloc_oversized(n, s) \
    (__builtin_constant_p (n) && __builtin_constant_p (s) \
     ? __xalloc_oversized (n, s) \
-    : ({ __xalloc_count_type __xalloc_count; \
+    : ({ ptrdiff_t __xalloc_count; \
          __builtin_mul_overflow (n, s, &__xalloc_count); }))
 
 /* Other compilers use integer division; this may be slower but is

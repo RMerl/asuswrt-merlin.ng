@@ -34,7 +34,7 @@ void do_deletion(undo_type action)
 		int charlen = char_length(openfile->current->data + openfile->current_x);
 		size_t line_len = strlen(openfile->current->data + openfile->current_x);
 #ifndef NANO_TINY
-		size_t old_amount = openfile->current->extrarows;
+		size_t old_amount = ISSET(SOFTWRAP) ? extra_chunks_in(openfile->current) : 0;
 
 		/* If the type of action changed or the cursor moved to a different
 		 * line, create a new undo item, otherwise update the existing item. */
@@ -49,13 +49,9 @@ void do_deletion(undo_type action)
 					&openfile->current->data[openfile->current_x + charlen],
 					line_len - charlen + 1);
 #ifndef NANO_TINY
-		/* When softwrapping, recompute the number of chunks in the line,
-		 * and schedule a refresh if the number changed. */
-		if (ISSET(SOFTWRAP)) {
-			openfile->current->extrarows = extra_chunks_in(openfile->current);
-			if (openfile->current->extrarows != old_amount)
-				refresh_needed = TRUE;
-		}
+		/* When softwrapping, a changed number of chunks requires a refresh. */
+		if (ISSET(SOFTWRAP) && extra_chunks_in(openfile->current) != old_amount)
+			refresh_needed = TRUE;
 
 		/* Adjust the mark if it is after the cursor on the current line. */
 		if (openfile->mark == openfile->current &&
@@ -94,10 +90,6 @@ void do_deletion(undo_type action)
 
 		unlink_node(joining);
 
-#ifndef NANO_TINY
-		if (ISSET(SOFTWRAP))
-			openfile->current->extrarows = extra_chunks_in(openfile->current);
-#endif
 		/* Two lines were joined, so do a renumbering and refresh the screen. */
 		renumber_from(openfile->current);
 		refresh_needed = TRUE;
@@ -336,9 +328,6 @@ void extract_segment(linestruct *top, size_t top_x, linestruct *bot, size_t bot_
 #ifndef NANO_TINY
 	openfile->current->has_anchor = was_anchored;
 
-	if (ISSET(SOFTWRAP))
-		openfile->current->extrarows = extra_chunks_in(openfile->current);
-
 	if (post_marked || same_line)
 		openfile->mark = openfile->current;
 	if (post_marked)
@@ -391,10 +380,6 @@ void ingraft_buffer(linestruct *topline)
 	}
 
 	if (topline != botline) {
-#ifndef NANO_TINY
-		/* First compute the softwrapped chunks for each line in the graft. */
-		compute_the_extra_rows_per_line_from(topline);
-#endif
 		/* When inserting at end-of-buffer, update the relevant pointer. */
 		if (line->next == NULL)
 			openfile->filebot = botline;
@@ -427,11 +412,6 @@ void ingraft_buffer(linestruct *topline)
 		openfile->mark_x += length - xpos;
 	} else if (mark_follows)
 		openfile->mark_x += extralen;
-
-	if (ISSET(SOFTWRAP)) {
-		line->extrarows = extra_chunks_in(line);
-		openfile->current->extrarows = extra_chunks_in(openfile->current);
-	}
 #endif
 
 	delete_node(topline);
@@ -734,6 +714,10 @@ void paste_text(void)
 	/* If we pasted less than a screenful, don't center the cursor. */
 	if (less_than_a_screenful(was_lineno, was_leftedge))
 		focusing = FALSE;
+#ifdef ENABLE_COLOR
+	else
+		precalc_multicolorinfo();
+#endif
 
 	/* Set the desired x position to where the pasted text ends. */
 	openfile->placewewant = xplustabs();

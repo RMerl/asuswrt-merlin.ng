@@ -58,7 +58,10 @@ void set_interface_colorpairs(void)
 				interface_color_pair[index] = A_NORMAL;
 			else if (index == GUIDE_STRIPE)
 				interface_color_pair[index] = A_REVERSE;
-			else if (index == PROMPT_BAR)
+			else if (index == SPOTLIGHTED) {
+				init_pair(index + 1, COLOR_BLACK, COLOR_YELLOW + (COLORS > 15 ? 8 : 0));
+				interface_color_pair[index] = COLOR_PAIR(index + 1);
+			} else if (index == PROMPT_BAR)
 				interface_color_pair[index] = interface_color_pair[TITLE_BAR];
 			else if (index == ERROR_MESSAGE) {
 				init_pair(index + 1, COLOR_WHITE, COLOR_RED);
@@ -116,19 +119,9 @@ void prepare_palette(void)
  * the list starting at head.  Return TRUE upon success. */
 bool found_in_list(regexlisttype *head, const char *shibboleth)
 {
-	regexlisttype *item;
-	regex_t rgx;
-
-	for (item = head; item != NULL; item = item->next) {
-		regcomp(&rgx, item->full_regex, NANO_REG_EXTENDED);
-
-		if (regexec(&rgx, shibboleth, 0, NULL, 0) == 0) {
-			regfree(&rgx);
+	for (regexlisttype *item = head; item != NULL; item = item->next)
+		if (regexec(item->one_rgx, shibboleth, 0, NULL, 0) == 0)
 			return TRUE;
-		}
-
-		regfree(&rgx);
-	}
 
 	return FALSE;
 }
@@ -231,15 +224,6 @@ void find_and_prime_applicable_syntax(void)
 	openfile->syntax = sntx;
 }
 
-/* Allocate and initialize (for the given line) the cache for multiline info. */
-void set_up_multicache(linestruct *line)
-{
-	line->multidata = nmalloc(openfile->syntax->nmultis * sizeof(short));
-
-	for (short index = 0; index < openfile->syntax->nmultis; index++)
-		line->multidata[index] = -1;
-}
-
 /* Determine whether the matches of multiline regexes are still the same,
  * and if not, schedule a screen refresh, so things will be repainted. */
 void check_the_multis(linestruct *line)
@@ -253,8 +237,10 @@ void check_the_multis(linestruct *line)
 	if (openfile->syntax == NULL || openfile->syntax->nmultis == 0)
 		return;
 
-	if (line->multidata == NULL)
-		set_up_multicache(line);
+	if (line->multidata == NULL) {
+		refresh_needed = TRUE;
+		return;
+	}
 
 	for (ink = openfile->syntax->color; ink != NULL; ink = ink->next) {
 		/* If it's not a multiline regex, skip. */
@@ -266,18 +252,21 @@ void check_the_multis(linestruct *line)
 		anend = (regexec(ink->end, afterstart, 1, &endmatch, 0) == 0);
 
 		/* Check whether the multidata still matches the current situation. */
-		if (line->multidata[ink->id] == CNONE ||
-						line->multidata[ink->id] == CWHOLELINE) {
+		if (line->multidata[ink->id] == NOTHING) {
+			if (!astart)
+				continue;
+		} else if (line->multidata[ink->id] & (WHOLELINE|WOULDBE)) {
 			if (!astart && !anend)
 				continue;
-		} else if (line->multidata[ink->id] == CSTARTENDHERE) {
-			if (astart && anend && startmatch.rm_so < endmatch.rm_so)
+		} else if (line->multidata[ink->id] == JUSTONTHIS) {
+			if (astart && anend && regexec(ink->start, line->data + endmatch.rm_eo,
+														1, &startmatch, 0) != 0)
 				continue;
-		} else if (line->multidata[ink->id] == CBEGINBEFORE) {
-			if (!astart && anend)
-				continue;
-		} else if (line->multidata[ink->id] == CENDAFTER) {
+		} else if (line->multidata[ink->id] == STARTSHERE) {
 			if (astart && !anend)
+				continue;
+		} else if (line->multidata[ink->id] == ENDSHERE) {
+			if (!astart && anend)
 				continue;
 		}
 
@@ -295,13 +284,19 @@ void precalc_multicolorinfo(void)
 	regmatch_t startmatch, endmatch;
 	linestruct *line, *tailline;
 
-	if (openfile->syntax == NULL || openfile->syntax->nmultis == 0 ||
-					openfile->filetop->multidata || ISSET(NO_SYNTAX))
+	if (!openfile->syntax || openfile->syntax->nmultis == 0 || ISSET(NO_SYNTAX))
 		return;
+
+//#define TIMEPRECALC  123
+#ifdef TIMEPRECALC
+#include <time.h>
+	clock_t start = clock();
+#endif
 
 	/* For each line, allocate cache space for the multiline-regex info. */
 	for (line = openfile->filetop; line != NULL; line = line->next)
-		set_up_multicache(line);
+		if (!line->multidata)
+			line->multidata = nmalloc(openfile->syntax->nmultis * sizeof(short));
 
 	for (ink = openfile->syntax->color; ink != NULL; ink = ink->next) {
 		/* If this is not a multi-line regex, skip it. */
@@ -312,66 +307,68 @@ void precalc_multicolorinfo(void)
 			int index = 0;
 
 			/* Assume nothing applies until proven otherwise below. */
-			line->multidata[ink->id] = CNONE;
+			line->multidata[ink->id] = NOTHING;
 
-			/* For an unpaired start match, mark all remaining lines. */
-			if (line->prev && line->prev->multidata[ink->id] == CWOULDBE) {
-				line->multidata[ink->id] = CWOULDBE;
-				continue;
-			}
-
-			/* When the line contains a start match, look for an end, and if
-			 * found, mark all the lines that are affected. */
-			while (regexec(ink->start, line->data + index, 1,
-							&startmatch, (index == 0) ? 0 : REG_NOTBOL) == 0) {
+			/* When the line contains a start match, look for an end,
+			 * and if found, mark all the lines that are affected. */
+			while (regexec(ink->start, line->data + index, 1, &startmatch,
+										(index == 0) ? 0 : REG_NOTBOL) == 0) {
 				/* Begin looking for an end match after the start match. */
 				index += startmatch.rm_eo;
 
-				/* If there is an end match on this line, mark the line, but
-				 * continue looking for other starts after it. */
-				if (regexec(ink->end, line->data + index, 1,
-							&endmatch, (index == 0) ? 0 : REG_NOTBOL) == 0) {
-					line->multidata[ink->id] = CSTARTENDHERE;
+				/* If there is an end match on this same line, mark the line,
+				 * but continue looking for other starts after it. */
+				if (regexec(ink->end, line->data + index, 1, &endmatch,
+										(index == 0) ? 0 : REG_NOTBOL) == 0) {
+					line->multidata[ink->id] = JUSTONTHIS;
+
 					index += endmatch.rm_eo;
-					/* If both start and end are mere anchors, step ahead. */
-					if (startmatch.rm_so == startmatch.rm_eo &&
-								endmatch.rm_so == endmatch.rm_eo) {
-						/* When at end-of-line, we're done. */
+
+					/* If the total match has zero length, force an advance. */
+					if (startmatch.rm_eo - startmatch.rm_so + endmatch.rm_eo == 0) {
+						/* When at end-of-line, there is no other start. */
 						if (line->data[index] == '\0')
 							break;
 						index = step_right(line->data, index);
 					}
+
 					continue;
 				}
 
 				/* Look for an end match on later lines. */
 				tailline = line->next;
 
-				while (tailline != NULL) {
-					if (regexec(ink->end, tailline->data, 1, &endmatch, 0) == 0)
-						break;
+				while (tailline && regexec(ink->end, tailline->data,
+											1, &endmatch, 0) != 0)
 					tailline = tailline->next;
-				}
 
+				/* When there is no end match, mark relevant lines as such. */
 				if (tailline == NULL) {
-					line->multidata[ink->id] = CWOULDBE;
+					for (; line->next != NULL; line = line->next)
+						line->multidata[ink->id] = WOULDBE;
+					line->multidata[ink->id] = WOULDBE;
 					break;
 				}
 
-				/* We found it, we found it, la la la la la.  Mark all
-				 * the lines in between and the end properly. */
-				line->multidata[ink->id] = CENDAFTER;
+				/* We found it, we found it, la lala lala.  Mark the lines. */
+				line->multidata[ink->id] = STARTSHERE;
 
+				// Note that this also advances the line in the main loop.
 				for (line = line->next; line != tailline; line = line->next)
-					line->multidata[ink->id] = CWHOLELINE;
+					line->multidata[ink->id] = WHOLELINE;
 
-				tailline->multidata[ink->id] = CBEGINBEFORE;
+				tailline->multidata[ink->id] = ENDSHERE;
 
-				/* Begin looking for a new start after the end match. */
+				/* Look for a possible new start after the end match. */
 				index = endmatch.rm_eo;
 			}
 		}
 	}
+
+#ifdef TIMEPRECALC
+	statusline(INFO, "Precalculation: %.1f ms", 1000 * (double)(clock() - start) / CLOCKS_PER_SEC);
+	napms(1200);
+#endif
 }
 
 #endif /* ENABLE_COLOR */

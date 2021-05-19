@@ -1859,6 +1859,7 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
     /* errno is already set.  */
     return NULL;
 
+  /* Frees the memory allocated by this function.  Preserves errno.  */
 #define CLEANUP() \
   if (d.dir != d.direct_alloc_dir)                                      \
     free (d.dir);                                                       \
@@ -2183,13 +2184,11 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
 #  endif
                         if (converted == NULL)
                           {
-                            int saved_errno = errno;
                             if (!(result == resultbuf || result == NULL))
                               free (result);
                             if (buf_malloced != NULL)
                               free (buf_malloced);
                             CLEANUP ();
-                            errno = saved_errno;
                             return NULL;
                           }
                         if (converted != result + length)
@@ -2309,13 +2308,11 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
 #  endif
                         if (converted == NULL)
                           {
-                            int saved_errno = errno;
                             if (!(result == resultbuf || result == NULL))
                               free (result);
                             if (buf_malloced != NULL)
                               free (buf_malloced);
                             CLEANUP ();
-                            errno = saved_errno;
                             return NULL;
                           }
                         if (converted != result + length)
@@ -2435,13 +2432,11 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
 #  endif
                         if (converted == NULL)
                           {
-                            int saved_errno = errno;
                             if (!(result == resultbuf || result == NULL))
                               free (result);
                             if (buf_malloced != NULL)
                               free (buf_malloced);
                             CLEANUP ();
-                            errno = saved_errno;
                             return NULL;
                           }
                         if (converted != result + length)
@@ -2852,14 +2847,12 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                                               NULL, &tmpdst_len);
                   if (tmpdst == NULL)
                     {
-                      int saved_errno = errno;
                       free (tmpsrc);
                       if (!(result == resultbuf || result == NULL))
                         free (result);
                       if (buf_malloced != NULL)
                         free (buf_malloced);
                       CLEANUP ();
-                      errno = saved_errno;
                       return NULL;
                     }
                   free (tmpsrc);
@@ -3079,13 +3072,11 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                                               NULL, &tmpdst_len);
                   if (tmpdst == NULL)
                     {
-                      int saved_errno = errno;
                       if (!(result == resultbuf || result == NULL))
                         free (result);
                       if (buf_malloced != NULL)
                         free (buf_malloced);
                       CLEANUP ();
-                      errno = saved_errno;
                       return NULL;
                     }
 # endif
@@ -5449,15 +5440,14 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                     /* Attempt to handle failure.  */
                     if (count < 0)
                       {
-                        /* SNPRINTF or sprintf failed.  Save and use the errno
-                           that it has set, if any.  */
-                        int saved_errno = errno;
-                        if (saved_errno == 0)
+                        /* SNPRINTF or sprintf failed.  Use the errno that it
+                           has set, if any.  */
+                        if (errno == 0)
                           {
                             if (dp->conversion == 'c' || dp->conversion == 's')
-                              saved_errno = EILSEQ;
+                              errno = EILSEQ;
                             else
-                              saved_errno = EINVAL;
+                              errno = EINVAL;
                           }
 
                         if (!(result == resultbuf || result == NULL))
@@ -5466,7 +5456,6 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                           free (buf_malloced);
                         CLEANUP ();
 
-                        errno = saved_errno;
                         return NULL;
                       }
 
@@ -5602,13 +5591,11 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                                                     NULL, &tmpdst_len);
                         if (tmpdst == NULL)
                           {
-                            int saved_errno = errno;
                             if (!(result == resultbuf || result == NULL))
                               free (result);
                             if (buf_malloced != NULL)
                               free (buf_malloced);
                             CLEANUP ();
-                            errno = saved_errno;
                             return NULL;
                           }
                         ENSURE_ALLOCATION (xsum (length, tmpdst_len));

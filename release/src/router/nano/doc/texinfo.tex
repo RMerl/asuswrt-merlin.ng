@@ -3,9 +3,9 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2020-02-11.09}
+\def\texinfoversion{2020-10-24.12}
 %
-% Copyright 1985, 1986, 1988, 1990-2019 Free Software Foundation, Inc.
+% Copyright 1985, 1986, 1988, 1990-2020 Free Software Foundation, Inc.
 %
 % This texinfo.tex file is free software: you can redistribute it and/or
 % modify it under the terms of the GNU General Public License as
@@ -33,7 +33,7 @@
 % The texinfo.tex in any given distribution could well be out
 % of date, so if that's what you're using, please check.
 %
-% Send bug reports to bug-texinfo@gnu.org.  Please include including a
+% Send bug reports to bug-texinfo@gnu.org.  Please include a
 % complete document in each bug report with which we can reproduce the
 % problem.  Patches are, of course, greatly appreciated.
 %
@@ -349,34 +349,19 @@
   \ifodd\pageno  \advance\hoffset by \bindingoffset
   \else \advance\hoffset by -\bindingoffset\fi
   %
+  \checkchapterpage
+  %
   % Retrieve the information for the headings from the marks in the page,
   % and call Plain TeX's \makeheadline and \makefootline, which use the
   % values in \headline and \footline.
-  %
-  % This is used to check if we are on the first page of a chapter.
-  \ifcase1\the\savedtopmark\fi
-  \let\prevchaptername\thischaptername
-  \ifcase0\firstmark\fi
-  \let\curchaptername\thischaptername
-  %
-  \ifodd\pageno \getoddheadingmarks \else \getevenheadingmarks \fi
-  %
-  \ifx\curchaptername\prevchaptername
-    \let\thischapterheading\thischapter
-  \else
-    % \thischapterheading is the same as \thischapter except it is blank
-    % for the first page of a chapter.  This is to prevent the chapter name
-    % being shown twice.
-    \def\thischapterheading{}%
-  \fi
   %
   % Common context changes for both heading and footing.
   % Do this outside of the \shipout so @code etc. will be expanded in
   % the headline as they should be, not taken literally (outputting ''code).
   \def\commonheadfootline{\let\hsize=\txipagewidth \texinfochars}
   %
+  \ifodd\pageno \getoddheadingmarks \else \getevenheadingmarks \fi
   \global\setbox\headlinebox = \vbox{\commonheadfootline \makeheadline}%
-  %
   \ifodd\pageno \getoddfootingmarks \else \getevenfootingmarks \fi
   \global\setbox\footlinebox = \vbox{\commonheadfootline \makefootline}%
   %
@@ -423,6 +408,22 @@
 \ifr@ggedbottom \kern-\dimen@ \vfil \fi}
 }
 
+% Check if we are on the first page of a chapter.  Used for printing headings.
+\newif\ifchapterpage
+\def\checkchapterpage{%
+  % Get the chapter that was current at the end of the last page
+  \ifcase1\the\savedtopmark\fi
+  \let\prevchaptername\thischaptername
+  %
+  \ifodd\pageno \getoddheadingmarks \else \getevenheadingmarks \fi
+  \let\curchaptername\thischaptername
+  %
+  \ifx\curchaptername\prevchaptername
+    \chapterpagefalse
+  \else
+    \chapterpagetrue
+  \fi
+}
 
 % Argument parsing
 
@@ -1010,7 +1011,7 @@ where each line of input produces a line of output.}
 \let\setfilename=\comment
 
 % @bye.
-\outer\def\bye{\pagealignmacro\tracingstats=1\ptexend}
+\outer\def\bye{\chappager\pagelabels\tracingstats=1\ptexend}
 
 
 \message{pdf,}
@@ -1134,6 +1135,45 @@ where each line of input produces a line of output.}
 \fi
 \ifx\XeTeXrevision\thisisundefined\else
   \pdforxetextrue
+\fi
+
+
+% Output page labels information.
+% See PDF reference v.1.7 p.594, section 8.3.1.
+\ifpdf
+\def\pagelabels{%
+  \def\title{0 << /P (T-) /S /D >>}%
+  \edef\roman{\the\romancount << /S /r >>}%
+  \edef\arabic{\the\arabiccount << /S /D >>}%
+  %
+  % Page label ranges must be increasing.  Remove any duplicates.
+  % (There is a slight chance of this being wrong if e.g. there is
+  % a @contents but no @titlepage, etc.)
+  %
+  \ifnum\romancount=0 \def\roman{}\fi
+  \ifnum\arabiccount=0 \def\title{}%
+  \else
+    \ifnum\romancount=\arabiccount \def\roman{}\fi
+  \fi
+  %
+  \ifnum\romancount<\arabiccount
+    \pdfcatalog{/PageLabels << /Nums [\title \roman \arabic ] >> }\relax
+  \else
+    \pdfcatalog{/PageLabels << /Nums [\title \arabic \roman ] >> }\relax
+  \fi
+}
+\else
+  \let\pagelabels\relax
+\fi
+
+\newcount\pagecount \pagecount=0
+\newcount\romancount \romancount=0
+\newcount\arabiccount \arabiccount=0
+\ifpdf
+  \let\ptxadvancepageno\advancepageno
+  \def\advancepageno{%
+    \ptxadvancepageno\global\advance\pagecount by 1
+  }
 \fi
 
 
@@ -1427,7 +1467,13 @@ output) for that.)}
       % subentries, which we calculated on our first read of the .toc above.
       %
       % We use the node names as the destinations.
+      %
+      % Currently we prefix the section name with the section number
+      % for chapter and appendix headings only in order to avoid too much
+      % horizontal space being required in the PDF viewer.
       \def\numchapentry##1##2##3##4{%
+        \dopdfoutline{##2 ##1}{count-\expnumber{chap##2}}{##3}{##4}}%
+      \def\unnchapentry##1##2##3##4{%
         \dopdfoutline{##1}{count-\expnumber{chap##2}}{##3}{##4}}%
       \def\numsecentry##1##2##3##4{%
         \dopdfoutline{##1}{count-\expnumber{sec##2}}{##3}{##4}}%
@@ -1669,9 +1715,13 @@ output) for that.)}
       % Therefore, we read toc only once.
       %
       % We use node names as destinations.
+      %
+      % Currently we prefix the section name with the section number
+      % for chapter and appendix headings only in order to avoid too much
+      % horizontal space being required in the PDF viewer.
       \def\partentry##1##2##3##4{}% ignore parts in the outlines
       \def\numchapentry##1##2##3##4{%
-        \dopdfoutline{##1}{1}{##3}{##4}}%
+        \dopdfoutline{##2 ##1}{1}{##3}{##4}}%
       \def\numsecentry##1##2##3##4{%
         \dopdfoutline{##1}{2}{##3}{##4}}%
       \def\numsubsecentry##1##2##3##4{%
@@ -1683,7 +1733,8 @@ output) for that.)}
       \let\appsecentry\numsecentry%
       \let\appsubsecentry\numsubsecentry%
       \let\appsubsubsecentry\numsubsubsecentry%
-      \let\unnchapentry\numchapentry%
+      \def\unnchapentry##1##2##3##4{%
+        \dopdfoutline{##1}{1}{##3}{##4}}%
       \let\unnsecentry\numsecentry%
       \let\unnsubsecentry\numsubsecentry%
       \let\unnsubsubsecentry\numsubsubsecentry%
@@ -2496,7 +2547,7 @@ end
 \def\it{\fam=\itfam \setfontstyle{it}}
 \def\sl{\fam=\slfam \setfontstyle{sl}}
 \def\bf{\fam=\bffam \setfontstyle{bf}}\def\bfstylename{bf}
-\def\tt{\fam=\ttfam \setfontstyle{tt}}
+\def\tt{\fam=\ttfam \setfontstyle{tt}}\def\ttstylename{tt}
 
 % Texinfo sort of supports the sans serif font style, which plain TeX does not.
 % So we set up a \sf.
@@ -2987,10 +3038,18 @@ end
 % arg (if given), and not the url (which is then just the link target).
 \newif\ifurefurlonlylink
 
+% The default \pretolerance setting stops the penalty inserted in
+% \urefallowbreak being a discouragement to line breaking.  Set it to
+% a negative value for this paragraph only.  Hopefully this does not
+% conflict with redefinitions of \par done elsewhere.
+\def\nopretolerance{%
+\pretolerance=-1
+\def\par{\endgraf\pretolerance=100 \let\par\endgraf}%
+}
+
 % The main macro is \urefbreak, which allows breaking at expected
-% places within the url.  (There used to be another version, which
-% didn't support automatic breaking.)
-\def\urefbreak{\begingroup \urefcatcodes \dourefbreak}
+% places within the url.
+\def\urefbreak{\nopretolerance \begingroup \urefcatcodes \dourefbreak}
 \let\uref=\urefbreak
 %
 \def\dourefbreak#1{\urefbreakfinish #1,,,\finish}
@@ -3101,14 +3160,14 @@ end
 
 % Allow a ragged right output to aid breaking long URL's.  There can
 % be a break at the \allowbreak with no extra glue (if the existing stretch in
-% the line is sufficent), a break at the \penalty100 with extra glue added
+% the line is sufficient), a break at the \penalty with extra glue added
 % at the end of the line, or no break at all here.
 %   Changing the value of the penalty and/or the amount of stretch affects how
-% preferrable one choice is over the other.
+% preferable one choice is over the other.
 \def\urefallowbreak{%
-  \allowbreak
+  \penalty0\relax
   \hskip 0pt plus 2 em\relax
-  \penalty300
+  \penalty1000\relax
   \hskip 0pt plus -2 em\relax
 }
 
@@ -3304,6 +3363,25 @@ end
 %
 \def\sup{\ifmmode \expandafter\ptexsp \else \expandafter\finishsup\fi}
 \def\finishsup#1{$\ptexsp{\hbox{\switchtolllsize #1}}$}%
+
+% provide this command from LaTeX as it is very common
+\def\frac#1#2{{{#1}\over{#2}}}
+
+% @displaymath.
+% \globaldefs is needed to recognize the end lines in \tex and
+% \end tex.  Set \thisenv as @end displaymath is seen before @end tex.
+{\obeylines
+\globaldefs=1
+\envdef\displaymath{%
+\tex
+\def\thisenv{\displaymath}%
+$$%
+}
+
+\def\Edisplaymath{$$
+\def\thisenv{\tex}%
+\end tex
+}}
 
 % @inlinefmt{FMTNAME,PROCESSED-TEXT} and @inlineraw{FMTNAME,RAW-TEXT}.
 % Ignore unless FMTNAME == tex; then it is like @iftex and @tex,
@@ -3509,7 +3587,7 @@ end
 
 % @pounds{} is a sterling sign, which Knuth put in the CM italic font.
 %
-\def\pounds{{\it\$}}
+\def\pounds{\ifmonospace{\ecfont\char"BF}\else{\it\$}\fi}
 
 % @euro{} comes from a separate font, depending on the current style.
 % We use the free feym* fonts from the eurosym package by Henrik
@@ -3658,10 +3736,18 @@ end
 \fi
 
 % Quotes.
-\chardef\quotedblleft="5C
-\chardef\quotedblright=`\"
 \chardef\quoteleft=`\`
 \chardef\quoteright=`\'
+
+% only change font for tt for correct kerning and to avoid using
+% \ecfont unless necessary.
+\def\quotedblleft{%
+  \ifmonospace{\ecfont\char"10}\else{\char"5C}\fi
+}
+
+\def\quotedblright{%
+  \ifmonospace{\ecfont\char"11}\else{\char`\"}\fi
+}
 
 
 \message{page headings,}
@@ -3784,12 +3870,19 @@ end
 
 \newtoks\evenheadline    % headline on even pages
 \newtoks\oddheadline     % headline on odd pages
+\newtoks\evenchapheadline% headline on even pages with a new chapter
+\newtoks\oddchapheadline % headline on odd pages with a new chapter
 \newtoks\evenfootline    % footline on even pages
 \newtoks\oddfootline     % footline on odd pages
 
 % Now make \makeheadline and \makefootline in Plain TeX use those variables
-\headline={{\textfonts\rm \ifodd\pageno \the\oddheadline
-                            \else \the\evenheadline \fi}}
+\headline={{\textfonts\rm
+            \ifchapterpage
+              \ifodd\pageno\the\oddchapheadline\else\the\evenchapheadline\fi
+            \else
+              \ifodd\pageno\the\oddheadline\else\the\evenheadline\fi
+            \fi}}
+
 \footline={{\textfonts\rm \ifodd\pageno \the\oddfootline
                             \else \the\evenfootline \fi}\HEADINGShook}
 \let\HEADINGShook=\relax
@@ -3805,12 +3898,14 @@ end
 \def\evenheading{\parsearg\evenheadingxxx}
 \def\evenheadingxxx #1{\evenheadingyyy #1\|\|\|\|\finish}
 \def\evenheadingyyy #1\|#2\|#3\|#4\finish{%
-\global\evenheadline={\rlap{\centerline{#2}}\line{#1\hfil#3}}}
+  \global\evenheadline={\rlap{\centerline{#2}}\line{#1\hfil#3}}
+  \global\evenchapheadline=\evenheadline}
 
 \def\oddheading{\parsearg\oddheadingxxx}
 \def\oddheadingxxx #1{\oddheadingyyy #1\|\|\|\|\finish}
 \def\oddheadingyyy #1\|#2\|#3\|#4\finish{%
-\global\oddheadline={\rlap{\centerline{#2}}\line{#1\hfil#3}}}
+  \global\oddheadline={\rlap{\centerline{#2}}\line{#1\hfil#3}}%
+  \global\oddchapheadline=\oddheadline}
 
 \parseargdef\everyheading{\oddheadingxxx{#1}\evenheadingxxx{#1}}%
 
@@ -3877,37 +3972,34 @@ end
 \parseargdef\headings{\csname HEADINGS#1\endcsname}
 
 \def\headingsoff{% non-global headings elimination
-  \evenheadline={\hfil}\evenfootline={\hfil}%
-   \oddheadline={\hfil}\oddfootline={\hfil}%
+  \evenheadline={\hfil}\evenfootline={\hfil}\evenchapheadline={\hfil}%
+   \oddheadline={\hfil}\oddfootline={\hfil}\oddchapheadline={\hfil}%
 }
 
 \def\HEADINGSoff{{\globaldefs=1 \headingsoff}} % global setting
 \HEADINGSoff  % it's the default
 
 % When we turn headings on, set the page number to 1.
+\def\pageone{
+  \global\pageno=1
+  \global\arabiccount = \pagecount
+}
+
 % For double-sided printing, put current file name in lower left corner,
 % chapter name on inside top of right hand pages, document
 % title on inside top of left hand pages, and page numbers on outside top
 % edge of all pages.
 \def\HEADINGSdouble{%
-\global\pageno=1
-\global\evenfootline={\hfil}
-\global\oddfootline={\hfil}
-\global\evenheadline={\line{\folio\hfil\thistitle}}
-\global\oddheadline={\line{\thischapterheading\hfil\folio}}
-\global\let\contentsalignmacro = \chapoddpage
+\pageone
+\HEADINGSdoublex
 }
 \let\contentsalignmacro = \chappager
 
 % For single-sided printing, chapter title goes across top left of page,
 % page number on top right.
 \def\HEADINGSsingle{%
-\global\pageno=1
-\global\evenfootline={\hfil}
-\global\oddfootline={\hfil}
-\global\evenheadline={\line{\thischapterheading\hfil\folio}}
-\global\oddheadline={\line{\thischapterheading\hfil\folio}}
-\global\let\contentsalignmacro = \chappager
+\pageone
+\HEADINGSsinglex
 }
 \def\HEADINGSon{\HEADINGSdouble}
 
@@ -3917,7 +4009,9 @@ end
 \global\evenfootline={\hfil}
 \global\oddfootline={\hfil}
 \global\evenheadline={\line{\folio\hfil\thistitle}}
-\global\oddheadline={\line{\thischapterheading\hfil\folio}}
+\global\oddheadline={\line{\thischapter\hfil\folio}}
+\global\evenchapheadline={\line{\folio\hfil}}
+\global\oddchapheadline={\line{\hfil\folio}}
 \global\let\contentsalignmacro = \chapoddpage
 }
 
@@ -3925,8 +4019,22 @@ end
 \def\HEADINGSsinglex{%
 \global\evenfootline={\hfil}
 \global\oddfootline={\hfil}
-\global\evenheadline={\line{\thischapterheading\hfil\folio}}
-\global\oddheadline={\line{\thischapterheading\hfil\folio}}
+\global\evenheadline={\line{\thischapter\hfil\folio}}
+\global\oddheadline={\line{\thischapter\hfil\folio}}
+\global\evenchapheadline={\line{\hfil\folio}}
+\global\oddchapheadline={\line{\hfil\folio}}
+\global\let\contentsalignmacro = \chappager
+}
+
+% for @setchapternewpage off
+\def\HEADINGSsinglechapoff{%
+\pageone
+\global\evenfootline={\hfil}
+\global\oddfootline={\hfil}
+\global\evenheadline={\line{\thischapter\hfil\folio}}
+\global\oddheadline={\line{\thischapter\hfil\folio}}
+\global\evenchapheadline=\evenheadline
+\global\oddchapheadline=\oddheadline
 \global\let\contentsalignmacro = \chappager
 }
 
@@ -4841,7 +4949,7 @@ end
 
 % like the previous two, but they put @code around the argument.
 \def\docodeindex#1{\edef\indexname{#1}\parsearg\docodeindexxxx}
-\def\docodeindexxxx #1{\doind{\indexname}{\code{#1}}}
+\def\docodeindexxxx #1{\docind{\indexname}{#1}}
 
 
 % Used for the aux, toc and index files to prevent expansion of Texinfo
@@ -5117,64 +5225,66 @@ end
   \let\lbracechar\{%
   \let\rbracechar\}%
   %
+  %
+  \let\do\indexnofontsdef
+  %
   % Non-English letters.
-  \def\AA{AA}%
-  \def\AE{AE}%
-  \def\DH{DZZ}%
-  \def\L{L}%
-  \def\OE{OE}%
-  \def\O{O}%
-  \def\TH{TH}%
-  \def\aa{aa}%
-  \def\ae{ae}%
-  \def\dh{dzz}%
-  \def\exclamdown{!}%
-  \def\l{l}%
-  \def\oe{oe}%
-  \def\ordf{a}%
-  \def\ordm{o}%
-  \def\o{o}%
-  \def\questiondown{?}%
-  \def\ss{ss}%
-  \def\th{th}%
+  \do\AA{AA}%
+  \do\AE{AE}%
+  \do\DH{DZZ}%
+  \do\L{L}%
+  \do\OE{OE}%
+  \do\O{O}%
+  \do\TH{TH}%
+  \do\aa{aa}%
+  \do\ae{ae}%
+  \do\dh{dzz}%
+  \do\exclamdown{!}%
+  \do\l{l}%
+  \do\oe{oe}%
+  \do\ordf{a}%
+  \do\ordm{o}%
+  \do\o{o}%
+  \do\questiondown{?}%
+  \do\ss{ss}%
+  \do\th{th}%
   %
-  \def\LaTeX{LaTeX}%
-  \def\TeX{TeX}%
+  \do\LaTeX{LaTeX}%
+  \do\TeX{TeX}%
   %
-  % Assorted special characters.  \defglyph gives the control sequence a
-  % definition that removes the {} that follows its use.
-  \defglyph\atchar{@}%
-  \defglyph\arrow{->}%
-  \defglyph\bullet{bullet}%
-  \defglyph\comma{,}%
-  \defglyph\copyright{copyright}%
-  \defglyph\dots{...}%
-  \defglyph\enddots{...}%
-  \defglyph\equiv{==}%
-  \defglyph\error{error}%
-  \defglyph\euro{euro}%
-  \defglyph\expansion{==>}%
-  \defglyph\geq{>=}%
-  \defglyph\guillemetleft{<<}%
-  \defglyph\guillemetright{>>}%
-  \defglyph\guilsinglleft{<}%
-  \defglyph\guilsinglright{>}%
-  \defglyph\leq{<=}%
-  \defglyph\lbracechar{\{}%
-  \defglyph\minus{-}%
-  \defglyph\point{.}%
-  \defglyph\pounds{pounds}%
-  \defglyph\print{-|}%
-  \defglyph\quotedblbase{"}%
-  \defglyph\quotedblleft{"}%
-  \defglyph\quotedblright{"}%
-  \defglyph\quoteleft{`}%
-  \defglyph\quoteright{'}%
-  \defglyph\quotesinglbase{,}%
-  \defglyph\rbracechar{\}}%
-  \defglyph\registeredsymbol{R}%
-  \defglyph\result{=>}%
-  \defglyph\textdegree{o}%
+  % Assorted special characters.
+  \do\atchar{@}%
+  \do\arrow{->}%
+  \do\bullet{bullet}%
+  \do\comma{,}%
+  \do\copyright{copyright}%
+  \do\dots{...}%
+  \do\enddots{...}%
+  \do\equiv{==}%
+  \do\error{error}%
+  \do\euro{euro}%
+  \do\expansion{==>}%
+  \do\geq{>=}%
+  \do\guillemetleft{<<}%
+  \do\guillemetright{>>}%
+  \do\guilsinglleft{<}%
+  \do\guilsinglright{>}%
+  \do\leq{<=}%
+  \do\lbracechar{\{}%
+  \do\minus{-}%
+  \do\point{.}%
+  \do\pounds{pounds}%
+  \do\print{-|}%
+  \do\quotedblbase{"}%
+  \do\quotedblleft{"}%
+  \do\quotedblright{"}%
+  \do\quoteleft{`}%
+  \do\quoteright{'}%
+  \do\quotesinglbase{,}%
+  \do\rbracechar{\}}%
+  \do\registeredsymbol{R}%
+  \do\result{=>}%
+  \do\textdegree{o}%
   %
   % We need to get rid of all macros, leaving only the arguments (if present).
   % Of course this is not nearly correct, but it is the best we can do for now.
@@ -5189,7 +5299,10 @@ end
   \macrolist
   \let\value\indexnofontsvalue
 }
-\def\defglyph#1#2{\def#1##1{#2}} % see above
+
+% Give the control sequence a definition that removes the {} that follows
+% its use, e.g. @AA{} -> AA
+\def\indexnofontsdef#1#2{\def#1##1{#2}}%
 
 
 
@@ -5204,6 +5317,20 @@ end
     %
     \def\indextext{#2}%
     \safewhatsit\doindwrite
+  }%
+  \fi
+}
+
+% Same as \doind, but for code indices
+\def\docind#1#2{%
+  \iflinks
+  {%
+    %
+    \requireopenindexfile{#1}%
+    \edef\writeto{\csname#1indfile\endcsname}%
+    %
+    \def\indextext{#2}%
+    \safewhatsit\docindwrite
   }%
   \fi
 }
@@ -5274,6 +5401,9 @@ end
     % trim spaces.
     \edef\trimmed{\segment}%
     \edef\trimmed{\expandafter\eatspaces\expandafter{\trimmed}}%
+    \ifincodeindex
+      \edef\trimmed{\noexpand\code{\trimmed}}%
+    \fi
     %
     \xdef\bracedtext{\bracedtext{\trimmed}}%
     %
@@ -5339,7 +5469,12 @@ end
 
 % Write the entry in \indextext to the index file.
 %
-\def\doindwrite{%
+
+\newif\ifincodeindex
+\def\doindwrite{\incodeindexfalse\doindwritex}
+\def\docindwrite{\incodeindextrue\doindwritex}
+
+\def\doindwritex{%
   \maybemarginindex
   %
   \atdummies
@@ -5559,7 +5694,11 @@ might help (with 'rm \jobname.?? \jobname.??s')%
   \else
     \begindoublecolumns
     \catcode`\\=0\relax
-    \catcode`\@=12\relax
+    %
+    % Make @ an escape character to give macros a chance to work.  This
+    % should work because we (hopefully) don't otherwise use @ in index files.
+    %\catcode`\@=12\relax
+    \catcode`\@=0\relax
     \input \jobname.\indexname s
     \enddoublecolumns
   \fi
@@ -6401,18 +6540,16 @@ might help (with 'rm \jobname.?? \jobname.??s')%
 \def\CHAPPAGoff{%
 \global\let\contentsalignmacro = \chappager
 \global\let\pchapsepmacro=\chapbreak
-\global\let\pagealignmacro=\chappager}
+\global\def\HEADINGSon{\HEADINGSsinglechapoff}}
 
 \def\CHAPPAGon{%
 \global\let\contentsalignmacro = \chappager
 \global\let\pchapsepmacro=\chappager
-\global\let\pagealignmacro=\chappager
 \global\def\HEADINGSon{\HEADINGSsingle}}
 
 \def\CHAPPAGodd{%
 \global\let\contentsalignmacro = \chapoddpage
 \global\let\pchapsepmacro=\chapoddpage
-\global\let\pagealignmacro=\chapoddpage
 \global\def\HEADINGSon{\HEADINGSdouble}}
 
 \CHAPPAGon
@@ -6777,9 +6914,7 @@ might help (with 'rm \jobname.?? \jobname.??s')%
 %
 \def\startcontents#1{%
   % If @setchapternewpage on, and @headings double, the contents should
-  % start on an odd page, unlike chapters.  Thus, we maintain
-  % \contentsalignmacro in parallel with \pagealignmacro.
-  % From: Torbjorn Granlund <tege@matematik.su.se>
+  % start on an odd page, unlike chapters.
   \contentsalignmacro
   \immediate\closeout\tocfile
   %
@@ -6794,6 +6929,9 @@ might help (with 'rm \jobname.?? \jobname.??s')%
     %
     % Roman numerals for page numbers.
     \ifnum \pageno>0 \global\pageno = \lastnegativepageno \fi
+    \def\thistitle{}% no title in double-sided headings
+    % Record where the Roman numerals started.
+    \ifnum\romancount=0 \global\romancount=\pagecount \fi
 }
 
 % redefined for the two-volume lispref.  We always output on
@@ -6816,8 +6954,7 @@ might help (with 'rm \jobname.?? \jobname.??s')%
     \fi
     \closein 1
   \endgroup
-  \lastnegativepageno = \pageno
-  \global\pageno = \savepageno
+  \contentsendroman
 }
 
 % And just the chapters.
@@ -6852,10 +6989,20 @@ might help (with 'rm \jobname.?? \jobname.??s')%
     \vfill \eject
     \contentsalignmacro % in case @setchapternewpage odd is in effect
   \endgroup
-  \lastnegativepageno = \pageno
-  \global\pageno = \savepageno
+  \contentsendroman
 }
 \let\shortcontents = \summarycontents
+
+% Get ready to use Arabic numerals again
+\def\contentsendroman{%
+  \lastnegativepageno = \pageno
+  \global\pageno = \savepageno
+  %
+  % If \romancount > \arabiccount, the contents are at the end of the
+  % document.  Otherwise, advance where the Arabic numerals start for
+  % the page numbers.
+  \ifnum\romancount>\arabiccount\else\global\arabiccount=\pagecount\fi
+}
 
 % Typeset the label for a chapter or appendix for the short contents.
 % The arg is, e.g., `A' for an appendix, or `3' for a chapter.
@@ -7444,13 +7591,9 @@ might help (with 'rm \jobname.?? \jobname.??s')%
 \newdimen\tabw \setbox0=\hbox{\tt\space} \tabw=8\wd0 % tab amount
 %
 % We typeset each line of the verbatim in an \hbox, so we can handle
-% tabs.  The \global is in case the verbatim line starts with an accent,
-% or some other command that starts with a begin-group.  Otherwise, the
-% entire \verbbox would disappear at the corresponding end-group, before
-% it is typeset.  Meanwhile, we can't have nested verbatim commands
-% (can we?), so the \global won't be overwriting itself.
+% tabs.
 \newbox\verbbox
-\def\starttabbox{\global\setbox\verbbox=\hbox\bgroup}
+\def\starttabbox{\setbox\verbbox=\hbox\bgroup}
 %
 \begingroup
   \catcode`\^^I=\active
@@ -7461,7 +7604,8 @@ might help (with 'rm \jobname.?? \jobname.??s')%
       \divide\dimen\verbbox by\tabw
       \multiply\dimen\verbbox by\tabw % compute previous multiple of \tabw
       \advance\dimen\verbbox by\tabw  % advance to next multiple of \tabw
-      \wd\verbbox=\dimen\verbbox \box\verbbox \starttabbox
+      \wd\verbbox=\dimen\verbbox
+      \leavevmode\box\verbbox \starttabbox
     }%
   }
 \endgroup
@@ -7471,9 +7615,7 @@ might help (with 'rm \jobname.?? \jobname.??s')%
   \let\nonarrowing = t%
   \nonfillstart
   \tt % easiest (and conventionally used) font for verbatim
-  % The \leavevmode here is for blank lines.  Otherwise, we would
-  % never \starttabbox and the \egroup would end verbatim mode.
-  \def\par{\leavevmode\egroup\box\verbbox\endgraf}%
+  \def\par{\egroup\leavevmode\box\verbbox\endgraf\starttabbox}%
   \tabexpand
   \setupmarkupstyle{verbatim}%
   % Respect line breaks,
@@ -7481,7 +7623,6 @@ might help (with 'rm \jobname.?? \jobname.??s')%
   % make each space count.
   % Must do in this order:
   \obeylines \uncatcodespecials \sepspaces
-  \everypar{\starttabbox}%
 }
 
 % Do the @verb magic: verbatim text is quoted by unique
@@ -7516,13 +7657,16 @@ might help (with 'rm \jobname.?? \jobname.??s')%
   % ignore everything up to the first ^^M, that's the newline at the end
   % of the @verbatim input line itself.  Otherwise we get an extra blank
   % line in the output.
-  \xdef\doverbatim#1^^M#2@end verbatim{#2\noexpand\end\gobble verbatim}%
+  \xdef\doverbatim#1^^M#2@end verbatim{%
+    \starttabbox#2\egroup\noexpand\end\gobble verbatim}%
   % We really want {...\end verbatim} in the body of the macro, but
   % without the active space; thus we have to use \xdef and \gobble.
+  % The \egroup ends the \verbbox started at the end of the last line in
+  % the block.
 \endgroup
 %
 \envdef\verbatim{%
-    \setupverbatim\doverbatim
+    \setnormaldispenv\setupverbatim\doverbatim
 }
 \let\Everbatim = \afterenvbreak
 
@@ -7540,7 +7684,7 @@ might help (with 'rm \jobname.?? \jobname.??s')%
       \wlog{texinfo.tex: doing @verbatiminclude of #1^^J}%
       \edef\tmp{\noexpand\input #1 }
       \expandafter
-    }\tmp
+    }\expandafter\starttabbox\tmp\egroup
     \afterenvbreak
   }%
 }
@@ -10706,6 +10850,8 @@ directory should work if nowhere else does.}
   \DeclareUnicodeCharacter{0233}{\=y}%
   \DeclareUnicodeCharacter{0237}{\dotless{j}}%
   %
+  \DeclareUnicodeCharacter{02BC}{'}%
+  %
   \DeclareUnicodeCharacter{02DB}{\ogonek{ }}%
   %
   % Greek letters upper case
@@ -11340,6 +11486,18 @@ directory should work if nowhere else does.}
   \globaldefs = 0
 }}
 
+\def\bsixpaper{{\globaldefs = 1
+  \afourpaper
+  \internalpagesizes{140mm}{100mm}%
+                    {-6.35mm}{-12.7mm}%
+                    {\bindingoffset}{14pt}%
+                    {176mm}{125mm}%
+  \let\SETdispenvsize=\smallword
+  \lispnarrowing = 0.2in
+  \globaldefs = 0
+}}
+
+
 % @pagesizes TEXTHEIGHT[,TEXTWIDTH]
 % Perhaps we should allow setting the margins, \topskip, \parskip,
 % and/or leading, also. Or perhaps we should compute them somehow.
@@ -11353,12 +11511,12 @@ directory should work if nowhere else does.}
   \setleading{\textleading}%
   %
   \dimen0 = #1\relax
-  \advance\dimen0 by \voffset
-  \advance\dimen0 by 1in % reference point for DVI is 1 inch from top of page
+  \advance\dimen0 by 2.5in % default 1in margin above heading line
+                           % and 1.5in to include heading, footing and
+                           % bottom margin
   %
   \dimen2 = \hsize
-  \advance\dimen2 by \normaloffset
-  \advance\dimen2 by 1in % reference point is 1 inch from left edge of page
+  \advance\dimen2 by 2in % default to 1 inch margin on each side
   %
   \internalpagesizes{#1}{\hsize}%
                     {\voffset}{\normaloffset}%

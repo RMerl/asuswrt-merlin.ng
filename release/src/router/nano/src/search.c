@@ -323,13 +323,13 @@ int findnextstr(const char *needle, bool whole_word_only, int modus,
 		*match_len = found_len;
 
 #ifndef NANO_TINY
-	if (modus == JUSTFIND && ISSET(MARK_MATCH) && (!openfile->mark || openfile->softmark)) {
-		openfile->mark = line;
-		openfile->mark_x = found_x + found_len;
-		openfile->softmark = TRUE;
+	if (modus == JUSTFIND && (!openfile->mark || openfile->softmark)) {
+		spotlighted = TRUE;
+		light_from_col = xplustabs();
+		light_to_col = wideness(line->data, found_x + found_len);
 		if (!ISSET(SHOW_CURSOR))
 			hide_cursor = TRUE;
-		shift_held = TRUE;
+		refresh_needed = TRUE;
 	}
 #endif
 
@@ -521,19 +521,6 @@ char *replace_line(const char *needle)
 	return copy;
 }
 
-#ifdef ENABLE_COLOR
-/* Reset the multiline coloring info and then recalculate it. */
-void wipe_and_recalculate_colorinfo(void)
-{
-	for (linestruct *line = openfile->filetop; line != NULL; line = line->next)
-		if (line->multidata)
-			for (short index = 0; index < openfile->syntax->nmultis; index++)
-				line->multidata[index] = -1;
-
-	precalc_multicolorinfo();
-}
-#endif
-
 /* Step through each occurrence of the search string and prompt the user
  * before replacing it.  We seek for needle, and replace it with answer.
  * The parameters real_current and real_current_x are needed in order to
@@ -678,17 +665,6 @@ ssize_t do_replace_loop(const char *needle, bool whole_word_only,
 			free(openfile->current->data);
 			openfile->current->data = copy;
 
-#ifndef NANO_TINY
-			if (ISSET(SOFTWRAP))
-				openfile->current->extrarows = extra_chunks_in(openfile->current);
-#endif
-#ifdef ENABLE_COLOR
-			/* Check whether the replacement requires a change in the coloring. */
-			check_the_multis(openfile->current);
-
-			if (refresh_needed && !replaceall)
-				wipe_and_recalculate_colorinfo();
-#endif
 			set_modified();
 			as_an_at = TRUE;
 			numreplaced++;
@@ -697,11 +673,6 @@ ssize_t do_replace_loop(const char *needle, bool whole_word_only,
 
 	if (numreplaced == -1)
 		not_found_msg(needle);
-
-#ifdef ENABLE_COLOR
-	if (refresh_needed)
-		wipe_and_recalculate_colorinfo();
-#endif
 
 #ifndef NANO_TINY
 	openfile->mark = was_mark;

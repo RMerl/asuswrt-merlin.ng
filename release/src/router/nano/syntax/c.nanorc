@@ -1,14 +1,15 @@
 ## Syntax highlighting for C and C++ files.
 
 syntax c "\.([ch](pp|xx)?|C|cc|c\+\+|cu|H|hh|ii?)$"
-header "-\*-.*\<C(\+\+)?((;|\s).*)?-\*-"
+header "-\*-.*\<C(\+\+)?((;|[[:blank:]]).*)?-\*-"
 magic "^(C|C\+\+) (source|program)"
 comment "//"
 
 # Constants.
 color brightred "\<[A-Z_][0-9A-Z_]*\>"
 # Labels.
-color brightmagenta "^[[:space:]]*[A-Z_a-z]+:[[:space:]]*$"
+color brightmagenta "^[[:blank:]]*[A-Z_a-z][0-9A-Z_a-z]*:[[:blank:]]*$"
+color normal ":[[:blank:]]*$"
 
 # Types and related keywords.
 color green "\<(auto|bool|char|const|double|enum|extern|float|inline|int|long|restrict|short|signed|sizeof|static|struct|typedef|union|unsigned|void)\>"
@@ -25,15 +26,15 @@ color magenta "\<(break|continue|goto|return)\>"
 color brightmagenta "'([^'\]|\\(["'\abfnrtv]|x[0-9A-Fa-f]{1,2}|[0-3]?[0-7]{1,2}))'"
 
 # GCC builtins.
-color cyan "__attribute__[[:space:]]*\(\([^)]*\)\)" "__(aligned|asm|builtin|hidden|inline|packed|restrict|section|typeof|weak)__"
+color cyan "__attribute__[[:blank:]]*\(\([^)]*\)\)" "__(aligned|asm|builtin|hidden|inline|packed|restrict|section|typeof|weak)__"
 
 # Strings.  (In general you will want your strings and comments to come last,
 # because highlighting rules are applied in the order they are read in.)
-color brightyellow ""([^"]|\\")*"" "#[[:space:]]*include[[:space:]]+<[^[:blank:]=]*>"
+color brightyellow ""([^"]|\\")*"" "#[[:blank:]]*include[[:blank:]]*<[^>]+>"
 
 # Preprocessor directives.
-color brightcyan start="^[[:space:]]*#[[:space:]]*(if(n?def)?|elif|warning|error|pragma)\>" end="(\`|[^\\])$"
-color brightcyan "^[[:space:]]*#[[:space:]]*((define|else|endif|include(_next)?|line|undef)\>|$)"
+color brightcyan start="^[[:blank:]]*#[[:blank:]]*(if(n?def)?|elif|warning|error|pragma)\>" end="(\`|[^\\])$"
+color brightcyan "^[[:blank:]]*#[[:blank:]]*((define|else|endif|include(_next)?|line|undef)\>|$)"
 
 # Comments.
 color brightblue "//.*"

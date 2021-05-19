@@ -85,7 +85,7 @@
 
 /* Override WINT_MIN and WINT_MAX if gnulib's <wchar.h> or <wctype.h> overrides
    wint_t.  */
-#if @GNULIB_OVERRIDES_WINT_T@
+#if @GNULIBHEADERS_OVERRIDE_WINT_T@
 # undef WINT_MIN
 # undef WINT_MAX
 # define WINT_MIN 0x0U
@@ -598,7 +598,7 @@ typedef int _verify_intmax_size[sizeof (intmax_t) == sizeof (uintmax_t)
 /* wint_t limits */
 /* If gnulib's <wchar.h> or <wctype.h> overrides wint_t, @WINT_T_SUFFIX@ is not
    accurate, therefore use the definitions from above.  */
-# if !@GNULIB_OVERRIDES_WINT_T@
+# if !@GNULIBHEADERS_OVERRIDE_WINT_T@
 #  undef WINT_MIN
 #  undef WINT_MAX
 #  if @HAVE_SIGNED_WINT_T@

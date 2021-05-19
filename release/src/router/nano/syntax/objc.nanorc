@@ -15,13 +15,13 @@ color brightgreen "\<(goto|continue|break|return)\>"
 color brightgreen "@(encode|end|implementation|interface)|selector)\>"
 
 # GCC builtins.
-color cyan "__attribute__[[:space:]]*\(\([^)]*\)\)" "__(aligned|asm|builtin|hidden|inline|packed|restrict|section|typeof|weak)__"
+color cyan "__attribute__[[:blank:]]*\(\([^)]*\)\)" "__(aligned|asm|builtin|hidden|inline|packed|restrict|section|typeof|weak)__"
 
 # Selector/method.
-color brightmagenta "(^|[[:space:]])\[.*[[:space:]].*\]"
+color brightmagenta "(^|[[:blank:]])\[.*[[:blank:]].*\]"
 color white ":[[:alnum:]]*"
 color magenta "[[:alnum:]]*:"
-color white "\[[^][:space:]]*\]"
+color white "\[[^][:blank:]]*\]"
 
 # Strings.
 color brightblack "'([^'\]|(\\["'abfnrtv\\]))'" "'\\(([0-3]?[0-7]{1,2}))'" "'\\x[0-9A-Fa-f]{1,2}'"
@@ -29,7 +29,7 @@ color brightblack "<[^= 	]*>" ""(\\.|[^"])*""
 color brightblue "@"(\\.|[^"])*""
 
 # Preprocessor commands.
-color brightblue "^[[:space:]]*#[[:space:]]*(define|include|import|(un|ifn?)def|endif|el(if|se)|if|warning|error)"
+color brightblue "^[[:blank:]]*#[[:blank:]]*(define|include|import|(un|ifn?)def|endif|el(if|se)|if|warning|error)"
 
 # Comments.
 color yellow "//.*"

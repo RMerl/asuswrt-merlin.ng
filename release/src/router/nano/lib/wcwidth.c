@@ -34,7 +34,7 @@ is_locale_utf8 (void)
   return STREQ_OPT (encoding, "UTF-8", 'U', 'T', 'F', '-', '8', 0, 0, 0, 0);
 }
 
-#if GNULIB_WCHAR_SINGLE
+#if GNULIB_WCHAR_SINGLE_LOCALE
 /* When we know that the locale does not change, provide a speedup by
    caching the value of is_locale_utf8.  */
 static int cached_is_locale_utf8 = -1;

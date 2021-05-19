@@ -44,8 +44,7 @@
 ## Do case-sensitive searches by default.
 # set casesensitive
 
-## Constantly display the cursor position in the status bar.  Note that
-## this overrides "quickblank".
+## Constantly display the cursor position in the status bar or minibar.
 # set constantshow
 
 ## Use cut-from-cursor-to-end-of-line by default.
@@ -78,9 +77,6 @@
 
 ## Fall back to slow libmagic to try and determine an applicable syntax.
 # set magic
-
-# After a search, set the mark at the end of the found match (if any).
-# set markmatch
 
 ## The opening and closing brackets that can be found by bracket
 ## searches.  They cannot contain blank characters.  The former set must
@@ -127,8 +123,7 @@
 ## sentences.
 # set punct "!.?"
 
-## Do quick status-bar blanking.  Status-bar messages will disappear after
-## 1 keystroke instead of 26.  Note that "constantshow" overrides this.
+## Make status-bar messages disappear after 1 keystroke instead of after 20.
 # set quickblank
 
 ## The regular expression that matches quoting characters in email
@@ -206,12 +201,14 @@
 ## of a single character, and without affecting the cutbuffer).
 # set zap
 
-## Paint the interface elements of nano.  These are examples;
-## by default there are no colors, except for errorcolor.
+
+## Paint the interface elements of nano.  These are examples; there are
+## no colors by default, except for errorcolor and spotlightcolor.
 # set titlecolor bold,lightwhite,blue
 # set promptcolor lightwhite,lightblack
 # set statuscolor bold,lightwhite,green
 # set errorcolor bold,lightwhite,red
+# set spotlightcolor black,lime
 # set selectedcolor lightwhite,magenta
 # set stripecolor ,yellow
 # set scrollercolor cyan
@@ -224,6 +221,7 @@
 # set promptcolor black,yellow
 # set statuscolor bold,lightwhite,magenta
 # set errorcolor bold,lightwhite,red
+# set spotlightcolor black,orange
 # set selectedcolor lightwhite,cyan
 # set stripecolor ,yellow
 # set scrollercolor magenta

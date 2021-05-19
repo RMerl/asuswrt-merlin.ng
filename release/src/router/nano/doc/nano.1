@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH NANO 1 "version 5.5" "January 2021"
+.TH NANO 1 "version 5.7" "April 2021"
 
 .SH NAME
 nano \- Nano's ANOther editor, inspired by Pico
@@ -190,9 +190,9 @@ Set the size (width) of a tab to \fInumber\fP columns.  The value of
 \fInumber\fR must be greater than 0.  The default value is \fB8\fR.
 .TP
 .BR \-U ", " \-\-quickblank
-Do quick status-bar blanking: status-bar messages will disappear after 1
-keystroke instead of 25.  Note that option \fB\-c\fR (\fB\-\-constantshow\fR)
-overrides this.
+Make status-bar messages disappear after 1 keystroke instead of after 20.
+Note that options \fB\-c\fR (\fB\-\-constantshow\fR)
+and \fB\-_\fR (\fB\-\-minibar\fR) override this.
 .TP
 .BR \-V ", " \-\-version
 Show the current version number and exit.
@@ -329,12 +329,6 @@ Make Ctrl+Right and Ctrl+Delete stop at word ends instead of beginnings.
 .BR \-z ", " \-\-suspendable
 Allow the user to suspend the editor (with \fB^Z\fR by default).
 .TP
-.BR \-^ ", " \-\-markmatch
-After a search, set the mark at the end of the found match
-(if there is any) so that it gets highlighted.  This makes
-the match more visible, but also allows deleting the match
-with a single keystroke.
-.TP
 .BR \-% ", " \-\-stateflags
 Use the top-right corner of the screen for showing some state flags:
 \fBI\fR when auto-indenting, \fBM\fR when the mark is on, \fBL\fR when
@@ -356,6 +350,9 @@ When a file is loaded or saved, and also when switching between buffers,
 the number of lines in the buffer is displayed after the file name.
 This number is cleared upon the next keystroke, or replaced with an
 [i/n] counter when multiple buffers are open.
+The line plus column numbers and the character code are displayed only when
+\fB\-\-constantshow\fR is used, and can be toggled on and off with \fBM-C\fR.
+The state flags are displayed only when \fB\-\-stateflags\fR is used.
 .TP
 .BR \-! ", " \-\-magic
 When neither the file's name nor its first line give a clue,

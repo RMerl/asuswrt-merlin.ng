@@ -11,7 +11,7 @@ File: nano.info,  Node: Top,  Next: Introduction,  Up: (dir)
 nano
 ****
 
-This manual documents the GNU ‘nano’ editor, version 5.5.
+This manual documents the GNU ‘nano’ editor, version 5.7.
 
 * Menu:
 
@@ -213,9 +213,9 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
 
 ‘-U’
 ‘--quickblank’
-     Do quick status-bar blanking: status-bar messages will disappear
-     after 1 keystroke instead of 25.  Note that option ‘-c’
-     (‘--constantshow’) overrides this.
+     Make status-bar messages disappear after 1 keystroke instead of
+     after 20.  Note that options ‘-c’ (‘--constantshow’) and ‘-_’
+     (‘--minibar’) override this.
 
 ‘-V’
 ‘--version’
@@ -403,13 +403,6 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
      Enable the ability to suspend ‘nano’ using the system’s suspend
      keystroke (usually ‘^Z’).
 
-‘-^’
-‘--markmatch’
-     After a search, set the mark at the end of the found match (if
-     there is any) so that it gets highlighted.  This makes the match
-     more visible, but also allows deleting the match with a single
-     keystroke.
-
 ‘-%’
 ‘--stateflags’
      Use the top-right corner of the screen for showing some state
@@ -431,7 +424,10 @@ File: nano.info,  Node: Command-line Options,  Next: Editor Basics,  Prev: Invok
      file is loaded or saved, and also when switching between buffers,
      the number of lines in the buffer is displayed after the file name.
      This number is cleared upon the next keystroke, or replaced with an
-     [i/n] counter when multiple buffers are open.
+     [i/n] counter when multiple buffers are open.  The line plus column
+     numbers and the character code are displayed only when
+     ‘--constantshow’ is used, and can be toggled on and off with <M-C>.
+     The state flags are displayed only when ‘--stateflags’ is used.
 
 ‘-!’
 ‘--magic’
@@ -880,12 +876,6 @@ The supported settings in a nanorc file are:
      libmagic can be relatively time consuming.  It is therefore not
      done by default.)
 
-‘set markmatch’
-     After a search, set the mark at the end of the found match (if
-     there is any) so that it gets highlighted.  This makes the match
-     more visible, but also allows deleting the match with a single
-     keystroke.
-
 ‘set matchbrackets "CHARACTERS"’
      Specify the opening and closing brackets that can be found by
      bracket searches.  This may not include blank characters.  The
@@ -904,11 +894,10 @@ The supported settings in a nanorc file are:
      file is loaded or saved, and also when switching between buffers,
      the number of lines in the buffer is displayed after the file name.
      This number is cleared upon the next keystroke, or replaced with an
-     [i/n] counter when multiple buffers are open.
-
-‘set morespace’
-     Deprecated option since it has become the default setting.  When
-     needed, use ‘unset emptyline’ instead.
+     [i/n] counter when multiple buffers are open.  The line plus column
+     numbers and the character code are displayed only when ‘set
+     constantshow’ is used, and can be toggled on and off with <M-C>.
+     The state flags are displayed only when ‘set stateflags’ is used.
 
 ‘set mouse’
      Enable mouse support, so that mouse clicks can be used to place the
@@ -927,9 +916,6 @@ The supported settings in a nanorc file are:
 ‘set nonewlines’
      Don’t automatically add a newline when a text does not end with
      one.  (This can cause you to save non-POSIX text files.)
-
-‘set nopauses’
-     Obsolete option.  Ignored.
 
 ‘set nowrap’
      Deprecated option since it has become the default setting.  When
@@ -966,9 +952,9 @@ The supported settings in a nanorc file are:
      value is "!.?".
 
 ‘set quickblank’
-     Do quick status-bar blanking: status-bar messages will disappear
-     after 1 keystroke instead of 25.  Note that ‘constantshow’
-     overrides this.
+     Make status-bar messages disappear after 1 keystroke instead of
+     after 20.  Note that options ‘constantshow’ and ‘minibar’ override
+     this.
 
 ‘set quotestr "REGEX"’
      Set the regular expression for matching the quoting part of a line.
@@ -1019,10 +1005,6 @@ The supported settings in a nanorc file are:
      If the cursor is already at that position, it will jump to the true
      beginning of the line.
 
-‘set smooth’
-     Deprecated option since it has become the default setting.  When
-     needed, use ‘unset jumpyscrolling’ instead.
-
 ‘set softwrap’
      Display lines that exceed the screen’s width over multiple screen
      lines.  (You can make this soft-wrapping occur at whitespace
@@ -1032,6 +1014,11 @@ The supported settings in a nanorc file are:
 ‘set speller "PROGRAM [ARGUMENT ...]"’
      Use the given program to do spell checking and correcting.  *Note
      --speller:: for details.
+
+‘set spotlightcolor [bold,][italic,]FGCOLOR,BGCOLOR’
+     Use this color combination for highlighting a search match.  The
+     default value is black,lightyellow.  *Note set functioncolor:: for
+     valid color names.
 
 ‘set stateflags’
      Use the top-right corner of the screen for showing some state
@@ -1922,29 +1909,29 @@ Node: Top199
 Node: Introduction554
 Node: Invoking1750
 Node: Command-line Options3366
-Ref: --speller12492
-Node: Editor Basics16301
-Node: Entering Text16597
-Node: Commands17586
-Node: The Cutbuffer18383
-Node: The Mark18957
-Node: Screen Layout19927
-Node: Search and Replace21106
-Node: Using the Mouse21841
-Node: Anchors22454
-Node: Limitations23259
-Node: Built-in Help23576
-Node: The File Browser24001
-Node: Feature Toggles24892
-Node: Nanorc Files26699
-Node: Settings28320
-Ref: set functioncolor31590
-Ref: set matchbrackets34218
-Ref: Whitespace42030
-Node: Syntax Highlighting42785
-Node: Rebinding Keys49550
-Node: Pico Compatibility64002
-Node: Building and Configure Options68542
+Ref: --speller12499
+Node: Editor Basics16290
+Node: Entering Text16586
+Node: Commands17575
+Node: The Cutbuffer18372
+Node: The Mark18946
+Node: Screen Layout19916
+Node: Search and Replace21095
+Node: Using the Mouse21830
+Node: Anchors22443
+Node: Limitations23248
+Node: Built-in Help23565
+Node: The File Browser23990
+Node: Feature Toggles24881
+Node: Nanorc Files26688
+Node: Settings28309
+Ref: set functioncolor31579
+Ref: set matchbrackets33964
+Ref: Whitespace41905
+Node: Syntax Highlighting42660
+Node: Rebinding Keys49425
+Node: Pico Compatibility63877
+Node: Building and Configure Options68417
 
 End Tag Table
 

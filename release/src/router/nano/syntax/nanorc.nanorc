@@ -7,26 +7,26 @@ comment "#"
 color brightred ".*"
 
 # Keywords
-color brightgreen "^[[:space:]]*(set|unset)[[:space:]]+(afterends|allow_insecure_backup|atblanks|autoindent|backup|boldtext|bookstyle|breaklonglines|casesensitive|constantshow|cutfromcursor|emptyline|historylog|indicator|jumpyscrolling|linenumbers|locking|magic|markmatch|minibar|mouse|multibuffer|noconvert|nohelp|nonewlines|positionlog|preserve|quickblank|rawsequences|rebinddelete|regexp|saveonexit|showcursor|smarthome|softwrap|stateflags|suspendable|tabstospaces|trimblanks|unix|wordbounds|zap)\>"
-color yellow "^[[:space:]]*set[[:space:]]+((error|function|key|number|prompt|scroller|selected|status|stripe|title)color)[[:space:]]+(bold,)?(italic,)?(bright|light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte)?(,(light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte))?\>"
-color brightgreen "^[[:space:]]*set[[:space:]]+(backupdir|brackets|errorcolor|functioncolor|keycolor|matchbrackets|numbercolor|operatingdir|promptcolor|punct|quotestr|scrollercolor|selectedcolor|speller|statuscolor|stripecolor|titlecolor|whitespace|wordchars)[[:space:]]+"
-color brightgreen "^[[:space:]]*set[[:space:]]+(fill[[:space:]]+-?[[:digit:]]+|(guidestripe|tabsize)[[:space:]]+[1-9][0-9]*)\>"
-color brightgreen "^[[:space:]]*bind[[:space:]]+((\^([A-Za-z]|[]/@\^_`]|Space)|([Ss][Hh]-)?[Mm]-[A-Za-z]|[Mm]-([][!"#$%&'()*+,./0-9:;<=>?@\^_`{|}~-]|Space))|F([1-9]|1[0-9]|2[0-4])|Ins|Del)[[:space:]]+([a-z]+|".*")[[:space:]]+(main|help|search|replace(with)?|yesno|gotoline|writeout|insert|browser|whereisfile|gotodir|execute|spell|linter|all)([[:space:]]+#|[[:space:]]*$)"
-color brightgreen "^[[:space:]]*unbind[[:space:]]+((\^([A-Za-z]|[]/@\^_`]|Space)|([Ss][Hh]-)?[Mm]-[A-Za-z]|[Mm]-([][!"#$%&'()*+,./0-9:;<=>?@\^_`{|}~-]|Space))|F([1-9]|1[0-9]|2[0-4])|Ins|Del)[[:space:]]+(all|main|search|replace(with)?|yesno|gotoline|writeout|insert|ext(ernal)?cmd|help|spell|linter|browser|whereisfile|gotodir)([[:space:]]+#|[[:space:]]*$)"
-color brightgreen "^[[:space:]]*extendsyntax[[:space:]]+[[:alpha:]]+[[:space:]]+(i?color|header|magic|comment|formatter|linter|tabgives)[[:space:]]+.*"
-color brightgreen "^[[:space:]]*(syntax[[:space:]]+[^[:blank:]]+|(formatter|linter)[[:space:]]+.+)"
-color green "^[[:space:]]*((un)?(bind|set)|include|syntax|header|magic|comment|formatter|linter|tabgives|extendsyntax)\>"
+color brightgreen "^[[:blank:]]*(set|unset)[[:blank:]]+(afterends|allow_insecure_backup|atblanks|autoindent|backup|boldtext|bookstyle|breaklonglines|casesensitive|constantshow|cutfromcursor|emptyline|historylog|indicator|jumpyscrolling|linenumbers|locking|magic|minibar|mouse|multibuffer|noconvert|nohelp|nonewlines|positionlog|preserve|quickblank|rawsequences|rebinddelete|regexp|saveonexit|showcursor|smarthome|softwrap|stateflags|suspendable|tabstospaces|trimblanks|unix|wordbounds|zap)\>"
+color yellow "^[[:blank:]]*set[[:blank:]]+((error|function|key|number|prompt|scroller|selected|spotlight|status|stripe|title)color)[[:blank:]]+(bold,)?(italic,)?(bright|light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte)?(,(light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte))?\>"
+color brightgreen "^[[:blank:]]*set[[:blank:]]+(backupdir|brackets|errorcolor|functioncolor|keycolor|matchbrackets|numbercolor|operatingdir|promptcolor|punct|quotestr|scrollercolor|selectedcolor|speller|spotlightcolor|statuscolor|stripecolor|titlecolor|whitespace|wordchars)[[:blank:]]+"
+color brightgreen "^[[:blank:]]*set[[:blank:]]+(fill[[:blank:]]+-?[[:digit:]]+|(guidestripe|tabsize)[[:blank:]]+[1-9][0-9]*)\>"
+color brightgreen "^[[:blank:]]*bind[[:blank:]]+((\^([A-Za-z]|[]/@\^_`]|Space)|([Ss][Hh]-)?[Mm]-[A-Za-z]|[Mm]-([][!"#$%&'()*+,./0-9:;<=>?@\^_`{|}~-]|Space))|F([1-9]|1[0-9]|2[0-4])|Ins|Del)[[:blank:]]+([a-z]+|".*")[[:blank:]]+(main|help|search|replace(with)?|yesno|gotoline|writeout|insert|browser|whereisfile|gotodir|execute|spell|linter|all)([[:blank:]]+#|[[:blank:]]*$)"
+color brightgreen "^[[:blank:]]*unbind[[:blank:]]+((\^([A-Za-z]|[]/@\^_`]|Space)|([Ss][Hh]-)?[Mm]-[A-Za-z]|[Mm]-([][!"#$%&'()*+,./0-9:;<=>?@\^_`{|}~-]|Space))|F([1-9]|1[0-9]|2[0-4])|Ins|Del)[[:blank:]]+(all|main|search|replace(with)?|yesno|gotoline|writeout|insert|ext(ernal)?cmd|help|spell|linter|browser|whereisfile|gotodir)([[:blank:]]+#|[[:blank:]]*$)"
+color brightgreen "^[[:blank:]]*extendsyntax[[:blank:]]+[[:alpha:]]+[[:blank:]]+(i?color|header|magic|comment|formatter|linter|tabgives)[[:blank:]]+.*"
+color brightgreen "^[[:blank:]]*(syntax[[:blank:]]+[^[:space:]]+|(formatter|linter)[[:blank:]]+.+)"
+color green "^[[:blank:]]*((un)?(bind|set)|include|syntax|header|magic|comment|formatter|linter|tabgives|extendsyntax)\>"
 
 # Strings
-color brightmagenta "([[:space:]]|(start|end)=)".+"([[:space:]]|$)"
+color brightmagenta "([[:blank:]]|(start|end)=)".+"([[:blank:]]|$)"
 
 # Colors
-color yellow "^[[:space:]]*i?color[[:space:]]*(bold,)?(italic,)?(bright|light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte)?(,(light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte))?\>"
-color magenta "^[[:space:]]*i?color\>" "\<(start|end)="
+color yellow "^[[:blank:]]*i?color[[:blank:]]*(bold,)?(italic,)?(bright|light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte)?(,(light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte))?\>"
+color magenta "^[[:blank:]]*i?color\>" "\<(start|end)="
 
 # Comments
-color brightblue "(^|[[:space:]]+)#.*"
-color cyan "^[[:space:]]*##.*"
+color brightblue "(^|[[:blank:]]+)#.*"
+color cyan "^[[:blank:]]*##.*"
 
 # Trailing whitespace
 color ,green "[[:space:]]+$"

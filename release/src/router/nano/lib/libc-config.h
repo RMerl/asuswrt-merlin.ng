@@ -33,9 +33,9 @@
 #include <config.h>
 
 /* On glibc this includes <features.h> and <sys/cdefs.h> and #defines
-   _FEATURES_H, __WORDSIZE, and __set_errno.  On FreeBSD 11 it
-   includes <sys/cdefs.h> which defines __nonnull.  Elsewhere it
-   is harmless.  */
+   _FEATURES_H, __WORDSIZE, and __set_errno.  On FreeBSD 11 and
+   DragonFlyBSD 5.9 it includes <sys/cdefs.h> which defines __nonnull.
+   Elsewhere it is harmless.  */
 #include <errno.h>
 
 /* From glibc <errno.h>.  */
@@ -71,24 +71,18 @@
 # endif
 #endif
 
-#ifndef __glibc_likely
-/* <sys/cdefs.h> either does not exist, or predates glibc commit
-   2012-12-28T06:33:01Z!siddhesh@redhat.com
-   (91998e449e0ce758db55aecf2abc3ee510fcbc8f)
-   and so does not suffice for Gnulib.  Prepare to include <cdefs.h>,
-   which is Gnulib's copy of a more-recent glibc <sys/cdefs.h>.  */
+#ifndef __attribute_nonnull__
+/* <sys/cdefs.h> either does not exist, or is too old for Gnulib.
+   Prepare to include <cdefs.h>, which is Gnulib's version of a
+   more-recent glibc <sys/cdefs.h>.  */
 
 /* Define _FEATURES_H so that <cdefs.h> does not include <features.h>.  */
 # ifndef _FEATURES_H
 #  define _FEATURES_H 1
 # endif
-/* Define __WORDSIZE so that <cdefs.h> does not attempt to include
-   nonexistent files.  Make it a syntax error, since Gnulib does not
-   use __WORDSIZE now, and if Gnulib uses it later the syntax error
-   will let us know that __WORDSIZE needs configuring.  */
-# ifndef __WORDSIZE
-#  define __WORDSIZE %%%
-# endif
+/* Define __GNULIB_CDEFS so that <cdefs.h> does not attempt to include
+   nonexistent files.  */
+# define __GNULIB_CDEFS
 /* Undef the macros unconditionally defined by our copy of glibc
    <sys/cdefs.h>, so that they do not clash with any system-defined
    versions.  */

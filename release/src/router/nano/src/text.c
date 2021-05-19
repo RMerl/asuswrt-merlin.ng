@@ -103,9 +103,6 @@ void indent_a_line(linestruct *line, char *indentation)
 
 	openfile->totsize += indent_len;
 
-	if (ISSET(SOFTWRAP))
-		line->extrarows = extra_chunks_in(line);
-
 	/* Compensate for the change in the current line. */
 	if (line == openfile->mark && openfile->mark_x > 0)
 		openfile->mark_x += indent_len;
@@ -233,9 +230,6 @@ void unindent_a_line(linestruct *line, size_t indent_len)
 	memmove(line->data, line->data + indent_len, length - indent_len + 1);
 
 	openfile->totsize -= indent_len;
-
-	if (ISSET(SOFTWRAP))
-		line->extrarows = extra_chunks_in(line);
 
 	/* Adjust the positions of mark and cursor, when they are affected. */
 	compensate_leftward(line, indent_len);
@@ -426,10 +420,6 @@ void do_comment(void)
 	 * store undo data when a line changed. */
 	for (line = top; line != bot->next; line = line->next) {
 		if (comment_line(action, line, comment_seq)) {
-#ifndef NANO_TINY
-			if (ISSET(SOFTWRAP))
-				line->extrarows = extra_chunks_in(line);
-#endif
 			update_multiline_undo(line->lineno, "");
 		}
 	}
@@ -573,8 +563,6 @@ void do_undo(void)
 			break;
 		}
 		line->data[u->tail_x] = '\0';
-		if (ISSET(SOFTWRAP))
-			line->extrarows = extra_chunks_in(line);
 		intruder = make_new_node(line);
 		intruder->data = copy_of(u->strdata);
 		splice_node(line, intruder);
@@ -676,9 +664,6 @@ void do_undo(void)
 	openfile->mark = NULL;
 	openfile->placewewant = xplustabs();
 
-	if (ISSET(SOFTWRAP))
-		openfile->current->extrarows = extra_chunks_in(openfile->current);
-
 	openfile->totsize = u->wassize;
 
 	/* When at the point where the file was last saved, unset "Modified". */
@@ -725,8 +710,6 @@ void do_redo(void)
 	case ENTER:
 		redidmsg = _("line break");
 		line->data[u->head_x] = '\0';
-		if (ISSET(SOFTWRAP))
-			line->extrarows = extra_chunks_in(line);
 		intruder = make_new_node(line);
 		intruder->data = copy_of(u->strdata);
 		splice_node(line, intruder);
@@ -841,9 +824,6 @@ void do_redo(void)
 	openfile->mark = NULL;
 	openfile->placewewant = xplustabs();
 
-	if (ISSET(SOFTWRAP))
-		openfile->current->extrarows = extra_chunks_in(openfile->current);
-
 	openfile->totsize = u->newsize;
 
 	/* When at the point where the file was last saved, unset "Modified". */
@@ -907,11 +887,6 @@ void do_enter(void)
 		openfile->mark = newnode;
 		openfile->mark_x += extra - openfile->current_x;
 	}
-
-	if (ISSET(SOFTWRAP)) {
-		openfile->current->extrarows = extra_chunks_in(openfile->current);
-		newnode->extrarows = extra_chunks_in(newnode);
-	}
 #endif
 
 	/* Insert the newly created line after the current one and renumber. */
@@ -951,7 +926,7 @@ void discard_until(const undostruct *thisitem)
 		while (group != NULL) {
 			groupstruct *next = group->next;
 			free_chararray(group->indentations,
-								group->bottom_line - group->top_line);
+								group->bottom_line - group->top_line + 1);
 			free(group);
 			group = next;
 		}
@@ -1453,21 +1428,12 @@ ssize_t break_line(const char *textstart, ssize_t goal, bool snap_at_nl)
  * "indentation" of a line is the leading consecutive whitespace. */
 size_t indent_length(const char *line)
 {
-	size_t len = 0;
-	char onechar[MAXCHARLEN];
-	int charlen;
+	const char *start = line;
 
-	while (*line != '\0') {
-		charlen = collect_char(line, onechar);
+	while (*line != '\0' && is_blank_char(line))
+		line += char_length(line);
 
-		if (!is_blank_char(onechar))
-			break;
-
-		line += charlen;
-		len += charlen;
-	}
-
-	return len;
+	return (line - start);
 }
 #endif
 
@@ -2000,7 +1966,7 @@ void do_justify(bool full_justify)
 	else
 #endif
 	if (full_justify)
-		statusbar(_("Justified file"));
+		statusline(REMARK, _("Justified file"));
 	else
 		statusbar(_("Justified paragraph"));
 

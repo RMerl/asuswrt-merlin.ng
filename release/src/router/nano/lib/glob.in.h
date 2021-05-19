@@ -70,7 +70,9 @@ typedef int (*_gl_glob_errfunc_fn) (const char *, int);
 
 /* Preparations for including the standard GNU C Library header.  */
 
-# include <libc-config.h>
+# ifndef __attribute_maybe_unused__
+#  include <libc-config.h>
+# endif
 
 # include <stddef.h>
 

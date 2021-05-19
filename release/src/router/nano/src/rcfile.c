@@ -60,7 +60,6 @@ static const rcoption rcopts[] = {
 #ifdef HAVE_LIBMAGIC
 	{"magic", USE_MAGIC},
 #endif
-	{"morespace", MORE_SPACE},  /* Deprecated; remove in 2021. */
 #ifdef ENABLE_MOUSE
 	{"mouse", USE_MOUSE},
 #endif
@@ -69,7 +68,6 @@ static const rcoption rcopts[] = {
 #endif
 	{"nohelp", NO_HELP},
 	{"nonewlines", NO_NEWLINES},
-	{"nopauses", NO_PAUSES},  /* Obsolete; remove in 2021. */
 #ifdef ENABLE_WRAPPING
 	{"nowrap", NO_WRAP},  /* Deprecated; remove in 2024. */
 #endif
@@ -109,13 +107,11 @@ static const rcoption rcopts[] = {
 	{"indicator", INDICATOR},
 	{"jumpyscrolling", JUMPY_SCROLLING},
 	{"locking", LOCKING},
-	{"markmatch", MARK_MATCH},
 	{"matchbrackets", 0},
 	{"minibar", MINIBAR},
 	{"noconvert", NO_CONVERT},
 	{"showcursor", SHOW_CURSOR},
 	{"smarthome", SMART_HOME},
-	{"smooth", SMOOTH_SCROLL},  /* Deprecated; remove in 2021. */
 	{"softwrap", SOFTWRAP},
 	{"stateflags", STATEFLAGS},
 	{"tabsize", 0},
@@ -133,6 +129,7 @@ static const rcoption rcopts[] = {
 	{"stripecolor", 0},
 	{"scrollercolor", 0},
 	{"selectedcolor", 0},
+	{"spotlightcolor", 0},
 	{"promptcolor", 0},
 	{"statuscolor", 0},
 	{"errorcolor", 0},
@@ -625,9 +622,7 @@ bool compile(const char *expression, int rex_flags, regex_t **packed)
 		regerror(outcome, compiled, message, length);
 		jot_error(N_("Bad regex \"%s\": %s"), expression, message);
 		free(message);
-	}
 
-	if (packed == NULL || outcome != 0) {
 		regfree(compiled);
 		free(compiled);
 	} else
@@ -1242,6 +1237,8 @@ void grab_and_store(const char *kind, char *ptr, regexlisttype **storage)
 
 	/* Now gather any valid regexes and add them to the linked list. */
 	while (*ptr != '\0') {
+		regex_t *packed_rgx = NULL;
+
 		regexstring = ++ptr;
 		ptr = parse_next_regex(ptr);
 
@@ -1249,12 +1246,12 @@ void grab_and_store(const char *kind, char *ptr, regexlisttype **storage)
 			return;
 
 		/* If the regex string is malformed, skip it. */
-		if (!compile(regexstring, NANO_REG_EXTENDED | REG_NOSUB, NULL))
+		if (!compile(regexstring, NANO_REG_EXTENDED | REG_NOSUB, &packed_rgx))
 			continue;
 
 		/* Copy the regex into a struct, and hook this in at the end. */
 		newthing = nmalloc(sizeof(regexlisttype));
-		newthing->full_regex = copy_of(regexstring);
+		newthing->one_rgx = packed_rgx;
 		newthing->next = NULL;
 
 		if (lastthing == NULL)
@@ -1558,6 +1555,8 @@ void parse_rcfile(FILE *rcstream, bool just_syntax, bool intros_only)
 			color_combo[SCROLL_BAR] = parse_interface_color(argument);
 		else if (strcmp(option, "selectedcolor") == 0)
 			color_combo[SELECTED_TEXT] = parse_interface_color(argument);
+		else if (strcmp(option, "spotlightcolor") == 0)
+			color_combo[SPOTLIGHTED] = parse_interface_color(argument);
 		else if (strcmp(option, "promptcolor") == 0)
 			color_combo[PROMPT_BAR] = parse_interface_color(argument);
 		else if (strcmp(option, "statuscolor") == 0)

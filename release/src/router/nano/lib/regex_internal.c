@@ -1314,6 +1314,7 @@ re_node_set_insert (re_node_set *set, Idx elem)
     {
       for (idx = set->nelem; set->elems[idx - 1] > elem; idx--)
 	set->elems[idx] = set->elems[idx - 1];
+      DEBUG_ASSERT (set->elems[idx - 1] < elem);
     }
 
   /* Insert the new element.  */

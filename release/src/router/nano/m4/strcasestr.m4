@@ -1,4 +1,4 @@
-# strcasestr.m4 serial 26
+# strcasestr.m4 serial 27
 dnl Copyright (C) 2005, 2007-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -7,7 +7,7 @@ dnl with or without modifications, as long as this notice is preserved.
 dnl Check that strcasestr is present and works.
 AC_DEFUN([gl_FUNC_STRCASESTR_SIMPLE],
 [
-  AC_REQUIRE([gl_HEADER_STRING_H_DEFAULTS])
+  AC_REQUIRE([gl_STRING_H_DEFAULTS])
 
   dnl Persuade glibc <string.h> to declare strcasestr().
   AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])

@@ -1,7 +1,7 @@
 ## Syntax highlighting for Bourne shell scripts.
 
 syntax sh "(\.sh|(\.|/)(a|ba|c|da|k|mk|pdk|tc|z)sh(rc|_profile)?|/(etc/|\.)profile)$"
-header "^#!.*/((env\s+)?((a|ba|c|da|k|mk|pdk|tc|z)?sh)|busybox\s+sh|openrc-run|runscript)\>"
+header "^#!.*/((env[[:blank:]]+)?((a|ba|c|da|k|mk|pdk|tc|z)?sh)|busybox[[:blank:]]+sh|openrc-run|runscript)\>"
 header "-\*-.*shell-script.*-\*-"
 magic "(POSIX|Bourne-Again) shell script.*text"
 comment "#"
@@ -27,10 +27,10 @@ color normal "[.-]tar\>"
 # Basic variable names (no braces).
 color brightred "\$[-0-9@*#?$!]" "\$[[:alpha:]_][[:alnum:]_]*"
 # More complicated variable names; handles braces and replacements and arrays.
-color brightred "\$\{[#!]?([-@*#?$!]|[0-9]+|[[:alpha:]_][[:alnum:]_]*)(\[([[:space:]]*[[:alnum:]_]+[[:space:]]*|@)\])?(([#%/]|:?[-=?+])[^}]*\}|\[|\})"
+color brightred "\$\{[#!]?([-@*#?$!]|[0-9]+|[[:alpha:]_][[:alnum:]_]*)(\[([[:blank:]]*[[:alnum:]_]+[[:blank:]]*|@)\])?(([#%/]|:?[-=?+])[^}]*\}|\[|\})"
 
 # Comments.
-color cyan "(^|[[:space:]])#.*"
+color cyan "(^|[[:blank:]])#.*"
 
 # Strings.
 color brightyellow ""(\\.|[^"])*"" "'(\\.|[^'])*'"

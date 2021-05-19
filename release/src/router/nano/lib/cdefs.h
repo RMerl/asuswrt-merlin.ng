@@ -38,7 +38,9 @@
        #if defined __has_attribute && __has_attribute (...)
    even though they do not need to evaluate the right-hand side of the &&.
    Similarly for __has_builtin, etc.  */
-#ifdef __has_attribute
+#if (defined __has_attribute \
+     && (!defined __clang_minor__ \
+         || 3 < __clang_major__ + (5 <= __clang_minor__)))
 # define __glibc_has_attribute(attr) __has_attribute (attr)
 #else
 # define __glibc_has_attribute(attr) 0
@@ -257,6 +259,16 @@
 # define __attribute_const__ /* Ignore */
 #endif
 
+#if __GNUC_PREREQ (2,7) || __glibc_has_attribute (__unused__)
+# define __attribute_maybe_unused__ __attribute__ ((__unused__))
+/* Once the next version of the C standard comes out, we can
+   do something like the following here:
+   #elif defined __STDC_VERSION__ && 202???L <= __STDC_VERSION__
+   # define __attribute_maybe_unused__ [[__maybe_unused__]]   */
+#else
+# define __attribute_maybe_unused__ /* Ignore */
+#endif
+
 /* At some point during the gcc 3.1 development the `used' attribute
    for functions was introduced.  We don't want to use it unconditionally
    (although this would be possible) since it generates warnings.  */
@@ -310,14 +322,18 @@
 #endif
 
 /* The nonnull function attribute marks pointer parameters that
-   must not be NULL.  Do not define __nonnull if it is already defined,
-   for portability when this file is used in Gnulib.  */
-#ifndef __nonnull
+   must not be NULL.  This has the name __nonnull in glibc,
+   and __attribute_nonnull__ in files shared with Gnulib to avoid
+   collision with a different __nonnull in DragonFlyBSD 5.9.  */
+#ifndef __attribute_nonnull__
 # if __GNUC_PREREQ (3,3) || __glibc_has_attribute (__nonnull__)
-#  define __nonnull(params) __attribute__ ((__nonnull__ params))
+#  define __attribute_nonnull__(params) __attribute__ ((__nonnull__ params))
 # else
-#  define __nonnull(params)
+#  define __attribute_nonnull__(params)
 # endif
+#endif
+#ifndef __nonnull
+# define __nonnull(params) __attribute_nonnull__ (params)
 #endif
 
 /* If fortification mode, we warn about unused results of certain
@@ -473,9 +489,9 @@
       [!!sizeof (struct { int __error_if_negative: (expr) ? 2 : -1; })]
 #endif
 
-/* The #ifndef lets Gnulib avoid including these on non-glibc
-   platforms, where the includes typically do not exist.  */
-#ifndef __WORDSIZE
+/* Gnulib avoids including these, as they don't work on non-glibc or
+   older glibc platforms.  */
+#ifndef __GNULIB_CDEFS
 # include <bits/wordsize.h>
 # include <bits/long-double.h>
 #endif

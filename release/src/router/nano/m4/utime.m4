@@ -1,4 +1,4 @@
-# utime.m4 serial 3
+# utime.m4 serial 4
 dnl Copyright (C) 2017-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -34,7 +34,7 @@ AC_DEFUN([gl_FUNC_UTIME],
            AC_RUN_IFELSE(
              [AC_LANG_PROGRAM(
                [[#include <stddef.h>
-                 #include <time.h>
+                 #include <utime.h>
                ]],
                [[int result = 0;
                  if (!utime ("conftest.tmp/", NULL))

@@ -3,17 +3,17 @@
 syntax cmake "(CMakeLists\.txt|\.cmake)$"
 comment "#"
 
-color green "^[[:space:]]*[0-9A-Za-z_]+"
-icolor brightyellow "^[[:space:]]*(include|include_directories|include_external_msproject)\>"
+color green "^[[:blank:]]*[0-9A-Za-z_]+"
+icolor brightyellow "^[[:blank:]]*(include|include_directories|include_external_msproject)\>"
 
-icolor brightgreen "^[[:space:]]*((else|end)?if|else|(end)?while|(end)?foreach|break)\>"
-color brightgreen "\<(NOT|COMMAND|POLICY|TARGET|EXISTS|IS_(DIRECTORY|ABSOLUTE)|DEFINED)[[:space:]]"
-color brightgreen "[[:space:]](OR|AND|IS_NEWER_THAN|MATCHES|(STR|VERSION_)?(LESS|GREATER|EQUAL))[[:space:]]"
+icolor brightgreen "^[[:blank:]]*((else|end)?if|else|(end)?while|(end)?foreach|break)\>"
+color brightgreen "\<(NOT|COMMAND|POLICY|TARGET|EXISTS|IS_(DIRECTORY|ABSOLUTE)|DEFINED)[[:blank:]]"
+color brightgreen "[[:blank:]](OR|AND|IS_NEWER_THAN|MATCHES|(STR|VERSION_)?(LESS|GREATER|EQUAL))[[:blank:]]"
 
-icolor brightred "^[[:space:]]*((end)?(function|macro)|return)"
+icolor brightred "^[[:blank:]]*((end)?(function|macro)|return)"
 
 icolor cyan start="\$(ENV)?\{" end="\}"
 color magenta "\<(APPLE|UNIX|WIN32|CYGWIN|BORLAND|MINGW|MSVC(_IDE|60|71|80|90)?)\>"
 
-color brightblue "(^|[[:space:]])#.*"
+color brightblue "(^|[[:blank:]])#.*"
 color ,green "[[:space:]]+$"

@@ -340,22 +340,60 @@ _GL_CXXALIASWARN (strftime);
 # endif
 
 # if defined _GNU_SOURCE && @GNULIB_TIME_RZ@ && ! @HAVE_TIMEZONE_T@
+/* Functions that use a first-class time zone data type, instead of
+   relying on an implicit global time zone.
+   Inspired by NetBSD.  */
+
+/* Represents a time zone.
+   (timezone_t) NULL stands for UTC.  */
 typedef struct tm_zone *timezone_t;
+
+/* tzalloc (name)
+   Returns a time zone object for the given time zone NAME.  This object
+   represents the time zone that other functions would use it the TZ
+   environment variable was set to NAME.
+   If NAME is NULL, the result represents the time zone that other functions
+   would use it the TZ environment variable was unset.
+   May return NULL if NAME is invalid (this is platform dependent) or
+   upon memory allocation failure.  */
 _GL_FUNCDECL_SYS (tzalloc, timezone_t, (char const *__name));
 _GL_CXXALIAS_SYS (tzalloc, timezone_t, (char const *__name));
+
+/* tzfree (tz)
+   Frees a time zone object.
+   The argument must have been returned by tzalloc().  */
 _GL_FUNCDECL_SYS (tzfree, void, (timezone_t __tz));
 _GL_CXXALIAS_SYS (tzfree, void, (timezone_t __tz));
+
+/* localtime_rz (tz, &t, &result)
+   Converts an absolute time T to a broken-down time RESULT, assuming the
+   time zone TZ.
+   This function is like 'localtime_r', but relies on the argument TZ instead
+   of an implicit global time zone.  */
 _GL_FUNCDECL_SYS (localtime_rz, struct tm *,
                   (timezone_t __tz, time_t const *restrict __timer,
                    struct tm *restrict __result) _GL_ARG_NONNULL ((2, 3)));
 _GL_CXXALIAS_SYS (localtime_rz, struct tm *,
                   (timezone_t __tz, time_t const *restrict __timer,
                    struct tm *restrict __result));
+
+/* mktime_z (tz, &tm)
+   Normalizes the broken-down time TM and converts it to an absolute time,
+   assuming the time zone TZ.  Returns the absolute time.
+   This function is like 'mktime', but relies on the argument TZ instead
+   of an implicit global time zone.  */
 _GL_FUNCDECL_SYS (mktime_z, time_t,
-                  (timezone_t __tz, struct tm *restrict __result)
+                  (timezone_t __tz, struct tm *restrict __tm)
                   _GL_ARG_NONNULL ((2)));
 _GL_CXXALIAS_SYS (mktime_z, time_t,
-                  (timezone_t __tz, struct tm *restrict __result));
+                  (timezone_t __tz, struct tm *restrict __tm));
+
+/* Time zone abbreviation strings (returned by 'localtime_rz' or 'mktime_z'
+   in the 'tm_zone' member of 'struct tm') are valid as long as
+     - the 'struct tm' argument is not destroyed or overwritten,
+   and
+     - the 'timezone_t' argument is not freed through tzfree().  */
+
 # endif
 
 /* Convert TM to a time_t value, assuming UTC.  */

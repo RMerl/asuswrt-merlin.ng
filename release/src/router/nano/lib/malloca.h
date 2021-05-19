@@ -76,9 +76,10 @@ extern void freea (void *p);
 
 /* nmalloca(N,S) is an overflow-safe variant of malloca (N * S).
    It allocates an array of N objects, each with S bytes of memory,
-   on the stack.  S must be positive and N must be nonnegative.
+   on the stack.  N and S should be nonnegative and free of side effects.
    The array must be freed using freea() before the function returns.  */
-#define nmalloca(n, s) (xalloc_oversized (n, s) ? NULL : malloca ((n) * (s)))
+#define nmalloca(n, s) \
+  (xalloc_oversized (n, s) ? NULL : malloca ((n) * (size_t) (s)))
 
 
 #ifdef __cplusplus

@@ -1,4 +1,4 @@
-# threadlib.m4 serial 29
+# threadlib.m4 serial 30
 dnl Copyright (C) 2005-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -126,7 +126,7 @@ int main ()
      case "$gl_cv_have_weak" in
        *yes)
          case "$host_os" in
-           freebsd* | dragonfly*)
+           freebsd* | dragonfly* | midnightbsd*)
              : > conftest1.c
              $CC $CPPFLAGS $CFLAGS $LDFLAGS -fPIC -shared -o libempty.so conftest1.c -lpthread >&AS_MESSAGE_LOG_FD 2>&1
              cat <<EOF > conftest2.c
@@ -488,7 +488,7 @@ AC_DEFUN([gl_THREADLIB_BODY],
               LIBTHREAD= LTLIBTHREAD=
             else
               case "$host_os" in
-                freebsd* | dragonfly*)
+                freebsd* | dragonfly* | midnightbsd*)
                   if test "x$LIBTHREAD" != "x$LIBMULTITHREAD"; then
                     dnl If weak symbols can't tell whether pthread_create(), pthread_key_create()
                     dnl etc. will succeed, we need a runtime test.

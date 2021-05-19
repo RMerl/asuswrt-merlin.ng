@@ -154,7 +154,8 @@ _GL_WARN_ON_USE (closedir, "closedir is not portable - "
 /* Return the file descriptor associated with the given directory stream,
    or -1 if none exists.  */
 # if @REPLACE_DIRFD@
-#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+/* On kLIBC, dirfd() is a macro that does not work.  Undefine it.  */
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE) || defined dirfd
 #   undef dirfd
 #   define dirfd rpl_dirfd
 #  endif

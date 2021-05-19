@@ -22,16 +22,10 @@
 
 
 /* Define _GL_HAVE__STATIC_ASSERT to 1 if _Static_assert (R, DIAGNOSTIC)
-   works as per C11.  This is supported by GCC 4.6.0 and later, in C
-   mode, and by clang (also in C++ mode).
+   works as per C11.  This is supported by GCC 4.6.0+ and by clang 4+.
 
    Define _GL_HAVE__STATIC_ASSERT1 to 1 if _Static_assert (R) works as
-   per C2X.  This is supported by GCC 9.1 and later, and by clang in
-   C++1z mode.
-
-   Define _GL_HAVE_STATIC_ASSERT1 if static_assert (R) works as per
-   C++17.  This is supported by GCC 9.1 and later, and by clang in
-   C++1z mode.
+   per C2X.  This is supported by GCC 9.1+.
 
    Support compilers claiming conformance to the relevant standard,
    and also support GCC when not pedantic.  If we were willing to slow
@@ -46,18 +40,6 @@
 # if (202000L <= __STDC_VERSION__ \
       || (!defined __STRICT_ANSI__ && 9 <= __GNUC__))
 #  define _GL_HAVE__STATIC_ASSERT1 1
-# endif
-#else
-# if 4 <= __clang_major__
-#  define _GL_HAVE__STATIC_ASSERT 1
-# endif
-# if 4 <= __clang_major__ && 201411 <= __cpp_static_assert
-#  define _GL_HAVE__STATIC_ASSERT1 1
-# endif
-# if 201703L <= __cplusplus \
-     || 9 <= __GNUC__ \
-     || (4 <= __clang_major__ && 201411 <= __cpp_static_assert)
-#  define _GL_HAVE_STATIC_ASSERT1 1
 # endif
 #endif
 
@@ -225,7 +207,9 @@ template <int w>
    Unfortunately, unlike C11, this implementation must appear as an
    ordinary declaration, and cannot appear inside struct { ... }.  */
 
-#if defined _GL_HAVE__STATIC_ASSERT
+#if 200410 <= __cpp_static_assert
+# define _GL_VERIFY(R, DIAGNOSTIC, ...) static_assert (R, DIAGNOSTIC)
+#elif defined _GL_HAVE__STATIC_ASSERT
 # define _GL_VERIFY(R, DIAGNOSTIC, ...) _Static_assert (R, DIAGNOSTIC)
 #else
 # define _GL_VERIFY(R, DIAGNOSTIC, ...)                                \
@@ -239,7 +223,7 @@ template <int w>
 #  define _Static_assert(...) \
      _GL_VERIFY (__VA_ARGS__, "static assertion failed", -)
 # endif
-# if !defined _GL_HAVE_STATIC_ASSERT1 && !defined static_assert
+# if __cpp_static_assert < 201411 && !defined static_assert
 #  define static_assert _Static_assert /* C11 requires this #define.  */
 # endif
 #endif

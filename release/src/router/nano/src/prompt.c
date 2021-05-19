@@ -408,11 +408,13 @@ void draw_the_promptbar(void)
 
 	wattroff(bottomwin, interface_color_pair[PROMPT_BAR]);
 
+#if defined(NCURSES_VERSION_PATCH) && (NCURSES_VERSION_PATCH < 20210220)
 	/* Work around a cursor-misplacement bug -- https://sv.gnu.org/bugs/?59808. */
 	if (ISSET(NO_HELP)) {
 		wmove(bottomwin, 0, 0);
 		wrefresh(bottomwin);
 	}
+#endif
 
 	/* Place the cursor at the right spot. */
 	wmove(bottomwin, 0, column - the_page);

@@ -45,7 +45,7 @@ ul.no-bullet {list-style: none}
 
 
 <span id="Top"></span><span id="SEC_Top"></span>
-<p>This manual documents the GNU <code>nano</code> editor, version 5.5.
+<p>This manual documents the GNU <code>nano</code> editor, version 5.7.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -279,9 +279,9 @@ the screen&rsquo;s edge, by using also <code>--atblanks</code>.)
 </dd>
 <dt><samp>-U</samp></dt>
 <dt><samp>--quickblank</samp></dt>
-<dd><p>Do quick status-bar blanking: status-bar messages will disappear after 1
-keystroke instead of 25.  Note that option <samp>-c</samp>
-(<samp>--constantshow</samp>) overrides this.
+<dd><p>Make status-bar messages disappear after 1 keystroke instead of after 20.
+Note that options <samp>-c</samp> (<samp>--constantshow</samp>)
+and <samp>-_</samp> (<samp>--minibar</samp>) override this.
 </p>
 </dd>
 <dt><samp>-V</samp></dt>
@@ -497,14 +497,6 @@ disabled to display the help-system navigation keys.
 keystroke (usually <kbd>^Z</kbd>).
 </p>
 </dd>
-<dt><samp>-^</samp></dt>
-<dt><samp>--markmatch</samp></dt>
-<dd><p>After a search, set the mark at the end of the found match
-(if there is any) so that it gets highlighted.  This makes
-the match more visible, but also allows deleting the match
-with a single keystroke.
-</p>
-</dd>
 <dt><samp>-%</samp></dt>
 <dt><samp>--stateflags</samp></dt>
 <dd><p>Use the top-right corner of the screen for showing some state flags:
@@ -529,6 +521,9 @@ When a file is loaded or saved, and also when switching between buffers,
 the number of lines in the buffer is displayed after the file name.
 This number is cleared upon the next keystroke, or replaced with an
 [i/n] counter when multiple buffers are open.
+The line plus column numbers and the character code are displayed only when
+<code>--constantshow</code> is used, and can be toggled on and off with <tt class="key">M-C</tt>.
+The state flags are displayed only when <code>--stateflags</code> is used.
 </p>
 </dd>
 <dt><samp>-!</samp></dt>
@@ -1001,13 +996,6 @@ try using libmagic to determine the applicable syntax.
 (Calling libmagic can be relatively time consuming.
 It is therefore not done by default.)
 </p>
-</dd>
-<dt><code>set markmatch</code></dt>
-<dd><p>After a search, set the mark at the end of the found match
-(if there is any) so that it gets highlighted.  This makes
-the match more visible, but also allows deleting the match
-with a single keystroke.
-</p>
 <span id="set-matchbrackets"></span></dd>
 <dt><code>set matchbrackets &quot;<var>characters</var>&quot;</code></dt>
 <dd><p>Specify the opening and closing brackets that can be found by bracket
@@ -1029,11 +1017,9 @@ When a file is loaded or saved, and also when switching between buffers,
 the number of lines in the buffer is displayed after the file name.
 This number is cleared upon the next keystroke, or replaced with an
 [i/n] counter when multiple buffers are open.
-</p>
-</dd>
-<dt><code>set morespace</code></dt>
-<dd><p>Deprecated option since it has become the default setting.
-When needed, use <code>unset emptyline</code> instead.
+The line plus column numbers and the character code are displayed only when
+<code>set constantshow</code> is used, and can be toggled on and off with <tt class="key">M-C</tt>.
+The state flags are displayed only when <code>set stateflags</code> is used.
 </p>
 </dd>
 <dt><code>set mouse</code></dt>
@@ -1056,10 +1042,6 @@ cursor, set the mark (with a double click), or execute shortcuts.
 <dt><code>set nonewlines</code></dt>
 <dd><p>Don&rsquo;t automatically add a newline when a text does not end with one.
 (This can cause you to save non-POSIX text files.)
-</p>
-</dd>
-<dt><code>set nopauses</code></dt>
-<dd><p>Obsolete option.  Ignored.
 </p>
 </dd>
 <dt><code>set nowrap</code></dt>
@@ -1103,8 +1085,8 @@ The default value is &quot;<tt>!.?</tt>&quot;.
 </p>
 </dd>
 <dt><code>set quickblank</code></dt>
-<dd><p>Do quick status-bar blanking: status-bar messages will disappear after 1
-keystroke instead of 25.  Note that <samp>constantshow</samp> overrides this.
+<dd><p>Make status-bar messages disappear after 1 keystroke instead of after 20.
+Note that options <samp>constantshow</samp> and <samp>minibar</samp> override this.
 </p>
 </dd>
 <dt><code>set quotestr &quot;<var>regex</var>&quot;</code></dt>
@@ -1164,11 +1146,6 @@ already at that position, it will jump to the true beginning of the
 line.
 </p>
 </dd>
-<dt><code>set smooth</code></dt>
-<dd><p>Deprecated option since it has become the default setting.
-When needed, use <code>unset jumpyscrolling</code> instead.
-</p>
-</dd>
 <dt><code>set softwrap</code></dt>
 <dd><p>Display lines that exceed the screen&rsquo;s width over multiple screen lines.
 (You can make this soft-wrapping occur at whitespace instead of rudely at
@@ -1178,6 +1155,12 @@ the screen&rsquo;s edge, by using also <code>set atblanks</code>.)
 <dt><code>set speller &quot;<var>program</var> [<var>argument</var> &hellip;]&quot;</code></dt>
 <dd><p>Use the given program to do spell checking and correcting.
 See <a href="#g_t_002d_002dspeller"><samp>--speller</samp></a> for details.
+</p>
+</dd>
+<dt><code>set spotlightcolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var></code></dt>
+<dd><p>Use this color combination for highlighting a search match.
+The default value is <tt>black,lightyellow</tt>.
+See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
 </p>
 </dd>
 <dt><code>set stateflags</code></dt>

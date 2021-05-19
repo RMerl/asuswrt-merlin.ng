@@ -1032,12 +1032,23 @@ _GL_WARN_ON_USE (realloc, "realloc is not POSIX compliant everywhere - "
 
 
 #if @GNULIB_REALLOCARRAY@
-# if ! @HAVE_REALLOCARRAY@
+# if @REPLACE_REALLOCARRAY@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef reallocarray
+#   define reallocarray rpl_reallocarray
+#  endif
+_GL_FUNCDECL_RPL (reallocarray, void *,
+                  (void *ptr, size_t nmemb, size_t size));
+_GL_CXXALIAS_RPL (reallocarray, void *,
+                  (void *ptr, size_t nmemb, size_t size));
+# else
+#  if ! @HAVE_REALLOCARRAY@
 _GL_FUNCDECL_SYS (reallocarray, void *,
                   (void *ptr, size_t nmemb, size_t size));
-# endif
+#  endif
 _GL_CXXALIAS_SYS (reallocarray, void *,
                   (void *ptr, size_t nmemb, size_t size));
+# endif
 _GL_CXXALIASWARN (reallocarray);
 #elif defined GNULIB_POSIXCHECK
 # undef reallocarray
@@ -1202,6 +1213,47 @@ _GL_WARN_ON_USE (strtold, "strtold is unportable - "
 # endif
 #endif
 
+#if @GNULIB_STRTOL@
+/* Parse a signed integer whose textual representation starts at STRING.
+   The integer is expected to be in base BASE (2 <= BASE <= 36); if BASE == 0,
+   it may be decimal or octal (with prefix "0") or hexadecimal (with prefix
+   "0x").
+   If ENDPTR is not NULL, the address of the first byte after the integer is
+   stored in *ENDPTR.
+   Upon overflow, the return value is LONG_MAX or LONG_MIN, and errno is set
+   to ERANGE.  */
+# if @REPLACE_STRTOL@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   define strtol rpl_strtol
+#  endif
+#  define GNULIB_defined_strtol_function 1
+_GL_FUNCDECL_RPL (strtol, long,
+                  (const char *restrict string, char **restrict endptr,
+                   int base)
+                  _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (strtol, long,
+                  (const char *restrict string, char **restrict endptr,
+                   int base));
+# else
+#  if !@HAVE_STRTOL@
+_GL_FUNCDECL_SYS (strtol, long,
+                  (const char *restrict string, char **restrict endptr,
+                   int base)
+                  _GL_ARG_NONNULL ((1)));
+#  endif
+_GL_CXXALIAS_SYS (strtol, long,
+                  (const char *restrict string, char **restrict endptr,
+                   int base));
+# endif
+_GL_CXXALIASWARN (strtol);
+#elif defined GNULIB_POSIXCHECK
+# undef strtol
+# if HAVE_RAW_DECL_STRTOL
+_GL_WARN_ON_USE (strtol, "strtol is unportable - "
+                 "use gnulib module strtol for portability");
+# endif
+#endif
+
 #if @GNULIB_STRTOLL@
 /* Parse a signed integer whose textual representation starts at STRING.
    The integer is expected to be in base BASE (2 <= BASE <= 36); if BASE == 0,
@@ -1211,21 +1263,75 @@ _GL_WARN_ON_USE (strtold, "strtold is unportable - "
    stored in *ENDPTR.
    Upon overflow, the return value is LLONG_MAX or LLONG_MIN, and errno is set
    to ERANGE.  */
-# if !@HAVE_STRTOLL@
+# if @REPLACE_STRTOLL@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   define strtoll rpl_strtoll
+#  endif
+#  define GNULIB_defined_strtoll_function 1
+_GL_FUNCDECL_RPL (strtoll, long long,
+                  (const char *restrict string, char **restrict endptr,
+                   int base)
+                  _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (strtoll, long long,
+                  (const char *restrict string, char **restrict endptr,
+                   int base));
+# else
+#  if !@HAVE_STRTOLL@
 _GL_FUNCDECL_SYS (strtoll, long long,
                   (const char *restrict string, char **restrict endptr,
                    int base)
                   _GL_ARG_NONNULL ((1)));
-# endif
+#  endif
 _GL_CXXALIAS_SYS (strtoll, long long,
                   (const char *restrict string, char **restrict endptr,
                    int base));
+# endif
 _GL_CXXALIASWARN (strtoll);
 #elif defined GNULIB_POSIXCHECK
 # undef strtoll
 # if HAVE_RAW_DECL_STRTOLL
 _GL_WARN_ON_USE (strtoll, "strtoll is unportable - "
                  "use gnulib module strtoll for portability");
+# endif
+#endif
+
+#if @GNULIB_STRTOUL@
+/* Parse an unsigned integer whose textual representation starts at STRING.
+   The integer is expected to be in base BASE (2 <= BASE <= 36); if BASE == 0,
+   it may be decimal or octal (with prefix "0") or hexadecimal (with prefix
+   "0x").
+   If ENDPTR is not NULL, the address of the first byte after the integer is
+   stored in *ENDPTR.
+   Upon overflow, the return value is ULONG_MAX, and errno is set to ERANGE.  */
+# if @REPLACE_STRTOUL@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   define strtoul rpl_strtoul
+#  endif
+#  define GNULIB_defined_strtoul_function 1
+_GL_FUNCDECL_RPL (strtoul, unsigned long,
+                  (const char *restrict string, char **restrict endptr,
+                   int base)
+                  _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (strtoul, unsigned long,
+                  (const char *restrict string, char **restrict endptr,
+                   int base));
+# else
+#  if !@HAVE_STRTOUL@
+_GL_FUNCDECL_SYS (strtoul, unsigned long,
+                  (const char *restrict string, char **restrict endptr,
+                   int base)
+                  _GL_ARG_NONNULL ((1)));
+#  endif
+_GL_CXXALIAS_SYS (strtoul, unsigned long,
+                  (const char *restrict string, char **restrict endptr,
+                   int base));
+# endif
+_GL_CXXALIASWARN (strtoul);
+#elif defined GNULIB_POSIXCHECK
+# undef strtoul
+# if HAVE_RAW_DECL_STRTOUL
+_GL_WARN_ON_USE (strtoul, "strtoul is unportable - "
+                 "use gnulib module strtoul for portability");
 # endif
 #endif
 
@@ -1238,15 +1344,29 @@ _GL_WARN_ON_USE (strtoll, "strtoll is unportable - "
    stored in *ENDPTR.
    Upon overflow, the return value is ULLONG_MAX, and errno is set to
    ERANGE.  */
-# if !@HAVE_STRTOULL@
+# if @REPLACE_STRTOULL@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   define strtoull rpl_strtoull
+#  endif
+#  define GNULIB_defined_strtoull_function 1
+_GL_FUNCDECL_RPL (strtoull, unsigned long long,
+                  (const char *restrict string, char **restrict endptr,
+                   int base)
+                  _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (strtoull, unsigned long long,
+                  (const char *restrict string, char **restrict endptr,
+                   int base));
+# else
+#  if !@HAVE_STRTOULL@
 _GL_FUNCDECL_SYS (strtoull, unsigned long long,
                   (const char *restrict string, char **restrict endptr,
                    int base)
                   _GL_ARG_NONNULL ((1)));
-# endif
+#  endif
 _GL_CXXALIAS_SYS (strtoull, unsigned long long,
                   (const char *restrict string, char **restrict endptr,
                    int base));
+# endif
 _GL_CXXALIASWARN (strtoull);
 #elif defined GNULIB_POSIXCHECK
 # undef strtoull

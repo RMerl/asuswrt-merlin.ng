@@ -54,6 +54,10 @@ static bool linger_after_escape = FALSE;
 		/* Whether to give ncurses some time to get the next code. */
 static int statusblank = 0;
 		/* The number of keystrokes left before we blank the status bar. */
+size_t from_x = 0;
+		/* From where in the relevant line the current row is drawn. */
+size_t till_x = 0;
+		/* Until where in the relevant line the current row is drawn. */
 static bool has_more = FALSE;
 		/* Whether the current line has more text after the displayed part. */
 static bool is_shorter = TRUE;
@@ -188,7 +192,7 @@ void read_keys_from(WINDOW *win)
 	if (currmenu == MMAIN && ISSET(MINIBAR) && lastmessage > HUSH &&
 						lastmessage != INFO && lastmessage < ALERT) {
 		timed = TRUE;
-		halfdelay(8);
+		halfdelay(ISSET(QUICK_BLANK) ? 8 : 15);
 		disable_kb_interrupt();
 	}
 #endif
@@ -1377,7 +1381,7 @@ int *parse_verbatim_kbinput(WINDOW *win, size_t *count)
 	 * commence Unicode input.  Otherwise, put the code back. */
 	if (using_utf8() && (keycode == '0' || keycode == '1')) {
 		long unicode = assemble_unicode(keycode);
-		char *multibyte;
+		char multibyte[MB_CUR_MAX];
 
 		reveal_cursor = FALSE;
 
@@ -1407,13 +1411,14 @@ int *parse_verbatim_kbinput(WINDOW *win, size_t *count)
 		}
 
 		/* Convert the Unicode value to a multibyte sequence. */
-		multibyte = make_mbchar(unicode, (int *)count);
+		*count = wctomb(multibyte, unicode);
+
+		if (*count > MAXCHARLEN)
+			*count = 0;
 
 		/* Change the multibyte character into a series of integers. */
 		for (size_t i = 0; i < *count; i++)
 			yield[i] = (int)multibyte[i];
-
-		free(multibyte);
 
 		return yield;
 	}
@@ -1695,32 +1700,35 @@ void set_blankdelay_to_one(void)
 	statusblank = 1;
 }
 
-/* Convert buf into a string that can be displayed on screen.  The caller
- * wants to display buf starting with the given column, and extending for
+/* Convert text into a string that can be displayed on screen.  The caller
+ * wants to display text starting with the given column, and extending for
  * at most span columns.  column is zero-based, and span is one-based, so
  * span == 0 means you get "" returned.  The returned string is dynamically
  * allocated, and should be freed.  If isdata is TRUE, the caller might put
  * "<" at the beginning or ">" at the end of the line if it's too long.  If
  * isprompt is TRUE, the caller might put ">" at the end of the line if it's
  * too long. */
-char *display_string(const char *buf, size_t column, size_t span,
+char *display_string(const char *text, size_t column, size_t span,
 						bool isdata, bool isprompt)
 {
-	size_t start_index = actual_x(buf, column);
+	const char *origin = text;
+		/* The beginning of the text, to later determine the covered part. */
+	size_t start_x = actual_x(text, column);
 		/* The index of the first character that the caller wishes to show. */
-	size_t start_col = wideness(buf, start_index);
+	size_t start_col = wideness(text, start_x);
 		/* The actual column where that first character starts. */
-	char *converted;
-		/* The expanded string we will return. */
+	size_t stowaways = 20;
+		/* The number of zero-width characters for which to reserve space. */
+	size_t allocsize = (COLS + stowaways) * MAXCHARLEN + 1;
+		/* The amount of memory to reserve for the displayable string. */
+	char *converted = nmalloc(allocsize);
+		/* The displayable string we will return. */
 	size_t index = 0;
 		/* Current position in converted. */
 	size_t beyond = column + span;
 		/* The column number just beyond the last shown character. */
 
-	buf += start_index;
-
-	/* Allocate enough space for converting the relevant part of the line. */
-	converted = nmalloc(strlen(buf) * (MAXCHARLEN + tabsize) + 1);
+	text += start_x;
 
 #ifndef NANO_TINY
 	if (span > HIGHEST_POSITIVE) {
@@ -1731,17 +1739,17 @@ char *display_string(const char *buf, size_t column, size_t span,
 #endif
 	/* If the first character starts before the left edge, or would be
 	 * overwritten by a "<" token, then show placeholders instead. */
-	if (*buf != '\0' && *buf != '\t' && (start_col < column ||
-						(start_col > 0 && isdata && !ISSET(SOFTWRAP)))) {
-		if (is_cntrl_char(buf)) {
+	if ((start_col < column || (start_col > 0 && isdata && !ISSET(SOFTWRAP))) &&
+											*text != '\0' && *text != '\t') {
+		if (is_cntrl_char(text)) {
 			if (start_col < column) {
-				converted[index++] = control_mbrep(buf, isdata);
+				converted[index++] = control_mbrep(text, isdata);
 				column++;
-				buf += char_length(buf);
+				text += char_length(text);
 			}
 		}
 #ifdef ENABLE_UTF8
-		else if (mbwidth(buf) == 2) {
+		else if (is_doublewidth(text)) {
 			if (start_col == column) {
 				converted[index++] = ' ';
 				column++;
@@ -1750,29 +1758,29 @@ char *display_string(const char *buf, size_t column, size_t span,
 			/* Display the right half of a two-column character as ']'. */
 			converted[index++] = ']';
 			column++;
-			buf += char_length(buf);
+			text += char_length(text);
 		}
 #endif
 	}
 
 #ifdef ENABLE_UTF8
 #define ISO8859_CHAR  FALSE
-#define ZEROWIDTH_CHAR  (mbwidth(buf) == 0)
+#define ZEROWIDTH_CHAR  (is_zerowidth(text))
 #else
-#define ISO8859_CHAR  ((unsigned char)*buf > 0x9F)
+#define ISO8859_CHAR  ((unsigned char)*text > 0x9F)
 #define ZEROWIDTH_CHAR  FALSE
 #endif
 
-	while (*buf != '\0' && (column < beyond || ZEROWIDTH_CHAR)) {
+	while (*text != '\0' && (column < beyond || ZEROWIDTH_CHAR)) {
 		/* A plain printable ASCII character is one byte, one column. */
-		if (((signed char)*buf > 0x20 && *buf != DEL_CODE) || ISO8859_CHAR) {
-			converted[index++] = *(buf++);
+		if (((signed char)*text > 0x20 && *text != DEL_CODE) || ISO8859_CHAR) {
+			converted[index++] = *(text++);
 			column++;
 			continue;
 		}
 
 		/* Show a space as a visible character, or as a space. */
-		if (*buf == ' ') {
+		if (*text == ' ') {
 #ifndef NANO_TINY
 			if (ISSET(WHITESPACE_DISPLAY)) {
 				for (int i = whitelen[0]; i < whitelen[0] + whitelen[1];)
@@ -1781,12 +1789,12 @@ char *display_string(const char *buf, size_t column, size_t span,
 #endif
 				converted[index++] = ' ';
 			column++;
-			buf++;
+			text++;
 			continue;
 		}
 
 		/* Show a tab as a visible character plus spaces, or as just spaces. */
-		if (*buf == '\t') {
+		if (*text == '\t') {
 #ifndef NANO_TINY
 			if (ISSET(WHITESPACE_DISPLAY) && (index > 0 || !isdata ||
 						!ISSET(SOFTWRAP) || column % tabsize == 0 ||
@@ -1802,15 +1810,15 @@ char *display_string(const char *buf, size_t column, size_t span,
 				converted[index++] = ' ';
 				column++;
 			}
-			buf++;
+			text++;
 			continue;
 		}
 
 		/* Represent a control character with a leading caret. */
-		if (is_cntrl_char(buf)) {
+		if (is_cntrl_char(text)) {
 			converted[index++] = '^';
-			converted[index++] = control_mbrep(buf, isdata);
-			buf += char_length(buf);
+			converted[index++] = control_mbrep(text, isdata);
+			text += char_length(text);
 			column += 2;
 			continue;
 		}
@@ -1820,14 +1828,14 @@ char *display_string(const char *buf, size_t column, size_t span,
 		wchar_t wc;
 
 		/* Convert a multibyte character to a single code. */
-		charlength = mbtowc(&wc, buf, MAXCHARLEN);
+		charlength = mbtowide(&wc, text);
 
 		/* Represent an invalid character with the Replacement Character. */
-		if (charlength < 0 || !is_valid_unicode(wc)) {
+		if (charlength < 0) {
 			converted[index++] = '\xEF';
 			converted[index++] = '\xBF';
 			converted[index++] = '\xBD';
-			buf += (charlength > 0 ? charlength : 1);
+			text++;
 			column++;
 			continue;
 		}
@@ -1835,17 +1843,24 @@ char *display_string(const char *buf, size_t column, size_t span,
 		/* Determine whether the character takes zero, one, or two columns. */
 		charwidth = wcwidth(wc);
 
+		/* Watch the number of zero-widths, to keep ample memory reserved. */
+		if (charwidth == 0 && --stowaways == 0) {
+			stowaways = 40;
+			allocsize += stowaways * MAXCHARLEN;
+			converted = nrealloc(converted, allocsize);
+		}
+
 #ifdef __linux__
 		/* On a Linux console, skip zero-width characters, as it would show
 		 * them WITH a width, thus messing up the display.  See bug #52954. */
 		if (on_a_vt && charwidth == 0) {
-			buf += charlength;
+			text += charlength;
 			continue;
 		}
 #endif
 		/* For any valid character, just copy its bytes. */
 		for (; charlength > 0; charlength--)
-			converted[index++] = *(buf++);
+			converted[index++] = *(text++);
 
 		/* If the codepoint is unassigned, assume a width of one. */
 		column += (charwidth < 0 ? 1 : charwidth);
@@ -1853,15 +1868,15 @@ char *display_string(const char *buf, size_t column, size_t span,
 	}
 
 	/* If there is more text than can be shown, make room for the ">". */
-	if (column > beyond || (*buf != '\0' && (isprompt ||
+	if (column > beyond || (*text != '\0' && (isprompt ||
 							(isdata && !ISSET(SOFTWRAP))))) {
 #ifdef ENABLE_UTF8
 		do {
 			index = step_left(converted, index);
-		} while (mbwidth(converted + index) == 0);
+		} while (is_zerowidth(converted + index));
 
 		/* Display the left half of a two-column character as '['. */
-		if (mbwidth(converted + index) == 2)
+		if (is_doublewidth(converted + index))
 			converted[index++] = '[';
 #else
 		index--;
@@ -1874,6 +1889,10 @@ char *display_string(const char *buf, size_t column, size_t span,
 
 	/* Null-terminate the converted string. */
 	converted[index] = '\0';
+
+	/* Remember what part of the original text is covered by converted. */
+	from_x = start_x;
+	till_x = text - origin;
 
 	return converted;
 }
@@ -2084,10 +2103,9 @@ void minibar(void)
 	wattron(bottomwin, interface_color_pair[TITLE_BAR]);
 	mvwprintw(bottomwin, 0, 0, "%*s", COLS, " ");
 
-	/* Display the name of the current file, plus a star when modified. */
 	if (openfile->filename[0] != '\0') {
 		as_an_at = FALSE;
-		thename = display_string(openfile->filename, 0, HIGHEST_POSITIVE, FALSE, FALSE);
+		thename = display_string(openfile->filename, 0, COLS, FALSE, FALSE);
 	} else
 		thename = copy_of(_("(nameless)"));
 
@@ -2099,8 +2117,9 @@ void minibar(void)
 	if (namewidth + 19 > COLS)
 		padding = 0;
 
+	/* Display the name of the current file (dottifying it if it doesn't fit),
+	 * plus a star when the file has been modified. */
 	if (COLS > 4) {
-		/* If the full file name doesn't fit, dottify it. */
 		if (namewidth > COLS - 2) {
 			thename = display_string(thename, namewidth - COLS + 5, COLS - 5, FALSE, FALSE);
 			mvwaddstr(bottomwin, 0, 0, "...");
@@ -2111,6 +2130,8 @@ void minibar(void)
 		waddstr(bottomwin, openfile->modified ? " *" : "  ");
 	}
 
+	/* Right after reading or writing a file, display its number of lines;
+	 * otherwise, when there a mutiple buffers, display an [x/n] counter. */
 	if (report_size && COLS > 35) {
 		size_t count = openfile->filebot->lineno - (openfile->filebot->data[0] == '\0');
 
@@ -2133,11 +2154,12 @@ void minibar(void)
 #endif
 
 	/* Display the line/column position of the cursor. */
-	if (namewidth + tallywidth + placewidth + 32 < COLS)
+	if (ISSET(CONSTANT_SHOW) && namewidth + tallywidth + placewidth + 32 < COLS)
 		mvwaddstr(bottomwin, 0, COLS - 27 - placewidth, location);
 
-	/* Display the hexadecimal code of the character under the cursor. */
-	if (namewidth + tallywidth + 28 < COLS) {
+	/* Display the hexadecimal code of the character under the cursor,
+	 * plus the codes of upto two succeeding zero-width characters. */
+	if (ISSET(CONSTANT_SHOW) && namewidth + tallywidth + 28 < COLS) {
 		char *this_position = openfile->current->data + openfile->current_x;
 
 		if (*this_position == '\0')
@@ -2151,7 +2173,7 @@ void minibar(void)
 #ifdef ENABLE_UTF8
 		else if ((unsigned char)*this_position < 0x80 && using_utf8())
 			sprintf(hexadecimal, "U+%04X", (unsigned char)*this_position);
-		else if (using_utf8() && mbtowc(&widecode, this_position, MAXCHARLEN) >= 0)
+		else if (using_utf8() && mbtowide(&widecode, this_position) > 0)
 			sprintf(hexadecimal, "U+%04X", (int)widecode);
 #endif
 		else
@@ -2163,13 +2185,13 @@ void minibar(void)
 		successor = this_position + char_length(this_position);
 
 		if (*this_position && *successor && is_zerowidth(successor) &&
-					mbtowc(&widecode, successor, MAXCHARLEN) >= 0) {
+								mbtowide(&widecode, successor) > 0) {
 			sprintf(hexadecimal, "|%04X", (int)widecode);
 			waddstr(bottomwin, hexadecimal);
 
 			successor += char_length(successor);
 
-			if (is_zerowidth(successor) && mbtowc(&widecode, successor, MAXCHARLEN) >= 0) {
+			if (is_zerowidth(successor) && mbtowide(&widecode, successor) > 0) {
 				sprintf(hexadecimal, "|%04X", (int)widecode);
 				waddstr(bottomwin, hexadecimal);
 			}
@@ -2179,7 +2201,7 @@ void minibar(void)
 	}
 
 	/* Display the state of three flags, and the state of macro and mark. */
-	if (!successor && namewidth + tallywidth + 14 + 2 * padding < COLS) {
+	if (ISSET(STATEFLAGS) && !successor && namewidth + tallywidth + 14 + 2 * padding < COLS) {
 		wmove(bottomwin, 0, COLS - 11 - padding);
 		show_states_at(bottomwin);
 	}
@@ -2223,6 +2245,18 @@ void statusline(message_type importance, const char *msg, ...)
 	if (importance < lastmessage && lastmessage > NOTICE)
 		return;
 
+	/* Construct the message out of all the arguments. */
+	compound = nmalloc(MAXCHARLEN * COLS + 1);
+	va_start(ap, msg);
+	vsnprintf(compound, MAXCHARLEN * COLS + 1, msg, ap);
+	va_end(ap);
+
+#if !defined(NANO_TINY) && defined(ENABLE_MULTIBUFFER)
+	if (!we_are_running && importance == ALERT && openfile && !openfile->fmt &&
+						!openfile->errormessage && openfile->next != openfile)
+		openfile->errormessage = copy_of(compound);
+#endif
+
 	/* If there are multiple alert messages, add trailing dots to the first. */
 	if (lastmessage == ALERT) {
 		if (start_col > 4) {
@@ -2235,6 +2269,7 @@ void statusline(message_type importance, const char *msg, ...)
 			napms(100);
 			beep();
 		}
+		free(compound);
 		return;
 	}
 
@@ -2251,11 +2286,6 @@ void statusline(message_type importance, const char *msg, ...)
 
 	blank_statusbar();
 
-	/* Construct the message out of all the arguments. */
-	compound = nmalloc(MAXCHARLEN * (COLS + 1));
-	va_start(ap, msg);
-	vsnprintf(compound, MAXCHARLEN * (COLS + 1), msg, ap);
-	va_end(ap);
 	message = display_string(compound, 0, COLS, FALSE, FALSE);
 	free(compound);
 
@@ -2267,7 +2297,6 @@ void statusline(message_type importance, const char *msg, ...)
 	if (bracketed)
 		waddstr(bottomwin, "[ ");
 	waddstr(bottomwin, message);
-	free(message);
 	if (bracketed)
 		waddstr(bottomwin, " ]");
 	wattroff(bottomwin, colorpair);
@@ -2280,6 +2309,7 @@ void statusline(message_type importance, const char *msg, ...)
 
 	/* Push the message to the screen straightaway. */
 	wrefresh(bottomwin);
+	free(message);
 
 #ifndef NANO_TINY
 	if (old_whitespace)
@@ -2429,16 +2459,6 @@ void place_the_cursor(void)
  * from_col is the column number of the first character of this "page". */
 void draw_row(int row, const char *converted, linestruct *line, size_t from_col)
 {
-#if !defined(NANO_TINY) || defined(ENABLE_COLOR)
-	size_t from_x = actual_x(line->data, from_col);
-		/* The position in the line's data of the leftmost character
-		 * that displays at least partially on the window. */
-	size_t till_x = actual_x(line->data, from_col + editwincols - 1) + 1;
-		/* The position in the line's data of the first character that
-		 * is completely off the window to the right.  Note that till_x
-		 * might be beyond the null terminator of the string. */
-#endif
-
 #ifdef ENABLE_LINENUMBERS
 	/* If line numbering is switched on, put a line number in front of
 	 * the text -- but only for the parts that are not softwrapped. */
@@ -2483,15 +2503,15 @@ void draw_row(int row, const char *converted, linestruct *line, size_t from_col)
 	if (openfile->syntax && !ISSET(NO_SYNTAX)) {
 		const colortype *varnish = openfile->syntax->color;
 
-		/* If there are multiline regexes, make sure there is a cache. */
+		/* If there are multiline regexes, make sure this line has a cache. */
 		if (openfile->syntax->nmultis > 0 && line->multidata == NULL)
-			set_up_multicache(line);
+			line->multidata = nmalloc(openfile->syntax->nmultis * sizeof(short));
 
 		/* Iterate through all the coloring regexes. */
 		for (; varnish != NULL; varnish = varnish->next) {
 			size_t index = 0;
 				/* Where in the line we currently begin looking for a match. */
-			int start_col;
+			int start_col = 0;
 				/* The starting column of a piece to paint.  Zero-based. */
 			int paintlen = 0;
 				/* The number of characters to paint. */
@@ -2501,87 +2521,81 @@ void draw_row(int row, const char *converted, linestruct *line, size_t from_col)
 				/* The match positions of a single-line regex. */
 			const linestruct *start_line = line->prev;
 				/* The first line before line that matches 'start'. */
-			const linestruct *end_line = line;
+			linestruct *end_line = line;
 				/* The line that matches 'end'. */
 			regmatch_t startmatch, endmatch;
 				/* The match positions of the start and end regexes. */
 
-			/* Two notes about regexec().  A return value of zero means
-			 * that there is a match.  Also, rm_eo is the first
-			 * non-matching character after the match. */
-
-			wattron(edit, varnish->attributes);
-
 			/* First case: varnish is a single-line expression. */
 			if (varnish->end == NULL) {
-				/* We increment index by rm_eo, to move past the end of the
-				 * last match.  Even though two matches may overlap, we
-				 * want to ignore them, so that we can highlight e.g. C
-				 * strings correctly. */
 				while (index < till_x) {
-					/* Note the fifth parameter to regexec().  It says
-					 * not to match the beginning-of-line character
-					 * unless index is zero.  If regexec() returns
-					 * REG_NOMATCH, there are no more matches in the
-					 * line. */
+					/* If there is no match, go on to the next line. */
 					if (regexec(varnish->start, &line->data[index], 1,
 								&match, (index == 0) ? 0 : REG_NOTBOL) != 0)
 						break;
-
-					/* If the match is of length zero, skip it. */
-					if (match.rm_so == match.rm_eo) {
-						index = step_right(line->data, index + match.rm_eo);
-						continue;
-					}
 
 					/* Translate the match to the beginning of the line. */
 					match.rm_so += index;
 					match.rm_eo += index;
 					index = match.rm_eo;
 
-					/* If the matching part is not visible, skip it. */
-					if (match.rm_eo <= from_x || match.rm_so >= till_x)
+					/* If the match is offscreen to the right, this rule is done. */
+					if (match.rm_so >= till_x)
+						break;
+
+					/* If the match has length zero, advance over it. */
+					if (match.rm_so == match.rm_eo) {
+						if (line->data[index] == '\0')
+							break;
+						index = step_right(line->data, index);
+						continue;
+					}
+
+					/* If the match is offscreen to the left, skip to next. */
+					if (match.rm_eo <= from_x)
 						continue;
 
-					start_col = (match.rm_so <= from_x) ?
-										0 : wideness(line->data,
-										match.rm_so) - from_col;
+					if (match.rm_so > from_x)
+						start_col = wideness(line->data, match.rm_so) - from_col;
 
 					thetext = converted + actual_x(converted, start_col);
 
 					paintlen = actual_x(thetext, wideness(line->data,
 										match.rm_eo) - from_col - start_col);
 
+					wattron(edit, varnish->attributes);
 					mvwaddnstr(edit, row, margin + start_col, thetext, paintlen);
+					wattroff(edit, varnish->attributes);
 				}
-				goto tail_of_loop;
+
+				continue;
 			}
 
 			/* Second case: varnish is a multiline expression. */
 
 			/* Assume nothing gets painted until proven otherwise below. */
-			line->multidata[varnish->id] = CNONE;
+			line->multidata[varnish->id] = NOTHING;
 
-			/* First check the multidata of the preceding line -- it tells
-			 * us about the situation so far, and thus what to do here. */
-			if (start_line != NULL && start_line->multidata != NULL) {
-				if (start_line->multidata[varnish->id] == CWHOLELINE ||
-						start_line->multidata[varnish->id] == CENDAFTER ||
-						start_line->multidata[varnish->id] == CWOULDBE)
+			/* Apart from the first row, check the multidata of the preceding line:
+			 * it tells us about the situation so far, and thus what to do here. */
+			if (row > 0 && start_line != NULL && start_line->multidata != NULL) {
+				if (start_line->multidata[varnish->id] == WHOLELINE ||
+						start_line->multidata[varnish->id] == STARTSHERE ||
+						start_line->multidata[varnish->id] == WOULDBE)
 					goto seek_an_end;
-				if (start_line->multidata[varnish->id] == CNONE ||
-						start_line->multidata[varnish->id] == CBEGINBEFORE ||
-						start_line->multidata[varnish->id] == CSTARTENDHERE)
+				if (start_line->multidata[varnish->id] == NOTHING ||
+						start_line->multidata[varnish->id] == ENDSHERE ||
+						start_line->multidata[varnish->id] == JUSTONTHIS)
 					goto step_two;
 			}
 
-			/* The preceding line has no precalculated multidata.  So, do
-			 * some backtracking to find out what to paint. */
+			/* The preceding line has no precalculated multidata.
+			 * So, do some backtracking to find out what to paint. */
 
 			/* First step: see if there is a line before current that
 			 * matches 'start' and is not complemented by an 'end'. */
 			while (start_line != NULL && regexec(varnish->start,
-					start_line->data, 1, &startmatch, 0) == REG_NOMATCH) {
+						start_line->data, 1, &startmatch, 0) == REG_NOMATCH) {
 				/* There is no start on this line; but if there is an end,
 				 * there is no need to look for starts on earlier lines. */
 				if (regexec(varnish->end, start_line->data, 0, NULL, 0) == 0)
@@ -2593,14 +2607,14 @@ void draw_row(int row, const char *converted, linestruct *line, size_t from_col)
 			if (start_line == NULL)
 				goto step_two;
 
-			/* If a found start has been qualified as an end earlier,
-			 * believe it and skip to the next step. */
+			/* If the start has been qualified as an end earlier, believe it. */
 			if (start_line->multidata != NULL &&
-						(start_line->multidata[varnish->id] == CBEGINBEFORE ||
-						start_line->multidata[varnish->id] == CSTARTENDHERE))
+						(start_line->multidata[varnish->id] == ENDSHERE ||
+						start_line->multidata[varnish->id] == JUSTONTHIS))
 				goto step_two;
 
-			/* Is there an uncomplemented start on the found line? */
+			/* Maybe there is an end on that same line?  If yes, maybe
+			 * there is another start after it?  And so on, until EOL. */
 			while (TRUE) {
 				/* Begin searching for an end after the start match. */
 				index += startmatch.rm_eo;
@@ -2614,7 +2628,7 @@ void draw_row(int row, const char *converted, linestruct *line, size_t from_col)
 				if (startmatch.rm_so == startmatch.rm_eo &&
 								endmatch.rm_so == endmatch.rm_eo) {
 					if (start_line->data[index] == '\0')
-						break;
+						goto step_two;
 					index = step_right(start_line->data, index);
 				}
 				/* If there is no later start on this line, next step. */
@@ -2622,79 +2636,87 @@ void draw_row(int row, const char *converted, linestruct *line, size_t from_col)
 								1, &startmatch, REG_NOTBOL) == REG_NOMATCH)
 					goto step_two;
 			}
-			/* Indeed, there is a start without an end on that line. */
 
   seek_an_end:
 			/* We've already checked that there is no end between the start
 			 * and the current line.  But is there an end after the start
-			 * at all?  We don't paint unterminated starts. */
-			while (end_line != NULL && regexec(varnish->end, end_line->data,
-								1, &endmatch, 0) == REG_NOMATCH)
-				end_line = end_line->next;
+			 * at all?  Because we don't paint unterminated starts. */
+			if (row == 0) {
+				while (end_line != NULL && regexec(varnish->end, end_line->data,
+											1, &endmatch, 0) == REG_NOMATCH)
+					end_line = end_line->next;
+			} else if (regexec(varnish->end, line->data, 1, &endmatch, 0) != 0)
+				end_line = line->next;
 
 			/* If there is no end, there is nothing to paint. */
 			if (end_line == NULL) {
-				line->multidata[varnish->id] = CWOULDBE;
-				goto tail_of_loop;
+				line->multidata[varnish->id] = WOULDBE;
+				continue;
+			}
+
+			/* If it was already determined that there is no end... */
+			if (end_line != line && line->prev == start_line && line->prev->multidata &&
+								line->prev->multidata[varnish->id] == WOULDBE) {
+				line->multidata[varnish->id] = WOULDBE;
+				continue;
 			}
 
 			/* If the end is on a later line, paint whole line, and be done. */
 			if (end_line != line) {
+				wattron(edit, varnish->attributes);
 				mvwaddnstr(edit, row, margin, converted, -1);
-				line->multidata[varnish->id] = CWHOLELINE;
-				goto tail_of_loop;
+				wattroff(edit, varnish->attributes);
+				line->multidata[varnish->id] = WHOLELINE;
+				continue;
 			}
 
 			/* Only if it is visible, paint the part to be coloured. */
 			if (endmatch.rm_eo > from_x) {
 				paintlen = actual_x(converted, wideness(line->data,
 												endmatch.rm_eo) - from_col);
+				wattron(edit, varnish->attributes);
 				mvwaddnstr(edit, row, margin, converted, paintlen);
+				wattroff(edit, varnish->attributes);
 			}
-			line->multidata[varnish->id] = CBEGINBEFORE;
+			line->multidata[varnish->id] = ENDSHERE;
 
   step_two:
 			/* Second step: look for starts on this line, but begin
 			 * looking only after an end match, if there is one. */
 			index = (paintlen == 0) ? 0 : endmatch.rm_eo;
 
-			while (regexec(varnish->start, line->data + index,
-								1, &startmatch, (index == 0) ?
-								0 : REG_NOTBOL) == 0) {
-				/* Translate the match to be relative to the
-				 * beginning of the line. */
+			while (regexec(varnish->start, line->data + index, 1, &startmatch,
+										(index == 0) ? 0 : REG_NOTBOL) == 0) {
+				/* Make the match relative to the beginning of the line. */
 				startmatch.rm_so += index;
 				startmatch.rm_eo += index;
 
-				start_col = (startmatch.rm_so <= from_x) ?
-								0 : wideness(line->data,
-								startmatch.rm_so) - from_col;
+				if (startmatch.rm_so > from_x)
+					start_col = wideness(line->data, startmatch.rm_so) - from_col;
 
 				thetext = converted + actual_x(converted, start_col);
 
-				if (regexec(varnish->end, line->data + startmatch.rm_eo,
-								1, &endmatch, (startmatch.rm_eo == 0) ?
-								0 : REG_NOTBOL) == 0) {
-					/* Translate the end match to be relative to
-					 * the beginning of the line. */
+				if (regexec(varnish->end, line->data + startmatch.rm_eo, 1, &endmatch,
+									(startmatch.rm_eo == 0) ? 0 : REG_NOTBOL) == 0) {
+					/* Make the match relative to the beginning of the line. */
 					endmatch.rm_so += startmatch.rm_eo;
 					endmatch.rm_eo += startmatch.rm_eo;
-					/* Only paint the match if it is visible on screen and
-					 * it is more than zero characters long. */
-					if (endmatch.rm_eo > from_x &&
-										endmatch.rm_eo > startmatch.rm_so) {
+					/* Only paint the match if it is visible on screen
+					 * and it is more than zero characters long. */
+					if (endmatch.rm_eo > from_x && endmatch.rm_eo > startmatch.rm_so) {
 						paintlen = actual_x(thetext, wideness(line->data,
-										endmatch.rm_eo) - from_col - start_col);
+											endmatch.rm_eo) - from_col - start_col);
 
-						mvwaddnstr(edit, row, margin + start_col,
-												thetext, paintlen);
+						wattron(edit, varnish->attributes);
+						mvwaddnstr(edit, row, margin + start_col, thetext, paintlen);
+						wattroff(edit, varnish->attributes);
 
-						line->multidata[varnish->id] = CSTARTENDHERE;
+						line->multidata[varnish->id] = JUSTONTHIS;
 					}
 					index = endmatch.rm_eo;
 					/* If both start and end match are anchors, advance. */
 					if (startmatch.rm_so == startmatch.rm_eo &&
-								endmatch.rm_so == endmatch.rm_eo) {
+										endmatch.rm_so == endmatch.rm_eo) {
 						if (line->data[index] == '\0')
 							break;
 						index = step_right(line->data, index);
@@ -2705,23 +2727,32 @@ void draw_row(int row, const char *converted, linestruct *line, size_t from_col)
 				/* There is no end on this line.  But maybe on later lines? */
 				end_line = line->next;
 
-				while (end_line != NULL && regexec(varnish->end, end_line->data,
-										0, NULL, 0) == REG_NOMATCH)
+				while (end_line && regexec(varnish->end, end_line->data,
+											0, NULL, 0) == REG_NOMATCH)
 					end_line = end_line->next;
 
 				/* If there is no end, we're done with this regex. */
 				if (end_line == NULL) {
-					line->multidata[varnish->id] = CWOULDBE;
+					line->multidata[varnish->id] = WOULDBE;
 					break;
 				}
 
 				/* Paint the rest of the line, and we're done. */
+				wattron(edit, varnish->attributes);
 				mvwaddnstr(edit, row, margin + start_col, thetext, -1);
-				line->multidata[varnish->id] = CENDAFTER;
+				wattroff(edit, varnish->attributes);
+
+				line->multidata[varnish->id] = STARTSHERE;
+
+				if (end_line->multidata == NULL) {
+					end_line->multidata = nmalloc(openfile->syntax->nmultis * sizeof(short));
+					for (short item = 0; item < openfile->syntax->nmultis; item++)
+						end_line->multidata[item] = 0;
+				}
+				end_line->multidata[varnish->id] = ENDSHERE;
+
 				break;
 			}
-  tail_of_loop:
-			wattroff(edit, varnish->attributes);
 		}
 	}
 #endif /* ENABLE_COLOR */
@@ -2844,7 +2875,7 @@ int update_line(linestruct *line, size_t index)
 		wattroff(edit, hilite_attribute);
 	}
 
-	if (spotlighted && line == openfile->current && !inhelp)
+	if (spotlighted && line == openfile->current)
 		spotlight(light_from_col, light_to_col);
 
 	return 1;
@@ -2905,7 +2936,7 @@ int update_softwrapped_line(linestruct *line)
 		from_col = to_col;
 	}
 
-	if (spotlighted && line == openfile->current && !inhelp)
+	if (spotlighted && line == openfile->current)
 		spotlight_softwrapped(light_from_col, light_to_col);
 
 	return (row - starting_row);
@@ -3024,22 +3055,26 @@ bool less_than_a_screenful(size_t was_lineno, size_t was_leftedge)
 /* Draw a scroll bar on the righthand side of the screen. */
 void draw_scrollbar(void)
 {
-	int totalrows = openfile->filebot->lineno;
-	int first_row = openfile->edittop->lineno;
+	int totallines = openfile->filebot->lineno;
+	int fromline = openfile->edittop->lineno - 1;
+	int coveredlines = editwinrows;
 
 	if (ISSET(SOFTWRAP)) {
-		for (linestruct *ln = openfile->filetop; ln != openfile->edittop; ln = ln->next)
-			first_row += ln->extrarows;
-		first_row += chunk_for(openfile->firstcolumn, openfile->edittop);
+		linestruct *line = openfile->edittop;
+		int extras = extra_chunks_in(line) - chunk_for(openfile->firstcolumn, line);
 
-		for (linestruct *ln = openfile->filetop; ln != NULL; ln = ln->next)
-			totalrows += ln->extrarows;
+		while (line->lineno + extras < fromline + editwinrows && line->next) {
+			line = line->next;
+			extras += extra_chunks_in(line);
+		}
+
+		coveredlines = line->lineno - fromline;
 	}
 
-	int lowest = ((first_row - 1) * editwinrows) / totalrows;
-	int highest = lowest + (editwinrows * editwinrows) / totalrows;
+	int lowest = (fromline * editwinrows) / totallines;
+	int highest = lowest + (editwinrows * coveredlines) / totallines;
 
-	if (editwinrows > totalrows)
+	if (editwinrows > totallines)
 		highest = editwinrows;
 
 	for (int row = 0; row < editwinrows; row++) {
@@ -3253,14 +3288,11 @@ size_t actual_last_column(size_t leftedge, size_t column)
 	return leftedge + column;
 }
 
-/* Return TRUE if current[current_x] is above the top of the screen, and FALSE
- * otherwise. */
+/* Return TRUE if current[current_x] is before the viewport. */
 bool current_is_above_screen(void)
 {
 #ifndef NANO_TINY
 	if (ISSET(SOFTWRAP))
-		/* The cursor is above screen when current[current_x] is before edittop
-		 * at column firstcolumn. */
 		return (openfile->current->lineno < openfile->edittop->lineno ||
 				(openfile->current->lineno == openfile->edittop->lineno &&
 				xplustabs() < openfile->firstcolumn));
@@ -3269,8 +3301,7 @@ bool current_is_above_screen(void)
 		return (openfile->current->lineno < openfile->edittop->lineno);
 }
 
-/* Return TRUE if current[current_x] is below the bottom of the screen, and
- * FALSE otherwise. */
+/* Return TRUE if current[current_x] is beyond the viewport. */
 bool current_is_below_screen(void)
 {
 #ifndef NANO_TINY
@@ -3283,16 +3314,14 @@ bool current_is_below_screen(void)
 		return (go_forward_chunks(editwinrows - 1, &line, &leftedge) == 0 &&
 						(line->lineno < openfile->current->lineno ||
 						(line->lineno == openfile->current->lineno &&
-						leftedge < leftedge_for(xplustabs(),
-												openfile->current))));
+						leftedge < leftedge_for(xplustabs(), openfile->current))));
 	} else
 #endif
 		return (openfile->current->lineno >=
 						openfile->edittop->lineno + editwinrows);
 }
 
-/* Return TRUE if current[current_x] is offscreen relative to edittop, and
- * FALSE otherwise. */
+/* Return TRUE if current[current_x] is outside the viewport. */
 bool current_is_offscreen(void)
 {
 	return (current_is_above_screen() || current_is_below_screen());
@@ -3361,6 +3390,12 @@ void edit_refresh(void)
 		draw_scrollbar();
 #endif
 
+//#define TIMEREFRESH  123
+#ifdef TIMEREFRESH
+#include <time.h>
+	clock_t start = clock();
+#endif
+
 	line = openfile->edittop;
 
 	while (row < editwinrows && line != NULL) {
@@ -3379,6 +3414,10 @@ void edit_refresh(void)
 #endif
 		row++;
 	}
+
+#ifdef TIMEREFRESH
+	statusline(INFO, "Refresh: %.1f ms", 1000 * (double)(clock() - start) / CLOCKS_PER_SEC);
+#endif
 
 	place_the_cursor();
 	wnoutrefresh(edit);
@@ -3458,9 +3497,11 @@ void report_cursor_position(void)
 	charpct = (openfile->totsize == 0) ? 0 : 100 * sum / openfile->totsize;
 
 	statusline(INFO,
-			_("line %zd/%zd (%d%%), col %zu/%zu (%d%%), char %zu/%zu (%d%%)"),
+			_("line %*zd/%zd (%2d%%), col %2zu/%2zu (%3d%%), char %*zu/%zu (%2d%%)"),
+			digits(openfile->filebot->lineno),
 			openfile->current->lineno, openfile->filebot->lineno, linepct,
-			column, fullwidth, colpct, sum, openfile->totsize, charpct);
+			column, fullwidth, colpct,
+			digits(openfile->totsize), sum, openfile->totsize, charpct);
 }
 
 /* Highlight the text between the given two columns on the current line. */
@@ -3484,11 +3525,11 @@ void spotlight(size_t from_col, size_t to_col)
 		word = display_string(openfile->current->data, from_col,
 								to_col - from_col, FALSE, overshoots);
 
-	wattron(edit, interface_color_pair[SELECTED_TEXT]);
+	wattron(edit, interface_color_pair[SPOTLIGHTED]);
 	waddnstr(edit, word, actual_x(word, to_col));
 	if (overshoots)
 		mvwaddch(edit, openfile->current_y, COLS - 1 - thebar, '>');
-	wattroff(edit, interface_color_pair[SELECTED_TEXT]);
+	wattroff(edit, interface_color_pair[SPOTLIGHTED]);
 
 	free(word);
 }
@@ -3524,9 +3565,9 @@ void spotlight_softwrapped(size_t from_col, size_t to_col)
 			word = display_string(openfile->current->data, from_col,
 										break_col - from_col, FALSE, FALSE);
 
-		wattron(edit, interface_color_pair[SELECTED_TEXT]);
+		wattron(edit, interface_color_pair[SPOTLIGHTED]);
 		waddnstr(edit, word, actual_x(word, break_col));
-		wattroff(edit, interface_color_pair[SELECTED_TEXT]);
+		wattroff(edit, interface_color_pair[SPOTLIGHTED]);
 
 		free(word);
 

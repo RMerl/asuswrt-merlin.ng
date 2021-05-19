@@ -20,7 +20,7 @@ color red "\<(drop|reject)\>"
 color brightblue "\<(accept|continue|(d|s)nat|goto|jump|masquerade|return)\>"
 
 # Comments
-color cyan "(^|[[:space:]])#.*"
+color cyan "(^|[[:blank:]])#.*"
 
 # Trailing whitespace
 color ,green "[[:space:]]+$"

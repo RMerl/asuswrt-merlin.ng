@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Thu Jan 14 11:12:27 2021 -->
+<!-- CreationDate: Thu Apr 29 11:50:45 2021 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -327,10 +327,11 @@ greater than 0. The default value is <b>8</b>.</p>
 <p style="margin-left:11%;"><b>&minus;U</b>,
 <b>&minus;&minus;quickblank</b></p>
 
-<p style="margin-left:22%;">Do quick status-bar blanking:
-status-bar messages will disappear after 1 keystroke instead
-of 25. Note that option <b>&minus;c</b>
-(<b>&minus;&minus;constantshow</b>) overrides this.</p>
+<p style="margin-left:22%;">Make status-bar messages
+disappear after 1 keystroke instead of after 20. Note that
+options <b>&minus;c</b> (<b>&minus;&minus;constantshow</b>)
+and <b>&minus;_</b> (<b>&minus;&minus;minibar</b>) override
+this.</p>
 
 <p style="margin-left:11%;"><b>&minus;V</b>,
 <b>&minus;&minus;version</b></p>
@@ -577,14 +578,6 @@ stop at word ends instead of beginnings.</p>
 <p style="margin-left:22%;">Allow the user to suspend the
 editor (with <b>^Z</b> by default).</p>
 
-<p style="margin-left:11%;"><b>&minus;^</b>,
-<b>&minus;&minus;markmatch</b></p>
-
-<p style="margin-left:22%;">After a search, set the mark at
-the end of the found match (if there is any) so that it gets
-highlighted. This makes the match more visible, but also
-allows deleting the match with a single keystroke.</p>
-
 <p style="margin-left:11%;"><b>&minus;%</b>,
 <b>&minus;&minus;stateflags</b></p>
 
@@ -613,7 +606,12 @@ When a file is loaded or saved, and also when switching
 between buffers, the number of lines in the buffer is
 displayed after the file name. This number is cleared upon
 the next keystroke, or replaced with an [i/n] counter when
-multiple buffers are open.</p>
+multiple buffers are open. The line plus column numbers and
+the character code are displayed only when
+<b>&minus;&minus;constantshow</b> is used, and can be
+toggled on and off with <b>M-C</b>. The state flags are
+displayed only when <b>&minus;&minus;stateflags</b> is
+used.</p>
 
 <p style="margin-left:11%;"><b>&minus;!</b>,
 <b>&minus;&minus;magic</b></p>

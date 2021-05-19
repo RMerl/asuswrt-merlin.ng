@@ -461,7 +461,7 @@ void show_help(void)
 		didfind = 0;
 
 #ifndef NANO_TINY
-		openfile->mark = NULL;
+		spotlighted = FALSE;
 		hide_cursor = FALSE;
 
 		if (bracketed_paste || kbinput == BRACKETED_PASTE_MARKER) {

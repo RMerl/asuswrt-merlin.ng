@@ -30,4 +30,4 @@ color blue ":(\w|[?-])+"
 color yellow start="^[[:blank:]]+"" end="[^\]""
 color yellow ""(\\.|[^"])*""
 # Comments
-color cyan "(^|[[:space:]]);.*"
+color cyan "(^|[[:blank:]]);.*"

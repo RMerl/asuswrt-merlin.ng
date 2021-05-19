@@ -19,7 +19,7 @@ color cyan "\<(true|false|null|undefined)\>"
 # Strings.
 color brightmagenta ""(\\.|[^"])*"" "'(\\.|[^'])*'" "`(\\.|[^`])*`"
 # Comments.
-color brightblue "(^|[[:space:]])//.*"
+color brightblue "(^|[[:blank:]])//.*"
 color brightblue start="/\*" end="\*/"
 
 # Trailing whitespace.

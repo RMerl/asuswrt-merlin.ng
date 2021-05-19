@@ -6,7 +6,7 @@ CLEANFILES = revision.h
 if BUILDING_FROM_GIT
 SOMETHING = "REVISION \"`git describe --tags 2>/dev/null`\""
 else
-SOMETHING = "NOTHING \"from tarball\""
+SOMETHING = "PLAINBUILD \"from tarball\""
 endif
 
 nano.o: revision.h

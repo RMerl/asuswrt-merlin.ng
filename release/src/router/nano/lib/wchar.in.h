@@ -111,7 +111,7 @@
 /* mingw and MSVC define wint_t as 'unsigned short' in <crtdefs.h> or
    <stddef.h>.  This is too small: ISO C 99 section 7.24.1.(2) says that
    wint_t must be "unchanged by default argument promotions".  Override it.  */
-# if @GNULIB_OVERRIDES_WINT_T@
+# if @GNULIBHEADERS_OVERRIDE_WINT_T@
 #  if !GNULIB_defined_wint_t
 #   if @HAVE_CRTDEFS_H@
 #    include <crtdefs.h>

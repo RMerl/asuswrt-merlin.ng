@@ -18,7 +18,7 @@ color blue "\$+[{(][a-zA-Z0-9_-]+[})]"
 color brightblue "^[^ 	]+:"
 
 # Comments.
-color green "(^|[[:space:]]+)#.*"
+color green "(^|[[:blank:]]+)#.*"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

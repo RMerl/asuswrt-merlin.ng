@@ -1,4 +1,4 @@
-# gnulib-common.m4 serial 63
+# gnulib-common.m4 serial 65
 dnl Copyright (C) 2007-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -39,11 +39,12 @@ AC_DEFUN([gl_COMMON_BODY], [
        this syntax with 'extern'.  */
 #  define _Noreturn [[noreturn]]
 # elif ((!defined __cplusplus || defined __clang__) \
-        && (201112 <= (defined __STDC_VERSION__ ? __STDC_VERSION__ : 0)  \
-            || _GL_GNUC_PREREQ (4, 7) \
-            || (defined __apple_build_version__ \
-                ? 6000000 <= __apple_build_version__ \
-                : 3 < __clang_major__ + (5 <= __clang_minor__))))
+        && (201112 <= (defined __STDC_VERSION__ ? __STDC_VERSION__ : 0) \
+            || (!defined __STRICT_ANSI__ \
+                && (_GL_GNUC_PREREQ (4, 7) \
+                    || (defined __apple_build_version__ \
+                        ? 6000000 <= __apple_build_version__ \
+                        : 3 < __clang_major__ + (5 <= __clang_minor__))))))
    /* _Noreturn works as-is.  */
 # elif _GL_GNUC_PREREQ (2, 8) || defined __clang__ || 0x5110 <= __SUNPRO_C
 #  define _Noreturn __attribute__ ((__noreturn__))
@@ -66,7 +67,9 @@ AC_DEFUN([gl_COMMON_BODY], [
 #endif])
   AH_VERBATIM([attribute],
 [/* Attributes.  */
-#ifdef __has_attribute
+#if (defined __has_attribute \
+     && (!defined __clang_minor__ \
+         || 3 < __clang_major__ + (5 <= __clang_minor__)))
 # define _GL_HAS_ATTRIBUTE(attr) __has_attribute (__##attr##__)
 #else
 # define _GL_HAS_ATTRIBUTE(attr) _GL_ATTR_##attr
@@ -354,6 +357,16 @@ AC_DEFUN([gl_COMMON_BODY], [
   export LIBC_FATAL_STDERR_
 ])
 
+# gl_MODULE_INDICATOR_INIT_VARIABLE([variablename])
+# gl_MODULE_INDICATOR_INIT_VARIABLE([variablename], [initialvalue])
+# initializes the shell variable that indicates the presence of the given module
+# as a C preprocessor expression.
+AC_DEFUN([gl_MODULE_INDICATOR_INIT_VARIABLE],
+[
+  GL_MODULE_INDICATOR_PREFIX[]_[$1]=m4_if([$2], , [0], [$2])
+  AC_SUBST(GL_MODULE_INDICATOR_PREFIX[]_[$1])
+])
+
 # gl_MODULE_INDICATOR_CONDITION
 # expands to a C preprocessor expression that evaluates to 1 or 0, depending
 # whether a gnulib module that has been requested shall be considered present
@@ -366,9 +379,9 @@ m4_define([gl_MODULE_INDICATOR_CONDITION], [1])
 AC_DEFUN([gl_MODULE_INDICATOR_SET_VARIABLE],
 [
   gl_MODULE_INDICATOR_SET_VARIABLE_AUX(
-    [GNULIB_[]m4_translit([[$1]],
-                          [abcdefghijklmnopqrstuvwxyz./-],
-                          [ABCDEFGHIJKLMNOPQRSTUVWXYZ___])],
+    [GL_MODULE_INDICATOR_PREFIX[]_GNULIB_[]m4_translit([[$1]],
+                                                       [abcdefghijklmnopqrstuvwxyz./-],
+                                                       [ABCDEFGHIJKLMNOPQRSTUVWXYZ___])],
     [gl_MODULE_INDICATOR_CONDITION])
 ])
 

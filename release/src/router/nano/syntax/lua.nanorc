@@ -20,7 +20,7 @@ color normal "\.\.\."
 color brightblue "\<(do|end|while|repeat|until|if|elseif|then|else|for|in|function|local|return|break)\>"
 
 # Keywords
-color brightyellow "\<(_G|_VERSION|assert|collectgarbage|dofile|error|getfenv|getmetatable|ipairs|load|loadfile|module|next|pairs|pcall|print|rawequal|rawget|rawlen|rawset|require|select|setfenv|setmetatable|tonumber|tostring|type|unpack|xpcall)\s*\("
+color brightyellow "\<(_G|_VERSION|assert|collectgarbage|dofile|error|getfenv|getmetatable|ipairs|load|loadfile|module|next|pairs|pcall|print|rawequal|rawget|rawlen|rawset|require|select|setfenv|setmetatable|tonumber|tostring|type|unpack|xpcall)[[:blank:]]*\("
 
 # Standard library
 color brightyellow "\<coroutine\.(create|isyieldable|resume|running|status|wrap|yield)\>"

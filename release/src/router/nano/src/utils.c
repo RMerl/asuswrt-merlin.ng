@@ -76,7 +76,6 @@ char *concatenate(const char *path, const char *name)
 	return joined;
 }
 
-#ifdef ENABLE_LINENUMBERS
 /* Return the number of digits that the given integer n takes up. */
 int digits(ssize_t n)
 {
@@ -106,7 +105,6 @@ int digits(ssize_t n)
 		}
 	}
 }
-#endif
 
 /* Read an integer from the given string.  If it parses okay,
  * store it in *result and return TRUE; otherwise, return FALSE. */
@@ -195,22 +193,18 @@ void free_chararray(char **array, size_t len)
 #endif
 
 #ifdef ENABLE_SPELLER
-/* Is the word starting at the given position in buf and of the given length
- * a separate word?  That is: is it not part of a longer word?*/
-bool is_separate_word(size_t position, size_t length, const char *buf)
+/* Is the word starting at the given position in 'text' and of the given
+ * length a separate word?  That is: is it not part of a longer word? */
+bool is_separate_word(size_t position, size_t length, const char *text)
 {
-	char before[MAXCHARLEN], after[MAXCHARLEN];
-	size_t word_end = position + length;
-
-	/* Get the characters before and after the word, if any. */
-	collect_char(buf + step_left(buf, position), before);
-	collect_char(buf + word_end, after);
+	const char *before = text + step_left(text, position);
+	const char *after = text + position + length;
 
 	/* If the word starts at the beginning of the line OR the character before
 	 * the word isn't a letter, and if the word ends at the end of the line OR
 	 * the character after the word isn't a letter, we have a whole word. */
 	return ((position == 0 || !is_alpha_char(before)) &&
-				(buf[word_end] == '\0' || !is_alpha_char(after)));
+					(*after == '\0' || !is_alpha_char(after)));
 }
 #endif /* ENABLE_SPELLER */
 
@@ -355,14 +349,12 @@ char *free_and_assign(char *dest, char *src)
 	return src;
 }
 
-/* When not in softwrap mode, nano scrolls horizontally within a line in
- * chunks (a bit smaller than the chunks used in softwrapping).  Return the
- * column number of the first character displayed in the edit window when the
- * cursor is at the given column.  Note that (0 <= column -
- * get_page_start(column) < COLS). */
+/* When not softwrapping, nano scrolls the current line horizontally by
+ * chunks ("pages").  Return the column number of the first character
+ * displayed in the edit window when the cursor is at the given column. */
 size_t get_page_start(size_t column)
 {
-	if (column + 2 < editwincols || ISSET(SOFTWRAP) || column == 0)
+	if (column == 0 || column + 2 < editwincols || ISSET(SOFTWRAP))
 		return 0;
 	else if (editwincols > 8)
 		return column - 6 - (column - 6) % (editwincols - 8);
@@ -437,9 +429,6 @@ void new_magicline(void)
 	openfile->filebot->next = make_new_node(openfile->filebot);
 	openfile->filebot->next->data = copy_of("");
 	openfile->filebot = openfile->filebot->next;
-#ifndef NANO_TINY
-	openfile->filebot->extrarows = 0;
-#endif
 	openfile->totsize++;
 }
 

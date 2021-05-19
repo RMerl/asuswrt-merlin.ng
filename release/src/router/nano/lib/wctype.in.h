@@ -103,7 +103,7 @@ _GL_INLINE_HEADER_BEGIN
 /* mingw and MSVC define wint_t as 'unsigned short' in <crtdefs.h> or
    <stddef.h>.  This is too small: ISO C 99 section 7.24.1.(2) says that
    wint_t must be "unchanged by default argument promotions".  Override it.  */
-# if @GNULIB_OVERRIDES_WINT_T@
+# if @GNULIBHEADERS_OVERRIDE_WINT_T@
 #  if !GNULIB_defined_wint_t
 #   if @HAVE_CRTDEFS_H@
 #    include <crtdefs.h>
@@ -132,7 +132,7 @@ typedef unsigned int rpl_wint_t;
    same way, or not at all.  */
 # if ! @HAVE_ISWCNTRL@ || @REPLACE_ISWCNTRL@
 
-#  if @GNULIB_OVERRIDES_WINT_T@ /* implies @REPLACE_ISWCNTRL@ */
+#  if @GNULIBHEADERS_OVERRIDE_WINT_T@ /* implies @REPLACE_ISWCNTRL@ */
 
 _GL_WCTYPE_INLINE int
 rpl_iswalnum (wint_t wc)
@@ -496,7 +496,7 @@ _GL_FUNCDECL_RPL (iswxdigit, int, (wint_t wc));
 
 # endif
 
-# if defined __MINGW32__ && !@GNULIB_OVERRIDES_WINT_T@
+# if defined __MINGW32__ && !@GNULIBHEADERS_OVERRIDE_WINT_T@
 
 /* On native Windows, wchar_t is uint16_t, and wint_t is uint32_t.
    The functions towlower and towupper are implemented in the MSVCRT library
@@ -529,7 +529,7 @@ rpl_towupper (wint_t wc)
 #   define towupper rpl_towupper
 #  endif
 
-# endif /* __MINGW32__ && !@GNULIB_OVERRIDES_WINT_T@ */
+# endif /* __MINGW32__ && !@GNULIBHEADERS_OVERRIDE_WINT_T@ */
 
 # define GNULIB_defined_wctype_functions 1
 #endif
@@ -646,7 +646,7 @@ _GL_WARN_ON_USE (wctype, "wctype is unportable - "
    The argument WC must be either a wchar_t value or WEOF.
    The argument DESC must have been returned by the wctype() function.  */
 #if @GNULIB_ISWCTYPE@
-# if @GNULIB_OVERRIDES_WINT_T@
+# if @GNULIBHEADERS_OVERRIDE_WINT_T@
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   undef iswctype
 #   define iswctype rpl_iswctype

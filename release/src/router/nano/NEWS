@@ -1,3 +1,28 @@
+2021.04.29 - GNU nano 5.7 "Toți ceilalți arau câmpurile"
+• The output of --constantshow (without --minibar) is more stable.
+• When opening multiple buffers and there is an error message, this
+  message is shown again upon first switch to the relevant buffer.
+• The position and size of the indicator now follow actual lines,
+  instead of visual lines when in softwrap mode, meaning that the
+  size of the indicator can change when scrolling in softwrap mode.
+
+2021.03.03 - GNU nano 5.6.1 "Geelgors"
+• Search matches are properly colorized in softwrap mode too.
+• Option 'highlightcolor' has been renamed to 'spotlightcolor'.
+
+2021.02.24 - GNU nano 5.6 "Wielewaal"
+• A search match gets highlighted (in black on yellow by default),
+  in addition to placing the cursor at the start of the match.
+  The color combination can be changed with 'set highlightcolor'.
+  By default the cursor is hidden until the next keystroke, but
+  it can be forced on with --showcursor / 'set showcursor'.
+• Option --markmatch / 'set markmatch' has been removed.
+• Cursor position and character code are displayed in the minibar
+  only when option --constantshow / 'set constantshow' is used,
+  and their display can be toggled with M-C.
+• The state flags are displayed in the minibar only when option
+  --stateflags / 'set stateflags' is used.
+
 2021.01.14 - GNU nano 5.5 "Rebecca"
 • Option 'set minibar' makes nano suppress the title bar and instead
   show a bar with basic editing information at the bottom: file name

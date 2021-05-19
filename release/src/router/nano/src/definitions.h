@@ -111,9 +111,9 @@
 #define REPLACING  1
 #define INREGION   2
 
-/* In UTF-8 a character is at most six bytes long. */
 #ifdef ENABLE_UTF8
-#define MAXCHARLEN  6
+/* In UTF-8 a valid character is at most four bytes long. */
+#define MAXCHARLEN  4
 #else
 #define MAXCHARLEN  1
 #endif
@@ -138,17 +138,17 @@
 #define BAD_COLOR  -2
 
 /* Flags for indicating how a multiline regex pair apply to a line. */
-#define CNONE           (1<<1)
+#define NOTHING      (1<<1)
 		/* The start/end regexes don't cover this line at all. */
-#define CBEGINBEFORE    (1<<2)
-		/* The start regex matches on an earlier line, the end regex on this one. */
-#define CENDAFTER       (1<<3)
+#define STARTSHERE   (1<<2)
 		/* The start regex matches on this line, the end regex on a later one. */
-#define CWHOLELINE      (1<<4)
+#define WHOLELINE    (1<<3)
 		/* The start regex matches on an earlier line, the end regex on a later one. */
-#define CSTARTENDHERE   (1<<5)
+#define ENDSHERE     (1<<4)
+		/* The start regex matches on an earlier line, the end regex on this one. */
+#define JUSTONTHIS   (1<<5)
 		/* Both the start and end regexes match within this line. */
-#define CWOULDBE        (1<<6)
+#define WOULDBE      (1<<6)
 		/* An unpaired start match is on or before this line. */
 #endif
 
@@ -246,7 +246,7 @@
 
 /* Enumeration types. */
 typedef enum {
-	NIX_FILE, DOS_FILE, MAC_FILE
+	UNSPECIFIED, NIX_FILE, DOS_FILE, MAC_FILE
 } format_type;
 
 typedef enum {
@@ -282,6 +282,7 @@ enum {
 	GUIDE_STRIPE,
 	SCROLL_BAR,
 	SELECTED_TEXT,
+	SPOTLIGHTED,
 	PROMPT_BAR,
 	STATUS_BAR,
 	ERROR_MESSAGE,
@@ -306,7 +307,6 @@ enum {
 	CUT_FROM_CURSOR,
 	BACKWARDS_SEARCH,
 	MULTIBUFFER,
-	SMOOTH_SCROLL,
 	REBIND_DELETE,
 	RAW_SEQUENCES,
 	NO_CONVERT,
@@ -318,7 +318,6 @@ enum {
 	RESTRICTED,
 	SMART_HOME,
 	WHITESPACE_DISPLAY,
-	MORE_SPACE,
 	TABS_TO_SPACES,
 	QUICK_BLANK,
 	WORD_BOUNDS,
@@ -332,7 +331,6 @@ enum {
 	TRIM_BLANKS,
 	SHOW_CURSOR,
 	LINE_NUMBERS,
-	NO_PAUSES,
 	AT_BLANKS,
 	AFTER_ENDS,
 	LET_THEM_ZAP,
@@ -343,8 +341,7 @@ enum {
 	BOOKSTYLE,
 	STATEFLAGS,
 	USE_MAGIC,
-	MINIBAR,
-	MARK_MATCH
+	MINIBAR
 };
 
 /* Structure types. */
@@ -369,8 +366,8 @@ typedef struct colortype {
 } colortype;
 
 typedef struct regexlisttype {
-	char *full_regex;
-		/* A regex string to match things that imply a certain syntax. */
+	regex_t *one_rgx;
+		/* A regex to match things that imply a certain syntax. */
 	struct regexlisttype *next;
 		/* The next regex. */
 } regexlisttype;
@@ -441,10 +438,6 @@ typedef struct linestruct {
 		/* The text of this line. */
 	ssize_t lineno;
 		/* The number of this line. */
-#ifndef NANO_TINY
-	ssize_t extrarows;
-		/* The extra rows that this line occupies when softwrapping. */
-#endif
 	struct linestruct *next;
 		/* Next node. */
 	struct linestruct *prev;
@@ -567,6 +560,8 @@ typedef struct openfilestruct {
 		/* The syntax that applies to this file, if any. */
 #endif
 #ifdef ENABLE_MULTIBUFFER
+	char *errormessage;
+		/* The ALERT message (if any) that occurred when opening the file. */
 	struct openfilestruct *next;
 		/* The next open file, if any. */
 	struct openfilestruct *prev;

@@ -83,7 +83,7 @@ void make_new_buffer(void)
 	openfile->mark = NULL;
 	openfile->softmark = FALSE;
 
-	openfile->fmt = NIX_FILE;
+	openfile->fmt = UNSPECIFIED;
 
 	openfile->undotop = NULL;
 	openfile->current_undo = NULL;
@@ -92,6 +92,9 @@ void make_new_buffer(void)
 
 	openfile->statinfo = NULL;
 	openfile->lock_filename = NULL;
+#endif
+#ifdef ENABLE_MULTIBUFFER
+	openfile->errormessage = NULL;
 #endif
 #ifdef ENABLE_COLOR
 	openfile->syntax = NULL;
@@ -200,7 +203,8 @@ bool write_lockfile(const char *lockfilename, const char *filename, bool modifie
 	 * some byte-order-checking numbers (bytes 1008-1022). */
 	lockdata[0] = 0x62;
 	lockdata[1] = 0x30;
-	snprintf(&lockdata[2], 10, "nano %s", VERSION);
+	/* It's fine to overwrite byte 12 with the \0 as it is 0x00 anyway. */
+	snprintf(&lockdata[2], 11, "nano %s", VERSION);
 	lockdata[24] = mypid % 256;
 	lockdata[25] = (mypid / 256) % 256;
 	lockdata[26] = (mypid / (256 * 256)) % 256;
@@ -370,9 +374,6 @@ bool open_buffer(const char *filename, bool new_one)
 {
 	char *realname;
 		/* The filename after tilde expansion. */
-#ifndef NANO_TINY
-	char *thelocksname = NULL;
-#endif
 	struct stat fileinfo;
 	int descriptor = 0;
 		/* Code 0 means new file, -1 means failure, and else it's the fd. */
@@ -417,22 +418,27 @@ bool open_buffer(const char *filename, bool new_one)
 
 	/* When loading into a new buffer, first check the file's path is valid,
 	 * and then (if requested and possible) create a lock file for it. */
-	if (new_one && has_valid_path(realname)) {
-#ifndef NANO_TINY
-		if (ISSET(LOCKING) && !ISSET(VIEW_MODE) && filename[0] != '\0') {
-			thelocksname = do_lockfile(realname, TRUE);
-
-			/* When not overriding an existing lock, don't open a buffer. */
-			if (thelocksname == SKIPTHISFILE) {
-				free(realname);
-				return FALSE;
-			}
-		}
-#endif
-	}
-
-	if (new_one)
+	if (new_one) {
 		make_new_buffer();
+
+		if (has_valid_path(realname)) {
+#ifndef NANO_TINY
+			if (ISSET(LOCKING) && !ISSET(VIEW_MODE) && filename[0] != '\0') {
+				char *thelocksname = do_lockfile(realname, TRUE);
+
+				/* When not overriding an existing lock, discard the buffer. */
+				if (thelocksname == SKIPTHISFILE) {
+#ifdef ENABLE_MULTIBUFFER
+					close_buffer();
+#endif
+					free(realname);
+					return FALSE;
+				} else
+					openfile->lock_filename = thelocksname;
+			}
+#endif /* NANO_TINY */
+		}
+	}
 
 	/* If we have a filename and are not in NOREAD mode, open the file. */
 	if (filename[0] != '\0' && !ISSET(NOREAD_MODE))
@@ -452,13 +458,9 @@ bool open_buffer(const char *filename, bool new_one)
 #endif
 	}
 
-	/* When we've loaded a file into a new buffer, set the filename
-	 * and put the cursor at the start of the buffer. */
+	/* For a new buffer, store filename and put cursor at start of buffer. */
 	if (descriptor >= 0 && new_one) {
 		openfile->filename = mallocstrcpy(openfile->filename, realname);
-#ifndef NANO_TINY
-		openfile->lock_filename = thelocksname;
-#endif
 		openfile->current = openfile->filetop;
 		openfile->current_x = 0;
 		openfile->placewewant = 0;
@@ -469,6 +471,7 @@ bool open_buffer(const char *filename, bool new_one)
 	if (new_one)
 		find_and_prime_applicable_syntax();
 #endif
+
 	free(realname);
 	return TRUE;
 }
@@ -498,7 +501,8 @@ void prepare_for_display(void)
 
 #ifdef ENABLE_COLOR
 	/* Precalculate the data for any multiline coloring regexes. */
-	precalc_multicolorinfo();
+	if (!openfile->filetop->multidata)
+		precalc_multicolorinfo();
 	have_palette = FALSE;
 #endif
 	refresh_needed = TRUE;
@@ -540,10 +544,8 @@ void redecorate_after_switch(void)
 	}
 
 #ifndef NANO_TINY
-	/* While in a different buffer, the effective width of the screen may
-	 * have changed, so make sure that the softwrapped chunks per line and
-	 * the starting column for the first row get corresponding values. */
-	compute_the_extra_rows_per_line_from(openfile->filetop);
+	/* While in a different buffer, the width of the screen may have changed,
+	 * so make sure that the starting column for the first row is fitting. */
 	ensure_firstcolumn_is_aligned();
 #endif
 
@@ -556,6 +558,11 @@ void redecorate_after_switch(void)
 	/* Prevent a possible Shift selection from getting cancelled. */
 	shift_held = TRUE;
 
+	if (openfile->errormessage) {
+		statusline(ALERT, openfile->errormessage);
+		free(openfile->errormessage);
+		openfile->errormessage = NULL;
+	} else
 	/* Indicate on the status bar where we switched to. */
 	mention_name_and_linecount();
 }
@@ -593,12 +600,16 @@ void close_buffer(void)
 	/* Free the undo stack. */
 	discard_until(NULL);
 #endif
+	free(orphan->errormessage);
 
 	openfile = orphan->prev;
+	if (openfile == orphan)
+		openfile = NULL;
+
 	free(orphan);
 
 	/* When just one buffer remains open, show "Exit" in the help lines. */
-	if (openfile == openfile->next)
+	if (openfile && openfile == openfile->next)
 		exitfunc->desc = exit_tag;
 }
 #endif /* ENABLE_MULTIBUFFER */
@@ -644,11 +655,9 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 	bool writable = TRUE;
 		/* Whether the file is writable (in case we care). */
 #ifndef NANO_TINY
-	int format = 0;
-		/* 0 = Unix, 1 = DOS, 2 = Mac. */
-#endif
+	format_type format = NIX_FILE;
+		/* The type of line ending the file uses: Unix, DOS, or Mac. */
 
-#ifndef NANO_TINY
 	if (undoable)
 		add_undo(INSERT, NULL);
 
@@ -677,20 +686,20 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 		if (control_C_was_pressed)
 			break;
 
-		/* When the byte before the current one is a CR and we're doing
-		 * format conversion, then strip this CR when it's before a LF
-		 * OR when the file is in Mac format.  Also, when still on the
-		 * first line, set the format to either DOS (1) or Mac (2). */
+		/* When the byte before the current one is a CR and automatic format
+		 * conversion has not been switched off, then strip this CR when it's
+		 * before a LF OR when the file is in Mac format.  Also, when this is
+		 * the first line break, make a note of the format. */
 		if (input == '\n') {
 #ifndef NANO_TINY
 			if (len > 0 && buf[len - 1] == '\r' && !ISSET(NO_CONVERT)) {
 				if (num_lines == 0)
-					format = 1;
+					format = DOS_FILE;
 				len--;
 			}
-		} else if ((num_lines == 0 || format == 2) &&
+		} else if ((num_lines == 0 || format == MAC_FILE) &&
 					len > 0 && buf[len - 1] == '\r' && !ISSET(NO_CONVERT)) {
-			format = 2;
+			format = MAC_FILE;
 			len--;
 #endif
 		} else {
@@ -757,7 +766,7 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 	if (fd > 0 && !undoable && !ISSET(VIEW_MODE))
 		writable = (access(filename, W_OK) == 0);
 
-	/* If the file ended with newline, or it was entirely empty, make the
+	/* If the file ended with a newline, or it was entirely empty, make the
 	 * last line blank.  Otherwise, put the last read data in. */
 	if (len == 0)
 		bottomline->data = copy_of("");
@@ -769,7 +778,7 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 		 * strip this CR and indicate that an extra blank line is needed. */
 		if (buf[len - 1] == '\r' && !ISSET(NO_CONVERT)) {
 			if (num_lines == 0)
-				format = 2;
+				format = MAC_FILE;
 			buf[--len] = '\0';
 			mac_line_needs_newline = TRUE;
 		}
@@ -798,18 +807,15 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 	if (!writable)
 		statusline(ALERT, _("File '%s' is unwritable"), filename);
 #ifndef NANO_TINY
-	else if (format == 2) {
+	else if (format == MAC_FILE)
 		/* TRANSLATORS: Keep the next three messages at most 78 characters. */
-		openfile->fmt = MAC_FILE;
 		statusline(HUSH, P_("Read %zu line (Converted from Mac format)",
 						"Read %zu lines (Converted from Mac format)",
 						num_lines), num_lines);
-	} else if (format == 1) {
-		openfile->fmt = DOS_FILE;
+	else if (format == DOS_FILE)
 		statusline(HUSH, P_("Read %zu line (Converted from DOS format)",
 						"Read %zu lines (Converted from DOS format)",
 						num_lines), num_lines);
-	}
 #endif
 	else
 		statusline(HUSH, P_("Read %zu line", "Read %zu lines",
@@ -818,6 +824,10 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 	/* If we inserted less than a screenful, don't center the cursor. */
 	if (undoable && less_than_a_screenful(was_lineno, was_leftedge))
 		focusing = FALSE;
+#ifdef ENABLE_COLOR
+	else if (undoable)
+		precalc_multicolorinfo();
+#endif
 
 #ifndef NANO_TINY
 	if (undoable)
@@ -825,6 +835,8 @@ void read_file(FILE *f, int fd, const char *filename, bool undoable)
 
 	if (ISSET(MAKE_IT_UNIX))
 		openfile->fmt = NIX_FILE;
+	else if (openfile->fmt == UNSPECIFIED)
+		openfile->fmt = format;
 #endif
 }
 
@@ -1104,9 +1116,6 @@ void do_insertfile(bool execute)
 #ifdef ENABLE_MULTIBUFFER
 	bool was_multibuffer = ISSET(MULTIBUFFER);
 #endif
-#ifndef NANO_TINY
-	format_type was_fmt = openfile->fmt;
-#endif
 
 	/* Display newlines in filenames as ^J. */
 	as_an_at = FALSE;
@@ -1274,12 +1283,9 @@ void do_insertfile(bool execute)
 			{
 				/* If the file actually changed, mark it as modified. */
 				if (openfile->current->lineno != was_current_lineno ||
-								openfile->current_x != was_current_x)
+									openfile->current_x != was_current_x)
 					set_modified();
-#ifndef NANO_TINY
-				/* Ensure that the buffer retains the format that it had. */
-				openfile->fmt = was_fmt;
-#endif
+
 				refresh_needed = TRUE;
 			}
 

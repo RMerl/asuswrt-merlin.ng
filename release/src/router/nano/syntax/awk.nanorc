@@ -31,7 +31,7 @@ color magenta "\<(bindtextdomain|dcgettext|dcngettext)\>"
 # Strings.
 color brightyellow "<[^= 	]*>" ""(\\.|[^"])*""
 # Comments.
-color brightblue "(^|[[:space:]])#.*$"
+color brightblue "(^|[[:blank:]])#.*$"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

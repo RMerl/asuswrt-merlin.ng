@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2018, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -30,7 +30,7 @@ typedef struct pub_binding_t {
   /**
    * A template for the msg_t fields that are filled in for this message.
    * This is copied into outgoing messages, ensuring that their fields are set
-   * corretly.
+   * correctly.
    **/
   msg_t msg_template;
 } pub_binding_t;

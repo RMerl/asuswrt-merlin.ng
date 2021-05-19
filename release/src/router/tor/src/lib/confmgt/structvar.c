@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -30,13 +30,28 @@
 #include <stddef.h>
 
 /**
+ * Return true iff all fields on <b>decl</b> are NULL or 0, indicating that
+ * there is no object or no magic number to check.
+ **/
+static inline bool
+magic_is_null(const struct_magic_decl_t *decl)
+{
+  return decl->typename == NULL &&
+    decl->magic_offset == 0 &&
+    decl->magic_val == 0;
+}
+
+/**
  * Set the 'magic number' on <b>object</b> to correspond to decl.
  **/
 void
 struct_set_magic(void *object, const struct_magic_decl_t *decl)
 {
-  tor_assert(object);
   tor_assert(decl);
+  if (magic_is_null(decl))
+    return;
+
+  tor_assert(object);
   uint32_t *ptr = STRUCT_VAR_P(object, decl->magic_offset);
   *ptr = decl->magic_val;
 }
@@ -47,8 +62,11 @@ struct_set_magic(void *object, const struct_magic_decl_t *decl)
 void
 struct_check_magic(const void *object, const struct_magic_decl_t *decl)
 {
-  tor_assert(object);
   tor_assert(decl);
+  if (magic_is_null(decl))
+    return;
+
+  tor_assert(object);
 
   const uint32_t *ptr = STRUCT_VAR_P(object, decl->magic_offset);
   tor_assertf(*ptr == decl->magic_val,

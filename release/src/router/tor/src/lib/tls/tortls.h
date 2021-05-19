@@ -1,6 +1,6 @@
 /* Copyright (c) 2003, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #ifndef TOR_TORTLS_H
@@ -81,6 +81,7 @@ void tor_tls_free_all(void);
 void tor_tls_init(void);
 void tls_log_errors(tor_tls_t *tls, int severity, int domain,
                     const char *doing);
+const char *tor_tls_get_last_error_msg(const tor_tls_t *tls);
 int tor_tls_context_init(unsigned flags,
                          crypto_pk_t *client_identity,
                          crypto_pk_t *server_identity,

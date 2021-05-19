@@ -1,3 +1,6 @@
+/* Not sure where we got this; it appears to be hand-generated and signed.
+ * It's been edited so that the signature doesn't verify any more;
+ * you need to mock check_signature_token for this to work. */
 static const char* VOTE_BODY_V3 =
 "network-status-version 3\n"
 "vote-status vote\n"
@@ -60,6 +63,7 @@ static const char* VOTE_BODY_V3 =
 "w Bandwidth=30 Measured=30\n"
 "p reject 1-65535\n"
 "id ed25519 none\n"
+"pr Cons=1-2 Desc=1-2 DirCache=1-2 FlowCtrl=1 HSDir=1-2 HSIntro=3-5\n"
 "m 9,10,11,12,13,14,15,16,17 sha256=xyzajkldsdsajdadlsdjaslsdksdjlsdjsdaskdaaa0\n"
 "r router1 BQUFBQUFBQUFBQUFBQUFBQUFBQU TU1NTU1NTU1NTU1NTU1NTU1NTU0 2015-09-02 19:17:35 153.0.153.1 443 0\n"
 "a [1:2:3::4]:4711\n"
@@ -68,6 +72,7 @@ static const char* VOTE_BODY_V3 =
 "w Bandwidth=120 Measured=120\n"
 "p reject 1-65535\n"
 "id ed25519 none\n"
+"pr Cons=1-2 Desc=1-2 DirCache=1-2 FlowCtrl=1 HSDir=1-2 HSIntro=3-5\n"
 "m 9,10,11,12,13,14,15,16,17 sha256=xyzajkldsdsajdadlsdjaslsdksdjlsdjsdaskdaaa1\n"
 "r router3 MzMzMzMzMzMzMzMzMzMzMzMzMzM T09PT09PT09PT09PT09PT09PT08 2015-09-02 19:17:35 170.0.153.1 400 9999\n"
 "s Authority Exit Fast Guard Running Stable V2Dir Valid\n"
@@ -75,6 +80,7 @@ static const char* VOTE_BODY_V3 =
 "w Bandwidth=120\n"
 "p reject 1-65535\n"
 "id ed25519 none\n"
+"pr Cons=1-2 Desc=1-2 DirCache=1-2 FlowCtrl=1 HSDir=1-2 HSIntro=3-5\n"
 "m 9,10,11,12,13,14,15,16,17 "
 "sha256=xyzajkldsdsajdadlsdjaslsdksdjlsdjsdaskdaaa2\n"
 "r router4 NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ Ly8vLy8vLy8vLy8vLy8vLy8vLy8 2015-09-02 19:17:35 192.0.2.3 500 1999\n"
@@ -83,6 +89,7 @@ static const char* VOTE_BODY_V3 =
 "w Bandwidth=30\n"
 "p reject 1-65535\n"
 "id ed25519 none\n"
+"pr Cons=1-2 Desc=1-2 DirCache=1-2 FlowCtrl=1 HSDir=1-2 HSIntro=3-5\n"
 "m 9,10,11,12,13,14,15,16,17 sha256=xyzajkldsdsajdadlsdjaslsdksdjlsdjsdaskdaaa3\n"
 "directory-footer\n"
 "directory-signature D867ACF56A9D229B35C25F0090BC9867E906BE69 CBF56A83368A5150F1A9AAADAFB4D77F8C4170E2\n"
@@ -91,4 +98,3 @@ static const char* VOTE_BODY_V3 =
 "TXQWGUq9Z7jdSVnzWT3xqPA4zjw6eZkj+DKUtwq+oEDZGlf8eHTFmr0NAWfwZbk9\n"
 "NAjbMTUXUP37N2XAZwkoCWwFCrrfMwXrL7OhZbj7ifo=\n"
 "-----END SIGNATURE-----\n";
-

@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2019, The Tor Project, Inc. */
+/* Copyright (c) 2014-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define GUARDFRACTION_PRIVATE
@@ -51,9 +51,9 @@ gen_vote_routerstatus_for_tests(const char *digest_in_hex, int is_guard)
     vrs->version = tor_strdup("0.1.2.14");
     strlcpy(rs->nickname, "router2", sizeof(rs->nickname));
     memset(rs->descriptor_digest, 78, DIGEST_LEN);
-    rs->addr = 0x99008801;
-    rs->or_port = 443;
-    rs->dir_port = 8000;
+    tor_addr_from_ipv4h(&rs->ipv4_addr, 0x99008801);
+    rs->ipv4_orport = 443;
+    rs->ipv4_dirport = 8000;
     /* all flags but running cleared */
     rs->is_flagged_running = 1;
     vrs->has_measured_bw = 1;

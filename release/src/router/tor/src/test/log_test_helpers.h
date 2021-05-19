@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2019, The Tor Project, Inc. */
+/* Copyright (c) 2014-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "core/or/or.h"
@@ -78,7 +78,7 @@ void mock_dump_saved_logs(void);
                          mock_saved_log_n_entries() == 1,               \
                          ("expected log to contain exactly 1 message \"%s\"", \
                           str));                                        \
-  } while (0);
+  } while (0)
 
 #define expect_single_log_msg_containing(str) \
   do {                                                                  \
@@ -86,30 +86,30 @@ void mock_dump_saved_logs(void);
                          mock_saved_log_n_entries() == 1 ,              \
                     ("expected log to contain 1 message, containing \"%s\"",\
                      str));                                             \
-  } while (0);
+  } while (0)
 
 #define expect_no_log_msg(str) \
   assert_log_predicate(!mock_saved_log_has_message(str), \
-                       ("expected log to not contain \"%s\"",str));
+                       ("expected log to not contain \"%s\"",str))
 
 #define expect_no_log_msg_containing(str) \
   assert_log_predicate(!mock_saved_log_has_message_containing(str), \
-                       ("expected log to not contain \"%s\"", str));
+                       ("expected log to not contain \"%s\"", str))
 
 #define expect_log_severity(severity) \
   assert_log_predicate(mock_saved_log_has_severity(severity), \
-                       ("expected log to contain severity " # severity));
+                       ("expected log to contain severity " # severity))
 
 #define expect_no_log_severity(severity) \
   assert_log_predicate(!mock_saved_log_has_severity(severity), \
-                       ("expected log to not contain severity " # severity));
+                       ("expected log to not contain severity " # severity))
 
 #define expect_log_entry() \
   assert_log_predicate(mock_saved_log_has_entry(), \
-                       ("expected log to contain entries"));
+                       ("expected log to contain entries"))
 
 #define expect_no_log_entry() \
   assert_log_predicate(!mock_saved_log_has_entry(), \
-                       ("expected log to not contain entries"));
+                       ("expected log to not contain entries"))
 
 #endif /* !defined(TOR_LOG_TEST_HELPERS_H) */

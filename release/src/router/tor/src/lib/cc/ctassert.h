@@ -46,7 +46,7 @@
 
 #define CTASSERT_EXPN(x, a, b) CTASSERT_DECL(x, a, b)
 #define CTASSERT_DECL(x, a, b) \
-  typedef char tor_ctassert_##a##_##b[(x) ? 1 : -1] ATTR_UNUSED
+  typedef char tor_ctassert_##a##_##b[(x) ? 1 : -1] ATTR_UNUSED; EAT_SEMICOLON
 
 #endif /* __STDC_VERSION__ >= 201112L */
 

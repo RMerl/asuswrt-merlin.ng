@@ -1,7 +1,7 @@
 /* Copyright 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -64,6 +64,8 @@
 #include "core/or/circuitstats.h"
 #include "core/or/circuitpadding.h"
 #include "core/or/crypt_path.h"
+#include "core/or/extendinfo.h"
+#include "core/or/trace_probes_circuit.h"
 #include "core/mainloop/connection.h"
 #include "app/config/config.h"
 #include "core/or/connection_edge.h"
@@ -89,6 +91,7 @@
 #include "feature/rend/rendclient.h"
 #include "feature/rend/rendcommon.h"
 #include "feature/stats/predict_ports.h"
+#include "feature/stats/bwhist.h"
 #include "feature/stats/rephist.h"
 #include "feature/nodelist/routerlist.h"
 #include "feature/nodelist/routerset.h"
@@ -99,7 +102,6 @@
 #include "lib/compress/compress_zstd.h"
 #include "lib/buf/buffers.h"
 
-#define OCIRC_EVENT_PRIVATE
 #include "core/or/ocirc_event.h"
 
 #include "ht.h"
@@ -146,6 +148,9 @@ static void circuit_about_to_free(circuit_t *circ);
 static int any_opened_circs_cached_val = 0;
 
 /********* END VARIABLES ************/
+
+/* Implement circuit handle helpers. */
+HANDLE_IMPL(circuit, circuit_t,)
 
 or_circuit_t *
 TO_OR_CIRCUIT(circuit_t *x)
@@ -213,10 +218,10 @@ chan_circid_entry_hash_(chan_circid_circuit_map_t *a)
 static HT_HEAD(chan_circid_map, chan_circid_circuit_map_t)
      chan_circid_map = HT_INITIALIZER();
 HT_PROTOTYPE(chan_circid_map, chan_circid_circuit_map_t, node,
-             chan_circid_entry_hash_, chan_circid_entries_eq_)
+             chan_circid_entry_hash_, chan_circid_entries_eq_);
 HT_GENERATE2(chan_circid_map, chan_circid_circuit_map_t, node,
              chan_circid_entry_hash_, chan_circid_entries_eq_, 0.6,
-             tor_reallocarray_, tor_free_)
+             tor_reallocarray_, tor_free_);
 
 /** The most recently returned entry from circuit_get_by_circid_chan;
  * used to improve performance when many cells arrive in a row from the
@@ -562,6 +567,8 @@ circuit_set_state(circuit_t *circ, uint8_t state)
   }
   if (state == CIRCUIT_STATE_GUARD_WAIT || state == CIRCUIT_STATE_OPEN)
     tor_assert(!circ->n_chan_create_cell);
+
+  tor_trace(TR_SUBSYS(circuit), TR_EV(change_state), circ, circ->state, state);
   circ->state = state;
   if (CIRCUIT_IS_ORIGIN(circ))
     circuit_state_publish(circ);
@@ -612,7 +619,7 @@ circuit_count_pending_on_channel(channel_t *chan)
   cnt = smartlist_len(sl);
   smartlist_free(sl);
   log_debug(LD_CIRC,"or_conn to %s, %d pending circs",
-            channel_get_canonical_remote_descr(chan),
+            channel_describe_peer(chan),
             cnt);
   return cnt;
 }
@@ -844,7 +851,7 @@ circuit_purpose_to_controller_hs_state_string(uint8_t purpose)
              "Unrecognized circuit purpose: %d",
              (int)purpose);
       tor_fragile_assert();
-      /* fall through */
+      FALLTHROUGH_UNLESS_ALL_BUGS_ARE_FATAL;
 
     case CIRCUIT_PURPOSE_OR:
     case CIRCUIT_PURPOSE_C_GENERAL:
@@ -1076,6 +1083,7 @@ origin_circuit_new(void)
               prediction_time_remaining);
   }
 
+  tor_trace(TR_SUBSYS(circuit), TR_EV(new_origin), circ);
   return circ;
 }
 
@@ -1098,6 +1106,7 @@ or_circuit_new(circid_t p_circ_id, channel_t *p_chan)
 
   init_circuit_base(TO_CIRCUIT(circ));
 
+  tor_trace(TR_SUBSYS(circuit), TR_EV(new_or), circ);
   return circ;
 }
 
@@ -1134,7 +1143,7 @@ circuit_free_(circuit_t *circ)
    * circuit is closed. This is to avoid any code path that free registered
    * circuits without closing them before. This needs to be done before the
    * hs identifier is freed. */
-  hs_circ_cleanup(circ);
+  hs_circ_cleanup_on_free(circ);
 
   if (CIRCUIT_IS_ORIGIN(circ)) {
     origin_circuit_t *ocirc = TO_ORIGIN_CIRCUIT(circ);
@@ -1246,6 +1255,13 @@ circuit_free_(circuit_t *circ)
 
   /* Free any circuit padding structures */
   circpad_circuit_free_all_machineinfos(circ);
+
+  /* Clear all dangling handle references. */
+  circuit_handles_clear(circ);
+
+  /* Tracepoint. Data within the circuit object is recorded so do this before
+   * the actual memory free. */
+  tor_trace(TR_SUBSYS(circuit), TR_EV(free), circ);
 
   if (should_free) {
     memwipe(mem, 0xAA, memlen); /* poison memory */
@@ -1938,8 +1954,8 @@ circuit_find_to_cannibalize(uint8_t purpose_to_produce, extend_info_t *info,
       }
 
       /* Ignore any circuits for which we can't use the Guard. It is possible
-       * that the Guard was removed from the samepled set after the circuit
-       * was created so avoid using it. */
+       * that the Guard was removed from the sampled set after the circuit
+       * was created, so avoid using it. */
       if (!entry_guard_could_succeed(circ->guard_state)) {
         goto next;
       }
@@ -2128,7 +2144,7 @@ circuit_mark_all_dirty_circs_as_unusable(void)
  * This function is in the critical path of circuit_mark_for_close().
  * It must be (and is) O(1)!
  *
- * See https://trac.torproject.org/projects/tor/ticket/23512.
+ * See https://bugs.torproject.org/tpo/core/tor/23512
  */
 void
 circuit_synchronize_written_or_bandwidth(const circuit_t *c,
@@ -2160,6 +2176,12 @@ circuit_synchronize_written_or_bandwidth(const circuit_t *c,
   else
     cell_size = CELL_MAX_NETWORK_SIZE;
 
+  /* If we know the channel, find out if it's IPv6. */
+  tor_addr_t remote_addr;
+  bool is_ipv6 = chan &&
+    channel_get_addr_if_possible(chan, &remote_addr) &&
+    tor_addr_family(&remote_addr) == AF_INET6;
+
   /* The missing written bytes are the cell counts times their cell
    * size plus TLS per cell overhead */
   written_sync = cells*(cell_size+TLS_PER_CELL_OVERHEAD);
@@ -2167,7 +2189,7 @@ circuit_synchronize_written_or_bandwidth(const circuit_t *c,
   /* Report the missing bytes as written, to avoid asymmetry.
    * We must use time() for consistency with rephist, even though on
    * some very old rare platforms, approx_time() may be faster. */
-  rep_hist_note_bytes_written(written_sync, time(NULL));
+  bwhist_note_bytes_written(written_sync, time(NULL), is_ipv6);
 }
 
 /** Mark <b>circ</b> to be closed next time we call
@@ -2255,7 +2277,7 @@ circuit_mark_for_close_, (circuit_t *circ, int reason, int line,
   }
 
   /* Notify the HS subsystem that this circuit is closing. */
-  hs_circ_cleanup(circ);
+  hs_circ_cleanup_on_close(circ);
 
   if (circuits_pending_close == NULL)
     circuits_pending_close = smartlist_new();
@@ -2269,6 +2291,7 @@ circuit_mark_for_close_, (circuit_t *circ, int reason, int line,
            CIRCUIT_IS_ORIGIN(circ) ?
               TO_ORIGIN_CIRCUIT(circ)->global_identifier : 0,
            file, line, orig_reason, reason);
+  tor_trace(TR_SUBSYS(circuit), TR_EV(mark_for_close), circ);
 }
 
 /** Called immediately before freeing a marked circuit <b>circ</b> from
@@ -2335,43 +2358,6 @@ circuit_about_to_free(circuit_t *circ)
       circ->state == CIRCUIT_STATE_GUARD_WAIT) ?
                                  CIRC_EVENT_CLOSED:CIRC_EVENT_FAILED,
      orig_reason);
-  }
-
-  if (circ->purpose == CIRCUIT_PURPOSE_C_INTRODUCE_ACK_WAIT) {
-    origin_circuit_t *ocirc = TO_ORIGIN_CIRCUIT(circ);
-    int timed_out = (reason == END_CIRC_REASON_TIMEOUT);
-    tor_assert(circ->state == CIRCUIT_STATE_OPEN);
-    tor_assert(ocirc->build_state->chosen_exit);
-    if (orig_reason != END_CIRC_REASON_IP_NOW_REDUNDANT &&
-        ocirc->rend_data) {
-      /* treat this like getting a nack from it */
-      log_info(LD_REND, "Failed intro circ %s to %s (awaiting ack). %s",
-          safe_str_client(rend_data_get_address(ocirc->rend_data)),
-          safe_str_client(build_state_get_exit_nickname(ocirc->build_state)),
-          timed_out ? "Recording timeout." : "Removing from descriptor.");
-      rend_client_report_intro_point_failure(ocirc->build_state->chosen_exit,
-                                             ocirc->rend_data,
-                                             timed_out ?
-                                             INTRO_POINT_FAILURE_TIMEOUT :
-                                             INTRO_POINT_FAILURE_GENERIC);
-    }
-  } else if (circ->purpose == CIRCUIT_PURPOSE_C_INTRODUCING &&
-             reason != END_CIRC_REASON_TIMEOUT) {
-    origin_circuit_t *ocirc = TO_ORIGIN_CIRCUIT(circ);
-    if (ocirc->build_state->chosen_exit && ocirc->rend_data) {
-      if (orig_reason != END_CIRC_REASON_IP_NOW_REDUNDANT &&
-          ocirc->rend_data) {
-        log_info(LD_REND, "Failed intro circ %s to %s "
-            "(building circuit to intro point). "
-            "Marking intro point as possibly unreachable.",
-            safe_str_client(rend_data_get_address(ocirc->rend_data)),
-            safe_str_client(build_state_get_exit_nickname(
-                                              ocirc->build_state)));
-        rend_client_report_intro_point_failure(ocirc->build_state->chosen_exit,
-                                              ocirc->rend_data,
-                                              INTRO_POINT_FAILURE_UNREACHABLE);
-      }
-    }
   }
 
   if (circ->n_chan) {
@@ -2451,7 +2437,6 @@ single_conn_free_bytes(connection_t *conn)
   if (conn->outbuf) {
     result += buf_allocation(conn->outbuf);
     buf_clear(conn->outbuf);
-    conn->outbuf_flushlen = 0;
   }
   if (conn->type == CONN_TYPE_DIR) {
     dir_connection_t *dir_conn = TO_DIR_CONN(conn);

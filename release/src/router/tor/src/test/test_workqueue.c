@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "core/or/or.h"
@@ -32,7 +32,7 @@ int handled_len;
 bitarray_t *handled;
 #endif
 
-typedef struct state_s {
+typedef struct state_t {
   int magic;
   int n_handled;
   crypto_pk_t *rsa;
@@ -40,13 +40,13 @@ typedef struct state_s {
   int is_shutdown;
 } state_t;
 
-typedef struct rsa_work_s {
+typedef struct rsa_work_t {
   int serial;
   uint8_t msg[128];
   uint8_t msglen;
 } rsa_work_t;
 
-typedef struct ecdh_work_s {
+typedef struct ecdh_work_t {
   int serial;
   union {
     curve25519_public_key_t pk;
@@ -339,7 +339,7 @@ main(int argc, char **argv)
   replyqueue_t *rq;
   threadpool_t *tp;
   int i;
-  tor_libevent_cfg evcfg;
+  tor_libevent_cfg_t evcfg;
   uint32_t as_flags = 0;
 
   for (i = 1; i < argc; ++i) {

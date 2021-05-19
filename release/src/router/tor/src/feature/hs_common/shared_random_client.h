@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -38,11 +38,9 @@ time_t sr_state_get_start_time_of_current_protocol_run(void);
 time_t sr_state_get_start_time_of_previous_protocol_run(void);
 unsigned int sr_state_get_phase_duration(void);
 unsigned int sr_state_get_protocol_run_duration(void);
-time_t get_start_time_of_current_round(void);
 
 #ifdef TOR_UNIT_TESTS
 
 #endif /* TOR_UNIT_TESTS */
 
 #endif /* !defined(TOR_SHARED_RANDOM_CLIENT_H) */
-

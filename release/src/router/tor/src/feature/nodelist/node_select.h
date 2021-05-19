@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -14,20 +14,26 @@
 /** Flags to be passed to control router_choose_random_node() to indicate what
  * kind of nodes to pick according to what algorithm. */
 typedef enum router_crn_flags_t {
+  /* Try to choose stable nodes. */
   CRN_NEED_UPTIME = 1<<0,
+  /* Try to choose nodes with a reasonable amount of bandwidth. */
   CRN_NEED_CAPACITY = 1<<1,
-  CRN_NEED_GUARD = 1<<2,
-  /* XXXX not used, apparently. */
-  CRN_WEIGHT_AS_EXIT = 1<<5,
-  CRN_NEED_DESC = 1<<6,
-  /* On clients, only provide nodes that satisfy ClientPreferIPv6OR */
-  CRN_PREF_ADDR = 1<<7,
+  /* Only choose nodes if we have downloaded their descriptor or
+   * microdescriptor. */
+  CRN_NEED_DESC = 1<<2,
+  /* Choose nodes that can be used as Guard relays. */
+  CRN_NEED_GUARD = 1<<3,
   /* On clients, only provide nodes that we can connect to directly, based on
-   * our firewall rules */
-  CRN_DIRECT_CONN = 1<<8,
-  /* On clients, only provide nodes with HSRend >= 2 protocol version which
-   * is required for hidden service version >= 3. */
-  CRN_RENDEZVOUS_V3 = 1<<9,
+   * our firewall rules. */
+  CRN_DIRECT_CONN = 1<<4,
+  /* On clients, if choosing a node for a direct connection, only provide
+   * nodes that satisfy ClientPreferIPv6OR. */
+  CRN_PREF_ADDR = 1<<5,
+  /* On clients, only provide nodes with HSRend=2 protocol version which
+   * is required for hidden service version 3. */
+  CRN_RENDEZVOUS_V3 = 1<<6,
+  /* On clients, only provide nodes that can initiate IPv6 extends. */
+  CRN_INITIATE_IPV6_EXTEND = 1<<7,
 } router_crn_flags_t;
 
 /** Possible ways to weight routers when choosing one randomly.  See

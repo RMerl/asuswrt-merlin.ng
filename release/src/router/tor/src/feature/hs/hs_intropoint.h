@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -12,15 +12,15 @@
 #include "lib/crypt_ops/crypto_curve25519.h"
 #include "feature/nodelist/torcert.h"
 
-/* Object containing introduction point common data between the service and
+/** Object containing introduction point common data between the service and
  * the client side. */
 typedef struct hs_intropoint_t {
-  /* Does this intro point only supports legacy ID ?. */
+  /** Does this intro point only supports legacy ID ?. */
   unsigned int is_only_legacy : 1;
 
-  /* Authentication key certificate from the descriptor. */
+  /** Authentication key certificate from the descriptor. */
   tor_cert_t *auth_key_cert;
-  /* A list of link specifier. */
+  /** A list of link specifier. */
   smartlist_t *link_specifiers;
 } hs_intropoint_t;
 
@@ -64,4 +64,3 @@ STATIC bool cell_dos_extension_parameters_are_valid(
 #endif /* defined(HS_INTROPOINT_PRIVATE) */
 
 #endif /* !defined(TOR_HS_INTRO_H) */
-

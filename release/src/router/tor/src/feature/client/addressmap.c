@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -23,7 +23,6 @@
 #include "app/config/config.h"
 #include "core/or/connection_edge.h"
 #include "feature/control/control_events.h"
-#include "feature/relay/dns.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/nodelist/routerset.h"
 
@@ -423,7 +422,7 @@ addressmap_rewrite(char *address, size_t maxlen,
       goto done;
     }
 
-    /* Check wither the flags we were passed tell us not to use this
+    /* Check whether the flags we were passed tell us not to use this
      * mapping. */
     switch (ent->source) {
       case ADDRMAPSRC_DNS:
@@ -516,7 +515,7 @@ addressmap_rewrite_reverse(char *address, size_t maxlen, unsigned flags,
     else if (f == AF_INET6 && !(flags & AMR_FLAG_USE_IPV6_DNS))
       return 0;
     /* FFFF we should reverse-map virtual addresses even if we haven't
-     * enabled DNS cacheing. */
+     * enabled DNS caching. */
   }
 
   tor_asprintf(&s, "REVERSE[%s]", address);
@@ -689,7 +688,7 @@ client_dns_set_addressmap_impl(entry_connection_t *for_conn,
   if (ttl<0)
     ttl = DEFAULT_DNS_TTL;
   else
-    ttl = dns_clip_ttl(ttl);
+    ttl = clip_dns_ttl(ttl);
 
   if (exitname) {
     /* XXXX fails to ever get attempts to get an exit address of
@@ -903,7 +902,7 @@ get_random_virtual_addr(const virtual_addr_conf_t *conf, tor_addr_t *addr_out)
   }
 
   if (ipv6)
-    tor_addr_from_ipv6_bytes(addr_out, (char*) bytes);
+    tor_addr_from_ipv6_bytes(addr_out, bytes);
   else
     tor_addr_from_ipv4n(addr_out, get_uint32(bytes));
 

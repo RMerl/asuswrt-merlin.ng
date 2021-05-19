@@ -1,8 +1,13 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file dir_connection_st.h
+ * @brief Client/server directory connection structure.
+ **/
 
 #ifndef DIR_CONNECTION_ST_H
 #define DIR_CONNECTION_ST_H
@@ -23,7 +28,9 @@ struct dir_connection_t {
   * fingerprints.
   **/
   char *requested_resource;
-  unsigned int dirconn_direct:1; /**< Is this dirconn direct, or via Tor? */
+  /** Is this dirconn direct, or via a multi-hop Tor circuit?
+   * Direct connections can use the DirPort, or BEGINDIR over the ORPort. */
+  unsigned int dirconn_direct:1;
 
   /** If we're fetching descriptors, what router purpose shall we assign
    * to them? */

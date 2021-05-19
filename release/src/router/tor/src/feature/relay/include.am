@@ -1,0 +1,46 @@
+
+# Legacy shared relay code: migrate to the relay module over time
+LIBTOR_APP_A_SOURCES += 			\
+	src/feature/relay/onion_queue.c		\
+	src/feature/relay/relay_find_addr.c	\
+	src/feature/relay/router.c
+
+# The Relay module.
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+MODULE_RELAY_SOURCES = 						\
+	src/feature/relay/circuitbuild_relay.c			\
+	src/feature/relay/dns.c					\
+	src/feature/relay/ext_orport.c		                \
+	src/feature/relay/routermode.c				\
+	src/feature/relay/relay_config.c			\
+	src/feature/relay/relay_handshake.c			\
+	src/feature/relay/relay_periodic.c			\
+	src/feature/relay/relay_sys.c				\
+	src/feature/relay/routerkeys.c				\
+	src/feature/relay/selftest.c				\
+	src/feature/relay/transport_config.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/feature/relay/circuitbuild_relay.h		\
+	src/feature/relay/dns.h				\
+	src/feature/relay/dns_structs.h			\
+	src/feature/relay/ext_orport.h			\
+	src/feature/relay/onion_queue.h			\
+	src/feature/relay/relay_config.h		\
+	src/feature/relay/relay_handshake.h		\
+	src/feature/relay/relay_periodic.h		\
+	src/feature/relay/relay_sys.h			\
+	src/feature/relay/relay_find_addr.h		\
+	src/feature/relay/router.h			\
+	src/feature/relay/routerkeys.h			\
+	src/feature/relay/routermode.h			\
+	src/feature/relay/selftest.h			\
+	src/feature/relay/transport_config.h
+
+if BUILD_MODULE_RELAY
+LIBTOR_APP_A_SOURCES += $(MODULE_RELAY_SOURCES)
+else
+LIBTOR_APP_A_STUB_SOURCES += src/feature/relay/relay_stub.c
+endif

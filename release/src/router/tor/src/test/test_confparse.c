@@ -1,20 +1,20 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /*
- * Tests for confparse.c module that we use to parse various
+ * Tests for confmgt.c module that we use to parse various
  * configuration/state file types.
  */
 
-#define CONFPARSE_PRIVATE
+#define CONFMGT_PRIVATE
 #include "orconfig.h"
 
 #include "core/or/or.h"
 #include "lib/encoding/confline.h"
 #include "feature/nodelist/routerset.h"
-#include "lib/confmgt/confparse.h"
+#include "lib/confmgt/confmgt.h"
 #include "test/test.h"
 #include "test/log_test_helpers.h"
 
@@ -103,12 +103,9 @@ static config_deprecation_t test_deprecation_notes[] = {
 };
 
 static int
-test_validate_cb(void *old_options, void *options, void *default_options,
-                 int from_setconf, char **msg)
+test_validate_cb(const void *old_options, void *options, char **msg)
 {
   (void)old_options;
-  (void)default_options;
-  (void)from_setconf;
   (void)msg;
   test_struct_t *ts = options;
 
@@ -122,19 +119,16 @@ test_validate_cb(void *old_options, void *options, void *default_options,
 #define TEST_MAGIC 0x1337
 
 static const config_format_t test_fmt = {
-  sizeof(test_struct_t),
-  {
+  .size = sizeof(test_struct_t),
+  .magic = {
    "test_struct_t",
    TEST_MAGIC,
    offsetof(test_struct_t, magic),
   },
-  test_abbrevs,
-  test_deprecation_notes,
-  test_vars,
-  test_validate_cb,
-  NULL,
-  NULL,
-  -1,
+  .abbrevs = test_abbrevs,
+  .deprecations = test_deprecation_notes,
+  .vars = test_vars,
+  .legacy_validate_fn = test_validate_cb,
 };
 
 /* Make sure that config_init sets everything to the right defaults. */
@@ -350,7 +344,7 @@ test_confparse_assign_deprecated(void *arg)
   config_mgr_free(mgr);
 }
 
-/* Try to re-assign an option name that has been depreacted in favor of
+/* Try to re-assign an option name that has been deprecated in favor of
  * another. */
 static void
 test_confparse_assign_replaced(void *arg)
@@ -818,19 +812,17 @@ static struct_member_t extra = {
 };
 
 static config_format_t etest_fmt = {
-  sizeof(test_struct_t),
-  {
+  .size = sizeof(test_struct_t),
+  .magic = {
    "test_struct_t (with extra lines)",
    ETEST_MAGIC,
    offsetof(test_struct_t, magic),
   },
-  test_abbrevs,
-  test_deprecation_notes,
-  test_vars,
-  test_validate_cb,
-  NULL,
-  &extra,
-  -1,
+  .abbrevs = test_abbrevs,
+  .deprecations = test_deprecation_notes,
+  .vars = test_vars,
+  .legacy_validate_fn = test_validate_cb,
+  .extra = &extra,
 };
 
 /* Try out the feature where we can store unrecognized lines and dump them
@@ -906,11 +898,22 @@ test_confparse_unitparse(void *args)
   tt_assert(ok);
 
   /* u64 overflow */
-  /* XXXX our implementation does not currently detect this. See bug 30920. */
-  /*
   tt_u64_op(config_parse_memunit("20000000 TB", &ok), OP_EQ, 0);
   tt_assert(!ok);
-  */
+  // This test fails the double check as the float representing 15000000.5 TB
+  // is greater than (double) INT64_MAX
+  tt_u64_op(config_parse_memunit("15000000.5 TB", &ok), OP_EQ, 0);
+  tt_assert(!ok);
+  // 8388608.1 TB passes double check because it falls in the same float
+  // value as (double)INT64_MAX (which is 2^63) due to precision.
+  // But will fail the int check because the unsigned representation of
+  // the float, which is 2^63, is strictly greater than INT64_MAX (2^63-1)
+  tt_u64_op(config_parse_memunit("8388608.1 TB", &ok), OP_EQ, 0);
+  tt_assert(!ok);
+
+  /* negative float */
+  tt_u64_op(config_parse_memunit("-1.5 GB", &ok), OP_EQ, 0);
+  tt_assert(!ok);
 
   /* i32 overflow */
   tt_int_op(config_parse_interval("1000 months", &ok), OP_EQ, -1);
@@ -1037,12 +1040,14 @@ test_confparse_find_option_name(void *arg)
   config_mgr_free(mgr);
 }
 
+#ifndef COCCI
 #define CONFPARSE_TEST(name, flags)                          \
   { #name, test_confparse_ ## name, flags, NULL, NULL }
 
 #define BADVAL_TEST(name)                               \
   { "badval_" #name, test_confparse_assign_badval, 0,   \
       &passthrough_setup, (void*)&bv_ ## name }
+#endif /* !defined(COCCI) */
 
 struct testcase_t confparse_tests[] = {
   CONFPARSE_TEST(init, 0),

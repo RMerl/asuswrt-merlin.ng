@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -13,6 +13,8 @@
 #define TOR_DIRCLIENT_H
 
 #include "feature/hs/hs_ident.h"
+
+void dirclient_dump_total_dls(void);
 
 int directories_have_accepted_server_descriptor(void);
 void directory_post_to_dirservers(uint8_t dir_purpose, uint8_t router_purpose,
@@ -40,8 +42,6 @@ typedef enum {
   /** Connect over a multi-hop anonymizing Tor circuit to our dirport */
   DIRIND_ANON_DIRPORT,
 } dir_indirection_t;
-
-int directory_must_use_begindir(const or_options_t *options);
 
 /**
  * A directory_request_t describes the information about a directory request

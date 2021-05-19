@@ -1,8 +1,13 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file authority_cert_st.h
+ * @brief Authority certificate structure.
+ **/
 
 #ifndef AUTHORITY_CERT_ST_H
 #define AUTHORITY_CERT_ST_H
@@ -22,11 +27,10 @@ struct authority_cert_t {
   char signing_key_digest[DIGEST_LEN];
   /** The listed expiration time of this certificate. */
   time_t expires;
-  /** This authority's IPv4 address, in host order. */
-  uint32_t addr;
+  /** This authority's IPv4 address. */
+  tor_addr_t ipv4_addr;
   /** This authority's directory port. */
-  uint16_t dir_port;
+  uint16_t ipv4_dirport;
 };
 
 #endif /* !defined(AUTHORITY_CERT_ST_H) */
-

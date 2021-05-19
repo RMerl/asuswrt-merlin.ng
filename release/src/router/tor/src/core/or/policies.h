@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -69,43 +69,43 @@ typedef struct short_policy_t {
 
 int firewall_is_fascist_or(void);
 int firewall_is_fascist_dir(void);
-int fascist_firewall_use_ipv6(const or_options_t *options);
-MOCK_DECL(int, fascist_firewall_rand_prefer_ipv6_addr, (void));
-int fascist_firewall_prefer_ipv6_orport(const or_options_t *options);
-int fascist_firewall_prefer_ipv6_dirport(const or_options_t *options);
+int reachable_addr_use_ipv6(const or_options_t *options);
+int reachable_addr_prefer_ipv6_orport(const or_options_t *options);
+int reachable_addr_prefer_ipv6_dirport(const or_options_t *options);
 
-int fascist_firewall_allows_address_addr(const tor_addr_t *addr,
+int reachable_addr_allows_addr(const tor_addr_t *addr,
                                          uint16_t port,
                                          firewall_connection_t fw_connection,
                                          int pref_only, int pref_ipv6);
 
-int fascist_firewall_allows_rs(const routerstatus_t *rs,
+int reachable_addr_allows_rs(const routerstatus_t *rs,
                                firewall_connection_t fw_connection,
                                int pref_only);
-int fascist_firewall_allows_node(const node_t *node,
+int reachable_addr_allows_node(const node_t *node,
                                  firewall_connection_t fw_connection,
                                  int pref_only);
-int fascist_firewall_allows_dir_server(const dir_server_t *ds,
+int reachable_addr_allows_dir_server(const dir_server_t *ds,
                                        firewall_connection_t fw_connection,
                                        int pref_only);
 
-void fascist_firewall_choose_address_rs(const routerstatus_t *rs,
+void reachable_addr_choose_from_rs(const routerstatus_t *rs,
                                         firewall_connection_t fw_connection,
                                         int pref_only, tor_addr_port_t* ap);
-void fascist_firewall_choose_address_ls(const smartlist_t *lspecs,
+void reachable_addr_choose_from_ls(const smartlist_t *lspecs,
                                         int pref_only, tor_addr_port_t* ap);
-void fascist_firewall_choose_address_node(const node_t *node,
+void reachable_addr_choose_from_node(const node_t *node,
                                           firewall_connection_t fw_connection,
                                           int pref_only, tor_addr_port_t* ap);
-void fascist_firewall_choose_address_dir_server(const dir_server_t *ds,
+void reachable_addr_choose_from_dir_server(const dir_server_t *ds,
                                           firewall_connection_t fw_connection,
                                           int pref_only, tor_addr_port_t* ap);
 
 int dir_policy_permits_address(const tor_addr_t *addr);
 int socks_policy_permits_address(const tor_addr_t *addr);
-int authdir_policy_permits_address(uint32_t addr, uint16_t port);
-int authdir_policy_valid_address(uint32_t addr, uint16_t port);
-int authdir_policy_badexit_address(uint32_t addr, uint16_t port);
+int metrics_policy_permits_address(const tor_addr_t *addr);
+int authdir_policy_permits_address(const tor_addr_t *addr, uint16_t port);
+int authdir_policy_valid_address(const tor_addr_t *addr, uint16_t port);
+int authdir_policy_badexit_address(const tor_addr_t *addr, uint16_t port);
 
 int validate_addr_policies(const or_options_t *options, char **msg);
 void policy_expand_private(smartlist_t **policy);
@@ -121,7 +121,7 @@ addr_policy_result_t compare_tor_addr_to_node_policy(const tor_addr_t *addr,
 
 int policies_parse_exit_policy_from_options(
                                           const or_options_t *or_options,
-                                          uint32_t local_address,
+                                          const tor_addr_t *ipv4_local_address,
                                           const tor_addr_t *ipv6_local_address,
                                           smartlist_t **result);
 struct config_line_t;
@@ -174,11 +174,11 @@ addr_policy_result_t compare_tor_addr_to_short_policy(
 
 #ifdef POLICIES_PRIVATE
 STATIC void append_exit_policy_string(smartlist_t **policy, const char *more);
-STATIC int fascist_firewall_allows_address(const tor_addr_t *addr,
+STATIC int reachable_addr_allows(const tor_addr_t *addr,
                                            uint16_t port,
                                            smartlist_t *firewall_policy,
                                            int pref_only, int pref_ipv6);
-STATIC const tor_addr_port_t * fascist_firewall_choose_address(
+STATIC const tor_addr_port_t * reachable_addr_choose(
                                           const tor_addr_port_t *a,
                                           const tor_addr_port_t *b,
                                           int want_a,

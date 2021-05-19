@@ -2,18 +2,34 @@
 noinst_LIBRARIES += \
 	src/lib/libtor-trace.a
 
+# ADD_C_FILE: INSERT SOURCES HERE.
+LIBTOR_TRACE_A_SOURCES = \
+	src/lib/trace/trace.c	\
+	src/lib/trace/trace_sys.c
+
 # ADD_C_FILE: INSERT HEADERS HERE.
 TRACEHEADERS = \
-	src/lib/trace/trace.h \
+	src/lib/trace/trace.h		\
+	src/lib/trace/trace_sys.h	\
 	src/lib/trace/events.h
 
-if USE_EVENT_TRACING_DEBUG
+if USE_TRACING_INSTRUMENTATION_LOG_DEBUG
 TRACEHEADERS += \
 	src/lib/trace/debug.h
 endif
 
-# ADD_C_FILE: INSERT SOURCES HERE.
-src_lib_libtor_trace_a_SOURCES = \
-	src/lib/trace/trace.c
+if USE_TRACING_INSTRUMENTATION_USDT
+include src/lib/trace/usdt/include.am
+endif
+
+if USE_TRACING_INSTRUMENTATION_LTTNG
+include src/lib/trace/lttng/include.am
+endif
+
+if USE_TRACING
+src_lib_libtor_trace_a_SOURCES = $(LIBTOR_TRACE_A_SOURCES)
+else
+src_lib_libtor_trace_a_SOURCES = src/lib/trace/trace_stub.c
+endif
 
 noinst_HEADERS+= $(TRACEHEADERS)

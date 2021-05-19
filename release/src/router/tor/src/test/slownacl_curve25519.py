@@ -6,9 +6,14 @@
 # Nick got the slownacl source from:
 #        https://github.com/mdempsky/dnscurve/tree/master/slownacl
 
-__all__ = ['smult_curve25519_base', 'smult_curve25519']
+# Future imports for Python 2.7, mandatory in 3.0
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import sys
+
+__all__ = ['smult_curve25519_base', 'smult_curve25519']
 
 P = 2 ** 255 - 19
 A = 486662

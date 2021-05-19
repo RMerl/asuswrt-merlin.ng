@@ -1,16 +1,18 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
  * @file relay_periodic.c
- * @brief Periodic functions for the relay subsytem
+ * @brief Periodic functions for the relay subsystem
  **/
 
 #include "orconfig.h"
 #include "core/or/or.h"
+
+#include "app/config/resolve_addr.h"
 
 #include "core/mainloop/periodic.h"
 #include "core/mainloop/cpuworker.h" // XXXX use a pubsub event.
@@ -31,11 +33,13 @@
 #include "feature/nodelist/routerinfo_st.h"
 #include "feature/control/control_events.h"
 
+#ifndef COCCI
 #define DECLARE_EVENT(name, roles, flags)         \
   static periodic_event_item_t name ## _event =   \
     PERIODIC_EVENT(name,                          \
                    PERIODIC_EVENT_ROLE_##roles,   \
                    flags)
+#endif /* !defined(COCCI) */
 
 #define FL(name) (PERIODIC_EVENT_FLAG_##name)
 
@@ -100,7 +104,7 @@ rotate_onion_key_callback(time_t now, const or_options_t *options)
     log_info(LD_GENERAL,"Rotating onion key.");
     rotate_onion_key();
     cpuworkers_rotate_keyinfo();
-    if (router_rebuild_descriptor(1)<0) {
+    if (!router_rebuild_descriptor(1)) {
       log_info(LD_CONFIG, "Couldn't rebuild router descriptor");
     }
     if (advertised_server_mode() && !net_is_disabled())
@@ -150,6 +154,9 @@ check_for_reachability_bw_callback(time_t now, const or_options_t *options)
 {
   /* XXXX This whole thing was stuck in the middle of what is now
    * XXXX check_descriptor_callback.  I'm not sure it's right. */
+  /** How often should we consider launching reachability tests in our first
+   * TIMEOUT_UNTIL_UNREACHABILITY_COMPLAINT seconds? */
+#define EARLY_CHECK_REACHABILITY_INTERVAL (60)
 
   /* also, check religiously for reachability, if it's within the first
    * 20 minutes of our uptime. */
@@ -160,7 +167,7 @@ check_for_reachability_bw_callback(time_t now, const or_options_t *options)
       router_do_reachability_checks(1, dirport_reachability_count==0);
       if (++dirport_reachability_count > 5)
         dirport_reachability_count = 0;
-      return 1;
+      return EARLY_CHECK_REACHABILITY_INTERVAL;
     } else {
       /* If we haven't checked for 12 hours and our bandwidth estimate is
        * low, do another bandwidth test. This is especially important for
@@ -199,31 +206,77 @@ reachability_warnings_callback(time_t now, const or_options_t *options)
       have_completed_a_circuit()) {
     /* every 20 minutes, check and complain if necessary */
     const routerinfo_t *me = router_get_my_routerinfo();
-    if (me && !check_whether_orport_reachable(options)) {
-      char *address = tor_dup_ip(me->addr);
-      log_warn(LD_CONFIG,"Your server (%s:%d) has not managed to confirm that "
-               "its ORPort is reachable. Relays do not publish descriptors "
-               "until their ORPort and DirPort are reachable. Please check "
-               "your firewalls, ports, address, /etc/hosts file, etc.",
-               address, me->or_port);
-      control_event_server_status(LOG_WARN,
-                                  "REACHABILITY_FAILED ORADDRESS=%s:%d",
-                                  address, me->or_port);
-      tor_free(address);
+    bool v4_ok =
+      router_orport_seems_reachable(options,AF_INET);
+    bool v6_ok =
+      router_orport_seems_reachable(options,AF_INET6);
+    if (me && !(v4_ok && v6_ok)) {
+      /* We need to warn that one or more of our ORPorts isn't reachable.
+       * Determine which, and give a reasonable warning. */
+      char *address4 = tor_addr_to_str_dup(&me->ipv4_addr);
+      char *address6 = tor_addr_to_str_dup(&me->ipv6_addr);
+      if (address4 || address6) {
+        char *where4=NULL, *where6=NULL;
+        if (!v4_ok)
+          tor_asprintf(&where4, "%s:%d", address4, me->ipv4_orport);
+        if (!v6_ok)
+          tor_asprintf(&where6, "[%s]:%d", address6, me->ipv6_orport);
+        const char *opt_and = (!v4_ok && !v6_ok) ? "and" : "";
+
+        /* IPv4 reachability test worked but not the IPv6. We will _not_
+         * publish the descriptor if our IPv6 was configured. We will if it
+         * was auto discovered. */
+        if (v4_ok && !v6_ok && !resolved_addr_is_configured(AF_INET6)) {
+          static ratelim_t rlim = RATELIM_INIT(3600);
+          log_fn_ratelim(&rlim, LOG_NOTICE, LD_CONFIG,
+                         "Auto-discovered IPv6 address %s has not been found "
+                         "reachable. However, IPv4 address is reachable. "
+                         "Publishing server descriptor without IPv6 address.",
+                         where6 ? where6 : "");
+          /* Indicate we want to publish even if reachability test failed. */
+          mark_my_descriptor_if_omit_ipv6_changes("IPv4 is reachable. "
+                                                  "IPv6 is not but was "
+                                                  "auto-discovered", true);
+        } else {
+          log_warn(LD_CONFIG,
+                   "Your server has not managed to confirm reachability for "
+                   "its ORPort(s) at %s%s%s. Relays do not publish "
+                   "descriptors until their ORPort and DirPort are "
+                   "reachable. Please check your firewalls, ports, address, "
+                   "/etc/hosts file, etc.",
+                   where4?where4:"",
+                   opt_and,
+                   where6?where6:"");
+        }
+        tor_free(where4);
+        tor_free(where6);
+        if (!v4_ok) {
+          control_event_server_status(LOG_WARN,
+                                      "REACHABILITY_FAILED ORADDRESS=%s:%d",
+                                      address4, me->ipv4_orport);
+        }
+        if (!v6_ok) {
+          control_event_server_status(LOG_WARN,
+                                      "REACHABILITY_FAILED ORADDRESS=[%s]:%d",
+                                      address6, me->ipv6_orport);
+        }
+      }
+      tor_free(address4);
+      tor_free(address6);
     }
 
-    if (me && !check_whether_dirport_reachable(options)) {
-      char *address = tor_dup_ip(me->addr);
+    if (me && !router_dirport_seems_reachable(options)) {
+      char *address4 = tor_addr_to_str_dup(&me->ipv4_addr);
       log_warn(LD_CONFIG,
                "Your server (%s:%d) has not managed to confirm that its "
                "DirPort is reachable. Relays do not publish descriptors "
                "until their ORPort and DirPort are reachable. Please check "
                "your firewalls, ports, address, /etc/hosts file, etc.",
-               address, me->dir_port);
+               address4, me->ipv4_dirport);
       control_event_server_status(LOG_WARN,
                                   "REACHABILITY_FAILED DIRADDRESS=%s:%d",
-                                  address, me->dir_port);
-      tor_free(address);
+                                  address4, me->ipv4_dirport);
+      tor_free(address4);
     }
   }
 

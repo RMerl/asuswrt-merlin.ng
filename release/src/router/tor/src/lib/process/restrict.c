@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -44,7 +44,7 @@ tor_disable_debugger_attach(void)
 {
   int r = -1;
   log_debug(LD_CONFIG,
-            "Attemping to disable debugger attachment to Tor for "
+            "Attempting to disable debugger attachment to Tor for "
             "unprivileged users.");
 #if defined(__linux__) && defined(HAVE_SYS_PRCTL_H) \
   && defined(HAVE_PRCTL) && defined(PR_SET_DUMPABLE)
@@ -85,7 +85,7 @@ tor_set_max_memlock(void)
 {
   /* Future consideration for Windows is probably SetProcessWorkingSetSize
    * This is similar to setting the memory rlimit of RLIMIT_MEMLOCK
-   * http://msdn.microsoft.com/en-us/library/ms686234(VS.85).aspx
+   * https://msdn.microsoft.com/en-us/library/ms686234(VS.85).aspx
    */
 
   struct rlimit limit;
@@ -128,7 +128,7 @@ tor_mlockall(void)
    * Future consideration for Windows may be VirtualLock
    * VirtualLock appears to implement mlock() but not mlockall()
    *
-   * http://msdn.microsoft.com/en-us/library/aa366895(VS.85).aspx
+   * https://msdn.microsoft.com/en-us/library/aa366895(VS.85).aspx
    */
 
 #ifdef HAVE_UNIX_MLOCKALL
@@ -190,7 +190,7 @@ set_max_file_descriptors(rlim_t limit, int *max_out)
 
   /* Define some maximum connections values for systems where we cannot
    * automatically determine a limit. Re Cygwin, see
-   * http://archives.seul.org/or/talk/Aug-2006/msg00210.html
+   * https://archives.seul.org/or/talk/Aug-2006/msg00210.html
    * For an iPhone, 9999 should work. For Windows and all other unknown
    * systems we use 15000 as the default. */
 #ifndef HAVE_GETRLIMIT

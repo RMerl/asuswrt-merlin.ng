@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -17,11 +17,6 @@
  * <ul><li>Statistics used by authorities to remember the uptime and
  * stability information about various relays, including "uptime",
  * "weighted fractional uptime" and "mean time between failures".
- *
- * <li>Bandwidth usage history, used by relays to self-report how much
- * bandwidth they've used for different purposes over last day or so,
- * in order to generate the {dirreq-,}{read,write}-history lines in
- * that they publish.
  *
  * <li>Predicted ports, used by clients to remember how long it's been
  * since they opened an exit connection to each given target
@@ -47,9 +42,6 @@
  *
  * <li>Descriptor serving statistics, used by directory caches to track
  * how many descriptors they've served.
- *
- * <li>Connection statistics, used by relays to track one-way and
- * bidirectional connections.
  *
  * <li>Onion handshake statistics, used by relays to count how many
  * TAP and ntor handshakes they've handled.
@@ -77,14 +69,13 @@
 #define REPHIST_PRIVATE
 #include "core/or/or.h"
 #include "app/config/config.h"
-#include "app/config/statefile.h"
 #include "core/or/circuitlist.h"
 #include "core/or/connection_or.h"
 #include "feature/dirauth/authmode.h"
 #include "feature/nodelist/networkstatus.h"
 #include "feature/nodelist/nodelist.h"
-#include "feature/relay/routermode.h"
 #include "feature/stats/predict_ports.h"
+#include "feature/stats/connstats.h"
 #include "feature/stats/rephist.h"
 #include "lib/container/order.h"
 #include "lib/crypt_ops/crypto_rand.h"
@@ -92,13 +83,10 @@
 
 #include "feature/nodelist/networkstatus_st.h"
 #include "core/or/or_circuit_st.h"
-#include "app/config/or_state_st.h"
 
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
-
-static void bw_arrays_init(void);
 
 /** Total number of bytes currently allocated in fields used by rephist.c. */
 uint64_t rephist_total_alloc=0;
@@ -232,7 +220,6 @@ void
 rep_hist_init(void)
 {
   history_map = digestmap_new();
-  bw_arrays_init();
 }
 
 /** We have just decided that this router with identity digest <b>id</b> is
@@ -973,560 +960,6 @@ rep_hist_load_mtbf_data(time_t now)
   return r;
 }
 
-/** For how many seconds do we keep track of individual per-second bandwidth
- * totals? */
-#define NUM_SECS_ROLLING_MEASURE 10
-/** How large are the intervals for which we track and report bandwidth use? */
-#define NUM_SECS_BW_SUM_INTERVAL (24*60*60)
-/** How far in the past do we remember and publish bandwidth use? */
-#define NUM_SECS_BW_SUM_IS_VALID (5*24*60*60)
-/** How many bandwidth usage intervals do we remember? (derived) */
-#define NUM_TOTALS (NUM_SECS_BW_SUM_IS_VALID/NUM_SECS_BW_SUM_INTERVAL)
-
-/** Structure to track bandwidth use, and remember the maxima for a given
- * time period.
- */
-struct bw_array_t {
-  /** Observation array: Total number of bytes transferred in each of the last
-   * NUM_SECS_ROLLING_MEASURE seconds. This is used as a circular array. */
-  uint64_t obs[NUM_SECS_ROLLING_MEASURE];
-  int cur_obs_idx; /**< Current position in obs. */
-  time_t cur_obs_time; /**< Time represented in obs[cur_obs_idx] */
-  uint64_t total_obs; /**< Total for all members of obs except
-                       * obs[cur_obs_idx] */
-  uint64_t max_total; /**< Largest value that total_obs has taken on in the
-                       * current period. */
-  uint64_t total_in_period; /**< Total bytes transferred in the current
-                             * period. */
-
-  /** When does the next period begin? */
-  time_t next_period;
-  /** Where in 'maxima' should the maximum bandwidth usage for the current
-   * period be stored? */
-  int next_max_idx;
-  /** How many values in maxima/totals have been set ever? */
-  int num_maxes_set;
-  /** Circular array of the maximum
-   * bandwidth-per-NUM_SECS_ROLLING_MEASURE usage for the last
-   * NUM_TOTALS periods */
-  uint64_t maxima[NUM_TOTALS];
-  /** Circular array of the total bandwidth usage for the last NUM_TOTALS
-   * periods */
-  uint64_t totals[NUM_TOTALS];
-};
-
-/** Shift the current period of b forward by one. */
-STATIC void
-commit_max(bw_array_t *b)
-{
-  /* Store total from current period. */
-  b->totals[b->next_max_idx] = b->total_in_period;
-  /* Store maximum from current period. */
-  b->maxima[b->next_max_idx++] = b->max_total;
-  /* Advance next_period and next_max_idx */
-  b->next_period += NUM_SECS_BW_SUM_INTERVAL;
-  if (b->next_max_idx == NUM_TOTALS)
-    b->next_max_idx = 0;
-  if (b->num_maxes_set < NUM_TOTALS)
-    ++b->num_maxes_set;
-  /* Reset max_total. */
-  b->max_total = 0;
-  /* Reset total_in_period. */
-  b->total_in_period = 0;
-}
-
-/** Shift the current observation time of <b>b</b> forward by one second. */
-STATIC void
-advance_obs(bw_array_t *b)
-{
-  int nextidx;
-  uint64_t total;
-
-  /* Calculate the total bandwidth for the last NUM_SECS_ROLLING_MEASURE
-   * seconds; adjust max_total as needed.*/
-  total = b->total_obs + b->obs[b->cur_obs_idx];
-  if (total > b->max_total)
-    b->max_total = total;
-
-  nextidx = b->cur_obs_idx+1;
-  if (nextidx == NUM_SECS_ROLLING_MEASURE)
-    nextidx = 0;
-
-  b->total_obs = total - b->obs[nextidx];
-  b->obs[nextidx]=0;
-  b->cur_obs_idx = nextidx;
-
-  if (++b->cur_obs_time >= b->next_period)
-    commit_max(b);
-}
-
-/** Add <b>n</b> bytes to the number of bytes in <b>b</b> for second
- * <b>when</b>. */
-static inline void
-add_obs(bw_array_t *b, time_t when, uint64_t n)
-{
-  if (when < b->cur_obs_time)
-    return; /* Don't record data in the past. */
-
-  /* If we're currently adding observations for an earlier second than
-   * 'when', advance b->cur_obs_time and b->cur_obs_idx by an
-   * appropriate number of seconds, and do all the other housekeeping. */
-  while (when > b->cur_obs_time) {
-    /* Doing this one second at a time is potentially inefficient, if we start
-       with a state file that is very old.  Fortunately, it doesn't seem to
-       show up in profiles, so we can just ignore it for now. */
-    advance_obs(b);
-  }
-
-  b->obs[b->cur_obs_idx] += n;
-  b->total_in_period += n;
-}
-
-/** Allocate, initialize, and return a new bw_array. */
-static bw_array_t *
-bw_array_new(void)
-{
-  bw_array_t *b;
-  time_t start;
-  b = tor_malloc_zero(sizeof(bw_array_t));
-  rephist_total_alloc += sizeof(bw_array_t);
-  start = time(NULL);
-  b->cur_obs_time = start;
-  b->next_period = start + NUM_SECS_BW_SUM_INTERVAL;
-  return b;
-}
-
-#define bw_array_free(val) \
-  FREE_AND_NULL(bw_array_t, bw_array_free_, (val))
-
-/** Free storage held by bandwidth array <b>b</b>. */
-static void
-bw_array_free_(bw_array_t *b)
-{
-  if (!b) {
-    return;
-  }
-
-  rephist_total_alloc -= sizeof(bw_array_t);
-  tor_free(b);
-}
-
-/** Recent history of bandwidth observations for read operations. */
-static bw_array_t *read_array = NULL;
-/** Recent history of bandwidth observations for write operations. */
-STATIC bw_array_t *write_array = NULL;
-/** Recent history of bandwidth observations for read operations for the
-    directory protocol. */
-static bw_array_t *dir_read_array = NULL;
-/** Recent history of bandwidth observations for write operations for the
-    directory protocol. */
-static bw_array_t *dir_write_array = NULL;
-
-/** Set up [dir-]read_array and [dir-]write_array, freeing them if they
- * already exist. */
-static void
-bw_arrays_init(void)
-{
-  bw_array_free(read_array);
-  bw_array_free(write_array);
-  bw_array_free(dir_read_array);
-  bw_array_free(dir_write_array);
-
-  read_array = bw_array_new();
-  write_array = bw_array_new();
-  dir_read_array = bw_array_new();
-  dir_write_array = bw_array_new();
-}
-
-/** Remember that we read <b>num_bytes</b> bytes in second <b>when</b>.
- *
- * Add num_bytes to the current running total for <b>when</b>.
- *
- * <b>when</b> can go back to time, but it's safe to ignore calls
- * earlier than the latest <b>when</b> you've heard of.
- */
-void
-rep_hist_note_bytes_written(uint64_t num_bytes, time_t when)
-{
-/* Maybe a circular array for recent seconds, and step to a new point
- * every time a new second shows up. Or simpler is to just to have
- * a normal array and push down each item every second; it's short.
- */
-/* When a new second has rolled over, compute the sum of the bytes we've
- * seen over when-1 to when-1-NUM_SECS_ROLLING_MEASURE, and stick it
- * somewhere. See rep_hist_bandwidth_assess() below.
- */
-  add_obs(write_array, when, num_bytes);
-}
-
-/** Remember that we wrote <b>num_bytes</b> bytes in second <b>when</b>.
- * (like rep_hist_note_bytes_written() above)
- */
-void
-rep_hist_note_bytes_read(uint64_t num_bytes, time_t when)
-{
-/* if we're smart, we can make this func and the one above share code */
-  add_obs(read_array, when, num_bytes);
-}
-
-/** Remember that we wrote <b>num_bytes</b> directory bytes in second
- * <b>when</b>. (like rep_hist_note_bytes_written() above)
- */
-void
-rep_hist_note_dir_bytes_written(uint64_t num_bytes, time_t when)
-{
-  add_obs(dir_write_array, when, num_bytes);
-}
-
-/** Remember that we read <b>num_bytes</b> directory bytes in second
- * <b>when</b>. (like rep_hist_note_bytes_written() above)
- */
-void
-rep_hist_note_dir_bytes_read(uint64_t num_bytes, time_t when)
-{
-  add_obs(dir_read_array, when, num_bytes);
-}
-
-/** Helper: Return the largest value in b->maxima.  (This is equal to the
- * most bandwidth used in any NUM_SECS_ROLLING_MEASURE period for the last
- * NUM_SECS_BW_SUM_IS_VALID seconds.)
- */
-STATIC uint64_t
-find_largest_max(bw_array_t *b)
-{
-  int i;
-  uint64_t max;
-  max=0;
-  for (i=0; i<NUM_TOTALS; ++i) {
-    if (b->maxima[i]>max)
-      max = b->maxima[i];
-  }
-  return max;
-}
-
-/** Find the largest sums in the past NUM_SECS_BW_SUM_IS_VALID (roughly)
- * seconds. Find one sum for reading and one for writing. They don't have
- * to be at the same time.
- *
- * Return the smaller of these sums, divided by NUM_SECS_ROLLING_MEASURE.
- */
-MOCK_IMPL(int,
-rep_hist_bandwidth_assess,(void))
-{
-  uint64_t w,r;
-  r = find_largest_max(read_array);
-  w = find_largest_max(write_array);
-  if (r>w)
-    return (int)(((double)w)/NUM_SECS_ROLLING_MEASURE);
-  else
-    return (int)(((double)r)/NUM_SECS_ROLLING_MEASURE);
-}
-
-/** Print the bandwidth history of b (either [dir-]read_array or
- * [dir-]write_array) into the buffer pointed to by buf.  The format is
- * simply comma separated numbers, from oldest to newest.
- *
- * It returns the number of bytes written.
- */
-static size_t
-rep_hist_fill_bandwidth_history(char *buf, size_t len, const bw_array_t *b)
-{
-  char *cp = buf;
-  int i, n;
-  const or_options_t *options = get_options();
-  uint64_t cutoff;
-
-  if (b->num_maxes_set <= b->next_max_idx) {
-    /* We haven't been through the circular array yet; time starts at i=0.*/
-    i = 0;
-  } else {
-    /* We've been around the array at least once.  The next i to be
-       overwritten is the oldest. */
-    i = b->next_max_idx;
-  }
-
-  if (options->RelayBandwidthRate) {
-    /* We don't want to report that we used more bandwidth than the max we're
-     * willing to relay; otherwise everybody will know how much traffic
-     * we used ourself. */
-    cutoff = options->RelayBandwidthRate * NUM_SECS_BW_SUM_INTERVAL;
-  } else {
-    cutoff = UINT64_MAX;
-  }
-
-  for (n=0; n<b->num_maxes_set; ++n,++i) {
-    uint64_t total;
-    if (i >= NUM_TOTALS)
-      i -= NUM_TOTALS;
-    tor_assert(i < NUM_TOTALS);
-    /* Round the bandwidth used down to the nearest 1k. */
-    total = b->totals[i] & ~0x3ff;
-    if (total > cutoff)
-      total = cutoff;
-
-    if (n==(b->num_maxes_set-1))
-      tor_snprintf(cp, len-(cp-buf), "%"PRIu64, (total));
-    else
-      tor_snprintf(cp, len-(cp-buf), "%"PRIu64",", (total));
-    cp += strlen(cp);
-  }
-  return cp-buf;
-}
-
-/** Allocate and return lines for representing this server's bandwidth
- * history in its descriptor. We publish these lines in our extra-info
- * descriptor.
- */
-char *
-rep_hist_get_bandwidth_lines(void)
-{
-  char *buf, *cp;
-  char t[ISO_TIME_LEN+1];
-  int r;
-  bw_array_t *b = NULL;
-  const char *desc = NULL;
-  size_t len;
-
-  /* [dirreq-](read|write)-history yyyy-mm-dd HH:MM:SS (n s) n,n,n... */
-/* The n,n,n part above. Largest representation of a uint64_t is 20 chars
- * long, plus the comma. */
-#define MAX_HIST_VALUE_LEN (21*NUM_TOTALS)
-  len = (67+MAX_HIST_VALUE_LEN)*4;
-  buf = tor_malloc_zero(len);
-  cp = buf;
-  for (r=0;r<4;++r) {
-    char tmp[MAX_HIST_VALUE_LEN];
-    size_t slen;
-    switch (r) {
-      case 0:
-        b = write_array;
-        desc = "write-history";
-        break;
-      case 1:
-        b = read_array;
-        desc = "read-history";
-        break;
-      case 2:
-        b = dir_write_array;
-        desc = "dirreq-write-history";
-        break;
-      case 3:
-        b = dir_read_array;
-        desc = "dirreq-read-history";
-        break;
-    }
-    tor_assert(b);
-    slen = rep_hist_fill_bandwidth_history(tmp, MAX_HIST_VALUE_LEN, b);
-    /* If we don't have anything to write, skip to the next entry. */
-    if (slen == 0)
-      continue;
-    format_iso_time(t, b->next_period-NUM_SECS_BW_SUM_INTERVAL);
-    tor_snprintf(cp, len-(cp-buf), "%s %s (%d s) ",
-                 desc, t, NUM_SECS_BW_SUM_INTERVAL);
-    cp += strlen(cp);
-    strlcat(cp, tmp, len-(cp-buf));
-    cp += slen;
-    strlcat(cp, "\n", len-(cp-buf));
-    ++cp;
-  }
-  return buf;
-}
-
-/** Write a single bw_array_t into the Values, Ends, Interval, and Maximum
- * entries of an or_state_t. Done before writing out a new state file. */
-static void
-rep_hist_update_bwhist_state_section(or_state_t *state,
-                                     const bw_array_t *b,
-                                     smartlist_t **s_values,
-                                     smartlist_t **s_maxima,
-                                     time_t *s_begins,
-                                     int *s_interval)
-{
-  int i,j;
-  uint64_t maxval;
-
-  if (*s_values) {
-    SMARTLIST_FOREACH(*s_values, char *, val, tor_free(val));
-    smartlist_free(*s_values);
-  }
-  if (*s_maxima) {
-    SMARTLIST_FOREACH(*s_maxima, char *, val, tor_free(val));
-    smartlist_free(*s_maxima);
-  }
-  if (! server_mode(get_options())) {
-    /* Clients don't need to store bandwidth history persistently;
-     * force these values to the defaults. */
-    /* FFFF we should pull the default out of config.c's state table,
-     * so we don't have two defaults. */
-    if (*s_begins != 0 || *s_interval != 900) {
-      time_t now = time(NULL);
-      time_t save_at = get_options()->AvoidDiskWrites ? now+3600 : now+600;
-      or_state_mark_dirty(state, save_at);
-    }
-    *s_begins = 0;
-    *s_interval = 900;
-    *s_values = smartlist_new();
-    *s_maxima = smartlist_new();
-    return;
-  }
-  *s_begins = b->next_period;
-  *s_interval = NUM_SECS_BW_SUM_INTERVAL;
-
-  *s_values = smartlist_new();
-  *s_maxima = smartlist_new();
-  /* Set i to first position in circular array */
-  i = (b->num_maxes_set <= b->next_max_idx) ? 0 : b->next_max_idx;
-  for (j=0; j < b->num_maxes_set; ++j,++i) {
-    if (i >= NUM_TOTALS)
-      i = 0;
-    smartlist_add_asprintf(*s_values, "%"PRIu64,
-                           (b->totals[i] & ~0x3ff));
-    maxval = b->maxima[i] / NUM_SECS_ROLLING_MEASURE;
-    smartlist_add_asprintf(*s_maxima, "%"PRIu64,
-                           (maxval & ~0x3ff));
-  }
-  smartlist_add_asprintf(*s_values, "%"PRIu64,
-                         (b->total_in_period & ~0x3ff));
-  maxval = b->max_total / NUM_SECS_ROLLING_MEASURE;
-  smartlist_add_asprintf(*s_maxima, "%"PRIu64,
-                         (maxval & ~0x3ff));
-}
-
-/** Update <b>state</b> with the newest bandwidth history. Done before
- * writing out a new state file. */
-void
-rep_hist_update_state(or_state_t *state)
-{
-#define UPDATE(arrname,st) \
-  rep_hist_update_bwhist_state_section(state,\
-                                       (arrname),\
-                                       &state->BWHistory ## st ## Values, \
-                                       &state->BWHistory ## st ## Maxima, \
-                                       &state->BWHistory ## st ## Ends, \
-                                       &state->BWHistory ## st ## Interval)
-
-  UPDATE(write_array, Write);
-  UPDATE(read_array, Read);
-  UPDATE(dir_write_array, DirWrite);
-  UPDATE(dir_read_array, DirRead);
-
-  if (server_mode(get_options())) {
-    or_state_mark_dirty(state, time(NULL)+(2*3600));
-  }
-#undef UPDATE
-}
-
-/** Load a single bw_array_t from its Values, Ends, Maxima, and Interval
- * entries in an or_state_t. Done while reading the state file. */
-static int
-rep_hist_load_bwhist_state_section(bw_array_t *b,
-                                   const smartlist_t *s_values,
-                                   const smartlist_t *s_maxima,
-                                   const time_t s_begins,
-                                   const int s_interval)
-{
-  time_t now = time(NULL);
-  int retval = 0;
-  time_t start;
-
-  uint64_t v, mv;
-  int i,ok,ok_m = 0;
-  int have_maxima = s_maxima && s_values &&
-    (smartlist_len(s_values) == smartlist_len(s_maxima));
-
-  if (s_values && s_begins >= now - NUM_SECS_BW_SUM_INTERVAL*NUM_TOTALS) {
-    start = s_begins - s_interval*(smartlist_len(s_values));
-    if (start > now)
-      return 0;
-    b->cur_obs_time = start;
-    b->next_period = start + NUM_SECS_BW_SUM_INTERVAL;
-    SMARTLIST_FOREACH_BEGIN(s_values, const char *, cp) {
-        const char *maxstr = NULL;
-        v = tor_parse_uint64(cp, 10, 0, UINT64_MAX, &ok, NULL);
-        if (have_maxima) {
-          maxstr = smartlist_get(s_maxima, cp_sl_idx);
-          mv = tor_parse_uint64(maxstr, 10, 0, UINT64_MAX, &ok_m, NULL);
-          mv *= NUM_SECS_ROLLING_MEASURE;
-        } else {
-          /* No maxima known; guess average rate to be conservative. */
-          mv = (v / s_interval) * NUM_SECS_ROLLING_MEASURE;
-        }
-        if (!ok) {
-          retval = -1;
-          log_notice(LD_HIST, "Could not parse value '%s' into a number.'",cp);
-        }
-        if (maxstr && !ok_m) {
-          retval = -1;
-          log_notice(LD_HIST, "Could not parse maximum '%s' into a number.'",
-                     maxstr);
-        }
-
-        if (start < now) {
-          time_t cur_start = start;
-          time_t actual_interval_len = s_interval;
-          uint64_t cur_val = 0;
-          /* Calculate the average per second. This is the best we can do
-           * because our state file doesn't have per-second resolution. */
-          if (start + s_interval > now)
-            actual_interval_len = now - start;
-          cur_val = v / actual_interval_len;
-          /* This is potentially inefficient, but since we don't do it very
-           * often it should be ok. */
-          while (cur_start < start + actual_interval_len) {
-            add_obs(b, cur_start, cur_val);
-            ++cur_start;
-          }
-          b->max_total = mv;
-          /* This will result in some fairly choppy history if s_interval
-           * is not the same as NUM_SECS_BW_SUM_INTERVAL. XXXX */
-          start += actual_interval_len;
-        }
-    } SMARTLIST_FOREACH_END(cp);
-  }
-
-  /* Clean up maxima and observed */
-  for (i=0; i<NUM_SECS_ROLLING_MEASURE; ++i) {
-    b->obs[i] = 0;
-  }
-  b->total_obs = 0;
-
-  return retval;
-}
-
-/** Set bandwidth history from the state file we just loaded. */
-int
-rep_hist_load_state(or_state_t *state, char **err)
-{
-  int all_ok = 1;
-
-  /* Assert they already have been malloced */
-  tor_assert(read_array && write_array);
-  tor_assert(dir_read_array && dir_write_array);
-
-#define LOAD(arrname,st)                                                \
-  if (rep_hist_load_bwhist_state_section(                               \
-                                (arrname),                              \
-                                state->BWHistory ## st ## Values,       \
-                                state->BWHistory ## st ## Maxima,       \
-                                state->BWHistory ## st ## Ends,         \
-                                state->BWHistory ## st ## Interval)<0)  \
-    all_ok = 0
-
-  LOAD(write_array, Write);
-  LOAD(read_array, Read);
-  LOAD(dir_write_array, DirWrite);
-  LOAD(dir_read_array, DirRead);
-
-#undef LOAD
-  if (!all_ok) {
-    *err = tor_strdup("Parsing of bandwidth history values failed");
-    /* and create fresh arrays */
-    bw_arrays_init();
-    return -1;
-  }
-  return 0;
-}
-
 /*** Exit port statistics ***/
 
 /* Some constants */
@@ -2213,223 +1646,6 @@ rep_hist_note_desc_served(const char * desc)
 
 /*** Connection statistics ***/
 
-/** Start of the current connection stats interval or 0 if we're not
- * collecting connection statistics. */
-static time_t start_of_conn_stats_interval;
-
-/** Initialize connection stats. */
-void
-rep_hist_conn_stats_init(time_t now)
-{
-  start_of_conn_stats_interval = now;
-}
-
-/* Count connections that we read and wrote less than these many bytes
- * from/to as below threshold. */
-#define BIDI_THRESHOLD 20480
-
-/* Count connections that we read or wrote at least this factor as many
- * bytes from/to than we wrote or read to/from as mostly reading or
- * writing. */
-#define BIDI_FACTOR 10
-
-/* Interval length in seconds for considering read and written bytes for
- * connection stats. */
-#define BIDI_INTERVAL 10
-
-/** Start of next BIDI_INTERVAL second interval. */
-static time_t bidi_next_interval = 0;
-
-/** Number of connections that we read and wrote less than BIDI_THRESHOLD
- * bytes from/to in BIDI_INTERVAL seconds. */
-static uint32_t below_threshold = 0;
-
-/** Number of connections that we read at least BIDI_FACTOR times more
- * bytes from than we wrote to in BIDI_INTERVAL seconds. */
-static uint32_t mostly_read = 0;
-
-/** Number of connections that we wrote at least BIDI_FACTOR times more
- * bytes to than we read from in BIDI_INTERVAL seconds. */
-static uint32_t mostly_written = 0;
-
-/** Number of connections that we read and wrote at least BIDI_THRESHOLD
- * bytes from/to, but not BIDI_FACTOR times more in either direction in
- * BIDI_INTERVAL seconds. */
-static uint32_t both_read_and_written = 0;
-
-/** Entry in a map from connection ID to the number of read and written
- * bytes on this connection in a BIDI_INTERVAL second interval. */
-typedef struct bidi_map_entry_t {
-  HT_ENTRY(bidi_map_entry_t) node;
-  uint64_t conn_id; /**< Connection ID */
-  size_t read; /**< Number of read bytes */
-  size_t written; /**< Number of written bytes */
-} bidi_map_entry_t;
-
-/** Map of OR connections together with the number of read and written
- * bytes in the current BIDI_INTERVAL second interval. */
-static HT_HEAD(bidimap, bidi_map_entry_t) bidi_map =
-     HT_INITIALIZER();
-
-static int
-bidi_map_ent_eq(const bidi_map_entry_t *a, const bidi_map_entry_t *b)
-{
-  return a->conn_id == b->conn_id;
-}
-
-/* DOCDOC bidi_map_ent_hash */
-static unsigned
-bidi_map_ent_hash(const bidi_map_entry_t *entry)
-{
-  return (unsigned) entry->conn_id;
-}
-
-HT_PROTOTYPE(bidimap, bidi_map_entry_t, node, bidi_map_ent_hash,
-             bidi_map_ent_eq)
-HT_GENERATE2(bidimap, bidi_map_entry_t, node, bidi_map_ent_hash,
-             bidi_map_ent_eq, 0.6, tor_reallocarray_, tor_free_)
-
-/* DOCDOC bidi_map_free */
-static void
-bidi_map_free_all(void)
-{
-  bidi_map_entry_t **ptr, **next, *ent;
-  for (ptr = HT_START(bidimap, &bidi_map); ptr; ptr = next) {
-    ent = *ptr;
-    next = HT_NEXT_RMV(bidimap, &bidi_map, ptr);
-    tor_free(ent);
-  }
-  HT_CLEAR(bidimap, &bidi_map);
-}
-
-/** Reset counters for conn statistics. */
-void
-rep_hist_reset_conn_stats(time_t now)
-{
-  start_of_conn_stats_interval = now;
-  below_threshold = 0;
-  mostly_read = 0;
-  mostly_written = 0;
-  both_read_and_written = 0;
-  bidi_map_free_all();
-}
-
-/** Stop collecting connection stats in a way that we can re-start doing
- * so in rep_hist_conn_stats_init(). */
-void
-rep_hist_conn_stats_term(void)
-{
-  rep_hist_reset_conn_stats(0);
-}
-
-/** We read <b>num_read</b> bytes and wrote <b>num_written</b> from/to OR
- * connection <b>conn_id</b> in second <b>when</b>. If this is the first
- * observation in a new interval, sum up the last observations. Add bytes
- * for this connection. */
-void
-rep_hist_note_or_conn_bytes(uint64_t conn_id, size_t num_read,
-                            size_t num_written, time_t when)
-{
-  if (!start_of_conn_stats_interval)
-    return;
-  /* Initialize */
-  if (bidi_next_interval == 0)
-    bidi_next_interval = when + BIDI_INTERVAL;
-  /* Sum up last period's statistics */
-  if (when >= bidi_next_interval) {
-    bidi_map_entry_t **ptr, **next, *ent;
-    for (ptr = HT_START(bidimap, &bidi_map); ptr; ptr = next) {
-      ent = *ptr;
-      if (ent->read + ent->written < BIDI_THRESHOLD)
-        below_threshold++;
-      else if (ent->read >= ent->written * BIDI_FACTOR)
-        mostly_read++;
-      else if (ent->written >= ent->read * BIDI_FACTOR)
-        mostly_written++;
-      else
-        both_read_and_written++;
-      next = HT_NEXT_RMV(bidimap, &bidi_map, ptr);
-      tor_free(ent);
-    }
-    while (when >= bidi_next_interval)
-      bidi_next_interval += BIDI_INTERVAL;
-    log_info(LD_GENERAL, "%d below threshold, %d mostly read, "
-             "%d mostly written, %d both read and written.",
-             below_threshold, mostly_read, mostly_written,
-             both_read_and_written);
-  }
-  /* Add this connection's bytes. */
-  if (num_read > 0 || num_written > 0) {
-    bidi_map_entry_t *entry, lookup;
-    lookup.conn_id = conn_id;
-    entry = HT_FIND(bidimap, &bidi_map, &lookup);
-    if (entry) {
-      entry->written += num_written;
-      entry->read += num_read;
-    } else {
-      entry = tor_malloc_zero(sizeof(bidi_map_entry_t));
-      entry->conn_id = conn_id;
-      entry->written = num_written;
-      entry->read = num_read;
-      HT_INSERT(bidimap, &bidi_map, entry);
-    }
-  }
-}
-
-/** Return a newly allocated string containing the connection statistics
- * until <b>now</b>, or NULL if we're not collecting conn stats. Caller must
- * ensure start_of_conn_stats_interval is in the past. */
-char *
-rep_hist_format_conn_stats(time_t now)
-{
-  char *result, written[ISO_TIME_LEN+1];
-
-  if (!start_of_conn_stats_interval)
-    return NULL; /* Not initialized. */
-
-  tor_assert(now >= start_of_conn_stats_interval);
-
-  format_iso_time(written, now);
-  tor_asprintf(&result, "conn-bi-direct %s (%d s) %d,%d,%d,%d\n",
-               written,
-               (unsigned) (now - start_of_conn_stats_interval),
-               below_threshold,
-               mostly_read,
-               mostly_written,
-               both_read_and_written);
-  return result;
-}
-
-/** If 24 hours have passed since the beginning of the current conn stats
- * period, write conn stats to $DATADIR/stats/conn-stats (possibly
- * overwriting an existing file) and reset counters.  Return when we would
- * next want to write conn stats or 0 if we never want to write. */
-time_t
-rep_hist_conn_stats_write(time_t now)
-{
-  char *str = NULL;
-
-  if (!start_of_conn_stats_interval)
-    return 0; /* Not initialized. */
-  if (start_of_conn_stats_interval + WRITE_STATS_INTERVAL > now)
-    goto done; /* Not ready to write */
-
-  /* Generate history string. */
-  str = rep_hist_format_conn_stats(now);
-
-  /* Reset counters. */
-  rep_hist_reset_conn_stats(now);
-
-  /* Try to write to disk. */
-  if (!check_or_create_data_subdir("stats")) {
-    write_to_data_subdir("stats", "conn-stats", str, "connection statistics");
-  }
-
- done:
-  tor_free(str);
-  return start_of_conn_stats_interval + WRITE_STATS_INTERVAL;
-}
-
 /** Internal statistics to track how many requests of each type of
  * handshake we've received, and how many we've assigned to cpuworkers.
  * Useful for seeing trends in cpu load.
@@ -2453,6 +1669,26 @@ rep_hist_note_circuit_handshake_assigned(uint16_t type)
 {
   if (type <= MAX_ONION_HANDSHAKE_TYPE)
     onion_handshakes_assigned[type]++;
+}
+
+/** Get the circuit handshake value that is requested. */
+MOCK_IMPL(int,
+rep_hist_get_circuit_handshake_requested, (uint16_t type))
+{
+  if (BUG(type > MAX_ONION_HANDSHAKE_TYPE)) {
+    return 0;
+  }
+  return onion_handshakes_requested[type];
+}
+
+/** Get the circuit handshake value that is assigned. */
+MOCK_IMPL(int,
+rep_hist_get_circuit_handshake_assigned, (uint16_t type))
+{
+  if (BUG(type > MAX_ONION_HANDSHAKE_TYPE)) {
+    return 0;
+  }
+  return onion_handshakes_assigned[type];
 }
 
 /** Log our onionskin statistics since the last time we were called. */
@@ -2593,7 +1829,7 @@ rep_hist_stored_maybe_new_hs(const crypto_pk_t *pubkey)
 
 /* The number of cells that are supposed to be hidden from the adversary
  * by adding noise from the Laplace distribution.  This value, divided by
- * EPSILON, is Laplace parameter b. It must be greather than 0. */
+ * EPSILON, is Laplace parameter b. It must be greater than 0. */
 #define REND_CELLS_DELTA_F 2048
 /* Security parameter for obfuscating number of cells with a value between
  * ]0.0, 1.0]. Smaller values obfuscate observations more, but at the same
@@ -2901,23 +2137,11 @@ rep_hist_free_all(void)
   hs_stats_free(hs_stats);
   digestmap_free(history_map, free_or_history);
 
-  bw_array_free(read_array);
-  read_array = NULL;
-
-  bw_array_free(write_array);
-  write_array = NULL;
-
-  bw_array_free(dir_read_array);
-  dir_read_array = NULL;
-
-  bw_array_free(dir_write_array);
-  dir_write_array = NULL;
-
   tor_free(exit_bytes_read);
   tor_free(exit_bytes_written);
   tor_free(exit_streams);
   predicted_ports_free_all();
-  bidi_map_free_all();
+  conn_stats_free_all();
 
   if (circuits_for_buffer_stats) {
     SMARTLIST_FOREACH(circuits_for_buffer_stats, circ_buffer_stats_t *, s,

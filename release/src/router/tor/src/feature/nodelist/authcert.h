@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -41,7 +41,7 @@ void authority_cert_dl_failed(const char *id_digest,
 void authority_certs_fetch_missing(networkstatus_t *status, time_t now,
                                    const char *dir_hint);
 int authority_cert_dl_looks_uncertain(const char *id_digest);
-int authority_cert_is_blacklisted(const authority_cert_t *cert);
+int authority_cert_is_denylisted(const authority_cert_t *cert);
 
 void authority_cert_free_(authority_cert_t *cert);
 #define authority_cert_free(cert) \

@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -60,7 +60,7 @@
  *
  * Q: So, what backends is monotime_coarse using?
  *
- * A: Generally speaking, it uses "whatever monotonic-ish time implemenation
+ * A: Generally speaking, it uses "whatever monotonic-ish time implementation
  * does not require a context switch."  The various implementations provide
  * this by having a view of the current time in a read-only memory page that
  * is updated with a frequency corresponding to the kernel's tick count.

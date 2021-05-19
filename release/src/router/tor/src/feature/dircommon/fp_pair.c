@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2019, The Tor Project, Inc. */
+/* Copyright (c) 2013-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -22,14 +22,14 @@
 
 /* Define fp_pair_map_t structures */
 
-struct fp_pair_map_entry_s {
-  HT_ENTRY(fp_pair_map_entry_s) node;
+struct fp_pair_map_entry_t {
+  HT_ENTRY(fp_pair_map_entry_t) node;
   void *val;
   fp_pair_t key;
 };
 
-struct fp_pair_map_s {
-  HT_HEAD(fp_pair_map_impl, fp_pair_map_entry_s) head;
+struct fp_pair_map_t {
+  HT_HEAD(fp_pair_map_impl, fp_pair_map_entry_t) head;
 };
 
 /*
@@ -56,11 +56,11 @@ fp_pair_map_entry_hash(const fp_pair_map_entry_t *a)
  * Hash table functions for fp_pair_map_t
  */
 
-HT_PROTOTYPE(fp_pair_map_impl, fp_pair_map_entry_s, node,
-             fp_pair_map_entry_hash, fp_pair_map_entries_eq)
-HT_GENERATE2(fp_pair_map_impl, fp_pair_map_entry_s, node,
+HT_PROTOTYPE(fp_pair_map_impl, fp_pair_map_entry_t, node,
+             fp_pair_map_entry_hash, fp_pair_map_entries_eq);
+HT_GENERATE2(fp_pair_map_impl, fp_pair_map_entry_t, node,
              fp_pair_map_entry_hash, fp_pair_map_entries_eq,
-             0.6, tor_reallocarray_, tor_free_)
+             0.6, tor_reallocarray_, tor_free_);
 
 /** Constructor to create a new empty map from fp_pair_t to void *
  */
@@ -312,4 +312,3 @@ fp_pair_map_assert_ok(const fp_pair_map_t *map)
 {
   tor_assert(!fp_pair_map_impl_HT_REP_IS_BAD_(&(map->head)));
 }
-

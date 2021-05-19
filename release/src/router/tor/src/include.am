@@ -1,4 +1,5 @@
 include src/ext/include.am
+
 include src/lib/arch/include.am
 include src/lib/buf/include.am
 include src/lib/err/include.am
@@ -18,12 +19,14 @@ include src/lib/fs/include.am
 include src/lib/geoip/include.am
 include src/lib/include.libdonna.am
 include src/lib/intmath/include.am
+include src/lib/llharden/include.am
 include src/lib/lock/include.am
 include src/lib/log/include.am
+include src/lib/malloc/include.am
 include src/lib/math/include.am
 include src/lib/memarea/include.am
 include src/lib/meminfo/include.am
-include src/lib/malloc/include.am
+include src/lib/metrics/include.am
 include src/lib/net/include.am
 include src/lib/osinfo/include.am
 include src/lib/process/include.am
@@ -41,6 +44,43 @@ include src/lib/trace/include.am
 include src/lib/version/include.am
 include src/lib/wallclock/include.am
 include src/trunnel/include.am
+
+noinst_LIBRARIES += src/core/libtor-app.a
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/core/libtor-app-testing.a
+endif
+
+LIBTOR_APP_A_SOURCES =
+#
+# Sources that we only add for the real libtor_a, and not for testing.
+#
+LIBTOR_APP_A_STUB_SOURCES =
+
+include src/core/crypto/include.am
+include src/core/mainloop/include.am
+include src/core/or/include.am
+include src/core/proto/include.am
+
+include src/feature/api/include.am
+include src/feature/client/include.am
+include src/feature/control/include.am
+include src/feature/dirauth/include.am
+include src/feature/dircache/include.am
+include src/feature/dirclient/include.am
+include src/feature/dircommon/include.am
+include src/feature/dirparse/include.am
+include src/feature/hibernate/include.am
+include src/feature/hs_common/include.am
+include src/feature/hs/include.am
+include src/feature/keymgt/include.am
+include src/feature/metrics/include.am
+include src/feature/nodelist/include.am
+include src/feature/relay/include.am
+include src/feature/rend/include.am
+include src/feature/stats/include.am
+
+include src/app/config/include.am
+include src/app/main/include.am
 
 include src/core/include.am
 include src/app/include.am

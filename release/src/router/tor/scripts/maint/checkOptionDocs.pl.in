@@ -39,7 +39,7 @@ loadTorrc("@abs_top_srcdir@/src/config/torrc.sample.in", \%torrcSampleOptions);
 # Try to figure out what's in the man page.
 
 my $considerNextLine = 0;
-open(F, "@abs_top_srcdir@/doc/tor.1.txt") or die;
+open(F, "@abs_top_srcdir@/doc/man/tor.1.txt") or die;
 while (<F>) {
     if (m!^(?:\[\[([A-za-z0-9_]+)\]\] *)?\*\*([A-Za-z0-9_]+)\*\*!) {
         $manPageOptions{$2} = 1;

@@ -1,8 +1,13 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file extrainfo_st.h
+ * @brief A relay's extra-info structure.
+ **/
 
 #ifndef EXTRAINFO_ST_H
 #define EXTRAINFO_ST_H
@@ -27,4 +32,3 @@ struct extrainfo_t {
 };
 
 #endif /* !defined(EXTRAINFO_ST_H) */
-

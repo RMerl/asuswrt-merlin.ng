@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -54,6 +54,7 @@
 #include "feature/nodelist/describe.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/nodelist/routerlist.h"
+#include "feature/relay/circuitbuild_relay.h"
 #include "feature/relay/routermode.h"
 #include "feature/stats/rephist.h"
 #include "lib/crypt_ops/crypto_util.h"
@@ -217,23 +218,6 @@ command_process_cell(channel_t *chan, cell_t *cell)
   }
 }
 
-/** Process an incoming var_cell from a channel; in the current protocol all
- * the var_cells are handshake-related and handled below the channel layer,
- * so this just logs a warning and drops the cell.
- */
-
-void
-command_process_var_cell(channel_t *chan, var_cell_t *var_cell)
-{
-  tor_assert(chan);
-  tor_assert(var_cell);
-
-  log_info(LD_PROTOCOL,
-           "Received unexpected var_cell above the channel layer of type %d"
-           "; dropping it.",
-           var_cell->command);
-}
-
 /** Process a 'create' <b>cell</b> that just arrived from <b>chan</b>. Make a
  * new circuit with the p_circ_id specified in cell. Put the circuit in state
  * onionskin_pending, and pass the onionskin to the cpuworker. Circ will get
@@ -268,7 +252,7 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
     log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
            "Received a create cell (type %d) from %s with zero circID; "
            " ignoring.", (int)cell->command,
-           channel_get_actual_remote_descr(chan));
+           channel_describe_peer(chan));
     return;
   }
 
@@ -311,7 +295,7 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
            "Received create cell (type %d) from %s, but we're connected "
            "to it as a client. "
            "Sending back a destroy.",
-           (int)cell->command, channel_get_canonical_remote_descr(chan));
+           (int)cell->command, channel_describe_peer(chan));
     channel_send_destroy(cell->circ_id, chan,
                          END_CIRC_REASON_TORPROTOCOL);
     return;
@@ -491,7 +475,7 @@ command_process_relay_cell(cell_t *cell, channel_t *chan)
     log_debug(LD_OR,
               "unknown circuit %u on connection from %s. Dropping.",
               (unsigned)cell->circ_id,
-              channel_get_canonical_remote_descr(chan));
+              channel_describe_peer(chan));
     return;
   }
 
@@ -552,7 +536,7 @@ command_process_relay_cell(cell_t *cell, channel_t *chan)
         control_event_circ_bandwidth_used_for_circ(TO_ORIGIN_CIRCUIT(circ));
       } else if (circ->n_chan) {
         log_warn(LD_OR, " upstream=%s",
-                 channel_get_actual_remote_descr(circ->n_chan));
+                 channel_describe_peer(circ->n_chan));
       }
       circuit_mark_for_close(circ, END_CIRC_REASON_TORPROTOCOL);
       return;
@@ -563,7 +547,7 @@ command_process_relay_cell(cell_t *cell, channel_t *chan)
                "Received too many RELAY_EARLY cells on circ %u from %s."
                "  Closing circuit.",
                (unsigned)cell->circ_id,
-               safe_str(channel_get_canonical_remote_descr(chan)));
+               safe_str(channel_describe_peer(chan)));
         circuit_mark_for_close(circ, END_CIRC_REASON_TORPROTOCOL);
         return;
       }
@@ -634,7 +618,7 @@ command_process_destroy_cell(cell_t *cell, channel_t *chan)
   if (!circ) {
     log_info(LD_OR,"unknown circuit %u on connection from %s. Dropping.",
              (unsigned)cell->circ_id,
-             channel_get_canonical_remote_descr(chan));
+             channel_describe_peer(chan));
     return;
   }
   log_debug(LD_OR,"Received for circID %u.",(unsigned)cell->circ_id);
@@ -685,8 +669,7 @@ command_setup_channel(channel_t *chan)
   tor_assert(chan);
 
   channel_set_cell_handlers(chan,
-                            command_process_cell,
-                            command_process_var_cell);
+                            command_process_cell);
 }
 
 /** Given a listener, install the right handler to process incoming

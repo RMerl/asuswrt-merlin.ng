@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -16,8 +16,7 @@
 #include "orconfig.h"
 
 #ifdef ENABLE_OPENSSL
-#include <openssl/engine.h>
-
+#include <openssl/opensslv.h>
 /*
   Macro to create an arbitrary OpenSSL version number as used by
   OPENSSL_VERSION_NUMBER or SSLeay(), since the actual numbers are a bit hard
@@ -58,7 +57,7 @@
 #if OPENSSL_VERSION_NUMBER >= OPENSSL_VER(1,1,0,0,5) && \
   !defined(LIBRESSL_VERSION_NUMBER)
 /* OpenSSL as of 1.1.0pre4 has an "new" thread API, which doesn't require
- * seting up various callbacks.
+ * setting up various callbacks.
  *
  * OpenSSL 1.1.0pre4 has a messed up `ERR_remove_thread_state()` prototype,
  * while the previous one was restored in pre5, and the function made a no-op

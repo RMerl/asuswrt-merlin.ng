@@ -1,8 +1,13 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file server_port_cfg_st.h
+ * @brief Configuration structure for server ports.
+ **/
 
 #ifndef SERVER_PORT_CFG_ST_H
 #define SERVER_PORT_CFG_ST_H
@@ -17,4 +22,3 @@ struct server_port_cfg_t {
 };
 
 #endif /* !defined(SERVER_PORT_CFG_ST_H) */
-

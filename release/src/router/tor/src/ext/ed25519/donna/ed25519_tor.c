@@ -35,11 +35,15 @@
 #define ED25519_FN(fn)         ED25519_FN2(fn,ED25519_SUFFIX)
 
 #include "orconfig.h"
+
+#include "lib/cc/compat_compiler.h"
+
 #include "ed25519-donna.h"
 #include "ed25519_donna_tor.h"
 #include "ed25519-randombytes.h"
 #include "ed25519-hash.h"
 
+#include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
 
 typedef unsigned char ed25519_signature[64];
@@ -366,4 +370,3 @@ ed25519_donna_scalarmult_with_group_order(unsigned char *out,
 }
 
 #include "test-internals.c"
-

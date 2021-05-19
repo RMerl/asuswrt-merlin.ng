@@ -54,7 +54,7 @@ AC_DEFUN([AC_PC_FROM_UCONTEXT],
    else
      AC_CHECK_HEADERS(sys/ucontext.h)       # ucontext on OS X 10.6 (at least)
    fi
-   AC_CHECK_HEADERS(cygwin/signal.h)        # ucontext on cywgin
+   AC_CHECK_HEADERS(cygwin/signal.h)        # ucontext on cygwin
    AC_MSG_CHECKING([how to access the program counter from a struct ucontext])
    pc_fields="           uc_mcontext.gregs[[REG_PC]]"  # Solaris x86 (32 + 64 bit)
    pc_fields="$pc_fields uc_mcontext.gregs[[REG_EIP]]" # Linux (i386)

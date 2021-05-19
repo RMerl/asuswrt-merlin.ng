@@ -1,5 +1,5 @@
 /* Copyright (c) 2014, Daniel Martí
- * Copyright (c) 2014-2019, The Tor Project, Inc. */
+ * Copyright (c) 2014-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -530,10 +530,12 @@ typedef struct router_id_iterator_t {
   cdline_t hash;
 } router_id_iterator_t;
 
+#ifndef COCCI
 /**
  * Initializer for a router_id_iterator_t.
  */
 #define ROUTER_ID_ITERATOR_INIT { { NULL, 0 }, { NULL, 0 } }
+#endif /* !defined(COCCI) */
 
 /** Given an index *<b>idxp</b> into the consensus at <b>cons</b>, advance
  * the index to the next router line ("r ...") in the consensus, or to
@@ -570,7 +572,7 @@ find_next_router_line(const smartlist_t *cons,
 /** Pre-process a consensus in <b>cons</b> (represented as a list of cdline_t)
  * to remove the signatures from it.  If the footer is removed, return a
  * cdline_t containing a delete command to delete the footer, allocated in
- * <b>area</>.  If no footer is removed, return NULL.
+ * <b>area</b>.  If no footer is removed, return NULL.
  *
  * We remove the signatures here because they are not themselves signed, and
  * as such there might be different encodings for them.
@@ -827,7 +829,7 @@ gen_ed_diff(const smartlist_t *cons1_orig, const smartlist_t *cons2,
 }
 
 /* Helper: Read a base-10 number between 0 and INT32_MAX from <b>s</b> and
- * store it in <b>num_out</b>.  Advance <b>s</b> to the characer immediately
+ * store it in <b>num_out</b>.  Advance <b>s</b> to the character immediately
  * after the number.  Return 0 on success, -1 on failure. */
 static int
 get_linenum(const char **s, int *num_out)
@@ -1048,7 +1050,7 @@ consdiff_gen_diff(const smartlist_t *cons1,
   if (smartlist_len(cons2) == smartlist_len(ed_cons2)) {
     SMARTLIST_FOREACH_BEGIN(cons2, const cdline_t *, line1) {
       const cdline_t *line2 = smartlist_get(ed_cons2, line1_sl_idx);
-      if (! lines_eq(line1, line2) ) {
+      if (!lines_eq(line1, line2)) {
         cons2_eq = 0;
         break;
       }
@@ -1333,7 +1335,7 @@ consensus_join_lines(const smartlist_t *inp)
 }
 
 /** Given two consensus documents, try to compute a diff between them.  On
- * success, retun a newly allocated string containing that diff.  On failure,
+ * success, return a newly allocated string containing that diff.  On failure,
  * return NULL. */
 char *
 consensus_diff_generate(const char *cons1, size_t cons1len,

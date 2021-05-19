@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -52,7 +52,7 @@
  *   saves the current state of the protocol on disk so that it can resume
  *   normally in case of reboot. The disk state (sr_disk_state_t) is managed by
  *   shared_random_state.c:state_query() and we go to extra lengths to ensure
- *   that the state is flushed on disk everytime we receive any useful
+ *   that the state is flushed on disk every time we receive any useful
  *   information like commits or SRVs.
  *
  * - When we receive a commit from a vote, we examine it to see if it's useful
@@ -62,7 +62,7 @@
  *   receive the reveal information corresponding to a commitment, we verify
  *   that they indeed match using verify_commit_and_reveal().
  *
- * - We treat consensuses as the ground truth, so everytime we generate a new
+ * - We treat consensuses as the ground truth, so every time we generate a new
  *   consensus we update our SR state accordingly even if our local view was
  *   different (see sr_act_post_consensus()).
  *
@@ -90,7 +90,7 @@
 #include "core/or/or.h"
 #include "feature/dirauth/shared_random.h"
 #include "app/config/config.h"
-#include "lib/confmgt/confparse.h"
+#include "lib/confmgt/confmgt.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
 #include "feature/nodelist/networkstatus.h"
@@ -99,27 +99,29 @@
 #include "feature/nodelist/dirlist.h"
 #include "feature/hs_common/shared_random_client.h"
 #include "feature/dirauth/shared_random_state.h"
-#include "feature/dircommon/voting_schedule.h"
+#include "feature/dirauth/voting_schedule.h"
 
 #include "feature/dirauth/dirvote.h"
 #include "feature/dirauth/authmode.h"
+#include "feature/dirauth/dirauth_sys.h"
 
+#include "feature/dirauth/dirauth_options_st.h"
 #include "feature/nodelist/authority_cert_st.h"
 #include "feature/nodelist/networkstatus_st.h"
 
-/* String prefix of shared random values in votes/consensuses. */
+/** String prefix of shared random values in votes/consensuses. */
 static const char previous_srv_str[] = "shared-rand-previous-value";
 static const char current_srv_str[] = "shared-rand-current-value";
 static const char commit_ns_str[] = "shared-rand-commit";
 static const char sr_flag_ns_str[] = "shared-rand-participate";
 
-/* The value of the consensus param AuthDirNumSRVAgreements found in the
+/** The value of the consensus param AuthDirNumSRVAgreements found in the
  * vote. This is set once the consensus creation subsystem requests the
  * SRV(s) that should be put in the consensus. We use this value to decide
  * if we keep or not an SRV. */
 static int32_t num_srv_agreements_from_vote;
 
-/* Return a heap allocated copy of the SRV <b>orig</b>. */
+/** Return a heap allocated copy of the SRV <b>orig</b>. */
 sr_srv_t *
 sr_srv_dup(const sr_srv_t *orig)
 {
@@ -135,7 +137,7 @@ sr_srv_dup(const sr_srv_t *orig)
   return duplicate;
 }
 
-/* Allocate a new commit object and initializing it with <b>rsa_identity</b>
+/** Allocate a new commit object and initializing it with <b>rsa_identity</b>
  * that MUST be provided. The digest algorithm is set to the default one
  * that is supported. The rest is uninitialized. This never returns NULL. */
 static sr_commit_t *
@@ -153,7 +155,7 @@ commit_new(const char *rsa_identity)
   return commit;
 }
 
-/* Issue a log message describing <b>commit</b>. */
+/** Issue a log message describing <b>commit</b>. */
 static void
 commit_log(const sr_commit_t *commit)
 {
@@ -166,9 +168,9 @@ commit_log(const sr_commit_t *commit)
             commit->reveal_ts, safe_str(commit->encoded_reveal));
 }
 
-/* Make sure that the commitment and reveal information in <b>commit</b>
+/** Make sure that the commitment and reveal information in <b>commit</b>
  * match. If they match return 0, return -1 otherwise. This function MUST be
- * used everytime we receive a new reveal value. Furthermore, the commit
+ * used every time we receive a new reveal value. Furthermore, the commit
  * object MUST have a reveal value and the hash of the reveal value. */
 STATIC int
 verify_commit_and_reveal(const sr_commit_t *commit)
@@ -220,7 +222,7 @@ verify_commit_and_reveal(const sr_commit_t *commit)
   return -1;
 }
 
-/* Return true iff the commit contains an encoded reveal value. */
+/** Return true iff the commit contains an encoded reveal value. */
 STATIC int
 commit_has_reveal_value(const sr_commit_t *commit)
 {
@@ -228,7 +230,7 @@ commit_has_reveal_value(const sr_commit_t *commit)
                           sizeof(commit->encoded_reveal));
 }
 
-/* Parse the encoded commit. The format is:
+/** Parse the encoded commit. The format is:
  *    base64-encode( TIMESTAMP || H(REVEAL) )
  *
  * If successfully decoded and parsed, commit is updated and 0 is returned.
@@ -283,7 +285,7 @@ commit_decode(const char *encoded, sr_commit_t *commit)
   return -1;
 }
 
-/* Parse the b64 blob at <b>encoded</b> containing reveal information and
+/** Parse the b64 blob at <b>encoded</b> containing reveal information and
  * store the information in-place in <b>commit</b>. Return 0 on success else
  * a negative value. */
 STATIC int
@@ -333,7 +335,7 @@ reveal_decode(const char *encoded, sr_commit_t *commit)
   return -1;
 }
 
-/* Encode a reveal element using a given commit object to dst which is a
+/** Encode a reveal element using a given commit object to dst which is a
  * buffer large enough to put the base64-encoded reveal construction. The
  * format is as follow:
  *     REVEAL = base64-encode( TIMESTAMP || H(RN) )
@@ -362,7 +364,7 @@ reveal_encode(const sr_commit_t *commit, char *dst, size_t len)
   return ret;
 }
 
-/* Encode the given commit object to dst which is a buffer large enough to
+/** Encode the given commit object to dst which is a buffer large enough to
  * put the base64-encoded commit. The format is as follow:
  *     COMMIT = base64-encode( TIMESTAMP || H(H(RN)) )
  * Return base64 encoded length on success else a negative value.
@@ -388,14 +390,14 @@ commit_encode(const sr_commit_t *commit, char *dst, size_t len)
   return base64_encode(dst, len, buf, sizeof(buf), 0);
 }
 
-/* Cleanup both our global state and disk state. */
+/** Cleanup both our global state and disk state. */
 static void
 sr_cleanup(void)
 {
   sr_state_free_all();
 }
 
-/* Using <b>commit</b>, return a newly allocated string containing the commit
+/** Using <b>commit</b>, return a newly allocated string containing the commit
  * information that should be used during SRV calculation. It's the caller
  * responsibility to free the memory. Return NULL if this is not a commit to be
  * used for SRV calculation. */
@@ -414,7 +416,7 @@ get_srv_element_from_commit(const sr_commit_t *commit)
   return element;
 }
 
-/* Return a srv object that is built with the construction:
+/** Return a srv object that is built with the construction:
  *    SRV = SHA3-256("shared-random" | INT_8(reveal_num) |
  *                   INT_4(version) | HASHED_REVEALS | previous_SRV)
  * This function cannot fail. */
@@ -456,7 +458,7 @@ generate_srv(const char *hashed_reveals, uint64_t reveal_num,
   return srv;
 }
 
-/* Compare reveal values and return the result. This should exclusively be
+/** Compare reveal values and return the result. This should exclusively be
  * used by smartlist_sort(). */
 static int
 compare_reveal_(const void **_a, const void **_b)
@@ -466,7 +468,7 @@ compare_reveal_(const void **_a, const void **_b)
                      sizeof(a->hashed_reveal));
 }
 
-/* Given <b>commit</b> give the line that we should place in our votes.
+/** Given <b>commit</b> give the line that we should place in our votes.
  * It's the responsibility of the caller to free the string. */
 static char *
 get_vote_line_from_commit(const sr_commit_t *commit, sr_phase_t phase)
@@ -506,7 +508,7 @@ get_vote_line_from_commit(const sr_commit_t *commit, sr_phase_t phase)
   return vote_line;
 }
 
-/* Return a heap allocated string that contains the given <b>srv</b> string
+/** Return a heap allocated string that contains the given <b>srv</b> string
  * representation formatted for a networkstatus document using the
  * <b>key</b> as the start of the line. This doesn't return NULL. */
 static char *
@@ -524,7 +526,7 @@ srv_to_ns_string(const sr_srv_t *srv, const char *key)
   return srv_str;
 }
 
-/* Given the previous SRV and the current SRV, return a heap allocated
+/** Given the previous SRV and the current SRV, return a heap allocated
  * string with their data that could be put in a vote or a consensus. Caller
  * must free the returned string.  Return NULL if no SRVs were provided. */
 static char *
@@ -557,7 +559,7 @@ get_ns_str_from_sr_values(const sr_srv_t *prev_srv, const sr_srv_t *cur_srv)
   return srv_str;
 }
 
-/* Return 1 iff the two commits have the same commitment values. This
+/** Return 1 iff the two commits have the same commitment values. This
  * function does not care about reveal values. */
 STATIC int
 commitments_are_the_same(const sr_commit_t *commit_one,
@@ -572,7 +574,7 @@ commitments_are_the_same(const sr_commit_t *commit_one,
   return 1;
 }
 
-/* We just received a commit from the vote of authority with
+/** We just received a commit from the vote of authority with
  * <b>identity_digest</b>. Return 1 if this commit is authorititative that
  * is, it belongs to the authority that voted it. Else return 0 if not. */
 STATIC int
@@ -586,7 +588,7 @@ commit_is_authoritative(const sr_commit_t *commit,
                     sizeof(commit->rsa_identity));
 }
 
-/* Decide if the newly received <b>commit</b> should be kept depending on
+/** Decide if the newly received <b>commit</b> should be kept depending on
  * the current phase and state of the protocol. The <b>voter_key</b> is the
  * RSA identity key fingerprint of the authority's vote from which the
  * commit comes from. The <b>phase</b> is the phase we should be validating
@@ -705,7 +707,7 @@ should_keep_commit(const sr_commit_t *commit, const char *voter_key,
   return 0;
 }
 
-/* We are in reveal phase and we found a valid and verified <b>commit</b> in
+/** We are in reveal phase and we found a valid and verified <b>commit</b> in
  * a vote that contains reveal values that we could use. Update the commit
  * we have in our state. Never call this with an unverified commit. */
 STATIC void
@@ -726,7 +728,7 @@ save_commit_during_reveal_phase(const sr_commit_t *commit)
   sr_state_copy_reveal_info(saved_commit, commit);
 }
 
-/* Save <b>commit</b> to our persistent state. Depending on the current
+/** Save <b>commit</b> to our persistent state. Depending on the current
  * phase, different actions are taken. Steals reference of <b>commit</b>.
  * The commit object MUST be valid and verified before adding it to the
  * state. */
@@ -751,7 +753,7 @@ save_commit_to_state(sr_commit_t *commit)
   }
 }
 
-/* Return 1 if we should we keep an SRV voted by <b>n_agreements</b> auths.
+/** Return 1 if we should we keep an SRV voted by <b>n_agreements</b> auths.
  * Return 0 if we should ignore it. */
 static int
 should_keep_srv(int n_agreements)
@@ -781,7 +783,7 @@ should_keep_srv(int n_agreements)
   return 1;
 }
 
-/* Helper: compare two DIGEST256_LEN digests. */
+/** Helper: compare two DIGEST256_LEN digests. */
 static int
 compare_srvs_(const void **_a, const void **_b)
 {
@@ -789,7 +791,7 @@ compare_srvs_(const void **_a, const void **_b)
   return tor_memcmp(a->value, b->value, sizeof(a->value));
 }
 
-/* Return the most frequent member of the sorted list of DIGEST256_LEN
+/** Return the most frequent member of the sorted list of DIGEST256_LEN
  * digests in <b>sl</b> with the count of that most frequent element. */
 static sr_srv_t *
 smartlist_get_most_frequent_srv(const smartlist_t *sl, int *count_out)
@@ -806,7 +808,7 @@ compare_srv_(const void **_a, const void **_b)
                      sizeof(a->value));
 }
 
-/* Using a list of <b>votes</b>, return the SRV object from them that has
+/** Using a list of <b>votes</b>, return the SRV object from them that has
  * been voted by the majority of dirauths. If <b>current</b> is set, we look
  * for the current SRV value else the previous one. The returned pointer is
  * an object located inside a vote. NULL is returned if no appropriate value
@@ -868,7 +870,7 @@ get_majority_srv_from_votes(const smartlist_t *votes, int current)
   return the_srv;
 }
 
-/* Free a commit object. */
+/** Free a commit object. */
 void
 sr_commit_free_(sr_commit_t *commit)
 {
@@ -880,7 +882,7 @@ sr_commit_free_(sr_commit_t *commit)
   tor_free(commit);
 }
 
-/* Generate the commitment/reveal value for the protocol run starting at
+/** Generate the commitment/reveal value for the protocol run starting at
  * <b>timestamp</b>. <b>my_rsa_cert</b> is our authority RSA certificate. */
 sr_commit_t *
 sr_generate_our_commit(time_t timestamp, const authority_cert_t *my_rsa_cert)
@@ -937,7 +939,8 @@ sr_generate_our_commit(time_t timestamp, const authority_cert_t *my_rsa_cert)
   return NULL;
 }
 
-/* Compute the shared random value based on the active commits in our state. */
+/** Compute the shared random value based on the active commits in our
+ * state. */
 void
 sr_compute_srv(void)
 {
@@ -1010,7 +1013,7 @@ sr_compute_srv(void)
   tor_free(reveals);
 }
 
-/* Parse a commit from a vote or from our disk state and return a newly
+/** Parse a commit from a vote or from our disk state and return a newly
  * allocated commit object. NULL is returned on error.
  *
  * The commit's data is in <b>args</b> and the order matters very much:
@@ -1082,7 +1085,7 @@ sr_parse_commit(const smartlist_t *args)
   return NULL;
 }
 
-/* Called when we are done parsing a vote by <b>voter_key</b> that might
+/** Called when we are done parsing a vote by <b>voter_key</b> that might
  * contain some useful <b>commits</b>. Find if any of them should be kept
  * and update our state accordingly. Once done, the list of commitments will
  * be empty. */
@@ -1120,7 +1123,7 @@ sr_handle_received_commits(smartlist_t *commits, crypto_pk_t *voter_key)
   } SMARTLIST_FOREACH_END(commit);
 }
 
-/* Return a heap-allocated string containing commits that should be put in
+/** Return a heap-allocated string containing commits that should be put in
  * the votes. It's the responsibility of the caller to free the string.
  * This always return a valid string, either empty or with line(s). */
 char *
@@ -1129,7 +1132,7 @@ sr_get_string_for_vote(void)
   char *vote_str = NULL;
   digestmap_t *state_commits;
   smartlist_t *chunks = smartlist_new();
-  const or_options_t *options = get_options();
+  const dirauth_options_t *options = dirauth_get_options();
 
   /* Are we participating in the protocol? */
   if (!options->AuthDirSharedRandomness) {
@@ -1178,7 +1181,7 @@ sr_get_string_for_vote(void)
   return vote_str;
 }
 
-/* Return a heap-allocated string that should be put in the consensus and
+/** Return a heap-allocated string that should be put in the consensus and
  * contains the shared randomness values. It's the responsibility of the
  * caller to free the string. NULL is returned if no SRV(s) available.
  *
@@ -1194,7 +1197,7 @@ sr_get_string_for_consensus(const smartlist_t *votes,
                             int32_t num_srv_agreements)
 {
   char *srv_str;
-  const or_options_t *options = get_options();
+  const dirauth_options_t *options = dirauth_get_options();
 
   tor_assert(votes);
 
@@ -1222,7 +1225,7 @@ sr_get_string_for_consensus(const smartlist_t *votes,
   return NULL;
 }
 
-/* We just computed a new <b>consensus</b>. Update our state with the SRVs
+/** We just computed a new <b>consensus</b>. Update our state with the SRVs
  * from the consensus (might be NULL as well). Register the SRVs in our SR
  * state and prepare for the upcoming protocol round. */
 void
@@ -1258,10 +1261,10 @@ sr_act_post_consensus(const networkstatus_t *consensus)
   }
 
   /* Prepare our state so that it's ready for the next voting period. */
-  sr_state_update(voting_schedule_get_next_valid_after_time());
+  sr_state_update(dirauth_sched_get_next_valid_after_time());
 }
 
-/* Initialize shared random subsystem. This MUST be called early in the boot
+/** Initialize shared random subsystem. This MUST be called early in the boot
  * process of tor. Return 0 on success else -1 on error. */
 int
 sr_init(int save_to_disk)
@@ -1269,7 +1272,7 @@ sr_init(int save_to_disk)
   return sr_state_init(save_to_disk, 1);
 }
 
-/* Save our state to disk and cleanup everything. */
+/** Save our state to disk and cleanup everything. */
 void
 sr_save_and_cleanup(void)
 {
@@ -1279,7 +1282,7 @@ sr_save_and_cleanup(void)
 
 #ifdef TOR_UNIT_TESTS
 
-/* Set the global value of number of SRV agreements so the test can play
+/** Set the global value of number of SRV agreements so the test can play
  * along by calling specific functions that don't parse the votes prior for
  * the AuthDirNumSRVAgreements value. */
 void

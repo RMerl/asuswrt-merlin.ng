@@ -6,7 +6,7 @@
 
 """
  exitlist -- Given a Tor directory on stdin, lists the Tor servers
- that accept connections to given addreses.
+ that accept connections to given addresses.
 
  example usage:
 

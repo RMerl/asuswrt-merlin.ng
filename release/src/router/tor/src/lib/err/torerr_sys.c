@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -27,15 +27,14 @@ subsys_torerr_initialize(void)
 static void
 subsys_torerr_shutdown(void)
 {
-  /* Stop handling signals with backtraces, then close the logs. */
+  /* Stop handling signals with backtraces, then flush the logs. */
   clean_up_backtrace_handler();
-  /* We can't log any log messages after this point: we've closed all the log
-   * fds, including stdio. */
-  tor_log_close_sigsafe_err_fds();
+  tor_log_flush_sigsafe_err_fds();
 }
 
 const subsys_fns_t sys_torerr = {
   .name = "err",
+  SUBSYS_DECLARE_LOCATION(),
   /* Low-level error handling is a diagnostic feature, we want it to init
    * right after windows process security, and shutdown last.
    * (Security never shuts down.) */

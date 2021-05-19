@@ -26,6 +26,7 @@ struct circpad_negotiate_st {
   uint8_t machine_type;
   /** If true, send a relay_drop reply.. */
   uint8_t echo_request;
+  uint32_t machine_ctr;
   uint8_t trunnel_error_code_;
 };
 #endif
@@ -42,6 +43,14 @@ struct circpad_negotiated_st {
   /** Machine type is left unbounded because we can specify
      * new machines in the consensus */
   uint8_t machine_type;
+  /**
+     * This field is used for shutdown synchronization. It is OK if
+     * it wraps, because all we need to do is make sure the STOP
+     * command is actually for the currently active machine.
+     * For backward-compatibility, though, 0 has special meaning
+     * (it means match any machine).
+     */
+  uint32_t machine_ctr;
   uint8_t trunnel_error_code_;
 };
 #endif
@@ -118,6 +127,15 @@ uint8_t circpad_negotiate_get_echo_request(const circpad_negotiate_t *inp);
  * code on 'inp' on failure.
  */
 int circpad_negotiate_set_echo_request(circpad_negotiate_t *inp, uint8_t val);
+/** Return the value of the machine_ctr field of the
+ * circpad_negotiate_t in 'inp'
+ */
+uint32_t circpad_negotiate_get_machine_ctr(const circpad_negotiate_t *inp);
+/** Set the value of the machine_ctr field of the circpad_negotiate_t
+ * in 'inp' to 'val'. Return 0 on success; return -1 and set the error
+ * code on 'inp' on failure.
+ */
+int circpad_negotiate_set_machine_ctr(circpad_negotiate_t *inp, uint32_t val);
 /** Return a newly allocated circpad_negotiated with all elements set
  * to zero.
  */
@@ -190,6 +208,15 @@ uint8_t circpad_negotiated_get_machine_type(const circpad_negotiated_t *inp);
  * -1 and set the error code on 'inp' on failure.
  */
 int circpad_negotiated_set_machine_type(circpad_negotiated_t *inp, uint8_t val);
+/** Return the value of the machine_ctr field of the
+ * circpad_negotiated_t in 'inp'
+ */
+uint32_t circpad_negotiated_get_machine_ctr(const circpad_negotiated_t *inp);
+/** Set the value of the machine_ctr field of the circpad_negotiated_t
+ * in 'inp' to 'val'. Return 0 on success; return -1 and set the error
+ * code on 'inp' on failure.
+ */
+int circpad_negotiated_set_machine_ctr(circpad_negotiated_t *inp, uint32_t val);
 
 
 #endif

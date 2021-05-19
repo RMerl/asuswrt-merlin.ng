@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -265,6 +265,6 @@ tor_threads_init(void)
       pthread_attr_setdetachstate(&attr_detached, PTHREAD_CREATE_DETACHED);
     tor_assert(ret2 == 0);
     threads_initialized = 1;
-    set_main_thread();
   }
+  set_main_thread();
 }

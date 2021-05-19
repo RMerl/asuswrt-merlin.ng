@@ -7,7 +7,8 @@ endif
 
 # ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_osinfo_a_SOURCES =			\
-	src/lib/osinfo/uname.c
+	src/lib/osinfo/uname.c		\
+	src/lib/osinfo/libc.c
 
 src_lib_libtor_osinfo_testing_a_SOURCES = \
 	$(src_lib_libtor_osinfo_a_SOURCES)
@@ -16,4 +17,5 @@ src_lib_libtor_osinfo_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
 # ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
-	src/lib/osinfo/uname.h
+	src/lib/osinfo/uname.h		\
+	src/lib/osinfo/libc.h

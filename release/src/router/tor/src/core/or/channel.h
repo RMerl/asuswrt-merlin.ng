@@ -1,4 +1,4 @@
-/* * Copyright (c) 2012-2019, The Tor Project, Inc. */
+/* * Copyright (c) 2012-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -14,6 +14,7 @@
 #include "lib/container/handles.h"
 #include "lib/crypt_ops/crypto_ed25519.h"
 
+#include "ext/ht.h"
 #include "tor_queue.h"
 
 #define tor_timer_t timeout
@@ -22,7 +23,6 @@ struct tor_timer_t;
 /* Channel handler function pointer typedefs */
 typedef void (*channel_listener_fn_ptr)(channel_listener_t *, channel_t *);
 typedef void (*channel_cell_handler_fn_ptr)(channel_t *, cell_t *);
-typedef void (*channel_var_cell_handler_fn_ptr)(channel_t *, var_cell_t *);
 
 /**
  * This enum is used by channelpadding to decide when to pad channels.
@@ -48,7 +48,7 @@ typedef enum {
 /* channel states for channel_t */
 
 typedef enum {
-  /*
+  /**
    * Closed state - channel is inactive
    *
    * Permitted transitions from:
@@ -57,7 +57,7 @@ typedef enum {
    *   - CHANNEL_STATE_OPENING
    */
   CHANNEL_STATE_CLOSED = 0,
-  /*
+  /**
    * Opening state - channel is trying to connect
    *
    * Permitted transitions from:
@@ -68,7 +68,7 @@ typedef enum {
    *   - CHANNEL_STATE_OPEN
    */
   CHANNEL_STATE_OPENING,
-  /*
+  /**
    * Open state - channel is active and ready for use
    *
    * Permitted transitions from:
@@ -80,7 +80,7 @@ typedef enum {
    *   - CHANNEL_STATE_MAINT
    */
   CHANNEL_STATE_OPEN,
-  /*
+  /**
    * Maintenance state - channel is temporarily offline for subclass specific
    *   maintenance activities such as TLS renegotiation.
    *
@@ -92,7 +92,7 @@ typedef enum {
    *   - CHANNEL_STATE_OPEN
    */
   CHANNEL_STATE_MAINT,
-  /*
+  /**
    * Closing state - channel is shutting down
    *
    * Permitted transitions from:
@@ -103,7 +103,7 @@ typedef enum {
    *   - CHANNEL_STATE_ERROR
    */
   CHANNEL_STATE_CLOSING,
-  /*
+  /**
    * Error state - channel has experienced a permanent error
    *
    * Permitted transitions from:
@@ -115,7 +115,7 @@ typedef enum {
    *   - None
    */
   CHANNEL_STATE_ERROR,
-  /*
+  /**
    * Placeholder for maximum state value
    */
   CHANNEL_STATE_LAST
@@ -124,7 +124,7 @@ typedef enum {
 /* channel listener states for channel_listener_t */
 
 typedef enum {
-  /*
+  /**
    * Closed state - channel listener is inactive
    *
    * Permitted transitions from:
@@ -133,7 +133,7 @@ typedef enum {
    *   - CHANNEL_LISTENER_STATE_LISTENING
    */
   CHANNEL_LISTENER_STATE_CLOSED = 0,
-  /*
+  /**
    * Listening state - channel listener is listening for incoming
    * connections
    *
@@ -144,7 +144,7 @@ typedef enum {
    *   - CHANNEL_LISTENER_STATE_ERROR
    */
   CHANNEL_LISTENER_STATE_LISTENING,
-  /*
+  /**
    * Closing state - channel listener is shutting down
    *
    * Permitted transitions from:
@@ -154,7 +154,7 @@ typedef enum {
    *   - CHANNEL_LISTENER_STATE_ERROR
    */
   CHANNEL_LISTENER_STATE_CLOSING,
-  /*
+  /**
    * Error state - channel listener has experienced a permanent error
    *
    * Permitted transitions from:
@@ -164,7 +164,7 @@ typedef enum {
    *   - None
    */
   CHANNEL_LISTENER_STATE_ERROR,
-  /*
+  /**
    * Placeholder for maximum state value
    */
   CHANNEL_LISTENER_STATE_LAST
@@ -178,15 +178,15 @@ typedef enum {
  * to a particular node, and once constructed support the abstract operations
  * defined below.
  */
-struct channel_s {
+struct channel_t {
   /** Magic number for type-checking cast macros */
   uint32_t magic;
 
   /** List entry for hashtable for global-identifier lookup. */
-  HT_ENTRY(channel_s) gidmap_node;
+  HT_ENTRY(channel_t) gidmap_node;
 
   /** Handle entry for handle-based lookup */
-  HANDLE_ENTRY(channel, channel_s);
+  HANDLE_ENTRY(channel, channel_t);
 
   /** Current channel state */
   channel_state_t state;
@@ -236,6 +236,9 @@ struct channel_s {
   /** The handle to this channel (to free on canceled timers) */
   struct channel_handle_t *timer_handle;
 
+  /** If not UNSPEC, the address that the peer says we have. */
+  tor_addr_t addr_according_to_peer;
+
   /**
    * These two fields specify the minimum and maximum negotiated timeout
    * values for inactivity (send or receive) before we decide to pad a
@@ -267,21 +270,21 @@ struct channel_s {
 
   /** State variable for use by the scheduler */
   enum {
-    /*
+    /**
      * The channel is not open, or it has a full output buffer but no queued
      * cells.
      */
     SCHED_CHAN_IDLE = 0,
-    /*
+    /**
      * The channel has space on its output buffer to write, but no queued
      * cells.
      */
     SCHED_CHAN_WAITING_FOR_CELLS,
-    /*
+    /**
      * The scheduler has queued cells but no output buffer space to write.
      */
     SCHED_CHAN_WAITING_TO_WRITE,
-    /*
+    /**
      * The scheduler has both queued cells and output buffer space, and is
      * eligible for the scheduler loop.
      */
@@ -320,7 +323,6 @@ struct channel_s {
 
   /** Registered handlers for incoming cells */
   channel_cell_handler_fn_ptr cell_handler;
-  channel_var_cell_handler_fn_ptr var_cell_handler;
 
   /* Methods implemented by the lower layer */
 
@@ -330,33 +332,25 @@ struct channel_s {
    */
   double (*get_overhead_estimate)(channel_t *);
   /*
-   * Ask the underlying transport what the remote endpoint address is, in
-   * a tor_addr_t.  This is optional and subclasses may leave this NULL.
-   * If they implement it, they should write the address out to the
-   * provided tor_addr_t *, and return 1 if successful or 0 if no address
-   * available.
+   * Ask the underlying transport what the remote endpoint address is, in a
+   * tor_addr_t.  Write the address out to the provided tor_addr_t *, and
+   * return 1 if successful or 0 if no address available.
    */
-  int (*get_remote_addr)(channel_t *, tor_addr_t *);
+  int (*get_remote_addr)(const channel_t *, tor_addr_t *);
   int (*get_transport_name)(channel_t *chan, char **transport_out);
 
-#define GRD_FLAG_ORIGINAL 1
-#define GRD_FLAG_ADDR_ONLY 2
   /**
-   * Get a text description of the remote endpoint; canonicalized if the flag
-   * GRD_FLAG_ORIGINAL is not set, or the one we originally connected
-   * to/received from if it is.  If GRD_FLAG_ADDR_ONLY is set, we return only
-   * the original address.
+   * Get a human-readable text description of the remote endpoint, for
+   * logging.
    */
-  const char * (*get_remote_descr)(channel_t *, int);
+  const char * (*describe_peer)(const channel_t *);
   /** Check if the lower layer has queued writes */
   int (*has_queued_writes)(channel_t *);
   /**
-   * If the second param is zero, ask the lower layer if this is
-   * 'canonical', for a transport-specific definition of canonical; if
-   * it is 1, ask if the answer to the preceding query is safe to rely
-   * on.
+   * Ask the lower layer if this is 'canonical', for a transport-specific
+   * definition of canonical.
    */
-  int (*is_canonical)(channel_t *, int);
+  int (*is_canonical)(channel_t *);
   /** Check if this channel matches a specified extend_info_t */
   int (*matches_extend_info)(channel_t *, extend_info_t *);
   /** Check if this channel matches a target address when extending */
@@ -397,7 +391,7 @@ struct channel_s {
    * Linked list of channels with the same RSA identity digest, for use with
    * the digest->channel map
    */
-  TOR_LIST_ENTRY(channel_s) next_with_same_id;
+  TOR_LIST_ENTRY(channel_t) next_with_same_id;
 
   /** Circuit mux for circuits sending on this channel */
   circuitmux_t *cmux;
@@ -444,9 +438,9 @@ struct channel_s {
   ratelim_t last_warned_circ_ids_exhausted;
 
   /** Channel timestamps for cell channels */
-  time_t timestamp_client; /* Client used this, according to relay.c */
-  time_t timestamp_recv; /* Cell received from lower layer */
-  time_t timestamp_xmit; /* Cell sent to lower layer */
+  time_t timestamp_client; /*(< Client used this, according to relay.c */
+  time_t timestamp_recv; /**< Cell received from lower layer */
+  time_t timestamp_xmit; /**< Cell sent to lower layer */
 
   /** Timestamp for run_connection_housekeeping(). We update this once a
    * second when we run housekeeping and find a circuit on this channel, and
@@ -458,16 +452,17 @@ struct channel_s {
    * distinct namespace. */
   uint64_t dirreq_id;
 
-  /** Channel counters for cell channels */
+  /** Channel counters for cells and bytes we have received. */
   uint64_t n_cells_recved, n_bytes_recved;
+  /** Channel counters for cells and bytes we have sent. */
   uint64_t n_cells_xmitted, n_bytes_xmitted;
 };
 
-struct channel_listener_s {
-  /* Current channel listener state */
+struct channel_listener_t {
+  /** Current channel listener state */
   channel_listener_state_t state;
 
-  /* Globally unique ID number for a channel over the lifetime of a Tor
+  /** Globally unique ID number for a channel over the lifetime of a Tor
    * process.
    */
   uint64_t global_identifier;
@@ -531,6 +526,7 @@ void channel_mark_for_close(channel_t *chan);
 int channel_write_packed_cell(channel_t *chan, packed_cell_t *cell);
 
 void channel_listener_mark_for_close(channel_listener_t *chan_l);
+void channel_mark_as_used_for_origin_circuit(channel_t *chan);
 
 /* Channel callback registrations */
 
@@ -541,13 +537,8 @@ void channel_listener_set_listener_fn(channel_listener_t *chan,
 /* Incoming cell callbacks */
 channel_cell_handler_fn_ptr channel_get_cell_handler(channel_t *chan);
 
-channel_var_cell_handler_fn_ptr
-channel_get_var_cell_handler(channel_t *chan);
-
 void channel_set_cell_handlers(channel_t *chan,
-                               channel_cell_handler_fn_ptr cell_handler,
-                               channel_var_cell_handler_fn_ptr
-                                 var_cell_handler);
+                               channel_cell_handler_fn_ptr cell_handler);
 
 /* Clean up closed channels and channel listeners periodically; these are
  * called from run_scheduled_events() in main.c.
@@ -562,13 +553,16 @@ void channel_free_all(void);
 void channel_dumpstats(int severity);
 void channel_listener_dumpstats(int severity);
 
-#ifdef TOR_CHANNEL_INTERNAL_
+#ifdef CHANNEL_OBJECT_PRIVATE
 
-#ifdef CHANNEL_PRIVATE_
+#ifdef CHANNEL_FILE_PRIVATE
 
 STATIC void channel_add_to_digest_map(channel_t *chan);
-
-#endif /* defined(CHANNEL_PRIVATE_) */
+STATIC bool channel_matches_target_addr_for_extend(
+                                          channel_t *chan,
+                                          const tor_addr_t *target_ipv4_addr,
+                                          const tor_addr_t *target_ipv6_addr);
+#endif /* defined(CHANNEL_FILE_PRIVATE) */
 
 /* Channel operations for subclasses and internal use only */
 
@@ -647,7 +641,7 @@ void channel_notify_flushed(channel_t *chan);
 /* Handle stuff we need to do on open like notifying circuits */
 void channel_do_open_actions(channel_t *chan);
 
-#endif /* defined(TOR_CHANNEL_INTERNAL_) */
+#endif /* defined(CHANNEL_OBJECT_PRIVATE) */
 
 /* Helper functions to perform operations on channels */
 
@@ -663,11 +657,14 @@ channel_t * channel_connect(const tor_addr_t *addr, uint16_t port,
                             const char *rsa_id_digest,
                             const struct ed25519_public_key_t *ed_id);
 
-channel_t * channel_get_for_extend(const char *rsa_id_digest,
+MOCK_DECL(channel_t *, channel_get_for_extend,(
+                                   const char *rsa_id_digest,
                                    const struct ed25519_public_key_t *ed_id,
-                                   const tor_addr_t *target_addr,
+                                   const tor_addr_t *target_ipv4_addr,
+                                   const tor_addr_t *target_ipv6_addr,
+                                   bool for_origin_circ,
                                    const char **msg_out,
-                                   int *launch_out);
+                                   int *launch_out));
 
 /* Ask which of two channels is better for circuit-extension purposes */
 int channel_is_better(channel_t *a, channel_t *b);
@@ -724,16 +721,13 @@ channel_is_in_state(channel_t *chan, channel_state_t state)
 const char * channel_describe_transport(channel_t *chan);
 MOCK_DECL(void, channel_dump_statistics, (channel_t *chan, int severity));
 void channel_dump_transport_statistics(channel_t *chan, int severity);
-const char * channel_get_actual_remote_descr(channel_t *chan);
-const char * channel_get_actual_remote_address(channel_t *chan);
-MOCK_DECL(int, channel_get_addr_if_possible, (channel_t *chan,
+MOCK_DECL(int, channel_get_addr_if_possible, (const channel_t *chan,
                                               tor_addr_t *addr_out));
-const char * channel_get_canonical_remote_descr(channel_t *chan);
+MOCK_DECL(const char *, channel_describe_peer,(channel_t *chan));
 int channel_has_queued_writes(channel_t *chan);
 int channel_is_bad_for_new_circs(channel_t *chan);
 void channel_mark_bad_for_new_circs(channel_t *chan);
 int channel_is_canonical(channel_t *chan);
-int channel_is_canonical_is_reliable(channel_t *chan);
 int channel_is_client(const channel_t *chan);
 int channel_is_local(channel_t *chan);
 int channel_is_incoming(channel_t *chan);
@@ -741,8 +735,9 @@ int channel_is_outgoing(channel_t *chan);
 void channel_mark_client(channel_t *chan);
 void channel_clear_client(channel_t *chan);
 int channel_matches_extend_info(channel_t *chan, extend_info_t *extend_info);
-int channel_matches_target_addr_for_extend(channel_t *chan,
-                                           const tor_addr_t *target);
+int channel_remote_identity_matches(const channel_t *chan,
+                                    const char *rsa_id_digest,
+                                    const ed25519_public_key_t *ed_id);
 unsigned int channel_num_circuits(channel_t *chan);
 MOCK_DECL(void,channel_set_circid_type,(channel_t *chan,
                                         crypto_pk_t *identity_rcvd,
@@ -772,7 +767,7 @@ int packed_cell_is_destroy(channel_t *chan,
                            circid_t *circid_out);
 
 /* Declare the handle helpers */
-HANDLE_DECL(channel, channel_s,)
+HANDLE_DECL(channel, channel_t,)
 #define channel_handle_free(h)    \
   FREE_AND_NULL(channel_handle_t, channel_handle_free_, (h))
 #undef tor_timer_t

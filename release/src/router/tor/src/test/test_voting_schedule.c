@@ -1,17 +1,18 @@
-/* Copyright (c) 2018-2019, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
 
 #include "core/or/or.h"
-#include "feature/dircommon/voting_schedule.h"
+#include "feature/dirauth/voting_schedule.h"
+#include "feature/nodelist/networkstatus.h"
 
 #include "test/test.h"
 
 static void
 test_voting_schedule_interval_start(void *arg)
 {
-#define next_interval voting_schedule_get_start_of_next_interval
+#define next_interval voting_sched_get_start_of_interval_after
   (void)arg;
   char buf[ISO_TIME_LEN+1];
 
@@ -61,4 +62,3 @@ struct testcase_t voting_schedule_tests[] = {
   VS(interval_start, 0),
   END_OF_TESTCASES
 };
-

@@ -1,4 +1,4 @@
-/* Copyright (c) 2007-2019, The Tor Project, Inc. */
+/* Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -22,7 +22,7 @@
 
 #include "core/or/cpath_build_state_st.h"
 #include "core/or/ocirc_event.h"
-#include "core/or/ocirc_event_sys.h"
+#include "core/or/or_sys.h"
 #include "core/or/origin_circuit_st.h"
 #include "lib/subsys/subsys.h"
 
@@ -84,7 +84,7 @@ static dispatch_typefns_t ocirc_cevent_fns = {
   .fmt_fn = ocirc_cevent_fmt,
 };
 
-static int
+int
 ocirc_add_pubsub(struct pubsub_connector_t *connector)
 {
   if (DISPATCH_REGISTER_TYPE(connector, ocirc_state, &ocirc_state_fns))
@@ -119,10 +119,3 @@ ocirc_cevent_publish(ocirc_cevent_msg_t *msg)
 {
   PUBLISH(ocirc_cevent, msg);
 }
-
-const subsys_fns_t sys_ocirc_event = {
-  .name = "ocirc_event",
-  .supported = true,
-  .level = -32,
-  .add_pubsub = ocirc_add_pubsub,
-};

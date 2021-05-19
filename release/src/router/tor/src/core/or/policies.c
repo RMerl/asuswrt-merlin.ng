@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -48,6 +48,8 @@
 static smartlist_t *socks_policy = NULL;
 /** Policy that addresses for incoming directory connections must match. */
 static smartlist_t *dir_policy = NULL;
+/** Policy for incoming MetricsPort connections that must match. */
+static smartlist_t *metrics_policy = NULL;
 /** Policy that addresses for incoming router descriptors must match in order
  * to be published by us. */
 static smartlist_t *authdir_reject_policy = NULL;
@@ -167,7 +169,7 @@ policy_expand_unspec(smartlist_t **policy)
       }
       tor_addr_from_ipv4h(&newpolicy_ipv4.addr, 0);
       tor_addr_from_ipv6_bytes(&newpolicy_ipv6.addr,
-                               "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+          (const uint8_t *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
       smartlist_add(tmp, addr_policy_get_canonical_entry(&newpolicy_ipv4));
       smartlist_add(tmp, addr_policy_get_canonical_entry(&newpolicy_ipv6));
       addr_policy_free(p);
@@ -311,7 +313,7 @@ parse_reachable_addresses(void)
                    "ReachableAddresses, ReachableORAddresses, or "
                    "ReachableDirAddresses reject all IPv4 addresses. "
                    "Tor will not connect using IPv4.");
-    } else if (fascist_firewall_use_ipv6(options)
+    } else if (reachable_addr_use_ipv6(options)
        && (policy_is_reject_star(reachable_or_addr_policy, AF_INET6, 0)
          || policy_is_reject_star(reachable_dir_addr_policy, AF_INET6, 0))) {
           log_warn(LD_CONFIG, "You have configured tor to use or prefer IPv6 "
@@ -389,19 +391,6 @@ addr_policy_permits_tor_addr(const tor_addr_t *addr, uint16_t port,
   }
 }
 
-/** Return true iff <b> policy</b> (possibly NULL) will allow a connection to
- * <b>addr</b>:<b>port</b>.  <b>addr</b> is an IPv4 address given in host
- * order. */
-/* XXXX deprecate when possible. */
-static int
-addr_policy_permits_address(uint32_t addr, uint16_t port,
-                            smartlist_t *policy)
-{
-  tor_addr_t a;
-  tor_addr_from_ipv4h(&a, addr);
-  return addr_policy_permits_tor_addr(&a, port, policy);
-}
-
 /** Return true iff we think our firewall will let us make a connection to
  * addr:port.
  *
@@ -412,12 +401,12 @@ addr_policy_permits_address(uint32_t addr, uint16_t port,
  *    - if ClientUseIPv4 is 0, or
  *      if pref_only and pref_ipv6 are both true;
  *  - return false for all IPv6 addresses:
- *    - if fascist_firewall_use_ipv6() is 0, or
+ *    - if reachable_addr_use_ipv6() is 0, or
  *    - if pref_only is true and pref_ipv6 is false.
  *
  * Return false if addr is NULL or tor_addr_is_null(), or if port is 0. */
 STATIC int
-fascist_firewall_allows_address(const tor_addr_t *addr,
+reachable_addr_allows(const tor_addr_t *addr,
                                 uint16_t port,
                                 smartlist_t *firewall_policy,
                                 int pref_only, int pref_ipv6)
@@ -440,7 +429,7 @@ fascist_firewall_allows_address(const tor_addr_t *addr,
   /* Clients and Servers won't use IPv6 unless it's enabled (and in most
    * cases, IPv6 must also be preferred before it will be used). */
   if (tor_addr_family(addr) == AF_INET6 &&
-      (!fascist_firewall_use_ipv6(options) || (pref_only && !pref_ipv6))) {
+      (!reachable_addr_use_ipv6(options) || (pref_only && !pref_ipv6))) {
     return 0;
   }
 
@@ -456,15 +445,14 @@ fascist_firewall_allows_address(const tor_addr_t *addr,
  * port: it supports bridge client per-node IPv6 preferences.
  */
 int
-fascist_firewall_use_ipv6(const or_options_t *options)
+reachable_addr_use_ipv6(const or_options_t *options)
 {
   /* Clients use IPv6 if it's set, or they use bridges, or they don't use
    * IPv4, or they prefer it.
    * ClientPreferIPv6DirPort is deprecated, but check it anyway. */
   return (options->ClientUseIPv6 == 1 || options->ClientUseIPv4 == 0 ||
           options->ClientPreferIPv6ORPort == 1 ||
-          options->ClientPreferIPv6DirPort == 1 || options->UseBridges == 1 ||
-          options->ClientAutoIPv6ORPort == 1);
+          options->ClientPreferIPv6DirPort == 1 || options->UseBridges == 1);
 }
 
 /** Do we prefer to connect to IPv6, ignoring ClientPreferIPv6ORPort and
@@ -472,7 +460,7 @@ fascist_firewall_use_ipv6(const or_options_t *options)
  * If we're unsure, return -1, otherwise, return 1 for IPv6 and 0 for IPv4.
  */
 static int
-fascist_firewall_prefer_ipv6_impl(const or_options_t *options)
+reachable_addr_prefer_ipv6_impl(const or_options_t *options)
 {
   /*
    Cheap implementation of config options ClientUseIPv4 & ClientUseIPv6 --
@@ -480,7 +468,7 @@ fascist_firewall_prefer_ipv6_impl(const or_options_t *options)
    If IPv4 is disabled, use IPv6.
    */
 
-  if (server_mode(options) || !fascist_firewall_use_ipv6(options)) {
+  if (server_mode(options) || !reachable_addr_use_ipv6(options)) {
     return 0;
   }
 
@@ -491,33 +479,21 @@ fascist_firewall_prefer_ipv6_impl(const or_options_t *options)
   return -1;
 }
 
-/* Choose whether we prefer IPv4 or IPv6 by randomly choosing an address
- * family. Return 0 for IPv4, and 1 for IPv6. */
-MOCK_IMPL(int,
-fascist_firewall_rand_prefer_ipv6_addr, (void))
-{
-  /* TODO: Check for failures, and infer our preference based on this. */
-  return crypto_rand_int(2);
-}
-
 /** Do we prefer to connect to IPv6 ORPorts?
  * Use node_ipv6_or_preferred() whenever possible: it supports bridge client
  * per-node IPv6 preferences.
  */
 int
-fascist_firewall_prefer_ipv6_orport(const or_options_t *options)
+reachable_addr_prefer_ipv6_orport(const or_options_t *options)
 {
-  int pref_ipv6 = fascist_firewall_prefer_ipv6_impl(options);
+  int pref_ipv6 = reachable_addr_prefer_ipv6_impl(options);
 
   if (pref_ipv6 >= 0) {
     return pref_ipv6;
   }
 
   /* We can use both IPv4 and IPv6 - which do we prefer? */
-  if (options->ClientAutoIPv6ORPort == 1) {
-    /* If ClientAutoIPv6ORPort is 1, we prefer IPv4 or IPv6 at random. */
-    return fascist_firewall_rand_prefer_ipv6_addr();
-  } else if (options->ClientPreferIPv6ORPort == 1) {
+  if (options->ClientPreferIPv6ORPort == 1) {
     return 1;
   }
 
@@ -530,9 +506,9 @@ fascist_firewall_prefer_ipv6_orport(const or_options_t *options)
  * preferences. There's no reason to use it instead of this function.)
  */
 int
-fascist_firewall_prefer_ipv6_dirport(const or_options_t *options)
+reachable_addr_prefer_ipv6_dirport(const or_options_t *options)
 {
-  int pref_ipv6 = fascist_firewall_prefer_ipv6_impl(options);
+  int pref_ipv6 = reachable_addr_prefer_ipv6_impl(options);
 
   if (pref_ipv6 >= 0) {
     return pref_ipv6;
@@ -554,16 +530,16 @@ fascist_firewall_prefer_ipv6_dirport(const or_options_t *options)
  * If pref_only is false, ignore pref_ipv6, and return true if addr is allowed.
  */
 int
-fascist_firewall_allows_address_addr(const tor_addr_t *addr, uint16_t port,
+reachable_addr_allows_addr(const tor_addr_t *addr, uint16_t port,
                                      firewall_connection_t fw_connection,
                                      int pref_only, int pref_ipv6)
 {
   if (fw_connection == FIREWALL_OR_CONNECTION) {
-    return fascist_firewall_allows_address(addr, port,
+    return reachable_addr_allows(addr, port,
                                reachable_or_addr_policy,
                                pref_only, pref_ipv6);
   } else if (fw_connection == FIREWALL_DIR_CONNECTION) {
-    return fascist_firewall_allows_address(addr, port,
+    return reachable_addr_allows(addr, port,
                                reachable_dir_addr_policy,
                                pref_only, pref_ipv6);
   } else {
@@ -576,34 +552,15 @@ fascist_firewall_allows_address_addr(const tor_addr_t *addr, uint16_t port,
 /** Return true iff we think our firewall will let us make a connection to
  * addr:port (ap). Uses ReachableORAddresses or ReachableDirAddresses based on
  * fw_connection.
- * pref_only and pref_ipv6 work as in fascist_firewall_allows_address_addr().
+ * pref_only and pref_ipv6 work as in reachable_addr_allows_addr().
  */
 static int
-fascist_firewall_allows_address_ap(const tor_addr_port_t *ap,
+reachable_addr_allows_ap(const tor_addr_port_t *ap,
                                    firewall_connection_t fw_connection,
                                    int pref_only, int pref_ipv6)
 {
   tor_assert(ap);
-  return fascist_firewall_allows_address_addr(&ap->addr, ap->port,
-                                              fw_connection, pref_only,
-                                              pref_ipv6);
-}
-
-/* Return true iff we think our firewall will let us make a connection to
- * ipv4h_or_addr:ipv4_or_port. ipv4h_or_addr is interpreted in host order.
- * Uses ReachableORAddresses or ReachableDirAddresses based on
- * fw_connection.
- * pref_only and pref_ipv6 work as in fascist_firewall_allows_address_addr().
- */
-static int
-fascist_firewall_allows_address_ipv4h(uint32_t ipv4h_or_addr,
-                                          uint16_t ipv4_or_port,
-                                          firewall_connection_t fw_connection,
-                                          int pref_only, int pref_ipv6)
-{
-  tor_addr_t ipv4_or_addr;
-  tor_addr_from_ipv4h(&ipv4_or_addr, ipv4h_or_addr);
-  return fascist_firewall_allows_address_addr(&ipv4_or_addr, ipv4_or_port,
+  return reachable_addr_allows_addr(&ap->addr, ap->port,
                                               fw_connection, pref_only,
                                               pref_ipv6);
 }
@@ -612,17 +569,17 @@ fascist_firewall_allows_address_ipv4h(uint32_t ipv4h_or_addr,
  * ipv4h_addr/ipv6_addr. Uses ipv4_orport/ipv6_orport/ReachableORAddresses or
  * ipv4_dirport/ipv6_dirport/ReachableDirAddresses based on IPv4/IPv6 and
  * <b>fw_connection</b>.
- * pref_only and pref_ipv6 work as in fascist_firewall_allows_address_addr().
+ * pref_only and pref_ipv6 work as in reachable_addr_allows_addr().
  */
 static int
-fascist_firewall_allows_base(uint32_t ipv4h_addr, uint16_t ipv4_orport,
+reachable_addr_allows_base(const tor_addr_t *ipv4_addr, uint16_t ipv4_orport,
                              uint16_t ipv4_dirport,
                              const tor_addr_t *ipv6_addr, uint16_t ipv6_orport,
                              uint16_t ipv6_dirport,
                              firewall_connection_t fw_connection,
                              int pref_only, int pref_ipv6)
 {
-  if (fascist_firewall_allows_address_ipv4h(ipv4h_addr,
+  if (reachable_addr_allows_addr(ipv4_addr,
                                       (fw_connection == FIREWALL_OR_CONNECTION
                                        ? ipv4_orport
                                        : ipv4_dirport),
@@ -631,7 +588,7 @@ fascist_firewall_allows_base(uint32_t ipv4h_addr, uint16_t ipv4_orport,
     return 1;
   }
 
-  if (fascist_firewall_allows_address_addr(ipv6_addr,
+  if (reachable_addr_allows_addr(ipv6_addr,
                                       (fw_connection == FIREWALL_OR_CONNECTION
                                        ? ipv6_orport
                                        : ipv6_dirport),
@@ -643,9 +600,9 @@ fascist_firewall_allows_base(uint32_t ipv4h_addr, uint16_t ipv4_orport,
   return 0;
 }
 
-/** Like fascist_firewall_allows_base(), but takes ri. */
+/** Like reachable_addr_allows_base(), but takes ri. */
 static int
-fascist_firewall_allows_ri_impl(const routerinfo_t *ri,
+reachable_addr_allows_ri_impl(const routerinfo_t *ri,
                                 firewall_connection_t fw_connection,
                                 int pref_only, int pref_ipv6)
 {
@@ -654,15 +611,15 @@ fascist_firewall_allows_ri_impl(const routerinfo_t *ri,
   }
 
   /* Assume IPv4 and IPv6 DirPorts are the same */
-  return fascist_firewall_allows_base(ri->addr, ri->or_port, ri->dir_port,
-                                      &ri->ipv6_addr, ri->ipv6_orport,
-                                      ri->dir_port, fw_connection, pref_only,
-                                      pref_ipv6);
+  return reachable_addr_allows_base(&ri->ipv4_addr, ri->ipv4_orport,
+                                      ri->ipv4_dirport, &ri->ipv6_addr,
+                                      ri->ipv6_orport, ri->ipv4_dirport,
+                                      fw_connection, pref_only, pref_ipv6);
 }
 
-/** Like fascist_firewall_allows_rs, but takes pref_ipv6. */
+/** Like reachable_addr_allows_rs, but takes pref_ipv6. */
 static int
-fascist_firewall_allows_rs_impl(const routerstatus_t *rs,
+reachable_addr_allows_rs_impl(const routerstatus_t *rs,
                                 firewall_connection_t fw_connection,
                                 int pref_only, int pref_ipv6)
 {
@@ -671,20 +628,20 @@ fascist_firewall_allows_rs_impl(const routerstatus_t *rs,
   }
 
   /* Assume IPv4 and IPv6 DirPorts are the same */
-  return fascist_firewall_allows_base(rs->addr, rs->or_port, rs->dir_port,
-                                      &rs->ipv6_addr, rs->ipv6_orport,
-                                      rs->dir_port, fw_connection, pref_only,
-                                      pref_ipv6);
+  return reachable_addr_allows_base(&rs->ipv4_addr, rs->ipv4_orport,
+                                      rs->ipv4_dirport, &rs->ipv6_addr,
+                                      rs->ipv6_orport, rs->ipv4_dirport,
+                                      fw_connection, pref_only, pref_ipv6);
 }
 
-/** Like fascist_firewall_allows_base(), but takes rs.
+/** Like reachable_addr_allows_base(), but takes rs.
  * When rs is a fake_status from a dir_server_t, it can have a reachable
  * address, even when the corresponding node does not.
  * nodes can be missing addresses when there's no consensus (IPv4 and IPv6),
  * or when there is a microdescriptor consensus, but no microdescriptors
  * (microdescriptors have IPv6, the microdesc consensus does not). */
 int
-fascist_firewall_allows_rs(const routerstatus_t *rs,
+reachable_addr_allows_rs(const routerstatus_t *rs,
                            firewall_connection_t fw_connection, int pref_only)
 {
   if (!rs) {
@@ -695,20 +652,20 @@ fascist_firewall_allows_rs(const routerstatus_t *rs,
    * generic IPv6 preference instead. */
   const or_options_t *options = get_options();
   int pref_ipv6 = (fw_connection == FIREWALL_OR_CONNECTION
-                   ? fascist_firewall_prefer_ipv6_orport(options)
-                   : fascist_firewall_prefer_ipv6_dirport(options));
+                   ? reachable_addr_prefer_ipv6_orport(options)
+                   : reachable_addr_prefer_ipv6_dirport(options));
 
-  return fascist_firewall_allows_rs_impl(rs, fw_connection, pref_only,
+  return reachable_addr_allows_rs_impl(rs, fw_connection, pref_only,
                                          pref_ipv6);
 }
 
 /** Return true iff we think our firewall will let us make a connection to
  * ipv6_addr:ipv6_orport based on ReachableORAddresses.
  * If <b>fw_connection</b> is FIREWALL_DIR_CONNECTION, returns 0.
- * pref_only and pref_ipv6 work as in fascist_firewall_allows_address_addr().
+ * pref_only and pref_ipv6 work as in reachable_addr_allows_addr().
  */
 static int
-fascist_firewall_allows_md_impl(const microdesc_t *md,
+reachable_addr_allows_md_impl(const microdesc_t *md,
                                 firewall_connection_t fw_connection,
                                 int pref_only, int pref_ipv6)
 {
@@ -722,15 +679,15 @@ fascist_firewall_allows_md_impl(const microdesc_t *md,
   }
 
   /* Also can't check IPv4, doesn't have that either */
-  return fascist_firewall_allows_address_addr(&md->ipv6_addr, md->ipv6_orport,
+  return reachable_addr_allows_addr(&md->ipv6_addr, md->ipv6_orport,
                                               fw_connection, pref_only,
                                               pref_ipv6);
 }
 
-/** Like fascist_firewall_allows_base(), but takes node, and looks up pref_ipv6
+/** Like reachable_addr_allows_base(), but takes node, and looks up pref_ipv6
  * from node_ipv6_or/dir_preferred(). */
 int
-fascist_firewall_allows_node(const node_t *node,
+reachable_addr_allows_node(const node_t *node,
                              firewall_connection_t fw_connection,
                              int pref_only)
 {
@@ -746,15 +703,15 @@ fascist_firewall_allows_node(const node_t *node,
 
   /* Sometimes, the rs is missing the IPv6 address info, and we need to go
    * all the way to the md */
-  if (node->ri && fascist_firewall_allows_ri_impl(node->ri, fw_connection,
+  if (node->ri && reachable_addr_allows_ri_impl(node->ri, fw_connection,
                                                   pref_only, pref_ipv6)) {
     return 1;
-  } else if (node->rs && fascist_firewall_allows_rs_impl(node->rs,
+  } else if (node->rs && reachable_addr_allows_rs_impl(node->rs,
                                                          fw_connection,
                                                          pref_only,
                                                          pref_ipv6)) {
     return 1;
-  } else if (node->md && fascist_firewall_allows_md_impl(node->md,
+  } else if (node->md && reachable_addr_allows_md_impl(node->md,
                                                          fw_connection,
                                                          pref_only,
                                                          pref_ipv6)) {
@@ -766,9 +723,9 @@ fascist_firewall_allows_node(const node_t *node,
   }
 }
 
-/** Like fascist_firewall_allows_rs(), but takes ds. */
+/** Like reachable_addr_allows_rs(), but takes ds. */
 int
-fascist_firewall_allows_dir_server(const dir_server_t *ds,
+reachable_addr_allows_dir_server(const dir_server_t *ds,
                                    firewall_connection_t fw_connection,
                                    int pref_only)
 {
@@ -779,8 +736,8 @@ fascist_firewall_allows_dir_server(const dir_server_t *ds,
   /* A dir_server_t always has a fake_status. As long as it has the same
    * addresses/ports in both fake_status and dir_server_t, this works fine.
    * (See #17867.)
-   * fascist_firewall_allows_rs only checks the addresses in fake_status. */
-  return fascist_firewall_allows_rs(&ds->fake_status, fw_connection,
+   * reachable_addr_allows_rs only checks the addresses in fake_status. */
+  return reachable_addr_allows_rs(&ds->fake_status, fw_connection,
                                     pref_only);
 }
 
@@ -788,10 +745,10 @@ fascist_firewall_allows_dir_server(const dir_server_t *ds,
  * choose one based on want_a and return it.
  * Otherwise, return whichever is allowed.
  * Otherwise, return NULL.
- * pref_only and pref_ipv6 work as in fascist_firewall_allows_address_addr().
+ * pref_only and pref_ipv6 work as in reachable_addr_allows_addr().
  */
 static const tor_addr_port_t *
-fascist_firewall_choose_address_impl(const tor_addr_port_t *a,
+reachable_addr_choose_impl(const tor_addr_port_t *a,
                                      const tor_addr_port_t *b,
                                      int want_a,
                                      firewall_connection_t fw_connection,
@@ -800,12 +757,12 @@ fascist_firewall_choose_address_impl(const tor_addr_port_t *a,
   const tor_addr_port_t *use_a = NULL;
   const tor_addr_port_t *use_b = NULL;
 
-  if (fascist_firewall_allows_address_ap(a, fw_connection, pref_only,
+  if (reachable_addr_allows_ap(a, fw_connection, pref_only,
                                          pref_ipv6)) {
     use_a = a;
   }
 
-  if (fascist_firewall_allows_address_ap(b, fw_connection, pref_only,
+  if (reachable_addr_allows_ap(b, fw_connection, pref_only,
                                          pref_ipv6)) {
     use_b = b;
   }
@@ -829,13 +786,13 @@ fascist_firewall_choose_address_impl(const tor_addr_port_t *a,
  *  - Otherwise, return whichever is preferred.
  * Otherwise, return NULL. */
 STATIC const tor_addr_port_t *
-fascist_firewall_choose_address(const tor_addr_port_t *a,
+reachable_addr_choose(const tor_addr_port_t *a,
                                 const tor_addr_port_t *b,
                                 int want_a,
                                 firewall_connection_t fw_connection,
                                 int pref_only, int pref_ipv6)
 {
-  const tor_addr_port_t *pref = fascist_firewall_choose_address_impl(
+  const tor_addr_port_t *pref = reachable_addr_choose_impl(
                                                                 a, b, want_a,
                                                                 fw_connection,
                                                                 1, pref_ipv6);
@@ -847,7 +804,7 @@ fascist_firewall_choose_address(const tor_addr_port_t *a,
   } else {
     /* If there's no preferred address, and we can return addresses that are
      * not preferred, use an address that's allowed */
-    return fascist_firewall_choose_address_impl(a, b, want_a, fw_connection,
+    return reachable_addr_choose_impl(a, b, want_a, fw_connection,
                                                 0, pref_ipv6);
   }
 }
@@ -862,7 +819,7 @@ fascist_firewall_choose_address(const tor_addr_port_t *a,
  * If both addresses could be chosen (they are both preferred or both allowed)
  * choose IPv6 if pref_ipv6 is true, otherwise choose IPv4. */
 static void
-fascist_firewall_choose_address_base(const tor_addr_t *ipv4_addr,
+reachable_addr_choose_base(const tor_addr_t *ipv4_addr,
                                      uint16_t ipv4_orport,
                                      uint16_t ipv4_dirport,
                                      const tor_addr_t *ipv6_addr,
@@ -894,7 +851,7 @@ fascist_firewall_choose_address_base(const tor_addr_t *ipv4_addr,
                   ? ipv6_orport
                   : ipv6_dirport);
 
-  result = fascist_firewall_choose_address(&ipv4_ap, &ipv6_ap,
+  result = reachable_addr_choose(&ipv4_ap, &ipv6_ap,
                                            want_ipv4,
                                            fw_connection, pref_only,
                                            pref_ipv6);
@@ -905,84 +862,13 @@ fascist_firewall_choose_address_base(const tor_addr_t *ipv4_addr,
   }
 }
 
-/** Like fascist_firewall_choose_address_base(), but takes a host-order IPv4
- * address as the first parameter. */
-static void
-fascist_firewall_choose_address_ipv4h(uint32_t ipv4h_addr,
-                                      uint16_t ipv4_orport,
-                                      uint16_t ipv4_dirport,
-                                      const tor_addr_t *ipv6_addr,
-                                      uint16_t ipv6_orport,
-                                      uint16_t ipv6_dirport,
-                                      firewall_connection_t fw_connection,
-                                      int pref_only,
-                                      int pref_ipv6,
-                                      tor_addr_port_t* ap)
-{
-  tor_addr_t ipv4_addr;
-  tor_addr_from_ipv4h(&ipv4_addr, ipv4h_addr);
-  tor_assert(ap);
-
-  tor_addr_make_null(&ap->addr, AF_UNSPEC);
-  ap->port = 0;
-
-  fascist_firewall_choose_address_base(&ipv4_addr, ipv4_orport,
-                                       ipv4_dirport, ipv6_addr,
-                                       ipv6_orport, ipv6_dirport,
-                                       fw_connection, pref_only,
-                                       pref_ipv6, ap);
-}
-
-/* Some microdescriptor consensus methods have no IPv6 addresses in rs: they
- * are in the microdescriptors. For these consensus methods, we can't rely on
- * the node's IPv6 address until its microdescriptor is available (when using
- * microdescs).
- * But for bridges, rewrite_node_address_for_bridge() updates node->ri with
- * the configured address, so we can trust bridge addresses.
- * (Bridges could gain an IPv6 address if their microdescriptor arrives, but
- * this will never be their preferred address: that is in the config.)
- * Returns true if the node needs a microdescriptor for its IPv6 address, and
- * false if the addresses in the node are already up-to-date.
- */
-static int
-node_awaiting_ipv6(const or_options_t* options, const node_t *node)
-{
-  tor_assert(node);
-
-  /* There's no point waiting for an IPv6 address if we'd never use it */
-  if (!fascist_firewall_use_ipv6(options)) {
-    return 0;
-  }
-
-  /* If the node has an IPv6 address, we're not waiting */
-  if (node_has_ipv6_addr(node)) {
-    return 0;
-  }
-
-  /* If the current consensus method and flavour has IPv6 addresses, we're not
-   * waiting */
-  if (networkstatus_consensus_has_ipv6(options)) {
-    return 0;
-  }
-
-  /* Bridge clients never use the address from a bridge's md, so there's no
-   * need to wait for it. */
-  if (node_is_a_configured_bridge(node)) {
-    return 0;
-  }
-
-  /* We are waiting if we_use_microdescriptors_for_circuits() and we have no
-   * md. */
-  return (!node->md && we_use_microdescriptors_for_circuits(options));
-}
-
-/** Like fascist_firewall_choose_address_base(), but takes <b>rs</b>.
+/** Like reachable_addr_choose_base(), but takes <b>rs</b>.
  * Consults the corresponding node, then falls back to rs if node is NULL.
  * This should only happen when there's no valid consensus, and rs doesn't
  * correspond to a bridge client's bridge.
  */
 void
-fascist_firewall_choose_address_rs(const routerstatus_t *rs,
+reachable_addr_choose_from_rs(const routerstatus_t *rs,
                                    firewall_connection_t fw_connection,
                                    int pref_only, tor_addr_port_t* ap)
 {
@@ -998,31 +884,30 @@ fascist_firewall_choose_address_rs(const routerstatus_t *rs,
   const or_options_t *options = get_options();
   const node_t *node = node_get_by_id(rs->identity_digest);
 
-  if (node && !node_awaiting_ipv6(options, node)) {
-    fascist_firewall_choose_address_node(node, fw_connection, pref_only, ap);
+  if (node) {
+    reachable_addr_choose_from_node(node, fw_connection, pref_only, ap);
   } else {
     /* There's no node-specific IPv6 preference, so use the generic IPv6
      * preference instead. */
     int pref_ipv6 = (fw_connection == FIREWALL_OR_CONNECTION
-                     ? fascist_firewall_prefer_ipv6_orport(options)
-                     : fascist_firewall_prefer_ipv6_dirport(options));
+                     ? reachable_addr_prefer_ipv6_orport(options)
+                     : reachable_addr_prefer_ipv6_dirport(options));
 
-    /* Assume IPv4 and IPv6 DirPorts are the same.
-     * Assume the IPv6 OR and Dir addresses are the same. */
-    fascist_firewall_choose_address_ipv4h(rs->addr, rs->or_port, rs->dir_port,
-                                          &rs->ipv6_addr, rs->ipv6_orport,
-                                          rs->dir_port, fw_connection,
-                                          pref_only, pref_ipv6, ap);
+    reachable_addr_choose_base(&rs->ipv4_addr, rs->ipv4_orport,
+                                          rs->ipv4_dirport, &rs->ipv6_addr,
+                                          rs->ipv6_orport, rs->ipv4_dirport,
+                                          fw_connection, pref_only, pref_ipv6,
+                                          ap);
   }
 }
 
-/** Like fascist_firewall_choose_address_base(), but takes in a smartlist
+/** Like reachable_addr_choose_base(), but takes in a smartlist
  * <b>lspecs</b> consisting of one or more link specifiers. We assume
  * fw_connection is FIREWALL_OR_CONNECTION as link specifiers cannot
  * contain DirPorts.
  */
 void
-fascist_firewall_choose_address_ls(const smartlist_t *lspecs,
+reachable_addr_choose_from_ls(const smartlist_t *lspecs,
                                    int pref_only, tor_addr_port_t* ap)
 {
   int have_v4 = 0, have_v6 = 0;
@@ -1061,7 +946,7 @@ fascist_firewall_choose_address_ls(const smartlist_t *lspecs,
        * direct connection. */
       if (have_v6) continue;
       tor_addr_from_ipv6_bytes(&addr_v6,
-          (const char *) link_specifier_getconstarray_un_ipv6_addr(ls));
+          link_specifier_getconstarray_un_ipv6_addr(ls));
       port_v6 = link_specifier_get_un_ipv6_port(ls);
       have_v6 = 1;
       break;
@@ -1084,20 +969,20 @@ fascist_firewall_choose_address_ls(const smartlist_t *lspecs,
   /* Here, don't check for DirPorts as link specifiers are only used for
    * ORPorts. */
   const or_options_t *options = get_options();
-  int pref_ipv6 = fascist_firewall_prefer_ipv6_orport(options);
+  int pref_ipv6 = reachable_addr_prefer_ipv6_orport(options);
   /* Assume that the DirPorts are zero as link specifiers only use ORPorts. */
-  fascist_firewall_choose_address_base(&addr_v4, port_v4, 0,
+  reachable_addr_choose_base(&addr_v4, port_v4, 0,
                                        &addr_v6, port_v6, 0,
                                        FIREWALL_OR_CONNECTION,
                                        pref_only, pref_ipv6,
                                        ap);
 }
 
-/** Like fascist_firewall_choose_address_base(), but takes <b>node</b>, and
+/** Like reachable_addr_choose_base(), but takes <b>node</b>, and
  * looks up the node's IPv6 preference rather than taking an argument
  * for pref_ipv6. */
 void
-fascist_firewall_choose_address_node(const node_t *node,
+reachable_addr_choose_from_node(const node_t *node,
                                      firewall_connection_t fw_connection,
                                      int pref_only, tor_addr_port_t *ap)
 {
@@ -1111,17 +996,6 @@ fascist_firewall_choose_address_node(const node_t *node,
   }
 
   node_assert_ok(node);
-  /* Calling fascist_firewall_choose_address_node() when the node is missing
-   * IPv6 information breaks IPv6-only clients.
-   * If the node is a hard-coded fallback directory or authority, call
-   * fascist_firewall_choose_address_rs() on the fake (hard-coded) routerstatus
-   * for the node.
-   * If it is not hard-coded, check that the node has a microdescriptor, full
-   * descriptor (routerinfo), or is one of our configured bridges before
-   * calling this function. */
-  if (BUG(node_awaiting_ipv6(get_options(), node))) {
-    return;
-  }
 
   const int pref_ipv6_node = (fw_connection == FIREWALL_OR_CONNECTION
                               ? node_ipv6_or_preferred(node)
@@ -1138,16 +1012,16 @@ fascist_firewall_choose_address_node(const node_t *node,
   node_get_pref_ipv6_dirport(node, &ipv6_dir_ap);
 
   /* Assume the IPv6 OR and Dir addresses are the same. */
-  fascist_firewall_choose_address_base(&ipv4_or_ap.addr, ipv4_or_ap.port,
+  reachable_addr_choose_base(&ipv4_or_ap.addr, ipv4_or_ap.port,
                                        ipv4_dir_ap.port, &ipv6_or_ap.addr,
                                        ipv6_or_ap.port, ipv6_dir_ap.port,
                                        fw_connection, pref_only,
                                        pref_ipv6_node, ap);
 }
 
-/** Like fascist_firewall_choose_address_rs(), but takes <b>ds</b>. */
+/** Like reachable_addr_choose_from_rs(), but takes <b>ds</b>. */
 void
-fascist_firewall_choose_address_dir_server(const dir_server_t *ds,
+reachable_addr_choose_from_dir_server(const dir_server_t *ds,
                                            firewall_connection_t fw_connection,
                                            int pref_only,
                                            tor_addr_port_t *ap)
@@ -1164,9 +1038,9 @@ fascist_firewall_choose_address_dir_server(const dir_server_t *ds,
   /* A dir_server_t always has a fake_status. As long as it has the same
    * addresses/ports in both fake_status and dir_server_t, this works fine.
    * (See #17867.)
-   * This function relies on fascist_firewall_choose_address_rs looking up the
+   * This function relies on reachable_addr_choose_from_rs looking up the
    * node if it can, because that will get the latest info for the relay. */
-  fascist_firewall_choose_address_rs(&ds->fake_status, fw_connection,
+  reachable_addr_choose_from_rs(&ds->fake_status, fw_connection,
                                      pref_only, ap);
 }
 
@@ -1188,20 +1062,26 @@ socks_policy_permits_address(const tor_addr_t *addr)
   return addr_policy_permits_tor_addr(addr, 1, socks_policy);
 }
 
+/** Return 1 if <b>addr</b> is permitted to connect to our metrics port,
+ * based on <b>socks_policy</b>. Else return 0.
+ */
+int
+metrics_policy_permits_address(const tor_addr_t *addr)
+{
+  return addr_policy_permits_tor_addr(addr, 1, metrics_policy);
+}
+
 /** Return true iff the address <b>addr</b> is in a country listed in the
  * case-insensitive list of country codes <b>cc_list</b>. */
 static int
-addr_is_in_cc_list(uint32_t addr, const smartlist_t *cc_list)
+addr_is_in_cc_list(const tor_addr_t *addr, const smartlist_t *cc_list)
 {
   country_t country;
   const char *name;
-  tor_addr_t tar;
 
   if (!cc_list)
     return 0;
-  /* XXXXipv6 */
-  tor_addr_from_ipv4h(&tar, addr);
-  country = geoip_get_country_by_addr(&tar);
+  country = geoip_get_country_by_addr(addr);
   name = geoip_get_country_name(country);
   return smartlist_contains_string_case(cc_list, name);
 }
@@ -1210,9 +1090,9 @@ addr_is_in_cc_list(uint32_t addr, const smartlist_t *cc_list)
  * directory, based on <b>authdir_reject_policy</b>. Else return 0.
  */
 int
-authdir_policy_permits_address(uint32_t addr, uint16_t port)
+authdir_policy_permits_address(const tor_addr_t *addr, uint16_t port)
 {
-  if (! addr_policy_permits_address(addr, port, authdir_reject_policy))
+  if (!addr_policy_permits_tor_addr(addr, port, authdir_reject_policy))
     return 0;
   return !addr_is_in_cc_list(addr, get_options()->AuthDirRejectCCs);
 }
@@ -1221,9 +1101,9 @@ authdir_policy_permits_address(uint32_t addr, uint16_t port)
  * directory, based on <b>authdir_invalid_policy</b>. Else return 0.
  */
 int
-authdir_policy_valid_address(uint32_t addr, uint16_t port)
+authdir_policy_valid_address(const tor_addr_t *addr, uint16_t port)
 {
-  if (! addr_policy_permits_address(addr, port, authdir_invalid_policy))
+  if (!addr_policy_permits_tor_addr(addr, port, authdir_invalid_policy))
     return 0;
   return !addr_is_in_cc_list(addr, get_options()->AuthDirInvalidCCs);
 }
@@ -1232,9 +1112,9 @@ authdir_policy_valid_address(uint32_t addr, uint16_t port)
  * based on <b>authdir_badexit_policy</b>. Else return 0.
  */
 int
-authdir_policy_badexit_address(uint32_t addr, uint16_t port)
+authdir_policy_badexit_address(const tor_addr_t *addr, uint16_t port)
 {
-  if (! addr_policy_permits_address(addr, port, authdir_badexit_policy))
+  if (!addr_policy_permits_tor_addr(addr, port, authdir_badexit_policy))
     return 1;
   return addr_is_in_cc_list(addr, get_options()->AuthDirBadExitCCs);
 }
@@ -1349,6 +1229,22 @@ load_policy_from_option(config_line_t *config, const char *option_name,
   return 0;
 }
 
+/** Helper: Parse the MetricsPortPolicy option into the metrics_policy and set
+ * the reject all by default.
+ *
+ * Return 0 on success else -1. */
+static int
+parse_metrics_port_policy(const or_options_t *options)
+{
+  if (load_policy_from_option(options->MetricsPortPolicy, "MetricsPortPolicy",
+                              &metrics_policy, -1) < 0) {
+    return -1;
+  }
+  /* It is a reject all by default. */
+  append_exit_policy_string(&metrics_policy, "reject *:*");
+  return 0;
+}
+
 /** Set all policies based on <b>options</b>, which should have been validated
  * first by validate_addr_policies. */
 int
@@ -1370,6 +1266,9 @@ policies_parse_from_options(const or_options_t *options)
   if (load_policy_from_option(options->AuthDirBadExit, "AuthDirBadExit",
                               &authdir_badexit_policy, ADDR_POLICY_REJECT) < 0)
     ret = -1;
+  if (parse_metrics_port_policy(options) < 0) {
+    ret = -1;
+  }
   if (parse_reachable_addresses() < 0)
     ret = -1;
   return ret;
@@ -1459,9 +1358,9 @@ policy_hash(const policy_map_ent_t *ent)
 }
 
 HT_PROTOTYPE(policy_map, policy_map_ent_t, node, policy_hash,
-             policy_eq)
+             policy_eq);
 HT_GENERATE2(policy_map, policy_map_ent_t, node, policy_hash,
-             policy_eq, 0.6, tor_reallocarray_, tor_free_)
+             policy_eq, 0.6, tor_reallocarray_, tor_free_);
 
 /** Given a pointer to an addr_policy_t, return a copy of the pointer to the
  * "canonical" copy of that addr_policy_t; the canonical copy is a single
@@ -1950,7 +1849,7 @@ policies_log_first_redundant_entry(const smartlist_t *policy)
     int found_ipv4_wildcard = 0, found_ipv6_wildcard = 0;
     const int i = p_sl_idx;
 
-    /* Look for accept/reject *[4|6|]:* entires */
+    /* Look for accept/reject *[4|6|]:* entries */
     if (p->prt_min <= 1 && p->prt_max == 65535 && p->maskbits == 0) {
       family = tor_addr_family(&p->addr);
       /* accept/reject *:* may have already been expanded into
@@ -2153,22 +2052,6 @@ policies_copy_addr_to_smartlist(smartlist_t *addr_list, const tor_addr_t *addr)
   }
 }
 
-/** Helper function that adds ipv4h_addr to a smartlist as a tor_addr_t *,
- * as long as it is not tor_addr_is_null(), by converting it to a tor_addr_t
- * and passing it to policies_add_addr_to_smartlist.
- *
- * The caller is responsible for freeing all the tor_addr_t* in the smartlist.
- */
-static void
-policies_copy_ipv4h_to_smartlist(smartlist_t *addr_list, uint32_t ipv4h_addr)
-{
-  if (ipv4h_addr) {
-    tor_addr_t ipv4_tor_addr;
-    tor_addr_from_ipv4h(&ipv4_tor_addr, ipv4h_addr);
-    policies_copy_addr_to_smartlist(addr_list, &ipv4_tor_addr);
-  }
-}
-
 /** Helper function that adds copies of or_options->OutboundBindAddresses
  * to a smartlist as tor_addr_t *, as long as or_options is non-NULL, and
  * the addresses are not tor_addr_is_null(), by passing them to
@@ -2200,8 +2083,8 @@ policies_copy_outbound_addresses_to_smartlist(smartlist_t *addr_list,
  * If <b>or_options->ExitPolicyRejectPrivate</b> is true:
  *  - prepend an entry that rejects all destinations in all netblocks reserved
  *    for private use.
- *  - if local_address is non-zero, treat it as a host-order IPv4 address, and
- *    add it to the list of configured addresses.
+ *  - if ipv4_local_address is non-zero, treat it as a host-order IPv4 address,
+ *    and add it to the list of configured addresses.
  *  - if ipv6_local_address is non-NULL, and not the null tor_addr_t, add it
  *    to the list of configured addresses.
  * If <b>or_options->ExitPolicyRejectLocalInterfaces</b> is true:
@@ -2218,7 +2101,7 @@ policies_copy_outbound_addresses_to_smartlist(smartlist_t *addr_list,
  */
 int
 policies_parse_exit_policy_from_options(const or_options_t *or_options,
-                                        uint32_t local_address,
+                                        const tor_addr_t *ipv4_local_address,
                                         const tor_addr_t *ipv6_local_address,
                                         smartlist_t **result)
 {
@@ -2259,7 +2142,7 @@ policies_parse_exit_policy_from_options(const or_options_t *or_options,
 
   /* Copy the configured addresses into the tor_addr_t* list */
   if (or_options->ExitPolicyRejectPrivate) {
-    policies_copy_ipv4h_to_smartlist(configured_addresses, local_address);
+    policies_copy_addr_to_smartlist(configured_addresses, ipv4_local_address);
     policies_copy_addr_to_smartlist(configured_addresses, ipv6_local_address);
   }
 
@@ -2842,7 +2725,7 @@ parse_short_policy(const char *summary)
     switch (*next) {
       case ',':
         ++next;
-        /* fall through */
+        FALLTHROUGH;
       case '\0':
         high = low;
         break;
@@ -3129,7 +3012,7 @@ getinfo_helper_policies(control_connection_t *conn,
 
     /* Copy the configured addresses into the tor_addr_t* list */
     if (options->ExitPolicyRejectPrivate) {
-      policies_copy_ipv4h_to_smartlist(configured_addresses, me->addr);
+      policies_copy_addr_to_smartlist(configured_addresses, &me->ipv4_addr);
       policies_copy_addr_to_smartlist(configured_addresses, &me->ipv6_addr);
     }
 
@@ -3221,6 +3104,8 @@ policies_free_all(void)
   socks_policy = NULL;
   addr_policy_list_free(dir_policy);
   dir_policy = NULL;
+  addr_policy_list_free(metrics_policy);
+  metrics_policy = NULL;
   addr_policy_list_free(authdir_reject_policy);
   authdir_reject_policy = NULL;
   addr_policy_list_free(authdir_invalid_policy);

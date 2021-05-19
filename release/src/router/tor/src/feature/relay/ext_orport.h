@@ -1,8 +1,13 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file ext_orport.h
+ * @brief Header for ext_orport.c
+ **/
 
 #ifndef EXT_ORPORT_H
 #define EXT_ORPORT_H
@@ -26,25 +31,55 @@
 #define EXT_OR_CONN_STATE_FLUSHING 5
 #define EXT_OR_CONN_STATE_MAX_ 5
 
+#ifdef HAVE_MODULE_RELAY
+
 int connection_ext_or_start_auth(or_connection_t *or_conn);
 
-ext_or_cmd_t *ext_or_cmd_new(uint16_t len);
-
-#define ext_or_cmd_free(cmd)                            \
-  FREE_AND_NULL(ext_or_cmd_t, ext_or_cmd_free_, (cmd))
-
-void ext_or_cmd_free_(ext_or_cmd_t *cmd);
 void connection_or_set_ext_or_identifier(or_connection_t *conn);
 void connection_or_remove_from_ext_or_id_map(or_connection_t *conn);
 void connection_or_clear_ext_or_id_map(void);
-or_connection_t *connection_or_get_by_ext_or_id(const char *id);
-
 int connection_ext_or_finished_flushing(or_connection_t *conn);
 int connection_ext_or_process_inbuf(or_connection_t *or_conn);
-
-int init_ext_or_cookie_authentication(int is_enabled);
 char *get_ext_or_auth_cookie_file_name(void);
+
+/* (No stub needed for these: they are only called within feature/relay.) */
+int init_ext_or_cookie_authentication(int is_enabled);
 void ext_orport_free_all(void);
+
+#else /* !defined(HAVE_MODULE_RELAY) */
+
+static inline int
+connection_ext_or_start_auth(or_connection_t *conn)
+{
+  (void)conn;
+  tor_assert_nonfatal_unreached();
+  return -1;
+}
+static inline int
+connection_ext_or_finished_flushing(or_connection_t *conn)
+{
+  (void)conn;
+  tor_assert_nonfatal_unreached();
+  return -1;
+}
+static inline int
+connection_ext_or_process_inbuf(or_connection_t *conn)
+{
+  (void)conn;
+  tor_assert_nonfatal_unreached();
+  return -1;
+}
+#define connection_or_set_ext_or_identifier(conn) \
+  ((void)(conn))
+#define connection_or_remove_from_ext_or_id_map(conn) \
+  ((void)(conn))
+#define connection_or_clear_ext_or_id_map() \
+  STMT_NIL
+
+#define get_ext_or_auth_cookie_file_name() \
+  (NULL)
+
+#endif /* defined(HAVE_MODULE_RELAY) */
 
 #ifdef EXT_ORPORT_PRIVATE
 STATIC int connection_write_ext_or_command(connection_t *conn,
@@ -55,9 +90,11 @@ STATIC int handle_client_auth_nonce(const char *client_nonce,
                          size_t client_nonce_len,
                          char **client_hash_out,
                          char **reply_out, size_t *reply_len_out);
+
 #ifdef TOR_UNIT_TESTS
 extern uint8_t *ext_or_auth_cookie;
 extern int ext_or_auth_cookie_is_set;
+or_connection_t *connection_or_get_by_ext_or_id(const char *id);
 #endif
 #endif /* defined(EXT_ORPORT_PRIVATE) */
 

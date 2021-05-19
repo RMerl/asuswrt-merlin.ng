@@ -1,0 +1,18 @@
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+LIBTOR_APP_A_SOURCES += 				\
+	src/core/proto/proto_cell.c		\
+	src/core/proto/proto_control0.c		\
+	src/core/proto/proto_ext_or.c		\
+	src/core/proto/proto_haproxy.c		\
+	src/core/proto/proto_http.c		\
+	src/core/proto/proto_socks.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/core/proto/proto_cell.h			\
+	src/core/proto/proto_control0.h			\
+	src/core/proto/proto_ext_or.h			\
+	src/core/proto/proto_haproxy.h			\
+	src/core/proto/proto_http.h			\
+	src/core/proto/proto_socks.h

@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2019, The Tor Project, Inc. */
+/* Copyright (c) 2015-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -10,6 +10,8 @@
 #include "core/or/or.h"
 #include "test/test.h"
 
+#include "app/config/config.h"
+#include "app/config/or_options_st.h"
 #include "core/mainloop/connection.h"
 #include "core/or/connection_edge.h"
 #include "feature/hs/hs_common.h"
@@ -312,6 +314,25 @@ test_conn_download_status_teardown(const struct testcase_t *tc, void *arg)
   return rv;
 }
 
+static void *
+test_conn_proxy_connect_setup(const struct testcase_t *tc)
+{
+  return test_conn_get_proxy_or_connection(*(unsigned int *)tc->setup_data);
+}
+
+static int
+test_conn_proxy_connect_teardown(const struct testcase_t *tc, void *arg)
+{
+  (void)tc;
+  or_connection_t *conn = arg;
+
+  tt_assert(conn);
+  assert_connection_ok(&conn->base_, time(NULL));
+
+ done:
+  return 1;
+}
+
 /* Like connection_ap_make_link(), but does much less */
 static connection_t *
 test_conn_get_linked_connection(connection_t *l_conn, uint8_t state)
@@ -358,6 +379,10 @@ static struct testcase_setup_t test_conn_get_rsrc_st = {
 
 static struct testcase_setup_t test_conn_download_status_st = {
   test_conn_download_status_setup, test_conn_download_status_teardown
+};
+
+static struct testcase_setup_t test_conn_proxy_connect_st = {
+  test_conn_proxy_connect_setup, test_conn_proxy_connect_teardown
 };
 
 static void
@@ -592,7 +617,8 @@ test_conn_download_status(void *arg)
   connection_t *ap_conn = NULL;
 
   const struct testcase_t *tc = arg;
-  consensus_flavor_t usable_flavor = (consensus_flavor_t)tc->setup_data;
+  consensus_flavor_t usable_flavor =
+    networkstatus_parse_flavor_name((const char*) tc->setup_data);
 
   /* The "other flavor" trick only works if there are two flavors */
   tor_assert(N_CONSENSUS_FLAVORS == 2);
@@ -788,6 +814,64 @@ test_conn_download_status(void *arg)
   /* the teardown function removes all the connections in the global list*/;
 }
 
+static void
+test_conn_https_proxy_connect(void *arg)
+{
+  size_t sz;
+  char *buf = NULL;
+  or_connection_t *conn = arg;
+
+  MOCK(connection_or_change_state, mock_connection_or_change_state);
+
+  tt_int_op(conn->base_.proxy_state, OP_EQ, PROXY_HTTPS_WANT_CONNECT_OK);
+
+  buf = buf_get_contents(conn->base_.outbuf, &sz);
+  tt_str_op(buf, OP_EQ, "CONNECT 127.0.0.1:12345 HTTP/1.0\r\n\r\n");
+
+ done:
+  UNMOCK(connection_or_change_state);
+  tor_free(buf);
+}
+
+static int handshake_start_called = 0;
+
+static int
+handshake_start(or_connection_t *conn, int receiving)
+{
+  (void)receiving;
+
+  tor_assert(conn);
+
+  handshake_start_called = 1;
+  return 0;
+}
+
+static void
+test_conn_haproxy_proxy_connect(void *arg)
+{
+  size_t sz;
+  char *buf = NULL;
+  or_connection_t *conn = arg;
+
+  MOCK(connection_or_change_state, mock_connection_or_change_state);
+  MOCK(connection_tls_start_handshake, handshake_start);
+
+  tt_int_op(conn->base_.proxy_state, OP_EQ, PROXY_HAPROXY_WAIT_FOR_FLUSH);
+
+  buf = buf_get_contents(conn->base_.outbuf, &sz);
+  tt_str_op(buf, OP_EQ, "PROXY TCP4 0.0.0.0 127.0.0.1 0 12345\r\n");
+
+  connection_or_finished_flushing(conn);
+
+  tt_int_op(conn->base_.proxy_state, OP_EQ, PROXY_CONNECTED);
+  tt_int_op(handshake_start_called, OP_EQ, 1);
+
+ done:
+  UNMOCK(connection_or_change_state);
+  UNMOCK(connection_tls_start_handshake);
+  tor_free(buf);
+}
+
 static node_t test_node;
 
 static node_t *
@@ -800,10 +884,8 @@ mock_node_get_mutable_by_id(const char *digest)
   test_node.ri = &node_ri;
   memset(test_node.identity, 'c', sizeof(test_node.identity));
 
-  tor_addr_t ipv4_addr;
-  tor_addr_parse(&ipv4_addr, "18.0.0.1");
-  node_ri.addr = tor_addr_to_ipv4h(&ipv4_addr);
-  node_ri.or_port = 1;
+  tor_addr_parse(&node_ri.ipv4_addr, "18.0.0.1");
+  node_ri.ipv4_orport = 1;
 
   return &test_node;
 }
@@ -830,7 +912,8 @@ test_failed_orconn_tracker(void *arg)
 
   /* Prepare the OR connection that will be used in this test */
   or_connection_t or_conn;
-  tt_int_op(AF_INET,OP_EQ, tor_addr_parse(&or_conn.real_addr, "18.0.0.1"));
+  tt_int_op(AF_INET,OP_EQ, tor_addr_parse(&or_conn.canonical_orport.addr,
+                                          "18.0.0.1"));
   tt_int_op(AF_INET,OP_EQ, tor_addr_parse(&or_conn.base_.addr, "18.0.0.1"));
   or_conn.base_.port = 1;
   memset(or_conn.identity_digest, 'c', sizeof(or_conn.identity_digest));
@@ -881,22 +964,148 @@ test_failed_orconn_tracker(void *arg)
   ;
 }
 
+static void
+test_conn_describe(void *arg)
+{
+  (void)arg;
+  or_options_t *options = get_options_mutable();
+  options->SafeLogging_ = SAFELOG_SCRUB_ALL;
+
+  // Let's start with a listener connection since they're simple.
+  connection_t *conn = connection_new(CONN_TYPE_OR_LISTENER, AF_INET);
+  tor_addr_parse(&conn->addr, "44.22.11.11");
+  conn->port = 80;
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "OR listener connection (ready) on 44.22.11.11:80");
+  // If the address is unspec, we should still work.
+  tor_addr_make_unspec(&conn->addr);
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "OR listener connection (ready) on <unset>:80");
+  // Try making the address null.
+  tor_addr_make_null(&conn->addr, AF_INET);
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "OR listener connection (ready) on 0.0.0.0:80");
+  // What if the address is uninitialized? (This can happen if we log about the
+  // connection before we set the address.)
+  memset(&conn->addr, 0, sizeof(conn->addr));
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "OR listener connection (ready) on <unset>:80");
+  connection_free_minimal(conn);
+
+  // Try a unix socket.
+  conn = connection_new(CONN_TYPE_CONTROL_LISTENER, AF_UNIX);
+  conn->address = tor_strdup("/a/path/that/could/exist");
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "Control listener connection (ready) on /a/path/that/could/exist");
+  connection_free_minimal(conn);
+
+  // Try an IPv6 address.
+  conn = connection_new(CONN_TYPE_AP_LISTENER, AF_INET6);
+  tor_addr_parse(&conn->addr, "ff00::3");
+  conn->port = 9050;
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "Socks listener connection (ready) on [ff00::3]:9050");
+  connection_free_minimal(conn);
+
+  // Now let's mess with exit connections.  They have some special issues.
+  options->SafeLogging_ = SAFELOG_SCRUB_NONE;
+  conn = connection_new(CONN_TYPE_EXIT, AF_INET);
+  // If address and state are unset, we should say SOMETHING.
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "Exit connection (uninitialized) to <unset> (DNS lookup pending)");
+  // Now suppose that the address is set but we haven't resolved the hostname.
+  conn->port = 443;
+  conn->address = tor_strdup("www.torproject.org");
+  conn->state = EXIT_CONN_STATE_RESOLVING;
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "Exit connection (waiting for dest info) to "
+            "www.torproject.org:443 (DNS lookup pending)");
+  //  Now give it a hostname!
+  tor_addr_parse(&conn->addr, "192.168.8.8");
+  conn->state = EXIT_CONN_STATE_OPEN;
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "Exit connection (open) to 192.168.8.8:443");
+  // But what if safelogging is on?
+  options->SafeLogging_ = SAFELOG_SCRUB_RELAY;
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "Exit connection (open) to [scrubbed]");
+  connection_free_minimal(conn);
+
+  // Now at last we look at OR addresses, which are complicated.
+  conn = connection_new(CONN_TYPE_OR, AF_INET6);
+  conn->state = OR_CONN_STATE_OPEN;
+  conn->port = 8080;
+  tor_addr_parse(&conn->addr, "[ffff:3333:1111::2]");
+  // This should get scrubbed, since the lack of a set ID means we might be
+  // talking to a client.
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "OR connection (open) with [scrubbed]");
+  // But now suppose we aren't safelogging? We'll get the address then.
+  options->SafeLogging_ = SAFELOG_SCRUB_NONE;
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "OR connection (open) with [ffff:3333:1111::2]:8080");
+  // Suppose we have an ID, so we know it isn't a client.
+  TO_OR_CONN(conn)->identity_digest[3] = 7;
+  options->SafeLogging_ = SAFELOG_SCRUB_RELAY; // back to safelogging.
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "OR connection (open) with [ffff:3333:1111::2]:8080 "
+            "ID=<none> RSA_ID=0000000700000000000000000000000000000000");
+  // Add a 'canonical address' that is the same as the one we have.
+  tor_addr_parse(&TO_OR_CONN(conn)->canonical_orport.addr,
+                 "[ffff:3333:1111::2]");
+  TO_OR_CONN(conn)->canonical_orport.port = 8080;
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "OR connection (open) with [ffff:3333:1111::2]:8080 "
+            "ID=<none> RSA_ID=0000000700000000000000000000000000000000");
+  // Add a different 'canonical address'
+  tor_addr_parse(&TO_OR_CONN(conn)->canonical_orport.addr,
+                 "[ffff:3333:1111::8]");
+  tt_str_op(connection_describe(conn), OP_EQ,
+            "OR connection (open) with [ffff:3333:1111::2]:8080 "
+            "ID=<none> RSA_ID=0000000700000000000000000000000000000000 "
+            "canonical_addr=[ffff:3333:1111::8]:8080");
+
+  // Clear identity_digest so that free_minimal won't complain.
+  memset(TO_OR_CONN(conn)->identity_digest, 0, DIGEST_LEN);
+
+ done:
+  connection_free_minimal(conn);
+}
+
+#ifndef COCCI
 #define CONNECTION_TESTCASE(name, fork, setup)                           \
   { #name, test_conn_##name, fork, &setup, NULL }
 
+#define STR(x) #x
 /* where arg is an expression (constant, variable, compound expression) */
-#define CONNECTION_TESTCASE_ARG(name, fork, setup, arg)                  \
-  { #name "_" #arg, test_conn_##name, fork, &setup, (void *)arg }
+#define CONNECTION_TESTCASE_ARG(name, fork, setup, arg)                 \
+  { #name "_" STR(x),                                                   \
+      test_conn_##name,                                                 \
+      fork,                                                             \
+      &setup,                                                           \
+      (void *)arg }
+#endif /* !defined(COCCI) */
+
+static const unsigned int PROXY_CONNECT_ARG = PROXY_CONNECT;
+static const unsigned int PROXY_HAPROXY_ARG = PROXY_HAPROXY;
 
 struct testcase_t connection_tests[] = {
   CONNECTION_TESTCASE(get_basic, TT_FORK, test_conn_get_basic_st),
   CONNECTION_TESTCASE(get_rend,  TT_FORK, test_conn_get_rend_st),
   CONNECTION_TESTCASE(get_rsrc,  TT_FORK, test_conn_get_rsrc_st),
+
   CONNECTION_TESTCASE_ARG(download_status,  TT_FORK,
-                          test_conn_download_status_st, FLAV_MICRODESC),
+                          test_conn_download_status_st, "microdesc"),
   CONNECTION_TESTCASE_ARG(download_status,  TT_FORK,
-                          test_conn_download_status_st, FLAV_NS),
-//CONNECTION_TESTCASE(func_suffix, TT_FORK, setup_func_pair),
+                          test_conn_download_status_st, "ns"),
+
+  CONNECTION_TESTCASE_ARG(https_proxy_connect,   TT_FORK,
+                          test_conn_proxy_connect_st, &PROXY_CONNECT_ARG),
+  CONNECTION_TESTCASE_ARG(haproxy_proxy_connect, TT_FORK,
+                          test_conn_proxy_connect_st, &PROXY_HAPROXY_ARG),
+
+  //CONNECTION_TESTCASE(func_suffix, TT_FORK, setup_func_pair),
   { "failed_orconn_tracker", test_failed_orconn_tracker, TT_FORK, NULL, NULL },
+  { "describe", test_conn_describe, TT_FORK, NULL, NULL },
   END_OF_TESTCASES
 };

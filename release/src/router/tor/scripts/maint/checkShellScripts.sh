@@ -34,6 +34,9 @@ if [ ! -d "$TOPLEVEL/src" ]; then
     exit 1
 fi
 
+# Remove obsolete scripts generated from older versions of Tor
+rm -f "$TOPLEVEL/contrib/dist/suse/tor.sh" "$TOPLEVEL/contrib/dist/tor.sh"
+
 # Check *.sh scripts, but ignore the ones that we can't fix
 find "$TOPLEVEL/contrib" "$TOPLEVEL/doc" "$TOPLEVEL/scripts" "$TOPLEVEL/src" \
     -name "*.sh" \

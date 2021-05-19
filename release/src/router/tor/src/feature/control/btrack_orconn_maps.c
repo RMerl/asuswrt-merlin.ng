@@ -1,4 +1,4 @@
-/* Copyright (c) 2007-2019, The Tor Project, Inc. */
+/* Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -47,17 +47,18 @@ bto_chan_eq_(bt_orconn_t *a, bt_orconn_t *b)
 }
 
 HT_HEAD(bto_gid_ht, bt_orconn_t);
-HT_PROTOTYPE(bto_gid_ht, bt_orconn_t, node, bto_gid_hash_, bto_gid_eq_)
+HT_PROTOTYPE(bto_gid_ht, bt_orconn_t, node, bto_gid_hash_, bto_gid_eq_);
 HT_GENERATE2(bto_gid_ht, bt_orconn_t, node,
              bto_gid_hash_, bto_gid_eq_, 0.6,
-             tor_reallocarray_, tor_free_)
+             tor_reallocarray_, tor_free_);
 static struct bto_gid_ht *bto_gid_map;
 
 HT_HEAD(bto_chan_ht, bt_orconn_t);
-HT_PROTOTYPE(bto_chan_ht, bt_orconn_t, chan_node, bto_chan_hash_, bto_chan_eq_)
+HT_PROTOTYPE(bto_chan_ht, bt_orconn_t, chan_node, bto_chan_hash_,
+             bto_chan_eq_);
 HT_GENERATE2(bto_chan_ht, bt_orconn_t, chan_node,
              bto_chan_hash_, bto_chan_eq_, 0.6,
-             tor_reallocarray_, tor_free_)
+             tor_reallocarray_, tor_free_);
 static struct bto_chan_ht *bto_chan_map;
 
 /** Clear the GID hash map, freeing any bt_orconn_t objects that become

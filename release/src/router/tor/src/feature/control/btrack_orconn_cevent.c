@@ -1,4 +1,4 @@
-/* Copyright (c) 2007-2019, The Tor Project, Inc. */
+/* Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -45,6 +45,7 @@ using_proxy(const bt_orconn_t *bto)
   case PROXY_CONNECT:
   case PROXY_SOCKS4:
   case PROXY_SOCKS5:
+  case PROXY_HAPROXY:
     return true;
   default:
     return false;
@@ -146,6 +147,7 @@ bto_cevent_apconn(const bt_orconn_t *bto)
     break;
   case OR_CONN_STATE_OPEN:
     control_event_bootstrap(BOOTSTRAP_STATUS_AP_HANDSHAKE_DONE, 0);
+    break;
   default:
     break;
   }

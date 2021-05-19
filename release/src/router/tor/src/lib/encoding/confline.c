@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -151,6 +151,8 @@ config_get_lines_aux(const char *string, config_line_t **result, int extended,
       if (allow_include && !strcmp(k, "%include") && handle_include) {
         tor_free(k);
         include_used = 1;
+        log_notice(LD_CONFIG, "Processing configuration path \"%s\" at "
+                   "recursion level %d.", v, recursion_level);
 
         config_line_t *include_list;
         if (handle_include(v, recursion_level, extended, &include_list,
@@ -161,9 +163,6 @@ config_get_lines_aux(const char *string, config_line_t **result, int extended,
           tor_free(v);
           return -1;
         }
-        log_notice(LD_CONFIG, "Included configuration file or "
-                   "directory at recursion level %d: \"%s\".",
-                   recursion_level, v);
         *next = include_list;
         if (list_last)
           next = &list_last->next;
@@ -251,6 +250,35 @@ config_lines_dup_and_filter(const config_line_t *inp,
   }
   (*next_out) = NULL;
   return result;
+}
+
+/**
+ * Given a linelist <b>inp</b> beginning with the key <b>header</b>, find the
+ * next line with that key, and remove that instance and all following lines
+ * from the list.  Return the lines that were removed.  Operate
+ * case-insensitively.
+ *
+ * For example, if the header is "H", and <b>inp</b> contains "H, A, B, H, C,
+ * H, D", this function will alter <b>inp</b> to contain only "H, A, B", and
+ * return the elements "H, C, H, D" as a separate list.
+ **/
+config_line_t *
+config_lines_partition(config_line_t *inp, const char *header)
+{
+  if (BUG(inp == NULL))
+    return NULL;
+  if (BUG(strcasecmp(inp->key, header)))
+    return NULL;
+
+  /* Advance ptr until it points to the link to the next segment of this
+     list. */
+  config_line_t **ptr = &inp->next;
+  while (*ptr && strcasecmp((*ptr)->key, header)) {
+    ptr = &(*ptr)->next;
+  }
+  config_line_t *remainder = *ptr;
+  *ptr = NULL;
+  return remainder;
 }
 
 /** Return true iff a and b contain identical keys and values in identical

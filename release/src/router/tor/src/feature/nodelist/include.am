@@ -1,0 +1,49 @@
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+LIBTOR_APP_A_SOURCES += 				\
+	src/feature/nodelist/authcert.c		\
+	src/feature/nodelist/describe.c		\
+	src/feature/nodelist/dirlist.c		\
+	src/feature/nodelist/microdesc.c	\
+	src/feature/nodelist/networkstatus.c	\
+	src/feature/nodelist/nickname.c		\
+	src/feature/nodelist/nodefamily.c	\
+	src/feature/nodelist/nodelist.c		\
+	src/feature/nodelist/node_select.c	\
+	src/feature/nodelist/routerinfo.c	\
+	src/feature/nodelist/routerlist.c	\
+	src/feature/nodelist/routerset.c	\
+	src/feature/nodelist/fmt_routerstatus.c	\
+	src/feature/nodelist/torcert.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/feature/nodelist/authcert.h			\
+	src/feature/nodelist/authority_cert_st.h	\
+	src/feature/nodelist/describe.h			\
+	src/feature/nodelist/desc_store_st.h		\
+	src/feature/nodelist/dirlist.h			\
+	src/feature/nodelist/document_signature_st.h	\
+	src/feature/nodelist/extrainfo_st.h		\
+	src/feature/nodelist/microdesc.h		\
+	src/feature/nodelist/microdesc_st.h		\
+	src/feature/nodelist/networkstatus.h		\
+	src/feature/nodelist/networkstatus_sr_info_st.h	\
+	src/feature/nodelist/networkstatus_st.h		\
+	src/feature/nodelist/networkstatus_voter_info_st.h	\
+	src/feature/nodelist/nickname.h			\
+	src/feature/nodelist/node_st.h			\
+	src/feature/nodelist/nodefamily.h		\
+	src/feature/nodelist/nodefamily_st.h		\
+	src/feature/nodelist/nodelist.h			\
+	src/feature/nodelist/node_select.h		\
+	src/feature/nodelist/routerinfo.h		\
+	src/feature/nodelist/routerinfo_st.h		\
+	src/feature/nodelist/routerlist.h		\
+	src/feature/nodelist/routerlist_st.h		\
+	src/feature/nodelist/routerset.h		\
+	src/feature/nodelist/fmt_routerstatus.h		\
+	src/feature/nodelist/routerstatus_st.h		\
+	src/feature/nodelist/signed_descriptor_st.h	\
+	src/feature/nodelist/torcert.h			\
+	src/feature/nodelist/vote_routerstatus_st.h

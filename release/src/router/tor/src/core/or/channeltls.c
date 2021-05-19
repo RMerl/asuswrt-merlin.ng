@@ -1,4 +1,4 @@
-/* * Copyright (c) 2012-2019, The Tor Project, Inc. */
+/* * Copyright (c) 2012-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -34,7 +34,7 @@
  * Define this so channel.h gives us things only channel_t subclasses
  * should touch.
  */
-#define TOR_CHANNEL_INTERNAL_
+#define CHANNEL_OBJECT_PRIVATE
 
 #define CHANNELTLS_PRIVATE
 
@@ -45,8 +45,10 @@
 #include "core/or/circuitmux_ewma.h"
 #include "core/or/command.h"
 #include "app/config/config.h"
+#include "app/config/resolve_addr.h"
 #include "core/mainloop/connection.h"
 #include "core/or/connection_or.h"
+#include "feature/relay/relay_handshake.h"
 #include "feature/control/control.h"
 #include "feature/client/entrynodes.h"
 #include "trunnel/link_handshake.h"
@@ -61,15 +63,16 @@
 #include "trunnel/channelpadding_negotiation.h"
 #include "trunnel/netinfo.h"
 #include "core/or/channelpadding.h"
+#include "core/or/extendinfo.h"
 
 #include "core/or/cell_st.h"
 #include "core/or/cell_queue_st.h"
-#include "core/or/extend_info_st.h"
 #include "core/or/or_connection_st.h"
 #include "core/or/or_handshake_certs_st.h"
 #include "core/or/or_handshake_state_st.h"
 #include "feature/nodelist/routerinfo_st.h"
 #include "core/or/var_cell_st.h"
+#include "src/feature/relay/relay_find_addr.h"
 
 #include "lib/tls/tortls.h"
 #include "lib/tls/x509.h"
@@ -100,14 +103,13 @@ static void channel_tls_close_method(channel_t *chan);
 static const char * channel_tls_describe_transport_method(channel_t *chan);
 static void channel_tls_free_method(channel_t *chan);
 static double channel_tls_get_overhead_estimate_method(channel_t *chan);
-static int
-channel_tls_get_remote_addr_method(channel_t *chan, tor_addr_t *addr_out);
+static int channel_tls_get_remote_addr_method(const channel_t *chan,
+                                              tor_addr_t *addr_out);
 static int
 channel_tls_get_transport_name_method(channel_t *chan, char **transport_out);
-static const char *
-channel_tls_get_remote_descr_method(channel_t *chan, int flags);
+static const char *channel_tls_describe_peer_method(const channel_t *chan);
 static int channel_tls_has_queued_writes_method(channel_t *chan);
-static int channel_tls_is_canonical_method(channel_t *chan, int req);
+static int channel_tls_is_canonical_method(channel_t *chan);
 static int
 channel_tls_matches_extend_info_method(channel_t *chan,
                                        extend_info_t *extend_info);
@@ -161,7 +163,7 @@ channel_tls_common_init(channel_tls_t *tlschan)
   chan->free_fn = channel_tls_free_method;
   chan->get_overhead_estimate = channel_tls_get_overhead_estimate_method;
   chan->get_remote_addr = channel_tls_get_remote_addr_method;
-  chan->get_remote_descr = channel_tls_get_remote_descr_method;
+  chan->describe_peer = channel_tls_describe_peer_method;
   chan->get_transport_name = channel_tls_get_transport_name_method;
   chan->has_queued_writes = channel_tls_has_queued_writes_method;
   chan->is_canonical = channel_tls_is_canonical_method;
@@ -201,7 +203,7 @@ channel_tls_connect(const tor_addr_t *addr, uint16_t port,
             tlschan,
             (chan->global_identifier));
 
-  if (is_local_addr(addr)) {
+  if (is_local_to_resolve_addr(addr)) {
     log_debug(LD_CHANNEL,
               "Marking new outgoing channel %"PRIu64 " at %p as local",
               (chan->global_identifier), chan);
@@ -338,7 +340,7 @@ channel_tls_handle_incoming(or_connection_t *orconn)
   tlschan->conn = orconn;
   orconn->chan = tlschan;
 
-  if (is_local_addr(&(TO_CONN(orconn)->addr))) {
+  if (is_local_to_resolve_addr(&(TO_CONN(orconn)->addr))) {
     log_debug(LD_CHANNEL,
               "Marking new incoming channel %"PRIu64 " at %p as local",
               (chan->global_identifier), chan);
@@ -356,6 +358,31 @@ channel_tls_handle_incoming(or_connection_t *orconn)
   channel_register(chan);
 
   return chan;
+}
+
+/**
+ * Set the `potentially_used_for_bootstrapping` flag on the or_connection_t
+ * corresponding to the provided channel.
+ *
+ * This flag indicates that if the connection fails, it might be interesting
+ * to the bootstrapping subsystem.  (The bootstrapping system only cares about
+ * channels that we have tried to use for our own circuits.  Other channels
+ * may have been launched in response to EXTEND cells from somebody else, and
+ * if they fail, it won't necessarily indicate a bootstrapping problem.)
+ **/
+void
+channel_mark_as_used_for_origin_circuit(channel_t *chan)
+{
+  if (BUG(!chan))
+    return;
+  if (chan->magic != TLS_CHAN_MAGIC)
+    return;
+  channel_tls_t *tlschan = channel_tls_from_base(chan);
+  if (BUG(!tlschan))
+    return;
+
+  if (tlschan->conn)
+    tlschan->conn->potentially_used_for_bootstrapping = 1;
 }
 
 /*********
@@ -385,6 +412,25 @@ channel_tls_from_base(channel_t *chan)
   tor_assert(chan->magic == TLS_CHAN_MAGIC);
 
   return (channel_tls_t *)(chan);
+}
+
+/**
+ * Cast a const channel_tls_t to a const channel_t.
+ */
+const channel_t *
+channel_tls_to_base_const(const channel_tls_t *tlschan)
+{
+  return channel_tls_to_base((channel_tls_t*) tlschan);
+}
+
+/**
+ * Cast a const channel_t to a const channel_tls_t, with appropriate
+ * type-checking asserts.
+ */
+const channel_tls_t *
+channel_tls_from_base_const(const channel_t *chan)
+{
+  return channel_tls_from_base((channel_t *)chan);
 }
 
 /********************************************
@@ -508,24 +554,29 @@ channel_tls_get_overhead_estimate_method(channel_t *chan)
  * Get the remote address of a channel_tls_t.
  *
  * This implements the get_remote_addr method for channel_tls_t; copy the
- * remote endpoint of the channel to addr_out and return 1 (always
- * succeeds for this transport).
+ * remote endpoint of the channel to addr_out and return 1.  (Always
+ * succeeds if this channel is attached to an OR connection.)
+ *
+ * Always returns the real address of the peer, not the canonical address.
  */
 static int
-channel_tls_get_remote_addr_method(channel_t *chan, tor_addr_t *addr_out)
+channel_tls_get_remote_addr_method(const channel_t *chan,
+                                   tor_addr_t *addr_out)
 {
-  int rv = 0;
-  channel_tls_t *tlschan = BASE_CHAN_TO_TLS(chan);
+  const channel_tls_t *tlschan = CONST_BASE_CHAN_TO_TLS(chan);
 
   tor_assert(tlschan);
   tor_assert(addr_out);
 
-  if (tlschan->conn) {
-    tor_addr_copy(addr_out, &(tlschan->conn->real_addr));
-    rv = 1;
-  } else tor_addr_make_unspec(addr_out);
+  if (tlschan->conn == NULL) {
+    tor_addr_make_unspec(addr_out);
+    return 0;
+  }
 
-  return rv;
+  /* They want the real address, so give it to them. */
+  tor_addr_copy(addr_out, &TO_CONN(tlschan->conn)->addr);
+
+  return 1;
 }
 
 /**
@@ -553,65 +604,22 @@ channel_tls_get_transport_name_method(channel_t *chan, char **transport_out)
 }
 
 /**
- * Get endpoint description of a channel_tls_t.
+ * Get a human-readable endpoint description of a channel_tls_t.
  *
- * This implements the get_remote_descr method for channel_tls_t; it returns
- * a text description of the remote endpoint of the channel suitable for use
- * in log messages. The req parameter is 0 for the canonical address or 1 for
- * the actual address seen.
+ * This format is intended for logging, and may change in the future;
+ * nothing should parse or rely on its particular details.
  */
 static const char *
-channel_tls_get_remote_descr_method(channel_t *chan, int flags)
+channel_tls_describe_peer_method(const channel_t *chan)
 {
-#define MAX_DESCR_LEN 32
-
-  static char buf[MAX_DESCR_LEN + 1];
-  channel_tls_t *tlschan = BASE_CHAN_TO_TLS(chan);
-  connection_t *conn;
-  const char *answer = NULL;
-  char *addr_str;
-
+  const channel_tls_t *tlschan = CONST_BASE_CHAN_TO_TLS(chan);
   tor_assert(tlschan);
 
   if (tlschan->conn) {
-    conn = TO_CONN(tlschan->conn);
-    switch (flags) {
-      case 0:
-        /* Canonical address with port*/
-        tor_snprintf(buf, MAX_DESCR_LEN + 1,
-                     "%s:%u", conn->address, conn->port);
-        answer = buf;
-        break;
-      case GRD_FLAG_ORIGINAL:
-        /* Actual address with port */
-        addr_str = tor_addr_to_str_dup(&(tlschan->conn->real_addr));
-        tor_snprintf(buf, MAX_DESCR_LEN + 1,
-                     "%s:%u", addr_str, conn->port);
-        tor_free(addr_str);
-        answer = buf;
-        break;
-      case GRD_FLAG_ADDR_ONLY:
-        /* Canonical address, no port */
-        strlcpy(buf, conn->address, sizeof(buf));
-        answer = buf;
-        break;
-      case GRD_FLAG_ORIGINAL|GRD_FLAG_ADDR_ONLY:
-        /* Actual address, no port */
-        addr_str = tor_addr_to_str_dup(&(tlschan->conn->real_addr));
-        strlcpy(buf, addr_str, sizeof(buf));
-        tor_free(addr_str);
-        answer = buf;
-        break;
-      default:
-        /* Something's broken in channel.c */
-        tor_assert_nonfatal_unreached_once();
-    }
+    return connection_describe_peer(TO_CONN(tlschan->conn));
   } else {
-    strlcpy(buf, "(No connection)", sizeof(buf));
-    answer = buf;
+    return "(No connection)";
   }
-
-  return answer;
 }
 
 /**
@@ -644,12 +652,11 @@ channel_tls_has_queued_writes_method(channel_t *chan)
 /**
  * Tell the upper layer if we're canonical.
  *
- * This implements the is_canonical method for channel_tls_t; if req is zero,
- * it returns whether this is a canonical channel, and if it is one it returns
- * whether that can be relied upon.
+ * This implements the is_canonical method for channel_tls_t:
+ * it returns whether this is a canonical channel.
  */
 static int
-channel_tls_is_canonical_method(channel_t *chan, int req)
+channel_tls_is_canonical_method(channel_t *chan)
 {
   int answer = 0;
   channel_tls_t *tlschan = BASE_CHAN_TO_TLS(chan);
@@ -657,24 +664,13 @@ channel_tls_is_canonical_method(channel_t *chan, int req)
   tor_assert(tlschan);
 
   if (tlschan->conn) {
-    switch (req) {
-      case 0:
-        answer = tlschan->conn->is_canonical;
-        break;
-      case 1:
-        /*
-         * Is the is_canonical bit reliable?  In protocols version 2 and up
-         * we get the canonical address from a NETINFO cell, but in older
-         * versions it might be based on an obsolete descriptor.
-         */
-        answer = (tlschan->conn->link_proto >= 2);
-        break;
-      default:
-        /* This shouldn't happen; channel.c is broken if it does */
-        tor_assert_nonfatal_unreached_once();
-    }
+    /* If this bit is set to 0, and link_proto is sufficiently old, then we
+     * can't actually _rely_ on this being a non-canonical channel.
+     * Nonetheless, we're going to believe that this is a non-canonical
+     * channel in this case, since nobody should be using these link protocols
+     * any more. */
+    answer = tlschan->conn->is_canonical;
   }
-  /* else return 0 for tlschan->conn == NULL */
 
   return answer;
 }
@@ -684,6 +680,9 @@ channel_tls_is_canonical_method(channel_t *chan, int req)
  *
  * This implements the matches_extend_info method for channel_tls_t; the upper
  * layer wants to know if this channel matches an extend_info_t.
+ *
+ * NOTE that this function only checks for an address/port match, and should
+ * be used only when no identify is available.
  */
 static int
 channel_tls_matches_extend_info_method(channel_t *chan,
@@ -703,9 +702,19 @@ channel_tls_matches_extend_info_method(channel_t *chan,
     return 0;
   }
 
-  return (tor_addr_eq(&(extend_info->addr),
-                      &(TO_CONN(tlschan->conn)->addr)) &&
-         (extend_info->port == TO_CONN(tlschan->conn)->port));
+  const tor_addr_port_t *orport = &tlschan->conn->canonical_orport;
+  // If the canonical address is set, then we'll allow matches based on that.
+  if (! tor_addr_is_unspec(&orport->addr)) {
+    if (extend_info_has_orport(extend_info, &orport->addr, orport->port)) {
+      return 1;
+    }
+  }
+
+  // We also want to match if the true address and port are listed in the
+  // extend info.
+  return extend_info_has_orport(extend_info,
+                                &TO_CONN(tlschan->conn)->addr,
+                                TO_CONN(tlschan->conn)->port);
 }
 
 /**
@@ -733,16 +742,19 @@ channel_tls_matches_target_method(channel_t *chan,
     return 0;
   }
 
-  /* real_addr is the address this connection came from.
-   * base_.addr is updated by connection_or_init_conn_from_address()
+  /* addr is the address this connection came from.
+   * canonical_orport is updated by connection_or_init_conn_from_address()
    * to be the address in the descriptor. It may be tempting to
    * allow either address to be allowed, but if we did so, it would
-   * enable someone who steals a relay's keys to impersonate/MITM it
+   * enable someone who steals a relay's keys to covertly impersonate/MITM it
    * from anywhere on the Internet! (Because they could make long-lived
    * TLS connections from anywhere to all relays, and wait for them to
    * be used for extends).
+   *
+   * An adversary who has stolen a relay's keys could also post a fake relay
+   * descriptor, but that attack is easier to detect.
    */
-  return tor_addr_eq(&(tlschan->conn->real_addr), target);
+  return tor_addr_eq(&TO_CONN(tlschan->conn)->addr, target);
 }
 
 /**
@@ -1236,8 +1248,7 @@ channel_tls_handle_var_cell(var_cell_t *var_cell, or_connection_t *conn)
        * the v2 and v3 handshakes. */
       /* But that should be happening any longer've disabled bufferevents. */
       tor_assert_nonfatal_unreached_once();
-
-      /* fall through */
+      FALLTHROUGH_UNLESS_ALL_BUGS_ARE_FATAL;
     case OR_CONN_STATE_TLS_SERVER_RENEGOTIATING:
       if (!(command_allowed_before_handshake(var_cell->command))) {
         log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
@@ -1351,7 +1362,7 @@ channel_tls_update_marks(or_connection_t *conn)
 
   chan = TLS_CHAN_TO_BASE(conn->chan);
 
-  if (is_local_addr(&(TO_CONN(conn)->addr))) {
+  if (is_local_to_resolve_addr(&(TO_CONN(conn)->addr))) {
     if (!channel_is_local(chan)) {
       log_debug(LD_CHANNEL,
                 "Marking channel %"PRIu64 " at %p as local",
@@ -1416,7 +1427,7 @@ enter_v3_handshake_with_cell(var_cell_t *cell, channel_tls_t *chan)
            "OR_HANDSHAKING_V3, on a connection we originated.");
   }
   connection_or_block_renegotiation(chan->conn);
-  chan->conn->base_.state = OR_CONN_STATE_OR_HANDSHAKING_V3;
+  connection_or_change_state(chan->conn, OR_CONN_STATE_OR_HANDSHAKING_V3);
   if (connection_init_or_handshake_state(chan->conn, started_here) < 0) {
     connection_or_close_for_error(chan->conn, 0);
     return -1;
@@ -1515,7 +1526,7 @@ channel_tls_process_versions_cell(var_cell_t *cell, channel_tls_t *chan)
     log_fn(LOG_WARN, LD_OR,
            "Negotiated link with non-2 protocol after doing a v2 TLS "
            "handshake with %s. Closing connection.",
-           fmt_addr(&chan->conn->base_.addr));
+           connection_describe_peer(TO_CONN(chan->conn)));
     connection_or_close_for_error(chan->conn, 0);
     return;
   }
@@ -1527,10 +1538,9 @@ channel_tls_process_versions_cell(var_cell_t *cell, channel_tls_t *chan)
 
   if (chan->conn->link_proto == 2) {
     log_info(LD_OR,
-             "Negotiated version %d with %s:%d; sending NETINFO.",
+             "Negotiated version %d on %s; sending NETINFO.",
              highest_supported_version,
-             safe_str_client(chan->conn->base_.address),
-             chan->conn->base_.port);
+             connection_describe(TO_CONN(chan->conn)));
 
     if (connection_or_send_netinfo(chan->conn) < 0) {
       connection_or_close_for_error(chan->conn, 0);
@@ -1550,10 +1560,9 @@ channel_tls_process_versions_cell(var_cell_t *cell, channel_tls_t *chan)
     tor_assert(chan->conn->link_proto >= 3);
 
     log_info(LD_OR,
-             "Negotiated version %d with %s:%d; %s%s%s%s%s",
+             "Negotiated version %d with on %s; %s%s%s%s%s",
              highest_supported_version,
-             safe_str_client(chan->conn->base_.address),
-             chan->conn->base_.port,
+             connection_describe(TO_CONN(chan->conn)),
              send_any ? "Sending cells:" : "Waiting for CERTS cell",
              send_versions ? " VERSIONS" : "",
              send_certs ? " CERTS" : "",
@@ -1664,7 +1673,7 @@ tor_addr_from_netinfo_addr(tor_addr_t *tor_addr,
   } else if (type == NETINFO_ADDR_TYPE_IPV6 && len == 16) {
     const uint8_t *ipv6_bytes = netinfo_addr_getconstarray_addr_ipv6(
                                   netinfo_addr);
-    tor_addr_from_ipv6_bytes(tor_addr, (const char *)ipv6_bytes);
+    tor_addr_from_ipv6_bytes(tor_addr, ipv6_bytes);
   } else {
     log_fn(LOG_PROTOCOL_WARN, LD_OR, "Cannot read address from NETINFO "
                                      "- wrong type/length.");
@@ -1684,6 +1693,85 @@ static inline time_t
 time_abs(time_t val)
 {
   return (val < 0) ? -val : val;
+}
+
+/** Return true iff the channel can process a NETINFO cell. For this to return
+ * true, these channel conditions apply:
+ *
+ *    1. Link protocol is version 2 or higher (tor-spec.txt, NETINFO cells
+ *       section).
+ *
+ *    2. Underlying OR connection of the channel is either in v2 or v3
+ *       handshaking state.
+ */
+static bool
+can_process_netinfo_cell(const channel_tls_t *chan)
+{
+  /* NETINFO cells can only be negotiated on link protocol 2 or higher. */
+  if (chan->conn->link_proto < 2) {
+    log_fn(LOG_PROTOCOL_WARN, LD_OR,
+           "Received a NETINFO cell on %s connection; dropping.",
+           chan->conn->link_proto == 0 ? "non-versioned" : "a v1");
+    return false;
+  }
+
+  /* Can't process a NETINFO cell if the connection is not handshaking. */
+  if (chan->conn->base_.state != OR_CONN_STATE_OR_HANDSHAKING_V2 &&
+      chan->conn->base_.state != OR_CONN_STATE_OR_HANDSHAKING_V3) {
+    log_fn(LOG_PROTOCOL_WARN, LD_OR,
+           "Received a NETINFO cell on non-handshaking connection; dropping.");
+    return false;
+  }
+
+  /* Make sure we do have handshake state. */
+  tor_assert(chan->conn->handshake_state);
+  tor_assert(chan->conn->handshake_state->received_versions);
+
+  return true;
+}
+
+/** Mark the given channel endpoint as a client (which means either a tor
+ * client or a tor bridge).
+ *
+ * This MUST be done on an _unauthenticated_ channel. It is a mistake to mark
+ * an authenticated channel as a client.
+ *
+ * The following is done on the channel:
+ *
+ *    1. Marked as a client.
+ *    2. Type of circuit ID type is set.
+ *    3. The underlying OR connection is initialized with the address of the
+ *       endpoint.
+ */
+static void
+mark_channel_tls_endpoint_as_client(channel_tls_t *chan)
+{
+  /* Ending up here for an authenticated link is a mistake. */
+  if (BUG(chan->conn->handshake_state->authenticated)) {
+    return;
+  }
+
+  tor_assert(tor_digest_is_zero(
+            (const char*)(chan->conn->handshake_state->
+                authenticated_rsa_peer_id)));
+  tor_assert(fast_mem_is_zero(
+            (const char*)(chan->conn->handshake_state->
+                          authenticated_ed25519_peer_id.pubkey), 32));
+  /* If the client never authenticated, it's a tor client or bridge
+   * relay, and we must not use it for EXTEND requests (nor could we, as
+   * there are no authenticated peer IDs) */
+  channel_mark_client(TLS_CHAN_TO_BASE(chan));
+  channel_set_circid_type(TLS_CHAN_TO_BASE(chan), NULL,
+         chan->conn->link_proto < MIN_LINK_PROTO_FOR_WIDE_CIRC_IDS);
+
+  connection_or_init_conn_from_address(chan->conn,
+            &(chan->conn->base_.addr),
+            chan->conn->base_.port,
+            /* zero, checked above */
+            (const char*)(chan->conn->handshake_state->
+                          authenticated_rsa_peer_id),
+            NULL, /* Ed25519 ID: Also checked as zero */
+            0);
 }
 
 /**
@@ -1711,20 +1799,12 @@ channel_tls_process_netinfo_cell(cell_t *cell, channel_tls_t *chan)
   tor_assert(chan);
   tor_assert(chan->conn);
 
-  if (chan->conn->link_proto < 2) {
-    log_fn(LOG_PROTOCOL_WARN, LD_OR,
-           "Received a NETINFO cell on %s connection; dropping.",
-           chan->conn->link_proto == 0 ? "non-versioned" : "a v1");
+  /* Make sure we can process a NETINFO cell. Link protocol and state
+   * validation is done to make sure of it. */
+  if (!can_process_netinfo_cell(chan)) {
     return;
   }
-  if (chan->conn->base_.state != OR_CONN_STATE_OR_HANDSHAKING_V2 &&
-      chan->conn->base_.state != OR_CONN_STATE_OR_HANDSHAKING_V3) {
-    log_fn(LOG_PROTOCOL_WARN, LD_OR,
-           "Received a NETINFO cell on non-handshaking connection; dropping.");
-    return;
-  }
-  tor_assert(chan->conn->handshake_state &&
-             chan->conn->handshake_state->received_versions);
+
   started_here = connection_or_nonopen_was_started_here(chan->conn);
   identity_digest = chan->conn->identity_digest;
 
@@ -1739,30 +1819,13 @@ channel_tls_process_netinfo_cell(cell_t *cell, channel_tls_t *chan)
         return;
       }
     } else {
-      /* we're the server.  If the client never authenticated, we have
-         some housekeeping to do.*/
+      /* We're the server. If the client never authenticated, we have some
+       * housekeeping to do.
+       *
+       * It's a tor client or bridge relay, and we must not use it for EXTEND
+       * requests (nor could we, as there are no authenticated peer IDs) */
       if (!(chan->conn->handshake_state->authenticated)) {
-        tor_assert(tor_digest_is_zero(
-                  (const char*)(chan->conn->handshake_state->
-                      authenticated_rsa_peer_id)));
-        tor_assert(fast_mem_is_zero(
-                  (const char*)(chan->conn->handshake_state->
-                                authenticated_ed25519_peer_id.pubkey), 32));
-        /* If the client never authenticated, it's a tor client or bridge
-         * relay, and we must not use it for EXTEND requests (nor could we, as
-         * there are no authenticated peer IDs) */
-        channel_mark_client(TLS_CHAN_TO_BASE(chan));
-        channel_set_circid_type(TLS_CHAN_TO_BASE(chan), NULL,
-               chan->conn->link_proto < MIN_LINK_PROTO_FOR_WIDE_CIRC_IDS);
-
-        connection_or_init_conn_from_address(chan->conn,
-                  &(chan->conn->base_.addr),
-                  chan->conn->base_.port,
-                  /* zero, checked above */
-                  (const char*)(chan->conn->handshake_state->
-                                authenticated_rsa_peer_id),
-                  NULL, /* Ed25519 ID: Also checked as zero */
-                  0);
+        mark_channel_tls_endpoint_as_client(chan);
       }
     }
   }
@@ -1805,7 +1868,7 @@ channel_tls_process_netinfo_cell(cell_t *cell, channel_tls_t *chan)
 
   if (my_addr_type == NETINFO_ADDR_TYPE_IPV4 && my_addr_len == 4) {
     if (!get_options()->BridgeRelay && me &&
-        tor_addr_eq_ipv4h(&my_apparent_addr, me->addr)) {
+        tor_addr_eq(&my_apparent_addr, &me->ipv4_addr)) {
       TLS_CHAN_TO_BASE(chan)->is_canonical_to_peer = 1;
     }
   } else if (my_addr_type == NETINFO_ADDR_TYPE_IPV6 &&
@@ -1815,6 +1878,13 @@ channel_tls_process_netinfo_cell(cell_t *cell, channel_tls_t *chan)
         tor_addr_eq(&my_apparent_addr, &me->ipv6_addr)) {
       TLS_CHAN_TO_BASE(chan)->is_canonical_to_peer = 1;
     }
+  }
+
+  if (me) {
+    /* We have a descriptor, so we are a relay: record the address that the
+     * other side said we had. */
+    tor_addr_copy(&TLS_CHAN_TO_BASE(chan)->addr_according_to_peer,
+                  &my_apparent_addr);
   }
 
   n_other_addrs = netinfo_cell_get_n_my_addrs(netinfo_cell);
@@ -1839,7 +1909,7 @@ channel_tls_process_netinfo_cell(cell_t *cell, channel_tls_t *chan)
      * might be doing something funny, but nobody else is doing a MITM
      * on the relay's TCP.
      */
-    if (tor_addr_eq(&addr, &(chan->conn->real_addr))) {
+    if (tor_addr_eq(&addr, &TO_CONN(chan->conn)->addr)) {
       connection_or_set_canonical(chan->conn, 1);
       break;
     }
@@ -1849,8 +1919,8 @@ channel_tls_process_netinfo_cell(cell_t *cell, channel_tls_t *chan)
 
   if (me && !TLS_CHAN_TO_BASE(chan)->is_canonical_to_peer &&
       channel_is_canonical(TLS_CHAN_TO_BASE(chan))) {
-    const char *descr =
-      TLS_CHAN_TO_BASE(chan)->get_remote_descr(TLS_CHAN_TO_BASE(chan), 0);
+    const char *descr = channel_describe_peer(
+                                                    TLS_CHAN_TO_BASE(chan));
     log_info(LD_OR,
              "We made a connection to a relay at %s (fp=%s) but we think "
              "they will not consider this connection canonical. They "
@@ -1859,7 +1929,7 @@ channel_tls_process_netinfo_cell(cell_t *cell, channel_tls_t *chan)
              safe_str(hex_str(identity_digest, DIGEST_LEN)),
              safe_str(tor_addr_is_null(&my_apparent_addr) ?
              "<none>" : fmt_and_decorate_addr(&my_apparent_addr)),
-             safe_str(fmt_addr32(me->addr)));
+             safe_str(fmt_addr(&me->ipv4_addr)));
   }
 
   /* Act on apparent skew. */
@@ -1873,8 +1943,12 @@ channel_tls_process_netinfo_cell(cell_t *cell, channel_tls_t *chan)
                        "NETINFO cell", "OR");
   }
 
-  /* XXX maybe act on my_apparent_addr, if the source is sufficiently
-   * trustworthy. */
+  /* Consider our apparent address as a possible suggestion for our address if
+   * we were unable to resolve it previously. The endpoint address is passed
+   * in order to make sure to never consider an address that is the same as
+   * our endpoint. */
+  relay_address_new_suggestion(&my_apparent_addr, &TO_CONN(chan->conn)->addr,
+                               identity_digest);
 
   if (! chan->conn->handshake_state->sent_netinfo) {
     /* If we were prepared to authenticate, but we never got an AUTH_CHALLENGE
@@ -1888,18 +1962,16 @@ channel_tls_process_netinfo_cell(cell_t *cell, channel_tls_t *chan)
 
   if (connection_or_set_state_open(chan->conn) < 0) {
     log_fn(LOG_PROTOCOL_WARN, LD_OR,
-           "Got good NETINFO cell from %s:%d; but "
+           "Got good NETINFO cell on %s; but "
            "was unable to make the OR connection become open.",
-           safe_str_client(chan->conn->base_.address),
-           chan->conn->base_.port);
+           connection_describe(TO_CONN(chan->conn)));
     connection_or_close_for_error(chan->conn, 0);
   } else {
     log_info(LD_OR,
-             "Got good NETINFO cell from %s:%d; OR connection is now "
+             "Got good NETINFO cell on %s; OR connection is now "
              "open, using protocol version %d. Its ID digest is %s. "
              "Our address is apparently %s.",
-             safe_str_client(chan->conn->base_.address),
-             chan->conn->base_.port,
+             connection_describe(TO_CONN(chan->conn)),
              (int)(chan->conn->link_proto),
              hex_str(identity_digest, DIGEST_LEN),
              tor_addr_is_null(&my_apparent_addr) ?
@@ -1984,9 +2056,9 @@ channel_tls_process_certs_cell(var_cell_t *cell, channel_tls_t *chan)
 #define ERR(s)                                                  \
   do {                                                          \
     log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,                      \
-           "Received a bad CERTS cell from %s:%d: %s",          \
-           safe_str(chan->conn->base_.address),                 \
-           chan->conn->base_.port, (s));                        \
+           "Received a bad CERTS cell on %s: %s",               \
+           connection_describe(TO_CONN(chan->conn)),            \
+           (s));                                                \
     connection_or_close_for_error(chan->conn, 0);               \
     goto err;                                                   \
   } while (0)
@@ -2034,9 +2106,8 @@ channel_tls_process_certs_cell(var_cell_t *cell, channel_tls_t *chan)
         tor_x509_cert_t *x509_cert = tor_x509_cert_decode(cert_body, cert_len);
         if (!x509_cert) {
           log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
-                 "Received undecodable certificate in CERTS cell from %s:%d",
-                 safe_str(chan->conn->base_.address),
-               chan->conn->base_.port);
+                 "Received undecodable certificate in CERTS cell on %s",
+                 connection_describe(TO_CONN(chan->conn)));
         } else {
           if (x509_certs[cert_type]) {
             tor_x509_cert_free(x509_cert);
@@ -2052,9 +2123,8 @@ channel_tls_process_certs_cell(var_cell_t *cell, channel_tls_t *chan)
         if (!ed_cert) {
           log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
                  "Received undecodable Ed certificate "
-                 "in CERTS cell from %s:%d",
-                 safe_str(chan->conn->base_.address),
-               chan->conn->base_.port);
+                 "in CERTS cell on %s",
+                 connection_describe(TO_CONN(chan->conn)));
         } else {
           if (ed_certs[cert_type]) {
             tor_cert_free(ed_cert);
@@ -2164,9 +2234,9 @@ channel_tls_process_certs_cell(var_cell_t *cell, channel_tls_t *chan)
       ERR("Problem setting or checking peer id");
 
     log_info(LD_HANDSHAKE,
-             "Got some good certificates from %s:%d: Authenticated it with "
+             "Got some good certificates on %s: Authenticated it with "
              "RSA%s",
-             safe_str(chan->conn->base_.address), chan->conn->base_.port,
+             connection_describe(TO_CONN(chan->conn)),
              checked_ed_id ? " and Ed25519" : "");
 
     if (!public_server_mode(get_options())) {
@@ -2178,11 +2248,10 @@ channel_tls_process_certs_cell(var_cell_t *cell, channel_tls_t *chan)
   } else {
     /* We can't call it authenticated till we see an AUTHENTICATE cell. */
     log_info(LD_OR,
-             "Got some good RSA%s certificates from %s:%d. "
+             "Got some good RSA%s certificates on %s. "
              "Waiting for AUTHENTICATE.",
              checked_ed_id ? " and Ed25519" : "",
-             safe_str(chan->conn->base_.address),
-             chan->conn->base_.port);
+             connection_describe(TO_CONN(chan->conn)));
     /* XXXX check more stuff? */
   }
 
@@ -2231,9 +2300,9 @@ channel_tls_process_auth_challenge_cell(var_cell_t *cell, channel_tls_t *chan)
 #define ERR(s)                                                  \
   do {                                                          \
     log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,                      \
-           "Received a bad AUTH_CHALLENGE cell from %s:%d: %s", \
-           safe_str(chan->conn->base_.address),                 \
-           chan->conn->base_.port, (s));                        \
+           "Received a bad AUTH_CHALLENGE cell on %s: %s",      \
+           connection_describe(TO_CONN(chan->conn)),            \
+           (s));                                                \
     connection_or_close_for_error(chan->conn, 0);               \
     goto done;                                                  \
   } while (0)
@@ -2278,10 +2347,9 @@ channel_tls_process_auth_challenge_cell(var_cell_t *cell, channel_tls_t *chan)
 
   if (use_type >= 0) {
     log_info(LD_OR,
-             "Got an AUTH_CHALLENGE cell from %s:%d: Sending "
+             "Got an AUTH_CHALLENGE cell on %s: Sending "
              "authentication type %d",
-             safe_str(chan->conn->base_.address),
-             chan->conn->base_.port,
+             connection_describe(TO_CONN(chan->conn)),
              use_type);
 
     if (connection_or_send_authenticate_cell(chan->conn, use_type) < 0) {
@@ -2292,10 +2360,9 @@ channel_tls_process_auth_challenge_cell(var_cell_t *cell, channel_tls_t *chan)
     }
   } else {
     log_info(LD_OR,
-             "Got an AUTH_CHALLENGE cell from %s:%d, but we don't "
+             "Got an AUTH_CHALLENGE cell on %s, but we don't "
              "know any of its authentication types. Not authenticating.",
-             safe_str(chan->conn->base_.address),
-             chan->conn->base_.port);
+             connection_describe(TO_CONN(chan->conn)));
   }
 
   if (connection_or_send_netinfo(chan->conn) < 0) {
@@ -2335,9 +2402,9 @@ channel_tls_process_authenticate_cell(var_cell_t *cell, channel_tls_t *chan)
 #define ERR(s)                                                  \
   do {                                                          \
     log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,                      \
-           "Received a bad AUTHENTICATE cell from %s:%d: %s",   \
-           safe_str(chan->conn->base_.address),                 \
-           chan->conn->base_.port, (s));                        \
+           "Received a bad AUTHENTICATE cell on %s: %s",        \
+           connection_describe(TO_CONN(chan->conn)),            \
+           (s));                                                \
     connection_or_close_for_error(chan->conn, 0);               \
     var_cell_free(expected_cell);                               \
     return;                                                     \
@@ -2498,9 +2565,9 @@ channel_tls_process_authenticate_cell(var_cell_t *cell, channel_tls_t *chan)
     crypto_pk_free(identity_rcvd);
 
     log_debug(LD_HANDSHAKE,
-              "Calling connection_or_init_conn_from_address for %s "
+              "Calling connection_or_init_conn_from_address on %s "
               " from %s, with%s ed25519 id.",
-              safe_str(chan->conn->base_.address),
+              connection_describe(TO_CONN(chan->conn)),
               __func__,
               ed_identity_received ? "" : "out");
 
@@ -2513,10 +2580,9 @@ channel_tls_process_authenticate_cell(var_cell_t *cell, channel_tls_t *chan)
                   0);
 
     log_debug(LD_HANDSHAKE,
-             "Got an AUTHENTICATE cell from %s:%d, type %d: Looks good.",
-             safe_str(chan->conn->base_.address),
-             chan->conn->base_.port,
-             authtype);
+             "Got an AUTHENTICATE cell on %s, type %d: Looks good.",
+              connection_describe(TO_CONN(chan->conn)),
+              authtype);
   }
 
   var_cell_free(expected_cell);

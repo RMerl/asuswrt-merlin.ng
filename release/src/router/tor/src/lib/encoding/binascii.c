@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -275,7 +275,7 @@ base64_encode(char *dest, size_t destlen, const char *src, size_t srclen,
   }
   switch (n_idx) {
   case 0:
-    /* 0 leftover bits, no pading to add. */
+    /* 0 leftover bits, no padding to add. */
     break;
   case 1:
     /* 8 leftover bits, pad to 12 bits, write the 2 6-bit values followed

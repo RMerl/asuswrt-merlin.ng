@@ -27,6 +27,11 @@ commands:
 
 """
 
+# Future imports for Python 2.7, mandatory in 3.0
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import binascii
 try:
     import curve25519
@@ -99,7 +104,7 @@ else:
    def int2byte(i):
       return bytes([i])
 
-def  kdf_rfc5869(key, salt, info, n):
+def kdf_rfc5869(key, salt, info, n):
 
     prk = HMAC(key=salt, msg=key)
 

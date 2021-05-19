@@ -14,6 +14,21 @@ Recognized fields are:
      Time when this state file was written.
      Given in ISO format (YYYY-MM-DD HH:MM:SS)
 
+
+  MinutesSinceUserActivity (integer)
+  Dormant (0, 1, or "auto")
+
+     These values are used to keep track of how long Tor has been idle,
+     for the purpose of becoming 'dormant' after a long period without
+     any user-initiated requests.
+
+     "MinutesSinceUserActivity" is the number of minutes since the last
+     time the user asked us to do something.  It is set to zero if we're
+     dormant.
+
+     "Dormant" is 1 if Tor was dormant when it wrote its state file, 0 if
+     Tor was active, and "auto" if Tor was starting for the first time.
+
   AccountingBytesReadInInterval     (memory unit)
   AccountingBytesWrittenInInterval  (memory unit)
   AccountingExpectedUsage           (memory unit)
@@ -36,12 +51,167 @@ Recognized fields are:
      BytesAtSoftLimit.  If we hit the soft limit already, we did so at
      SoftLimitHitAt.
 
+  TransportProxy
+
+     One or more of these may be present.
+
+     The format is "transportname addr:port", to remember the address
+     at which a pluggable transport was listening. Tor bridges use
+     this information to spawn pluggable transport listeners in the
+     same IP address and TCP port even after tor client restarts.
+
+  BWHistory___Ends           (ISO time)
+  BWHistory___Interval       (integer, number of seconds)
+  BWHistory___Values         (comma-separated list of integer)
+  BWHistory___Maxima         (comma-separated list of integer)
+
+     These values record bandwidth history.  The "Values" fields are a list,
+     for some number of "Intervals", of the total amount read/written during
+     that integer.  The "Maxima" are the highest burst for each interval.
+
+     Interval duration is set by the "Interval" field, in seconds.  The
+     "Ends" field is the ending time of the last interval in each list.
+
+     Recognized values for "___" are:
+         Read -- total bytes read
+         Write -- total bytes written
+         DirRead -- total bytes read for directory connections.
+         DirWrite -- total bytes written for directory connections.
+         IPv6Read -- total bytes read on IPv6 connections
+         IPv6Write -- total bytes written on IPv6 connections
+
+  LastRotatedOnionKey
+
+     The last time that we changed our onion key for a new one.
+     Given in ISO format (YYYY-MM-DD HH:MM:SS)
+
+     This field is used to ensure that onion key rotations happen with the
+     appropriate frequency.
+
+  TotalBuildTimes
+  CircuitBuildAbandonedCount
+  CircuitBuildTimeBin
+
+      These fields are used by the Circuit Build Timeout code, which
+      tries to learn what times are reasonable for circuit construction,
+      so that it can reject circuits that take too long to build.
+
+      CircuitBuildTimeBin is a count of circuits that were build
+      successfully in some timeframe. This entry can repeat; each of
+      these represents some bar on a histogram. The first integer is a
+      number of milliseconds; it tells the position of the center of the
+      histogram bin on the time axis. The second number is a count of
+      circuits in that bin.
+
+      CircuitBuildTimeAbandonedCount is a count of circuits that we
+      simply gave up on building because they were taking far too long.
+
+      TotalBuildTimes is the number of circuit build times that we
+      observed in order to build the above measurements fields.  If it
+      reaches a cap, then older measurements get thrown away.
+
+  Guard [key=value] [key=value]...
+
+      Describes a single entry guard used by the client.  Key=value
+      entries with unrecognized keys are persisted.  Order is not
+      significant.  For more information about terminology used here,
+      system, see guard-spec.txt in the tor specifications repository.
+
+      Recognized keys are:
+
+         in (string)
+
+              The name of a guard selection that this guard is in.
+
+         rsa_id (string)
+
+              RSA fingerprint of this guard, without spaces.
+
+         nickname (string)
+
+              Declared nickname of this guard.
+
+         sampled_on (Time in ISO YYYY-MM-DDTHH:MM:SS format)
+
+              When was this guard added to the Guard sample?
+
+         sampled_by (tor version)
+
+              Which version of Tor added this Guard to the sample?
+              (Used to help with debugging.)
+
+         sampled_idx (integer)
+
+              Index of this guard among sampled guards.
+
+         listed (boolean)
+
+              Did this guard appear in the most recent consensus?
+
+         unlisted_since (Time in ISO YYYY-MM-DDTHH:MM:SS format)
+
+              If this guard is not listed, when is the earliest
+              consensus in which we found it unlisted?
+
+         confirmed_on  (Time in ISO YYYY-MM-DDTHH:MM:SS format)
+
+              When did this guard become confirmed?
+
+         confirmed_idx (integer)
+
+              Index of this guard among confirmed guards.
+
+         bridge_addr (address)
+
+              If this guard is a bridge, its current address.
+
+         pb_use_attempts
+         pb_use_successes
+         pb_circ_attempts
+         pb_successful_circuits_closed
+         pb_collapsed_circuits
+         pb_unusable_circuits
+         pb_timeouts
+
+              Used by the pathbias subsystem to keep a record of the
+              behavior of circuits built through this guard, in hopes of
+              detecting guards try to that interfere with traffic.
+
+              All of these fields are floating-point integers which
+              represent a count of circuits that have been trated in
+              various ways.  These counts decay with time.
+
+              "use_attempts" is a count of the circuits that we've built
+              and tried to use for traffic.
+
+              "successful_circuits_closed" is a count of circuits that
+              have closed "naturally" without timeout or error.
+
+              "use_successes" is a count of circuits that we've sent
+              traffic on, and which closed "naturally" without timeout
+              or error.
+
+              "circ_attempts" is a count of circuits we've tried to
+              build through this guard.
+
+              "collapsed_circuits" is a count of circuits that failed
+              after having been built, but before sending traffic.
+
+              "unusable_circuits" is a count of circuits that we
+              built, but where streams or probes but which failed,
+              or which encountered questionable errors.
+
+              "timeouts" is a count of circuits that encountered a
+              timeout while we were building them.
+
+Obsolete fields include:
+
   EntryGuard
   EntryGuardDownSince
   EntryGuardUnlistedSince
   EntryGuardAddedBy
 
-      These lines form sections related to entry guards.  Each section
+      These lines formed sections related to entry guards.  Each section
       starts with a single EntryGuard line, and is then followed by
       information on the state of the Entry guard.
 
@@ -56,50 +226,17 @@ Recognized fields are:
       space-separated fields: the identity of the entry guard, the version of
       Tor that added it, and the ISO time at which it was added.
 
-  TransportProxy
+      EntryGuardPathBias and  EntryGuardPathUseBias are superseded by
+      the `pb_...` elements in the Guard flag, and served a similar purpose.
 
-     One or more of these may be present.
+      These entries have all been superseded by the Guard line type,
+      since Tor 0.3.0.1-alpha.
 
-     The format is "transportname addr:port", to remember the address
-     at which a pluggable transport was listening. Tor bridges use
-     this information to spawn pluggable transport listeners in the
-     same IP address and TCP port even after tor client restarts.
+  HidServRevCounter
 
-  BWHistoryReadEnds           (ISO time)
-  BWHistoryReadInterval       (integer, number of seconds)
-  BWHistoryReadValues         (comma-separated list of integer)
-  BWHistoryReadMaxima         (comma-separated list of integer)
-  BWHistoryWriteEnds
-  BWHistoryWriteInterval
-  BWHistoryWriteValues
-  BWHistoryWriteMaxima
-  BWHistoryDirReadEnds
-  BWHistoryDirReadInterval
-  BWHistoryDirReadValues
-  BWHistoryDirReadMaxima
-  BWHistoryDirWriteEnds
-  BWHistoryDirWriteInterval
-  BWHistoryDirWriteValues
-  BWHistoryDirWriteMaxima
+      It was once used to ensure that v3 onion service directory revision
+      numbers were strictly increasing; we now use an order-preserving
+      encryption scheme for that purpose.
 
-     These values record bandwidth history.  The "Values" fields are a list, for
-     some number of "Intervals", of the total amount read/written during that
-     integer.  The "Maxima" are the highest burst for each interval.
-
-     Interval duration is set by the "Interval" field, in seconds.  The
-     "Ends" field is the ending time of the last interval in each list.
-
-     The *Read* and *Write* fields are the total amount read and
-     written; the *DirRead* and *DirWrite* variants are for directory
-     traffic only.
-
-  LastRotatedOnionKey
-
-     The last time that we changed our onion key for a new one.
-     Given in ISO format (YYYY-MM-DD HH:MM:SS)
-
-  TotalBuildTimes
-  CircuitBuildAbandonedCount
-  CircuitBuildTimeBin
-
-      XXXX writeme.
+      This option could appear multiple times; each time it does, it
+      applies to a different hidden service.

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -14,10 +14,10 @@
 
 void cpu_init(void);
 void cpuworkers_rotate_keyinfo(void);
-struct workqueue_entry_s;
+struct workqueue_entry_t;
 enum workqueue_reply_t;
 enum workqueue_priority_t;
-MOCK_DECL(struct workqueue_entry_s *, cpuworker_queue_work, (
+MOCK_DECL(struct workqueue_entry_t *, cpuworker_queue_work, (
                     enum workqueue_priority_t priority,
                     enum workqueue_reply_t (*fn)(void *, void *),
                     void (*reply_fn)(void *),

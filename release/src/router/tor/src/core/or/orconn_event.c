@@ -1,4 +1,4 @@
-/* Copyright (c) 2007-2019, The Tor Project, Inc. */
+/* Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -22,7 +22,7 @@
 
 #define ORCONN_EVENT_PRIVATE
 #include "core/or/orconn_event.h"
-#include "core/or/orconn_event_sys.h"
+#include "core/or/or_sys.h"
 
 DECLARE_PUBLISH(orconn_state);
 DECLARE_PUBLISH(orconn_status);
@@ -65,7 +65,7 @@ static dispatch_typefns_t orconn_status_fns = {
   .fmt_fn = orconn_status_fmt,
 };
 
-static int
+int
 orconn_add_pubsub(struct pubsub_connector_t *connector)
 {
   if (DISPATCH_REGISTER_TYPE(connector, orconn_state, &orconn_state_fns))
@@ -90,10 +90,3 @@ orconn_status_publish(orconn_status_msg_t *msg)
 {
   PUBLISH(orconn_status, msg);
 }
-
-const subsys_fns_t sys_orconn_event = {
-  .name = "orconn_event",
-  .supported = true,
-  .level = -33,
-  .add_pubsub = orconn_add_pubsub,
-};

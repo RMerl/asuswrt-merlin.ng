@@ -1,0 +1,11 @@
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+LIBTOR_APP_A_SOURCES += 				\
+	src/feature/api/tor_api.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/feature/api/tor_api_internal.h
+
+# This may someday want to be an installed file?
+noinst_HEADERS += src/feature/api/tor_api.h

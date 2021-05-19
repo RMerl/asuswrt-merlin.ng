@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -28,9 +28,10 @@
 #include "feature/nodelist/microdesc_st.h"
 
 /** List of tokens recognized in microdescriptors */
+// clang-format off
 static token_rule_t microdesc_token_table[] = {
   T1_START("onion-key",        K_ONION_KEY,        NO_ARGS,     NEED_KEY_1024),
-  T01("ntor-onion-key",        K_ONION_KEY_NTOR,   GE(1),       NO_OBJ ),
+  T1("ntor-onion-key",         K_ONION_KEY_NTOR,   GE(1),       NO_OBJ ),
   T0N("id",                    K_ID,               GE(2),       NO_OBJ ),
   T0N("a",                     K_A,                GE(1),       NO_OBJ ),
   T01("family",                K_FAMILY,           CONCAT_ARGS, NO_OBJ ),
@@ -39,6 +40,7 @@ static token_rule_t microdesc_token_table[] = {
   A01("@last-listed",          A_LAST_LISTED,      CONCAT_ARGS, NO_OBJ ),
   END_OF_TABLE
 };
+// clang-format on
 
 /** Assuming that s starts with a microdesc, return the start of the
  * *NEXT* one.  Return NULL on "not found." */
@@ -164,7 +166,7 @@ microdesc_extract_body(microdesc_t *md,
 
 /**
  * Parse a microdescriptor which begins at <b>s</b> and ends at
- * <b>start_of_next_microdesc.  Store its fields into <b>md</b>.  Use
+ * <b>start_of_next_microdesc</b>.  Store its fields into <b>md</b>.  Use
  * <b>where</b> for generating log information.  If <b>allow_annotations</b>
  * is true, then one or more annotations may precede the microdescriptor body
  * proper.  Use <b>area</b> for memory management, clearing it when done.

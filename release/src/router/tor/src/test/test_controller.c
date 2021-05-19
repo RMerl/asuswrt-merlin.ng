@@ -1,9 +1,10 @@
-/* Copyright (c) 2015-2019, The Tor Project, Inc. */
+/* Copyright (c) 2015-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define CONTROL_CMD_PRIVATE
 #define CONTROL_GETINFO_PRIVATE
 #include "core/or/or.h"
+#include "app/config/config.h"
 #include "lib/crypt_ops/crypto_ed25519.h"
 #include "feature/client/bridges.h"
 #include "feature/control/control.h"
@@ -11,11 +12,14 @@
 #include "feature/control/control_getinfo.h"
 #include "feature/control/control_proto.h"
 #include "feature/client/entrynodes.h"
+#include "feature/dircache/cached_dir_st.h"
+#include "feature/dircache/dirserv.h"
 #include "feature/hs/hs_common.h"
 #include "feature/nodelist/networkstatus.h"
 #include "feature/rend/rendservice.h"
 #include "feature/nodelist/authcert.h"
 #include "feature/nodelist/nodelist.h"
+#include "feature/stats/rephist.h"
 #include "test/test.h"
 #include "test/test_helpers.h"
 #include "lib/net/resolve.h"
@@ -119,6 +123,7 @@ test_controller_parse_cmd(void *arg)
   control_cmd_args_free(result);
 }
 
+#ifndef COCCI
 #define OK(inp, out) \
   { inp "\r\n", out, NULL }
 #define ERR(inp, err) \
@@ -128,6 +133,7 @@ test_controller_parse_cmd(void *arg)
   { &syntax,                                     \
       ARRAY_LENGTH(array),                       \
       array }
+#endif /* !defined(COCCI) */
 
 static const parser_testcase_t one_to_three_tests[] = {
    ERR("", "Need at least 1 argument(s)"),
@@ -1691,6 +1697,138 @@ test_download_status_bridge(void *arg)
   return;
 }
 
+/** Mock cached consensus */
+static cached_dir_t *mock_ns_consensus_cache;
+static cached_dir_t *mock_microdesc_consensus_cache;
+
+/**  Mock the function that retrieves consensus from cache. These use a
+ * global variable so that they can be cleared from within the test.
+ * The actual code retains the pointer to the consensus data, but
+ * we are doing this here, to prevent memory leaks
+ * from within the tests */
+static cached_dir_t *
+mock_dirserv_get_consensus(const char *flavor_name)
+{
+  if (!strcmp(flavor_name, "ns")) {
+    mock_ns_consensus_cache = tor_malloc_zero(sizeof(cached_dir_t));
+    mock_ns_consensus_cache->dir = tor_strdup("mock_ns_consensus");
+    return mock_ns_consensus_cache;
+  } else {
+    mock_microdesc_consensus_cache = tor_malloc_zero(sizeof(cached_dir_t));
+    mock_microdesc_consensus_cache->dir = tor_strdup(
+                                            "mock_microdesc_consensus");
+    return mock_microdesc_consensus_cache;
+  }
+}
+
+/** Mock the function that retrieves consensuses
+ *  from a files in the directory. */
+static tor_mmap_t *
+mock_tor_mmap_file(const char* filename)
+{
+  tor_mmap_t *res;
+  res = tor_malloc_zero(sizeof(tor_mmap_t));
+  if (strstr(filename, "cached-consensus") != NULL) {
+    res->data = "mock_ns_consensus";
+  } else if (strstr(filename, "cached-microdesc-consensus") != NULL) {
+    res->data = "mock_microdesc_consensus";
+  } else {
+    res->data = ".";
+  }
+  res->size = strlen(res->data);
+  return res;
+}
+
+/** Mock the function that clears file data
+ * loaded into the memory */
+static int
+mock_tor_munmap_file(tor_mmap_t *handle)
+{
+  tor_free(handle);
+  return 0;
+}
+
+static void
+test_getinfo_helper_current_consensus_from_file(void *arg)
+{
+  /* We just need one of these to pass, it doesn't matter what's in it */
+  control_connection_t dummy;
+  /* Get results out */
+  char *answer = NULL;
+  const char *errmsg = NULL;
+
+  (void)arg;
+
+  MOCK(tor_mmap_file, mock_tor_mmap_file);
+  MOCK(tor_munmap_file, mock_tor_munmap_file);
+
+  getinfo_helper_dir(&dummy,
+                     "dir/status-vote/current/consensus",
+                     &answer,
+                     &errmsg);
+  tt_str_op(answer, OP_EQ, "mock_ns_consensus");
+  tt_ptr_op(errmsg, OP_EQ, NULL);
+  tor_free(answer);
+  errmsg = NULL;
+
+  getinfo_helper_dir(&dummy,
+                     "dir/status-vote/current/consensus-microdesc",
+                     &answer,
+                     &errmsg);
+  tt_str_op(answer, OP_EQ, "mock_microdesc_consensus");
+  tt_ptr_op(errmsg, OP_EQ, NULL);
+  errmsg = NULL;
+
+ done:
+  tor_free(answer);
+  UNMOCK(tor_mmap_file);
+  UNMOCK(tor_munmap_file);
+  return;
+}
+
+static void
+test_getinfo_helper_current_consensus_from_cache(void *arg)
+{
+  /* We just need one of these to pass, it doesn't matter what's in it */
+  control_connection_t dummy;
+  /* Get results out */
+  char *answer = NULL;
+  const char *errmsg = NULL;
+
+  (void)arg;
+  or_options_t *options = get_options_mutable();
+  options->FetchUselessDescriptors = 1;
+  MOCK(dirserv_get_consensus, mock_dirserv_get_consensus);
+
+  getinfo_helper_dir(&dummy,
+                     "dir/status-vote/current/consensus",
+                     &answer,
+                     &errmsg);
+  tt_str_op(answer, OP_EQ, "mock_ns_consensus");
+  tt_ptr_op(errmsg, OP_EQ, NULL);
+  tor_free(answer);
+  tor_free(mock_ns_consensus_cache->dir);
+  tor_free(mock_ns_consensus_cache);
+  errmsg = NULL;
+
+  getinfo_helper_dir(&dummy,
+                     "dir/status-vote/current/consensus-microdesc",
+                     &answer,
+                     &errmsg);
+  tt_str_op(answer, OP_EQ, "mock_microdesc_consensus");
+  tt_ptr_op(errmsg, OP_EQ, NULL);
+  tor_free(mock_microdesc_consensus_cache->dir);
+  tor_free(answer);
+  errmsg = NULL;
+
+ done:
+  options->FetchUselessDescriptors = 0;
+  tor_free(answer);
+  tor_free(mock_microdesc_consensus_cache);
+  UNMOCK(dirserv_get_consensus);
+  return;
+}
+
 /** Set timeval to a mock date and time. This is necessary
  * to make tor_gettimeofday() mockable. */
 static void
@@ -1820,9 +1958,251 @@ test_getinfo_md_all(void *arg)
   return;
 }
 
+static smartlist_t *reply_strs;
+
+static void
+mock_control_write_reply_list(control_connection_t *conn, int code, int c,
+                              const char *s)
+{
+  (void)conn;
+  /* To make matching easier, don't append "\r\n" */
+  smartlist_add_asprintf(reply_strs, "%03d%c%s", code, c, s);
+}
+
+static void
+test_control_reply(void *arg)
+{
+  (void)arg;
+  smartlist_t *lines = smartlist_new();
+
+  MOCK(control_write_reply, mock_control_write_reply);
+
+  tor_free(reply_str);
+  control_reply_clear(lines);
+  control_reply_add_str(lines, 250, "FOO");
+  control_write_reply_lines(NULL, lines);
+  tt_str_op(reply_str, OP_EQ, "FOO");
+
+  tor_free(reply_str);
+  control_reply_clear(lines);
+  control_reply_add_done(lines);
+  control_write_reply_lines(NULL, lines);
+  tt_str_op(reply_str, OP_EQ, "OK");
+
+  tor_free(reply_str);
+  control_reply_clear(lines);
+  UNMOCK(control_write_reply);
+  MOCK(control_write_reply, mock_control_write_reply_list);
+  reply_strs = smartlist_new();
+  control_reply_add_one_kv(lines, 250, 0, "A", "B");
+  control_reply_add_one_kv(lines, 250, 0, "C", "D");
+  control_write_reply_lines(NULL, lines);
+  tt_int_op(smartlist_len(reply_strs), OP_EQ, 2);
+  tt_str_op((char *)smartlist_get(reply_strs, 0), OP_EQ, "250-A=B");
+  tt_str_op((char *)smartlist_get(reply_strs, 1), OP_EQ, "250 C=D");
+
+  control_reply_clear(lines);
+  SMARTLIST_FOREACH(reply_strs, char *, p, tor_free(p));
+  smartlist_clear(reply_strs);
+  control_reply_add_printf(lines, 250, "PROTOCOLINFO %d", 1);
+  control_reply_add_one_kv(lines, 250, KV_OMIT_VALS|KV_RAW, "AUTH", "");
+  control_reply_append_kv(lines, "METHODS", "COOKIE");
+  control_reply_append_kv(lines, "COOKIEFILE", escaped("/tmp/cookie"));
+  control_reply_add_done(lines);
+  control_write_reply_lines(NULL, lines);
+  tt_int_op(smartlist_len(reply_strs), OP_EQ, 3);
+  tt_str_op((char *)smartlist_get(reply_strs, 0),
+            OP_EQ, "250-PROTOCOLINFO 1");
+  tt_str_op((char *)smartlist_get(reply_strs, 1),
+            OP_EQ, "250-AUTH METHODS=COOKIE COOKIEFILE=\"/tmp/cookie\"");
+  tt_str_op((char *)smartlist_get(reply_strs, 2),
+            OP_EQ, "250 OK");
+
+ done:
+  UNMOCK(control_write_reply);
+  tor_free(reply_str);
+  control_reply_free(lines);
+  if (reply_strs)
+    SMARTLIST_FOREACH(reply_strs, char *, p, tor_free(p));
+  smartlist_free(reply_strs);
+  return;
+}
+
+static void
+test_control_getconf(void *arg)
+{
+  (void)arg;
+  control_connection_t conn;
+  char *args = NULL;
+  int r = -1;
+
+  memset(&conn, 0, sizeof(conn));
+  conn.current_cmd = tor_strdup("GETCONF");
+
+  MOCK(control_write_reply, mock_control_write_reply_list);
+  reply_strs = smartlist_new();
+
+  args = tor_strdup("");
+  r = handle_control_command(&conn, (uint32_t)strlen(args), args);
+  tt_int_op(r, OP_EQ, 0);
+  tt_int_op(smartlist_len(reply_strs), OP_EQ, 1);
+  tt_str_op((char *)smartlist_get(reply_strs, 0), OP_EQ, "250 OK");
+  SMARTLIST_FOREACH(reply_strs, char *, p, tor_free(p));
+  smartlist_clear(reply_strs);
+  tor_free(args);
+
+  args = tor_strdup("NoSuch");
+  r = handle_control_command(&conn, (uint32_t)strlen(args), args);
+  tt_int_op(r, OP_EQ, 0);
+  tt_int_op(smartlist_len(reply_strs), OP_EQ, 1);
+  tt_str_op((char *)smartlist_get(reply_strs, 0), OP_EQ,
+            "552 Unrecognized configuration key \"NoSuch\"");
+  tor_free(args);
+  SMARTLIST_FOREACH(reply_strs, char *, p, tor_free(p));
+  smartlist_clear(reply_strs);
+
+  args = tor_strdup("NoSuch1 NoSuch2");
+  r = handle_control_command(&conn, (uint32_t)strlen(args), args);
+  tt_int_op(r, OP_EQ, 0);
+  tt_int_op(smartlist_len(reply_strs), OP_EQ, 2);
+  tt_str_op((char *)smartlist_get(reply_strs, 0), OP_EQ,
+            "552-Unrecognized configuration key \"NoSuch1\"");
+  tt_str_op((char *)smartlist_get(reply_strs, 1), OP_EQ,
+            "552 Unrecognized configuration key \"NoSuch2\"");
+  tor_free(args);
+  SMARTLIST_FOREACH(reply_strs, char *, p, tor_free(p));
+  smartlist_clear(reply_strs);
+
+  args = tor_strdup("ControlPort NoSuch");
+  r = handle_control_command(&conn, (uint32_t)strlen(args), args);
+  tt_int_op(r, OP_EQ, 0);
+  /* Valid keys ignored if there are any invalid ones */
+  tt_int_op(smartlist_len(reply_strs), OP_EQ, 1);
+  tt_str_op((char *)smartlist_get(reply_strs, 0), OP_EQ,
+            "552 Unrecognized configuration key \"NoSuch\"");
+  tor_free(args);
+  SMARTLIST_FOREACH(reply_strs, char *, p, tor_free(p));
+  smartlist_clear(reply_strs);
+
+  args = tor_strdup("ClientOnly");
+  r = handle_control_command(&conn, (uint32_t)strlen(args), args);
+  tt_int_op(r, OP_EQ, 0);
+  tt_int_op(smartlist_len(reply_strs), OP_EQ, 1);
+  /* According to config.c, this is an exception for the unit tests */
+  tt_str_op((char *)smartlist_get(reply_strs, 0), OP_EQ, "250 ClientOnly=0");
+  tor_free(args);
+  SMARTLIST_FOREACH(reply_strs, char *, p, tor_free(p));
+  smartlist_clear(reply_strs);
+
+  args = tor_strdup("BridgeRelay ClientOnly");
+  r = handle_control_command(&conn, (uint32_t)strlen(args), args);
+  tt_int_op(r, OP_EQ, 0);
+  tt_int_op(smartlist_len(reply_strs), OP_EQ, 2);
+  /* Change if config.c changes BridgeRelay default (unlikely) */
+  tt_str_op((char *)smartlist_get(reply_strs, 0), OP_EQ, "250-BridgeRelay=0");
+  tt_str_op((char *)smartlist_get(reply_strs, 1), OP_EQ, "250 ClientOnly=0");
+  tor_free(args);
+  SMARTLIST_FOREACH(reply_strs, char *, p, tor_free(p));
+  smartlist_clear(reply_strs);
+
+ done:
+  tor_free(conn.current_cmd);
+  tor_free(args);
+  UNMOCK(control_write_reply);
+  SMARTLIST_FOREACH(reply_strs, char *, p, tor_free(p));
+  smartlist_free(reply_strs);
+}
+
+static int
+mock_rep_hist_get_circuit_handshake(uint16_t type)
+{
+  int ret;
+
+  switch (type) {
+    case ONION_HANDSHAKE_TYPE_NTOR:
+      ret = 80;
+      break;
+    case ONION_HANDSHAKE_TYPE_TAP:
+      ret = 86;
+      break;
+    default:
+      ret = 0;
+      break;
+  }
+
+  return ret;
+}
+
+static void
+test_stats(void *arg)
+{
+  /* We just need one of these to pass, it doesn't matter what's in it */
+  control_connection_t dummy;
+  /* Get results out */
+  char *answer = NULL;
+  const char *errmsg = NULL;
+
+  (void) arg;
+
+  /* We need these for returning the (mock) rephist. */
+  MOCK(rep_hist_get_circuit_handshake_requested,
+       mock_rep_hist_get_circuit_handshake);
+  MOCK(rep_hist_get_circuit_handshake_assigned,
+       mock_rep_hist_get_circuit_handshake);
+
+  /* NTor tests */
+  getinfo_helper_rephist(&dummy, "stats/ntor/requested",
+                         &answer, &errmsg);
+  tt_ptr_op(answer, OP_NE, NULL);
+  tt_ptr_op(errmsg, OP_EQ, NULL);
+  tt_str_op(answer, OP_EQ, "80");
+  tor_free(answer);
+  errmsg = NULL;
+
+  getinfo_helper_rephist(&dummy, "stats/ntor/assigned",
+                         &answer, &errmsg);
+  tt_ptr_op(answer, OP_NE, NULL);
+  tt_ptr_op(errmsg, OP_EQ, NULL);
+  tt_str_op(answer, OP_EQ, "80");
+  tor_free(answer);
+  errmsg = NULL;
+
+  /* TAP tests */
+  getinfo_helper_rephist(&dummy, "stats/tap/requested",
+                         &answer, &errmsg);
+  tt_ptr_op(answer, OP_NE, NULL);
+  tt_ptr_op(errmsg, OP_EQ, NULL);
+  tt_str_op(answer, OP_EQ, "86");
+  tor_free(answer);
+  errmsg = NULL;
+
+  getinfo_helper_rephist(&dummy, "stats/tap/assigned",
+                         &answer, &errmsg);
+  tt_ptr_op(answer, OP_NE, NULL);
+  tt_ptr_op(errmsg, OP_EQ, NULL);
+  tt_str_op(answer, OP_EQ, "86");
+  tor_free(answer);
+  errmsg = NULL;
+
+  getinfo_helper_rephist(&dummy, "stats/tap/onion_circuits_ddosed",
+                         &answer, &errmsg);
+  tt_ptr_op(answer, OP_EQ, NULL);
+  tt_str_op(errmsg, OP_EQ, "Unrecognized handshake type");
+  errmsg = NULL;
+
+ done:
+  UNMOCK(rep_hist_get_circuit_handshake_requested);
+  UNMOCK(rep_hist_get_circuit_handshake_assigned);
+  tor_free(answer);
+
+  return;
+}
+
+#ifndef COCCI
 #define PARSER_TEST(type)                                             \
   { "parse/" #type, test_controller_parse_cmd, 0, &passthrough_setup, \
       (void*)&parse_ ## type ## _params }
+#endif
 
 struct testcase_t controller_tests[] = {
   PARSER_TEST(one_to_three),
@@ -1840,11 +2220,18 @@ struct testcase_t controller_tests[] = {
     NULL },
   { "download_status_consensus", test_download_status_consensus, 0, NULL,
     NULL },
+  {"getinfo_helper_current_consensus_from_cache",
+   test_getinfo_helper_current_consensus_from_cache, 0, NULL, NULL },
+  {"getinfo_helper_current_consensus_from_file",
+   test_getinfo_helper_current_consensus_from_file, 0, NULL, NULL },
   { "download_status_cert", test_download_status_cert, 0, NULL,
     NULL },
   { "download_status_desc", test_download_status_desc, 0, NULL, NULL },
   { "download_status_bridge", test_download_status_bridge, 0, NULL, NULL },
   { "current_time", test_current_time, 0, NULL, NULL },
   { "getinfo_md_all", test_getinfo_md_all, 0, NULL, NULL },
+  { "control_reply", test_control_reply, 0, NULL, NULL },
+  { "control_getconf", test_control_getconf, 0, NULL, NULL },
+  { "stats", test_stats, 0, NULL, NULL },
   END_OF_TESTCASES
 };

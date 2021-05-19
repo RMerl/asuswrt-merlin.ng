@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -31,6 +31,7 @@ int tor_digest256_is_zero(const char *digest);
 #define HEX_CHARACTERS "0123456789ABCDEFabcdef"
 void tor_strlower(char *s);
 void tor_strupper(char *s);
+void tor_strreplacechar(char *s, char find, char replacement);
 int tor_strisprint(const char *s);
 int tor_strisnonupper(const char *s);
 int tor_strisspace(const char *s);

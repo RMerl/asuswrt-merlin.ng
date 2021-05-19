@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2019, The Tor Project, Inc. */
+/* Copyright (c) 2013-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -15,16 +15,41 @@
 #ifndef TOR_TESTSUPPORT_H
 #define TOR_TESTSUPPORT_H
 
-#ifdef TOR_UNIT_TESTS
 /** The "STATIC" macro marks a function or variable that is static when
  * building Tor for production, but non-static when building the unit
- * tests. */
+ * tests.
+ *
+ * For example, a function declared as:
+ *
+ *     STATIC int internal_function(void);
+ *
+ * should be only visible for the file on which it is declared, and in the
+ * unit tests.
+ */
+#ifdef TOR_UNIT_TESTS
 #define STATIC
-#define EXTERN(type, name) extern type name;
 #else /* !defined(TOR_UNIT_TESTS) */
 #define STATIC static
-#define EXTERN(type, name)
 #endif /* defined(TOR_UNIT_TESTS) */
+
+/** The "EXTERN" macro is used along with "STATIC" for variables declarations:
+ * it expands to an extern declaration when Tor building unit tests, and to
+ * nothing otherwise.
+ *
+ * For example, to declare a variable as visible only visible in one
+ * file and in the unit tests, you would put this in the header:
+ *
+ *     EXTERN(int, local_variable)
+ *
+ * and this in the source:
+ *
+ *     STATIC int local_variable;
+ */
+#ifdef TOR_UNIT_TESTS
+#define EXTERN(type, name) extern type name;
+#else
+#define EXTERN(type, name)
+#endif
 
 /** Quick and dirty macros to implement test mocking.
  *
@@ -70,32 +95,42 @@
  *
  * @{ */
 #ifdef TOR_UNIT_TESTS
+/** Declare a mocked function. For use in headers. */
 #define MOCK_DECL(rv, funcname, arglist)     \
   rv funcname ##__real arglist;              \
   extern rv(*funcname) arglist
+/** Define the implementation of a mocked function. */
 #define MOCK_IMPL(rv, funcname, arglist)     \
   rv(*funcname) arglist = funcname ##__real; \
   rv funcname ##__real arglist
+/** As MOCK_DECL(), but allow attributes. */
 #define MOCK_DECL_ATTR(rv, funcname, arglist, attr) \
   rv funcname ##__real arglist attr;                \
   extern rv(*funcname) arglist
-#define MOCK_IMPL(rv, funcname, arglist)     \
-  rv(*funcname) arglist = funcname ##__real; \
-  rv funcname ##__real arglist
+/**
+ * Replace <b>func</b> (a mockable function) with a replacement function.
+ *
+ * Only usable when Tor has been built for unit tests. */
 #define MOCK(func, replacement)                 \
   do {                                          \
     (func) = (replacement);                     \
   } while (0)
+/** Replace <b>func</b> (a mockable function) with its original value.
+ *
+ * Only usable when Tor has been built for unit tests. */
 #define UNMOCK(func)                            \
   do {                                          \
     func = func ##__real;                       \
   } while (0)
 #else /* !defined(TOR_UNIT_TESTS) */
+/** Declare a mocked function. For use in headers. */
 #define MOCK_DECL(rv, funcname, arglist) \
   rv funcname arglist
-#define MOCK_DECL_ATTR(rv, funcname, arglist, attr) \
+/** As MOCK_DECL(), but allow  */
+#define MOCK_DECL_ATTR(rv, funcname, arglist, attr)     \
   rv funcname arglist attr
-#define MOCK_IMPL(rv, funcname, arglist) \
+/** Define the implementation of a mocked function. */
+#define MOCK_IMPL(rv, funcname, arglist)        \
   rv funcname arglist
 #endif /* defined(TOR_UNIT_TESTS) */
 /** @} */

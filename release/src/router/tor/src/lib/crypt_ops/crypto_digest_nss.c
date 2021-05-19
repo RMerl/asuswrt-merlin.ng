@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -23,9 +23,9 @@
 
 #include "lib/arch/bytes.h"
 
-DISABLE_GCC_WARNING(strict-prototypes)
+DISABLE_GCC_WARNING("-Wstrict-prototypes")
 #include <pk11pub.h>
-ENABLE_GCC_WARNING(strict-prototypes)
+ENABLE_GCC_WARNING("-Wstrict-prototypes")
 
 /**
  * Convert a digest_algorithm_t (used by tor) to a HashType (used by NSS).
@@ -37,14 +37,18 @@ digest_alg_to_nss_oid(digest_algorithm_t alg)
     case DIGEST_SHA1: return SEC_OID_SHA1;
     case DIGEST_SHA256: return SEC_OID_SHA256;
     case DIGEST_SHA512: return SEC_OID_SHA512;
-    case DIGEST_SHA3_256: /* Fall through */
-    case DIGEST_SHA3_512: /* Fall through */
+    case DIGEST_SHA3_256: FALLTHROUGH;
+    case DIGEST_SHA3_512: FALLTHROUGH;
     default:
       return SEC_OID_UNKNOWN;
   }
 }
 
-/* Helper: get an unkeyed digest via pk11wrap */
+/** Helper: Compute an unkeyed digest of the <b>msg_len</b> bytes at
+ * <b>msg</b>, using the digest algorithm specified by <b>alg</b>.
+ * Store the result in the <b>len_out</b>-byte buffer at <b>digest</b>.
+ * Return the number of bytes written on success, and -1 on failure.
+ **/
 static int
 digest_nss_internal(SECOidTag alg,
                     char *digest, unsigned len_out,
@@ -85,12 +89,12 @@ static bool
 library_supports_digest(digest_algorithm_t alg)
 {
   switch (alg) {
-    case DIGEST_SHA1: /* Fall through */
-    case DIGEST_SHA256: /* Fall through */
-    case DIGEST_SHA512: /* Fall through */
+    case DIGEST_SHA1: FALLTHROUGH;
+    case DIGEST_SHA256: FALLTHROUGH;
+    case DIGEST_SHA512:
       return true;
-    case DIGEST_SHA3_256: /* Fall through */
-    case DIGEST_SHA3_512: /* Fall through */
+    case DIGEST_SHA3_256: FALLTHROUGH;
+    case DIGEST_SHA3_512: FALLTHROUGH;
     default:
       return false;
   }
@@ -197,8 +201,8 @@ crypto_digest_alloc_bytes(digest_algorithm_t alg)
 #define END_OF_FIELD(f) (offsetof(crypto_digest_t, f) + \
                          STRUCT_FIELD_SIZE(crypto_digest_t, f))
   switch (alg) {
-    case DIGEST_SHA1: /* Fall through */
-    case DIGEST_SHA256: /* Fall through */
+    case DIGEST_SHA1: FALLTHROUGH;
+    case DIGEST_SHA256: FALLTHROUGH;
     case DIGEST_SHA512:
       return END_OF_FIELD(d.ctx);
     case DIGEST_SHA3_256:
@@ -224,8 +228,8 @@ crypto_digest_new_internal(digest_algorithm_t algorithm)
 
   switch (algorithm)
     {
-    case DIGEST_SHA1: /* fall through */
-    case DIGEST_SHA256: /* fall through */
+    case DIGEST_SHA1: FALLTHROUGH;
+    case DIGEST_SHA256: FALLTHROUGH;
     case DIGEST_SHA512:
       r->d.ctx = PK11_CreateDigestContext(digest_alg_to_nss_oid(algorithm));
       if (BUG(!r->d.ctx)) {
@@ -312,8 +316,8 @@ crypto_digest_add_bytes(crypto_digest_t *digest, const char *data,
    * just doing it ourselves. Hashes are fast.
    */
   switch (digest->algorithm) {
-    case DIGEST_SHA1: /* fall through */
-    case DIGEST_SHA256: /* fall through */
+    case DIGEST_SHA1: FALLTHROUGH;
+    case DIGEST_SHA256: FALLTHROUGH;
     case DIGEST_SHA512:
       tor_assert(len <= UINT_MAX);
       SECStatus s = PK11_DigestOp(digest->d.ctx,
@@ -321,7 +325,7 @@ crypto_digest_add_bytes(crypto_digest_t *digest, const char *data,
                                   (unsigned int)len);
       tor_assert(s == SECSuccess);
       break;
-    case DIGEST_SHA3_256: /* FALLSTHROUGH */
+    case DIGEST_SHA3_256: FALLTHROUGH;
     case DIGEST_SHA3_512:
       keccak_digest_update(&digest->d.sha3, (const uint8_t *)data, len);
       break;
@@ -557,4 +561,3 @@ crypto_hmac_sha256(char *hmac_out,
 
   tor_assert(ok);
 }
-

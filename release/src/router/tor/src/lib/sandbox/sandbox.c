@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -82,7 +82,7 @@
 #if defined(HAVE_EXECINFO_H) && defined(HAVE_BACKTRACE) && \
   defined(HAVE_BACKTRACE_SYMBOLS_FD) && defined(HAVE_SIGACTION)
 #define USE_BACKTRACE
-#define EXPOSE_CLEAN_BACKTRACE
+#define BACKTRACE_PRIVATE
 #include "lib/err/backtrace.h"
 #endif /* defined(HAVE_EXECINFO_H) && defined(HAVE_BACKTRACE) && ... */
 
@@ -117,6 +117,10 @@
 
 #endif /* defined(__i386__) || ... */
 
+#ifdef M_SYSCALL
+#define SYSCALL_NAME_DEBUGGING
+#endif
+
 /**Determines if at least one sandbox is active.*/
 static int sandbox_active = 0;
 /** Holds the parameter list configuration for the sandbox.*/
@@ -133,6 +137,10 @@ static sandbox_cfg_t *filter_dynamic = NULL;
  * the high bits of the value might get masked out improperly. */
 #define SCMP_CMP_MASKED(a,b,c) \
   SCMP_CMP4((a), SCMP_CMP_MASKED_EQ, ~(scmp_datum_t)(b), (c))
+/* For negative constants, the rule to add depends on the glibc version. */
+#define SCMP_CMP_NEG(a,op,b) (libc_negative_constant_needs_cast() ? \
+                              (SCMP_CMP((a), (op), (unsigned int)(b))) : \
+                              (SCMP_CMP_STR((a), (op), (b))))
 
 /** Variable used for storing all syscall numbers that will be allowed with the
  * stage 1 general Tor sandbox.
@@ -166,6 +174,7 @@ static int filter_nopar_gen[] = {
 #ifdef __NR_fstat64
     SCMP_SYS(fstat64),
 #endif
+    SCMP_SYS(fsync),
     SCMP_SYS(futex),
     SCMP_SYS(getdents),
     SCMP_SYS(getdents64),
@@ -195,6 +204,8 @@ static int filter_nopar_gen[] = {
 #ifdef __NR__llseek
     SCMP_SYS(_llseek),
 #endif
+    // glob uses this..
+    SCMP_SYS(lstat),
     SCMP_SYS(mkdir),
     SCMP_SYS(mlockall),
 #ifdef __NR_mmap
@@ -265,12 +276,26 @@ static int filter_nopar_gen[] = {
     SCMP_SYS(listen),
     SCMP_SYS(connect),
     SCMP_SYS(getsockname),
+#ifdef ENABLE_NSS
+#ifdef __NR_getpeername
+    SCMP_SYS(getpeername),
+#endif
+#endif
     SCMP_SYS(recvmsg),
     SCMP_SYS(recvfrom),
     SCMP_SYS(sendto),
     SCMP_SYS(unlink),
+#ifdef __NR_unlinkat
+    SCMP_SYS(unlinkat),
+#endif
     SCMP_SYS(poll)
 };
+
+/* opendir is not a syscall but it will use either open or openat. We do not
+ * want the decision to allow open/openat to be the callers reponsability, so
+ * we create a phony syscall number for opendir and sb_opendir will choose the
+ * correct syscall. */
+#define PHONY_OPENDIR_SYSCALL -2
 
 /* These macros help avoid the error where the number of filters we add on a
  * single rule don't match the arg_cnt param. */
@@ -284,6 +309,8 @@ static int filter_nopar_gen[] = {
   seccomp_rule_add((ctx),(act),(call),3,(f1),(f2),(f3))
 #define seccomp_rule_add_4(ctx,act,call,f1,f2,f3,f4)      \
   seccomp_rule_add((ctx),(act),(call),4,(f1),(f2),(f3),(f4))
+
+static const char *sandbox_get_interned_string(const char *str);
 
 /**
  * Function responsible for setting up the rt_sigaction syscall for
@@ -425,29 +452,57 @@ sb_mmap2(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 #endif
 #endif
 
-/* Return true if we think we're running with a libc that always uses
- * openat on linux. */
+/* Return true the libc version is greater or equal than
+ * <b>major</b>.<b>minor</b>. Returns false otherwise. */
 static int
-libc_uses_openat_for_everything(void)
+is_libc_at_least(int major, int minor)
 {
 #ifdef CHECK_LIBC_VERSION
   const char *version = gnu_get_libc_version();
   if (version == NULL)
     return 0;
 
-  int major = -1;
-  int minor = -1;
+  int libc_major = -1;
+  int libc_minor = -1;
 
-  tor_sscanf(version, "%d.%d", &major, &minor);
-  if (major >= 3)
+  tor_sscanf(version, "%d.%d", &libc_major, &libc_minor);
+  if (libc_major > major)
     return 1;
-  else if (major == 2 && minor >= 26)
+  else if (libc_major == major && libc_minor >= minor)
     return 1;
   else
     return 0;
 #else /* !defined(CHECK_LIBC_VERSION) */
+  (void)major;
+  (void)minor;
   return 0;
 #endif /* defined(CHECK_LIBC_VERSION) */
+}
+
+/* Return true if we think we're running with a libc that uses openat for the
+ * open function on linux. */
+static int
+libc_uses_openat_for_open(void)
+{
+  return is_libc_at_least(2, 26);
+}
+
+/* Return true if we think we're running with a libc that uses openat for the
+ * opendir function on linux. */
+static int
+libc_uses_openat_for_opendir(void)
+{
+  // libc 2.27 and above or between 2.15 (inclusive) and 2.22 (exclusive)
+  return is_libc_at_least(2, 27) ||
+         (is_libc_at_least(2, 15) && !is_libc_at_least(2, 22));
+}
+
+/* Return true if we think we're running with a libc that needs to cast
+ * negative arguments like AT_FDCWD for seccomp rules. */
+static int
+libc_negative_constant_needs_cast(void)
+{
+  return is_libc_at_least(2, 27);
 }
 
 /** Allow a single file to be opened.  If <b>use_openat</b> is true,
@@ -457,7 +512,7 @@ allow_file_open(scmp_filter_ctx ctx, int use_openat, const char *file)
 {
   if (use_openat) {
     return seccomp_rule_add_2(ctx, SCMP_ACT_ALLOW, SCMP_SYS(openat),
-                              SCMP_CMP(0, SCMP_CMP_EQ, (unsigned int)AT_FDCWD),
+                              SCMP_CMP_NEG(0, SCMP_CMP_EQ, AT_FDCWD),
                               SCMP_CMP_STR(1, SCMP_CMP_EQ, file));
   } else {
     return seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(open),
@@ -475,7 +530,7 @@ sb_open(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
   int rc;
   sandbox_cfg_t *elem = NULL;
 
-  int use_openat = libc_uses_openat_for_everything();
+  int use_openat = libc_uses_openat_for_open();
 
   // for each dynamic parameter filters
   for (elem = filter; elem != NULL; elem = elem->next) {
@@ -593,10 +648,34 @@ sb_openat(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
     if (param != NULL && param->prot == 1 && param->syscall
         == SCMP_SYS(openat)) {
       rc = seccomp_rule_add_3(ctx, SCMP_ACT_ALLOW, SCMP_SYS(openat),
-          SCMP_CMP(0, SCMP_CMP_EQ, AT_FDCWD),
+          SCMP_CMP_NEG(0, SCMP_CMP_EQ, AT_FDCWD),
           SCMP_CMP_STR(1, SCMP_CMP_EQ, param->value),
           SCMP_CMP(2, SCMP_CMP_EQ, O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY|
               O_CLOEXEC));
+      if (rc != 0) {
+        log_err(LD_BUG,"(Sandbox) failed to add openat syscall, received "
+            "libseccomp error %d", rc);
+        return rc;
+      }
+    }
+  }
+
+  return 0;
+}
+
+static int
+sb_opendir(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
+{
+  int rc;
+  sandbox_cfg_t *elem = NULL;
+
+  // for each dynamic parameter filters
+  for (elem = filter; elem != NULL; elem = elem->next) {
+    smp_param_t *param = elem->param;
+
+    if (param != NULL && param->prot == 1 && param->syscall
+        == PHONY_OPENDIR_SYSCALL) {
+      rc = allow_file_open(ctx, libc_uses_openat_for_opendir(), param->value);
       if (rc != 0) {
         log_err(LD_BUG,"(Sandbox) failed to add openat syscall, received "
             "libseccomp error %d", rc);
@@ -647,6 +726,15 @@ sb_socket(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
         return rc;
     }
   }
+
+#ifdef ENABLE_NSS
+  rc = seccomp_rule_add_3(ctx, SCMP_ACT_ALLOW, SCMP_SYS(socket),
+    SCMP_CMP(0, SCMP_CMP_EQ, PF_INET),
+    SCMP_CMP(1, SCMP_CMP_EQ, SOCK_STREAM),
+    SCMP_CMP(2, SCMP_CMP_EQ, IPPROTO_IP));
+  if (rc)
+    return rc;
+#endif
 
   rc = seccomp_rule_add_3(ctx, SCMP_ACT_ALLOW, SCMP_SYS(socket),
       SCMP_CMP(0, SCMP_CMP_EQ, PF_UNIX),
@@ -913,7 +1001,7 @@ sb_epoll_ctl(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
  * the seccomp filter sandbox.
  *
  * NOTE: if multiple filters need to be added, the PR_SECCOMP parameter needs
- * to be whitelisted in this function.
+ * to be allowlisted in this function.
  */
 static int
 sb_prctl(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
@@ -1113,6 +1201,7 @@ static sandbox_filter_func_t filter_func[] = {
     sb_chmod,
     sb_open,
     sb_openat,
+    sb_opendir,
     sb_rename,
 #ifdef __NR_fcntl64
     sb_fcntl64,
@@ -1137,8 +1226,41 @@ static sandbox_filter_func_t filter_func[] = {
     sb_kill
 };
 
+/**
+ * Return the interned (and hopefully sandbox-permitted) string equal
+ * to @a str.
+ *
+ * Return NULL if `str` is NULL, or `str` is not an interned string.
+ **/
 const char *
 sandbox_intern_string(const char *str)
+{
+  const char *interned = sandbox_get_interned_string(str);
+
+  if (sandbox_active && str != NULL && interned == NULL) {
+    log_warn(LD_BUG, "No interned sandbox parameter found for %s", str);
+  }
+
+  return interned ? interned : str;
+}
+
+/**
+ * Return true if the sandbox is running and we are missing an interned string
+ * equal to @a str.
+ */
+bool
+sandbox_interned_string_is_missing(const char *str)
+{
+  return sandbox_active && sandbox_get_interned_string(str) == NULL;
+}
+
+/**
+ * Try to find and return the interned string equal to @a str.
+ *
+ * If there is no such string, return NULL.
+ **/
+static const char *
+sandbox_get_interned_string(const char *str)
 {
   sandbox_cfg_t *elem;
 
@@ -1158,9 +1280,7 @@ sandbox_intern_string(const char *str)
     }
   }
 
-  if (sandbox_active)
-    log_warn(LD_BUG, "No interned sandbox parameter found for %s", str);
-  return str;
+  return NULL;
 }
 
 /* DOCDOC */
@@ -1432,6 +1552,19 @@ sandbox_cfg_allow_openat_filename(sandbox_cfg_t **cfg, char *file)
   return 0;
 }
 
+int
+sandbox_cfg_allow_opendir_dirname(sandbox_cfg_t **cfg, char *dir)
+{
+  sandbox_cfg_t *elem = NULL;
+
+  elem = new_element(PHONY_OPENDIR_SYSCALL, dir);
+
+  elem->next = *cfg;
+  *cfg = elem;
+
+  return 0;
+}
+
 /**
  * Function responsible for going through the parameter syscall filters and
  * call each function pointer in the list.
@@ -1473,6 +1606,28 @@ add_noparam_filter(scmp_filter_ctx ctx)
           "received libseccomp error %d", i, filter_nopar_gen[i], rc);
       return rc;
     }
+  }
+
+  if (is_libc_at_least(2, 33)) {
+#ifdef __NR_newfstatat
+    // Libc 2.33 uses this syscall to implement both fstat() and stat().
+    //
+    // The trouble is that to implement fstat(fd, &st), it calls:
+    //     newfstatat(fs, "", &st, AT_EMPTY_PATH)
+    // We can't detect this usage in particular, because "" is a pointer
+    // we don't control.  And we can't just look for AT_EMPTY_PATH, since
+    // AT_EMPTY_PATH only has effect when the path string is empty.
+    //
+    // So our only solution seems to be allowing all fstatat calls, which
+    // means that an attacker can stat() anything on the filesystem. That's
+    // not a great solution, but I can't find a better one.
+    rc = seccomp_rule_add_0(ctx, SCMP_ACT_ALLOW, SCMP_SYS(newfstatat));
+    if (rc != 0) {
+      log_err(LD_BUG,"(Sandbox) failed to add newfstatat() syscall; "
+          "received libseccomp error %d", rc);
+      return rc;
+    }
+#endif
   }
 
   return 0;
@@ -1530,8 +1685,10 @@ install_syscall_filter(sandbox_cfg_t* cfg)
   return (rc < 0 ? -rc : rc);
 }
 
+#ifdef SYSCALL_NAME_DEBUGGING
 #include "lib/sandbox/linux_syscalls.inc"
 
+/** Return a string containing the name of a given syscall (if we know it) */
 static const char *
 get_syscall_name(int syscall_num)
 {
@@ -1549,6 +1706,28 @@ get_syscall_name(int syscall_num)
   }
 }
 
+/** Return the syscall number from a ucontext_t that we got in a signal
+ * handler (if we know how to do that). */
+static int
+get_syscall_from_ucontext(const ucontext_t *ctx)
+{
+  return (int) ctx->uc_mcontext.M_SYSCALL;
+}
+#else
+static const char *
+get_syscall_name(int syscall_num)
+{
+  (void) syscall_num;
+  return "unknown";
+}
+static int
+get_syscall_from_ucontext(const ucontext_t *ctx)
+{
+  (void) ctx;
+  return -1;
+}
+#endif
+
 #ifdef USE_BACKTRACE
 #define MAX_DEPTH 256
 static void *syscall_cb_buf[MAX_DEPTH];
@@ -1564,7 +1743,6 @@ sigsys_debugging(int nr, siginfo_t *info, void *void_context)
 {
   ucontext_t *ctx = (ucontext_t *) (void_context);
   const char *syscall_name;
-  int syscall;
 #ifdef USE_BACKTRACE
   size_t depth;
   int n_fds, i;
@@ -1579,7 +1757,7 @@ sigsys_debugging(int nr, siginfo_t *info, void *void_context)
   if (!ctx)
     return;
 
-  syscall = (int) ctx->uc_mcontext.M_SYSCALL;
+  int syscall = get_syscall_from_ucontext(ctx);
 
 #ifdef USE_BACKTRACE
   depth = backtrace(syscall_cb_buf, MAX_DEPTH);
@@ -1733,6 +1911,13 @@ int
 sandbox_cfg_allow_openat_filename(sandbox_cfg_t **cfg, char *file)
 {
   (void)cfg; (void)file;
+  return 0;
+}
+
+int
+sandbox_cfg_allow_opendir_dirname(sandbox_cfg_t **cfg, char *dir)
+{
+  (void)cfg; (void)dir;
   return 0;
 }
 

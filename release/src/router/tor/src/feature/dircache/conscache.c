@@ -1,5 +1,10 @@
-/* Copyright (c) 2017-2019, The Tor Project, Inc. */
+/* Copyright (c) 2017-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file conscache.c
+ * @brief Consensus and diff on-disk cache.
+ **/
 
 #include "core/or/or.h"
 
@@ -127,13 +132,22 @@ consensus_cache_may_overallocate(consensus_cache_t *cache)
 #endif
 }
 
+// HACK: GCC on Appveyor hates that we may assert before returning. Work around
+// the error.
+#ifdef _WIN32
+#ifndef COCCI
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#endif
+#endif /* defined(_WIN32) */
+
 /**
  * Tell the sandbox (if any) configured by <b>cfg</b> to allow the
  * operations that <b>cache</b> will need.
  */
 int
 consensus_cache_register_with_sandbox(consensus_cache_t *cache,
-                                      struct sandbox_cfg_elem **cfg)
+                                      struct sandbox_cfg_elem_t **cfg)
 {
 #ifdef MUST_UNMAP_TO_UNLINK
   /* Our Linux sandbox doesn't support huge file lists like the one that would
@@ -150,6 +164,12 @@ consensus_cache_register_with_sandbox(consensus_cache_t *cache,
 #endif /* defined(MUST_UNMAP_TO_UNLINK) */
   return storage_dir_register_with_sandbox(cache->dir, cfg);
 }
+
+#ifdef _WIN32
+#ifndef COCCI
+#pragma GCC diagnostic pop
+#endif
+#endif
 
 /**
  * Helper: clear all entries from <b>cache</b> (but do not delete
@@ -246,7 +266,7 @@ consensus_cache_find_first(consensus_cache_t *cache,
 }
 
 /**
- * Given a <b>cache</b>, add every entry to <b>out<b> for which
+ * Given a <b>cache</b>, add every entry to <b>out</b> for which
  * <b>key</b>=<b>value</b>.  If <b>key</b> is NULL, add every entry.
  *
  * Do not add any entry that has been marked for removal.

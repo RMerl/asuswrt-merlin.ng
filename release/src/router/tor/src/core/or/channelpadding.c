@@ -1,12 +1,17 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
-/* TOR_CHANNEL_INTERNAL_ define needed for an O(1) implementation of
+/**
+ * @file channelpadding.c
+ * @brief Link-level padding code.
+ **/
+
+/* CHANNEL_OBJECT_PRIVATE define needed for an O(1) implementation of
  * channelpadding_channel_to_channelinfo() */
-#define TOR_CHANNEL_INTERNAL_
+#define CHANNEL_OBJECT_PRIVATE
 
 #include "core/or/or.h"
 #include "core/or/channel.h"
@@ -85,7 +90,7 @@ static int consensus_nf_pad_single_onion;
  * for every single connection, every second.
  */
 void
-channelpadding_new_consensus_params(networkstatus_t *ns)
+channelpadding_new_consensus_params(const networkstatus_t *ns)
 {
 #define DFLT_NETFLOW_INACTIVE_KEEPALIVE_LOW 1500
 #define DFLT_NETFLOW_INACTIVE_KEEPALIVE_HIGH 9500
@@ -260,7 +265,7 @@ channelpadding_update_padding_for_channel(channel_t *chan,
     log_fn_ratelim(&relay_limit,LOG_PROTOCOL_WARN,LD_PROTOCOL,
            "Got a PADDING_NEGOTIATE from relay at %s (%s). "
            "This should not happen.",
-           chan->get_remote_descr(chan, 0),
+           channel_describe_peer(chan),
            hex_str(chan->identity_digest, DIGEST_LEN));
     return -1;
   }
@@ -394,7 +399,7 @@ channelpadding_send_padding_cell_for_callback(channel_t *chan)
         "Sending netflow keepalive on %"PRIu64" to %s (%s) after "
         "%"PRId64" ms. Delta %"PRId64"ms",
         (chan->global_identifier),
-        safe_str_client(chan->get_remote_descr(chan, 0)),
+        safe_str_client(channel_describe_peer(chan)),
         safe_str_client(hex_str(chan->identity_digest, DIGEST_LEN)),
         (monotime_coarse_diff_msec(&chan->timestamp_xfer,&now)),
         (

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -21,14 +21,12 @@ int buf_read_from_socket(struct buf_t *buf, tor_socket_t s, size_t at_most,
                          int *reached_eof,
                          int *socket_error);
 
-int buf_flush_to_socket(struct buf_t *buf, tor_socket_t s, size_t sz,
-                        size_t *buf_flushlen);
+int buf_flush_to_socket(struct buf_t *buf, tor_socket_t s, size_t sz);
 
 int buf_read_from_pipe(struct buf_t *buf, int fd, size_t at_most,
                        int *reached_eof,
                        int *socket_error);
 
-int buf_flush_to_pipe(struct buf_t *buf, int fd, size_t sz,
-                      size_t *buf_flushlen);
+int buf_flush_to_pipe(struct buf_t *buf, int fd, size_t sz);
 
 #endif /* !defined(TOR_BUFFERS_NET_H) */

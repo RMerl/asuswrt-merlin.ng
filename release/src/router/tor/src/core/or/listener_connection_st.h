@@ -1,8 +1,13 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file listener_connection_st.h
+ * @brief Listener connection structure.
+ **/
 
 #ifndef LISTENER_CONNECTION_ST_H
 #define LISTENER_CONNECTION_ST_H
@@ -22,4 +27,3 @@ struct listener_connection_t {
 };
 
 #endif /* !defined(LISTENER_CONNECTION_ST_H) */
-

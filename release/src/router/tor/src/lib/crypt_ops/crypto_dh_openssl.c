@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -17,11 +17,11 @@
 #include "lib/log/log.h"
 #include "lib/log/util_bug.h"
 
-DISABLE_GCC_WARNING(redundant-decls)
+DISABLE_GCC_WARNING("-Wredundant-decls")
 
 #include <openssl/dh.h>
 
-ENABLE_GCC_WARNING(redundant-decls)
+ENABLE_GCC_WARNING("-Wredundant-decls")
 
 #include <openssl/bn.h>
 #include <string.h>
@@ -103,7 +103,7 @@ crypto_validate_dh_params(const BIGNUM *p, const BIGNUM *g)
 #endif /* 0 */
 
 /**
- * Helper: convert <b>hex<b> to a bignum, and return it.  Assert that the
+ * Helper: convert <b>hex</b> to a bignum, and return it.  Assert that the
  * operation was successful.
  */
 static BIGNUM *
@@ -163,7 +163,7 @@ crypto_dh_init_openssl(void)
 
 /** Number of bits to use when choosing the x or y value in a Diffie-Hellman
  * handshake.  Since we exponentiate by this value, choosing a smaller one
- * lets our handhake go faster.
+ * lets our handshake go faster.
  */
 #define DH_PRIVATE_KEY_BITS 320
 

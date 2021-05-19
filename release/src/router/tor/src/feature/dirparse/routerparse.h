@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -40,7 +40,8 @@ int find_single_ipv6_orport(const smartlist_t *list,
 void routerparse_init(void);
 void routerparse_free_all(void);
 
-#ifdef EXPOSE_ROUTERDESC_TOKEN_TABLE
+#ifdef ROUTERDESC_TOKEN_TABLE_PRIVATE
+#include "feature/dirparse/parsecommon.h"
 extern const struct token_rule_t routerdesc_token_table[];
 #endif
 

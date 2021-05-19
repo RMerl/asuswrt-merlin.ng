@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -10,17 +10,31 @@
  * functions.
  */
 
+#include "orconfig.h"
+
 #ifdef _WIN32
+/* For condition variable support */
+#ifndef WINVER
+#error "orconfig.h didn't define WINVER"
+#endif
+#ifndef _WIN32_WINNT
+#error "orconfig.h didn't define _WIN32_WINNT"
+#endif
+#if WINVER < 0x0600
+#error "winver too low"
+#endif
+#if _WIN32_WINNT < 0x0600
+#error "winver too low"
+#endif
 
 #include <windows.h>
 #include <process.h>
+#include <time.h>
+
 #include "lib/thread/threads.h"
 #include "lib/log/log.h"
 #include "lib/log/util_bug.h"
 #include "lib/log/win32err.h"
-
-/* This value is more or less total cargo-cult */
-#define SPIN_COUNT 2000
 
 /** Minimalist interface to run a void function in the background.  On
  * Unix calls fork, on win32 calls beginthread.  Returns -1 on failure.
@@ -64,45 +78,24 @@ tor_get_thread_id(void)
 int
 tor_cond_init(tor_cond_t *cond)
 {
-  memset(cond, 0, sizeof(tor_cond_t));
-  if (InitializeCriticalSectionAndSpinCount(&cond->lock, SPIN_COUNT)==0) {
-    return -1;
-  }
-  if ((cond->event = CreateEvent(NULL,TRUE,FALSE,NULL)) == NULL) {
-    DeleteCriticalSection(&cond->lock);
-    return -1;
-  }
-  cond->n_waiting = cond->n_to_wake = cond->generation = 0;
+  InitializeConditionVariable(&cond->cond);
   return 0;
 }
 void
 tor_cond_uninit(tor_cond_t *cond)
 {
-  DeleteCriticalSection(&cond->lock);
-  CloseHandle(cond->event);
+  (void) cond;
 }
 
-static void
-tor_cond_signal_impl(tor_cond_t *cond, int broadcast)
-{
-  EnterCriticalSection(&cond->lock);
-  if (broadcast)
-    cond->n_to_wake = cond->n_waiting;
-  else
-    ++cond->n_to_wake;
-  cond->generation++;
-  SetEvent(cond->event);
-  LeaveCriticalSection(&cond->lock);
-}
 void
 tor_cond_signal_one(tor_cond_t *cond)
 {
-  tor_cond_signal_impl(cond, 0);
+  WakeConditionVariable(&cond->cond);
 }
 void
 tor_cond_signal_all(tor_cond_t *cond)
 {
-  tor_cond_signal_impl(cond, 1);
+  WakeAllConditionVariable(&cond->cond);
 }
 
 int
@@ -152,66 +145,23 @@ int
 tor_cond_wait(tor_cond_t *cond, tor_mutex_t *lock_, const struct timeval *tv)
 {
   CRITICAL_SECTION *lock = &lock_->mutex;
-  int generation_at_start;
-  int waiting = 1;
-  int result = -1;
-  DWORD ms = INFINITE, ms_orig = INFINITE, startTime, endTime;
-  if (tv)
-    ms_orig = ms = tv->tv_sec*1000 + (tv->tv_usec+999)/1000;
+  DWORD ms = INFINITE;
+  if (tv) {
+    ms = tv->tv_sec*1000 + (tv->tv_usec+999)/1000;
+  }
 
-  EnterCriticalSection(&cond->lock);
-  ++cond->n_waiting;
-  generation_at_start = cond->generation;
-  LeaveCriticalSection(&cond->lock);
-
-  LeaveCriticalSection(lock);
-
-  startTime = GetTickCount();
-  do {
-    DWORD res;
-    res = WaitForSingleObject(cond->event, ms);
-    EnterCriticalSection(&cond->lock);
-    if (cond->n_to_wake &&
-        cond->generation != generation_at_start) {
-      --cond->n_to_wake;
-      --cond->n_waiting;
-      result = 0;
-      waiting = 0;
-      goto out;
-    } else if (res != WAIT_OBJECT_0) {
-      result = (res==WAIT_TIMEOUT) ? 1 : -1;
-      --cond->n_waiting;
-      waiting = 0;
-      goto out;
-    } else if (ms != INFINITE) {
-      endTime = GetTickCount();
-      if (startTime + ms_orig <= endTime) {
-        result = 1; /* Timeout */
-        --cond->n_waiting;
-        waiting = 0;
-        goto out;
-      } else {
-        ms = startTime + ms_orig - endTime;
-      }
+  BOOL ok = SleepConditionVariableCS(&cond->cond, lock, ms);
+  if (!ok) {
+    DWORD err = GetLastError();
+    if (err == ERROR_TIMEOUT) {
+      return 1;
     }
-    /* If we make it here, we are still waiting. */
-    if (cond->n_to_wake == 0) {
-      /* There is nobody else who should wake up; reset
-       * the event. */
-      ResetEvent(cond->event);
-    }
-  out:
-    LeaveCriticalSection(&cond->lock);
-  } while (waiting);
-
-  EnterCriticalSection(lock);
-
-  EnterCriticalSection(&cond->lock);
-  if (!cond->n_waiting)
-    ResetEvent(cond->event);
-  LeaveCriticalSection(&cond->lock);
-
-  return result;
+    char *msg = format_win32_error(err);
+    log_err(LD_GENERAL, "Error waiting for condition variable: %s", msg);
+    tor_free(msg);
+    return -1;
+  }
+  return 0;
 }
 
 void

@@ -68,6 +68,8 @@ noinst_HEADERS +=					\
 	src/lib/crypt_ops/crypto_nss_mgt.h		\
 	src/lib/crypt_ops/crypto_openssl_mgt.h		\
 	src/lib/crypt_ops/crypto_ope.h          	\
+	src/lib/crypt_ops/crypto_options.inc		\
+	src/lib/crypt_ops/crypto_options_st.h		\
 	src/lib/crypt_ops/crypto_pwbox.h		\
 	src/lib/crypt_ops/crypto_rand.h			\
 	src/lib/crypt_ops/crypto_rsa.h			\

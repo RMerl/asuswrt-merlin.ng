@@ -1,6 +1,6 @@
 /* Copyright (c) 2003, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -29,7 +29,7 @@ sample_laplace_distribution(double mu, double b, double p)
   tor_assert(p >= 0.0 && p < 1.0);
 
   /* This is the "inverse cumulative distribution function" from:
-   * http://en.wikipedia.org/wiki/Laplace_distribution */
+   * https://en.wikipedia.org/wiki/Laplace_distribution */
   if (p <= 0.0) {
     /* Avoid taking log(0.0) == -INFINITY, as some processors or compiler
      * options can cause the program to trap. */

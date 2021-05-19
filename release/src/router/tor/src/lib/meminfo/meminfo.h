@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -15,7 +15,6 @@
 #include "lib/testsupport/testsupport.h"
 #include <stddef.h>
 
-void tor_log_mallinfo(int severity);
 MOCK_DECL(int, get_total_system_memory, (size_t *mem_out));
 
 #endif /* !defined(TOR_MEMINFO_H) */

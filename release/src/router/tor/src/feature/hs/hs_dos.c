@@ -1,4 +1,4 @@
-/* Copyright (c) 2019, The Tor Project, Inc. */
+/* Copyright (c) 2019-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -31,19 +31,22 @@
 
 #include "feature/hs/hs_dos.h"
 
-/* Default value of the allowed INTRODUCE2 cell rate per second. Above that
+/** Default value of the allowed INTRODUCE2 cell rate per second. Above that
  * value per second, the introduction is denied. */
 #define HS_DOS_INTRODUCE_DEFAULT_CELL_RATE_PER_SEC 25
 
-/* Default value of the allowed INTRODUCE2 cell burst per second. This is the
+/** Default value of the allowed INTRODUCE2 cell burst per second. This is the
  * maximum value a token bucket has per second. We thus allow up to this value
  * of INTRODUCE2 cell per second but the bucket is refilled by the rate value
  * but never goes above that burst value. */
 #define HS_DOS_INTRODUCE_DEFAULT_CELL_BURST_PER_SEC 200
 
-/* Default value of the consensus parameter enabling or disabling the
+/** Default value of the consensus parameter enabling or disabling the
  * introduction DoS defense. Disabled by default. */
 #define HS_DOS_INTRODUCE_ENABLED_DEFAULT 0
+
+/** INTRODUCE2 rejected request counter. */
+static uint64_t intro2_rejected_count = 0;
 
 /* Consensus parameters. The ESTABLISH_INTRO DoS cell extension have higher
  * priority than these values. If no extension is sent, these are used only by
@@ -62,7 +65,7 @@ get_intro2_enable_consensus_param(const networkstatus_t *ns)
                                  HS_DOS_INTRODUCE_ENABLED_DEFAULT, 0, 1);
 }
 
-/* Return the parameter for the introduction rate per sec. */
+/** Return the parameter for the introduction rate per sec. */
 STATIC uint32_t
 get_intro2_rate_consensus_param(const networkstatus_t *ns)
 {
@@ -71,7 +74,7 @@ get_intro2_rate_consensus_param(const networkstatus_t *ns)
                                  0, INT32_MAX);
 }
 
-/* Return the parameter for the introduction burst per sec. */
+/** Return the parameter for the introduction burst per sec. */
 STATIC uint32_t
 get_intro2_burst_consensus_param(const networkstatus_t *ns)
 {
@@ -80,7 +83,7 @@ get_intro2_burst_consensus_param(const networkstatus_t *ns)
                                  0, INT32_MAX);
 }
 
-/* Go over all introduction circuit relay side and adjust their rate/burst
+/** Go over all introduction circuit relay side and adjust their rate/burst
  * values using the global parameters. This is called right after the
  * consensus parameters might have changed. */
 static void
@@ -90,6 +93,11 @@ update_intro_circuits(void)
   smartlist_t *intro_circs = hs_circuitmap_get_all_intro_circ_relay_side();
 
   SMARTLIST_FOREACH_BEGIN(intro_circs, circuit_t *, circ) {
+    /* Ignore circuit if the defenses were set explicitly through the
+     * ESTABLISH_INTRO cell DoS extension. */
+    if (TO_OR_CIRCUIT(circ)->introduce2_dos_defense_explicit) {
+      continue;
+    }
     /* Defenses might have been enabled or disabled. */
     TO_OR_CIRCUIT(circ)->introduce2_dos_defense_enabled =
       consensus_param_introduce_defense_enabled;
@@ -102,7 +110,7 @@ update_intro_circuits(void)
   smartlist_free(intro_circs);
 }
 
-/* Set consensus parameters. */
+/** Set consensus parameters. */
 static void
 set_consensus_parameters(const networkstatus_t *ns)
 {
@@ -122,7 +130,7 @@ set_consensus_parameters(const networkstatus_t *ns)
  * Public API.
  */
 
-/* Initialize the INTRODUCE2 token bucket for the DoS defenses using the
+/** Initialize the INTRODUCE2 token bucket for the DoS defenses using the
  * consensus/default values. We might get a cell extension that changes those
  * later but if we don't, the default or consensus parameters are used. */
 void
@@ -138,7 +146,7 @@ hs_dos_setup_default_intro2_defenses(or_circuit_t *circ)
                         (uint32_t) approx_time());
 }
 
-/* Called when the consensus has changed. We might have new consensus
+/** Called when the consensus has changed. We might have new consensus
  * parameters to look at. */
 void
 hs_dos_consensus_has_changed(const networkstatus_t *ns)
@@ -152,7 +160,7 @@ hs_dos_consensus_has_changed(const networkstatus_t *ns)
   set_consensus_parameters(ns);
 }
 
-/* Return true iff an INTRODUCE2 cell can be sent on the given service
+/** Return true iff an INTRODUCE2 cell can be sent on the given service
  * introduction circuit. */
 bool
 hs_dos_can_send_intro2(or_circuit_t *s_intro_circ)
@@ -163,12 +171,12 @@ hs_dos_can_send_intro2(or_circuit_t *s_intro_circ)
    * This can be set by the consensus, the ESTABLISH_INTRO cell extension or
    * the hardcoded values in tor code. */
   if (!s_intro_circ->introduce2_dos_defense_enabled) {
-    return true;
+    goto allow;
   }
 
   /* Should not happen but if so, scream loudly. */
   if (BUG(TO_CIRCUIT(s_intro_circ)->purpose != CIRCUIT_PURPOSE_INTRO_POINT)) {
-    return false;
+    goto disallow;
   }
 
   /* This is called just after we got a valid and parsed INTRODUCE1 cell. The
@@ -189,10 +197,30 @@ hs_dos_can_send_intro2(or_circuit_t *s_intro_circ)
   }
 
   /* Finally, we can send a new INTRODUCE2 if there are still tokens. */
-  return token_bucket_ctr_get(&s_intro_circ->introduce2_bucket) > 0;
+  if (token_bucket_ctr_get(&s_intro_circ->introduce2_bucket) > 0) {
+    goto allow;
+  }
+
+  /* If we reach this point, then it means the bucket has reached zero, and
+     we're going to disallow. */
+
+ disallow:
+  /* Increment stats counter, we are rejecting the INTRO2 cell. */
+  intro2_rejected_count++;
+  return false;
+
+ allow:
+  return true;
 }
 
-/* Initialize the onion service Denial of Service subsystem. */
+/** Return rolling count of rejected INTRO2. */
+uint64_t
+hs_dos_get_intro2_rejected_count(void)
+{
+  return intro2_rejected_count;
+}
+
+/** Initialize the onion service Denial of Service subsystem. */
 void
 hs_dos_init(void)
 {

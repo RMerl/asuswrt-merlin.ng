@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -18,6 +18,7 @@
 #include "core/or/policies.h"
 #include "feature/dirauth/bwauth.h"
 #include "feature/dirauth/reachability.h"
+#include "feature/dirauth/dirauth_sys.h"
 #include "feature/hibernate/hibernate.h"
 #include "feature/nodelist/dirlist.h"
 #include "feature/nodelist/networkstatus.h"
@@ -27,6 +28,7 @@
 #include "feature/relay/router.h"
 #include "feature/stats/rephist.h"
 
+#include "feature/dirauth/dirauth_options_st.h"
 #include "feature/nodelist/node_st.h"
 #include "feature/nodelist/routerinfo_st.h"
 #include "feature/nodelist/routerlist_st.h"
@@ -145,7 +147,7 @@ router_is_active(const routerinfo_t *ri, const node_t *node, time_t now)
    * if TestingTorNetwork, and TestingMinExitFlagThreshold is non-zero */
   if (!ri->bandwidthcapacity) {
     if (get_options()->TestingTorNetwork) {
-      if (get_options()->TestingMinExitFlagThreshold > 0) {
+      if (dirauth_get_options()->TestingMinExitFlagThreshold > 0) {
         /* If we're in a TestingTorNetwork, and TestingMinExitFlagThreshold is,
          * then require bandwidthcapacity */
         return 0;
@@ -175,14 +177,14 @@ dirserv_thinks_router_is_hs_dir(const routerinfo_t *router,
   long uptime;
 
   /* If we haven't been running for at least
-   * get_options()->MinUptimeHidServDirectoryV2 seconds, we can't
+   * MinUptimeHidServDirectoryV2 seconds, we can't
    * have accurate data telling us a relay has been up for at least
    * that long. We also want to allow a bit of slack: Reachability
    * tests aren't instant. If we haven't been running long enough,
    * trust the relay. */
 
   if (get_uptime() >
-      get_options()->MinUptimeHidServDirectoryV2 * 1.1)
+      dirauth_get_options()->MinUptimeHidServDirectoryV2 * 1.1)
     uptime = MIN(rep_hist_get_uptime(router->cache_info.identity_digest, now),
                  real_uptime(router, now));
   else
@@ -191,7 +193,7 @@ dirserv_thinks_router_is_hs_dir(const routerinfo_t *router,
   return (router->wants_to_be_hs_dir &&
           router->supports_tunnelled_dir_requests &&
           node->is_stable && node->is_fast &&
-          uptime >= get_options()->MinUptimeHidServDirectoryV2 &&
+          uptime >= dirauth_get_options()->MinUptimeHidServDirectoryV2 &&
           router_is_active(router, node, now));
 }
 
@@ -214,9 +216,10 @@ router_counts_toward_thresholds(const node_t *node, time_t now,
     dirserv_has_measured_bw(node->identity);
   uint64_t min_bw_kb = ABSOLUTE_MIN_BW_VALUE_TO_CONSIDER_KB;
   const or_options_t *options = get_options();
+  const dirauth_options_t *dirauth_options = dirauth_get_options();
 
   if (options->TestingTorNetwork) {
-    min_bw_kb = (int64_t)options->TestingMinExitFlagThreshold / 1000;
+    min_bw_kb = (int64_t)dirauth_options->TestingMinExitFlagThreshold / 1000;
   }
 
   return node->ri && router_is_active(node->ri, node, now) &&
@@ -242,11 +245,12 @@ dirserv_compute_performance_thresholds(digestmap_t *omit_as_sybil)
   const smartlist_t *nodelist;
   time_t now = time(NULL);
   const or_options_t *options = get_options();
+  const dirauth_options_t *dirauth_options = dirauth_get_options();
 
   /* Require mbw? */
   int require_mbw =
     (dirserv_get_last_n_measured_bws() >
-     options->MinMeasuredBWsForAuthToIgnoreAdvertised) ? 1 : 0;
+     dirauth_options->MinMeasuredBWsForAuthToIgnoreAdvertised) ? 1 : 0;
 
   /* initialize these all here, in case there are no routers */
   stable_uptime = 0;
@@ -338,7 +342,7 @@ dirserv_compute_performance_thresholds(digestmap_t *omit_as_sybil)
       ABSOLUTE_MIN_VALUE_FOR_FAST_FLAG,
       INT32_MAX);
     if (options->TestingTorNetwork) {
-      min_fast = (int32_t)options->TestingMinFastFlagThreshold;
+      min_fast = (int32_t)dirauth_options->TestingMinFastFlagThreshold;
     }
     max_fast = networkstatus_get_param(NULL, "FastFlagMaxThreshold",
                                        INT32_MAX, min_fast, INT32_MAX);
@@ -352,9 +356,11 @@ dirserv_compute_performance_thresholds(digestmap_t *omit_as_sybil)
   }
   /* Protect sufficiently fast nodes from being pushed out of the set
    * of Fast nodes. */
-  if (options->AuthDirFastGuarantee &&
-      fast_bandwidth_kb > options->AuthDirFastGuarantee/1000)
-    fast_bandwidth_kb = (uint32_t)options->AuthDirFastGuarantee/1000;
+  {
+    const uint64_t fast_opt = dirauth_get_options()->AuthDirFastGuarantee;
+    if (fast_opt && fast_bandwidth_kb > fast_opt / 1000)
+      fast_bandwidth_kb = (uint32_t)(fast_opt / 1000);
+  }
 
   /* Now that we have a time-known that 7/8 routers are known longer than,
    * fill wfus with the wfu of every such "familiar" router. */
@@ -428,7 +434,7 @@ dirserv_get_flag_thresholds_line(void)
 {
   char *result=NULL;
   const int measured_threshold =
-    get_options()->MinMeasuredBWsForAuthToIgnoreAdvertised;
+    dirauth_get_options()->MinMeasuredBWsForAuthToIgnoreAdvertised;
   const int enough_measured_bw =
     dirserv_get_last_n_measured_bws() > measured_threshold;
 
@@ -455,8 +461,9 @@ dirserv_get_flag_thresholds_line(void)
 int
 running_long_enough_to_decide_unreachable(void)
 {
-  return time_of_process_start
-    + get_options()->TestingAuthDirTimeToLearnReachability < approx_time();
+  const dirauth_options_t *opts = dirauth_get_options();
+  return time_of_process_start +
+    opts->TestingAuthDirTimeToLearnReachability < approx_time();
 }
 
 /** Each server needs to have passed a reachability test no more
@@ -480,7 +487,7 @@ dirserv_set_router_is_running(routerinfo_t *router, time_t now)
     unreachable.
    */
   int answer;
-  const or_options_t *options = get_options();
+  const dirauth_options_t *dirauth_options = dirauth_get_options();
   node_t *node = node_get_mutable_by_id(router->cache_info.identity_digest);
   tor_assert(node);
 
@@ -493,8 +500,9 @@ dirserv_set_router_is_running(routerinfo_t *router, time_t now)
     /* A hibernating router is down unless we (somehow) had contact with it
      * since it declared itself to be hibernating. */
     answer = 0;
-  } else if (options->AssumeReachable) {
-    /* If AssumeReachable, everybody is up unless they say they are down! */
+  } else if (! dirauth_options->AuthDirTestReachability) {
+    /* If we aren't testing reachability, then everybody is up unless they say
+     * they are down. */
     answer = 1;
   } else {
     /* Otherwise, a router counts as up if we found all announced OR
@@ -507,7 +515,7 @@ dirserv_set_router_is_running(routerinfo_t *router, time_t now)
        IPv6 OR port since that'd kill all dual stack relays until a
        majority of the dir auths have IPv6 connectivity. */
     answer = (now < node->last_reachable + REACHABLE_TIMEOUT &&
-              (options->AuthDirHasIPv6Connectivity != 1 ||
+              (dirauth_options->AuthDirHasIPv6Connectivity != 1 ||
                tor_addr_is_null(&router->ipv6_addr) ||
                now < node->last_reachable6 + REACHABLE_TIMEOUT));
   }
@@ -538,7 +546,7 @@ static int
 should_publish_node_ipv6(const node_t *node, const routerinfo_t *ri,
                          time_t now)
 {
-  const or_options_t *options = get_options();
+  const dirauth_options_t *options = dirauth_get_options();
 
   return options->AuthDirHasIPv6Connectivity == 1 &&
     !tor_addr_is_null(&ri->ipv6_addr) &&
@@ -571,10 +579,10 @@ dirauth_set_routerstatus_from_routerinfo(routerstatus_t *rs,
   set_routerstatus_from_routerinfo(rs, node, ri);
 
   /* Override rs->is_possible_guard. */
+  const uint64_t bw_opt = dirauth_get_options()->AuthDirGuardBWGuarantee;
   if (node->is_fast && node->is_stable &&
       ri->supports_tunnelled_dir_requests &&
-      ((options->AuthDirGuardBWGuarantee &&
-        routerbw_kb >= options->AuthDirGuardBWGuarantee/1000) ||
+      ((bw_opt && routerbw_kb >= bw_opt / 1000) ||
        routerbw_kb >= MIN(guard_bandwidth_including_exits_kb,
                           guard_bandwidth_excluding_exits_kb))) {
     long tk = rep_hist_get_weighted_time_known(
@@ -612,9 +620,9 @@ dirauth_set_routerstatus_from_routerinfo(routerstatus_t *rs,
 STATIC void
 dirserv_set_routerstatus_testing(routerstatus_t *rs)
 {
-  const or_options_t *options = get_options();
+  const dirauth_options_t *options = dirauth_get_options();
 
-  tor_assert(options->TestingTorNetwork);
+  tor_assert(get_options()->TestingTorNetwork);
 
   if (routerset_contains_routerstatus(options->TestingDirAuthVoteExit,
                                       rs, 0)) {

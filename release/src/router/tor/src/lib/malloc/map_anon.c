@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -78,8 +78,8 @@
 #endif /* defined(HAVE_MINHERIT) || ... */
 
 #if defined(HAVE_MINHERIT) && !defined(FLAG_ZERO) && !defined(FLAG_NOINHERIT)
-#warn "minherit() is defined, but we couldn't find the right flag for it."
-#warn "This is probably a bug in Tor's support for this platform."
+#warning "minherit() is defined, but FLAG_ZERO/NOINHERIT are not."
+#warning "This is probably a bug in Tor's support for this platform."
 #endif
 
 /**

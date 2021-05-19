@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /*
@@ -25,7 +25,7 @@ int protover_contains_long_protocol_names_(const char *s);
  * name longer than MAX_PROTOCOL_NAME_LENGTH, and false otherwise.
  */
 bool
-protover_contains_long_protocol_names(const char *s)
+protover_list_is_invalid(const char *s)
 {
   return protover_contains_long_protocol_names_(s) != 0;
 }

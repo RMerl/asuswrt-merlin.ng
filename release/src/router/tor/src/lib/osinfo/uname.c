@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -27,6 +27,40 @@ static char uname_result[256];
 /** True iff uname_result is set. */
 static int uname_result_is_set = 0;
 
+#ifdef _WIN32
+/** Table to map claimed windows versions into human-readable windows
+ * versions. */
+static struct {
+  unsigned major;
+  unsigned minor;
+  const char *client_version;
+  const char *server_version;
+} win_version_table[] = {
+  /* This table must be sorted in descending order.
+   * Sources:
+   *   https://en.wikipedia.org/wiki/List_of_Microsoft_Windows_versions
+   *   https://docs.microsoft.com/en-us/windows/desktop/api/winnt/
+   *     ns-winnt-_osversioninfoexa#remarks
+   */
+   /* Windows Server 2019 is indistinguishable from Windows Server 2016
+    * using GetVersionEx().
+   { 10,  0, NULL,                        "Windows Server 2019" }, */
+   // clang-format off
+   { 10,  0, "Windows 10",                "Windows Server 2016" },
+   {  6,  3, "Windows 8.1",               "Windows Server 2012 R2" },
+   {  6,  2, "Windows 8",                 "Windows Server 2012" },
+   {  6,  1, "Windows 7",                 "Windows Server 2008 R2" },
+   {  6,  0, "Windows Vista",             "Windows Server 2008" },
+   {  5,  2, "Windows XP Professional",   "Windows Server 2003" },
+   /* Windows XP did not have a server version, but we need something here */
+   {  5,  1, "Windows XP",                "Windows XP Server" },
+   {  5,  0, "Windows 2000 Professional", "Windows 2000 Server" },
+   /* Earlier versions are not supported by GetVersionEx(). */
+   {  0,  0, NULL,                        NULL }
+   // clang-format on
+};
+#endif /* defined(_WIN32) */
+
 /** Return a pointer to a description of our platform.
  */
 MOCK_IMPL(const char *,
@@ -49,31 +83,6 @@ get_uname,(void))
         int is_client = 0;
         int is_server = 0;
         const char *plat = NULL;
-        static struct {
-          unsigned major; unsigned minor;
-          const char *client_version; const char *server_version;
-        } win_version_table[] = {
-    /* This table must be sorted in descending order.
-     * Sources:
-     *   https://en.wikipedia.org/wiki/List_of_Microsoft_Windows_versions
-     *   https://docs.microsoft.com/en-us/windows/desktop/api/winnt/
-     *     ns-winnt-_osversioninfoexa#remarks
-     */
-    /* Windows Server 2019 is indistinguishable from Windows Server 2016
-     * using GetVersionEx().
-    { 10,  0, NULL,                        "Windows Server 2019" }, */
-    { 10,  0, "Windows 10",                "Windows Server 2016" },
-    {  6,  3, "Windows 8.1",               "Windows Server 2012 R2" },
-    {  6,  2, "Windows 8",                 "Windows Server 2012" },
-    {  6,  1, "Windows 7",                 "Windows Server 2008 R2" },
-    {  6,  0, "Windows Vista",             "Windows Server 2008" },
-    {  5,  2, "Windows XP Professional",   "Windows Server 2003" },
-    /* Windows XP did not have a server version, but we need something here */
-    {  5,  1, "Windows XP",                "Windows XP Server" },
-    {  5,  0, "Windows 2000 Professional", "Windows 2000 Server" },
-    /* Earlier versions are not supported by GetVersionEx(). */
-    {  0,  0, NULL,                        NULL }
-        };
         memset(&info, 0, sizeof(info));
         info.dwOSVersionInfoSize = sizeof(info);
         if (! GetVersionEx((LPOSVERSIONINFO)&info)) {

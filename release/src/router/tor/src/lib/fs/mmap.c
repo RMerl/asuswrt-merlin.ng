@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -42,8 +42,8 @@
  * failure, return NULL. Sets errno properly, using ERANGE to mean
  * "empty file". Must only be called on trusted Tor-owned files, as changing
  * the underlying file's size causes unspecified behavior. */
-tor_mmap_t *
-tor_mmap_file(const char *filename)
+MOCK_IMPL(tor_mmap_t *,
+tor_mmap_file,(const char *filename))
 {
   int fd; /* router file */
   char *string;
@@ -111,8 +111,8 @@ tor_mmap_file(const char *filename)
 }
 /** Release storage held for a memory mapping; returns 0 on success,
  * or -1 on failure (and logs a warning). */
-int
-tor_munmap_file(tor_mmap_t *handle)
+MOCK_IMPL(int,
+tor_munmap_file,(tor_mmap_t *handle))
 {
   int res;
 
@@ -132,8 +132,8 @@ tor_munmap_file(tor_mmap_t *handle)
   return res;
 }
 #elif defined(_WIN32)
-tor_mmap_t *
-tor_mmap_file(const char *filename)
+MOCK_IMPL(tor_mmap_t *,
+tor_mmap_file,(const char *filename))
 {
   TCHAR tfilename[MAX_PATH]= {0};
   tor_mmap_t *res = tor_malloc_zero(sizeof(tor_mmap_t));
@@ -213,8 +213,8 @@ tor_mmap_file(const char *filename)
 }
 
 /* Unmap the file, and return 0 for success or -1 for failure */
-int
-tor_munmap_file(tor_mmap_t *handle)
+MOCK_IMPL(int,
+tor_munmap_file,(tor_mmap_t *handle))
 {
   if (handle == NULL)
     return 0;

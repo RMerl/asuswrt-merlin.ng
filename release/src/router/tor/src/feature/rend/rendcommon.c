@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -14,6 +14,7 @@
 #include "core/or/circuitbuild.h"
 #include "core/or/circuitlist.h"
 #include "core/or/circuituse.h"
+#include "core/or/extendinfo.h"
 #include "app/config/config.h"
 #include "feature/control/control_events.h"
 #include "lib/crypt_ops/crypto_rand.h"
@@ -233,7 +234,12 @@ rend_encode_v2_intro_points(char **encoded, rend_service_descriptor_t *desc)
       goto done;
     }
     /* Assemble everything for this introduction point. */
-    address = tor_addr_to_str_dup(&info->addr);
+    const tor_addr_port_t *orport = extend_info_get_orport(info, AF_INET);
+    IF_BUG_ONCE(!orport) {
+      /* There must be an IPv4 address for v2 hs. */
+      goto done;
+    }
+    address = tor_addr_to_str_dup(&orport->addr);
     res = tor_snprintf(unenc + unenc_written, unenc_len - unenc_written,
                          "introduction-point %s\n"
                          "ip-address %s\n"
@@ -242,7 +248,7 @@ rend_encode_v2_intro_points(char **encoded, rend_service_descriptor_t *desc)
                          "service-key\n%s",
                        id_base32,
                        address,
-                       info->port,
+                       orport->port,
                        onion_key,
                        service_key);
     tor_free(address);

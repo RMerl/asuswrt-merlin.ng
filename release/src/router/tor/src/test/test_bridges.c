@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information     */
 
 /**
@@ -550,8 +550,6 @@ test_bridges_get_transport_by_bridge_addrport_no_ptlist(void *arg)
   sweep_bridge_list();
 }
 
-#define PT_PRIVATE
-
 /**
  * Calling get_transport_by_bridge_addrport() with the address and port of a
  * configured bridge which uses a pluggable transport should return 0 and set
@@ -594,8 +592,12 @@ test_bridges_get_transport_by_bridge_addrport(void *arg)
 static void
 test_bridges_node_is_a_configured_bridge(void *arg)
 {
-  routerinfo_t ri_ipv4 = { .addr = 0x06060606, .or_port = 6666 };
-  routerstatus_t rs_ipv4 = { .addr = 0x06060606, .or_port = 6666 };
+
+  routerinfo_t ri_ipv4 = { .ipv4_orport = 6666 };
+  tor_addr_parse(&ri_ipv4.ipv4_addr, "6.6.6.6");
+
+  routerstatus_t rs_ipv4 = { .ipv4_orport = 6666 };
+  tor_addr_parse(&rs_ipv4.ipv4_addr, "6.6.6.6");
 
   routerinfo_t ri_ipv6 = { .ipv6_orport = 6666 };
   tor_addr_parse(&(ri_ipv6.ipv6_addr),
@@ -634,8 +636,8 @@ test_bridges_node_is_a_configured_bridge(void *arg)
 
   /* It won't match bridge1, though, since bridge1 has a digest, and this
      isn't it! */
-  node_ri_ipv4.ri->addr = 0x06060607;
-  node_ri_ipv4.ri->or_port = 6667;
+  tor_addr_parse(&node_ri_ipv4.ri->ipv4_addr, "6.6.6.7");
+  node_ri_ipv4.ri->ipv4_orport = 6667;
   tt_assert(! node_is_a_configured_bridge(&node_ri_ipv4));
   /* If we set the fingerprint right, though, it will match. */
   base16_decode(node_ri_ipv4.identity, DIGEST_LEN,

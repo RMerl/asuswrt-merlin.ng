@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2019, The Tor Project, Inc. */
+/* Copyright (c) 2008-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -39,7 +39,7 @@
 #elif MEMAREA_ALIGN == 8
 #define MEMAREA_ALIGN_MASK ((uintptr_t)7)
 #else
-#error "void* is neither 4 nor 8 bytes long. I don't know how to align stuff."
+#error "void* is neither 4 nor 8 bytes long."
 #endif /* MEMAREA_ALIGN == 4 || ... */
 
 #if defined(__GNUC__) && defined(FLEXIBLE_ARRAY_MEMBER)

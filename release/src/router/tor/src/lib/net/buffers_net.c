@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -76,7 +76,7 @@ read_to_chunk(buf_t *buf, chunk_t *chunk, tor_socket_t fd, size_t at_most,
     chunk->datalen += read_result;
     log_debug(LD_NET,"Read %ld bytes. %d on inbuf.", (long)read_result,
               (int)buf->datalen);
-    tor_assert(read_result < INT_MAX);
+    tor_assert(read_result <= BUF_MAX_LEN);
     return (int)read_result;
   }
 }
@@ -103,9 +103,9 @@ buf_read_from_fd(buf_t *buf, int fd, size_t at_most,
   tor_assert(reached_eof);
   tor_assert(SOCKET_OK(fd));
 
-  if (BUG(buf->datalen >= INT_MAX))
+  if (BUG(buf->datalen > BUF_MAX_LEN))
     return -1;
-  if (BUG(buf->datalen >= INT_MAX - at_most))
+  if (BUG(buf->datalen > BUF_MAX_LEN - at_most))
     return -1;
 
   while (at_most > total_read) {
@@ -127,7 +127,7 @@ buf_read_from_fd(buf_t *buf, int fd, size_t at_most,
     check();
     if (r < 0)
       return r; /* Error */
-    tor_assert(total_read+r < INT_MAX);
+    tor_assert(total_read+r <= BUF_MAX_LEN);
     total_read += r;
     if ((size_t)r < readlen) { /* eof, block, or no more to read. */
       break;
@@ -137,13 +137,12 @@ buf_read_from_fd(buf_t *buf, int fd, size_t at_most,
 }
 
 /** Helper for buf_flush_to_socket(): try to write <b>sz</b> bytes from chunk
- * <b>chunk</b> of buffer <b>buf</b> onto file descriptor <b>fd</b>.  On
- * success, deduct the bytes written from *<b>buf_flushlen</b>.  Return the
- * number of bytes written on success, 0 on blocking, -1 on failure.
+ * <b>chunk</b> of buffer <b>buf</b> onto file descriptor <b>fd</b>.  Return
+ * the number of bytes written on success, 0 on blocking, -1 on failure.
  */
 static inline int
 flush_chunk(tor_socket_t fd, buf_t *buf, chunk_t *chunk, size_t sz,
-            size_t *buf_flushlen, bool is_socket)
+            bool is_socket)
 {
   ssize_t write_result;
 
@@ -168,35 +167,29 @@ flush_chunk(tor_socket_t fd, buf_t *buf, chunk_t *chunk, size_t sz,
     log_debug(LD_NET,"write() would block, returning.");
     return 0;
   } else {
-    *buf_flushlen -= write_result;
     buf_drain(buf, write_result);
-    tor_assert(write_result < INT_MAX);
+    tor_assert(write_result <= BUF_MAX_LEN);
     return (int)write_result;
   }
 }
 
 /** Write data from <b>buf</b> to the file descriptor <b>fd</b>.  Write at most
- * <b>sz</b> bytes, decrement *<b>buf_flushlen</b> by
- * the number of bytes actually written, and remove the written bytes
+ * <b>sz</b> bytes, and remove the written bytes
  * from the buffer.  Return the number of bytes written on success,
  * -1 on failure.  Return 0 if write() would block.
  */
 static int
 buf_flush_to_fd(buf_t *buf, int fd, size_t sz,
-                size_t *buf_flushlen, bool is_socket)
+                bool is_socket)
 {
   /* XXXX It's stupid to overload the return values for these functions:
    * "error status" and "number of bytes flushed" are not mutually exclusive.
    */
   int r;
   size_t flushed = 0;
-  tor_assert(buf_flushlen);
   tor_assert(SOCKET_OK(fd));
-  if (BUG(*buf_flushlen > buf->datalen)) {
-    *buf_flushlen = buf->datalen;
-  }
-  if (BUG(sz > *buf_flushlen)) {
-    sz = *buf_flushlen;
+  if (BUG(sz > buf->datalen)) {
+    sz = buf->datalen;
   }
 
   check();
@@ -208,7 +201,7 @@ buf_flush_to_fd(buf_t *buf, int fd, size_t sz,
     else
       flushlen0 = buf->head->datalen;
 
-    r = flush_chunk(fd, buf, buf->head, flushlen0, buf_flushlen, is_socket);
+    r = flush_chunk(fd, buf, buf->head, flushlen0, is_socket);
     check();
     if (r < 0)
       return r;
@@ -217,7 +210,7 @@ buf_flush_to_fd(buf_t *buf, int fd, size_t sz,
     if (r == 0 || (size_t)r < flushlen0) /* can't flush any more now. */
       break;
   }
-  tor_assert(flushed < INT_MAX);
+  tor_assert(flushed <= BUF_MAX_LEN);
   return (int)flushed;
 }
 
@@ -228,10 +221,9 @@ buf_flush_to_fd(buf_t *buf, int fd, size_t sz,
  * -1 on failure.  Return 0 if write() would block.
  */
 int
-buf_flush_to_socket(buf_t *buf, tor_socket_t s, size_t sz,
-                    size_t *buf_flushlen)
+buf_flush_to_socket(buf_t *buf, tor_socket_t s, size_t sz)
 {
-  return buf_flush_to_fd(buf, s, sz, buf_flushlen, true);
+  return buf_flush_to_fd(buf, s, sz, true);
 }
 
 /** Read from socket <b>s</b>, writing onto end of <b>buf</b>.  Read at most
@@ -254,10 +246,9 @@ buf_read_from_socket(buf_t *buf, tor_socket_t s, size_t at_most,
  * -1 on failure.  Return 0 if write() would block.
  */
 int
-buf_flush_to_pipe(buf_t *buf, int fd, size_t sz,
-                  size_t *buf_flushlen)
+buf_flush_to_pipe(buf_t *buf, int fd, size_t sz)
 {
-  return buf_flush_to_fd(buf, fd, sz, buf_flushlen, false);
+  return buf_flush_to_fd(buf, fd, sz, false);
 }
 
 /** Read from pipe <b>fd</b>, writing onto end of <b>buf</b>.  Read at most

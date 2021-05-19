@@ -1,3 +1,12 @@
+/* Copyright (c) 2001-2004, Roger Dingledine.
+ * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
+/* See LICENSE for licensing information */
+
+/**
+ * @file getinfo_geoip.c
+ * @brief GEOIP-related controller GETINFO commands.
+ **/
 
 #include "core/or/or.h"
 #include "core/mainloop/connection.h"

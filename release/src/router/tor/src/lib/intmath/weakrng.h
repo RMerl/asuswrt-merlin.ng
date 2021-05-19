@@ -1,6 +1,6 @@
 /* Copyright (c) 2003, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -19,8 +19,11 @@ typedef struct tor_weak_rng_t {
   uint32_t state;
 } tor_weak_rng_t;
 
+#ifndef COCCI
 #define TOR_WEAK_RNG_INIT {383745623}
+#endif
 #define TOR_WEAK_RANDOM_MAX (INT_MAX)
+
 void tor_init_weak_random(tor_weak_rng_t *weak_rng, unsigned seed);
 int32_t tor_weak_random(tor_weak_rng_t *weak_rng);
 int32_t tor_weak_random_range(tor_weak_rng_t *rng, int32_t top);

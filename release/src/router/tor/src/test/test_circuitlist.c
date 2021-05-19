@@ -1,7 +1,7 @@
-/* Copyright (c) 2013-2019, The Tor Project, Inc. */
+/* Copyright (c) 2013-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
-#define TOR_CHANNEL_INTERNAL_
+#define CHANNEL_OBJECT_PRIVATE
 #define CIRCUITBUILD_PRIVATE
 #define CIRCUITLIST_PRIVATE
 #define HS_CIRCUITMAP_PRIVATE
@@ -136,7 +136,7 @@ test_clist_maps(void *arg)
   channel_note_destroy_pending(ch2, 200);
   channel_note_destroy_pending(ch2, 205);
   channel_note_destroy_pending(ch1, 100);
-  tt_assert(circuit_id_in_use_on_channel(205, ch2))
+  tt_assert(circuit_id_in_use_on_channel(205, ch2));
   tt_assert(circuit_id_in_use_on_channel(200, ch2));
   tt_assert(circuit_id_in_use_on_channel(100, ch1));
 

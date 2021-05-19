@@ -1,3 +1,5 @@
+Unusual pattern permitted.h in scripts/maint/practracker/testdata
 problem function-size a.c:i_am_a_function() 9
 (warning) problem function-size a.c:another_function() 12
 problem function-size b.c:foo() 4
+practracker exit status: 2

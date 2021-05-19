@@ -1,0 +1,25 @@
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+LIBTOR_APP_A_SOURCES += 			\
+	src/feature/dirparse/authcert_parse.c	\
+	src/feature/dirparse/microdesc_parse.c	\
+	src/feature/dirparse/ns_parse.c		\
+	src/feature/dirparse/parsecommon.c	\
+	src/feature/dirparse/policy_parse.c	\
+	src/feature/dirparse/routerparse.c	\
+	src/feature/dirparse/sigcommon.c	\
+	src/feature/dirparse/signing.c		\
+	src/feature/dirparse/unparseable.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/feature/dirparse/authcert_members.h		\
+	src/feature/dirparse/authcert_parse.h		\
+	src/feature/dirparse/microdesc_parse.h		\
+	src/feature/dirparse/ns_parse.h			\
+	src/feature/dirparse/parsecommon.h		\
+	src/feature/dirparse/policy_parse.h		\
+	src/feature/dirparse/routerparse.h		\
+	src/feature/dirparse/sigcommon.h		\
+	src/feature/dirparse/signing.h			\
+	src/feature/dirparse/unparseable.h

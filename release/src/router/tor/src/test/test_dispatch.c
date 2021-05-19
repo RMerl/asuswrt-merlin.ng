@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define DISPATCH_NEW_PRIVATE
@@ -135,7 +135,7 @@ test_dispatch_simple(void *arg)
   tor_free(recv2_received);
 }
 
-/* Construct a dispatch_t with a message and no reciever; make sure that it
+/* Construct a dispatch_t with a message and no receiver; make sure that it
  * gets dropped properly. */
 static void
 test_dispatch_no_recipient(void *arg)
@@ -167,7 +167,7 @@ test_dispatch_no_recipient(void *arg)
   dcfg_free(cfg);
 }
 
-struct coord { int x; int y; };
+struct coord_t { int x; int y; };
 static void
 free_coord(msg_aux_data_t d)
 {
@@ -177,7 +177,7 @@ static char *
 fmt_coord(msg_aux_data_t d)
 {
   char *v;
-  struct coord *c = d.ptr;
+  struct coord_t *c = d.ptr;
   tor_asprintf(&v, "[%d, %d]", c->x, c->y);
   return v;
 }
@@ -225,7 +225,7 @@ test_dispatch_with_types(void *arg)
   r = dispatch_set_alert_fn(d, 2, alert_run_immediate, NULL);
   tt_int_op(r, OP_EQ, 0);
 
-  struct coord *xy = tor_malloc(sizeof(*xy));
+  struct coord_t *xy = tor_malloc(sizeof(*xy));
   xy->x = 13;
   xy->y = 37;
   msg_aux_data_t data = {.ptr = xy};

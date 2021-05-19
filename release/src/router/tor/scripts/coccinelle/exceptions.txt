@@ -1,0 +1,24 @@
+# A list of exception patterns for check_cocci_parse.sh
+# Passed to 'grep -f'
+src/lib/cc/compat_compiler.h
+src/lib/container/handles.h
+src/lib/container/map.c
+src/lib/container/map.h
+src/lib/container/order.c
+src/lib/crypt_ops/crypto_rand.c
+src/lib/fs/files.h
+src/lib/log/util_bug.c
+src/lib/pubsub/pubsub_macros.h
+src/lib/smartlist_core/smartlist_foreach.h
+src/lib/testsupport/testsupport.h
+src/lib/tls/tortls.h
+src/lib/tls/tortls_openssl.c
+src/lib/tls/x509.h
+src/lib/version/version.c
+src/core/mainloop/connection.c
+src/core/or/reasons.c
+src/feature/dirclient/dirclient.c
+src/feature/nodelist/networkstatus.c
+src/test/test_address.c
+src/test/test_hs_cache.c
+src/test/test_hs_descriptor.c

@@ -1,4 +1,4 @@
-/* * Copyright (c) 2012-2019, The Tor Project, Inc. */
+/* * Copyright (c) 2012-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -12,11 +12,11 @@
 #include "core/or/or.h"
 #include "lib/testsupport/testsupport.h"
 
-typedef struct circuitmux_policy_s circuitmux_policy_t;
-typedef struct circuitmux_policy_data_s circuitmux_policy_data_t;
-typedef struct circuitmux_policy_circ_data_s circuitmux_policy_circ_data_t;
+typedef struct circuitmux_policy_t circuitmux_policy_t;
+typedef struct circuitmux_policy_data_t circuitmux_policy_data_t;
+typedef struct circuitmux_policy_circ_data_t circuitmux_policy_circ_data_t;
 
-struct circuitmux_policy_s {
+struct circuitmux_policy_t {
   /* Allocate cmux-wide policy-specific data */
   circuitmux_policy_data_t * (*alloc_cmux_data)(circuitmux_t *cmux);
   /* Free cmux-wide policy-specific data */
@@ -67,7 +67,7 @@ struct circuitmux_policy_s {
  * wide data; it just has the magic number in the base struct.
  */
 
-struct circuitmux_policy_data_s {
+struct circuitmux_policy_data_t {
   uint32_t magic;
 };
 
@@ -76,7 +76,7 @@ struct circuitmux_policy_data_s {
  * specific data; it just has the magic number in the base struct.
  */
 
-struct circuitmux_policy_circ_data_s {
+struct circuitmux_policy_circ_data_t {
   uint32_t magic;
 };
 
@@ -127,7 +127,7 @@ MOCK_DECL(unsigned int, circuitmux_num_cells, (circuitmux_t *cmux));
 unsigned int circuitmux_num_circuits(circuitmux_t *cmux);
 unsigned int circuitmux_num_active_circuits(circuitmux_t *cmux);
 
-/* Debuging interface - slow. */
+/* Debugging interface - slow. */
 int64_t circuitmux_count_queued_destroy_cells(const channel_t *chan,
                                               const circuitmux_t *cmux);
 
@@ -157,6 +157,62 @@ void circuitmux_mark_destroyed_circids_usable(circuitmux_t *cmux,
 /* Optional interchannel comparisons for scheduling */
 MOCK_DECL(int, circuitmux_compare_muxes,
           (circuitmux_t *cmux_1, circuitmux_t *cmux_2));
+
+#ifdef CIRCUITMUX_PRIVATE
+
+#include "core/or/destroy_cell_queue_st.h"
+
+/*
+ * Map of muxinfos for circuitmux_t to use; struct is defined below (name
+ * of struct must match HT_HEAD line).
+ */
+typedef HT_HEAD(chanid_circid_muxinfo_map, chanid_circid_muxinfo_t)
+  chanid_circid_muxinfo_map_t;
+
+/*
+ * Structures for circuitmux.c
+ */
+
+struct circuitmux_t {
+  /* Keep count of attached, active circuits */
+  unsigned int n_circuits, n_active_circuits;
+
+  /* Total number of queued cells on all circuits */
+  unsigned int n_cells;
+
+  /*
+   * Map from (channel ID, circuit ID) pairs to circuit_muxinfo_t
+   */
+  chanid_circid_muxinfo_map_t *chanid_circid_map;
+
+  /** List of queued destroy cells */
+  destroy_cell_queue_t destroy_cell_queue;
+  /** Boolean: True iff the last cell to circuitmux_get_first_active_circuit
+   * returned the destroy queue. Used to force alternation between
+   * destroy/non-destroy cells.
+   *
+   * XXXX There is no reason to think that alternating is a particularly good
+   * approach -- it's just designed to prevent destroys from starving other
+   * cells completely.
+   */
+  unsigned int last_cell_was_destroy : 1;
+  /** Destroy counter: increment this when a destroy gets queued, decrement
+   * when we unqueue it, so we can test to make sure they don't starve.
+   */
+  int64_t destroy_ctr;
+
+  /*
+   * Circuitmux policy; if this is non-NULL, it can override the built-
+   * in round-robin active circuits behavior.  This is how EWMA works in
+   * the new circuitmux_t world.
+   */
+  const circuitmux_policy_t *policy;
+
+  /* Policy-specific data */
+  circuitmux_policy_data_t *policy_data;
+};
+
+#endif /* defined(CIRCUITMUX_PRIVATE) */
 
 #endif /* !defined(TOR_CIRCUITMUX_H) */
 

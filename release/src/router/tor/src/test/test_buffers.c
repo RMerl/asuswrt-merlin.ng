@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define BUFFERS_PRIVATE
@@ -300,6 +300,69 @@ test_buffer_pullup(void *arg)
   buf_free(buf);
   tor_free(stuff);
   tor_free(tmp);
+}
+
+static void
+test_buffers_move_all(void *arg)
+{
+  (void)arg;
+  buf_t *input = buf_new();
+  buf_t *output = buf_new();
+  char *s = NULL;
+
+  /* Move from empty buffer to nonempty buffer. (This is a regression test for
+   * #40076) */
+  buf_add(output, "abc", 3);
+  buf_assert_ok(input);
+  buf_assert_ok(output);
+  buf_move_all(output, input);
+  buf_assert_ok(input);
+  buf_assert_ok(output);
+  tt_int_op(buf_datalen(output), OP_EQ, 3);
+  s = buf_extract(output, NULL);
+  tt_str_op(s, OP_EQ, "abc");
+  buf_free(output);
+  buf_free(input);
+  tor_free(s);
+
+  /* Move from empty to empty. */
+  output = buf_new();
+  input = buf_new();
+  buf_move_all(output, input);
+  buf_assert_ok(input);
+  buf_assert_ok(output);
+  tt_int_op(buf_datalen(output), OP_EQ, 0);
+  buf_free(output);
+  buf_free(input);
+
+  /* Move from nonempty to empty. */
+  output = buf_new();
+  input = buf_new();
+  buf_add(input, "longstanding bugs", 17);
+  buf_move_all(output, input);
+  buf_assert_ok(input);
+  buf_assert_ok(output);
+  s = buf_extract(output, NULL);
+  tt_str_op(s, OP_EQ, "longstanding bugs");
+  buf_free(output);
+  buf_free(input);
+  tor_free(s);
+
+  /* Move from nonempty to nonempty. */
+  output = buf_new();
+  input = buf_new();
+  buf_add(output, "the start of", 12);
+  buf_add(input, " a string", 9);
+  buf_move_all(output, input);
+  buf_assert_ok(input);
+  buf_assert_ok(output);
+  s = buf_extract(output, NULL);
+  tt_str_op(s, OP_EQ, "the start of a string");
+
+ done:
+  buf_free(output);
+  buf_free(input);
+  tor_free(s);
 }
 
 static void
@@ -799,6 +862,7 @@ struct testcase_t buffer_tests[] = {
   { "basic", test_buffers_basic, TT_FORK, NULL, NULL },
   { "copy", test_buffer_copy, TT_FORK, NULL, NULL },
   { "pullup", test_buffer_pullup, TT_FORK, NULL, NULL },
+  { "move_all", test_buffers_move_all, 0, NULL, NULL },
   { "startswith", test_buffer_peek_startswith, 0, NULL, NULL },
   { "allocation_tracking", test_buffer_allocation_tracking, TT_FORK,
     NULL, NULL },

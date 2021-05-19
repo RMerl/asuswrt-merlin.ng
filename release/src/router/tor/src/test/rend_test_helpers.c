@@ -1,7 +1,8 @@
-/* Copyright (c) 2014-2019, The Tor Project, Inc. */
+/* Copyright (c) 2014-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "core/or/or.h"
+#include "core/or/extendinfo.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "test/test.h"
 #include "feature/rend/rendcommon.h"
@@ -58,7 +59,8 @@ create_descriptor(rend_service_descriptor_t **generated, char **service_id,
   for (i = 0; i < intro_points; i++) {
     rend_intro_point_t *intro = tor_malloc_zero(sizeof(rend_intro_point_t));
     crypto_pk_t *okey = pk_generate(2 + i);
-    intro->extend_info = tor_malloc_zero(sizeof(extend_info_t));
+    intro->extend_info =
+      extend_info_new(NULL, NULL, NULL, NULL, NULL, NULL, 0);
     intro->extend_info->onion_key = okey;
     crypto_pk_get_digest(intro->extend_info->onion_key,
                          intro->extend_info->identity_digest);
@@ -66,8 +68,12 @@ create_descriptor(rend_service_descriptor_t **generated, char **service_id,
     base16_encode(intro->extend_info->nickname + 1,
                   sizeof(intro->extend_info->nickname) - 1,
                   intro->extend_info->identity_digest, DIGEST_LEN);
-    tor_addr_from_ipv4h(&intro->extend_info->addr, crypto_rand_int(65536));
-    intro->extend_info->port = 1 + crypto_rand_int(65535);
+    tor_addr_t addr;
+    uint16_t port;
+    /* Does not cover all IP addresses. */
+    tor_addr_from_ipv4h(&addr, crypto_rand_int(65536) + 1);
+    port = 1 + crypto_rand_int(65535);
+    extend_info_add_orport(intro->extend_info, &addr, port);
     intro->intro_key = crypto_pk_dup_key(pk2);
     smartlist_add((*generated)->intro_nodes, intro);
   }
@@ -91,4 +97,3 @@ mock_rend_data(const char *onion_address)
                                                  DIGEST_LEN));
   return rend_query;
 }
-

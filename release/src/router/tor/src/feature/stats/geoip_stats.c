@@ -1,4 +1,4 @@
-/* Copyright (c) 2007-2019, The Tor Project, Inc. */
+/* Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -146,9 +146,9 @@ clientmap_entries_eq(const clientmap_entry_t *a, const clientmap_entry_t *b)
 }
 
 HT_PROTOTYPE(clientmap, clientmap_entry_t, node, clientmap_entry_hash,
-             clientmap_entries_eq)
+             clientmap_entries_eq);
 HT_GENERATE2(clientmap, clientmap_entry_t, node, clientmap_entry_hash,
-             clientmap_entries_eq, 0.6, tor_reallocarray_, tor_free_)
+             clientmap_entries_eq, 0.6, tor_reallocarray_, tor_free_);
 
 #define clientmap_entry_free(ent) \
   FREE_AND_NULL(clientmap_entry_t, clientmap_entry_free_, ent)
@@ -484,9 +484,9 @@ dirreq_map_ent_hash(const dirreq_map_entry_t *entry)
 }
 
 HT_PROTOTYPE(dirreqmap, dirreq_map_entry_t, node, dirreq_map_ent_hash,
-             dirreq_map_ent_eq)
+             dirreq_map_ent_eq);
 HT_GENERATE2(dirreqmap, dirreq_map_entry_t, node, dirreq_map_ent_hash,
-             dirreq_map_ent_eq, 0.6, tor_reallocarray_, tor_free_)
+             dirreq_map_ent_eq, 0.6, tor_reallocarray_, tor_free_);
 
 /** Helper: Put <b>entry</b> into map of directory requests using
  * <b>type</b> and <b>dirreq_id</b> as key parts. If there is
@@ -774,7 +774,7 @@ geoip_get_dirreq_history(dirreq_type_t type)
  *
  * Store a newly allocated comma-separated string in <a>ipver_str</a>
  * containing entries for clients connecting over IPv4 and IPv6. The
- * format is family=num where num is the nubmer of IPs we've seen
+ * format is family=num where num is the number of IPs we've seen
  * connecting over that protocol family, and family is 'v4' or 'v6'.
  *
  * Return 0 on success and -1 if we're missing geoip data. */

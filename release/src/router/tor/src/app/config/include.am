@@ -1,0 +1,23 @@
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+LIBTOR_APP_A_SOURCES += 			\
+	src/app/config/config.c			\
+	src/app/config/quiet_level.c		\
+	src/app/config/resolve_addr.c		\
+	src/app/config/statefile.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/app/config/config.h				\
+	src/app/config/or_options_st.h			\
+	src/app/config/or_state_st.h			\
+	src/app/config/quiet_level.h			\
+	src/app/config/resolve_addr.h			\
+	src/app/config/statefile.h			\
+	src/app/config/tor_cmdline_mode.h
+
+
+noinst_HEADERS +=				\
+	src/app/config/auth_dirs.inc		\
+	src/app/config/fallback_dirs.inc	\
+	src/app/config/testnet.inc

@@ -1,0 +1,22 @@
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+LIBTOR_APP_A_SOURCES += 				\
+	src/core/mainloop/connection.c		\
+	src/core/mainloop/cpuworker.c		\
+	src/core/mainloop/mainloop.c		\
+	src/core/mainloop/mainloop_pubsub.c	\
+	src/core/mainloop/mainloop_sys.c	\
+	src/core/mainloop/netstatus.c		\
+	src/core/mainloop/periodic.c
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/core/mainloop/connection.h			\
+	src/core/mainloop/cpuworker.h			\
+	src/core/mainloop/mainloop.h			\
+	src/core/mainloop/mainloop_pubsub.h		\
+	src/core/mainloop/mainloop_state.inc    	\
+	src/core/mainloop/mainloop_state_st.h    	\
+	src/core/mainloop/mainloop_sys.h		\
+	src/core/mainloop/netstatus.h			\
+	src/core/mainloop/periodic.h

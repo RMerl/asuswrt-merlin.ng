@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -23,6 +23,8 @@ void sweep_bridge_list(void);
 const smartlist_t *bridge_list_get(void);
 const uint8_t *bridge_get_rsa_id_digest(const bridge_info_t *bridge);
 const tor_addr_port_t * bridge_get_addr_port(const bridge_info_t *bridge);
+const char *bridget_get_transport_name(const bridge_info_t *bridge);
+bool bridge_has_invalid_transport(const bridge_info_t *bridge);
 bridge_info_t *get_configured_bridge_by_addr_port_digest(
                                           const tor_addr_t *addr,
                                           uint16_t port,

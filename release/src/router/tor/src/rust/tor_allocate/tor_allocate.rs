@@ -60,7 +60,7 @@ pub fn allocate_and_copy_string(src: &str) -> *mut c_char {
     unsafe { ptr::copy_nonoverlapping(bytes.as_ptr(), dest, size) };
 
     // set the last byte as null, using the ability to index into a slice
-    // rather than doing pointer arithmatic
+    // rather than doing pointer arithmetic
     let slice = unsafe { slice::from_raw_parts_mut(dest, size_with_null_byte) };
     slice[size] = 0; // add a null terminator
 

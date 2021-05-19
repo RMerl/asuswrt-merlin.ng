@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define SHARED_RANDOM_PRIVATE
@@ -21,7 +21,7 @@
 #include "feature/nodelist/dirlist.h"
 #include "feature/dirparse/authcert_parse.h"
 #include "feature/hs_common/shared_random_client.h"
-#include "feature/dircommon/voting_schedule.h"
+#include "feature/dirauth/voting_schedule.h"
 
 #include "feature/dirclient/dir_server_st.h"
 #include "feature/nodelist/networkstatus_st.h"
@@ -167,6 +167,15 @@ mock_networkstatus_get_live_consensus(time_t now)
   return &mock_consensus;
 }
 
+/* Mock function to immediately return our local 'mock_consensus'. */
+static networkstatus_t *
+mock_networkstatus_get_reasonably_live_consensus(time_t now, int flavor)
+{
+  (void) now;
+  (void) flavor;
+  return &mock_consensus;
+}
+
 static void
 test_get_state_valid_until_time(void *arg)
 {
@@ -179,6 +188,8 @@ test_get_state_valid_until_time(void *arg)
 
   MOCK(networkstatus_get_live_consensus,
        mock_networkstatus_get_live_consensus);
+  MOCK(networkstatus_get_reasonably_live_consensus,
+       mock_networkstatus_get_reasonably_live_consensus);
 
   retval = parse_rfc1123_time("Mon, 20 Apr 2015 01:00:00 UTC",
                               &mock_consensus.fresh_until);
@@ -193,7 +204,7 @@ test_get_state_valid_until_time(void *arg)
     retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:01 UTC",
                                 &current_time);
     tt_int_op(retval, OP_EQ, 0);
-    voting_schedule_recalculate_timing(get_options(), current_time);
+    dirauth_sched_recalculate_timing(get_options(), current_time);
     valid_until_time = get_state_valid_until_time(current_time);
 
     /* Compare it with the correct result */
@@ -205,7 +216,7 @@ test_get_state_valid_until_time(void *arg)
     retval = parse_rfc1123_time("Mon, 20 Apr 2015 19:22:00 UTC",
                                 &current_time);
     tt_int_op(retval, OP_EQ, 0);
-    voting_schedule_recalculate_timing(get_options(), current_time);
+    dirauth_sched_recalculate_timing(get_options(), current_time);
     valid_until_time = get_state_valid_until_time(current_time);
 
     format_iso_time(tbuf, valid_until_time);
@@ -216,7 +227,7 @@ test_get_state_valid_until_time(void *arg)
     retval = parse_rfc1123_time("Mon, 20 Apr 2015 23:59:00 UTC",
                                 &current_time);
     tt_int_op(retval, OP_EQ, 0);
-    voting_schedule_recalculate_timing(get_options(), current_time);
+    dirauth_sched_recalculate_timing(get_options(), current_time);
     valid_until_time = get_state_valid_until_time(current_time);
 
     format_iso_time(tbuf, valid_until_time);
@@ -227,7 +238,7 @@ test_get_state_valid_until_time(void *arg)
     retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:00 UTC",
                                 &current_time);
     tt_int_op(retval, OP_EQ, 0);
-    voting_schedule_recalculate_timing(get_options(), current_time);
+    dirauth_sched_recalculate_timing(get_options(), current_time);
     valid_until_time = get_state_valid_until_time(current_time);
 
     format_iso_time(tbuf, valid_until_time);
@@ -235,7 +246,7 @@ test_get_state_valid_until_time(void *arg)
   }
 
  done:
-  UNMOCK(networkstatus_get_live_consensus);
+  UNMOCK(networkstatus_get_reasonably_live_consensus);
 }
 
 /** Test the function that calculates the start time of the current SRV
@@ -251,6 +262,8 @@ test_get_start_time_of_current_run(void *arg)
 
   MOCK(networkstatus_get_live_consensus,
        mock_networkstatus_get_live_consensus);
+  MOCK(networkstatus_get_reasonably_live_consensus,
+       mock_networkstatus_get_reasonably_live_consensus);
 
   retval = parse_rfc1123_time("Mon, 20 Apr 2015 01:00:00 UTC",
                               &mock_consensus.fresh_until);
@@ -265,7 +278,7 @@ test_get_start_time_of_current_run(void *arg)
     retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:01 UTC",
                                 &current_time);
     tt_int_op(retval, OP_EQ, 0);
-    voting_schedule_recalculate_timing(get_options(), current_time);
+    dirauth_sched_recalculate_timing(get_options(), current_time);
     run_start_time = sr_state_get_start_time_of_current_protocol_run();
 
     /* Compare it with the correct result */
@@ -277,7 +290,7 @@ test_get_start_time_of_current_run(void *arg)
     retval = parse_rfc1123_time("Mon, 20 Apr 2015 23:59:59 UTC",
                                 &current_time);
     tt_int_op(retval, OP_EQ, 0);
-    voting_schedule_recalculate_timing(get_options(), current_time);
+    dirauth_sched_recalculate_timing(get_options(), current_time);
     run_start_time = sr_state_get_start_time_of_current_protocol_run();
 
     /* Compare it with the correct result */
@@ -289,7 +302,7 @@ test_get_start_time_of_current_run(void *arg)
     retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:00:00 UTC",
                                 &current_time);
     tt_int_op(retval, OP_EQ, 0);
-    voting_schedule_recalculate_timing(get_options(), current_time);
+    dirauth_sched_recalculate_timing(get_options(), current_time);
     run_start_time = sr_state_get_start_time_of_current_protocol_run();
 
     /* Compare it with the correct result */
@@ -319,7 +332,7 @@ test_get_start_time_of_current_run(void *arg)
                                 &current_time);
     tt_int_op(retval, OP_EQ, 0);
     update_approx_time(current_time);
-    voting_schedule_recalculate_timing(get_options(), current_time);
+    dirauth_sched_recalculate_timing(get_options(), current_time);
 
     run_start_time = sr_state_get_start_time_of_current_protocol_run();
 
@@ -327,7 +340,7 @@ test_get_start_time_of_current_run(void *arg)
     format_iso_time(tbuf, run_start_time);
     tt_str_op("2015-04-19 00:00:00", OP_EQ, tbuf);
     /* Check that voting_schedule.interval_starts is at 01:00 (see above) */
-    time_t interval_starts = voting_schedule_get_next_valid_after_time();
+    time_t interval_starts = dirauth_sched_get_next_valid_after_time();
     format_iso_time(tbuf, interval_starts);
     tt_str_op("2015-04-20 01:00:00", OP_EQ, tbuf);
   }
@@ -335,6 +348,7 @@ test_get_start_time_of_current_run(void *arg)
   /* Next test is testing it without a consensus to use the testing voting
    * interval . */
   UNMOCK(networkstatus_get_live_consensus);
+  UNMOCK(networkstatus_get_reasonably_live_consensus);
 
   /* Now let's alter the voting schedule and check the correctness of the
    * function. Voting interval of 10 seconds, means that an SRV protocol run
@@ -346,7 +360,7 @@ test_get_start_time_of_current_run(void *arg)
     retval = parse_rfc1123_time("Mon, 20 Apr 2015 00:15:32 UTC",
                                 &current_time);
     tt_int_op(retval, OP_EQ, 0);
-    voting_schedule_recalculate_timing(get_options(), current_time);
+    dirauth_sched_recalculate_timing(get_options(), current_time);
     run_start_time = sr_state_get_start_time_of_current_protocol_run();
 
     /* Compare it with the correct result */
@@ -366,8 +380,8 @@ test_get_start_time_functions(void *arg)
   (void) arg;
   int retval;
 
-  MOCK(networkstatus_get_live_consensus,
-       mock_networkstatus_get_live_consensus);
+  MOCK(networkstatus_get_reasonably_live_consensus,
+       mock_networkstatus_get_reasonably_live_consensus);
 
   retval = parse_rfc1123_time("Mon, 20 Apr 2015 01:00:00 UTC",
                               &mock_consensus.fresh_until);
@@ -378,17 +392,17 @@ test_get_start_time_functions(void *arg)
   tt_int_op(retval, OP_EQ, 0);
   time_t now = mock_consensus.valid_after;
 
-  voting_schedule_recalculate_timing(get_options(), now);
+  dirauth_sched_recalculate_timing(get_options(), now);
   time_t start_time_of_protocol_run =
     sr_state_get_start_time_of_current_protocol_run();
   tt_assert(start_time_of_protocol_run);
 
   /* Check that the round start time of the beginning of the run, is itself */
-  tt_int_op(get_start_time_of_current_round(), OP_EQ,
+  tt_int_op(dirauth_sched_get_cur_valid_after_time(), OP_EQ,
             start_time_of_protocol_run);
 
  done:
-  UNMOCK(networkstatus_get_live_consensus);
+  UNMOCK(networkstatus_get_reasonably_live_consensus);
 }
 
 static void
@@ -1400,7 +1414,7 @@ test_state_transition(void *arg)
     sr_state_delete_commits();
     tt_int_op(digestmap_size(state->commits), OP_EQ, 0);
     /* Add it back so we can continue the rest of the test because after
-     * deletiong our commit will be freed so generate a new one. */
+     * deleting our commit will be freed so generate a new one. */
     commit = sr_generate_our_commit(now, mock_cert);
     tt_assert(commit);
     sr_state_add_commit(commit);
@@ -1541,7 +1555,7 @@ test_keep_commit(void *arg)
    * in the state and commitment and reveal values match. */
   tt_int_op(should_keep_commit(commit, commit->rsa_identity,
                                SR_PHASE_REVEAL), OP_EQ, 1);
-  /* The commit shouldn't be kept if it's not verified that is no matchin
+  /* The commit shouldn't be kept if it's not verified that is no matching
    * hashed reveal. */
   {
     /* Let's save the hash reveal so we can restore it. */

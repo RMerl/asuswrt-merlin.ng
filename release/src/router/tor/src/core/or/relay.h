@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -107,7 +107,7 @@ handle_relay_cell_command(cell_t *cell, circuit_t *circ,
 STATIC int connected_cell_parse(const relay_header_t *rh, const cell_t *cell,
                          tor_addr_t *addr_out, int *ttl_out);
 /** An address-and-ttl tuple as yielded by resolved_cell_parse */
-typedef struct address_ttl_s {
+typedef struct address_ttl_t {
   tor_addr_t addr;
   char *hostname;
   int ttl;

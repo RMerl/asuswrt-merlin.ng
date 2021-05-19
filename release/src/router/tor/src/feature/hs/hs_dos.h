@@ -1,4 +1,4 @@
-/* Copyright (c) 2019, The Tor Project, Inc. */
+/* Copyright (c) 2019-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -23,6 +23,9 @@ void hs_dos_consensus_has_changed(const networkstatus_t *ns);
 /* Introduction Point. */
 bool hs_dos_can_send_intro2(or_circuit_t *s_intro_circ);
 void hs_dos_setup_default_intro2_defenses(or_circuit_t *circ);
+
+/* Statistics. */
+uint64_t hs_dos_get_intro2_rejected_count(void);
 
 #ifdef HS_DOS_PRIVATE
 

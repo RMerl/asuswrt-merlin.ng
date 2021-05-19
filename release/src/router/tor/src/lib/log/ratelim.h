@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -40,12 +40,20 @@
    </pre>
  */
 typedef struct ratelim_t {
+  /** How many seconds must elapse between log messages? */
   int rate;
+  /** When did this limiter last allow a message to appear? */
   time_t last_allowed;
+  /** When did this limiter start suppressing messages? */
+  time_t started_limiting;
+  /** How many messages has this limiter suppressed since it last allowed
+   * one to appear? */
   int n_calls_since_last_time;
 } ratelim_t;
 
-#define RATELIM_INIT(r) { (r), 0, 0 }
+#ifndef COCCI
+#define RATELIM_INIT(r) { (r), 0, 0, 0 }
+#endif
 #define RATELIM_TOOMANY (16*1000*1000)
 
 char *rate_limit_log(ratelim_t *lim, time_t now);

@@ -16,8 +16,7 @@ src_lib_libtor_process_a_SOURCES =		\
 	src/lib/process/process_win32.c		\
 	src/lib/process/restrict.c		\
 	src/lib/process/setuid.c		\
-	src/lib/process/waitpid.c		\
-	src/lib/process/winprocess_sys.c
+	src/lib/process/waitpid.c
 
 src_lib_libtor_process_testing_a_SOURCES = \
 	$(src_lib_libtor_process_a_SOURCES)
@@ -35,5 +34,4 @@ noinst_HEADERS +=				\
 	src/lib/process/process_win32.h		\
 	src/lib/process/restrict.h		\
 	src/lib/process/setuid.h		\
-	src/lib/process/waitpid.h		\
-	src/lib/process/winprocess_sys.h
+	src/lib/process/waitpid.h

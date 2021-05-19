@@ -1,4 +1,4 @@
-/* Copyright (c) 2007-2019, The Tor Project, Inc. */
+/* Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -70,12 +70,18 @@ static smartlist_t *geoip_countries = NULL;
  * The index is encoded in the pointer, and 1 is added so that NULL can mean
  * not found. */
 static strmap_t *country_idxplus1_by_lc_code = NULL;
-/** Lists of all known geoip_ipv4_entry_t and geoip_ipv6_entry_t, sorted
- * by their respective ip_low. */
-static smartlist_t *geoip_ipv4_entries = NULL, *geoip_ipv6_entries = NULL;
+/** List of all known geoip_ipv4_entry_t sorted
+ * by their respective ip_low values. */
+static smartlist_t *geoip_ipv4_entries = NULL;
+/** List of all known geoip_ipv6_entry_t, sorted by their respective
+ * ip_low values. */
+static smartlist_t *geoip_ipv6_entries = NULL;
 
-/** SHA1 digest of the GeoIP files to include in extra-info descriptors. */
+/** SHA1 digest of the IPv4 GeoIP file to include in extra-info
+ * descriptors. */
 static char geoip_digest[DIGEST_LEN];
+/** SHA1 digest of the IPv6 GeoIP file to include in extra-info
+ * descriptors. */
 static char geoip6_digest[DIGEST_LEN];
 
 /** Return a list of geoip_country_t for all known countries. */

@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -15,6 +15,7 @@
 #include "core/or/circuitlist.h"
 #include "core/or/circuituse.h"
 #include "core/or/connection_edge.h"
+#include "core/or/extendinfo.h"
 #include "core/or/relay.h"
 #include "feature/client/circpathbias.h"
 #include "feature/control/control_events.h"
@@ -234,9 +235,15 @@ rend_client_send_introduction(origin_circuit_t *introcirc,
     /* version 2 format */
     extend_info_t *extend_info = rendcirc->build_state->chosen_exit;
     int klen;
+    const tor_addr_port_t *orport =
+      extend_info_get_orport(extend_info, AF_INET);
+    IF_BUG_ONCE(! orport) {
+      /* we should never put an IPv6 address here. */
+      goto perm_err;
+    }
     /* nul pads */
-    set_uint32(tmp+v3_shift+1, tor_addr_to_ipv4n(&extend_info->addr));
-    set_uint16(tmp+v3_shift+5, htons(extend_info->port));
+    set_uint32(tmp+v3_shift+1, tor_addr_to_ipv4n(&orport->addr));
+    set_uint16(tmp+v3_shift+5, htons(orport->port));
     memcpy(tmp+v3_shift+7, extend_info->identity_digest, DIGEST_LEN);
     klen = crypto_pk_asn1_encode(extend_info->onion_key,
                                  tmp+v3_shift+7+DIGEST_LEN+2,
@@ -261,8 +268,8 @@ rend_client_send_introduction(origin_circuit_t *introcirc,
             > MAX_NICKNAME_LEN)) {
       goto perm_err;
     }
-    strncpy(tmp, rendcirc->build_state->chosen_exit->nickname,
-            (MAX_NICKNAME_LEN+1)); /* nul pads */
+    strlcpy(tmp, rendcirc->build_state->chosen_exit->nickname,
+            sizeof(tmp));
     memcpy(tmp+MAX_NICKNAME_LEN+1, rendcirc->rend_data->rend_cookie,
            REND_COOKIE_LEN);
     dh_offset = MAX_NICKNAME_LEN+1+REND_COOKIE_LEN;
@@ -831,7 +838,7 @@ rend_client_report_intro_point_failure(extend_info_t *failed_intro,
         log_warn(LD_BUG, "Unknown failure type %u. Removing intro point.",
                  failure_type);
         tor_fragile_assert();
-        /* fall through */
+        FALLTHROUGH_UNLESS_ALL_BUGS_ARE_FATAL;
       case INTRO_POINT_FAILURE_GENERIC:
         rend_cache_intro_failure_note(failure_type,
                                       (uint8_t *)failed_intro->identity_digest,
@@ -1048,18 +1055,30 @@ rend_client_get_random_intro_impl(const rend_cache_entry_t *entry,
   const or_options_t *options = get_options();
   smartlist_t *usable_nodes;
   int n_excluded = 0;
+  char service_id[REND_SERVICE_ID_LEN_BASE32 + 1];
 
   /* We'll keep a separate list of the usable nodes.  If this becomes empty,
    * no nodes are usable.  */
   usable_nodes = smartlist_new();
   smartlist_add_all(usable_nodes, entry->parsed->intro_nodes);
 
+  /* Get service ID so we can use it to query the failure cache. If we fail to
+   * parse it, this cache entry is no good. */
+  if (BUG(rend_get_service_id(entry->parsed->pk, service_id) < 0)) {
+    smartlist_free(usable_nodes);
+    return NULL;
+  }
+
   /* Remove the intro points that have timed out during this HS
    * connection attempt from our list of usable nodes. */
-  SMARTLIST_FOREACH(usable_nodes, rend_intro_point_t *, ip,
-                    if (ip->timed_out) {
-                      SMARTLIST_DEL_CURRENT(usable_nodes, ip);
-                    });
+  SMARTLIST_FOREACH_BEGIN(usable_nodes, const rend_intro_point_t *, ip) {
+    bool failed_intro =
+      rend_cache_intro_failure_exists(service_id,
+                       (const uint8_t *) ip->extend_info->identity_digest);
+    if (ip->timed_out || failed_intro) {
+      SMARTLIST_DEL_CURRENT(usable_nodes, ip);
+    };
+  } SMARTLIST_FOREACH_END(ip);
 
  again:
   if (smartlist_len(usable_nodes) == 0) {
@@ -1237,4 +1256,67 @@ rend_parse_service_authorization(const or_options_t *options,
     strmap_free(parsed, rend_service_authorization_free_void);
   }
   return res;
+}
+
+/** The given circuit is being freed. Take appropriate action if it is of
+ * interest to the client subsystem. */
+void
+rend_client_circuit_cleanup_on_free(const circuit_t *circ)
+{
+  int reason, orig_reason;
+  bool has_timed_out, ip_is_redundant;
+  const origin_circuit_t *ocirc = NULL;
+
+  tor_assert(circ);
+  tor_assert(CIRCUIT_IS_ORIGIN(circ));
+
+  reason = circ->marked_for_close_reason;
+  orig_reason = circ->marked_for_close_orig_reason;
+  ocirc = CONST_TO_ORIGIN_CIRCUIT(circ);
+  tor_assert(ocirc->rend_data);
+
+  has_timed_out = (reason == END_CIRC_REASON_TIMEOUT);
+  ip_is_redundant = (orig_reason == END_CIRC_REASON_IP_NOW_REDUNDANT);
+
+  switch (circ->purpose) {
+  case CIRCUIT_PURPOSE_C_INTRODUCE_ACK_WAIT:
+  {
+    if (ip_is_redundant) {
+      break;
+    }
+    tor_assert(circ->state == CIRCUIT_STATE_OPEN);
+    tor_assert(ocirc->build_state->chosen_exit);
+    /* Treat this like getting a nack from it */
+    log_info(LD_REND, "Failed intro circ %s to %s (awaiting ack). %s",
+        safe_str_client(rend_data_get_address(ocirc->rend_data)),
+        safe_str_client(build_state_get_exit_nickname(ocirc->build_state)),
+        has_timed_out ? "Recording timeout." : "Removing from descriptor.");
+    rend_client_report_intro_point_failure(ocirc->build_state->chosen_exit,
+                                           ocirc->rend_data,
+                                           has_timed_out ?
+                                           INTRO_POINT_FAILURE_TIMEOUT :
+                                           INTRO_POINT_FAILURE_GENERIC);
+    break;
+  }
+  case CIRCUIT_PURPOSE_C_INTRODUCING:
+  {
+    /* Ignore if we were introducing and it timed out, we didn't pick an exit
+     * point yet (IP) or the reason indicate that it was a redundant IP. */
+    if (has_timed_out || !ocirc->build_state->chosen_exit || ip_is_redundant) {
+      break;
+    }
+    log_info(LD_REND, "Failed intro circ %s to %s "
+             "(building circuit to intro point). "
+             "Marking intro point as possibly unreachable.",
+             safe_str_client(rend_data_get_address(ocirc->rend_data)),
+             safe_str_client(build_state_get_exit_nickname(
+                                                  ocirc->build_state)));
+    rend_client_report_intro_point_failure(ocirc->build_state->chosen_exit,
+                                           ocirc->rend_data,
+                                           INTRO_POINT_FAILURE_UNREACHABLE);
+    break;
+  }
+  default:
+    break;
+  }
 }

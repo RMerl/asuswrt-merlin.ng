@@ -88,7 +88,7 @@
 ## yourself to make this work.
 #ORPort 443 NoListen
 #ORPort 127.0.0.1:9090 NoAdvertise
-## If you want to listen on IPv6 your numeric address must be explictly
+## If you want to listen on IPv6 your numeric address must be explicitly
 ## between square brackets as follows. You must also listen on IPv4.
 #ORPort [2001:DB8::1]:9050
 
@@ -242,11 +242,12 @@
 #PublishServerDescriptor 0
 
 ## Configuration options can be imported from files or folders using the %include
-## option with the value being a path. If the path is a file, the options from the
-## file will be parsed as if they were written where the %include option is. If
-## the path is a folder, all files on that folder will be parsed following lexical
-## order. Files starting with a dot are ignored. Files on subfolders are ignored.
+## option with the value being a path. This path can have wildcards. Wildcards are 
+## expanded first, using lexical order. Then, for each matching file or folder, the following 
+## rules are followed: if the path is a file, the options from the file will be parsed as if 
+## they were written where the %include option is. If the path is a folder, all files on that 
+## folder will be parsed following lexical order. Files starting with a dot are ignored. Files 
+## on subfolders are ignored.
 ## The %include option can be used recursively.
-#%include /etc/torrc.d/
-#%include /etc/torrc.custom
+#%include /etc/torrc.d/*.conf
 

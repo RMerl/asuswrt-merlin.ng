@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2019, The Tor Project, Inc. */
+/* Copyright (c) 2011-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -165,8 +165,8 @@ tor_validate_process_specifier(const char *process_spec,
   return parse_process_specifier(process_spec, &ppspec, msg);
 }
 
-/* DOCDOC poll_interval_tv */
-static const struct timeval poll_interval_tv = {15, 0};
+/* We check this often for presence of owning controller process. */
+static const struct timeval poll_interval_tv = {15, 0}; // 15 seconds.
 
 /** Create a process-termination monitor for the process specifier
  * given in <b>process_spec</b>.  Return a newly allocated

@@ -1,11 +1,11 @@
-/* Copyright (c) 2014-2019, The Tor Project, Inc. */
+/* Copyright (c) 2014-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
 
 #define CHANNELTLS_PRIVATE
 #define CONNECTION_PRIVATE
-#define TOR_CHANNEL_INTERNAL_
+#define CHANNEL_OBJECT_PRIVATE
 #define TORTLS_PRIVATE
 
 #include "core/or/or.h"
@@ -18,6 +18,7 @@
 #include "feature/relay/routerkeys.h"
 #include "core/or/scheduler.h"
 #include "feature/nodelist/torcert.h"
+#include "feature/relay/relay_handshake.h"
 
 #include "core/or/or_connection_st.h"
 #include "core/or/or_handshake_certs_st.h"
@@ -325,7 +326,7 @@ test_link_handshake_certs_ok(void *arg)
   crypto_pk_free(key2);
 }
 
-typedef struct certs_data_s {
+typedef struct certs_data_t {
   int is_ed;
   int is_link_cert;
   or_connection_t *c;
@@ -709,7 +710,7 @@ CERTS_FAIL(missing_signing_key, /* ed25519 */
      * signing key. */
     const ed25519_keypair_t *mk = get_master_identity_keypair();
     const ed25519_keypair_t *sk = get_master_signing_keypair();
-    tor_cert_t *bad_cert = tor_cert_create(mk, CERT_TYPE_ID_SIGNING,
+    tor_cert_t *bad_cert = tor_cert_create_ed25519(mk, CERT_TYPE_ID_SIGNING,
                                            &sk->pubkey, time(NULL), 86400,
                                            0 /* don't include signer */);
     certs_cell_cert_setlen_body(cert, bad_cert->encoded_len);
@@ -972,7 +973,7 @@ test_link_handshake_send_authchallenge(void *arg)
   crypto_pk_free(rsa1);
 }
 
-typedef struct authchallenge_data_s {
+typedef struct authchallenge_data_t {
   or_connection_t *c;
   channel_tls_t *chan;
   var_cell_t *cell;
@@ -1171,7 +1172,7 @@ mock_set_circid_type(channel_t *chan,
   (void) consider_identity;
 }
 
-typedef struct authenticate_data_s {
+typedef struct authenticate_data_t {
   int is_ed;
   or_connection_t *c1, *c2;
   channel_tls_t *chan2;
@@ -1492,6 +1493,7 @@ AUTHENTICATE_FAIL(missing_ed_auth,
                     "authentication certificate";
                 })
 
+#ifndef COCCI
 #define TEST_RSA(name, flags)                                           \
   { #name , test_link_handshake_ ## name, (flags),                      \
       &passthrough_setup, (void*)"RSA" }
@@ -1527,6 +1529,7 @@ AUTHENTICATE_FAIL(missing_ed_auth,
 #define TEST_AUTHENTICATE_ED(name)                                      \
   { "authenticate/" #name "_ed25519" , test_link_handshake_auth_ ## name, \
       TT_FORK, &setup_authenticate, (void*)3 }
+#endif /* !defined(COCCI) */
 
 struct testcase_t link_handshake_tests[] = {
   TEST_RSA(certs_ok, TT_FORK),

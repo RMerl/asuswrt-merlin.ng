@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2019, The Tor Project, Inc. */
+/* Copyright (c) 2010-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -7,10 +7,7 @@
 #include "test/test.h"
 
 #include "lib/crypt_ops/crypto_rand.h"
-#define UTIL_FORMAT_PRIVATE
 #include "lib/encoding/binascii.h"
-
-#define NS_MODULE util_format
 
 static void
 test_util_format_unaligned_accessors(void *ignored)

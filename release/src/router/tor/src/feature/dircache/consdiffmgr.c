@@ -1,8 +1,8 @@
-/* Copyright (c) 2017-2019, The Tor Project, Inc. */
+/* Copyright (c) 2017-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
- * \file consdiffmsr.c
+ * \file consdiffmgr.c
  *
  * \brief consensus diff manager functions
  *
@@ -177,6 +177,16 @@ typedef struct cdm_diff_t {
 /** Hashtable mapping flavor and source consensus digest to status. */
 static HT_HEAD(cdm_diff_ht, cdm_diff_t) cdm_diff_ht = HT_INITIALIZER();
 
+#ifdef _WIN32
+   // XXX(ahf): For tor#24857, a contributor suggested that on Windows, the CPU
+   // begins to spike at 100% once the number of files handled by the consensus
+   // diff manager becomes larger than 64. To see if the issue goes away, we
+   // hardcode this value to 64 now while we investigate a better solution.
+#  define CACHE_MAX_NUM 64
+#else
+#  define CACHE_MAX_NUM 128
+#endif
+
 /**
  * Configuration for this module
  */
@@ -184,7 +194,7 @@ static consdiff_cfg_t consdiff_cfg = {
   // XXXX I'd like to make this number bigger, but it interferes with the
   // XXXX seccomp2 syscall filter, which tops out at BPF_MAXINS (4096)
   // XXXX rules.
-  /* .cache_max_num = */ 128
+  /* .cache_max_num = */ CACHE_MAX_NUM
 };
 
 static int consdiffmgr_ensure_space_for_files(int n);
@@ -218,9 +228,9 @@ cdm_diff_eq(const cdm_diff_t *diff1, const cdm_diff_t *diff2)
     diff1->compress_method == diff2->compress_method;
 }
 
-HT_PROTOTYPE(cdm_diff_ht, cdm_diff_t, node, cdm_diff_hash, cdm_diff_eq)
+HT_PROTOTYPE(cdm_diff_ht, cdm_diff_t, node, cdm_diff_hash, cdm_diff_eq);
 HT_GENERATE2(cdm_diff_ht, cdm_diff_t, node, cdm_diff_hash, cdm_diff_eq,
-             0.6, tor_reallocarray, tor_free_)
+             0.6, tor_reallocarray, tor_free_);
 
 #define cdm_diff_free(diff) \
   FREE_AND_NULL(cdm_diff_t, cdm_diff_free_, (diff))
@@ -844,7 +854,7 @@ consdiffmgr_configure(const consdiff_cfg_t *cfg)
  * operations that the consensus diff manager will need.
  */
 int
-consdiffmgr_register_with_sandbox(struct sandbox_cfg_elem **cfg)
+consdiffmgr_register_with_sandbox(struct sandbox_cfg_elem_t **cfg)
 {
   return consensus_cache_register_with_sandbox(cdm_cache_get(), cfg);
 }
@@ -1293,7 +1303,7 @@ typedef struct compressed_result_t {
 
 /**
  * Compress the bytestring <b>input</b> of length <b>len</b> using the
- * <n>n_methods</b> compression methods listed in the array <b>methods</b>.
+ * <b>n_methods</b> compression methods listed in the array <b>methods</b>.
  *
  * For each successful compression, set the fields in the <b>results_out</b>
  * array in the position corresponding to the compression method. Use

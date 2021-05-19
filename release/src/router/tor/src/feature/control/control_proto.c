@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -22,6 +22,8 @@
 #include "core/or/origin_circuit_st.h"
 #include "core/or/socks_request_st.h"
 #include "feature/control/control_connection_st.h"
+#include "lib/container/smartlist.h"
+#include "lib/encoding/kvline.h"
 
 /** Append a NUL-terminated string <b>s</b> to the end of
  * <b>conn</b>-\>outbuf.
@@ -274,4 +276,159 @@ control_write_data(control_connection_t *conn, const char *data)
   esc_len = write_escaped_data(data, strlen(data), &esc);
   connection_buf_add(esc, esc_len, TO_CONN(conn));
   tor_free(esc);
+}
+
+/** Write a single reply line to @a conn.
+ *
+ * @param conn control connection
+ * @param line control reply line to write
+ * @param lastone true if this is the last reply line of a multi-line reply
+ */
+void
+control_write_reply_line(control_connection_t *conn,
+                         const control_reply_line_t *line, bool lastone)
+{
+  const config_line_t *kvline = line->kvline;
+  char *s = NULL;
+
+  if (strpbrk(kvline->value, "\r\n") != NULL) {
+    /* If a key-value pair needs to be encoded as CmdData, it can be
+       the only key-value pair in that reply line */
+    tor_assert(kvline->next == NULL);
+    control_printf_datareply(conn, line->code, "%s=", kvline->key);
+    control_write_data(conn, kvline->value);
+    return;
+  }
+  s = kvline_encode(kvline, line->flags);
+  if (lastone) {
+    control_write_endreply(conn, line->code, s);
+  } else {
+    control_write_midreply(conn, line->code, s);
+  }
+  tor_free(s);
+}
+
+/** Write a set of reply lines to @a conn.
+ *
+ * @param conn control connection
+ * @param lines smartlist of pointers to control_reply_line_t to write
+ */
+void
+control_write_reply_lines(control_connection_t *conn, smartlist_t *lines)
+{
+  bool lastone = false;
+
+  SMARTLIST_FOREACH_BEGIN(lines, control_reply_line_t *, line) {
+    if (line_sl_idx >= line_sl_len - 1)
+      lastone = true;
+    control_write_reply_line(conn, line, lastone);
+  } SMARTLIST_FOREACH_END(line);
+}
+
+/** Add a single key-value pair as a new reply line to a control reply
+ * line list.
+ *
+ * @param reply smartlist of pointers to control_reply_line_t
+ * @param code numeric control reply code
+ * @param flags kvline encoding flags
+ * @param key key
+ * @param val value
+ */
+void
+control_reply_add_one_kv(smartlist_t *reply, int code, int flags,
+                         const char *key, const char *val)
+{
+  control_reply_line_t *line = tor_malloc_zero(sizeof(*line));
+
+  line->code = code;
+  line->flags = flags;
+  config_line_append(&line->kvline, key, val);
+  smartlist_add(reply, line);
+}
+
+/** Append a single key-value pair to last reply line in a control
+ * reply line list.
+ *
+ * @param reply smartlist of pointers to control_reply_line_t
+ * @param key key
+ * @param val value
+ */
+void
+control_reply_append_kv(smartlist_t *reply, const char *key, const char *val)
+{
+  int len = smartlist_len(reply);
+  control_reply_line_t *line;
+
+  tor_assert(len > 0);
+
+  line = smartlist_get(reply, len - 1);
+  config_line_append(&line->kvline, key, val);
+}
+
+/** Add new reply line consisting of the string @a s
+ *
+ * @param reply smartlist of pointers to control_reply_line_t
+ * @param code numeric control reply code
+ * @param s string containing the rest of the reply line
+ */
+void
+control_reply_add_str(smartlist_t *reply, int code, const char *s)
+{
+  control_reply_add_one_kv(reply, code, KV_OMIT_KEYS|KV_RAW, "", s);
+}
+
+/** Format a new reply line
+ *
+ * @param reply smartlist of pointers to control_reply_line_t
+ * @param code numeric control reply code
+ * @param fmt format string
+ */
+void
+control_reply_add_printf(smartlist_t *reply, int code, const char *fmt, ...)
+{
+  va_list ap;
+  char *buf = NULL;
+
+  va_start(ap, fmt);
+  (void)tor_vasprintf(&buf, fmt, ap);
+  va_end(ap);
+  control_reply_add_str(reply, code, buf);
+  tor_free(buf);
+}
+
+/** Add a "250 OK" line to a set of control reply lines */
+void
+control_reply_add_done(smartlist_t *reply)
+{
+  control_reply_add_str(reply, 250, "OK");
+}
+
+/** Free a control_reply_line_t.  Don't call this directly; use the
+ * control_reply_line_free() macro instead. */
+void
+control_reply_line_free_(control_reply_line_t *line)
+{
+  if (!line)
+    return;
+  config_free_lines(line->kvline);
+  tor_free_(line);
+}
+
+/** Clear a smartlist of control_reply_line_t.  Doesn't free the
+ * smartlist, but does free each individual line. */
+void
+control_reply_clear(smartlist_t *reply)
+{
+  SMARTLIST_FOREACH(reply, control_reply_line_t *, line,
+                    control_reply_line_free(line));
+  smartlist_clear(reply);
+}
+
+/** Free a smartlist of control_reply_line_t. Don't call this
+ * directly; use the control_reply_free() macro instead. */
+void
+control_reply_free_(smartlist_t *reply)
+{
+  control_reply_clear(reply);
+  smartlist_free_(reply);
 }

@@ -103,7 +103,7 @@ pub mod log {
         static LD_GENERAL_: u64;
     }
 
-    /// Translate Rust defintions of log domain levels to C. This exposes a 1:1
+    /// Translate Rust definitions of log domain levels to C. This exposes a 1:1
     /// mapping between types.
     #[inline]
     pub unsafe fn translate_domain(domain: LogDomain) -> u64 {
@@ -113,7 +113,7 @@ pub mod log {
         }
     }
 
-    /// Translate Rust defintions of log severity levels to C. This exposes a
+    /// Translate Rust definitions of log severity levels to C. This exposes a
     /// 1:1 mapping between types.
     #[inline]
     pub unsafe fn translate_severity(severity: LogSeverity) -> c_int {

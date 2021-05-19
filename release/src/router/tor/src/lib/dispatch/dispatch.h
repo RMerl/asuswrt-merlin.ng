@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2018, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #ifndef TOR_DISPATCH_H
@@ -37,7 +37,7 @@
  * configure messages with their types, channels, and receivers.  Then, use
  * dispatch_new() with that dispatch_cfg_t to create the dispatch_t object.
  *
- * (We use a two-phase contruction procedure here to enable better static
+ * (We use a two-phase construction procedure here to enable better static
  * reasoning about publish/subscribe relationships.)
  *
  * Once you have a dispatch_t, you can queue messages on it with

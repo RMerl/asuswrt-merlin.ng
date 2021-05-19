@@ -6,11 +6,13 @@ Check out fuzzing-corpora, and set TOR_FUZZ_CORPORA to point to the place
 where you checked it out.
 
 To run the fuzzing test cases in a deterministic fashion, use:
-      make test-fuzz-corpora
+
+```console
+$ make test-fuzz-corpora
+```
 
 This won't actually fuzz Tor!  It will just run all the fuzz binaries
 on our existing set of testcases for the fuzzer.
-
 
 ## Different kinds of fuzzing
 
@@ -26,7 +28,7 @@ have a reasonably recent clang and libfuzzer installed.  At that point, you
 just build with --enable-expensive-hardening and --enable-libfuzzer.  That
 will produce a set of binaries in src/test/fuzz/lf-fuzz-* .  These programs
 take as input a series of directories full of fuzzing examples.  For more
-information on libfuzzer, see http://llvm.org/docs/LibFuzzer.html
+information on libfuzzer, see https://llvm.org/docs/LibFuzzer.html
 
 Third, there's Google's OSS-Fuzz infrastructure, which expects to get all of
 its.  For more on this, see https://github.com/google/oss-fuzz and the
@@ -51,7 +53,6 @@ But the fuzzing harness should crash if tor fails an assertion, triggers a
 bug, or accesses memory it shouldn't. This helps fuzzing frameworks detect
 "interesting" cases.
 
-
 ## Guided Fuzzing with AFL
 
 There is no HTTPS, hash, or signature for American Fuzzy Lop's source code, so
@@ -60,11 +61,13 @@ machine you care about, anyway.
 
 To Build:
   Get AFL from http://lcamtuf.coredump.cx/afl/ and unpack it
-  cd afl
-  make
-  cd ../tor
-  PATH=$PATH:../afl/ CC="../afl/afl-gcc" ./configure --enable-expensive-hardening
-  AFL_HARDEN=1 make clean fuzzers
+  ```console
+  $ cd afl
+  $ make
+  $ cd ../tor
+  $ PATH=$PATH:../afl/ CC="../afl/afl-gcc" ./configure --enable-expensive-hardening
+  $ AFL_HARDEN=1 make clean fuzzers
+  ```
 
 To Find The ASAN Memory Limit: (64-bit only)
 
@@ -74,13 +77,15 @@ and then not actually use it.
 
 Read afl/docs/notes_for_asan.txt for more details.
 
-  Download recidivm from http://jwilk.net/software/recidivm
+  Download recidivm from https://jwilk.net/software/recidivm
   Download the signature
   Check the signature
-  tar xvzf recidivm*.tar.gz
-  cd recidivm*
-  make
-  /path/to/recidivm -v src/test/fuzz/fuzz-http
+  ```console
+  $ tar xvzf recidivm*.tar.gz
+  $ cd recidivm*
+  $ make
+  $ /path/to/recidivm -v src/test/fuzz/fuzz-http
+  ```
   Use the final "ok" figure as the input to -m when calling afl-fuzz
   (Normally, recidivm would output a figure automatically, but in some cases,
   the fuzzing harness will hang when the memory limit is too small.)
@@ -90,9 +95,11 @@ don't care about memory limits.
 
 
 To Run:
-  mkdir -p src/test/fuzz/fuzz_http_findings
-  ../afl/afl-fuzz -i ${TOR_FUZZ_CORPORA}/http -o src/test/fuzz/fuzz_http_findings -m <asan-memory-limit> -- src/test/fuzz/fuzz-http
 
+```console
+$ mkdir -p src/test/fuzz/fuzz_http_findings
+$ ../afl/afl-fuzz -i ${TOR_FUZZ_CORPORA}/http -o src/test/fuzz/fuzz_http_findings -m <asan-memory-limit> -- src/test/fuzz/fuzz-http
+```
 
 AFL has a multi-core mode, check the documentation for details.
 You might find the included fuzz-multi.sh script useful for this.
@@ -111,7 +118,10 @@ valid inputs may take a second or so, particularly with the fuzzer and
 sanitizers enabled.
 
 To see what fuzz-http is doing with a test case, call it like this:
-  src/test/fuzz/fuzz-http --debug < /path/to/test.case
+
+```console
+$ src/test/fuzz/fuzz-http --debug < /path/to/test.case
+```
 
 (Logging is disabled while fuzzing to increase fuzzing speed.)
 
@@ -120,4 +130,4 @@ To see what fuzz-http is doing with a test case, call it like this:
 Please report any issues discovered using the process in Tor's security issue
 policy:
 
-https://trac.torproject.org/projects/tor/wiki/org/meetings/2016SummerDevMeeting/Notes/SecurityIssuePolicy
+https://gitlab.torproject.org/tpo/core/team/-/wikis/NetworkTeam/SecurityPolicy

@@ -1,16 +1,16 @@
-/* Copyright (c) 2017-2019, The Tor Project, Inc. */
+/* Copyright (c) 2017-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
  * \file hs_ident.c
  * \brief Contains circuit and connection identifier code for the whole HS
- *        subsytem.
+ *        subsystem.
  **/
 
 #include "lib/crypt_ops/crypto_util.h"
 #include "feature/hs/hs_ident.h"
 
-/* Return a newly allocated circuit identifier. The given public key is copied
+/** Return a newly allocated circuit identifier. The given public key is copied
  * identity_pk into the identifier. */
 hs_ident_circuit_t *
 hs_ident_circuit_new(const ed25519_public_key_t *identity_pk)
@@ -20,7 +20,7 @@ hs_ident_circuit_new(const ed25519_public_key_t *identity_pk)
   return ident;
 }
 
-/* Free the given circuit identifier. */
+/** Free the given circuit identifier. */
 void
 hs_ident_circuit_free_(hs_ident_circuit_t *ident)
 {
@@ -31,7 +31,7 @@ hs_ident_circuit_free_(hs_ident_circuit_t *ident)
   tor_free(ident);
 }
 
-/* For a given circuit identifier src, return a newly allocated copy of it.
+/** For a given circuit identifier src, return a newly allocated copy of it.
  * This can't fail. */
 hs_ident_circuit_t *
 hs_ident_circuit_dup(const hs_ident_circuit_t *src)
@@ -41,7 +41,7 @@ hs_ident_circuit_dup(const hs_ident_circuit_t *src)
   return ident;
 }
 
-/* For a given directory connection identifier src, return a newly allocated
+/** For a given directory connection identifier src, return a newly allocated
  * copy of it. This can't fail. */
 hs_ident_dir_conn_t *
 hs_ident_dir_conn_dup(const hs_ident_dir_conn_t *src)
@@ -51,7 +51,7 @@ hs_ident_dir_conn_dup(const hs_ident_dir_conn_t *src)
   return ident;
 }
 
-/* Free the given directory connection identifier. */
+/** Free the given directory connection identifier. */
 void
 hs_ident_dir_conn_free_(hs_ident_dir_conn_t *ident)
 {
@@ -62,7 +62,7 @@ hs_ident_dir_conn_free_(hs_ident_dir_conn_t *ident)
   tor_free(ident);
 }
 
-/* Initialized the allocated ident object with identity_pk and blinded_pk.
+/** Initialized the allocated ident object with identity_pk and blinded_pk.
  * None of them can be NULL since a valid directory connection identifier must
  * have all fields set. */
 void
@@ -78,7 +78,7 @@ hs_ident_dir_conn_init(const ed25519_public_key_t *identity_pk,
   ed25519_pubkey_copy(&ident->blinded_pk, blinded_pk);
 }
 
-/* Return a newly allocated edge connection identifier. The given public key
+/** Return a newly allocated edge connection identifier. The given public key
  * identity_pk is copied into the identifier. */
 hs_ident_edge_conn_t *
 hs_ident_edge_conn_new(const ed25519_public_key_t *identity_pk)
@@ -88,7 +88,7 @@ hs_ident_edge_conn_new(const ed25519_public_key_t *identity_pk)
   return ident;
 }
 
-/* Free the given edge connection identifier. */
+/** Free the given edge connection identifier. */
 void
 hs_ident_edge_conn_free_(hs_ident_edge_conn_t *ident)
 {
@@ -99,7 +99,7 @@ hs_ident_edge_conn_free_(hs_ident_edge_conn_t *ident)
   tor_free(ident);
 }
 
-/* Return true if the given ident is valid for an introduction circuit. */
+/** Return true if the given ident is valid for an introduction circuit. */
 int
 hs_ident_intro_circ_is_valid(const hs_ident_circuit_t *ident)
 {
@@ -120,4 +120,3 @@ hs_ident_intro_circ_is_valid(const hs_ident_circuit_t *ident)
  invalid:
   return 0;
 }
-

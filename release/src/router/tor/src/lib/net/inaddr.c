@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -11,7 +11,9 @@
 #include "lib/net/inaddr.h"
 
 #include "lib/cc/torint.h"
+#include "lib/container/smartlist.h"
 #include "lib/log/util_bug.h"
+#include "lib/malloc/malloc.h"
 #include "lib/net/inaddr_st.h"
 #include "lib/string/compat_ctype.h"
 #include "lib/string/compat_string.h"
@@ -35,12 +37,31 @@
  * (Like inet_aton(str,addr), but works on Windows and Solaris.)
  */
 int
-tor_inet_aton(const char *str, struct in_addr* addr)
+tor_inet_aton(const char *str, struct in_addr *addr)
 {
-  unsigned a,b,c,d;
+  unsigned a, b, c, d;
   char more;
-  if (tor_sscanf(str, "%3u.%3u.%3u.%3u%c", &a,&b,&c,&d,&more) != 4)
+  bool is_octal = false;
+  smartlist_t *sl = NULL;
+
+  if (tor_sscanf(str, "%3u.%3u.%3u.%3u%c", &a, &b, &c, &d, &more) != 4)
     return 0;
+
+  /* Parse the octets and check them for leading zeros. */
+  sl = smartlist_new();
+  smartlist_split_string(sl, str, ".", 0, 0);
+  SMARTLIST_FOREACH(sl, const char *, octet, {
+    is_octal = (strlen(octet) > 1 && octet[0] == '0');
+    if (is_octal) {
+        break;
+    }
+  });
+  SMARTLIST_FOREACH(sl, char *, octet, tor_free(octet));
+  smartlist_free(sl);
+
+  if (is_octal)
+    return 0;
+
   if (a > 255) return 0;
   if (b > 255) return 0;
   if (c > 255) return 0;

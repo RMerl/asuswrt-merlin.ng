@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Tor Project, Inc. */
+/* Copyright (c) 2017-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define CONSDIFFMGR_PRIVATE
@@ -119,7 +119,7 @@ typedef struct fake_work_queue_ent_t {
   void (*reply_fn)(void *);
   void *arg;
 } fake_work_queue_ent_t;
-static struct workqueue_entry_s *
+static struct workqueue_entry_t *
 mock_cpuworker_queue_work(workqueue_priority_t prio,
                           enum workqueue_reply_t (*fn)(void *, void *),
                           void (*reply_fn)(void *),
@@ -135,7 +135,7 @@ mock_cpuworker_queue_work(workqueue_priority_t prio,
   ent->reply_fn = reply_fn;
   ent->arg = arg;
   smartlist_add(fake_cpuworker_queue, ent);
-  return (struct workqueue_entry_s *)ent;
+  return (struct workqueue_entry_t *)ent;
 }
 static int
 mock_cpuworker_run_work(void)
@@ -689,7 +689,7 @@ static void
 test_consdiffmgr_cleanup_bad_valid_after(void *arg)
 {
   /* This will seem cleanable, but isn't, because its valid-after time is
-   * misformed. */
+   * malformed. */
 
   (void)arg;
   config_line_t *labels = NULL;

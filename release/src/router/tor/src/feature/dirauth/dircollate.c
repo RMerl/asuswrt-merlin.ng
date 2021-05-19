@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -32,8 +32,8 @@ static void dircollator_collate_by_ed25519(dircollator_t *dc);
 
 /** Hashtable entry mapping a pair of digests (actually an ed25519 key and an
  * RSA SHA1 digest) to an array of vote_routerstatus_t. */
-typedef struct ddmap_entry_s {
-  HT_ENTRY(ddmap_entry_s) node;
+typedef struct ddmap_entry_t {
+  HT_ENTRY(ddmap_entry_t) node;
   /** A SHA1-RSA1024 identity digest and Ed25519 identity key,
    * concatenated.  (If there is no ed25519 identity key, there is no
    * entry in this table.) */
@@ -89,10 +89,10 @@ ddmap_entry_set_digests(ddmap_entry_t *ent,
   memcpy(ent->d + DIGEST_LEN, ed25519, DIGEST256_LEN);
 }
 
-HT_PROTOTYPE(double_digest_map, ddmap_entry_s, node, ddmap_entry_hash,
-             ddmap_entry_eq)
-HT_GENERATE2(double_digest_map, ddmap_entry_s, node, ddmap_entry_hash,
-             ddmap_entry_eq, 0.6, tor_reallocarray, tor_free_)
+HT_PROTOTYPE(double_digest_map, ddmap_entry_t, node, ddmap_entry_hash,
+             ddmap_entry_eq);
+HT_GENERATE2(double_digest_map, ddmap_entry_t, node, ddmap_entry_hash,
+             ddmap_entry_eq, 0.6, tor_reallocarray, tor_free_);
 
 /** Helper: add a single vote_routerstatus_t <b>vrs</b> to the collator
  * <b>dc</b>, indexing it by its RSA key digest, and by the 2-tuple of its RSA
@@ -324,4 +324,3 @@ dircollator_get_votes_for_router(dircollator_t *dc, int idx)
   return digestmap_get(dc->by_collated_rsa_sha1,
                        smartlist_get(dc->all_rsa_sha1_lst, idx));
 }
-

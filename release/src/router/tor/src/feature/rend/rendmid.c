@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -59,7 +59,7 @@ rend_mid_establish_intro_legacy(or_circuit_t *circ, const uint8_t *request,
   pk = crypto_pk_asn1_decode((char*)(request+2), asn1len);
   if (!pk) {
     reason = END_CIRC_REASON_TORPROTOCOL;
-    log_warn(LD_PROTOCOL, "Couldn't decode public key.");
+    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL, "Couldn't decode public key.");
     goto err;
   }
 
@@ -81,7 +81,7 @@ rend_mid_establish_intro_legacy(or_circuit_t *circ, const uint8_t *request,
                                        (char*)request, 2+asn1len+DIGEST_LEN,
                                        (char*)(request+2+DIGEST_LEN+asn1len),
                                        request_len-(2+DIGEST_LEN+asn1len))<0) {
-    log_warn(LD_PROTOCOL,
+    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
              "Incorrect signature on ESTABLISH_INTRO cell; rejecting.");
     reason = END_CIRC_REASON_TORPROTOCOL;
     goto err;
@@ -162,9 +162,9 @@ rend_mid_introduce_legacy(or_circuit_t *circ, const uint8_t *request,
   if (request_len < (DIGEST_LEN+(MAX_NICKNAME_LEN+1)+REND_COOKIE_LEN+
                      DH1024_KEY_LEN+CIPHER_KEY_LEN+
                      PKCS1_OAEP_PADDING_OVERHEAD)) {
-    log_warn(LD_PROTOCOL, "Impossibly short INTRODUCE1 cell on circuit %u; "
-             "responding with nack.",
-             (unsigned)circ->p_circ_id);
+    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+           "Impossibly short INTRODUCE1 cell on circuit %u; "
+           "responding with nack.", (unsigned)circ->p_circ_id);
     goto err;
   }
 
@@ -258,7 +258,7 @@ rend_mid_establish_rendezvous(or_circuit_t *circ, const uint8_t *request,
   }
 
   if (circ->base_.n_chan) {
-    log_warn(LD_PROTOCOL,
+    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
              "Tried to establish rendezvous on non-edge circuit");
     goto err;
   }
@@ -270,8 +270,8 @@ rend_mid_establish_rendezvous(or_circuit_t *circ, const uint8_t *request,
   }
 
   if (hs_circuitmap_get_rend_circ_relay_side(request)) {
-    log_warn(LD_PROTOCOL,
-             "Duplicate rendezvous cookie in ESTABLISH_RENDEZVOUS.");
+    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+           "Duplicate rendezvous cookie in ESTABLISH_RENDEZVOUS.");
     goto err;
   }
 
@@ -313,9 +313,9 @@ rend_mid_rendezvous(or_circuit_t *circ, const uint8_t *request,
   int reason = END_CIRC_REASON_INTERNAL;
 
   if (circ->base_.purpose != CIRCUIT_PURPOSE_OR || circ->base_.n_chan) {
-    log_info(LD_REND,
-             "Tried to complete rendezvous on non-OR or non-edge circuit %u.",
-             (unsigned)circ->p_circ_id);
+    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+           "Tried to complete rendezvous on non-OR or non-edge circuit %u.",
+           (unsigned)circ->p_circ_id);
     reason = END_CIRC_REASON_TORPROTOCOL;
     goto err;
   }
@@ -343,10 +343,12 @@ rend_mid_rendezvous(or_circuit_t *circ, const uint8_t *request,
     goto err;
   }
 
-  /* Statistics: Mark this circuit as an RP circuit so that we collect
-     stats from it. */
+  /* Statistics: Mark circuits as RP circuits */
   if (options->HiddenServiceStatistics) {
+    /* `circ` is the RP <-> service circuit */
     circ->circuit_carries_hs_traffic_stats = 1;
+    /* `rend_circ` is the client <-> RP circuit */
+    rend_circ->circuit_carries_hs_traffic_stats = 1;
   }
 
   /* Send the RENDEZVOUS2 cell to the client. */

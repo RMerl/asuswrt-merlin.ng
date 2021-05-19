@@ -1,6 +1,6 @@
 /* Copyright (c) 2003, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -34,7 +34,7 @@
 #include "lib/tls/nss_countbytes.h"
 #include "lib/log/util_bug.h"
 
-DISABLE_GCC_WARNING(strict-prototypes)
+DISABLE_GCC_WARNING("-Wstrict-prototypes")
 #include <prio.h>
 // For access to rar sockets.
 #include <private/pprio.h>
@@ -42,7 +42,7 @@ DISABLE_GCC_WARNING(strict-prototypes)
 #include <sslt.h>
 #include <sslproto.h>
 #include <certt.h>
-ENABLE_GCC_WARNING(strict-prototypes)
+ENABLE_GCC_WARNING("-Wstrict-prototypes")
 
 static SECStatus always_accept_cert_cb(void *, PRFileDesc *, PRBool, PRBool);
 
@@ -369,6 +369,8 @@ tls_log_errors(tor_tls_t *tls, int severity, int domain,
 
   (void)tls;
   PRErrorCode code = PORT_GetError();
+  if (tls)
+    tls->last_error = code;
 
   const char *addr = tls ? tls->address : NULL;
   const char *string = PORT_ErrorToString(code);
@@ -390,6 +392,17 @@ tls_log_errors(tor_tls_t *tls, int severity, int domain,
     log_fn(severity, domain, "TLS error %s%s%s: %s", name, string,
            with, addr);
   }
+}
+const char *
+tor_tls_get_last_error_msg(const tor_tls_t *tls)
+{
+  IF_BUG_ONCE(!tls) {
+    return NULL;
+  }
+  if (tls->last_error == 0) {
+    return NULL;
+  }
+  return PORT_ErrorToString((PRErrorCode)tls->last_error);
 }
 
 tor_tls_t *
@@ -415,6 +428,16 @@ tor_tls_new(tor_socket_t sock, int is_server)
   PRFileDesc *ssl = SSL_ImportFD(ctx->ctx, count);
   if (!ssl) {
     PR_Close(tcp);
+    return NULL;
+  }
+
+  /* even if though the socket is already nonblocking, we need to tell NSS
+   * about the fact, so that it knows what to do when it says EAGAIN. */
+  PRSocketOptionData data;
+  data.option = PR_SockOpt_Nonblocking;
+  data.value.non_blocking = 1;
+  if (PR_SetSocketOption(ssl, &data) != PR_SUCCESS) {
+    PR_Close(ssl);
     return NULL;
   }
 
@@ -713,23 +736,58 @@ MOCK_IMPL(int,
 tor_tls_cert_matches_key,(const tor_tls_t *tls,
                           const struct tor_x509_cert_t *cert))
 {
-  tor_assert(tls);
   tor_assert(cert);
+  tor_assert(cert->cert);
+
   int rv = 0;
 
-  CERTCertificate *peercert = SSL_PeerCertificate(tls->ssl);
-  if (!peercert)
+  tor_x509_cert_t *peercert = tor_tls_get_peer_cert((tor_tls_t *)tls);
+
+  if (!peercert || !peercert->cert)
     goto done;
-  CERTSubjectPublicKeyInfo *peer_info = &peercert->subjectPublicKeyInfo;
+
+  CERTSubjectPublicKeyInfo *peer_info = &peercert->cert->subjectPublicKeyInfo;
   CERTSubjectPublicKeyInfo *cert_info = &cert->cert->subjectPublicKeyInfo;
+
+  /* NSS stores the `len` field in bits, instead of bytes, for the
+   * `subjectPublicKey` field in CERTSubjectPublicKeyInfo, but
+   * `SECITEM_ItemsAreEqual()` compares the two bitstrings using a length field
+   * defined in bytes.
+   *
+   * We convert the `len` field from bits to bytes, do our comparison with
+   * `SECITEM_ItemsAreEqual()`, and reset the length field from bytes to bits
+   * again.
+   *
+   * See also NSS's own implementation of `SECKEY_CopySubjectPublicKeyInfo()`
+   * in seckey.c in the NSS source tree. This function also does the conversion
+   * between bits and bytes.
+   */
+  const unsigned int peer_info_orig_len = peer_info->subjectPublicKey.len;
+  const unsigned int cert_info_orig_len = cert_info->subjectPublicKey.len;
+
+  /* We convert the length from bits to bytes, but instead of using NSS's
+   * `DER_ConvertBitString()` macro on both of peer_info->subjectPublicKey and
+   * cert_info->subjectPublicKey, we have to do the conversion explicitly since
+   * both of the two subjectPublicKey fields are allowed to point to the same
+   * memory address. Otherwise, the bits to bytes conversion would potentially
+   * be applied twice, which would lead to us comparing too few of the bytes
+   * when we call SECITEM_ItemsAreEqual(), which would be catastrophic.
+   */
+  peer_info->subjectPublicKey.len = ((peer_info_orig_len + 7) >> 3);
+  cert_info->subjectPublicKey.len = ((cert_info_orig_len + 7) >> 3);
+
   rv = SECOID_CompareAlgorithmID(&peer_info->algorithm,
                                  &cert_info->algorithm) == 0 &&
        SECITEM_ItemsAreEqual(&peer_info->subjectPublicKey,
                              &cert_info->subjectPublicKey);
 
+  /* Convert from bytes back to bits. */
+  peer_info->subjectPublicKey.len = peer_info_orig_len;
+  cert_info->subjectPublicKey.len = cert_info_orig_len;
+
  done:
-  if (peercert)
-    CERT_DestroyCertificate(peercert);
+  tor_x509_cert_free(peercert);
+
   return rv;
 }
 

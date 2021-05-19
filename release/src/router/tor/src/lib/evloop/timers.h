@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2019, The Tor Project, Inc. */
+/* Copyright (c) 2016-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -13,6 +13,7 @@
 #include "lib/testsupport/testsupport.h"
 
 struct monotime_t;
+struct timeval;
 typedef struct timeout tor_timer_t;
 typedef void (*timer_cb_fn_t)(tor_timer_t *, void *,
                               const struct monotime_t *);

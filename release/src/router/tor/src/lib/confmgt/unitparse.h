@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -25,7 +25,8 @@ extern const unit_table_t memory_units[];
 extern const unit_table_t time_units[];
 extern const struct unit_table_t time_msec_units[];
 
-uint64_t config_parse_units(const char *val, const unit_table_t *u, int *ok);
+uint64_t config_parse_units(const char *val, const unit_table_t *u, int *ok,
+                            char **errmsg_out);
 
 uint64_t config_parse_memunit(const char *s, int *ok);
 int config_parse_msec_interval(const char *s, int *ok);

@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2019, The Tor Project, Inc. */
+/* Copyright (c) 2012-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -14,16 +14,16 @@ typedef struct replaycache_t replaycache_t;
 #ifdef REPLAYCACHE_PRIVATE
 
 struct replaycache_t {
-  /* Scrub interval */
+  /** Scrub interval */
   time_t scrub_interval;
-  /* Last scrubbed */
+  /** Last scrubbed */
   time_t scrubbed;
-  /*
+  /**
    * Horizon
    * (don't return true on digests in the cache but older than this)
    */
   time_t horizon;
-  /*
+  /**
    * Digest map: keys are digests, values are times the digest was last seen
    */
   digest256map_t *digests_seen;
@@ -34,6 +34,11 @@ struct replaycache_t {
 /* replaycache_t free/new */
 
 void replaycache_free_(replaycache_t *r);
+/**
+ * @copydoc replaycache_free_
+ *
+ * Additionally, set the pointer <b>r</b> to NULL.
+ **/
 #define replaycache_free(r) \
   FREE_AND_NULL(replaycache_t, replaycache_free_, (r))
 replaycache_t * replaycache_new(time_t horizon, time_t interval);

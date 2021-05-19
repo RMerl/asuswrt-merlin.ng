@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -29,7 +29,7 @@
 #include "core/or/circuitbuild.h"
 #include "core/or/circuitstats.h"
 #include "app/config/config.h"
-#include "lib/confmgt/confparse.h"
+#include "lib/confmgt/confmgt.h"
 #include "feature/control/control_events.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "core/mainloop/mainloop.h"
@@ -53,9 +53,6 @@
 #undef log
 #include <math.h>
 
-static void cbt_control_event_buildtimeout_set(
-                                  const circuit_build_times_t *cbt,
-                                  buildtimeout_set_event_t type);
 static void circuit_build_times_scale_circ_counts(circuit_build_times_t *cbt);
 
 #define CBT_BIN_TO_MS(bin) ((bin)*CBT_BIN_WIDTH + (CBT_BIN_WIDTH/2))
@@ -402,7 +399,7 @@ circuit_build_times_initial_timeout(void)
  * and learn a new timeout.
  */
 static int32_t
-circuit_build_times_recent_circuit_count(networkstatus_t *ns)
+circuit_build_times_recent_circuit_count(const networkstatus_t *ns)
 {
   int32_t num;
   num = networkstatus_get_param(ns, "cbtrecentcount",
@@ -428,7 +425,7 @@ circuit_build_times_recent_circuit_count(networkstatus_t *ns)
  */
 void
 circuit_build_times_new_consensus_params(circuit_build_times_t *cbt,
-                                         networkstatus_t *ns)
+                                         const networkstatus_t *ns)
 {
   int32_t num;
 
@@ -545,7 +542,7 @@ circuit_build_times_get_initial_timeout(void)
  * Leave estimated parameters, timeout and network liveness intact
  * for future use.
  */
-STATIC void
+void
 circuit_build_times_reset(circuit_build_times_t *cbt)
 {
   memset(cbt->circuit_build_times, 0, sizeof(cbt->circuit_build_times));
@@ -972,7 +969,7 @@ circuit_build_times_update_state(const circuit_build_times_t *cbt,
 /**
  * Shuffle the build times array.
  *
- * Adapted from http://en.wikipedia.org/wiki/Fisher-Yates_shuffle
+ * Adapted from https://en.wikipedia.org/wiki/Fisher-Yates_shuffle
  */
 static void
 circuit_build_times_shuffle_and_store_array(circuit_build_times_t *cbt,
@@ -1183,7 +1180,7 @@ circuit_build_times_parse_state(circuit_build_times_t *cbt,
 
 /**
  * Estimates the Xm and Alpha parameters using
- * http://en.wikipedia.org/wiki/Pareto_distribution#Parameter_estimation
+ * https://en.wikipedia.org/wiki/Pareto_distribution#Parameter_estimation
  *
  * The notable difference is that we use mode instead of min to estimate Xm.
  * This is because our distribution is frechet-like. We claim this is
@@ -1198,7 +1195,7 @@ circuit_build_times_update_alpha(circuit_build_times_t *cbt)
   int n=0,i=0,abandoned_count=0;
   build_time_t max_time=0;
 
-  /* http://en.wikipedia.org/wiki/Pareto_distribution#Parameter_estimation */
+  /* https://en.wikipedia.org/wiki/Pareto_distribution#Parameter_estimation */
   /* We sort of cheat here and make our samples slightly more pareto-like
    * and less frechet-like. */
   cbt->Xm = circuit_build_times_get_xm(cbt);
@@ -1270,9 +1267,9 @@ circuit_build_times_update_alpha(circuit_build_times_t *cbt)
  * We use it to calculate the timeout and also to generate synthetic
  * values of time for circuits that timeout before completion.
  *
- * See http://en.wikipedia.org/wiki/Quantile_function,
- * http://en.wikipedia.org/wiki/Inverse_transform_sampling and
- * http://en.wikipedia.org/wiki/Pareto_distribution#Generating_a_
+ * See https://en.wikipedia.org/wiki/Quantile_function,
+ * https://en.wikipedia.org/wiki/Inverse_transform_sampling and
+ * https://en.wikipedia.org/wiki/Pareto_distribution#Generating_a_
  *     random_sample_from_Pareto_distribution
  * That's right. I'll cite wikipedia all day long.
  *
@@ -1892,62 +1889,4 @@ void
 circuit_build_times_update_last_circ(circuit_build_times_t *cbt)
 {
   cbt->last_circ_at = approx_time();
-}
-
-static void
-cbt_control_event_buildtimeout_set(const circuit_build_times_t *cbt,
-                                   buildtimeout_set_event_t type)
-{
-  char *args = NULL;
-  double qnt;
-  double timeout_rate = 0.0;
-  double close_rate = 0.0;
-
-  switch (type) {
-    case BUILDTIMEOUT_SET_EVENT_RESET:
-    case BUILDTIMEOUT_SET_EVENT_SUSPENDED:
-    case BUILDTIMEOUT_SET_EVENT_DISCARD:
-      qnt = 1.0;
-      break;
-    case BUILDTIMEOUT_SET_EVENT_COMPUTED:
-    case BUILDTIMEOUT_SET_EVENT_RESUME:
-    default:
-      qnt = circuit_build_times_quantile_cutoff();
-      break;
-  }
-
-  /* The timeout rate is the ratio of the timeout count over
-   * the total number of circuits attempted. The total number of
-   * circuits is (timeouts+succeeded), since every circuit
-   * either succeeds, or times out. "Closed" circuits are
-   * MEASURE_TIMEOUT circuits whose measurement period expired.
-   * All MEASURE_TIMEOUT circuits are counted in the timeouts stat
-   * before transitioning to MEASURE_TIMEOUT (in
-   * circuit_build_times_mark_circ_as_measurement_only()).
-   * MEASURE_TIMEOUT circuits that succeed are *not* counted as
-   * "succeeded". See circuit_build_times_handle_completed_hop().
-   *
-   * We cast the denominator
-   * to promote it to double before the addition, to avoid int32
-   * overflow. */
-  const double total_circuits =
-    ((double)cbt->num_circ_timeouts) + cbt->num_circ_succeeded;
-  if (total_circuits >= 1.0) {
-    timeout_rate = cbt->num_circ_timeouts / total_circuits;
-    close_rate = cbt->num_circ_closed / total_circuits;
-  }
-
-  tor_asprintf(&args, "TOTAL_TIMES=%lu "
-               "TIMEOUT_MS=%lu XM=%lu ALPHA=%f CUTOFF_QUANTILE=%f "
-               "TIMEOUT_RATE=%f CLOSE_MS=%lu CLOSE_RATE=%f",
-               (unsigned long)cbt->total_build_times,
-               (unsigned long)cbt->timeout_ms,
-               (unsigned long)cbt->Xm, cbt->alpha, qnt,
-               timeout_rate,
-               (unsigned long)cbt->close_ms,
-               close_rate);
-
-  control_event_buildtimeout_set(type, args);
-
-  tor_free(args);
 }

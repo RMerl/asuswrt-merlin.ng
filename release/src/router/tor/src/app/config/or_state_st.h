@@ -1,11 +1,11 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
- * \file or_state_t
+ * \file or_state_st.h
  *
  * \brief The or_state_t structure, which represents Tor's state file.
  */
@@ -21,7 +21,7 @@ struct config_suite_t;
 struct or_state_t {
   uint32_t magic_;
   /** The time at which we next plan to write the state to the disk.  Equal to
-   * TIME_MAX if there are no savable changes, 0 if there are changes that
+   * TIME_MAX if there are no saveable changes, 0 if there are changes that
    * should be saved right away. */
   time_t next_write;
 
@@ -38,16 +38,10 @@ struct or_state_t {
   uint64_t AccountingBytesAtSoftLimit;
   uint64_t AccountingExpectedUsage;
 
-  /** A list of Entry Guard-related configuration lines. (pre-prop271) */
-  struct config_line_t *EntryGuards;
-
-  /** A list of guard-related configuration lines. (post-prop271) */
+  /** A list of guard-related configuration lines. */
   struct config_line_t *Guard;
 
   struct config_line_t *TransportProxies;
-
-  /** Cached revision counters for active hidden services on this host */
-  struct config_line_t *HidServRevCounter;
 
   /** These fields hold information on the history of bandwidth usage for
    * servers.  The "Ends" fields hold the time when we last updated the
@@ -65,6 +59,14 @@ struct or_state_t {
   int         BWHistoryWriteInterval;
   struct smartlist_t *BWHistoryWriteValues;
   struct smartlist_t *BWHistoryWriteMaxima;
+  time_t      BWHistoryIPv6ReadEnds;
+  int         BWHistoryIPv6ReadInterval;
+  struct smartlist_t *BWHistoryIPv6ReadValues;
+  struct smartlist_t *BWHistoryIPv6ReadMaxima;
+  time_t      BWHistoryIPv6WriteEnds;
+  int         BWHistoryIPv6WriteInterval;
+  struct smartlist_t *BWHistoryIPv6WriteValues;
+  struct smartlist_t *BWHistoryIPv6WriteMaxima;
   time_t      BWHistoryDirReadEnds;
   int         BWHistoryDirReadInterval;
   struct smartlist_t *BWHistoryDirReadValues;
@@ -88,13 +90,6 @@ struct or_state_t {
 
   /** When did we last rotate our onion key?  "0" for 'no idea'. */
   time_t LastRotatedOnionKey;
-
-  /** Number of minutes since the last user-initiated request (as defined by
-   * the dormant net-status system.) Set to zero if we are dormant. */
-  int MinutesSinceUserActivity;
-  /** True if we were dormant when we last wrote the file; false if we
-   * weren't.  "auto" on initial startup. */
-  int Dormant;
 
   /**
    * State objects for individual modules.

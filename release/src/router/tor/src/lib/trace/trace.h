@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Tor Project, Inc. */
+/* Copyright (c) 2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -6,9 +6,31 @@
  * \brief Header for trace.c
  **/
 
-#ifndef TOR_TRACE_TRACE_H
-#define TOR_TRACE_TRACE_H
+#ifndef TOR_LIB_TRACE_TRACE_H
+#define TOR_LIB_TRACE_TRACE_H
+
+#include "orconfig.h"
 
 void tor_trace_init(void);
+void tor_trace_free_all(void);
 
-#endif /* !defined(TOR_TRACE_TRACE_H) */
+#ifdef HAVE_TRACING
+
+#include "lib/log/log.h"
+
+static inline void
+tracing_log_warning(void)
+{
+  log_warn(LD_GENERAL,
+           "Tracing capabilities have been built in. If this is NOT on "
+           "purpose, your tor is NOT safe to run.");
+}
+
+#else
+
+/* NOP it. */
+#define tracing_log_warning()
+
+#endif /* defined(HAVE_TRACING) */
+
+#endif /* !defined(TOR_LIB_TRACE_TRACE_H) */

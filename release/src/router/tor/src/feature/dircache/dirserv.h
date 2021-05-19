@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -73,29 +73,52 @@ typedef struct spooled_resource_t {
 
 int connection_dirserv_flushed_some(dir_connection_t *conn);
 
-int directory_fetches_from_authorities(const or_options_t *options);
-int directory_fetches_dir_info_early(const or_options_t *options);
-int directory_fetches_dir_info_later(const or_options_t *options);
+enum dir_spool_source_t;
+int dir_split_resource_into_spoolable(const char *resource,
+                                      enum dir_spool_source_t source,
+                                      smartlist_t *spool_out,
+                                      int *compressed_out,
+                                      int flags);
+
+#ifdef HAVE_MODULE_DIRCACHE
+/** Is the dircache module enabled? */
+#define have_module_dircache() (1)
 int directory_caches_unknown_auth_certs(const or_options_t *options);
 int directory_caches_dir_info(const or_options_t *options);
 int directory_permits_begindir_requests(const or_options_t *options);
-int directory_too_idle_to_fetch_descriptors(const or_options_t *options,
-                                            time_t now);
-
-cached_dir_t *dirserv_get_consensus(const char *flavor_name);
+MOCK_DECL(cached_dir_t *, dirserv_get_consensus, (const char *flavor_name));
 void dirserv_set_cached_consensus_networkstatus(const char *consensus,
                                               size_t consensus_len,
                                               const char *flavor_name,
                                               const common_digests_t *digests,
                                               const uint8_t *sha3_as_signed,
                                               time_t published);
+#else /* !defined(HAVE_MODULE_DIRCACHE) */
+#define have_module_dircache() (0)
+#define directory_caches_unknown_auth_certs(opt) \
+  ((void)(opt), 0)
+#define directory_caches_dir_info(opt) \
+  ((void)(opt), 0)
+#define directory_permits_begindir_requests(opt) \
+  ((void)(opt), 0)
+#define dirserv_get_consensus(flav) \
+  ((void)(flav), NULL)
+#define dirserv_set_cached_consensus_networkstatus(a,b,c,d,e,f) \
+  STMT_BEGIN {                                                  \
+    (void)(a);                                                  \
+    (void)(b);                                                  \
+    (void)(c);                                                  \
+    (void)(d);                                                  \
+    (void)(e);                                                  \
+    (void)(f);                                                  \
+  } STMT_END
+#endif /* defined(HAVE_MODULE_DIRCACHE) */
+
 void dirserv_clear_old_networkstatuses(time_t cutoff);
 int dirserv_get_routerdesc_spool(smartlist_t *spools_out, const char *key,
                                  dir_spool_source_t source,
                                  int conn_is_encrypted,
                                  const char **msg_out);
-int dirserv_get_routerdescs(smartlist_t *descs_out, const char *key,
-                            const char **msg);
 
 void dirserv_free_all(void);
 void cached_dir_decref(cached_dir_t *d);

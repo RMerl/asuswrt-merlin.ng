@@ -1,5 +1,4 @@
-Coding conventions for Tor
-==========================
+# Coding conventions for Tor
 
 tl;dr:
 
@@ -10,8 +9,7 @@ tl;dr:
    - Run `make distcheck` if you have made changes to build system components
    - Add a file in `changes` for your branch.
 
-Patch checklist
----------------
+## Patch checklist
 
 If possible, send your patch as one of these (in descending order of
 preference)
@@ -34,7 +32,7 @@ Did you remember...
 
 If you are submitting a major patch or new feature, or want to in the future...
 
-   - Set up Chutney and Stem, see HACKING/WritingTests.md
+   - Set up Chutney and Stem, see `doc/HACKING/WritingTests.md`
    - Run `make test-full` to test against all unit and integration tests.
 
 If you have changed build system components:
@@ -42,9 +40,7 @@ If you have changed build system components:
    - For example, if you have changed Makefiles, autoconf files, or anything
      else that affects the build system.
 
-
-License issues
-==============
+## License issues
 
 Tor is distributed under the license terms in the LICENSE -- in
 brief, the "3-clause BSD license".  If you send us code to
@@ -58,9 +54,7 @@ Some compatible licenses include:
   - 2-clause BSD
   - CC0 Public Domain Dedication
 
-
-How we use Git branches
-=======================
+## How we use Git branches
 
 Each main development series (like 0.2.1, 0.2.2, etc) has its main work
 applied to a single branch.  At most one series can be the development series
@@ -91,9 +85,7 @@ conflicts in the ChangeLog when it comes time to merge your branch into Tor.
 Best advice: don't try to keep an independent branch forked for more than 6
 months and expect it to merge cleanly. Try to merge pieces early and often.
 
-
-How we log changes
-==================
+## How we log changes
 
 When you do a commit that needs a ChangeLog entry, add a new file to
 the `changes` toplevel subdirectory.  It should have the format of a
@@ -126,27 +118,36 @@ instance of the feature (--reverse).
 
 For example, for #30224, we wanted to know when the bridge-distribution-request
 feature was introduced into Tor:
-    $ git log -S bridge-distribution-request --reverse
-    commit ebab521525
-    Author: Roger Dingledine <arma@torproject.org>
-    Date:   Sun Nov 13 02:39:16 2016 -0500
 
-        Add new BridgeDistribution config option
+```console
+$ git log -S bridge-distribution-request --reverse commit ebab521525
+Author: Roger Dingledine <arma@torproject.org>
+Date:   Sun Nov 13 02:39:16 2016 -0500
 
-    $ git describe --contains ebab521525
-    tor-0.3.2.3-alpha~15^2~4
+    Add new BridgeDistribution config option
+
+$ git describe --contains ebab521525
+tor-0.3.2.3-alpha~15^2~4
+```
 
 If you need to know all the Tor versions that contain a commit, use:
-    $ git tag --contains 9f2efd02a1 | sort -V
-    tor-0.2.5.16
-    tor-0.2.8.17
-    tor-0.2.9.14
-    tor-0.2.9.15
-    ...
-    tor-0.3.0.13
-    tor-0.3.1.9
-    tor-0.3.1.10
-    ...
+
+```console
+$ git tag --contains 9f2efd02a1 | sort -V
+tor-0.2.5.16
+tor-0.2.8.17
+tor-0.2.9.14
+tor-0.2.9.15
+...
+tor-0.3.0.13
+tor-0.3.1.9
+tor-0.3.1.10
+...
+```
+
+If a bug was introduced before the oldest currently supported release series
+of Tor, and it's hard to track down where it was introduced, you may say
+"bugfix on all supported versions of Tor."
 
 If at all possible, try to create the changes file in the same commit where
 you are making the change.  Please give it a distinctive name that no other
@@ -188,6 +189,14 @@ What needs a changes file?
 What does not need a changes file?
 
    * Bugfixes for code that hasn't shipped in any released version of Tor
+   * Any change to a file that is not distributed in the tarball. This
+     includes:
+     * Any change to our CI configuration that does not affect the distributed
+      source.
+     * Any change to developer-only tools, unless those tools are distributed
+      in the tarball.
+   * Non-functional code movement.
+   * Identifier re-namings, comment edits, spelling fixes, and so on.
 
 Why use changes files instead of Git commit messages?
 
@@ -199,11 +208,11 @@ Why use changes files instead of entries in the ChangeLog?
    * Having every single commit touch the ChangeLog file tended to create
    zillions of merge conflicts.
 
-Whitespace and C conformance
-----------------------------
+## Whitespace and C conformance
 
-Invoke `make check-spaces` from time to time, so it can tell you about
-deviations from our C whitespace style.  Generally, we use:
+Tor's C code is written in accordance with the C99 standard. Invoke `make
+check-spaces` from time to time, so it can tell you about deviations from our C
+whitespace style.  Generally, we use:
 
    - Unix-style line endings
    - K&R-style indentation
@@ -219,6 +228,11 @@ deviations from our C whitespace style.  Generally, we use:
    - No space between a function name and an opening paren. `puts(x)`, not
      `puts (x)`.
    - Function declarations at the start of the line.
+   - Use `void foo(void)` to declare a function with no arguments.  Saying
+     `void foo()` is C++ syntax.
+   - Use `const` for new APIs.
+   - Variables should be initialized when declared, rather than declared at the
+     top of a scope.
 
 If you use an editor that has plugins for editorconfig.org, the file
 `.editorconfig` will help you to conform this coding style.
@@ -228,12 +242,17 @@ you're using gcc, you should invoke the configure script with the
 option `--enable-fatal-warnings`.  This will tell the compiler
 to make all warnings into errors.
 
-Functions to use; functions not to use
---------------------------------------
+## Functions to use; functions not to use
 
 We have some wrapper functions like `tor_malloc`, `tor_free`, `tor_strdup`, and
 `tor_gettimeofday;` use them instead of their generic equivalents.  (They
 always succeed or exit.)
+
+Specifically, Don't use `malloc`, `realloc`, `calloc`, `free`, or
+`strdup`. Use `tor_malloc`, `tor_realloc`, `tor_calloc`, `tor_free`, or
+`tor_strdup`.
+
+Don't use `tor_realloc(x, y\*z)`. Use `tor_reallocarray(x, y, z)` instead.;
 
 You can get a full list of the compatibility functions that Tor provides by
 looking through `src/lib/*/*.h`.  You can see the
@@ -241,17 +260,37 @@ available containers in `src/lib/containers/*.h`.  You should probably
 familiarize yourself with these modules before you write too much code, or
 else you'll wind up reinventing the wheel.
 
-We don't use `strcat` or `strcpy` or `sprintf` of any of those notoriously broken
-old C functions.  Use `strlcat`, `strlcpy`, or `tor_snprintf/tor_asprintf` instead.
+We don't use `strcat` or `strcpy` or `sprintf` of any of those notoriously
+broken old C functions.  We also avoid `strncat` and `strncpy`. Use
+`strlcat`, `strlcpy`, or `tor_snprintf/tor_asprintf` instead.
 
 We don't call `memcmp()` directly.  Use `fast_memeq()`, `fast_memneq()`,
-`tor_memeq()`, or `tor_memneq()` for most purposes.
+`tor_memeq()`, or `tor_memneq()` for most purposes.  If you really need a
+tristate return value, use `tor_memcmp()` or `fast_memcmp()`.
 
-Also see a longer list of functions to avoid in:
-https://people.torproject.org/~nickm/tor-auto/internal/this-not-that.html
+Don't call `assert()` directly. For hard asserts, use `tor_assert()`. For
+soft asserts, use `tor_assert_nonfatal()` or `BUG()`. If you need to print
+debug information in assert error message, consider using `tor_assertf()` and
+`tor_assertf_nonfatal()`.  If you are writing code that is too low-level to
+use the logging subsystem, use `raw_assert()`.
 
-What code can use what other code?
-----------------------------------
+Don't use `toupper()` and `tolower()` functions. Use `TOR_TOUPPER` and
+`TOR_TOLOWER` macros instead. Similarly, use `TOR_ISALPHA`, `TOR_ISALNUM` et.
+al. instead of `isalpha()`, `isalnum()`, etc.
+
+When allocating new string to be added to a smartlist, use
+`smartlist_add_asprintf()` to do both at once.
+
+Avoid calling BSD socket functions directly. Use portable wrappers to work
+with sockets and socket addresses. Also, sockets should be of type
+`tor_socket_t`.
+
+Don't use any of these functions: they aren't portable. Use the
+version prefixed with `tor_` instead: strtok_r, memmem, memstr,
+asprintf, localtime_r, gmtime_r, inet_aton, inet_ntop, inet_pton,
+getpass, ntohll, htonll.  (This list is incomplete.)
+
+## What code can use what other code?
 
 We're trying to simplify Tor's structure over time.  In the long run, we want
 Tor to be structured as a set of modules with *no circular dependencies*.
@@ -268,8 +307,7 @@ included except those specifically permitted by the `.may_include` file.
 When editing one of these files, please make sure that you are not
 introducing any cycles into Tor's dependency graph.
 
-Floating point math is hard
----------------------------
+## Floating point math is hard
 
 Floating point arithmetic as typically implemented by computers is
 very counterintuitive.  Failure to adequately analyze floating point
@@ -315,7 +353,7 @@ General advice:
 
 For additional useful advice (and a little bit of background), see
 [What Every Programmer Should Know About Floating-Point
-Arithmetic](http://floating-point-gui.de/).
+Arithmetic](https://floating-point-gui.de/).
 
 A list of notable (and surprising) facts about floating point
 arithmetic is at [Floating-point
@@ -328,8 +366,7 @@ For more detailed (and math-intensive) background, see [What Every
 Computer Scientist Should Know About Floating-Point
 Arithmetic](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
 
-Other C conventions
--------------------
+## Other C conventions
 
 The `a ? b : c` trinary operator only goes inside other expressions;
 don't use it as a replacement for if. (You can ignore this inside macro
@@ -338,8 +375,15 @@ definitions when necessary.)
 Assignment operators shouldn't nest inside other expressions.  (You can
 ignore this inside macro definitions when necessary.)
 
-Functions not to write
-----------------------
+## Binary data and wire formats
+
+Use pointer to `char` when representing NUL-terminated string. To represent
+arbitrary binary data, use pointer to `uint8_t`. (Many older Tor APIs ignore
+this rule.)
+
+Refrain from attempting to encode integers by casting their pointers to byte
+arrays. Use something like `set_uint32()`/`get_uint32()` instead and don't
+forget about endianness.
 
 Try to never hand-write new code to parse or generate binary
 formats. Instead, use trunnel if at all possible.  See
@@ -350,8 +394,7 @@ for more information about trunnel.
 
 For information on adding new trunnel code to Tor, see src/trunnel/README
 
-Calling and naming conventions
-------------------------------
+## Calling and naming conventions
 
 Whenever possible, functions should return -1 on error and 0 on success.
 
@@ -374,17 +417,15 @@ probably time to create an enum.  If you find that you are passing three or
 more flags to a function, it's probably time to create a flags argument that
 takes a bitfield.
 
-What To Optimize
-----------------
+## What To Optimize
 
 Don't optimize anything if it's not in the critical path.  Right now, the
 critical path seems to be AES, logging, and the network itself.  Feel free to
 do your own profiling to determine otherwise.
 
-Log conventions
----------------
+## Log conventions
 
-`https://www.torproject.org/docs/faq#LogLevel`
+[FAQ - Log Levels](https://www.torproject.org/docs/faq#LogLevel)
 
 No error or warning messages should be expected during normal OR or OP
 operation.
@@ -398,8 +439,7 @@ end-users that they aren't expected to understand the message (perhaps
 with a string like "internal error"). Option (A) is to be preferred to
 option (B).
 
-Assertions In Tor
------------------
+## Assertions In Tor
 
 Assertions should be used for bug-detection only.  Don't use assertions to
 detect bad user inputs, network errors, resource exhaustion, or similar
@@ -415,11 +455,12 @@ use `tor_assert_nonfatal()` in place of `tor_assert()`.  If you'd like to
 write a conditional that incorporates a nonfatal assertion, use the `BUG()`
 macro, as in:
 
-	if (BUG(ptr == NULL))
-		return -1;
+```c
+if (BUG(ptr == NULL))
+	return -1;
+```
 
-Allocator conventions
----------------------
+## Allocator conventions
 
 By convention, any tor type with a name like `abc_t` should be allocated
 by a function named `abc_new()`.  This function should never return
@@ -429,59 +470,71 @@ Also, a type named `abc_t` should be freed by a function named `abc_free_()`.
 Don't call this `abc_free_()` function directly -- instead, wrap it in a
 macro called `abc_free()`, using the `FREE_AND_NULL` macro:
 
-    void abc_free_(abc_t *obj);
-    #define abc_free(obj) FREE_AND_NULL(abc_t, abc_free_, (obj))
+```c
+void abc_free_(abc_t *obj);
+#define abc_free(obj) FREE_AND_NULL(abc_t, abc_free_, (obj))
+```
 
 This macro will free the underlying `abc_t` object, and will also set
 the object pointer to NULL.
 
 You should define all `abc_free_()` functions to accept NULL inputs:
 
-    void
-    abc_free_(abc_t *obj)
-    {
-      if (!obj)
-        return;
-      tor_free(obj->name);
-      thing_free(obj->thing);
-      tor_free(obj);
-    }
+```c
+void
+abc_free_(abc_t *obj)
+{
+  if (!obj)
+    return;
+  tor_free(obj->name);
+  thing_free(obj->thing);
+  tor_free(obj);
+}
+```
 
 If you need a free function that takes a `void *` argument (for example,
 to use it as a function callback), define it with a name like
 `abc_free_void()`:
 
-    static void
-    abc_free_void_(void *obj)
-    {
-      abc_free_(obj);
-    }
+```c
+static void
+abc_free_void_(void *obj)
+{
+  abc_free_(obj);
+}
+```
 
-Doxygen comment conventions
----------------------------
+When deallocating, don't say e.g. `if (x) tor_free(x)`. The convention is to
+have deallocators do nothing when NULL pointer is passed.
+
+## Doxygen comment conventions
 
 Say what functions do as a series of one or more imperative sentences, as
 though you were telling somebody how to be the function.  In other words, DO
 NOT say:
 
-     /** The strtol function parses a number.
-      *
-      * nptr -- the string to parse.  It can include whitespace.
-      * endptr -- a string pointer to hold the first thing that is not part
-      *    of the number, if present.
-      * base -- the numeric base.
-      * returns: the resulting number.
-      */
-     long strtol(const char *nptr, char **nptr, int base);
+```c
+/** The strtol function parses a number.
+ *
+ * nptr -- the string to parse.  It can include whitespace.
+ * endptr -- a string pointer to hold the first thing that is not part
+ *    of the number, if present.
+ * base -- the numeric base.
+ * returns: the resulting number.
+ */
+long strtol(const char *nptr, char **nptr, int base);
+```
 
 Instead, please DO say:
 
-     /** Parse a number in radix <b>base</b> from the string <b>nptr</b>,
-      * and return the result.  Skip all leading whitespace.  If
-      * <b>endptr</b> is not NULL, set *<b>endptr</b> to the first character
-      * after the number parsed.
-      **/
-     long strtol(const char *nptr, char **nptr, int base);
+```c
+/** Parse a number in radix <b>base</b> from the string <b>nptr</b>,
+ * and return the result.  Skip all leading whitespace.  If
+ * <b>endptr</b> is not NULL, set *<b>endptr</b> to the first character
+ * after the number parsed.
+ **/
+long strtol(const char *nptr, char **nptr, int base);
+```
 
 Doxygen comments are the contract in our abstraction-by-contract world: if
 the functions that call your function rely on it doing something, then your

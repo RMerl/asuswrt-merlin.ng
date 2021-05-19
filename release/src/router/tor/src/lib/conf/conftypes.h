@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -64,7 +64,18 @@ typedef enum config_type_t {
   CONFIG_TYPE_LINELIST_V,   /**< Catch-all "virtual" option to summarize
                              * context-sensitive config lines when fetching.
                              */
-  CONFIG_TYPE_OBSOLETE,     /**< Obsolete (ignored) option. */
+  /** Ignored (obsolete) option. Uses no storage.
+   *
+   * Reported as "obsolete" when its type is queried.
+   */
+  CONFIG_TYPE_OBSOLETE,
+  /** Ignored option. Uses no storage.
+   *
+   * Reported as "ignored" when its type is queried. For use with options used
+   * by disabled modules.
+   **/
+  CONFIG_TYPE_IGNORE,
+
   /**
    * Extended type: definition appears in the <b>type_def</b> pointer
    * of the corresponding struct_member_t.
@@ -120,6 +131,9 @@ typedef struct struct_member_t {
  *
  * These 'magic numbers' are 32-bit values used to tag objects to make sure
  * that they have the correct type.
+ *
+ * If all fields in this structure are zero or 0, the magic-number check is
+ * not performed.
  */
 typedef struct struct_magic_decl_t {
   /** The name of the structure */
@@ -178,12 +192,35 @@ typedef struct struct_magic_decl_t {
  * however, setting them appends to their old value.
  */
 #define CFLG_NOREPLACE    (1u<<5)
+/**
+ * Flag to indicate that an option or type cannot be changed while Tor is
+ * running.
+ **/
+#define CFLG_IMMUTABLE (1u<<6)
+/**
+ * Flag to indicate that we should warn that an option or type is obsolete
+ * whenever the user tries to use it.
+ **/
+#define CFLG_WARN_OBSOLETE (1u<<7)
+/**
+ * Flag to indicate that we should warn that an option applies only to
+ * a disabled module, whenever the user tries to use it.
+ **/
+#define CFLG_WARN_DISABLED (1u<<8)
 
 /**
  * A group of flags that should be set on all obsolete options and types.
  **/
 #define CFLG_GROUP_OBSOLETE \
-  (CFLG_NOCOPY|CFLG_NOCMP|CFLG_NODUMP|CFLG_NOSET|CFLG_NOLIST)
+  (CFLG_NOCOPY|CFLG_NOCMP|CFLG_NODUMP|CFLG_NOSET|CFLG_NOLIST|\
+   CFLG_WARN_OBSOLETE)
+
+/**
+ * A group of fflags that should be set on all disabled options.
+ **/
+#define CFLG_GROUP_DISABLED \
+  (CFLG_NOCOPY|CFLG_NOCMP|CFLG_NODUMP|CFLG_NOSET|CFLG_NOLIST|\
+   CFLG_WARN_DISABLED)
 
 /** A variable allowed in the configuration file or on the command line. */
 typedef struct config_var_t {
@@ -198,5 +235,149 @@ typedef struct config_var_t {
   confparse_dummy_values_t var_ptr_dummy;
 #endif
 } config_var_t;
+
+/**
+ * An abbreviation or alias for a configuration option.
+ **/
+typedef struct config_abbrev_t {
+  /** The option name as abbreviated.  Not case-sensitive. */
+  const char *abbreviated;
+  /** The full name of the option. Not case-sensitive. */
+  const char *full;
+  /** True if this abbreviation should only be allowed on the command line. */
+  int commandline_only;
+  /** True if we should warn whenever this abbreviation is used. */
+  int warn;
+} config_abbrev_t;
+
+/**
+ * A note that a configuration option is deprecated, with an explanation why.
+ */
+typedef struct config_deprecation_t {
+  /** The option that is deprecated. */
+  const char *name;
+  /** A user-facing string explaining why the option is deprecated. */
+  const char *why_deprecated;
+} config_deprecation_t;
+
+#ifndef COCCI
+/**
+ * Handy macro for declaring "In the config file or on the command line, you
+ * can abbreviate <b>tok</b>s as <b>tok</b>". Used inside an array of
+ * config_abbrev_t.
+ *
+ * For example, to declare "NumCpu" as an abbreviation for "NumCPUs",
+ * you can say PLURAL(NumCpu).
+ **/
+#define PLURAL(tok) { (#tok), (#tok "s"), 0, 0 }
+#endif /* !defined(COCCI) */
+
+/**
+ * Validation function: verify whether a configuration object is well-formed
+ * and consistent.
+ *
+ * On success, return 0.  On failure, set <b>msg_out</b> to a newly allocated
+ * string containing an error message, and return -1. */
+typedef int (*validate_fn_t)(const void *value, char **msg_out);
+/**
+ * Validation function: verify whether a configuration object (`value`) is an
+ * allowable value given the previous configuration value (`old_value`).
+ *
+ * On success, return 0.  On failure, set <b>msg_out</b> to a newly allocated
+ * string containing an error message, and return -1. */
+typedef int (*check_transition_fn_t)(const void *old_value, const void *value,
+                                     char **msg_out);
+/**
+ * Validation function: normalize members of `value`, and compute derived
+ * members.
+ *
+ * This function is called before any other validation of `value`, and must
+ * not assume that validate_fn or check_transition_fn has passed.
+ *
+ * On success, return 0.  On failure, set <b>msg_out</b> to a newly allocated
+ * string containing an error message, and return -1. */
+typedef int (*pre_normalize_fn_t)(void *value, char **msg_out);
+/**
+ * Validation function: normalize members of `value`, and compute derived
+ * members.
+ *
+ * This function is called after validation of `value`, and may
+ * assume that validate_fn or check_transition_fn has passed.
+ *
+ * On success, return 0.  On failure, set <b>msg_out</b> to a newly allocated
+ * string containing an error message, and return -1. */
+typedef int (*post_normalize_fn_t)(void *value, char **msg_out);
+
+/**
+ * Legacy function to validate whether a given configuration is
+ * well-formed and consistent.
+ *
+ * The configuration to validate is passed as <b>newval</b>. The previous
+ * configuration, if any, is provided in <b>oldval</b>.
+ *
+ * This API is deprecated, since it mixes the responsibilities of
+ * pre_normalize_fn_t, post_normalize_fn_t, validate_fn_t, and
+ * check_transition_fn_t.  No new instances of this function type should
+ * be written.
+ *
+ * On success, return 0.  On failure, set *<b>msg_out</b> to a newly allocated
+ * error message, and return -1.
+ */
+typedef int (*legacy_validate_fn_t)(const void *oldval,
+                                    void *newval,
+                                    char **msg_out);
+
+struct config_mgr_t;
+
+/**
+ * Callback to clear all non-managed fields of a configuration object.
+ *
+ * <b>obj</b> is the configuration object whose non-managed fields should be
+ * cleared.
+ *
+ * (Regular fields get cleared by config_reset(), but you might have fields
+ * in the object that do not correspond to configuration variables.  If those
+ * fields need to be cleared or freed, this is where to do it.)
+ */
+typedef void (*clear_cfg_fn_t)(const struct config_mgr_t *mgr, void *obj);
+
+/** Information on the keys, value types, key-to-struct-member mappings,
+ * variable descriptions, validation functions, and abbreviations for a
+ * configuration or storage format. */
+typedef struct config_format_t {
+  size_t size; /**< Size of the struct that everything gets parsed into. */
+  struct_magic_decl_t magic; /**< Magic number info for this struct. */
+  const config_abbrev_t *abbrevs; /**< List of abbreviations that we expand
+                             * when parsing this format. */
+  const config_deprecation_t *deprecations; /** List of deprecated options */
+  const config_var_t *vars; /**< List of variables we recognize, their default
+                             * values, and where we stick them in the
+                             * structure. */
+
+  /** Early-stage normalization callback. Invoked by config_validate(). */
+  pre_normalize_fn_t pre_normalize_fn;
+  /** Configuration validation function. Invoked by config_validate(). */
+  validate_fn_t validate_fn;
+    /** Legacy validation function. Invoked by config_validate(). */
+  legacy_validate_fn_t legacy_validate_fn;
+  /** Transition checking function. Invoked by config_validate(). */
+  check_transition_fn_t check_transition_fn;
+  /** Late-stage normalization callback. Invoked by config_validate(). */
+  post_normalize_fn_t post_normalize_fn;
+
+  clear_cfg_fn_t clear_fn; /**< Function to clear the configuration. */
+  /** If present, extra denotes a LINELIST variable for unrecognized
+   * lines.  Otherwise, unrecognized lines are an error. */
+  const struct_member_t *extra;
+  /**
+   * If true, this format describes a top-level configuration, with
+   * a suite containing multiple sub-configuration objects.
+   */
+  bool has_config_suite;
+  /** The position of a config_suite_t pointer within the toplevel object.
+   * Ignored unless have_config_suite is true.
+   */
+  ptrdiff_t config_suite_offset;
+} config_format_t;
 
 #endif /* !defined(TOR_SRC_LIB_CONF_CONFTYPES_H) */

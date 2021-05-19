@@ -1,6 +1,6 @@
 /* Copyright 2001-2004 Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -9,6 +9,11 @@
 
 #include <stdio.h>
 #include <string.h>
+
+/**
+ * @file version.c
+ * @brief Functions to get the version of Tor.
+ **/
 
 /** A shorter version of this Tor process's version, for export in our router
  *  descriptor.  (Does not include the git version, if any.) */
@@ -19,6 +24,10 @@ static const char the_short_tor_version[] =
 #endif
   "";
 
+/**
+ * Longest possible version length. We make this a constant so that we
+ * can statically allocate the_tor_version.
+ **/
 #define MAX_VERSION_LEN 128
 
 /** The version of this Tor process, possibly including git version */

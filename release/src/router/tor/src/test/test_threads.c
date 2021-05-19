@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -155,7 +155,7 @@ test_threads_basic(void *arg)
     tor_mutex_free(thread_test_start2_);
 }
 
-typedef struct cv_testinfo_s {
+typedef struct cv_testinfo_t {
   tor_cond_t *cond;
   tor_mutex_t *mutex;
   int value;

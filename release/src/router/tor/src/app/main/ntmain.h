@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -22,7 +22,8 @@ int nt_service_is_stopping(void);
 void nt_service_set_state(DWORD state);
 #else
 #define nt_service_is_stopping() 0
+#define nt_service_parse_options(a, b, c) (0)
+#define nt_service_set_state(s) STMT_NIL
 #endif /* defined(NT_SERVICE) */
 
 #endif /* !defined(TOR_NTMAIN_H) */
-

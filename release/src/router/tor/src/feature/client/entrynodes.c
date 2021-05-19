@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -47,8 +47,7 @@
  * As a persistent ordered list whose elements are taken from the
  * sampled set, we track a CONFIRMED GUARDS LIST.  A guard becomes
  * confirmed when we successfully build a circuit through it, and decide
- * to use that circuit.  We order the guards on this list by the order
- * in which they became confirmed.
+ * to use that circuit.
  *
  * And as a final group, we have an ordered list of PRIMARY GUARDS,
  * whose elements are taken from the filtered set. We prefer
@@ -59,7 +58,7 @@
  *
  * To build circuits, we take a primary guard if possible -- or a
  * reachable filtered confirmed guard if no primary guard is possible --
- * or a random reachable filtered guard otherwise.  If the guard is
+ * or the first (by sampled order) filtered guard otherwise.  If the guard is
  * primary, we can use the circuit immediately on success.  Otherwise,
  * the guard is now "pending" -- we won't use its circuit unless all
  * of the circuits we're trying to build through better guards have
@@ -92,14 +91,18 @@
  * [x] Whenever we remove a guard from the sample, remove it from the primary
  * and confirmed lists.
  *
- * [x] When we make a guard confirmed, update the primary list.
+ * [x] When we make a guard confirmed, update the primary list, and sort them
+ * by sampled order.
  *
  * [x] When we make a guard filtered or unfiltered, update the primary list.
  *
  * [x] When we are about to pick a guard, make sure that the primary list is
  * full.
  *
- * [x] Before calling sample_reachable_filtered_entry_guards(), make sure
+ * [x] When we update the confirmed list, or when we re-build the primary list
+ * and detect a change, we sort those lists by sampled_idx
+ *
+ * [x] Before calling first_reachable_filtered_entry_guard(), make sure
  * that the filtered, primary, and confirmed flags are up-to-date.
  *
  * [x] Call entry_guard_consider_retry every time we are about to check
@@ -114,7 +117,7 @@
 
 #include "core/or/or.h"
 #include "app/config/config.h"
-#include "lib/confmgt/confparse.h"
+#include "lib/confmgt/confmgt.h"
 #include "app/config/statefile.h"
 #include "core/mainloop/connection.h"
 #include "core/mainloop/mainloop.h"
@@ -172,6 +175,7 @@ static entry_guard_t *get_sampled_guard_by_bridge_addr(guard_selection_t *gs,
                                               const tor_addr_port_t *addrport);
 static int entry_guard_obeys_restriction(const entry_guard_t *guard,
                                          const entry_guard_restriction_t *rst);
+static int compare_guards_by_sampled_idx(const void **a_, const void **b_);
 
 /** Return 0 if we should apply guardfraction information found in the
  *  consensus. A specific consensus can be specified with the
@@ -338,7 +342,7 @@ entry_guard_get_pathbias_state(entry_guard_t *guard)
 
 HANDLE_IMPL(entry_guard, entry_guard_t, ATTR_UNUSED STATIC)
 
-/** Return an interval betweeen 'now' and 'max_backdate' seconds in the past,
+/** Return an interval between 'now' and 'max_backdate' seconds in the past,
  * chosen uniformly at random.  We use this before recording persistent
  * dates, so that we aren't leaking exactly when we recorded it.
  */
@@ -890,6 +894,7 @@ entry_guard_add_to_sample_impl(guard_selection_t *gs,
   tor_free(guard->sampled_by_version);
   guard->sampled_by_version = tor_strdup(VERSION);
   guard->currently_listed = 1;
+  guard->sampled_idx = gs->next_sampled_idx++;
   guard->confirmed_idx = -1;
 
   /* non-persistent fields */
@@ -901,6 +906,11 @@ entry_guard_add_to_sample_impl(guard_selection_t *gs,
   guard->in_selection = gs;
   entry_guard_set_filtered_flags(get_options(), gs, guard);
   entry_guards_changed_for_guard_selection(gs);
+
+  /* Just added this guard to the sampled set and hence it might be used as a
+   * guard in the future: send GUARD NEW control event. */
+  control_event_guard(guard->nickname, guard->identity, "NEW");
+
   return guard;
 }
 
@@ -1038,7 +1048,7 @@ get_max_sample_size(guard_selection_t *gs,
  * Return a smartlist of the all the guards that are not currently
  * members of the sample (GUARDS - SAMPLED_GUARDS).  The elements of
  * this list are node_t pointers in the non-bridge case, and
- * bridge_info_t pointers in the bridge case.  Set *<b>n_guards_out/b>
+ * bridge_info_t pointers in the bridge case.  Set *<b>n_guards_out</b>
  * to the number of guards that we found in GUARDS, including those
  * that were already sampled.
  */
@@ -1383,7 +1393,7 @@ sampled_guards_prune_obsolete_entries(guard_selection_t *gs,
 
     if (rmv) {
       ++n_changes;
-      SMARTLIST_DEL_CURRENT(gs->sampled_entry_guards, guard);
+      SMARTLIST_DEL_CURRENT_KEEPORDER(gs->sampled_entry_guards, guard);
       remove_guard_from_confirmed_and_primary_lists(gs, guard);
       entry_guard_free(guard);
     }
@@ -1456,7 +1466,7 @@ node_passes_guard_filter(const or_options_t *options,
       !routerset_contains_node(options->EntryNodes, node))
     return 0;
 
-  if (!fascist_firewall_allows_node(node, FIREWALL_OR_CONNECTION, 0))
+  if (!reachable_addr_allows_node(node, FIREWALL_OR_CONNECTION, 0))
     return 0;
 
   if (node_is_a_configured_bridge(node))
@@ -1482,7 +1492,7 @@ bridge_passes_guard_filter(const or_options_t *options,
   /* Ignore entrynodes */
   const tor_addr_port_t *addrport = bridge_get_addr_port(bridge);
 
-  if (!fascist_firewall_allows_address_addr(&addrport->addr,
+  if (!reachable_addr_allows_addr(&addrport->addr,
                                             addrport->port,
                                             FIREWALL_OR_CONNECTION,
                                             0, 0))
@@ -1544,7 +1554,7 @@ guard_in_node_family(const entry_guard_t *guard, const node_t *node)
     if (get_options()->EnforceDistinctSubnets && guard->bridge_addr) {
       tor_addr_t node_addr;
       node_get_addr(node, &node_addr);
-      if (addrs_in_same_network_family(&node_addr,
+      if (router_addrs_in_same_network(&node_addr,
                                        &guard->bridge_addr->addr)) {
         return 1;
       }
@@ -1566,12 +1576,12 @@ guard_create_exit_restriction(const uint8_t *exit_id)
 }
 
 /** If we have fewer than this many possible usable guards, don't set
- * MD-availability-based restrictions: we might blacklist all of them. */
+ * MD-availability-based restrictions: we might denylist all of them. */
 #define MIN_GUARDS_FOR_MD_RESTRICTION 10
 
 /** Return true if we should set md dirserver restrictions. We might not want
  *  to set those if our guard options are too restricted, since we don't want
- *  to blacklist all of them. */
+ *  to denylist all of them. */
 static int
 should_set_md_dirserver_restriction(void)
 {
@@ -1707,7 +1717,7 @@ entry_guards_update_filtered_sets(guard_selection_t *gs)
 }
 
 /**
- * Return a random guard from the reachable filtered sample guards
+ * Return the first sampled guard from the reachable filtered sample guards
  * in <b>gs</b>, subject to the exclusion rules listed in <b>flags</b>.
  * Return NULL if no such guard can be found.
  *
@@ -1718,7 +1728,7 @@ entry_guards_update_filtered_sets(guard_selection_t *gs)
  * violate it.
  **/
 STATIC entry_guard_t *
-sample_reachable_filtered_entry_guards(guard_selection_t *gs,
+first_reachable_filtered_entry_guard(guard_selection_t *gs,
                                        const entry_guard_restriction_t *rst,
                                        unsigned flags)
 {
@@ -1771,7 +1781,17 @@ sample_reachable_filtered_entry_guards(guard_selection_t *gs,
            flags, smartlist_len(reachable_filtered_sample));
 
   if (smartlist_len(reachable_filtered_sample)) {
-    result = smartlist_choose(reachable_filtered_sample);
+    /**
+     * Get the first guard of the filtered set builds from
+     * sampled_entry_guards. Proposal 310 suggests this design to overcome
+     * performance and security issues linked to the previous selection
+     * method. The guard selected here should be filtered out if this function
+     * is called again in the same context. I.e., if we filter guards to add
+     * them into some list X, then the guards from list X will be filtered out
+     * when this function is called again. Hence it requires setting exclude
+     * flags in a appropriate way (depending of the context of the caller).
+     */
+    result = smartlist_get(reachable_filtered_sample, 0);
     log_info(LD_GUARD, "  (Selected %s.)",
              result ? entry_guard_describe(result) : "<null>");
   }
@@ -1780,10 +1800,6 @@ sample_reachable_filtered_entry_guards(guard_selection_t *gs,
   return result;
 }
 
-/**
- * Helper: compare two entry_guard_t by their confirmed_idx values.
- * Used to sort the confirmed list.
- */
 static int
 compare_guards_by_confirmed_idx(const void **a_, const void **b_)
 {
@@ -1791,6 +1807,21 @@ compare_guards_by_confirmed_idx(const void **a_, const void **b_)
   if (a->confirmed_idx < b->confirmed_idx)
     return -1;
   else if (a->confirmed_idx > b->confirmed_idx)
+    return 1;
+  else
+    return 0;
+}
+/**
+ * Helper: compare two entry_guard_t by their sampled_idx values.
+ * Used to sort the sampled list
+ */
+static int
+compare_guards_by_sampled_idx(const void **a_, const void **b_)
+{
+  const entry_guard_t *a = *a_, *b = *b_;
+  if (a->sampled_idx < b->sampled_idx)
+    return -1;
+  else if (a->sampled_idx > b->sampled_idx)
     return 1;
   else
     return 0;
@@ -1811,7 +1842,7 @@ entry_guards_update_confirmed(guard_selection_t *gs)
   } SMARTLIST_FOREACH_END(guard);
 
   smartlist_sort(gs->confirmed_entry_guards, compare_guards_by_confirmed_idx);
-
+  /** Needed to keep a dense array of confirmed_idx */
   int any_changed = 0;
   SMARTLIST_FOREACH_BEGIN(gs->confirmed_entry_guards, entry_guard_t *, guard) {
     if (guard->confirmed_idx != guard_sl_idx) {
@@ -1821,6 +1852,8 @@ entry_guards_update_confirmed(guard_selection_t *gs)
   } SMARTLIST_FOREACH_END(guard);
 
   gs->next_confirmed_idx = smartlist_len(gs->confirmed_entry_guards);
+  // We need the confirmed list to always be give guards in sampled order
+  smartlist_sort(gs->confirmed_entry_guards, compare_guards_by_sampled_idx);
 
   if (any_changed) {
     entry_guards_changed_for_guard_selection(gs);
@@ -1849,6 +1882,9 @@ make_guard_confirmed(guard_selection_t *gs, entry_guard_t *guard)
 
   guard->confirmed_idx = gs->next_confirmed_idx++;
   smartlist_add(gs->confirmed_entry_guards, guard);
+  /** The confirmation ordering might not be the sample ording. We need to
+   * reorder */
+  smartlist_sort(gs->confirmed_entry_guards, compare_guards_by_sampled_idx);
 
   // This confirmed guard might kick something else out of the primary
   // guards.
@@ -1912,7 +1948,7 @@ entry_guards_update_primary(guard_selection_t *gs)
 
   /* Finally, fill out the list with sampled guards. */
   while (smartlist_len(new_primary_guards) < N_PRIMARY_GUARDS) {
-    entry_guard_t *guard = sample_reachable_filtered_entry_guards(gs, NULL,
+    entry_guard_t *guard = first_reachable_filtered_entry_guard(gs, NULL,
                                             SAMPLE_EXCLUDE_CONFIRMED|
                                             SAMPLE_EXCLUDE_PRIMARY|
                                             SAMPLE_NO_UPDATE_PRIMARY);
@@ -1943,6 +1979,7 @@ entry_guards_update_primary(guard_selection_t *gs)
                g->confirmed_idx >= 0 ? " (confirmed)" : "",
                g->is_filtered_guard ? "" : " (excluded by filter)");
     } SMARTLIST_FOREACH_END(g);
+    smartlist_sort(new_primary_guards, compare_guards_by_sampled_idx);
   }
 
   smartlist_free(old_primary_guards);
@@ -1974,10 +2011,12 @@ get_retry_schedule(time_t failing_since, time_t now,
   const struct {
     time_t maximum; int primary_delay; int nonprimary_delay;
   } delays[] = {
+    // clang-format off
     { SIX_HOURS,    10*60,  1*60*60 },
     { FOUR_DAYS,    90*60,  4*60*60 },
     { SEVEN_DAYS, 4*60*60, 18*60*60 },
     { TIME_MAX,   9*60*60, 36*60*60 }
+    // clang-format on
   };
 
   unsigned i;
@@ -2053,10 +2092,15 @@ select_primary_guard_for_circuit(guard_selection_t *gs,
 
   SMARTLIST_FOREACH_BEGIN(gs->primary_entry_guards, entry_guard_t *, guard) {
     entry_guard_consider_retry(guard);
-    if (! entry_guard_obeys_restriction(guard, rst))
+    if (!entry_guard_obeys_restriction(guard, rst)) {
+      log_info(LD_GUARD, "Entry guard %s doesn't obey restriction, we test the"
+          " next one", entry_guard_describe(guard));
       continue;
+    }
     if (guard->is_reachable != GUARD_REACHABLE_NO) {
       if (need_descriptor && !guard_has_descriptor(guard)) {
+        log_info(LD_GUARD, "Guard %s does not have a descriptor",
+            entry_guard_describe(guard));
         continue;
       }
       *state_out = GUARD_CIRC_STATE_USABLE_ON_COMPLETION;
@@ -2069,9 +2113,11 @@ select_primary_guard_for_circuit(guard_selection_t *gs,
 
   if (smartlist_len(usable_primary_guards)) {
     chosen_guard = smartlist_choose(usable_primary_guards);
+    log_info(LD_GUARD,
+        "Selected primary guard %s for circuit from a list size of %d.",
+        entry_guard_describe(chosen_guard),
+        smartlist_len(usable_primary_guards));
     smartlist_free(usable_primary_guards);
-    log_info(LD_GUARD, "Selected primary guard %s for circuit.",
-             entry_guard_describe(chosen_guard));
   }
 
   smartlist_free(usable_primary_guards);
@@ -2116,10 +2162,10 @@ select_confirmed_guard_for_circuit(guard_selection_t *gs,
 }
 
 /**
- * For use with a circuit, pick a confirmed usable filtered guard
- * at random. Update the <b>last_tried_to_connect</b> time and the
- * <b>is_pending</b> fields of the guard as appropriate. Set <b>state_out</b>
- * to the new guard-state of the circuit.
+ * For use with a circuit, pick a usable filtered guard. Update the
+ * <b>last_tried_to_connect</b> time and the <b>is_pending</b> fields of the
+ * guard as appropriate. Set <b>state_out</b> to the new guard-state of the
+ * circuit.
  */
 static entry_guard_t *
 select_filtered_guard_for_circuit(guard_selection_t *gs,
@@ -2132,7 +2178,7 @@ select_filtered_guard_for_circuit(guard_selection_t *gs,
   unsigned flags = 0;
   if (need_descriptor)
     flags |= SAMPLE_EXCLUDE_NO_DESCRIPTOR;
-  chosen_guard = sample_reachable_filtered_entry_guards(gs,
+  chosen_guard = first_reachable_filtered_entry_guard(gs,
                                                  rst,
                                                  SAMPLE_EXCLUDE_CONFIRMED |
                                                  SAMPLE_EXCLUDE_PRIMARY |
@@ -2146,7 +2192,7 @@ select_filtered_guard_for_circuit(guard_selection_t *gs,
   chosen_guard->last_tried_to_connect = approx_time();
   *state_out = GUARD_CIRC_STATE_USABLE_IF_NO_BETTER_GUARD;
   log_info(LD_GUARD, "No primary or confirmed guards available. Selected "
-           "random guard %s for circuit. Will try other guards before "
+           "guard %s for circuit. Will try other guards before "
            "using this circuit.",
            entry_guard_describe(chosen_guard));
   return chosen_guard;
@@ -2187,8 +2233,8 @@ select_entry_guard_for_circuit(guard_selection_t *gs,
   if (chosen_guard)
     return chosen_guard;
 
-  /* "Otherwise, if there is no such entry, select a member at
-      random from {USABLE_FILTERED_GUARDS}." */
+  /* "Otherwise, if there is no such entry, select a member
+   * {USABLE_FILTERED_GUARDS} following the sample ordering" */
   chosen_guard = select_filtered_guard_for_circuit(gs, usage, rst, state_out);
 
   if (chosen_guard == NULL) {
@@ -2218,6 +2264,9 @@ entry_guards_note_guard_failure(guard_selection_t *gs,
   if (guard->failing_since == 0)
     guard->failing_since = approx_time();
 
+  /* This guard not reachable: send GUARD DOWN event */
+  control_event_guard(guard->nickname, guard->identity, "DOWN");
+
   log_info(LD_GUARD, "Recorded failure for %s%sguard %s",
            guard->is_primary?"primary ":"",
            guard->confirmed_idx>=0?"confirmed ":"",
@@ -2243,6 +2292,11 @@ entry_guards_note_guard_success(guard_selection_t *gs,
   const time_t last_time_on_internet = gs->last_time_on_internet;
   gs->last_time_on_internet = approx_time();
 
+  /* If guard was not already marked as reachable, send a GUARD UP signal */
+  if (guard->is_reachable != GUARD_REACHABLE_YES) {
+    control_event_guard(guard->nickname, guard->identity, "UP");
+  }
+
   guard->is_reachable = GUARD_REACHABLE_YES;
   guard->failing_since = 0;
   guard->is_pending = 0;
@@ -2263,7 +2317,7 @@ entry_guards_note_guard_success(guard_selection_t *gs,
       break;
     default:
       tor_assert_nonfatal_unreached();
-      /* Fall through. */
+      FALLTHROUGH_UNLESS_ALL_BUGS_ARE_FATAL;
     case GUARD_CIRC_STATE_USABLE_IF_NO_BETTER_GUARD:
       if (guard->is_primary) {
         /* XXXX #20832 -- I don't actually like this logic. It seems to make
@@ -2771,10 +2825,12 @@ entry_guards_update_all(guard_selection_t *gs)
 
 /**
  * Return a newly allocated string for encoding the persistent parts of
- * <b>guard</b> to the state file.
+ * <b>guard</b> to the state file. <b>dense_sampled_idx</b> refers to the
+ * sampled_idx made dense for this <b>guard</b>. Encoding all guards should
+ * lead to a dense array of sampled_idx in the state file.
  */
 STATIC char *
-entry_guard_encode_for_state(entry_guard_t *guard)
+entry_guard_encode_for_state(entry_guard_t *guard, int dense_sampled_idx)
 {
   /*
    * The meta-format we use is K=V K=V K=V... where K can be any
@@ -2803,7 +2859,8 @@ entry_guard_encode_for_state(entry_guard_t *guard)
 
   format_iso_time_nospace(tbuf, guard->sampled_on_date);
   smartlist_add_asprintf(result, "sampled_on=%s", tbuf);
-
+  // Replacing the sampled_idx by dense array
+  smartlist_add_asprintf(result, "sampled_idx=%d", dense_sampled_idx);
   if (guard->sampled_by_version) {
     smartlist_add_asprintf(result, "sampled_by=%s",
                            guard->sampled_by_version);
@@ -2859,66 +2916,13 @@ entry_guard_encode_for_state(entry_guard_t *guard)
 }
 
 /**
- * Given a string generated by entry_guard_encode_for_state(), parse it
- * (if possible) and return an entry_guard_t object for it.  Return NULL
- * on complete failure.
+ * Extract key=val from the state string <b>s</b> and duplicate the value to
+ * some string target declared in entry_guard_parse_from_state
  */
-STATIC entry_guard_t *
-entry_guard_parse_from_state(const char *s)
+static void
+parse_from_state_set_vals(const char *s, smartlist_t *entries, smartlist_t
+    *extra, strmap_t *vals)
 {
-  /* Unrecognized entries get put in here. */
-  smartlist_t *extra = smartlist_new();
-
-  /* These fields get parsed from the string. */
-  char *in = NULL;
-  char *rsa_id = NULL;
-  char *nickname = NULL;
-  char *sampled_on = NULL;
-  char *sampled_by = NULL;
-  char *unlisted_since = NULL;
-  char *listed  = NULL;
-  char *confirmed_on = NULL;
-  char *confirmed_idx = NULL;
-  char *bridge_addr = NULL;
-
-  // pathbias
-  char *pb_use_attempts = NULL;
-  char *pb_use_successes = NULL;
-  char *pb_circ_attempts = NULL;
-  char *pb_circ_successes = NULL;
-  char *pb_successful_circuits_closed = NULL;
-  char *pb_collapsed_circuits = NULL;
-  char *pb_unusable_circuits = NULL;
-  char *pb_timeouts = NULL;
-
-  /* Split up the entries.  Put the ones we know about in strings and the
-   * rest in "extra". */
-  {
-    smartlist_t *entries = smartlist_new();
-
-    strmap_t *vals = strmap_new(); // Maps keyword to location
-#define FIELD(f) \
-    strmap_set(vals, #f, &f);
-    FIELD(in);
-    FIELD(rsa_id);
-    FIELD(nickname);
-    FIELD(sampled_on);
-    FIELD(sampled_by);
-    FIELD(unlisted_since);
-    FIELD(listed);
-    FIELD(confirmed_on);
-    FIELD(confirmed_idx);
-    FIELD(bridge_addr);
-    FIELD(pb_use_attempts);
-    FIELD(pb_use_successes);
-    FIELD(pb_circ_attempts);
-    FIELD(pb_circ_successes);
-    FIELD(pb_successful_circuits_closed);
-    FIELD(pb_collapsed_circuits);
-    FIELD(pb_unusable_circuits);
-    FIELD(pb_timeouts);
-#undef FIELD
-
     smartlist_split_string(entries, s, " ",
                            SPLIT_SKIP_SPACE|SPLIT_IGNORE_BLANK, 0);
 
@@ -2941,6 +2945,113 @@ entry_guard_parse_from_state(const char *s)
       tor_free(key);
       tor_free(entry);
     } SMARTLIST_FOREACH_END(entry);
+}
+
+/**
+ * Handle part of the parsing state file logic, focused on time related things
+ */
+static void
+parse_from_state_handle_time(entry_guard_t *guard, char *sampled_on, char
+    *unlisted_since, char *confirmed_on)
+{
+#define HANDLE_TIME(field) do {                                 \
+    if (field) {                                                \
+      int r = parse_iso_time_nospace(field, &field ## _time);   \
+      if (r < 0) {                                              \
+        log_warn(LD_CIRC, "Unable to parse %s %s from guard",   \
+                 #field, escaped(field));                       \
+        field##_time = -1;                                      \
+      }                                                         \
+    }                                                           \
+  } while (0)
+
+  time_t sampled_on_time = 0;
+  time_t unlisted_since_time = 0;
+  time_t confirmed_on_time = 0;
+
+  HANDLE_TIME(sampled_on);
+  HANDLE_TIME(unlisted_since);
+  HANDLE_TIME(confirmed_on);
+
+  if (sampled_on_time <= 0)
+    sampled_on_time = approx_time();
+  if (unlisted_since_time < 0)
+    unlisted_since_time = 0;
+  if (confirmed_on_time < 0)
+    confirmed_on_time = 0;
+
+  #undef HANDLE_TIME
+
+  guard->sampled_on_date = sampled_on_time;
+  guard->unlisted_since_date = unlisted_since_time;
+  guard->confirmed_on_date = confirmed_on_time;
+}
+
+/**
+ * Given a string generated by entry_guard_encode_for_state(), parse it
+ * (if possible) and return an entry_guard_t object for it.  Return NULL
+ * on complete failure.
+ */
+STATIC entry_guard_t *
+entry_guard_parse_from_state(const char *s)
+{
+  /* Unrecognized entries get put in here. */
+  smartlist_t *extra = smartlist_new();
+
+  /* These fields get parsed from the string. */
+  char *in = NULL;
+  char *rsa_id = NULL;
+  char *nickname = NULL;
+  char *sampled_on = NULL;
+  char *sampled_idx = NULL;
+  char *sampled_by = NULL;
+  char *unlisted_since = NULL;
+  char *listed  = NULL;
+  char *confirmed_on = NULL;
+  char *confirmed_idx = NULL;
+  char *bridge_addr = NULL;
+
+  // pathbias
+  char *pb_use_attempts = NULL;
+  char *pb_use_successes = NULL;
+  char *pb_circ_attempts = NULL;
+  char *pb_circ_successes = NULL;
+  char *pb_successful_circuits_closed = NULL;
+  char *pb_collapsed_circuits = NULL;
+  char *pb_unusable_circuits = NULL;
+  char *pb_timeouts = NULL;
+  int invalid_sampled_idx = get_max_sample_size_absolute();
+
+  /* Split up the entries.  Put the ones we know about in strings and the
+   * rest in "extra". */
+  {
+    smartlist_t *entries = smartlist_new();
+
+    strmap_t *vals = strmap_new(); // Maps keyword to location
+#define FIELD(f) \
+    strmap_set(vals, #f, &f);
+    FIELD(in);
+    FIELD(rsa_id);
+    FIELD(nickname);
+    FIELD(sampled_on);
+    FIELD(sampled_idx);
+    FIELD(sampled_by);
+    FIELD(unlisted_since);
+    FIELD(listed);
+    FIELD(confirmed_on);
+    FIELD(confirmed_idx);
+    FIELD(bridge_addr);
+    FIELD(pb_use_attempts);
+    FIELD(pb_use_successes);
+    FIELD(pb_circ_attempts);
+    FIELD(pb_circ_successes);
+    FIELD(pb_successful_circuits_closed);
+    FIELD(pb_collapsed_circuits);
+    FIELD(pb_unusable_circuits);
+    FIELD(pb_timeouts);
+#undef FIELD
+    /* Extract from s the key=val that we recognize, put the others in extra*/
+    parse_from_state_set_vals(s, entries, extra, vals);
 
     smartlist_free(entries);
     strmap_free(vals, NULL);
@@ -2988,43 +3099,12 @@ entry_guard_parse_from_state(const char *s)
   }
 
   /* Process the various time fields. */
-
-#define HANDLE_TIME(field) do {                                 \
-    if (field) {                                                \
-      int r = parse_iso_time_nospace(field, &field ## _time);   \
-      if (r < 0) {                                              \
-        log_warn(LD_CIRC, "Unable to parse %s %s from guard",   \
-                 #field, escaped(field));                       \
-        field##_time = -1;                                      \
-      }                                                         \
-    }                                                           \
-  } while (0)
-
-  time_t sampled_on_time = 0;
-  time_t unlisted_since_time = 0;
-  time_t confirmed_on_time = 0;
-
-  HANDLE_TIME(sampled_on);
-  HANDLE_TIME(unlisted_since);
-  HANDLE_TIME(confirmed_on);
-
-  if (sampled_on_time <= 0)
-    sampled_on_time = approx_time();
-  if (unlisted_since_time < 0)
-    unlisted_since_time = 0;
-  if (confirmed_on_time < 0)
-    confirmed_on_time = 0;
-
-  #undef HANDLE_TIME
-
-  guard->sampled_on_date = sampled_on_time;
-  guard->unlisted_since_date = unlisted_since_time;
-  guard->confirmed_on_date = confirmed_on_time;
+  parse_from_state_handle_time(guard, sampled_on, unlisted_since,
+      confirmed_on);
 
   /* Take sampled_by_version verbatim. */
   guard->sampled_by_version = sampled_by;
   sampled_by = NULL; /* prevent free */
-
   /* Listed is a boolean */
   if (listed && strcmp(listed, "0"))
     guard->currently_listed = 1;
@@ -3040,6 +3120,29 @@ entry_guard_parse_from_state(const char *s)
     } else {
       guard->confirmed_idx = (int)idx;
     }
+  }
+
+  if (sampled_idx) {
+    int ok = 1;
+    long idx = tor_parse_long(sampled_idx, 10, 0, INT_MAX, &ok, NULL);
+    if (!ok) {
+      log_warn(LD_GUARD, "Guard has invalid sampled_idx %s",
+          escaped(sampled_idx));
+      /* set it to a idx higher than the max sample size */
+      guard->sampled_idx = invalid_sampled_idx++;
+    } else {
+      guard->sampled_idx = (int)idx;
+    }
+  } else if (confirmed_idx) {
+    /* This state has been written by an older Tor version which did not have
+     * sample ordering  */
+
+    guard->sampled_idx = guard->confirmed_idx;
+  } else {
+    log_info(LD_GUARD, "The state file seems to be into a status that could"
+             " yield to weird entry node selection: we're missing both a"
+             " sampled_idx and a confirmed_idx.");
+    guard->sampled_idx = invalid_sampled_idx++;
   }
 
   /* Anything we didn't recognize gets crammed together */
@@ -3096,6 +3199,7 @@ entry_guard_parse_from_state(const char *s)
   tor_free(listed);
   tor_free(confirmed_on);
   tor_free(confirmed_idx);
+  tor_free(sampled_idx);
   tor_free(bridge_addr);
   tor_free(pb_use_attempts);
   tor_free(pb_use_successes);
@@ -3125,13 +3229,15 @@ entry_guards_update_guards_in_state(or_state_t *state)
   config_line_t **nextline = &lines;
 
   SMARTLIST_FOREACH_BEGIN(guard_contexts, guard_selection_t *, gs) {
+    int i = 0;
     SMARTLIST_FOREACH_BEGIN(gs->sampled_entry_guards, entry_guard_t *, guard) {
       if (guard->is_persistent == 0)
         continue;
       *nextline = tor_malloc_zero(sizeof(config_line_t));
       (*nextline)->key = tor_strdup("Guard");
-      (*nextline)->value = entry_guard_encode_for_state(guard);
+      (*nextline)->value = entry_guard_encode_for_state(guard, i);
       nextline = &(*nextline)->next;
+      i++;
     } SMARTLIST_FOREACH_END(guard);
   } SMARTLIST_FOREACH_END(gs);
 
@@ -3184,6 +3290,14 @@ entry_guards_load_guards_from_state(or_state_t *state, int set)
       tor_assert(gs);
       smartlist_add(gs->sampled_entry_guards, guard);
       guard->in_selection = gs;
+      /* Recompute the next_sampled_id from the state. We do not assume that
+       * sampled guards appear in the correct order within the file, and we
+       * need to know what would be the next sampled idx to give to any
+       * new sampled guard (i.e., max of guard->sampled_idx + 1)*/
+      if (gs->next_sampled_idx <= guard->sampled_idx) {
+        gs->next_sampled_idx = guard->sampled_idx + 1;
+      }
+
     } else {
       entry_guard_free(guard);
     }
@@ -3191,6 +3305,10 @@ entry_guards_load_guards_from_state(or_state_t *state, int set)
 
   if (set) {
     SMARTLIST_FOREACH_BEGIN(guard_contexts, guard_selection_t *, gs) {
+      /** Guards should be in sample order within the file, but it is maybe
+       * better NOT to assume that. Let's order them before updating lists
+       */
+      smartlist_sort(gs->sampled_entry_guards, compare_guards_by_sampled_idx);
       entry_guards_update_all(gs);
     } SMARTLIST_FOREACH_END(gs);
   }
@@ -3241,7 +3359,7 @@ get_guard_state_for_bridge_desc_fetch(const char *digest)
   }
 
   /* Update the guard last_tried_to_connect time since it's checked by the
-   * guard susbsystem. */
+   * guard subsystem. */
   guard->last_tried_to_connect = approx_time();
 
   /* Create the guard state */
@@ -3452,10 +3570,16 @@ entry_guards_update_state(or_state_t *state)
   entry_guards_dirty = 0;
 }
 
-/** Return true iff the circuit's guard can succeed that is can be used. */
+/** Return true iff the circuit's guard can succeed, that is, can be used. */
 int
 entry_guard_could_succeed(const circuit_guard_state_t *guard_state)
 {
+  if (get_options()->UseEntryGuards == 0) {
+    /* we're fine with this circuit's first hop, because we're not
+     * configured to use entry guards. */
+    return 1;
+  }
+
   if (!guard_state) {
     return 0;
   }

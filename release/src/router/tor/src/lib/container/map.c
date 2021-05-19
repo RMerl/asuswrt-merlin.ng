@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -85,21 +85,21 @@ digest256map_entry_hash(const digest256map_entry_t *a)
 }
 
 HT_PROTOTYPE(strmap_impl, strmap_entry_t, node, strmap_entry_hash,
-             strmap_entries_eq)
+             strmap_entries_eq);
 HT_GENERATE2(strmap_impl, strmap_entry_t, node, strmap_entry_hash,
-             strmap_entries_eq, 0.6, tor_reallocarray_, tor_free_)
+             strmap_entries_eq, 0.6, tor_reallocarray_, tor_free_);
 
 HT_PROTOTYPE(digestmap_impl, digestmap_entry_t, node, digestmap_entry_hash,
-             digestmap_entries_eq)
+             digestmap_entries_eq);
 HT_GENERATE2(digestmap_impl, digestmap_entry_t, node, digestmap_entry_hash,
-             digestmap_entries_eq, 0.6, tor_reallocarray_, tor_free_)
+             digestmap_entries_eq, 0.6, tor_reallocarray_, tor_free_);
 
 HT_PROTOTYPE(digest256map_impl, digest256map_entry_t, node,
              digest256map_entry_hash,
-             digest256map_entries_eq)
+             digest256map_entries_eq);
 HT_GENERATE2(digest256map_impl, digest256map_entry_t, node,
              digest256map_entry_hash,
-             digest256map_entries_eq, 0.6, tor_reallocarray_, tor_free_)
+             digest256map_entries_eq, 0.6, tor_reallocarray_, tor_free_);
 
 #define strmap_entry_free(ent) \
   FREE_AND_NULL(strmap_entry_t, strmap_entry_free_, (ent))

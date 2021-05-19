@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019, The Tor Project, Inc. */
+/* Copyright (c) 2018-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -8,6 +8,7 @@
 #include "core/or/or.h"
 
 #include "feature/dirauth/voteflags.h"
+#include "feature/dirauth/dirauth_options_st.h"
 #include "feature/nodelist/node_st.h"
 #include "feature/nodelist/routerstatus_st.h"
 #include "feature/nodelist/routerinfo_st.h"
@@ -15,6 +16,7 @@
 #include "app/config/config.h"
 
 #include "test/test.h"
+#include "test/opts_test_helpers.h"
 
 typedef struct {
   time_t now;
@@ -40,10 +42,10 @@ setup_cfg(flag_vote_test_cfg_t *c)
   c->ri.cache_info.published_on = c->now - 100;
   c->expected.published_on = c->now - 100;
 
-  c->ri.addr = 0x7f010105;
-  c->expected.addr = 0x7f010105;
-  c->ri.or_port = 9090;
-  c->expected.or_port = 9090;
+  tor_addr_from_ipv4h(&c->ri.ipv4_addr, 0x7f010105);
+  tor_addr_from_ipv4h(&c->expected.ipv4_addr, 0x7f010105);
+  c->ri.ipv4_orport = 9090;
+  c->expected.ipv4_orport = 9090;
 
   tor_addr_make_null(&c->ri.ipv6_addr, AF_INET6);
   tor_addr_make_null(&c->expected.ipv6_addr, AF_INET6);
@@ -67,9 +69,9 @@ check_result(flag_vote_test_cfg_t *c)
 
   // identity_digest and descriptor_digest are not set here.
 
-  tt_uint_op(rs.addr, OP_EQ, c->expected.addr);
-  tt_uint_op(rs.or_port, OP_EQ, c->expected.or_port);
-  tt_uint_op(rs.dir_port, OP_EQ, c->expected.dir_port);
+  tt_assert(tor_addr_eq(&rs.ipv4_addr, &c->expected.ipv4_addr));
+  tt_uint_op(rs.ipv4_orport, OP_EQ, c->expected.ipv4_orport);
+  tt_uint_op(rs.ipv4_dirport, OP_EQ, c->expected.ipv4_dirport);
 
   tt_assert(tor_addr_eq(&rs.ipv6_addr, &c->expected.ipv6_addr));
   tt_uint_op(rs.ipv6_orport, OP_EQ, c->expected.ipv6_orport);
@@ -119,7 +121,7 @@ test_voting_flags_ipv6(void *arg)
   if (!check_result(cfg))
     goto done;
 
-  get_options_mutable()->AuthDirHasIPv6Connectivity = 1;
+  get_dirauth_options(get_options_mutable())->AuthDirHasIPv6Connectivity = 1;
   // no change in expected results, since last_reachable6 won't be set.
   if (!check_result(cfg))
     goto done;

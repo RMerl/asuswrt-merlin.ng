@@ -1,10 +1,10 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
- * \file routerlist.h
+ * \file routerset.h
  * \brief Header file for routerset.c
  **/
 
@@ -46,6 +46,7 @@ int routerset_len(const routerset_t *set);
 
 struct var_type_def_t;
 extern const struct var_type_def_t ROUTERSET_type_defn;
+typedef routerset_t *config_decl_ROUTERSET;
 
 #ifdef ROUTERSET_PRIVATE
 #include "lib/container/bitarray.h"
@@ -87,6 +88,10 @@ struct routerset_t {
    * routerset_refresh_countries() whenever the geoip country list is
    * reloaded. */
   bitarray_t *countries;
+  /** If true, subsequent assignments to this routerset should replace
+   * it, not extend it.  Set only on the first item in a routerset in an
+   * or_options_t. */
+  unsigned int fragile:1;
 };
 #endif /* defined(ROUTERSET_PRIVATE) */
 #endif /* !defined(TOR_ROUTERSET_H) */

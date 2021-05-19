@@ -1,14 +1,20 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
+
+/**
+ * @file node_st.h
+ * @brief Node information structure.
+ **/
 
 #ifndef NODE_ST_H
 #define NODE_ST_H
 
 #include "feature/hs/hsdir_index_st.h"
 #include "lib/crypt_ops/crypto_ed25519.h"
+#include "ext/ht.h"
 
 /** A node_t represents a Tor router.
  *
@@ -78,12 +84,11 @@ struct node_t {
 
   /* Local info: derived. */
 
-  /** True if the IPv6 OR port is preferred over the IPv4 OR port.
-   * XX/teor - can this become out of date if the torrc changes? */
+  /** True if the IPv6 OR port is preferred over the IPv4 OR port. */
   unsigned int ipv6_preferred:1;
 
   /** According to the geoip db what country is this router in? */
-  /* XXXprop186 what is this suppose to mean with multiple OR ports? */
+  /* IPv6: what is this supposed to mean with multiple OR ports? */
   country_t country;
 
   /* The below items are used only by authdirservers for

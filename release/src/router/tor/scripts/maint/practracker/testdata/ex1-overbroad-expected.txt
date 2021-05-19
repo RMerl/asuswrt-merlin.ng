@@ -1,2 +1,4 @@
-problem file-size a.c 40 -> 38
+Unusual pattern permitted.h in scripts/maint/practracker/testdata
+problem file-size a.c 45 -> 41
 problem file-size z.c 100 -> 0
+practracker exit status: 3

@@ -1,10 +1,15 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2018, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #ifndef NAMEMAP_ST_H
 #define NAMEMAP_ST_H
+
+/**
+ * @file namemap_st.h
+ * @brief Internal declarations for namemap structure.
+ **/
 
 #include "lib/cc/compat_compiler.h"
 #include "ext/ht.h"
@@ -28,7 +33,9 @@ struct namemap_t {
   struct smartlist_t *names;
 };
 
+#ifndef COCCI
 /** Macro to initialize a namemap. */
 #define NAMEMAP_INIT() { HT_INITIALIZER(), NULL }
+#endif
 
 #endif /* !defined(NAMEMAP_ST_H) */

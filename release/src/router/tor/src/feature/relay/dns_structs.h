@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2019, The Tor Project, Inc. */
+ * Copyright (c) 2007-2020, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -12,6 +12,8 @@
 
 #ifndef TOR_DNS_STRUCTS_H
 #define TOR_DNS_STRUCTS_H
+
+#include "ext/ht.h"
 
 /** Longest hostname we're willing to resolve. */
 #define MAX_ADDRESSLEN 256
@@ -99,4 +101,3 @@ typedef struct cached_resolve_t {
 } cached_resolve_t;
 
 #endif /* !defined(TOR_DNS_STRUCTS_H) */
-

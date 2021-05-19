@@ -2,12 +2,18 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.3 (xx-xxx-xxxx)
+  - NOTE: First time you boot into this version, you need to
+          either shift-reload the main index page, or clear
+          your browser cache.
+
   - NEW: Added QR codes to the networkmap as well as the Guest
          Network page, to allow easily connecting a mobile
          device just by scanning the QR code.
          The generated QR code can also be saved as a file
          if you'd like to print it.
   - UPDATED: chart.js to 2.9.4.
+  - UPDATED: tor to 0.4.5.8.
+  - UPDATED: nano to 5.7.
 
 
 386.2_4 (30-Apr-2021)

@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at https://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -85,7 +85,7 @@ static char *max5data(curl_off_t bytes, char *max5)
               CURL_FORMAT_CURL_OFF_T "M", bytes/ONE_MEGABYTE,
               (bytes%ONE_MEGABYTE) / (ONE_MEGABYTE/CURL_OFF_T_C(10)) );
 
-#if (CURL_SIZEOF_CURL_OFF_T > 4)
+#if (SIZEOF_CURL_OFF_T > 4)
 
   else if(bytes < CURL_OFF_T_C(10000) * ONE_MEGABYTE)
     /* 'XXXXM' is good until we're at 10000MB or above */
@@ -137,12 +137,11 @@ static char *max5data(curl_off_t bytes, char *max5)
 
 */
 
-int Curl_pgrsDone(struct connectdata *conn)
+int Curl_pgrsDone(struct Curl_easy *data)
 {
   int rc;
-  struct Curl_easy *data = conn->data;
   data->progress.lastshow = 0;
-  rc = Curl_pgrsUpdate(conn); /* the final (forced) update */
+  rc = Curl_pgrsUpdate(data); /* the final (forced) update */
   if(rc)
     return rc;
 
@@ -164,9 +163,13 @@ void Curl_pgrsResetTransferSizes(struct Curl_easy *data)
 }
 
 /*
+ *
+ * Curl_pgrsTime(). Store the current time at the given label. This fetches a
+ * fresh "now" and returns it.
+ *
  * @unittest: 1399
  */
-void Curl_pgrsTime(struct Curl_easy *data, timerid timer)
+struct curltime Curl_pgrsTime(struct Curl_easy *data, timerid timer)
 {
   struct curltime now = Curl_now();
   timediff_t *delta = NULL;
@@ -209,7 +212,7 @@ void Curl_pgrsTime(struct Curl_easy *data, timerid timer)
      * changing the t_starttransfer time.
      */
     if(data->progress.is_t_startransfer_set) {
-      return;
+      return now;
     }
     else {
       data->progress.is_t_startransfer_set = true;
@@ -228,6 +231,7 @@ void Curl_pgrsTime(struct Curl_easy *data, timerid timer)
       us = 1; /* make sure at least one microsecond passed */
     *delta += us;
   }
+  return now;
 }
 
 void Curl_pgrsStartNow(struct Curl_easy *data)
@@ -235,10 +239,8 @@ void Curl_pgrsStartNow(struct Curl_easy *data)
   data->progress.speeder_c = 0; /* reset the progress meter display */
   data->progress.start = Curl_now();
   data->progress.is_t_startransfer_set = false;
-  data->progress.ul_limit_start.tv_sec = 0;
-  data->progress.ul_limit_start.tv_usec = 0;
-  data->progress.dl_limit_start.tv_sec = 0;
-  data->progress.dl_limit_start.tv_usec = 0;
+  data->progress.ul_limit_start = data->progress.start;
+  data->progress.dl_limit_start = data->progress.start;
   data->progress.downloaded = 0;
   data->progress.uploaded = 0;
   /* clear all bits except HIDE and HEADERS_OUT */
@@ -319,14 +321,14 @@ void Curl_pgrsSetDownloadCounter(struct Curl_easy *data, curl_off_t size)
 void Curl_ratelimit(struct Curl_easy *data, struct curltime now)
 {
   /* don't set a new stamp unless the time since last update is long enough */
-  if(data->set.max_recv_speed > 0) {
+  if(data->set.max_recv_speed) {
     if(Curl_timediff(now, data->progress.dl_limit_start) >=
        MIN_RATE_LIMIT_PERIOD) {
       data->progress.dl_limit_start = now;
       data->progress.dl_limit_size = data->progress.downloaded;
     }
   }
-  if(data->set.max_send_speed > 0) {
+  if(data->set.max_send_speed) {
     if(Curl_timediff(now, data->progress.ul_limit_start) >=
        MIN_RATE_LIMIT_PERIOD) {
       data->progress.ul_limit_start = now;
@@ -368,11 +370,10 @@ void Curl_pgrsSetUploadSize(struct Curl_easy *data, curl_off_t size)
 }
 
 /* returns TRUE if it's time to show the progress meter */
-static bool progress_calc(struct connectdata *conn, struct curltime now)
+static bool progress_calc(struct Curl_easy *data, struct curltime now)
 {
   curl_off_t timespent;
   curl_off_t timespent_ms; /* milliseconds */
-  struct Curl_easy *data = conn->data;
   curl_off_t dl = data->progress.downloaded;
   curl_off_t ul = data->progress.uploaded;
   bool timetoshow = FALSE;
@@ -462,9 +463,8 @@ static bool progress_calc(struct connectdata *conn, struct curltime now)
 }
 
 #ifndef CURL_DISABLE_PROGRESS_METER
-static void progress_meter(struct connectdata *conn)
+static void progress_meter(struct Curl_easy *data)
 {
-  struct Curl_easy *data = conn->data;
   char max5[6][10];
   curl_off_t dlpercen = 0;
   curl_off_t ulpercen = 0;
@@ -578,11 +578,10 @@ static void progress_meter(struct connectdata *conn)
  * Curl_pgrsUpdate() returns 0 for success or the value returned by the
  * progress callback!
  */
-int Curl_pgrsUpdate(struct connectdata *conn)
+int Curl_pgrsUpdate(struct Curl_easy *data)
 {
-  struct Curl_easy *data = conn->data;
   struct curltime now = Curl_now(); /* what time is it */
-  bool showprogress = progress_calc(conn, now);
+  bool showprogress = progress_calc(data, now);
   if(!(data->progress.flags & PGRS_HIDE)) {
     if(data->set.fxferinfo) {
       int result;
@@ -618,7 +617,7 @@ int Curl_pgrsUpdate(struct connectdata *conn)
     }
 
     if(showprogress)
-      progress_meter(conn);
+      progress_meter(data);
   }
 
   return 0;

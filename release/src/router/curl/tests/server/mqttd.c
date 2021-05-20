@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at https://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -213,12 +213,10 @@ static void logprotocol(mqttdir dir,
   ssize_t i;
   unsigned char *ptr = buffer;
   char *optr = data;
-  ssize_t width = 0;
   int left = sizeof(data);
 
   for(i = 0; i<len && (left >= 0); i++) {
     msnprintf(optr, left, "%02x", ptr[i]);
-    width += 2;
     optr += 2;
     left -= 2;
   }
@@ -486,6 +484,7 @@ static curl_socket_t mqttit(curl_socket_t fd)
   size_t bytes = 0; /* remaining length field size in bytes */
   char client_id[MAX_CLIENT_ID_LENGTH];
   long testno;
+  FILE *stream = NULL;
 
   static const char protocol[7] = {
     0x00, 0x04,       /* protocol length */
@@ -536,7 +535,7 @@ static curl_socket_t mqttit(curl_socket_t fd)
         logmsg("Too large client id");
         goto end;
       }
-      memcpy(client_id, &buffer[14], payload_len);
+      memcpy(client_id, &buffer[12], payload_len);
       client_id[payload_len] = 0;
 
       logmsg("MQTT client connect accepted: %s", client_id);
@@ -550,7 +549,6 @@ static curl_socket_t mqttit(curl_socket_t fd)
       }
     }
     else if(byte == MQTT_MSG_SUBSCRIBE) {
-      FILE *stream;
       int error;
       char *data;
       size_t datalen;
@@ -636,7 +634,10 @@ static curl_socket_t mqttit(curl_socket_t fd)
   } while(1);
 
   end:
-  fclose(dump);
+  if(dump)
+    fclose(dump);
+  if(stream)
+    fclose(stream);
   return CURL_SOCKET_BAD;
 }
 

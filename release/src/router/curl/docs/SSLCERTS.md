@@ -60,8 +60,8 @@ server, do one of the following:
     With the curl command line tool: --cacert [file]
 
  3. Add the CA cert for your server to the existing default CA certificate
-    store. The default CA certificate store can changed at compile time with the
-    following configure options:
+    store. The default CA certificate store can be changed at compile time with
+    the following configure options:
 
     --with-ca-bundle=FILE: use the specified file as CA certificate store. CA
     certificates need to be concatenated in PEM format into this file.
@@ -119,7 +119,7 @@ server, do one of the following:
  5. Get a better/different/newer CA cert bundle! One option is to extract the
     one a recent Firefox browser uses by running 'make ca-bundle' in the curl
     build tree root, or possibly download a version that was generated this
-    way for you: [CA Extract](https://curl.haxx.se/docs/caextract.html)
+    way for you: [CA Extract](https://curl.se/docs/caextract.html)
 
 Neglecting to use one of the above methods when dealing with a server using a
 certificate that isn't signed by one of the certificates in the installed CA

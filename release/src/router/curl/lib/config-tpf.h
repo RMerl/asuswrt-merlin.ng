@@ -7,11 +7,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at https://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -561,7 +561,7 @@
 
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT \
-  "a suitable curl mailing list => https://curl.haxx.se/mail/"
+  "a suitable curl mailing list => https://curl.se/mail/"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "curl"
@@ -577,9 +577,6 @@
 
 /* a suitable file to read random data from */
 /* #undef RANDOM_FILE */
-
-/* Define as the return type of signal handlers (`int' or `void'). */
-#define RETSIGTYPE void
 
 /* Define to the type of arg 1 for `select'. */
 #define SELECT_TYPE_ARG1 int
@@ -616,9 +613,6 @@
 
 /* Define if you want to enable ares support */
 /* #undef USE_ARES */
-
-/* Define to disable non-blocking sockets */
-/* #undef USE_BLOCKING_SOCKETS */
 
 /* if GnuTLS is enabled */
 /* #undef USE_GNUTLS */

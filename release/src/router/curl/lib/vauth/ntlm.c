@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at https://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -63,10 +63,6 @@
 
 /* "NTLMSSP" signature is always in ASCII regardless of the platform */
 #define NTLMSSP_SIGNATURE "\x4e\x54\x4c\x4d\x53\x53\x50"
-
-#define SHORTPAIR(x) ((int)((x) & 0xff)), ((int)(((x) >> 8) & 0xff))
-#define LONGQUARTET(x) ((int)((x) & 0xff)), ((int)(((x) >> 8) & 0xff)), \
-  ((int)(((x) >> 16) & 0xff)), ((int)(((x) >> 24) & 0xff))
 
 #if DEBUG_ME
 # define DEBUG_OUT(x) x
@@ -407,7 +403,8 @@ CURLcode Curl_auth_create_ntlm_type1_message(struct Curl_easy *data,
   /* Clean up any former leftovers and initialise to defaults */
   Curl_auth_cleanup_ntlm(ntlm);
 
-#if defined(USE_NTRESPONSES) && defined(USE_NTLM2SESSION)
+#if defined(USE_NTRESPONSES) && \
+    (defined(USE_NTLM2SESSION) || defined(USE_NTLM_V2))
 #define NTLM2FLAG NTLMFLAG_NEGOTIATE_NTLM2_KEY
 #else
 #define NTLM2FLAG 0
@@ -497,7 +494,6 @@ CURLcode Curl_auth_create_ntlm_type3_message(struct Curl_easy *data,
                                              const char *passwdp,
                                              struct ntlmdata *ntlm,
                                              char **outptr, size_t *outlen)
-
 {
   /* NTLM type-3 message structure:
 
@@ -564,12 +560,20 @@ CURLcode Curl_auth_create_ntlm_type3_message(struct Curl_easy *data,
     hostlen = strlen(host);
   }
 
-#if defined(USE_NTRESPONSES) && defined(USE_NTLM_V2)
+#if defined(USE_NTRESPONSES) && \
+    (defined(USE_NTLM2SESSION) || defined(USE_NTLM_V2))
+  /* We don't support NTLM2 or extended security if we don't have
+     USE_NTRESPONSES */
   if(ntlm->flags & NTLMFLAG_NEGOTIATE_NTLM2_KEY) {
+# if defined(USE_NTLM_V2)
     unsigned char ntbuffer[0x18];
     unsigned char entropy[8];
     unsigned char ntlmv2hash[0x18];
 
+    /* Full NTLM version 2
+       Although this cannot be negotiated, it is used here if available, as
+       servers featuring extended security are likely supporting also
+       NTLMv2. */
     result = Curl_rand(data, entropy, 8);
     if(result)
       return result;
@@ -596,20 +600,13 @@ CURLcode Curl_auth_create_ntlm_type3_message(struct Curl_easy *data,
       return result;
 
     ptr_ntresp = ntlmv2resp;
-  }
-  else
-#endif
-
-#if defined(USE_NTRESPONSES) && defined(USE_NTLM2SESSION)
-
-#define CURL_MD5_DIGEST_LENGTH 16 /* fixed size */
-
-  /* We don't support NTLM2 if we don't have USE_NTRESPONSES */
-  if(ntlm->flags & NTLMFLAG_NEGOTIATE_NTLM_KEY) {
+# else /* defined(USE_NTLM_V2) */
     unsigned char ntbuffer[0x18];
     unsigned char tmp[0x18];
-    unsigned char md5sum[CURL_MD5_DIGEST_LENGTH];
+    unsigned char md5sum[MD5_DIGEST_LEN];
     unsigned char entropy[8];
+
+    /* NTLM version 1 with extended security. */
 
     /* Need to create 8 bytes random data */
     result = Curl_rand(data, entropy, 8);
@@ -640,6 +637,7 @@ CURLcode Curl_auth_create_ntlm_type3_message(struct Curl_easy *data,
     /* NTLM v2 session security is a misnomer because it is not NTLM v2.
        It is NTLM v1 using the extended session security that is also
        in NTLM v2 */
+# endif /* defined(USE_NTLM_V2) */
   }
   else
 #endif
@@ -649,6 +647,8 @@ CURLcode Curl_auth_create_ntlm_type3_message(struct Curl_easy *data,
     unsigned char ntbuffer[0x18];
 #endif
     unsigned char lmbuffer[0x18];
+
+    /* NTLM version 1 */
 
 #ifdef USE_NTRESPONSES
     result = Curl_ntlm_core_mk_nt_hash(data, passwdp, ntbuffer);
@@ -663,6 +663,7 @@ CURLcode Curl_auth_create_ntlm_type3_message(struct Curl_easy *data,
       return result;
 
     Curl_ntlm_core_lm_resp(lmbuffer, &ntlm->nonce[0], lmresp);
+    ntlm->flags &= ~NTLMFLAG_NEGOTIATE_NTLM2_KEY;
 
     /* A safer but less compatible alternative is:
      *   Curl_ntlm_core_lm_resp(ntbuffer, &ntlm->nonce[0], lmresp);

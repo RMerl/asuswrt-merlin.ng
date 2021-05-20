@@ -5,11 +5,11 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
-# are also available at https://curl.haxx.se/docs/copyright.html.
+# are also available at https://curl.se/docs/copyright.html.
 #
 # You may opt to use, copy, modify, merge, publish, distribute and/or sell
 # copies of the Software, and permit persons to whom the Software is
@@ -57,12 +57,14 @@ man_MANS =                                      \
   CURLINFO_PRIMARY_PORT.3                       \
   CURLINFO_PRIVATE.3                            \
   CURLINFO_PROTOCOL.3                           \
-  CURLINFO_PROXYAUTH_AVAIL.3                    \
+  CURLINFO_PROXY_ERROR.3                        \
   CURLINFO_PROXY_SSL_VERIFYRESULT.3             \
+  CURLINFO_PROXYAUTH_AVAIL.3                    \
   CURLINFO_REDIRECT_COUNT.3                     \
   CURLINFO_REDIRECT_TIME.3                      \
   CURLINFO_REDIRECT_TIME_T.3                    \
   CURLINFO_REDIRECT_URL.3                       \
+  CURLINFO_REFERER.3                            \
   CURLINFO_REQUEST_SIZE.3                       \
   CURLINFO_RESPONSE_CODE.3                      \
   CURLINFO_RETRY_AFTER.3                        \
@@ -149,6 +151,9 @@ man_MANS =                                      \
   CURLOPT_DNS_SERVERS.3                         \
   CURLOPT_DNS_SHUFFLE_ADDRESSES.3               \
   CURLOPT_DNS_USE_GLOBAL_CACHE.3                \
+  CURLOPT_DOH_SSL_VERIFYHOST.3                  \
+  CURLOPT_DOH_SSL_VERIFYPEER.3                  \
+  CURLOPT_DOH_SSL_VERIFYSTATUS.3                \
   CURLOPT_DOH_URL.3                             \
   CURLOPT_EGDSOCKET.3                           \
   CURLOPT_ERRORBUFFER.3                         \
@@ -179,6 +184,12 @@ man_MANS =                                      \
   CURLOPT_HEADERDATA.3                          \
   CURLOPT_HEADERFUNCTION.3                      \
   CURLOPT_HEADEROPT.3                           \
+  CURLOPT_HSTS.3                                \
+  CURLOPT_HSTSREADDATA.3                        \
+  CURLOPT_HSTSREADFUNCTION.3                    \
+  CURLOPT_HSTSWRITEDATA.3                       \
+  CURLOPT_HSTSWRITEFUNCTION.3                   \
+  CURLOPT_HSTS_CTRL.3                           \
   CURLOPT_HTTP09_ALLOWED.3                      \
   CURLOPT_HTTP200ALIASES.3                      \
   CURLOPT_HTTPAUTH.3                            \
@@ -330,6 +341,7 @@ man_MANS =                                      \
   CURLOPT_SSL_CIPHER_LIST.3                     \
   CURLOPT_SSL_CTX_DATA.3                        \
   CURLOPT_SSL_CTX_FUNCTION.3                    \
+  CURLOPT_SSL_EC_CURVES.3			\
   CURLOPT_SSL_ENABLE_ALPN.3                     \
   CURLOPT_SSL_ENABLE_NPN.3                      \
   CURLOPT_SSL_FALSESTART.3                      \
@@ -374,6 +386,7 @@ man_MANS =                                      \
   CURLOPT_USERNAME.3                            \
   CURLOPT_USERPWD.3                             \
   CURLOPT_USE_SSL.3                             \
+  CURLOPT_AWS_SIGV4.3                           \
   CURLOPT_VERBOSE.3                             \
   CURLOPT_WILDCARDMATCH.3                       \
   CURLOPT_WRITEDATA.3                           \

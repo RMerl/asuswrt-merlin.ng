@@ -9,7 +9,7 @@
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
-.\" * are also available at https://curl.haxx.se/docs/copyright.html.
+.\" * are also available at https://curl.se/docs/copyright.html.
 .\" *
 .\" * You may opt to use, copy, modify, merge, publish, distribute and/or sell
 .\" * copies of the Software, and permit persons to whom the Software is
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_CONTENT_LENGTH_UPLOAD_T 3 "March 23, 2020" "libcurl 7.72.0" "curl_easy_getinfo options"
+.TH CURLINFO_CONTENT_LENGTH_UPLOAD_T 3 "November 04, 2020" "libcurl 7.76.1" "curl_easy_getinfo options"
 
 .SH NAME
 CURLINFO_CONTENT_LENGTH_UPLOAD_T \- get the specified size of the upload
@@ -38,7 +38,7 @@ All
 .nf
 CURL *curl = curl_easy_init();
 if(curl) {
-  curl_easy_setopt(curl, CURLOPT_URL, "http://example.com");
+  curl_easy_setopt(curl, CURLOPT_URL, "https://example.com");
 
   /* Perform the upload */
   res = curl_easy_perform(curl);

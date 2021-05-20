@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at https://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -167,8 +167,8 @@ void win32_init(void)
   WORD wVersionRequested;
   WSADATA wsaData;
   int err;
-  wVersionRequested = MAKEWORD(USE_WINSOCK, USE_WINSOCK);
 
+  wVersionRequested = MAKEWORD(2, 2);
   err = WSAStartup(wVersionRequested, &wsaData);
 
   if(err != 0) {
@@ -177,8 +177,8 @@ void win32_init(void)
     exit(1);
   }
 
-  if(LOBYTE(wsaData.wVersion) != USE_WINSOCK ||
-     HIBYTE(wsaData.wVersion) != USE_WINSOCK) {
+  if(LOBYTE(wsaData.wVersion) != LOBYTE(wVersionRequested) ||
+     HIBYTE(wsaData.wVersion) != HIBYTE(wVersionRequested) ) {
     WSACleanup();
     perror("Winsock init failed");
     logmsg("No suitable winsock.dll found -- aborting");
@@ -543,7 +543,7 @@ long timediff(struct timeval newer, struct timeval older)
 
 /* vars used to keep around previous signal handlers */
 
-typedef RETSIGTYPE (*SIGHANDLER_T)(int);
+typedef void (*SIGHANDLER_T)(int);
 
 #ifdef SIGHUP
 static SIGHANDLER_T old_sighup_handler  = SIG_ERR;
@@ -591,7 +591,7 @@ HANDLE exit_event = NULL;
  * The first time this is called it will set got_exit_signal to one and
  * store in exit_signal the signal that triggered its execution.
  */
-static RETSIGTYPE exit_signal_handler(int signum)
+static void exit_signal_handler(int signum)
 {
   int old_errno = errno;
   logmsg("exit_signal_handler: %d", signum);
@@ -682,13 +682,14 @@ static DWORD WINAPI main_window_loop(LPVOID lpParameter)
   ZeroMemory(&wc, sizeof(wc));
   wc.lpfnWndProc = (WNDPROC)main_window_proc;
   wc.hInstance = (HINSTANCE)lpParameter;
-  wc.lpszClassName = "MainWClass";
+  wc.lpszClassName = TEXT("MainWClass");
   if(!RegisterClass(&wc)) {
     perror("RegisterClass failed");
     return (DWORD)-1;
   }
 
-  hidden_main_window = CreateWindowEx(0, "MainWClass", "Recv WM_CLOSE msg",
+  hidden_main_window = CreateWindowEx(0, TEXT("MainWClass"),
+                                      TEXT("Recv WM_CLOSE msg"),
                                       WS_OVERLAPPEDWINDOW,
                                       CW_USEDEFAULT, CW_USEDEFAULT,
                                       CW_USEDEFAULT, CW_USEDEFAULT,

@@ -6330,11 +6330,11 @@ curl: $(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),openssl,) $(if $(RTCONFIG_
 
 curl-install:
 	@$(SEP)
-	install -D curl/lib/.libs/libcurl.so.4.6.0 $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.6.0
-	$(STRIP) $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.6.0
+	install -D curl/lib/.libs/libcurl.so.4.7.0 $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.7.0
+	$(STRIP) $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.7.0
 	cd $(INSTALLDIR)/curl/usr/lib && \
-		ln -sf libcurl.so.4.6.0 libcurl.so && \
-		ln -sf libcurl.so.4.6.0 libcurl.so.4
+		ln -sf libcurl.so.4.7.0 libcurl.so && \
+		ln -sf libcurl.so.4.7.0 libcurl.so.4
 #ifeq ($(or $(RTCONFIG_SPEEDTEST),$(RTCONFIG_LETSENCRYPT)),y)
 	# for speedtest
 	install -D curl/src/.libs/curl $(INSTALLDIR)/curl/usr/sbin/curl

@@ -12,7 +12,7 @@ HTTPS-proxy
 # This is the HTTPS proxy response
 <connect>
 HTTP/1.1 200 OK
-Date: Thu, 09 Nov 2010 14:49:00 GMT
+Date: Tue, 09 Nov 2010 14:49:00 GMT
 Server: test-server/fake
 Content-Type: text/html
 Funny-head: yesyes
@@ -43,9 +43,10 @@ https-proxy
 FTP through HTTPS-proxy
  </name>
  <command>
--p -x https://%HOSTIP:%HTTPSPROXYPORT ftp://ftp.site.thru.https.proxy:%FTPPORT/1631 --proxy-insecure
+-p -x https://%HOSTIP:%HTTPSPROXYPORT ftp://ftp.site.thru.https.proxy:%FTPPORT/%TESTNUMBER --proxy-insecure
 </command>
 <features>
+http
 proxy
 </features>
 </client>
@@ -74,13 +75,11 @@ Proxy-Connection: Keep-Alive
 <protocol>
 USER anonymous
 PASS ftp@example.com
-PBSZ 0
-PROT P
 PWD
 EPSV
 TYPE I
-SIZE 1631
-RETR 1631
+SIZE %TESTNUMBER
+RETR %TESTNUMBER
 QUIT
 </protocol>
 </verify>

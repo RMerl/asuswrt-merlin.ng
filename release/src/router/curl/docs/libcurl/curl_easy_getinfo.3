@@ -5,11 +5,11 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
-.\" * are also available at https://curl.haxx.se/docs/copyright.html.
+.\" * are also available at https://curl.se/docs/copyright.html.
 .\" *
 .\" * You may opt to use, copy, modify, merge, publish, distribute and/or sell
 .\" * copies of the Software, and permit persons to whom the Software is
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH curl_easy_getinfo 3 "July 13, 2020" "libcurl 7.72.0" "libcurl Manual"
+.TH curl_easy_getinfo 3 "February 19, 2021" "libcurl 7.76.1" "libcurl Manual"
 
 .SH NAME
 curl_easy_getinfo - extract information from a curl handle
@@ -51,6 +51,9 @@ See \fICURLINFO_EFFECTIVE_URL(3)\fP
 .IP CURLINFO_RESPONSE_CODE
 Last received response code.
 See \fICURLINFO_RESPONSE_CODE(3)\fP
+.IP CURLINFO_REFERER
+Referrer header.
+See \fICURLINFO_REFERER(3)\fP
 .IP CURLINFO_HTTP_CONNECTCODE
 Last proxy CONNECT response code.
 See \fICURLINFO_HTTP_CONNECTCODE(3)\fP
@@ -142,6 +145,9 @@ See \fICURLINFO_REQUEST_SIZE(3)\fP
 .IP CURLINFO_SSL_VERIFYRESULT
 Certificate verification result.
 See \fICURLINFO_SSL_VERIFYRESULT(3)\fP
+.IP CURLINFO_PROXY_ERROR
+Detailed proxy error.
+See \fICURLINFO_PROXY_ERROR(3)\fP
 .IP CURLINFO_PROXY_SSL_VERIFYRESULT
 Proxy certificate verification result.
 See \fICURLINFO_PROXY_SSL_VERIFYRESULT(3)\fP

@@ -1,43 +1,24 @@
-curl the next few years - perhaps
-=================================
+# curl the next few years - perhaps
 
 Roadmap of things Daniel Stenberg wants to work on next. It is intended to
 serve as a guideline for others for information, feedback and possible
 participation.
 
-HSTS
-----
+## "Complete" the HTTP/3 support
 
- Complete and merge [the existing PR](https://github.com/curl/curl/pull/2682).
+curl has experimental support for HTTP/3 since a good while back. There are
+some functionality missing and once the final specs are published we want to
+eventually remove the "experimental" label from this functionality.
 
- Loading a huge preload file is probably not too interesting to most people,
- but using a custom file and reacting to HSTS response header probably are
- good features.
+## HTTPS DNS records
 
-DNS-over-TLS
-------------
+As a DNS version of alt-svc and also a pre-requisite for ECH (see below).
 
- Similar to DNS-over-HTTPS. Could share quite a lot of generic code.
+See: https://tools.ietf.org/html/draft-ietf-dnsop-svcb-https-02
 
-ESNI (Encrypted SNI)
---------------------
+## ECH (Encrypted Client Hello - formerly known as ESNI)
 
  See Daniel's post on [Support of Encrypted
- SNI](https://curl.haxx.se/mail/lib-2019-03/0000.html) on the mailing list.
+ SNI](https://curl.se/mail/lib-2019-03/0000.html) on the mailing list.
 
  Initial work exists in https://github.com/curl/curl/pull/4011
-
-thread-safe `curl_global_init()`
---------------------------------
-
- Fix the libcurl specific parts of the function to be thread-safe. Make sure
- it can be thread-safe if built with thread-safe 3rd party libraries.
- (probably can't include `curl_global_init_mem()` for obvious reasons)
-
-Hardcode “localhost”
---------------------
-
- No need to resolve it. Avoid a risk where this is resolved over the network
- and actually responds with something else than a local address. Some
- operating systems already do this. Also:
- https://tools.ietf.org/html/draft-ietf-dnsop-let-localhost-be-localhost-02

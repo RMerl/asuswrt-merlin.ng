@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at https://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -63,8 +63,8 @@
 /* to disable LDAPS */
 #cmakedefine CURL_DISABLE_LDAPS 1
 
-/* to enable MQTT */
-#undef CURL_ENABLE_MQTT
+/* to disable MQTT */
+#cmakedefine CURL_DISABLE_MQTT 1
 
 /* to disable POP3 */
 #cmakedefine CURL_DISABLE_POP3 1
@@ -98,7 +98,7 @@
 #endif
 
 /* Allow SMB to work on Windows */
-#cmakedefine USE_WIN32_CRYPTO
+#cmakedefine USE_WIN32_CRYPTO 1
 
 /* Use Windows LDAP implementation */
 #cmakedefine USE_WIN32_LDAP 1
@@ -322,15 +322,6 @@
 /* Define to 1 if you have the `inet_addr' function. */
 #cmakedefine HAVE_INET_ADDR 1
 
-/* Define to 1 if you have the inet_ntoa_r function. */
-#cmakedefine HAVE_INET_NTOA_R 1
-
-/* inet_ntoa_r() takes 2 args */
-#cmakedefine HAVE_INET_NTOA_R_2 1
-
-/* inet_ntoa_r() takes 3 args */
-#cmakedefine HAVE_INET_NTOA_R_3 1
-
 /* Define to 1 if you have a IPv6 capable working inet_ntop function. */
 #cmakedefine HAVE_INET_NTOP 1
 
@@ -395,8 +386,11 @@
 /* Define to 1 if you have the <libgen.h> header file. */
 #cmakedefine HAVE_LIBGEN_H 1
 
-/* Define to 1 if you have the `idn' library (-lidn). */
-#cmakedefine HAVE_LIBIDN 1
+/* Define to 1 if you have the `idn2' library (-lidn2). */
+#cmakedefine HAVE_LIBIDN2 1
+
+/* Define to 1 if you have the idn2.h header file. */
+#cmakedefine HAVE_IDN2_H 1
 
 /* Define to 1 if you have the `resolv' library (-lresolv). */
 #cmakedefine HAVE_LIBRESOLV 1
@@ -469,6 +463,9 @@
 
 /* Define to 1 if you have the <netinet/tcp.h> header file. */
 #cmakedefine HAVE_NETINET_TCP_H 1
+
+/* Define to 1 if you have the <linux/tcp.h> header file. */
+#cmakedefine HAVE_LINUX_TCP_H 1
 
 /* Define to 1 if you have the <net/if.h> header file. */
 #cmakedefine HAVE_NET_IF_H 1
@@ -652,9 +649,6 @@
 
 /* Define to 1 if you have the `strlcpy' function. */
 #cmakedefine HAVE_STRLCPY 1
-
-/* Define to 1 if you have the strncasecmp function. */
-#cmakedefine HAVE_STRNCASECMP 1
 
 /* Define to 1 if you have the strncmpi function. */
 #cmakedefine HAVE_STRNCMPI 1
@@ -873,9 +867,6 @@
 /* Define to the function return type for recv. */
 #cmakedefine RECV_TYPE_RETV ${RECV_TYPE_RETV}
 
-/* Define as the return type of signal handlers (`int' or `void'). */
-#cmakedefine RETSIGTYPE ${RETSIGTYPE}
-
 /* Define to the type qualifier of arg 5 for select. */
 #cmakedefine SELECT_QUAL_ARG5 ${SELECT_QUAL_ARG5}
 
@@ -957,9 +948,6 @@ ${SIZEOF_TIME_T_CODE}
 /* Define if you want to enable WIN32 threaded DNS lookup */
 #cmakedefine USE_THREADS_WIN32 1
 
-/* Define to disable non-blocking sockets. */
-#cmakedefine USE_BLOCKING_SOCKETS 1
-
 /* if GnuTLS is enabled */
 #cmakedefine USE_GNUTLS 1
 
@@ -996,6 +984,10 @@ ${SIZEOF_TIME_T_CODE}
 /* if OpenSSL is in use */
 #cmakedefine USE_OPENSSL 1
 
+/* Define to 1 if you don't want the OpenSSL configuration to be loaded
+   automatically */
+#cmakedefine CURL_DISABLE_OPENSSL_AUTO_LOAD_CONFIG 1
+
 /* to enable NGHTTP2  */
 #cmakedefine USE_NGHTTP2 1
 
@@ -1014,8 +1006,8 @@ ${SIZEOF_TIME_T_CODE}
 /* if Unix domain sockets are enabled  */
 #cmakedefine USE_UNIX_SOCKETS
 
-/* to enable alt-svc */
-#cmakedefine USE_ALTSVC 1
+/* to disable alt-svc */
+#cmakedefine CURL_DISABLE_ALTSVC 1
 
 /* Define to 1 if you are building a Windows target with large file support. */
 #cmakedefine USE_WIN32_LARGE_FILES 1
@@ -1069,3 +1061,9 @@ ${SIZEOF_TIME_T_CODE}
 
 /* Define to 1 if you have the mach_absolute_time function. */
 #cmakedefine HAVE_MACH_ABSOLUTE_TIME 1
+
+/* to enable Windows IDN */
+#cmakedefine USE_WIN32_IDN 1
+
+/* to make the compiler know the prototypes of Windows IDN APIs */
+#cmakedefine WANT_IDN_PROTOTYPES 1

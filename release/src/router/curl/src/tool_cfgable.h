@@ -7,11 +7,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at https://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -54,10 +54,11 @@ struct OperationConfig {
   char *random_file;
   char *egd_file;
   char *useragent;
-  char *cookie;             /* single line with specified cookies */
+  struct curl_slist *cookies;  /* cookies to serialize into a single line */
   char *cookiejar;          /* write to this file */
-  char *cookiefile;         /* read from this file */
+  struct curl_slist *cookiefiles;  /* file(s) to load cookies from */
   char *altsvc;             /* alt-svc cache file name */
+  char *hsts;               /* HSTS cache file name */
   bool cookiesession;       /* new session? */
   bool encoding;            /* Accept-Encoding please */
   bool tr_encoding;         /* Transfer-Encoding please */
@@ -80,6 +81,7 @@ struct OperationConfig {
   double connecttimeout;
   long maxredirs;
   curl_off_t max_filesize;
+  char *output_dir;
   char *headerfile;
   char *ftpport;
   char *iface;
@@ -116,6 +118,7 @@ struct OperationConfig {
   bool use_ascii;           /* select ascii or text transfer */
   bool autoreferer;         /* automatically set referer */
   bool failonerror;         /* fail on (HTTP) errors */
+  bool failwithbody;        /* fail on (HTTP) errors but still store body */
   bool show_headers;        /* show headers to data output */
   bool no_body;             /* don't get the body */
   bool dirlistonly;         /* only get the FTP dir list */
@@ -161,6 +164,7 @@ struct OperationConfig {
   char *etag_compare_file;
   bool crlf;
   char *customrequest;
+  char *ssl_ec_curves;
   char *krblevel;
   char *request_target;
   long httpversion;
@@ -170,10 +174,13 @@ struct OperationConfig {
   bool globoff;
   bool use_httpget;
   bool insecure_ok;         /* set TRUE to allow insecure SSL connects */
+  bool doh_insecure_ok;     /* set TRUE to allow insecure SSL connects
+                               for DOH */
   bool proxy_insecure_ok;   /* set TRUE to allow insecure SSL connects
                                for proxy */
   bool terminal_binary_ok;
   bool verifystatus;
+  bool doh_verifystatus;
   bool create_dirs;
   bool ftp_create_dirs;
   bool ftp_skip_ip;
@@ -190,6 +197,7 @@ struct OperationConfig {
   long ssl_version_max;
   long proxy_ssl_version;
   long ip_version;
+  long create_file_mode; /* CURLOPT_NEW_FILE_PERMS */
   curl_TimeCond timecond;
   curl_off_t condtime;
   struct curl_slist *headers;
@@ -280,6 +288,7 @@ struct OperationConfig {
                                      0 is valid. default: CURL_HET_DEFAULT. */
   bool haproxy_protocol;          /* whether to send HAProxy protocol v1 */
   bool disallow_username_in_url;  /* disallow usernames in URLs */
+  char *aws_sigv4;
   struct GlobalConfig *global;
   struct OperationConfig *prev;
   struct OperationConfig *next;   /* Always last in the struct */
@@ -310,6 +319,7 @@ struct GlobalConfig {
   bool parallel;
   long parallel_max;
   bool parallel_connect;
+  char *help_category;            /* The help category, if set */
   struct OperationConfig *first;
   struct OperationConfig *current;
   struct OperationConfig *last;   /* Always last in the struct */

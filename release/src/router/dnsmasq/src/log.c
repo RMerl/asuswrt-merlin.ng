@@ -273,7 +273,7 @@ static void log_write(void)
 /* priority is one of LOG_DEBUG, LOG_INFO, LOG_NOTICE, etc. See sys/syslog.h.
    OR'd to priority can be MS_TFTP, MS_DHCP, ... to be able to do log separation between
    DNS, DHCP and TFTP services.
-*/
+   If OR'd with MS_DEBUG, the messages are suppressed unless --log-debug is set. */
 void my_syslog(int priority, const char *format, ...)
 {
   va_list ap;
@@ -290,7 +290,13 @@ void my_syslog(int priority, const char *format, ...)
     func = "-dhcp";
   else if ((LOG_FACMASK & priority) == MS_SCRIPT)
     func = "-script";
-	    
+  else if ((LOG_FACMASK & priority) == MS_DEBUG)
+    {
+      if (!option_bool(OPT_LOG_DEBUG))
+	return;
+      func = "-debug";
+    }
+  
 #ifdef LOG_PRI
   priority = LOG_PRI(priority);
 #else

@@ -280,31 +280,29 @@ static int is_config_in_context(struct dhcp_context *context, struct dhcp_config
 {
   if (!context) /* called via find_config() from lease_update_from_configs() */
     return 1; 
+
+  if (!(config->flags & (CONFIG_ADDR | CONFIG_ADDR6)))
+    return 1;
   
 #ifdef HAVE_DHCP6
   if (context->flags & CONTEXT_V6)
     {
        struct addrlist *addr_list;
 
-       if (!(config->flags & CONFIG_ADDR6))
-	 return 1;
-       
-        for (; context; context = context->current)
-	  for (addr_list = config->addr6; addr_list; addr_list = addr_list->next)
-	    {
-	      if ((addr_list->flags & ADDRLIST_WILDCARD) && context->prefix == 64)
-		return 1;
-	      
-	      if (is_same_net6(&addr_list->addr.addr6, &context->start6, context->prefix))
-		return 1;
-	    }
+       if (config->flags & CONFIG_ADDR6)
+	 for (; context; context = context->current)
+	   for (addr_list = config->addr6; addr_list; addr_list = addr_list->next)
+	     {
+	       if ((addr_list->flags & ADDRLIST_WILDCARD) && context->prefix == 64)
+		 return 1;
+	       
+	       if (is_same_net6(&addr_list->addr.addr6, &context->start6, context->prefix))
+		 return 1;
+	     }
     }
   else
 #endif
     {
-      if (!(config->flags & CONFIG_ADDR))
-	return 1;
-      
       for (; context; context = context->current)
 	if ((config->flags & CONFIG_ADDR) && is_same_net(config->addr, context->start, context->netmask))
 	  return 1;

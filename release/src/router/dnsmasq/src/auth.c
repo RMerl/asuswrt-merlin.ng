@@ -867,6 +867,3 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 }
   
 #endif  
-  
-
-

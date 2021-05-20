@@ -921,11 +921,14 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
       
   
     case DHCP6RENEW:
+    case DHCP6REBIND:
       {
+	int address_assigned = 0;
+
 	/* set reply message type */
 	*outmsgtypep = DHCP6REPLY;
 	
-	log6_quiet(state, "DHCPRENEW", NULL, NULL);
+	log6_quiet(state, msg_type == DHCP6RENEW ? "DHCPRENEW" : "DHCPREBIND", NULL, NULL);
 
 	for (opt = state->packet_options; opt; opt = opt6_next(opt, state->end))
 	  {
@@ -954,23 +957,34 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
 					  state->ia_type == OPTION6_IA_NA ? LEASE_NA : LEASE_TA, 
 					  state->iaid, &req_addr)))
 		  {
-		    /* If the server cannot find a client entry for the IA the server
-		       returns the IA containing no addresses with a Status Code option set
-		       to NoBinding in the Reply message. */
-		    save_counter(iacntr);
-		    t1cntr = 0;
-		    
-		    log6_packet(state, "DHCPREPLY", &req_addr, _("lease not found"));
-		    
-		    o1 = new_opt6(OPTION6_STATUS_CODE);
-		    put_opt6_short(DHCP6NOBINDING);
-		    put_opt6_string(_("no binding found"));
-		    end_opt6(o1);
-
-		    preferred_time = valid_time = 0;
-		    break;
+		    if (msg_type == DHCP6REBIND)
+		      {
+			/* When rebinding, we can create a lease if it doesn't exist. */
+			lease = lease6_allocate(&req_addr, state->ia_type == OPTION6_IA_NA ? LEASE_NA : LEASE_TA);
+			if (lease)
+			  lease_set_iaid(lease, state->iaid);
+			else
+			  break;
+		      }
+		    else
+		      {
+			/* If the server cannot find a client entry for the IA the server
+			   returns the IA containing no addresses with a Status Code option set
+			   to NoBinding in the Reply message. */
+			save_counter(iacntr);
+			t1cntr = 0;
+			
+			log6_packet(state, "DHCPREPLY", &req_addr, _("lease not found"));
+			
+			o1 = new_opt6(OPTION6_STATUS_CODE);
+			put_opt6_short(DHCP6NOBINDING);
+			put_opt6_string(_("no binding found"));
+			end_opt6(o1);
+			
+			preferred_time = valid_time = 0;
+			break;
+		      }
 		  }
-		
 		
 		if ((this_context = address6_available(state->context, &req_addr, tagif, 1)) ||
 		    (this_context = address6_valid(state->context, &req_addr, tagif, 1)))
@@ -1002,6 +1016,8 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
 		    
 		    if (preferred_time == 0)
 		      message = _("deprecated");
+
+		    address_assigned = 1;
 		  }
 		else
 		  {
@@ -1024,10 +1040,18 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
 	    end_ia(t1cntr, min_time, 1);
 	    end_opt6(o);
 	  }
+
+	if (!address_assigned && msg_type == DHCP6REBIND)
+	  { 
+	    /* can't create lease for any address, return error */
+	    o1 = new_opt6(OPTION6_STATUS_CODE);
+	    put_opt6_short(DHCP6NOADDRS);
+	    put_opt6_string(_("no addresses available"));
+	    end_opt6(o1);
+	  }
 	
 	tagif = add_options(state, 0);
 	break;
-	
       }
       
     case DHCP6CONFIRM:

@@ -1,3 +1,109 @@
+version 2.86
+	Handle DHCPREBIND requests in the DHCPv6 server code.
+	Thanks to Aichun Li for spotting this ommision, and the initial
+	patch.
+
+	Fix bug which caused dnsmasq to lose track of processes forked
+	to handle TCP DNS connections under heavy load. The code
+	checked that at least one free process table slot was
+	available before listening on TCP sockets, but didn't take
+	into account that more than one TCP connection could
+	arrive, so that check was not sufficient to ensure that
+	there would be slots for all new processes. It compounded
+	this error by silently failing to store the process when
+	it did run out of slots. Even when this bug is triggered,
+	all the right things happen, and answers are still returned.
+	Only under very exceptional circumstances, does the bug
+	manifest itself: see
+	https://lists.thekelleys.org.uk/pipermail/dnsmasq-discuss/2021q2/014976.html
+	Thanks to Tijs Van Buggenhout for finding the conditions under
+	which the bug manifests itself, and then working out
+	exactly what was going on.
+
+	
+	
+version 2.85
+        Fix problem with DNS retries in 2.83/2.84.
+        The new logic in 2.83/2.84 which merges distinct requests
+	for the same domain causes problems with clients which do
+	retries as distinct requests (differing IDs and/or source ports.)
+	The retries just get piggy-backed on the first, failed, request.
+        The logic is now changed so that distinct requests for repeated
+        queries still get merged into a single ID/source port, but
+	they now always trigger a re-try upstream.
+        Thanks to Nicholas Mu for his analysis.
+
+	Tweak sort order of tags in get-version. v2.84 sorts
+	before v2.83, but v2.83 sorts before v2.83rc1 and 2.83rc1
+	sorts before v2.83test1. This fixes the problem which lead
+	to 2.84 announcing itself as 2.84rc2.
+
+ 	Avoid treating a --dhcp-host which has an IPv6 address
+	as eligible for use with DHCPv4 on the grounds that it has
+	no address, and vice-versa. Thanks to Viktor Papp for
+	spotting the problem. (This bug was fixed was back in 2.67, and
+	then regressed in 2.81).
+
+	Add --dynamic-host option: A and AAAA records which take their
+	network part from the network of a local interface. Useful
+	for routers with dynamically prefixes. Thanks
+	to Fred F for the suggestion.
+
+	Teach --bogus-nxdomain and --ignore-address to take an IPv4 subnet.
+
+	Use random source ports where possible if source
+	addresses/interfaces in use.
+	CVE-2021-3448 applies. Thanks to Petr Menšík for spotting this.
+	It's possible to specify the source address or interface to be
+	used when contacting upstream name servers: server=8.8.8.8@1.2.3.4
+	or server=8.8.8.8@1.2.3.4#66 or server=8.8.8.8@eth0, and all of
+	these have, until now, used a single socket, bound to a fixed
+	port. This was originally done to allow an error (non-existent
+	interface, or non-local address) to be detected at start-up. This
+	means that any upstream servers specified in such a way don't use
+	random source ports, and are more susceptible to cache-poisoning
+	attacks.
+	We now use random ports where possible, even when the
+	source is specified, so server=8.8.8.8@1.2.3.4 or
+	server=8.8.8.8@eth0 will use random source
+	ports. server=8.8.8.8@1.2.3.4#66 or any use of --query-port will
+	use the explicitly configured port, and should only be done with
+	understanding of the security implications.
+	Note that this change changes non-existing interface, or non-local
+	source address errors from fatal to run-time. The error will be
+	logged and communication with the server not possible.
+
+	Change the method of allocation of random source ports for DNS.
+	Previously, without min-port or max-port configured, dnsmasq would
+	default to the compiled in defaults for those, which are 1024 and
+	65535. Now, when neither are configured, it defaults instead to
+	the kernel's ephemeral port range, which is typically
+	32768 to 60999 on Linux systems. This change eliminates the
+	possibility that dnsmasq may be using a registered port > 1024
+	when a long-running daemon starts up and wishes to claim it.
+	This change does likely slightly reduce the number of random ports
+	and therefore the protection from reply spoofing. The older
+	behaviour can be restored using the min-port and max-port config
+	switches should that be a concern.
+
+	Scale the size of the DNS random-port pool based on the
+	value of the --dns-forward-max configuration.
+
+	Tweak TFTP code to check sender of all received packets, as
+	specified in RFC 1350 para 4.
+
+	
+version 2.84
+	Fix a problem, introduced in 2.83, which could see DNS replies
+	being sent via the wrong socket. On machines running both
+	IPv4 and IPv6 this could result in sporadic messages of
+	the form "failed to send packet: Network is unreachable" and
+	the lost of the query. Since the error is sporadic and of
+	low probability, the client retry would normally succeed.
+
+	Change HAVE_NETTLEHASH compile-time to HAVE_CRYPTOHASH.
+
+
 version 2.83
 	Use the values of --min-port and --max-port in outgoing
 	TCP connections to upstream DNS servers.
@@ -19,13 +125,13 @@ version 2.83
 
 	Handle multiple identical near simultaneous DNS queries better.
 	Previously, such queries would all be forwarded
-	independently. This is, in theory, inefficent but in practise
+	independently. This is, in theory, inefficient but in practise
 	not a problem, _except_ that is means that an answer for any
 	of the forwarded queries will be accepted and cached.
 	An attacker can send a query multiple times, and for each repeat,
 	another {port, ID} becomes capable of accepting the answer he is
 	sending in the blind, to random IDs and ports. The chance of a
-	succesful attack is therefore multiplied by the number of repeats
+	successful attack is therefore multiplied by the number of repeats
 	of the query. The new behaviour detects repeated queries and
 	merely stores the clients sending repeats so that when the
 	first query completes, the answer can be sent to all the

@@ -413,6 +413,8 @@ static int dnsmasq_gost_verify(struct blockdata *key_data, unsigned int key_len,
   const unsigned char *p = keybuf;
   int r;
 
+  (void)algo; /* unused */
+
   if (key_len != 64 || sig_len != 64)
     return 0;
 

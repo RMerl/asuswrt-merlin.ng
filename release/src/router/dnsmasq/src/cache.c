@@ -1980,5 +1980,3 @@ void log_query(unsigned int flags, char *name, union all_addr *addr, char *arg)
   else
     my_syslog(LOG_INFO, "%s %s %s %s", source, name, verb, dest);
 }
-
- 

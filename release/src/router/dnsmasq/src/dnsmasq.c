@@ -237,9 +237,16 @@ int main (int argc, char **argv)
     die(_("Ubus not available: set HAVE_UBUS in src/config.h"), NULL, EC_BADCONF);
 #endif
   
+  /* Handle only one of min_port/max_port being set. */
+  if (daemon->min_port != 0 && daemon->max_port == 0)
+    daemon->max_port = MAX_PORT;
+  
+  if (daemon->max_port != 0 && daemon->min_port == 0)
+    daemon->min_port = MIN_PORT;
+   
   if (daemon->max_port < daemon->min_port)
     die(_("max_port cannot be smaller than min_port"), NULL, EC_BADCONF);
-
+  
   now = dnsmasq_time();
 
   if (daemon->auth_zones)
@@ -395,6 +402,14 @@ int main (int argc, char **argv)
       crypto_init();
 #endif
       hash_questions_init();
+
+      /* Scale random socket pool by ftabsize, but
+	 limit it based on available fds. */
+      daemon->numrrand = daemon->ftabsize/2;
+      if (daemon->numrrand > max_fd/3)
+	daemon->numrrand = max_fd/3;
+      /* safe_malloc returns zero'd memory */
+      daemon->randomsocks = safe_malloc(daemon->numrrand * sizeof(struct randfd));
     }
 
 #ifdef HAVE_INOTIFY
@@ -983,7 +998,7 @@ int main (int argc, char **argv)
 	 a single file will be sent to may clients (the file only needs
 	 one fd). */
 
-      max_fd -= 30; /* use other than TFTP */
+      max_fd -= 30 + daemon->numrrand; /* use other than TFTP */
       
       if (max_fd < 0)
 	max_fd = 5;
@@ -1683,6 +1698,7 @@ static int set_dns_listeners(time_t now)
 {
   struct serverfd *serverfdp;
   struct listener *listener;
+  struct randfd_list *rfl;
   int wait = 0, i;
   
 #ifdef HAVE_TFTP
@@ -1703,27 +1719,32 @@ static int set_dns_listeners(time_t now)
   for (serverfdp = daemon->sfds; serverfdp; serverfdp = serverfdp->next)
     poll_listen(serverfdp->fd, POLLIN);
     
-  if (daemon->port != 0 && !daemon->osport)
-    for (i = 0; i < RANDOM_SOCKS; i++)
-      if (daemon->randomsocks[i].refcount != 0)
-	poll_listen(daemon->randomsocks[i].fd, POLLIN);
-	  
+  for (i = 0; i < daemon->numrrand; i++)
+    if (daemon->randomsocks[i].refcount != 0)
+      poll_listen(daemon->randomsocks[i].fd, POLLIN);
+
+  /* Check overflow random sockets too. */
+  for (rfl = daemon->rfl_poll; rfl; rfl = rfl->next)
+    poll_listen(rfl->rfd->fd, POLLIN);
+  
+  /* check to see if we have free tcp process slots. */
+  for (i = MAX_PROCS - 1; i >= 0; i--)
+    if (daemon->tcp_pids[i] == 0 && daemon->tcp_pipes[i] == -1)
+      break;
+
   for (listener = daemon->listeners; listener; listener = listener->next)
     {
       /* only listen for queries if we have resources */
       if (listener->fd != -1 && wait == 0)
 	poll_listen(listener->fd, POLLIN);
 	
-      /* death of a child goes through the select loop, so
-	 we don't need to explicitly arrange to wake up here */
-      if  (listener->tcpfd != -1)
-	for (i = 0; i < MAX_PROCS; i++)
-	  if (daemon->tcp_pids[i] == 0 && daemon->tcp_pipes[i] == -1)
-	    {
-	      poll_listen(listener->tcpfd, POLLIN);
-	      break;
-	    }
-
+      /* Only listen for TCP connections when a process slot
+	 is available. Death of a child goes through the select loop, so
+	 we don't need to explicitly arrange to wake up here,
+	 we'll be called again when a slot becomes available. */
+      if  (listener->tcpfd != -1 && i >= 0)
+	poll_listen(listener->tcpfd, POLLIN);
+      
 #ifdef HAVE_TFTP
       /* tftp == 0 in single-port mode. */
       if (tftp <= daemon->tftp_max && listener->tftpfd != -1)
@@ -1744,18 +1765,23 @@ static void check_dns_listeners(time_t now)
 {
   struct serverfd *serverfdp;
   struct listener *listener;
+  struct randfd_list *rfl;
   int i;
   int pipefd[2];
   
   for (serverfdp = daemon->sfds; serverfdp; serverfdp = serverfdp->next)
     if (poll_check(serverfdp->fd, POLLIN))
-      reply_query(serverfdp->fd, serverfdp->source_addr.sa.sa_family, now);
+      reply_query(serverfdp->fd, now);
   
-  if (daemon->port != 0 && !daemon->osport)
-    for (i = 0; i < RANDOM_SOCKS; i++)
-      if (daemon->randomsocks[i].refcount != 0 && 
-	  poll_check(daemon->randomsocks[i].fd, POLLIN))
-	reply_query(daemon->randomsocks[i].fd, daemon->randomsocks[i].family, now);
+  for (i = 0; i < daemon->numrrand; i++)
+    if (daemon->randomsocks[i].refcount != 0 && 
+	poll_check(daemon->randomsocks[i].fd, POLLIN))
+      reply_query(daemon->randomsocks[i].fd, now);
+
+  /* Check overflow random sockets too. */
+  for (rfl = daemon->rfl_poll; rfl; rfl = rfl->next)
+    if (poll_check(rfl->rfd->fd, POLLIN))
+      reply_query(rfl->rfd->fd, now);
 
   /* Races. The child process can die before we read all of the data from the
      pipe, or vice versa. Therefore send tcp_pids to zero when we wait() the 
@@ -1784,7 +1810,16 @@ static void check_dns_listeners(time_t now)
 	tftp_request(listener, now);
 #endif
 
-      if (listener->tcpfd != -1 && poll_check(listener->tcpfd, POLLIN))
+      /* check to see if we have a free tcp process slot.
+	 Note that we can't assume that because we had
+	 at least one a poll() time, that we still do.
+	 There may be more waiting connections after
+	 poll() returns then free process slots. */
+      for (i = MAX_PROCS - 1; i >= 0; i--)
+	if (daemon->tcp_pids[i] == 0 && daemon->tcp_pipes[i] == -1)
+	  break;
+
+      if (listener->tcpfd != -1 && i >= 0 && poll_check(listener->tcpfd, POLLIN))
 	{
 	  int confd, client_ok = 1;
 	  struct irec *iface = NULL;
@@ -1874,7 +1909,6 @@ static void check_dns_listeners(time_t now)
 		close(pipefd[0]);
 	      else
 		{
-		  int i;
 #ifdef HAVE_LINUX_NETWORK
 		  /* The child process inherits the netlink socket, 
 		     which it never uses, but when the parent (us) 
@@ -1894,13 +1928,9 @@ static void check_dns_listeners(time_t now)
 		  read_write(pipefd[0], &a, 1, 1);
 #endif
 
-		  for (i = 0; i < MAX_PROCS; i++)
-		    if (daemon->tcp_pids[i] == 0 && daemon->tcp_pipes[i] == -1)
-		      {
-			daemon->tcp_pids[i] = p;
-			daemon->tcp_pipes[i] = pipefd[0];
-			break;
-		      }
+		  /* i holds index of free slot */
+		  daemon->tcp_pids[i] = p;
+		  daemon->tcp_pipes[i] = pipefd[0];
 		}
 	      close(confd);
 

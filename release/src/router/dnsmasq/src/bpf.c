@@ -440,5 +440,3 @@ void route_sock(void)
 }
 
 #endif /* HAVE_BSD_NETWORK */
-
-

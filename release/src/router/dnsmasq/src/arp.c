@@ -230,5 +230,3 @@ int do_arp_script_run(void)
 
   return 0;
 }
-
-

@@ -2785,11 +2785,4 @@ static void apply_delay(u32 xid, time_t recvtime, struct dhcp_netid *netid)
     }
 }
 
-#endif
-  
-
-  
-  
-
-
-  
+#endif /* HAVE_DHCP */

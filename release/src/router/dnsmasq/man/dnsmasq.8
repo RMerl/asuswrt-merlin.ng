@@ -135,6 +135,9 @@ running, will go exclusively to the file.) When logging to a file,
 dnsmasq will close and reopen the file when it receives SIGUSR2. This 
 allows the log file to be rotated without stopping dnsmasq.
 .TP
+.B --log-debug
+Enable extra logging intended for debugging rather than information.
+.TP
 .B --log-async[=<lines>]
 Enable asynchronous logging and optionally set the limit on the
 number of lines
@@ -181,7 +184,7 @@ OS: this was the default behaviour in versions prior to 2.43.
 .B --min-port=<port>
 Do not use ports less than that given as source for outbound DNS
 queries. Dnsmasq picks random ports as source for outbound queries:
-when this option is given, the ports used will always to larger
+when this option is given, the ports used will always be larger
 than that specified. Useful for systems behind firewalls. If not specified,
 defaults to 1024.
 .TP
@@ -296,7 +299,7 @@ option requires non-standard networking APIs and it is only available
 under Linux. On other platforms it falls-back to \fB--bind-interfaces\fP mode.
 .TP
 .B \-y, --localise-queries
-Return answers to DNS queries from /etc/hosts and \fB--interface-name\fP which depend on the interface over which the query was
+Return answers to DNS queries from /etc/hosts and \fB--interface-name\fP and \fB--dynamic-host\fP which depend on the interface over which the query was
 received. If a name has more than one address associated with
 it, and at least one of those addresses is on the same subnet as the
 interface to which the query was sent, then return only the
@@ -323,8 +326,8 @@ are re-written. So
 .B --alias=192.168.0.10-192.168.0.40,10.0.0.0,255.255.255.0
 maps 192.168.0.10->192.168.0.40 to 10.0.0.10->10.0.0.40
 .TP 
-.B \-B, --bogus-nxdomain=<ipaddr>
-Transform replies which contain the IP address given into "No such
+.B \-B, --bogus-nxdomain=<ipaddr>[/prefix]
+Transform replies which contain the IP specified address or subnet into "No such
 domain" replies. This is intended to counteract a devious move made by
 Verisign in September 2003 when they started returning the address of
 an advertising web page in response to queries for unregistered names,
@@ -332,8 +335,8 @@ instead of the correct NXDOMAIN response. This option tells dnsmasq to
 fake the correct response when it sees this behaviour. As at Sept 2003
 the IP address being returned by Verisign is 64.94.110.11
 .TP 
-.B --ignore-address=<ipaddr>
-Ignore replies to A-record queries which include the specified address. 
+.B --ignore-address=<ipaddr>[/prefix]
+Ignore replies to A-record queries which include the specified address or subnet. 
 No error is generated, dnsmasq simply continues to listen for another reply. 
 This is useful to defeat blocking strategies which rely on quickly supplying a
 forged answer to a DNS request for certain domain, before the correct answer can arrive.
@@ -428,7 +431,7 @@ Tells dnsmasq to never forward A or AAAA queries for plain names, without dots
 or domain parts, to upstream nameservers. If the name is not known
 from /etc/hosts or DHCP then a "not found" answer is returned.
 .TP
-.B \-S, --local, --server=[/[<domain>]/[domain/]][<ipaddr>[#<port>]][@<source-ip>|<interface>[#<port>]]
+.B \-S, --local, --server=[/[<domain>]/[domain/]][<ipaddr>[#<port>]][@<interface>][@<source-ip>[#<port>]]
 Specify IP address of upstream servers directly. Setting this flag does
 not suppress reading of /etc/resolv.conf, use \fB--no-resolv\fP to do that. If one or more
 optional domains are given, that server is used only for those domains
@@ -489,7 +492,7 @@ source address specified but the port may be specified directly as
 part of the source address. Forcing queries to an interface is not
 implemented on all platforms supported by dnsmasq.
 .TP
-.B --rev-server=<ip-address>/<prefix-len>[,<ipaddr>][#<port>][@<source-ip>|<interface>[#<port>]]
+.B --rev-server=<ip-address>/<prefix-len>[,<ipaddr>][#<port>][@<interface>][@<source-ip>[#<port>]]
 This is functionally the same as 
 .B --server, 
 but provides some syntactic sugar to make specifying address-to-name queries easier. For example
@@ -590,6 +593,12 @@ eg.
 If the time-to-live is given, it overrides the default, which is zero
 or the value of \fB--local-ttl\fP. The value is a positive integer and gives
 the time-to-live in seconds.
+.TP
+.B --dynamic-host=<name>,[IPv4-address],[IPv6-address],<interface>
+Add A, AAAA and PTR records to the DNS in the same subnet as the specified interface. The address is derived from the network part of each address associated with the interface, and the host part from the specified address. For example
+.B --dynamic-host=example.com,0.0.0.8,eth0
+will, when eth0 has the address 192.168.78.x and netmask 255.255.255.0 give the
+name example.com an A record for 192.168.78.8. The same principle applies to IPv6 addresses. Note that if an interface has more than one address, more than one A or AAAA record will be created. The TTL of the records is always zero, and any changes to interface addresses will be immediately reflected in them.
 .TP
 .B \-Y, --txt-record=<name>[[,<text>],<text>]
 Return a TXT DNS record. The value of TXT record is a set of strings,
@@ -1045,6 +1054,19 @@ option, but aliases are possible by using CNAMEs. (See
 .B --cname
 ).
 
+More than one
+.B --dhcp-host
+can be associated (by name, hardware address or UID) with a host. Which one is used
+(and therefore which address is allocated by DHCP and appears in the DNS) depends
+on the subnet on which the host last obtained a DHCP lease:
+the
+.B --dhcp-host
+with an address within the subnet is used. If more than one address is within the subnet,
+the result is undefined. A corollary to this is that the name associated with a host using
+.B --dhcp-host
+does not appear in the DNS until the host obtains a DHCP lease.
+
+
 The special keyword "ignore"
 tells dnsmasq to never offer a DHCP lease to a machine. The machine
 can be specified by hardware address, client ID or hostname, for
@@ -1436,7 +1458,7 @@ functions when supported by a suitable DHCP server.
 This specifies a boot option which may appear in a PXE boot menu. <CSA> is
 client system type, only services of the correct type will appear in a
 menu. The known types are x86PC, PC98, IA64_EFI, Alpha, Arc_x86,
-Intel_Lean_Client, IA32_EFI,  X86-64_EFI, Xscale_EFI, BC_EFI, ARM32_EFI and ARM64_EFI; an
+Intel_Lean_Client, IA32_EFI,  x86-64_EFI, Xscale_EFI, BC_EFI, ARM32_EFI and ARM64_EFI; an
 integer may be used for other types. The
 parameter after the menu text may be a file name, in which case dnsmasq acts as a
 boot server and directs the PXE client to download the file by TFTP,
@@ -2367,6 +2389,8 @@ IPv4 and IPv6 addresses from /etc/hosts (and
 .B --host-record
 and 
 .B --interface-name
+and
+.B ---dynamic-host
 provided the address falls into one of the subnets specified in the
 .B --auth-zone.
 .PP

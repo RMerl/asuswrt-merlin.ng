@@ -82,7 +82,4 @@ static int callback(enum nf_conntrack_msg_type type, struct nf_conntrack *ct, vo
   return NFCT_CB_CONTINUE;
 }
 
-#endif
-  
-
-
+#endif /* HAVE_CONNTRACK */

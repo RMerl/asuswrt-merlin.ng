@@ -53,6 +53,3 @@ struct prefix_opt {
 #define ICMP6_OPT_RT_INFO     24
 #define ICMP6_OPT_RDNSS       25
 #define ICMP6_OPT_DNSSL       31
-
-
-

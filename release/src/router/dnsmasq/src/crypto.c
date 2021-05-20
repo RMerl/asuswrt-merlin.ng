@@ -19,11 +19,20 @@
 #ifdef HAVE_NETTLE
 #ifdef HAVE_DNSSEC
 
+/* Minimal version of nettle */
+#define MIN_VERSION(major, minor) (NETTLE_VERSION_MAJOR == (major) && NETTLE_VERSION_MINOR >= (minor)) || \
+				  (NETTLE_VERSION_MAJOR > (major))
+
 #include <nettle/rsa.h>
 #include <nettle/ecdsa.h>
 #include <nettle/ecc-curve.h>
+#if !defined(NETTLE_VERSION_MAJOR)
+#define NETTLE_VERSION_MAJOR 2
+#endif
+#if MIN_VERSION(3, 1)
 #include <nettle/eddsa.h>
-#if NETTLE_VERSION_MAJOR == 3 && NETTLE_VERSION_MINOR >= 6 && !defined(NO_GOST)
+#endif
+#if MIN_VERSION(3, 6) && !defined(NO_GOST)
 #  include <nettle/gostdsa.h>
 #  define HAVE_GOST
 #endif
@@ -117,10 +126,8 @@ const void *hash_find(char *name)
 
   /* libnettle >= 3.4 provides nettle_lookup_hash() which avoids nasty ABI
      incompatibilities if sizeof(nettle_hashes) changes between library
-     versions. It also #defines nettle_hashes, so use that to tell
-     if we have the new facilities. */
-  
-#ifdef nettle_hashes
+     versions. */
+#if MIN_VERSION(3, 4)
   return nettle_lookup_hash(name);
 #else
   {
@@ -188,7 +195,7 @@ size_t hash_length(const void *hash)
 {
   return ((struct nettle_hash *)hash)->digest_size;
 }
-#endif
+#endif /* defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH) */
 
 #ifdef HAVE_DNSSEC
   
@@ -255,7 +262,7 @@ static int dnsmasq_ecdsa_verify(struct blockdata *key_data, unsigned int key_len
   static struct ecc_point *key_256 = NULL, *key_384 = NULL;
   static mpz_t x, y;
   static struct dsa_signature *sig_struct;
-#if NETTLE_VERSION_MAJOR == 3 && NETTLE_VERSION_MINOR < 4
+#if !MIN_VERSION(3, 4)
 #define nettle_get_secp_256r1() (&nettle_secp_256r1)
 #define nettle_get_secp_384r1() (&nettle_secp_384r1)
 #endif
@@ -318,7 +325,7 @@ static int dnsmasq_ecdsa_verify(struct blockdata *key_data, unsigned int key_len
   return nettle_ecdsa_verify(key, digest_len, digest, sig_struct);
 }
 
-#ifdef HAVE_GOST
+#if MIN_VERSION(3, 6) && HAVE_GOST
 static int dnsmasq_gostdsa_verify(struct blockdata *key_data, unsigned int key_len, 
 				  unsigned char *sig, size_t sig_len,
 				  unsigned char *digest, size_t digest_len, int algo)
@@ -359,6 +366,7 @@ static int dnsmasq_gostdsa_verify(struct blockdata *key_data, unsigned int key_l
 }
 #endif
 
+#if MIN_VERSION(3, 1)
 static int dnsmasq_eddsa_verify(struct blockdata *key_data, unsigned int key_len, 
 				unsigned char *sig, size_t sig_len,
 				unsigned char *digest, size_t digest_len, int algo)
@@ -385,7 +393,7 @@ static int dnsmasq_eddsa_verify(struct blockdata *key_data, unsigned int key_len
 				   ((struct null_hash_digest *)digest)->buff,
 				   sig);
       
-#if NETTLE_VERSION_MAJOR == 3 && NETTLE_VERSION_MINOR >= 6
+#if MIN_VERSION(3, 6)
     case 16:
       if (key_len != ED448_KEY_SIZE ||
 	  sig_len != ED448_SIGNATURE_SIZE)
@@ -401,6 +409,7 @@ static int dnsmasq_eddsa_verify(struct blockdata *key_data, unsigned int key_len
 
   return 0;
 }
+#endif
 
 static int (*verify_func(int algo))(struct blockdata *key_data, unsigned int key_len, unsigned char *sig, size_t sig_len,
 			     unsigned char *digest, size_t digest_len, int algo)
@@ -416,16 +425,17 @@ static int (*verify_func(int algo))(struct blockdata *key_data, unsigned int key
     case 5: case 7: case 8: case 10:
       return dnsmasq_rsa_verify;
 
-#ifdef HAVE_GOST
+#if MIN_VERSION(3, 6) && HAVE_GOST
     case 12:
       return dnsmasq_gostdsa_verify;
 #endif
       
     case 13: case 14:
       return dnsmasq_ecdsa_verify;
-
+#if MIN_VERSION(3, 1)
     case 15: case 16:
       return dnsmasq_eddsa_verify;
+#endif
     }
   
   return NULL;

@@ -98,7 +98,7 @@ int add_to_ipset(const char *setname, const union all_addr *ipaddr,
   io.pfrio_size = 1;
   if (ioctl(dev, DIOCRADDTABLES, &io))
     {
-      my_syslog(LOG_WARNING, _("IPset: error:%s"), pfr_strerror(errno));
+      my_syslog(LOG_WARNING, _("IPset: error: %s"), pfr_strerror(errno));
       
       return -1;
     }

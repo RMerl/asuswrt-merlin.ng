@@ -2,6 +2,9 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.3 (xx-xxx-xxxx)
+  - NOTE: The IRC channel, #asuswrt, has moved to the
+          Libera IRC network (https://libera.chat/).
+
   - NOTE: First time you boot into this version, you need to
           either shift-reload the main index page, or clear
           your browser cache.
@@ -14,6 +17,8 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: chart.js to 2.9.4.
   - UPDATED: tor to 0.4.5.8.
   - UPDATED: nano to 5.7.
+  - UPDATED: curl to 7.76.1.
+  - UPDATED: dnsmasq to 2.85-openssl.
 
 
 386.2_4 (30-Apr-2021)

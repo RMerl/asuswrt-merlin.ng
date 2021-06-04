@@ -66,24 +66,18 @@ ca_be_str.c:
 	"`echo '#include <bcmevent.h>' | $(CC) -M $(CFLAGS) -xc - | \
 	grep bcmevent.h | head -1`" $@
 
-ifneq ($(PREBUILT_BCMBIN),1)
 ceventd: $(CEVENTD_OBJS) ceventd.h
 	$(CC) $(CFLAGS) $^ -o $@  $(LDFLAGS)
 
 ceventc: $(CEVENTC_OBJS) ceventc.h
 	$(CC) $(CFLAGS) $^ -o $@  $(LDFLAGS)
-else
-ceventd:
-	cp -f $(SRCBASE)/../components/apps/cevent_app/$(PRBM_DIR)/$@ ./
-ceventc:
-	cp -f $(SRCBASE)/../components/apps/cevent_app/$(PRBM_DIR)/$@ ./	
-endif
-ceventd-install: ceventd
+
+ceventd-install: $(if $(wildcard prebuilt/ceventd),,ceventd)
 	install -d $(INSTALLDIR)/bin
 	install ceventd $(INSTALLDIR)/bin
 	$(STRIP) $(INSTALLDIR)/bin/ceventd
 
-ceventc-install: ceventc
+ceventc-install: $(if $(wildcard prebuilt/ceventd),,ceventc)
 	install -d $(INSTALLDIR)/bin
 	install ceventc $(INSTALLDIR)/bin
 	$(STRIP) $(INSTALLDIR)/bin/ceventc
@@ -92,4 +86,3 @@ install: $(INST)
 
 clean:
 	rm -f *.o $(EXES) ca_be_str.c
-

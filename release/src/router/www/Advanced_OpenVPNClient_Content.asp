@@ -380,13 +380,12 @@ function update_visibility(){
 
 	showhide("vpn_client_cn", ((auth == "tls") && (tlsremote > 0)));
 	showhide("client_cn_label", ((auth == "tls") && (tlsremote > 0)));
-	showhide("clientlist_Block", (rgw >= 2));
-	showhide("selectiveTable", (rgw >= 2));
-	showhide("client_enforce", (rgw >= 2));
+	showhide("clientlist_Block", (rgw == 2));
+	showhide("selectiveTable", (rgw == 2));
+	showhide("client_enforce", (rgw != 0));
 
 	showhide("ncp_ciphers", (auth == "tls"));
 	showhide("client_cipher", (auth == "secret"));
-
 }
 
 
@@ -394,7 +393,7 @@ function update_rgw_options(){
 	currentpolicy = document.form.vpn_client_rgw.value;
 	iface = document.form.vpn_client_if_x.value;
 
-	if ((iface == "tap") && (currentpolicy >= 2)) {
+	if ((iface == "tap") && (currentpolicy == 2)) {
 		currentpolicy = 1;
 		document.form.vpn_client_rgw.value = 1;
 	}
@@ -402,10 +401,8 @@ function update_rgw_options(){
 	free_options(document.form.vpn_client_rgw);
 	add_option(document.form.vpn_client_rgw, "No","0",(currentpolicy == 0));
 	add_option(document.form.vpn_client_rgw, "Yes","1",(currentpolicy == 1));
-	if (iface == "tun") {
+	if (iface == "tun")
 		add_option(document.form.vpn_client_rgw, "Policy Rules","2",(currentpolicy == 2));
-		add_option(document.form.vpn_client_rgw, "Policy Rules (strict)","3",(currentpolicy == 3));
-	}
 }
 
 
@@ -1419,7 +1416,7 @@ function refreshVPNIP() {
 						</td>
 					</tr>
 					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,19);">Force Internet traffic through tunnel</a></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,19);">Redirect Internet traffic through tunnel</a></th>
 						<td colspan="2">
 							<select name="vpn_client_rgw" class="input_option" onChange="update_visibility();">
 							</select>

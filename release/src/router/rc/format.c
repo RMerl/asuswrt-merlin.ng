@@ -74,6 +74,12 @@ void adjust_merlin_config(void)
 	}
 
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
+/* Convert strict policy routing to regular policy routing (386.4) */
+		sprintf(varname_ori, "vpn_client%d_rgw", unit);
+		if (nvram_get_int(varname_ori) == 3)
+			nvram_set(varname_ori, "2");
+
+/* Migrate OVPN custom settings, either from stock _custom or previous AM _custom2* */
 		sprintf(varname_ori, "vpn_client%d_custom2", unit);
 		if(!nvram_is_empty(varname_ori)) {
 			sprintf(varname_new, "vpn_client%d_cust2", unit);

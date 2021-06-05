@@ -201,7 +201,7 @@ Website: https://www.asuswrt-merlin.net/
 Github: https://github.com/RMerl
 Email: merlin@asuswrt-merlin.net
 Twitter: https://twitter.com/RMerlinDev
-IRC: #asuswrt on Freenode
+IRC: #asuswrt on Libera
 Download: https://www.asuswrt-merlin.net/download
 
 Development news will be posted on Twitter and the support forums.  

@@ -19,6 +19,7 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: nano to 5.7.
   - UPDATED: curl to 7.76.1.
   - UPDATED: dnsmasq to 2.85-openssl.
+  - FIXED: Fragattack security issues.
 
 
 386.2_4 (30-Apr-2021)

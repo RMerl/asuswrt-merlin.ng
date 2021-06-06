@@ -1,12 +1,13 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
-386.2_6 (xx-xxx-2021)
+386.2_6 (6-June-2021)
   - NOTE: The IRC channel, #asuswrt, has moved to the
           Libera IRC network (https://libera.chat/).
 
   - UPDATED: chart.js to 2.9.4.
   - UPDATED: tor to 0.4.5.8.
+  - UPDATED: root certificate bundle to June 5th 2021.
   - FIXED: Fragattack security issues
 
 

@@ -2,9 +2,6 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.3 (xx-xxx-xxxx)
-  - NOTE: The IRC channel, #asuswrt, has moved to the
-          Libera IRC network (https://libera.chat/).
-
   - NOTE: First time you boot into this version, you need to
           either shift-reload the main index page, or clear
           your browser cache.
@@ -14,12 +11,31 @@ Asuswrt-Merlin 386/NG Changelog
          device just by scanning the QR code.
          The generated QR code can also be saved as a file
          if you'd like to print it.
-  - UPDATED: chart.js to 2.9.4.
-  - UPDATED: tor to 0.4.5.8.
+  - CHANGED: Rewrote OpenVPN policy routing.  The new implementation
+             brings a few changes:
+             - "Force Internet traffic through tunnel" can now
+               be set to "No", "Yes" or "Policy Rules".
+             - The setting will now override whatever setting
+               pushed by the server regarding gateway redirection.
+             - The kill switch can now be used in both "Yes" and
+               "Policy Rule" modes
+             - Manually stopping a client will remove the kill switch.
+               It will now only be applied at boot time (if client
+               was set to start at boot), or if the tunnel is
+               disconnected through a non-user event
   - UPDATED: nano to 5.7.
   - UPDATED: curl to 7.76.1.
   - UPDATED: dnsmasq to 2.85-openssl.
-  - FIXED: Fragattack security issues.
+
+
+386.2_6 (6-June-2021)
+  - NOTE: The IRC channel, #asuswrt, has moved to the
+          Libera IRC network (https://libera.chat/).
+
+  - UPDATED: chart.js to 2.9.4.
+  - UPDATED: tor to 0.4.5.8.
+  - UPDATED: root certificate bundle to June 5th 2021.
+  - FIXED: Fragattack security issues
 
 
 386.2_4 (30-Apr-2021)

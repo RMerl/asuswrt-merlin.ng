@@ -332,7 +332,7 @@ int ovpn_crt_is_empty(const char *name)
 }
 
 
-char *get_ovpn_custom(ovpn_type_t type, int unit, char* buffer, int bufferlen)
+char *get_ovpn_custom_old(ovpn_type_t type, int unit, char* buffer, int bufferlen)
 {
 	char varname[32];
 	char *nvcontent;
@@ -376,12 +376,40 @@ char *get_ovpn_custom(ovpn_type_t type, int unit, char* buffer, int bufferlen)
 }
 
 
+char *get_ovpn_custom(ovpn_type_t type, int unit, char* buffer, int bufferlen)
+{
+	char filename[128];
+	char *typeStr;
+	int datalen;
+
+	switch (type) {
+		case OVPN_TYPE_SERVER:
+			typeStr = "server";
+			break;
+		case OVPN_TYPE_CLIENT:
+			typeStr = "client";
+			break;
+                default:
+			return buffer;
+        }
+
+	snprintf(filename, sizeof(filename), "%s/vpn_%s%d_custom3", OVPN_FS_PATH, typeStr, unit);
+
+	datalen = f_read(filename, buffer, bufferlen-1);
+	if (datalen < 0) {
+		buffer[0] = '\0';
+	} else {
+		buffer[datalen] = '\0';
+	}
+
+	return buffer;
+}
+
+
 int set_ovpn_custom(ovpn_type_t type, int unit, char* buffer)
 {
-	char varname[32];
-	char *encbuffer;
 	char *typeStr;
-	int datalen, enclen;
+	char filename[128];
 
 	switch (type) {
 		case OVPN_TYPE_SERVER:
@@ -394,28 +422,14 @@ int set_ovpn_custom(ovpn_type_t type, int unit, char* buffer)
 			return -1;
         }
 
-	datalen = strlen(buffer);
+	if(!d_exists(OVPN_FS_PATH))
+		mkdir(OVPN_FS_PATH, S_IRWXU);
 
-	if (datalen) {
-		encbuffer = malloc(base64_encoded_len(datalen) + 1);
-		if (encbuffer) {
-			enclen = base64_encode((unsigned char*)buffer, encbuffer, datalen);
-			encbuffer[enclen] = '\0';
+	snprintf(filename, sizeof(filename), "%s/vpn_%s%d_custom3", OVPN_FS_PATH, typeStr, unit);
+	if (f_write(filename, buffer, strlen(buffer), 0, 0) < 0)
+		return -1;
 
-			snprintf(varname, sizeof (varname), "vpn_%s%d_cust2", typeStr, unit);
-
-#ifdef HND_ROUTER
-			nvram_split_set(varname, encbuffer, 255, 2);
-#else
-			nvram_set(varname, encbuffer);
-#endif
-
-			free(encbuffer);
-			return 0;
-		}
-	}
-
-	return -1;
+	return 0;
 }
 
 

@@ -187,20 +187,10 @@ function initial(){
 	//	https://www.asus.com/support/FAQ/1004466
 	httpApi.faqURL("1004466", function(url){document.getElementById("faq_android").href=url;});
 
-	var cust2 = document.form.vpn_server_cust2.value;
-	if (isSupport("hnd")) {
-		document.getElementById("vpn_server_custom_x").maxLength = 170 * 3; // 255*3 - base64 overhead
-
-		cust2 += document.form.vpn_server_cust21.value +
-		           document.form.vpn_server_cust22.value;
-	}
-
 	// Models without encrypted passwords
 	if (based_modelid == "RT-AC68U") {
 		showhide("show_pass_div", 1);
 	}
-
-	document.getElementById("vpn_server_custom_x").value = Base64.decode(cust2);
 }
 
 var MAX_RETRY_NUM = 5;
@@ -348,11 +338,6 @@ function applyRule(){
 		var vpnSubnet = document.form.vpn_server_sn;
 		var pool_start = '<% nvram_get("dhcp_start"); %>';
 		var pool_subnet = pool_start.split(".")[0]+"."+pool_start.split(".")[1]+"."+pool_start.split(".")[2]+".";
-
-		if (isSupport("hnd"))
-			split_custom2(Base64.encode(document.getElementById("vpn_server_custom_x").value));
-		else
-			document.form.vpn_server_cust2.value = Base64.encode(document.getElementById("vpn_server_custom_x").value);
 
 		if(document.form.vpn_server_if.value == 'tun'){
 			if(vpnSubnet.value == ""){
@@ -586,14 +571,6 @@ function applyRule(){
 		showLoading();
 		document.form.submit();
 	}
-}
-
-function split_custom2(cust2){
-	var counter = 0;
-	document.form.vpn_server_cust2.value = cust2.substring(counter, (counter+=255));
-
-	document.form.vpn_server_cust21.value = cust2.substring(counter, (counter+=255));
-	document.form.vpn_server_cust22.value = cust2.substring(counter, (counter+=255));
 }
 
 function addRow(obj, head){
@@ -1321,9 +1298,6 @@ function callback_upload_cert(_flag) {
 <input type="hidden" name="vpn_serverx_start" value="<% nvram_get("vpn_serverx_start"); %>">
 <input type="hidden" name="vpn_server_ccd_val" value="">
 <input type="hidden" name="vpn_server_tls_keysize" value="<% nvram_get("vpn_server_tls_keysize"); %>">
-<input type="hidden" name="vpn_server_cust2" value="<% nvram_get("vpn_server_cust2"); %>">
-<input type="hidden" name="vpn_server_cust21" value="<% nvram_get("vpn_server_cust21"); %>">
-<input type="hidden" name="vpn_server_cust22" value="<% nvram_get("vpn_server_cust22"); %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>		
@@ -1743,7 +1717,7 @@ function callback_upload_cert(_flag) {
 
 											<tr>
 												<td>
-													<textarea rows="8" class="textarea_ssh_table" spellcheck="false" style="width:99%;" id="vpn_server_custom_x" cols="55" maxlength="2047"></textarea>
+													<textarea rows="8" class="textarea_ssh_table" spellcheck="false" style="width:99%;" name="vpn_server_custom3" cols="55" maxlength="4095"><% nvram_clean_get("vpn_server_custom3"); %></textarea>
 												</td>
 											</tr>
 										</table>

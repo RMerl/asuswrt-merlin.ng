@@ -270,15 +270,6 @@ function initial()
 	document.form.vpn_client_rgw.value = policy_ori;
 	update_visibility();
 
-
-	var cust2 = document.form.vpn_client_cust2.value;
-	if (isSupport("hnd")) {
-		document.getElementById("vpn_client_custom_x").maxLength = 170 * 3;     // 255 * 3 - base64 overhead
-		cust2 += document.form.vpn_client_cust21.value +
-		           document.form.vpn_client_cust22.value;
-	}
-	document.getElementById("vpn_client_custom_x").value = Base64.decode(cust2);
-
 	setTimeout("getConnStatus()", 1000);
 
 }
@@ -380,13 +371,12 @@ function update_visibility(){
 
 	showhide("vpn_client_cn", ((auth == "tls") && (tlsremote > 0)));
 	showhide("client_cn_label", ((auth == "tls") && (tlsremote > 0)));
-	showhide("clientlist_Block", (rgw >= 2));
-	showhide("selectiveTable", (rgw >= 2));
-	showhide("client_enforce", (rgw >= 2));
+	showhide("clientlist_Block", (rgw == 2));
+	showhide("selectiveTable", (rgw == 2));
+	showhide("client_enforce", (rgw != 0));
 
 	showhide("ncp_ciphers", (auth == "tls"));
 	showhide("client_cipher", (auth == "secret"));
-
 }
 
 
@@ -394,7 +384,7 @@ function update_rgw_options(){
 	currentpolicy = document.form.vpn_client_rgw.value;
 	iface = document.form.vpn_client_if_x.value;
 
-	if ((iface == "tap") && (currentpolicy >= 2)) {
+	if ((iface == "tap") && (currentpolicy == 2)) {
 		currentpolicy = 1;
 		document.form.vpn_client_rgw.value = 1;
 	}
@@ -402,10 +392,8 @@ function update_rgw_options(){
 	free_options(document.form.vpn_client_rgw);
 	add_option(document.form.vpn_client_rgw, "No","0",(currentpolicy == 0));
 	add_option(document.form.vpn_client_rgw, "Yes","1",(currentpolicy == 1));
-	if (iface == "tun") {
+	if (iface == "tun")
 		add_option(document.form.vpn_client_rgw, "Policy Rules","2",(currentpolicy == 2));
-		add_option(document.form.vpn_client_rgw, "Policy Rules (strict)","3",(currentpolicy == 3));
-	}
 }
 
 
@@ -600,14 +588,6 @@ function applyRule(manual_switch){
 	if(tmp_value == "<"+"<#IPConnection_VSList_Norule#>" || tmp_value == "<")
 		tmp_value = "";
 
-	if (isSupport("hnd")) {
-		split_clientlist(tmp_value);
-		split_custom2(Base64.encode(document.getElementById("vpn_client_custom_x").value));
-	} else {
-		document.form.vpn_client_clientlist.value = tmp_value;
-		document.form.vpn_client_cust2.value = Base64.encode(document.getElementById("vpn_client_custom_x").value);
-	}
-
 	if (((enforce_ori != getRadioValue(document.form.vpn_client_enforce)) ||
 	     (policy_ori != document.form.vpn_client_rgw.value)) &&
 	    (client_state == 0) && (manual_switch == 0))
@@ -628,14 +608,6 @@ function split_clientlist(clientlist){
 	document.form.vpn_client_clientlist3.value = clientlist.substring(counter, (counter+=255));
 	document.form.vpn_client_clientlist4.value = clientlist.substring(counter, (counter+=255));
 	document.form.vpn_client_clientlist5.value = clientlist.substring(counter, (counter+=255));
-}
-
-function split_custom2(cust2){
-	var counter = 0;
-	document.form.vpn_client_cust2.value = cust2.substring(counter, (counter+=255));
-
-	document.form.vpn_client_cust21.value = cust2.substring(counter, (counter+=255));
-	document.form.vpn_client_cust22.value = cust2.substring(counter, (counter+=255));
 }
 
 function change_vpn_unit(val){
@@ -1097,9 +1069,6 @@ function refreshVPNIP() {
 <input type="hidden" name="vpn_client_clientlist3" value="<% nvram_clean_get("vpn_client_clientlist3"); %>">
 <input type="hidden" name="vpn_client_clientlist4" value="<% nvram_clean_get("vpn_client_clientlist4"); %>">
 <input type="hidden" name="vpn_client_clientlist5" value="<% nvram_clean_get("vpn_client_clientlist5"); %>">
-<input type="hidden" name="vpn_client_cust2" value="<% nvram_get("vpn_client_cust2"); %>">
-<input type="hidden" name="vpn_client_cust21" value="<% nvram_get("vpn_client_cust21"); %>">
-<input type="hidden" name="vpn_client_cust22" value="<% nvram_get("vpn_client_cust22"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -1419,7 +1388,7 @@ function refreshVPNIP() {
 						</td>
 					</tr>
 					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,19);">Force Internet traffic through tunnel</a></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,19);">Redirect Internet traffic through tunnel</a></th>
 						<td colspan="2">
 							<select name="vpn_client_rgw" class="input_option" onChange="update_visibility();">
 							</select>
@@ -1483,7 +1452,7 @@ function refreshVPNIP() {
 					</thead>
 					<tr>
 						<td>
-							<textarea rows="8" class="textarea_ssh_table" spellcheck="false" style="width:99%;" id="vpn_client_custom_x" cols="55" maxlength="2047"></textarea>
+							<textarea rows="8" class="textarea_ssh_table" spellcheck="false" style="width:99%;" name="vpn_client_custom3" cols="55" maxlength="4095"><% nvram_clean_get("vpn_client_custom3"); %></textarea>
 						</td>
 					</tr>
 					</table>

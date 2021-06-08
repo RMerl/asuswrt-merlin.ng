@@ -26,7 +26,8 @@ void adjust_merlin_config(void)
 #ifdef RTCONFIG_OPENVPN
 	int unit;
 	char varname_ori[32], varname_ori2[32], varname_new[32];
-	int rgw, plan;
+	int rgw, plan, converted;
+	char buffer[4096];
 #endif
 	char *newstr, *hostnames;
 	char *nv, *nvp, *entry;
@@ -46,57 +47,80 @@ void adjust_merlin_config(void)
 		nvram_unset("vpn_server_clientlist");
 	}
 
-/* Migrate OVPN custom settings, either from stock _custom or previous AM _custom2* */
+/* Migrate OVPN custom settings, either from stock _custom, or previous AM _custom2 and _cust2 (386.3) */
 	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
+
+/* Handle custom2 migration */
+		converted = 0;
 		sprintf(varname_ori, "vpn_server%d_custom2", unit);
 		if(!nvram_is_empty(varname_ori)) {
-			sprintf(varname_new, "vpn_server%d_cust2", unit);
-			nvram_set(varname_new, nvram_safe_get(varname_ori));
+			strlcpy(buffer, nvram_safe_get(varname_ori), sizeof (buffer));
 			nvram_unset(varname_ori);
 #ifdef HND_ROUTER
 			sprintf(varname_ori, "vpn_server%d_custom21", unit);
-			sprintf(varname_new, "vpn_server%d_cust21", unit);
-			nvram_set(varname_new, nvram_safe_get(varname_ori));
+			strlcat(buffer, nvram_safe_get(varname_ori), sizeof (buffer));
 			nvram_unset(varname_ori);
 
 			sprintf(varname_ori, "vpn_server%d_custom22", unit);
-			sprintf(varname_new, "vpn_server%d_cust22", unit);
-			nvram_set(varname_new, nvram_safe_get(varname_ori));
+			strlcat(buffer, nvram_safe_get(varname_ori), sizeof (buffer));
 			nvram_unset(varname_ori);
 #endif
-		} else {	// Check if need to migrate from stock or older Asuswrt-Merlin
-			sprintf(varname_ori,"vpn_server%d_custom", unit);
-			if(!nvram_is_empty(varname_ori)) {
-				set_ovpn_custom(OVPN_TYPE_SERVER, unit, nvram_safe_get(varname_ori));
-				nvram_unset(varname_ori);
-			}
+			set_ovpn_custom(OVPN_TYPE_SERVER, unit, buffer);
+			converted = 1;
+		}
+
+/* Handle cust2 base64 migration */
+		sprintf(varname_ori, "vpn_server%d_cust2", unit);
+		if(!converted && !nvram_is_empty(varname_ori)) {
+			get_ovpn_custom_old(OVPN_TYPE_SERVER, unit, buffer, sizeof (buffer));
+			set_ovpn_custom(OVPN_TYPE_SERVER, unit, buffer);
+			nvram_unset(varname_ori);
+			converted = 1;
+		}
+
+/* Handle stock or very old migration */
+		sprintf(varname_ori, "vpn_server%d_custom", unit);
+		if(!converted && !nvram_is_empty(varname_ori)) {
+			set_ovpn_custom(OVPN_TYPE_SERVER, unit, nvram_safe_get(varname_ori));
+			nvram_unset(varname_ori);
 		}
 	}
 
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
+
+/* Handle custom2 migration */
+		converted = 0;
 		sprintf(varname_ori, "vpn_client%d_custom2", unit);
 		if(!nvram_is_empty(varname_ori)) {
-			sprintf(varname_new, "vpn_client%d_cust2", unit);
-			nvram_set(varname_new, nvram_safe_get(varname_ori));
+			strlcpy(buffer, nvram_safe_get(varname_ori), sizeof (buffer));
 			nvram_unset(varname_ori);
-
 #ifdef HND_ROUTER
 			sprintf(varname_ori, "vpn_client%d_custom21", unit);
-			sprintf(varname_new, "vpn_client%d_cust21", unit);
-			nvram_set(varname_new, nvram_safe_get(varname_ori));
+			strlcat(buffer, nvram_safe_get(varname_ori), sizeof (buffer));
 			nvram_unset(varname_ori);
 
 			sprintf(varname_ori, "vpn_client%d_custom22", unit);
-			sprintf(varname_new, "vpn_client%d_cust22", unit);
-			nvram_set(varname_new, nvram_safe_get(varname_ori));
+			strlcat(buffer, nvram_safe_get(varname_ori), sizeof (buffer));
 			nvram_unset(varname_ori);
 #endif
-		} else {	// Check if need to migrate from stock or older Asuswrt-Merlin
-			sprintf(varname_ori,"vpn_client%d_custom", unit);
-			if(!nvram_is_empty(varname_ori)) {
-				set_ovpn_custom(OVPN_TYPE_CLIENT, unit, nvram_safe_get(varname_ori));
-				nvram_unset(varname_ori);
-			}
+			set_ovpn_custom(OVPN_TYPE_CLIENT, unit, buffer);
+			converted = 1;
+		}
+
+/* Handle cust2 base64 migration */
+		sprintf(varname_ori, "vpn_client%d_cust2", unit);
+		if(!converted && !nvram_is_empty(varname_ori)) {
+			get_ovpn_custom_old(OVPN_TYPE_CLIENT, unit, buffer, sizeof (buffer));
+			set_ovpn_custom(OVPN_TYPE_CLIENT, unit, buffer);
+			nvram_unset(varname_ori);
+			converted = 1;
+		}
+
+/* Handle stock or very old migration */
+		sprintf(varname_ori, "vpn_client%d_custom", unit);
+		if(!converted && !nvram_is_empty(varname_ori)) {
+			set_ovpn_custom(OVPN_TYPE_CLIENT, unit, nvram_safe_get(varname_ori));
+			nvram_unset(varname_ori);
 		}
 	}
 

@@ -1076,18 +1076,32 @@ ej_nvram_clean_get(int eid, webs_t wp, int argc, char_t **argv)
 {
 	char *name, *c;
 	int ret = 0;
+	int unit;
+	char buffer[4096];
 
 	if (ejArgs(argc, argv, "%s", &name) < 1) {
 		websError(wp, 400, "Insufficient args\n");
 		return -1;
 	}
 
-	for (c = nvram_safe_get(name); *c; c++) {
+	if (!strcmp(name, "vpn_client_custom3")) {
+		unit = nvram_get_int("vpn_client_unit");
+		c = get_ovpn_custom(OVPN_TYPE_CLIENT, unit, buffer, sizeof (buffer));
+	}
+	else if (!strcmp(name, "vpn_server_custom3")) {
+		unit = nvram_get_int("vpn_server_unit");
+		c = get_ovpn_custom(OVPN_TYPE_SERVER, unit, buffer, sizeof (buffer));
+	}
+	else
+		c = nvram_safe_get(name);
+
+	while (*c) {
 		if (isprint(*c) &&
 			*c != '"' && *c != '&' && *c != '<' && *c != '>')
 				ret += websWrite(wp, "%c", *c);
 		else
 			ret += websWrite(wp, "&#%d;", *c);
+		c++;
 	}
 
 	return ret;
@@ -3799,17 +3813,28 @@ int validate_apply(webs_t wp, json_object *root) {
 				snprintf(prefix, sizeof(prefix), "vpn_server%d_", unit);
 				(void)strcat_r(prefix, name+11, tmp);
 
-				if(strcmp(nvram_safe_get(tmp), value)) {
+				if (!strcmp(name, "vpn_server_custom3")) {
+					set_ovpn_custom(OVPN_TYPE_SERVER, unit, value);
+					nvram_modified = 1;
+					_dprintf("set %s=%s\n", tmp, value);
+				}
+				else if(strcmp(nvram_safe_get(tmp), value)) {
 					nvram_set(tmp, value);
 					nvram_modified = 1;
 					_dprintf("set %s=%s\n", tmp, value);
 				}
+
 			}
 			else if(!strncmp(name, "vpn_client_", 11) && unit!=-1) {
 				snprintf(prefix, sizeof(prefix), "vpn_client%d_", unit);
 				(void)strcat_r(prefix, name+11, tmp);
 
-				if(strcmp(nvram_safe_get(tmp), value)) {
+				if (!strcmp(name, "vpn_client_custom3")) {
+					set_ovpn_custom(OVPN_TYPE_CLIENT, unit, value);
+					nvram_modified = 1;
+					_dprintf("set %s=%s\n", tmp, value);
+				}
+				else if(strcmp(nvram_safe_get(tmp), value)) {
 					nvram_set(tmp, value);
 					nvram_modified = 1;
 					_dprintf("set %s=%s\n", tmp, value);

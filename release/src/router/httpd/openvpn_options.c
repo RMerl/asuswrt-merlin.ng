@@ -565,7 +565,7 @@ add_option (char *p[], int line, int unit)
 		else
 		{
 			if(p[2]) {
-				nvram_pf_set(prefix, "hmac", 4);
+				nvram_pf_set(prefix, "hmac", "4");
 			}
 			return VPN_UPLOAD_NEED_STATIC;
 		}

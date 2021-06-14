@@ -221,9 +221,13 @@ function show_vpn_summary(refresh) {
 				break;
 			case "1":
 				var routing = "Redirect all";
+				if (ovpn_info.enforce == 1)
+					routing += ' + killswitch';
 				break;
 			case "2":
 				var routing = '<span style="#FC0;">Policy rules</span>';
+				if (ovpn_info.enforce == 1)
+					routing += ' + <span style="#FC0;">killswitch</span>';
 				break;
 			default:
 				var routing = "unknown";
@@ -232,8 +236,7 @@ function show_vpn_summary(refresh) {
 
 		code += '<tr><th style="text-align:left; padding-left:10px;">OVPN' + i + ': ' + ovpn_info.desc + '</th>';
 		code += '<td style="text-align:left; padding-left:10px;">' + ( ovpn_info.state == 2 ? '<span style="color:#FC0;">Connected</span>' : 'Disconnected') + '</td>';
-		code +=	'<td style="text-align:left; padding-left:10px;">' + routing;
-		code += (ovpn_info.enforce == 1 ? ' + <span style="#FC0;">killswitch</span>' : '') + '</td>';
+		code +=	'<td style="text-align:left; padding-left:10px;">' + routing + '</td>';
 		if (ovpn_info.state == 2)
 			code += '<td style="text-align:left; padding-left:10px;"><span onclick="stop_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Stop Client</span></td></tr>';
 		else if ((ovpn_info.state == 0) || (ovpn_info.state == -1))

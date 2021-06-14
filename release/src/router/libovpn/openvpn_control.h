@@ -25,4 +25,5 @@ extern void ovpn_stop_server(int unit);
 void _clean_routing_rules(int unit);
 extern void ovpn_set_killswitch(int unit);
 void _flush_routing_cache();
+void _write_routing_rules(int unit, char *buffer);
 #endif

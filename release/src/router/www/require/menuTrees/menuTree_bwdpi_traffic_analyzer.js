@@ -285,6 +285,7 @@ define(function(){
 				index: "menu_VPN", 
 				tab: [
 					{url: "Advanced_VPNStatus.asp", tabName: "VPN Status"},
+					{url: "Advanced_VPNDirector.asp", tabName: "VPN Director"},
 					{url: "Advanced_VPN_OpenVPN.asp", tabName: "<#BOP_isp_heart_item#>"},
 					{url: "Advanced_VPN_PPTP.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_VPN_IPSec.asp", tabName: "__INHERIT__"},
@@ -609,6 +610,8 @@ define(function(){
 
 				if(!openvpnd_support){
 					retArray.push("Advanced_VPN_OpenVPN.asp");
+					retArray.push("Advanced_OpenVPNClient_Content.asp");
+					retArray.push("Advanced_VPNDirector.asp");
 				}	
 
 				if(!ipsec_srv_support){

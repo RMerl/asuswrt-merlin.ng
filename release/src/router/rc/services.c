@@ -14806,7 +14806,18 @@ retry_wps_enr:
 		if (action & RC_SERVICE_START) start_ovpn_server(atoi(&script[9]));
 	}
 	else if (strncmp(script, "vpnrouting" ,10) == 0) {
-		if (action & RC_SERVICE_START) ovpn_set_routing_rules(atoi(&script[10]));
+		int unit;
+
+		if (action & RC_SERVICE_START) {
+			unit = atoi(&script[10]);
+			if (unit == 0) {
+				for (i = 1; i < OVPN_CLIENT_MAX; i++) {
+					ovpn_set_routing_rules(i);
+				}
+			} else {
+				ovpn_set_routing_rules(unit);
+			}
+		}
 	}
 #endif
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)

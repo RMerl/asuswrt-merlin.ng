@@ -1022,6 +1022,7 @@ ej_nvram_get(int eid, webs_t wp, int argc, char_t **argv)
 //	char sid_dummy = "",
 	int from_app = 0;
 	char dec_passwd[4096];
+	char buffer[8000];
 
 	memset(dec_passwd, 0, sizeof(dec_passwd));
 
@@ -1526,13 +1527,17 @@ ej_nvram_char_to_ascii(int eid, webs_t wp, int argc, char_t **argv)
 	char tmp[MAX_LINE_SIZE];
 	char *buf = tmp, *str;
 	int ret;
+	char buffer[8000];
 
 	if (ejArgs(argc, argv, "%s %s", &sid, &name) < 2) {
 		websError(wp, 400, "Insufficient args\n");
 		return -1;
 	}
 
-	str = nvram_safe_get_x(sid, name);
+	if (!strcmp(name, "vpndirector_rulelist"))
+		str = ovpn_get_policy_rules(-1, buffer, sizeof (buffer));
+	else
+		str = nvram_safe_get_x(sid, name);
 
 	/* each char expands to %XX at max */
 	ret = strlen(str) * sizeof(char)*3 + sizeof(char);
@@ -3839,6 +3844,9 @@ int validate_apply(webs_t wp, json_object *root) {
 					nvram_modified = 1;
 					_dprintf("set %s=%s\n", tmp, value);
 				}
+			}
+			else if (!strcmp(name, "vpndirector_rulelist")) {
+				ovpn_set_policy_rules(value);
 			}
 #endif
 			else if(!strncmp(name, "sshd_", 5)) {

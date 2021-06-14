@@ -373,7 +373,7 @@ void ovpn_client_up_handler(int unit)
 				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route replace default via %s table ovpnc%d",
 				         remotegw_env, unit);
 				if (verb >= 3)
-					logmessage("openvpn-routing","Redirecting all traffic through VPN client %d gateway", unit);
+					logmessage("openvpn-routing","Setting client %d routing table's default route through the tunnel", unit);
 				system(buffer);
 			} else {
 				logmessage("openvpn-routing","WARNING: no VPN gateway provided, routing might not work properly!");
@@ -453,16 +453,17 @@ exit:
 }
 
 
+// Remove all rules pointing to a specific client table
+// If unit is 0, then remove rules targetting main (i.e. WAN)
 void _clear_routing_rules(int unit) {
 	FILE *fp;
 	char buffer[128], buffer2[128], buffer3[128];
-	int prio, minprio, verb;
-
+	int prio, verb;
+	char table[12], *lookup;
+	char target_table[12];
 
 	snprintf(buffer, sizeof (buffer), "vpn_client%d_verb", unit);
 	verb = nvram_get_int(buffer);
-
-	minprio = 10000 + (200 * (unit-1));
 
 	snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule show > /tmp/vpnrules%d_tmp", unit);
 	system(buffer);
@@ -470,14 +471,28 @@ void _clear_routing_rules(int unit) {
 	snprintf(buffer, sizeof (buffer), "/tmp/vpnrules%d_tmp", unit);
 	fp = fopen(buffer, "r");
 	if (fp) {
+		if (unit == 0)
+			strlcpy(target_table, "main", sizeof (target_table));
+		else
+			snprintf(target_table, sizeof (target_table), "ovpnc%d", unit);
+
 		while (fgets(buffer2, sizeof(buffer2), fp) != NULL) {
 			if (buffer2[strlen(buffer2)-1] == '\n')
 				buffer2[strlen(buffer2)-1] = '\0';
 
-			if (sscanf(buffer2, "%u:", &prio) != 1)
+			if (sscanf(buffer2, "%u", &prio) != 1)
 				continue;
 
-			if (prio < minprio || prio > minprio + 200)
+			// Only remove rules within our official range
+			if ((prio < 10000) || (prio > (10209 + (OVPN_CLIENT_MAX * 200))))
+				continue;
+
+			if ((lookup = strstr(buffer2, "lookup")) == NULL)
+				continue;
+
+			if (sscanf(lookup, "lookup %11s", table) != 1)
+				continue;
+			if (strcmp(table, target_table))
 				continue;
 
 			snprintf(buffer3, sizeof (buffer3), "/usr/sbin/ip rule del prio %d", prio);
@@ -490,75 +505,111 @@ void _clear_routing_rules(int unit) {
 	unlink(buffer);
 }
 
+/*
+	Rule priority allocations:
+
+	10000-10009: clients set to OVPN_RGW_ALL
+
+	10010-10209: WAN rules
+
+	10210-10409: OVPN 1
+	10510-10609: OVPN 2
+	10710-10809: OVPN 3
+	10910-11009: OVPN 4
+	11100-11209: OVPN 5
+*/
 
 void ovpn_set_routing_rules(int unit) {
-	char prefix[32], buffer[128], table[16];
-	int ruleprio, rgw, verb;
-	char *desc, *target, *src, *dst;
-	char srcstr[64], dststr[64];
-	char *nv, *nvp, *rule;
+	char prefix[32], buffer[8000];
+	int rgw, state;
+
+	if (unit < 1 || unit > OVPN_CLIENT_MAX)
+		return;
 
 	_clear_routing_rules(unit);
 
+	/* Refresh WAN rules */
+	_clear_routing_rules(0);
+	ovpn_get_policy_rules(0, buffer, sizeof (buffer));
+	_write_routing_rules(0, buffer);
+
 	snprintf(prefix, sizeof(prefix), "vpn_client%d_", unit);
-
 	rgw = nvram_pf_get_int(prefix, "rgw");
-	verb = nvram_pf_get_int(prefix, "verb");
-
-	ruleprio = 10000 + (200 * (unit-1));
 
 	switch (rgw) {
 		case OVPN_RGW_NONE:
 		case OVPN_RGW_ALL:
-			snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add table ovpnc%d priority %d", unit, ruleprio);
-			system(buffer);
-			break;
-		case OVPN_RGW_POLICY:
-		case OVPN_RGW_POLICY_STRICT:
-
-			snprintf(buffer, sizeof (buffer), "%sclientlist", prefix);
-#ifdef HND_ROUTER
-			nv = nvp = malloc(255 * 6 + 1);
-			if (nv) nvram_split_get(buffer, nv, 255 * 6 + 1, 5);
-#else
-			nv = nvp = strdup(nvram_safe_get(buffer));
-#endif
-
-			while (nv && (rule = strsep(&nvp, "<")) != NULL) {
-				if((vstrsep(rule, ">", &desc, &src, &dst, &target)) != 4)
-					 continue;
-
-				if (!*src && !*dst)
-					continue;
-
-				if (!strcmp(target,"WAN"))
-					strcpy(table, "main");
-				else if (!strcmp(target, "VPN"))
-					snprintf(table, sizeof (table), "ovpnc%d", unit);
-				else
-					continue;
-
-				if (*src && strcmp(src, "0.0.0.0"))
-					snprintf(srcstr, sizeof (srcstr), "from %s", src);
-				else
-					*srcstr = '\0';
-
-				if (*dst && strcmp(dst, "0.0.0.0"))
-					snprintf(dststr, sizeof (dststr), "to %s", dst);
-				else
-					*dststr = '\0';
-
-				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add %s %s table %s priority %d",
-				                                   srcstr, dststr, table, ruleprio++);
-
-				if (verb >= 3)
-					logmessage("openvpn-routing","Routing %s from \"%s\" to \"%s\" through %s", desc, src, dst, table);
-
+			// Set client rules if running or currently connecting
+			state = get_ovpn_status(OVPN_TYPE_CLIENT, unit);
+			if (state == OVPN_STS_RUNNING || state == OVPN_STS_INIT) {
+				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add table ovpnc%d priority %d", unit, 10000 + unit);
 				system(buffer);
 			}
-			free(nv);
+			break;
+
+		case OVPN_RGW_POLICY:
+			ovpn_get_policy_rules(unit, buffer, sizeof (buffer));
+			_write_routing_rules(unit, buffer);
 			break;
 	}
+}
+
+
+void _write_routing_rules(int unit, char *rules) {
+	char *buffer_tmp, *buffer_tmp2, *rule;
+	char buffer[128], prefix[32], table[16];
+	int ruleprio, vpnprio, wanprio, verb;
+	char *enable, *desc, *target, *src, *dst;
+	char srcstr[64], dststr[64];
+
+	snprintf(prefix, sizeof(prefix), "vpn_client%d_", unit);
+	verb = nvram_pf_get_int(prefix, "verb");
+
+	wanprio = 10010;
+	vpnprio = 10010 + (200 * unit);
+
+	buffer_tmp = buffer_tmp2 = strdup(rules);
+
+	while (buffer_tmp && (rule = strsep(&buffer_tmp2, "<")) != NULL) {
+		if((vstrsep(rule, ">", &enable, &desc, &src, &dst, &target)) != 5)
+			 continue;
+
+		if (!atoi(&enable[0]))
+			continue;
+
+		if (!*src && !*dst)
+			continue;
+
+		if (!strcmp(target,"WAN")) {
+			strcpy(table, "main");
+			ruleprio = wanprio++;
+		}
+		else if (!strncmp(target, "OVPN", 4)) {
+			snprintf(table, sizeof (table), "ovpnc%d", unit);
+			ruleprio = vpnprio++;
+		}
+		else
+			continue;
+
+		if (*src && strcmp(src, "0.0.0.0"))
+			snprintf(srcstr, sizeof (srcstr), "from %s", src);
+		else
+			*srcstr = '\0';
+
+		if (*dst && strcmp(dst, "0.0.0.0"))
+			snprintf(dststr, sizeof (dststr), "to %s", dst);
+		else
+			*dststr = '\0';
+
+		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add %s %s table %s priority %d",
+				                                   srcstr, dststr, table, ruleprio);
+
+		if (verb >= 3)
+			logmessage("openvpn-routing","Routing %s from \"%s\" to \"%s\" through %s", desc, src, dst, table);
+
+		system(buffer);
+	}
+	free(buffer_tmp);
 }
 
 
@@ -806,8 +857,13 @@ void ovpn_stop_client(int unit) {
 	// Stop the VPN client
 	killall_tk_period_wait(buffer, 10);
 
-	// Manual stop, so remove rules, which will also free clients from killswitch
+	// Manual stop, so remove rules
 	_clear_routing_rules(unit);
+
+	// Clear routing table, also freeing from killswitch set by down handler
+	snprintf(buffer, sizeof (buffer),"/usr/sbin/ip route flush table ovpnc%d", unit);
+	logmessage("openvpn-routing", "Clearing routing table");
+	system(buffer);
 
 	ovpn_remove_iface(OVPN_TYPE_CLIENT, unit);
 

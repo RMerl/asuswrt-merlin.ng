@@ -426,7 +426,7 @@ int set_ovpn_custom(ovpn_type_t type, int unit, char* buffer)
 		mkdir(OVPN_FS_PATH, S_IRWXU);
 
 	snprintf(filename, sizeof(filename), "%s/vpn_%s%d_custom3", OVPN_FS_PATH, typeStr, unit);
-	if (f_write(filename, buffer, strlen(buffer), 0, 0) < 0)
+	if (f_write(filename, buffer, strlen(buffer), 0,  S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP) < 0)
 		return -1;
 
 	return 0;
@@ -654,7 +654,7 @@ int ovpn_set_policy_rules(char* buffer)
 		mkdir(OVPN_FS_PATH, S_IRWXU);
 
 	snprintf(filename, sizeof(filename), "%s/vpndirector_rulelist", OVPN_FS_PATH);
-	if (f_write(filename, buffer, strlen(buffer), 0, 0) < 0)
+	if (f_write(filename, buffer, strlen(buffer), 0, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP) < 0)
 		return -1;
 
 	return 0;

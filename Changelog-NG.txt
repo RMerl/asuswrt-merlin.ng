@@ -6,16 +6,29 @@ Asuswrt-Merlin 386/NG Changelog
           either shift-reload the main index page, or clear
           your browser cache.
 
+  - NEW: Introducing VPN Director, which replaces the original
+         policy routing management interface for OpenVPN clients.
+         A bit similar to Asus's own VPN Fusion, OpenVPN routing
+         rules are now managed through a central web interface,
+         and they are stored in JFFS instead of nvram, to allow
+         creating more rules, and free up some nvram for
+         nvram-limited devices such as the RT-AC68U.
+         See the Wiki for more information.
+
   - NEW: Added QR codes to the networkmap as well as the Guest
          Network page, to allow easily connecting a mobile
          device just by scanning the QR code.
          The generated QR code can also be saved as a file
          if you'd like to print it.
-  - CHANGED: Rewrote OpenVPN policy routing.  The new implementation
-             brings a few changes:
+
+  - CHANGED: Rewrote OpenVPN routing handling.  Asuswrt-Merlin
+             will now handle route creation rather than letting
+             the openvpn client create/remove routes itself.
+             The new implementation brings a few changes:
+
              - "Force Internet traffic through tunnel" can now
                be set to "No", "Yes" or "Policy Rules".
-             - The setting will now override whatever setting
+             - This setting will now override whatever setting
                pushed by the server regarding gateway redirection.
              - The kill switch can now be used in both "Yes" and
                "Policy Rule" modes

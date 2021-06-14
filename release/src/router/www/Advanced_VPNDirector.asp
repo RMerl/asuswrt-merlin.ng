@@ -30,7 +30,7 @@
 	z-index: 200;
 	display: none;
 	margin-left: 35%;
-	top: 290px;
+	top: 280px !important;
 	width: 600px;
 	box-shadow: 1px 5px 10px #000;
 	font-size: 12px;
@@ -564,7 +564,7 @@ function applyRule() {
 				<input type="text" maxlength="18" class="input_18_table" id="localIP_x" align="left" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" style="float:left;" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
 				<img id="pull_arrow" class="pull_arrow" height="16px;" src="images/arrow-down.gif" align="right" onclick="pullLANIPList(this);" title="<#select_IP#>">
 				<div id="ClientList_Block" class="clientlist_dropdown" style="margin-left:2px;margin-top:27px;width:238px;"></div>
-				<span style="margin-left:8px;"><#feedback_optional#></span>
+				<span style="margin-left:3px; line-height:25px;"><#feedback_optional#></span>
 			</td>
 		</tr>
 		<tr>

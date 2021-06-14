@@ -186,10 +186,6 @@ function initial(){
 	//	https://www.asus.com/support/FAQ/1004466
 	httpApi.faqURL("1004466", function(url){document.getElementById("faq_android").href=url;});
 
-	// Models without encrypted passwords
-	if (based_modelid == "RT-AC68U") {
-		showhide("show_pass_div", 1);
-	}
 }
 
 var MAX_RETRY_NUM = 5;
@@ -1432,7 +1428,7 @@ function callback_upload_cert(_flag) {
 											<ol>
 										</div>
 
-										<div style="color:#FFCC00;display:none;" id="show_pass_div"><input type="checkbox" name="show_pass" id="show_pass" onclick="showopenvpnd_clientlist();update_vpn_client_state();openvpnd_connected_status();">Show passwords</div>
+										<div style="color:#FFCC00;" id="show_pass_div"><input type="checkbox" name="show_pass" id="show_pass" onclick="showopenvpnd_clientlist();update_vpn_client_state();openvpnd_connected_status();">Show passwords</div>
 
 										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
 											<thead>

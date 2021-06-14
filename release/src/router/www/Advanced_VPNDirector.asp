@@ -234,9 +234,9 @@ function show_vpn_summary(refresh) {
 		code += '<td style="text-align:left; padding-left:10px;">' + ( ovpn_info.state == 2 ? '<span style="color:#FC0;">Connected</span>' : 'Disconnected') + '</td>';
 		code +=	'<td style="text-align:left; padding-left:10px;">' + routing;
 		code += (ovpn_info.enforce == 1 ? ' + <span style="#FC0;">killswitch</span>' : '') + '</td>';
-		if ((ovpn_info.state == 2) || (ovpn_info.state == -1))
-			code += '<td style="text-align:left; padding-left:10px; "><span onclick="stop_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Stop Client</span></td></tr>';
-		else if (ovpn_info.state == 0)
+		if (ovpn_info.state == 2)
+			code += '<td style="text-align:left; padding-left:10px;"><span onclick="stop_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Stop Client</span></td></tr>';
+		else if ((ovpn_info.state == 0) || (ovpn_info.state == -1))
                         code += '<td style="text-align:left; padding-left:10px;"><span onclick="start_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Start Client</span></td></tr>';
 		else
 			code += '<td>...&nbsp;</td></tr>';

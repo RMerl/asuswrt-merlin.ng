@@ -71,11 +71,16 @@ void adjust_merlin_config(void)
 
 			nvram_unset(varname_ori);
 #ifdef HND_ROUTER
-			nvram_unset(sprintf(varname_ori, "vpn_client%d_clientlist1", unit));
-			nvram_unset(sprintf(varname_ori, "vpn_client%d_clientlist2", unit));
-			nvram_unset(sprintf(varname_ori, "vpn_client%d_clientlist3", unit));
-			nvram_unset(sprintf(varname_ori, "vpn_client%d_clientlist4", unit));
-			nvram_unset(sprintf(varname_ori, "vpn_client%d_clientlist5", unit));
+			sprintf(varname_ori, "vpn_client%d_clientlist1", unit);
+			nvram_unset(varname_ori);
+			sprintf(varname_ori, "vpn_client%d_clientlist2", unit);
+			nvram_unset(varname_ori);
+			sprintf(varname_ori, "vpn_client%d_clientlist3", unit);
+			nvram_unset(varname_ori);
+			sprintf(varname_ori, "vpn_client%d_clientlist4", unit);
+			nvram_unset(varname_ori);
+			sprintf(varname_ori, "vpn_client%d_clientlist5", unit);
+			nvram_unset(varname_ori);
 #endif
 			free(nv);
 		}

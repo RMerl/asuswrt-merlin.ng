@@ -685,14 +685,7 @@ function showopenvpnd_clientlist(){
 				}
 				else if(j ==1){
 					overlib_str3[i] = vpn_server_clientlist_col[1];
-					if (document.getElementById('show_pass').checked == false) {
-						code +='<td width="35%">*****</td>';
-					}else if(vpn_server_clientlist_col[1].length >32){
-						vpn_server_clientlist_col[1] = vpn_server_clientlist_col[1].substring(0, 30)+"...";
-						code +='<td width="35%" title="'+overlib_str3[i]+'">'+ vpn_server_clientlist_col[1] +'</td>';
-					}else{
-						code +='<td width="35%">'+ vpn_server_clientlist_col[1] +'</td>';
-					}
+					code +='<td width="35%">*****</td>';
 				} 
 			}
 			
@@ -1427,8 +1420,6 @@ function callback_upload_cert(_flag) {
 												<li><a id="faq_android" href="https://www.asus.com/support/FAQ/1004466/" target="_blank" style="text-decoration:underline;">Android</a></li>
 											<ol>
 										</div>
-
-										<div style="color:#FFCC00;" id="show_pass_div"><input type="checkbox" name="show_pass" id="show_pass" onclick="showopenvpnd_clientlist();update_vpn_client_state();openvpnd_connected_status();">Show passwords</div>
 
 										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
 											<thead>

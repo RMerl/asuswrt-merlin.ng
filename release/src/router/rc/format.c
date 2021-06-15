@@ -41,10 +41,16 @@ void adjust_merlin_config(void)
 	int need_commit=0;
 
 #ifdef RTCONFIG_OPENVPN
-/* Migrate OVPN clientlist rules to VPN Director (386.3) */
+/* Migrate OVPN RGW + clientlist rules to VPN Director (386.3) */
 	*buffer = '\0';
 
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
+		sprintf(varname_ori, "vpn_client%d_rgw", unit);
+		if (nvram_get_int(varname_ori) == OVPN_RGW_POLICY_STRICT {
+			nvram_set_int(varname_ori, OVPN_RGW_POLICY);
+			need_commit = 1;
+		}
+
 		sprintf(varname_ori, "vpn_client%d_clientlist", unit);
 		if (!nvram_is_empty(varname_ori)) {
 			need_commit = 1;

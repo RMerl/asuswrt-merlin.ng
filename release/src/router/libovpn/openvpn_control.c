@@ -270,25 +270,7 @@ void ovpn_client_up_handler(int unit)
 		}
 	}
 
-	// DNS stuff
-	if (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_IGNORE)
-		goto exit;
-
 	verb = nvram_pf_get_int(prefix, "verb");
-
-	sprintf(buffer, "%s/dns.sh", dirname);
-	fp_dns = fopen(buffer, "w");
-	if (!fp_dns)
-		goto exit;
-
-	fprintf(fp_dns, "#!/bin/sh\n"
-	            "/usr/sbin/iptables -t nat -N DNSVPN%d\n",
-	             unit);
-
-	if ((nvram_pf_get_int(prefix, "rgw") >= 2) && (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_EXCLUSIVE))
-		setdns = 0;	// Need to configure enforced DNS
-	else
-		setdns = -1;	// Do not enforce DNS
 
 
 	// Routing handling, only for TUN
@@ -385,6 +367,24 @@ void ovpn_client_up_handler(int unit)
 
 	}	// end IF_TUN
 
+
+	// DNS stuff
+	if (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_IGNORE)
+		goto exit;
+
+	sprintf(buffer, "%s/dns.sh", dirname);
+	fp_dns = fopen(buffer, "w");
+	if (!fp_dns)
+		goto exit;
+
+	fprintf(fp_dns, "#!/bin/sh\n"
+	            "/usr/sbin/iptables -t nat -N DNSVPN%d\n",
+	             unit);
+
+	if ((nvram_pf_get_int(prefix, "rgw") == OVPN_RGW_POLICY) && (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_EXCLUSIVE))
+		setdns = 0;	// Need to configure enforced DNS
+	else
+		setdns = -1;	// Do not enforce DNS
 
 	// Parse foreign options
 	i = 1;

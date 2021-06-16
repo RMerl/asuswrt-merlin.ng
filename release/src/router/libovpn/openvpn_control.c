@@ -359,7 +359,7 @@ void ovpn_client_up_handler(int unit)
 				if (!remote_env || !localgw)
 					break;
 
-				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route add %s/32 via %s table ovpnc%d",
+				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route add %s via %s table ovpnc%d",
 				         remote_env, localgw, unit);
 
 				if (verb >= 6)

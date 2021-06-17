@@ -95,7 +95,6 @@ void reset_ovpn_setting(ovpn_type_t type, int unit, int full){
 		{
 			// Don't reset these settings unless asked to
 			if (!full && (!strcmp(t->name + 12, "desc") ||
-				      !strncmp(t->name + 12, "clientlist", 10) ||	/* handle clientlist1 through 5 */
 				      !strcmp(t->name + 12, "rgw") ||
 				      !strcmp(t->name + 12, "enforce")))
 				continue;

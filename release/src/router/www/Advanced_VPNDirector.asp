@@ -191,7 +191,6 @@ function pullLANIPList(obj){
 function hideClients_Block(){
 	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
 	document.getElementById('ClientList_Block').style.display = 'none';
-	validator.validIPForm(document.getElementById("localIP_x"), 0);
 }
 
 
@@ -416,6 +415,11 @@ function saveRule(_mode, _rowIdx) {
 
 	if ( $("#localIP_x").val() == "" && $("#remoteIP_x").val() == "") {
 		alert("You need to specify either a local or remote address!");
+		return false;
+	}
+
+	if (!validator.ipv4cidr(document.getElementById("remoteIP_x")) ||
+	    !validator.ipv4cidr(document.getElementById("localIP_x"))) {
 		return false;
 	}
 

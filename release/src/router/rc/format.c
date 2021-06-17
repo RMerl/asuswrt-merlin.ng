@@ -46,7 +46,7 @@ void adjust_merlin_config(void)
 
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
 		sprintf(varname_ori, "vpn_client%d_rgw", unit);
-		if (nvram_get_int(varname_ori) == OVPN_RGW_POLICY_STRICT {
+		if (nvram_get_int(varname_ori) == OVPN_RGW_POLICY_STRICT) {
 			nvram_set_int(varname_ori, OVPN_RGW_POLICY);
 			need_commit = 1;
 		}

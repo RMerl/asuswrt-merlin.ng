@@ -633,25 +633,24 @@ inline void _flush_routing_cache() {
 
 
 void _set_exclusive_dns(FILE *fp, int unit, char *server) {
-	char rules[2048], buffer[32];
+	char rules[8000], buffer[32], iface_match[8];
 	char *nvp, *entry;
-	char *src, *dst, *iface, *name, *netptr;
+	char *src, *dst, *iface, *desc, *enable, *netptr;
 	struct in_addr addr;
 	int mask;
 
 	if (!fp) return;
 
-	sprintf(buffer, "vpn_client%d_clientlist", unit);
-#ifdef HND_ROUTER
-	nvram_split_get(buffer, rules, sizeof (rules), 5);
-#else
-	strlcpy(rules, nvram_safe_get(buffer), sizeof(rules));
-#endif
-
+	ovpn_get_policy_rules(unit, rules, sizeof (rules));
 	nvp = rules;
 
+	snprintf(iface_match, sizeof (iface_match), "OVPN%d", unit);
+
 	while ((entry = strsep(&nvp, "<")) != NULL) {
-		if (vstrsep(entry, ">", &name, &src, &dst, &iface) != 4)
+		if (vstrsep(entry, ">", &enable, &desc, &src, &dst, &iface) != 5)
+			continue;
+
+		if (atoi(&enable[0]) == 0)
 			continue;
 
 		if (*src) {
@@ -667,7 +666,7 @@ void _set_exclusive_dns(FILE *fp, int unit, char *server) {
 			if ((mask >= 0) &&
 			    (mask <= 32) &&
 			    (inet_aton(buffer, &addr))) {
-				if (!strcmp(iface, "VPN")) {
+				if (!strcmp(iface, iface_match)) {
 	                                fprintf(fp, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit, src, server);
 	                                logmessage("openvpn", "Forcing %s to use DNS server %s", src, server);
 	                        } else if (!strcmp(iface, "WAN")) {

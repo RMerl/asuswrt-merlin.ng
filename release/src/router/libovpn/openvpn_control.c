@@ -205,11 +205,7 @@ void ovpn_client_down_handler(int unit)
 	ovpn_set_killswitch(unit);
 	_flush_routing_cache();
 
-	sprintf(buffer, "DNSVPN%d", unit);
-	eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
-	eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
-	eval("/usr/sbin/iptables", "-t", "nat", "-F", buffer);
-	eval("/usr/sbin/iptables", "-t", "nat", "-X", buffer);
+	ovpn_clear_exclusive_dns(unit);
 
 	sprintf(dirname, "/etc/openvpn/client%d", unit);
 
@@ -219,10 +215,6 @@ void ovpn_client_down_handler(int unit)
 		eval(buffer);
 		unlink(buffer);
 	}
-
-	sprintf(buffer, "%s/dns.sh", dirname);
-	if (f_exists(buffer))
-		unlink(buffer);
 
 	sprintf(buffer, "%s/client.resolv", dirname);
 	if (f_exists(buffer))
@@ -236,13 +228,28 @@ void ovpn_client_down_handler(int unit)
 }
 
 
+void ovpn_clear_exclusive_dns(int unit)
+{
+	char buffer[32];
+
+	sprintf(buffer, "DNSVPN%d", unit);
+	eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
+	eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
+	eval("/usr/sbin/iptables", "-t", "nat", "-F", buffer);
+	eval("/usr/sbin/iptables", "-t", "nat", "-X", buffer);
+
+	sprintf(buffer, "/etc/openvpn/client%d/dns.sh", unit);
+	if (f_exists(buffer))
+		unlink(buffer);
+}
+
+
 void ovpn_client_up_handler(int unit)
 {
 	char buffer[128], buffer2[128], buffer3[128];
 	char dirname[64];
 	char prefix[32];
-	FILE *fp_dns = NULL, *fp_resolv = NULL, *fp_conf = NULL, *fp_qos = NULL, *fp_route = NULL;;
-	int setdns;
+	FILE *fp_resolv = NULL, *fp_conf = NULL, *fp_qos = NULL, *fp_route = NULL;;
 	int i, j, verb, rgw;
 	char *option, *option2;
 	char *network_env, *netmask_env, *gateway_env, *metric_env, *remotegw_env, *dev_env;
@@ -271,7 +278,6 @@ void ovpn_client_up_handler(int unit)
 	}
 
 	verb = nvram_pf_get_int(prefix, "verb");
-
 
 	// Routing handling, only for TUN
 	if (!strncmp(_safe_getenv("dev"),"tun", 3)) {
@@ -368,23 +374,8 @@ void ovpn_client_up_handler(int unit)
 	}	// end IF_TUN
 
 
-	// DNS stuff
 	if (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_IGNORE)
 		goto exit;
-
-	sprintf(buffer, "%s/dns.sh", dirname);
-	fp_dns = fopen(buffer, "w");
-	if (!fp_dns)
-		goto exit;
-
-	fprintf(fp_dns, "#!/bin/sh\n"
-	            "/usr/sbin/iptables -t nat -N DNSVPN%d\n",
-	             unit);
-
-	if ((nvram_pf_get_int(prefix, "rgw") == OVPN_RGW_POLICY) && (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_EXCLUSIVE))
-		setdns = 0;	// Need to configure enforced DNS
-	else
-		setdns = -1;	// Do not enforce DNS
 
 	// Parse foreign options
 	i = 1;
@@ -416,11 +407,6 @@ void ovpn_client_up_handler(int unit)
 			}
 			fprintf(fp_resolv, "server=%s\n", &option[16]);
 
-			if (!setdns) {
-				_set_exclusive_dns(fp_dns, unit, &option[16]);
-				setdns = 1;
-			}
-
 			// Any search domains for that server
 			j = 1;
 			while (1) {
@@ -434,17 +420,14 @@ void ovpn_client_up_handler(int unit)
 			}
 		}
 	}
-
 exit:
-	if (fp_dns) {
-		fclose(fp_dns);
-		sprintf(buffer, "%s/dns.sh", dirname);
-		chmod(buffer, 0755);
-		eval(buffer);
-	}
-
-	if (fp_resolv)
+	if (fp_resolv) {
 		fclose(fp_resolv);
+
+		// Set exclusive DNS iptables
+		if ((nvram_pf_get_int(prefix, "rgw") == OVPN_RGW_POLICY) && (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_EXCLUSIVE))
+			ovpn_set_exclusive_dns(unit);
+	}
 
 	if (fp_conf)
 		fclose(fp_conf);
@@ -632,14 +615,31 @@ inline void _flush_routing_cache() {
 }
 
 
-void _set_exclusive_dns(FILE *fp, int unit, char *server) {
-	char rules[8000], buffer[32], iface_match[8];
+void ovpn_set_exclusive_dns(int unit) {
+	char rules[8000], buffer[64], buffer2[64], server[20], iface_match[8];
 	char *nvp, *entry;
 	char *src, *dst, *iface, *desc, *enable, *netptr;
 	struct in_addr addr;
 	int mask;
 
-	if (!fp) return;
+	FILE *fp_resolv, *fp_dns;
+
+	snprintf(buffer, sizeof (buffer), "/etc/openvpn/client%d/client.resolv", unit);
+	fp_resolv = fopen(buffer, "r");
+	snprintf(buffer, sizeof (buffer), "/etc/openvpn/client%d/dns.sh", unit);
+	fp_dns = fopen(buffer, "w");
+
+	if (!fp_resolv || !fp_dns) {
+		if (fp_resolv)
+			fclose(fp_resolv);
+		if (fp_dns)
+			fclose(fp_dns);
+		return;
+	}
+
+	fprintf(fp_dns, "#!/bin/sh\n"
+	                "/usr/sbin/iptables -t nat -N DNSVPN%d\n",
+	                 unit);
 
 	ovpn_get_policy_rules(unit, rules, sizeof (rules));
 	nvp = rules;
@@ -667,19 +667,38 @@ void _set_exclusive_dns(FILE *fp, int unit, char *server) {
 			    (mask <= 32) &&
 			    (inet_aton(buffer, &addr))) {
 				if (!strcmp(iface, iface_match)) {
-	                                fprintf(fp, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit, src, server);
-	                                logmessage("openvpn", "Forcing %s to use DNS server %s", src, server);
+
+					// Interate through servers, we could set just the first one though
+					rewind(fp_resolv);
+					while (fgets(buffer2, sizeof(buffer2), fp_resolv) != NULL) {
+						if (sscanf(buffer2, "server=%16s", server) != 1)
+							continue;
+
+						if (!inet_aton(server, &addr))
+							continue;
+
+		                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit, src, server);
+		                                logmessage("openvpn", "Forcing %s to use DNS server %s", src, server);
+					}
 	                        } else if (!strcmp(iface, "WAN")) {
-	                                fprintf(fp, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit, src);
+	                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit, src);
 	                                logmessage("openvpn", "Excluding %s from forced DNS routing", src);
 	                        }
 			}
 		}
 	}
 
-	fprintf(fp, "/usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN%d\n"
-	            "/usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN%d\n",
-	             unit, unit);
+	fprintf(fp_dns, "/usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN%d\n"
+	                "/usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN%d\n",
+	                 unit, unit);
+
+	fclose(fp_resolv);
+	fclose(fp_dns);
+	sprintf(buffer, "/etc/openvpn/client%d/dns.sh", unit);
+	if (f_exists(buffer)) {
+		chmod(buffer, 0755);
+		eval(buffer);
+	}
 }
 
 

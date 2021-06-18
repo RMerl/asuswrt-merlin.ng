@@ -14813,9 +14813,13 @@ retry_wps_enr:
 			if (unit == 0) {
 				for (i = 1; i < OVPN_CLIENT_MAX; i++) {
 					ovpn_set_routing_rules(i);
+					ovpn_clear_exclusive_dns(i);
+					ovpn_set_exclusive_dns(i);
 				}
 			} else {
 				ovpn_set_routing_rules(unit);
+				ovpn_clear_exclusive_dns(unit);
+				ovpn_set_exclusive_dns(unit);
 			}
 		}
 	}

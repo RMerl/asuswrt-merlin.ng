@@ -14,7 +14,7 @@ extern void ovpn_server_up_handler(int unit);
 extern void ovpn_server_down_handler(int unit);
 extern void ovpn_client_down_handler(int unit);
 extern void ovpn_client_up_handler(int unit);
-void _set_exclusive_dns(FILE *fp, int unit, char *server);
+extern void ovpn_set_exclusive_dns(int unit);
 char *_safe_getenv(const char* name);
 void _ovpn_run_event_script();
 extern void ovpn_process_eas(int start);
@@ -26,4 +26,5 @@ void _clean_routing_rules(int unit);
 extern void ovpn_set_killswitch(int unit);
 void _flush_routing_cache();
 void _write_routing_rules(int unit, char *buffer);
+extern void ovpn_clear_exclusive_dns(int unit);
 #endif

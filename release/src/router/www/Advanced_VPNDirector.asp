@@ -224,7 +224,7 @@ function show_vpn_summary(refresh) {
 					routing += ' + killswitch';
 				break;
 			case "2":
-				var routing = '<span style="#FC0;">Policy rules</span>';
+				var routing = '<span style="#FC0;">VPN Director</span>';
 				if (ovpn_info.enforce == 1)
 					routing += ' + <span style="#FC0;">killswitch</span>';
 				break;

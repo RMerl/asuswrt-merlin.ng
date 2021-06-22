@@ -150,7 +150,8 @@ void ovpn_run_fw_scripts(){
 			eval(buffer);
 	}
 
-	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
+	// Reverse order because of DNSVPN rules
+	for (unit = OVPN_CLIENT_MAX; unit > 0; unit--) {
 		snprintf(buffer, sizeof(buffer), "/etc/openvpn/client%d/fw.sh", unit);
 		if (f_exists(buffer))
 			eval(buffer);
@@ -258,13 +259,35 @@ void ovpn_clear_exclusive_dns(int unit)
 }
 
 
+// Recreate the port 53 PREROUTING rules to ensure they are in the correct order (OVPN1 first, OVPN5 last)
+void ovpn_update_exclusive_dns_rules()
+{
+	int unit;
+	char buffer[100];
+
+	for (unit = OVPN_CLIENT_MAX; unit > 0; unit--) {
+		snprintf(buffer, sizeof (buffer), "/etc/openvpn/client%d/dns.sh", unit);
+		if (f_exists(buffer)) {
+			// Remove and re-add to ensure proper order
+			snprintf(buffer, sizeof (buffer), "DNSVPN%d", unit);
+
+			eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
+			eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
+
+			eval("/usr/sbin/iptables", "-t", "nat", "-I", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
+			eval("/usr/sbin/iptables", "-t", "nat", "-I", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
+		}
+	}
+}
+
+
 void ovpn_client_up_handler(int unit)
 {
 	char buffer[128], buffer2[128], buffer3[128];
 	char dirname[64];
 	char prefix[32];
 	FILE *fp_resolv = NULL, *fp_conf = NULL, *fp_qos = NULL, *fp_route = NULL;;
-	int i, j, verb, rgw;
+	int i, j, verb, rgw, lock;
 	char *option, *option2;
 	char *network_env, *netmask_env, *gateway_env, *metric_env, *remotegw_env, *dev_env;
 	char *remote_env, *localgw;
@@ -439,8 +462,13 @@ exit:
 		fclose(fp_resolv);
 
 		// Set exclusive DNS iptables
-		if ((nvram_pf_get_int(prefix, "rgw") == OVPN_RGW_POLICY) && (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_EXCLUSIVE))
+		if ((nvram_pf_get_int(prefix, "rgw") == OVPN_RGW_POLICY) && (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_EXCLUSIVE)) {
+			lock = file_lock(VPNROUTING_LOCK);
 			ovpn_set_exclusive_dns(unit);
+			// Refresh prerouting rules to ensure correct order
+			ovpn_update_exclusive_dns_rules();
+			file_unlock(lock);
+		}
 	}
 
 	if (fp_conf)

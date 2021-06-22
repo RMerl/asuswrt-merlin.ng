@@ -1,6 +1,8 @@
 #ifndef _OPENVPN_CONTROL_H
 #define _OPENVPN_CONTROL_H
 
+#define VPNROUTING_LOCK "vpnrouting-dns"
+
 extern int ovpn_skip_dnsmasq();
 extern int check_ovpn_server_enabled(int unit);
 extern int check_ovpn_client_enabled(int unit);
@@ -28,4 +30,5 @@ void _flush_routing_cache();
 void _write_routing_rules(int unit, char *buffer);
 extern void ovpn_clear_exclusive_dns(int unit);
 extern int ovpn_need_dnsmasq_restart();
+extern void ovpn_update_exclusive_dns_rules();
 #endif

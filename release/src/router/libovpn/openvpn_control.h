@@ -1,7 +1,7 @@
 #ifndef _OPENVPN_CONTROL_H
 #define _OPENVPN_CONTROL_H
 
-extern int ovpn_max_dnsmode();
+extern int ovpn_skip_dnsmasq();
 extern int check_ovpn_server_enabled(int unit);
 extern int check_ovpn_client_enabled(int unit);
 extern void ovpn_set_routing_rules(int unit);
@@ -27,4 +27,5 @@ extern void ovpn_set_killswitch(int unit);
 void _flush_routing_cache();
 void _write_routing_rules(int unit, char *buffer);
 extern void ovpn_clear_exclusive_dns(int unit);
+extern int ovpn_need_dnsmasq_restart();
 #endif

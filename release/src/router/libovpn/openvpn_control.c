@@ -40,30 +40,44 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-// Determine how to handle dnsmasq server list based on
-// highest active dnsmode
-int ovpn_max_dnsmode() {
-	int unit, maxlevel = 0, level;
-	char filename[40];
-	char varname[32];
 
-	for( unit = 1; unit <= OVPN_CLIENT_MAX; unit++ ) {
+int ovpn_skip_dnsmasq() {
+	int unit;
+	char filename[40], varname[32];
+
+	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++ ) {
 		sprintf(filename, "/etc/openvpn/client%d/client.resolv", unit);
 		if (f_exists(filename)) {
 			sprintf(varname, "vpn_client%d_", unit);
-			level = nvram_pf_get_int(varname, "adns");
 
-			// Ignore exclusive mode if policy mode is also enabled
-			if ((nvram_pf_get_int(varname, "rgw") >= OVPN_RGW_POLICY ) && (level == OVPN_DNSMODE_EXCLUSIVE))
-				continue;
-
-			// Only return the highest active level, so one exclusive client
-			// will override a relaxed client.
-			if (level > maxlevel) maxlevel = level;
+			// Skip DNS setup if we have a running client that uses exclusive mode and not VPN Director
+			if ((nvram_pf_get_int(varname, "rgw") == OVPN_RGW_ALL) &&
+			    (nvram_pf_get_int(varname, "adns") == OVPN_DNSMODE_EXCLUSIVE) &&
+			    (nvram_pf_get_int(varname, "state") > OVPN_STS_STOP))	// Include OVPN_STS_INIT/STOPPING
+				return 1;
 		}
 	}
-	return maxlevel;
+	return 0;
 }
+
+
+// Any running client using strict mode (which requires restarting dnsmasq)?
+int ovpn_need_dnsmasq_restart() {
+	int unit;
+	char filename[40], varname[32];
+
+	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++ ) {
+		sprintf(filename, "/etc/openvpn/client%d/client.resolv", unit);
+		if (f_exists(filename)) {
+			sprintf(varname, "vpn_client%d_", unit);
+			if ((nvram_pf_get_int(varname, "adns") == OVPN_DNSMODE_STRICT) &&
+			    (nvram_pf_get_int(varname, "state") > OVPN_STS_STOP))
+				return 1;
+		}
+	}
+	return 0;
+}
+
 
 int _check_ovpn_enabled(int unit, ovpn_type_t type){
 	char tmp[2];

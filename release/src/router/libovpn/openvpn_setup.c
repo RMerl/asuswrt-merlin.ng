@@ -67,7 +67,7 @@ void write_ovpn_resolv_dnsmasq(FILE* dnsmasq_conf) {
 
 			// Don't add servers if policy routing is enabled and dns mode set to "Exclusive"
 			// Handled by iptables on a case-by-case basis
-			if ((nvram_pf_get_int(prefix, "rgw") >= OVPN_RGW_POLICY ) && (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_EXCLUSIVE))
+			if ((nvram_pf_get_int(prefix, "rgw") == OVPN_RGW_POLICY) && (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_EXCLUSIVE))
 				continue;
 
 			buffer = read_whole_file(filename);

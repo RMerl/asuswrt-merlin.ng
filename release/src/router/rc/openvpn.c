@@ -88,6 +88,19 @@ int ovpn_down_main(int argc, char **argv)
 	return 0;
 }
 
+
+int ovpn_route_up_main(int argc, char **argv)
+{
+	ovpn_client_route_up_handler();
+	return 0;
+}
+
+int ovpn_route_pre_down_main(int argc, char **argv)
+{
+	ovpn_client_route_pre_down_handler();
+}
+
+
 /* Wrappers for library functions */
 void inline start_ovpn_eas() {
 	ovpn_process_eas(1);

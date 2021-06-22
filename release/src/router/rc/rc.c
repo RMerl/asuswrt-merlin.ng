@@ -1233,6 +1233,7 @@ static const applets_t applets[] = {
 	{ "ovpn-up",			ovpn_up_main				},
 	{ "ovpn-down",			ovpn_down_main			},
 	{ "ovpn-route-up",		ovpn_route_up_main				},
+	{ "ovpn-route-pre-down",	ovpn_route_pre_down_main	},
 #endif
 #ifdef RTCONFIG_EAPOL
 	{ "wpa_cli",			wpacli_main			},

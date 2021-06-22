@@ -209,6 +209,17 @@ void ovpn_server_down_handler(int unit)
 	_ovpn_run_event_script();
 }
 
+void ovpn_client_route_up_handler()
+{
+        _ovpn_run_event_script();
+}
+
+void ovpn_client_route_pre_down_handler()
+{
+        _ovpn_run_event_script();
+}
+
+
 void ovpn_client_down_handler(int unit)
 {
 	char buffer[64];
@@ -238,8 +249,6 @@ void ovpn_client_down_handler(int unit)
 	sprintf(buffer, "%s/client.conf", dirname);
 	if (f_exists(buffer))
 		unlink(buffer);
-
-	_ovpn_run_event_script();
 }
 
 
@@ -473,8 +482,6 @@ exit:
 
 	if (fp_conf)
 		fclose(fp_conf);
-
-	_ovpn_run_event_script();
 }
 
 

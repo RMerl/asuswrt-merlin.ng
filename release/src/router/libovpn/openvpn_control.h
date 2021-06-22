@@ -14,6 +14,8 @@ extern ovpn_status_t get_ovpn_status(ovpn_type_t type, int unit);
 extern ovpn_errno_t get_ovpn_errno(ovpn_type_t type, int unit);
 extern void ovpn_server_up_handler(int unit);
 extern void ovpn_server_down_handler(int unit);
+extern void ovpn_client_route_pre_down_handler();
+extern void ovpn_client_route_up_handler();
 extern void ovpn_client_down_handler(int unit);
 extern void ovpn_client_up_handler(int unit);
 extern void ovpn_set_exclusive_dns(int unit);

@@ -680,8 +680,16 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 	sprintf(buffer, "/etc/openvpn/client%d/ovpn-down", unit);
 	symlink("/sbin/rc", buffer);
 
+	sprintf(buffer, "/etc/openvpn/client%d/ovpn-route-up", unit);
+	symlink("/sbin/rc", buffer);
+	sprintf(buffer, "/etc/openvpn/client%d/ovpn-route-pre-down", unit);
+	symlink("/sbin/rc", buffer);
+
 	fprintf(fp, "up 'ovpn-up %d client'\n", unit);
 	fprintf(fp, "down 'ovpn-down %d client'\n", unit);
+
+	fprintf(fp, "route-up 'ovpn-route-up'\n");
+	fprintf(fp, "route-pre-down 'ovpn-route-pre-down'\n");
 
 	fprintf(fp, "script-security 2\n");
 	fprintf(fp, "route-delay 2\n");

@@ -14811,7 +14811,7 @@ retry_wps_enr:
 		if (action & RC_SERVICE_START) {
 			unit = atoi(&script[10]);
 			if (unit == 0) {
-				for (i = 1; i < OVPN_CLIENT_MAX; i++) {
+				for (i = OVPN_CLIENT_MAX; i > 0; i--) {
 					ovpn_set_routing_rules(i);
 					ovpn_clear_exclusive_dns(i);
 					ovpn_set_exclusive_dns(i);

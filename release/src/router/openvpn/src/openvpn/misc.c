@@ -5,9 +5,9 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2018 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
  *  Copyright (C) 2014-2015 David Sommerseth <davids@redhat.com>
- *  Copyright (C) 2016-2018 David Sommerseth <davids@openvpn.net>
+ *  Copyright (C) 2016-2021 David Sommerseth <davids@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -510,21 +510,48 @@ void
 set_auth_token(struct user_pass *up, struct user_pass *tk, const char *token)
 {
 
-    if (strlen(token) && (up->defined || tk->defined))
+    if (strlen(token))
     {
-        /* auth-token has no password, so it needs the username
-         * either already set or copied from up */
         strncpynt(tk->password, token, USER_PASS_LEN);
-        if (up->defined)
+        tk->token_defined = true;
+
+        /*
+         * --auth-token has no username, so it needs the username
+         * either already set or copied from up, or later set by
+         * --auth-token-user
+         *
+         * Do not overwrite the username if already set to avoid
+         * overwriting an username set by --auth-token-user
+         */
+        if (up->defined && !tk->defined)
         {
             strncpynt(tk->username, up->username, USER_PASS_LEN);
+            tk->defined = true;
         }
-        tk->defined = true;
     }
 
     /* Cleans user/pass for nocache */
     purge_user_pass(up, false);
 }
+
+void
+set_auth_token_user(struct user_pass *tk, const char *username)
+{
+    if (strlen(username))
+    {
+        /* Clear the username before decoding to ensure no old material is left
+         * and also allow decoding to not use all space to ensure the last byte is
+         * always 0 */
+        CLEAR(tk->username);
+        int len = openvpn_base64_decode(username, tk->username, USER_PASS_LEN - 1);
+        tk->defined = len > 0;
+        if (!tk->defined)
+        {
+            msg(D_PUSH, "Error decoding auth-token-username");
+        }
+    }
+}
+
 
 /*
  * Process string received by untrusted peer before

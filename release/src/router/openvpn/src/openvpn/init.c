@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2018 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -2457,8 +2457,9 @@ socket_restart_pause(struct context *c)
     }
 #endif
 
-    /* Slow down reconnection after 5 retries per remote -- for tcp only in client mode */
-    if (c->options.ce.proto != PROTO_TCP_SERVER)
+    /* Slow down reconnection after 5 retries per remote -- for TCP client or UDP tls-client only */
+    if (c->options.ce.proto == PROTO_TCP_CLIENT
+        || (c->options.ce.proto == PROTO_UDP && c->options.tls_client))
     {
         backoff = (c->options.unsuccessful_attempts / c->options.connection_list->len) - 4;
         if (backoff > 0)
@@ -2554,6 +2555,7 @@ key_schedule_free(struct key_schedule *ks, bool free_ssl_ctx)
     if (tls_ctx_initialised(&ks->ssl_ctx) && free_ssl_ctx)
     {
         tls_ctx_free(&ks->ssl_ctx);
+        free_key_ctx(&ks->auth_token_key);
     }
     CLEAR(*ks);
 }

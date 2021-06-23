@@ -1031,6 +1031,14 @@ Newer clients (2.4.7+) will fall back to the original password method
 after a failed auth. Older clients will keep using the token value and
 react according to \fB\-\-auth\-retry\fP
 .TP
+.BI \-\-auth\-token\-user \ base64username
+Companion option to \fB\-\-auth\-token\fP\&. This options allows to override
+the username used by the client when reauthenticating with the \fBauth\-token\fP\&.
+It also allows to use \fB\-\-auth\-token\fP in setups that normally do not use
+username and password.
+.sp
+The username has to be base64 encoded.
+.TP
 .B \-\-auth\-user\-pass
 Authenticate with server using username/password.
 .sp
@@ -2076,6 +2084,10 @@ The client announces the list of supported ciphers configured with the
 .B \fBIV_GUI_VER=<gui_id> <version>\fP
 The UI version of a UI if one is running, for example
 \fBde.blinkt.openvpn 0.5.47\fP for the Android app.
+.TP
+.B \fBIV_SSO=[crtext,][openurl,][proxy_url]\fP
+Additional authentication methods supported by the client.
+This may be set by the client UI/GUI using \fB\-\-setenv\fP
 .UNINDENT
 .sp
 When \fB\-\-push\-peer\-info\fP is enabled the additional information consists

@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.15.2: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
 <title>openvpn</title>
 <style type="text/css">
 
@@ -1244,6 +1244,15 @@ after a failed auth. Older clients will keep using the token value and
 react according to <tt class="docutils literal"><span class="pre">--auth-retry</span></tt></p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
+<kbd><span class="option">--auth-token-user <var>base64username</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td><p class="first">Companion option to <tt class="docutils literal"><span class="pre">--auth-token</span></tt>. This options allows to override
+the username used by the client when reauthenticating with the <tt class="docutils literal"><span class="pre">auth-token</span></tt>.
+It also allows to use <tt class="docutils literal"><span class="pre">--auth-token</span></tt> in setups that normally do not use
+username and password.</p>
+<p class="last">The username has to be base64 encoded.</p>
+</td></tr>
+<tr><td class="option-group" colspan="2">
 <kbd><span class="option">--auth-user-pass</span></kbd></td>
 </tr>
 <tr><td>&nbsp;</td><td><p class="first">Authenticate with server using username/password.</p>
@@ -2082,6 +2091,9 @@ the server, a value of 2 or greater indicates client supports
 <dt><code>IV_GUI_VER=&lt;gui_id&gt; &lt;version&gt;</code></dt>
 <dd>The UI version of a UI if one is running, for example
 <code>de.blinkt.openvpn 0.5.47</code> for the Android app.</dd>
+<dt><code>IV_SSO=[crtext,][openurl,][proxy_url]</code></dt>
+<dd>Additional authentication methods supported by the client.
+This may be set by the client UI/GUI using <tt class="docutils literal"><span class="pre">--setenv</span></tt></dd>
 </dl>
 <p>When <tt class="docutils literal"><span class="pre">--push-peer-info</span></tt> is enabled the additional information consists
 of the following data:</p>

@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2018 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2008-2013 David Sommerseth <dazo@users.sourceforge.net>
+ *  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2008-2021 David Sommerseth <dazo@eurephia.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -4386,7 +4386,7 @@ usage_version(void)
     show_windows_version( M_INFO|M_NOPREFIX );
 #endif
     msg(M_INFO|M_NOPREFIX, "Originally developed by James Yonan");
-    msg(M_INFO|M_NOPREFIX, "Copyright (C) 2002-2018 OpenVPN Inc <sales@openvpn.net>");
+    msg(M_INFO|M_NOPREFIX, "Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>");
 #ifndef ENABLE_SMALL
 #ifdef CONFIGURE_DEFINES
     msg(M_INFO|M_NOPREFIX, "Compile time defines: %s", CONFIGURE_DEFINES);
@@ -5319,7 +5319,7 @@ add_option(struct options *options,
         {
             /* only message-related ECHO are logged, since other ECHOs
              * can potentially include security-sensitive strings */
-            if (strncmp(p[1], "msg", 3) == 0)
+            if (p[1] && strncmp(p[1], "msg", 3) == 0)
             {
                 msg(M_INFO, "%s:%s",
                     pull_mode ? "ECHO-PULL" : "ECHO",
@@ -8280,6 +8280,11 @@ add_option(struct options *options,
             management_auth_token(management, p[1]);
         }
 #endif
+    }
+    else if (streq(p[0], "auth-token-user") && p[1] && !p[2])
+    {
+        VERIFY_PERMISSION(OPT_P_ECHO);
+        ssl_set_auth_token_user(p[1]);
     }
     else if (streq(p[0], "single-session") && !p[1])
     {

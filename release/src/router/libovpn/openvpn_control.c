@@ -653,7 +653,7 @@ void ovpn_set_killswitch(int unit) {
 		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route del default table ovpnc%d", unit);
 		system(buffer);
 		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route add prohibit default table ovpnc%d", unit);
-		logmessage("openvpn-routing", "Configured killswitch on instance %d", unit);
+		logmessage("openvpn-routing", "Configured killswitch on VPN client %d", unit);
 		system(buffer);
 	}
 }
@@ -717,7 +717,7 @@ void ovpn_set_exclusive_dns(int unit) {
 			    (inet_aton(buffer, &addr))) {
 				if (!strcmp(iface, iface_match)) {
 
-					// Interate through servers, we could set just the first one though
+					// Iterate through servers
 					rewind(fp_resolv);
 					while (fgets(buffer2, sizeof(buffer2), fp_resolv) != NULL) {
 						if (sscanf(buffer2, "server=%16s", server) != 1)
@@ -728,6 +728,8 @@ void ovpn_set_exclusive_dns(int unit) {
 
 		                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit, src, server);
 		                                logmessage("openvpn", "Forcing %s to use DNS server %s", src, server);
+						// Only configure first server found, as others would never get used
+						break;
 					}
 	                        } else if (!strcmp(iface, "WAN")) {
 	                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit, src);
@@ -929,7 +931,7 @@ void ovpn_stop_client(int unit) {
 
 	// Clear routing table, also freeing from killswitch set by down handler
 	snprintf(buffer, sizeof (buffer),"/usr/sbin/ip route flush table ovpnc%d", unit);
-	logmessage("openvpn-routing", "Clearing routing table");
+	logmessage("openvpn-routing", "Clearing routing table for VPN client %d", unit);
 	system(buffer);
 
 	ovpn_remove_iface(OVPN_TYPE_CLIENT, unit);

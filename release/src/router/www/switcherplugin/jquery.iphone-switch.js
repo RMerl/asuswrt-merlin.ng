@@ -56,6 +56,7 @@ jQuery.fn.iphoneSwitch = function(start_state, switched_on_callback, switched_of
 				this.id == "vlan_enable" ||  //Advanced_TagBasedVLAN_Content
 				this.id == "ad_radio_dualwan_enable" ||
 				this.id == "tencent_qmacc_enable" ||
+				this.id == "radio_service_enable" ||
 				this.id == "radio_IG_enable") && typeof(curState) != "undefined"){
 					state = curState;
 			}

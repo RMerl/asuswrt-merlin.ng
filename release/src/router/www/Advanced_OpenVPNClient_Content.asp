@@ -536,17 +536,6 @@ function applyRule(manual_switch){
 	document.form.submit();
 }
 
-function split_clientlist(clientlist){
-	var counter = 0;
-	document.form.vpn_client_clientlist.value = clientlist.substring(counter, (counter+=255));
-
-	document.form.vpn_client_clientlist1.value = clientlist.substring(counter, (counter+=255));
-	document.form.vpn_client_clientlist2.value = clientlist.substring(counter, (counter+=255));
-	document.form.vpn_client_clientlist3.value = clientlist.substring(counter, (counter+=255));
-	document.form.vpn_client_clientlist4.value = clientlist.substring(counter, (counter+=255));
-	document.form.vpn_client_clientlist5.value = clientlist.substring(counter, (counter+=255));
-}
-
 function change_vpn_unit(val){
 	document.form.action_mode.value = "change_vpn_client_unit";
 	document.form.action = "apply.cgi";
@@ -901,12 +890,6 @@ function refreshVPNIP() {
 <input type="hidden" name="vpn_upload_unit" value="<% nvram_get("vpn_client_unit"); %>">
 <input type="hidden" name="vpn_client_if" value="<% nvram_get("vpn_client_if"); %>">
 <input type="hidden" name="vpn_client_local" value="<% nvram_get("vpn_client_local"); %>">
-<input type="hidden" name="vpn_client_clientlist" value="<% nvram_clean_get("vpn_client_clientlist"); %>">
-<input type="hidden" name="vpn_client_clientlist1" value="<% nvram_clean_get("vpn_client_clientlist1"); %>">
-<input type="hidden" name="vpn_client_clientlist2" value="<% nvram_clean_get("vpn_client_clientlist2"); %>">
-<input type="hidden" name="vpn_client_clientlist3" value="<% nvram_clean_get("vpn_client_clientlist3"); %>">
-<input type="hidden" name="vpn_client_clientlist4" value="<% nvram_clean_get("vpn_client_clientlist4"); %>">
-<input type="hidden" name="vpn_client_clientlist5" value="<% nvram_clean_get("vpn_client_clientlist5"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -959,16 +942,23 @@ function refreshVPNIP() {
 									 function() {
 										document.form.action_script.value = "start_vpnclient" + openvpn_unit;
 										document.form.action_wait.value = 10;
-										parent.showLoading();
-										applyRule(1);
-										return true;
+										if (applyRule(1) == false) {
+											$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
+											curState = 0;
+											return false;
+										} else {
+											parent.showLoading();
+											return true;
+										}
 									 },
 									 function() {
 										document.form.action_script.value = "stop_vpnclient" + openvpn_unit;
 										document.form.action_wait.value = 10;
-										parent.showLoading();
-										applyRule(1)
-										return true;
+										if (applyRule(1)) {
+											parent.showLoading();
+											return true;
+										} else
+											return false;
 									 },
 									 {
 										switch_on_container_path: '/switcherplugin/iphone_switch_container_off.png'

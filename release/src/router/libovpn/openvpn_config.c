@@ -102,6 +102,9 @@ void reset_ovpn_setting(ovpn_type_t type, int unit, int full){
 		}
 	}
 
+	// Clear custom settings
+	set_ovpn_custom(type, unit, "");
+
         if (type == OVPN_TYPE_SERVER)  // server-only files
         {
 		set_ovpn_key(type, unit, OVPN_SERVER_CA_KEY, NULL, NULL);

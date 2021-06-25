@@ -637,7 +637,7 @@ void _write_routing_rules(int unit, char *rules) {
 				                                   srcstr, dststr, table, ruleprio);
 
 		if (verb >= 3)
-			logmessage("openvpn-routing","Routing %s from \"%s\" to \"%s\" through %s", desc, src, dst, table);
+			logmessage("openvpn-routing","Routing %s from %s to %s through %s", desc, (*src ? src : "any"), (*dst ? dst : "any"), table);
 
 		system(buffer);
 	}

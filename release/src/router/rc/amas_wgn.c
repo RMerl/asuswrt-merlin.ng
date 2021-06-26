@@ -1096,6 +1096,10 @@ void wgn_filter_forward(
 		if (!p_vlan_rule->internet)
 			continue;
 
+// OpenVPN
+#ifdef RTCONFIG_OPENVPN
+		fprintf(fp, "-A FORWARD -i %s -o tun+ -j ACCEPT\n", word);
+#endif
 		//iptables -A  FORWARD  -i brX -o eth0 -j ACCEPT
 		fprintf(fp, "-A FORWARD -i %s -o %s -j ACCEPT\n", word, wan_if);
 	}

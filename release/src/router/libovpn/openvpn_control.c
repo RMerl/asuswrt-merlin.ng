@@ -384,21 +384,17 @@ void ovpn_client_up_handler(int unit)
 
 		if (rgw != OVPN_RGW_NONE) {
 			// Force traffic to remote VPN server to go through local GW
-			i = 1;
-			while (1) {
-				sprintf(buffer, "remote_%d", i++);
-				remote_env = getenv(buffer);
-				localgw = getenv("route_net_gateway");
+			remote_env = getenv("trusted_ip");
+			localgw = getenv("route_net_gateway");
 
-				if (!remote_env || !localgw)
-					break;
-
-				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route add %s via %s table ovpnc%d",
-				         remote_env, localgw, unit);
-
+			if (remote_env && localgw) {
+				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route add %s/32 via %s table ovpnc%d",
+					remote_env, localgw, unit);
 				if (verb >= 6)
 					logmessage("openvpn-routing", "Add route to remote endpoint: %s", buffer);
 				system(buffer);
+			} else {
+				logmessage("openvpn-routing", "Missing remote IP or local gateway - cannot configure route");
 			}
 
 			// Use VPN as default gateway

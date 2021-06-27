@@ -34,6 +34,11 @@
 #include <getdns/getdns.h>
 #include <getdns/getdns_extra.h>
 
+#if !defined(STUBBY_ON_WINDOWS) && !defined(GETDNS_ON_WINDOWS)
+#include <syslog.h>
+extern int use_syslog;
+#endif
+
 typedef void(*stubby_verror_t)(getdns_loglevel_type level, const char *fmt, va_list ap);
 typedef void(*stubby_vlog_t)(void *userarg, uint64_t system,
                              getdns_loglevel_type level,

@@ -54,6 +54,10 @@
 #define STUBBYPIDFILE RUNSTATEDIR"/stubby.pid"
 #endif
 
+#if !defined(STUBBY_ON_WINDOWS) && !defined(GETDNS_ON_WINDOWS)
+int use_syslog = 0;
+#endif
+
 void
 print_usage(FILE *out)
 {
@@ -160,6 +164,11 @@ main(int argc, char **argv)
 		}
 	}
 
+#if !defined(STUBBY_ON_WINDOWS) && !defined(GETDNS_ON_WINDOWS)
+	use_syslog = log_connections || !run_in_foreground;
+	if (use_syslog)
+		openlog(STUBBY_PACKAGE, LOG_PID, LOG_DAEMON);
+#endif
 	stubby_log(NULL,GETDNS_LOG_UPSTREAM_STATS, GETDNS_LOG_INFO,
 		   "Stubby version: %s", STUBBY_PACKAGE_STRING);
 

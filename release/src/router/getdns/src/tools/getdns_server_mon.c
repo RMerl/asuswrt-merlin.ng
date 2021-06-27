@@ -1569,10 +1569,10 @@ static void out_of_order_callback(getdns_context          *context,
                                   void                    *userarg,
                                   getdns_transaction_t    transaction_id)
 {
-        (void) context;
-        (void) callback_type;
-        (void) response;
-        (void) transaction_id;
+        (void) context; /* unused parameter */
+        (void) callback_type; /* unused parameter */
+        (void) response; /* unused parameter */
+        (void) transaction_id; /* unused parameter */
 
         struct async_query *query = (struct async_query *) userarg;
         static unsigned callback_no;
@@ -1717,7 +1717,7 @@ int main(int ac, char *av[])
         bool use_tcp = false;
         bool use_tls = false;
 
-        (void) ac;
+        (void) ac; /* unused parameter */
 
         test_info.errout = stderr;
         atexit(exit_tidy);

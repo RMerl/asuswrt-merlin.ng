@@ -47,7 +47,7 @@
 
       ptr = getdns_display_ip_address(NULL);
       ck_assert_msg(ptr == NULL, "Expected retrieved bindata == NULL, got: %p",
-        ptr);
+        (void *)ptr);
     }
     END_TEST
 
@@ -64,7 +64,7 @@
       ptr = getdns_display_ip_address(&bindata_of_ipv4_or_ipv6_address);
 
       ck_assert_msg(ptr == NULL, "Expected pointer == NULL, got: %p",
-        ptr);  
+        (void *)ptr);
   
     }
     END_TEST

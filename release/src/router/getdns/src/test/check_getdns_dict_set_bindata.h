@@ -112,9 +112,9 @@
       ASSERT_RC(getdns_dict_get_bindata(this_dict, "bindata", &retrieved_bindata),
         GETDNS_RETURN_GOOD, "Return code from getdns_dict_get_bindata()");
 
-      ck_assert_msg(retrieved_bindata->size, second_bindata.size,
+      ck_assert_msg(retrieved_bindata->size == second_bindata.size,
         "Expected retrieved bindata size == %d, got: %d",
-        second_bindata.size, retrieved_bindata->size);
+        (int)second_bindata.size, (int)retrieved_bindata->size);
 
       ck_assert_msg(strcmp((char *)retrieved_bindata->data, (char *)second_bindata.data) == 0,
         "Expected retrieved bindata to be \"%s\", got: \"%s\"",
@@ -152,7 +152,7 @@
 
       ck_assert_msg(retrieved_bindata->size == bindata.size, 
         "Expected retrieved bindata size == %d, got: %d",
-        bindata.size, retrieved_bindata->size);
+        (int)bindata.size, (int)retrieved_bindata->size);
 
       ck_assert_msg(strcmp((char *)retrieved_bindata->data, (char *)bindata.data) == 0, 
         "Expected bindata data to be \"%s\", got: \"%s\"",

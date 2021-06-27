@@ -417,6 +417,8 @@ typedef enum getdns_callback_type_t {
 #define GETDNS_RRTYPE_OPENPGPKEY 61
 #define GETDNS_RRTYPE_CSYNC     62
 #define GETDNS_RRTYPE_ZONEMD    63
+#define GETDNS_RRTYPE_SVCB      64
+#define GETDNS_RRTYPE_HTTPS     65
 #define GETDNS_RRTYPE_SPF       99
 #define GETDNS_RRTYPE_UINFO     100
 #define GETDNS_RRTYPE_UID       101
@@ -473,26 +475,26 @@ typedef enum getdns_callback_type_t {
  * \defgroup rcodes Rcodes
  * @{
  */
-#define GETDNS_RCODE_NOERROR   0
-#define GETDNS_RCODE_FORMERR   1
-#define GETDNS_RCODE_SERVFAIL  2
-#define GETDNS_RCODE_NXDOMAIN  3
-#define GETDNS_RCODE_NOTIMP    4
-#define GETDNS_RCODE_REFUSED   5
-#define GETDNS_RCODE_YXDOMAIN  6
-#define GETDNS_RCODE_YXRRSET   7
-#define GETDNS_RCODE_NXRRSET   8
-#define GETDNS_RCODE_NOTAUTH   9
-#define GETDNS_RCODE_NOTZONE  10
-#define GETDNS_RCODE_BADVERS  16
-#define GETDNS_RCODE_BADSIG   16
-#define GETDNS_RCODE_BADKEY   17
-#define GETDNS_RCODE_BADTIME  18
-#define GETDNS_RCODE_BADMODE  19
-#define GETDNS_RCODE_BADNAME  20
-#define GETDNS_RCODE_BADALG   21
-#define GETDNS_RCODE_BADTRUNC 22
-#define GETDNS_RCODE_COOKIE   23
+#define GETDNS_RCODE_NOERROR    0
+#define GETDNS_RCODE_FORMERR    1
+#define GETDNS_RCODE_SERVFAIL   2
+#define GETDNS_RCODE_NXDOMAIN   3
+#define GETDNS_RCODE_NOTIMP     4
+#define GETDNS_RCODE_REFUSED    5
+#define GETDNS_RCODE_YXDOMAIN   6
+#define GETDNS_RCODE_YXRRSET    7
+#define GETDNS_RCODE_NXRRSET    8
+#define GETDNS_RCODE_NOTAUTH    9
+#define GETDNS_RCODE_NOTZONE   10
+#define GETDNS_RCODE_BADVERS   16
+#define GETDNS_RCODE_BADSIG    16
+#define GETDNS_RCODE_BADKEY    17
+#define GETDNS_RCODE_BADTIME   18
+#define GETDNS_RCODE_BADMODE   19
+#define GETDNS_RCODE_BADNAME   20
+#define GETDNS_RCODE_BADALG    21
+#define GETDNS_RCODE_BADTRUNC  22
+#define GETDNS_RCODE_BADCOOKIE 23
 /** @}
  */
 
@@ -1513,6 +1515,24 @@ getdns_context_set_dns_transport_list(getdns_context *context,
  */
 getdns_return_t
 getdns_context_set_idle_timeout(getdns_context *context, uint64_t timeout);
+
+/**
+ * Set the number of milliseconds send data may remain unacknowledged by
+ * the peer in a TCP connection, if supported by the operation system.
+ * When not set (the default), the system default is left alone.
+ *
+ * @see getdns_context_get_tcp_send_timeout
+ * @see getdns_context_unset_tcp_send_timeout
+ * @param context The context to configure
+ * @param value The number of milliseconds the send data may remain
+ *              unacknowledged by the peer in a TCP connection.
+ * @return GETDNS_RETURN_GOOD when successful.
+ * @return GETDNS_RETURN_INVALID_PARAMETER when context was NULL or the
+ *         value was too high.
+ */
+getdns_return_t
+getdns_context_set_tcp_send_timeout(getdns_context *context,
+    uint32_t value);
 
 /**
  * Limit the number of outstanding DNS queries. When more than limit requests

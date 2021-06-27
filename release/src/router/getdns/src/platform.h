@@ -60,6 +60,7 @@ typedef u_short sa_family_t;
 #define _getdns_socketerror() (WSAGetLastError())
 
 const char *_getdns_strerror(DWORD errnum);
+const char *_getdns_filestrerror(int errnum);
 #else /* USE_WINSOCK */
 
 #ifndef HAVE_SYS_POLL_H
@@ -132,10 +133,13 @@ const char *_getdns_strerror(DWORD errnum);
 #define _getdns_socketerror() (errno)
 
 const char *_getdns_strerror(int errnum);
+#define _getdns_filestrerror(errnum) (_getdns_strerror(errnum))
 #endif
 
 void _getdns_perror(const char *str);
 
+#define _getdns_fileerror() (errno)
+#define _getdns_fileerrnostr() (_getdns_filestrerror(_getdns_fileerror()))
 #define _getdns_errnostr() (_getdns_strerror(_getdns_socketerror()))
 #define _getdns_error_wants_retry(X) (  (X) != 0 \
                                      && (  (X) == _getdns_EINTR \

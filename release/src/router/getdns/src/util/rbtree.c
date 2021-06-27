@@ -39,8 +39,6 @@
  * Implementation of a redblack tree.
  */
 
-#include <stdlib.h>
-
 #include "config.h"
 #include "log.h"
 #include "fptr_wlist.h"

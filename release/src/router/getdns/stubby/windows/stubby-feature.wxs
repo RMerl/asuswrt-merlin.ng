@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"  xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <!-- OpenSSL DLL name suffix -->
+  <?if $(sys.BUILDARCH) = x64 ?>
+    <?define OpenSSLSuffix = "-x64" ?>
+  <?else ?>
+    <?define OpenSSLSuffix = "" ?>
+  <?endif ?>
+
+  <Fragment>
+    <Feature Id="StubbyFeature" Title="Stubby" Level="1">
+      <ComponentGroupRef Id="StubbyComponents" />
+      <ComponentRef Id="ServiceRegistryEntries" />
+    </Feature>
+
+    <ComponentGroup Id="StubbyComponents" Directory="INSTALLFOLDER">
+      <Component Id="stubby.exe">
+        <File Id="stubby.exe" Source="Stubby/stubby.exe"  KeyPath="yes" Checksum="yes"/>
+        <ServiceInstall Id="ServiceInstaller" Type="ownProcess"
+                        Name="Stubby" DisplayName="Stubby DNS Privacy stub resolver"
+                        Description="Enable performing DNS name lookups over encrypted channels."
+                        Start="demand"
+                        ErrorControl="normal"
+                        Arguments="-w service">
+          <util:ServiceConfig FirstFailureActionType="restart"
+                              SecondFailureActionType="restart"
+                              ThirdFailureActionType="restart"
+                              ResetPeriodInDays="1"
+                              RestartServiceDelayInSeconds="0" />
+        </ServiceInstall>
+        <ServiceControl Id="StopService" Stop="both"
+                        Remove="uninstall" Name="Stubby" Wait="yes" />
+      </Component>
+      <Component Id="getdns_query.exe">
+        <File Id="getdns_query.exe" Source="Stubby/getdns_query.exe"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+      <Component Id="getdns_server_mon.exe">
+        <File Id="getdns_server_mon.exe" Source="Stubby/getdns_server_mon.exe"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+      <Component Id="stubres.dll">
+        <File Id="stubres.dll" Source="Stubby/stubres.dll"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+      <Component Id="yaml.dll">
+        <File Id="yaml.dll" Source="Stubby/yaml.dll"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+      <Component Id="libssl.dll">
+        <File Id="libssl.dll" Source="Stubby/libssl-1_1$(var.OpenSSLSuffix).dll"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+      <Component Id="libcrypto.dll">
+        <File Id="libcrypto.dll" Source="Stubby/libcrypto-1_1$(var.OpenSSLSuffix).dll"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+      <Component Id="stubby.yml">
+        <File Id="stubby.yml" Source="Stubby/stubby.yml"  KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="stubbyservice.yml">
+        <File Id="stubbyservice.yml" Name="stubbyservice.yml" Source="Stubby/stubby.yml"  KeyPath="yes" Checksum="yes" />
+      </Component>
+      <Component Id="README.txt">
+        <File Id="README.txt" Source="Stubby/README.txt"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+      <Component Id="stubby_setdns_windows.ps1">
+        <File Id="stubby_setdns_windows.ps1" Source="Stubby/stubby_setdns_windows.ps1"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+      <Component Id="stubby_resetdns_windows.ps1">
+        <File Id="stubby_resetdns_windows.ps1" Source="Stubby/stubby_resetdns_windows.ps1"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+      <Component Id="stubby_setdns_windows7.ps1">
+        <File Id="stubby_setdns_windows7.ps1" Source="Stubby/stubby_setdns_windows7.ps1"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+      <Component Id="stubby_resetdns_windows7.ps1">
+        <File Id="stubby_resetdns_windows7.ps1" Source="Stubby/stubby_resetdns_windows7.ps1"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+      <Component Id="stubby.bat">
+        <File Id="stubby.bat" Source="Stubby/stubby.bat"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+      <Component Id="stubby.xml">
+        <File Id="stubby.xml" Source="Stubby/stubby.xml"  KeyPath="yes" Checksum="yes"/>
+      </Component>
+    </ComponentGroup>
+
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Component Id="ServiceRegistryEntries">
+        <RegistryKey Root="HKLM"
+                     Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\Stubby">
+          <RegistryValue Type="string" Name="EventMessageFile" Value="[INSTALLFOLDER]stubres.dll" KeyPath="yes" />
+          <RegistryValue Type="string" Name="CategoryMessageFile" Value="[INSTALLFOLDER]stubres.dll" />
+          <RegistryValue Type="integer" Name="TypesSupported" Value="7" />
+          <RegistryValue Type="integer" Name="CategoryCount" Value="1" />
+        </RegistryKey>
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>

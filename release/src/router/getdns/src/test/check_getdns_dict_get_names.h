@@ -98,7 +98,7 @@
       ASSERT_RC(getdns_list_get_length(answer, &length),
         GETDNS_RETURN_GOOD, "Return code from getdns_list_get_length()");
  
-      ck_assert_msg(length == 3, "Expected length == 3, got %d", length);
+      ck_assert_msg(length == 3, "Expected length == 3, got %d", (int)length);
 
       for(i = 0; i < length; i++)
       {

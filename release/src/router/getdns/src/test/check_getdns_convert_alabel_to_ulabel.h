@@ -44,7 +44,8 @@
       char *alabel = NULL;
 
       ck_assert_msg( getdns_convert_alabel_to_ulabel( alabel ) == 0,
-               "Was not expecting %d from getdns_convert_alabel_to_ulabel()", getdns_convert_alabel_to_ulabel( alabel ) );
+               "Was not expecting %p from getdns_convert_alabel_to_ulabel()",
+		(void *)getdns_convert_alabel_to_ulabel( alabel ) );
 
      }
      END_TEST

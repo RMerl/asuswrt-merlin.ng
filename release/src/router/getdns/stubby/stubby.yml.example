@@ -46,6 +46,7 @@ dns_transport_list:
 
 # Selects Strict or Opportunistic Usage profile as described in
 # https://datatracker.ietf.org/doc/draft-ietf-dprive-dtls-and-tls-profiles/
+# ONLY for the case when TLS is the one and only transport specified above.
 # Strict mode requires that authentication information for the upstreams is
 # specified below. Opportunistic may fallback to clear text DNS if UDP or TCP
 # is included in the transport list above.
@@ -154,9 +155,10 @@ listen_addresses:
 # in milliseconds (which defaults to two and a half seconds).
 # trust_anchors_backoff_time: 2500
 
-# Specify the location of the installed trust anchor file to override the 
+# Specify the location of the installed trust anchor files to override the
 # default location (see above)
-# dnssec_trust_anchors: "/etc/unbound/getdns-root.key"
+# dnssec_trust_anchors:
+#   - "/etc/unbound/getdns-root.key"
 
 
 ##################################  UPSTREAMS  ################################
@@ -245,11 +247,79 @@ upstream_recursive_servers:
 #  - address_data: 1.0.0.1
 #    tls_auth_name: "cloudflare-dns.com"
 ## The Uncensored DNS servers
+#  - address_data: 91.239.100.100
+#    tls_auth_name: "anycast.censurfridns.dk"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 2JjZgBZkfjSjs117vX+AnyKeYzJNM38zwsaxHwStWsg=
+#        comment: "deic-ore.anycast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: UXs8xWXai9ZXBAjDKYDiYl/jbIYtyV/bY2w3F1FFTDs=
+#        comment: "deic-ore.anycast.censurfridns.dk ECDSA"
+#      - digest: "sha256"
+#        value: oDxJrI/lG1Jhl1J7LvapMlYwlHMphZUODvCDBm0nof8=
+#        comment: "deic-lgb.anycast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: iYkCUwXdH7sT8qh26zt+r5dbTySL43wgJtLCTHaSH9M=
+#        comment: "deic-lgb.anycast.censurfridns.dk ECDSA"
+#      - digest: "sha256"
+#        value: Clii3HzZr48onFoog7I0ma5QmMPSpOBpCykXqgA0Wn0=
+#        comment: "kracon.anycast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: 6eW98h0+xxuaGQkgNalEU5e/hbgKyUoydpPMY6xcKyY=
+#        comment: "kracon.anycast.censurfridns.dk ECDSA"
+#      - digest: "sha256"
+#        value: sp2Low3+oTsQljNzs3gkYgLRYo7o91t3XGka+pwX//4=
+#        comment: "rgnet-iad.anycast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: /NPc7sIUzKLAQbsvRRhK6Ul3jip6Gi49bxutfrzpsQM=
+#        comment: "rgnet-iad.anycast.censurfridns.dk ECDSA"
+#  - address_data: 2001:67c:28a4::0
+#    tls_auth_name: "anycast.censurfridns.dk"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 2JjZgBZkfjSjs117vX+AnyKeYzJNM38zwsaxHwStWsg=
+#        comment: "deic-ore.anycast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: UXs8xWXai9ZXBAjDKYDiYl/jbIYtyV/bY2w3F1FFTDs=
+#        comment: "deic-ore.anycast.censurfridns.dk ECDSA"
+#      - digest: "sha256"
+#        value: oDxJrI/lG1Jhl1J7LvapMlYwlHMphZUODvCDBm0nof8=
+#        comment: "deic-lgb.anycast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: iYkCUwXdH7sT8qh26zt+r5dbTySL43wgJtLCTHaSH9M=
+#        comment: "deic-lgb.anycast.censurfridns.dk ECDSA"
+#      - digest: "sha256"
+#        value: Clii3HzZr48onFoog7I0ma5QmMPSpOBpCykXqgA0Wn0=
+#        comment: "kracon.anycast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: 6eW98h0+xxuaGQkgNalEU5e/hbgKyUoydpPMY6xcKyY=
+#        comment: "kracon.anycast.censurfridns.dk ECDSA"
+#      - digest: "sha256"
+#        value: sp2Low3+oTsQljNzs3gkYgLRYo7o91t3XGka+pwX//4=
+#        comment: "rgnet-iad.anycast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: /NPc7sIUzKLAQbsvRRhK6Ul3jip6Gi49bxutfrzpsQM=
+#        comment: "rgnet-iad.anycast.censurfridns.dk ECDSA"
 #  - address_data: 89.233.43.71
 #    tls_auth_name: "unicast.censurfridns.dk"
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
 #        value: wikE3jYAA6jQmXYTr/rbHeEPmC78dQwZbQp6WdrseEs=
+#        comment: "unicast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: INSZEZpDoWKiavosV2/xVT8O83vk/RRwS+LTiL+IpHs=
+#        comment: "unicast.censurfridns.dk ECDSA"
+#  - address_data: 2a01:3a0:53:53::0
+#    tls_auth_name: "unicast.censurfridns.dk"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: wikE3jYAA6jQmXYTr/rbHeEPmC78dQwZbQp6WdrseEs=
+#        comment: "unicast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: INSZEZpDoWKiavosV2/xVT8O83vk/RRwS+LTiL+IpHs=
+#        comment: "unicast.censurfridns.dk ECDSA"
+#
 ## Fondation RESTENA (NREN for Luxembourg)
 #  - address_data: 158.64.1.29
 #    tls_auth_name: "kaitain.restena.lu"
@@ -271,6 +341,9 @@ upstream_recursive_servers:
 #    tls_auth_name: "dns-family.adguard.com"
 #  - address_data: 176.103.130.134
 #    tls_auth_name: "dns-family.adguard.com"
+## Comcast public Beta
+#  - address_data: 96.113.151.145
+#    tls_auth_name: "dot.xfinity.com"
 ### Test servers ###
 ## A Surfnet/Sinodun server supporting TLS 1.2 and 1.3
 #  - address_data: 145.100.185.18
@@ -294,42 +367,6 @@ upstream_recursive_servers:
 #        value: 3IOHSS48KOc/zlkKGtI46a9TY9PPKDVGhE3W2ZS4JZo=
 #      - digest: "sha256"
 #        value: 5zFN3smRPuHIlM/8L+hANt99LW26T97RFHqHv90awjo=
-## dns.larsdebruin.net (formerly dns1.darkmoon.is)
-#  - address_data: 51.15.70.167
-#    tls_auth_name: "dns.larsdebruin.net "
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: AAT+rHoKx5wQkWhxlfrIybFocBu3RBrPD2/ySwIwmvA=
-## dot.securedns.eu
-#  - address_data: 146.185.167.43
-#    tls_auth_name: "dot.securedns.eu"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: h3mufC43MEqRD6uE4lz6gAgULZ5/riqH/E+U+jE3H8g=
-## dns-tls.bitwiseshift.net
-#  - address_data: 81.187.221.24
-#    tls_auth_name: "dns-tls.bitwiseshift.net"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: YmcYWZU5dd2EoblZHNf1jTUPVS+uK3280YYCdz4l4wo=
-## ns1.dnsprivacy.at
-#  - address_data: 94.130.110.185
-#    tls_auth_name: "ns1.dnsprivacy.at"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: vqVQ9TcoR9RDY3TpO0MTXw1YQLjF44zdN3/4PkLwtEY=
-## ns2.dnsprivacy.at
-#  - address_data: 94.130.110.178
-#    tls_auth_name: "ns2.dnsprivacy.at"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: s5Em89o0kigwfBF1gcXWd8zlATSWVXsJ6ecZfmBDTKg=
-## dns.bitgeek.in
-#  - address_data: 139.59.51.46
-#    tls_auth_name: "dns.bitgeek.in"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: FndaG4ezEBQs4k0Ya3xt3z4BjFEyQHd7B75nRyP1nTs=
 ## Lorraine Data Network  (self-signed cert).
 #  - address_data: 80.67.188.188
 #    tls_pubkey_pinset:
@@ -347,14 +384,8 @@ upstream_recursive_servers:
 #      - digest: "sha256"
 #        value: sG6kj+XJToXwt1M6+9BeCz1SOj/1/mdZn56OZvCyZZc=
 ## Foundation for Applied Privacy 
-#  - address_data: 93.177.65.183
+#  - address_data: 146.255.56.98
 #    tls_auth_name: "dot1.applied-privacy.net"
-## # OARC. Note: this server currently doesn't support strict mode!
-##   - address_data: 184.105.193.78
-##     tls_auth_name: "tls-dns-u.odvr.dns-oarc.net"
-##     tls_pubkey_pinset:
-##       - digest: "sha256"
-##         value: pOXrpUt9kgPgbWxBFFcBTbRH2heo2wHwXp1fd4AEVXI=
 
 ####### IPv6 addresses #######
 ### Anycast services ###
@@ -386,6 +417,9 @@ upstream_recursive_servers:
 #    tls_auth_name: "dns-family.adguard.com"
 #  - address_data: 2a00:5a60::bad2:0ff
 #    tls_auth_name: "dns-family.adguard.com"
+## Comcast public Beta
+#  - address_data: 2001:558:fe21:6b:96:113:151:145
+#    tls_auth_name: "dot.xfinity.com"
 ### Test servers ###
 ## The Uncensored DNS server
 #  - address_data: 2a01:3a0:53:53::0
@@ -421,30 +455,6 @@ upstream_recursive_servers:
 #        value: 3IOHSS48KOc/zlkKGtI46a9TY9PPKDVGhE3W2ZS4JZo=
 #      - digest: "sha256"
 #        value: 5zFN3smRPuHIlM/8L+hANt99LW26T97RFHqHv90awjo=
-## dot.securedns.eu
-#  - address_data: 2a03:b0c0:0:1010::e9a:3001
-#    tls_auth_name: "dot.securedns.eu"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: h3mufC43MEqRD6uE4lz6gAgULZ5/riqH/E+U+jE3H8g=
-## dns-tls.bitwiseshift.net
-#  - address_data: 2001:8b0:24:24::24
-#    tls_auth_name: "dns-tls.bitwiseshift.net"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: YmcYWZU5dd2EoblZHNf1jTUPVS+uK3280YYCdz4l4wo=
-## ns1.dnsprivacy.at
-#  - address_data: 2a01:4f8:c0c:3c03::2
-#    tls_auth_name: "ns1.dnsprivacy.at"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: vqVQ9TcoR9RDY3TpO0MTXw1YQLjF44zdN3/4PkLwtEY=
-## ns2.dnsprivacy.at
-#  - address_data: 2a01:4f8:c0c:3bfc::2
-#    tls_auth_name: "ns2.dnsprivacy.at"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: s5Em89o0kigwfBF1gcXWd8zlATSWVXsJ6ecZfmBDTKg=
 ## Go6Lab
 #  - address_data: 2001:67c:27e4::35
 #    tls_auth_name: "privacydns.go6lab.si"
@@ -468,14 +478,8 @@ upstream_recursive_servers:
 #      - digest: "sha256"
 #        value: sG6kj+XJToXwt1M6+9BeCz1SOj/1/mdZn56OZvCyZZc=
 ## Foundation for Applied Privacy 
-#  - address_data: 2a03:4000:38:53c::2
+#  - address_data: 2a02:1b8:10:234::2
 #    tls_auth_name: "dot1.applied-privacy.net"
-## # OARC. Note: this server currently doesn't support strict mode!
-##   - address_data: 2620:ff:c000:0:1::64:25
-##     tls_auth_name: "tls-dns-u.odvr.dns-oarc.net"
-##     tls_pubkey_pinset:
-##       - digest: "sha256"
-##         value: pOXrpUt9kgPgbWxBFFcBTbRH2heo2wHwXp1fd4AEVXI=
 
 ####### Servers that listen on port 443 (IPv4 and IPv6) #######
 ### Test servers ###
@@ -550,9 +554,9 @@ upstream_recursive_servers:
 #      - digest: "sha256"
 #        value: wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
 ## Foundation for Applied Privacy 
-#  - address_data: 93.177.65.183
+#  - address_data: 146.255.56.98
 #    tls_port: 443
 #    tls_auth_name: "dot1.applied-privacy.net"
-#  - address_data: 2a03:4000:38:53c::2
+#  - address_data: 2a02:1b8:10:234::2
 #    tls_port: 443
 #    tls_auth_name: "dot1.applied-privacy.net"

@@ -1,9 +1,9 @@
 prefix=@prefix@
 exec_prefix=${prefix}
-libdir=${exec_prefix}/lib
-includedir=${prefix}/include
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 
-Name: getdns 
+Name: getdns
 Version: @GETDNS_VERSION@
 Description: A modern asynchronous DNS library
 

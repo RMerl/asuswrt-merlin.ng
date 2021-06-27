@@ -1,8 +1,18 @@
+* 2021-06-04: Version 0.4.0
+  * We announce the intention to remove the dnsovertls*.sinodun.com 
+    servers from the default resolver list in the next release,
+    see https://github.com/getdnsapi/stubby/issues/286 for details.
+  * Add ability to run Stubby as a full Windows service
+  * Update IPs for dot1.applied-privacy.net
+  * Remove the secure.eu entries in the stubby config file
+  * Bugfix: Make `run_in_foreground = 1` the default again
+  * Support yaml config files that do not use quotes
+
 * 2020-02-28: Version 0.3.0
   * Correct the applied-privacy.net details and remove ibksturm server in stubby.yml.example.
   * Include AppArmor profile (thanks CameronNemo)
   * Add `contrib` contributors to the README
-  * Let scheduled task run idefinately on Windows (thanks triatic)
+  * Let scheduled task run indefinitely on Windows (thanks triatic)
   * Add `Restart=on-failure` to the systemd.service file (thanks appliedprivacy)
 
 * 2019-12-20: Version 0.3.0-beta.1

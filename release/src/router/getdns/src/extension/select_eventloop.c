@@ -154,14 +154,14 @@ select_eventloop_clear(getdns_eventloop *loop, getdns_eventloop_event *event)
 static void
 select_eventloop_cleanup(getdns_eventloop *loop)
 {
-	(void)loop;
+	(void)loop; /* unused parameter */
 }
 
 static void
 select_read_cb(int fd, getdns_eventloop_event *event)
 {
 #if !defined(SCHED_DEBUG) || !SCHED_DEBUG
-	(void)fd;
+	(void)fd; /* unused parameter */
 #endif
 	DEBUG_SCHED( "%s(fd: %d, event: %p)\n", __FUNC__, fd, (void *)event);
 	event->read_cb(event->userarg);
@@ -171,7 +171,7 @@ static void
 select_write_cb(int fd, getdns_eventloop_event *event)
 {
 #if !defined(SCHED_DEBUG) || !SCHED_DEBUG
-	(void)fd;
+	(void)fd; /* unused parameter */
 #endif
 	DEBUG_SCHED( "%s(fd: %d, event: %p)\n", __FUNC__, fd, (void *)event);
 	event->write_cb(event->userarg);
@@ -181,7 +181,7 @@ static void
 select_timeout_cb(int fd, getdns_eventloop_event *event)
 {
 #if !defined(SCHED_DEBUG) || !SCHED_DEBUG
-	(void)fd;
+	(void)fd; /* unused parameter */
 #endif
 	DEBUG_SCHED( "%s(fd: %d, event: %p)\n", __FUNC__, fd, (void *)event);
 	event->timeout_cb(event->userarg);
@@ -244,7 +244,7 @@ select_eventloop_run_once(getdns_eventloop *loop, int blocking)
 	} else {
 #endif
 	if (select(max_fd + 1, &readfds, &writefds, NULL,
-	    (timeout == TIMEOUT_FOREVER ? NULL : &tv)) < 0) {
+		   ((blocking && timeout == TIMEOUT_FOREVER) ? NULL : &tv)) < 0) {
 		if (_getdns_socketerror_wants_retry())
 			return;
 
@@ -309,7 +309,7 @@ _getdns_select_eventloop_init(struct mem_funcs *mf, _getdns_select_eventloop *lo
 		select_eventloop_run,
 		select_eventloop_run_once
 	};
-	(void) mf;
+	(void) mf; /* unused parameter */
 	(void) memset(loop, 0, sizeof(_getdns_select_eventloop));
 	loop->loop.vmt = &select_eventloop_vmt;
 }

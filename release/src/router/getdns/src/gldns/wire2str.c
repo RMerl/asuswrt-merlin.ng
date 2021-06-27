@@ -14,6 +14,7 @@
  * Contains functions to translate the wireformat to text
  * representation, as well as functions to print them.
  */
+#include <stdlib.h>
 #include "config.h"
 #include "gldns/wire2str.h"
 #include "gldns/str2wire.h"
@@ -821,9 +822,12 @@ int gldns_wire2str_dname_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
 			if(!pkt || target >= pktlen)
 				return w + gldns_str_print(s, slen,
 					"ErrorComprPtrOutOfBounds");
-			if(counter++ > maxcompr)
+			if(counter++ > maxcompr) {
+				if(comprloop && *comprloop < 10)
+					(*comprloop)++;
 				return w + gldns_str_print(s, slen,
 					"ErrorComprPtrLooped");
+			}
 			in_buf = 0;
 			pos = pkt+target;
 			continue;

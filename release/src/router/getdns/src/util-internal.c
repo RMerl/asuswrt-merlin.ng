@@ -299,9 +299,10 @@ _getdns_rr_iter2rr_dict_canonical(
 			}
 		} else if (rdf->rdd_pos->type == GETDNS_RDF_SPECIAL)
 			val_type = wf_special;
-		else
-			assert(((val_type = wf_int), 0));
-
+		else {
+			val_type = wf_int;
+			assert(0);
+		}
 		if (! rdf->rdd_repeat) {
 			switch (val_type) {
 			case wf_int:
@@ -642,6 +643,12 @@ _getdns_create_reply_dict(getdns_context *context, getdns_network_req *req,
 		    rr_type == GETDNS_RRTYPE_RRSIG && rrsigs_in_answer)
 			*rrsigs_in_answer = 1;
 
+		if (section == SECTION_ADDITIONAL &&
+		    rr_type == GETDNS_RRTYPE_OPT &&
+		    getdns_dict_set_int( result, "/header/extended_rcode"
+		                       , (uint32_t)rr_iter->rr_type[4] << 4
+		                       | GLDNS_RCODE_WIRE(req->response)))
+			goto error;
 		if (section != SECTION_ANSWER) {
 			if (_getdns_list_append_this_dict(
 			    sections[section], rr_dict))
@@ -1402,7 +1409,7 @@ getdns_return_t
 getdns_apply_network_result(getdns_network_req* netreq,
     int rcode, void *pkt, int pkt_len, int sec, char* why_bogus)
 {
-	(void)why_bogus;
+	(void)why_bogus; /* unused parameter */
 
 	netreq->dnssec_status = sec == 0 ? GETDNS_DNSSEC_INSECURE
 	                      : sec == 2 ? GETDNS_DNSSEC_SECURE

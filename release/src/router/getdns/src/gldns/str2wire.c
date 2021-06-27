@@ -81,7 +81,7 @@ static int gldns_str2wire_dname_buf_rel(const char* str, uint8_t* buf,
 	for (s = str; *s; s++, q++) {
 		if (q >= buf + *olen)
 			return RET_ERR(GLDNS_WIREPARSE_ERR_BUFFER_TOO_SMALL, q-buf);
-		if (q > buf + GLDNS_MAX_DOMAINLEN)
+		if (q >= buf + GLDNS_MAX_DOMAINLEN)
 			return RET_ERR(GLDNS_WIREPARSE_ERR_DOMAINNAME_OVERFLOW, q-buf);
 		switch (*s) {
 		case '.':
@@ -118,7 +118,7 @@ static int gldns_str2wire_dname_buf_rel(const char* str, uint8_t* buf,
 		if(rel) *rel = 1;
 		if (q >= buf + *olen)
 			return RET_ERR(GLDNS_WIREPARSE_ERR_BUFFER_TOO_SMALL, q-buf);
-		if (q > buf + GLDNS_MAX_DOMAINLEN) {
+		if (q >= buf + GLDNS_MAX_DOMAINLEN) {
 			return RET_ERR(GLDNS_WIREPARSE_ERR_DOMAINNAME_OVERFLOW, q-buf);
 		}
                 if (label_len > GLDNS_MAX_LABELLEN) {
@@ -930,6 +930,10 @@ int gldns_fp2wire_rr_buf(FILE* in, uint8_t* rr, size_t* len, size_t* dname_len,
 			memmove(parse_state->prev_rr, rr, *dname_len);
 			parse_state->prev_rr_len = (*dname_len);
 		}
+		if(r == GLDNS_WIREPARSE_ERR_OK && parse_state) {
+			parse_state->default_ttl = gldns_wirerr_get_ttl(
+				rr, *len, *dname_len);
+		}
 		return r;
 	}
 	return GLDNS_WIREPARSE_ERR_OK;
@@ -1494,13 +1498,17 @@ static int
 loc_parse_cm(char* my_str, char** endstr, uint8_t* m, uint8_t* e)
 {
 	uint32_t meters = 0, cm = 0, val;
+	char* cm_endstr;
 	while (isblank((unsigned char)*my_str)) {
 		my_str++;
 	}
 	meters = (uint32_t)strtol(my_str, &my_str, 10);
 	if (*my_str == '.') {
 		my_str++;
-		cm = (uint32_t)strtol(my_str, &my_str, 10);
+		cm = (uint32_t)strtol(my_str, &cm_endstr, 10);
+		if(cm_endstr == my_str + 1)
+			cm *= 10;
+		my_str = cm_endstr;
 	}
 	if (meters >= 1) {
 		*e = 2;

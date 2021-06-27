@@ -47,7 +47,7 @@
 static const uint8_t *
 apl_n_rdf_end(const uint8_t *pkt, const uint8_t *pkt_end, const uint8_t *rdf)
 {
-	(void)pkt;
+	(void)pkt; /* unused parameter */
 	return rdf < pkt_end ? rdf + 1 : NULL;
 }
 static getdns_return_t
@@ -91,7 +91,7 @@ apl_afdpart_rdf_end(
     const uint8_t *pkt, const uint8_t *pkt_end, const uint8_t *rdf)
 {
 	const uint8_t *end = rdf + (rdf[-1] & 0x7F);
-	(void)(pkt);
+	(void)pkt; /* unused parameter */
 	return end <= pkt_end ? end : NULL;
 }
 static getdns_return_t
@@ -217,6 +217,7 @@ ipseckey_gateway_2wire(
 {
 	assert(rdf - 2 >= rdata && rdf[-2] > 0);
 
+	(void)rdata; /* unused parameter */
 	switch (rdf[-2]) {
 	case 1: if (!value || value->size != 4)
 			return GETDNS_RETURN_INVALID_PARAMETER;
@@ -280,7 +281,7 @@ static const uint8_t *
 hip_pk_algorithm_rdf_end(
     const uint8_t *pkt, const uint8_t *pkt_end, const uint8_t *rdf)
 {
-	(void)(pkt);
+	(void)pkt; /* unused parameter */
 	return rdf + 4 > pkt_end ? NULL
 	     : rdf + 4 + *rdf + gldns_read_uint16(rdf + 2) > pkt_end ? NULL
 	     : rdf + 1;
@@ -326,7 +327,7 @@ static _getdns_rdf_special hip_pk_algorithm = {
 static const uint8_t *
 hip_hit_rdf_end(const uint8_t *pkt, const uint8_t *pkt_end, const uint8_t *rdf)
 {
-	(void)(pkt);
+	(void)pkt; /* unused parameter */
 	return rdf + 3 > pkt_end ? NULL
 	     : rdf + 3 + rdf[-1] + gldns_read_uint16(rdf + 1) > pkt_end ? NULL
 	     : rdf + 1;
@@ -380,7 +381,7 @@ static const uint8_t *
 hip_public_key_rdf_end(
     const uint8_t *pkt, const uint8_t *pkt_end, const uint8_t *rdf)
 {
-	(void)(pkt);
+	(void)pkt; /* unused parameter */
 	return rdf + 2 > pkt_end ? NULL
 	     : rdf + 2 + rdf[-2] + gldns_read_uint16(rdf) > pkt_end ? NULL
 	     : rdf + 2 + rdf[-2] + gldns_read_uint16(rdf);
@@ -434,7 +435,7 @@ static _getdns_rdf_special hip_public_key = {
 static const uint8_t *
 amtrelay_D_rdf_end(const uint8_t *pkt, const uint8_t *pkt_end, const uint8_t *rdf)
 {
-	(void)pkt;
+	(void)pkt; /* unused parameter */
 	return rdf < pkt_end ? rdf + 1 : NULL;
 }
 static getdns_return_t
@@ -471,7 +472,8 @@ static const uint8_t *
 amtrelay_rtype_rdf_end(
     const uint8_t *pkt, const uint8_t *pkt_end, const uint8_t *rdf)
 {
-	(void)pkt; (void)pkt_end;
+	(void)pkt; /* unused parameter */
+	(void)pkt_end; /* unused parameter */
 	return rdf;
 }
 static getdns_return_t
@@ -581,6 +583,7 @@ amtrelay_relay_2wire(
 {
 	assert(rdf - 1 >= rdata && (rdf[-1] & 0x7F) > 0);
 
+	(void)rdata; /* unused parameter */
 	switch (rdf[-1] & 0x7F) {
 	case 1: if (!value || value->size != 4)
 			return GETDNS_RETURN_INVALID_PARAMETER;
@@ -1293,8 +1296,39 @@ write_rdata_field(gldns_buffer *buf, uint8_t *rdata_start,
 	return r != GETDNS_RETURN_NO_SUCH_LIST_ITEM ? r : GETDNS_RETURN_GOOD;
 }
 
+void
+_getdns_rr_buffer_write_cached_name(gldns_buffer *buf, getdns_bindata *name, name_cache_t *name_cache)
+{
+	size_t name_size = name->size;
+	uint8_t *name_data = name->data;
+	if((NULL != name_cache) && (name_size > 2)) {
+		unsigned count = name_cache->count;
+		name_cache_entry_t *entry_ptr = &name_cache->entry[(count < NAME_CACHE_ENTRIES)?count:NAME_CACHE_ENTRIES];
+		name_cache_entry_t *table_start = &name_cache->entry[0];
+		/* Search backward if name is already in cache */
+		while(entry_ptr-- > table_start) {
+			if((entry_ptr->name->size == name_size) &&
+			   !memcmp(entry_ptr->name->data, name_data, name_size)) {
+				gldns_buffer_write_u16(buf, (uint16_t)(0xc000 | entry_ptr->name_offset));
+				return;
+			}
+		}
+		unsigned name_offset = gldns_buffer_position(buf);
+		if (name_offset < 0xc000) {
+			/* Cache name */
+			entry_ptr = &name_cache->entry[count % NAME_CACHE_ENTRIES];
+			entry_ptr->name = name;
+			entry_ptr->name_offset = name_offset;
+			name_cache->count = count + 1;
+		}
+	}
+	gldns_buffer_write(buf, name_data, name_size);
+	return;
+}
+
 getdns_return_t
-_getdns_rr_dict2wire(const getdns_dict *rr_dict, gldns_buffer *buf)
+_getdns_rr_dict2wire_cache(const getdns_dict *rr_dict, gldns_buffer *buf,
+		     name_cache_t *name_cache)
 {
 	getdns_return_t r = GETDNS_RETURN_GOOD;
 	getdns_bindata root = { 1, (void *)"" };
@@ -1325,7 +1359,7 @@ _getdns_rr_dict2wire(const getdns_dict *rr_dict, gldns_buffer *buf)
 		} else
 			return r;
 	}
-	gldns_buffer_write(buf, name->data, name->size);
+	_getdns_rr_buffer_write_cached_name(buf, name, name_cache);
 	gldns_buffer_write_u16(buf, (uint16_t)rr_type);
 
 	(void) getdns_dict_get_int(rr_dict, "class", &rr_class);
@@ -1378,41 +1412,50 @@ _getdns_rr_dict2wire(const getdns_dict *rr_dict, gldns_buffer *buf)
 		gldns_buffer_skip(buf, 2);
 		rdata_start = gldns_buffer_current(buf);
 
-		for ( rd_def = rr_def->rdata
-		    , n_rdata_fields = rr_def->n_rdata_fields
-		    ; n_rdata_fields ; n_rdata_fields-- , rd_def++ ) {
+		/* Special case CNAME payload */
+		if((rr_type == GETDNS_RRTYPE_CNAME) && (n_rdata_fields == 1) &&
+		   (rd_def->type & GETDNS_RDF_BINDATA) && !(rd_def->type & GETDNS_RDF_REPEAT) &&
+		   (GETDNS_RETURN_GOOD == (r = getdns_dict_get_bindata(rdata, rd_def->name, &rdata_raw)))) {
 
-			if (rd_def->type == GETDNS_RDF_REPEAT)
-				break;
+			_getdns_rr_buffer_write_cached_name(buf, rdata_raw, name_cache);
+		} else {
 
-			if ((r = write_rdata_field(buf,
-			    rdata_start, rd_def, rdata)))
-				break;
-		}
-		if (n_rdata_fields == 0 || r) { 
-			/* pass */;
+			for ( rd_def = rr_def->rdata
+			    , n_rdata_fields = rr_def->n_rdata_fields
+			    ; n_rdata_fields ; n_rdata_fields-- , rd_def++ ) {
 
-		} else if ((r = getdns_dict_get_list(
-		    rdata, rd_def->name, &list))) {
-			/* pass */;
-
-		} else for ( i = 0
-		           ; r == GETDNS_RETURN_GOOD
-		           ; i++) {
-
-			if ((r = getdns_list_get_dict(list, i, &rdata))) {
-				if (r == GETDNS_RETURN_NO_SUCH_LIST_ITEM)
-					r = GETDNS_RETURN_GOOD;
-				break;
-			}
-			for ( rep_rd_def = rd_def + 1
-			    , rep_n_rdata_fields = n_rdata_fields - 1
-			    ; rep_n_rdata_fields
-			    ; rep_n_rdata_fields--, rep_rd_def++ ) {
+				if (rd_def->type == GETDNS_RDF_REPEAT)
+					break;
 
 				if ((r = write_rdata_field(buf,
-				    rdata_start, rep_rd_def, rdata)))
+				    rdata_start, rd_def, rdata)))
 					break;
+			}
+			if (n_rdata_fields == 0 || r) {
+				/* pass */;
+
+			} else if ((r = getdns_dict_get_list(
+			    rdata, rd_def->name, &list))) {
+				/* pass */;
+
+			} else for ( i = 0
+			           ; r == GETDNS_RETURN_GOOD
+			           ; i++) {
+
+				if ((r = getdns_list_get_dict(list, i, &rdata))) {
+					if (r == GETDNS_RETURN_NO_SUCH_LIST_ITEM)
+						r = GETDNS_RETURN_GOOD;
+					break;
+				}
+				for ( rep_rd_def = rd_def + 1
+				    , rep_n_rdata_fields = n_rdata_fields - 1
+				    ; rep_n_rdata_fields
+				    ; rep_n_rdata_fields--, rep_rd_def++ ) {
+
+					if ((r = write_rdata_field(buf,
+					    rdata_start, rep_rd_def, rdata)))
+						break;
+				}
 			}
 		}
 		gldns_buffer_write_u16_at(buf, rdata_size_mark,

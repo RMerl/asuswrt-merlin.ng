@@ -122,13 +122,13 @@ typedef struct my_event {
 static void my_event_base_free(struct ub_event_base* base)
 {
 	/* We don't allocate our event base, so no need to free */
-	(void)base;
+	(void)base; /* unused parameter */
 	return;
 }
 
 static int my_event_base_dispatch(struct ub_event_base* base)
 {
-	(void)base;
+	(void)base; /* unused parameter */
 	/* We run the event loop extension for which this ub_event_base is an
 	 * interface ourselfs, so no need to let libunbound call dispatch.
 	 */
@@ -138,7 +138,7 @@ static int my_event_base_dispatch(struct ub_event_base* base)
 
 static int my_event_base_loopexit(struct ub_event_base* base, struct timeval* tv)
 {
-	(void)tv;
+	(void)tv; /* unused parameter */
 	/* Not sure when this will be called.  But it is of no influence as we
 	 * run the event loop ourself.
 	 */
@@ -353,7 +353,7 @@ static int my_timer_del(struct ub_event* ev)
 
 static int my_signal_add(struct ub_event* ub_ev, struct timeval* tv)
 {
-	(void)ub_ev; (void)tv;
+	(void)ub_ev; (void)tv; /* unused parameters */
 	/* Only unbound daaemon workers use signals */
 	DEBUG_SCHED("UB_LOOP ERROR: signal_add()\n");
 	return -1;
@@ -361,7 +361,7 @@ static int my_signal_add(struct ub_event* ub_ev, struct timeval* tv)
 
 static int my_signal_del(struct ub_event* ub_ev)
 {
-	(void)ub_ev;
+	(void)ub_ev; /* unused parameter */
 	/* Only unbound daaemon workers use signals */
 	DEBUG_SCHED("UB_LOOP ERROR: signal_del()\n");
 	return -1;
@@ -370,13 +370,13 @@ static int my_signal_del(struct ub_event* ub_ev)
 static void my_winsock_unregister_wsaevent(struct ub_event* ev)
 {
 	/* wsa events don't get registered with libunbound */
-	(void)ev;
+	(void)ev; /* unused parameter */
 }
 
 static void my_winsock_tcp_wouldblock(struct ub_event* ev, int bits)
 {
 #ifndef USE_WINSOCK
-	(void)ev; (void)bits;
+	(void)ev; (void)bits; /* unused parameters */
 #else
 	if (bits & UB_EV_READ)
 		AS_MY_EVENT(ev)->read_wouldblock = 1;
@@ -434,7 +434,7 @@ static struct ub_event* my_signal_new(struct ub_event_base* base, int fd,
     void (*cb)(int, short, void*), void* arg)
 {
 	/* Not applicable, because in unbound used in the daemon only */
-	(void)base; (void)fd; (void)cb; (void)arg;
+	(void)base; (void)fd; (void)cb; (void)arg; /* unused parameters */
 	return NULL;
 }
 
@@ -442,7 +442,7 @@ static struct ub_event* my_winsock_register_wsaevent(struct ub_event_base *b,
     void* wsaevent, void (*cb)(int, short, void*), void* arg)
 {
 	/* Not applicable, because in unbound used for tubes only */
-	(void)b; (void)wsaevent; (void)cb; (void)arg;
+	(void)b; (void)wsaevent; (void)cb; (void)arg; /* unused parameters */
 	return NULL;
 }
 

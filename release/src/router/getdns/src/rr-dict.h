@@ -143,8 +143,25 @@ typedef struct _getdns_rr_def {
 
 const _getdns_rr_def *_getdns_rr_def_lookup(uint16_t rr_type);
 
-getdns_return_t _getdns_rr_dict2wire(
-    const getdns_dict *rr_dict, gldns_buffer *buf);
+#define NAME_CACHE_ENTRIES 4
+
+typedef struct __name_cache_entry {
+	getdns_bindata *name;
+	unsigned name_offset;
+} name_cache_entry_t;
+
+typedef struct __name_cache {
+	unsigned count;
+	name_cache_entry_t entry[NAME_CACHE_ENTRIES];
+} name_cache_t;
+
+void _getdns_rr_buffer_write_cached_name(
+    gldns_buffer *buf, getdns_bindata *name, name_cache_t *name_cache);
+
+getdns_return_t _getdns_rr_dict2wire_cache(
+    const getdns_dict *rr_dict, gldns_buffer *buf, name_cache_t *name_cache);
+
+#define _getdns_rr_dict2wire(d, b)  _getdns_rr_dict2wire_cache((d),(b), NULL)
 
 const char *_getdns_rr_type_name(int rr_type);
 

@@ -13,6 +13,8 @@ of the available [DNS Privacy servers](https://dnsprivacy.org/wiki/x/E4AT)
 
 Stubby is developed by the getdns team.
 
+Stubby can be used as a command line tool requiring the user to manually modify the system DNS resolvers. A development version of a Stubby Manager GUI is also available for Windows, see [Stubby Mananger GUI](https://dnsprivacy.org/wiki/display/DP/Stubby+Manager+GUI).
+
 # Documentation
 
 See [Stubby Homepage](https://dnsprivacy.org/wiki/x/JYAT) for more details
@@ -30,7 +32,7 @@ https://repology.org/metapackage/stubby/versions
 https://repology.org/metapackage/getdns/versions
 https://repology.org/metapackage/libyaml/versions
 
-* A [Windows Installer](https://dnsprivacy.org/wiki/x/CoBn) is now available for Stubby.
+* A [Windows Installer](https://dnsprivacy.org/wiki/x/CoBn) is now available for Stubby. From version 0.4.0 the msi installer includes a development version of a Windowd GUI.
 * A Homebrew package for stubby is now available (`brew install stubby`).
 * A [GUI for macOS](https://dnsprivacy.org/wiki/x/CIBn) is also available for testing
 
@@ -182,7 +184,7 @@ You can add /usr/local/sbin to your path to avoid having to type it above by doi
 export PATH=/usr/local/sbin:$PATH
 ```
 
-Or via the GUI:
+Or via the macOs System Settings GUI:
 
 * Open *System Preferences &rarr; Network &rarr; Advanced &rarr; DNS*
 * Use the '-' button to remove the existing nameservers
@@ -190,6 +192,8 @@ Or via the GUI:
 * Hit 'OK' in the *DNS* pane and then 'Apply' on the *Network* pane
 
 ## Windows 8 and later
+
+See the file windows/README.txt for a detailed description of building and using Stubby on windows.
 
 Powershell scripts are provided in the the windows directory of the source code that can be used to update the system resolvers. 
 Instructions for how to update the resolvers manually are provided are also provided - see https://dnsprivacy.org/wiki/display/DP/Windows+installer+for+Stubby 

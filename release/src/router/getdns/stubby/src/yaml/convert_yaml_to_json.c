@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2019, Sinodun Internet Technologies Ltd.
+ * Copyright (c) 2017, 2019, 2020, Sinodun Internet Technologies Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "config.h"
@@ -57,6 +58,29 @@ static void report_parser_error(yaml_parser_t *);
 
 static char* event_type_string(yaml_event_type_t);
 
+static int quote_next_scalar;
+
+static const char* QUOTE_KEY_VALUES[] = {
+	"tls_ca_path",
+	"tls_cipher_list",
+	"tls_ciphersuites",
+	"appdata_dir",
+	"dnssec_trust_anchors",
+	"tls_auth_name",
+	"digest",
+	NULL
+};
+
+static void quote_key_values(const char *key)
+{
+	quote_next_scalar = 0;
+	for ( const char** p = QUOTE_KEY_VALUES; *p; p++ )
+		if ( !strcmp(key, *p) ) {
+			quote_next_scalar = 1;
+			break;
+		}
+}
+
 /* public functions */
 
 char *
@@ -78,6 +102,7 @@ yaml_string_to_json_string(const char *instr)
 
 	memset(&parser, 0, sizeof(parser));
 	memset(&event, 0, sizeof(event));
+	quote_next_scalar = 0;
 
 	if (!yaml_parser_initialize(&parser)) {
 		fprintf(stderr, "Could not initialize the parser object\n");
@@ -278,7 +303,8 @@ process_yaml_mapping(yaml_parser_t *parser, yaml_event_t *event, gldns_buffer *b
 			if (members)
 				if (gldns_buffer_printf(buf, ", ") == -1)
 					return -1;
-			
+
+			quote_next_scalar = 0;
 			if (output_scalar(event, buf) != 0) {
 				fprintf(stderr, "Mapping error: Error outputting key\n");
 				return -1;
@@ -287,6 +313,7 @@ process_yaml_mapping(yaml_parser_t *parser, yaml_event_t *event, gldns_buffer *b
 				return -1;
 			
 			members = 1;
+			quote_key_values((const char*)event->data.scalar.value);
 		} else if (event->type == YAML_MAPPING_END_EVENT) {
 			if (gldns_buffer_printf(buf, " }") == -1)
 				return -1;
@@ -444,7 +471,7 @@ output_scalar(yaml_event_t *event, gldns_buffer *buf)
 	assert(buf);
 	assert(event->data.scalar.length > 0);
 	
-	if (event->data.scalar.style != YAML_PLAIN_SCALAR_STYLE)
+	if (quote_next_scalar)
 		fmt = "\"%s\"";
 
 	if ( gldns_buffer_printf(buf, fmt, event->data.scalar.value) == -1 )

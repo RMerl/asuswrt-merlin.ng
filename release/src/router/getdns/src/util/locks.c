@@ -42,7 +42,6 @@
 #include "config.h"
 #include "util/locks.h"
 #include <signal.h>
-#include <string.h>
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif

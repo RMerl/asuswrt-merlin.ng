@@ -1,3 +1,27 @@
+* 2021-06-04: Version 1.7.0
+  * Make TLS Handshake timeout max 4/5th of timeout for the query,
+    just like connection setup timeout was, so fallback transport
+    have a chance too when TCP connection setup is less well
+    detectable (as with TCP_FASTOPEN on MacOS).
+  * Issue #466: Memory leak with retrying queries (for examples
+    with search paths). Thanks doublez13.
+  * Issue #480: Handling of strptime when Cross compiling with CMake.
+    A new option to FORCE_COMPAT_STRPTIME (default disabled) will
+    (when disabled) make cmake assume the target platform has a POSIX
+    compatible strptime when cross-compiling.
+  * Setting of the number of milliseconds send data may remain
+    unacknowledged by the peer in a TCP connection (when supported 
+    by the OS) with getdns_context_set_tcp_send_timeout()
+    Thanks maciejsszmigiero.
+  * Issue #497: Fix typo in CMAKE included files, so Stubby can use
+    TLS v1.3 with chipersuites options ON. Thanks har-riz.
+  * Basic name compression on server replied messages. Thanks amialkow!
+    This alleviates (but might not completely resolve) issues #495 and
+    #320 .
+  * Eventloop extensions back to the old names libgetdns_ext_event,
+    libgetdns_ext_ev and libgetdns_ext_uv.
+  * Compilation warning fixes. Thanks Andreas!
+
 * 2020-02-28: Version 1.6.0
   * Issues #457, #458, #461: New symbols with libnettle >= 3.4.
     Thanks hanvinke & kometchtech for testing & reporting.

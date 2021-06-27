@@ -161,7 +161,7 @@
         GETDNS_RETURN_GOOD, "Return code from getdns_dict_get_bindata()");
 
       ck_assert_msg(answer->size == bindata.size, "Expected bindata size == %d, got: %d",
-        bindata.size, answer->size);
+        (int)bindata.size, (int)answer->size);
       ck_assert_msg(strcmp((char *)answer->data, (char *)bindata.data) == 0, 
         "Expected bindata data to be \"%s\", got: \"%s\"",
         (char *)bindata.data, (char *)answer->data);

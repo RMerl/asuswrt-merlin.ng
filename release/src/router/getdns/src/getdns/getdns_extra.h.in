@@ -540,6 +540,18 @@ getdns_context_set_tls_query_padding_blocksize(getdns_context *context, uint16_t
 getdns_return_t
 getdns_context_unset_edns_maximum_udp_payload_size(getdns_context *context);
 
+/**
+ * Configure context to use the system default setting for the time
+ * send data may remain unacknowledged by the peer in a TCP connection.
+ * @see getdns_context_set_tcp_send_timeout
+ * @see getdns_context_get_tcp_send_timeout
+ * @param context The context to configure
+ * @return GETDNS_RETURN_GOOD on success
+ * @return GETDNS_RETURN_INVALID_PARAMETER if context is null.
+ */
+getdns_return_t
+getdns_context_unset_tcp_send_timeout(getdns_context *context);
+
 
 typedef enum getdns_loglevel_type {
 	GETDNS_LOG_EMERG   = 0,
@@ -991,6 +1003,22 @@ getdns_context_get_timeout(const getdns_context *context, uint64_t *timeout);
 getdns_return_t
 getdns_context_get_idle_timeout(
     const getdns_context *context, uint64_t *timeout);
+
+/**
+ * Get the number of milliseconds send data may remain unacknowledged by
+ * the peer in a TCP connection setting from context.
+ * @see getdns_context_set_tcp_send_timeout
+ * @see getdns_context_unset_tcp_send_timeout
+ * @param[in]  context The context from which to get the setting
+ * @param[out] value   The number of milliseconds the send data may remain
+ *                     unacknowledged by the peer in a TCP connection.
+ *                     When the value is unset, 0 is returned.
+ * @return GETDNS_RETURN_GOOD when successful
+ * @return GETDNS_RETURN_INVALID_PARAMETER when context or value was NULL.
+ */
+getdns_return_t
+getdns_context_get_tcp_send_timeout(const getdns_context *context,
+    uint32_t *value);
 
 /**
  * Get the setting that says whether or not DNS queries follow redirects.

@@ -26,6 +26,14 @@ This module will set the following variables in your project:
 ``GETDNS_VERSION``
   the version of the Getdns library found
 
+Hints
+^^^^^
+
+``GETDNS_DIR``
+  look here for a getdns install tree (include/ and lib/)
+``GETDNS_STATIC``
+  include common static library dependents, on Windows find the static library.
+
 #]=======================================================================]
 
 find_path(GETDNS_INCLUDE_DIR getdns/getdns.h
@@ -34,13 +42,49 @@ find_path(GETDNS_INCLUDE_DIR getdns/getdns.h
   "${GETDNS_DIR}/include"
   )
 
-find_library(GETDNS_LIBRARY NAMES getdns libgetdns
-  HINTS
-  "${GETDNS_DIR}"
-  "${GETDNS_DIR}/lib"
-  )
+if (GETDNS_STATIC AND (WIN32 OR MINGW OR MSYS OR CYGWIN))
+  find_library(GETDNS_LIBRARY NAMES getdns_static
+    HINTS
+    "${GETDNS_DIR}"
+    "${GETDNS_DIR}/lib"
+    )
+else()
+  find_library(GETDNS_LIBRARY NAMES getdns libgetdns
+    HINTS
+    "${GETDNS_DIR}"
+    "${GETDNS_DIR}/lib"
+    )
+endif()
 
 set(GETDNS_LIBRARIES "")
+if (GETDNS_STATIC)
+  find_package(OpenSSL "1.0.2" REQUIRED)
+  set(THREADS_PREFER_PTHREAD_FLAG ON)
+  find_package(Threads REQUIRED)
+  list(APPEND GETDNS_LIBRARIES
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    Threads::Threads
+    )
+  find_package(Libidn2 "2.0.0")
+  if (Libidn2_FOUND)
+    list(APPEND GETDNS_LIBRARIES Libidn2::Libidn2)
+  endif ()
+  find_package(Libunbound "1.5.9")
+  if (Libunbound_FOUND)
+    list(APPEND GETDNS_LIBRARIES Libunbound::Libunbound)
+  endif ()
+  if (WIN32 OR MINGW OR MSYS OR CYGWIN)
+    list(APPEND GETDNS_LIBRARIES
+    "ws2_32"
+    "crypt32"
+    "gdi32"
+    "iphlpapi"
+    "psapi"
+    "userenv"
+    )
+  endif ()
+endif ()
 
 if (GETDNS_INCLUDE_DIR AND GETDNS_LIBRARY)
   if (NOT TARGET Getdns::Getdns)

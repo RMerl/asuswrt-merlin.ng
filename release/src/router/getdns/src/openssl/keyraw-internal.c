@@ -21,10 +21,10 @@
 #include <openssl/err.h>
 #include <openssl/md5.h>
 #ifdef HAVE_OPENSSL_CONF_H
-# include <openssl/conf.h>
+#include <openssl/conf.h>
 #endif
 #ifdef HAVE_OPENSSL_ENGINE_H
-#  include <openssl/engine.h>
+#include <openssl/engine.h>
 #endif
 #ifdef HAVE_OPENSSL_BN_H
 #include <openssl/bn.h>
@@ -34,6 +34,9 @@
 #endif
 #ifdef HAVE_OPENSSL_DSA_H
 #include <openssl/dsa.h>
+#endif
+#ifdef HAVE_OPENSSL_RSA_H
+#include <openssl/rsa.h>
 #endif
 #endif /* HAVE_SSL */
 
@@ -74,7 +77,6 @@ gldns_key_EVP_load_gost_id(void)
 	if(!e) {
 		/* load it ourself, in case statically linked */
 		ENGINE_load_builtin_engines();
-		ENGINE_load_dynamic();
 		e = ENGINE_by_id("gost");
 	}
 	if(!e) {

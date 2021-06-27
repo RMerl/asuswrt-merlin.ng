@@ -153,7 +153,6 @@ int gldns_bgetc(struct gldns_buffer *buffer);
  * the position to the first character that is not in *s.
  * \param[in] *buffer buffer to use
  * \param[in] *s characters to skip
- * \return void
  */
 void gldns_bskipcs(struct gldns_buffer *buffer, const char *s);
 
@@ -162,7 +161,6 @@ void gldns_bskipcs(struct gldns_buffer *buffer, const char *s);
  * the position to the first character that is not in *s.
  * \param[in] *fp file to use
  * \param[in] *s characters to skip
- * \return void
  */
 void gldns_fskipcs(FILE *fp, const char *s);
 
@@ -173,7 +171,6 @@ void gldns_fskipcs(FILE *fp, const char *s);
  * \param[in] *fp file to use
  * \param[in] *s characters to skip
  * \param[in] line_nr pointer to an integer containing the current line number (for debugging purposes)
- * \return void
  */
 void gldns_fskipcs_l(FILE *fp, const char *s, int *line_nr);
 

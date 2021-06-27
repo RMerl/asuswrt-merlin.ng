@@ -154,7 +154,8 @@ getdns_sync_cb(getdns_context *context, getdns_callback_type_t callback_type,
     getdns_dict *response, void *userarg, getdns_transaction_t transaction_id)
 {
 	getdns_sync_data *data = (getdns_sync_data *)userarg;
-	(void)context; (void)callback_type; (void)transaction_id;
+	(void)context; (void)callback_type; /* unused parameters */
+	(void)transaction_id; /* unused parameter */
 
 	assert(data);
 

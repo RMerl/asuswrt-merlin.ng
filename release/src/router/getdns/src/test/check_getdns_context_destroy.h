@@ -271,7 +271,7 @@
 
      void verify_getdns_context_destroy(struct extracted_response *ex_response)
      {
-       (void)ex_response;
+       (void)ex_response; /* unused parameter */
        /*
         * Sleep for a second to make getdns_context_destroy() wait.
         */

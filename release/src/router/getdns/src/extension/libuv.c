@@ -73,8 +73,7 @@ getdns_libuv_cleanup(getdns_eventloop *loop)
 }
 
 typedef struct poll_timer {
-	uv_poll_t        read;
-	uv_poll_t        write;
+	uv_poll_t        poll;
 	uv_timer_t       timer;
 	int              to_close;
 	struct mem_funcs mf;
@@ -104,22 +103,15 @@ getdns_libuv_clear(getdns_eventloop *loop, getdns_eventloop_event *el_ev)
 	poll_timer   *my_ev = (poll_timer *)el_ev->ev;
 	uv_poll_t    *my_poll;
 	uv_timer_t   *my_timer;
-	(void)loop;
+	(void)loop; /* unused parameter */
 	
 	assert(my_ev);
 
 	DEBUG_UV("enter libuv_clear(el_ev = %p, my_ev = %p, to_close = %d)\n"
 	        , el_ev, my_ev, my_ev->to_close);
 
-	if (el_ev->read_cb) {
-		my_poll = &my_ev->read;
-		uv_poll_stop(my_poll);
-		my_ev->to_close += 1;
-		my_poll->data = my_ev;
-		uv_close((uv_handle_t *)my_poll, getdns_libuv_close_cb);
-	}
-	if (el_ev->write_cb) {
-		my_poll = &my_ev->write;
+	if (el_ev->read_cb || el_ev->write_cb) {
+		my_poll = &my_ev->poll;
 		uv_poll_stop(my_poll);
 		my_ev->to_close += 1;
 		my_poll->data = my_ev;
@@ -139,29 +131,29 @@ getdns_libuv_clear(getdns_eventloop *loop, getdns_eventloop_event *el_ev)
 }
 
 static void
-getdns_libuv_read_cb(uv_poll_t *poll, int status, int events)
+getdns_libuv_cb(uv_poll_t *poll, int status, int events)
 {
-        getdns_eventloop_event *el_ev = (getdns_eventloop_event *)poll->data;
-	(void)status; (void)events;
-        assert(el_ev->read_cb);
-	DEBUG_UV("enter libuv_read_cb(el_ev = %p, el_ev->ev = %p)\n"
-	        , el_ev, el_ev->ev);
-        el_ev->read_cb(el_ev->userarg);
-	DEBUG_UV("exit  libuv_read_cb(el_ev = %p, el_ev->ev = %p)\n"
-	        , el_ev, el_ev->ev);
-}
+	getdns_eventloop_event *el_ev = (getdns_eventloop_event *)poll->data;
 
-static void
-getdns_libuv_write_cb(uv_poll_t *poll, int status, int events)
-{
-        getdns_eventloop_event *el_ev = (getdns_eventloop_event *)poll->data;
-	(void)status; (void)events;
-        assert(el_ev->write_cb);
-	DEBUG_UV("enter libuv_write_cb(el_ev = %p, el_ev->ev = %p)\n"
-	        , el_ev, el_ev->ev);
-        el_ev->write_cb(el_ev->userarg);
-	DEBUG_UV("exit  libuv_write_cb(el_ev = %p, el_ev->ev = %p)\n"
-	        , el_ev, el_ev->ev);
+	if (status == 0) {
+		if (events & UV_READABLE) {
+			assert(el_ev->read_cb);
+			DEBUG_UV("enter libuv_read_cb(el_ev = %p, el_ev->ev = %p)\n"
+					, el_ev, el_ev->ev);
+			el_ev->read_cb(el_ev->userarg);
+			DEBUG_UV("exit  libuv_read_cb(el_ev = %p, el_ev->ev = %p)\n"
+					, el_ev, el_ev->ev);
+		} else if (events & UV_WRITABLE) {
+			assert(el_ev->write_cb);
+			DEBUG_UV("enter libuv_write_cb(el_ev = %p, el_ev->ev = %p)\n"
+					, el_ev, el_ev->ev);
+			el_ev->write_cb(el_ev->userarg);
+			DEBUG_UV("exit  libuv_write_cb(el_ev = %p, el_ev->ev = %p)\n"
+					, el_ev, el_ev->ev);
+		} else {
+			assert(ASSERT_UNREACHABLE);
+		}
+	}
 }
 
 static void
@@ -173,7 +165,7 @@ getdns_libuv_timeout_cb(uv_timer_t *timer, int status)
 {
         getdns_eventloop_event *el_ev = (getdns_eventloop_event *)timer->data;
 #ifndef HAVE_NEW_UV_TIMER_CB
-	(void)status;
+	(void)status; /* unused parameter */
 #endif
         assert(el_ev->timeout_cb);
 	DEBUG_UV("enter libuv_timeout_cb(el_ev = %p, el_ev->ev = %p)\n"
@@ -205,18 +197,15 @@ getdns_libuv_schedule(getdns_eventloop *loop,
 	my_ev->to_close = 0;
 	my_ev->mf = ext->mf;
 	el_ev->ev = my_ev;
-	
-	if (el_ev->read_cb) {
-		my_poll = &my_ev->read;
+
+	if (el_ev->read_cb || el_ev->write_cb) {
+		my_poll = &my_ev->poll;
 		my_poll->data = el_ev;
 		uv_poll_init(ext->loop, my_poll, fd);
-		uv_poll_start(my_poll, UV_READABLE, getdns_libuv_read_cb);
-	}
-	if (el_ev->write_cb) {
-		my_poll = &my_ev->write;
-		my_poll->data = el_ev;
-		uv_poll_init(ext->loop, my_poll, fd);
-		uv_poll_start(my_poll, UV_WRITABLE, getdns_libuv_write_cb);
+		int events =
+			(el_ev->read_cb ? UV_READABLE : 0) |
+			(el_ev->write_cb ? UV_WRITABLE : 0);
+		uv_poll_start(my_poll, events, getdns_libuv_cb);
 	}
 	if (el_ev->timeout_cb) {
 		my_timer = &my_ev->timer;

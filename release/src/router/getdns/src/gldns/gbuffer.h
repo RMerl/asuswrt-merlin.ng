@@ -232,7 +232,6 @@ INLINE void gldns_buffer_clear(gldns_buffer *buffer)
  * the position is set to 0.
  *
  * \param[in] buffer the buffer to flip
- * \return void
  */
 INLINE void gldns_buffer_flip(gldns_buffer *buffer)
 {
@@ -782,7 +781,6 @@ int gldns_buffer_printf(gldns_buffer *buffer, const char *format, ...)
 /**
  * frees the buffer.
  * \param[in] *buffer the buffer to be freed
- * \return void
  */
 void gldns_buffer_free(gldns_buffer *buffer);
 
@@ -790,7 +788,6 @@ void gldns_buffer_free(gldns_buffer *buffer);
  * Makes the buffer fixed and returns a pointer to the data.  The
  * caller is responsible for free'ing the result.
  * \param[in] *buffer the buffer to be exported
- * \return void
  */
 void *gldns_buffer_export(gldns_buffer *buffer);
 

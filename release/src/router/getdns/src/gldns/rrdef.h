@@ -195,7 +195,9 @@ enum gldns_enum_rr_type
 	GLDNS_RR_TYPE_CDNSKEY = 60, /** RFC 7344 */
 	GLDNS_RR_TYPE_OPENPGPKEY = 61, /* RFC 7929 */
 	GLDNS_RR_TYPE_CSYNC = 62, /* RFC 7477 */
-	GLDNS_RR_TYPE_ZONEMD = 63, /* draft-wessels-dns-zone-digest */
+	GLDNS_RR_TYPE_ZONEMD = 63, /* RFC8976 */
+	GLDNS_RR_TYPE_SVCB = 64,
+	GLDNS_RR_TYPE_HTTPS = 65,
 
 	GLDNS_RR_TYPE_SPF = 99, /* RFC 4408 */
 
@@ -432,7 +434,8 @@ enum gldns_enum_edns_option
 	GLDNS_EDNS_N3U = 7, /* RFC6975 */
 	GLDNS_EDNS_CLIENT_SUBNET = 8, /* RFC7871 */
 	GLDNS_EDNS_KEEPALIVE = 11, /* draft-ietf-dnsop-edns-tcp-keepalive*/
-	GLDNS_EDNS_PADDING = 12 /* RFC7830 */
+	GLDNS_EDNS_PADDING = 12, /* RFC7830 */
+	GLDNS_EDNS_CLIENT_TAG = 16 /* draft-bellis-dnsop-edns-tags-01 */
 };
 typedef enum gldns_enum_edns_option gldns_edns_option;
 

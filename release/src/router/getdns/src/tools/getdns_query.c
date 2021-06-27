@@ -366,7 +366,7 @@ void callback(getdns_context *context, getdns_callback_type_t callback_type,
     getdns_dict *response, void *userarg, getdns_transaction_t trans_id)
 {
 	char *response_str;
-	(void)context; (void)userarg;
+	(void)context; (void)userarg; /* unused parameters */
 
 	/* This is a callback with data */;
 	if (response && !quiet && (response_str = json ?
@@ -1440,7 +1440,7 @@ static void request_cb(
 	dns_msg *msg = (dns_msg *)userarg;
 	uint32_t qid;
 	getdns_return_t r = GETDNS_RETURN_GOOD;
-	uint32_t n, rcode, dnssec_status;
+	uint32_t n, rcode, dnssec_status = GETDNS_DNSSEC_INDETERMINATE;
 
 #if defined(SERVER_DEBUG) && SERVER_DEBUG
 	getdns_bindata *qname;
@@ -1457,7 +1457,7 @@ static void request_cb(
 	if (qname_str != unknown_qname)
 		free(qname_str);
 #else
-	(void)transaction_id;
+	(void)transaction_id; /* unused parameter */
 #endif
 	assert(msg);
 
@@ -1556,8 +1556,8 @@ static void incoming_request_handler(getdns_context *context,
 	getdns_dict *rr;
 	uint32_t rr_type;
 
-	(void)callback_type;
-	(void)userarg;
+	(void)callback_type; /* unused parameter */
+	(void)userarg; /* unused parameter */
 
 	if (!query_extensions_spc &&
 	    !(query_extensions_spc = getdns_dict_create()))
@@ -1757,7 +1757,7 @@ static void _getdns_query_log(void *userarg, uint64_t system,
 	gmtime_r(&tv.tv_sec, &tm);
 #endif
 	strftime(buf, 10, "%H:%M:%S", &tm);
-	(void)userarg; (void)system; (void)level;
+	(void)userarg; (void)system; (void)level; /* unused parameters */
 	(void) fprintf(stderr, "[%s.%.6d] UPSTREAM ", buf, (int)tv.tv_usec);
 	(void) vfprintf(stderr, fmt, ap);
 }

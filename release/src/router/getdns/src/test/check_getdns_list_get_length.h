@@ -89,7 +89,7 @@
       ASSERT_RC(getdns_list_get_length(list, &length),
         GETDNS_RETURN_GOOD, "Return code from getdns_list_get_length()");
 
-      ck_assert_msg(length == 3, "Expected length == 3, got %d", length);
+      ck_assert_msg(length == 3, "Expected length == 3, got %d", (int)length);
 
       LIST_DESTROY(list);
     }
@@ -110,7 +110,7 @@
       ASSERT_RC(getdns_list_get_length(list, &length),
         GETDNS_RETURN_GOOD, "Return code from getdns_list_get_length()");
 
-      ck_assert_msg(length == 0, "Expected length == 3, got %d", length);
+      ck_assert_msg(length == 0, "Expected length == 3, got %d", (int)length);
 
       LIST_DESTROY(list);    
     }

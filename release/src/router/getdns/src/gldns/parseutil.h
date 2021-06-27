@@ -92,13 +92,16 @@ size_t gldns_b64_ntop_calculate_size(size_t srcsize);
 
 int gldns_b64_ntop(uint8_t const *src, size_t srclength,
 	char *target, size_t targsize);
+int gldns_b64url_ntop(uint8_t const *src, size_t srclength, char *target,
+	size_t targsize);
 
 /**
  * calculates the size needed to store the result of gldns_b64_pton
  */
 size_t gldns_b64_pton_calculate_size(size_t srcsize);
-
 int gldns_b64_pton(char const *src, uint8_t *target, size_t targsize);
+int gldns_b64url_pton(char const *src, size_t srcsize, uint8_t *target,
+	size_t targsize);
 
 /**
  * calculates the size needed to store the result of b32_ntop

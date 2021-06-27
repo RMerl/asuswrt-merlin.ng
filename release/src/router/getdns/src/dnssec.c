@@ -922,7 +922,7 @@ static getdns_dict *CD_extension(getdns_dns_req *dnsreq)
 	     ? dnssec_ok_checking_disabled_roadblock_avoidance
 	     : dnssec_ok_checking_disabled_avoid_roadblocks;
 #else
-	(void)dnsreq;
+	(void)dnsreq; /* unused parameter */
 	return dnssec_ok_checking_disabled;
 #endif
 }

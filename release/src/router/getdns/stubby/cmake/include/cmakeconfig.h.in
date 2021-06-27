@@ -5,6 +5,7 @@
 #cmakedefine STUBBY_PACKAGE_STRING      "@STUBBY_PACKAGE_STRING@"
 
 #cmakedefine STUBBY_ON_WINDOWS  1
+#cmakedefine ENABLE_WINDOWS_SERVICE	1
 
 #cmakedefine HAVE_ATTR_FORMAT   1
 #cmakedefine HAVE_ATTR_UNUSED   1

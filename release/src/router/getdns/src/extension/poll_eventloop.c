@@ -288,7 +288,7 @@ static void
 poll_read_cb(int fd, getdns_eventloop_event *event)
 {
 #if !defined(SCHED_DEBUG) || !SCHED_DEBUG
-	(void)fd;
+	(void)fd; /* unused parameter */
 #endif
 	DEBUG_SCHED( "%s(fd: %d, event: %p)\n", __FUNC__, fd, (void *)event);
 	if (event && event->read_cb)
@@ -299,7 +299,7 @@ static void
 poll_write_cb(int fd, getdns_eventloop_event *event)
 {
 #if !defined(SCHED_DEBUG) || !SCHED_DEBUG
-	(void)fd;
+	(void)fd; /* unused parameter */
 #endif
 	DEBUG_SCHED( "%s(fd: %d, event: %p)\n", __FUNC__, fd, (void *)event);
 	if (event && event->write_cb)

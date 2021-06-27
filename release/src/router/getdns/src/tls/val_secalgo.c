@@ -72,6 +72,10 @@
 #include <openssl/engine.h>
 #endif
 
+#if defined(HAVE_OPENSSL_DSA_H) && defined(USE_DSA)
+#include <openssl/dsa.h>
+#endif
+
 /** fake DSA support for unit tests */
 int fake_dsa = 0;
 /** fake SHA1 support for unit tests */
@@ -136,6 +140,69 @@ secalgo_hash_sha256(unsigned char* buf, size_t len, unsigned char* res)
 #else
 	(void)SHA256(buf, len, res);
 #endif
+}
+
+/** hash structure for keeping track of running hashes */
+struct secalgo_hash {
+	/** the openssl message digest context */
+	EVP_MD_CTX* ctx;
+};
+
+/** create secalgo hash with hash type */
+static struct secalgo_hash* secalgo_hash_create_md(const EVP_MD* md)
+{
+	struct secalgo_hash* h;
+	if(!md)
+		return NULL;
+	h = calloc(1, sizeof(*h));
+	if(!h)
+		return NULL;
+	h->ctx = EVP_MD_CTX_create();
+	if(!h->ctx) {
+		free(h);
+		return NULL;
+	}
+	if(!EVP_DigestInit_ex(h->ctx, md, NULL)) {
+		EVP_MD_CTX_destroy(h->ctx);
+		free(h);
+		return NULL;
+	}
+	return h;
+}
+
+struct secalgo_hash* secalgo_hash_create_sha384(void)
+{
+	return secalgo_hash_create_md(EVP_sha384());
+}
+
+struct secalgo_hash* secalgo_hash_create_sha512(void)
+{
+	return secalgo_hash_create_md(EVP_sha512());
+}
+
+int secalgo_hash_update(struct secalgo_hash* hash, uint8_t* data, size_t len)
+{
+	return EVP_DigestUpdate(hash->ctx, (unsigned char*)data,
+		(unsigned int)len);
+}
+
+int secalgo_hash_final(struct secalgo_hash* hash, uint8_t* result,
+        size_t maxlen, size_t* resultlen)
+{
+	if(EVP_MD_CTX_size(hash->ctx) > (int)maxlen) {
+		*resultlen = 0;
+		log_err("secalgo_hash_final: hash buffer too small");
+		return 0;
+	}
+	*resultlen = EVP_MD_CTX_size(hash->ctx);
+	return EVP_DigestFinal_ex(hash->ctx, result, NULL);
+}
+
+void secalgo_hash_delete(struct secalgo_hash* hash)
+{
+	if(!hash) return;
+	EVP_MD_CTX_destroy(hash->ctx);
+	free(hash);
 }
 
 /**
@@ -327,8 +394,10 @@ setup_dsa_sig(unsigned char** sig, unsigned int* len)
 #ifdef HAVE_DSA_SIG_SET0
 	if(!DSA_SIG_set0(dsasig, R, S)) return 0;
 #else
+#  ifndef S_SPLINT_S
 	dsasig->r = R;
 	dsasig->s = S;
+#  endif /* S_SPLINT_S */
 #endif
 	*sig = NULL;
 	newlen = i2d_DSA_SIG(dsasig, sig);
@@ -818,6 +887,64 @@ secalgo_hash_sha256(unsigned char* buf, size_t len, unsigned char* res)
 	(void)HASH_HashBuf(HASH_AlgSHA256, res, buf, (unsigned long)len);
 }
 
+/** the secalgo hash structure */
+struct secalgo_hash {
+	/** hash context */
+	HASHContext* ctx;
+};
+
+/** create hash struct of type */
+static struct secalgo_hash* secalgo_hash_create_type(HASH_HashType tp)
+{
+	struct secalgo_hash* h = calloc(1, sizeof(*h));
+	if(!h)
+		return NULL;
+	h->ctx = HASH_Create(tp);
+	if(!h->ctx) {
+		free(h);
+		return NULL;
+	}
+	return h;
+}
+
+struct secalgo_hash* secalgo_hash_create_sha384(void)
+{
+	return secalgo_hash_create_type(HASH_AlgSHA384);
+}
+
+struct secalgo_hash* secalgo_hash_create_sha512(void)
+{
+	return secalgo_hash_create_type(HASH_AlgSHA512);
+}
+
+int secalgo_hash_update(struct secalgo_hash* hash, uint8_t* data, size_t len)
+{
+	HASH_Update(hash->ctx, (unsigned char*)data, (unsigned int)len);
+	return 1;
+}
+
+int secalgo_hash_final(struct secalgo_hash* hash, uint8_t* result,
+        size_t maxlen, size_t* resultlen)
+{
+	unsigned int reslen = 0;
+	if(HASH_ResultLenContext(hash->ctx) > (unsigned int)maxlen) {
+		*resultlen = 0;
+		log_err("secalgo_hash_final: hash buffer too small");
+		return 0;
+	}
+	HASH_End(hash->ctx, (unsigned char*)result, &reslen,
+		(unsigned int)maxlen);
+	*resultlen = (size_t)reslen;
+	return 1;
+}
+
+void secalgo_hash_delete(struct secalgo_hash* hash)
+{
+	if(!hash) return;
+	HASH_Destroy(hash->ctx);
+	free(hash);
+}
+
 size_t
 ds_digest_size_supported(int algo)
 {
@@ -985,6 +1112,7 @@ static SECKEYPublicKey* nss_buf2ecdsa(unsigned char* key, size_t len, int algo)
 	return pk;
 }
 
+#if defined(USE_DSA) && defined(USE_SHA1)
 static SECKEYPublicKey* nss_buf2dsa(unsigned char* key, size_t len)
 {
 	SECKEYPublicKey* pk;
@@ -1045,6 +1173,7 @@ static SECKEYPublicKey* nss_buf2dsa(unsigned char* key, size_t len)
 	}
 	return pk;
 }
+#endif /* USE_DSA && USE_SHA1 */
 
 static SECKEYPublicKey* nss_buf2rsa(unsigned char* key, size_t len)
 {
@@ -1444,6 +1573,82 @@ secalgo_hash_sha256(unsigned char* buf, size_t len, unsigned char* res)
 	_digest_nettle(SHA256_DIGEST_SIZE, (uint8_t*)buf, len, res);
 }
 
+/** secalgo hash structure */
+struct secalgo_hash {
+	/** if it is 384 or 512 */
+	int active;
+	/** context for sha384 */
+	struct sha384_ctx ctx384;
+	/** context for sha512 */
+	struct sha512_ctx ctx512;
+};
+
+struct secalgo_hash* secalgo_hash_create_sha384(void)
+{
+	struct secalgo_hash* h = calloc(1, sizeof(*h));
+	if(!h)
+		return NULL;
+	h->active = 384;
+	sha384_init(&h->ctx384);
+	return h;
+}
+
+struct secalgo_hash* secalgo_hash_create_sha512(void)
+{
+	struct secalgo_hash* h = calloc(1, sizeof(*h));
+	if(!h)
+		return NULL;
+	h->active = 512;
+	sha512_init(&h->ctx512);
+	return h;
+}
+
+int secalgo_hash_update(struct secalgo_hash* hash, uint8_t* data, size_t len)
+{
+	if(hash->active == 384) {
+		sha384_update(&hash->ctx384, len, data);
+	} else if(hash->active == 512) {
+		sha512_update(&hash->ctx512, len, data);
+	} else {
+		return 0;
+	}
+	return 1;
+}
+
+int secalgo_hash_final(struct secalgo_hash* hash, uint8_t* result,
+        size_t maxlen, size_t* resultlen)
+{
+	if(hash->active == 384) {
+		if(SHA384_DIGEST_SIZE > maxlen) {
+			*resultlen = 0;
+			log_err("secalgo_hash_final: hash buffer too small");
+			return 0;
+		}
+		*resultlen = SHA384_DIGEST_SIZE;
+		sha384_digest(&hash->ctx384, SHA384_DIGEST_SIZE,
+			(unsigned char*)result);
+	} else if(hash->active == 512) {
+		if(SHA512_DIGEST_SIZE > maxlen) {
+			*resultlen = 0;
+			log_err("secalgo_hash_final: hash buffer too small");
+			return 0;
+		}
+		*resultlen = SHA512_DIGEST_SIZE;
+		sha512_digest(&hash->ctx512, SHA512_DIGEST_SIZE,
+			(unsigned char*)result);
+	} else {
+		*resultlen = 0;
+		return 0;
+	}
+	return 1;
+}
+
+void secalgo_hash_delete(struct secalgo_hash* hash)
+{
+	if(!hash) return;
+	free(hash);
+}
+
 /**
  * Return size of DS digest according to its hash algorithm.
  * @param algo: DS digest algo.
@@ -1508,13 +1713,21 @@ dnskey_algo_id_is_supported(int id)
 {
 	/* uses libnettle */
 	switch(id) {
-#if defined(USE_DSA) && defined(USE_SHA1)
 	case LDNS_DSA:
 	case LDNS_DSA_NSEC3:
+#if defined(USE_DSA) && defined(USE_SHA1)
+		return 1;
+#else
+		if(fake_dsa || fake_sha1) return 1;
+		return 0;
 #endif
-#ifdef USE_SHA1
 	case LDNS_RSASHA1:
 	case LDNS_RSASHA1_NSEC3:
+#ifdef USE_SHA1
+		return 1;
+#else
+		if(fake_sha1) return 1;
+		return 0;
 #endif
 #ifdef USE_SHA2
 	case LDNS_RSASHA256:
@@ -1741,6 +1954,7 @@ _verify_nettle_ecdsa(sldns_buffer* buf, unsigned int digest_size, unsigned char*
 			res &= nettle_ecdsa_verify (&pubkey, SHA256_DIGEST_SIZE, digest, &signature);
 			mpz_clear(x);
 			mpz_clear(y);
+			nettle_ecc_point_clear(&pubkey);
 			break;
 		}
 		case SHA384_DIGEST_SIZE:
@@ -1826,6 +2040,15 @@ verify_canonrrset(sldns_buffer* buf, int algo, unsigned char* sigblock,
 		*reason = "null signature";
 		return sec_status_bogus;
 	}
+
+#ifndef USE_DSA
+	if((algo == LDNS_DSA || algo == LDNS_DSA_NSEC3) &&(fake_dsa||fake_sha1))
+		return sec_status_secure;
+#endif
+#ifndef USE_SHA1
+	if(fake_sha1 && (algo == LDNS_DSA || algo == LDNS_DSA_NSEC3 || algo == LDNS_RSASHA1 || algo == LDNS_RSASHA1_NSEC3))
+		return sec_status_secure;
+#endif
 
 	switch(algo) {
 #if defined(USE_DSA) && defined(USE_SHA1)

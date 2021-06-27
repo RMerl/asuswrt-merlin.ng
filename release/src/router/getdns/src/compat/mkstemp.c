@@ -39,5 +39,5 @@ int mkstemp(char *template)
 {
 		if (_mktemp_s(template, strlen(template) + 1) != 0)
 				return -1;
-		return open(template, _O_CREAT | _O_EXCL, _S_IWRITE);
+		return open(template, _O_CREAT | _O_EXCL | _O_RDWR, _S_IWRITE | _S_IREAD);
 }

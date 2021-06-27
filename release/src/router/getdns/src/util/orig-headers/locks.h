@@ -36,8 +36,6 @@
 #ifndef UTIL_LOCKS_H
 #define UTIL_LOCKS_H
 
-#include <string.h>
-
 /**
  * \file
  * Locking primitives.
@@ -221,7 +219,6 @@ void* ub_thread_key_get(ub_thread_key_type key);
 #else /* we do not HAVE_SOLARIS_THREADS and no PTHREADS */
 /******************* WINDOWS THREADS ************************/
 #ifdef HAVE_WINDOWS_THREADS
-#include <winsock2.h>
 #include <windows.h>
 
 /* Use a mutex */

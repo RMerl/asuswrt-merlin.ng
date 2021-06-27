@@ -457,7 +457,7 @@
          void *userarg,
          getdns_transaction_t transaction_id)
      {
-       (void)context; (void)response; (void)userarg;
+       (void)context; (void)response; (void)userarg; /* unused parameters */
 
        callback_called++;
 
@@ -466,23 +466,23 @@
          callback_canceled++;
          ck_assert_msg(transaction_id % 2,
            "Only callbacks with odd transaction_ids were canceled, this one is even: %d",
-           transaction_id);
+           (int)transaction_id);
        }
        else if(callback_type == GETDNS_CALLBACK_COMPLETE)
        {
          callback_completed++;
          ck_assert_msg((transaction_id % 2) == 0,
            "One callbacks with even transaction_ids should complete, this one is odd: %d",
-           transaction_id);
+           (int)transaction_id);
        }
        else
        {
          if(transaction_id % 2)
            ck_abort_msg("callback_type should == GETDNS_CALLBACK_CANCEL for odd transaction_id (%d), got: %d",
-             transaction_id, callback_type);
+             (int)transaction_id, (int)callback_type);
          else
            ck_abort_msg("callback_type should == GETDNS_CALLBACK_COMPLETE for even transaction_id (%d), got %d",
-             transaction_id, callback_type);
+             (int)transaction_id, (int)callback_type);
        }
      }
 
@@ -491,7 +491,7 @@
      */
      void verify_getdns_cancel_callback(struct extracted_response *ex_response)
      {
-       (void)ex_response;
+       (void)ex_response; /* unused parameter */
        /*
         *  increment callback_called global to prove callback was called.
         */

@@ -57,6 +57,8 @@ int event_loop_type = 0;
 void extract_response(struct getdns_dict *response, struct extracted_response *ex_response)
 {
   int have_answer_type = 0;
+  int get_reply = 0;
+  uint32_t rcode;
 
   ck_assert_msg(response != NULL, "Response should not be NULL");
   /* fprintf(stderr, "%s\n", getdns_pretty_print_dict(response)); */
@@ -103,10 +105,18 @@ void extract_response(struct getdns_dict *response, struct extracted_response *e
     ex_response->question = NULL;
     return;
   }
+  /* Work around dnsmasq issue in which NXDOMAIN AAAA responses
+   * are returned as NODATA. In such cases use the other A response
+   * which does have rcode NXDOMAIN.
+   */
+  if (ex_response->status == GETDNS_RESPSTATUS_NO_NAME
+  && !getdns_dict_get_int(response, "/replies_tree/1/header/rcode", &rcode)
+  && rcode == GETDNS_RCODE_NXDOMAIN)
+    get_reply = 1;
 
-  ASSERT_RC(getdns_list_get_dict(ex_response->replies_tree, 0, &ex_response->replies_tree_sub_dict),
-    GETDNS_RETURN_GOOD, "Failed to extract \"replies_tree[0]\"");
-  ck_assert_msg(ex_response->replies_tree_sub_dict != NULL, "replies_tree[0] dict should not be NULL");
+  ASSERT_RC(getdns_list_get_dict(ex_response->replies_tree, get_reply, &ex_response->replies_tree_sub_dict),
+    GETDNS_RETURN_GOOD, "Failed to extract \"replies_tree[#]\"");
+  ck_assert_msg(ex_response->replies_tree_sub_dict != NULL, "replies_tree[#] dict should not be NULL");
 
   ASSERT_RC(getdns_dict_get_list(ex_response->replies_tree_sub_dict, "additional", &ex_response->additional),
     GETDNS_RETURN_GOOD, "Failed to extract \"additional\"");
@@ -186,7 +196,7 @@ void assert_nodata(struct extracted_response *ex_response)
 
   ASSERT_RC(getdns_list_get_length(ex_response->answer, &length),
     GETDNS_RETURN_GOOD, "Failed to extract \"answer\" length");
-  ck_assert_msg(length == 0, "Expected \"answer\" length == 0, got %d", length);
+  ck_assert_msg(length == 0, "Expected \"answer\" length == 0, got %d", (int)length);
 
   ASSERT_RC(ex_response->status, GETDNS_RESPSTATUS_NO_NAME, "Unexpected value for \"status\"");
 }
@@ -212,7 +222,7 @@ void assert_address_in_answer(struct extracted_response *ex_response, int a, int
 
   ASSERT_RC(getdns_list_get_length(ex_response->answer, &length),
     GETDNS_RETURN_GOOD, "Failed to extract \"answer\" length");
-  ck_assert_msg(length == ancount, "Expected \"answer\" length == ancount: %d, got %d", ancount, length);
+  ck_assert_msg(length == ancount, "Expected \"answer\" length == ancount: %d, got %d", (int)ancount, (int)length);
 
   for(i = 0; i < length; i++)
   {
@@ -247,7 +257,7 @@ void assert_address_in_just_address_answers(struct extracted_response *ex_respon
     GETDNS_RETURN_GOOD, "Failed to extract \"just_address_answers\" length");
   
   if (length == 0) resp_str = getdns_pretty_print_dict(ex_response->response);
-  ck_assert_msg(length > 0, "Expected \"just_address_answers\" length > 0, got %d\n%s", length, resp_str);
+  ck_assert_msg(length > 0, "Expected \"just_address_answers\" length > 0, got %d\n%s", (int)length, resp_str);
   if (length == 0) free(resp_str);
 }
 
@@ -284,7 +294,7 @@ void assert_soa_in_authority(struct extracted_response *ex_response)
 
   ASSERT_RC(getdns_list_get_length(ex_response->authority, &length),
     GETDNS_RETURN_GOOD, "Failed to extract \"authority\" length");
-  ck_assert_msg(length == nscount, "Expected \"authority\" length == nscount: %d, got %d", nscount, length);
+  ck_assert_msg(length == nscount, "Expected \"authority\" length == nscount: %d, got %d", (int)nscount, (int)length);
 
   for(i = 0; i < length; i++)
   {
@@ -318,7 +328,7 @@ void assert_ptr_in_answer(struct extracted_response *ex_response)
 
   ASSERT_RC(getdns_list_get_length(ex_response->answer, &length),
     GETDNS_RETURN_GOOD, "Failed to extract \"answer\" length");
-  ck_assert_msg(length == ancount, "Expected \"answer\" length == ancount: %d, got %d", ancount, length);
+  ck_assert_msg(length == ancount, "Expected \"answer\" length == ancount: %d, got %d", (int)ancount, (int)length);
 
   for(i = 0; i < length; i++)
   {
@@ -339,7 +349,7 @@ void destroy_callbackfn(struct getdns_context *context,
                         void *userarg,
                         getdns_transaction_t transaction_id) {
     int* flag = (int*)userarg;
-    (void)callback_type; (void)transaction_id;
+    (void)callback_type; (void)transaction_id; /* unused parameters */
     *flag = 1;
     getdns_dict_destroy(response);
     getdns_context_destroy(context);
@@ -359,7 +369,7 @@ void callbackfn(struct getdns_context *context,
 {
   typedef void (*fn_ptr)(struct extracted_response *ex_response);
   fn_ptr fn = ((fn_cont *)userarg)->fn;
-  (void)context; (void)transaction_id;
+  (void)context; (void)transaction_id; /* unused parameters */
 
   /*
    *  If userarg is NULL, either a negative test case
@@ -399,7 +409,7 @@ void callbackfn(struct getdns_context *context,
 void update_callbackfn(struct getdns_context *context,
                 getdns_context_code_t changed_item)
 {
-  (void)context;
+  (void)context; /* unused parameter */
   ck_assert_msg(changed_item == expected_changed_item,
     "Expected changed_item == %d, got %d",
     changed_item, expected_changed_item);

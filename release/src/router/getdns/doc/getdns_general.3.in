@@ -76,7 +76,7 @@ getdns_dict **response)
 The getdns_general(3) and getdns_general_sync functions provide public entry
 points into the getdns API library to retrieve any valid responses to a query
 from the DNS (note that other namespaces in the context are not used).   Most
-typical use cases for applications are probably satisifed via calls to
+typical use cases for applications are probably satisfied via calls to
 getdns_address(3) which would replace getaddrinfo(3).
 
 .HP 3

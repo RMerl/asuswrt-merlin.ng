@@ -915,12 +915,9 @@ void ovpn_stop_client(int unit) {
 
 	sprintf(buffer, "vpnclient%d", unit);
 
-	// Are we running?
-	if (pidof(buffer) == -1)
-		return;
-
-	// Stop the VPN client
-	killall_tk_period_wait(buffer, 10);
+	// Stop running client
+	if (pidof(buffer) != -1)
+		killall_tk_period_wait(buffer, 10);
 
 	// Manual stop, so remove rules
 	_clear_routing_rules(unit);
@@ -934,8 +931,10 @@ void ovpn_stop_client(int unit) {
 
 	// Remove firewall rules after VPN exit
 	sprintf(buffer, "/etc/openvpn/client%d/fw.sh", unit);
-	if (!eval("sed", "-i", "s/-A/-D/g;s/-I/-D/g", buffer))
-		eval(buffer);
+	if (f_exists(buffer)) {
+		if (!eval("sed", "-i", "s/-A/-D/g;s/-I/-D/g", buffer))
+			eval(buffer);
+	}
 
 	// Delete all files for this client
 	sprintf(buffer, "/etc/openvpn/client%d",unit);

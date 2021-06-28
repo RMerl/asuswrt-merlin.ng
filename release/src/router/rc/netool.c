@@ -275,7 +275,7 @@ static int do_ping_normal(void *rInfo)
 		snprintf(ifpara, sizeof(ifpara), "-I %s", req->interface);
 	}
 	
-	snprintf(cmd, sizeof(cmd), "%s %s -c %d -W %d %s > %s 2>&1 && echo 'XU6J03M6' >> %s &", 
+	snprintf(cmd, sizeof(cmd), "%s %s -c %d -W %d %s > %s 2>&1 || true && echo 'XU6J03M6' >> %s &",
 				   (!strcmp(req->ver, "v6")) ? "ping6" : "ping", ifpara, req->ping_cnt,
 				   req->response, req->target, result_path, result_path);
 	

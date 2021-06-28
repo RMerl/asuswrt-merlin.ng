@@ -68,6 +68,7 @@ static const char* QUOTE_KEY_VALUES[] = {
 	"dnssec_trust_anchors",
 	"tls_auth_name",
 	"digest",
+	"resolvconf",
 	NULL
 };
 

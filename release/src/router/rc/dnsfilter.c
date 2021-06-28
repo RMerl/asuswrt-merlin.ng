@@ -136,20 +136,17 @@ int get_dns_filter(int proto, int mode, dnsf_srv_entry_t *dnsfsrv)
 }
 
 
-void dnsfilter_settings(FILE *fp, char *lan_ip) {
+void dnsfilter_settings(FILE *fp) {
 	char *name, *mac, *mode;
 	unsigned char ea[ETHER_ADDR_LEN];
 	char *nv, *nvp, *rule;
-	char lan_class[32];
 	int dnsmode;
 	dnsf_srv_entry_t dnsfsrv;
 
 	if (nvram_get_int("dnsfilter_enable_x")) {
 		/* Reroute all DNS requests from LAN */
-		ip2class(lan_ip, nvram_safe_get("lan_netmask"), lan_class);
-		fprintf(fp, "-A PREROUTING -s %s -p udp -m udp --dport 53 -j DNSFILTER\n"
-			    "-A PREROUTING -s %s -p tcp -m tcp --dport 53 -j DNSFILTER\n",
-			lan_class, lan_class);
+		fprintf(fp, "-A PREROUTING -i br+ -p udp -m udp --dport 53 -j DNSFILTER\n"
+			    "-A PREROUTING -i br+ -p tcp -m tcp --dport 53 -j DNSFILTER\n");
 
 		/* Protection level per client */
 
@@ -187,19 +184,18 @@ void dnsfilter_settings(FILE *fp, char *lan_ip) {
 
 
 #ifdef RTCONFIG_IPV6
-void dnsfilter6_settings(FILE *fp, char *lan_if, char *lan_ip) {
+void dnsfilter6_settings(FILE *fp) {
 	char *nv, *nvp, *rule;
 	char *name, *mac, *mode;
 	unsigned char ea[ETHER_ADDR_LEN];
 	int dnsmode, count;
 	dnsf_srv_entry_t dnsfsrv;
 
-	fprintf(fp, "-A INPUT -i %s -p udp -m udp --dport 53 -j DNSFILTERI\n"
-		    "-A INPUT -i %s -p tcp -m tcp --dport 53 -j DNSFILTERI\n"
-		    "-A FORWARD -i %s -p udp -m udp --dport 53 -j DNSFILTERF\n"
-		    "-A FORWARD -i %s -p tcp -m tcp --dport 53 -j DNSFILTERF\n"
-		    "-A FORWARD -i %s -p tcp -m tcp --dport 853 -j DNSFILTER_DOT\n",
-		lan_if, lan_if, lan_if, lan_if, lan_if);
+	fprintf(fp, "-A INPUT -i br+ -p udp -m udp --dport 53 -j DNSFILTERI\n"
+		    "-A INPUT -i br+ -p tcp -m tcp --dport 53 -j DNSFILTERI\n"
+		    "-A FORWARD -i br+ -p udp -m udp --dport 53 -j DNSFILTERF\n"
+		    "-A FORWARD -i br+ -p tcp -m tcp --dport 53 -j DNSFILTERF\n"
+		    "-A FORWARD -i br+ -p tcp -m tcp --dport 853 -j DNSFILTER_DOT\n");
 
 #ifdef HND_ROUTER
 	nv = nvp = malloc(255 * 6 + 1);
@@ -313,7 +309,7 @@ void dnsfilter_setup_dnsmasq(FILE *fp) {
 
 
 // Add rules fo Filter chain to prevent the use of DOT if client is filtered, and server does not support DOT
-void dnsfilter_dot_rules(FILE *fp, char *lan_if)
+void dnsfilter_dot_rules(FILE *fp)
 {
 	char *name, *mac, *mode;
 	unsigned char ea[ETHER_ADDR_LEN];
@@ -323,7 +319,7 @@ void dnsfilter_dot_rules(FILE *fp, char *lan_if)
 
 	if (nvram_get_int("dnsfilter_enable_x") == 0) return;
 
-	fprintf(fp, "-A FORWARD -i %s -m tcp -p tcp --dport 853 -j DNSFILTER_DOT\n", lan_if);
+	fprintf(fp, "-A FORWARD -i br+ -m tcp -p tcp --dport 853 -j DNSFILTER_DOT\n");
 
 #ifdef HND_ROUTER
 	nv = nvp = malloc(255 * 6 + 1);

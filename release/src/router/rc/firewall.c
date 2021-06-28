@@ -1710,7 +1710,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 #endif
 
 #ifdef RTCONFIG_DNSFILTER
-	dnsfilter_settings(fp, lan_ip);
+	dnsfilter_settings(fp);
 #endif
 
 #ifdef RTCONFIG_NTPD
@@ -2094,7 +2094,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 #endif
 
 #ifdef RTCONFIG_DNSFILTER
-	dnsfilter_settings(fp, lan_ip);
+	dnsfilter_settings(fp);
 #endif
 
 #ifdef RTCONFIG_NTPD
@@ -4470,7 +4470,7 @@ TRACE_PT("write wl filter\n");
 #endif
 
 #ifdef RTCONFIG_DNSFILTER
-	dnsfilter_dot_rules(fp, lan_if);
+	dnsfilter_dot_rules(fp);
 #endif
 
 	// Default rule
@@ -5862,7 +5862,7 @@ TRACE_PT("write wl filter\n");
 #endif
 
 #ifdef RTCONFIG_DNSFILTER
-	dnsfilter_dot_rules(fp, lan_if);
+	dnsfilter_dot_rules(fp);
 #endif
 
 	// Default rule
@@ -6033,7 +6033,7 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 			    ":DNSFILTERF - [0:0]\n"
 			    ":DNSFILTER_DOT - [0:0]\n");
 
-			dnsfilter6_settings(fp, lan_if, lan_ip);
+			dnsfilter6_settings(fp);
 
 			fprintf(fp, "COMMIT\n");
 			fclose(fp);
@@ -6219,7 +6219,7 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 				":DNSFILTERF - [0:0]\n"
 				":DNSFILTER_DOT - [0:0]\n");
 
-			dnsfilter6_settings(fp, lan_if, lan_ip);
+			dnsfilter6_settings(fp);
 
 			fprintf(fp, "COMMIT\n");
 			fclose(fp);

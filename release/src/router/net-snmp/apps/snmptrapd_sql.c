@@ -60,7 +60,7 @@
 #include "snmptrapd_log.h"
 #include "snmptrapd_sql.h"
 
-netsnmp_feature_require(container_fifo)
+netsnmp_feature_require(container_fifo);
 
 /*
  * define a structure to hold all the file globals
@@ -199,7 +199,7 @@ typedef struct sql_buf_t {
  * static bind structures, plus 2 static buffers to bind to.
  */
 static MYSQL_BIND _tbind[TBIND_MAX], _vbind[VBIND_MAX];
-static my_bool    _no_v3;
+static char       _no_v3;
 
 static void _sql_process_queue(u_int dontcare, void *meeither);
 
@@ -421,9 +421,6 @@ netsnmp_mysql_connect(void)
 int
 netsnmp_mysql_init(void)
 {
-    int not_argc = 0, i;
-    char *not_args[] = { NULL };
-    char **not_argv = not_args;
     netsnmp_trapd_handler *traph;
 
     DEBUGMSGTL(("sql:init","called\n"));
@@ -450,14 +447,22 @@ netsnmp_mysql_init(void)
     my_init();
 #endif
 
+#if !defined(HAVE_MYSQL_OPTIONS)
+    {
+    int not_argc = 0, i;
+    char *not_args[] = { NULL };
+    char **not_argv = not_args;
+
     /** load .my.cnf values */
 #if HAVE_MY_LOAD_DEFAULTS
     my_load_defaults ("my", _sql.groups, &not_argc, &not_argv, 0);
 #elif defined(HAVE_LOAD_DEFAULTS)
     load_defaults ("my", _sql.groups, &not_argc, &not_argv);
+#else
+#error Neither load_defaults() nor mysql_options() are available.
 #endif
 
-    for(i=0; i < not_argc; ++i) {
+    for (i = 0; i < not_argc; ++i) {
         if (NULL == not_argv[i])
             continue;
         if (strncmp(not_argv[i],"--password=",11) == 0)
@@ -475,6 +480,8 @@ netsnmp_mysql_init(void)
         else
             snmp_log(LOG_WARNING, "unknown argument[%d] %s\n", i, not_argv[i]);
     }
+    }
+#endif /* !defined(HAVE_MYSQL_OPTIONS) */
 
     /** init bind structures */
     memset(_tbind, 0x0, sizeof(_tbind));
@@ -554,7 +561,7 @@ netsnmp_mysql_init(void)
         return -1;
     }
 
-#if MYSQL_VERSION_ID >= 100000
+#if HAVE_MYSQL_OPTIONS
     mysql_options(_sql.conn, MYSQL_READ_DEFAULT_GROUP, "snmptrapd");
 #endif
 

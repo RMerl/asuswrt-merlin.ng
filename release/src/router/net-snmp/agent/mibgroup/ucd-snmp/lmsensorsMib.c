@@ -1,3 +1,7 @@
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
@@ -90,7 +94,11 @@ initialize_lmSensorsTable(const char *tableName, const oid *tableOID,
     netsnmp_table_helper_add_indexes(table_info, ASN_INTEGER, 0);
     table_info->min_column = COLUMN_LMSENSORS_INDEX;
     table_info->max_column = COLUMN_LMSENSORS_VALUE;
-    netsnmp_container_table_register( reg, table_info, container, 0 );
+    if (netsnmp_container_table_register(reg, table_info, container, 0) !=
+        SNMPERR_SUCCESS) {
+        snmp_log(LOG_ERR, "Failed to register the sensors container table\n");
+        return;
+    }
 
     /*
      * If the HAL sensors module was configured as an on-demand caching

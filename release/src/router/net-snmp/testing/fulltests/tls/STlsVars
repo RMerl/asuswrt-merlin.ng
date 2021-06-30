@@ -40,7 +40,7 @@ DOTRAPTEST() {
 
   # IF-MIB::linkUp
   CAPTURE "snmptrap $args 0 .1.3.6.1.6.3.1.1.5.4 system.sysContact.0 s $value"
-
+  DELAY 1
   CHECKTRAPD "STRING: $value"
 }
 
@@ -50,7 +50,7 @@ DOFAILTRAPTEST() {
 
   # IF-MIB::linkUp
   CAPTURE "snmptrap $args 0 .1.3.6.1.6.3.1.1.5.4 system.sysContact.0 s $value"
-
+  DELAY 1
   CHECKTRAPDCOUNT 0 "$value"
 }
 

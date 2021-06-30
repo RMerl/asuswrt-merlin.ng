@@ -49,11 +49,11 @@ extern          "C" {
                                      size_t * kcstring_len);
 
     NETSNMP_IMPORT
-    int             decode_keychange(const oid * hashtype,
-                                     u_int hashtype_len, u_char * oldkey,
-                                     size_t oldkey_len, u_char * kcstring,
-                                     size_t kcstring_len, u_char * newkey,
-                                     size_t * newkey_len);
+    int             decode_keychange(const oid *hashtype, u_int hashtype_len,
+                                     const u_char *oldkey, size_t oldkey_len,
+                                     const u_char *kcstring,
+                                     size_t kcstring_len, u_char *newkey,
+                                     size_t *newkey_len);
 
 
     /*

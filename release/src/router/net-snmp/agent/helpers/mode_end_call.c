@@ -16,8 +16,8 @@
 
 #include <net-snmp/agent/mode_end_call.h>
 
-netsnmp_feature_provide(mode_end_call)
-netsnmp_feature_child_of(mode_end_call, mib_helpers)
+netsnmp_feature_provide(mode_end_call);
+netsnmp_feature_child_of(mode_end_call, mib_helpers);
 
 #ifndef NETSNMP_FEATURE_REMOVE_MODE_END_CALL
 /** @defgroup mode_end_call mode_end_call

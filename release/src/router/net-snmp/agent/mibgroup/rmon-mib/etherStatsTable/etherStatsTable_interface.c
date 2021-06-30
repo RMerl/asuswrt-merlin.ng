@@ -47,12 +47,12 @@
 
 #include <ctype.h>
 
-netsnmp_feature_require(row_merge)
-netsnmp_feature_require(baby_steps)
-netsnmp_feature_require(table_container_row_insert)
-netsnmp_feature_require(check_all_requests_error)
+netsnmp_feature_require(row_merge);
+netsnmp_feature_require(baby_steps);
+netsnmp_feature_require(table_container_row_insert);
+netsnmp_feature_require(check_all_requests_error);
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(check_vb_type_and_max_size)
+netsnmp_feature_require(check_vb_type_and_max_size);
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 /**********************************************************************

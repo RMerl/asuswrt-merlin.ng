@@ -27,8 +27,8 @@
 #include <net-snmp/library/snmpDTLSSCTPDomain.h>
 #endif
 
-netsnmp_feature_require(snmpv3_probe_contextEngineID_rfc5343)
-netsnmp_feature_require(row_create)
+netsnmp_feature_require(snmpv3_probe_contextEngineID_rfc5343);
+netsnmp_feature_require(row_create);
 
 static int      tsm_session_init(netsnmp_session *);
 static void     tsm_free_state_ref(void *);
@@ -346,7 +346,7 @@ tsm_rgenerate_out_msg(struct snmp_secmod_outgoing_params *parms)
        and tmStateReference are returned to the calling Message
        Processing Model with the statusInformation set to success. */
 
-    /* For the Net-SNMP implemantion that actually means we start
+    /* For the Net-SNMP implementation that actually means we start
        encoding the full packet sequence from here before returning it */
 
     /*

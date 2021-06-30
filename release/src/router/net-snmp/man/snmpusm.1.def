@@ -83,7 +83,7 @@ with no authentication or privacy settings.
 In principle, this user should be useable for 'noAuthNoPriv' requests,
 but in practise the Net-SNMP agent will not allow such an entry
 to be made active.  The user can be created via the createAndWait
-operation instead by using the \-Ca flag.  This will prevent the user
+operation instead by using the \-Cw flag.  This will prevent the user
 from being marked as active in any agent until explicitly activated
 later via the activate command.
 

@@ -90,9 +90,6 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
 
 #ifdef solaris2
 #include "kernel_sunos5.h"

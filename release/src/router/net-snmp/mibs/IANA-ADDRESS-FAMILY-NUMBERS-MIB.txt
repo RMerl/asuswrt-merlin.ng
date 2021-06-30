@@ -6,7 +6,7 @@ IMPORTS
     TEXTUAL-CONVENTION                  FROM SNMPv2-TC;
 
 ianaAddressFamilyNumbers MODULE-IDENTITY
-    LAST-UPDATED "201409020000Z"  -- September 2, 2014
+    LAST-UPDATED "201911040000Z"  -- November 4, 2019
     ORGANIZATION "IANA"
     CONTACT-INFO
         "Postal:    Internet Assigned Numbers Authority
@@ -22,6 +22,9 @@ ianaAddressFamilyNumbers MODULE-IDENTITY
         textual convention."
 
     -- revision history
+
+    REVISION     "201911040000Z"  -- November 4, 2019
+    DESCRIPTION  "Assigned value 16397."
 
     REVISION     "201409020000Z"  -- September 2, 2014
     DESCRIPTION  "Assigned value 16396."
@@ -118,6 +121,7 @@ AddressFamilyNumbers ::= TEXTUAL-CONVENTION
         ipv664(16394),  -- IPv6/64
         rBridgePortID(16395),  -- RBridge Port ID
         trillNickname(16396),  -- TRILL Nickname
+        universallyUniqueIdentifier(16397),  -- Universally Unique Identifier (UUID)
         reserved(65535)
 
         Requests for new values should be made to IANA via
@@ -165,6 +169,7 @@ AddressFamilyNumbers ::= TEXTUAL-CONVENTION
                 ipv664(16394),
                 rBridgePortID(16395),
                 trillNickname(16396),
+                universallyUniqueIdentifier(16397),
                 reserved(65535)
             }
     END

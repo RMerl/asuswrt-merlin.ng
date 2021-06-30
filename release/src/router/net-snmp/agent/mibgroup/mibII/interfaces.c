@@ -22,7 +22,7 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
 
-netsnmp_feature_provide(interface_legacy)
+netsnmp_feature_provide(interface_legacy);
 
 #if defined(NETSNMP_IFNET_NEEDS_KERNEL) && !defined(_KERNEL) && !defined(NETSNMP_IFNET_NEEDS_KERNEL_LATE)
 #define _KERNEL 1
@@ -1490,7 +1490,6 @@ Interface_Scan_Init(void)
      *  [               OUT                               ]
      *   byte pkts errs drop fifo colls carrier compressed
      */
-#ifdef SCNuMAX
     uintmax_t       rec_pkt, rec_oct, rec_err, rec_drop;
     uintmax_t       snd_pkt, snd_oct, snd_err, snd_drop, coll;
     const char     *scan_line_2_2 =
@@ -1502,14 +1501,6 @@ Interface_Scan_Init(void)
         "%"   SCNuMAX " %"  SCNuMAX " %*" SCNuMAX " %*" SCNuMAX
         " %*" SCNuMAX " %"  SCNuMAX " %"  SCNuMAX " %*" SCNuMAX
         " %*" SCNuMAX " %"  SCNuMAX;
-#else
-    unsigned long   rec_pkt, rec_oct, rec_err, rec_drop;
-    unsigned long   snd_pkt, snd_oct, snd_err, snd_drop, coll;
-    const char     *scan_line_2_2 =
-        "%lu %lu %lu %lu %*lu %*lu %*lu %*lu %lu %lu %lu %lu %*lu %lu";
-    const char     *scan_line_2_0 =
-        "%lu %lu %*lu %*lu %*lu %lu %lu %*lu %*lu %lu";
-#endif
     const char     *scan_line_to_use;
     struct timeval et;                              /* elapsed time */
 
@@ -2670,6 +2661,11 @@ WriteMethod     writeIfEntry;
 #endif /* !NETSNMP_NO_WRITE_SUPPORT */
 long            admin_status = 0;
 long            oldadmin_status = 0;
+
+void
+Interface_Scan_Init(void)
+{
+}
 
 static int
 header_ifEntry(struct variable *vp,

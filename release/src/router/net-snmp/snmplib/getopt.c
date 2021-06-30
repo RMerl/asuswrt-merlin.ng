@@ -27,14 +27,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*
- * static char sccsid[] = "from: @(#)getopt.c   8.2 (Berkeley) 4/2/94"; 
- */
-static char    *rcsid =
-    "$Id$";
-#endif                          /* LIBC_SCCS and not lint */
-
 #include <net-snmp/net-snmp-config.h>
 
 #include <stdio.h>

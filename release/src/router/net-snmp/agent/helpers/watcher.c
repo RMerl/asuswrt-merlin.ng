@@ -31,18 +31,18 @@ static void free_wrapper(void * p)
 #define free_wrapper free
 #endif
 
-netsnmp_feature_provide(watcher_all)
-netsnmp_feature_child_of(watcher_all, mib_helpers)
-netsnmp_feature_child_of(watcher_create_info6, watcher_all)
-netsnmp_feature_child_of(watcher_register_timestamp, watcher_all)
-netsnmp_feature_child_of(watcher_ulong_scalar, watcher_all)
-netsnmp_feature_child_of(watcher_read_only_ulong_scalar, watcher_all)
-netsnmp_feature_child_of(watcher_read_only_int_scalar, watcher_all)
-netsnmp_feature_child_of(watcher_long_scalar, watcher_all)
-netsnmp_feature_child_of(watcher_read_only_long_scalar, watcher_all)
-netsnmp_feature_child_of(watcher_int_scalar, watcher_all)
-netsnmp_feature_child_of(read_only_counter32_scalar, watcher_all)
-netsnmp_feature_child_of(watcher_spinlock, watcher_all)
+netsnmp_feature_provide(watcher_all);
+netsnmp_feature_child_of(watcher_all, mib_helpers);
+netsnmp_feature_child_of(watcher_create_info6, watcher_all);
+netsnmp_feature_child_of(watcher_register_timestamp, watcher_all);
+netsnmp_feature_child_of(watcher_ulong_scalar, watcher_all);
+netsnmp_feature_child_of(watcher_read_only_ulong_scalar, watcher_all);
+netsnmp_feature_child_of(watcher_read_only_int_scalar, watcher_all);
+netsnmp_feature_child_of(watcher_long_scalar, watcher_all);
+netsnmp_feature_child_of(watcher_read_only_long_scalar, watcher_all);
+netsnmp_feature_child_of(watcher_int_scalar, watcher_all);
+netsnmp_feature_child_of(read_only_counter32_scalar, watcher_all);
+netsnmp_feature_child_of(watcher_spinlock, watcher_all);
 
 /** @defgroup watcher watcher
  *  Watch a specified variable and process it as an instance or scalar object

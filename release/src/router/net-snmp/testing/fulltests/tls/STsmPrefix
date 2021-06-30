@@ -45,7 +45,7 @@ FLAGS="-v3 -r1 -On $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT"
 #
 # Start the agent
 #
-AGENT_FLAGS="-Dtsm udp:9999"
+AGENT_FLAGS="-Dtsm"
 STARTAGENT
 
 CAPTURE "snmpget -Dssl $FLAGS .1.3.6.1.2.1.190.1.2.1.0"
@@ -79,8 +79,6 @@ CAPTURE "snmpget -Dssl $FLAGS .1.3.6.1.2.1.1.3.0"
 
 CHECKCOUNT 0 ".1.3.6.1.2.1.1.3.0 = Timeticks:"
 CHECK "authorizationError"
-
-CAPTURE "snmpget -v 1 -c public 127.0.0.1:9999 .1.3.6.1.2.1.190.1.2.1.0"
 
 # cleanup
 STOPAGENT

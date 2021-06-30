@@ -13,9 +13,18 @@ struct ip6_mib {
 };
 #endif
 
-config_require(mibII/ifTable mibII/at mibII/var_route mibII/route_write)
+config_require(mibII/ifTable mibII/at)
+#if !defined(darwin) || defined(HAVE_STRUCT_IN_IFADDR_IA_SUBNETMASK)
+/*
+ * To do: port mibII/ipAddr and mibII/var_route to Darwin versions that do not
+ * export struct in_ifaddr.
+ */
+config_require(mibII/var_route mibII/route_write)
+#endif /* !defined(darwin) || defined(HAVE_STRUCT_IN_IFADDR_IA_SUBNETMASK) */
 config_add_mib(IPV6-ICMP-MIB:IPV6-MIB:IPV6-TCP-MIB:IPV6-UDP-MIB)
-config_arch_require(solaris2, kernel_sunos5)
+#ifdef solaris2
+config_require(kernel_sunos5)
+#endif
 #include "var_route.h"
 #include "route_write.h"
 extern void     init_ipv6(void);

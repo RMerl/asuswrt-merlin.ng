@@ -35,8 +35,8 @@
  * --with-features="agent_check_and_process enable_stderrlog" to your
  * configure line.
  */
-netsnmp_feature_require(agent_check_and_process)
-netsnmp_feature_require(enable_stderrlog)
+netsnmp_feature_require(agent_check_and_process);
+netsnmp_feature_require(enable_stderrlog);
 
 static int keep_running;
 

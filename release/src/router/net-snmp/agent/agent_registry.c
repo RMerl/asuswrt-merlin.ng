@@ -73,9 +73,9 @@
 #include "agentx/client.h"
 #endif
 
-netsnmp_feature_child_of(agent_registry_all, libnetsnmpagent)
+netsnmp_feature_child_of(agent_registry_all, libnetsnmpagent);
 
-netsnmp_feature_child_of(unregister_mib_table_row, agent_registry_all)
+netsnmp_feature_child_of(unregister_mib_table_row, agent_registry_all);
 
 /** @defgroup agent_lookup_cache Lookup cache, storing the registered OIDs.
  *     Maintain the cache used for locating sub-trees and OIDs.
@@ -561,7 +561,7 @@ netsnmp_subtree_change_prev(netsnmp_subtree *ptr, netsnmp_subtree *theprev)
                                &ptr->oid_off);
 }
 
-netsnmp_feature_child_of(netsnmp_subtree_compare,netsnmp_unused)
+netsnmp_feature_child_of(netsnmp_subtree_compare,netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_NETSNMP_SUBTREE_COMPARE
 /** Compares OIDs of given subtrees.
  *
@@ -1278,7 +1278,6 @@ netsnmp_register_mib(const char *moduleName,
         reg_parms.range_ubound = range_ubound;
         reg_parms.timeout = timeout;
         reg_parms.flags = (u_char) flags;
-        reg_parms.contextName = context;
         reg_parms.session = ss;
         reg_parms.reginfo = reginfo;
         reg_parms.contextName = context;
@@ -2167,7 +2166,7 @@ netsnmp_acm_check_subtree(netsnmp_pdu *pdu, oid *name, size_t namelen)
     return 1;
 }
 
-netsnmp_feature_child_of(get_session_for_oid,netsnmp_unused)
+netsnmp_feature_child_of(get_session_for_oid,netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_GET_SESSION_FOR_OID
 netsnmp_session *
 get_session_for_oid(const oid *name, size_t len, const char *context_name)
@@ -2334,7 +2333,7 @@ dump_registry(void)
 /* End of MIB registration code */
 
 
-netsnmp_feature_child_of(register_signal, netsnmp_unused)
+netsnmp_feature_child_of(register_signal, netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_REGISTER_SIGNAL
 
 /** @defgroup agent_signals POSIX signals support for agents.

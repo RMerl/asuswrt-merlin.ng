@@ -3,89 +3,123 @@ package MakefileSubs;
 use strict;
 use warnings;
 use Config;
+use Cwd 'abs_path';
+use File::Basename;
+use File::Spec;
 use Getopt::Long;
 use Exporter;
 use vars qw(@ISA @EXPORT_OK);
 
 our $VERSION = 1.00;
 our @ISA     = qw(Exporter);
-our @EXPORT  = qw(NetSNMPGetOpts find_files Check_Version floatize_version);
+our @EXPORT  = qw(NetSNMPGetOpts AddCommonParams find_files Check_Version
+                  floatize_version);
 our $basedir;
+
+BEGIN {
+    $basedir = abs_path($0);
+    while (1) {
+	my $basename = basename($basedir);
+	last if (length($basename) <= 2);
+	$basedir = dirname($basedir);
+	last if ($basename eq "perl");
+    }
+    if ($Config{'osname'} eq 'MSWin32' && $basedir =~ / /) {
+        die "\nA space has been detected in the base directory.  This is not " .
+            "supported\nPlease rename the folder and try again.\n\n";
+    }
+}
 
 sub NetSNMPGetOpts {
     my %ret;
-    my $rootpath = shift;
-    $rootpath = "../" if (!$rootpath);
-    $rootpath .= '/' if ($rootpath !~ /\/$/);
+    my $rootpath = $basedir;
 
-    if (($Config{'osname'} eq 'MSWin32' && $ENV{'OSTYPE'} eq '')) {
-
-      # Grab command line options first.  Only used if environment variables are not set
-      GetOptions("NET-SNMP-IN-SOURCE=s" => \$ret{'insource'},
-        "NET-SNMP-PATH=s"      => \$ret{'prefix'},
-        "NET-SNMP-DEBUG=s"     => \$ret{'debug'});
-
-      if ($ENV{'NET-SNMP-IN-SOURCE'})
-      {
-	$ret{'insource'} = $ENV{'NET-SNMP-IN-SOURCE'};
-        undef ($ret{'prefix'});
-      }
-      elsif ($ENV{'NET-SNMP-PATH'})
-      {
-	$ret{'prefix'} = $ENV{'NET-SNMP-PATH'};
-      }
-
-      if ($ENV{'NET-SNMP-DEBUG'})
-      {
-	$ret{'debug'} = $ENV{'NET-SNMP-DEBUG'};
-      }
-
-      # Update environment variables in case they are needed
-      $ENV{'NET-SNMP-IN-SOURCE'}    = $ret{'insource'};
-      $ENV{'NET-SNMP-PATH'}         = $ret{'prefix'};
-      $ENV{'NET-SNMP-DEBUG'}        = $ret{'debug'};
-
-      $basedir = abs_path($0);
-      while (1) {
-          my $basename = basename($basedir);
-          last if (length($basename) <= 2);
-          $basedir = dirname($basedir);
-          last if ($basename eq "perl");
-      }
-      print "Net-SNMP base directory: $basedir\n";
-      if ($basedir =~ / /) {
-        die "\nA space has been detected in the base directory.  This is not " .
-            "supported\nPlease rename the folder and try again.\n\n";
-      }
-    }
-    else
-    {
-      if ($ENV{'NET-SNMP-CONFIG'} &&
-        $ENV{'NET-SNMP-IN-SOURCE'}) {
+    if ($ENV{'NET-SNMP-CONFIG'} && $ENV{'NET-SNMP-IN-SOURCE'}) {
 	# have env vars, pull from there
 	$ret{'nsconfig'} = $ENV{'NET-SNMP-CONFIG'};
 	$ret{'insource'} = $ENV{'NET-SNMP-IN-SOURCE'};
-      } else {
+	$ret{'define'}   = $ENV{'NET-SNMP-DEFINE'};
+	$ret{'inc'}      = $ENV{'NET-SNMP-INC'};
+	$ret{'cflags'}   = $ENV{'NET-SNMP-CFLAGS'};
+	# $ret{'prefix'} is not used on Windows.
+    } else {
 	# don't have env vars, pull from command line and put there
-	GetOptions("NET-SNMP-CONFIG=s" => \$ret{'nsconfig'},
-	           "NET-SNMP-IN-SOURCE=s" => \$ret{'insource'});
+	GetOptions("NET-SNMP-CONFIG=s"    => \$ret{'nsconfig'},
+	           "NET-SNMP-IN-SOURCE=s" => \$ret{'insource'},
+		   "NET-SNMP-DEFINE=s"    => \$ret{'define'},
+		   "NET-SNMP-INC=s"       => \$ret{'inc'},
+		   "NET-SNMP-CFLAGS=s"    => \$ret{'cflags'},
+		   "NET-SNMP-PATH=s"      => \$ret{'prefix'});
 
-	if (lc($ret{'insource'}) eq "true" && $ret{'nsconfig'} eq "") {
-	    $ret{'nsconfig'}="sh ROOTPATH../net-snmp-config";
-	} elsif ($ret{'nsconfig'} eq "") {
+	my $use_default_nsconfig;
+
+	if ($ret{'insource'}) {
+	    if (lc($ret{'insource'}) eq "true" && !defined($ret{'nsconfig'})) {
+		$use_default_nsconfig = 1;
+	    }
+	}
+
+	if ($use_default_nsconfig) {
+	    $ret{'nsconfig'}="sh " . File::Spec->catfile(${rootpath}, "..",
+							 "net-snmp-config");
+	} elsif (!defined($ret{'nsconfig'})) {
 	    $ret{'nsconfig'}="net-snmp-config";
 	}
 
 	$ENV{'NET-SNMP-CONFIG'}    = $ret{'nsconfig'};
 	$ENV{'NET-SNMP-IN-SOURCE'} = $ret{'insource'};
-      }
+	$ENV{'NET-SNMP-DEFINE'}    = $ret{'define'};
+	$ENV{'NET-SNMP-INC'}       = $ret{'inc'};
+	$ENV{'NET-SNMP-CFLAGS'}    = $ret{'cflags'};
+	$ENV{'NET-SNMP-PATH'}      = $ret{'prefix'};
     }
-
-    $ret{'nsconfig'} =~ s/ROOTPATH/$rootpath/;
-
+    
     $ret{'rootpath'} = $rootpath;
+    $ret{'debug'} = 'false';
 
     \%ret;
+}
+
+sub append {
+    if ($_[0] && $_[1]) {
+	$_[0] = $_[0] . " " . $_[1];
+    } elsif ($_[1]) {
+	$_[0] = $_[1];
+    }
+}
+
+sub AddCommonParams {
+    my $Params = shift;
+    my $opts = NetSNMPGetOpts();
+
+    append($Params->{'DEFINE'},  $opts->{'define'});
+    append($Params->{'INC'},     $opts->{'inc'});
+    append($Params->{'CCFLAGS'}, $opts->{'cflags'});
+
+    if ($Config{'osname'} eq 'MSWin32') {
+	# Microsoft Visual Studio.
+	append($Params->{'DEFINE'}, "-DMSVC_PERL -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS");
+	append($Params->{'INC'},
+	       "-I" . File::Spec->catdir($basedir, "include") . " " .
+	       "-I" . File::Spec->catdir($basedir, "win32") . " ");
+    } else {
+	# Unix or MinGW.
+	append($Params->{'LDDLFLAGS'}, $Config{'lddlflags'});
+	my $ldflags = `$opts->{'nsconfig'} --ldflags` or
+	    die "net-snmp-config failed\n";
+	chomp($ldflags);
+	append($Params->{'LDDLFLAGS'}, $ldflags);
+	append($Params->{'CCFLAGS'},
+	       "-I" . File::Spec->catdir($basedir, "include"));
+	my $cflags = `$opts->{'nsconfig'} --cflags` or
+	    die "net-snmp-config failed\n";
+	chomp($cflags);
+	append($Params->{'CCFLAGS'}, $cflags);
+	append($Params->{'CCFLAGS'}, $Config{'ccflags'});
+	# Suppress known Perl header shortcomings.
+	$Params->{'CCFLAGS'} =~ s/ -W(cast-qual|write-strings)//g;
+	append($Params->{'CCFLAGS'}, '-Wformat');
+    }
 }
 
 sub find_files {
@@ -103,11 +137,10 @@ sub find_files {
 }
 
 
-sub Check_Version
-{
+sub Check_Version {
   my $lib_version = shift;
 
-  if (($Config{'osname'} ne 'MSWin32' || $ENV{'OSTYPE'} ne '')) {
+  if ($Config{'osname'} ne 'MSWin32') {
     my $foundversion = 0;
     return if ($ENV{'NETSNMP_DONT_CHECK_VERSION'});
     open(I,"<Makefile");

@@ -33,7 +33,7 @@
 #include <net-snmp/agent/table.h>
 
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(oid_stash)
+netsnmp_feature_require(oid_stash);
 #endif /* !NETSNMP_NO_WRITE_SUPPORT */
 
 #if HAVE_STRING_H
@@ -44,12 +44,12 @@ netsnmp_feature_require(oid_stash)
 
 #include <net-snmp/library/snmp_assert.h>
 
-netsnmp_feature_child_of(table_all, mib_helpers)
+netsnmp_feature_child_of(table_all, mib_helpers);
 
-netsnmp_feature_child_of(table_build_result, table_all)
-netsnmp_feature_child_of(table_get_or_create_row_stash, table_all)
-netsnmp_feature_child_of(registration_owns_table_info, table_all)
-netsnmp_feature_child_of(table_sparse, table_all)
+netsnmp_feature_child_of(table_build_result, table_all);
+netsnmp_feature_child_of(table_get_or_create_row_stash, table_all);
+netsnmp_feature_child_of(registration_owns_table_info, table_all);
+netsnmp_feature_child_of(table_sparse, table_all);
 
 static void     table_helper_cleanup(netsnmp_agent_request_info *reqinfo,
                                      netsnmp_request_info *request,
@@ -998,7 +998,8 @@ netsnmp_update_indexes_from_variable_list(netsnmp_table_request_info *tri)
     if (!tri)
         return SNMPERR_GENERR;
 
-    return build_oid_noalloc(tri->index_oid, sizeof(tri->index_oid),
+    return build_oid_noalloc(tri->index_oid,
+                             sizeof(tri->index_oid) / sizeof(tri->index_oid[0]),
                              &tri->index_oid_len, NULL, 0, tri->indexes);
 }
 

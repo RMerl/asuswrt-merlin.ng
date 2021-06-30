@@ -1,7 +1,4 @@
 /* -*- C -*- */
-#if defined(_WIN32) && !defined(_WIN32_WINNT)
-#define _WIN32_WINNT 0x501
-#endif
 
 #include "EXTERN.h"
 #include "perl.h"
@@ -45,13 +42,8 @@ static int __sprint_num_objid _((char *, oid *, int));
 #define USE_ENUMS 1
 #define USE_SPRINT_VALUE 2
 static int
-__snprint_value (buf, buf_len, var, tp, type, flag)
-char * buf;
-size_t buf_len;
-netsnmp_variable_list * var;
-struct tree * tp;
-int type;
-int flag;
+__snprint_value(char *buf, size_t buf_len, netsnmp_variable_list *var,
+                struct tree *tp, int type, int flag)
 {
    int len = 0;
    u_char* ip;
@@ -236,7 +228,7 @@ nsop_to_array(oid1)
         int i;
 
     PPCODE:
-        EXTEND(SP, oid1->len);
+        EXTEND(SP, (int)oid1->len);
         for(i=0; i < (int)oid1->len; i++) {
             PUSHs(sv_2mortal(newSVnv(oid1->name[i])));
         }

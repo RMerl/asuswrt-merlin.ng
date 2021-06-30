@@ -12,7 +12,7 @@
 #include "disman/event/mteEvent.h"
 #include "disman/event/mteEventConf.h"
 
-netsnmp_feature_require(iquery)
+netsnmp_feature_require(iquery);
 
 /** Initializes the mteEventsConf module */
 void

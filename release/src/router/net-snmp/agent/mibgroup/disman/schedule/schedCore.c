@@ -10,9 +10,9 @@
 #include "disman/schedule/schedCore.h"
 #include "utilities/iquery.h"
 
-netsnmp_feature_require(iquery)
+netsnmp_feature_require(iquery);
 
-netsnmp_feature_child_of(sched_nextrowtime, netsnmp_unused)
+netsnmp_feature_child_of(sched_nextrowtime, netsnmp_unused);
 
 netsnmp_tdata *schedule_table;
 

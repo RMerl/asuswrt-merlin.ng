@@ -68,7 +68,7 @@
 #include "smux.h"
 #include "snmpd.h"
 
-netsnmp_feature_require(snprint_objid)
+netsnmp_feature_require(snprint_objid);
 
 long            smux_long;
 u_long          smux_ulong;

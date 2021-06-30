@@ -33,15 +33,10 @@ AT_Cmp(void *addr, void *ep)
     int             ret = -1;
     oid             index;
 
-#ifdef NETSNMP_INCLUDE_IFTABLE_REWRITES
     mp->ipNetToMediaIfIndex.o_bytes[mp->ipNetToMediaIfIndex.o_length] = '\0';
     index = netsnmp_access_interface_index_find(
                     mp->ipNetToMediaIfIndex.o_bytes);
-#else
-    index = Interface_Index_By_Name(mp->ipNetToMediaIfIndex.o_bytes,
-                                    mp->ipNetToMediaIfIndex.o_length);
-#endif
-    DEBUGMSGTL(("mibII/at", "......... AT_Cmp %lx<>%lx %d<>%d (%.5s)\n",
+    DEBUGMSGTL(("mibII/at", "......... AT_Cmp %lx<>%lx %d<>%" NETSNMP_PRIo "d (%.5s)\n",
                 (unsigned long)mp->ipNetToMediaNetAddress,
                 (unsigned long)((if_ip_t *) addr)->ipAddr,
                 ((if_ip_t *) addr)->ifIdx, index,
@@ -101,15 +96,9 @@ var_atEntry(struct variable * vp,
             (MIB_IP_NET, &entry, sizeof(mib2_ipNetToMediaEntry_t),
              req_type, &AT_Cmp, &NextAddr) != 0)
             break;
-#ifdef NETSNMP_INCLUDE_IFTABLE_REWRITES
         entry.ipNetToMediaIfIndex.o_bytes[entry.ipNetToMediaIfIndex.o_length] = '\0';
         current[AT_IFINDEX_OFF] = netsnmp_access_interface_index_find(
            entry.ipNetToMediaIfIndex.o_bytes);
-#else
-        current[AT_IFINDEX_OFF] =
-           Interface_Index_By_Name(entry.ipNetToMediaIfIndex.o_bytes,
-                                   entry.ipNetToMediaIfIndex.o_length);
-#endif
         if (current[6] == 3) {  /* AT group oid */
             current[AT_IFINDEX_OFF + 1] = 1;
             offset = AT_IFINDEX_OFF + 2;
@@ -152,20 +141,14 @@ var_atEntry(struct variable * vp,
     switch (vp->magic) {
     case IPMEDIAIFINDEX:
         *var_len = sizeof long_return;
-#ifdef NETSNMP_INCLUDE_IFTABLE_REWRITES
         Lowentry.ipNetToMediaIfIndex.o_bytes[
             Lowentry.ipNetToMediaIfIndex.o_length] = '\0';
         long_return = netsnmp_access_interface_index_find(
             Lowentry.ipNetToMediaIfIndex.o_bytes);
-#else
-        long_return = Interface_Index_By_Name(
-            Lowentry.ipNetToMediaIfIndex.o_bytes,
-            Lowentry.ipNetToMediaIfIndex.o_length);
-#endif
         return (u_char *) & long_return;
     case IPMEDIAPHYSADDRESS:
         *var_len = Lowentry.ipNetToMediaPhysAddress.o_length;
-        return Lowentry.ipNetToMediaPhysAddress.o_bytes;
+        return (u_char *) Lowentry.ipNetToMediaPhysAddress.o_bytes;
     case IPMEDIANETADDRESS:
         *var_len = sizeof(addr_ret);
         addr_ret = Lowentry.ipNetToMediaNetAddress;

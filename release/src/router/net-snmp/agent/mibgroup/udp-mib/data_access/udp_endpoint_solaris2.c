@@ -11,9 +11,9 @@
 
 #include "kernel_sunos5.h"
 
-netsnmp_feature_require(netsnmp_access_udp_endpoint_entry_create)
-netsnmp_feature_child_of(udp_endpoint_all, libnetsnmpmibs)
-netsnmp_feature_child_of(udp_endpoint_writable, udp_endpoint_all)
+netsnmp_feature_require(netsnmp_access_udp_endpoint_entry_create);
+netsnmp_feature_child_of(udp_endpoint_all, libnetsnmpmibs);
+netsnmp_feature_child_of(udp_endpoint_writable, udp_endpoint_all);
 
 static int _load_udp_endpoint_table_v4(netsnmp_container *, int);
 #if defined(NETSNMP_ENABLE_IPV6) && defined(SOLARIS_HAVE_IPV6_MIB_SUPPORT)

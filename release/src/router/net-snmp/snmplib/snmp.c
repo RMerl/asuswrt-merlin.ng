@@ -55,10 +55,6 @@ SOFTWARE.
 #define NULL 0
 #endif
 
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
-
 #ifdef vms
 #include <in.h>
 #endif

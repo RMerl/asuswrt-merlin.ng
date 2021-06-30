@@ -11,7 +11,13 @@
 AC_HEADER_STDC          #  <stdlib.h>, <stdarg.h>,   <string.h>  & <float.h>
 AC_HEADER_DIRENT        #  <dirent.h>, <sys/ndir.h>, <sys/dir.h> & <ndir.h>
 #  Apps:
-AC_HEADER_SYS_WAIT      #  <sys/wait.h>
+# Don't use <sys/wait.h> when using Windows sockets
+case x$with_socklib in
+  xwinsock2)
+    ;;
+  *)
+    AC_HEADER_SYS_WAIT  #  <sys/wait.h>
+esac
 
 # allow for quick module/library/etc processing checks
 if test "x$NETSNMP_QUICK_CHECK" = "x" ; then
@@ -23,13 +29,12 @@ if test "x$NETSNMP_QUICK_CHECK" = "x" ; then
 AC_CHECK_HEADERS([getopt.h   pthread.h  regex.h      ] dnl
                  [string.h   syslog.h   unistd.h     ] dnl
                  [stdint.h   inttypes.h              ] dnl
+                 [process.h          ] dnl
                  [sys/param.h        ] dnl
                  [sys/select.h       ] dnl
-                 [sys/socket.h       ] dnl
                  [sys/syslog.h       ] dnl
                  [sys/time.h         ] dnl
-                 [sys/timeb.h        ] dnl
-                 [sys/un.h           ])
+                 [sys/timeb.h        ])
 
 #  Library and Agent:
 AC_CHECK_HEADERS([nlist.h],,,[
@@ -41,8 +46,10 @@ AC_INCLUDES_DEFAULT
 ]])
 
 #  Library:
-AC_CHECK_HEADERS([fcntl.h    io.h       kstat.h                 ] dnl
+AC_CHECK_HEADERS([crt_externs.h                        ] dnl
+                 [fcntl.h    io.h       kstat.h        ] dnl
                  [limits.h   locale.h                  ] dnl
+                 [mach-o/dyld.h                        ] dnl
                  [sys/file.h       sys/ioctl.h         ] dnl
                  [sys/sockio.h     sys/stat.h          ] dnl
                  [sys/systemcfg.h  sys/systeminfo.h    ] dnl
@@ -55,7 +62,7 @@ AC_CHECK_HEADERS([dlfcn.h    err.h      fcntl.h    fstab.h      ] dnl
                  [           grp.h      io.h                    ] dnl
                  [ioctls.h   kstat.h    kvm.h      limits.h     ] dnl
                  [           mntent.h   mtab.h                  ] dnl
-                 [           pkglocs.h             pwd.h        ] dnl
+                 [pkglocs.h  pwd.h      spawn.h                 ] dnl
                  [           com_err.h             et/com_err.h ] dnl
                  [           utmpx.h    utsname.h               ])
 
@@ -73,7 +80,6 @@ AC_CHECK_HEADERS([asm/page.h asm/types.h               ] dnl
                  [inet/mib2.h                          ] dnl
                  [linux/hdreg.h linux/tasks.h          ] dnl
                  [machine/param.h                      ] dnl
-                 [netinet/tcp_fsm.h                    ] dnl
                  [ufs/fs.h                             ] dnl
                  [uvm/uvm_extern.h uvm/uvm_param.h     ] dnl
                  [vm/vm.h vm/vm_extern.h vm/vm_param.h ])
@@ -81,7 +87,6 @@ AC_CHECK_HEADERS([asm/page.h asm/types.h               ] dnl
 #  Apps:
 AC_CHECK_HEADERS([fcntl.h    grp.h      pwd.h      ] dnl
                  [sys/cdefs.h   sys/ioctl.h        ] dnl
-                 [sys/socket.h  sys/sockio.h       ] dnl
                  [sys/time.h                       ])
 
 #  Not-Used:
@@ -125,34 +130,11 @@ AC_CHECK_HEADERS(sys/swap.h,,,
 
 #       requiring <sys/param.h>                         (FreeBSD)
 #
-#  Core:      (? Tested above? )
-AC_CHECK_HEADERS([stdlib.h  ],,,
-    [[
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#if HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif
-    ]])
-#
-#  Library:
-AC_CHECK_HEADERS([malloc.h        net/if_dl.h   sys/sysctl.h    ],,,
-    [[
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#if HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif
-    ]])
-#
-#  Agent:
 AC_CHECK_HEADERS([malloc.h        osreldate.h                   ] dnl
-                 [machine/types.h net/if_dl.h   net/if_types.h  ] dnl
+                 [machine/types.h ] dnl
                  [sys/dkstat.h    sys/conf.h    sys/mbuf.h      ] dnl
                  [sys/mount.h     sys/proc.h    sys/queue.h     ] dnl
-                 [sys/sysctl.h    sys/user.h                    ],,,
+                 [sys/user.h                                    ],,,
     [[
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -161,6 +143,17 @@ AC_CHECK_HEADERS([malloc.h        osreldate.h                   ] dnl
 #include <sys/param.h>
 #endif
     ]])
+
+case "$target_os" in
+    linux*)
+	# <sys/sysctl.h> is considered deprecated on Linux and including that
+	# header file triggers a compiler warning. See also
+	# https://savannah.gnu.org/forum/forum.php?forum_id=9515.
+        ;;
+    *)
+	AC_CHECK_HEADERS([sys/sysctl.h])
+        ;;
+esac
 
 #       requiring <sys/sema.h>                          (IRIX 6.5)
 #  Agent:
@@ -171,17 +164,6 @@ AC_CHECK_HEADERS(sys/hashing.h,,,
     [
 #if HAVE_SYS_SEMA_H
 #include <sys/sema.h>
-#endif
-    ])
-
-#       requiring <sys/socket.h>                        (Solaris 9)
-#  Agent:
-#
-AC_CHECK_HEADERS(sys/socketvar.h,,,
-    AC_INCLUDES_DEFAULT([])
-    [
-#if HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
 #endif
     ])
 
@@ -257,65 +239,57 @@ AC_CHECK_HEADERS([linux/netlink.h  linux/rtnetlink.h],,,
 #endif
     ]])
 
+#
+# Avoid that on MinGW any networking headers get included that are
+# incompatible with <winsock2.h> by only testing for certain headers if not
+# building for one of these two platforms.
+#
 
-#       Network headers
-#  Core or Library/Agent/Apps:
-#
-AC_CHECK_HEADERS([arpa/inet.h        net/if.h             ] dnl
-                 [netinet/in.h       netdb.h              ],,,
-    [[
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#if HAVE_SYS_TIMEOUT_H
-#include <sys/timeout.h>
-#endif
-#if HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
-#if HAVE_SYS_SOCKETVAR_H
-#include <sys/socketvar.h>
-#endif
-#if HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
-#if HAVE_NETINET_IN_SYSTM_H
-#include <netinet/in_systm.h>
-#endif
-#if HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-#if HAVE_NETINET_IP_H
-#include <netinet/ip.h>
-#endif
-#if HAVE_NET_IF_H
-#include <net/if.h>
-#endif
-#if HAVE_NETINET_IP_VAR_H
-#include <netinet/ip_var.h>
-#endif
-#if HAVE_NETINET_IP_ICMP_H
-#include <netinet/ip_icmp.h>
-#endif
-#if HAVE_NETINET_TCP_H
-#include <netinet/tcp.h>
-#endif
-#if HAVE_NETINET_UDP_H
-#include <netinet/udp.h>
-#endif
-#if HAVE_NETINET_TCP_TIMER_H
-#include <netinet/tcp_timer.h>
-#endif
-    ]])
-#
-#  Agent:
-AC_CHECK_HEADERS([net/if_arp.h       net/if_mib.h         net/if_var.h     ] dnl
-                 [netinet/if_ether.h netinet/in_systm.h   netinet/in_var.h ] dnl
-                 [netinet/ip.h       netinet/ip_icmp.h                     ] dnl
-                 [netinet/icmp_var.h netinet/ip_var.h                      ] dnl
-                 [netinet/tcp.h      netinet/tcp_timer.h  netinet/tcp_var.h] dnl
-                 [netinet/tcpip.h    netinet/udp.h        netinet/udp_var.h] dnl
-                 [net/route.h        netinet/icmp6.h                       ],,,
+case x$with_socklib in
+  xwinsock2)
+    ;;
+  *)
+
+AC_CHECK_HEADERS([sys/socket.h]dnl
+                 [sys/un.h]dnl
+                 [netinet/tcp_fsm.h]dnl
+                 [sys/sockio.h]dnl
+                 [sys/socketvar.h]dnl
+                 [net/if_dl.h]dnl
+                 [net/if_types.h]dnl
+                 [arpa/inet.h]dnl
+                 [net/if.h]dnl
+                 [netinet/in.h]dnl
+                 [netdb.h]dnl
+                 [net/if_arp.h]dnl
+                 [net/if_mib.h]dnl
+                 [net/if_var.h]dnl
+                 [netinet/if_ether.h]dnl
+                 [netinet/in_systm.h]dnl
+                 [netinet/in_var.h]dnl
+                 [netinet/ip.h]dnl
+                 [netinet/ip_icmp.h]dnl
+                 [netinet/icmp_var.h]dnl
+                 [netinet/ip_var.h]dnl
+                 [netinet/tcp.h]dnl
+                 [netinet/tcp_timer.h]dnl
+                 [netinet/tcp_var.h]dnl
+                 [netinet/tcpip.h]dnl
+                 [netinet/udp.h]dnl
+                 [netinet/udp_var.h]dnl
+                 [net/route.h]dnl
+                 [netinet/icmp6.h]dnl
+                 [netinet/in_pcb.h]dnl
+                 [netinet/ip6.h]dnl
+                 [netinet6/in6_var.h]dnl
+                 [netinet6/in6_pcb.h]dnl
+                 [netinet6/ip6_var.h]dnl
+                 [netinet6/nd6.h]dnl
+                 [netinet6/tcp6.h]dnl
+                 [netinet6/tcp6_fsm.h]dnl
+                 [netinet6/tcp6_timer.h]dnl
+                 [netinet6/tcp6_var.h]dnl
+                 ,,,
     [[
 #if HAVE_SYS_PARAM_H
 #include <sys/param.h>
@@ -344,6 +318,9 @@ AC_CHECK_HEADERS([net/if_arp.h       net/if_mib.h         net/if_var.h     ] dnl
 #if HAVE_NETINET_IP_H
 #include <netinet/ip.h>
 #endif
+#if HAVE_NETINET_IP_H
+#include <netinet/ip_icmp.h>
+#endif
 #if HAVE_NET_IF_H
 #include <net/if.h>
 #endif
@@ -364,87 +341,16 @@ AC_CHECK_HEADERS([net/if_arp.h       net/if_mib.h         net/if_var.h     ] dnl
 #endif
 #if HAVE_NETINET_TCP_TIMER_H
 #include <netinet/tcp_timer.h>
+#endif
+#if HAVE_NETINET_IP6_H
+#include <netinet/ip6.h>
 #endif
 #if HAVE_NETINET_ICMP6_H
 #include <netinet/icmp6.h>
 #endif
     ]])
 
-#       KAME (IPv6) headers
-#  Agent:
-#
-# KAME
-AC_CHECK_HEADERS([netinet/ip6.h                               ] dnl
-                 [netinet6/in6_var.h    netinet6/in6_pcb.h    ] dnl
-                 [netinet6/ip6_var.h    netinet6/nd6.h        ] dnl
-                 [netinet6/tcp6.h       netinet6/tcp6_fsm.h   ] dnl
-                 [netinet6/tcp6_timer.h netinet6/tcp6_var.h],,,
-    [[
-#if HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#if HAVE_SYS_QUEUE_H
-#include <sys/queue.h>
-#endif
-#if HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
-#if HAVE_NET_IF_H
-#include <net/if.h>
-#endif
-#if HAVE_NET_IF_VAR_H
-#include <net/if_var.h>
-#endif
-#if HAVE_NET_ROUTE_H
-#include <net/route.h>
-#endif
-#if HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-#if HAVE_NETINET_IP6_H
-#include <netinet/ip6.h>
-#endif
-    ]])
-
-#       requiring <netinet/in.h>                        (OpenBSD 2.6)
-#  Agent:
-#
-AC_CHECK_HEADERS(netinet/in_pcb.h,,,
-    [[
-#if HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#if HAVE_SYS_TIMEOUT_H
-#include <sys/timeout.h>
-#endif
-#if HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
-#if HAVE_SYS_SOCKETVAR_H
-#include <sys/socketvar.h>
-#endif
-#if HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-#if HAVE_NETINET_IN_SYSTM_H
-#include <netinet/in_systm.h>
-#endif
-#if HAVE_NETINET_IP_H
-#include <netinet/ip.h>
-#endif
-#if HAVE_NET_ROUTE_H
-#include <net/route.h>
-#endif
-#if HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
-    ]])
+esac
 
 ##
 #   Pre-requisite on specific types
@@ -538,11 +444,17 @@ AC_CHECK_HEADERS([windows.h iphlpapi.h], [], [], [
 #endif
 ])
 
+AC_CHECK_HEADERS([lm.h], [LAGENTLIBS="$LAGENTLIBS -lnetapi32"], [], [
+#ifdef HAVE_WINDOWS_H
+#include <windows.h>
+#endif
+])
+
 #       for MIB-2 info                                  (MinGW)
 #  Core:
 #
 if test x$with_socklib = xwinsock2; then
-  AC_CHECK_HEADERS([winsock.h winsock2.h ws2tcpip.h])
+  AC_CHECK_HEADERS([winsock.h winsock2.h ws2tcpip.h],,,[#include <windows.h>])
 fi
 
 #

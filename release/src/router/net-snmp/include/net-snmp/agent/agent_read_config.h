@@ -25,6 +25,11 @@ extern          "C" {
     void            snmpd_unregister_config_handler(const char *);
     void            snmpd_store_config(const char *);
 
+    void            netsnmp_set_agent_user_id(int uid);
+    void            netsnmp_set_agent_group_id(int gid);
+    void            netsnmp_parse_agent_user(const char *token, char *cptr);
+    void            netsnmp_parse_agent_group(const char *token, char *cptr);
+
 #ifdef __cplusplus
 }
 #endif

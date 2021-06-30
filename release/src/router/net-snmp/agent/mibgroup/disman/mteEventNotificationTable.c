@@ -9,8 +9,8 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include "mteEventNotificationTable.h"
 
-netsnmp_feature_require(table_dataset)
-netsnmp_feature_require(table_set_multi_add_default_row)
+netsnmp_feature_require(table_dataset);
+netsnmp_feature_require(table_set_multi_add_default_row);
 
 netsnmp_table_data_set *mteEventNotif_table_set;
 

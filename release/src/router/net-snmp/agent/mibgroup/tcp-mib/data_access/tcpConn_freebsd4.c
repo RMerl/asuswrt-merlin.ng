@@ -163,7 +163,11 @@ _load(netsnmp_container *container, u_int load_flags)
 #else
 	xig = (struct xinpgen *) ((char *) xig + xig->xig_len);
 #endif
+#if __FreeBSD_version >= 1200026
+	state = StateMap[pcb.t_state];
+#else
 	state = StateMap[pcb.xt_tp.t_state];
+#endif
 
 	if (load_flags) {
 	    if (state == TCPCONNECTIONSTATE_LISTEN) {

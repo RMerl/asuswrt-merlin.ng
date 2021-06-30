@@ -43,6 +43,9 @@ SOFTWARE.
  */
 
 
+    struct timeval;
+
+
     /*
      * function to create a daemon. Will fork and call setsid().
      *
@@ -97,18 +100,9 @@ SOFTWARE.
 
 #endif                         /* MSVC_PERL */
 
-/*
- * Note: when compiling Net-SNMP with dmalloc enabled on a system without
- * strcasecmp() or strncasecmp(), the macro HAVE_STRNCASECMP is
- * not defined but strcasecmp() and strncasecmp() are defined as macros in
- * <dmalloc.h>. In order to prevent a compilation error, do not declare
- * strcasecmp() or strncasecmp() when the <dmalloc.h> header has been included.
- */
-#if !defined(HAVE_STRNCASECMP) && !defined(strcasecmp)
+#if !defined(HAVE_STRNCASECMP) && !defined(strncasecmp)
     NETSNMP_IMPORT
     int             strcasecmp(const char *s1, const char *s2);
-#endif
-#if !defined(HAVE_STRNCASECMP) && !defined(strncasecmp)
     NETSNMP_IMPORT
     int             strncasecmp(const char *s1, const char *s2, size_t n);
 #endif
@@ -126,6 +120,9 @@ SOFTWARE.
 #endif                          /* WIN32 */
 
 #include <net-snmp/types.h>     /* For definition of in_addr_t */
+#if HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
 
     /* Simply resolve a hostname and return first IPv4 address.
      * Returns -1 on error */

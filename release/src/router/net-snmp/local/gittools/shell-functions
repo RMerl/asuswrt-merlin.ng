@@ -4,7 +4,7 @@
 
 nsbuildroot=${nsbuildroot:=$HOME/ns-build-root}
 nsecho=${nsecho:=}
-nsbranches=${nsbranches:="V5-4-patches V5-7-patches master"}
+nsbranches=${nsbranches:="V5-9-patches master"}
 
 # set nsverbose to ':' if you don't want verbose output of what's going on
 nsverbose=${nsverbose:="echo ::: Net-SNMP: "}

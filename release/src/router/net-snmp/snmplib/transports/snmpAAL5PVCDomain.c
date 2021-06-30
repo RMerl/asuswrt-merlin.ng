@@ -23,10 +23,6 @@
 #endif
 #include <atm.h>
 
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
-
 #include <net-snmp/types.h>
 #include <net-snmp/output_api.h>
 #include <net-snmp/config_api.h>
@@ -378,7 +374,6 @@ netsnmp_aal5pvc_ctor(void)
     aal5pvcDomain.prefix[0] = "aal5pvc";
     aal5pvcDomain.prefix[1] = "pvc";
 
-    aal5pvcDomain.f_create_from_tstring     = NULL;
     aal5pvcDomain.f_create_from_tstring_new = netsnmp_aal5pvc_create_tstring;
     aal5pvcDomain.f_create_from_ostring     = netsnmp_aal5pvc_create_ostring;
 

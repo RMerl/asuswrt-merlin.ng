@@ -176,6 +176,12 @@ netsnmp_large_fd_set_select(int numfds, netsnmp_large_fd_set *readfds,
                      netsnmp_large_fd_set *exceptfds,
                      struct timeval *timeout)
 {
+    NETSNMP_SELECT_TIMEVAL tmo;
+
+    if (timeout) {
+        tmo.tv_sec  = timeout->tv_sec;
+        tmo.tv_usec = timeout->tv_usec;
+    }
 #if defined(cygwin) || !defined(HAVE_WINSOCK_H)
     /* Bit-set representation: make sure all fds have at least size 'numfds'. */
     if (readfds && readfds->lfs_setsize < numfds)
@@ -190,7 +196,8 @@ netsnmp_large_fd_set_select(int numfds, netsnmp_large_fd_set *readfds,
 
     return select(numfds, (readfds) ? readfds->lfs_setptr : NULL,
                   (writefds) ? writefds->lfs_setptr : NULL,
-                  (exceptfds) ? exceptfds->lfs_setptr : NULL, timeout);
+                  (exceptfds) ? exceptfds->lfs_setptr : NULL,
+                  timeout ? &tmo : NULL);
 }
 
 int

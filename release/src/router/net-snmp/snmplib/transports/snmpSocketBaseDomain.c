@@ -345,7 +345,7 @@ int
 netsnmp_set_non_blocking_mode(int sock, int non_blocking_mode)
 {
 #ifdef WIN32
-    u_long          arg;
+    NETSNMP_IOCTLSOCKET_ARG arg;
 
     arg = non_blocking_mode;
     return ioctlsocket(sock, FIONBIO, &arg);

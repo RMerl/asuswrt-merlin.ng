@@ -20,10 +20,10 @@
 
 #include <net-snmp/net-snmp-features.h>
 
-netsnmp_feature_child_of(header_complex_all, libnetsnmpmibs)
+netsnmp_feature_child_of(header_complex_all, libnetsnmpmibs);
 
-netsnmp_feature_child_of(header_complex_free_all, header_complex_all)
-netsnmp_feature_child_of(header_complex_find_entry, header_complex_all)
+netsnmp_feature_child_of(header_complex_free_all, header_complex_all);
+netsnmp_feature_child_of(header_complex_find_entry, header_complex_all);
 
 int
 header_complex_generate_varoid(netsnmp_variable_list * var)

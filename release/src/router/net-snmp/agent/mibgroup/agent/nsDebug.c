@@ -3,6 +3,7 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/scalar.h>
 
+#include <stdint.h>
 #ifdef HAVE_STRING_H
 #include <string.h>
 #else

@@ -23,8 +23,8 @@
 #include <sys/ioctl.h>
 #include <errno.h>
 
-netsnmp_feature_require(container_lifo)
-netsnmp_feature_require(ipaddress_entry_update)
+netsnmp_feature_require(container_lifo);
+netsnmp_feature_require(ipaddress_entry_update);
 
 /** @ingroup interface 
  * @addtogroup data_access data_access: Routines to access data

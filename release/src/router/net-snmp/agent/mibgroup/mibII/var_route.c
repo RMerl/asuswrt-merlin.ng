@@ -69,7 +69,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include <winerror.h>
 #endif
 
-netsnmp_feature_child_of(get_routes, libnetsnmpmibs)
+netsnmp_feature_child_of(get_routes, libnetsnmpmibs);
 
 #ifndef  MIN
 #define  MIN(a,b)                     (((a) < (b)) ? (a) : (b))
@@ -408,7 +408,7 @@ static union {
     u_short         data[128];
 } klgetsatmp;
 
-struct sockaddr_in *
+static struct sockaddr_in *
 klgetsa(struct sockaddr_in *dst)
 {
     if (!NETSNMP_KLOOKUP(dst, (char *) &klgetsatmp.sin, sizeof klgetsatmp.sin)) {
@@ -822,16 +822,10 @@ var_ipRouteEntry(struct variable * vp,
         addr_ret = Lowentry.ipRouteDest;
         return (u_char *) & addr_ret;
     case IPROUTEIFINDEX:
-#ifdef NETSNMP_INCLUDE_IFTABLE_REWRITES
         Lowentry.ipRouteIfIndex.o_bytes[Lowentry.ipRouteIfIndex.o_length] = '\0';
         long_return =
             netsnmp_access_interface_index_find(
                 Lowentry.ipRouteIfIndex.o_bytes);
-#else
-        long_return =
-           Interface_Index_By_Name(Lowentry.ipRouteIfIndex.o_bytes,
-                                   Lowentry.ipRouteIfIndex.o_length);
-#endif
         return (u_char *) & long_return;
     case IPROUTEMETRIC1:
         long_return = Lowentry.ipRouteMetric1;
@@ -880,7 +874,7 @@ static int      qsort_compare(const void *, const void *);
 #if defined(RTENTRY_4_4) || defined(RTENTRY_RT_NEXT) || defined (hpux11)
 
 #if defined(RTENTRY_4_4) && !defined(hpux11)
-void
+static void
 load_rtentries(struct radix_node *pt)
 {
     struct radix_node node;
@@ -1184,8 +1178,8 @@ Route_Scan_Reload(void)
 #else
 
 #if HAVE_SYS_MBUF_H
-netsnmp_feature_require(string_append_int)
-netsnmp_feature_require(interface_legacy)
+netsnmp_feature_require(string_append_int);
+netsnmp_feature_require(interface_legacy);
 static void
 Route_Scan_Reload(void)
 {

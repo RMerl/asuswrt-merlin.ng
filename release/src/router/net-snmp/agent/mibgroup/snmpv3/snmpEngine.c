@@ -11,9 +11,9 @@
 #include "util_funcs/header_generic.h"
 #include "snmpEngine.h"
 
-netsnmp_feature_child_of(snmpengine_all, libnetsnmpmibs)
+netsnmp_feature_child_of(snmpengine_all, libnetsnmpmibs);
 
-netsnmp_feature_child_of(register_snmpEngine_scalars_context, snmpengine_all)
+netsnmp_feature_child_of(register_snmpEngine_scalars_context, snmpengine_all);
 
 struct variable2 snmpEngine_variables[] = {
     {SNMPENGINEID, ASN_OCTET_STR, NETSNMP_OLDAPI_RONLY,

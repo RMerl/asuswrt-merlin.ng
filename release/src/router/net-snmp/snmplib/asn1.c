@@ -175,6 +175,9 @@ SOFTWARE.
 
 #include <sys/types.h>
 #include <stdio.h>
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -184,10 +187,6 @@ SOFTWARE.
 
 #ifdef vms
 #include <in.h>
-#endif
-
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
 #endif
 
 #include <net-snmp/output_api.h>
@@ -302,16 +301,13 @@ _asn_length_err(const char *str, size_t wrongsize, size_t rightsize)
  * @param wrongsize  wrong  length
  * @param rightsize  expected length
  */
-static
-    void
+static void
 _asn_short_err(const char *str, size_t wrongsize, size_t rightsize)
 {
     char            ebuf[128];
 
-    snprintf(ebuf, sizeof(ebuf),
-            "%s length %lu too short: need %lu", str,
+    snprintf(ebuf, sizeof(ebuf), "%s length %lu too short: need %lu", str,
 	    (unsigned long)wrongsize, (unsigned long)rightsize);
-    ebuf[ sizeof(ebuf)-1 ] = 0;
     ERROR_MSG(ebuf);
 }
 
@@ -349,7 +345,7 @@ asn_parse_nlength(u_char *pkt, size_t pkt_len, u_long *data_len)
          * long length; first byte is length of length (after masking high bit)
          */
         len_len = (int) ((*pkt & ~0x80) + 1);
-        if ((int) pkt_len <= len_len )
+        if (pkt_len < len_len)
             return NULL;           /* still too short for length and data */
 
         /* now we know we have enough data to parse length */
@@ -576,7 +572,11 @@ asn_parse_int(u_char * data,
     static const char *errpre = "parse int";
     register u_char *bufp = data;
     u_long          asn_length;
-    register long   value = 0;
+    int             i;
+    union {
+        long          l;
+        unsigned char b[sizeof(long)];
+    } value;
 
     if (NULL == data || NULL == datalength || NULL == type || NULL == intp) {
         ERROR_MSG("parse int: NULL pointer");
@@ -612,19 +612,23 @@ asn_parse_int(u_char * data,
     }
 
     *datalength -= (int) asn_length + (bufp - data);
-    if (*bufp & 0x80)
-        value = -1;             /* integer is negative */
 
     DEBUGDUMPSETUP("recv", data, bufp - data + asn_length);
 
-    while (asn_length--)
-        value = (value << 8) | *bufp++;
+    memset(&value.b, *bufp & 0x80 ? 0xff : 0, sizeof(value.b));
+    if (NETSNMP_BIGENDIAN) {
+        for (i = sizeof(long) - asn_length; asn_length--; i++)
+            value.b[i] = *bufp++;
+    } else {
+        for (i = asn_length - 1; asn_length--; i--)
+            value.b[i] = *bufp++;
+    }
 
-    CHECK_OVERFLOW_S(value,1);
+    CHECK_OVERFLOW_S(value.l, 1);
 
-    DEBUGMSG(("dumpv_recv", "  Integer:\t%ld (0x%.2lX)\n", value, value));
+    DEBUGMSG(("dumpv_recv", "  Integer:\t%ld (0x%.2lX)\n", value.l, value.l));
 
-    *intp = value;
+    *intp = value.l;
     return bufp;
 }
 
@@ -1033,8 +1037,9 @@ asn_build_string(u_char * data,
         u_char         *buf = (u_char *) malloc(1 + strlength);
         size_t          l = (buf != NULL) ? (1 + strlength) : 0, ol = 0;
 
-        if (sprint_realloc_asciistring
-            (&buf, &l, &ol, 1, str, strlength)) {
+        if (sprint_realloc_asciistring(&buf, &l, &ol, 1,
+                                       str ? str : (const u_char *)"",
+                                       strlength)) {
             DEBUGMSG(("dumpv_send", "  String:\t%s\n", buf));
         } else {
             if (buf == NULL) {
@@ -1534,7 +1539,7 @@ asn_parse_objid(u_char * data,
      *  X is the value of the first subidentifier.
      *  Y is the value of the second subidentifier.
      */
-    subidentifier = (u_long) objid[1];
+    subidentifier = oidp - objid >= 2 ? objid[1] : 0;
     if (subidentifier == 0x2B) {
         objid[0] = 1;
         objid[1] = 3;

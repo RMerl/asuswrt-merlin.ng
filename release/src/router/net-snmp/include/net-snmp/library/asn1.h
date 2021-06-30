@@ -52,26 +52,26 @@ SOFTWARE.
 #define OID_LENGTH(x)  (sizeof(x)/sizeof(oid))
 
 
-#define ASN_BOOLEAN	    ((u_char)0x01)
-#define ASN_INTEGER	    ((u_char)0x02)
-#define ASN_BIT_STR	    ((u_char)0x03)
-#define ASN_OCTET_STR	    ((u_char)0x04)
-#define ASN_NULL	    ((u_char)0x05)
-#define ASN_OBJECT_ID	    ((u_char)0x06)
-#define ASN_SEQUENCE	    ((u_char)0x10)
-#define ASN_SET		    ((u_char)0x11)
+#define ASN_BOOLEAN	    0x01U
+#define ASN_INTEGER	    0x02U
+#define ASN_BIT_STR	    0x03U
+#define ASN_OCTET_STR	    0x04U
+#define ASN_NULL	    0x05U
+#define ASN_OBJECT_ID	    0x06U
+#define ASN_SEQUENCE	    0x10U
+#define ASN_SET		    0x11U
 
-#define ASN_UNIVERSAL	    ((u_char)0x00)
-#define ASN_APPLICATION     ((u_char)0x40)
-#define ASN_CONTEXT	    ((u_char)0x80)
-#define ASN_PRIVATE	    ((u_char)0xC0)
+#define ASN_UNIVERSAL	    0x00U
+#define ASN_APPLICATION     0x40U
+#define ASN_CONTEXT	    0x80U
+#define ASN_PRIVATE	    0xC0U
 
-#define ASN_PRIMITIVE	    ((u_char)0x00)
-#define ASN_CONSTRUCTOR	    ((u_char)0x20)
+#define ASN_PRIMITIVE	    0x00U
+#define ASN_CONSTRUCTOR	    0x20U
 
-#define ASN_LONG_LEN	    (0x80)
-#define ASN_EXTENSION_ID    (0x1F)
-#define ASN_BIT8	    (0x80)
+#define ASN_LONG_LEN	    0x80U
+#define ASN_EXTENSION_ID    0x1FU
+#define ASN_BIT8	    0x80U
 
 #define IS_CONSTRUCTOR(byte)	((byte) & ASN_CONSTRUCTOR)
 #define IS_EXTENSION_ID(byte)	(((byte) & ASN_EXTENSION_ID) == ASN_EXTENSION_ID)
@@ -107,9 +107,9 @@ SOFTWARE.
      * base value for the second octet of the tag - the
      * second octet was the value for the tag 
      */
-#define ASN_OPAQUE_TAG2 ((u_char)0x30)
+#define ASN_OPAQUE_TAG2 0x30U
 
-#define ASN_OPAQUE_TAG2U ((u_char)0x2f) /* second octet of tag for union */
+#define ASN_OPAQUE_TAG2U 0x2fU /* second octet of tag for union */
 
     /*
      * All the ASN.1 types for SNMP "should have been" defined in this file,

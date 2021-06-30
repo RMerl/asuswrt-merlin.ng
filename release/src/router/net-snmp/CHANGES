@@ -3,6 +3,67 @@ that have been applied in released versions.  Please see the NEWS file for
 a summary of the major changes, and the ChangeLog file for a comprehensive
 listing of all changes made to the code.
 
+*5.9.1*:
+    General: Many bug fixes
+
+*5.9*
+    snmplib:
+      - Add IPv6 support to DTLSUDP transport
+      - use new netsnmp_sockaddr_storage in netsnmp_addr_pair
+      - add base_transport ptr for tunneled transports
+      - Add support for OpenSSL 1.1.1
+      - Dtls: overhaul of debug
+      - Remove inline versions of container funcs
+
+    snmpd:
+      - Use ETHTOOL_GLINKSETTINGS when available Newer Linux kernels
+	support ETHTOOL_GLINKSETTINGS. Use it when available instead of the
+	older and deprecated ETHTOOL_GSET. This patch avoids that the Linux
+	kernel reports the following kernel warning: warning: 'snmpd' uses
+	legacy ethtool link settings API, link modes are only partially
+	reported See also https://sourceforge.net/p/net-snmp/patches/1387/.
+	[bvanassche: reworked this patch significantly]
+      - Reduce the time needed to execute "pass" scripts on BSD systems See
+	also https://github.com/net-snmp/net-snmp/issues/8.
+      - [BUG 2926]: Make it possible to set agentXPingInterval for a
+	subagent - register agentXPingInterval for the subagent list
+	handler, before it was registered for snmp - added agentxTimeout to
+	the subagent list handler. It's now possible to set for snmpd and
+	the subagent. See 'man snmpd.conf' - added agentxRetries to the
+	subagent list handler. See 'man snmpd.conf'. It's never used in the
+	subagent, but it's now following the documentation Signed-off-by:
+	Anders Wallin <wallinux@gmail.com>
+
+    snmptrap:
+      - BUG: 2899: Patch from Drew Roedersheimer to set library
+	engineboots/time values before sending
+
+    snmptrapd:
+      - Add support for the latest libmysqlclient version
+
+    libsnmp:
+      - Scan MIB directories in alphabetical order This guarantees that
+	e.g. mibs/RFC1213-MIB.txt is read before mibs/SNMPv2-MIB.txt. The
+	order in which these MIBs is read matters because both define
+	sysLocation but with different attributes.
+
+    unspecified:
+      - [BUG 2930]: Fix a Solaris hrSWInst crash Avoid that snmpd crashes
+	on Solaris when querying software packages with an empty CATEGORY
+	field. See also https://sourceforge.net/p/net-snmp/bugs/2930/. See
+	also https://sourceforge.net/p/net-snmp/patches/1390/.
+
+    FreeBSD:
+      - Fix first byte of IF-MIB::ifPhysAddress   Don't write past the
+	interface name, and use temporary copy instead. This fixes the
+	first byte of ifPhysAddress always being 0 on FreeBSD. See also
+	https://sourceforge.net/p/net-snmp/code/merge-requests/20/. [
+	bvanassche: edited patch title / added test for malloc() result /
+	reduced number of free(if_name) calls ]
+
+    Win32:
+      - BUG: 2779541 Fixed handle leak in pass_persist.
+
 *5.8*
     snmplib:
       - [BUG 3444939]: BUG: 1796886: snmplib: Avoid that

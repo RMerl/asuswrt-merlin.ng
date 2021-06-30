@@ -13,7 +13,7 @@
 #include "sctpLookupRemPrimIPAddrTable.h"
 #include "sctpLookupRemIPAddrTable.h"
 
-netsnmp_feature_require(container_lifo)
+netsnmp_feature_require(container_lifo);
 
 static void
 sctpAssocTable_collect_invalid(void *what, void *magic)

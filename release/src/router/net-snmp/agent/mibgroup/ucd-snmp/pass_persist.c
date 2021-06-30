@@ -42,14 +42,14 @@
 #include "extensible.h"
 #include "util_funcs.h"
 
-netsnmp_feature_require(get_exten_instance)
-netsnmp_feature_require(parse_miboid)
+netsnmp_feature_require(get_exten_instance);
+netsnmp_feature_require(parse_miboid);
 
 struct extensible *persistpassthrus = NULL;
 int             numpersistpassthrus = 0;
 struct persist_pipe_type {
-    FILE           *fIn, *fOut;
-    int             fdIn, fdOut;
+    FILE           *fIn;
+    int             fdOut;
     netsnmp_pid_t   pid;
 }              *persist_pipes = (struct persist_pipe_type *) NULL;
 static unsigned pipe_check_alarm_id;
@@ -509,24 +509,22 @@ init_persist_pipes(void)
     /*
      * if we are already taken care of, just return 
      */
-    if (persist_pipes) {
-        return persist_pipes ? 1 : 0;
-    }
+    if (persist_pipes)
+        return 1;
 
     /*
      * Otherwise malloc and initialize 
      */
-    persist_pipes = (struct persist_pipe_type *)
-        malloc(sizeof(struct persist_pipe_type) *
-               (numpersistpassthrus + 1));
-    if (persist_pipes) {
-        for (i = 0; i <= numpersistpassthrus; i++) {
-            persist_pipes[i].fIn = persist_pipes[i].fOut = (FILE *) 0;
-            persist_pipes[i].fdIn = persist_pipes[i].fdOut = -1;
-            persist_pipes[i].pid = NETSNMP_NO_SUCH_PROCESS;
-        }
+    persist_pipes = malloc(sizeof(persist_pipes[0]) *
+                           (numpersistpassthrus + 1));
+    if (!persist_pipes)
+        return 0;
+    for (i = 0; i <= numpersistpassthrus; i++) {
+        persist_pipes[i].fIn = NULL;
+        persist_pipes[i].fdOut = -1;
+        persist_pipes[i].pid = NETSNMP_NO_SUCH_PROCESS;
     }
-    return persist_pipes ? 1 : 0;
+    return 1;
 }
 
 /**
@@ -538,10 +536,9 @@ init_persist_pipes(void)
 static int process_stopped(int idx)
 {
     if (persist_pipes[idx].pid != NETSNMP_NO_SUCH_PROCESS) {
-#if HAVE_SYS_WAIT_H
+#if HAVE_WAITPID
         return waitpid(persist_pipes[idx].pid, NULL, WNOHANG) > 0;
-#endif
-#if defined(WIN32) && !defined (mingw32) && !defined(HAVE_SIGNAL)
+#elif defined(WIN32) && !defined (mingw32) && !defined(HAVE_SIGNAL)
         return WaitForSingleObject(persist_pipes[idx].pid, 0) == WAIT_OBJECT_0;
 #endif
     }
@@ -623,15 +620,9 @@ open_persist_pipe(int iindex, char *command)
          * If not, fill out our structure 
          */
         persist_pipes[iindex].pid = pid;
-        persist_pipes[iindex].fdIn = fdIn;
         persist_pipes[iindex].fdOut = fdOut;
         persist_pipes[iindex].fIn = fdopen(fdIn, "r");
-        persist_pipes[iindex].fOut = fdopen(fdOut, "w");
 
-        /*
-         * Setup our -non-buffered-io- 
-         */
-        setbuf(persist_pipes[iindex].fOut, (char *) 0);
         DEBUGMSGTL(("ucd-snmp/pass_persist", "open_persist_pipe: opened the pipes\n"));
     }
 
@@ -683,12 +674,10 @@ open_persist_pipe(int iindex, char *command)
 static int
 write_persist_pipe(int iindex, const char *data)
 {
-#if HAVE_SIGNAL
-    struct sigaction sa, osa;
-    int             wret = 0, werrno = 0;
+    int             len, wret;
 
     /*
-     * Don't write to a non-existant process 
+     * Don't write to a non-existent process
      */
     if (persist_pipes[iindex].pid == NETSNMP_NO_SUCH_PROCESS) {
         DEBUGMSGTL(("ucd-snmp/pass_persist",
@@ -698,115 +687,42 @@ write_persist_pipe(int iindex, const char *data)
     }
 
     /*
-     * Setup our signal action to ignore SIGPIPEs 
-     */
-    sa.sa_handler = SIG_IGN;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    if (sigaction(SIGPIPE, &sa, &osa)) {
-        DEBUGMSGTL(("ucd-snmp/pass_persist",
-                    "write_persist_pipe: sigaction failed: %d", errno));
-    }
-
-    /*
      * Do the write 
      */
-    wret = write(persist_pipes[iindex].fdOut, data, strlen(data));
-    werrno = errno;
-
-    /*
-     * Reset the signal handler 
-     */
-    sigaction(SIGPIPE, &osa, (struct sigaction *) 0);
-
+    len = strlen(data);
+    wret = write(persist_pipes[iindex].fdOut, data, len);
+    if (wret == len)
+        return 1;
     if (wret < 0) {
+        int werrno = errno;
+
         if (werrno != EPIPE) {
             DEBUGMSGTL(("ucd-snmp/pass_persist",
-                        "write_persist_pipe: write returned unknown error %d (%s)\n",
+                        "write_persist_pipe: write returned unexpected error %d (%s)\n",
                         werrno, strerror(werrno)));
         }
         close_persist_pipe(iindex);
-        return 0;
+    } else {
+        DEBUGMSGTL(("ucd-snmp/pass_persist",
+                    "write_persist_pipe: short write (%d < %d)\n", wret, len));
     }
-#endif                          /* HAVE_SIGNAL */
-#if defined(WIN32) && !defined (mingw32) && !defined (HAVE_SIGNAL)
-/* We have no signal here (maybe we can make a Thread?) so write may block, 
- * but probably never will.
- */
-    int wret = 0, werrno = 0;
-
-    /*
-     * Do the write 
-     */
-    wret = write(persist_pipes[iindex].fdOut, data,strlen(data));
-    werrno = errno;
-    
-    if (wret < 0) {
-      if (werrno != EINTR) {
-        DEBUGMSGTL(("ucd-snmp/pass_persist", "write_persist_pipe: write returned unknown error %d\n",errno));
-      }
-      close_persist_pipe(iindex);
-      return 0;
-    }
-#endif                          /* WIN32 */
-    return 1;
+    return 0;
 }
 
 static void
 close_persist_pipe(int iindex)
 {
-/*	Alexander Prömel, alexander@proemel.de 08/24/2006
-	The hard coded pathnames, are temporary.
-	I'll fix it soon.
-	If you changed them here, you have to do it in ../util_funcs.c too.
-*/
-#ifdef __uClinux__
-	char fifo_in_path[256];
-	char fifo_out_path[256];
-
-	snprintf(fifo_in_path, 256, "/flash/cp_%d", persist_pipes[iindex].pid);
-	snprintf(fifo_out_path, 256, "/flash/pc_%d", persist_pipes[iindex].pid);
-#endif
-
     /*
      * Check and nix every item 
      */
-    if (persist_pipes[iindex].fOut) {
-        fclose(persist_pipes[iindex].fOut);
-        persist_pipes[iindex].fOut = (FILE *) 0;
-    }
     if (persist_pipes[iindex].fdOut != -1) {
-#ifndef WIN32
-        /*
-         * The sequence open()/fdopen()/fclose()/close() triggers an access
-         * violation with the MSVC runtime. Hence skip the close() call when
-         * using the MSVC runtime.
-         */
         close(persist_pipes[iindex].fdOut);
-#endif
         persist_pipes[iindex].fdOut = -1;
     }
     if (persist_pipes[iindex].fIn) {
         fclose(persist_pipes[iindex].fIn);
         persist_pipes[iindex].fIn = (FILE *) 0;
     }
-    if (persist_pipes[iindex].fdIn != -1) {
-#ifndef WIN32
-        /*
-         * The sequence open()/fdopen()/fclose()/close() triggers an access
-         * violation with the MSVC runtime. Hence skip the close() call when
-         * using the MSVC runtime.
-         */
-        close(persist_pipes[iindex].fdIn);
-#endif
-        persist_pipes[iindex].fdIn = -1;
-    }
-
-#ifdef __uClinux__
-	/*remove the pipes*/
-	unlink(fifo_in_path);
-	unlink(fifo_out_path);
-#endif
 
     if (persist_pipes[iindex].pid != NETSNMP_NO_SUCH_PROCESS) {
         /*
@@ -816,12 +732,12 @@ close_persist_pipe(int iindex)
 #ifdef HAVE_SIGNAL
         (void)kill(persist_pipes[iindex].pid, SIGKILL);
 #endif
-#if HAVE_SYS_WAIT_H
+#if HAVE_WAITPID
         waitpid(persist_pipes[iindex].pid, NULL, 0);
-#endif
-#if defined(WIN32) && !defined (mingw32) && !defined (HAVE_SIGNAL)
+#elif defined(WIN32) && !defined (mingw32) && !defined (HAVE_SIGNAL)
         if (!CloseHandle(persist_pipes[iindex].pid)) {
-            DEBUGMSGTL(("ucd-snmp/pass_persist","close_persist_pipe pid: close error\n"));
+            DEBUGMSGTL(("ucd-snmp/pass_persist",
+                        "close_persist_pipe pid: close error\n"));
         }
 #endif
         persist_pipes[iindex].pid = NETSNMP_NO_SUCH_PROCESS;

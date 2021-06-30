@@ -11,8 +11,8 @@
 #include "disman/schedule/schedCore.h"
 #include "disman/schedule/schedConf.h"
 
-netsnmp_feature_require(iquery)
-netsnmp_feature_require(string_time_to_secs)
+netsnmp_feature_require(iquery);
+netsnmp_feature_require(string_time_to_secs);
 
 static int schedEntries;
 

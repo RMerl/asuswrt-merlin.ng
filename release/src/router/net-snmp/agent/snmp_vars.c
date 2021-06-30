@@ -292,9 +292,7 @@ init_agent(const char *app)
     netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, 
 			   NETSNMP_DS_LIB_ALARM_DONT_USE_SIG, 1);
 
-#ifdef HAVE_KMEM
     r = init_kmem("/dev/kmem") ? 0 : -EACCES;
-#endif
 
     setup_tree();
 
@@ -384,9 +382,7 @@ shutdown_agent(void) {
     clear_callback();
     shutdown_secmod();
     netsnmp_addrcache_destroy();
-#ifdef HAVE_KMEM
     free_kmem();
-#endif
 
     done_init_agent = 0;
 }

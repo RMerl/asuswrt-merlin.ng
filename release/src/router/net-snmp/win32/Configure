@@ -4,14 +4,16 @@
 # Written by Alex Burger
 # March 5th, 2004
 #
-use Getopt::Long;
 use strict;
 use warnings;
+use ExtUtils::Embed;
+use Getopt::Long;
 
 my $version = "unknown";
 my $config;
 my $sdk = 0;
 my $linktype;
+my $blumenthal_aes;
 my $prefix;
 my $prefixdos;
 my $openssl = 0;
@@ -25,6 +27,7 @@ GetOptions      ('config=s' => \$config,
                  'with-sdk' => \$sdk,
                  'linktype=s' => \$linktype,
                  'destdir=s' => \$prefix,
+                 'enable-blumenthal-aes' => \$blumenthal_aes,
                  'prefix=s' => \$prefix,
                  'with-ssl' => \$openssl,
                  'with-sslincdir=s' => \$opensslincdir,
@@ -46,6 +49,7 @@ Options:
     --linktype=[static | dynamic]    Build static or dynamic (DLL)
     --prefix=\"path\"                  Set INSTALL_BASE path (install path)
     --destdir=\"path\"                 Same as --prefix
+    --enable-blumenthal-aes          Enable Blumenthal AES support
     --with-ssl                       Link against OpenSSL
     --with-sslincdir=\"path\"          OpenSSL include path
     --with-ssllibdir=\"path\"          OpenSSL library path
@@ -173,6 +177,21 @@ foreach my $app (@apps) {
     push @apps_clean, $app . "_clean";
 }
 
+my $perl_define =
+    "/D NETSNMP_REMOVE_U64 " .
+    "/D VC_EXTRALEAN " .
+    "/D WIN32 " .
+    "/D _CONSOLE " .
+    "/D _CRT_NONSTDC_NO_WARNINGS " .
+    "/D _CRT_SECURE_NO_WARNINGS " .
+    "/D _MBCS " .
+    "/D _WIN32_WINNT=0xffff " .
+    "/D _WINSOCK_DEPRECATED_NO_WARNINGS";
+
+my $perl_inc = $opensslincdir ? "/I $opensslincdir" : "";
+
+my $perl_cflags = ExtUtils::Embed::ccopts();
+
 my %makefile_subs = (
     "app" => [ "^APPS=",       "APPS=" . join(" ", @apps)	    ],
     "apc" => [ "^APPS_CLEAN=", "APPS_CLEAN=" . join(" ", @apps_clean)],
@@ -184,26 +203,22 @@ my %makefile_subs = (
     "dos" => [ "^PREFIX_DOS=", "PREFIX_DOS=$prefixdos"              ],
     "ssl" => [ "^OPENSSL=",    $openssl ? "OPENSSL=true" : "OPENSSL=false" ],
     "sdk" => [ "^SDK=",        $sdk == 1 ? "SDK=true" : "SDK=false" ],
-    "cfl" => [ "^CFLAGS=",     "CFLAGS=" .
-                               "/D WIN32 " .
-                               "/D _BIND_TO_CURRENT_VCLIBS_VERSION " .
-                               "/D _CONSOLE " .
-                               "/D _CRT_NONSTDC_NO_WARNINGS " .
-                               "/D _CRT_SECURE_NO_WARNINGS " .
-                               "/D _MBCS " .
-                               "/D _WINSOCK_DEPRECATED_NO_WARNINGS " .
+    "pin" => [ "^PERL_DEFINE=","PERL_DEFINE=$perl_define"           ],
+    "pdf" => [ "^PERL_INC=",   "PERL_INC=$perl_inc"                 ],
+    "pcf" => [ "^PERL_CFLAGS=","PERL_CFLAGS=$perl_cflags"           ],
+    "cfl" => [ "^CFLAGS=",     "CFLAGS=$perl_define " .
+                               "/D WIN32_LEAN_AND_MEAN " .
                                "/EHsc " .
                                "/FD " .
                                "/FR\$(INTDIR)\\ " .
                                "/Fd\$(INTDIR)\\\$(PROGNAME).pdb " .
                                "/Fo\$(INTDIR)\\ " .
-                               ($opensslincdir ? "/I $opensslincdir " : "") .
+                               "$perl_inc " .
+                               "$perl_cflags " .
                                "/c " .
                                "/W3 " .
                                "/Zi " .
                                "/nologo " .
-                               "/wd4244 " .
-                               "/wd4267 " .
                ($config eq "release" ?
                 "/MD  /D NDEBUG /O2 " :
                 "/MDd /D _DEBUG /Od /Gm ")
@@ -211,7 +226,8 @@ my %makefile_subs = (
     "lfl" => [ "^LDFLAGS=",    "LDFLAGS=" .
                                ($config eq "debug" ? "/debug " : "") .
                                ($openssllibdir ? "/libpath:$openssllibdir" :
-                                "")
+                                "") . " " .
+                               "/MANIFEST:EMBED"
              ],
     "rsc" => [ "^RSCFLAGS=",   "RSCFLAGS=/l 0x409 " .
                                ($config eq "release" ? "/d NDEBUG" :
@@ -259,6 +275,9 @@ if ($openssl == 1) {
 } else {
     $net_snmp_config_subs{"ssl"} = [ "^.*#undef NETSNMP_USE_INTERNAL_MD5.*", "#define NETSNMP_USE_INTERNAL_MD5 1" ];
 }
+if ($blumenthal_aes) {
+    $net_snmp_config_subs{"baes"} = [ "^.*#undef NETSNMP_DRAFT_BLUMENTHAL_AES_04.*", "#define NETSNMP_DRAFT_BLUMENTHAL_AES_04 1" ];
+}
 if ($b_ipv6 == 1) {
     $net_snmp_config_subs{"ipv6"} = [ "^.*#undef NETSNMP_ENABLE_IPV6.*", "#define NETSNMP_ENABLE_IPV6 1" ];
 }
@@ -286,6 +305,7 @@ print "  SDK:                        " . ($sdk == 1 ? "enabled" : "disabled") . 
 print "  Link type:                  $linktype\n";
 print "  Prefix / Destdir:           " . ($prefix ne "" ? $prefix : "(default)") . "\n";
 print "  OpenSSL:                    " . ($openssl == 1 ? "enabled" : "disabled") . "\n";
+print "  Blumenthal AES:             " . ($blumenthal_aes ? "enabled" : "disabled") . "\n";
 print "  IPv6 transport:             " . ($b_ipv6 == 1 ? "enabled" : "disabled") . "\n";
 print "  winExtDLL agent:            " . ($b_winextdll == 1 ? "enabled" : "disabled") . "\n";
 

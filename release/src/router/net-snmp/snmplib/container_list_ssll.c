@@ -29,16 +29,16 @@
 
 #include <net-snmp/library/container_list_ssll.h>
 
-netsnmp_feature_child_of(container_linked_list, container_types)
-netsnmp_feature_child_of(container_fifo, container_types)
-netsnmp_feature_child_of(container_lifo, container_types)
+netsnmp_feature_child_of(container_linked_list, container_types);
+netsnmp_feature_child_of(container_fifo, container_types);
+netsnmp_feature_child_of(container_lifo, container_types);
 
 /* this is a fancy way of cleaning up ifdefs */
 #ifdef NETSNMP_FEATURE_REQUIRE_CONTAINER_FIFO
-netsnmp_feature_require(container_linked_list)
+netsnmp_feature_require(container_linked_list);
 #endif /* NETSNMP_FEATURE_REQUIRE_CONTAINER_FIFO */
 #ifdef NETSNMP_FEATURE_REQUIRE_CONTAINER_LIFO
-netsnmp_feature_require(container_linked_list)
+netsnmp_feature_require(container_linked_list);
 #endif /* NETSNMP_FEATURE_REQUIRE_CONTAINER_LIFO */
 
 #ifndef NETSNMP_FEATURE_REMOVE_CONTAINER_LINKED_LIST

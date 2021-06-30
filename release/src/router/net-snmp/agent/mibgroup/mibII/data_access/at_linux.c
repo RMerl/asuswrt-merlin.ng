@@ -62,7 +62,7 @@ ARP_Scan_Init(void)
     /*
      * Get rid of the header line
      */
-    fgets(line, sizeof(line), in);
+    NETSNMP_IGNORE_RESULT(fgets(line, sizeof(line), in));
 
     i = 0;
     while (fgets(line, sizeof(line), in)) {

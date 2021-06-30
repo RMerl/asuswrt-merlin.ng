@@ -56,7 +56,7 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
     DIR                 *procdir = NULL;
     struct dirent       *procentry_p;
     FILE                *fp;
-    int                  pid, i;
+    int                  pid, i, ret;
     unsigned long long   cpu;
     char                 buf[BUFSIZ], buf2[BUFSIZ], *cp, *cp1;
     netsnmp_swrun_entry *entry;
@@ -129,24 +129,26 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
         if (cp != NULL) {
             /*
              *     argv[0]   is hrSWRunPath
-             */ 
-            entry->hrSWRunPath_len = snprintf(entry->hrSWRunPath,
-                                       sizeof(entry->hrSWRunPath)-1, "%s", buf);
+             */
+            ret = snprintf(entry->hrSWRunPath, sizeof(entry->hrSWRunPath),
+                           "%s", buf);
+
+            if (ret < sizeof(entry->hrSWRunPath))
+                entry->hrSWRunPath_len = ret;
+            else
+                entry->hrSWRunPath_len = sizeof(entry->hrSWRunPath) - 1;
+
             /*
              * Stitch together argv[1..] to construct hrSWRunParameters
              */
-            cp = buf + entry->hrSWRunPath_len+1;
-            while ( 1 ) {
-                while (*cp)
-                    cp++;
-                if ( '\0' == *(cp+1))
-                    break;      /* '\0''\0' => End of command line */
-                *cp = ' ';
-            }
+            for (cp = buf + ret; ! (*cp == '\0' && *(cp + 1) == '\0'); cp++)
+                    if (*cp == '\0')
+                            *cp = ' ';
+
             entry->hrSWRunParameters_len
                 = sprintf(entry->hrSWRunParameters, "%.*s",
                           (int)sizeof(entry->hrSWRunParameters) - 1,
-                          buf + entry->hrSWRunPath_len + 1);
+                          buf + ret + 1);
         } else {
             /* empty /proc/PID/cmdline, it's probably a kernel thread */
             entry->hrSWRunPath_len = 0;

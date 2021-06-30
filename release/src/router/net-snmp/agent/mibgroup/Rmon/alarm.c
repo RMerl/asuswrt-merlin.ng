@@ -129,6 +129,8 @@
          0;
 #endif
 
+static unsigned char zero_octet_string[1];
+
 static int
 fetch_var_val(oid * name, size_t namelen, u_long * new_value)
 {
@@ -645,7 +647,7 @@ var_alarmEntry(struct variable * vp, oid * name, size_t * length,
             return (unsigned char *) hdr->owner;
         } else {
             *var_len = 0;
-            return (unsigned char *) "";
+            return zero_octet_string;
         }
 
     case IDalarmStatus:

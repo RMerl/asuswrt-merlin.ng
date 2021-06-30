@@ -10,9 +10,9 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 
-netsnmp_feature_require(agentx_enable_subagent)
-netsnmp_feature_require(agent_check_and_process)
-netsnmp_feature_require(enable_stderrlog)
+netsnmp_feature_require(agentx_enable_subagent);
+netsnmp_feature_require(agent_check_and_process);
+netsnmp_feature_require(enable_stderrlog);
 
 /*
  * include our parent header 

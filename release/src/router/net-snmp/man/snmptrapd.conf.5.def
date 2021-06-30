@@ -284,6 +284,17 @@ in the
 manual page for more information about the format of listening
 addresses.
 .RE
+.P
+addForwarderInfo 1|yes|true|0|no|false
+.IP
+Each time a trap is forwarded, add an OID with the IP address of the system
+from which the trap has been received. The following OID is
+added: .1.3.6.1.6.3.18.1.3.x (SNMP-COMMUNITY-MIB::snmpTrapAddress.x) where
+x is the lowest index >= 0 that does not yet occur in the trap payload. The end
+recipient (i.e. the monitoring system) can determine the IPv4 address of the
+original sender by looking for the varbind with OID snmpTrapAddress.0. If that
+OID is not populated it means that the trap has been sent directly or in other
+words that it has not been forwarded.
 .SH NOTES
 .IP o
 The daemon blocks while executing the \fItraphandle\fR commands.

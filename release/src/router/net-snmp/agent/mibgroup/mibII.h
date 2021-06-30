@@ -10,20 +10,21 @@ config_require(mibII/setSerialNo)
 #if !defined(cygwin) || defined(HAVE_IPHLPAPI_H)
 config_require(mibII/at)
 config_require(mibII/ifTable)
+#if !defined(darwin) || defined(HAVE_STRUCT_IN_IFADDR_IA_SUBNETMASK)
 config_require(mibII/ip)
 config_require(mibII/tcp)
-config_require(mibII/icmp)
 config_require(mibII/udp)
-#endif
 
 /* mibII/ipv6 is activated via --enable-ipv6 and only builds on Linux+*BSD */
 #if defined(NETSNMP_ENABLE_IPV6) && (defined(linux) || defined(freebsd3) || defined(netbsd1) || defined(openbsd4)) 
 config_require(mibII/ipv6)
-#endif
+#endif /* defined(NETSNMP_ENABLE_IPV6) */
 
-#ifdef NETSNMP_INCLUDE_IFTABLE_REWRITES
+#endif /* !defined(darwin) || defined(HAVE_STRUCT_IN_IFADDR_IA_SUBNETMASK) */
+config_require(mibII/icmp)
+#endif /* !defined(cygwin) || defined(HAVE_IPHLPAPI_H) */
+
 config_require(if-mib)
-#endif
 
 /*
  * these new module re-rewrites have only been implemented for

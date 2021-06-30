@@ -142,16 +142,7 @@ Installation:
    C++ 6.0 and Microsoft Microsoft Development Environment 2003/2003 
    (MSVC 7.0/7.1).  See the following sections for Cygwin and MinGW.
 
-   ActiveState Perl is required.  
-
-   Note: With ActiveState Perl (currently at 5.8.2 build 808) and possibly other 
-         versions of Perl on Windows, if a Perl script modifies a
-         system environment variable and then calls a C function, the
-         C function will not see the new environment variable.  This
-         problem can be seen with the failure of test #3 in the SNMP
-         conf test (perl/SNMP/t/conf.t).  The change to the
-         SNMPCONFPATH env variable is not seen by the calls to the C
-         SNMP module.
+   Perl binaries build with MSVC++ are required.
 
    Note: The source code should *not* be in a folder that contains a space.  For
          example, compiling in your 'My Documents' or your Desktop (usually
@@ -294,94 +285,9 @@ Installation:
          example, compiling in your 'My Documents' or your Desktop (usually
          c:\Documents and Settings\xxxx\Desktop) is not supported.
           
-   These directions are for MinGW 3.1.0 with MSYS 1.0.9 and ActiveState Perl.
-   Compiling the Perl modules using a MinGW built Perl environment has not
-   been tested.
 
-   Note: With ActiveState Perl (currently at 5.8.2 build 808) and
-         possibly other versions of Perl on Windows, if a Perl script
-         modifies a system environment variable and then calls a C
-         function, the C function will not see the new environment
-         variable.  This problem can be seen with the failure of test
-         #3 in the SNMP conf test (perl/SNMP/t/conf.t).  The change to
-         the SNMPCONFPATH env variable is not seen by the calls to the
-         C SNMP module.
-
-   The main Net-SNMP package must be compiled with the regex library.  
-   See Net-SNMP README.win32 for compiling with MinGW.
-
-   The following additional software is required:
-
-    dmake:
-    http://www.cpan.org/authors/id/GSAR/dmake-4.1pl1-win32.zip  
-
-    ExtUtils-FakeConfig:
-    http://search.cpan.org/~mbarbon/ExtUtils-FakeConfig-0.05/
-
-   Note: A PPM package is available from ActiveState for
-          ExtUtils-FakeConfig, but it does not include the
-          make_implib.pl script.  Downloading from CPAN is
-          recommended.
-
-   Installing DMAKE and ExtUtils-FakeConfig:
-   -----------------------------------------
-
-   1.  Install DMAKE as described in the README.NOW contained in the DMAKE .ZIP 
-       file ensuring the DMAKE program can be found in the system path.
-
-   2.  Extract ExtUtils-FakeConfig-0.05.zip to a temporary folder.
-
-   3.  Add the MinGW bin folder to your system path.
-
-   4.  Open a Windows command prompt (cmd) and cd into
-       ExtUtils-FakeConfig-0.05 and typet he following to build and
-       install the ExtUtils-FakeConfig module:
-
-       perl Makefile.PL
-       dmake
-       dmake install
-
-   5.  A Perl import library needs to be created using the ExtUtils-FakeConfig 
-       make_implib.pl script.  
-
-       For ActiveState Perl 5.6.x installed to c:\Perl, type the
-       following on one line:
-
-         perl script/make_implib.pl --output-dir=C:/Perl/lib/CORE 
-           --output-lib=libperl56.a --target=mingw c:/Perl/bin/Perl56.dll
-
-       For ActiveState Perl 5.8.x installed to c:\Perl, type the
-       following on one line:
-
-         perl script/make_implib.pl --output-dir=C:/Perl/lib/CORE 
-           --output-lib=libperl58.a --target=mingw c:/Perl/bin/Perl58.dll
-
-
-Building the Perl module:
--------------------------
-
-   1.  Complete the section titled 'Installing DMAKE and ExtUtils-FakeConfig'
-
-   2.  Open an MSYS shell and cd into the net-snmp/Perl folder and type the 
-       following on one line:
-
-         perl -MConfig_m Makefile.PL -NET-SNMP-IN-SOURCE=true DEFINE=-DMINGW_PERL
-
-   3.  Open a Windows command prompt (cmd) and cd into the net-snmp/perl folder 
-       and type:
-
-         dmake
-         dmake test
-         dmake install
-
-       Note:  'dmake test' will automatically start and stop the agent(snmpd) and 
-              trap receiver (snmptrapd) while testing the SNMP module.  
-
-   4.  Remove the MinGW bin folder to your system path if it was not already in
-       your path for step 3 of 'Installing DMAKE and ExtUtils-FakeConfig'.
-
-
-   Operational Description:
+Operational Description:
+------------------------
 
    The basic operations of the SNMP protocol are provided by this module
    through an object oriented interface for modularity and ease of use.

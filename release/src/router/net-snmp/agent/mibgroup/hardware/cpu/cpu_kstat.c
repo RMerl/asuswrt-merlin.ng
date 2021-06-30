@@ -22,8 +22,9 @@ int _cpu_status(char *state);
      * Initialise the list of CPUs on the system
      *   (including descriptions)
      */
-void init_cpu_kstat( void ) {
-    int               i = 0, n = 0, clock, state_begin;
+void init_cpu_kstat(void)
+{
+    int               i = 0, n = 0, clock;
     char              ctype[16], ftype[16], state[10];
     kstat_t          *ksp;
     kstat_named_t    *ks_data;
@@ -49,8 +50,6 @@ void init_cpu_kstat( void ) {
             for (i=0, ks_data = ksp->ks_data; i < ksp->ks_ndata; i++, ks_data++) {
                 if ( strcmp( ks_data->name, "state" ) == 0 ) {
                     strlcpy(state, ks_data->value.c, sizeof(state));
-                } else if ( strcmp( ks_data->name, "state_begin" ) == 0 ) {
-                    state_begin = ks_data->value.i32;
                 } else if ( strcmp( ks_data->name, "cpu_type" ) == 0 ) {
                     strlcpy(ctype, ks_data->value.c, sizeof(ctype));
                 } else if ( strcmp( ks_data->name, "fpu_type" ) == 0 ) {

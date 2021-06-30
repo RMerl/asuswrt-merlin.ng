@@ -41,7 +41,8 @@ netsnmp_access_interface_ioctl_ifindex_get(int fd, const char *name);
 
 int
 netsnmp_access_interface_ioctl_has_ipv4(int sd, const char *if_name,
-                                        int if_index, u_int *flags);
+                                        int if_index, u_int *flags,
+                                        const struct ifconf *pifc);
 
 /**---------------------------------------------------------------------*/
 

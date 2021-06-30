@@ -10,10 +10,10 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include "nsVacmAccessTable.h"
 
-netsnmp_feature_require(check_vb_storagetype)
+netsnmp_feature_require(check_vb_storagetype);
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(check_vb_type_and_max_size)
-netsnmp_feature_require(table_iterator_insert_context)
+netsnmp_feature_require(check_vb_type_and_max_size);
+netsnmp_feature_require(table_iterator_insert_context);
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 /** Initializes the nsVacmAccessTable module */

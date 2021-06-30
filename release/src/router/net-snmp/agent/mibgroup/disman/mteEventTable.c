@@ -12,8 +12,8 @@
 #include "mteEventNotificationTable.h"
 #include "mteObjectsTable.h"
 
-netsnmp_feature_require(table_dataset)
-netsnmp_feature_require(table_set_multi_add_default_row)
+netsnmp_feature_require(table_dataset);
+netsnmp_feature_require(table_set_multi_add_default_row);
 
 static netsnmp_table_data_set *table_set = NULL;
 

@@ -35,9 +35,6 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
 
 #include <net-snmp/types.h>
 #include <net-snmp/output_api.h>
@@ -53,8 +50,8 @@
 
 #include <net-snmp/library/transform_oids.h>
 
-netsnmp_feature_child_of(usm_support, libnetsnmp)
-netsnmp_feature_child_of(usm_lcd_time, usm_support)
+netsnmp_feature_child_of(usm_support, libnetsnmp);
+netsnmp_feature_child_of(usm_lcd_time, usm_support);
 
 #ifndef NETSNMP_FEATURE_REMOVE_USM_LCD_TIME
 

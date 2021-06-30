@@ -27,6 +27,8 @@ AC_ARG_WITH(endianness,
                                   cross-compiling.],
     [if test $with_endianness != "big" -a $with_endianness != "little" ; then
        AC_MSG_ERROR([Endianness must be big or little, not "$with_endianness".]);
+     else
+       AC_MSG_WARN([--with-endianness is obsolete])
      fi
 ])
 
@@ -56,14 +58,6 @@ AC_SUBST(LIBTOOLFLAGS)
 ##
 #   System: Library settings
 ##
-
-NETSNMP_ARG_WITH(dmalloc,
-        AS_HELP_STRING([--with-dmalloc=PATH],
-                [Use dmalloc library (www.dmalloc.com)]))
-
-NETSNMP_ARG_WITH(efence,
-[  --with-efence                   Look for and use libefence (malloc).],
-      use_efence="$withval")
 
 tryrsaref=no
 NETSNMP_ARG_WITH(rsaref,

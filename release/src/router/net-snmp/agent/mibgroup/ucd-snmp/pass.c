@@ -37,8 +37,8 @@
 #include "extensible.h"
 #include "util_funcs.h"
 
-netsnmp_feature_require(get_exten_instance)
-netsnmp_feature_require(parse_miboid)
+netsnmp_feature_require(get_exten_instance);
+netsnmp_feature_require(parse_miboid);
 
 struct extensible *passthrus = NULL;
 int             numpassthrus = 0;
@@ -323,9 +323,9 @@ setPass(int action, u_char * var_val, u_char var_val_type,
 int
 pass_compare(const void *a, const void *b)
 {
-    const struct extensible *const *ap, *const *bp;
-    ap = (const struct extensible * const *) a;
-    bp = (const struct extensible * const *) b;
+    const struct extensible *const *ap = a;
+    const struct extensible *const *bp = b;
+
     return snmp_oid_compare((*ap)->miboid, (*ap)->miblen, (*bp)->miboid,
                             (*bp)->miblen);
 }

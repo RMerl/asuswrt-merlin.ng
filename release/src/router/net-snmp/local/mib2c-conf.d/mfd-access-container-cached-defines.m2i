@@ -358,7 +358,7 @@ $example_end
 @end@ # example
 
     DEBUGMSGT(("verbose:${context}:${context}_container_load",
-               "inserted %d records\n", count));
+               "inserted %" NETSNMP_PRIz "u records\n", count));
 
     return MFD_SUCCESS;
 } /* ${context}_container_load */

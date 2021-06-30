@@ -11,7 +11,7 @@
 
 #include <net-snmp/net-snmp-features.h>
 
-netsnmp_feature_require(table_container)
+netsnmp_feature_require(table_container);
 
 
 /** Typical data structure for a row entry */

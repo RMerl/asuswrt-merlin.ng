@@ -6,6 +6,14 @@ HEADER TLS-TCP over IPV6
 
 SKIPIFNOT NETSNMP_TRANSPORT_TLSTCP_DOMAIN
 
+openssl_version=$(openssl version | cut -d ' ' -f2)
+major=$(echo $openssl_version | cut -c1)
+minor=$(echo $openssl_version | cut -c3)
+
+if [ $major -lt 1 ] || { [ $major -eq 1 ] && [ $minor -eq 0 ]; }; then
+    SKIP "openssl version $openssl_version does not support IPv6"
+fi
+
 #
 # Begin test
 #

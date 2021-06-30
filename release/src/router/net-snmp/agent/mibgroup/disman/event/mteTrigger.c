@@ -11,9 +11,9 @@
 #include "disman/event/mteTrigger.h"
 #include "disman/event/mteEvent.h"
 
-netsnmp_feature_child_of(disman_debugging, libnetsnmpmibs)
-netsnmp_feature_child_of(mtetrigger, libnetsnmpmibs)
-netsnmp_feature_child_of(mtetrigger_removeentry, mtetrigger)
+netsnmp_feature_child_of(disman_debugging, libnetsnmpmibs);
+netsnmp_feature_child_of(mtetrigger, libnetsnmpmibs);
+netsnmp_feature_child_of(mtetrigger_removeentry, mtetrigger);
 
 netsnmp_tdata *trigger_table_data;
 

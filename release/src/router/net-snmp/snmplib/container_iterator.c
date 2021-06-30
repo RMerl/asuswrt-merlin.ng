@@ -29,7 +29,7 @@
 
 #include <net-snmp/library/container_iterator.h>
 
-netsnmp_feature_child_of(container_iterator, container_types)
+netsnmp_feature_child_of(container_iterator, container_types);
 
 #ifndef NETSNMP_FEATURE_REMOVE_CONTAINER_ITERATOR
 /**
@@ -285,18 +285,21 @@ _iterator_get_next(iterator_info *ii, const void *key)
  * container
  *
  **********************************************************************/
-static void
-_iterator_free(iterator_info *ii)
+static int _iterator_free(netsnmp_container *c)
 {
+    iterator_info *ii = (iterator_info *)c;
+
     DEBUGMSGT(("container_iterator",">%s\n", "_iterator_free"));
     
     if(NULL == ii)
-        return;
+        return 0;
     
     if(ii->user_ctx)
         ii->free_user_ctx(ii->user_ctx,ii->user_ctx);
     
     free(ii);
+
+    return 0;
 }
 
 static void *
@@ -463,7 +466,7 @@ netsnmp_container_iterator_get(void *iterator_user_ctx,
     /*
      * init container structure with iterator functions
      */
-    ii->c.cfree = (netsnmp_container_rc*)_iterator_free;
+    ii->c.cfree = _iterator_free;
     ii->c.compare = compare;
     ii->c.get_size = (netsnmp_container_size*)_iterator_size;
     ii->c.init = NULL;

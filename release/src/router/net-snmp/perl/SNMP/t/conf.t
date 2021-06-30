@@ -1,10 +1,9 @@
 #!./perl
 
+use strict;
+use warnings;
+
 BEGIN {
-    unless(grep /blib/, @INC) {
-        chdir 't' if -d 't';
-        @INC = '../lib' if -d '../lib';
-    }
     $ENV{'MIBS'} = '';
 }
 
@@ -13,12 +12,11 @@ BEGIN {
 # serious problem because they linked with static libraries instead of
 # shared ones as the memory space is different.
 
+use Config;
 use Test;
 BEGIN {plan tests => 3}
 
-my $envsep = ($^O =~ /win32/i) ? ';' : ':';
-
-SNMP::setenv('SNMPCONFPATH', '.' . $envsep . 't', 1);
+SNMP::setenv('SNMPCONFPATH', '.' . $Config{path_sep} . 't', 1);
 
 ok(1); # just start up
 
@@ -26,8 +24,8 @@ use SNMP;
 use NetSNMP::default_store(':all');
 
 # should be 0, as it's un-initialized
-$myint = netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID, 
-			    NETSNMP_DS_LIB_NUMERIC_TIMETICKS);
+my $myint = netsnmp_ds_get_int(NETSNMP_DS_LIBRARY_ID, 
+			       NETSNMP_DS_LIB_NUMERIC_TIMETICKS);
 
 ok($myint == 0);
 

@@ -8,19 +8,23 @@
 
 
 config_require(mibII/ifTable)
+#if !defined(darwin) || defined(HAVE_STRUCT_IN_IFADDR_IA_SUBNETMASK)
+/*
+ * To do: port mibII/ipAddr and mibII/var_route to Darwin versions that do not
+ * export struct in_ifaddr.
+ */
 config_require(mibII/ipAddr)
-config_require(mibII/at)
 config_require(mibII/var_route mibII/route_write)
+#endif /* !defined(darwin) || defined(HAVE_STRUCT_IN_IFADDR_IA_SUBNETMASK) */
+config_require(mibII/at)
 
-config_arch_require(solaris2,        kernel_sunos5)
-config_arch_require(linux,     mibII/kernel_linux)
-config_arch_require(netbsd,    mibII/kernel_netbsd)
-config_arch_require(netbsd5,   mibII/kernel_netbsd)
-config_arch_require(netbsd6,   mibII/kernel_netbsd)
-config_arch_require(netbsd7,   mibII/kernel_netbsd)
-config_arch_require(netbsd8,   mibII/kernel_netbsd)
-config_arch_require(netbsdelf, mibII/kernel_netbsd)
-config_arch_require(netbsdelf5, mibII/kernel_netbsd)
+#ifdef solaris2
+config_require(kernel_sunos5)
+#elif defined(linux)
+config_require(mibII/kernel_linux)
+#elif defined(netbsd) || defined(netbsdelf)
+config_require(mibII/kernel_netbsd)
+#endif
 
 #include "var_route.h"
 #include "route_write.h"

@@ -60,7 +60,7 @@
 @      eval $m2c_node_skip_get = 1@
 @    end@
 @  else@
-@    eval $m2c_decl = $node.decl@
+@    eval $m2c_decl = "$node.decl"@
  @  end@ // enums
 ########################################################################
 ## find max size

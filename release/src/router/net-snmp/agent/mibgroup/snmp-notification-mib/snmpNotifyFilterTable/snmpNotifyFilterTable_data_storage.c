@@ -28,7 +28,7 @@
 #include <ctype.h>
 
 
-netsnmp_feature_require(CONTAINER_FREE_ALL)
+netsnmp_feature_require(CONTAINER_FREE_ALL);
 
 
 /**********************************************************************

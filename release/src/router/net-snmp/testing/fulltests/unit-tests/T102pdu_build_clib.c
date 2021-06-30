@@ -10,7 +10,13 @@ int rc;
 
 init_snmp("testing");
 snmp_sess_init(&session);
+#if !defined(NETSNMP_DISABLE_SNMPV2C)
 session.version = SNMP_VERSION_2c;
+#elif !defined(NETSNMP_DISABLE_SNMPV1)
+session.version = SNMP_VERSION_1;
+#else
+#error This test does not (yet?) support SNMPv3
+#endif
 session.peername = strdup("udp:127.0.0.1"); /* we won't actually connect */
 session.community = (u_char *) strdup("bogus");
 session.community_len = strlen((char *) session.community);

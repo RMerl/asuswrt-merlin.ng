@@ -5,7 +5,7 @@
        TEXTUAL-CONVENTION          FROM SNMPv2-TC;
 
    ianaifType MODULE-IDENTITY
-       LAST-UPDATED "201703300000Z" -- March 30, 2017
+       LAST-UPDATED "202004020000Z" -- April 2, 2020
        ORGANIZATION "IANA"
        CONTACT-INFO "        Internet Assigned Numbers Authority
 
@@ -18,6 +18,42 @@
        DESCRIPTION  "This MIB module defines the IANAifType Textual
                      Convention, and thus the enumerated values of
                      the ifType object defined in MIB-II's ifTable."
+
+       REVISION     "202004020000Z"  -- April 2, 2020
+       DESCRIPTION  "Added reference to ifType definitions registry."
+
+       REVISION     "202001100000Z"  -- January 10, 2020
+       DESCRIPTION  "Addition of IANAifType 299."
+
+       REVISION     "201912030000Z"  -- December 3, 2019
+       DESCRIPTION  "Updated email address for IANA"
+
+       REVISION     "201910160000Z"  -- October 16, 2019
+       DESCRIPTION  "Addition of IANAifTypes 297-298."
+
+       REVISION     "201902140000Z"  -- February 14, 2019
+       DESCRIPTION  "Registration of new tunnelType 18."
+
+       REVISION     "201902080000Z"  -- February 8, 2019
+       DESCRIPTION  "Added missing commas for 295-296."
+
+       REVISION     "201901310000Z"  -- January 31, 2019
+       DESCRIPTION  "Registration of new IANAifTypes 295-296."
+
+       REVISION     "201807040000Z"  -- July 4, 2018
+       DESCRIPTION  "Added missing commas for 291-293."
+
+       REVISION     "201806280000Z"  -- June 28, 2018
+       DESCRIPTION  "Registration of new IANAifType 294."
+
+       REVISION     "201806280000Z"  -- June 28, 2018
+       DESCRIPTION  "Registration of new IANAifType 293."
+
+       REVISION     "201806220000Z"  -- June 22, 2018
+       DESCRIPTION  "Registration of new IANAifType 292."
+
+       REVISION     "201806210000Z"  -- June 21, 2018
+       DESCRIPTION  "Registration of new IANAifType 291."
 
        REVISION     "201703300000Z"  -- March 30, 2017
        DESCRIPTION  "Registration of new IANAifType 290."
@@ -324,8 +360,10 @@
                latest arrangements can be obtained by contacting the
                IANA.)
 
-               Requests for new values should be made to IANA via
-               email (iana&iana.org).
+               Interface types must not be directly added to the
+               IANAifType-MIB MIB module.  They must instead be added
+               to the 'ifType definitions' registry at
+               https://www.iana.org/assignments/smi-numbers.
 
                The relationship between the assignment of ifType
                values and of OIDs to particular media-specific MIBs
@@ -639,7 +677,16 @@
                    docsCableNdf (287), -- Cable Narrowband Digital Forward
                    docsCableNdr (288), -- Cable Narrowband Digital Return
                    ptm (289), -- Packet Transfer Mode
-                   ghn (290) -- G.hn port
+                   ghn (290), -- G.hn port
+                   otnOtsi (291), -- Optical Tributary Signal
+                   otnOtuc (292), -- OTN OTUCn
+                   otnOduc (293), -- OTN ODUC
+                   otnOtsig (294), -- OTN OTUC Signal
+                   microwaveCarrierTermination (295), -- air interface of a single microwave carrier
+                   microwaveRadioLinkTerminal (296), -- radio link interface for one or several aggregated microwave carriers
+                   ieee8021axDrni (297), -- IEEE 802.1AX Distributed Resilient Network Interface
+                   ax25 (298), -- AX.25 network interfaces
+                   ieee19061nanocom (299) -- Nanoscale and Molecular Communication
                    }
 
 IANAtunnelType ::= TEXTUAL-CONVENTION
@@ -696,7 +743,8 @@ IANAtunnelType ::= TEXTUAL-CONVENTION
                    teredo(14),       -- Teredo encapsulation
                    ipHttps(15),      -- IPHTTPS
                    softwireMesh(16), -- softwire mesh tunnel
-                   dsLite(17)        -- DS-Lite tunnel
+                   dsLite(17),       -- DS-Lite tunnel
+                   aplusp(18)        -- A+P encapsulation
                }
 
    END

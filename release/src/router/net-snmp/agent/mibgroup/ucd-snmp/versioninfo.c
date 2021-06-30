@@ -28,7 +28,7 @@
 #include "util_funcs/restart.h"
 #include "util_funcs.h" /* clear_cache */
 
-netsnmp_feature_require(clear_cache)
+netsnmp_feature_require(clear_cache);
 
 
 void

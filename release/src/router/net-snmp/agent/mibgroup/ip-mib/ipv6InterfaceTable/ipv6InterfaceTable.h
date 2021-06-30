@@ -105,95 +105,27 @@ config_require(ip-mib/ipv6InterfaceTable/ipv6InterfaceTable_data_access)
      * function prototypes
      */
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceTable_pre_request(ipv6InterfaceTable_registration *
                                        user_context);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceTable_post_request(ipv6InterfaceTable_registration *
                                         user_context, int rc);
 
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceTable_rowreq_ctx_init(ipv6InterfaceTable_rowreq_ctx *
                                            rowreq_ctx,
                                            void *user_init_ctx);
     void
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceTable_rowreq_ctx_cleanup(ipv6InterfaceTable_rowreq_ctx
                                               * rowreq_ctx);
 
     int             ipv6InterfaceTable_commit(ipv6InterfaceTable_rowreq_ctx
                                               * rowreq_ctx);
-
-         
-         
-         
-         
-         
-         
-        ipv6InterfaceTable_rowreq_ctx
-        * ipv6InterfaceTable_row_find_by_mib_index
+    ipv6InterfaceTable_rowreq_ctx *ipv6InterfaceTable_row_find_by_mib_index
         (ipv6InterfaceTable_mib_index * mib_idx);
 
-    extern const oid      ipv6InterfaceTable_oid[];
-    extern const int      ipv6InterfaceTable_oid_size;
+    extern const oid ipv6InterfaceTable_oid[];
+    extern const int ipv6InterfaceTable_oid_size;
 
 
 #include "ipv6InterfaceTable_interface.h"
@@ -224,123 +156,32 @@ config_require(ip-mib/ipv6InterfaceTable/ipv6InterfaceTable_data_access)
      */
 
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceReasmMaxSize_get(ipv6InterfaceTable_rowreq_ctx *
                                       rowreq_ctx,
                                       u_long *
                                       ipv6InterfaceReasmMaxSize_val_ptr);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceIdentifier_get(ipv6InterfaceTable_rowreq_ctx *
                                     rowreq_ctx, char
                                     **ipv6InterfaceIdentifier_val_ptr_ptr,
-                                    size_t
-                                    *
+                                    size_t *
                                     ipv6InterfaceIdentifier_val_ptr_len_ptr);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceEnableStatus_get(ipv6InterfaceTable_rowreq_ctx *
                                       rowreq_ctx,
                                       u_long *
                                       ipv6InterfaceEnableStatus_val_ptr);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceReachableTime_get(ipv6InterfaceTable_rowreq_ctx *
                                        rowreq_ctx,
                                        u_long *
                                        ipv6InterfaceReachableTime_val_ptr);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceRetransmitTime_get(ipv6InterfaceTable_rowreq_ctx *
                                         rowreq_ctx,
                                         u_long *
                                         ipv6InterfaceRetransmitTime_val_ptr);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceForwarding_get(ipv6InterfaceTable_rowreq_ctx *
                                     rowreq_ctx,
                                     u_long *
@@ -348,40 +189,10 @@ config_require(ip-mib/ipv6InterfaceTable/ipv6InterfaceTable_data_access)
 
 
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceTable_indexes_set_tbl_idx(ipv6InterfaceTable_mib_index
                                                * tbl_idx, long
                                                ipv6InterfaceIfIndex_val);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceTable_indexes_set(ipv6InterfaceTable_rowreq_ctx *
                                        rowreq_ctx,
                                        long ipv6InterfaceIfIndex_val);
@@ -412,39 +223,9 @@ config_require(ip-mib/ipv6InterfaceTable/ipv6InterfaceTable_data_access)
 
 
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceTable_undo_setup(ipv6InterfaceTable_rowreq_ctx *
                                       rowreq_ctx);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceTable_undo_cleanup(ipv6InterfaceTable_rowreq_ctx *
                                         rowreq_ctx);
     int             ipv6InterfaceTable_undo(ipv6InterfaceTable_rowreq_ctx *
@@ -452,503 +233,106 @@ config_require(ip-mib/ipv6InterfaceTable/ipv6InterfaceTable_data_access)
     int             ipv6InterfaceTable_commit(ipv6InterfaceTable_rowreq_ctx
                                               * rowreq_ctx);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceTable_undo_commit(ipv6InterfaceTable_rowreq_ctx *
                                        rowreq_ctx);
-
-
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceReasmMaxSize_check_value(ipv6InterfaceTable_rowreq_ctx
                                               * rowreq_ctx,
                                               u_long
                                               ipv6InterfaceReasmMaxSize_val);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceReasmMaxSize_undo_setup(ipv6InterfaceTable_rowreq_ctx
                                              * rowreq_ctx);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceReasmMaxSize_set(ipv6InterfaceTable_rowreq_ctx *
                                       rowreq_ctx,
                                       u_long
                                       ipv6InterfaceReasmMaxSize_val);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceReasmMaxSize_undo(ipv6InterfaceTable_rowreq_ctx *
                                        rowreq_ctx);
 
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceIdentifier_check_value(ipv6InterfaceTable_rowreq_ctx *
                                             rowreq_ctx, char
                                             *ipv6InterfaceIdentifier_val_ptr,
                                             size_t
                                             ipv6InterfaceIdentifier_val_ptr_len);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceIdentifier_undo_setup(ipv6InterfaceTable_rowreq_ctx *
                                            rowreq_ctx);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceIdentifier_set(ipv6InterfaceTable_rowreq_ctx *
                                     rowreq_ctx,
                                     char *ipv6InterfaceIdentifier_val_ptr,
                                     size_t
                                     ipv6InterfaceIdentifier_val_ptr_len);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceIdentifier_undo(ipv6InterfaceTable_rowreq_ctx *
                                      rowreq_ctx);
 
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceEnableStatus_check_value(ipv6InterfaceTable_rowreq_ctx
                                               * rowreq_ctx,
                                               u_long
                                               ipv6InterfaceEnableStatus_val);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceEnableStatus_undo_setup(ipv6InterfaceTable_rowreq_ctx
                                              * rowreq_ctx);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceEnableStatus_set(ipv6InterfaceTable_rowreq_ctx *
                                       rowreq_ctx,
                                       u_long
                                       ipv6InterfaceEnableStatus_val);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceEnableStatus_undo(ipv6InterfaceTable_rowreq_ctx *
                                        rowreq_ctx);
-
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceReachableTime_check_value
         (ipv6InterfaceTable_rowreq_ctx * rowreq_ctx,
          u_long ipv6InterfaceReachableTime_val);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceReachableTime_undo_setup(ipv6InterfaceTable_rowreq_ctx
                                               * rowreq_ctx);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceReachableTime_set(ipv6InterfaceTable_rowreq_ctx *
                                        rowreq_ctx,
                                        u_long
                                        ipv6InterfaceReachableTime_val);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceReachableTime_undo(ipv6InterfaceTable_rowreq_ctx *
                                         rowreq_ctx);
-
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceRetransmitTime_check_value
         (ipv6InterfaceTable_rowreq_ctx * rowreq_ctx,
          u_long ipv6InterfaceRetransmitTime_val);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceRetransmitTime_undo_setup
         (ipv6InterfaceTable_rowreq_ctx * rowreq_ctx);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceRetransmitTime_set(ipv6InterfaceTable_rowreq_ctx *
                                         rowreq_ctx,
                                         u_long
                                         ipv6InterfaceRetransmitTime_val);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceRetransmitTime_undo(ipv6InterfaceTable_rowreq_ctx *
                                          rowreq_ctx);
-
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceForwarding_check_value(ipv6InterfaceTable_rowreq_ctx *
                                             rowreq_ctx,
                                             u_long
                                             ipv6InterfaceForwarding_val);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceForwarding_undo_setup(ipv6InterfaceTable_rowreq_ctx *
                                            rowreq_ctx);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceForwarding_set(ipv6InterfaceTable_rowreq_ctx *
                                     rowreq_ctx,
                                     u_long ipv6InterfaceForwarding_val);
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceForwarding_undo(ipv6InterfaceTable_rowreq_ctx *
                                      rowreq_ctx);
-
-
     int
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         ipv6InterfaceTable_check_dependencies(ipv6InterfaceTable_rowreq_ctx
                                               * ctx);
 
@@ -968,4 +352,3 @@ config_require(ip-mib/ipv6InterfaceTable/ipv6InterfaceTable_data_access)
 #endif
 #endif                          /* IPV6INTERFACETABLE_H */
 /** @} */
-

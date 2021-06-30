@@ -1,54 +1,35 @@
 #!./perl
 
+use strict;
+use warnings;
+
 BEGIN {
-    unless(grep /blib/, @INC) {
-        chdir 't' if -d 't';
-        @INC = '../lib' if -d '../lib';
-    }
     eval "use Cwd qw(abs_path)";
-    $ENV{'SNMPCONFPATH'} = 'nopath';
-    $ENV{'MIBDIRS'} = '+' . abs_path("../../mibs");
 }
 
+use File::Spec;
 use Test;
 BEGIN {plan tests => 7}
 use SNMP;
 
 require "t/startagent.pl";
-
 use vars qw($mibdir);
 
 $SNMP::verbose = 0;
 
-my $mib_file = 't/mib.txt';
+my $mib_file = File::Spec->catfile('t', 'mib.txt');
 my $junk_mib_file = 'mib.txt';
 
-my $mibfile1;
-my @mibdir;
-my $mibfile2;
-
-if ($^O =~ /win32/i) {
-  $mibdir =~ s"/"\\"g;
-  $mibfile1 = "$mibdir\\TCP-MIB.txt";
-  @mibdir = ("$mibdir");
-  $mibfile2 = "$mibdir\\IPV6-TCP-MIB.txt";
-}
-else {
-  $mibfile1 = "$mibdir/TCP-MIB.txt";
-  @mibdir = ("$mibdir");
-  $mibfile2 = "$mibdir/IPV6-TCP-MIB.txt";
-}
-
-if ($^O =~ /win32/i) {
-  $mibdir =~ s"/"\\"g;
-}
+my $mibfile1 = File::Spec->catfile($mibdir, "TCP-MIB.txt");
+my @mibdir = ("$mibdir");
+my $mibfile2 = File::Spec->catfile($mibdir, "IPV6-TCP-MIB.txt");
 
 
 ######################################################################
 # See if we can find a mib to use, return of 0 means the file wasn't
 # found or isn't readable.
 
-$res = SNMP::setMib($junk_mib_file,1);
+my $res = SNMP::setMib($junk_mib_file,1);
 ok(defined(!$res));
 ######################################################################
 # Now we give the right name
@@ -81,9 +62,9 @@ ok(!defined($res));
 ########################  5  ############################
 # add mib file
 
-$res1 = SNMP::addMibFiles($mibfile1);
+my $res1 = SNMP::addMibFiles($mibfile1);
 ok(defined($res1));
-$res2 = SNMP::addMibFiles($mibfile2);
+my $res2 = SNMP::addMibFiles($mibfile2);
 ok(defined($res2));
 
 $res = $SNMP::MIB{ipv6TcpConnState}{moduleID};

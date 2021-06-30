@@ -191,19 +191,17 @@ set_if_info(mib2_ifEntry_t *ifp, unsigned index, char *name, uint64_t flags,
             int mtu);
 static int get_if_stats(mib2_ifEntry_t *ifp);
 
-#if defined(HAVE_IF_NAMEINDEX) && defined(NETSNMP_INCLUDE_IFTABLE_REWRITES)
+#if defined(HAVE_IF_NAMEINDEX)
 static int _dlpi_open(const char *devname);
 static int _dlpi_get_phys_address(int fd, char *paddr, int maxlen,
                                   int *paddrlen);
 static int _dlpi_get_iftype(int fd, unsigned int *iftype);
 static int _dlpi_attach(int fd, int ppa);
 static int _dlpi_parse_devname(char *devname, int *ppap);
-#endif
-
-
-
+#else
 static int
 Name_cmp(void *, void *);
+#endif
 
 static void
 init_mibcache_element(mibcache * cp);
@@ -305,7 +303,8 @@ getKstatInt(const char *classname, const char *statname,
     if ((ksc = kstat_fd) == NULL) {
 	goto Return;
     }
-    ks = kstat_lookup(ksc, classname, -1, statname);
+    ks = kstat_lookup(ksc, NETSNMP_REMOVE_CONST(char *, classname),
+                      -1, NETSNMP_REMOVE_CONST(char *, statname));
     if (ks == NULL) {
 	DEBUGMSGTL(("kernel_sunos5", "class %s, stat %s not found\n",
 		classname ? classname : "NULL",
@@ -318,7 +317,7 @@ getKstatInt(const char *classname, const char *statname,
 		classname ? classname : "NULL", statname ? statname : "NULL"));
 	goto Return;
     }
-    named = kstat_data_lookup(ks, varname);
+    named = kstat_data_lookup(ks, NETSNMP_REMOVE_CONST(char *, varname));
     if (named == NULL) {
 	DEBUGMSGTL(("kernel_sunos5", "no var %s for class %s stat %s\n",
 		varname, classname ? classname : "NULL",
@@ -408,7 +407,8 @@ getKstat(const char *statname, const char *varname, void *value)
      * contain all available modules. 
      */
 
-    if ((ks = kstat_lookup(ksc, "unix", 0, "kstat_headers")) == NULL) {
+    if ((ks = kstat_lookup(ksc, NETSNMP_REMOVE_CONST(char *, "unix"),
+                           0, NETSNMP_REMOVE_CONST(char *, "kstat_headers"))) == NULL) {
 	ret = -10;
 	goto Return;        /* kstat errors */
     }
@@ -442,7 +442,8 @@ getKstat(const char *statname, const char *varname, void *value)
     /*
      * Get the named statistics 
      */
-    if ((ks = kstat_lookup(ksc, module_name, instance, statname)) == NULL) {
+    if ((ks = kstat_lookup(ksc, module_name, instance,
+                           NETSNMP_REMOVE_CONST(char *, statname))) == NULL) {
 	ret = -10;
 	goto Return;        /* kstat errors */
     }
@@ -563,7 +564,8 @@ getKstatString(const char *statname, const char *varname,
      * contain all available modules.
      */
 
-    if ((ks = kstat_lookup(ksc, "unix", 0, "kstat_headers")) == NULL) {
+    if ((ks = kstat_lookup(ksc, NETSNMP_REMOVE_CONST(char *, "unix"),
+                           0, NETSNMP_REMOVE_CONST(char *, "kstat_headers"))) == NULL) {
         ret = -10;
         goto Return;        /* kstat errors */
     }
@@ -597,7 +599,8 @@ getKstatString(const char *statname, const char *varname,
     /*
      * Get the named statistics
      */
-    if ((ks = kstat_lookup(ksc, module_name, instance, statname)) == NULL) {
+    if ((ks = kstat_lookup(ksc, module_name, instance,
+                           NETSNMP_REMOVE_CONST(char *, statname))) == NULL) {
         ret = -10;
         goto Return;        /* kstat errors */
     }
@@ -1024,6 +1027,7 @@ getmib(int groupname, int subgroupname, void **statbuf, size_t *size,
 		    break;
 		}
 		strbuf.buf = (char *)*statbuf + (oldsize - strbuf.len);
+		/* fallthrough */
 	    case 0:
 		/* fix buffer to real size & position */
 		strbuf.len += strbuf.buf - (char*)*statbuf;
@@ -1068,11 +1072,10 @@ getmib(int groupname, int subgroupname, void **statbuf, size_t *size,
  * to be substituted later if SunSoft decides to extend its mib2 interface.
  */
 
-#if defined(HAVE_IF_NAMEINDEX) && defined(NETSNMP_INCLUDE_IFTABLE_REWRITES)
+#if defined(HAVE_IF_NAMEINDEX)
 
 /*
- * If IFTABLE_REWRITES is enabled, then we will also rely on DLPI to obtain
- * information from the NIC.
+ * Use DLPI to obtain information from the NIC.
  */
 
 /*
@@ -1616,7 +1619,7 @@ getif(mib2_ifEntry_t *ifbuf, size_t size, req_e req_type,
     close(ifsd);
     return ret;
 }
-#endif /*defined(HAVE_IF_NAMEINDEX)&&defined(NETSNMP_INCLUDE_IFTABLE_REWRITES)*/
+#endif /*defined(HAVE_IF_NAMEINDEX)*/
 
 static void
 set_if_info(mib2_ifEntry_t *ifp, unsigned index, char *name, uint64_t flags,
@@ -1759,7 +1762,7 @@ set_if_info(mib2_ifEntry_t *ifp, unsigned index, char *name, uint64_t flags,
 static int 
 get_if_stats(mib2_ifEntry_t *ifp)
 {
-    Counter l_tmp;
+    int l_tmp;
     char *name = ifp->ifDescr.o_bytes;
 
     if (strchr(name, ':'))
@@ -1846,6 +1849,7 @@ Get_everything(void *x, void *y)
     return 0;             /* Always TRUE */
 }
 
+#if !defined(HAVE_IF_NAMEINDEX)
 /*
  * Compare name and IP address of the interface to ARP table entry.
  * Needed to obtain the physical address of the interface in getif.
@@ -1866,6 +1870,7 @@ Name_cmp(void *ifrp, void *ep)
 	return 1;
     }
 }
+#endif
 
 /*
  * Try to determine the index of a particular interface. If mfd-rewrites is

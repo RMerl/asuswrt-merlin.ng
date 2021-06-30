@@ -19,3 +19,15 @@
 
 /* the legacy symbol NOACCESS clashes with the system headers. Remove it. */
 #define NETSNMP_NO_LEGACY_DEFINITIONS
+
+#ifdef _AIX43
+#define aix4
+#endif
+
+#ifdef _AIX51
+#define aix5
+#endif
+
+#ifdef _AIX61
+#define aix6
+#endif

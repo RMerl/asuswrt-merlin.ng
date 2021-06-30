@@ -24,7 +24,7 @@
 
 #include "snmpNotifyFilterTable_data_access.h"
 
-netsnmp_feature_require(snmpNotifyFilterTable_container_get)
+netsnmp_feature_require(snmpNotifyFilterTable_container_get);
 
 /** @ingroup interface 
  * @addtogroup data_access data_access: Routines to access data

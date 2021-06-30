@@ -68,12 +68,12 @@
 #include <net-snmp/net-snmp-features.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 
-netsnmp_feature_require(table_set_multi_add_default_row)
-netsnmp_feature_require(unregister_auto_data_table)
-netsnmp_feature_require(delete_table_data_set)
-netsnmp_feature_require(table_dataset)
-netsnmp_feature_require(table_set_multi_add_default_row)
-netsnmp_feature_require(table_dataset_unregister_auto_data_table)
+netsnmp_feature_require(table_set_multi_add_default_row);
+netsnmp_feature_require(unregister_auto_data_table);
+netsnmp_feature_require(delete_table_data_set);
+netsnmp_feature_require(table_dataset);
+netsnmp_feature_require(table_set_multi_add_default_row);
+netsnmp_feature_require(table_dataset_unregister_auto_data_table);
 
 static netsnmp_table_data_set *table_set;
 

@@ -25,10 +25,6 @@
 #include <netinet/in.h>
 #endif
 
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
-
 #include <net-snmp/types.h>
 #include <net-snmp/output_api.h>
 #include <net-snmp/config_api.h>
@@ -483,7 +479,6 @@ netsnmp_ipx_ctor(void)
     ipxDomain.prefix = (const char**)calloc(2, sizeof(char *));
     ipxDomain.prefix[0] = "ipx";
 
-    ipxDomain.f_create_from_tstring     = NULL;
     ipxDomain.f_create_from_tstring_new = netsnmp_ipx_create_tstring;
     ipxDomain.f_create_from_ostring     = netsnmp_ipx_create_ostring;
 

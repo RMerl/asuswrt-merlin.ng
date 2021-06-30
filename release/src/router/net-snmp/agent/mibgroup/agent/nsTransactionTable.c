@@ -12,7 +12,7 @@
 #include <net-snmp/agent/table_iterator.h>
 #include "nsTransactionTable.h"
 
-netsnmp_feature_require(table_dataset)
+netsnmp_feature_require(table_dataset);
 
 /** Initialize the nsTransactionTable table by defining it's contents
    and how it's structured */

@@ -40,17 +40,27 @@
 #include "execute.h"
 #include "struct.h"
 
-#define setPerrorstatus(x) snmp_log_perror(x)
-
 #ifdef _MSC_VER
 #define popen  _popen
 #define pclose _pclose
 #endif
 
 
+/**
+ * Run a shell command by calling system() or popen().
+ *
+ * @command: Shell command to run.
+ * @input:   Data to send to stdin. May be NULL.
+ * @output:  Buffer in which to store the output written to stdout. May be NULL.
+ * @out_len: Size of the output buffer. The actual number of bytes written is
+ *           stored in *@out_len.
+ *
+ * @return >= 0 if the command has been executed; -1 if the command could not
+ *           be executed.
+ */
 int
-run_shell_command( char *command, char *input,
-                   char *output,  int *out_len)	/* Or realloc style ? */
+run_shell_command(const char *command, const char *input,
+                  char *output, int *out_len)
 {
 #if HAVE_SYSTEM
     int         result;    /* and the return value of the command */
@@ -67,12 +77,11 @@ run_shell_command( char *command, char *input,
      * Set up the command and run it.
      */
     if (input) {
-        FILE       *file;
-
         if (output) {
             const char *ifname;
             const char *ofname;    /* Filename for output redirection */
             char        shellline[STRMAX];   /* The full command to run */
+            FILE       *file;
 
             ifname = netsnmp_mktemp();
             if(NULL == ifname)
@@ -102,17 +111,23 @@ run_shell_command( char *command, char *input,
             if (out_len && *out_len != 0) {
                 int         fd;        /* For processing any output */
                 int         len = 0;
+
                 fd = open(ofname, O_RDONLY);
                 if(fd >= 0)
-                    len  = read( fd, output, *out_len-1 );
+                    len = read(fd, output, *out_len - 1);
                 *out_len = len;
-                if (len >= 0) output[len] = 0;
-                else output[0] = 0;
-                if (fd >= 0) close(fd);
+                if (len >= 0)
+                    output[len] = 0;
+                else
+                    output[0] = 0;
+                if (fd >= 0)
+                    close(fd);
             }
             unlink(ofname);
             unlink(ifname);
         } else {
+            FILE       *file;
+
             file = popen(command, "w");
             if (file) {
                 fwrite(input, 1, strlen(input), file);
@@ -132,8 +147,9 @@ run_shell_command( char *command, char *input,
                     output[0] = 0;
                 result = pclose(file);
             }
-        } else
+        } else {
             result = system(command);
+        }
     }
 
     return result;
@@ -142,42 +158,51 @@ run_shell_command( char *command, char *input,
 #endif
 }
 
-
+#if HAVE_EXECV
 /*
  * Split the given command up into separate tokens,
  * ready to be passed to 'execv'
  */
-char **
-tokenize_exec_command( char *command, int *argc )
+static char **
+tokenize_exec_command(const char *command, int *argc)
 {
     char ctmp[STRMAX];
-    char *cp;
+    const char *cp = command;
     char **argv;
     int  i;
 
-    argv = (char **) calloc(100, sizeof(char *));
-    cp = command;
+    argv = calloc(100, sizeof(char *));
+    if (!argv)
+        return argv;
 
-    for ( i=0; cp; i++ ) {
-        memset( ctmp, 0, STRMAX );
-        cp = copy_nword( cp, ctmp, STRMAX );
-        argv[i] = strdup( ctmp );
-        if (i == 99)
-            break;
+    for (i = 0; cp && i + 2 < 100; i++) {
+        cp = copy_nword_const(cp, ctmp, sizeof(ctmp));
+        argv[i] = strdup(ctmp);
     }
-    if (cp) {
-        argv[i++] = strdup( cp );
-    }
+    if (cp)
+        argv[i++] = strdup(cp);
     argv[i] = NULL;
     *argc = i;
 
     return argv;
 }
+#endif
 
-
+/**
+ * Run a command by calling execv().
+ *
+ * @command: Shell command to run.
+ * @input:   Data to send to stdin. May be NULL.
+ * @output:  Buffer in which to store the output written to stdout. May be NULL.
+ * @out_len: Size of the output buffer. The actual number of bytes written is
+ *           stored in *@out_len.
+ *
+ * @return >= 0 if the command has been executed; -1 if the command could not
+ *           be executed.
+ */
 int
-run_exec_command( char *command, char *input,
-                  char *output,  int  *out_len)	/* Or realloc style ? */
+run_exec_command(const char *command, const char *input,
+                 char *output, int *out_len)
 {
 #if HAVE_EXECV
     int ipipe[2];
@@ -189,8 +214,16 @@ run_exec_command( char *command, char *input,
     int argc;
 
     DEBUGMSGTL(("run:exec", "running '%s'\n", command));
-    pipe(ipipe);
-    pipe(opipe);
+    if (pipe(ipipe) < 0) {
+        snmp_log_perror("pipe");
+        return -1;
+    }
+    if (pipe(opipe) < 0) {
+        snmp_log_perror("pipe");
+        close(ipipe[0]);
+        close(ipipe[1]);
+        return -1;
+    }
     if ((pid = fork()) == 0) {
         /*
          * Child process
@@ -200,18 +233,24 @@ run_exec_command( char *command, char *input,
          * Set stdin/out/err to use the pipe
          *   and close everything else
          */
-        close(0);
-        dup(  ipipe[0]);
+        if (dup2(ipipe[0], STDIN_FILENO) < 0) {
+            snmp_log_perror("dup2(STDIN_FILENO)");
+            exit(1);
+        }
         close(ipipe[0]);
-	close(ipipe[1]);
+        close(ipipe[1]);
 
-        close(1);
-        dup(  opipe[1]);
+        if (dup2(opipe[1], STDOUT_FILENO) < 0) {
+            snmp_log_perror("dup2(STDOUT_FILENO)");
+            exit(1);
+        }
         close(opipe[0]);
         close(opipe[1]);
 
-        close(2);
-        dup(1);
+        if (dup2(STDOUT_FILENO, STDERR_FILENO) < 0) {
+            snmp_log_perror("dup2(STDERR_FILENO)");
+            exit(1);
+        }
 
         netsnmp_close_fds(2);
 
@@ -220,10 +259,15 @@ run_exec_command( char *command, char *input,
          * This is being run in the child process,
          *   so will release resources when it terminates.
          */
-        argv = tokenize_exec_command( command, &argc );
-        execv( argv[0], argv );
-        perror( argv[0] );
-        exit(1);	/* End of child */
+        argv = tokenize_exec_command(command, &argc);
+        if (!argv)
+            exit(1);
+        execv(argv[0], argv);
+        snmp_log_perror(argv[0]);
+        for (i = 0; i < argc; i++)
+            free(argv[i]);
+        free(argv);
+        exit(1);        /* End of child */
 
     } else if (pid > 0) {
         char            cache[NETSNMP_MAXCACHESIZE];
@@ -238,17 +282,15 @@ run_exec_command( char *command, char *input,
          */
 
         /*
-	 * Pass the input message (if any) to the child,
+         * Pass the input message (if any) to the child,
          * wait for the child to finish executing, and read
          *    any output into the output buffer (if provided)
          */
-	close(ipipe[0]);
-	close(opipe[1]);
-	if (input) {
-	   write(ipipe[1], input, strlen(input));
-	   close(ipipe[1]);	/* or flush? */
-        }
-	else close(ipipe[1]);
+        close(ipipe[0]);
+        close(opipe[1]);
+        if (input && write(ipipe[1], input, strlen(input)) < 0)
+            snmp_log_perror("write() to input pipe");
+        close(ipipe[1]);
 
         /*
          * child will block if it writes a lot of data and
@@ -281,19 +323,19 @@ run_exec_command( char *command, char *input,
              * set up data for select
              */
             FD_ZERO(&readfds);
-            FD_SET(opipe[0],&readfds);
+            FD_SET(opipe[0], &readfds);
             timeout.tv_sec = 1;
             timeout.tv_usec = 0;
 
             DEBUGMSGTL(("verbose:run:exec", "    calling select\n"));
             count = select(numfds, &readfds, NULL, NULL, &timeout);
             if (count == -1) {
-                if (EAGAIN == errno)
+                if (EAGAIN == errno) {
                     continue;
-                else {
+                } else {
                     DEBUGMSGTL(("verbose:run:exec", "      errno %d\n",
                                 errno));
-                    setPerrorstatus("read");
+                    snmp_log_perror("read");
                     break;
                 }
             } else if (0 == count) {
@@ -301,7 +343,7 @@ run_exec_command( char *command, char *input,
                 continue;
             }
 
-            if (! FD_ISSET(opipe[0], &readfds)) {
+            if (!FD_ISSET(opipe[0], &readfds)) {
                 DEBUGMSGTL(("verbose:run:exec", "    fd not ready!\n"));
                 continue;
             }
@@ -332,8 +374,7 @@ run_exec_command( char *command, char *input,
                     waited = 1; /* don't wait again */
                     break;
                 }
-            }
-            else if (count > 0) {
+            } else if (count > 0) {
                 /*
                  * got some data. fix up offset, if needed.
                  */
@@ -348,14 +389,13 @@ run_exec_command( char *command, char *input,
                     DEBUGMSGTL(("verbose:run:exec",
                                 "    %d left in buffer\n", (int)cache_size));
                 }
-            }
-            else if ((count == -1) && (EAGAIN != errno)) {
+            } else if (count == -1 && EAGAIN != errno) {
                 /*
                  * if error, break
                  */
                 DEBUGMSGTL(("verbose:run:exec", "      errno %d\n",
                             errno));
-                setPerrorstatus("read");
+                snmp_log_perror("read");
                 break;
             }
         }
@@ -374,7 +414,7 @@ run_exec_command( char *command, char *input,
          * time. maybe start a time to wait(WNOHANG) once a second,
          * and late the agent continue?
          */
-        if ((!waited) && (waitpid(pid, &result, 0) < 0 )) {
+        if (!waited && waitpid(pid, &result, 0) < 0) {
             snmp_log_perror("waitpid");
             return -1;
         }
@@ -383,24 +423,24 @@ run_exec_command( char *command, char *input,
          * null terminate any output
          */
         if (output) {
-	    output[offset] = 0;
-	    *out_len = offset;
+            output[offset] = 0;
+            *out_len = offset;
         }
         DEBUGMSGTL(("run:exec","  child %d finished. result=%d\n",
                     pid,result));
 
-	return WEXITSTATUS(result);
+        return WEXITSTATUS(result);
 
     } else {
         /*
          * Parent process - fork failed
          */
         snmp_log_perror("fork");
-	close(ipipe[0]);
-	close(ipipe[1]);
-	close(opipe[0]);
-	close(opipe[1]);
-	return -1;
+        close(ipipe[0]);
+        close(ipipe[1]);
+        close(opipe[0]);
+        close(opipe[1]);
+        return -1;
     }
     
 #else

@@ -27,7 +27,7 @@
 #define snmpMPDMIBObjects snmpMPDMIB, 2
 #define snmpMPDMIBCompliances snmpMPDMIB, 3, 1
 
-netsnmp_feature_require(helper_statistics)
+netsnmp_feature_require(helper_statistics);
 
 static oid snmpMPDStats[] = { snmpMPDMIBObjects, 1 };
 

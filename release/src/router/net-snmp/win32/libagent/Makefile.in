@@ -29,6 +29,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\cache_handler.obj" \
 	"$(INTDIR)\debug_handler.obj" \
 	"$(INTDIR)\instance.obj" \
+	"$(INTDIR)\kernel.obj" \
 	"$(INTDIR)\mode_end_call.obj" \
 	"$(INTDIR)\multiplexer.obj" \
 	"$(INTDIR)\null.obj" \

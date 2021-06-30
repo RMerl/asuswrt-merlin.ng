@@ -119,11 +119,11 @@ netsnmp_fsys_arch_load( void )
     /*
      * Retrieve information about the currently mounted filesystems...
      */
-    n = NSFS_GETFSSTAT( NULL, 0, MNT_NOWAIT );
+    n = NSFS_GETFSSTAT( NULL, 0, MNT_WAIT );
     if ( n==0 )
         return;
     stats = (struct NSFS_STATFS *)malloc( n * sizeof( struct NSFS_STATFS ));
-    n = NSFS_GETFSSTAT( stats, n * sizeof( struct NSFS_STATFS ), MNT_NOWAIT );
+    n = NSFS_GETFSSTAT( stats, n * sizeof( struct NSFS_STATFS ), MNT_WAIT );
 
     /*
      * ... and insert this into the filesystem container.

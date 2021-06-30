@@ -14,6 +14,7 @@
 #include "systemstats.h"
 #include "systemstats_private.h"
 
+#include <stdint.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <ctype.h>
@@ -123,7 +124,7 @@ _systemstats_v4(netsnmp_container* container, u_int load_flags)
     /*
      * skip header, but make sure it's the length we expect...
      */
-    fgets(line, sizeof(line), devin);
+    NETSNMP_IGNORE_RESULT(fgets(line, sizeof(line), devin));
     len = strlen(line);
     if (224 != len) {
         fclose(devin);
@@ -560,10 +561,12 @@ _systemstats_v6_load_systemstats(netsnmp_container* container, u_int load_flags)
      * try to open file. If we can't, that's ok - maybe the module hasn't
      * been loaded yet.
      */
-    if (!(devin = fopen(filename, "r"))) {
+    devin = fopen(filename, "r");
+    if (!devin) {
         DEBUGMSGTL(("access:systemstats",
                 "Failed to load Systemstats Table (linux1), cannot open %s\n",
                 filename));
+        netsnmp_access_systemstats_entry_free(entry);
         return 0;
     }
     

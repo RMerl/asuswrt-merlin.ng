@@ -49,23 +49,6 @@ AC_CACHE_CHECK([for location of system kernel],
 AC_DEFINE_UNQUOTED(KERNEL_LOC,"$ac_cv_KERNEL_LOC", [location of UNIX kernel])
 
 
-#       /dev/kmem existence
-#	    used in agent only
-#
-AC_CACHE_CHECK([for /dev/kmem],
-    ac_cv_HAVE_KMEM,
-   [if test $CDEV_TEST_FLAG /dev/kmem; then
-        ac_cv_HAVE_KMEM="/dev/kmem"
-    fi
-])
-#
-#  Note that it's OK if this device is not found
-#
-if test "x$ac_cv_HAVE_KMEM" = "x/dev/kmem"; then
-    AC_DEFINE_UNQUOTED(HAVE_KMEM,"$ac_cv_HAVE_KMEM", [Define if you have /dev/kmem])
-fi
-
-
 #       Swap device Location
 #           (/dev/dmem or /dev/drum)
 #	    used in agent only
@@ -203,7 +186,8 @@ else
 # include <sys/sysctl.h>
 #endif
 
-main() {
+int main(int argc, char **argv)
+{
   int                 mib[2];
   size_t              len;
   struct timeval boottime;
@@ -212,11 +196,7 @@ main() {
   mib[1] = KERN_BOOTTIME;
   
   len = sizeof(boottime);
-  sysctl(mib, 2, &boottime, &len, NULL, NULL);
-  if (boottime.tv_sec != 0)
-    exit(0);
-  else
-    exit(1);
+  return 1 - (sysctl(mib, 2, &boottime, &len, NULL, 0) == 0 && boottime.tv_sec);
 }
         ],
         ac_cv_NETSNMP_CAN_USE_SYSCTL=yes,
@@ -318,6 +298,30 @@ And this can be very slow.])
     ;;
 esac
 
+#   Check whether SO_BINDTODEVICE is available.
+#
+
+AC_MSG_CHECKING([for SO_BINDTODEVICE])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([
+#include <sys/types.h>
+#include <sys/socket.h>
+], [
+return SO_BINDTODEVICE
+])],
+[AC_DEFINE([HAVE_SO_BINDTODEVICE], [1],
+  [Define to 1 if SO_BINDTODEVICE is available])
+ AC_MSG_RESULT([yes])],
+[AC_MSG_RESULT([no])])
+
+#   Check whether struct in_pktinfo.ipi_spec_dst is available.
+#
+
+AC_CHECK_MEMBERS([struct in_pktinfo.ipi_spec_dst], [], [], [
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+])
+
 #   Check whether IP_PKTINFO is usable.
 #
 
@@ -330,6 +334,7 @@ AC_CACHE_CHECK([for IP_PKTINFO ],
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h> /* inet_ntoa() */
 ], [
     void *buf;
     int len;
@@ -379,6 +384,7 @@ AC_CACHE_CHECK([for IP_RECVDSTADDR ],
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h> /* inet_ntoa() */
 ], [
     void *buf;
     int len;

@@ -1,4 +1,4 @@
-	       README file for net-snmp Version: 5.8
+	       README file for net-snmp Version: 5.9.1
 
 DISCLAIMER
 
@@ -245,117 +245,8 @@ CLOSING
 
 THANKS
 
-  The following people have contributed various patches and
-  improvements.  To them we owe our deepest thanks (and you do too!):
-
-    Wes Hardaker <hardaker@users.sourceforge.net>
-    Steve Waldbusser <waldbusser@nextbeacon.com>
-    Dan A. Dickey <ddickey@transition.com>
-    Dave Shield <D.T.Shield@csc.liv.ac.uk>
-    Giovanni S. Marzot <gmarzot@nortelnetworks.com>
-    Niels Baggesen <nba@users.sourceforge.net>
-    Simon Leinen <simon@limmat.switch.ch>
-    David T. Perkins <dperkins@dsperkins.com>
-    Mike Perik <mikep@crt.com>
-    Sanjai Narain <narain@thumper.bellcore.com>
-    francus@metsny.delphi.com
-    Gary Palmer <gpalmer@freebsd.org>
-    Marc G. Fournier <scrappy@ki.net>
-    Gary A. Hayward <gah@bellcore.com>
-    Jennifer Bray <jbray@origin-at.co.uk>
-    Philip Guenther <guenther@gac.edu>
-    Elwyn B Davies <edavies@origin-at.co.uk>
-    Simon Burge <simonb@telstra.com.au>
-    David Paul Zimmerman <dpz@apple.com>
-    Alan Batie <batie@aahz.jf.intel.com>
-    Michael Douglass <mikedoug@texas.net>
-    Ted Rule <Ted_Rule@FLEXTECH.CO.UK>
-    Craig Bevins <craigb@bitcom.net.au>
-    Arther Hyun <arthur@psi.com>
-    Cristian Estan <Cristian.Estan@net.utcluj.ro>
-    Eugene Polovnikov <eugen@rd.zgik.zaporizhzhe.ua>
-    Jakob Ellerstedt <jakob@dynarc.se>
-    Michael J. Slifcak <slif@bellsouth.net>
-    Jonas Olsson <jolsson@erv.ericsson.se>
-    James H. Young <sysjhy@gsu.edu>
-    Jeff Johnson <jbj@redhat.com>
-    Markku Laukkanen <marlaukk@stybba.ntc.nokia.com>
-    Derek Simkowiak <dereks@kd-dev.com>
-    David F. Newman <dnewman@epnet.com>
-    Nick Amato <naamato@merit.edu>
-    Mike Baer <baerm@calweb.com>
-    Patrick Lawrence <pjlawrence@ucdavis.edu>
-    Russ Mundy <mundy@tislabs.com>
-    Olafur Gudmundsson <ogud@tislabs.com>
-    David Reeder <dreeder@tislabs.com>
-    Ed Lewis <lewis@tislabs.com>
-    Bill Babson <wbabson@tislabs.com>
-    Chris Smith <csmith@platform.com>
-    Mike Michaud <mikemichaud@earthlink.net>
-    Andy Hood <ahood@westpac.com.au>
-    Robert Story <rstory@freesnmp.com>
-    Bert Driehuis <driehuis@playbeing.org>
-    Juergen Schoenwaelder <schoenw@ibr.cs.tu-bs.de>
-    Frank Strauss <strauss@ibr.cs.tu-bs.de>
-    Ragnar Kjørstad <ucd@ragnark.vestdata.no>
-    Jochen Kmietsch <jochen.kmietsch@tu-clausthal.de>
-    Jun-ichiro itojun Hagino <itojun@iijlab.net>
-    John L Villalovos <john.l.villalovos@intel.com>
-    Christoph Mammitzsch <Christoph.Mammitzsch@tu-clausthal.de>
-    Arne Oesleboe <Arne.Oesleboe@item.ntnu.no>
-    Jeff Cours <jeff@ultradns.com>
-    Karl Schilke <karl_schilke@eli.net>
-    John Naylon <jbpn@cambridgebroadband.com>
-    Ken Hornstein <kenh@cmf.nrl.navy.mil>
-    Martin Oldfield <m@mail.tc>
-    Harrie Hazewinkel <harrie@users.sourceforge.net>
-    Mark Ferlatte <ferlatte@users.sourceforge.net>
-    Marus Meissner <marcusmeissner@users.sourceforge.net>
-    Stephan Wenzer <stephanwenzel@users.sourceforge.net>
-    Ron Mevissen <ron.mevissen@eed.ericsson.se>
-    T.J. Mather <tjmather@tjmather.com>
-    Craig Setera <seterajunk@charter.net>
-    Katsuhisa ABE <abekatsu@cysols.com>
-    Axel Kittenberger <Axel.Kittenberger@maxxio.com>
-    Johannes Schmidt-Fischer <jsf@InterFace-AG.com>
-    Jeffrey Watson <nostaw@users.sourceforge.net>
-    Bruce Shaw <Bruce.Shaw@gov.ab.ca>
-    Stefan Radman <sradman@users.sourceforge.net>
-    Stephen J. Friedl <sjfriedl@users.sourceforge.net>
-    Alex Burger <alex_b@users.sourceforge.net>
-    Christophe Varoqui <ext.devoteam.varoqui@sncf.fr>
-    Srikanth Pindiproli <sripindip@users.sourceforge.net>
-    Kevin Graham <kevgraham7@users.sourceforge.net>
-    Xiaofeng Ling <xfling@users.sourceforge.net>
-    Brandon Knitter <knitterb@bl...>
-    Andrew Findlay <andrew.findlay@skills-1st.co.uk>
-    Ron Tabor <rtabor@users.sourceforge.net>
-    Peter Warasin <drg-r3@users.sourceforge.net>
-    Bob Rowlands <robert.rowlands@sun.com>
-    Peter Hicks <Peter.Hicks@POGGS.CO.UK>
-    Andy Smith <wasmith32@earthlink.net>
-    Nick Barkas <nbarkas@users.sourceforge.net>
-    Noah Friedman <friedman@prep.ai.mit.edu>
-    Geert De Peuter <geert@depeuter.org>
-    Magnus Fromreide <magfr@lysator.liu.se>
-    Marcus Meissner <marcusmeissner@users.sourceforge.net>
-    Andrew Rucker Jones <arjones@users.sourceforge.net>
-    Dai.H. <dg-f@users.sourceforge.net>
-    Thomas Anders <tanders@users.sourceforge.net>
-    Vladislav Bogdanov <slava_reg@nsys.by>
-    Peter Martin <pnmartin@users.sourceforge.net>
-    Thomas Lackey <telackey@users.sourceforge.net>
-    Joe Buehler <jbuehler@spirentcom.com>
-    Anders Persson <apersson@users.sourceforge.net>
-    Rojer <rojer@users.sourceforge.net>
-    Bart Van Assche <bart.vanassche@gmail.com>
-    Pablo Carboni <pcarboni@users.sourceforge.net>
-    Bill Fenner <fenner@gmail.com>
-    Brian Sipos <bsiposrkf@users.sourceforge.net>
-    Eugene M. Kim <eugene.kim@ntti3.com>
-    Anders Wallin <wallinux@gmail.com>
-    Andrew Stormont <andy-js@users.sourceforge.net>
-    Keith Mendoza <keith@icei.org>
-
-  We've probably forgotten people on this list.  Let us know if you've
-  contributed code and we've left you out.
+  This project has been graciously supported by a long list of people
+  (too long to keep roperly up to date).  To them we owe our deepest
+  thanks (and you do too!).  Please see the git log or ChangeLog file,
+  where the core developers are careful to have (hopefully always)
+  pointed out where patches have come from.

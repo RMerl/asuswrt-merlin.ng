@@ -15,7 +15,7 @@
 #include "disman/expr/expObject.h"
 #include "disman/expr/expExpressionConf.h"
 
-netsnmp_feature_require(iquery)
+netsnmp_feature_require(iquery);
 
 /* Initializes the expExpressionConf module */
 void

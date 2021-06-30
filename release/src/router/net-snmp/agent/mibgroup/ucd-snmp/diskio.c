@@ -1364,6 +1364,7 @@ static int get_sysfs_stats(void)
 static int
 getstats(void)
 {
+    struct stat stbuf;
     FILE* parts;
     time_t now;
     
@@ -1412,6 +1413,10 @@ getstats(void)
 	        head.length++;
 	}
     }
+    else if (stat("/proc/vz", &stbuf) == 0) {
+        /* OpenVZ / Virtuozzo containers do not have /proc/diskstats */
+        goto update_cache_time;
+    }
     else {
 	/* See if a 2.4 kernel */
 	char buffer[1024];
@@ -1425,8 +1430,8 @@ getstats(void)
 	/*
 	 * first few fscanfs are garbage we don't care about. skip it.
 	 */
-	fgets(buffer, sizeof(buffer), parts);
-	fgets(buffer, sizeof(buffer), parts);
+	NETSNMP_IGNORE_RESULT(fgets(buffer, sizeof(buffer), parts));
+	NETSNMP_IGNORE_RESULT(fgets(buffer, sizeof(buffer), parts));
 
 	while (! feof(parts)) {
 	    linux_diskio* pTemp;
@@ -1453,6 +1458,8 @@ getstats(void)
     }
 
     fclose(parts);
+
+update_cache_time:
     cache_time = now;
     return 0;
 }

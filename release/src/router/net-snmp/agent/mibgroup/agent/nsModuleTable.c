@@ -9,7 +9,7 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include "nsModuleTable.h"
 
-netsnmp_feature_require(table_dataset)
+netsnmp_feature_require(table_dataset);
 
 void
 nsModuleTable_free(void *context, netsnmp_iterator_info *dont_care)

@@ -29,6 +29,7 @@
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
+#include <sys/types.h>
 
 #include <net-snmp/library/asn1.h>
 #include <net-snmp/library/snmp_api.h>
@@ -42,6 +43,9 @@
 #include <net-snmp/library/getopt.h>
 
 #include <stdlib.h>
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 
 /*
@@ -83,21 +87,18 @@ output(const char *format, ...)
     return 0;
 }
 
-#define SUCCESS(s)					\
-{							\
-    printf("# Done with %s\n", s);			\
-}
+#define TEST_SUCCEEDED(s) do { printf("# Done with %s\n", (s)); } while (0)
 
-#define FAILED(e, f)                                                    \
-{                                                                       \
-    if (e != SNMPERR_SUCCESS) {                                         \
-                printf("not ok: %d - %s\n", ++testcount, f);            \
-		failcount += 1;                                         \
-	} else {                                                        \
-                printf("ok: %d - %s\n", ++testcount, f);                \
-        }                                                               \
-    fflush(stdout); \
-}
+#define TEST_FAILED(e, f)                                               \
+do {                                                                    \
+    if ((e) != SNMPERR_SUCCESS) {                                       \
+        printf("not ok: %d - %s\n", ++testcount, (f));                  \
+        failcount += 1;                                                 \
+    } else {                                                            \
+        printf("ok: %d - %s\n", ++testcount, (f));                      \
+    }                                                                   \
+    fflush(stdout);                                                     \
+} while (0)
 
 #define BIGSTRING							\
     (const u_char *)                                                    \
@@ -200,7 +201,7 @@ main(int argc, char **argv)
      * Test stuff.
      */
     rval = sc_init();
-    FAILED(rval, "sc_init() return code");
+    TEST_FAILED(rval, "sc_init() return code");
 
 
     if (docrypt || doalltests) {
@@ -243,16 +244,16 @@ test_dorandom(void)
     output("Random test -- large request:");
 
     rval = sc_random(buf, &nbytes);
-    FAILED(rval, "sc_random() return code");
+    TEST_FAILED(rval, "sc_random() return code");
 
     if (nbytes != origrequest) {
-        FAILED(SNMPERR_GENERR,
-               "sc_random() returned different than requested.");
+        TEST_FAILED(SNMPERR_GENERR,
+                    "sc_random() returned different than requested.");
     }
 
     dump_chunk("scapitest", NULL, buf, nbytes);
 
-    SUCCESS("Random test -- large request.");
+    TEST_SUCCEEDED("Random test -- large request.");
 
 
     output("Random test -- short requests:");
@@ -261,17 +262,17 @@ test_dorandom(void)
     for (i = 0; i < shortcount; i++) {
         nbytes = origrequest_short;
         rval = sc_random(buf, &nbytes);
-        FAILED(rval, "sc_random() return code");
+        TEST_FAILED(rval, "sc_random() return code");
 
         if (nbytes != origrequest_short) {
-            FAILED(SNMPERR_GENERR,
-                   "sc_random() returned different " "than requested.");
+            TEST_FAILED(SNMPERR_GENERR,
+                        "sc_random() returned different " "than requested.");
         }
 
         dump_chunk("scapitest", NULL, buf, nbytes);
     }                           /* endfor */
 
-    SUCCESS("Random test -- short requests.");
+    TEST_SUCCEEDED("Random test -- short requests.");
 
 
     return failcount;
@@ -303,7 +304,7 @@ test_dokeyedhash(void)
         auth_idx = 0,
         mlcount = 0;        /* MAC Length count.   */
     size_t          hblen;      /* Hash Buffer length. */
-    netsnmp_auth_alg_info *ai;
+    const netsnmp_auth_alg_info *ai;
     u_int           hashbuf_len[] = {
         LOCAL_MAXBUF,
         USM_MD5_AND_SHA_AUTH_LEN,
@@ -344,14 +345,14 @@ test_dokeyedhash(void)
                                secret_len, BIGSTRING,
                                bigstring_len,
                                hashbuf, &hblen);
-    FAILED(rval, "sc_generate_keyed_hash() return code");
+    TEST_FAILED(rval, "sc_generate_keyed_hash() return code");
 
     if (hashbuf_len[mlcount] > ai->proper_length) {
         if (hblen != ai->proper_length) {
-            FAILED(SNMPERR_GENERR, "Wrong hash length returned.  (1)");
+            TEST_FAILED(SNMPERR_GENERR, "Wrong hash length returned.  (1)");
         }
     } else if (hblen != hashbuf_len[mlcount]) {
-        FAILED(SNMPERR_GENERR, "Wrong hash length returned.  (2)");
+        TEST_FAILED(SNMPERR_GENERR, "Wrong hash length returned.  (2)");
     }
     if (hblen > ai->mac_length) {
         printf("# TRUNCATING %d length hash to %s mac length %d\n", (int)hblen,
@@ -363,7 +364,7 @@ test_dokeyedhash(void)
         sc_check_keyed_hash(ai->alg_oid, ai->oid_len, BIGSECRET,
                             secret_len, BIGSTRING, bigstring_len, hashbuf,
                             hblen);
-    FAILED(rval, "sc_check_keyed_hash() return code");
+    TEST_FAILED(rval, "sc_check_keyed_hash() return code");
 
     binary_to_hex(hashbuf, hblen, &s);
     printf("# hash buffer (len=%" NETSNMP_PRIz "u, request=%d):   %s\n",
@@ -399,7 +400,7 @@ test_docrypt(void)
 {
     int             rval, index = 0, secret_len, iv_len,
         bigstring_len = strlen((const char *) BIGSTRING);
-    netsnmp_priv_alg_info *pi;
+    const netsnmp_priv_alg_info *pi;
     size_t          buf_len, cryptbuf_len;
 
     u_char            buf[LOCAL_MAXBUF],
@@ -427,25 +428,25 @@ test_docrypt(void)
                           secret, secret_len,
                           iv, iv_len,
                           BIGSTRING, bigstring_len, cryptbuf, &cryptbuf_len);
-        FAILED(rval, "sc_encrypt() return code.");
+        TEST_FAILED(rval, "sc_encrypt() return code.");
 
         rval = sc_decrypt(pi->alg_oid, pi->oid_len,
                           secret, secret_len,
                           iv, iv_len, cryptbuf, cryptbuf_len, buf, &buf_len);
-        FAILED(rval, "sc_decrypt() return code.");
+        TEST_FAILED(rval, "sc_decrypt() return code.");
 
         if (pi->pad_size > 0) {
             /* ignore the pad */
             buf_len -= buf[buf_len-1];
         }
 
-        FAILED((buf_len != bigstring_len),
-               "Decrypted buffer is the right length.");
+        TEST_FAILED(buf_len != bigstring_len,
+                    "Decrypted buffer is the right length.");
         printf("# original length: %d\n", bigstring_len);
         printf("# output   length: %" NETSNMP_PRIz "u\n", buf_len);
 
-        FAILED((memcmp(buf, BIGSTRING, bigstring_len) != 0),
-               "Decrypted buffer is the same as the original plaintext.");
+        TEST_FAILED((memcmp(buf, BIGSTRING, bigstring_len) != 0),
+                    "Decrypted buffer is the same as the original plaintext.");
 
     } /* while(1) */
 

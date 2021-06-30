@@ -15,7 +15,7 @@
 
 #include <net-snmp/agent/snmp_get_statistic.h>
 
-netsnmp_feature_require(helper_statistics)
+netsnmp_feature_require(helper_statistics);
 
 void
 init_target_counters(void)

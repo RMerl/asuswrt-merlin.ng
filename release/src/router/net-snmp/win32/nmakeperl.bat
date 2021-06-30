@@ -39,6 +39,7 @@ echo Remember to run this script from the base of the source directory.
 cd perl
 
 REM choose the installed location...
+set PERL5LIB=$(MAKEDIR)\..\perl
 perl Makefile.PL CAPI=TRUE -NET-SNMP-PATH=%INSTALL_BASE%
 
 REM Or, if the libraries have been built, look back in the build directory.

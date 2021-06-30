@@ -50,7 +50,7 @@
 #include "agutil_api.h"
 #include "row_api.h"
 
-netsnmp_feature_require(snprint_objid)
+netsnmp_feature_require(snprint_objid);
 
 /*
  * File scope definitions section 
@@ -524,7 +524,7 @@ create_explanaition(CRTL_ENTRY_T * evptr, u_char is_rising,
         tmp = strchr(pch, '.');
         if (!tmp)
             break;
-        if (isdigit(tmp[1]) || '"' == tmp[1])
+        if (isdigit((unsigned char)tmp[1]) || '"' == tmp[1])
             break;
         pch = tmp + 1;
     }

@@ -91,7 +91,7 @@
     $m2c_ctx_lhs = $m2c_ctx_rhs$m2c_ctx_lm;
     memcpy( $m2c_ctx_lh, $m2c_ctx_rh, $m2c_ctx_rhs$m2c_ctx_cm );
 @else@
-@   if $node.decl =~ /U64/i@ #              ASN_COUNTER64
+@   if $node.decl =~ /struct counter64/i@  # ASN_COUNTER64
     ${m2c_ctx_lh}.high = ${m2c_ctx_rh}.high;
     ${m2c_ctx_lh}.low = ${m2c_ctx_rh}.low;
 @   else@

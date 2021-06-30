@@ -148,7 +148,7 @@ while($#ARGV >= 0) {
 	       "UNSIGNED32", "u_long",
 	       "UINTEGER", "u_long",
 	       "OBJECTID", "oid",
-	       "COUNTER64", "U64",
+	       "COUNTER64", "struct counter64",
 	       "COUNTER", "u_long",
 	       "IPADDR", "in_addr_t",
 	       "BITS", "char",

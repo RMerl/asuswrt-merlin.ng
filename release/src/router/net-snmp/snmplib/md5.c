@@ -25,22 +25,6 @@
  */
 
 /*
- * Implementation notes:
- * ** This implementation assumes that ints are 32-bit quantities.
- * ** If the machine stores the least-significant byte of an int in the
- * ** least-addressed byte (eg., VAX and 8086), then LOWBYTEFIRST should be
- * ** set to TRUE.  Otherwise (eg., SUNS), LOWBYTEFIRST should be set to
- * ** FALSE.  Note that on machines with LOWBYTEFIRST FALSE the routine
- * ** MDupdate modifies has a side-effect on its input array (the order of bytes
- * ** in each word are reversed).  If this is undesired a call to MDreverse(X) can
- * ** reverse the bytes of X back into order after each call to MDupdate.
- */
-
-/*
- * code uses WORDS_BIGENDIAN defined by configure now  -- WH 9/27/95 
- */
-
-/*
  * Compile-time includes 
  */
 
@@ -49,6 +33,9 @@
 #ifndef NETSNMP_DISABLE_MD5
 
 #include <stdio.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #include <sys/types.h>
 #if HAVE_STRING_H
 #include <string.h>
@@ -90,6 +77,22 @@
 
 
 /*
+ * Read four bytes starting from address p and interpret these four bytes
+ * as a 32-bits little endian integer.
+ */
+NETSNMP_STATIC_INLINE uint32_t le32(const uint32_t *p)
+{
+    uint32_t res = *p;
+
+    if (NETSNMP_BIGENDIAN) {
+        uint32_t t = (res << 16) | (res >> 16);
+        res = ((t & 0xFF00FF00) >> 8) | ((t & 0x00FF00FF) << 8);
+    }
+
+    return res;
+}
+
+/*
  * Compile-time macro declarations for MD5.
  * ** Note: The ``rot'' operator uses the variable ``tmp''.
  * ** It assumes tmp is declared as unsigned int, so that the >>
@@ -100,19 +103,16 @@
 #define h(X,Y,Z)             (X^Y^Z)
 #define i_(X,Y,Z)            (Y ^ ((X) | (~Z)))
 #define rot(X,S)             (tmp=X,(tmp<<S) | (tmp>>(32-S)))
-#define ff(A,B,C,D,i,s,lp)   A = rot((A + f(B,C,D) + X[i] + lp),s) + B
-#define gg(A,B,C,D,i,s,lp)   A = rot((A + g(B,C,D) + X[i] + lp),s) + B
-#define hh(A,B,C,D,i,s,lp)   A = rot((A + h(B,C,D) + X[i] + lp),s) + B
-#define ii(A,B,C,D,i,s,lp)   A = rot((A + i_(B,C,D) + X[i] + lp),s) + B
+#define ff(A,B,C,D,i,s,lp)   A = rot((A + f(B,C,D) + le32(&X[i]) + lp),s) + B
+#define gg(A,B,C,D,i,s,lp)   A = rot((A + g(B,C,D) + le32(&X[i]) + lp),s) + B
+#define hh(A,B,C,D,i,s,lp)   A = rot((A + h(B,C,D) + le32(&X[i]) + lp),s) + B
+#define ii(A,B,C,D,i,s,lp)   A = rot((A + i_(B,C,D) + le32(&X[i]) + lp),s) + B
 
 #ifdef STDC_HEADERS
 #define Uns(num) num##U
 #else
 #define Uns(num) num
 #endif                          /* STDC_HEADERS */
-
-void            MDreverse(unsigned int *);
-static void     MDblock(MDptr, const unsigned int *);
 
 #ifdef NETSNMP_ENABLE_TESTING_CODE
 /*
@@ -153,37 +153,6 @@ MDbegin(MDptr MDp)
 }
 
 /*
- * MDreverse(X)
- * ** Reverse the byte-ordering of every int in X.
- * ** Assumes X is an array of 16 ints.
- * ** The macro revx reverses the byte-ordering of the next word of X.
- */
-#define revx { t = (*X << 16) | (*X >> 16); \
-	       *X++ = ((t & 0xFF00FF00) >> 8) | ((t & 0x00FF00FF) << 8); }
-
-void
-MDreverse(unsigned int *X)
-{
-    register unsigned int t;
-    revx;
-    revx;
-    revx;
-    revx;
-    revx;
-    revx;
-    revx;
-    revx;
-    revx;
-    revx;
-    revx;
-    revx;
-    revx;
-    revx;
-    revx;
-    revx;
-}
-
-/*
  * MDblock(MDp,X)
  * ** Update message digest buffer MDp->buffer using 16-word data block X.
  * ** Assumes all 16 words of X are full of data.
@@ -194,9 +163,7 @@ static void
 MDblock(MDptr MDp, const unsigned int *X)
 {
     register unsigned int tmp, A, B, C, D;      /* hpux sysv sun */
-#ifdef WORDS_BIGENDIAN
-    MDreverse(X);
-#endif
+
     A = MDp->buffer[0];
     B = MDp->buffer[1];
     C = MDp->buffer[2];
@@ -274,9 +241,6 @@ MDblock(MDptr MDp, const unsigned int *X)
     MDp->buffer[1] += B;
     MDp->buffer[2] += C;
     MDp->buffer[3] += D;
-#ifdef WORDS_BIGENDIAN
-    MDreverse(X);
-#endif
 }
 
 /*

@@ -55,6 +55,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\snmp-tc.obj" \
 	"$(INTDIR)\snmp.obj" \
 	"$(INTDIR)\snmpCallbackDomain.obj" \
+	"$(INTDIR)\snmpIPBaseDomain.obj" \
 	"$(INTDIR)\snmpIPv4BaseDomain.obj" \
 	"$(INTDIR)\snmpSocketBaseDomain.obj" \
 	"$(INTDIR)\snmpTCPBaseDomain.obj" \
@@ -130,10 +131,6 @@ LINK32_FLAGS=advapi32.lib ws2_32.lib kernel32.lib user32.lib /nologo /subsystem:
 
 "..\bin\$(OUTDIR)\netsnmp.dll" : "..\bin\$(OUTDIR)" "..\lib\$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) $(LINK32_FLAGS) $(LINK32_OBJS)
- if exist "../bin/$(OUTDIR)/netsnmp.dll.manifest" \
-	    mt.exe -manifest "../bin/$(OUTDIR)/netsnmp.dll.manifest" -outputresource:"../bin/$(OUTDIR)/netsnmp.dll";2
-
-
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("$(PROGNAME).dep")
 !INCLUDE "$(PROGNAME).dep"

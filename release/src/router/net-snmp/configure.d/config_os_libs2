@@ -16,27 +16,6 @@
 #   Simple checks:
 ##
 
-# AC_CHECK_LIB(des, main)
-# AC_CHECK_LIB(m,   asin)
-
-#   dmalloc
-#
-if test "${with_dmalloc+set}" = set; then
-   if test "$with_dmalloc" = yes -a -d $with_dmalloc ; then
-       AC_ADD_SEARCH_PATH($with_dmalloc)
-   fi
-   AC_CHECK_HEADERS([dmalloc.h])
-   AC_SEARCH_LIBS([dmalloc_message], [dmalloc])
-fi
-
-#   EFence
-#       (This used to be on by default for developer checkout)
-#
-if test "x$use_efence" = "xyes"; then
-    AC_SEARCH_LIBS([EF_Exit], [efence])
-fi
-
-
 #   ELF libraries
 #       Typically used for 'nlist'  (needed for uptime)
 #
@@ -113,6 +92,20 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([
     ;;
   esac
 ])
+
+AC_MSG_CHECKING([for MIB_IF_TABLE2])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([
+  #define _WIN32_WINNT 0xffff
+  #include <winsock2.h>
+  #include <ws2tcpip.h>
+  #include <iphlpapi.h>
+],[
+  return sizeof(MIB_IF_TABLE2)
+])],[
+  AC_MSG_RESULT([yes])
+  AC_DEFINE([HAVE_MIB_IF_TABLE2], 1,
+    [Define if MIB_IF_TABLE2 is available])],
+  [AC_MSG_RESULT([no])])
 
 
 #   libregex                                            (MinGW)
@@ -258,7 +251,7 @@ if test "x$with_nl" != "xno"; then
         NETSNMP_SEARCH_LIBS(nl_connect, nl-3,
             [AC_CHECK_HEADERS(netlink/netlink.h)
             EXTERNAL_MIBGROUP_INCLUDES="$EXTERNAL_MIBGROUP_INCLUDES ${LIBNL3_CFLAGS}"],
-            [CPPFLAGS="$netsnmp_save_CPPFLAGS"], [], [], [LMIBLIBS])
+            [CPPFLAGS="$netsnmp_save_CPPFLAGS"], [], [LMIBLIBS])
         if test "x$ac_cv_header_netlink_netlink_h" != xyes; then
             NETSNMP_SEARCH_LIBS(nl_connect, nl, [
                 AC_CHECK_HEADERS(netlink/netlink.h)], [], [], LMIBLIBS)
@@ -347,7 +340,8 @@ if test "x$tryopenssl" != "xno" -a "x$tryopenssl" != "xinternal"; then
         netsnmp_save_LIBS="$LIBS"
         LIBS="-lssl"
         AC_CHECK_FUNCS([TLS_method TLSv1_method DTLS_method DTLSv1_method]dnl
-                       [SSL_library_init SSL_load_error_strings])
+                       [SSL_library_init SSL_load_error_strings]dnl
+		       [ERR_get_error_all])
         LIBS="$netsnmp_save_LIBS"
         if echo " $transport_result_list " | $GREP "DTLS" > /dev/null; then
 	    if test x$ac_cv_func_DTLSv1_method = xyes -o \
@@ -384,16 +378,6 @@ elif test "x$askedpkcs" = "xyes"; then
     AC_CHECK_LIB(pkcs11, C_Initialize,
         AC_DEFINE(HAVE_LIBPKCS11)
         LIBPKCS11="-lpkcs11")
-fi
-if test "x$TLSPROG" = "xyes"; then
-   AC_CHECK_DECL([EVP_sha224],
-    AC_DEFINE([HAVE_EVP_SHA224], [], [Define if you have EVP_sha224/256 in openssl]),
-    : ,
-    [[#include <openssl/evp.h>]])
-   AC_CHECK_DECL([EVP_sha384],
-    AC_DEFINE([HAVE_EVP_SHA384], [], [Define if you have EVP_sha384/512 in openssl]),
-    : ,
-    [[#include <openssl/evp.h>]])
 fi
 
 LIBS=$NONAGENTLIBS	 # restore old libraries
@@ -510,7 +494,7 @@ if test "$with_libwrap" != "no"; then
 	_wraplibs="$_wraplibs -lwrap -lnsl"],
        [AC_MSG_RESULT(no)
 	AC_MSG_ERROR(Asked to use libwrap but I couldn't find it.)])])
-  LAGENTLIBS="$_wraplibs"
+  LAGENTLIBS="$LAGENTLIBS $_wraplibs"
   CPPFLAGS=${_cppflags}
   LDFLAGS=${_ldflags}
   LIBS=${_libs}
@@ -532,7 +516,7 @@ if test "x$with_mysql" = "xyes" ; then
   CPPFLAGS="${CPPFLAGS} ${MYSQL_INCLUDES}"
   AC_CHECK_HEADER(mysql.h,,
      [AC_MSG_ERROR([Could not find mysql.h and was specifically asked to use MySQL support])])
-  AC_CHECK_HEADER([my_global.h my_sys.h])
+  AC_CHECK_HEADERS([my_global.h my_sys.h])
   AC_MSG_CHECKING([whether MY_INIT() works])
   AC_LINK_IFELSE([
     AC_LANG_PROGRAM(
@@ -563,14 +547,7 @@ if test "x$with_mysql" = "xyes" ; then
        AC_DEFINE([HAVE_MY_LOAD_DEFAULTS], 1,
                  [Define if having my_load_defaults()])],
       [AC_MSG_RESULT(no)])
-  AC_CHECK_FUNC(
-    [mysql_init],
-    AC_DEFINE([HAVE_MYSQL_INIT], 1,
-              [Define if mysql_init() is available in libmysqlclient]))
-  AC_CHECK_FUNC(
-    [load_defaults],
-    AC_DEFINE([HAVE_LOAD_DEFAULTS], 1,
-              [Define if load_defaults() is available in libmysqlclient]))
+  AC_CHECK_FUNCS([load_defaults mysql_init mysql_options])
   CPPFLAGS="${_cppflags}"
   LIBS="${_libs}"
   AC_MSG_CACHE_ADD(MYSQL Trap Logging:         enabled)
@@ -601,29 +578,15 @@ AC_SUBST(NETSNMP_BUILD_PCAP_PROG_FALSE)
 # nlist
 AC_CHECK_FUNCS(nlist nlist64 knlist)
 
-AC_CHECK_HEADERS([curses.h])
-AC_CHECK_HEADERS([ncurses/curses.h])
-NETSNMP_SEARCH_LIBS([endwin], [curses ncurses],,,,[LIBCURSES])
+NETSNMP_SEARCH_LIBS([endwin], [curses ncurses], [
+  AC_CHECK_HEADERS([curses.h])
+  AC_CHECK_HEADERS([ncurses/curses.h])
+  HAVE_LIBCURSES=TRUE],
+  [HAVE_LIBCURSES=FALSE],,
+  [LIBCURSES])
+AC_SUBST([HAVE_LIBCURSES])
 AC_SUBST([LIBCURSES])
 
 #   libm for ceil
 #
-AC_MSG_CHECKING([for ceil without -lm])
-AC_LINK_IFELSE([AC_LANG_PROGRAM([
-  #include <math.h>
-], [
-  ceil((double)2.4);
-])], [
-  AC_MSG_RESULT(yes);
-  # Keep LIBS.
-  need_ceil_lib="no"
-  true
-], [
-  AC_MSG_RESULT(no)
-  need_ceil_lib="yes"
-  # Restore LIBS.
-])
-
-if test "${need_ceil_lib}" = yes; then
-  AC_SEARCH_LIBS([ceil], [m])
-fi
+NETSNMP_SEARCH_LIBS(ceil, m,,,, LNETSNMPLIBS)

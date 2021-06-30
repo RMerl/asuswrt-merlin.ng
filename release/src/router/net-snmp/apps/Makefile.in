@@ -53,6 +53,8 @@ mysubdir=apps
 @NETSNMP_HAVE_AGENTX_LIBS_TRUE@AGENTXTRAP = agentxtrap$(EXEEXT)
 @NETSNMP_HAVE_AGENTX_LIBS_FALSE@AGENTXTRAP =
 
+INSTALLBINPROGS_LIBCURSES_TRUE = snmpps$(EXEEXT)
+
 INSTALLBINPROGS	= snmpget$(EXEEXT) 			\
 		snmpgetnext$(EXEEXT) 			\
 		$(SNMPSETINSTALLBINPROG)	        \
@@ -66,7 +68,7 @@ INSTALLBINPROGS	= snmpget$(EXEEXT) 			\
 		snmpdelta$(EXEEXT) 			\
 		snmptest$(EXEEXT)			\
 		snmpdf$(EXEEXT) 			\
-		snmpps$(EXEEXT) 			\
+		$(INSTALLBINPROGS_LIBCURSES_@HAVE_LIBCURSES@) \
 		$(SNMPPINGINSTALLBINPROG)               \
 		$(AGENTXTRAP)				\
 		$(SNMPVACMINSTALLBINPROG)	        \
@@ -149,8 +151,13 @@ FTOBJS=$(LIBTRAPD_FTS) \
 
 all: standardall
 
-OTHERINSTALL=snmpinforminstall snmptopinstall snmptrapdperlinstall
-OTHERUNINSTALL=snmpinformuninstall snmptopuninstall snmptrapdperluninstall
+OTHERINSTALL_LIBCURSES_TRUE=snmptopinstall
+OTHERUNINSTALL_LIBCURSES_TRUE=snmptopuninstall
+
+OTHERINSTALL=snmpinforminstall snmptrapdperlinstall		\
+	$(OTHERINSTALL_LIBCURSES_@HAVE_LIBCURSES@)
+OTHERUNINSTALL=snmpinformuninstall snmptrapdperluninstall	\
+	$(OTHERUNINSTALL_LIBCURSES_@HAVE_LIBCURSES@)
 
 #
 # build rules
@@ -230,7 +237,7 @@ snmppcap$(EXEEXT):    snmppcap.$(OSUFFIX) $(USELIBS)
 	$(LINK) ${CFLAGS} -o $@ snmppcap.$(OSUFFIX) ${LDFLAGS} ${LIBS} -lpcap
 
 libnetsnmptrapd.$(LIB_EXTENSION)$(LIB_VERSION): $(LLIBTRAPD_OBJS)
-	$(LIB_LD_CMD) $@ ${LLIBTRAPD_OBJS} $(MIBLIB) $(USELIBS) $(PERLLDOPTS_FOR_LIBS) $(LIB_LD_LIBS)
+	$(LIB_LD_CMD) $@ ${LLIBTRAPD_OBJS} $(MIBLIB) $(USELIBS) $(PERLLDOPTS_FOR_LIBS) $(LDFLAGS)
 	$(RANLIB) $@
 
 snmpinforminstall:

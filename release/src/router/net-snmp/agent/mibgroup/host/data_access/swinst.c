@@ -16,9 +16,9 @@
 #include "swinst.h"
 #include "swinst_private.h"
 
-netsnmp_feature_child_of(software_installed, libnetsnmpmibs)
+netsnmp_feature_child_of(software_installed, libnetsnmpmibs);
 
-netsnmp_feature_child_of(swinst_entry_remove, netsnmp_unused)
+netsnmp_feature_child_of(swinst_entry_remove, netsnmp_unused);
 
 /* ---------------------------------------------------------------------
  */

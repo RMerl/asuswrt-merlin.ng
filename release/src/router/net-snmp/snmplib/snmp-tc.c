@@ -33,12 +33,12 @@
 #include <net-snmp/library/snmp-tc.h>   /* for "internal" definitions */
 #include <net-snmp/library/snmp_api.h>
 
-netsnmp_feature_child_of(snmp_tc_all, libnetsnmp)
+netsnmp_feature_child_of(snmp_tc_all, libnetsnmp);
 
-netsnmp_feature_child_of(netsnmp_dateandtime_set_buf_from_vars, netsnmp_unused)
-netsnmp_feature_child_of(date_n_time, snmp_tc_all)
-netsnmp_feature_child_of(ctime_to_timet, snmp_tc_all)
-netsnmp_feature_child_of(check_rowstatus_with_storagetype_transition, snmp_tc_all)
+netsnmp_feature_child_of(netsnmp_dateandtime_set_buf_from_vars, netsnmp_unused);
+netsnmp_feature_child_of(date_n_time, snmp_tc_all);
+netsnmp_feature_child_of(ctime_to_timet, snmp_tc_all);
+netsnmp_feature_child_of(check_rowstatus_with_storagetype_transition, snmp_tc_all);
 
 #ifndef NETSNMP_FEATURE_REMOVE_NETSNMP_DATEANDTIME_SET_BUF_FROM_VARS
 /*
@@ -163,7 +163,7 @@ date_n_time(const time_t * when, size_t * length)
     string[7] = 0;
     *length = 8;
 
-#if defined(HAVE_STRUCT_TM_TM_GMTOFF) || defined(HAVE_TIMEZONE_VARIABLE)
+#if defined(HAVE_STRUCT_TM_TM_GMTOFF) || HAVE_DECL_TIMEZONE
     /*
      * Timezone offset
      */
@@ -254,9 +254,15 @@ ctime_to_timet(const char *str)
      *  Cope with timezone and DST
      */
 
-#ifdef HAVE_STRUCT_TIME_TM_ISDST
+#ifdef HAVE_STRUCT_TM_TM_ISDST
+#if HAVE_DECL_DAYLIGHT
     tm.tm_isdst = !!daylight;
+#else
+    tm.tm_isdst = 0;
+#endif
+#if HAVE_DECL_TIMEZONE && defined(HAVE_SCALAR_TIMEZONE)
     tm.tm_sec -= timezone;
+#endif
 #endif
 
     return (mktime(&tm));
@@ -429,7 +435,7 @@ check_rowstatus_with_storagetype_transition(int oldValue, int newValue,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_CHECK_ROWSTATUS_WITH_STORAGETYPE_TRANSITION */
 
-netsnmp_feature_child_of(check_storage_transition, snmp_tc_all)
+netsnmp_feature_child_of(check_storage_transition, snmp_tc_all);
 #ifndef NETSNMP_FEATURE_REMOVE_CHECK_STORAGE_TRANSITION
 char
 check_storage_transition(int oldValue, int newValue)

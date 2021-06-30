@@ -45,7 +45,7 @@
 #include <net-snmp/data_access/swinst.h>
 #include "swinst_private.h"
 
-netsnmp_feature_require(date_n_time)
+netsnmp_feature_require(date_n_time);
 
    /*
     * Location of RPM package directory.

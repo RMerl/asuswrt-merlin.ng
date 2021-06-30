@@ -86,13 +86,15 @@ typedef int     (Secmod2PduCallback) (netsnmp_pdu *, netsnmp_pdu *);
 typedef int     (SecmodOutMsg) (struct snmp_secmod_outgoing_params *);
 typedef int     (SecmodInMsg) (struct snmp_secmod_incoming_params *);
 typedef void    (SecmodFreeState) (void *);
-typedef void    (SecmodHandleReport) (void *sessp,
+typedef void    (SecmodHandleReport) (struct session_list *slp,
                                       netsnmp_transport *transport,
                                       netsnmp_session *,
                                       int result,
                                       netsnmp_pdu *origpdu);
-typedef int     (SecmodDiscoveryMethod) (void *slp, netsnmp_session *session);
-typedef int     (SecmodPostDiscovery) (void *slp, netsnmp_session *session);
+typedef int     (SecmodDiscoveryMethod) (struct session_list *slp,
+                                         netsnmp_session *session);
+typedef int     (SecmodPostDiscovery) (struct session_list *slp,
+                                       netsnmp_session *session);
 
 typedef int     (SecmodSessionSetup) (netsnmp_session *in_session,
                                       netsnmp_session *out_session);

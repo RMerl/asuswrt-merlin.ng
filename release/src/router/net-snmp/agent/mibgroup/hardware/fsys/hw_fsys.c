@@ -9,18 +9,49 @@
 #include <inttypes.h>
 #endif
 
-netsnmp_feature_child_of(hw_fsys_get_container, netsnmp_unused)
-
-static int  _fsys_load( void );
-static void _fsys_free( void );
+netsnmp_feature_child_of(hw_fsys_get_container, netsnmp_unused);
 
 static int _fsysAutoUpdate = 0;   /* 0 means on-demand caching */
-static void _fsys_update_stats( unsigned int, void* );
 
-netsnmp_cache     *_fsys_cache     = NULL;
-netsnmp_container *_fsys_container = NULL;
-static int         _fsys_idx       = 0;
-static netsnmp_fsys_info * _fsys_create_entry( void );
+static netsnmp_cache     *_fsys_cache;
+static netsnmp_container *_fsys_container;
+static int         _fsys_idx;
+
+
+/*
+ * Architecture-independent processing of loading filesystem statistics
+ */
+static int
+_fsys_load(void)
+{
+    netsnmp_fsys_arch_load();
+    /* XXX - update cache timestamp */
+    return 0;
+}
+
+/*
+ * Architecture-independent release of filesystem statistics
+ */
+static void
+_fsys_free(void)
+{
+    netsnmp_fsys_info *sp;
+
+    for (sp = CONTAINER_FIRST(_fsys_container); sp;
+         sp = CONTAINER_NEXT(_fsys_container, sp)) {
+         sp->flags &= ~NETSNMP_FS_FLAG_ACTIVE;
+    }
+}
+
+/*
+ * Wrapper routine for automatically updating fsys information
+ */
+void
+_fsys_update_stats(unsigned int clientreg, void *data)
+{
+    _fsys_free();
+    _fsys_load();
+}
 
 void init_hw_fsys( void ) {
 
@@ -78,16 +109,6 @@ netsnmp_cache *netsnmp_fsys_get_cache( void ) { return _fsys_cache; }
 
 
 /*
- * Wrapper routine for automatically updating fsys information
- */
-void
-_fsys_update_stats( unsigned int clientreg, void *data )
-{
-    _fsys_free();
-    _fsys_load();
-}
-
-/*
  * Wrapper routine for re-loading filesystem statistics on demand
  */
 int
@@ -107,39 +128,35 @@ netsnmp_fsys_free( netsnmp_cache *cache, void *data )
 }
 
 
-/*
- * Architecture-independent processing of loading filesystem statistics
- */
-static int
-_fsys_load( void )
-{
-    netsnmp_fsys_arch_load();
-    /* XXX - update cache timestamp */
-    return 0;
+netsnmp_fsys_info *netsnmp_fsys_get_first(void) {
+    return CONTAINER_FIRST(_fsys_container);
 }
 
-/*
- * Architecture-independent release of filesystem statistics
- */
-static void
-_fsys_free( void )
+netsnmp_fsys_info *netsnmp_fsys_get_next(netsnmp_fsys_info *this_ptr) {
+    return CONTAINER_NEXT(_fsys_container, this_ptr);
+}
+
+netsnmp_fsys_info *
+_fsys_create_entry(void)
 {
     netsnmp_fsys_info *sp;
 
-    for (sp = CONTAINER_FIRST( _fsys_container );
-         sp;
-         sp = CONTAINER_NEXT(  _fsys_container, sp )) {
-
-         sp->flags &= ~NETSNMP_FS_FLAG_ACTIVE;
+    sp = SNMP_MALLOC_TYPEDEF(netsnmp_fsys_info);
+    if (sp) {
+        /*
+         * Set up the index value.
+         *
+         * All this trouble, just for a simple integer.
+         * Surely there must be a better way?
+         */
+        sp->idx.len  = 1;
+        sp->idx.oids = SNMP_MALLOC_TYPEDEF( oid );
+        sp->idx.oids[0] = ++_fsys_idx;
     }
-}
 
-
-netsnmp_fsys_info *netsnmp_fsys_get_first( void ) {
-    return CONTAINER_FIRST( _fsys_container );
-}
-netsnmp_fsys_info *netsnmp_fsys_get_next( netsnmp_fsys_info *this_ptr ) {
-    return CONTAINER_NEXT( _fsys_container, this_ptr );
+    DEBUGMSGTL(("fsys:new", "Create filesystem entry (index = %d)\n", _fsys_idx));
+    CONTAINER_INSERT(_fsys_container, sp);
+    return sp;
 }
 
 /*
@@ -221,30 +238,6 @@ netsnmp_fsys_by_device( char *device, int create_type )
     sp = _fsys_create_entry();
     if (sp)
         strlcpy(sp->device, device, sizeof(sp->device));
-    return sp;
-}
-
-
-netsnmp_fsys_info *
-_fsys_create_entry( void )
-{
-    netsnmp_fsys_info *sp;
-
-    sp = SNMP_MALLOC_TYPEDEF( netsnmp_fsys_info );
-    if ( sp ) {
-        /*
-         * Set up the index value.
-         *  
-         * All this trouble, just for a simple integer.
-         * Surely there must be a better way?
-         */
-        sp->idx.len  = 1;
-        sp->idx.oids = SNMP_MALLOC_TYPEDEF( oid );
-        sp->idx.oids[0] = ++_fsys_idx;
-    }
-
-    DEBUGMSGTL(("fsys:new", "Create filesystem entry (index = %d)\n", _fsys_idx));
-    CONTAINER_INSERT( _fsys_container, sp );
     return sp;
 }
 

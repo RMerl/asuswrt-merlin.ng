@@ -29,9 +29,9 @@
 
 #include "ipAddressTable_interface.h"
 
-netsnmp_feature_require(check_storage_transition)
-netsnmp_feature_require(ipaddress_entry_copy)
-netsnmp_feature_require(ipaddress_prefix_copy)
+netsnmp_feature_require(check_storage_transition);
+netsnmp_feature_require(ipaddress_entry_copy);
+netsnmp_feature_require(ipaddress_prefix_copy);
 
 const oid       ipAddressTable_oid[] = { IPADDRESSTABLE_OID };
 const int       ipAddressTable_oid_size = OID_LENGTH(ipAddressTable_oid);
@@ -43,13 +43,14 @@ void            initialize_table_ipAddressTable(void);
 void            shutdown_table_ipAddressTable(void);
 
 
-/**
- * Initializes the ipAddressTable module
- */
-void
-init_ipAddressTable(void)
+/* Called after the snmpd configuration has been read. */
+static int
+_init_ipAddressTable(int majorID, int minorID, void *serverargs,
+                     void *clientarg)
 {
     DEBUGMSGTL(("verbose:ipAddressTable:init_ipAddressTable", "called\n"));
+
+    netsnmp_access_interface_init();
 
     /*
      * TODO:300:o: Perform ipAddressTable one-time module initialization.
@@ -61,7 +62,19 @@ init_ipAddressTable(void)
     if (should_init("ipAddressTable"))
         initialize_table_ipAddressTable();
 
-}                               /* init_ipAddressTable */
+    return 0;
+}
+
+/**
+ * Initializes the ipAddressTable module
+ */
+void
+init_ipAddressTable(void)
+{
+    snmp_register_callback(SNMP_CALLBACK_LIBRARY,
+                           SNMP_CALLBACK_POST_READ_CONFIG,
+                           _init_ipAddressTable, NULL);
+}
 
 /**
  * Shut-down the ipAddressTable module (agent is exiting)

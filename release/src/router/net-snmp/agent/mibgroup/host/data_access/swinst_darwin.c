@@ -28,8 +28,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <ApplicationServices/ApplicationServices.h>
 
-netsnmp_feature_require(container_directory)
-netsnmp_feature_require(date_n_time)
+netsnmp_feature_require(container_directory);
+netsnmp_feature_require(date_n_time);
 
 /* ---------------------------------------------------------------------
  */

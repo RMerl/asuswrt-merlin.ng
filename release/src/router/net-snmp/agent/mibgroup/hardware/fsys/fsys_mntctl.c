@@ -43,8 +43,9 @@ _fsys_type( int type)
 
         case  MNT_NFS:
         case  MNT_NFS3:
-        case  MNT_AUTOFS:
             return NETSNMP_FS_TYPE_NFS;
+        case  MNT_AUTOFS:
+            return NETSNMP_FS_TYPE_AUTOFS;
 
     /*
      *  The following code covers selected filesystems
@@ -155,11 +156,14 @@ netsnmp_fsys_arch_load( void )
          */
 
         /*
-         *  Optionally skip retrieving statistics for remote mounts
+         *  Skip retrieving statistics for AUTOFS and optionally for remote
+         *  mounts.
          */
         if ( (entry->flags & NETSNMP_FS_FLAG_REMOTE) &&
             netsnmp_ds_get_boolean(NETSNMP_DS_APPLICATION_ID,
                                    NETSNMP_DS_AGENT_SKIPNFSINHOSTRESOURCES))
+            continue;
+        if (entry->type == NETSNMP_FS_TYPE_AUTOFS)
             continue;
 
         if ( statfs( entry->path, &stat_buf ) < 0 ) {

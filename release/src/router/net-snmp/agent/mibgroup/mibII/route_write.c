@@ -800,8 +800,8 @@ write_rte(int action,
                     if ((status =
                          CreateIpForwardEntry(route_row)) != NO_ERROR) {
                         snmp_log(LOG_ERR,
-                                 "Inside COMMIT: CreateIpNetEntry failed, status %lu\n",
-                                 status);
+                                 "Inside COMMIT: CreateIpNetEntry failed, status %u\n",
+                                 (unsigned int)status);
                         retval = SNMP_ERR_COMMITFAILED;
                     }
                 } else {
@@ -814,6 +814,7 @@ write_rte(int action,
                 }
             }
         }
+        /* FALL THROUGH */
 
     case FREE:
         /*

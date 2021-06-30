@@ -51,9 +51,9 @@
 #include "agentx/protocol.h"
 #include "agentx/master_admin.h"
 
-netsnmp_feature_require(handler_mark_requests_as_delegated)
-netsnmp_feature_require(unix_socket_paths)
-netsnmp_feature_require(free_agent_snmp_session_by_session)
+netsnmp_feature_require(handler_mark_requests_as_delegated);
+netsnmp_feature_require(unix_socket_paths);
+netsnmp_feature_require(free_agent_snmp_session_by_session);
 
 void
 real_init_master(void)
@@ -178,13 +178,17 @@ real_init_master(void)
                         agentx_sock_user = -1;
                     if (agentx_sock_group == 0 )
                         agentx_sock_group = -1;
-                    chown(name, agentx_sock_user, agentx_sock_group);
+                    NETSNMP_IGNORE_RESULT(chown(name, agentx_sock_user,
+                                                agentx_sock_group));
                 }
             }
 #endif
             session =
                 snmp_add_full(&sess, t, NULL, agentx_parse, NULL, NULL,
                               agentx_realloc_build, agentx_check_packet, NULL);
+            /* snmp_add_full() frees 't' upon failure. */
+            if (!session)
+                t = NULL;
         }
         if (session == NULL) {
             netsnmp_transport_free(t);
@@ -221,7 +225,7 @@ agentx_got_response(int operation,
         /* response is too late, free the cache */
         if (magic)
             netsnmp_free_delegated_cache((netsnmp_delegated_cache*) magic);
-        return 0;
+        return 1;
     }
     requests = cache->requests;
 
@@ -278,6 +282,11 @@ agentx_got_response(int operation,
         netsnmp_set_request_error(cache->reqinfo, requests,     /* XXXWWW: should be index=0 */
                                   SNMP_ERR_GENERR);
         netsnmp_free_delegated_cache(cache);
+        return 0;
+
+    case NETSNMP_CALLBACK_OP_RESEND:
+        DEBUGMSGTL(("agentx/master", "resend on session %8p req=0x%x\n",
+                    session, (unsigned)reqid));
         return 0;
 
     case NETSNMP_CALLBACK_OP_RECEIVED_MESSAGE:
@@ -608,8 +617,6 @@ agentx_master_handler(netsnmp_mib_handler *handler,
     result = snmp_async_send(ax_session, pdu, agentx_got_response, cb_data);
     if (result == 0) {
         snmp_free_pdu(pdu);
-        if (cb_data)
-            netsnmp_free_delegated_cache((netsnmp_delegated_cache*) cb_data);
     }
 
     return SNMP_ERR_NOERROR;

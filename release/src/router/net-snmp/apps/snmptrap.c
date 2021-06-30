@@ -214,6 +214,9 @@ main(int argc, char *argv[])
             session.engineBoots = 1;
         if (session.engineTime == 0)    /* not really correct, */
             session.engineTime = get_uptime();  /* but it'll work. Sort of. */
+
+        set_enginetime(session.securityEngineID, session.securityEngineIDLen,
+                       session.engineBoots, session.engineTime, TRUE);
     }
 
     ss = snmp_add(&session,

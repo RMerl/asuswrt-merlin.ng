@@ -379,7 +379,7 @@ var_vacm_access(struct variable * vp,
             cp = groupName;
             for (i = 0; i <= len && op < name + *length; i++) {
                 if (*op > 255) {
-                    *cp++ = 255;
+                    *cp++ = (char) 255;
                     ++op;
                 } else
                     *cp++ = (char) *op++;
@@ -394,7 +394,7 @@ var_vacm_access(struct variable * vp,
             cp = contextPrefix;
             for (i = 0; i <= len && op < name + *length; i++) {
                 if (*op > 255) {
-                    *cp++ = 255;
+                    *cp++ = (char) 255;
                     ++op;
                 } else
                     *cp++ = (char) *op++;
@@ -590,7 +590,7 @@ var_vacm_view(struct variable * vp,
                 cp = viewName;
                 for (i = 0; i <= len && op < name + *length; i++) {
                     if (*op > 255) {
-                        *cp++ = 255;
+                        *cp++ = (char) 255;
                         ++op;
                     } else
                         *cp++ = (char) *op++;

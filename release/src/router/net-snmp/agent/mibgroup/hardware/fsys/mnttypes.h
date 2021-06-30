@@ -112,79 +112,18 @@
 #ifndef MNTTYPE_MVFS
 #define MNTTYPE_MVFS     "mvfs"
 #endif
-#ifndef MNTTYPE_TMPFS
-#define MNTTYPE_TMPFS    "tmpfs"
-#endif
-#ifndef MNTTYPE_GFS
-#define MNTTYPE_GFS      "gfs"
-#endif
-#ifndef MNTTYPE_GFS2
-#define MNTTYPE_GFS2     "gfs2"
-#endif
-#ifndef MNTTYPE_XFS
-#define MNTTYPE_XFS      "xfs"
-#endif
-#ifndef MNTTYPE_JFS
-#define MNTTYPE_JFS      "jfs"
-#endif
-#ifndef MNTTYPE_VXFS
-#define MNTTYPE_VXFS      "vxfs"
-#endif
-#ifndef MNTTYPE_REISERFS
-#define MNTTYPE_REISERFS "reiserfs"
-#endif
-#ifndef MNTTYPE_LOFS
-#define MNTTYPE_LOFS     "lofs"
-#endif
-#ifndef MNTTYPE_OCFS2
-#define MNTTYPE_OCFS2    "ocfs2"
-#endif
-#ifndef MNTTYPE_CVFS
-#define MNTTYPE_CVFS     "cvfs"
-#endif
-#ifndef MNTTYPE_SIMFS
-#define MNTTYPE_SIMFS     "simfs"
-#endif
-#ifndef MNTTYPE_BTRFS
-#define MNTTYPE_BTRFS     "btrfs"
-#endif
-#ifndef MNTTYPE_ZFS
-#define MNTTYPE_ZFS       "zfs"
-#endif
-#ifndef MNTTYPE_NVMFS
-#define MNTTYPE_NVMFS     "nvmfs"
-#endif
-#ifndef MNTTYPE_ACFS
-#define MNTTYPE_ACFS      "acfs"
-#endif
 
 /*
  *  File systems to skip
- *    (Probably not strictly needed)
  */
-#ifndef MNTTYPE_APP
-#define MNTTYPE_APP      "app"
-#endif
-#ifndef MNTTYPE_DEVPTS
-#define MNTTYPE_DEVPTS   "devpts"
+#ifndef MNTTYPE_AUTOFS
+#define MNTTYPE_AUTOFS   "autofs"
 #endif
 #ifndef MNTTYPE_IGNORE
 #define MNTTYPE_IGNORE   "ignore"
 #endif
 #ifndef MNTTYPE_PROC
 #define MNTTYPE_PROC     "proc"
-#endif
-#ifndef MNTTYPE_SYSFS
-#define MNTTYPE_SYSFS    "sysfs"
-#endif
-#ifndef MNTTYPE_USBFS
-#define MNTTYPE_USBFS    "usbfs"
-#endif
-#ifndef MNTTYPE_BINFMT
-#define MNTTYPE_BINFMT   "binfmt_misc"
-#endif
-#ifndef MNTTYPE_RPCPIPE
-#define MNTTYPE_RPCPIPE  "rpc_pipefs"
 #endif
 
 #endif /* _NETSNMP_FSYS_MNTTYPES_H */

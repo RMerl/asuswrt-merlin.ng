@@ -1,0 +1,33 @@
+#!/bin/sh
+
+. ../support/simple_eval_tools.sh
+
+HEADER "extending agent functionality with extend OID"
+
+SKIPIF NETSNMP_DISABLE_SNMPV2C
+SKIPIFNOT USING_AGENT_EXTEND_MODULE
+SKIPIFNOT USING_UTILITIES_EXECUTE_MODULE
+
+# make sure snmpwalk can be executed
+SNMPWALK="${SNMP_UPDIR}/apps/snmpwalk"
+[ -x "$SNMPWALK" ] || SKIP snmpwalk not compiled
+
+snmp_version=v2c
+TESTCOMMUNITY=testcommunity
+. ./Sv2cconfig
+
+#
+# Begin test
+#
+
+oid=.1.3.6.1.4.1.2021.8
+
+CONFIGAGENT extend "${oid}" mpstat /usr/bin/mpstat -P ALL
+
+STARTAGENT
+
+# NET-SNMP-EXTEND-MIB::nsExtendOutput1Line."hello" = STRING: "hello_world"
+CAPTURE "$SNMPWALK $SNMP_FLAGS -$snmp_version -c $TESTCOMMUNITY $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT ${oid}"
+
+STOPAGENT
+FINISHED

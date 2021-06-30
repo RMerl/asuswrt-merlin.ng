@@ -56,6 +56,33 @@ AH_BOTTOM([/* end of definitions added by configure on-the-fly */
 
 #endif /* NETSNMP_NO_AUTOCONF_DEFINITIONS */
 
+/*
+ * Note: GCC 4.6 added __BYTE_ORDER__, __ORDER_BIG_ENDIAN__,
+ * __ORDER_LITTLE_ENDIAN__ and __ORDER_PDP_ENDIAN__ in SVN r165881. For older
+ * gcc versions and also for other compilers, determine the endianness using
+ * an expression that can be evaluated at compile time. To do: add support for
+ * other compilers than gcc that do not support statement expressions.
+ */
+#if defined(__BYTE_ORDER__)
+# if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#  define NETSNMP_BIGENDIAN 1
+# elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#  define NETSNMP_BIGENDIAN 0
+# else
+#  error Unknown byte order
+# endif
+#else
+# define NETSNMP_BIGENDIAN                              \
+    (__extension__                                      \
+     ({                                                 \
+         union { unsigned long l; unsigned char c; } u; \
+                                                        \
+         u.l = 1;                                       \
+         u.c == 0;                                      \
+     })                                                 \
+    )
+#endif
+
 
 
 

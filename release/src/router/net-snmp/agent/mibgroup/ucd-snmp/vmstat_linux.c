@@ -112,7 +112,7 @@
 #include "util_funcs/header_generic.h"
 #include "vmstat.h"
 
-netsnmp_feature_require(hardware_cpu_load)
+netsnmp_feature_require(hardware_cpu_load);
 
 
 FindVarMethod var_extensible_vmstat;

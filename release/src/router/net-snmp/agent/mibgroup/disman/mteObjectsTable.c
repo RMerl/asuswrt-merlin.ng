@@ -19,7 +19,7 @@
 #endif
 
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(header_complex_find_entry)
+netsnmp_feature_require(header_complex_find_entry);
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 /*

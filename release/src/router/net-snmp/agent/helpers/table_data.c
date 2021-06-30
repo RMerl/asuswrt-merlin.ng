@@ -26,24 +26,24 @@
 #include <net-snmp/agent/table.h>
 #include <net-snmp/agent/read_only.h>
 
-netsnmp_feature_child_of(table_data_all, mib_helpers)
+netsnmp_feature_child_of(table_data_all, mib_helpers);
 
-netsnmp_feature_child_of(table_data, table_data_all)
-netsnmp_feature_child_of(register_read_only_table_data, table_data_all)
-netsnmp_feature_child_of(extract_table_row_data, table_data_all)
-netsnmp_feature_child_of(insert_table_row, table_data_all)
-netsnmp_feature_child_of(table_data_delete_table, table_data_all)
+netsnmp_feature_child_of(table_data, table_data_all);
+netsnmp_feature_child_of(register_read_only_table_data, table_data_all);
+netsnmp_feature_child_of(extract_table_row_data, table_data_all);
+netsnmp_feature_child_of(insert_table_row, table_data_all);
+netsnmp_feature_child_of(table_data_delete_table, table_data_all);
 
-netsnmp_feature_child_of(table_data_extras, table_data_all)
+netsnmp_feature_child_of(table_data_extras, table_data_all);
 
-netsnmp_feature_child_of(table_data_create_table, table_data_extras)
-netsnmp_feature_child_of(table_data_create_row, table_data_extras)
-netsnmp_feature_child_of(table_data_copy_row, table_data_extras)
-netsnmp_feature_child_of(table_data_remove_delete_row, table_data_extras)
-netsnmp_feature_child_of(table_data_unregister, table_data_extras)
-netsnmp_feature_child_of(table_data_row_count, table_data_extras)
-netsnmp_feature_child_of(table_data_row_operations, table_data_extras)
-netsnmp_feature_child_of(table_data_row_first, table_data_extras)
+netsnmp_feature_child_of(table_data_create_table, table_data_extras);
+netsnmp_feature_child_of(table_data_create_row, table_data_extras);
+netsnmp_feature_child_of(table_data_copy_row, table_data_extras);
+netsnmp_feature_child_of(table_data_remove_delete_row, table_data_extras);
+netsnmp_feature_child_of(table_data_unregister, table_data_extras);
+netsnmp_feature_child_of(table_data_row_count, table_data_extras);
+netsnmp_feature_child_of(table_data_row_operations, table_data_extras);
+netsnmp_feature_child_of(table_data_row_first, table_data_extras);
 
 #ifndef NETSNMP_FEATURE_REMOVE_TABLE_DATA
 

@@ -5,30 +5,16 @@
 #ifndef _MIBGROUP_ICMP_H
 #define _MIBGROUP_ICMP_H
 
-config_arch_require(solaris2,  kernel_sunos5)
-config_arch_require(linux,     mibII/kernel_linux)
-config_arch_require(freebsd4,  mibII/kernel_sysctl)
-config_arch_require(freebsd5,  mibII/kernel_sysctl)
-config_arch_require(freebsd6,  mibII/kernel_sysctl)
-config_arch_require(freebsd7,  mibII/kernel_sysctl)
-config_arch_require(freebsd8,  mibII/kernel_sysctl)
-config_arch_require(freebsd9,  mibII/kernel_sysctl)
-config_arch_require(freebsd10, mibII/kernel_sysctl)
-config_arch_require(freebsd11, mibII/kernel_sysctl)
-config_arch_require(freebsd12, mibII/kernel_sysctl)
-config_arch_require(netbsd,    mibII/kernel_netbsd)
-config_arch_require(netbsdelf, mibII/kernel_netbsd)
-config_arch_require(openbsd4,  mibII/kernel_sysctl)
-config_arch_require(openbsd5,  mibII/kernel_sysctl)
-config_arch_require(openbsd6,  mibII/kernel_sysctl)
-config_arch_require(dragonfly2, mibII/kernel_sysctl)
-config_arch_require(dragonfly3, mibII/kernel_sysctl)
-config_arch_require(dragonfly4, mibII/kernel_sysctl)
-config_arch_require(dragonfly5, mibII/kernel_sysctl)
-config_arch_require(darwin10,  mibII/kernel_sysctl)
-config_arch_require(darwin11,  mibII/kernel_sysctl)
-config_arch_require(darwin12,  mibII/kernel_sysctl)
-config_arch_require(darwin13,  mibII/kernel_sysctl)
+#if defined(solaris2)
+config_require(kernel_sunos5)
+#elif defined(linux)
+config_require(mibII/kernel_linux)
+#elif defined(freebsd4) || defined(openbsd4) || defined(dragonfly2) || \
+    defined(darwin10)
+config_require(mibII/kernel_sysctl)
+#elif defined(netbsd) || defined(netbsdelf)
+config_require(mibII/kernel_netbsd)
+#endif
 
 #include <net-snmp/agent/cache_handler.h>
 

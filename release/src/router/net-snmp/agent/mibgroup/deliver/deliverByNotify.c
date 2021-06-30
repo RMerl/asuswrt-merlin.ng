@@ -5,7 +5,7 @@
 
 #include <limits.h>
 
-netsnmp_feature_require(container_fifo)
+netsnmp_feature_require(container_fifo);
 
 #include "deliverByNotify.h"
 

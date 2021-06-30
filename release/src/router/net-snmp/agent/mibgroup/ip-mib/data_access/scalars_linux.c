@@ -9,7 +9,7 @@
 
 #include <net-snmp/data_access/ip_scalars.h>
 
-netsnmp_feature_require(register_num_file_instance)
+netsnmp_feature_require(register_num_file_instance);
 
 static const char ipfw_name[] = "/proc/sys/net/ipv4/conf/all/forwarding";
 static const char ipttl_name[] = "/proc/sys/net/ipv4/ip_default_ttl";

@@ -34,10 +34,6 @@
 #include <errno.h>
 
 
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
-
 #ifdef NETSNMP_USE_KERBEROS_HEIMDAL
 #ifndef NETSNMP_USE_KERBEROS_MIT
 #define OLD_HEIMDAL
@@ -70,6 +66,8 @@
 #include <et/com_err.h>
 #elif HAVE_COM_ERR_H
 #include <com_err.h>
+#else
+static const char *error_message(int ret) { return "(?)"; }
 #endif
 
 #include <net-snmp/output_api.h>
@@ -483,7 +481,10 @@ ksm_rgenerate_out_msg(struct snmp_secmod_outgoing_params *parms)
 #else                           /* NETSNMP_USE_KERBEROS_MIT */
     krb5_encrypt_block eblock;
 #endif                          /* NETSNMP_USE_KERBEROS_MIT */
-    size_t          blocksize, encrypted_length;
+#ifndef OLD_HEIMDAL
+    size_t          blocksize;
+#endif
+    size_t          encrypted_length;
     unsigned char  *encrypted_data = NULL;
     long            zero = 0, tmp;
     int             i;
@@ -1246,7 +1247,10 @@ ksm_process_in_msg(struct snmp_secmod_incoming_params *parms)
     size_t          length =
         parms->wholeMsgLen - (u_int) (parms->secParams - parms->wholeMsg);
     u_char         *current = parms->secParams, type;
-    size_t          cksumlength, blocksize;
+#ifndef OLD_HEIMDAL
+    size_t          blocksize;
+#endif
+    size_t          cksumlength;
     long            hint;
     char           *cname;
     struct ksm_secStateRef *ksm_state;
@@ -1766,7 +1770,7 @@ ksm_process_in_msg(struct snmp_secmod_incoming_params *parms)
 	retcode = krb5_decrypt(kcontext, heim_crypto, KSM_KEY_USAGE_ENCRYPTION,
 			       current, length, &output);
 	if (retcode == 0) {
-		*parms->scopedPdu = (char *) output.data;
+		*parms->scopedPdu = (u_char *) output.data;
 		*parms->scopedPduLen = output.length;
 		krb5_data_zero(&output);
 	}

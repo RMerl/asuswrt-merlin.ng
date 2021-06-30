@@ -16,7 +16,7 @@
 #include "kernel_sunos5.h"
 #include "mibII/mibII_common.h"
 
-netsnmp_feature_child_of(ipaddress_arch_entry_copy, ipaddress_common)
+netsnmp_feature_child_of(ipaddress_arch_entry_copy, ipaddress_common);
 
 static int _load_v4(netsnmp_container *container, int idx_offset);
 #if defined( NETSNMP_ENABLE_IPV6 )

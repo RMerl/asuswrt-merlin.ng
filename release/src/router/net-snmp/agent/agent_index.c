@@ -49,9 +49,9 @@
 #include "agentx/client.h"
 #endif
 
-netsnmp_feature_child_of(agent_index_all, libnetsnmpagent)
+netsnmp_feature_child_of(agent_index_all, libnetsnmpagent);
 
-netsnmp_feature_child_of(remove_index, agent_index_all)
+netsnmp_feature_child_of(remove_index, agent_index_all);
 
         /*
          * Initial support for index allocation
@@ -454,7 +454,7 @@ register_index(netsnmp_variable_list * varbind, int flags,
          * Release an allocated index,
          *   to allow it to be used elsewhere
          */
-netsnmp_feature_child_of(release_index,netsnmp_unused)
+netsnmp_feature_child_of(release_index,netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_RELEASE_INDEX
 int
 release_index(netsnmp_variable_list * varbind)
@@ -597,7 +597,7 @@ unregister_index(netsnmp_variable_list * varbind, int remember,
     return SNMP_ERR_NOERROR;
 }
 
-netsnmp_feature_child_of(unregister_indexes,netsnmp_unused)
+netsnmp_feature_child_of(unregister_indexes,netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_UNREGISTER_INDEXES
 int
 unregister_string_index(oid * name, size_t name_len, char *cp)
@@ -704,7 +704,7 @@ dump_idx_registry(void)
     }
 }
 
-netsnmp_feature_child_of(count_indexes, netsnmp_unused)
+netsnmp_feature_child_of(count_indexes, netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_UNUSED
 unsigned long
 count_indexes(oid * name, size_t namelen, int include_unallocated)

@@ -9,9 +9,13 @@
 
 #include <net-snmp/library/snmp_transport.h>
 
+config_require(IPBase)
+
 #ifdef __cplusplus
 extern          "C" {
 #endif
+
+    struct netsnmp_ep;
 
 /*
  * Prototypes
@@ -34,6 +38,9 @@ extern          "C" {
                             int remote_port);
     int netsnmp_sockaddr_in2(struct sockaddr_in *addr, const char *inpeername,
                              const char *default_target);
+    int
+    netsnmp_sockaddr_in3(struct netsnmp_ep *ep,
+                         const char *inpeername, const char *default_target);
 
 #ifdef __cplusplus
 }

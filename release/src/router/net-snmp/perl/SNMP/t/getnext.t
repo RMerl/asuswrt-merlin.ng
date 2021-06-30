@@ -1,20 +1,17 @@
 #!./perl
 
+use strict;
+use warnings;
+
 BEGIN {
-    unless(grep /blib/, @INC) {
-        chdir 't' if -d 't';
-        @INC = '../lib' if -d '../lib';
-    }
     eval "use Cwd qw(abs_path)";
-    $ENV{'SNMPCONFPATH'} = 'nopath';
-    $ENV{'MIBDIRS'} = '+' . abs_path("../../mibs");
 }
 
 use Test;
 BEGIN { plan tests => 9 }
 use SNMP;
-use vars qw($agent_port $comm $agent_host);
 require "t/startagent.pl";
+use vars qw($agent_host $agent_port $comm);
 
 
 my $junk_oid = ".1.3.6.1.2.1.1.1.1.1.1";
@@ -24,10 +21,6 @@ my $junk_host = 'no.host.here';
 my $name = "gmarzot\@nortelnetworks.com";
 
 $SNMP::debugging = 0;
-my $n = 9;  # Number of tests to run
-
-#print "1..$n\n";
-#if ($n == 0) { exit 0; }
 
 # create list of varbinds for GETS, val field can be null or omitted
 my $vars = new SNMP::VarList (

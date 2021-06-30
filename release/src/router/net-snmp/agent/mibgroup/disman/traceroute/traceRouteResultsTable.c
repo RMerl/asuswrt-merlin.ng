@@ -42,7 +42,7 @@
 #include "traceRouteHopsTable.h"
 #include "header_complex.h"
 
-netsnmp_feature_require(table_dataset)
+netsnmp_feature_require(table_dataset);
 
 /*
  *traceRouteResultsTable_variables_oid:

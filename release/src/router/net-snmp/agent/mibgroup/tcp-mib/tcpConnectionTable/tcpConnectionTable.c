@@ -345,9 +345,8 @@ tcpConnectionTable_indexes_set_tbl_idx(tcpConnectionTable_mib_index *
     /*
      * make sure there is enough space for tcpConnectionLocalAddress data
      */
-    if ((NULL == tbl_idx->tcpConnectionLocalAddress) ||
-        (tbl_idx->tcpConnectionLocalAddress_len <
-         (tcpConnectionLocalAddress_val_ptr_len))) {
+    if (tbl_idx->tcpConnectionLocalAddress_len <
+        tcpConnectionLocalAddress_val_ptr_len) {
         snmp_log(LOG_ERR, "not enough space for value\n");
         return MFD_ERROR;
     }
@@ -378,9 +377,8 @@ tcpConnectionTable_indexes_set_tbl_idx(tcpConnectionTable_mib_index *
     /*
      * make sure there is enough space for tcpConnectionRemAddress data
      */
-    if ((NULL == tbl_idx->tcpConnectionRemAddress) ||
-        (tbl_idx->tcpConnectionRemAddress_len <
-         (tcpConnectionRemAddress_val_ptr_len))) {
+    if (tbl_idx->tcpConnectionRemAddress_len <
+        tcpConnectionRemAddress_val_ptr_len) {
         snmp_log(LOG_ERR, "not enough space for value\n");
         return MFD_ERROR;
     }

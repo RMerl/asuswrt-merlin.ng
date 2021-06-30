@@ -133,7 +133,7 @@ _load4(netsnmp_container *container, u_int load_flags)
     }
     
     setvbuf(in, rbuf, _IOFBF, rbufsize);
-    fgets(line, sizeof(line), in); /* skip header */
+    NETSNMP_IGNORE_RESULT(fgets(line, sizeof(line), in)); /* skip header */
 
     /*
      *   sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode
@@ -278,7 +278,7 @@ _load6(netsnmp_container *container, u_int load_flags)
     }
 
     setvbuf(in, rbuf, _IOFBF, rbufsize);
-    fgets(line, sizeof(line), in); /* skip header */
+    NETSNMP_IGNORE_RESULT(fgets(line, sizeof(line), in)); /* skip header */
 
     /*
      * Note: PPC (big endian)

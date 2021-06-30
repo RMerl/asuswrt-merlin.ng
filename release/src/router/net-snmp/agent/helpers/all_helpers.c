@@ -13,7 +13,7 @@
 #include <net-snmp/agent/table_dataset.h>
 #include <net-snmp/agent/stash_cache.h>
 
-netsnmp_feature_child_of(mib_helpers, libnetsnmpagent)
+netsnmp_feature_child_of(mib_helpers, libnetsnmpagent);
 
 
 /** call the initialization sequence for all handlers with init_ routines. */

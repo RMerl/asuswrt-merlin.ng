@@ -13,9 +13,9 @@
 #include <net-snmp/library/snmp_logging.h>
 #include "agent/nsLogging.h"
 
-netsnmp_feature_require(logging_external)
+netsnmp_feature_require(logging_external);
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(table_iterator_insert_context)
+netsnmp_feature_require(table_iterator_insert_context);
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 /*

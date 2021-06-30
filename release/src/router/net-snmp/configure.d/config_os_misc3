@@ -9,12 +9,3 @@
 #   Compilation characteristics
 ##
 
-#       Byte order
-#
-if test "$with_endianness" = "big"; then
-    ac_cv_c_bigendian=yes
-elif test "$with_endianness" = "little" ; then
-    ac_cv_c_bigendian=no
-fi
-AC_C_BIGENDIAN(,,
-    [AC_MSG_ERROR([Failed to figure out host endianness, please use --with-endianness to specify it.])])

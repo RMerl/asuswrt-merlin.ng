@@ -17,14 +17,14 @@
 #include "alarmTable.h"
 #include "event.h"
 
-netsnmp_feature_require(iquery)
-netsnmp_feature_require(query_set_default_session)
-netsnmp_feature_require(table_tdata)
-netsnmp_feature_require(check_vb_type_and_max_size)
-netsnmp_feature_require(table_tdata_extract_table)
+netsnmp_feature_require(iquery);
+netsnmp_feature_require(query_set_default_session);
+netsnmp_feature_require(table_tdata);
+netsnmp_feature_require(check_vb_type_and_max_size);
+netsnmp_feature_require(table_tdata_extract_table);
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(table_tdata_insert_row)
-netsnmp_feature_require(iquery_pdu_session)
+netsnmp_feature_require(table_tdata_insert_row);
+netsnmp_feature_require(iquery_pdu_session);
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 /** Initializes the alarmTable module */
@@ -805,7 +805,7 @@ alarmTable_handler(netsnmp_mib_handler *handler,
                         netsnmp_query_set_default_session(sess);
                         DEBUGMSGTL(("rmon:alarmTable", "user name %s\n", secName));
                     } else { 
-                        snmp_log(LOG_ERR, "user name %s not found\n", secName);
+                        snmp_log(LOG_ERR, "user name not found\n");
                         config_perror("Unknown user name\n");
                     }
 

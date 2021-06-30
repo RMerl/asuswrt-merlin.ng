@@ -76,13 +76,22 @@ int pages_swapped(void) {
 
             swapped_pages = 0;
             for (address = 0;; address += size) {
+                kern_return_t ret = KERN_FAILURE;
+
                 /* Get memory region. */
                 count = VM_REGION_EXTENDED_INFO_COUNT; 
-#if defined(__ppc64__) || defined(__x86_64__)
-                if (vm_region_64(tasks[j], &address, &size, VM_REGION_EXTENDED_INFO, &info, &count, &object_name) != KERN_SUCCESS) {
+#if HAVE_VM_REGION_64
+                ret = vm_region_64(tasks[j], &address, &size,
+                                 VM_REGION_EXTENDED_INFO, (void *)&info, &count,
+                                 &object_name);
+#elif HAVE_VM_REGION
+                ret = vm_region(tasks[j], &address, &size,
+                              VM_REGION_EXTENDED_INFO, (void *)&info, &count,
+                              &object_name);
 #else
-                if (vm_region(tasks[j], &address, &size, VM_REGION_EXTENDED_INFO, &info, &count, &object_name) != KERN_SUCCESS) {
+#error How to query memory protection information?
 #endif
+                if (ret != KERN_SUCCESS) {
                     /* No more memory regions. */
                     break;
                 }

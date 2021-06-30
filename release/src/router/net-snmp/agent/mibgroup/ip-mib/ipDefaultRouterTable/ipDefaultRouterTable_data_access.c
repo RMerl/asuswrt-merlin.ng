@@ -20,7 +20,7 @@
 
 #include "ipDefaultRouterTable_data_access.h"
 
-netsnmp_feature_require(container_lifo)
+netsnmp_feature_require(container_lifo);
 
 /** @ingroup interface
  * @addtogroup data_access data_access: Routines to access data

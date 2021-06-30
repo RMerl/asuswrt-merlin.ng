@@ -53,8 +53,43 @@
 /* Define if compiling with the mibII/at module files.  */
 #define USING_MIBII_AT_MODULE 1
  
+#if 0
 /* Define if compiling with the mibII/interfaces module files.  */
 #define USING_MIBII_INTERFACES_MODULE 1
+#else
+/* Define if compiling with the if-mib module files.  */
+#define USING_IF_MIB_MODULE 1
+
+/* Define if compiling with the if-mib/ifTable module files.  */
+#define USING_IF_MIB_IFTABLE_MODULE 1
+
+/* Define if compiling with the if-mib/ifXTable module files.  */
+#define USING_IF_MIB_IFXTABLE_MODULE 1
+
+/* Define if compiling with the if-mib/ifTable/ifTable module files.  */
+#define USING_IF_MIB_IFTABLE_IFTABLE_MODULE 1
+
+/* Define if compiling with the if-mib/ifXTable/ifXTable module files.  */
+#define USING_IF_MIB_IFXTABLE_IFXTABLE_MODULE 1
+
+/* Define if compiling with the if-mib/data_access/interface module files.  */
+#define USING_IF_MIB_DATA_ACCESS_INTERFACE_MODULE 1
+
+/* Define if compiling with the if-mib/ifTable/ifTable_interface module files.  */
+#define USING_IF_MIB_IFTABLE_IFTABLE_INTERFACE_MODULE 1
+
+/* Define if compiling with the if-mib/ifTable/ifTable_data_access module files.  */
+#define USING_IF_MIB_IFTABLE_IFTABLE_DATA_ACCESS_MODULE 1
+
+/* Define if compiling with the if-mib/ifXTable/ifXTable_interface module files.  */
+#define USING_IF_MIB_IFXTABLE_IFXTABLE_INTERFACE_MODULE 1
+
+/* Define if compiling with the if-mib/ifXTable/ifXTable_data_access module files.  */
+#define USING_IF_MIB_IFXTABLE_IFXTABLE_DATA_ACCESS_MODULE 1
+
+/* Define if compiling with the if-mib/data_access/interface_iphlpapi module files.  */
+#define USING_IF_MIB_DATA_ACCESS_INTERFACE_IPHLPAPI_MODULE 1
+#endif
  
 /* Define if compiling with the mibII/snmp_mib module files.  */
 #define USING_MIBII_SNMP_MIB_MODULE 1

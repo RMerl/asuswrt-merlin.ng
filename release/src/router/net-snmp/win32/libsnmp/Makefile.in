@@ -55,6 +55,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\snmp-tc.obj" \
 	"$(INTDIR)\snmp.obj" \
 	"$(INTDIR)\snmpCallbackDomain.obj" \
+	"$(INTDIR)\snmpIPBaseDomain.obj" \
 	"$(INTDIR)\snmpIPv4BaseDomain.obj" \
 	"$(INTDIR)\snmpSocketBaseDomain.obj" \
 	"$(INTDIR)\snmpTCPBaseDomain.obj" \

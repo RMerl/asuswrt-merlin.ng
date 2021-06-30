@@ -1,8 +1,19 @@
 #ifndef UCD_SNMP_PROXY_H
 #define UCD_SNMP_PROXY_H
 
+/*
+ * @name: OID of the tree that is being proxied.
+ * @name_len: Length of @name.
+ * @base: Optional. If specified, the OID that @name is replaced with before
+ *   an SNMP request is forwarded.
+ * @base_len: Length of @base.
+ * @context: Context string specified via <-Cn [contextname]>.
+ * @sess: Session associated with this proxy.
+ * @next: Next proxy in the single-linked proxy list.
+ *
+ * See also the Proxy Support section in the snmpd.conf(5) man page.
+ */
 struct simple_proxy {
-    struct variable2 *variables;
     oid             name[MAX_OID_LEN];
     size_t          name_len;
     oid             base[MAX_OID_LEN];

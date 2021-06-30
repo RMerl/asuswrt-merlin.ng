@@ -4,12 +4,12 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 
-netsnmp_feature_provide(stash_cache)
-netsnmp_feature_child_of(stash_cache, mib_helpers)
+netsnmp_feature_provide(stash_cache);
+netsnmp_feature_child_of(stash_cache, mib_helpers);
 #ifdef NETSNMP_FEATURE_REQUIRE_STASH_CACHE
-netsnmp_feature_require(oid_stash)
-netsnmp_feature_require(oid_stash_iterate)
-netsnmp_feature_require(oid_stash_get_data)
+netsnmp_feature_require(oid_stash);
+netsnmp_feature_require(oid_stash_iterate);
+netsnmp_feature_require(oid_stash_get_data);
 #endif
 
 #ifndef NETSNMP_FEATURE_REMOVE_STASH_CACHE

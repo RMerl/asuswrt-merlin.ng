@@ -1,12 +1,18 @@
+#!./perl
+#
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-#########################
-
-# change 'tests => 1' to 'tests => last_test_to_print';
-
+use strict;
+use warnings;
+use Cwd qw(abs_path);
 use Test;
-BEGIN { eval "use Cwd qw(abs_path)"; plan tests => 38 ; $ENV{'SNMPCONFPATH'} = 'nopath' ; $ENV{'MIBDIRS'} = '+' . abs_path("../../mibs"); };
+
+BEGIN {
+    plan tests => 38;
+}
+
+require "../SNMP/t/readsnmptest.pl";
 use NetSNMP::OID;
 
 ok(1); # If we made it this far, we're ok.
@@ -70,7 +76,7 @@ ok($a[0] == 1 && $a[1] == 3 && $a[2] == 6 && $a[3] == 1 && $#a == 3);
 $oid->append(".1.2.3");
 ok("$oid" eq "directory.2.3");
 
-$oidmore = $oid + ".8.9.10";
+my $oidmore = $oid + ".8.9.10";
 ok($oidmore == new NetSNMP::OID("directory.2.3.8.9.10"));
 ok("$oid" eq "directory.2.3");
 ok(ref($oidmore) eq "NetSNMP::OID");
@@ -79,7 +85,7 @@ ok(ref($oidmore) eq "NetSNMP::OID");
 $oidmore += ".11";
 ok($oidmore == new NetSNMP::OID("directory.2.3.8.9.10.11"));
 
-$oidstr = $oidmore + "\"wes\"";
+my $oidstr = $oidmore + "\"wes\"";
 ok($oidstr == new NetSNMP::OID("directory.2.3.8.9.10.11.3.119.101.115"));
 
 $oidstr = $oidmore + "\'wes\'";
@@ -123,7 +129,7 @@ else {
 $newtest = new NetSNMP::OID ("snmpNotifyRowStatus.105.110.116.101.114.110.97.108.48");
 
 if ($newtest) {
-  $arrayback = $newtest->get_indexes();
+  my $arrayback = $newtest->get_indexes();
   
   ok($#$arrayback == 0 &&
     $arrayback->[0] eq 'internal0'

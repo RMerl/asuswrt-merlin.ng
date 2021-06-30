@@ -50,7 +50,7 @@
 #include "updates.h"
 #include "agent_global_vars.h"
 
-netsnmp_feature_require(watcher_read_only_int_scalar)
+netsnmp_feature_require(watcher_read_only_int_scalar);
 
         /*********************
 	 *

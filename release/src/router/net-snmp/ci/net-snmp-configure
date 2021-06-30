@@ -1,5 +1,28 @@
 #!/usr/bin/env bash
 
+ssl_include_path() {
+    case "$(uname)" in
+	MINGW32*)
+	    echo /mingw32/include/openssl;;
+	MINGW64*)
+	    echo /mingw64/include/openssl;;
+	*)
+	    echo "${with_openssl:-/usr}/include/openssl"
+	    ;;
+    esac
+}
+
+freebsd_pkg_version() {
+    local pkg ver
+
+    for pkg in "$@"; do
+	ver=$(pkg info "$pkg" 2>/dev/null |
+		     sed -n 's/^Version[[:blank:]]*:[[:blank:]]*//p') &&
+	    [ -n "$ver" ] && echo "$ver" && return
+    done
+    return 1
+}
+
 branch_name="$1"
 shift
 
@@ -11,23 +34,112 @@ if [ "${branch_name#master}" != "${branch_name}" ]; then
 elif [ "${branch_name#V5-7-}" != "${branch_name}" ]; then
   is_5_7_or_above="true"
 fi
-case "${OSTYPE}" in
-    linux*)
-        opensslver="$(
-                for p in openssl-devel libopenssl-devel libressl-devel; do
-	            rpm -q --qf '%{version}\n' $p 2>/dev/null;
-                done;
-	        dpkg-query --show -f '${Version}\n' libssl-dev 2>/dev/null;
-	        pacman -Q openssl 2>&1 | sed -n 's/^openssl[[:blank:]]*//p'
-            )";;
-    *)
-	opensslver=1.0;;
+
+libatmver="$(for p in linux-atm-devel; do
+                rpm -q --qf '%{version}\n' $p 2>/dev/null |
+                  grep -v 'not installed';
+              done |
+              head -n1;
+	      for p in libatm1-dev; do
+	        dpkg-query --show -f '${Version}\n' $p 2>/dev/null;
+              done | grep -v '^$';
+              pacman -Q no-such-library 2>/dev/null |
+                sed -n 's/^[^[:blank:]]*[[:blank:]]*//p')"
+echo "libatmver=$libatmver"
+
+libmysqlver="$(for p in libmariadb-devel; do
+                rpm -q --qf '%{version}\n' $p 2>/dev/null |
+                  grep -v 'not installed';
+              done |
+              head -n1;
+	      for p in libmariadbclient-dev libmariadb-client-lgpl-dev; do
+	        dpkg-query --show -f '${Version}\n' $p 2>/dev/null;
+              done | grep -v '^$';
+              pacman -Q mingw-w64-x86_64-libmariadbclient 2>/dev/null |
+                sed -n 's/^[^[:blank:]]*[[:blank:]]*//p')"
+echo "libmysqlver=$libmysqlver"
+
+libsensorsver="$(for p in libsensors4-devel; do
+                rpm -q --qf '%{version}\n' $p 2>/dev/null |
+                  grep -v 'not installed';
+              done |
+              head -n1;
+	      for p in libsensors4-dev; do
+	        dpkg-query --show -f '${Version}\n' $p 2>/dev/null;
+              done | grep -v '^$';
+              pacman -Q no-such-package 2>/dev/null |
+                sed -n 's/^[^[:blank:]]*[[:blank:]]*//p')"
+echo "libsensorsver=$libsensorsver"
+
+if ! echo "$*" | grep -Eq 'with-openssl=(no|internal)|without-openssl'; then
+    case "$(uname -a)" in
+	FreeBSD*)
+	    opensslver="$(freebsd_pkg_version libressl-devel openssl111 openssl\
+	                  2>/dev/null)"
+	    if [ -z "$opensslver" ]; then
+		opensslver="$(openssl version 2>&1 |
+				{ read -r a b c; echo "$b"; })"
+	    fi
+	    ;;
+	Linux*)
+	    opensslver="$(
+	    for p in openssl-devel libopenssl-devel libressl-devel; do
+	      rpm -q --qf '%{version}\n' $p 2>/dev/null |
+                grep -v 'not installed';
+            done;
+	    dpkg-query --show -f '${Version}\n' libssl-dev 2>/dev/null;
+	    pacman -Q mingw-w64-x86_64-openssl 2>/dev/null |
+	      sed -n 's/^[^[:blank:]]*[[:blank:]]*//p')";;
+	MSYS*x86_64*)
+	    opensslver="$(pacman -Q openssl-devel 2>/dev/null |
+	      sed -n 's/^[^[:blank:]]*[[:blank:]]*//p')";;
+	MINGW64*)
+	    opensslver="$(pacman -Q mingw-w64-x86_64-openssl 2>/dev/null |
+	      sed -n 's/^[^[:blank:]]*[[:blank:]]*//p')";;
+	*)
+	    opensslver=1.0;;
+    esac
+fi
+if grep -q 'CentOS release 4' /etc/issue 2>/dev/null; then
+  opensslver=""
+fi
+echo "opensslver=$opensslver"
+
+case "$(uname)" in
+    FreeBSD*)
+	libssh2ver="$(freebsd_pkg_version libssh2 2>/dev/null)";;
+    Linux*)
+	libssh2ver="$(for p in openssh-devel libssh2-devel libssh-devel; do
+                rpm -q --qf '%{version}\n' $p 2>/dev/null |
+                  grep -v 'not installed';
+              done |
+              head -n1;
+              for p in libopenssh2 libssh2-1-dev libssh-dev; do
+                dpkg-query --show -f '${Version}\n' $p 2>/dev/null;
+              done | grep -v '^$';
+              pacman -Q mingw-w64-x86_64-libssh2 2>/dev/null |
+                sed -n 's/^[^[:blank:]]*[[:blank:]]*//p')"
+	;;
 esac
-opensshver="$({
-    rpm -q openssh-devel;
-    rpm -q libssh2-devel;
-    rpm -q libssh-devel; } 2>/dev/null |
-    sed -n 's/^.*ssh[0-9]*-devel-\([0-9a-z.]*\)-.*$/\1/p' | head -n1)"
+echo "libssh2ver=$libssh2ver"
+
+case "$(uname)" in
+    FreeBSD*)
+	perldevver="$(freebsd_pkg_version perl5 2>/dev/null)";;
+    Linux*)
+	perldevver="$(for p in perl; do
+                rpm -q --qf '%{version}\n' $p 2>/dev/null |
+                  grep -v 'not installed';
+              done |
+              head -n1;
+	      for p in libperl-dev; do
+	        dpkg-query --show -f '${Version}\n' $p 2>/dev/null;
+              done | grep -v '^$';
+              pacman -Q mingw-w64-x86_64-perl 2>/dev/null |
+                sed -n 's/^[^[:blank:]]*[[:blank:]]*//p')"
+	;;
+esac
+echo "perldevver=$perldevver"
 
 options=()
 options+=(--enable-developer)
@@ -36,13 +148,11 @@ options+=("--prefix=/usr/local/net-snmp-${branch_name}")
 options+=("--with-cflags=$cflags")
 options+=(--with-defaults)
 transports=()
-[ "$opensshver" != "" ] && transports+=(SSH)
 # Mib names can be found as follows:
 # (cd agent/mibgroup &&
 # git grep -lE 'void[[:blank:]]*init_.*\(void\)|config_require\(' |
 #  sed -n 's/\.h$//p')
 mibs=()
-mibs+=(mibII)
 case "$MODE" in
     read-only)
         ;;
@@ -85,7 +195,6 @@ case "$(uname)" in
               mibs+=(hardware/cpu)
               mibs+=(hardware/fsys)
               mibs+=(hardware/memory)
-              mibs+=(hardware/sensors)
               mibs+=(host)
               mibs+=(ip-forward-mib)
               mibs+=(ip-mib/inetNetToMediaTable)
@@ -93,32 +202,43 @@ case "$(uname)" in
               mibs+=(ip-mib/ipv4InterfaceTable)
               mibs+=(ip-mib/ipv6InterfaceTable)
               mibs+=(ip-mib/ipv6ScopeZoneIndexTable)
-              mibs+=(mibII/ipAddr)
               mibs+=(mibII/mta_sendmail)
               mibs+=(misc/ipfwacc)
               mibs+=(sctp-mib)
               mibs+=(snmp-notification-mib)
-              [ "$opensslver" != "" ] && mibs+=(snmp-usm-dh-objects-mib)
               mibs+=(tcp-mib)
               mibs+=(testhandler)
-              [ "$opensslver" != "" ] && mibs+=(tlstm-mib tsm-mib)
               mibs+=(tunnel)
               mibs+=(ucd-snmp/diskio)
-              mibs+=(ucd-snmp/lmsensorsMib)
+	      if [ -n "$libsensorsver" ]; then
+		  mibs+=(hardware/sensors)
+		  mibs+=(ucd-snmp/lmsensorsMib)
+	      fi
               mibs+=(ucd-snmp/extensible)
               mibs+=(udp-mib)
 	      mibs+=(rmon-mib)
               ;;
       esac
-      options+=(--with-mysql)
-      options+=(--with-perl-modules)
-      transports+=(AAL5PVC)
+      # Disable MySQL support because of the following Perl test failure on
+      # Travis:
+      # t/1.t .. Can't load '/home/travis/build/bvanassche/net-snmp/perl/TrapReceiver/../blib/arch/auto/NetSNMP/TrapReceiver/TrapReceiver.so' for module NetSNMP::TrapReceiver: /home/travis/build/bvanassche/net-snmp/apps/.libs/libnetsnmptrapd.so.35: undefined symbol: mysql_sqlstate at /usr/lib/x86_64-linux-gnu/perl/5.22/DynaLoader.pm line 187.
+      # at t/1.t line 16.
+      if false && [ -n "$libmysqlver" ]; then
+	  options+=(--with-mysql)
+      fi
+      if [ -n "$perldevver" ]; then
+	  options+=(--with-perl-modules)
+      else
+	  options+=(--disable-embedded-perl --without-perl-modules)
+      fi
+      if [ -n "$libatmver" ]; then
+	  transports+=(AAL5PVC)
+      fi
       transports+=(IPX)
       transports+=(STD)
       $is_5_8_or_above && transports+=(UDPshared)
-      [ "$opensslver" = "" ] && options+=("--with-openssl=internal")
       options+=("--with-default-snmp-version=2")
-      { rpm -q python-setuptools >/dev/null 2>&1 || rpm -q python-devel >/dev/null 2>&1 || dpkg-query -l python-setuptools >/dev/null 2>&1; } && options+=(--with-python-modules)
+      options+=("--with-systemd")
       # Disabled modules because troublesome: Rmon ipfwchains/ipfwchains ucd-snmp/lmSensors
     ;;
   darwin*|Darwin*)
@@ -132,7 +252,6 @@ case "$(uname)" in
               mibs+=(mibII/mta_sendmail)
               mibs+=(misc/ipfwacc)
               mibs+=(snmp-notification-mib)
-              mibs+=(snmp-usm-dh-objects-mib)
               mibs+=(tcp-mib)
               mibs+=(ucd-snmp/diskio)
               mibs+=(ucd-snmp/extensible)
@@ -140,7 +259,6 @@ case "$(uname)" in
               mibs+=(Rmon)
               ;;
       esac
-      options+=(--with-python-modules)
       if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
           options+=("--with-openssl=$(brew --prefix openssl)")
           # On Travis OS/X linking the Perl modules fails with "undefined symbol
@@ -148,34 +266,55 @@ case "$(uname)" in
           options+=(--disable-embedded-perl --without-perl-modules)
       fi
     ;;
+  FreeBSD*)
+      case "$MODE" in
+          mini*|read-only)
+              ;;
+          *)
+              mibs+=(disman/nslookup-mib)
+              mibs+=(host)
+              mibs+=(if-mib)
+              mibs+=(mibII/mta_sendmail)
+              mibs+=(misc/ipfwacc)
+              mibs+=(sctp-mib)
+              mibs+=(snmp-notification-mib)
+              mibs+=(tcp-mib)
+              mibs+=(ucd-snmp/diskio)
+              mibs+=(ucd-snmp/extensible)
+              mibs+=(udp-mib)
+              mibs+=(Rmon)
+              ;;
+      esac
+      options+=(--disable-embedded-perl --without-perl-modules)
+    ;;
   CYGWIN*)
       export ENV_SEPARATOR=":"
       mibs+=(ucd-snmp/extensible)
       mibs+=(winExtDLL)
-      # To do: avoid that the Net-SNMP headers trigger the following build
-      # failure: /usr/include/w32api/psdk_inc/_fd_types.h:100:2: warning: #warning "fd_set and associated macros have been defined in sys/types. This can cause runtime problems with W32 sockets" [-Wcpp]
-      # #warning "fd_set and associated macros have been defined in sys/types.
-      options+=("--with-openssl=internal")
-      if [ -n "$APPVEYOR" ]; then
-          # On Appveyor building the Perl modules fails as follows:
-          # /usr/lib/perl5/5.26/i686-cygwin-threads-64int/CORE/reentr.h:104:26: fatal error: crypt.h: No such file or directory
-          options+=(--disable-embedded-perl --without-perl-modules)
-      fi
+      options+=(--disable-embedded-perl --without-perl-modules)
     ;;
-  MINGW*|MSYS*)
+  MINGW*)
       options+=(--disable-embedded-perl)
-      if [ "$branch_name" != "V5-4-patches" ]; then
-	  options+=("--with-openssl=/c/OpenSSL")
-      fi
+      mibs+=(host)
       mibs+=(snmp-notification-mib)
       mibs+=(ucd-snmp/dlmod)
       mibs+=(ucd-snmp/extensible)
       mibs+=(winExtDLL)
       options+=(--without-perl-modules)
-      #options+=(--with-mibdirs="C:/usr/share/snmp/mibs")
-      if [ -n "$APPVEYOR" ]; then
-          options+=("--build=x86_64-pc-mingw32")
-      fi
+    ;;
+  MSYS*)
+      options+=(--disable-embedded-perl)
+      mibs+=(host)
+      mibs+=(snmp-notification-mib)
+      mibs+=(ucd-snmp/dlmod)
+      mibs+=(ucd-snmp/extensible)
+      mibs+=(winExtDLL)
+      options+=(--without-perl-modules)
+      # The config.guess script in the Net-SNMP source tree is too old to
+      # recognize the MSYS2 environment. Hence the explicit --build=... option.
+      # See also
+      # http://git.savannah.gnu.org/cgit/automake.git/tree/lib/config.guess.
+      options+=("--build=x86_64-pc-mingw32")
     ;;
   *)
     echo "Unknown OS $(uname)."
@@ -188,26 +327,59 @@ for o in "${options[@]}"; do
         with_openssl="${o#--with-openssl=}"
     fi
 done
-set -x
-if [ "$opensslver" != "" ] &&
-	grep -rqw BIO_dgram_get_peer "${with_openssl:-/usr}/include/openssl" 2>/dev/null
-then
-	transports+=(DTLSUDP)
-        # to do: figure out why one of the IPv6 TLSTCP test fails on Travis.
-        if [ "${TRAVIS_OS_NAME}" != linux ]; then
-	    transports+=(TLSTCP)
-        fi
+if [ "$opensslver" = "" ]; then
+    options+=("--with-openssl=internal")
+    with_openssl="internal"
+else
+    if grep -rqw BIO_dgram_get_peer "$(ssl_include_path)" 2>/dev/null; then
+	transports+=(DTLSUDP TLSTCP)
+    fi
+    if [ "$MODE" != "read-only" ]; then
+	# these MIB modules do not support read-only
+	if [ -e "$(ssl_include_path)/dh.h" ]; then
+	    mibs+=(snmp-usm-dh-objects-mib)
+	fi
+	if [ -e "$(ssl_include_path)/ssl.h" ]; then
+	    mibs+=(tlstm-mib)
+	fi
+	mibs+=(tsm-mib)
+    fi
 fi
-set +x
-if $is_5_8_or_above; then
-    [ -e "${with_openssl:-/usr}/openssl/aes.h" ] &&
-        [ -e "${with_openssl:-/usr}/openssl/evp.h" ] &&
-        options+=(--enable-blumenthal-aes)
+if [ "$with_openssl" != "internal" ] && $is_5_8_or_above &&
+       [ -e "$(ssl_include_path)/aes.h" ] &&
+       [ -e "$(ssl_include_path)/evp.h" ]; then
+       options+=(--enable-blumenthal-aes)
 fi
 security_modules=(usm tsm)
 if [ -e /usr/include/krb5.h ]; then
     security_modules+=(ksm)
 fi
+case "$(uname)" in
+    MSYS*|MINGW*)
+	# Do not enable Python support on MinGW32 nor for the MSYS build
+	# environment because the Python interpreter has been built on these
+	# environments with Visual C++. That compiler is incompatible with gcc.
+        ;;
+    Darwin*)
+	case "$(uname -r)" in
+	    11.*|12.*)
+		if python3 -c 'import setuptools' 1>/dev/null 2>&1; then
+		    options+=(--with-python-modules)
+		fi
+		;;
+	    *)
+		;;
+	esac
+	;;
+    *)
+	# Do not enable Python support for Cirrus CI because on Cirrus linking
+	# with Python fails as follows (this is probably a bug in Net-SNMP):
+	# /usr/bin/ld: /tmp/cirrus-ci-build/snmplib/.libs/libnetsnmp.a(snmp_client.o): relocation R_X86_64_32S against `a local symbol' can not be used when making a shared object; recompile with -fPIC
+	if python3 -c 'import setuptools' 1>/dev/null 2>&1 &&
+	       [ -z "$CIRRUS_CI" ]; then
+	    options+=(--with-python-modules)
+	fi
+    esac
 
 case "$MODE" in
     disable-set)
@@ -225,8 +397,8 @@ case "$MODE" in
         exit 1;;
 esac
 
+[ "${libssh2ver#2}" != "${libssh2ver}" ] && transports+=(SSH)
 set -x
-./configure "${options[@]}" --with-transports="${transports[*]}"	\
-            --with-security-modules="${security_modules[*]}"		\
+./configure "${options[@]}" --with-transports="${transports[*]}" \
+            --with-security-modules="${security_modules[*]}"	 \
 	    --with-mib-modules="${mibs[*]}" "$@"
-set +x

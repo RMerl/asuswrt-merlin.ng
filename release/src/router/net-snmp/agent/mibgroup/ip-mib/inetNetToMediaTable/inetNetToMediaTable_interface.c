@@ -47,18 +47,18 @@
 
 #include <ctype.h>
 
-netsnmp_feature_child_of(inetNetToMediaTable_external_access, libnetsnmpmibs)
+netsnmp_feature_child_of(inetNetToMediaTable_external_access, libnetsnmpmibs);
 
-netsnmp_feature_require(row_merge)
-netsnmp_feature_require(baby_steps)
-netsnmp_feature_require(table_container_row_insert)
-netsnmp_feature_require(check_all_requests_error)
+netsnmp_feature_require(row_merge);
+netsnmp_feature_require(baby_steps);
+netsnmp_feature_require(table_container_row_insert);
+netsnmp_feature_require(check_all_requests_error);
 
 
-netsnmp_feature_child_of(inetNetToMediaTable_container_size, inetNetToMediaTable_external_access)
-netsnmp_feature_child_of(inetNetToMediaTable_registration_set, inetNetToMediaTable_external_access)
-netsnmp_feature_child_of(inetNetToMediaTable_registration_get, inetNetToMediaTable_external_access)
-netsnmp_feature_child_of(inetNetToMediaTable_container_get, inetNetToMediaTable_external_access)
+netsnmp_feature_child_of(inetNetToMediaTable_container_size, inetNetToMediaTable_external_access);
+netsnmp_feature_child_of(inetNetToMediaTable_registration_set, inetNetToMediaTable_external_access);
+netsnmp_feature_child_of(inetNetToMediaTable_registration_get, inetNetToMediaTable_external_access);
+netsnmp_feature_child_of(inetNetToMediaTable_container_get, inetNetToMediaTable_external_access);
 
 /**********************************************************************
  **********************************************************************
@@ -1101,10 +1101,8 @@ _inetNetToMediaTable_check_indexes(inetNetToMediaTable_rowreq_ctx *
     /*
      * check defined range(s). 
      */
-    if ((SNMPERR_SUCCESS == rc)
-        && ((rowreq_ctx->tbl_idx.inetNetToMediaNetAddress_len < 0)
-            || (rowreq_ctx->tbl_idx.inetNetToMediaNetAddress_len > 255))
-        ) {
+    if (rc == SNMPERR_SUCCESS &&
+        rowreq_ctx->tbl_idx.inetNetToMediaNetAddress_len > 255) {
         rc = SNMP_ERR_WRONGLENGTH;
     }
     if (MFD_SUCCESS != rc)
@@ -1175,9 +1173,7 @@ _inetNetToMediaTable_check_column(inetNetToMediaTable_rowreq_ctx *
         /*
          * check defined range(s). 
          */
-        if ((SNMPERR_SUCCESS == rc)
-            && ((var->val_len < 0) || (var->val_len > 65535))
-            ) {
+        if (rc == SNMPERR_SUCCESS && var->val_len > 65535) {
             rc = SNMP_ERR_WRONGLENGTH;
         }
         if (SNMPERR_SUCCESS != rc) {

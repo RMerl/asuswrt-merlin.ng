@@ -15,4 +15,3 @@
 
 /* define the extra mib modules that are supported */
 #define NETSNMP_INCLUDE_HOST_RESOURCES
-#define NETSNMP_INCLUDE_IFTABLE_REWRITES

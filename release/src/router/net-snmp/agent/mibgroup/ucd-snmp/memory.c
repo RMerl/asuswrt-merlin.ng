@@ -26,7 +26,7 @@ init_memory(void)
         netsnmp_create_handler_registration("memory", handle_memory,
                                  memory_oid, OID_LENGTH(memory_oid),
                                              HANDLER_CAN_RONLY),
-                                 1, 26);
+                                 1, 27);
     netsnmp_register_scalar(
         netsnmp_create_handler_registration("memSwapError", handle_memory,
                            memSwapError_oid, OID_LENGTH(memSwapError_oid),
@@ -271,6 +271,16 @@ handle_memory(netsnmp_mib_handler *handler,
             val *= (mem_info->units/1024);
 	    c64.low = val & 0xFFFFFFFF;
 	    c64.high = val >>32;
+            break;
+        case MEMORY_SYS_AVAIL:
+	    type = ASN_COUNTER64;
+            mem_info = netsnmp_memory_get_byIdx(NETSNMP_MEM_TYPE_AVAILMEM, 0);
+            if (!mem_info)
+                goto NOSUCH;
+            val = mem_info->size;       /* memavail */
+            val *= (mem_info->units/1024);
+	    c64.low = val & 0xFFFFFFFF;
+	    c64.high = val >> 32;
             break;
         case MEMORY_SWAP_ERROR:
             mem_info = netsnmp_memory_get_byIdx( NETSNMP_MEM_TYPE_SWAP, 0 );

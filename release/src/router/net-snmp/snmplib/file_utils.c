@@ -33,17 +33,13 @@
 
 #include <errno.h>
 
-#if HAVE_DMALLOC_H
-#  include <dmalloc.h>
-#endif
-
 #include <net-snmp/types.h>
 #include <net-snmp/library/container.h>
 #include <net-snmp/library/file_utils.h>
 
-netsnmp_feature_child_of(file_utils_all, libnetsnmp)
-netsnmp_feature_child_of(file_utils, file_utils_all)
-netsnmp_feature_child_of(file_close, file_utils_all)
+netsnmp_feature_child_of(file_utils_all, libnetsnmp);
+netsnmp_feature_child_of(file_utils, file_utils_all);
+netsnmp_feature_child_of(file_close, file_utils_all);
 
 #ifndef NETSNMP_FEATURE_REMOVE_FILE_UTILS
 /*------------------------------------------------------------------

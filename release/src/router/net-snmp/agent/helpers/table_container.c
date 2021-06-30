@@ -30,14 +30,14 @@
 #include <net-snmp/library/container.h>
 #include <net-snmp/library/snmp_assert.h>
 
-netsnmp_feature_provide(table_container)
-netsnmp_feature_child_of(table_container, table_container_all)
-netsnmp_feature_child_of(table_container_replace_row, table_container_all)
-netsnmp_feature_child_of(table_container_extract, table_container_all)
-netsnmp_feature_child_of(table_container_management, table_container_all)
-netsnmp_feature_child_of(table_container_row_remove, table_container_all)
-netsnmp_feature_child_of(table_container_row_insert, table_container_all)
-netsnmp_feature_child_of(table_container_all, mib_helpers)
+netsnmp_feature_provide(table_container);
+netsnmp_feature_child_of(table_container, table_container_all);
+netsnmp_feature_child_of(table_container_replace_row, table_container_all);
+netsnmp_feature_child_of(table_container_extract, table_container_all);
+netsnmp_feature_child_of(table_container_management, table_container_all);
+netsnmp_feature_child_of(table_container_row_remove, table_container_all);
+netsnmp_feature_child_of(table_container_row_insert, table_container_all);
+netsnmp_feature_child_of(table_container_all, mib_helpers);
 
 #ifndef NETSNMP_FEATURE_REMOVE_TABLE_CONTAINER
 

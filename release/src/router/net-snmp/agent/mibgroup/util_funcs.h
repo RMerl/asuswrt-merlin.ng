@@ -37,9 +37,11 @@ int             exec_command(struct extensible *);
 struct extensible *get_exten_instance(struct extensible *, size_t);
 int             get_exec_output(struct extensible *);
 #if defined(WIN32) && !defined(cygwin)
-int             get_exec_pipes(char *cmd, int *fdIn, int *fdOut, HANDLE *pid);
+int             get_exec_pipes(const char *cmd, int *fdIn, int *fdOut,
+                               HANDLE *pid);
 #else
-int             get_exec_pipes(char *cmd, int *fdIn, int *fdOut, pid_t *pid);
+int             get_exec_pipes(const char *cmd, int *fdIn, int *fdOut,
+                               pid_t *pid);
 #endif
 WriteMethod     clear_cache;
 void            print_mib_oid(oid *, size_t);
@@ -67,6 +69,15 @@ int net_snmp_search_update_prefix_info(prefix_cbx **head,
 int net_snmp_delete_prefix_info(prefix_cbx **head,
                                 char *address);
 #endif
+
+struct netsnmp_linux_link_settings {
+    uint32_t   speed;
+    uint8_t    duplex;
+};
+
+int netsnmp_get_link_settings(struct netsnmp_linux_link_settings *nlls,
+                              int fd, const char *name);
+
 #define NIP6(addr) \
         ntohs((addr).s6_addr16[0]), \
         ntohs((addr).s6_addr16[1]), \

@@ -746,6 +746,22 @@ memCachedX OBJECT-TYPE
          memory as specifically reserved for this purpose."
     ::= { memory 26 }
 
+memSysAvail OBJECT-TYPE
+    SYNTAX	CounterBasedGauge64
+    UNITS       "kB"
+    MAX-ACCESS	read-only
+    STATUS	current
+    DESCRIPTION
+        "The total amount of available memory, which is an estimate
+         of how much memory is available for starting new applications,
+         without swapping.
+
+         This object will not be implemented on hosts where the
+         underlying operating system does not explicitly identify
+         memory as specifically reserved for this purpose."
+    ::= { memory 27 }
+
+
 memSwapError OBJECT-TYPE
     SYNTAX	UCDErrorFlag
     MAX-ACCESS	read-only

@@ -196,6 +196,11 @@ add(netsnmp_pdu *pdu, const char *mibnodename,
         exit(1);
     }
 
+    if (base_length + indexlen > sizeof(base) / sizeof(base[0])) {
+        fprintf(stderr, "internal error for %s, giving up\n", mibnodename);
+        exit(1);
+    }
+
     if (index && indexlen) {
         memcpy(&(base[base_length]), index, indexlen * sizeof(oid));
         base_length += indexlen;
@@ -332,44 +337,52 @@ collect_perf(netsnmp_session *ss, struct hrSWRunTable **fproc)
         proc.hrSWRunIndex = vlp->name[base_length];
 
         vlp2 = response->variables;
-        if (vlp2->type == SNMP_NOSUCHINSTANCE) goto next;
+        if (vlp2->type == SNMP_NOSUCHINSTANCE ||
+            vlp2->type == SNMP_NOSUCHOBJECT) goto next;
         len = vlp2->val_len;
         proc.hrSWRunName = malloc(len+1);
         memcpy(proc.hrSWRunName, vlp2->val.string, len);
         proc.hrSWRunName[len] = '\0';
 
         vlp2 = vlp2->next_variable;
-        if (vlp2->type == SNMP_NOSUCHINSTANCE) goto next;
+        if (vlp2->type == SNMP_NOSUCHINSTANCE ||
+            vlp2->type == SNMP_NOSUCHOBJECT) goto next;
         proc.hrSWRunID = *vlp2->val.integer;
 
         vlp2 = vlp2->next_variable;
-        if (vlp2->type == SNMP_NOSUCHINSTANCE) goto next;
+        if (vlp2->type == SNMP_NOSUCHINSTANCE ||
+            vlp2->type == SNMP_NOSUCHOBJECT) goto next;
         len = vlp2->val_len;
         proc.hrSWRunPath = malloc(len+1);
         memcpy(proc.hrSWRunPath, vlp2->val.string, len);
         proc.hrSWRunPath[len] = '\0';
 
         vlp2 = vlp2->next_variable;
-        if (vlp2->type == SNMP_NOSUCHINSTANCE) goto next;
+        if (vlp2->type == SNMP_NOSUCHINSTANCE ||
+            vlp2->type == SNMP_NOSUCHOBJECT) goto next;
         len = vlp2->val_len;
         proc.hrSWRunParameters = malloc(len+1);
         memcpy(proc.hrSWRunParameters, vlp2->val.string, len);
         proc.hrSWRunParameters[len] = '\0';
 
         vlp2 = vlp2->next_variable;
-        if (vlp2->type == SNMP_NOSUCHINSTANCE) goto next;
+        if (vlp2->type == SNMP_NOSUCHINSTANCE ||
+            vlp2->type == SNMP_NOSUCHOBJECT) goto next;
         proc.hrSWRunType = *vlp2->val.integer;
 
         vlp2 = vlp2->next_variable;
-        if (vlp2->type == SNMP_NOSUCHINSTANCE) goto next;
+        if (vlp2->type == SNMP_NOSUCHINSTANCE ||
+            vlp2->type == SNMP_NOSUCHOBJECT) goto next;
         proc.hrSWRunStatus = *vlp2->val.integer;
 
         vlp2 = vlp2->next_variable;
-        if (vlp2->type == SNMP_NOSUCHINSTANCE) goto next;
+        if (vlp2->type == SNMP_NOSUCHINSTANCE ||
+            vlp2->type == SNMP_NOSUCHOBJECT) goto next;
         proc.hrSWRunPerfCPU = *vlp2->val.integer;
 
         vlp2 = vlp2->next_variable;
-        if (vlp2->type == SNMP_NOSUCHINSTANCE) goto next;
+        if (vlp2->type == SNMP_NOSUCHINSTANCE ||
+            vlp2->type == SNMP_NOSUCHOBJECT) goto next;
         proc.hrSWRunPerfMem = *vlp2->val.integer;
 
         count++;
@@ -974,6 +987,8 @@ int snmptop(int argc, char **argv)
         ocount = ncount;
     }
     endwin();
+
+    free_perf(oproc, ocount);
 
     snmp_close(ss);
     SOCK_CLEANUP;

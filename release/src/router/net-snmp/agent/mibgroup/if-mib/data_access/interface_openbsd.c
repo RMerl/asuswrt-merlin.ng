@@ -9,7 +9,7 @@
 #include "mibII/mibII_common.h"
 #include "if-mib/ifTable/ifTable_constants.h"
 
-netsnmp_feature_child_of(interface_arch_set_admin_status, interface_all)
+netsnmp_feature_child_of(interface_arch_set_admin_status, interface_all);
 
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 
@@ -143,8 +143,6 @@ netsnmp_arch_interface_container_load(netsnmp_container* container,
 
         entry = netsnmp_access_interface_entry_create(if_name, ifp->ifm_index);
         if(NULL == entry) {
-            netsnmp_access_interface_container_free(container,
-                                                    NETSNMP_ACCESS_INTERFACE_FREE_NOFLAGS);
             free(if_list);
             return -3;
         }
@@ -334,7 +332,8 @@ netsnmp_openbsd_interface_get_if_speed(char *name, u_int *speed, u_int *speed_hi
 {
     int s;
     struct ifmediareq ifmr;
-    int *media_list, i;
+    int i;
+    uint64_t *media_list;
     u_int t_speed, t_speed_high; 
     u_int m_speed, m_speed_high;
 
@@ -361,7 +360,7 @@ netsnmp_openbsd_interface_get_if_speed(char *name, u_int *speed, u_int *speed_hi
     _openbsd_interface_ifmedia_to_speed(ifmr.ifm_current, speed, speed_high);
 
     if (*speed == 0 &&
-        (media_list = (int *) malloc(ifmr.ifm_count * sizeof(int))) != NULL ) {
+        (media_list = (uint64_t *) malloc(ifmr.ifm_count * sizeof(uint64_t))) != NULL ) {
 
         ifmr.ifm_ulist = media_list;
 

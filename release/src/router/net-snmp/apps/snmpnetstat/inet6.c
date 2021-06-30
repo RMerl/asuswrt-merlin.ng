@@ -1,8 +1,12 @@
-/*	$OpenBSD: inet6.c,v 1.31 2004/11/17 01:47:20 itojun Exp $	*/
-/*	BSDI inet.c,v 2.3 1995/10/24 02:19:29 prb Exp	*/
+/*
+ * $OpenBSD: inet6.c,v 1.31 2004/11/17 01:47:20 itojun Exp $
+ */
+/*
+ * BSDI inet.c,v 2.3 1995/10/24 02:19:29 prb Exp
+ */
 /*
  * Copyright (c) 1983, 1988, 1993
- *	The Regents of the University of California.  All rights reserved.
+ *      The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,17 +32,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-#ifdef  INHERITED_CODE
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)inet.c	8.4 (Berkeley) 4/20/94";
-#else
-/*__RCSID("$OpenBSD: inet6.c,v 1.31 2004/11/17 01:47:20 itojun Exp $");*/
-/*__RCSID("KAME Id: inet6.c,v 1.10 2000/02/09 10:49:31 itojun Exp");*/
-#endif
-#endif /* not lint */
-#endif
 
 #include <net-snmp/net-snmp-config.h>
 
@@ -71,15 +64,15 @@ static char sccsid[] = "@(#)inet.c	8.4 (Berkeley) 4/20/94";
 #include "netstat.h"
 
 struct stat_table {
-    unsigned int entry;      /* entry number in table */
+    unsigned int    entry;      /* entry number in table */
     /*
-     * format string to printf(description, value) 
-     * warning: the %d must be before the %s 
+     * format string to printf(description, value)
+     * warning: the %d must be before the %s
      */
     char            description[80];
 };
 
-static char *inet6name(const unsigned char *);
+static char    *inet6name(const struct in6_addr *);
 
 /*
  * Print a summary of TCPv6 connections
@@ -100,33 +93,35 @@ const char     *tcp6states[] = {
     "CLOSING",
     "TIMEWAIT"
 };
+
 #define TCP_NSTATES 11
 
 void
 tcp6protopr(const char *name)
 {
     netsnmp_variable_list *var, *vp;
-    oid    ipv6TcpConnState_oid[] = { 1,3,6,1,2,1,6,16,1,6 };
-    size_t ipv6TcpConnState_len   = OID_LENGTH( ipv6TcpConnState_oid );
-    int    state, i;
+    oid             ipv6TcpConnState_oid[] =
+        { 1, 3, 6, 1, 2, 1, 6, 16, 1, 6 };
+    size_t          ipv6TcpConnState_len =
+        OID_LENGTH(ipv6TcpConnState_oid);
+    int             state, i;
     unsigned char   localAddr[16], remoteAddr[16];
-    int    localPort,     remotePort,  ifIndex;
-    int    first = 1;
+    int             localPort, remotePort, ifIndex;
+    int             first = 1;
 
     /*
      * Walking the v6 tcpConnState column will provide all
      *   the necessary information.
      */
     var = NULL;
-    snmp_varlist_add_variable( &var, ipv6TcpConnState_oid,
-                                     ipv6TcpConnState_len,
-                                     ASN_NULL, NULL,  0);
-    if (netsnmp_query_walk( var, ss ) != SNMP_ERR_NOERROR)
+    snmp_varlist_add_variable(&var, ipv6TcpConnState_oid,
+                              ipv6TcpConnState_len, ASN_NULL, NULL, 0);
+    if (netsnmp_query_walk(var, ss) != SNMP_ERR_NOERROR)
         return;
-    if ((var->type & 0xF0) == 0x80)		/* exception */
+    if ((var->type & 0xF0) == 0x80)     /* exception */
         return;
 
-    for (vp = var; vp ; vp=vp->next_variable) {
+    for (vp = var; vp; vp = vp->next_variable) {
         state = *vp->val.integer;
         if (!aflag && state == MIB_TCPCONNSTATE_LISTEN)
             continue;
@@ -137,28 +132,31 @@ tcp6protopr(const char *name)
                 printf(" (including servers)");
             putchar('\n');
             printf("%-5.5s %-27.27s %-27.27s %4s %s\n",
-                   "Proto", "Local Address", "Remote Address", "I/F", "(state)");
+                   "Proto", "Local Address", "Remote Address", "I/F",
+                   "(state)");
             first = 0;
         }
-        
-        /* Extract the local/remote information from the index values */
-        for (i=0; i<16; i++)
-            localAddr[i]  = vp->name[ 10+i ];
-        localPort    = vp->name[ 26 ];
-        for (i=0; i<16; i++)
-            remoteAddr[i] = vp->name[ 27+i ];
-        remotePort   = vp->name[ 43 ];
-        ifIndex      = vp->name[ 44 ];
+
+        /*
+         * Extract the local/remote information from the index values
+         */
+        for (i = 0; i < 16; i++)
+            localAddr[i] = vp->name[10 + i];
+        localPort = vp->name[26];
+        for (i = 0; i < 16; i++)
+            remoteAddr[i] = vp->name[27 + i];
+        remotePort = vp->name[43];
+        ifIndex = vp->name[44];
 
         printf("%-5.5s", name);
-        inet6print(localAddr,  localPort,  name, 1);
-        inet6print(remoteAddr, remotePort, name, 0);
-        if ( state < 1 || state > TCP_NSTATES )
-            printf(" %4d %d\n", ifIndex, state );
+        inet6print((struct in6_addr *) localAddr, localPort, name, 1);
+        inet6print((struct in6_addr *) remoteAddr, remotePort, name, 0);
+        if (state < 1 || state > TCP_NSTATES)
+            printf(" %4d %d\n", ifIndex, state);
         else
-            printf(" %4d %s\n", ifIndex, tcp6states[ state ]);
+            printf(" %4d %s\n", ifIndex, tcp6states[state]);
     }
-    snmp_free_varbind( var );
+    snmp_free_varbind(var);
 }
 
 /*
@@ -169,42 +167,43 @@ void
 udp6protopr(const char *name)
 {
     netsnmp_variable_list *var, *vp;
-    oid    ipv6UdpLocalAddress_oid[] = { 1,3,6,1,2,1,7,6,1,1 };
-    size_t ipv6UdpLocalAddress_len   = OID_LENGTH( ipv6UdpLocalAddress_oid );
-    int    localPort, ifIndex;
+    oid             ipv6UdpLocalAddress_oid[] =
+        { 1, 3, 6, 1, 2, 1, 7, 6, 1, 1 };
+    size_t          ipv6UdpLocalAddress_len =
+        OID_LENGTH(ipv6UdpLocalAddress_oid);
+    int             localPort, ifIndex;
 
     /*
      * Walking a single column of the udpTable will provide
      *   all the necessary information from the index values.
      */
     var = NULL;
-    snmp_varlist_add_variable( &var, ipv6UdpLocalAddress_oid,
-                                     ipv6UdpLocalAddress_len,
-                                     ASN_NULL, NULL,  0);
-    if (netsnmp_query_walk( var, ss ) != SNMP_ERR_NOERROR)
+    snmp_varlist_add_variable(&var, ipv6UdpLocalAddress_oid,
+                              ipv6UdpLocalAddress_len, ASN_NULL, NULL, 0);
+    if (netsnmp_query_walk(var, ss) != SNMP_ERR_NOERROR)
         return;
-    if ((var->type & 0xF0) == 0x80)		/* exception */
+    if ((var->type & 0xF0) == 0x80)     /* exception */
         return;
 
     printf("Active Internet Connections\n");
     printf("%-5.5s %-27.27s %4s\n", "Proto", "Local Address", "I/F");
-    for (vp = var; vp ; vp=vp->next_variable) {
+    for (vp = var; vp; vp = vp->next_variable) {
         printf("%-5.5s", name);
         /*
          * Extract the local port from the index values, but take
          *   the IP address from the varbind value, (which is why
          *   we walked udpLocalAddress rather than udpLocalPort)
          */
-        localPort = vp->name[ vp->name_length-2 ];
-        ifIndex   = vp->name[ vp->name_length-1 ];
-        inet6print(vp->val.string, localPort, name, 1);
-        printf(" %4d\n", ifIndex );
+        localPort = vp->name[vp->name_length - 2];
+        ifIndex = vp->name[vp->name_length - 1];
+        inet6print((struct in6_addr *) vp->val.string, localPort, name, 1);
+        printf(" %4d\n", ifIndex);
     }
-    snmp_free_varbind( var );
+    snmp_free_varbind(var);
 }
 
 
-	/*********************
+        /*********************
 	 *
 	 *  IPv6 statistics
 	 *
@@ -217,68 +216,67 @@ udp6protopr(const char *name)
  *    than simply retrieving individual scalar values)
  */
 void
-_dump_v6stats( const char *name, oid *oid_buf, size_t buf_len,
-               struct stat_table *stable )
+_dump_v6stats(const char *name, oid * oid_buf, size_t buf_len,
+              struct stat_table *stable)
 {
     netsnmp_variable_list *var, *vp;
-    struct stat_table     *sp;
-    long   *stats;
-    oid stat;
-    unsigned int max_stat = 0;
-    int    active   = 0;
+    struct stat_table *sp;
+    long           *stats;
+    oid             stat;
+    unsigned int    max_stat = 0;
+    int             active = 0;
 
     var = NULL;
-    for (sp=stable; sp->entry; sp++) {
-        oid_buf[buf_len-1] = sp->entry;
+    for (sp = stable; sp->entry; sp++) {
+        oid_buf[buf_len - 1] = sp->entry;
         if (sp->entry > max_stat)
             max_stat = sp->entry;
-        snmp_varlist_add_variable( &var, oid_buf, buf_len,
-                                   ASN_NULL, NULL,  0);
+        snmp_varlist_add_variable(&var, oid_buf, buf_len,
+                                  ASN_NULL, NULL, 0);
     }
-    oid_buf[buf_len-1] = stable[0].entry;
-    stats = (long *)calloc(max_stat+1, sizeof(long));
-    
+    oid_buf[buf_len - 1] = stable[0].entry;
+    stats = (long *) calloc(max_stat + 1, sizeof(long));
+
     /*
      * Walk the specified column(s), and total the individual statistics
      */
     while (1) {
-        if (netsnmp_query_getnext( var, ss ) != SNMP_ERR_NOERROR)
+        if (netsnmp_query_getnext(var, ss) != SNMP_ERR_NOERROR)
             break;
-        if ((var->type & 0xF0) == 0x80)		/* exception */
+        if ((var->type & 0xF0) == 0x80) /* exception */
             break;
-        if ( snmp_oid_compare( oid_buf,   buf_len,
-                               var->name, buf_len) != 0 )
-            break;    /* End of Table */
-            
-        for ( vp=var; vp; vp=vp->next_variable ) {
-            stat = vp->name[ buf_len-1 ];
+        if (snmp_oid_compare(oid_buf, buf_len, var->name, buf_len) != 0)
+            break;              /* End of Table */
+
+        for (vp = var; vp; vp = vp->next_variable) {
+            stat = vp->name[buf_len - 1];
             stats[stat] += *vp->val.integer;
         }
-        active=1;
+        active = 1;
     }
     if (!active) {
-        free( stats );
-        snmp_free_varbind( var );
-        return;     /* No statistics to display */
+        free(stats);
+        snmp_free_varbind(var);
+        return;                 /* No statistics to display */
     }
 
     /*
      * Display the results
      */
     printf("%s:\n", name);
-    for (sp=stable; sp->entry; sp++) {
+    for (sp = stable; sp->entry; sp++) {
         /*
          * If '-Cs' was specified twice,
          *   then only display non-zero stats.
          */
-        if ( stats[sp->entry] > 0 || sflag == 1 ) {
+        if (stats[sp->entry] > 0 || sflag == 1) {
             printf(sp->description, stats[sp->entry],
-                             plural(stats[sp->entry]));
+                   plural(stats[sp->entry]));
             putchar('\n');
         }
     }
-    free( stats );
-    snmp_free_varbind( var );
+    free(stats);
+    snmp_free_varbind(var);
 }
 
 
@@ -288,18 +286,18 @@ _dump_v6stats( const char *name, oid *oid_buf, size_t buf_len,
 void
 ip6_stats(const char *name)
 {
-    oid               ip6stats_oid[] = { 1, 3, 6, 1, 2, 1, 55, 1, 6, 1, 0 };
-    size_t            ip6stats_len   = OID_LENGTH( ip6stats_oid );
+    oid             ip6stats_oid[] = { 1, 3, 6, 1, 2, 1, 55, 1, 6, 1, 0 };
+    size_t          ip6stats_len = OID_LENGTH(ip6stats_oid);
     struct stat_table ip6stats_tbl[] = {
-        { 1, "%14d total datagram%s received"},
-        { 2, "%14d datagram%s with header errors"},
-        { 3, "%14d oversized datagram%s"},
-        { 4, "%14d datagram%s with no route"},
-        { 5, "%14d datagram%s with an invalid destination address"},
-        { 6, "%14d datagram%s with unknown protocol"},
-        { 7, "%14d short datagram%s discarded"},
-        { 8, "%14d datagram%s discarded"},
-        { 9, "%14d datagram%s delivered"},
+        {1, "%14d total datagram%s received"},
+        {2, "%14d datagram%s with header errors"},
+        {3, "%14d oversized datagram%s"},
+        {4, "%14d datagram%s with no route"},
+        {5, "%14d datagram%s with an invalid destination address"},
+        {6, "%14d datagram%s with unknown protocol"},
+        {7, "%14d short datagram%s discarded"},
+        {8, "%14d datagram%s discarded"},
+        {9, "%14d datagram%s delivered"},
         {10, "%14d datagram%s forwarded"},
         {11, "%14d output datagram request%s"},
         {12, "%14d output datagram%s discarded"},
@@ -311,10 +309,10 @@ ip6_stats(const char *name)
         {18, "%14d reassembly failure%s"},
         {19, "%14d multicast datagram%s received"},
         {20, "%14d multicast datagram%s transmitted"},
-        { 0, ""}
+        {0, ""}
     };
 
-    _dump_v6stats( name, ip6stats_oid, ip6stats_len, ip6stats_tbl );
+    _dump_v6stats(name, ip6stats_oid, ip6stats_len, ip6stats_tbl);
 }
 
 /*
@@ -328,23 +326,24 @@ ip6_stats(const char *name)
 void
 icmp6_stats(const char *name)
 {
-    oid               icmp6stats_oid[] = { 1, 3, 6, 1, 2, 1, 56, 1, 1, 1, 0 };
-    size_t            icmp6stats_len   = OID_LENGTH( icmp6stats_oid );
+    oid             icmp6stats_oid[] =
+        { 1, 3, 6, 1, 2, 1, 56, 1, 1, 1, 0 };
+    size_t          icmp6stats_len = OID_LENGTH(icmp6stats_oid);
     struct stat_table icmp6stats_tbl[] = {
-        { 1, "%14d total message%s received"},
-        { 2, "%14d message%s dropped due to errors"},
+        {1, "%14d total message%s received"},
+        {2, "%14d message%s dropped due to errors"},
         {18, "%14d ouput message request%s"},
         {19, "%14d output message%s discarded"},
-        { 0, ""}
+        {0, ""}
     };
     struct stat_table icmp6_inhistogram[] = {
-        { 3, "        Destination unreachable: %d"},
-        { 4, "        Admin Prohibit: %d"},
-        { 5, "        Time Exceeded: %d"},
-        { 6, "        Parameter Problem: %d"},
-        { 7, "        Too Big: %d"},
-        { 8, "        Echo Request: %d"},
-        { 9, "        Echo Reply: %d"},
+        {3, "        Destination unreachable: %d"},
+        {4, "        Admin Prohibit: %d"},
+        {5, "        Time Exceeded: %d"},
+        {6, "        Parameter Problem: %d"},
+        {7, "        Too Big: %d"},
+        {8, "        Echo Request: %d"},
+        {9, "        Echo Reply: %d"},
         {10, "        Router Solicit: %d"},
         {11, "        Router Advert: %d"},
         {12, "        Neighbor Solicit: %d"},
@@ -353,7 +352,7 @@ icmp6_stats(const char *name)
         {15, "        Group Member Request: %d"},
         {16, "        Group Member Reply: %d"},
         {17, "        Group Member Reduce: %d"},
-        { 0, ""}
+        {0, ""}
     };
     struct stat_table icmp6_outhistogram[] = {
         {20, "        Destination unreachable: %d"},
@@ -374,11 +373,11 @@ icmp6_stats(const char *name)
         {0, ""}
     };
 
-    _dump_v6stats( name, icmp6stats_oid, icmp6stats_len, icmp6stats_tbl );
-    _dump_v6stats( "    Input Histogram",
-                         icmp6stats_oid, icmp6stats_len, icmp6_inhistogram );
-    _dump_v6stats( "    Output Histogram",
-                         icmp6stats_oid, icmp6stats_len, icmp6_outhistogram );
+    _dump_v6stats(name, icmp6stats_oid, icmp6stats_len, icmp6stats_tbl);
+    _dump_v6stats("    Input Histogram",
+                  icmp6stats_oid, icmp6stats_len, icmp6_inhistogram);
+    _dump_v6stats("    Output Histogram",
+                  icmp6stats_oid, icmp6stats_len, icmp6_outhistogram);
 }
 
 /*
@@ -400,7 +399,8 @@ icmp6_stats(const char *name)
  */
 
 void
-inet6print(unsigned char *in6, int port, const char *proto, int local)
+inet6print(const struct in6_addr *in6, int port, const char *proto,
+           int local)
 {
 
 #define GETSERVBYPORT6(port, proto, ret) do { \
@@ -412,30 +412,30 @@ inet6print(unsigned char *in6, int port, const char *proto, int local)
 		(ret) = getservbyport((int)(port), (proto)); \
 	} while (0)
 
-	struct servent *sp = NULL;
-	char line[80], *cp;
-	int width = 27-9;
-	int len = sizeof line;
+    struct servent *sp = NULL;
+    char            line[80], *cp;
+    int             width = 27 - 9;
+    int             len = sizeof line;
 
-	if (vflag && width < strlen(inet6name(in6)))
-		width = strlen(inet6name(in6));
-	snprintf(line, len, "%.*s.", width, inet6name(in6));
-	len -= strlen(line);
-	if (len <= 0)
-		goto bail;
+    if (vflag && width < strlen(inet6name(in6)))
+        width = strlen(inet6name(in6));
+    snprintf(line, len, "%.*s.", width, inet6name(in6));
+    len -= strlen(line);
+    if (len <= 0)
+        goto bail;
 
-	cp = strchr(line, '\0');
-	if (!nflag && port && local)
-		GETSERVBYPORT6(htons(port), proto, sp);
-	if (sp || port == 0)
-		snprintf(cp, len, vflag ? "%s" : "%.8s", sp ? sp->s_name : "*");
-	else
-		snprintf(cp, len, "%d", port);
-	width = 27;
-	if (vflag && width < strlen(line))
-		width = strlen(line);
-bail:
-	printf(" %-*.*s", width, width, line);
+    cp = strchr(line, '\0');
+    if (!nflag && port && local)
+        GETSERVBYPORT6(htons(port), proto, sp);
+    if (sp || port == 0)
+        snprintf(cp, len, vflag ? "%s" : "%.8s", sp ? sp->s_name : "*");
+    else
+        snprintf(cp, len, "%d", port);
+    width = 27;
+    if (vflag && width < strlen(line))
+        width = strlen(line);
+  bail:
+    printf(" %-*.*s", width, width, line);
 }
 
 /*
@@ -444,68 +444,52 @@ bail:
  * numeric value, otherwise try for symbolic name.
  */
 
-char *
-inet6name(const unsigned char *in6)
+char           *
+inet6name(const struct in6_addr *in6p)
 {
-	char *cp;
-	static char line[NI_MAXHOST];
-	static char domain[MAXHOSTNAMELEN];
-	static int first = 1;
-#ifdef NETSNMP_ENABLE_IPV6
-	struct hostent *hp;
-	char hbuf[NI_MAXHOST];
-	const int niflag = NI_NUMERICHOST;
-	struct sockaddr_in6 sin6;
-	const struct in6_addr *in6p = (const struct in6_addr *)in6;
-#endif
+    char           *cp;
+    static char     line[NI_MAXHOST];
+    static char     domain[MAXHOSTNAMELEN];
+    static int      first = 1;
 
-	if (first && !nflag) {
-		first = 0;
-		if (gethostname(line, sizeof(line)) == 0 &&
-		    (cp = strchr(line, '.')))
-			(void) strlcpy(domain, cp + 1, sizeof domain);
-		else
-			domain[0] = '\0';
-	}
+    if (first && !nflag) {
+        first = 0;
+        if (gethostname(line, sizeof(line)) == 0 &&
+            (cp = strchr(line, '.')))
+            (void) strlcpy(domain, cp + 1, sizeof domain);
+        else
+            domain[0] = '\0';
+    }
 #ifdef NETSNMP_ENABLE_IPV6
-	cp = NULL;
-	if (!nflag && !IN6_IS_ADDR_UNSPECIFIED(in6p)) {
-		hp = netsnmp_gethostbyaddr((const char *)in6p, sizeof(*in6p),
-                                           AF_INET6);
-		if (hp) {
-			if ((cp = strchr(hp->h_name, '.')) &&
-			    !strcmp(cp + 1, domain))
-				*cp = 0;
-			cp = hp->h_name;
-		}
-	}
-	if (IN6_IS_ADDR_UNSPECIFIED(in6p))
-		strlcpy(line, "*", sizeof(line));
-	else if (cp)
-		strlcpy(line, cp, sizeof(line));
-	else {
-		memset(&sin6, 0, sizeof(sin6));
-/*		sin6.sin6_len = sizeof(sin6);   */
-		sin6.sin6_family = AF_INET6;
-		sin6.sin6_addr = *in6p;
+    if (IN6_IS_ADDR_UNSPECIFIED(in6p)) {
+        strlcpy(line, "*", sizeof(line));
+    } else {
+        struct sockaddr_in6 sin6;
+        char            hbuf[NI_MAXHOST];
+
+        memset(&sin6, 0, sizeof(sin6));
+        sin6.sin6_family = AF_INET6;
+        sin6.sin6_addr = *in6p;
 #ifdef __KAME__
-		if (IN6_IS_ADDR_LINKLOCAL(in6p) ||
-		    IN6_IS_ADDR_MC_LINKLOCAL(in6p)) {
-			sin6.sin6_scope_id =
-			    ntohs(*(const uint16_t *)&in6p->s6_addr[2]);
-			sin6.sin6_addr.s6_addr[2] = 0;
-			sin6.sin6_addr.s6_addr[3] = 0;
-		}
+        if (IN6_IS_ADDR_LINKLOCAL(in6p) || IN6_IS_ADDR_MC_LINKLOCAL(in6p)) {
+            sin6.sin6_scope_id =
+                ntohs(*(const uint16_t *) &in6p->s6_addr[2]);
+            sin6.sin6_addr.s6_addr[2] = 0;
+            sin6.sin6_addr.s6_addr[3] = 0;
+        }
 #endif
-		if (getnameinfo((struct sockaddr *)&sin6, sizeof(sin6),
-		    hbuf, sizeof(hbuf), NULL, 0, niflag) != 0)
-			strlcpy(hbuf, "?", sizeof hbuf);
-		strlcpy(line, hbuf, sizeof(line));
-	}
+        if (getnameinfo((struct sockaddr *) &sin6, sizeof(sin6),
+                        hbuf, sizeof(hbuf), NULL, 0,
+                        nflag ? NI_NUMERICHOST : 0) < 0)
+            strlcpy(hbuf, "?", sizeof(hbuf));
+        if ((cp = strchr(hbuf, '.')) && strcmp(cp + 1, domain) == 0)
+            *cp = 0;
+        strlcpy(line, hbuf, sizeof(line));
+    }
 #else
-	strlcpy(line, "[[XXX - inet6 address]]", sizeof(line));
+    strlcpy(line, "[[XXX - inet6 address]]", sizeof(line));
 #endif
-	return (line);
+    return (line);
 }
 
 #ifdef TCP6

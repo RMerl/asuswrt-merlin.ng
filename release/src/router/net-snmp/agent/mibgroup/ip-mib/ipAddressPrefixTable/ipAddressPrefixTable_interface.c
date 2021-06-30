@@ -47,15 +47,15 @@
 
 #include <ctype.h>
 
-netsnmp_feature_require(row_merge)
-netsnmp_feature_require(baby_steps)
-netsnmp_feature_require(check_all_requests_error)
+netsnmp_feature_require(row_merge);
+netsnmp_feature_require(baby_steps);
+netsnmp_feature_require(check_all_requests_error);
 
-netsnmp_feature_child_of(ipaddressprefixtable_row_find_by_mib_index, ipaddressprefixtable_all)
-netsnmp_feature_child_of(ipaddressprefixtable_container_get, ipaddressprefixtable_all)
-netsnmp_feature_child_of(ipAddressPrefixTable_registration_get, ipaddressprefixtable_all)
-netsnmp_feature_child_of(ipAddressPrefixTable_registration_set, ipaddressprefixtable_all)
-netsnmp_feature_child_of(ipAddressPrefixTable_container_size, ipaddressprefixtable_all)
+netsnmp_feature_child_of(ipaddressprefixtable_row_find_by_mib_index, ipaddressprefixtable_all);
+netsnmp_feature_child_of(ipaddressprefixtable_container_get, ipaddressprefixtable_all);
+netsnmp_feature_child_of(ipAddressPrefixTable_registration_get, ipaddressprefixtable_all);
+netsnmp_feature_child_of(ipAddressPrefixTable_registration_set, ipaddressprefixtable_all);
+netsnmp_feature_child_of(ipAddressPrefixTable_container_size, ipaddressprefixtable_all);
 
 /**********************************************************************
  **********************************************************************

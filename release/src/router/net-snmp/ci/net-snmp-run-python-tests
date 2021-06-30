@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 set -x
 killall snmpd
@@ -10,7 +10,10 @@ export PYTHONPATH=$PWD/python/netsnmp
 mkdir -p "$SNMP_PERSISTENT_DIR" || exit $?
 agent/snmpd -I-smux -r -f -Lo -c python/netsnmp/tests/snmpd.conf localhost:${SNMP_SNMPD_PORT} &
 pid=$!
+PYTHONPROG=$(sed -n 's/^S\["PYTHONPROG"\]="\(.*\)"$/\1/p' config.status) ||
+    exit $?
+[ -n "$PYTHONPROG" ] || exit $?
 cd python || exit $?
-python setup.py --basedir="$PWD/.." test || exit $?
+$PYTHONPROG setup.py --basedir="$PWD/.." test || exit $?
 kill $pid
 wait

@@ -105,16 +105,16 @@
 #include <net-snmp/agent/serialize.h>
 #include <net-snmp/agent/stash_cache.h>
 
-netsnmp_feature_child_of(table_iterator_all, mib_helpers)
+netsnmp_feature_child_of(table_iterator_all, mib_helpers);
 
-netsnmp_feature_child_of(table_iterator_insert_context, table_iterator_all)
-netsnmp_feature_child_of(table_iterator_create_table, table_iterator_all)
-netsnmp_feature_child_of(table_iterator_row_first, table_iterator_all)
-netsnmp_feature_child_of(table_iterator_row_count, table_iterator_all)
+netsnmp_feature_child_of(table_iterator_insert_context, table_iterator_all);
+netsnmp_feature_child_of(table_iterator_create_table, table_iterator_all);
+netsnmp_feature_child_of(table_iterator_row_first, table_iterator_all);
+netsnmp_feature_child_of(table_iterator_row_count, table_iterator_all);
 
 #ifdef NETSNMP_FEATURE_REQUIRE_STASH_CACHE
-netsnmp_feature_require(data_list_get_list_node)
-netsnmp_feature_require(oid_stash_add_data)
+netsnmp_feature_require(data_list_get_list_node);
+netsnmp_feature_require(oid_stash_add_data);
 #endif /* NETSNMP_FEATURE_REQUIRE_STASH_CACHE */
 
 /* ==================================
@@ -850,7 +850,8 @@ netsnmp_table_iterator_helper_handler(netsnmp_mib_handler *handler,
                         netsnmp_request_get_list_data(request,
                                                       TI_REQUEST_CACHE);
                     if (!ti_info->results) {
-                      int nc;
+                        int nc;
+
                         table_info = netsnmp_extract_table_info(request);
                         nc = netsnmp_table_next_column(table_info);
                         if (0 == nc) {
@@ -858,7 +859,6 @@ netsnmp_table_iterator_helper_handler(netsnmp_mib_handler *handler,
                             snmp_set_var_objid(request->requestvb,
                                                coloid, reginfo->rootoid_len+2);
                             request->processed = TABLE_ITERATOR_NOTAGAIN;
-                            break;
                         } else {
                           table_info->colnum = nc;
                           hintok = 0;

@@ -14,10 +14,10 @@
 
 #include "var_route.h"
 
-netsnmp_feature_require(oid_stash)
-netsnmp_feature_require(get_routes)
-netsnmp_feature_require(oid_stash_get_data)
-netsnmp_feature_require(oid_stash_add_data)
+netsnmp_feature_require(oid_stash);
+netsnmp_feature_require(get_routes);
+netsnmp_feature_require(oid_stash_get_data);
+netsnmp_feature_require(oid_stash_add_data);
 
 static netsnmp_oid_stash_node *undoStorage;
 

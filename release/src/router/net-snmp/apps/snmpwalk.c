@@ -346,6 +346,7 @@ main(int argc, char *argv[])
                             && snmp_oid_compare(name, name_length,
                                                 vars->name,
                                                 vars->name_length) >= 0) {
+                            fflush(stdout);
                             fprintf(stderr, "Error: OID not increasing: ");
                             fprint_objid(stderr, name, name_length);
                             fprintf(stderr, " >= ");

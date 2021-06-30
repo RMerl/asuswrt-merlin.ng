@@ -32,8 +32,8 @@
 #include <net-snmp/agent/serialize.h>
 #include <net-snmp/agent/read_only.h>
 
-netsnmp_feature_provide(instance)
-netsnmp_feature_child_of(instance, mib_helpers)
+netsnmp_feature_provide(instance);
+netsnmp_feature_child_of(instance, mib_helpers);
 
 typedef struct netsnmp_num_file_instance_s {
     int   refcnt;
@@ -214,7 +214,7 @@ get_reg(const char *name,
 #endif /* NETSNMP_FEATURE_REMOVE_REGISTER_NUM_FILE_INSTANCE */
 
 /* Watched 'long' instances are writable on both 32-bit and 64-bit systems  */
-netsnmp_feature_child_of(read_only_ulong_instance,instance)
+netsnmp_feature_child_of(read_only_ulong_instance,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_READ_ONLY_ULONG_INSTANCE
 int
 netsnmp_register_read_only_ulong_instance(const char *name,
@@ -232,7 +232,7 @@ netsnmp_register_read_only_ulong_instance(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_READ_ONLY_ULONG_INSTANCE */
 
-netsnmp_feature_child_of(ulong_instance,instance)
+netsnmp_feature_child_of(ulong_instance,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_ULONG_INSTANCE
 int
 netsnmp_register_ulong_instance(const char *name,
@@ -249,7 +249,7 @@ netsnmp_register_ulong_instance(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_ULONG_INSTANCE */
 
-netsnmp_feature_child_of(read_only_counter32_instance,instance)
+netsnmp_feature_child_of(read_only_counter32_instance,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_READ_ONLY_COUNTER32_INSTANCE
 int
 netsnmp_register_read_only_counter32_instance(const char *name,
@@ -268,7 +268,7 @@ netsnmp_register_read_only_counter32_instance(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_READ_ONLY_COUNTER32_INSTANCE */
 
-netsnmp_feature_child_of(read_only_long_instance,instance)
+netsnmp_feature_child_of(read_only_long_instance,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_READ_ONLY_LONG_INSTANCE
 int
 netsnmp_register_read_only_long_instance(const char *name,
@@ -285,7 +285,7 @@ netsnmp_register_read_only_long_instance(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_READ_ONLY_LONG_INSTANCE */
 
-netsnmp_feature_child_of(long_instance,instance)
+netsnmp_feature_child_of(long_instance,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_LONG_INSTANCE
 int
 netsnmp_register_long_instance(const char *name,
@@ -301,7 +301,7 @@ netsnmp_register_long_instance(const char *name,
 #endif /* NETSNMP_FEATURE_REMOVE_LONG_INSTANCE */
 
 /* Watched 'int' instances are only writable on 32-bit systems  */
-netsnmp_feature_child_of(read_only_uint_instance,instance)
+netsnmp_feature_child_of(read_only_uint_instance,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_READ_ONLY_UINT_INSTANCE
 int
 netsnmp_register_read_only_uint_instance(const char *name,
@@ -319,7 +319,7 @@ netsnmp_register_read_only_uint_instance(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_READ_ONLY_UINT_INSTANCE */
 
-netsnmp_feature_child_of(uint_instance,instance)
+netsnmp_feature_child_of(uint_instance,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_UINT_INSTANCE
 int
 netsnmp_register_uint_instance(const char *name,
@@ -335,7 +335,7 @@ netsnmp_register_uint_instance(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_UINT_INSTANCE */
 
-netsnmp_feature_child_of(read_only_int_instance,instance)
+netsnmp_feature_child_of(read_only_int_instance,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_READ_ONLY_INT_INSTANCE
 int
 netsnmp_register_read_only_int_instance(const char *name,
@@ -353,7 +353,7 @@ netsnmp_register_read_only_int_instance(const char *name,
   /*
    * Compatibility with earlier (inconsistently named) routine
    */
-netsnmp_feature_child_of(register_read_only_int_instance,netsnmp_unused)
+netsnmp_feature_child_of(register_read_only_int_instance,netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_REGISTER_READ_ONLY_INT_INSTANCE
 int
 register_read_only_int_instance(const char *name,
@@ -370,7 +370,7 @@ register_read_only_int_instance(const char *name,
  * Context registrations
  */
 
-netsnmp_feature_child_of(register_read_only_ulong_instance_context,instance)
+netsnmp_feature_child_of(register_read_only_ulong_instance_context,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_REGISTER_READ_ONLY_ULONG_INSTANCE_CONTEXT
 int
 netsnmp_register_read_only_ulong_instance_context(const char *name,
@@ -392,7 +392,7 @@ netsnmp_register_read_only_ulong_instance_context(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_REGISTER_READ_ONLY_ULONG_INSTANCE_CONTEXT */
 
-netsnmp_feature_child_of(register_ulong_instance_context,instance)
+netsnmp_feature_child_of(register_ulong_instance_context,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_REGISTER_ULONG_INSTANCE_CONTEXT
 int
 netsnmp_register_ulong_instance_context(const char *name,
@@ -412,7 +412,7 @@ netsnmp_register_ulong_instance_context(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_REGISTER_ULONG_INSTANCE_CONTEXT */
 
-netsnmp_feature_child_of(register_read_only_counter32_instance_context,instance)
+netsnmp_feature_child_of(register_read_only_counter32_instance_context,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_REGISTER_READ_ONLY_COUNTER32_INSTANCE_CONTEXT
 int
 netsnmp_register_read_only_counter32_instance_context(const char *name,
@@ -434,7 +434,7 @@ netsnmp_register_read_only_counter32_instance_context(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_REGISTER_READ_ONLY_COUNTER32_INSTANCE_CONTEXT */
 
-netsnmp_feature_child_of(register_read_only_long_instance_context,instance)
+netsnmp_feature_child_of(register_read_only_long_instance_context,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_REGISTER_READ_ONLY_LONG_INSTANCE_CONTEXT
 int
 netsnmp_register_read_only_long_instance_context(const char *name,
@@ -456,7 +456,7 @@ netsnmp_register_read_only_long_instance_context(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_REGISTER_READ_ONLY_LONG_INSTANCE_CONTEXT */
 
-netsnmp_feature_child_of(register_long_instance_context,instance)
+netsnmp_feature_child_of(register_long_instance_context,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_REGISTER_LONG_INSTANCE_CONTEXT
 int
 netsnmp_register_long_instance_context(const char *name,
@@ -476,7 +476,7 @@ netsnmp_register_long_instance_context(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_REGISTER_LONG_INSTANCE_CONTEXT */
 
-netsnmp_feature_child_of(register_int_instance_context,instance)
+netsnmp_feature_child_of(register_int_instance_context,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_REGISTER_INT_INSTANCE_CONTEXT
 int
 netsnmp_register_int_instance_context(const char *name,
@@ -497,7 +497,7 @@ netsnmp_register_int_instance_context(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_REGISTER_INT_INSTANCE_CONTEXT */
 
-netsnmp_feature_child_of(register_read_only_int_instance_context,instance)
+netsnmp_feature_child_of(register_read_only_int_instance_context,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_REGISTER_READ_ONLY_INT_INSTANCE_CONTEXT
 int
 netsnmp_register_read_only_int_instance_context(const char *name,
@@ -521,7 +521,7 @@ netsnmp_register_read_only_int_instance_context(const char *name,
 /*
  * Compatibility with earlier (inconsistently named) routine
  */
-netsnmp_feature_child_of(read_only_int_instance_context,instance)
+netsnmp_feature_child_of(read_only_int_instance_context,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_READ_ONLY_INT_INSTANCE_CONTEXT
 int
 register_read_only_int_instance_context(const char *name,
@@ -537,7 +537,7 @@ register_read_only_int_instance_context(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_READ_ONLY_INT_INSTANCE_CONTEXT */
 
-netsnmp_feature_child_of(register_num_file_instance,instance)
+netsnmp_feature_child_of(register_num_file_instance,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_REGISTER_NUM_FILE_INSTANCE
 int
 netsnmp_register_num_file_instance(const char *name,
@@ -581,7 +581,7 @@ netsnmp_register_num_file_instance(const char *name,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_REGISTER_NUM_FILE_INSTANCE */
 
-netsnmp_feature_child_of(register_int_instance,instance)
+netsnmp_feature_child_of(register_int_instance,instance);
 #ifndef NETSNMP_FEATURE_REMOVE_REGISTER_INT_INSTANCE
 /**
  * This function registers an int helper handler to a specified OID.

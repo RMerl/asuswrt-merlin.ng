@@ -49,9 +49,9 @@
 
 #include <ctype.h>
 
-netsnmp_feature_require(row_merge)
-netsnmp_feature_require(baby_steps)
-netsnmp_feature_require(check_all_requests_error)
+netsnmp_feature_require(row_merge);
+netsnmp_feature_require(baby_steps);
+netsnmp_feature_require(check_all_requests_error);
 
 /**********************************************************************
  **********************************************************************

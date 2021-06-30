@@ -7,7 +7,7 @@
 #     modify it under the same terms as Perl itself.
 
 package SNMP;
-$VERSION = '5.08';   # current release version number
+$VERSION = '5.0901';   # current release version number
 
 use strict;
 use warnings;
@@ -1185,7 +1185,7 @@ sub trap {
      $varbind_list_ref = $vars if ref($$vars[0]) =~ /ARRAY/;
    }
 
-   if ($this->{Version} eq '1') {
+   if ($this->{Version} =~ '^1') {
        my $enterprise = $param{enterprise} || 'ucdavis';
        $enterprise = SNMP::translateObj($enterprise)
 	   unless $enterprise =~ /^[\.\d]+$/;
@@ -1200,6 +1200,8 @@ sub trap {
        my $trap_oid = $param{oid} || $param{trapoid} || '.0.0';
        my $uptime = $param{uptime} || SNMP::_sys_uptime();
        @res = SNMP::_trapV2($this, $uptime, $trap_oid, $varbind_list_ref);
+   } else {
+     warn("error:trap: Unsupported SNMP version " . $this->{Version} . "\n");
    }
 
    return(wantarray() ? @res : $res[0]);
@@ -1234,7 +1236,7 @@ sub inform {
    my $trap_oid = $param{oid} || $param{trapoid};
    my $uptime = $param{uptime} || SNMP::_sys_uptime();
 
-   if($this->{Version} eq '3') {
+   if ($this->{Version} =~ '^[23]') {
      @res = SNMP::_inform($this, $uptime, $trap_oid, $varbind_list_ref, $cb);
    } else {
      warn("error:inform: This version doesn't support the command\n");
@@ -1661,7 +1663,9 @@ The default is 'noAuthNoPriv'.
 =item SecEngineId
 
 The SNMPv3 security engineID to use (if the snmpv3 security model
-needs it; for example USM).
+needs it; for example USM). The format is as a string without the leading '0x'.
+So if snmptrapd.conf has C<-e 0x8000000001020304>, use C<< SecEngineId =>
+'8000000001020304' >>.
 
 The default is <none>, security engineID and it will be probed if not
 supplied (v3)

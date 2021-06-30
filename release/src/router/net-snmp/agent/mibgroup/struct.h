@@ -28,13 +28,6 @@ struct extensible {
 #endif /* USING_SINGLE_COMMON_PASSPERSIST_INSTANCE */
 };
 
-#if HAVE_PCRE_H
-/* Pointer to pcre struct. Abstract pcre native pointer so all *.c files */
-/* do not have to include pcre.h */
-struct real_pcre;
-typedef struct real_pcre *netsnmp_regex_ptr;
-#endif
-
 struct myproc {
     char            name[STRMAX];
 #if HAVE_PCRE_H

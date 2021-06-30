@@ -544,6 +544,8 @@ really_try_next:
                                         NETSNMP_DS_AGENT_SKIPNFSINHOSTRESOURCES) &&
                  Check_HR_FileSys_NFS())
                 return NULL;  /* or goto try_next; */
+            if (Check_HR_FileSys_AutoFs())
+                return NULL;
 	    if (HRFS_statfs(HRFS_entry->HRFS_mount, &stat_buf) < 0) {
 		snmp_log_perror(HRFS_entry->HRFS_mount);
 		goto try_next;
@@ -683,7 +685,8 @@ Get_Next_HR_Store(void)
 		if (HRS_index >= 0) {
 			if (!(netsnmp_ds_get_boolean(NETSNMP_DS_APPLICATION_ID, 
 							NETSNMP_DS_AGENT_SKIPNFSINHOSTRESOURCES) && 
-						Check_HR_FileSys_NFS())) {
+						Check_HR_FileSys_NFS()) &&
+                            !Check_HR_FileSys_AutoFs()) {
 				return HRS_index + NETSNMP_MEM_TYPE_MAX;	
 			}
 		} else {

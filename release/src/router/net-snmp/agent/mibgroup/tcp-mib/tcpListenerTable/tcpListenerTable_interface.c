@@ -47,17 +47,17 @@
 
 #include <ctype.h>
 
-netsnmp_feature_child_of(tcpListenerTable_external_access, libnetsnmpmibs)
+netsnmp_feature_child_of(tcpListenerTable_external_access, libnetsnmpmibs);
 
-netsnmp_feature_require(row_merge)
-netsnmp_feature_require(baby_steps)
-netsnmp_feature_require(check_all_requests_error)
+netsnmp_feature_require(row_merge);
+netsnmp_feature_require(baby_steps);
+netsnmp_feature_require(check_all_requests_error);
 
 
-netsnmp_feature_child_of(tcpListenerTable_container_size, tcpListenerTable_external_access)
-netsnmp_feature_child_of(tcpListenerTable_registration_set, tcpListenerTable_external_access)
-netsnmp_feature_child_of(tcpListenerTable_registration_get, tcpListenerTable_external_access)
-netsnmp_feature_child_of(tcpListenerTable_container_get, tcpListenerTable_external_access)
+netsnmp_feature_child_of(tcpListenerTable_container_size, tcpListenerTable_external_access);
+netsnmp_feature_child_of(tcpListenerTable_registration_set, tcpListenerTable_external_access);
+netsnmp_feature_child_of(tcpListenerTable_registration_get, tcpListenerTable_external_access);
+netsnmp_feature_child_of(tcpListenerTable_container_get, tcpListenerTable_external_access);
 
 /**********************************************************************
  **********************************************************************

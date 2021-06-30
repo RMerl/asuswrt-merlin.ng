@@ -81,9 +81,9 @@ LINKCC	        = @LINKCC@
 # 5.3 was at 10, 5.4 is at 15, ...  This leaves some room for needed
 # changes for past releases if absolutely necessary.
 #
-# Most recent change: 35 for release 5.8
-LIBCURRENT  = 35
-LIBAGE      = 0
+# Most recent change: 40 for the v5.8.1 release.
+LIBCURRENT  = 41
+LIBAGE      = 1
 LIBREVISION = 0
 
 LIB_LD_CMD      = $(LIBTOOL) --mode=link $(LINKCC) $(CFLAGS) -rpath $(libdir) -version-info $(LIBCURRENT):$(LIBREVISION):$(LIBAGE) -o
@@ -99,7 +99,7 @@ RANLIB		= :
 .c.lo:
 	$(LIBTOOL) --mode=compile $(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 .rc.lo:
-	$(LIBTOOL) --mode=compile --tag=CC windres -o $@ -i $<
+	$(LIBTOOL) --mode=compile --tag=RC @RC@ -o $@ -i $<
 
 # include paths
 #

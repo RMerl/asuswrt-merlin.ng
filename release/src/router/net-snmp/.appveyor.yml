@@ -1,20 +1,28 @@
 image:
-  - Visual Studio 2017
+  - Visual Studio 2019
 
 environment:
   CYG_MIRROR: http://mirrors.kernel.org/sourceware/cygwin/
   matrix:
     - BUILD: MSVCDYNAMIC64
     - BUILD: MSVCSTATIC64
+    - BUILD: INSTALLER
+    - BUILD: MinGW32
+    - BUILD: MSYS2
     - BUILD: MinGW64
     - BUILD: Cygwin32
     - BUILD: Cygwin64
 
-matrix:
-  allow_failures:
-  - BUILD: MINGW64
+artifacts:
+  - path: installer
 
 clone_depth: 5
 
+install:
+  - 'call "ci\openssl.bat"'
+
 build_script:
   - 'call "ci\build.bat"'
+
+test_script:
+  - 'call "ci\test.bat"'

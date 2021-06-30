@@ -34,7 +34,7 @@
 #include <net-snmp/library/tools.h>
 #include <net-snmp/library/snmp_assert.h>
 
-netsnmp_feature_child_of(container_null, container_types)
+netsnmp_feature_child_of(container_null, container_types);
 
 /** @defgroup null_container null_container
  *  Helps you implement specialized containers.

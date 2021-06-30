@@ -306,7 +306,7 @@ AC_CHECK_MEMBERS([struct tcpstat.tcp_rcvmemdrop],,,[
 #       struct tm
 #   Library:
 #
-AC_CHECK_MEMBERS([struct tm.tm_gmtoff, struct time.tm_isdst],,,[
+AC_CHECK_MEMBERS([struct tm.tm_gmtoff, struct tm.tm_isdst],,,[
     AC_INCLUDES_DEFAULT()
     [
 #if TIME_WITH_SYS_TIME
@@ -321,9 +321,21 @@ AC_CHECK_MEMBERS([struct tm.tm_gmtoff, struct time.tm_isdst],,,[
 #endif
     ]])
 
-#       extern timezone
-AC_MSG_CHECKING([extern timezone])
-AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+AC_CHECK_DECLS([daylight,timezone],,,[
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+])
+
+AC_MSG_CHECKING([whether timezone is a scalar])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
@@ -335,13 +347,12 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 # endif
 #endif
 ]], [[
-  return timezone;
-]])], [
-AC_MSG_RESULT([yes])
-AC_DEFINE([HAVE_TIMEZONE_VARIABLE], [1], [Define if a timezone variable is declared in <sys/time.h>])
-], [
-AC_MSG_RESULT([no])
-])
+int a[2];
+return &a[timezone] != NULL;
+]])], [AC_MSG_RESULT([yes])
+	 AC_DEFINE([HAVE_SCALAR_TIMEZONE], [1],
+            [Define if timezone declared as a scalar in <time.h>])],
+    [AC_MSG_RESULT([no])])
 
 #       struct timezone
 #   Library:

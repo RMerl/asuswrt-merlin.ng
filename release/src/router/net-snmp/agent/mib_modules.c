@@ -65,9 +65,6 @@ init_mib_modules(void)
 {
     static int once = 0;
 
-#ifdef USING_IF_MIB_DATA_ACCESS_INTERFACE_MODULE
-    netsnmp_access_interface_init();
-#endif
 #  include "mib_module_inits.h"
 
     need_shutdown = 1;

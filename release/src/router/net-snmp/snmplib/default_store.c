@@ -146,9 +146,6 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
 
 #include <net-snmp/types.h>
 #include <net-snmp/output_api.h>
@@ -158,9 +155,9 @@
 
 #include <net-snmp/library/snmp_api.h>
 
-netsnmp_feature_child_of(default_store_all, libnetsnmp)
+netsnmp_feature_child_of(default_store_all, libnetsnmp);
 
-netsnmp_feature_child_of(default_store_void, default_store_all)
+netsnmp_feature_child_of(default_store_void, default_store_all);
 
 #ifndef NETSNMP_FEATURE_REMOVE_DEFAULT_STORE_VOID
 #endif /* NETSNMP_FEATURE_REMOVE_DEFAULT_STORE_VOID */

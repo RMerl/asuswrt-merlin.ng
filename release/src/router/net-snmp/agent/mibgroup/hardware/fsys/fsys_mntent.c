@@ -59,6 +59,36 @@
 
 #endif
 
+/*
+ * File systems to monitor and that are not covered by any hrFSTypes
+ * enumeration.
+ */
+static const char *other_fs[] = {
+    "acfs",
+    "btrfs",
+    "cvfs",
+    "f2fs",
+    "fuse.glusterfs",
+    "gfs",
+    "gfs2",
+    "glusterfs",
+    "jfs",
+    "jffs2",
+    "lofs",
+    "mvfs",
+    "nsspool",
+    "nssvol",
+    "nvmfs",
+    "ocfs2",
+    "reiserfs",
+    "simfs",
+    "tmpfs",
+    "vxfs",
+    "xfs",
+    "zfs",
+    NULL,
+};
+
 static int
 _fsys_remote( char *device, int type )
 {
@@ -72,6 +102,8 @@ _fsys_remote( char *device, int type )
 static int
 _fsys_type( char *typename )
 {
+    const char **fs;
+
     DEBUGMSGTL(("fsys:type", "Classifying %s\n", typename));
 
     if ( !typename || *typename=='\0' )
@@ -124,37 +156,21 @@ _fsys_type( char *typename )
               !strcmp(typename, MNTTYPE_VFAT) )
        return NETSNMP_FS_TYPE_FAT32;
 
-    /*
-     *  The following code covers selected filesystems
-     *    which are not covered by the HR-TYPES enumerations,
-     *    but should still be monitored.
-     *  These are all mapped into type "other"
-     *
-     *    (The systems listed are not fixed in stone,
-     *     but are simply here to illustrate the principle!)
-     */    
-    else if ( !strcmp(typename, MNTTYPE_TMPFS) ||
-              !strcmp(typename, MNTTYPE_GFS) ||
-              !strcmp(typename, MNTTYPE_GFS2) ||
-              !strcmp(typename, MNTTYPE_XFS) ||
-              !strcmp(typename, MNTTYPE_JFS) ||
-              !strcmp(typename, MNTTYPE_VXFS) ||
-              !strcmp(typename, MNTTYPE_REISERFS) ||
-              !strcmp(typename, MNTTYPE_OCFS2) ||
-              !strcmp(typename, MNTTYPE_CVFS) ||
-              !strcmp(typename, MNTTYPE_SIMFS) ||
-              !strcmp(typename, MNTTYPE_BTRFS) ||
-              !strcmp(typename, MNTTYPE_ZFS) ||
-              !strcmp(typename, MNTTYPE_NVMFS) ||
-              !strcmp(typename, MNTTYPE_ACFS) ||
-              !strcmp(typename, MNTTYPE_LOFS))
-       return NETSNMP_FS_TYPE_OTHER;
+    for (fs = other_fs; *fs; fs++)
+        if (strcmp(typename, *fs) == 0)
+            return NETSNMP_FS_TYPE_OTHER;
+
+    /* Detection of AUTOFS.
+     * This file system will be ignored by default
+     */ 
+    if (!strcmp(typename, MNTTYPE_AUTOFS))
+        return NETSNMP_FS_TYPE_AUTOFS;
+
 
     /*    
      *  All other types are silently skipped
      */
-    else
-       return NETSNMP_FS_TYPE_IGNORE;
+    return NETSNMP_FS_TYPE_IGNORE;
 }
 
 void
@@ -212,7 +228,7 @@ netsnmp_fsys_arch_load( void )
         if ( _fsys_remote( entry->device, entry->type ))
             entry->flags |= NETSNMP_FS_FLAG_REMOTE;
 #if HAVE_HASMNTOPT
-        if (hasmntopt( m, "ro" ))
+        if (hasmntopt( m, NETSNMP_REMOVE_CONST(char *, "ro") ))
             entry->flags |= NETSNMP_FS_FLAG_RONLY;
         else
             entry->flags &= ~NETSNMP_FS_FLAG_RONLY;
@@ -239,36 +255,30 @@ netsnmp_fsys_arch_load( void )
                                    NETSNMP_DS_AGENT_SKIPNFSINHOSTRESOURCES))
             continue;
 
+        /* Skip AUTOFS entries */
+        if (entry->type == NETSNMP_FS_TYPE_AUTOFS)
+            continue;
+
 #ifdef irix6
         if ( NSFS_STATFS( entry->path, &stat_buf, sizeof(struct statfs), 0) < 0 )
 #else
         if ( NSFS_STATFS( entry->path, &stat_buf ) < 0 )
 #endif
         {
-            tmpbuf = NULL;
-            if (asprintf(&tmpbuf, "Cannot statfs %s", entry->path) >= 0)
+            static char logged = 0;
+
+            if (!logged &&
+                asprintf(&tmpbuf, "Cannot statfs %s", entry->path) >= 0) {
                 snmp_log_perror(tmpbuf);
-            free(tmpbuf);
-            entry->units = stat_buf.NSFS_SIZE;
-            entry->size  = 0;
-            entry->used  = 0;
-            entry->avail = 0;
-            entry->inums_total = stat_buf.f_files;
-            entry->inums_avail = stat_buf.f_ffree;
-            netsnmp_fsys_calculate32(entry);
-            continue;
+                free(tmpbuf);
+                logged = 1;
+            }
+            memset(&stat_buf, 0, sizeof(stat_buf));
         }
         entry->units =  stat_buf.NSFS_SIZE;
         entry->size  =  stat_buf.f_blocks;
         entry->used  = (stat_buf.f_blocks - stat_buf.f_bfree);
-        /* entry->avail is currently unsigned, so protect against negative
-         * values!
-         * This should be changed to a signed field.
-         */
-        if (stat_buf.f_bavail < 0)
-            entry->avail = 0;
-        else
-            entry->avail =  stat_buf.f_bavail;
+        entry->avail =  stat_buf.f_bavail;
         entry->inums_total = stat_buf.f_files;
         entry->inums_avail = stat_buf.f_ffree;
         netsnmp_fsys_calculate32(entry);

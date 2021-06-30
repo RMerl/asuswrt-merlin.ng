@@ -10,10 +10,10 @@
 #include <strings.h>
 #endif
 
-netsnmp_feature_require(ulong_instance)
-netsnmp_feature_require(register_read_only_table_data)
-netsnmp_feature_require(table_build_result)
-netsnmp_feature_require(table_dataset)
+netsnmp_feature_require(ulong_instance);
+netsnmp_feature_require(register_read_only_table_data);
+netsnmp_feature_require(table_build_result);
+netsnmp_feature_require(table_dataset);
 
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>

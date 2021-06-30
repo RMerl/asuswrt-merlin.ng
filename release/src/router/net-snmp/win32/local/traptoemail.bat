@@ -16,8 +16,8 @@ goto end
 :no_perl
 echo %MYPERLPROGRAM% requires Perl to run.
 echo .
-echo A version of Perl for Windows is available from
-echo http://www.activestate.com/Products/ActivePerl
+echo Perl source code and instructions for how to build Perl for Windows are
+echo available from https://www.cpan.org/src/.
 echo .
 echo Please install Perl and run this program again.
 echo .

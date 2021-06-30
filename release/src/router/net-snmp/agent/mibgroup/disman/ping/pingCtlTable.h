@@ -327,8 +327,6 @@ unsigned long   round_double(double);
 
 #define	MAX_DUP_CHK	0x10000
 
-volatile int    exiting;
-volatile int    status_snapshot;
 
 #ifndef MSG_CONFIRM
 #define MSG_CONFIRM 0

@@ -130,7 +130,7 @@ int create_winpipe_transport(int *pipefds)
 	SOCKET socketpair[2];
 	struct sockaddr_in socketaddress[2];
 
-	struct timeval waittime = {0, 200000};
+	NETSNMP_SELECT_TIMEVAL waittime = {0, 200000};
 	fd_set readset;
 
 	if (InitUPDSocket(&socketpair[0], &socketaddress[0]))

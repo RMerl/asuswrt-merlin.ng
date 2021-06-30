@@ -122,6 +122,7 @@ int netsnmp_cpu_arch_load( netsnmp_cache *cache, void *magic ) {
         bsize = getpagesize()-1;
         buff = (char*)malloc(bsize+1);
         if (buff == NULL) {
+            close(statfd);
             return -1;
         }
     }

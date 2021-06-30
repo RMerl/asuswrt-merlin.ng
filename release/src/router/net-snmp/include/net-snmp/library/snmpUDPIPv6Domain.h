@@ -29,24 +29,25 @@ config_require(UDPBase)
 #define TRANSPORT_DOMAIN_UDP_IPV6	1,3,6,1,2,1,100,1,2
 NETSNMP_IMPORT oid      netsnmp_UDPIPv6Domain[];
 
-netsnmp_transport *netsnmp_udp6_transport(const struct sockaddr_in6 *addr,
+netsnmp_transport *netsnmp_udp6_transport(const struct netsnmp_ep *ep,
                                           int local);
 
 netsnmp_transport *
-netsnmp_udp6_transport_with_source(const struct sockaddr_in6 *addr, int local,
-                                   const struct sockaddr_in6 *src_addr);
+netsnmp_udp6_transport_with_source(const struct netsnmp_ep *ep, int local,
+                                   const struct netsnmp_ep *src_addr);
 
     /** internal functions for derivatives of udpipv6 */
 
     netsnmp_transport *
-    netsnmp_udp6_transport_init(const struct sockaddr_in6 *addr, int local);
+    netsnmp_udp6_transport_init(const struct netsnmp_ep *ep, int local);
 
     int
     netsnmp_udp6_transport_socket(int flags);
 
     int
     netsnmp_udp6_transport_bind(netsnmp_transport *t,
-                                const struct sockaddr_in6 *addr, int flags);
+                                const struct netsnmp_ep *ep,
+                                int flags);
 
     void
     netsnmp_udp6_transport_get_bound_addr(netsnmp_transport *t);
@@ -79,7 +80,7 @@ int             netsnmp_udp6_getSecName(void *opaque, int olength,
  * "Constructor" for transport domain object.
  */
 
-NETSNMP_IMPORT void netsnmp_udpipv6_ctor(void);
+void netsnmp_udpipv6_ctor(void);
 
 #ifdef __cplusplus
 }

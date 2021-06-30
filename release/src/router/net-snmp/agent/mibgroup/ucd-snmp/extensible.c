@@ -111,8 +111,8 @@
 #include "utilities/execute.h"
 #include "util_funcs/header_simple_table.h"
 
-netsnmp_feature_require(get_exten_instance)
-netsnmp_feature_require(parse_miboid)
+netsnmp_feature_require(get_exten_instance);
+netsnmp_feature_require(parse_miboid);
 
 /*
  * the relocatable extensible commands variables 

@@ -54,7 +54,7 @@ if test "x$PARTIALTARGETOS" = "xmingw32" -o "x$PARTIALTARGETOS" = "xmingw32msvc"
 fi
 
 # Linux systemd
-if test "x$with_systemd" == "xyes"; then
+if test "x$with_systemd" = "xyes"; then
   other_src_list="$other_src_list sd-daemon.c"
   other_objs_list="$other_objs_list sd-daemon.o"
   other_lobjs_list="$other_lobjs_list sd-daemon.lo"
@@ -142,6 +142,9 @@ AC_MSG_CACHE_ADD(SNMPv3 Security Modules:    $new_with_security)
 rebuilt_new_with_security=
 already_checked_krb5=no
 
+netsnmp_save_LIBS=$LIBS
+CRYPTO_LIBS=""
+
 for sec in $new_with_security
 do
   if test "x$sec" = "xksm"; then
@@ -163,21 +166,24 @@ do
     AC_PATH_PROG([krb5_config],krb5-config,[no],$krb5path/bin:$PATH)
 
     if test no != $krb5_config; then
+      [
       CPPFLAGS="$CPPFLAGS `$krb5_config --cflags`"
-      LIBS="$LIBS `$krb5_config --libs`"
+      CRYPTO_LIBS="$CRYPTO_LIBS `$krb5_config --libs |
+				 $SED 's/-flto=[^[:blank:]]*//g'`"
+      ]
     elif test $krb5path != no; then
       AC_ADD_SEARCH_PATH($krb5path)
     else
       AC_ADD_SEARCH_PATH(/usr/kerberos)
     fi
 
-    AC_MSG_CHECKING([for krb5])
-    AC_CACHE_VAL(ac_cv_have_krb5,
-      AC_CHECK_LIB(krb5, krb5_init_context,
-	ac_cv_have_krb5=yes, ac_cv_have_krb5=no
-      )
-    )
+    NETSNMP_SEARCH_LIBS([krb5_init_context], [krb5],
+                        [ac_cv_have_krb5=yes], [ac_cv_have_krb5=no], [],
+                        [CRYPTO_LIBS])
+    NETSNMP_SEARCH_LIBS([error_message], [com_err], [], [], [],
+                        [CRYPTO_LIBS])
 
+    AC_MSG_CHECKING([for krb5])
     if test $ac_cv_have_krb5 = no; then
       if test "x$askedkrb5" = "xyes"; then
 	AC_MSG_ERROR(Asked to use krb5 but I couldn't find it.)
@@ -202,32 +208,40 @@ do
       AC_DEFINE(NETSNMP_USE_KERBEROS_HEIMDAL, 1,
         [Define this if you're using Heimdal Kerberos])
       if test no = $krb5_config; then
-	LIBS="$LIBS -lkrb5 -lasn1 -lcom_err -lroken"
+	CRYPTO_LIBS="$CRYPTO_LIBS -lkrb5 -lasn1 -lcom_err -lroken"
       fi
     elif test no = $krb5_config; then
-	LIBS="$LIBS -lkrb5 -lcom_err"
+	CRYPTO_LIBS="$CRYPTO_LIBS -lkrb5 -lcom_err"
     fi
 
-    AC_MSG_CHECKING([to see which crypto API we need to use])
     AC_CACHE_VAL(ac_cv_NETSNMP_USE_KERBEROS_MIT,
-      AC_CHECK_LIB(k5crypto, krb5_init_context,
-	ac_cv_NETSNMP_USE_KERBEROS_MIT=yes, ac_cv_NETSNMP_USE_KERBEROS_MIT=no
-      )
+      NETSNMP_SEARCH_LIBS([krb5_init_context], [k5crypto],
+                          [ac_cv_NETSNMP_USE_KERBEROS_MIT=yes],
+                          [ac_cv_NETSNMP_USE_KERBEROS_MIT=no], [],
+                          [CRYPTO_LIBS])
     )
+    NETSNMP_SEARCH_LIBS([krb5_c_keyed_checksum_types], [k5crypto], [], [], [],
+                        [CRYPTO_LIBS])
 
+    AC_CHECK_MEMBERS([krb5_keyblock.enctype], [],
+                     [ac_cv_NETSNMP_USE_KERBEROS_MIT=no],
+                     [[#include <krb5.h>]])
+
+    AC_MSG_CHECKING([to see which crypto API we need to use])
     if test yes = $ac_cv_NETSNMP_USE_KERBEROS_MIT; then
       AC_MSG_RESULT(new MIT crypto API)
       AC_DEFINE(NETSNMP_USE_KERBEROS_MIT, 1,
         [Define this if we're using the new MIT crypto API])
-      if test no = $krb5_config; then
-	LIBS="$LIBS -lk5crypto"
-      fi
     else
       AC_MSG_RESULT(old MIT crypto API)
     fi
+    LIBS="$CRYPTO_LIBS $netsnmp_save_LIBS"
     AC_CHECK_FUNCS([krb5_auth_con_getsendsubkey krb5_auth_con_getrecvsubkey])
   fi
 done
+
+LNETSNMPLIBS="$LNETSNMPLIBS $CRYPTO_LIBS"
+LIBS=$netsnmp_save_LIBS
 
 new_with_security=$rebuilt_new_with_security
 

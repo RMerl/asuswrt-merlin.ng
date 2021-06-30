@@ -1,8 +1,9 @@
 #!/bin/sh
 
-# Make sure MinGW / MSYS users have the pskill.exe program to stop the agent and
+# Make sure MinGW32 users have the pskill.exe program to stop the agent and
 # snmptrapd
-if [ "x$OSTYPE" = "xmsys" ]; then
+case $(uname) in
+MINGW32*)
     for e in pskill.exe pslist.exe; do
 	if [ "x`type $e 2>/dev/null`" = "x" ]; then
 	    echo "Could not find $e. Aborting tests."
@@ -12,4 +13,5 @@ if [ "x$OSTYPE" = "xmsys" ]; then
 	    exit 1
 	fi
     done
-fi
+    ;;
+esac

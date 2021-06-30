@@ -15,7 +15,7 @@
 #include <sys/protosw.h>
 #include <libperfstat.h>
 
-netsnmp_feature_require(hardware_cpu_copy_stats)
+netsnmp_feature_require(hardware_cpu_copy_stats);
 void _cpu_copy_stats( netsnmp_cpu_info *cpu );
 
     /*

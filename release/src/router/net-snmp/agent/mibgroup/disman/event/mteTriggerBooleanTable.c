@@ -13,10 +13,10 @@
 #include "disman/event/mteTrigger.h"
 #include "disman/event/mteTriggerBooleanTable.h"
 
-netsnmp_feature_require(table_tdata)
+netsnmp_feature_require(table_tdata);
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(check_vb_type_and_max_size)
-netsnmp_feature_require(check_vb_truthvalue)
+netsnmp_feature_require(check_vb_type_and_max_size);
+netsnmp_feature_require(check_vb_truthvalue);
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 static netsnmp_table_registration_info *table_info;

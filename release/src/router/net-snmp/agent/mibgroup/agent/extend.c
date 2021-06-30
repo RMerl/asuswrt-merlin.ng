@@ -16,10 +16,16 @@
 #define SHELLCOMMAND 3
 #endif
 
-netsnmp_feature_require(extract_table_row_data)
-netsnmp_feature_require(table_data_delete_table)
+/*  This mib is potentially dangerous to turn on by default, since it
+ *  allows arbitrary commands to be set by anyone with SNMP WRITE
+ *  access to the MIB table.  If all of your users are "root" level
+ *  users, then it may be safe to turn on. */
+#define ENABLE_EXTEND_WRITE_ACCESS 0
+
+netsnmp_feature_require(extract_table_row_data);
+netsnmp_feature_require(table_data_delete_table);
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(insert_table_row)
+netsnmp_feature_require(insert_table_row);
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 oid  ns_extend_oid[]    = { 1, 3, 6, 1, 4, 1, 8072, 1, 3, 2 };
@@ -646,9 +652,9 @@ handle_nsExtendConfigTable(netsnmp_mib_handler          *handler,
     netsnmp_request_info       *request;
     netsnmp_table_request_info *table_info;
     netsnmp_extend             *extension;
-    extend_registration_block  *eptr;
+    extend_registration_block  *eptr NETSNMP_ATTRIBUTE_UNUSED;
     int  i;
-    int  need_to_validate = 0;
+    int  need_to_validate NETSNMP_ATTRIBUTE_UNUSED = 0;
 
     for ( request=requests; request; request=request->next ) {
         if (request->processed)
@@ -742,7 +748,7 @@ handle_nsExtendConfigTable(netsnmp_mib_handler          *handler,
          *
          **********/
 
-#ifndef NETSNMP_NO_WRITE_SUPPORT
+#if !defined(NETSNMP_NO_WRITE_SUPPORT) && ENABLE_EXTEND_WRITE_ACCESS
         case MODE_SET_RESERVE1:
             /*
              * Validate the new assignments
@@ -1068,7 +1074,7 @@ handle_nsExtendConfigTable(netsnmp_mib_handler          *handler,
                 }
             }
             break;
-#endif /* !NETSNMP_NO_WRITE_SUPPORT */ 
+#endif /* !NETSNMP_NO_WRITE_SUPPORT and ENABLE_EXTEND_WRITE_ACCESS */
 
         default:
             netsnmp_set_request_error(reqinfo, request, SNMP_ERR_GENERR);
@@ -1076,7 +1082,7 @@ handle_nsExtendConfigTable(netsnmp_mib_handler          *handler,
         }
     }
 
-#ifndef NETSNMP_NO_WRITE_SUPPORT
+#if !defined(NETSNMP_NO_WRITE_SUPPORT) && ENABLE_EXTEND_WRITE_ACCESS
     /*
      * If we're marking a given row as active,
      *  then we need to check that it's ready.
@@ -1101,7 +1107,7 @@ handle_nsExtendConfigTable(netsnmp_mib_handler          *handler,
             }
         }
     }
-#endif /* !NETSNMP_NO_WRITE_SUPPORT */
+#endif /* !NETSNMP_NO_WRITE_SUPPORT && ENABLE_EXTEND_WRITE_ACCESS */
     
     return SNMP_ERR_NOERROR;
 }
@@ -1526,52 +1532,49 @@ var_extensible_old(struct variable * vp,
     idx = name[*length-1] -1;
 	if (idx > max_compatability_entries)
 		return NULL;
-    exten = &compatability_entries[ idx ];
-    if (exten) {
-        switch (vp->magic) {
-        case MIBINDEX:
-            long_ret = name[*length - 1];
-            return ((u_char *) (&long_ret));
-        case ERRORNAME:        /* name defined in config file */
-            *var_len = strlen(exten->exec_entry->token);
-            return ((u_char *) (exten->exec_entry->token));
-        case SHELLCOMMAND:
-            cmdline = _get_cmdline(exten->exec_entry);
+    exten = &compatability_entries[idx];
+    switch (vp->magic) {
+    case MIBINDEX:
+        long_ret = name[*length - 1];
+        return (u_char *) &long_ret;
+    case ERRORNAME:        /* name defined in config file */
+        *var_len = strlen(exten->exec_entry->token);
+        return ((u_char *) (exten->exec_entry->token));
+    case SHELLCOMMAND:
+        cmdline = _get_cmdline(exten->exec_entry);
+        if (cmdline)
+            *var_len = strlen(cmdline);
+        return (u_char *) cmdline;
+    case ERRORFLAG:        /* return code from the process */
+        netsnmp_cache_check_and_reload( exten->exec_entry->cache );
+        long_ret = exten->exec_entry->result;
+        return (u_char *) &long_ret;
+    case ERRORMSG:         /* first line of text returned from the process */
+        netsnmp_cache_check_and_reload( exten->exec_entry->cache );
+        if (exten->exec_entry->numlines > 1) {
+            *var_len = (exten->exec_entry->lines[1])-
+                (exten->exec_entry->output) -1;
+        } else if (exten->exec_entry->output) {
+            *var_len = strlen(exten->exec_entry->output);
+        } else {
+            *var_len = 0;
+        }
+        return (u_char *) exten->exec_entry->output;
+    case ERRORFIX:
+        *write_method = fixExec2Error;
+        long_return = 0;
+        return (u_char *) &long_return;
+
+    case ERRORFIXCMD:
+        if (exten->efix_entry) {
+            cmdline = _get_cmdline(exten->efix_entry);
             if (cmdline)
                 *var_len = strlen(cmdline);
-            return ((u_char *) cmdline);
-        case ERRORFLAG:        /* return code from the process */
-            netsnmp_cache_check_and_reload( exten->exec_entry->cache );
-            long_ret = exten->exec_entry->result;
-            return ((u_char *) (&long_ret));
-        case ERRORMSG:         /* first line of text returned from the process */
-            netsnmp_cache_check_and_reload( exten->exec_entry->cache );
-            if (exten->exec_entry->numlines > 1) {
-                *var_len = (exten->exec_entry->lines[1])-
-                           (exten->exec_entry->output) -1;
-            } else if (exten->exec_entry->output) {
-                *var_len = strlen(exten->exec_entry->output);
-            } else {
-                *var_len = 0;
-            }
-            return ((u_char *) (exten->exec_entry->output));
-        case ERRORFIX:
-            *write_method = fixExec2Error;
-            long_return = 0;
-            return ((u_char *) &long_return);
-
-        case ERRORFIXCMD:
-            if (exten->efix_entry) {
-                cmdline = _get_cmdline(exten->efix_entry);
-		if (cmdline)
-                    *var_len = strlen(cmdline);
-                return ((u_char *) cmdline);
-            } else {
-                *var_len = 0;
-                return ((u_char *) &long_return);  /* Just needs to be non-null! */
-            }
+            return (u_char *) cmdline;
+        } else {
+            *var_len = 0;
+            return (u_char *) &long_return;  /* Just needs to be non-null! */
         }
-        return NULL;
     }
     return NULL;
 }
@@ -1590,7 +1593,7 @@ fixExec2Error(int action,
     idx = name[name_len-1] -1;
     exten = &compatability_entries[ idx ];
 
-#ifndef NETSNMP_NO_WRITE_SUPPORT
+#if !defined(NETSNMP_NO_WRITE_SUPPORT) && ENABLE_EXTEND_WRITE_ACCESS
     switch (action) {
     case MODE_SET_RESERVE1:
         if (var_val_type != ASN_INTEGER) {
@@ -1611,7 +1614,7 @@ fixExec2Error(int action,
     case MODE_SET_COMMIT:
         netsnmp_cache_check_and_reload( exten->efix_entry->cache );
     }
-#endif /* !NETSNMP_NO_WRITE_SUPPORT */
+#endif /* !NETSNMP_NO_WRITE_SUPPORT && ENABLE_EXTEND_WRITE_ACCESS */
     return SNMP_ERR_NOERROR;
 }
 #endif /* USING_UCD_SNMP_EXTENSIBLE_MODULE */

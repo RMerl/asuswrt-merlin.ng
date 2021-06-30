@@ -32,9 +32,9 @@
 #include "snmpTargetParamsEntry.h"
 #include "target.h"
 
-netsnmp_feature_require(tdomain_support)
-netsnmp_feature_require(tdomain_transport_oid)
-netsnmp_feature_want(netsnmp_tlstmAddr_get_serverId)
+netsnmp_feature_require(tdomain_support);
+netsnmp_feature_require(tdomain_transport_oid);
+netsnmp_feature_want(netsnmp_tlstmAddr_get_serverId);
 
 #define MAX_TAGS 128
 
@@ -66,8 +66,7 @@ get_target_sessions(char *taglist, TargetFilterFunction * filterfunct,
         /*
          * legal row? 
          */
-        if (targaddrs->tDomain == NULL ||
-            targaddrs->tAddress == NULL ||
+        if (targaddrs->tAddress == NULL ||
             targaddrs->rowStatus != SNMP_ROW_ACTIVE) {
             DEBUGMSGTL(("target_sessions", "  which is not ready yet\n"));
             continue;

@@ -93,9 +93,6 @@ SOFTWARE.
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
 
 #include <errno.h>
 
@@ -109,8 +106,8 @@ SOFTWARE.
 #include <net-snmp/library/snmp_api.h>
 #include <net-snmp/library/tools.h>
 
-netsnmp_feature_child_of(find_module, mib_api)
-netsnmp_feature_child_of(get_tc_description, mib_api)
+netsnmp_feature_child_of(find_module, mib_api);
+netsnmp_feature_child_of(get_tc_description, mib_api);
 
 /*
  * A linked list of nodes.
@@ -150,7 +147,7 @@ struct subid_s {
     char           *label;
 };
 
-#define MAXTC   16384
+#define TC_INCR 100
 struct tc {                     /* textual conventions */
     int             type;
     int             modid;
@@ -159,7 +156,8 @@ struct tc {                     /* textual conventions */
     struct enum_list *enums;
     struct range_list *ranges;
     char           *description;
-} tclist[MAXTC];
+} *tclist;
+int tc_alloc;
 
 int             mibLine = 0;
 const char     *File = "(none)";
@@ -607,8 +605,6 @@ static int     read_module_replacements(const char *);
 static int     read_import_replacements(const char *,
                                          struct module_import *);
 
-static void     new_module(const char *, const char *);
-
 static struct node *merge_parse_objectid(struct node *, FILE *, char *);
 static struct index_list *getIndexes(FILE * fp, struct index_list **);
 static struct varbind_list *getVarbinds(FILE * fp, struct varbind_list **);
@@ -749,7 +745,8 @@ netsnmp_init_mib_internals(void)
 
     memset(nbuckets, 0, sizeof(nbuckets));
     memset(tbuckets, 0, sizeof(tbuckets));
-    memset(tclist, 0, MAXTC * sizeof(struct tc));
+    tc_alloc = TC_INCR;
+    tclist = calloc(tc_alloc, sizeof(struct tc));
     build_translation_table();
     init_tree_roots();          /* Set up initial roots */
     /*
@@ -783,7 +780,7 @@ init_node_hash(struct node *nodes)
 
 static int      erroneousMibs = 0;
 
-netsnmp_feature_child_of(parse_get_error_count, netsnmp_unused)
+netsnmp_feature_child_of(parse_get_error_count, netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_PARSE_GET_ERROR_COUNT
 int
 get_mib_parse_error_count(void)
@@ -2134,7 +2131,7 @@ get_tc_index(const char *descriptor, int modid)
         }
 
 
-    for (i = 0, tcp = tclist; i < MAXTC; i++, tcp++) {
+    for (i = 0, tcp = tclist; i < tc_alloc; i++, tcp++) {
         if (tcp->type == 0)
             break;
         if (!label_compare(descriptor, tcp->descriptor) &&
@@ -2153,9 +2150,9 @@ get_tc_index(const char *descriptor, int modid)
 const char     *
 get_tc_descriptor(int tc_index)
 {
-    if (tc_index < 0 || tc_index >= MAXTC)
+    if (tc_index < 0 || tc_index >= tc_alloc)
         return NULL;
-    return (tclist[tc_index].descriptor);
+    return tclist[tc_index].descriptor;
 }
 
 #ifndef NETSNMP_FEATURE_REMOVE_GET_TC_DESCRIPTION
@@ -2163,9 +2160,9 @@ get_tc_descriptor(int tc_index)
 const char     *
 get_tc_description(int tc_index)
 {
-    if (tc_index < 0 || tc_index >= MAXTC)
+    if (tc_index < 0 || tc_index >= tc_alloc)
         return NULL;
-    return (tclist[tc_index].description);
+    return tclist[tc_index].description;
 }
 #endif /* NETSNMP_FEATURE_REMOVE_GET_TC_DESCRIPTION */
 
@@ -2438,14 +2435,15 @@ parse_asntype(FILE * fp, char *name, int *ntype, char *ntoken)
         /*
          * textual convention 
          */
-        for (i = 0; i < MAXTC; i++) {
+        for (i = 0; i < tc_alloc; i++) {
             if (tclist[i].type == 0)
                 break;
         }
 
-        if (i == MAXTC) {
-            print_error("Too many textual conventions", token, type);
-            goto err;
+        if (i == tc_alloc) {
+            tclist = realloc(tclist, (tc_alloc + TC_INCR)*sizeof(struct tc));
+            memset(tclist+tc_alloc, 0, TC_INCR*sizeof(struct tc));
+            tc_alloc += TC_INCR;
         }
         if (!(type & SYNTAX_MASK)) {
             print_error("Textual convention doesn't map to real type",
@@ -3638,13 +3636,15 @@ parse_imports(FILE * fp)
     register int    type;
     char            token[MAXTOKEN];
     char            modbuf[256];
-#define MAX_IMPORTS	256
-    struct module_import import_list[MAX_IMPORTS];
+#define MAX_IMPORTS	512
+    struct module_import *import_list;
     int             this_module;
     struct module  *mp;
 
     int             import_count = 0;   /* Total number of imported descriptors */
     int             i = 0, old_i;       /* index of first import from each module */
+
+    import_list = malloc(MAX_IMPORTS * sizeof(*import_list));
 
     type = get_token(fp, token, MAXTOKEN);
 
@@ -3658,7 +3658,7 @@ parse_imports(FILE * fp)
                 do {
                     type = get_token(fp, token, MAXTOKEN);
                 } while (type != SEMI && type != ENDOFFILE);
-                return;
+                goto out;
             }
             import_list[import_count++].label = strdup(token);
         } else if (type == FROM) {
@@ -3695,10 +3695,10 @@ parse_imports(FILE * fp)
      * Save the import information
      *   in the global module table
      */
-    for (mp = module_head; mp; mp = mp->next)
+    for (mp = module_head; mp; mp = mp->next) {
         if (mp->modid == current_module) {
             if (import_count == 0)
-                return;
+                goto out;
             if (mp->imports && (mp->imports != root_imports)) {
                 /*
                  * this can happen if all modules are in one source file. 
@@ -3708,14 +3708,14 @@ parse_imports(FILE * fp)
                                 "#### freeing Module %d '%s' %d\n",
                                 mp->modid, mp->imports[i].label,
                                 mp->imports[i].modid));
-                    free((char *) mp->imports[i].label);
+                    free(mp->imports[i].label);
                 }
-                free((char *) mp->imports);
+                free(mp->imports);
             }
             mp->imports = (struct module_import *)
                 calloc(import_count, sizeof(struct module_import));
             if (mp->imports == NULL)
-                return;
+                goto out;
             for (i = 0; i < import_count; ++i) {
                 mp->imports[i].label = import_list[i].label;
                 mp->imports[i].modid = import_list[i].modid;
@@ -3724,13 +3724,17 @@ parse_imports(FILE * fp)
                             mp->imports[i].label, mp->imports[i].modid));
             }
             mp->no_imports = import_count;
-            return;
+            goto out;
         }
+    }
 
     /*
      * Shouldn't get this far
      */
     print_module_not_found(module_name(current_module, modbuf));
+
+out:
+    free(import_list);
     return;
 }
 
@@ -3792,7 +3796,7 @@ module_name(int modid, char *cp)
  *      or those relating to a specified identifier (read_import_replacements)
  *      plus an interface to add new replacement requirements
  */
-netsnmp_feature_child_of(parse_add_module_replacement, netsnmp_unused)
+netsnmp_feature_child_of(parse_add_module_replacement, netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_PARSE_ADD_MODULE_REPLACEMENT
 void
 add_module_replacement(const char *old_module,
@@ -4200,7 +4204,7 @@ unload_all_mibs(void)
      * tree nodes are cleared 
      */
 
-    for (i = 0, ptc = tclist; i < MAXTC; i++, ptc++) {
+    for (i = 0, ptc = tclist; i < tc_alloc; i++, ptc++) {
         if (ptc->type == 0)
             continue;
         free_enums(&ptc->enums);
@@ -4211,7 +4215,7 @@ unload_all_mibs(void)
         if (ptc->description)
             free(ptc->description);
     }
-    memset(tclist, 0, MAXTC * sizeof(struct tc));
+    memset(tclist, 0, tc_alloc * sizeof(struct tc));
 
     memset(buckets, 0, sizeof(buckets));
     memset(nbuckets, 0, sizeof(nbuckets));
@@ -4612,6 +4616,7 @@ parse(FILE * fp, struct node *root)
 static int
 is_labelchar(int ich)
 {
+    netsnmp_assert(ich == EOF || (0 <= ich && ich < 256));
     if ((isalnum(ich)) || (ich == '-'))
         return 1;
     if (ich == '_' && netsnmp_ds_get_boolean(NETSNMP_DS_LIBRARY_ID, 
@@ -4849,7 +4854,7 @@ get_token(FILE * fp, char *token, int maxtlen)
     }
 }
 
-netsnmp_feature_child_of(parse_get_token, netsnmp_unused)
+netsnmp_feature_child_of(parse_get_token, netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_PARSE_GET_TOKEN
 int
 snmp_get_token(FILE * fp, char *token, int maxtlen)
@@ -4859,7 +4864,7 @@ snmp_get_token(FILE * fp, char *token, int maxtlen)
 #endif /* NETSNMP_FEATURE_REMOVE_PARSE_GET_TOKEN */
 
 int
-add_mibfile(const char* tmpstr, const char* d_name, FILE *ip )
+add_mibfile(const char* tmpstr, const char* d_name)
 {
     FILE           *fp;
     char            token[MAXTOKEN], token2[MAXTOKEN];
@@ -4884,14 +4889,86 @@ add_mibfile(const char* tmpstr, const char* d_name, FILE *ip )
      */
     if (get_token(fp, token2, MAXTOKEN) == DEFINITIONS) {
         new_module(token, tmpstr);
-        if (ip)
-            fprintf(ip, "%s %s\n", token, d_name);
         fclose(fp);
         return 0;
     } else {
         fclose(fp);
         return 1;
     }
+}
+
+static int elemcmp(const void *a, const void *b)
+{
+    const char *const *s1 = a, *const *s2 = b;
+
+    return strcmp(*s1, *s2);
+}
+
+/*
+ * Scan a directory and return all filenames found as an array of pointers to
+ * directory entries (@result).
+ */
+static int scan_directory(char ***result, const char *dirname)
+{
+    DIR            *dir, *dir2;
+    struct dirent  *file;
+    char          **filenames = NULL;
+    int             fname_len, i, filename_count = 0, array_size = 0;
+    char           *tmpstr;
+
+    *result = NULL;
+
+    dir = opendir(dirname);
+    if (!dir)
+        return -1;
+
+    while ((file = readdir(dir))) {
+        /*
+         * Only parse file names that don't begin with a '.'
+         * Also skip files ending in '~', or starting/ending
+         * with '#' which are typically editor backup files.
+         */
+        fname_len = strlen(file->d_name);
+        if (fname_len > 0 && file->d_name[0] != '.'
+            && file->d_name[0] != '#'
+            && file->d_name[fname_len-1] != '#'
+            && file->d_name[fname_len-1] != '~') {
+            if (asprintf(&tmpstr, "%s/%s", dirname, file->d_name) < 0)
+                continue;
+            dir2 = opendir(tmpstr);
+            if (dir2) {
+                /* file is a directory, don't read it */
+                closedir(dir2);
+            } else {
+                if (filename_count >= array_size) {
+                    char **new_filenames;
+
+                    array_size = (array_size + 16) * 2;
+                    new_filenames = realloc(filenames,
+                                        array_size * sizeof(filenames[0]));
+                    if (!new_filenames) {
+                        free(tmpstr);
+                        for (i = 0; i < filename_count; i++)
+                            free(filenames[i]);
+                        free(filenames);
+                        closedir(dir);
+                        return -1;
+                    }
+                    filenames = new_filenames;
+                }
+                filenames[filename_count++] = tmpstr;
+                tmpstr = NULL;
+            }
+            free(tmpstr);
+        }
+    }
+    closedir(dir);
+
+    if (filenames)
+        qsort(filenames, filename_count, sizeof(filenames[0]), elemcmp);
+    *result = filenames;
+
+    return filename_count;
 }
 
 /* For Win32 platforms, the directory does not maintain a last modification
@@ -4903,92 +4980,23 @@ add_mibfile(const char* tmpstr, const char* d_name, FILE *ip )
 int
 add_mibdir(const char *dirname)
 {
-    FILE           *ip;
-    DIR            *dir, *dir2;
     const char     *oldFile = File;
-    struct dirent  *file;
-    char            tmpstr[300];
+    char          **filenames;
     int             count = 0;
-    int             fname_len = 0;
-#if !(defined(WIN32) || defined(cygwin))
-    char           *token;
-    char space;
-    char newline;
-    struct stat     dir_stat, idx_stat;
-    char            tmpstr1[300];
-#endif
+    int             filename_count, i;
 
     DEBUGMSGTL(("parse-mibs", "Scanning directory %s\n", dirname));
-#if !(defined(WIN32) || defined(cygwin))
-    token = netsnmp_mibindex_lookup( dirname );
-    if (token && stat(token, &idx_stat) == 0 && stat(dirname, &dir_stat) == 0) {
-        if (dir_stat.st_mtime < idx_stat.st_mtime) {
-            DEBUGMSGTL(("parse-mibs", "The index is good\n"));
-            if ((ip = fopen(token, "r")) != NULL) {
-                fgets(tmpstr, sizeof(tmpstr), ip); /* Skip dir line */
-                while (fscanf(ip, "%127s%c%299[^\n]%c", token, &space, tmpstr,
-		    &newline) == 4) {
 
-		    /*
-		     * If an overflow of the token or tmpstr buffers has been
-		     * found log a message and break out of the while loop,
-		     * thus the rest of the file tokens will be ignored.
-		     */
-		    if (space != ' ' || newline != '\n') {
-			snmp_log(LOG_ERR,
-			    "add_mibdir: strings scanned in from %s/%s " \
-			    "are too large.  count = %d\n ", dirname,
-			    ".index", count);
-			    break;
-		    }
-		   
-		    snprintf(tmpstr1, sizeof(tmpstr1), "%s/%s", dirname, tmpstr);
-                    tmpstr1[ sizeof(tmpstr1)-1 ] = 0;
-                    new_module(token, tmpstr1);
-                    count++;
-                }
-                fclose(ip);
-                return count;
-            } else
-                DEBUGMSGTL(("parse-mibs", "Can't read index\n"));
-        } else
-            DEBUGMSGTL(("parse-mibs", "Index outdated\n"));
-    } else
-        DEBUGMSGTL(("parse-mibs", "No index\n"));
-#endif
+    filename_count = scan_directory(&filenames, dirname);
 
-    if ((dir = opendir(dirname))) {
-        ip = netsnmp_mibindex_new( dirname );
-        while ((file = readdir(dir))) {
-            /*
-             * Only parse file names that don't begin with a '.' 
-             * Also skip files ending in '~', or starting/ending
-             * with '#' which are typically editor backup files.
-             */
-            if (file->d_name != NULL) {
-              fname_len = strlen( file->d_name );
-              if (fname_len > 0 && file->d_name[0] != '.' 
-                                && file->d_name[0] != '#'
-                                && file->d_name[fname_len-1] != '#'
-                                && file->d_name[fname_len-1] != '~') {
-                snprintf(tmpstr, sizeof(tmpstr), "%s/%s", dirname, file->d_name);
-                tmpstr[ sizeof(tmpstr)-1 ] = 0;
-                if ((dir2 = opendir(tmpstr))) {
-                    /*
-                     * file is a directory, don't read it 
-                     */
-                    closedir(dir2);
-                } else {
-                    if ( !add_mibfile( tmpstr, file->d_name, ip ))
-                        count++;
-                }
-              }
-            }
+    if (filename_count >= 0) {
+        for (i = 0; i < filename_count; i++) {
+            if (add_mibfile(filenames[i], strrchr(filenames[i], '/')) == 0)
+                count++;
+	    free(filenames[i]);
         }
         File = oldFile;
-        closedir(dir);
-        if (ip)
-            fclose(ip);
+        free(filenames);
         return (count);
     }
     else
@@ -5349,7 +5357,7 @@ find_node(const char *name, struct tree *subtree)
     return (find_tree_node(name, -1));
 }
 
-netsnmp_feature_child_of(parse_find_node2, netsnmp_unused)
+netsnmp_feature_child_of(parse_find_node2, netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_PARSE_FIND_NODE2
 struct tree    *
 find_node2(const char *name, const char *module)

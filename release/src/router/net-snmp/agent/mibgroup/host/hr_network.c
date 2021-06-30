@@ -24,7 +24,7 @@
 #include "hr_network.h"
 
 #if !defined( solaris2 )
-netsnmp_feature_require(interface_legacy)
+netsnmp_feature_require(interface_legacy);
 #endif /* !solaris2 */
 
         /*********************
@@ -299,8 +299,10 @@ network_status(int idx)
         return 2;               /* running */
     else
         return 5;               /* down */
+#else
+    /* To do: implement network_status() for Windows. */
+    return 2;                   /* running */
 #endif /* WIN32 */
-
 }
 
 int

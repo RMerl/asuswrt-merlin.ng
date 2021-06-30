@@ -104,6 +104,7 @@ extern          "C" {
 #define NETSNMP_DS_LIB_DISABLE_V2c         44 /* disable SNMPv2c */
 #define NETSNMP_DS_LIB_DISABLE_V3          45 /* disable SNMPv3 */
 #define NETSNMP_DS_LIB_FILTER_SOURCE       46 /* filter pkt by source IP */
+#define NETSNMP_DS_LIB_ADD_FORWARDER_INFO  47 /* add info about forwarder to SNMP packets */
 #define NETSNMP_DS_LIB_MAX_BOOL_ID         48 /* match NETSNMP_DS_MAX_SUBIDS */
 
     /*
@@ -128,7 +129,7 @@ extern          "C" {
 #define NETSNMP_DS_LIB_TIMEOUT             14
 #define NETSNMP_DS_LIB_RETRIES             15
 #define NETSNMP_DS_LIB_MSG_SEND_MAX        16 /* global max response size */
-#define NETSNMP_DS_LIB_FILTER_TYPE         17 /* 0=NONE, 1=whitelist, -1=blacklist */
+#define NETSNMP_DS_LIB_FILTER_TYPE         17 /* 0=NONE, 1=acceptlist, -1=blocklist */
 #define NETSNMP_DS_LIB_MAX_INT_ID          48 /* match NETSNMP_DS_MAX_SUBIDS */
     
     /*
@@ -193,17 +194,25 @@ extern          "C" {
      */
 #ifndef NETSNMP_FEATURE_REMOVE_RUNTIME_DISABLE_VERSION
 
-#if !defined(NETSNMP_DISABLE_SNMPV1) || !defined(NETSNMP_DISABLE_SNMPV2C)
-
-#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V1(pc_ver) \
-    ((pc_ver == SNMP_VERSION_1) &&                                     \
+#if defined(NETSNMP_DISABLE_SNMPV1)
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V1(pc_ver)                        \
+    ((pc_ver) == 0/*SNMP_VERSION_1*/)
+#else
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V1(pc_ver)                        \
+    ((pc_ver) == SNMP_VERSION_1 &&                                      \
      netsnmp_ds_get_boolean(NETSNMP_DS_LIBRARY_ID,                      \
                             NETSNMP_DS_LIB_DISABLE_V1))
+#endif
 
-#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V2(pc_ver) \
-    ((pc_ver == SNMP_VERSION_2c) &&                                     \
+#if defined(NETSNMP_DISABLE_SNMPV2C)
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V2(pc_ver)                        \
+    ((pc_ver) == 1/*SNMP_VERSION_2c*/)
+#else
+#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V2(pc_ver)                        \
+    ((pc_ver) == SNMP_VERSION_2c &&                                     \
      netsnmp_ds_get_boolean(NETSNMP_DS_LIBRARY_ID,                      \
                             NETSNMP_DS_LIB_DISABLE_V2c))
+#endif
 
 #define NETSNMP_RUNTIME_PROTOCOL_CHECK_V1V2(pc_ver, pc_target) do {    \
         if (NETSNMP_RUNTIME_PROTOCOL_SKIP_V1(pc_ver) ||                \
@@ -212,11 +221,6 @@ extern          "C" {
             goto pc_target;                                            \
         }                                                              \
     } while(0)
-#else
-#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V1(pc_ver) (0)
-#define NETSNMP_RUNTIME_PROTOCOL_SKIP_V2(pc_ver) (0)
-#define NETSNMP_RUNTIME_PROTOCOL_CHECK_V1V2(ver, gt) do { ; } while(0)
-#endif
 
 #define NETSNMP_RUNTIME_PROTOCOL_SKIP_V3(pc_ver) \
     ((pc_ver == SNMP_VERSION_3) &&                                   \

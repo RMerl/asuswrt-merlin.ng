@@ -77,7 +77,7 @@
 #include "util_funcs/header_simple_table.h"
 #include <time.h>
 
-netsnmp_feature_require(table_container)
+netsnmp_feature_require(table_container);
 
 
 /*

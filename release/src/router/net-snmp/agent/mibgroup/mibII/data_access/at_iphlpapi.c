@@ -29,7 +29,7 @@
 
 static WriteMethod write_arp;
 MIB_IPNETROW   *arp_row = NULL;
-int             create_flag = 0;
+static int      create_flag;
 
 u_char         *
 var_atEntry(struct variable *vp,
@@ -280,7 +280,8 @@ write_arp(int action,
                 return SNMP_ERR_WRONGTYPE;
             }
             if (var_val_len != 6) {
-                snmp_log(LOG_ERR, "not correct ipAddress length: %d",
+                snmp_log(LOG_ERR,
+                         "incorrect ipAddress length %" NETSNMP_PRIz "d",
                          var_val_len);
                 return SNMP_ERR_WRONGLENGTH;
             }
@@ -383,8 +384,8 @@ write_arp(int action,
              */
             if (!create_flag) {
                 if ((status = SetIpNetEntry(oldarp_row)) != NO_ERROR) {
-                    snmp_log(LOG_ERR, "Error in case UNDO, status : %lu\n",
-                             status);
+                    snmp_log(LOG_ERR, "Error in case UNDO, status : %u\n",
+                             (unsigned int)status);
                     retval = SNMP_ERR_UNDOFAILED;
                 }
             }
@@ -394,8 +395,8 @@ write_arp(int action,
 
                 if ((status = SetIpNetEntry(arp_row)) != NO_ERROR) {
                     snmp_log(LOG_ERR,
-                             "Error while deleting added row, status : %lu\n",
-                             status);
+                             "Error while deleting added row, status : %u\n",
+                             (unsigned int)status);
                     retval = SNMP_ERR_UNDOFAILED;
                 }
             }
@@ -414,8 +415,8 @@ write_arp(int action,
             if (arp_row->dwPhysAddrLen != 0) {
                 if ((status = CreateIpNetEntry(arp_row)) != NO_ERROR) {
                     snmp_log(LOG_ERR,
-                             "Inside COMMIT: CreateIpNetEntry failed, status %lu\n",
-                             status);
+                             "Inside COMMIT: CreateIpNetEntry failed, status %u\n",
+                             (unsigned int)status);
                     retval = SNMP_ERR_COMMITFAILED;
                 }
             } else {
@@ -431,6 +432,7 @@ write_arp(int action,
              */
             create_flag = 0;
         }
+        /* FALL THROUGH */
 
     case FREE:
         /*

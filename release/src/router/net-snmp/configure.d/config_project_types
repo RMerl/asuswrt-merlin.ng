@@ -34,39 +34,77 @@ AC_DEFINE_UNQUOTED([NETSNMP_ATTRIBUTE_UNUSED], [${attr}],
 #   More complex checks:
 ##
 
-#   Check for 'socklen_t'                           (HP-UX)
+#   Check for 'socklen_t', 'in_addr_t' and 'ssize_t'.
 #
-AC_CHECK_TYPES([socklen_t],,,[
-#include <sys/types.h>
-#if STDC_HEADERS
+AC_CHECK_TYPES([socklen_t, in_addr_t, ssize_t],,,[
+#if defined(HAVE_WINSOCK2_H) && defined(HAVE_WS2TCPIP_H)
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
 #include <stdlib.h>
 #include <stddef.h>
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
 #endif
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
-#endif])
-
-
-#   Check for 'in_addr_t'
-#       May be in <netinet/in.h>                        (AIX)
-#
-AC_CHECK_TYPES([in_addr_t],,,[
-#include <sys/types.h>
-#if STDC_HEADERS
-#include <stdlib.h>
-#include <stddef.h>
 #endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif])
 
+if test "x$ac_cv_type_in_addr_t" != xyes; then
+AC_DEFINE([in_addr_t], [unsigned long],
+          [in_addr_t definition if not defined in <netinet/in.h>. Must match the type of sockaddr_in::sin_addr])
+fi
 
-#   Check for 'ssize_t'
-#       Not necessarily in <sys/types.h>                (older MinGW)
 #
-AC_CHECK_TYPES([ssize_t],,,[
-#include <sys/types.h>
-#if STDC_HEADERS
-#include <stdlib.h>
+# Check for the type of the fifth argument of select()
+#
+
+netsnmp_save_CFLAGS=$CFLAGS
+CFLAGS="$CFLAGS -Werror"
+
+AC_MSG_CHECKING([for the type of the fifth argument of select()])
+arg_type=void
+for t in "struct timeval" "struct __ms_timeval"; do
+AC_COMPILE_IFELSE(
+    [AC_LANG_PROGRAM([
+#if defined(HAVE_WINSOCK2_H) && defined(HAVE_WS2TCPIP_H)
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif
+#endif
 #include <stddef.h>
-#endif])
+], [return select(0, NULL, NULL, NULL, ($t *)NULL)])],
+    [arg_type=$t; break])
+done
+AC_MSG_RESULT(${arg_type})
+AC_DEFINE_UNQUOTED([NETSNMP_SELECT_TIMEVAL], [${arg_type}],
+        [Type of the fifth argument of select()])
+
+AC_MSG_CHECKING([for the type of the third argument of ioctlsocket()])
+arg_type=void
+for t in "unsigned int" "unsigned long"; do
+AC_COMPILE_IFELSE(
+    [AC_LANG_PROGRAM([
+#if defined(HAVE_WINSOCK2_H) && defined(HAVE_WS2TCPIP_H)
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif
+#endif
+#include <stddef.h>
+], [return ioctlsocket(0, 0, ($t *)NULL)])],
+    [arg_type=$t; break])
+done
+AC_MSG_RESULT(${arg_type})
+AC_DEFINE_UNQUOTED([NETSNMP_IOCTLSOCKET_ARG], [${arg_type}],
+        [Type of the third argument of ioctlsocket()])
+
+CFLAGS=$netsnmp_save_CFLAGS

@@ -1,4 +1,7 @@
 /* HEADER Testing the netsnmp_string_time_to_secs API */
+
+#ifndef NETSNMP_FEATURE_REMOVE_STRING_TIME_TO_SECS
+
 int secs;
 
 #define TESTIT(x,y) \
@@ -42,4 +45,4 @@ TESTIT("1234D", 1234 * 60 * 60 * 24);
 TESTIT("1234w", 1234 * 60 * 60 * 24 * 7);
 TESTIT("1234W", 1234 * 60 * 60 * 24 * 7);
 
-
+#endif

@@ -32,5 +32,5 @@ LOBJS = dummy.lo
 all: standardall
 
 libnetsnmphelpers.$(LIB_EXTENSION)$(LIB_VERSION):    $(LOBJS)
-	$(LIB_LD_CMD) $@ $(LOBJS) @LD_NO_UNDEFINED@ $(LDFLAGS) $(LIB_LD_LIBS)
+	$(LIB_LD_CMD) $@ $(LOBJS) @LD_NO_UNDEFINED@ $(LDFLAGS)
 	$(RANLIB) $@

@@ -1,0 +1,28 @@
+#!/bin/sh
+
+. ../support/simple_eval_tools.sh
+
+HEADER large SNMPv3 bulkget
+
+SKIPIFNOT USING_MIBII_SYSTEM_MIB_MODULE
+
+#
+# Begin test
+#
+
+# standard V3 configuration: 
+. ./Sv3config
+
+AGENT_FLAGS="$AGENT_FLAGS -Dsnmp_api,recv,send,snmp_build,dumpx_send,dumpv_send,dumph_send,snmp_sess,sess_async_send,snmpv3_parse:msgMaxSize"
+SNMP_FLAGS="$SNMP_FLAGS -Dsnmp_api,recv,send,snmp_build,dumpx_send,dumpv_send,dumph_send,snmp_sess,sess_async_send,snmpv3_parse:msgMaxSize"
+
+STARTAGENT
+
+CAPTURE "snmpbulkget $SNMP_FLAGS -On -Cn5 -Cr50 $NOAUTHTESTARGS $SNMP_TRANSPORT_SPEC:$SNMP_TEST_DEST$SNMP_SNMPD_PORT sysUpTime sysUpTime sysUpTime sysUpTime sysUpTime .1"
+
+STOPAGENT
+
+CHECKCOUNT atleastone "^\.1\.3\.6\.1\.2\.1\.1\.3\.0 = Timeticks: "
+CHECKCOUNT 55 "^\.1\."
+
+FINISHED

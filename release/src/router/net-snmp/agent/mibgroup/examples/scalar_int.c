@@ -31,7 +31,7 @@
  * if --enable-minimalist has been turned on, we need to register
  * the support we need so the needed functions aren't removed at compile time
  */
-netsnmp_feature_require(long_instance)
+netsnmp_feature_require(long_instance);
 
 /*
  * Then, we declare the variables we want to be accessed 

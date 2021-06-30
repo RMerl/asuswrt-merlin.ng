@@ -10,6 +10,7 @@ extern void     Init_HR_FileSys(void);
 extern FindVarMethod var_hrhfilesys;
 extern int      Get_Next_HR_FileSys(void);
 extern int      Check_HR_FileSys_NFS(void);
+extern int	Check_HR_FileSys_AutoFs(void);
 
 extern int      Get_FSIndex(char *);
 extern long     Get_FSSize(char *);     /* Temporary */

@@ -27,9 +27,9 @@
 
 #include <net-snmp/agent/bulk_to_next.h>
 
-netsnmp_feature_child_of(agent_handler, libnetsnmpagent)
+netsnmp_feature_child_of(agent_handler, libnetsnmpagent);
 
-netsnmp_feature_child_of(handler_mark_requests_as_delegated, agent_handler)
+netsnmp_feature_child_of(handler_mark_requests_as_delegated, agent_handler);
 
 static netsnmp_mib_handler *_clone_handler(netsnmp_mib_handler *it);
 
@@ -667,7 +667,7 @@ netsnmp_call_next_handler(netsnmp_mib_handler *current,
  *
  *  @return Returns SNMPERR_SUCCESS or SNMP_ERR_* error code.
  */
-netsnmp_feature_child_of(netsnmp_call_next_handler_one_request,netsnmp_unused)
+netsnmp_feature_child_of(netsnmp_call_next_handler_one_request,netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_NETSNMP_CALL_NEXT_HANDLER_ONE_REQUEST
 NETSNMP_INLINE int
 netsnmp_call_next_handler_one_request(netsnmp_mib_handler *current,
@@ -806,56 +806,51 @@ netsnmp_handler_registration_dup(netsnmp_handler_registration *reginfo)
 {
     netsnmp_handler_registration *r = NULL;
 
-    if (reginfo == NULL) {
+    if (reginfo == NULL)
         return NULL;
-    }
 
-
-    r = (netsnmp_handler_registration *) calloc(1,
-                                                sizeof
-                                                (netsnmp_handler_registration));
-
-    if (r != NULL) {
-        r->modes = reginfo->modes;
-        r->priority = reginfo->priority;
-        r->range_subid = reginfo->range_subid;
-        r->timeout = reginfo->timeout;
-        r->range_ubound = reginfo->range_ubound;
-        r->rootoid_len = reginfo->rootoid_len;
-
-        if (reginfo->handlerName != NULL) {
-            r->handlerName = strdup(reginfo->handlerName);
-            if (r->handlerName == NULL) {
-                netsnmp_handler_registration_free(r);
-                return NULL;
-            }
-        }
-
-        if (reginfo->contextName != NULL) {
-            r->contextName = strdup(reginfo->contextName);
-            if (r->contextName == NULL) {
-                netsnmp_handler_registration_free(r);
-                return NULL;
-            }
-        }
-
-        if (reginfo->rootoid != NULL) {
-            r->rootoid =
-                snmp_duplicate_objid(reginfo->rootoid, reginfo->rootoid_len);
-            if (r->rootoid == NULL) {
-                netsnmp_handler_registration_free(r);
-                return NULL;
-            }
-        }
-
-        r->handler = netsnmp_handler_dup(reginfo->handler);
-        if (r->handler == NULL) {
-            netsnmp_handler_registration_free(r);
-            return NULL;
-        }
+    r = calloc(1, sizeof(netsnmp_handler_registration));
+    if (!r)
         return r;
+    r->modes = reginfo->modes;
+    r->priority = reginfo->priority;
+    r->range_subid = reginfo->range_subid;
+    r->timeout = reginfo->timeout;
+    r->range_ubound = reginfo->range_ubound;
+    r->rootoid_len = reginfo->rootoid_len;
+
+    if (reginfo->handlerName != NULL) {
+        r->handlerName = strdup(reginfo->handlerName);
+        if (r->handlerName == NULL)
+            goto err;
     }
 
+    if (reginfo->contextName != NULL) {
+        r->contextName = strdup(reginfo->contextName);
+        if (r->contextName == NULL)
+            goto err;
+    }
+
+    if (reginfo->rootoid != NULL) {
+        /*
+         * + 1 to make the following code safe:
+         * reginfo->rootoid[reginfo->rootoid_len++] = 0;
+         * See also netsnmp_scalar_helper_handler().
+         */
+        r->rootoid = malloc((reginfo->rootoid_len + 1) * sizeof(oid));
+        if (r->rootoid == NULL)
+            goto err;
+        memcpy(r->rootoid, reginfo->rootoid,
+               reginfo->rootoid_len * sizeof(oid));
+    }
+
+    r->handler = netsnmp_handler_dup(reginfo->handler);
+    if (r->handler == NULL)
+        goto err;
+    return r;
+
+err:
+    netsnmp_handler_registration_free(r);
     return NULL;
 }
 

@@ -75,13 +75,13 @@
 #include "mibgroup/notification/snmpNotifyTable_data.h"
 #endif
 
-netsnmp_feature_child_of(agent_trap_all, libnetsnmpagent)
+netsnmp_feature_child_of(agent_trap_all, libnetsnmpagent);
 
-netsnmp_feature_child_of(trap_vars_with_context, agent_trap_all)
-netsnmp_feature_child_of(remove_trap_session, agent_trap_all)
+netsnmp_feature_child_of(trap_vars_with_context, agent_trap_all);
+netsnmp_feature_child_of(remove_trap_session, agent_trap_all);
 
-netsnmp_feature_child_of(send_v3trap,netsnmp_unused)
-netsnmp_feature_child_of(send_trap_pdu,netsnmp_unused)
+netsnmp_feature_child_of(send_v3trap,netsnmp_unused);
+netsnmp_feature_child_of(send_trap_pdu,netsnmp_unused);
 
 struct trap_sink {
     netsnmp_session *sesp;
@@ -91,11 +91,6 @@ struct trap_sink {
 };
 
 struct trap_sink *sinks = NULL;
-
-#ifndef NETSNMP_DISABLE_SNMPV1
-static int _v1_sessions = 0;
-#endif /* NETSNMP_DISABLE_SNMPV1 */
-static int _v2_sessions = 0;
 
 const oid       objid_enterprisetrap[] = { NETSNMP_NOTIFICATION_MIB };
 const oid       trap_version_id[] = { NETSNMP_SYSTEM_MIB };
@@ -158,55 +153,6 @@ free_trap_session(struct trap_sink *sp)
     snmp_close(sp->sesp);
     free(sp);
 }
-
-static void
-_trap_version_incr(int version)
-{
-    switch (version) {
-#ifndef NETSNMP_DISABLE_SNMPV1
-        case SNMP_VERSION_1:
-            ++_v1_sessions;
-            break;
-#endif
-#ifndef NETSNMP_DISABLE_SNMPV2C
-        case SNMP_VERSION_2c:
-#endif
-        case SNMP_VERSION_3:
-            ++_v2_sessions;
-            break;
-        default:
-            snmp_log(LOG_ERR, "unknown snmp version %d\n", version);
-    }
-    return;
-}
-
-static void
-_trap_version_decr(int version)
-{
-    switch (version) {
-#ifndef NETSNMP_DISABLE_SNMPV1
-        case SNMP_VERSION_1:
-            if (--_v1_sessions < 0) {
-                snmp_log(LOG_ERR,"v1 session count < 0! fixed.\n");
-                _v1_sessions = 0;
-            }
-            break;
-#endif
-#ifndef NETSNMP_DISABLE_SNMPV2C
-        case SNMP_VERSION_2c:
-#endif
-        case SNMP_VERSION_3:
-            if (--_v2_sessions < 0) {
-                snmp_log(LOG_ERR,"v2 session count < 0! fixed.\n");
-                _v2_sessions = 0;
-            }
-            break;
-        default:
-            snmp_log(LOG_ERR, "unknown snmp version %d\n", version);
-    }
-    return;
-}
-
 
 #ifndef NETSNMP_NO_TRAP_STATS
 static void
@@ -285,8 +231,6 @@ netsnmp_add_notification_session(netsnmp_session * ss, int pdutype,
         sinks = new_sink;
     }
 
-    _trap_version_incr(version);
-
     return 1;
 }
 
@@ -338,7 +282,6 @@ remove_trap_session(netsnmp_session * ss)
             } else {
                 sinks = sp->next;
             }
-            _trap_version_decr(ss->version);
             /*
              * I don't believe you *really* want to close the session here;
              * it may still be in use for other purposes.  In particular this
@@ -490,7 +433,6 @@ snmpd_free_trapsinks(void)
     DEBUGMSGTL(("trap", "freeing trap sessions\n"));
     while (sp) {
         sinks = sinks->next;
-        _trap_version_decr(sp->version);
         free_trap_session(sp);
         sp = sinks;
     }
@@ -1025,11 +967,11 @@ netsnmp_send_traps(int trap, int specific,
         }
     }
 #ifndef NETSNMP_DISABLE_SNMPV1
-    if (template_v1pdu && _v1_sessions)
+    if (template_v1pdu)
         snmp_call_callbacks(SNMP_CALLBACK_APPLICATION,
                         SNMPD_CALLBACK_SEND_TRAP1, template_v1pdu);
 #endif
-    if (template_v2pdu && _v2_sessions)
+    if (template_v2pdu)
         snmp_call_callbacks(SNMP_CALLBACK_APPLICATION,
                         SNMPD_CALLBACK_SEND_TRAP2, template_v2pdu);
     snmp_free_pdu(template_v1pdu);
@@ -1219,8 +1161,19 @@ send_trap_to_sess(netsnmp_session * sess, netsnmp_pdu *template_pdu)
                     template_pdu->command, sess->version));
         return;
     }
-    DEBUGMSGTL(("trap", "sending trap type=%d, version=%ld\n",
-                template_pdu->command, sess->version));
+    DEBUGIF("trap") {
+        struct session_list *sessp = snmp_sess_pointer(sess);
+        netsnmp_transport *t = sessp->transport;
+        const void *dst = template_pdu->transport_data;
+        const int dst_len = template_pdu->transport_data_length;
+        char *peer = NULL;
+
+        if (t && t->f_fmtaddr)
+            peer = t->f_fmtaddr(t, dst, dst_len);
+        DEBUGMSGTL(("trap", "sending trap type=%d, version=%ld to %s\n",
+                    template_pdu->command, sess->version, peer ? peer : "(?)"));
+        free(peer);
+    }
 
 #ifndef NETSNMP_DISABLE_SNMPV1
     if (sess->version == SNMP_VERSION_1 &&
@@ -1603,8 +1556,7 @@ netsnmp_create_v3user_notification_session(const char *dest, const char *user,
         engineId = tmp_engineId;
     }
 
-    usmUser = usm_get_user(NETSNMP_REMOVE_CONST(u_char *,engineId),
-                           engineId_len, NETSNMP_REMOVE_CONST(char *,user));
+    usmUser = usm_get_user(engineId, engineId_len, user);
     if (NULL == usmUser) {
         DEBUGMSGTL(("trap:v3user_notif_sess", "usmUser %s not found\n", user));
         return NULL;
@@ -1701,7 +1653,7 @@ netsnmp_create_v3user_notification_session(const char *dest, const char *user,
                                          ss->version, notif_name, notif_tag,
                                          notif_profile) != 1) {
         DEBUGMSGTL(("trap:v3user_notif_sess", "add notification failed\n"));
-        snmp_sess_close(ss);
+        snmp_close(ss);
         ss = NULL;
         goto bail;
     }
@@ -1735,14 +1687,17 @@ snmpd_parse_config_trapsess(const char *word, char *cptr)
         if (strncmp(cp, "-profile", 8) == 0) {
             cp = skip_token(cp);
             cp = copy_nword(cp, tmp, SPRINT_MAX_LEN);
+            free(profile);
             profile = strdup(tmp);
         } else if (strncmp(cp, "-name", 5) == 0) {
             cp = skip_token(cp);
             cp = copy_nword(cp, tmp, SPRINT_MAX_LEN);
+            free(name);
             name = strdup(tmp);
-        } else if (strncmp(cp, "-tag", 5) == 0) {
+        } else if (strncmp(cp, "-tag", 4) == 0) {
             cp = skip_token(cp);
             cp = copy_nword(cp, tmp, SPRINT_MAX_LEN);
+            free(tag);
             tag = strdup(tmp);
         } else
             break;
@@ -1835,6 +1790,8 @@ snmpd_parse_config_trapsess(const char *word, char *cptr)
                                      ss->version, name, tag, profile);
 
   cleanup:
+    if (session.securityEngineIDLen > 0)
+        SNMP_FREE(session.securityEngineID);
     SNMP_FREE(clientaddr_save);
     SNMP_FREE(profile);
     SNMP_FREE(name);

@@ -312,7 +312,7 @@ notifyTable_register_notifications(int major, int minor,
             snmp_log(LOG_ERR,
                      "Can't register new trap destination: max limit reached: %d",
                      MAX_ENTRIES);
-            snmp_sess_close(ss);
+            snmp_close(ss);
             return (0);
         }
         name = buf;
@@ -335,7 +335,7 @@ notifyTable_register_notifications(int major, int minor,
     if (!t) {
         snmp_log(LOG_ERR,
                 "Cannot add new trap destination, transport is closed.");
-        snmp_sess_close(ss);
+        snmp_close(ss);
         return 0;
     }
     ptr = snmpTargetAddrTable_create();
@@ -378,6 +378,10 @@ notifyTable_register_notifications(int major, int minor,
     if (ss->version == SNMP_VERSION_3) {
         pptr->secModel = ss->securityModel;
         pptr->secLevel = ss->securityLevel;
+        if (!ss->securityName) {
+            snmp_log(LOG_ERR, "Security name is missing.");
+            goto bail;
+        }
         pptr->secNameData = netsnmp_memdup_nt(ss->securityName,
                                               ss->securityNameLen,
                                               &pptr->secNameLen);
@@ -461,7 +465,7 @@ notifyTable_register_notifications(int major, int minor,
     return 0;
 
   bail:
-    snmp_log(LOG_ERR, "Cannot add new trap destination");
+    snmp_log(LOG_ERR, "Cannot add new trap destination %s\n", name);
 
     if (NULL != nptr)
         snmpNotifyTable_remove(nptr);
@@ -472,7 +476,7 @@ notifyTable_register_notifications(int major, int minor,
     if (NULL != ptr)
         snmpTargetAddrTable_remove(ptr);
 
-    snmp_sess_close(ss);
+    snmp_close(ss);
 
     return 0;
 }

@@ -18,9 +18,6 @@
 #include <strings.h>
 #endif
 
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
 #include <sys/types.h>
 
 #include <net-snmp/types.h>
@@ -31,12 +28,12 @@
 #include <net-snmp/library/system.h>      /* strcasecmp() */
 #include <net-snmp/library/snmp_assert.h>
 
-netsnmp_feature_child_of(snmp_enum_all, libnetsnmp)
+netsnmp_feature_child_of(snmp_enum_all, libnetsnmp);
 
-netsnmp_feature_child_of(se_find_free_value_in_slist, snmp_enum_all)
-netsnmp_feature_child_of(snmp_enum_store_list, snmp_enum_all)
-netsnmp_feature_child_of(snmp_enum_store_slist, snmp_enum_all)
-netsnmp_feature_child_of(snmp_enum_clear, snmp_enum_all)
+netsnmp_feature_child_of(se_find_free_value_in_slist, snmp_enum_all);
+netsnmp_feature_child_of(snmp_enum_store_list, snmp_enum_all);
+netsnmp_feature_child_of(snmp_enum_store_slist, snmp_enum_all);
+netsnmp_feature_child_of(snmp_enum_clear, snmp_enum_all);
 
 struct snmp_enum_list_str {
     char           *name;

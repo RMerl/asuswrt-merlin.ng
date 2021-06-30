@@ -4,12 +4,193 @@ os:
   - linux
   - osx
 
+# See also https://docs.travis-ci.com/user/reference/osx/
+osx_image:
+  - xcode12
+  - xcode11.6
+  - xcode11.5
+  - xcode11.4
+  - xcode11.3
+  - xcode11.2
+  - xcode11.1
+  - xcode11
+  # Apparently when building with Xcode 10, the internal crypto code is
+  # selected. The SNMPv3 tests fail when built with the internal crypto code
+  # (snmpd reports "security service 3 error parsing ScopedPDU").
+  # - xcode10.3
+  # - xcode10.2
+  # - xcode10.1
+  # - xcode10
+  - xcode9.4
+  - xcode9.3
+  - xcode9.2
+  - xcode9.1
+  - xcode9
+  - xcode8.3
+  - xcode8
+  - xcode7.3
+
 env:
-  - env: MODE=regular
-  - env: MODE=disable-set
-  - env: MODE=mini
-  - env: MODE=minimalist
-  - env: MODE=read-only
+  - MODE=regular
+  - MODE=disable-set
+  - MODE=mini
+  - MODE=minimalist
+  - MODE=read-only
+
+jobs:
+  exclude:
+    - osx_image: xcode11.6
+      env: MODE=disable-set
+    - osx_image: xcode11.6
+      env: MODE=mini
+    - osx_image: xcode11.6
+      env: MODE=minimalist
+    - osx_image: xcode11.6
+      env: MODE=read-only
+    - osx_image: xcode11.5
+      env: MODE=disable-set
+    - osx_image: xcode11.5
+      env: MODE=mini
+    - osx_image: xcode11.5
+      env: MODE=minimalist
+    - osx_image: xcode11.5
+      env: MODE=read-only
+    - osx_image: xcode11.4
+      env: MODE=disable-set
+    - osx_image: xcode11.4
+      env: MODE=mini
+    - osx_image: xcode11.4
+      env: MODE=minimalist
+    - osx_image: xcode11.4
+      env: MODE=read-only
+    - osx_image: xcode11.3
+      env: MODE=disable-set
+    - osx_image: xcode11.3
+      env: MODE=mini
+    - osx_image: xcode11.3
+      env: MODE=minimalist
+    - osx_image: xcode11.3
+      env: MODE=read-only
+    - osx_image: xcode11.2
+      env: MODE=disable-set
+    - osx_image: xcode11.2
+      env: MODE=mini
+    - osx_image: xcode11.2
+      env: MODE=minimalist
+    - osx_image: xcode11.2
+      env: MODE=read-only
+    - osx_image: xcode11.1
+      env: MODE=disable-set
+    - osx_image: xcode11.1
+      env: MODE=mini
+    - osx_image: xcode11.1
+      env: MODE=minimalist
+    - osx_image: xcode11.1
+      env: MODE=read-only
+    - osx_image: xcode11
+      env: MODE=disable-set
+    - osx_image: xcode11
+      env: MODE=mini
+    - osx_image: xcode11
+      env: MODE=minimalist
+    - osx_image: xcode11
+      env: MODE=read-only
+    - osx_image: xcode10.3
+      env: MODE=disable-set
+    - osx_image: xcode10.3
+      env: MODE=mini
+    - osx_image: xcode10.3
+      env: MODE=minimalist
+    - osx_image: xcode10.3
+      env: MODE=read-only
+    - osx_image: xcode10.2
+      env: MODE=disable-set
+    - osx_image: xcode10.2
+      env: MODE=mini
+    - osx_image: xcode10.2
+      env: MODE=minimalist
+    - osx_image: xcode10.2
+      env: MODE=read-only
+    - osx_image: xcode10.1
+      env: MODE=disable-set
+    - osx_image: xcode10.1
+      env: MODE=mini
+    - osx_image: xcode10.1
+      env: MODE=minimalist
+    - osx_image: xcode10.1
+      env: MODE=read-only
+    - osx_image: xcode10
+      env: MODE=disable-set
+    - osx_image: xcode10
+      env: MODE=mini
+    - osx_image: xcode10
+      env: MODE=minimalist
+    - osx_image: xcode10
+      env: MODE=read-only
+    - osx_image: xcode9.4
+      env: MODE=disable-set
+    - osx_image: xcode9.4
+      env: MODE=mini
+    - osx_image: xcode9.4
+      env: MODE=minimalist
+    - osx_image: xcode9.4
+      env: MODE=read-only
+    - osx_image: xcode9.3
+      env: MODE=disable-set
+    - osx_image: xcode9.3
+      env: MODE=mini
+    - osx_image: xcode9.3
+      env: MODE=minimalist
+    - osx_image: xcode9.3
+      env: MODE=read-only
+    - osx_image: xcode9.2
+      env: MODE=disable-set
+    - osx_image: xcode9.2
+      env: MODE=mini
+    - osx_image: xcode9.2
+      env: MODE=minimalist
+    - osx_image: xcode9.2
+      env: MODE=read-only
+    - osx_image: xcode9.1
+      env: MODE=disable-set
+    - osx_image: xcode9.1
+      env: MODE=mini
+    - osx_image: xcode9.1
+      env: MODE=minimalist
+    - osx_image: xcode9.1
+      env: MODE=read-only
+    - osx_image: xcode9
+      env: MODE=disable-set
+    - osx_image: xcode9
+      env: MODE=mini
+    - osx_image: xcode9
+      env: MODE=minimalist
+    - osx_image: xcode9
+      env: MODE=read-only
+    - osx_image: xcode8.3
+      env: MODE=disable-set
+    - osx_image: xcode8.3
+      env: MODE=mini
+    - osx_image: xcode8.3
+      env: MODE=minimalist
+    - osx_image: xcode8.3
+      env: MODE=read-only
+    - osx_image: xcode8
+      env: MODE=disable-set
+    - osx_image: xcode8
+      env: MODE=mini
+    - osx_image: xcode8
+      env: MODE=minimalist
+    - osx_image: xcode8
+      env: MODE=read-only
+    - osx_image: xcode7.3
+      env: MODE=disable-set
+    - osx_image: xcode7.3
+      env: MODE=mini
+    - osx_image: xcode7.3
+      env: MODE=minimalist
+    - osx_image: xcode7.3
+      env: MODE=read-only
 
 addons:
   apt:
@@ -19,21 +200,18 @@ addons:
       - libatm-dev
       - libperl-dev
       - libsensors4-dev
-      - libssh-dev
+      - libssh2-1-dev
       - libssl-dev
       - make
       - perl-modules
       - pkg-config
       - python-dev
       - python-setuptools
+      - python3-dev
+      - python3-setuptools
 
 sudo: required
 
-before_script:
-  # Add an IPv6 config - see the corresponding Travis issue
-  # https://github.com/travis-ci/travis-ci/issues/8361
-  - 'if [ "${TRAVIS_OS_NAME}" == "linux" ]; then sudo sh -c ''echo 0 > /proc/sys/net/ipv6/conf/all/disable_ipv6; printf "\n::1 localhost ipv6-localhost ipv6-loopback\n" >>/etc/hosts; cat /etc/hosts''; fi'
-  # Upgrade openssl such that Net-SNMP can be built with Blumenthal AES support.
-  - 'if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew upgrade openssl >/dev/null 2>&1; fi'
+before_script: ci/before.sh
 
 script: ci/build.sh

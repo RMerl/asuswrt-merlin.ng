@@ -13,9 +13,9 @@
 #include "disman/event/mteTrigger.h"
 #include "disman/event/mteTriggerExistenceTable.h"
 
-netsnmp_feature_require(table_tdata)
+netsnmp_feature_require(table_tdata);
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(check_vb_type_and_max_size)
+netsnmp_feature_require(check_vb_type_and_max_size);
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 static netsnmp_table_registration_info *table_info;
@@ -63,9 +63,11 @@ init_mteTriggerExistenceTable(void)
 
     /* Register this using the (common) trigger_table_data container */
     rc = netsnmp_tdata_register(reg, trigger_table_data, table_info);
-    if (rc != SNMPERR_SUCCESS)
+    if (rc != SNMPERR_SUCCESS) {
+        snmp_log(LOG_ERR, "%s: netsnmp_tdata_register() returned %d\n",
+                 __func__, rc);
         return;
-
+    }
     netsnmp_handler_owns_table_info(reg->handler->next);
     DEBUGMSGTL(("disman:event:init", "Trigger Exist Table\n"));
 }

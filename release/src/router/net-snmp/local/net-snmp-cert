@@ -1003,7 +1003,7 @@ sub make_openssl_conf {
 rdir            = .
 dir		= $ENV::DIR
 RANDFILE	= $rdir/.rand
-MD		= sha1
+MD		= sha512
 KSIZE		= 2048
 CN		= net-snmp.org
 EMAIL		= admin@net-snmp.org

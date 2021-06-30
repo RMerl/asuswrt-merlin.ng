@@ -47,16 +47,16 @@
 
 #include <ctype.h>
 
-netsnmp_feature_child_of(inetCidrRouteTable_external_access, libnetsnmpmibs)
-netsnmp_feature_require(row_merge)
-netsnmp_feature_require(baby_steps)
-netsnmp_feature_require(table_container_row_insert)
-netsnmp_feature_require(check_all_requests_error)
+netsnmp_feature_child_of(inetCidrRouteTable_external_access, libnetsnmpmibs);
+netsnmp_feature_require(row_merge);
+netsnmp_feature_require(baby_steps);
+netsnmp_feature_require(table_container_row_insert);
+netsnmp_feature_require(check_all_requests_error);
 
-netsnmp_feature_child_of(inetCidrRouteTable_container_size, inetCidrRouteTable_external_access)
-netsnmp_feature_child_of(inetCidrRouteTable_registration_set, inetCidrRouteTable_external_access)
-netsnmp_feature_child_of(inetCidrRouteTable_registration_get, inetCidrRouteTable_external_access)
-netsnmp_feature_child_of(inetCidrRouteTable_container_get, inetCidrRouteTable_external_access)
+netsnmp_feature_child_of(inetCidrRouteTable_container_size, inetCidrRouteTable_external_access);
+netsnmp_feature_child_of(inetCidrRouteTable_registration_set, inetCidrRouteTable_external_access);
+netsnmp_feature_child_of(inetCidrRouteTable_registration_get, inetCidrRouteTable_external_access);
+netsnmp_feature_child_of(inetCidrRouteTable_container_get, inetCidrRouteTable_external_access);
 /**********************************************************************
  **********************************************************************
  ***
@@ -1238,10 +1238,8 @@ _inetCidrRouteTable_check_indexes(inetCidrRouteTable_rowreq_ctx *
     /*
      * check defined range(s). 
      */
-    if ((SNMPERR_SUCCESS == rc)
-        && ((rowreq_ctx->tbl_idx.inetCidrRouteDest_len < 0)
-            || (rowreq_ctx->tbl_idx.inetCidrRouteDest_len > 255))
-        ) {
+    if (rc == SNMPERR_SUCCESS &&
+        rowreq_ctx->tbl_idx.inetCidrRouteDest_len > 255) {
         rc = SNMP_ERR_WRONGLENGTH;
     }
     if (MFD_SUCCESS != rc)
@@ -1256,10 +1254,8 @@ _inetCidrRouteTable_check_indexes(inetCidrRouteTable_rowreq_ctx *
     /*
      * check defined range(s). 
      */
-    if ((SNMPERR_SUCCESS == rc)
-        && ((rowreq_ctx->tbl_idx.inetCidrRoutePfxLen < 0)
-            || (rowreq_ctx->tbl_idx.inetCidrRoutePfxLen > 2040))
-        ) {
+    if (rc == SNMPERR_SUCCESS &&
+        rowreq_ctx->tbl_idx.inetCidrRoutePfxLen > 2040) {
         rc = SNMP_ERR_WRONGVALUE;
     }
     if (MFD_SUCCESS != rc)
@@ -1311,10 +1307,8 @@ _inetCidrRouteTable_check_indexes(inetCidrRouteTable_rowreq_ctx *
     /*
      * check defined range(s). 
      */
-    if ((SNMPERR_SUCCESS == rc)
-        && ((rowreq_ctx->tbl_idx.inetCidrRouteNextHop_len < 0)
-            || (rowreq_ctx->tbl_idx.inetCidrRouteNextHop_len > 255))
-        ) {
+    if (rc == SNMPERR_SUCCESS &&
+        rowreq_ctx->tbl_idx.inetCidrRouteNextHop_len > 255) {
         rc = SNMP_ERR_WRONGLENGTH;
     }
     if (MFD_SUCCESS != rc)

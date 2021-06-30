@@ -17,6 +17,11 @@
  * distributed with the Net-SNMP package.
  */
 #include <net-snmp/net-snmp-config.h>
+#include <net-snmp/net-snmp-includes.h>
+#include <net-snmp/library/snmp_openssl.h>
+#if defined(HAVE_OPENSSL_DH_H) && defined(HAVE_LIBCRYPTO)
+#include <openssl/dh.h>
+#endif /* HAVE_OPENSSL_DH_H && HAVE_LIBCRYPTO */
 
 #if HAVE_STDLIB_H
 #include <stdlib.h>
@@ -54,13 +59,6 @@
 #if HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif
-
-#if defined(HAVE_OPENSSL_DH_H) && defined(HAVE_LIBCRYPTO)
-#include <openssl/dh.h>
-#endif /* HAVE_OPENSSL_DH_H && HAVE_LIBCRYPTO */
-
-#include <net-snmp/net-snmp-includes.h>
-#include <net-snmp/library/snmp_openssl.h>
 
 #define CMD_PASSWD_NAME    "passwd"
 #define CMD_PASSWD         1

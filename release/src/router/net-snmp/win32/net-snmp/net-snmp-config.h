@@ -96,6 +96,9 @@
    variables */
 #define NETSNMP_ATTRIBUTE_DEPRECATED
 
+/* Used to suppress compiler warnings about unused functions and variables */
+#define NETSNMP_ATTRIBUTE_UNUSED
+
 /* add in recent CMU library extensions (not complete) */
 /* #undef CMU_COMPATIBLE */
 
@@ -164,8 +167,20 @@
 /* Use libwrap to handle allow/deny hosts? */
 /* #undef NETSNMP_USE_LIBWRAP */
 
-/* Use dmalloc to do malloc debugging? */
-/* #undef HAVE_DMALLOC_H */
+/* Define if _beginthreadex() is defined in <process.h> */
+#define HAVE__BEGINTHREADEX 1
+
+/* Define if _cputs() is defined in <conio.h> */
+#define HAVE__CPUTS 1
+
+/* Define if _getch() is defined in <conio.h> */
+#define HAVE__GETCH 1
+
+/* Define if _get_osfhandle() is defined in <io.h> */
+#define HAVE__GET_OSFHANDLE 1
+
+/* Define if _open_osfhandle() is defined in <io.h> */
+#define HAVE__OPEN_OSFHANDLE 1
 
 /* location of UNIX kernel */
 #define KERNEL_LOC "unknown"
@@ -194,6 +209,9 @@
 
 /* If we don't want to use kmem. */
 /* #undef NETSNMP_NO_KMEM_USAGE */
+
+/* Should evaluate to the name of the current function if defined */
+#define NETSNMP_FUNCTION __FUNCTION__
 
 /* If you don't want the agent to report on variables it doesn't have data for */
 #define NETSNMP_NO_DUMMY_VALUES 1
@@ -229,6 +247,9 @@
 
 /* Define if SNMPv2c code should not be included */
 /* #undef NETSNMP_DISABLE_SNMPV2C */
+
+/* Define if AES-192/AES-256 encryption should be supported */
+/* #undef NETSNMP_DRAFT_BLUMENTHAL_AES_04 */
 
 /* Define to 1 if you have the `AES_cfb128_encrypt' function. */
 /* #undef HAVE_AES_CFB128_ENCRYPT */
@@ -399,9 +420,6 @@
 /* Define to 1 if you have the `crypto' library (-lcrypto). */
 /* #undef HAVE_LIBCRYPTO */
 
-/* Define to 1 if you have the `efence' library (-lefence). */
-/* #undef HAVE_LIBEFENCE */
-
 /* Define to 1 if you have the `elf' library (-lelf). */
 /* #undef HAVE_LIBELF */
 
@@ -440,6 +458,9 @@
 
 /* Define to 1 if you have the <linux/tasks.h> header file. */
 /* #undef HAVE_LINUX_TASKS_H */
+
+/* Define to 1 if you have the <lm.h> header file. */
+#define HAVE_LM_H 1
 
 /* Define to 1 if you have the <locale.h> header file. */
 #define HAVE_LOCALE_H 1
@@ -691,7 +712,7 @@
 /* #undef HAVE_STATVFS */
 
 /* Define to 1 if you have the <stdint.h> header file. */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || (defined(_MSC_VER) && (_MSC_VER >= 1600))
 #define HAVE_STDINT_H 1
 #endif
 
@@ -940,6 +961,9 @@
 /* Define to 1 if you have the `vsnprintf' function. */
 #define HAVE_VSNPRINTF 1
 
+/* Define to 1 if you have the <windows.h> header file. */
+#define HAVE_WINDOWS_H 1
+
 /* Define to 1 if you have the <winsock.h> header file. */
 #define HAVE_WINSOCK_H 1
 
@@ -954,6 +978,12 @@
 
 /* Define to 1 if you have the <xti.h> header file. */
 /* #undef HAVE_XTI_H */
+
+/* Type of the fifth argument of select() */
+#define NETSNMP_SELECT_TIMEVAL struct timeval
+
+/* Type of the third argument of ioctlsocket() */
+#define NETSNMP_IOCTLSOCKET_ARG u_long
 
 /* Define to the address where bug reports for this package should be sent. */
 /* #undef PACKAGE_BUGREPORT */
@@ -1002,10 +1032,6 @@
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 /* #undef TIME_WITH_SYS_TIME */
-
-/* Define to 1 if your processor stores words with the most significant byte
-   first (like Motorola and SPARC, unlike Intel and VAX). */
-/* #undef WORDS_BIGENDIAN */
 
 /* Define to 1 if on AIX 3.
    System headers sometimes define this.
@@ -1154,10 +1180,18 @@
 /* #undef NETSNMP_CAN_USE_SYSCTL */
 
 /* type check for in_addr_t */
-/* #undef in_addr_t */
+#define in_addr_t unsigned long
 
 /* define if SIOCGIFADDR exists in sys/ioctl.h */
 /* #undef SYS_IOCTL_H_HAS_SIOCGIFADDR */
+
+#if defined(_M_PPC) || defined(_M_MPPC)
+# define NETSNMP_BIGENDIAN 1
+#elif defined(_M_IX86) || defined(_M_X64)
+# define NETSNMP_BIGENDIAN 0
+#else
+#  error Unknown byte order
+#endif
 
 /* Mib-2 tree Info */
 /* These are the system information variables. */
@@ -1625,6 +1659,9 @@
 #include NETSNMP_MACHINE_INCLUDE_FILE
 #endif
 
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
 #if NETSNMP_ENABLE_INLINE && !defined(NETSNMP_NO_INLINE)
 #   define NETSNMP_USE_INLINE 1
 #else
@@ -1692,9 +1729,6 @@ enum {
 /* Define if you have the closesocket function.  */
 #define HAVE_CLOSESOCKET 1
 
-/* Define if you have raise() instead of alarm() */
-#define HAVE_RAISE 1
-
 /* define to 1 if you do not want to set global snmp_errno */
 #define DONT_SHARE_ERROR_WITH_OTHER_THREADS 1
 
@@ -1731,11 +1765,11 @@ enum {
 #ifdef NETSNMP_USE_DLL
   #ifdef NETSNMP_DLL
     #if defined(_MSC_VER)
-      #define NETSNMP_IMPORT __declspec(dllexport)
+      #define NETSNMP_IMPORT extern __declspec(dllexport)
     #endif
   #else
     #if defined(_MSC_VER)
-      #define NETSNMP_IMPORT __declspec(dllimport)
+      #define NETSNMP_IMPORT extern __declspec(dllimport)
     #endif
   #endif   /* NETSNMP_DLL */
 #endif     /* NETSNMP_USE_DLL */
@@ -1822,10 +1856,6 @@ enum {
 /* define if agentx transport is to use domain sockets only */
 /* #undef NETSNMP_AGENTX_DOM_SOCK_ONLY */
 
-#ifndef LOG_DAEMON
-#define       LOG_DAEMON      (3<<3)  /* system daemons */
-#endif
-
 #ifdef UCD_COMPATIBLE
 /* old and in the way */
 #define EXTENSIBLEMIB NETSNMP_UCDAVIS_MIB
@@ -1911,9 +1941,6 @@ enum {
 #ifdef HAVE_WIN32_PLATFORM_SDK
 #define HAVE_STRUCT_SOCKADDR_STORAGE_SS_FAMILY 1
 #endif
-
-/* Size prefix to use to printf a uint32_t */
-#define NETSNMP_PRI32 ""
 
 #ifdef _MSC_VER
 #ifdef _WIN64

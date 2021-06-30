@@ -5,23 +5,23 @@
 
 #include <net-snmp/library/check_varbind.h>
 
-netsnmp_feature_child_of(check_varbind_all, libnetsnmp)
+netsnmp_feature_child_of(check_varbind_all, libnetsnmp);
 
-netsnmp_feature_child_of(check_vb_range, check_varbind_all)
-netsnmp_feature_child_of(check_vb_size_range, check_varbind_all)
-netsnmp_feature_child_of(check_vb_uint, check_varbind_all)
-netsnmp_feature_child_of(check_vb_storagetype, check_varbind_all)
-netsnmp_feature_child_of(check_vb_oid, check_varbind_all)
-netsnmp_feature_child_of(check_vb_type_and_max_size, check_varbind_all)
-netsnmp_feature_child_of(check_vb_type_and_max_size, check_varbind_all)
-netsnmp_feature_child_of(check_vb_rowstatus_with_storagetype, check_varbind_all)
-netsnmp_feature_child_of(check_vb_truthvalue, check_varbind_all)
+netsnmp_feature_child_of(check_vb_range, check_varbind_all);
+netsnmp_feature_child_of(check_vb_size_range, check_varbind_all);
+netsnmp_feature_child_of(check_vb_uint, check_varbind_all);
+netsnmp_feature_child_of(check_vb_storagetype, check_varbind_all);
+netsnmp_feature_child_of(check_vb_oid, check_varbind_all);
+netsnmp_feature_child_of(check_vb_type_and_max_size, check_varbind_all);
+netsnmp_feature_child_of(check_vb_type_and_max_size, check_varbind_all);
+netsnmp_feature_child_of(check_vb_rowstatus_with_storagetype, check_varbind_all);
+netsnmp_feature_child_of(check_vb_truthvalue, check_varbind_all);
 
 #ifdef NETSNMP_FEATURE_REQUIRE_CHECK_VB_ROWSTATUS_WITH_STORAGETYPE
-netsnmp_feature_require(check_rowstatus_with_storagetype_transition)
+netsnmp_feature_require(check_rowstatus_with_storagetype_transition);
 #endif /* NETSNMP_FEATURE_REQUIRES_CHECK_VB_ROWSTATUS_WITH_STORAGETYPE */
 #ifdef NETSNMP_FEATURE_REQUIRE_CHECK_VB_STORAGETYPE
-netsnmp_feature_require(check_storage_transition)
+netsnmp_feature_require(check_storage_transition);
 #endif /* NETSNMP_FEATURE_REQUIRE_CHECK_VB_STORAGETYPE */
 
 

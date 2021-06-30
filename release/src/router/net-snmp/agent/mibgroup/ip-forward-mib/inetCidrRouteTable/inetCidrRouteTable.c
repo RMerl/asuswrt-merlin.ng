@@ -27,8 +27,8 @@
 
 #include "inetCidrRouteTable_interface.h"
 
-netsnmp_feature_require(inetCidrRouteTable_container_get)
-netsnmp_feature_require(inetCidrRouteTable_container_size)
+netsnmp_feature_require(inetCidrRouteTable_container_get);
+netsnmp_feature_require(inetCidrRouteTable_container_size);
 
 const oid       inetCidrRouteTable_oid[] = { INETCIDRROUTETABLE_OID };
 const int       inetCidrRouteTable_oid_size =
@@ -394,9 +394,7 @@ inetCidrRouteTable_indexes_set_tbl_idx(inetCidrRouteTable_mib_index *
     /*
      * make sure there is enough space for inetCidrRouteDest data
      */
-    if ((NULL == tbl_idx->inetCidrRouteDest) ||
-        (tbl_idx->inetCidrRouteDest_len <
-         (inetCidrRouteDest_val_ptr_len))) {
+    if (tbl_idx->inetCidrRouteDest_len < (inetCidrRouteDest_val_ptr_len)) {
         snmp_log(LOG_ERR, "not enough space for value\n");
         return MFD_ERROR;
     }
@@ -419,9 +417,7 @@ inetCidrRouteTable_indexes_set_tbl_idx(inetCidrRouteTable_mib_index *
     /*
      * make sure there is enough space for inetCidrRoutePolicy data
      */
-    if (tbl_idx->inetCidrRoutePolicy == NULL ||
-        inetCidrRoutePolicy_val_ptr_len >
-        tbl_idx->inetCidrRoutePolicy_len *
+    if (inetCidrRoutePolicy_val_ptr_len > tbl_idx->inetCidrRoutePolicy_len *
         sizeof(inetCidrRoutePolicy_val_ptr[0])) {
         snmp_log(LOG_ERR,
 	    "inetCidrRoutePolicy: Not enough space for value (%d < %d)\n",
@@ -451,9 +447,8 @@ inetCidrRouteTable_indexes_set_tbl_idx(inetCidrRouteTable_mib_index *
     /*
      * make sure there is enough space for inetCidrRouteNextHop data
      */
-    if ((NULL == tbl_idx->inetCidrRouteNextHop) ||
-        (tbl_idx->inetCidrRouteNextHop_len <
-         (inetCidrRouteNextHop_val_ptr_len / sizeof(inetCidrRouteNextHop_val_ptr[0])))) {
+    if (tbl_idx->inetCidrRouteNextHop_len < (inetCidrRouteNextHop_val_ptr_len /
+          sizeof(inetCidrRouteNextHop_val_ptr[0]))) {
         snmp_log(LOG_ERR,
 	    "inetCidrRouteNexthop: Not enough space for value (%d < %d)\n",
 	    (int)tbl_idx->inetCidrRouteNextHop_len,

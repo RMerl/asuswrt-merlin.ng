@@ -34,9 +34,9 @@
  *
  */
 int
-header_simple_table(struct variable *vp, oid * name, size_t * length,
-                    int exact, size_t * var_len,
-                    WriteMethod ** write_method, int max)
+header_simple_table(struct variable *vp, oid *name, size_t *length,
+                    int exact, size_t *var_len, WriteMethod **write_method,
+                    int max)
 {
     int             i, rtest;   /* Set to:      -1      If name < vp->name,
                                  *              1       If name > vp->name,
@@ -44,8 +44,7 @@ header_simple_table(struct variable *vp, oid * name, size_t * length,
                                  */
     oid             newname[MAX_OID_LEN];
 
-    for (i = 0, rtest = 0;
-         i < (int) vp->namelen && i < (int) (*length) && !rtest; i++) {
+    for (i = 0, rtest = 0; i < vp->namelen && i < *length && !rtest; i++) {
         if (name[i] != vp->name[i]) {
             if (name[i] < vp->name[i])
                 rtest = -1;
@@ -53,9 +52,7 @@ header_simple_table(struct variable *vp, oid * name, size_t * length,
                 rtest = 1;
         }
     }
-    if (rtest > 0 ||
-        (exact == 1
-         && (rtest || (int) *length != (int) (vp->namelen + 1)))) {
+    if (rtest > 0 || (exact == 1 && (rtest || *length != vp->namelen + 1))) {
         if (var_len)
             *var_len = 0;
         return MATCH_FAILED;
@@ -63,13 +60,13 @@ header_simple_table(struct variable *vp, oid * name, size_t * length,
 
     memset(newname, 0, sizeof(newname));
 
-    if (((int) *length) <= (int) vp->namelen || rtest == -1) {
-        memmove(newname, vp->name, (int) vp->namelen * sizeof(oid));
+    if (*length <= vp->namelen || rtest == -1) {
+        memmove(newname, vp->name, vp->namelen * sizeof(oid));
         newname[vp->namelen] = 1;
         *length = vp->namelen + 1;
-    } else if (((int) *length) > (int) vp->namelen + 1) {       /* exact case checked earlier */
+    } else if (*length > vp->namelen + 1) {     /* exact case checked earlier */
         *length = vp->namelen + 1;
-        memmove(newname, name, (*length) * sizeof(oid));
+        memmove(newname, name, *length * sizeof(oid));
         if (name[*length - 1] < MAX_SUBID) {
             newname[*length - 1] = name[*length - 1] + 1;
         } else {
@@ -80,7 +77,7 @@ header_simple_table(struct variable *vp, oid * name, size_t * length,
         }
     } else {
         *length = vp->namelen + 1;
-        memmove(newname, name, (*length) * sizeof(oid));
+        memmove(newname, name, *length * sizeof(oid));
         if (!exact) {
             if (name[*length - 1] < MAX_SUBID) {
                 newname[*length - 1] = name[*length - 1] + 1;
@@ -94,16 +91,16 @@ header_simple_table(struct variable *vp, oid * name, size_t * length,
             newname[*length - 1] = name[*length - 1];
         }
     }
-    if ((max >= 0 && ((int)newname[*length - 1] > max)) ||
-               ( 0 == newname[*length - 1] )) {
+    if (*length && ((max >= 0 && newname[*length - 1] > (unsigned int)max) ||
+                    newname[*length - 1] == 0)) {
         if (var_len)
             *var_len = 0;
         return MATCH_FAILED;
     }
 
-    memmove(name, newname, (*length) * sizeof(oid));
+    memmove(name, newname, *length * sizeof(oid));
     if (write_method)
-        *write_method = (WriteMethod*)0;
+        *write_method = NULL;
     if (var_len)
         *var_len = sizeof(long);        /* default */
     return (MATCH_SUCCEEDED);

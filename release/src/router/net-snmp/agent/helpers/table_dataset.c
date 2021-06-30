@@ -24,32 +24,32 @@
 #include <strings.h>
 #endif
 
-netsnmp_feature_child_of(table_dataset_all, mib_helpers)
-netsnmp_feature_child_of(table_dataset, table_dataset_all)
-netsnmp_feature_child_of(table_dataset_remove_row, table_dataset_all)
-netsnmp_feature_child_of(table_data_set_column, table_dataset_all)
-netsnmp_feature_child_of(table_dataset_get_newrow, table_dataset_all)
-netsnmp_feature_child_of(table_set_add_indexes, table_dataset_all)
-netsnmp_feature_child_of(delete_table_data_set, table_dataset_all)
-netsnmp_feature_child_of(table_set_multi_add_default_row, table_dataset_all)
-netsnmp_feature_child_of(table_dataset_unregister_auto_data_table, table_dataset_all)
+netsnmp_feature_child_of(table_dataset_all, mib_helpers);
+netsnmp_feature_child_of(table_dataset, table_dataset_all);
+netsnmp_feature_child_of(table_dataset_remove_row, table_dataset_all);
+netsnmp_feature_child_of(table_data_set_column, table_dataset_all);
+netsnmp_feature_child_of(table_dataset_get_newrow, table_dataset_all);
+netsnmp_feature_child_of(table_set_add_indexes, table_dataset_all);
+netsnmp_feature_child_of(delete_table_data_set, table_dataset_all);
+netsnmp_feature_child_of(table_set_multi_add_default_row, table_dataset_all);
+netsnmp_feature_child_of(table_dataset_unregister_auto_data_table, table_dataset_all);
 
 #ifdef NETSNMP_FEATURE_REQUIRE_TABLE_DATASET
-netsnmp_feature_require(table_get_or_create_row_stash)
-netsnmp_feature_require(table_data_delete_table)
-netsnmp_feature_require(table_data)
-netsnmp_feature_require(oid_stash_get_data)
-netsnmp_feature_require(oid_stash_add_data)
+netsnmp_feature_require(table_get_or_create_row_stash);
+netsnmp_feature_require(table_data_delete_table);
+netsnmp_feature_require(table_data);
+netsnmp_feature_require(oid_stash_get_data);
+netsnmp_feature_require(oid_stash_add_data);
 #endif /* NETSNMP_FEATURE_REQUIRE_TABLE_DATASET */
 
 #ifndef NETSNMP_FEATURE_REMOVE_TABLE_DATASET
 
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(oid_stash)
+netsnmp_feature_require(oid_stash);
 #endif /* !NETSNMP_NO_WRITE_SUPPORT */
 
 #ifndef NETSNMP_DISABLE_MIB_LOADING
-netsnmp_feature_require(mib_to_asn_type)
+netsnmp_feature_require(mib_to_asn_type);
 #endif /* NETSNMP_DISABLE_MIB_LOADING */
 
 static netsnmp_data_list *auto_tables;

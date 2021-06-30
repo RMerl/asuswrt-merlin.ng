@@ -20,7 +20,7 @@
 
 #include "inetNetToMediaTable_data_access.h"
 
-netsnmp_feature_require(container_lifo)
+netsnmp_feature_require(container_lifo);
 static netsnmp_arp_access * arp_access = NULL;
 
 /** @ingroup interface 

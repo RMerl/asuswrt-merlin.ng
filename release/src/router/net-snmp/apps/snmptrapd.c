@@ -98,6 +98,7 @@ SOFTWARE.
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/library/fd_event_manager.h>
 #include <net-snmp/agent/netsnmp_close_fds.h>
+#include "../snmplib/snmp_syslog.h"
 #include "../agent_global_vars.h"
 #include "../agent/mibgroup/snmpv3/snmpEngine.h"
 #include "../agent/mibgroup/snmpv3/usmUser.h"
@@ -150,43 +151,6 @@ char           *default_port = ddefault_port;
 #endif
 char           *trap1_fmt_str_remember = NULL;
 int             dofork = 1;
-
-/*
- * These definitions handle 4.2 systems without additional syslog facilities.
- */
-#ifndef LOG_CONS
-#define LOG_CONS	0       /* Don't bother if not defined... */
-#endif
-#ifndef LOG_PID
-#define LOG_PID		0       /* Don't bother if not defined... */
-#endif
-#ifndef LOG_LOCAL0
-#define LOG_LOCAL0	0
-#endif
-#ifndef LOG_LOCAL1
-#define LOG_LOCAL1	0
-#endif
-#ifndef LOG_LOCAL2
-#define LOG_LOCAL2	0
-#endif
-#ifndef LOG_LOCAL3
-#define LOG_LOCAL3	0
-#endif
-#ifndef LOG_LOCAL4
-#define LOG_LOCAL4	0
-#endif
-#ifndef LOG_LOCAL5
-#define LOG_LOCAL5	0
-#endif
-#ifndef LOG_LOCAL6
-#define LOG_LOCAL6	0
-#endif
-#ifndef LOG_LOCAL7
-#define LOG_LOCAL7	0
-#endif
-#ifndef LOG_DAEMON
-#define LOG_DAEMON	0
-#endif
 
 /*
  * Include an extra Facility variable to allow command line adjustment of
@@ -448,65 +412,6 @@ parse_config_pidFile(const char *token, char *cptr)
   pid_file = strdup (cptr);
 }
 
-#ifdef HAVE_UNISTD_H
-void
-parse_config_agentuser(const char *token, char *cptr)
-{
-    if (cptr[0] == '#') {
-        char           *ecp;
-        int             uid;
-
-        uid = strtoul(cptr + 1, &ecp, 10);
-        if (*ecp != 0) {
-            config_perror("Bad number");
-	} else {
-	    netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, 
-			       NETSNMP_DS_AGENT_USERID, uid);
-	}
-#if defined(HAVE_GETPWNAM) && defined(HAVE_PWD_H)
-    } else {
-        struct passwd *info;
-
-        info = getpwnam(cptr);
-        if (info)
-            netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, 
-                               NETSNMP_DS_AGENT_USERID, info->pw_uid);
-        else
-            config_perror("User not found in passwd database");
-        endpwent();
-#endif
-    }
-}
-
-void
-parse_config_agentgroup(const char *token, char *cptr)
-{
-    if (cptr[0] == '#') {
-        char           *ecp;
-        int             gid = strtoul(cptr + 1, &ecp, 10);
-
-        if (*ecp != 0) {
-            config_perror("Bad number");
-	} else {
-            netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, 
-			       NETSNMP_DS_AGENT_GROUPID, gid);
-	}
-#if defined(HAVE_GETGRNAM) && defined(HAVE_GRP_H)
-    } else {
-        struct group   *info;
-
-        info = getgrnam(cptr);
-        if (info)
-            netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, 
-                               NETSNMP_DS_AGENT_GROUPID, info->gr_gid);
-        else
-            config_perror("Group not found in group database");
-        endgrent();
-#endif
-    }
-}
-#endif
-
 void
 parse_config_doNotFork(const char *token, char *cptr)
 {
@@ -533,12 +438,22 @@ parse_config_outputOption(const char *token, char *cptr)
   }
 }
 
+void
+parse_config_addForwarderInfo(const char *token, char *cptr)
+{
+    if (netsnmp_ds_parse_boolean(cptr) == 1) {
+        netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID,
+                               NETSNMP_DS_LIB_ADD_FORWARDER_INFO, 1);
+    }
+}
+
 static void
 snmptrapd_main_loop(void)
 {
     int             count, numfds, block;
     fd_set          readfds,writefds,exceptfds;
-    struct timeval  timeout, *tvp;
+    struct timeval  timeout;
+    NETSNMP_SELECT_TIMEVAL timeout2;
 
     while (netsnmp_running) {
         if (reconfig) {
@@ -562,16 +477,16 @@ snmptrapd_main_loop(void)
         FD_ZERO(&writefds);
         FD_ZERO(&exceptfds);
         block = 0;
-        tvp = &timeout;
-        timerclear(tvp);
-        tvp->tv_sec = 5;
-        snmp_select_info(&numfds, &readfds, tvp, &block);
-        if (block == 1)
-            tvp = NULL;         /* block without timeout */
+        timerclear(&timeout);
+        timeout.tv_sec = 5;
+        snmp_select_info(&numfds, &readfds, &timeout, &block);
 #ifndef NETSNMP_FEATURE_REMOVE_FD_EVENT_MANAGER
         netsnmp_external_event_info(&numfds, &readfds, &writefds, &exceptfds);
 #endif /* NETSNMP_FEATURE_REMOVE_FD_EVENT_MANAGER */
-        count = select(numfds, &readfds, &writefds, &exceptfds, tvp);
+        timeout2.tv_sec = timeout.tv_sec;
+        timeout2.tv_usec = timeout.tv_usec;
+        count = select(numfds, &readfds, &writefds, &exceptfds,
+                       !block ? &timeout2 : NULL);
         if (count > 0) {
 #ifndef NETSNMP_FEATURE_REMOVE_FD_EVENT_MANAGER
             netsnmp_dispatch_external_events(&count, &readfds, &writefds,
@@ -693,11 +608,11 @@ main(int argc, char *argv[])
 #endif
 #ifdef HAVE_UNISTD_H
     register_config_handler("snmptrapd", "agentuser",
-                            parse_config_agentuser, NULL, "userid");
+                            netsnmp_parse_agent_user, NULL, "userid");
     register_config_handler("snmptrapd", "agentgroup",
-                            parse_config_agentgroup, NULL, "groupid");
+                            netsnmp_parse_agent_group, NULL, "groupid");
 #endif
-    
+
     register_config_handler("snmptrapd", "doNotFork",
                             parse_config_doNotFork, NULL, "(1|yes|true|0|no|false)");
 
@@ -706,6 +621,10 @@ main(int argc, char *argv[])
 
     register_config_handler("snmptrapd", "outputOption",
                             parse_config_outputOption, NULL, "string");
+
+    register_config_handler("snmptrapd", "addForwarderInfo",
+                            parse_config_addForwarderInfo, NULL,
+                            "(1|yes|true|0|no|false)");
 
 #ifndef NETSNMP_FEATURE_REMOVE_LOGGING_SYSLOG
 #ifdef WIN32
@@ -794,8 +713,8 @@ main(int argc, char *argv[])
 #if HAVE_UNISTD_H
         case 'g':
             if (optarg != NULL) {
-                netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, 
-				   NETSNMP_DS_AGENT_GROUPID, gid = atoi(optarg));
+                gid = atoi(optarg);
+                netsnmp_set_agent_group_id(gid);
             } else {
                 usage();
                 goto out;
@@ -924,8 +843,7 @@ main(int argc, char *argv[])
                     fprintf(stderr, "Bad user id: %s\n", optarg);
                     goto out;
                 }
-                netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, 
-				   NETSNMP_DS_AGENT_USERID, uid);
+                netsnmp_set_agent_user_id(uid);
             } else {
                 usage();
                 goto out;
@@ -1370,9 +1288,8 @@ trapd_update_config(void)
 * Invokes appropriate startup functions depending on the 
 * parameters passed
 *************************************************************/
-int
-    __cdecl
-_tmain(int argc, TCHAR * argv[])
+int __cdecl
+main(int argc, TCHAR * argv[])
 {
     /*
      * Define Service Name and Description, which appears in windows SCM 
@@ -1387,7 +1304,7 @@ _tmain(int argc, TCHAR * argv[])
 #endif
     InputParams     InputOptions;
 
-    int             nRunType = RUN_AS_CONSOLE;
+    enum net_snmp_cmd_line_action nRunType = RUN_AS_CONSOLE;
     int             quiet = 0;
 
     nRunType = ParseCmdLineForServiceOption(argc, argv, &quiet);

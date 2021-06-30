@@ -18,6 +18,9 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include "at.h"
+#ifdef solaris2
+#include "kernel_sunos5.h"
+#endif
 
 /*
  * define the structure we're going to ask the agent to register our

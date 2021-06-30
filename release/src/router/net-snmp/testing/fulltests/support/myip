@@ -1,0 +1,53 @@
+#!/usr/bin/env perl
+#
+# Use the "connect" trick to find out my IP address.
+# Note that the destination address here does not
+# actually matter, we will never send any data to it.
+# We use Google's public DNS server, since, it doesn't
+# matter.
+
+use strict;
+use warnings;
+import IO::Socket::INET6;
+if (eval "Socket6->import(qw(AF_INET6 inet_ntop inet_pton pack_sockaddr_in6
+                             sockaddr_in6))") {
+    use Socket qw(AF_INET SOCK_DGRAM pack_sockaddr_in sockaddr_in);
+} else {
+    use Socket qw(AF_INET AF_INET6 SOCK_DGRAM inet_ntop inet_pton
+		  pack_sockaddr_in pack_sockaddr_in6 sockaddr_in sockaddr_in6);
+}
+
+
+my $v6 = defined($ARGV[0]) && $ARGV[0] eq "ipv6";
+my ($af, $dest, $noaddr);
+if ($v6) {
+    $af = AF_INET6;
+    $dest = '2001:4860:4860::8888';
+    $noaddr = '::';
+ } else {
+    $af = AF_INET;
+    $dest = '8.8.8.8';
+    $noaddr = '0.0.0.0';
+}
+socket(my $sock, $af, SOCK_DGRAM, 0) or die "socket creation failed: $!";
+my $myip;
+if ($v6) {
+    connect($sock, pack_sockaddr_in6(53, inet_pton($af, $dest)));
+    my ($port, $ip6_address) = sockaddr_in6(getsockname($sock));
+    socket(my $sock2, $af, SOCK_DGRAM, 0);
+    my $i = 1;
+    while (1) {
+	bind($sock2, sockaddr_in6(0, $ip6_address, $i)) && last;
+	$i++;
+    }
+    $myip = inet_ntop($af, $ip6_address);
+    exit 1 if $myip eq $noaddr;
+    $myip = $myip . '%' . $i;
+} else {
+    connect($sock, pack_sockaddr_in(53, inet_pton($af, $dest)));
+    my ($port, $myaddr) = sockaddr_in(getsockname($sock));
+    $myip = inet_ntop($af, $myaddr);
+    exit 1 if $myip eq $noaddr;
+}
+print $myip, "\n";
+exit 0;

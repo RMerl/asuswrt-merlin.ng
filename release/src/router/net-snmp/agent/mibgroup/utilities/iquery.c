@@ -13,12 +13,12 @@
 #include "agentx/subagent.h"
 #include "utilities/iquery.h"
 
-netsnmp_feature_child_of(iquery_all, libnetsnmpmibs)
-netsnmp_feature_child_of(iquery, iquery_all)
-netsnmp_feature_child_of(iquery_community_session, iquery_all)
-netsnmp_feature_child_of(iquery_pdu_session, iquery_all)
+netsnmp_feature_child_of(iquery_all, libnetsnmpmibs);
+netsnmp_feature_child_of(iquery, iquery_all);
+netsnmp_feature_child_of(iquery_community_session, iquery_all);
+netsnmp_feature_child_of(iquery_pdu_session, iquery_all);
 
-netsnmp_feature_require(query_set_default_session)
+netsnmp_feature_require(query_set_default_session);
 
 #ifndef NETSNMP_FEATURE_REMOVE_IQUERY
 

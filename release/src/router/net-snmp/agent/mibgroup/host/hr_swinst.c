@@ -72,7 +72,7 @@
 
 #define HRSWINST_MONOTONICALLY_INCREASING
 
-netsnmp_feature_require(date_n_time)
+netsnmp_feature_require(date_n_time);
 
         /*********************
 	 *

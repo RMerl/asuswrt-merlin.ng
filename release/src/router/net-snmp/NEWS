@@ -3,6 +3,30 @@ Please see the CHANGES file for a more detailed list of specific bugs/patches
 that have been fixed/applied, and the ChangeLog file for a comprehensive
 listing of all changes made to the code.
 
+*5.9.1*:
+    General: Many bug fixes
+
+*5.9*
+    snmplib:
+      - Add IPv6 support to DTLSUDP transport CHANGES: snmplib: use new
+	netsnmp_sockaddr_storage in netsnmp_addr_pair CHANGES: snmplib: add
+	base_transport ptr for tunneled transports
+
+    snmpd:
+      - Security vulnerabilty in the ping MIB reported by Christopher Ertl
+	from Microsoft fixed
+      - Changing to a different uid/gid can only be done once
+      - The extend mib is now read-only by default
+
+    snmptrap:
+      - BUG: 2899: Patch from Drew Roedersheimer to set library
+	engineboots/time values before sending
+
+    unspecified:
+      - Add pkg-config support for building applications and sub-agents Use
+	the netsnmp package when building Net-SNMP applications. Use the
+	netsnmp-agent package when building Net-SNMP subagents.
+
 *5.8*
     snmplib:
       - TLS/DTLS fixes

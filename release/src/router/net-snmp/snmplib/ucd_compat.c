@@ -16,7 +16,7 @@
 
 #include <ucd-snmp/default_store.h>
 
-netsnmp_feature_child_of(ucd_compatibility, libnetsnmp)
+netsnmp_feature_child_of(ucd_compatibility, libnetsnmp);
 
 #ifndef NETSNMP_FEATURE_REMOVE_UCD_COMPATIBILITY
 /*

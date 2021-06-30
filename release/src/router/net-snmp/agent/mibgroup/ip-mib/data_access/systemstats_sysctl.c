@@ -13,14 +13,6 @@
 #include "../ipSystemStatsTable/ipSystemStatsTable.h"
 #include "systemstats_private.h"
 
-#if defined(NETSNMP_IFNET_NEEDS_KERNEL) && !defined(_KERNEL)
-#define _KERNEL 1
-#define _I_DEFINED_KERNEL
-#endif
-#if NETSNMP_IFNET_NEEDS_KERNEL_STRUCTURES
-#define _KERNEL_STRUCTURES
-#endif
-
 #include <sys/types.h>
 #include <dirent.h>
 #include <ctype.h>
@@ -29,12 +21,25 @@
 #include <sys/sysctl.h>
 #include <sys/protosw.h>
 
+#if defined(NETSNMP_IFNET_NEEDS_KERNEL) && !defined(_KERNEL)
+#define _KERNEL 1
+#define _I_DEFINED_KERNEL
+#endif
+#if NETSNMP_IFNET_NEEDS_KERNEL_STRUCTURES
+#define _KERNEL_STRUCTURES
+#endif
 #include <net/if.h>
+#ifdef _I_DEFINED_KERNEL
+#undef _KERNEL
+#endif
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/ip_var.h>
+#if HAVE_NETINET_ICMP6_H
+#include <netinet/icmp6.h>
+#endif
 #if HAVE_NETINET6_IP6_VAR_H
 #include <sys/queue.h>
 #include <netinet6/ip6_var.h>

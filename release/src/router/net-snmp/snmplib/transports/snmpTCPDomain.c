@@ -1,6 +1,7 @@
 #include <net-snmp/net-snmp-config.h>
 
 #include <net-snmp/types.h>
+#include <net-snmp/library/snmpIPBaseDomain.h>
 #include <net-snmp/library/snmpTCPDomain.h>
 
 #include <stdio.h>
@@ -29,10 +30,6 @@
 #endif
 #if HAVE_FCNTL_H
 #include <fcntl.h>
-#endif
-
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
 #endif
 
 #include <net-snmp/types.h>
@@ -149,8 +146,9 @@ netsnmp_tcp_accept(netsnmp_transport *t)
  */
 
 netsnmp_transport *
-netsnmp_tcp_transport(const struct sockaddr_in *addr, int local)
+netsnmp_tcp_transport(const struct netsnmp_ep *ep, int local)
 {
+    const struct sockaddr_in *addr = &ep->a.sin;
     netsnmp_transport *t = NULL;
     netsnmp_udp_addr_pair *addr_pair = NULL;
     int rc = 0;
@@ -170,11 +168,10 @@ netsnmp_tcp_transport(const struct sockaddr_in *addr, int local)
         return NULL;
     }
 
+    t->sock = -1;
     addr_pair = (netsnmp_udp_addr_pair *)malloc(sizeof(netsnmp_udp_addr_pair));
-    if (addr_pair == NULL) {
-        netsnmp_transport_free(t);
-        return NULL;
-    }
+    if (addr_pair == NULL)
+        goto err;
     memset(addr_pair, 0, sizeof *addr_pair);
     t->data = addr_pair;
     t->data_length = sizeof(netsnmp_udp_addr_pair);
@@ -197,10 +194,8 @@ netsnmp_tcp_transport(const struct sockaddr_in *addr, int local)
 #endif
     if (!socket_initialized)
         t->sock = (int) socket(PF_INET, SOCK_STREAM, 0);
-    if (t->sock < 0) {
-        netsnmp_transport_free(t);
-        return NULL;
-    }
+    if (t->sock < 0)
+        goto err;
 
     t->flags = NETSNMP_TRANSPORT_FLAG_STREAM;
 
@@ -217,11 +212,8 @@ netsnmp_tcp_transport(const struct sockaddr_in *addr, int local)
         t->flags |= NETSNMP_TRANSPORT_FLAG_LISTEN;
         t->local_length = sizeof(*addr);
         t->local = netsnmp_memdup(addr, sizeof(*addr));
-        if (!t->local) {
-            netsnmp_socketbase_close(t);
-            netsnmp_transport_free(t);
-            return NULL;
-        }
+        if (!t->local)
+            goto err;
 
         /*
          * We should set SO_REUSEADDR too.  
@@ -231,12 +223,16 @@ netsnmp_tcp_transport(const struct sockaddr_in *addr, int local)
 		   sizeof(opt));
 
         if (!socket_initialized) {
-            rc = bind(t->sock, (const struct sockaddr *)addr, sizeof(*addr));
+            rc = netsnmp_bindtodevice(t->sock, ep->iface);
             if (rc != 0) {
-                netsnmp_socketbase_close(t);
-                netsnmp_transport_free(t);
-                return NULL;
+                DEBUGMSGTL(("netsnmp_tcpbase",
+                            "failed to bind to iface %s: %s\n",
+                            ep->iface, strerror(errno)));
+                goto err;
             }
+            rc = bind(t->sock, (const struct sockaddr *)addr, sizeof(*addr));
+            if (rc != 0)
+                goto err;
         }
 
         /*
@@ -254,11 +250,8 @@ netsnmp_tcp_transport(const struct sockaddr_in *addr, int local)
          */
         if (!socket_initialized) {
             rc = listen(t->sock, NETSNMP_STREAM_QUEUE_LEN);
-            if (rc != 0) {
-                netsnmp_socketbase_close(t);
-                netsnmp_transport_free(t);
-                return NULL;
-            }
+            if (rc != 0)
+                goto err;
         }
         
         /*
@@ -270,11 +263,8 @@ netsnmp_tcp_transport(const struct sockaddr_in *addr, int local)
     } else {
         t->remote_length = sizeof(*addr);
         t->remote = netsnmp_memdup(addr, sizeof(*addr));
-        if (!t->remote) {
-            netsnmp_socketbase_close(t);
-            netsnmp_transport_free(t);
-            return NULL;
-        }
+        if (!t->remote)
+            goto err;
 
         /*
          * This is a client-type session, so attempt to connect to the far
@@ -284,11 +274,8 @@ netsnmp_tcp_transport(const struct sockaddr_in *addr, int local)
          */
 
         rc = connect(t->sock, (const struct sockaddr *)addr, sizeof(*addr));
-        if (rc < 0) {
-            netsnmp_socketbase_close(t);
-            netsnmp_transport_free(t);
-            return NULL;
-        }
+        if (rc < 0)
+            goto err;
 
         /*
          * Allow user to override the send and receive buffers. Default is
@@ -313,6 +300,11 @@ netsnmp_tcp_transport(const struct sockaddr_in *addr, int local)
     t->f_get_taddr = netsnmp_ipv4_get_taddr;
 
     return t;
+
+err:
+    netsnmp_socketbase_close(t);
+    netsnmp_transport_free(t);
+    return NULL;
 }
 
 
@@ -321,10 +313,10 @@ netsnmp_transport *
 netsnmp_tcp_create_tstring(const char *str, int local,
 			   const char *default_target)
 {
-    struct sockaddr_in addr;
+    struct netsnmp_ep ep;
 
-    if (netsnmp_sockaddr_in2(&addr, str, default_target)) {
-        return netsnmp_tcp_transport(&addr, local);
+    if (netsnmp_sockaddr_in3(&ep, str, default_target)) {
+        return netsnmp_tcp_transport(&ep, local);
     } else {
         return NULL;
     }
@@ -335,10 +327,11 @@ netsnmp_tcp_create_tstring(const char *str, int local,
 netsnmp_transport *
 netsnmp_tcp_create_ostring(const void *o, size_t o_len, int local)
 {
-    struct sockaddr_in sin;
+    struct netsnmp_ep ep;
 
-    if (netsnmp_ipv4_ostring_to_sockaddr(&sin, o, o_len))
-        return netsnmp_tcp_transport(&sin, local);
+    memset(&ep, 0, sizeof(ep));
+    if (netsnmp_ipv4_ostring_to_sockaddr(&ep.a.sin, o, o_len))
+        return netsnmp_tcp_transport(&ep, local);
     return NULL;
 }
 
@@ -352,7 +345,6 @@ netsnmp_tcp_ctor(void)
     tcpDomain.prefix = (const char **)calloc(2, sizeof(char *));
     tcpDomain.prefix[0] = "tcp";
 
-    tcpDomain.f_create_from_tstring     = NULL;
     tcpDomain.f_create_from_tstring_new = netsnmp_tcp_create_tstring;
     tcpDomain.f_create_from_ostring     = netsnmp_tcp_create_ostring;
 

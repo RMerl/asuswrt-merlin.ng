@@ -59,6 +59,9 @@
 #if HAVE_SYS_DISKLABEL_H
 #define DKTYPENAMES
 #include <sys/disklabel.h>
+#ifndef dragonfly
+#include <sys/disk.h>
+#endif
 #endif
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
@@ -77,6 +80,9 @@
 
 #if HAVE_LIMITS_H
 #include <limits.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
 #endif
 
 #ifdef darwin
@@ -173,7 +179,7 @@ static int      HRD_savedCtrl_type;
 static struct hd_driveid HRD_info;
 #endif
 
-#ifdef DIOCGDINFO
+#if defined(DIOCGDINFO) || defined(DIOCGMEDIASIZE)
 static struct disklabel HRD_info;
 #endif
 
@@ -268,6 +274,9 @@ init_hr_disk(void)
 #elif defined(freebsd2)
     Add_HR_Disk_entry("/dev/wd%d%c", -1, -1, 0, 3, "/dev/wd%d", 'a', 'h');
     Add_HR_Disk_entry("/dev/sd%d%c", -1, -1, 0, 3, "/dev/sd%d", 'a', 'h');
+#elif defined(netbsd6)
+    Add_HR_Disk_entry("/dev/wd%d%c", -1, -1, 0, 3, "/dev/rwd%da", 'a', 'h');
+    Add_HR_Disk_entry("/dev/sd%d%c", -1, -1, 0, 3, "/dev/rsd%da", 'a', 'h');
 #elif defined(netbsd1)
     Add_HR_Disk_entry("/dev/wd%d%c", -1, -1, 0, 3, "/dev/wd%dc", 'a', 'h');
     Add_HR_Disk_entry("/dev/sd%d%c", -1, -1, 0, 3, "/dev/sd%dc", 'a', 'h');
@@ -1050,7 +1059,14 @@ Query_Disk(int fd, const char *devfull)
     }
 #endif
 
-#ifdef DIOCGDINFO
+#if defined(DIOCGMEDIASIZE)
+    unsigned long long size64;
+
+    if (ioctl(fd, DIOCGMEDIASIZE, &size64) < 0)
+	result = -1;
+    HRD_info.d_secperunit = size64 / 512;
+    result = 0;
+#elif defined(DIOCGDINFO)
     result = ioctl(fd, DIOCGDINFO, &HRD_info);
 #endif
 

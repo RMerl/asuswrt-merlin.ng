@@ -67,7 +67,7 @@ touch $destination;
 
 # process requires
 firstrequire=1
-for i in `grep NSF_RR $tmpf | sed 's/ NSF_RR//'` ; do
+for i in `grep NSF_RR $tmpf | sed 's/ NSF_RR;//'` ; do
     if test $firstrequire = 1 ; then
 	echo "" >> $destination
 	echo "/* required by $sourcedir/$source */" >> $destination
@@ -79,7 +79,7 @@ done
 
 # process provides
 firstfeature=1
-for i in `grep NSF_PP $tmpf | sed 's/ NSF_PP//'` ; do
+for i in `grep NSF_PP $tmpf | sed 's/ NSF_PP;//'` ; do
     if test $firstfeature = 1 ; then
 	echo "" >> $destination
 	echo "/* features provided by $sourcedir/$source */" >> $destination
@@ -91,7 +91,7 @@ done
 
 # process children
 firstfeature=1
-for i in `grep NSF_CO $tmpf | sed 's/ NSF_CO//'` ; do
+for i in `grep NSF_CO $tmpf | sed 's/ NSF_CO;//'` ; do
     parent=`echo $i | sed 's/.*,//'`
     child=`echo $i | sed 's/,.*//'`
     if test $firstfeature = 1 ; then
@@ -107,7 +107,7 @@ done
 
 # process wants
 firstfeature=1
-for i in `grep NSF_WW $tmpf | sed 's/ NSF_WW//'` ; do
+for i in `grep NSF_WW $tmpf | sed 's/ NSF_WW;//'` ; do
     if test $firstfeature = 1 ; then
 	echo "" >> $destination
 	echo "/* features wanted by $sourcedir/$source */" >> $destination

@@ -24,10 +24,6 @@
 #include <sys/socket.h>
 #endif
 
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
-
 #include <net-snmp/types.h>
 #include <net-snmp/output_api.h>
 #include <net-snmp/config_api.h>
@@ -41,8 +37,8 @@
 #include <net-snmp/library/sd-daemon.h>
 #endif
 
-netsnmp_feature_child_of(transport_unix_socket_all, transport_all)
-netsnmp_feature_child_of(unix_socket_paths, transport_unix_socket_all)
+netsnmp_feature_child_of(transport_unix_socket_all, transport_all);
+netsnmp_feature_child_of(unix_socket_paths, transport_unix_socket_all);
 
 #ifndef NETSNMP_STREAM_QUEUE_LEN
 #define NETSNMP_STREAM_QUEUE_LEN  5
@@ -524,7 +520,6 @@ netsnmp_unix_ctor(void)
     unixDomain.prefix = (const char**)calloc(2, sizeof(char *));
     unixDomain.prefix[0] = "unix";
 
-    unixDomain.f_create_from_tstring     = NULL;
     unixDomain.f_create_from_tstring_new = netsnmp_unix_create_tstring;
     unixDomain.f_create_from_ostring     = netsnmp_unix_create_ostring;
 

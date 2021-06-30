@@ -1,0 +1,68 @@
+#
+# The T18* tests have a great deal of commonality.
+# We factor that out into this file.
+#
+# Usage:
+# HEADER ...
+# INITV4 or INITV6
+# CONFIGAGENT ...
+# RUNTEST
+#
+
+INIT() {
+    # We need to set $SNMP_TEST_DEST to a real IP address; we have a helper script
+    # to determine this
+    MYIP=`perl ../support/myip $1`
+    if [ $? -ne 0 ]
+    then
+        SKIP "can not determine my IP"
+    fi
+
+    if [ "$1" = "ipv6" ]
+    then
+        SNMP_TEST_DEST="[${MYIP}]":
+    else
+        SNMP_TEST_DEST=${MYIP}:
+    fi
+
+    # Standard V2c configuration
+    . ./Sv2cconfig
+
+    CONFIGTRAPD authcommunity log public
+    CONFIGTRAPD agentxsocket /dev/null
+
+    # Tracing that helps understand what is being done
+    AGENT_FLAGS="$AGENT_FLAGS -Dtdomain,netsnmp_sockaddr,netsnmp_udp"
+}
+
+INITV4() {
+    localhost=127.0.0.1
+    snmptrapd_log_regex="UDP: \[${localhost}\]:[0-9]*->\["
+    INIT
+}
+
+INITV6() {
+    localhost=::1
+    snmptrapd_log_regex="\[UDP/IPv6: \[${localhost}\]:[0-9]*\]"
+    SNMP_TRANSPORT_SPEC=udp6
+    INIT ipv6
+}
+
+RUNTEST() {
+    STARTTRAPD
+
+    STARTAGENT
+
+    # We just rely on the coldstart trap, so there is no active test here.
+
+    STOPAGENT
+
+    STOPTRAPD
+
+    # Check that the coldstart trap packet was sourced from localhost
+    # (IPv4 uses <addr>-><addr>; IPv6 uses just [UDP/IPv6: <addr>],
+    #  so match either "-" or "]" after the port.)
+    CHECKTRAPDCOUNT atleastone "${snmptrapd_log_regex}"
+
+    FINISHED
+}

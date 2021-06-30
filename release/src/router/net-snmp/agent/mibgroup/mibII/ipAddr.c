@@ -123,7 +123,7 @@
 #include <winerror.h>
 #endif
 
-netsnmp_feature_require(interface_legacy)
+netsnmp_feature_require(interface_legacy);
 
         /*********************
 	 *
@@ -700,16 +700,10 @@ var_ipAddrEntry(struct variable * vp,
         addr_ret = Lowentry.ipAdEntAddr;
         return (u_char *) & addr_ret;
     case IPADIFINDEX:
-#ifdef NETSNMP_INCLUDE_IFTABLE_REWRITES
         Lowentry.ipAdEntIfIndex.o_bytes[Lowentry.ipAdEntIfIndex.o_length] = '\0';
         long_return =
             netsnmp_access_interface_index_find(Lowentry.
                                                 ipAdEntIfIndex.o_bytes);
-#else
-        long_return =
-           Interface_Index_By_Name(Lowentry.ipAdEntIfIndex.o_bytes,
-                                   Lowentry.ipAdEntIfIndex.o_length);
-#endif
         return (u_char *) & long_return;
     case IPADNETMASK:
 	*var_len = sizeof(addr_ret);

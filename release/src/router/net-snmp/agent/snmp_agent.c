@@ -111,23 +111,23 @@ int             deny_severity = LOG_WARNING;
 #include "smux/smux.h"
 #endif
 
-netsnmp_feature_child_of(snmp_agent, libnetsnmpagent)
-netsnmp_feature_child_of(agent_debugging_utilities, libnetsnmpagent)
+netsnmp_feature_child_of(snmp_agent, libnetsnmpagent);
+netsnmp_feature_child_of(agent_debugging_utilities, libnetsnmpagent);
 
-netsnmp_feature_child_of(allocate_globalcacheid, snmp_agent)
-netsnmp_feature_child_of(free_agent_snmp_session_by_session, snmp_agent)
-netsnmp_feature_child_of(check_all_requests_error, snmp_agent)
-netsnmp_feature_child_of(check_requests_error, snmp_agent)
-netsnmp_feature_child_of(request_set_error_idx, snmp_agent)
-netsnmp_feature_child_of(set_agent_uptime, snmp_agent)
-netsnmp_feature_child_of(agent_check_and_process, snmp_agent)
+netsnmp_feature_child_of(allocate_globalcacheid, snmp_agent);
+netsnmp_feature_child_of(free_agent_snmp_session_by_session, snmp_agent);
+netsnmp_feature_child_of(check_all_requests_error, snmp_agent);
+netsnmp_feature_child_of(check_requests_error, snmp_agent);
+netsnmp_feature_child_of(request_set_error_idx, snmp_agent);
+netsnmp_feature_child_of(set_agent_uptime, snmp_agent);
+netsnmp_feature_child_of(agent_check_and_process, snmp_agent);
 
-netsnmp_feature_child_of(dump_sess_list, agent_debugging_utilities)
+netsnmp_feature_child_of(dump_sess_list, agent_debugging_utilities);
 
-netsnmp_feature_child_of(agent_remove_list_data, netsnmp_unused)
-netsnmp_feature_child_of(set_all_requests_error, netsnmp_unused)
-netsnmp_feature_child_of(addrcache_age, netsnmp_unused)
-netsnmp_feature_child_of(delete_subtree_cache, netsnmp_unused)
+netsnmp_feature_child_of(agent_remove_list_data, netsnmp_unused);
+netsnmp_feature_child_of(set_all_requests_error, netsnmp_unused);
+netsnmp_feature_child_of(addrcache_age, netsnmp_unused);
+netsnmp_feature_child_of(delete_subtree_cache, netsnmp_unused);
 
 #ifndef NETSNMP_NO_PDU_STATS
 
@@ -1574,7 +1574,11 @@ init_agent_snmp_session(netsnmp_session * session, netsnmp_pdu *pdu)
     DEBUGMSGTL(("snmp_agent","agent_sesion %8p created\n", asp));
     asp->session = session;
     asp->pdu = snmp_clone_pdu(pdu);
+    if (!asp->pdu)
+        goto err;
     asp->orig_pdu = snmp_clone_pdu(pdu);
+    if (!asp->orig_pdu)
+        goto err;
     asp->rw = READ;
     asp->exact = TRUE;
     asp->next = NULL;
@@ -1590,6 +1594,12 @@ init_agent_snmp_session(netsnmp_session * session, netsnmp_pdu *pdu)
                 asp, asp->reqinfo));
 
     return asp;
+
+err:
+    snmp_free_pdu(asp->orig_pdu);
+    snmp_free_pdu(asp->pdu);
+    free(asp);
+    return NULL;
 }
 
 void
@@ -1604,6 +1614,7 @@ free_agent_snmp_session(netsnmp_agent_session *asp)
     
     DEBUGMSGTL(("verbose:asp", "asp %p reqinfo %p freed\n",
                 asp, asp->reqinfo));
+
     if (asp->orig_pdu)
         snmp_free_pdu(asp->orig_pdu);
     if (asp->pdu)
@@ -2458,7 +2469,7 @@ netsnmp_add_varbind_to_cache(netsnmp_agent_session *asp, int vbcount,
                             asp->treecache_len);
                 if (asp->treecache == NULL)
                     return NULL;
-                memset(&(asp->treecache[cacheid]), 0x00,
+                memset(asp->treecache + cacheid, 0,
                        sizeof(netsnmp_tree_cache) * (CACHE_GROW_SIZE));
             }
             asp->treecache[cacheid].subtree = tp;
@@ -3757,9 +3768,7 @@ handle_pdu(netsnmp_agent_session *asp)
     case SNMP_MSG_INTERNAL_SET_RESERVE1:
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
         asp->vbcount = count_varbinds(asp->pdu->variables);
-        if (asp->vbcount) /* efence doesn't like 0 size allocs */
-            asp->requests = (netsnmp_request_info *)
-                calloc(asp->vbcount, sizeof(netsnmp_request_info));
+        asp->requests = calloc(asp->vbcount, sizeof(netsnmp_request_info));
         /*
          * collect varbinds 
          */

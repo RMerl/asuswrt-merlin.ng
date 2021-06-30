@@ -1,1 +1,1 @@
-int _ffs(int mask);
+int             _ffs(int mask);

@@ -48,20 +48,20 @@
 
 #include <ctype.h>
 
-netsnmp_feature_child_of(ifTable_external_access, libnetsnmpmibs)
+netsnmp_feature_child_of(ifTable_external_access, libnetsnmpmibs);
 
-netsnmp_feature_require(row_merge)
-netsnmp_feature_require(baby_steps)
-netsnmp_feature_require(check_all_requests_error)
-netsnmp_feature_child_of(iftable_container_get, ifTable_external_access)
-netsnmp_feature_child_of(ifxtable_shutdown_interface, netsnmp_unused)
-netsnmp_feature_child_of(ifXTable_container_size, ifXTable_external_access)
-netsnmp_feature_child_of(ifXTable_registration_set, ifXTable_external_access)
-netsnmp_feature_child_of(ifXTable_registration_get, ifXTable_external_access)
-netsnmp_feature_child_of(ifXTable_container_get, ifXTable_external_access)
-netsnmp_feature_child_of(iftable_container_size, ifTable_external_access)
-netsnmp_feature_child_of(iftable_registration_set, ifTable_external_access)
-netsnmp_feature_child_of(iftable_registration_get, ifTable_external_access)
+netsnmp_feature_require(row_merge);
+netsnmp_feature_require(baby_steps);
+netsnmp_feature_require(check_all_requests_error);
+netsnmp_feature_child_of(iftable_container_get, ifTable_external_access);
+netsnmp_feature_child_of(ifxtable_shutdown_interface, netsnmp_unused);
+netsnmp_feature_child_of(ifXTable_container_size, ifXTable_external_access);
+netsnmp_feature_child_of(ifXTable_registration_set, ifXTable_external_access);
+netsnmp_feature_child_of(ifXTable_registration_get, ifXTable_external_access);
+netsnmp_feature_child_of(ifXTable_container_get, ifXTable_external_access);
+netsnmp_feature_child_of(iftable_container_size, ifTable_external_access);
+netsnmp_feature_child_of(iftable_registration_set, ifTable_external_access);
+netsnmp_feature_child_of(iftable_registration_get, ifTable_external_access);
 
 /**********************************************************************
  **********************************************************************

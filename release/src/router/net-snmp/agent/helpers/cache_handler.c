@@ -27,10 +27,10 @@
 
 #include <net-snmp/agent/cache_handler.h>
 
-netsnmp_feature_child_of(cache_handler, mib_helpers)
+netsnmp_feature_child_of(cache_handler, mib_helpers);
 
-netsnmp_feature_child_of(cache_find_by_oid, cache_handler)
-netsnmp_feature_child_of(cache_get_head, cache_handler)
+netsnmp_feature_child_of(cache_find_by_oid, cache_handler);
+netsnmp_feature_child_of(cache_get_head, cache_handler);
 
 static netsnmp_cache  *cache_head = NULL;
 static int             cache_outstanding_valid = 0;
@@ -457,7 +457,7 @@ _cache_handler_register(netsnmp_handler_registration * reginfo,
 
 /** functionally the same as calling netsnmp_register_handler() but also
  * injects a cache handler at the same time for you. */
-netsnmp_feature_child_of(netsnmp_cache_handler_register,netsnmp_unused)
+netsnmp_feature_child_of(netsnmp_cache_handler_register,netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_NETSNMP_CACHE_HANDLER_REGISTER
 int
 netsnmp_cache_handler_register(netsnmp_handler_registration * reginfo,
@@ -475,7 +475,7 @@ netsnmp_cache_handler_register(netsnmp_handler_registration * reginfo,
 
 /** functionally the same as calling netsnmp_register_handler() but also
  * injects a cache handler at the same time for you. */
-netsnmp_feature_child_of(netsnmp_register_cache_handler,netsnmp_unused)
+netsnmp_feature_child_of(netsnmp_register_cache_handler,netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_NETSNMP_REGISTER_CACHE_HANDLER
 int
 netsnmp_register_cache_handler(netsnmp_handler_registration * reginfo,
@@ -538,7 +538,7 @@ netsnmp_cache_reqinfo_extract(netsnmp_agent_request_info * reqinfo,
 }
 
 /** Extract the cache information for a given request (PDU) */
-netsnmp_feature_child_of(netsnmp_extract_cache_info,netsnmp_unused)
+netsnmp_feature_child_of(netsnmp_extract_cache_info,netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_NETSNMP_EXTRACT_CACHE_INFO
 netsnmp_cache  *
 netsnmp_extract_cache_info(netsnmp_agent_request_info * reqinfo)
@@ -594,7 +594,7 @@ netsnmp_cache_is_valid(netsnmp_agent_request_info * reqinfo,
 /** Is the cache valid for a given request?
  * for backwards compatability. netsnmp_cache_is_valid() is preferred.
  */
-netsnmp_feature_child_of(netsnmp_is_cache_valid,netsnmp_unused)
+netsnmp_feature_child_of(netsnmp_is_cache_valid,netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_NETSNMP_IS_CACHE_VALID
 int
 netsnmp_is_cache_valid(netsnmp_agent_request_info * reqinfo)

@@ -6,6 +6,7 @@
 VPATH		= @srcdir@
 
 SUBDIRS		= snmplib @MAINSUBS@
+SUBDIRDEPS      = sedscript
 FTSUBDIRS	= @FTMAINSUBS@ snmplib
 TESTDIRS	= testing
 
@@ -17,14 +18,12 @@ CPP		= @CPP@ 					        \
 INSTALLHEADERS=version.h net-snmp-features.h
 INCLUDESUBDIR=system
 INCLUDESUBDIRHEADERS= aix.h bsd.h bsdi3.h bsdi4.h bsdi.h cygwin.h \
-	darwin.h darwin7.h darwin8.h darwin9.h darwin10.h darwin11.h darwin12.h \
-	darwin13.h darwin14.h darwin15.h darwin16.h darwin17.h \
-	dragonfly.h dynix.h \
+	darwin.h dragonfly.h dynix.h \
 	freebsd2.h freebsd3.h freebsd4.h freebsd5.h freebsd6.h \
 	freebsd7.h freebsd8.h freebsd9.h freebsd10.h freebsd11.h \
-	freebsd12.h freebsd.h kfreebsd.h \
+	freebsd12.h freebsd13.h freebsd14.h freebsd.h \
 	generic.h \
-	hpux.h irix.h linux.h mingw32.h mingw32msvc.h mips.h \
+	hpux.h irix.h kfreebsd.h linux.h mingw32.h mingw32msvc.h mips.h \
 	netbsd.h nto-qnx6.h osf5.h \
 	openbsd.h openbsd6.h openbsd5.h openbsd4.h \
 	solaris2.3.h solaris2.4.h solaris2.5.h solaris2.6.h \
@@ -35,6 +34,7 @@ INSTALLBUILTHEADERS=include/net-snmp/net-snmp-config.h
 INSTALLBUILTINCLUDEHEADERS=@FEATUREHEADERS@
 INSTALLBINSCRIPTS=net-snmp-config net-snmp-create-v3-user
 INSTALLUCDHEADERS=ucd-snmp-config.h version.h mib_module_config.h
+INSTALL_PKGCONFIG=netsnmp.pc netsnmp-agent.pc
 
 #
 # other install rules.
@@ -180,7 +180,7 @@ perlmodules: perlmakefiles subdirs
 
 perlmakefiles: perl/Makefile net-snmp-config-x
 
-perl/Makefile: perl/Makefile.PL
+perl/Makefile: perl/Makefile.PL subdirs
 	dir=`pwd` &&							\
 	cd perl &&							\
 	if false; then							\
@@ -275,6 +275,7 @@ configclean: makefileclean
 		libtool include/net-snmp/net-snmp-config.h \
 		net-snmp-config net-snmp-config-x configure-summary \
 		net-snmp-create-v3-user net-snmp-create-v3-user-x
+	rm -f *.pc
 	rm -f mibs/.index
 	rm -f include/net-snmp/agent/mib_module_config.h		\
 		include/net-snmp/agent/agent_module_config.h		\
@@ -454,6 +455,16 @@ perlcalloccheck:
 	@if grep -nwE 'calloc|SNMP_MALLOC_STRUCT|SNMP_MALLOC_TYPEDEF' `$(FIND) $(top_srcdir) -name '*.xs'`; then false; fi
 
 dist: tar
+
+rpm: dist
+	rpmtopdir=$$PWD/rpmbuilddir &&					\
+	for d in BUILD RPMS SOURCES SPECS SRPMS; do			\
+	  mkdir -p $${rpmtopdir}/$$d;					\
+	done &&								\
+	cp net-snmp-$(VERSION).tar.gz $${rpmtopdir}/SOURCES &&		\
+	MAKE="$(MAKE)" rpmbuild --define="%_topdir $${rpmtopdir}"	\
+	    -ba dist/net-snmp.spec &&					\
+	find $${rpmtopdir} -name '*rpm'
 
 FAQ.html:
 	local/FAQ2HTML FAQ

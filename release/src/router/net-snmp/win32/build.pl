@@ -153,7 +153,7 @@ if ($perl && $perl_arch[1] ne $target_arch) {
 }
 
 my $linktype = $link_dynamic ? "dynamic" : "static";
-$configOpts = (($openssl ? "--with-ssl" : "")		. " " .
+$configOpts = (($openssl ? "--with-ssl --enable-blumenthal-aes" : "")	 . " " .
                ($opensslincdir ? "--with-sslincdir=$opensslincdir" : "") . " " .
                ($openssllibdir ? "--with-ssllibdir=$openssllibdir" : "") . " " .
                ($sdk ? "--with-sdk" : "")		. " " .

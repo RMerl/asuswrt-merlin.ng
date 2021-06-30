@@ -38,9 +38,6 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
 
 #include <math.h>
 
@@ -73,8 +70,8 @@
 #include <net-snmp/library/snmp_secmod.h>
 #include <net-snmp/library/snmpusm.h>
 
-netsnmp_feature_child_of(usm_support, libnetsnmp)
-netsnmp_feature_child_of(usm_keytools, usm_support)
+netsnmp_feature_child_of(usm_support, libnetsnmp);
+netsnmp_feature_child_of(usm_keytools, usm_support);
 
 #ifndef NETSNMP_FEATURE_REMOVE_USM_KEYTOOLS
 
@@ -186,11 +183,15 @@ generate_Ku(const oid * hashtype, u_int hashtype_len,
     ctx = EVP_MD_CTX_create();
 #else
     ctx = malloc(sizeof(*ctx));
-    if (!EVP_MD_CTX_init(ctx))
-        return SNMPERR_GENERR;
+    if (!EVP_MD_CTX_init(ctx)) {
+        rval = SNMPERR_GENERR;
+        goto generate_Ku_quit;
+    }
 #endif
-    if (!EVP_DigestInit(ctx, hashfn))
-        return SNMPERR_GENERR;
+    if (!EVP_DigestInit(ctx, hashfn)) {
+        rval = SNMPERR_GENERR;
+        goto generate_Ku_quit;
+    }
 
 #elif NETSNMP_USE_INTERNAL_CRYPTO
 #ifndef NETSNMP_DISABLE_MD5
@@ -943,7 +944,7 @@ encode_keychange(const oid * hashtype, u_int hashtype_len,
     /*
      * Sanity check.
      */
-    if (!hashtype || !oldkey || !newkey || !kcstring || !kcstring_len
+    if (!hashtype || !oldkey || !newkey || !kcstring
         || (oldkey_len != newkey_len ) || (newkey_len == 0)
         || (*kcstring_len < (2 * newkey_len))) {
         QUITFUN(SNMPERR_GENERR, encode_keychange_quit);
@@ -1223,10 +1224,10 @@ KeyChange ::=     TEXTUAL-CONVENTION
  * XXX:  if the newkey is not long enough, it should be freed and remalloced 
  */
 int
-decode_keychange(const oid * hashtype, u_int hashtype_len,
-                 u_char * oldkey, size_t oldkey_len,
-                 u_char * kcstring, size_t kcstring_len,
-                 u_char * newkey, size_t * newkey_len)
+decode_keychange(const oid *hashtype, u_int hashtype_len,
+                 const u_char *oldkey, size_t oldkey_len,
+                 const u_char *kcstring, size_t kcstring_len,
+                 u_char *newkey, size_t *newkey_len)
 #if defined(NETSNMP_USE_OPENSSL) || defined(NETSNMP_USE_INTERNAL_MD5) || defined(NETSNMP_USE_PKCS11) || defined(NETSNMP_USE_INTERNAL_CRYPTO)
 {
     int             rval = SNMPERR_SUCCESS, auth_type;
@@ -1234,7 +1235,8 @@ decode_keychange(const oid * hashtype, u_int hashtype_len,
     int             ihash_len = 0;
     u_int           nbytes = 0;
 
-    u_char         *deltap, hash[SNMP_MAXBUF];
+    const u_char   *deltap;
+    u_char          hash[SNMP_MAXBUF];
     size_t          delta_len, tmpbuf_len;
     u_char         *tmpbuf = NULL;
 #ifdef NETSNMP_ENABLE_TESTING_CODE

@@ -1,19 +1,17 @@
 #!./perl
 
+use strict;
+use warnings;
+
 BEGIN {
-    unless(grep /blib/, @INC) {
-        chdir 't' if -d 't';
-        @INC = '../lib' if -d '../lib';
-    }
     eval "use Cwd qw(abs_path)";
-    $ENV{'SNMPCONFPATH'} = 'nopath';
-    $ENV{'MIBDIRS'} = '+' . abs_path("../../mibs");
 }
 use Test;
 BEGIN { plan tests => 5}
 use SNMP;
-use vars qw($agent_port $comm $agent_host $bad_auth_pass $auth_pass $sec_name $bad_sec_name $bad_version $bad_priv_pass $priv_pass);
 require "t/startagent.pl";
+use vars qw($agent_host $agent_port $auth_pass $bad_auth_pass $bad_priv_pass
+            $bad_sec_name $bad_version $comm $priv_pass $sec_name);
 
 $SNMP::debugging = 0;
 

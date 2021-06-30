@@ -23,6 +23,8 @@
 
 #include "snmpTargetParamsEntry_data.h"
 
+netsnmp_feature_require(container_compare_mem);
+
 static struct targetParamTable_struct *aPTable = NULL;
 static int _active = 0;
 

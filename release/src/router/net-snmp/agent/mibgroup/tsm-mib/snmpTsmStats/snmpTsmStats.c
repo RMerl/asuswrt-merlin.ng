@@ -11,9 +11,9 @@
 
 static netsnmp_handler_registration* _myreg = NULL;
 
-netsnmp_feature_require(helper_statistics)
+netsnmp_feature_require(helper_statistics);
 
-netsnmp_feature_child_of(shutdown_snmptsmsession, netsnmp_unused)
+netsnmp_feature_child_of(shutdown_snmptsmsession, netsnmp_unused);
 
 /** Initializes the snmpTsmStats module */
 void

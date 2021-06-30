@@ -9,6 +9,7 @@
 
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/data_access/defaultrouter.h>
+#include <net-snmp/data_access/interface.h>
 
 #include "ip-mib/ipDefaultRouterTable/ipDefaultRouterTable.h"
 #include "defaultrouter_private.h"
@@ -137,6 +138,5 @@ _load_defaultrouter_from_mib2(netsnmp_container *container, int family)
         }
     }
 
-out:
     return 0;
 }

@@ -31,7 +31,9 @@ check_build_dir()
 # effect: returns the (n+1)th argument
 index()
 {
-    eval echo \$`expr $1 + 1`
+    [ $# -gt $1 ] || return
+    shift $1
+    echo $1
 }
 
 # usage: count arguments
@@ -45,7 +47,8 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 includedir=@includedir@
 libdir=@libdir@
-datarootdir=@datarootdir@
+# Avoid that configure complains that this script ignores @datarootdir@
+echo "@datarootdir@" >/dev/null
 NSC_LDFLAGS="@LDFLAGS@"
 
 NSC_LIBS="@LIBS@"
@@ -659,7 +662,7 @@ EOF
       fi
       cmd="@CC@ $cflags @CFLAGS@ @DEVFLAGS@ -I. -I${NSC_INCLUDEDIR} -o $outname $tmpfile $cfiles $NSC_LDFLAGS $NSC_LIBDIR $NSC_BASE_AGENT_LIBS $NSC_AGENTLIBS $ldflags"
       echo "running: $cmd"
-      `$cmd`
+      echo `$cmd`
       result=$?
       if test "x$norm" != "x1" ; then
         echo "removing the temporary code file: $tmpfile"

@@ -44,6 +44,18 @@ ALL : "..\lib\$(OUTDIR)\$(PROGNAME).lib"
 {..\..\agent\mibgroup\examples}.c{$(INTDIR)}.obj::
    $(CPP) $(CPP_PROJ) $<
 
+{..\..\agent\mibgroup\if-mib}.c{$(INTDIR)}.obj::
+   $(CPP) $(CPP_PROJ) $<
+
+{..\..\agent\mibgroup\if-mib\ifTable}.c{$(INTDIR)}.obj::
+   $(CPP) $(CPP_PROJ) $<
+
+{..\..\agent\mibgroup\if-mib\ifXTable}.c{$(INTDIR)}.obj::
+   $(CPP) $(CPP_PROJ) $<
+
+{..\..\agent\mibgroup\if-mib\data_access}.c{$(INTDIR)}.obj::
+   $(CPP) $(CPP_PROJ) $<
+
 {..\..\agent\mibgroup\mibII}.c{$(INTDIR)}.obj::
    $(CPP) $(CPP_PROJ) $<
 
@@ -169,7 +181,14 @@ LIB32_OBJS3= \
 	"$(INTDIR)\at.obj" \
 	"$(INTDIR)\at_iphlpapi.obj" \
 	"$(INTDIR)\icmp.obj" \
-	"$(INTDIR)\interfaces.obj" \
+	"$(INTDIR)\ifTable.obj" \
+	"$(INTDIR)\ifTable_data_access.obj" \
+	"$(INTDIR)\ifTable_interface.obj" \
+	"$(INTDIR)\ifXTable.obj" \
+	"$(INTDIR)\ifXTable_data_access.obj" \
+	"$(INTDIR)\ifXTable_interface.obj" \
+	"$(INTDIR)\interface.obj" \
+	"$(INTDIR)\interface_iphlpapi.obj" \
 	"$(INTDIR)\ip.obj" \
 	"$(INTDIR)\ipAddr.obj" \
 	"$(INTDIR)\notification_log.obj" \

@@ -13,11 +13,11 @@
 #include "disman/event/mteObjects.h"
 #include "disman/event/mteObjectsTable.h"
 
-netsnmp_feature_require(table_tdata)
+netsnmp_feature_require(table_tdata);
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(check_vb_oid)
-netsnmp_feature_require(check_vb_truthvalue)
-netsnmp_feature_require(table_tdata_insert_row)
+netsnmp_feature_require(check_vb_oid);
+netsnmp_feature_require(check_vb_truthvalue);
+netsnmp_feature_require(table_tdata_insert_row);
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 static netsnmp_table_registration_info *table_info;

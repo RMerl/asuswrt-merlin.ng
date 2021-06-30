@@ -5,6 +5,9 @@
 
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-features.h>
+/* For FreeBSD */
+#define _WANT_INPCB 1
+#define _WANT_TCPCB 1
 #include <sys/types.h>
 #include <sys/socket.h>
 #if HAVE_SYS_IOCTL_H
@@ -18,10 +21,11 @@
 #define _KERNEL_STRUCTURES
 #endif
 #include <sys/param.h>
-#if defined(freebsd3) || defined(darwin)
-# if HAVE_SYS_SOCKETVAR_H
-#  include <sys/socketvar.h>
-# endif
+#ifdef _I_DEFINED_KERNEL
+#undef _KERNEL
+#endif
+#if HAVE_SYS_SOCKETVAR_H
+# include <sys/socketvar.h>
 #endif
 
 #if STDC_HEADERS
@@ -86,18 +90,19 @@
 #if HAVE_NETINET_IP_VAR_H
 # include <netinet/ip_var.h>
 #endif
+#if HAVE_NETINET_ICMP6_H
+# include <netinet/icmp6.h>
+#endif
 #if HAVE_NETINET6_IP6_VAR_H
 # include <sys/queue.h>
 # include <netinet6/ip6_var.h>
 #endif
 #include <net/route.h>
-#if defined(freebsd3) || defined(darwin) || defined(openbsd4)
-# if HAVE_NETINET_IP_H
-#  include <netinet/ip.h>
-# endif
-# if HAVE_NETINET_IN_PCB_H
-#  include <netinet/in_pcb.h>
-# endif
+#if HAVE_NETINET_IP_H
+# include <netinet/ip.h>
+#endif
+#if HAVE_NETINET_IN_PCB_H
+# include <netinet/in_pcb.h>
 #endif
 #if HAVE_NETINET6_IN6_PCB_H
 # include <netinet6/in6_pcb.h>
@@ -165,7 +170,11 @@
 #include "ipv6.h"
 #include "interfaces.h"
 
-netsnmp_feature_require(linux_read_ip6_stat)
+#ifdef freebsd3
+#undef in6pcb
+#endif
+
+netsnmp_feature_require(linux_read_ip6_stat);
 
 #if defined(netbsd1) && !defined(openbsd4)
 #define inp_lport in6p_lport
@@ -619,7 +628,7 @@ if_getindex(const char *name)
 /*------------------------------------------------------------*/
 #ifndef linux
 
-#ifdef __OpenBSD__
+#if defined(__OpenBSD__) || defined(freebsd3)
 
  /*
   * It is not possible to use struct ifnet anymore on OpenBSD, get
@@ -863,7 +872,7 @@ var_ifv6Entry(register struct variable * vp,
         p = if_getname(interface);
         if (p) {
             *var_len = strlen(p);
-            return p;
+            return (u_char *)p;
         }
         break;
     case IPV6IFLOWLAYER:
@@ -904,7 +913,7 @@ var_ifv6Entry(register struct variable * vp,
 #endif
     case IPV6IFPHYSADDRESS:
         {
-#ifdef __OpenBSD__
+#if defined(__OpenBSD__) || defined(freebsd3)
 	    struct ifaddrs *ifa0, *ifa;
             static struct sockaddr_dl sdl;
             char ifnam[IF_NAMESIZE];
@@ -1024,7 +1033,7 @@ var_ifv6Entry(register struct variable * vp,
         }
     case IPV6IFADMSTATUS:
         {
-#ifdef __OpenBSD__
+#if defined(__OpenBSD__) || defined(freebsd3)
             int    if_flags;
             if (if_getifflags(interface, &if_flags) < 0)
                 break;
@@ -1040,7 +1049,7 @@ var_ifv6Entry(register struct variable * vp,
         }
     case IPV6IFOPERSTATUS:
         {
-#ifdef __OpenBSD__
+#if defined(__OpenBSD__) || defined(freebsd3)
             int    if_flags;
             if (if_getifflags(interface, &if_flags) < 0)
                 break;
@@ -1504,7 +1513,7 @@ var_udp6(register struct variable * vp,
     int             result;
     int             i, j;
     caddr_t         p;
-#if defined(openbsd4)
+#if defined(openbsd4) || defined(freebsd3)
     static struct inpcb in6pcb, savpcb;
 #else
     static struct in6pcb in6pcb, savpcb;
@@ -1520,7 +1529,6 @@ var_udp6(register struct variable * vp,
 #elif defined(freebsd3) || defined(darwin)
     char           *sysctl_buf;
     struct xinpgen *xig, *oxig;
-    static struct in6pcb udb6;
 #endif
 
     DEBUGMSGTL(("mibII/ipv6", "var_udp6: "));
@@ -1539,10 +1547,6 @@ var_udp6(register struct variable * vp,
 #else
     first = p = (caddr_t)udbtable.inpt_queue.cqh_first;
 #endif
-#elif !defined(freebsd3) && !defined(darwin)
-    if (!auto_nlist("udb6", (char *) &udb6, sizeof(udb6)))
-        return NULL;
-    p = (caddr_t) udb6.in6p_next;
 #elif defined(dragonfly)
     {
         const char     *udblist = "net.inet.udp.pcblist";
@@ -1563,6 +1567,14 @@ var_udp6(register struct variable * vp,
 	    return NULL;
 	}
         p = (caddr_t) ((char *) xig); /* silence compiler warning */
+    }
+#elif !defined(freebsd3) && !defined(darwin)
+    {
+    static struct in6pcb udb6;
+
+    if (!auto_nlist("udb6", (char *) &udb6, sizeof(udb6)))
+        return NULL;
+    p = (caddr_t) udb6.in6p_next;
     }
 #else
     {
@@ -1601,15 +1613,18 @@ var_udp6(register struct variable * vp,
         ) {
         DEBUGMSGTL(("mibII/ipv6", "looping: p=%p\n", p));
 
-#if !defined(freebsd3) && !defined(darwin)
+#if defined(freebsd3)
+	/* To do: fill in in6pcb properly. */
+	memset(&in6pcb, 0, sizeof(in6pcb));
+#elif defined(darwin)
+	in6pcb = ((struct xinpcb *) xig)->xi_inp;
+#else
         if (!NETSNMP_KLOOKUP(p, (char *) &in6pcb, sizeof(in6pcb))) {
             DEBUGMSGTL(("mibII/ipv6", "klookup fail for udb6 at %p\n",
                         p));
             found = 0;
             break;
         }
-#else
-        in6pcb = ((struct xinpcb *) xig)->xi_inp;
 #endif
 #if defined(__NetBSD__) && __NetBSD_Version__ >= 106250000	/*1.6Y*/
         if (in6pcb.in6p_af != AF_INET6)
@@ -1684,10 +1699,10 @@ var_udp6(register struct variable * vp,
 #elif defined(__NetBSD__) && __NetBSD_Version__ >= 106250000	/*1.6Y*/
         p = (caddr_t)in6pcb.in6p_queue.cqe_next;
 	if (p == first) break;
-#elif !defined(freebsd3) && !defined(darwin)
-        p = (caddr_t)in6pcb.in6p_next;
 #elif defined(__DragonFly__)
         xig = (struct xinpcb *) ((char *) xig + xig->xi_len);
+#elif !defined(freebsd3) && !defined(darwin)
+        p = (caddr_t)in6pcb.in6p_next;
 #else
         xig = (struct xinpgen *) ((char *) xig + xig->xig_len);
 #endif
@@ -1757,8 +1772,6 @@ var_tcp6(register struct variable * vp,
 #elif defined(freebsd3) || defined(darwin)
     char           *sysctl_buf;
     struct xinpgen *xig, *oxig;
-#else
-    static struct in6pcb tcb6;
 #endif
 
     if (!initialized) {
@@ -1785,9 +1798,13 @@ var_tcp6(register struct variable * vp,
         return NULL;
     first = p = (caddr_t)tcbtable.inpt_queue.cqh_first;
 #elif !defined(freebsd3) && !defined(darwin)
+    {
+    static struct in6pcb tcb6;
+
     if (!auto_nlist("tcb6", (char *) &tcb6, sizeof(tcb6)))
         return NULL;
     p = (caddr_t) tcb6.in6p_next;
+    }
 #else
     {
         const char     *tcblist = "net.inet.tcp.pcblist";
@@ -2072,7 +2089,7 @@ var_tcp6(register struct variable * vp,
     int             result;
     int             i, j;
     caddr_t         p;
-#if defined(openbsd4)
+#if defined(openbsd4) || defined(freebsd3)
     static struct inpcb in6pcb, savpcb;
 #else
     static struct in6pcb in6pcb, savpcb;
@@ -2089,7 +2106,6 @@ var_tcp6(register struct variable * vp,
 #elif defined(freebsd3) || defined(darwin)
     char           *sysctl_buf;
     struct xinpgen *xig, *oxig;
-    static struct in6pcb tcb6;
 #endif
 
     DEBUGMSGTL(("mibII/ipv6", "var_tcp6: "));
@@ -2106,10 +2122,6 @@ var_tcp6(register struct variable * vp,
 #else
     first = p = (caddr_t)tcbtable.inpt_queue.cqh_first;
 #endif
-#elif !defined(freebsd3) && !defined(darwin)
-    if (!auto_nlist("tcb6", (char *) &tcb6, sizeof(tcb6)))
-        return NULL;
-    p = (caddr_t) tcb6.in6p_next;
 #elif defined(dragonfly)
     {
         const char     *tcblist = "net.inet.tcp.pcblist";
@@ -2130,6 +2142,14 @@ var_tcp6(register struct variable * vp,
 	    return NULL;
 	}
         p = (caddr_t) ((char *) xtp); /* silence compiler warning */
+    }
+#elif !defined(freebsd3) && !defined(darwin)
+    {
+    static struct in6pcb tcb6;
+
+    if (!auto_nlist("tcb6", (char *) &tcb6, sizeof(tcb6)))
+        return NULL;
+    p = (caddr_t) tcb6.in6p_next;
     }
 #else
     {
@@ -2168,17 +2188,20 @@ var_tcp6(register struct variable * vp,
         ) {
         DEBUGMSGTL(("mibII/ipv6", "looping: p=%p\n", p));
 
-#if !defined(freebsd3) && !defined(darwin)
+#if defined(freebsd3)
+	/* To do: fill in in6pcb properly. */
+	memset(&in6pcb, 0, sizeof(in6pcb));
+#elif defined(dragonfly)
+	in6pcb = xtp->xt_inp;
+#elif defined(darwin)
+        in6pcb = ((struct xinpcb *) xig)->xi_inp;
+#else
         if (!NETSNMP_KLOOKUP(p, (char *) &in6pcb, sizeof(in6pcb))) {
             DEBUGMSGTL(("mibII/ipv6", "klookup fail for tcb6 at %p\n",
                         p));
             found = 0;
             break;
         }
-#elif defined(dragonfly)
-	in6pcb = xtp->xt_inp;
-#else
-        in6pcb = ((struct xinpcb *) xig)->xi_inp;
 #endif
 #if defined(__NetBSD__) && __NetBSD_Version__ >= 106250000	/*1.6Y*/
         if (in6pcb.in6p_af != AF_INET6)
@@ -2262,10 +2285,10 @@ var_tcp6(register struct variable * vp,
 #elif defined(__NetBSD__) && __NetBSD_Version__ >= 106250000 || defined(openbsd4)	/*1.6Y*/
         p = (caddr_t)in6pcb.in6p_queue.cqe_next;
 	if (p == first) break;
-#elif !defined(freebsd3) && !defined(darwin)
-        p = (caddr_t) in6pcb.in6p_next;
 #elif defined(dragonfly)
 	xtp = (struct xtcpcb *) ((char *)xtp + xtp->xt_len);
+#elif !defined(freebsd3) && !defined(darwin)
+        p = (caddr_t) in6pcb.in6p_next;
 #else
         xig = (struct xinpgen *) ((char *) xig + xig->xig_len);
 #endif

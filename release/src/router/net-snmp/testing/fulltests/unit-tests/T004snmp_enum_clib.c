@@ -1,5 +1,7 @@
 /* HEADER Testing snmp_enum */
 
+#ifndef NETSNMP_FEATURE_REMOVE_SNMP_ENUM_STORE_LIST
+
 #define CONFIG_TYPE "snmp-enum-unit-test"
 #define STRING1 "life, and everything"
 #define STRING2 "restaurant at the end of the universe"
@@ -30,7 +32,7 @@
 char tmp_persist_file[256];
 char *se_find_result;
 
-sprintf(tmp_persist_file, "/tmp/snmp-enum-unit-test-%d", getpid());
+sprintf(tmp_persist_file, "/tmp/snmp-enum-unit-test-%ld", (long)getpid());
 netsnmp_setenv("SNMP_PERSISTENT_FILE", tmp_persist_file, 1);
 
 init_snmp_enum("snmp");
@@ -101,3 +103,5 @@ OK(se_find_result && strcmp(se_find_result, "pear") == 0,
 
 clear_snmp_enum();
 unregister_all_config_handlers();
+
+#endif

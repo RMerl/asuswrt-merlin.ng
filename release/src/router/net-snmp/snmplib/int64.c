@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #if HAVE_STRING_H
 #include <string.h>
 #else
@@ -201,7 +204,7 @@ u64UpdateCounter(struct counter64 *pu64out, const struct counter64 *pu64one,
     u64Incr(pu64out, &tmp);
 }
 
-netsnmp_feature_child_of(u64copy, netsnmp_unused)
+netsnmp_feature_child_of(u64copy, netsnmp_unused);
 #ifndef NETSNMP_FEATURE_REMOVE_U64COPY
 /**
  * Copy a 64-bit number.

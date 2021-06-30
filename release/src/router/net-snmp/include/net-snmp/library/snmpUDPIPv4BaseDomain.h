@@ -29,20 +29,20 @@ extern          "C" {
  * Prototypes
  */
 
-    netsnmp_transport *netsnmp_udpipv4base_transport(const struct sockaddr_in *addr,
-                                                     int local);
+    netsnmp_transport *
+    netsnmp_udpipv4base_transport(const struct netsnmp_ep *ep, int local);
 
     netsnmp_transport *
-    netsnmp_udpipv4base_transport_with_source(const struct sockaddr_in *addr,
+    netsnmp_udpipv4base_transport_with_source(const struct netsnmp_ep *ep,
                                               int local,
-                                              const struct sockaddr_in *src_addr);
+                                              const struct netsnmp_ep *src_addr);
 
     netsnmp_transport *
     netsnmp_udpipv4base_tspec_transport(netsnmp_tdomain_spec *tspec);
 
     /** internal functions for derivatives of udpipv4base */
     netsnmp_transport *
-    netsnmp_udpipv4base_transport_init(const struct sockaddr_in *addr,
+    netsnmp_udpipv4base_transport_init(const struct netsnmp_ep *ep,
                                        int local);
 
     int
@@ -50,7 +50,7 @@ extern          "C" {
 
     int
     netsnmp_udpipv4base_transport_bind(netsnmp_transport *t,
-                                       const struct sockaddr_in *addr,
+                                       const struct netsnmp_ep *ep,
                                        int flags);
 
     void

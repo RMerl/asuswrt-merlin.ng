@@ -3,6 +3,7 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/auto_nlist.h>
 #include <net-snmp/agent/hardware/memory.h>
+#include "../../../kernel.h"
 
 #include <unistd.h>
 #include <sys/param.h>
@@ -237,8 +238,6 @@ swapmode(long pagesize)
  */
 
 #include <sys/conf.h>
-
-extern kvm_t *kd;
 
 static int
 swapmode(long pagesize)

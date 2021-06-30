@@ -16,15 +16,15 @@
 
 #include <net-snmp/net-snmp-features.h>
 
-netsnmp_feature_child_of(ipaddress_common, libnetsnmpmibs)
+netsnmp_feature_child_of(ipaddress_common, libnetsnmpmibs);
 
-netsnmp_feature_child_of(ipaddress_common_copy_utilities, ipaddress_common)
-netsnmp_feature_child_of(ipaddress_entry_copy, ipaddress_common)
-netsnmp_feature_child_of(ipaddress_entry_update, ipaddress_common)
-netsnmp_feature_child_of(ipaddress_prefix_copy, ipaddress_common_copy_utilities)
+netsnmp_feature_child_of(ipaddress_common_copy_utilities, ipaddress_common);
+netsnmp_feature_child_of(ipaddress_entry_copy, ipaddress_common);
+netsnmp_feature_child_of(ipaddress_entry_update, ipaddress_common);
+netsnmp_feature_child_of(ipaddress_prefix_copy, ipaddress_common_copy_utilities);
 
 #ifdef NETSNMP_FEATURE_REQUIRE_IPADDRESS_ENTRY_COPY
-netsnmp_feature_require(ipaddress_arch_entry_copy)
+netsnmp_feature_require(ipaddress_arch_entry_copy);
 #endif /* NETSNMP_FEATURE_REQUIRE_IPADDRESS_ENTRY_COPY */
 
 /**---------------------------------------------------------------------*/

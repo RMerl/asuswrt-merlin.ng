@@ -1,42 +1,59 @@
-# common parameters used in SNMP::Session creation and tests
-$agent_host = 'localhost';
-$agent_port = 8765;
-$trap_port = 8764;
-$mibdir = '/usr/local/share/snmp/mibs';
-$comm = 'v1_private';
-$comm2 = 'v2c_private';
-$comm3 = 'v3_private';
-$sec_name = 'v3_user';
-$oid = '.1.3.6.1.2.1.1.1';
-$name = 'sysDescr';
-$name_module = 'RFC1213-MIB::sysDescr';
-$name_module2 = 'SNMPv2-MIB::sysDescr';
-$name_long = '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr';
-$name_module_long = 'RFC1213-MIB::.iso.org.dod.internet.mgmt.mib-2.system.sysDescr';
-$name_module_long2 = 'SNMPv2-MIB::.iso.org.dod.internet.mgmt.mib-2.system.sysDescr';
-$auth_pass = 'test_pass_auth';
-$priv_pass = 'test_pass_priv';
+#!./perl
 
-# don't use any .conf files other than those specified.
-$ENV{'SNMPCONFPATH'} |= "bogus";
+use strict;
+use warnings;
+use Exporter;
+
+#Open the snmptest.cmd file and get the info
+require "t/readsnmptest.pl";
+use vars qw($agent_host $agent_port $mibdir $snmpd_cmd $snmptrapd_cmd);
+
+our @ISA = 'Exporter';
+our @EXPORT_OK = qw($agent_host $agent_port $mibdir
+$trap_port $comm $comm2 $comm3 $sec_name $oid $name
+$name_module $name_module2 $name_long $name_module_long $name_module_long2
+$auth_pass $priv_pass $bad_comm $bad_name $bad_oid $bad_port $bad_host
+$bad_auth_pass $bad_priv_pass $bad_sec_name $bad_version);
+
+# common parameters used in SNMP::Session creation and tests
+$agent_host = 'localhost' if (!defined($agent_host));
+$agent_port = 8765 if (!defined($agent_port));
+our $trap_port = 8764;
+$mibdir = '/usr/local/share/snmp/mibs' if (!defined($mibdir));
+our $comm = 'v1_private';
+our $comm2 = 'v2c_private';
+our $comm3 = 'v3_private';
+our $sec_name = 'v3_user';
+our $oid = '.1.3.6.1.2.1.1.1';
+our $name = 'sysDescr';
+our $name_module = 'RFC1213-MIB::sysDescr';
+our $name_module2 = 'SNMPv2-MIB::sysDescr';
+our $name_long = '.iso.org.dod.internet.mgmt.mib-2.system.sysDescr';
+our $name_module_long = 'RFC1213-MIB::.iso.org.dod.internet.mgmt.mib-2.system.sysDescr';
+our $name_module_long2 = 'SNMPv2-MIB::.iso.org.dod.internet.mgmt.mib-2.system.sysDescr';
+our $auth_pass = 'test_pass_auth';
+our $priv_pass = 'test_pass_priv';
 
 # erroneous input to test failure cases
-$bad_comm = 'BAD_COMMUNITY';
-$bad_name = "badName";
-$bad_oid = ".1.3.6.1.2.1.1.1.1.1.1";
-$bad_host = 'bad.host.here';
-$bad_port = '9999999';
-$bad_auth_pass = 'bad_auth_pass';
-$bad_priv_pass = 'bad_priv_pass';
-$bad_sec_name = 'bad_sec_name';
-$bad_version = 7;
-
-local $snmpd_cmd;
-local $snmptrapd_cmd;
-my $line;
+our $bad_comm = 'BAD_COMMUNITY';
+our $bad_name = "badName";
+our $bad_oid = ".1.3.6.1.2.1.1.1.1.1.1";
+our $bad_host = 'bad.host.here';
+our $bad_port = '9999999';
+our $bad_auth_pass = 'bad_auth_pass';
+our $bad_priv_pass = 'bad_priv_pass';
+our $bad_sec_name = 'bad_sec_name';
+our $bad_version = 7;
 
 if ($^O =~ /win32/i) {
   require Win32::Process;
+}
+
+# Variant of sleep that accepts a floating point number as argument.
+sub delay {
+  my ($timeout) = @_;
+
+  select(undef, undef, undef, $timeout);
 }
 
 sub run_async {
@@ -49,8 +66,8 @@ sub run_async {
       system "$cmd @args 2>&1";
     }
     # Wait at most three seconds for the pid file to appear.
-    for ($i = 0; ($i < 3) && ! (-r "$pidfile"); ++$i) {
-      sleep 1;
+    for (my $i = 0; ($i < 30) && ! (-r "$pidfile"); ++$i) {
+      delay 0.1;
     }
   } else {
     warn "Couldn't run $cmd\n";
@@ -58,52 +75,40 @@ sub run_async {
 }
 
 sub snmptest_cleanup {
-  kill_by_pid_file("t/snmpd.pid");
+  my $ignore_failures = shift;
+
+  kill_by_pid_file("t/snmpd.pid", $ignore_failures);
   unlink("t/snmpd.pid");
-  kill_by_pid_file("t/snmptrapd.pid");
+  kill_by_pid_file("t/snmptrapd.pid", $ignore_failures);
   unlink("t/snmptrapd.pid");
 }
 
 sub kill_by_pid_file {
-  if ((-e "$_[0]") && (-r "$_[0]")) {
-    if ($^O !~ /win32/i) {
-      # Unix or Windows + Cygwin.
-      system "kill `cat $_[0]` > /dev/null 2>&1";
-    } else {
-      # Windows + MSVC or Windows + MinGW.
-      open(H, "<$_[0]");
-      my $pid = (<H>);
-      close (H);
-      if ($pid > 0) {
-        Win32::Process::KillProcess($pid, 0)
-      }
-    }
+  my $pidfile = shift;
+  my $ignore_failures = shift;
+
+  if (!open(H, "<$pidfile")) {
+    return;
   }
+  my $pid = (<H>);
+  close (H);
+  if (!$pid) {
+    defined($ignore_failures) or die "Reading $pidfile failed\n";
+    return;
+  }
+  if ($^O !~ /win32/i) {
+    # Unix or Windows + Cygwin.
+    system "kill $pid > /dev/null 2>&1";
+  } else {
+    # Windows + MSVC or Windows + MinGW.
+    Win32::Process::KillProcess($pid, 0);
+  }
+  return 1;
 }
 
 
 # Stop any processes started during a previous test.
-snmptest_cleanup();
-
-#Open the snmptest.cmd file and get the info
-if (open(CMD, "<t/snmptest.cmd")) {
-  while ($line = <CMD>) {
-    if ($line =~ /HOST\s*=>\s*(.*?)\s+$/) {
-      $agent_host = $1;
-    } elsif ($line =~ /MIBDIR\s*=>\s*(.*?)\s+$/) {
-      $mibdir = $1;
-    } elsif ($line =~ /AGENT_PORT\s*=>\s*(.*?)\s+$/) {
-      $agent_port = $1;
-    } elsif ($line =~ /SNMPD\s*=>\s*(.*?)\s+$/) {
-      $snmpd_cmd = $1;
-    } elsif ($line =~ /SNMPTRAPD\s*=>\s*(.*?)\s+$/) {
-      $snmptrapd_cmd = $1;
-    }
-  } # end of while
-  close CMD;
-} else {
-  die ("Could not start agent. Couldn't find snmptest.cmd file\n");
-}
+snmptest_cleanup(1);
 
 # Start snmpd and snmptrapd.
 

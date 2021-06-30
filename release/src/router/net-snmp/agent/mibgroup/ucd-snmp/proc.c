@@ -39,9 +39,6 @@
 #  include <time.h>
 # endif
 #endif
-#if HAVE_KVM_H
-#include <kvm.h>
-#endif
 #if HAVE_PCRE_H
 #include <pcre.h>
 #endif
@@ -49,6 +46,7 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 
+#include "mibdefs.h"
 #include "struct.h"
 #include "proc.h"
 #ifdef USING_HOST_DATA_ACCESS_SWRUN_MODULE
@@ -60,7 +58,10 @@
 #define setPerrorstatus(x) snmp_log_perror(x)
 #endif
 #include "util_funcs.h"
-#include "kernel.h"
+
+#define PROCMIN 3
+#define PROCMAX 4
+#define PROCCOUNT 5
 
 static struct myproc *get_proc_instance(struct myproc *, oid);
 struct myproc  *procwatch = NULL;
@@ -134,9 +135,7 @@ proc_free_config(void)
         ptmp2 = ptmp;
         ptmp = ptmp->next;
 #if HAVE_PCRE_H
-        if (ptmp2->regexp) {
-            free(ptmp2->regexp);
-        }
+        free(ptmp2->regexp.regex_ptr);
 #endif
         free(ptmp2);
     }
@@ -193,7 +192,7 @@ proc_parse_config(const char *token, char *cptr)
     /*
      * don't allow two entries with the same name 
      */
-    copy_nword(cptr, tmpname, sizeof(tmpname));
+    cptr = copy_nword(cptr, tmpname, sizeof(tmpname));
     if (get_proc_by_name(tmpname) != NULL) {
         config_perror("Already have an entry for this process.");
         return;
@@ -210,14 +209,13 @@ proc_parse_config(const char *token, char *cptr)
         return;                 /* memory alloc error */
     numprocs++;
 #if HAVE_PCRE_H
-    (*procp)->regexp = NULL;
+    (*procp)->regexp.regex_ptr = NULL;
 #endif
     /*
      * not blank and not a comment 
      */
-    copy_nword(cptr, (*procp)->name, sizeof((*procp)->name));
-    cptr = skip_not_white(cptr);
-    if ((cptr = skip_white(cptr))) {
+    strlcpy((*procp)->name, tmpname, sizeof((*procp)->name));
+    if (cptr) {
         (*procp)->max = atoi(cptr);
         cptr = skip_not_white(cptr);
         if ((cptr = skip_white(cptr))) {
@@ -229,8 +227,9 @@ proc_parse_config(const char *token, char *cptr)
                 int pcre_error_offset;
 
                 DEBUGMSGTL(("ucd-snmp/regexp_proc", "Loading regex %s\n", cptr));
-                (*procp)->regexp = pcre_compile(cptr, 0,  &pcre_error, &pcre_error_offset, NULL);
-                if ((*procp)->regexp == NULL) {
+                (*procp)->regexp.regex_ptr =
+                    pcre_compile(cptr, 0,  &pcre_error, &pcre_error_offset, NULL);
+                if ((*procp)->regexp.regex_ptr == NULL) {
                     config_perror(pcre_error);
                 }
             }
@@ -267,7 +266,7 @@ var_extensible_proc(struct variable *vp,
     struct myproc  *proc;
     static long     long_ret;
     static char    *errmsg;
-
+    static char     empty_str[1];
 
     if (header_simple_table
         (vp, name, length, exact, var_len, write_method, numprocs))
@@ -330,19 +329,14 @@ var_extensible_proc(struct variable *vp,
                 }
             }
             *var_len = errmsg ? strlen(errmsg) : 0;
-            return ((u_char *) errmsg);
+            return (u_char *)(errmsg ? errmsg : empty_str);
         case ERRORFIX:
             *write_method = fixProcError;
             long_return = fixproc.result;
             return ((u_char *) & long_return);
         case ERRORFIXCMD:
-            if (proc->fixcmd) {
-                *var_len = strlen(proc->fixcmd);
-                return (u_char *) proc->fixcmd;
-            }
-            errmsg[0] = 0;
-            *var_len = 0;
-            return ((u_char *) errmsg);
+            *var_len = strlen(proc->fixcmd);
+            return (u_char *) proc->fixcmd;
         }
         return NULL;
     }
@@ -397,7 +391,7 @@ sh_count_myprocs(struct myproc *proc)
         return 0;
 
 #if defined(USING_HOST_DATA_ACCESS_SWRUN_MODULE) && defined(HAVE_PCRE_H)
-    if (proc->regexp != NULL)
+    if (proc->regexp.regex_ptr != NULL)
       return sh_count_procs_by_regex(proc->name, proc->regexp);
 #endif
 
@@ -405,7 +399,7 @@ sh_count_myprocs(struct myproc *proc)
 }
 
 #ifdef USING_HOST_DATA_ACCESS_SWRUN_MODULE
-netsnmp_feature_require(swrun_count_processes_by_name)
+netsnmp_feature_require(swrun_count_processes_by_name);
 int
 sh_count_procs(char *procname)
 {
@@ -413,7 +407,7 @@ sh_count_procs(char *procname)
 }
 
 #if HAVE_PCRE_H
-netsnmp_feature_require(swrun_count_processes_by_regex)
+netsnmp_feature_require(swrun_count_processes_by_regex);
 int
 sh_count_procs_by_regex(char *procname, netsnmp_regex_ptr regexp)
 {
@@ -865,7 +859,7 @@ sh_count_procs(char *procname)
 }
 #endif                          /* _SLASH_PROC_METHOD_ */
 #else
-netsnmp_feature_require(find_field)
+netsnmp_feature_require(find_field);
 int
 sh_count_procs(char *procname)
 {

@@ -43,7 +43,7 @@
 #include "agentx/client.h"
 #include "agentx/subagent.h"
 
-netsnmp_feature_require(set_agent_uptime)
+netsnmp_feature_require(set_agent_uptime);
 
         /*
          * AgentX handling utility routines
@@ -105,7 +105,7 @@ int
 agentx_open_session(netsnmp_session * ss)
 {
     netsnmp_pdu    *pdu, *response;
-    u_long 	    timeout;
+    int 	    timeout;
 
     DEBUGMSGTL(("agentx/subagent", "opening session \n"));
     if (ss == NULL || !IS_AGENTX_VERSION(ss->version)) {
@@ -118,7 +118,7 @@ agentx_open_session(netsnmp_session * ss)
     timeout = netsnmp_ds_get_int(NETSNMP_DS_APPLICATION_ID,
                                    NETSNMP_DS_AGENT_AGENTX_TIMEOUT);
     if (timeout < 0) 
-    pdu->time = 0;
+        pdu->time = 0;
     else
 	/* for master TIMEOUT is usec, but Agentx Open specifies sec */
     	pdu->time = timeout/ONE_SEC;

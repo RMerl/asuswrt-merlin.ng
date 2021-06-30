@@ -30,8 +30,8 @@
 
 #include "ifXTable_interface.h"
 
-netsnmp_feature_require(ifTable_container_get)
-netsnmp_feature_require(ifTable_container_size)
+netsnmp_feature_require(ifTable_container_get);
+netsnmp_feature_require(ifTable_container_size);
 
 /*
  * not sure if we want to support set for promiscuous mode, because

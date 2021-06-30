@@ -22,6 +22,9 @@
 #include <net-snmp/net-snmp-features.h>
 
 #include <ctype.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 #include <stdio.h>
 #include <sys/types.h>
 #if TIME_WITH_SYS_TIME
@@ -64,9 +67,6 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
 
 #include <net-snmp/types.h>
 #include <net-snmp/output_api.h>
@@ -77,23 +77,23 @@
 #include <net-snmp/library/mib.h>
 #include <net-snmp/library/scapi.h>
 
-netsnmp_feature_child_of(tools_all, libnetsnmp)
+netsnmp_feature_child_of(tools_all, libnetsnmp);
 
-netsnmp_feature_child_of(memory_wrappers, tools_all)
-netsnmp_feature_child_of(valgrind, tools_all)
-netsnmp_feature_child_of(string_time_to_secs, tools_all)
-netsnmp_feature_child_of(netsnmp_check_definedness, valgrind)
+netsnmp_feature_child_of(memory_wrappers, tools_all);
+netsnmp_feature_child_of(valgrind, tools_all);
+netsnmp_feature_child_of(string_time_to_secs, tools_all);
+netsnmp_feature_child_of(netsnmp_check_definedness, valgrind);
 
-netsnmp_feature_child_of(uatime_ready, netsnmp_unused)
-netsnmp_feature_child_of(timeval_tticks, netsnmp_unused)
+netsnmp_feature_child_of(uatime_ready, netsnmp_unused);
+netsnmp_feature_child_of(timeval_tticks, netsnmp_unused);
 
-netsnmp_feature_child_of(memory_strdup, memory_wrappers)
-netsnmp_feature_child_of(memory_calloc, memory_wrappers)
-netsnmp_feature_child_of(memory_malloc, memory_wrappers)
-netsnmp_feature_child_of(memory_realloc, memory_wrappers)
-netsnmp_feature_child_of(memory_free, memory_wrappers)
+netsnmp_feature_child_of(memory_strdup, memory_wrappers);
+netsnmp_feature_child_of(memory_calloc, memory_wrappers);
+netsnmp_feature_child_of(memory_malloc, memory_wrappers);
+netsnmp_feature_child_of(memory_realloc, memory_wrappers);
+netsnmp_feature_child_of(memory_free, memory_wrappers);
 
-#ifndef NETSNMP_FEATURE_REMOVE_MEMORY_WRAPPERS
+#ifndef NETSNMP_FEATURE_REMOVE_MEMORY_STRDUP
 /**
  * This function is a wrapper for the strdup function.
  *
@@ -300,7 +300,7 @@ void *netsnmp_memdup(const void *from, size_t size)
  *
  * @param[in] from Pointer to copy memory from.
  * @param[in] from_size Size of the data to be copied.
- * @param[out] new_size Pointer to size var for new block (OPTIONAL)
+ * @param[out] to_size Pointer to size var for new block (OPTIONAL)
  *
  * @return Pointer to the duplicated memory block, or NULL if memory allocation
  * failed.
@@ -1319,29 +1319,29 @@ int netsnmp_setenv(const char *envname, const char *envval, int overwrite)
 int
 netsnmp_addrstr_hton(char *ptr, size_t len)
 {
-#ifndef WORDS_BIGENDIAN
     char tmp[8];
     
-    if (8 == len) {
-        tmp[0] = ptr[6];
-        tmp[1] = ptr[7];
-        tmp[2] = ptr[4];
-        tmp[3] = ptr[5];
-        tmp[4] = ptr[2];
-        tmp[5] = ptr[3];
-        tmp[6] = ptr[0];
-        tmp[7] = ptr[1];
-        memcpy (ptr, &tmp, 8);
+    if (!NETSNMP_BIGENDIAN) {
+        if (8 == len) {
+            tmp[0] = ptr[6];
+            tmp[1] = ptr[7];
+            tmp[2] = ptr[4];
+            tmp[3] = ptr[5];
+            tmp[4] = ptr[2];
+            tmp[5] = ptr[3];
+            tmp[6] = ptr[0];
+            tmp[7] = ptr[1];
+            memcpy(ptr, &tmp, 8);
+        }
+        else if (32 == len) {
+            netsnmp_addrstr_hton(ptr,      8);
+            netsnmp_addrstr_hton(ptr + 8,  8);
+            netsnmp_addrstr_hton(ptr + 16, 8);
+            netsnmp_addrstr_hton(ptr + 24, 8);
+        }
+        else
+            return -1;
     }
-    else if (32 == len) {
-        netsnmp_addrstr_hton(ptr   , 8);
-        netsnmp_addrstr_hton(ptr+8 , 8);
-        netsnmp_addrstr_hton(ptr+16, 8);
-        netsnmp_addrstr_hton(ptr+24, 8);
-    }
-    else
-        return -1;
-#endif
 
     return 0;
 }

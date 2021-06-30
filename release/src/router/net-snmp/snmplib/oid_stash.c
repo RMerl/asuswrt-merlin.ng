@@ -8,9 +8,9 @@
 #include <net-snmp/net-snmp-features.h>
 #include <net-snmp/net-snmp-includes.h>
 
-netsnmp_feature_child_of(oid_stash_all, libnetsnmp)
-netsnmp_feature_child_of(oid_stash, oid_stash_all)
-netsnmp_feature_child_of(oid_stash_no_free, oid_stash_all)
+netsnmp_feature_child_of(oid_stash_all, libnetsnmp);
+netsnmp_feature_child_of(oid_stash, oid_stash_all);
+netsnmp_feature_child_of(oid_stash_no_free, oid_stash_all);
 
 #ifndef NETSNMP_FEATURE_REMOVE_OID_STASH
 
@@ -75,7 +75,7 @@ netsnmp_oid_stash_create_node(void)
     return netsnmp_oid_stash_create_sized_node(OID_STASH_CHILDREN_SIZE);
 }
 
-netsnmp_feature_child_of(oid_stash_add_data, oid_stash_all)
+netsnmp_feature_child_of(oid_stash_add_data, oid_stash_all);
 #ifndef NETSNMP_FEATURE_REMOVE_OID_STASH_ADD_DATA
 /** adds data to the stash at a given oid.
 
@@ -197,7 +197,7 @@ netsnmp_oid_stash_get_node(netsnmp_oid_stash_node *root,
  * @param lookup the oid to look up a node for.
  * @param lookup_len the length of the lookup oid
  */
-netsnmp_feature_child_of(oid_stash_iterate, oid_stash_all)
+netsnmp_feature_child_of(oid_stash_iterate, oid_stash_all);
 #ifndef NETSNMP_FEATURE_REMOVE_OID_STASH_ITERATE
 netsnmp_oid_stash_node *
 netsnmp_oid_stash_getnext_node(netsnmp_oid_stash_node *root,
@@ -282,7 +282,7 @@ netsnmp_oid_stash_getnext_node(netsnmp_oid_stash_node *root,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_OID_STASH_ITERATE */
 
-netsnmp_feature_child_of(oid_stash_get_data, oid_stash_all)
+netsnmp_feature_child_of(oid_stash_get_data, oid_stash_all);
 #ifndef NETSNMP_FEATURE_REMOVE_OID_STASH_GET_DATA
 /** returns a data pointer associated with a given OID.
 
@@ -305,7 +305,7 @@ netsnmp_oid_stash_get_data(netsnmp_oid_stash_node *root,
 }
 #endif /* NETSNMP_FEATURE_REMOVE_OID_STASH_GET_DATA */
 
-netsnmp_feature_child_of(oid_stash_store_all, oid_stash_all)
+netsnmp_feature_child_of(oid_stash_store_all, oid_stash_all);
 #ifndef NETSNMP_FEATURE_REMOVE_OID_STASH_STORE_ALL
 /** a wrapper around netsnmp_oid_stash_store for use with a snmp_alarm.
  * when calling snmp_alarm, you can list this as a callback.  The

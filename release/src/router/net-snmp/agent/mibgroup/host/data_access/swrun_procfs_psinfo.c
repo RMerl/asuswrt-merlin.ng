@@ -56,7 +56,7 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
     DIR                 *procdir = NULL;
     struct dirent       *procentry_p;
     psinfo_t             psinfo;
-    int                  pid, rc, fd;
+    int                  pid, fd;
     char                *cp, buf[512];
     netsnmp_swrun_entry *entry;
 
@@ -77,7 +77,7 @@ netsnmp_arch_swrun_container_load( netsnmp_container *container, u_int flags)
         entry = netsnmp_swrun_entry_create(pid);
         if (NULL == entry)
             continue;   /* error already logged by function */
-        rc = CONTAINER_INSERT(container, entry);
+        CONTAINER_INSERT(container, entry);
 
         /*
          * Now extract the interesting information

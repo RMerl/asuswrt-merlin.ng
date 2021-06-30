@@ -145,6 +145,8 @@
 #include <net-snmp/agent/table.h>
 #include <net-snmp/agent/table_iterator.h>
 
+#include "../snmplib/snmp_syslog.h"
+
 #include "mibgroup/util_funcs/restart.h"
 
 /*
@@ -163,9 +165,9 @@
 #include <net-snmp/library/sd-daemon.h>
 #endif
 
-netsnmp_feature_want(logging_file)
-netsnmp_feature_want(logging_stdio)
-netsnmp_feature_want(logging_syslog)
+netsnmp_feature_want(logging_file);
+netsnmp_feature_want(logging_stdio);
+netsnmp_feature_want(logging_syslog);
 
 /*
  * Globals.
@@ -206,44 +208,6 @@ static int      receive(void);
 #ifdef WIN32SERVICE
 static void     StopSnmpAgent(void);
 #endif
-
-/*
- * These definitions handle 4.2 systems without additional syslog facilities.
- */
-#ifndef LOG_CONS
-#define LOG_CONS	0       /* Don't bother if not defined... */
-#endif
-#ifndef LOG_PID
-#define LOG_PID		0       /* Don't bother if not defined... */
-#endif
-#ifndef LOG_LOCAL0
-#define LOG_LOCAL0	0
-#endif
-#ifndef LOG_LOCAL1
-#define LOG_LOCAL1	0
-#endif
-#ifndef LOG_LOCAL2
-#define LOG_LOCAL2	0
-#endif
-#ifndef LOG_LOCAL3
-#define LOG_LOCAL3	0
-#endif
-#ifndef LOG_LOCAL4
-#define LOG_LOCAL4	0
-#endif
-#ifndef LOG_LOCAL5
-#define LOG_LOCAL5	0
-#endif
-#ifndef LOG_LOCAL6
-#define LOG_LOCAL6	0
-#endif
-#ifndef LOG_LOCAL7
-#define LOG_LOCAL7	0
-#endif
-#ifndef LOG_DAEMON
-#define LOG_DAEMON	0
-#endif
-
 
 static void
 usage(char *prog)
@@ -604,8 +568,7 @@ main(int argc, char *argv[])
                     fprintf(stderr, "Bad group id: %s\n", optarg);
                     goto out;
                 }
-                netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, 
-				   NETSNMP_DS_AGENT_GROUPID, gid);
+                netsnmp_set_agent_group_id(gid);
             } else {
                 usage(argv[0]);
             }
@@ -783,8 +746,7 @@ main(int argc, char *argv[])
                     fprintf(stderr, "Bad user id: %s\n", optarg);
                     goto out;
                 }
-                netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, 
-				   NETSNMP_DS_AGENT_USERID, uid);
+                netsnmp_set_agent_user_id(uid);
             } else {
                 usage(argv[0]);
             }
@@ -993,17 +955,13 @@ main(int argc, char *argv[])
             }
         } else {
             if ((PID = fdopen(fd, "w")) == NULL) {
+                close(fd);
                 snmp_log_perror(pid_file);
                 goto out;
             } else {
                 fprintf(PID, "%d\n", (int) getpid());
                 fclose(PID);
             }
-#ifndef _MSC_VER
-            /* The sequence open()/fdopen()/fclose()/close() makes MSVC crash,
-               hence skip the close() call when using the MSVC runtime. */
-            close(fd);
-#endif
         }
     }
 #endif
@@ -1023,7 +981,7 @@ main(int argc, char *argv[])
     
 #ifdef HAVE_CHOWN
     if ( uid != 0 || gid != 0 )
-        chown( persistent_dir, uid, gid );
+        NETSNMP_IGNORE_RESULT(chown(persistent_dir, uid, gid));
 #endif
 
 #ifdef HAVE_SETGID
@@ -1170,7 +1128,13 @@ static unsigned __stdcall wait_for_stdin(void* arg)
 static void create_stdin_waiter_thread(void)
 {
     netsnmp_assert(s_thread_handle == 0);
-    s_thread_handle = (HANDLE)_beginthreadex(0, 0, wait_for_stdin, 0, 0, &s_threadid);
+#ifdef HAVE__BEGINTHREADEX
+    s_thread_handle = (HANDLE)_beginthreadex(0, 0, wait_for_stdin, 0, 0,
+                                             &s_threadid);
+#else
+    s_thread_handle = (HANDLE)CreateThread(NULL, 0, wait_for_stdin, 0, 0,
+                                           &s_threadid);
+#endif
     netsnmp_assert(s_thread_handle != 0);
 }
 
@@ -1205,7 +1169,7 @@ receive(void)
     int             numfds;
     netsnmp_large_fd_set readfds, writefds, exceptfds;
     struct timeval  timeout, *tvp = &timeout;
-    int             count, block, i;
+    int             count, block, i, ret;
 #ifdef	USING_SMUX_MODULE
     int             sd;
 #endif                          /* USING_SMUX_MODULE */
@@ -1228,8 +1192,13 @@ receive(void)
      */
     while (netsnmp_running) {
         if (reconfig) {
-#if HAVE_SIGHOLD
-            sighold(SIGHUP);
+#if HAVE_SIGPROCMASK
+            sigset_t set;
+
+            sigemptyset(&set);
+            sigaddset(&set, SIGHUP);
+            ret = sigprocmask(SIG_BLOCK, &set, NULL);
+            netsnmp_assert(ret == 0);
 #endif
             reconfig = 0;
             snmp_log(LOG_INFO, "Reconfiguring daemon\n");
@@ -1240,8 +1209,9 @@ receive(void)
 		     netsnmp_get_version());
             update_config();
             send_easy_trap(SNMP_TRAP_ENTERPRISESPECIFIC, 3);
-#if HAVE_SIGHOLD
-            sigrelse(SIGHUP);
+#if HAVE_SIGPROCMASK
+            ret = sigprocmask(SIG_UNBLOCK, &set, NULL);
+            netsnmp_assert(ret == 0);
 #endif
         }
 
@@ -1452,9 +1422,8 @@ snmp_input(int op,
 * Invokes appropriate startup functions depending on the 
 * parameters passed
 *************************************************************/
-int
-    __cdecl
-_tmain(int argc, TCHAR * argv[])
+int __cdecl
+main(int argc, TCHAR * argv[])
 {
     /*
      * Define Service Name and Description, which appears in windows SCM 
@@ -1470,7 +1439,7 @@ _tmain(int argc, TCHAR * argv[])
     InputParams     InputOptions;
 
 
-    int             nRunType = RUN_AS_CONSOLE;
+    enum net_snmp_cmd_line_action nRunType = RUN_AS_CONSOLE;
     int             quiet = 0;
     
 #if 0

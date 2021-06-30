@@ -20,13 +20,13 @@
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
 
-netsnmp_feature_require(prefix_info)
-netsnmp_feature_require(find_prefix_info)
+netsnmp_feature_require(prefix_info);
+netsnmp_feature_require(find_prefix_info);
 
-netsnmp_feature_child_of(ipaddress_arch_entry_copy, ipaddress_common)
+netsnmp_feature_child_of(ipaddress_arch_entry_copy, ipaddress_common);
 
 #ifdef NETSNMP_FEATURE_REQUIRE_IPADDRESS_ARCH_ENTRY_COPY
-netsnmp_feature_require(ipaddress_ioctl_entry_copy)
+netsnmp_feature_require(ipaddress_ioctl_entry_copy);
 #endif /* NETSNMP_FEATURE_REQUIRE_IPADDRESS_ARCH_ENTRY_COPY */
 
 #include "ipaddress_ioctl.h"

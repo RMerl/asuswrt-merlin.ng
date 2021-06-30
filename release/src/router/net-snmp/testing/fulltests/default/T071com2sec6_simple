@@ -132,23 +132,30 @@ SAVECHECKAGENT '<"c606a", ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/ffff:ffff:ffff
 SAVECHECKAGENT 'line 27: Error:'
 SAVECHECKAGENT 'line 28: Error:'
 
-# 608
-CHECKAGENT '<"c608a"'
-if [ "$snmp_last_test_result" -eq 0 ] ; then
-  CHECKAGENT 'line 29: Error:'
-  errnum=`expr $errnum - 1`
-  if [ "$snmp_last_test_result" -ne 1 ] ; then
+if false; then
+  # The two tests below have been disabled because these rely on resolving a
+  # domain name into a local IP address. Such DNS replies are filtered out by
+  # many security devices because to avoid DNS rebinding attacks. See also
+  # https://en.wikipedia.org/wiki/DNS_rebinding.
+
+  # 608
+  CHECKAGENT '<"c608a"'
+  if [ "$snmp_last_test_result" -eq 0 ] ; then
+    CHECKAGENT 'line 29: Error:'
+    errnum=`expr $errnum - 1`
+    if [ "$snmp_last_test_result" -ne 1 ] ; then
+      FINISHED
+    fi
+  elif [ "$snmp_last_test_result" -ne 1 ] ; then
     FINISHED
   fi
-elif [ "$snmp_last_test_result" -ne 1 ] ; then
-  FINISHED
-fi
 
-CHECKAGENTCOUNT atleastone '<"c608b"'
-if [ "$snmp_last_test_result" -eq 0 ] ; then
-  CHECKAGENT 'line 30: Error:'
-  if [ "$snmp_last_test_result" -eq 1 ] ; then
-    errnum=`expr $errnum - 1`
+  CHECKAGENTCOUNT atleastone '<"c608b"'
+  if [ "$snmp_last_test_result" -eq 0 ] ; then
+    CHECKAGENT 'line 30: Error:'
+    if [ "$snmp_last_test_result" -eq 1 ] ; then
+      errnum=`expr $errnum - 1`
+    fi
   fi
 fi
 

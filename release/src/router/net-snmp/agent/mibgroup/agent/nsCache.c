@@ -13,7 +13,7 @@
 #include <net-snmp/agent/cache_handler.h>
 #include "agent/nsCache.h"
 
-netsnmp_feature_require(cache_get_head)
+netsnmp_feature_require(cache_get_head);
 
 
 /*

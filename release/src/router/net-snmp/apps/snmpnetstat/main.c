@@ -1,9 +1,13 @@
-/*	$OpenBSD: main.c,v 1.52 2005/02/10 14:25:08 itojun Exp $	*/
-/*	$NetBSD: main.c,v 1.9 1996/05/07 02:55:02 thorpej Exp $	*/
+/*
+ * $OpenBSD: main.c,v 1.52 2005/02/10 14:25:08 itojun Exp $
+ */
+/*
+ * $NetBSD: main.c,v 1.9 1996/05/07 02:55:02 thorpej Exp $
+ */
 
 /*
  * Copyright (c) 1983, 1988, 1993
- *	Regents of the University of California.  All rights reserved.
+ *      Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,25 +35,17 @@
  */
 
 #ifndef lint
-char copyright[] =
-    "@(#) Copyright (c) 1983, 1988, 1993\n\
+char            copyright[] = "@(#) Copyright (c) 1983, 1988, 1993\n\
 	Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifdef  INHERITED_CODE
-#ifndef lint
-#if 0
-static char sccsid[] = "from: @(#)main.c	8.4 (Berkeley) 3/1/94";
-#else
-static char *rcsid = "$OpenBSD: main.c,v 1.52 2005/02/10 14:25:08 itojun Exp $";
-#endif
-#endif /* not lint */
-#endif
+#endif                          /* not lint */
 
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/utilities.h>
 
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #if HAVE_NETDB_H
 #include <netdb.h>
 #endif
@@ -61,92 +57,100 @@ static char *rcsid = "$OpenBSD: main.c,v 1.52 2005/02/10 14:25:08 itojun Exp $";
 #include "winstub.h"
 #endif
 
-int	aflag;		/* show all sockets (including servers) */
-int	bflag;		/* show bytes instead of packets */
-int	dflag;		/* show i/f dropped packets */
-int	gflag;		/* show group (multicast) routing or stats */
-int	iflag;		/* show interfaces */
-int	lflag;		/* show routing table with use and ref */
-int	Lflag;		/* Legacy mibs */
-int	mflag;		/* show memory stats */
-int	nflag;		/* show addresses numerically */
-int	oflag;		/* Open/Net-BSD style octet output */
-int	pflag;		/* show given protocol */
-int	qflag;		/* only display non-zero values for output */
-int	rflag;		/* show routing tables (or routing stats) */
-int	Sflag;		/* show source address in routing table */
-int	sflag;		/* show protocol statistics */
-int	tflag;		/* show i/f watchdog timers */
-int	vflag;		/* be verbose */
+int             aflag;          /* show all sockets (including servers) */
+int             bflag;          /* show bytes instead of packets */
+int             dflag;          /* show i/f dropped packets */
+int             gflag;          /* show group (multicast) routing or stats */
+int             iflag;          /* show interfaces */
+int             lflag;          /* show routing table with use and ref */
+int             Lflag;          /* Legacy mibs */
+int             mflag;          /* show memory stats */
+int             nflag;          /* show addresses numerically */
+int             oflag;          /* Open/Net-BSD style octet output */
+int             pflag;          /* show given protocol */
+int             qflag;          /* only display non-zero values for output */
+int             rflag;          /* show routing tables (or routing stats) */
+int             Sflag;          /* show source address in routing table */
+int             sflag;          /* show protocol statistics */
+int             tflag;          /* show i/f watchdog timers */
+int             vflag;          /* be verbose */
 
 
-int	interval;	/* repeat interval for i/f stats */
-char	*intrface;	/* desired i/f for stats, or NULL for all i/fs */
-int	af;		/* address family */
-int     max_getbulk = 32;  /* specifies the max-repeaters value to use with GETBULK requests */
+int             interval;       /* repeat interval for i/f stats */
+char           *intrface;       /* desired i/f for stats, or NULL for all i/fs */
+int             af;             /* address family */
+int             max_getbulk = 32;       /* specifies the max-repeaters value to use with GETBULK requests */
 
-char    *progname = NULL;
-const char *pname;
+char           *progname = NULL;
+const char     *pname;
 /*
  * struct nlist nl[] - Omitted
  */
 
-typedef void (stringfun)(const char*);
+typedef void    (stringfun) (const char *);
 
 struct protox {
-    /* pr_index/pr_sindex - Omitted */
-    int		pr_wanted;	/* 1 if wanted, 0 otherwise */
-    stringfun	*pr_cblocks;	/* control blocks printing routine */
-    stringfun	*pr_stats;	/* statistics printing routine */
-    const char	*pr_name;	/* well-known name */
+    /*
+     * pr_index/pr_sindex - Omitted
+     */
+    int             pr_wanted;  /* 1 if wanted, 0 otherwise */
+    stringfun      *pr_cblocks; /* control blocks printing routine */
+    stringfun      *pr_stats;   /* statistics printing routine */
+    const char     *pr_name;    /* well-known name */
 };
 
-struct protox protox[] = {
-    { 1,	tcpprotopr,	tcp_stats,	"tcp" },
-    { 1,	udpprotopr,	udp_stats,	"udp" },
+struct protox   protox[] = {
+    {1, tcpprotopr, tcp_stats, "tcp"},
+    {1, udpprotopr, udp_stats, "udp"},
 
-    { 1,	(stringfun*)0,	ip_stats,	"ip" },	/* protopr Omitted */
-    { 1,	(stringfun*)0,	icmp_stats,	"icmp" },
-    /* igmp/ah/esp/ipencap/etherip/ipcomp/carp/pfsync/pim - Omitted */
-    { 0,	(stringfun*)0,	(stringfun*)0,	NULL }
+    {1, (stringfun *) 0, ip_stats, "ip"},       /* protopr Omitted */
+    {1, (stringfun *) 0, icmp_stats, "icmp"},
+    /*
+     * igmp/ah/esp/ipencap/etherip/ipcomp/carp/pfsync/pim - Omitted
+     */
+    {0, (stringfun *) 0, (stringfun *) 0, NULL}
 };
 
-struct protox ip6protox[] = {
-    { 1,	tcp6protopr,	(stringfun*)0,	"tcp6" },
-    { 1,	udp6protopr,	(stringfun*)0,	"udp6" },
+struct protox   ip6protox[] = {
+    {1, tcp6protopr, (stringfun *) 0, "tcp6"},
+    {1, udp6protopr, (stringfun *) 0, "udp6"},
 
-    { 1,	(stringfun*)0,	ip6_stats,	"ip6" },/* ip6protopr Omitted */
-    { 1,	(stringfun*)0,	icmp6_stats,	"icmp6" },
-    /* pim6/rip6 - Omitted */
-    { 0,	(stringfun*)0,	(stringfun*)0,	NULL }
+    {1, (stringfun *) 0, ip6_stats, "ip6"},     /* ip6protopr Omitted */
+    {1, (stringfun *) 0, icmp6_stats, "icmp6"},
+    /*
+     * pim6/rip6 - Omitted
+     */
+    {0, (stringfun *) 0, (stringfun *) 0, NULL}
 };
 
-struct protox ipxprotox[] = {
-    { 1,	tcpxprotopr,	tcp_stats,	"tcp" },
-    { 1,	udpxprotopr,	udp_stats,	"udp" },
-    { 1,	(stringfun*)0,	ipx_stats,	"ip" },/* ip6protopr Omitted */
-    { 1,	(stringfun*)0,	ipx_stats,	"ip6" },/* ip6protopr Omitted */
-    { 1,	(stringfun*)0,	icmpx_stats,	"icmp" },
-    { 1,	(stringfun*)0,	icmpx_stats,	"icmp6" },
-    { 0,	(stringfun*)0,	(stringfun*)0,	NULL }
+struct protox   ipxprotox[] = {
+    {1, tcpxprotopr, tcp_stats, "tcp"},
+    {1, udpxprotopr, udp_stats, "udp"},
+    {1, (stringfun *) 0, ipx_stats, "ip"},      /* ip6protopr Omitted */
+    {1, (stringfun *) 0, ipx_stats, "ip6"},     /* ip6protopr Omitted */
+    {1, (stringfun *) 0, icmpx_stats, "icmp"},
+    {1, (stringfun *) 0, icmpx_stats, "icmp6"},
+    {0, (stringfun *) 0, (stringfun *) 0, NULL}
 };
 
-/* {ipx,ns,atalk}protox Omitted */
+/*
+ * {ipx,ns,atalk}protox Omitted
+ */
 
-struct protox *protoprotox[] = {
+struct protox  *protoprotox[] = {
     protox, ip6protox, NULL
 };
 
-static void printproto(struct protox *, const char *);
-static void usage(void);
+static void     printproto(struct protox *, const char *);
+static void     usage(void);
 static struct protox *name2protox(const char *);
 static struct protox *knownname(const char *);
 
 netsnmp_session *ss;
-struct protox *tp = NULL; /* for printing cblocks & stats */
+struct protox  *tp = NULL;      /* for printing cblocks & stats */
 
 static void
-optProc( int argc, char *const *argv, int opt )
+optProc(int argc, char *const *argv, int opt)
 {
     switch (opt) {
     case 'C':
@@ -169,23 +173,23 @@ optProc( int argc, char *const *argv, int opt )
                 else if (strcmp(optarg, "inet6") == 0)
                     af = AF_INET6;
                 /*
-                  else if (strcmp(optarg, "local") == 0)
-                  af = AF_LOCAL;
-                  else if (strcmp(optarg, "unix") == 0)
-                  af = AF_UNIX;
-                  else if (strcmp(optarg, "ipx") == 0)
-                  af = AF_IPX;
-                  else if (strcmp(optarg, "ns") == 0)
-                  af = AF_NS;
-                  else if (strcmp(optarg, "encap") == 0)
-                  af = PF_KEY;
-                  else if (strcmp(optarg, "atalk") == 0)
-                  af = AF_APPLETALK;
-                */
+                 * else if (strcmp(optarg, "local") == 0)
+                 * af = AF_LOCAL;
+                 * else if (strcmp(optarg, "unix") == 0)
+                 * af = AF_UNIX;
+                 * else if (strcmp(optarg, "ipx") == 0)
+                 * af = AF_IPX;
+                 * else if (strcmp(optarg, "ns") == 0)
+                 * af = AF_NS;
+                 * else if (strcmp(optarg, "encap") == 0)
+                 * af = PF_KEY;
+                 * else if (strcmp(optarg, "atalk") == 0)
+                 * af = AF_APPLETALK;
+                 */
                 else {
-                    (void)fprintf(stderr,
-                                  "%s: %s: unknown address family\n",
-                                  progname, optarg);
+                    (void) fprintf(stderr,
+                                   "%s: %s: unknown address family\n",
+                                   progname, optarg);
                     exit(1);
                 }
                 return;
@@ -204,49 +208,56 @@ optProc( int argc, char *const *argv, int opt )
             case 'L':
                 Lflag = 1;
                 break;
-                /*  case 'L':		FreeBSD: Display listen queue lengths
-                    NetBSD:  Suppress link-level routes */
-                /*	case 'l':		OpenBSD: Wider IPv6 display
-                        Linux:   Listening sockets only
-			lflag = 1;
-			break;
-                        case 'M':		*BSD:    Memory image
-                        Linux:   Masqueraded connections
-			memf = optarg;
-			break;
-                */
+                /*
+                 * case 'L':            FreeBSD: Display listen queue lengths
+                 * NetBSD:  Suppress link-level routes
+                 */
+                /*
+                 * case 'l':            OpenBSD: Wider IPv6 display
+                 * Linux:   Listening sockets only
+                 * lflag = 1;
+                 * break;
+                 * case 'M':            *BSD:    Memory image
+                 * Linux:   Masqueraded connections
+                 * memf = optarg;
+                 * break;
+                 */
             case 'm':
                 mflag = 1;
                 break;
-                /*	case 'N':		*BSD:    Kernel image
-			nlistf = optarg;
-			break;
-                */
+                /*
+                 * case 'N':            *BSD:    Kernel image
+                 * nlistf = optarg;
+                 * break;
+                 */
             case 'n':
                 nflag = 1;
                 break;
             case 'o':
                 oflag = 1;
                 break;
-                /*  case 'P':		NetBSD:
-                    OpenBSD: dump PCB block */
+                /*
+                 * case 'P':            NetBSD:
+                 * OpenBSD: dump PCB block
+                 */
             case 'p':
                 if (!*optarg)
                     optarg = argv[optind++];
                 if ((tp = name2protox(optarg)) == NULL) {
-                    (void)fprintf(stderr,
-                                  "%s: %s: unknown protocol\n",
-                                  progname, optarg);
+                    (void) fprintf(stderr,
+                                   "%s: %s: unknown protocol\n",
+                                   progname, optarg);
                     exit(1);
                 }
                 pflag = 1;
                 pname = tp->pr_name;
                 return;
-                /*	case 'q':		NetBSD:  IRQ information
-                        OpenBSD: Suppress inactive I/Fs
-			qflag = 1;
-			break;
-                */
+                /*
+                 * case 'q':            NetBSD:  IRQ information
+                 * OpenBSD: Suppress inactive I/Fs
+                 * qflag = 1;
+                 * break;
+                 */
             case 'r':
                 rflag = 1;
                 break;
@@ -268,22 +279,23 @@ optProc( int argc, char *const *argv, int opt )
                 }
                 optind++;
                 break;
-            case 'S':	     /* FreeBSD:
-                                NetBSD:  Semi-numeric display
-                                OpenBSD: Show route source selector */
+            case 'S':          /* FreeBSD:
+                                 * NetBSD:  Semi-numeric display
+                                 * OpenBSD: Show route source selector */
                 Sflag = 1;
                 break;
             case 's':
                 ++sflag;
                 break;
-                /*	case 't':		FreeBSD:
-                        OpenBSD: Display watchdog timers
-			tflag = 1;
-			break;
-                        case 'u':		OpenBSD: unix sockets only
-			af = AF_UNIX;
-			break;
-                */
+                /*
+                 * case 't':            FreeBSD:
+                 * OpenBSD: Display watchdog timers
+                 * tflag = 1;
+                 * break;
+                 * case 'u':            OpenBSD: unix sockets only
+                 * af = AF_UNIX;
+                 * break;
+                 */
             case 'v':
                 vflag = 1;
                 break;
@@ -299,21 +311,21 @@ optProc( int argc, char *const *argv, int opt )
                 exit(1);
             }
         }
-        break;   /* End of '-Cx' switch */
+        break;                  /* End of '-Cx' switch */
 
         /*
          *  Backward compatability for the main display modes
          *    (where this doesn't clash with standard SNMP flags)
          */
     case 'i':
-	iflag = 1;
-	break;
+        iflag = 1;
+        break;
     case 'R':
-	rflag = 1;    /* -r sets the retry count */
-	break;
+        rflag = 1;              /* -r sets the retry count */
+        break;
     case 's':
-	++sflag;
-	break;
+        ++sflag;
+        break;
     }
 }
 
@@ -322,19 +334,19 @@ main(int argc, char *argv[])
 {
     netsnmp_session session;
     struct protoent *p;
-    char *cp;
-    int exit_code = 1;
+    char           *cp;
+    int             exit_code = 1;
 
     SOCK_STARTUP;
 
     af = AF_UNSPEC;
-    cp = strrchr( argv[0], '/' );
+    cp = strrchr(argv[0], '/');
     if (cp)
-        progname = cp+1;
+        progname = cp + 1;
     else
         progname = argv[0];
 
-    switch (snmp_parse_args( argc, argv, &session, "C:iRs", optProc)) {
+    switch (snmp_parse_args(argc, argv, &session, "C:iRs", optProc)) {
     case NETSNMP_PARSE_ARGS_ERROR:
         goto out;
     case NETSNMP_PARSE_ARGS_SUCCESS_EXIT:
@@ -375,9 +387,9 @@ main(int argc, char *argv[])
 #if 0
     if (mflag) {
         /*
-          mbpr(nl[N_MBSTAT].n_value, nl[N_MBPOOL].n_value,
-          nl[N_MCLPOOL].n_value);
-        */
+         * mbpr(nl[N_MBSTAT].n_value, nl[N_MBPOOL].n_value,
+         * nl[N_MCLPOOL].n_value);
+         */
         exit_code = 0;
         goto out;
     }
@@ -400,52 +412,55 @@ main(int argc, char *argv[])
     }
     if (rflag) {
         /*
-          if (sflag)
-          rt_stats();
-          else
-        */
+         * if (sflag)
+         * rt_stats();
+         * else
+         */
         if (Lflag || routexpr(af) == 0) {
-            if (route4pr(af) == 0 && af == AF_INET) routepr();
+            if (route4pr(af) == 0 && af == AF_INET)
+                routepr();
             route6pr(af);
         }
         exit_code = 0;
         goto out;
     }
     /*
-      if (gflag) {
-      if (sflag) {
-      if (af == AF_INET || af == AF_UNSPEC)
-      mrt_stats(nl[N_MRTPROTO].n_value,
-      nl[N_MRTSTAT].n_value);
-      #ifdef NETSNMP_ENABLE_IPV6
-      if (af == AF_INET6 || af == AF_UNSPEC)
-      mrt6_stats(nl[N_MRT6PROTO].n_value,
-      nl[N_MRT6STAT].n_value);
-      #endif
-      }
-      else {
-      if (af == AF_INET || af == AF_UNSPEC)
-      mroutepr(nl[N_MRTPROTO].n_value,
-      nl[N_MFCHASHTBL].n_value,
-      nl[N_MFCHASH].n_value,
-      nl[N_VIFTABLE].n_value);
-      #ifdef NETSNMP_ENABLE_IPV6
-      if (af == AF_INET6 || af == AF_UNSPEC)
-      mroute6pr(nl[N_MRT6PROTO].n_value,
-      nl[N_MF6CTABLE].n_value,
-      nl[N_MIF6TABLE].n_value);
-      #endif
-      }
-      exit_code = 0;
-      goto out;
-      }
-    */
+     * if (gflag) {
+     * if (sflag) {
+     * if (af == AF_INET || af == AF_UNSPEC)
+     * mrt_stats(nl[N_MRTPROTO].n_value,
+     * nl[N_MRTSTAT].n_value);
+     * #ifdef NETSNMP_ENABLE_IPV6
+     * if (af == AF_INET6 || af == AF_UNSPEC)
+     * mrt6_stats(nl[N_MRT6PROTO].n_value,
+     * nl[N_MRT6STAT].n_value);
+     * #endif
+     * }
+     * else {
+     * if (af == AF_INET || af == AF_UNSPEC)
+     * mroutepr(nl[N_MRTPROTO].n_value,
+     * nl[N_MFCHASHTBL].n_value,
+     * nl[N_MFCHASH].n_value,
+     * nl[N_VIFTABLE].n_value);
+     * #ifdef NETSNMP_ENABLE_IPV6
+     * if (af == AF_INET6 || af == AF_UNSPEC)
+     * mroute6pr(nl[N_MRT6PROTO].n_value,
+     * nl[N_MF6CTABLE].n_value,
+     * nl[N_MIF6TABLE].n_value);
+     * #endif
+     * }
+     * exit_code = 0;
+     * goto out;
+     * }
+     */
     setservent(1);
     if (Lflag) {
         switch (af) {
         case AF_UNSPEC:
             setprotoent(1);
-            /* ugh, this is O(MN) ... why do we do this? */
+            /*
+             * ugh, this is O(MN) ... why do we do this?
+             */
             while ((p = getprotoent())) {
                 for (tp = protox; tp->pr_name; tp++)
                     if (strcmp(tp->pr_name, p->p_name) == 0)
@@ -457,34 +472,35 @@ main(int argc, char *argv[])
         case AF_INET:
             for (tp = protox; tp->pr_name; tp++)
                 printproto(tp, tp->pr_name);
-	    /* FALL THROUGH */
+            /*
+             * FALL THROUGH
+             */
         case AF_INET6:
             for (tp = ip6protox; tp->pr_name; tp++)
                 printproto(tp, tp->pr_name);
         }
-    }
-    else {
+    } else {
         for (tp = ipxprotox; tp->pr_name; tp++)
-            if (!pname || strcmp(pname,tp->pr_name) == 0)
+            if (!pname || strcmp(pname, tp->pr_name) == 0)
                 printproto(tp, pname);
     }
     /*
-      if (af == AF_IPX || af == AF_UNSPEC)
-      for (tp = ipxprotox; tp->pr_name; tp++)
-      printproto(tp, tp->pr_name);
-      if (af == AF_NS || af == AF_UNSPEC)
-      for (tp = nsprotox; tp->pr_name; tp++)
-      printproto(tp, tp->pr_name);
-      if ((af == AF_UNIX || af == AF_UNSPEC) && !sflag)
-      unixpr(nl[N_UNIXSW].n_value);
-      if (af == AF_APPLETALK || af == AF_UNSPEC)
-      for (tp = atalkprotox; tp->pr_name; tp++)
-      printproto(tp, tp->pr_name);
-    */
+     * if (af == AF_IPX || af == AF_UNSPEC)
+     * for (tp = ipxprotox; tp->pr_name; tp++)
+     * printproto(tp, tp->pr_name);
+     * if (af == AF_NS || af == AF_UNSPEC)
+     * for (tp = nsprotox; tp->pr_name; tp++)
+     * printproto(tp, tp->pr_name);
+     * if ((af == AF_UNIX || af == AF_UNSPEC) && !sflag)
+     * unixpr(nl[N_UNIXSW].n_value);
+     * if (af == AF_APPLETALK || af == AF_UNSPEC)
+     * for (tp = atalkprotox; tp->pr_name; tp++)
+     * printproto(tp, tp->pr_name);
+     */
 
     exit_code = 0;
 
-out:
+  out:
     SOCK_CLEANUP;
     return exit_code;
 }
@@ -496,7 +512,7 @@ out:
 static void
 printproto(struct protox *tp, const char *name)
 {
-    void (*pr)(const char *);
+    void            (*pr)(const char *);
 
     if (sflag) {
         pr = tp->pr_stats;
@@ -504,14 +520,14 @@ printproto(struct protox *tp, const char *name)
         pr = tp->pr_cblocks;
     }
     if (pr != NULL)
-        (*pr)(name);
+        (*pr) (name);
 }
 
 /*
  * Read kernel memory - Omitted
  */
 
-const char *
+const char     *
 plural(int n)
 {
     return (n != 1 ? "s" : "");
@@ -538,8 +554,8 @@ knownname(const char *name)
 static struct protox *
 name2protox(const char *name)
 {
-    struct protox *tp;
-    char **alias;			/* alias from p->aliases */
+    struct protox  *tp;
+    char          **alias;      /* alias from p->aliases */
     struct protoent *p;
 
     /*
@@ -549,9 +565,11 @@ name2protox(const char *name)
     if ((tp = knownname(name)))
         return (tp);
 
-    setprotoent(1);			/* make protocol lookup cheaper */
+    setprotoent(1);             /* make protocol lookup cheaper */
     while ((p = getprotoent())) {
-        /* netsnmp_assert: name not same as p->name */
+        /*
+         * netsnmp_assert: name not same as p->name
+         */
         for (alias = p->p_aliases; *alias; alias++)
             if (strcmp(name, *alias) == 0) {
                 endprotoent();
@@ -565,12 +583,16 @@ name2protox(const char *name)
 static void
 usage(void)
 {
-    (void)fprintf(stderr,
-                  "usage: %s [snmp_opts] [-Canv] [-Cf address_family]\n", progname);
-    (void)fprintf(stderr,
-                  "       %s [snmp_opts] [-Cibodnv] [-CI interface] [-Cw wait]\n", progname);
-    (void)fprintf(stderr,
-                  "       %s [snmp_opts] [-Cs[s]] [-Cp protocol]\n", progname);
-    (void)fprintf(stderr,
-                  "       %s [snmp_opts] [-Crnv] [-Cf address_family]\n", progname);
+    (void) fprintf(stderr,
+                   "usage: %s [snmp_opts] [-Canv] [-Cf address_family]\n",
+                   progname);
+    (void) fprintf(stderr,
+                   "       %s [snmp_opts] [-Cibodnv] [-CI interface] [-Cw wait]\n",
+                   progname);
+    (void) fprintf(stderr,
+                   "       %s [snmp_opts] [-Cs[s]] [-Cp protocol]\n",
+                   progname);
+    (void) fprintf(stderr,
+                   "       %s [snmp_opts] [-Crnv] [-Cf address_family]\n",
+                   progname);
 }

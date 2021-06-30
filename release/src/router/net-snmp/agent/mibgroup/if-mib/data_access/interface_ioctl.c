@@ -14,7 +14,7 @@
 #include <net-snmp/data_access/ipaddress.h>
 #include "if-mib/data_access/interface.h"
 
-netsnmp_feature_child_of(interface_ioctl_flags_set, interface_all)
+netsnmp_feature_child_of(interface_ioctl_flags_set, interface_all);
 
 #ifdef HAVE_NET_IF_H
 #include <net/if.h>
@@ -417,7 +417,7 @@ netsnmp_access_interface_ioctl_ifindex_get(int fd, const char *name)
         return 0;
     }
 
-#if defined(__FreeBSD__)    /* ? Should use HAVE_STRUCT_IFREQ_IFR_INDEX */
+#if defined(freebsd3)    /* ? Should use HAVE_STRUCT_IFREQ_IFR_INDEX */
     return ifrq.ifr_index;
 #else
     return ifrq.ifr_ifindex;
@@ -432,6 +432,7 @@ netsnmp_access_interface_ioctl_ifindex_get(int fd, const char *name)
  * @param if_name : optional name. takes precedent over if_index.
  * @param if_index: optional if index. only used if no if_name specified
  * @param flags   :
+ * @param pifc    : ifconf structures returned by the SIOCGIFCONF ioctl
  *
  * @retval < 0 : error
  * @retval   0 : no ip v4 addresses
@@ -439,30 +440,24 @@ netsnmp_access_interface_ioctl_ifindex_get(int fd, const char *name)
  */
 int
 netsnmp_access_interface_ioctl_has_ipv4(int sd, const char *if_name,
-                                        int if_index, u_int *flags)
+                                        int if_index, u_int *flags,
+                                        const struct ifconf *pifc)
 {
     int             i, interfaces = 0;
-    struct ifconf   ifc;
     struct ifreq   *ifrp;
 
     /*
      * one or the other
      */
-    if ((NULL == flags) ||
+    if (NULL == flags || NULL == pifc ||
         ((0 == if_index) && (NULL == if_name))) {
         return -1;
     }
 
-    interfaces = netsnmp_access_ipaddress_ioctl_get_interface_count(sd, &ifc);
-    if(interfaces < 0) {
-        close(sd);
-        return -2;
-    }
-    netsnmp_assert(NULL != ifc.ifc_buf);
-
     *flags &= ~NETSNMP_INTERFACE_FLAGS_HAS_IPV4;
 
-    ifrp = ifc.ifc_req;
+    ifrp = pifc->ifc_req;
+    interfaces = pifc->ifc_len / sizeof(struct ifreq);
     for(i=0; i < interfaces; ++i, ++ifrp) {
 
         DEBUGMSGTL(("access:ipaddress:container",
@@ -496,11 +491,6 @@ netsnmp_access_interface_ioctl_has_ipv4(int sd, const char *if_name,
             break;
         }
     }
-
-    /*
-     * clean up
-     */
-    free(ifc.ifc_buf);
 
     return 0;
 }

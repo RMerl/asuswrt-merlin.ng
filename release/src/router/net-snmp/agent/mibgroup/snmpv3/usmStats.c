@@ -22,7 +22,7 @@ static oid usmStats[] = { snmpUsmMIB, 1, 1 };
 static netsnmp_handler_registration* usmStats_reg = NULL;
 static oid usmMIBCompliance[] = { usmMIBCompliances, 1 };
 
-netsnmp_feature_require(helper_statistics)
+netsnmp_feature_require(helper_statistics);
 
 void
 init_usmStats(void)

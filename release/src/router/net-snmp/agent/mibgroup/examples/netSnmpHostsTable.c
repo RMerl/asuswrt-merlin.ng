@@ -11,9 +11,9 @@
 #include "netSnmpHostsTable_checkfns.h"
 #include "netSnmpHostsTable_access.h"
 
-netsnmp_feature_require(oid_stash)
-netsnmp_feature_require(oid_stash_get_data)
-netsnmp_feature_require(oid_stash_add_data)
+netsnmp_feature_require(oid_stash);
+netsnmp_feature_require(oid_stash_get_data);
+netsnmp_feature_require(oid_stash_add_data);
 
 static netsnmp_oid_stash_node *undoStorage = NULL;
 static netsnmp_oid_stash_node *commitStorage = NULL;

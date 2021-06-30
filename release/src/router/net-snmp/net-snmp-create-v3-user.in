@@ -1,7 +1,5 @@
 #!/bin/sh
 #
-# $Id$
-#
 # this shell script is designed to add new SNMPv3 users
 # to Net-SNMP config file.
 
@@ -16,15 +14,12 @@ Xalgorithm="DES"
 token=rwuser
 
 while test "x$done" = "x" -a "x$1" != "x" -a "x$usage" != "xyes"; do
-case "$1" in
-    -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
-    *) optarg= ;;
-esac
 
 unset shifted
 case $1 in
     --version|--ver*)
       echo @VERSION@
+      exit 0
       ;;
     --help)
       usage="yes"
@@ -42,7 +37,7 @@ case $1 in
 	    shift
 	    ;;
             md5|sha)
-	    Aalgorithm=`echo $1 | tr a-z A-Z`
+	    Aalgorithm=$(echo "$1" | tr a-z A-Z)
 	    shift
 	    ;;
             *)
@@ -63,7 +58,7 @@ case $1 in
 	    shift
 	    ;;
             des|aes|aes128)
-	    Xalgorithm=`echo $1 | tr a-z A-Z`
+	    Xalgorithm=$(echo "$1" | tr a-z A-Z)
 	    shift
 	    ;;
             *)
@@ -124,24 +119,28 @@ fi
 fi
 outdir="@PERSISTENT_DIRECTORY@"
 outfile="$outdir/snmpd.conf"
-line="createUser $user $Aalgorithm \"$apassphrase\" $Xalgorithm \"$xpassphrase\""
+if test "x$xpassphrase" = "x" ; then
+    line="createUser $user $Aalgorithm \"$apassphrase\" $Xalgorithm"
+else
+    line="createUser $user $Aalgorithm \"$apassphrase\" $Xalgorithm \"$xpassphrase\""
+fi
 echo "adding the following line to $outfile:"
-echo "  " $line
+echo "   $line"
 # in case it hasn't ever been started yet, start it.
-if test ! -d $outdir ; then
-    mkdir $outdir
+if test ! -d "$outdir"; then
+    mkdir "$outdir"
 fi
-if test ! -d $outfile ; then
-    touch $outfile
+if test ! -d "$outfile"; then
+    touch "$outfile"
 fi
-echo $line >> $outfile
-prefix="@prefix@"
-datarootdir="@datarootdir@"
+echo "$line" >> "$outfile"
+# Avoid that configure complains that this script ignores @datarootdir@
+echo "@datarootdir@" >/dev/null
 outfile="@datadir@/snmp/snmpd.conf"
 line="$token $user"
 echo "adding the following line to $outfile:"
-echo "  " $line
-if test ! -d $outfile ; then
-    touch $outfile
+echo "   $line"
+if test ! -d "$outfile"; then
+    touch "$outfile"
 fi
-echo $line >> $outfile
+echo "$line" >> $outfile

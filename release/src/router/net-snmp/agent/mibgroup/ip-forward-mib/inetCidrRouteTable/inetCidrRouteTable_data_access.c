@@ -262,11 +262,12 @@ inetCidrRouteTable_container_load(netsnmp_container *container)
     route_container =
         netsnmp_access_route_container_load(NULL,
                                             NETSNMP_ACCESS_ROUTE_LOAD_NOFLAGS);
-    DEBUGMSGT(("verbose:inetCidrRouteTable:inetCidrRouteTable_cache_load",
-               "%d records\n", (int)CONTAINER_SIZE(route_container)));
 
     if (NULL == route_container)
         return MFD_RESOURCE_UNAVAILABLE;        /* msg already logged */
+
+    DEBUGMSGT(("verbose:inetCidrRouteTable:inetCidrRouteTable_cache_load",
+               "%d records\n", (int)CONTAINER_SIZE(route_container)));
 
     /*
      * we just got a fresh copy of route data. snarf data

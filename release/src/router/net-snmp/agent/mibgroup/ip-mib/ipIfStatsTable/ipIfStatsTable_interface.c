@@ -47,17 +47,17 @@
 
 #include <ctype.h>
 
-netsnmp_feature_child_of(ipIfStatsTable_external_access, libnetsnmpmibs)
+netsnmp_feature_child_of(ipIfStatsTable_external_access, libnetsnmpmibs);
 
-netsnmp_feature_require(row_merge)
-netsnmp_feature_require(baby_steps)
-netsnmp_feature_require(check_all_requests_error)
+netsnmp_feature_require(row_merge);
+netsnmp_feature_require(baby_steps);
+netsnmp_feature_require(check_all_requests_error);
 
 
-netsnmp_feature_child_of(ipIfStatsTable_container_size, ipIfStatsTable_external_access)
-netsnmp_feature_child_of(ipIfStatsTable_registration_set, ipIfStatsTable_external_access)
-netsnmp_feature_child_of(ipIfStatsTable_registration_get, ipIfStatsTable_external_access)
-netsnmp_feature_child_of(ipIfStatsTable_container_get, ipIfStatsTable_external_access)
+netsnmp_feature_child_of(ipIfStatsTable_container_size, ipIfStatsTable_external_access);
+netsnmp_feature_child_of(ipIfStatsTable_registration_set, ipIfStatsTable_external_access);
+netsnmp_feature_child_of(ipIfStatsTable_registration_get, ipIfStatsTable_external_access);
+netsnmp_feature_child_of(ipIfStatsTable_container_get, ipIfStatsTable_external_access);
 
 /**********************************************************************
  **********************************************************************

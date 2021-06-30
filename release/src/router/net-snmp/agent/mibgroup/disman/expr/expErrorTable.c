@@ -13,7 +13,7 @@
 #include "disman/expr/expExpression.h"
 #include "disman/expr/expErrorTable.h"
 
-netsnmp_feature_require(table_tdata)
+netsnmp_feature_require(table_tdata);
 
 /* Initializes the expExpressionErrorTable module */
 void

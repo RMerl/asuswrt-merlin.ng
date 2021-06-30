@@ -11,6 +11,10 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 /*
  * include our parent header 
  */

@@ -53,7 +53,13 @@ if test "x$CRYPTO" = "xinternal" ; then
     AC_DEFINE(NETSNMP_USE_INTERNAL_CRYPTO, 1, "Define if internal cryptography code should be used")
     AC_MSG_RESULT(Internal Crypto Support)
 elif test "x$useopenssl" != "xno" ; then
-    authmodes="MD5 SHA1 SHA512 SHA384 SHA256 SHA192"
+    authmodes="MD5 SHA1"
+    if test "x$ac_cv_func_EVP_sha224" = xyes; then
+        authmodes="$authmodes SHA224 SHA256"
+    fi
+    if test "x$ac_cv_func_EVP_sha384" = xyes; then
+        authmodes="$authmodes SHA384 SHA512"
+    fi
     if test "x$enable_privacy" != "xno" ; then
         if test "x$ac_cv_header_openssl_aes_h" = "xyes" ; then
             encrmodes="DES AES"
@@ -85,6 +91,13 @@ elif test "x$enable_md5" != "xno"; then
 fi
 if test "x$enable_md5" = "xno"; then
     authmodes=`echo $authmodes | $SED 's/MD5 *//;'`
+fi
+if test "x$ac_cv_func_AES_cfb128_encrypt" = xyes ||
+   test "x$CRYPTO" = xinternal; then
+    encrmodes="$encrmodes AES128"
+    if test "x$aes_capable" = "xyes"; then
+        encrmodes="$encrmodes AES192 AES192C AES256 AES256C"
+    fi
 fi
 AC_SUBST(LNETSNMPLIBS)
 AC_SUBST(LAGENTLIBS)

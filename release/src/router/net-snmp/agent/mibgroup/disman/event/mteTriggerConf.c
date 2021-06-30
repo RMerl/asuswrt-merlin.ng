@@ -15,7 +15,7 @@
 
 #include <ctype.h>
 
-netsnmp_feature_require(iquery)
+netsnmp_feature_require(iquery);
 
 /** Initializes the mteTriggerConf module */
 void

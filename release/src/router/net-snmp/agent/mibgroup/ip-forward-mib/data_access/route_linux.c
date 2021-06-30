@@ -69,7 +69,7 @@ _load_ipv4(netsnmp_container* container, u_long *index )
         return -2;
     }
 
-    fgets(line, sizeof(line), in); /* skip header */
+    NETSNMP_IGNORE_RESULT(fgets(line, sizeof(line), in)); /* skip header */
 
     while (fgets(line, sizeof(line), in)) {
         char            rtent_name[32];

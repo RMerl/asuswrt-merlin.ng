@@ -286,7 +286,7 @@ load_assoc(sctpTables_containers * containers)
     /*
      * ignore the header. 
      */
-    fgets(line, sizeof(line), f);
+    NETSNMP_IGNORE_RESULT(fgets(line, sizeof(line), f));
 
     while (fgets(line, sizeof(line), f) != NULL) {
         DEBUGMSGTL(("sctp:tables:load:assoc", "processing line: %s\n",
@@ -406,7 +406,7 @@ load_remaddr(sctpTables_containers * containers)
     /*
      * ignore the header. 
      */
-    fgets(line, sizeof(line), f);
+    NETSNMP_IGNORE_RESULT(fgets(line, sizeof(line), f));
 
     while (fgets(line, sizeof(line), f) != NULL) {
         DEBUGMSGTL(("sctp:load:remaddr", "processing line: %s\n", line));

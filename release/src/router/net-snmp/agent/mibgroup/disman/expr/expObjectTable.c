@@ -13,11 +13,11 @@
 #include "disman/expr/expObject.h"
 #include "disman/expr/expObjectTable.h"
 
-netsnmp_feature_require(table_tdata)
+netsnmp_feature_require(table_tdata);
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(check_vb_oid)
-netsnmp_feature_require(check_vb_truthvalue)
-netsnmp_feature_require(table_tdata_insert_row)
+netsnmp_feature_require(check_vb_oid);
+netsnmp_feature_require(check_vb_truthvalue);
+netsnmp_feature_require(table_tdata_insert_row);
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 /* Initializes the expObjectTable module */

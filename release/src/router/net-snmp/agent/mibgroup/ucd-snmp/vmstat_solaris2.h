@@ -18,7 +18,9 @@
 /*
  * Dependency requirements 
  */
-config_arch_require(solaris2, kernel_sunos5)
+#ifdef solaris2
+config_require(kernel_sunos5)
+#endif
 
     /*
      * Directive to include utility module 

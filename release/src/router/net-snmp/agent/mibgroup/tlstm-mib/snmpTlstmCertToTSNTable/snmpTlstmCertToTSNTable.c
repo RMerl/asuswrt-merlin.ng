@@ -13,17 +13,17 @@
 #include "tlstm-mib.h"
 #include "snmpTlstmCertToTSNTable.h"
 
-netsnmp_feature_require(table_tdata)
-netsnmp_feature_require(cert_fingerprints)
-netsnmp_feature_require(table_tdata_delete_table)
-netsnmp_feature_require(table_tdata_extract_table)
-netsnmp_feature_require(table_tdata_remove_row)
-netsnmp_feature_require(tls_fingerprint_build)
+netsnmp_feature_require(table_tdata);
+netsnmp_feature_require(cert_fingerprints);
+netsnmp_feature_require(table_tdata_delete_table);
+netsnmp_feature_require(table_tdata_extract_table);
+netsnmp_feature_require(table_tdata_remove_row);
+netsnmp_feature_require(tls_fingerprint_build);
 #ifndef NETSNMP_NO_WRITE_SUPPORT
-netsnmp_feature_require(check_vb_storagetype)
-netsnmp_feature_require(check_vb_type_and_max_size)
-netsnmp_feature_require(check_vb_rowstatus_with_storagetype)
-netsnmp_feature_require(table_tdata_insert_row)
+netsnmp_feature_require(check_vb_storagetype);
+netsnmp_feature_require(check_vb_type_and_max_size);
+netsnmp_feature_require(check_vb_rowstatus_with_storagetype);
+netsnmp_feature_require(table_tdata_insert_row);
 #endif /* NETSNMP_NO_WRITE_SUPPORT */
 
 /** XXX - move these to table_data header? */
@@ -119,8 +119,9 @@ init_snmpTlstmCertToTSNTable_context(const char *contextName)
     netsnmp_table_registration_info *info;
     netsnmp_cache                   *cache;
     netsnmp_watcher_info            *watcher;
-    const char *mib_map_help = 
+    static const char mib_map_help[] =
         MAP_MIB_CONFIG_TOKEN " table persistence (internal use)";
+    int rc;
 
     DEBUGMSGTL(("tlstmCertToSN:init",
                 "initializing table tlstmCertToTSNTable\n"));
@@ -175,9 +176,13 @@ init_snmpTlstmCertToTSNTable_context(const char *contextName)
     cache->magic = (void *)_table;
     cache->flags = NETSNMP_CACHE_DONT_INVALIDATE_ON_SET;
 
-    netsnmp_tdata_register(reg, _table, info);
-
-    if (cache) 
+    rc = netsnmp_tdata_register(reg, _table, info);
+    if (rc) {
+        snmp_log(LOG_ERR, "%s: netsnmp_tdata_register() returned %d\n",
+                 __func__, rc);
+        return;
+    }
+    if (cache)
         netsnmp_inject_handler_before( reg, netsnmp_cache_handler_get(cache),
                                        "table_container");
 
@@ -193,11 +198,18 @@ init_snmpTlstmCertToTSNTable_context(const char *contextName)
         snmp_log(LOG_ERR,
                  "could not create handler for snmpTlstmCertToTSNCount\n");
     else {
+        int rc;
+
         if (NULL != contextName)
             reg->contextName = strdup(contextName);
 
-        netsnmp_register_scalar(reg);
-        if (cache) 
+        rc = netsnmp_register_scalar(reg);
+        if (rc) {
+            snmp_log(LOG_ERR, "%s: netsnmp_register_scalar() returned %d\n",
+                     __func__, rc);
+            return;
+        }
+        if (cache)
             netsnmp_inject_handler_before(reg, netsnmp_cache_handler_get(cache),
                                           "snmpTlstmCertToTSNCount");
     }
@@ -956,8 +968,7 @@ _cert_map_add(certToTSN_entry *entry)
 
     map->priority = entry->tlstmCertToTSNID;
     map->mapType = entry->mapType;
-    if (entry->data)
-        map->data = strdup(entry->data);
+    map->data = strdup(entry->data);
     map->hashType = entry->hashType;
 
     map->flags = NSCM_FROM_MIB;
@@ -1302,8 +1313,8 @@ _save_maps(int majorID, int minorID, void *serverarg, void *clientarg)
                 continue;
             _save_map(map, RS_ACTIVE, type);
         }
+        ITERATOR_RELEASE(map_itr);
     }
-    ITERATOR_RELEASE(map_itr);
 
     /*
      * save inactive rows from mib

@@ -124,9 +124,6 @@ SOFTWARE.
     NETSNMP_IMPORT
     char            *netsnmp_get_mib_directory(void);
     void            netsnmp_fixup_mib_directory(void);
-    void            netsnmp_mibindex_load( void );
-    char *          netsnmp_mibindex_lookup( const char * );
-    FILE *          netsnmp_mibindex_new( const char * );
     int             sprint_realloc_description(u_char ** buf, size_t * buf_len,
                                 size_t * out_len, int allow_realloc,
                                 oid * objid, size_t objidlen, int width);
@@ -149,7 +146,7 @@ SOFTWARE.
                                       netsnmp_variable_list * data);
     NETSNMP_IMPORT
     int             build_oid_noalloc(oid * in, size_t in_len,
-                                      size_t * out_len, oid * prefix,
+                                      size_t * out_len, const oid * prefix,
                                       size_t prefix_len,
                                       netsnmp_variable_list * indexes);
     NETSNMP_IMPORT
@@ -484,7 +481,7 @@ SOFTWARE.
 	                             unsigned char **new_val, int *new_val_len);
 
     NETSNMP_IMPORT
-    void            clear_tree_flags(register struct tree *tp);
+    void            clear_tree_flags(struct tree *tp);
 
     NETSNMP_IMPORT
     char           *snmp_out_toggle_options(char *);

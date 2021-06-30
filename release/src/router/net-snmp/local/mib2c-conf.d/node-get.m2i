@@ -83,7 +83,7 @@ ${node}_get( ${context}_rowreq_ctx *rowreq_ctx, $m2c_node_param_ref )
 @       include generic-get-char.m2i@
 @    elsif $node.decl =~ /oid/i@ #                    ASN_OBJECT_ID
 @       include generic-get-oid.m2i@
-@    elsif $node.decl =~ /U64/i@ #                    ASN_COUNTER64
+@    elsif $node.decl =~ /struct counter64/i@ #       ASN_COUNTER64
 @       include generic-get-U64.m2i@
 @    else@
 @        print ERROR: unknown node.decl: $node.decl@

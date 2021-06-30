@@ -203,8 +203,7 @@ usmDHUserKeyTable_indexes_set_tbl_idx(usmDHUserKeyTable_mib_index *
     /*
      * make sure there is enough space for usmUserEngineID data
      */
-    if ((NULL == tbl_idx->usmUserEngineID) ||
-        (tbl_idx->usmUserEngineID_len < (usmUserEngineID_val_ptr_len))) {
+    if (tbl_idx->usmUserEngineID_len < usmUserEngineID_val_ptr_len) {
         snmp_log(LOG_ERR, "not enough space for value\n");
         return MFD_ERROR;
     }
@@ -222,8 +221,7 @@ usmDHUserKeyTable_indexes_set_tbl_idx(usmDHUserKeyTable_mib_index *
     /*
      * make sure there is enough space for usmUserName data
      */
-    if ((NULL == tbl_idx->usmUserName) ||
-        (tbl_idx->usmUserName_len < (usmUserName_val_ptr_len))) {
+    if (tbl_idx->usmUserName_len < usmUserName_val_ptr_len) {
         snmp_log(LOG_ERR, "not enough space for value\n");
         return MFD_ERROR;
     }

@@ -63,8 +63,6 @@ LINK32_OBJS= \
 "..\bin\$(OUTDIR)\$(PROGNAME).exe" : "..\bin\$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
 !IF "$(LINKTYPE)" == "static" || "$(ALLOW_DLL)" == "1"
     $(LINK32) $(LINK32_FLAGS) $(LINK32_OBJS)
- if exist "..\bin\$(OUTDIR)\$(PROGNAME).exe.manifest" \
-	    mt.exe -manifest "..\bin\$(OUTDIR)\$(PROGNAME).exe.manifest" -outputresource:"..\bin\$(OUTDIR)\$(PROGNAME).exe";1
 !ELSE	# Linktype check
 	-@echo .
 	-@echo Aborting build.  Applications can not be built using --linktype=dynamic

@@ -1,11 +1,12 @@
 #!/usr/bin/env perl
 
+use strict;
+use warnings;
 use Getopt::Long;
 #use Data::Dumper;
 use File::Basename;
 use File::Spec;
 use Cwd qw(abs_path);
-use strict;
 
 ########################################
 # Globals and Command Line options
@@ -24,6 +25,7 @@ GetOptions(\%opts,
            "quiet|q",
            "groups|g=s",
            "r=s",
+           "exclude|e=s",
            "debug",
            "srcdir|D=s",
            "builddir|d=s",
@@ -71,7 +73,7 @@ if (!$ENV{'MIBDIRS'}) {
 }
 
 my $cfp_path = File::Spec->catfile(dirname(abs_path($0)), "check_for_pskill");
-my $rc = `$cfp_path`;
+my $rc = system($cfp_path);
 if ($rc != 0) {
     die "$cfp_path failed with error code $rc\n";
 }
@@ -125,7 +127,7 @@ if ($opts{'f'}) {
 	push @tests, build_test($_);
     }
 } else {
-    @tests = gather_tests($opts{'groups'}, $opts{'r'});
+    @tests = gather_tests($opts{'groups'}, $opts{'r'}, $opts{'exclude'});
 }
 
 ########################################
@@ -137,6 +139,13 @@ if ($opts{'f'}) {
 
 DEBUG("Running tests:\n"); 
 DEBUG("-" x 78, "\n");
+
+$ENV{'PATH'}="$opts{'builddir'}/agent/.libs:$opts{'builddir'}/apps/.libs:$opts{'builddir'}:$ENV{'PATH'}";
+$ENV{'LD_LIBRARY_PATH'}=`find $opts{'builddir'} -name '*.so' | grep -v NetSNMP/agent/default_store | sed 's,/[^/]*\$,,' | sort -u | tr '\n' :`;
+$ENV{'PERL5LIB'}="$opts{'srcdir'}/perl:$opts{'srcdir'}/perl/SNMP:$opts{'srcdir'}/perl/blib/lib:$opts{'srcdir'}/testing/fulltests/perl:$opts{'srcdir'}/testing/fulltests/support";
+DEBUG("PATH: $ENV{'PATH'}\n");
+DEBUG("LD_LIBRARY_PATH: $ENV{'LD_LIBRARY_PATH'}\n");
+DEBUG("PERL5LIB: $ENV{'PERL5LIB'}\n");
 
 my $results;
 if ($harness) {
@@ -177,6 +186,9 @@ sub decide_exec {
     # 1) Parse the $testfile argument.
     my ($dirname, $groupname, $basename, $app_extension, $file_extension) = 
       ($testfile =~ /([^\/]+)\/([^\/]+)\/([^\/]+)_([^\/_]+)\.*([^\/\.]*)$/);
+    if (!defined($app_extension)) {
+	return undef;
+    }
     $app_extension =~ s/$opts{'exeext'}\$//;
 
     # 2) we have a RUN_TYPE file in the same directory
@@ -193,8 +205,24 @@ sub decide_exec {
     return undef;
 }
 
+sub configured_with {
+    my ($opt) = @_;
+    my $cfglog = "$opts{'srcdir'}/config.log";
+
+    if (open my $fh, $cfglog) {
+	while (my $line = <$fh>) {
+	    if ($line =~ $opt) {
+		return 1;
+	    }
+	}
+    } else {
+	print "Failed to open $cfglog\n"
+    }
+    return 0;
+}
+
 sub gather_tests {
-    my ( $groups, $regexp ) = @_;
+    my ( $groups, $incl_regexp, $excl_regexp ) = @_;
     my @groups;
 
     # figure out the list of groups we need to search through
@@ -223,19 +251,27 @@ sub gather_tests {
 	    next;
 	}
 
+	if (($group eq 'perl' && !configured_with("PERLTARGS='perlmodules'")) ||
+	    ($group eq 'python' && !configured_with('with-python-modules'))) {
+	    DEBUG("Skipping group $group\n");
+	    next;
+	}
+
 	# push on all files that start with T[NUM]*
-	push_or_skip(\@tests, $regexp, glob("$opts{'srcdir'}/testing/$opts{'master-directory'}/$group/T[0-9]*"));
+	push_or_skip(\@tests, $incl_regexp, $excl_regexp,
+		     glob("$opts{'srcdir'}/testing/$opts{'master-directory'}/$group/T[0-9]*"));
     }
 
     return @tests;
 }
 
 sub push_or_skip {
-    my ($array, $regexp, @files) = @_;
+    my ($array, $incl_regexp, $excl_regexp, @files) = @_;
     foreach my $file (@files) {
 	next if ($file =~ /.(bak|old|orig|rej)$/);
 	next if ($file =~ /~$/);
-	next if (defined($regexp) && $file !~ /$regexp/i);
+	next if (defined($excl_regexp) && $file =~ /$excl_regexp/i);
+	next if (defined($incl_regexp) && $file !~ /$incl_regexp/i);
 	DEBUG("  Adding file $file\n");
 	push @$array, build_test($file);
     }
@@ -453,6 +489,7 @@ sub usage {
     print "    --group GROUP\n";
     print "\t\t\t(use 'all' to run all tests)\n";
     print "  -r REGEXP\t\tOnly run test files matching this regexp\n";
+    print "  -e REGEXP\t\tExclude test files matching this regexp\n";
     print "  -f\t\t\tRun only the failed tests from the last run\n";
     print "  -F\t\t\tDon't create the failed_tests file\n";
     print "  --failed-file FILE\tThe location of the failed state file\n";

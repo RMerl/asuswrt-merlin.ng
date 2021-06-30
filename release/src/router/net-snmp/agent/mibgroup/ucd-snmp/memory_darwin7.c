@@ -36,10 +36,6 @@
 #include <mach/mach.h>
 #include <dirent.h>
 
-#if HAVE_DMALLOC_H
-#include <dmalloc.h>
-#endif
-
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include <net-snmp/agent/auto_nlist.h>
@@ -385,9 +381,23 @@ int pages_swapped(void) {
 
             swapped_pages = 0;
             for (address = 0;; address += size) {
+                kern_return_t ret = KERN_FAILURE;
+
                 /* Get memory region. */
-                count = VM_REGION_EXTENDED_INFO_COUNT; 
-                if (vm_region(tasks[j], &address, &size, VM_REGION_EXTENDED_INFO, (vm_region_extended_info_t)&info, &count, &object_name) != KERN_SUCCESS) {
+                count = VM_REGION_EXTENDED_INFO_COUNT;
+#if HAVE_VM_REGION_64
+                ret = vm_region64(tasks[j], &address, &size,
+                                  VM_REGION_EXTENDED_INFO,
+                                  (vm_region_extended_info_t)&info, &count,
+                                  &object_name);
+#elif HAVE_VM_REGION
+                ret = vm_region(tasks[j], &address, &size,
+                                VM_REGION_EXTENDED_INFO,
+                                (vm_region_extended_info_t)&info, &count,
+                                &object_name);
+#error How to query memory protection information?
+#endif
+                if (ret != KERN_SUCCESS) {
                     /* No more memory regions. */
                     break;
                 }

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+. ../support/simple_eval_tools.sh
+
+HEADER Agent uses clientaddr for trapsink source
+
+SKIPIF NETSNMP_DISABLE_SNMPV2C
+
+. ./S180trapaddrinfra
+
+INITV4
+
+CONFIGAGENT "[snmp] clientaddr ${localhost}"
+CONFIGAGENT trap2sink ${SNMP_TRANSPORT_SPEC}:${SNMP_TEST_DEST}${SNMP_SNMPTRAPD_PORT} public
+
+RUNTEST

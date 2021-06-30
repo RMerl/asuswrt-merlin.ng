@@ -21,11 +21,11 @@
 #include <pcre.h>
 #endif
 
-netsnmp_feature_child_of(software_running, libnetsnmpmibs)
+netsnmp_feature_child_of(software_running, libnetsnmpmibs);
 
-netsnmp_feature_child_of(swrun_max_processes, software_running)
-netsnmp_feature_child_of(swrun_count_processes_by_name, software_running)
-netsnmp_feature_child_of(swrun_count_processes_by_regex, software_running)
+netsnmp_feature_child_of(swrun_max_processes, software_running);
+netsnmp_feature_child_of(swrun_count_processes_by_name, software_running);
+netsnmp_feature_child_of(swrun_count_processes_by_regex, software_running);
 
 /**---------------------------------------------------------------------*/
 /*
@@ -102,7 +102,7 @@ swrun_max_processes( void )
 #ifndef NETSNMP_FEATURE_REMOVE_SWRUN_COUNT_PROCESSES_BY_REGEX
 #if HAVE_PCRE_H
 int
-swrun_count_processes_by_regex( char *name, struct real_pcre *regexp )
+swrun_count_processes_by_regex( char *name, netsnmp_regex_ptr regexp )
 {
     netsnmp_swrun_entry *entry;
     netsnmp_iterator  *it;
@@ -112,14 +112,14 @@ swrun_count_processes_by_regex( char *name, struct real_pcre *regexp )
     char fullCommand[64 + 128 + 128 + 3];
 
     netsnmp_cache_check_and_reload(swrun_cache);
-    if ( !swrun_container || !name || !regexp )
+    if ( !swrun_container || !name || !regexp.regex_ptr )
         return 0;    /* or -1 */
 
     it = CONTAINER_ITERATOR( swrun_container );
     while ((entry = (netsnmp_swrun_entry*)ITERATOR_NEXT( it )) != NULL) {
         /* need to assemble full command back so regexps can get full picture */
         sprintf(fullCommand, "%s %s", entry->hrSWRunPath, entry->hrSWRunParameters);
-        found = pcre_exec(regexp, NULL, fullCommand, strlen(fullCommand), 0, 0, found_ndx, 30);
+        found = pcre_exec(regexp.regex_ptr, NULL, fullCommand, strlen(fullCommand), 0, 0, found_ndx, 30);
         if (found > 0) {
             i++;
         }

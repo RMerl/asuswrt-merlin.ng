@@ -243,9 +243,8 @@ udpEndpointTable_indexes_set_tbl_idx(udpEndpointTable_mib_index * tbl_idx,
     /*
      * make sure there is enough space for udpEndpointLocalAddress data
      */
-    if ((NULL == tbl_idx->udpEndpointLocalAddress) ||
-        (tbl_idx->udpEndpointLocalAddress_len <
-         (udpEndpointLocalAddress_val_ptr_len))) {
+    if (tbl_idx->udpEndpointLocalAddress_len <
+        udpEndpointLocalAddress_val_ptr_len) {
         snmp_log(LOG_ERR, "not enough space for value\n");
         return MFD_ERROR;
     }
@@ -274,9 +273,8 @@ udpEndpointTable_indexes_set_tbl_idx(udpEndpointTable_mib_index * tbl_idx,
     /*
      * make sure there is enough space for udpEndpointRemoteAddress data
      */
-    if ((NULL == tbl_idx->udpEndpointRemoteAddress) ||
-        (tbl_idx->udpEndpointRemoteAddress_len <
-         (udpEndpointRemoteAddress_val_ptr_len))) {
+    if (tbl_idx->udpEndpointRemoteAddress_len <
+        udpEndpointRemoteAddress_val_ptr_len) {
         snmp_log(LOG_ERR, "not enough space for value\n");
         return MFD_ERROR;
     }

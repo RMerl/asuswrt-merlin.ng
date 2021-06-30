@@ -8,7 +8,13 @@
 
 #ifdef HAVE_WIN32_PLATFORM_SDK
   if (should_init("at")) init_at();
+#if 0
   if (should_init("interfaces")) init_interfaces();
+#else
+  if (should_init("ifTable")) init_ifTable();
+  if (should_init("ifXTable")) init_ifXTable();
+  if (should_init("interface")) init_interface();
+#endif
   if (should_init("tcp")) init_tcp();
   if (should_init("tcpTable")) init_tcpTable();
   if (should_init("icmp")) init_icmp();

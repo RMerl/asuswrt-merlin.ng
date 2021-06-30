@@ -10,7 +10,7 @@
 #include <net-snmp/library/snmp_logging.h>
 #include <net-snmp/library/large_fd_set.h>
 
-netsnmp_feature_child_of(fd_event_manager, libnetsnmp)
+netsnmp_feature_child_of(fd_event_manager, libnetsnmp);
 
 #ifndef NETSNMP_FEATURE_REMOVE_FD_EVENT_MANAGER
 int     external_readfd[NUM_EXTERNAL_FDS],   external_readfdlen   = 0;

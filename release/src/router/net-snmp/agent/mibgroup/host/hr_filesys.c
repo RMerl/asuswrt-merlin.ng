@@ -718,7 +718,7 @@ static const char *HRFS_ignores[] = {
 int
 Get_Next_HR_FileSys(void)
 {
-next:
+next: ;
 #if HAVE_GETFSSTAT
     if (HRFS_index >= fscount)
         return -1;

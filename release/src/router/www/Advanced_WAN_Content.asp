@@ -1788,25 +1788,6 @@ function change_nat(state) {
 			</tr>
 			</table>
 
-			<table id="wan_DHCP_opt" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
-			<thead>
-				<tr><td colspan="2"><#ipv6_6rd_dhcp_option#></td></tr>
-			</thead>
-				<tr>
-					<th width="40%">Class-identifier (option 60):</th>
-					<td>
-						<input type="text" id="wan_vendorid" name="wan_vendorid" class="input_25_table" value="<% nvram_get("wan_vendorid"); %>" maxlength="126" autocapitalization="off" autocomplete="off">
-					</td>
-				</tr>
-				<tr>
-					<th width="40%">Client-identifier (option 61):</th>
-					<td>
-						<input type="checkbox" id="tmp_dhcp_clientid_type" name="tmp_dhcp_clientid_type" onclick="showDiableDHCPclientID(this);" <% nvram_match("wan_clientid_type", "1", "checked"); %>>IAID/DUID<br>
-						<input type="text" id="wan_clientid" name="wan_clientid" class="input_25_table" value="<% nvram_get("wan_clientid"); %>" maxlength="126" autocapitalization="off" autocomplete="off">
-					</td>
-				</tr>
-			</table>
-
 			<table id="DNSPrivacy" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table" style="display:none">
 			<thead>
 				<tr>
@@ -1839,6 +1820,25 @@ function change_nat(state) {
 			</table>
 			<!-- server block -->
 			<div id="dnspriv_rulelist_Block"></div>
+
+			<table id="wan_DHCP_opt" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+			<thead>
+				<tr><td colspan="2"><#ipv6_6rd_dhcp_option#></td></tr>
+			</thead>
+				<tr>
+					<th width="40%">Class-identifier (option 60):</th>
+					<td>
+						<input type="text" id="wan_vendorid" name="wan_vendorid" class="input_25_table" value="<% nvram_get("wan_vendorid"); %>" maxlength="126" autocapitalization="off" autocomplete="off">
+					</td>
+				</tr>
+				<tr>
+					<th width="40%">Client-identifier (option 61):</th>
+					<td>
+						<input type="checkbox" id="tmp_dhcp_clientid_type" name="tmp_dhcp_clientid_type" onclick="showDiableDHCPclientID(this);" <% nvram_match("wan_clientid_type", "1", "checked"); %>>IAID/DUID<br>
+						<input type="text" id="wan_clientid" name="wan_clientid" class="input_25_table" value="<% nvram_get("wan_clientid"); %>" maxlength="126" autocapitalization="off" autocomplete="off">
+					</td>
+				</tr>
+			</table>
 
 		  		<table id="PPPsetting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
             	<thead>

@@ -15961,7 +15961,7 @@ int reboothalt_main(int argc, char *argv[])
 	int reboot = (strstr(argv[0], "reboot") != NULL);
 	int def_reset_wait = 30;
 
-	logmessage("%s: %s", reboot ? "Rebooting..." : "Shutting down...");
+	logmessage("system", reboot ? "Rebooting..." : "Shutting down...");
 	_dprintf(reboot ? "Rebooting..." : "Shutting down...");
 	g_reboot = 1;
 	f_write_string("/tmp/reboot", "1", 0, 0);

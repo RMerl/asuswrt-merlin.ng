@@ -52,9 +52,6 @@ SOFTWARE.
 #include <ctype.h>
 #include <errno.h>
 
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
 #if HAVE_IO_H
 #include <io.h>
 #endif
@@ -129,9 +126,8 @@ SOFTWARE.
 #include <strings.h>
 #endif
 
-#ifdef WIN32
-#include <wchar.h>   /* wcsncmp() */
-#include <winperf.h> /* PERF_DATA_BLOCK */
+#if HAVE_DMALLOC_H
+#include <dmalloc.h>
 #endif
 
 #ifdef HAVE_SYS_STAT_H
@@ -157,12 +153,8 @@ SOFTWARE.
 #include <sys/systeminfo.h>
 #endif
 
-#if HAVE_CRT_EXTERNS_H
+#if defined(darwin9)
 #include <crt_externs.h>        /* for _NSGetArgv() */
-#endif
-
-#ifdef HAVE_MACH_O_DYLD_H
-#include <mach-o/dyld.h>
 #endif
 
 #if HAVE_PWD_H
@@ -202,10 +194,10 @@ SOFTWARE.
 /* NetSNMP and DNSSEC-Tools both define FREE. We'll not use either here. */
 #undef FREE
 
-netsnmp_feature_child_of(system_all, libnetsnmp);
+netsnmp_feature_child_of(system_all, libnetsnmp)
 
-netsnmp_feature_child_of(user_information, system_all);
-netsnmp_feature_child_of(calculate_sectime_diff, system_all);
+netsnmp_feature_child_of(user_information, system_all)
+netsnmp_feature_child_of(calculate_sectime_diff, system_all)
 
 #ifndef IFF_LOOPBACK
 #	define IFF_LOOPBACK 0
@@ -228,7 +220,7 @@ _daemon_prep(int stderr_log)
     int fd;
 
     /* Avoid keeping any directory in use. */
-    NETSNMP_IGNORE_RESULT(chdir("/"));
+    chdir("/");
 
     if (stderr_log)
         return;
@@ -283,7 +275,7 @@ netsnmp_daemonize(int quit_immediately, int stderr_log)
     int i = 0;
     DEBUGMSGT(("daemonize","deamonizing...\n"));
 #if HAVE_FORK
-#if HAVE__NSGETEXECUTABLEPATH
+#if defined(darwin9)
      char            path [PATH_MAX] = "";
      uint32_t        size = sizeof (path);
 
@@ -349,7 +341,7 @@ netsnmp_daemonize(int quit_immediately, int stderr_log)
             
             DEBUGMSGT(("daemonize","child continuing\n"));
 
-#if !defined(HAVE__NSGETARGV)
+#if ! defined(darwin9)
             _daemon_prep(stderr_log);
 #else
              /*
@@ -705,12 +697,11 @@ get_uptime(void)
     u_long          lbolt = 0;
 
     if (ksc) {
-        ks = kstat_lookup(ksc, NETSNMP_REMOVE_CONST(char *, "unix"), -1,
-                          NETSNMP_REMOVE_CONST(char *, "system_misc"));
+        ks = kstat_lookup(ksc, "unix", -1, "system_misc");
         if (ks) {
             kid = kstat_read(ksc, ks, NULL);
             if (kid != -1) {
-                named = kstat_data_lookup(ks, NETSNMP_REMOVE_CONST(char *, "lbolt"));
+                named = kstat_data_lookup(ks, "lbolt");
                 if (named) {
 #ifdef KSTAT_DATA_UINT32
                     lbolt = named->value.ui32;
@@ -771,6 +762,28 @@ netsnmp_validator_context(void)
 int
 netsnmp_gethostbyname_v4(const char* name, in_addr_t *addr_out)
 {
+    static int use_dns_workaround = -1;
+
+    if (use_dns_workaround < 0)
+        use_dns_workaround = getenv("NETSNMP_DNS_WORKAROUND") != 0;
+    if (use_dns_workaround) {
+        /*
+         * A hack that avoids that T070com2sec_simple fails due to the DNS
+         * client filtering out 127.0.0.x addresses and/or redirecting DNS
+         * resolution failures to a web page.
+         */
+        if (strcmp(name, "onea.net-snmp.org") == 0) {
+            *addr_out = htonl(INADDR_LOOPBACK);
+            return 0;
+        } else if (strcmp(name, "twoa.net-snmp.org") == 0) {
+            *addr_out = htonl(INADDR_LOOPBACK + 1);
+            return 0;
+        } else if (strcmp(name, "no.such.address.") == 0) {
+            return -1;
+        }
+    }
+
+    {
 #if HAVE_GETADDRINFO
     struct addrinfo *addrs = NULL;
     struct addrinfo hint;
@@ -835,6 +848,7 @@ netsnmp_gethostbyname_v4(const char* name, in_addr_t *addr_out)
 #else /* HAVE_GETIPNODEBYNAME */
     return -1;
 #endif
+    }
 }
 
 int
@@ -1038,7 +1052,7 @@ netsnmp_gethostbyaddr(const void *addr, socklen_t len, int type)
 
 /*******************************************************************/
 
-#if !defined(HAVE_STRNCASECMP) && !defined(strncasecmp)
+#ifndef HAVE_STRNCASECMP
 
 /*
  * test for NULL pointers before and NULL characters after
@@ -1087,7 +1101,7 @@ strcasecmp(const char *s1, const char *s2)
     return strncasecmp(s1, s2, 1000000);
 }
 
-#endif                /* !defined(HAVE_STRNCASECMP) && !defined(strncasecmp) */
+#endif                          /* HAVE_STRNCASECMP */
 
 
 #ifndef HAVE_STRDUP
@@ -1128,7 +1142,7 @@ setenv(const char *name, const char *value, int overwrite)
 }
 #endif                          /* HAVE_SETENV */
 
-netsnmp_feature_child_of(calculate_time_diff, netsnmp_unused);
+netsnmp_feature_child_of(calculate_time_diff, netsnmp_unused)
 #ifndef NETSNMP_FEATURE_REMOVE_CALCULATE_TIME_DIFF
 /**
  * Compute (*now - *then) in centiseconds.
@@ -1409,7 +1423,7 @@ netsnmp_os_kernel_width(void)
 #endif
 }
 
-netsnmp_feature_child_of(str_to_uid, user_information);
+netsnmp_feature_child_of(str_to_uid, user_information)
 #ifndef NETSNMP_FEATURE_REMOVE_STR_TO_UID
 /**
  * Convert a user name or number into numeric form.
@@ -1442,7 +1456,7 @@ int netsnmp_str_to_uid(const char *useroruid) {
 }
 #endif /* NETSNMP_FEATURE_REMOVE_STR_TO_UID */
 
-netsnmp_feature_child_of(str_to_gid, user_information);
+netsnmp_feature_child_of(str_to_gid, user_information)
 #ifndef NETSNMP_FEATURE_REMOVE_STR_TO_GID
 /**
  * Convert a group name or number into numeric form.

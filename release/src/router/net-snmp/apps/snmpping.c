@@ -36,9 +36,6 @@
  * DAMAGE.
  */
 
-/* For getlogin() on MinGW */
-#define _POSIX
-
 #include <net-snmp/net-snmp-config.h>
 
 #include <signal.h>
@@ -55,12 +52,6 @@
 #endif
 #if HAVE_NETDB_H
 #include <netdb.h>
-#endif
-#if HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#if HAVE_IO_H
-#include <io.h>
 #endif
 
 #include <math.h>
@@ -208,11 +199,6 @@ add_var(netsnmp_pdu *pdu, const char *mibnodename,
         snmp_perror(mibnodename);
         fprintf(stderr, "couldn't find mib node %s, giving up\n",
                 mibnodename);
-        exit(1);
-    }
-
-    if (base_length + indexlen > sizeof(base) / sizeof(base[0])) {
-        fprintf(stderr, "internal error for %s, giving up\n", mibnodename);
         exit(1);
     }
 
@@ -571,7 +557,7 @@ out:
     return 0;
 }
 
-#ifndef HAVE_GETLOGIN
+#ifdef WIN32
 /* To do: port this function to the Win32 platform. */
 const char *getlogin(void)
 {
@@ -636,7 +622,7 @@ int main(int argc, char **argv)
         usernameLen = strlen(username);
     }
     if (1 /* !have-testname-arg */) {
-        snprintf(testname, sizeof(testname) - 1, "snmpping-%ld", (long)getpid());
+        snprintf(testname, sizeof(testname) - 1, "snmpping-%d", getpid());
         testname[32] = '\0';
         testnameLen = strlen(testname);
     }

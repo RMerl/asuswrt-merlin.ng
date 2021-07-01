@@ -199,9 +199,6 @@ elif test -x /c/Windows/System32/netstat ; then
 elif test -x /usr/sbin/ss ; then
     # Fedora24, RHEL7 does not install netstat as standard
     NETSTAT=/usr/sbin/ss
-elif test -x /usr/bin/ss ; then
-    # Debian 10 (buster) put ss in /usr/bin/ss
-    NETSTAT=/usr/bin/ss
 else
     NETSTAT=""
 fi
@@ -217,7 +214,7 @@ fi
 
 PROBE_FOR_PORT() {
     BASE_PORT=$1
-    MAX_RETRIES=30
+    MAX_RETRIES=10
     if test -x "$NETSTAT" ; then
         if test -z "$RANDOM"; then
             RANDOM=2

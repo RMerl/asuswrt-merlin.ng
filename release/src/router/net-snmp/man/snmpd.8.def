@@ -55,11 +55,9 @@ the \-D flag and the listed TOKENs.
 Do not fork() from the calling shell.
 .TP
 .B \-g \fIGID
-Change the group ID of the snmpd process into
+Change to the numerical group ID
 .I GID
-after opening listening sockets. This overrides the
-.I agentgroup
-configuration file parameter.
+after opening listening sockets.
 .TP
 .B \-h, \-\-help
 Display a brief usage message and then exit.
@@ -113,12 +111,10 @@ if files only accessible to root (such as /dev/kmem etc.) cannot be
 opened.
 .TP
 .B \-u \fIUID
-Change the user ID of the snmpd process into
+Change to the user ID
 .I UID
 (which can be given in numerical or textual form) after opening
-listening sockets. This overrides the
-.I agentuser
-configuration file parameter.
+listening sockets.
 .TP
 .B \-U
 Instructs the agent to not remove its pid file (see the

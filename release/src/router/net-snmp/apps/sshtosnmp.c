@@ -123,29 +123,24 @@ main(int argc, char **argv) {
     /* send the prelim message and the credentials together using sendmsg() */
     {
         struct msghdr m;
-        /*
-         * Ancillary data buffer, wrapped in a union in order to ensure it is
-         * suitably aligned.
-         */
-        union {
-            char buf[CMSG_SPACE(sizeof(struct ucred))];
-            struct cmsghdr cm;
+        struct {
+           struct cmsghdr cm;
+           struct ucred ouruser;
         } cmsg;
-        struct ucred *const ouruser = (void *)CMSG_DATA(&cmsg.cm);
         struct iovec iov = { buf, buf_len };
 
         /* Make sure that even padding fields get initialized.*/
         memset(&cmsg, 0, sizeof(cmsg));
         memset(&m, 0, sizeof(m));
 
-        /* set up the message header */
-        cmsg.cm.cmsg_len = sizeof(cmsg);
+        /* set up the basic message */
+        cmsg.cm.cmsg_len = sizeof(struct cmsghdr) + sizeof(struct ucred);
         cmsg.cm.cmsg_level = SOL_SOCKET;
         cmsg.cm.cmsg_type = SCM_CREDENTIALS;
 
-        ouruser->uid = getuid();
-        ouruser->gid = getgid();
-        ouruser->pid = getpid();
+        cmsg.ouruser.uid = getuid();
+        cmsg.ouruser.gid = getgid();
+        cmsg.ouruser.pid = getpid();
 
         m.msg_iov               = &iov;
         m.msg_iovlen            = 1;

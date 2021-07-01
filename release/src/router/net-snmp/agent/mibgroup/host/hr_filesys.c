@@ -64,13 +64,9 @@
 #include <sys/statfs.h>
 #endif
 
-netsnmp_feature_require(se_find_free_value_in_slist);
-netsnmp_feature_require(date_n_time);
-netsnmp_feature_require(ctime_to_timet);
-
-#ifndef MNTTYPE_AUTOFS
-#define MNTTYPE_AUTOFS	"autofs"
-#endif
+netsnmp_feature_require(se_find_free_value_in_slist)
+netsnmp_feature_require(date_n_time)
+netsnmp_feature_require(ctime_to_timet)
 
 #if defined(bsdi4) || defined(freebsd3) || defined(freebsd4) || defined(freebsd5) || defined(darwin)
 #if HAVE_GETFSSTAT && defined(MFSNAMELEN)
@@ -622,7 +618,7 @@ Init_HR_FileSys(void)
 #if defined(HAVE_STATVFS) && defined(__NetBSD__)
     fscount = getvfsstat(NULL, 0, ST_NOWAIT);
 #else
-    fscount = getfsstat(NULL, 0, MNT_WAIT);
+    fscount = getfsstat(NULL, 0, MNT_NOWAIT);
 #endif
     if (fsstats)
         free((char *) fsstats);
@@ -631,7 +627,7 @@ Init_HR_FileSys(void)
 #if defined(HAVE_STATVFS) && defined(__NetBSD__)
     getvfsstat(fsstats, fscount * sizeof(*fsstats), ST_NOWAIT);
 #else
-    getfsstat(fsstats, fscount * sizeof(*fsstats), MNT_WAIT);
+    getfsstat(fsstats, fscount * sizeof(*fsstats), MNT_NOWAIT);
 #endif
     HRFS_index = 0;
 #elif defined(aix4) || defined(aix5) || defined(aix6) || defined(aix7)
@@ -668,7 +664,7 @@ Init_HR_FileSys(void)
 #endif
 }
 
-static const char *HRFS_ignores[] = {
+const char     *HRFS_ignores[] = {
 #ifdef MNTTYPE_IGNORE
     MNTTYPE_IGNORE,
 #endif
@@ -681,8 +677,13 @@ static const char *HRFS_ignores[] = {
 #ifdef MNTTYPE_PROCFS
     MNTTYPE_PROCFS,
 #endif
+#ifdef MNTTYPE_AUTOFS
     MNTTYPE_AUTOFS,
+#else
+    "autofs",
+#endif
 #ifdef linux
+    "autofs",
     "bdev",
     "binfmt_misc",
     "cpuset",
@@ -704,6 +705,7 @@ static const char *HRFS_ignores[] = {
     "shm",
     "sockfs",
     "sysfs",
+    "tmpfs",
     "usbdevfs",
     "usbfs",
 #endif
@@ -718,7 +720,6 @@ static const char *HRFS_ignores[] = {
 int
 Get_Next_HR_FileSys(void)
 {
-next:
 #if HAVE_GETFSSTAT
     if (HRFS_index >= fscount)
         return -1;
@@ -745,7 +746,8 @@ next:
         case MNT_PROCFS:
 #endif
         case MNT_SFS:
-            goto next;
+            return Get_Next_HR_FileSys();
+            break;
     }
     return HRFS_index++;
 #else
@@ -765,7 +767,7 @@ next:
 
     for (cpp = HRFS_ignores; *cpp != NULL; ++cpp)
         if (!strcmp(HRFS_entry->HRFS_type, *cpp))
-            goto next;
+            return Get_Next_HR_FileSys();
 
     /*
      * Try and ensure that index values are persistent
@@ -830,17 +832,6 @@ Check_HR_FileSys_NFS (void)
 	return 1;	/* NFS file system */
 
     return 0;		/* no NFS file system */
-}
-
-/* This function checks whether current file system is an AutoFs
- * HRFS_entry must be valid prior to calling this function
- * return 1 if AutoFs, 0 otherwise
- */
-int
-Check_HR_FileSys_AutoFs(void)
-{
-    return HRFS_entry->HRFS_type &&
-        strcmp(HRFS_entry->HRFS_type, MNTTYPE_AUTOFS) == 0;
 }
 
 void

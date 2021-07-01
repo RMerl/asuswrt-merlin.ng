@@ -1,7 +1,6 @@
 /*
  *  Interface MIB architecture support
  */
-
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 
@@ -10,11 +9,7 @@
 #include <net-snmp/data_access/interface.h>
 
 #include <errno.h>
-#include <stdint.h>
 #include <sys/types.h>
-#if HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 #include <linux/types.h>
 #include <linux/rtnetlink.h>
 

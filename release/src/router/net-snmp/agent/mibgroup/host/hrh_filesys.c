@@ -62,8 +62,8 @@
 #include <sys/statfs.h>
 #endif
 
-netsnmp_feature_require(date_n_time);
-netsnmp_feature_require(ctime_to_timet);
+netsnmp_feature_require(date_n_time)
+netsnmp_feature_require(ctime_to_timet)
 
 #define HRFS_MONOTONICALLY_INCREASING
 
@@ -219,7 +219,6 @@ var_hrhfilesys(struct variable *vp,
 {
     int             fsys_idx;
     static char    *string;
-    static char     empty_str[1];
 
     fsys_idx =
         header_hrhfilesys(vp, name, length, exact, var_len, write_method);
@@ -236,7 +235,7 @@ var_hrhfilesys(struct variable *vp,
         *var_len = 0;
         if (asprintf(&string, "%s", HRFS_entry->path) >= 0)
             *var_len = strlen(string);
-        return (u_char *)(string ? string : empty_str);
+        return (u_char *) string;
     case HRFSYS_RMOUNT:
         free(string);
         if (HRFS_entry->flags & NETSNMP_FS_FLAG_REMOTE) {
@@ -246,7 +245,7 @@ var_hrhfilesys(struct variable *vp,
             string = strdup("");
         }
         *var_len = string ? strlen(string) : 0;
-        return (u_char *)(string ? string : empty_str);
+        return (u_char *) string;
 
     case HRFSYS_TYPE:
         fsys_type_id[fsys_type_len - 1] = 
@@ -429,10 +428,4 @@ int
 Check_HR_FileSys_NFS (void)
 {
     return (HRFS_entry->flags & NETSNMP_FS_FLAG_REMOTE) ? 1 : 0;
-}
-
-int
-Check_HR_FileSys_AutoFs (void)
-{
-    return HRFS_entry->type == NETSNMP_FS_TYPE_AUTOFS;
 }

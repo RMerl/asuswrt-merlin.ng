@@ -27,17 +27,21 @@
 #include <net-snmp/agent/table_container.h>
 #include <net-snmp/agent/read_only.h>
 
-netsnmp_feature_child_of(table_tdata_all, mib_helpers);
-netsnmp_feature_child_of(table_tdata, table_tdata_all);
-netsnmp_feature_child_of(table_tdata_delete_table, table_tdata_all);
-netsnmp_feature_child_of(table_tdata_extract_table, table_tdata_all);
-netsnmp_feature_child_of(table_tdata_remove_row, table_tdata_all);
-netsnmp_feature_child_of(table_tdata_insert_row, table_tdata_all);
+#if HAVE_DMALLOC_H
+#include <dmalloc.h>
+#endif
+
+netsnmp_feature_child_of(table_tdata_all, mib_helpers)
+netsnmp_feature_child_of(table_tdata, table_tdata_all)
+netsnmp_feature_child_of(table_tdata_delete_table, table_tdata_all)
+netsnmp_feature_child_of(table_tdata_extract_table, table_tdata_all)
+netsnmp_feature_child_of(table_tdata_remove_row, table_tdata_all)
+netsnmp_feature_child_of(table_tdata_insert_row, table_tdata_all)
 
 #ifdef NETSNMP_FEATURE_REQUIRE_TABLE_TDATA
-netsnmp_feature_require(table_container_row_insert);
+netsnmp_feature_require(table_container_row_insert)
 #ifdef NETSNMP_FEATURE_REQUIRE_TABLE_TDATA_REMOVE_ROW
-netsnmp_feature_require(table_container_row_remove);
+netsnmp_feature_require(table_container_row_remove)
 #endif /* NETSNMP_FEATURE_REQUIRE_TABLE_TDATA_REMOVE_ROW */
 #endif /* NETSNMP_FEATURE_REQUIRE_TABLE_TDATA */
 
@@ -123,7 +127,7 @@ netsnmp_tdata_create_row(void)
 }
 
 /** clones a 'tdata' row. DOES NOT CLONE THE TABLE-SPECIFIC ENTRY DATA. */
-netsnmp_feature_child_of(tdata_clone_row, table_tdata_all);
+netsnmp_feature_child_of(tdata_clone_row, table_tdata_all)
 #ifndef NETSNMP_FEATURE_REMOVE_TDATA_CLONE_ROW
 netsnmp_tdata_row *
 netsnmp_tdata_clone_row(netsnmp_tdata_row *row)
@@ -161,7 +165,7 @@ netsnmp_tdata_clone_row(netsnmp_tdata_row *row)
 
 /** copy the contents of a 'tdata' row.
     DOES NOT COPY THE TABLE-SPECIFIC ENTRY DATA. */
-netsnmp_feature_child_of(tdata_copy_row, table_tdata_all);
+netsnmp_feature_child_of(tdata_copy_row, table_tdata_all)
 #ifndef NETSNMP_FEATURE_REMOVE_TDATA_COPY_ROW
 int
 netsnmp_tdata_copy_row(netsnmp_tdata_row *dst_row, netsnmp_tdata_row *src_row)
@@ -263,7 +267,7 @@ netsnmp_tdata_add_row(netsnmp_tdata     *table,
 }
 
 /** swaps out origrow with newrow.  This does *not* delete/free anything! */
-netsnmp_feature_child_of(tdata_replace_row, table_tdata_all);
+netsnmp_feature_child_of(tdata_replace_row, table_tdata_all)
 #ifndef NETSNMP_FEATURE_REMOVE_TDATA_REPLACE_ROW
 void
 netsnmp_tdata_replace_row(netsnmp_tdata *table,
@@ -424,7 +428,7 @@ netsnmp_tdata_register(netsnmp_handler_registration    *reginfo,
                   table->container, TABLE_CONTAINER_KEY_NETSNMP_INDEX);
 }
 
-netsnmp_feature_child_of(tdata_unregister, table_tdata_all);
+netsnmp_feature_child_of(tdata_unregister, table_tdata_all)
 #ifndef NETSNMP_FEATURE_REMOVE_TDATA_UNREGISTER
 int
 netsnmp_tdata_unregister(netsnmp_handler_registration    *reginfo)
@@ -445,7 +449,7 @@ netsnmp_tdata_extract_table(netsnmp_request_info *request)
 #endif /* NETSNMP_FEATURE_REMOVE_TABLE_TDATA_EXTRACT_TABLE */
 
 /** extracts the tdata container from the request structure */
-netsnmp_feature_child_of(tdata_extract_container, table_tdata_all);
+netsnmp_feature_child_of(tdata_extract_container, table_tdata_all)
 #ifndef NETSNMP_FEATURE_REMOVE_TDATA_EXTRACT_CONTAINER
 netsnmp_container *
 netsnmp_tdata_extract_container(netsnmp_request_info *request)
@@ -592,7 +596,7 @@ netsnmp_tdata_row_next_byoid(netsnmp_tdata *table,
     return (netsnmp_tdata_row*)CONTAINER_NEXT( table->container, &index );
 }
 
-netsnmp_feature_child_of(tdata_row_count, table_tdata_all);
+netsnmp_feature_child_of(tdata_row_count, table_tdata_all)
 #ifndef NETSNMP_FEATURE_REMOVE_TDATA_ROW_COUNT
 int
 netsnmp_tdata_row_count(netsnmp_tdata *table)
@@ -611,7 +615,7 @@ netsnmp_tdata_row_count(netsnmp_tdata *table)
 
 
 /** compare a row with the given index values */
-netsnmp_feature_child_of(tdata_compare_idx, table_tdata_all);
+netsnmp_feature_child_of(tdata_compare_idx, table_tdata_all)
 #ifndef NETSNMP_FEATURE_REMOVE_TDATA_COMPARE_IDX
 int
 netsnmp_tdata_compare_idx(netsnmp_tdata_row     *row,

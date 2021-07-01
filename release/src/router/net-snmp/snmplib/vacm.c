@@ -50,6 +50,10 @@
 #include <netinet/in.h>
 #endif
 
+#if HAVE_DMALLOC_H
+#include <dmalloc.h>
+#endif
+
 #include <ctype.h>
 
 #include <net-snmp/types.h>

@@ -1,6 +1,10 @@
 #ifndef NETSNMP_LIBRARY_OID_H
 #define NETSNMP_LIBRARY_OID_H
 
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+
 #if defined(__CYGWIN__) && defined(__LP64__)
 /*
  * The winExtDLL implementation assumes that the size of an OID component is
@@ -14,11 +18,11 @@ typedef unsigned int oid;
 #define NETSNMP_PRIo ""
 #else
 #ifndef EIGHTBIT_SUBIDS
-typedef unsigned long oid;
+typedef u_long oid;
 #define MAX_SUBID   0xFFFFFFFFUL
 #define NETSNMP_PRIo "l"
 #else
-typedef unsigned char oid;
+typedef uint8_t oid;
 #define MAX_SUBID   0xFF
 #define NETSNMP_PRIo ""
 #endif

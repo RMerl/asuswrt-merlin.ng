@@ -33,6 +33,9 @@
 #include <net-snmp/library/getopt.h>
 #endif
 
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>         /* for in_addr_t */
+#endif
 #include <net-snmp/library/system.h>
 #include <net-snmp/library/tools.h>
 #include <net-snmp/library/asn1.h>      /* for counter64 */

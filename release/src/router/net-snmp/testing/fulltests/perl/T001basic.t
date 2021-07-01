@@ -2,8 +2,16 @@
 
 # HEADER Basic perl functionality to a UDP agent
 
-use strict;
-use warnings;
+BEGIN {
+    if (exists($ENV{'srcdir'})) {
+	push @INC, "$ENV{'srcdir'}/testing/fulltests/support";
+    } elsif (-d "fulltests/support") {
+	push @INC, "fulltests/support";
+    } elsif (-d "../support") {
+	push @INC, "../support";
+    }
+}
+
 use NetSNMPTest;
 use Test;
 use SNMP;
@@ -62,7 +70,7 @@ $value = $session->set($varbind);
 
 ok(($value == 0), 1, 'return value from set was a success');
 
-$value = $session->get('sysLocation.0');
+my $value = $session->get('sysLocation.0');
 
 ok($value, 'yep');
 

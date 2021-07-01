@@ -13,9 +13,6 @@
 
 #include <net-snmp/net-snmp-config.h>
 #include <errno.h>
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
@@ -65,6 +62,10 @@
 #endif
 #ifdef HAVE_NET_IF_H
 #	include <net/if.h>
+#endif
+
+#if HAVE_DMALLOC_H
+#include <dmalloc.h>
 #endif
 
 #include <net-snmp/types.h>
@@ -923,7 +924,7 @@ exactEngineID_conf(const char *word, char *cptr)
 /*
  * merely call 
  */
-netsnmp_feature_child_of(get_enginetime_alarm, netsnmp_unused);
+netsnmp_feature_child_of(get_enginetime_alarm, netsnmp_unused)
 #ifndef NETSNMP_FEATURE_REMOVE_GET_ENGINETIME_ALARM
 void
 get_enginetime_alarm(unsigned int regnum, void *clientargs)

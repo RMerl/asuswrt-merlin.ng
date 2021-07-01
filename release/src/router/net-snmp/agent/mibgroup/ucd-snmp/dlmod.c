@@ -186,7 +186,8 @@ dlmod_load_module(struct dlmod *dlm)
     DEBUGMSGTL(("dlmod", "dlmod_load_module %s: %s\n", dlm->name,
                 dlm->path));
 
-    if (!dlm || (dlm->status != DLMOD_UNLOADED && dlm->status != DLMOD_ERROR))
+    if (!dlm || !dlm->path || !dlm->name ||
+        (dlm->status != DLMOD_UNLOADED && dlm->status != DLMOD_ERROR))
         return;
 
     free(dlm->error);
@@ -700,7 +701,7 @@ init_dlmod(void)
     DEBUGMSGTL(("dlmod", "dlmod_path: %s\n", dlmod_path));
 }
 
-netsnmp_feature_require(snmpd_unregister_config_handler);
+netsnmp_feature_require(snmpd_unregister_config_handler)
 
 void
 shutdown_dlmod(void)

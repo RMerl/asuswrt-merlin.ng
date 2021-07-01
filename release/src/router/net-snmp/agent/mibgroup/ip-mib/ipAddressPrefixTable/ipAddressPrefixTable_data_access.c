@@ -22,9 +22,9 @@
 
 #include "ip-mib/ipAddressTable/ipAddressTable.h"
 
-netsnmp_feature_require(ipAddressTable_container_get);
-netsnmp_feature_require(ipaddress_common_copy_utilities);
-netsnmp_feature_require(ipaddress_prefix_copy);
+netsnmp_feature_require(ipAddressTable_container_get)
+netsnmp_feature_require(ipaddress_common_copy_utilities)
+netsnmp_feature_require(ipaddress_prefix_copy)
 
 /** @ingroup interface 
  * @addtogroup data_access data_access: Routines to access data
@@ -246,7 +246,6 @@ ipAddressPrefixTable_container_load(netsnmp_container *container)
             rowreq_ctx = ipAddressPrefixTable_allocate_rowreq_ctx(NULL);
             if (NULL == rowreq_ctx) {
                 snmp_log(LOG_ERR, "memory allocation failed\n");
-                ITERATOR_RELEASE(addr_it);
                 return MFD_RESOURCE_UNAVAILABLE;
             }
         }
@@ -301,7 +300,7 @@ ipAddressPrefixTable_container_load(netsnmp_container *container)
          * TODO:352:r: |   |-> populate ipAddressPrefixTable data context.
          * Populate data context here. (optionally, delay until row prep)
          */
-        netsnmp_ipaddress_prefix_origin_copy(&rowreq_ctx->data.
+           netsnmp_ipaddress_prefix_origin_copy(&rowreq_ctx->data.
                                              ipAddressPrefixOrigin,
                                              addr_rowreq_ctx->data->
                                              ia_origin,
@@ -315,20 +314,11 @@ ipAddressPrefixTable_container_load(netsnmp_container *container)
         /*
          * insert into table container, clear ptr so we reallocate
          */
-        if (CONTAINER_INSERT(container, rowreq_ctx) == 0) {
-            rowreq_ctx = NULL;
-            ++count;
-        }
+        CONTAINER_INSERT(container, rowreq_ctx);
+        rowreq_ctx = NULL;
+        ++count;
     }
     ITERATOR_RELEASE(addr_it);
-
-    /*
-     * clean up if "do we already have this prefix?" was true and no
-     * CONTAINER_INSERT happened afterwards
-     */
-    if (rowreq_ctx) {
-        ipAddressPrefixTable_release_rowreq_ctx(rowreq_ctx);
-    }
 
     DEBUGMSGT(("verbose:ipAddressPrefixTable:ipAddressPrefixTable_container_load", "inserted %d records\n", count));
 

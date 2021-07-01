@@ -19,10 +19,7 @@ config_exclude(if-mib/ifTable/ifTable)
 config_require(if-mib/data_access/interface)
 #endif
 
-#if defined(solaris2)
-config_require(kernel_sunos5)
-#endif
-
+config_arch_require(solaris2, kernel_sunos5)
 /*
  * need get_address in var_route for some platforms (USE_SYSCTL_IFLIST).
  * Not sure if that can be translated into a config_arch_require, so be

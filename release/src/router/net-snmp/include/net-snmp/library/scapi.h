@@ -87,13 +87,11 @@ typedef struct netsnmp_priv_alg_info_s {
     NETSNMP_IMPORT
     oid *           sc_get_auth_oid(int auth_type, size_t *oid_len);
     NETSNMP_IMPORT
-    const netsnmp_auth_alg_info *
-    sc_find_auth_alg_byoid(const oid *oid, u_int len);
+    netsnmp_auth_alg_info * sc_get_auth_alg_byoid(const oid *oid, u_int len);
     NETSNMP_IMPORT
-    const netsnmp_auth_alg_info *
-    sc_find_auth_alg_bytype(u_int type);
+    netsnmp_auth_alg_info * sc_get_auth_alg_bytype(u_int type);
     NETSNMP_IMPORT
-    const netsnmp_auth_alg_info * sc_get_auth_alg_byindex(u_int index);
+    netsnmp_auth_alg_info * sc_get_auth_alg_byindex(u_int index);
 
     /** deprectated, use
      *        sc_get_authtype() + sc_get_proper_auth_length_bytype() */
@@ -118,12 +116,11 @@ typedef struct netsnmp_priv_alg_info_s {
     NETSNMP_IMPORT
     int             sc_get_proper_priv_length_bytype(int privtype);
     NETSNMP_IMPORT
-    const netsnmp_priv_alg_info *
-    sc_get_priv_alg_byoid(const oid *oid, u_int len);
+    netsnmp_priv_alg_info * sc_get_priv_alg_byoid(const oid *oid, u_int len);
     NETSNMP_IMPORT
-    const netsnmp_priv_alg_info * sc_get_priv_alg_bytype(u_int type);
+    netsnmp_priv_alg_info * sc_get_priv_alg_bytype(u_int type);
     NETSNMP_IMPORT
-    const netsnmp_priv_alg_info * sc_get_priv_alg_byindex(u_int index);
+    netsnmp_priv_alg_info * sc_get_priv_alg_byindex(u_int index);
 
     NETSNMP_IMPORT
     int             sc_init(void);

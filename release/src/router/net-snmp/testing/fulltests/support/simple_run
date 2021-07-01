@@ -6,9 +6,9 @@ if [ $# = 0 ]; then
 fi
 
 if [ "x$builddir" = "x" ]; then
+    cd ..
     builddir=`pwd`
-    builddir=`dirname "$builddir"`
-    if [ -d "${builddir}/testing" ]; then
+    if cd testing 2>/dev/null; then
        :
     else
        echo "Error: $0 must be started from inside the testing directory in the source tree."
@@ -18,11 +18,11 @@ if [ "x$builddir" = "x" ]; then
 fi
 
 if [ "x$srcdir" = "x" ]; then
-    srcdir=`dirname "$0"`
-    srcdir=`dirname "$srcdir"`
-    srcdir=`dirname "$srcdir"`
-    srcdir=`dirname "$srcdir"`
-    if [ -d "${srcdir}/testing" ]; then
+    srcdir=`dirname $0`
+    srcdir=`cd $srcdir; cd ../..; pwd`
+    srcdir=`dirname $srcdir`
+    cd $srcdir
+    if cd testing 2>/dev/null; then
        :
     else
        echo "Error: $0 must be started from inside the testing directory in the source tree."
@@ -32,14 +32,11 @@ if [ "x$srcdir" = "x" ]; then
 fi
 
 testscript=$1
-if [ `echo "$testscript" | cut -c 1-1` != '/' ]; then
+if [ `echo $testscript | cut -c 1-1` != '/' ]; then
     testscript="`pwd`/$1"
 fi
 
-SNMP_BASEDIR=`dirname "$0"`
-if [ `echo "$SNMP_BASEDIR" | cut -c 1-1` != '/' ]; then
-    SNMP_BASEDIR="`pwd`/$SNMP_BASEDIR"
-fi
+SNMP_BASEDIR=`dirname $0`
 
 ## prefer MIB files found in source hierarchy
 SNMP_PREFER_NEAR_MIBS=1
@@ -48,6 +45,10 @@ export SNMP_PREFER_NEAR_MIBS
 SNMP_TEST_PREFIX=${SNMP_TEST_PREFIX:=T}
 export SNMP_TEST_PREFIX
 
+SNMP_ORIGDIR=`pwd`	        ## this script may be invoked with relative path
+export SNMP_ORIGDIR
+
+SNMP_UPDIR=${builddir}          ## build directory
 if [ "x$DYNAMIC_ANALYZER" = "x" ]; then
     SNMP_SLEEP_DEFAULT=1
 else
@@ -59,14 +60,15 @@ export SNMP_SLEEP
 # Find executables in source first, then build, then existing PATH.
 ## Add to PATH if a binary is found.
 
-SNMP_UPDIR=${builddir}          ## build directory
+cd $SNMP_UPDIR
+SNMP_UPDIR=`pwd`
 bf=snmpget
-if [ -x "$SNMP_UPDIR/$bf" ] ; then
+if [ -x "$bf" ] ; then
    PATH=$SNMP_UPDIR:$PATH
 else
   for dd in apps bin ; do
    bf=$dd/snmpget
-   if [ -x "$SNMP_UPDIR/$bf" ] ; then
+   if [ -x "$bf" ] ; then
       PATH=$SNMP_UPDIR/$dd:$PATH
       break
    fi
@@ -74,7 +76,7 @@ else
 fi
 for dd in agent bin sbin ; do
    bf=$dd/snmpd
-   if [ -x "$SNMP_UPDIR/$bf" ] ; then
+   if [ -x "$bf" ] ; then
       PATH=$SNMP_UPDIR/$dd:$PATH
       break
    fi
@@ -87,7 +89,8 @@ fi
 unset bf
 
 # Run from the test scripts directory.
-cd "${SNMP_BASEDIR}" || return $?
+cd $SNMP_ORIGDIR ; cd ${SNMP_BASEDIR}
+SNMP_BASEDIR=`pwd`
 export SNMP_BASEDIR
 
 PATH=${SNMP_BASEDIR}:$PATH
@@ -107,10 +110,10 @@ testnum="`basename $testscript`"
 
 . simple_eval_tools.sh
 
-cd `dirname "$testscript"` || return $?
+cd `dirname $testscript`
 PATH=`pwd`:$PATH
 export PATH
 
-. `basename "$testscript"`
+. `basename $testscript`
 
 FINISHED

@@ -132,8 +132,7 @@ This value is also used by \fBsnmpd\fR when generating notifications.
 .IP "clientaddrUsesPort no"
 specifies, if clientaddr option contains a port number. Set this option
 to "yes", if clientaddr contains a port number and this port should
-be used for sending outgoing SNMP requests. This option only affects
-IPv4 client addresses and is ignored for IPv6 client addresses.
+be used for sending outgoing SNMP requests.
 .IP "clientRecvBuf INTEGER"
 specifies the desired size of the buffer to be used when receiving
 responses to SNMP requests.
@@ -319,15 +318,15 @@ This directive will be ignored if the platforms does not support
 is similar to \fIserverRecvBuf\fR, but applies to the size
 of the buffer used when sending SNMP responses.
 .IP
-.IP "sourceFilterType none|acceptlist|blocklist"
+.IP "sourceFilterType none|whitelist|blacklist"
 specifies whether or not addresses added with \fIsourceFilterAddress\fR are
-accepted or blocked. The default is none, indicating that incoming
+whitelisted or blacklisted. The default is none, indicating that incoming
 packets will not be checked agains the filter list.
 .IP
 .IP "sourceFilterAddress ADDRESS"
 specifies an address to be added to the source address filter list.
 \fIsourceFilterType\fR configuration determines whether or not addresses are
-accepted or blocked.
+whitelisted or blacklisted.
 .IP
 .SH MIB HANDLING
 .IP "mibdirs DIRLIST"

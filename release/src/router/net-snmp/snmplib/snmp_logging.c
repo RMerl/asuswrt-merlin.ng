@@ -66,6 +66,9 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#if HAVE_DMALLOC_H
+#include <dmalloc.h>
+#endif
 
 #include <net-snmp/types.h>
 #include <net-snmp/output_api.h>
@@ -74,8 +77,6 @@
 #include <net-snmp/utilities.h>
 
 #include <net-snmp/library/callback.h>
-
-#include "snmp_syslog.h"
 
 #ifdef va_copy
 #define NEED_VA_END_AFTER_VA_COPY
@@ -91,21 +92,21 @@
 #include "snprintf.h"
 #endif
 
-netsnmp_feature_child_of(logging_all, libnetsnmp);
+netsnmp_feature_child_of(logging_all, libnetsnmp)
 
-netsnmp_feature_child_of(logging_outputs, logging_all);
-netsnmp_feature_child_of(logging_file, logging_outputs);
-netsnmp_feature_child_of(logging_stdio, logging_outputs);
-netsnmp_feature_child_of(logging_syslog, logging_outputs);
-netsnmp_feature_child_of(logging_external, logging_all);
+netsnmp_feature_child_of(logging_outputs, logging_all)
+netsnmp_feature_child_of(logging_file, logging_outputs)
+netsnmp_feature_child_of(logging_stdio, logging_outputs)
+netsnmp_feature_child_of(logging_syslog, logging_outputs)
+netsnmp_feature_child_of(logging_external, logging_all)
 
-netsnmp_feature_child_of(enable_stderrlog, logging_all);
+netsnmp_feature_child_of(enable_stderrlog, logging_all)
 
-netsnmp_feature_child_of(logging_enable_calllog, netsnmp_unused);
-netsnmp_feature_child_of(logging_enable_loghandler, netsnmp_unused);
+netsnmp_feature_child_of(logging_enable_calllog, netsnmp_unused)
+netsnmp_feature_child_of(logging_enable_loghandler, netsnmp_unused)
 
 /* default to the file/stdio/syslog set */
-netsnmp_feature_want(logging_outputs);
+netsnmp_feature_want(logging_outputs)
 
 /*
  * logh_head:  A list of all log handlers, in increasing order of priority
@@ -180,6 +181,48 @@ shutdown_snmp_logging(void)
    while(NULL != logh_head)
       netsnmp_remove_loghandler( logh_head );
 }
+
+/*
+ * These definitions handle 4.2 systems without additional syslog facilities.
+ */
+#ifndef NETSNMP_FEATURE_REMOVE_LOGGING_SYSLOG
+#ifndef LOG_CONS
+#define LOG_CONS	0       /* Don't bother if not defined... */
+#endif
+#ifndef LOG_PID
+#define LOG_PID		0       /* Don't bother if not defined... */
+#endif
+#ifndef LOG_LOCAL0
+#define LOG_LOCAL0	0
+#endif
+#ifndef LOG_LOCAL1
+#define LOG_LOCAL1	0
+#endif
+#ifndef LOG_LOCAL2
+#define LOG_LOCAL2	0
+#endif
+#ifndef LOG_LOCAL3
+#define LOG_LOCAL3	0
+#endif
+#ifndef LOG_LOCAL4
+#define LOG_LOCAL4	0
+#endif
+#ifndef LOG_LOCAL5
+#define LOG_LOCAL5	0
+#endif
+#ifndef LOG_LOCAL6
+#define LOG_LOCAL6	0
+#endif
+#ifndef LOG_LOCAL7
+#define LOG_LOCAL7	0
+#endif
+#ifndef LOG_DAEMON
+#define LOG_DAEMON	0
+#endif
+#ifndef LOG_USER
+#define LOG_USER	0
+#endif
+#endif /* NETSNMP_FEATURE_REMOVE_LOGGING_SYSLOG */
 
 /* Set line buffering mode for a stream. */
 void
@@ -761,8 +804,8 @@ snmp_enable_syslog_ident(const char *ident, const int facility)
 	     * Hmmm.....
 	     * Maybe disable this handler, and log the error ?
 	     */
-        fprintf(stderr, "Could not open event log for %s. Last error: %u\n",
-                ident, (unsigned int)GetLastError());
+        fprintf(stderr, "Could not open event log for %s. "
+                "Last error: 0x%x\n", ident, GetLastError());
         enable = 0;
     }
 #else
@@ -996,11 +1039,11 @@ netsnmp_register_loghandler( int type, int priority )
 
     logh->type     = type;
     switch ( type ) {
-#ifndef NETSNMP_FEATURE_REMOVE_LOGGING_STDIO
     case NETSNMP_LOGHANDLER_STDOUT:
         logh->imagic  = 1;
         logh->handler = log_handler_stdouterr;
         break;
+#ifndef NETSNMP_FEATURE_REMOVE_LOGGING_STDIO
     case NETSNMP_LOGHANDLER_STDERR:
         logh->handler = log_handler_stdouterr;
         break;
@@ -1170,8 +1213,8 @@ log_handler_syslog(  netsnmp_log_handler* logh, int pri, const char *str)
 	     * Hmmm.....
 	     * Maybe disable this handler, and log the error ?
 	     */
-        fprintf(stderr, "Could not report event.  Last error: %u\n",
-                (unsigned int)GetLastError());
+        fprintf(stderr, "Could not report event.  Last error: 0x%x\n",
+			GetLastError());
         return 0;
     }
     return 1;
@@ -1211,7 +1254,6 @@ log_handler_file(    netsnmp_log_handler* logh, int pri, const char *str)
 {
     FILE           *fhandle;
     char            sbuf[40];
-    int             len = strlen( str );
 
     /*
      * We use imagic to save information about whether the next output
@@ -1240,11 +1282,7 @@ log_handler_file(    netsnmp_log_handler* logh, int pri, const char *str)
     }
     fprintf(fhandle, "%s%s", sbuf, str);
     fflush(fhandle);
-    if (len > 0) {
-        logh->imagic = str[len - 1] == '\n';
-    } else {
-        logh->imagic = 0;
-    }
+    logh->imagic = str[strlen(str) - 1] == '\n';
     return 1;
 }
 #endif /* NETSNMP_FEATURE_REMOVE_LOGGING_FILE */

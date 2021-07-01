@@ -13,6 +13,10 @@
 #ifndef _TOOLS_H
 #define _TOOLS_H
 
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h> /* uintptr_t */
+#endif
+
 #ifdef __cplusplus
 extern          "C" {
 #endif
@@ -88,9 +92,9 @@ extern          "C" {
  */
 #if defined(__GNUC__)
 #define NETSNMP_REMOVE_CONST(t, e)                                      \
-    (__extension__ ({ const t tmp = (e); (t)(size_t)tmp; }))
+    (__extension__ ({ const t tmp = (e); (t)(uintptr_t)tmp; }))
 #else
-#define NETSNMP_REMOVE_CONST(t, e) ((t)(size_t)(e))
+#define NETSNMP_REMOVE_CONST(t, e) ((t)(uintptr_t)(e))
 #endif
 
 
@@ -128,8 +132,6 @@ extern          "C" {
 #define TRUE  1
 #endif
 
-#define NETSNMP_IGNORE_RESULT(e) do { if (e) { } } while (0)
-
     /*
      * QUIT the FUNction:
      *      e       Error code variable
@@ -153,14 +155,15 @@ extern          "C" {
  * @note res may be the same variable as one of the operands. In other
  *   words, &a == &res || &b == &res may hold.
  */
-#define NETSNMP_TIMERADD(a, b, res) do {             \
+#define NETSNMP_TIMERADD(a, b, res)                  \
+{                                                    \
     (res)->tv_sec  = (a)->tv_sec  + (b)->tv_sec;     \
     (res)->tv_usec = (a)->tv_usec + (b)->tv_usec;    \
     if ((res)->tv_usec >= 1000000L) {                \
         (res)->tv_usec -= 1000000L;                  \
         (res)->tv_sec++;                             \
     }                                                \
-} while (0)
+}
 
 /**
  * Compute res = a - b.
@@ -170,20 +173,20 @@ extern          "C" {
  * @note res may be the same variable as one of the operands. In other
  *   words, &a == &res || &b == &res may hold.
  */
-#define NETSNMP_TIMERSUB(a, b, res) do {                        \
+#define NETSNMP_TIMERSUB(a, b, res)                             \
+{                                                               \
     (res)->tv_sec  = (a)->tv_sec  - (b)->tv_sec - 1;            \
     (res)->tv_usec = (a)->tv_usec - (b)->tv_usec + 1000000L;    \
     if ((res)->tv_usec >= 1000000L) {                           \
         (res)->tv_usec -= 1000000L;                             \
         (res)->tv_sec++;                                        \
     }                                                           \
-} while (0)
+}
 
 #define ENGINETIME_MAX	2147483647      /* ((2^31)-1) */
 #define ENGINEBOOT_MAX	2147483647      /* ((2^31)-1) */
 
 
-    struct timeval;
 
 
     /*

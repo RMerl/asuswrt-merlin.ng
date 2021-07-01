@@ -314,8 +314,9 @@ tcpListenerTable_indexes_set_tbl_idx(tcpListenerTable_mib_index * tbl_idx,
     /*
      * make sure there is enough space for tcpListenerLocalAddress data
      */
-    if (tbl_idx->tcpListenerLocalAddress_len <
-        tcpListenerLocalAddress_val_ptr_len) {
+    if ((NULL == tbl_idx->tcpListenerLocalAddress) ||
+        (tbl_idx->tcpListenerLocalAddress_len <
+         (tcpListenerLocalAddress_val_ptr_len))) {
         snmp_log(LOG_ERR, "not enough space for value\n");
         return MFD_ERROR;
     }

@@ -64,9 +64,6 @@ extern "C" {
     do { (fdset)->lfs_setptr->fd_count = 0; } while(0)
 
 
-struct timeval;
-
-
 NETSNMP_IMPORT
 void   netsnmp_large_fd_setfd( SOCKET fd, netsnmp_large_fd_set *fdset);
 NETSNMP_IMPORT

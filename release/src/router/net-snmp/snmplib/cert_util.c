@@ -13,28 +13,28 @@
 #include <net-snmp/net-snmp-features.h>
 
 #if defined(NETSNMP_USE_OPENSSL) && defined(HAVE_LIBSSL) && NETSNMP_TRANSPORT_TLSBASE_DOMAIN
-netsnmp_feature_child_of(cert_util_all, libnetsnmp);
-netsnmp_feature_child_of(cert_util, cert_util_all);
+netsnmp_feature_child_of(cert_util_all, libnetsnmp)
+netsnmp_feature_child_of(cert_util, cert_util_all)
 #ifdef NETSNMP_FEATURE_REQUIRE_CERT_UTIL
-netsnmp_feature_require(container_directory);
-netsnmp_feature_require(container_fifo);
-netsnmp_feature_require(container_dup);
-netsnmp_feature_require(container_free_all);
-netsnmp_feature_require(subcontainer_find);
+netsnmp_feature_require(container_directory)
+netsnmp_feature_require(container_fifo)
+netsnmp_feature_require(container_dup)
+netsnmp_feature_require(container_free_all)
+netsnmp_feature_require(subcontainer_find)
 
-netsnmp_feature_child_of(cert_map_remove, netsnmp_unused);
-netsnmp_feature_child_of(cert_map_find, netsnmp_unused);
-netsnmp_feature_child_of(tlstmparams_external, cert_util_all);
-netsnmp_feature_child_of(tlstmparams_container, tlstmparams_external);
-netsnmp_feature_child_of(tlstmparams_remove, tlstmparams_external);
-netsnmp_feature_child_of(tlstmparams_find, tlstmparams_external);
-netsnmp_feature_child_of(tlstmAddr_remove, netsnmp_unused);
-netsnmp_feature_child_of(tlstmaddr_external, cert_util_all);
-netsnmp_feature_child_of(tlstmaddr_container, tlstmaddr_external);
-netsnmp_feature_child_of(tlstmAddr_get_serverId, tlstmaddr_external);
+netsnmp_feature_child_of(cert_map_remove, netsnmp_unused)
+netsnmp_feature_child_of(cert_map_find, netsnmp_unused)
+netsnmp_feature_child_of(tlstmparams_external, cert_util_all)
+netsnmp_feature_child_of(tlstmparams_container, tlstmparams_external)
+netsnmp_feature_child_of(tlstmparams_remove, tlstmparams_external)
+netsnmp_feature_child_of(tlstmparams_find, tlstmparams_external)
+netsnmp_feature_child_of(tlstmAddr_remove, netsnmp_unused)
+netsnmp_feature_child_of(tlstmaddr_external, cert_util_all)
+netsnmp_feature_child_of(tlstmaddr_container, tlstmaddr_external)
+netsnmp_feature_child_of(tlstmAddr_get_serverId, tlstmaddr_external)
 
-netsnmp_feature_child_of(cert_fingerprints, cert_util_all);
-netsnmp_feature_child_of(tls_fingerprint_build, cert_util_all);
+netsnmp_feature_child_of(cert_fingerprints, cert_util_all)
+netsnmp_feature_child_of(tls_fingerprint_build, cert_util_all)
 
 #endif /* NETSNMP_FEATURE_REQUIRE_CERT_UTIL */
 
@@ -70,6 +70,10 @@ netsnmp_feature_child_of(tls_fingerprint_build, cert_util_all);
 # if HAVE_NDIR_H
 #  include <ndir.h>
 # endif
+#endif
+
+#if HAVE_DMALLOC_H
+#include <dmalloc.h>
 #endif
 
 #include <net-snmp/types.h>
@@ -144,7 +148,7 @@ void netsnmp_key_free(netsnmp_key *key);
 
 static int _certindex_add( const char *dirname, int i );
 
-static int _time_filter(const void *text, void *ctx);
+static int _time_filter(netsnmp_file *f, struct stat *idx);
 
 static void _init_tlstmCertToTSN(void);
 #define TRUSTCERT_CONFIG_TOKEN "trustCert"
@@ -479,7 +483,7 @@ _new_key(const char *dirname, const char *filename)
         return NULL;
     }
 
-#if !defined(_MSC_VER) && !defined(__MINGW32__)
+#if !defined(_MSC_VER)
     if ((fstat.st_mode & S_IROTH) || (fstat.st_mode & S_IWOTH)) {
         snmp_log(LOG_ERR,
                  "refusing to read world readable or writable key %s\n", fn);
@@ -700,9 +704,9 @@ _type_from_filename(const char *filename)
 /*
  * filter functions; return 1 to include file, 0 to exclude
  */
-static int _cert_cert_filter(const void *text, void *ctx)
+static int
+_cert_cert_filter(const char *filename)
 {
-    const char *filename = text;
     int  len = strlen(filename);
     const char *pos;
 
@@ -1379,7 +1383,8 @@ _cert_read_index(const char *dirname, struct stat *dirstat)
      */
     newer =
         netsnmp_directory_container_read_some(NULL, dirname,
-                                              _time_filter, &idx_stat,
+                                              (netsnmp_directory_filter*)
+                                              _time_filter,(void*)&idx_stat,
                                               NETSNMP_DIR_NSFILE |
                                               NETSNMP_DIR_NSFILE_STATS);
     if (newer) {
@@ -1405,7 +1410,7 @@ _cert_read_index(const char *dirname, struct stat *dirstat)
     /*
      * check index format version
      */
-    NETSNMP_IGNORE_RESULT(fgets(tmpstr, sizeof(tmpstr), index));
+    fgets(tmpstr, sizeof(tmpstr), index);
     pos = strrchr(tmpstr, ' ');
     if (pos) {
         ++pos;
@@ -1438,8 +1443,8 @@ _cert_read_index(const char *dirname, struct stat *dirstat)
             }
             type = atoi(type_str);
             hash = atoi(hash_str);
-            cert = _new_cert(dirname, filename, type, hash, fingerprint,
-                             common_name, subject);
+            cert = (void*)_new_cert(dirname, filename, type, hash, fingerprint,
+                                    common_name, subject);
             if (cert && 0 == CONTAINER_INSERT(found, cert))
                 ++count;
             else {
@@ -1541,7 +1546,8 @@ _add_certdir(const char *dirname)
      */
     cert_container =
         netsnmp_directory_container_read_some(NULL, dirname,
-                                              _cert_cert_filter, NULL,
+                                              (netsnmp_directory_filter*)
+                                              &_cert_cert_filter, NULL,
                                               NETSNMP_DIR_RELATIVE_PATH |
                                               NETSNMP_DIR_EMPTY_OK );
     if (NULL == cert_container) {
@@ -2390,11 +2396,8 @@ _key_find_fn(const char *filename)
 #endif
 
 static int
-_time_filter(const void *text, void *ctx)
+_time_filter(netsnmp_file *f, struct stat *idx)
 {
-    const netsnmp_file *f = text;
-    struct stat *idx = ctx;
-
     /** include if mtime or ctime newer than index mtime */
     if (f && idx && f->stats &&
         ((f->stats->st_mtime >= idx->st_mtime) ||
@@ -3217,18 +3220,14 @@ netsnmp_tlstmAddr_restore_common(char **line, char *name, size_t *name_len,
                                  char *id, size_t *id_len, char *fp,
                                  size_t *fp_len, u_char *ht)
 {
-    size_t fp_len_save = *fp_len - 1;
+    size_t fp_len_save = *fp_len;
 
     /*
      * Calling this function with name == NULL, fp == NULL or id == NULL would
      * trigger a memory leak.
      */
-    if (!name || !fp || !id || *name_len == 0 || *id_len == 0 || *fp_len == 0)
+    if (!name || !fp || !id)
         return -1;
-
-    (*name_len)--;
-    (*fp_len)--;
-    (*id_len)--;
 
     *line = read_config_read_octet_string(*line, (u_char **)&name, name_len);
     if (NULL == *line) {

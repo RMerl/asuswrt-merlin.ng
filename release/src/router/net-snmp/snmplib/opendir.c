@@ -8,7 +8,6 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/types.h>
 #include <net-snmp/library/system.h>
-#include <stdlib.h>
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif

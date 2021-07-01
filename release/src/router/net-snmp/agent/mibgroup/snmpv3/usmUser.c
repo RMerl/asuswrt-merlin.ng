@@ -31,10 +31,10 @@
 int usmStatusCheck(struct usmUser *uptr);
 #endif  /* !NETSNMP_NO_WRITE_SUPPORT */
 
-netsnmp_feature_child_of(usmuser_all, libnetsnmpmibs);
-netsnmp_feature_child_of(init_register_usmuser_context, usmuser_all);
+netsnmp_feature_child_of(usmuser_all, libnetsnmpmibs)
+netsnmp_feature_child_of(init_register_usmuser_context, usmuser_all)
 
-netsnmp_feature_require(scapi_get_proper_priv_length);
+netsnmp_feature_require(scapi_get_proper_priv_length)
 
 struct variable4 usmUser_variables[] = {
     {USMUSERSPINLOCK, ASN_INTEGER, NETSNMP_OLDAPI_RWRITE,
@@ -1091,7 +1091,7 @@ write_usmUserPrivKeyChange(int action,
     static unsigned char *oldkey;
     static size_t   oldkeylen;
     static int      resetOnFail;
-    int plen;
+    int plen, alen;
 
     if (name[USM_MIB_LENGTH - 1] == 9) {
         fname = fnPrivKey;
@@ -1113,7 +1113,7 @@ write_usmUserPrivKeyChange(int action,
         if ((uptr = usm_parse_user(name, name_len)) == NULL) {
             return SNMP_ERR_INCONSISTENTNAME;
         } else {
-            const netsnmp_priv_alg_info *pai =
+            netsnmp_priv_alg_info *pai =
                 sc_get_priv_alg_byoid(uptr->privProtocol,
                                       uptr->privProtocolLen);
             if (NULL == pai) {
@@ -1121,17 +1121,17 @@ write_usmUserPrivKeyChange(int action,
                             fname));
                 return SNMP_ERR_GENERR;
             }
+            alen = sc_get_properlength(uptr->authProtocol,
+                                       uptr->authProtocolLen);
             plen = pai->proper_length;
-            DEBUGMSGTL(("usmUser", "plen %d\n", plen));
-            /*
-             * ?? we store salt with key. See also the corresponding statement
-             * in apps/snmpusm.c.
-             */
+            DEBUGMSGTL(("usmUser", "plen %d, alen %d\n", plen, alen));
+#if 0
             if (USM_CREATE_USER_PRIV_DES == pai->type)
-                plen *= 2;
+                plen *= 2; /* ?? we store salt with key */
+#endif
             if (var_val_len != 0 && var_val_len != (2 * plen)) {
                 DEBUGMSGTL(("usmUser", "%s: bad len. %" NETSNMP_PRIz "d != %d\n",
-                            fname, var_val_len, 2 * plen));
+                            fname, var_val_len, (2*alen)));
                 return SNMP_ERR_WRONGLENGTH;
             }
         }
@@ -1145,7 +1145,9 @@ write_usmUserPrivKeyChange(int action,
         }
         plen = sc_get_proper_priv_length(uptr->privProtocol,
                                          uptr->privProtocolLen);
-        DEBUGMSGTL(("usmUser", "plen %d\n", plen));
+        alen = sc_get_properlength(uptr->authProtocol,
+                                   uptr->authProtocolLen);
+        DEBUGMSGTL(("usmUser", "plen %d, alen %d\n", plen, alen));
         if (snmp_oid_compare(uptr->privProtocol, uptr->privProtocolLen,
                              usmNoPrivProtocol,
                              sizeof(usmNoPrivProtocol) / sizeof(oid)) ==

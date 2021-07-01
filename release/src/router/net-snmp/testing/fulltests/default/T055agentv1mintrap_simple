@@ -5,8 +5,6 @@
 HEADER snmpv1 traps are sent by snmpd without notification mib support
 
 SKIPIFNOT USING_EXAMPLES_EXAMPLE_MODULE
-# To do: figure out why this test fails with Xcode 12.
-[ "${TRAVIS_OS_NAME}" = "osx" ] && SKIP "Skipping T055 on OS/X"
 
 #
 # Begin test

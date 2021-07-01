@@ -131,8 +131,9 @@ ipDefaultRouterTable_indexes_set_tbl_idx(ipDefaultRouterTable_mib_index *
     /*
      * make sure there is enough space for ipDefaultRouterAddress data
      */
-    if (tbl_idx->ipDefaultRouterAddress_len <
-        ipDefaultRouterAddress_val_ptr_len) {
+    if ((NULL == tbl_idx->ipDefaultRouterAddress) ||
+        (tbl_idx->ipDefaultRouterAddress_len <
+         (ipDefaultRouterAddress_val_ptr_len))) {
         snmp_log(LOG_ERR, "not enough space for value\n");
         return MFD_ERROR;
     }

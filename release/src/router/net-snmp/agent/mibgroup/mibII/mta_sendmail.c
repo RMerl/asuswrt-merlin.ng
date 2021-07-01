@@ -539,7 +539,7 @@ count_queuegroup(struct QGrp *qg)
 
     qg->last = current_time;
 
-    NETSNMP_IGNORE_RESULT(chdir(cwd));
+    chdir(cwd);
 }
 
 /** static void add_queuegroup(const char *name, const char *path)

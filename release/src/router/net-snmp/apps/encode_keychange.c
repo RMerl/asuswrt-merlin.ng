@@ -95,12 +95,12 @@ int             get_user_passphrases(void);
 int             snmp_ttyecho(const int fd, const int echo);
 char           *snmp_getpassphrase(const char *prompt, int fvisible);
 
-#if defined(HAVE__CPUTS) && defined(HAVE__GETCH)
-#include <conio.h>
-#include <io.h>
+#ifdef WIN32
 #define HAVE_GETPASS 1
-#define isatty _isatty
-static char    *getpass(const char *prompt);
+char           *getpass(const char *prompt);
+int             isatty(int);
+int             _cputs(const char *);
+int             _getch(void);
 #endif
 
 /*******************************************************************-o-******
@@ -758,7 +758,8 @@ snmp_getpassphrase(const char *prompt, int bvisible)
 
 }                               /* end snmp_getpassphrase() */
 
-#if defined(HAVE__CPUTS) && defined(HAVE__GETCH)
+#ifdef WIN32
+
 int
 snmp_ttyecho(const int fd, const int echo)
 {
@@ -769,7 +770,7 @@ snmp_ttyecho(const int fd, const int echo)
  * stops at the first newline, carrier return, or backspace.
  * WARNING! _getch does NOT read <Ctrl-C>
  */
-static char    *
+char           *
 getpass(const char *prompt)
 {
     static char     pbuf[128];
@@ -787,4 +788,4 @@ getpass(const char *prompt)
 
     return pbuf;
 }
-#endif /* defined(HAVE__CPUTS) && defined(HAVE__GETCH) */
+#endif                          /* WIN32 */

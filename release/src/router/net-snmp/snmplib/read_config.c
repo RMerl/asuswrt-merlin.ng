@@ -134,6 +134,10 @@
 # endif
 #endif
 
+#if HAVE_DMALLOC_H
+#include <dmalloc.h>
+#endif
+
 #include <net-snmp/types.h>
 #include <net-snmp/output_api.h>
 #include <net-snmp/config_api.h>
@@ -145,10 +149,10 @@
 #include <net-snmp/library/snmp_api.h>
 #include <net-snmp/library/callback.h>
 
-netsnmp_feature_child_of(read_config_all, libnetsnmp);
+netsnmp_feature_child_of(read_config_all, libnetsnmp)
 
-netsnmp_feature_child_of(unregister_app_config_handler, read_config_all);
-netsnmp_feature_child_of(read_config_register_app_prenetsnmp_mib_handler, netsnmp_unused);
+netsnmp_feature_child_of(unregister_app_config_handler, read_config_all)
+netsnmp_feature_child_of(read_config_register_app_prenetsnmp_mib_handler, netsnmp_unused)
 
 static int      config_errors;
 
@@ -1539,18 +1543,14 @@ read_config_store(const char *type, const char *line)
         fflush(fout);
 #if defined(HAVE_FSYNC)
         fsync(fileno(fout));
-#elif defined(HAVE__GET_OSFHANDLE)
+#elif defined(WIN32) && !defined(cygwin)
         {
             int fd;
-            HANDLE h;
+            void *h;
 
-            fd = fileno(fout);
+            fd = _fileno(fout);
             netsnmp_assert(fd != -1);
-            /*
-             * Use size_t instead of uintptr_t because not all supported
-             * Windows compilers support uintptr_t.
-             */
-            h = (HANDLE)(size_t)_get_osfhandle(fd);
+            h = _get_osfhandle(fd);
             netsnmp_assert(h != INVALID_HANDLE_VALUE);
             FlushFileBuffers(h);
         }

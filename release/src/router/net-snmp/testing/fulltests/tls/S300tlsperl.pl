@@ -1,5 +1,14 @@
 #!/usr/bin/perl
 
+BEGIN {
+    if (exists($ENV{'srcdir'})) {
+	push @INC, "$ENV{'srcdir'}/testing/fulltests/support";
+    } elsif (-d "fulltests/support") {
+	push @INC, "fulltests/support";
+    } elsif (-d "../support") {
+	push @INC, "../support";
+    }
+}
 use NetSNMPTest;
 use Test;
 use SNMP;

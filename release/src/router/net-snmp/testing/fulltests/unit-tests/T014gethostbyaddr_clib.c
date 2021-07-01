@@ -39,7 +39,7 @@ SOCK_STARTUP;
 
 {
     struct hostent *h;
-#if defined(cygwin) || defined(solaris2)
+#ifdef cygwin
     static const struct in6_addr v6loop = { { IN6ADDR_LOOPBACK_INIT } };
 #else
     static const struct in6_addr v6loop = IN6ADDR_LOOPBACK_INIT;

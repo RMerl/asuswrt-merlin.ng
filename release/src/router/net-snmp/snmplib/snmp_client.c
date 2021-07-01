@@ -49,9 +49,6 @@ SOFTWARE.
 
 #include <stdio.h>
 #include <errno.h>
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
 #if HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -90,6 +87,10 @@ SOFTWARE.
 #include <syslog.h>
 #endif
 
+#if HAVE_DMALLOC_H
+#include <dmalloc.h>
+#endif
+
 #include <net-snmp/types.h>
 
 #include <net-snmp/agent/ds_agent.h>
@@ -104,12 +105,12 @@ SOFTWARE.
 #include <net-snmp/library/large_fd_set.h>
 #include <net-snmp/pdu_api.h>
 
-netsnmp_feature_child_of(snmp_client_all, libnetsnmp);
+netsnmp_feature_child_of(snmp_client_all, libnetsnmp)
 
-netsnmp_feature_child_of(snmp_split_pdu, snmp_client_all);
-netsnmp_feature_child_of(snmp_reset_var_types, snmp_client_all);
-netsnmp_feature_child_of(query_set_default_session, snmp_client_all);
-netsnmp_feature_child_of(row_create, snmp_client_all);
+netsnmp_feature_child_of(snmp_split_pdu, snmp_client_all)
+netsnmp_feature_child_of(snmp_reset_var_types, snmp_client_all)
+netsnmp_feature_child_of(query_set_default_session, snmp_client_all)
+netsnmp_feature_child_of(row_create, snmp_client_all)
 
 #ifndef BSD4_3
 #define BSD4_2
@@ -401,14 +402,25 @@ _clone_pdu_header(netsnmp_pdu *pdu)
         return NULL;
     }
 
-    sptr = find_sec_mod(newpdu->securityModel);
-    if (sptr && sptr->pdu_clone) {
-        /* call security model if it needs to know about this */
-        ret = sptr->pdu_clone(pdu, newpdu);
-        if (ret) {
+    if (pdu->securityStateRef &&
+        pdu->command == SNMP_MSG_TRAP2) {
+
+        ret = usm_clone_usmStateReference((struct usmStateReference *) pdu->securityStateRef,
+                (struct usmStateReference **) &newpdu->securityStateRef );
+
+        if (ret)
+        {
             snmp_free_pdu(newpdu);
             return NULL;
         }
+    }
+
+    if ((sptr = find_sec_mod(newpdu->securityModel)) != NULL &&
+        sptr->pdu_clone != NULL) {
+        /*
+         * call security model if it needs to know about this 
+         */
+        (*sptr->pdu_clone) (pdu, newpdu);
     }
 
     return newpdu;
@@ -554,10 +566,7 @@ netsnmp_pdu    *
 _clone_pdu(netsnmp_pdu *pdu, int drop_err)
 {
     netsnmp_pdu    *newpdu;
-
     newpdu = _clone_pdu_header(pdu);
-    if (!newpdu)
-        return newpdu;
     newpdu = _copy_pdu_vars(pdu, newpdu, drop_err, 0, 10000);   /* skip none, copy all */
 
     return newpdu;
@@ -603,10 +612,7 @@ netsnmp_pdu    *
 snmp_split_pdu(netsnmp_pdu *pdu, int skip_count, int copy_count)
 {
     netsnmp_pdu    *newpdu;
-
     newpdu = _clone_pdu_header(pdu);
-    if (!newpdu)
-        return newpdu;
     newpdu = _copy_pdu_vars(pdu, newpdu, 0,     /* don't drop any variables */
                             skip_count, copy_count);
 
@@ -751,7 +757,7 @@ count_varbinds(netsnmp_variable_list * var_ptr)
     return count;
 }
 
-netsnmp_feature_child_of(count_varbinds_of_type, netsnmp_unused);
+netsnmp_feature_child_of(count_varbinds_of_type, netsnmp_unused)
 #ifndef NETSNMP_FEATURE_REMOVE_COUNT_VARBINDS_OF_TYPE
 int
 count_varbinds_of_type(netsnmp_variable_list * var_ptr, u_char type)
@@ -766,7 +772,7 @@ count_varbinds_of_type(netsnmp_variable_list * var_ptr, u_char type)
 }
 #endif /* NETSNMP_FEATURE_REMOVE_COUNT_VARBINDS_OF_TYPE */
 
-netsnmp_feature_child_of(find_varind_of_type, netsnmp_unused);
+netsnmp_feature_child_of(find_varind_of_type, netsnmp_unused)
 #ifndef NETSNMP_FEATURE_REMOVE_FIND_VARIND_OF_TYPE
 netsnmp_variable_list *
 find_varbind_of_type(netsnmp_variable_list * var_ptr, u_char type)
@@ -897,8 +903,8 @@ snmp_set_var_value(netsnmp_variable_list * vars,
 #endif
         else if (vars->val_len == sizeof(char)) {
             if (ASN_INTEGER == vars->type) {
-                const signed char   *val_char
-                    = (const signed char *) value;
+                const char      *val_char 
+                    = (const char *) value;
                 *(vars->val.integer) = (long) *val_char;
             } else {
                     const u_char    *val_uchar
@@ -967,7 +973,7 @@ snmp_set_var_value(netsnmp_variable_list * vars,
     case ASN_OPAQUE_I64:
 #endif                          /* NETSNMP_WITH_OPAQUE_SPECIAL_TYPES */
     case ASN_COUNTER64:
-        if (largeval || vars->val_len != sizeof(struct counter64)) {
+        if (largeval) {
             snmp_log(LOG_ERR,"bad size for counter 64 (%d)\n",
                      (int)vars->val_len);
             return (1);

@@ -23,4 +23,10 @@ config_require(util_funcs)
      void            proc_parse_config(const char *, char *);
      void            procfix_parse_config(const char *, char *);
 
+#include "mibdefs.h"
+
+#define PROCMIN 3
+#define PROCMAX 4
+#define PROCCOUNT 5
+
 #endif                          /* _MIBGROUP_PROC_H */

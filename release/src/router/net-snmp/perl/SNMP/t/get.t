@@ -1,16 +1,19 @@
 #!./perl
 
-use strict;
-use warnings;
-use Test;
-
 BEGIN {
+    unless(grep /blib/, @INC) {
+        chdir 't' if -d 't';
+        @INC = '../lib' if -d '../lib';
+    }
     eval "use Cwd qw(abs_path)";
-    plan tests => 17
+    $ENV{'SNMPCONFPATH'} = 'nopath';
+    $ENV{'MIBDIRS'} = '+' . abs_path("../../mibs");
 }
+use Test;
+BEGIN { $n = 17; plan tests => $n }
 use SNMP;
+use vars qw($agent_port $comm $agent_host);
 require "t/startagent.pl";
-use vars qw($agent_host $agent_port $comm);
 $SNMP::debugging = 0;
 $SNMP::verbose = 0;
 $SNMP::dump_packet = 0;
@@ -23,7 +26,7 @@ my $name = "gmarzot\@nortelnetworks.com";
 my $s1;
 
 # create list of varbinds for GETS, val field can be null or omitted
-my $vars = new SNMP::VarList(
+$vars = new SNMP::VarList (
 			   ['sysDescr', '0', ''],
 			   ['sysObjectID', '0'],
 			   ['sysUpTime', '0'],
@@ -83,7 +86,7 @@ my $vars = new SNMP::VarList(
 
 ######################################################################
 # Get the standard Vars and check that we got some defined vars back
-my @ret = $s1->get($vars);
+@ret = $s1->get($vars);
 ok(!$s1->{ErrorStr} and defined($ret[0]));
 #print STDERR "Error string = $s1->{ErrorStr}:$s1->{ErrorInd}\n";
 ######################################################################
@@ -93,7 +96,7 @@ ok($#ret == $#{$vars});
 ################################################
 
 # Test for a string
-my $contact = $s1->get('sysContact.0');
+$contact = $s1->get('sysContact.0');
 #print("contact is : $contact\n");
 ok( defined($contact));
 
@@ -103,49 +106,49 @@ $name = $s1->get('sysName.0');
 ok( defined($name));
 
 
-my $location = $s1->get('sysLocation.0');
+$location = $s1->get('sysLocation.0');
 #print("Location is : $location\n");
 ok( defined($location));
 #########################################
 
 
 # Test for an integer
-my $ttl = $s1->get('ipDefaultTTL.0');
+$ttl = $s1->get('ipDefaultTTL.0');
 #print("TTL is : $ttl\n");
 ok( defined($ttl));
 ########################################
 
 
 # Test for a TimeTicks
-my $time = $s1->get('sysUpTime.0');
+$time = $s1->get('sysUpTime.0');
 #print("up time is : $time hundredths of a second\n");
 ok( defined($time));
 #########################################
 
 
 #Test for a Counter32 type.
-my $totalDatagramsReceived = $s1->get('ipInHdrErrors.0');
+$totalDatagramsReceived = $s1->get('ipInHdrErrors.0');
 #print("totalDatagramsReceived is : $totalDatagramsReceived\n");
 ok( defined($totalDatagramsReceived));
 ################################################
 
 
 #Test for a PhysicalAddr type
-my $physaddr = $s1->get('ipNetToMediaPhysAddress.0');
+$physaddr = $s1->get('ipNetToMediaPhysAddress.0');
 #print("physical addr is : $physaddr \n");
 ok( defined($physaddr));
 ##############################################
 
 
 #Test for a IpAddr type
-my $ipaddr = $s1->get('ipAdEntAddr.0');
+$ipaddr = $s1->get('ipAdEntAddr.0');
 #print("Ip address is : $ipaddr \n");
 ok( defined($ipaddr));
 ##############################################
 
 
 #Test for a OID type
-my $trapOID = $s1->get('snmpTrapOID.0');
+$trapOID = $s1->get('snmpTrapOID.0');
 #print("trap OID is : $trapOID $s1->{ErrorStr}\n");
 ok( defined($trapOID));
 ##############################################
@@ -190,20 +193,20 @@ ok(defined($oid));
 #############################################
 
 # String test
-my $descr = $s1->get('sysORDescr.1');
+$descr = $s1->get('sysORDescr.1');
 #print("Sys Descr is : $descr\n");
 ok(defined($descr));
 #############################################
 
 # string String test
-my $ifname = $s1->get('ifDescr.1');
+$ifname = $s1->get('ifDescr.1');
 #print("ifname is : $ifname $s1->{ErrorStr}\n");
 ok(defined($ifname));
 #############################################
 
 
 # Try getting some unknown(wrong ?) data
-my $unknown = $s1->get('ifmyData.0');
+$unknown = $s1->get('ifmyData.0');
 ok(!defined($unknown));
 ##############################################
 

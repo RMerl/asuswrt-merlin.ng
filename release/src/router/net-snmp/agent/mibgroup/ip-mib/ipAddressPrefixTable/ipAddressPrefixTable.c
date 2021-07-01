@@ -280,8 +280,9 @@ ipAddressPrefixTable_indexes_set_tbl_idx(ipAddressPrefixTable_mib_index *
     /*
      * make sure there is enough space for ipAddressPrefixPrefix data
      */
-    if (tbl_idx->ipAddressPrefixPrefix_len <
-        ipAddressPrefixPrefix_val_ptr_len) {
+    if ((NULL == tbl_idx->ipAddressPrefixPrefix) ||
+        (tbl_idx->ipAddressPrefixPrefix_len <
+         (ipAddressPrefixPrefix_val_ptr_len))) {
         snmp_log(LOG_ERR, "not enough space for value\n");
         return MFD_ERROR;
     }

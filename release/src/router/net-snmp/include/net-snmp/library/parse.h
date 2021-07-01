@@ -201,7 +201,7 @@ SOFTWARE.
 #endif
     void            netsnmp_init_mib_internals(void);
     void            unload_all_mibs(void);
-    int             add_mibfile(const char*, const char*);
+    int             add_mibfile(const char*, const char*, FILE *);
     int             which_module(const char *);
     NETSNMP_IMPORT
     char           *module_name(int, char *);

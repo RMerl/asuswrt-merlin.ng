@@ -70,7 +70,7 @@ cleanfeaturessubdirs:
 		> $(top_builddir)/include/net-snmp/feature-details.h
 	$(FEATURECHECK) --feature-global $(top_builddir)/include/net-snmp/feature-details.h $(mysubdir) $< $@ $(CC) -E $(CPPFLAGS) $(CFLAGS) -c
 
-subdirs: $(SUBDIRDEPS)
+subdirs:
 	@if test "$(SUBDIRS)" != ""; then \
 		it="$(SUBDIRS)" ; \
 		for i in $$it ; do \
@@ -85,14 +85,12 @@ subdirs: $(SUBDIRDEPS)
 # installlibs handles local, ucd and subdir libs. need to do subdir libs
 # before bins, sinze those libs may be needed for successful linking
 install: installlocalheaders @installucdheaders@ \
-	installlibs         install_pkgconfig   \
-	installlocalbin     installlocalsbin    \
-	installsubdirs
+         installlibs \
+         installlocalbin      installlocalsbin   \
+         installsubdirs
 
-uninstall: uninstalllibs     uninstall_pkgconfig \
-	uninstallbin      uninstallsbin       \
-	uninstallheaders                      \
-	uninstallsubdirs  $(OTHERUNINSTALL)
+uninstall: uninstalllibs uninstallbin uninstallsbin uninstallheaders \
+           uninstallsubdirs $(OTHERUNINSTALL)
 
 installprogs: installbin installsbin
 
@@ -294,26 +292,6 @@ uninstalllibs:
 	fi
 
 #
-# pkg-config files
-#
-install_pkgconfig: $(INSTALL_PKGCONFIG)
-	@if test "x$(INSTALL_PKGCONFIG)" != x; then			\
-		$(SHELL) $(top_srcdir)/mkinstalldirs $(INSTALL_PREFIX)$(libdir)/pkgconfig; \
-		for i in $(INSTALL_PKGCONFIG); do			\
-			echo "installing $$i in $(INSTALL_PREFIX)$(libdir)/pkgconfig"; \
-		done;							\
-		$(INSTALL_DATA) $(INSTALL_PKGCONFIG) $(INSTALL_PREFIX)$(libdir)/pkgconfig; \
-	fi
-
-uninstall_pkgconfig:
-	@if test "x$(INSTALL_PKGCONFIG)" != x; then			\
-		for i in $(INSTALL_PKGCONFIG); do			\
-			echo "removing $$i from $(INSTALL_PREFIX)$(libdir)/pkgconfig"; \
-			$(UNINSTALL) $(INSTALL_PREFIX)$(libdir)/pkgconfig/$$i;\
-		done;							\
-	fi
-
-#
 # normal bin binaries
 #
 # set INSTALLBINPROGS to a list of things to install in each makefile.
@@ -442,17 +420,13 @@ lint:
 #
 depend: dependdirs
 	@if test -f Makefile.depend ; then \
-		makedepend `echo $(CPPFLAGS) | \
-		awk '{for(i=1;i<=NF;i++) if (match(substr($$i,1,2), "-[ID]")) print $$i}'` \
-		-o .lo $(srcdir)/*.c $(srcdir)/*/*.c ; \
+		makedepend `echo $(CPPFLAGS) | sed 's/-f[-a-z]*//g'` -o .lo $(srcdir)/*.c $(srcdir)/*/*.c ; \
 	fi
 
 
 nosysdepend: nosysdependdirs
 	@if test -f Makefile.depend ; then \
-		makedepend `echo $(CPPFLAGS) | \
-		awk '{for(i=1;i<=NF;i++) if (match(substr($$i,1,2), "-[ID]")) print $$i}'` \
-		-o .lo $(srcdir)/*.c $(srcdir)/*/*.c ; \
+		makedepend `echo $(CPPFLAGS) | sed 's/-f[-a-z]*//g'` -o .lo $(srcdir)/*.c $(srcdir)/*/*.c ; \
 		$(PERL) -n -i.bak $(top_srcdir)/makenosysdepend.pl Makefile ; \
 	fi
 

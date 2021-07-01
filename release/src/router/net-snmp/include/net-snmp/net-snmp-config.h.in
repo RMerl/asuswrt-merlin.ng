@@ -54,6 +54,9 @@
 
 #define config_parse_dot_conf(w,x,y,z)
 
+/* Define if building universal (internal helper macro) */
+#undef AC_APPLE_UNIVERSAL_BUILD
+
 /* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
    systems. This function is required for `alloca.c' support on those systems.
    */
@@ -123,23 +126,12 @@
 /* Define to 1 if the system has the type `Counter64'. */
 #undef HAVE_COUNTER64
 
-/* Define to 1 if you have the <crt_externs.h> header file. */
-#undef HAVE_CRT_EXTERNS_H
-
 /* Define to 1 if you have the <curses.h> header file. */
 #undef HAVE_CURSES_H
-
-/* Define to 1 if you have the declaration of `daylight', and to 0 if you
-   don't. */
-#undef HAVE_DECL_DAYLIGHT
 
 /* Define to 1 if you have the declaration of `sensors_get_all_subfeatures',
    and to 0 if you don't. */
 #undef HAVE_DECL_SENSORS_GET_ALL_SUBFEATURES
-
-/* Define to 1 if you have the declaration of `timezone', and to 0 if you
-   don't. */
-#undef HAVE_DECL_TIMEZONE
 
 /* define to 1 if you have IRE_CACHE defined in <inet/ip.h> header file. */
 #undef HAVE_DEFINED_IRE_CACHE
@@ -166,6 +158,9 @@
 /* Define to 1 if you have the `dlopen' function. */
 #undef HAVE_DLOPEN
 
+/* Define to 1 if you have the <dmalloc.h> header file. */
+#undef HAVE_DMALLOC_H
+
 /* Set if the dpkg-query command is available */
 #undef HAVE_DPKG_QUERY
 
@@ -174,12 +169,6 @@
 
 /* Define to 1 if you have the `DTLS_method' function. */
 #undef HAVE_DTLS_METHOD
-
-/* Define to 1 if you have the `endfsent' function. */
-#undef HAVE_ENDFSENT
-
-/* Define to 1 if you have the `ERR_get_error_all' function. */
-#undef HAVE_ERR_GET_ERROR_ALL
 
 /* Define to 1 if you have the <err.h> header file. */
 #undef HAVE_ERR_H
@@ -202,10 +191,10 @@
 /* Define to 1 if you have the `EVP_MD_CTX_new' function. */
 #undef HAVE_EVP_MD_CTX_NEW
 
-/* Define to 1 if you have the `EVP_sha224' function. */
+/* Define if you have EVP_sha224/256 in openssl */
 #undef HAVE_EVP_SHA224
 
-/* Define to 1 if you have the `EVP_sha384' function. */
+/* Define if you have EVP_sha384/512 in openssl */
 #undef HAVE_EVP_SHA384
 
 /* Define to 1 if you have the `execv' function. */
@@ -247,9 +236,6 @@
 /* Define to 1 if you have the `getdtablesize' function. */
 #undef HAVE_GETDTABLESIZE
 
-/* Define to 1 if you have the `getfsent' function. */
-#undef HAVE_GETFSENT
-
 /* Define to 1 if you have the `getfsstat' function. */
 #undef HAVE_GETFSSTAT
 
@@ -274,14 +260,8 @@
 /* Define to 1 if you have the `getloadavg' function. */
 #undef HAVE_GETLOADAVG
 
-/* Define to 1 if you have the `getlogin' function. */
-#undef HAVE_GETLOGIN
-
 /* Define to 1 if you have the `getmntent' function. */
 #undef HAVE_GETMNTENT
-
-/* Define to 1 if you have the `getmntinfo' function. */
-#undef HAVE_GETMNTINFO
 
 /* Define to 1 if you have the `getopt' function. */
 #undef HAVE_GETOPT
@@ -373,6 +353,9 @@
 /* Define to 1 if you have the `kinfo_get_cpus' function. */
 #undef HAVE_KINFO_GET_CPUS
 
+/* Define if you have /dev/kmem */
+#undef HAVE_KMEM
+
 /* Define to 1 if you have the `knlist' function. */
 #undef HAVE_KNLIST
 
@@ -381,9 +364,6 @@
 
 /* Define to 1 if you have the `krb5_auth_con_getsendsubkey' function. */
 #undef HAVE_KRB5_AUTH_CON_GETSENDSUBKEY
-
-/* Define to 1 if `enctype' is a member of `krb5_keyblock'. */
-#undef HAVE_KRB5_KEYBLOCK_ENCTYPE
 
 /* Define to 1 if you have the <kstat.h> header file. */
 #undef HAVE_KSTAT_H
@@ -482,10 +462,7 @@
 /* Define to 1 if you have the <linux/tasks.h> header file. */
 #undef HAVE_LINUX_TASKS_H
 
-/* Define to 1 if you have the <lm.h> header file. */
-#undef HAVE_LM_H
-
-/* Define to 1 if you have the `load_defaults' function. */
+/* Define if load_defaults() is available in libmysqlclient */
 #undef HAVE_LOAD_DEFAULTS
 
 /* Define to 1 if you have the <locale.h> header file. */
@@ -515,9 +492,6 @@
 /* Define to 1 if you have the <machine/types.h> header file. */
 #undef HAVE_MACHINE_TYPES_H
 
-/* Define to 1 if you have the <mach-o/dyld.h> header file. */
-#undef HAVE_MACH_O_DYLD_H
-
 /* Define to 1 if you have the <malloc.h> header file. */
 #undef HAVE_MALLOC_H
 
@@ -526,9 +500,6 @@
 
 /* Define to 1 if the system has the type `mib2_ipIfStatsEntry_t'. */
 #undef HAVE_MIB2_IPIFSTATSENTRY_T
-
-/* Define if MIB_IF_TABLE2 is available */
-#undef HAVE_MIB_IF_TABLE2
 
 /* Define to 1 if you have the `mkstemp' function. */
 #undef HAVE_MKSTEMP
@@ -542,23 +513,14 @@
 /* Define to 1 if you have the <mtab.h> header file. */
 #undef HAVE_MTAB_H
 
-/* Define to 1 if you have the `mysql_init' function. */
+/* Define if mysql_init() is available in libmysqlclient */
 #undef HAVE_MYSQL_INIT
-
-/* Define to 1 if you have the `mysql_options' function. */
-#undef HAVE_MYSQL_OPTIONS
-
-/* Define to 1 if you have the <my_global.h> header file. */
-#undef HAVE_MY_GLOBAL_H
 
 /* Define if MY_INIT() is availabe in libmysqlclient */
 #undef HAVE_MY_INIT
 
 /* Define if having my_load_defaults() */
 #undef HAVE_MY_LOAD_DEFAULTS
-
-/* Define to 1 if you have the <my_sys.h> header file. */
-#undef HAVE_MY_SYS_H
 
 /* Define to 1 if you have the <nbutil.h> header file. */
 #undef HAVE_NBUTIL_H
@@ -752,9 +714,6 @@
 /* Define to 1 if you have the `poll' function. */
 #undef HAVE_POLL
 
-/* Define to 1 if you have the `posix_spawn' function. */
-#undef HAVE_POSIX_SPAWN
-
 /* Define to 1 if you have the `pread64' function. */
 #undef HAVE_PREAD64
 
@@ -763,9 +722,6 @@
 
 /* Define if prioritynames variable is declared in <syslog.h> */
 #undef HAVE_PRIORITYNAMES
-
-/* Define to 1 if you have the <process.h> header file. */
-#undef HAVE_PROCESS_H
 
 /* Define to 1 if you have the <pthread.h> header file. */
 #undef HAVE_PTHREAD_H
@@ -803,9 +759,6 @@
 /* Define to 1 if you have the <rpm/rpmts.h> header file. */
 #undef HAVE_RPM_RPMTS_H
 
-/* Define if timezone declared as a scalar in <time.h> */
-#undef HAVE_SCALAR_TIMEZONE
-
 /* Define to 1 if you have the <search.h> header file. */
 #undef HAVE_SEARCH_H
 
@@ -820,9 +773,6 @@
 
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
-
-/* Define to 1 if you have the `setfsent' function. */
-#undef HAVE_SETFSENT
 
 /* Define to 1 if you have the `setgid' function. */
 #undef HAVE_SETGID
@@ -857,6 +807,9 @@
 /* Define to 1 if you have the `sigblock' function. */
 #undef HAVE_SIGBLOCK
 
+/* Define to 1 if you have the `sighold' function. */
+#undef HAVE_SIGHOLD
+
 /* Define if SIGHUP is defined in <signal.h>. */
 #undef HAVE_SIGHUP
 
@@ -877,12 +830,6 @@
 
 /* Define to 1 if the system has the type `socklen_t'. */
 #undef HAVE_SOCKLEN_T
-
-/* Define to 1 if SO_BINDTODEVICE is available */
-#undef HAVE_SO_BINDTODEVICE
-
-/* Define to 1 if you have the <spawn.h> header file. */
-#undef HAVE_SPAWN_H
 
 /* Define to 1 if you have the `srand' function. */
 #undef HAVE_SRAND
@@ -1016,12 +963,6 @@
 /* Define to 1 if `if_xname' is a member of `struct ifnet'. */
 #undef HAVE_STRUCT_IFNET_IF_XNAME
 
-/* Define to 1 if `ia_subnetmask' is a member of `struct in_ifaddr'. */
-#undef HAVE_STRUCT_IN_IFADDR_IA_SUBNETMASK
-
-/* Define to 1 if `ipi_spec_dst' is a member of `struct in_pktinfo'. */
-#undef HAVE_STRUCT_IN_PKTINFO_IPI_SPEC_DST
-
 /* Define to 1 if `ip6s_exthdrtoolong ' is a member of `struct ip6stat'. */
 #undef HAVE_STRUCT_IP6STAT_IP6S_EXTHDRTOOLONG_
 
@@ -1146,11 +1087,11 @@
 /* Define to 1 if `tz_dsttime' is a member of `struct timezone'. */
 #undef HAVE_STRUCT_TIMEZONE_TZ_DSTTIME
 
+/* Define to 1 if `tm_isdst' is a member of `struct time'. */
+#undef HAVE_STRUCT_TIME_TM_ISDST
+
 /* Define to 1 if `tm_gmtoff' is a member of `struct tm'. */
 #undef HAVE_STRUCT_TM_TM_GMTOFF
-
-/* Define to 1 if `tm_isdst' is a member of `struct tm'. */
-#undef HAVE_STRUCT_TM_TM_ISDST
 
 /* Define to 1 if `udps_discard' is a member of `struct udpstat'. */
 #undef HAVE_STRUCT_UDPSTAT_UDPS_DISCARD
@@ -1376,6 +1317,9 @@
 /* Define to 1 if you have the `times' function. */
 #undef HAVE_TIMES
 
+/* Define if a timezone variable is declared in <sys/time.h> */
+#undef HAVE_TIMEZONE_VARIABLE
+
 /* Define to 1 if you have the `TLSv1_method' function. */
 #undef HAVE_TLSV1_METHOD
 
@@ -1436,12 +1380,6 @@
 /* Define to 1 if you have the <validator/validator-config.h> header file. */
 #undef HAVE_VALIDATOR_VALIDATOR_CONFIG_H
 
-/* Define to 1 if you have the `vm_region' function. */
-#undef HAVE_VM_REGION
-
-/* Define to 1 if you have the `vm_region_64' function. */
-#undef HAVE_VM_REGION_64
-
 /* Define to 1 if you have the <vm/swap_pager.h> header file. */
 #undef HAVE_VM_SWAP_PAGER_H
 
@@ -1456,9 +1394,6 @@
 
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
-
-/* Define to 1 if you have the `waitpid' function. */
-#undef HAVE_WAITPID
 
 /* Define to 1 if you have the <windows.h> header file. */
 #undef HAVE_WINDOWS_H
@@ -1484,34 +1419,14 @@
 /* Define to 1 if you have the <xti.h> header file. */
 #undef HAVE_XTI_H
 
-/* Define if _beginthreadex() is defined in <process.h> */
-#undef HAVE__BEGINTHREADEX
-
-/* Define if _cputs() is defined in <conio.h> */
-#undef HAVE__CPUTS
-
-/* Define if _getch() is defined in <conio.h> */
-#undef HAVE__GETCH
-
-/* Define if _get_osfhandle() is defined in <io.h> */
-#undef HAVE__GET_OSFHANDLE
-
-/* Define to 1 if you have the `_NSGetArgv' function. */
-#undef HAVE__NSGETARGV
-
-/* Define to 1 if you have the `_NSGetExecutablePath' function. */
-#undef HAVE__NSGETEXECUTABLEPATH
-
-/* Define if _open_osfhandle() is defined in <io.h> */
-#undef HAVE__OPEN_OSFHANDLE
-
 /* location of UNIX kernel */
 #undef KERNEL_LOC
 
 /* Path to the lpstat command */
 #undef LPSTAT_PATH
 
-/* Define to the sub-directory where libtool stores uninstalled libraries. */
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
 #undef LT_OBJDIR
 
 /* define if agentx transport is to use domain sockets only */
@@ -1607,9 +1522,6 @@
 /* ifnet needs to have _KERNEL_STRUCTURES defined */
 #undef NETSNMP_IFNET_NEEDS_KERNEL_STRUCTURES
 
-/* Type of the third argument of ioctlsocket() */
-#undef NETSNMP_IOCTLSOCKET_ARG
-
 /* Define if you want to remove all non-essential code features. */
 #undef NETSNMP_MINIMAL_CODE
 
@@ -1641,15 +1553,15 @@
 /* umask permissions to set up persistent files with */
 #undef NETSNMP_PERSISTENT_MASK
 
+/* Size prefix to use to printf a uint32_t */
+#undef NETSNMP_PRI32
+
 /* Size prefix to use to printf a size_t or ssize_t */
 #undef NETSNMP_PRIz
 
 /* Define to 1 if you want to build with reentrant/threaded code (incomplete).
    */
 #undef NETSNMP_REENTRANT
-
-/* Type of the fifth argument of select() */
-#undef NETSNMP_SELECT_TIMEVAL
 
 /* define if you do not want snmptrapd to register as an AgentX subagent */
 #undef NETSNMP_SNMPTRAPD_DISABLE_AGENTX
@@ -1795,6 +1707,18 @@
 #endif
 
 
+/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
+   significant byte first (like Motorola and SPARC, unlike Intel). */
+#if defined AC_APPLE_UNIVERSAL_BUILD
+# if defined __BIG_ENDIAN__
+#  define WORDS_BIGENDIAN 1
+# endif
+#else
+# ifndef WORDS_BIGENDIAN
+#  undef WORDS_BIGENDIAN
+# endif
+#endif
+
 /* Define to 1 if on MINIX. */
 #undef _MINIX
 
@@ -1822,10 +1746,6 @@
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
-
-/* in_addr_t definition if not defined in <netinet/in.h>. Must match the type
-   of sockaddr_in::sin_addr */
-#undef in_addr_t
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
@@ -1911,33 +1831,6 @@
 #endif
 
 #endif /* NETSNMP_NO_AUTOCONF_DEFINITIONS */
-
-/*
- * Note: GCC 4.6 added __BYTE_ORDER__, __ORDER_BIG_ENDIAN__,
- * __ORDER_LITTLE_ENDIAN__ and __ORDER_PDP_ENDIAN__ in SVN r165881. For older
- * gcc versions and also for other compilers, determine the endianness using
- * an expression that can be evaluated at compile time. To do: add support for
- * other compilers than gcc that do not support statement expressions.
- */
-#if defined(__BYTE_ORDER__)
-# if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#  define NETSNMP_BIGENDIAN 1
-# elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#  define NETSNMP_BIGENDIAN 0
-# else
-#  error Unknown byte order
-# endif
-#else
-# define NETSNMP_BIGENDIAN                              \
-    (__extension__                                      \
-     ({                                                 \
-         union { unsigned long l; unsigned char c; } u; \
-                                                        \
-         u.l = 1;                                       \
-         u.c == 0;                                      \
-     })                                                 \
-    )
-#endif
 
 
 

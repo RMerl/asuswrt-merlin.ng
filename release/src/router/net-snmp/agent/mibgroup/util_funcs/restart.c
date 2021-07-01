@@ -15,6 +15,10 @@
 #endif
 #include <signal.h>
 
+#if HAVE_RAISE
+#define alarm raise
+#endif
+
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/library/snmp_logging.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
@@ -28,8 +32,7 @@
 
 char **argvrestartp, *argvrestartname, *argvrestart;
 
-#ifdef SIGALRM
-static RETSIGTYPE
+RETSIGTYPE
 restart_doit(int a)
 {
     char * name = netsnmp_ds_get_string(NETSNMP_DS_LIBRARY_ID,
@@ -66,7 +69,6 @@ restart_doit(int a)
     setPerrorstatus(argvrestartname);
 #endif
 }
-#endif
 
 int
 restart_hook(int action,
@@ -86,8 +88,8 @@ restart_hook(int action,
     if (tmp == 1 && action == COMMIT) {
 #ifdef SIGALRM
         signal(SIGALRM, restart_doit);
-        alarm(NETSNMP_RESTARTSLEEP);
 #endif
+        alarm(NETSNMP_RESTARTSLEEP);
     }
     return SNMP_ERR_NOERROR;
 }

@@ -1,17 +1,9 @@
-#include <net-snmp/net-snmp-config.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <net-snmp/net-snmp-config.h>
 
 #ifndef HAVE_ASPRINTF
-
-#ifdef va_copy
-#elif defined(__va_copy)
-#define va_copy __va_copy
-#else
-#define va_copy(dest, src) memcpy(&dest, &src, sizeof(va_list))
-#endif
 
 NETSNMP_IMPORT
 int vasprintf(char **strp, const char *fmt, va_list ap)
@@ -20,7 +12,11 @@ int vasprintf(char **strp, const char *fmt, va_list ap)
     char *str;
     int len;
 
+#ifdef va_copy
     va_copy(ap_copy, ap);
+#else
+    __va_copy(ap_copy, ap);
+#endif
     len = vsnprintf(NULL, 0, fmt, ap_copy);
     va_end(ap_copy);
 

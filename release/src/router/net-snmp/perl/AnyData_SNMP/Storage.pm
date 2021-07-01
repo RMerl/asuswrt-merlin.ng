@@ -6,7 +6,7 @@ package AnyData::Storage::SNMP;
 ##   scalar sets?
 ##   multi-hosts
 
-$AnyData::Storage::VERSION = '5.0901';
+$AnyData::Storage::VERSION = '5.08';
 use strict;
 use warnings;
 

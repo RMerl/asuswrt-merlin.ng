@@ -29,9 +29,7 @@
 #include <netinet/in.h>
 #endif
 
-#if HAVE_UNISTD_H
 #include <unistd.h>
-#endif
 
 #include <net-snmp/library/asn1.h>
 #include <net-snmp/library/snmp_api.h>
@@ -65,18 +63,21 @@ int             doalltests = 0, dohashindex = 0, doetimetest = 0;
 
 #define OUTPUT(o)	fprintf(stdout, "# %s\n", o);
 
-#define TEST_SUCCEEDED(s) do { printf("# Done with %s\n", (s)); } while (0)
+#define SUCCESS(s)					\
+{							\
+    fprintf(stdout, "# Done with %s\n", s);             \
+}
 
-#define TEST_FAILED(e, f)                                               \
-do {                                                                    \
+#define FAILED(e, f)                                                    \
+{                                                                       \
     if (e != SNMPERR_SUCCESS) {                                         \
-        fprintf(stdout, "not ok: %d - %s\n", ++testcount, (f));         \
-        failcount += 1;                                                 \
-    } else {                                                            \
-        fprintf(stdout, "ok: %d - %s\n", ++testcount, (f));             \
-    }                                                                   \
-    fflush(stdout);                                                     \
-} while (0)
+                fprintf(stdout, "not ok: %d - %s\n", ++testcount, f);	\
+		failcount += 1;                                         \
+	} else {                                                        \
+                fprintf(stdout, "ok: %d - %s\n", ++testcount, f);	\
+        }                                                               \
+    fflush(stdout); \
+}
 
 #define DETAILINT(s, i) \
     fprintf(stdout, "# %s: %d\n", s, i);
@@ -154,7 +155,7 @@ main(int argc, char **argv)
      * test stuff.
      */
     rval = sc_init();
-    TEST_FAILED(rval, "sc_init()");
+    FAILED(rval, "sc_init()");
 
 
     if (dohashindex || doalltests) {
@@ -289,19 +290,19 @@ test_etime(void)
 
     rval = ISENGINEKNOWN((const u_char *) "A", 1);
     if (rval == TRUE) {
-        TEST_FAILED(SNMPERR_GENERR, "Query of empty list returned TRUE.");
+        FAILED(SNMPERR_GENERR, "Query of empty list returned TRUE.")
     }
 
 
     rval = set_enginetime((const u_char *) "BB", 2, 2, 20, TRUE);
-    TEST_FAILED(rval, "set_enginetime()");
+    FAILED(rval, "set_enginetime()");
 
 
     rval = set_enginetime((const u_char *) "CCC", 3, 31, 90127, TRUE);
-    TEST_FAILED(rval, "set_enginetime()");
+    FAILED(rval, "set_enginetime()");
 
 
-    TEST_SUCCEEDED("Check of empty list, and two additions.");
+    SUCCESS("Check of empty list, and two additions.");
 
 
 
@@ -312,23 +313,23 @@ test_etime(void)
 
 
     rval = ENSURE_ENGINE_RECORD((const u_char *) "DDDD", 4);
-    TEST_FAILED(rval, "ENSURE_ENGINE_RECORD()");
+    FAILED(rval, "ENSURE_ENGINE_RECORD()");
 
 
     rval = MAKENEW_ENGINE_RECORD((const u_char *) "EEEEE", 5);
     if (rval == SNMPERR_SUCCESS) {
-        TEST_FAILED(rval,
-                    "MAKENEW_ENGINE_RECORD returned success for "
-                    "missing record.");
+        FAILED(rval,
+               "MAKENEW_ENGINE_RECORD returned success for "
+               "missing record.");
     }
 
 
     rval = MAKENEW_ENGINE_RECORD((const u_char *) "BB", 2);
-    TEST_FAILED(rval, "MAKENEW_ENGINE_RECORD().");
+    FAILED(rval, "MAKENEW_ENGINE_RECORD().");
 
 
-    TEST_SUCCEEDED("Added entries with macros, tested for existence with"
-                   " macros.");
+    SUCCESS
+        ("Added entries with macros, tested for existence with macros.");
 
 
 
@@ -356,33 +357,33 @@ test_etime(void)
 
 
     rval = get_enginetime((const u_char *) "BB", 2, &eboot, &etime, TRUE);
-    TEST_FAILED(rval, "get_enginetime().");
+    FAILED(rval, "get_enginetime().");
 
     fprintf(stdout, "# BB = <%d,%d>\n", eboot, etime);
     if ((etime < 20) || (eboot < 2)) {
-        TEST_FAILED(SNMPERR_GENERR,
-                    "get_enginetime() returned bad values.  (1)");
+        FAILED(SNMPERR_GENERR,
+               "get_enginetime() returned bad values.  (1)");
     }
 
     rval = get_enginetime((const u_char *) "DDDD", 4, &eboot, &etime, FALSE);
-    TEST_FAILED(rval, "get_enginetime().");
+    FAILED(rval, "get_enginetime().");
 
     fprintf(stdout, "# DDDD = <%d,%d>\n", eboot, etime);
     if ((etime < sleeptime) || (eboot != 0)) {
-        TEST_FAILED(SNMPERR_GENERR,
-                    "get_enginetime() returned bad values.  (2)");
+        FAILED(SNMPERR_GENERR,
+               "get_enginetime() returned bad values.  (2)");
     }
 
 
     rval = set_enginetime((const u_char *) "CCC", 3, 234, 10000, TRUE);
-    TEST_FAILED(rval, "set_enginetime().");
+    FAILED(rval, "set_enginetime().");
 
 
     rval = set_enginetime((const u_char *) "EEEEE", 5, 9876, 55555, TRUE);
-    TEST_FAILED(rval, "set_enginetime().");
+    FAILED(rval, "set_enginetime().");
 
 
-    TEST_SUCCEEDED("Retrieval and updates.");
+    SUCCESS("Retrieval and updates.");
 
 
 

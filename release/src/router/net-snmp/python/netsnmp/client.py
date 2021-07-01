@@ -1,4 +1,3 @@
-from __future__ import print_function
 import re
 from sys import stderr
 import netsnmp
@@ -35,12 +34,12 @@ def _parse_session_args(kargs):
         'TheirHostname':'',
         'TrustCert':''
         }
-    keys = list(kargs.keys())
+    keys = kargs.keys()
     for key in keys:
-        if key in sessArgs:
+        if sessArgs.has_key(key):
             sessArgs[key] = kargs[key]
         else:
-            print("ERROR: unknown key", key, file=stderr)
+            print >>stderr, "ERROR: unknown key", key
     return sessArgs
 
 def STR(obj):
@@ -133,7 +132,7 @@ class Session(object):
 
         sess_args = _parse_session_args(args)
 
-        for k, v in list(sess_args.items()):
+        for k, v in sess_args.items():
             self.__dict__[k] = v
 
 

@@ -2,8 +2,15 @@
 
 # HEADER Perl UDP IPv6 Test
 
-use strict;
-use warnings;
+BEGIN {
+    if (exists($ENV{'srcdir'})) {
+	push @INC, "$ENV{'srcdir'}/testing/fulltests/perl";
+    } elsif (-d "fulltests/perl") {
+	push @INC, "fulltests/perl";
+    } elsif (-d "../perl") {
+	push @INC, "../perl";
+    }
+}
 use NetSNMPTestTransport;
 
 my $test = new NetSNMPTestTransport(agentaddress => "udp6:[::1]:9875");

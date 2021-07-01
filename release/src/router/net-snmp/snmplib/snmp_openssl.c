@@ -83,12 +83,12 @@ DH_set0_pqg(DH *dh, BIGNUM *p, BIGNUM *q, BIGNUM *g)
 /** TLS/DTLS certificatte support */
 #if defined(NETSNMP_USE_OPENSSL) && defined(HAVE_LIBSSL) && !defined(NETSNMP_FEATURE_REMOVE_CERT_UTIL)
 
-netsnmp_feature_require(container_free_all);
+netsnmp_feature_require(container_free_all)
 
-netsnmp_feature_child_of(openssl_cert_get_subjectAltNames, netsnmp_unused);
-netsnmp_feature_child_of(openssl_ht2nid, netsnmp_unused);
-netsnmp_feature_child_of(openssl_err_log, netsnmp_unused);
-netsnmp_feature_child_of(cert_dump_names, netsnmp_unused);
+netsnmp_feature_child_of(openssl_cert_get_subjectAltNames, netsnmp_unused)
+netsnmp_feature_child_of(openssl_ht2nid, netsnmp_unused)
+netsnmp_feature_child_of(openssl_err_log, netsnmp_unused)
+netsnmp_feature_child_of(cert_dump_names, netsnmp_unused)
 
 #include <ctype.h>
 
@@ -284,30 +284,31 @@ _cert_get_extension(X509_EXTENSION  *oext, char **buf, int *len, int flags)
     }
     if (X509V3_EXT_print(bio, oext, 0, 0) != 1) {
         snmp_log(LOG_ERR, "could not print extension!\n");
-        goto out;
+        BIO_vfree(bio);
+        return NULL;
     }
 
     space = BIO_get_mem_data(bio, &data);
     if (buf && *buf) {
-        if (*len < space + 1) {
-            snmp_log(LOG_ERR, "not enough buffer space to print extension\n");
-            goto out;
-        }
-        buf_ptr = *buf;
-    } else {
-        buf_ptr = calloc(1, space + 1);
+        if (*len < space) 
+            buf_ptr = NULL;
+        else
+            buf_ptr = *buf;
     }
+    else
+        buf_ptr = calloc(1,space + 1);
     
     if (!buf_ptr) {
-        snmp_log(LOG_ERR, "error in allocation for extension\n");
-        goto out;
+        snmp_log(LOG_ERR,
+                 "not enough space or error in allocation for extenstion\n");
+        BIO_vfree(bio);
+        return NULL;
     }
     memcpy(buf_ptr, data, space);
     buf_ptr[space] = 0;
     if (len)
         *len = space;
 
-out:
     BIO_vfree(bio);
 
     return buf_ptr;
@@ -478,7 +479,7 @@ netsnmp_openssl_cert_dump_extensions(X509 *ocert)
 {
     X509_EXTENSION  *extension;
     const char      *extension_name;
-    char             buf[SNMP_MAXBUF], *buf_ptr = buf, *str, *lf;
+    char             buf[SNMP_MAXBUF_SMALL], *buf_ptr = buf, *str, *lf;
     int              i, num_extensions, buf_len, nid;
 
     if (NULL == ocert)
@@ -498,11 +499,6 @@ netsnmp_openssl_cert_dump_extensions(X509 *ocert)
         extension_name = OBJ_nid2sn(nid);
         buf_len = sizeof(buf);
         str = _cert_get_extension_str_at(ocert, i, &buf_ptr, &buf_len, 0);
-        if (!str) {
-            DEBUGMSGT(("9:cert:dump", "    %2d: %s\n", i,
-                        extension_name));
-            continue;
-        }
         lf = strchr(str, '\n'); /* look for multiline strings */
         if (NULL != lf)
             *lf = '\0'; /* only log first line of multiline here */
@@ -701,7 +697,8 @@ netsnmp_openssl_get_cert_chain(SSL *ssl)
         DEBUGMSGT(("ssl:cert:chain", "examining cert chain\n"));
         for(i = 0; i < sk_num((const void *)ochain); ++i) {
             ocert_tmp = (X509*)sk_value((const void *)ochain,i);
-            fingerprint = netsnmp_openssl_cert_get_fingerprint(ocert_tmp, -1);
+            fingerprint = netsnmp_openssl_cert_get_fingerprint(ocert_tmp,
+                                                               NS_HASH_SHA1);
             if (NULL == fingerprint)
                 break;
             cert_map = netsnmp_cert_map_alloc(NULL, ocert);

@@ -112,38 +112,13 @@
 #include "agent_module_includes.h"
 #include "mib_module_includes.h"
 
-netsnmp_feature_child_of(agent_read_config_all, libnetsnmpagent);
+netsnmp_feature_child_of(agent_read_config_all, libnetsnmpagent)
 
-netsnmp_feature_child_of(snmpd_unregister_config_handler, agent_read_config_all);
-
-void netsnmp_set_agent_user_id(int uid)
-{
-    static int agent_user_id = -1;
-
-    if (agent_user_id != -1 && uid != agent_user_id) {
-        snmp_log(LOG_ERR, "User ID has already been set -- can not change\n");
-        return;
-    }
-    agent_user_id = uid;
-    netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, NETSNMP_DS_AGENT_USERID, uid);
-}
-
-void netsnmp_set_agent_group_id(int gid)
-{
-    static int agent_group_id = -1;
-
-    if (agent_group_id != -1 && gid != agent_group_id) {
-        snmp_log(LOG_ERR, "Group ID has already been set -- can not change\n");
-        return;
-    }
-    agent_group_id = gid;
-    netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, NETSNMP_DS_AGENT_GROUPID,
-                       gid);
-}
+netsnmp_feature_child_of(snmpd_unregister_config_handler, agent_read_config_all)
 
 #ifdef HAVE_UNISTD_H
 void
-netsnmp_parse_agent_user(const char *token, char *cptr)
+snmpd_set_agent_user(const char *token, char *cptr)
 {
     if (cptr[0] == '#') {
         char           *ecp;
@@ -153,7 +128,8 @@ netsnmp_parse_agent_user(const char *token, char *cptr)
         if (*ecp != 0) {
             config_perror("Bad number");
 	} else {
-            netsnmp_set_agent_user_id(uid);
+	    netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, 
+			       NETSNMP_DS_AGENT_USERID, uid);
 	}
 #if defined(HAVE_GETPWNAM) && defined(HAVE_PWD_H)
     } else {
@@ -161,7 +137,8 @@ netsnmp_parse_agent_user(const char *token, char *cptr)
 
         info = getpwnam(cptr);
         if (info)
-            netsnmp_set_agent_user_id(info->pw_uid);
+            netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, 
+                               NETSNMP_DS_AGENT_USERID, info->pw_uid);
         else
             config_perror("User not found in passwd database");
         endpwent();
@@ -170,7 +147,7 @@ netsnmp_parse_agent_user(const char *token, char *cptr)
 }
 
 void
-netsnmp_parse_agent_group(const char *token, char *cptr)
+snmpd_set_agent_group(const char *token, char *cptr)
 {
     if (cptr[0] == '#') {
         char           *ecp;
@@ -179,7 +156,8 @@ netsnmp_parse_agent_group(const char *token, char *cptr)
         if (*ecp != 0) {
             config_perror("Bad number");
 	} else {
-            netsnmp_set_agent_group_id(gid);
+            netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, 
+			       NETSNMP_DS_AGENT_GROUPID, gid);
 	}
 #if defined(HAVE_GETGRNAM) && defined(HAVE_GRP_H)
     } else {
@@ -187,7 +165,8 @@ netsnmp_parse_agent_group(const char *token, char *cptr)
 
         info = getgrnam(cptr);
         if (info)
-            netsnmp_set_agent_group_id(info->gr_gid);
+            netsnmp_ds_set_int(NETSNMP_DS_APPLICATION_ID, 
+                               NETSNMP_DS_AGENT_GROUPID, info->gr_gid);
         else
             config_perror("Group not found in group database");
         endgrent();
@@ -277,9 +256,9 @@ init_agent_read_config(const char *app)
                                NETSNMP_DS_AGENT_TRAP_ADDR);
 #ifdef HAVE_UNISTD_H
     register_app_config_handler("agentuser",
-                                netsnmp_parse_agent_user, NULL, "userid");
+                                snmpd_set_agent_user, NULL, "userid");
     register_app_config_handler("agentgroup",
-                                netsnmp_parse_agent_group, NULL, "groupid");
+                                snmpd_set_agent_group, NULL, "groupid");
 #endif
 #ifndef NETSNMP_NO_LISTEN_SUPPORT
     register_app_config_handler("agentaddress",
@@ -354,7 +333,7 @@ snmpd_register_const_config_handler(const char *token,
 }
 
 #ifdef NETSNMP_FEATURE_REQUIRE_SNMPD_UNREGISTER_CONFIG_HANDLER
-netsnmp_feature_require(unregister_app_config_handler);
+netsnmp_feature_require(unregister_app_config_handler)
 #endif /* NETSNMP_FEATURE_REQUIRE_SNMPD_UNREGISTER_CONFIG_HANDLER */
 
 #ifndef NETSNMP_FEATURE_REMOVE_SNMPD_UNREGISTER_CONFIG_HANDLER

@@ -5,10 +5,6 @@
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 
-#if HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
 /*
  * include our parent header 
  */
@@ -346,8 +342,8 @@ _etherStats_ioctl_get(int fd, int which, struct ifreq *ifrq, const char* name)
      */
     if(NULL == name) {
         DEBUGMSGTL(("access:etherStatsTable:ioctl",
-                    "_etherStats_ioctl_get interface name is NULL"));
-        snmp_log (LOG_ERR, "access:etherStatsTable:ioctl, _etherStats_ioctl_get interface name is NULL");
+                    "_etherStats_ioctl_get invalid ifname '%s'\n", name));
+        snmp_log (LOG_ERR, "access:etherStatsTable:ioctl, _etherStats_ioctl_get error on inerface '%s'\n", name);
         return -1;
     }
 

@@ -3820,7 +3820,8 @@ int get_active_fw_num(void)
 		return ret;
 
 	if ((sb.st_mode & S_IFMT) == S_IFLNK) {
-		if (readlink(mnt->mnt_fsname, name, sizeof(name)) <= 0) {
+		memset(name, 0, sizeof(name));
+		if (readlink(mnt->mnt_fsname, name, sizeof(name) - 1) <= 0) {
 			dbg("%s: can't read symlink of %s\n", __func__, mnt->mnt_fsname);
 			return ret;
 		}

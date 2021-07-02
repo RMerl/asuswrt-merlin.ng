@@ -132,6 +132,7 @@ int exec_for_host(int host, int obsolete, uint flags, host_exec func)
 	int siz;
 	char line[256];
 	int result = 0;
+	int len;
 #ifdef LINUX26
 	int ret;
 	char hostbuf[16], device_path[PATH_MAX], linkbuf[PATH_MAX], *h;
@@ -141,7 +142,6 @@ int exec_for_host(int host, int obsolete, uint flags, host_exec func)
 	char bfr[256];	/* Will be: /dev/discs/disc#					*/
 	char bfr2[128];	/* Will be: /dev/discs/disc#/disc     for the BLKRRPART.	*/
 	char *cp;
-	int len;
 	int disc_num;	/* Disc # */
 	int part_num;	/* Parition # */
 	char *mp;	/* Ptr to after any leading ../ path */
@@ -174,15 +174,17 @@ int exec_for_host(int host, int obsolete, uint flags, host_exec func)
 		    !strcmp(dp->d_name, "..")
 		   )
 			continue;
-#if LINUX_KERNEL_VERSION >= KERNEL_VERSION(4,1,0)
-		snprintf(device_path, sizeof(device_path), "/sys/block/%s/device", dp->d_name);
-#elif LINUX_KERNEL_VERSION >= KERNEL_VERSION(3,3,0)
+
 		snprintf(device_path, sizeof(device_path), "/sys/block/%s", dp->d_name);
-#else
-		snprintf(device_path, sizeof(device_path), "/sys/block/%s/device", dp->d_name);
-#endif
-		if (readlink(device_path, linkbuf, sizeof(linkbuf)) == -1)
-			continue;
+		len = readlink(device_path, linkbuf, sizeof(linkbuf) - 1);
+		if (len == -1) {
+			snprintf(device_path, sizeof(device_path), "/sys/block/%s/device", dp->d_name);
+			len = readlink(device_path, linkbuf, sizeof(linkbuf) - 1);
+			if (len == -1)
+				continue;
+		}
+		linkbuf[len] = '\0';
+
 		h = strstr(linkbuf, "/host");
 		if (!h)	continue;
 		if ((ret = sscanf(h, "/host%*d/target%*d:%*d:%*d/%d:%*d:%*d:%*d", &host_no)) != 1) {

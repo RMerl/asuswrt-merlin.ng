@@ -43,11 +43,19 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: curl to 7.76.1.
   - UPDATED: dnsmasq to 2.85-openssl.
   - UPDATED: openvpn to 2.5.3.
+  - UPDATED: getdns to 1.7.0.
+  - UPDATED: stubby to 0.4.0.
   - FIXED: Setting an OpenVPN client's DNS mode to Exclusive
            could fail to work for certain configurations
   - FIXED: DNS Exclusive redirections applied in Policy mode
            could be executed in the wrong order if you had
            overlapping policy rules in two separate clients.
+  - FIXED: Clients connected to Guest Network 1 couldn't be
+           routed through an OpenVPN tunnel.
+  - FIXED: Clients connected to Guest Network 1 would bypass
+           DNSFilter rules.
+  - FIXED: USB disks not properly unmounted on reboot
+           on some router models.
 
 
 386.2_6 (6-June-2021)

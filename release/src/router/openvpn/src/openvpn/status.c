@@ -336,31 +336,31 @@ void update_nvram_status(int event)
 
 	p = name + 3;
 
-	if (!strcmp(p, "client"))
+	if (!strncmp(p, "client", 6))
 		is_client = 1;
 
 	switch(event) {
 	case EVENT_AUTH_FAILED:
 		if (is_client) {
-			snprintf(cmd, sizeof(cmd), "nvram set vpn_client_errno=%d", ERRNO_AUTH);
+			snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_errno=%d", p, ERRNO_AUTH);
 			system(cmd);
-			snprintf(cmd, sizeof(cmd), "nvram set vpn_client_state=%d", ST_ERROR);
+			snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_state=%d", p, ST_ERROR);
 			system(cmd);
 		}
 		break;
 	case EVENT_TLS_ERROR:
 		if (is_client) {
-			snprintf(cmd, sizeof(cmd), "nvram set vpn_client_errno=%d", ERRNO_SSL);
+			snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_errno=%d", p, ERRNO_SSL);
 			system(cmd);
-			snprintf(cmd, sizeof(cmd), "nvram set vpn_client_state=%d", ST_ERROR);
+			snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_state=%d", p, ST_ERROR);
 			system(cmd);
 		}
 		break;
 	case EVENT_NET_CONN:
 		if (is_client) {
-			snprintf(cmd, sizeof(cmd), "nvram set vpn_client_errno=%d", ERRNO_NET_CONN);
+			snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_errno=%d", p, ERRNO_NET_CONN);
 			system(cmd);
-			snprintf(cmd, sizeof(cmd), "nvram set vpn_client_state=%d", ST_ERROR);
+			snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_state=%d", p, ST_ERROR);
 			system(cmd);
 		}
 		break;

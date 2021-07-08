@@ -146,7 +146,7 @@ MASQUERADE_print(const void *ip, const struct xt_entry_target *target,
 		printf(" random");
 #ifdef BCM_KF_NETFILTER
 	if (r->min_ip == 1)
-		printf("mode: fullcone ");
+		printf(" mode: fullcone ");
 #endif
 }
 
@@ -166,7 +166,7 @@ MASQUERADE_save(const void *ip, const struct xt_entry_target *target)
 		printf(" --random");
 #ifdef BCM_KF_NETFILTER
 	if (r->min_ip == 1)
-		printf("--mode fullcone ");
+		printf(" --mode fullcone ");
 #endif
 }
 

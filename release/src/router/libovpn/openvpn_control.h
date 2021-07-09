@@ -29,7 +29,7 @@ extern void ovpn_stop_server(int unit);
 void _clean_routing_rules(int unit);
 extern void ovpn_set_killswitch(int unit);
 void _flush_routing_cache();
-void _write_routing_rules(int unit, char *buffer);
+void _write_routing_rules(int unit, char *buffer, int verb);
 extern void ovpn_clear_exclusive_dns(int unit);
 extern int ovpn_need_dnsmasq_restart();
 extern void ovpn_update_exclusive_dns_rules();

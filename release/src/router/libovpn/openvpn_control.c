@@ -659,7 +659,7 @@ inline void _flush_routing_cache() {
 
 
 void ovpn_set_exclusive_dns(int unit) {
-	char rules[8000], buffer[64], buffer2[64], server[20], iface_match[8];
+	char rules[8000], wanrules[8000], buffer[64], buffer2[64], server[20], iface_match[8];
 	char *nvp, *entry;
 	char *src, *dst, *iface, *desc, *enable, *netptr;
 	struct in_addr addr;
@@ -685,6 +685,9 @@ void ovpn_set_exclusive_dns(int unit) {
 	                 unit);
 
 	ovpn_get_policy_rules(unit, rules, sizeof (rules));
+	ovpn_get_policy_rules(0, wanrules, sizeof (wanrules));
+	strlcat(rules, wanrules, sizeof (rules));
+
 	nvp = rules;
 
 	snprintf(iface_match, sizeof (iface_match), "OVPN%d", unit);

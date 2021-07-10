@@ -39,6 +39,10 @@ Asuswrt-Merlin 386/NG Changelog
 
   - CHANGED: Reworked OpenVPN's DNS Exclusive mode implementation
              and interaction with dnsmasq.
+  - CHANGED: Moved OpenVPN Custom settings content to JFFS, and
+             increased max storage length from around 350 chars
+             to 4095 chars.
+
   - UPDATED: nano to 5.7.
   - UPDATED: curl to 7.76.1.
   - UPDATED: dnsmasq to 2.85-openssl.
@@ -56,6 +60,10 @@ Asuswrt-Merlin 386/NG Changelog
            DNSFilter rules.
   - FIXED: USB disks not properly unmounted on reboot
            on some router models.
+  - FIXED: Missing error report on OpenVPN client connection
+           failure
+  - FIXED: profile.add getting used even if JFFS scripting
+           was disabled (dave14305)
 
 
 386.2_6 (6-June-2021)

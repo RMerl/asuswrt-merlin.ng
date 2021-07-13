@@ -573,6 +573,8 @@ void ovpn_set_routing_rules(int unit) {
 			if (state == OVPN_STS_RUNNING || state == OVPN_STS_INIT) {
 				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add table ovpnc%d priority %d", unit, 10000 + unit);
 				system(buffer);
+				if (verb >= 3)
+					logmessage("openvpn-routing","Routing all traffic through ovpnc%d", unit);
 			}
 			break;
 

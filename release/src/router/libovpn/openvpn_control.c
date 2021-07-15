@@ -701,7 +701,7 @@ void ovpn_set_exclusive_dns(int unit) {
 		if (atoi(&enable[0]) == 0)
 			continue;
 
-		if (*src) {
+		if (*src && !*dst) {
 			strlcpy(buffer, src, sizeof(buffer));
 
 			if ((netptr = strchr(buffer, '/'))) {

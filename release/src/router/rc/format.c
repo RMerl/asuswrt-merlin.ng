@@ -651,12 +651,5 @@ void adjust_jffs_content(void)
 		system("/bin/mv -f /jffs/ssl/* /jffs/.cert/");     /* */
 		rmdir("/jffs/ssl");
 	}
-
-/* Remove legacy 1.xxx Trend Micro signatures if present */
-#ifdef RTCONFIG_BWDPI
-	if (f_exists("/jffs/signature/rule.trf") &&
-	    f_size("/jffs/signature/rule.trf") < 50000)
-		unlink("/jffs/signature/rule.trf");
-#endif
 }
 

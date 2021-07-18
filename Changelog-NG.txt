@@ -64,6 +64,8 @@ Asuswrt-Merlin 386/NG Changelog
            failure
   - FIXED: profile.add getting used even if JFFS scripting
            was disabled (dave14305)
+  - FIXED: Freedns authentication errors would not
+           properly be reported as errors.
 
 
 386.2_6 (6-June-2021)

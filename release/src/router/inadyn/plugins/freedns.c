@@ -110,11 +110,12 @@ static int setup(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 
 	tmp = buf = fetch_keys(ctx, info);
 	if (!buf) {
-		logit(LOG_ERR, "Cannot find you FreeDNS account API keys");
+		logit(LOG_ERR, "Cannot find your FreeDNS account API keys");
 		return RC_ERROR;
 	}
 
-	if (strstr(buf, "Could not authenticate")) {
+	if (strstr(buf, "Failed authenticating to fetch API keys")) {
+		free(buf);
 		return RC_DDNS_RSP_AUTH_FAIL;
 	}
 

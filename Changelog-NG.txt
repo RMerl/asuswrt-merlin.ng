@@ -1,7 +1,7 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
-386.3 (xx-xxx-xxxx)
+386.3 (23-July-2021)
   - NOTE: First time you boot into this version, you need to
           either shift-reload the main index page, or clear
           your browser cache.
@@ -42,7 +42,8 @@ Asuswrt-Merlin 386/NG Changelog
   - CHANGED: Moved OpenVPN Custom settings content to JFFS, and
              increased max storage length from around 350 chars
              to 4095 chars.
-
+  - CHANGED: Added support for BCM50991 used for the 2.5G
+             interface in newer RT-AX86U revisions.
   - UPDATED: nano to 5.7.
   - UPDATED: curl to 7.76.1.
   - UPDATED: dnsmasq to 2.85-openssl.

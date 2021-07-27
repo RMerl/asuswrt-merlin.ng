@@ -382,7 +382,12 @@ void ovpn_client_up_handler(int unit)
 		// Handle traffic redirection
 		rgw = nvram_pf_get_int(prefix, "rgw");
 
-		if (rgw != OVPN_RGW_NONE) {
+		if (rgw == OVPN_RGW_NONE) {
+			snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route del default table ovpnc%d", unit);
+			system(buffer);
+			if (verb >= 6)
+				logmessage("openvpn-routing", "Remove default gateway for client %d table", unit);
+		} else {
 			// Force traffic to remote VPN server to go through local GW
 			remote_env = getenv("trusted_ip");
 			localgw = getenv("route_net_gateway");

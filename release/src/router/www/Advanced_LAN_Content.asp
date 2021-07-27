@@ -415,7 +415,7 @@ function check_vpn(){		//true: lAN ip & VPN client ip conflict
 	</td>
 	
     <td valign="top">
-	<div id="tabMenu" class="submenuBlock" style="margin-top: 120px"></div>
+	<div id="tabMenu" class="submenuBlock" style="margin-top: -120px"></div>
 		<!--===================================Beginning of Main Content===========================================-->
 <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 	<tr>

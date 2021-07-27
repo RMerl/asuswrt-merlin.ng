@@ -292,7 +292,7 @@ function Ctrl_LANIPList(obj){
 	</td>
 	
     <td valign="top">
-	<div id="tabMenu" class="submenuBlock"></div>
+	<div id="tabMenu" class="submenuBlock" style="margin-top: -120px"></div>
 <!--===================================Beginning of Main Content===========================================-->
 <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
   <tr>

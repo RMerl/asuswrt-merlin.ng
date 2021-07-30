@@ -1,6 +1,17 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+386.3_2 (xx-xxx-2021)
+  - FIXED: Only the first OpenVPN client would be used if
+           you had multiple clients connected and the first
+           one had a Redirect Internet set to "No".  Now,
+           setting this to "No" means that client's routing
+           table will no longer get a default gateway
+           configured, allowing traffic to be processed
+           by other RPDB tables if there wasn't a matching
+           route within that client's table.
+
+
 386.3 (23-July-2021)
   - NOTE: First time you boot into this version, you need to
           either shift-reload the main index page, or clear

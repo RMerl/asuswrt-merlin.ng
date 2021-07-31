@@ -2,6 +2,11 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.3_2 (xx-xxx-2021)
+  - CHANGED: Re-disabled jitterentropy-rngd on non-HND
+             models.  It kept using CPU time every two
+             seconds and had a very marginal impact on
+             the entropy pool (which it never could push
+             above the target threshold of 1024).
   - FIXED: Only the first OpenVPN client would be used if
            you had multiple clients connected and the first
            one had a Redirect Internet set to "No".  Now,

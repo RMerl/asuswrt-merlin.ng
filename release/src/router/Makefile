@@ -7748,7 +7748,7 @@ libovpn: shared nvram$(BCMEX)$(EX7)
 
 jitterentropy-rngd:
 	@$(SEP)
-	$(MAKE) CFLAGS+="-fPIC -O0" -C $@
+	$(MAKE) CFLAGS+="-fPIC -O0 -I." -C $@
 
 jitterentropy-rngd-install:
 	install -D jitterentropy-rngd/jitterentropy-rngd $(INSTALLDIR)/jitterentropy-rngd/usr/sbin/jitterentropy-rngd

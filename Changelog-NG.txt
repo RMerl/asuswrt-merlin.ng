@@ -2,11 +2,22 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.3_2 (xx-xxx-2021)
+  - NOTE: closed down the Issue tracker on Github, as 90%
+          of it was people asking for technical support,
+          or failing to use the supplied submission form.
   - CHANGED: Re-disabled jitterentropy-rngd on non-HND
              models.  It kept using CPU time every two
              seconds and had a very marginal impact on
              the entropy pool (which it never could push
              above the target threshold of 1024).
+  - CHANGED: Moved the "Redirect Internet traffic" setting on
+             the OpenVPN Client page to the Network Settings
+             section to increase its visibility, as too many
+             users are not properly configuring it.
+  - CHANGED: Display "Internet traffic not redirected" instead
+             of "Public IP Unknown" on the OpenVPN Client
+             status display when Redirect Internet traffic
+             is set to "No".
   - FIXED: Only the first OpenVPN client would be used if
            you had multiple clients connected and the first
            one had a Redirect Internet set to "No".  Now,

@@ -713,8 +713,11 @@ function showConnStatus() {
 			code = "Connecting...";
 			setTimeout("getConnStatus()",2000);
 			break;
-		case "2":	// COnnected
-			code = "Connected (Local: "+ localip + " - Public: " + remoteip + ") <a href='#' style='padding-left:12px;text-decoration:underline;' onclick='refreshVPNIP();'>Refresh</a>";
+		case "2":	// Connected
+			if (policy_ori == 0)
+	                        code = "Connected (Local: "+ localip + " - Internet not redirected)";
+			else
+				code = "Connected (Local: "+ localip + " - Public: " + remoteip + ") <a href='#' style='padding-left:12px;text-decoration:underline;' onclick='refreshVPNIP();'>Refresh</a>";
 			break;
 		case "-1":
 			switch (client_errno) {
@@ -737,7 +740,6 @@ function showConnStatus() {
 					code = "Error - check configuration!";
 					break;
 			}
-			setTimeout("getConnStatus()",2000);
 		break;
 		default:
 			code = "";
@@ -1019,6 +1021,14 @@ function refreshVPNIP() {
 							<label style="margin-left: 4em;">Port:</label><input type="text" maxlength="5" class="input_6_table" name="vpn_client_port" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_port"); %>" >
 						</td>
 					</tr>
+					<tr>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,19);">Redirect Internet traffic through tunnel</a></th>
+						<td colspan="2">
+							<select name="vpn_client_rgw" class="input_option" onChange="update_visibility();">
+							</select>
+							<label style="padding-left:3em;" id="client_gateway_label">Gateway:</label><input type="text" maxlength="15" class="input_15_table" id="vpn_client_gw" name="vpn_client_gw" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_client_gw"); %>">
+						</td>
+					</tr>
 					<tr id="client_adns">
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,24);">Accept DNS Configuration</a></th>
 						<td>
@@ -1213,14 +1223,6 @@ function refreshVPNIP() {
 								<option value="3" <% nvram_match("vpn_client_tlsremote","3","selected"); %> >Subject</option>
 							</select>
 							<label style="padding-left:3em;" id="client_cn_label">Value:</label><input type="text" maxlength="255" class="input_22_table" id="vpn_client_cn" name="vpn_client_cn" value="<% nvram_get("vpn_client_cn"); %>">
-						</td>
-					</tr>
-					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,19);">Redirect Internet traffic through tunnel</a></th>
-						<td colspan="2">
-							<select name="vpn_client_rgw" class="input_option" onChange="update_visibility();">
-							</select>
-							<label style="padding-left:3em;" id="client_gateway_label">Gateway:</label><input type="text" maxlength="15" class="input_15_table" id="vpn_client_gw" name="vpn_client_gw" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_client_gw"); %>">
 						</td>
 					</tr>
 					<tr id="client_enforce">

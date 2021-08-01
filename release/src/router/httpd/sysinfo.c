@@ -84,7 +84,7 @@ typedef struct {
         unsigned int speed[4];
 } phyState;
 #endif
-
+#include "openvpn_config.h"
 
 
 unsigned int get_phy_temperature(int radio);
@@ -411,7 +411,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			int instance = 1;
 			int fd;
 			struct ifreq ifr;
-			char buf[18];
+			char buf[18], buf2[18];
 
 			strcpy(result, "0.0.0.0");
 
@@ -424,7 +424,11 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 					strlcpy(result, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), sizeof result);
 
 					snprintf(buf, sizeof buf, "vpn_client%d_rip", instance);
-					if (!strlen(nvram_safe_get(buf))) {
+					snprintf(buf2, sizeof buf2, "vpn_client%d_rgw", instance);
+
+					if (nvram_get_int(buf2) == OVPN_RGW_NONE) {
+						nvram_set(buf, "no Internet traffic");
+					} else if (!strlen(nvram_safe_get(buf))) {
 						sprintf(buf, "%d", instance);
 						eval("/usr/sbin/gettunnelip.sh", buf);
 					}

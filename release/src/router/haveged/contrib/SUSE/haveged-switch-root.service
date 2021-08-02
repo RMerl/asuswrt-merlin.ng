@@ -1,0 +1,17 @@
+[Unit]
+Description=Tell haveged about new root
+DefaultDependencies=no
+ConditionPathExists=/etc/initrd-release
+Before=initrd-switch-root.service
+JoinsNamespaceOf=haveged.service
+
+[Service]
+ExecStart=-/usr/sbin/haveged -c root=/sysroot
+PrivateNetwork=yes
+Type=oneshot
+StandardInput=null
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=initrd-switch-root.target

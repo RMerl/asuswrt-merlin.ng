@@ -1,0 +1,74 @@
+#!/bin/sh
+#
+# Copyright 2011-2021 Jirka Hladky hladky DOT jiri AT gmail DOT com
+# Copyright 2011-2012 Gary Wuertz gary@issiweb.com
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#
+# haveged: Starts the haveged entropy daemon
+#
+# chkconfig: - 75 25
+# description: havege entropy daemon
+# processname: haveged
+#
+# source function library
+. /etc/init.d/functions
+
+HAVEGED_BIN=@SBIN_DIR@/haveged
+
+RETVAL=0
+prog="haveged"
+LOCKFILE=/var/lock/subsys/$prog
+
+test -x ${HAVEGED_BIN} || { echo "Cannot find haveged executable ${HAVEGED_BIN}" 1>&2 ; exit 5 ; }
+
+case "$1" in
+start)
+  echo -n $"Starting $prog: "
+  ${HAVEGED_BIN} -w 1024 -v 1 && success || failure
+  RETVAL=$?
+  [ "$RETVAL" = 0 ] && touch ${LOCKFILE}
+  echo
+  ;;
+
+stop)
+  echo -n $"Stopping $prog: "
+  if [ -e /var/run/$prog.pid ]; then
+    kill `cat /var/run/$prog.pid` && success || failure
+  else
+    failure
+  fi
+  RETVAL=$?
+  [ "$RETVAL" = 0 ] && rm -f ${LOCKFILE}
+  echo
+  ;;
+
+restart|reload)
+  $0 stop
+  $0 start
+  ;;
+
+condrestart)
+  [ -f $LOCKFILE ] && $0 restart
+  ;;
+
+status)
+  status $prog
+  RETVAL=$?
+  ;;
+*)
+  echo $"Usage: $prog {start|stop|status|reload|restart|condrestart}"
+esac
+exit $RETVAL

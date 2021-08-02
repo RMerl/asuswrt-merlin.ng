@@ -1,0 +1,6 @@
+x = rnorm(16*1024*1024, mean=2.005285, sd=0.2162)
+write(x,file="i7.ln",ncolumns=1)
+x = rnorm(16*1024*1024, mean=2.744504, sd=0.93767)
+write(x,file="xeon.ln",ncolumns=1)
+x = rnorm(16*1024*1024, mean=5.9478, sd=2.4142)
+write(x,file="celeron.ln",ncolumns=1)

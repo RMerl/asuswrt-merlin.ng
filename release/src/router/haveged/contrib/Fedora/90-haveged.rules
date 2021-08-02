@@ -1,0 +1,5 @@
+# Start the haveged service as soon as the random device is available
+# to avoid starting other services while starved of entropy
+
+ACTION=="add", KERNEL=="random" , SUBSYSTEM=="mem", TAG+="systemd", ENV{SYSTEMD_WANTS}+="haveged.service"
+

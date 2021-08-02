@@ -6,7 +6,7 @@ else
 sbin_PROGRAMS = haveged
 endif
 
-AM_CFLAGS=-Wall -Wextra -Wpedantic -I..
+AM_CFLAGS=-Wall -Wextra -I..
 
 ####nolibtool_start##
 ##haveged_SOURCES = haveged.c havege.c havegetune.c havegecollect.c havegetest.c havegecmd.c \

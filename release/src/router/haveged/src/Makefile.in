@@ -326,7 +326,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CFLAGS = -Wall -Wextra -Wpedantic -I..
+AM_CFLAGS = -Wall -Wextra -I..
 
 ####nolibtool_start##
 ####nolibtool_end##

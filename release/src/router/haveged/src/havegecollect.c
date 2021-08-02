@@ -335,8 +335,10 @@ else if (0 != (h_ctxt->havege_raw & H_DEBUG_TEST_IN)) {
    }
 #endif
 
+#if defined(__GNUC__) && __GNUC__ >= 5
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
+#endif
 
 loop_enter:
 LOOP(40,39)
@@ -421,7 +423,9 @@ LOOP(1,0)
    #include "oneiteration.h"
 LOOP(0,0)
    (void)havege_cp(h_ctxt, i,0,LOOP_PT(0));
+#if defined(__GNUC__) && __GNUC__ >= 5
 #pragma GCC diagnostic pop
+#endif
 
 loop_exit:
    return ANDPT==0? 0 : 1;

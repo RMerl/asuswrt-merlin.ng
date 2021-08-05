@@ -17,10 +17,6 @@ extern int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int 
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#ifdef RTCONFIG_DNSFILTER
-#include "dnsfilter.h"
-#endif
-
 void adjust_merlin_config(void)
 {
 #ifdef RTCONFIG_OPENVPN
@@ -34,9 +30,6 @@ void adjust_merlin_config(void)
 	char *nv, *nvp, *entry;
 	char *name, *mac, *mode, *ipaddr, *nvname;
 	char tmp[64];
-#ifdef RTCONFIG_DNSFILTER
-	int globalmode;
-#endif
 	int count;
 	int need_commit=0;
 
@@ -231,48 +224,6 @@ void adjust_merlin_config(void)
 	if (nvram_match("dev_fail_reboot", "3")) {
 		nvram_set("dev_fail_reboot", "1");
 	}
-
-/* Remove discontinued DNSFilter services (384.7) */
-#ifdef RTCONFIG_DNSFILTER
-	globalmode = nvram_get_int("dnsfilter_mode");
-	if (globalmode == DNSF_SRV_NORTON1 || globalmode == DNSF_SRV_NORTON2 || globalmode == DNSF_SRV_NORTON3)
-		nvram_set_int("dnsfilter_mode", DNSF_SRV_OPENDNS_FAMILY);
-
-#ifdef HND_ROUTER
-	nv = nvp = malloc(255 * 6 + 1);
-	if (nv) nvram_split_get("dnsfilter_rulelist", nv, 255 * 6 + 1, 5);
-#else
-	nv = nvp = strdup(nvram_safe_get("dnsfilter_rulelist"));
-#endif
-	newstr = malloc(strlen(nv) + 1);
-
-	if (newstr) {
-		newstr[0] = '\0';
-
-		while (nv && (entry = strsep(&nvp, "<")) != NULL) {
-			if (vstrsep(entry, ">", &name, &mac, &mode) != 3)
-				continue;
-			if (!*mac || !*mode )
-				continue;
-
-			if (atoi(mode) == DNSF_SRV_NORTON1 || atoi(mode) == DNSF_SRV_NORTON2 || atoi(mode) == DNSF_SRV_NORTON3) {
-				need_commit = 1;
-				snprintf(tmp, sizeof(tmp), "<%s>%s>%d", name, mac, DNSF_SRV_OPENDNS_FAMILY);
-			}
-			else
-				snprintf(tmp, sizeof(tmp), "<%s>%s>%s", name, mac, mode);
-			strcat(newstr, tmp);
-		}
-
-#ifdef HND_ROUTER
-		nvram_split_set("dnsfilter_rulelist", newstr, 255 * 6 + 1, 5);
-#else
-		nvram_set("dnsfilter_rulelist", newstr);
-#endif
-		free(newstr);
-	}
-	free(nv);
-#endif
 
 /* Migrate lan_dns_fwd_local (384.11) */
 	if (nvram_get_int("lan_dns_fwd_local")) {

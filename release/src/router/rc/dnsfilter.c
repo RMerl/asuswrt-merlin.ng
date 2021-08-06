@@ -289,7 +289,13 @@ void dnsfilter_setup_dnsmasq(FILE *fp) {
 	}
 
 	/* DNS server per client */
+#ifdef HND_ROUTER
+	nv = nvp = malloc(255 * 6 + 1);
+	if (nv) nvram_split_get("dnsfilter_rulelist", nv, 255 * 6 + 1, 5);
+#else
 	nv = nvp = strdup(nvram_safe_get("dnsfilter_rulelist"));
+#endif
+
 	while (nv && (b = strsep(&nvp, "<")) != NULL) {
 		if (vstrsep(b, ">", &name, &mac, &mode, &enable) < 3)
 			continue;

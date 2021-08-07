@@ -1,0 +1,183 @@
+v1.9.15 (TBD)
+* Check for sys/auxv.h before using it. [Peter Seiderer]
+* fix build on uclibc (origin/pr/58) [Pierre-Jean Texier]
+* Improved make check tests [Jirka Hladky]
+
+v1.9.14 (Jan 01, 2021)
+* made enttest configurable
+* havegecmd.c - new command added to close the communication socket [Werner Fink]
+
+v1.9.13 (Jun 28, 2020)
+* added support for --version [Jirka Hladky]
+* updated systemd service file [Jirka Hladky]
+
+v1.9.12 (Jun 18, 2020)
+* fix a memory leak in havege_destroy [Anakin Zhang]
+
+v1.9.11 (Jun 11, 2020)
+* updated version reported by program [Jirka Hladky]
+
+v1.9.10 (Jun 11, 2020)
+* fix ordering cycle with private tmp [Christian Hesse]
+
+v1.9.9 (Jun 9, 2020)
+* Updated systemd service file [nicoo]
+* Bump soname [nicoo]
+* Fix crash on shutdown in threaded mode [Sergei Trofimovich]
+* Fix compilation with --enable-threads [Lars Wendler]
+
+v1.9.8 (Sep 30, 2019)
+* Fix for Unresolved symbol error_exit in libhavege #20 by pld-gitsync [Jirka Hladky]
+* order after systemd-tmpfiles-setup-dev.service (origin/pr/21) [Christian Hesse]
+* use systemd security features [Christian Hesse]
+* do not run in container [Christian Hesse]
+* do not use carriage return in line break [Christian Hesse]
+* Fixed invalid UTF-8 codes in ChangeLog [Jirka Hladky]
+
+
+v1.9.5 (Aug 20, 2019)
+ * Added test for /dev/random symlink [Jirka Hladky]
+ * Update to automake 1.16 [Jirka Hladky]
+ * Fix segv at start [Andrew]
+ * Fixed built issue on Cygwin [jbaker6953]
+ * Fix segfault on arm machines (origin/pr/7) [Natanael Copa]
+ * init.d/Makefile.am - add missing dependency [Jackie Huang]
+ * service.redhat - update PIDFile [Pierre-Jean Texier]
+ * Fix type mismatch in get_poolsize [Andreas Schwab]
+ * Fixup upstream changelog [Nicolas Braud-Santoni]
+ * Remove support for CPUID on ia64 (origin/pr/19) [Jeremy Bobbio]
+ * Output some progress during CUSUM and RANDOM EXCURSION test [Sven Hartge]
+ * Diagnostics capture mode now works correctly [Ethan Rahn]
+
+v1.9.4 (Aug 11, 2018)
+ * Avoid misleading message if cmd socket is in use
+
+v1.9.3 (Aug 10, 2018)
+ * Implemented a command mode and use it for chroot - contributed Dr. Werner Fink
+
+v1.9.2 (Nov 16, 2017)
+ * Add cross compile fixes contributed by Robert Schwebel
+ * Limit watermark max to less than pool size to avoid 100% cpu condition
+ * Add service.suse init script contributed by Tomas Chvatal
+ 
+v1.9.1 (Feb 11, 2014)
+ * Documentation and sample file touch-up for v1.9.
+ 
+v1.9  (Feb 10, 2014)
+ * Fix dead man limit in test procedure B. Fix broken AIS retry logic.
+ * Correct online test defaults
+ * Improve diagnostic display of test results, output summary, testing retries
+ * Add test/output summary to all abnormal app terminations
+ * Add required <stddef.h> include to havege.h. Add quick version check for lib users.
+ * Improve diagnostic build for testing online tests. Fix broken inject features.
+ * Rework major portions of havegetest,c for better performance with -fpic
+ * Correct test procedure B to match independent clean room implementation of reference
+ * Tweak configure.ac for arm build, make --disable-clock_gettime consistent
+ * Major edit of man pages, haveged.8 and libhavege.3
+ * Many other documentation changes: havege.h, README, etc...
+ 
+v1.8   (Jan 02, 2014)
+ * Fix return code for signalled termination.
+ * Update init.d/service.fedora - new return code + simple, not forking
+ * Add --enable_unitdir as DESTDIR for systemd install
+
+v1.7c (Jun 08, 2013)
+ * Fix alignment fault on mips in havegetest.c, procedure B.
+
+v1.7b (Jun 06, 2013)
+ * Fix alignment fault on sparc in havegetest.c, procedure A, test5XOR().
+ * Fix build ppc detection in configure.ac
+
+v1.7a (Feb 13, 2013)
+ * Fix parallel build (LDADD fix + VPATH fixes to test programs)
+ * Fix check target for automake v1.13 and previous (use check-local)
+ * Add option to suppress tuning code build
+ * Improve sample spec file for library
+
+v1.7  (Jan 15, 2013)
+ * Add havege_status_dump() as basis for haveged diagnostics
+ * Provide sample spec to build haveged and haveged-devel
+ * Add contrib/build to provide build support
+ * Modify build to use libtool
+ * Rename base types to alias stdint.h types to allow 'fixes' if necessary
+ * Rename all public functions to follow havege_* naming convention
+ * Sanitize havege.h to be include file for devel package
+ * Add destroy() to havege for library use.
+ * Move all remaining static vars to allocated memory.
+ * Rework include file structure to eliminate include sequence errors.
+ * Fix (rare) segfault in test0 caused by 1.6 alignment fix
+ 
+v1.6a (Dec 18, 2012)
+ * Fix typo in configure.ac
+ 
+v1.6 (Dec 15, 2012)
+ * Correct makefile encoding and defaults description
+ * Make clock_gettime a build option and correct dependencies when used.
+ * Fix alignment fault on arm64 in procedure A test0.
+
+v1.5 (Aug 12, 2012)
+ * Add online tests based on AIS-31 controlled by --enable-olt build option
+ * Add -o option to specify online tests to perform
+ * Add -p option to specify the pid location.
+ * Fix -F option to not take argument - i.e. now a switch
+ * Factor diagnostic methods for capture and inject for better performance
+ * Fix install target, move to bin and eliminate script if not daemon, now use sysv and systemd templates 
+ 
+v1.4 (Feb 07, 2012)
+ * Add s390 architecture. Thanks to Dan Horak and Jiri Hladky
+ * Add generic architecture with clock_gettime() timer.
+ * Rewrite collection loop to support multiple instances and new diagnostics
+ * Rewrite tuning mechanism to add virtual file system mining and correct cpuid bugs
+ * Add prototype multi-thread collection option
+ * Reduce collection buffer size to .5MB
+ * Improve/correct build and install
+ * Add new invocation options to support new features.
+ 
+v1.3 (Oct 23, 2011)
+ * Integrate contributions by Jirka Hladky to fine tune collection implementation.
+ * Add non-daemon interface with option to send continuous stream of output to stdout.
+
+v1.2 (June 26, 2011))
+ * Address compiler issues by using compiler intrinsics.
+ * Fix cpuid pic issues once again.
+
+v1.01 (Jan 04,2011)
+ * Add detached option for those who use a supervising daemon
+ * Build cleanup for non-cpuid environments
+
+v1.0 (Nov 28,2010)
+ * Fix gcc 4.5 optimization of HARDCLOCK
+ * Add contrib section
+
+v0.9 (Sep 01, 2009)
+ * Refine collection for gcc 4.4 on Intel  i7 (gentoo)
+ * Update auto tune to Intel latest cpuid spec
+ * Add check for cpuid instruction on i386
+ * Add man(8) page
+ * Cleanup check target to build with -Wall
+
+v0.8 (Jul 30, 2009)
+ * Correct pool size related calculations.
+
+v0.7 (May 1, 2009)
+ * More package contents confusion.
+
+v0.6 (Apr 29, 2009)
+ * Correct mix up in package contents
+
+v0.5 (Apr 28, 2009)
+ * Migrated project to GNU build
+
+v04 (Apr 26, 2009)
+ * Fix documentation typos!
+
+v03 (Apr 24, 2009)
+ * Reworked build/test for more general install.
+ * Integrate init script changes from A Bartlett
+
+v02 (Jan 19, 2009)
+ * Reworked daemon with run-time loop tuning.
+ * Submitted to freshmeat
+
+v (Jan 10, 2009)
+ * Original daemon based on libhavege.

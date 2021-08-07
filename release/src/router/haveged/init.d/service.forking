@@ -1,0 +1,11 @@
+[Unit]
+Description=Entropy Daemon based on the HAVEGE algorithm
+Documentation=man:haveged(8) http://www.issihosts.com/haveged/
+
+[Service]
+Type=forking
+PIDFile=/run/haveged.pid
+ExecStart=@SBIN_DIR@/haveged -w 1024 -v 1 -p /run/haveged.pid
+
+[Install]
+WantedBy=multi-user.target

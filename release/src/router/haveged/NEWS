@@ -1,0 +1,81 @@
+v1.9.8 (Sep 30, 2019)
+ * Various bug fixes - please see ChangeLog for the detailed list of changes
+ 
+v1.9.5 (Aug 11, 2018)
+ * Various bug fixes - please see ChangeLog for the detailed list of changes
+
+v1.9.4 (Aug 11, 2018)
+ * Avoid misleading message if cmd socket is in use
+
+v1.9.3 (Aug 10, 2018)
+ I (Jirka Hladky) took over haveged upstream development and moved it to GiHub
+ https://github.com/jirka-h/haveged
+ This version implements a command mode and use it for chroot -it was
+ contributed by Dr. Werner Fink.
+
+v1.9.2 (Nov 16, 2017)
+
+   This release cleans up issues that have accumulated since the last release. I retired
+   several years ago, and haveged is no longer under active development. This release only
+   attempts to collect and document the downstream reports I have received.
+
+v1.9.1 (Feb 11, 2014)
+   Documentation and sample file touch-up for v1.9.
+
+v1.9   (Feb 10, 2014)
+
+   A Fedora bugzilla request was received to harden the haveged build. Since haveged has
+   traditionally been fussy with compiler options, Jirka Hladky set up a large scale test
+   using using TestU01's BigCrush and PractRand. A normally harmless bug inadvertently sent
+   the 8TB data sets through the haveged run-time continuous test. This accident revealed
+   many problems with the run-time test implementation, including incorrect test defaults
+   based on app/daemon selection, broken dead man limit in test procedure B, broken retry
+   logic, and implementation bugs in both test procedure A and B. Attempting to diagnose
+   these problems also revealed the injection feature of the diagnostic build was also
+   broken.
+
+   Once the injection facility was fixed, an independent implementation of the AIS reference
+   for procedure B was used to verify the haveged implementation down to bit level. Portions
+   of the run-time test suite were rewritten to correct defects and improve performance of the
+   run-time test suite in PIE builds. The procedure A tests were rewritten to remove the need
+   to overlap the previous test to attain byte alignment - all test procedures are now bit
+   oriented. Unrelated changes included in the release include adding a quick version check
+   for libhavege use, many small improvements to diagnostics, and more cleanup man pages,
+   sample files, and other documentation.
+
+   Special thanks to Jirka Hladky for help in sorting out the procedure B bugs, verifying
+   the haveged RNG is statistically comparable to RDRAND, and the first formal testing of
+   haveged on ARM.
+
+v1.8   (Jan 02, 2014)
+
+   Fix return code for signaled termination. Update init.d/service.fedora to use new
+   return code and simple service type. Add --enable_unitdir as DESTDIR for systemd
+   install. Cleanup documentation and man file.
+
+v1.7c  (Jun 08, 2013)
+
+   Additional fix for run-time test alignment problems on mips.
+
+v1.7b  (Jun 06, 2013)
+
+   Fix run-time test alignment problems on sparc and mips. Fix ppc detection in build.
+
+v1.7a  (Feb 13, 2013)
+
+   Fix broken parallel builds - fix LDADD problem in build, VPATH problems in check targets.
+   Move to check-local for check target to work with automake v1.13 but retain backward
+   compatibility. Modify build to make tuning component optional in build. Improve sample
+   spec file and docs.
+
+v1.7   (Jan 15, 2013)
+
+   The build has been restructured to provide a devel package. This introduces a new libtool
+   dependency. The new contrib/build/build.sh script is intended to toggle this requirement
+   as well as providing a bootstrap to recover from automake mismatches. The script will also
+   build and run devel sample code for those interested in using the devel package.
+
+   Other build related changes include updating AC_PREQ to a more reasonable, 2.59 and changing
+   the build option for init scripts to default to --enable-init=none. The format of the
+   haveged diagnostic display has changed to provided more information and the output is now
+   displayed after output is generated in the non-daemon case.

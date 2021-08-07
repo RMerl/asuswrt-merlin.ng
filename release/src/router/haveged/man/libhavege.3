@@ -1,0 +1,414 @@
+.TH libhavege 3  "February 10, 2014" "version 1.1" "LIBRARY FUNCTIONS"
+.SH NAME
+libhavege, havege_create, havege_run, havege_rng, havege_destroy, havege_status, havege_status_dump, havege_version \- haveged RNG
+.SH SYNOPSIS
+.HP
+.P
+.nf
+#include <haveged/havege.h>
+H_PARAMS params = {0};
+h_status status;
+char     status_buf[512];
+
+if (NULL==havege_version(HAVEGE_PREP_VERSION)) exit(1);
+H_PTR handle = havege_create(&params);
+havege_status(handle, &status);
+havege_run(handle);
+rc = havege_rng(handle, handle->io_buf, handle->i_readSz/sizeof(H_UINT));
+havege_status_dump(handle, H_SD_TOPIC_BUILD, status_buf, sizeof(status_buf));
+havege_destroy(handle);
+.fi
+    
+.SH DESCRIPTION
+.P
+The libhavege library provides the haveged random number generator and it's
+associated tuning and testing facilities in a development sub-package. All
+haveged conditional build features are preserved and all haveged options not
+directly related to it's daemon or file system interfaces are available. This
+means that the same haveged tuning and testing components are present in the
+library with the equivalent controls provided by the haveged command line. 
+
+
+.SH API METHODS
+.P
+The libhavege library uses the opaque handle technique to manage it's required
+resources. Errors are returned in the "error" member of the handle. The
+havege_destroy() method should be called to dispose of any resources
+claimed by havege_create().
+.P
+.BI "H_PTR havege_create(H_PARAMS " *params ");"
+
+Create an anchor. Most members of the H_PARAMS input to this call correspond
+closely to haveged command line options (see
+.B haveged(8)
+for details). The caller
+should check for a non-null return value with a error value of H_NOERR. Any
+non-null return should be disposed of by a call to havege_destroy() to free any
+resources. Possible error values: H_NOERR, H_NOTESTSPEC, H_NOBUF, H_NOTESTMEM,
+H_NOINIT
+
+.P
+.BI "void havege_destroy(H_PTR " hptr ");"
+
+Free all allocated anchor resources. If the multi-core option is used, this
+method should be called from a signal handler to prevent zombie processes. If
+called by the process that called haveged_create(), hptr will be freed when all
+child processes (if any) have terminated. If called by a child process, H_EXIT
+will be set and all children awakened to exit.
+
+.P
+.BI "int havege_rng(H_PTR " hptr ", H_UINT " *buf ", H_UINT " sz ");"
+
+Read random bytes from an active anchor. The RNG must have been previously
+readied by a call to havege_run(). The read must take place within the allocated
+buffer, hptr->io_buf. The range specified is the number of H_UINT to read. If
+the multi-core option is used, this buffer is memory mapped between collectors.
+Possible error values: H_NOERR, H_NOTESRUN, H_NOPOST, H_NODONE, H_NORQST,
+H_NOCOMP, H_EXIT
+
+.P
+.BI "int havege_run(H_PTR " hptr ");"
+
+Warm up the RNG and run the start-up tests. The operation succeeded if the error
+member of the handle is H_NOERR. A failed handle should be disposed of by a call
+to havege_destroy(). Possible error values: H_NOERR, H_NOCOLLECT, H_NOWALK,
+H_NOTESTMEM, H_NOTASK, H_NOTESTTOT, H_NOWAIT, H_NOTIMER, and any havege_rng()
+error.
+
+.P
+.BI "void havege_status(H_PTR " hptr ", H_STATUS " hsts ");"
+ 
+Fills in the h_status structure with read-only information collected from the
+package build, run-time tuning, and test components.
+ 
+.P
+.BI "int havege_status_dump(H_PTR " hptr ", H_SD_TOPIC " topic ", char " *buf ", size_t " len ");"
+
+Calls havege_status() and formats standard presentations of havege status in the
+supplied buffer. The standard formats are:
+
+.RS
+H_SD_TOPIC_BUILD
+
+ver: %s; arch: %s; vend: %s; build: (%s); collect: %dK
+
+H_SD_TOPIC_TUNE
+
+cpu: (%s); data: %dK (%s); inst: %dK (%s); idx: %d/%d; sz: %d/%d
+
+H_SD_TOPIC_TEST
+
+[tot tests(%s): A:%d/%d B: %d/%d;][continuous tests(%s): A:%d/%d B: %d/%d;][last entropy estimate %g]
+
+H_SD_TOPIC_SUM
+
+fills: %d, generated: %.4g %c bytes
+.RE
+
+.BI "const char *havege_version(const char *" version ");"
+ 
+Return/check library prep version. The prep version is the package version used
+to build the library. A null argument returns the prep version unconditionally.
+Using the definition of the prep string in havege.h as input returns the
+prep version if the header file is compatible with the library, or NULL if
+it is not. Intended to be called before attempting any initialization.
+
+.SH NOTES
+.P
+
+The sizes of the processor level 1 instruction and data caches are used to tune
+the HAVEGE algorithm for maximum sensitivity. If these sizes not specified,
+haveged will attempt to determine the sizes dynamically from the Linux sysfs
+and/or cpuid instruction with a fallback to a compiled default if no better
+information is not available.
+
+The haveged RNG includes a run time test facility based upon the test suite
+defined in the AIS-31 specification from the The German Federal Office for
+Information Security (Bundesamt für Sicherheit in der Informationstechnik). The
+test suite consists of 11 statistical tests packaged into two test suites ("A"
+and "B"). The tests can be run at initialization (a.k.a. a "tot" test), or
+continuously to monitor all output. Failure of a suite will abort operation
+unless the behavior is explicitly waived in the test setup options.
+.P
+
+Procedure A contains 6 test procedures designed to ensure statistically
+inconspicuous behavior. The first test, "test0", checks the disjointedness of
+65k six-bit strings. The remainder of the procedure consists of 257 repetitions
+of the FIPS140-1 tests, "test1" through "test4", and an auto-correlation test,
+"test5". The fixed size of the Procedure A input makes it ideal for continuous
+use, but the procedure is slow and resource intensive. In particular, test5 is
+several orders of magnitude slower than any other individual AIS test. As an
+alternative for those who cannot tolerate this load, procedure A variants A<n>
+are provided that execute all included tests but execute test5 only every 2^n
+repetitions. Even with this accommodation, procedure A is much slower than
+procedure B. 
+
+.P
+
+Procedure B contains 5 tests, "test6a", "test6b', "test7a", "test7b", and
+"test8". The first 4 tests verify the expected frequencies for samples 100,000
+one-step, two-step, three-step, and four-step bit transitions. The last test
+provides an empirical entropy estimate of the input. The input required to
+complete these tests is variable, resulting in an ever-shifting bit alignment
+that guards against buffering artifacts.
+
+.P
+
+Each test procedure requires more than 1MB of data. Test input is managed by a
+bit index into the collection buffer. An independent index manages where integer
+output is taken from the same buffer. A buffer fill is triggered when the output
+index indicates all data has been extracted from the buffer. Online testing
+takes place after the buffer has been refilled but before the output index
+update allows output to resume. If any online test fails while processing the
+buffer, the buffer will be refilled and reprocessed until any retry is complete
+and the buffer contains no failed online tests or the online test procedure has
+failed and the RNG is considered broken.
+
+.P
+
+It is recommend to run both AIS test procedures at start-up to ensure the  RNG
+is properly initialized. If resources are in short supply, omitting procedure A
+will save memory and time, with little risk in circumstances where output is
+mixed with other sources in /dev/random or other csprng. Continuous testing is
+also recommended where the throughput penalty is acceptable. One recent
+assessment of testing throughput costs is shown below.
+
+.RS
+.TP 40
+haveged -n0 -oc | pv > /dev/null
+400MiB/s
+.TP
+haveged -n0 -ocb | pv > /dev/null
+70MiB/s
+.TP
+haveged -n0 -oca8b | pv > /dev/null
+13MiB/s
+.TP
+haveged -n0 -oca8 | pv > /dev/null
+8MiB/s
+.TP
+haveged -n0 -oca | pv > /dev/null
+100kiB/s
+.RE
+.P
+
+Continuous testing also exposes another possible pitfall. Even an ideal RNG has
+a 10e-4 chance of failing either test procedure. The strict retry policy of
+AIS-31 is designed to guarantee an ideal RNG will "almost never" fail a test
+procedure. A single retry is mandated only to recover from a previous attempt
+that experienced a single individual test failure. The haveged implementation
+logs all retries and terminates on test procedure failures unless the procedure
+has been flagged as advisory by the "w" argument (see --onlinetest in
+.B haveged(8)
+). Little evidence of the retry mechanism is seen unless large data sets are
+processed. Procedure A is too slow to be practical in these situations, so
+procedure B has been the best studied. Retries are observed at the approximate
+rate of 0.7-0.8 failures/GB, mostly in the test7 multi-step transition checks.
+.P
+The probability that procedureB will fail two times in a row (in which case the
+program will be terminated unless w option was specified) is 4e-7 which is
+expected to happen at an approximate rate of once per 3,000 TB. When producing
+large amounts of data in order of TBs it's recommended to use -w option to make
+sure that program will not prematurely terminate because of a failed retry
+and carefully examine the stderr output for any problems.
+
+.P
+
+.SH FILES
+
+Tuning information may be extracted from the following virtual file paths if
+tuning is required and the path exists.
+.P
+.RS
+.I /proc/cpuinfo
+.P
+.I /proc/self/status
+.P    
+.I /sys/devices/system/cpu/online
+.P
+.I /sys/devices/system/cpu/cpu%d/cache/index%d/level
+.RE
+
+.SH DIAGNOSTICS
+
+To enable diagnostic output, supply a msg_out callback when creating the handle. All
+possible errors are enumerated in havege.h and reproduced here for reference.
+.P
+.RE
+.B 01 H_NOHANDLE
+.RS
+No memory for handle
+.P
+.RE
+.B 02 H_NOBUF
+.RS
+Output buffer allocation failed
+.P
+.RE
+.B 03 H_NOINIT
+.RS
+Semaphore init failed
+.P
+.RE
+.B 04 H_NOCOLLECT
+.RS
+Collector allocation failed
+.P
+.RE
+.B 05 H_NOWALK
+.RS
+Walk buffer allocation failed
+.P
+.RE
+.B 06 H_NOTESTSPEC
+.RS
+Invalid test specification
+.P
+.RE
+.B 07 H_NOTESTINIT
+.RS
+Test setup failed
+.P
+.RE
+.B 08 H_NOTESTMEM
+.RS
+Unable to allocate test memory
+.P
+.RE
+.B 09 H_NOTESTTOT
+.RS
+Power on (i.e. 'tot') test failed
+.P
+.RE
+.B 10 H_NOTESTRUN
+.RS
+Continuous test failed
+.P
+.RE
+.B 11 H_NOCORES
+.RS
+Too many cores specified
+.P
+.RE
+.B 12 H_NOTASK
+.RS
+Unable to create child task
+.P
+.RE
+.B 13 H_NOWAIT
+.RS
+sem_wait failed
+.P
+.RE
+.B 14 H_NOPOST
+.RS
+sem_post failed
+.P
+.RE
+.B 15 H_NODONE
+.RS
+sem_post done failed
+.P
+.RE
+.B 16 H_NORQST
+.RS
+sem_post request failed
+.P
+.RE
+.B 17 H_NOCOMP
+.RS
+wait for completion failed
+.P
+.RE
+.B 18 H_EXIT
+.RS
+Exit signal
+.P
+.RE
+.B 19 H_NOTIMER
+.RS
+Timer failed
+.P
+.RE
+.RE
+.SH EXAMPLE
+
+The following minimal program writes the contents of 16 collection buffers
+of random data to stdout with continuous testing.
+
+.nf
+#include <stdio.h>
+#include <haveged/havege.h>
+int main(void)
+{
+H_PTR havege_state;
+H_PARAMS havege_parameters = {0};
+int i, rc;
+
+if (NULL==havege_version(HAVEGE_PREP_VERSION)) {
+  fprintf(stderr, "Incompatible library %s\\n", havege_version(NULL));
+  return 1;
+  }
+havege_parameters.testSpec="ta8bcb";
+havege_state = havege_create(&havege_parameters);
+rc = havege_state==NULL? H_NOHANDLE : havege_state->error;
+if (H_NOERR==rc) {
+  if (0==havege_run(havege_state)) {
+    H_UINT *buf = havege_state->io_buf;
+    int size = havege_state->i_readSz /sizeof(H_UINT);
+    char info[256];
+
+    for(i=0;i<16;i++) {
+        rc = havege_rng(havege_state, buf, size);
+        if (rc != size) {
+            fprintf(stderr, "RNG read failed %d\\n", havege_state->error);
+            break;
+            }
+        rc = fwrite(buf, 1, size*sizeof(H_UINT), stdout);
+        if ( rc < size ) {
+            fprintf(stderr, "Write failed\\n");
+            break;
+            }
+        }
+    i = havege_status_dump(havege_state, H_SD_TOPIC_TEST, info, sizeof(info));
+    info[i++] = '\\n';
+    havege_status_dump(havege_state, H_SD_TOPIC_SUM, info+i, sizeof(info)-i);
+    fprintf(stderr, "%s\\n", info);
+    }
+  else fprintf(stderr, "Initialize failed %d\\n", havege_state->error);
+  havege_destroy(havege_state);
+  }
+else fprintf(stderr, "Create failed %d\\n", rc);
+return rc;
+}
+.fi
+
+Defaults are provided for all inputs to havege_create() as documented in havege.h. In this
+case for example, (16*4kb=65kb) will be written to stdout because the default size for
+i_readsz in 4kb.
+
+.SH SEE ALSO
+.TP
+.BR haveged(8)
+
+.SH REFERENCES
+
+.B haveged(8)
+references provides a basic reading list. The following links are suggested as sources for
+further exploration.
+.TP
+The origins of the HAVEGE concept can be found at:
+http://www.irisa.fr/caps/projects/hipsor/
+.TP
+Tuning concepts inspired by (the complexity) at:
+http://www.open-mpi.org/projects/hwloc/
+.TP
+Reference documentation for the AIS-31 test suite can be found at:
+https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Zertifizierung/Interpretationen/AIS_31_Functionality_classes_for_random_number_generators_e.pdf?__blob=publicationFile
+.TP
+Implementation and design information available at:
+http://www.issihosts.com/haveged/
+
+
+.SH AUTHORS
+Gary Wuertz <gary@issiweb.com> and Jirka Hladky <hladky jiri AT gmail DOT com> 

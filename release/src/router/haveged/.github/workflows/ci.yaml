@@ -1,0 +1,19 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: reconfigure
+      run: autoreconf -fi
+    - name: configure
+      run: ./configure --prefix="/usr"
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make install
+      run: sudo make install

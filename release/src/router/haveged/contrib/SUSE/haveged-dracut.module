@@ -1,0 +1,26 @@
+#!/bin/bash
+# /usr/lib/dracut/modules.d/98haveged/module-setup.sh
+# -*- mode: shell-script; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
+# ex: ts=8 sw=4 sts=4 et filetype=sh
+
+# called by dracut
+depends() {
+    return 0
+}
+
+installkernel() {
+    return 0
+}
+
+# called by dracut
+install() {
+    inst_multiple -o \
+        /usr/sbin/haveged \
+        $systemdsystemunitdir/haveged.service \
+        $systemdsystemunitdir/haveged-switch-root.service
+    mkdir -p "$initdir/$systemdsystemunitdir/sysinit.target.wants"
+    mkdir -p "$initdir/$systemdsystemunitdir/initrd-switch-root.target.wants"
+    mkdir -p "$initdir/$systemdsystemunitdir/systemd-journald.service.wants"
+    ln_r "$systemdsystemunitdir/haveged.service" "$systemdsystemunitdir/systemd-journald.service.wants/haveged.service"
+    ln_r "$systemdsystemunitdir/haveged-switch-root.service" "$systemdsystemunitdir/initrd-switch-root.target.wants/haveged-switch-root.service"
+}

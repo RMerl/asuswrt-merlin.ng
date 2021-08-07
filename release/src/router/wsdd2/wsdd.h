@@ -27,7 +27,9 @@
 #include <net/if.h> // IFNAMSIZ
 #include <arpa/inet.h> // ntohs()
 #include <netinet/in.h> // struct sockaddr_in, struct ip_mreq
+#ifndef ASUSWRT
 #include <linux/in.h> // struct ip_mreqn
+#endif
 #include <linux/netlink.h> // struct sockaddr_nl
 #include <time.h> // time_t, time()
 

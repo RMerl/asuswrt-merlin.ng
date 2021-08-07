@@ -1,0 +1,19 @@
+Source: wsdd2
+Section: net
+Priority: optional
+Maintainer: Justin Maggard <justin.maggard@netgear.com>
+Build-Depends: debhelper (>= 8)
+Standards-Version: 3.9.4
+
+Package: wsdd2
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends}
+Description: Web Services for Devices (WSD) daemon
+ Web Services for Devices or Web Services on Devices (WSD), is a
+ Microsoft API to simplify programming connections to web service
+ enabled devices, such as Printers, Scanners and File Shares.
+ .
+ This daemon advertises and responds to probe requests from Windows
+ clients looking for File Shares.  It also implements LLMNR Multicast
+ name lookup services.

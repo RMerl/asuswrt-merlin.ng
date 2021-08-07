@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+export DH_ALWAYS_EXCLUDE=.git
+
+export CFLAGS := -g -O2 -Wall -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security
+export CPPFLAGS := -D_FORTIFY_SOURCE=2
+export CXXFLAGS := -g -O2 -Wall -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security
+export FFLAGS := -g -O2
+export LDFLAGS := -g -Wl,-z,relro
+
+%:
+	dh $@

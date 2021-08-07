@@ -1,0 +1,55 @@
+wsdd2 (1.8) stable; urgency=medium
+
+  * Fix CPU spinner on disconnected endpoint socket.
+
+ -- Justin Maggard <justin.maggard@netgear.com>  Fri, 06 Oct 2017 10:58:48 -0700
+
+wsdd2 (1.7) stable; urgency=medium
+
+  * Fix send return code evaluation.
+
+ -- Justin Maggard <justin.maggard@netgear.com>  Wed, 23 Aug 2017 14:34:10 -0700
+
+wsdd2 (1.6) stable; urgency=medium
+
+  * Fix one more crash bug with VPN interfaces.
+
+ -- Justin Maggard <justin.maggard@netgear.com>  Mon, 09 Jan 2017 15:28:57 -0800
+
+wsdd2 (1.5) stable; urgency=medium
+
+  * Fix crash bug with VPN interfaces.
+
+ -- Justin Maggard <justin.maggard@netgear.com>  Fri, 06 Jan 2017 17:42:49 -0800
+
+wsdd2 (1.4) unstable; urgency=medium
+
+  * Fix some memory leaks.
+
+ -- Justin Maggard <justin.maggard@netgear.com>  Tue, 06 Sep 2016 15:13:10 -0700
+
+wsdd2 (1.3) unstable; urgency=medium
+
+  * Filter out frequent IPv6 RA new address notifications.
+
+ -- Justin Maggard <justin.maggard@netgear.com>  Fri, 01 Apr 2016 12:17:45 -0700
+
+wsdd2 (1.2) unstable; urgency=low
+
+  * Fix some more debug log levels.
+  * Allow reuse of HTTP addrs, to allow for quickly restart the service.
+
+ -- Justin Maggard <justin.maggard@netgear.com>  Mon, 21 Mar 2016 13:47:50 -0700
+
+wsdd2 (1.1) unstable; urgency=low
+
+  * Fix memory leak.
+  * Don't terminate when encountering a temporary error.
+
+ -- Justin Maggard <justin.maggard@netgear.com>  Thu, 17 Mar 2016 17:33:32 -0700
+
+wsdd2 (1.0) unstable; urgency=low
+
+  * Initial release.
+
+ -- Justin Maggard <justin.maggard@netgear.com>  Wed, 16 Mar 2016 16:19:01 -0700

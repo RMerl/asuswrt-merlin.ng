@@ -21,41 +21,41 @@
 #ifndef _WSDD_H_
 #define _WSDD_H_
 
-#define _GNU_SOURCE
+#include <stdbool.h> // bool
+#include <stdio.h> // FILE, fopen(), fprintf()
+#include <syslog.h> // syslog()
+#include <net/if.h> // IFNAMSIZ
+#include <arpa/inet.h> // ntohs()
+#include <netinet/in.h> // struct sockaddr_in, struct ip_mreq
+#include <linux/in.h> // struct ip_mreqn
+#include <linux/netlink.h> // struct sockaddr_nl
+#include <time.h> // time_t, time()
 
-#include <sys/types.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include <unistd.h>
-
-#include <stdbool.h>
-#include <ctype.h>
-#include <err.h>
-#include <errno.h>
-
-#include <time.h>
-#include <syslog.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <arpa/inet.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <ifaddrs.h>
-#include <linux/rtnetlink.h>
-
+/* wsdd2.c */
+extern char *hostname, *hostaliases, *netbiosname, *netbiosaliases, *workgroup;
 extern int debug_L, debug_W;
-extern char *netbiosname, *workgroup;
-#define DEBUG(x, y, ...)	\
-	do {	\
-		if (debug_##y >= (x)) {	\
-			fprintf(stderr, __VA_ARGS__);	\
-			putc('\n', stderr);		\
-			syslog(LOG_USER|LOG_ERR, __VA_ARGS__);	\
-		}		\
+extern bool is_daemon;
+
+#define LOG(level, ...)						\
+	do {							\
+		if (is_daemon) {				\
+			syslog(LOG_USER | (level), __VA_ARGS__);\
+		} else {					\
+			fprintf(stderr, __VA_ARGS__);		\
+			putc('\n', stderr);			\
+		}						\
+	} while (0)
+
+#define DEBUG(x, y, ...)						\
+	do {								\
+		if (debug_##y >= (x)) {					\
+			if (is_daemon) {				\
+				syslog(LOG_USER | LOG_DEBUG, __VA_ARGS__);\
+			} else {					\
+				fprintf(stderr, __VA_ARGS__);		\
+				putc('\n', stderr);			\
+			}						\
+		}							\
 	} while (0)
 
 #ifndef HOST_NAME_MAX
@@ -63,7 +63,7 @@ extern char *netbiosname, *workgroup;
 #endif
 
 #ifndef ARRAY_SIZE
-#define ARRAY_SIZE(a)	(sizeof(a)/sizeof(a[0]))
+#define ARRAY_SIZE(a)	(sizeof(a) / sizeof((a)[0]))
 #endif
 
 #ifndef max
@@ -73,6 +73,7 @@ extern char *netbiosname, *workgroup;
 #define _ADDRSTRLEN	max(INET_ADDRSTRLEN, INET6_ADDRSTRLEN)
 
 typedef union {
+	struct sockaddr		sa;
 	struct sockaddr_in	in;
 	struct sockaddr_in6	in6;
 	struct sockaddr_nl	nl;
@@ -96,14 +97,16 @@ struct endpoint {
 	int sock;
 	char *errstr;
 	int _errno;
-	size_t mlen, llen;
+	size_t mlen, llen, mreqlen;
 	_saddr_t mcast, local;
 	union {
+#ifdef USE_ip_mreq
 		struct ip_mreq ip_mreq;
-		/* struct ip_mreqn ip_mreq; */
+#else
+		struct ip_mreqn ip_mreq;
+#endif
 		struct ipv6_mreq ipv6_mreq;
 	} mreq;
-	size_t mreqlen;
 };
 
 struct service {
@@ -122,21 +125,29 @@ struct service {
 	time_t interval;
 };
 
-extern int wsd_init(struct endpoint *);
-extern int wsd_recv(struct endpoint *);
-extern void wsd_exit(struct endpoint *);
+// wsd.c
+int wsd_init(struct endpoint *);
+int wsd_recv(struct endpoint *);
+void wsd_exit(struct endpoint *);
 
-extern int wsd_http(struct endpoint *);
+void init_getresp(void);
+const char *get_getresp(const char *key);
+int set_getresp(const char *key, const char **endp);
+void printBootInfoKeys(FILE *fp, int indent);
 
-extern int llmnr_init(struct endpoint *);
-extern int llmnr_recv(struct endpoint *);
-extern int llmnr_timer(struct endpoint *);
-extern void llmnr_exit(struct endpoint *);
+// llmnr.c
+int llmnr_init(struct endpoint *);
+int llmnr_recv(struct endpoint *);
+void llmnr_exit(struct endpoint *);
 
-extern int connected_if(const _saddr_t *, _saddr_t *);
-extern char *ip2uri(const char *);
+// wsdd2.c
+int connected_if(const _saddr_t *, _saddr_t *);
+char *ip2uri(const char *);
 
-extern int set_getresp(const char *, const char **);
-extern void printBootInfoKeys(FILE *, int);
+// nl_debug.c
+int nl_debug(void *buf, int len);
+void dump(const void *p, size_t len, unsigned long start, const char *prefix);
+void dump_str(const void *p, size_t len);
+void dump_hex(const void *p, size_t len);
 
 #endif

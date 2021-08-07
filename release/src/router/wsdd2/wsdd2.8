@@ -1,7 +1,7 @@
 '\" t
 .\"     Title: wsdd2
 .\"
-.TH "WSDD2" "8" "03/15/2016" "WSDD" "System Administration tools"
+.TH "WSDD2" "8" "02/05/2021" "WSDD" "System Administration tools"
 .\" -----------------------------------------------------------------
 .\" * set default formatting
 .\" -----------------------------------------------------------------
@@ -12,31 +12,30 @@
 .\" -----------------------------------------------------------------
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
+
 .SH "NAME"
-wsdds \- server to provide WSDD/LLMNR services to clients
+wsdd2 \- server to provide WSDD/LLMNR services to clients
 .SH "SYNOPSIS"
 .HP \w'\ 'u
-wsddd2 [\-4] [\-6] [\-L] [\-W] [\-d] [\-h] [\-l] [\-t] [\-u] [\-w]
+wsddd2 [\-h] [\-d] [\-4] [\-6] [\-u] [\-t] [\-l] [\-w] [\-L] [\-W]
+[\-i <intrerface>] [\-H <hostname>] [\-N <netbiosname>] [\-G <workgroup>]
+[\-b <kvlist>]
+
 .SH "DESCRIPTION"
 .PP
-\fBwsdd2\fR
-is the server daemon that provides WSDD (Web Services Dynamic Discovery)
-as well as LLMNR (Link-Local Multicast Name Resolution) services
+\fBwsdd2\fR is the server daemon that provides WSDD (Web Services Dynamic
+Discovery) as well as LLMNR (Link-Local Multicast Name Resolution) services
 primarily for Windows clients on both IPv4 and IPv6.
 .PP
-\fBwsdd2\fR's WSDD protocol handler
-multicasts Hello and Bye messages by itself over UDP,
-submits ProbeMatch and ResolveMatch messages
-in response to Probe and Resolve queries respectively over UDP,
-and submits HTTP reponse messages
-to HTTP property query POST messages over TCP.
+\fBwsdd2\fR's WSDD protocol handler multicasts Hello and Bye messages by
+itself over UDP, responds with ProbeMatch and ResolveMatch messages in
+response to Probe and Resolve queries respectively over UDP, and sends
+HTTP reponse messages to HTTP property query POST messages over TCP.
 .PP
-\fBwsdd2\fR's LLMNR protocol handler
-responds to LLMNR multicast query messages over UDP
-and to LLMNR unicast query messages over TCP.
+\fBwsdd2\fR's LLMNR protocol handler responds to LLMNR multicast query
+messages over UDP and to LLMNR unicast query messages over TCP.
 .PP
-\fBwsdd2\fR
-uses and listens on the following ports:
+\fBwsdd2\fR uses and listens on the following ports:
 .PP
 3702 UDP
 .RS 4
@@ -57,82 +56,126 @@ LLMNR query multicast group addresses 224.0.0.252 and ff02::1:3.
 .RS 4
 LLMNR query unicast.
 .RE
+
 .SH "OPTIONS"
+.PP
+\-h
+.RS 4
+Display a simple help messasge to stdout including currently in effect
+parameters' values.
+.RE
+
+.PP
+\-d
+.RS 4
+Fork off a child process to become daemon.
+.RE
+
 .PP
 \-4 \-6
 .RS 4
 Respond only to IPv4 and IPv6 respectively.
-Default is equivalent to "\-4 \-6."
+Default is equivalent to "\-4 \-6".
 .RE
+
+.PP
+\-u \-t
+.RS 4
+Respond only to UDP and TCP respectively.
+Default is equivalent to "\-u \-t".
+.RE
+
+.PP
+\-l \-w
+.RS 4
+Respond only to LLMNR and WSDD respectively.
+Default is equivalent to "\-l \-w".
+.RE
+
 .PP
 \-L
 .RS 4
 Print out LLMNR debug messages to stdout.
 Multiple \-L's to increment debug level.
 .RE
+
 .PP
 \-W
 .RS 4
 Print out WSDD debug messages to stdout.
 Multiple \-W's to increment debug level.
 .RE
+
+.PP
+\-i <interface>
+.RS 4
+Use only specified interface to reply to incoming requests. Specifying "any"
+or leaving option out causes \fBwsdd2\fR to listen on every IPv4 or IPv6
+capable interface excluding those that have names matching LeafNets,
+docker*, veth*, tun*, ppp*, zt*.
+.RE
+
+.PP
+\-H <hostname>
+.RS 4
+Use specified string as host name instead of first label before '.' of
+system host name retrieved with \fBgethostname\fR(3) or \fBuname\fR(3)
+functions.
+.RE
+
+.PP
+\-N <nebiosname>
+.RS 4
+Use specified string as NETBIOS machine name instead of value returned by
+.br
+\fBtestparm -s --parameter-name="netbios name"\fR command or system host
+name.
+.RE
+
+.PP
+\-G <workgroup>
+.RS 4
+Use specified string as workgroup name instead of value returned by
+.br
+\fBtestparm -s --parameter-name="workgroup"\fR command or "WORKGROUP"
+default value.
+.RE
+
 .PP
 \-b "\fIkey1\fR:\fIval1\fR,\fIkey2\fR:\fIval2\fR,\fI...\fR"
 .RS 4
-Set WSDD query over HTTP response values in a comma-delimited list.
-The valid/necessary keys are:
-.RS 4
-vendor
-model
-serial
-sku
-vendorurl
-modelutl
-presentationurl
-.RE
+Set WSDD query over HTTP response values in a comma-delimited list. The
+valid/necessary keys are: \fBvendor, model, serial, sku, vendorurl,
+modelurl, presentationurl\fR.
+.br
 This option overrides /proc/sys/dev/boot/info readouts.
 .RE
-.PP
-\-d
-.RS 4
-Fork off a child process to go daemon.
-.RE
-.PP
-\-h
-.RS 4
-Display a simple help messasge to stdout.
-.RE
-.PP
-\-l \-w
-.RS 4
-Respond only to LLMNR and WSDD respectively.
-Default is equivalent to "\-l \-w."
-.RE
-.PP
-\-t \-u
-.RS 4
-Respond only to TCP and UDP respectively.
-Default is equivalent to "\-t \-u."
-.RE
+
 .RE
 .SH "WSDD PROPERTY QUERY RESPONSE"
 .PP
-\fBwsdd2\fR
-responds to property queries using the following values over HTTP.
-If a value may be set with multiple methods,
-the latter in the method list has precedence.
+\fBwsdd2\fR responds to property queries using the following values over
+HTTP. If a value may be set with multiple methods, the latter in the method
+list has precedence.
+
 .PP
 Vendor
 .RS 4
 Value retrieved from /proc/sys/dev/boot/info or set with the -b option.
 .RE
 .PP
-VendorURL
+Model
 .RS 4
-Value set with the -b option.
+Value retrieved from /proc/sys/dev/boot/info or set with the -b option.
 .RE
 .PP
-Model
+Serial
+.RS 4
+Value retrieved from /proc/sys/dev/boot/info or set with the -b option or
+\fB0\fR.
+.RE
+.PP
+SKU
 .RS 4
 Value retrieved from /proc/sys/dev/boot/info or set with the -b option.
 .RE
@@ -142,74 +185,63 @@ ModelURL
 Value set with the -b option.
 .RE
 .PP
-PresentationURL
+VendorURL
 .RS 4
 Value set with the -b option.
 .RE
 .PP
-Host
+PresentationURL
 .RS 4
-Host name retrieved with \fBgethostname\fR(3),
-NETBIOS name retrieved with \fBtestparm\fR(1),
-or value set with the -b option.
+Value set with the -b option.
 .RE
-.PP
-Workgroup
-.RS 4
-Value retrieved with \fBtestparm\fR(1) or set with the -b option.
-.RE
+
 .SH "FILES"
+.PP
 /etc/samba/smb.conf
 .RS 4
-This is the default location of the samba configuration file.
+This is the default location of the Samba configuration file.
 .RE
+
 .PP
 /etc/machine-id
 .RS 4
-A single line text file containing a host-unique UUID in the form of
-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.
-To create a such new file, use \fBuuidgen\fR(1).
+A single line text file containing a host-unique UUID in the form of 32
+lowercase hex digits used by \fBsystemd-id128\fR(1). See \fBmachine-id\fR(5).
 .RE
+
 .PP
 /proc/sys/dev/boot/info
 .RS 4
-A list of \fIkey\fR:\fIvalue\fR entries for 
-WSDD query over HTTP response values.
+A list of \fIkey\fR:\fIvalue\fR entries for WSDD query over HTTP response
+values.
 .RE
+
 .SH "SIGNALS"
 .PP
-Sending the
-\fBwsdd2\fR
-a SIGHUP will cause it to restart.
-Restarting will re-parse
-\fBtestparm\fR(1)'s output and other parameters,
-but it will not re-evaluated command line options.
-Any change on, addition of, or deletion of a network interface
-will restart
-\fBwsdd2\fR
-as well.
+Sending the \fBwsdd2\fR a SIGHUP will cause it to restart. Restarting will
+bind daemon to new interfaces but will not reparse \fBtestparm\fR(1)'s
+output and other parameters, nor re-evaluate command line options - stop and
+start the daemon again for this. Address change, addition, or deletion on a
+network interface will restart \fBwsdd2\fR as well.
 .PP
-SIGTERM and SIGINT will terminate
-\fBwsdd2\fR
-gracefully with WSDD Bye messages.
+SIGTERM and SIGINT will terminate \fBwsdd2\fR gracefully with WSDD "Bye"
+messages.
+
 .SH "SEE ALSO"
 .PP
-\fBtestparm\fR(1),
+\fBtestparm\fR(1), \fBsystemd-id128\fR(1).
+
 .SH "STANDARDS"
 .PP
-The WSDD protocol is described in detail in
-"Web Services Dynamic Discovery (WS-Discovery)
-Version 1.1" OASYS Standard 1 July 2009
+The WSDD protocol is described in detail in "Web Services Dynamic Discovery
+(WS-Discovery) Version 1.1" OASYS Standard, 1 July 2009
 .br
 http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html
 .PP
 LLMNR complies with RFC4795.
+
 .SH "AUTHOR"
 .PP
-Hiro Sugawara at NETGEAR authored the code.
-\fBwsdd2\fR was inspired by and uses some code from
-the wsdd/llmnr extension for smbd
-created by
-Tobias Waldvogel,
-Jose M. Prieto,
-and possibly other contributors.
+Hiro Sugawara at NETGEAR authored the code. \fBwsdd2\fR was inspired by and
+uses some code from the wsdd/llmnr extension for smbd created by Tobias
+Waldvogel, Jose M. Prieto, and possibly other contributors.

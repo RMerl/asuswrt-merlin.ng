@@ -175,10 +175,14 @@ void start_cron(void);
 void start_wlcscan(void);
 void stop_wlcscan(void);
 
-#ifdef HND_ROUTER
+#if 0
 void start_jitterentropy(void);
 void stop_jitterentropy(void);
-#endif /* HND_ROUTER */
+#else
+void start_haveged(void);
+void stop_haveged(void);
+#endif
+
 
 #ifndef MS_MOVE
 #define MS_MOVE		8192
@@ -9335,9 +9339,11 @@ start_aura_rgb_sw(void)
 int
 start_services(void)
 {
-#ifdef HND_ROUTER
+#if 0
 	start_jitterentropy();
-#endif /* HND_ROUTER */
+#else
+	start_haveged();
+#endif
 #if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
 	start_ledg();
 	start_ledbtn();
@@ -9994,12 +10000,14 @@ stop_services(void)
 #if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
 	stop_envrams();
 #endif
-#ifdef HND_ROUTER
+#if 0
 	stop_jitterentropy();
-#endif /* HND_ROUTER */
+#else
+	stop_haveged();
+#endif
 }
 
-#ifdef HND_ROUTER
+#if 0
 void start_jitterentropy()
 {
 	pid_t pid;
@@ -10015,7 +10023,28 @@ void stop_jitterentropy()
 	char *cmd_argv[] = { "killall", "jitterentropy-rngd", NULL};
 	_eval(cmd_argv, NULL, 0, &pid);
 }
-#endif /* HND_ROUTER */
+#else
+void start_haveged()
+{
+	pid_t pid;
+	char *cmd_argv[] = { "/usr/sbin/haveged",
+	                     "-r", "0",
+	                     "-w", "1024",
+#if 1	// All supported models use 32 KB so far
+	                     "-d", "32",
+	                     "-i", "32",
+#endif
+	                     NULL };
+
+	_eval(cmd_argv, NULL, 0, &pid);
+}
+
+void stop_haveged()
+{
+	if (pids("haveged"))
+		killall_tk("haveged");
+}
+#endif
 
 #ifdef RTCONFIG_QCA
 int stop_wifi_service(void)

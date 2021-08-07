@@ -1,0 +1,9 @@
+Makefile
+*.o
+*.lo
+*.la
+autom4te.cache
+src/.libs
+src/haveged
+config.h
+libtool

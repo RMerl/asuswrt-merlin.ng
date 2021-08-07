@@ -25,12 +25,12 @@ PREFIX := /usr/local
 UNITDIR ?= $(shell pkg-config --variable=systemdsystemunitdir systemd 2>/dev/null || echo /usr/lib/systemd/system)
 
 NAME := jitterentropy-rngd
-#C_SRCS := $(wildcard *.c)
-C_SRCS := jitterentropy-base.c jitterentropy-rngd.c
+C_SRCS := $(wildcard lib/*.c)
+C_SRCS += jitterentropy-rngd.c
 C_OBJS := ${C_SRCS:.c=.o}
 OBJS := $(C_OBJS)
 
-INCLUDE_DIRS :=
+INCLUDE_DIRS := . lib/
 LIBRARY_DIRS :=
 LIBRARIES := rt pthread
 

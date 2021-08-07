@@ -1,3 +1,6 @@
+1.2.3:
+ * enhancement: use Jitter RNG library 3.1.0
+
 1.2.2:
  * enhancement: Add SP800-90B compliant entropy injection
  * fix: proper use of the RNDRESEEDCRNG IOCTL which otherwise causes an

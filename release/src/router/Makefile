@@ -7777,7 +7777,7 @@ haveged-clean:
 
 wsdd2:
 	@$(SEP)
-	$(MAKE) CFLAGS+="-DASUSWRT -Os" -C $@
+	$(MAKE) CFLAGS+="-DASUSWRT -Os -std=gnu99" -C $@
 
 wsdd2-install:
 	install -D wsdd2/wsdd2 $(INSTALLDIR)/wsdd2/usr/sbin/wsdd2

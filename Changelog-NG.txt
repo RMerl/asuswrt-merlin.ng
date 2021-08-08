@@ -1,6 +1,16 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+386.4 (xx-xxx-2021)
+  - UPDATED: wsdd2 to 1.8.5-dev (20210803 git)
+  - CHANGED: replaced jitterentropy-rngd with haveged.
+             It uses more flash and memory, but it
+             works properly on older platforms, and is
+             generally less CPU intensive in regular
+             use.  This is enabled for all router
+             models.
+
+
 386.3_2 (6-Aug-2021)
   - NOTE: closed down the Issue tracker on Github, as 90%
           of it was people asking for technical support,

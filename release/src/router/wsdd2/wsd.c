@@ -136,6 +136,7 @@ static void uuid_endpoint(char uuid[UUIDLEN])
 	}
 }
 
+#ifndef ASUSWRT
 static struct {
 	const char *key, *_default;
 	char *value;
@@ -149,6 +150,21 @@ static struct {
 	{ .key	= "presentationurl:",	._default = NULL},
 	{}
 };
+#else
+static struct {
+	const char *key, *_default;
+	char *value;
+} bootinfo[] = {
+	{ .key  = "vendor:",    ._default = "ASUS"},
+	{ .key  = "model:",     ._default = "Asuswrt-Merlin"},
+	{ .key  = "serial:",    ._default = "0"},
+	{ .key  = "sku:",       ._default = "Asus router"},
+	{ .key  = "vendorurl:", ._default = "https://www.asus.com"},
+	{ .key  = "modelurl:",  ._default = "https://www.asuswrt-merlin.net"},
+	{ .key  = "presentationurl:",   ._default = "http://router.asus.com"},
+	{}
+};
+#endif
 
 int set_getresp(const char *str, const char **next)
 {
@@ -722,7 +738,12 @@ static int send_http_resp_header(int fd, struct endpoint *ep,
 {
 	const char resp_hdr_fmt[] =
 		"HTTP/1.1 %s\r\n"
+#ifndef ASUSWRT
 		"Server: NETGEAR WSD Server\r\n"
+#else
+		"Server: Asuswrt WSD Server\r\n"
+#endif
+
 		"Date: %s\r\n"
 		"Connection: close\r\n"
 		"Content-Type: application/soap+xml\r\n"

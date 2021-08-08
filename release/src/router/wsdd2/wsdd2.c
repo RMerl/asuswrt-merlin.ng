@@ -581,6 +581,7 @@ static void sighandler(int sig)
 	}
 }
 
+#ifndef ASUSWRT
 static char *get_smbparm(const char *name, const char *_default)
 {
 #define __FUNCTION__	"get_smbparm"
@@ -616,6 +617,91 @@ static char *get_smbparm(const char *name, const char *_default)
 	return result;
 #undef __FUNCTION__
 }
+#else
+char *get_smbparm(const char *name, const char *_default)
+{
+#define __FUNCTION__    "get_smbparm"
+	char buf[256], *result;
+	FILE *fp;
+	char parm[64];
+	char value[64];
+	char *p, *dstp, *dstv;
+	int stage = 0, c = 0;
+
+	*value = '\0';
+	*parm = '\0';
+
+	if (!(fp = fopen("/etc/smb.conf","r"))) {
+		DEBUG(0, W, __FUNCTION__ ": can't access smb.conf");
+		return strdup(_default);
+	}
+
+	while (fgets(buf, sizeof(buf), fp)) {
+		p = buf;
+		dstp = parm;
+		dstv = value;
+
+		/* Retrieve name */
+		while (*p && c < 63) {
+			if (stage == 0 && isspace(*p)) {
+				p++;
+				continue;
+			} else {
+				stage = 1;
+			}
+			if (*p == '=') {
+				p++;	// Skip it
+				break;
+			}
+			*dstp++ = *p++;
+			c++;
+		}
+		*dstp = '\0';
+
+		/* Trim trailing whitespace */
+	        for (dstp = parm + strlen(parm) - 1; parm < dstp && isspace(*dstp); dstp--)
+	                *dstp = '\0';
+
+		/* Is is the desired parameter? */
+		if (strcmp(parm, name))
+			continue;
+
+		/* Retrieve value */
+		stage = 0;
+		c = 0;
+
+		while (*p && c < 63) {
+			if (stage == 0 && isspace(*p)) {
+				p++;
+				continue;
+			} else {
+				stage = 1;
+			}
+			if (*p == '\n') {
+				break;
+			}
+			*dstv++ = *p++;
+			c++;
+		}
+		*dstv = '\0';
+
+		/* Trim trailing whitespace */
+		for (dstv = value + strlen(value) - 1; value < dstv && isspace(*dstv); dstv--)
+			*dstv = '\0';
+
+		break;
+	}
+	fclose(fp);
+
+	if (!*value)
+		result = strdup(_default);
+	else
+		result = strdup(value);
+
+	return result;
+#undef __FUNCTION__
+}
+#endif
 
 static void help(const char *prog, int ec, const char *fmt, ...)
 {

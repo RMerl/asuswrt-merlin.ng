@@ -66,7 +66,10 @@ extern int tunable_force_local_logins_ssl;    /* Require local logins use SSL */
 extern int tunable_force_local_data_ssl;      /* Require local data uses SSL */
 extern int tunable_sslv2;                     /* Allow SSLv2 */
 extern int tunable_sslv3;                     /* Allow SSLv3 */
-extern int tunable_tlsv1;                     /* Allow TLSv1 */
+extern int tunable_tlsv1;                     /* Allow TLSv1.0 */
+extern int tunable_tlsv1_1;                   /* Allow TLSv1.1 */
+extern int tunable_tlsv1_2;                   /* Allow TLSv1.2 */
+extern int tunable_tlsv1_3;                   /* Allow TLSv1.3 */
 extern int tunable_tilde_user_enable;         /* Support e.g. ~chris */
 extern int tunable_enable_iconv;              /* Convert filename use iconv */	// Jiahao
 extern int tunable_force_anon_logins_ssl;     /* Require anon logins use SSL */
@@ -146,6 +149,7 @@ extern const char* tunable_ssl_ciphers;
 extern const char* tunable_rsa_private_key_file;
 extern const char* tunable_dsa_private_key_file;
 extern const char* tunable_ca_certs_file;
+extern const char* tunable_ssl_sni_hostname;
 extern const char* tunable_cmds_denied;
 extern const char* tunable_local_charset;
 extern const char* tunable_remote_charset;

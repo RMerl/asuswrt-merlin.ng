@@ -80,7 +80,8 @@ const char* vsf_sysutil_next_dirent(const char* session_user, const char *base_d
 /* File create/open/close etc. */
 enum EVSFSysUtilOpenMode
 {
-  kVSFSysUtilOpenReadOnly = 1,
+  kVSFSysUtilOpenUnknown = 0,
+  kVSFSysUtilOpenReadOnly,
   kVSFSysUtilOpenWriteOnly,
   kVSFSysUtilOpenReadWrite
 };

@@ -1375,3 +1375,22 @@ upload integrity.
 
 At this point: v3.0.3 released!
 ===============================
+
+- Fix build on Fedora 33 (one warning, one incorrect libcap used).
+- Fix SSL build (terrible grep for symbol in vsf_findlibs.sh)!
+- Fix runtime SIGSYS crashes on Fedora 33 (seccomp sandbox policy tweaks).
+- Reject HTTP verbs pre-login.
+- Disable TLS prior to v1.2 by default.
+- Close the control connection after 10 unknown commands pre-login.
+- Reject any TLS ALPN advertisement that's not 'ftp'.
+- Add ssl_sni_hostname option to require a match on incoming SNI hostname.
+
+At this point: v3.0.4 released!
+===============================
+
+- Fix ALPN callback to correctly select the 'ftp' string if present. Works
+with FileZilla-3.55.0.
+- Fix a couple of seccomp policy issues with Fedora 34.
+
+At this point: v3.0.5 released!
+===============================

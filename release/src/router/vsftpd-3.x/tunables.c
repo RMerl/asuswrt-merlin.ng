@@ -66,6 +66,9 @@ int tunable_force_local_data_ssl;
 int tunable_sslv2;
 int tunable_sslv3;
 int tunable_tlsv1;
+int tunable_tlsv1_1;
+int tunable_tlsv1_2;
+int tunable_tlsv1_3;
 int tunable_tilde_user_enable;
 int tunable_force_anon_logins_ssl;
 int tunable_force_anon_data_ssl;
@@ -143,6 +146,7 @@ const char* tunable_ssl_ciphers;
 const char* tunable_rsa_private_key_file;
 const char* tunable_dsa_private_key_file;
 const char* tunable_ca_certs_file;
+const char* tunable_ssl_sni_hostname;
 const char* tunable_local_charset;
 const char* tunable_remote_charset;
 
@@ -208,7 +212,10 @@ tunables_load_defaults()
   tunable_force_local_data_ssl = 1;
   tunable_sslv2 = 0;
   tunable_sslv3 = 0;
-  tunable_tlsv1 = 1;
+  tunable_tlsv1 = 0;
+  tunable_tlsv1_1 = 0;
+  tunable_tlsv1_2 = 1;
+  tunable_tlsv1_3 = 1;
   tunable_tilde_user_enable = 0;
   tunable_force_anon_logins_ssl = 0;
   tunable_force_anon_data_ssl = 0;
@@ -294,6 +301,7 @@ tunables_load_defaults()
   install_str_setting(0, &tunable_rsa_private_key_file);
   install_str_setting(0, &tunable_dsa_private_key_file);
   install_str_setting(0, &tunable_ca_certs_file);
+  install_str_setting(0, &tunable_ssl_sni_hostname);
 }
 
 void

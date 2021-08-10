@@ -45,6 +45,15 @@
 #ifndef __NR_openat
   #define __NR_openat 257
 #endif
+#ifndef __NR_newfstatat
+  #define __NR_newfstatat 262
+#endif
+#ifndef __NR_pselect6
+  #define __NR_pselect6 270
+#endif
+#ifndef __NR_getrandom
+  #define __NR_getrandom 318
+#endif
 
 #ifndef O_LARGEFILE
   #define O_LARGEFILE 00100000
@@ -267,6 +276,7 @@ seccomp_sandbox_setup_data_connections()
                        3, IPPROTO_TCP);
   allow_nr(__NR_bind);
   allow_nr(__NR_select);
+  allow_nr(__NR_pselect6);
   if (tunable_port_enable)
   {
     allow_nr(__NR_connect);
@@ -350,6 +360,8 @@ seccomp_sandbox_setup_prelogin(const struct vsf_session* p_sess)
     /* For file locking. */
     allow_nr_1_arg_match(__NR_fcntl, 2, F_SETLKW);
     allow_nr_1_arg_match(__NR_fcntl, 2, F_SETLK);
+    /* Newer kernel / glibc hit this. */
+    allow_nr(__NR_getrandom);
   }
   if (tunable_ssl_enable)
   {
@@ -396,6 +408,7 @@ seccomp_sandbox_setup_postlogin(const struct vsf_session* p_sess)
   allow_nr_2_arg_match(__NR_setsockopt, 2, SOL_SOCKET, 3, SO_LINGER);
   allow_nr_2_arg_match(__NR_setsockopt, 2, IPPROTO_IP, 3, IP_TOS);
   allow_nr(__NR_fstat);
+  allow_nr(__NR_newfstatat);
   allow_nr(__NR_lseek);
   /* Since we use chroot() to restrict filesystem access, we can just blanket
    * allow open().
@@ -409,8 +422,10 @@ seccomp_sandbox_setup_postlogin(const struct vsf_session* p_sess)
   allow_nr(__NR_getcwd);
   allow_nr(__NR_chdir);
   allow_nr(__NR_getdents);
+  allow_nr(__NR_getdents64);
   /* Misc */
   allow_nr(__NR_umask);
+  reject_nr(__NR_sysinfo, EPERM);
 
   /* Config-dependent items follow. */
   if (tunable_use_sendfile)

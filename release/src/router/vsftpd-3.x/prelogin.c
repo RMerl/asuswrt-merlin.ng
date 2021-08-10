@@ -164,8 +164,21 @@ parse_username_password(struct vsf_session* p_sess)
       {
         /* Deliberately ignore to avoid NAT device bugs, as per ProFTPd. */
       }
+      else if (str_equal_text(&p_sess->ftp_cmd_str, "GET") ||
+               str_equal_text(&p_sess->ftp_cmd_str, "POST") ||
+               str_equal_text(&p_sess->ftp_cmd_str, "HEAD") ||
+               str_equal_text(&p_sess->ftp_cmd_str, "OPTIONS") ||
+               str_equal_text(&p_sess->ftp_cmd_str, "CONNECT"))
+      {
+        vsf_cmdio_write_exit(p_sess, FTP_BADCMD,
+                             "HTTP protocol commands not allowed.", 1);
+      }
       else
       {
+        p_sess->prelogin_errors++;
+        if (p_sess->prelogin_errors > 10) {
+          vsf_cmdio_write_exit(p_sess, FTP_BADCMD, "Too many errors.", 1);
+        }
         vsf_cmdio_write(p_sess, FTP_LOGINERR,
                         "Please login with USER and PASS.");
       }

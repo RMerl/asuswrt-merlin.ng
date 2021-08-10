@@ -479,7 +479,7 @@ Default: YES
 Only applies if
 .BR ssl_enable
 is activated. If enabled, this option will permit SSL v2 protocol connections.
-TLS v1 connections are preferred.
+TLS v1.2+ connections are preferred.
 
 Default: NO
 .TP
@@ -487,15 +487,39 @@ Default: NO
 Only applies if
 .BR ssl_enable
 is activated. If enabled, this option will permit SSL v3 protocol connections.
-TLS v1 connections are preferred.
+TLS v1.2+ connections are preferred.
 
 Default: NO
 .TP
 .B ssl_tlsv1
 Only applies if
 .BR ssl_enable
-is activated. If enabled, this option will permit TLS v1 protocol connections.
-TLS v1 connections are preferred.
+is activated. If enabled, this option will permit TLS v1.0 protocol connections.
+TLS v1.2+ connections are preferred.
+
+Default: NO
+.TP
+.B ssl_tlsv1_1
+Only applies if
+.BR ssl_enable
+is activated. If enabled, this option will permit TLS v1.1 protocol connections.
+TLS v1.2+ connections are preferred.
+
+Default: NO
+.TP
+.B ssl_tlsv1_2
+Only applies if
+.BR ssl_enable
+is activated. If enabled, this option will permit TLS v1.2 protocol connections.
+TLS v1.2+ connections are preferred.
+
+Default: YES
+.TP
+.B ssl_tlsv1_3
+Only applies if
+.BR ssl_enable
+is activated. If enabled, this option will permit TLS v1.3 protocol connections.
+TLS v1.2+ connections are preferred.
 
 Default: YES
 .TP
@@ -980,6 +1004,12 @@ security precaution as it prevents malicious remote parties forcing a cipher
 which they have found problems with.
 
 Default: DES-CBC3-SHA
+.TP
+.B ssl_sni_hostname
+If set, SSL connections will be rejected unless the SNI hostname in the
+incoming handshakes matches this value.
+
+Default: (none)
 .TP
 .B user_config_dir
 This powerful option allows the override of any config option specified in

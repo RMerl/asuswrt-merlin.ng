@@ -39,7 +39,7 @@ main(int argc, const char* argv[])
   struct vsf_session the_session =
   {
     /* Control connection */
-    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
     /* Data connection */
     -1, 0, -1, 0, 0, 0, 0,
     /* Login */

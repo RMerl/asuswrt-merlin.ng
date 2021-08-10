@@ -48,15 +48,12 @@ locate_library /usr/lib/libutil.so && echo "-lutil";
 locate_library /usr/lib/libsec.sl && echo "-lsec";
 
 # Look for libcap (capabilities)
-if locate_library /lib/libcap.so.1; then
-  echo "/lib/libcap.so.1";
-elif locate_library /lib/libcap.so.2; then
-  echo "/lib/libcap.so.2";
-else
-  locate_library /usr/lib/libcap.so && echo "-lcap";
-  locate_library /lib/libcap.so && echo "-lcap";
-  locate_library /lib64/libcap.so && echo "-lcap";
-fi
+# Note that link may fail with:
+# /usr/bin/ld: cannot find -lcap
+# If the libcap-devel package isn't installed.
+locate_library /usr/lib/libcap.so && echo "-lcap";
+locate_library /lib/libcap.so && echo "-lcap";
+locate_library /lib64/libcap.so && echo "-lcap";
 
 # Solaris needs this for nanosleep()..
 locate_library /lib/libposix4.so && echo "-lposix4";
@@ -70,6 +67,8 @@ locate_library /usr/lib/libsendfile.so && echo "-lsendfile";
 
 # OpenSSL
 if find_func SSL_library_init ssl.o; then
+  echo "-lssl -lcrypto";
+elif find_func SSL_new ssl.o; then
   echo "-lssl -lcrypto";
 fi
 

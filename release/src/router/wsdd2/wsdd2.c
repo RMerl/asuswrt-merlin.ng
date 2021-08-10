@@ -624,7 +624,7 @@ char *get_smbparm(const char *name, const char *_default)
 	char buf[256], *result;
 	FILE *fp;
 	char parm[64];
-	char value[64];
+	char value[256];
 	char *p, *dstp, *dstv;
 	int stage = 0, c = 0;
 
@@ -642,7 +642,7 @@ char *get_smbparm(const char *name, const char *_default)
 		dstv = value;
 
 		/* Retrieve name */
-		while (*p && c < 63) {
+		while (*p && c < sizeof(parm) - 1) {
 			if (stage == 0 && isspace(*p)) {
 				p++;
 				continue;
@@ -670,7 +670,7 @@ char *get_smbparm(const char *name, const char *_default)
 		stage = 0;
 		c = 0;
 
-		while (*p && c < 63) {
+		while (*p && c < sizeof(value) - 1) {
 			if (stage == 0 && isspace(*p)) {
 				p++;
 				continue;

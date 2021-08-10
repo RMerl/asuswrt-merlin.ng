@@ -626,7 +626,7 @@ char *get_smbparm(const char *name, const char *_default)
 	char parm[64];
 	char value[256];
 	char *p, *dstp, *dstv;
-	int stage = 0, c = 0;
+	int stage, c;
 
 	*value = '\0';
 	*parm = '\0';
@@ -637,6 +637,8 @@ char *get_smbparm(const char *name, const char *_default)
 	}
 
 	while (fgets(buf, sizeof(buf), fp)) {
+		stage = 0;
+		c = 0;
 		p = buf;
 		dstp = parm;
 		dstv = value;

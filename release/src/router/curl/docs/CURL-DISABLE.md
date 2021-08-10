@@ -12,6 +12,10 @@ Disable support for HTTP cookies.
 
 Disable support for authentication methods using crypto.
 
+## CURL_DISABLE_NTLM
+
+Disable support for NTLM.
+
 ## CURL_DISABLE_DICT
 
 Disable the DICT protocol
@@ -36,6 +40,10 @@ about existing options to `curl_easy_setopt`.
 ## CURL_DISABLE_GOPHER
 
 Disable the GOPHER protocol.
+
+## CURL_DISABLE_HSTS
+
+Disable the HTTP Strict Transport Security support.
 
 ## CURL_DISABLE_HTTP
 

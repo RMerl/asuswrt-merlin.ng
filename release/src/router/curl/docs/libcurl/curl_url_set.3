@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH curl_url_set 3 "February 21, 2021" "libcurl 7.76.1" "libcurl Manual"
+.TH curl_url_set 3 "May 31, 2021" "libcurl 7.78.0" "libcurl Manual"
 
 .SH NAME
 curl_url_set - set a URL part
@@ -39,6 +39,9 @@ The \fIpart\fP argument should identify the particular URL part (see list
 below) to set or change, with \fIcontent\fP pointing to a null-terminated
 string with the new contents for that URL part. The contents should be in the
 form and encoding they'd use in a URL: URL encoded.
+
+The application does not have to keep \fIcontent\fP around after a successful
+call.
 
 Setting a part to a NULL pointer will effectively remove that part's contents
 from the CURLU handle.
@@ -123,6 +126,15 @@ When set for \fBCURLUPART_URL\fP, this makes libcurl skip the normalization of
 the path. That's the procedure where curl otherwise removes sequences of
 dot-slash and dot-dot etc. The same option used for transfers is called
 \fICURLOPT_PATH_AS_IS(3)\fP.
+.IP CURLU_ALLOW_SPACE
+If set, a the URL parser allows space (ASCII 32) where possible. The URL
+syntax does normally not allow spaces anywhere, but they should be encoded as
+%20 or '+'. When spaces are allowed, they are still not allowed in the scheme.
+When space is used and allowed in a URL, it will be stored as-is unless
+\fICURLU_URLENCODE\fP is also set, which then makes libcurl URL-encode the
+space before stored. This affects how the URL will be constructed when
+\fIcurl_url_get(3)\fP is subsequently used to extract the full URL or
+individual parts.
 .SH RETURN VALUE
 Returns a CURLUcode error value, which is CURLUE_OK (0) if everything went
 fine.

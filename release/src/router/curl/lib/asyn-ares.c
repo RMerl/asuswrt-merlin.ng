@@ -206,7 +206,8 @@ static void destroy_async_data(struct Curl_async *async);
  */
 void Curl_resolver_cancel(struct Curl_easy *data)
 {
-  if(data && data->state.async.resolver)
+  DEBUGASSERT(data);
+  if(data->state.async.resolver)
     ares_cancel((ares_channel)data->state.async.resolver);
   destroy_async_data(&data->state.async);
 }
@@ -309,7 +310,7 @@ static int waitperform(struct Curl_easy *data, timediff_t timeout_ms)
       pfd[i].fd = socks[i];
       pfd[i].events |= POLLWRNORM|POLLOUT;
     }
-    if(pfd[i].events != 0)
+    if(pfd[i].events)
       num++;
     else
       break;
@@ -493,17 +494,31 @@ CURLcode Curl_resolver_wait_resolv(struct Curl_easy *data,
 static void compound_results(struct thread_data *res,
                              struct Curl_addrinfo *ai)
 {
-  struct Curl_addrinfo *ai_tail;
   if(!ai)
     return;
-  ai_tail = ai;
 
-  while(ai_tail->ai_next)
-    ai_tail = ai_tail->ai_next;
+#ifdef ENABLE_IPV6 /* CURLRES_IPV6 */
+  if(res->temp_ai && res->temp_ai->ai_family == PF_INET6) {
+    /* We have results already, put the new IPv6 entries at the head of the
+       list. */
+    struct Curl_addrinfo *temp_ai_tail = res->temp_ai;
 
-  /* Add the new results to the list of old results. */
-  ai_tail->ai_next = res->temp_ai;
-  res->temp_ai = ai;
+    while(temp_ai_tail->ai_next)
+      temp_ai_tail = temp_ai_tail->ai_next;
+
+    temp_ai_tail->ai_next = ai;
+  }
+  else
+#endif /* CURLRES_IPV6 */
+  {
+    /* Add the new results to the list of old results. */
+    struct Curl_addrinfo *ai_tail = ai;
+    while(ai_tail->ai_next)
+      ai_tail = ai_tail->ai_next;
+
+    ai_tail->ai_next = res->temp_ai;
+    res->temp_ai = ai;
+  }
 }
 
 /*
@@ -620,27 +635,8 @@ struct Curl_addrinfo *Curl_resolver_getaddrinfo(struct Curl_easy *data,
                                                 int *waitp)
 {
   char *bufp;
-  int family = PF_INET;
 
   *waitp = 0; /* default to synchronous response */
-
-#ifdef ENABLE_IPV6
-  switch(data->set.ipver) {
-  default:
-#if ARES_VERSION >= 0x010601
-    family = PF_UNSPEC; /* supported by c-ares since 1.6.1, so for older
-                           c-ares versions this just falls through and defaults
-                           to PF_INET */
-    break;
-#endif
-  case CURL_IPRESOLVE_V4:
-    family = PF_INET;
-    break;
-  case CURL_IPRESOLVE_V6:
-    family = PF_INET6;
-    break;
-  }
-#endif /* ENABLE_IPV6 */
 
   bufp = strdup(hostname);
   if(bufp) {
@@ -661,33 +657,27 @@ struct Curl_addrinfo *Curl_resolver_getaddrinfo(struct Curl_easy *data,
 
     /* initial status - failed */
     res->last_status = ARES_ENOTFOUND;
-#ifdef ENABLE_IPV6
-    if(family == PF_UNSPEC) {
-      if(Curl_ipv6works(data)) {
-        res->num_pending = 2;
 
-        /* areschannel is already setup in the Curl_open() function */
-        ares_gethostbyname((ares_channel)data->state.async.resolver, hostname,
-                            PF_INET, query_completed_cb, data);
-        ares_gethostbyname((ares_channel)data->state.async.resolver, hostname,
-                            PF_INET6, query_completed_cb, data);
-      }
-      else {
-        res->num_pending = 1;
+#if ARES_VERSION >= 0x010601
+    /* IPv6 supported by c-ares since 1.6.1 */
+    if(Curl_ipv6works(data)) {
+      /* The stack seems to be IPv6-enabled */
+      res->num_pending = 2;
 
-        /* areschannel is already setup in the Curl_open() function */
-        ares_gethostbyname((ares_channel)data->state.async.resolver, hostname,
-                            PF_INET, query_completed_cb, data);
-      }
+      /* areschannel is already setup in the Curl_open() function */
+      ares_gethostbyname((ares_channel)data->state.async.resolver, hostname,
+                          PF_INET, query_completed_cb, data);
+      ares_gethostbyname((ares_channel)data->state.async.resolver, hostname,
+                          PF_INET6, query_completed_cb, data);
     }
     else
-#endif /* ENABLE_IPV6 */
+#endif /* ARES_VERSION >= 0x010601 */
     {
       res->num_pending = 1;
 
       /* areschannel is already setup in the Curl_open() function */
       ares_gethostbyname((ares_channel)data->state.async.resolver,
-                         hostname, family,
+                         hostname, PF_INET,
                          query_completed_cb, data);
     }
 

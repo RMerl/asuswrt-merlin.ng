@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1999 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1999 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -815,7 +815,7 @@ static int dprintf_formatf(
         size_t len;
 
         str = (char *) p->data.str;
-        if(str == NULL) {
+        if(!str) {
           /* Write null[] if there's space.  */
           if(prec == -1 || prec >= (long) sizeof(null) - 1) {
             str = null;
@@ -1017,9 +1017,11 @@ int curl_mvsnprintf(char *buffer, size_t maxlength, const char *format,
   retcode = dprintf_formatf(&info, addbyter, format, ap_save);
   if((retcode != -1) && info.max) {
     /* we terminate this with a zero byte */
-    if(info.max == info.length)
+    if(info.max == info.length) {
       /* we're at maximum, scrap the last letter */
       info.buffer[-1] = 0;
+      retcode--; /* don't count the nul byte */
+    }
     else
       info.buffer[0] = 0;
   }

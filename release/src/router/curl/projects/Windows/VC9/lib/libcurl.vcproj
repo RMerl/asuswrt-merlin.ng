@@ -3578,6 +3578,10 @@
 			>
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\bufref.c"
+			>
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\c-hyper.c"
 			>
 			</File>
@@ -4051,6 +4055,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\asyn.h"
+			>
+			</File>
+			<File
+				RelativePath="..\..\..\..\lib\bufref.h"
 			>
 			</File>
 			<File

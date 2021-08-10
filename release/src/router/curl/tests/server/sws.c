@@ -81,8 +81,7 @@ static bool use_gopher = FALSE;
 static int serverlogslocked = 0;
 static bool is_proxy = FALSE;
 
-#define REQBUFSIZ 150000
-#define REQBUFSIZ_TXT "149999"
+#define REQBUFSIZ (2*1024*1024)
 
 static long prevtestno = -1;    /* previous test number we served */
 static long prevpartno = -1;    /* previous part number we served */
@@ -792,15 +791,15 @@ static void storerequest(const char *reqbuf, size_t totalsize)
   FILE *dump;
   const char *dumpfile = is_proxy?REQUEST_PROXY_DUMP:REQUEST_DUMP;
 
-  if(reqbuf == NULL)
+  if(!reqbuf)
     return;
   if(totalsize == 0)
     return;
 
   do {
     dump = fopen(dumpfile, "ab");
-  } while((dump == NULL) && ((error = errno) == EINTR));
-  if(dump == NULL) {
+  } while(!dump && ((error = errno) == EINTR));
+  if(!dump) {
     logmsg("[2] Error opening file %s error: %d %s",
            dumpfile, error, strerror(error));
     logmsg("Failed to write request input ");
@@ -1442,9 +1441,14 @@ static void http_connect(curl_socket_t *infdp,
         /* a new connection on listener socket (most likely from client) */
         curl_socket_t datafd = accept(rootfd, NULL, NULL);
         if(datafd != CURL_SOCKET_BAD) {
-          struct httprequest req2;
+          static struct httprequest *req2;
           int err = 0;
-          memset(&req2, 0, sizeof(req2));
+          if(!req2) {
+            req2 = malloc(sizeof(*req2));
+            if(!req2)
+              exit(1);
+          }
+          memset(req2, 0, sizeof(*req2));
           logmsg("====> Client connect DATA");
 #ifdef TCP_NODELAY
           if(socket_domain_is_ip()) {
@@ -1455,9 +1459,9 @@ static void http_connect(curl_socket_t *infdp,
               logmsg("====> TCP_NODELAY for client DATA connection failed");
           }
 #endif
-          init_httprequest(&req2);
-          while(!req2.done_processing) {
-            err = get_request(datafd, &req2);
+          init_httprequest(req2);
+          while(!req2->done_processing) {
+            err = get_request(datafd, req2);
             if(err < 0) {
               /* this socket must be closed, done or not */
               break;
@@ -1466,14 +1470,14 @@ static void http_connect(curl_socket_t *infdp,
 
           /* skip this and close the socket if err < 0 */
           if(err >= 0) {
-            err = send_doc(datafd, &req2);
-            if(!err && req2.connect_request) {
+            err = send_doc(datafd, req2);
+            if(!err && req2->connect_request) {
               /* sleep to prevent triggering libcurl known bug #39. */
               for(loop = 2; (loop > 0) && !got_exit_signal; loop--)
                 wait_ms(250);
               if(!got_exit_signal) {
                 /* connect to the server */
-                serverfd[DATA] = connect_to(ipaddr, req2.connect_port);
+                serverfd[DATA] = connect_to(ipaddr, req2->connect_port);
                 if(serverfd[DATA] != CURL_SOCKET_BAD) {
                   /* secondary tunnel established, now we have two
                      connections */
@@ -1872,7 +1876,7 @@ int main(int argc, char *argv[])
 #endif
   const char *pidname = ".http.pid";
   const char *portname = ".http.port";
-  struct httprequest req;
+  struct httprequest *req;
   int rc = 0;
   int error;
   int arg = 1;
@@ -1885,7 +1889,9 @@ int main(int argc, char *argv[])
   /* a default CONNECT port is basically pointless but still ... */
   size_t socket_idx;
 
-  memset(&req, 0, sizeof(req));
+  req = calloc(1, sizeof(*req));
+  if(!req)
+    return 0;
 
   while(argc>arg) {
     if(!strcmp("--version", argv[arg])) {
@@ -2066,9 +2072,9 @@ int main(int argc, char *argv[])
     strncpy(me.sau.sun_path, unix_socket, sizeof(me.sau.sun_path) - 1);
     rc = bind(sock, &me.sa, sizeof(me.sau));
     if(0 != rc && errno == EADDRINUSE) {
-      struct stat statbuf;
+      struct_stat statbuf;
       /* socket already exists. Perhaps it is stale? */
-      int unixfd = socket(AF_UNIX, SOCK_STREAM, 0);
+      curl_socket_t unixfd = socket(AF_UNIX, SOCK_STREAM, 0);
       if(CURL_SOCKET_BAD == unixfd) {
         error = SOCKERRNO;
         logmsg("Error binding socket, failed to create socket at %s: (%d) %s",
@@ -2078,25 +2084,31 @@ int main(int argc, char *argv[])
       /* check whether the server is alive */
       rc = connect(unixfd, &me.sa, sizeof(me.sau));
       error = errno;
-      close(unixfd);
+      sclose(unixfd);
       if(ECONNREFUSED != error) {
         logmsg("Error binding socket, failed to connect to %s: (%d) %s",
                unix_socket, error, strerror(error));
         goto sws_cleanup;
       }
-      /* socket server is not alive, now check if it was actually a socket.
-       * Systems which have Unix sockets will also have lstat */
+      /* socket server is not alive, now check if it was actually a socket. */
+#ifdef WIN32
+      /* Windows does not have lstat function. */
+      rc = curlx_win32_stat(unix_socket, &statbuf);
+#else
       rc = lstat(unix_socket, &statbuf);
+#endif
       if(0 != rc) {
         logmsg("Error binding socket, failed to stat %s: (%d) %s",
                unix_socket, errno, strerror(errno));
         goto sws_cleanup;
       }
+#ifdef S_IFSOCK
       if((statbuf.st_mode & S_IFSOCK) != S_IFSOCK) {
         logmsg("Error binding socket, failed to stat %s: (%d) %s",
                unix_socket, error, strerror(error));
         goto sws_cleanup;
       }
+#endif
       /* dead socket, cleanup and retry bind */
       rc = unlink(unix_socket);
       if(0 != rc) {
@@ -2198,7 +2210,7 @@ int main(int argc, char *argv[])
      the pipelining struct field must be initialized previously to FALSE
      every time a new connection arrives. */
 
-  init_httprequest(&req);
+  init_httprequest(req);
 
   for(;;) {
     fd_set input;
@@ -2277,20 +2289,20 @@ int main(int argc, char *argv[])
 
         /* Service this connection until it has nothing available */
         do {
-          rc = service_connection(all_sockets[socket_idx], &req, sock,
+          rc = service_connection(all_sockets[socket_idx], req, sock,
                                   connecthost);
           if(got_exit_signal)
             goto sws_cleanup;
 
           if(rc < 0) {
-            logmsg("====> Client disconnect %d", req.connmon);
+            logmsg("====> Client disconnect %d", req->connmon);
 
-            if(req.connmon) {
+            if(req->connmon) {
               const char *keepopen = "[DISCONNECT]\n";
               storerequest(keepopen, strlen(keepopen));
             }
 
-            if(!req.open)
+            if(!req->open)
               /* When instructed to close connection after server-reply we
                  wait a very small amount of time before doing so. If this
                  is not done client might get an ECONNRESET before reading
@@ -2306,13 +2318,13 @@ int main(int argc, char *argv[])
             if(!serverlogslocked)
               clear_advisor_read_lock(SERVERLOGS_LOCK);
 
-            if(req.testno == DOCNUMBER_QUIT)
+            if(req->testno == DOCNUMBER_QUIT)
               goto sws_cleanup;
           }
 
           /* Reset the request, unless we're still in the middle of reading */
-          if(rc != 0)
-            init_httprequest(&req);
+          if(rc)
+            init_httprequest(req);
         } while(rc > 0);
       }
     }

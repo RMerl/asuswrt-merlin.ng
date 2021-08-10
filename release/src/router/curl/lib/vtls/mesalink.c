@@ -98,8 +98,7 @@ mesalink_connect_step1(struct Curl_easy *data,
 #ifdef ENABLE_IPV6
   struct in6_addr addr6;
 #endif
-  const char *const hostname =
-    SSL_IS_PROXY() ? conn->http_proxy.host.name : conn->host.name;
+  const char * const hostname = SSL_HOST_NAME();
   size_t hostname_len = strlen(hostname);
 
   SSL_METHOD *req_method = NULL;
@@ -168,14 +167,14 @@ mesalink_connect_step1(struct Curl_easy *data,
       }
       infof(data,
           "error setting certificate verify locations,"
-          " continuing anyway:\n");
+          " continuing anyway:");
     }
     else {
-      infof(data, "successfully set certificate verify locations:\n");
+      infof(data, "successfully set certificate verify locations:");
     }
-    infof(data, " CAfile: %s\n",
+    infof(data, " CAfile: %s",
           SSL_CONN_CONFIG(CAfile) ? SSL_CONN_CONFIG(CAfile): "none");
-    infof(data, " CApath: %s\n",
+    infof(data, " CApath: %s",
           SSL_CONN_CONFIG(CApath) ? SSL_CONN_CONFIG(CApath): "none");
   }
 
@@ -197,7 +196,7 @@ mesalink_connect_step1(struct Curl_easy *data,
       return CURLE_SSL_CONNECT_ERROR;
     }
     infof(data,
-          "client cert: %s\n",
+          "client cert: %s",
           SSL_CONN_CONFIG(clientcert)?
           SSL_CONN_CONFIG(clientcert): "none");
   }
@@ -210,7 +209,7 @@ mesalink_connect_step1(struct Curl_easy *data,
       return CURLE_SSL_CIPHER;
     }
 #endif
-    infof(data, "Cipher selection: %s\n", ciphers);
+    infof(data, "Cipher selection: %s", ciphers);
   }
 
   if(BACKEND->handle)
@@ -274,7 +273,7 @@ mesalink_connect_step1(struct Curl_easy *data,
         return CURLE_SSL_CONNECT_ERROR;
       }
       /* Informational message */
-      infof(data, "SSL re-using session ID\n");
+      infof(data, "SSL re-using session ID");
     }
     Curl_ssl_sessionid_unlock(data);
   }
@@ -327,7 +326,7 @@ mesalink_connect_step2(struct Curl_easy *data,
 
   connssl->connecting_state = ssl_connect_3;
   infof(data,
-        "SSL connection using %s / %s\n",
+        "SSL connection using %s / %s",
         SSL_get_version(BACKEND->handle),
         SSL_get_cipher_name(BACKEND->handle));
 
@@ -357,7 +356,7 @@ mesalink_connect_step3(struct connectdata *conn, int sockindex)
                               sockindex));
     if(incache) {
       if(old_ssl_sessionid != our_ssl_sessionid) {
-        infof(data, "old SSL session ID is stale, removing\n");
+        infof(data, "old SSL session ID is stale, removing");
         Curl_ssl_delsessionid(data, old_ssl_sessionid);
         incache = FALSE;
       }
@@ -667,7 +666,9 @@ const struct Curl_ssl Curl_ssl_mesalink = {
   Curl_none_set_engine_default,  /* set_engine_default */
   Curl_none_engines_list,        /* engines_list */
   Curl_none_false_start,         /* false_start */
-  NULL                           /* sha256sum */
+  NULL,                          /* sha256sum */
+  NULL,                          /* associate_connection */
+  NULL                           /* disassociate_connection */
 };
 
 #endif

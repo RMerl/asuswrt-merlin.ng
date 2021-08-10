@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -129,6 +129,37 @@ struct querycase {
 };
 
 static struct testcase get_parts_list[] ={
+  {"https://user:password@example.net/get?this=and what", "",
+   CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
+  {"https://user:password@example.net/ge t?this=and-what", "",
+   CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
+  {"https://user:pass word@example.net/get?this=and-what", "",
+   CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
+  {"https://u ser:password@example.net/get?this=and-what", "",
+   CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
+  /* no space allowed in scheme */
+  {"htt ps://user:password@example.net/get?this=and-what", "",
+   CURLU_NON_SUPPORT_SCHEME|CURLU_ALLOW_SPACE, 0, CURLUE_MALFORMED_INPUT},
+  {"https://user:password@example.net/get?this=and what",
+   "https | user | password | [13] | example.net | [15] | /get | "
+   "this=and what | [17]",
+   CURLU_ALLOW_SPACE, 0, CURLUE_OK},
+  {"https://user:password@example.net/ge t?this=and-what",
+   "https | user | password | [13] | example.net | [15] | /ge t | "
+   "this=and-what | [17]",
+   CURLU_ALLOW_SPACE, 0, CURLUE_OK},
+  {"https://user:pass word@example.net/get?this=and-what",
+   "https | user | pass word | [13] | example.net | [15] | /get | "
+   "this=and-what | [17]",
+   CURLU_ALLOW_SPACE, 0, CURLUE_OK},
+  {"https://u ser:password@example.net/get?this=and-what",
+   "https | u ser | password | [13] | example.net | [15] | /get | "
+   "this=and-what | [17]",
+   CURLU_ALLOW_SPACE, 0, CURLUE_OK},
+  {"https://user:password@example.net/ge t?this=and-what",
+   "https | user | password | [13] | example.net | [15] | /ge%20t | "
+   "this=and-what | [17]",
+   CURLU_ALLOW_SPACE | CURLU_URLENCODE, 0, CURLUE_OK},
   {"[::1]",
    "http | [11] | [12] | [13] | [::1] | [15] | / | [16] | [17]",
    CURLU_GUESS_SCHEME, 0, CURLUE_OK },
@@ -253,11 +284,9 @@ static struct testcase get_parts_list[] ={
   {"https://127abc.com",
    "https | [11] | [12] | [13] | 127abc.com | [15] | / | [16] | [17]",
    CURLU_DEFAULT_SCHEME, 0, CURLUE_OK},
-  {"https:// example.com?check",
-   "",
+  {"https:// example.com?check", "",
    CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
-  {"https://e x a m p l e.com?check",
-   "",
+  {"https://e x a m p l e.com?check", "",
    CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
   {"https://example.com?check",
    "https | [11] | [12] | [13] | example.com | [15] | / | check | [17]",
@@ -323,6 +352,22 @@ static struct testcase get_parts_list[] ={
 };
 
 static struct urltestcase get_url_list[] = {
+  /* IPv4 trickeries */
+  {"https://16843009", "https://1.1.1.1/", 0, 0, CURLUE_OK},
+  {"https://0x7f.1", "https://127.0.0.1/", 0, 0, CURLUE_OK},
+  {"https://0177.1", "https://127.0.0.1/", 0, 0, CURLUE_OK},
+  {"https://0111.02.0x3", "https://73.2.0.3/", 0, 0, CURLUE_OK},
+  {"https://0xff.0xff.0377.255", "https://255.255.255.255/", 0, 0, CURLUE_OK},
+  {"https://1.0xffffff", "https://1.255.255.255/", 0, 0, CURLUE_OK},
+  /* IPv4 numerical overflows or syntax errors will not normalize */
+  {"https://+127.0.0.1", "https://+127.0.0.1/", 0, 0, CURLUE_OK},
+  {"https://127.-0.0.1", "https://127.-0.0.1/", 0, 0, CURLUE_OK},
+  {"https://127.0. 1", "https://127.0.0.1/", 0, 0, CURLUE_MALFORMED_INPUT},
+  {"https://1.0x1000000", "https://1.0x1000000/", 0, 0, CURLUE_OK},
+  {"https://1.2.3.256", "https://1.2.3.256/", 0, 0, CURLUE_OK},
+  {"https://1.2.3.4.5", "https://1.2.3.4.5/", 0, 0, CURLUE_OK},
+  {"https://1.2.0x100.3", "https://1.2.0x100.3/", 0, 0, CURLUE_OK},
+  {"https://4294967296", "https://4294967296/", 0, 0, CURLUE_OK},
   /* 40 bytes scheme is the max allowed */
   {"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA://hostname/path",
    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa://hostname/path",
@@ -369,8 +414,8 @@ static struct urltestcase get_url_list[] = {
    CURLU_GUESS_SCHEME, 0, CURLUE_OK},
   {"HTTP://test/", "http://test/", 0, 0, CURLUE_OK},
   {"http://HO0_-st..~./", "http://HO0_-st..~./", 0, 0, CURLUE_OK},
-  {"http:/@example.com: 123/", "", 0, 0, CURLUE_BAD_PORT_NUMBER},
-  {"http:/@example.com:123 /", "", 0, 0, CURLUE_BAD_PORT_NUMBER},
+  {"http:/@example.com: 123/", "", 0, 0, CURLUE_MALFORMED_INPUT},
+  {"http:/@example.com:123 /", "", 0, 0, CURLUE_MALFORMED_INPUT},
   {"http:/@example.com:123a/", "", 0, 0, CURLUE_BAD_PORT_NUMBER},
   {"http://host/file\r", "", 0, 0, CURLUE_MALFORMED_INPUT},
   {"http://host/file\n\x03", "", 0, 0, CURLUE_MALFORMED_INPUT},

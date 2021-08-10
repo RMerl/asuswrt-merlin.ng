@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH libcurl-errors 3 "November 04, 2020" "libcurl 7.76.1" "libcurl errors"
+.TH libcurl-errors 3 "June 02, 2021" "libcurl 7.78.0" "libcurl errors"
 
 .SH NAME
 libcurl-errors \- error codes in libcurl
@@ -161,8 +161,9 @@ An option passed to libcurl is not recognized/known. Refer to the appropriate
 documentation. This is most likely a problem in the program that uses
 libcurl. The error buffer might contain more specific information about which
 exact option it concerns.
-.IP "CURLE_TELNET_OPTION_SYNTAX (49)"
-A telnet option string was Illegally formatted.
+.IP "CURLE_SETOPT_OPTION_SYNTAX (49)"
+An option passed in to a setopt was wrongly formatted. See error message for
+details about what option.
 .IP "CURLE_GOT_NOTHING (52)"
 Nothing was returned from the server, and under the circumstances, getting
 nothing is considered an error.
@@ -263,6 +264,8 @@ be one out of several problems, see the error buffer for details.
 .IP "CURLE_QUIC_CONNECT_ERROR (96)"
 QUIC connection error. This error may be caused by an SSL library error. QUIC
 is the protocol used for HTTP/3 transfers.
+.IP "CURLE_SSL_CLIENTCERT (98)"
+SSL Client Certificate required.
 .IP "CURLE_OBSOLETE*"
 These error codes will never be returned. They were used in an old libcurl
 version and are currently unused.

@@ -30,10 +30,12 @@ proceed.
 A normal Unix installation is made in three or four steps (after you've
 unpacked the source archive):
 
-    ./configure
+    ./configure --with-openssl [--with-gnutls --with-wolfssl]
     make
     make test (optional)
     make install
+
+(Adjust the configure line accordingly to use the TLS library you want.)
 
 You probably need to be root when doing the last command.
 
@@ -59,16 +61,16 @@ explicitly told not to. If you have OpenSSL installed in the default search
 path for your compiler/linker, you don't need to do anything special. If you
 have OpenSSL installed in `/usr/local/ssl`, you can run configure like:
 
-    ./configure --with-ssl
+    ./configure --with-openssl
 
 If you have OpenSSL installed somewhere else (for example, `/opt/OpenSSL`) and
 you have pkg-config installed, set the pkg-config path first, like this:
 
-    env PKG_CONFIG_PATH=/opt/OpenSSL/lib/pkgconfig ./configure --with-ssl
+    env PKG_CONFIG_PATH=/opt/OpenSSL/lib/pkgconfig ./configure --with-openssl
 
 Without pkg-config installed, use this:
 
-    ./configure --with-ssl=/opt/OpenSSL
+    ./configure --with-openssl=/opt/OpenSSL
 
 If you insist on forcing a build without SSL support, even though you may
 have OpenSSL installed in your system, you can run configure like this:
@@ -86,7 +88,7 @@ If you have shared SSL libs installed in a directory where your run-time
 linker doesn't find them (which usually causes configure failures), you can
 provide this option to gcc to set a hard-coded path to the run-time linker:
 
-    LDFLAGS=-Wl,-R/usr/local/ssl/lib ./configure --with-ssl
+    LDFLAGS=-Wl,-R/usr/local/ssl/lib ./configure --with-openssl
 
 ## More Options
 
@@ -109,17 +111,19 @@ want to alter it, you can select how to deal with each individual library.
 
 ## Select TLS backend
 
-The default OpenSSL configure check will also detect and use BoringSSL or
-libressl.
+These options are provided to select TLS backend to use.
 
- - GnuTLS: `--without-ssl --with-gnutls`.
- - wolfSSL: `--without-ssl --with-wolfssl`
- - NSS: `--without-ssl --with-nss`
- - mbedTLS: `--without-ssl --with-mbedtls`
- - schannel: `--without-ssl --with-schannel`
- - secure transport: `--without-ssl --with-secure-transport`
- - MesaLink: `--without-ssl --with-mesalink`
- - BearSSL: `--without-ssl --with-bearssl`
+ - AmiSSL: `--with-amissl`
+ - BearSSL: `--with-bearssl`
+ - GnuTLS: `--with-gnutls`.
+ - mbedTLS: `--with-mbedtls`
+ - MesaLink: `--with-mesalink`
+ - NSS: `--with-nss`
+ - OpenSSL: `--with-openssl` (also for BoringSSL and libressl)
+ - rustls: `--with-rustls`
+ - schannel: `--with-schannel`
+ - secure transport: `--with-secure-transport`
+ - wolfSSL: `--with-wolfssl`
 
 # Windows
 
@@ -204,7 +208,7 @@ environment, therefore, you cannot use the various disable-protocol options of
 the configure utility on this platform.
 
 You can use specific defines to disable specific protocols and features. See
-[CURL-DISABLE.md](CURL-DISABLE-md) for the full list.
+[CURL-DISABLE.md](CURL-DISABLE.md) for the full list.
 
 If you want to set any of these defines you have the following options:
 
@@ -266,8 +270,8 @@ Windows you should choose another SSL backend such as OpenSSL.
 
 On modern Apple operating systems, curl can be built to use Apple's SSL/TLS
 implementation, Secure Transport, instead of OpenSSL. To build with Secure
-Transport for SSL/TLS, use the configure option `--with-secure-transport`
-or `--with-darwin-ssl`. (It is not necessary to use the option `--without-ssl`.)
+Transport for SSL/TLS, use the configure option `--with-secure-transport`. (It
+is not necessary to use the option `--without-openssl`.)
 
 When Secure Transport is in use, the curl options `--cacert` and `--capath`
 and their libcurl equivalents, will be ignored, because Secure Transport uses
@@ -287,7 +291,7 @@ export SDK=macosx
 export DEPLOYMENT_TARGET=10.8
 
 export CFLAGS="-arch $ARCH -isysroot $(xcrun -sdk $SDK --show-sdk-path) -m$SDK-version-min=$DEPLOYMENT_TARGET"
-./configure --host=$ARCH-apple-darwin --prefix $(pwd)/artifacts --with-darwin-ssl
+./configure --host=$ARCH-apple-darwin --prefix $(pwd)/artifacts --with-secure-transport
 make -j8
 make install
 ```
@@ -302,7 +306,7 @@ export SDK=iphoneos
 export DEPLOYMENT_TARGET=11.0
 
 export CFLAGS="-arch $ARCH -isysroot $(xcrun -sdk $SDK --show-sdk-path) -m$SDK-version-min=$DEPLOYMENT_TARGET"
-./configure --host=$ARCH-apple-darwin --prefix $(pwd)/artifacts --with-darwin-ssl
+./configure --host=$ARCH-apple-darwin --prefix $(pwd)/artifacts --with-secure-transport
 make -j8
 make install
 ```
@@ -315,7 +319,7 @@ export SDK=watchsimulator
 export DEPLOYMENT_TARGET=5.0
 
 export CFLAGS="-arch $ARCH -isysroot $(xcrun -sdk $SDK --show-sdk-path) -m$SDK-version-min=$DEPLOYMENT_TARGET"
-./configure --host=$ARCH-apple-darwin --prefix $(pwd)/artifacts --with-darwin-ssl
+./configure --host=$ARCH-apple-darwin --prefix $(pwd)/artifacts --with-secure-transport
 make -j8
 make install
 ```
@@ -358,12 +362,45 @@ OpenSSL, follow the OpenSSL build instructions and then install `libssl.a` and
 `libcrypto.a` to `$TOOLCHAIN/sysroot/usr/lib` and copy `include/openssl` to
 `$TOOLCHAIN/sysroot/usr/include`. Now you can build curl for Android using
 OpenSSL like this:
-    
-    ./configure --host aarch64-linux-android --with-pic --disable-shared --with-ssl="$TOOLCHAIN/sysroot/usr"
+
+    ./configure --host aarch64-linux-android --with-pic --disable-shared --with-openssl="$TOOLCHAIN/sysroot/usr"
 
 Note, however, that you must target at least Android M (API level 23) or `configure`
 won't be able to detect OpenSSL since `stderr` (and the like) weren't defined
 before Android M.
+
+# IBM i
+
+For IBM i (formerly OS/400), you can use curl in two different ways:
+
+- Natively, running in the **ILE**. The obvious use is being able to call curl
+  from ILE C or RPG applications.
+  - You will need to build this from source. See `packages/OS400/README` for
+    the ILE specific build instructions.
+- In the **PASE** environment, which runs AIX programs. curl will be built as
+  it would be on AIX.
+  - IBM provides builds of curl in their Yum repository for PASE software.
+  - To build from source, follow the Unix instructions.
+
+There are some additional limitations and quirks with curl on this platform;
+they affect both environments.
+
+## Multithreading notes
+
+By default, jobs in IBM i won't start with threading enabled. (Exceptions
+include interactive PASE sessions started by `QP2TERM` or SSH.) If you use
+curl in an environment without threading when options like async DNS were
+enabled, you'll messages like:
+
+```
+getaddrinfo() thread failed to start
+```
+
+Don't panic! curl and your program aren't broken. You can fix this by:
+
+- Set the environment variable `QIBM_MULTI_THREADED` to `Y` before starting
+  your program. This can be done at whatever scope you feel is appropriate.
+- Alternatively, start the job with the `ALWMLTTHD` parameter set to `*YES`.
 
 # Cross compile
 
@@ -438,7 +475,7 @@ use, here are some other flags that can reduce the size of the library:
  - `--enable-hidden-symbols` (eliminates unneeded symbols in the shared library)
  - `--without-libidn` (disables support for the libidn DNS library)
  - `--without-librtmp` (disables support for RTMP)
- - `--without-ssl` (disables support for SSL/TLS)
+ - `--without-openssl` (disables support for SSL/TLS)
  - `--without-zlib` (disables support for on-the-fly decompression)
 
 The GNU compiler and linker have a number of options that can reduce the

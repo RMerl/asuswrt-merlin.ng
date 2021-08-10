@@ -300,12 +300,7 @@ static CURLcode bearssl_connect_step1(struct Curl_easy *data,
   struct ssl_connect_data *connssl = &conn->ssl[sockindex];
   struct ssl_backend_data *backend = connssl->backend;
   const char * const ssl_cafile = SSL_CONN_CONFIG(CAfile);
-#ifndef CURL_DISABLE_PROXY
-  const char *hostname = SSL_IS_PROXY() ? conn->http_proxy.host.name :
-    conn->host.name;
-#else
-  const char *hostname = conn->host.name;
-#endif
+  const char *hostname = SSL_HOST_NAME();
   const bool verifypeer = SSL_CONN_CONFIG(verifypeer);
   const bool verifyhost = SSL_CONN_CONFIG(verifyhost);
   CURLcode ret;
@@ -354,7 +349,7 @@ static CURLcode bearssl_connect_step1(struct Curl_easy *data,
         return ret;
       }
       infof(data, "error setting certificate verify locations,"
-            " continuing anyway:\n");
+            " continuing anyway:");
     }
   }
 
@@ -378,7 +373,7 @@ static CURLcode bearssl_connect_step1(struct Curl_easy *data,
     if(!Curl_ssl_getsessionid(data, conn, SSL_IS_PROXY() ? TRUE : FALSE,
                               &session, NULL, sockindex)) {
       br_ssl_engine_set_session_parameters(&backend->ctx.eng, session);
-      infof(data, "BearSSL: re-using session ID\n");
+      infof(data, "BearSSL: re-using session ID");
     }
     Curl_ssl_sessionid_unlock(data);
   }
@@ -390,19 +385,19 @@ static CURLcode bearssl_connect_step1(struct Curl_easy *data,
      * protocols array in `struct ssl_backend_data`.
      */
 
-#ifdef USE_NGHTTP2
+#ifdef USE_HTTP2
     if(data->state.httpwant >= CURL_HTTP_VERSION_2
 #ifndef CURL_DISABLE_PROXY
       && (!SSL_IS_PROXY() || !conn->bits.tunnel_proxy)
 #endif
       ) {
-      backend->protocols[cur++] = NGHTTP2_PROTO_VERSION_ID;
-      infof(data, "ALPN, offering %s\n", NGHTTP2_PROTO_VERSION_ID);
+      backend->protocols[cur++] = ALPN_H2;
+      infof(data, "ALPN, offering %s", ALPN_H2);
     }
 #endif
 
     backend->protocols[cur++] = ALPN_HTTP_1_1;
-    infof(data, "ALPN, offering %s\n", ALPN_HTTP_1_1);
+    infof(data, "ALPN, offering %s", ALPN_HTTP_1_1);
 
     br_ssl_engine_set_protocol_names(&backend->ctx.eng,
                                      backend->protocols, cur);
@@ -543,22 +538,22 @@ static CURLcode bearssl_connect_step3(struct Curl_easy *data,
 
     protocol = br_ssl_engine_get_selected_protocol(&backend->ctx.eng);
     if(protocol) {
-      infof(data, "ALPN, server accepted to use %s\n", protocol);
+      infof(data, "ALPN, server accepted to use %s", protocol);
 
-#ifdef USE_NGHTTP2
-      if(!strcmp(protocol, NGHTTP2_PROTO_VERSION_ID))
+#ifdef USE_HTTP2
+      if(!strcmp(protocol, ALPN_H2))
         conn->negnpn = CURL_HTTP_VERSION_2;
       else
 #endif
       if(!strcmp(protocol, ALPN_HTTP_1_1))
         conn->negnpn = CURL_HTTP_VERSION_1_1;
       else
-        infof(data, "ALPN, unrecognized protocol %s\n", protocol);
+        infof(data, "ALPN, unrecognized protocol %s", protocol);
       Curl_multiuse_state(data, conn->negnpn == CURL_HTTP_VERSION_2 ?
                           BUNDLE_MULTIPLEX : BUNDLE_NO_MULTIUSE);
     }
     else
-      infof(data, "ALPN, server did not agree to a protocol\n");
+      infof(data, "ALPN, server did not agree to a protocol");
   }
 
   if(SSL_SET_OPTION(primary.sessionid)) {
@@ -845,30 +840,32 @@ static CURLcode bearssl_sha256sum(const unsigned char *input,
 }
 
 const struct Curl_ssl Curl_ssl_bearssl = {
-  { CURLSSLBACKEND_BEARSSL, "bearssl" },
+  { CURLSSLBACKEND_BEARSSL, "bearssl" }, /* info */
   0,
   sizeof(struct ssl_backend_data),
 
-  Curl_none_init,
-  Curl_none_cleanup,
-  bearssl_version,
-  Curl_none_check_cxn,
-  Curl_none_shutdown,
-  bearssl_data_pending,
-  bearssl_random,
-  Curl_none_cert_status_request,
-  bearssl_connect,
-  bearssl_connect_nonblocking,
-  Curl_ssl_getsock,
-  bearssl_get_internals,
-  bearssl_close,
-  Curl_none_close_all,
-  bearssl_session_free,
-  Curl_none_set_engine,
-  Curl_none_set_engine_default,
-  Curl_none_engines_list,
-  Curl_none_false_start,
-  bearssl_sha256sum
+  Curl_none_init,                  /* init */
+  Curl_none_cleanup,               /* cleanup */
+  bearssl_version,                 /* version */
+  Curl_none_check_cxn,             /* check_cxn */
+  Curl_none_shutdown,              /* shutdown */
+  bearssl_data_pending,            /* data_pending */
+  bearssl_random,                  /* random */
+  Curl_none_cert_status_request,   /* cert_status_request */
+  bearssl_connect,                 /* connect */
+  bearssl_connect_nonblocking,     /* connect_nonblocking */
+  Curl_ssl_getsock,                /* getsock */
+  bearssl_get_internals,           /* get_internals */
+  bearssl_close,                   /* close_one */
+  Curl_none_close_all,             /* close_all */
+  bearssl_session_free,            /* session_free */
+  Curl_none_set_engine,            /* set_engine */
+  Curl_none_set_engine_default,    /* set_engine_default */
+  Curl_none_engines_list,          /* engines_list */
+  Curl_none_false_start,           /* false_start */
+  bearssl_sha256sum,               /* sha256sum */
+  NULL,                            /* associate_connection */
+  NULL                             /* disassociate_connection */
 };
 
 #endif /* USE_BEARSSL */

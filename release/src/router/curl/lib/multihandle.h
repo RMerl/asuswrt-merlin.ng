@@ -140,15 +140,22 @@ struct Curl_multi {
                                     previous callback */
   unsigned int max_concurrent_streams;
 
+#ifdef USE_WINSOCK
+  WSAEVENT wsa_event; /* winsock event used for waits */
+#else
 #ifdef ENABLE_WAKEUP
   curl_socket_t wakeup_pair[2]; /* socketpair() used for wakeup
                                    0 is used for read, 1 is used for write */
+#endif
 #endif
   /* multiplexing wanted */
   bool multiplexing;
   bool recheckstate; /* see Curl_multi_connchanged */
   bool in_callback;            /* true while executing a callback */
   bool ipv6_works;
+#ifdef USE_OPENSSL
+  bool ssl_seeded;
+#endif
 };
 
 #endif /* HEADER_CURL_MULTIHANDLE_H */

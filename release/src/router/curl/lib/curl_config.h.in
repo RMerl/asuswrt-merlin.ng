@@ -42,6 +42,9 @@
 /* to disable Gopher */
 #undef CURL_DISABLE_GOPHER
 
+/* disable alt-svc */
+#undef CURL_DISABLE_HSTS
+
 /* to disable HTTP */
 #undef CURL_DISABLE_HTTP
 
@@ -68,6 +71,9 @@
 
 /* disable netrc parsing */
 #undef CURL_DISABLE_NETRC
+
+/* to disable NTLM support */
+#undef CURL_DISABLE_NTLM
 
 /* if the OpenSSL configuration won't be loaded automatically */
 #undef CURL_DISABLE_OPENSSL_AUTO_LOAD_CONFIG
@@ -128,12 +134,6 @@
 
 /* Define to the type of arg 2 for gethostname. */
 #undef GETHOSTNAME_TYPE_ARG2
-
-/* Specifies the number of arguments to getservbyport_r */
-#undef GETSERVBYPORT_R_ARGS
-
-/* Specifies the size of the buffer to pass to getservbyport_r */
-#undef GETSERVBYPORT_R_BUFSIZE
 
 /* Define to 1 if you have the alarm function. */
 #undef HAVE_ALARM
@@ -214,9 +214,6 @@
 /* Define to 1 if you have the freeaddrinfo function. */
 #undef HAVE_FREEADDRINFO
 
-/* Define to 1 if you have the freeifaddrs function. */
-#undef HAVE_FREEIFADDRS
-
 /* Define to 1 if you have the fsetxattr function. */
 #undef HAVE_FSETXATTR
 
@@ -229,9 +226,6 @@
 /* Define to 1 if you have the ftruncate function. */
 #undef HAVE_FTRUNCATE
 
-/* Define to 1 if you have the gai_strerror function. */
-#undef HAVE_GAI_STRERROR
-
 /* Define to 1 if you have a working getaddrinfo function. */
 #undef HAVE_GETADDRINFO
 
@@ -240,21 +234,6 @@
 
 /* Define to 1 if you have the `geteuid' function. */
 #undef HAVE_GETEUID
-
-/* Define to 1 if you have the gethostbyaddr function. */
-#undef HAVE_GETHOSTBYADDR
-
-/* Define to 1 if you have the gethostbyaddr_r function. */
-#undef HAVE_GETHOSTBYADDR_R
-
-/* gethostbyaddr_r() takes 5 args */
-#undef HAVE_GETHOSTBYADDR_R_5
-
-/* gethostbyaddr_r() takes 7 args */
-#undef HAVE_GETHOSTBYADDR_R_7
-
-/* gethostbyaddr_r() takes 8 args */
-#undef HAVE_GETHOSTBYADDR_R_8
 
 /* Define to 1 if you have the gethostbyname function. */
 #undef HAVE_GETHOSTBYNAME
@@ -294,9 +273,6 @@
 
 /* Define to 1 if you have the `getrlimit' function. */
 #undef HAVE_GETRLIMIT
-
-/* Define to 1 if you have the getservbyport_r function. */
-#undef HAVE_GETSERVBYPORT_R
 
 /* Define to 1 if you have the getsockname function. */
 #undef HAVE_GETSOCKNAME
@@ -345,15 +321,6 @@
 
 /* Define to 1 if you have the `if_nametoindex' function. */
 #undef HAVE_IF_NAMETOINDEX
-
-/* Define to 1 if you have the inet_ntoa_r function. */
-#undef HAVE_INET_NTOA_R
-
-/* inet_ntoa_r() takes 2 args */
-#undef HAVE_INET_NTOA_R_2
-
-/* inet_ntoa_r() takes 3 args */
-#undef HAVE_INET_NTOA_R_3
 
 /* Define to 1 if you have a IPv6 capable working inet_ntop function. */
 #undef HAVE_INET_NTOP
@@ -606,9 +573,6 @@
 /* Define to 1 if you have a working setsockopt SO_NONBLOCK function. */
 #undef HAVE_SETSOCKOPT_SO_NONBLOCK
 
-/* Define to 1 if you have the <sgtty.h> header file. */
-#undef HAVE_SGTTY_H
-
 /* Define to 1 if you have the sigaction function. */
 #undef HAVE_SIGACTION
 
@@ -807,9 +771,6 @@
 /* Define to 1 if you have the <wolfssh/ssh.h> header file. */
 #undef HAVE_WOLFSSH_SSH_H
 
-/* Define to 1 if you have the `wolfSSLv3_client_method' function. */
-#undef HAVE_WOLFSSLV3_CLIENT_METHOD
-
 /* if you have wolfSSL_DES_ecb_encrypt */
 #undef HAVE_WOLFSSL_DES_ECB_ENCRYPT
 
@@ -987,9 +948,6 @@
 /* GSASL support enabled */
 #undef USE_GSASL
 
-/* to enable HSTS */
-#undef USE_HSTS
-
 /* if hyper is in use */
 #undef USE_HYPER
 
@@ -1013,9 +971,6 @@
 
 /* if MesaLink is enabled */
 #undef USE_MESALINK
-
-/* Define to enable metalink support */
-#undef USE_METALINK
 
 /* if nghttp2 is in use */
 #undef USE_NGHTTP2

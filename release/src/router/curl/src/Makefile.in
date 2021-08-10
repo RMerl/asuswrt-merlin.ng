@@ -21,7 +21,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -124,12 +124,22 @@ bin_PROGRAMS = curl$(EXEEXT)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_compile_check_sizeof.m4 \
+	$(top_srcdir)/m4/curl-amissl.m4 \
+	$(top_srcdir)/m4/curl-bearssl.m4 \
 	$(top_srcdir)/m4/curl-compilers.m4 \
 	$(top_srcdir)/m4/curl-confopts.m4 \
 	$(top_srcdir)/m4/curl-functions.m4 \
+	$(top_srcdir)/m4/curl-gnutls.m4 \
+	$(top_srcdir)/m4/curl-mbedtls.m4 \
+	$(top_srcdir)/m4/curl-mesalink.m4 $(top_srcdir)/m4/curl-nss.m4 \
 	$(top_srcdir)/m4/curl-openssl.m4 \
 	$(top_srcdir)/m4/curl-override.m4 \
-	$(top_srcdir)/m4/curl-reentrant.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/curl-reentrant.m4 \
+	$(top_srcdir)/m4/curl-rustls.m4 \
+	$(top_srcdir)/m4/curl-schannel.m4 \
+	$(top_srcdir)/m4/curl-sectransp.m4 \
+	$(top_srcdir)/m4/curl-sysconfig.m4 \
+	$(top_srcdir)/m4/curl-wolfssl.m4 $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
 	$(top_srcdir)/m4/xc-am-iface.m4 \
@@ -158,11 +168,11 @@ am__libcurltool_la_SOURCES_DIST = slist_wc.c tool_binmode.c \
 	tool_convert.c tool_dirhie.c tool_doswin.c tool_easysrc.c \
 	tool_filetime.c tool_formparse.c tool_getparam.c \
 	tool_getpass.c tool_help.c tool_helpers.c tool_homedir.c \
-	tool_hugehelp.c tool_libinfo.c tool_main.c tool_metalink.c \
-	tool_msgs.c tool_operate.c tool_operhlp.c tool_panykey.c \
-	tool_paramhlp.c tool_parsecfg.c tool_progress.c tool_strdup.c \
-	tool_setopt.c tool_sleep.c tool_urlglob.c tool_util.c \
-	tool_vms.c tool_writeout.c tool_writeout_json.c tool_xattr.c \
+	tool_hugehelp.c tool_libinfo.c tool_main.c tool_msgs.c \
+	tool_operate.c tool_operhlp.c tool_panykey.c tool_paramhlp.c \
+	tool_parsecfg.c tool_progress.c tool_strdup.c tool_setopt.c \
+	tool_sleep.c tool_urlglob.c tool_util.c tool_vms.c \
+	tool_writeout.c tool_writeout_json.c tool_xattr.c \
 	../lib/strtoofft.c ../lib/nonblock.c ../lib/warnless.c \
 	../lib/curl_ctype.c ../lib/curl_multibyte.c \
 	../lib/version_win32.c ../lib/dynbuf.c slist_wc.h \
@@ -172,11 +182,11 @@ am__libcurltool_la_SOURCES_DIST = slist_wc.c tool_binmode.c \
 	tool_easysrc.h tool_filetime.h tool_formparse.h \
 	tool_getparam.h tool_getpass.h tool_help.h tool_helpers.h \
 	tool_homedir.h tool_hugehelp.h tool_libinfo.h tool_main.h \
-	tool_metalink.h tool_msgs.h tool_operate.h tool_operhlp.h \
-	tool_panykey.h tool_paramhlp.h tool_parsecfg.h tool_progress.h \
-	tool_sdecls.h tool_setopt.h tool_setup.h tool_sleep.h \
-	tool_strdup.h tool_urlglob.h tool_util.h tool_version.h \
-	tool_vms.h tool_writeout.h tool_writeout_json.h tool_xattr.h
+	tool_msgs.h tool_operate.h tool_operhlp.h tool_panykey.h \
+	tool_paramhlp.h tool_parsecfg.h tool_progress.h tool_sdecls.h \
+	tool_setopt.h tool_setup.h tool_sleep.h tool_strdup.h \
+	tool_urlglob.h tool_util.h tool_version.h tool_vms.h \
+	tool_writeout.h tool_writeout_json.h tool_xattr.h
 am__objects_1 = libcurltool_la-slist_wc.lo \
 	libcurltool_la-tool_binmode.lo libcurltool_la-tool_bname.lo \
 	libcurltool_la-tool_cb_dbg.lo libcurltool_la-tool_cb_hdr.lo \
@@ -190,9 +200,9 @@ am__objects_1 = libcurltool_la-slist_wc.lo \
 	libcurltool_la-tool_help.lo libcurltool_la-tool_helpers.lo \
 	libcurltool_la-tool_homedir.lo libcurltool_la-tool_hugehelp.lo \
 	libcurltool_la-tool_libinfo.lo libcurltool_la-tool_main.lo \
-	libcurltool_la-tool_metalink.lo libcurltool_la-tool_msgs.lo \
-	libcurltool_la-tool_operate.lo libcurltool_la-tool_operhlp.lo \
-	libcurltool_la-tool_panykey.lo libcurltool_la-tool_paramhlp.lo \
+	libcurltool_la-tool_msgs.lo libcurltool_la-tool_operate.lo \
+	libcurltool_la-tool_operhlp.lo libcurltool_la-tool_panykey.lo \
+	libcurltool_la-tool_paramhlp.lo \
 	libcurltool_la-tool_parsecfg.lo \
 	libcurltool_la-tool_progress.lo libcurltool_la-tool_strdup.lo \
 	libcurltool_la-tool_setopt.lo libcurltool_la-tool_sleep.lo \
@@ -222,33 +232,29 @@ libcurltool_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(libcurltool_la_CFLAGS) $(CFLAGS) $(libcurltool_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
 @BUILD_UNITTESTS_TRUE@am_libcurltool_la_rpath =
-am__objects_6 = curl-slist_wc.$(OBJEXT) curl-tool_binmode.$(OBJEXT) \
-	curl-tool_bname.$(OBJEXT) curl-tool_cb_dbg.$(OBJEXT) \
-	curl-tool_cb_hdr.$(OBJEXT) curl-tool_cb_prg.$(OBJEXT) \
-	curl-tool_cb_rea.$(OBJEXT) curl-tool_cb_see.$(OBJEXT) \
-	curl-tool_cb_wrt.$(OBJEXT) curl-tool_cfgable.$(OBJEXT) \
-	curl-tool_convert.$(OBJEXT) curl-tool_dirhie.$(OBJEXT) \
-	curl-tool_doswin.$(OBJEXT) curl-tool_easysrc.$(OBJEXT) \
-	curl-tool_filetime.$(OBJEXT) curl-tool_formparse.$(OBJEXT) \
-	curl-tool_getparam.$(OBJEXT) curl-tool_getpass.$(OBJEXT) \
-	curl-tool_help.$(OBJEXT) curl-tool_helpers.$(OBJEXT) \
-	curl-tool_homedir.$(OBJEXT) curl-tool_hugehelp.$(OBJEXT) \
-	curl-tool_libinfo.$(OBJEXT) curl-tool_main.$(OBJEXT) \
-	curl-tool_metalink.$(OBJEXT) curl-tool_msgs.$(OBJEXT) \
-	curl-tool_operate.$(OBJEXT) curl-tool_operhlp.$(OBJEXT) \
-	curl-tool_panykey.$(OBJEXT) curl-tool_paramhlp.$(OBJEXT) \
-	curl-tool_parsecfg.$(OBJEXT) curl-tool_progress.$(OBJEXT) \
-	curl-tool_strdup.$(OBJEXT) curl-tool_setopt.$(OBJEXT) \
-	curl-tool_sleep.$(OBJEXT) curl-tool_urlglob.$(OBJEXT) \
-	curl-tool_util.$(OBJEXT) curl-tool_vms.$(OBJEXT) \
-	curl-tool_writeout.$(OBJEXT) curl-tool_writeout_json.$(OBJEXT) \
-	curl-tool_xattr.$(OBJEXT)
-am__objects_7 = ../lib/curl-strtoofft.$(OBJEXT) \
-	../lib/curl-nonblock.$(OBJEXT) ../lib/curl-warnless.$(OBJEXT) \
-	../lib/curl-curl_ctype.$(OBJEXT) \
-	../lib/curl-curl_multibyte.$(OBJEXT) \
-	../lib/curl-version_win32.$(OBJEXT) \
-	../lib/curl-dynbuf.$(OBJEXT)
+am__objects_6 = slist_wc.$(OBJEXT) tool_binmode.$(OBJEXT) \
+	tool_bname.$(OBJEXT) tool_cb_dbg.$(OBJEXT) \
+	tool_cb_hdr.$(OBJEXT) tool_cb_prg.$(OBJEXT) \
+	tool_cb_rea.$(OBJEXT) tool_cb_see.$(OBJEXT) \
+	tool_cb_wrt.$(OBJEXT) tool_cfgable.$(OBJEXT) \
+	tool_convert.$(OBJEXT) tool_dirhie.$(OBJEXT) \
+	tool_doswin.$(OBJEXT) tool_easysrc.$(OBJEXT) \
+	tool_filetime.$(OBJEXT) tool_formparse.$(OBJEXT) \
+	tool_getparam.$(OBJEXT) tool_getpass.$(OBJEXT) \
+	tool_help.$(OBJEXT) tool_helpers.$(OBJEXT) \
+	tool_homedir.$(OBJEXT) tool_hugehelp.$(OBJEXT) \
+	tool_libinfo.$(OBJEXT) tool_main.$(OBJEXT) tool_msgs.$(OBJEXT) \
+	tool_operate.$(OBJEXT) tool_operhlp.$(OBJEXT) \
+	tool_panykey.$(OBJEXT) tool_paramhlp.$(OBJEXT) \
+	tool_parsecfg.$(OBJEXT) tool_progress.$(OBJEXT) \
+	tool_strdup.$(OBJEXT) tool_setopt.$(OBJEXT) \
+	tool_sleep.$(OBJEXT) tool_urlglob.$(OBJEXT) \
+	tool_util.$(OBJEXT) tool_vms.$(OBJEXT) tool_writeout.$(OBJEXT) \
+	tool_writeout_json.$(OBJEXT) tool_xattr.$(OBJEXT)
+am__objects_7 = ../lib/strtoofft.$(OBJEXT) ../lib/nonblock.$(OBJEXT) \
+	../lib/warnless.$(OBJEXT) ../lib/curl_ctype.$(OBJEXT) \
+	../lib/curl_multibyte.$(OBJEXT) ../lib/version_win32.$(OBJEXT) \
+	../lib/dynbuf.$(OBJEXT)
 am__objects_8 = $(am__objects_6) $(am__objects_7) $(am__objects_3)
 am_curl_OBJECTS = $(am__objects_8)
 curl_OBJECTS = $(am_curl_OBJECTS)
@@ -256,9 +262,6 @@ curl_OBJECTS = $(am_curl_OBJECTS)
 @USE_EXPLICIT_LIB_DEPS_FALSE@	$(top_builddir)/lib/libcurl.la
 @USE_EXPLICIT_LIB_DEPS_TRUE@curl_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_TRUE@	$(top_builddir)/lib/libcurl.la
-curl_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(curl_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -274,13 +277,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = 
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ../lib/$(DEPDIR)/curl-curl_ctype.Po \
-	../lib/$(DEPDIR)/curl-curl_multibyte.Po \
-	../lib/$(DEPDIR)/curl-dynbuf.Po \
-	../lib/$(DEPDIR)/curl-nonblock.Po \
-	../lib/$(DEPDIR)/curl-strtoofft.Po \
-	../lib/$(DEPDIR)/curl-version_win32.Po \
-	../lib/$(DEPDIR)/curl-warnless.Po \
+am__depfiles_remade = ../lib/$(DEPDIR)/curl_ctype.Po \
+	../lib/$(DEPDIR)/curl_multibyte.Po ../lib/$(DEPDIR)/dynbuf.Po \
 	../lib/$(DEPDIR)/libcurltool_la-curl_ctype.Plo \
 	../lib/$(DEPDIR)/libcurltool_la-curl_multibyte.Plo \
 	../lib/$(DEPDIR)/libcurltool_la-dynbuf.Plo \
@@ -288,39 +286,8 @@ am__depfiles_remade = ../lib/$(DEPDIR)/curl-curl_ctype.Po \
 	../lib/$(DEPDIR)/libcurltool_la-strtoofft.Plo \
 	../lib/$(DEPDIR)/libcurltool_la-version_win32.Plo \
 	../lib/$(DEPDIR)/libcurltool_la-warnless.Plo \
-	./$(DEPDIR)/curl-slist_wc.Po ./$(DEPDIR)/curl-tool_binmode.Po \
-	./$(DEPDIR)/curl-tool_bname.Po ./$(DEPDIR)/curl-tool_cb_dbg.Po \
-	./$(DEPDIR)/curl-tool_cb_hdr.Po \
-	./$(DEPDIR)/curl-tool_cb_prg.Po \
-	./$(DEPDIR)/curl-tool_cb_rea.Po \
-	./$(DEPDIR)/curl-tool_cb_see.Po \
-	./$(DEPDIR)/curl-tool_cb_wrt.Po \
-	./$(DEPDIR)/curl-tool_cfgable.Po \
-	./$(DEPDIR)/curl-tool_convert.Po \
-	./$(DEPDIR)/curl-tool_dirhie.Po \
-	./$(DEPDIR)/curl-tool_doswin.Po \
-	./$(DEPDIR)/curl-tool_easysrc.Po \
-	./$(DEPDIR)/curl-tool_filetime.Po \
-	./$(DEPDIR)/curl-tool_formparse.Po \
-	./$(DEPDIR)/curl-tool_getparam.Po \
-	./$(DEPDIR)/curl-tool_getpass.Po ./$(DEPDIR)/curl-tool_help.Po \
-	./$(DEPDIR)/curl-tool_helpers.Po \
-	./$(DEPDIR)/curl-tool_homedir.Po \
-	./$(DEPDIR)/curl-tool_hugehelp.Po \
-	./$(DEPDIR)/curl-tool_libinfo.Po ./$(DEPDIR)/curl-tool_main.Po \
-	./$(DEPDIR)/curl-tool_metalink.Po \
-	./$(DEPDIR)/curl-tool_msgs.Po ./$(DEPDIR)/curl-tool_operate.Po \
-	./$(DEPDIR)/curl-tool_operhlp.Po \
-	./$(DEPDIR)/curl-tool_panykey.Po \
-	./$(DEPDIR)/curl-tool_paramhlp.Po \
-	./$(DEPDIR)/curl-tool_parsecfg.Po \
-	./$(DEPDIR)/curl-tool_progress.Po \
-	./$(DEPDIR)/curl-tool_setopt.Po ./$(DEPDIR)/curl-tool_sleep.Po \
-	./$(DEPDIR)/curl-tool_strdup.Po \
-	./$(DEPDIR)/curl-tool_urlglob.Po ./$(DEPDIR)/curl-tool_util.Po \
-	./$(DEPDIR)/curl-tool_vms.Po ./$(DEPDIR)/curl-tool_writeout.Po \
-	./$(DEPDIR)/curl-tool_writeout_json.Po \
-	./$(DEPDIR)/curl-tool_xattr.Po \
+	../lib/$(DEPDIR)/nonblock.Po ../lib/$(DEPDIR)/strtoofft.Po \
+	../lib/$(DEPDIR)/version_win32.Po ../lib/$(DEPDIR)/warnless.Po \
 	./$(DEPDIR)/libcurltool_la-slist_wc.Plo \
 	./$(DEPDIR)/libcurltool_la-tool_binmode.Plo \
 	./$(DEPDIR)/libcurltool_la-tool_bname.Plo \
@@ -345,7 +312,6 @@ am__depfiles_remade = ../lib/$(DEPDIR)/curl-curl_ctype.Po \
 	./$(DEPDIR)/libcurltool_la-tool_hugehelp.Plo \
 	./$(DEPDIR)/libcurltool_la-tool_libinfo.Plo \
 	./$(DEPDIR)/libcurltool_la-tool_main.Plo \
-	./$(DEPDIR)/libcurltool_la-tool_metalink.Plo \
 	./$(DEPDIR)/libcurltool_la-tool_msgs.Plo \
 	./$(DEPDIR)/libcurltool_la-tool_operate.Plo \
 	./$(DEPDIR)/libcurltool_la-tool_operhlp.Plo \
@@ -361,7 +327,27 @@ am__depfiles_remade = ../lib/$(DEPDIR)/curl-curl_ctype.Po \
 	./$(DEPDIR)/libcurltool_la-tool_vms.Plo \
 	./$(DEPDIR)/libcurltool_la-tool_writeout.Plo \
 	./$(DEPDIR)/libcurltool_la-tool_writeout_json.Plo \
-	./$(DEPDIR)/libcurltool_la-tool_xattr.Plo
+	./$(DEPDIR)/libcurltool_la-tool_xattr.Plo \
+	./$(DEPDIR)/slist_wc.Po ./$(DEPDIR)/tool_binmode.Po \
+	./$(DEPDIR)/tool_bname.Po ./$(DEPDIR)/tool_cb_dbg.Po \
+	./$(DEPDIR)/tool_cb_hdr.Po ./$(DEPDIR)/tool_cb_prg.Po \
+	./$(DEPDIR)/tool_cb_rea.Po ./$(DEPDIR)/tool_cb_see.Po \
+	./$(DEPDIR)/tool_cb_wrt.Po ./$(DEPDIR)/tool_cfgable.Po \
+	./$(DEPDIR)/tool_convert.Po ./$(DEPDIR)/tool_dirhie.Po \
+	./$(DEPDIR)/tool_doswin.Po ./$(DEPDIR)/tool_easysrc.Po \
+	./$(DEPDIR)/tool_filetime.Po ./$(DEPDIR)/tool_formparse.Po \
+	./$(DEPDIR)/tool_getparam.Po ./$(DEPDIR)/tool_getpass.Po \
+	./$(DEPDIR)/tool_help.Po ./$(DEPDIR)/tool_helpers.Po \
+	./$(DEPDIR)/tool_homedir.Po ./$(DEPDIR)/tool_hugehelp.Po \
+	./$(DEPDIR)/tool_libinfo.Po ./$(DEPDIR)/tool_main.Po \
+	./$(DEPDIR)/tool_msgs.Po ./$(DEPDIR)/tool_operate.Po \
+	./$(DEPDIR)/tool_operhlp.Po ./$(DEPDIR)/tool_panykey.Po \
+	./$(DEPDIR)/tool_paramhlp.Po ./$(DEPDIR)/tool_parsecfg.Po \
+	./$(DEPDIR)/tool_progress.Po ./$(DEPDIR)/tool_setopt.Po \
+	./$(DEPDIR)/tool_sleep.Po ./$(DEPDIR)/tool_strdup.Po \
+	./$(DEPDIR)/tool_urlglob.Po ./$(DEPDIR)/tool_util.Po \
+	./$(DEPDIR)/tool_vms.Po ./$(DEPDIR)/tool_writeout.Po \
+	./$(DEPDIR)/tool_writeout_json.Po ./$(DEPDIR)/tool_xattr.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -533,9 +519,6 @@ LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBCURL_LIBS = @LIBCURL_LIBS@
 LIBCURL_NO_SHARED = @LIBCURL_NO_SHARED@
-LIBMETALINK_CPPFLAGS = @LIBMETALINK_CPPFLAGS@
-LIBMETALINK_LDFLAGS = @LIBMETALINK_LDFLAGS@
-LIBMETALINK_LIBS = @LIBMETALINK_LIBS@
 LIBOBJS = @LIBOBJS@
 
 # Prevent LIBS from being used for all link targets
@@ -679,7 +662,7 @@ top_srcdir = @top_srcdir@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -756,7 +739,6 @@ CURL_CFILES = \
   tool_hugehelp.c \
   tool_libinfo.c \
   tool_main.c \
-  tool_metalink.c \
   tool_msgs.c \
   tool_operate.c \
   tool_operhlp.c \
@@ -799,7 +781,6 @@ CURL_HFILES = \
   tool_hugehelp.h \
   tool_libinfo.h \
   tool_main.h \
-  tool_metalink.h \
   tool_msgs.h \
   tool_operate.h \
   tool_operhlp.h \
@@ -827,14 +808,12 @@ CURL_FILES = $(CURL_CFILES) $(CURLX_CFILES) $(CURL_HFILES)
 
 # CURL_FILES comes from Makefile.inc
 curl_SOURCES = $(CURL_FILES)
-@USE_EXPLICIT_LIB_DEPS_FALSE@curl_LDADD = $(top_builddir)/lib/libcurl.la @LIBMETALINK_LIBS@ @NSS_LIBS@ @SSL_LIBS@ @ZLIB_LIBS@ @CURL_NETWORK_AND_TIME_LIBS@
-@USE_EXPLICIT_LIB_DEPS_TRUE@curl_LDADD = $(top_builddir)/lib/libcurl.la @LIBMETALINK_LIBS@ @LIBCURL_LIBS@
-curl_LDFLAGS = @LIBMETALINK_LDFLAGS@
-curl_CPPFLAGS = $(AM_CPPFLAGS) $(LIBMETALINK_CPPFLAGS)
+@USE_EXPLICIT_LIB_DEPS_FALSE@curl_LDADD = $(top_builddir)/lib/libcurl.la @NSS_LIBS@ @SSL_LIBS@ @ZLIB_LIBS@ @CURL_NETWORK_AND_TIME_LIBS@
+@USE_EXPLICIT_LIB_DEPS_TRUE@curl_LDADD = $(top_builddir)/lib/libcurl.la @LIBCURL_LIBS@
 
 # if unit tests are enabled, build a static library to link them with
 @BUILD_UNITTESTS_TRUE@noinst_LTLIBRARIES = libcurltool.la
-@BUILD_UNITTESTS_TRUE@libcurltool_la_CPPFLAGS = $(LIBMETALINK_CPPFLAGS) $(AM_CPPFLAGS) \
+@BUILD_UNITTESTS_TRUE@libcurltool_la_CPPFLAGS = $(AM_CPPFLAGS) \
 @BUILD_UNITTESTS_TRUE@                          -DCURL_STATICLIB -DUNITTESTS
 
 @BUILD_UNITTESTS_TRUE@libcurltool_la_CFLAGS = 
@@ -980,24 +959,24 @@ clean-noinstLTLIBRARIES:
 
 libcurltool.la: $(libcurltool_la_OBJECTS) $(libcurltool_la_DEPENDENCIES) $(EXTRA_libcurltool_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libcurltool_la_LINK) $(am_libcurltool_la_rpath) $(libcurltool_la_OBJECTS) $(libcurltool_la_LIBADD) $(LIBS)
-../lib/curl-strtoofft.$(OBJEXT): ../lib/$(am__dirstamp) \
+../lib/strtoofft.$(OBJEXT): ../lib/$(am__dirstamp) \
 	../lib/$(DEPDIR)/$(am__dirstamp)
-../lib/curl-nonblock.$(OBJEXT): ../lib/$(am__dirstamp) \
+../lib/nonblock.$(OBJEXT): ../lib/$(am__dirstamp) \
 	../lib/$(DEPDIR)/$(am__dirstamp)
-../lib/curl-warnless.$(OBJEXT): ../lib/$(am__dirstamp) \
+../lib/warnless.$(OBJEXT): ../lib/$(am__dirstamp) \
 	../lib/$(DEPDIR)/$(am__dirstamp)
-../lib/curl-curl_ctype.$(OBJEXT): ../lib/$(am__dirstamp) \
+../lib/curl_ctype.$(OBJEXT): ../lib/$(am__dirstamp) \
 	../lib/$(DEPDIR)/$(am__dirstamp)
-../lib/curl-curl_multibyte.$(OBJEXT): ../lib/$(am__dirstamp) \
+../lib/curl_multibyte.$(OBJEXT): ../lib/$(am__dirstamp) \
 	../lib/$(DEPDIR)/$(am__dirstamp)
-../lib/curl-version_win32.$(OBJEXT): ../lib/$(am__dirstamp) \
+../lib/version_win32.$(OBJEXT): ../lib/$(am__dirstamp) \
 	../lib/$(DEPDIR)/$(am__dirstamp)
-../lib/curl-dynbuf.$(OBJEXT): ../lib/$(am__dirstamp) \
+../lib/dynbuf.$(OBJEXT): ../lib/$(am__dirstamp) \
 	../lib/$(DEPDIR)/$(am__dirstamp)
 
 curl$(EXEEXT): $(curl_OBJECTS) $(curl_DEPENDENCIES) $(EXTRA_curl_DEPENDENCIES) 
 	@rm -f curl$(EXEEXT)
-	$(AM_V_CCLD)$(curl_LINK) $(curl_OBJECTS) $(curl_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(curl_OBJECTS) $(curl_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1007,13 +986,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/curl-curl_ctype.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/curl-curl_multibyte.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/curl-dynbuf.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/curl-nonblock.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/curl-strtoofft.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/curl-version_win32.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/curl-warnless.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/curl_ctype.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/curl_multibyte.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/dynbuf.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/libcurltool_la-curl_ctype.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/libcurltool_la-curl_multibyte.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/libcurltool_la-dynbuf.Plo@am__quote@ # am--include-marker
@@ -1021,47 +996,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/libcurltool_la-strtoofft.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/libcurltool_la-version_win32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/libcurltool_la-warnless.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-slist_wc.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_binmode.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_bname.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_cb_dbg.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_cb_hdr.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_cb_prg.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_cb_rea.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_cb_see.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_cb_wrt.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_cfgable.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_convert.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_dirhie.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_doswin.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_easysrc.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_filetime.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_formparse.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_getparam.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_getpass.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_help.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_helpers.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_homedir.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_hugehelp.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_libinfo.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_main.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_metalink.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_msgs.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_operate.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_operhlp.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_panykey.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_paramhlp.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_parsecfg.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_progress.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_setopt.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_sleep.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_strdup.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_urlglob.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_util.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_vms.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_writeout.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_writeout_json.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/curl-tool_xattr.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/nonblock.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/strtoofft.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/version_win32.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../lib/$(DEPDIR)/warnless.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-slist_wc.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-tool_binmode.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-tool_bname.Plo@am__quote@ # am--include-marker
@@ -1086,7 +1024,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-tool_hugehelp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-tool_libinfo.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-tool_main.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-tool_metalink.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-tool_msgs.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-tool_operate.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-tool_operhlp.Plo@am__quote@ # am--include-marker
@@ -1103,6 +1040,46 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-tool_writeout.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-tool_writeout_json.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurltool_la-tool_xattr.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/slist_wc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_binmode.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_bname.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_cb_dbg.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_cb_hdr.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_cb_prg.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_cb_rea.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_cb_see.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_cb_wrt.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_cfgable.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_convert.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_dirhie.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_doswin.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_easysrc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_filetime.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_formparse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_getparam.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_getpass.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_help.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_helpers.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_homedir.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_hugehelp.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_libinfo.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_main.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_msgs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_operate.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_operhlp.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_panykey.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_paramhlp.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_parsecfg.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_progress.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_setopt.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_sleep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_strdup.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_urlglob.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_util.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_vms.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_writeout.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_writeout_json.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tool_xattr.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -1302,13 +1279,6 @@ libcurltool_la-tool_main.lo: tool_main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurltool_la_CPPFLAGS) $(CPPFLAGS) $(libcurltool_la_CFLAGS) $(CFLAGS) -c -o libcurltool_la-tool_main.lo `test -f 'tool_main.c' || echo '$(srcdir)/'`tool_main.c
 
-libcurltool_la-tool_metalink.lo: tool_metalink.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurltool_la_CPPFLAGS) $(CPPFLAGS) $(libcurltool_la_CFLAGS) $(CFLAGS) -MT libcurltool_la-tool_metalink.lo -MD -MP -MF $(DEPDIR)/libcurltool_la-tool_metalink.Tpo -c -o libcurltool_la-tool_metalink.lo `test -f 'tool_metalink.c' || echo '$(srcdir)/'`tool_metalink.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcurltool_la-tool_metalink.Tpo $(DEPDIR)/libcurltool_la-tool_metalink.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_metalink.c' object='libcurltool_la-tool_metalink.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurltool_la_CPPFLAGS) $(CPPFLAGS) $(libcurltool_la_CFLAGS) $(CFLAGS) -c -o libcurltool_la-tool_metalink.lo `test -f 'tool_metalink.c' || echo '$(srcdir)/'`tool_metalink.c
-
 libcurltool_la-tool_msgs.lo: tool_msgs.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurltool_la_CPPFLAGS) $(CPPFLAGS) $(libcurltool_la_CFLAGS) $(CFLAGS) -MT libcurltool_la-tool_msgs.lo -MD -MP -MF $(DEPDIR)/libcurltool_la-tool_msgs.Tpo -c -o libcurltool_la-tool_msgs.lo `test -f 'tool_msgs.c' || echo '$(srcdir)/'`tool_msgs.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcurltool_la-tool_msgs.Tpo $(DEPDIR)/libcurltool_la-tool_msgs.Plo
@@ -1469,678 +1439,6 @@ libcurltool_la-tool_xattr.lo: tool_xattr.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/dynbuf.c' object='../lib/libcurltool_la-dynbuf.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurltool_la_CPPFLAGS) $(CPPFLAGS) $(libcurltool_la_CFLAGS) $(CFLAGS) -c -o ../lib/libcurltool_la-dynbuf.lo `test -f '../lib/dynbuf.c' || echo '$(srcdir)/'`../lib/dynbuf.c
-
-curl-slist_wc.o: slist_wc.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-slist_wc.o -MD -MP -MF $(DEPDIR)/curl-slist_wc.Tpo -c -o curl-slist_wc.o `test -f 'slist_wc.c' || echo '$(srcdir)/'`slist_wc.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-slist_wc.Tpo $(DEPDIR)/curl-slist_wc.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='slist_wc.c' object='curl-slist_wc.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-slist_wc.o `test -f 'slist_wc.c' || echo '$(srcdir)/'`slist_wc.c
-
-curl-slist_wc.obj: slist_wc.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-slist_wc.obj -MD -MP -MF $(DEPDIR)/curl-slist_wc.Tpo -c -o curl-slist_wc.obj `if test -f 'slist_wc.c'; then $(CYGPATH_W) 'slist_wc.c'; else $(CYGPATH_W) '$(srcdir)/slist_wc.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-slist_wc.Tpo $(DEPDIR)/curl-slist_wc.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='slist_wc.c' object='curl-slist_wc.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-slist_wc.obj `if test -f 'slist_wc.c'; then $(CYGPATH_W) 'slist_wc.c'; else $(CYGPATH_W) '$(srcdir)/slist_wc.c'; fi`
-
-curl-tool_binmode.o: tool_binmode.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_binmode.o -MD -MP -MF $(DEPDIR)/curl-tool_binmode.Tpo -c -o curl-tool_binmode.o `test -f 'tool_binmode.c' || echo '$(srcdir)/'`tool_binmode.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_binmode.Tpo $(DEPDIR)/curl-tool_binmode.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_binmode.c' object='curl-tool_binmode.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_binmode.o `test -f 'tool_binmode.c' || echo '$(srcdir)/'`tool_binmode.c
-
-curl-tool_binmode.obj: tool_binmode.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_binmode.obj -MD -MP -MF $(DEPDIR)/curl-tool_binmode.Tpo -c -o curl-tool_binmode.obj `if test -f 'tool_binmode.c'; then $(CYGPATH_W) 'tool_binmode.c'; else $(CYGPATH_W) '$(srcdir)/tool_binmode.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_binmode.Tpo $(DEPDIR)/curl-tool_binmode.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_binmode.c' object='curl-tool_binmode.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_binmode.obj `if test -f 'tool_binmode.c'; then $(CYGPATH_W) 'tool_binmode.c'; else $(CYGPATH_W) '$(srcdir)/tool_binmode.c'; fi`
-
-curl-tool_bname.o: tool_bname.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_bname.o -MD -MP -MF $(DEPDIR)/curl-tool_bname.Tpo -c -o curl-tool_bname.o `test -f 'tool_bname.c' || echo '$(srcdir)/'`tool_bname.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_bname.Tpo $(DEPDIR)/curl-tool_bname.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_bname.c' object='curl-tool_bname.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_bname.o `test -f 'tool_bname.c' || echo '$(srcdir)/'`tool_bname.c
-
-curl-tool_bname.obj: tool_bname.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_bname.obj -MD -MP -MF $(DEPDIR)/curl-tool_bname.Tpo -c -o curl-tool_bname.obj `if test -f 'tool_bname.c'; then $(CYGPATH_W) 'tool_bname.c'; else $(CYGPATH_W) '$(srcdir)/tool_bname.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_bname.Tpo $(DEPDIR)/curl-tool_bname.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_bname.c' object='curl-tool_bname.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_bname.obj `if test -f 'tool_bname.c'; then $(CYGPATH_W) 'tool_bname.c'; else $(CYGPATH_W) '$(srcdir)/tool_bname.c'; fi`
-
-curl-tool_cb_dbg.o: tool_cb_dbg.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cb_dbg.o -MD -MP -MF $(DEPDIR)/curl-tool_cb_dbg.Tpo -c -o curl-tool_cb_dbg.o `test -f 'tool_cb_dbg.c' || echo '$(srcdir)/'`tool_cb_dbg.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cb_dbg.Tpo $(DEPDIR)/curl-tool_cb_dbg.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cb_dbg.c' object='curl-tool_cb_dbg.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cb_dbg.o `test -f 'tool_cb_dbg.c' || echo '$(srcdir)/'`tool_cb_dbg.c
-
-curl-tool_cb_dbg.obj: tool_cb_dbg.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cb_dbg.obj -MD -MP -MF $(DEPDIR)/curl-tool_cb_dbg.Tpo -c -o curl-tool_cb_dbg.obj `if test -f 'tool_cb_dbg.c'; then $(CYGPATH_W) 'tool_cb_dbg.c'; else $(CYGPATH_W) '$(srcdir)/tool_cb_dbg.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cb_dbg.Tpo $(DEPDIR)/curl-tool_cb_dbg.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cb_dbg.c' object='curl-tool_cb_dbg.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cb_dbg.obj `if test -f 'tool_cb_dbg.c'; then $(CYGPATH_W) 'tool_cb_dbg.c'; else $(CYGPATH_W) '$(srcdir)/tool_cb_dbg.c'; fi`
-
-curl-tool_cb_hdr.o: tool_cb_hdr.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cb_hdr.o -MD -MP -MF $(DEPDIR)/curl-tool_cb_hdr.Tpo -c -o curl-tool_cb_hdr.o `test -f 'tool_cb_hdr.c' || echo '$(srcdir)/'`tool_cb_hdr.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cb_hdr.Tpo $(DEPDIR)/curl-tool_cb_hdr.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cb_hdr.c' object='curl-tool_cb_hdr.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cb_hdr.o `test -f 'tool_cb_hdr.c' || echo '$(srcdir)/'`tool_cb_hdr.c
-
-curl-tool_cb_hdr.obj: tool_cb_hdr.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cb_hdr.obj -MD -MP -MF $(DEPDIR)/curl-tool_cb_hdr.Tpo -c -o curl-tool_cb_hdr.obj `if test -f 'tool_cb_hdr.c'; then $(CYGPATH_W) 'tool_cb_hdr.c'; else $(CYGPATH_W) '$(srcdir)/tool_cb_hdr.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cb_hdr.Tpo $(DEPDIR)/curl-tool_cb_hdr.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cb_hdr.c' object='curl-tool_cb_hdr.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cb_hdr.obj `if test -f 'tool_cb_hdr.c'; then $(CYGPATH_W) 'tool_cb_hdr.c'; else $(CYGPATH_W) '$(srcdir)/tool_cb_hdr.c'; fi`
-
-curl-tool_cb_prg.o: tool_cb_prg.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cb_prg.o -MD -MP -MF $(DEPDIR)/curl-tool_cb_prg.Tpo -c -o curl-tool_cb_prg.o `test -f 'tool_cb_prg.c' || echo '$(srcdir)/'`tool_cb_prg.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cb_prg.Tpo $(DEPDIR)/curl-tool_cb_prg.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cb_prg.c' object='curl-tool_cb_prg.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cb_prg.o `test -f 'tool_cb_prg.c' || echo '$(srcdir)/'`tool_cb_prg.c
-
-curl-tool_cb_prg.obj: tool_cb_prg.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cb_prg.obj -MD -MP -MF $(DEPDIR)/curl-tool_cb_prg.Tpo -c -o curl-tool_cb_prg.obj `if test -f 'tool_cb_prg.c'; then $(CYGPATH_W) 'tool_cb_prg.c'; else $(CYGPATH_W) '$(srcdir)/tool_cb_prg.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cb_prg.Tpo $(DEPDIR)/curl-tool_cb_prg.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cb_prg.c' object='curl-tool_cb_prg.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cb_prg.obj `if test -f 'tool_cb_prg.c'; then $(CYGPATH_W) 'tool_cb_prg.c'; else $(CYGPATH_W) '$(srcdir)/tool_cb_prg.c'; fi`
-
-curl-tool_cb_rea.o: tool_cb_rea.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cb_rea.o -MD -MP -MF $(DEPDIR)/curl-tool_cb_rea.Tpo -c -o curl-tool_cb_rea.o `test -f 'tool_cb_rea.c' || echo '$(srcdir)/'`tool_cb_rea.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cb_rea.Tpo $(DEPDIR)/curl-tool_cb_rea.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cb_rea.c' object='curl-tool_cb_rea.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cb_rea.o `test -f 'tool_cb_rea.c' || echo '$(srcdir)/'`tool_cb_rea.c
-
-curl-tool_cb_rea.obj: tool_cb_rea.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cb_rea.obj -MD -MP -MF $(DEPDIR)/curl-tool_cb_rea.Tpo -c -o curl-tool_cb_rea.obj `if test -f 'tool_cb_rea.c'; then $(CYGPATH_W) 'tool_cb_rea.c'; else $(CYGPATH_W) '$(srcdir)/tool_cb_rea.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cb_rea.Tpo $(DEPDIR)/curl-tool_cb_rea.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cb_rea.c' object='curl-tool_cb_rea.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cb_rea.obj `if test -f 'tool_cb_rea.c'; then $(CYGPATH_W) 'tool_cb_rea.c'; else $(CYGPATH_W) '$(srcdir)/tool_cb_rea.c'; fi`
-
-curl-tool_cb_see.o: tool_cb_see.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cb_see.o -MD -MP -MF $(DEPDIR)/curl-tool_cb_see.Tpo -c -o curl-tool_cb_see.o `test -f 'tool_cb_see.c' || echo '$(srcdir)/'`tool_cb_see.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cb_see.Tpo $(DEPDIR)/curl-tool_cb_see.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cb_see.c' object='curl-tool_cb_see.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cb_see.o `test -f 'tool_cb_see.c' || echo '$(srcdir)/'`tool_cb_see.c
-
-curl-tool_cb_see.obj: tool_cb_see.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cb_see.obj -MD -MP -MF $(DEPDIR)/curl-tool_cb_see.Tpo -c -o curl-tool_cb_see.obj `if test -f 'tool_cb_see.c'; then $(CYGPATH_W) 'tool_cb_see.c'; else $(CYGPATH_W) '$(srcdir)/tool_cb_see.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cb_see.Tpo $(DEPDIR)/curl-tool_cb_see.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cb_see.c' object='curl-tool_cb_see.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cb_see.obj `if test -f 'tool_cb_see.c'; then $(CYGPATH_W) 'tool_cb_see.c'; else $(CYGPATH_W) '$(srcdir)/tool_cb_see.c'; fi`
-
-curl-tool_cb_wrt.o: tool_cb_wrt.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cb_wrt.o -MD -MP -MF $(DEPDIR)/curl-tool_cb_wrt.Tpo -c -o curl-tool_cb_wrt.o `test -f 'tool_cb_wrt.c' || echo '$(srcdir)/'`tool_cb_wrt.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cb_wrt.Tpo $(DEPDIR)/curl-tool_cb_wrt.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cb_wrt.c' object='curl-tool_cb_wrt.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cb_wrt.o `test -f 'tool_cb_wrt.c' || echo '$(srcdir)/'`tool_cb_wrt.c
-
-curl-tool_cb_wrt.obj: tool_cb_wrt.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cb_wrt.obj -MD -MP -MF $(DEPDIR)/curl-tool_cb_wrt.Tpo -c -o curl-tool_cb_wrt.obj `if test -f 'tool_cb_wrt.c'; then $(CYGPATH_W) 'tool_cb_wrt.c'; else $(CYGPATH_W) '$(srcdir)/tool_cb_wrt.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cb_wrt.Tpo $(DEPDIR)/curl-tool_cb_wrt.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cb_wrt.c' object='curl-tool_cb_wrt.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cb_wrt.obj `if test -f 'tool_cb_wrt.c'; then $(CYGPATH_W) 'tool_cb_wrt.c'; else $(CYGPATH_W) '$(srcdir)/tool_cb_wrt.c'; fi`
-
-curl-tool_cfgable.o: tool_cfgable.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cfgable.o -MD -MP -MF $(DEPDIR)/curl-tool_cfgable.Tpo -c -o curl-tool_cfgable.o `test -f 'tool_cfgable.c' || echo '$(srcdir)/'`tool_cfgable.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cfgable.Tpo $(DEPDIR)/curl-tool_cfgable.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cfgable.c' object='curl-tool_cfgable.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cfgable.o `test -f 'tool_cfgable.c' || echo '$(srcdir)/'`tool_cfgable.c
-
-curl-tool_cfgable.obj: tool_cfgable.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_cfgable.obj -MD -MP -MF $(DEPDIR)/curl-tool_cfgable.Tpo -c -o curl-tool_cfgable.obj `if test -f 'tool_cfgable.c'; then $(CYGPATH_W) 'tool_cfgable.c'; else $(CYGPATH_W) '$(srcdir)/tool_cfgable.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_cfgable.Tpo $(DEPDIR)/curl-tool_cfgable.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_cfgable.c' object='curl-tool_cfgable.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_cfgable.obj `if test -f 'tool_cfgable.c'; then $(CYGPATH_W) 'tool_cfgable.c'; else $(CYGPATH_W) '$(srcdir)/tool_cfgable.c'; fi`
-
-curl-tool_convert.o: tool_convert.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_convert.o -MD -MP -MF $(DEPDIR)/curl-tool_convert.Tpo -c -o curl-tool_convert.o `test -f 'tool_convert.c' || echo '$(srcdir)/'`tool_convert.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_convert.Tpo $(DEPDIR)/curl-tool_convert.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_convert.c' object='curl-tool_convert.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_convert.o `test -f 'tool_convert.c' || echo '$(srcdir)/'`tool_convert.c
-
-curl-tool_convert.obj: tool_convert.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_convert.obj -MD -MP -MF $(DEPDIR)/curl-tool_convert.Tpo -c -o curl-tool_convert.obj `if test -f 'tool_convert.c'; then $(CYGPATH_W) 'tool_convert.c'; else $(CYGPATH_W) '$(srcdir)/tool_convert.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_convert.Tpo $(DEPDIR)/curl-tool_convert.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_convert.c' object='curl-tool_convert.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_convert.obj `if test -f 'tool_convert.c'; then $(CYGPATH_W) 'tool_convert.c'; else $(CYGPATH_W) '$(srcdir)/tool_convert.c'; fi`
-
-curl-tool_dirhie.o: tool_dirhie.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_dirhie.o -MD -MP -MF $(DEPDIR)/curl-tool_dirhie.Tpo -c -o curl-tool_dirhie.o `test -f 'tool_dirhie.c' || echo '$(srcdir)/'`tool_dirhie.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_dirhie.Tpo $(DEPDIR)/curl-tool_dirhie.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_dirhie.c' object='curl-tool_dirhie.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_dirhie.o `test -f 'tool_dirhie.c' || echo '$(srcdir)/'`tool_dirhie.c
-
-curl-tool_dirhie.obj: tool_dirhie.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_dirhie.obj -MD -MP -MF $(DEPDIR)/curl-tool_dirhie.Tpo -c -o curl-tool_dirhie.obj `if test -f 'tool_dirhie.c'; then $(CYGPATH_W) 'tool_dirhie.c'; else $(CYGPATH_W) '$(srcdir)/tool_dirhie.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_dirhie.Tpo $(DEPDIR)/curl-tool_dirhie.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_dirhie.c' object='curl-tool_dirhie.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_dirhie.obj `if test -f 'tool_dirhie.c'; then $(CYGPATH_W) 'tool_dirhie.c'; else $(CYGPATH_W) '$(srcdir)/tool_dirhie.c'; fi`
-
-curl-tool_doswin.o: tool_doswin.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_doswin.o -MD -MP -MF $(DEPDIR)/curl-tool_doswin.Tpo -c -o curl-tool_doswin.o `test -f 'tool_doswin.c' || echo '$(srcdir)/'`tool_doswin.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_doswin.Tpo $(DEPDIR)/curl-tool_doswin.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_doswin.c' object='curl-tool_doswin.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_doswin.o `test -f 'tool_doswin.c' || echo '$(srcdir)/'`tool_doswin.c
-
-curl-tool_doswin.obj: tool_doswin.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_doswin.obj -MD -MP -MF $(DEPDIR)/curl-tool_doswin.Tpo -c -o curl-tool_doswin.obj `if test -f 'tool_doswin.c'; then $(CYGPATH_W) 'tool_doswin.c'; else $(CYGPATH_W) '$(srcdir)/tool_doswin.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_doswin.Tpo $(DEPDIR)/curl-tool_doswin.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_doswin.c' object='curl-tool_doswin.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_doswin.obj `if test -f 'tool_doswin.c'; then $(CYGPATH_W) 'tool_doswin.c'; else $(CYGPATH_W) '$(srcdir)/tool_doswin.c'; fi`
-
-curl-tool_easysrc.o: tool_easysrc.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_easysrc.o -MD -MP -MF $(DEPDIR)/curl-tool_easysrc.Tpo -c -o curl-tool_easysrc.o `test -f 'tool_easysrc.c' || echo '$(srcdir)/'`tool_easysrc.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_easysrc.Tpo $(DEPDIR)/curl-tool_easysrc.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_easysrc.c' object='curl-tool_easysrc.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_easysrc.o `test -f 'tool_easysrc.c' || echo '$(srcdir)/'`tool_easysrc.c
-
-curl-tool_easysrc.obj: tool_easysrc.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_easysrc.obj -MD -MP -MF $(DEPDIR)/curl-tool_easysrc.Tpo -c -o curl-tool_easysrc.obj `if test -f 'tool_easysrc.c'; then $(CYGPATH_W) 'tool_easysrc.c'; else $(CYGPATH_W) '$(srcdir)/tool_easysrc.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_easysrc.Tpo $(DEPDIR)/curl-tool_easysrc.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_easysrc.c' object='curl-tool_easysrc.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_easysrc.obj `if test -f 'tool_easysrc.c'; then $(CYGPATH_W) 'tool_easysrc.c'; else $(CYGPATH_W) '$(srcdir)/tool_easysrc.c'; fi`
-
-curl-tool_filetime.o: tool_filetime.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_filetime.o -MD -MP -MF $(DEPDIR)/curl-tool_filetime.Tpo -c -o curl-tool_filetime.o `test -f 'tool_filetime.c' || echo '$(srcdir)/'`tool_filetime.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_filetime.Tpo $(DEPDIR)/curl-tool_filetime.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_filetime.c' object='curl-tool_filetime.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_filetime.o `test -f 'tool_filetime.c' || echo '$(srcdir)/'`tool_filetime.c
-
-curl-tool_filetime.obj: tool_filetime.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_filetime.obj -MD -MP -MF $(DEPDIR)/curl-tool_filetime.Tpo -c -o curl-tool_filetime.obj `if test -f 'tool_filetime.c'; then $(CYGPATH_W) 'tool_filetime.c'; else $(CYGPATH_W) '$(srcdir)/tool_filetime.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_filetime.Tpo $(DEPDIR)/curl-tool_filetime.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_filetime.c' object='curl-tool_filetime.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_filetime.obj `if test -f 'tool_filetime.c'; then $(CYGPATH_W) 'tool_filetime.c'; else $(CYGPATH_W) '$(srcdir)/tool_filetime.c'; fi`
-
-curl-tool_formparse.o: tool_formparse.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_formparse.o -MD -MP -MF $(DEPDIR)/curl-tool_formparse.Tpo -c -o curl-tool_formparse.o `test -f 'tool_formparse.c' || echo '$(srcdir)/'`tool_formparse.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_formparse.Tpo $(DEPDIR)/curl-tool_formparse.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_formparse.c' object='curl-tool_formparse.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_formparse.o `test -f 'tool_formparse.c' || echo '$(srcdir)/'`tool_formparse.c
-
-curl-tool_formparse.obj: tool_formparse.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_formparse.obj -MD -MP -MF $(DEPDIR)/curl-tool_formparse.Tpo -c -o curl-tool_formparse.obj `if test -f 'tool_formparse.c'; then $(CYGPATH_W) 'tool_formparse.c'; else $(CYGPATH_W) '$(srcdir)/tool_formparse.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_formparse.Tpo $(DEPDIR)/curl-tool_formparse.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_formparse.c' object='curl-tool_formparse.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_formparse.obj `if test -f 'tool_formparse.c'; then $(CYGPATH_W) 'tool_formparse.c'; else $(CYGPATH_W) '$(srcdir)/tool_formparse.c'; fi`
-
-curl-tool_getparam.o: tool_getparam.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_getparam.o -MD -MP -MF $(DEPDIR)/curl-tool_getparam.Tpo -c -o curl-tool_getparam.o `test -f 'tool_getparam.c' || echo '$(srcdir)/'`tool_getparam.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_getparam.Tpo $(DEPDIR)/curl-tool_getparam.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_getparam.c' object='curl-tool_getparam.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_getparam.o `test -f 'tool_getparam.c' || echo '$(srcdir)/'`tool_getparam.c
-
-curl-tool_getparam.obj: tool_getparam.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_getparam.obj -MD -MP -MF $(DEPDIR)/curl-tool_getparam.Tpo -c -o curl-tool_getparam.obj `if test -f 'tool_getparam.c'; then $(CYGPATH_W) 'tool_getparam.c'; else $(CYGPATH_W) '$(srcdir)/tool_getparam.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_getparam.Tpo $(DEPDIR)/curl-tool_getparam.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_getparam.c' object='curl-tool_getparam.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_getparam.obj `if test -f 'tool_getparam.c'; then $(CYGPATH_W) 'tool_getparam.c'; else $(CYGPATH_W) '$(srcdir)/tool_getparam.c'; fi`
-
-curl-tool_getpass.o: tool_getpass.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_getpass.o -MD -MP -MF $(DEPDIR)/curl-tool_getpass.Tpo -c -o curl-tool_getpass.o `test -f 'tool_getpass.c' || echo '$(srcdir)/'`tool_getpass.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_getpass.Tpo $(DEPDIR)/curl-tool_getpass.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_getpass.c' object='curl-tool_getpass.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_getpass.o `test -f 'tool_getpass.c' || echo '$(srcdir)/'`tool_getpass.c
-
-curl-tool_getpass.obj: tool_getpass.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_getpass.obj -MD -MP -MF $(DEPDIR)/curl-tool_getpass.Tpo -c -o curl-tool_getpass.obj `if test -f 'tool_getpass.c'; then $(CYGPATH_W) 'tool_getpass.c'; else $(CYGPATH_W) '$(srcdir)/tool_getpass.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_getpass.Tpo $(DEPDIR)/curl-tool_getpass.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_getpass.c' object='curl-tool_getpass.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_getpass.obj `if test -f 'tool_getpass.c'; then $(CYGPATH_W) 'tool_getpass.c'; else $(CYGPATH_W) '$(srcdir)/tool_getpass.c'; fi`
-
-curl-tool_help.o: tool_help.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_help.o -MD -MP -MF $(DEPDIR)/curl-tool_help.Tpo -c -o curl-tool_help.o `test -f 'tool_help.c' || echo '$(srcdir)/'`tool_help.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_help.Tpo $(DEPDIR)/curl-tool_help.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_help.c' object='curl-tool_help.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_help.o `test -f 'tool_help.c' || echo '$(srcdir)/'`tool_help.c
-
-curl-tool_help.obj: tool_help.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_help.obj -MD -MP -MF $(DEPDIR)/curl-tool_help.Tpo -c -o curl-tool_help.obj `if test -f 'tool_help.c'; then $(CYGPATH_W) 'tool_help.c'; else $(CYGPATH_W) '$(srcdir)/tool_help.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_help.Tpo $(DEPDIR)/curl-tool_help.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_help.c' object='curl-tool_help.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_help.obj `if test -f 'tool_help.c'; then $(CYGPATH_W) 'tool_help.c'; else $(CYGPATH_W) '$(srcdir)/tool_help.c'; fi`
-
-curl-tool_helpers.o: tool_helpers.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_helpers.o -MD -MP -MF $(DEPDIR)/curl-tool_helpers.Tpo -c -o curl-tool_helpers.o `test -f 'tool_helpers.c' || echo '$(srcdir)/'`tool_helpers.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_helpers.Tpo $(DEPDIR)/curl-tool_helpers.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_helpers.c' object='curl-tool_helpers.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_helpers.o `test -f 'tool_helpers.c' || echo '$(srcdir)/'`tool_helpers.c
-
-curl-tool_helpers.obj: tool_helpers.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_helpers.obj -MD -MP -MF $(DEPDIR)/curl-tool_helpers.Tpo -c -o curl-tool_helpers.obj `if test -f 'tool_helpers.c'; then $(CYGPATH_W) 'tool_helpers.c'; else $(CYGPATH_W) '$(srcdir)/tool_helpers.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_helpers.Tpo $(DEPDIR)/curl-tool_helpers.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_helpers.c' object='curl-tool_helpers.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_helpers.obj `if test -f 'tool_helpers.c'; then $(CYGPATH_W) 'tool_helpers.c'; else $(CYGPATH_W) '$(srcdir)/tool_helpers.c'; fi`
-
-curl-tool_homedir.o: tool_homedir.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_homedir.o -MD -MP -MF $(DEPDIR)/curl-tool_homedir.Tpo -c -o curl-tool_homedir.o `test -f 'tool_homedir.c' || echo '$(srcdir)/'`tool_homedir.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_homedir.Tpo $(DEPDIR)/curl-tool_homedir.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_homedir.c' object='curl-tool_homedir.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_homedir.o `test -f 'tool_homedir.c' || echo '$(srcdir)/'`tool_homedir.c
-
-curl-tool_homedir.obj: tool_homedir.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_homedir.obj -MD -MP -MF $(DEPDIR)/curl-tool_homedir.Tpo -c -o curl-tool_homedir.obj `if test -f 'tool_homedir.c'; then $(CYGPATH_W) 'tool_homedir.c'; else $(CYGPATH_W) '$(srcdir)/tool_homedir.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_homedir.Tpo $(DEPDIR)/curl-tool_homedir.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_homedir.c' object='curl-tool_homedir.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_homedir.obj `if test -f 'tool_homedir.c'; then $(CYGPATH_W) 'tool_homedir.c'; else $(CYGPATH_W) '$(srcdir)/tool_homedir.c'; fi`
-
-curl-tool_hugehelp.o: tool_hugehelp.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_hugehelp.o -MD -MP -MF $(DEPDIR)/curl-tool_hugehelp.Tpo -c -o curl-tool_hugehelp.o `test -f 'tool_hugehelp.c' || echo '$(srcdir)/'`tool_hugehelp.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_hugehelp.Tpo $(DEPDIR)/curl-tool_hugehelp.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_hugehelp.c' object='curl-tool_hugehelp.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_hugehelp.o `test -f 'tool_hugehelp.c' || echo '$(srcdir)/'`tool_hugehelp.c
-
-curl-tool_hugehelp.obj: tool_hugehelp.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_hugehelp.obj -MD -MP -MF $(DEPDIR)/curl-tool_hugehelp.Tpo -c -o curl-tool_hugehelp.obj `if test -f 'tool_hugehelp.c'; then $(CYGPATH_W) 'tool_hugehelp.c'; else $(CYGPATH_W) '$(srcdir)/tool_hugehelp.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_hugehelp.Tpo $(DEPDIR)/curl-tool_hugehelp.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_hugehelp.c' object='curl-tool_hugehelp.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_hugehelp.obj `if test -f 'tool_hugehelp.c'; then $(CYGPATH_W) 'tool_hugehelp.c'; else $(CYGPATH_W) '$(srcdir)/tool_hugehelp.c'; fi`
-
-curl-tool_libinfo.o: tool_libinfo.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_libinfo.o -MD -MP -MF $(DEPDIR)/curl-tool_libinfo.Tpo -c -o curl-tool_libinfo.o `test -f 'tool_libinfo.c' || echo '$(srcdir)/'`tool_libinfo.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_libinfo.Tpo $(DEPDIR)/curl-tool_libinfo.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_libinfo.c' object='curl-tool_libinfo.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_libinfo.o `test -f 'tool_libinfo.c' || echo '$(srcdir)/'`tool_libinfo.c
-
-curl-tool_libinfo.obj: tool_libinfo.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_libinfo.obj -MD -MP -MF $(DEPDIR)/curl-tool_libinfo.Tpo -c -o curl-tool_libinfo.obj `if test -f 'tool_libinfo.c'; then $(CYGPATH_W) 'tool_libinfo.c'; else $(CYGPATH_W) '$(srcdir)/tool_libinfo.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_libinfo.Tpo $(DEPDIR)/curl-tool_libinfo.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_libinfo.c' object='curl-tool_libinfo.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_libinfo.obj `if test -f 'tool_libinfo.c'; then $(CYGPATH_W) 'tool_libinfo.c'; else $(CYGPATH_W) '$(srcdir)/tool_libinfo.c'; fi`
-
-curl-tool_main.o: tool_main.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_main.o -MD -MP -MF $(DEPDIR)/curl-tool_main.Tpo -c -o curl-tool_main.o `test -f 'tool_main.c' || echo '$(srcdir)/'`tool_main.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_main.Tpo $(DEPDIR)/curl-tool_main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_main.c' object='curl-tool_main.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_main.o `test -f 'tool_main.c' || echo '$(srcdir)/'`tool_main.c
-
-curl-tool_main.obj: tool_main.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_main.obj -MD -MP -MF $(DEPDIR)/curl-tool_main.Tpo -c -o curl-tool_main.obj `if test -f 'tool_main.c'; then $(CYGPATH_W) 'tool_main.c'; else $(CYGPATH_W) '$(srcdir)/tool_main.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_main.Tpo $(DEPDIR)/curl-tool_main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_main.c' object='curl-tool_main.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_main.obj `if test -f 'tool_main.c'; then $(CYGPATH_W) 'tool_main.c'; else $(CYGPATH_W) '$(srcdir)/tool_main.c'; fi`
-
-curl-tool_metalink.o: tool_metalink.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_metalink.o -MD -MP -MF $(DEPDIR)/curl-tool_metalink.Tpo -c -o curl-tool_metalink.o `test -f 'tool_metalink.c' || echo '$(srcdir)/'`tool_metalink.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_metalink.Tpo $(DEPDIR)/curl-tool_metalink.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_metalink.c' object='curl-tool_metalink.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_metalink.o `test -f 'tool_metalink.c' || echo '$(srcdir)/'`tool_metalink.c
-
-curl-tool_metalink.obj: tool_metalink.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_metalink.obj -MD -MP -MF $(DEPDIR)/curl-tool_metalink.Tpo -c -o curl-tool_metalink.obj `if test -f 'tool_metalink.c'; then $(CYGPATH_W) 'tool_metalink.c'; else $(CYGPATH_W) '$(srcdir)/tool_metalink.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_metalink.Tpo $(DEPDIR)/curl-tool_metalink.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_metalink.c' object='curl-tool_metalink.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_metalink.obj `if test -f 'tool_metalink.c'; then $(CYGPATH_W) 'tool_metalink.c'; else $(CYGPATH_W) '$(srcdir)/tool_metalink.c'; fi`
-
-curl-tool_msgs.o: tool_msgs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_msgs.o -MD -MP -MF $(DEPDIR)/curl-tool_msgs.Tpo -c -o curl-tool_msgs.o `test -f 'tool_msgs.c' || echo '$(srcdir)/'`tool_msgs.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_msgs.Tpo $(DEPDIR)/curl-tool_msgs.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_msgs.c' object='curl-tool_msgs.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_msgs.o `test -f 'tool_msgs.c' || echo '$(srcdir)/'`tool_msgs.c
-
-curl-tool_msgs.obj: tool_msgs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_msgs.obj -MD -MP -MF $(DEPDIR)/curl-tool_msgs.Tpo -c -o curl-tool_msgs.obj `if test -f 'tool_msgs.c'; then $(CYGPATH_W) 'tool_msgs.c'; else $(CYGPATH_W) '$(srcdir)/tool_msgs.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_msgs.Tpo $(DEPDIR)/curl-tool_msgs.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_msgs.c' object='curl-tool_msgs.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_msgs.obj `if test -f 'tool_msgs.c'; then $(CYGPATH_W) 'tool_msgs.c'; else $(CYGPATH_W) '$(srcdir)/tool_msgs.c'; fi`
-
-curl-tool_operate.o: tool_operate.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_operate.o -MD -MP -MF $(DEPDIR)/curl-tool_operate.Tpo -c -o curl-tool_operate.o `test -f 'tool_operate.c' || echo '$(srcdir)/'`tool_operate.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_operate.Tpo $(DEPDIR)/curl-tool_operate.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_operate.c' object='curl-tool_operate.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_operate.o `test -f 'tool_operate.c' || echo '$(srcdir)/'`tool_operate.c
-
-curl-tool_operate.obj: tool_operate.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_operate.obj -MD -MP -MF $(DEPDIR)/curl-tool_operate.Tpo -c -o curl-tool_operate.obj `if test -f 'tool_operate.c'; then $(CYGPATH_W) 'tool_operate.c'; else $(CYGPATH_W) '$(srcdir)/tool_operate.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_operate.Tpo $(DEPDIR)/curl-tool_operate.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_operate.c' object='curl-tool_operate.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_operate.obj `if test -f 'tool_operate.c'; then $(CYGPATH_W) 'tool_operate.c'; else $(CYGPATH_W) '$(srcdir)/tool_operate.c'; fi`
-
-curl-tool_operhlp.o: tool_operhlp.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_operhlp.o -MD -MP -MF $(DEPDIR)/curl-tool_operhlp.Tpo -c -o curl-tool_operhlp.o `test -f 'tool_operhlp.c' || echo '$(srcdir)/'`tool_operhlp.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_operhlp.Tpo $(DEPDIR)/curl-tool_operhlp.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_operhlp.c' object='curl-tool_operhlp.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_operhlp.o `test -f 'tool_operhlp.c' || echo '$(srcdir)/'`tool_operhlp.c
-
-curl-tool_operhlp.obj: tool_operhlp.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_operhlp.obj -MD -MP -MF $(DEPDIR)/curl-tool_operhlp.Tpo -c -o curl-tool_operhlp.obj `if test -f 'tool_operhlp.c'; then $(CYGPATH_W) 'tool_operhlp.c'; else $(CYGPATH_W) '$(srcdir)/tool_operhlp.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_operhlp.Tpo $(DEPDIR)/curl-tool_operhlp.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_operhlp.c' object='curl-tool_operhlp.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_operhlp.obj `if test -f 'tool_operhlp.c'; then $(CYGPATH_W) 'tool_operhlp.c'; else $(CYGPATH_W) '$(srcdir)/tool_operhlp.c'; fi`
-
-curl-tool_panykey.o: tool_panykey.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_panykey.o -MD -MP -MF $(DEPDIR)/curl-tool_panykey.Tpo -c -o curl-tool_panykey.o `test -f 'tool_panykey.c' || echo '$(srcdir)/'`tool_panykey.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_panykey.Tpo $(DEPDIR)/curl-tool_panykey.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_panykey.c' object='curl-tool_panykey.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_panykey.o `test -f 'tool_panykey.c' || echo '$(srcdir)/'`tool_panykey.c
-
-curl-tool_panykey.obj: tool_panykey.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_panykey.obj -MD -MP -MF $(DEPDIR)/curl-tool_panykey.Tpo -c -o curl-tool_panykey.obj `if test -f 'tool_panykey.c'; then $(CYGPATH_W) 'tool_panykey.c'; else $(CYGPATH_W) '$(srcdir)/tool_panykey.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_panykey.Tpo $(DEPDIR)/curl-tool_panykey.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_panykey.c' object='curl-tool_panykey.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_panykey.obj `if test -f 'tool_panykey.c'; then $(CYGPATH_W) 'tool_panykey.c'; else $(CYGPATH_W) '$(srcdir)/tool_panykey.c'; fi`
-
-curl-tool_paramhlp.o: tool_paramhlp.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_paramhlp.o -MD -MP -MF $(DEPDIR)/curl-tool_paramhlp.Tpo -c -o curl-tool_paramhlp.o `test -f 'tool_paramhlp.c' || echo '$(srcdir)/'`tool_paramhlp.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_paramhlp.Tpo $(DEPDIR)/curl-tool_paramhlp.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_paramhlp.c' object='curl-tool_paramhlp.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_paramhlp.o `test -f 'tool_paramhlp.c' || echo '$(srcdir)/'`tool_paramhlp.c
-
-curl-tool_paramhlp.obj: tool_paramhlp.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_paramhlp.obj -MD -MP -MF $(DEPDIR)/curl-tool_paramhlp.Tpo -c -o curl-tool_paramhlp.obj `if test -f 'tool_paramhlp.c'; then $(CYGPATH_W) 'tool_paramhlp.c'; else $(CYGPATH_W) '$(srcdir)/tool_paramhlp.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_paramhlp.Tpo $(DEPDIR)/curl-tool_paramhlp.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_paramhlp.c' object='curl-tool_paramhlp.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_paramhlp.obj `if test -f 'tool_paramhlp.c'; then $(CYGPATH_W) 'tool_paramhlp.c'; else $(CYGPATH_W) '$(srcdir)/tool_paramhlp.c'; fi`
-
-curl-tool_parsecfg.o: tool_parsecfg.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_parsecfg.o -MD -MP -MF $(DEPDIR)/curl-tool_parsecfg.Tpo -c -o curl-tool_parsecfg.o `test -f 'tool_parsecfg.c' || echo '$(srcdir)/'`tool_parsecfg.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_parsecfg.Tpo $(DEPDIR)/curl-tool_parsecfg.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_parsecfg.c' object='curl-tool_parsecfg.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_parsecfg.o `test -f 'tool_parsecfg.c' || echo '$(srcdir)/'`tool_parsecfg.c
-
-curl-tool_parsecfg.obj: tool_parsecfg.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_parsecfg.obj -MD -MP -MF $(DEPDIR)/curl-tool_parsecfg.Tpo -c -o curl-tool_parsecfg.obj `if test -f 'tool_parsecfg.c'; then $(CYGPATH_W) 'tool_parsecfg.c'; else $(CYGPATH_W) '$(srcdir)/tool_parsecfg.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_parsecfg.Tpo $(DEPDIR)/curl-tool_parsecfg.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_parsecfg.c' object='curl-tool_parsecfg.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_parsecfg.obj `if test -f 'tool_parsecfg.c'; then $(CYGPATH_W) 'tool_parsecfg.c'; else $(CYGPATH_W) '$(srcdir)/tool_parsecfg.c'; fi`
-
-curl-tool_progress.o: tool_progress.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_progress.o -MD -MP -MF $(DEPDIR)/curl-tool_progress.Tpo -c -o curl-tool_progress.o `test -f 'tool_progress.c' || echo '$(srcdir)/'`tool_progress.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_progress.Tpo $(DEPDIR)/curl-tool_progress.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_progress.c' object='curl-tool_progress.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_progress.o `test -f 'tool_progress.c' || echo '$(srcdir)/'`tool_progress.c
-
-curl-tool_progress.obj: tool_progress.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_progress.obj -MD -MP -MF $(DEPDIR)/curl-tool_progress.Tpo -c -o curl-tool_progress.obj `if test -f 'tool_progress.c'; then $(CYGPATH_W) 'tool_progress.c'; else $(CYGPATH_W) '$(srcdir)/tool_progress.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_progress.Tpo $(DEPDIR)/curl-tool_progress.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_progress.c' object='curl-tool_progress.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_progress.obj `if test -f 'tool_progress.c'; then $(CYGPATH_W) 'tool_progress.c'; else $(CYGPATH_W) '$(srcdir)/tool_progress.c'; fi`
-
-curl-tool_strdup.o: tool_strdup.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_strdup.o -MD -MP -MF $(DEPDIR)/curl-tool_strdup.Tpo -c -o curl-tool_strdup.o `test -f 'tool_strdup.c' || echo '$(srcdir)/'`tool_strdup.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_strdup.Tpo $(DEPDIR)/curl-tool_strdup.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_strdup.c' object='curl-tool_strdup.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_strdup.o `test -f 'tool_strdup.c' || echo '$(srcdir)/'`tool_strdup.c
-
-curl-tool_strdup.obj: tool_strdup.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_strdup.obj -MD -MP -MF $(DEPDIR)/curl-tool_strdup.Tpo -c -o curl-tool_strdup.obj `if test -f 'tool_strdup.c'; then $(CYGPATH_W) 'tool_strdup.c'; else $(CYGPATH_W) '$(srcdir)/tool_strdup.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_strdup.Tpo $(DEPDIR)/curl-tool_strdup.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_strdup.c' object='curl-tool_strdup.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_strdup.obj `if test -f 'tool_strdup.c'; then $(CYGPATH_W) 'tool_strdup.c'; else $(CYGPATH_W) '$(srcdir)/tool_strdup.c'; fi`
-
-curl-tool_setopt.o: tool_setopt.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_setopt.o -MD -MP -MF $(DEPDIR)/curl-tool_setopt.Tpo -c -o curl-tool_setopt.o `test -f 'tool_setopt.c' || echo '$(srcdir)/'`tool_setopt.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_setopt.Tpo $(DEPDIR)/curl-tool_setopt.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_setopt.c' object='curl-tool_setopt.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_setopt.o `test -f 'tool_setopt.c' || echo '$(srcdir)/'`tool_setopt.c
-
-curl-tool_setopt.obj: tool_setopt.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_setopt.obj -MD -MP -MF $(DEPDIR)/curl-tool_setopt.Tpo -c -o curl-tool_setopt.obj `if test -f 'tool_setopt.c'; then $(CYGPATH_W) 'tool_setopt.c'; else $(CYGPATH_W) '$(srcdir)/tool_setopt.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_setopt.Tpo $(DEPDIR)/curl-tool_setopt.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_setopt.c' object='curl-tool_setopt.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_setopt.obj `if test -f 'tool_setopt.c'; then $(CYGPATH_W) 'tool_setopt.c'; else $(CYGPATH_W) '$(srcdir)/tool_setopt.c'; fi`
-
-curl-tool_sleep.o: tool_sleep.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_sleep.o -MD -MP -MF $(DEPDIR)/curl-tool_sleep.Tpo -c -o curl-tool_sleep.o `test -f 'tool_sleep.c' || echo '$(srcdir)/'`tool_sleep.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_sleep.Tpo $(DEPDIR)/curl-tool_sleep.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_sleep.c' object='curl-tool_sleep.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_sleep.o `test -f 'tool_sleep.c' || echo '$(srcdir)/'`tool_sleep.c
-
-curl-tool_sleep.obj: tool_sleep.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_sleep.obj -MD -MP -MF $(DEPDIR)/curl-tool_sleep.Tpo -c -o curl-tool_sleep.obj `if test -f 'tool_sleep.c'; then $(CYGPATH_W) 'tool_sleep.c'; else $(CYGPATH_W) '$(srcdir)/tool_sleep.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_sleep.Tpo $(DEPDIR)/curl-tool_sleep.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_sleep.c' object='curl-tool_sleep.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_sleep.obj `if test -f 'tool_sleep.c'; then $(CYGPATH_W) 'tool_sleep.c'; else $(CYGPATH_W) '$(srcdir)/tool_sleep.c'; fi`
-
-curl-tool_urlglob.o: tool_urlglob.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_urlglob.o -MD -MP -MF $(DEPDIR)/curl-tool_urlglob.Tpo -c -o curl-tool_urlglob.o `test -f 'tool_urlglob.c' || echo '$(srcdir)/'`tool_urlglob.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_urlglob.Tpo $(DEPDIR)/curl-tool_urlglob.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_urlglob.c' object='curl-tool_urlglob.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_urlglob.o `test -f 'tool_urlglob.c' || echo '$(srcdir)/'`tool_urlglob.c
-
-curl-tool_urlglob.obj: tool_urlglob.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_urlglob.obj -MD -MP -MF $(DEPDIR)/curl-tool_urlglob.Tpo -c -o curl-tool_urlglob.obj `if test -f 'tool_urlglob.c'; then $(CYGPATH_W) 'tool_urlglob.c'; else $(CYGPATH_W) '$(srcdir)/tool_urlglob.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_urlglob.Tpo $(DEPDIR)/curl-tool_urlglob.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_urlglob.c' object='curl-tool_urlglob.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_urlglob.obj `if test -f 'tool_urlglob.c'; then $(CYGPATH_W) 'tool_urlglob.c'; else $(CYGPATH_W) '$(srcdir)/tool_urlglob.c'; fi`
-
-curl-tool_util.o: tool_util.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_util.o -MD -MP -MF $(DEPDIR)/curl-tool_util.Tpo -c -o curl-tool_util.o `test -f 'tool_util.c' || echo '$(srcdir)/'`tool_util.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_util.Tpo $(DEPDIR)/curl-tool_util.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_util.c' object='curl-tool_util.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_util.o `test -f 'tool_util.c' || echo '$(srcdir)/'`tool_util.c
-
-curl-tool_util.obj: tool_util.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_util.obj -MD -MP -MF $(DEPDIR)/curl-tool_util.Tpo -c -o curl-tool_util.obj `if test -f 'tool_util.c'; then $(CYGPATH_W) 'tool_util.c'; else $(CYGPATH_W) '$(srcdir)/tool_util.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_util.Tpo $(DEPDIR)/curl-tool_util.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_util.c' object='curl-tool_util.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_util.obj `if test -f 'tool_util.c'; then $(CYGPATH_W) 'tool_util.c'; else $(CYGPATH_W) '$(srcdir)/tool_util.c'; fi`
-
-curl-tool_vms.o: tool_vms.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_vms.o -MD -MP -MF $(DEPDIR)/curl-tool_vms.Tpo -c -o curl-tool_vms.o `test -f 'tool_vms.c' || echo '$(srcdir)/'`tool_vms.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_vms.Tpo $(DEPDIR)/curl-tool_vms.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_vms.c' object='curl-tool_vms.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_vms.o `test -f 'tool_vms.c' || echo '$(srcdir)/'`tool_vms.c
-
-curl-tool_vms.obj: tool_vms.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_vms.obj -MD -MP -MF $(DEPDIR)/curl-tool_vms.Tpo -c -o curl-tool_vms.obj `if test -f 'tool_vms.c'; then $(CYGPATH_W) 'tool_vms.c'; else $(CYGPATH_W) '$(srcdir)/tool_vms.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_vms.Tpo $(DEPDIR)/curl-tool_vms.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_vms.c' object='curl-tool_vms.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_vms.obj `if test -f 'tool_vms.c'; then $(CYGPATH_W) 'tool_vms.c'; else $(CYGPATH_W) '$(srcdir)/tool_vms.c'; fi`
-
-curl-tool_writeout.o: tool_writeout.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_writeout.o -MD -MP -MF $(DEPDIR)/curl-tool_writeout.Tpo -c -o curl-tool_writeout.o `test -f 'tool_writeout.c' || echo '$(srcdir)/'`tool_writeout.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_writeout.Tpo $(DEPDIR)/curl-tool_writeout.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_writeout.c' object='curl-tool_writeout.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_writeout.o `test -f 'tool_writeout.c' || echo '$(srcdir)/'`tool_writeout.c
-
-curl-tool_writeout.obj: tool_writeout.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_writeout.obj -MD -MP -MF $(DEPDIR)/curl-tool_writeout.Tpo -c -o curl-tool_writeout.obj `if test -f 'tool_writeout.c'; then $(CYGPATH_W) 'tool_writeout.c'; else $(CYGPATH_W) '$(srcdir)/tool_writeout.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_writeout.Tpo $(DEPDIR)/curl-tool_writeout.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_writeout.c' object='curl-tool_writeout.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_writeout.obj `if test -f 'tool_writeout.c'; then $(CYGPATH_W) 'tool_writeout.c'; else $(CYGPATH_W) '$(srcdir)/tool_writeout.c'; fi`
-
-curl-tool_writeout_json.o: tool_writeout_json.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_writeout_json.o -MD -MP -MF $(DEPDIR)/curl-tool_writeout_json.Tpo -c -o curl-tool_writeout_json.o `test -f 'tool_writeout_json.c' || echo '$(srcdir)/'`tool_writeout_json.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_writeout_json.Tpo $(DEPDIR)/curl-tool_writeout_json.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_writeout_json.c' object='curl-tool_writeout_json.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_writeout_json.o `test -f 'tool_writeout_json.c' || echo '$(srcdir)/'`tool_writeout_json.c
-
-curl-tool_writeout_json.obj: tool_writeout_json.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_writeout_json.obj -MD -MP -MF $(DEPDIR)/curl-tool_writeout_json.Tpo -c -o curl-tool_writeout_json.obj `if test -f 'tool_writeout_json.c'; then $(CYGPATH_W) 'tool_writeout_json.c'; else $(CYGPATH_W) '$(srcdir)/tool_writeout_json.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_writeout_json.Tpo $(DEPDIR)/curl-tool_writeout_json.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_writeout_json.c' object='curl-tool_writeout_json.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_writeout_json.obj `if test -f 'tool_writeout_json.c'; then $(CYGPATH_W) 'tool_writeout_json.c'; else $(CYGPATH_W) '$(srcdir)/tool_writeout_json.c'; fi`
-
-curl-tool_xattr.o: tool_xattr.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_xattr.o -MD -MP -MF $(DEPDIR)/curl-tool_xattr.Tpo -c -o curl-tool_xattr.o `test -f 'tool_xattr.c' || echo '$(srcdir)/'`tool_xattr.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_xattr.Tpo $(DEPDIR)/curl-tool_xattr.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_xattr.c' object='curl-tool_xattr.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_xattr.o `test -f 'tool_xattr.c' || echo '$(srcdir)/'`tool_xattr.c
-
-curl-tool_xattr.obj: tool_xattr.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT curl-tool_xattr.obj -MD -MP -MF $(DEPDIR)/curl-tool_xattr.Tpo -c -o curl-tool_xattr.obj `if test -f 'tool_xattr.c'; then $(CYGPATH_W) 'tool_xattr.c'; else $(CYGPATH_W) '$(srcdir)/tool_xattr.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/curl-tool_xattr.Tpo $(DEPDIR)/curl-tool_xattr.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tool_xattr.c' object='curl-tool_xattr.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o curl-tool_xattr.obj `if test -f 'tool_xattr.c'; then $(CYGPATH_W) 'tool_xattr.c'; else $(CYGPATH_W) '$(srcdir)/tool_xattr.c'; fi`
-
-../lib/curl-strtoofft.o: ../lib/strtoofft.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-strtoofft.o -MD -MP -MF ../lib/$(DEPDIR)/curl-strtoofft.Tpo -c -o ../lib/curl-strtoofft.o `test -f '../lib/strtoofft.c' || echo '$(srcdir)/'`../lib/strtoofft.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-strtoofft.Tpo ../lib/$(DEPDIR)/curl-strtoofft.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/strtoofft.c' object='../lib/curl-strtoofft.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-strtoofft.o `test -f '../lib/strtoofft.c' || echo '$(srcdir)/'`../lib/strtoofft.c
-
-../lib/curl-strtoofft.obj: ../lib/strtoofft.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-strtoofft.obj -MD -MP -MF ../lib/$(DEPDIR)/curl-strtoofft.Tpo -c -o ../lib/curl-strtoofft.obj `if test -f '../lib/strtoofft.c'; then $(CYGPATH_W) '../lib/strtoofft.c'; else $(CYGPATH_W) '$(srcdir)/../lib/strtoofft.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-strtoofft.Tpo ../lib/$(DEPDIR)/curl-strtoofft.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/strtoofft.c' object='../lib/curl-strtoofft.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-strtoofft.obj `if test -f '../lib/strtoofft.c'; then $(CYGPATH_W) '../lib/strtoofft.c'; else $(CYGPATH_W) '$(srcdir)/../lib/strtoofft.c'; fi`
-
-../lib/curl-nonblock.o: ../lib/nonblock.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-nonblock.o -MD -MP -MF ../lib/$(DEPDIR)/curl-nonblock.Tpo -c -o ../lib/curl-nonblock.o `test -f '../lib/nonblock.c' || echo '$(srcdir)/'`../lib/nonblock.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-nonblock.Tpo ../lib/$(DEPDIR)/curl-nonblock.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/nonblock.c' object='../lib/curl-nonblock.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-nonblock.o `test -f '../lib/nonblock.c' || echo '$(srcdir)/'`../lib/nonblock.c
-
-../lib/curl-nonblock.obj: ../lib/nonblock.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-nonblock.obj -MD -MP -MF ../lib/$(DEPDIR)/curl-nonblock.Tpo -c -o ../lib/curl-nonblock.obj `if test -f '../lib/nonblock.c'; then $(CYGPATH_W) '../lib/nonblock.c'; else $(CYGPATH_W) '$(srcdir)/../lib/nonblock.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-nonblock.Tpo ../lib/$(DEPDIR)/curl-nonblock.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/nonblock.c' object='../lib/curl-nonblock.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-nonblock.obj `if test -f '../lib/nonblock.c'; then $(CYGPATH_W) '../lib/nonblock.c'; else $(CYGPATH_W) '$(srcdir)/../lib/nonblock.c'; fi`
-
-../lib/curl-warnless.o: ../lib/warnless.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-warnless.o -MD -MP -MF ../lib/$(DEPDIR)/curl-warnless.Tpo -c -o ../lib/curl-warnless.o `test -f '../lib/warnless.c' || echo '$(srcdir)/'`../lib/warnless.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-warnless.Tpo ../lib/$(DEPDIR)/curl-warnless.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/warnless.c' object='../lib/curl-warnless.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-warnless.o `test -f '../lib/warnless.c' || echo '$(srcdir)/'`../lib/warnless.c
-
-../lib/curl-warnless.obj: ../lib/warnless.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-warnless.obj -MD -MP -MF ../lib/$(DEPDIR)/curl-warnless.Tpo -c -o ../lib/curl-warnless.obj `if test -f '../lib/warnless.c'; then $(CYGPATH_W) '../lib/warnless.c'; else $(CYGPATH_W) '$(srcdir)/../lib/warnless.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-warnless.Tpo ../lib/$(DEPDIR)/curl-warnless.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/warnless.c' object='../lib/curl-warnless.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-warnless.obj `if test -f '../lib/warnless.c'; then $(CYGPATH_W) '../lib/warnless.c'; else $(CYGPATH_W) '$(srcdir)/../lib/warnless.c'; fi`
-
-../lib/curl-curl_ctype.o: ../lib/curl_ctype.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-curl_ctype.o -MD -MP -MF ../lib/$(DEPDIR)/curl-curl_ctype.Tpo -c -o ../lib/curl-curl_ctype.o `test -f '../lib/curl_ctype.c' || echo '$(srcdir)/'`../lib/curl_ctype.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-curl_ctype.Tpo ../lib/$(DEPDIR)/curl-curl_ctype.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/curl_ctype.c' object='../lib/curl-curl_ctype.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-curl_ctype.o `test -f '../lib/curl_ctype.c' || echo '$(srcdir)/'`../lib/curl_ctype.c
-
-../lib/curl-curl_ctype.obj: ../lib/curl_ctype.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-curl_ctype.obj -MD -MP -MF ../lib/$(DEPDIR)/curl-curl_ctype.Tpo -c -o ../lib/curl-curl_ctype.obj `if test -f '../lib/curl_ctype.c'; then $(CYGPATH_W) '../lib/curl_ctype.c'; else $(CYGPATH_W) '$(srcdir)/../lib/curl_ctype.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-curl_ctype.Tpo ../lib/$(DEPDIR)/curl-curl_ctype.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/curl_ctype.c' object='../lib/curl-curl_ctype.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-curl_ctype.obj `if test -f '../lib/curl_ctype.c'; then $(CYGPATH_W) '../lib/curl_ctype.c'; else $(CYGPATH_W) '$(srcdir)/../lib/curl_ctype.c'; fi`
-
-../lib/curl-curl_multibyte.o: ../lib/curl_multibyte.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-curl_multibyte.o -MD -MP -MF ../lib/$(DEPDIR)/curl-curl_multibyte.Tpo -c -o ../lib/curl-curl_multibyte.o `test -f '../lib/curl_multibyte.c' || echo '$(srcdir)/'`../lib/curl_multibyte.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-curl_multibyte.Tpo ../lib/$(DEPDIR)/curl-curl_multibyte.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/curl_multibyte.c' object='../lib/curl-curl_multibyte.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-curl_multibyte.o `test -f '../lib/curl_multibyte.c' || echo '$(srcdir)/'`../lib/curl_multibyte.c
-
-../lib/curl-curl_multibyte.obj: ../lib/curl_multibyte.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-curl_multibyte.obj -MD -MP -MF ../lib/$(DEPDIR)/curl-curl_multibyte.Tpo -c -o ../lib/curl-curl_multibyte.obj `if test -f '../lib/curl_multibyte.c'; then $(CYGPATH_W) '../lib/curl_multibyte.c'; else $(CYGPATH_W) '$(srcdir)/../lib/curl_multibyte.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-curl_multibyte.Tpo ../lib/$(DEPDIR)/curl-curl_multibyte.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/curl_multibyte.c' object='../lib/curl-curl_multibyte.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-curl_multibyte.obj `if test -f '../lib/curl_multibyte.c'; then $(CYGPATH_W) '../lib/curl_multibyte.c'; else $(CYGPATH_W) '$(srcdir)/../lib/curl_multibyte.c'; fi`
-
-../lib/curl-version_win32.o: ../lib/version_win32.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-version_win32.o -MD -MP -MF ../lib/$(DEPDIR)/curl-version_win32.Tpo -c -o ../lib/curl-version_win32.o `test -f '../lib/version_win32.c' || echo '$(srcdir)/'`../lib/version_win32.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-version_win32.Tpo ../lib/$(DEPDIR)/curl-version_win32.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/version_win32.c' object='../lib/curl-version_win32.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-version_win32.o `test -f '../lib/version_win32.c' || echo '$(srcdir)/'`../lib/version_win32.c
-
-../lib/curl-version_win32.obj: ../lib/version_win32.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-version_win32.obj -MD -MP -MF ../lib/$(DEPDIR)/curl-version_win32.Tpo -c -o ../lib/curl-version_win32.obj `if test -f '../lib/version_win32.c'; then $(CYGPATH_W) '../lib/version_win32.c'; else $(CYGPATH_W) '$(srcdir)/../lib/version_win32.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-version_win32.Tpo ../lib/$(DEPDIR)/curl-version_win32.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/version_win32.c' object='../lib/curl-version_win32.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-version_win32.obj `if test -f '../lib/version_win32.c'; then $(CYGPATH_W) '../lib/version_win32.c'; else $(CYGPATH_W) '$(srcdir)/../lib/version_win32.c'; fi`
-
-../lib/curl-dynbuf.o: ../lib/dynbuf.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-dynbuf.o -MD -MP -MF ../lib/$(DEPDIR)/curl-dynbuf.Tpo -c -o ../lib/curl-dynbuf.o `test -f '../lib/dynbuf.c' || echo '$(srcdir)/'`../lib/dynbuf.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-dynbuf.Tpo ../lib/$(DEPDIR)/curl-dynbuf.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/dynbuf.c' object='../lib/curl-dynbuf.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-dynbuf.o `test -f '../lib/dynbuf.c' || echo '$(srcdir)/'`../lib/dynbuf.c
-
-../lib/curl-dynbuf.obj: ../lib/dynbuf.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../lib/curl-dynbuf.obj -MD -MP -MF ../lib/$(DEPDIR)/curl-dynbuf.Tpo -c -o ../lib/curl-dynbuf.obj `if test -f '../lib/dynbuf.c'; then $(CYGPATH_W) '../lib/dynbuf.c'; else $(CYGPATH_W) '$(srcdir)/../lib/dynbuf.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../lib/$(DEPDIR)/curl-dynbuf.Tpo ../lib/$(DEPDIR)/curl-dynbuf.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../lib/dynbuf.c' object='../lib/curl-dynbuf.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(curl_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../lib/curl-dynbuf.obj `if test -f '../lib/dynbuf.c'; then $(CYGPATH_W) '../lib/dynbuf.c'; else $(CYGPATH_W) '$(srcdir)/../lib/dynbuf.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -2354,13 +1652,9 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool \
 	clean-noinstLTLIBRARIES mostlyclean-am
 
 distclean: distclean-recursive
-		-rm -f ../lib/$(DEPDIR)/curl-curl_ctype.Po
-	-rm -f ../lib/$(DEPDIR)/curl-curl_multibyte.Po
-	-rm -f ../lib/$(DEPDIR)/curl-dynbuf.Po
-	-rm -f ../lib/$(DEPDIR)/curl-nonblock.Po
-	-rm -f ../lib/$(DEPDIR)/curl-strtoofft.Po
-	-rm -f ../lib/$(DEPDIR)/curl-version_win32.Po
-	-rm -f ../lib/$(DEPDIR)/curl-warnless.Po
+		-rm -f ../lib/$(DEPDIR)/curl_ctype.Po
+	-rm -f ../lib/$(DEPDIR)/curl_multibyte.Po
+	-rm -f ../lib/$(DEPDIR)/dynbuf.Po
 	-rm -f ../lib/$(DEPDIR)/libcurltool_la-curl_ctype.Plo
 	-rm -f ../lib/$(DEPDIR)/libcurltool_la-curl_multibyte.Plo
 	-rm -f ../lib/$(DEPDIR)/libcurltool_la-dynbuf.Plo
@@ -2368,47 +1662,10 @@ distclean: distclean-recursive
 	-rm -f ../lib/$(DEPDIR)/libcurltool_la-strtoofft.Plo
 	-rm -f ../lib/$(DEPDIR)/libcurltool_la-version_win32.Plo
 	-rm -f ../lib/$(DEPDIR)/libcurltool_la-warnless.Plo
-	-rm -f ./$(DEPDIR)/curl-slist_wc.Po
-	-rm -f ./$(DEPDIR)/curl-tool_binmode.Po
-	-rm -f ./$(DEPDIR)/curl-tool_bname.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cb_dbg.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cb_hdr.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cb_prg.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cb_rea.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cb_see.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cb_wrt.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cfgable.Po
-	-rm -f ./$(DEPDIR)/curl-tool_convert.Po
-	-rm -f ./$(DEPDIR)/curl-tool_dirhie.Po
-	-rm -f ./$(DEPDIR)/curl-tool_doswin.Po
-	-rm -f ./$(DEPDIR)/curl-tool_easysrc.Po
-	-rm -f ./$(DEPDIR)/curl-tool_filetime.Po
-	-rm -f ./$(DEPDIR)/curl-tool_formparse.Po
-	-rm -f ./$(DEPDIR)/curl-tool_getparam.Po
-	-rm -f ./$(DEPDIR)/curl-tool_getpass.Po
-	-rm -f ./$(DEPDIR)/curl-tool_help.Po
-	-rm -f ./$(DEPDIR)/curl-tool_helpers.Po
-	-rm -f ./$(DEPDIR)/curl-tool_homedir.Po
-	-rm -f ./$(DEPDIR)/curl-tool_hugehelp.Po
-	-rm -f ./$(DEPDIR)/curl-tool_libinfo.Po
-	-rm -f ./$(DEPDIR)/curl-tool_main.Po
-	-rm -f ./$(DEPDIR)/curl-tool_metalink.Po
-	-rm -f ./$(DEPDIR)/curl-tool_msgs.Po
-	-rm -f ./$(DEPDIR)/curl-tool_operate.Po
-	-rm -f ./$(DEPDIR)/curl-tool_operhlp.Po
-	-rm -f ./$(DEPDIR)/curl-tool_panykey.Po
-	-rm -f ./$(DEPDIR)/curl-tool_paramhlp.Po
-	-rm -f ./$(DEPDIR)/curl-tool_parsecfg.Po
-	-rm -f ./$(DEPDIR)/curl-tool_progress.Po
-	-rm -f ./$(DEPDIR)/curl-tool_setopt.Po
-	-rm -f ./$(DEPDIR)/curl-tool_sleep.Po
-	-rm -f ./$(DEPDIR)/curl-tool_strdup.Po
-	-rm -f ./$(DEPDIR)/curl-tool_urlglob.Po
-	-rm -f ./$(DEPDIR)/curl-tool_util.Po
-	-rm -f ./$(DEPDIR)/curl-tool_vms.Po
-	-rm -f ./$(DEPDIR)/curl-tool_writeout.Po
-	-rm -f ./$(DEPDIR)/curl-tool_writeout_json.Po
-	-rm -f ./$(DEPDIR)/curl-tool_xattr.Po
+	-rm -f ../lib/$(DEPDIR)/nonblock.Po
+	-rm -f ../lib/$(DEPDIR)/strtoofft.Po
+	-rm -f ../lib/$(DEPDIR)/version_win32.Po
+	-rm -f ../lib/$(DEPDIR)/warnless.Po
 	-rm -f ./$(DEPDIR)/libcurltool_la-slist_wc.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_binmode.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_bname.Plo
@@ -2433,7 +1690,6 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_hugehelp.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_libinfo.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_main.Plo
-	-rm -f ./$(DEPDIR)/libcurltool_la-tool_metalink.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_msgs.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_operate.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_operhlp.Plo
@@ -2450,6 +1706,46 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_writeout.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_writeout_json.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_xattr.Plo
+	-rm -f ./$(DEPDIR)/slist_wc.Po
+	-rm -f ./$(DEPDIR)/tool_binmode.Po
+	-rm -f ./$(DEPDIR)/tool_bname.Po
+	-rm -f ./$(DEPDIR)/tool_cb_dbg.Po
+	-rm -f ./$(DEPDIR)/tool_cb_hdr.Po
+	-rm -f ./$(DEPDIR)/tool_cb_prg.Po
+	-rm -f ./$(DEPDIR)/tool_cb_rea.Po
+	-rm -f ./$(DEPDIR)/tool_cb_see.Po
+	-rm -f ./$(DEPDIR)/tool_cb_wrt.Po
+	-rm -f ./$(DEPDIR)/tool_cfgable.Po
+	-rm -f ./$(DEPDIR)/tool_convert.Po
+	-rm -f ./$(DEPDIR)/tool_dirhie.Po
+	-rm -f ./$(DEPDIR)/tool_doswin.Po
+	-rm -f ./$(DEPDIR)/tool_easysrc.Po
+	-rm -f ./$(DEPDIR)/tool_filetime.Po
+	-rm -f ./$(DEPDIR)/tool_formparse.Po
+	-rm -f ./$(DEPDIR)/tool_getparam.Po
+	-rm -f ./$(DEPDIR)/tool_getpass.Po
+	-rm -f ./$(DEPDIR)/tool_help.Po
+	-rm -f ./$(DEPDIR)/tool_helpers.Po
+	-rm -f ./$(DEPDIR)/tool_homedir.Po
+	-rm -f ./$(DEPDIR)/tool_hugehelp.Po
+	-rm -f ./$(DEPDIR)/tool_libinfo.Po
+	-rm -f ./$(DEPDIR)/tool_main.Po
+	-rm -f ./$(DEPDIR)/tool_msgs.Po
+	-rm -f ./$(DEPDIR)/tool_operate.Po
+	-rm -f ./$(DEPDIR)/tool_operhlp.Po
+	-rm -f ./$(DEPDIR)/tool_panykey.Po
+	-rm -f ./$(DEPDIR)/tool_paramhlp.Po
+	-rm -f ./$(DEPDIR)/tool_parsecfg.Po
+	-rm -f ./$(DEPDIR)/tool_progress.Po
+	-rm -f ./$(DEPDIR)/tool_setopt.Po
+	-rm -f ./$(DEPDIR)/tool_sleep.Po
+	-rm -f ./$(DEPDIR)/tool_strdup.Po
+	-rm -f ./$(DEPDIR)/tool_urlglob.Po
+	-rm -f ./$(DEPDIR)/tool_util.Po
+	-rm -f ./$(DEPDIR)/tool_vms.Po
+	-rm -f ./$(DEPDIR)/tool_writeout.Po
+	-rm -f ./$(DEPDIR)/tool_writeout_json.Po
+	-rm -f ./$(DEPDIR)/tool_xattr.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -2495,13 +1791,9 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-recursive
-		-rm -f ../lib/$(DEPDIR)/curl-curl_ctype.Po
-	-rm -f ../lib/$(DEPDIR)/curl-curl_multibyte.Po
-	-rm -f ../lib/$(DEPDIR)/curl-dynbuf.Po
-	-rm -f ../lib/$(DEPDIR)/curl-nonblock.Po
-	-rm -f ../lib/$(DEPDIR)/curl-strtoofft.Po
-	-rm -f ../lib/$(DEPDIR)/curl-version_win32.Po
-	-rm -f ../lib/$(DEPDIR)/curl-warnless.Po
+		-rm -f ../lib/$(DEPDIR)/curl_ctype.Po
+	-rm -f ../lib/$(DEPDIR)/curl_multibyte.Po
+	-rm -f ../lib/$(DEPDIR)/dynbuf.Po
 	-rm -f ../lib/$(DEPDIR)/libcurltool_la-curl_ctype.Plo
 	-rm -f ../lib/$(DEPDIR)/libcurltool_la-curl_multibyte.Plo
 	-rm -f ../lib/$(DEPDIR)/libcurltool_la-dynbuf.Plo
@@ -2509,47 +1801,10 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ../lib/$(DEPDIR)/libcurltool_la-strtoofft.Plo
 	-rm -f ../lib/$(DEPDIR)/libcurltool_la-version_win32.Plo
 	-rm -f ../lib/$(DEPDIR)/libcurltool_la-warnless.Plo
-	-rm -f ./$(DEPDIR)/curl-slist_wc.Po
-	-rm -f ./$(DEPDIR)/curl-tool_binmode.Po
-	-rm -f ./$(DEPDIR)/curl-tool_bname.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cb_dbg.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cb_hdr.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cb_prg.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cb_rea.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cb_see.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cb_wrt.Po
-	-rm -f ./$(DEPDIR)/curl-tool_cfgable.Po
-	-rm -f ./$(DEPDIR)/curl-tool_convert.Po
-	-rm -f ./$(DEPDIR)/curl-tool_dirhie.Po
-	-rm -f ./$(DEPDIR)/curl-tool_doswin.Po
-	-rm -f ./$(DEPDIR)/curl-tool_easysrc.Po
-	-rm -f ./$(DEPDIR)/curl-tool_filetime.Po
-	-rm -f ./$(DEPDIR)/curl-tool_formparse.Po
-	-rm -f ./$(DEPDIR)/curl-tool_getparam.Po
-	-rm -f ./$(DEPDIR)/curl-tool_getpass.Po
-	-rm -f ./$(DEPDIR)/curl-tool_help.Po
-	-rm -f ./$(DEPDIR)/curl-tool_helpers.Po
-	-rm -f ./$(DEPDIR)/curl-tool_homedir.Po
-	-rm -f ./$(DEPDIR)/curl-tool_hugehelp.Po
-	-rm -f ./$(DEPDIR)/curl-tool_libinfo.Po
-	-rm -f ./$(DEPDIR)/curl-tool_main.Po
-	-rm -f ./$(DEPDIR)/curl-tool_metalink.Po
-	-rm -f ./$(DEPDIR)/curl-tool_msgs.Po
-	-rm -f ./$(DEPDIR)/curl-tool_operate.Po
-	-rm -f ./$(DEPDIR)/curl-tool_operhlp.Po
-	-rm -f ./$(DEPDIR)/curl-tool_panykey.Po
-	-rm -f ./$(DEPDIR)/curl-tool_paramhlp.Po
-	-rm -f ./$(DEPDIR)/curl-tool_parsecfg.Po
-	-rm -f ./$(DEPDIR)/curl-tool_progress.Po
-	-rm -f ./$(DEPDIR)/curl-tool_setopt.Po
-	-rm -f ./$(DEPDIR)/curl-tool_sleep.Po
-	-rm -f ./$(DEPDIR)/curl-tool_strdup.Po
-	-rm -f ./$(DEPDIR)/curl-tool_urlglob.Po
-	-rm -f ./$(DEPDIR)/curl-tool_util.Po
-	-rm -f ./$(DEPDIR)/curl-tool_vms.Po
-	-rm -f ./$(DEPDIR)/curl-tool_writeout.Po
-	-rm -f ./$(DEPDIR)/curl-tool_writeout_json.Po
-	-rm -f ./$(DEPDIR)/curl-tool_xattr.Po
+	-rm -f ../lib/$(DEPDIR)/nonblock.Po
+	-rm -f ../lib/$(DEPDIR)/strtoofft.Po
+	-rm -f ../lib/$(DEPDIR)/version_win32.Po
+	-rm -f ../lib/$(DEPDIR)/warnless.Po
 	-rm -f ./$(DEPDIR)/libcurltool_la-slist_wc.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_binmode.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_bname.Plo
@@ -2574,7 +1829,6 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_hugehelp.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_libinfo.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_main.Plo
-	-rm -f ./$(DEPDIR)/libcurltool_la-tool_metalink.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_msgs.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_operate.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_operhlp.Plo
@@ -2591,6 +1845,46 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_writeout.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_writeout_json.Plo
 	-rm -f ./$(DEPDIR)/libcurltool_la-tool_xattr.Plo
+	-rm -f ./$(DEPDIR)/slist_wc.Po
+	-rm -f ./$(DEPDIR)/tool_binmode.Po
+	-rm -f ./$(DEPDIR)/tool_bname.Po
+	-rm -f ./$(DEPDIR)/tool_cb_dbg.Po
+	-rm -f ./$(DEPDIR)/tool_cb_hdr.Po
+	-rm -f ./$(DEPDIR)/tool_cb_prg.Po
+	-rm -f ./$(DEPDIR)/tool_cb_rea.Po
+	-rm -f ./$(DEPDIR)/tool_cb_see.Po
+	-rm -f ./$(DEPDIR)/tool_cb_wrt.Po
+	-rm -f ./$(DEPDIR)/tool_cfgable.Po
+	-rm -f ./$(DEPDIR)/tool_convert.Po
+	-rm -f ./$(DEPDIR)/tool_dirhie.Po
+	-rm -f ./$(DEPDIR)/tool_doswin.Po
+	-rm -f ./$(DEPDIR)/tool_easysrc.Po
+	-rm -f ./$(DEPDIR)/tool_filetime.Po
+	-rm -f ./$(DEPDIR)/tool_formparse.Po
+	-rm -f ./$(DEPDIR)/tool_getparam.Po
+	-rm -f ./$(DEPDIR)/tool_getpass.Po
+	-rm -f ./$(DEPDIR)/tool_help.Po
+	-rm -f ./$(DEPDIR)/tool_helpers.Po
+	-rm -f ./$(DEPDIR)/tool_homedir.Po
+	-rm -f ./$(DEPDIR)/tool_hugehelp.Po
+	-rm -f ./$(DEPDIR)/tool_libinfo.Po
+	-rm -f ./$(DEPDIR)/tool_main.Po
+	-rm -f ./$(DEPDIR)/tool_msgs.Po
+	-rm -f ./$(DEPDIR)/tool_operate.Po
+	-rm -f ./$(DEPDIR)/tool_operhlp.Po
+	-rm -f ./$(DEPDIR)/tool_panykey.Po
+	-rm -f ./$(DEPDIR)/tool_paramhlp.Po
+	-rm -f ./$(DEPDIR)/tool_parsecfg.Po
+	-rm -f ./$(DEPDIR)/tool_progress.Po
+	-rm -f ./$(DEPDIR)/tool_setopt.Po
+	-rm -f ./$(DEPDIR)/tool_sleep.Po
+	-rm -f ./$(DEPDIR)/tool_strdup.Po
+	-rm -f ./$(DEPDIR)/tool_urlglob.Po
+	-rm -f ./$(DEPDIR)/tool_util.Po
+	-rm -f ./$(DEPDIR)/tool_vms.Po
+	-rm -f ./$(DEPDIR)/tool_writeout.Po
+	-rm -f ./$(DEPDIR)/tool_writeout_json.Po
+	-rm -f ./$(DEPDIR)/tool_xattr.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

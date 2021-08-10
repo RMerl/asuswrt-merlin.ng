@@ -750,6 +750,10 @@ SOURCE=..\..\..\..\lib\base64.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\bufref.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\c-hyper.c
 # End Source File
 # Begin Source File
@@ -1359,6 +1363,10 @@ SOURCE=..\..\..\..\lib\arpa_telnet.h
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\asyn.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\lib\bufref.h
 # End Source File
 # Begin Source File
 

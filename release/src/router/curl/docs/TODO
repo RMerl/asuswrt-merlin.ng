@@ -37,6 +37,7 @@
  1.18 try next proxy if one doesn't work
  1.19 provide timing info for each redirect
  1.20 SRV and URI DNS records
+ 1.21 netrc caching and sharing
  1.22 CURLINFO_PAUSE_STATE
  1.23 Offer API to flush the connection pool
  1.24 TCP Fast Open for windows
@@ -108,17 +109,16 @@
  13. SSL
  13.1 TLS-PSK with OpenSSL
  13.2 Provide mutex locking API
- 13.3 Support in-memory certs/ca certs/keys
  13.4 Cache/share OpenSSL contexts
  13.5 Export session ids
  13.6 Provide callback for cert verification
- 13.7 improve configure --with-ssl
  13.8 Support DANE
  13.9 TLS record padding
  13.10 Support Authority Information Access certificate extension (AIA)
  13.11 Support intermediate & root pinning for PINNEDPUBLICKEY
  13.13 Make sure we forbid TLS 1.3 post-handshake authentication
  13.14 Support the clienthello extension
+ 13.15 Support mbedTLS 3.0
 
  14. GnuTLS
  14.2 check connection
@@ -126,7 +126,6 @@
  15. Schannel
  15.1 Extend support for client certificate authentication
  15.2 Extend support for the --ciphers option
- 15.3 Add option to disable client certificate auto-send
  15.4 Add option to allow abrupt server closure
 
  16. SASL
@@ -183,7 +182,10 @@
  20.6 Use the RFC6265 test suite
  20.7 Support LD_PRELOAD on macOS
  20.8 Run web-platform-tests url tests
- 20.9 Use "random" ports for the test servers
+ 20.9 Bring back libssh tests on Travis
+
+ 21. MQTT
+ 21.1 Support rate-limiting
 
 ==============================================================================
 
@@ -364,6 +366,13 @@
 
  Offer support for resolving SRV and URI DNS records for libcurl to know which
  server to connect to for various protocols (including HTTP!).
+
+1.21 netrc caching and sharing
+
+ The netrc file is read and parsed each time a connection is setup, which
+ means that if a transfer needs multiple connections for authentication or
+ redirects, the file might be reread (and parsed) multiple times. This makes
+ it impossible to provide the file as a pipe.
 
 1.22 CURLINFO_PAUSE_STATE
 
@@ -731,14 +740,6 @@
  library, so that the same application code can use mutex-locking
  independently of OpenSSL or GnutTLS being used.
 
-13.3 Support in-memory certs/ca certs/keys
-
- You can specify the private and public keys for SSH/SSL as file paths. Some
- programs want to avoid using files and instead just pass them as in-memory
- data blobs. There's probably a challenge to make this work across the
- plethora of different TLS and SSH backends that curl supports.
- https://github.com/curl/curl/issues/2310
-
 13.4 Cache/share OpenSSL contexts
 
  "Look at SSL cafile - quick traces look to me like these are done on every
@@ -768,11 +769,6 @@
  OpenSSL supports a callback for customised verification of the peer
  certificate, but this doesn't seem to be exposed in the libcurl APIs. Could
  it be? There's so much that could be done if it were!
-
-13.7 improve configure --with-ssl
-
- make the configure --with-ssl option first check for OpenSSL, then GnuTLS,
- then NSS...
 
 13.8 Support DANE
 
@@ -836,6 +832,13 @@
  https://tools.ietf.org/html/rfc7685
  https://github.com/curl/curl/issues/2299
 
+13.15 Support mbedTLS 3.0
+
+ Version 3.0 is not backwards compatible with pre-3.0 versions, and curl no
+ longer builds due to breaking changes in the API.
+
+ See https://github.com/curl/curl/issues/7385
+
 14. GnuTLS
 
 14.2 check connection
@@ -858,19 +861,6 @@
  by mapping the OpenSSL/GnuTLS cipher suites to the Schannel APIs, see
  - Specifying Schannel Ciphers and Cipher Strengths
    https://msdn.microsoft.com/en-us/library/windows/desktop/aa380161.aspx
-
-15.3 Add option to disable client certificate auto-send
-
- Microsoft says "By default, Schannel will, with no notification to the client,
- attempt to locate a client certificate and send it to the server." That could
- be considered a privacy violation and unexpected.
-
- Some Windows users have come to expect that default behavior and to change the
- default to make it consistent with other SSL backends would be a breaking
- change. An option should be added that can be used to disable the default
- Schannel auto-send behavior.
-
- https://github.com/curl/curl/issues/2262
 
 15.4 Add option to allow abrupt server closure
 
@@ -1283,13 +1273,16 @@
 
  See https://github.com/curl/curl/issues/4477
 
-20.9 Use "random" ports for the test servers
+20.9 Bring back libssh tests on Travis
 
- Instead of insisting and using fixed port numbers for the tests (even though
- they can be changed with a switch), consider letting each server pick a
- random available one at start-up, store that info in a file and let the test
- suite use that.
+ In https://github.com/curl/curl/pull/7012 we remove the libssh builds and
+ tests from Travis CI due to them not working. This should be remedied and
+ libssh builds be brought back.
 
- We could then remove the "check that it is our server that's running"-check
- and we would immediately detect when we write tests wrongly to use hard-coded
- port numbers.
+
+21. MQTT
+
+21.1 Support rate-limiting
+
+ The rate-limiting logic is done in the PERFORMING state in multi.c but MQTT
+ is not (yet) implemented to use that!

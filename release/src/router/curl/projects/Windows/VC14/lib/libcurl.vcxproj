@@ -2384,6 +2384,7 @@
     <ClCompile Include="..\..\..\..\lib\asyn-ares.c" />
     <ClCompile Include="..\..\..\..\lib\asyn-thread.c" />
     <ClCompile Include="..\..\..\..\lib\base64.c" />
+    <ClCompile Include="..\..\..\..\lib\bufref.c" />
     <ClCompile Include="..\..\..\..\lib\c-hyper.c" />
     <ClCompile Include="..\..\..\..\lib\conncache.c" />
     <ClCompile Include="..\..\..\..\lib\connect.c" />
@@ -2538,6 +2539,7 @@
     <ClInclude Include="..\..\..\..\lib\amigaos.h" />
     <ClInclude Include="..\..\..\..\lib\arpa_telnet.h" />
     <ClInclude Include="..\..\..\..\lib\asyn.h" />
+    <ClInclude Include="..\..\..\..\lib\bufref.h" />
     <ClInclude Include="..\..\..\..\lib\c-hyper.h" />
     <ClInclude Include="..\..\..\..\lib\config-win32.h" />
     <ClInclude Include="..\..\..\..\lib\conncache.h" />

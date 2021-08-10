@@ -12,7 +12,6 @@ check the changelog of the current development status, as one or more of these
 problems may have been fixed or changed somewhat since this was written!
 
  1. HTTP
- 1.1 Excessive HTTP/2 packets with TCP_NODELAY
  1.2 Multiple methods in a single WWW-Authenticate: header
  1.3 STARTTRANSFER time is wrong for HTTP POSTs
  1.4 multipart formposts file name encoding
@@ -20,7 +19,6 @@ problems may have been fixed or changed somewhat since this was written!
  1.6 Unnecessary close when 401 received waiting for 100
  1.7 Deflate error after all content was received
  1.8 DoH isn't used for all name resolves when enabled
- 1.9 HTTP/2 frames while in the connection pool kill reuse
  1.11 CURLOPT_SEEKFUNCTION not called with CURLFORM_STREAM
 
  2. TLS
@@ -48,7 +46,6 @@ problems may have been fixed or changed somewhat since this was written!
  4.1 -J and -O with %-encoded file names
  4.2 -J with -C - fails
  4.3 --retry and transfer timeouts
- 4.4 Improve --data-urlencode space encoding
 
  5. Build and portability issues
  5.1 OS400 port requires deprecated IBM library
@@ -61,6 +58,7 @@ problems may have been fixed or changed somewhat since this was written!
  5.9 Utilize Requires.private directives in libcurl.pc
  5.10 SMB tests fail with Python 2
  5.11 configure --with-gssapi with Heimdal is ignored on macOS
+ 5.12 flaky Windows CI builds
 
  6. Authentication
  6.1 NTLM authentication and unicode
@@ -73,6 +71,7 @@ problems may have been fixed or changed somewhat since this was written!
  6.8 RTSP authentication breaks without redirect support
  6.9 SHA-256 digest not supported in Windows SSPI builds
  6.10 curl never completes Negotiate over HTTP
+ 6.11 Negotiate on Windows fails
 
  7. FTP
  7.1 FTP without or slow 220 response
@@ -115,6 +114,7 @@ problems may have been fixed or changed somewhat since this was written!
  11.13 wakeup socket disconnect causes havoc
  11.14 Multi perform hangs waiting for threaded resolver
  11.15 CURLOPT_OPENSOCKETPAIRFUNCTION is missing
+ 11.16 libcurl uses renames instead of locking for atomic operations
 
  12. LDAP
  12.1 OpenLDAP hangs after returning results
@@ -145,19 +145,20 @@ problems may have been fixed or changed somewhat since this was written!
  16. Applications
  16.1 pulseUI VPN client
 
+ 17. HTTP/2
+ 17.1 Excessive HTTP/2 packets with TCP_NODELAY
+ 17.2 HTTP/2 frames while in the connection pool kill reuse
+ 17.3 ENHANCE_YOUR_CALM causes infinite retries
+ 17.4 Connection failures with parallel HTTP/2
+
+ 18. HTTP/3
+ 18.1 If the HTTP/3 server closes connection during upload curl hangs
+ 18.2 Uploading HTTP/3 files gets interrupted at certain file sizes
+ 18.3 HTTP/3 download is 5x times slower than HTTP/2
+
 ==============================================================================
 
 1. HTTP
-
-1.1 Excessive HTTP/2 packets with TCP_NODELAY
-
- Because of how curl sets TCP_NODELAY by default, HTTP/2 requests are issued
- using more separate TCP packets than it would otherwise need to use. This
- means spending more bytes than it has to. Just disabling TCP_NODELAY for
- HTTP/2 is also not the correct fix because that then makes the outgoing
- packets to get delayed.
-
- See https://github.com/curl/curl/issues/6363
 
 1.2 Multiple methods in a single WWW-Authenticate: header
 
@@ -215,16 +216,6 @@ problems may have been fixed or changed somewhat since this was written!
 
  See https://github.com/curl/curl/pull/3857 and
  https://github.com/curl/curl/pull/3850
-
-1.9 HTTP/2 frames while in the connection pool kill reuse
-
- If the server sends HTTP/2 frames (like for example an HTTP/2 PING frame) to
- curl while the connection is held in curl's connection pool, the socket will
- be found readable when considered for reuse and that makes curl think it is
- dead and then it will be closed and a new connection gets created instead.
-
- This is *best* fixed by adding monitoring to connections while they are kept
- in the pool so that pings can be responded to appropriately.
 
 1.11 CURLOPT_SEEKFUNCTION not called with CURLFORM_STREAM
 
@@ -411,13 +402,6 @@ problems may have been fixed or changed somewhat since this was written!
  https://curl.se/mail/lib-2008-01/0080.html and Mandriva bug report
  https://qa.mandriva.com/show_bug.cgi?id=22565
 
-4.4 Improve --data-urlencode space encoding
-
- ASCII space characters in --data-urlencode are currently encoded as %20
- rather than +, which RFC 1866 says should be used.
-
- See https://github.com/curl/curl/issues/3229
-
 5. Build and portability issues
 
 5.1 OS400 port requires deprecated IBM library
@@ -520,6 +504,16 @@ problems may have been fixed or changed somewhat since this was written!
 
  https://github.com/curl/curl/issues/3841
 
+5.12 flaky Windows CI builds
+
+ We run many CI builds for each commit and PR on github, and especially a
+ number of the Windows builds are very flaky. This means that we rarely get
+ all CI builds go green and complete without errors. This is very unfortunate
+ as it makes us sometimes miss actual build problems and it is surprising to
+ newcomers to the project who (rightfully) don't expect this.
+
+ See https://github.com/curl/curl/issues/6972
+
 6. Authentication
 
 6.1 NTLM authentication and unicode
@@ -601,6 +595,15 @@ problems may have been fixed or changed somewhat since this was written!
  Apparently it isn't working correctly...?
 
  See https://github.com/curl/curl/issues/5235
+
+6.11 Negotiate on Windows fails
+
+ When using --negotiate (or NTLM) with curl on Windows, SSL/TSL handshake
+ fails despite having a valid kerberos ticket cached. Works without any issue
+ in Unix/Linux.
+
+ https://github.com/curl/curl/issues/5881
+
 
 7. FTP
 
@@ -887,6 +890,15 @@ problems may have been fixed or changed somewhat since this was written!
 
  https://github.com/curl/curl/issues/5747
 
+11.16 libcurl uses renames instead of locking for atomic operations
+
+ For saving cookies, alt-svc and hsts files. This is bad when for example the
+ file is stored in a directory where the application has no write permission
+ but it has permission for the file.
+
+ https://github.com/curl/curl/issues/6882
+ https://github.com/curl/curl/pull/6884
+
 12. LDAP
 
 12.1 OpenLDAP hangs after returning results
@@ -1024,3 +1036,51 @@ problems may have been fixed or changed somewhat since this was written!
  See
  https://community.pulsesecure.net/t5/Pulse-Desktop-Clients/Linux-Pulse-Client-does-not-work-with-curl-7-74/m-p/44378
  and https://github.com/curl/curl/issues/6306
+
+17. HTTP/2
+
+17.1 Excessive HTTP/2 packets with TCP_NODELAY
+
+ Because of how curl sets TCP_NODELAY by default, HTTP/2 requests are issued
+ using more separate TCP packets than it would otherwise need to use. This
+ means spending more bytes than it has to. Just disabling TCP_NODELAY for
+ HTTP/2 is also not the correct fix because that then makes the outgoing
+ packets to get delayed.
+
+ See https://github.com/curl/curl/issues/6363
+
+17.2 HTTP/2 frames while in the connection pool kill reuse
+
+ If the server sends HTTP/2 frames (like for example an HTTP/2 PING frame) to
+ curl while the connection is held in curl's connection pool, the socket will
+ be found readable when considered for reuse and that makes curl think it is
+ dead and then it will be closed and a new connection gets created instead.
+
+ This is *best* fixed by adding monitoring to connections while they are kept
+ in the pool so that pings can be responded to appropriately.
+
+17.3 ENHANCE_YOUR_CALM causes infinite retries
+
+ Infinite retries with 2 parallel requests on one connection receiving GOAWAY
+ with ENHANCE_YOUR_CALM error code.
+
+ See https://github.com/curl/curl/issues/5119
+
+17.4 Connection failures with parallel HTTP/2
+
+ See https://github.com/curl/curl/issues/5611
+
+
+18. HTTP/3
+
+18.1 If the HTTP/3 server closes connection during upload curl hangs
+
+ See https://github.com/curl/curl/issues/6606
+
+18.2 Uploading HTTP/3 files gets interrupted at certain file sizes
+
+ See https://github.com/curl/curl/issues/6510
+
+18.3 HTTP/3 download is 5x times slower than HTTP/2
+
+ See https://github.com/curl/curl/issues/6494

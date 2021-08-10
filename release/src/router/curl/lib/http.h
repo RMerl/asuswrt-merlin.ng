@@ -93,6 +93,7 @@ CURLcode Curl_http_statusline(struct Curl_easy *data,
                               struct connectdata *conn);
 CURLcode Curl_http_header(struct Curl_easy *data, struct connectdata *conn,
                           char *headp);
+CURLcode Curl_transferencode(struct Curl_easy *data);
 CURLcode Curl_http_body(struct Curl_easy *data, struct connectdata *conn,
                         Curl_HttpReq httpreq,
                         const char **teep);
@@ -184,8 +185,7 @@ struct HTTP {
   enum {
     HTTPSEND_NADA,    /* init */
     HTTPSEND_REQUEST, /* sending a request */
-    HTTPSEND_BODY,    /* sending body */
-    HTTPSEND_LAST     /* never use this */
+    HTTPSEND_BODY     /* sending body */
   } sending;
 
 #ifndef CURL_DISABLE_HTTP
@@ -211,6 +211,7 @@ struct HTTP {
   char **push_headers;       /* allocated array */
   size_t push_headers_used;  /* number of entries filled in */
   size_t push_headers_alloc; /* number of entries allocated */
+  uint32_t error; /* HTTP/2 stream error code */
 #endif
 #if defined(USE_NGHTTP2) || defined(USE_NGHTTP3)
   bool closed; /* TRUE on HTTP2 stream close */
@@ -281,7 +282,6 @@ struct http_conn {
   /* list of settings that will be sent */
   nghttp2_settings_entry local_settings[3];
   size_t local_settings_num;
-  uint32_t error_code; /* HTTP/2 error code */
 #else
   int unused; /* prevent a compiler warning */
 #endif

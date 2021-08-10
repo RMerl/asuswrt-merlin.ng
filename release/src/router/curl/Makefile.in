@@ -65,7 +65,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -166,12 +166,22 @@ host_triplet = @host@
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_compile_check_sizeof.m4 \
+	$(top_srcdir)/m4/curl-amissl.m4 \
+	$(top_srcdir)/m4/curl-bearssl.m4 \
 	$(top_srcdir)/m4/curl-compilers.m4 \
 	$(top_srcdir)/m4/curl-confopts.m4 \
 	$(top_srcdir)/m4/curl-functions.m4 \
+	$(top_srcdir)/m4/curl-gnutls.m4 \
+	$(top_srcdir)/m4/curl-mbedtls.m4 \
+	$(top_srcdir)/m4/curl-mesalink.m4 $(top_srcdir)/m4/curl-nss.m4 \
 	$(top_srcdir)/m4/curl-openssl.m4 \
 	$(top_srcdir)/m4/curl-override.m4 \
-	$(top_srcdir)/m4/curl-reentrant.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/curl-reentrant.m4 \
+	$(top_srcdir)/m4/curl-rustls.m4 \
+	$(top_srcdir)/m4/curl-schannel.m4 \
+	$(top_srcdir)/m4/curl-sectransp.m4 \
+	$(top_srcdir)/m4/curl-sysconfig.m4 \
+	$(top_srcdir)/m4/curl-wolfssl.m4 $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
 	$(top_srcdir)/m4/xc-am-iface.m4 \
@@ -405,9 +415,6 @@ LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBCURL_LIBS = @LIBCURL_LIBS@
 LIBCURL_NO_SHARED = @LIBCURL_NO_SHARED@
-LIBMETALINK_CPPFLAGS = @LIBMETALINK_CPPFLAGS@
-LIBMETALINK_LDFLAGS = @LIBMETALINK_LDFLAGS@
-LIBMETALINK_LIBS = @LIBMETALINK_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -781,6 +788,7 @@ LIB_CFILES = \
   asyn-ares.c        \
   asyn-thread.c      \
   base64.c           \
+  bufref.c           \
   c-hyper.c          \
   conncache.c        \
   connect.c          \
@@ -901,6 +909,7 @@ LIB_HFILES = \
   amigaos.h          \
   arpa_telnet.h      \
   asyn.h             \
+  bufref.h           \
   c-hyper.h          \
   conncache.h        \
   connect.h          \
@@ -1070,7 +1079,6 @@ CURL_CFILES = \
   tool_hugehelp.c \
   tool_libinfo.c \
   tool_main.c \
-  tool_metalink.c \
   tool_msgs.c \
   tool_operate.c \
   tool_operhlp.c \
@@ -1113,7 +1121,6 @@ CURL_HFILES = \
   tool_hugehelp.h \
   tool_libinfo.h \
   tool_main.h \
-  tool_metalink.h \
   tool_msgs.h \
   tool_operate.h \
   tool_operhlp.h \

@@ -59,7 +59,7 @@ OM_uint32 Curl_gss_init_sec_context(
     req_flags |= GSS_C_DELEG_POLICY_FLAG;
 #else
     infof(data, "warning: support for CURLGSSAPI_DELEGATION_POLICY_FLAG not "
-        "compiled in\n");
+        "compiled in");
 #endif
   }
 
@@ -102,7 +102,7 @@ static size_t display_gss_error(OM_uint32 status, int type,
                        (char *)status_string.value);
     }
     gss_release_buffer(&min_stat, &status_string);
-  } while(!GSS_ERROR(maj_stat) && msg_ctx != 0);
+  } while(!GSS_ERROR(maj_stat) && msg_ctx);
 
   return len;
 }
@@ -130,7 +130,7 @@ void Curl_gss_log_error(struct Curl_easy *data, const char *prefix,
 
   display_gss_error(minor, GSS_C_MECH_CODE, buf, len);
 
-  infof(data, "%s%s\n", prefix, buf);
+  infof(data, "%s%s", prefix, buf);
 #ifdef CURL_DISABLE_VERBOSE_STRINGS
   (void)data;
   (void)prefix;

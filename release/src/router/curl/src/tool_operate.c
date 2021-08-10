@@ -66,7 +66,6 @@
 #include "tool_homedir.h"
 #include "tool_libinfo.h"
 #include "tool_main.h"
-#include "tool_metalink.h"
 #include "tool_msgs.h"
 #include "tool_operate.h"
 #include "tool_operhlp.h"
@@ -167,14 +166,14 @@ static curl_off_t vms_realfilesize(const char *name,
 
   /* !checksrc! disable FOPENMODE 1 */
   file = fopen(name, "r"); /* VMS */
-  if(file == NULL) {
+  if(!file) {
     return 0;
   }
   count = 0;
   ret_stat = 1;
   while(ret_stat > 0) {
     ret_stat = fread(buffer, 1, sizeof(buffer), file);
-    if(ret_stat != 0)
+    if(ret_stat)
       count += ret_stat;
   }
   fclose(file);
@@ -280,7 +279,7 @@ static CURLcode pre_transfer(struct GlobalConfig *global,
      *
      * - Stat gives a size but this is UNRELIABLE in VMS As a f.e. a
      * fixed file with implied CC needs to have a byte added for every
-     * record processed, this can by derived from Filesize & recordsize
+     * record processed, this can be derived from Filesize & recordsize
      * for VARiable record files the records need to be counted!  for
      * every record add 1 for linefeed and subtract 2 for the record
      * header for VARIABLE header files only the bare record data needs
@@ -413,35 +412,6 @@ static CURLcode post_per_transfer(struct GlobalConfig *global,
     }
   }
 
-#ifdef USE_METALINK
-  if(per->metalink && !per->metalink_next_res)
-    fprintf(global->errors, "Metalink: fetching (%s) from (%s) OK\n",
-            per->mlfile->filename, per->this_url);
-
-  if(!per->metalink && config->use_metalink && result == CURLE_OK) {
-    int rv = parse_metalink(config, outs, per->this_url);
-    if(!rv) {
-      fprintf(config->global->errors, "Metalink: parsing (%s) OK\n",
-              per->this_url);
-    }
-    else if(rv == -1)
-      fprintf(config->global->errors, "Metalink: parsing (%s) FAILED\n",
-              per->this_url);
-  }
-  else if(per->metalink && result == CURLE_OK && !per->metalink_next_res) {
-    int rv;
-    (void)fflush(outs->stream);
-    rv = metalink_check_hash(global, per->mlfile, outs->filename);
-    if(!rv)
-      per->metalink_next_res = 1;
-  }
-#endif /* USE_METALINK */
-
-#ifdef USE_METALINK
-  if(outs->metalink_parser)
-    metalink_parser_context_delete(outs->metalink_parser);
-#endif /* USE_METALINK */
-
   /* if retry-max-time is non-zero, make sure we haven't exceeded the
      time */
   if(per->retry_numretries &&
@@ -560,7 +530,7 @@ static CURLcode post_per_transfer(struct GlobalConfig *global,
       }
       if(outs->bytes && outs->filename && outs->stream) {
         int rc;
-        /* We have written data to a output file, we truncate file
+        /* We have written data to an output file, we truncate file
          */
         if(!global->mute)
           fprintf(global->errors, "Throwing away %"
@@ -600,36 +570,6 @@ static CURLcode post_per_transfer(struct GlobalConfig *global,
       return CURLE_OK;
     }
   } /* if retry_numretries */
-  else if(per->metalink) {
-    /* Metalink: Decide to try the next resource or not. Try the next resource
-       if download was not successful. */
-    long response = 0;
-    if(CURLE_OK == result) {
-      /* TODO We want to try next resource when download was
-         not successful. How to know that? */
-      char *effective_url = NULL;
-      curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effective_url);
-      if(effective_url &&
-         curl_strnequal(effective_url, "http", 4)) {
-        /* This was HTTP(S) */
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response);
-        if(response != 200 && response != 206) {
-          per->metalink_next_res = 1;
-          fprintf(global->errors,
-                  "Metalink: fetching (%s) from (%s) FAILED "
-                  "(HTTP status code %ld)\n",
-                  per->mlfile->filename, per->this_url, response);
-        }
-      }
-    }
-    else {
-      per->metalink_next_res = 1;
-      fprintf(global->errors,
-              "Metalink: fetching (%s) from (%s) FAILED (%s)\n",
-              per->mlfile->filename, per->this_url,
-              curl_easy_strerror(result));
-    }
-  }
 
   if((global->progressmode == CURL_PROGRESS_BAR) &&
      per->progressbar.calls)
@@ -715,7 +655,6 @@ static CURLcode single_transfer(struct GlobalConfig *global,
 {
   CURLcode result = CURLE_OK;
   struct getout *urlnode;
-  struct metalinkfile *mlfile_last = NULL;
   bool orig_noprogress = global->noprogress;
   bool orig_isatty = global->isatty;
   struct State *state = &config->state;
@@ -757,24 +696,7 @@ static CURLcode single_transfer(struct GlobalConfig *global,
   while(config->state.urlnode) {
     char *infiles; /* might be a glob pattern */
     struct URLGlob *inglob = state->inglob;
-    bool metalink = FALSE; /* metalink download? */
-    struct metalinkfile *mlfile;
-    struct metalink_resource *mlres;
-
     urlnode = config->state.urlnode;
-    if(urlnode->flags & GETOUT_METALINK) {
-      metalink = 1;
-      if(mlfile_last == NULL) {
-        mlfile_last = config->metalinkfile_list;
-      }
-      mlfile = mlfile_last;
-      mlfile_last = mlfile_last->next;
-      mlres = mlfile->resource;
-    }
-    else {
-      mlfile = NULL;
-      mlres = NULL;
-    }
 
     /* urlnode->url is the full URL (it might be NULL) */
 
@@ -836,12 +758,7 @@ static CURLcode single_transfer(struct GlobalConfig *global,
       }
 
       if(!state->urlnum) {
-        if(metalink) {
-          /* For Metalink download, we don't use glob. Instead we use
-             the number of resources as urlnum. */
-          urlnum = count_next_metalink_resource(mlfile);
-        }
-        else if(!config->globoff) {
+        if(!config->globoff) {
           /* Unless explicitly shut off, we expand '{...}' and '[...]'
              expressions and return total number of URLs in pattern set */
           result = glob_url(&state->urls, urlnode->url, &state->urlnum,
@@ -997,51 +914,33 @@ static CURLcode single_transfer(struct GlobalConfig *global,
           }
         }
 
-        if(metalink) {
-          /* For Metalink download, use name in Metalink file as
-             filename. */
-          per->outfile = strdup(mlfile->filename);
-          if(!per->outfile) {
-            result = CURLE_OUT_OF_MEMORY;
+        if(state->urls) {
+          result = glob_next_url(&per->this_url, state->urls);
+          if(result)
             break;
-          }
-          per->this_url = strdup(mlres->url);
+        }
+        else if(!state->li) {
+          per->this_url = strdup(urlnode->url);
           if(!per->this_url) {
             result = CURLE_OUT_OF_MEMORY;
             break;
           }
-          per->mlfile = mlfile;
         }
-        else {
-          if(state->urls) {
-            result = glob_next_url(&per->this_url, state->urls);
-            if(result)
-              break;
-          }
-          else if(!state->li) {
-            per->this_url = strdup(urlnode->url);
-            if(!per->this_url) {
-              result = CURLE_OUT_OF_MEMORY;
-              break;
-            }
-          }
-          else
-            per->this_url = NULL;
-          if(!per->this_url)
-            break;
+        else
+          per->this_url = NULL;
+        if(!per->this_url)
+          break;
 
-          if(state->outfiles) {
-            per->outfile = strdup(state->outfiles);
-            if(!per->outfile) {
-              result = CURLE_OUT_OF_MEMORY;
-              break;
-            }
+        if(state->outfiles) {
+          per->outfile = strdup(state->outfiles);
+          if(!per->outfile) {
+            result = CURLE_OUT_OF_MEMORY;
+            break;
           }
         }
 
         if(((urlnode->flags&GETOUT_USEREMOTE) ||
-            (per->outfile && strcmp("-", per->outfile))) &&
-           (metalink || !config->use_metalink)) {
+            (per->outfile && strcmp("-", per->outfile)))) {
 
           /*
            * We have specified a file name to store the result in, or we have
@@ -1071,7 +970,7 @@ static CURLcode single_transfer(struct GlobalConfig *global,
             }
           }
 
-          if(config->output_dir) {
+          if(config->output_dir && *config->output_dir) {
             char *d = aprintf("%s/%s", config->output_dir, per->outfile);
             if(!d) {
               result = CURLE_WRITE_ERROR;
@@ -1083,7 +982,7 @@ static CURLcode single_transfer(struct GlobalConfig *global,
           /* Create the directory hierarchy, if not pre-existent to a multiple
              file output call */
 
-          if(config->create_dirs || metalink) {
+          if(config->create_dirs) {
             result = create_dir_hierarchy(per->outfile, global->errors);
             /* create_dir_hierarchy shows error upon CURLE_WRITE_ERROR */
             if(result)
@@ -1275,21 +1174,14 @@ static CURLcode single_transfer(struct GlobalConfig *global,
         my_setopt(curl, CURLOPT_WRITEDATA, per);
         my_setopt(curl, CURLOPT_INTERLEAVEDATA, per);
 
-        if(metalink || !config->use_metalink)
-          /* what call to write */
-          my_setopt(curl, CURLOPT_WRITEFUNCTION, tool_write_cb);
-#ifdef USE_METALINK
-        else
-          /* Set Metalink specific write callback function to parse
-             XML data progressively. */
-          my_setopt(curl, CURLOPT_WRITEFUNCTION, metalink_write_cb);
-#endif /* USE_METALINK */
+        /* what call to write */
+        my_setopt(curl, CURLOPT_WRITEFUNCTION, tool_write_cb);
 
         /* for uploads */
         input->config = config;
         /* Note that if CURLOPT_READFUNCTION is fread (the default), then
          * lib/telnet.c will Curl_poll() on the input file descriptor
-         * rather then calling the READFUNCTION at regular intervals.
+         * rather than calling the READFUNCTION at regular intervals.
          * The circumstances in which it is preferable to enable this
          * behavior, by omitting to set the READFUNCTION & READDATA options,
          * have not been determined.
@@ -1591,7 +1483,7 @@ static CURLcode single_transfer(struct GlobalConfig *global,
 
           /* In debug build of curl tool, using
            *    --cert loadmem=<filename>:<password> --cert-type p12
-           *  must do the same thing than classic:
+           *  must do the same thing as classic:
            *    --cert <filename>:<password> --cert-type p12
            *  but is designed to test blob */
 #if defined(CURLDEBUG) || defined(DEBUGBUILD)
@@ -1720,20 +1612,31 @@ static CURLcode single_transfer(struct GlobalConfig *global,
 
           {
             long mask =
-              (config->ssl_allow_beast ? CURLSSLOPT_ALLOW_BEAST : 0) |
+              (config->ssl_allow_beast ?
+               CURLSSLOPT_ALLOW_BEAST : 0) |
+              (config->ssl_no_revoke ?
+               CURLSSLOPT_NO_REVOKE : 0) |
               (config->ssl_revoke_best_effort ?
                CURLSSLOPT_REVOKE_BEST_EFFORT : 0) |
               (config->native_ca_store ?
                CURLSSLOPT_NATIVE_CA : 0) |
-              (config->ssl_no_revoke ? CURLSSLOPT_NO_REVOKE : 0);
+              (config->ssl_auto_client_cert ?
+               CURLSSLOPT_AUTO_CLIENT_CERT : 0);
 
             if(mask)
               my_setopt_bitmask(curl, CURLOPT_SSL_OPTIONS, mask);
           }
 
-          if(config->proxy_ssl_allow_beast)
-            my_setopt(curl, CURLOPT_PROXY_SSL_OPTIONS,
-                      (long)CURLSSLOPT_ALLOW_BEAST);
+          {
+            long mask =
+              (config->proxy_ssl_allow_beast ?
+               CURLSSLOPT_ALLOW_BEAST : 0) |
+              (config->proxy_ssl_auto_client_cert ?
+               CURLSSLOPT_AUTO_CLIENT_CERT : 0);
+
+            if(mask)
+              my_setopt_bitmask(curl, CURLOPT_PROXY_SSL_OPTIONS, mask);
+          }
         }
 
         if(config->path_as_is)
@@ -1979,7 +1882,7 @@ static CURLcode single_transfer(struct GlobalConfig *global,
         /* curl 7.17.1 */
         if(!config->nokeepalive) {
           my_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
-          if(config->alivetime != 0) {
+          if(config->alivetime) {
             my_setopt(curl, CURLOPT_TCP_KEEPIDLE, config->alivetime);
             my_setopt(curl, CURLOPT_TCP_KEEPINTVL, config->alivetime);
           }
@@ -2125,23 +2028,6 @@ static CURLcode single_transfer(struct GlobalConfig *global,
         if(config->hsts)
           my_setopt_str(curl, CURLOPT_HSTS, config->hsts);
 
-#ifdef USE_METALINK
-        if(!metalink && config->use_metalink) {
-          outs->metalink_parser = metalink_parser_context_new();
-          if(outs->metalink_parser == NULL) {
-            result = CURLE_OUT_OF_MEMORY;
-            break;
-          }
-          fprintf(global->errors,
-                  "Metalink: parsing (%s) metalink/XML...\n", per->this_url);
-        }
-        else if(metalink)
-          fprintf(global->errors,
-                  "Metalink: fetching (%s) from (%s)...\n",
-                  mlfile->filename, per->this_url);
-#endif /* USE_METALINK */
-
-        per->metalink = metalink;
         /* initialize retry vars for loop below */
         per->retry_sleep_default = (config->retry_delay) ?
           config->retry_delay*1000L : RETRY_SLEEP_DEFAULT; /* ms */
@@ -2162,7 +2048,7 @@ static CURLcode single_transfer(struct GlobalConfig *global,
       }
       else {
         /* Free this URL node data without destroying the
-           the node itself nor modifying next pointer. */
+           node itself nor modifying next pointer. */
         Curl_safefree(urlnode->outfile);
         Curl_safefree(urlnode->infile);
         urlnode->flags = 0;
@@ -2294,11 +2180,11 @@ static CURLcode parallel_transfers(struct GlobalConfig *global,
           long delay;
           struct per_transfer *ended;
           CURL *easy = msg->easy_handle;
-          result = msg->data.result;
+          CURLcode tres = msg->data.result;
           curl_easy_getinfo(easy, CURLINFO_PRIVATE, (void *)&ended);
           curl_multi_remove_handle(multi, easy);
 
-          result = post_per_transfer(global, ended, result, &retry, &delay);
+          tres = post_per_transfer(global, ended, tres, &retry, &delay);
           progress_finalize(ended); /* before it goes away */
           all_added--; /* one fewer added */
           checkmore = TRUE;
@@ -2307,8 +2193,11 @@ static CURLcode parallel_transfers(struct GlobalConfig *global,
             /* we delay retries in full integer seconds only */
             ended->startat = delay ? time(NULL) + delay/1000 : 0;
           }
-          else
+          else {
+            if(tres)
+              result = tres;
             (void)del_per_transfer(ended);
+          }
         }
       } while(msg);
       if(!checkmore) {
@@ -2320,9 +2209,11 @@ static CURLcode parallel_transfers(struct GlobalConfig *global,
       }
       if(checkmore) {
         /* one or more transfers completed, add more! */
-        (void)add_parallel_transfers(global, multi, share,
-                                     &more_transfers,
-                                     &added_transfers);
+        CURLcode tres = add_parallel_transfers(global, multi, share,
+                                               &more_transfers,
+                                               &added_transfers);
+        if(tres)
+          result = tres;
         if(added_transfers)
           /* we added new ones, make sure the loop doesn't exit yet */
           still_running = 1;
@@ -2393,9 +2284,6 @@ static CURLcode serial_transfers(struct GlobalConfig *global,
       if(result)
         bailout = TRUE;
     }
-
-    /* Release metalink related resources here */
-    delete_metalinkfile(per->mlfile);
 
     per = del_per_transfer(per);
 
@@ -2565,8 +2453,6 @@ static CURLcode run_all_transfers(struct GlobalConfig *global,
     /* Free list of given URLs */
     clean_getout(per->config);
 
-    /* Release metalink related resources here */
-    clean_metalink(per->config);
     per = del_per_transfer(per);
   }
 

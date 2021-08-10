@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH runtests.pl 1 "March 27, 2021" "Curl 7.76.1" "runtests"
+.TH runtests.pl 1 "June 08, 2021" "Curl 7.78.0" "runtests"
 
 .SH NAME
 runtests.pl \- run one or more test cases
@@ -73,6 +73,8 @@ The exclusion types are \fkeyword\fP, \ftest\fP, and \ftool\fP.
 Run the test event-based (if possible). This will make runtests invoke curl
 with --test-event option. This option only works if both curl and libcurl were
 built debug-enabled.
+.IP "-f"
+Force the test to run even if mentioned in DISABLED.
 .IP "-g"
 Run the given test(s) with gdb. This is best used on a single test case and
 curl built --disable-shared. This then fires up gdb with command line set to

@@ -2,13 +2,17 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.4 (xx-xxx-2021)
-  - UPDATED: wsdd2 to 1.8.5-dev (20210803 git)
+  - UPDATED: wsdd2 to 1.8.6, and rewrote Asuswrt patches for it.
+  - UPDATED: curl to 7.78.0.
+  - UPDATED: vsftpd to 3.0.5.
   - CHANGED: replaced jitterentropy-rngd with haveged.
              It uses more flash and memory, but it
              works properly on older platforms, and is
              generally less CPU intensive in regular
              use.  This is enabled for all router
              models.
+  - CHANGED: No longer restart nasapps/wsdd2 on WAN start.
+  - REMOVED: jitterentropy-rngd (replaced with haveged)
 
 
 386.3_2 (6-Aug-2021)

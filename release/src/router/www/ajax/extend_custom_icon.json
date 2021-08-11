@@ -1,0 +1,74 @@
+{
+	"electronic_product": {
+		"title": "Electronic Devices",
+		"translation": "#CLIENTLIST_ELECTRONIC_DEVICES",
+		"list": [
+			{
+				"num": 78,
+				"title": "Gateways",
+				"translation": "",
+				"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAMAAAC7m5rvAAAAPFBMVEUAAAD////////////////////////////////////////////////////////////////////////////YSWgTAAAAE3RSTlMAgEDAIOAw8BBwYL+gkM+wr49QA2RL9AAAAJdJREFUSMftlTsSAiEQRIc/y7r++v53FTBbLWeg1NpgXtJB9yOAAFKU/+BnKp+wjFdkgDBc9Q4fKtVUm9LyFRLO9/1pMsKchhctGA73TnPEYY6ilbTmGhtu7VnWVGrEECKjJaDUIQBPtDxv/AKcGM31fU59H9u+24XRsvUtvM0toqUe8Vg3OapJ+JZmIWPbfylWBCnKr3kARKMeoE2UwykAAAAASUVORK5CYII="
+			}
+		]
+	},
+	"media_and_entertainment": {
+		"title": "Media and Entertainment",
+		"translation": "#CLIENTLIST_MEDIA_ENTERTAINMENT",
+		"list": [
+			{
+				"num": 79,
+				"title": "Nintendo Switch",
+				"translation": "",
+				"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAMAAAC7m5rvAAAAP1BMVEUAAAD///////////////////////////////////////////////////////////////////////////////9Du/pqAAAAFHRSTlMAQMCAf1DgMGAgEO/Q8M+wkHBfnz8Yb3IAAAC2SURBVEjH7ZVNC8MgDEDjXKrVfi///7cuucxaR0dgB0t9F/HhAyGHQOPihO25B8VhprZQVj5SjgNwBxXxWBk6Yr7LnI5d9/iQsuTkyZRXPSsLiZTtpOVrX/zRnGTpUQXZEuNLnyExXp1Zyaw685Kt6gxmnm+ofQD3yyzR5NSZI2ZWZysJ6sxINagzGPhEfQbG9NXPrWWnmX51LGl1KBfV8J+1CDj+XsIjQkHwdg+Kw0z5AI1r8wb9Gi51oOaefQAAAABJRU5ErkJggg=="
+			},
+			{
+				"num": 80,
+				"title": "Blu-ray player",
+				"translation": "",
+				"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAMAAAC7m5rvAAAAPFBMVEUAAAD////////////////////////////////////////////////////////////////////////////YSWgTAAAAE3RSTlMAwECA8GCgEFAg37Aw4JDQr3Bv6W4wzAAAAX5JREFUSMftVdmOwyAMTDAxV66G///XdQIKZCHUkSqtVuo8tAgY24yPdP8ZGmDtZxBPOAKlj5DIZRr0F6yGFV701BOix+E9azhuzjG0cT6MDCyWM1nIjsEbw53S0tik2cAqebbFetEFKLfnN2HS+6fa/tR0p8mqjmu1reumioMakHJ0yZ7UKQxsxYiZopmC2IoyvXxP1rLQj0ti3rEUnYnTwBwUjMVNK3VX+IGWDIgLTbC8IYVaemu/DffCsJy3EZZTSSNjz5jTzMLJ2zjtrGnk5E1ntacGgEGlYk5Vwq89S46fdwDQ9qtrYKr3240gZrWeBZuPMSE9G1Kc1WH9A9hcXqcFA9qlt7dLoCykOS57GsEsTrz7GZoeD4H0obHZ4Bd0nYah2yYvFbF8CazS+lBBYe6ICq2v0gbZK/qDIBWWidbx7p8o6Z7RXGonqXgsI1NDikMmFsJ8T1Hy4dJcRT4LLzEDQNiGEvmZqYhEkLefsDu5lSCYGwUFQXVffBw/kK0w41oq2MUAAAAASUVORK5CYII="
+			},
+			{
+				"num": 81,
+				"title": "Smart speakers",
+				"translation": "",
+				"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAMAAAC7m5rvAAAAP1BMVEUAAAD///////////////////////////////////////////////////////////////////////////////9Du/pqAAAAFHRSTlMAwD+A8JAQUCCwMNBwYKBv4N9fj0F+whcAAAFNSURBVEjH7ZXRboMwDEVj4yQEArSd//9b56Rla4k9hNjLtJ4HhLicBNsC3Jt/x4Abhu8MzSxyQ7dmvs3iI+raCFYNlCVPayM+MT5rm+xVg0f5od76qtXzgOgKrRapXFO1WgdFTUMJRMyalu8ZKhpwKv0mTSP2ziUGRauLybFvtYHZ1cdRtAtPzvUStVooi7mJL4rmmZbblUHR5Hi9LcRe0cLIAvWa1hMLY2g1IQP4oA8geICszW1F1yqGFhPcLG2CFHUts+B1zbOQVY04Saq3hNknJlVjDjI81DTkaxmetdts7zZbu0Wu1+zaot7Jwc/R6mSc/fC7c/uAO8RMoJxPRm179JrW7WpoaWAy/qQ5E9zRcnmRsd7ZrYRdbarfDnICf5F2tV76HJJ3goeVKNqp2tp/wFwCk0XSZfMPOMBpDemIRYN7EPAAwb35s3wCWxg7ihctypMAAAAASUVORK5CYII="
+			},
+			{
+				"num": 82,
+				"title": "AV amplifier",
+				"translation": "",
+				"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAMAAAC7m5rvAAAAPFBMVEUAAAD////////////////////////////////////////////////////////////////////////////YSWgTAAAAE3RSTlMAwH+/EEDw4D8woFBgINCQcLBfN1I2SQAAAWpJREFUSMftlFGWgyAMRRExDAVE+/a/1yENLU6lhc/pOb0fGiAh8QVUX/4dZsZs2HBk81us1agOFwCaDQ1sj6mll4wA0C0HsMocgXrZArADgU0LOH574KI6rCADzKXKNFijAxL7xWxHwEqNdkAQ96hq4gGPdF8QWzUInFpyvyeI6ElEMYDlx9QX5M56LzkAoStIxYn0aQeZviB6YVIRxcIONI0A2TlCrISM70QtdWdusYT3m2YmikpwdrrlDWSd+miu+zzEfj0qsWKY1ZxO1FicKngAdhrCHpqvAWvUEMbWuzfJzegjvvvfsOh/3h48H6tvDfME+a3GnydiEZt8I4yA283e8QyXtSFD5zCDDE+hAfsw5kW2xKNneDW9yKYCSh+WE0V5tL5NxS2YNx0LW0vJPtW3nhI1yOGUBACzHmIGEOoWwxwLc4RhyB1k2vKlKD1qUdc2c/5aRjUp5bVwOuNVE89rH/6//KLUL151KpkPG+ctAAAAAElFTkSuQmCC"
+			}
+		]
+	},
+	"electronic_equipment": {
+		"title": "Electronic equipment",
+		"translation": "#CLIENTLIST_ELECTRONIC_EQUIPMENT",
+		"list": [
+			{
+				"num": 83,
+				"title": "Smart desk lamp",
+				"translation": "",
+				"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAMAAAC7m5rvAAAAOVBMVEUAAAD///////////////////////////////////////////////////////////////////////8KOjVvAAAAEnRSTlMA8DCgQMAQYJCAINDfcFCf4K+2J5GRAAAA+0lEQVRIx+3T2w7CIBBF0YEyXFsv8/8fK0VjwcR0To0+ud9XSA+U/v0ka4+gIjJbWBmpGYsr3DU1Tau7MnNyKpWbIqru0RwUjO+qd8J+97CmWslwnNi0A72CnanLh9WdaKfy6to4WTXk+UVZ5QVEtRodouwsyzqhSEGUEbncr44xJXFjOhWkex+MK1pExGvVNrsVkaRXoX/OGpUGRSedat8RCX5R3ow/hy+76jleos65TJpKdZngXGVMePHNP6xYxXjchXYJeFydxZn9YJWAM3+BVhme8HRwFYeiEEtlM19Tho56ZhyyY+fUrGwI+UIZWo6xpGVuKNO/73YDdBoWe35g2NoAAAAASUVORK5CYII="
+			},
+			{
+				"num": 84,
+				"title": "Smart ceiling lamp",
+				"translation": "",
+				"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAMAAAC7m5rvAAAAQlBMVEUAAAD///////////////////////////////////////////////////////////////////////////////////8IX9KGAAAAFXRSTlMAf4AQ8D/QYJDAcLBQMCDfoJ9v4F8FBlorAAAA30lEQVRIx+2U2w7CIBBEkV2oUO1N5/9/VSBpqhYQmpj0gfPaHHYy0BWNs2Kh6YDGQHdAAyCb1rQ/aMPVaeNCdZaTAnyvsWbggHfzQi+l9kHLNe2nrFlvpRZtJXJFncppiwpoF7Z0WI93WJX1wfhippIb26OpyDJqSyxLvHBj9vOZaX9Qvg3GfjuS9+yviDZ6GFN+mBZ7uuy48FklXptOaxPAIoavM53SAOMlxhxipECSrMY5rUtXkvEMRYREoyY0WPOf8lMMfeXSk1h5VK28qX5xBWRoZxpELUopEo2T8gKQYhsU2Kgr0wAAAABJRU5ErkJggg=="
+			}
+		]
+	},
+	"security": {
+		"title": "Security",
+		"translation": "#CLIENTLIST_SECURITY",
+		"list": [
+			{
+				"num": 85,
+				"title": "Smart doorbell",
+				"translation": "",
+				"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAMAAAC7m5rvAAAAPFBMVEUAAAD////////////////////////////////////////////////////////////////////////////YSWgTAAAAE3RSTlMAQIDwYL8wEFDgIMDQoK+QsJ9w+WT5CAAAARpJREFUSMft1t2OhCAMhuG2oiD+z3f/97rSTNRsROhuMkfzHpHoE8BEkb495lpka11ObXhsu1eCQnLLGqCRbOnqnWIAgbIFAJxhdKmb50iXKtkETH9gAryMTHOOzEz7GOuWFmiXzsT8jHezr2ddj6O+q2V+1PtFVI++kgn21jRasSd1zCMVdbVI+SrmkCINKVfF5DeTKjZgb6BzvFaxBXsd0bG5pXqRI70bAbxK7Jyhb7VeZy6yc0MIzIxzm2XGSLUxbkhxJSOHS47K7HSnqmcUpyaZZorWt5tD4E99FDxr3sh6aL2RBdGCiXk+8gY24mg0MJYjNu0tshaNj6SB1hgZi8ZFZj+E7Uf+/38waHpWE2VyQx4Njr499QMv9y8J6Z285QAAAABJRU5ErkJggg=="
+			}
+		]
+	}
+}

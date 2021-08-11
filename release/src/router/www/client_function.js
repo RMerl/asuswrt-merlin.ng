@@ -735,7 +735,7 @@ function popClientListEditTable(event) {
 		custom_icon_list_api.paramObj.select_icon_callBack = card_select_custom_icon;
 		custom_icon_list_api.paramObj.upload_callBack = previewCardUploadIcon;
 		custom_icon_list_api.gen_component(custom_icon_list_api.paramObj);
-		$.getJSON("http://nw-dlcdnet.asus.com/plugin/js/extend_custom_icon.json",
+		$.getJSON("/ajax/extend_custom_icon.json",
 			function(data){
 				custom_icon_list_api.paramObj.container = $('#edit_client_block').find("#card_custom_image");
 				custom_icon_list_api.paramObj.source = "cloud";

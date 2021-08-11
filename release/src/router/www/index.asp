@@ -421,7 +421,7 @@ function initial(){
 		custom_icon_list_api.paramObj.select_icon_callBack = select_custom_icon;
 		custom_icon_list_api.paramObj.upload_callBack = previewImage;
 		custom_icon_list_api.gen_component(custom_icon_list_api.paramObj);
-		$.getJSON("http://nw-dlcdnet.asus.com/plugin/js/extend_custom_icon.json",
+		$.getJSON("/ajax/extend_custom_icon.json",
 			function(data){
 				custom_icon_list_api.paramObj.container = $(".custom_icon_list_bg");
 				custom_icon_list_api.paramObj.source = "cloud";

@@ -72,12 +72,12 @@ function getVariable(){
 	if(system.band2gSupport){
 		var _element = new Array();
 		if(isSwMode('re') && (concurrep_support || wlc_band == '0')){
-			_element = ['wl0.1_nmode_x', 'wl0.1_auth_mode_x', 'wl0.1_crypto', 'wl0.1_wpa_psk', 'wl0.1_mfp', 'wl0.1_wep_x', 'wl0.1_key', 'wl0.1_key1', 'wl0.1_key2', 'wl0.1_key3', 'wl0.1_key4', 'wl0.1_closed'];
+			_element = ['wl0.1_nmode_x', 'wl0.1_auth_mode_x', 'wl0.1_crypto', 'wl0.1_mfp', 'wl0.1_wep_x', 'wl0.1_key', 'wl0.1_key1', 'wl0.1_key2', 'wl0.1_key3', 'wl0.1_key4', 'wl0.1_closed'];
 			_ssid.push('wl0.1_ssid');
 			_ssid.push('wl0.1_wpa_psk');
 		}
 		else{
-			_element = ['wl0_nmode_x', 'wl0_auth_mode_x', 'wl0_crypto', 'wl0_wpa_psk', 'wl0_mfp', 'wl0_wep_x', 'wl0_key', 'wl0_key1', 'wl0_key2', 'wl0_key3', 'wl0_key4', 'wl0_closed'];
+			_element = ['wl0_nmode_x', 'wl0_auth_mode_x', 'wl0_crypto', 'wl0_mfp', 'wl0_wep_x', 'wl0_key', 'wl0_key1', 'wl0_key2', 'wl0_key3', 'wl0_key4', 'wl0_closed'];
 			_ssid.push('wl0_ssid');
 			_ssid.push('wl0_wpa_psk');
 		}
@@ -92,12 +92,12 @@ function getVariable(){
 	if(system.band5gSupport){
 		var _element = new Array();
 		if(isSwMode('re') && (concurrep_support || wlc_band == '1')){
-			_element = ['wl1.1_nmode_x', 'wl1.1_auth_mode_x', 'wl1.1_crypto', 'wl1.1_wpa_psk', 'wl1.1_mfp', 'wl1.1_wep_x', 'wl1.1_key', 'wl1.1_key1', 'wl1.1_key2', 'wl1.1_key3', 'wl1.1_key4', 'wl1.1_closed'];
+			_element = ['wl1.1_nmode_x', 'wl1.1_auth_mode_x', 'wl1.1_crypto', 'wl1.1_mfp', 'wl1.1_wep_x', 'wl1.1_key', 'wl1.1_key1', 'wl1.1_key2', 'wl1.1_key3', 'wl1.1_key4', 'wl1.1_closed'];
 			_ssid.push('wl1.1_ssid');
 			_ssid.push('wl1.1_wpa_psk');
 		}
 		else{
-			_element = ['wl1_nmode_x', 'wl1_auth_mode_x', 'wl1_crypto', 'wl1_wpa_psk', 'wl1_mfp', 'wl1_wep_x', 'wl1_key', 'wl1_key1', 'wl1_key2', 'wl1_key3', 'wl1_key4', 'wl1_closed'];
+			_element = ['wl1_nmode_x', 'wl1_auth_mode_x', 'wl1_crypto', 'wl1_mfp', 'wl1_wep_x', 'wl1_key', 'wl1_key1', 'wl1_key2', 'wl1_key3', 'wl1_key4', 'wl1_closed'];
 			_ssid.push('wl1_ssid');
 			_ssid.push('wl1_wpa_psk');
 		}
@@ -112,12 +112,12 @@ function getVariable(){
 	if(system.band5g2Support){
 		var _element = new Array();
 		if(isSwMode('re') && (concurrep_support || wlc_band == '2')){
-			_element = ['wl2.1_nmode_x', 'wl2.1_auth_mode_x', 'wl2.1_crypto', 'wl2.1_wpa_psk', 'wl2.1_mfp', 'wl2.1_wep_x', 'wl2.1_key', 'wl2.1_key1', 'wl2.1_key2', 'wl2.1_key3', 'wl2.1_key4', 'wl2.1_closed'];
+			_element = ['wl2.1_nmode_x', 'wl2.1_auth_mode_x', 'wl2.1_crypto', 'wl2.1_mfp', 'wl2.1_wep_x', 'wl2.1_key', 'wl2.1_key1', 'wl2.1_key2', 'wl2.1_key3', 'wl2.1_key4', 'wl2.1_closed'];
 			_ssid.push('wl2.1_ssid');
 			_ssid.push('wl2.1_wpa_psk');
 		}
 		else{
-			_element = ['wl2_nmode_x', 'wl2_auth_mode_x', 'wl2_crypto', 'wl2_wpa_psk', 'wl2_mfp', 'wl2_wep_x', 'wl2_key', 'wl2_key1', 'wl2_key2', 'wl2_key3', 'wl2_key4', 'wl2_closed'];
+			_element = ['wl2_nmode_x', 'wl2_auth_mode_x', 'wl2_crypto', 'wl2_mfp', 'wl2_wep_x', 'wl2_key', 'wl2_key1', 'wl2_key2', 'wl2_key3', 'wl2_key4', 'wl2_closed'];
 			_ssid.push('wl2_ssid');
 			_ssid.push('wl2_wpa_psk');
 		}

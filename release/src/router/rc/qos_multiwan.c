@@ -2580,6 +2580,11 @@ int start_iQos(void)
 			status = start_bandwidth_limiter_AMAS_WGN();
 #endif
 		break;
+#ifdef HND_ROUTER
+	case 9:
+		status = start_cake();
+		break;
+#endif
 	default:
 		/* Unknown QoS type */
 		_dprintf("%s: unknown qos_type %d\n",
@@ -2629,3 +2634,122 @@ void ForceDisableWLan_bw(void)
 	}
 	QOSDBG("[BWLIT] ALL Guest Netwok of Bandwidth Limiter has been Didabled.\n");
 }
+
+#ifdef HND_ROUTER
+
+int start_cake(void)
+{
+	unsigned int ibw, obw;
+	FILE *f;
+	char overheadstr[32];
+	char ibwstr[32];
+	char obwstr[32];
+	char *mode;
+	char nvnat[16];
+	int nat;
+
+	if((f = fopen("/etc/cake-qos.conf", "w")) == NULL) return -2;
+
+	switch (nvram_get_int("qos_atm")) {
+		case 0:
+			mode = "";
+			break;
+		case 1:
+			mode = "atm";
+			break;
+		case 2:
+			mode = "ptm";
+			break;
+		default:
+			mode = "";
+	}
+
+	ibw = strtoul(nvram_safe_get("qos_ibw"), NULL, 10);
+	obw = strtoul(nvram_safe_get("qos_obw"), NULL, 10);
+
+	if (ibw == 0)
+		*ibwstr = '\0';
+	else
+		snprintf(ibwstr, sizeof(ibwstr), "bandwidth %dkbit", ibw);
+
+	if (obw == 0)
+		*obwstr = '\0';
+	else
+		snprintf(obwstr, sizeof(obwstr), "bandwidth %dkbit", obw);
+
+	snprintf(overheadstr, sizeof(overheadstr), "overhead %d mpu %d", nvram_get_int("qos_overhead"), nvram_get_int("qos_mpu"));
+
+	const char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
+
+	snprintf(nvnat, sizeof (nvnat), "wan%d_nat_x", wan_primary_ifunit());
+	nat = nvram_get_int(nvnat);
+
+	/* Config parameters */
+	fprintf(f,
+		"#!/bin/sh\n\n"
+		"ULIF='%s'\n"
+		"DLIF='%s'\n"
+		"MIF='ifb4%s'\n"
+		"ULBW='%s'\n"
+		"DLBW='%s'\n"
+		"OVERHEAD='%s'\n"
+		"FRAMING='%s'\n"
+		"ULPRIOQUEUE='diffserv3'\n"
+		"DLPRIOQUEUE='besteffort'\n"
+		"ULOPTIONS='%s dual-srchost'\n"
+		"DLOPTIONS='%s wash dual-dsthost ingress'\n",
+
+		wan_ifname,
+		wan_ifname,
+		wan_ifname,
+		obwstr,
+		ibwstr,
+		overheadstr,
+		mode,
+		(nat ? "nat" : ""),
+		(nat ? "nat" : "")
+	);
+
+	append_custom_config("cake-qos.conf",f);
+	fclose(f);
+
+
+	if((f = fopen(qosfn, "w")) == NULL) return -2;
+
+	/* Stop/start rules */
+	fprintf(f,
+		"#!/bin/sh\n"
+		"source /etc/cake-qos.conf\n\n"
+
+		"case \"$1\" in\n"
+		"start)\n"
+		"# Upload\n"
+		"\ttc qdisc add dev $ULIF root cake $ULPRIOQUEUE $ULBW $OVERHEAD $FRAMING $ULOPTIONS 2>/dev/null\n\n"
+
+		"# Download\n"
+		"\tip link add name $MIF type ifb 2>/dev/null\n"
+		"\ttc qdisc add dev $DLIF handle ffff: ingress 2>/dev/null\n"
+		"\ttc qdisc add dev $MIF root cake $DLPRIOQUEUE $DLBW $OVERHEAD $FRAMING $DLOPTIONS 2>/dev/null\n"
+		"\tip link set $MIF up 2>/dev/null\n"
+		"\ttc filter add dev $DLIF parent ffff: prio 10 matchall action mirred egress redirect dev $MIF 2>/dev/null\n\n"
+
+		"\t;;\n"
+		"stop)\n"
+		"\ttc qdisc del dev $ULIF root 2>/dev/null\n"
+		"\ttc qdisc del dev $DLIF ingress 2>/dev/null\n"
+		"\ttc qdisc del dev $MIF root 2>/dev/null\n"
+		"\tip link set $MIF down 2>/dev/null\n"
+		"\tip link del dev $MIF 2>/dev/null\n"
+		"\t;;\n"
+		"*)\n"
+		"esac\n");
+
+	fclose(f);
+	chmod("/etc/cake-qos.conf", 0755);
+	chmod(qosfn, 0755);
+	run_custom_script("qos-start", 120, "init", NULL);
+	eval((char *)qosfn, "start");
+
+	return 0;
+}
+#endif

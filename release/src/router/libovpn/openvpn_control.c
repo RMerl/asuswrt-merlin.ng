@@ -405,8 +405,8 @@ void ovpn_client_up_handler(int unit)
 			// Use VPN as default gateway
 			remotegw_env = getenv("route_vpn_gateway");
 			if (remotegw_env) {
-				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route replace default via %s table ovpnc%d",
-				         remotegw_env, unit);
+				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route replace default via %s dev %s table ovpnc%d",
+				         remotegw_env, dev_env, unit);
 				if (verb >= 3)
 					logmessage("openvpn-routing","Setting client %d routing table's default route through the tunnel", unit);
 				system(buffer);

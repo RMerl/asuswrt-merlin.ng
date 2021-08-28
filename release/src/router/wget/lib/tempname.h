@@ -1,6 +1,6 @@
 /* Create a temporary file or directory.
 
-   Copyright (C) 2006, 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2009-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -50,6 +50,9 @@ extern "C" {
 
    We use a clever algorithm to get hard-to-predict names. */
 extern int gen_tempname (char *tmpl, int suffixlen, int flags, int kind);
+/* Similar, except X_SUFFIX_LEN gives the number of Xs.  */
+extern int gen_tempname_len (char *tmpl, int suffixlen, int flags, int kind,
+                             size_t x_suffix_len);
 
 /* Similar to gen_tempname, but TRYFUNC is called for each temporary
    name to try.  If TRYFUNC returns a non-negative number, TRY_GEN_TEMPNAME
@@ -57,6 +60,10 @@ extern int gen_tempname (char *tmpl, int suffixlen, int flags, int kind);
    name is tried, or else TRY_GEN_TEMPNAME returns -1. */
 extern int try_tempname (char *tmpl, int suffixlen, void *args,
                          int (*tryfunc) (char *, void *));
+/* Similar, except X_SUFFIX_LEN gives the number of Xs.  */
+extern int try_tempname_len (char *tmpl, int suffixlen, void *args,
+                             int (*tryfunc) (char *, void *),
+                             size_t x_suffix_len);
 
 #ifdef __cplusplus
 }

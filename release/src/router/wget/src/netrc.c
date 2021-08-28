@@ -1,6 +1,6 @@
 /* Read and parse the .netrc file to get hosts, accounts, and passwords.
-   Copyright (C) 1996, 2007-2011, 2015, 2018 Free Software Foundation,
-   Inc.
+   Copyright (C) 1996, 2007-2011, 2015, 2018-2021 Free Software
+   Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -59,17 +59,20 @@ typedef struct _acc_t
 
 static acc_t *parse_netrc (const char *);
 static acc_t *parse_netrc_fp (const char *, FILE *);
-static void free_netrc(acc_t *);
 
 static acc_t *netrc_list;
 static int processed_netrc;
 
+#if defined DEBUG_MALLOC || defined TESTING
+static void free_netrc(acc_t *);
+
 void
-netrc_cleanup(void)
+netrc_cleanup (void)
 {
   free_netrc (netrc_list);
   processed_netrc = 0;
 }
+#endif
 
 /* Return the correct user and password, given the host, user (as
    given in the URL), and password (as given in the URL).  May return
@@ -111,11 +114,10 @@ search_netrc (const char *host, const char **acc, const char **passwd,
       else if (opt.homedir)
         {
           struct stat buf;
-          char *path = (char *)alloca (strlen (opt.homedir) + 1
-                                       + strlen (NETRC_FILE_NAME) + 1);
-          sprintf (path, "%s/%s", opt.homedir, NETRC_FILE_NAME);
+          char *path = aprintf ("%s/%s", opt.homedir, NETRC_FILE_NAME);
           if (stat (path, &buf) == 0)
             netrc_list = parse_netrc (path);
+          xfree (path);
         }
 
 #endif /* def __VMS [else] */
@@ -460,6 +462,7 @@ parse_netrc (const char *path)
   return acc;
 }
 
+#if defined DEBUG_MALLOC || defined TESTING
 /* Free a netrc list.  */
 static void
 free_netrc(acc_t *l)
@@ -476,6 +479,7 @@ free_netrc(acc_t *l)
       l = t;
     }
 }
+#endif
 
 #ifdef STANDALONE
 #include <sys/types.h>

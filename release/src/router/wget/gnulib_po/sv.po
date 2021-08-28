@@ -1,0 +1,981 @@
+# Swedish messages for gnulib.
+# Copyright © 1997, 2002, 2003, 2004, 2005, 2007, 2009, 2010, 2011, 2019, 2020 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gnulib package.
+# Peter Antman <peter.antman@abc.se>, 1997.
+# Thomas Olsson <cid95tho@lustudat.student.lu.se>, 1997.
+# Daniel Resare <daniel@resare.com>, 1999, 2000.
+# Göran Uddeborg <goeran@uddeborg.se>, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010, 2011, 2019, 2020.
+#
+# $Revision: 1.19 $
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gnulib 4.0.0.2567\n"
+"Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
+"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"PO-Revision-Date: 2020-05-28 21:40+0200\n"
+"Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
+"Language-Team: Swedish <tp-sv-list@lists.sourceforge.net>\n"
+"Language: sv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/error.c:195
+msgid "Unknown system error"
+msgstr "Okänt systemfel"
+
+#: lib/gai_strerror.c:57
+msgid "Address family for hostname not supported"
+msgstr "Adressfamiljen för värdnamnet stöds inte"
+
+#: lib/gai_strerror.c:58
+msgid "Temporary failure in name resolution"
+msgstr "Tillfälligt fel i namnuppslagning"
+
+#: lib/gai_strerror.c:59
+msgid "Bad value for ai_flags"
+msgstr "Felaktigt värde för ai_flags"
+
+#: lib/gai_strerror.c:60
+msgid "Non-recoverable failure in name resolution"
+msgstr "Oreparabelt fel i namnuppslagning"
+
+#: lib/gai_strerror.c:61
+msgid "ai_family not supported"
+msgstr "ai_family stöds inte"
+
+#: lib/gai_strerror.c:62
+msgid "Memory allocation failure"
+msgstr "Minnesallokeringsfel"
+
+#: lib/gai_strerror.c:63
+msgid "No address associated with hostname"
+msgstr "Ingen adress associerad med värdnamnet"
+
+#: lib/gai_strerror.c:64
+msgid "Name or service not known"
+msgstr "Namn eller tjänst inte känd"
+
+#: lib/gai_strerror.c:65
+msgid "Servname not supported for ai_socktype"
+msgstr "Servname stöds inte för ai_socktype"
+
+#: lib/gai_strerror.c:66
+msgid "ai_socktype not supported"
+msgstr "ai_socktype stöds inte"
+
+#: lib/gai_strerror.c:67
+msgid "System error"
+msgstr "Systemfel"
+
+#: lib/gai_strerror.c:68
+msgid "Argument buffer too small"
+msgstr "Argumentbufferten för liten"
+
+#: lib/gai_strerror.c:70
+msgid "Processing request in progress"
+msgstr "Bearbetar pågående begäran"
+
+#: lib/gai_strerror.c:71
+msgid "Request canceled"
+msgstr "Begäran annullerad"
+
+#: lib/gai_strerror.c:72
+msgid "Request not canceled"
+msgstr "Begäran inte annullerad"
+
+#: lib/gai_strerror.c:73
+msgid "All requests done"
+msgstr "Alla begäran utförda"
+
+#: lib/gai_strerror.c:74
+msgid "Interrupted by a signal"
+msgstr "Avbruten av en signal"
+
+#: lib/gai_strerror.c:75
+msgid "Parameter string not correctly encoded"
+msgstr "Parametersträng inte korrekt kodad"
+
+#: lib/gai_strerror.c:87
+msgid "Unknown error"
+msgstr "Okänt fel"
+
+#: lib/getopt.c:278
+#, c-format
+msgid "%s: option '%s%s' is ambiguous\n"
+msgstr "%s: flaggan ”%s%s” är tvetydig\n"
+
+#: lib/getopt.c:284
+#, c-format
+msgid "%s: option '%s%s' is ambiguous; possibilities:"
+msgstr "%s: flaggan ”%s%s” är tvetydig: möjligheter:"
+
+#: lib/getopt.c:319
+#, c-format
+msgid "%s: unrecognized option '%s%s'\n"
+msgstr "%s: okänd flagga ”%s%s”\n"
+
+#: lib/getopt.c:345
+#, c-format
+msgid "%s: option '%s%s' doesn't allow an argument\n"
+msgstr "%s: flaggan ”%s%s” tar inget argument\n"
+
+#: lib/getopt.c:360
+#, c-format
+msgid "%s: option '%s%s' requires an argument\n"
+msgstr "%s: flaggan ”%s%s” kräver ett argument\n"
+
+#: lib/getopt.c:621
+#, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr "%s: ogiltig flagga -- ”%c”\n"
+
+#: lib/getopt.c:636 lib/getopt.c:682
+#, c-format
+msgid "%s: option requires an argument -- '%c'\n"
+msgstr "%s: flaggan kräver ett argument -- ”%c”\n"
+
+#: lib/openat-die.c:38
+#, c-format
+msgid "unable to record current working directory"
+msgstr "kan inte notera aktuell arbetskatalog"
+
+#: lib/openat-die.c:57
+#, c-format
+msgid "failed to return to initial working directory"
+msgstr "kunde inte återvända till den ursprungliga arbetskatalogen"
+
+#: lib/os2-spawn.c:46
+#, c-format
+msgid "_open_osfhandle failed"
+msgstr "_open_osfhandle misslyckades"
+
+#: lib/os2-spawn.c:83
+#, c-format
+msgid "cannot restore fd %d: dup2 failed"
+msgstr "kan inte återställa fb %d: dup2 misslyckades"
+
+#. TRANSLATORS:
+#. Get translations for open and closing quotation marks.
+#. The message catalog should translate "`" to a left
+#. quotation mark suitable for the locale, and similarly for
+#. "'".  For example, a French Unicode local should translate
+#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), respectively.
+#.
+#. If the catalog has no translation, we will try to
+#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
+#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
+#. current locale is not Unicode, locale_quoting_style
+#. will quote 'like this', and clocale_quoting_style will
+#. quote "like this".  You should always include translations
+#. for "`" and "'" even if U+2018 and U+2019 are appropriate
+#. for your locale.
+#.
+#. If you don't know what to put here, please see
+#. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
+#. and use glyphs suitable for your language.
+#: lib/quotearg.c:355
+msgid "`"
+msgstr "”"
+
+#: lib/quotearg.c:356
+msgid "'"
+msgstr "”"
+
+#: lib/regcomp.c:135
+msgid "Success"
+msgstr "Lyckades"
+
+#: lib/regcomp.c:138
+msgid "No match"
+msgstr "Ingen träff"
+
+#: lib/regcomp.c:141
+msgid "Invalid regular expression"
+msgstr "Felaktigt reguljärt uttryck"
+
+#: lib/regcomp.c:144
+msgid "Invalid collation character"
+msgstr "Ogiltigt sorteringstecken"
+
+#: lib/regcomp.c:147
+msgid "Invalid character class name"
+msgstr "Ogiltigt teckenklassnamn"
+
+#: lib/regcomp.c:150
+msgid "Trailing backslash"
+msgstr "Avslutande bakstreck"
+
+#: lib/regcomp.c:153
+msgid "Invalid back reference"
+msgstr "Ogiltig bakåtreferens"
+
+#: lib/regcomp.c:156
+msgid "Unmatched [, [^, [:, [., or [="
+msgstr "Ensam [, [^, [:, [. eller [="
+
+#: lib/regcomp.c:159
+msgid "Unmatched ( or \\("
+msgstr "Ensam ( eller \\("
+
+#: lib/regcomp.c:162
+msgid "Unmatched \\{"
+msgstr "Ensam \\{"
+
+#: lib/regcomp.c:165
+msgid "Invalid content of \\{\\}"
+msgstr "Ogiltigt innehåll i \\{\\}"
+
+#: lib/regcomp.c:168
+msgid "Invalid range end"
+msgstr "Ogiltigt intervallslut"
+
+#: lib/regcomp.c:171
+msgid "Memory exhausted"
+msgstr "Minnet slut"
+
+#: lib/regcomp.c:174
+msgid "Invalid preceding regular expression"
+msgstr "Felaktigt föregående reguljärt uttryck"
+
+#: lib/regcomp.c:177
+msgid "Premature end of regular expression"
+msgstr "Förtida slut av reguljärt uttryck"
+
+#: lib/regcomp.c:180
+msgid "Regular expression too big"
+msgstr "För stort reguljärt uttryck"
+
+#: lib/regcomp.c:183
+msgid "Unmatched ) or \\)"
+msgstr "Ensam ) eller \\)"
+
+#: lib/regcomp.c:676
+msgid "No previous regular expression"
+msgstr "Inget föregående reguljärt uttryck"
+
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
+#: lib/spawn-pipe.c:463
+#, c-format
+msgid "cannot create pipe"
+msgstr "kan inte skapa rör"
+
+#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#, c-format
+msgid "%s subprocess failed"
+msgstr "%s-underprocess misslyckades"
+
+#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#, c-format
+msgid "%s subprocess"
+msgstr "%s-underprocess"
+
+#: lib/wait-process.c:282 lib/wait-process.c:354
+#, c-format
+msgid "%s subprocess got fatal signal %d"
+msgstr "%s-underprocess fick ödesdiger signal %d"
+
+#: lib/xalloc-die.c:34
+msgid "memory exhausted"
+msgstr "minnet slut"
+
+#, c-format
+#~ msgid "invalid argument %s for %s"
+#~ msgstr "felaktigt argument %s till %s"
+
+#, c-format
+#~ msgid "ambiguous argument %s for %s"
+#~ msgstr "tvetydigt argument %s till %s"
+
+#~ msgid "Valid arguments are:"
+#~ msgstr "Giltiga argument är:"
+
+#, c-format
+#~ msgid "ARGP_HELP_FMT: %s value is less than or equal to %s"
+#~ msgstr "ARGP_HELP_FMT: värdet på %s är mindre än eller lika med %s"
+
+#, c-format
+#~ msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
+#~ msgstr "%.*s: ARGP_HELP_FMT-parametern kräver ett värde"
+
+#, c-format
+#~ msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
+#~ msgstr "%.*s: Okänd ARGP_HELP_FMT-parameter"
+
+#, c-format
+#~ msgid "Garbage in ARGP_HELP_FMT: %s"
+#~ msgstr "Skräp i ARGP_HELP_FMT: %s"
+
+#~ msgid ""
+#~ "Mandatory or optional arguments to long options are also mandatory or "
+#~ "optional for any corresponding short options."
+#~ msgstr ""
+#~ "Obligatoriska eller valfria argument till långa flaggor är obligatoriska "
+#~ "eller valfria även för motsvarande korta flaggor."
+
+#~ msgid "Usage:"
+#~ msgstr "Användning:"
+
+#~ msgid "  or: "
+#~ msgstr "   eller:  "
+
+#~ msgid " [OPTION...]"
+#~ msgstr " [FLAGGA...]"
+
+#, c-format
+#~ msgid "Try '%s --help' or '%s --usage' for more information.\n"
+#~ msgstr "Försök med ”%s --help” eller ”%s --usage” för mer information.\n"
+
+#, c-format
+#~ msgid "Report bugs to %s.\n"
+#~ msgstr ""
+#~ "Rapportera fel till %s.\n"
+#~ "Skicka synpunkter på översättningen till <tp-sv-list@lists.sourceforge."
+#~ "net>.\n"
+
+#~ msgid "give this help list"
+#~ msgstr "ge denna hjälplista"
+
+#~ msgid "give a short usage message"
+#~ msgstr "ge ett kort användningsmeddelande"
+
+#~ msgid "NAME"
+#~ msgstr "NAMN"
+
+#~ msgid "set the program name"
+#~ msgstr "ange programnamnet"
+
+#~ msgid "SECS"
+#~ msgstr "S"
+
+#~ msgid "hang for SECS seconds (default 3600)"
+#~ msgstr "häng i S sekunder (3600 som standard)"
+
+#~ msgid "print program version"
+#~ msgstr "skriv ut programversion"
+
+#~ msgid "(PROGRAM ERROR) No version known!?"
+#~ msgstr "(PROGRAMFEL) Ingen version känd!?"
+
+#, c-format
+#~ msgid "%s: Too many arguments\n"
+#~ msgstr "%s: För många argument\n"
+
+#~ msgid "(PROGRAM ERROR) Option should have been recognized!?"
+#~ msgstr "(PROGRAMFEL) Flaggan borde ha känts igen!?"
+
+#, c-format
+#~ msgid "%u bitset_allocs, %u freed (%.2f%%).\n"
+#~ msgstr "%u bitset-allokeringar, %u frigjorda (%.2f %%).\n"
+
+#, c-format
+#~ msgid "%u bitset_sets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset-mängder, %u cachade (%.2f %%)\n"
+
+#, c-format
+#~ msgid "%u bitset_resets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset-återställningar, %u cachade (%.2f %%)\n"
+
+#, c-format
+#~ msgid "%u bitset_tests, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset-tester, %u cachade (%.2f %%)\n"
+
+#, c-format
+#~ msgid "%u bitset_lists\n"
+#~ msgstr "%u bitset-listor\n"
+
+#~ msgid "count log histogram\n"
+#~ msgstr "antalsloggshistogram\n"
+
+#~ msgid "size log histogram\n"
+#~ msgstr "storleksloggshistogram\n"
+
+#~ msgid "density histogram\n"
+#~ msgstr "densitetshistogram\n"
+
+#, c-format
+#~ msgid ""
+#~ "Bitset statistics:\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Bitset-statistik:\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Accumulated runs = %u\n"
+#~ msgstr "Ackumulerade körningar = %u\n"
+
+#~ msgid "cannot read stats file"
+#~ msgstr "kan inte läsa statistikfilen"
+
+#, c-format
+#~ msgid "bad stats file size\n"
+#~ msgstr "felaktig storlek på statistikfil\n"
+
+#~ msgid "cannot write stats file"
+#~ msgstr "kan inte skriva statistikfilen"
+
+#~ msgid "cannot open stats file for writing"
+#~ msgstr "kan inte öppna statistikfilen för skrivning"
+
+#~ msgid "program error"
+#~ msgstr "programfel"
+
+#~ msgid "stack overflow"
+#~ msgstr "stackspill"
+
+#~ msgid "cannot find a temporary directory, try setting $TMPDIR"
+#~ msgstr "kan inte hitta en temporärkatalog, försök sätta $TMPDIR"
+
+#, c-format
+#~ msgid "cannot create a temporary directory using template \"%s\""
+#~ msgstr "kan inte skapa en temporärkatalog med användning av mallen ”%s”"
+
+#, c-format
+#~ msgid "cannot remove temporary file %s"
+#~ msgstr "kan inte ta bort temporärfil %s"
+
+#, c-format
+#~ msgid "cannot remove temporary directory %s"
+#~ msgstr "kan inte ta bort temporärkatalog %s"
+
+#~ msgid "error closing file"
+#~ msgstr "fel när fil stängdes"
+
+#~ msgid "write error"
+#~ msgstr "skrivfel"
+
+#, c-format
+#~ msgid "preserving permissions for %s"
+#~ msgstr "bevarar rättigheter på %s"
+
+#, c-format
+#~ msgid "error while opening %s for reading"
+#~ msgstr "fel när %s öppnades för läsning"
+
+#, c-format
+#~ msgid "cannot open backup file %s for writing"
+#~ msgstr "det går inte att öppna säkerhetskopiefilen %s för skrivning"
+
+#, c-format
+#~ msgid "error reading %s"
+#~ msgstr "fel vid läsning av %s"
+
+#, c-format
+#~ msgid "error writing %s"
+#~ msgstr "fel vid skrivning av %s"
+
+#, c-format
+#~ msgid "error after reading %s"
+#~ msgstr "fel efter läsning av %s"
+
+#~ msgid "fdopen() failed"
+#~ msgstr "fdopen() misslyckades"
+
+#~ msgid "C# compiler not found, try installing mono"
+#~ msgstr "C#-kompilator hittades inte, försök installera mono"
+
+#~ msgid "C# virtual machine not found, try installing mono"
+#~ msgstr "den virtuella C#-maskinen hittades inte, försök installera mono"
+
+#~ msgid "unbalanced ["
+#~ msgstr "obalanserad ["
+
+#~ msgid "invalid character class"
+#~ msgstr "ogiltig teckenklass"
+
+#~ msgid "character class syntax is [[:space:]], not [:space:]"
+#~ msgstr "teckenklassyntaxen är [[:space:]], inte [:space:]"
+
+#~ msgid "unfinished \\ escape"
+#~ msgstr "oavslutad \\-sekvens"
+
+#~ msgid "invalid content of \\{\\}"
+#~ msgstr "ogiltigt innehåll i \\{\\}"
+
+#~ msgid "regular expression too big"
+#~ msgstr "för stort reguljärt uttryck"
+
+#~ msgid "unbalanced ("
+#~ msgstr "obalanserad ("
+
+#~ msgid "no syntax specified"
+#~ msgstr "ingen syntax angiven"
+
+#~ msgid "unbalanced )"
+#~ msgstr "obalanserad )"
+
+#~ msgid "regular empty file"
+#~ msgstr "tom normal fil"
+
+#~ msgid "regular file"
+#~ msgstr "normal fil"
+
+#~ msgid "directory"
+#~ msgstr "katalog"
+
+#~ msgid "symbolic link"
+#~ msgstr "symbolisk länk"
+
+#~ msgid "message queue"
+#~ msgstr "meddelandekö"
+
+#~ msgid "semaphore"
+#~ msgstr "semafor"
+
+#~ msgid "shared memory object"
+#~ msgstr "objekt av delat minne"
+
+#~ msgid "typed memory object"
+#~ msgstr "objekt av typat minne"
+
+#~ msgid "block special file"
+#~ msgstr "blockspecialfil"
+
+#~ msgid "character special file"
+#~ msgstr "teckenspecialfil"
+
+#~ msgid "contiguous data"
+#~ msgstr "sammanhängande data"
+
+#~ msgid "fifo"
+#~ msgstr "fifo"
+
+#~ msgid "door"
+#~ msgstr "dörr"
+
+#~ msgid "multiplexed block special file"
+#~ msgstr "multiplexad blockspecialfil"
+
+#~ msgid "multiplexed character special file"
+#~ msgstr "multiplexad teckenspecialfil"
+
+#~ msgid "multiplexed file"
+#~ msgstr "multiplexad fil"
+
+#~ msgid "named file"
+#~ msgstr "namngiven fil"
+
+#~ msgid "network special file"
+#~ msgstr "nätverksspecialfil"
+
+#~ msgid "migrated file with data"
+#~ msgstr "migrerad fil med data"
+
+#~ msgid "migrated file without data"
+#~ msgstr "migrerad fil utan data"
+
+#~ msgid "port"
+#~ msgstr "port"
+
+#~ msgid "socket"
+#~ msgstr "uttag (socket)"
+
+#~ msgid "whiteout"
+#~ msgstr "övertäckningsfil"
+
+#~ msgid "weird file"
+#~ msgstr "konstig fil"
+
+#~ msgid "invalid source_version argument to compile_java_class"
+#~ msgstr "ogiltigt source_version-argument till compile_java_class"
+
+#~ msgid "invalid target_version argument to compile_java_class"
+#~ msgstr "ogiltigt target_version-argument till compile_java_class"
+
+#, c-format
+#~ msgid "failed to create \"%s\""
+#~ msgstr "det gick inte att skapa ”%s”"
+
+#, c-format
+#~ msgid "error while writing \"%s\" file"
+#~ msgstr "fel vid skrivning av filen ”%s”"
+
+#~ msgid "Java compiler not found, try installing gcj or set $JAVAC"
+#~ msgstr ""
+#~ "Javakompilator hittades inte, försök installera gcj eller sätta $JAVAC"
+
+#~ msgid "Java virtual machine not found, try installing gij or set $JAVA"
+#~ msgstr ""
+#~ "Virtuell Javamaskin hittades inte, försök installera gij eller sätta $JAVA"
+
+#, c-format
+#~ msgid "%s subprocess I/O error"
+#~ msgstr "%s-underprocess I/O-fel"
+
+#, c-format
+#~ msgid "cannot stat %s"
+#~ msgstr "kan inte ta status på %s"
+
+#, c-format
+#~ msgid "cannot change permissions of %s"
+#~ msgstr "kan inte ändra rättigheter på %s"
+
+#, c-format
+#~ msgid "cannot create directory %s"
+#~ msgstr "kan inte skapa katalogen %s"
+
+#~ msgid "Failed to open /dev/zero for read"
+#~ msgstr "Misslyckades att öppna /dev/zero för läsning"
+
+#~ msgid "creation of reading thread failed"
+#~ msgstr "att skapa lästråd misslyckades"
+
+#, c-format
+#~ msgid "cannot set up nonblocking I/O to %s subprocess"
+#~ msgstr ""
+#~ "det gick inte att sätta upp icke blockerande I/O till %s-underprocess"
+
+#, c-format
+#~ msgid "communication with %s subprocess failed"
+#~ msgstr "kommunikation med %s-underprocess misslyckades"
+
+#, c-format
+#~ msgid "write to %s subprocess failed"
+#~ msgstr "skrivning till %s-underprocess misslyckades"
+
+#, c-format
+#~ msgid "read from %s subprocess failed"
+#~ msgstr "läsning från %s-underprocess misslyckades"
+
+#, c-format
+#~ msgid "subprocess %s terminated with exit code %d"
+#~ msgstr "underprocess %s avslutad med slutstatus %d"
+
+#~ msgid "creation of threads failed"
+#~ msgstr "att skapa trådar misslyckades"
+
+#, c-format
+#~ msgid "%s subprocess terminated with exit code %d"
+#~ msgstr "%s-underprocess avslutad med slutstatus %d"
+
+#~ msgid "^[yY]"
+#~ msgstr "^[yYjJ]"
+
+#~ msgid "^[nN]"
+#~ msgstr "^[nN]"
+
+#, c-format
+#~ msgid "setting permissions for %s"
+#~ msgstr "ändrar rättigheter på %s"
+
+#~ msgid "Hangup"
+#~ msgstr "Avringd"
+
+#~ msgid "Interrupt"
+#~ msgstr "Avbruten"
+
+#~ msgid "Quit"
+#~ msgstr "Lämnad"
+
+#~ msgid "Illegal instruction"
+#~ msgstr "Otillåten instruktion"
+
+#~ msgid "Trace/breakpoint trap"
+#~ msgstr "Spårnings-/brytpunktsfälla"
+
+#~ msgid "Aborted"
+#~ msgstr "Avbruten (abort)"
+
+#~ msgid "Floating point exception"
+#~ msgstr "Flyttalsundantag"
+
+#~ msgid "Killed"
+#~ msgstr "Dödad"
+
+#~ msgid "Bus error"
+#~ msgstr "Bussfel"
+
+#~ msgid "Segmentation fault"
+#~ msgstr "Segmenteringsfel"
+
+#~ msgid "Broken pipe"
+#~ msgstr "Brutet rör"
+
+#~ msgid "Alarm clock"
+#~ msgstr "Alarmklocka"
+
+#~ msgid "Terminated"
+#~ msgstr "Avslutad"
+
+#~ msgid "Urgent I/O condition"
+#~ msgstr "Brådskande I/O-situation"
+
+#~ msgid "Stopped (signal)"
+#~ msgstr "Stoppad (signal)"
+
+#~ msgid "Stopped"
+#~ msgstr "Stoppad"
+
+#~ msgid "Continued"
+#~ msgstr "Återupptagen"
+
+#~ msgid "Child exited"
+#~ msgstr "Barn avslutade"
+
+#~ msgid "Stopped (tty input)"
+#~ msgstr "Stoppad (terminalläsning)"
+
+#~ msgid "Stopped (tty output)"
+#~ msgstr "Stoppad (terminalskrivning)"
+
+#~ msgid "I/O possible"
+#~ msgstr "I/O möjligt"
+
+#~ msgid "CPU time limit exceeded"
+#~ msgstr "Begränsning av CPU-tid överskriden"
+
+#~ msgid "File size limit exceeded"
+#~ msgstr "Begränsning av filstorlek överskriden"
+
+#~ msgid "Virtual timer expired"
+#~ msgstr "Alarmklocka - virtuell tid gick ut"
+
+#~ msgid "Profiling timer expired"
+#~ msgstr "Profileringsklocka gick ut"
+
+#~ msgid "Window changed"
+#~ msgstr "Ändrat fönster"
+
+#~ msgid "User defined signal 1"
+#~ msgstr "Användarsignal 1"
+
+#~ msgid "User defined signal 2"
+#~ msgstr "Användarsignal 2"
+
+#~ msgid "EMT trap"
+#~ msgstr "Emulatorfälla"
+
+#~ msgid "Bad system call"
+#~ msgstr "Felaktigt systemanrop"
+
+#~ msgid "Stack fault"
+#~ msgstr "Stackfel"
+
+#~ msgid "Information request"
+#~ msgstr "Informationsbegäran"
+
+#~ msgid "Power failure"
+#~ msgstr "Strömavbrott"
+
+#~ msgid "Resource lost"
+#~ msgstr "Förlorad resurs"
+
+#~ msgid "error writing to a closed pipe or socket"
+#~ msgstr "fel vid skrivning till ett stängt rör eller uttag"
+
+#, c-format
+#~ msgid "Real-time signal %d"
+#~ msgstr "Realtidssignal %d"
+
+#, c-format
+#~ msgid "Unknown signal %d"
+#~ msgstr "Okänd signal %d"
+
+#~ msgid "Execution times (seconds)"
+#~ msgstr "Körtider (sekunder)"
+
+#~ msgid "CPU user"
+#~ msgstr "CPU användare"
+
+#~ msgid "CPU system"
+#~ msgstr "CPU system"
+
+#~ msgid "wall clock"
+#~ msgstr "väggklocka"
+
+#~ msgid "iconv function not usable"
+#~ msgstr "iconv-funktion inte användbar"
+
+#~ msgid "iconv function not available"
+#~ msgstr "iconv-funktion inte tillgänglig"
+
+#~ msgid "character out of range"
+#~ msgstr "tecken utanför intervall"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set"
+#~ msgstr "kan inte konvertera U+%04X till lokal teckenuppsättning"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set: %s"
+#~ msgstr "kan inte konvertera U+%04X till lokal teckenuppsättning: %s"
+
+#~ msgid "invalid user"
+#~ msgstr "ogiltig användare"
+
+#~ msgid "invalid group"
+#~ msgstr "ogiltig grupp"
+
+#~ msgid "invalid spec"
+#~ msgstr "ogiltig specifikation"
+
+#~ msgid "unable to display error message"
+#~ msgstr "kan inte visa felmeddelande"
+
+#, c-format
+#~ msgid "Packaged by %s (%s)\n"
+#~ msgstr "Paketerat av %s (%s)\n"
+
+#, c-format
+#~ msgid "Packaged by %s\n"
+#~ msgstr "Paketerat av %s\n"
+
+#~ msgid "(C)"
+#~ msgstr "©"
+
+#, c-format
+#~ msgid ""
+#~ "License GPLv3+: GNU GPL version 3 or later <%s>.\n"
+#~ "This is free software: you are free to change and redistribute it.\n"
+#~ "There is NO WARRANTY, to the extent permitted by law.\n"
+#~ msgstr ""
+#~ "Licens GPLv3+: GNU GPL version 3 eller senare <%s>.\n"
+#~ "Detta är fri programvara: du får lov att ändra och vidaredistribuera "
+#~ "den.\n"
+#~ "Det finns INGEN GARANTI, så långt lagen tillåter.\n"
+
+#, c-format
+#~ msgid "Written by %s.\n"
+#~ msgstr "Skrivet av %s.\n"
+
+#, c-format
+#~ msgid "Written by %s and %s.\n"
+#~ msgstr "Skrivet av %s och %s.\n"
+
+#, c-format
+#~ msgid "Written by %s, %s, and %s.\n"
+#~ msgstr "Skrivet av %s, %s och %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Skrivet av %s, %s, %s\n"
+#~ "och %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Skrivet av %s, %s, %s,\n"
+#~ "%s och %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Skrivet av %s, %s, %s,\n"
+#~ "%s, %s och %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Skrivet av %s, %s, %s,\n"
+#~ "%s, %s, %s och %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Skrivet av %s, %s, %s,\n"
+#~ "%s, %s, %s, %s\n"
+#~ "och %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Skrivet av %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s och %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s, and others.\n"
+#~ msgstr ""
+#~ "Skrivet av %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s med flera.\n"
+
+#, c-format
+#~ msgid "Report bugs to: %s\n"
+#~ msgstr ""
+#~ "Rapportera fel till: %s\n"
+#~ "Skicka synpunkter på översättningen till: tp-sv-list@lists.sourceforg."
+#~ "net\n"
+
+#, c-format
+#~ msgid "Report %s bugs to: %s\n"
+#~ msgstr "Rapportera %s-fel till: %s\n"
+
+#, c-format
+#~ msgid "%s home page: <%s>\n"
+#~ msgstr "Webbsida för %s: <%s>\n"
+
+#, c-format
+#~ msgid "General help using GNU software: <%s>\n"
+#~ msgstr "Allmän hjälp med att använda GNU-program: <%s>\n"
+
+#~ msgid "failed to set file descriptor text/binary mode"
+#~ msgstr "misslyckades att sätta filbeskrivaren i text-/binärt läge"
+
+#~ msgid "stdin"
+#~ msgstr "standard in"
+
+#~ msgid "stdout"
+#~ msgstr "standard ut"
+
+#~ msgid "stderr"
+#~ msgstr "standard fel"
+
+#~ msgid "unknown stream"
+#~ msgstr "okänd ström"
+
+#, c-format
+#~ msgid "failed to reopen %s with mode %s"
+#~ msgstr "det gick inte att öppna om %s i läget %s"
+
+#~ msgid "string comparison failed"
+#~ msgstr "strängjämförelse misslyckades"
+
+#~ msgid "Set LC_ALL='C' to work around the problem."
+#~ msgstr "Sätt LC_ALL='C' för att gå runt problemet."
+
+#, c-format
+#~ msgid "The strings compared were %s and %s."
+#~ msgstr "De jämförda strängarna var %s och %s."
+
+#~ msgid "cannot perform formatted output"
+#~ msgstr "kan inte utföra formaterad utmatning"
+
+#~ msgid "standard file descriptors"
+#~ msgstr "standard filbeskrivare"
+
+#, c-format
+#~ msgid "invalid %s%s argument '%s'"
+#~ msgstr "felaktigt %s%s-argument ”%s”"
+
+#, c-format
+#~ msgid "invalid suffix in %s%s argument '%s'"
+#~ msgstr "felaktigt suffix i %s%s-argument ”%s”"
+
+#, c-format
+#~ msgid "%s%s argument '%s' too large"
+#~ msgstr "%s%s-argumentet ”%s” är för stort"

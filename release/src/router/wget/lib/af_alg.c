@@ -1,5 +1,5 @@
 /* af_alg.c - Compute message digests from file streams and buffers.
-   Copyright (C) 2018 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -18,9 +18,9 @@
 
 #include <config.h>
 
-#if USE_LINUX_CRYPTO_API
-
 #include "af_alg.h"
+
+#if USE_LINUX_CRYPTO_API
 
 #include <unistd.h>
 #include <string.h>

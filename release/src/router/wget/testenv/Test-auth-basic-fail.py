@@ -5,10 +5,10 @@ from misc.wget_file import WgetFile
 
 """
     This test ensures that Wget returns the correct exit code when Basic
-    authentcation failes due to a username/password error.
+    authentication fails due to a username/password error.
 """
 ############# File Definitions ###############################################
-File1 = "I am an invisble man."
+File1 = "I am an invisible man."
 
 File1_rules = {
     "Authentication"    : {

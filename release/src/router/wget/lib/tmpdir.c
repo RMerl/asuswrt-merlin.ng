@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2001-2002, 2006, 2009-2018 Free Software Foundation,
+/* Copyright (C) 1999, 2001-2002, 2006, 2009-2021 Free Software Foundation,
    Inc.
    This file is part of the GNU C Library.
 
@@ -48,6 +48,12 @@
 #endif
 
 #include "pathmax.h"
+
+#if defined _WIN32 && ! defined __CYGWIN__
+/* Don't assume that UNICODE is not defined.  */
+# undef GetTempPath
+# define GetTempPath GetTempPathA
+#endif
 
 #if _LIBC
 # define struct_stat64 struct stat64

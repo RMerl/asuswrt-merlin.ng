@@ -1,0 +1,1005 @@
+# Dutch translations for gnulib.
+# Copyright (C) 2019 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gnulib package.
+#
+# Erick Branderhorst <branderh@debian.org>, 1996.
+# Ivo Timmermans <ivo@o2w.nl>, 2000.
+# Freek de Kruijf <f.de.kruijf@hetnet.nl>, 2004, 2005.
+# Erwin Poeze <erwin.poeze@gmail.com>, 2009, 2010.
+# Benno Schulenberg <benno@vertaalt.nl>, 2007, 2008, 2010, 2011, 2019.
+msgid ""
+msgstr ""
+"Project-Id-Version: gnulib-4.0.0.2567\n"
+"Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
+"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"PO-Revision-Date: 2019-05-29 13:31+0200\n"
+"Last-Translator: Benno Schulenberg <vertaling@coevern.nl>\n"
+"Language-Team: Dutch <vertaling@vrijschrift.org>\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/error.c:195
+msgid "Unknown system error"
+msgstr "Onbekende systeemfout"
+
+#: lib/gai_strerror.c:57
+msgid "Address family for hostname not supported"
+msgstr "Adresfamilie voor hostnaam wordt niet ondersteund"
+
+#: lib/gai_strerror.c:58
+msgid "Temporary failure in name resolution"
+msgstr "Tijdelijk probleem in naamsherleiding"
+
+#: lib/gai_strerror.c:59
+msgid "Bad value for ai_flags"
+msgstr "Ongeldige waarde voor 'ai_flags'"
+
+#: lib/gai_strerror.c:60
+msgid "Non-recoverable failure in name resolution"
+msgstr "Onherstelbaar probleem in naamsherleiding"
+
+#: lib/gai_strerror.c:61
+msgid "ai_family not supported"
+msgstr "'ai_family' wordt niet ondersteund"
+
+#: lib/gai_strerror.c:62
+msgid "Memory allocation failure"
+msgstr "Onvoldoende geheugen beschikbaar"
+
+#: lib/gai_strerror.c:63
+msgid "No address associated with hostname"
+msgstr "Aan hostnaam is geen adres verbonden"
+
+#: lib/gai_strerror.c:64
+msgid "Name or service not known"
+msgstr "Naam of dienst is niet bekend"
+
+#: lib/gai_strerror.c:65
+msgid "Servname not supported for ai_socktype"
+msgstr "Servicenaam wordt niet ondersteund voor 'ai_socktype'"
+
+#: lib/gai_strerror.c:66
+msgid "ai_socktype not supported"
+msgstr "'ai_socktype' wordt niet ondersteund"
+
+#: lib/gai_strerror.c:67
+msgid "System error"
+msgstr "Systeemfout"
+
+#: lib/gai_strerror.c:68
+msgid "Argument buffer too small"
+msgstr "Argumentenbuffer is te klein"
+
+#: lib/gai_strerror.c:70
+msgid "Processing request in progress"
+msgstr "Bezig met verwerken van verzoek"
+
+#: lib/gai_strerror.c:71
+msgid "Request canceled"
+msgstr "Verzoek is geannuleerd"
+
+#: lib/gai_strerror.c:72
+msgid "Request not canceled"
+msgstr "Verzoek is niet geannuleerd"
+
+#: lib/gai_strerror.c:73
+msgid "All requests done"
+msgstr "Alle verzoeken zijn gedaan"
+
+#: lib/gai_strerror.c:74
+msgid "Interrupted by a signal"
+msgstr "Onderbroken door een signaal"
+
+#: lib/gai_strerror.c:75
+msgid "Parameter string not correctly encoded"
+msgstr "Parametertekst is niet juist gecodeerd"
+
+#: lib/gai_strerror.c:87
+msgid "Unknown error"
+msgstr "Onbekende fout"
+
+#: lib/getopt.c:278
+#, c-format
+msgid "%s: option '%s%s' is ambiguous\n"
+msgstr "%s: optie '%s%s' is niet eenduidig\n"
+
+#: lib/getopt.c:284
+#, c-format
+msgid "%s: option '%s%s' is ambiguous; possibilities:"
+msgstr "%s: optie '%s%s' is niet eenduidig; mogelijkheden zijn:"
+
+#: lib/getopt.c:319
+#, c-format
+msgid "%s: unrecognized option '%s%s'\n"
+msgstr "%s: onbekende optie '%s%s'\n"
+
+#: lib/getopt.c:345
+#, c-format
+msgid "%s: option '%s%s' doesn't allow an argument\n"
+msgstr "%s: optie '%s%s' staat geen argument toe\n"
+
+#: lib/getopt.c:360
+#, c-format
+msgid "%s: option '%s%s' requires an argument\n"
+msgstr "%s: optie '%s%s' vereist een argument\n"
+
+#: lib/getopt.c:621
+#, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr "%s: ongeldige optie -- '%c'\n"
+
+#: lib/getopt.c:636 lib/getopt.c:682
+#, c-format
+msgid "%s: option requires an argument -- '%c'\n"
+msgstr "%s: optie vereist een argument -- '%c'\n"
+
+#: lib/openat-die.c:38
+#, c-format
+msgid "unable to record current working directory"
+msgstr "kan de huidige werkmap niet vastleggen"
+
+#: lib/openat-die.c:57
+#, c-format
+msgid "failed to return to initial working directory"
+msgstr "kan niet terugkeren naar de oorspronkelijke werkmap"
+
+#: lib/os2-spawn.c:46
+#, c-format
+msgid "_open_osfhandle failed"
+msgstr "_open_osfhandle() is mislukt"
+
+#: lib/os2-spawn.c:83
+#, c-format
+msgid "cannot restore fd %d: dup2 failed"
+msgstr "kan bestandsdescriptor %d niet herstellen: dup2() is mislukt"
+
+#. TRANSLATORS:
+#. Get translations for open and closing quotation marks.
+#. The message catalog should translate "`" to a left
+#. quotation mark suitable for the locale, and similarly for
+#. "'".  For example, a French Unicode local should translate
+#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), respectively.
+#.
+#. If the catalog has no translation, we will try to
+#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
+#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
+#. current locale is not Unicode, locale_quoting_style
+#. will quote 'like this', and clocale_quoting_style will
+#. quote "like this".  You should always include translations
+#. for "`" and "'" even if U+2018 and U+2019 are appropriate
+#. for your locale.
+#.
+#. If you don't know what to put here, please see
+#. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
+#. and use glyphs suitable for your language.
+#: lib/quotearg.c:355
+msgid "`"
+msgstr "‘"
+
+#: lib/quotearg.c:356
+msgid "'"
+msgstr "’"
+
+#: lib/regcomp.c:135
+msgid "Success"
+msgstr "Gelukt"
+
+#: lib/regcomp.c:138
+msgid "No match"
+msgstr "Geen overeenkomsten"
+
+#: lib/regcomp.c:141
+msgid "Invalid regular expression"
+msgstr "Ongeldige reguliere expressie"
+
+#: lib/regcomp.c:144
+msgid "Invalid collation character"
+msgstr "Ongeldig samengesteld teken"
+
+#: lib/regcomp.c:147
+msgid "Invalid character class name"
+msgstr "Ongeldige tekenklassenaam"
+
+#: lib/regcomp.c:150
+msgid "Trailing backslash"
+msgstr "Backslash aan het eind"
+
+#: lib/regcomp.c:153
+msgid "Invalid back reference"
+msgstr "Ongeldige terugverwijzing"
+
+#: lib/regcomp.c:156
+msgid "Unmatched [, [^, [:, [., or [="
+msgstr "Ongepaarde [, [^, [:, [., of [="
+
+#: lib/regcomp.c:159
+msgid "Unmatched ( or \\("
+msgstr "Ongepaarde ( of \\("
+
+#: lib/regcomp.c:162
+msgid "Unmatched \\{"
+msgstr "Ongepaarde \\{"
+
+#: lib/regcomp.c:165
+msgid "Invalid content of \\{\\}"
+msgstr "Ongeldige inhoud van \\{\\}"
+
+#: lib/regcomp.c:168
+msgid "Invalid range end"
+msgstr "Ongeldig bereikeinde"
+
+#: lib/regcomp.c:171
+msgid "Memory exhausted"
+msgstr "Onvoldoende geheugen beschikbaar"
+
+#: lib/regcomp.c:174
+msgid "Invalid preceding regular expression"
+msgstr "Ongeldige voorafgaande reguliere expressie"
+
+#: lib/regcomp.c:177
+msgid "Premature end of regular expression"
+msgstr "Voortijdig einde van reguliere expressie"
+
+#: lib/regcomp.c:180
+msgid "Regular expression too big"
+msgstr "Reguliere expressie is te groot"
+
+#: lib/regcomp.c:183
+msgid "Unmatched ) or \\)"
+msgstr "Ongepaarde ) of \\)"
+
+#: lib/regcomp.c:676
+msgid "No previous regular expression"
+msgstr "Geen eerdere reguliere expressie"
+
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
+#: lib/spawn-pipe.c:463
+#, c-format
+msgid "cannot create pipe"
+msgstr "kan geen pijp aanmaken"
+
+#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#, c-format
+msgid "%s subprocess failed"
+msgstr "subproces %s is mislukt"
+
+#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#, c-format
+msgid "%s subprocess"
+msgstr "subproces %s"
+
+#: lib/wait-process.c:282 lib/wait-process.c:354
+#, c-format
+msgid "%s subprocess got fatal signal %d"
+msgstr "subproces %s ontving het fatale signaal %d"
+
+#: lib/xalloc-die.c:34
+msgid "memory exhausted"
+msgstr "onvoldoende geheugen beschikbaar"
+
+#, c-format
+#~ msgid "invalid argument %s for %s"
+#~ msgstr "ongeldig argument %s van %s"
+
+#, c-format
+#~ msgid "ambiguous argument %s for %s"
+#~ msgstr "argument %s van %s is niet eenduidig"
+
+#~ msgid "Valid arguments are:"
+#~ msgstr "Geldige argumenten zijn:"
+
+#, c-format
+#~ msgid "ARGP_HELP_FMT: %s value is less than or equal to %s"
+#~ msgstr "ARGP_HELP_FMT: waarde voor '%s' is kleiner of gelijk aan %s"
+
+#, c-format
+#~ msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
+#~ msgstr "%.*s: Parameter in ARGP_HELP_FMT vereist een waarde"
+
+#, c-format
+#~ msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
+#~ msgstr "%.*s: Onbekende parameter in ARGP_HELP_FMT"
+
+#, c-format
+#~ msgid "Garbage in ARGP_HELP_FMT: %s"
+#~ msgstr "Rommel in ARGP_HELP_FMT: %s"
+
+#~ msgid ""
+#~ "Mandatory or optional arguments to long options are also mandatory or "
+#~ "optional for any corresponding short options."
+#~ msgstr ""
+#~ "Een argument dat verplicht of optioneel is voor een lange optie, is dat\n"
+#~ "ook voor de overeenkomstige korte optie."
+
+#~ msgid "Usage:"
+#~ msgstr "Gebruik: "
+
+#~ msgid "  or: "
+#~ msgstr "     of: "
+
+#~ msgid " [OPTION...]"
+#~ msgstr " [OPTIE...]"
+
+#, c-format
+#~ msgid "Try '%s --help' or '%s --usage' for more information.\n"
+#~ msgstr "Typ '%s --help' of '%s --usage' voor meer informatie.\n"
+
+#, c-format
+#~ msgid "Report bugs to %s.\n"
+#~ msgstr ""
+#~ "Rapporteer gebreken in het programma aan %s;\n"
+#~ "meld fouten in de vertaling aan <vertaling@vrijschrift.org>.\n"
+
+#~ msgid "give this help list"
+#~ msgstr "deze hulptekst tonen"
+
+#~ msgid "give a short usage message"
+#~ msgstr "een korte gebruikssamenvatting tonen"
+
+#~ msgid "NAME"
+#~ msgstr "NAAM"
+
+#~ msgid "set the program name"
+#~ msgstr "de programmanaam instellen"
+
+#~ msgid "SECS"
+#~ msgstr "SECONDEN"
+
+#~ msgid "hang for SECS seconds (default 3600)"
+#~ msgstr "dit aantal seconden pauzeren (standaard 3600)"
+
+#~ msgid "print program version"
+#~ msgstr "programmaversie tonen"
+
+#~ msgid "(PROGRAM ERROR) No version known!?"
+#~ msgstr "**Interne programmafout**: geen versie bekend!?"
+
+#, c-format
+#~ msgid "%s: Too many arguments\n"
+#~ msgstr "%s: Te veel argumenten\n"
+
+#~ msgid "(PROGRAM ERROR) Option should have been recognized!?"
+#~ msgstr "**Interne programmafout**: optie had herkend moeten worden!?"
+
+#, c-format
+#~ msgid "%u bitset_allocs, %u freed (%.2f%%).\n"
+#~ msgstr "%u bitset_allocs, %u vrijgegeven (%.2f%%).\n"
+
+#, c-format
+#~ msgid "%u bitset_sets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_sets, %u gecached (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_resets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_resets, %u gecached (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_tests, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_tests, %u gecached (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_lists\n"
+#~ msgstr "%u bitset_lists\n"
+
+#~ msgid "count log histogram\n"
+#~ msgstr "histogram van aantal gezette bits\n"
+
+#~ msgid "size log histogram\n"
+#~ msgstr "histogram van bitset-groottes\n"
+
+#~ msgid "density histogram\n"
+#~ msgstr "histogram van dichtheid aan gezette bits\n"
+
+#, c-format
+#~ msgid ""
+#~ "Bitset statistics:\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Bitset-statistieken:\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Accumulated runs = %u\n"
+#~ msgstr "Aantal uitvoeringen = %u\n"
+
+#~ msgid "cannot read stats file"
+#~ msgstr "kan statistiekenbestand niet lezen"
+
+#, c-format
+#~ msgid "bad stats file size\n"
+#~ msgstr "statistiekenbestand heeft een verkeerde grootte\n"
+
+#~ msgid "cannot write stats file"
+#~ msgstr "kan statistiekenbestand niet schrijven"
+
+#~ msgid "cannot open stats file for writing"
+#~ msgstr "kan statistiekenbestand niet openen voor schrijven"
+
+#~ msgid "program error"
+#~ msgstr "programmafout"
+
+#~ msgid "stack overflow"
+#~ msgstr "stack-overloop"
+
+#~ msgid "cannot find a temporary directory, try setting $TMPDIR"
+#~ msgstr "kan geen tijdelijke map vinden; zet $TMPDIR"
+
+#, c-format
+#~ msgid "cannot create a temporary directory using template \"%s\""
+#~ msgstr "kan met sjabloon '%s' geen tijdelijke map aanmaken"
+
+#, c-format
+#~ msgid "cannot remove temporary file %s"
+#~ msgstr "kan tijdelijk bestand '%s' niet verwijderen"
+
+#, c-format
+#~ msgid "cannot remove temporary directory %s"
+#~ msgstr "kan tijdelijke map '%s' niet verwijderen"
+
+#~ msgid "error closing file"
+#~ msgstr "fout bij sluiten van bestand"
+
+#~ msgid "write error"
+#~ msgstr "schrijffout"
+
+#, c-format
+#~ msgid "preserving permissions for %s"
+#~ msgstr "toegangsrechten van '%s' worden behouden"
+
+#, c-format
+#~ msgid "error while opening %s for reading"
+#~ msgstr "fout bij openen van %s voor lezen"
+
+#, c-format
+#~ msgid "cannot open backup file %s for writing"
+#~ msgstr "kan reservekopiebestand %s niet openen voor schrijven"
+
+#, c-format
+#~ msgid "error reading %s"
+#~ msgstr "fout bij lezen van %s"
+
+#, c-format
+#~ msgid "error writing %s"
+#~ msgstr "fout bij schrijven van %s"
+
+#, c-format
+#~ msgid "error after reading %s"
+#~ msgstr "fout na lezen van %s"
+
+#~ msgid "fdopen() failed"
+#~ msgstr "fdopen() is mislukt"
+
+#~ msgid "C# compiler not found, try installing mono"
+#~ msgstr "C#-compiler is niet gevonden; installeer 'mono'"
+
+#~ msgid "C# virtual machine not found, try installing mono"
+#~ msgstr "virtuele C#-machine is niet gevonden; installeer 'mono'"
+
+#~ msgid "unbalanced ["
+#~ msgstr "ongepaarde ["
+
+#~ msgid "invalid character class"
+#~ msgstr "ongeldige tekenklasse"
+
+#~ msgid "character class syntax is [[:space:]], not [:space:]"
+#~ msgstr "syntax van tekenklasse is [[:space:]], niet [:space:]"
+
+#~ msgid "unfinished \\ escape"
+#~ msgstr "onafgemaakte \\-stuurcode"
+
+#~ msgid "invalid content of \\{\\}"
+#~ msgstr "ongeldige inhoud van \\{\\}"
+
+#~ msgid "regular expression too big"
+#~ msgstr "reguliere expressie is te groot"
+
+#~ msgid "unbalanced ("
+#~ msgstr "ongepaarde ("
+
+#~ msgid "no syntax specified"
+#~ msgstr "geen syntax opgegeven"
+
+#~ msgid "unbalanced )"
+#~ msgstr "ongepaarde )"
+
+#~ msgid "regular empty file"
+#~ msgstr "leeg normaal bestand"
+
+#~ msgid "regular file"
+#~ msgstr "normaal bestand"
+
+#~ msgid "directory"
+#~ msgstr "map"
+
+#~ msgid "symbolic link"
+#~ msgstr "symbolische koppeling"
+
+#~ msgid "message queue"
+#~ msgstr "berichtenwachtrij"
+
+#~ msgid "semaphore"
+#~ msgstr "semafoor"
+
+#~ msgid "shared memory object"
+#~ msgstr "gedeeld geheugenobject"
+
+#~ msgid "typed memory object"
+#~ msgstr "zelfstandig geheugenobject"
+
+#~ msgid "block special file"
+#~ msgstr "blok-apparaat"
+
+#~ msgid "character special file"
+#~ msgstr "byte-apparaat"
+
+#~ msgid "contiguous data"
+#~ msgstr "aaneengesloten gegevens"
+
+#~ msgid "fifo"
+#~ msgstr "fifo"
+
+#~ msgid "door"
+#~ msgstr "door"
+
+#~ msgid "multiplexed block special file"
+#~ msgstr "gemultiplexed blok-apparaat"
+
+#~ msgid "multiplexed character special file"
+#~ msgstr "gemultiplexed byte-apparaat"
+
+#~ msgid "multiplexed file"
+#~ msgstr "gemultiplexed bestand"
+
+#~ msgid "named file"
+#~ msgstr "benoemd bestand"
+
+#~ msgid "network special file"
+#~ msgstr "netwerkapparaat"
+
+#~ msgid "migrated file with data"
+#~ msgstr "gemigreerd bestand met gegevens"
+
+#~ msgid "migrated file without data"
+#~ msgstr "gemigreerd bestand zonder gegevens"
+
+#~ msgid "port"
+#~ msgstr "poort"
+
+#~ msgid "socket"
+#~ msgstr "socket"
+
+#~ msgid "whiteout"
+#~ msgstr "whiteout"
+
+#~ msgid "weird file"
+#~ msgstr "merkwaardig bestand"
+
+#~ msgid "invalid source_version argument to compile_java_class"
+#~ msgstr "ongeldige waarde voor 'source_version' in compile_java_class()"
+
+#~ msgid "invalid target_version argument to compile_java_class"
+#~ msgstr "ongeldige waarde voor 'target_version' in compile_java_class()"
+
+#, c-format
+#~ msgid "failed to create \"%s\""
+#~ msgstr "aanmaken van '%s' is mislukt"
+
+#, c-format
+#~ msgid "error while writing \"%s\" file"
+#~ msgstr "fout bij schrijven van bestand '%s'"
+
+#~ msgid "Java compiler not found, try installing gcj or set $JAVAC"
+#~ msgstr "Java-compiler is niet gevonden; installeer 'gcj' of zet $JAVAC"
+
+#~ msgid "Java virtual machine not found, try installing gij or set $JAVA"
+#~ msgstr ""
+#~ "Virtuele Java-machine is niet gevonden; installeer 'gcj' of zet $JAVA"
+
+#, c-format
+#~ msgid "%s subprocess I/O error"
+#~ msgstr "In-/uitvoerfout in subproces %s"
+
+#, c-format
+#~ msgid "cannot stat %s"
+#~ msgstr "kan status van '%s' niet opvragen"
+
+#, c-format
+#~ msgid "cannot change permissions of %s"
+#~ msgstr "kan de toegangsrechten van %s niet veranderen"
+
+#, c-format
+#~ msgid "cannot create directory %s"
+#~ msgstr "kan map %s niet aanmaken"
+
+#~ msgid "Failed to open /dev/zero for read"
+#~ msgstr "Openen van /dev/zero voor lezen is mislukt"
+
+#~ msgid "creation of reading thread failed"
+#~ msgstr "Het aanmaken van een lees-thread is mislukt"
+
+#, c-format
+#~ msgid "cannot set up nonblocking I/O to %s subprocess"
+#~ msgstr "kan geen niet-blokkerende in-/uitvoer instellen naar subproces %s"
+
+#, c-format
+#~ msgid "communication with %s subprocess failed"
+#~ msgstr "communicatie met subproces %s is mislukt"
+
+#, c-format
+#~ msgid "write to %s subprocess failed"
+#~ msgstr "schrijven naar subproces %s is mislukt"
+
+#, c-format
+#~ msgid "read from %s subprocess failed"
+#~ msgstr "lezen uit subproces %s is mislukt"
+
+#, c-format
+#~ msgid "subprocess %s terminated with exit code %d"
+#~ msgstr "subproces %s is geëindigd met afsluitwaarde %d"
+
+#~ msgid "creation of threads failed"
+#~ msgstr "aanmaken van threads is mislukt"
+
+#, c-format
+#~ msgid "%s subprocess terminated with exit code %d"
+#~ msgstr "subproces %s is geëindigd met afsluitwaarde %d"
+
+#~ msgid "^[yY]"
+#~ msgstr "^[jJyY]"
+
+#~ msgid "^[nN]"
+#~ msgstr "^[nN]"
+
+#, c-format
+#~ msgid "setting permissions for %s"
+#~ msgstr "toegangsrechten van %s worden ingesteld"
+
+# Vroeger ging dit over het afsluiten van een modemverbinding,
+# tegenwoordig over het afsluiten van een pseudoterminal.
+#~ msgid "Hangup"
+#~ msgstr "Opgehangen"
+
+#~ msgid "Interrupt"
+#~ msgstr "Onderbroken"
+
+# Verleden tijd, "Afgesloten", net als de andere actiesignaalnamen.
+#~ msgid "Quit"
+#~ msgstr "Afgesloten"
+
+#~ msgid "Illegal instruction"
+#~ msgstr "Ongeldige instructie"
+
+#~ msgid "Trace/breakpoint trap"
+#~ msgstr "Traceer/breekpunt-instructie"
+
+#~ msgid "Aborted"
+#~ msgstr "Afgebroken"
+
+#~ msgid "Floating point exception"
+#~ msgstr "Drijvendekomma-berekeningsfout"
+
+#~ msgid "Killed"
+#~ msgstr "Geëlimineerd"
+
+#~ msgid "Bus error"
+#~ msgstr "Busfout"
+
+#~ msgid "Segmentation fault"
+#~ msgstr "Segmentatiefout"
+
+#~ msgid "Broken pipe"
+#~ msgstr "Gebroken pijp"
+
+#~ msgid "Alarm clock"
+#~ msgstr "Wekker"
+
+#~ msgid "Terminated"
+#~ msgstr "Beëindigd"
+
+#~ msgid "Urgent I/O condition"
+#~ msgstr "Urgente in-/uitvoertoestand"
+
+#~ msgid "Stopped (signal)"
+#~ msgstr "Gepauzeerd (signaal)"
+
+#~ msgid "Stopped"
+#~ msgstr "Gepauzeerd"
+
+#~ msgid "Continued"
+#~ msgstr "Doorgegaan"
+
+#~ msgid "Child exited"
+#~ msgstr "Dochter is afgesloten"
+
+#~ msgid "Stopped (tty input)"
+#~ msgstr "Gepauzeerd (terminalinvoer)"
+
+#~ msgid "Stopped (tty output)"
+#~ msgstr "Gepauzeerd (terminaluitvoer)"
+
+#~ msgid "I/O possible"
+#~ msgstr "In-/uitvoer is mogelijk"
+
+#~ msgid "CPU time limit exceeded"
+#~ msgstr "Limiet op processortijd is overschreden"
+
+#~ msgid "File size limit exceeded"
+#~ msgstr "Limiet op bestandsgrootte is overschreden"
+
+#~ msgid "Virtual timer expired"
+#~ msgstr "Virtuele tijdopnemer is verlopen"
+
+#~ msgid "Profiling timer expired"
+#~ msgstr "Tijdopnemer voor analyse is verlopen"
+
+#~ msgid "Window changed"
+#~ msgstr "Venster is veranderd"
+
+#~ msgid "User defined signal 1"
+#~ msgstr "Gebruikergedefinieerd signaal 1"
+
+#~ msgid "User defined signal 2"
+#~ msgstr "Gebruikergedefinieerd signaal 2"
+
+#~ msgid "EMT trap"
+#~ msgstr "EMT-instructie"
+
+#~ msgid "Bad system call"
+#~ msgstr "Onjuiste systeemaanroep"
+
+#~ msgid "Stack fault"
+#~ msgstr "Stack-fout"
+
+#~ msgid "Information request"
+#~ msgstr "Verzoek om informatie"
+
+#~ msgid "Power failure"
+#~ msgstr "Stroomstoring"
+
+#~ msgid "Resource lost"
+#~ msgstr "Hulpbron verloren"
+
+#~ msgid "error writing to a closed pipe or socket"
+#~ msgstr "fouten bij het schrijven naar een afgesloten 'pipe' of 'socket'"
+
+#, c-format
+#~ msgid "Real-time signal %d"
+#~ msgstr "Realtime-signaal %d"
+
+#, c-format
+#~ msgid "Unknown signal %d"
+#~ msgstr "Onbekend signaal %d"
+
+#~ msgid "Execution times (seconds)"
+#~ msgstr "Uitvoeringstijden (in seconden)"
+
+#~ msgid "CPU user"
+#~ msgstr "CPU (gebruiker)"
+
+#~ msgid "CPU system"
+#~ msgstr "CPU (systeem)"
+
+#~ msgid "wall clock"
+#~ msgstr "kloktijd"
+
+#~ msgid "iconv function not usable"
+#~ msgstr "de functie iconv() is onbruikbaar"
+
+#~ msgid "iconv function not available"
+#~ msgstr "de functie iconv() is niet beschikbaar"
+
+#~ msgid "character out of range"
+#~ msgstr "teken ligt buiten het toegestane bereik"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set"
+#~ msgstr "kan U+%04X niet converteren naar de lokale tekenset"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set: %s"
+#~ msgstr "kan U+%04X niet converteren naar de lokale tekenset: %s"
+
+#~ msgid "invalid user"
+#~ msgstr "ongeldige gebruiker"
+
+#~ msgid "invalid group"
+#~ msgstr "ongeldige groep"
+
+#~ msgid "invalid spec"
+#~ msgstr "ongeldige aanduiding"
+
+#~ msgid "unable to display error message"
+#~ msgstr "kan foutmelding niet tonen"
+
+#, c-format
+#~ msgid "Packaged by %s (%s)\n"
+#~ msgstr "In pakketvorm gebracht door %s (%s)\n"
+
+#, c-format
+#~ msgid "Packaged by %s\n"
+#~ msgstr "In pakketvorm gebracht door %s\n"
+
+#~ msgid "(C)"
+#~ msgstr "©"
+
+#, c-format
+#~ msgid ""
+#~ "License GPLv3+: GNU GPL version 3 or later <%s>.\n"
+#~ "This is free software: you are free to change and redistribute it.\n"
+#~ "There is NO WARRANTY, to the extent permitted by law.\n"
+#~ msgstr ""
+#~ "Dit is vrije software: u mag het vrijelijk wijzigen en verder "
+#~ "verspreiden.\n"
+#~ "De precieze licentie is GPL-3+: GNU General Public License versie 3 of "
+#~ "later.\n"
+#~ "Zie <%s> voor de volledige (Engelse) tekst.\n"
+#~ "Deze software kent GEEN GARANTIE, voor zover de wet dit toestaat.\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Written by %s.\n"
+#~ msgstr "Geschreven door %s.\n"
+
+#, c-format
+#~ msgid "Written by %s and %s.\n"
+#~ msgstr "Geschreven door %s en %s.\n"
+
+#, c-format
+#~ msgid "Written by %s, %s, and %s.\n"
+#~ msgstr "Geschreven door %s, %s en %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Geschreven door %s, %s, %s\n"
+#~ "en %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Geschreven door %s, %s, %s,\n"
+#~ "%s en %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Geschreven door %s, %s, %s,\n"
+#~ "%s, %s en %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Geschreven door %s, %s, %s,\n"
+#~ "%s, %s, %s en %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Geschreven door %s, %s, %s,\n"
+#~ "%s, %s, %s, %s\n"
+#~ "en %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Geschreven door %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s en %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s, and others.\n"
+#~ msgstr ""
+#~ "Geschreven door %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s en anderen.\n"
+
+#, c-format
+#~ msgid "Report bugs to: %s\n"
+#~ msgstr ""
+#~ "Rapporteer gebreken in het programma aan <%s>;\n"
+#~ "meld fouten in de vertaling aan <vertaling@vrijschrift.org>.\n"
+
+#, c-format
+#~ msgid "Report %s bugs to: %s\n"
+#~ msgstr ""
+#~ "Rapporteer gebreken in het programma '%s' aan <%s>;\n"
+#~ "meld fouten in de vertaling aan <vertaling@vrijschrift.org>.\n"
+
+#, c-format
+#~ msgid "%s home page: <%s>\n"
+#~ msgstr "Webpagina van %s: <%s>\n"
+
+#, c-format
+#~ msgid "General help using GNU software: <%s>\n"
+#~ msgstr "Algemene hulp bij gebruik van GNU-software: <%s>\n"
+
+#~ msgid "failed to set file descriptor text/binary mode"
+#~ msgstr "kan modus van bestandsdescriptor niet instellen op tekst of binair"
+
+#~ msgid "stdin"
+#~ msgstr "standaardinvoer"
+
+#~ msgid "stdout"
+#~ msgstr "standaarduitvoer"
+
+#~ msgid "stderr"
+#~ msgstr "standaardfoutuitvoer"
+
+#~ msgid "unknown stream"
+#~ msgstr "onbekende gegevensstroom"
+
+#, c-format
+#~ msgid "failed to reopen %s with mode %s"
+#~ msgstr "opnieuw openen van '%s' met modus %s is mislukt"
+
+#~ msgid "string comparison failed"
+#~ msgstr "vergelijking van tekenreeksen is mislukt"
+
+#~ msgid "Set LC_ALL='C' to work around the problem."
+#~ msgstr "Zet LC_ALL='C' om het probleem te omzeilen."
+
+#, c-format
+#~ msgid "The strings compared were %s and %s."
+#~ msgstr "De te vergelijken tekenreeksen waren %s en %s."
+
+#~ msgid "cannot perform formatted output"
+#~ msgstr "kan geen opgemaakte uitvoer aanmaken"
+
+#~ msgid "standard file descriptors"
+#~ msgstr "standaard bestandsdescriptors"
+
+#, c-format
+#~ msgid "invalid %s%s argument '%s'"
+#~ msgstr "ongeldig argument '%3$s' van %1$s%2$s"
+
+#, c-format
+#~ msgid "invalid suffix in %s%s argument '%s'"
+#~ msgstr "ongeldig achtervoegsel in argument '%3$s' van %1$s%2$s"
+
+#, c-format
+#~ msgid "%s%s argument '%s' too large"
+#~ msgstr "argument '%3$s' van %1$s%2$s is te groot"
+
+#~ msgid "%.*s: ARGP_HELP_FMT parameter must be positive"
+#~ msgstr "%.*s: Parameter in ARGP_HELP_FMT moet positief zijn"
+
+#~ msgid "%s: option '--%s' doesn't allow an argument\n"
+#~ msgstr "%s: optie '--%s' staat geen argument toe\n"
+
+#~ msgid "%s: unrecognized option '--%s'\n"
+#~ msgstr "%s: onbekende optie '--%s'\n"
+
+#~ msgid "%s: option '-W %s' doesn't allow an argument\n"
+#~ msgstr "%s: optie '-W %s' staat geen argument toe\n"
+
+#~ msgid "%s: option '-W %s' requires an argument\n"
+#~ msgstr "%s: optie '-W %s' vereist een argument\n"
+
+#~ msgid "Franc,ois Pinard"
+#~ msgstr "François Pinard"
+
+#~ msgid "%s home page: <http://www.gnu.org/software/%s/>\n"
+#~ msgstr "Webpagina van %s: <http://www.gnu.org/software/%s/>\n"

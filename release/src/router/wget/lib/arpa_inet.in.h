@@ -1,6 +1,6 @@
 /* A GNU-like <arpa/inet.h>.
 
-   Copyright (C) 2005-2006, 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2006, 2008-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -49,6 +49,12 @@
 #ifndef _@GUARD_PREFIX@_ARPA_INET_H
 #define _@GUARD_PREFIX@_ARPA_INET_H
 
+/* Get all possible declarations of inet_ntop() and inet_pton().  */
+#if (@GNULIB_INET_NTOP@ || @GNULIB_INET_PTON@ || defined GNULIB_POSIXCHECK) \
+    && @HAVE_WS2TCPIP_H@
+# include <ws2tcpip.h>
+#endif
+
 /* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */
 
 /* The definition of _GL_ARG_NONNULL is copied here.  */
@@ -70,8 +76,8 @@
    the return value is NULL and errno is set to ENOSPC.  A good value
    for CNT is 46.
 
-   For more details, see the POSIX:2001 specification
-   <http://www.opengroup.org/susv3xsh/inet_ntop.html>.  */
+   For more details, see the POSIX:2008 specification
+   <https://pubs.opengroup.org/onlinepubs/9699919799/functions/inet_ntop.html>.  */
 # if @REPLACE_INET_NTOP@
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   undef inet_ntop
@@ -97,7 +103,9 @@ _GL_CXXALIAS_SYS_CAST (inet_ntop, const char *,
                        (int af, const void *restrict src,
                         char *restrict dst, socklen_t cnt));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (inet_ntop);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef inet_ntop
 # if HAVE_RAW_DECL_INET_NTOP
@@ -126,7 +134,9 @@ _GL_FUNCDECL_SYS (inet_pton, int,
 _GL_CXXALIAS_SYS (inet_pton, int,
                   (int af, const char *restrict src, void *restrict dst));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (inet_pton);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef inet_pton
 # if HAVE_RAW_DECL_INET_PTON

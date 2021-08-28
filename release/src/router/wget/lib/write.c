@@ -1,5 +1,5 @@
 /* POSIX compatible write() function.
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2008.
 
    This program is free software: you can redistribute it and/or modify
@@ -43,6 +43,10 @@
 #  include <io.h>
 # endif
 
+/* Don't assume that UNICODE is not defined.  */
+# undef GetNamedPipeHandleState
+# define GetNamedPipeHandleState GetNamedPipeHandleStateA
+
 # undef write
 
 # if HAVE_MSVC_INVALID_PARAMETER_HANDLER
@@ -53,7 +57,7 @@ write_nothrow (int fd, const void *buf, size_t count)
 
   TRY_MSVC_INVAL
     {
-      result = write (fd, buf, count);
+      result = _write (fd, buf, count);
     }
   CATCH_MSVC_INVAL
     {
@@ -65,7 +69,7 @@ write_nothrow (int fd, const void *buf, size_t count)
   return result;
 }
 # else
-#  define write_nothrow write
+#  define write_nothrow _write
 # endif
 
 ssize_t

@@ -1,5 +1,5 @@
 /* Optimized case-insensitive string comparison in C locale.
-   Copyright (C) 2001-2002, 2007, 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2002, 2007, 2009-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published
@@ -27,7 +27,7 @@
 
 /* Help GCC to generate good code for string comparisons with
    immediate strings. */
-#if defined (__GNUC__) && defined (__OPTIMIZE__)
+#if (defined __GNUC__ || defined __clang__) && defined __OPTIMIZE__
 
 /* Case insensitive comparison of ASCII characters.  */
 # if C_CTYPE_ASCII

@@ -1,6 +1,6 @@
 /* xmalloc.c -- malloc with out of memory checking
 
-   Copyright (C) 1990-2000, 2002-2006, 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 1990-2000, 2002-2006, 2008-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,13 +24,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* 1 if calloc is known to be compatible with GNU calloc.  This
-   matters if we are not also using the calloc module, which defines
-   HAVE_CALLOC_GNU and supports the GNU API even on non-GNU platforms.  */
+/* 1 if calloc, malloc and realloc are known to be compatible with GNU.
+   This matters if we are not also using the calloc-gnu, malloc-gnu
+   and realloc-gnu modules, which define HAVE_CALLOC_GNU,
+   HAVE_MALLOC_GNU and HAVE_REALLOC_GNU and support the GNU API even
+   on non-GNU platforms.  */
 #if defined HAVE_CALLOC_GNU || (defined __GLIBC__ && !defined __UCLIBC__)
 enum { HAVE_GNU_CALLOC = 1 };
 #else
 enum { HAVE_GNU_CALLOC = 0 };
+#endif
+#if defined HAVE_MALLOC_GNU || (defined __GLIBC__ && !defined __UCLIBC__)
+enum { HAVE_GNU_MALLOC = 1 };
+#else
+enum { HAVE_GNU_MALLOC = 0 };
+#endif
+#if defined HAVE_REALLOC_GNU || (defined __GLIBC__ && !defined __UCLIBC__)
+enum { HAVE_GNU_REALLOC = 1 };
+#else
+enum { HAVE_GNU_REALLOC = 0 };
 #endif
 
 /* Allocate N bytes of memory dynamically, with error checking.  */
@@ -39,7 +51,7 @@ void *
 xmalloc (size_t n)
 {
   void *p = malloc (n);
-  if (!p && n != 0)
+  if (!p && (HAVE_GNU_MALLOC || n))
     xalloc_die ();
   return p;
 }
@@ -50,18 +62,17 @@ xmalloc (size_t n)
 void *
 xrealloc (void *p, size_t n)
 {
-  if (!n && p)
+  if (!HAVE_GNU_REALLOC && !n && p)
     {
-      /* The GNU and C99 realloc behaviors disagree here.  Act like
-         GNU, even if the underlying realloc is C99.  */
+      /* The GNU and C99 realloc behaviors disagree here.  Act like GNU.  */
       free (p);
       return NULL;
     }
 
-  p = realloc (p, n);
-  if (!p && n)
+  void *r = realloc (p, n);
+  if (!r && (n || (HAVE_GNU_REALLOC && !p)))
     xalloc_die ();
-  return p;
+  return r;
 }
 
 /* If P is null, allocate a block of at least *PN bytes; otherwise,
@@ -76,14 +87,14 @@ x2realloc (void *p, size_t *pn)
   return x2nrealloc (p, pn, 1);
 }
 
-/* Allocate S bytes of zeroed memory dynamically, with error checking.
+/* Allocate N bytes of zeroed memory dynamically, with error checking.
    There's no need for xnzalloc (N, S), since it would be equivalent
    to xcalloc (N, S).  */
 
 void *
-xzalloc (size_t s)
+xzalloc (size_t n)
 {
-  return memset (xmalloc (s), 0, s);
+  return xcalloc (n, 1);
 }
 
 /* Allocate zeroed memory for N elements of S bytes, with error

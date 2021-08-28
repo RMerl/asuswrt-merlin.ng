@@ -1,5 +1,5 @@
 /* base32.h -- Encode binary data using printable characters.
-   Copyright (C) 2004-2006, 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2004-2006, 2009-2021 Free Software Foundation, Inc.
    Adapted from Simon Josefsson's base64 code by Gijs van Tulder.
 
    This program is free software; you can redistribute it and/or modify

@@ -1,5 +1,5 @@
 /* Test whether a Unicode character is cased.
-   Copyright (C) 2002, 2006-2007, 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006-2007, 2009-2021 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2009.
 
    This program is free software: you can redistribute it and/or modify it

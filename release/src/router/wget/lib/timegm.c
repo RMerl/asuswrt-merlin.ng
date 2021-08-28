@@ -1,6 +1,6 @@
 /* Convert UTC calendar time to simple time.  Like mktime but assumes UTC.
 
-   Copyright (C) 1994-2018 Free Software Foundation, Inc.
+   Copyright (C) 1994-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -15,20 +15,44 @@
 
    You should have received a copy of the GNU General Public
    License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+   <https://www.gnu.org/licenses/>.  */
 
 #ifndef _LIBC
-# include <config.h>
+# include <libc-config.h>
 #endif
 
 #include <time.h>
+#include <errno.h>
 
 #include "mktime-internal.h"
+
+__time64_t
+__timegm64 (struct tm *tmp)
+{
+  static mktime_offset_t gmtime_offset;
+  tmp->tm_isdst = 0;
+  return __mktime_internal (tmp, __gmtime64_r, &gmtime_offset);
+}
+
+#if defined _LIBC && __TIMESIZE != 64
+
+libc_hidden_def (__timegm64)
 
 time_t
 timegm (struct tm *tmp)
 {
-  static mktime_offset_t gmtime_offset;
-  tmp->tm_isdst = 0;
-  return __mktime_internal (tmp, __gmtime_r, &gmtime_offset);
+  struct tm tm = *tmp;
+  __time64_t t = __timegm64 (&tm);
+  if (in_time_t_range (t))
+    {
+      *tmp = tm;
+      return t;
+    }
+  else
+    {
+      __set_errno (EOVERFLOW);
+      return -1;
+    }
 }
+
+#endif

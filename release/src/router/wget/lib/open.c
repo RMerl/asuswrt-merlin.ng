@@ -1,5 +1,5 @@
 /* Open a descriptor to a file.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,7 +30,11 @@
 static int
 orig_open (const char *filename, int flags, mode_t mode)
 {
+#if defined _WIN32 && !defined __CYGWIN__
+  return _open (filename, flags, mode);
+#else
   return open (filename, flags, mode);
+#endif
 }
 
 /* Specification.  */
@@ -92,28 +96,27 @@ open (const char *filename, int flags, ...)
 #endif
 
 #if OPEN_TRAILING_SLASH_BUG
-  /* If the filename ends in a slash and one of O_CREAT, O_WRONLY, O_RDWR
-     is specified, then fail.
-     Rationale: POSIX <http://www.opengroup.org/susv3/basedefs/xbd_chap04.html>
-     says that
-       "A pathname that contains at least one non-slash character and that
-        ends with one or more trailing slashes shall be resolved as if a
-        single dot character ( '.' ) were appended to the pathname."
-     and
-       "The special filename dot shall refer to the directory specified by
-        its predecessor."
+  /* Fail if one of O_CREAT, O_WRONLY, O_RDWR is specified and the filename
+     ends in a slash, as POSIX says such a filename must name a directory
+     <https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_13>:
+       "A pathname that contains at least one non-<slash> character and that
+        ends with one or more trailing <slash> characters shall not be resolved
+        successfully unless the last pathname component before the trailing
+        <slash> characters names an existing directory"
      If the named file already exists as a directory, then
        - if O_CREAT is specified, open() must fail because of the semantics
          of O_CREAT,
        - if O_WRONLY or O_RDWR is specified, open() must fail because POSIX
-         <http://www.opengroup.org/susv3/functions/open.html> says that it
-         fails with errno = EISDIR in this case.
+         <https://pubs.opengroup.org/onlinepubs/9699919799/functions/open.html>
+         says that it fails with errno = EISDIR in this case.
      If the named file does not exist or does not name a directory, then
        - if O_CREAT is specified, open() must fail since open() cannot create
          directories,
        - if O_WRONLY or O_RDWR is specified, open() must fail because the
          file does not contain a '.' directory.  */
-  if (flags & (O_CREAT | O_WRONLY | O_RDWR))
+  if ((flags & O_CREAT)
+      || (flags & O_ACCMODE) == O_RDWR
+      || (flags & O_ACCMODE) == O_WRONLY)
     {
       size_t len = strlen (filename);
       if (len > 0 && filename[len - 1] == '/')
@@ -125,7 +128,7 @@ open (const char *filename, int flags, ...)
 #endif
 
   fd = orig_open (filename,
-                  flags & ~(have_cloexec <= 0 ? O_CLOEXEC : 0), mode);
+                  flags & ~(have_cloexec < 0 ? O_CLOEXEC : 0), mode);
 
   if (flags & O_CLOEXEC)
     {
@@ -171,14 +174,12 @@ open (const char *filename, int flags, ...)
 #if OPEN_TRAILING_SLASH_BUG
   /* If the filename ends in a slash and fd does not refer to a directory,
      then fail.
-     Rationale: POSIX <http://www.opengroup.org/susv3/basedefs/xbd_chap04.html>
-     says that
-       "A pathname that contains at least one non-slash character and that
-        ends with one or more trailing slashes shall be resolved as if a
-        single dot character ( '.' ) were appended to the pathname."
-     and
-       "The special filename dot shall refer to the directory specified by
-        its predecessor."
+     Rationale: POSIX says such a filename must name a directory
+     <https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_13>:
+       "A pathname that contains at least one non-<slash> character and that
+        ends with one or more trailing <slash> characters shall not be resolved
+        successfully unless the last pathname component before the trailing
+        <slash> characters names an existing directory"
      If the named file without the slash is not a directory, open() must fail
      with ENOTDIR.  */
   if (fd >= 0)

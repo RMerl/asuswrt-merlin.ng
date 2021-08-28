@@ -9,7 +9,7 @@ from misc.wget_file import WgetFile
     doesn't wait for a challenge the second time.
 """
 ############# File Definitions ###############################################
-File1 = "I am an invisble man."
+File1 = "I am an invisible man."
 File2 = "I too am an invisible man."
 
 File1_rules = {

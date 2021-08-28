@@ -1,5 +1,5 @@
-# sys_socket_h.m4 serial 23
-dnl Copyright (C) 2005-2018 Free Software Foundation, Inc.
+# sys_socket_h.m4 serial 25
+dnl Copyright (C) 2005-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -95,6 +95,8 @@ AC_DEFUN([gl_HEADER_SYS_SOCKET],
 #include <sys/socket.h>
     ]], [socket connect accept bind getpeername getsockname getsockopt
     listen recv send recvfrom sendto setsockopt shutdown accept4])
+
+  AC_REQUIRE([AC_C_RESTRICT])
 ])
 
 AC_DEFUN([gl_PREREQ_SYS_H_SOCKET],
@@ -104,17 +106,11 @@ AC_DEFUN([gl_PREREQ_SYS_H_SOCKET],
   gl_CHECK_NEXT_HEADERS([sys/socket.h])
   if test $ac_cv_header_sys_socket_h = yes; then
     HAVE_SYS_SOCKET_H=1
-    HAVE_WS2TCPIP_H=0
   else
     HAVE_SYS_SOCKET_H=0
-    if test $ac_cv_header_ws2tcpip_h = yes; then
-      HAVE_WS2TCPIP_H=1
-    else
-      HAVE_WS2TCPIP_H=0
-    fi
   fi
   AC_SUBST([HAVE_SYS_SOCKET_H])
-  AC_SUBST([HAVE_WS2TCPIP_H])
+  gl_PREREQ_SYS_H_WS2TCPIP
 ])
 
 # Common prerequisites of the <sys/socket.h> replacement and of the
@@ -140,6 +136,24 @@ AC_DEFUN([gl_PREREQ_SYS_H_WINSOCK2],
     HAVE_WINSOCK2_H=0
   fi
   AC_SUBST([HAVE_WINSOCK2_H])
+])
+
+# Common prerequisites of the <sys/socket.h> replacement and of the
+# <arpa/inet.h> replacement.
+# Sets and substitutes HAVE_WS2TCPIP_H.
+AC_DEFUN([gl_PREREQ_SYS_H_WS2TCPIP],
+[
+  AC_REQUIRE([gl_CHECK_SOCKET_HEADERS])
+  if test $ac_cv_header_sys_socket_h = yes; then
+    HAVE_WS2TCPIP_H=0
+  else
+    if test $ac_cv_header_ws2tcpip_h = yes; then
+      HAVE_WS2TCPIP_H=1
+    else
+      HAVE_WS2TCPIP_H=0
+    fi
+  fi
+  AC_SUBST([HAVE_WS2TCPIP_H])
 ])
 
 AC_DEFUN([gl_SYS_SOCKET_MODULE_INDICATOR],

@@ -1,6 +1,6 @@
 /* A substitute for ISO C11 <stdalign.h>.
 
-   Copyright 2011-2018 Free Software Foundation, Inc.
+   Copyright 2011-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -34,11 +34,12 @@
    requirement of a structure member (i.e., slot or field) that is of
    type TYPE, as an integer constant expression.
 
-   This differs from GCC's __alignof__ operator, which can yield a
-   better-performing alignment for an object of that type.  For
-   example, on x86 with GCC, __alignof__ (double) and __alignof__
-   (long long) are 8, whereas alignof (double) and alignof (long long)
-   are 4 unless the option '-malign-double' is used.
+   This differs from GCC's and clang's __alignof__ operator, which can
+   yield a better-performing alignment for an object of that type.  For
+   example, on x86 with GCC and on Linux/x86 with clang,
+   __alignof__ (double) and __alignof__ (long long) are 8, whereas
+   alignof (double) and alignof (long long) are 4 unless the option
+   '-malign-double' is used.
 
    The result cannot be used as a value for an 'enum' constant, if you
    want to be portable to HP-UX 10.20 cc and AIX 3.2.5 xlc.
@@ -53,9 +54,12 @@
 #undef _Alignof
 
 /* GCC releases before GCC 4.9 had a bug in _Alignof.  See GCC bug 52023
-   <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52023>.  */
+   <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52023>.
+   clang versions < 8.0.0 have the same bug.  */
 #if (!defined __STDC_VERSION__ || __STDC_VERSION__ < 201112 \
-     || (defined __GNUC__ && __GNUC__ < 4 + (__GNUC_MINOR__ < 9)))
+     || (defined __GNUC__ && __GNUC__ < 4 + (__GNUC_MINOR__ < 9) \
+         && !defined __clang__) \
+     || (defined __clang__ && __clang_major__ < 8))
 # ifdef __cplusplus
 #  if 201103 <= __cplusplus
 #   define _Alignof(type) alignof (type)
@@ -102,8 +106,9 @@
 #  define _Alignas(a) alignas (a)
 # elif ((defined __APPLE__ && defined __MACH__                  \
          ? 4 < __GNUC__ + (1 <= __GNUC_MINOR__)                 \
-         : __GNUC__)                                            \
-        || (__ia64 && (61200 <= __HP_cc || 61200 <= __HP_aCC)) \
+         : __GNUC__ && !defined __ibmxl__)                      \
+        || (4 <= __clang_major__)                               \
+        || (__ia64 && (61200 <= __HP_cc || 61200 <= __HP_aCC))  \
         || __ICC || 0x590 <= __SUNPRO_C || 0x0600 <= __xlC__)
 #  define _Alignas(a) __attribute__ ((__aligned__ (a)))
 # elif 1300 <= _MSC_VER

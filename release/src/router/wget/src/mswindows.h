@@ -1,5 +1,6 @@
 /* Declarations for windows
-   Copyright (C) 1996-2011, 2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 1996-2011, 2015, 2018-2021 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 
@@ -48,7 +49,7 @@ as that of the covered work.  */
 # define EAI_SYSTEM -1   /* value doesn't matter */
 #endif
 
-/* Declares file access functions, such as open, creat, access, and
+/* Declares file access functions, such as open, create, access, and
    chmod.  Unix declares these in unistd.h and fcntl.h.  */
 #include <io.h>
 
@@ -58,31 +59,7 @@ as that of the covered work.  */
 /* Declares inet_ntop() and inet_pton(). */
 #include <arpa/inet.h>
 
-/* We have strcasecmp and strncasecmp, just under different names.  */
-#ifndef HAVE_STRCASECMP
-# define strcasecmp stricmp
-#endif
-#ifndef HAVE_STRNCASECMP
-# define strncasecmp strnicmp
-#endif
-
 #include <stdio.h>
-
-/* Define a wgint type under Windows. */
-typedef __int64 wgint;
-#define SIZEOF_WGINT 8
-
-/* str_to_wgint is a function with the semantics of strtol[l], but
-   which works on wgint.  */
-#if defined HAVE_STRTOLL
-# define str_to_wgint strtoll
-#elif defined HAVE__STRTOI64
-# define str_to_wgint _strtoi64
-#else
-# define str_to_wgint strtoll
-# define NEED_STRTOLL
-# define strtoll_type __int64
-#endif
 
 #define PATH_SEPARATOR '\\'
 

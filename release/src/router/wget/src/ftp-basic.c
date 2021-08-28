@@ -1,6 +1,6 @@
 /* Basic FTP routines.
-   Copyright (C) 1996-2011, 2014-2015, 2018 Free Software Foundation,
-   Inc.
+   Copyright (C) 1996-2011, 2014-2015, 2018-2021 Free Software
+   Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -93,8 +93,11 @@ static char *
 ftp_request (const char *command, const char *value)
 {
   char *res;
+
   if (value)
     {
+      char *defanged = NULL, buf[256];
+
       /* Check for newlines in VALUE (possibly injected by the %0A URL
          escape) making the callers inadvertently send multiple FTP
          commands at once.  Without this check an attacker could
@@ -103,18 +106,31 @@ ftp_request (const char *command, const char *value)
       if (strpbrk (value, "\r\n"))
         {
           /* Copy VALUE to the stack and modify CR/LF to space. */
-          char *defanged, *p;
-          STRDUP_ALLOCA (defanged, value);
+          char *p;
+          size_t len = strlen(value);
+
+          if (len < sizeof (buf))
+            defanged = buf;
+          else
+            defanged = xmalloc (len + 1);
+
+          memcpy (defanged, value, len + 1);
+
           for (p = defanged; *p; p++)
             if (*p == '\r' || *p == '\n')
               *p = ' ';
+
           DEBUGP (("\nDetected newlines in %s \"%s\"; changing to %s \"%s\"\n",
                    command, quotearg_style (escape_quoting_style, value),
                    command, quotearg_style (escape_quoting_style, defanged)));
+
           /* Make VALUE point to the defanged copy of the string. */
           value = defanged;
         }
       res = concat_strings (command, " ", value, "\r\n", (char *) 0);
+
+      if (defanged != buf)
+        xfree (defanged);
     }
   else
     res = concat_strings (command, "\r\n", (char *) 0);
@@ -904,7 +920,7 @@ ftp_epsv (int csock, ip_address *ip, int *port)
   for (tport = 0, i = 0; i < 5 && c_isdigit (*s); i++, s++)
       tport = (*s - '0') + 10 * tport;
 
-  /* Make sure that the response terminates correcty */
+  /* Make sure that the response terminates correctly */
   if (*s++ != delim)
     {
       xfree (respline);

@@ -1,5 +1,6 @@
 /* HTTP Strict Transport Security (HSTS) support.
-   Copyright (C) 1996-2012, 2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 1996-2012, 2015, 2018-2021 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 
@@ -32,10 +33,10 @@ as that of the covered work.  */
 #include "hsts.h"
 #include "utils.h"
 #include "host.h" /* for is_valid_ip_address() */
-#include "init.h" /* for home_dir() */
 #include "hash.h"
 #include "c-ctype.h"
 #ifdef TESTING
+#include "init.h" /* for ajoin_dir_file() */
 #include "../tests/unit-tests.h"
 #endif
 
@@ -220,7 +221,7 @@ hsts_add_entry (hsts_store_t store,
   time_t t = time (NULL);
 
   /* It might happen time() returned -1 */
-  return (t < 0 ?
+  return (t == (time_t)(-1) ?
       false :
       hsts_new_entry_internal (store, host, port, t, max_age, include_subdomains, false, true, false));
 }
@@ -465,7 +466,7 @@ hsts_store_entry (hsts_store_t store,
                * See also Section 11.2. */
               time_t t = time (NULL);
 
-              if (t != -1 && t != entry->created)
+              if (t != (time_t)(-1) && t != entry->created)
                 {
                   entry->created = t;
                   entry->max_age = max_age;
@@ -629,7 +630,7 @@ get_hsts_store_filename (void)
 
   if (opt.homedir)
     {
-      filename = aprintf ("%s/.wget-hsts-test", opt.homedir);
+      filename = ajoin_dir_file (opt.homedir, ".wget-hsts-test");
       fp = fopen (filename, "w");
       if (fp)
         fclose (fp);
@@ -795,7 +796,7 @@ test_hsts_read_database (void)
 
   if (opt.homedir)
     {
-      file = aprintf ("%s/.wget-hsts-testing", opt.homedir);
+      file = ajoin_dir_file (opt.homedir, ".wget-hsts-testing");
       fp = fopen (file, "w");
       if (fp)
         {

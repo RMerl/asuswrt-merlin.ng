@@ -1,5 +1,5 @@
-# inttypes.m4 serial 27
-dnl Copyright (C) 2006-2018 Free Software Foundation, Inc.
+# inttypes.m4 serial 32
+dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -28,17 +28,26 @@ AC_DEFUN_ONCE([gl_INTTYPES_INCOMPLETE],
   dnl corresponding gnulib module is not in use.
   gl_WARN_ON_USE_PREPARE([[#include <inttypes.h>
     ]], [imaxabs imaxdiv strtoimax strtoumax])
+
+  AC_REQUIRE([AC_C_RESTRICT])
 ])
 
 # Ensure that the PRI* and SCN* macros are defined appropriately.
 AC_DEFUN([gl_INTTYPES_PRI_SCN],
 [
-  AC_REQUIRE([gt_INTTYPES_PRI])
-
   PRIPTR_PREFIX=
   if test -n "$STDINT_H"; then
-    dnl Using the gnulib <stdint.h>. It always defines intptr_t to 'long'.
-    PRIPTR_PREFIX='"l"'
+    dnl Using the gnulib <stdint.h>. It defines intptr_t to 'long' or
+    dnl 'long long', depending on _WIN64.
+    AC_COMPILE_IFELSE(
+      [AC_LANG_PROGRAM([[
+         #ifdef _WIN64
+         LLP64
+         #endif
+         ]])
+      ],
+      [PRIPTR_PREFIX='"l"'],
+      [PRIPTR_PREFIX='"ll"'])
   else
     dnl Using the system's <stdint.h>.
     for glpfx in '' l ll I64; do
@@ -113,10 +122,8 @@ AC_DEFUN([gl_INTTYPES_CHECK_LONG_LONG_INT_CONDITION],
 
             #if $2
              #define CONDITION ($3)
-            #elif HAVE_LONG_LONG_INT
-             #define CONDITION ($4)
             #else
-             #define CONDITION 0
+             #define CONDITION ($4)
             #endif
             int test[CONDITION ? 1 : -1];]])],
        [gl_cv_test_$1=yes],
@@ -152,7 +159,6 @@ AC_DEFUN([gl_INTTYPES_H_DEFAULTS],
   REPLACE_STRTOUMAX=0;   AC_SUBST([REPLACE_STRTOUMAX])
   INT32_MAX_LT_INTMAX_MAX=1;  AC_SUBST([INT32_MAX_LT_INTMAX_MAX])
   INT64_MAX_EQ_LONG_MAX='defined _LP64';  AC_SUBST([INT64_MAX_EQ_LONG_MAX])
-  PRI_MACROS_BROKEN=0;   AC_SUBST([PRI_MACROS_BROKEN])
   PRIPTR_PREFIX=__PRIPTR_PREFIX;  AC_SUBST([PRIPTR_PREFIX])
   UINT32_MAX_LT_UINTMAX_MAX=1;  AC_SUBST([UINT32_MAX_LT_UINTMAX_MAX])
   UINT64_MAX_EQ_ULONG_MAX='defined _LP64';  AC_SUBST([UINT64_MAX_EQ_ULONG_MAX])

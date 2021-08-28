@@ -1,7 +1,7 @@
 /* On some systems, mkdir ("foo/", 0700) fails because of the trailing
    slash.  On those systems, this wrapper removes the trailing slash.
 
-   Copyright (C) 2001, 2003, 2006, 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2006, 2008-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ rpl_mkdir (char const *dir, mode_t mode maybe_unused)
                          || (last[1] == '.' && last[2] == '\0')))
       {
         struct stat st;
-        if (stat (tmp_dir, &st) == 0)
+        if (stat (tmp_dir, &st) == 0 || errno == EOVERFLOW)
           errno = EEXIST;
         return -1;
       }

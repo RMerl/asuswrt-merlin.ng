@@ -1,5 +1,6 @@
 /* IRI related functions.
-   Copyright (C) 2008-2011, 2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2011, 2015, 2018-2021 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 
@@ -189,9 +190,10 @@ do_conversion (const char *tocode, const char *fromcode, char const *in_org, siz
         {
           tooshort++;
           done = len;
-          len = outlen = done + inlen * 2;
-          s = xrealloc (s, outlen + 1);
-          *out = s + done;
+          len = done + inlen * 2;
+          s = xrealloc (s, len + 1);
+          *out = s + done - outlen;
+          outlen += inlen * 2;
         }
       else /* Weird, we got an unspecified error */
         {

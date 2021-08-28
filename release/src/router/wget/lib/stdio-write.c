@@ -1,5 +1,5 @@
 /* POSIX compatible FILE stream write function.
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2008.
 
    This program is free software: you can redistribute it and/or modify
@@ -44,6 +44,10 @@
 #  else
 #   include <io.h>
 #  endif
+
+/* Don't assume that UNICODE is not defined.  */
+#  undef GetNamedPipeHandleState
+#  define GetNamedPipeHandleState GetNamedPipeHandleStateA
 
 #  if GNULIB_NONBLOCKING
 #   define CLEAR_ERRNO \

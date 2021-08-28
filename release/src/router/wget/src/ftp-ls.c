@@ -1,5 +1,6 @@
 /* Parsing FTP `ls' output.
-   Copyright (C) 1996-2011, 2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 1996-2011, 2015, 2018-2021 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 
@@ -63,7 +64,7 @@ symperms (const char *s)
 
 
 /* Cleans a line of text so that it can be consistently parsed. Destroys
-   <CR> and <LF> in case that thay occur at the end of the line and
+   <CR> and <LF> in case that they occur at the end of the line and
    replaces all <TAB> character with <SPACE>. Returns the length of the
    modified line. */
 static int
@@ -610,27 +611,27 @@ static void eat_carets( char *str)
       if (uchr == '^')
       {
         /* Found a caret.  Skip it, and check the next character. */
-        if ((char_prop[(unsigned char) str[0]] & 64) && (char_prop[(unsigned char) str[1]] & 64))
+        if ((char_prop[(unsigned char) str[1]] & 64) && (char_prop[(unsigned char) str[2]] & 64))
         {
           /* Hex digit.  Get char code from this and next hex digit. */
           uchr = *(++str);
           if (uchr <= '9')
           {
-            hdgt = uchr- '0';           /* '0' - '9' -> 0 - 9. */
+            hdgt = uchr - '0';           /* '0' - '9' -> 0 - 9. */
           }
           else
           {
-            hdgt = ((uchr- 'A')& 7)+ 10;    /* [Aa] - [Ff] -> 10 - 15. */
+            hdgt = ((uchr - 'A') & 7) + 10;    /* [Aa] - [Ff] -> 10 - 15. */
           }
           hdgt <<= 4;                   /* X16. */
           uchr = *(++str);              /* Next char must be hex digit. */
           if (uchr <= '9')
           {
-            uchr = hdgt+ uchr- '0';
+            uchr = hdgt + uchr - '0';
           }
           else
           {
-            uchr = hdgt+ ((uchr- 'A')& 15)+ 10;
+            uchr = hdgt + ((uchr - 'A') & 15) + 10;
           }
         }
         else if (uchr == '_')
@@ -856,8 +857,7 @@ ftp_parse_vms_ls (FILE *fp)
             {
               /* Date. */
               DEBUGP (("Date.\n"));
-              strcpy( date_str, tok);
-              strcat( date_str, " ");
+				  snprintf(date_str, sizeof(date_str), "%s ", tok);
             }
           else if ((strlen (tok) < 12) && (strchr( tok, ':') != NULL))
             {
@@ -961,16 +961,16 @@ ftp_parse_vms_ls (FILE *fp)
       if (!dir)
         {
           l = dir = (struct fileinfo *)xmalloc (sizeof (struct fileinfo));
+          cur.prev = cur.next = NULL;
           memcpy (l, &cur, sizeof (cur));
-          l->prev = l->next = NULL;
         }
       else
         {
           cur.prev = l;
+			 cur.next = NULL;
           l->next = (struct fileinfo *)xmalloc (sizeof (struct fileinfo));
           l = l->next;
           memcpy (l, &cur, sizeof (cur));
-          l->next = NULL;
         }
       cur.name = NULL;
 
@@ -994,7 +994,7 @@ ftp_parse_vms_ls (FILE *fp)
 
 /* This function switches between the correct parsing routine depending on
    the SYSTEM_TYPE. The system type should be based on the result of the
-   "SYST" response of the FTP server. According to this repsonse we will
+   "SYST" response of the FTP server. According to this response we will
    use on of the three different listing parsers that cover the most of FTP
    servers used nowadays.  */
 

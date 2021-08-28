@@ -1,6 +1,6 @@
 /* HTTP support.
-   Copyright (C) 1996-2012, 2014-2015, 2018 Free Software Foundation,
-   Inc.
+   Copyright (C) 1996-2012, 2014-2015, 2018-2021 Free Software
+   Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -62,9 +62,9 @@ as that of the covered work.  */
 #include "warc.h"
 #include "c-strcase.h"
 #include "version.h"
+#include "xstrndup.h"
 #ifdef HAVE_METALINK
 # include "metalink.h"
-# include "xstrndup.h"
 #endif
 #ifdef ENABLE_XATTR
 #include "xattr.h"
@@ -280,15 +280,18 @@ request_set_header (struct request *req, const char *name, const char *value,
 static void
 request_set_user_header (struct request *req, const char *header)
 {
-  char *name;
-  const char *p = strchr (header, ':');
-  if (!p)
+  const char *name, *p;
+
+  if (!(p = strchr (header, ':')))
     return;
-  BOUNDED_TO_ALLOCA (header, p, name);
+
+  name = xstrndup(header, p - header);
+
   ++p;
   while (c_isspace (*p))
     ++p;
-  request_set_header (req, xstrdup (name), (char *) p, rel_name);
+
+  request_set_header (req, name, p, rel_name);
 }
 
 /* Remove the header with specified name from REQ.  Returns true if
@@ -388,7 +391,7 @@ request_send (const struct request *req, int fd, FILE *warc_tmp)
 }
 
 /* Release the resources used by REQ.
-   It is safe to call it with a vaild pointer to a NULL pointer.
+   It is safe to call it with a valid pointer to a NULL pointer.
    It is not safe to call it with an invalid or NULL pointer.  */
 
 static void
@@ -458,7 +461,6 @@ register_basic_auth_host (const char *hostname)
       DEBUGP (("Inserted %s into basic_authed_hosts\n", quote (hostname)));
     }
 }
-
 
 /* Send the contents of FILE_NAME to SOCK.  Make sure that exactly
    PROMISED_SIZE bytes are sent over the wire -- if the file is
@@ -553,7 +555,7 @@ response_head_terminator (const char *start, const char *peeked, int peeklen)
           return p + 2;
       }
   /* p==end-2: check for \n\n directly preceding END. */
-  if (p[0] == '\n' && p[1] == '\n')
+  if (peeklen >= 2 && p[0] == '\n' && p[1] == '\n')
     return p + 2;
 
   return NULL;
@@ -865,10 +867,22 @@ resp_free (struct response **resp_ref)
 static void
 print_response_line (const char *prefix, const char *b, const char *e)
 {
-  char *copy;
-  BOUNDED_TO_ALLOCA(b, e, copy);
+  char buf[1024], *copy;
+  size_t len = e - b;
+
+  if (len < sizeof (buf))
+    copy = buf;
+  else
+    copy = xmalloc(len + 1);
+
+  memcpy(copy, b, len);
+  copy[len] = 0;
+
   logprintf (LOG_ALWAYS, "%s%s\n", prefix,
              quotearg_style (escape_quoting_style, copy));
+
+  if (copy != buf)
+    xfree (copy);
 }
 
 /* Print the server response, line by line, omitting the trailing CRLF
@@ -1077,7 +1091,7 @@ modify_param_name (param_token *name)
   return result;
 }
 
-/* extract_param extract the paramater value into VALUE.
+/* extract_param extract the parameter value into VALUE.
    Like modify_param_name this function modifies VALUE by
    stripping off the encoding information from the actual value
 */
@@ -1355,7 +1369,7 @@ static struct {
   char *host;
   int port;
 
-  /* Whether a ssl handshake has occoured on this connection.  */
+  /* Whether a ssl handshake has occurred on this connection.  */
   bool ssl;
 
   /* Whether the connection was authorized.  This is only done by
@@ -1758,6 +1772,7 @@ read_response_body (struct http_stat *hs, int sock, FILE *fp, wgint contlen,
   else
     {
       /* A read error! */
+      xfree (hs->rderrmsg);
       hs->rderrmsg = xstrdup (fd_errstr (sock));
       return RETRFINISHED;
     }
@@ -1768,27 +1783,15 @@ read_response_body (struct http_stat *hs, int sock, FILE *fp, wgint contlen,
    && (c_isspace (line[sizeof (string_constant) - 1])                      \
        || !line[sizeof (string_constant) - 1]))
 
-#ifdef __VMS
 #define SET_USER_AGENT(req) do {                                         \
   if (!opt.useragent)                                                    \
     request_set_header (req, "User-Agent",                               \
-                        aprintf ("Wget/%s (VMS %s %s)",                  \
-                        version_string, vms_arch(), vms_vers()),         \
+                        aprintf ("Wget/%s",                              \
+                        version_string),                                 \
                         rel_value);                                      \
   else if (*opt.useragent)                                               \
     request_set_header (req, "User-Agent", opt.useragent, rel_none);     \
 } while (0)
-#else /* def __VMS */
-#define SET_USER_AGENT(req) do {                                         \
-  if (!opt.useragent)                                                    \
-    request_set_header (req, "User-Agent",                               \
-                        aprintf ("Wget/%s (%s)",                         \
-                        version_string, OS_TYPE),                        \
-                        rel_value);                                      \
-  else if (*opt.useragent)                                               \
-    request_set_header (req, "User-Agent", opt.useragent, rel_none);     \
-} while (0)
-#endif /* def __VMS [else] */
 
 /*
    Convert time_t to one of valid HTTP date formats
@@ -1875,7 +1878,7 @@ initialize_request (const struct url *u, struct http_stat *hs, int *dt, struct u
     req = request_new (meth, meth_arg);
   }
 
-  request_set_header (req, "Referer", (char *) hs->referer, rel_none);
+  request_set_header (req, "Referer", hs->referer, rel_none);
   if (*dt & SEND_NOCACHE)
     {
       /* Cache-Control MUST be obeyed by all HTTP/1.1 caching mechanisms...  */
@@ -2228,11 +2231,10 @@ establish_connection (const struct url *u, const struct url **conn_ref,
 static uerr_t
 set_file_timestamp (struct http_stat *hs)
 {
-  size_t filename_len = strlen (hs->local_file);
-  char *filename_plus_orig_suffix = alloca (filename_len + sizeof (ORIG_SFX));
   bool local_dot_orig_file_exists = false;
   char *local_filename = NULL;
   struct stat st;
+  char buf[1024];
 
   if (opt.backup_converted)
     /* If -K is specified, we'll act on the assumption that it was specified
@@ -2242,6 +2244,14 @@ set_file_timestamp (struct http_stat *hs)
         _wasn't_ specified last time, or the server contains files called
         *.orig, -N will be back to not operating correctly with -k. */
     {
+      size_t filename_len = strlen (hs->local_file);
+      char *filename_plus_orig_suffix;
+
+      if (filename_len + sizeof (ORIG_SFX) > sizeof (buf))
+        filename_plus_orig_suffix = xmalloc (filename_len + sizeof (ORIG_SFX));
+      else
+        filename_plus_orig_suffix = buf;
+
       /* Would a single s[n]printf() call be faster?  --dan
 
           Definitely not.  sprintf() is horribly slow.  It's a
@@ -2267,14 +2277,21 @@ set_file_timestamp (struct http_stat *hs)
   if (!local_dot_orig_file_exists)
     /* Couldn't stat() <file>.orig, so try to stat() <file>. */
     if (stat (hs->local_file, &st) == 0)
-      local_filename = hs->local_file;
+      {
+        if (local_filename != buf)
+          xfree (local_filename);
+        local_filename = hs->local_file;
+      }
 
   if (local_filename != NULL)
     /* There was a local file, so we'll check later to see if the version
         the server has is the same version we already have, allowing us to
         skip a download. */
     {
-      hs->orig_file_name = xstrdup (local_filename);
+      if (local_filename == buf || local_filename == hs->local_file)
+        hs->orig_file_name = xstrdup (local_filename); // on stack or a copy, make a heap copy
+      else
+        hs->orig_file_name = local_filename; // was previously malloc'ed
       hs->orig_file_size = st.st_size;
       hs->orig_file_tstamp = st.st_mtime;
 #ifdef WINDOWS
@@ -2338,7 +2355,7 @@ check_file_output (const struct url *u, struct http_stat *hs,
         }
       else if (!ALLOW_CLOBBER)
         {
-          char *unique = unique_name (hs->local_file, true);
+          char *unique = unique_name_passthrough (hs->local_file);
           if (unique != hs->local_file)
             xfree (hs->local_file);
           hs->local_file = unique;
@@ -2365,26 +2382,40 @@ check_auth (const struct url *u, char *user, char *passwd, struct response *resp
   bool basic_auth_finished = *basic_auth_finished_ref;
   bool auth_finished = *auth_finished_ref;
   bool ntlm_seen = *ntlm_seen_ref;
+  char buf[256], *tmp = NULL;
+
   *retry = false;
+
   if (!auth_finished && (user && passwd))
     {
       /* IIS sends multiple copies of WWW-Authenticate, one with
          the value "negotiate", and other(s) with data.  Loop over
          all the occurrences and pick the one we recognize.  */
       int wapos;
-      char *buf;
       const char *www_authenticate = NULL;
       const char *wabeg, *waend;
       const char *digest = NULL, *basic = NULL, *ntlm = NULL;
+
       for (wapos = 0; !ntlm
              && (wapos = resp_header_locate (resp, "WWW-Authenticate", wapos,
                                              &wabeg, &waend)) != -1;
            ++wapos)
         {
           param_token name, value;
+          size_t len = waend - wabeg;
 
-          BOUNDED_TO_ALLOCA (wabeg, waend, buf);
-          www_authenticate = buf;
+          if (tmp != buf)
+            xfree (tmp);
+
+          if (len < sizeof (buf))
+            tmp = buf;
+          else
+            tmp = xmalloc (len + 1);
+
+          memcpy (tmp, wabeg, len);
+          tmp[len] = 0;
+
+          www_authenticate = tmp;
 
           for (;!ntlm;)
             {
@@ -2475,6 +2506,7 @@ check_auth (const struct url *u, char *user, char *passwd, struct response *resp
           else
             {
               /* Creating the Authorization header went wrong */
+              xfree (value);
             }
         }
       else
@@ -2485,6 +2517,8 @@ check_auth (const struct url *u, char *user, char *passwd, struct response *resp
     }
 
  cleanup:
+   if (tmp != buf)
+     xfree (tmp);
   *ntlm_seen_ref = ntlm_seen;
   *basic_auth_finished_ref = basic_auth_finished;
   *auth_finished_ref = auth_finished;
@@ -3032,14 +3066,24 @@ skip_content_type:
           /* The hash here is assumed to be base64. We need the hash in hex.
              Therefore we convert: base64 -> binary -> hex.  */
           const size_t dig_hash_str_len = strlen (dig_hash);
-          char *bin_hash = alloca (dig_hash_str_len * 3 / 4 + 1);
+          char bin_hash[256];
           ssize_t hash_bin_len;
+
+          // there is no hash with that size
+          if (dig_hash_str_len >= sizeof (bin_hash))
+            {
+              DEBUGP (("Hash too long, ignored.\n"));
+              xfree (dig_type);
+              xfree (dig_hash);
+              continue;
+            }
 
           hash_bin_len = wget_base64_decode (dig_hash, bin_hash, dig_hash_str_len * 3 / 4 + 1);
 
           /* Detect malformed base64 input.  */
           if (hash_bin_len < 0)
             {
+              DEBUGP (("Malformed base64 input, ignored.\n"));
               xfree (dig_type);
               xfree (dig_hash);
               continue;
@@ -3184,7 +3228,7 @@ gethttp (const struct url *u, struct url *original_url, struct http_stat *hs,
   FILE *warc_tmp = NULL;
   char warc_timestamp_str [21];
   char warc_request_uuid [48];
-  ip_address *warc_ip = NULL;
+  ip_address warc_ip_buf, *warc_ip = NULL;
   off_t warc_payload_offset = -1;
 
   /* Whether this connection will be kept alive after the HTTP request
@@ -3217,15 +3261,17 @@ gethttp (const struct url *u, struct url *original_url, struct http_stat *hs,
     }
 #endif /* HAVE_SSL */
 
-  /* Initialize certain elements of struct http_stat.  */
+  /* Initialize certain elements of struct http_stat.
+   * Since this function is called in a loop, we have to xfree certain
+   * members. */
   hs->len = 0;
   hs->contlen = -1;
   hs->res = -1;
-  hs->rderrmsg = NULL;
-  hs->newloc = NULL;
+  xfree (hs->rderrmsg);
+  xfree (hs->newloc);
   xfree (hs->remote_time);
-  hs->error = NULL;
-  hs->message = NULL;
+  xfree (hs->error);
+  xfree (hs->message);
   hs->local_encoding = ENC_NONE;
   hs->remote_encoding = ENC_NONE;
 
@@ -3302,7 +3348,7 @@ gethttp (const struct url *u, struct url *original_url, struct http_stat *hs,
 
       if (! proxy)
         {
-          warc_ip = (ip_address *) alloca (sizeof (ip_address));
+          warc_ip = &warc_ip_buf;
           socket_ip_address (sock, warc_ip, ENDPOINT_PEER);
         }
     }
@@ -3365,7 +3411,7 @@ gethttp (const struct url *u, struct url *original_url, struct http_stat *hs,
 
       /* Generate a timestamp and uuid for this request. */
       warc_timestamp (warc_timestamp_str, sizeof (warc_timestamp_str));
-      warc_uuid_str (warc_request_uuid);
+      warc_uuid_str (warc_request_uuid, sizeof (warc_request_uuid));
 
       /* Create a request record and store it in the WARC file. */
       warc_result = warc_write_request_record (u->url, warc_timestamp_str,
@@ -3502,9 +3548,22 @@ gethttp (const struct url *u, struct url *original_url, struct http_stat *hs,
                                         &scbeg, &scend)) != -1;
            ++scpos)
         {
-          char *set_cookie; BOUNDED_TO_ALLOCA (scbeg, scend, set_cookie);
+          char buf[1024], *set_cookie;
+          size_t len = scend - scbeg;
+
+          if (len < sizeof (buf))
+            set_cookie = buf;
+          else
+            set_cookie = xmalloc (len + 1);
+
+          memcpy (set_cookie, scbeg, len);
+          set_cookie[len] = 0;
+
           cookie_handle_set_cookie (wget_cookie_jar, u->host, u->port,
                                     u->path, set_cookie);
+
+          if (set_cookie != buf)
+            xfree (set_cookie);
         }
     }
 
@@ -3575,7 +3634,6 @@ gethttp (const struct url *u, struct url *original_url, struct http_stat *hs,
                                &auth_finished);
         if (auth_err == RETROK && retry)
           {
-            xfree (hs->message);
             resp_free (&resp);
             xfree (message);
             xfree (head);
@@ -3605,6 +3663,7 @@ gethttp (const struct url *u, struct url *original_url, struct http_stat *hs,
   }
 
   hs->statcode = statcode;
+  xfree (hs->error);
   if (statcode == -1)
     hs->error = xstrdup (_("Malformed status line"));
   else if (!*message)
@@ -3632,6 +3691,7 @@ gethttp (const struct url *u, struct url *original_url, struct http_stat *hs,
                    (unsigned long) max_age,
                    (include_subdomains ? "true" : "false")));
         }
+      xfree (hsts_params);
     }
 #endif
 
@@ -3662,7 +3722,9 @@ gethttp (const struct url *u, struct url *original_url, struct http_stat *hs,
 #endif
         }
     }
+  xfree (hs->newloc);
   hs->newloc = resp_header_strdup (resp, "Location");
+  xfree (hs->remote_time);
   hs->remote_time = resp_header_strdup (resp, "Last-Modified");
   if (!hs->remote_time) // now look for the Wayback Machine's timestamp
     hs->remote_time = resp_header_strdup (resp, "X-Archive-Orig-last-modified");
@@ -4113,9 +4175,9 @@ gethttp (const struct url *u, struct url *original_url, struct http_stat *hs,
   if (opt.enable_xattr)
     {
       if (original_url != u)
-        set_file_metadata (u->url, original_url->url, fp);
+        set_file_metadata (u, original_url, fp);
       else
-        set_file_metadata (u->url, NULL, fp);
+        set_file_metadata (u, NULL, fp);
     }
 #endif
 
@@ -4335,8 +4397,13 @@ http_loop (const struct url *u, struct url *original_url, char **newloc,
            first attempt to clobber existing data.)  */
         hstat.restval = st.st_size;
       else if (count > 1)
-        /* otherwise, continue where the previous try left off */
-        hstat.restval = hstat.len;
+        {
+          /* otherwise, continue where the previous try left off */
+          if (hstat.len < hstat.restval)
+            hstat.restval -= hstat.len;
+          else
+            hstat.restval = hstat.len;
+        }
       else
         hstat.restval = 0;
 
@@ -4371,8 +4438,6 @@ http_loop (const struct url *u, struct url *original_url, char **newloc,
              bring them to "while" statement at the end, to judge
              whether the number of tries was exceeded.  */
           printwhat (count, opt.ntry);
-          xfree (hstat.message);
-          xfree (hstat.error);
           continue;
         case FWRITEERR: case FOPENERR:
           /* Another fatal error.  */
@@ -4386,8 +4451,6 @@ http_loop (const struct url *u, struct url *original_url, char **newloc,
           if ( opt.retry_on_host_error )
             {
               printwhat (count, opt.ntry);
-              xfree (hstat.message);
-              xfree (hstat.error);
               continue;
             }
           ret = err;
@@ -4652,8 +4715,6 @@ Remote file exists.\n\n"));
               got_name = true;
               *dt &= ~HEAD_ONLY;
               count = 0;          /* the retrieve count for HEAD is reset */
-              xfree (hstat.message);
-              xfree (hstat.error);
               continue;
             } /* send_head_first */
         } /* !got_head */
@@ -4806,7 +4867,10 @@ exit:
       /* Bugfix: Prevent SIGSEGV when hstat.local_file was left NULL
          (i.e. due to opt.content_disposition).  */
       if (hstat.local_file)
-        *local_file = xstrdup (hstat.local_file);
+        {
+          *local_file = hstat.local_file;
+          hstat.local_file = NULL;
+        }
     }
   free_hstat (&hstat);
 
@@ -4945,16 +5009,32 @@ http_atotm (const char *time_string)
 static char *
 basic_authentication_encode (const char *user, const char *passwd)
 {
-  char *t1, *t2;
-  int len1 = strlen (user) + 1 + strlen (passwd);
+  char buf_t1[256], buf_t2[256];
+  char *t1, *t2, *ret;
+  size_t len1 = strlen (user) + 1 + strlen (passwd);
 
-  t1 = (char *)alloca (len1 + 1);
+  if (len1 < sizeof (buf_t1))
+    t1 = buf_t1;
+  else
+    t1 = xmalloc(len1 + 1);
+
+  if (BASE64_LENGTH (len1) < sizeof (buf_t2))
+    t2 = buf_t2;
+  else
+    t2 = xmalloc (BASE64_LENGTH (len1) + 1);
+
   sprintf (t1, "%s:%s", user, passwd);
-
-  t2 = (char *)alloca (BASE64_LENGTH (len1) + 1);
   wget_base64_encode (t1, len1, t2);
 
-  return concat_strings ("Basic ", t2, (char *) 0);
+  ret = concat_strings ("Basic ", t2, (char *) 0);
+
+  if (t2 != buf_t2)
+    xfree (t2);
+
+  if (t1 != buf_t1)
+    xfree (t1);
+
+  return ret;
 }
 
 #define SKIP_WS(x) do {                         \
@@ -5257,13 +5337,31 @@ save_cookies (void)
     cookie_jar_save (wget_cookie_jar, opt.cookies_output);
 }
 
+#if defined DEBUG_MALLOC || defined TESTING
 void
 http_cleanup (void)
 {
-  xfree (pconn.host);
+  if (pconn_active)
+    invalidate_persistent ();
+
   if (wget_cookie_jar)
-    cookie_jar_delete (wget_cookie_jar);
+    {
+      cookie_jar_delete (wget_cookie_jar);
+      wget_cookie_jar = NULL;
+    }
+
+  if (basic_authed_hosts)
+    {
+      hash_table_iterator iter;
+      for (hash_table_iterate (basic_authed_hosts, &iter); hash_table_iter_next (&iter); )
+        {
+          xfree (iter.key);
+        }
+      hash_table_destroy (basic_authed_hosts);
+      basic_authed_hosts = NULL;
+    }
 }
+#endif
 
 void
 ensure_extension (struct http_stat *hs, const char *ext, int *dt)
@@ -5325,9 +5423,7 @@ test_parse_range_header (void)
       { "bytes 42-1233/1234", 42, 1233, 1234, true },
       { "bytes 42-1233/*", 42, 1233, -1, true },
       { "bytes 0-2147483648/2147483649", 0, 2147483648U, 2147483649U, true },
-#if SIZEOF_WGINT >= 8
       { "bytes 2147483648-4294967296/4294967297", 2147483648U, 4294967296ULL, 4294967297ULL, true },
-#endif
   };
 
   wgint firstbyteptr[sizeof(wgint)];
@@ -5365,8 +5461,8 @@ test_parse_content_disposition (void)
     { "attachment; filename=\"file.ext\"", "file.ext", true },
     { "attachment; filename=\"file.ext\"; dummy", "file.ext", true },
     { "attachment", NULL, false },
-    { "attachement; filename*=UTF-8'en-US'hello.txt", "hello.txt", true },
-    { "attachement; filename*0=\"hello\"; filename*1=\"world.txt\"",
+    { "attachment; filename*=UTF-8'en-US'hello.txt", "hello.txt", true },
+    { "attachment; filename*0=\"hello\"; filename*1=\"world.txt\"",
       "helloworld.txt", true },
     { "attachment; filename=\"A.ext\"; filename*=\"B.ext\"", "B.ext", true },
     { "attachment; filename*=\"A.ext\"; filename*0=\"B\"; filename*1=\"B.ext\"",

@@ -1,4 +1,1196 @@
+2021-01-09  Darshit Shah  <darnir@gnu.org>
+
+	* NEWS: Update NEWS items for release
+
+	* gnulib: Pull forward
+
+	* cfg.mk: Add manual_title for web docs
+
+	* contrib/make-release: Update to use maintainer-makefile
+
+	* bootstrap.conf: Add gendocs and gnu-web-doc-update modules
+
+	* configure.ac(AM_INIT_AUTOMAKE): Create lzip archives when making a distribution
+
+	Prepare for making releases
+	The maintainer makefile provides targets for making a release. They need
+	these things:
+	* cfg.mk: Set the hash of the NEWS file as it was at the beginning of
+	  this release
+	* .prev-version: Create the .prev-version file
+
+	Prepare NEWS file for new release
+	* NEWS: Fix the copyright notice
+	* NEWS: Add header for new release
+
+2021-01-07  Darshit Shah  <darnir@gnu.org>
+
+	Use PRId64 to correctly identify the format specifier
+	* src/utils.c: Use PRId64 to correctly identify the format specifier for
+	wgint values. This fixes a warning on 32-bit systems where wgint is a
+	long long int instead of the long int that the format specifier
+	indicated.
+
+	Reported-by: Jeffrey Walton
+
+2021-01-03  Darshit Shah  <darnir@gnu.org>
+
+	* src/retr.c(rotate_backups): Simplify logic for handling filename rotation
+
+2021-01-03  Matt Whitlock  <gentoo@mattwhitlock.name>
+
+	* configure.ac: Don't use Bashisms
+
+2021-01-01  Darshit Shah  <darnir@gnu.org>
+
+	Run make update-copyright
+
+	* gnulib: Pull forward
+
+2020-12-31  Darshit Shah  <darnir@gnu.org>
+
+	* NEWS: Finalize release
+
+	* gnulib: Update for release
+
+2020-12-30  Darshit Shah  <darnir@gnu.org>
+
+	* src/main.c: Disable use-askpass on VMS
+
+2020-12-30  Steven M. Schweda  <sms@antinode.info>
+	    Darshit Shah  <darnir@gnu.org>
+
+	Fixes for running on VMS
+	time_t on VMS is typically unsigned.  (Lazy man's solution to 2038?)
+	I added "(time_t)" type casts to negative values ("-1"), and changed
+	tests to avoid complaints.
+
+	* src/hsts.c (hsts_add_entry): Explicitly cast potentially negative time
+	  values to time_t to handle VMS quirks.
+	  (hsts_store_entry): Same
+	  (get_hsts_store_filename): Use new ajoin_dir_file function to join
+	  filenames
+	  (test_hsts_read_database): Same
+	* src/init.c (struct options): use-askpass is not implemented on VMS
+	  (ajoin_dir_file): New Function to join filenames in a platform
+	  agnostic manner
+	  (wgetrc_user_file_name): Use ajoin_dir_file to join paths. Doing this
+	  correctly, eliminates the need for a special case on VMS
+	* src/init.h: Add prototype for ajoin_dir_file
+	* src/log.c (check_redirect_output): Ignore on VMS
+	* src/main.c(option_data): Disable use-askpass on VMS
+	  (print_help): Same
+	  (get_hsts_database): Use ajoin_dir_file to join paths
+	  (print_version): Add VMS specific information to Version output
+	* src/utils.c (fork_to_background): Fix signature on VMS
+
+2020-12-29  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Remove SIZEOF_WGINT as wgint is always int64_t
+	* src/http.c (test_parse_range_header): Remove use of SIZEOF_WGINT.
+	* src/utils.c (human_readable): Remove superfluous HR_NUMTYPE,
+	*   (number_to_string): Remove use of SIZEOF_WGINT.
+	* src/utils.h: Remove use of SIZEOF_WGINT and HR_NUMTYPE.
+	* src/wget.h: Remove #define SIZEOF_WGINT.
+
+	src/wget.h: Cleanup code around wgint
+
+2020-12-29  Darshit Shah  <darnir@gnu.org>
+
+	Remove portability handling for str[n]casecmp
+	* src/mswindows.c: Gnulib ensures we always have str{n}casecmp
+	* configure.ac: Don't need to define HAVE_STR[N]CASECMP anymore
+
+2020-12-29  Darshit Shah  <darnir@gnu.org>
+
+	Remove portability handling code for wgint
+	Gnulib's stdint.h module promises a C99 compliant stdint.h file on all
+	platforms. Thus allowing us to directly use the fixed wodth integer
+	type, int64_t wihout needing to resort to all the checks being
+	performed.
+
+	* src/wget.h: Assume that int64_t is always available and use it
+	* src/mswindows.h: Remove portability code since gnulib handles it
+	* configure.ac: Remove sizeof checks for integer types that are no
+	  longer used
+
+2020-12-29  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* .lgtm.yml: Call autoreconf to support Debian oldstable
+
+2020-12-28  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix --accept-regex/i--reject-regex for FTP
+	* src/ftp.c (ftp_retrieve_glob): Call accept_url() with the full URL
+
+	Reported-by: Frans de Boer <frans@fransdb.nl>
+
+2020-12-28  Darshit Shah  <darnir@gnu.org>
+
+	* tests/valgrind-suppressions: Make suppression for libidn false positive more generic
+
+	* Makefile.am: Clean up gnulib_po/stamp-po
+
+	tests/valgrind-suppressions: Add suppressions for false positives
+
+	testenv/Test--https.py: Fix missing import
+
+	.gitlab-ci.yml: Everyone needs an autoreconf now
+
+	.gitlab-ci.yml: Even Debian Stable requires running autoreconf
+
+	Fix usage of Magic number of tests
+	testenv/test/base_test.py: Add new variable SKIP_TEST
+	testenv/Test--https-crl.py: Use SKIP_TEST instead of magic number
+	testenv/Test--https.py: Same
+	testenv/Test-hsts.py: Same
+	testenv/Test-no_proxy-env.py: Same
+	testenv/Test-pinnedpubkey-der-https.py: Same
+	testenv/Test-pinnedpubkey-der-no-check-https.py: Same
+	testenv/Test-pinnedpubkey-hash-https.py: Same
+	testenv/Test-pinnedpubkey-hash-no-check-fail-https.py: Same
+	testenv/Test-pinnedpubkey-pem-fail-https.py: Same
+	testenv/Test-pinnedpubkey-pem-https.py: Same
+
+	.gitlab-ci.yml: All modern builds need autoreconf
+
+	.po/POTFILES.in: Remove files containing no translateable strings
+
+	Fix issues reported by codespell
+
+	.gitlab-ci.yml: Need --force option to autopoint
+
+	* .gitlab-ci.yml: Don't need autoreconf everywhere. Only on Arch
+	This (partially) reverts commit 0309d13794303d82529addecfc31f0e1a8c5b97b.
+
+	configure.ac: Revert to requiring gettext 0.19
+
+	.gitlab-ci.yml: Call autoreconf to refresh gettext files
+
+	* NEWS: Update NEWS items
+
+	configure.ac: Raise minimum gettext version to 0.20
+
+	Run autoupdate on configure.ac
+	* configure.ac, m4/{wget, wget_manywarnings}.m4: Run autoupdate
+
+	.gitignore: Ignore gnulib_po directory
+
+	configure.ac: Replace obsolete macro AC_AIX with AC_USE_SYSTEM_EXTENSIONS
+
+2020-12-27  Darshit Shah  <darnir@gnu.org>
+
+	bootstrap.conf: Remove unneeded text block
+
+	m4/getpagesize.m4: Don't track autogenerated file
+
+2020-12-27  Darshit Shah  <darnir@gnu.org>
+
+	Remove unneeded files from gnulib
+	m4/exitfail.m4: Remove unneeded file
+	m4/wchar.m4: Same
+	m4/wctype.m4: Same
+
+	The latest versions of these files will be copied by gnulib-tool upon
+	its invokation. No need to track them around here
+
+2020-12-27  Darshit Shah  <darnir@gnu.org>
+
+	Use a separate domain for translating gnulib
+	Use the --po-domain option to gnulib-tool to create a new textdomain
+	that can be used by gnulib files for translations. This way, we don't
+	have to maintain the list of all files that require translations in
+	gnulib.
+
+	* bootstrap.conf: Use --po-domain and --po-base options to create a
+	  separate base for gnulib translations
+	* src/main.c(i18n_initialize): Call bindtextdomain on wget-gnulib to
+	  include those translations as well
+	* Makefile.am: Add new directory gnulib_po to SUBDIRS
+	* configure.ac: Generate gnulib_po/Makefile.in
+	* lib/Makefile.am: Set AM_CPPFLAGS to empty since gnulib.mk expects it
+	  to be set
+
+2020-12-27  Darshit Shah  <darnir@gnu.org>
+
+	po/POTFILES.in: Update the list of files that need translation
+
+	m4/getpagesize.m4: Update from gnulib
+
+	configure.ac: Increase minimum required version to 2.64
+
+	gnulib: Pull forward
+
+2020-12-22  Darshit Shah  <git@darnir.net>
+
+	main.c (main): Warn when trying to use password without username
+
+2020-12-13  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http.c (http_cleanup): Reset wget_cookie_jar after freeing
+	This silences the wget_options_fuzzer which triggered #28610 on
+	OSS-Fuzz. This issue can not happen with the Wget utility.
+	The fuzzer runs main(),...,cleanup() in a loop which the Wget utility
+	never does.
+
+2020-11-08  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/main.c: Add description to --help output of wait options
+
+2020-07-11  Tomas Hozza  <thozza@redhat.com>
+
+	testenv: Add test for handling of no_proxy environment variable
+	* testenv/Test-no_proxy-env.py: Added new test for no_proxy env
+	* testenv/Makefile.am: Added the new test to Makefile
+
+	Added new test with 5 cases, which are testing various combinations
+	of no_proxy environment variable definition and requested URLs.
+	The test is skipped if the system does not support resolution of
+	localhost subdomains to lcalhost address.
+
+2020-07-11  Tomas Hozza  <thozza@redhat.com>
+
+	testenv: Allow definition of environment variables for wget execuion
+	* testenv/README: Added description for new EnvironmentVariable hook
+	* testenv/conf/environment_variable.py: Added implementation of
+	EnvironmentVariable hook
+	* testenv/test/base_test.py: Modified exec_wget() to enable use of
+	EnvironmentVariable hook
+
+	Added new test hook called EnvironmentVariables, for defining environment
+	variables when wget is executed in tests. This is handy for testing
+	environment variables, which are accepted by wget.
+
+2020-07-11  Tomas Hozza  <thozza@redhat.com>
+
+	testenv: HTTPTest.begin() should return exit value
+	* testenv/test/http_test.py: Ensure that HTTPTest.begin() always returns
+	a value
+
+	Previously the HTTPTest.begin() method always returned None. However this
+	is not consistent with the begin() implementation of the parent class
+	(BaseTest). This change ensures that HTTPTest.begin() returns a value.
+
+2020-07-07  Darshit Shah  <git@darnir.net>
+
+	Minor documentation clarification
+	* src/wget.texi: Clarify behaviour of --quota
+	  Thanks to TheWild on IRC for pointing it out
+
+2020-06-29  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/ftp.c (ftp_loop_internal): Check for VERIFCERTERR to avoid SIGABRT
+	There is a bug that causes wget to exit with SIGABRT when trying to
+	receive files through FTP from a server with a certificate that failed
+	the verification.
+
+	The bug is filed in RedHat Bugzilla for Fedora:
+	https://bugzilla.redhat.com/show_bug.cgi?id=1475861
+
+	Reported-by: Artem Egorenkov <aegorenk@redhat.com>
+
+2020-06-21  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/host.c (lookup_host): Fix uninitialized pointer access in c-ares code
+	Reported-by: Swapnil More
+
+2020-05-22  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/gnutls.c (ssl_init): Small cleanup fixing output of ncerts
+
+2020-05-01  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/convert.c (downloaded_files_free): Only compile if DEBUG_MALLOC or TESTING is defined
+
+	* src/netrc.c (free_netrc): Only compile if DEBUG_MALLOC or TESTING is defined
+
+2020-05-01  Вячеслав Петрищев  <vyachemail@gmail.com>
+
+	Fix SSL/TLS timeout issues.
+	* connect.c (fd_read, fd_peek): Let implementation take care about timeout.
+	* gnutls.c (_do_handshake, _do_reauth, wgnutls_read_timeout): Fix support for interactive timeout.
+	* gnutls.c (wgnutls_peek): Let wgnutls_read_timeout() take care about timeout.
+	* openssl.c (openssl_read_peek): Fix 0 (-1) timeout.
+	* retr.c (fd_read_body): Avoid wrong 'interactive timeout'.
+
+	Set interactive to true for bar progress.
+	* src/progress.c (bar_set_params): Set interactive to true.
+	* src/retr.c (fd_read_body): Avoid call fd_read with 0 timeout.
+
+2020-05-01  Вячеслав Петрищев  <vyachemail@gmail.com>
+
+	New implementation for openssl_read, openssl_peek ssl_connect_with_timeout (openssl)
+	Add new implementation for openssl_read, openssl_peek
+	ssl_connect_with_timeout (openssl). Thats allow continue
+	read after ETIMEDOUT (if timeout < opt.read_timeout)
+	without 'Retrying', and do not create thread (under MSWin)
+	for every read. Old implementation, (with fix for 'timeout')
+	avaible for build with: -DOPENSSL_RUN_WITHTIMEOUT
+
+	Add timeout for transport_implementation {reader,peeker};
+
+	* src/init.c (cmd_time): Add check for negative value.
+	* src/connect.h (transport_implementation {reader,peeker}): Change function prototype.
+	* src/connect.c (select_fd_nb): New function, aviod conversion to blocked under MSWin.
+	* src/gnutls.c
+	   (gnutls_read): Fix: using timeout, seting ETIMEDOUT, conversion to blocked.
+	   (gnutls_peek): Likewise.
+	   (wgnutls_errstr): Add errmsg for ETIMEDOUT.
+	   (_do_handshake) (_do_reauth): Fix conversion to blocked.
+	* src/openssl.c:
+	   Add new implementation for openssl_read, openssl_peek, ssl_connect_with_timeout.
+	   (init_prng): when option --random-file given warn user if RAND_load_file() fail.
+
+2020-04-18  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Add missing linefeed in output strings
+	* src/ftp.c (getftp): Add linefeed to error message.
+	* src/res.c (res_parse_from_file): Likewise.
+	* src/utils.c (fopen_stat): Likewise.
+	  (open_stat): Likewise.
+
+2020-03-28  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/metalink.c: Include filename.h instead of dosname.h
+
+	* gnulib: Update
+
+2020-03-24  Tomas Hozza  <thozza@redhat.com>
+
+	Don't print message about loading crl or ca-cert files with --no-verbose
+	* src/gnutls.c (ssl_init): Use LOG_VERBOSE verbosity for informative
+	  message related to loading CRL or CA certificate file.
+
+	Before change [1], wget didn't produce any output related to loading CA
+	certificates when --no-verbose option has been used. When --no-verbose
+	option is used, only error messages and basic information should get
+	printed. Information about loading CRL or CA certificate is probably not
+	a basic information. Any error when loading the CRL or CA certificate
+	will be still printed with --no-verbose.
+
+	Some users rely on wget not printing such information and they consider
+	it a regression.
+
+	Reported as https://bugzilla.redhat.com/show_bug.cgi?id=1807267
+
+	[1] http://git.savannah.gnu.org/cgit/wget.git/commit/?id=e4a8fe84e2b813b65d91aec29298eecabe4850a5
+
+2020-03-06  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Add NTLM fuzzer
+	* configure.ac: Create WITH_NTLM conditional.
+	* fuzz/Makefile.am: Add wget_ntlm_fuzzer.
+	* fuzz/wget_ntlm_fuzzer.c: New file.
+	* fuzz/wget_ntlm_fuzzer.in/*: Initial fuzz corpora.
+
+	* src/http.c (check_auth): Fix memory leak
+
+	* src/http-ntlm.c (mkhash): Fix read buffer overflow
+
+2020-03-05  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* README.checkout: Fix gperf typo and tab indentation
+
+	* .gitlab-ci.yml: Generate online docs and coverage reports for Gitlab
+
+2020-03-05  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Add code coverage reporting
+	* configure.ac: Add AX_CODE_COVERAGE.
+	* Makefile.am: Add rules 'check-coverage' and 'fuzz-coverage'.
+	* fuzz/Makefile.am: Amend LDADD, AM_CFLAGS and AM_CPPFLAGS.
+	* src/Makefile.am: Amend LDADD, AM_CFLAGS and AM_CPPFLAGS.
+
+	This add a new configure option, --enable-code-coverage.
+
+	With this option enabled, generate test code coverage with
+	  make code-coverage
+	and generate coverage for the fuzz test corpora with
+	  make fuzz-coverage
+
+2020-03-05  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http.c: Don't cast 3rd param to request_set_header.
+
+	* README: Fix typo 'can retrieves' -> 'can retrieve'
+
+2020-03-03  Darshit Shah  <darnir@gnu.org>
+
+	* doc/wget.texi: Add maintainers and mention wget2
+
+	doc/wget.texi: Clarify usage of --level
+
+2020-03-03  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http.c (gethttp): Remove unneeded free of hstat.(message|error)
+
+	* src/http.c (gethttp): Fix memleaks
+	Reported-by: Вячеслав Петрищев
+
+	* src/http.c (read_response_body): Fix memleak
+	Reported-by: Вячеслав Петрищев
+
+2020-02-29  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* contrib/spell-checker: Add lightening to exceptions
+
+	Always build ssl_cleanup
+	* src/gnutls.c (ssl_cleanup): Don't build conditionally.
+	* src/openssl.c (ssl_cleanup): Likewise
+
+2020-02-28  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* doc/wget.texi: Fix spelling error
+	Reported-by: Jim Cathey
+
+2020-02-27  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/convert.c (convert_cleanup): Free downloaded_css_set
+
+	* src/openssl.c (ssl_cleanup): Only compile for DEBUG_MALLOC or TESTING
+
+	* src/gnutls.c (ssl_cleanup): Only compile for DEBUG_MALLOC or TESTING
+
+	* src/netrc.c (netrc_cleanup): Only compile for DEBUG_MALLOC or TESTING
+
+	* src/log.c (log_cleanup): Only compile for DEBUG_MALLOC or TESTING
+
+	* src/host.c (host_cleanup): Only compile for DEBUG_MALLOC or TESTING
+
+	* src/spider.c (spider_cleanup): Only compile for DEBUG_MALLOC or TESTING
+
+	* src/res.c (res_cleanup): Only compile for DEBUG_MALLOC or TESTING
+
+	* src/convert.c (convert_cleanup): Only compile for DEBUG_MALLOC or TESTING
+
+	* src/html-url.c (cleanup_html_url): Only compile for DEBUG_MALLOC or TESTING
+
+	* src/http.c (http_cleanup): Free hashtable basic_authed_hosts
+
+	* src/cookies.c (cookie_jar_delete): Set psl to NULL after calling psl_free
+
+	* src/init.c (cleanup): Call ssl_cleanup and connect_cleanup
+
+	Add ssl_cleanup to free memory
+	* src/ssl.h: Add declaration for ssl_cleanup.
+	* src/openssl.c: Add ssl_cleanup stub.
+	* src/gnutls.c: Implement ssl_cleanup.
+
+	* src/http.c (http_cleanup): Call invalidate_persistent to free resources
+
+	* src/cookies.c: Free PSL in cookie_jar_delete
+
+	* src/connect.c (connect_cleanup): Only needed with DEBUG_MALLOC or TESTING
+
+	* src/http.c (http_loop): Avoid unneeded strdup
+
+2020-02-27  Вячеслав Петрищев  <vyachemail@gmail.com>
+
+	* src/http.c (gethttp): Fix memleak
+
+2020-02-23  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http.c: Do not reveal OS type to server via User-Agent: header
+	Following the "privacy by design" principle, which is now European law by
+	virtue of the GDPR since 2018, the client should not transmit the operating
+	system.
+
+	Fixes #57884
+	Reported-by: Bruno Haible
+
+2020-02-22  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* tests/unit-tests.c: Fix 'multiple definition of...' with gcc 10
+
+	Split unique_name into two functions with just one arg
+	* src/http.c (check_file_output): Call unique_name_passthrough.
+	* src/metalink.c (badhash_suffix): Call unique_name.
+	* src/url.c (url_file_name): Call unique_name_passthrough.
+	* src/utils.c: Split unique_name, amend description.
+	* src/utils.h: Amend unique_name, add unique_name_passthrough.
+
+	* .gitlab-ci.yml: Set tag 'linux' explicitly for each runner
+
+2020-02-22  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http.c (print_response_line): Fixed comparison
+	Introduced in 68868bbb3737d26c197f39edafc5d526334426b0 (13.2.2020).
+
+	Reported-by: Gisle Vanem
+
+2020-02-21  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Add valgrind suppressions
+	* testenv/valgrind-suppression-ssl: Add gnutls suppressions
+	* tests/valgrind-suppressions: Likewise
+	* tests/valgrind-suppressions-ssl: Likewise
+
+	Add --gen-suppressions=all to valgrind options
+	* testenv/test/base_test.py: Add --gen-suppressions=all to valgrind options
+	* tests/Test-proxied-https-auth.px: Likewise
+	* tests/WgetTests.pm: Likewise
+
+	* cfg.mk: Exclude sc_prohibit_gnu_make_extensions
+
+	* src/retr.c (fd_read_body): Check timer before accessing (Coverity #600494)
+
+	* src/warc.c (warc_write_start_record): Check return values of fseek, fflush (Coverity #1419650)
+
+	* src/ftp-ls.c (eat_carets): Fix caret decoding issue (Coverity #1419653)
+
+	* src/warc.c (warc_write_block_from_file): Check for write error (Coverity #1419654)
+
+	* src/warc.c (warc_write_end_record): Check return value of fseeko (Coverity #1419657)
+
+	Add valgrind suppressions for HTTPS tests (GnuTLS false positive)
+	* testenv/valgrind-suppression-ssl: Add new rule
+	* tests/valgrind-suppressions: Likewise
+	* tests/valgrind-suppressions-ssl: Likewise
+
+2020-02-20  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/init.c (setoptval): Add missing comma (fix compilation)
+
+	* .gitlab-ci.yml: Add spell-checking to VPATH/Debian
+
+2020-02-20  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix typos found by codespell
+	*/*: Fix typos
+
+	Thanks to https://fossies.org/features.html#codespell
+
+	Reported-by: Jens Schleusener
+
+2020-02-20  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* contrib/spell-checker: Add new file
+
+	* src/init.c (setoptval): Silence Coverity (Coverity #1419648)
+
+	* src/main.c (init_switches): Remove unneeded code (Coverity #1419658)
+
+	* src/ftp-ls.c (ftp_parse_vms_ls): Fix use of uninitialized stack mem (Coverity #609373)
+
+2020-02-19  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/retr.c (retrieve_url): Fix memory leak (Coverity #1316408)
+
+	* src/http.c (set_file_timestamp): Fix stack memory leak (Coverity #1419655)
+
+	* src/main.c (main): Initialize variable (Coverity #1419660)
+
+	* .gitlab-ci.yml: Fix linebreak
+
+	* src/http.c (metalink_from_http): Fix memleak (Coverity #1419661, #1419656)
+
+	* .gitlab-ci.yml: Add 'coverity' runner
+
+	* contrib/mk_authors: Create list of authors and translators since last version
+
+	* src/progress.c (eta_to_human_short): Silence -Wformat-overflow
+
+2020-02-14  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* .gitlab-ci.yml: Don't copy gnulib manually
+
+	* NEWS: Update
+
+	Remove alloca includes and macros
+	* bootstrap.conf: Remove gnulib module 'alloca'.
+	* src/sysdep.h: Remove include of alloca.h.
+	* src/wget.h: Likewise,
+	  remove macros BOUNDED_TO_ALLOCA and STRDUP_ALLOCA.
+
+	* src/utils.h: Remove alloca_array
+
+	* src/convert.c (convert_links_in_hashtable): Remove use of alloca
+
+	* src/convert.c (local_quote_string): Remove use of alloca
+
+	* src/convert.c (replace_attr_refresh_hack): Remove use of alloca
+
+	* gnulib: Update
+
+	* bootstrap.conf: Use fnmatch-gnu instead of fnmatch
+
+	* src/convert.c (write_backup_file): Remove use of alloca
+
+	* src/utils.c (fnmatch_nocase): Remove FNM_CASEFOLD emulation, gnulib takes care of it
+
+	* src/cookies.c (cookie_header): Remove use of alloca
+
+	* src/cookies.c (cookie_header): Remove use of alloca
+
+	* src/cookies.c (cookie_handle_set_cookie): Remove use of alloca
+
+	* src/cookies.c (parse_set_cookie): Explicitly convert from double to time_t
+
+	* src/cookies.c (parse_set_cookie): Remove use of alloca
+
+	* src/warc.c (warc_uuid_str): Add second param to windows_uuid_str
+
+	* src/cookies.c (parse_set_cookie): Remove use of alloca
+
+	* src/main.c (main): Code clean, reduce allocations
+
+	* src/main.c: Modify macro IF_SSL to work with latest struct changes
+
+	* configure.ac: List 'no' for --with-ssl in help output
+
+2020-02-13  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/ftp.c (ftp_retrieve_dirs): Remove use of alloca
+
+	* src/ftp.c (ftp_retrieve_list): Remove use of alloca
+
+	* src/ftp.c (ftp_loop_internal): Remove use of alloca
+
+	* src/ftp.c (getftp): Remove use of alloca
+
+	* src/http.c: Include xstrndup.h unconditionally
+
+	* src/ftp-basic.c (ftp_request): Remove use of alloca
+
+	* src/html-parse.c (name_allowed): Remove use of alloca
+
+	* src/netrc.c (search_netrc): Remove use of alloca
+
+	* src/init.c (parse_line): Remove use of alloca
+
+	Remove use of alloca in setoptval
+	* src/init.c (setoptval): Remove use of alloca
+	* src/init.h: Add define MAX_LONGOPTION
+	* src/main.c (struct cmdline_option): Make 'long_name' a char array
+
+	* src/http.c (check_auth): Remove use of alloca
+
+	* src/http.c (print_response_line): Remove use of alloca
+
+	* src/http.c (request_set_user_header): Remove use of alloca
+
+	* src/http.c (metalink_from_http): Remove use of alloca
+
+	* src/http.c (basic_authentication_encode): Remove use of alloca
+
+	* src/http.c (gethttp): Remove use of alloca
+
+	* src/http.c (gethttp): Remove use of alloca
+
+	* src/http.c (set_file_timestamp): Remove use of alloca
+
+	* src/main.c (main): Remove use of alloca
+
+	* src/url.c (append_uri_pathel): Replace alloca by fixed array / sprintf
+
+	* src/url.c (append_uri_pathel): Replace alloca by fixed array / xmalloc
+
+	* src/utils.c (make_directory): Replace alloca by fixed array / xmalloc
+
+	* src/utils.c (unique_name_1): Replace alloca by xmalloc
+
+	Add buffer size param to warc_uuid_str
+	* src/http.c (gethttp): Add buffer size param to warc_uuid_str.
+	* src/warc.c: Likewise
+	* src/warc.h: Likewise
+
+2020-02-12  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http-ntlm.c (ntlm_output): Remove alloca
+
+	* src/http-ntlm.c (mkhash): Replace alloca by fixed length array
+
+	* src/http-ntlm.c (ntlm_input): Replace alloca by fixed length array
+
+	* src/gnutls.c (ssl_init): Replace alloca by fixed length arrays
+
+	* src/retr.c (fd_read_body): Fix signedness warnings
+
+	* src/retr.c (rotate_backups): Replace alloca by fixed length arrays
+
+	* src/wget.h: Add inline to _unhex
+
+	* src/metalink.h: Include dirname.h, remove declaration of last_component
+
+	* configure.ac: Add -Wno-undef -Wno-float-equal to gcc's WARN_CFLAGS
+
+	* src/convert.c (convert_links): Fix previous commit
+
+	* src/convert.c (convert_links): Add \n (Fixes #57795)
+
+2020-01-25  Ander Juaristi  <ajuaristi@gmx.es>
+
+	Do not overwrite restval if len is smaller
+	 * src/http.c (http_loop): overwrite 'restval' only if 'len' is
+	   greater than it. Else substract 'len' to 'restval'.
+
+	When retrying a request, only send a 'Range' header if the previous
+	request returned data.
+
+2020-01-24  Вячеслав Петрищев  <vyachemail@gmail.com>
+
+	Fix and cleanup progress bar code
+	*src/progress.c
+	 (struct dot_progress) accumulated, rows: Type changed to wgint
+	 (print_row_stats): Fix missing unit name 'T'
+	 (dot_update): Add ability to reduce dot_draw runtime
+	 (bar_update): Avoid integer overflow
+
+	* src/progress.c: Fix MINIMUM_SCREEN_WIDTH
+
+	* src/progress.c (prepare_filename): Replace zero-width mbc (\xe2\x80\x8b, ...)
+
+	Reenabling filename scrolling code in progress bar
+	* src/progress.c: Reenabling filename scrolling code
+	  (bar_create):  Reenabling file name scrolling.
+	  (bar_create):  Memory allocation, filename preparation.
+	  (bar_finish):  Filename  memory deallocation.
+	  (prepare_filename):  New function, replaces unprintable chars.
+
+	Fix multibyte handling in progress bar
+	* src/progress.c
+	  (count_cols): Fix return value if invalid multibyte sequence was encountered
+	  (bar_draw): Fix xrealoc size
+
+2020-01-10  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/progress.c (print_row_stats): Fix two integer overflows
+
+	* .gitlab-ci.yml: Fix path for llvm-symbolizer
+
+	* fuzz/wget_progress_fuzzer.in/*: Add fuzzer corpora
+
+	* src/retr.c (calc_rate): Remove unwanted assertions
+
+	Fix buffer overflows in progress 'bar' code
+	* src/progress.c (progress_interactive_p): Sanitize input.
+	  (progress_update): Likewise.
+	  (bar_create): Use larger BUF_LEN.
+	  (bar_create): Remove superfluous memset.
+	  (bar_create): Fix filename layout.
+	  (bar_create): Remove filename scrolling code, it caused many buffer
+	  overflows later in bar_create.
+	  (bar_create): Support TB/s download speed.
+
+	Add new fuzzer for the progress bar code
+	* Makefile.am: Add wget_progress_fuzzer.
+	* wget_progress_fuzzer.c: New file.
+
+2020-01-10  Darshit Shah  <darnir@gnu.org>
+
+	Update copyright year to 2020
+
+	* cfg.mk: Set update-copyright to use intervals
+
+2019-12-27  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix segfault in progress bar in certain locales
+	* src/progress.c (create_image): Protect memset from negative count
+
+	Reported-by: JunDong Xie
+
+2019-12-27  Tim Rühsen  <tim.ruehsen@gmx.de>  (tiny change)
+
+	* src/progress.c (count_cols): Fix return value if USE_NLS_PROGRESS_BAR is undefined
+	Taking patch from #54126
+	Reported-by: Vyacheslav
+
+2019-12-27  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/progress.c: Allow const names for set_progress_implementation.
+
+	* src/progress.c (dot_draw): Avoid integer overflow
+
+	* fuzz/README.md: Add --enable-assert to fuzzing build
+
+	* src/progress.c (print_row_stats): Fix UB if eta < 0
+
+	* src/progress.c (dot_update, dot_finish): Sanitize input
+
+	* src/retr.c (calc_rate): Fix division by 0
+
+	* src/retr.c (calc_rate): Add TB/s
+
+	* src/progress.c (create_image): Sanitize input param 'dl_total_time'
+
+	* fuzz/README.md: Update clang instructions
+
+2019-12-26  Lauri Nurmi  <lanurmi@iki.fi>  (tiny change)
+
+	Mark note to translators properly and elaborate its contents.
+	* src/progress.c (create_image): Likewise
+
+	The note was not even picked by xgettext to be included in the .pot,
+	so barely any translators even saw the note.
+	Also, this is one of the most cryptic messages to translate in wget,
+	unless the translator happens to guess where the string is used,
+	or looks at the source.
+
+2019-12-26  Lauri Nurmi  <lanurmi@iki.fi>  (tiny change)
+
+	* src/main.c (print_help): Don't cut translatable string mid-sentence.
+	Complicates translating.
+
+2019-11-24  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* fuzz/wget_read_hunk_fuzzer.c: Use cast to fix C++ error
+
+2019-11-21  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/Makefile.am: Add build_info.c to EXTRA_DIST
+
+	* .gitlab-ci.yml: Skip tests on tarball build due to missing perl
+
+	* tests/WgetTests.pm: Support  to set the wget executable for testing
+
+	* .gitlab-ci.yml: Add --with-ssl=no
+
+	* .gitlab-ci.yml: Allow failure for Valgrind and Scan-Build CI runner
+
+	* src/ftp.c (delelement): Make sure free'd pointer is set to NULL
+
+	* configure.ac: Remove -fno-sanitize-recover=integer
+	With this option on, several overflows from gnulib code (all
+	harmless and on purpose) would break our tests.
+
+2019-11-21  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Replace XDIGIT_TO_NUM by _unhex() with proper unsigned handling
+	* src/wget.h: Replace XDIGIT_TO_NUM by _unhex()
+	* src/html-parse.c (decode_entity): Use _unhex()
+	* src/host.c (is_valid_ipv6_address): Use _unhex()
+	* src/url.c (url_unescape_1): Use unsigned char to avoid UB
+	* src/res.c (free_specs): Likewise
+
+	Code taken from Wget2. XDIGIT_TO_NUM had a signed issue, detected by
+	scan-build static anylyzer.
+
+2019-11-21  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/connect.c (select_fd): Check for negative fd
+
+	* .gitlab-ci.yml: Enable Windows executables for MinGW runner
+
+	* .gitlab-ci.yml: Add CI runners from Wget2
+
+2019-11-21  Tomas Hozza  <thozza@redhat.com>
+
+	testenv: enable running tests on different wget binary
+	* testenv/README: Document $WGET_PATH
+	* testenv/test/base_test.py: Use $WGET_PATH instead ../src/wget if set
+
+	Previously tests in testenv/ directory were run only on wget binary
+	which was built from sources in src/ directory. However as a
+	wget maintainer in a Linux distribution, I would like to be able to run
+	upstream tests on the wget binary distributed with the distribution.
+
+	This change enables one to define WGET_PATH environment variable
+	to a path to wget binary which should be used by tests.
+
+2019-11-21  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* AUTHORS: Add Darshit Shah and Tim Rühsen as maintainers
+
+2019-11-19  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/cookie.c: Fix cookie file header to be recognized by 'file'
+
+	* .mailmap: Allow mapping contributors for statistics
+
+2019-10-03  Darshit Shah  <darnir@gnu.org>
+
+	* configure.ac: Ignore -Wchkp which is deprecated
+
+	Update gnulib
+	* gnulib: Pull submodule
+	* bootstrap: Update file from gnulib
+
+2019-05-30  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Revert "Add . to perl path for all perl tests"
+	This reverts commit 79be99aff4717a75ec7531d8b3a4ec96341754ca.
+
+	/usr/bin/env 8.28 and below doesn't know -S.
+
+2019-05-30  Darshit Shah  <darnir@gnu.org>
+
+	Revert "	Hi, Thank you again Darshit for your response. The RejectHeaderField rule rejects ANY header"
+	I accidentally commited this patch.
+
+	This reverts commit 4ce2f93600827f47f7fea5e7eeb224232cef3c3d.
+
+2019-05-30  Darshit Shah  <darnir@gnu.org>
+
+	* .gitignore: Update gitignore file
+
+2019-05-30  sulfastor  <torresmoisesa@gmail.com>
+
+		Hi, Thank you again Darshit for your response. The RejectHeaderField rule rejects ANY header 	of the header field while RejectHeader rejects ONLY the specified full header. 	Since we wanted to be sure a header field is not sent to the server we wrote this rule.
+		* doc/wget.texi: Added --disable-header documentation.
+	        * fuzz/wget_options_fuzzer.dict: Update with --disable-header inputs.
+	        * src/http.c (disabled_header): Checks for disabled headers
+		(request_set_header): Doesn't let header to be set if disabled
+		(gethttp): frees disabled header to let overriding
+	        * src/init.c (cmd_dis_header), (check_user_disabled_header) added new option disabled_headers.
+	        * src/main.c: added new option --disable-header, added help description
+	        * src/options.h: added new option --disable-header
+		* src/utils.h (vec_remove_header)
+		* src/utils.c (vec_remove_header) removes all header instances from vector
+	        * testenv/Makefile.am: Added new test files
+	        * testenv/server/http/http_server.py: Added new rule RejectHeaderField
+	        * testenv/conf/reject_header_field.py: Added new rule RejectHeaderField
+	        * testenv/README: Added help description for new rule
+	        * testenv/Test-disable-default-headers.py: Test without using --header
+	        * testenv/Test-disable-headers-after.py: Test using --header before --disable-header
+	        * testenv/Test-disable-headers-before.py: Test using --header after --disable-header
+
+2019-05-28  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/log.c (log_vprintf_internal): Don't log twice
+
+2019-05-25  AviSoomirtee  <avi@cyberstorm.mu>  (tiny change)
+
+	* src/openssl.c (ssl_init): post handshake auth for OpenSSL
+
+2019-05-24  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* bootstrap.conf: Explicitly set source_base and test_base
+
+2019-05-07  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/convert.c (convert_basename): Do not pass NULL to strrchr()
+
+	* src/url.c (append_uri_pathel): Check for possible NULL dereference
+
+	* fuzz/main.c: Fix paths for WIN32
+
+	* bootstrap.conf: Work around VPATH issue
+
+	* configure.ac: Update gettext version to 0.19.3
+
+	* bootstrap.conf: Remove rsync as prerequisite
+	'./bootstrap --skip-po' won't need wget nor rsync
+
+	* bootstrap.conf: Replace prerequisite xz by gzip
+
+2019-05-03  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Add sanitizer flags for ./configure
+	* bootstrap.conf: Add 'warning' gnulib module
+	* configure.ac: Add --enable-fsanitize-* flags
+	* tests/Makefile.am: Add compiler flags for unit testing
+
+2019-05-02  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Add --enable-manywarnings from wget2
+	* .gitignore: Exclude /lib/Makefile.am
+	* bootstrap.conf: Use --makefile-name=gnulib.mk with gnulib-tool
+	* configure.ac: Use wget_MANYWARNINGS()
+	* lib/Makefile.am: Define empty noinst_LIBRARIES and MAINTAINERCLEANFILES
+	* m4/wget_manywarnings.m4: New file from GNU Wget2
+	* src/Makefile.am: Use WARN_CFLAGS for AM_CFLAGS
+
+2019-04-28  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Add CONTRIBUTING.md
+	* CONTRIBUTING.md: New file for contributors
+	* README: Mention CONTRIBUTING.md
+
+2019-04-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* fuzz/*.in/*: Update corpora from OSS-fuzz
+
+	* fuzz/get_ossfuzz_corpora: Remove -f from unzip, mkdir *.in/
+
+	* .gitlab-ci.yml: Update Gitlab CI WORKDIR to /usr/local
+
+2019-04-26  Eneas U de Queiroz  <cote2004-github@yahoo.com>  (tiny change)
+
+	* src/openssl.c: fix ssl_init for openssl 1.1.1
+	ssl_init fails with openssl 1.1.1 when openssl.cnf is not found.
+	Redundant calls to intialization functions were removed as
+	OPENSSL_config takes care of them for openssl versions < 1.1.0.
+	For versions > 1.1.0, OPENSSL_init_ssl is preferred.
+
+2019-04-11  Leif Ryge  <leif@synthesize.us>  (tiny change)
+
+	* doc/wget.texi: Fix typo in man page
+
+2019-04-11  raminfp  <ramin.blackhat@gmail.com>
+
+	[log] miss check If logging is inhibited
+
+2019-04-05  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/iri.c (do_conversion): Remove unneeded debug lines
+
+2019-04-05  Darshit Shah  <darnir@gnu.org>
+
+	* NEWS: Update NEWS for new release
+
+2019-04-05  Tim Ruehsen  <tim.ruehsen@gmx.de>
+
+	Fix a buffer overflow vulnerability
+	* src/iri.c(do_conversion): Reallocate the output buffer to a larger
+	  size if it is already full
+
+2019-04-05  Darshit Shah  <darnir@gnu.org>
+
+	* NEWS: Update NEWS for new release
+
+2019-04-03  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/openssl.c (ssl_init): Check for X509_V_FLAG_PARTIAL_CHAIN
+
+2019-04-01  Darshit Shah  <darnir@gnu.org>
+
+	* gnulib: Pull forward
+
+2019-03-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* fuzz/main.c (test_all_from): Fix indentation
+
+2019-03-25  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix corner case in processing server response
+	* src/http.c (response_head_terminator): Don't access uninitialized data
+	* fuzz/wget_read_hunk_fuzzer.c: Sync response_head_terminator()
+
+	Add new fuzzer wget_read_hunk_fuzzer.c
+	* fuzz/Makefile.am: Add wget_read_hunk_fuzzer
+	* fuzz/wget_read_hunk_fuzzer.c: New file
+	* fuzz/wget_read_hunk_fuzzer.in/*: Fuzz corpora
+	* src/connect.c: Add connect_cleanup()
+	* src/connect.h: Add prototype for connect_cleanup()
+
+2019-03-03  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* fuzz/wget_netrc_fuzzer.c: Fix fuzzer
+
+	* fuzz/wget_ftpls_fuzzer.c: Fix fuzzer
+
+2019-02-22  Jeffrey Walton  <noloader@gmail.com>
+
+	* src/openssl.c (ssl_init): Trust partial cert chain
+
+2019-02-20  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/ftp-ls.c (ftp_parse_vms_ls): Use snprintf instead of strcpy/strcat
+
+2019-02-19  Darshit Shah  <darnir@gnu.org>
+
+	* src/html-url.c(get_urls_html_fm): Add message in verbose mode with no-follow attribute
+
+2019-02-19  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix fuzz/ tests for OpenBSD
+	* fuzz/wget_*_fuzzer.c: Take care when calling exit()
+
+	* fuzz/Makefile.am: Remove hard-coded gcc flags
+
+	Fix STDERR closing/restoring in fuzzers
+	* fuzz/fuzzer.h: Add CLOSE_STDERR and RESTORE_STDERR
+	* fuzz/wget_*_fuzzer.c: Use CLOSE_STDERR and RESTORE_STDERR
+
+	* configure.ac: Rearrange AM_ICONV before gl_INIT
+
+2019-02-19  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Do not hard-code -ldl in fuzz/Makefile.am
+	* configure.ac: Search for dlopen and add library to $FUZZ_LIBS
+	* fuzz/Makefile.am: Link with $FUZZ_LIBS instead of -ldl
+
+	This fixes linking on BSD systems.
+
+	Reported-by: Nam Nguyen
+
+2019-02-14  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* doc/wget.texi: Correct --logfile -> --output-file
+
+2019-02-10  Darshit Shah  <darnir@gnu.org>
+
+	Update gnulib
+
+	Update copyright statements
+
+2019-01-23  Leon Klingele  <git@leonklingele.de>  (tiny change)
+
+	docs: --no-cache also sets the 'Cache-Control: no-cache' header
+	* doc/wget.texi: Add Cache-Control to docs
+	* src/wget.h: Add Cache-Control to comment of SEND_NOCACHE
+
+2019-01-20  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* .gitlab-ci.yml: Add minimal build
+
+	* src/init.c (cleanup): Check HAVE_HSTS
+	Reported-by: Simon Dales
+
+2018-12-31  André Wolski  <andre@dena-design.de>
+
+	NTLM restart authentication (trivial change)
+	* src/http-ntlm.c (ntlm_input): Continue on NTLMSTATE_LAST,
+	  error on NTLMSTATE_TYPE3
+
+	The code comes from the cURL project. Thanks to Daniel Stenberg
+	for donating the code.
+
+	https://lists.gnu.org/archive/html/bug-wget/2018-12/msg00030.html
+
+2018-12-28  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* contrib/spell-checker: Remove trailing whitespace
+
+	Fix typos detected by codespell (via contrib/spell-checker)
+
+	* contrib/spell-checker: Add script for spell checking
+
+2018-12-27  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* fuzz/Makefile.am: Fix order of libraries for linking
+
+	* src/wget.h: #undef _Noreturn when building with C++
+
+	* src/gnutls.c (ssl_connect_wget): Fix call to gnutls_set_default_priority()
+
+2018-12-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* NEWS: Add release changes for 1.20.1
+
+2018-12-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Don't save user/pw with --xattr
+	Also the Referer info is reduced to scheme+host+port.
+
+	* src/ftp.c (getftp): Change params of set_file_metadata()
+	* src/http.c (gethttp): Change params of set_file_metadata()
+	* src/xattr.c (set_file_metadata): Remove user/password from origin URL,
+	  reduce Referer value to scheme/host/port.
+	* src/xattr.h: Change prototype of set_file_metadata()
+
+2018-12-26  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Don't use extended attributes (--xattr) by default
+	* src/init.c (defaults): Set enable_xattr to false by default
+	* src/main.c (print_help): Reverse option logic of --xattr
+	* doc/wget.texi: Add description for --xattr
+
+	Users may not be aware that the origin URL and Referer are saved
+	including credentials, and possibly access tokens within
+	the urls.
+
+2018-12-13  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* .travis.yml: Email to wget-dev instead bug-wget mailing list
+
+2018-11-30  Darshit Shah  <darnir@gnu.org>
+
+	* NEWS: Prepare for new version
+
 2018-11-13  Darshit Shah  <darnir@gnu.org>
+
+	* contrib/make-release: Add a small checklist for pending tasks
 
 	Prepare NEWS for new release
 
@@ -4619,10 +5811,6 @@
 
 	Add support for older versions of flex (tiny change)
 	E.g. flex 2.5.4 (Solaris 10) does not like a space after -o.
-
-2014-12-10  Tim Rühsen  <tim.ruehsen@gmx.de>
-
-	Check for pcre.h in configure.ac
 
 2014-12-11  Tim Ruehsen <tim.ruehsen@gmx.de>
 

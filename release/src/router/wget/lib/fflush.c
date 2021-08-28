@@ -1,5 +1,5 @@
 /* fflush.c -- allow flushing input streams
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ clear_ungetc_buffer (FILE *fp)
       fp->_ungetc_count = 0;
       fp->_rcount = - fp->_rcount;
     }
-# elif defined _IOERR               /* Minix, AIX, HP-UX, IRIX, OSF/1, Solaris, OpenServer, mingw, MSVC, NonStop Kernel, OpenVMS */
+# elif defined _IOERR               /* Minix, AIX, HP-UX, IRIX, OSF/1, Solaris, OpenServer, UnixWare, mingw, MSVC, NonStop Kernel, OpenVMS */
   /* Nothing to do.  */
 # else                              /* other implementations */
   fseeko (fp, 0, SEEK_CUR);
@@ -159,25 +159,28 @@ rpl_fflush (FILE *stream)
 
 #else
   {
-    /* Notes about the file-position indicator:
-       1) The file position indicator is incremented by fgetc() and decremented
+    /* What POSIX says:
+       1) About the file-position indicator (-> fseeko, ftello):
+          The file position indicator is incremented by fgetc() and decremented
           by ungetc():
-          <http://www.opengroup.org/susv3/functions/fgetc.html>
+          <https://pubs.opengroup.org/onlinepubs/9699919799/functions/fgetc.html>
             "... the fgetc() function shall ... advance the associated file
              position indicator for the stream ..."
-          <http://www.opengroup.org/susv3/functions/ungetc.html>
+          <https://pubs.opengroup.org/onlinepubs/9699919799/functions/ungetc.html>
             "The file-position indicator is decremented by each successful
              call to ungetc()..."
-       2) <http://www.opengroup.org/susv3/functions/ungetc.html> says:
-            "The value of the file-position indicator for the stream after
-             reading or discarding all pushed-back bytes shall be the same
-             as it was before the bytes were pushed back."
-          Here we are discarding all pushed-back bytes.  But more specifically,
-       3) <http://www.opengroup.org/austin/aardvark/latest/xshbug3.txt> says:
-            "[After fflush(),] the file offset of the underlying open file
-             description shall be set to the file position of the stream, and
-             any characters pushed back onto the stream by ungetc() ... shall
-             be discarded."  */
+       2) fflush discards bytes pushed back by ungetc:
+          <https://pubs.opengroup.org/onlinepubs/9699919799/functions/fflush.html>
+            "...any characters pushed back onto the stream by ungetc()
+             or ungetwc() that have not subsequently been read from the
+             stream shall be discarded..."
+          This implies implicitly: fflush does not change the file position
+          indicator.
+       3) Effects on the file descriptor, if the file descriptor is capable of
+          seeking:
+          <https://pubs.opengroup.org/onlinepubs/9699919799/functions/fflush.html>
+            "...the file offset of the underlying open file description shall
+             be set to the file position of the stream..."  */
 
     /* POSIX does not specify fflush behavior for non-seekable input
        streams.  Some implementations purge unread data, some return

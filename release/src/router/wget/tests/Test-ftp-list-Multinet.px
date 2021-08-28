@@ -1,4 +1,4 @@
-#!/usr/bin/env -S perl -I .
+#!/usr/bin/env perl
 
 
 # 2013-10-17 Andrea Urbani (matfanjol)

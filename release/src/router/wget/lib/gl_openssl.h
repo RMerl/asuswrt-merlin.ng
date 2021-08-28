@@ -1,6 +1,6 @@
 /* Wrap openssl crypto hash routines in gnulib interface.  -*- coding: utf-8 -*-
 
-   Copyright (C) 2013-2018 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -90,15 +90,15 @@ GL_CRYPTO_FN (_process_block) (const void *buf, size_t len, struct _gl_ctx *ctx)
 #endif
 
 GL_OPENSSL_INLINE void *
-GL_CRYPTO_FN (_finish_ctx) (struct _gl_ctx *ctx, void *res)
+GL_CRYPTO_FN (_finish_ctx) (struct _gl_ctx *ctx, void *restrict res)
 { OPENSSL_FN (_Final) ((unsigned char *) res, (_gl_CTX *) ctx); return res; }
 
 GL_OPENSSL_INLINE void *
-GL_CRYPTO_FN (_buffer) (const char *buf, size_t len, void *res)
+GL_CRYPTO_FN (_buffer) (const char *buf, size_t len, void *restrict res)
 { return OPENSSL_FN () ((const unsigned char *) buf, len, (unsigned char *) res); }
 
 GL_OPENSSL_INLINE void *
-GL_CRYPTO_FN (_read_ctx) (const struct _gl_ctx *ctx, void *res)
+GL_CRYPTO_FN (_read_ctx) (const struct _gl_ctx *ctx, void *restrict res)
 {
   /* Assume any unprocessed bytes in ctx are not to be ignored.  */
   _gl_CTX tmp_ctx = *(_gl_CTX *) ctx;

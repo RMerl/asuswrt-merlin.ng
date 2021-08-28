@@ -4,7 +4,7 @@
 # Print a version string.
 scriptversion=2018-03-07.03; # UTC
 
-# Copyright (C) 2006-2018 Free Software Foundation, Inc.
+# Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ scriptversion=2018-03-07.03; # UTC
 # list the version-controlled files in that directory.
 
 # If there's an argument, it must be a single, "."-relative directory name.
-# cvsu is part of the cvsutils package: http://www.red-bean.com/cvsutils/
+# cvsu is part of the cvsutils package: https://www.red-bean.com/cvsutils/
 
 postprocess=
 case $1 in

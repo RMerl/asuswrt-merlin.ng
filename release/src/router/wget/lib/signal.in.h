@@ -1,6 +1,6 @@
 /* A GNU-like <signal.h>.
 
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -55,13 +55,13 @@
 #ifndef _@GUARD_PREFIX@_SIGNAL_H
 #define _@GUARD_PREFIX@_SIGNAL_H
 
-/* Mac OS X 10.3, FreeBSD 6.4, OpenBSD 3.8, OSF/1 4.0, Solaris 2.6, Android
-   declare pthread_sigmask in <pthread.h>, not in <signal.h>.
+/* Mac OS X 10.3, FreeBSD 6.4, OpenBSD 3.8, OSF/1 4.0, Solaris 2.6, Android,
+   OS/2 kLIBC declare pthread_sigmask in <pthread.h>, not in <signal.h>.
    But avoid namespace pollution on glibc systems.*/
 #if (@GNULIB_PTHREAD_SIGMASK@ || defined GNULIB_POSIXCHECK) \
     && ((defined __APPLE__ && defined __MACH__) \
         || defined __FreeBSD__ || defined __OpenBSD__ || defined __osf__ \
-        || defined __sun || defined __ANDROID__) \
+        || defined __sun || defined __ANDROID__ || defined __KLIBC__) \
     && ! defined __GLIBC__
 # include <pthread.h>
 #endif
@@ -133,18 +133,28 @@ typedef void (*sighandler_t) (int);
 #   define pthread_sigmask rpl_pthread_sigmask
 #  endif
 _GL_FUNCDECL_RPL (pthread_sigmask, int,
-                  (int how, const sigset_t *new_mask, sigset_t *old_mask));
+                  (int how,
+                   const sigset_t *restrict new_mask,
+                   sigset_t *restrict old_mask));
 _GL_CXXALIAS_RPL (pthread_sigmask, int,
-                  (int how, const sigset_t *new_mask, sigset_t *old_mask));
+                  (int how,
+                   const sigset_t *restrict new_mask,
+                   sigset_t *restrict old_mask));
 # else
 #  if !(@HAVE_PTHREAD_SIGMASK@ || defined pthread_sigmask)
 _GL_FUNCDECL_SYS (pthread_sigmask, int,
-                  (int how, const sigset_t *new_mask, sigset_t *old_mask));
+                  (int how,
+                   const sigset_t *restrict new_mask,
+                   sigset_t *restrict old_mask));
 #  endif
 _GL_CXXALIAS_SYS (pthread_sigmask, int,
-                  (int how, const sigset_t *new_mask, sigset_t *old_mask));
+                  (int how,
+                   const sigset_t *restrict new_mask,
+                   sigset_t *restrict old_mask));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (pthread_sigmask);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef pthread_sigmask
 # if HAVE_RAW_DECL_PTHREAD_SIGMASK
@@ -168,7 +178,9 @@ _GL_FUNCDECL_SYS (raise, int, (int sig));
 #  endif
 _GL_CXXALIAS_SYS (raise, int, (int sig));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (raise);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef raise
 /* Assume raise is always declared.  */
@@ -291,10 +303,14 @@ _GL_CXXALIASWARN (sigpending);
 #  define SIG_SETMASK 1  /* blocked_set = *set; */
 #  define SIG_UNBLOCK 2  /* blocked_set = blocked_set & ~*set; */
 _GL_FUNCDECL_SYS (sigprocmask, int,
-                  (int operation, const sigset_t *set, sigset_t *old_set));
+                  (int operation,
+                   const sigset_t *restrict set,
+                   sigset_t *restrict old_set));
 # endif
 _GL_CXXALIAS_SYS (sigprocmask, int,
-                  (int operation, const sigset_t *set, sigset_t *old_set));
+                  (int operation,
+                   const sigset_t *restrict set,
+                   sigset_t *restrict old_set));
 _GL_CXXALIASWARN (sigprocmask);
 
 /* Install the handler FUNC for signal SIG, and return the previous
@@ -318,10 +334,18 @@ _GL_FUNCDECL_RPL (signal, _gl_function_taking_int_returning_void_t,
 _GL_CXXALIAS_RPL (signal, _gl_function_taking_int_returning_void_t,
                   (int sig, _gl_function_taking_int_returning_void_t func));
 # else
+/* On OpenBSD, the declaration of 'signal' may not be present at this point,
+   because it occurs in <sys/signal.h>, not <signal.h> directly.  */
+#  if defined __OpenBSD__
+_GL_FUNCDECL_SYS (signal, _gl_function_taking_int_returning_void_t,
+                  (int sig, _gl_function_taking_int_returning_void_t func));
+#  endif
 _GL_CXXALIAS_SYS (signal, _gl_function_taking_int_returning_void_t,
                   (int sig, _gl_function_taking_int_returning_void_t func));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (signal);
+# endif
 
 # if !@HAVE_POSIX_SIGNALBLOCKING@ && GNULIB_defined_SIGPIPE
 /* Raise signal SIGPIPE.  */

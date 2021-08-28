@@ -1,6 +1,6 @@
 /* Conversion of links to local files.
-   Copyright (C) 2003-2011, 2014-2015, 2018 Free Software Foundation,
-   Inc.
+   Copyright (C) 2003-2011, 2014-2015, 2018-2021 Free Software
+   Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -64,17 +64,17 @@ convert_links_in_hashtable (struct hash_table *downloaded_set,
                             int is_css,
                             int *file_count)
 {
-  int i;
+  int i, cnt = 0;
+  char *arr[1024], **file_array;
 
-  int cnt;
-  char **file_array;
-
-  cnt = 0;
-  if (downloaded_set)
-    cnt = hash_table_count (downloaded_set);
-  if (cnt == 0)
+  if (!downloaded_set || (cnt = hash_table_count (downloaded_set)) == 0)
     return;
-  file_array = alloca_array (char *, cnt);
+
+  if (cnt <= (int) countof (arr))
+    file_array = arr;
+  else
+    file_array = xmalloc (cnt * sizeof (arr[0]));
+
   string_set_to_array (downloaded_set, file_array);
 
   for (i = 0; i < cnt; i++)
@@ -166,6 +166,9 @@ convert_links_in_hashtable (struct hash_table *downloaded_set,
       /* Free the data.  */
       free_urlpos (urls);
     }
+
+  if (file_array != arr)
+    xfree (file_array);
 }
 
 /* This function is called when the retrieval is done to convert the
@@ -240,6 +243,7 @@ convert_links (const char *file, struct urlpos *links)
         logputs (LOG_VERBOSE, _("nothing to do.\n"));
         return;
       }
+    logprintf (LOG_VERBOSE, _("%d.\n"), dry_count);
   }
 
   fm = wget_read_file (file);
@@ -255,9 +259,9 @@ convert_links (const char *file, struct urlpos *links)
     write_backup_file (file, downloaded_file_return);
 
   /* Before opening the file for writing, unlink the file.  This is
-     important if the data in FM is mmaped.  In such case, nulling the
+     important if the data in FM is mapped.  In such case, nulling the
      file, which is what fopen() below does, would make us read all
-     zeroes from the mmaped region.  */
+     zeroes from the mapped region.  */
   if (unlink (file) < 0 && errno != ENOENT)
     {
       logprintf (LOG_NOTQUIET, _("Unable to delete %s: %s\n"),
@@ -486,7 +490,7 @@ convert_basename (const char *p, const struct urlpos *link)
 {
   int len = link->size;
   char *url = NULL;
-  char *org_basename = NULL, *local_basename = NULL;
+  char *org_basename = NULL, *local_basename;
   char *result = NULL;
 
   if (*p == '"' || *p == '\'')
@@ -503,7 +507,7 @@ convert_basename (const char *p, const struct urlpos *link)
   else
     org_basename = url;
 
-  local_basename = strrchr (link->local_name, '/');
+  local_basename = link->local_name ? strrchr (link->local_name, '/') : NULL;
   if (local_basename)
     local_basename++;
   else
@@ -537,32 +541,6 @@ write_backup_file (const char *file, downloaded_file_t downloaded_file_return)
      clobber .orig files sitting around from previous invocations.
      On VMS, use "_orig" instead of ".orig".  See "wget.h". */
 
-  /* Construct the backup filename as the original name plus ".orig". */
-  size_t         filename_len = strlen (file);
-  char*          filename_plus_orig_suffix;
-
-  /* TODO: hack this to work with css files */
-  if (downloaded_file_return == FILE_DOWNLOADED_AND_HTML_EXTENSION_ADDED)
-    {
-      /* Just write "orig" over "html".  We need to do it this way
-         because when we're checking to see if we've downloaded the
-         file before (to see if we can skip downloading it), we don't
-         know if it's a text/html file.  Therefore we don't know yet
-         at that stage that -E is going to cause us to tack on
-         ".html", so we need to compare vs. the original URL plus
-         ".orig", not the original URL plus ".html.orig". */
-      filename_plus_orig_suffix = alloca (filename_len + 1);
-      strcpy (filename_plus_orig_suffix, file);
-      strcpy ((filename_plus_orig_suffix + filename_len) - 4, "orig");
-    }
-  else /* downloaded_file_return == FILE_DOWNLOADED_NORMALLY */
-    {
-      /* Append ".orig" to the name. */
-      filename_plus_orig_suffix = alloca (filename_len + sizeof (ORIG_SFX));
-      strcpy (filename_plus_orig_suffix, file);
-      strcpy (filename_plus_orig_suffix + filename_len, ORIG_SFX);
-    }
-
   if (!converted_files)
     converted_files = make_string_hash_table (0);
 
@@ -573,10 +551,43 @@ write_backup_file (const char *file, downloaded_file_t downloaded_file_return)
      called on this file. */
   if (!string_set_contains (converted_files, file))
     {
+      /* Construct the backup filename as the original name plus ".orig". */
+      char buf[1024];
+      size_t filename_len = strlen (file);
+      char *filename_plus_orig_suffix;
+
+      if (filename_len < sizeof (buf) - 5)
+        filename_plus_orig_suffix = buf;
+      else
+        filename_plus_orig_suffix = xmalloc (filename_len + 5 + 1);
+
+      /* TODO: hack this to work with css files */
+      if (downloaded_file_return == FILE_DOWNLOADED_AND_HTML_EXTENSION_ADDED)
+        {
+          /* Just write "orig" over "html".  We need to do it this way
+             because when we're checking to see if we've downloaded the
+             file before (to see if we can skip downloading it), we don't
+             know if it's a text/html file.  Therefore we don't know yet
+             at that stage that -E is going to cause us to tack on
+             ".html", so we need to compare vs. the original URL plus
+             ".orig", not the original URL plus ".html.orig". */
+          memcpy (filename_plus_orig_suffix, file, filename_len - 4);
+          memcpy (filename_plus_orig_suffix + filename_len - 4, "orig", 5);
+        }
+      else /* downloaded_file_return == FILE_DOWNLOADED_NORMALLY */
+        {
+          /* Append ".orig" to the name. */
+          memcpy (filename_plus_orig_suffix, file, filename_len);
+          strcpy (filename_plus_orig_suffix + filename_len, ORIG_SFX);
+        }
+
       /* Rename <file> to <file>.orig before former gets written over. */
       if (rename (file, filename_plus_orig_suffix) != 0)
         logprintf (LOG_NOTQUIET, _("Cannot back up %s as %s: %s\n"),
                    file, filename_plus_orig_suffix, strerror (errno));
+
+      if (filename_plus_orig_suffix != buf)
+        xfree (filename_plus_orig_suffix);
 
       /* Remember that we've already written a .orig backup for this file.
          Note that we never free this memory since we need it till the
@@ -658,11 +669,18 @@ replace_attr_refresh_hack (const char *p, int size, FILE *fp,
                            const char *new_text, int timeout)
 {
   /* "0; URL=..." */
-  char *new_with_timeout = (char *)alloca (numdigit (timeout)
-                                           + 6 /* "; URL=" */
-                                           + strlen (new_text)
-                                           + 1);
-  sprintf (new_with_timeout, "%d; URL=%s", timeout, new_text);
+  char new_with_timeout[1024];
+
+  if (((unsigned) snprintf (
+       new_with_timeout, sizeof (new_with_timeout),
+       "%d; URL=%s", timeout, new_text)) >= sizeof (new_with_timeout))
+    {
+      // very unlikely fallback using heap memory
+      char *tmp = aprintf("%d; URL=%s", timeout, new_text);
+      const char *res = replace_attr (p, size, fp, tmp);
+      xfree (tmp);
+      return res;
+    }
 
   return replace_attr (p, size, fp, new_with_timeout);
 }
@@ -719,7 +737,9 @@ static char *
 local_quote_string (const char *file, bool no_html_quote)
 {
   const char *from;
-  char *newname, *to;
+  char *newname, *to, *res;
+  char buf[1024];
+  size_t tolen;
 
   char *any = strpbrk (file, "?#%;");
   if (!any)
@@ -727,8 +747,12 @@ local_quote_string (const char *file, bool no_html_quote)
 
   /* Allocate space assuming the worst-case scenario, each character
      having to be quoted.  */
-  to = newname = (char *)alloca (3 * strlen (file) + 1);
-  newname[0] = '\0';
+  tolen = 3 * strlen (file);
+  if (tolen < sizeof (buf))
+    to = newname = buf;
+  else
+    to = newname = xmalloc (tolen + 1);
+
   for (from = file; *from; from++)
     switch (*from)
       {
@@ -761,7 +785,15 @@ local_quote_string (const char *file, bool no_html_quote)
       }
   *to = '\0';
 
-  return no_html_quote ? strdup (newname) : html_quote_string (newname);
+  if (newname == buf)
+    return no_html_quote ? strdup (newname) : html_quote_string (newname);
+
+  if (no_html_quote)
+    return newname;
+
+  res = html_quote_string (newname);
+  xfree (newname);
+  return res;
 }
 
 /* Book-keeping code for dl_file_url_map, dl_url_file_map,
@@ -993,9 +1025,10 @@ register_css (const char *file)
   string_set_add (downloaded_css_set, file);
 }
 
-static void downloaded_files_free (void);
-
 /* Cleanup the data structures associated with this file.  */
+
+#if defined DEBUG_MALLOC || defined TESTING
+static void downloaded_files_free (void);
 
 void
 convert_cleanup (void)
@@ -1014,10 +1047,13 @@ convert_cleanup (void)
     }
   if (downloaded_html_set)
     string_set_free (downloaded_html_set);
+  if (downloaded_css_set)
+    string_set_free (downloaded_css_set);
   downloaded_files_free ();
   if (converted_files)
     string_set_free (converted_files);
 }
+#endif
 
 /* Book-keeping code for downloaded files that enables extension
    hacks.  */
@@ -1100,6 +1136,7 @@ downloaded_file (downloaded_file_t mode, const char *file)
   return FILE_NOT_ALREADY_DOWNLOADED;
 }
 
+#if defined DEBUG_MALLOC || defined TESTING
 static void
 downloaded_files_free (void)
 {
@@ -1114,6 +1151,7 @@ downloaded_files_free (void)
       downloaded_files_hash = NULL;
     }
 }
+#endif
 
 /* The function returns the pointer to the malloc-ed quoted version of
    string s.  It will recognize and quote numeric and special graphic

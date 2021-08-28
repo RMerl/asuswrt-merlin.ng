@@ -1,5 +1,5 @@
 /* Work around platform bugs in stat.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -42,10 +42,14 @@ orig_stat (const char *filename, struct stat *buf)
 #endif
 
 /* Specification.  */
+#ifdef __osf__
 /* Write "sys/stat.h" here, not <sys/stat.h>, otherwise OSF/1 5.1 DTK cc
    eliminates this include because of the preliminary #include <sys/stat.h>
    above.  */
-#include "sys/stat.h"
+# include "sys/stat.h"
+#else
+# include <sys/stat.h>
+#endif
 
 #include "stat-time.h"
 
@@ -61,6 +65,13 @@ orig_stat (const char *filename, struct stat *buf)
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 # include "stat-w32.h"
+/* Don't assume that UNICODE is not defined.  */
+# undef WIN32_FIND_DATA
+# define WIN32_FIND_DATA WIN32_FIND_DATAA
+# undef CreateFile
+# define CreateFile CreateFileA
+# undef FindFirstFile
+# define FindFirstFile FindFirstFileA
 #endif
 
 #ifdef WINDOWS_NATIVE
@@ -107,9 +118,9 @@ rpl_stat (char const *name, struct stat *buf)
      <https://lists.gnu.org/r/bug-gnulib/2017-04/msg00134.html>  */
   /* XXX Should we convert to wchar_t* and prepend '\\?\', in order to work
      around length limitations
-     <https://msdn.microsoft.com/en-us/library/aa365247.aspx> ?  */
+     <https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file> ?  */
 
-  /* POSIX <http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_13>
+  /* POSIX <https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_13>
      specifies: "More than two leading <slash> characters shall be treated as
      a single <slash> character."  */
   if (ISSLASH (name[0]) && ISSLASH (name[1]) && ISSLASH (name[2]))
@@ -190,8 +201,8 @@ rpl_stat (char const *name, struct stat *buf)
 
       /* Open a handle to the file.
          CreateFile
-         <https://msdn.microsoft.com/en-us/library/aa363858.aspx>
-         <https://msdn.microsoft.com/en-us/library/aa363874.aspx>  */
+         <https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/nf-fileapi-createfilea>
+         <https://docs.microsoft.com/en-us/windows/desktop/FileIO/creating-and-opening-files>  */
       HANDLE h =
         CreateFile (rname,
                     FILE_READ_ATTRIBUTES,
@@ -232,13 +243,13 @@ rpl_stat (char const *name, struct stat *buf)
 
       /* Get the details about the directory entry.  This can be done through
          FindFirstFile
-         <https://msdn.microsoft.com/en-us/library/aa364418.aspx>
-         <https://msdn.microsoft.com/en-us/library/aa365740.aspx>
+         <https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/nf-fileapi-findfirstfilea>
+         <https://docs.microsoft.com/en-us/windows/desktop/api/minwinbase/ns-minwinbase-_win32_find_dataa>
          or through
          FindFirstFileEx with argument FindExInfoBasic
-         <https://msdn.microsoft.com/en-us/library/aa364419.aspx>
-         <https://msdn.microsoft.com/en-us/library/aa364415.aspx>
-         <https://msdn.microsoft.com/en-us/library/aa365740.aspx>  */
+         <https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/nf-fileapi-findfirstfileexa>
+         <https://docs.microsoft.com/en-us/windows/desktop/api/minwinbase/ne-minwinbase-findex_info_levels>
+         <https://docs.microsoft.com/en-us/windows/desktop/api/minwinbase/ns-minwinbase-_win32_find_dataa>  */
       WIN32_FIND_DATA info;
       HANDLE h = FindFirstFile (rname, &info);
       if (h == INVALID_HANDLE_VALUE)
@@ -371,7 +382,7 @@ rpl_stat (char const *name, struct stat *buf)
 
       case ERROR_ACCESS_DENIED:  /* rname is such as 'C:\System Volume Information\foo'.  */
       case ERROR_SHARING_VIOLATION: /* rname is such as 'C:\pagefile.sys' (second approach only).  */
-                                    /* XXX map to EACCESS or EPERM? */
+                                    /* XXX map to EACCES or EPERM? */
         errno = EACCES;
         break;
 
@@ -394,7 +405,7 @@ rpl_stat (char const *name, struct stat *buf)
         errno = ENAMETOOLONG;
         break;
 
-      case ERROR_DELETE_PENDING: /* XXX map to EACCESS or EPERM? */
+      case ERROR_DELETE_PENDING: /* XXX map to EACCES or EPERM? */
         errno = EPERM;
         break;
 

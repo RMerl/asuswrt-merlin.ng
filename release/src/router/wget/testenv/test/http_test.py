@@ -42,7 +42,7 @@ class HTTPTest(BaseTest):
                 print_green("Test Passed.")
             else:
                 self.tests_passed = False
-            super(HTTPTest, self).begin()
+            return super(HTTPTest, self).begin()
 
     def instantiate_server_by(self, protocol):
         server = {HTTP: HTTPd,

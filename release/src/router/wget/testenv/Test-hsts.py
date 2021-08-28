@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from sys import exit
 from test.http_test import HTTPTest
-from test.base_test import HTTP, HTTPS
+from test.base_test import HTTPS, SKIP_TEST
 from misc.wget_file import WgetFile
 import time
 import os
@@ -12,7 +12,7 @@ This test makes sure Wget can parse a given HSTS database and apply the indicate
 
 print (os.getenv('SSL_TESTS'))
 if os.getenv('SSL_TESTS') is None:
-    exit (77)
+    exit (SKIP_TEST)
 
 def hsts_database_path():
     hsts_file = ".wget-hsts-testenv"

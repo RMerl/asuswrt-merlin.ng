@@ -1,5 +1,6 @@
 /* Exit status related declarations.
-   Copyright (C) 2009-2012, 2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2012, 2015, 2018-2021 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 

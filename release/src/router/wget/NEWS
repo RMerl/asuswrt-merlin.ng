@@ -1,9 +1,58 @@
 GNU Wget NEWS -- history of user-visible changes.
 
-Copyright (C) 1997-2018 Free Software Foundation, Inc.
-See the end for copying conditions.
+* Noteworthy changes in release 1.21.1 (2021-01-09)
 
-Please send GNU Wget bug reports to <bug-wget@gnu.org>.
+** Fix compilation on MacOS and Solaris 9
+
+** Resove bashism from configure.ac
+
+** Fix a compilation warning on 32-bit systems
+
+
+* Changes in Wget 1.21
+
+** Improve the number of translated strings
+
+** Remove all uses of alloca
+   In some places the length of untrusted strings has been used, e.g.
+   strings from the command line or from remote.
+
+** Fix buffer overflows in progress bar code in some locales
+
+** Fix two null pointer accesses
+
+** Amend cookie file header to be recognized by the 'file' command
+
+** Post Handshake Authentication for OpenSSL
+
+** Require gettext version 0.19.3+
+
+** Add configure flags --enable-fsanitize-ubsan, --enable-fsanitize-asan
+   and --enable-fsanitize-msan for gcc and clang
+
+** Make several smaller fixes, enhance fuzzing, enhance building
+
+
+* Changes in Wget 1.20.3
+
+** Fixed a buffer overflow vulnerability
+
+
+* Changes in Wget 1.20.2
+
+** NTLM authentication will retry under certain cases
+
+
+* Changes in Wget 1.20.1
+
+** --xattr is no longer default since it introduces privacy issues.
+
+** --xattr saves the Referer as scheme/host/port, user/pw/path/query/fragment
+   are no longer saved to prevent privacy issues.
+
+** --xattr saves the Original URL without user/password to prevent
+   privacy issues.
+
 
 * Changes in Wget 1.20
 
@@ -1108,7 +1157,7 @@ geturl -vo log http://fly.cc.fer.hr/
 ----------------------------------------------------------------------
 Copyright information:
 
-Copyright (C) 1997-2005 Free Software Foundation, Inc.
+Copyright (C) 1997-2021 Free Software Foundation, Inc.
 
    Permission is granted to anyone to make or distribute verbatim
    copies of this document as received, in any medium, provided that

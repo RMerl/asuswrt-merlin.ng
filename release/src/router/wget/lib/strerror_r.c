@@ -1,6 +1,6 @@
 /* strerror_r.c --- POSIX compatible system error routine
 
-   Copyright (C) 2010-2018 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -120,6 +120,7 @@ local_snprintf (char *buf, size_t buflen, const char *format, ...)
     buf[buflen - 1] = '\0';
   return result;
 }
+# undef snprintf
 # define snprintf local_snprintf
 #endif
 
@@ -129,22 +130,13 @@ static int
 safe_copy (char *buf, size_t buflen, const char *msg)
 {
   size_t len = strlen (msg);
-  int ret;
+  size_t moved = len < buflen ? len : buflen - 1;
 
-  if (len < buflen)
-    {
-      /* Although POSIX allows memcpy() to corrupt errno, we don't
-         know of any implementation where this is a real problem.  */
-      memcpy (buf, msg, len + 1);
-      ret = 0;
-    }
-  else
-    {
-      memcpy (buf, msg, buflen - 1);
-      buf[buflen - 1] = '\0';
-      ret = ERANGE;
-    }
-  return ret;
+  /* Although POSIX lets memmove corrupt errno, we don't
+     know of any implementation where this is a real problem.  */
+  memmove (buf, msg, moved);
+  buf[moved] = '\0';
+  return len < buflen ? 0 : ERANGE;
 }
 
 

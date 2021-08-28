@@ -1,5 +1,5 @@
 /* Define PATH_MAX somehow.  Requires sys/types.h.
-   Copyright (C) 1992, 1999, 2001, 2003, 2005, 2009-2018 Free Software
+   Copyright (C) 1992, 1999, 2001, 2003, 2005, 2009-2021 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 /* POSIX:2008 defines PATH_MAX to be the maximum number of bytes in a filename,
    including the terminating NUL byte.
-   <http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/limits.h.html>
+   <https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/limits.h.html>
    PATH_MAX is not defined on systems which have no limit on filename length,
    such as GNU/Hurd.
 
@@ -68,7 +68,7 @@
 # if defined _WIN32 && ! defined __CYGWIN__
 /* The page "Naming Files, Paths, and Namespaces" on msdn.microsoft.com,
    section "Maximum Path Length Limitation",
-   <https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath>
+   <https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file#maximum-path-length-limitation>
    explains that the maximum size of a filename, including the terminating
    NUL byte, is 260 = 3 + 256 + 1.
    This is the same value as

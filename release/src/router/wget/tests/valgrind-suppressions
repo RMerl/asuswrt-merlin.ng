@@ -8,6 +8,36 @@
 }
 
 {
+   False positive in libidn.so
+   Memcheck:Addr8
+   fun:strncmp
+   fun:is_dst
+   ...
+   fun:fillin_rpath.isra.0
+   fun:decompose_rpath
+   ...
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+}
+
+{
+   False positive in libidn.so
+   Memcheck:Addr16
+   fun:strncmp
+   ...
+   fun:fillin_rpath.isra.0
+   fun:decompose_rpath
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+}
+
+{
    Valgrind 3.4 bug suppression
    Memcheck:Cond
    fun:memrchr
@@ -173,6 +203,41 @@
    fun:extract_param
    fun:parse_set_cookie.constprop.4
    fun:cookie_handle_set_cookie
+   fun:gethttp
+   fun:http_loop
+   fun:retrieve_url
+   fun:main
+}
+
+{
+   gnutls-false-positive
+   Memcheck:Cond
+   fun:decode_complex_string.isra.0
+   fun:_gnutls_x509_dn_to_string
+   ...
+}
+
+{
+   gnutls-false-positive
+   Memcheck:Cond
+   ...
+   fun:gnutls_x509_ext_import_subject_alt_names
+   fun:gnutls_x509_crt_import
+   fun:gnutls_x509_crt_list_import
+   fun:gnutls_x509_crt_list_import2
+   fun:gnutls_x509_trust_list_add_trust_mem
+   fun:gnutls_x509_trust_list_add_trust_file
+   fun:gnutls_x509_trust_list_add_system_trust
+}
+
+{
+   gnutls-false-positive
+   Memcheck:Cond
+   ...
+   fun:gnutls_x509_crt_get_dn_by_oid
+   fun:gnutls_x509_crt_check_hostname2
+   fun:ssl_check_certificate
+   fun:establish_connection
    fun:gethttp
    fun:http_loop
    fun:retrieve_url

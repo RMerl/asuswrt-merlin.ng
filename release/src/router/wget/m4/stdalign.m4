@@ -1,6 +1,6 @@
 # Check for stdalign.h that conforms to C11.
 
-dnl Copyright 2011-2018 Free Software Foundation, Inc.
+dnl Copyright 2011-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.

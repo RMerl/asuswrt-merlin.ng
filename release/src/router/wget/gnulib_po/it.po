@@ -1,0 +1,1039 @@
+# Italian translation of gnulib 
+# Copyright (C) 2008, 2009, 2010, 2011, 2019 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gnulib package.
+# Marco d'Itri <md@linux.it>, 1998, 1999.
+# Giovanni Bortolozzo <borto@dei.unipd.it>, 1998.
+# Milo Casagrande <milo@milo.name>, 2008, 2009, 2010, 2011, 2019.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gnulib-4.0.0.2567\n"
+"Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
+"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"PO-Revision-Date: 2019-05-21 14:07+0200\n"
+"Last-Translator: Milo Casagrande <milo@milo.name>\n"
+"Language-Team: Italian <tp@lists.linux.it>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 2.2.1\n"
+
+#: lib/error.c:195
+msgid "Unknown system error"
+msgstr "Errore di sistema sconosciuto"
+
+#: lib/gai_strerror.c:57
+msgid "Address family for hostname not supported"
+msgstr "Famiglia di indirizzi per il nome host non supportata"
+
+#: lib/gai_strerror.c:58
+msgid "Temporary failure in name resolution"
+msgstr "Errore temporaneo nella risoluzione del nome"
+
+#: lib/gai_strerror.c:59
+msgid "Bad value for ai_flags"
+msgstr "Valore per ai_flags errato"
+
+#: lib/gai_strerror.c:60
+msgid "Non-recoverable failure in name resolution"
+msgstr "Errore irreversibile nella risoluzione del nome"
+
+#: lib/gai_strerror.c:61
+msgid "ai_family not supported"
+msgstr "ai_family non supportato"
+
+#: lib/gai_strerror.c:62
+msgid "Memory allocation failure"
+msgstr "Allocazione memoria non riuscita"
+
+#: lib/gai_strerror.c:63
+msgid "No address associated with hostname"
+msgstr "Nessun indirizzo associato col nome host"
+
+#: lib/gai_strerror.c:64
+msgid "Name or service not known"
+msgstr "Nome o servizio sconosciuto"
+
+# (ndt)
+#
+# define EAI_SERVICE  -8 /* SERVICE not supported for `ai_socktype'.  */
+#: lib/gai_strerror.c:65
+msgid "Servname not supported for ai_socktype"
+msgstr "Nome servizio non supportato per ai_socktype"
+
+#: lib/gai_strerror.c:66
+msgid "ai_socktype not supported"
+msgstr "ai_socktype non supportato"
+
+#: lib/gai_strerror.c:67
+msgid "System error"
+msgstr "Errore di sistema"
+
+#: lib/gai_strerror.c:68
+msgid "Argument buffer too small"
+msgstr "Buffer argomento troppo piccolo"
+
+#: lib/gai_strerror.c:70
+msgid "Processing request in progress"
+msgstr "Elaborazione richiesta in corso"
+
+#: lib/gai_strerror.c:71
+msgid "Request canceled"
+msgstr "Richiesta annullata"
+
+#: lib/gai_strerror.c:72
+msgid "Request not canceled"
+msgstr "Richiesta non annullata"
+
+#: lib/gai_strerror.c:73
+msgid "All requests done"
+msgstr "Tutte le richieste completate"
+
+#: lib/gai_strerror.c:74
+msgid "Interrupted by a signal"
+msgstr "Interrotto da un segnale"
+
+#: lib/gai_strerror.c:75
+msgid "Parameter string not correctly encoded"
+msgstr "Stringa del parametro non codificata correttamente"
+
+#: lib/gai_strerror.c:87
+msgid "Unknown error"
+msgstr "Errore sconosciuto"
+
+#: lib/getopt.c:278
+#, c-format
+msgid "%s: option '%s%s' is ambiguous\n"
+msgstr "%s: l'opzione «%s%s» è ambigua\n"
+
+#: lib/getopt.c:284
+#, c-format
+msgid "%s: option '%s%s' is ambiguous; possibilities:"
+msgstr "%s: l'opzione «%s%s» è ambigua. Possibilità:"
+
+#: lib/getopt.c:319
+#, c-format
+msgid "%s: unrecognized option '%s%s'\n"
+msgstr "%s: opzione «%s%s» non riconosciuta\n"
+
+#: lib/getopt.c:345
+#, c-format
+msgid "%s: option '%s%s' doesn't allow an argument\n"
+msgstr "%s: l'opzione «%s%s» non accetta un argomento\n"
+
+#: lib/getopt.c:360
+#, c-format
+msgid "%s: option '%s%s' requires an argument\n"
+msgstr "%s: l'opzione «%s%s» richiede un argomento\n"
+
+#: lib/getopt.c:621
+#, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr "%s: opzione non valida -- %c\n"
+
+#: lib/getopt.c:636 lib/getopt.c:682
+#, c-format
+msgid "%s: option requires an argument -- '%c'\n"
+msgstr "%s: l'opzione richiede un argomento -- %c\n"
+
+#: lib/openat-die.c:38
+#, c-format
+msgid "unable to record current working directory"
+msgstr "impossibile registrare la directory di lavoro corrente"
+
+#: lib/openat-die.c:57
+#, c-format
+msgid "failed to return to initial working directory"
+msgstr "ritorno alla directory di lavoro iniziale non riuscito"
+
+#: lib/os2-spawn.c:46
+#, c-format
+msgid "_open_osfhandle failed"
+msgstr "_open_osfhandle non riuscita"
+
+#: lib/os2-spawn.c:83
+#, c-format
+msgid "cannot restore fd %d: dup2 failed"
+msgstr "impossibile ripristinare fd %d: dup2 non riuscita"
+
+#. TRANSLATORS:
+#. Get translations for open and closing quotation marks.
+#. The message catalog should translate "`" to a left
+#. quotation mark suitable for the locale, and similarly for
+#. "'".  For example, a French Unicode local should translate
+#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), respectively.
+#.
+#. If the catalog has no translation, we will try to
+#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
+#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
+#. current locale is not Unicode, locale_quoting_style
+#. will quote 'like this', and clocale_quoting_style will
+#. quote "like this".  You should always include translations
+#. for "`" and "'" even if U+2018 and U+2019 are appropriate
+#. for your locale.
+#.
+#. If you don't know what to put here, please see
+#. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
+#. and use glyphs suitable for your language.
+#: lib/quotearg.c:355
+msgid "`"
+msgstr "«"
+
+#: lib/quotearg.c:356
+msgid "'"
+msgstr "»"
+
+#: lib/regcomp.c:135
+msgid "Success"
+msgstr "Successo"
+
+#: lib/regcomp.c:138
+msgid "No match"
+msgstr "Nessuna corrispondenza"
+
+#: lib/regcomp.c:141
+msgid "Invalid regular expression"
+msgstr "Espressione regolare non valida"
+
+# (ndt) http://en.wikipedia.org/wiki/Collation
+#: lib/regcomp.c:144
+msgid "Invalid collation character"
+msgstr "Carattere di collazione non valido"
+
+#: lib/regcomp.c:147
+msgid "Invalid character class name"
+msgstr "Nome classe del carattere non valida"
+
+#: lib/regcomp.c:150
+msgid "Trailing backslash"
+msgstr "Backslash finale"
+
+#: lib/regcomp.c:153
+msgid "Invalid back reference"
+msgstr "Riferimento all'indietro non valido"
+
+#: lib/regcomp.c:156
+msgid "Unmatched [, [^, [:, [., or [="
+msgstr "[, [^, [:, [. o [= senza corrispondenza"
+
+#: lib/regcomp.c:159
+msgid "Unmatched ( or \\("
+msgstr "( o \\( senza corrispondenza"
+
+#: lib/regcomp.c:162
+msgid "Unmatched \\{"
+msgstr "\\{ senza corrispondenza"
+
+#: lib/regcomp.c:165
+msgid "Invalid content of \\{\\}"
+msgstr "Contenuto di \\{\\} non valido"
+
+#: lib/regcomp.c:168
+msgid "Invalid range end"
+msgstr "Fine dell'intervallo non valida"
+
+#: lib/regcomp.c:171
+msgid "Memory exhausted"
+msgstr "Memoria esaurita"
+
+#: lib/regcomp.c:174
+msgid "Invalid preceding regular expression"
+msgstr "Espressione regolare precedente non valida"
+
+#: lib/regcomp.c:177
+msgid "Premature end of regular expression"
+msgstr "Fine prematura dell'espressione regolare"
+
+#: lib/regcomp.c:180
+msgid "Regular expression too big"
+msgstr "Espressione regolare troppo grande"
+
+#: lib/regcomp.c:183
+msgid "Unmatched ) or \\)"
+msgstr ") o \\) senza corrispondenza"
+
+#: lib/regcomp.c:676
+msgid "No previous regular expression"
+msgstr "Nessuna espressione regolare precedente"
+
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
+#: lib/spawn-pipe.c:463
+#, c-format
+msgid "cannot create pipe"
+msgstr "impossibile creare la pipe"
+
+#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#, c-format
+msgid "%s subprocess failed"
+msgstr "%s: sottoprocesso non riuscito"
+
+#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#, c-format
+msgid "%s subprocess"
+msgstr "sottoprocesso %s"
+
+#: lib/wait-process.c:282 lib/wait-process.c:354
+#, c-format
+msgid "%s subprocess got fatal signal %d"
+msgstr "il sottoprocesso %s ha ricevuto un segnale %d fatale"
+
+#: lib/xalloc-die.c:34
+msgid "memory exhausted"
+msgstr "memoria esaurita"
+
+#, c-format
+#~ msgid "invalid argument %s for %s"
+#~ msgstr "argomento %s non valido per %s"
+
+#, c-format
+#~ msgid "ambiguous argument %s for %s"
+#~ msgstr "argomento %s ambiguo per %s"
+
+#~ msgid "Valid arguments are:"
+#~ msgstr "Sono argomenti validi:"
+
+#, c-format
+#~ msgid "ARGP_HELP_FMT: %s value is less than or equal to %s"
+#~ msgstr "ARGP_HELP_FMT: il valore %s è minore o uguale a %s"
+
+#, c-format
+#~ msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
+#~ msgstr "%.*s: il parametro ARGP_HELP_FMT richiede un valore"
+
+#, c-format
+#~ msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
+#~ msgstr "%.*s: parametro ARGP_HELP_FMT sconosciuto"
+
+#, c-format
+#~ msgid "Garbage in ARGP_HELP_FMT: %s"
+#~ msgstr "Spazzatura in ARGP_HELP_FMT: %s"
+
+#~ msgid ""
+#~ "Mandatory or optional arguments to long options are also mandatory or "
+#~ "optional for any corresponding short options."
+#~ msgstr ""
+#~ "Gli argomenti obbligatori o facoltativi per le opzioni estese lo sono "
+#~ "anche per le corrispondenti opzioni brevi."
+
+#~ msgid "Usage:"
+#~ msgstr "Uso:"
+
+#~ msgid "  or: "
+#~ msgstr "  o: "
+
+#~ msgid " [OPTION...]"
+#~ msgstr " [OPZIONE...]"
+
+#, c-format
+#~ msgid "Try '%s --help' or '%s --usage' for more information.\n"
+#~ msgstr "Provare «%s --help» o «%s --usage» per ulteriori informazioni.\n"
+
+#, c-format
+#~ msgid "Report bugs to %s.\n"
+#~ msgstr "Segnalare i bug a %s.\n"
+
+#~ msgid "give this help list"
+#~ msgstr "Mostra questo aiuto"
+
+#~ msgid "give a short usage message"
+#~ msgstr "Mostra un breve messaggio sull'uso"
+
+#~ msgid "NAME"
+#~ msgstr "NOME"
+
+#~ msgid "set the program name"
+#~ msgstr "Imposta il nome del programma"
+
+#~ msgid "SECS"
+#~ msgstr "SEC"
+
+#~ msgid "hang for SECS seconds (default 3600)"
+#~ msgstr "Resta in attesa per SEC secondi (predefinito 3600)"
+
+#~ msgid "print program version"
+#~ msgstr "Stampa la versione del programma"
+
+#~ msgid "(PROGRAM ERROR) No version known!?"
+#~ msgstr "(ERRORE DEL PROGRAMMA) Nessuna versione conosciuta."
+
+#, c-format
+#~ msgid "%s: Too many arguments\n"
+#~ msgstr "%s: troppi argomenti\n"
+
+#~ msgid "(PROGRAM ERROR) Option should have been recognized!?"
+#~ msgstr ""
+#~ "(ERRORE DEL PROGRAMMA) L'opzione dovrebbe essere stata riconosciuta."
+
+#, c-format
+#~ msgid "%u bitset_allocs, %u freed (%.2f%%).\n"
+#~ msgstr "%u bitset_allocs, %u liberati (%.2f%%).\n"
+
+#, c-format
+#~ msgid "%u bitset_sets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_sets, %u nella cache (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_resets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_resets, %u nella cache (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_tests, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_tests, %u nella cache (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_lists\n"
+#~ msgstr "%u bitset_lists\n"
+
+#~ msgid "count log histogram\n"
+#~ msgstr "istogramma registro del conteggio\n"
+
+#~ msgid "size log histogram\n"
+#~ msgstr "istogramma registro delle dimensioni\n"
+
+#~ msgid "density histogram\n"
+#~ msgstr "istogramma densità\n"
+
+#, c-format
+#~ msgid ""
+#~ "Bitset statistics:\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Statistiche bitset:\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Accumulated runs = %u\n"
+#~ msgstr "Esecuzioni accumulate = %u\n"
+
+#~ msgid "cannot read stats file"
+#~ msgstr "impossibile leggere il file delle statistiche"
+
+#, c-format
+#~ msgid "bad stats file size\n"
+#~ msgstr "dimensione file delle statistiche errata\n"
+
+#~ msgid "cannot write stats file"
+#~ msgstr "impossibile scrivere il file delle statistiche"
+
+#~ msgid "cannot open stats file for writing"
+#~ msgstr "impossibile aprire il file delle statistiche in scrittura"
+
+#~ msgid "program error"
+#~ msgstr "errore del programma"
+
+#~ msgid "stack overflow"
+#~ msgstr "overflow dello stack"
+
+#~ msgid "cannot find a temporary directory, try setting $TMPDIR"
+#~ msgstr ""
+#~ "impossibile trovare una directory temporanea, provare a impostare $TMPDIR"
+
+#, c-format
+#~ msgid "cannot create a temporary directory using template \"%s\""
+#~ msgstr "impossibile creare una directory temporanea usando il modello «%s»"
+
+#, c-format
+#~ msgid "cannot remove temporary file %s"
+#~ msgstr "impossibile rimuovere il file temporaneo %s"
+
+#, c-format
+#~ msgid "cannot remove temporary directory %s"
+#~ msgstr "impossibile rimuovere la directory temporanea %s"
+
+#~ msgid "error closing file"
+#~ msgstr "errore nel chiudere il file"
+
+#~ msgid "write error"
+#~ msgstr "errore di scrittura"
+
+#, c-format
+#~ msgid "preserving permissions for %s"
+#~ msgstr "preservazione dei permessi per %s"
+
+#, c-format
+#~ msgid "error while opening %s for reading"
+#~ msgstr "errore nell'aprire %s in lettura"
+
+#, c-format
+#~ msgid "cannot open backup file %s for writing"
+#~ msgstr "impossibile aprire il file di backup %s in scrittura"
+
+#, c-format
+#~ msgid "error reading %s"
+#~ msgstr "errore nel leggere %s"
+
+#, c-format
+#~ msgid "error writing %s"
+#~ msgstr "errore nello scrivere %s"
+
+#, c-format
+#~ msgid "error after reading %s"
+#~ msgstr "errore dopo la lettura di %s"
+
+#~ msgid "fdopen() failed"
+#~ msgstr "fdopen() non riuscita"
+
+#~ msgid "C# compiler not found, try installing mono"
+#~ msgstr "compilatore C# non trovato, provare a installare mono"
+
+#~ msgid "C# virtual machine not found, try installing mono"
+#~ msgstr "macchina virtuale C# non trovata, provare a installare mono"
+
+#~ msgid "unbalanced ["
+#~ msgstr "[ non bilanciata"
+
+#~ msgid "invalid character class"
+#~ msgstr "classe carattere non valida"
+
+#~ msgid "character class syntax is [[:space:]], not [:space:]"
+#~ msgstr "la sintassi per la classe carattere è [[:space:]], non [:space:]"
+
+#~ msgid "unfinished \\ escape"
+#~ msgstr "escape \\ incompleto"
+
+#~ msgid "invalid content of \\{\\}"
+#~ msgstr "contenuto di \\{\\} non valido"
+
+#~ msgid "regular expression too big"
+#~ msgstr "espressione regolare troppo grande"
+
+#~ msgid "unbalanced ("
+#~ msgstr "( non bilanciata"
+
+#~ msgid "no syntax specified"
+#~ msgstr "nessuna sintassi specificata"
+
+#~ msgid "unbalanced )"
+#~ msgstr ") non bilanciata"
+
+#~ msgid "regular empty file"
+#~ msgstr "file normale vuoto"
+
+#~ msgid "regular file"
+#~ msgstr "file normale"
+
+#~ msgid "directory"
+#~ msgstr "directory"
+
+#~ msgid "symbolic link"
+#~ msgstr "collegamento simbolico"
+
+#~ msgid "message queue"
+#~ msgstr "coda di messaggi"
+
+#~ msgid "semaphore"
+#~ msgstr "semaforo"
+
+#~ msgid "shared memory object"
+#~ msgstr "oggetto di memoria condivisa"
+
+# (ndt) sono accettati:
+# - suggerimenti
+# - collegamenti dove si spieghi cosa sia un 'typed memory object'
+# Ma dove si spieghi VERAMENTE e CONCRETAMENTE cos'è.
+#~ msgid "typed memory object"
+#~ msgstr "oggetto di memoria con nome"
+
+#~ msgid "block special file"
+#~ msgstr "file speciale a blocchi"
+
+#~ msgid "character special file"
+#~ msgstr "file speciale a caratteri"
+
+#~ msgid "contiguous data"
+#~ msgstr "dati contigui"
+
+#~ msgid "fifo"
+#~ msgstr "fifo"
+
+#~ msgid "door"
+#~ msgstr "door"
+
+#~ msgid "multiplexed block special file"
+#~ msgstr "file speciale a blocchi multiplex"
+
+#~ msgid "multiplexed character special file"
+#~ msgstr "file speciale a caratteri multiplex"
+
+#~ msgid "multiplexed file"
+#~ msgstr "file multiplex"
+
+#~ msgid "named file"
+#~ msgstr "file con nome"
+
+#~ msgid "network special file"
+#~ msgstr "file speciale di rete"
+
+#~ msgid "migrated file with data"
+#~ msgstr "file migrato con dati"
+
+#~ msgid "migrated file without data"
+#~ msgstr "file migrato senza dati"
+
+#~ msgid "port"
+#~ msgstr "porta"
+
+#~ msgid "socket"
+#~ msgstr "socket"
+
+#~ msgid "whiteout"
+#~ msgstr "whiteout"
+
+#~ msgid "weird file"
+#~ msgstr "file strano"
+
+#~ msgid "invalid source_version argument to compile_java_class"
+#~ msgstr "argomento source_version in compile_java_class non valido"
+
+#~ msgid "invalid target_version argument to compile_java_class"
+#~ msgstr "argomento target_version in compile_java_class non valido"
+
+#, c-format
+#~ msgid "failed to create \"%s\""
+#~ msgstr "creazione di \"%s\" non riuscita"
+
+#, c-format
+#~ msgid "error while writing \"%s\" file"
+#~ msgstr "errore durante la scrittura del file \"%s\""
+
+#~ msgid "Java compiler not found, try installing gcj or set $JAVAC"
+#~ msgstr ""
+#~ "compilatore Java non trovato, provare a installare gcj o impostare $JAVAC"
+
+#~ msgid "Java virtual machine not found, try installing gij or set $JAVA"
+#~ msgstr ""
+#~ "macchina virtuale Java non trovato, provare a installare gij o impostare "
+#~ "$JAVA"
+
+#, c-format
+#~ msgid "%s subprocess I/O error"
+#~ msgstr "errore di I/O nel sottoprocesso %s"
+
+#, c-format
+#~ msgid "cannot stat %s"
+#~ msgstr "impossibile eseguire stat di %s"
+
+#, c-format
+#~ msgid "cannot change permissions of %s"
+#~ msgstr "impossibile cambiare i permessi di %s"
+
+#, c-format
+#~ msgid "cannot create directory %s"
+#~ msgstr "impossibile creare la directory %s"
+
+#~ msgid "Failed to open /dev/zero for read"
+#~ msgstr "Apertura di /dev/zero in lettura non riuscita"
+
+#~ msgid "creation of reading thread failed"
+#~ msgstr "creazione del thread di lettura non riuscita"
+
+#, c-format
+#~ msgid "cannot set up nonblocking I/O to %s subprocess"
+#~ msgstr "impossibile impostare I/O non bloccante sul sottoprocesso di %s"
+
+#, c-format
+#~ msgid "communication with %s subprocess failed"
+#~ msgstr "comunicazione col sottoprocesso di %s non riuscita"
+
+#, c-format
+#~ msgid "write to %s subprocess failed"
+#~ msgstr "scrittura sul sottoprocesso di %s non riuscita"
+
+#, c-format
+#~ msgid "read from %s subprocess failed"
+#~ msgstr "lettura dal sottoprocesso di %s non riuscita"
+
+#, c-format
+#~ msgid "subprocess %s terminated with exit code %d"
+#~ msgstr "sottoprocesso %s terminato con codice d'uscita %d"
+
+#~ msgid "creation of threads failed"
+#~ msgstr "creazione dei thread non riuscita"
+
+#, c-format
+#~ msgid "%s subprocess terminated with exit code %d"
+#~ msgstr "sottoprocesso di %s terminato con codice d'uscita %d"
+
+#~ msgid "^[yY]"
+#~ msgstr "^[sSyY]"
+
+#~ msgid "^[nN]"
+#~ msgstr "^[nN]"
+
+#, c-format
+#~ msgid "setting permissions for %s"
+#~ msgstr "impostazione dei permessi per %s"
+
+# (ndt) ho preferito mettere tra parentesi il vero nome della costante del segnale, sono cose abbastanza tecniche e forse con un riferimento reale più comprensibili
+#
+# http://en.wikipedia.org/wiki/SIGHUP
+#~ msgid "Hangup"
+#~ msgstr "Chiusura"
+
+# http://en.wikipedia.org/wiki/SIGINT_(POSIX)
+#~ msgid "Interrupt"
+#~ msgstr "Interruzione"
+
+# http://en.wikipedia.org/wiki/SIGQUIT
+#~ msgid "Quit"
+#~ msgstr "Uscita (con core dump)"
+
+# http://en.wikipedia.org/wiki/SIGILL
+#~ msgid "Illegal instruction"
+#~ msgstr "Istruzione non consentita"
+
+# http://en.wikipedia.org/wiki/Trap_(computing)
+# http://en.wikipedia.org/wiki/SIGTRAP
+#~ msgid "Trace/breakpoint trap"
+#~ msgstr "Rilevato trace/breakpoint"
+
+# http://en.wikipedia.org/wiki/SIGABRT
+#~ msgid "Aborted"
+#~ msgstr "Annullato"
+
+# http://en.wikipedia.org/wiki/SIGFPE
+#~ msgid "Floating point exception"
+#~ msgstr "Eccezione in virgola mobile"
+
+#~ msgid "Killed"
+#~ msgstr "Ucciso"
+
+# http://en.wikipedia.org/wiki/Bus_error
+# http://en.wikipedia.org/wiki/SIGBUS
+#~ msgid "Bus error"
+#~ msgstr "Errore di bus"
+
+# http://en.wikipedia.org/wiki/Segmentation_fault
+# http://en.wikipedia.org/wiki/SIGSEGV
+#~ msgid "Segmentation fault"
+#~ msgstr "Errore di segmentazione"
+
+# http://en.wikipedia.org/wiki/SIGPIPE
+#~ msgid "Broken pipe"
+#~ msgstr "Pipe interrotta"
+
+# (ndt) non so se convenga lasciarlo invariato... ma forse anche le altre...
+# http://en.wikipedia.org/wiki/SIGALRM
+#~ msgid "Alarm clock"
+#~ msgstr "Sveglia"
+
+# http://en.wikipedia.org/wiki/SIGTERM
+#~ msgid "Terminated"
+#~ msgstr "Terminato"
+
+# http://en.wikipedia.org/wiki/SIGURG
+#~ msgid "Urgent I/O condition"
+#~ msgstr "Condizione di I/O urgente"
+
+# http://en.wikipedia.org/wiki/SIGSTOP
+#~ msgid "Stopped (signal)"
+#~ msgstr "Fermato"
+
+# http://en.wikipedia.org/wiki/SIGTSTP
+#~ msgid "Stopped"
+#~ msgstr "Fermato (da terminale)"
+
+# http://en.wikipedia.org/wiki/SIGCONT
+#~ msgid "Continued"
+#~ msgstr "Continuato"
+
+# http://en.wikipedia.org/wiki/SIGCHLD
+#~ msgid "Child exited"
+#~ msgstr "Processo figlio uscito"
+
+# http://en.wikipedia.org/wiki/SIGTTIN
+#~ msgid "Stopped (tty input)"
+#~ msgstr "Fermato per input tty"
+
+# http://en.wikipedia.org/wiki/SIGTTOU
+#~ msgid "Stopped (tty output)"
+#~ msgstr "Fermato per output tty"
+
+# (ndt) questa pare non sia posix, wikipedia riporta la stessa di SIGABRT
+#~ msgid "I/O possible"
+#~ msgstr "I/O consentito"
+
+# http://en.wikipedia.org/wiki/SIGXCPU
+#~ msgid "CPU time limit exceeded"
+#~ msgstr "Superato il limite di tempo CPU"
+
+# http://en.wikipedia.org/wiki/SIGXFSZ
+#~ msgid "File size limit exceeded"
+#~ msgstr "Superato il limite di dimensione file"
+
+# http://en.wikipedia.org/wiki/SIGVTALRM
+#~ msgid "Virtual timer expired"
+#~ msgstr "Timer virtuale terminato"
+
+# http://en.wikipedia.org/wiki/SIGPROF
+#~ msgid "Profiling timer expired"
+#~ msgstr "Timer di profiling terminato"
+
+# http://en.wikipedia.org/wiki/SIGWINCH
+#~ msgid "Window changed"
+#~ msgstr "Finestra modificata"
+
+# http://en.wikipedia.org/wiki/SIGUSR1
+#~ msgid "User defined signal 1"
+#~ msgstr "Segnale 1 definito dall'utente"
+
+#~ msgid "User defined signal 2"
+#~ msgstr "Segnale 2 definito dall'utente"
+
+# http://en.wikipedia.org/wiki/SIGEMT
+#~ msgid "EMT trap"
+#~ msgstr "Rilevato EMT"
+
+# http://en.wikipedia.org/wiki/SIGSYS
+#~ msgid "Bad system call"
+#~ msgstr "Chiamata di sistema errata"
+
+# http://en.wikipedia.org/wiki/SIGSTKFLT
+#~ msgid "Stack fault"
+#~ msgstr "Errore sullo stack"
+
+# http://en.wikipedia.org/wiki/SIGINFO
+#~ msgid "Information request"
+#~ msgstr "Richiesta informazioni"
+
+# http://en.wikipedia.org/wiki/SIGPWR
+#~ msgid "Power failure"
+#~ msgstr "Mancanza alimentazione elettrica"
+
+# http://en.wikipedia.org/wiki/SIGLOST
+#~ msgid "Resource lost"
+#~ msgstr "Risorsa persa"
+
+#~ msgid "error writing to a closed pipe or socket"
+#~ msgstr "errore nello scrivere su una pipe o un socket chiusi"
+
+#, c-format
+#~ msgid "Real-time signal %d"
+#~ msgstr "Segnale real-time %d"
+
+#, c-format
+#~ msgid "Unknown signal %d"
+#~ msgstr "Segnale %d sconosciuto"
+
+#~ msgid "Execution times (seconds)"
+#~ msgstr "Tempi di esecuzione (secondi)"
+
+#~ msgid "CPU user"
+#~ msgstr "CPU utente"
+
+#~ msgid "CPU system"
+#~ msgstr "CPU sistema"
+
+#~ msgid "wall clock"
+#~ msgstr "tempo reale"
+
+#~ msgid "iconv function not usable"
+#~ msgstr "funzione iconv non utilizzabile"
+
+#~ msgid "iconv function not available"
+#~ msgstr "funzione iconv non disponibile"
+
+#~ msgid "character out of range"
+#~ msgstr "carattere fuori dall'intervallo"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set"
+#~ msgstr "impossibile convertire U+%04X nel set di caratteri locale"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set: %s"
+#~ msgstr "impossibile convertire U+%04X nel set di caratteri locale: %s"
+
+#~ msgid "invalid user"
+#~ msgstr "utente non valido"
+
+#~ msgid "invalid group"
+#~ msgstr "gruppo non valido"
+
+# (ndt) evinta da un commento al codice:
+#
+# /* Set U and G to nonzero length strings corresponding to user and
+#    group specifiers or to NULL.  If U is not NULL, it is a newly
+#    allocated string.  */
+#
+#~ msgid "invalid spec"
+#~ msgstr "specificatore non valido"
+
+#~ msgid "unable to display error message"
+#~ msgstr "impossibile visualizzare il messaggio di errore"
+
+#, c-format
+#~ msgid "Packaged by %s (%s)\n"
+#~ msgstr "Pacchetto creato da %s (%s)\n"
+
+#, c-format
+#~ msgid "Packaged by %s\n"
+#~ msgstr "Pacchetto creato da %s\n"
+
+#~ msgid "(C)"
+#~ msgstr "©"
+
+#, c-format
+#~ msgid ""
+#~ "License GPLv3+: GNU GPL version 3 or later <%s>.\n"
+#~ "This is free software: you are free to change and redistribute it.\n"
+#~ "There is NO WARRANTY, to the extent permitted by law.\n"
+#~ msgstr ""
+#~ "Licenza GPLv3+: GNU GPL versione 3 o successiva <%s>.\n"
+#~ "Questo programma è software libero: siete liberi di modificarlo e "
+#~ "ridistribuirlo.\n"
+#~ "Non c'è ALCUNA GARANZIA, per quanto consentito dalle vigenti normative.\n"
+
+#, c-format
+#~ msgid "Written by %s.\n"
+#~ msgstr "Scritto da %s.\n"
+
+#, c-format
+#~ msgid "Written by %s and %s.\n"
+#~ msgstr "Scritto da %s e %s.\n"
+
+#, c-format
+#~ msgid "Written by %s, %s, and %s.\n"
+#~ msgstr "Scritto da %s, %s e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Scritto da %s, %s, %s\n"
+#~ "e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Scritto da %s, %s, %s,\n"
+#~ "%s e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Scritto da %s, %s, %s,\n"
+#~ "%s, %s e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Scritto da %s, %s, %s,\n"
+#~ "%s, %s, %s e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Scritto da %s, %s, %s,\n"
+#~ "%s, %s, %s, %s\n"
+#~ "e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Scritto da %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s, and others.\n"
+#~ msgstr ""
+#~ "Scritto da %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s e altri.\n"
+
+#, c-format
+#~ msgid "Report bugs to: %s\n"
+#~ msgstr ""
+#~ "Segnalare i bug a: %s\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Report %s bugs to: %s\n"
+#~ msgstr "Segnalare i bug di %s a: %s.\n"
+
+#, c-format
+#~ msgid "%s home page: <%s>\n"
+#~ msgstr "Sito web di %s: <%s>\n"
+
+#, c-format
+#~ msgid "General help using GNU software: <%s>\n"
+#~ msgstr "Aiuto per l'utilizzo di software GNU: <%s>\n"
+
+#~ msgid "failed to set file descriptor text/binary mode"
+#~ msgstr ""
+#~ "impostazione del descrittore file in modalità testo/binario non riuscita"
+
+#~ msgid "stdin"
+#~ msgstr "stdin"
+
+#~ msgid "stdout"
+#~ msgstr "stdout"
+
+#~ msgid "stderr"
+#~ msgstr "stderr"
+
+#~ msgid "unknown stream"
+#~ msgstr "stream sconosciuto"
+
+#, c-format
+#~ msgid "failed to reopen %s with mode %s"
+#~ msgstr "riapertura di %s in modalità %s non riuscita"
+
+#~ msgid "string comparison failed"
+#~ msgstr "confronto delle stringhe non riuscito"
+
+#~ msgid "Set LC_ALL='C' to work around the problem."
+#~ msgstr "Impostare LC_ALL='C' per aggirare il problema."
+
+#, c-format
+#~ msgid "The strings compared were %s and %s."
+#~ msgstr "Le stringhe confrontate erano %s e %s."
+
+#~ msgid "cannot perform formatted output"
+#~ msgstr "impossibile mostrare l'output formattato"
+
+#~ msgid "standard file descriptors"
+#~ msgstr "descrittori file standard"
+
+# (ndt)
+# quello che viene sostituito pare sia:
+#  * il primo, hypens (con valore '--')
+#  * il secondo, option
+#  * il terzo, arg
+# quindi qualche cosa del genere:
+# invalid --option argument 'arg'
+#
+# (altre idee sono benvenute!)
+#, c-format
+#~ msgid "invalid %s%s argument '%s'"
+#~ msgstr "l'argomento «%3$s» di %1$s%2$s non è valido"
+
+#, c-format
+#~ msgid "invalid suffix in %s%s argument '%s'"
+#~ msgstr "il suffisso nell'argomento «%3$s» di %1$s%2$s non è valido"
+
+#, c-format
+#~ msgid "%s%s argument '%s' too large"
+#~ msgstr "l'argomento «%3$s» di %1$s%2$s è troppo grande"

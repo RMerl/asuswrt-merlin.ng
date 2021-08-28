@@ -19,7 +19,7 @@ File1 = """All that is gold does not glitter,
 
 File1_rules = {
     "SendHeader"        : {
-        "Content-Disposition" : "Attachment; filename=JRR.Tolkein"
+        "Content-Disposition" : "Attachment; filename=JRR.Tolkien"
     }
 }
 A_File = WgetFile ("LOTR", File1, rules=File1_rules)
@@ -30,7 +30,7 @@ WGET_URLS = [["LOTR"]]
 Files = [[A_File]]
 
 ExpectedReturnCode = 0
-ExpectedDownloadedFiles = [WgetFile ("JRR.Tolkein", File1)]
+ExpectedDownloadedFiles = [WgetFile ("JRR.Tolkien", File1)]
 
 ################ Pre and Post Test Hooks #####################################
 pre_test = {

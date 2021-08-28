@@ -1,6 +1,6 @@
 /* Emulate link on platforms that lack it, namely native Windows platforms.
 
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,13 +30,21 @@
 #  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
 
+/* Don't assume that UNICODE is not defined.  */
+#  undef GetModuleHandle
+#  define GetModuleHandle GetModuleHandleA
+#  undef CreateHardLink
+#  define CreateHardLink CreateHardLinkA
+
+#  if !(_WIN32_WINNT >= _WIN32_WINNT_WINXP)
+
 /* Avoid warnings from gcc -Wcast-function-type.  */
-#  define GetProcAddress \
-    (void *) GetProcAddress
+#   define GetProcAddress \
+     (void *) GetProcAddress
 
 /* CreateHardLink was introduced only in Windows 2000.  */
-typedef BOOL (WINAPI * CreateHardLinkFuncType) (LPCTSTR lpFileName,
-                                                LPCTSTR lpExistingFileName,
+typedef BOOL (WINAPI * CreateHardLinkFuncType) (LPCSTR lpFileName,
+                                                LPCSTR lpExistingFileName,
                                                 LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 static CreateHardLinkFuncType CreateHardLinkFunc = NULL;
 static BOOL initialized = FALSE;
@@ -53,30 +61,48 @@ initialize (void)
   initialized = TRUE;
 }
 
+#  else
+
+#   define CreateHardLinkFunc CreateHardLink
+
+#  endif
+
 int
 link (const char *file1, const char *file2)
 {
   char *dir;
   size_t len1 = strlen (file1);
   size_t len2 = strlen (file2);
+
+#  if !(_WIN32_WINNT >= _WIN32_WINNT_WINXP)
   if (!initialized)
     initialize ();
+#  endif
+
   if (CreateHardLinkFunc == NULL)
     {
       /* System does not support hard links.  */
       errno = EPERM;
       return -1;
     }
-  /* Reject trailing slashes on non-directories; mingw does not
+  /* Reject trailing slashes on non-directories; native Windows does not
      support hard-linking directories.  */
   if ((len1 && (file1[len1 - 1] == '/' || file1[len1 - 1] == '\\'))
       || (len2 && (file2[len2 - 1] == '/' || file2[len2 - 1] == '\\')))
     {
+      /* If stat() fails, then link() should fail for the same reason.  */
       struct stat st;
-      if (stat (file1, &st) == 0 && S_ISDIR (st.st_mode))
-        errno = EPERM;
-      else
+      if (stat (file1, &st))
+        {
+          if (errno == EOVERFLOW)
+            /* It's surely a file, not a directory (see stat-w32.c).  */
+            errno = ENOTDIR;
+          return -1;
+        }
+      if (!S_ISDIR (st.st_mode))
         errno = ENOTDIR;
+      else
+        errno = EPERM;
       return -1;
     }
   /* CreateHardLink("b/.","a",NULL) creates file "b", so we must check
@@ -89,7 +115,7 @@ link (const char *file1, const char *file2)
     char *p = strchr (dir, '\0');
     while (dir < p && (*--p != '/' && *p != '\\'));
     *p = '\0';
-    if (p != dir && stat (dir, &st) == -1)
+    if (p != dir && stat (dir, &st) != 0 && errno != EOVERFLOW)
       {
         int saved_errno = errno;
         free (dir);
@@ -163,7 +189,7 @@ rpl_link (char const *file1, char const *file2)
   struct stat st;
 
   /* Don't allow IRIX to dereference dangling file2 symlink.  */
-  if (!lstat (file2, &st))
+  if (lstat (file2, &st) == 0 || errno == EOVERFLOW)
     {
       errno = EEXIST;
       return -1;
@@ -200,7 +226,7 @@ rpl_link (char const *file1, char const *file2)
       if (p)
         {
           *p = '\0';
-          if (stat (dir, &st) == -1)
+          if (stat (dir, &st) != 0 && errno != EOVERFLOW)
             {
               int saved_errno = errno;
               free (dir);

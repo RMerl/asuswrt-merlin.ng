@@ -1,5 +1,5 @@
 /* Normalization of UTF-8 strings.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2009.
 
    This program is free software: you can redistribute it and/or modify it
@@ -28,7 +28,7 @@
 #include "unistr.h"
 #include "unictype.h"
 #include "normalize-internal.h"
-#include "decompose-internal.h"
+#include "uninorm/decompose-internal.h"
 
 #define FUNC u8_normalize
 #define UNIT uint8_t

@@ -1,5 +1,5 @@
-# utime_h.m4 serial 3
-dnl Copyright (C) 2017-2018 Free Software Foundation, Inc.
+# utime_h.m4 serial 5
+dnl Copyright (C) 2017-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -21,28 +21,6 @@ AC_DEFUN([gl_UTIME_H],
   fi
   AC_SUBST([HAVE_UTIME_H])
 
-  m4_ifdef([gl_POSIXCHECK],
-    [UTIME_H=utime.h],
-    [UTIME_H=''
-     if m4_ifdef([gl_ANSI_CXX], [test "$CXX" != no], [false]); then
-       dnl Override <utime.h> always, to support the C++ GNULIB_NAMESPACE.
-       UTIME_H=utime.h
-     else
-       if test $ac_cv_header_utime_h != yes; then
-         dnl Provide a substitute <utime.h> file.
-         UTIME_H=utime.h
-       else
-         case "$host_os" in
-           mingw*) dnl Need special handling of 'struct utimbuf'.
-             UTIME_H=utime.h
-             ;;
-         esac
-       fi
-     fi
-    ])
-  AC_SUBST([UTIME_H])
-  AM_CONDITIONAL([GL_GENERATE_UTIME_H], [test -n "$UTIME_H"])
-
   dnl Check for declarations of anything we want to poison if the
   dnl corresponding gnulib module is not in use.
   gl_WARN_ON_USE_PREPARE([[#include <utime.h>
@@ -62,6 +40,8 @@ AC_DEFUN([gl_UTIME_MODULE_INDICATOR],
 AC_DEFUN([gl_UTIME_H_DEFAULTS],
 [
   GNULIB_UTIME=0;            AC_SUBST([GNULIB_UTIME])
+  dnl Support Microsoft deprecated alias function names by default.
+  GNULIB_MDA_UTIME=1;        AC_SUBST([GNULIB_MDA_UTIME])
   dnl Assume POSIX behavior unless another module says otherwise.
   HAVE_UTIME=1;              AC_SUBST([HAVE_UTIME])
   REPLACE_UTIME=0;           AC_SUBST([REPLACE_UTIME])

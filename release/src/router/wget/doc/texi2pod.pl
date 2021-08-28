@@ -1,6 +1,6 @@
 #! /usr/bin/env perl
 
-#   Copyright (C) 1999-2001, 2003, 2007, 2009-2011, 2015, 2018 Free
+#   Copyright (C) 1999-2001, 2003, 2007, 2009-2011, 2015, 2018-2021 Free
 #   Software Foundation, Inc.
 
 # This file is part of GCC.

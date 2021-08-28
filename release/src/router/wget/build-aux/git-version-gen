@@ -1,8 +1,8 @@
 #!/bin/sh
 # Print a version string.
-scriptversion=2018-03-07.03; # UTC
+scriptversion=2019-10-13.15; # UTC
 
-# Copyright (C) 2007-2018 Free Software Foundation, Inc.
+# Copyright (C) 2007-2021 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -72,9 +72,10 @@ scriptversion=2018-03-07.03; # UTC
 
 me=$0
 
+year=`expr "$scriptversion" : '\([^-]*\)'`
 version="git-version-gen $scriptversion
 
-Copyright 2011 Free Software Foundation, Inc.
+Copyright $year Free Software Foundation, Inc.
 There is NO warranty.  You may redistribute this software
 under the terms of the GNU General Public License.
 For more information about these matters, see the files named COPYING."
@@ -141,11 +142,9 @@ then
     v=`cat $tarball_version_file` || v=
     case $v in
         *$nl*) v= ;; # reject multi-line output
-        [0-9]*) ;;
-        *) v= ;;
     esac
     test "x$v" = x \
-        && echo "$0: WARNING: $tarball_version_file is missing or damaged" 1>&2
+        && echo "$0: WARNING: $tarball_version_file is damaged" 1>&2
 fi
 
 if test "x$v" != x

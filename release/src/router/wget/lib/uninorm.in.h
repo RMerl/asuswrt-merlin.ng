@@ -1,5 +1,5 @@
 /* Normalization forms (composition and decomposition) of Unicode strings.
-   Copyright (C) 2001-2002, 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001-2002, 2009-2021 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2009.
 
    This program is free software: you can redistribute it and/or modify it
@@ -143,13 +143,13 @@ extern uninorm_t
 /* Return the specified normalization form of a string.  */
 extern uint8_t *
        u8_normalize (uninorm_t nf, const uint8_t *s, size_t n,
-                     uint8_t *resultbuf, size_t *lengthp);
+                     uint8_t *_UC_RESTRICT resultbuf, size_t *lengthp);
 extern uint16_t *
        u16_normalize (uninorm_t nf, const uint16_t *s, size_t n,
-                      uint16_t *resultbuf, size_t *lengthp);
+                      uint16_t *_UC_RESTRICT resultbuf, size_t *lengthp);
 extern uint32_t *
        u32_normalize (uninorm_t nf, const uint32_t *s, size_t n,
-                      uint32_t *resultbuf, size_t *lengthp);
+                      uint32_t *_UC_RESTRICT resultbuf, size_t *lengthp);
 
 
 /* Compare S1 and S2, ignoring differences in normalization.

@@ -6,7 +6,7 @@
 
 void warc_init (void);
 void warc_close (void);
-void warc_uuid_str (char *id_str);
+void warc_uuid_str (char *id_str, size_t urn_size);
 
 char * warc_timestamp (char *timestamp, size_t timestamp_size);
 

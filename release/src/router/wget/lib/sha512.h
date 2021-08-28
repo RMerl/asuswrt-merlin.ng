@@ -1,6 +1,6 @@
 /* Declarations of functions and data types used for SHA512 and SHA384 sum
    library functions.
-   Copyright (C) 2005-2006, 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2006, 2008-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -70,8 +70,8 @@ extern void sha512_process_bytes (const void *buffer, size_t len,
    in first 64 (48) bytes following RESBUF.  The result is always in little
    endian byte order, so that a byte-wise output yields to the wanted
    ASCII representation of the message digest.  */
-extern void *sha512_finish_ctx (struct sha512_ctx *ctx, void *resbuf);
-extern void *sha384_finish_ctx (struct sha512_ctx *ctx, void *resbuf);
+extern void *sha512_finish_ctx (struct sha512_ctx *ctx, void *restrict resbuf);
+extern void *sha384_finish_ctx (struct sha512_ctx *ctx, void *restrict resbuf);
 
 
 /* Put result from CTX in first 64 (48) bytes following RESBUF.  The result is
@@ -80,16 +80,20 @@ extern void *sha384_finish_ctx (struct sha512_ctx *ctx, void *resbuf);
 
    IMPORTANT: On some systems it is required that RESBUF is correctly
    aligned for a 32 bits value.  */
-extern void *sha512_read_ctx (const struct sha512_ctx *ctx, void *resbuf);
-extern void *sha384_read_ctx (const struct sha512_ctx *ctx, void *resbuf);
+extern void *sha512_read_ctx (const struct sha512_ctx *ctx,
+                              void *restrict resbuf);
+extern void *sha384_read_ctx (const struct sha512_ctx *ctx,
+                              void *restrict resbuf);
 
 
-/* Compute SHA512 (SHA384) message digest for LEN bytes beginning at BUFFER.  The
-   result is always in little endian byte order, so that a byte-wise
+/* Compute SHA512 (SHA384) message digest for LEN bytes beginning at BUFFER.
+   The result is always in little endian byte order, so that a byte-wise
    output yields to the wanted ASCII representation of the message
    digest.  */
-extern void *sha512_buffer (const char *buffer, size_t len, void *resblock);
-extern void *sha384_buffer (const char *buffer, size_t len, void *resblock);
+extern void *sha512_buffer (const char *buffer, size_t len,
+                            void *restrict resblock);
+extern void *sha384_buffer (const char *buffer, size_t len,
+                            void *restrict resblock);
 
 # endif
 /* Compute SHA512 (SHA384) message digest for bytes read from STREAM.

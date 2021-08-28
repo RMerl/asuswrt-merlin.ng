@@ -1,5 +1,5 @@
 /* Convert a 'struct tm' to a time_t value.
-   Copyright (C) 1993-2018 Free Software Foundation, Inc.
+   Copyright (C) 1993-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Paul Eggert <eggert@twinsun.com>.
 
@@ -17,12 +17,6 @@
    License along with the GNU C Library; if not, see
    <https://www.gnu.org/licenses/>.  */
 
-/* Define this to 1 to have a standalone program to test this implementation of
-   mktime.  */
-#ifndef DEBUG_MKTIME
-# define DEBUG_MKTIME 0
-#endif
-
 /* The following macros influence what gets defined when this file is compiled:
 
    Macro/expression            Which gnulib module    This compilation unit
@@ -34,12 +28,10 @@
    || NEED_MKTIME_WINDOWS
 
    NEED_MKTIME_INTERNAL        mktime-internal        mktime_internal
-
-   DEBUG_MKTIME                (defined manually)     my_mktime, main
  */
 
-#if !defined _LIBC && !DEBUG_MKTIME
-# include <config.h>
+#ifndef _LIBC
+# include <libc-config.h>
 #endif
 
 /* Assume that leap seconds are possible, unless told otherwise.
@@ -51,6 +43,7 @@
 
 #include <time.h>
 
+#include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -59,13 +52,6 @@
 #include <intprops.h>
 #include <verify.h>
 
-#if DEBUG_MKTIME
-# include <stdio.h>
-/* Make it work even if the system's libc has its own mktime routine.  */
-# undef mktime
-# define mktime my_mktime
-#endif /* DEBUG_MKTIME */
-
 #ifndef NEED_MKTIME_INTERNAL
 # define NEED_MKTIME_INTERNAL 0
 #endif
@@ -73,7 +59,7 @@
 # define NEED_MKTIME_WINDOWS 0
 #endif
 #ifndef NEED_MKTIME_WORKING
-# define NEED_MKTIME_WORKING DEBUG_MKTIME
+# define NEED_MKTIME_WORKING 0
 #endif
 
 #include "mktime-internal.h"
@@ -86,13 +72,13 @@ my_tzset (void)
   /* Rectify the value of the environment variable TZ.
      There are four possible kinds of such values:
        - Traditional US time zone names, e.g. "PST8PDT".  Syntax: see
-         <https://msdn.microsoft.com/en-us/library/90s5c885.aspx>
+         <https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/tzset>
        - Time zone names based on geography, that contain one or more
          slashes, e.g. "Europe/Moscow".
        - Time zone names based on geography, without slashes, e.g.
          "Singapore".
        - Time zone names that contain explicit DST rules.  Syntax: see
-         <http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_03>
+         <https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_03>
      The Microsoft CRT understands only the first kind.  It produces incorrect
      results if the value of TZ is of the other kinds.
      But in a Cygwin environment, /etc/profile.d/tzset.sh sets TZ to a value
@@ -108,7 +94,7 @@ my_tzset (void)
   const char *tz = getenv ("TZ");
   if (tz != NULL && strchr (tz, '/') != NULL)
     _putenv ("TZ=");
-# elif HAVE_TZSET
+# else
   tzset ();
 # endif
 }
@@ -119,24 +105,25 @@ my_tzset (void)
 #if defined _LIBC || NEED_MKTIME_WORKING || NEED_MKTIME_INTERNAL
 
 /* A signed type that can represent an integer number of years
-   multiplied by three times the number of seconds in a year.  It is
+   multiplied by four times the number of seconds in a year.  It is
    needed when converting a tm_year value times the number of seconds
-   in a year.  The factor of three comes because these products need
+   in a year.  The factor of four comes because these products need
    to be subtracted from each other, and sometimes with an offset
-   added to them, without worrying about overflow.
+   added to them, and then with another timestamp added, without
+   worrying about overflow.
 
-   Much of the code uses long_int to represent time_t values, to
-   lessen the hassle of dealing with platforms where time_t is
+   Much of the code uses long_int to represent __time64_t values, to
+   lessen the hassle of dealing with platforms where __time64_t is
    unsigned, and because long_int should suffice to represent all
-   time_t values that mktime can generate even on platforms where
-   time_t is excessively wide.  */
+   __time64_t values that mktime can generate even on platforms where
+   __time64_t is wider than the int components of struct tm.  */
 
-#if INT_MAX <= LONG_MAX / 3 / 366 / 24 / 60 / 60
+#if INT_MAX <= LONG_MAX / 4 / 366 / 24 / 60 / 60
 typedef long int long_int;
 #else
 typedef long long int long_int;
 #endif
-verify (INT_MAX <= TYPE_MAXIMUM (long_int) / 3 / 366 / 24 / 60 / 60);
+verify (INT_MAX <= TYPE_MAXIMUM (long_int) / 4 / 366 / 24 / 60 / 60);
 
 /* Shift A right by B bits portably, by dividing A by 2**B and
    truncating towards minus infinity.  B should be in the range 0 <= B
@@ -154,19 +141,18 @@ shr (long_int a, int b)
   long_int one = 1;
   return (-one >> 1 == -1
 	  ? a >> b
-	  : a / (one << b) - (a % (one << b) < 0));
+	  : (a + (a < 0)) / (one << b) - (a < 0));
 }
 
-/* Bounds for the intersection of time_t and long_int.  */
+/* Bounds for the intersection of __time64_t and long_int.  */
 
 static long_int const mktime_min
-  = ((TYPE_SIGNED (time_t) && TYPE_MINIMUM (time_t) < TYPE_MINIMUM (long_int))
-     ? TYPE_MINIMUM (long_int) : TYPE_MINIMUM (time_t));
+  = ((TYPE_SIGNED (__time64_t)
+      && TYPE_MINIMUM (__time64_t) < TYPE_MINIMUM (long_int))
+     ? TYPE_MINIMUM (long_int) : TYPE_MINIMUM (__time64_t));
 static long_int const mktime_max
-  = (TYPE_MAXIMUM (long_int) < TYPE_MAXIMUM (time_t)
-     ? TYPE_MAXIMUM (long_int) : TYPE_MAXIMUM (time_t));
-
-verify (TYPE_IS_INTEGER (time_t));
+  = (TYPE_MAXIMUM (long_int) < TYPE_MAXIMUM (__time64_t)
+     ? TYPE_MAXIMUM (long_int) : TYPE_MAXIMUM (__time64_t));
 
 #define EPOCH_YEAR 1970
 #define TM_YEAR_BASE 1900
@@ -210,9 +196,10 @@ isdst_differ (int a, int b)
    were not adjusted between the timestamps.
 
    The YEAR values uses the same numbering as TP->tm_year.  Values
-   need not be in the usual range.  However, YEAR1 must not overflow
-   when multiplied by three times the number of seconds in a year, and
-   likewise for YDAY1 and three times the number of seconds in a day.  */
+   need not be in the usual range.  However, YEAR1 - YEAR0 must not
+   overflow even when multiplied by three times the number of seconds
+   in a year, and likewise for YDAY1 - YDAY0 and three times the
+   number of seconds in a day.  */
 
 static long_int
 ydhms_diff (long_int year1, long_int yday1, int hour1, int min1, int sec1,
@@ -224,8 +211,8 @@ ydhms_diff (long_int year1, long_int yday1, int hour1, int min1, int sec1,
      Take care to avoid integer overflow here.  */
   int a4 = shr (year1, 2) + shr (TM_YEAR_BASE, 2) - ! (year1 & 3);
   int b4 = shr (year0, 2) + shr (TM_YEAR_BASE, 2) - ! (year0 & 3);
-  int a100 = a4 / 25 - (a4 % 25 < 0);
-  int b100 = b4 / 25 - (b4 % 25 < 0);
+  int a100 = (a4 + (a4 < 0)) / 25 - (a4 < 0);
+  int b100 = (b4 + (b4 < 0)) / 25 - (b4 < 0);
   int a400 = shr (a100, 2);
   int b400 = shr (b100, 2);
   int intervening_leap_days = (a4 - b4) - (a100 - b100) + (a400 - b400);
@@ -247,110 +234,94 @@ long_int_avg (long_int a, long_int b)
   return shr (a, 1) + shr (b, 1) + ((a | b) & 1);
 }
 
-/* Return a time_t value corresponding to (YEAR-YDAY HOUR:MIN:SEC),
-   assuming that T corresponds to *TP and that no clock adjustments
-   occurred between *TP and the desired time.
-   Although T and the returned value are of type long_int,
-   they represent time_t values and must be in time_t range.
-   If TP is null, return a value not equal to T; this avoids false matches.
+/* Return a long_int value corresponding to (YEAR-YDAY HOUR:MIN:SEC)
+   minus *TP seconds, assuming no clock adjustments occurred between
+   the two timestamps.
+
    YEAR and YDAY must not be so large that multiplying them by three times the
    number of seconds in a year (or day, respectively) would overflow long_int.
-   If the returned value would be out of range, yield the minimal or
-   maximal in-range value, except do not yield a value equal to T.  */
+   *TP should be in the usual range.  */
 static long_int
-guess_time_tm (long_int year, long_int yday, int hour, int min, int sec,
-	       long_int t, const struct tm *tp)
+tm_diff (long_int year, long_int yday, int hour, int min, int sec,
+	 struct tm const *tp)
 {
-  if (tp)
-    {
-      long_int result;
-      long_int d = ydhms_diff (year, yday, hour, min, sec,
-			       tp->tm_year, tp->tm_yday,
-			       tp->tm_hour, tp->tm_min, tp->tm_sec);
-      if (! INT_ADD_WRAPV (t, d, &result))
-	return result;
-    }
-
-  /* Overflow occurred one way or another.  Return the nearest result
-     that is actually in range, except don't report a zero difference
-     if the actual difference is nonzero, as that would cause a false
-     match; and don't oscillate between two values, as that would
-     confuse the spring-forward gap detector.  */
-  return (t < long_int_avg (mktime_min, mktime_max)
-	  ? (t <= mktime_min + 1 ? t + 1 : mktime_min)
-	  : (mktime_max - 1 <= t ? t - 1 : mktime_max));
+  return ydhms_diff (year, yday, hour, min, sec,
+		     tp->tm_year, tp->tm_yday,
+		     tp->tm_hour, tp->tm_min, tp->tm_sec);
 }
 
 /* Use CONVERT to convert T to a struct tm value in *TM.  T must be in
-   range for time_t.  Return TM if successful, NULL if T is out of
-   range for CONVERT.  */
+   range for __time64_t.  Return TM if successful, NULL (setting errno) on
+   failure.  */
 static struct tm *
-convert_time (struct tm *(*convert) (const time_t *, struct tm *),
+convert_time (struct tm *(*convert) (const __time64_t *, struct tm *),
 	      long_int t, struct tm *tm)
 {
-  time_t x = t;
+  __time64_t x = t;
   return convert (&x, tm);
 }
 
 /* Use CONVERT to convert *T to a broken down time in *TP.
    If *T is out of range for conversion, adjust it so that
    it is the nearest in-range value and then convert that.
-   A value is in range if it fits in both time_t and long_int.  */
+   A value is in range if it fits in both __time64_t and long_int.
+   Return TP on success, NULL (setting errno) on failure.  */
 static struct tm *
-ranged_convert (struct tm *(*convert) (const time_t *, struct tm *),
+ranged_convert (struct tm *(*convert) (const __time64_t *, struct tm *),
 		long_int *t, struct tm *tp)
 {
-  struct tm *r;
-  if (*t < mktime_min)
-    *t = mktime_min;
-  else if (mktime_max < *t)
-    *t = mktime_max;
-  r = convert_time (convert, *t, tp);
-
-  if (!r && *t)
+  long_int t1 = (*t < mktime_min ? mktime_min
+		 : *t <= mktime_max ? *t : mktime_max);
+  struct tm *r = convert_time (convert, t1, tp);
+  if (r)
     {
-      long_int bad = *t;
-      long_int ok = 0;
+      *t = t1;
+      return r;
+    }
+  if (errno != EOVERFLOW)
+    return NULL;
 
-      /* BAD is a known unconvertible value, and OK is a known good one.
-	 Use binary search to narrow the range between BAD and OK until
-	 they differ by 1.  */
-      while (true)
-	{
-	  long_int mid = long_int_avg (ok, bad);
-	  if (mid != ok && mid != bad)
-	    break;
-	  r = convert_time (convert, mid, tp);
-	  if (r)
-	    ok = mid;
-	  else
-	    bad = mid;
-	}
+  long_int bad = t1;
+  long_int ok = 0;
+  struct tm oktm; oktm.tm_sec = -1;
 
-      if (!r && ok)
-	{
-	  /* The last conversion attempt failed;
-	     revert to the most recent successful attempt.  */
-	  r = convert_time (convert, ok, tp);
-	}
+  /* BAD is a known out-of-range value, and OK is a known in-range one.
+     Use binary search to narrow the range between BAD and OK until
+     they differ by 1.  */
+  while (true)
+    {
+      long_int mid = long_int_avg (ok, bad);
+      if (mid == ok || mid == bad)
+	break;
+      if (convert_time (convert, mid, tp))
+	ok = mid, oktm = *tp;
+      else if (errno != EOVERFLOW)
+	return NULL;
+      else
+	bad = mid;
     }
 
-  return r;
+  if (oktm.tm_sec < 0)
+    return NULL;
+  *t = ok;
+  *tp = oktm;
+  return tp;
 }
 
 
-/* Convert *TP to a time_t value, inverting
+/* Convert *TP to a __time64_t value, inverting
    the monotonic and mostly-unit-linear conversion function CONVERT.
    Use *OFFSET to keep track of a guess at the offset of the result,
    compared to what the result would be for UTC without leap seconds.
    If *OFFSET's guess is correct, only one CONVERT call is needed.
+   If successful, set *TP to the canonicalized struct tm;
+   otherwise leave *TP alone, return ((time_t) -1) and set errno.
    This function is external because it is used also by timegm.c.  */
-time_t
+__time64_t
 __mktime_internal (struct tm *tp,
-		   struct tm *(*convert) (const time_t *, struct tm *),
+		   struct tm *(*convert) (const __time64_t *, struct tm *),
 		   mktime_offset_t *offset)
 {
-  long_int t, gt, t0, t1, t2, dt;
   struct tm tm;
 
   /* The maximum number of probes (calls to CONVERT) should be enough
@@ -370,7 +341,7 @@ __mktime_internal (struct tm *tp,
   int isdst = tp->tm_isdst;
 
   /* 1 if the previous probe was DST.  */
-  int dst2;
+  int dst2 = 0;
 
   /* Ensure that mon is in range, and set year accordingly.  */
   int mon_remainder = mon % 12;
@@ -398,7 +369,7 @@ __mktime_internal (struct tm *tp,
   if (LEAP_SECONDS_POSSIBLE)
     {
       /* Handle out-of-range seconds specially,
-	 since ydhms_tm_diff assumes every minute has 60 seconds.  */
+	 since ydhms_diff assumes every minute has 60 seconds.  */
       if (sec < 0)
 	sec = 0;
       if (59 < sec)
@@ -409,33 +380,46 @@ __mktime_internal (struct tm *tp,
      time.  */
 
   INT_SUBTRACT_WRAPV (0, off, &negative_offset_guess);
-  t0 = ydhms_diff (year, yday, hour, min, sec,
-		   EPOCH_YEAR - TM_YEAR_BASE, 0, 0, 0, negative_offset_guess);
+  long_int t0 = ydhms_diff (year, yday, hour, min, sec,
+			    EPOCH_YEAR - TM_YEAR_BASE, 0, 0, 0,
+			    negative_offset_guess);
+  long_int t = t0, t1 = t0, t2 = t0;
 
   /* Repeatedly use the error to improve the guess.  */
 
-  for (t = t1 = t2 = t0, dst2 = 0;
-       (gt = guess_time_tm (year, yday, hour, min, sec, t,
-			    ranged_convert (convert, &t, &tm)),
-	t != gt);
-       t1 = t2, t2 = t, t = gt, dst2 = tm.tm_isdst != 0)
-    if (t == t1 && t != t2
-	&& (tm.tm_isdst < 0
-	    || (isdst < 0
-		? dst2 <= (tm.tm_isdst != 0)
-		: (isdst != 0) != (tm.tm_isdst != 0))))
-      /* We can't possibly find a match, as we are oscillating
-	 between two values.  The requested time probably falls
-	 within a spring-forward gap of size GT - T.  Follow the common
-	 practice in this case, which is to return a time that is GT - T
-	 away from the requested time, preferring a time whose
-	 tm_isdst differs from the requested value.  (If no tm_isdst
-	 was requested and only one of the two values has a nonzero
-	 tm_isdst, prefer that value.)  In practice, this is more
-	 useful than returning -1.  */
-      goto offset_found;
-    else if (--remaining_probes == 0)
-      return -1;
+  while (true)
+    {
+      if (! ranged_convert (convert, &t, &tm))
+	return -1;
+      long_int dt = tm_diff (year, yday, hour, min, sec, &tm);
+      if (dt == 0)
+	break;
+
+      if (t == t1 && t != t2
+	  && (tm.tm_isdst < 0
+	      || (isdst < 0
+		  ? dst2 <= (tm.tm_isdst != 0)
+		  : (isdst != 0) != (tm.tm_isdst != 0))))
+	/* We can't possibly find a match, as we are oscillating
+	   between two values.  The requested time probably falls
+	   within a spring-forward gap of size DT.  Follow the common
+	   practice in this case, which is to return a time that is DT
+	   away from the requested time, preferring a time whose
+	   tm_isdst differs from the requested value.  (If no tm_isdst
+	   was requested and only one of the two values has a nonzero
+	   tm_isdst, prefer that value.)  In practice, this is more
+	   useful than returning -1.  */
+	goto offset_found;
+
+      remaining_probes--;
+      if (remaining_probes == 0)
+	{
+	  __set_errno (EOVERFLOW);
+	  return -1;
+	}
+
+      t1 = t2, t2 = t, t += dt, dst2 = tm.tm_isdst != 0;
+    }
 
   /* We have a match.  Check whether tm.tm_isdst has the requested
      value, if any.  */
@@ -477,25 +461,38 @@ __mktime_internal (struct tm *tp,
 	    if (! INT_ADD_WRAPV (t, delta * direction, &ot))
 	      {
 		struct tm otm;
-		ranged_convert (convert, &ot, &otm);
+		if (! ranged_convert (convert, &ot, &otm))
+		  return -1;
 		if (! isdst_differ (isdst, otm.tm_isdst))
 		  {
 		    /* We found the desired tm_isdst.
 		       Extrapolate back to the desired time.  */
-		    t = guess_time_tm (year, yday, hour, min, sec, ot, &otm);
-		    ranged_convert (convert, &t, &tm);
-		    goto offset_found;
+		    long_int gt = ot + tm_diff (year, yday, hour, min, sec,
+						&otm);
+		    if (mktime_min <= gt && gt <= mktime_max)
+		      {
+			if (convert_time (convert, gt, &tm))
+			  {
+			    t = gt;
+			    goto offset_found;
+			  }
+			if (errno != EOVERFLOW)
+			  return -1;
+		      }
 		  }
 	      }
 	  }
+
+      __set_errno (EOVERFLOW);
+      return -1;
     }
 
  offset_found:
   /* Set *OFFSET to the low-order bits of T - T0 - NEGATIVE_OFFSET_GUESS.
      This is just a heuristic to speed up the next mktime call, and
      correctness is unaffected if integer overflow occurs here.  */
-  INT_SUBTRACT_WRAPV (t, t0, &dt);
-  INT_SUBTRACT_WRAPV (dt, negative_offset_guess, offset);
+  INT_SUBTRACT_WRAPV (t, t0, offset);
+  INT_SUBTRACT_WRAPV (*offset, negative_offset_guess, offset);
 
   if (LEAP_SECONDS_POSSIBLE && sec_requested != tm.tm_sec)
     {
@@ -505,8 +502,12 @@ __mktime_internal (struct tm *tp,
       sec_adjustment -= sec;
       sec_adjustment += sec_requested;
       if (INT_ADD_WRAPV (t, sec_adjustment, &t)
-	  || ! (mktime_min <= t && t <= mktime_max)
-	  || ! convert_time (convert, t, &tm))
+	  || ! (mktime_min <= t && t <= mktime_max))
+	{
+	  __set_errno (EOVERFLOW);
+	  return -1;
+	}
+      if (! convert_time (convert, t, &tm))
 	return -1;
     }
 
@@ -518,9 +519,9 @@ __mktime_internal (struct tm *tp,
 
 #if defined _LIBC || NEED_MKTIME_WORKING || NEED_MKTIME_WINDOWS
 
-/* Convert *TP to a time_t value.  */
-time_t
-mktime (struct tm *tp)
+/* Convert *TP to a __time64_t value.  */
+__time64_t
+__mktime64 (struct tm *tp)
 {
   /* POSIX.1 8.1.1 requires that whenever mktime() is called, the
      time zone names contained in the external variable 'tzname' shall
@@ -529,7 +530,7 @@ mktime (struct tm *tp)
 
 # if defined _LIBC || NEED_MKTIME_WORKING
   static mktime_offset_t localtime_offset;
-  return __mktime_internal (tp, __localtime_r, &localtime_offset);
+  return __mktime_internal (tp, __localtime64_r, &localtime_offset);
 # else
 #  undef mktime
   return mktime (tp);
@@ -537,154 +538,29 @@ mktime (struct tm *tp)
 }
 #endif /* _LIBC || NEED_MKTIME_WORKING || NEED_MKTIME_WINDOWS */
 
-#ifdef weak_alias
-weak_alias (mktime, timelocal)
+#if defined _LIBC && __TIMESIZE != 64
+
+libc_hidden_def (__mktime64)
+
+time_t
+mktime (struct tm *tp)
+{
+  struct tm tm = *tp;
+  __time64_t t = __mktime64 (&tm);
+  if (in_time_t_range (t))
+    {
+      *tp = tm;
+      return t;
+    }
+  else
+    {
+      __set_errno (EOVERFLOW);
+      return -1;
+    }
+}
+
 #endif
 
-#ifdef _LIBC
+weak_alias (mktime, timelocal)
 libc_hidden_def (mktime)
 libc_hidden_weak (timelocal)
-#endif
-
-#if DEBUG_MKTIME
-
-static int
-not_equal_tm (const struct tm *a, const struct tm *b)
-{
-  return ((a->tm_sec ^ b->tm_sec)
-	  | (a->tm_min ^ b->tm_min)
-	  | (a->tm_hour ^ b->tm_hour)
-	  | (a->tm_mday ^ b->tm_mday)
-	  | (a->tm_mon ^ b->tm_mon)
-	  | (a->tm_year ^ b->tm_year)
-	  | (a->tm_yday ^ b->tm_yday)
-	  | isdst_differ (a->tm_isdst, b->tm_isdst));
-}
-
-static void
-print_tm (const struct tm *tp)
-{
-  if (tp)
-    printf ("%04d-%02d-%02d %02d:%02d:%02d yday %03d wday %d isdst %d",
-	    tp->tm_year + TM_YEAR_BASE, tp->tm_mon + 1, tp->tm_mday,
-	    tp->tm_hour, tp->tm_min, tp->tm_sec,
-	    tp->tm_yday, tp->tm_wday, tp->tm_isdst);
-  else
-    printf ("0");
-}
-
-static int
-check_result (time_t tk, struct tm tmk, time_t tl, const struct tm *lt)
-{
-  if (tk != tl || !lt || not_equal_tm (&tmk, lt))
-    {
-      printf ("mktime (");
-      print_tm (lt);
-      printf (")\nyields (");
-      print_tm (&tmk);
-      printf (") == %ld, should be %ld\n", (long int) tk, (long int) tl);
-      return 1;
-    }
-
-  return 0;
-}
-
-int
-main (int argc, char **argv)
-{
-  int status = 0;
-  struct tm tm, tmk, tml;
-  struct tm *lt;
-  time_t tk, tl, tl1;
-  char trailer;
-
-  /* Sanity check, plus call tzset.  */
-  tl = 0;
-  if (! localtime (&tl))
-    {
-      printf ("localtime (0) fails\n");
-      status = 1;
-    }
-
-  if ((argc == 3 || argc == 4)
-      && (sscanf (argv[1], "%d-%d-%d%c",
-		  &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &trailer)
-	  == 3)
-      && (sscanf (argv[2], "%d:%d:%d%c",
-		  &tm.tm_hour, &tm.tm_min, &tm.tm_sec, &trailer)
-	  == 3))
-    {
-      tm.tm_year -= TM_YEAR_BASE;
-      tm.tm_mon--;
-      tm.tm_isdst = argc == 3 ? -1 : atoi (argv[3]);
-      tmk = tm;
-      tl = mktime (&tmk);
-      lt = localtime_r (&tl, &tml);
-      printf ("mktime returns %ld == ", (long int) tl);
-      print_tm (&tmk);
-      printf ("\n");
-      status = check_result (tl, tmk, tl, lt);
-    }
-  else if (argc == 4 || (argc == 5 && strcmp (argv[4], "-") == 0))
-    {
-      time_t from = atol (argv[1]);
-      time_t by = atol (argv[2]);
-      time_t to = atol (argv[3]);
-
-      if (argc == 4)
-	for (tl = from; by < 0 ? to <= tl : tl <= to; tl = tl1)
-	  {
-	    lt = localtime_r (&tl, &tml);
-	    if (lt)
-	      {
-		tmk = tml;
-		tk = mktime (&tmk);
-		status |= check_result (tk, tmk, tl, &tml);
-	      }
-	    else
-	      {
-		printf ("localtime_r (%ld) yields 0\n", (long int) tl);
-		status = 1;
-	      }
-	    tl1 = tl + by;
-	    if ((tl1 < tl) != (by < 0))
-	      break;
-	  }
-      else
-	for (tl = from; by < 0 ? to <= tl : tl <= to; tl = tl1)
-	  {
-	    /* Null benchmark.  */
-	    lt = localtime_r (&tl, &tml);
-	    if (lt)
-	      {
-		tmk = tml;
-		tk = tl;
-		status |= check_result (tk, tmk, tl, &tml);
-	      }
-	    else
-	      {
-		printf ("localtime_r (%ld) yields 0\n", (long int) tl);
-		status = 1;
-	      }
-	    tl1 = tl + by;
-	    if ((tl1 < tl) != (by < 0))
-	      break;
-	  }
-    }
-  else
-    printf ("Usage:\
-\t%s YYYY-MM-DD HH:MM:SS [ISDST] # Test given time.\n\
-\t%s FROM BY TO # Test values FROM, FROM+BY, ..., TO.\n\
-\t%s FROM BY TO - # Do not test those values (for benchmark).\n",
-	    argv[0], argv[0], argv[0]);
-
-  return status;
-}
-
-#endif /* DEBUG_MKTIME */
-
-/*
-Local Variables:
-compile-command: "gcc -DDEBUG_MKTIME -I. -Wall -W -O2 -g mktime.c -o mktime"
-End:
-*/

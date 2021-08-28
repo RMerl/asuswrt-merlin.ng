@@ -1,6 +1,6 @@
 /* Look up an environment variable, returning NULL in insecure situations.
 
-   Copyright 2013-2018 Free Software Foundation, Inc.
+   Copyright 2013-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published

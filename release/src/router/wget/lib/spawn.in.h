@@ -1,5 +1,5 @@
 /* Definitions for POSIX spawn interface.
-   Copyright (C) 2000, 2003-2004, 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003-2004, 2008-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    This program is free software: you can redistribute it and/or modify
@@ -43,28 +43,35 @@
 # define __THROW
 #endif
 
-/* GCC 2.95 and later have "__restrict"; C99 compilers have
+/* For plain 'restrict', use glibc's __restrict if defined.
+   Otherwise, GCC 2.95 and later have "__restrict"; C99 compilers have
    "restrict", and "configure" may have defined "restrict".
    Other compilers use __restrict, __restrict__, and _Restrict, and
    'configure' might #define 'restrict' to those words, so pick a
    different name.  */
 #ifndef _Restrict_
-# if 199901L <= __STDC_VERSION__
-#  define _Restrict_ restrict
-# elif 2 < __GNUC__ || (2 == __GNUC__ && 95 <= __GNUC_MINOR__)
+# if defined __restrict \
+     || 2 < __GNUC__ + (95 <= __GNUC_MINOR__) \
+     || __clang_major__ >= 3
 #  define _Restrict_ __restrict
+# elif 199901L <= __STDC_VERSION__ || defined restrict
+#  define _Restrict_ restrict
 # else
 #  define _Restrict_
 # endif
 #endif
-/* gcc 3.1 and up support the [restrict] syntax.  Don't trust
-   sys/cdefs.h's definition of __restrict_arr, though, as it
-   mishandles gcc -ansi -pedantic.  */
+/* For the ISO C99 syntax
+     array_name[restrict]
+   use glibc's __restrict_arr if available.
+   Otherwise, GCC 3.1 and clang support this syntax (but not in C++ mode).
+   Other ISO C99 compilers support it as well.  */
 #ifndef _Restrict_arr_
-# if ((199901L <= __STDC_VERSION__                                      \
-       || ((3 < __GNUC__ || (3 == __GNUC__ && 1 <= __GNUC_MINOR__))     \
-           && !defined __STRICT_ANSI__))                                        \
-      && !defined __GNUG__)
+# ifdef __restrict_arr
+#  define _Restrict_arr_ __restrict_arr
+# elif ((199901L <= __STDC_VERSION__ \
+         || 3 < __GNUC__ + (1 <= __GNUC_MINOR__) \
+         || __clang_major__ >= 3) \
+        && !defined __cplusplus)
 #  define _Restrict_arr_ _Restrict_
 # else
 #  define _Restrict_arr_
@@ -604,7 +611,9 @@ _GL_CXXALIAS_SYS (posix_spawnattr_getschedpolicy, int,
                   (const posix_spawnattr_t *_Restrict_ __attr,
                    int *_Restrict_ __schedpolicy));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (posix_spawnattr_getschedpolicy);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef posix_spawnattr_getschedpolicy
 # if HAVE_RAW_DECL_POSIX_SPAWNATTR_GETSCHEDPOLICY
@@ -634,7 +643,9 @@ _GL_FUNCDECL_SYS (posix_spawnattr_setschedpolicy, int,
 _GL_CXXALIAS_SYS (posix_spawnattr_setschedpolicy, int,
                   (posix_spawnattr_t *__attr, int __schedpolicy));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (posix_spawnattr_setschedpolicy);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef posix_spawnattr_setschedpolicy
 # if HAVE_RAW_DECL_POSIX_SPAWNATTR_SETSCHEDPOLICY
@@ -668,7 +679,9 @@ _GL_CXXALIAS_SYS (posix_spawnattr_getschedparam, int,
                   (const posix_spawnattr_t *_Restrict_ __attr,
                    struct sched_param *_Restrict_ __schedparam));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (posix_spawnattr_getschedparam);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef posix_spawnattr_getschedparam
 # if HAVE_RAW_DECL_POSIX_SPAWNATTR_GETSCHEDPARAM
@@ -702,7 +715,9 @@ _GL_CXXALIAS_SYS (posix_spawnattr_setschedparam, int,
                   (posix_spawnattr_t *_Restrict_ __attr,
                    const struct sched_param *_Restrict_ __schedparam));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (posix_spawnattr_setschedparam);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef posix_spawnattr_setschedparam
 # if HAVE_RAW_DECL_POSIX_SPAWNATTR_SETSCHEDPARAM
@@ -802,7 +817,9 @@ _GL_CXXALIAS_SYS (posix_spawn_file_actions_addopen, int,
                    int __fd,
                    const char *_Restrict_ __path, int __oflag, mode_t __mode));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (posix_spawn_file_actions_addopen);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef posix_spawn_file_actions_addopen
 # if HAVE_RAW_DECL_POSIX_SPAWN_FILE_ACTIONS_ADDOPEN
@@ -833,7 +850,9 @@ _GL_FUNCDECL_SYS (posix_spawn_file_actions_addclose, int,
 _GL_CXXALIAS_SYS (posix_spawn_file_actions_addclose, int,
                   (posix_spawn_file_actions_t *__file_actions, int __fd));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (posix_spawn_file_actions_addclose);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef posix_spawn_file_actions_addclose
 # if HAVE_RAW_DECL_POSIX_SPAWN_FILE_ACTIONS_ADDCLOSE
@@ -868,7 +887,9 @@ _GL_CXXALIAS_SYS (posix_spawn_file_actions_adddup2, int,
                   (posix_spawn_file_actions_t *__file_actions,
                    int __fd, int __newfd));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (posix_spawn_file_actions_adddup2);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef posix_spawn_file_actions_adddup2
 # if HAVE_RAW_DECL_POSIX_SPAWN_FILE_ACTIONS_ADDDUP2
@@ -910,6 +931,41 @@ _GL_CXXALIASWARN (posix_spawn_file_actions_addchdir);
 _GL_WARN_ON_USE (posix_spawn_file_actions_addchdir,
                  "posix_spawn_file_actions_addchdir is unportable - "
                  "use gnulib module posix_spawn_file_actions_addchdir for portability");
+# endif
+#endif
+
+#if @GNULIB_POSIX_SPAWN_FILE_ACTIONS_ADDFCHDIR@
+/* Add an action to FILE-ACTIONS which tells the implementation to call
+   'fchdir' to the given directory during the 'spawn' call.  */
+# if @REPLACE_POSIX_SPAWN_FILE_ACTIONS_ADDFCHDIR@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   define posix_spawn_file_actions_addfchdir rpl_posix_spawn_file_actions_addfchdir
+#  endif
+_GL_FUNCDECL_RPL (posix_spawn_file_actions_addfchdir, int,
+                  (posix_spawn_file_actions_t *_Restrict_ __file_actions,
+                   int __fd)
+                  __THROW _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (posix_spawn_file_actions_addfchdir, int,
+                  (posix_spawn_file_actions_t *_Restrict_ __file_actions,
+                   int __fd));
+# else
+#  if !@HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDFCHDIR@
+_GL_FUNCDECL_SYS (posix_spawn_file_actions_addfchdir, int,
+                  (posix_spawn_file_actions_t *_Restrict_ __file_actions,
+                   int __fd)
+                  __THROW _GL_ARG_NONNULL ((1)));
+#  endif
+_GL_CXXALIAS_SYS (posix_spawn_file_actions_addfchdir, int,
+                  (posix_spawn_file_actions_t *_Restrict_ __file_actions,
+                   int __fd));
+# endif
+_GL_CXXALIASWARN (posix_spawn_file_actions_addfchdir);
+#elif defined GNULIB_POSIXCHECK
+# undef posix_spawn_file_actions_addfchdir
+# if HAVE_RAW_DECL_POSIX_SPAWN_FILE_ACTIONS_ADDFCHDIR
+_GL_WARN_ON_USE (posix_spawn_file_actions_addfchdir,
+                 "posix_spawn_file_actions_addfchdir is unportable - "
+                 "use gnulib module posix_spawn_file_actions_addfchdir for portability");
 # endif
 #endif
 

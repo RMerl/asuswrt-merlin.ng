@@ -1,0 +1,778 @@
+# Galician translation of gnulib.
+# This file is distributed under the same license as the gnulib package.
+# Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 2012 Leandro Regueiro.
+#
+# Jacobo Tarrio <jtarrio@trasno.net>, 2000, 2001, 2002.
+# Leandro Regueiro <leandro.regueiro@gmail.com>, 2012.
+#
+# Proxecto Trasno - Adaptación do software libre á lingua galega:  Se desexas
+# colaborar connosco, podes atopar máis información en http://www.trasno.net
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gnulib 3.0.0.6062.a6b16\n"
+"Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
+"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"PO-Revision-Date: 2012-11-11 13:26+0200\n"
+"Last-Translator: Leandro Regueiro <leandro.regueiro@gmail.com>\n"
+"Language-Team: Galician <proxecto@trasno.net>\n"
+"Language: gl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/error.c:195
+msgid "Unknown system error"
+msgstr "Erro do sistema descoñecido"
+
+#: lib/gai_strerror.c:57
+msgid "Address family for hostname not supported"
+msgstr ""
+
+#: lib/gai_strerror.c:58
+msgid "Temporary failure in name resolution"
+msgstr ""
+
+#: lib/gai_strerror.c:59
+msgid "Bad value for ai_flags"
+msgstr ""
+
+#: lib/gai_strerror.c:60
+msgid "Non-recoverable failure in name resolution"
+msgstr ""
+
+#: lib/gai_strerror.c:61
+msgid "ai_family not supported"
+msgstr "ai_family non admitido"
+
+#: lib/gai_strerror.c:62
+msgid "Memory allocation failure"
+msgstr ""
+
+#: lib/gai_strerror.c:63
+msgid "No address associated with hostname"
+msgstr ""
+
+#: lib/gai_strerror.c:64
+msgid "Name or service not known"
+msgstr "Nome ou servizo descoñecido"
+
+#: lib/gai_strerror.c:65
+msgid "Servname not supported for ai_socktype"
+msgstr ""
+
+#: lib/gai_strerror.c:66
+msgid "ai_socktype not supported"
+msgstr "ai_socktype non admitido"
+
+#: lib/gai_strerror.c:67
+msgid "System error"
+msgstr "Erro do sistema"
+
+#: lib/gai_strerror.c:68
+msgid "Argument buffer too small"
+msgstr ""
+
+#: lib/gai_strerror.c:70
+msgid "Processing request in progress"
+msgstr ""
+
+#: lib/gai_strerror.c:71
+msgid "Request canceled"
+msgstr "Solicitude cancelada"
+
+#: lib/gai_strerror.c:72
+msgid "Request not canceled"
+msgstr "Solicitude non cancelada"
+
+#: lib/gai_strerror.c:73
+msgid "All requests done"
+msgstr ""
+
+#: lib/gai_strerror.c:74
+msgid "Interrupted by a signal"
+msgstr ""
+
+#: lib/gai_strerror.c:75
+msgid "Parameter string not correctly encoded"
+msgstr ""
+
+#: lib/gai_strerror.c:87
+msgid "Unknown error"
+msgstr "Erro descoñecido"
+
+#: lib/getopt.c:278
+#, fuzzy, c-format
+msgid "%s: option '%s%s' is ambiguous\n"
+msgstr "%s: a opción «-W %s» é ambigua\n"
+
+#: lib/getopt.c:284
+#, fuzzy, c-format
+msgid "%s: option '%s%s' is ambiguous; possibilities:"
+msgstr "%s: a opción «%s» é ambigua; as posibilidades son:"
+
+#: lib/getopt.c:319
+#, fuzzy, c-format
+msgid "%s: unrecognized option '%s%s'\n"
+msgstr "%s: opción «%c%s» non recoñecida\n"
+
+#: lib/getopt.c:345
+#, fuzzy, c-format
+msgid "%s: option '%s%s' doesn't allow an argument\n"
+msgstr "%s: a opción «%c%s» non permite ningún argumento\n"
+
+#: lib/getopt.c:360
+#, fuzzy, c-format
+msgid "%s: option '%s%s' requires an argument\n"
+msgstr "%s: a opción «--%s» require un argumento\n"
+
+#: lib/getopt.c:621
+#, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr "%s: opción incorrecta -- «%c»\n"
+
+#: lib/getopt.c:636 lib/getopt.c:682
+#, c-format
+msgid "%s: option requires an argument -- '%c'\n"
+msgstr "%s: a opción require un argumento -- «%c»\n"
+
+#: lib/openat-die.c:38
+#, c-format
+msgid "unable to record current working directory"
+msgstr "non foi posíbel gravar o directorio de traballo actual"
+
+#: lib/openat-die.c:57
+#, c-format
+msgid "failed to return to initial working directory"
+msgstr "non foi posíbel volver ao directorio de traballo inicial"
+
+#: lib/os2-spawn.c:46
+#, c-format
+msgid "_open_osfhandle failed"
+msgstr "_open_osfhandle fallou"
+
+#: lib/os2-spawn.c:83
+#, c-format
+msgid "cannot restore fd %d: dup2 failed"
+msgstr "non foi posíbel restaurar o fd %d: dup2 fallou"
+
+#. TRANSLATORS:
+#. Get translations for open and closing quotation marks.
+#. The message catalog should translate "`" to a left
+#. quotation mark suitable for the locale, and similarly for
+#. "'".  For example, a French Unicode local should translate
+#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), respectively.
+#.
+#. If the catalog has no translation, we will try to
+#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
+#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
+#. current locale is not Unicode, locale_quoting_style
+#. will quote 'like this', and clocale_quoting_style will
+#. quote "like this".  You should always include translations
+#. for "`" and "'" even if U+2018 and U+2019 are appropriate
+#. for your locale.
+#.
+#. If you don't know what to put here, please see
+#. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
+#. and use glyphs suitable for your language.
+#: lib/quotearg.c:355
+msgid "`"
+msgstr "«"
+
+#: lib/quotearg.c:356
+msgid "'"
+msgstr "»"
+
+#: lib/regcomp.c:135
+msgid "Success"
+msgstr "Éxito"
+
+#: lib/regcomp.c:138
+msgid "No match"
+msgstr "Sen coincidencias"
+
+#: lib/regcomp.c:141
+msgid "Invalid regular expression"
+msgstr "Expresión regular non válida"
+
+#: lib/regcomp.c:144
+msgid "Invalid collation character"
+msgstr "Carácter de ordenación incorrecto"
+
+#: lib/regcomp.c:147
+msgid "Invalid character class name"
+msgstr "Nome da clase de caracteres incorrecto"
+
+#: lib/regcomp.c:150
+msgid "Trailing backslash"
+msgstr "Barra invertida ao final"
+
+#: lib/regcomp.c:153
+msgid "Invalid back reference"
+msgstr ""
+
+#: lib/regcomp.c:156
+#, fuzzy
+msgid "Unmatched [, [^, [:, [., or [="
+msgstr "[ ou [^ sen parella"
+
+#: lib/regcomp.c:159
+msgid "Unmatched ( or \\("
+msgstr "( ou \\( sen parella"
+
+#: lib/regcomp.c:162
+msgid "Unmatched \\{"
+msgstr "\\{ sen parella"
+
+#: lib/regcomp.c:165
+msgid "Invalid content of \\{\\}"
+msgstr "Contido de \\{\\} non válido"
+
+#: lib/regcomp.c:168
+msgid "Invalid range end"
+msgstr "Fin de intervalo non válido"
+
+#: lib/regcomp.c:171
+msgid "Memory exhausted"
+msgstr "Memoria esgotada"
+
+#: lib/regcomp.c:174
+msgid "Invalid preceding regular expression"
+msgstr "Expresión regular precedente non válida"
+
+#: lib/regcomp.c:177
+msgid "Premature end of regular expression"
+msgstr "Fin prematura da expresión regular"
+
+#: lib/regcomp.c:180
+msgid "Regular expression too big"
+msgstr "Expresión regular grande de máis"
+
+#: lib/regcomp.c:183
+msgid "Unmatched ) or \\)"
+msgstr ") ou \\) sen parella"
+
+#: lib/regcomp.c:676
+msgid "No previous regular expression"
+msgstr "Non hai ningunha expresión regular anterior"
+
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
+#: lib/spawn-pipe.c:463
+#, c-format
+msgid "cannot create pipe"
+msgstr "non é posíbel crear a canalización"
+
+#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#, c-format
+msgid "%s subprocess failed"
+msgstr ""
+
+#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#, c-format
+msgid "%s subprocess"
+msgstr ""
+
+#: lib/wait-process.c:282 lib/wait-process.c:354
+#, c-format
+msgid "%s subprocess got fatal signal %d"
+msgstr ""
+
+#: lib/xalloc-die.c:34
+msgid "memory exhausted"
+msgstr "memoria esgotada"
+
+#, c-format
+#~ msgid "invalid argument %s for %s"
+#~ msgstr "argumento incorrecto %s para %s"
+
+#, c-format
+#~ msgid "ambiguous argument %s for %s"
+#~ msgstr "argumento %s ambiguo para %s"
+
+#, c-format
+#~ msgid "Valid arguments are:"
+#~ msgstr "Os argumentos válidos son:"
+
+#~ msgid ""
+#~ "Mandatory or optional arguments to long options are also mandatory or "
+#~ "optional for any corresponding short options."
+#~ msgstr ""
+#~ "Os argumentos obrigatorios ou opcionais das opcións longas son tamén "
+#~ "obrigatorios ou opcionais para calquera opción curta que se corresponda."
+
+#~ msgid "Usage:"
+#~ msgstr "Uso:"
+
+#~ msgid "  or: "
+#~ msgstr "  ou: "
+
+#~ msgid " [OPTION...]"
+#~ msgstr " [OPCIÓN...]"
+
+#, c-format
+#~ msgid "Try `%s --help' or `%s --usage' for more information.\n"
+#~ msgstr "Execute «%s --help» ou «%s --usage» para obter máis información.\n"
+
+#, c-format
+#~ msgid "Report bugs to %s.\n"
+#~ msgstr "Envíe os informes de fallo a %s.\n"
+
+#~ msgid "give this help list"
+#~ msgstr "devolve esta lista de axuda"
+
+#~ msgid "give a short usage message"
+#~ msgstr "devolve unha mensaxe curta sobre o uso"
+
+#~ msgid "NAME"
+#~ msgstr "NOME"
+
+#~ msgid "set the program name"
+#~ msgstr "define o nome do programa"
+
+#~ msgid "SECS"
+#~ msgstr "SECS"
+
+#~ msgid "print program version"
+#~ msgstr "mostra a versión do programa"
+
+#, c-format
+#~ msgid "%s: Too many arguments\n"
+#~ msgstr "%s: Demasiados argumentos\n"
+
+#~ msgid "program error"
+#~ msgstr "erro do programa"
+
+#~ msgid "stack overflow"
+#~ msgstr "desbordamento da pila"
+
+#, c-format
+#~ msgid "cannot create a temporary directory using template \"%s\""
+#~ msgstr "non é posíbel crear un directorio temporal empregando o patrón «%s»"
+
+#, c-format
+#~ msgid "cannot remove temporary file %s"
+#~ msgstr "non é posíbel retirar o ficheiro temporal %s"
+
+#, c-format
+#~ msgid "cannot remove temporary directory %s"
+#~ msgstr "non é posíbel retirar o directorio temporal %s"
+
+#~ msgid "error closing file"
+#~ msgstr "produciuse un erro ao pechar o ficheiro"
+
+#~ msgid "write error"
+#~ msgstr "erro de escritura"
+
+#, c-format
+#~ msgid "preserving permissions for %s"
+#~ msgstr "conservando os permisos para %s"
+
+#, c-format
+#~ msgid "error while opening \"%s\" for reading"
+#~ msgstr "produciuse un erro ao abrir «%s» para lectura"
+
+#, c-format
+#~ msgid "cannot open backup file \"%s\" for writing"
+#~ msgstr ""
+#~ "non é posíbel abrir o ficheiro de copia de seguridade «%s» para escribir"
+
+#, c-format
+#~ msgid "error reading \"%s\""
+#~ msgstr "produciuse un erro ao ler «%s»"
+
+#, c-format
+#~ msgid "error writing \"%s\""
+#~ msgstr "produciuse un erro ao escribir «%s»"
+
+#, c-format
+#~ msgid "error after reading \"%s\""
+#~ msgstr "produciuse un erro despois de ler «%s»"
+
+#, c-format
+#~ msgid "fdopen() failed"
+#~ msgstr "fdopen() fallou"
+
+#~ msgid "regular empty file"
+#~ msgstr "ficheiro normal baleiro"
+
+#~ msgid "regular file"
+#~ msgstr "ficheiro normal"
+
+#~ msgid "directory"
+#~ msgstr "directorio"
+
+#~ msgid "block special file"
+#~ msgstr "ficheiro especial de bloque"
+
+#~ msgid "character special file"
+#~ msgstr "ficheiro especial de carácter"
+
+#~ msgid "fifo"
+#~ msgstr "fifo"
+
+#~ msgid "symbolic link"
+#~ msgstr "ligazón simbólica"
+
+#~ msgid "message queue"
+#~ msgstr "cola de mensaxes"
+
+#~ msgid "semaphore"
+#~ msgstr "semáforo"
+
+#~ msgid "shared memory object"
+#~ msgstr "obxecto de memoria compartida"
+
+#~ msgid "weird file"
+#~ msgstr "ficheiro estraño"
+
+#, c-format
+#~ msgid "%s: option '--%s' doesn't allow an argument\n"
+#~ msgstr "%s: a opción «--%s» non permite ningún argumento\n"
+
+#, c-format
+#~ msgid "%s: unrecognized option '--%s'\n"
+#~ msgstr "%s: opción «--%s» non recoñecida\n"
+
+#, c-format
+#~ msgid "%s: option '-W %s' doesn't allow an argument\n"
+#~ msgstr "%s: a opción «-W %s» non permite ningún argumento\n"
+
+#, c-format
+#~ msgid "%s: option '-W %s' requires an argument\n"
+#~ msgstr "%s: a opción «-W %s» require un argumento\n"
+
+#, c-format
+#~ msgid "failed to create \"%s\""
+#~ msgstr "produciuse un erro ao crear «%s»"
+
+#, c-format
+#~ msgid "error while writing \"%s\" file"
+#~ msgstr "produciuse un erro ao escribir o ficheiro «%s»"
+
+#, c-format
+#~ msgid "cannot change permissions of %s"
+#~ msgstr "non foi posíbel cambiar os permisos de %s"
+
+#, c-format
+#~ msgid "cannot create directory %s"
+#~ msgstr "non foi posíbel crear o directorio %s"
+
+#, c-format
+#~ msgid "Failed to open /dev/zero for read"
+#~ msgstr "Produciuse un erro ao abrir /dev/zero para ler"
+
+#~ msgid "Franc,ois Pinard"
+#~ msgstr "François Pinard"
+
+#~ msgid "^[yY]"
+#~ msgstr "^[sSyY]"
+
+#~ msgid "^[nN]"
+#~ msgstr "^[nN]"
+
+#, c-format
+#~ msgid "setting permissions for %s"
+#~ msgstr "definindo os permisos para %s"
+
+#~ msgid "Quit"
+#~ msgstr "Saír"
+
+#~ msgid "Illegal instruction"
+#~ msgstr "Instrución inaceptábel"
+
+#~ msgid "Aborted"
+#~ msgstr "Interrompido"
+
+#~ msgid "Floating point exception"
+#~ msgstr "Excepción de coma flotante"
+
+#~ msgid "Killed"
+#~ msgstr "Matado"
+
+#~ msgid "Bus error"
+#~ msgstr "Erro de bus"
+
+#~ msgid "Broken pipe"
+#~ msgstr "Canalización danada"
+
+#~ msgid "Alarm clock"
+#~ msgstr "Reloxo de alarma"
+
+#~ msgid "Terminated"
+#~ msgstr "Terminado"
+
+#~ msgid "Stopped"
+#~ msgstr "Detido"
+
+#~ msgid "Continued"
+#~ msgstr "Continuado"
+
+#~ msgid "Child exited"
+#~ msgstr "O proceso fillo saíu"
+
+#~ msgid "Stopped (tty input)"
+#~ msgstr "Detido (entrada pola terminal)"
+
+#~ msgid "Stopped (tty output)"
+#~ msgstr "Detido (saída pola terminal)"
+
+#~ msgid "I/O possible"
+#~ msgstr "A E/S é posíbel"
+
+#~ msgid "CPU time limit exceeded"
+#~ msgstr "Excedeuse o límite de tempo de CPU"
+
+#~ msgid "File size limit exceeded"
+#~ msgstr "Excedeuse o límite de tamaño do ficheiro"
+
+#~ msgid "Virtual timer expired"
+#~ msgstr "Temporizador virtual esgotado"
+
+#~ msgid "User defined signal 1"
+#~ msgstr "Sinal 1 definido polo usuario"
+
+#~ msgid "User defined signal 2"
+#~ msgstr "Sinal 2 definido polo usuario"
+
+#~ msgid "Bad system call"
+#~ msgstr "Chamada ao sistema errónea"
+
+#~ msgid "Stack fault"
+#~ msgstr "Fallo de pila"
+
+#~ msgid "Information request"
+#~ msgstr "Solicitude de información"
+
+#~ msgid "Power failure"
+#~ msgstr "Fallo de subministración eléctrica"
+
+#~ msgid "Resource lost"
+#~ msgstr "Recurso perdido"
+
+#, c-format
+#~ msgid "Unknown signal %d"
+#~ msgstr "Sinal %d descoñecido"
+
+#~ msgid "iconv function not usable"
+#~ msgstr "a función iconv non é utilizábel"
+
+#~ msgid "iconv function not available"
+#~ msgstr "a función iconv non está dispoñíbel"
+
+#~ msgid "character out of range"
+#~ msgstr "carácter fóra de intervalo"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set"
+#~ msgstr "non é posíbel converter U+%04X ao xogo de caracteres local"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set: %s"
+#~ msgstr "non é posíbel converter U+%04X ao xogo de caracteres local: %s"
+
+#~ msgid "invalid user"
+#~ msgstr "usuario incorrecto"
+
+#~ msgid "invalid group"
+#~ msgstr "grupo incorrecto"
+
+#, c-format
+#~ msgid "unable to display error message"
+#~ msgstr "non é posíbel mostrar a mensaxe de erro"
+
+#, c-format
+#~ msgid "Packaged by %s (%s)\n"
+#~ msgstr "Empaquetado por %s (%s)\n"
+
+#, c-format
+#~ msgid "Packaged by %s\n"
+#~ msgstr "Empaquetado por %s\n"
+
+#~ msgid "(C)"
+#~ msgstr "©"
+
+#~ msgid ""
+#~ "\n"
+#~ "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl."
+#~ "html>.\n"
+#~ "This is free software: you are free to change and redistribute it.\n"
+#~ "There is NO WARRANTY, to the extent permitted by law.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Licenza GPL3v+: GNU GPL versión3  ou posterior <http://gnu.org/licenses/"
+#~ "gpl.html>\n"
+#~ "Isto é software libre: pode modificalo e redistribuílo.\n"
+#~ "Non hai NINGUNHA GARANTÍA, ata onde o permita a lei.\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Written by %s.\n"
+#~ msgstr "Escrito por %s.\n"
+
+#, c-format
+#~ msgid "Written by %s and %s.\n"
+#~ msgstr "Escrito por %s e %s.\n"
+
+#, c-format
+#~ msgid "Written by %s, %s, and %s.\n"
+#~ msgstr "Escrito por %s, %s e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Escrito por %s, %s, %s,\n"
+#~ "e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Escrito por %s, %s, %s,\n"
+#~ "%s, e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Escrito por %s, %s, %s,\n"
+#~ "%s, %s, e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Escrito por %s, %s, %s,\n"
+#~ "%s, %s, %s, e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Escrito por %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Escrito por %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, e %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s, and others.\n"
+#~ msgstr ""
+#~ "Escrito por %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s, e outros.\n"
+
+#, c-format
+#~ msgid ""
+#~ "\n"
+#~ "Report bugs to: %s\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Envíe os informes de fallo a: %s\n"
+
+#, c-format
+#~ msgid "Report %s bugs to: %s\n"
+#~ msgstr "Envíe os informes de fallo en %s a %s.\n"
+
+#, c-format
+#~ msgid "%s home page: <%s>\n"
+#~ msgstr "Páxina web de %s: <%s>\n"
+
+#, c-format
+#~ msgid "%s home page: <http://www.gnu.org/software/%s/>\n"
+#~ msgstr "Páxina web de %s: <http://www.gnu.org/software/%s/>\n"
+
+#~ msgid "General help using GNU software: <http://www.gnu.org/gethelp/>\n"
+#~ msgstr "Axuda xeral ao usar software GNU: <http://www.gnu.org/gethelp/>\n"
+
+#~ msgid "stdin"
+#~ msgstr "stdin"
+
+#~ msgid "stdout"
+#~ msgstr "stdout"
+
+#~ msgid "stderr"
+#~ msgstr "stderr"
+
+#~ msgid "unknown stream"
+#~ msgstr "fluxo descoñecido"
+
+#, c-format
+#~ msgid "failed to reopen %s with mode %s"
+#~ msgstr "produciuse un erro ao volver abrir %s en modo %s"
+
+#, c-format
+#~ msgid "string comparison failed"
+#~ msgstr "produciuse un erro ao comparar as cadeas"
+
+#, c-format
+#~ msgid "Set LC_ALL='C' to work around the problem."
+#~ msgstr "Defina LC_ALL='C' para paliar o problema."
+
+#, c-format
+#~ msgid "The strings compared were %s and %s."
+#~ msgstr "As cadeas que se compararon foron %s e %s."
+
+#, c-format
+#~ msgid "invalid %s%s argument `%s'"
+#~ msgstr "o argumento «%s» de %s%s é incorrecto"
+
+#, c-format
+#~ msgid "invalid suffix in %s%s argument `%s'"
+#~ msgstr "sufixo incorrecto %s%s no argumento «%s»"
+
+#~ msgid "%s: illegal option -- %c\n"
+#~ msgstr "%s: opción incorrecta -- %c\n"
+
+#~ msgid "block size"
+#~ msgstr "tamaño de bloque"
+
+#~ msgid "%s exists but is not a directory"
+#~ msgstr "%s existe pero non é un directorio"
+
+#~ msgid "cannot change owner and/or group of %s"
+#~ msgstr "non se pode cambia-lo propietario e/ou grupo de %s"
+
+#~ msgid "cannot chdir to directory %s"
+#~ msgstr "non se pode cambiar ao directorio %s"
+
+#~ msgid "cannot get the login group of a numeric UID"
+#~ msgstr "non se pode obte-lo grupo de login dun UID numérico"
+
+#, fuzzy
+#~ msgid ""
+#~ "\n"
+#~ "This is free software.  You may redistribute copies of it under the terms "
+#~ "of\n"
+#~ "the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\n"
+#~ "There is NO WARRANTY, to the extent permitted by law.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Este programa é software libre; pode redistribuílo e/ou modificalo baixo\n"
+#~ "os termos da Licencia Pública Xeral de GNU tal como a publicou a Free\n"
+#~ "Software Foundation; xa ben a versión 2 ou (á súa elección) calquera\n"
+#~ "versión posterior.\n"
+#~ "\n"

@@ -1,5 +1,5 @@
 /* Stub for symlink().
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ rpl_symlink (char const *contents, char const *name)
   if (len && name[len - 1] == '/')
     {
       struct stat st;
-      if (lstat (name, &st) == 0)
+      if (lstat (name, &st) == 0 || errno == EOVERFLOW)
         errno = EEXIST;
       return -1;
     }

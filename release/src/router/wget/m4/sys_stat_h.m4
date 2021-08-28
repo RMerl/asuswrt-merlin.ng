@@ -1,5 +1,5 @@
-# sys_stat_h.m4 serial 31   -*- Autoconf -*-
-dnl Copyright (C) 2006-2018 Free Software Foundation, Inc.
+# sys_stat_h.m4 serial 38   -*- Autoconf -*-
+dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -46,9 +46,11 @@ AC_DEFUN([gl_HEADER_SYS_STAT_H],
   dnl Check for declarations of anything we want to poison if the
   dnl corresponding gnulib module is not in use.
   gl_WARN_ON_USE_PREPARE([[#include <sys/stat.h>
-    ]], [fchmodat fstat fstatat futimens lchmod lstat mkdirat mkfifo mkfifoat
-    mknod mknodat stat utimensat])
-]) # gl_HEADER_SYS_STAT_H
+    ]], [fchmodat fstat fstatat futimens getumask lchmod lstat
+    mkdirat mkfifo mkfifoat mknod mknodat stat utimensat])
+
+  AC_REQUIRE([AC_C_RESTRICT])
+])
 
 AC_DEFUN([gl_SYS_STAT_MODULE_INDICATOR],
 [
@@ -66,8 +68,10 @@ AC_DEFUN([gl_SYS_STAT_H_DEFAULTS],
   GNULIB_FSTAT=0;       AC_SUBST([GNULIB_FSTAT])
   GNULIB_FSTATAT=0;     AC_SUBST([GNULIB_FSTATAT])
   GNULIB_FUTIMENS=0;    AC_SUBST([GNULIB_FUTIMENS])
+  GNULIB_GETUMASK=0;    AC_SUBST([GNULIB_GETUMASK])
   GNULIB_LCHMOD=0;      AC_SUBST([GNULIB_LCHMOD])
   GNULIB_LSTAT=0;       AC_SUBST([GNULIB_LSTAT])
+  GNULIB_MKDIR=0;       AC_SUBST([GNULIB_MKDIR])
   GNULIB_MKDIRAT=0;     AC_SUBST([GNULIB_MKDIRAT])
   GNULIB_MKFIFO=0;      AC_SUBST([GNULIB_MKFIFO])
   GNULIB_MKFIFOAT=0;    AC_SUBST([GNULIB_MKFIFOAT])
@@ -76,10 +80,15 @@ AC_DEFUN([gl_SYS_STAT_H_DEFAULTS],
   GNULIB_STAT=0;        AC_SUBST([GNULIB_STAT])
   GNULIB_UTIMENSAT=0;   AC_SUBST([GNULIB_UTIMENSAT])
   GNULIB_OVERRIDES_STRUCT_STAT=0; AC_SUBST([GNULIB_OVERRIDES_STRUCT_STAT])
+  dnl Support Microsoft deprecated alias function names by default.
+  GNULIB_MDA_CHMOD=1;   AC_SUBST([GNULIB_MDA_CHMOD])
+  GNULIB_MDA_MKDIR=1;   AC_SUBST([GNULIB_MDA_MKDIR])
+  GNULIB_MDA_UMASK=1;   AC_SUBST([GNULIB_MDA_UMASK])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_FCHMODAT=1;      AC_SUBST([HAVE_FCHMODAT])
   HAVE_FSTATAT=1;       AC_SUBST([HAVE_FSTATAT])
   HAVE_FUTIMENS=1;      AC_SUBST([HAVE_FUTIMENS])
+  HAVE_GETUMASK=1;      AC_SUBST([HAVE_GETUMASK])
   HAVE_LCHMOD=1;        AC_SUBST([HAVE_LCHMOD])
   HAVE_LSTAT=1;         AC_SUBST([HAVE_LSTAT])
   HAVE_MKDIRAT=1;       AC_SUBST([HAVE_MKDIRAT])
@@ -88,13 +97,16 @@ AC_DEFUN([gl_SYS_STAT_H_DEFAULTS],
   HAVE_MKNOD=1;         AC_SUBST([HAVE_MKNOD])
   HAVE_MKNODAT=1;       AC_SUBST([HAVE_MKNODAT])
   HAVE_UTIMENSAT=1;     AC_SUBST([HAVE_UTIMENSAT])
+  REPLACE_FCHMODAT=0;   AC_SUBST([REPLACE_FCHMODAT])
   REPLACE_FSTAT=0;      AC_SUBST([REPLACE_FSTAT])
   REPLACE_FSTATAT=0;    AC_SUBST([REPLACE_FSTATAT])
   REPLACE_FUTIMENS=0;   AC_SUBST([REPLACE_FUTIMENS])
   REPLACE_LSTAT=0;      AC_SUBST([REPLACE_LSTAT])
   REPLACE_MKDIR=0;      AC_SUBST([REPLACE_MKDIR])
   REPLACE_MKFIFO=0;     AC_SUBST([REPLACE_MKFIFO])
+  REPLACE_MKFIFOAT=0;   AC_SUBST([REPLACE_MKFIFOAT])
   REPLACE_MKNOD=0;      AC_SUBST([REPLACE_MKNOD])
+  REPLACE_MKNODAT=0;    AC_SUBST([REPLACE_MKNODAT])
   REPLACE_STAT=0;       AC_SUBST([REPLACE_STAT])
   REPLACE_UTIMENSAT=0;  AC_SUBST([REPLACE_UTIMENSAT])
 ])

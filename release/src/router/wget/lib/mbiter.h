@@ -1,5 +1,5 @@
 /* Iterating through multibyte strings: macros for multi-byte encodings.
-   Copyright (C) 2001, 2005, 2007, 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005, 2007, 2009-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -86,13 +86,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
-
-/* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
-   <wchar.h>.
-   BSD/OS 4.1 has a bug: <stdio.h> and <time.h> must be included before
-   <wchar.h>.  */
-#include <stdio.h>
-#include <time.h>
 #include <wchar.h>
 
 #include "mbchar.h"

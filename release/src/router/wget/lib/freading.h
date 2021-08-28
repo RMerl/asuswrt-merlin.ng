@@ -1,5 +1,5 @@
 /* Retrieve information about a FILE stream.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -33,9 +33,11 @@
    STREAM must not be wide-character oriented.  */
 
 #if HAVE___FREADING && (!defined __GLIBC__ || defined __UCLIBC__ || __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 7))
-/* Solaris >= 7, Android API >= 29, not glibc >= 2.2, but glibc >= 2.7, or musl libc  */
+/* Solaris >= 7, UnixWare >= 7.1.4.MP4, Cygwin >= 1.7.34, Android API >= 29, not glibc >= 2.2, but glibc >= 2.7, or musl libc  */
 
-# include <stdio_ext.h>
+# if HAVE_STDIO_EXT_H
+#  include <stdio_ext.h>
+# endif
 # define freading(stream) (__freading (stream) != 0)
 
 #else

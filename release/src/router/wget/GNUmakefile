@@ -5,7 +5,7 @@
 # It is necessary if you want to build targets usually of interest
 # only to the maintainer.
 
-# Copyright (C) 2001, 2003, 2006-2018 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2006-2021 Free Software Foundation, Inc.
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -104,7 +104,7 @@ endif
 
 abort-due-to-no-makefile:
 	@echo There seems to be no Makefile in this directory.   1>&2
-	@echo "You must run ./configure before running 'make'." 1>&2
+	@echo "You must run ./configure before running '$(MAKE)'." 1>&2
 	@exit 1
 
 endif

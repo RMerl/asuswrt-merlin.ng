@@ -1,6 +1,5 @@
 # Makefile for `Wget' utility
-# Copyright (C) 1995-1997, 2006-2018 Free Software Foundation,
-# Inc.
+# Copyright (C) 1995-1997, 2006-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,7 +40,7 @@ distuninstallcheck_listfiles = find . -type f | \
 ACLOCAL_AMFLAGS = -I m4
 
 # subdirectories in the distribution
-SUBDIRS = lib src doc po util fuzz tests testenv
+SUBDIRS = lib src doc po gnulib_po util fuzz tests testenv
 
 EXTRA_DIST = MAILING-LIST \
              msdos/config.h msdos/Makefile.DJ \
@@ -49,7 +48,7 @@ EXTRA_DIST = MAILING-LIST \
              build-aux/build_info.pl build-aux/git-version-gen .version
 
 CLEANFILES = *~ *.bak $(DISTNAME).tar.gz
-DISTCLEANFILES = po/stamp-po
+DISTCLEANFILES = po/stamp-po gnulib_po/stamp-po
 
 BUILT_SOURCES = .version
 
@@ -81,3 +80,30 @@ gen-ChangeLog:
 
 check-valgrind:
 	TESTS_ENVIRONMENT="VALGRIND_TESTS=1" $(MAKE) check
+
+LCOV_INFO=wget.info
+
+clean-lcov:
+	rm -rf $(LCOV_INFO) */*.gc?? */.libs/*.gc?? lcov/
+	lcov --zerocounters --directory src/
+
+check-coverage: clean clean-lcov
+	$(MAKE) CFLAGS="$(CFLAGS) --coverage" LDFLAGS="$(LDFLAGS) --coverage"
+	lcov --capture --initial --directory src/ --output-file $(LCOV_INFO)
+	$(MAKE) CFLAGS="$(CFLAGS) --coverage" LDFLAGS="$(LDFLAGS) --coverage" VALGRIND_TESTS=0 check
+	lcov --capture --directory src/ --output-file $(LCOV_INFO)
+	lcov --remove $(LCOV_INFO) '/usr/include/*' '*/lib/*' -o $(LCOV_INFO)
+	genhtml --prefix . --ignore-errors source $(LCOV_INFO) --legend --title "Wget" --output-directory=lcov
+	@echo
+	@echo "You can now view the coverage report with 'xdg-open lcov/index.html'"
+
+fuzz-coverage: clean clean-lcov
+	$(MAKE) -C lib
+	$(MAKE) -C src CFLAGS="$(CFLAGS) --coverage" LDFLAGS="$(LDFLAGS) --coverage"
+	$(MAKE) -C fuzz check CFLAGS="$(CFLAGS) --coverage" LDFLAGS="$(LDFLAGS) --coverage"
+	lcov --capture --initial --directory fuzz --directory src --output-file $(LCOV_INFO)
+	lcov --capture --directory fuzz --directory src --output-file $(LCOV_INFO)
+	lcov --remove $(LCOV_INFO) '/usr/include/*' '*/lib/*' -o $(LCOV_INFO)
+	genhtml --prefix . --ignore-errors source $(LCOV_INFO) --legend --title "Wget-fuzz" --output-directory=lcov
+	@echo
+	@echo "You can now view the coverage report with 'xdg-open lcov/index.html'"

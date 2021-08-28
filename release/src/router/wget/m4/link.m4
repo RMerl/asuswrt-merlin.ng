@@ -1,5 +1,5 @@
-# link.m4 serial 10
-dnl Copyright (C) 2009-2018 Free Software Foundation, Inc.
+# link.m4 serial 11
+dnl Copyright (C) 2009-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -43,8 +43,8 @@ AC_DEFUN([gl_FUNC_LINK],
             linux-* | linux) gl_cv_func_link_works="guessing yes" ;;
                              # Guess yes on glibc systems.
             *-gnu* | gnu*)   gl_cv_func_link_works="guessing yes" ;;
-                             # If we don't know, assume the worst.
-            *)               gl_cv_func_link_works="guessing no" ;;
+                             # If we don't know, obey --enable-cross-guesses.
+            *)               gl_cv_func_link_works="$gl_cross_guess_normal" ;;
           esac
          ])
        rm -f conftest.a conftest.b conftest.lnk])

@@ -1,5 +1,6 @@
 /* Miscellaneous declarations.
-   Copyright (C) 1996-2011, 2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 1996-2011, 2015, 2018-2021 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 
@@ -134,81 +135,23 @@ as that of the covered work.  */
    don't necessarily want to tie having a 64-bit type for internal
    calculations to having LFS support.  */
 
-#ifdef WINDOWS
-  /* nothing to do, see mswindows.h */
-#elif SIZEOF_LONG >= 8
-  /* long is large enough, so use it. */
-  typedef long wgint;
-# define SIZEOF_WGINT SIZEOF_LONG
-#elif SIZEOF_LONG_LONG >= 8
-  /* long long is large enough and available, use that */
-  typedef long long wgint;
-# define SIZEOF_WGINT SIZEOF_LONG_LONG
-#elif HAVE_INT64_T
-  typedef int64_t wgint;
-# define SIZEOF_WGINT 8
-#elif SIZEOF_OFF_T >= 8
-  /* In case off_t is typedeffed to a large non-standard type that our
-     tests don't find. */
-  typedef off_t wgint;
-# define SIZEOF_WGINT SIZEOF_OFF_T
-#else
-  /* Fall back to using long, which is always available and in most
-     cases large enough. */
-  typedef long wgint;
-# define SIZEOF_WGINT SIZEOF_LONG
-#endif
+/* Gnulib's stdint.h module essentially guarantees the existence of int64_t.
+ * Thus we can simply assume it always exists and use it.
+ */
+#include <stdint.h>
 
-/* Pick a strtol-compatible function that will work with wgint.  The
-   choices are strtol, strtoll, or our own implementation of strtoll
-   in cmpt.c, activated with NEED_STRTOLL.  */
-
-#ifdef WINDOWS
-  /* nothing to do, see mswindows.h */
-#elif SIZEOF_WGINT == SIZEOF_LONG
-# define str_to_wgint strtol
-#elif SIZEOF_WGINT == SIZEOF_LONG_LONG
-# define str_to_wgint strtoll
-# ifndef HAVE_STRTOLL
-#  define NEED_STRTOLL
-#  define strtoll_type long long
-# endif
-#else
-  /* wgint has a strange size; synthesize strtoll and use it. */
-# define str_to_wgint strtoll
-# define NEED_STRTOLL
-# define strtoll_type wgint
-#endif
-
-#define WGINT_MAX TYPE_MAXIMUM (wgint)
-
-/* Declare our strtoll replacement. */
-#ifdef NEED_STRTOLL
-strtoll_type strtoll (const char *, char **, int);
-#endif
-
-/* Now define a large numeric type useful for storing sizes of *sums*
-   of downloads, such as the value of the --quota option.  This should
-   be a type able to hold 2G+ values even on systems without large
-   file support.  (It is useful to limit Wget's download quota to say
-   10G even if a single file cannot be that large.)
-
-   To make sure we get the largest size possible, we use `double' on
-   systems without a 64-bit integral type.  (Since it is used in very
-   few places in Wget, this is acceptable.)  */
-
-#if SIZEOF_WGINT >= 8
-/* just use wgint */
+typedef int64_t wgint;
+#define WGINT_MAX INT64_MAX
 typedef wgint SUM_SIZE_INT;
-#else
-/* On systems without LFS, use double, which buys us integers up to 2^53. */
-typedef double SUM_SIZE_INT;
-#endif
+
+#define str_to_wgint strtol
 
 #include "options.h"
 
 /* Everything uses this, so include them here directly.  */
-#include <alloca.h>
+#ifdef __cplusplus
+#  undef _Noreturn
+#endif
 #include "xalloc.h"
 
 /* Likewise for logging functions.  */
@@ -235,28 +178,19 @@ typedef double SUM_SIZE_INT;
 #define xzero(x) memset (&(x), '\0', sizeof (x))
 
 /* Convert an ASCII hex digit to the corresponding number between 0
-   and 15.  H should be a hexadecimal digit that satisfies isxdigit;
+   and 15.  c should be a hexadecimal digit that satisfies c_isxdigit;
    otherwise, the result is undefined.  */
-#define XDIGIT_TO_NUM(h) ((h) < 'A' ? (h) - '0' : c_toupper (h) - 'A' + 10)
-#define X2DIGITS_TO_NUM(h1, h2) ((XDIGIT_TO_NUM (h1) << 4) + XDIGIT_TO_NUM (h2))
+static inline unsigned char _unhex(unsigned char c)
+{
+	return c <= '9' ? c - '0' : (c <= 'F' ? c - 'A' + 10 : c - 'a' + 10);
+}
+#define X2DIGITS_TO_NUM(h1, h2) ((_unhex (h1) << 4) + _unhex (h2))
 
 /* The reverse of the above: convert a number in the [0, 16) range to
    the ASCII representation of the corresponding hexadecimal digit.
    `+ 0' is there so you can't accidentally use it as an lvalue.  */
 #define XNUM_TO_DIGIT(x) ("0123456789ABCDEF"[x] + 0)
 #define XNUM_TO_digit(x) ("0123456789abcdef"[x] + 0)
-
-/* Copy the data delimited with BEG and END to alloca-allocated
-   storage, and zero-terminate it.  Arguments are evaluated only once,
-   in the order BEG, END, PLACE.  */
-#define BOUNDED_TO_ALLOCA(beg, end, place) do { \
-  const char *BTA_beg = (beg);                  \
-  int BTA_len = (end) - BTA_beg;                \
-  char **BTA_dest = &(place);                   \
-  *BTA_dest = alloca (BTA_len + 1);             \
-  memcpy (*BTA_dest, BTA_beg, BTA_len);         \
-  (*BTA_dest)[BTA_len] = '\0';                  \
-} while (0)
 
 /* Return non-zero if string bounded between BEG and END is equal to
    STRING_LITERAL.  The comparison is case-sensitive.  */
@@ -268,19 +202,6 @@ typedef double SUM_SIZE_INT;
 #define BOUNDED_EQUAL_NO_CASE(beg, end, string_literal)         \
   ((end) - (beg) == sizeof (string_literal) - 1                 \
    && !c_strncasecmp (beg, string_literal, sizeof (string_literal) - 1))
-
-/* Like ptr=strdup(str), but allocates the space for PTR on the stack.
-   This cannot be an expression because this is not portable:
-     #define STRDUP_ALLOCA(str) (strcpy (alloca (strlen (str) + 1), str))
-   The problem is that some compilers can't handle alloca() being an
-   argument to a function.  */
-
-#define STRDUP_ALLOCA(ptr, str) do {                \
-  char **SA_dest = &(ptr);                          \
-  const char *SA_src = (str);                       \
-  *SA_dest = (char *)alloca (strlen (SA_src) + 1);  \
-  strcpy (*SA_dest, SA_src);                        \
-} while (0)
 
 /* Generally useful if you want to avoid arbitrary size limits but
    don't need a full dynamic array.  Assumes that BASEVAR points to a
@@ -329,7 +250,7 @@ enum
                                            or application/xhtml+xml */
   RETROKF              = 0x0002,        /* retrieval was OK */
   HEAD_ONLY            = 0x0004,        /* only send the HEAD request */
-  SEND_NOCACHE         = 0x0008,        /* send Pragma: no-cache directive */
+  SEND_NOCACHE         = 0x0008,        /* send Cache-Control: no-cache and Pragma: no-cache directive */
   ACCEPTRANGES         = 0x0010,        /* Accept-ranges header was found */
   ADDED_HTML_EXTENSION = 0x0020,        /* added ".html" extension due to -E */
   TEXTCSS              = 0x0040,        /* document is of type text/css */

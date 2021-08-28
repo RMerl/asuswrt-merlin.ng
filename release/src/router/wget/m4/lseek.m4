@@ -1,5 +1,5 @@
-# lseek.m4 serial 10
-dnl Copyright (C) 2007, 2009-2018 Free Software Foundation, Inc.
+# lseek.m4 serial 11
+dnl Copyright (C) 2007, 2009-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -32,7 +32,8 @@ AC_DEFUN([gl_FUNC_LSEEK],
 #else /* on Windows with MSVC */
 # include <io.h>
 #endif
-]], [[
+]GL_MDA_DEFINES],
+[[
   /* Exit with success only if stdin is seekable.  */
   return lseek (0, (off_t)0, SEEK_CUR) < 0;
 ]])],

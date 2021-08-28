@@ -1,5 +1,6 @@
 /* NTLM code.
-   Copyright (C) 2005-2011, 2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 2005-2011, 2015, 2018-2021 Free Software Foundation,
+   Inc.
    Contributed by Daniel Stenberg.
 
 This file is part of GNU Wget.
@@ -117,17 +118,17 @@ ntlm_input (struct ntlmdata *ntlm, const char *header)
          32 (48) start of data block
       */
       ssize_t size;
-      char *buffer = (char *) alloca (strlen (header));
+      char buffer[48]; // decode 48 bytes needs ((48 + 2) / 3) * 4 + 1 bytes
 
       DEBUGP (("Received a type-2 NTLM message.\n"));
 
-      size = wget_base64_decode (header, buffer, strlen (header));
+      size = wget_base64_decode (header, buffer, sizeof (buffer));
       if (size < 0)
         return false;           /* malformed base64 from server */
 
       ntlm->state = NTLMSTATE_TYPE2; /* we got a type-2 */
 
-      if (size >= 48)
+      if ((size_t) size >= sizeof (buffer))
         /* the nonce of interest is index [24 .. 31], 8 bytes */
         memcpy (ntlm->nonce, &buffer[24], 8);
 
@@ -135,13 +136,24 @@ ntlm_input (struct ntlmdata *ntlm, const char *header)
     }
   else
     {
-      if (ntlm->state >= NTLMSTATE_TYPE1)
+      if (ntlm->state == NTLMSTATE_LAST)
+        {
+          DEBUGP (("NTLM auth restarted.\n"));
+          /* no return, continue */
+        }
+      else if (ntlm->state == NTLMSTATE_TYPE3)
+        {
+          DEBUGP (("NTLM handshake rejected.\n"));
+          ntlm->state = NTLMSTATE_NONE;
+          return false;
+        }
+      else if (ntlm->state >= NTLMSTATE_TYPE1)
         {
           DEBUGP (("Unexpected empty NTLM message.\n"));
           return false; /* this is an error */
         }
 
-      DEBUGP (("Empty NTLM message, starting transaction.\n"));
+      DEBUGP (("Empty NTLM message, (re)starting transaction.\n"));
       ntlm->state = NTLMSTATE_TYPE1; /* we should sent away a type-1 */
     }
 
@@ -243,22 +255,21 @@ mkhash(const char *password,
 #ifdef USE_NTRESPONSES
   unsigned char ntbuffer[21];
 #endif
-  unsigned char *pw;
+  unsigned char pw[14];
   static const unsigned char magic[] = {
     0x4B, 0x47, 0x53, 0x21, 0x40, 0x23, 0x24, 0x25
   };
   size_t i, len = strlen(password);
 
   /* make it fit at least 14 bytes */
-  pw = (unsigned char *) alloca (len < 7 ? 14 : len * 2);
 
-  if (len > 14)
-    len = 14;
+  if (len > sizeof (pw))
+    len = sizeof (pw);
 
-  for (i=0; i<len; i++)
+  for (i = 0; i < len; i++)
     pw[i] = (unsigned char) c_toupper (password[i]);
 
-  for (; i<14; i++)
+  for (; i < sizeof (pw); i++)
     pw[i] = 0;
 
   {
@@ -274,16 +285,16 @@ mkhash(const char *password,
 #else
     DES_key_schedule ks;
 
-    setup_des_key(pw, DESKEY(ks));
-    DES_ecb_encrypt((DES_cblock *)magic, (DES_cblock *)lmbuffer,
-                    DESKEY(ks), DES_ENCRYPT);
+    setup_des_key(pw, DESKEY (ks));
+    DES_ecb_encrypt((DES_cblock *) magic, (DES_cblock *) lmbuffer,
+                    DESKEY (ks), DES_ENCRYPT);
 
-    setup_des_key(pw+7, DESKEY(ks));
-    DES_ecb_encrypt((DES_cblock *)magic, (DES_cblock *)(lmbuffer+8),
-                    DESKEY(ks), DES_ENCRYPT);
+    setup_des_key(pw+7, DESKEY (ks));
+    DES_ecb_encrypt((DES_cblock *) magic, (DES_cblock *) (lmbuffer + 8),
+                    DESKEY (ks), DES_ENCRYPT);
 #endif
 
-    memset(lmbuffer+16, 0, 5);
+    memset(lmbuffer + 16, 0, 5);
   }
   /* create LM responses */
   calc_resp(lmbuffer, nonce, lmresp);
@@ -296,25 +307,30 @@ mkhash(const char *password,
     MD4_CTX MD4;
 #endif
 
-    len = strlen(password);
+    unsigned char pw4[64];
 
-    for (i=0; i<len; i++) {
-      pw[2*i]   = (unsigned char) password[i];
-      pw[2*i+1] = 0;
+    len = strlen (password);
+
+    if (len > sizeof (pw4) / 2)
+      len = sizeof (pw4) / 2;
+
+    for (i = 0; i < len; i++) {
+      pw4[2 * i]     = (unsigned char) password[i];
+      pw4[2 * i + 1] = 0;
     }
 
 #ifdef HAVE_NETTLE
     nettle_md4_init(&MD4);
-    nettle_md4_update(&MD4, (unsigned) (2 * len), pw);
+    nettle_md4_update(&MD4, (unsigned) (2 * len), pw4);
     nettle_md4_digest(&MD4, MD4_DIGEST_SIZE, ntbuffer);
 #else
     /* create NT hashed password */
     MD4_Init(&MD4);
-    MD4_Update(&MD4, pw, 2*len);
+    MD4_Update(&MD4, pw4, 2 * len);
     MD4_Final(ntbuffer, &MD4);
 #endif
 
-    memset(ntbuffer+16, 0, 5);
+    memset(ntbuffer + 16, 0, 5);
   }
 
   calc_resp(ntbuffer, nonce, ntresp);
@@ -337,7 +353,6 @@ ntlm_output (struct ntlmdata *ntlm, const char *user, const char *passwd,
   size_t hostoff; /* host name offset */
   size_t domoff;  /* domain name offset */
   size_t size;
-  char *base64;
   char ntlmbuf[256]; /* enough, unless the host/domain is very long */
 
   /* point to the address of the pointer that holds the string to sent to the
@@ -409,10 +424,10 @@ ntlm_output (struct ntlmdata *ntlm, const char *user, const char *passwd,
     /* initial packet length */
     size = 32 + hostlen + domlen;
 
-    base64 = (char *) alloca (BASE64_LENGTH (size) + 1);
-    wget_base64_encode (ntlmbuf, size, base64);
+    output = xmalloc(5 + BASE64_LENGTH (size) + 1);
+    memcpy(output, "NTLM ", 5);
+    wget_base64_encode (ntlmbuf, size, output + 5);
 
-    output = concat_strings ("NTLM ", base64, (char *) 0);
     break;
 
   case NTLMSTATE_TYPE2:
@@ -582,10 +597,9 @@ ntlm_output (struct ntlmdata *ntlm, const char *user, const char *passwd,
     ntlmbuf[57] = (char) (size >> 8);
 
     /* convert the binary blob into base64 */
-    base64 = (char *) alloca (BASE64_LENGTH (size) + 1);
-    wget_base64_encode (ntlmbuf, size, base64);
-
-    output = concat_strings ("NTLM ", base64, (char *) 0);
+    output = xmalloc(5 + BASE64_LENGTH (size) + 1);
+    memcpy(output, "NTLM ", 5);
+    wget_base64_encode (ntlmbuf, size, output + 5);
 
     ntlm->state = NTLMSTATE_TYPE3; /* we sent a type-3 */
     *ready = true;

@@ -1,0 +1,702 @@
+# Greek messages for gnulib
+# Copyright (C) 1999, 2000, 2001, 2002, 2012 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gnulib package.
+# Simos Xenitellis <simos.lists@googlemail.com>, 1999, 2000, 2001, 2002, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gnulib 3.0.0.6062.a6b16\n"
+"Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
+"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"PO-Revision-Date: 2012-03-11 11:25+0100\n"
+"Last-Translator: Simos Xenitellis <simos.lists@googlemail.com>\n"
+"Language-Team: Greek <team@lists.gnome.gr>\n"
+"Language: el\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+
+#
+#: lib/error.c:195
+msgid "Unknown system error"
+msgstr "Άγνωστο σφάλμα συστήματος"
+
+#: lib/gai_strerror.c:57
+#, fuzzy
+msgid "Address family for hostname not supported"
+msgstr "αρχεία fifo δεν υποστηρίζονται"
+
+#: lib/gai_strerror.c:58
+msgid "Temporary failure in name resolution"
+msgstr ""
+
+#: lib/gai_strerror.c:59
+msgid "Bad value for ai_flags"
+msgstr ""
+
+#: lib/gai_strerror.c:60
+msgid "Non-recoverable failure in name resolution"
+msgstr ""
+
+#: lib/gai_strerror.c:61
+#, fuzzy
+msgid "ai_family not supported"
+msgstr "αρχεία fifo δεν υποστηρίζονται"
+
+#: lib/gai_strerror.c:62
+msgid "Memory allocation failure"
+msgstr ""
+
+#: lib/gai_strerror.c:63
+msgid "No address associated with hostname"
+msgstr ""
+
+#: lib/gai_strerror.c:64
+msgid "Name or service not known"
+msgstr ""
+
+#: lib/gai_strerror.c:65
+msgid "Servname not supported for ai_socktype"
+msgstr ""
+
+#: lib/gai_strerror.c:66
+#, fuzzy
+msgid "ai_socktype not supported"
+msgstr "αρχεία fifo δεν υποστηρίζονται"
+
+#
+#: lib/gai_strerror.c:67
+#, fuzzy
+msgid "System error"
+msgstr "σφάλμα εγγραφής"
+
+#: lib/gai_strerror.c:68
+msgid "Argument buffer too small"
+msgstr ""
+
+#: lib/gai_strerror.c:70
+msgid "Processing request in progress"
+msgstr ""
+
+#: lib/gai_strerror.c:71
+msgid "Request canceled"
+msgstr ""
+
+#: lib/gai_strerror.c:72
+msgid "Request not canceled"
+msgstr ""
+
+#: lib/gai_strerror.c:73
+msgid "All requests done"
+msgstr ""
+
+#: lib/gai_strerror.c:74
+msgid "Interrupted by a signal"
+msgstr ""
+
+#: lib/gai_strerror.c:75
+msgid "Parameter string not correctly encoded"
+msgstr ""
+
+#
+#: lib/gai_strerror.c:87
+#, fuzzy
+msgid "Unknown error"
+msgstr "Άγνωστο σφάλμα συστήματος"
+
+#
+#: lib/getopt.c:278
+#, fuzzy, c-format
+msgid "%s: option '%s%s' is ambiguous\n"
+msgstr "%s: η επιλογή `-W %s' είναι ασαφής\n"
+
+#
+#: lib/getopt.c:284
+#, fuzzy, c-format
+msgid "%s: option '%s%s' is ambiguous; possibilities:"
+msgstr "%s: η επιλογή `%s' είναι ασαφής\n"
+
+#
+#: lib/getopt.c:319
+#, fuzzy, c-format
+msgid "%s: unrecognized option '%s%s'\n"
+msgstr "%s: μη αναγνωρίσιμη επιλογή `%c%s'\n"
+
+#
+#: lib/getopt.c:345
+#, fuzzy, c-format
+msgid "%s: option '%s%s' doesn't allow an argument\n"
+msgstr "%s: η επιλογή `%c%s' δεν επιτρέπει ορίσματα\n"
+
+#
+#: lib/getopt.c:360
+#, fuzzy, c-format
+msgid "%s: option '%s%s' requires an argument\n"
+msgstr "%s: η επιλογή `-%s' απαιτεί ένα όρισμα\n"
+
+#
+#: lib/getopt.c:621
+#, fuzzy, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr "%s: μη έγκυρη επιλογή -- %c\n"
+
+#
+#: lib/getopt.c:636 lib/getopt.c:682
+#, fuzzy, c-format
+msgid "%s: option requires an argument -- '%c'\n"
+msgstr "%s: η επιλογή απαιτεί ένα όρισμα -- %c\n"
+
+#
+#: lib/openat-die.c:38
+#, fuzzy, c-format
+msgid "unable to record current working directory"
+msgstr "αδύνατη η δημιουργία καταλόγου `%s'"
+
+#
+#: lib/openat-die.c:57
+#, fuzzy, c-format
+msgid "failed to return to initial working directory"
+msgstr "αδύνατη η δημιουργία καταλόγου `%s'"
+
+#: lib/os2-spawn.c:46
+#, c-format
+msgid "_open_osfhandle failed"
+msgstr ""
+
+#: lib/os2-spawn.c:83
+#, c-format
+msgid "cannot restore fd %d: dup2 failed"
+msgstr ""
+
+#
+#. TRANSLATORS:
+#. Get translations for open and closing quotation marks.
+#. The message catalog should translate "`" to a left
+#. quotation mark suitable for the locale, and similarly for
+#. "'".  For example, a French Unicode local should translate
+#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), respectively.
+#.
+#. If the catalog has no translation, we will try to
+#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
+#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
+#. current locale is not Unicode, locale_quoting_style
+#. will quote 'like this', and clocale_quoting_style will
+#. quote "like this".  You should always include translations
+#. for "`" and "'" even if U+2018 and U+2019 are appropriate
+#. for your locale.
+#.
+#. If you don't know what to put here, please see
+#. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
+#. and use glyphs suitable for your language.
+#: lib/quotearg.c:355
+msgid "`"
+msgstr "`"
+
+#
+#: lib/quotearg.c:356
+msgid "'"
+msgstr "'"
+
+#: lib/regcomp.c:135
+msgid "Success"
+msgstr ""
+
+#: lib/regcomp.c:138
+msgid "No match"
+msgstr ""
+
+#
+#: lib/regcomp.c:141
+#, fuzzy
+msgid "Invalid regular expression"
+msgstr "%s: μη έγκυρη κανονική έκφραση: %s"
+
+#
+#: lib/regcomp.c:144
+#, fuzzy
+msgid "Invalid collation character"
+msgstr "μη έγκυρη τάξη χαρακτήρων `%s'"
+
+#
+#: lib/regcomp.c:147
+#, fuzzy
+msgid "Invalid character class name"
+msgstr "μη έγκυρη τάξη χαρακτήρων `%s'"
+
+#: lib/regcomp.c:150
+msgid "Trailing backslash"
+msgstr ""
+
+#: lib/regcomp.c:153
+msgid "Invalid back reference"
+msgstr ""
+
+#: lib/regcomp.c:156
+msgid "Unmatched [, [^, [:, [., or [="
+msgstr ""
+
+#: lib/regcomp.c:159
+msgid "Unmatched ( or \\("
+msgstr ""
+
+#: lib/regcomp.c:162
+msgid "Unmatched \\{"
+msgstr ""
+
+#: lib/regcomp.c:165
+msgid "Invalid content of \\{\\}"
+msgstr ""
+
+#
+#: lib/regcomp.c:168
+#, fuzzy
+msgid "Invalid range end"
+msgstr "%s: μη έγκυρη κανονική έκφραση: %s"
+
+#
+#: lib/regcomp.c:171
+#, fuzzy
+msgid "Memory exhausted"
+msgstr "η μνήμη εξαντλήθηκε"
+
+#
+#: lib/regcomp.c:174
+#, fuzzy
+msgid "Invalid preceding regular expression"
+msgstr "%s: μη έγκυρη κανονική έκφραση: %s"
+
+#
+#: lib/regcomp.c:177
+#, fuzzy
+msgid "Premature end of regular expression"
+msgstr "σφάλμα στην ανεύρεση μέσω κανονικής έκφρασης"
+
+#
+#: lib/regcomp.c:180
+#, fuzzy
+msgid "Regular expression too big"
+msgstr "%s: μη έγκυρη κανονική έκφραση: %s"
+
+#: lib/regcomp.c:183
+msgid "Unmatched ) or \\)"
+msgstr ""
+
+#
+#: lib/regcomp.c:676
+#, fuzzy
+msgid "No previous regular expression"
+msgstr "σφάλμα στην ανεύρεση μέσω κανονικής έκφρασης"
+
+#
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
+#: lib/spawn-pipe.c:463
+#, fuzzy, c-format
+msgid "cannot create pipe"
+msgstr "αδύνατη η δημιουργία καταλόγου `%s'"
+
+#
+#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#, fuzzy, c-format
+msgid "%s subprocess failed"
+msgstr "%s: μη έγκυρη μορφή"
+
+#
+#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#, fuzzy, c-format
+msgid "%s subprocess"
+msgstr "%s: μη έγκυρη μορφή"
+
+#
+#: lib/wait-process.c:282 lib/wait-process.c:354
+#, fuzzy, c-format
+msgid "%s subprocess got fatal signal %d"
+msgstr "%s: μη έγκυρη μορφή"
+
+#
+#: lib/xalloc-die.c:34
+msgid "memory exhausted"
+msgstr "η μνήμη εξαντλήθηκε"
+
+#
+#, c-format
+#~ msgid "invalid argument %s for %s"
+#~ msgstr "μη έγκυρο όρισμα %s για %s"
+
+#
+#, c-format
+#~ msgid "ambiguous argument %s for %s"
+#~ msgstr "ασαφές όρισμα %s για %s"
+
+#
+#, c-format
+#~ msgid "Valid arguments are:"
+#~ msgstr "Έγκυρα ορίσματα είναι:"
+
+#
+#~ msgid " [OPTION...]"
+#~ msgstr " [ΕΠΙΛΟΓΗ...]"
+
+#
+#, fuzzy, c-format
+#~ msgid "Try `%s --help' or `%s --usage' for more information.\n"
+#~ msgstr "Δοκιμάστε `%s --help' για περισσότερη βοήθεια.\n"
+
+#
+#, fuzzy, c-format
+#~ msgid "Report bugs to %s.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Αναφέρατε σφάλματα στο <%s>.\n"
+
+#
+#, fuzzy
+#~ msgid "print program version"
+#~ msgstr "σφάλμα προγράμματος"
+
+#
+#, fuzzy, c-format
+#~ msgid "%s: Too many arguments\n"
+#~ msgstr "πάρα πολλά ορίσματα"
+
+#
+#~ msgid "program error"
+#~ msgstr "σφάλμα προγράμματος"
+
+#
+#~ msgid "stack overflow"
+#~ msgstr "υπερχείλιση στοίβας"
+
+#
+#, fuzzy, c-format
+#~ msgid "cannot create a temporary directory using template \"%s\""
+#~ msgstr "αδύνατη η δημιουργία καταλόγου `%s'"
+
+#
+#, fuzzy, c-format
+#~ msgid "cannot remove temporary file %s"
+#~ msgstr "αδύνατη η δημιουργία καταλόγου `%s'"
+
+#
+#, fuzzy, c-format
+#~ msgid "cannot remove temporary directory %s"
+#~ msgstr "αδύνατη η δημιουργία καταλόγου `%s'"
+
+#
+#~ msgid "write error"
+#~ msgstr "σφάλμα εγγραφής"
+
+#
+#, fuzzy, c-format
+#~ msgid "preserving permissions for %s"
+#~ msgstr "αδυναμία αλλαγής ιδιοκτησίας στο %s"
+
+#, fuzzy, c-format
+#~ msgid "error while opening \"%s\" for reading"
+#~ msgstr "αδυναμία μεταφοράς του `%s' στο `%s'"
+
+#, fuzzy, c-format
+#~ msgid "cannot open backup file \"%s\" for writing"
+#~ msgstr "αδυναμία μεταφοράς του `%s' στο `%s'"
+
+#
+#, fuzzy, c-format
+#~ msgid "error reading \"%s\""
+#~ msgstr "σφάλμα ανάγνωσης %s"
+
+#
+#, fuzzy, c-format
+#~ msgid "error writing \"%s\""
+#~ msgstr "σφάλμα εγγραφής %s"
+
+#
+#, fuzzy, c-format
+#~ msgid "error after reading \"%s\""
+#~ msgstr "σφάλμα ανάγνωσης %s"
+
+#
+#, fuzzy, c-format
+#~ msgid "fdopen() failed"
+#~ msgstr "αποτυχία ανοίγματος"
+
+#
+#~ msgid "regular empty file"
+#~ msgstr "κανονικό κενό αρχείο"
+
+#
+#~ msgid "regular file"
+#~ msgstr "κανονικό αρχείο"
+
+#
+#~ msgid "directory"
+#~ msgstr "κατάλογος"
+
+#
+#~ msgid "block special file"
+#~ msgstr "ειδικό αρχείο μπλοκ"
+
+#
+#~ msgid "character special file"
+#~ msgstr "ειδικό αρχείο χαρακτήρων"
+
+#
+#~ msgid "fifo"
+#~ msgstr "φίφο"
+
+#
+#~ msgid "symbolic link"
+#~ msgstr "συμβολικός σύνδεσμος"
+
+#
+#~ msgid "socket"
+#~ msgstr "υποδοχέας"
+
+#
+#~ msgid "message queue"
+#~ msgstr "ουρά μηνυμάτων"
+
+#
+#~ msgid "semaphore"
+#~ msgstr "σημαφόρος"
+
+#
+#~ msgid "weird file"
+#~ msgstr "παράξενο αρχείο"
+
+#
+#, fuzzy, c-format
+#~ msgid "%s: option '--%s' doesn't allow an argument\n"
+#~ msgstr "%s: η επιλογή `--%s' δεν επιτρέπει ορίσματα\n"
+
+#
+#, fuzzy, c-format
+#~ msgid "%s: unrecognized option '--%s'\n"
+#~ msgstr "%s: μη αναγνωρίσιμη επιλογή `--%s'\n"
+
+#
+#, fuzzy, c-format
+#~ msgid "%s: option '-W %s' doesn't allow an argument\n"
+#~ msgstr "%s: η επιλογή `-W %s' δεν επιτρέπει ορίσματα\n"
+
+#
+#, fuzzy, c-format
+#~ msgid "%s: option '-W %s' requires an argument\n"
+#~ msgstr "%s: η επιλογή `-%s' απαιτεί ένα όρισμα\n"
+
+#
+#, fuzzy, c-format
+#~ msgid "error while writing \"%s\" file"
+#~ msgstr "σφάλμα εγγραφής %s"
+
+#
+#, fuzzy, c-format
+#~ msgid "%s subprocess I/O error"
+#~ msgstr "%s: μη έγκυρη μορφή"
+
+#
+#, fuzzy, c-format
+#~ msgid "cannot change permissions of %s"
+#~ msgstr "αδυναμία αλλαγής ιδιοκτησίας στο %s"
+
+#
+#, fuzzy, c-format
+#~ msgid "cannot create directory %s"
+#~ msgstr "αδύνατη η δημιουργία καταλόγου `%s'"
+
+#
+#, fuzzy, c-format
+#~ msgid "Failed to open /dev/zero for read"
+#~ msgstr "αδυναμία αλλαγής ιδιοκτησίας στο %s"
+
+#
+#, fuzzy, c-format
+#~ msgid "communication with %s subprocess failed"
+#~ msgstr "%s: μη έγκυρη μορφή"
+
+#
+#, fuzzy, c-format
+#~ msgid "write to %s subprocess failed"
+#~ msgstr "%s: μη έγκυρη μορφή"
+
+#
+#, fuzzy, c-format
+#~ msgid "read from %s subprocess failed"
+#~ msgstr "%s: μη έγκυρη μορφή"
+
+#
+#~ msgid "^[yY]"
+#~ msgstr "^[yYνΝ]"
+
+#
+#~ msgid "^[nN]"
+#~ msgstr "^[nNοΟ]"
+
+#
+#, fuzzy, c-format
+#~ msgid "setting permissions for %s"
+#~ msgstr "αδυναμία αλλαγής ιδιοκτησίας στο %s"
+
+#
+#, fuzzy
+#~ msgid "Bus error"
+#~ msgstr "σφάλμα εγγραφής"
+
+#
+#, fuzzy
+#~ msgid "character out of range"
+#~ msgstr "%s: αριθμός γραμμής έξω από τα όρια"
+
+#
+#~ msgid "invalid user"
+#~ msgstr "μη έγκυρος χρήστης"
+
+#
+#~ msgid "invalid group"
+#~ msgstr "μη έγκυρη ομάδα"
+
+#
+#, fuzzy
+#~ msgid "invalid spec"
+#~ msgstr "μη έγκυρος χρήστης"
+
+#
+#, c-format
+#~ msgid "Written by %s.\n"
+#~ msgstr "Γραμμένο από τον/την %s.\n"
+
+#
+#, fuzzy, c-format
+#~ msgid "Written by %s and %s.\n"
+#~ msgstr "Γραμμένο από τον/την %s.\n"
+
+#
+#, fuzzy, c-format
+#~ msgid "Written by %s, %s, and %s.\n"
+#~ msgstr "Γραμμένο από τον/την %s.\n"
+
+#
+#, fuzzy, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr "Γραμμένο από τον/την %s.\n"
+
+#
+#, fuzzy, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr "Γραμμένο από τον/την %s.\n"
+
+#
+#, fuzzy, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, and %s.\n"
+#~ msgstr "Γραμμένο από τον/την %s.\n"
+
+#
+#, fuzzy, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, and %s.\n"
+#~ msgstr "Γραμμένο από τον/την %s.\n"
+
+#
+#, fuzzy, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr "Γραμμένο από τον/την %s.\n"
+
+#
+#, fuzzy, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr "Γραμμένο από τον/την %s.\n"
+
+#
+#, fuzzy, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s, and others.\n"
+#~ msgstr "Γραμμένο από τον/την %s.\n"
+
+#
+#, fuzzy, c-format
+#~ msgid ""
+#~ "\n"
+#~ "Report bugs to: %s\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Αναφέρατε σφάλματα στο <%s>.\n"
+
+#
+#, fuzzy, c-format
+#~ msgid "Report %s bugs to: %s\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Αναφέρατε σφάλματα στο <%s>.\n"
+
+#
+#, fuzzy
+#~ msgid "unknown stream"
+#~ msgstr "Άγνωστο σφάλμα συστήματος"
+
+#
+#, fuzzy, c-format
+#~ msgid "string comparison failed"
+#~ msgstr "αποτυχία εγγραφής"
+
+#
+#, c-format
+#~ msgid "Set LC_ALL='C' to work around the problem."
+#~ msgstr "Θέστε LC_ALL='C' για να παρακάμψετε το πρόβλημα."
+
+#, fuzzy, c-format
+#~ msgid "The strings compared were %s and %s."
+#~ msgstr "δεν είναι δυνατό να δημιουργηθεί το %s `%s' στο `%s'"
+
+#
+#, fuzzy, c-format
+#~ msgid "invalid %s%s argument `%s'"
+#~ msgstr "μη έγκυρο όρισμα %s για %s"
+
+#
+#, fuzzy, c-format
+#~ msgid "invalid suffix in %s%s argument `%s'"
+#~ msgstr "μη έγκυρο όρισμα %s για %s"
+
+#
+#~ msgid "%s: illegal option -- %c\n"
+#~ msgstr "%s: μη αναγνωρίσιμη επιλογή -- %c\n"
+
+#
+#~ msgid "block size"
+#~ msgstr "μέγεθος μπλοκ"
+
+#
+#, fuzzy
+#~ msgid "%s exists but is not a directory"
+#~ msgstr "το `%s' υπάρχει ήδη άλλα δεν είναι κατάλογος"
+
+#
+#, fuzzy
+#~ msgid "cannot change owner and/or group of %s"
+#~ msgstr "δεν είναι δυνατό να παραληφθεί χρήστης και ομάδα"
+
+#
+#, fuzzy
+#~ msgid "cannot chdir to directory %s"
+#~ msgstr "αδύνατη η αλλαγή στο κατάλογο %s"
+
+#
+#~ msgid "cannot get the login group of a numeric UID"
+#~ msgstr ""
+#~ "αδύνατη η λήψη της ομάδας εισαγωγής στο σύστημα ενός αριθμητικού UID"

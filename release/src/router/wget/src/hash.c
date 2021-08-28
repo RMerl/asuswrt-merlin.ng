@@ -1,5 +1,6 @@
 /* Hash tables.
-   Copyright (C) 2000-2011, 2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2011, 2015, 2018-2021 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 
@@ -199,7 +200,7 @@ struct hash_table {
    being HASHFUN.  */
 #define HASH_POSITION(key, hashfun, size) ((hashfun) (key) % size)
 
-/* Find a prime near, but greather than or equal to SIZE.  The primes
+/* Find a prime near, but greater than or equal to SIZE.  The primes
    are looked up from a table with a selection of primes convenient
    for this purpose.
 
@@ -691,7 +692,7 @@ hash_string_nocase (const void *key)
   return h;
 }
 
-/* Like string_cmp, but doing case-insensitive compareison. */
+/* Like string_cmp, but doing case-insensitive comparison. */
 
 static int
 string_cmp_nocase (const void *s1, const void *s2)

@@ -1,0 +1,453 @@
+# Mesajele în limba românã pentru pachetul mailutils.
+# Copyright (C) 2003 Free Software Foundation, Inc.
+# Eugen Hoanca <eugenh@urban-grafx.ro>, 2003.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: mailutils 0.4\n"
+"Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
+"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"PO-Revision-Date: 2003-12-10 08:55+0200\n"
+"Last-Translator: Eugen Hoanca <eugenh@urban-grafx.ro>\n"
+"Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
+"Language: ro\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: lib/error.c:195
+#, fuzzy
+msgid "Unknown system error"
+msgstr "tip de mesaj necunoscut"
+
+#: lib/gai_strerror.c:57
+msgid "Address family for hostname not supported"
+msgstr ""
+
+#: lib/gai_strerror.c:58
+msgid "Temporary failure in name resolution"
+msgstr ""
+
+#: lib/gai_strerror.c:59
+msgid "Bad value for ai_flags"
+msgstr ""
+
+#: lib/gai_strerror.c:60
+msgid "Non-recoverable failure in name resolution"
+msgstr ""
+
+#: lib/gai_strerror.c:61
+msgid "ai_family not supported"
+msgstr ""
+
+#: lib/gai_strerror.c:62
+#, fuzzy
+msgid "Memory allocation failure"
+msgstr "Operaþiune eºuatã"
+
+#: lib/gai_strerror.c:63
+msgid "No address associated with hostname"
+msgstr ""
+
+#: lib/gai_strerror.c:64
+msgid "Name or service not known"
+msgstr ""
+
+#: lib/gai_strerror.c:65
+msgid "Servname not supported for ai_socktype"
+msgstr ""
+
+#: lib/gai_strerror.c:66
+msgid "ai_socktype not supported"
+msgstr ""
+
+#: lib/gai_strerror.c:67
+#, fuzzy
+msgid "System error"
+msgstr "eroare regex"
+
+#: lib/gai_strerror.c:68
+msgid "Argument buffer too small"
+msgstr ""
+
+#: lib/gai_strerror.c:70
+msgid "Processing request in progress"
+msgstr ""
+
+#: lib/gai_strerror.c:71
+msgid "Request canceled"
+msgstr ""
+
+#: lib/gai_strerror.c:72
+msgid "Request not canceled"
+msgstr ""
+
+#: lib/gai_strerror.c:73
+msgid "All requests done"
+msgstr ""
+
+#: lib/gai_strerror.c:74
+msgid "Interrupted by a signal"
+msgstr ""
+
+#: lib/gai_strerror.c:75
+msgid "Parameter string not correctly encoded"
+msgstr ""
+
+#: lib/gai_strerror.c:87
+#, fuzzy
+msgid "Unknown error"
+msgstr "Escape necunoscut %s"
+
+#: lib/getopt.c:278
+#, fuzzy, c-format
+msgid "%s: option '%s%s' is ambiguous\n"
+msgstr "%s: opþiunea `%s' este ambiguã\n"
+
+#: lib/getopt.c:284
+#, fuzzy, c-format
+msgid "%s: option '%s%s' is ambiguous; possibilities:"
+msgstr "%s: opþiunea `%s' este ambiguã\n"
+
+#: lib/getopt.c:319
+#, fuzzy, c-format
+msgid "%s: unrecognized option '%s%s'\n"
+msgstr "%s: opþiune necunoscutã `%c%s'\n"
+
+#: lib/getopt.c:345
+#, fuzzy, c-format
+msgid "%s: option '%s%s' doesn't allow an argument\n"
+msgstr "%s: opþiunea `%c%s' nu permite argumente\n"
+
+#: lib/getopt.c:360
+#, fuzzy, c-format
+msgid "%s: option '%s%s' requires an argument\n"
+msgstr "%s: opþiunea `%s' necesitã un argument\n"
+
+#: lib/getopt.c:621
+#, fuzzy, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr "%s: opþiune invalidã -- %c\n"
+
+#: lib/getopt.c:636 lib/getopt.c:682
+#, fuzzy, c-format
+msgid "%s: option requires an argument -- '%c'\n"
+msgstr "%s: opþiunea necesitã un argument -- %c\n"
+
+#: lib/openat-die.c:38
+#, c-format
+msgid "unable to record current working directory"
+msgstr ""
+
+#: lib/openat-die.c:57
+#, c-format
+msgid "failed to return to initial working directory"
+msgstr ""
+
+#: lib/os2-spawn.c:46
+#, c-format
+msgid "_open_osfhandle failed"
+msgstr ""
+
+#: lib/os2-spawn.c:83
+#, c-format
+msgid "cannot restore fd %d: dup2 failed"
+msgstr ""
+
+#. TRANSLATORS:
+#. Get translations for open and closing quotation marks.
+#. The message catalog should translate "`" to a left
+#. quotation mark suitable for the locale, and similarly for
+#. "'".  For example, a French Unicode local should translate
+#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), respectively.
+#.
+#. If the catalog has no translation, we will try to
+#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
+#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
+#. current locale is not Unicode, locale_quoting_style
+#. will quote 'like this', and clocale_quoting_style will
+#. quote "like this".  You should always include translations
+#. for "`" and "'" even if U+2018 and U+2019 are appropriate
+#. for your locale.
+#.
+#. If you don't know what to put here, please see
+#. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
+#. and use glyphs suitable for your language.
+#: lib/quotearg.c:355
+msgid "`"
+msgstr ""
+
+#: lib/quotearg.c:356
+msgid "'"
+msgstr ""
+
+#: lib/regcomp.c:135
+msgid "Success"
+msgstr "Succes"
+
+#: lib/regcomp.c:138
+msgid "No match"
+msgstr ""
+
+#: lib/regcomp.c:141
+#, fuzzy
+msgid "Invalid regular expression"
+msgstr "Nu existã fiºier anterior"
+
+#: lib/regcomp.c:144
+msgid "Invalid collation character"
+msgstr ""
+
+#: lib/regcomp.c:147
+msgid "Invalid character class name"
+msgstr ""
+
+#: lib/regcomp.c:150
+msgid "Trailing backslash"
+msgstr ""
+
+#: lib/regcomp.c:153
+#, fuzzy
+msgid "Invalid back reference"
+msgstr "Numãr invalid"
+
+#: lib/regcomp.c:156
+msgid "Unmatched [, [^, [:, [., or [="
+msgstr ""
+
+#: lib/regcomp.c:159
+msgid "Unmatched ( or \\("
+msgstr ""
+
+#: lib/regcomp.c:162
+msgid "Unmatched \\{"
+msgstr ""
+
+#: lib/regcomp.c:165
+msgid "Invalid content of \\{\\}"
+msgstr ""
+
+#: lib/regcomp.c:168
+#, fuzzy
+msgid "Invalid range end"
+msgstr "Tip de datã invalid"
+
+#: lib/regcomp.c:171
+msgid "Memory exhausted"
+msgstr "Memorie plinã"
+
+#: lib/regcomp.c:174
+#, fuzzy
+msgid "Invalid preceding regular expression"
+msgstr "Nu existã fiºier anterior"
+
+#: lib/regcomp.c:177
+#, fuzzy
+msgid "Premature end of regular expression"
+msgstr "Nu existã fiºier anterior"
+
+#: lib/regcomp.c:180
+#, fuzzy
+msgid "Regular expression too big"
+msgstr "Nu existã fiºier anterior"
+
+#: lib/regcomp.c:183
+msgid "Unmatched ) or \\)"
+msgstr ""
+
+#: lib/regcomp.c:676
+#, fuzzy
+msgid "No previous regular expression"
+msgstr "Nu existã fiºier anterior"
+
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
+#: lib/spawn-pipe.c:463
+#, fuzzy, c-format
+msgid "cannot create pipe"
+msgstr "nu se poate crea mailerul \"%s\""
+
+#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#, c-format
+msgid "%s subprocess failed"
+msgstr ""
+
+#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#, c-format
+msgid "%s subprocess"
+msgstr ""
+
+#: lib/wait-process.c:282 lib/wait-process.c:354
+#, c-format
+msgid "%s subprocess got fatal signal %d"
+msgstr ""
+
+#: lib/xalloc-die.c:34
+#, fuzzy
+msgid "memory exhausted"
+msgstr "Memorie plinã"
+
+#, fuzzy, c-format
+#~ msgid "invalid argument %s for %s"
+#~ msgstr "nume etichetã(tag) invalid `%s' pentru `%s'"
+
+#, fuzzy, c-format
+#~ msgid "ambiguous argument %s for %s"
+#~ msgstr "lipseºte argumentul pentru %s"
+
+#, fuzzy, c-format
+#~ msgid "Valid arguments are:"
+#~ msgstr "argumentele if valide sunt: s | r | t"
+
+#, c-format
+#~ msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
+#~ msgstr "%.*s: parametrul ARGP_HELP_FMT necesitã o valoare"
+
+#, c-format
+#~ msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
+#~ msgstr "%.*s: Parametru ARGP_HELP_FMT necunoscut"
+
+#, c-format
+#~ msgid "Garbage in ARGP_HELP_FMT: %s"
+#~ msgstr "Gunoi(garbage) în ARGP_HELP_FMT: %s"
+
+#~ msgid ""
+#~ "Mandatory or optional arguments to long options are also mandatory or "
+#~ "optional for any corresponding short options."
+#~ msgstr ""
+#~ "Argumentele obligatorii sau opþionale pentru opþiunile lungi sunt de "
+#~ "asemenea obligatorii sau opþionale pentru toate opþiunile scurte "
+#~ "corespunzãtoare."
+
+#~ msgid "Usage:"
+#~ msgstr "Folosire:"
+
+#~ msgid "  or: "
+#~ msgstr "  sau: "
+
+#~ msgid " [OPTION...]"
+#~ msgstr " [OPÞIUNE...]"
+
+#, c-format
+#~ msgid "Try `%s --help' or `%s --usage' for more information.\n"
+#~ msgstr ""
+#~ "Încercaþi `%s --help' sau `%s --usage' pentru mai multe informaþii.\n"
+
+#, c-format
+#~ msgid "Report bugs to %s.\n"
+#~ msgstr "Raportaþi bug-urile la %s.\n"
+
+#~ msgid "Give this help list"
+#~ msgstr "Afiºeazã aceastã listã de ajutor"
+
+#~ msgid "Give a short usage message"
+#~ msgstr "Afiºeazã un mesaj de folosire scurt"
+
+#~ msgid "NAME"
+#~ msgstr "NUME"
+
+#~ msgid "Set the program name"
+#~ msgstr "Seteazã numele programului"
+
+#, fuzzy
+#~ msgid "SECS"
+#~ msgstr "SECUNDE"
+
+#~ msgid "Hang for SECS seconds (default 3600)"
+#~ msgstr "Întrerupe(hang) pentru SECS secunde (implicit 3600)"
+
+#~ msgid "Print program version"
+#~ msgstr "Afiºeazã versiunea programului"
+
+#~ msgid "(PROGRAM ERROR) No version known!?"
+#~ msgstr "(EROARE DE PROGRAM) Nici o versiune cunoscutã!?"
+
+#, c-format
+#~ msgid "%s: Too many arguments\n"
+#~ msgstr "%s: Prea multe argumente\n"
+
+#~ msgid "(PROGRAM ERROR) Option should have been recognized!?"
+#~ msgstr "(EROARE DE PROGRAM) Opþiunea ar fi trebuit recunoscutã!?"
+
+#, fuzzy
+#~ msgid "program error"
+#~ msgstr "eroare de interval(range)"
+
+#, fuzzy
+#~ msgid "stack overflow"
+#~ msgstr "subrulare(underflow) a stivei(stack)"
+
+#, fuzzy
+#~ msgid "write error"
+#~ msgstr "eroare regex"
+
+#, fuzzy, c-format
+#~ msgid "cannot open backup file \"%s\" for writing"
+#~ msgstr "nu se poate deschide fiºierul de ieºire(output) \"%s\": %s"
+
+#, fuzzy, c-format
+#~ msgid "error reading \"%s\""
+#~ msgstr "eroare la cititrea din fiºierul de intrare(input): %s"
+
+#, fuzzy, c-format
+#~ msgid "error writing \"%s\""
+#~ msgstr "eroare în scrierea în mailbox: %s"
+
+#, fuzzy
+#~ msgid "fdopen() failed"
+#~ msgstr "fork eºuat"
+
+#, fuzzy
+#~ msgid "message queue"
+#~ msgstr "%d mesaj"
+
+#, c-format
+#~ msgid "%s: option `--%s' doesn't allow an argument\n"
+#~ msgstr "%s: opþiunea `--%s' nu permite argumente\n"
+
+#, c-format
+#~ msgid "%s: unrecognized option `--%s'\n"
+#~ msgstr "%s: opþiune necunoscutã `--%s'\n"
+
+#, c-format
+#~ msgid "%s: illegal option -- %c\n"
+#~ msgstr "%s: opþiune ilegalã -- %c\n"
+
+#, c-format
+#~ msgid "%s: option `-W %s' is ambiguous\n"
+#~ msgstr "%s: opþiune `-W %s' este ambiguã\n"
+
+#, c-format
+#~ msgid "%s: option `-W %s' doesn't allow an argument\n"
+#~ msgstr "%s: opþiune `-W %s' nu permite argumente\n"
+
+#, fuzzy, c-format
+#~ msgid "cannot change owner and/or group of %s"
+#~ msgstr "nu se poate trece în uid %lu: %m"
+
+#, fuzzy, c-format
+#~ msgid "cannot create directory %s"
+#~ msgstr "nu se poate crea iterator: %s"
+
+#, fuzzy, c-format
+#~ msgid "cannot chdir to directory %s"
+#~ msgstr "nu se poate crea iterator: %s"
+
+#, fuzzy, c-format
+#~ msgid "cannot change permissions of %s"
+#~ msgstr "Permisiuni greºite la %s. Setaþi 0600."
+
+#, fuzzy
+#~ msgid "invalid user"
+#~ msgstr "Numãr invalid"
+
+#, fuzzy
+#~ msgid "invalid group"
+#~ msgstr "Deschide grup"
+
+#, fuzzy
+#~ msgid "string comparison failed"
+#~ msgstr "Autentificare eºuatã"

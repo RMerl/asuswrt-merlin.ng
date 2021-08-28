@@ -1,5 +1,5 @@
-# fcntl.m4 serial 9
-dnl Copyright (C) 2009-2018 Free Software Foundation, Inc.
+# fcntl.m4 serial 11
+dnl Copyright (C) 2009-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -34,6 +34,7 @@ AC_DEFUN([gl_FUNC_FCNTL],
               #include <limits.h>
               #include <sys/resource.h>
               #include <unistd.h>
+              ]GL_MDA_DEFINES[
               #ifndef RLIM_SAVED_CUR
               # define RLIM_SAVED_CUR RLIM_INFINITY
               #endif
@@ -80,15 +81,29 @@ AC_DEFUN([gl_FUNC_FCNTL],
           behavior does not match POSIX]) ;;
     esac
 
-    dnl Many systems lack F_DUPFD_CLOEXEC
+    dnl Many systems lack F_DUPFD_CLOEXEC.
+    dnl NetBSD 9.0 declares F_DUPFD_CLOEXEC but it works only like F_DUPFD.
     AC_CACHE_CHECK([whether fcntl understands F_DUPFD_CLOEXEC],
       [gl_cv_func_fcntl_f_dupfd_cloexec],
-      [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#include <fcntl.h>
-#ifndef F_DUPFD_CLOEXEC
-choke me
-#endif
-         ]])],
+      [AC_RUN_IFELSE(
+         [AC_LANG_SOURCE(
+            [[#include <fcntl.h>
+              #include <unistd.h>
+              int main (int argc, char *argv[])
+              {
+                if (argc == 1)
+                  /* parent process */
+                  {
+                    if (fcntl (1, F_DUPFD_CLOEXEC, 10) < 0)
+                      return 1;
+                    return execl ("./conftest", "./conftest", "child", NULL);
+                  }
+                else
+                  /* child process */
+                  return (fcntl (10, F_GETFL) < 0 ? 0 : 42);
+              }
+            ]])
+         ],
          [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #ifdef __linux__
 /* The Linux kernel only added F_DUPFD_CLOEXEC in 2.6.24, so we always replace
@@ -97,12 +112,22 @@ choke me
 #endif
            ]])],
            [gl_cv_func_fcntl_f_dupfd_cloexec=yes],
-           [gl_cv_func_fcntl_f_dupfd_cloexec="needs runtime check"])],
-         [gl_cv_func_fcntl_f_dupfd_cloexec=no])])
-    if test "$gl_cv_func_fcntl_f_dupfd_cloexec" != yes; then
-      gl_REPLACE_FCNTL
-      dnl No witness macro needed for this bug.
-    fi
+           [gl_cv_func_fcntl_f_dupfd_cloexec="needs runtime check"])
+         ],
+         [gl_cv_func_fcntl_f_dupfd_cloexec=no],
+         [case "$host_os" in
+                     # Guess no on NetBSD.
+            netbsd*) gl_cv_func_fcntl_f_dupfd_cloexec="guessing no" ;;
+            *)       gl_cv_func_fcntl_f_dupfd_cloexec="$gl_cross_guess_normal" ;;
+          esac
+         ])
+      ])
+    case "$gl_cv_func_fcntl_f_dupfd_cloexec" in
+      *yes) ;;
+      *)    gl_REPLACE_FCNTL
+            dnl No witness macro needed for this bug.
+            ;;
+    esac
   fi
   dnl Replace fcntl() for supporting the gnulib-defined fchdir() function,
   dnl to keep fchdir's bookkeeping up-to-date.

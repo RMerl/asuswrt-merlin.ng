@@ -1,5 +1,5 @@
-# netdb_h.m4 serial 11
-dnl Copyright (C) 2008-2018 Free Software Foundation, Inc.
+# netdb_h.m4 serial 12
+dnl Copyright (C) 2008-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -40,4 +40,5 @@ AC_DEFUN([gl_NETDB_H_DEFAULTS],
   HAVE_DECL_GETADDRINFO=1;  AC_SUBST([HAVE_DECL_GETADDRINFO])
   HAVE_DECL_GETNAMEINFO=1;  AC_SUBST([HAVE_DECL_GETNAMEINFO])
   REPLACE_GAI_STRERROR=0;   AC_SUBST([REPLACE_GAI_STRERROR])
+  REPLACE_GETADDRINFO=0;    AC_SUBST([REPLACE_GETADDRINFO])
 ])

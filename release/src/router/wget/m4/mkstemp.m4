@@ -1,6 +1,6 @@
-#serial 25
+#serial 28
 
-# Copyright (C) 2001, 2003-2007, 2009-2018 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003-2007, 2009-2021 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -26,7 +26,8 @@ AC_DEFUN([gl_FUNC_MKSTEMP],
         mkdir conftest.mkstemp
         AC_RUN_IFELSE(
           [AC_LANG_PROGRAM(
-            [AC_INCLUDES_DEFAULT],
+            [AC_INCLUDES_DEFAULT
+             GL_MDA_DEFINES],
             [[int result = 0;
               int i;
               off_t large = (off_t) 4294967295u;
@@ -59,10 +60,12 @@ AC_DEFUN([gl_FUNC_MKSTEMP],
           [case "$host_os" in
                             # Guess yes on glibc systems.
              *-gnu* | gnu*) gl_cv_func_working_mkstemp="guessing yes" ;;
+                            # Guess yes on musl systems.
+             *-musl*)       gl_cv_func_working_mkstemp="guessing yes" ;;
                             # Guess no on native Windows.
              mingw*)        gl_cv_func_working_mkstemp="guessing no" ;;
-                            # If we don't know, assume the worst.
-             *)             gl_cv_func_working_mkstemp="guessing no" ;;
+                            # If we don't know, obey --enable-cross-guesses.
+             *)             gl_cv_func_working_mkstemp="$gl_cross_guess_normal" ;;
            esac
           ])
         rm -rf conftest.mkstemp

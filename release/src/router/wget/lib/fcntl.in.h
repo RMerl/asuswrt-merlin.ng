@@ -1,6 +1,6 @@
 /* Like <fcntl.h>, but with non-working flags defined to 0.
 
-   Copyright (C) 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -39,6 +39,12 @@
 #endif
 #@INCLUDE_NEXT@ @NEXT_FCNTL_H@
 
+/* Native Windows platforms declare open(), creat() in <io.h>.  */
+#if (@GNULIB_CREAT@ || @GNULIB_OPEN@ || defined GNULIB_POSIXCHECK) \
+    && (defined _WIN32 && ! defined __CYGWIN__)
+# include <io.h>
+#endif
+
 #else
 /* Normal invocation convention.  */
 
@@ -59,17 +65,17 @@
 /* The include_next requires a split double-inclusion guard.  */
 #@INCLUDE_NEXT@ @NEXT_FCNTL_H@
 
+/* Native Windows platforms declare open(), creat() in <io.h>.  */
+#if (@GNULIB_CREAT@ || @GNULIB_OPEN@ || defined GNULIB_POSIXCHECK) \
+    && (defined _WIN32 && ! defined __CYGWIN__)
+# include <io.h>
+#endif
+
 #ifndef _@GUARD_PREFIX@_FCNTL_H
 #define _@GUARD_PREFIX@_FCNTL_H
 
 #ifndef __GLIBC__ /* Avoid namespace pollution on glibc systems.  */
 # include <unistd.h>
-#endif
-
-/* Native Windows platforms declare open(), creat() in <io.h>.  */
-#if (@GNULIB_OPEN@ || defined GNULIB_POSIXCHECK) \
-    && (defined _WIN32 && ! defined __CYGWIN__)
-# include <io.h>
 #endif
 
 
@@ -82,6 +88,47 @@
 
 /* Declare overridden functions.  */
 
+#if @GNULIB_CREAT@
+# if @REPLACE_CREAT@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef creat
+#   define creat rpl_creat
+#  endif
+_GL_FUNCDECL_RPL (creat, int, (const char *filename, mode_t mode)
+                             _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (creat, int, (const char *filename, mode_t mode));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef creat
+#   define creat _creat
+#  endif
+_GL_CXXALIAS_MDA (creat, int, (const char *filename, mode_t mode));
+# else
+_GL_CXXALIAS_SYS (creat, int, (const char *filename, mode_t mode));
+# endif
+_GL_CXXALIASWARN (creat);
+#elif defined GNULIB_POSIXCHECK
+# undef creat
+/* Assume creat is always declared.  */
+_GL_WARN_ON_USE (creat, "creat is not always POSIX compliant - "
+                 "use gnulib module creat for portability");
+#elif @GNULIB_MDA_CREAT@
+/* On native Windows, map 'creat' to '_creat', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::creat always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef creat
+#   define creat _creat
+#  endif
+/* Need to cast, because in mingw the last argument is 'int mode'.  */
+_GL_CXXALIAS_MDA_CAST (creat, int, (const char *filename, mode_t mode));
+# else
+_GL_CXXALIAS_SYS (creat, int, (const char *filename, mode_t mode));
+# endif
+_GL_CXXALIASWARN (creat);
+#endif
+
 #if @GNULIB_FCNTL@
 # if @REPLACE_FCNTL@
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
@@ -90,9 +137,15 @@
 #  endif
 _GL_FUNCDECL_RPL (fcntl, int, (int fd, int action, ...));
 _GL_CXXALIAS_RPL (fcntl, int, (int fd, int action, ...));
+#  if !GNULIB_defined_rpl_fcntl
+#   define GNULIB_defined_rpl_fcntl 1
+#  endif
 # else
 #  if !@HAVE_FCNTL@
 _GL_FUNCDECL_SYS (fcntl, int, (int fd, int action, ...));
+#   if !GNULIB_defined_fcntl
+#    define GNULIB_defined_fcntl 1
+#   endif
 #  endif
 _GL_CXXALIAS_SYS (fcntl, int, (int fd, int action, ...));
 # endif
@@ -114,6 +167,12 @@ _GL_WARN_ON_USE (fcntl, "fcntl is not always POSIX compliant - "
 _GL_FUNCDECL_RPL (open, int, (const char *filename, int flags, ...)
                              _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (open, int, (const char *filename, int flags, ...));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef open
+#   define open _open
+#  endif
+_GL_CXXALIAS_MDA (open, int, (const char *filename, int flags, ...));
 # else
 _GL_CXXALIAS_SYS (open, int, (const char *filename, int flags, ...));
 # endif
@@ -127,6 +186,22 @@ _GL_CXXALIASWARN (open);
 /* Assume open is always declared.  */
 _GL_WARN_ON_USE (open, "open is not always POSIX compliant - "
                  "use gnulib module open for portability");
+#elif @GNULIB_MDA_OPEN@
+/* On native Windows, map 'open' to '_open', so that -loldnames is not
+   required.  In C++ with GNULIB_NAMESPACE, avoid differences between
+   platforms by defining GNULIB_NAMESPACE::open always.  */
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef open
+#   define open _open
+#  endif
+_GL_CXXALIAS_MDA (open, int, (const char *filename, int flags, ...));
+# else
+_GL_CXXALIAS_SYS (open, int, (const char *filename, int flags, ...));
+# endif
+# if !defined __hpux
+_GL_CXXALIASWARN (open);
+# endif
 #endif
 
 #if @GNULIB_OPENAT@

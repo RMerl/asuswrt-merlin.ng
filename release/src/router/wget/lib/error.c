@@ -1,5 +1,5 @@
 /* Error handler for noninteractive utilities
-   Copyright (C) 1990-1998, 2000-2007, 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 1990-1998, 2000-2007, 2009-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    This program is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@
 # include <wchar.h>
 # define mbsrtowcs __mbsrtowcs
 # define USE_UNLOCKED_IO 0
-# define _GL_ATTRIBUTE_FORMAT_PRINTF(a, b)
+# define _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD(a, b)
 # define _GL_ARG_NONNULL(a)
 #else
 # include "getprogname.h"
@@ -119,7 +119,7 @@ int strerror_r (int errnum, char *buf, size_t buflen);
 #  endif
 # endif
 
-#define program_name getprogname ()
+# define program_name getprogname ()
 
 # if GNULIB_STRERROR_R_POSIX || HAVE_STRERROR_R || defined strerror_r
 #  define __strerror_r strerror_r
@@ -202,7 +202,7 @@ print_errno_message (int errnum)
 #endif
 }
 
-static void _GL_ATTRIBUTE_FORMAT_PRINTF (3, 0) _GL_ARG_NONNULL ((3))
+static void _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD (3, 0) _GL_ARG_NONNULL ((3))
 error_tail (int status, int errnum, const char *message, va_list args)
 {
 #if _LIBC

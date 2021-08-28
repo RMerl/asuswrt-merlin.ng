@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2009-2018 Free Software Foundation, Inc.
+/* Copyright (C) 2000, 2009-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 #include <spawn.h>
 
 #include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #if !_LIBC
@@ -47,27 +49,38 @@ posix_spawn_file_actions_addopen (posix_spawn_file_actions_t *file_actions,
 #if !REPLACE_POSIX_SPAWN
   return posix_spawn_file_actions_addopen (file_actions, fd, path, oflag, mode);
 #else
-  /* Allocate more memory if needed.  */
-  if (file_actions->_used == file_actions->_allocated
-      && __posix_spawn_file_actions_realloc (file_actions) != 0)
-    /* This can only mean we ran out of memory.  */
-    return ENOMEM;
-
   {
-    struct __spawn_action *rec;
+    /* Copy PATH, because the caller may free it before calling posix_spawn()
+       or posix_spawnp().  */
+    char *path_copy = strdup (path);
+    if (path_copy == NULL)
+      return ENOMEM;
 
-    /* Add the new value.  */
-    rec = &file_actions->_actions[file_actions->_used];
-    rec->tag = spawn_do_open;
-    rec->action.open_action.fd = fd;
-    rec->action.open_action.path = path;
-    rec->action.open_action.oflag = oflag;
-    rec->action.open_action.mode = mode;
+    /* Allocate more memory if needed.  */
+    if (file_actions->_used == file_actions->_allocated
+        && __posix_spawn_file_actions_realloc (file_actions) != 0)
+      {
+        /* This can only mean we ran out of memory.  */
+        free (path_copy);
+        return ENOMEM;
+      }
 
-    /* Account for the new entry.  */
-    ++file_actions->_used;
+    {
+      struct __spawn_action *rec;
 
-    return 0;
+      /* Add the new value.  */
+      rec = &file_actions->_actions[file_actions->_used];
+      rec->tag = spawn_do_open;
+      rec->action.open_action.fd = fd;
+      rec->action.open_action.path = path_copy;
+      rec->action.open_action.oflag = oflag;
+      rec->action.open_action.mode = mode;
+
+      /* Account for the new entry.  */
+      ++file_actions->_used;
+
+      return 0;
+    }
   }
 #endif
 }

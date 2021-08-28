@@ -1,396 +1,149 @@
-# Mesajele �n limba rom�n� pentru pachetul wget.
+# Mesajele în limba română pentru pachetul wget.
 # Copyright (C) 2003 Free Software Foundation, Inc.
+# This file is distributed under the same license as the wget package.
 # Eugen Hoanca <eugenh@urban-grafx.ro>, 2003.
+# Florentina Mușat <florentina.musat.28@gmail.com>, 2020.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: wget 1.9.1\n"
+"Project-Id-Version: wget 1.20\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2018-11-30 00:09+0100\n"
-"PO-Revision-Date: 2003-11-01 18:02+0200\n"
-"Last-Translator: Eugen Hoanca <eugenh@urban-grafx.ro>\n"
+"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"PO-Revision-Date: 2020-06-23 15:24+0300\n"
+"Last-Translator: Florentina Mușat <florentina.musat.28@gmail.com>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
 "Language: ro\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n==0 || (n!=1 && n%100>=1 && n"
+"%100<=19) ? 1 : 2);\n"
+"X-Generator: Poedit 2.3.1\n"
 
-#: lib/error.c:195
-#, fuzzy
-msgid "Unknown system error"
-msgstr "Eroare necunoscut�"
-
-#: lib/gai_strerror.c:57
-#, fuzzy
-msgid "Address family for hostname not supported"
-msgstr "Adresele IPv6 nu sunt suportate"
-
-#: lib/gai_strerror.c:58 src/host.c:371
-msgid "Temporary failure in name resolution"
-msgstr ""
-
-#: lib/gai_strerror.c:59
-msgid "Bad value for ai_flags"
-msgstr ""
-
-#: lib/gai_strerror.c:60
-msgid "Non-recoverable failure in name resolution"
-msgstr ""
-
-#: lib/gai_strerror.c:61
-msgid "ai_family not supported"
-msgstr ""
-
-#: lib/gai_strerror.c:62
-msgid "Memory allocation failure"
-msgstr ""
-
-#: lib/gai_strerror.c:63
-msgid "No address associated with hostname"
-msgstr ""
-
-#: lib/gai_strerror.c:64
-msgid "Name or service not known"
-msgstr ""
-
-#: lib/gai_strerror.c:65
-msgid "Servname not supported for ai_socktype"
-msgstr ""
-
-#: lib/gai_strerror.c:66
-#, fuzzy
-msgid "ai_socktype not supported"
-msgstr "Adresele IPv6 nu sunt suportate"
-
-#: lib/gai_strerror.c:67
-#, fuzzy
-msgid "System error"
-msgstr "Eroare necunoscut�"
-
-#: lib/gai_strerror.c:68
-msgid "Argument buffer too small"
-msgstr ""
-
-#: lib/gai_strerror.c:70
-msgid "Processing request in progress"
-msgstr ""
-
-#: lib/gai_strerror.c:71
-msgid "Request canceled"
-msgstr ""
-
-#: lib/gai_strerror.c:72
-msgid "Request not canceled"
-msgstr ""
-
-#: lib/gai_strerror.c:73
-msgid "All requests done"
-msgstr ""
-
-#: lib/gai_strerror.c:74
-msgid "Interrupted by a signal"
-msgstr ""
-
-#: lib/gai_strerror.c:75
-msgid "Parameter string not correctly encoded"
-msgstr ""
-
-#: lib/gai_strerror.c:87 src/host.c:373
-msgid "Unknown error"
-msgstr "Eroare necunoscut�"
-
-#: lib/getopt.c:278
-#, fuzzy, c-format
-msgid "%s: option '%s%s' is ambiguous\n"
-msgstr "%s: op�iunea `%s' este ambigu�\n"
-
-#: lib/getopt.c:284
-#, fuzzy, c-format
-msgid "%s: option '%s%s' is ambiguous; possibilities:"
-msgstr "%s: op�iunea `%s' este ambigu�\n"
-
-#: lib/getopt.c:319
-#, fuzzy, c-format
-msgid "%s: unrecognized option '%s%s'\n"
-msgstr "%s: op�iune nerecunoscut� `%c%s'\n"
-
-#: lib/getopt.c:345
-#, fuzzy, c-format
-msgid "%s: option '%s%s' doesn't allow an argument\n"
-msgstr "%s: op�iunea `%c%s' nu permite un parametru\n"
-
-#: lib/getopt.c:360
-#, fuzzy, c-format
-msgid "%s: option '%s%s' requires an argument\n"
-msgstr "%s: op�iunea `%s' necesit� un parametru\n"
-
-#: lib/getopt.c:621
-#, fuzzy, c-format
-msgid "%s: invalid option -- '%c'\n"
-msgstr "%s: op�iune invalid� -- %c\n"
-
-#: lib/getopt.c:636 lib/getopt.c:682
-#, fuzzy, c-format
-msgid "%s: option requires an argument -- '%c'\n"
-msgstr "%s: op�iunea necesit� un parametru -- %c\n"
-
-#. TRANSLATORS:
-#. Get translations for open and closing quotation marks.
-#. The message catalog should translate "`" to a left
-#. quotation mark suitable for the locale, and similarly for
-#. "'".  For example, a French Unicode local should translate
-#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
-#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
-#. QUOTATION MARK), respectively.
-#.
-#. If the catalog has no translation, we will try to
-#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
-#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
-#. current locale is not Unicode, locale_quoting_style
-#. will quote 'like this', and clocale_quoting_style will
-#. quote "like this".  You should always include translations
-#. for "`" and "'" even if U+2018 and U+2019 are appropriate
-#. for your locale.
-#.
-#. If you don't know what to put here, please see
-#. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
-#. and use glyphs suitable for your language.
-#: lib/quotearg.c:362
-msgid "`"
-msgstr ""
-
-#: lib/quotearg.c:363
-msgid "'"
-msgstr ""
-
-#: lib/regcomp.c:135
-msgid "Success"
-msgstr ""
-
-#: lib/regcomp.c:138
-msgid "No match"
-msgstr ""
-
-#: lib/regcomp.c:141
-msgid "Invalid regular expression"
-msgstr ""
-
-#: lib/regcomp.c:144
-msgid "Invalid collation character"
-msgstr ""
-
-#: lib/regcomp.c:147
-#, fuzzy
-msgid "Invalid character class name"
-msgstr "Nume utilizator invalid"
-
-#: lib/regcomp.c:150
-msgid "Trailing backslash"
-msgstr ""
-
-#: lib/regcomp.c:153
-#, fuzzy
-msgid "Invalid back reference"
-msgstr "Nume utilizator invalid"
-
-#: lib/regcomp.c:156
-msgid "Unmatched [, [^, [:, [., or [="
-msgstr ""
-
-#: lib/regcomp.c:159
-msgid "Unmatched ( or \\("
-msgstr ""
-
-#: lib/regcomp.c:162
-msgid "Unmatched \\{"
-msgstr ""
-
-#: lib/regcomp.c:165
-msgid "Invalid content of \\{\\}"
-msgstr ""
-
-#: lib/regcomp.c:168
-#, fuzzy
-msgid "Invalid range end"
-msgstr "Nume utilizator invalid"
-
-#: lib/regcomp.c:171
-msgid "Memory exhausted"
-msgstr ""
-
-#: lib/regcomp.c:174
-msgid "Invalid preceding regular expression"
-msgstr ""
-
-#: lib/regcomp.c:177
-msgid "Premature end of regular expression"
-msgstr ""
-
-#: lib/regcomp.c:180
-msgid "Regular expression too big"
-msgstr ""
-
-#: lib/regcomp.c:183
-msgid "Unmatched ) or \\)"
-msgstr ""
-
-#: lib/regcomp.c:688
-msgid "No previous regular expression"
-msgstr ""
-
-#: lib/spawn-pipe.c:141 lib/spawn-pipe.c:144 lib/spawn-pipe.c:265
-#: lib/spawn-pipe.c:268
-#, c-format
-msgid "cannot create pipe"
-msgstr ""
-
-#: lib/spawn-pipe.c:235 lib/spawn-pipe.c:349 lib/wait-process.c:282
-#: lib/wait-process.c:356
-#, c-format
-msgid "%s subprocess failed"
-msgstr ""
-
-#: lib/w32spawn.h:49
-#, c-format
-msgid "_open_osfhandle failed"
-msgstr ""
-
-#: lib/w32spawn.h:90
-#, c-format
-msgid "cannot restore fd %d: dup2 failed"
-msgstr ""
-
-#: lib/wait-process.c:223 lib/wait-process.c:255 lib/wait-process.c:317
-#, c-format
-msgid "%s subprocess"
-msgstr ""
-
-#: lib/wait-process.c:274 lib/wait-process.c:346
-#, c-format
-msgid "%s subprocess got fatal signal %d"
-msgstr ""
-
-#: lib/xalloc-die.c:34
-msgid "memory exhausted"
-msgstr ""
-
-#: src/connect.c:200
+#: src/connect.c:201
 #, c-format
 msgid "%s: unable to resolve bind address %s; disabling bind.\n"
 msgstr ""
+"%s: nu se poate rezolva adresa de legătură %s; se dezactivează legătura.\n"
 
-#: src/connect.c:281
-#, fuzzy, c-format
+#: src/connect.c:282
+#, c-format
 msgid "Connecting to %s|%s|:%d... "
-msgstr "Conectare la %s[%s]:%hu..."
+msgstr "Se conectează la %s|%s|:%d... "
 
-#: src/connect.c:289
-#, fuzzy, c-format
+#: src/connect.c:290
+#, c-format
 msgid "Connecting to %s:%d... "
-msgstr "Conectare la %s:%hu..."
+msgstr "Se conectează la %s:%d... "
 
-#: src/connect.c:292
-#, fuzzy, c-format
+#: src/connect.c:293
+#, c-format
 msgid "Connecting to [%s]:%d... "
-msgstr "Conectare la %s[%s]:%hu..."
+msgstr "Se conectează la [%s]:%d... "
 
-#: src/connect.c:328
+#: src/connect.c:329
 #, c-format
 msgid "setsockopt SO_RCVBUF failed: %s\n"
-msgstr ""
+msgstr "setsockopt SO_RCVBUF a eșuat: %s\n"
 
-#: src/connect.c:356
+#: src/connect.c:357
 msgid "connected.\n"
 msgstr "conectat.\n"
 
-#: src/connect.c:375 src/host.c:914 src/host.c:952
+#: src/connect.c:376 src/host.c:915 src/host.c:953
 #, c-format
 msgid "failed: %s.\n"
-msgstr "e�uare: %s.\n"
+msgstr "eşuare: %s.\n"
 
-#: src/connect.c:399 src/http.c:2108
+#: src/connect.c:400 src/http.c:2111
 #, c-format
 msgid "%s: unable to resolve host address %s\n"
-msgstr ""
+msgstr "%s: nu se poate rezolva adresa de gazdă %s\n"
 
-#: src/connect.c:469
+#: src/connect.c:470
 #, c-format
 msgid "setsockopt SO_REUSEADDR failed: %s\n"
-msgstr ""
+msgstr "setsockopt SO_REUSEADDR a eșuat: %s\n"
 
-#: src/connect.c:690 src/connect.c:737
+#: src/connect.c:694 src/connect.c:756
 #, c-format
 msgid "Too many fds open.  Cannot use select on a fd >= %d\n"
 msgstr ""
+"Prea multe fds-uri deschise.  Nu se poate utiliza selectarea pe un fd >= %d\n"
 
-#: src/convert.c:198
-#, fuzzy, c-format
+#: src/convert.c:201
+#, c-format
 msgid "Converted links in %d files in %s seconds.\n"
-msgstr "%d fi�iere convertite �n %.2f secunde.\n"
+msgstr "Legăturile convertite în fișiere %d în %s secunde.\n"
 
-#: src/convert.c:227
-#, fuzzy, c-format
+#: src/convert.c:230
+#, c-format
 msgid "Converting links in %s... "
-msgstr "Convertire %s... "
+msgstr "Se convertesc legăturile în %s... "
 
-#: src/convert.c:240
+#: src/convert.c:243
 msgid "nothing to do.\n"
-msgstr "nimic de f�cut.\n"
+msgstr "nimic de făcut.\n"
 
-#: src/convert.c:248 src/convert.c:272
+#: src/convert.c:246
+#, c-format
+msgid "%d.\n"
+msgstr ""
+
+#: src/convert.c:252 src/convert.c:276
 #, c-format
 msgid "Cannot convert links in %s: %s\n"
-msgstr "Nu pot converti linkurile �n %s: %s\n"
+msgstr "Nu pot converti linkurile în %s: %s\n"
 
-#: src/convert.c:263
-#, fuzzy, c-format
+#: src/convert.c:267
+#, c-format
 msgid "Unable to delete %s: %s\n"
-msgstr "Nu pot �terge `%s': %s\n"
+msgstr "Nu se poate șterge %s: %s\n"
 
-#: src/convert.c:578
+#: src/convert.c:586
 #, c-format
 msgid "Cannot back up %s as %s: %s\n"
 msgstr "Nu pot face backup la %s ca %s: %s\n"
 
-#: src/cookies.c:310
-#, fuzzy, c-format
+#: src/cookies.c:311
+#, c-format
 msgid "Unable to get cookie for %s\n"
-msgstr "Nu pot �terge `%s': %s\n"
+msgstr "Nu se poate obține cookie-ul pentru %s\n"
 
-#: src/cookies.c:457
+#: src/cookies.c:464
 #, c-format
 msgid "Syntax error in Set-Cookie: %s at position %d.\n"
-msgstr "Eroare de sintax� �n Set-Cookie: %s la pozi�ia %d.\n"
+msgstr "Eroare de sintaxă în Set-Cookie: %s la poziţia %d.\n"
 
-#: src/cookies.c:771
+#: src/cookies.c:777
 #, c-format
 msgid "Cookie coming from %s attempted to set domain to "
-msgstr ""
+msgstr "Cookie venind de la %s a încercat să stabilească domeniul la "
 
-#: src/cookies.c:774 src/spider.c:92
+#: src/cookies.c:780 src/spider.c:94
 #, c-format
 msgid "%s\n"
-msgstr ""
+msgstr "%s\n"
 
-#: src/cookies.c:1225 src/cookies.c:1346
-#, fuzzy, c-format
+#: src/cookies.c:1259 src/cookies.c:1380
+#, c-format
 msgid "Cannot open cookies file %s: %s\n"
-msgstr "Nu pot deschide fi�ierul de cookies `%s': %s\n"
+msgstr "Nu se poate deschide fișierul de cookie-uri %s: %s\n"
 
-#: src/cookies.c:1383
-#, fuzzy, c-format
+#: src/cookies.c:1417
+#, c-format
 msgid "Error writing to %s: %s\n"
-msgstr "Eroare la scriere �n `%s': %s\n"
+msgstr "Eroare la scrierea la %s: %s\n"
 
-#: src/cookies.c:1386
-#, fuzzy, c-format
+#: src/cookies.c:1420
+#, c-format
 msgid "Error closing %s: %s\n"
-msgstr "Eroare la �nchiderea `%s': %s\n"
+msgstr "Eroare la închiderea a %s: %s\n"
 
 #: src/ftp-ls.c:1045
 msgid "Unsupported listing type, trying Unix listing parser.\n"
-msgstr "Tip de listare nesuportat, se �ncearc� trecere la listare Unix.\n"
+msgstr "Tip de listare nesuportat, se încearcă trecere la listare Unix.\n"
 
 #: src/ftp-ls.c:1096 src/ftp-ls.c:1098
 #, c-format
@@ -400,12 +153,12 @@ msgstr "Index al /%s pe %s:%d"
 #: src/ftp-ls.c:1123
 #, c-format
 msgid "time unknown       "
-msgstr "durat� necunoscut� "
+msgstr "durată necunoscută "
 
 #: src/ftp-ls.c:1127
 #, c-format
 msgid "File        "
-msgstr "Fi�ier      "
+msgstr "Fişier      "
 
 #: src/ftp-ls.c:1130
 #, c-format
@@ -425,54 +178,55 @@ msgstr "Nesigur     "
 #: src/ftp-ls.c:1159
 #, c-format
 msgid " (%s bytes)"
-msgstr " (%s octe�i)"
+msgstr " (%s octeţi)"
 
 #: src/ftp.c:225
 #, c-format
 msgid "Length: %s"
 msgstr "Dimensiune: %s"
 
-#: src/ftp.c:231 src/http.c:4030
+#: src/ftp.c:231 src/http.c:4092
 #, c-format
 msgid ", %s (%s) remaining"
-msgstr ""
+msgstr ", %s (%s) rămas"
 
-#: src/ftp.c:235 src/http.c:4034
+#: src/ftp.c:235 src/http.c:4096
 #, c-format
 msgid ", %s remaining"
-msgstr ""
+msgstr ", %s rămas"
 
 #: src/ftp.c:238
 msgid " (unauthoritative)\n"
 msgstr " (neobligatoriu)\n"
 
 #: src/ftp.c:403
-msgid "Could not initialize SSL. It will be disabled."
-msgstr ""
+#, fuzzy
+msgid "Could not initialize SSL. It will be disabled.\n"
+msgstr "Nu s-a putut inițializa SSL. Va fi dezactivat."
 
 #: src/ftp.c:485
 #, c-format
 msgid "Logging in as %s ... "
 msgstr "Login ca %s ... "
 
-#: src/ftp.c:504 src/ftp.c:590 src/ftp.c:657 src/ftp.c:722 src/ftp.c:956
-#: src/ftp.c:1009 src/ftp.c:1056 src/ftp.c:1119 src/ftp.c:1180 src/ftp.c:1278
-#: src/ftp.c:1328
+#: src/ftp.c:504 src/ftp.c:590 src/ftp.c:657 src/ftp.c:722 src/ftp.c:963
+#: src/ftp.c:1019 src/ftp.c:1066 src/ftp.c:1129 src/ftp.c:1190 src/ftp.c:1288
+#: src/ftp.c:1338
 msgid "Error in server response, closing control connection.\n"
-msgstr "Eroare �n r�spunsul serverului, �nchid conexiunea.\n"
+msgstr "Eroare în răspunsul serverului, închid conexiunea.\n"
 
 #: src/ftp.c:511
 msgid "Error in server greeting.\n"
-msgstr "Eroare �n salutul serverului.\n"
+msgstr "Eroare în salutul serverului.\n"
 
-#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:964 src/ftp.c:1064 src/ftp.c:1129
-#: src/ftp.c:1190 src/ftp.c:1288 src/ftp.c:1338
+#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:971 src/ftp.c:1074 src/ftp.c:1139
+#: src/ftp.c:1200 src/ftp.c:1298 src/ftp.c:1348
 msgid "Write failed, closing control connection.\n"
-msgstr "Scriere e�uat�, �nchid conexiunea.\n"
+msgstr "Scriere eşuată, închid conexiunea.\n"
 
 #: src/ftp.c:524
 msgid "The server refuses login.\n"
-msgstr "Serverul refuz� loginul.\n"
+msgstr "Serverul refuză loginul.\n"
 
 #: src/ftp.c:530
 msgid "Login incorrect.\n"
@@ -484,1257 +238,1403 @@ msgstr "Admis!\n"
 
 #: src/ftp.c:556
 msgid "Server did not accept the 'PBSZ 0' command.\n"
-msgstr ""
+msgstr "Serverul nu a acceptat comanda „PBSZ 0”.\n"
 
 #: src/ftp.c:566
 #, c-format
 msgid "Server did not accept the 'PROT %c' command.\n"
-msgstr ""
+msgstr "Serverul nu a acceptat comanda „PROT %c”.\n"
 
 #: src/ftp.c:598
 msgid "Server error, can't determine system type.\n"
 msgstr "Eroare server, nu se poate determina tipul sistemului.\n"
 
-#: src/ftp.c:607 src/ftp.c:1099 src/ftp.c:1163 src/ftp.c:1206
+#: src/ftp.c:607 src/ftp.c:1109 src/ftp.c:1173 src/ftp.c:1216
 msgid "done.    "
-msgstr "terminat."
+msgstr "terminat.    "
 
-#: src/ftp.c:710 src/ftp.c:982 src/ftp.c:1026 src/ftp.c:1308 src/ftp.c:1357
+#: src/ftp.c:710 src/ftp.c:989 src/ftp.c:1036 src/ftp.c:1318 src/ftp.c:1367
 msgid "done.\n"
 msgstr "terminat.\n"
 
 #: src/ftp.c:737
 #, c-format
 msgid "Unknown type `%c', closing control connection.\n"
-msgstr "Tip `%c' necunoscut, conexiune �nchis�.\n"
+msgstr "Tip `%c' necunoscut, conexiune închisă.\n"
 
 #: src/ftp.c:749
 msgid "done.  "
-msgstr "finalizat."
+msgstr "terminat.  "
 
 #: src/ftp.c:755
 msgid "==> CWD not needed.\n"
 msgstr "==> CWD nenecesar.\n"
 
-#: src/ftp.c:939
+#: src/ftp.c:946
 msgid "Logically impossible section reached in getftp()"
-msgstr ""
+msgstr "A fost ajunsă o secțiune imposibilă logic în getftp()"
 
-#: src/ftp.c:940
+#: src/ftp.c:947
 #, c-format
 msgid ""
 "cwd_count: %d\n"
 "cwd_start: %d\n"
 "cwd_end: %d\n"
 msgstr ""
+"cwd_count: %d\n"
+"cwd_start: %d\n"
+"cwd_end: %d\n"
 
-#: src/ftp.c:970
-#, fuzzy, c-format
+#: src/ftp.c:977
+#, c-format
 msgid ""
 "No such directory %s.\n"
 "\n"
 msgstr ""
-"Nu exist� directorul `%s'.\n"
+"Nu există directorul %s.\n"
 "\n"
 
-#: src/ftp.c:991
+#: src/ftp.c:1001
 msgid "==> CWD not required.\n"
 msgstr "==> CWD nu este necesar.\n"
 
-#: src/ftp.c:1034
-#, fuzzy
+#: src/ftp.c:1044
 msgid "File has already been retrieved.\n"
-msgstr "Fi�ierul `%s' exist� deja, nu se mai aduce.\n"
+msgstr "Fișierul a fost recuperat deja.\n"
 
-#: src/ftp.c:1070
+#: src/ftp.c:1080
 msgid "Cannot initiate PASV transfer.\n"
-msgstr "Nu s-a putut ini�ia transferul PASV.\n"
+msgstr "Nu s-a putut iniţia transferul PASV.\n"
 
-#: src/ftp.c:1074
+#: src/ftp.c:1084
 msgid "Cannot parse PASV response.\n"
-msgstr "Nu s-a putut analiza r�spunsul PASV.\n"
+msgstr "Nu s-a putut analiza răspunsul PASV.\n"
 
-#: src/ftp.c:1091
-#, fuzzy, c-format
+#: src/ftp.c:1101
+#, c-format
 msgid "couldn't connect to %s port %d: %s\n"
-msgstr "conectare la %s:%hu nereu�it�: %s\n"
+msgstr "nu s-a putut conecta la %s portul %d: %s\n"
 
-#: src/ftp.c:1145
+#: src/ftp.c:1155
 #, c-format
 msgid "Bind error (%s).\n"
-msgstr "Eroare de leg�tur�(bind) (%s).\n"
+msgstr "Eroare de legătură(bind) (%s).\n"
 
-#: src/ftp.c:1151
+#: src/ftp.c:1161
 msgid "Invalid PORT.\n"
 msgstr "PORT invalid.\n"
 
-#: src/ftp.c:1197
+#: src/ftp.c:1207
 msgid ""
 "\n"
 "REST failed, starting from scratch.\n"
 msgstr ""
 "\n"
-"REST e�uat, start de la �nceput.\n"
+"REST eşuat, start de la început.\n"
 
-#: src/ftp.c:1240
+#: src/ftp.c:1250
 #, c-format
 msgid "File %s exists.\n"
-msgstr ""
+msgstr "Fișierul %s există.\n"
 
-#: src/ftp.c:1246
-#, fuzzy, c-format
+#: src/ftp.c:1256
+#, c-format
 msgid "No such file %s.\n"
-msgstr ""
-"Nu exist� fi�ierul `%s'.\n"
-"\n"
+msgstr "Nu există fișierul %s.\n"
 
-#: src/ftp.c:1296
-#, fuzzy, c-format
+#: src/ftp.c:1306
+#, c-format
 msgid ""
 "No such file %s.\n"
 "\n"
 msgstr ""
-"Nu exist� fi�ierul `%s'.\n"
+"Nu există fișierul %s.\n"
 "\n"
 
-#: src/ftp.c:1346
-#, fuzzy, c-format
+#: src/ftp.c:1356
+#, c-format
 msgid ""
 "No such file or directory %s.\n"
 "\n"
 msgstr ""
-"Nu exist� fi�ierul sau directorul `%s'.\n"
+"Nu există fișierul sau directorul %s.\n"
 "\n"
 
-#: src/ftp.c:1505 src/http.c:2563
+#: src/ftp.c:1515 src/http.c:2597
 #, c-format
 msgid "%s has sprung into existence.\n"
-msgstr ""
+msgstr "%s a apărut în existență.\n"
 
-#: src/ftp.c:1594
+#: src/ftp.c:1604
 #, c-format
 msgid "%s: %s, closing control connection.\n"
-msgstr "%s: %s, �nchid controlul conexiunii.\n"
+msgstr "%s: %s, închid controlul conexiunii.\n"
 
-#: src/ftp.c:1606
+#: src/ftp.c:1616
 #, c-format
 msgid "%s (%s) - Data connection: %s; "
 msgstr "%s (%s) - Conexiune de date: %s; "
 
-#: src/ftp.c:1621
+#: src/ftp.c:1631
 msgid "Control connection closed.\n"
-msgstr "Controlul conexiunii �nchis.\n"
+msgstr "Controlul conexiunii închis.\n"
 
-#: src/ftp.c:1639
+#: src/ftp.c:1649
 msgid "Data transfer aborted.\n"
-msgstr "Transfer de date �ntrerupt.\n"
+msgstr "Transfer de date întrerupt.\n"
 
-#: src/ftp.c:1863 src/main.c:1682
-#, fuzzy, c-format
+#: src/ftp.c:1873 src/main.c:1690
+#, c-format
 msgid "File %s already there; not retrieving.\n"
-msgstr "Fi�ierul `%s' exist� deja, nu se mai aduce.\n"
+msgstr "Fișierul %s există deja; nu se recuperează.\n"
 
-#: src/ftp.c:1948 src/http.c:4300
+#: src/ftp.c:1958 src/http.c:4362
 #, c-format
 msgid "(try:%2d)"
-msgstr "(�ncercare:%2d)"
+msgstr "(încercare:%2d)"
 
-#: src/ftp.c:2039 src/http.c:4731
+#: src/ftp.c:2050 src/http.c:4792
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
 "\n"
 msgstr ""
+"%s (%s) - scris la stdout %s[%s]\n"
+"\n"
 
-#: src/ftp.c:2040 src/http.c:4732
-#, fuzzy, c-format
+#: src/ftp.c:2051 src/http.c:4793
+#, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
 "\n"
-msgstr "%s (%s) - `%s' salvat [%ld]\n"
+msgstr ""
+"%s (%s) - %s salvat [%s]\n"
+"\n"
 
-#: src/ftp.c:2100 src/main.c:2172 src/metalink.c:1135 src/recur.c:511
-#: src/recur.c:749 src/retr.c:1309
+#: src/ftp.c:2111 src/main.c:2174 src/metalink.c:1135 src/recur.c:512
+#: src/recur.c:750 src/retr.c:1317
 #, c-format
 msgid "Removing %s.\n"
-msgstr "�terg %s.\n"
+msgstr "Şterg %s.\n"
 
-#: src/ftp.c:2157
-#, fuzzy, c-format
+#: src/ftp.c:2168
+#, c-format
 msgid "Using %s as listing tmp file.\n"
-msgstr "Se utilizeaz� `%s' ca fi�ier temporar de listare.\n"
+msgstr "Se utilizează %s ca un fișier de listare tmp.\n"
 
-#: src/ftp.c:2174
-#, fuzzy, c-format
+#: src/ftp.c:2185
+#, c-format
 msgid "Removed %s.\n"
-msgstr "`%s' �ters.\n"
+msgstr "S-a eliminat %s.\n"
 
-#: src/ftp.c:2213
+#: src/ftp.c:2224
 #, c-format
 msgid "Recursion depth %d exceeded max. depth %d.\n"
-msgstr "Ad�ncimea de recuren�� %d a depa�it max. de ad�ncime %d.\n"
+msgstr "Adăncimea de recurenţă %d a depaşit max. de adăncime %d.\n"
 
-#: src/ftp.c:2283
-#, fuzzy, c-format
+#: src/ftp.c:2294
+#, c-format
 msgid "Remote file no newer than local file %s -- not retrieving.\n"
 msgstr ""
-"Fi�ierul remote nu este mai nou dec�t fi�ierul local `%s'--nu se aduce.\n"
+"Fișierul de la distanță nu este mai nou decât fișierul local %s -- nu se "
+"recuperează.\n"
 
-#: src/ftp.c:2291
-#, fuzzy, c-format
+#: src/ftp.c:2302
+#, c-format
 msgid ""
 "Remote file is newer than local file %s -- retrieving.\n"
 "\n"
-msgstr "Fi�ierul remote este mai nou dec�t fi�ierul local `%s' -- se aduce.\n"
+msgstr ""
+"Fișierul de la distanță este mai nou decât fișierul local %s -- se "
+"recuperează.\n"
+"\n"
 
-#: src/ftp.c:2298
-#, fuzzy, c-format
+#: src/ftp.c:2309
+#, c-format
 msgid ""
 "The sizes do not match (local %s) -- retrieving.\n"
 "\n"
 msgstr ""
-"Dimensiunile nu corespund (local %ld) -- se aduce.\n"
+"Dimensiunile nu se potrivesc (local %s) -- se recuperează.\n"
 "\n"
 
-#: src/ftp.c:2316
+#: src/ftp.c:2327
 msgid "Invalid name of the symlink, skipping.\n"
 msgstr "Nume symlink invalid, se omite.\n"
 
-#: src/ftp.c:2333
+#: src/ftp.c:2356
 #, c-format
 msgid ""
 "Already have correct symlink %s -> %s\n"
 "\n"
 msgstr ""
-"Deja exist� symlinkul corect %s -> %s\n"
+"Deja există symlinkul corect %s -> %s\n"
 "\n"
 
-#: src/ftp.c:2342
+#: src/ftp.c:2365
 #, c-format
 msgid "Creating symlink %s -> %s\n"
 msgstr "Creare symlink %s -> %s\n"
 
-#: src/ftp.c:2352
-#, fuzzy, c-format
+#: src/ftp.c:2375
+#, c-format
 msgid "Symlinks not supported, skipping symlink %s.\n"
-msgstr "Symlinkuri nesuportate, se omite symlinkul `%s'.\n"
+msgstr ""
+"Legăturile simbolice nu sunt suportate, se omite legătura simbolică %s.\n"
 
-#: src/ftp.c:2367
-#, fuzzy, c-format
+#: src/ftp.c:2390
+#, c-format
 msgid "Skipping directory %s.\n"
-msgstr "Se omite directorul `%s.\n"
+msgstr "Se omite directorul %s.\n"
 
-#: src/ftp.c:2380
+#: src/ftp.c:2403
 #, c-format
 msgid "%s: unknown/unsupported file type.\n"
-msgstr "%s: tip fi�ier necunoscut/nesuportat.\n"
+msgstr "%s: tip fişier necunoscut/nesuportat.\n"
 
-#: src/ftp.c:2404
-#, fuzzy, c-format
+#: src/ftp.c:2427
+#, c-format
 msgid "Failed to set permissions for %s.\n"
-msgstr "Nu s-a putut primi codul(key) certificatului de la %s\n"
+msgstr "Nu s-au putut stabili permisiunile pentru %s.\n"
 
-#: src/ftp.c:2425
+#: src/ftp.c:2448
 #, c-format
 msgid "%s: corrupt time-stamp.\n"
 msgstr "%s: identificator-timp(time-stamp) corupt.\n"
 
-#: src/ftp.c:2449
+#: src/ftp.c:2472
 #, c-format
 msgid "Will not retrieve dirs since depth is %d (max %d).\n"
-msgstr "Nu vor fi aduse directoare pentru ad�ncime setat� la %d (max %d).\n"
+msgstr "Nu vor fi aduse directoare pentru adăncime setată la %d (max %d).\n"
 
-#: src/ftp.c:2500
-#, fuzzy, c-format
+#: src/ftp.c:2531
+#, c-format
 msgid "Not descending to %s as it is excluded/not-included.\n"
-msgstr "Nu se coboar� la `%s' daca este exclus/neinclus.\n"
+msgstr "Nu se coboară la %s pentru că este exclus/nu este inclus.\n"
 
-#: src/ftp.c:2613
-#, fuzzy, c-format
+#: src/ftp.c:2647
+#, c-format
 msgid "Rejecting %s.\n"
-msgstr "Refuzare `%s'.\n"
+msgstr "Se refuză %s.\n"
 
-#: src/ftp.c:2623
-#, fuzzy, c-format
+#: src/ftp.c:2657
+#, c-format
 msgid "Rejecting %s (Invalid Entry).\n"
-msgstr "Refuzare `%s'.\n"
+msgstr "Se refuză %s (Intrare nevalidă).\n"
 
-#: src/ftp.c:2631
+#: src/ftp.c:2678
 #, c-format
 msgid "%s is excluded/not-included through regex.\n"
-msgstr ""
+msgstr "%s este exclus/nu este inclus prin expresia regulară.\n"
 
-#: src/ftp.c:2645
-#, fuzzy, c-format
+#: src/ftp.c:2698
+#, c-format
 msgid "Error matching %s against %s: %s\n"
-msgstr "Eroare la scriere �n `%s': %s\n"
+msgstr "Eroare la potrivirea %s împotriva %s: %s\n"
 
-#: src/ftp.c:2685
-#, fuzzy, c-format
+#: src/ftp.c:2738
+#, c-format
 msgid "No matches on pattern %s.\n"
-msgstr "Nu s-au g�sit potriviri pentru tiparul `%s'.\n"
+msgstr "Nu sunt potriviri pe modelul %s.\n"
 
-#: src/ftp.c:2757
-#, fuzzy, c-format
+#: src/ftp.c:2810
+#, c-format
 msgid "Wrote HTML-ized index to %s [%s].\n"
-msgstr "S-a scris indexul HTML �n `%s' [%ld].\n"
+msgstr "S-a scris indexul HTML-izat la %s [%s].\n"
 
-#: src/ftp.c:2762
-#, fuzzy, c-format
+#: src/ftp.c:2815
+#, c-format
 msgid "Wrote HTML-ized index to %s.\n"
-msgstr "S-a scris indexul HTML �n `%s'\n"
+msgstr "S-a scris indexul HTML-izat la %s.\n"
 
-#: src/gnutls.c:119
+#: src/gnutls.c:132
 #, c-format
 msgid "ERROR: Cannot open directory %s.\n"
-msgstr ""
+msgstr "EROARE: Nu se poate deschide directorul %s.\n"
 
-#: src/gnutls.c:169
+#: src/gnutls.c:178
 #, c-format
 msgid "ERROR: Failed to open cert %s: (%d).\n"
-msgstr ""
+msgstr "EROARE: Nu s-a putut deschide certificatul %s: (%d).\n"
 
-#: src/gnutls.c:174
-#, fuzzy, c-format
+#: src/gnutls.c:183
+#, c-format
 msgid "Loaded CA certificate '%s'\n"
-msgstr "S-a e�uat �n �nc�rcarea certificatelor din %s\n"
+msgstr "S-a încărcat certificatul CA „%s”\n"
 
-#: src/gnutls.c:184
+#: src/gnutls.c:191
 #, c-format
 msgid "ERROR: Failed to load CRL file '%s': (%d)\n"
-msgstr ""
+msgstr "EROARE: Nu s-a putut încărca fișierul CRL „%s”: (%d)\n"
 
-#: src/gnutls.c:188
+#: src/gnutls.c:195
 #, c-format
 msgid "Loaded CRL file '%s'\n"
-msgstr ""
+msgstr "S-a încărcat fișierul CRL „%s”\n"
 
-#: src/gnutls.c:212
+#: src/gnutls.c:219
 msgid "ERROR: GnuTLS requires the key and the cert to be of the same type.\n"
-msgstr ""
+msgstr "EROARE: GnuTLS necesită cheia și certificatul să fie de același tip.\n"
 
-#: src/gnutls.c:664 src/gnutls.c:728
+#: src/gnutls.c:771 src/gnutls.c:835
 msgid "Your GnuTLS version is too old to support TLS 1.3\n"
-msgstr ""
+msgstr "Versiunea GnuTLS este prea veche pentru a suporta TLS 1.3\n"
 
-#: src/gnutls.c:676
+#: src/gnutls.c:783
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %u\n"
-msgstr ""
+msgstr "GnuTLS: valoare de opțiune „secure-protocol” neimplementată %u\n"
 
-#: src/gnutls.c:678 src/gnutls.c:734 src/host.c:157 src/openssl.c:284
-#, fuzzy
+#: src/gnutls.c:785 src/gnutls.c:841 src/host.c:158 src/openssl.c:288
 msgid "Please report this issue to bug-wget@gnu.org\n"
-msgstr "Rapoarte de bug-uri prin mail �i sugestii la <bug-wget@gnu.org>.\n"
+msgstr "Raportați această problemă la bug-wget@gnu.org\n"
 
-#: src/gnutls.c:733
+#: src/gnutls.c:840
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %d\n"
-msgstr ""
+msgstr "GnuTLS: valoare de opțiune „secure-protocol” neimplementată %d\n"
 
-#: src/gnutls.c:786
+#: src/gnutls.c:893
 msgid ""
 "GnuTLS: Cannot set prio string directly. Falling back to default priority.\n"
 msgstr ""
+"GnuTLS: Nu se poate stabili șirul de prioritate direct. Se revine la "
+"prioritatea implicită.\n"
 
-#: src/gnutls.c:914 src/openssl.c:825
+#: src/gnutls.c:1021 src/openssl.c:1029
 msgid "ERROR"
-msgstr ""
+msgstr "EROARE"
 
-#: src/gnutls.c:914 src/openssl.c:825
+#: src/gnutls.c:1021 src/openssl.c:1029
 msgid "WARNING"
-msgstr ""
+msgstr "AVERTISMENT"
 
-#: src/gnutls.c:925 src/openssl.c:838
+#: src/gnutls.c:1032 src/openssl.c:1042
 #, c-format
 msgid "%s: No certificate presented by %s.\n"
-msgstr ""
+msgstr "%s: Nu există niciun certificat prezentat de %s.\n"
 
-#: src/gnutls.c:931
+#: src/gnutls.c:1038
 #, c-format
 msgid "%s: The certificate of %s is not trusted.\n"
-msgstr ""
+msgstr "%s: Certificatul lui %s nu este de încredere.\n"
 
-#: src/gnutls.c:932
+#: src/gnutls.c:1039
 #, c-format
 msgid "%s: The certificate of %s doesn't have a known issuer.\n"
-msgstr ""
+msgstr "%s: Certificatul lui %s nu are un emitent cunoscut.\n"
 
-#: src/gnutls.c:933
+#: src/gnutls.c:1040
 #, c-format
 msgid "%s: The certificate of %s has been revoked.\n"
 msgstr ""
+"%s: Certificatul lui %s a fost revocat.\n"
+"\n"
 
-#: src/gnutls.c:934
+#: src/gnutls.c:1041
 #, c-format
 msgid "%s: The certificate signer of %s was not a CA.\n"
-msgstr ""
+msgstr "%s: Semnatarul certificatului lui %s nu a fost un CA.\n"
 
-#: src/gnutls.c:935
+#: src/gnutls.c:1042
 #, c-format
 msgid "%s: The certificate of %s was signed using an insecure algorithm.\n"
-msgstr ""
+msgstr "%s: Certificatul lui %s a fost semnat utilizând un algoritm nesigur.\n"
 
-#: src/gnutls.c:936
+#: src/gnutls.c:1043
 #, c-format
 msgid "%s: The certificate of %s is not yet activated.\n"
-msgstr ""
+msgstr "%s: Certificatul lui %s nu este încă activat.\n"
 
-#: src/gnutls.c:937
+#: src/gnutls.c:1044
 #, c-format
 msgid "%s: The certificate of %s has expired.\n"
-msgstr ""
+msgstr "%s: Certificatul lui %s a expirat.\n"
 
-#: src/gnutls.c:949
+#: src/gnutls.c:1056
 #, c-format
 msgid "Error initializing X509 certificate: %s\n"
-msgstr ""
+msgstr "Eroare la inițializarea certificatului X509: %s\n"
 
-#: src/gnutls.c:958
+#: src/gnutls.c:1065
 msgid "No certificate found\n"
-msgstr ""
+msgstr "Nu s-a găsit niciun certificat\n"
 
-#: src/gnutls.c:965
-#, fuzzy, c-format
+#: src/gnutls.c:1072
+#, c-format
 msgid "Error parsing certificate: %s\n"
-msgstr "Eroare �n analiza URL proxy: %s: %s.\n"
+msgstr "Eroare la parsarea certificatului: %s\n"
 
-#: src/gnutls.c:972
+#: src/gnutls.c:1079
 msgid "The certificate has not yet been activated\n"
-msgstr ""
+msgstr "Certificatul nu a fost încă activat\n"
 
-#: src/gnutls.c:977
+#: src/gnutls.c:1084
 msgid "The certificate has expired\n"
-msgstr ""
+msgstr "Certificatul a expirat\n"
 
-#: src/gnutls.c:984
+#: src/gnutls.c:1091
 #, c-format
 msgid "The certificate's owner does not match hostname %s\n"
-msgstr ""
+msgstr "Deținătorul certificatului nu se potrivește cu numele de gazdă %s\n"
 
-#: src/gnutls.c:993 src/openssl.c:1034
+#: src/gnutls.c:1100 src/openssl.c:1238
 msgid "The public key does not match pinned public key!\n"
-msgstr ""
+msgstr "Cheia publică nu se potrivește cu cheia publică fixată!\n"
 
-#: src/gnutls.c:1002
+#: src/gnutls.c:1109
 msgid "Certificate must be X.509\n"
-msgstr ""
+msgstr "Certificatul trebuie să fie X.509\n"
 
-#: src/host.c:156
+#: src/host.c:157
 msgid "Error in handling the address list.\n"
-msgstr ""
+msgstr "Eroare la gestionarea listei de adrese.\n"
 
-#: src/host.c:367
-#, fuzzy
+#: src/host.c:368
 msgid "Unknown host"
-msgstr "Eroare necunoscut�"
+msgstr "Gazdă necunoscută"
 
-#: src/host.c:849
+#: src/host.c:372
+msgid "Temporary failure in name resolution"
+msgstr "Eșec temporar în rezolvarea numelui"
+
+#: src/host.c:374
+msgid "Unknown error"
+msgstr "Eroare necunoscută"
+
+#: src/host.c:850
 #, c-format
 msgid "Resolving %s... "
 msgstr "Rezolvare %s... "
 
-#: src/host.c:925
+#: src/host.c:926
 msgid "failed: No IPv4/IPv6 addresses for host.\n"
-msgstr ""
+msgstr "a eșuat: Nu există adrese IPv4/IPv6 pentru gazdă.\n"
 
-#: src/host.c:955
+#: src/host.c:956
 msgid "failed: timed out.\n"
-msgstr "e�uare: .expirat(�)\n"
+msgstr "eşuare: .expirat(ă)\n"
 
-#: src/html-url.c:305
+#: src/html-url.c:306
 #, c-format
 msgid "%s: Cannot resolve incomplete link %s.\n"
 msgstr "%s: Nu s-a rezolvat linkul incomplet %s.\n"
 
-#: src/html-url.c:939
-#, fuzzy, c-format
-msgid "%s: Invalid URL %s: %s\n"
-msgstr "%s: %s: Valoare invalid� `%s'.\n"
-
-#: src/http.c:377
+#: src/html-url.c:841
 #, c-format
-msgid "Failed writing HTTP request: %s.\n"
-msgstr "Scriere cerere HTTP e�uat�: %s.\n"
-
-#: src/http.c:793
-msgid "No headers, assuming HTTP/0.9"
+msgid ""
+"no-follow attribute found in %s. Will not follow any links on this page\n"
 msgstr ""
 
-#: src/http.c:1623
-#, fuzzy, c-format
+#: src/html-url.c:944
+#, c-format
+msgid "%s: Invalid URL %s: %s\n"
+msgstr "%s: URL nevalid %s: %s\n"
+
+#: src/http.c:380
+#, c-format
+msgid "Failed writing HTTP request: %s.\n"
+msgstr "Scriere cerere HTTP eşuată: %s.\n"
+
+#: src/http.c:795
+msgid "No headers, assuming HTTP/0.9"
+msgstr "Nu există antete, se presupune HTTP/0.9"
+
+#: src/http.c:1637
+#, c-format
 msgid ""
 "File %s already there; not retrieving.\n"
 "\n"
-msgstr "Fi�ierul `%s' exist� deja, nu se mai aduce.\n"
-
-#: src/http.c:1833
-msgid "gmtime failed. This is probably a bug.\n"
 msgstr ""
+"Fișierul %s este deja acolo; nu se recuperează.\n"
+"\n"
 
-#: src/http.c:1894
+#: src/http.c:1836
+msgid "gmtime failed. This is probably a bug.\n"
+msgstr "gmtime a eșuat. Acesta este probabil o defecțiune.\n"
+
+#: src/http.c:1897
 msgid ""
 "Cannot convert timestamp to http format. Falling back to time 0 as last "
 "modification time.\n"
 msgstr ""
+"Nu se poate converti datarea în format http. Se revine la timpul 0 ca timpul "
+"ultimei modificări.\n"
 
-#: src/http.c:1998
+#: src/http.c:2001
 #, c-format
 msgid "BODY data file %s missing: %s\n"
-msgstr ""
+msgstr "Fișierul de date CORP %s lipsește: %s\n"
 
-#: src/http.c:2090
-#, fuzzy, c-format
+#: src/http.c:2093
+#, c-format
 msgid "Reusing existing connection to [%s]:%d.\n"
-msgstr "Reutilizare conexiune c�tre %s:%hu.\n"
+msgstr "Se reutilizează conexiunea existentă la [%s]:%d.\n"
 
-#: src/http.c:2095
-#, fuzzy, c-format
+#: src/http.c:2098
+#, c-format
 msgid "Reusing existing connection to %s:%d.\n"
-msgstr "Reutilizare conexiune c�tre %s:%hu.\n"
+msgstr "Se reutilizează conexiunea existentă la %s:%d.\n"
 
-#: src/http.c:2161
-#, fuzzy, c-format
+#: src/http.c:2164
+#, c-format
 msgid "Failed reading proxy response: %s\n"
-msgstr "Scriere cerere HTTP e�uat�: %s.\n"
+msgstr "Nu s-a putut citi răspunsul proxy: %s\n"
 
-#: src/http.c:2180 src/http.c:3419 src/http.c:4525
+#: src/http.c:2183 src/http.c:3465 src/http.c:4588
 #, c-format
 msgid "%s ERROR %d: %s.\n"
 msgstr "EROARE %s %d: %s.\n"
 
-#: src/http.c:2182 src/http.c:3421 src/http.c:3609
+#: src/http.c:2185 src/http.c:3467 src/http.c:3668
 msgid "Malformed status line"
-msgstr "Linie de stare malformat�"
+msgstr "Linie de stare malformată"
 
-#: src/http.c:2193
+#: src/http.c:2196
 #, c-format
 msgid "Proxy tunneling failed: %s"
-msgstr ""
+msgstr "Tunelarea proxy-ului a eșuat: %s"
 
-#: src/http.c:2429
+#: src/http.c:2460
 msgid "Unknown authentication scheme.\n"
-msgstr "Schem� autentificare necunoscut�.\n"
+msgstr "Schemă autentificare necunoscută.\n"
 
-#: src/http.c:2447
-#, fuzzy, c-format
+#: src/http.c:2478
+#, c-format
 msgid "Authentication selected: %s\n"
-msgstr "Schem� autentificare necunoscut�.\n"
+msgstr "Autentificare selectată: %s\n"
 
-#: src/http.c:2578
+#: src/http.c:2612
 #, c-format
 msgid "Saving to: %s\n"
-msgstr ""
+msgstr "Se salvează la: %s\n"
 
-#: src/http.c:2797
+#: src/http.c:2831
 #, c-format
 msgid ""
 "When downloading signature:\n"
 "%s: %s.\n"
 msgstr ""
+"Când se descarcă semnătura:\n"
+"%s: %s.\n"
 
-#: src/http.c:2833
+#: src/http.c:2867
 msgid "Unable to read signature content from temporary file. Skipping.\n"
 msgstr ""
+"Nu se poate citi conținutul semnăturii de la fișierul temporar. Se omite.\n"
 
-#: src/http.c:2856
+#: src/http.c:2890
 msgid "Could not create temporary file. Skipping signature download.\n"
 msgstr ""
+"Nu s-a putut crea fișierul temporar. Se omite descărcarea semnăturii.\n"
 
-#: src/http.c:2890 src/http.c:2972
+#: src/http.c:2924 src/http.c:3006
 #, c-format
 msgid "Invalid pri value. Assuming %d.\n"
-msgstr ""
+msgstr "Valoare privată nevalidă. Se presupune %d.\n"
 
-#: src/http.c:3076
+#: src/http.c:3120
 msgid ""
 "Could not find acceptable digest for Metalink resources.\n"
 "Ignoring them.\n"
 msgstr ""
+"Nu s-a putut găsi digestul acceptabil pentru resursele Metalink.\n"
+"Acestea se ignoră.\n"
 
-#: src/http.c:3213
+#: src/http.c:3257
 msgid "Disabling SSL due to encountered errors.\n"
-msgstr ""
-
-#: src/http.c:3355
-#, c-format
-msgid "%s request sent, awaiting response... "
-msgstr "Cerere %s trimis�, se a�teapt� r�spuns... "
-
-#: src/http.c:3395
-#, fuzzy
-msgid "No data received.\n"
-msgstr "Nici o dat� recep�ionat�"
+msgstr "Se dezactivează SSL din cauza unor erori întâlnite.\n"
 
 #: src/http.c:3401
 #, c-format
+msgid "%s request sent, awaiting response... "
+msgstr "Cerere %s trimisă, se aşteaptă răspuns... "
+
+#: src/http.c:3441
+msgid "No data received.\n"
+msgstr "Nu s-au primit date.\n"
+
+#: src/http.c:3447
+#, c-format
 msgid "Read error (%s) in headers.\n"
-msgstr "Eroare de citire (%s) �n headere.\n"
+msgstr "Eroare de citire (%s) în headere.\n"
 
-#: src/http.c:3611
+#: src/http.c:3670
 msgid "(no description)"
-msgstr "(f�r� descriere)"
+msgstr "(fără descriere)"
 
-#: src/http.c:3799
+#: src/http.c:3861
 #, c-format
 msgid "Location: %s%s\n"
-msgstr "Loca�ie: %s%s\n"
+msgstr "Locaţie: %s%s\n"
 
-#: src/http.c:3800 src/http.c:4040
+#: src/http.c:3862 src/http.c:4102
 msgid "unspecified"
-msgstr "nespecificat(�)"
+msgstr "nespecificat(ă)"
 
-#: src/http.c:3801
+#: src/http.c:3863
 msgid " [following]"
-msgstr " [urmeaz�]"
+msgstr " [urmează]"
 
-#: src/http.c:3883
+#: src/http.c:3945
 #, c-format
 msgid ""
 "File %s not modified on server. Omitting download.\n"
 "\n"
 msgstr ""
+"Fișierul %s nu a fost modificat pe server. Se omite descărcarea.\n"
+"\n"
 
-#: src/http.c:3956
+#: src/http.c:4018
 #, c-format
 msgid ""
 "Server ignored If-Modified-Since header for file %s.\n"
 "You might want to add --no-if-modified-since option.\n"
 "\n"
 msgstr ""
+"Serverul a ignorat antetul If-Modified-Since pentru fișierul %s.\n"
+"Poate doriți să adăugați opțiunea --no-if-modified-since.\n"
+"\n"
 
-#: src/http.c:3976
+#: src/http.c:4038
 msgid ""
 "\n"
 "    The file is already fully retrieved; nothing to do.\n"
 "\n"
 msgstr ""
 "\n"
-"    Fi�ierul este deja complet; nu mai e nimic de f�cut.\n"
+"    Fişierul este deja complet; nu mai e nimic de făcut.\n"
 "\n"
 
-#: src/http.c:4020
+#: src/http.c:4082
 msgid "Length: "
 msgstr "Dimensiune: "
 
-#: src/http.c:4040
+#: src/http.c:4102
 msgid "ignored"
 msgstr "ignorat"
 
-#: src/http.c:4208
+#: src/http.c:4270
 msgid "Warning: wildcards not supported in HTTP.\n"
-msgstr "Avertisment: selec�iile globale(wildcards) nu sunt permise �n HTTP.\n"
+msgstr "Avertisment: selecţiile globale(wildcards) nu sunt permise în HTTP.\n"
 
-#: src/http.c:4290
+#: src/http.c:4352
 msgid "Spider mode enabled. Check if remote file exists.\n"
 msgstr ""
+"Modul păianjen activat. Verifică dacă fișierul de la distanță există.\n"
 
-#: src/http.c:4380
-#, fuzzy, c-format
+#: src/http.c:4445
+#, c-format
 msgid "Cannot write to %s (%s).\n"
-msgstr "Nu se poate scrie �n `%s' (%s).\n"
+msgstr "Nu se poate scrie la %s (%s).\n"
 
-#: src/http.c:4404
+#: src/http.c:4467
 msgid "Required attribute missing from Header received.\n"
-msgstr ""
+msgstr "Atributul necesar care lipsește de la Antet a fost primit.\n"
 
-#: src/http.c:4409
+#: src/http.c:4472
 msgid "Username/Password Authentication Failed.\n"
-msgstr ""
+msgstr "Autentificarea nume de utilizator/parolă a eșuat.\n"
 
-#: src/http.c:4415
-#, fuzzy
+#: src/http.c:4478
 msgid "Cannot write to WARC file.\n"
-msgstr "Nu se poate scrie �n `%s' (%s).\n"
+msgstr "Nu se poate scrie la fișierul WARC.\n"
 
-#: src/http.c:4421
+#: src/http.c:4484
 msgid "Cannot write to temporary WARC file.\n"
-msgstr ""
+msgstr "Nu se poate scrie la fișierul temporar WARC.\n"
 
-#: src/http.c:4426
+#: src/http.c:4489
 msgid "Unable to establish SSL connection.\n"
 msgstr "Nu s-a putut stabili o conexiune SSL.\n"
 
-#: src/http.c:4432
-#, fuzzy, c-format
+#: src/http.c:4495
+#, c-format
 msgid "Cannot unlink %s (%s).\n"
-msgstr "Nu se poate scrie �n `%s' (%s).\n"
+msgstr "Nu se poate dezlega %s (%s).\n"
 
-#: src/http.c:4442
+#: src/http.c:4505
 #, c-format
 msgid "ERROR: Redirection (%d) without location.\n"
-msgstr "EROARE: Redirectare (%d) f�r� loca�ie.\n"
+msgstr "EROARE: Redirectare (%d) fără locaţie.\n"
 
-#: src/http.c:4464
+#: src/http.c:4527
 msgid ""
 "Could not find Metalink data in HTTP response. Downloading file using HTTP "
 "GET.\n"
 msgstr ""
+"Nu s-au putut găsi datele Metalink în răspunsul HTTP. Se descarcă fișierul "
+"utilizând HTTP GET.\n"
 
-#: src/http.c:4473
+#: src/http.c:4536
 msgid "Metalink headers found. Switching to Metalink mode.\n"
-msgstr ""
+msgstr "Antetele Metalink au fost găsite. Se comută la modul Metalink.\n"
 
-#: src/http.c:4514
+#: src/http.c:4577
 msgid "Remote file does not exist -- broken link!!!\n"
-msgstr ""
+msgstr "Fișierul de la distanță nu există -- legătură deteriorată!!!\n"
 
-#: src/http.c:4542
+#: src/http.c:4605
 msgid "Last-modified header missing -- time-stamps turned off.\n"
-msgstr "Lipse�te headerul Last-modified -- identificatori de timp opri�i.\n"
+msgstr "Lipseşte headerul Last-modified -- identificatori de timp opriţi.\n"
 
-#: src/http.c:4550
+#: src/http.c:4613
 msgid "Last-modified header invalid -- time-stamp ignored.\n"
 msgstr "Headerul Last-modified invalid -- identificator de timp ignorat.\n"
 
-#: src/http.c:4580
-#, fuzzy, c-format
+#: src/http.c:4643
+#, c-format
 msgid ""
 "Server file no newer than local file %s -- not retrieving.\n"
 "\n"
 msgstr ""
-"Fisierul de pe server nu e mai nou dec�t fi�ierul local `%s' -- nu se "
-"aduce.\n"
+"Fișierul server nu este mai nou decât fișierul local %s -- nu se "
+"recuperează.\n"
 "\n"
 
-#: src/http.c:4588
-#, fuzzy, c-format
+#: src/http.c:4651
+#, c-format
 msgid "The sizes do not match (local %s) -- retrieving.\n"
-msgstr "Dimensiunile difer� (local %ld) -- se aduce.\n"
+msgstr "Dimensiunile nu se potrivesc (local %s) -- se recuperează.\n"
 
-#: src/http.c:4597
+#: src/http.c:4660
 msgid "Remote file is newer, retrieving.\n"
-msgstr "Fi�ierul remote este mai nou, se aduce.\n"
+msgstr "Fişierul remote este mai nou, se aduce.\n"
 
-#: src/http.c:4615
-#, fuzzy
+#: src/http.c:4678
 msgid ""
 "Remote file exists and could contain links to other resources -- "
 "retrieving.\n"
 "\n"
-msgstr "Fi�ierul remote este mai nou dec�t fi�ierul local `%s' -- se aduce.\n"
+msgstr ""
+"Fișierul de la distanță există și poate să conțină legături către alte "
+"resurse -- se recuperează.\n"
+"\n"
 
-#: src/http.c:4621
-#, fuzzy
+#: src/http.c:4684
 msgid ""
 "Remote file exists but does not contain any link -- not retrieving.\n"
 "\n"
 msgstr ""
-"Fi�ierul remote nu este mai nou dec�t fi�ierul local `%s'--nu se aduce.\n"
+"Fișierul de la distanță există dar nu conține nicio legătură -- nu se "
+"recuperează.\n"
+"\n"
 
-#: src/http.c:4630
+#: src/http.c:4693
 msgid ""
 "Remote file exists and could contain further links,\n"
 "but recursion is disabled -- not retrieving.\n"
 "\n"
 msgstr ""
+"Fișierul de la distanță există și ar putea conține și mai multe legături,\n"
+"dar recursivitatea este dezactivată -- nu se obține.\n"
+"\n"
 
-#: src/http.c:4636
-#, fuzzy
+#: src/http.c:4699
 msgid ""
 "Remote file exists.\n"
 "\n"
-msgstr "Fi�ierul remote este mai nou, se aduce.\n"
+msgstr ""
+"Fișierul de la distanță există.\n"
+"\n"
 
-#: src/http.c:4645
-#, fuzzy, c-format
+#: src/http.c:4708
+#, c-format
 msgid "%s URL: %s %2d %s\n"
-msgstr "EROARE %s %d: %s.\n"
+msgstr "%s URL: %s %2d %s\n"
 
-#: src/http.c:4695
+#: src/http.c:4756
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s/%s]\n"
 "\n"
 msgstr ""
+"%s (%s) - scris la stdout %s[%s/%s]\n"
+"\n"
 
-#: src/http.c:4696
-#, fuzzy, c-format
+#: src/http.c:4757
+#, c-format
 msgid ""
 "%s (%s) - %s saved [%s/%s]\n"
 "\n"
 msgstr ""
-"%s(%s) - `%s' salvat [%ld%ld]\n"
+"%s (%s) - %s salvat [%s/%s]\n"
 "\n"
 
-#: src/http.c:4757
-#, fuzzy, c-format
+#: src/http.c:4818
+#, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
-msgstr "%s (%s) - Conexiune �nchis� la octetul %ld. "
+msgstr "%s (%s) - Conexiune închisă la octetul %s. "
 
-#: src/http.c:4780
-#, fuzzy, c-format
+#: src/http.c:4841
+#, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
-msgstr "%s (%s) - Eroare de citire la octetul %ld (%s)."
+msgstr "%s (%s) - Eroare de citire la octetul %s (%s)."
 
-#: src/http.c:4789
-#, fuzzy, c-format
+#: src/http.c:4850
+#, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
-msgstr "%s (%s) - Eroare de citire la octetul %ld/%ld (%s)."
+msgstr "%s (%s) - Eroare de citire la octetul %s/%s (%s). "
 
-#: src/http.c:5027
+#: src/http.c:5107
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
-msgstr ""
+msgstr "Calitate nesuportată a protecției „%s”.\n"
 
-#: src/http.c:5032
-#, fuzzy, c-format
+#: src/http.c:5112
+#, c-format
 msgid "Unsupported algorithm '%s'.\n"
-msgstr "Schem� nesuportat�"
+msgstr "Algoritm nesuportat „%s”.\n"
 
 #: src/init.c:583
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s: WGETRC points to %s, which couldn't be accessed because of error: %s.\n"
-msgstr "%s: WGETRC �inte�te spre %s, care nu exist�.\n"
+msgstr ""
+"%s: WGETRC arată către %s, care nu a putut fi accesat din cauza erorii: %s.\n"
 
-#: src/init.c:682 src/netrc.c:452
+#: src/init.c:695 src/netrc.c:454
 #, c-format
 msgid "%s: Cannot read %s (%s).\n"
 msgstr "%s: Nu s-a putut citi %s (%s).\n"
 
-#: src/init.c:699
+#: src/init.c:712
 #, c-format
 msgid "%s: Error in %s at line %d.\n"
-msgstr "%s: Eroare �n %s la linia %d.\n"
+msgstr "%s: Eroare în %s la linia %d.\n"
 
-#: src/init.c:705
-#, fuzzy, c-format
+#: src/init.c:718
+#, c-format
 msgid "%s: Syntax error in %s at line %d.\n"
-msgstr "%s: Eroare �n %s la linia %d.\n"
+msgstr "%s: Eroare de sintaxă în %s la linia %d.\n"
 
-#: src/init.c:710
-#, fuzzy, c-format
+#: src/init.c:723
+#, c-format
 msgid "%s: Unknown command %s in %s at line %d.\n"
-msgstr "%s: BUG: comand� necunoscut� `%s', valoare `%s'.\n"
+msgstr "%s: Comandă necunoscută %s în %s la linia %d.\n"
 
-#: src/init.c:749
+#: src/init.c:762
 #, c-format
 msgid ""
 "Parsing system wgetrc file (env SYSTEM_WGETRC) failed.  Please check\n"
 "'%s',\n"
 "or specify a different file using --config.\n"
 msgstr ""
+"Parsarea fișierului de sistem wgetrc (env SYSTEM_WGETRC) a eșuat.  "
+"Verificați\n"
+"„%s”,\n"
+"sau specificați un fișier diferit utilizând --config.\n"
 
-#: src/init.c:764
+#: src/init.c:777
 #, c-format
 msgid ""
 "Parsing system wgetrc file failed.  Please check\n"
 "'%s',\n"
 "or specify a different file using --config.\n"
 msgstr ""
+"Parsarea fișierului de sistem wgetrc a eșuat.  Verificați\n"
+"„%s”,\n"
+"sau specificați un fișier diferit utilizând --config.\n"
 
-#: src/init.c:780
-#, fuzzy, c-format
+#: src/init.c:793
+#, c-format
 msgid "%s: Warning: Both system and user wgetrc point to %s.\n"
 msgstr ""
-"%s: Avertisment: Fi�ierele wgetrc �i sistem �i user trimit c�tre `%s'.\n"
+"%s: Avertisment: Amândouă wgetrc-urile de sistem și de utilizator arată "
+"către %s.\n"
 
-#: src/init.c:981
-#, fuzzy, c-format
+#: src/init.c:1006
+#, c-format
 msgid "%s: Invalid --execute command %s\n"
-msgstr "%s: Comand� --execute invalid� `%s'\n"
+msgstr "%s: Comandă --execute nevalidă %s\n"
 
-#: src/init.c:1041
-#, fuzzy, c-format
+#: src/init.c:1066
+#, c-format
 msgid "%s: %s: Invalid boolean %s; use `on' or `off'.\n"
-msgstr ""
-"%s: %s: Boolean invalid `%s', folosi�i `on' (activat) sau "
-"`off'(dezactivat).\n"
+msgstr "%s: %s: Logic nevalid %s; utilizați „on” sau „off”.\n"
 
-#: src/init.c:1074
-#, fuzzy, c-format
+#: src/init.c:1099
+#, c-format
 msgid "%s: %s: Invalid %s; use `on', `off' or `quiet'.\n"
-msgstr ""
-"%s: %s: Boolean invalid `%s', folosi�i `on' (activat) sau "
-"`off'(dezactivat).\n"
+msgstr "%s: %s: %s nevalid; utilizați „on”, „off” sau „quiet”.\n"
 
-#: src/init.c:1094
-#, fuzzy, c-format
+#: src/init.c:1119
+#, c-format
 msgid "%s: %s: Invalid number %s.\n"
-msgstr "%s: %s: Num�r invalid `%s'.\n"
+msgstr "%s: %s: Număr nevalid %s.\n"
 
-#: src/init.c:1176
+#: src/init.c:1201
 #, c-format
 msgid "%s: %s must only be used once\n"
-msgstr ""
+msgstr "%s: %s trebuie să fie utilizat doar o dată\n"
 
-#: src/init.c:1331 src/init.c:1352
-#, fuzzy, c-format
+#: src/init.c:1356 src/init.c:1377
+#, c-format
 msgid "%s: %s: Invalid byte value %s\n"
-msgstr "%s: %s: Valoare octet invalid� `%s'\n"
+msgstr "%s: %s: Valoare de octet nevalidă %s\n"
 
-#: src/init.c:1377
-#, fuzzy, c-format
+#: src/init.c:1402
+#, c-format
 msgid "%s: %s: Invalid time period %s\n"
-msgstr "%s: %s: Perioad� de timp invalid� `%s'.\n"
+msgstr "%s: %s: Perioadă de timp nevalidă %s\n"
 
-#: src/init.c:1439 src/main.c:1912
+#: src/init.c:1443
+#, fuzzy, c-format
+msgid "%s: %s: Negative time period %s\n"
+msgstr "%s: %s: Perioadă de timp nevalidă %s\n"
+
+#: src/init.c:1471 src/main.c:1926
 #, c-format
 msgid ""
 "use-askpass requires a string or either environment variable WGET_ASKPASS or "
 "SSH_ASKPASS to be set.\n"
 msgstr ""
+"use-askpass necesită un șir sau fie variabila de mediu WGET_ASKPASS fie "
+"SSH_ASKPASS să fie stabilite.\n"
 
-#: src/init.c:1457 src/init.c:1479 src/init.c:1587 src/init.c:1643
-#: src/init.c:1709 src/init.c:1729 src/init.c:1754
-#, fuzzy, c-format
+#: src/init.c:1489 src/init.c:1511 src/init.c:1619 src/init.c:1675
+#: src/init.c:1741 src/init.c:1761 src/init.c:1786
+#, c-format
 msgid "%s: %s: Invalid value %s.\n"
-msgstr "%s: %s: Valoare invalid� `%s'.\n"
+msgstr "%s: %s: Valoare nevalidă %s.\n"
 
-#: src/init.c:1513
-#, fuzzy, c-format
+#: src/init.c:1545
+#, c-format
 msgid "%s: %s: Invalid header %s.\n"
-msgstr "%s: %s: Header invalid `%s'.\n"
+msgstr "%s: %s: Antet nevalid %s.\n"
 
-#: src/init.c:1534
-#, fuzzy, c-format
+#: src/init.c:1566
+#, c-format
 msgid "%s: %s: Invalid WARC header %s.\n"
-msgstr "%s: %s: Header invalid `%s'.\n"
+msgstr "%s: %s: Antet WARC nevalid %s.\n"
 
-#: src/init.c:1600
-#, fuzzy, c-format
+#: src/init.c:1632
+#, c-format
 msgid "%s: %s: Invalid progress type %s.\n"
-msgstr "%s: %s: Tip evolu�ie `%s' invalid.\n"
+msgstr "%s: %s: Tip de progres nevalid %s.\n"
 
-#: src/init.c:1682
-#, fuzzy, c-format
+#: src/init.c:1714
+#, c-format
 msgid ""
 "%s: %s: Invalid restriction %s,\n"
 "    use [unix|vms|windows],[lowercase|uppercase],[nocontrol],[ascii].\n"
-msgstr "%s: %s: Restric�ie invalid� `%s', folosi�i `unix' sau `windows'.\n"
+msgstr ""
+"%s: %s: Restricție nevalidă %s,\n"
+"    utilizați [unix|vms|windows],[lowercase|uppercase],[nocontrol],[ascii].\n"
 
-#: src/iri.c:113
+#: src/iri.c:114
 #, c-format
 msgid "Encoding %s isn't valid\n"
-msgstr ""
+msgstr "Codarea %s nu este validă\n"
 
-#: src/iri.c:139 src/url.c:1570
+#: src/iri.c:140 src/url.c:1587
 #, c-format
 msgid "Conversion from %s to %s isn't supported\n"
-msgstr ""
+msgstr "Conversia de la %s la %s nu este suportată\n"
 
-#: src/iri.c:179 src/url.c:1600
+#: src/iri.c:180 src/url.c:1617
 msgid "Incomplete or invalid multibyte sequence encountered\n"
-msgstr ""
+msgstr "Secvență de multiocteți nevalidă sau incompletă întâlnită\n"
 
-#: src/iri.c:198 src/url.c:1617
+#: src/iri.c:200 src/url.c:1634
 #, c-format
 msgid "Unhandled errno %d\n"
-msgstr ""
+msgstr "Errno %d nemanipulabilă\n"
 
-#: src/iri.c:235
+#: src/iri.c:237
 msgid "locale_to_utf8: locale is unset\n"
-msgstr ""
+msgstr "locale_to_utf8: localizarea nu este stabilită\n"
 
-#: src/iri.c:281 src/iri.c:296
+#: src/iri.c:283 src/iri.c:298
 #, c-format
 msgid "idn_encode failed (%d): %s\n"
-msgstr ""
+msgstr "idn_encode a eșuat (%d): %s\n"
 
-#: src/iri.c:288
-#, fuzzy, c-format
+#: src/iri.c:290
+#, c-format
 msgid "Failed to convert to lower: %d: %s\n"
-msgstr "conectare la %s:%hu nereu�it�: %s\n"
+msgstr "Nu s-a putut converti la minuscule: %d: %s\n"
 
-#: src/log.c:931 src/log.c:950
-#, fuzzy, c-format
+#: src/log.c:937 src/log.c:956
+#, c-format
 msgid ""
 "\n"
 "Redirecting output to %s.\n"
 msgstr ""
 "\n"
-"%s recep�iona�i, redirectare output c�tre `%s'.\n"
+"Se redirecționează ieșirea la %s.\n"
 
-#: src/log.c:943
+#: src/log.c:949
 #, c-format
 msgid "%s: %s; disabling logging.\n"
 msgstr "%s: %s; logging dezactivat.\n"
 
-#: src/main.c:577
+#: src/main.c:574
 #, c-format
 msgid "Usage: %s [OPTION]... [URL]...\n"
-msgstr "Folosire: %s [OP�IUNE]... [URL]...\n"
+msgstr "Folosire: %s [OPŢIUNE]... [URL]...\n"
 
-#: src/main.c:593
-#, fuzzy
+#: src/main.c:590
 msgid ""
 "Mandatory arguments to long options are mandatory for short options too.\n"
 "\n"
 msgstr ""
+"Argumentele obligatorii la opțiunile lungi sunt obligatorii și pentru "
+"opțiunile scurte.\n"
 "\n"
-"Parametrii obligatorii pentru op�iuni lungi sunt obligatorii �i la cele "
-"scurte.\n"
 
-#: src/main.c:595
+#: src/main.c:592
 msgid "Startup:\n"
-msgstr ""
+msgstr "La pornire:\n"
 
-#: src/main.c:597
+#: src/main.c:594
 msgid ""
 "  -V,  --version                   display the version of Wget and exit\n"
 msgstr ""
+"  -V,  --version                   afișează versiunea lui Wget și ieși\n"
 
-#: src/main.c:599
+#: src/main.c:596
 msgid "  -h,  --help                      print this help\n"
-msgstr ""
+msgstr "  -h,  --help                      tipărește acest ajutor\n"
 
-#: src/main.c:601
+#: src/main.c:598
 msgid "  -b,  --background                go to background after startup\n"
-msgstr ""
+msgstr "  -b,  --background                mergi la fundal după pornire\n"
 
-#: src/main.c:603
+#: src/main.c:600
 msgid "  -e,  --execute=COMMAND           execute a `.wgetrc'-style command\n"
 msgstr ""
+"  -e,  --execute=COMANDĂ           execută o comandă în stil „.wgetrc”\n"
 
-#: src/main.c:607
+#: src/main.c:604
 msgid "Logging and input file:\n"
-msgstr ""
+msgstr "Fișier de jurnalizare și de intrare:\n"
 
-#: src/main.c:609
+#: src/main.c:606
 msgid "  -o,  --output-file=FILE          log messages to FILE\n"
 msgstr ""
+"  -o,  --output-file=FIȘIER          înregistrează mesajele la FIȘIER\n"
+
+#: src/main.c:608
+msgid "  -a,  --append-output=FILE        append messages to FILE\n"
+msgstr "  -a,  --append-output=FIȘIER        adaugă mesajele la FIȘIER\n"
 
 #: src/main.c:611
-msgid "  -a,  --append-output=FILE        append messages to FILE\n"
-msgstr ""
-
-#: src/main.c:614
 msgid ""
 "  -d,  --debug                     print lots of debugging information\n"
 msgstr ""
+"  -d,  --debug                     tipărește multe informații de depanare\n"
 
-#: src/main.c:618
+#: src/main.c:615
 msgid "       --wdebug                    print Watt-32 debug output\n"
 msgstr ""
+"       --wdebug                    tipărește ieșirea de depanare Watt-32\n"
 
-#: src/main.c:621
+#: src/main.c:618
 msgid "  -q,  --quiet                     quiet (no output)\n"
-msgstr ""
+msgstr "  -q,  --quiet                     silențios (fără ieșire)\n"
 
-#: src/main.c:623
+#: src/main.c:620
 msgid "  -v,  --verbose                   be verbose (this is the default)\n"
 msgstr ""
+"  -v,  --verbose                   fii detaliat (aceasta este implicit)\n"
 
-#: src/main.c:625
+#: src/main.c:622
 msgid ""
 "  -nv, --no-verbose                turn off verboseness, without being "
 "quiet\n"
 msgstr ""
+"  -nv, --no-verbose                oprește afișarea detaliată, fără să fie "
+"silențioasă\n"
 
-#: src/main.c:627
+#: src/main.c:624
 msgid ""
 "       --report-speed=TYPE         output bandwidth as TYPE.  TYPE can be "
 "bits\n"
 msgstr ""
+"       --report-speed=TIP         produce lungimea de bandă ca TIP.  TIP "
+"poate fi biți\n"
 
-#: src/main.c:629
+#: src/main.c:626
 msgid ""
 "  -i,  --input-file=FILE           download URLs found in local or external "
 "FILE\n"
 msgstr ""
+"  -i,  --input-file=FIȘIER           descarcă URL-urile găsite în FIȘIERUL "
+"local sau extern\n"
 
-#: src/main.c:632
+#: src/main.c:629
 msgid ""
 "       --input-metalink=FILE       download files covered in local Metalink "
 "FILE\n"
 msgstr ""
+"       --input-metalink=FIȘIER       descarcă fișierele acoperite în "
+"FIȘIERUL Metalink local\n"
 
-#: src/main.c:635
+#: src/main.c:632
 msgid "  -F,  --force-html                treat input file as HTML\n"
 msgstr ""
+"  -F,  --force-html                tratează fișierul de intrare ca HTML\n"
 
-#: src/main.c:637
+#: src/main.c:634
 msgid ""
 "  -B,  --base=URL                  resolves HTML input-file links (-i -F)\n"
 "                                     relative to URL\n"
 msgstr ""
+"  -B,  --base=URL                  rezolvă legăturile de fișier de intrare "
+"HTML (-i -F)\n"
+"                                     relativ la URL\n"
 
-#: src/main.c:640
+#: src/main.c:637
 msgid "       --config=FILE               specify config file to use\n"
 msgstr ""
+"       --config=FIȘIER               specifică fișierul de configurare de "
+"utilizat\n"
 
-#: src/main.c:642
+#: src/main.c:639
 msgid "       --no-config                 do not read any config file\n"
 msgstr ""
+"       --no-config                 nu citi niciun fișier de configurare\n"
 
-#: src/main.c:644
+#: src/main.c:641
 msgid ""
 "       --rejected-log=FILE         log reasons for URL rejection to FILE\n"
 msgstr ""
+"       --rejected-log=FIȘIER         înregistrează motivele pentru "
+"respingerea URL-ului la FIȘIER\n"
 
-#: src/main.c:648
+#: src/main.c:645
 msgid "Download:\n"
-msgstr ""
+msgstr "Descarcă:\n"
 
-#: src/main.c:650
+#: src/main.c:647
 msgid ""
 "  -t,  --tries=NUMBER              set number of retries to NUMBER (0 "
 "unlimits)\n"
 msgstr ""
+"  -t,  --tries=NUMĂR              stabilește numărul de încercări la NUMĂR "
+"(0 nelimitat)\n"
 
-#: src/main.c:652
+#: src/main.c:649
 msgid ""
 "       --retry-connrefused         retry even if connection is refused\n"
 msgstr ""
+"       --retry-connrefused         încearcă din nou chiar dacă conexiunea "
+"este refuzată\n"
 
-#: src/main.c:654
+#: src/main.c:651
 msgid ""
 "       --retry-on-http-error=ERRORS    comma-separated list of HTTP errors "
 "to retry\n"
 msgstr ""
+"       --retry-on-http-error=ERORI    listă separată prin virgule a erorilor "
+"HTTP de încercat din nou\n"
 
-#: src/main.c:656
+#: src/main.c:653
 msgid "  -O,  --output-document=FILE      write documents to FILE\n"
-msgstr ""
+msgstr "  -O,  --output-document=FIȘIER      scrie documente la FIȘIER\n"
 
-#: src/main.c:658
+#: src/main.c:655
 msgid ""
 "  -nc, --no-clobber                skip downloads that would download to\n"
 "                                     existing files (overwriting them)\n"
 msgstr ""
+"  -nc, --no-clobber               omite descărcări care s-ar descărca la\n"
+"                                     fișiere existente (suprascriindu-le)\n"
 
-#: src/main.c:661
+#: src/main.c:658
 msgid ""
 "       --no-netrc                  don't try to obtain credentials from ."
 "netrc\n"
 msgstr ""
+"       --no-netrc                  nu încerca să obții certificări de la ."
+"netrc\n"
 
-#: src/main.c:663
+#: src/main.c:660
 msgid ""
 "  -c,  --continue                  resume getting a partially-downloaded "
 "file\n"
 msgstr ""
+"  -c,  --continue                  revino la obținerea unui fișier descărcat "
+"parțial\n"
 
-#: src/main.c:665
+#: src/main.c:662
 msgid ""
 "       --start-pos=OFFSET          start downloading from zero-based "
 "position OFFSET\n"
 msgstr ""
+"       --start-pos=DECALAJ          începe descărcarea de la DECALAJUL "
+"poziției bazată pe zero\n"
 
-#: src/main.c:667
+#: src/main.c:664
 msgid "       --progress=TYPE             select progress gauge type\n"
 msgstr ""
+"       --progress=TIP             selectați tipul gabaritului de progress\n"
 
-#: src/main.c:669
+#: src/main.c:666
 msgid ""
 "       --show-progress             display the progress bar in any verbosity "
 "mode\n"
 msgstr ""
+"       --show-progress             afișează bara de progres în orice mod de "
+"verbozitate\n"
 
-#: src/main.c:671
+#: src/main.c:668
 msgid ""
 "  -N,  --timestamping              don't re-retrieve files unless newer "
 "than\n"
 "                                     local\n"
 msgstr ""
+"  -N,  --timestamping              nu recupera fișierele decât dacă sunt mai "
+"noi decât\n"
+"                                     cele locale\n"
 
-#: src/main.c:674
+#: src/main.c:671
 msgid ""
 "       --no-if-modified-since      don't use conditional if-modified-since "
 "get\n"
 "                                     requests in timestamping mode\n"
 msgstr ""
+"       --no-if-modified-since      nu utiliza cererile de obținere "
+"condiționale if-modified-since\n"
+"                                    în modul de datare\n"
 
-#: src/main.c:677
+#: src/main.c:674
 msgid ""
 "       --no-use-server-timestamps  don't set the local file's timestamp by\n"
 "                                     the one on the server\n"
 msgstr ""
+"       --no-use-server-timestamps  nu stabili datarea fișierului local după\n"
+"                                     cel de pe server\n"
 
-#: src/main.c:680
+#: src/main.c:677
 msgid "  -S,  --server-response           print server response\n"
-msgstr ""
+msgstr "  -S,  --server-response           tipărește răspunsul serverului\n"
 
-#: src/main.c:682
+#: src/main.c:679
 msgid "       --spider                    don't download anything\n"
-msgstr ""
+msgstr "       --spider                    nu descărca nimic\n"
 
-#: src/main.c:684
+#: src/main.c:681
 msgid "  -T,  --timeout=SECONDS           set all timeout values to SECONDS\n"
 msgstr ""
+"  -T,  --timeout=SECUNDE           stabilește toate valorile limitei de timp "
+"la SECUNDE\n"
 
-#: src/main.c:687
+#: src/main.c:684
 msgid ""
 "       --dns-servers=ADDRESSES     list of DNS servers to query (comma "
 "separated)\n"
 msgstr ""
+"       --dns-servers=ADRESE     listă de servere DNS de interogat (separate "
+"prin virgule)\n"
 
-#: src/main.c:689
+#: src/main.c:686
 msgid ""
 "       --bind-dns-address=ADDRESS  bind DNS resolver to ADDRESS (hostname or "
 "IP) on local host\n"
 msgstr ""
+"       --bind-dns-address=ADRESĂ  leagă rezolvatorul DNS la ADRESĂ (nume de "
+"gazdă sau IP) pe gazda locală\n"
 
-#: src/main.c:692
+#: src/main.c:689
 msgid "       --dns-timeout=SECS          set the DNS lookup timeout to SECS\n"
 msgstr ""
+"       --dns-timeout=SECUNDE          stabilește limita de timp a căutării "
+"DNS la SECUNDE\n"
 
-#: src/main.c:694
+#: src/main.c:691
 msgid "       --connect-timeout=SECS      set the connect timeout to SECS\n"
 msgstr ""
+"       --connect-timeout=SECUNDE      stabilește limita de timp a conexiunii "
+"la SECUNDE\n"
 
-#: src/main.c:696
+#: src/main.c:693
 msgid "       --read-timeout=SECS         set the read timeout to SECS\n"
 msgstr ""
+"       --read-timeout=SECUNDE         stabilește limita de timp de citire la "
+"SECUNDE\n"
+
+#: src/main.c:695
+#, fuzzy
+msgid ""
+"  -w,  --wait=SECONDS              wait SECONDS between retrievals\n"
+"                                     (applies if more then 1 URL is to be "
+"retrieved)\n"
+msgstr "  -w,  --wait=SECUNDE              așteaptă SECUNDE între recuperări\n"
 
 #: src/main.c:698
-msgid "  -w,  --wait=SECONDS              wait SECONDS between retrievals\n"
-msgstr ""
-
-#: src/main.c:700
+#, fuzzy
 msgid ""
 "       --waitretry=SECONDS         wait 1..SECONDS between retries of a "
 "retrieval\n"
+"                                     (applies if more then 1 URL is to be "
+"retrieved)\n"
 msgstr ""
+"       --waitretry=SECUNDE         așteaptă 1..SECUNDE între încercările "
+"unei recuperări\n"
 
-#: src/main.c:702
+#: src/main.c:701
+#, fuzzy
 msgid ""
 "       --random-wait               wait from 0.5*WAIT...1.5*WAIT secs "
 "between retrievals\n"
+"                                     (applies if more then 1 URL is to be "
+"retrieved)\n"
 msgstr ""
+"       --random-wait               așteaptă de la "
+"0.5*AȘTEAPTĂ...1.5*AȘTEAPTĂ secunde între recuperări\n"
 
 #: src/main.c:704
 msgid "       --no-proxy                  explicitly turn off proxy\n"
-msgstr ""
+msgstr "       --no-proxy                  dezactivează proxy-ul explicit\n"
 
 #: src/main.c:706
 msgid "  -Q,  --quota=NUMBER              set retrieval quota to NUMBER\n"
 msgstr ""
+"  -Q,  --quota=NUMĂR              stabilește cota de recuperare la NUMĂR\n"
 
 #: src/main.c:708
 msgid ""
 "       --bind-address=ADDRESS      bind to ADDRESS (hostname or IP) on local "
 "host\n"
 msgstr ""
+"       --bind-address=ADRESĂ      leagă la ADRESĂ (nume de gazdă sau IP) pe "
+"gazda locală\n"
 
 #: src/main.c:710
 msgid "       --limit-rate=RATE           limit download rate to RATE\n"
 msgstr ""
+"       --limit-rate=RATĂ          limitează rata de descărcare la RATĂ\n"
 
 #: src/main.c:712
 msgid "       --no-dns-cache              disable caching DNS lookups\n"
 msgstr ""
+"       --no-dns-cache              dezactivează caching-ul căutărilor DNS\n"
 
 #: src/main.c:714
 msgid ""
 "       --restrict-file-names=OS    restrict chars in file names to ones OS "
 "allows\n"
 msgstr ""
+"       --restrict-file-names=OS    restricționează caracterele în numele de "
+"fișiere la cele permise de OS\n"
 
 #: src/main.c:716
 msgid ""
 "       --ignore-case               ignore case when matching files/"
 "directories\n"
 msgstr ""
+"       --ignore-case               ignoră majusculele când se potrivesc "
+"fișierele/directoarele\n"
 
 #: src/main.c:719
 msgid "  -4,  --inet4-only                connect only to IPv4 addresses\n"
-msgstr ""
+msgstr "  -4,  --inet4-only                conectează doar la adrese IPv4\n"
 
 #: src/main.c:721
 msgid "  -6,  --inet6-only                connect only to IPv6 addresses\n"
-msgstr ""
+msgstr "  -6,  --inet6-only                conectează doar la adrese IPv6\n"
 
 #: src/main.c:723
 msgid ""
@@ -1742,21 +1642,28 @@ msgid ""
 "family,\n"
 "                                     one of IPv6, IPv4, or none\n"
 msgstr ""
+"       --prefer-family=FAMILIE      conectează prima dată la adresele "
+"familiei specificate,\n"
+"                                     una din IPv6, IPv4, sau nimic\n"
 
 #: src/main.c:727
 msgid "       --user=USER                 set both ftp and http user to USER\n"
 msgstr ""
+"       --user=UTILIZATOR                 stabilește amândoi utilizatorii ftp "
+"și http la UTILIZATOR\n"
 
 #: src/main.c:729
 msgid ""
 "       --password=PASS             set both ftp and http password to PASS\n"
 msgstr ""
+"       --password=PAROLĂ             stabilește amândouă parolele ftp și "
+"http la PAROLĂ\n"
 
 #: src/main.c:731
 msgid "       --ask-password              prompt for passwords\n"
-msgstr ""
+msgstr "       --ask-password              solicită pentru parole\n"
 
-#: src/main.c:733
+#: src/main.c:734
 msgid ""
 "       --use-askpass=COMMAND       specify credential handler for "
 "requesting \n"
@@ -1766,286 +1673,371 @@ msgid ""
 "SSH_ASKPASS \n"
 "                                     environment variable is used.\n"
 msgstr ""
-
-#: src/main.c:738
-msgid "       --no-iri                    turn off IRI support\n"
-msgstr ""
+"       --use-askpass=COMANDĂ       specifică operatorul certificărilor "
+"pentru cererea de \n"
+"                                     nume de utilizator și parolă.  Dacă "
+"nicio COMANDĂ nu este \n"
+"                                     specificată, variabilele de mediu "
+"WGET_ASKPASS \n"
+"                                     sau SSH_ASKPASS sunt utilizate..\n"
 
 #: src/main.c:740
-msgid ""
-"       --local-encoding=ENC        use ENC as the local encoding for IRIs\n"
-msgstr ""
+msgid "       --no-iri                    turn off IRI support\n"
+msgstr "       --no-iri                    oprește suportul IRI\n"
 
 #: src/main.c:742
 msgid ""
-"       --remote-encoding=ENC       use ENC as the default remote encoding\n"
+"       --local-encoding=ENC        use ENC as the local encoding for IRIs\n"
 msgstr ""
+"       --local-encoding=ENC        utilizează ENC ca și codarea locală "
+"pentru IRI-uri\n"
 
 #: src/main.c:744
+msgid ""
+"       --remote-encoding=ENC       use ENC as the default remote encoding\n"
+msgstr ""
+"       --remote-encoding=ENC       utilizează ENC ca și codarea de la "
+"distanță implicită\n"
+
+#: src/main.c:746
 msgid "       --unlink                    remove file before clobber\n"
 msgstr ""
+"       --unlink                    elimină fișierul înainte de a bloca\n"
 
-#: src/main.c:747
+#: src/main.c:749
 msgid ""
 "       --keep-badhash              keep files with checksum mismatch "
 "(append .badhash)\n"
 msgstr ""
+"       --keep-badhash              păstrează fișierele cu nepotrivirea de "
+"sumă de control (adaugă .badhash)\n"
 
-#: src/main.c:749
+#: src/main.c:751
 msgid ""
 "       --metalink-index=NUMBER     Metalink application/metalink4+xml "
 "metaurl ordinal NUMBER\n"
 msgstr ""
+"       --metalink-index=NUMĂR     Aplicație Metalink/metalink4+xml metaurl "
+"NUMĂR ordinal\n"
 
-#: src/main.c:751
+#: src/main.c:753
 msgid ""
 "       --metalink-over-http        use Metalink metadata from HTTP response "
 "headers\n"
 msgstr ""
+"       --metalink-over-http        utilizează datele meta Metalink de la "
+"antetele de răspuns HTTP\n"
 
-#: src/main.c:753
+#: src/main.c:755
 msgid ""
 "       --preferred-location        preferred location for Metalink "
 "resources\n"
 msgstr ""
+"       --preferred-location        locație preferată pentru resursele "
+"Metalink\n"
 
-#: src/main.c:757
+#: src/main.c:759
+#, fuzzy
 msgid ""
-"       --no-xattr                  turn off storage of metadata in extended "
+"       --xattr                     turn on storage of metadata in extended "
 "file attributes\n"
 msgstr ""
-
-#: src/main.c:762
-#, fuzzy
-msgid "Directories:\n"
-msgstr "Director    "
+"       --no-xattr                  oprește stocarea de date meta în atribute "
+"de fișier extinse\n"
 
 #: src/main.c:764
-msgid "  -nd, --no-directories            don't create directories\n"
-msgstr ""
+msgid "Directories:\n"
+msgstr "Directoare:\n"
 
 #: src/main.c:766
-msgid "  -x,  --force-directories         force creation of directories\n"
-msgstr ""
+msgid "  -nd, --no-directories            don't create directories\n"
+msgstr "  -nd, --no-directories            nu crea directoare\n"
 
 #: src/main.c:768
-msgid "  -nH, --no-host-directories       don't create host directories\n"
-msgstr ""
+msgid "  -x,  --force-directories         force creation of directories\n"
+msgstr "  -x,  --force-directories         forțează crearea de directoare\n"
 
 #: src/main.c:770
-msgid "       --protocol-directories      use protocol name in directories\n"
-msgstr ""
+msgid "  -nH, --no-host-directories       don't create host directories\n"
+msgstr "  -nH, --no-host-directories       nu crea directoare de gazdă\n"
 
 #: src/main.c:772
-msgid "  -P,  --directory-prefix=PREFIX   save files to PREFIX/..\n"
+msgid "       --protocol-directories      use protocol name in directories\n"
 msgstr ""
+"       --protocol-directories      utilizează numele de protocol în "
+"directoare\n"
 
 #: src/main.c:774
+msgid "  -P,  --directory-prefix=PREFIX   save files to PREFIX/..\n"
+msgstr "  -P,  --directory-prefix=PREFIX   salvează fișierele la PREFIX/..\n"
+
+#: src/main.c:776
 msgid ""
 "       --cut-dirs=NUMBER           ignore NUMBER remote directory "
 "components\n"
 msgstr ""
-
-#: src/main.c:778
-msgid "HTTP options:\n"
-msgstr ""
+"       --cut-dirs=NUMĂR           ignoră NUMĂR de componente de director de "
+"la distanță\n"
 
 #: src/main.c:780
-msgid "       --http-user=USER            set http user to USER\n"
-msgstr ""
+msgid "HTTP options:\n"
+msgstr "Opțiuni HTTP:\n"
 
 #: src/main.c:782
-msgid "       --http-password=PASS        set http password to PASS\n"
+msgid "       --http-user=USER            set http user to USER\n"
 msgstr ""
+"       --http-user=UTILIZATOR            stabilește utilizatorul http la "
+"UTILIZATOR\n"
 
 #: src/main.c:784
-msgid "       --no-cache                  disallow server-cached data\n"
+msgid "       --http-password=PASS        set http password to PASS\n"
 msgstr ""
+"       --http-password=PAROLĂ        stabilește parola http la PAROLĂ\n"
 
 #: src/main.c:786
+msgid "       --no-cache                  disallow server-cached data\n"
+msgstr ""
+"       --no-cache                  nu permite datele din serverul cache\n"
+
+#: src/main.c:788
 msgid ""
 "       --default-page=NAME         change the default page name (normally\n"
 "                                     this is 'index.html'.)\n"
 msgstr ""
+"       --default-page=NUME         modifică numele de pagină implicit "
+"(normal\n"
+"                                     acesta este „index.html”.)\n"
 
-#: src/main.c:789
+#: src/main.c:791
 msgid ""
 "  -E,  --adjust-extension          save HTML/CSS documents with proper "
 "extensions\n"
 msgstr ""
+"  -E,  --adjust-extension          salvează documente HTML/CSS cu extensiile "
+"potrivite\n"
 
-#: src/main.c:791
+#: src/main.c:793
 msgid ""
 "       --ignore-length             ignore 'Content-Length' header field\n"
 msgstr ""
+"       --ignore-length             ignoră câmpul de antet „Lungime-"
+"Conținut”\n"
 
-#: src/main.c:793
+#: src/main.c:795
 msgid "       --header=STRING             insert STRING among the headers\n"
-msgstr ""
+msgstr "       --header=ȘIR             inserează ȘIR printre antete\n"
 
-#: src/main.c:796
+#: src/main.c:798
 msgid ""
 "       --compression=TYPE          choose compression, one of auto, gzip and "
 "none. (default: none)\n"
 msgstr ""
+"       --compression=TIP          alege comprimarea, una dintre automată, "
+"gzip, sau nimic. (implicit: nimic)\n"
 
-#: src/main.c:799
+#: src/main.c:801
 msgid ""
 "       --max-redirect              maximum redirections allowed per page\n"
 msgstr ""
-
-#: src/main.c:801
-msgid "       --proxy-user=USER           set USER as proxy username\n"
-msgstr ""
+"       --max-redirect              numărul maxim de redirecționări permise "
+"pe o pagină\n"
 
 #: src/main.c:803
-msgid "       --proxy-password=PASS       set PASS as proxy password\n"
+msgid "       --proxy-user=USER           set USER as proxy username\n"
 msgstr ""
+"       --proxy-user=UTILIZATOR           stabilește UTILIZATOR ca nume de "
+"utilizator proxy\n"
 
 #: src/main.c:805
+msgid "       --proxy-password=PASS       set PASS as proxy password\n"
+msgstr ""
+"       --proxy-password=PAROLĂ       stabilește PAROLĂ ca parola proxy-ului\n"
+
+#: src/main.c:807
 msgid ""
 "       --referer=URL               include 'Referer: URL' header in HTTP "
 "request\n"
 msgstr ""
-
-#: src/main.c:807
-msgid "       --save-headers              save the HTTP headers to file\n"
-msgstr ""
+"       --referer=URL               include antetul „Menționat de: URL” la "
+"cererea HTTP\n"
 
 #: src/main.c:809
+msgid "       --save-headers              save the HTTP headers to file\n"
+msgstr "       --save-headers              salvează antetele HTTP la fișier\n"
+
+#: src/main.c:811
 msgid ""
 "  -U,  --user-agent=AGENT          identify as AGENT instead of Wget/"
 "VERSION\n"
 msgstr ""
+"  -U,  --user-agent=AGENT          identifică ca AGENT în loc de Wget/"
+"VERSIUNE\n"
 
-#: src/main.c:811
+#: src/main.c:813
 msgid ""
 "       --no-http-keep-alive        disable HTTP keep-alive (persistent "
 "connections)\n"
 msgstr ""
-
-#: src/main.c:813
-msgid "       --no-cookies                don't use cookies\n"
-msgstr ""
+"       --no-http-keep-alive        dezactivează păstrează-viu HTTP "
+"(conexiuni persistente)\n"
 
 #: src/main.c:815
+msgid "       --no-cookies                don't use cookies\n"
+msgstr "       --no-cookies                nu utiliza cookie-uri\n"
+
+#: src/main.c:817
 msgid ""
 "       --load-cookies=FILE         load cookies from FILE before session\n"
 msgstr ""
-
-#: src/main.c:817
-msgid "       --save-cookies=FILE         save cookies to FILE after session\n"
-msgstr ""
+"       --load-cookies=FIȘIER         încarcă cookie-urile de la FIȘIER "
+"înainte de sesiune\n"
 
 #: src/main.c:819
+msgid "       --save-cookies=FILE         save cookies to FILE after session\n"
+msgstr ""
+"       --save-cookies=FIȘIER         salvează cookie-urile la FIȘIER după "
+"sesiune\n"
+
+#: src/main.c:821
 msgid ""
 "       --keep-session-cookies      load and save session (non-permanent) "
 "cookies\n"
 msgstr ""
+"       --keep-session-cookies      încarcă și salvează cookie-urile sesiunii "
+"(nepermanente)\n"
 
-#: src/main.c:821
+#: src/main.c:823
 msgid ""
 "       --post-data=STRING          use the POST method; send STRING as the "
 "data\n"
 msgstr ""
+"       --post-data=ȘIR          utilizează metoda POST; stabilește ȘIR ca "
+"date\n"
 
-#: src/main.c:823
+#: src/main.c:825
 msgid ""
 "       --post-file=FILE            use the POST method; send contents of "
 "FILE\n"
 msgstr ""
+"       --post-file=FIȘIER            utilizează metoda POST; trimite "
+"conținutul FIȘIERULUI\n"
 
-#: src/main.c:825
+#: src/main.c:827
 msgid ""
 "       --method=HTTPMethod         use method \"HTTPMethod\" in the request\n"
 msgstr ""
+"       --method=HTTPMethod         utilizează metoda „HTTPMethod” în cerere\n"
 
-#: src/main.c:827
+#: src/main.c:829
 msgid ""
 "       --body-data=STRING          send STRING as data. --method MUST be "
 "set\n"
 msgstr ""
+"       --body-data=ȘIR          trimite ȘIRUL ca date. --method TREBUIE să "
+"fie stabilit\n"
 
-#: src/main.c:829
+#: src/main.c:831
 msgid ""
 "       --body-file=FILE            send contents of FILE. --method MUST be "
 "set\n"
 msgstr ""
+"       --body-file=FIȘIER            trimite conținutul FIȘIERULUI. --method "
+"TREBUIE să fie stabilit\n"
 
-#: src/main.c:831
+#: src/main.c:833
 msgid ""
 "       --content-disposition       honor the Content-Disposition header "
 "when\n"
 "                                     choosing local file names "
 "(EXPERIMENTAL)\n"
 msgstr ""
+"       --content-disposition       onorează antetul de Dispoziție a "
+"Conținutului când\n"
+"                                     se aleg nume de fișiere locale "
+"(EXPERIMENTAL)\n"
 
-#: src/main.c:834
+#: src/main.c:836
 msgid ""
 "       --content-on-error          output the received content on server "
 "errors\n"
 msgstr ""
+"       --content-on-error          produce conținutul primit pe erorile de "
+"server\n"
 
-#: src/main.c:836
+#: src/main.c:838
 msgid ""
 "       --auth-no-challenge         send Basic HTTP authentication "
 "information\n"
 "                                     without first waiting for the server's\n"
 "                                     challenge\n"
 msgstr ""
-
-#: src/main.c:843
-msgid "HTTPS (SSL/TLS) options:\n"
-msgstr ""
+"       --auth-no-challenge         trimite informații de autentificare HTTP "
+"de bază\n"
+"                                     fără a aștepta mai întâi pentru "
+"provocarea\n"
+"                                     serverului\n"
 
 #: src/main.c:845
+msgid "HTTPS (SSL/TLS) options:\n"
+msgstr "Opțiuni HTTPS (SSL/TLS):\n"
+
+#: src/main.c:847
 msgid ""
 "       --secure-protocol=PR        choose secure protocol, one of auto, "
 "SSLv2,\n"
 "                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 and PFS\n"
 msgstr ""
-
-#: src/main.c:848
-msgid "       --https-only                only follow secure HTTPS links\n"
-msgstr ""
+"       --secure-protocol=PR        alege un protocol sigur, unul dintre "
+"auto, SSLv2,\n"
+"                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 și PFS\n"
 
 #: src/main.c:850
-msgid ""
-"       --no-check-certificate      don't validate the server's certificate\n"
+msgid "       --https-only                only follow secure HTTPS links\n"
 msgstr ""
+"       --https-only                urmărește doar legături HTTPS sigure\n"
 
 #: src/main.c:852
-msgid "       --certificate=FILE          client certificate file\n"
-msgstr ""
+msgid ""
+"       --no-check-certificate      don't validate the server's certificate\n"
+msgstr "       --no-check-certificate      nu valida certificatul serverului\n"
 
 #: src/main.c:854
+msgid "       --certificate=FILE          client certificate file\n"
+msgstr ""
+"       --certificate=FIȘIER          fișierul de certificat al clientului\n"
+
+#: src/main.c:856
 msgid ""
 "       --certificate-type=TYPE     client certificate type, PEM or DER\n"
 msgstr ""
-
-#: src/main.c:856
-msgid "       --private-key=FILE          private key file\n"
-msgstr ""
+"       --certificate-type=TIP     tipul certificatului clientului, PEM sau "
+"DER\n"
 
 #: src/main.c:858
-msgid "       --private-key-type=TYPE     private key type, PEM or DER\n"
-msgstr ""
+msgid "       --private-key=FILE          private key file\n"
+msgstr "       --private-key=FIȘIER          fișier de cheie privată\n"
 
 #: src/main.c:860
-msgid "       --ca-certificate=FILE       file with the bundle of CAs\n"
-msgstr ""
+msgid "       --private-key-type=TYPE     private key type, PEM or DER\n"
+msgstr "       --private-key-type=TIP     tip de cheie privată, PEM sau DER\n"
 
 #: src/main.c:862
+msgid "       --ca-certificate=FILE       file with the bundle of CAs\n"
+msgstr "       --ca-certificate=FIȘIER       fișier cu pachetul de CA-uri\n"
+
+#: src/main.c:864
 msgid ""
 "       --ca-directory=DIR          directory where hash list of CAs is "
 "stored\n"
 msgstr ""
-
-#: src/main.c:864
-msgid "       --crl-file=FILE             file with bundle of CRLs\n"
-msgstr ""
+"       --ca-directory=DIR          directorul în care lista de valoare de "
+"dispersie a CA-urilor este stocată\n"
 
 #: src/main.c:866
+msgid "       --crl-file=FILE             file with bundle of CRLs\n"
+msgstr "       --crl-file=FIȘIER             fișier cu pachet de CRL-uri\n"
+
+#: src/main.c:868
 msgid ""
 "       --pinnedpubkey=FILE/HASHES  Public key (PEM/DER) file, or any number\n"
 "                                   of base64 encoded sha256 hashes preceded "
@@ -2054,20 +2046,31 @@ msgid ""
 "verify\n"
 "                                   peer against\n"
 msgstr ""
+"       --pinnedpubkey=FIȘIER/VALORI DE DISPERSIE  Fișier de cheie "
+"publică(PEM/DER), sau orice număr\n"
+"                                   de base64 codat în valori de dispersie "
+"sha256 precedat de\n"
+"                                   „sha256/”' și separat de „;”, pentru a "
+"verifica\n"
+"                                   împotriva partenerului\n"
 
-#: src/main.c:872
+#: src/main.c:874
 msgid ""
 "       --random-file=FILE          file with random data for seeding the SSL "
 "PRNG\n"
 msgstr ""
+"       --random-file=FIȘIER          fișier cu date aleatorii pentru "
+"contribuirea la SSL PRNG\n"
 
-#: src/main.c:876
+#: src/main.c:878
 msgid ""
 "       --egd-file=FILE             file naming the EGD socket with random "
 "data\n"
 msgstr ""
+"       --egd-file=FIȘIER             denumirea fișierului cu soclul EGD cu "
+"date aleatorii\n"
 
-#: src/main.c:880
+#: src/main.c:882
 msgid ""
 "       --ciphers=STR           Set the priority string (GnuTLS) or cipher "
 "list string (OpenSSL) directly.\n"
@@ -2076,411 +2079,509 @@ msgid ""
 "                                   The format and syntax of this string "
 "depend on the specific SSL/TLS engine.\n"
 msgstr ""
-
-#: src/main.c:887
-msgid "HSTS options:\n"
-msgstr ""
+"       --ciphers=ȘIR           Stabilește șirul de prioritate (GnuTLS) sau "
+"șirul de listă de cifru (OpenSSL) direct.\n"
+"                                   Utilizați cu grijă. Această opțiune "
+"suprascrie --secure-protocol.\n"
+"                                   Formatul și sintaxa acestui șir depind de "
+"motorul specific SSL/TLS.\n"
 
 #: src/main.c:889
-msgid "       --no-hsts                   disable HSTS\n"
-msgstr ""
+msgid "HSTS options:\n"
+msgstr "Opțiuni HSTS:\n"
 
 #: src/main.c:891
+msgid "       --no-hsts                   disable HSTS\n"
+msgstr "       --no-hsts                   dezactivează HSTS\n"
+
+#: src/main.c:893
 msgid ""
 "       --hsts-file                 path of HSTS database (will override "
 "default)\n"
 msgstr ""
+"       --hsts-file                 calea bazei de date HSTS (va suprascrie "
+"implicitul)\n"
 
-#: src/main.c:896
+#: src/main.c:898
 msgid "FTP options:\n"
-msgstr ""
+msgstr "Opțiuni FTP:\n"
 
-#: src/main.c:899
+#: src/main.c:901
 msgid ""
 "       --ftp-stmlf                 use Stream_LF format for all binary FTP "
 "files\n"
 msgstr ""
-
-#: src/main.c:902
-msgid "       --ftp-user=USER             set ftp user to USER\n"
-msgstr ""
+"       --ftp-stmlf                 utilizează formatul Stream_LF pentru "
+"toate fișierele FTP binare\n"
 
 #: src/main.c:904
-msgid "       --ftp-password=PASS         set ftp password to PASS\n"
+msgid "       --ftp-user=USER             set ftp user to USER\n"
 msgstr ""
+"       --ftp-user=UTILIZATOR             stabilește utilizatorul ftp la "
+"UTILIZATOR\n"
 
 #: src/main.c:906
-msgid "       --no-remove-listing         don't remove '.listing' files\n"
-msgstr ""
+msgid "       --ftp-password=PASS         set ftp password to PASS\n"
+msgstr "       --ftp-password=PAROLĂ         stabilește parola ftp la PAROLĂ\n"
 
 #: src/main.c:908
-msgid "       --no-glob                   turn off FTP file name globbing\n"
-msgstr ""
+msgid "       --no-remove-listing         don't remove '.listing' files\n"
+msgstr "       --no-remove-listing         nu elimina fișierele „.listing”\n"
 
 #: src/main.c:910
+msgid "       --no-glob                   turn off FTP file name globbing\n"
+msgstr ""
+"       --no-glob                   oprește expandarea numelui de fișier FTP\n"
+
+#: src/main.c:912
 msgid ""
 "       --no-passive-ftp            disable the \"passive\" transfer mode\n"
 msgstr ""
-
-#: src/main.c:912
-msgid "       --preserve-permissions      preserve remote file permissions\n"
-msgstr ""
+"       --no-passive-ftp            dezactivează modul de transfer „pasiv”\n"
 
 #: src/main.c:914
+msgid "       --preserve-permissions      preserve remote file permissions\n"
+msgstr ""
+"       --preserve-permissions      păstrează permisiunile de fișier de la "
+"distanță\n"
+
+#: src/main.c:916
 msgid ""
 "       --retr-symlinks             when recursing, get linked-to files (not "
 "dir)\n"
 msgstr ""
-
-#: src/main.c:919
-msgid "FTPS options:\n"
-msgstr ""
+"       --retr-symlinks             când se face recursivitate, obține "
+"fișierele care sunt legate (nu dir)\n"
 
 #: src/main.c:921
+msgid "FTPS options:\n"
+msgstr "Opțiuni FTPS:\n"
+
+#: src/main.c:923
 msgid ""
 "       --ftps-implicit                 use implicit FTPS (default port is "
 "990)\n"
 msgstr ""
+"       --ftps-implicit                 utilizează FTPS implicit (portul "
+"implicit este 990)\n"
 
-#: src/main.c:923
+#: src/main.c:925
 msgid ""
 "       --ftps-resume-ssl               resume the SSL/TLS session started in "
 "the control connection when\n"
 "                                         opening a data connection\n"
 msgstr ""
+"       --ftps-resume-ssl               reia sesiunea SSL/TLS începută în "
+"conexiunea de control la\n"
+"                                         deschiderea unei conexiuni de date\n"
 
-#: src/main.c:926
+#: src/main.c:928
 msgid ""
 "       --ftps-clear-data-connection    cipher the control channel only; all "
 "the data will be in plaintext\n"
 msgstr ""
+"       --ftps-clear-data-connection    cifrează doar canalul de control; "
+"toate datele vor fi în text simplu\n"
 
-#: src/main.c:928
+#: src/main.c:930
 msgid ""
 "       --ftps-fallback-to-ftp          fall back to FTP if FTPS is not "
 "supported in the target server\n"
 msgstr ""
-
-#: src/main.c:932
-msgid "WARC options:\n"
-msgstr ""
+"       --ftps-fallback-to-ftp          revino la FTP dacă FTPS nu este "
+"suportat în serverul țintă\n"
 
 #: src/main.c:934
+msgid "WARC options:\n"
+msgstr "Opțiuni WARC:\n"
+
+#: src/main.c:936
 msgid ""
 "       --warc-file=FILENAME        save request/response data to a .warc.gz "
 "file\n"
 msgstr ""
-
-#: src/main.c:936
-msgid ""
-"       --warc-header=STRING        insert STRING into the warcinfo record\n"
-msgstr ""
+"       --warc-file=NUME DE FIȘIER        salvează datele de cerere/răspuns "
+"la un fișier .warc.gz\n"
 
 #: src/main.c:938
 msgid ""
-"       --warc-max-size=NUMBER      set maximum size of WARC files to NUMBER\n"
+"       --warc-header=STRING        insert STRING into the warcinfo record\n"
 msgstr ""
+"       --warc-header=ȘIR        inserează ȘIRUL într-o înregistrare "
+"warcinfo\n"
 
 #: src/main.c:940
-msgid "       --warc-cdx                  write CDX index files\n"
+msgid ""
+"       --warc-max-size=NUMBER      set maximum size of WARC files to NUMBER\n"
 msgstr ""
+"       --warc-max-size=NUMĂR      stabilește dimensiunea maximă a fișierelor "
+"WARC la NUMĂR\n"
 
 #: src/main.c:942
+msgid "       --warc-cdx                  write CDX index files\n"
+msgstr "       --warc-cdx                  scrie fișierele index CDX\n"
+
+#: src/main.c:944
 msgid ""
 "       --warc-dedup=FILENAME       do not store records listed in this CDX "
 "file\n"
 msgstr ""
+"       --warc-dedup=NUME DE FIȘIER       nu stoca înregistrările listate în "
+"acest fișier CDX\n"
 
-#: src/main.c:945
+#: src/main.c:947
 msgid ""
 "       --no-warc-compression       do not compress WARC files with GZIP\n"
 msgstr ""
-
-#: src/main.c:948
-msgid "       --no-warc-digests           do not calculate SHA1 digests\n"
-msgstr ""
+"       --no-warc-compression       nu comprima fișierele WARC cu GZIP\n"
 
 #: src/main.c:950
+msgid "       --no-warc-digests           do not calculate SHA1 digests\n"
+msgstr "       --no-warc-digests           nu calcula digest-urile SHA1\n"
+
+#: src/main.c:952
 msgid ""
 "       --no-warc-keep-log          do not store the log file in a WARC "
 "record\n"
 msgstr ""
+"       --no-warc-keep-log          nu stoca fișierul de jurnalizare într-o "
+"înregistrare WARC\n"
 
-#: src/main.c:952
+#: src/main.c:954
 msgid ""
 "       --warc-tempdir=DIRECTORY    location for temporary files created by "
 "the\n"
 "                                     WARC writer\n"
 msgstr ""
-
-#: src/main.c:957
-msgid "Recursive download:\n"
-msgstr ""
+"       --warc-tempdir=DIRECTOR    locația pentru fișierele temporare create "
+"de\n"
+"                                     scriitorul WARC\n"
 
 #: src/main.c:959
-msgid "  -r,  --recursive                 specify recursive download\n"
-msgstr ""
+msgid "Recursive download:\n"
+msgstr "Descărcare recursivă:\n"
 
 #: src/main.c:961
+msgid "  -r,  --recursive                 specify recursive download\n"
+msgstr "  -r,  --recursive                 specifică descărcarea recursivă\n"
+
+#: src/main.c:963
 msgid ""
 "  -l,  --level=NUMBER              maximum recursion depth (inf or 0 for "
 "infinite)\n"
 msgstr ""
+"  -l,  --level=NUMĂR              adâncime de recursivitate maximă (inf sau "
+"0 pentru infinit)\n"
 
-#: src/main.c:963
+#: src/main.c:965
 msgid ""
 "       --delete-after              delete files locally after downloading "
 "them\n"
 msgstr ""
+"       --delete-after              șterge fișierele local după descărcarea "
+"acestora\n"
 
-#: src/main.c:965
+#: src/main.c:967
 msgid ""
 "  -k,  --convert-links             make links in downloaded HTML or CSS "
 "point to\n"
 "                                     local files\n"
 msgstr ""
+"  -k,  --convert-links             face ca legăturile din HTML sau CSS "
+"descărcate să arate către\n"
+"                                     fișiere locale\n"
 
-#: src/main.c:968
+#: src/main.c:970
 msgid ""
 "       --convert-file-only         convert the file part of the URLs only "
 "(usually known as the basename)\n"
 msgstr ""
+"       --convert-file-only         convertește doar partea de fișier din URL-"
+"uri (de obicei cunoscut ca numele de bază)\n"
 
-#: src/main.c:970
+#: src/main.c:972
 msgid ""
 "       --backups=N                 before writing file X, rotate up to N "
 "backup files\n"
 msgstr ""
+"       --backups=N                 înaintea scrierii fișierului X, rotește "
+"până la N fișiere de copie de rezervă\n"
 
-#: src/main.c:974
+#: src/main.c:976
 msgid ""
 "  -K,  --backup-converted          before converting file X, back up as "
 "X_orig\n"
 msgstr ""
+"  -K,  --backup-converted          înaintea convertirii fișierulu X, faceți "
+"o copie de rezervă ca X_orig\n"
 
-#: src/main.c:977
+#: src/main.c:979
 msgid ""
 "  -K,  --backup-converted          before converting file X, back up as X."
 "orig\n"
 msgstr ""
+"  -K,  --backup-converted          înaintea convertirii fișierului X, faceți "
+"o copie de rezervă ca X.orig\n"
 
-#: src/main.c:980
+#: src/main.c:982
 msgid ""
 "  -m,  --mirror                    shortcut for -N -r -l inf --no-remove-"
 "listing\n"
 msgstr ""
+"  -m,  --mirror                    scurtătură pentru -N -r -l inf --no-"
+"remove-listing\n"
 
-#: src/main.c:982
+#: src/main.c:984
 msgid ""
 "  -p,  --page-requisites           get all images, etc. needed to display "
 "HTML page\n"
 msgstr ""
+"  -p,  --page-requisites           obține toate imaginile, etc. necesare "
+"pentru a afișa pagina HTML\n"
 
-#: src/main.c:984
+#: src/main.c:986
 msgid ""
 "       --strict-comments           turn on strict (SGML) handling of HTML "
 "comments\n"
 msgstr ""
-
-#: src/main.c:988
-msgid "Recursive accept/reject:\n"
-msgstr ""
+"       --strict-comments           pornește manipularea strictă (SGML) a "
+"comentariilor HTML\n"
 
 #: src/main.c:990
+msgid "Recursive accept/reject:\n"
+msgstr "Acceptare/Respingere recursivă:\n"
+
+#: src/main.c:992
 msgid ""
 "  -A,  --accept=LIST               comma-separated list of accepted "
 "extensions\n"
 msgstr ""
+"  -A,  --accept=LISTĂ               listă separată prin virgule de extensii "
+"acceptate\n"
 
-#: src/main.c:992
+#: src/main.c:994
 msgid ""
 "  -R,  --reject=LIST               comma-separated list of rejected "
 "extensions\n"
 msgstr ""
-
-#: src/main.c:994
-msgid "       --accept-regex=REGEX        regex matching accepted URLs\n"
-msgstr ""
+"  -R,  --reject=LISTĂ               listă separată prin virgule de extensii "
+"respinse\n"
 
 #: src/main.c:996
+msgid "       --accept-regex=REGEX        regex matching accepted URLs\n"
+msgstr ""
+"       --accept-regex=EXPRESIE REGULARĂ        expresie regulară care se "
+"potrivește cu URL-urile acceptate\n"
+
+#: src/main.c:998
 msgid "       --reject-regex=REGEX        regex matching rejected URLs\n"
 msgstr ""
+"       --reject-regex=EXPRESIE REGULARĂ        expresie regulară care se "
+"potrivește cu URL-urile respinse\n"
 
-#: src/main.c:999
+#: src/main.c:1001
 msgid "       --regex-type=TYPE           regex type (posix|pcre)\n"
 msgstr ""
+"       --regex-type=TIP           tip de expresie regulară (posix|pcre)\n"
 
-#: src/main.c:1002
+#: src/main.c:1004
 msgid "       --regex-type=TYPE           regex type (posix)\n"
-msgstr ""
-
-#: src/main.c:1005
-msgid ""
-"  -D,  --domains=LIST              comma-separated list of accepted domains\n"
-msgstr ""
+msgstr "       --regex-type=TIP           tip de expresie regulară (posix)\n"
 
 #: src/main.c:1007
 msgid ""
-"       --exclude-domains=LIST      comma-separated list of rejected domains\n"
+"  -D,  --domains=LIST              comma-separated list of accepted domains\n"
 msgstr ""
+"  -D,  --domains=LISTĂ              listă separată prin virgule de domenii "
+"acceptate\n"
 
 #: src/main.c:1009
 msgid ""
-"       --follow-ftp                follow FTP links from HTML documents\n"
+"       --exclude-domains=LIST      comma-separated list of rejected domains\n"
 msgstr ""
+"       --exclude-domains=LISTĂ      listă separată prin virgule de domenii "
+"respinse\n"
 
 #: src/main.c:1011
+msgid ""
+"       --follow-ftp                follow FTP links from HTML documents\n"
+msgstr ""
+"       --follow-ftp                urmărește legăturile FTP de la documente "
+"HTML\n"
+
+#: src/main.c:1013
 msgid ""
 "       --follow-tags=LIST          comma-separated list of followed HTML "
 "tags\n"
 msgstr ""
+"       --follow-tags=LISTĂ          listă separată prin virgule de etichete "
+"HTML urmărite\n"
 
-#: src/main.c:1013
+#: src/main.c:1015
 msgid ""
 "       --ignore-tags=LIST          comma-separated list of ignored HTML "
 "tags\n"
 msgstr ""
-
-#: src/main.c:1015
-msgid "  -H,  --span-hosts                go to foreign hosts when recursive\n"
-msgstr ""
+"       --ignore-tags=LISTĂ          listă separată prin virgule de etichete "
+"HTML ignorate\n"
 
 #: src/main.c:1017
-msgid "  -L,  --relative                  follow relative links only\n"
+msgid "  -H,  --span-hosts                go to foreign hosts when recursive\n"
 msgstr ""
+"  -H,  --span-hosts                mergi la gazde străine când se află în "
+"recursivitate\n"
 
 #: src/main.c:1019
-msgid "  -I,  --include-directories=LIST  list of allowed directories\n"
+msgid "  -L,  --relative                  follow relative links only\n"
 msgstr ""
+"  -L,  --relative                  urmărește doar legăturile relative\n"
 
 #: src/main.c:1021
+msgid "  -I,  --include-directories=LIST  list of allowed directories\n"
+msgstr ""
+"  -I,  --include-directories=LISTĂ  listează toate directoarele permise\n"
+
+#: src/main.c:1023
 msgid ""
 "       --trust-server-names        use the name specified by the "
 "redirection\n"
 "                                     URL's last component\n"
 msgstr ""
-
-#: src/main.c:1024
-msgid "  -X,  --exclude-directories=LIST  list of excluded directories\n"
-msgstr ""
+"       --trust-server-names        utilizează numele specificat de ultima "
+"componentă\n"
+"                                     a URL-ului de redirecționare\n"
 
 #: src/main.c:1026
+msgid "  -X,  --exclude-directories=LIST  list of excluded directories\n"
+msgstr ""
+"  -X,  --exclude-directories=LISTĂ  listează toate directoarele excluse\n"
+
+#: src/main.c:1028
 msgid ""
 "  -np, --no-parent                 don't ascend to the parent directory\n"
-msgstr ""
+msgstr "  -np, --no-parent                 nu urca la directorul părinte\n"
 
-#: src/main.c:1029
+#: src/main.c:1031
 #, fuzzy
-msgid "Email bug reports, questions, discussions to <bug-wget@gnu.org>\n"
-msgstr "Rapoarte de bug-uri prin mail �i sugestii la <bug-wget@gnu.org>.\n"
-
-#: src/main.c:1030
 msgid ""
+"Email bug reports, questions, discussions to <bug-wget@gnu.org>\n"
 "and/or open issues at https://savannah.gnu.org/bugs/?"
 "func=additem&group=wget.\n"
 msgstr ""
+"probleme deschise și/sau la https://savannah.gnu.org/bugs/?"
+"func=additem&group=wget.\n"
 
-#: src/main.c:1035
+#: src/main.c:1037
 #, c-format
 msgid "GNU Wget %s, a non-interactive network retriever.\n"
-msgstr "GNU Wget %s, un manager de desc�rcare non-interactiv.\n"
-
-#: src/main.c:1078
-#, c-format
-msgid "Password for user %s: "
-msgstr ""
+msgstr "GNU Wget %s, un manager de descărcare non-interactiv.\n"
 
 #: src/main.c:1080
 #, c-format
-msgid "Password: "
-msgstr ""
+msgid "Password for user %s: "
+msgstr "Parola pentru utilizatorul %s: "
 
-#: src/main.c:1104
+#: src/main.c:1082
+#, c-format
+msgid "Password: "
+msgstr "Parola: "
+
+#: src/main.c:1106
 #, c-format
 msgid "Cannot create pipe\n"
-msgstr ""
+msgstr "Nu se poate crea conexiunea\n"
 
-#: src/main.c:1112
+#: src/main.c:1114
 #, c-format
 msgid "Error initializing spawn file actions for use-askpass: %d\n"
 msgstr ""
+"Eroare la inițializarea acțiunilor de fișier de creare pentru use-askpass: "
+"%d\n"
 
-#: src/main.c:1121
+#: src/main.c:1123
 #, c-format
 msgid "Error setting spawn file actions for use-askpass: %d\n"
 msgstr ""
+"Eroare la stabilirea acțiunilor de fișier de creare pentru use-askpass: %d\n"
 
-#: src/main.c:1145
+#: src/main.c:1147
 #, c-format
 msgid "Error reading response from command \"%s %s\": %s\n"
-msgstr ""
+msgstr "Eroare la citirea răspunsului de la comanda „%s %s”: %s\n"
 
-#: src/main.c:1168
+#: src/main.c:1170
 #, c-format
 msgid "Username for '%s%s': "
-msgstr ""
+msgstr "Numele de utilizator pentru „%s %s”: "
 
-#: src/main.c:1178
+#: src/main.c:1180
 #, c-format
 msgid "Password for '%s%s@%s': "
-msgstr ""
-
-#: src/main.c:1250
-msgid "Wgetrc: "
-msgstr ""
-
-#: src/main.c:1251
-msgid "Locale: "
-msgstr ""
+msgstr "Parola pentru „%s%s@%s”: "
 
 #: src/main.c:1252
-msgid "Compile: "
-msgstr ""
+msgid "Wgetrc: "
+msgstr "Wgetrc: "
 
 #: src/main.c:1253
-msgid "Link: "
-msgstr ""
+msgid "Locale: "
+msgstr "Localizare: "
 
-#: src/main.c:1257
+#: src/main.c:1254
+msgid "Compile: "
+msgstr "Compilează: "
+
+#: src/main.c:1255
+msgid "Link: "
+msgstr "Legătură: "
+
+#: src/main.c:1259
 #, c-format
 msgid ""
 "GNU Wget %s built on %s.\n"
 "\n"
 msgstr ""
+"GNU Wget %s generat pe %s.\n"
+"\n"
 
-#: src/main.c:1284
+#: src/main.c:1292
 #, c-format
 msgid "    %s (env)\n"
-msgstr ""
+msgstr "    %s (mediu)\n"
 
-#: src/main.c:1291
+#: src/main.c:1299
 #, c-format
 msgid "    %s (user)\n"
-msgstr ""
+msgstr "    %s (utilizator)\n"
 
-#: src/main.c:1296
+#: src/main.c:1304
 #, c-format
 msgid "    %s (system)\n"
-msgstr ""
+msgstr "    %s (sistem)\n"
 
 #. TRANSLATORS: When available, an actual copyright character
 #. (circle-c) should be used in preference to "(C)".
-#: src/main.c:1324
-#, fuzzy, c-format
+#: src/main.c:1332
+#, c-format
 msgid "Copyright (C) %s Free Software Foundation, Inc.\n"
-msgstr "Copyright (C) 2003 Free Software Foundation, Inc.\n"
+msgstr "Drepturi de autor (C) %s Fundația de Software Liber, Inc.\n"
 
-#: src/main.c:1327
+#: src/main.c:1335
 msgid ""
 "License GPLv3+: GNU GPL version 3 or later\n"
 "<http://www.gnu.org/licenses/gpl.html>.\n"
 "This is free software: you are free to change and redistribute it.\n"
 "There is NO WARRANTY, to the extent permitted by law.\n"
 msgstr ""
+"Licența GPLv3+: GNU GPL versiunea 3 sau mai mare\n"
+"<http://www.gnu.org/licenses/gpl.html>.\n"
+"Acesta este software liber: sunteți liber să îl modificați și să îl "
+"redistribuiți.\n"
+"NU există NICIO GARANȚIE, în măsura permisă de lege.\n"
 
 #. TRANSLATORS: When available, please use the proper diacritics for
 #. names such as this one. See en_US.po for reference.
-#: src/main.c:1335
+#: src/main.c:1343
 msgid ""
 "\n"
 "Originally written by Hrvoje Niksic <hniksic@xemacs.org>.\n"
@@ -2488,607 +2589,674 @@ msgstr ""
 "\n"
 "Original scris de Hrvoje Niksic <hniksic@xemacs.org>.\n"
 
-#: src/main.c:1338
-#, fuzzy
+#: src/main.c:1346
 msgid "Please send bug reports and questions to <bug-wget@gnu.org>.\n"
-msgstr "Rapoarte de bug-uri prin mail �i sugestii la <bug-wget@gnu.org>.\n"
+msgstr ""
+"Trimiteți rapoartele de defecțiuni și întrebările la <bug-wget@gnu.org>.\n"
 
-#: src/main.c:1391 src/main.c:1940
+#: src/main.c:1399
 #, c-format
 msgid "Memory allocation problem\n"
-msgstr ""
+msgstr "Problemă de alocare a memoriei\n"
 
-#: src/main.c:1442
+#: src/main.c:1450
 #, c-format
 msgid "Exiting due to error in %s\n"
-msgstr ""
+msgstr "Se iese din cauza erorii din %s\n"
 
-#: src/main.c:1472 src/main.c:1543 src/main.c:1779
+#: src/main.c:1480 src/main.c:1551 src/main.c:1793
 #, c-format
 msgid "Try `%s --help' for more options.\n"
-msgstr "�ncerca�i `%s --help' pentru mai multe op�iuni.\n"
+msgstr "Încercaţi `%s --help' pentru mai multe opţiuni.\n"
 
-#: src/main.c:1539
+#: src/main.c:1547
 #, c-format
 msgid "%s: illegal option -- `-n%c'\n"
-msgstr "%s: op�iune ilegal� -- `-n%c'\n"
+msgstr "%s: opţiune ilegală -- `-n%c'\n"
 
-#: src/main.c:1585
-#, fuzzy, c-format
+#: src/main.c:1593
+#, c-format
 msgid "Debugging support not compiled in. Ignoring --debug flag.\n"
-msgstr "%s: suport de debug necompilat.\n"
+msgstr "Suportul de depanare nu este compilat. Se ignoră fanionul --debug.\n"
 
-#: src/main.c:1598
+#: src/main.c:1606
 #, c-format
 msgid ""
 "Both --no-clobber and --convert-links were specified, only --convert-links "
 "will be used.\n"
 msgstr ""
+"Amândouă --no-clobber și --convert-links au fost specificate, doar --convert-"
+"links va fi utilizată.\n"
 
-#: src/main.c:1600
+#: src/main.c:1608
 #, c-format
 msgid ""
 "Both --no-clobber and --convert-file-only were specified, only --convert-"
 "file-only will be used.\n"
 msgstr ""
+"Amândouă --no-clobber și --convert-file-only au fost specificate, doar --"
+"convert-file-only va fi utilizată.\n"
 
-#: src/main.c:1633
+#: src/main.c:1641
 #, c-format
 msgid "Can't be verbose and quiet at the same time.\n"
-msgstr "Nu pot fi �i detaliat �i silen�ios �n acela�i timp.\n"
+msgstr "Nu pot fi şi detaliat şi silenţios în acelaşi timp.\n"
 
-#: src/main.c:1639
+#: src/main.c:1647
 #, c-format
 msgid "Can't timestamp and not clobber old files at the same time.\n"
 msgstr ""
-"Nu pot �i identifica pentru timp (timestamp) �i l�sa fi�ierele nesec�ionate "
-"�n acela�i timp.\n"
+"Nu pot şi identifica pentru timp (timestamp) şi lăsa fişierele nesecţionate "
+"în acelaşi timp.\n"
 
-#: src/main.c:1648
+#: src/main.c:1656
 #, c-format
 msgid "Cannot specify both --inet4-only and --inet6-only.\n"
-msgstr ""
+msgstr "Nu se pot specifica amândouă --inet4-only și --inet6-only.\n"
 
-#: src/main.c:1658
+#: src/main.c:1666
 msgid ""
 "Cannot specify both -k or --convert-file-only and -O if multiple URLs are "
 "given, or in combination\n"
 "with -p or -r. See the manual for details.\n"
 "\n"
 msgstr ""
+"Nu se pot specifica amândouă -k sau --convert-file-only și -O dacă sunt date "
+"URL-uri multiple, sau în combinație\n"
+"cu -p or -r. Consultați manualul pentru detalii.\n"
+"\n"
 
-#: src/main.c:1667
+#: src/main.c:1675
 msgid ""
 "WARNING: combining -O with -r or -p will mean that all downloaded content\n"
 "will be placed in the single file you specified.\n"
 "\n"
 msgstr ""
+"AVERTISMENT: combinarea -O cu -r sau -p va însemna că tot conținutul "
+"descărcat\n"
+"va fi plasat în fișierul solo pe care l-ați specificat.\n"
+"\n"
 
-#: src/main.c:1673
+#: src/main.c:1681
 msgid ""
 "WARNING: timestamping does nothing in combination with -O. See the manual\n"
 "for details.\n"
 "\n"
 msgstr ""
+"AVERTISMENT: datarea nu face nimic în combinație cu -O. Consultați manualul\n"
+"pentru detalii.\n"
+"\n"
 
-#: src/main.c:1693
+#: src/main.c:1701
 #, c-format
 msgid ""
 "WARC output does not work with --no-clobber, --no-clobber will be disabled.\n"
 msgstr ""
+"Ieșirea WARC nu funcționează cu --no-clobber, --no-clobber va fi "
+"dezactivat.\n"
 
-#: src/main.c:1700
+#: src/main.c:1708
 #, c-format
 msgid ""
 "WARC output does not work with timestamping, timestamping will be disabled.\n"
-msgstr ""
+msgstr "Ieșirea WARC nu funcționează cu datare, datarea va fi dezactivată.\n"
 
-#: src/main.c:1707
+#: src/main.c:1715
 #, c-format
 msgid "WARC output does not work with --spider.\n"
-msgstr ""
+msgstr "Ieșirea WARC nu funcționează cu --spider.\n"
 
-#: src/main.c:1713
+#: src/main.c:1721
 #, c-format
 msgid ""
 "WARC output does not work with --continue or --start-pos, they will be "
 "disabled.\n"
 msgstr ""
+"Ieșirea WARC nu funcționează cu --continue sau --start-pos, acestea vor fi "
+"dezactivate.\n"
 
-#: src/main.c:1721
+#: src/main.c:1729
 #, c-format
 msgid ""
 "Digests are disabled; WARC deduplication will not find duplicate records.\n"
 msgstr ""
+"Digest-urile sunt dezactivate; deduplicarea WARC nu va găsi înregistrări "
+"duplicate.\n"
 
-#: src/main.c:1742
+#: src/main.c:1750
 #, c-format
 msgid ""
 "Compression does not work with --continue or --start-pos, they will be "
 "disabled.\n"
 msgstr ""
-
-#: src/main.c:1753
-#, c-format
-msgid "Cannot specify both --ask-password and --password.\n"
-msgstr ""
+"Comprimarea nu funcționează cu --continue sau --start-pos, acestea vor fi "
+"dezactivate.\n"
 
 #: src/main.c:1761
+#, c-format
+msgid "Cannot specify both --ask-password and --password.\n"
+msgstr "Nu se pot specifica ambele --ask-password și --password.\n"
+
+#: src/main.c:1769
+#, c-format
+msgid ""
+"WARNING: No username set with --ask-password. This is usually not what you "
+"want.\n"
+msgstr ""
+
+#: src/main.c:1775
 #, c-format
 msgid ""
 "Specifying both --start-pos and --continue is not recommended; --continue "
 "will be disabled.\n"
 msgstr ""
+"Specificarea a amândouă --start-pos și --continue nu este recomandată; --"
+"continue va fi dezactivată.\n"
 
-#: src/main.c:1774
+#: src/main.c:1788
 #, c-format
 msgid "%s: missing URL\n"
-msgstr "%s: URL lips�\n"
+msgstr "%s: URL lipsă\n"
 
-#: src/main.c:1822
+#: src/main.c:1836
 #, c-format
 msgid "You cannot specify both --post-data and --post-file.\n"
-msgstr ""
+msgstr "Nu puteți specifica ambele --post-data și --post-file.\n"
 
-#: src/main.c:1827
+#: src/main.c:1841
 #, c-format
 msgid ""
 "You cannot use --post-data or --post-file along with --method. --method "
 "expects data through --body-data and --body-file options\n"
 msgstr ""
+"Nu puteți utiliza --post-data sau --post-file pe lângă --method. --method "
+"așteaptă date prin opțiunile --body-data și --body-file.\n"
 
-#: src/main.c:1836
+#: src/main.c:1850
 #, c-format
 msgid ""
 "You must specify a method through --method=HTTPMethod to use with --body-"
 "data or --body-file.\n"
 msgstr ""
+"Trebuie să specificați o metodă prin --method=HTTPMethod pentru a utiliza cu "
+"--body-data sau --body-file.\n"
 
-#: src/main.c:1842
+#: src/main.c:1856
 #, c-format
 msgid "You cannot specify both --body-data and --body-file.\n"
-msgstr ""
+msgstr "Nu puteți specifica amândouă --body-date și --body-file.\n"
 
-#: src/main.c:1894
+#: src/main.c:1908
 #, c-format
 msgid "This version does not have support for IRIs\n"
-msgstr ""
+msgstr "Această versiune nu are suport pentru IRI-uri\n"
 
-#: src/main.c:2006
+#: src/main.c:2003
 #, c-format
 msgid ""
 "-k or -r can be used together with -O only if outputting to a regular file.\n"
 msgstr ""
+"-k sau -r pot fi utilizate împreună cu -O doar dacă se iese la un fișier "
+"obișnuit.\n"
 
-#: src/main.c:2012
+#: src/main.c:2009
 #, c-format
 msgid ""
 "--convert-links or --convert-file-only can be used together only if "
 "outputting to a regular file.\n"
 msgstr ""
+"--convert-links sau --convert-file-only pot fi utilizate împreună doar dacă "
+"se iese la un fișier obișnuit.\n"
 
-#: src/main.c:2023
+#: src/main.c:2020
 #, c-format
 msgid "Failed to init libcares\n"
-msgstr ""
+msgstr "Nu s-a putut inițializa libcares\n"
 
-#: src/main.c:2029
+#: src/main.c:2026
 #, c-format
 msgid "Failed to init c-ares channel\n"
-msgstr ""
+msgstr "Nu s-a putut inițializa canalul c-ares\n"
 
-#: src/main.c:2052
+#: src/main.c:2049
 #, c-format
 msgid "Failed to parse IP address '%s'\n"
-msgstr ""
+msgstr "Nu s-a putut parsa adresa IP „%s”\n"
 
-#: src/main.c:2063
+#: src/main.c:2060
 #, c-format
 msgid "Failed to set DNS server(s) '%s' (%d)\n"
-msgstr ""
+msgstr "Nu s-a(u) putut stabili server(ele) DNS „%s” (%d)\n"
 
-#: src/main.c:2191
+#: src/main.c:2197
 #, c-format
 msgid "No URLs found in %s.\n"
-msgstr "Nici un URL g�sit �n %s.\n"
+msgstr "Nici un URL găsit în %s.\n"
 
-#: src/main.c:2207
-#, fuzzy, c-format
+#: src/main.c:2213
+#, c-format
 msgid "Unable to parse metalink file %s.\n"
-msgstr "Nu pot �terge `%s': %s\n"
+msgstr "Nu se poate parsa fișierul metalink %s.\n"
 
-#: src/main.c:2237 src/metalink.c:337
-#, fuzzy, c-format
+#: src/main.c:2243 src/metalink.c:337
+#, c-format
 msgid "Could not download all resources from %s.\n"
-msgstr "S-a e�uat �n �nc�rcarea certificatelor din %s\n"
+msgstr "Nu s-au putut descărca toate resursele de la %s.\n"
 
-#: src/main.c:2264
-#, fuzzy, c-format
+#: src/main.c:2270
+#, c-format
 msgid ""
 "FINISHED --%s--\n"
 "Total wall clock time: %s\n"
 "Downloaded: %d files, %s in %s (%s)\n"
 msgstr ""
-"\n"
-"FINALIZAT --%s--\n"
-"Downloadat: %s octe�i �n %d fi�iere\n"
+"TERMINAT --%s--\n"
+"Ora totală a ceasului de perete: %s\n"
+"Descărcat: %d fișiere, %s în %s (%s)\n"
 
-#: src/main.c:2278
-#, fuzzy, c-format
+#: src/main.c:2284
+#, c-format
 msgid "Download quota of %s EXCEEDED!\n"
-msgstr "Cot� de download (%s octe�i) DEPêIT�!\n"
+msgstr "Cota de descărcare din %s este DEPĂȘITĂ!\n"
 
 #: src/metalink.c:93
 msgid "-O not supported for metalink download. Ignoring.\n"
-msgstr ""
+msgstr "-O nu este suportat pentru descărcarea metalink. Se ignoră.\n"
 
 #: src/metalink.c:172
 #, c-format
 msgid "[--trust-server-names %s, --directory-prefix=%s]\n"
-msgstr ""
+msgstr "[--trust-server-names %s, --directory-prefix=%s]\n"
 
 #: src/metalink.c:176
 #, c-format
 msgid "Planned metalink file: %s\n"
-msgstr ""
+msgstr "Fișier metalink planificat: %s\n"
 
 #: src/metalink.c:179
 #, c-format
 msgid "Secured metalink file: %s\n"
-msgstr ""
+msgstr "Fișier metalink securizat: %s\n"
 
 #: src/metalink.c:184
 msgid "Rejecting metalink file. Unsafe name.\n"
-msgstr ""
+msgstr "Se respinge fișierul metalink. Nume nesigur.\n"
 
 #: src/metalink.c:238
 #, c-format
 msgid "Processing metaurl %s...\n"
-msgstr ""
+msgstr "Se procesează metaurl %s...\n"
 
 #: src/metalink.c:251
 #, c-format
 msgid "Rejecting metaurl file %s. Unsafe name.\n"
-msgstr ""
+msgstr "Se respinge fișierul metaurl %s. Nume nesigur.\n"
 
 #: src/metalink.c:268
 #, c-format
 msgid "Failed to download %s. Skipping metaurl.\n"
-msgstr ""
+msgstr "Nu s-a putut descărca %s. Se omite metaurl-ul.\n"
 
 #: src/metalink.c:285
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to parse metaurl file %s.\n"
-msgstr "Nu pot �terge `%s': %s\n"
+msgstr "Nu se poate parsa fișierul metaurl %s.\n"
 
 #: src/metalink.c:354
 msgid "Metaurls processing returned with error.\n"
-msgstr ""
+msgstr "Procesarea metaurl-urilor s-a întors cu eroare.\n"
 
 #: src/metalink.c:386
 #, c-format
 msgid "Resource type %s not supported, ignoring...\n"
-msgstr ""
+msgstr "Tipul de resursă %s nu este suportat, se ignoră...\n"
 
 #: src/metalink.c:509
 msgid "Could not open downloaded file.\n"
-msgstr ""
+msgstr "Nu s-a putut deschide fișierul descărcat.\n"
 
 #: src/metalink.c:514
 #, c-format
 msgid "Computing size for %s\n"
-msgstr ""
+msgstr "Se calculează dimensiunea pentru %s\n"
 
 #: src/metalink.c:519
 msgid "File size not declared. Skipping check.\n"
-msgstr ""
+msgstr "Dimensiunea fișierului nu este declarată. Se omite verificarea.\n"
 
 #: src/metalink.c:527
 msgid "Could not get downloaded file's size.\n"
-msgstr ""
+msgstr "Nu s-a putut obține dimensiunea fișierului descărcat.\n"
 
 #: src/metalink.c:539
 #, c-format
 msgid "Size mismatch for file %s.\n"
-msgstr ""
+msgstr "Nepotrivire a dimensiunii pentru fișierul %s.\n"
 
 #: src/metalink.c:547
 msgid "Size matches.\n"
-msgstr ""
+msgstr "Dimensiunea se potrivește.\n"
 
 #: src/metalink.c:600
 #, c-format
 msgid "Computing checksum for %s\n"
-msgstr ""
+msgstr "Se calculează suma de control pentru %s\n"
 
 #: src/metalink.c:678
 msgid "Checksum matches.\n"
-msgstr ""
+msgstr "Suma de control se potrivește.\n"
 
 #: src/metalink.c:683
 #, c-format
 msgid "Checksum mismatch for file %s.\n"
-msgstr ""
+msgstr "Nepotrivire a sumei de control pentru fișierul %s.\n"
 
 #: src/metalink.c:722
 msgid "Could not open downloaded file for signature verification.\n"
 msgstr ""
+"Nu s-a putut deschide fișierul descărcat pentru verificarea semnăturii.\n"
 
 #: src/metalink.c:780
 #, c-format
 msgid "GPGME data_new_from_mem: %s\n"
-msgstr ""
+msgstr "GPGME data_new_from_mem: %s\n"
 
 #: src/metalink.c:792
 #, c-format
 msgid "GPGME op_verify: %s\n"
-msgstr ""
+msgstr "GPGME op_verify: %s\n"
 
 #: src/metalink.c:805
 msgid "GPGME op_verify_result: NULL\n"
-msgstr ""
+msgstr "GPGME op_verify_result: NULL\n"
 
 #: src/metalink.c:821
 msgid "Signature validation succeeded.\n"
-msgstr ""
+msgstr "Validarea semnăturii a reușit.\n"
 
 #: src/metalink.c:829
 msgid "Invalid signature. Rejecting resource.\n"
-msgstr ""
+msgstr "Semnătură nevalidă. Se respinge resursa.\n"
 
 #: src/metalink.c:838
 msgid "Data matches signature, but signature is not trusted.\n"
 msgstr ""
+"Datele se potrivesc cu semnătura, dar semnătura nu este de încredere.\n"
 
 #: src/metalink.c:865
 msgid "No checksums found.\n"
-msgstr ""
+msgstr "Nu s-au găsit sume de control.\n"
 
 #: src/metalink.c:871
 #, c-format
 msgid "Failed to download %s. Skipping resource.\n"
-msgstr ""
+msgstr "Nu s-a putut descărca %s. Se omite resursa.\n"
 
 #: src/metalink.c:878
 #, c-format
 msgid "File %s retrieved but size does not match. \n"
-msgstr ""
+msgstr "Fișierul %s a fost recuperat dar dimensiunea nu se potrivește.\n"
 
 #: src/metalink.c:885
 #, c-format
 msgid "File %s retrieved but checksum does not match. \n"
-msgstr ""
+msgstr "Fișierul %s a fost recuperat dar suma de control nu se potrivește.\n"
 
 #: src/metalink.c:894
 #, c-format
 msgid "File %s retrieved but signature does not match. \n"
-msgstr ""
+msgstr "Fișierul %s a fost recuperat dar semnătura nu se potrivește.\n"
 
 #: src/metalink.c:1113
-#, fuzzy, c-format
+#, c-format
 msgid "Renaming %s to %s.\n"
-msgstr "�terg %s.\n"
+msgstr "Se redenumește %s la %s.\n"
 
 #: src/mswindows.c:96
 #, c-format
 msgid "Continuing in background.\n"
-msgstr "Continui �n fundal.\n"
+msgstr "Continui în fundal.\n"
 
 #: src/mswindows.c:289
-#, fuzzy, c-format
+#, c-format
 msgid "Continuing in background, pid %lu.\n"
-msgstr "Continui �n fundal, pid %d.\n"
+msgstr "Se continuă în fundal, pid %lu.\n"
 
-#: src/mswindows.c:291 src/utils.c:508
-#, fuzzy, c-format
+#: src/mswindows.c:291 src/utils.c:509
+#, c-format
 msgid "Output will be written to %s.\n"
-msgstr "Output-ul va fi scris �n `%s'.\n"
+msgstr "Ieșirea va fi scrisă la %s.\n"
 
 #: src/mswindows.c:323
 #, c-format
 msgid "fake_fork_child() failed\n"
-msgstr ""
+msgstr "fake_fork_child() a eșuat\n"
 
 #: src/mswindows.c:331
 #, c-format
 msgid "fake_fork() failed\n"
-msgstr ""
+msgstr "fake_fork() a eșuat\n"
 
 #: src/mswindows.c:460 src/mswindows.c:467
 #, c-format
 msgid "%s: Couldn't find usable socket driver.\n"
-msgstr "%s: Nu am putut g�si un driver de socket folosibil.\n"
+msgstr "%s: Nu am putut găsi un driver de socket folosibil.\n"
 
 #: src/mswindows.c:647
 #, c-format
 msgid "ioctl() failed.  The socket could not be set as blocking.\n"
-msgstr ""
+msgstr "ioctl() a eșuat.  Soclul nu a putut fi stabilit ca blocare.\n"
 
-#: src/netrc.c:371
-#, fuzzy, c-format
+#: src/netrc.c:373
+#, c-format
 msgid "%s: %s:%d: warning: %s token appears before any machine name\n"
 msgstr ""
-"%s: %s:%d: avertisment: Simbolul \"%s\" apare �nainte de numele ma�inii\n"
+"%s: %s:%d: avertisment: %s jetonul apare înainte de oricare nume de mașină\n"
 
-#: src/netrc.c:412
+#: src/netrc.c:414
 #, c-format
 msgid "%s: %s:%d: unknown token \"%s\"\n"
 msgstr "%s: %s:%d: simbol necunoscut \"%s\"\n"
 
-#: src/netrc.c:496
+#: src/netrc.c:500
 #, c-format
 msgid "Usage: %s NETRC [HOSTNAME]\n"
 msgstr "Folosire: %s NETRC [NUME_HOST]\n"
 
-#: src/netrc.c:514
+#: src/netrc.c:518
 #, c-format
 msgid "%s: cannot stat %s: %s\n"
 msgstr "%s: n-am putut stabili %s: %s\n"
 
-#: src/openssl.c:114
+#: src/openssl.c:128
 msgid "WARNING: using a weak random seed.\n"
-msgstr ""
+msgstr "AVERTISMENT: se utilizează o contribuție slabă aleatorie.\n"
 
-#: src/openssl.c:192
-#, fuzzy
+#: src/openssl.c:208
 msgid "Could not seed PRNG; consider using --random-file.\n"
-msgstr "Nu s-a selectat OpenSSL PRNG; dezactivare SSL.\n"
+msgstr ""
+"Nu s-a putut contribui la PRNG; considerați utilizarea a --random-file.\n"
 
-#: src/openssl.c:267
+#: src/openssl.c:271
 msgid "Your OpenSSL version is too old to support TLS 1.3\n"
-msgstr ""
-
-#: src/openssl.c:273
-msgid "Your OpenSSL version is too old to support TLSv1.1\n"
-msgstr ""
+msgstr "Versiunea OpenSSL este prea veche pentru a suporta TLS 1.3\n"
 
 #: src/openssl.c:277
-msgid "Your OpenSSL version is too old to support TLSv1.2\n"
-msgstr ""
+msgid "Your OpenSSL version is too old to support TLSv1.1\n"
+msgstr "Versiunea OpenSSL este prea veche pentru a suporta TLSv1.1\n"
 
-#: src/openssl.c:283
+#: src/openssl.c:281
+msgid "Your OpenSSL version is too old to support TLSv1.2\n"
+msgstr "Versiunea OpenSSL este prea veche pentru a suporta TLSv1.2\n"
+
+#: src/openssl.c:287
 #, c-format
 msgid "OpenSSL: unimplemented 'secure-protocol' option value %d\n"
-msgstr ""
+msgstr "OpenSSL: valoare de opțiune neimplementată „secure-protocol” %d\n"
 
-#: src/openssl.c:323
+#: src/openssl.c:333
 #, c-format
 msgid "OpenSSL: Invalid cipher list: %s\n"
+msgstr "OpenSSL: Listă de cifru nevalidă: %s\n"
+
+#: src/openssl.c:360
+msgid "OpenSSL: Failed set trust to partial chain\n"
 msgstr ""
 
-#: src/openssl.c:640
+#: src/openssl.c:366
+msgid "OpenSSL: Failed to allocate verification param\n"
+msgstr ""
+
+#: src/openssl.c:844
 msgid "WARNING: Could not seed PRNG. Consider using --random-file.\n"
 msgstr ""
+"AVERTISMENT: Nu s-a putut contribui la PRNG. Considerați utilizarea a --"
+"random-file.\n"
 
-#: src/openssl.c:860
+#: src/openssl.c:1064
 #, c-format
 msgid "%s: cannot verify %s's certificate, issued by %s:\n"
-msgstr ""
+msgstr "%s: nu se poate verifica certificatul pentru %s, emis de %s:\n"
 
-#: src/openssl.c:871
+#: src/openssl.c:1075
 msgid "  Unable to locally verify the issuer's authority.\n"
-msgstr ""
+msgstr "  Nu se poate verifica local autoritatea emitentului.\n"
 
-#: src/openssl.c:876
+#: src/openssl.c:1080
 msgid "  Self-signed certificate encountered.\n"
-msgstr ""
+msgstr "  S-a întâlnit un certificat semnat de sine.\n"
 
-#: src/openssl.c:879
+#: src/openssl.c:1083
 msgid "  Issued certificate not yet valid.\n"
-msgstr ""
+msgstr "  Certificatul emis nu este încă valid.\n"
 
-#: src/openssl.c:882
+#: src/openssl.c:1086
 msgid "  Issued certificate has expired.\n"
-msgstr ""
+msgstr "  Certificatul emis a expirat.\n"
 
-#: src/openssl.c:970
+#: src/openssl.c:1174
 #, c-format
 msgid ""
 "%s: no certificate subject alternative name matches\n"
 "\trequested host name %s.\n"
 msgstr ""
+"%s: niciun nume alternativ de subiect de certificat se potrivește\n"
+"\tcu numele de gazdă cerut %s.\n"
 
-#: src/openssl.c:989
+#: src/openssl.c:1193
 #, c-format
 msgid ""
 "    %s: certificate common name %s doesn't match requested host name %s.\n"
 msgstr ""
+"    %s: numele comun al certificatului %s nu se potrivește cu numele de "
+"gazdă cerut %s.\n"
 
-#: src/openssl.c:1021
+#: src/openssl.c:1225
 #, c-format
 msgid ""
 "    %s: certificate common name is invalid (contains a NUL character).\n"
 "    This may be an indication that the host is not who it claims to be\n"
 "    (that is, it is not the real %s).\n"
 msgstr ""
+"    %s: numele comun al certificatului nu este valid (conține un caracter "
+"NUL).\n"
+"    Acesta poate fi un indicator cum că gazda nu este cine pretinde să fie\n"
+"    (adică, nu este realul %s).\n"
 
-#: src/openssl.c:1046
+#: src/openssl.c:1250
 #, c-format
 msgid "To connect to %s insecurely, use `--no-check-certificate'.\n"
 msgstr ""
+"Pentru a vă conecta nesigur la %s, utilizați „--no-check-certificate”.\n"
 
-#: src/progress.c:244
-#, fuzzy, c-format
+#: src/progress.c:260
+#, c-format
 msgid ""
 "\n"
 "%*s[ skipping %sK ]"
 msgstr ""
 "\n"
-"%*s[ omitere %dK ]"
+"%*s[ se omite %sK ]"
 
-#: src/progress.c:465
-#, fuzzy, c-format
+#: src/progress.c:545
+#, c-format
 msgid "Invalid dot style specification %s; leaving unchanged.\n"
-msgstr "Specificare punct invalid� `%s'; l�sat neschimbat.\n"
+msgstr "Specificație de stil de punct nevalidă %s; se lasă nemodificat.\n"
 
 #. TRANSLATORS: "ETA" is English-centric, but this must
 #. be short, ideally 3 chars.  Abbreviate if necessary.
-#: src/progress.c:857
+#: src/progress.c:1006
 #, c-format
 msgid "    eta %s"
-msgstr ""
+msgstr "    eta %s"
 
-#: src/progress.c:1147
+#. TRANSLATORS: The meaning is "elapsed time", and it is shown
+#. * next to the progress bar once the download is done.
+#. * This should not take up more room than
+#. * available here (6 columns).  Abbreviate if necessary.
+#: src/progress.c:1312
 msgid "    in "
-msgstr ""
+msgstr "    în "
 
-#: src/ptimer.c:157
+#: src/ptimer.c:158
 #, c-format
 msgid "Cannot get REALTIME clock frequency: %s\n"
-msgstr ""
+msgstr "Nu se poate obține frecvența de ceas ÎN TIMP REAL: %s\n"
 
-#: src/recur.c:512
+#: src/recur.c:513
 #, c-format
 msgid "Removing %s since it should be rejected.\n"
-msgstr "�tergere %s pentru c� oricum ar fi trebuit refuzat.\n"
+msgstr "Ştergere %s pentru că oricum ar fi trebuit refuzat.\n"
 
 #: src/res.c:394
 #, fuzzy, c-format
-msgid "Cannot open %s: %s"
-msgstr "Nu pot converti linkurile �n %s: %s\n"
+msgid "Cannot open %s: %s\n"
+msgstr "Nu se poate deschide %s: %s"
 
-#: src/res.c:553
+#: src/res.c:556
 msgid "Loading robots.txt; please ignore errors.\n"
-msgstr "Se �ncarc� robots.txt; ignora�i erorile.\n"
+msgstr "Se încarcă robots.txt; ignoraţi erorile.\n"
 
-#: src/retr.c:928
+#: src/retr.c:934
 #, c-format
 msgid "Error parsing proxy URL %s: %s.\n"
-msgstr "Eroare �n analiza URL proxy: %s: %s.\n"
+msgstr "Eroare în analiza URL proxy: %s: %s.\n"
 
-#: src/retr.c:940
+#: src/retr.c:948
 #, c-format
 msgid "Error in proxy URL %s: Must be HTTP.\n"
-msgstr "Eroare �n URL proxy %s: Trebuie s� fie HTTP.\n"
+msgstr "Eroare în URL proxy %s: Trebuie să fie HTTP.\n"
 
-#: src/retr.c:1069
+#: src/retr.c:1079
 #, c-format
 msgid "%d redirections exceeded.\n"
-msgstr "%d redirect�ri dep�ite.\n"
+msgstr "%d redirectări depăşite.\n"
 
-#: src/retr.c:1333
+#: src/retr.c:1341
 msgid ""
 "Giving up.\n"
 "\n"
 msgstr ""
-"Renun�.\n"
+"Renunţ.\n"
 "\n"
 
-#: src/retr.c:1333
+#: src/retr.c:1341
 msgid ""
 "Retrying.\n"
 "\n"
 msgstr ""
-"Re�ncerc.\n"
+"Reîncerc.\n"
 "\n"
 
-#: src/spider.c:75
+#: src/spider.c:77
 msgid ""
 "Found no broken links.\n"
 "\n"
 msgstr ""
+"S-au găsit legături deteriorate.\n"
+"\n"
 
-#: src/spider.c:82
+#: src/spider.c:84
 #, c-format
 msgid ""
 "Found %d broken link.\n"
@@ -3097,174 +3265,198 @@ msgid_plural ""
 "Found %d broken links.\n"
 "\n"
 msgstr[0] ""
+"S-a găsit %d legătură deteriorată.\n"
+"\n"
 msgstr[1] ""
+"S-au găsit %d legături deteriorate.\n"
+"\n"
+msgstr[2] ""
+"S-au găsit %d de legături deteriorate.\n"
+"\n"
 
-#: src/url.c:674
+#: src/url.c:675
 msgid "No error"
-msgstr "Eroare necunoscut�"
+msgstr "Eroare necunoscută"
 
-#: src/url.c:676
-#, fuzzy, c-format
+#: src/url.c:677
+#, c-format
 msgid "Unsupported scheme %s"
-msgstr "Schem� nesuportat�"
+msgstr "Schemă nesuportată %s"
 
-#: src/url.c:678
+#: src/url.c:679
 msgid "Scheme missing"
-msgstr ""
+msgstr "Schema lipsește"
 
-#: src/url.c:680
-#, fuzzy
+#: src/url.c:681
 msgid "Invalid host name"
-msgstr "Nume utilizator invalid"
+msgstr "Nume de gazdă nevalid"
 
-#: src/url.c:682
+#: src/url.c:683
 msgid "Bad port number"
-msgstr "Num�r de port invalid"
+msgstr "Număr de port invalid"
 
-#: src/url.c:684
+#: src/url.c:685
 msgid "Invalid user name"
 msgstr "Nume utilizator invalid"
 
-#: src/url.c:686
+#: src/url.c:687
 msgid "Unterminated IPv6 numeric address"
-msgstr "Adres� numeric� IPv6 neterminat�"
+msgstr "Adresă numerică IPv6 neterminată"
 
-#: src/url.c:688
+#: src/url.c:689
 msgid "IPv6 addresses not supported"
 msgstr "Adresele IPv6 nu sunt suportate"
 
-#: src/url.c:690
+#: src/url.c:691
 msgid "Invalid IPv6 numeric address"
-msgstr "Adres� numeric� IPv6 invalid�"
+msgstr "Adresă numerică IPv6 invalidă"
 
-#: src/url.c:1006
-#, fuzzy
+#: src/url.c:1007
 msgid "HTTPS support not compiled in"
-msgstr "%s: suport de debug necompilat.\n"
+msgstr "Suportul HTTPS nu este compilat"
 
-#: src/url.c:1603
+#: src/url.c:1620
 msgid "Unconvertable multibyte sequence encountered\n"
-msgstr ""
+msgstr "A apărut o ecvență de multiocteți care nu se poate converti\n"
 
-#: src/utils.c:128
+#: src/utils.c:129
 #, c-format
 msgid "%s: %s: Failed to allocate enough memory; memory exhausted.\n"
-msgstr ""
+msgstr "%s: %s: Nu s-a putut aloca destulă memorie; memorie epuizată.\n"
 
-#: src/utils.c:134
+#: src/utils.c:135
 #, c-format
 msgid "%s: %s: Failed to allocate %ld bytes; memory exhausted.\n"
-msgstr ""
+msgstr "%s: %s: Nu s-au putut aloca %ld octeți; memorie epuizată.\n"
 
-#: src/utils.c:354
+#: src/utils.c:355
 #, c-format
 msgid "%s: aprintf: text buffer is too big (%d bytes), aborting.\n"
 msgstr ""
+"%s: aprintf: preîncărcarea textului este prea mare (%d octeți), se renunță.\n"
 
-#: src/utils.c:506
+#: src/utils.c:507
 #, c-format
 msgid "Continuing in background, pid %d.\n"
-msgstr "Continui �n fundal, pid %d.\n"
+msgstr "Continui în fundal, pid %d.\n"
 
-#: src/utils.c:557
-#, fuzzy, c-format
+#: src/utils.c:558
+#, c-format
 msgid "Failed to unlink symlink %s: %s\n"
-msgstr "Nu am putut scoate(unlink) symlinkul `%s': %s\n"
+msgstr "Nu s-a putut dezlega legătura simbolică %s: %s\n"
 
-#: src/utils.c:865
-#, fuzzy, c-format
+#: src/utils.c:879
+#, c-format
 msgid "Failed to Fopen file %s\n"
-msgstr "S-a e�uat �n �nc�rcarea certificatelor din %s\n"
+msgstr "Nu s-a putut aplica Fopen la fișierul %s\n"
 
-#: src/utils.c:871
-#, fuzzy, c-format
+#: src/utils.c:885
+#, c-format
 msgid "Failed to get FD for file %s\n"
-msgstr "Nu s-a putut primi codul(key) certificatului de la %s\n"
+msgstr "Nu s-a putut obține FD pentru fișierul %s\n"
 
-#: src/utils.c:878
+#: src/utils.c:892
 #, c-format
 msgid "Failed to stat file %s, (check permissions)\n"
-msgstr ""
+msgstr "Nu s-a putut da stat fișierului %s, (verificați permisiunile)\n"
 
-#: src/utils.c:888
-#, c-format
-msgid "File %s changed since the last check. Security check failed."
-msgstr ""
-
-#: src/utils.c:923
+#: src/utils.c:902
 #, fuzzy, c-format
+msgid "File %s changed since the last check. Security check failed.\n"
+msgstr ""
+"Fișierul %s s-a modificat de la ultima verificare. Verificarea de securitate "
+"a eșuat."
+
+#: src/utils.c:937
+#, c-format
 msgid "Failed to open file %s, reason :%s\n"
-msgstr "S-a e�uat �n �nc�rcarea certificatelor din %s\n"
+msgstr "Nu s-a putut deschide fișierul %s, motiv: %s\n"
 
-#: src/utils.c:929
-#, fuzzy, c-format
-msgid "Failed to stat file %s, error: %s\n"
-msgstr "S-a e�uat �n �nc�rcarea certificatelor din %s\n"
-
-#: src/utils.c:939
+#: src/utils.c:943
 #, c-format
+msgid "Failed to stat file %s, error: %s\n"
+msgstr "Nu s-a putut da stat la fișierul %s, eroare: %s\n"
+
+#: src/utils.c:953
+#, fuzzy, c-format
 msgid ""
 "Trying to open file %s but it changed since last check. Security check "
-"failed."
+"failed.\n"
 msgstr ""
+"Se încearcă deschiderea fișierului %s dar s-a modificat de la ultima "
+"verificare. Verificarea de securitate a eșuat."
 
-#: src/utils.c:2445
+#: src/utils.c:2442
 #, c-format
 msgid "Invalid regular expression %s, PCRE2 error %d\n"
-msgstr ""
+msgstr "Expresie regulată nevalidă %s, eroare PCRE2 %d\n"
 
-#: src/utils.c:2462 src/utils.c:2485
+#: src/utils.c:2459 src/utils.c:2482
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
-msgstr ""
+msgstr "Expresie regulată nevalidă %s, %s\n"
 
-#: src/utils.c:2515 src/utils.c:2537 src/utils.c:2561
-#, fuzzy, c-format
+#: src/utils.c:2512 src/utils.c:2534 src/utils.c:2558
+#, c-format
 msgid "Error while matching %s: %d\n"
-msgstr "Eroare la scriere �n `%s': %s\n"
+msgstr "Eroare în timpul potrivirii %s: %d\n"
 
-#: src/utils.c:2854
+#: src/utils.c:2851
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
-msgstr ""
+msgstr "Se omite cheia cu dimensiunea greșită (%d/%d): %s\n"
 
-#: src/warc.c:222
+#: src/warc.c:217
+#, fuzzy
+msgid "Error setting WARC file position.\n"
+msgstr "Eroare la deschiderea fișierului WARC %s.\n"
+
+#: src/warc.c:224
+#, fuzzy
+msgid "Error flushing WARC file to disk.\n"
+msgstr "Eroare la deschiderea fișierului WARC %s.\n"
+
+#: src/warc.c:234
 msgid "Error duplicating WARC file file descriptor.\n"
-msgstr ""
+msgstr "Eroare la duplicarea descriptorului de fișier al fișierului WARC.\n"
 
-#: src/warc.c:233
+#: src/warc.c:245
 msgid "Error opening GZIP stream to WARC file.\n"
-msgstr ""
+msgstr "Eroare la deschiderea fluxului GZIP către fișierul WARC.\n"
 
-#: src/warc.c:809
+#: src/warc.c:830
 msgid "Error writing warcinfo record to WARC file.\n"
-msgstr ""
+msgstr "Eroare la scrierea înregistrării warcinfo la fișierul WARC.\n"
 
-#: src/warc.c:872
+#: src/warc.c:893
 #, c-format
 msgid ""
 "Opening WARC file %s.\n"
 "\n"
 msgstr ""
+"Se deschide fișierul WARC %s.\n"
+"\n"
 
-#: src/warc.c:878
-#, fuzzy, c-format
+#: src/warc.c:899
+#, c-format
 msgid "Error opening WARC file %s.\n"
-msgstr "Eroare �n analiza URL proxy: %s: %s.\n"
+msgstr "Eroare la deschiderea fișierului WARC %s.\n"
 
-#: src/warc.c:1075
+#: src/warc.c:1095
 msgid "CDX file does not list original urls. (Missing column 'a'.)\n"
 msgstr ""
+"Fișierul CDX nu listează url-urile originale. (Lipsește coloana „a”.)\n"
 
-#: src/warc.c:1078
+#: src/warc.c:1098
 msgid "CDX file does not list checksums. (Missing column 'k'.)\n"
-msgstr ""
+msgstr "Fișierul CDX nu listează sumele de control. (Lipsește coloana „k”.)\n"
 
-#: src/warc.c:1081
+#: src/warc.c:1101
 msgid "CDX file does not list record ids. (Missing column 'u'.)\n"
 msgstr ""
+"Fișierul CDX nu listează id-urile de înregistrare. (Lipsește coloana „u”.)\n"
 
-#: src/warc.c:1105
+#: src/warc.c:1125
 #, c-format
 msgid ""
 "Loaded %d record from CDX.\n"
@@ -3273,85 +3465,267 @@ msgid_plural ""
 "Loaded %d records from CDX.\n"
 "\n"
 msgstr[0] ""
+"S-a încărcat %d înregistrare de la CDX.\n"
+"\n"
 msgstr[1] ""
-
-#: src/warc.c:1151
-#, c-format
-msgid "Could not read CDX file %s for deduplication.\n"
-msgstr ""
-
-#: src/warc.c:1161
-msgid "Could not open temporary WARC manifest file.\n"
-msgstr ""
+"S-au încărcat %d înregistrări de la CDX.\n"
+"\n"
+msgstr[2] ""
+"S-au încărcat %d de înregistrări de la CDX.\n"
+"\n"
 
 #: src/warc.c:1171
+#, c-format
+msgid "Could not read CDX file %s for deduplication.\n"
+msgstr "Nu s-a putut citi fișierul CDX %s pentru deduplicare.\n"
+
+#: src/warc.c:1181
+msgid "Could not open temporary WARC manifest file.\n"
+msgstr "Nu s-a putut deschide fișierul manifest temporar WARC.\n"
+
+#: src/warc.c:1191
 msgid "Could not open temporary WARC log file.\n"
-msgstr ""
+msgstr "Nu s-a putut deschide fișierul de înregistrare temporar WARC.\n"
 
-#: src/warc.c:1180
+#: src/warc.c:1200
 msgid "Could not open WARC file.\n"
-msgstr ""
+msgstr "Nu s-a putut deschide fișierul WARC.\n"
 
-#: src/warc.c:1189
-#, fuzzy
+#: src/warc.c:1209
 msgid "Could not open CDX file for output.\n"
-msgstr "Nu s-a putut g�si serverul proxy.\n"
+msgstr "Nu s-a putut deschide fișierul CDX pentru ieșire.\n"
 
-#: src/warc.c:1219
+#: src/warc.c:1239
 msgid "Could not open temporary WARC file.\n"
-msgstr ""
+msgstr "Nu s-a putut deschide fișierul temporar WARC.\n"
 
-#: src/warc.c:1495
+#: src/warc.c:1515
 msgid "Found exact match in CDX file. Saving revisit record to WARC.\n"
 msgstr ""
+"S-a găsit potrivirea exactă în fișierul CDX. Se salvează înregistrarea de "
+"revizitare la WARC.\n"
+
+#~ msgid "Unknown system error"
+#~ msgstr "Eroare de sistem necunoscută"
+
+#~ msgid "Address family for hostname not supported"
+#~ msgstr "Familia de adrese pentru numele de gazdă nu este suportată"
+
+#~ msgid "Bad value for ai_flags"
+#~ msgstr "Valoare greșită pentru ai_flags"
+
+#~ msgid "Non-recoverable failure in name resolution"
+#~ msgstr "Eșec nerecuperabil în rezolvarea numelui"
+
+#~ msgid "ai_family not supported"
+#~ msgstr "ai_family nu este suportat"
+
+#~ msgid "Memory allocation failure"
+#~ msgstr "Eșec la alocarea memoriei"
+
+#~ msgid "No address associated with hostname"
+#~ msgstr "Nu este nicio adresă asociată cu numele de gazdă"
+
+#~ msgid "Name or service not known"
+#~ msgstr "Nume sau serviciu necunoscut"
+
+#~ msgid "Servname not supported for ai_socktype"
+#~ msgstr "Numele serverului nu este suportat pentru ai_socktype"
+
+#~ msgid "ai_socktype not supported"
+#~ msgstr "ai_socktype nu este suportată"
+
+#~ msgid "System error"
+#~ msgstr "Eroare de sistem"
+
+#~ msgid "Argument buffer too small"
+#~ msgstr "Preîncărcarea argumentului este prea mică"
+
+#~ msgid "Processing request in progress"
+#~ msgstr "Cerere de procesare în progres"
+
+#~ msgid "Request canceled"
+#~ msgstr "Cererea este anulată"
+
+#~ msgid "Request not canceled"
+#~ msgstr "Cererea nu este anulată"
+
+#~ msgid "All requests done"
+#~ msgstr "Toate cererile terminate"
+
+#~ msgid "Interrupted by a signal"
+#~ msgstr "Întrerupt de un semnal"
+
+#~ msgid "Parameter string not correctly encoded"
+#~ msgstr "Șirul parametru nu este codat corect"
+
+#, c-format
+#~ msgid "%s: option '%s%s' is ambiguous\n"
+#~ msgstr "%s: opțiunea „%s%s” este ambiguă\n"
+
+#, c-format
+#~ msgid "%s: option '%s%s' is ambiguous; possibilities:"
+#~ msgstr "%s: opțiunea „%s%s” este ambiguă; posibilități:"
+
+#, c-format
+#~ msgid "%s: unrecognized option '%s%s'\n"
+#~ msgstr "%s: opțiune nerecunoscută „%s%s”\n"
+
+#, c-format
+#~ msgid "%s: option '%s%s' doesn't allow an argument\n"
+#~ msgstr "%s: opțiunea „%s%s” nu permite un argument\n"
+
+#, c-format
+#~ msgid "%s: option '%s%s' requires an argument\n"
+#~ msgstr "%s: opțiunea „%s%s” necesită un argument\n"
+
+#, c-format
+#~ msgid "%s: invalid option -- '%c'\n"
+#~ msgstr "%s: opțiune nevalidă -- „%c”\n"
+
+#, c-format
+#~ msgid "%s: option requires an argument -- '%c'\n"
+#~ msgstr "%s: opțiunea necesită un argument -- „%c”\n"
+
+#~ msgid "`"
+#~ msgstr "`"
+
+#~ msgid "'"
+#~ msgstr "'"
+
+#~ msgid "Success"
+#~ msgstr "Succes"
+
+#~ msgid "No match"
+#~ msgstr "Nicio potrivire"
+
+#~ msgid "Invalid regular expression"
+#~ msgstr "Expresie regulată nevalidă"
+
+#~ msgid "Invalid collation character"
+#~ msgstr "Caracter în ordine alfabetică nevalid"
+
+#~ msgid "Invalid character class name"
+#~ msgstr "Nume de clasă de caracter nevalid"
+
+#~ msgid "Trailing backslash"
+#~ msgstr "Linie oblică inversă de urmărire"
+
+#~ msgid "Invalid back reference"
+#~ msgstr "Referință de înapoi nevalidă"
+
+#~ msgid "Unmatched [, [^, [:, [., or [="
+#~ msgstr "[, [^, [:, [., sau [= fără pereche"
+
+#~ msgid "Unmatched ( or \\("
+#~ msgstr "( sau \\( fără pereche"
+
+#~ msgid "Unmatched \\{"
+#~ msgstr "\\{ fără potrivire"
+
+#~ msgid "Invalid content of \\{\\}"
+#~ msgstr "Conținut nevalid al \\{\\}"
+
+#~ msgid "Invalid range end"
+#~ msgstr "Sfârșit de interval nevalid"
+
+#~ msgid "Memory exhausted"
+#~ msgstr "Memorie epuizată"
+
+#~ msgid "Invalid preceding regular expression"
+#~ msgstr "Expresie regulată precedentă nevalidă"
+
+#~ msgid "Premature end of regular expression"
+#~ msgstr "Sfârșit prematur al expresiei regulate"
+
+#~ msgid "Regular expression too big"
+#~ msgstr "Expresia regulată este prea mare"
+
+#~ msgid "Unmatched ) or \\)"
+#~ msgstr ") sau \\) fără pereche"
+
+#~ msgid "No previous regular expression"
+#~ msgstr "Nu există expresie regulată precedentă"
+
+#, c-format
+#~ msgid "cannot create pipe"
+#~ msgstr "nu se poate crea conexiunea"
+
+#, c-format
+#~ msgid "%s subprocess failed"
+#~ msgstr "subprocesul %s a eșuat"
+
+#, c-format
+#~ msgid "_open_osfhandle failed"
+#~ msgstr "_open_osfhandle a eșuat"
+
+#, c-format
+#~ msgid "cannot restore fd %d: dup2 failed"
+#~ msgstr "nu se poate restaura fd %d: dup2 a eșuat"
+
+#, c-format
+#~ msgid "%s subprocess"
+#~ msgstr "subproces %s"
+
+#, c-format
+#~ msgid "%s subprocess got fatal signal %d"
+#~ msgstr "subprocesul %s a primit un semnal fatal %d"
+
+#~ msgid "memory exhausted"
+#~ msgstr "memorie epuizată"
+
+#~ msgid "Email bug reports, questions, discussions to <bug-wget@gnu.org>\n"
+#~ msgstr ""
+#~ "Trimiteți email cu rapoartele de defecțiuni, întrebări, discuții la <bug-"
+#~ "wget@gnu.org>\n"
 
 #~ msgid "Unable to convert `%s' to a bind address.  Reverting to ANY.\n"
 #~ msgstr ""
-#~ "Nu am putut converti `%s' �ntr-o adres� bind.  Readucere(reverting) la "
+#~ "Nu am putut converti `%s' într-o adresă bind.  Readucere(reverting) la "
 #~ "ANY.\n"
 
 #~ msgid "Error in Set-Cookie, field `%s'"
-#~ msgstr "Eroare �n Set-Cookie, c�mpul `%s'"
+#~ msgstr "Eroare în Set-Cookie, câmpul `%s'"
 
 #~ msgid ""
 #~ "\n"
 #~ "REST failed; will not truncate `%s'.\n"
 #~ msgstr ""
 #~ "\n"
-#~ "REST e�uat; nu se va trunchia `%s'.\n"
+#~ "REST eşuat; nu se va trunchia `%s'.\n"
 
 #~ msgid " [%s to go]"
-#~ msgstr " [%s r�ma�i]"
+#~ msgstr " [%s rămaşi]"
 
 #~ msgid "%s: option `--%s' doesn't allow an argument\n"
-#~ msgstr "%s: op�iunea `--%s' nu permite un parametru\n"
+#~ msgstr "%s: opţiunea `--%s' nu permite un parametru\n"
 
 #~ msgid "%s: unrecognized option `--%s'\n"
-#~ msgstr "%s: op�iune nerecunoscut� `--%s'\n"
+#~ msgstr "%s: opţiune nerecunoscută `--%s'\n"
 
 #~ msgid "%s: illegal option -- %c\n"
-#~ msgstr "%s: op�iune ilegal� -- %c\n"
+#~ msgstr "%s: opţiune ilegală -- %c\n"
 
 #~ msgid "%s: option `-W %s' is ambiguous\n"
-#~ msgstr "%s: op�iunea `W %s' este ambigu�\n"
+#~ msgstr "%s: opţiunea `W %s' este ambiguă\n"
 
 #~ msgid "%s: option `-W %s' doesn't allow an argument\n"
-#~ msgstr "%s: op�iunea `-W %s' nu permite parametri\n"
+#~ msgstr "%s: opţiunea `-W %s' nu permite parametri\n"
 
 #~ msgid "Host not found"
-#~ msgstr "Host neg�sit"
+#~ msgstr "Host negăsit"
 
 #~ msgid "Failed to set up an SSL context\n"
-#~ msgstr "S-a e�uat �n setarea contextului SSL\n"
+#~ msgstr "S-a eşuat în setarea contextului SSL\n"
 
 #~ msgid "Trying without the specified certificate\n"
-#~ msgstr "Se �ncearc� f�r� certificatele specificate\n"
+#~ msgstr "Se încearcă fără certificatele specificate\n"
 
 #~ msgid "End of file while parsing headers.\n"
-#~ msgstr "Sf�r�it fi�ier la analiza headerelor.\n"
+#~ msgstr "Sfârşit fişier la analiza headerelor.\n"
 
 #~ msgid "Authorization failed.\n"
-#~ msgstr "Autorizare e�uat�.\n"
+#~ msgstr "Autorizare eşuată.\n"
 
 #~ msgid ""
 #~ "\n"
@@ -3360,16 +3734,16 @@ msgstr ""
 #~ "\n"
 #~ msgstr ""
 #~ "\n"
-#~ "Continuarea downloadului a e�uat la acest fi�ier, ceea ce intr� �n \n"
+#~ "Continuarea downloadului a eşuat la acest fişier, ceea ce intră în \n"
 #~ "conflict cu `-c'.\n"
-#~ "Se refuz� trunchierea fi�ierului `%s' existent. \n"
+#~ "Se refuză trunchierea fişierului `%s' existent. \n"
 #~ "\n"
 
 #~ msgid " (%s to go)"
-#~ msgstr " (%s r�ma�i)"
+#~ msgstr " (%s rămaşi)"
 
 #~ msgid "File `%s' already there, will not retrieve.\n"
-#~ msgstr "Fi�ierul `%s' exist� deja, nu se mai aduce.\n"
+#~ msgstr "Fişierul `%s' există deja, nu se mai aduce.\n"
 
 #~ msgid ""
 #~ "%s (%s) - `%s' saved [%ld/%ld])\n"
@@ -3377,11 +3751,11 @@ msgstr ""
 #~ msgstr "%s (%s) - `%s' salvat [%ld%ld])\n"
 
 #~ msgid "%s (%s) - Connection closed at byte %ld/%ld. "
-#~ msgstr "%s (%s) - Conexiune �nchis� la octetul %ld/%ld. "
+#~ msgstr "%s (%s) - Conexiune închisă la octetul %ld/%ld. "
 
 #~ msgid "%s: %s: Invalid boolean `%s', use always, on, off, or never.\n"
 #~ msgstr ""
-#~ "%s: %s:Boolean invalid `%s', specifica�i always, on, off sau never.\n"
+#~ "%s: %s:Boolean invalid `%s', specificaţi always, on, off sau never.\n"
 
 #~ msgid ""
 #~ "Startup:\n"
@@ -3392,10 +3766,10 @@ msgstr ""
 #~ "\n"
 #~ msgstr ""
 #~ "De start:\n"
-#~ "  -V,  --version\t\t    afi�eaz� versiunea Wget �i iese.\n"
-#~ "  -h,  --help\t\t\t    tip�re�te acest help.\n"
-#~ "  -b,  --background\t\trulare �n fundal dupa startare.\n"
-#~ "  -e,  --execute=COMAND�\texecut� o comand� �n stilul `.wgetrc'.\n"
+#~ "  -V,  --version\t\t    afişează versiunea Wget şi iese.\n"
+#~ "  -h,  --help\t\t\t    tipăreşte acest help.\n"
+#~ "  -b,  --background\t\trulare în fundal dupa startare.\n"
+#~ "  -e,  --execute=COMANDĂ\texecută o comandă în stilul `.wgetrc'.\n"
 #~ "\n"
 
 #~ msgid ""
@@ -3412,17 +3786,17 @@ msgstr ""
 #~ "file.\n"
 #~ "\n"
 #~ msgstr ""
-#~ "Log�ri �i fi�iere de intrare:\n"
-#~ "  -o,  --output-file=FI�IER\tlogare mesaje �n FI�IER.\n"
-#~ "  -a,  --append-output=FI�IER\tad�ugare mesaje �n FI�IER.\n"
-#~ "  -d,  --debug\t\t\t        tip�rire output debug.\n"
-#~ "  -q,  --quiet\t\t\t        silen�ios (f�r� output).\n"
+#~ "Logări şi fişiere de intrare:\n"
+#~ "  -o,  --output-file=FIŞIER\tlogare mesaje în FIŞIER.\n"
+#~ "  -a,  --append-output=FIŞIER\tadăugare mesaje în FIŞIER.\n"
+#~ "  -d,  --debug\t\t\t        tipărire output debug.\n"
+#~ "  -q,  --quiet\t\t\t        silenţios (fără output).\n"
 #~ "  -v,  --verbose\t\t        detaliat (este implicit).\n"
-#~ "  -nv, --non-verbose\t\t    nedetaliat, f�r� a fi silen�ios.\n"
-#~ "  -i,  --input-file=FI�IER\t    download de URL-uri g�site �n FI�IER.\n"
-#~ "  -F,  --force-html\t\t    consider� fi�ierul de intrare ca HTML.\n"
-#~ "  -B,  --base=URL\t            prefixare URL la linkuri relative �n -F -i "
-#~ "fi�ier.\n"
+#~ "  -nv, --non-verbose\t\t    nedetaliat, fără a fi silenţios.\n"
+#~ "  -i,  --input-file=FIŞIER\t    download de URL-uri găsite în FIŞIER.\n"
+#~ "  -F,  --force-html\t\t    consideră fişierul de intrare ca HTML.\n"
+#~ "  -B,  --base=URL\t            prefixare URL la linkuri relative în -F -i "
+#~ "fişier.\n"
 #~ "\n"
 
 #~ msgid ""
@@ -3460,36 +3834,36 @@ msgstr ""
 #~ "\n"
 #~ msgstr ""
 #~ "Download:\n"
-#~ "  -t,\t--tries=NUM�R\t\tseteaz� num�rul de �ncerc�ri ca NUM�R (0 este "
+#~ "  -t,\t--tries=NUMĂR\t\tsetează numărul de încercări ca NUMĂR (0 este "
 #~ "nelimitat\n"
-#~ "       --retry-connrefused      re�ncearc� �i �n cazul �n care conexiunea "
-#~ "este refuzat�.\n"
-#~ "  -O,\t--output-document=FI�IER \tscrie documentele �n FI�IER.\n"
-#~ "  -nc, --no-clobber\t\tnu sec�iona fi�ierele existente sau utilizeaz�  "
+#~ "       --retry-connrefused      reîncearcă şi în cazul în care conexiunea "
+#~ "este refuzată.\n"
+#~ "  -O,\t--output-document=FIşIER \tscrie documentele în FIŞIER.\n"
+#~ "  -nc, --no-clobber\t\tnu secţiona fişierele existente sau utilizează  "
 #~ "sufixe .#\n"
-#~ "  -c,  --continue\t\t    continu� s� iei un fi�ier downloadat par�ial.\n"
-#~ "\t--progress=TIP\t\t    selecteaz� mod m�surare desfa�urare download.\n"
-#~ "  -N,  --timestamping\t\tnu aduce fi�ierele dac� nu sunt mai noi dec�t "
+#~ "  -c,  --continue\t\t    continuă să iei un fişier downloadat parţial.\n"
+#~ "\t--progress=TIP\t\t    selectează mod măsurare desfaşurare download.\n"
+#~ "  -N,  --timestamping\t\tnu aduce fişierele dacă nu sunt mai noi decât "
 #~ "cele locale.\n"
-#~ "  -S,  --server-response\ttip�re�te r�spunsul serverului.\n"
-#~ "       --spider\t\t    nu desc�rca nimic.\n"
-#~ "  -T,  --timeout=SECUNDE\ta�teapt� 1...SECUNDE �ntre re�ncerc�rile de "
+#~ "  -S,  --server-response\ttipăreşte răspunsul serverului.\n"
+#~ "       --spider\t\t    nu descărca nimic.\n"
+#~ "  -T,  --timeout=SECUNDE\taşteaptă 1...SECUNDE între reîncercările de "
 #~ "aducere.\n"
-#~ "       --dns-timeout=SECUNDE       setare expirare c�utare DNS la "
+#~ "       --dns-timeout=SECUNDE       setare expirare căutare DNS la "
 #~ "SECUNDE.\n"
 #~ "       --connect-timeout=SECUNDE   setare expirare conectare la.SECUNDE\n"
 #~ "       --read-timeout=SECUNDE      setare expirare citire la SECUNDE.\n"
-#~ "  -w,  --wait=SECUNDE           a�teapt� SECUNDE �ntre aduceri.\n"
-#~ "       --waitretry=SECUNDE      a�teapt� 1...SECUNDE �ntre �ncerc�rile de "
+#~ "  -w,  --wait=SECUNDE           aşteaptă SECUNDE între aduceri.\n"
+#~ "       --waitretry=SECUNDE      aşteaptă 1...SECUNDE între încercările de "
 #~ "aducere.\n"
-#~ "       --random-wait            a�teapt� �ntre 0...2*WAIT secunde �ntre  "
+#~ "       --random-wait            aşteaptă între 0...2*WAIT secunde între  "
 #~ "aduceri.\n"
-#~ "  -Y,  --proxy=on/off\t\tactiveaz� (on) sau dezactiveaz�(off) proxy.\n"
-#~ "  -Q,  --quota=NUM�R\t\tseteaz� cot� de desc�rcare la NUM�R.\n"
-#~ "\t--limit-rate=RAT�\t    limiteaz� rat� desc�rcare la RAT�.\n"
-#~ "       --dns-cache=off          dezactiveaz� cachingul de c�ut�ri DNS.\n"
-#~ "       --restrict-file-names=OS restric�ioneaz� caracterele din numele "
-#~ "fi�ierul la cele pe care le permite sistemul de operare.n\n"
+#~ "  -Y,  --proxy=on/off\t\tactivează (on) sau dezactivează(off) proxy.\n"
+#~ "  -Q,  --quota=NUMĂR\t\tsetează cotă de descărcare la NUMĂR.\n"
+#~ "\t--limit-rate=RATĂ\t    limitează rată descărcare la RATă.\n"
+#~ "       --dns-cache=off          dezactivează cachingul de căutări DNS.\n"
+#~ "       --restrict-file-names=OS restricţionează caracterele din numele "
+#~ "fişierul la cele pe care le permite sistemul de operare.n\n"
 
 #~ msgid ""
 #~ "Directories:\n"
@@ -3503,10 +3877,10 @@ msgstr ""
 #~ msgstr ""
 #~ "Directoare:\n"
 #~ "  -nd  --no-directories            nu crea directoare.\n"
-#~ "  -x,  --force-directories         for�eaz� crearea directoarelor.\n"
-#~ "  -nH, --no-host-directories       nu crea directoare gazd�.\n"
-#~ "  -P,  --directory-prefix=PREFIX   salveaz� fi�ierele �n PREFIX/...\n"
-#~ "       --cut-dirs=NUM�R            Ignor� NUM�R componente director "
+#~ "  -x,  --force-directories         forţează crearea directoarelor.\n"
+#~ "  -nH, --no-host-directories       nu crea directoare gazdă.\n"
+#~ "  -P,  --directory-prefix=PREFIX   salvează fişierele în PREFIX/...\n"
+#~ "       --cut-dirs=NUMĂR            Ignoră NUMĂR componente director "
 #~ "remote.\n"
 #~ "\n"
 
@@ -3536,31 +3910,31 @@ msgstr ""
 #~ "       --post-file=FILE      use the POST method; send contents of FILE.\n"
 #~ "\n"
 #~ msgstr ""
-#~ "Op�iuni HTTP:\n"
-#~ "       --http-user=USER      seteaz� userul http ca USER.\n"
-#~ "       --http-passwd=PASS    seteaz� parola http ca PASS.\n"
-#~ "  -C,  --cache=on/off        (nu)permite date server-cached (�n mod "
+#~ "Opţiuni HTTP:\n"
+#~ "       --http-user=USER      setează userul http ca USER.\n"
+#~ "       --http-passwd=PASS    setează parola http ca PASS.\n"
+#~ "  -C,  --cache=on/off        (nu)permite date server-cached (în mod "
 #~ "normal permis).\n"
-#~ "  -E,  --html-extension      salveaz� toate documentele text/html cu "
+#~ "  -E,  --html-extension      salvează toate documentele text/html cu "
 #~ "extensie .html.\n"
-#~ "       --ignore-length       ignor� c�mpul header `Content-Length'.\n"
-#~ "       --header=�IR          insereaz� �IR �n headere.\n"
-#~ "       --proxy-user=USER     seteaz� USER drept nume utilizator proxy.\n"
-#~ "       --proxy-passwd=PASS   seteaz� PASS drept parol� proxy.\n"
-#~ "       --referer=URL         include headerul `Referer: URL' �n cererea "
+#~ "       --ignore-length       ignoră câmpul header `Content-Length'.\n"
+#~ "       --header=ŞIR          inserează ŞIR în headere.\n"
+#~ "       --proxy-user=USER     setează USER drept nume utilizator proxy.\n"
+#~ "       --proxy-passwd=PASS   setează PASS drept parolă proxy.\n"
+#~ "       --referer=URL         include headerul `Referer: URL' în cererea "
 #~ "HTTP.\n"
-#~ "  -s,  --save-headers        salveaz� headerele HTTP �n fi�ier.\n"
-#~ "  -U,  --user-agent=AGENT    identificare ca AGENT �n loc de Wget/"
+#~ "  -s,  --save-headers        salvează headerele HTTP în fişier.\n"
+#~ "  -U,  --user-agent=AGENT    identificare ca AGENT în loc de Wget/"
 #~ "VERSIUNE.\n"
-#~ "       --no-http-keep-alive  dezactiveaz� HTTP keep-alive (conexiuni "
+#~ "       --no-http-keep-alive  dezactivează HTTP keep-alive (conexiuni "
 #~ "persistente).\n"
 #~ "       --cookies=off         nu utiliza cookies.\n"
-#~ "       --load-cookies=FI�IER �nc�rc� cookies din FI�IER �nainte de "
+#~ "       --load-cookies=FIŞIER încărcă cookies din FIŞIER înainte de "
 #~ "sesiune.\n"
-#~ "       --save-cookies=FI�IER salveaz� cookies �n FI�IER dup� sesiune.\n"
-#~ "       --post-data=�IR    folose�te metoda POST; trimite �IR ca �i date.\n"
-#~ "       --post-file=FI�IER      folose�te metoda POST; trimite con�inutul "
-#~ "FI�IERului\n"
+#~ "       --save-cookies=FIŞIER salvează cookies în FIŞIER după sesiune.\n"
+#~ "       --post-data=ŞIR    foloseşte metoda POST; trimite ŞIR ca şi date.\n"
+#~ "       --post-file=FIŞIER      foloseşte metoda POST; trimite conţinutul "
+#~ "FIŞIERului\n"
 #~ "\n"
 
 #~ msgid ""
@@ -3577,14 +3951,14 @@ msgstr ""
 #~ "                              1=SSLv2 2=SSLv3 3=TLSv1\n"
 #~ "\n"
 #~ msgstr ""
-#~ "Op�iuni HTTPS (SSL):\n"
-#~ "       --sslcertfile=FI�IER     certificat client op�ional.\n"
-#~ "       --sslcertkey=FI�IER_CHEIE   fi�ier_cheie op�ional pentru acest "
+#~ "Opţiuni HTTPS (SSL):\n"
+#~ "       --sslcertfile=FIŞIER     certificat client opţional.\n"
+#~ "       --sslcertkey=FIŞIER_CHEIE   fişier_cheie opţional pentru acest "
 #~ "certificat.\n"
-#~ "       --egd-file=FI�IER        nume fi�ier al socketului EGD.\n"
-#~ "       --sslcadir=DIR         directorul unde este stocat� lista de CA-"
+#~ "       --egd-file=FIŞIER        nume fişier al socketului EGD.\n"
+#~ "       --sslcadir=DIR         directorul unde este stocată lista de CA-"
 #~ "uri.\n"
-#~ "       --sslcafile=FI�IER       fi�ierul cu gr�mada(bundle) de CA-uri\n"
+#~ "       --sslcafile=FIŞIER       fişierul cu grămada(bundle) de CA-uri\n"
 #~ "       --sslcerttype=0/1      Tip Cert-Client=PEM (implicit) / 1=ASN1 "
 #~ "(DER)\n"
 #~ "       --sslcheckcert=0/1     Verificarea serverului pentru CA-urile "
@@ -3602,11 +3976,11 @@ msgstr ""
 #~ "dirs).\n"
 #~ "\n"
 #~ msgstr ""
-#~ "Op�iuni FTP:\n"
-#~ "  -nr, --dont-remove-listing   nu �terge fi�ierele `.listing'.\n"
+#~ "Opţiuni FTP:\n"
+#~ "  -nr, --dont-remove-listing   nu şterge fişierele `.listing'.\n"
 #~ "  -g,  --glob=on/off           activare/dezactivare nume globale.\n"
-#~ "       --passive-ftp           utilizeaz� modul de transfer \"pasiv\".\n"
-#~ "       --retr-symlinks         �n recursiune, adu fi�ierele linkuite (nu "
+#~ "       --passive-ftp           utilizează modul de transfer \"pasiv\".\n"
+#~ "       --retr-symlinks         în recursiune, adu fişierele linkuite (nu "
 #~ "directoarele).\n"
 #~ "\n"
 
@@ -3626,21 +4000,21 @@ msgstr ""
 #~ "comments.\n"
 #~ "\n"
 #~ msgstr ""
-#~ "Aducere recursiv�:\n"
-#~ "  -r,  --recursive          absorbire web recursiv� -- folosi�i cu "
-#~ "aten�ie!\n"
-#~ "  -l,  --level=NUM�R       ad�ncime recursiune maxim� (inf sau 0 pentru "
-#~ "infinit�).\n"
-#~ "       --delete-after       �terge fi�ierele locale dupa desc�rcare.\n"
-#~ "  -k,  --convert-links      converte�te linkuri non-relative �n "
+#~ "Aducere recursivă:\n"
+#~ "  -r,  --recursive          absorbire web recursivă -- folosiţi cu "
+#~ "atenţie!\n"
+#~ "  -l,  --level=NUMĂR       adâncime recursiune maximă (inf sau 0 pentru "
+#~ "infinită).\n"
+#~ "       --delete-after       şterge fişierele locale dupa descărcare.\n"
+#~ "  -k,  --convert-links      converteşte linkuri non-relative în "
 #~ "relative.\n"
-#~ "  -K,  --backup-converted   �nainte de a converti fi�ierul X, back-up ca "
+#~ "  -K,  --backup-converted   înainte de a converti fişierul X, back-up ca "
 #~ "X.orig.\n"
-#~ "  -m,  --mirror             op�iune scurt� echivalent� cu -r -N -l inf -"
+#~ "  -m,  --mirror             opţiune scurtă echivalentă cu -r -N -l inf -"
 #~ "nr.\n"
 #~ "  -p,  --page-requisites    aducere toate imaginile, etc. necesare pentru "
-#~ "afi�area paginii HTML.\n"
-#~ "       --strict-comments    activeaz� manipularea strict� (SGML) a "
+#~ "afişarea paginii HTML.\n"
+#~ "       --strict-comments    activează manipularea strictă (SGML) a "
 #~ "comentariilorHTML.\n"
 #~ "\n"
 
@@ -3669,26 +4043,26 @@ msgstr ""
 #~ "\n"
 #~ msgstr ""
 #~ "Acceptare/refuz recursive:\n"
-#~ "  -A,  --accept=LIST�             list� separat� prin virgule a "
+#~ "  -A,  --accept=LISTĂ             listă separată prin virgule a "
 #~ "extensiilor acceptate.\n"
-#~ "  -R,  --reject=LIST�             list� separat� prin virgule a "
+#~ "  -R,  --reject=LISTĂ             listă separată prin virgule a "
 #~ "extensiilor refuzate.\n"
-#~ "  -D,  --domains=LIST�            list� separat� prin virgule a "
+#~ "  -D,  --domains=LISTĂ            listă separată prin virgule a "
 #~ "domeniilor acceptate.\n"
-#~ "       --exclude-domains=LIST�    list� separat� prin virgule a "
+#~ "       --exclude-domains=LISTĂ    listă separată prin virgule a "
 #~ "domeniilor refuzate.\n"
-#~ "       --follow-ftp               urmeaz� leg�turile FTP din documente "
+#~ "       --follow-ftp               urmează legăturile FTP din documente "
 #~ "HTML.\n"
-#~ "       --follow-tags=LIST�        list� separat� prin virgule a tagurilor "
+#~ "       --follow-tags=LISTĂ        listă separată prin virgule a tagurilor "
 #~ "HTML urmate.\n"
-#~ "  -G,  --ignore-tags=LIST�        list� separat� prin virgule a tagurilor "
+#~ "  -G,  --ignore-tags=LISTĂ        listă separată prin virgule a tagurilor "
 #~ "HTML ignorate.\n"
-#~ "  -H,  --span-hosts                 viziteaz� �i site-uri str�ine �n "
+#~ "  -H,  --span-hosts                 vizitează şi site-uri străine în "
 #~ "recursiune.\n"
-#~ "  -L,  --relative                   urmeaz� doar linkurile relative.\n"
-#~ "  -I,  --include-directories=LIST�  list� directoare permise.\n"
-#~ "  -X,  --exclude-directories=LIST�  list� directoare excluse.\n"
-#~ "  -np, --no-parent                  nu urca la directorul p�rinte.\n"
+#~ "  -L,  --relative                   urmează doar linkurile relative.\n"
+#~ "  -I,  --include-directories=LISTĂ  listă directoare permise.\n"
+#~ "  -X,  --exclude-directories=LISTĂ  listă directoare excluse.\n"
+#~ "  -np, --no-parent                  nu urca la directorul părinte.\n"
 #~ "\n"
 
 #~ msgid ""
@@ -3697,10 +4071,10 @@ msgstr ""
 #~ "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
 #~ "GNU General Public License for more details.\n"
 #~ msgstr ""
-#~ "Acest program este distribuit �n speran�a c� va fi folositor,\n"
-#~ "dar F�R� NICI O GARAN�IE; chiar f�r� garan�ia presupus� a\n"
-#~ "VANDABILIT��II sau POTRIVIRII PENT UN SCOP ANUME.  Citi�i\n"
-#~ "Licen�a Public� General� GNU pentru mai multe detalii.\n"
+#~ "Acest program este distribuit în speranţa că va fi folositor,\n"
+#~ "dar FĂRĂ NICI O GARANŢIE; chiar fără garanţia presupusă a\n"
+#~ "VANDABILITĂŢII sau POTRIVIRII PENT UN SCOP ANUME.  Citiţi\n"
+#~ "Licenţa Publică Generală GNU pentru mai multe detalii.\n"
 
 #~ msgid "Starting WinHelp %s\n"
 #~ msgstr "Startare WinHelp %s\n"
@@ -3709,16 +4083,16 @@ msgstr ""
 #~ msgstr "Host vid"
 
 #~ msgid "%s: %s: Not enough memory.\n"
-#~ msgstr "%s: %s: Memorie plin�.\n"
+#~ msgstr "%s: %s: Memorie plină.\n"
 
 #~ msgid "Syntax error in Set-Cookie at character `%c'.\n"
-#~ msgstr "Eroare de sintax� �n Set-Cookie la caracterul `%c'.\n"
+#~ msgstr "Eroare de sintaxă în Set-Cookie la caracterul `%c'.\n"
 
 #~ msgid "%s: %s: Cannot convert `%s' to an IP address.\n"
-#~ msgstr "%s: %s: Nu se poate converti `%s' �n adres� IP.\n"
+#~ msgstr "%s: %s: Nu se poate converti `%s' în adresă IP.\n"
 
 #~ msgid "%s: %s: invalid command\n"
-#~ msgstr "%s: %s: comand� invalid�\n"
+#~ msgstr "%s: %s: comandă invalidă\n"
 
 #~ msgid "%s: Redirection cycle detected.\n"
 #~ msgstr "%s: Ciclu de redirectare detectat.\n"

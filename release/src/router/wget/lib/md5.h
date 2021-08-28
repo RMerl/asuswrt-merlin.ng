@@ -1,6 +1,6 @@
 /* Declaration of functions and data types used for MD5 sum computing
    library functions.
-   Copyright (C) 1995-1997, 1999-2001, 2004-2006, 2008-2018 Free Software
+   Copyright (C) 1995-1997, 1999-2001, 2004-2006, 2008-2021 Free Software
    Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -40,7 +40,7 @@
 #endif
 
 #ifndef __THROW
-# if defined __cplusplus && __GNUC_PREREQ (2,8)
+# if defined __cplusplus && (__GNUC_PREREQ (2,8) || __clang_major__ >= 4)
 #  define __THROW       throw ()
 # else
 #  define __THROW
@@ -105,13 +105,15 @@ extern void __md5_process_bytes (const void *buffer, size_t len,
    in first 16 bytes following RESBUF.  The result is always in little
    endian byte order, so that a byte-wise output yields to the wanted
    ASCII representation of the message digest.  */
-extern void *__md5_finish_ctx (struct md5_ctx *ctx, void *resbuf) __THROW;
+extern void *__md5_finish_ctx (struct md5_ctx *ctx, void *restrict resbuf)
+     __THROW;
 
 
 /* Put result from CTX in first 16 bytes following RESBUF.  The result is
    always in little endian byte order, so that a byte-wise output yields
    to the wanted ASCII representation of the message digest.  */
-extern void *__md5_read_ctx (const struct md5_ctx *ctx, void *resbuf) __THROW;
+extern void *__md5_read_ctx (const struct md5_ctx *ctx, void *restrict resbuf)
+     __THROW;
 
 
 /* Compute MD5 message digest for LEN bytes beginning at BUFFER.  The
@@ -119,7 +121,7 @@ extern void *__md5_read_ctx (const struct md5_ctx *ctx, void *resbuf) __THROW;
    output yields to the wanted ASCII representation of the message
    digest.  */
 extern void *__md5_buffer (const char *buffer, size_t len,
-                           void *resblock) __THROW;
+                           void *restrict resblock) __THROW;
 
 # endif
 /* Compute MD5 message digest for bytes read from STREAM.

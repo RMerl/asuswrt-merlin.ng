@@ -9,7 +9,7 @@ from misc.wget_file import WgetFile
     and fails.
 """
 ############# File Definitions ###############################################
-File1 = "I am an invisble man."
+File1 = "I am an invisible man."
 
 User = "Sauron"
 Password = "TheEye"

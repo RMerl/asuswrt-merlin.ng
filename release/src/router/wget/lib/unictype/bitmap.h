@@ -1,5 +1,5 @@
 /* Three-level bitmap lookup.
-   Copyright (C) 2000-2002, 2005-2007, 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2000-2002, 2005-2007, 2009-2021 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2000-2002.
 
    This program is free software: you can redistribute it and/or modify it
@@ -17,7 +17,8 @@
 
 static inline int bitmap_lookup (const void *table, ucs4_t uc);
 
-/* These values are currently hardcoded into gen-ctype.c.  */
+/* These values are currently hardcoded into gen-uni-tables.c, function
+   output_predicate().  */
 #define header_0 16
 #define header_2 9
 #define header_3 127
@@ -37,7 +38,7 @@ bitmap_lookup (const void *table, ucs4_t uc)
           if (lookup2 >= 0)
             {
               unsigned int index3 = (uc >> 5) & header_4;
-              unsigned int lookup3 = ((const int *) table)[lookup2 + index3];
+              unsigned int lookup3 = ((const unsigned int *) table)[lookup2 + index3];
 
               return (lookup3 >> (uc & 0x1f)) & 1;
             }

@@ -1,5 +1,5 @@
-# strerror_r.m4 serial 19
-dnl Copyright (C) 2002, 2007-2018 Free Software Foundation, Inc.
+# strerror_r.m4 serial 20
+dnl Copyright (C) 2002, 2007-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -163,7 +163,7 @@ changequote([,])dnl
                [gl_cv_func_strerror_r_works=no],
                [dnl Guess no on all platforms that have __xpg_strerror_r,
                 dnl at least until fixed glibc and cygwin are more common.
-                gl_cv_func_strerror_r_works="guessing no"
+                gl_cv_func_strerror_r_works="$gl_cross_guess_normal"
                ])
             ])
         fi

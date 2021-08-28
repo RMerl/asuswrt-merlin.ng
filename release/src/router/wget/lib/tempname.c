@@ -1,24 +1,22 @@
-/* tempname.c - generate the name of a temporary file.
+/* Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
-   Copyright (C) 1991-2003, 2005-2007, 2009-2018 Free Software Foundation, Inc.
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public
+   License as published by the Free Software Foundation; either
+   version 3 of the License, or (at your option) any later version.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
+   The GNU C Library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
-
-/* Extracted from glibc sysdeps/posix/tempname.c.  See also tmpdir.c.  */
+   You should have received a copy of the GNU General Public
+   License along with the GNU C Library; if not, see
+   <https://www.gnu.org/licenses/>.  */
 
 #if !_LIBC
-# include <config.h>
+# include <libc-config.h>
 # include "tempname.h"
 #endif
 
@@ -26,9 +24,6 @@
 #include <assert.h>
 
 #include <errno.h>
-#ifndef __set_errno
-# define __set_errno(Val) errno = (Val)
-#endif
 
 #include <stdio.h>
 #ifndef P_tmpdir
@@ -52,52 +47,50 @@
 #include <string.h>
 
 #include <fcntl.h>
-#include <sys/time.h>
+#include <stdalign.h>
 #include <stdint.h>
-#include <unistd.h>
-
+#include <sys/random.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #if _LIBC
 # define struct_stat64 struct stat64
+# define __secure_getenv __libc_secure_getenv
 #else
 # define struct_stat64 struct stat
-# define __try_tempname try_tempname
 # define __gen_tempname gen_tempname
-# define __getpid getpid
-# define __gettimeofday gettimeofday
 # define __mkdir mkdir
 # define __open open
-# define __lxstat64(version, file, buf) lstat (file, buf)
+# define __lstat64(file, buf) lstat (file, buf)
+# define __stat64(file, buf) stat (file, buf)
+# define __getrandom getrandom
+# define __clock_gettime64 clock_gettime
+# define __timespec64 timespec
 #endif
 
-#ifdef _LIBC
-# include <hp-timing.h>
-# if HP_TIMING_AVAIL
-#  define RANDOM_BITS(Var) \
-  if (__builtin_expect (value == UINT64_C (0), 0))                            \
-    {                                                                         \
-      /* If this is the first time this function is used initialize           \
-         the variable we accumulate the value in to some somewhat             \
-         random value.  If we'd not do this programs at startup time          \
-         might have a reduced set of possible names, at least on slow         \
-         machines.  */                                                        \
-      struct timeval tv;                                                      \
-      __gettimeofday (&tv, NULL);                                             \
-      value = ((uint64_t) tv.tv_usec << 16) ^ tv.tv_sec;                      \
-    }                                                                         \
-  HP_TIMING_NOW (Var)
-# endif
-#endif
+/* Use getrandom if it works, falling back on a 64-bit linear
+   congruential generator that starts with Var's value
+   mixed in with a clock's low-order bits if available.  */
+typedef uint_fast64_t random_value;
+#define RANDOM_VALUE_MAX UINT_FAST64_MAX
+#define BASE_62_DIGITS 10 /* 62**10 < UINT_FAST64_MAX */
+#define BASE_62_POWER (62LL * 62 * 62 * 62 * 62 * 62 * 62 * 62 * 62 * 62)
 
-/* Use the widest available unsigned type if uint64_t is not
-   available.  The algorithm below extracts a number less than 62**6
-   (approximately 2**35.725) from uint64_t, so ancient hosts where
-   uintmax_t is only 32 bits lose about 3.725 bits of randomness,
-   which is better than not having mkstemp at all.  */
-#if !defined UINT64_MAX && !defined uint64_t
-# define uint64_t uintmax_t
+static random_value
+random_bits (random_value var)
+{
+  random_value r;
+  /* Without GRND_NONBLOCK it can be blocked for minutes on some systems.  */
+  if (__getrandom (&r, sizeof r, GRND_NONBLOCK) == sizeof r)
+    return r;
+#if _LIBC || (defined CLOCK_MONOTONIC && HAVE_CLOCK_GETTIME)
+  /* Add entropy if getrandom did not work.  */
+  struct __timespec64 tv;
+  __clock_gettime64 (CLOCK_MONOTONIC, &tv);
+  var ^= tv.tv_nsec;
 #endif
+  return 2862933555777941757 * var + 3037000493;
+}
 
 #if _LIBC
 /* Return nonzero if DIR is an existent directory.  */
@@ -105,7 +98,7 @@ static int
 direxists (const char *dir)
 {
   struct_stat64 buf;
-  return __xstat64 (_STAT_VER, dir, &buf) == 0 && S_ISDIR (buf.st_mode);
+  return __stat64 (dir, &buf) == 0 && S_ISDIR (buf.st_mode);
 }
 
 /* Path search algorithm, for tmpnam, tmpfile, etc.  If DIR is
@@ -172,91 +165,10 @@ __path_search (char *tmpl, size_t tmpl_len, const char *dir, const char *pfx,
 }
 #endif /* _LIBC */
 
-/* These are the characters used in temporary file names.  */
-static const char letters[] =
-"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-int
-__try_tempname (char *tmpl, int suffixlen, void *args,
-                int (*tryfunc) (char *, void *))
-{
-  int len;
-  char *XXXXXX;
-  static uint64_t value;
-  uint64_t random_time_bits;
-  unsigned int count;
-  int fd = -1;
-  int save_errno = errno;
-
-  /* A lower bound on the number of temporary files to attempt to
-     generate.  The maximum total number of temporary file names that
-     can exist for a given template is 62**6.  It should never be
-     necessary to try all of these combinations.  Instead if a reasonable
-     number of names is tried (we define reasonable as 62**3) fail to
-     give the system administrator the chance to remove the problems.  */
-#define ATTEMPTS_MIN (62 * 62 * 62)
-
-  /* The number of times to attempt to generate a temporary file.  To
-     conform to POSIX, this must be no smaller than TMP_MAX.  */
-#if ATTEMPTS_MIN < TMP_MAX
-  unsigned int attempts = TMP_MAX;
-#else
-  unsigned int attempts = ATTEMPTS_MIN;
+#if _LIBC
+static int try_tempname_len (char *, int, void *, int (*) (char *, void *),
+                             size_t);
 #endif
-
-  len = strlen (tmpl);
-  if (len < 6 + suffixlen || memcmp (&tmpl[len - 6 - suffixlen], "XXXXXX", 6))
-    {
-      __set_errno (EINVAL);
-      return -1;
-    }
-
-  /* This is where the Xs start.  */
-  XXXXXX = &tmpl[len - 6 - suffixlen];
-
-  /* Get some more or less random data.  */
-#ifdef RANDOM_BITS
-  RANDOM_BITS (random_time_bits);
-#else
-  {
-    struct timeval tv;
-    __gettimeofday (&tv, NULL);
-    random_time_bits = ((uint64_t) tv.tv_usec << 16) ^ tv.tv_sec;
-  }
-#endif
-  value += random_time_bits ^ __getpid ();
-
-  for (count = 0; count < attempts; value += 7777, ++count)
-    {
-      uint64_t v = value;
-
-      /* Fill in the random bits.  */
-      XXXXXX[0] = letters[v % 62];
-      v /= 62;
-      XXXXXX[1] = letters[v % 62];
-      v /= 62;
-      XXXXXX[2] = letters[v % 62];
-      v /= 62;
-      XXXXXX[3] = letters[v % 62];
-      v /= 62;
-      XXXXXX[4] = letters[v % 62];
-      v /= 62;
-      XXXXXX[5] = letters[v % 62];
-
-      fd = tryfunc (tmpl, args);
-      if (fd >= 0)
-        {
-          __set_errno (save_errno);
-          return fd;
-        }
-      else if (errno != EEXIST)
-        return -1;
-    }
-
-  /* We got out of the loop because we ran out of combinations to try.  */
-  __set_errno (EEXIST);
-  return -1;
-}
 
 static int
 try_file (char *tmpl, void *flags)
@@ -278,15 +190,20 @@ try_nocreate (char *tmpl, void *flags _GL_UNUSED)
 {
   struct_stat64 st;
 
-  if (__lxstat64 (_STAT_VER, tmpl, &st) == 0 || errno == EOVERFLOW)
+  if (__lstat64 (tmpl, &st) == 0 || errno == EOVERFLOW)
     __set_errno (EEXIST);
   return errno == ENOENT ? 0 : -1;
 }
 
+/* These are the characters used in temporary file names.  */
+static const char letters[] =
+"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
 /* Generate a temporary file name based on TMPL.  TMPL must match the
-   rules for mk[s]temp (i.e. end in "XXXXXX", possibly with a suffix).
+   rules for mk[s]temp (i.e., end in at least X_SUFFIX_LEN "X"s,
+   possibly with a suffix).
    The name constructed does not exist at the time of the call to
-   __gen_tempname.  TMPL is overwritten with the result.
+   this function.  TMPL is overwritten with the result.
 
    KIND may be one of:
    __GT_NOCREATE:       simply verify that the name does not exist
@@ -296,28 +213,122 @@ try_nocreate (char *tmpl, void *flags _GL_UNUSED)
    __GT_DIR:            create a directory, which will be mode 0700.
 
    We use a clever algorithm to get hard-to-predict names. */
+#ifdef _LIBC
+static
+#endif
+int
+gen_tempname_len (char *tmpl, int suffixlen, int flags, int kind,
+                  size_t x_suffix_len)
+{
+  static int (*const tryfunc[]) (char *, void *) =
+    {
+      [__GT_FILE] = try_file,
+      [__GT_DIR] = try_dir,
+      [__GT_NOCREATE] = try_nocreate
+    };
+  return try_tempname_len (tmpl, suffixlen, &flags, tryfunc[kind],
+                           x_suffix_len);
+}
+
+#ifdef _LIBC
+static
+#endif
+int
+try_tempname_len (char *tmpl, int suffixlen, void *args,
+                  int (*tryfunc) (char *, void *), size_t x_suffix_len)
+{
+  size_t len;
+  char *XXXXXX;
+  unsigned int count;
+  int fd = -1;
+  int save_errno = errno;
+
+  /* A lower bound on the number of temporary files to attempt to
+     generate.  The maximum total number of temporary file names that
+     can exist for a given template is 62**6.  It should never be
+     necessary to try all of these combinations.  Instead if a reasonable
+     number of names is tried (we define reasonable as 62**3) fail to
+     give the system administrator the chance to remove the problems.
+     This value requires that X_SUFFIX_LEN be at least 3.  */
+#define ATTEMPTS_MIN (62 * 62 * 62)
+
+  /* The number of times to attempt to generate a temporary file.  To
+     conform to POSIX, this must be no smaller than TMP_MAX.  */
+#if ATTEMPTS_MIN < TMP_MAX
+  unsigned int attempts = TMP_MAX;
+#else
+  unsigned int attempts = ATTEMPTS_MIN;
+#endif
+
+  /* A random variable.  The initial value is used only the for fallback path
+     on 'random_bits' on 'getrandom' failure.  Its initial value tries to use
+     some entropy from the ASLR and ignore possible bits from the stack
+     alignment.  */
+  random_value v = ((uintptr_t) &v) / alignof (max_align_t);
+
+  /* How many random base-62 digits can currently be extracted from V.  */
+  int vdigits = 0;
+
+  /* Least unfair value for V.  If V is less than this, V can generate
+     BASE_62_DIGITS digits fairly.  Otherwise it might be biased.  */
+  random_value const unfair_min
+    = RANDOM_VALUE_MAX - RANDOM_VALUE_MAX % BASE_62_POWER;
+
+  len = strlen (tmpl);
+  if (len < x_suffix_len + suffixlen
+      || strspn (&tmpl[len - x_suffix_len - suffixlen], "X") < x_suffix_len)
+    {
+      __set_errno (EINVAL);
+      return -1;
+    }
+
+  /* This is where the Xs start.  */
+  XXXXXX = &tmpl[len - x_suffix_len - suffixlen];
+
+  for (count = 0; count < attempts; ++count)
+    {
+      for (size_t i = 0; i < x_suffix_len; i++)
+        {
+          if (vdigits == 0)
+            {
+              do
+                v = random_bits (v);
+              while (unfair_min <= v);
+
+              vdigits = BASE_62_DIGITS;
+            }
+
+          XXXXXX[i] = letters[v % 62];
+          v /= 62;
+          vdigits--;
+        }
+
+      fd = tryfunc (tmpl, args);
+      if (fd >= 0)
+        {
+          __set_errno (save_errno);
+          return fd;
+        }
+      else if (errno != EEXIST)
+        return -1;
+    }
+
+  /* We got out of the loop because we ran out of combinations to try.  */
+  __set_errno (EEXIST);
+  return -1;
+}
+
 int
 __gen_tempname (char *tmpl, int suffixlen, int flags, int kind)
 {
-  int (*tryfunc) (char *, void *);
-
-  switch (kind)
-    {
-    case __GT_FILE:
-      tryfunc = try_file;
-      break;
-
-    case __GT_DIR:
-      tryfunc = try_dir;
-      break;
-
-    case __GT_NOCREATE:
-      tryfunc = try_nocreate;
-      break;
-
-    default:
-      assert (! "invalid KIND in __gen_tempname");
-      abort ();
-    }
-  return __try_tempname (tmpl, suffixlen, &flags, tryfunc);
+  return gen_tempname_len (tmpl, suffixlen, flags, kind, 6);
 }
+
+#if !_LIBC
+int
+try_tempname (char *tmpl, int suffixlen, void *args,
+              int (*tryfunc) (char *, void *))
+{
+  return try_tempname_len (tmpl, suffixlen, args, tryfunc, 6);
+}
+#endif

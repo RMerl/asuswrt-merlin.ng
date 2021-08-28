@@ -1,40 +1,54 @@
-eval '(exit $?0)' && eval 'exec perl -wS "$0" "$@"'
-  & eval 'exec perl -wS "$0" $argv:q'
-    if 0;
+#!/bin/sh
+#! -*-perl-*-
+
 # Generate a release announcement message.
 
-my $VERSION = '2018-03-07 03:46'; # UTC
+# Copyright (C) 2002-2021 Free Software Foundation, Inc.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# Written by Jim Meyering
+
+# This is a prologue that allows to run a perl script as an executable
+# on systems that are compliant to a POSIX version before POSIX:2017.
+# On such systems, the usual invocation of an executable through execlp()
+# or execvp() fails with ENOEXEC if it is a script that does not start
+# with a #! line.  The script interpreter mentioned in the #! line has
+# to be /bin/sh, because on GuixSD systems that is the only program that
+# has a fixed file name.  The second line is essential for perl and is
+# also useful for editing this file in Emacs.  The next two lines below
+# are valid code in both sh and perl.  When executed by sh, they re-execute
+# the script through the perl program found in $PATH.  The '-x' option
+# is essential as well; without it, perl would re-execute the script
+# through /bin/sh.  When executed by perl, the next two lines are a no-op.
+eval 'exec perl -wSx "$0" "$@"'
+     if 0;
+
+my $VERSION = '2020-05-10 16:13'; # UTC
 # The definition above must lie within the first 8 lines in order
 # for the Emacs time-stamp write hook (at end) to update it.
 # If you change this file with Emacs, please let the write hook
 # do its job.  Otherwise, update this string manually.
 
-# Copyright (C) 2002-2018 Free Software Foundation, Inc.
-
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-# Written by Jim Meyering
-
 use strict;
-
 use Getopt::Long;
 use POSIX qw(strftime);
 
 (my $ME = $0) =~ s|.*/||;
 
 my %valid_release_types = map {$_ => 1} qw (alpha beta stable);
-my @archive_suffixes = ('tar.gz', 'tar.bz2', 'tar.lzma', 'tar.xz');
+my @archive_suffixes = qw (tar.gz tar.bz2 tar.lz tar.lzma tar.xz);
 my %digest_classes =
   (
    'md5' => (eval { require Digest::MD5; } and 'Digest::MD5'),
@@ -357,8 +371,8 @@ sub get_tool_versions ($$)
 }
 
 {
-  # Neutralize the locale, so that, for instance, "du" does not
-  # issue "1,2" instead of "1.2", what confuses our regexps.
+  # Use the C locale so that, for instance, "du" does not
+  # print "1,2" instead of "1.2", which would confuse our regexps.
   $ENV{LC_ALL} = "C";
 
   my $mail_headers;
@@ -550,6 +564,7 @@ EOF
 ## perl-extra-newline-before-brace: t
 ## perl-merge-trailing-else: nil
 ## eval: (add-hook 'before-save-hook 'time-stamp)
+## time-stamp-line-limit: 50
 ## time-stamp-start: "my $VERSION = '"
 ## time-stamp-format: "%:y-%02m-%02d %02H:%02M"
 ## time-stamp-time-zone: "UTC0"

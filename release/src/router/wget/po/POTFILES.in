@@ -1,16 +1,7 @@
 # List of files which containing translatable strings.
-# Copyright (C) 1995-2011, 2018 Free Software Foundation, Inc.
+# Copyright (C) 1995-2011, 2018-2021 Free Software Foundation, Inc.
 
 # Package source files
-lib/error.c
-lib/gai_strerror.c
-lib/getopt.c
-lib/quotearg.c
-lib/regcomp.c
-lib/spawn-pipe.c
-lib/w32spawn.h
-lib/wait-process.c
-lib/xalloc-die.c
 src/connect.c
 src/convert.c
 src/cookies.c

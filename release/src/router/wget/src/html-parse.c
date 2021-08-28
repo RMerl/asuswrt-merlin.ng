@@ -1,5 +1,6 @@
 /* HTML parser for Wget.
-   Copyright (C) 1998-2011, 2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 1998-2011, 2015, 2018-2021 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 
@@ -385,7 +386,7 @@ decode_entity (const char **ptr, const char *end)
         value = 0;
         if (*p == 'x')
           for (++p; value < 256 && p < end && c_isxdigit (*p); p++, digits++)
-            value = (value << 4) + XDIGIT_TO_NUM (*p);
+            value = (value << 4) + _unhex (*p);
         else
           for (; value < 256 && p < end && c_isdigit (*p); p++, digits++)
             value = (value * 10) + (*p - '0');
@@ -776,11 +777,27 @@ find_comment_end (const char *beg, const char *end)
 static bool
 name_allowed (const struct hash_table *ht, const char *b, const char *e)
 {
-  char *copy;
+  char buf[256], *copy;
+  size_t len = e - b;
+  bool ret;
+
   if (!ht)
     return true;
-  BOUNDED_TO_ALLOCA (b, e, copy);
-  return hash_table_get (ht, copy) != NULL;
+
+  if (len < sizeof (buf))
+    copy = buf;
+  else
+    copy = xmalloc (len + 1);
+
+  memcpy (copy, b, len);
+  copy[len] = 0;
+
+  ret = hash_table_get (ht, copy) != NULL;
+
+  if (copy != buf)
+    xfree (copy);
+
+  return ret;
 }
 
 /* Advance P (a char pointer), with the explicit intent of being able

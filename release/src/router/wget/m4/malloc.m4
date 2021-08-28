@@ -1,27 +1,19 @@
-# malloc.m4 serial 17
-dnl Copyright (C) 2007, 2009-2018 Free Software Foundation, Inc.
+# malloc.m4 serial 21
+dnl Copyright (C) 2007, 2009-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
-
-m4_version_prereq([2.70], [] ,[
 
 # This is adapted with modifications from upstream Autoconf here:
 # https://git.savannah.gnu.org/cgit/autoconf.git/commit/?id=04be2b7a29d65d9a08e64e8e56e594c91749598c
 AC_DEFUN([_AC_FUNC_MALLOC_IF],
 [
-  AC_REQUIRE([AC_HEADER_STDC])dnl
   AC_REQUIRE([AC_CANONICAL_HOST])dnl for cross-compiles
-  AC_CHECK_HEADERS([stdlib.h])
   AC_CACHE_CHECK([for GNU libc compatible malloc],
     [ac_cv_func_malloc_0_nonnull],
     [AC_RUN_IFELSE(
        [AC_LANG_PROGRAM(
-          [[#if defined STDC_HEADERS || defined HAVE_STDLIB_H
-            # include <stdlib.h>
-            #else
-            char *malloc ();
-            #endif
+          [[#include <stdlib.h>
           ]],
           [[char *p = malloc (0);
             int result = !p;
@@ -32,18 +24,23 @@ AC_DEFUN([_AC_FUNC_MALLOC_IF],
        [ac_cv_func_malloc_0_nonnull=no],
        [case "$host_os" in
           # Guess yes on platforms where we know the result.
-          *-gnu* | gnu* | freebsd* | netbsd* | openbsd* \
+          *-gnu* | gnu* | *-musl* | freebsd* | netbsd* | openbsd* \
           | hpux* | solaris* | cygwin* | mingw*)
-            ac_cv_func_malloc_0_nonnull=yes ;;
-          # If we don't know, assume the worst.
-          *) ac_cv_func_malloc_0_nonnull=no ;;
+            ac_cv_func_malloc_0_nonnull="guessing yes" ;;
+          # If we don't know, obey --enable-cross-guesses.
+          *) ac_cv_func_malloc_0_nonnull="$gl_cross_guess_normal" ;;
         esac
        ])
     ])
-  AS_IF([test $ac_cv_func_malloc_0_nonnull = yes], [$1], [$2])
+  case "$ac_cv_func_malloc_0_nonnull" in
+    *yes)
+      $1
+      ;;
+    *)
+      $2
+      ;;
+  esac
 ])# _AC_FUNC_MALLOC_IF
-
-])
 
 # gl_FUNC_MALLOC_GNU
 # ------------------

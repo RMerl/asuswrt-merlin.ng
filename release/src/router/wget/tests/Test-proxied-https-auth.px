@@ -1,4 +1,4 @@
-#!/usr/bin/env -S perl -I .
+#!/usr/bin/env perl
 # Simulate a tunneling proxy to a HTTPS URL that needs authentication.
 # Use two connections (Connection: close)
 
@@ -166,7 +166,7 @@ if (!defined $valgrind || $valgrind eq "" || $valgrind == 0) {
 } elsif ($valgrind == 1) {
     $cmdline =
       'valgrind --suppressions=' . $VALGRIND_SUPP_FILE
-      . ' --error-exitcode=301 --leak-check=yes --track-origins=yes '
+      . ' --error-exitcode=301 --leak-check=yes --track-origins=yes --gen-suppressions=all '
       . $cmdline;
 } else {
     $cmdline = $valgrind . " " . $cmdline;

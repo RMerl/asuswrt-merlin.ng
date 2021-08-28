@@ -1,0 +1,1011 @@
+# traditional Chinese translation of coreutils.
+# Copyright (C) 1998, 2002, 2005 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gnulib package.
+#
+# # Merged from textutils, sh-utils and fileutils translation:
+#
+# # Yip Chi Lap <clyip@cs.hku.hk>, 1998.
+# # Yuan-Chung Cheng <platin@ms.ccafps.khc.edu.tw>, 1998.
+# # Abel Cheung <abelcheung@gmail.com>, 2002.
+# # Pofeng Lee <pofeng@linux.org.tw>, 1998, 2002.
+# Abel Cheung <abelcheung@gmail.com>, 2005.
+# pan93412 <pan93412@gmail.com>, 2019.
+msgid ""
+msgstr ""
+"Project-Id-Version: gnulib 4.0.0.2567\n"
+"Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
+"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"PO-Revision-Date: 2019-12-15 13:01+0800\n"
+"Last-Translator: pan93412 <pan93412@gmail.com>\n"
+"Language-Team: Chinese (traditional) <zh-l10n@lists.linux.org.tw>\n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Lokalize 19.12.0\n"
+
+#: lib/error.c:195
+msgid "Unknown system error"
+msgstr "未知系統錯誤"
+
+#: lib/gai_strerror.c:57
+msgid "Address family for hostname not supported"
+msgstr "不支援主機名稱的位址家族"
+
+#: lib/gai_strerror.c:58
+msgid "Temporary failure in name resolution"
+msgstr "解析名稱時發生暫時性錯誤"
+
+#: lib/gai_strerror.c:59
+msgid "Bad value for ai_flags"
+msgstr "ai_flags 的值無效"
+
+#: lib/gai_strerror.c:60
+msgid "Non-recoverable failure in name resolution"
+msgstr "解析名稱時發生無法復原錯誤"
+
+#: lib/gai_strerror.c:61
+msgid "ai_family not supported"
+msgstr "不支援 ai_family"
+
+#: lib/gai_strerror.c:62
+msgid "Memory allocation failure"
+msgstr "分配記憶體失敗"
+
+#: lib/gai_strerror.c:63
+msgid "No address associated with hostname"
+msgstr "沒有位址關聯至此主機名稱"
+
+#: lib/gai_strerror.c:64
+msgid "Name or service not known"
+msgstr "名稱或服務未知"
+
+#: lib/gai_strerror.c:65
+msgid "Servname not supported for ai_socktype"
+msgstr "ai_socktype 不支援伺服器名稱 (Servname)"
+
+#: lib/gai_strerror.c:66
+msgid "ai_socktype not supported"
+msgstr "不支援 ai_socktype"
+
+#: lib/gai_strerror.c:67
+msgid "System error"
+msgstr "系統錯誤"
+
+#: lib/gai_strerror.c:68
+msgid "Argument buffer too small"
+msgstr "參數緩衝區過小"
+
+#: lib/gai_strerror.c:70
+msgid "Processing request in progress"
+msgstr "正在處理請求"
+
+#: lib/gai_strerror.c:71
+msgid "Request canceled"
+msgstr "已取消請求"
+
+#: lib/gai_strerror.c:72
+msgid "Request not canceled"
+msgstr "未取消請求"
+
+#: lib/gai_strerror.c:73
+msgid "All requests done"
+msgstr "所有請求完成"
+
+#: lib/gai_strerror.c:74
+msgid "Interrupted by a signal"
+msgstr "遭信號中斷"
+
+#: lib/gai_strerror.c:75
+msgid "Parameter string not correctly encoded"
+msgstr "未正確編碼參數字串"
+
+#: lib/gai_strerror.c:87
+msgid "Unknown error"
+msgstr "未知錯誤"
+
+#: lib/getopt.c:278
+#, c-format
+msgid "%s: option '%s%s' is ambiguous\n"
+msgstr "%s：「%s%s」選項不明確\n"
+
+#: lib/getopt.c:284
+#, c-format
+msgid "%s: option '%s%s' is ambiguous; possibilities:"
+msgstr "%s：「%s%s」選項不明確；可能是："
+
+#: lib/getopt.c:319
+#, c-format
+msgid "%s: unrecognized option '%s%s'\n"
+msgstr "%s：無法識別「%s%s」選項\n"
+
+#: lib/getopt.c:345
+#, c-format
+msgid "%s: option '%s%s' doesn't allow an argument\n"
+msgstr "%s：「%s%s」選項不接受參數\n"
+
+#: lib/getopt.c:360
+#, c-format
+msgid "%s: option '%s%s' requires an argument\n"
+msgstr "%s：「%s%s」選項需要參數\n"
+
+#: lib/getopt.c:621
+#, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr "%s：無效選項 -- '%c'\n"
+
+#: lib/getopt.c:636 lib/getopt.c:682
+#, c-format
+msgid "%s: option requires an argument -- '%c'\n"
+msgstr "%s：選項需要參數 -- '%c'\n"
+
+#: lib/openat-die.c:38
+#, c-format
+msgid "unable to record current working directory"
+msgstr "無法記錄目前工作目錄"
+
+#: lib/openat-die.c:57
+#, c-format
+msgid "failed to return to initial working directory"
+msgstr "無法回到初始工作目錄"
+
+#: lib/os2-spawn.c:46
+#, c-format
+msgid "_open_osfhandle failed"
+msgstr "_open_osfhandle 失敗"
+
+#: lib/os2-spawn.c:83
+#, c-format
+msgid "cannot restore fd %d: dup2 failed"
+msgstr "無法復原 fd %d：dup2 失敗"
+
+#. TRANSLATORS:
+#. Get translations for open and closing quotation marks.
+#. The message catalog should translate "`" to a left
+#. quotation mark suitable for the locale, and similarly for
+#. "'".  For example, a French Unicode local should translate
+#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), respectively.
+#.
+#. If the catalog has no translation, we will try to
+#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
+#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
+#. current locale is not Unicode, locale_quoting_style
+#. will quote 'like this', and clocale_quoting_style will
+#. quote "like this".  You should always include translations
+#. for "`" and "'" even if U+2018 and U+2019 are appropriate
+#. for your locale.
+#.
+#. If you don't know what to put here, please see
+#. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
+#. and use glyphs suitable for your language.
+#: lib/quotearg.c:355
+msgid "`"
+msgstr "「"
+
+#: lib/quotearg.c:356
+msgid "'"
+msgstr "」"
+
+#: lib/regcomp.c:135
+msgid "Success"
+msgstr "成功"
+
+#: lib/regcomp.c:138
+msgid "No match"
+msgstr "無符合項目"
+
+#: lib/regcomp.c:141
+msgid "Invalid regular expression"
+msgstr "正規表示式無效"
+
+#: lib/regcomp.c:144
+msgid "Invalid collation character"
+msgstr "定序字元無效"
+
+#: lib/regcomp.c:147
+msgid "Invalid character class name"
+msgstr "字元類型名稱無效"
+
+#: lib/regcomp.c:150
+msgid "Trailing backslash"
+msgstr "末尾反斜線"
+
+#: lib/regcomp.c:153
+msgid "Invalid back reference"
+msgstr "向後參考無效"
+
+#: lib/regcomp.c:156
+msgid "Unmatched [, [^, [:, [., or [="
+msgstr "不對稱的 [、[^、[:、[. 或 [="
+
+#: lib/regcomp.c:159
+msgid "Unmatched ( or \\("
+msgstr "不對稱的 ( 或 \\("
+
+#: lib/regcomp.c:162
+msgid "Unmatched \\{"
+msgstr "不對稱的 \\{"
+
+#: lib/regcomp.c:165
+msgid "Invalid content of \\{\\}"
+msgstr "\\{\\} 中內容無效"
+
+#: lib/regcomp.c:168
+msgid "Invalid range end"
+msgstr "結束範圍無效"
+
+#: lib/regcomp.c:171
+msgid "Memory exhausted"
+msgstr "記憶體用盡"
+
+#: lib/regcomp.c:174
+msgid "Invalid preceding regular expression"
+msgstr "前置正規表示式無效"
+
+#: lib/regcomp.c:177
+msgid "Premature end of regular expression"
+msgstr "正規表示式過早結束"
+
+#: lib/regcomp.c:180
+msgid "Regular expression too big"
+msgstr "正規表示式過長"
+
+#: lib/regcomp.c:183
+msgid "Unmatched ) or \\)"
+msgstr "不對稱的 ) 或 \\)"
+
+#: lib/regcomp.c:676
+msgid "No previous regular expression"
+msgstr "沒有上一個正規表示式"
+
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
+#: lib/spawn-pipe.c:463
+#, c-format
+msgid "cannot create pipe"
+msgstr "無法建立管線"
+
+#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#, c-format
+msgid "%s subprocess failed"
+msgstr "%s 子執行程序執行失敗"
+
+#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#, c-format
+msgid "%s subprocess"
+msgstr "%s 子執行程序"
+
+#: lib/wait-process.c:282 lib/wait-process.c:354
+#, c-format
+msgid "%s subprocess got fatal signal %d"
+msgstr "%s 子執行程序收到嚴重錯誤信號 %d"
+
+#: lib/xalloc-die.c:34
+msgid "memory exhausted"
+msgstr "記憶體用盡"
+
+#, c-format
+#~ msgid "invalid argument %s for %s"
+#~ msgstr "傳入 %2$s 之參數 %1$s 無效"
+
+#, c-format
+#~ msgid "ambiguous argument %s for %s"
+#~ msgstr "傳入 %2$s 之參數 %1$s 不明確"
+
+#~ msgid "Valid arguments are:"
+#~ msgstr "有效的參數為："
+
+#, c-format
+#~ msgid "ARGP_HELP_FMT: %s value is less than or equal to %s"
+#~ msgstr "ARGP_HELP_FMT：%s 值小於或等於 %s"
+
+#, c-format
+#~ msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
+#~ msgstr "%.*s：ARGP_HELP_FMT 參數需要一個值"
+
+#, c-format
+#~ msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
+#~ msgstr "%.*s：未知 ARGP_HELP_FMT 參數"
+
+#, c-format
+#~ msgid "Garbage in ARGP_HELP_FMT: %s"
+#~ msgstr "ARGP_HELP_FMT 中的廢棄內容：%s"
+
+#~ msgid ""
+#~ "Mandatory or optional arguments to long options are also mandatory or "
+#~ "optional for any corresponding short options."
+#~ msgstr "長選項所使用的參數，在相對應的短選項也必須使用。"
+
+#~ msgid "Usage:"
+#~ msgstr "用法："
+
+#~ msgid "  or: "
+#~ msgstr "  或："
+
+#~ msgid " [OPTION...]"
+#~ msgstr " [選項…]"
+
+#, c-format
+#~ msgid "Try '%s --help' or '%s --usage' for more information.\n"
+#~ msgstr "嘗試「%s --help」或「%s --usage」取得更多資訊。\n"
+
+#, c-format
+#~ msgid "Report bugs to %s.\n"
+#~ msgstr "請向 %s 匯報錯誤。\n"
+
+#~ msgid "give this help list"
+#~ msgstr "提供此說明清單"
+
+#~ msgid "give a short usage message"
+#~ msgstr "提供短用法訊息"
+
+#~ msgid "NAME"
+#~ msgstr "名稱"
+
+#~ msgid "set the program name"
+#~ msgstr "設定程式名稱"
+
+#~ msgid "SECS"
+#~ msgstr "秒"
+
+#~ msgid "hang for SECS seconds (default 3600)"
+#~ msgstr "掛斷秒數（預設 3600）"
+
+#~ msgid "print program version"
+#~ msgstr "輸出程式版本"
+
+#~ msgid "(PROGRAM ERROR) No version known!?"
+#~ msgstr "（程式錯誤）沒有已知版本？！"
+
+#, c-format
+#~ msgid "%s: Too many arguments\n"
+#~ msgstr "%s：過多參數\n"
+
+#~ msgid "(PROGRAM ERROR) Option should have been recognized!?"
+#~ msgstr "（程式錯誤）選項應該已被識別？！"
+
+#, c-format
+#~ msgid "%u bitset_allocs, %u freed (%.2f%%).\n"
+#~ msgstr "%u bitset_allocs，已釋放 %u (%.2f%%)。\n"
+
+#, c-format
+#~ msgid "%u bitset_sets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_sets，已快取 %u (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_resets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_resets，已快取 %u (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_tests, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_tests，%u 已快取 (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_lists\n"
+#~ msgstr "%u bitset_lists\n"
+
+#, c-format
+#~ msgid ""
+#~ "Bitset statistics:\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Bitset 統計：\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Accumulated runs = %u\n"
+#~ msgstr "累積執行次數 = %u\n"
+
+#~ msgid "cannot read stats file"
+#~ msgstr "無法讀取統計檔案"
+
+#, c-format
+#~ msgid "bad stats file size\n"
+#~ msgstr "統計檔案大小無效\n"
+
+#~ msgid "cannot write stats file"
+#~ msgstr "無法寫入統計檔案"
+
+#~ msgid "cannot open stats file for writing"
+#~ msgstr "無法開啟統計檔案寫入"
+
+#~ msgid "program error"
+#~ msgstr "程式錯誤"
+
+#~ msgid "stack overflow"
+#~ msgstr "堆疊溢出"
+
+#~ msgid "cannot find a temporary directory, try setting $TMPDIR"
+#~ msgstr "未找到暫存目錄，請嘗試設定 $TMPDIR"
+
+#, c-format
+#~ msgid "cannot create a temporary directory using template \"%s\""
+#~ msgstr "無法使用「%s」範本建立暫存目錄"
+
+#, c-format
+#~ msgid "cannot remove temporary file %s"
+#~ msgstr "無法移除暫存檔 %s"
+
+#, c-format
+#~ msgid "cannot remove temporary directory %s"
+#~ msgstr "無法移除暫存目錄 %s"
+
+#~ msgid "error closing file"
+#~ msgstr "關閉檔案時發生錯誤"
+
+#~ msgid "write error"
+#~ msgstr "寫入時發生錯誤"
+
+#, c-format
+#~ msgid "preserving permissions for %s"
+#~ msgstr "正在保留 %s 的權限"
+
+#, c-format
+#~ msgid "error while opening %s for reading"
+#~ msgstr "開啟 %s 讀取時發生錯誤"
+
+#, c-format
+#~ msgid "cannot open backup file %s for writing"
+#~ msgstr "無法開啟備份檔 %s 寫入"
+
+#, c-format
+#~ msgid "error reading %s"
+#~ msgstr "讀取 %s 時發生錯誤"
+
+#, c-format
+#~ msgid "error writing %s"
+#~ msgstr "寫入 %s 時發生錯誤"
+
+#, c-format
+#~ msgid "error after reading %s"
+#~ msgstr "讀取 %s 後發生錯誤"
+
+#~ msgid "fdopen() failed"
+#~ msgstr "fdopen() 失敗"
+
+#~ msgid "C# compiler not found, try installing mono"
+#~ msgstr "未找到 C# 編譯器，嘗試安裝 mono"
+
+#~ msgid "C# virtual machine not found, try installing mono"
+#~ msgstr "未找到 C# 虛擬機，嘗試安裝 mono"
+
+#~ msgid "unbalanced ["
+#~ msgstr "不對稱的 ["
+
+#~ msgid "invalid character class"
+#~ msgstr "字元類型無效"
+
+#~ msgid "character class syntax is [[:space:]], not [:space:]"
+#~ msgstr "字元類型語法為 [[:space:]] 而非 [:space:]"
+
+#~ msgid "unfinished \\ escape"
+#~ msgstr "未完成的 \\ 跳脫字元"
+
+#~ msgid "invalid content of \\{\\}"
+#~ msgstr "\\{\\} 的內容無效"
+
+#~ msgid "regular expression too big"
+#~ msgstr "正規表示式過長"
+
+#~ msgid "unbalanced ("
+#~ msgstr "不對稱的 ("
+
+#~ msgid "no syntax specified"
+#~ msgstr "未指定語法"
+
+#~ msgid "unbalanced )"
+#~ msgstr "不對稱的 )"
+
+#~ msgid "regular empty file"
+#~ msgstr "一般空白檔案"
+
+#~ msgid "regular file"
+#~ msgstr "一般檔案"
+
+#~ msgid "directory"
+#~ msgstr "目錄"
+
+#~ msgid "symbolic link"
+#~ msgstr "符號連結"
+
+#~ msgid "message queue"
+#~ msgstr "訊息佇列"
+
+#~ msgid "semaphore"
+#~ msgstr "旗號"
+
+#~ msgid "shared memory object"
+#~ msgstr "共用記憶體物件"
+
+#~ msgid "typed memory object"
+#~ msgstr "具類型記憶體物件"
+
+#~ msgid "block special file"
+#~ msgstr "區塊特殊檔案"
+
+#~ msgid "character special file"
+#~ msgstr "字元特殊檔案"
+
+#~ msgid "contiguous data"
+#~ msgstr "連續資料"
+
+#~ msgid "fifo"
+#~ msgstr "fifo"
+
+#~ msgid "door"
+#~ msgstr "門 (door)"
+
+#~ msgid "multiplexed block special file"
+#~ msgstr "多工區塊特殊檔"
+
+#~ msgid "multiplexed character special file"
+#~ msgstr "多工字元特殊檔"
+
+#~ msgid "multiplexed file"
+#~ msgstr "多工檔案"
+
+#~ msgid "named file"
+#~ msgstr "命名檔案"
+
+#~ msgid "network special file"
+#~ msgstr "網路特殊檔案"
+
+#~ msgid "migrated file with data"
+#~ msgstr "移轉檔（含資料）"
+
+#~ msgid "migrated file without data"
+#~ msgstr "移轉檔（不含資料）"
+
+#~ msgid "port"
+#~ msgstr "連線埠"
+
+#~ msgid "socket"
+#~ msgstr "socket"
+
+#~ msgid "whiteout"
+#~ msgstr "whiteout"
+
+#~ msgid "weird file"
+#~ msgstr "不正常檔案"
+
+#~ msgid "invalid source_version argument to compile_java_class"
+#~ msgstr "傳入 compile_java_class 的 source_version 參數無效"
+
+#~ msgid "invalid target_version argument to compile_java_class"
+#~ msgstr "傳入 compile_java_class 的 target_version 參數無效"
+
+#, c-format
+#~ msgid "failed to create \"%s\""
+#~ msgstr "無法建立「%s」"
+
+#, c-format
+#~ msgid "error while writing \"%s\" file"
+#~ msgstr "寫入「%s」檔時發生錯誤"
+
+#~ msgid "Java compiler not found, try installing gcj or set $JAVAC"
+#~ msgstr "未找到 Java 編譯器。嘗試安裝 gcj，或設定 $JAVAC"
+
+#~ msgid "Java virtual machine not found, try installing gij or set $JAVA"
+#~ msgstr "未找到 Java 虛擬機。嘗試安裝 gij，或設定 $JAVA"
+
+#, c-format
+#~ msgid "%s subprocess I/O error"
+#~ msgstr "%s 子執行程序發生 I/O 錯誤"
+
+#, c-format
+#~ msgid "cannot stat %s"
+#~ msgstr "無法取得 %s 的資訊"
+
+#, c-format
+#~ msgid "cannot change permissions of %s"
+#~ msgstr "無法變更 %s 的權限"
+
+#, c-format
+#~ msgid "cannot create directory %s"
+#~ msgstr "無法建立 %s 目錄"
+
+#~ msgid "Failed to open /dev/zero for read"
+#~ msgstr "無法開啟 /dev/zero 讀取"
+
+#~ msgid "creation of reading thread failed"
+#~ msgstr "建立讀取執行緒失敗"
+
+#, c-format
+#~ msgid "cannot set up nonblocking I/O to %s subprocess"
+#~ msgstr "無法對 %s 子執行程序設定非封鎖 I/O"
+
+#, c-format
+#~ msgid "communication with %s subprocess failed"
+#~ msgstr "與 %s 子執行程序通訊失敗"
+
+#, c-format
+#~ msgid "write to %s subprocess failed"
+#~ msgstr "寫入 %s 子程序失敗"
+
+#, c-format
+#~ msgid "read from %s subprocess failed"
+#~ msgstr "自 %s 子執行程序讀取失敗"
+
+#, c-format
+#~ msgid "subprocess %s terminated with exit code %d"
+#~ msgstr "子執行程序 %s 終止，結束碼 %d"
+
+#~ msgid "creation of threads failed"
+#~ msgstr "建立執行緒失敗"
+
+#, c-format
+#~ msgid "%s subprocess terminated with exit code %d"
+#~ msgstr "子執行程序 %s 終止，結束碼 %d"
+
+#~ msgid "^[yY]"
+#~ msgstr "^[yY]"
+
+#~ msgid "^[nN]"
+#~ msgstr "^[nN]"
+
+#, c-format
+#~ msgid "setting permissions for %s"
+#~ msgstr "正在設定 %s 的權限"
+
+#~ msgid "Hangup"
+#~ msgstr "掛斷"
+
+#~ msgid "Interrupt"
+#~ msgstr "中斷"
+
+#~ msgid "Quit"
+#~ msgstr "退出"
+
+#~ msgid "Illegal instruction"
+#~ msgstr "無效指令"
+
+#~ msgid "Trace/breakpoint trap"
+#~ msgstr "追蹤 / 斷點陷阱"
+
+#~ msgid "Aborted"
+#~ msgstr "中止"
+
+#~ msgid "Floating point exception"
+#~ msgstr "浮點數例外"
+
+#~ msgid "Killed"
+#~ msgstr "強制結束"
+
+#~ msgid "Bus error"
+#~ msgstr "匯流排錯誤"
+
+#~ msgid "Segmentation fault"
+#~ msgstr "程式記憶體區段錯誤"
+
+#~ msgid "Broken pipe"
+#~ msgstr "管線損壞"
+
+#~ msgid "Alarm clock"
+#~ msgstr "鬧鐘"
+
+#~ msgid "Terminated"
+#~ msgstr "終止"
+
+#~ msgid "Urgent I/O condition"
+#~ msgstr "緊急 I/O 條件"
+
+#~ msgid "Stopped (signal)"
+#~ msgstr "停止（信號）"
+
+#~ msgid "Stopped"
+#~ msgstr "停止"
+
+#~ msgid "Continued"
+#~ msgstr "繼續"
+
+#~ msgid "Child exited"
+#~ msgstr "子程序退出"
+
+#~ msgid "Stopped (tty input)"
+#~ msgstr "停止（tty 輸入）"
+
+#~ msgid "Stopped (tty output)"
+#~ msgstr "停止（tty 輸出）"
+
+#~ msgid "I/O possible"
+#~ msgstr "可能 I/O"
+
+#~ msgid "CPU time limit exceeded"
+#~ msgstr "到達 CPU 時間上限"
+
+#~ msgid "File size limit exceeded"
+#~ msgstr "到達檔案大小上限"
+
+#~ msgid "Virtual timer expired"
+#~ msgstr "虛擬計時器過期"
+
+#~ msgid "Profiling timer expired"
+#~ msgstr "分析計時器過期"
+
+#~ msgid "Window changed"
+#~ msgstr "已變更視窗"
+
+#~ msgid "User defined signal 1"
+#~ msgstr "使用者定義信號 1"
+
+#~ msgid "User defined signal 2"
+#~ msgstr "使用者定義信號 2"
+
+#~ msgid "EMT trap"
+#~ msgstr "EMT 陷阱"
+
+#~ msgid "Bad system call"
+#~ msgstr "無效系統呼叫"
+
+#~ msgid "Stack fault"
+#~ msgstr "堆疊錯誤"
+
+#~ msgid "Information request"
+#~ msgstr "資訊請求"
+
+#~ msgid "Power failure"
+#~ msgstr "電源錯誤"
+
+#~ msgid "Resource lost"
+#~ msgstr "資源遺失"
+
+#~ msgid "error writing to a closed pipe or socket"
+#~ msgstr "寫入已關閉管線或 socket 時發生錯誤"
+
+#, c-format
+#~ msgid "Real-time signal %d"
+#~ msgstr "即時信號 %d"
+
+#, c-format
+#~ msgid "Unknown signal %d"
+#~ msgstr "未知信號 %d"
+
+#~ msgid "Execution times (seconds)"
+#~ msgstr "執行次數（秒）"
+
+#~ msgid "CPU user"
+#~ msgstr "CPU 使用者"
+
+#~ msgid "CPU system"
+#~ msgstr "CPU 系統"
+
+#~ msgid "wall clock"
+#~ msgstr "掛鐘"
+
+#~ msgid "iconv function not usable"
+#~ msgstr "iconv 功能沒有用"
+
+#~ msgid "iconv function not available"
+#~ msgstr "iconv 功能不能使用"
+
+#~ msgid "character out of range"
+#~ msgstr "字元超出範圍"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set"
+#~ msgstr "無法將 U+%04X 轉換至使用者的字元集"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set: %s"
+#~ msgstr "無法將 U+%04X 轉換至使用者的字元集：%s"
+
+#~ msgid "invalid user"
+#~ msgstr "使用者無效"
+
+#~ msgid "invalid group"
+#~ msgstr "群組無效"
+
+#~ msgid "invalid spec"
+#~ msgstr "規格無效"
+
+#~ msgid "unable to display error message"
+#~ msgstr "無法顯示錯誤訊息"
+
+#, c-format
+#~ msgid "Packaged by %s (%s)\n"
+#~ msgstr "由 %s (%s) 打包\n"
+
+#, c-format
+#~ msgid "Packaged by %s\n"
+#~ msgstr "由 %s 打包\n"
+
+#~ msgid "(C)"
+#~ msgstr "(C)"
+
+#, c-format
+#~ msgid ""
+#~ "License GPLv3+: GNU GPL version 3 or later <%s>.\n"
+#~ "This is free software: you are free to change and redistribute it.\n"
+#~ "There is NO WARRANTY, to the extent permitted by law.\n"
+#~ msgstr ""
+#~ "GPLv3+ 授權：GNU GPL 第三版或更新版本 <%s>。\n"
+#~ "此為自由軟體：您能自由變更及重散佈。\n"
+#~ "在法律所允許的範圍之內「沒有任何保證」。\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Written by %s.\n"
+#~ msgstr "由 %s 編寫。\n"
+
+#, c-format
+#~ msgid "Written by %s and %s.\n"
+#~ msgstr "由 %s 和 %s 編寫。\n"
+
+#, c-format
+#~ msgid "Written by %s, %s, and %s.\n"
+#~ msgstr "由 %s、%s 和 %s 編寫。\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "由 %s、%s、%s\n"
+#~ "和 %s 編寫。\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "由 %s、%s、%s、\n"
+#~ "%s 和 %s 編寫。\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, and %s.\n"
+#~ msgstr ""
+#~ "由 %s、%s、%s、\n"
+#~ "%s、%s 和 %s 編寫。\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, and %s.\n"
+#~ msgstr ""
+#~ "由 %s、%s、%s、%s、\n"
+#~ "%s、%s 和 %s 編寫。\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "由 %s、%s、%s、%s、\n"
+#~ "%s、%s、%s 和 %s 編寫。\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "由 %s、%s、%s、%s、\n"
+#~ "%s、%s、%s、%s\n"
+#~ "和 %s 編寫。\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s, and others.\n"
+#~ msgstr ""
+#~ "由 %s、%s、%s、%s、\n"
+#~ "%s、%s、%s、%s\n"
+#~ "和 %s 等人編寫。\n"
+
+#, c-format
+#~ msgid "Report bugs to: %s\n"
+#~ msgstr "匯報錯誤至：%s\n"
+
+#, c-format
+#~ msgid "Report %s bugs to: %s\n"
+#~ msgstr "請將 %s 的臭蟲匯報至：%s\n"
+
+#, c-format
+#~ msgid "%s home page: <%s>\n"
+#~ msgstr "%s 首頁：<%s>\n"
+
+#, c-format
+#~ msgid "General help using GNU software: <%s>\n"
+#~ msgstr "使用 GNU 軟體的一般說明：<%s>\n"
+
+#~ msgid "failed to set file descriptor text/binary mode"
+#~ msgstr "無法將檔案描述符設定成文字 / 二進位模式"
+
+#~ msgid "stdin"
+#~ msgstr "標準輸入"
+
+#~ msgid "stdout"
+#~ msgstr "標準輸出"
+
+#~ msgid "stderr"
+#~ msgstr "標準錯誤"
+
+#~ msgid "unknown stream"
+#~ msgstr "未知串流"
+
+#, c-format
+#~ msgid "failed to reopen %s with mode %s"
+#~ msgstr "無法使用 %2$s 模式重開啟 %1$s"
+
+#~ msgid "string comparison failed"
+#~ msgstr "比較字串失敗"
+
+#~ msgid "Set LC_ALL='C' to work around the problem."
+#~ msgstr "請設定 LC_ALL='C' 避免此問題發生。"
+
+#, c-format
+#~ msgid "The strings compared were %s and %s."
+#~ msgstr "要比較的字串為 %s 和 %s。"
+
+#~ msgid "cannot perform formatted output"
+#~ msgstr "無法執行格式化輸出"
+
+#~ msgid "standard file descriptors"
+#~ msgstr "標準檔案描述符"
+
+#, c-format
+#~ msgid "invalid %s%s argument '%s'"
+#~ msgstr "%s%s 參數「%s」無效"
+
+#, c-format
+#~ msgid "invalid suffix in %s%s argument '%s'"
+#~ msgstr "%s%s 參數「%s」有無效後綴"
+
+#, c-format
+#~ msgid "%s%s argument '%s' too large"
+#~ msgstr "%s%s 參數「%s」過長"
+
+#~ msgid "%s home page: <https://www.gnu.org/software/%s/>\n"
+#~ msgstr "%s 首頁：<https://www.gnu.org/software/%s/>\n"
+
+#~ msgid "%s: option `--%s' doesn't allow an argument\n"
+#~ msgstr "%s：選項‘--%s’不可配合參數使用\n"
+
+#~ msgid "%s: unrecognized option `--%s'\n"
+#~ msgstr "%s：無法識別的選項‘--%s’\n"
+
+#~ msgid "%s: illegal option -- %c\n"
+#~ msgstr "%s：不合法的選項 ─ %c\n"
+
+#~ msgid "%s: option `-W %s' is ambiguous\n"
+#~ msgstr "%s：選項‘-W %s’不明確\n"
+
+#~ msgid "%s: option `-W %s' doesn't allow an argument\n"
+#~ msgstr "%s：選項‘-W %s’不可配合參數使用\n"
+
+#, fuzzy
+#~ msgid "block size"
+#~ msgstr "區塊特殊檔案"
+
+#~ msgid "%s exists but is not a directory"
+#~ msgstr "%s已存在但不是目錄"
+
+#~ msgid "cannot change owner and/or group of %s"
+#~ msgstr "無法更改%s的擁有者和/或所屬群組"
+
+#~ msgid "cannot chdir to directory %s"
+#~ msgstr "無法進入%s目錄"
+
+#~ msgid "cannot get the login group of a numeric UID"
+#~ msgstr "無法取得 UID 數值所代表的登入群組"
+
+#, fuzzy
+#~ msgid ""
+#~ "\n"
+#~ "This is free software.  You may redistribute copies of it under the terms "
+#~ "of\n"
+#~ "the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\n"
+#~ "There is NO WARRANTY, to the extent permitted by law.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "本程式是自由軟體；你可以根據 Free Software Foundation 所公佈的 GNU\n"
+#~ "General Public License 第二版或(自由選擇)較新的版本中的條款去重新\n"
+#~ "散佈及/或修改本軟體。\n"
+#~ "\n"

@@ -1,24 +1,41 @@
 # Enable large files on systems where this is not the default.
+# Enable support for files on Linux file systems with 64-bit inode numbers.
 
-# Copyright 1992-1996, 1998-2018 Free Software Foundation, Inc.
+# Copyright 1992-1996, 1998-2021 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
+# The following macro works around a problem in Autoconf's AC_FUNC_FSEEKO:
+# It does not set _LARGEFILE_SOURCE=1 on HP-UX/ia64 32-bit, although this
+# setting of _LARGEFILE_SOURCE is needed so that <stdio.h> declares fseeko
+# and ftello in C++ mode as well.
+AC_DEFUN([gl_SET_LARGEFILE_SOURCE],
+[
+  AC_REQUIRE([AC_CANONICAL_HOST])
+  AC_FUNC_FSEEKO
+  case "$host_os" in
+    hpux*)
+      AC_DEFINE([_LARGEFILE_SOURCE], [1],
+        [Define to 1 to make fseeko visible on some hosts (e.g. glibc 2.2).])
+      ;;
+  esac
+])
+
 # The following implementation works around a problem in autoconf <= 2.69;
 # AC_SYS_LARGEFILE does not configure for large inodes on Mac OS X 10.5,
 # or configures them incorrectly in some cases.
-m4_version_prereq([2.70], [] ,[
+m4_version_prereq([2.70], [], [
 
 # _AC_SYS_LARGEFILE_TEST_INCLUDES
 # -------------------------------
 m4_define([_AC_SYS_LARGEFILE_TEST_INCLUDES],
-[@%:@include <sys/types.h>
+[#include <sys/types.h>
  /* Check that off_t can represent 2**63 - 1 correctly.
     We can't simply define LARGE_OFF_T to be 9223372036854775807,
     since some C++ compilers masquerading as C compilers
     incorrectly reject 9223372036854775807.  */
-@%:@define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
+#define LARGE_OFF_T (((off_t) 1 << 31 << 31) - 1 + ((off_t) 1 << 31 << 31))
   int off_t_is_large[[(LARGE_OFF_T % 2147483629 == 721
                        && LARGE_OFF_T % 2147483647 == 1)
                       ? 1 : -1]];[]dnl
@@ -37,7 +54,7 @@ m4_define([_AC_SYS_LARGEFILE_MACRO_VALUE],
     [AC_LANG_PROGRAM([$5], [$6])],
     [$3=no; break])
   m4_ifval([$6], [AC_LINK_IFELSE], [AC_COMPILE_IFELSE])(
-    [AC_LANG_PROGRAM([@%:@define $1 $2
+    [AC_LANG_PROGRAM([#define $1 $2
 $5], [$6])],
     [$3=$2; break])
   $3=unknown
@@ -56,7 +73,10 @@ rm -rf conftest*[]dnl
 # By default, many hosts won't let programs access large files;
 # one must use special compiler options to get large-file access to work.
 # For more details about this brain damage please see:
-# http://www.unix-systems.org/version2/whatsnew/lfs20mar.html
+# http://www.unix.org/version2/whatsnew/lfs20mar.html
+# Additionally, on Linux file systems with 64-bit inodes a file that happens
+# to have a 64-bit inode number cannot be accessed by 32-bit applications on
+# Linux x86/x86_64.  This can occur with file systems such as XFS and NFS.
 AC_DEFUN([AC_SYS_LARGEFILE],
 [AC_ARG_ENABLE(largefile,
                [  --disable-largefile     omit support for large files])
@@ -93,9 +113,6 @@ if test "$enable_largefile" != no; then
       [Define for large files, on AIX-style hosts.],
       [_AC_SYS_LARGEFILE_TEST_INCLUDES])
   fi
-
-  AC_DEFINE([_DARWIN_USE_64_BIT_INODE], [1],
-    [Enable large inode numbers on Mac OS X 10.5.])
 fi
 ])# AC_SYS_LARGEFILE
 ])# m4_version_prereq 2.70

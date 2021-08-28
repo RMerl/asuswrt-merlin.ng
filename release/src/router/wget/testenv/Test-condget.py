@@ -98,7 +98,7 @@ Existing_Files = [UpToDate_Local_File1, UpToDate_Local_File2,
 
 ExpectedReturnCode = 0
 
-# The uptodate file should not be downloaded
+# The up-to-date file should not be downloaded
 ExpectedDownloadedFiles = [UpToDate_Local_File1, UpToDate_Local_File2,
                            UpToDate_Local_File3, Newer_Local_File,
                            Updated_Server_File]

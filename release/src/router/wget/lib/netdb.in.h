@@ -1,5 +1,5 @@
 /* Provide a netdb.h header file for systems lacking it (read: MinGW).
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Written by Simon Josefsson.
 
    This program is free software; you can redistribute it and/or modify
@@ -158,33 +158,61 @@ struct addrinfo
 #  endif
 # endif
 
-# if !@HAVE_DECL_GETADDRINFO@
 /* Translate name of a service location and/or a service name to set of
    socket addresses.
-   For more details, see the POSIX:2001 specification
-   <http://www.opengroup.org/susv3xsh/getaddrinfo.html>.  */
+   For more details, see the POSIX:2008 specification
+   <https://pubs.opengroup.org/onlinepubs/9699919799/functions/getaddrinfo.html>.  */
+# if @REPLACE_GETADDRINFO@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef getaddrinfo
+#   define getaddrinfo rpl_getaddrinfo
+#  endif
+_GL_FUNCDECL_RPL (getaddrinfo, int,
+                  (const char *restrict nodename,
+                   const char *restrict servname,
+                   const struct addrinfo *restrict hints,
+                   struct addrinfo **restrict res)
+                  _GL_ARG_NONNULL ((4)));
+_GL_CXXALIAS_RPL (getaddrinfo, int,
+                  (const char *restrict nodename,
+                   const char *restrict servname,
+                   const struct addrinfo *restrict hints,
+                   struct addrinfo **restrict res));
+# else
+#  if !@HAVE_DECL_GETADDRINFO@
 _GL_FUNCDECL_SYS (getaddrinfo, int,
                   (const char *restrict nodename,
                    const char *restrict servname,
                    const struct addrinfo *restrict hints,
                    struct addrinfo **restrict res)
                   _GL_ARG_NONNULL ((4)));
-# endif
+#  endif
 _GL_CXXALIAS_SYS (getaddrinfo, int,
                   (const char *restrict nodename,
                    const char *restrict servname,
                    const struct addrinfo *restrict hints,
                    struct addrinfo **restrict res));
+# endif
 _GL_CXXALIASWARN (getaddrinfo);
 
-# if !@HAVE_DECL_FREEADDRINFO@
 /* Free 'addrinfo' structure AI including associated storage.
-   For more details, see the POSIX:2001 specification
-   <http://www.opengroup.org/susv3xsh/getaddrinfo.html>.  */
+   For more details, see the POSIX:2008 specification
+   <https://pubs.opengroup.org/onlinepubs/9699919799/functions/getaddrinfo.html>.  */
+# if @REPLACE_GETADDRINFO@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef freeaddrinfo
+#   define freeaddrinfo rpl_freeaddrinfo
+#  endif
+_GL_FUNCDECL_RPL (freeaddrinfo, void, (struct addrinfo *ai)
+                                      _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (freeaddrinfo, void, (struct addrinfo *ai));
+# else
+#  if !@HAVE_DECL_FREEADDRINFO@
 _GL_FUNCDECL_SYS (freeaddrinfo, void, (struct addrinfo *ai)
                                       _GL_ARG_NONNULL ((1)));
-# endif
+#  endif
 _GL_CXXALIAS_SYS (freeaddrinfo, void, (struct addrinfo *ai));
+# endif
 _GL_CXXALIASWARN (freeaddrinfo);
 
 # if @REPLACE_GAI_STRERROR@
@@ -197,18 +225,20 @@ _GL_CXXALIAS_RPL (gai_strerror, const char *, (int ecode));
 # else
 #  if !@HAVE_DECL_GAI_STRERROR@
 /* Convert error return from getaddrinfo() to a string.
-   For more details, see the POSIX:2001 specification
-   <http://www.opengroup.org/susv3xsh/gai_strerror.html>.  */
+   For more details, see the POSIX:2008 specification
+   <https://pubs.opengroup.org/onlinepubs/9699919799/functions/gai_strerror.html>.  */
 _GL_FUNCDECL_SYS (gai_strerror, const char *, (int ecode));
 #  endif
 _GL_CXXALIAS_SYS (gai_strerror, const char *, (int ecode));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (gai_strerror);
+# endif
 
 # if !@HAVE_DECL_GETNAMEINFO@
 /* Convert socket address to printable node and service names.
-   For more details, see the POSIX:2001 specification
-   <http://www.opengroup.org/susv3xsh/getnameinfo.html>.  */
+   For more details, see the POSIX:2008 specification
+   <https://pubs.opengroup.org/onlinepubs/9699919799/functions/getnameinfo.html>.  */
 _GL_FUNCDECL_SYS (getnameinfo, int,
                   (const struct sockaddr *restrict sa, socklen_t salen,
                    char *restrict node, socklen_t nodelen,

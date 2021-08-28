@@ -1,5 +1,5 @@
 /* Flushing buffers of a FILE stream.
-   Copyright (C) 2007-2018 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,8 +19,10 @@
 /* Specification.  */
 #include <stdio.h>
 
-#if HAVE___FPURGE                   /* glibc >= 2.2, Haiku, Solaris >= 7, Android API >= 23 */
-# include <stdio_ext.h>
+#if HAVE___FPURGE                   /* glibc >= 2.2, Haiku, Solaris >= 7, UnixWare >= 7.1.4.MP4, Cygwin >= 1.7.10, Android API >= 23, musl libc */
+# if HAVE_STDIO_EXT_H
+#  include <stdio_ext.h>
+# endif
 #endif
 #include <stdlib.h>
 
@@ -29,13 +31,13 @@
 int
 fpurge (FILE *fp)
 {
-#if HAVE___FPURGE                   /* glibc >= 2.2, Haiku, Solaris >= 7, Android API >= 23, musl libc */
+#if HAVE___FPURGE                   /* glibc >= 2.2, Haiku, Solaris >= 7, UnixWare >= 7.1.4.MP4, Cygwin >= 1.7.10, Android API >= 23, musl libc */
 
   __fpurge (fp);
   /* The __fpurge function does not have a return value.  */
   return 0;
 
-#elif HAVE_FPURGE                   /* FreeBSD, NetBSD, OpenBSD, DragonFly, Mac OS X, Cygwin 1.7 */
+#elif HAVE_FPURGE                   /* FreeBSD, NetBSD, OpenBSD, DragonFly, Mac OS X, Cygwin >= 1.7 */
 
   /* Call the system's fpurge function.  */
 # undef fpurge
@@ -99,7 +101,7 @@ fpurge (FILE *fp)
   if (fp->_ptr != NULL)
     fp->_count = 0;
   return 0;
-# elif defined _IOERR               /* AIX, HP-UX, IRIX, OSF/1, Solaris, OpenServer, mingw, MSVC, NonStop Kernel, OpenVMS */
+# elif defined _IOERR               /* AIX, HP-UX, IRIX, OSF/1, Solaris, OpenServer, UnixWare, mingw, MSVC, NonStop Kernel, OpenVMS */
   fp_->_ptr = fp_->_base;
   if (fp_->_ptr != NULL)
     fp_->_cnt = 0;

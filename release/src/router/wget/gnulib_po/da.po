@@ -1,0 +1,893 @@
+# Danish messages for gnulib.
+# Copyright © 1997, 2002, 2003, 2004, 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gnulib package.
+# Peter Antman <peter.antman@abc.se>, 1997.
+# Thomas Olsson <cid95tho@lustudat.student.lu.se>, 1997.
+# Daniel Resare <daniel@resare.com>, 1999, 2000.
+# Göran Uddeborg <goeran@uddeborg.se>, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010.
+# Keld Simonsen <keld@keldix.com>, 2011
+#
+# $Revision: 1.8 $
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gnulib 2.0.0.3462.e9796\n"
+"Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
+"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"PO-Revision-Date: 2011-01-20 22:11+0100\n"
+"Last-Translator: Keld Simonsen <keld@keldix.com>\n"
+"Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
+"Language: da\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/error.c:195
+msgid "Unknown system error"
+msgstr "Ukendt systemfejl"
+
+#: lib/gai_strerror.c:57
+msgid "Address family for hostname not supported"
+msgstr "Adressefamilien for værtsnavnet understøttes ikke"
+
+#: lib/gai_strerror.c:58
+msgid "Temporary failure in name resolution"
+msgstr "Midlertidig fejl i navneopslag"
+
+#: lib/gai_strerror.c:59
+msgid "Bad value for ai_flags"
+msgstr "Fejlagtig værdi for ai_flags"
+
+#: lib/gai_strerror.c:60
+msgid "Non-recoverable failure in name resolution"
+msgstr "Ureparérbar fejl i navneopslag"
+
+#: lib/gai_strerror.c:61
+msgid "ai_family not supported"
+msgstr "ai_family understøttes ikke"
+
+#: lib/gai_strerror.c:62
+msgid "Memory allocation failure"
+msgstr "Hukommelsesallokeringsfejl"
+
+#: lib/gai_strerror.c:63
+msgid "No address associated with hostname"
+msgstr "Ingen adresse associeret med værtsnavnet"
+
+#: lib/gai_strerror.c:64
+msgid "Name or service not known"
+msgstr "Navn eller tjeneste ikke kendt"
+
+#: lib/gai_strerror.c:65
+msgid "Servname not supported for ai_socktype"
+msgstr "Servname understøttes ikke for ai_socktype"
+
+#: lib/gai_strerror.c:66
+msgid "ai_socktype not supported"
+msgstr "ai_socktype understøttes ikke"
+
+#: lib/gai_strerror.c:67
+msgid "System error"
+msgstr "Systemfejl"
+
+#: lib/gai_strerror.c:68
+msgid "Argument buffer too small"
+msgstr "Argumentbufferen for lille"
+
+#: lib/gai_strerror.c:70
+msgid "Processing request in progress"
+msgstr "Bearbejder pågående anmodning"
+
+#: lib/gai_strerror.c:71
+msgid "Request canceled"
+msgstr "Anmodning annuleret"
+
+#: lib/gai_strerror.c:72
+msgid "Request not canceled"
+msgstr "Anmodning ikke annuleret"
+
+#: lib/gai_strerror.c:73
+msgid "All requests done"
+msgstr "Alle anmodninger udført"
+
+#: lib/gai_strerror.c:74
+msgid "Interrupted by a signal"
+msgstr "Afbrudt af et signal"
+
+#: lib/gai_strerror.c:75
+msgid "Parameter string not correctly encoded"
+msgstr "Parameterstreng ikke korrekt kodet"
+
+#: lib/gai_strerror.c:87
+msgid "Unknown error"
+msgstr "Ukendt fejl"
+
+#: lib/getopt.c:278
+#, fuzzy, c-format
+msgid "%s: option '%s%s' is ambiguous\n"
+msgstr "%s: flaget '%s' er flertydigt\n"
+
+#: lib/getopt.c:284
+#, fuzzy, c-format
+msgid "%s: option '%s%s' is ambiguous; possibilities:"
+msgstr "%s: flaget '%s' er flertydigt\n"
+
+#: lib/getopt.c:319
+#, fuzzy, c-format
+msgid "%s: unrecognized option '%s%s'\n"
+msgstr "%s: ukendt flag '%c%s'\n"
+
+#: lib/getopt.c:345
+#, fuzzy, c-format
+msgid "%s: option '%s%s' doesn't allow an argument\n"
+msgstr "%s: flaget '%c%s' tager intet argument\n"
+
+#: lib/getopt.c:360
+#, fuzzy, c-format
+msgid "%s: option '%s%s' requires an argument\n"
+msgstr "%s: flaget '%s' kræver et argument\n"
+
+#: lib/getopt.c:621
+#, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr "%s: ugyldig flag -- '%c'\n"
+
+#: lib/getopt.c:636 lib/getopt.c:682
+#, c-format
+msgid "%s: option requires an argument -- '%c'\n"
+msgstr "%s: flaget kræver et argument -- '%c'\n"
+
+#: lib/openat-die.c:38
+#, c-format
+msgid "unable to record current working directory"
+msgstr "kan ikke notere aktuelt arbejdskatalog"
+
+#: lib/openat-die.c:57
+#, c-format
+msgid "failed to return to initial working directory"
+msgstr "kunne ikke gå tilbage til det oprindelige arbejdskatalog"
+
+#: lib/os2-spawn.c:46
+#, c-format
+msgid "_open_osfhandle failed"
+msgstr "_open_osfhandle mislykkedes"
+
+#: lib/os2-spawn.c:83
+#, c-format
+msgid "cannot restore fd %d: dup2 failed"
+msgstr "kan ikke genskabe fb %d: dup2 mislykkedes"
+
+#. TRANSLATORS:
+#. Get translations for open and closing quotation marks.
+#. The message catalog should translate "`" to a left
+#. quotation mark suitable for the locale, and similarly for
+#. "'".  For example, a French Unicode local should translate
+#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), respectively.
+#.
+#. If the catalog has no translation, we will try to
+#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
+#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
+#. current locale is not Unicode, locale_quoting_style
+#. will quote 'like this', and clocale_quoting_style will
+#. quote "like this".  You should always include translations
+#. for "`" and "'" even if U+2018 and U+2019 are appropriate
+#. for your locale.
+#.
+#. If you don't know what to put here, please see
+#. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
+#. and use glyphs suitable for your language.
+#: lib/quotearg.c:355
+msgid "`"
+msgstr "'"
+
+#: lib/quotearg.c:356
+msgid "'"
+msgstr "'"
+
+#: lib/regcomp.c:135
+msgid "Success"
+msgstr "Lykkedes"
+
+#: lib/regcomp.c:138
+msgid "No match"
+msgstr "Ingen træffer"
+
+#: lib/regcomp.c:141
+msgid "Invalid regular expression"
+msgstr "Fejlagtigt regulært udtryk"
+
+#: lib/regcomp.c:144
+msgid "Invalid collation character"
+msgstr "Ugyldigt sorteringstegn"
+
+#: lib/regcomp.c:147
+msgid "Invalid character class name"
+msgstr "Ugyldigt tegnklassenavn"
+
+#: lib/regcomp.c:150
+msgid "Trailing backslash"
+msgstr "Afsluttende baglæns skråstreg"
+
+#: lib/regcomp.c:153
+msgid "Invalid back reference"
+msgstr "Ugyldig bagudreference"
+
+#: lib/regcomp.c:156
+#, fuzzy
+msgid "Unmatched [, [^, [:, [., or [="
+msgstr "Ensomt [ eller [^"
+
+#: lib/regcomp.c:159
+msgid "Unmatched ( or \\("
+msgstr "Ensomt ( eller \\("
+
+#: lib/regcomp.c:162
+msgid "Unmatched \\{"
+msgstr "Ensomt \\\\{"
+
+#: lib/regcomp.c:165
+msgid "Invalid content of \\{\\}"
+msgstr "Ugyldigt indhold i \\{\\}"
+
+#: lib/regcomp.c:168
+msgid "Invalid range end"
+msgstr "Ugyldigt intervalslut"
+
+#: lib/regcomp.c:171
+msgid "Memory exhausted"
+msgstr "Hukommelse opbrugt"
+
+#: lib/regcomp.c:174
+msgid "Invalid preceding regular expression"
+msgstr "Fejlagtigt foregående regulært udtryk"
+
+#: lib/regcomp.c:177
+msgid "Premature end of regular expression"
+msgstr "For tidlig afslutning af regulært udtryk"
+
+#: lib/regcomp.c:180
+msgid "Regular expression too big"
+msgstr "For stort regulært udtryk"
+
+#: lib/regcomp.c:183
+msgid "Unmatched ) or \\)"
+msgstr "Ensomt ) eller \\)"
+
+#: lib/regcomp.c:676
+msgid "No previous regular expression"
+msgstr "Intet foregående regulært udtryk"
+
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
+#: lib/spawn-pipe.c:463
+#, c-format
+msgid "cannot create pipe"
+msgstr "kan ikke oprette datakanal"
+
+#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#, c-format
+msgid "%s subprocess failed"
+msgstr "%s-underproces mislykkedes"
+
+#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#, c-format
+msgid "%s subprocess"
+msgstr "%s-underproces"
+
+#: lib/wait-process.c:282 lib/wait-process.c:354
+#, c-format
+msgid "%s subprocess got fatal signal %d"
+msgstr "%s-underproces fik ødelæggende signal %d"
+
+#: lib/xalloc-die.c:34
+msgid "memory exhausted"
+msgstr "hukommelsen opbrugt"
+
+#, c-format
+#~ msgid "invalid argument %s for %s"
+#~ msgstr "Ugyldigt argument %s til %s"
+
+#, c-format
+#~ msgid "ambiguous argument %s for %s"
+#~ msgstr "flertydigt argument %s til %s"
+
+#, c-format
+#~ msgid "Valid arguments are:"
+#~ msgstr "gyldige argumenter er:"
+
+#, c-format
+#~ msgid "ARGP_HELP_FMT: %s value is less than or equal to %s"
+#~ msgstr "ARGP_HELP_FMT: værdien på %s er mindre end eller lig med %s"
+
+#, c-format
+#~ msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
+#~ msgstr "%.*s: ARGP_HELP_FMT-parameteren kræver en værdi"
+
+#, c-format
+#~ msgid "%.*s: ARGP_HELP_FMT parameter must be positive"
+#~ msgstr "%.*s: ARGP_HELP_FMT-parameteren skal være positiv"
+
+#, c-format
+#~ msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
+#~ msgstr "%.*s: Ukendt ARGP_HELP_FMT-parameter"
+
+#, c-format
+#~ msgid "Garbage in ARGP_HELP_FMT: %s"
+#~ msgstr "Snavs i ARGP_HELP_FMT: %s"
+
+#~ msgid ""
+#~ "Mandatory or optional arguments to long options are also mandatory or "
+#~ "optional for any corresponding short options."
+#~ msgstr ""
+#~ "Obligatoriske eller valgfrie argumenter til lange flag er også "
+#~ "obligatoriske eller valgfrie for tilsvarende korte flag."
+
+#~ msgid "Usage:"
+#~ msgstr "Brug:"
+
+#~ msgid "  or: "
+#~ msgstr "   eller:  "
+
+#~ msgid " [OPTION...]"
+#~ msgstr " [FLAG...]"
+
+#, c-format
+#~ msgid "Try `%s --help' or `%s --usage' for more information.\n"
+#~ msgstr "Forsøg med '%s --help' eller '%s --usage' for mere information.\n"
+
+#, c-format
+#~ msgid "Report bugs to %s.\n"
+#~ msgstr ""
+#~ "Rapportér fejl til %s.\n"
+#~ "Send synspunkter på oversættelsen til <dansk@dansk-gruppen.dk>\n"
+
+#~ msgid "give this help list"
+#~ msgstr "giv denne hjælpeliste"
+
+#~ msgid "give a short usage message"
+#~ msgstr "giv en kort meddelelse om brug"
+
+#~ msgid "NAME"
+#~ msgstr "NAVN"
+
+#~ msgid "set the program name"
+#~ msgstr "angiv progravnavnet"
+
+#~ msgid "SECS"
+#~ msgstr "S"
+
+#~ msgid "hang for SECS seconds (default 3600)"
+#~ msgstr "hæng i S sekunder (som standard 3600)"
+
+#~ msgid "print program version"
+#~ msgstr "udskriv programversion"
+
+#~ msgid "(PROGRAM ERROR) No version known!?"
+#~ msgstr "(PROGRAMFEJL) Ingen version kendt!?"
+
+#, c-format
+#~ msgid "%s: Too many arguments\n"
+#~ msgstr "%s: For mange argumenter\n"
+
+#~ msgid "(PROGRAM ERROR) Option should have been recognized!?"
+#~ msgstr "(PROGRAMFEJL) Flaget burde være blevet genkendt!?"
+
+#~ msgid "program error"
+#~ msgstr "programfejl"
+
+#~ msgid "stack overflow"
+#~ msgstr "stakoverløb"
+
+#, c-format
+#~ msgid "cannot find a temporary directory, try setting $TMPDIR"
+#~ msgstr "kan ikke finde et temporært katalog, forsøg at sætte $TMPDIR"
+
+#, c-format
+#~ msgid "cannot create a temporary directory using template \"%s\""
+#~ msgstr "kan ikke oprette et temporært katalog ved brug af skabelonen '%s'"
+
+#, c-format
+#~ msgid "cannot remove temporary file %s"
+#~ msgstr "kan ikke fjerne temporær fil %s"
+
+#, c-format
+#~ msgid "cannot remove temporary directory %s"
+#~ msgstr "kan ikke fjerne temporært katalog %s"
+
+#~ msgid "error closing file"
+#~ msgstr "fejl ved lukning af fil"
+
+#~ msgid "write error"
+#~ msgstr "skrivefejl"
+
+#, c-format
+#~ msgid "preserving permissions for %s"
+#~ msgstr "bevarer rettigheder på %s"
+
+#, c-format
+#~ msgid "error while opening \"%s\" for reading"
+#~ msgstr "fejl ved åbning af '%s' for læsning"
+
+#, c-format
+#~ msgid "cannot open backup file \"%s\" for writing"
+#~ msgstr "kan ikke åbne sikkerhedskopifil '%s' for skrivning"
+
+#, c-format
+#~ msgid "error reading \"%s\""
+#~ msgstr "fejl ved læsning af '%s'"
+
+#, c-format
+#~ msgid "error writing \"%s\""
+#~ msgstr "fejl ved skrivning af '%s'"
+
+#, c-format
+#~ msgid "error after reading \"%s\""
+#~ msgstr "fejl efter læsning af '%s'"
+
+#, c-format
+#~ msgid "fdopen() failed"
+#~ msgstr "fdopen() mislykkedes"
+
+#, c-format
+#~ msgid "C# compiler not found, try installing pnet"
+#~ msgstr "C#-oversætter ikke fundet, forsøg at installere pnet"
+
+#, c-format
+#~ msgid "C# virtual machine not found, try installing pnet"
+#~ msgstr "virtuel C#-maskine ikke fundet, forsøg at installere pnet"
+
+#~ msgid "regular empty file"
+#~ msgstr "tom normal fil"
+
+#~ msgid "regular file"
+#~ msgstr "normal fil"
+
+#~ msgid "directory"
+#~ msgstr "katalog"
+
+#~ msgid "block special file"
+#~ msgstr "blokspecialfil"
+
+#~ msgid "character special file"
+#~ msgstr "tegnspecialfil"
+
+#~ msgid "fifo"
+#~ msgstr "fifo"
+
+#~ msgid "symbolic link"
+#~ msgstr "symbolsk lænke"
+
+#~ msgid "socket"
+#~ msgstr "sokkel (socket)"
+
+#~ msgid "message queue"
+#~ msgstr "meddelelsekø"
+
+#~ msgid "semaphore"
+#~ msgstr "semafor"
+
+#~ msgid "shared memory object"
+#~ msgstr "objekt af delt hukommelse"
+
+#~ msgid "typed memory object"
+#~ msgstr "objekt af typet hukommelse"
+
+#~ msgid "weird file"
+#~ msgstr "mærkelig fil"
+
+#, c-format
+#~ msgid "%s: option '--%s' doesn't allow an argument\n"
+#~ msgstr "%s: flaget '--%s' tager intet argument\n"
+
+#, c-format
+#~ msgid "%s: unrecognized option '--%s'\n"
+#~ msgstr "%s: ukendt flag '--%s'\n"
+
+#, c-format
+#~ msgid "%s: option '-W %s' is ambiguous\n"
+#~ msgstr "%s: flaget '-W %s' er flertydigt\n"
+
+#, c-format
+#~ msgid "%s: option '-W %s' doesn't allow an argument\n"
+#~ msgstr "%s: flaget '-W %s' tager intet argument\n"
+
+#, c-format
+#~ msgid "invalid source_version argument to compile_java_class"
+#~ msgstr "ugyldigt source_version-argument til compile_java_class"
+
+#, c-format
+#~ msgid "invalid target_version argument to compile_java_class"
+#~ msgstr "ugyldigt target_version-argument til compile_java_class"
+
+#, c-format
+#~ msgid "failed to create \"%s\""
+#~ msgstr "det gik ikke at oprette '%s'"
+
+#, c-format
+#~ msgid "error while writing \"%s\" file"
+#~ msgstr "fejl ved skrivning af filen '%s'"
+
+#, c-format
+#~ msgid "Java compiler not found, try installing gcj or set $JAVAC"
+#~ msgstr ""
+#~ "Javaoversætter ikke fundet, forsøg at installere gcj eller sætte $JAVAC"
+
+#, c-format
+#~ msgid "Java virtual machine not found, try installing gij or set $JAVA"
+#~ msgstr ""
+#~ "Virtuel Javamaskine ikke fundet, forsøg at installere gij eller sætte "
+#~ "$JAVA"
+
+#, c-format
+#~ msgid "%s subprocess I/O error"
+#~ msgstr "%s-underproces I/O-fejl"
+
+#, c-format
+#~ msgid "cannot change permissions of %s"
+#~ msgstr "kan ikke ændre rettigheder på %s"
+
+#, c-format
+#~ msgid "cannot create directory %s"
+#~ msgstr "kan ikke oprette kataloget %s"
+
+#, c-format
+#~ msgid "Failed to open /dev/zero for read"
+#~ msgstr "Mislykkedes med at åbne /dev/zero for læsning"
+
+#, c-format
+#~ msgid "creation of reading thread failed"
+#~ msgstr "oprettelse af læsetråd mislykkedes"
+
+#, c-format
+#~ msgid "cannot set up nonblocking I/O to %s subprocess"
+#~ msgstr "kan ikke opsætte ikke-blokerende I/O til %s-underproces"
+
+#, c-format
+#~ msgid "communication with %s subprocess failed"
+#~ msgstr "kommunikation med %s-underproces mislykkedes"
+
+#, c-format
+#~ msgid "write to %s subprocess failed"
+#~ msgstr "skrivning til %s-underproces mislykkedes"
+
+#, c-format
+#~ msgid "read from %s subprocess failed"
+#~ msgstr "læsning fra %s-underproces mislykkedes"
+
+#, c-format
+#~ msgid "subprocess %s terminated with exit code %d"
+#~ msgstr "underproces %s afsluttet med slutstatus %d"
+
+#, c-format
+#~ msgid "creation of threads failed"
+#~ msgstr "oprettelse af tråde mislykkedes"
+
+#, c-format
+#~ msgid "%s subprocess terminated with exit code %d"
+#~ msgstr "%s-underproces afslutted med slutstatus %d"
+
+#~ msgid "^[yY]"
+#~ msgstr "^[yYjJ]"
+
+#~ msgid "^[nN]"
+#~ msgstr "^[nN]"
+
+#, c-format
+#~ msgid "setting permissions for %s"
+#~ msgstr "ændrer rettigheder på %s"
+
+#~ msgid "Hangup"
+#~ msgstr "Lagt på"
+
+#~ msgid "Interrupt"
+#~ msgstr "Afbrudt"
+
+#~ msgid "Quit"
+#~ msgstr "Afslut"
+
+#~ msgid "Illegal instruction"
+#~ msgstr "Utilladt instruktion"
+
+#~ msgid "Trace/breakpoint trap"
+#~ msgstr "Sporings-/afbrudspunktsfælde"
+
+#~ msgid "Aborted"
+#~ msgstr "Afbrudt (abort)"
+
+#~ msgid "Floating point exception"
+#~ msgstr "Undtagelse ved flydende tal"
+
+#~ msgid "Killed"
+#~ msgstr "Dræbt"
+
+#~ msgid "Bus error"
+#~ msgstr "Busfejl"
+
+#~ msgid "Segmentation fault"
+#~ msgstr "Segmenteringsfejl"
+
+#~ msgid "Broken pipe"
+#~ msgstr "Brudt datakanal"
+
+#~ msgid "Alarm clock"
+#~ msgstr "Alarmklokke"
+
+#~ msgid "Terminated"
+#~ msgstr "Afsluttet"
+
+#~ msgid "Urgent I/O condition"
+#~ msgstr "Hastende I/O-situation"
+
+#~ msgid "Stopped (signal)"
+#~ msgstr "Stoppet (signal)"
+
+#~ msgid "Stopped"
+#~ msgstr "Stoppet"
+
+#~ msgid "Continued"
+#~ msgstr "Genoptaget"
+
+#~ msgid "Child exited"
+#~ msgstr "Barn afsluttede"
+
+#~ msgid "Stopped (tty input)"
+#~ msgstr "Stoppet (terminallæsning)"
+
+#~ msgid "Stopped (tty output)"
+#~ msgstr "Stoppet (terminalskrivning)"
+
+#~ msgid "I/O possible"
+#~ msgstr "I/O muligt"
+
+#~ msgid "CPU time limit exceeded"
+#~ msgstr "Grænse på CPU-tid overskredet"
+
+#~ msgid "File size limit exceeded"
+#~ msgstr "Grænse på filstørrelse overskredet"
+
+#~ msgid "Virtual timer expired"
+#~ msgstr "Alarmklokke - virtuel tid - udløb"
+
+#~ msgid "Profiling timer expired"
+#~ msgstr "Profileringsklokke udløb"
+
+#~ msgid "Window changed"
+#~ msgstr "Ændret vindue"
+
+#~ msgid "User defined signal 1"
+#~ msgstr "Brugersignal 1"
+
+#~ msgid "User defined signal 2"
+#~ msgstr "Brugersignal 2"
+
+#~ msgid "EMT trap"
+#~ msgstr "Emulatorfælde"
+
+#~ msgid "Bad system call"
+#~ msgstr "Fejlagtigt systemkald"
+
+#~ msgid "Stack fault"
+#~ msgstr "Stakfejl"
+
+#~ msgid "Information request"
+#~ msgstr "Informationsanmodning"
+
+#~ msgid "Power failure"
+#~ msgstr "Strømafbrud"
+
+#~ msgid "Resource lost"
+#~ msgstr "Tabt resurse"
+
+#~ msgid "error writing to a closed pipe or socket"
+#~ msgstr "fejl ved skrivning til en lukket datakanal eller sokkel"
+
+#, c-format
+#~ msgid "Real-time signal %d"
+#~ msgstr "Realtidsignal %d"
+
+#, c-format
+#~ msgid "Unknown signal %d"
+#~ msgstr "Ukendt signal %d"
+
+#~ msgid "iconv function not usable"
+#~ msgstr "iconv-funktion ikke brugbar"
+
+#~ msgid "iconv function not available"
+#~ msgstr "iconv-funktion ikke tilgængelig"
+
+#~ msgid "character out of range"
+#~ msgstr "tegn udenfor interval"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set"
+#~ msgstr "kan ikke konvertere U+%04X til lokalt tegnsæt"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set: %s"
+#~ msgstr "kan ikke konvertere U+%04X til lokalt tegnsæt: %s"
+
+#~ msgid "invalid user"
+#~ msgstr "ugyldig bruger"
+
+#~ msgid "invalid group"
+#~ msgstr "ugyldig gruppe"
+
+#~ msgid "invalid spec"
+#~ msgstr "ugyldig specifikation"
+
+#, c-format
+#~ msgid "unable to display error message"
+#~ msgstr "kan ikke vise fejlmeddelelse"
+
+#, c-format
+#~ msgid "Packaged by %s (%s)\n"
+#~ msgstr "Pakket af %s (%s)\n"
+
+#, c-format
+#~ msgid "Packaged by %s\n"
+#~ msgstr "Pakket af %s\n"
+
+#~ msgid "(C)"
+#~ msgstr "©"
+
+#~ msgid ""
+#~ "\n"
+#~ "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl."
+#~ "html>.\n"
+#~ "This is free software: you are free to change and redistribute it.\n"
+#~ "There is NO WARRANTY, to the extent permitted by law.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Licens GPLv3+: GNU GPL version 3 eller senere <http://gnu.org/licenses/"
+#~ "gpl.html>.\n"
+#~ "Dette er frit programmel: du må ændre og videredistribuere det.\n"
+#~ "Der gives INGEN GARANTI, så vidt lov tillader.\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Written by %s.\n"
+#~ msgstr "Skrevet af %s.\n"
+
+#, c-format
+#~ msgid "Written by %s and %s.\n"
+#~ msgstr "Skrevet af %s og %s.\n"
+
+#, c-format
+#~ msgid "Written by %s, %s, and %s.\n"
+#~ msgstr "Skrevet af %s, %s og %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Skrevet af %s, %s, %s\n"
+#~ "og %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Skrevet af %s, %s, %s,\n"
+#~ "%s og %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Skrevet af %s, %s, %s,\n"
+#~ "%s, %s og %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Skrevet af %s, %s, %s,\n"
+#~ "%s, %s, %s og %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Skrevet af %s, %s, %s,\n"
+#~ "%s, %s, %s, %s\n"
+#~ "og %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Skrevet af %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s og %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s, and others.\n"
+#~ msgstr ""
+#~ "Skrevet af %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s med flere.\n"
+
+#, c-format
+#~ msgid ""
+#~ "\n"
+#~ "Report bugs to: %s\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Rapportér fejl til: %s\n"
+#~ "Sende synspunkter på oversættelsen til: tp-sv@listor.tp-sv.se\n"
+
+#, c-format
+#~ msgid "Report %s bugs to: %s\n"
+#~ msgstr "Rapportér %s-fejl til: %s\n"
+
+#, c-format
+#~ msgid "%s home page: <%s>\n"
+#~ msgstr "%s hjemmeside: <%s>\n"
+
+#, c-format
+#~ msgid "%s home page: <http://www.gnu.org/software/%s/>\n"
+#~ msgstr "%s hjemmeside: <http://www.gnu.org/software/%s/>\n"
+
+#~ msgid "General help using GNU software: <http://www.gnu.org/gethelp/>\n"
+#~ msgstr ""
+#~ "Almindelig hjælp til at bruge GNU-programmer: <http://www.gnu.org/gethelp/"
+#~ ">\n"
+
+#~ msgid "stdin"
+#~ msgstr "standard ind"
+
+#~ msgid "stdout"
+#~ msgstr "standard ud"
+
+#~ msgid "stderr"
+#~ msgstr "standard fejl"
+
+#~ msgid "unknown stream"
+#~ msgstr "ukendt strøm"
+
+#, c-format
+#~ msgid "failed to reopen %s with mode %s"
+#~ msgstr "kunne ikke genåbne %s i tilstand %s"
+
+#, c-format
+#~ msgid "string comparison failed"
+#~ msgstr "strengsammenligning mislykkedes"
+
+#, c-format
+#~ msgid "Set LC_ALL='C' to work around the problem."
+#~ msgstr "Sæt LC_ALL='C' for at omgå problemet."
+
+#, c-format
+#~ msgid "The strings compared were %s and %s."
+#~ msgstr "De sammenlignede strenge var %s og %s."
+
+#, c-format
+#~ msgid "cannot perform formatted output"
+#~ msgstr "kan ikke udføre formateret udskrift"
+
+#, c-format
+#~ msgid "invalid %s%s argument `%s'"
+#~ msgstr "fejlagtigt %s%s-argument '%s'"
+
+#, c-format
+#~ msgid "invalid suffix in %s%s argument `%s'"
+#~ msgstr "fejlagtigt suffiks i %s%s-argument '%s'"
+
+#, c-format
+#~ msgid "%s%s argument `%s' too large"
+#~ msgstr "%s%s argument '%s' er for stort"

@@ -1,0 +1,602 @@
+# translation of coreutils-5.3.0.tr.po to Turkish
+# Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+# Ali Devin Sezer <Ali_Sezer@brown.edu>, 2002.
+# Nilgün Belma Bugüner <nilgun@superonline.com>, 2001, 2002.
+# Onur Tolga ŞEHİTOĞLU <onur@lcsl.metu.edu.tr>, 1998.
+# Deniz Akkus Kanca <deniz@arayan.com>, 2001,2003, 2004.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: coreutils 5.3.0\n"
+"Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
+"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"PO-Revision-Date: 2005-03-14 04:17+0200\n"
+"Last-Translator: Deniz Akkus Kanca <deniz@arayan.com>\n"
+"Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: KBabel 1.9.1\n"
+
+#: lib/error.c:195
+msgid "Unknown system error"
+msgstr "Bilinmeyen sistem hatası"
+
+#: lib/gai_strerror.c:57
+#, fuzzy
+msgid "Address family for hostname not supported"
+msgstr "fifo dosyaları desteklenmiyor"
+
+#: lib/gai_strerror.c:58
+msgid "Temporary failure in name resolution"
+msgstr ""
+
+#: lib/gai_strerror.c:59
+msgid "Bad value for ai_flags"
+msgstr ""
+
+#: lib/gai_strerror.c:60
+msgid "Non-recoverable failure in name resolution"
+msgstr ""
+
+#: lib/gai_strerror.c:61
+#, fuzzy
+msgid "ai_family not supported"
+msgstr "fifo dosyaları desteklenmiyor"
+
+#: lib/gai_strerror.c:62
+msgid "Memory allocation failure"
+msgstr ""
+
+#: lib/gai_strerror.c:63
+msgid "No address associated with hostname"
+msgstr ""
+
+#: lib/gai_strerror.c:64
+msgid "Name or service not known"
+msgstr ""
+
+#: lib/gai_strerror.c:65
+msgid "Servname not supported for ai_socktype"
+msgstr ""
+
+#: lib/gai_strerror.c:66
+#, fuzzy
+msgid "ai_socktype not supported"
+msgstr "fifo dosyaları desteklenmiyor"
+
+#: lib/gai_strerror.c:67
+#, fuzzy
+msgid "System error"
+msgstr "yazma hatası"
+
+#: lib/gai_strerror.c:68
+msgid "Argument buffer too small"
+msgstr ""
+
+#: lib/gai_strerror.c:70
+msgid "Processing request in progress"
+msgstr ""
+
+#: lib/gai_strerror.c:71
+msgid "Request canceled"
+msgstr ""
+
+#: lib/gai_strerror.c:72
+msgid "Request not canceled"
+msgstr ""
+
+#: lib/gai_strerror.c:73
+msgid "All requests done"
+msgstr ""
+
+#: lib/gai_strerror.c:74
+msgid "Interrupted by a signal"
+msgstr ""
+
+#: lib/gai_strerror.c:75
+msgid "Parameter string not correctly encoded"
+msgstr ""
+
+#: lib/gai_strerror.c:87
+#, fuzzy
+msgid "Unknown error"
+msgstr "Bilinmeyen sistem hatası"
+
+#: lib/getopt.c:278
+#, fuzzy, c-format
+msgid "%s: option '%s%s' is ambiguous\n"
+msgstr "%s: `%s' seçeneği belirsiz\n"
+
+#: lib/getopt.c:284
+#, fuzzy, c-format
+msgid "%s: option '%s%s' is ambiguous; possibilities:"
+msgstr "%s: `%s' seçeneği belirsiz\n"
+
+#: lib/getopt.c:319
+#, fuzzy, c-format
+msgid "%s: unrecognized option '%s%s'\n"
+msgstr "%s: `%c%s' seçeneği bilinmiyor\n"
+
+#: lib/getopt.c:345
+#, fuzzy, c-format
+msgid "%s: option '%s%s' doesn't allow an argument\n"
+msgstr "%s: seçenek `%c%s' argümansız kullanılır\n"
+
+#: lib/getopt.c:360
+#, fuzzy, c-format
+msgid "%s: option '%s%s' requires an argument\n"
+msgstr "%s: `%s' seçeneği bir argümanla kullanılır\n"
+
+#: lib/getopt.c:621
+#, fuzzy, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr "%s: geçersiz seçenek -- %c\n"
+
+#: lib/getopt.c:636 lib/getopt.c:682
+#, fuzzy, c-format
+msgid "%s: option requires an argument -- '%c'\n"
+msgstr "%s: seçenek bir argümanla kullanılır -- %c\n"
+
+#: lib/openat-die.c:38
+#, fuzzy, c-format
+msgid "unable to record current working directory"
+msgstr "openat: çalışılan dizini kaydedemedi"
+
+#: lib/openat-die.c:57
+#, c-format
+msgid "failed to return to initial working directory"
+msgstr "başlangıç çalışma dizinine geri dönülemedi"
+
+#: lib/os2-spawn.c:46
+#, c-format
+msgid "_open_osfhandle failed"
+msgstr ""
+
+#: lib/os2-spawn.c:83
+#, c-format
+msgid "cannot restore fd %d: dup2 failed"
+msgstr ""
+
+#. TRANSLATORS:
+#. Get translations for open and closing quotation marks.
+#. The message catalog should translate "`" to a left
+#. quotation mark suitable for the locale, and similarly for
+#. "'".  For example, a French Unicode local should translate
+#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), respectively.
+#.
+#. If the catalog has no translation, we will try to
+#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
+#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
+#. current locale is not Unicode, locale_quoting_style
+#. will quote 'like this', and clocale_quoting_style will
+#. quote "like this".  You should always include translations
+#. for "`" and "'" even if U+2018 and U+2019 are appropriate
+#. for your locale.
+#.
+#. If you don't know what to put here, please see
+#. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
+#. and use glyphs suitable for your language.
+#: lib/quotearg.c:355
+msgid "`"
+msgstr "`"
+
+#: lib/quotearg.c:356
+msgid "'"
+msgstr "'"
+
+#: lib/regcomp.c:135
+msgid "Success"
+msgstr ""
+
+#: lib/regcomp.c:138
+msgid "No match"
+msgstr ""
+
+#: lib/regcomp.c:141
+#, fuzzy
+msgid "Invalid regular expression"
+msgstr "%s: geçersiz düzenli ifade(regular expression): %s"
+
+#: lib/regcomp.c:144
+#, fuzzy
+msgid "Invalid collation character"
+msgstr "geçersiz karakter sınıfı `%s'"
+
+#: lib/regcomp.c:147
+#, fuzzy
+msgid "Invalid character class name"
+msgstr "geçersiz karakter sınıfı `%s'"
+
+#: lib/regcomp.c:150
+msgid "Trailing backslash"
+msgstr ""
+
+#: lib/regcomp.c:153
+#, fuzzy
+msgid "Invalid back reference"
+msgstr "Geçersiz sayfa aralığı `%s'"
+
+#: lib/regcomp.c:156
+msgid "Unmatched [, [^, [:, [., or [="
+msgstr ""
+
+#: lib/regcomp.c:159
+msgid "Unmatched ( or \\("
+msgstr ""
+
+#: lib/regcomp.c:162
+msgid "Unmatched \\{"
+msgstr ""
+
+#: lib/regcomp.c:165
+msgid "Invalid content of \\{\\}"
+msgstr ""
+
+#: lib/regcomp.c:168
+#, fuzzy
+msgid "Invalid range end"
+msgstr "Geçersiz sayfa aralığı `%s'"
+
+#: lib/regcomp.c:171
+#, fuzzy
+msgid "Memory exhausted"
+msgstr "bellek tükendi"
+
+#: lib/regcomp.c:174
+#, fuzzy
+msgid "Invalid preceding regular expression"
+msgstr "%s: geçersiz düzenli ifade(regular expression): %s"
+
+#: lib/regcomp.c:177
+#, fuzzy
+msgid "Premature end of regular expression"
+msgstr "düzenli ifade (regular expression) aramasında hata oluştu"
+
+#: lib/regcomp.c:180
+#, fuzzy
+msgid "Regular expression too big"
+msgstr "%s: geçersiz düzenli ifade(regular expression): %s"
+
+#: lib/regcomp.c:183
+msgid "Unmatched ) or \\)"
+msgstr ""
+
+#: lib/regcomp.c:676
+#, fuzzy
+msgid "No previous regular expression"
+msgstr "düzenli ifade (regular expression) aramasında hata oluştu"
+
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
+#: lib/spawn-pipe.c:463
+#, fuzzy, c-format
+msgid "cannot create pipe"
+msgstr "%s bağı oluşturulamadı"
+
+#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#, fuzzy, c-format
+msgid "%s subprocess failed"
+msgstr "%s: arama (seek) başarısız"
+
+#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#, fuzzy, c-format
+msgid "%s subprocess"
+msgstr "%s: arama (seek) başarısız"
+
+#: lib/wait-process.c:282 lib/wait-process.c:354
+#, fuzzy, c-format
+msgid "%s subprocess got fatal signal %d"
+msgstr "%s: arama (seek) başarısız"
+
+#: lib/xalloc-die.c:34
+msgid "memory exhausted"
+msgstr "bellek tükendi"
+
+#, c-format
+#~ msgid "invalid argument %s for %s"
+#~ msgstr "%s argümanı `%s' için geçersiz"
+
+#, c-format
+#~ msgid "ambiguous argument %s for %s"
+#~ msgstr "%s argümanı `%s' için belirsiz"
+
+#, c-format
+#~ msgid "Valid arguments are:"
+#~ msgstr "Geçerli argümanlar:"
+
+#
+#, fuzzy
+#~ msgid ""
+#~ "Mandatory or optional arguments to long options are also mandatory or "
+#~ "optional for any corresponding short options."
+#~ msgstr ""
+#~ "Uzun seçenekler için zorunlu olan argümanlar kısa seçenekler için de "
+#~ "zorunludur.\n"
+
+#, fuzzy
+#~ msgid " [OPTION...]"
+#~ msgstr "Kullanım: %s [SEÇENEK]...\n"
+
+#, fuzzy, c-format
+#~ msgid "Try `%s --help' or `%s --usage' for more information.\n"
+#~ msgstr "Daha fazla bilgi için `%s --help' yazın.\n"
+
+#, fuzzy, c-format
+#~ msgid "Report bugs to %s.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Yazılım hatalarını <%s> adresine,\n"
+#~ "çeviri hatalarını <gnu-tr@belgeler.org> adresine bildirin.\n"
+
+#~ msgid "NAME"
+#~ msgstr "İSİM"
+
+#, fuzzy, c-format
+#~ msgid "%s: Too many arguments\n"
+#~ msgstr "%s: çok fazla sağlama satırı"
+
+#, fuzzy
+#~ msgid "program error"
+#~ msgstr "okuma hatası"
+
+#~ msgid "write error"
+#~ msgstr "yazma hatası"
+
+#, fuzzy, c-format
+#~ msgid "error while opening \"%s\" for reading"
+#~ msgstr "%s okumak için açılamadı"
+
+#, fuzzy, c-format
+#~ msgid "cannot open backup file \"%s\" for writing"
+#~ msgstr "%s yazmak için açılamadı"
+
+#, fuzzy, c-format
+#~ msgid "error reading \"%s\""
+#~ msgstr "%s'i okunurken hata"
+
+#, fuzzy, c-format
+#~ msgid "error writing \"%s\""
+#~ msgstr "%s'e yazarken hata"
+
+#, fuzzy, c-format
+#~ msgid "error after reading \"%s\""
+#~ msgstr "%s'i okunurken hata"
+
+#, fuzzy
+#~ msgid "fdopen() failed"
+#~ msgstr "açma işlemi başarısız"
+
+#
+#~ msgid "regular empty file"
+#~ msgstr "normal boş dosya"
+
+#
+#~ msgid "regular file"
+#~ msgstr "normal dosya"
+
+#~ msgid "directory"
+#~ msgstr "dizin"
+
+#
+#~ msgid "block special file"
+#~ msgstr "blok özel dosyası"
+
+#
+#~ msgid "character special file"
+#~ msgstr "karakter özel dosyası"
+
+#
+#~ msgid "fifo"
+#~ msgstr "fifo"
+
+#~ msgid "symbolic link"
+#~ msgstr "sembolik bağ"
+
+#~ msgid "socket"
+#~ msgstr "soket"
+
+#~ msgid "message queue"
+#~ msgstr "ileti kuyruğu"
+
+#~ msgid "semaphore"
+#~ msgstr "semafor"
+
+#
+#~ msgid "shared memory object"
+#~ msgstr "paylaşımlı bellek nesnesi"
+
+#
+#~ msgid "typed memory object"
+#~ msgstr "türlenmiş bellek nesnesi"
+
+#
+#~ msgid "weird file"
+#~ msgstr "garip dosya"
+
+#, c-format
+#~ msgid "%s: option `--%s' doesn't allow an argument\n"
+#~ msgstr "%s: `--%s' seçeneği argümansız kullanılır\n"
+
+#, c-format
+#~ msgid "%s: unrecognized option `--%s'\n"
+#~ msgstr "%s: `--%s' seçeneği bilinmiyor\n"
+
+#, c-format
+#~ msgid "%s: illegal option -- %c\n"
+#~ msgstr "%s: kuraldışı seçenek -- %c\n"
+
+#, c-format
+#~ msgid "%s: option `-W %s' is ambiguous\n"
+#~ msgstr "%s: `-W %s' seçeneği belirsiz\n"
+
+#, c-format
+#~ msgid "%s: option `-W %s' doesn't allow an argument\n"
+#~ msgstr "%s: `-W %s' seçeneği argümansız kullanılır\n"
+
+#~ msgid "block size"
+#~ msgstr "blok uzunluğu"
+
+#, c-format
+#~ msgid "%s exists but is not a directory"
+#~ msgstr "%s var ama bir dizin değil"
+
+#, c-format
+#~ msgid "cannot change owner and/or group of %s"
+#~ msgstr "%s'in sahibi ve/veya grubu değiştirilemiyor"
+
+#, c-format
+#~ msgid "cannot create directory %s"
+#~ msgstr "%s dizini oluşturulamıyor"
+
+#, c-format
+#~ msgid "cannot chdir to directory %s"
+#~ msgstr "%s dizinine geçilemedi"
+
+#, c-format
+#~ msgid "cannot change permissions of %s"
+#~ msgstr "%s'in erişim izinleri değiştirilemiyor"
+
+#, fuzzy
+#~ msgid "Failed to open /dev/zero for read"
+#~ msgstr "%s: yazmak için açılamadı"
+
+#~ msgid "^[yY]"
+#~ msgstr "^[eE]"
+
+#~ msgid "^[nN]"
+#~ msgstr "^[hH]"
+
+#
+#~ msgid "iconv function not usable"
+#~ msgstr "iconv işlevi kullanılabilir değil"
+
+#~ msgid "iconv function not available"
+#~ msgstr "iconv işlevi yok"
+
+#~ msgid "character out of range"
+#~ msgstr "karakter kapsamdışı"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set"
+#~ msgstr "U+%04X yerel karakter kümesine dönüştürülemiyor"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set: %s"
+#~ msgstr "U+%04X yerel karakter kümesine dönüştürülemiyor: %s"
+
+#~ msgid "invalid user"
+#~ msgstr "kullanıcı geçersiz"
+
+#~ msgid "invalid group"
+#~ msgstr "grup geçersiz"
+
+#~ msgid "cannot get the login group of a numeric UID"
+#~ msgstr "bir sayısal kullanıcı-kimliğin grubu alınamıyor"
+
+#, fuzzy
+#~ msgid ""
+#~ "\n"
+#~ "This is free software.  You may redistribute copies of it under the terms "
+#~ "of\n"
+#~ "the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\n"
+#~ "There is NO WARRANTY, to the extent permitted by law.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Bu, bir serbest yazılımdır; Free Software Foundation tarafından "
+#~ "yayınlanan\n"
+#~ "GNU Genel Kamu Lisansı, 2. sürüm (veya sizin seçiminize bağlı olarak) "
+#~ "daha üst \n"
+#~ "sürüm koşulları altında değişiklik yapabilir ve/veya yeniden "
+#~ "dağıtabilirsiniz. \n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Written by %s.\n"
+#~ msgstr "%s tarafından yazıldı.\n"
+
+#, c-format
+#~ msgid "Written by %s and %s.\n"
+#~ msgstr "%s ve %s tarafından yazıldı.\n"
+
+#, c-format
+#~ msgid "Written by %s, %s, and %s.\n"
+#~ msgstr "%s, %s ve %s tarafından yazıldı.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "%s, %s, %s \n"
+#~ "ve %s tarafından yazıldı.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "%s, %s, %s, %s \n"
+#~ "ve %s tarafından yazıldı.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, and %s.\n"
+#~ msgstr ""
+#~ "%s, %s, %s, %s, \n"
+#~ "%s ve %s tarafından yazıldı.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, and %s.\n"
+#~ msgstr ""
+#~ "%s, %s, %s, %s, \n"
+#~ "%s, %s ve %s tarafından yazıldı.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "%s, %s, %s, \n"
+#~ "%s, %s, %s, \n"
+#~ "%s ve %s tarafından yazıldı.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "%s, %s, %s, \n"
+#~ "%s, %s, %s, \n"
+#~ "%s, %s ve %s tarafından yazıldı.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s, and others.\n"
+#~ msgstr ""
+#~ "%s, %s, %s, \n"
+#~ "%s, %s, %s, \n"
+#~ "%s, %s, %s ve başkaları tarafından yazıldı.\n"
+
+#
+#~ msgid "string comparison failed"
+#~ msgstr "dizge karşılaştırması başarısız"
+
+#
+#~ msgid "Set LC_ALL='C' to work around the problem."
+#~ msgstr "Problemi devre dışı bırakmak için LC_ALL='C' tanımlayın."
+
+#, c-format
+#~ msgid "The strings compared were %s and %s."
+#~ msgstr "Karşılaştırılan dizgeler %s ve %s idi."

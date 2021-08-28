@@ -1,6 +1,6 @@
-# serial 14
+# serial 17
 
-# Copyright (C) 2001, 2003-2004, 2006, 2008-2018 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003-2004, 2006, 2008-2021 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -16,33 +16,34 @@ AC_DEFUN([gl_FUNC_MKDIR],
   AC_CACHE_CHECK([whether mkdir handles trailing slash],
     [gl_cv_func_mkdir_trailing_slash_works],
     [rm -rf conftest.dir
-      AC_RUN_IFELSE([AC_LANG_PROGRAM([[
-#       include <sys/types.h>
-#       include <sys/stat.h>
-]], [return mkdir ("conftest.dir/", 0700);])],
-      [gl_cv_func_mkdir_trailing_slash_works=yes],
-      [gl_cv_func_mkdir_trailing_slash_works=no],
-      [case "$host_os" in
-                          # Guess yes on Linux systems.
-         linux-* | linux) gl_cv_func_mkdir_trailing_slash_works="guessing yes" ;;
-                          # Guess yes on glibc systems.
-         *-gnu* | gnu*)   gl_cv_func_mkdir_trailing_slash_works="guessing yes" ;;
-                          # Guess yes on MSVC, no on mingw.
-         mingw*)          AC_EGREP_CPP([Known], [
+     AC_RUN_IFELSE(
+       [AC_LANG_PROGRAM([[
+          #include <sys/types.h>
+          #include <sys/stat.h>
+          ]GL_MDA_DEFINES],
+          [[return mkdir ("conftest.dir/", 0700);]])],
+       [gl_cv_func_mkdir_trailing_slash_works=yes],
+       [gl_cv_func_mkdir_trailing_slash_works=no],
+       [case "$host_os" in
+                           # Guess yes on Linux systems.
+          linux-* | linux) gl_cv_func_mkdir_trailing_slash_works="guessing yes" ;;
+                           # Guess yes on glibc systems.
+          *-gnu* | gnu*)   gl_cv_func_mkdir_trailing_slash_works="guessing yes" ;;
+                           # Guess yes on MSVC, no on mingw.
+          mingw*)          AC_EGREP_CPP([Known], [
 #ifdef _MSC_VER
  Known
 #endif
-                            ],
-                            [gl_cv_func_mkdir_trailing_slash_works="guessing yes"],
-                            [gl_cv_func_mkdir_trailing_slash_works="guessing no"])
-                          ;;
-                          # If we don't know, assume the worst.
-         *)               gl_cv_func_mkdir_trailing_slash_works="guessing no" ;;
-       esac
-      ])
-    rm -rf conftest.dir
-    ]
-  )
+                             ],
+                             [gl_cv_func_mkdir_trailing_slash_works="guessing yes"],
+                             [gl_cv_func_mkdir_trailing_slash_works="guessing no"])
+                           ;;
+                           # If we don't know, obey --enable-cross-guesses.
+          *)               gl_cv_func_mkdir_trailing_slash_works="$gl_cross_guess_normal" ;;
+        esac
+       ])
+     rm -rf conftest.dir
+    ])
   case "$gl_cv_func_mkdir_trailing_slash_works" in
     *yes) ;;
     *)
@@ -53,22 +54,26 @@ AC_DEFUN([gl_FUNC_MKDIR],
   AC_CACHE_CHECK([whether mkdir handles trailing dot],
     [gl_cv_func_mkdir_trailing_dot_works],
     [rm -rf conftest.dir
-      AC_RUN_IFELSE([AC_LANG_PROGRAM([[
-#       include <sys/types.h>
-#       include <sys/stat.h>
-]], [return !mkdir ("conftest.dir/./", 0700);])],
-      [gl_cv_func_mkdir_trailing_dot_works=yes],
-      [gl_cv_func_mkdir_trailing_dot_works=no],
-      [case "$host_os" in
-                        # Guess yes on glibc systems.
-         *-gnu* | gnu*) gl_cv_func_mkdir_trailing_dot_works="guessing yes" ;;
-                        # Guess no on native Windows.
-         mingw*)        gl_cv_func_mkdir_trailing_dot_works="guessing no" ;;
-                        # If we don't know, assume the worst.
-         *)             gl_cv_func_mkdir_trailing_dot_works="guessing no" ;;
-       esac
-      ])
-    rm -rf conftest.dir
+     AC_RUN_IFELSE(
+       [AC_LANG_PROGRAM([[
+          #include <sys/types.h>
+          #include <sys/stat.h>
+          ]GL_MDA_DEFINES],
+          [[return !mkdir ("conftest.dir/./", 0700);]])],
+       [gl_cv_func_mkdir_trailing_dot_works=yes],
+       [gl_cv_func_mkdir_trailing_dot_works=no],
+       [case "$host_os" in
+                         # Guess yes on glibc systems.
+          *-gnu* | gnu*) gl_cv_func_mkdir_trailing_dot_works="guessing yes" ;;
+                         # Guess yes on musl systems.
+          *-musl*)       gl_cv_func_mkdir_trailing_dot_works="guessing yes" ;;
+                         # Guess no on native Windows.
+          mingw*)        gl_cv_func_mkdir_trailing_dot_works="guessing no" ;;
+                         # If we don't know, obey --enable-cross-guesses.
+          *)             gl_cv_func_mkdir_trailing_dot_works="$gl_cross_guess_normal" ;;
+        esac
+       ])
+     rm -rf conftest.dir
     ]
   )
   case "$gl_cv_func_mkdir_trailing_dot_works" in

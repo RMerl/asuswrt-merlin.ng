@@ -1,5 +1,5 @@
-# posix_spawn.m4 serial 15
-dnl Copyright (C) 2008-2018 Free Software Foundation, Inc.
+# posix_spawn.m4 serial 19
+dnl Copyright (C) 2008-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -42,43 +42,64 @@ AC_DEFUN([gl_POSIX_SPAWN_BODY],
          REPLACE_POSIX_SPAWN=1
        fi
       ])
+    m4_ifdef([gl_FUNC_POSIX_SPAWN_FILE_ACTIONS_ADDFCHDIR],
+      [dnl Module 'posix_spawn_file_actions_addfchdir' is present.
+       AC_CHECK_FUNCS_ONCE([posix_spawn_file_actions_addfchdir_np])
+       if test $ac_cv_func_posix_spawn_file_actions_addfchdir_np = no; then
+         dnl In order to implement the posix_spawn_file_actions_addfchdir
+         dnl function, we need to replace the entire posix_spawn facility.
+         REPLACE_POSIX_SPAWN=1
+       fi
+      ])
     if test $REPLACE_POSIX_SPAWN = 0; then
       gl_POSIX_SPAWN_WORKS
       case "$gl_cv_func_posix_spawn_works" in
-        *yes)
-          dnl Assume that these functions are available if POSIX_SPAWN_SETSCHEDULER
-          dnl evaluates to nonzero.
-          dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_getschedpolicy])
-          dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_setschedpolicy])
-          AC_CACHE_CHECK([whether posix_spawnattr_setschedpolicy is supported],
-            [gl_cv_func_spawnattr_setschedpolicy],
-            [AC_EGREP_CPP([POSIX scheduling supported], [
+        *yes) ;;
+        *) REPLACE_POSIX_SPAWN=1 ;;
+      esac
+    fi
+    if test $REPLACE_POSIX_SPAWN = 0; then
+      gl_POSIX_SPAWN_SECURE
+      case "$gl_cv_func_posix_spawn_secure_exec" in
+        *yes) ;;
+        *) REPLACE_POSIX_SPAWN=1 ;;
+      esac
+      case "$gl_cv_func_posix_spawnp_secure_exec" in
+        *yes) ;;
+        *) REPLACE_POSIX_SPAWN=1 ;;
+      esac
+    fi
+    if test $REPLACE_POSIX_SPAWN = 0; then
+      dnl Assume that these functions are available if POSIX_SPAWN_SETSCHEDULER
+      dnl evaluates to nonzero.
+      dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_getschedpolicy])
+      dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_setschedpolicy])
+      AC_CACHE_CHECK([whether posix_spawnattr_setschedpolicy is supported],
+        [gl_cv_func_spawnattr_setschedpolicy],
+        [AC_EGREP_CPP([POSIX scheduling supported], [
 #include <spawn.h>
 #if POSIX_SPAWN_SETSCHEDULER
  POSIX scheduling supported
 #endif
 ],
-               [gl_cv_func_spawnattr_setschedpolicy=yes],
-               [gl_cv_func_spawnattr_setschedpolicy=no])
-            ])
-          dnl Assume that these functions are available if POSIX_SPAWN_SETSCHEDPARAM
-          dnl evaluates to nonzero.
-          dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_getschedparam])
-          dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_setschedparam])
-          AC_CACHE_CHECK([whether posix_spawnattr_setschedparam is supported],
-            [gl_cv_func_spawnattr_setschedparam],
-            [AC_EGREP_CPP([POSIX scheduling supported], [
+           [gl_cv_func_spawnattr_setschedpolicy=yes],
+           [gl_cv_func_spawnattr_setschedpolicy=no])
+        ])
+      dnl Assume that these functions are available if POSIX_SPAWN_SETSCHEDPARAM
+      dnl evaluates to nonzero.
+      dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_getschedparam])
+      dnl AC_CHECK_FUNCS_ONCE([posix_spawnattr_setschedparam])
+      AC_CACHE_CHECK([whether posix_spawnattr_setschedparam is supported],
+        [gl_cv_func_spawnattr_setschedparam],
+        [AC_EGREP_CPP([POSIX scheduling supported], [
 #include <spawn.h>
 #if POSIX_SPAWN_SETSCHEDPARAM
  POSIX scheduling supported
 #endif
 ],
-               [gl_cv_func_spawnattr_setschedparam=yes],
-               [gl_cv_func_spawnattr_setschedparam=no])
-            ])
-          ;;
-        *) REPLACE_POSIX_SPAWN=1 ;;
-      esac
+           [gl_cv_func_spawnattr_setschedparam=yes],
+           [gl_cv_func_spawnattr_setschedparam=no])
+        ])
     fi
   fi
   if test $ac_cv_func_posix_spawn != yes || test $REPLACE_POSIX_SPAWN = 1; then
@@ -114,6 +135,7 @@ AC_DEFUN([gl_POSIX_SPAWN_WORKS],
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+]GL_MDA_DEFINES[
 
 extern char **environ;
 
@@ -257,6 +279,7 @@ main ()
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+]GL_MDA_DEFINES[
 
 extern char **environ;
 
@@ -406,6 +429,113 @@ main (int argc, char *argv[])
     ])
 ])
 
+dnl Test whether posix_spawn and posix_spawnp are secure.
+AC_DEFUN([gl_POSIX_SPAWN_SECURE],
+[
+  AC_REQUIRE([AC_PROG_CC])
+  AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
+  dnl On many platforms, posix_spawn or posix_spawnp allow executing a
+  dnl script without a '#!' marker as a shell script. This is unsecure.
+  AC_CACHE_CHECK([whether posix_spawn rejects scripts without shebang],
+    [gl_cv_func_posix_spawn_secure_exec],
+    [echo ':' > conftest.scr
+     chmod a+x conftest.scr
+     AC_RUN_IFELSE([AC_LANG_SOURCE([[
+       #include <errno.h>
+       #include <spawn.h>
+       #include <stddef.h>
+       #include <sys/types.h>
+       #include <sys/wait.h>
+       int
+       main ()
+       {
+         const char *prog_path = "./conftest.scr";
+         const char *prog_argv[2] = { prog_path, NULL };
+         const char *environment[2] = { "PATH=.", NULL };
+         pid_t child;
+         int status;
+         int err = posix_spawn (&child, prog_path, NULL, NULL,
+                                (char **) prog_argv, (char **) environment);
+         if (err == ENOEXEC)
+           return 0;
+         if (err != 0)
+           return 1;
+         status = 0;
+         while (waitpid (child, &status, 0) != child)
+           ;
+         if (!WIFEXITED (status))
+           return 2;
+         if (WEXITSTATUS (status) != 127)
+           return 3;
+         return 0;
+       }
+       ]])],
+       [gl_cv_func_posix_spawn_secure_exec=yes],
+       [gl_cv_func_posix_spawn_secure_exec=no],
+       [case "$host_os" in
+          # Guess no on GNU/Hurd.
+          gnu*)
+            gl_cv_func_posix_spawn_secure_exec="guessing no" ;;
+          # Guess yes on all other platforms.
+          *)
+            gl_cv_func_posix_spawn_secure_exec="guessing yes" ;;
+        esac
+       ])
+     rm -f conftest.scr
+    ])
+  AC_CACHE_CHECK([whether posix_spawnp rejects scripts without shebang],
+    [gl_cv_func_posix_spawnp_secure_exec],
+    [echo ':' > conftest.scr
+     chmod a+x conftest.scr
+     AC_RUN_IFELSE([AC_LANG_SOURCE([[
+       #include <errno.h>
+       #include <spawn.h>
+       #include <stddef.h>
+       #include <sys/types.h>
+       #include <sys/wait.h>
+       int
+       main ()
+       {
+         const char *prog_path = "./conftest.scr";
+         const char *prog_argv[2] = { prog_path, NULL };
+         const char *environment[2] = { "PATH=.", NULL };
+         pid_t child;
+         int status;
+         int err = posix_spawnp (&child, prog_path, NULL, NULL,
+                                 (char **) prog_argv, (char **) environment);
+         if (err == ENOEXEC)
+           return 0;
+         if (err != 0)
+           return 1;
+         status = 0;
+         while (waitpid (child, &status, 0) != child)
+           ;
+         if (!WIFEXITED (status))
+           return 2;
+         if (WEXITSTATUS (status) != 127)
+           return 3;
+         return 0;
+       }
+       ]])],
+       [gl_cv_func_posix_spawnp_secure_exec=yes],
+       [gl_cv_func_posix_spawnp_secure_exec=no],
+       [case "$host_os" in
+          # Guess yes on glibc systems (glibc >= 2.15 actually) except GNU/Hurd,
+          # musl libc, NetBSD.
+          *-gnu* | *-musl* | netbsd*)
+            gl_cv_func_posix_spawnp_secure_exec="guessing yes" ;;
+          # Guess no on GNU/Hurd, macOS, FreeBSD, OpenBSD, AIX, Solaris, Cygwin.
+          gnu* | darwin* | freebsd* | dragonfly* | openbsd* | aix* | solaris* | cygwin*)
+            gl_cv_func_posix_spawnp_secure_exec="guessing no" ;;
+          # If we don't know, obey --enable-cross-guesses.
+          *)
+            gl_cv_func_posix_spawnp_secure_exec="$gl_cross_guess_normal" ;;
+        esac
+       ])
+     rm -f conftest.scr
+    ])
+])
+
 # Prerequisites of lib/spawni.c.
 AC_DEFUN([gl_PREREQ_POSIX_SPAWN_INTERNAL],
 [
@@ -422,8 +552,8 @@ AC_DEFUN([gl_FUNC_POSIX_SPAWN_FILE_ACTIONS_ADDCLOSE],
   if test $REPLACE_POSIX_SPAWN = 1; then
     REPLACE_POSIX_SPAWN_FILE_ACTIONS_ADDCLOSE=1
   else
-    dnl On Solaris 11.0, posix_spawn_file_actions_addclose succeeds even
-    dnl if the fd argument is out of range.
+    dnl On musl libc and Solaris 11.0, posix_spawn_file_actions_addclose
+    dnl succeeds even if the fd argument is out of range.
     AC_CACHE_CHECK([whether posix_spawn_file_actions_addclose works],
       [gl_cv_func_posix_spawn_file_actions_addclose_works],
       [AC_RUN_IFELSE(
@@ -440,8 +570,9 @@ int main ()
 }]])],
          [gl_cv_func_posix_spawn_file_actions_addclose_works=yes],
          [gl_cv_func_posix_spawn_file_actions_addclose_works=no],
-         [# Guess no on Solaris, yes otherwise.
+         [# Guess no on musl libc and Solaris, yes otherwise.
           case "$host_os" in
+            *-musl*)  gl_cv_func_posix_spawn_file_actions_addclose_works="guessing no" ;;
             solaris*) gl_cv_func_posix_spawn_file_actions_addclose_works="guessing no" ;;
                       # Guess no on native Windows.
             mingw*)   gl_cv_func_posix_spawn_file_actions_addclose_works="guessing no" ;;
@@ -465,8 +596,8 @@ AC_DEFUN([gl_FUNC_POSIX_SPAWN_FILE_ACTIONS_ADDDUP2],
   if test $REPLACE_POSIX_SPAWN = 1; then
     REPLACE_POSIX_SPAWN_FILE_ACTIONS_ADDDUP2=1
   else
-    dnl On Solaris 11.0, posix_spawn_file_actions_adddup2 succeeds even
-    dnl if the fd argument is out of range.
+    dnl On musl libc and Solaris 11.0, posix_spawn_file_actions_adddup2
+    dnl succeeds even if the fd argument is out of range.
     AC_CACHE_CHECK([whether posix_spawn_file_actions_adddup2 works],
       [gl_cv_func_posix_spawn_file_actions_adddup2_works],
       [AC_RUN_IFELSE(
@@ -483,8 +614,9 @@ int main ()
 }]])],
          [gl_cv_func_posix_spawn_file_actions_adddup2_works=yes],
          [gl_cv_func_posix_spawn_file_actions_adddup2_works=no],
-         [# Guess no on Solaris, yes otherwise.
+         [# Guess no on musl libc and Solaris, yes otherwise.
           case "$host_os" in
+            *-musl*)  gl_cv_func_posix_spawn_file_actions_adddup2_works="guessing no";;
             solaris*) gl_cv_func_posix_spawn_file_actions_adddup2_works="guessing no";;
                       # Guess no on native Windows.
             mingw*)   gl_cv_func_posix_spawn_file_actions_adddup2_works="guessing no" ;;
@@ -508,8 +640,8 @@ AC_DEFUN([gl_FUNC_POSIX_SPAWN_FILE_ACTIONS_ADDOPEN],
   if test $REPLACE_POSIX_SPAWN = 1; then
     REPLACE_POSIX_SPAWN_FILE_ACTIONS_ADDOPEN=1
   else
-    dnl On Solaris 11.0, posix_spawn_file_actions_addopen succeeds even
-    dnl if the fd argument is out of range.
+    dnl On musl libc and Solaris 11.0, posix_spawn_file_actions_addopen
+    dnl succeeds even if the fd argument is out of range.
     AC_CACHE_CHECK([whether posix_spawn_file_actions_addopen works],
       [gl_cv_func_posix_spawn_file_actions_addopen_works],
       [AC_RUN_IFELSE(
@@ -528,8 +660,9 @@ int main ()
 }]])],
          [gl_cv_func_posix_spawn_file_actions_addopen_works=yes],
          [gl_cv_func_posix_spawn_file_actions_addopen_works=no],
-         [# Guess no on Solaris, yes otherwise.
+         [# Guess no on musl libc and Solaris, yes otherwise.
           case "$host_os" in
+            *-musl*)  gl_cv_func_posix_spawn_file_actions_addopen_works="guessing no";;
             solaris*) gl_cv_func_posix_spawn_file_actions_addopen_works="guessing no";;
                       # Guess no on native Windows.
             mingw*)   gl_cv_func_posix_spawn_file_actions_addopen_works="guessing no" ;;

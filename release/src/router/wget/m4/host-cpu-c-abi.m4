@@ -1,5 +1,5 @@
-# host-cpu-c-abi.m4 serial 11
-dnl Copyright (C) 2002-2018 Free Software Foundation, Inc.
+# host-cpu-c-abi.m4 serial 13
+dnl Copyright (C) 2002-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -55,7 +55,7 @@ AC_DEFUN([gl_HOST_CPU_C_ABI],
     [case "$host_cpu" in
 
 changequote(,)dnl
-       i[4567]86 )
+       i[34567]86 )
 changequote([,])dnl
          gl_cv_host_cpu_c_abi=i386
          ;;
@@ -457,7 +457,8 @@ EOF
 
 
 dnl Sets the HOST_CPU_C_ABI_32BIT variable to 'yes' if the C language ABI
-dnl (application binary interface) is a 32-bit one, or to 'no' otherwise.
+dnl (application binary interface) is a 32-bit one, to 'no' if it is a 64-bit
+dnl one, or to 'unknown' if unknown.
 dnl This is a simplified variant of gl_HOST_CPU_C_ABI.
 AC_DEFUN([gl_HOST_CPU_C_ABI_32BIT],
 [
@@ -467,14 +468,44 @@ AC_DEFUN([gl_HOST_CPU_C_ABI_32BIT],
        case "$gl_cv_host_cpu_c_abi" in
          i386 | x86_64-x32 | arm | armhf | arm64-ilp32 | hppa | ia64-ilp32 | mips | mipsn32 | powerpc | riscv*-ilp32* | s390 | sparc)
            gl_cv_host_cpu_c_abi_32bit=yes ;;
-         *)
+         x86_64 | alpha | arm64 | hppa64 | ia64 | mips64 | powerpc64 | powerpc64-elfv2 | riscv*-lp64* | s390x | sparc64 )
            gl_cv_host_cpu_c_abi_32bit=no ;;
+         *)
+           gl_cv_host_cpu_c_abi_32bit=unknown ;;
        esac
      else
        case "$host_cpu" in
 
+         # CPUs that only support a 32-bit ABI.
+         arc \
+         | bfin \
+         | cris* \
+         | csky \
+         | epiphany \
+         | ft32 \
+         | h8300 \
+         | m68k \
+         | microblaze | microblazeel \
+         | nds32 | nds32le | nds32be \
+         | nios2 | nios2eb | nios2el \
+         | or1k* \
+         | or32 \
+         | sh | sh[1234] | sh[1234]e[lb] \
+         | tic6x \
+         | xtensa* )
+           gl_cv_host_cpu_c_abi_32bit=yes
+           ;;
+
+         # CPUs that only support a 64-bit ABI.
 changequote(,)dnl
-         i[4567]86 )
+         alpha | alphaev[4-8] | alphaev56 | alphapca5[67] | alphaev6[78] \
+         | mmix )
+changequote([,])dnl
+           gl_cv_host_cpu_c_abi_32bit=no
+           ;;
+
+changequote(,)dnl
+         i[34567]86 )
 changequote([,])dnl
            gl_cv_host_cpu_c_abi_32bit=yes
            ;;
@@ -634,7 +665,7 @@ changequote([,])dnl
            ;;
 
          *)
-           gl_cv_host_cpu_c_abi_32bit=no
+           gl_cv_host_cpu_c_abi_32bit=unknown
            ;;
        esac
      fi

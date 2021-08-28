@@ -1,6 +1,6 @@
 /* xattr.h -- POSIX Extended Attribute function mappings.
 
-   Copyright (C) 2016, 2018 Free Software Foundation, Inc.
+   Copyright (C) 2016, 2018-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,12 +16,13 @@
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
 #include <stdio.h>
+#include <url.h>
 
 #ifndef _XATTR_H
 #define _XATTR_H
 
 /* Store metadata name/value attributes against fp. */
-int set_file_metadata (const char *origin_url, const char *referrer_url, FILE *fp);
+int set_file_metadata (const struct url *origin_url, const struct url *referrer_url, FILE *fp);
 
 #if defined(__linux)
 /* libc on Linux has fsetxattr (5 arguments). */

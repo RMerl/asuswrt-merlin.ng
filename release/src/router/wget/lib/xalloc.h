@@ -1,6 +1,6 @@
 /* xalloc.h -- malloc with out-of-memory checking
 
-   Copyright (C) 1990-2000, 2003-2004, 2006-2018 Free Software Foundation, Inc.
+   Copyright (C) 1990-2000, 2003-2004, 2006-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,24 +31,24 @@ _GL_INLINE_HEADER_BEGIN
 # define XALLOC_INLINE _GL_INLINE
 #endif
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-#if ! defined __clang__ && \
-    (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
-# define _GL_ATTRIBUTE_ALLOC_SIZE(args) __attribute__ ((__alloc_size__ args))
-#else
-# define _GL_ATTRIBUTE_ALLOC_SIZE(args)
-#endif
+#if GNULIB_XALLOC_DIE
 
 /* This function is always triggered when memory is exhausted.
    It must be defined by the application, either explicitly
    or by using gnulib's xalloc-die module.  This is the
    function to call when one wants the program to die because of a
    memory allocation failure.  */
-extern _Noreturn void xalloc_die (void);
+/*extern*/ _Noreturn void xalloc_die (void);
+
+#endif /* GNULIB_XALLOC_DIE */
+
+#if GNULIB_XALLOC
 
 void *xmalloc (size_t s)
       _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_ALLOC_SIZE ((1));
@@ -71,23 +71,23 @@ char *xstrdup (char const *str)
 
 /* Allocate an object of type T dynamically, with error checking.  */
 /* extern t *XMALLOC (typename t); */
-#define XMALLOC(t) ((t *) xmalloc (sizeof (t)))
+# define XMALLOC(t) ((t *) xmalloc (sizeof (t)))
 
 /* Allocate memory for N elements of type T, with error checking.  */
 /* extern t *XNMALLOC (size_t n, typename t); */
-#define XNMALLOC(n, t) \
-   ((t *) (sizeof (t) == 1 ? xmalloc (n) : xnmalloc (n, sizeof (t))))
+# define XNMALLOC(n, t) \
+    ((t *) (sizeof (t) == 1 ? xmalloc (n) : xnmalloc (n, sizeof (t))))
 
 /* Allocate an object of type T dynamically, with error checking,
    and zero it.  */
 /* extern t *XZALLOC (typename t); */
-#define XZALLOC(t) ((t *) xzalloc (sizeof (t)))
+# define XZALLOC(t) ((t *) xzalloc (sizeof (t)))
 
 /* Allocate memory for N elements of type T, with error checking,
    and zero it.  */
 /* extern t *XCALLOC (size_t n, typename t); */
-#define XCALLOC(n, t) \
-   ((t *) (sizeof (t) == 1 ? xzalloc (n) : xcalloc (n, sizeof (t))))
+# define XCALLOC(n, t) \
+    ((t *) (sizeof (t) == 1 ? xzalloc (n) : xcalloc (n, sizeof (t))))
 
 
 /* Allocate an array of N objects, each with S bytes of memory,
@@ -218,8 +218,15 @@ xcharalloc (size_t n)
   return XNMALLOC (n, char);
 }
 
+#endif /* GNULIB_XALLOC */
+
+
 #ifdef __cplusplus
 }
+#endif
+
+
+#if GNULIB_XALLOC && defined __cplusplus
 
 /* C++ does not allow conversions from void * to other pointer types
    without a cast.  Use templates to work around the problem when
@@ -255,7 +262,8 @@ xmemdup (T const *p, size_t s)
   return (T *) xmemdup ((void const *) p, s);
 }
 
-#endif
+#endif /* GNULIB_XALLOC && C++ */
+
 
 _GL_INLINE_HEADER_END
 

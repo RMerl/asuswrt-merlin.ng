@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017-2018 Free Software Foundation, Inc.
+ * Copyright (c) 2017-2021 Free Software Foundation, Inc.
  *
  * This file is part of GNU Wget.
  *
@@ -51,11 +51,12 @@ static int test_all_from(const char *dirname)
 			char fname[strlen(dirname) + strlen(dp->d_name) + 2];
 			snprintf(fname, sizeof(fname), "%s/%s", dirname, dp->d_name);
 
-                        struct file_memory *fmem;
+			struct file_memory *fmem;
 			if ((fmem = wget_read_file(fname))) {
 				printf("testing %ld bytes from '%s'\n", fmem->length, fname);
+				fflush(stdout);
 				LLVMFuzzerTestOneInput((uint8_t *)fmem->content, fmem->length);
-                                wget_read_file_free(fmem);
+				wget_read_file_free(fmem);
 			}
 		}
 		closedir(dirp);
@@ -87,10 +88,12 @@ int main(int argc, char **argv)
 		return system(cmd) != 0;
 	}
 
-	if ((target = strrchr(argv[0], SLASH)))
-		target = strrchr(target, '/');
-	else
+	if ((target = strrchr(argv[0], SLASH))) {
+		if (strrchr(target, '/'))
+			target = strrchr(target, '/');
+	} else
 		target = strrchr(argv[0], '/');
+
 	target = target ? target + 1 : argv[0];
 
 	if (strncmp(target, "lt-", 3) == 0)

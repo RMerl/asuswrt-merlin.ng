@@ -1,5 +1,5 @@
 /* af_alg.h - Compute message digests from file streams and buffers.
-   Copyright (C) 2018 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -66,7 +66,7 @@ afalg_buffer (const char *buffer, size_t len, const char *alg,
    STREAM is an open file stream.  The last operation on STREAM should
    not be 'ungetc', and if STREAM is also open for writing it should
    have been fflushed since its last write.  Read from the current
-   position to the end of STREAM.  Handle regular files efficently.
+   position to the end of STREAM.  Handle regular files efficiently.
 
    ALG is the message digest algorithm; see the file /proc/crypto.
 

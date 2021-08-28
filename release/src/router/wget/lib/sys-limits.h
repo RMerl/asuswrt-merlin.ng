@@ -1,6 +1,6 @@
 /* System call limits
 
-   Copyright 2018 Free Software Foundation, Inc.
+   Copyright 2018-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
-#ifndef _SYS_LIMITS_H
-#define _SYS_LIMITS_H
+#ifndef _GL_SYS_LIMITS_H
+#define _GL_SYS_LIMITS_H
 
 #include <limits.h>
 

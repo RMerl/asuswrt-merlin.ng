@@ -1,5 +1,6 @@
 /* Host name resolution and matching.
-   Copyright (C) 1996-2012, 2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 1996-2012, 2015, 2018-2021 Free Software Foundation,
+   Inc.
 
 This file is part of GNU Wget.
 
@@ -74,7 +75,7 @@ extern int h_errno;
    lookup_host for details.  */
 
 struct address_list {
-  int count;                    /* number of adrresses */
+  int count;                    /* number of addresses */
   ip_address *addresses;        /* pointer to the string of addresses */
 
   int faulty;                   /* number of addresses known not to work. */
@@ -515,7 +516,7 @@ is_valid_ipv6_address (const char *str, const char *end)
       if (c_isxdigit (ch))
         {
           val <<= 4;
-          val |= XDIGIT_TO_NUM (ch);
+          val |= _unhex (ch);
           if (val > 0xffff)
             return false;
           saw_xdigit = true;
@@ -856,8 +857,8 @@ lookup_host (const char *host, int flags)
 #ifdef HAVE_LIBCARES
   if (ares)
     {
-      struct address_list *al4;
-      struct address_list *al6;
+      struct address_list *al4 = NULL;
+      struct address_list *al6 = NULL;
 
       if (opt.ipv4_only || !opt.ipv6_only)
         ares_gethostbyname (ares, host, AF_INET, callback, &al4);
@@ -1042,6 +1043,7 @@ sufmatch (const char **list, const char *what)
   return false;
 }
 
+#if defined DEBUG_MALLOC || defined TESTING
 void
 host_cleanup (void)
 {
@@ -1062,6 +1064,7 @@ host_cleanup (void)
       host_name_addresses_map = NULL;
     }
 }
+#endif
 
 bool
 is_valid_ip_address (const char *name)

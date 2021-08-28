@@ -1,6 +1,6 @@
 /* Provide a replacement for the POSIX nanosleep function.
 
-   Copyright (C) 1999-2000, 2002, 2004-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999-2000, 2002, 2004-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -194,7 +194,7 @@ static sig_atomic_t volatile suspended;
 
 /* Handle SIGCONT. */
 
-static void
+static _GL_ASYNC_SAFE void
 sighandler (int sig)
 {
   suspended = 1;

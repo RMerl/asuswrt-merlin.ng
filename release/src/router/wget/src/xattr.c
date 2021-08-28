@@ -1,6 +1,6 @@
 /* xattr.h -- POSIX Extended Attribute support.
 
-   Copyright (C) 2016, 2018 Free Software Foundation, Inc.
+   Copyright (C) 2016, 2018-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "log.h"
+#include "utils.h"
 #include "xattr.h"
 
 #ifdef USE_XATTR
@@ -57,7 +58,7 @@ write_xattr_metadata (const char *name, const char *value, FILE *fp)
 #endif /* USE_XATTR */
 
 int
-set_file_metadata (const char *origin_url, const char *referrer_url, FILE *fp)
+set_file_metadata (const struct url *origin_url, const struct url *referrer_url, FILE *fp)
 {
   /* Save metadata about where the file came from (requested, final URLs) to
    * user POSIX Extended Attributes of retrieved file.
@@ -67,13 +68,28 @@ set_file_metadata (const char *origin_url, const char *referrer_url, FILE *fp)
    * [http://0pointer.de/lennart/projects/mod_mime_xattr/].
    */
   int retval = -1;
+  char *value;
 
   if (!origin_url || !fp)
     return retval;
 
-  retval = write_xattr_metadata ("user.xdg.origin.url", escnonprint_uri (origin_url), fp);
-  if ((!retval) && referrer_url)
-    retval = write_xattr_metadata ("user.xdg.referrer.url", escnonprint_uri (referrer_url), fp);
+  value = url_string (origin_url, URL_AUTH_HIDE);
+  retval = write_xattr_metadata ("user.xdg.origin.url", escnonprint_uri (value), fp);
+  xfree (value);
+
+  if (!retval && referrer_url)
+    {
+	  struct url u;
+
+	  memset(&u, 0, sizeof(u));
+      u.scheme = referrer_url->scheme;
+      u.host = referrer_url->host;
+      u.port = referrer_url->port;
+
+      value = url_string (&u, 0);
+      retval = write_xattr_metadata ("user.xdg.referrer.url", escnonprint_uri (value), fp);
+      xfree (value);
+    }
 
   return retval;
 }

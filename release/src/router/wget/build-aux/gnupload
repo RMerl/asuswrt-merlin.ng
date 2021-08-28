@@ -3,7 +3,7 @@
 
 scriptversion=2018-05-19.18; # UTC
 
-# Copyright (C) 2004-2018 Free Software Foundation, Inc.
+# Copyright (C) 2004-2021 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -77,10 +77,10 @@ Options:
   --user NAME              sign with key NAME
   --replace                allow replacements of existing files
   --symlink-regex[=EXPR]   use sed script EXPR to compute symbolic link names
-  --dry-run                do nothing, show what would have been done
+  -n, --dry-run            do nothing, show what would have been done
                            (including the constructed directive file)
   --version                output version information and exit
-  --help                   print this help text and exit
+  -h, --help               print this help text and exit
 
 If --symlink-regex is given without EXPR, then the link target name
 is created by replacing the version information with '-latest', e.g.:
@@ -116,12 +116,22 @@ Examples:
            --symlink-regex \\
            foobar-1.0.tar.gz foobar-1.0.tar.xz
 
-4. Upload foobar-0.9.90.tar.gz to two sites:
+4. Create a symbolic link foobar-latest.tar.gz -> foobar-1.0.tar.gz
+   and likewise for the corresponding .sig file:
+  gnupload --to ftp.gnu.org:foobar \\
+           --symlink foobar-1.0.tar.gz     foobar-latest.tar.gz \\
+                     foobar-1.0.tar.gz.sig foobar-latest.tar.gz.sig
+  or (equivalent):
+  gnupload --to ftp.gnu.org:foobar \\
+           --symlink foobar-1.0.tar.gz     foobar-latest.tar.gz \\
+           --symlink foobar-1.0.tar.gz.sig foobar-latest.tar.gz.sig
+
+5. Upload foobar-0.9.90.tar.gz to two sites:
   gnupload --to alpha.gnu.org:foobar \\
            --to sources.redhat.com:~ftp/pub/foobar \\
            foobar-0.9.90.tar.gz
 
-5. Delete oopsbar-0.9.91.tar.gz and upload foobar-0.9.91.tar.gz
+6. Delete oopsbar-0.9.91.tar.gz and upload foobar-0.9.91.tar.gz
    (the -- terminates the list of files to delete):
   gnupload --to alpha.gnu.org:foobar \\
            --to sources.redhat.com:~ftp/pub/foobar \\
@@ -148,7 +158,7 @@ while test -n "$1"; do
   -*)
     collect_var=
     case $1 in
-    --help)
+    -h | --help)
       echo "$usage"
       exit $?
       ;;
@@ -194,7 +204,7 @@ while test -n "$1"; do
     --symlink)
       collect_var=symlink_files
       ;;
-    --dry-run|-n)
+    -n | --dry-run)
       dry_run=:
       ;;
     --version)

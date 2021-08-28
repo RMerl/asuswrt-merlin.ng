@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017-2018 Free Software Foundation, Inc.
+ * Copyright (c) 2017-2021 Free Software Foundation, Inc.
  *
  * This file is part of GNU Wget.
  *
@@ -25,6 +25,8 @@
 #include <stdio.h>  // fmemopen
 #include <string.h>  // strncmp
 #include <stdlib.h>  // free
+#include <fcntl.h>  // open flags
+#include <unistd.h>  // close
 
 #include "wget.h"
 #undef fopen_wgetrc
@@ -60,15 +62,10 @@ FILE *fopen_wgetrc(const char *pathname, const char *mode)
 void exit_wget(int status)
 {
 }
-#else
-void exit(int status)
-{
-}
 #endif
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-	FILE *bak;
 	struct cookie_jar *cookie_jar;
 	char *set_cookie;
 
@@ -79,8 +76,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	memcpy(set_cookie, data, size);
 	set_cookie[size] = 0;
 
-	bak = stderr;
-	stderr = fopen("/dev/null", "w");
+	CLOSE_STDERR
 
 	cookie_jar = cookie_jar_new();
 	cookie_handle_set_cookie(cookie_jar, "x", 81, "p", set_cookie);
@@ -88,10 +84,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	cookie_handle_set_cookie(cookie_jar, "x", 80, "p/d/", set_cookie);
 	cookie_jar_delete(cookie_jar);
 
-	fclose(stderr);
-	stderr = bak;
+	RESTORE_STDERR
 
-        free(set_cookie);
+	free(set_cookie);
 
 	return 0;
 }

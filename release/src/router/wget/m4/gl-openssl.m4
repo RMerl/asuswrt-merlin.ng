@@ -1,5 +1,5 @@
-# gl-openssl.m4 serial 3
-dnl Copyright (C) 2013-2018 Free Software Foundation, Inc.
+# gl-openssl.m4 serial 5
+dnl Copyright (C) 2013-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -21,7 +21,9 @@ AC_DEFUN([gl_CRYPTO_CHECK],
   AC_ARG_WITH([openssl],
     [AS_HELP_STRING([--with-openssl],
       [use libcrypto hash routines. Valid ARGs are:
-       'yes', 'no', 'auto' => use if available,
+       'yes', 'no',
+       'auto' => use if any version available,
+       'auto-gpl-compat' => use if gpl compatible version available,
        'optional' => use if available and warn if not available;
        default is ']gl_CRYPTO_CHECK_DEFAULT['.
        Note also --with-linux-crypto, which will enable
@@ -29,19 +31,30 @@ AC_DEFUN([gl_CRYPTO_CHECK],
     [],
     [with_openssl=$with_openssl_default])
 
-  if test "x$1" = xMD5; then
-    ALG_header=md5.h
-  else
-    ALG_header=sha.h
-  fi
-
   AC_SUBST([LIB_CRYPTO])
   if test "x$with_openssl" != xno; then
-    AC_CHECK_LIB([crypto], [$1],
-      [AC_CHECK_HEADERS([openssl/$ALG_header],
-         [LIB_CRYPTO=-lcrypto
-          AC_DEFINE([HAVE_OPENSSL_$1], [1],
-            [Define to 1 if libcrypto is used for $1.])])])
+    if test "x$with_openssl" = xauto-gpl-compat; then
+      AC_CACHE_CHECK([whether openssl is GPL compatible],
+                     [gl_cv_openssl_gpl_compat],
+        [AC_COMPILE_IFELSE(
+           [AC_LANG_PROGRAM([[
+                #include <openssl/opensslv.h>
+                #if OPENSSL_VERSION_MAJOR < 3
+                  #error "openssl >= version 3 not found"
+                #endif
+              ]])],
+           [gl_cv_openssl_gpl_compat=yes],
+           [gl_cv_openssl_gpl_compat=no])])
+    fi
+    if test "x$with_openssl" != xauto-gpl-compat ||
+       test "x$gl_cv_openssl_gpl_compat" = xyes; then
+      AC_CHECK_LIB([crypto], [$1],
+        [AC_CHECK_HEADERS(
+           m4_if([$1], [MD5], [openssl/md5.h], [openssl/sha.h]),
+           [LIB_CRYPTO=-lcrypto
+            AC_DEFINE([HAVE_OPENSSL_$1], [1],
+              [Define to 1 if libcrypto is used for $1.])])])
+    fi
     if test "x$LIB_CRYPTO" = x; then
       if test "x$with_openssl" = xyes; then
         AC_MSG_ERROR([openssl development library not found for $1])

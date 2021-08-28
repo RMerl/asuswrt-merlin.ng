@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2017-2018 Free Software Foundation, Inc.
+ * Copyright (c) 2017-2021 Free Software Foundation, Inc.
  *
  * This file is part of GNU Wget.
  *
@@ -67,16 +67,26 @@ FILE *fopen_wgetrc(const char *pathname, const char *mode)
 #endif
 }
 
+static int do_jump;
 static jmp_buf jmpbuf;
 #ifdef FUZZING
 void exit_wget(int status)
 {
 	longjmp(jmpbuf, 1);
 }
-#else
+#elif defined HAVE_DLFCN_H
+#include <dlfcn.h> // dlsym
+#ifndef RTLD_NEXT
+#define RTLD_NEXT RTLD_GLOBAL
+#endif
 void exit(int status)
 {
-	longjmp(jmpbuf, 1);
+	if (do_jump) {
+		longjmp(jmpbuf, 1);
+	} else {
+		void (*libc_exit)(int) = (void(*)(int)) dlsym (RTLD_NEXT, "exit");
+		libc_exit(status);
+	}
 }
 #endif
 
@@ -91,8 +101,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		.document_file = NULL,
 	};
 
-	FILE *bak = stderr;
-	stderr = fopen("/dev/null", "w");
+	CLOSE_STDERR
+
+	do_jump = 1;
 
 	if (setjmp(jmpbuf))
 		goto done;
@@ -102,8 +113,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	free((void *) ctx.parent_base);
 
 done:
-	fclose(stderr);
-	stderr = bak;
+	do_jump = 0;
+
+	RESTORE_STDERR
 
 	return 0;
 }

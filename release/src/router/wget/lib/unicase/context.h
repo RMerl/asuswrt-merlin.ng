@@ -1,5 +1,5 @@
 /* Case-mapping contexts of UTF-8/UTF-16/UTF-32 substring.
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2009.
 
    This program is free software: you can redistribute it and/or modify it
@@ -18,7 +18,7 @@
 
 /* The context of a prefix string combines the information of the "Before C"
    conditions of the Unicode Standard,
-   <http://www.unicode.org/versions/Unicode5.0.0/ch03.pdf>, section 3.13,
+   <https://www.unicode.org/versions/Unicode5.0.0/ch03.pdf>, section 3.13,
    table 3-14 "Context Specification for Casing".
 
    casing_prefix_context_t contains the following fields:
@@ -38,7 +38,7 @@
 
 /* The context of a suffix string combines the information of the "After C"
    conditions of the Unicode Standard,
-   <http://www.unicode.org/versions/Unicode5.0.0/ch03.pdf>, section 3.13,
+   <https://www.unicode.org/versions/Unicode5.0.0/ch03.pdf>, section 3.13,
    table 3-14 "Context Specification for Casing".
 
    casing_suffix_context_t contains the following fields:

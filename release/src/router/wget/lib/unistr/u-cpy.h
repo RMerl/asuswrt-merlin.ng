@@ -1,5 +1,5 @@
 /* Copy piece of UTF-8/UTF-16/UTF-32 string.
-   Copyright (C) 1999, 2002, 2006, 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2006, 2009-2021 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2002.
 
    This program is free software: you can redistribute it and/or modify it
@@ -26,7 +26,8 @@ FUNC (UNIT *dest, const UNIT *src, size_t n)
   for (; n > 0; n--)
     *destptr++ = *src++;
 #else
-  memcpy ((char *) dest, (const char *) src, n * sizeof (UNIT));
+  if (n > 0)
+    memcpy ((char *) dest, (const char *) src, n * sizeof (UNIT));
 #endif
   return dest;
 }

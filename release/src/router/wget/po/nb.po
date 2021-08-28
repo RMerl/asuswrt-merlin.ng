@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wget-1.20\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2018-11-30 00:09+0100\n"
+"POT-Creation-Date: 2021-01-09 10:58+0100\n"
 "PO-Revision-Date: 2018-11-18 22:33+0100\n"
 "Last-Translator: Åka Sikrom <a4@hush.com>\n"
 "Language-Team: Norwegian Bokmaal <i18n-nb@lister.ping.uio.no>\n"
@@ -20,369 +20,122 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.0.6\n"
 
-#: lib/error.c:195
-msgid "Unknown system error"
-msgstr "Ukjent systemfeil"
-
-#: lib/gai_strerror.c:57
-msgid "Address family for hostname not supported"
-msgstr "Adressefamilie for vertsnavn støttes ikke"
-
-#: lib/gai_strerror.c:58 src/host.c:371
-msgid "Temporary failure in name resolution"
-msgstr "Midlertidig feil i navnoppbygging"
-
-#: lib/gai_strerror.c:59
-msgid "Bad value for ai_flags"
-msgstr "ai_flags har ugyldig verdi"
-
-#: lib/gai_strerror.c:60
-msgid "Non-recoverable failure in name resolution"
-msgstr "Ikke-gjenopprettbar feil i navnoppbygging"
-
-#: lib/gai_strerror.c:61
-msgid "ai_family not supported"
-msgstr "ai_family støttes ikke"
-
-#: lib/gai_strerror.c:62
-msgid "Memory allocation failure"
-msgstr "Feil ved minnetildeling"
-
-#: lib/gai_strerror.c:63
-msgid "No address associated with hostname"
-msgstr "Ingen adresse forbindes med vertsnavnet"
-
-#: lib/gai_strerror.c:64
-msgid "Name or service not known"
-msgstr "Navnet eller tjenesten er ukjent"
-
-#: lib/gai_strerror.c:65
-msgid "Servname not supported for ai_socktype"
-msgstr "Tjenernavnet støttes ikke for ai_socktype"
-
-#: lib/gai_strerror.c:66
-msgid "ai_socktype not supported"
-msgstr "ai_socktype støttes ikke"
-
-#: lib/gai_strerror.c:67
-msgid "System error"
-msgstr "Systemfeil"
-
-#: lib/gai_strerror.c:68
-msgid "Argument buffer too small"
-msgstr "Argument-mellomlageret er for lite"
-
-#: lib/gai_strerror.c:70
-msgid "Processing request in progress"
-msgstr "Behandler forespørsel"
-
-#: lib/gai_strerror.c:71
-msgid "Request canceled"
-msgstr "Forespørselen ble avbrutt"
-
-#: lib/gai_strerror.c:72
-msgid "Request not canceled"
-msgstr "Forespørselen er ikke avbrutt"
-
-#: lib/gai_strerror.c:73
-msgid "All requests done"
-msgstr "Alle forespørsler er utført"
-
-#: lib/gai_strerror.c:74
-msgid "Interrupted by a signal"
-msgstr "Brutt av et signal"
-
-#: lib/gai_strerror.c:75
-msgid "Parameter string not correctly encoded"
-msgstr "Parameter-strengen er ikke kodet korrekt"
-
-#: lib/gai_strerror.c:87 src/host.c:373
-msgid "Unknown error"
-msgstr "Ukjent feil"
-
-#: lib/getopt.c:278
-#, c-format
-msgid "%s: option '%s%s' is ambiguous\n"
-msgstr "%s: valget «%s%s» er flertydig\n"
-
-#: lib/getopt.c:284
-#, c-format
-msgid "%s: option '%s%s' is ambiguous; possibilities:"
-msgstr "%s: valget «%s%s» er flertydig, og kan bety følgende:"
-
-#: lib/getopt.c:319
-#, c-format
-msgid "%s: unrecognized option '%s%s'\n"
-msgstr "%s: «%s%s» er et ukjent valg\n"
-
-#: lib/getopt.c:345
-#, c-format
-msgid "%s: option '%s%s' doesn't allow an argument\n"
-msgstr "%s: valget «%s%s» tillater ikke bruk av argumenter\n"
-
-#: lib/getopt.c:360
-#, c-format
-msgid "%s: option '%s%s' requires an argument\n"
-msgstr "%s: valget «%s%s» krever et argument\n"
-
-#: lib/getopt.c:621
-#, c-format
-msgid "%s: invalid option -- '%c'\n"
-msgstr "%s: «%c» er et ugyldig valg\n"
-
-#: lib/getopt.c:636 lib/getopt.c:682
-#, c-format
-msgid "%s: option requires an argument -- '%c'\n"
-msgstr "%s: «%c» krever et argument\n"
-
-#. TRANSLATORS:
-#. Get translations for open and closing quotation marks.
-#. The message catalog should translate "`" to a left
-#. quotation mark suitable for the locale, and similarly for
-#. "'".  For example, a French Unicode local should translate
-#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
-#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
-#. QUOTATION MARK), respectively.
-#.
-#. If the catalog has no translation, we will try to
-#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
-#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
-#. current locale is not Unicode, locale_quoting_style
-#. will quote 'like this', and clocale_quoting_style will
-#. quote "like this".  You should always include translations
-#. for "`" and "'" even if U+2018 and U+2019 are appropriate
-#. for your locale.
-#.
-#. If you don't know what to put here, please see
-#. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
-#. and use glyphs suitable for your language.
-#: lib/quotearg.c:362
-msgid "`"
-msgstr "«"
-
-#: lib/quotearg.c:363
-msgid "'"
-msgstr "»"
-
-#: lib/regcomp.c:135
-msgid "Success"
-msgstr "Vellykket"
-
-#: lib/regcomp.c:138
-msgid "No match"
-msgstr "Ingen treff"
-
-#: lib/regcomp.c:141
-msgid "Invalid regular expression"
-msgstr "Ugyldig regulært uttrykk"
-
-#: lib/regcomp.c:144
-msgid "Invalid collation character"
-msgstr "Ugyldig sorteringstegn"
-
-#: lib/regcomp.c:147
-msgid "Invalid character class name"
-msgstr "Ugyldig tegnklassenavn"
-
-#: lib/regcomp.c:150
-msgid "Trailing backslash"
-msgstr "Etterfølgende omvendt skråstrek"
-
-#: lib/regcomp.c:153
-msgid "Invalid back reference"
-msgstr "Ugyldig tilbakereferanse"
-
-#: lib/regcomp.c:156
-msgid "Unmatched [, [^, [:, [., or [="
-msgstr "Ingen treff på  «[», «[^», «[:», «[.» eller «[=»"
-
-#: lib/regcomp.c:159
-msgid "Unmatched ( or \\("
-msgstr "Ingen treff på «(» eller «\\(»"
-
-#: lib/regcomp.c:162
-msgid "Unmatched \\{"
-msgstr "Ingen treff på «\\{»"
-
-#: lib/regcomp.c:165
-msgid "Invalid content of \\{\\}"
-msgstr "Ugyldig innhold i «\\{\\}»"
-
-#: lib/regcomp.c:168
-msgid "Invalid range end"
-msgstr "Ugyldig ende på rekkevidde"
-
-#: lib/regcomp.c:171
-msgid "Memory exhausted"
-msgstr "Minnet er oppbrukt"
-
-#: lib/regcomp.c:174
-msgid "Invalid preceding regular expression"
-msgstr "Ugyldig foregående regulært uttrykk"
-
-#: lib/regcomp.c:177
-msgid "Premature end of regular expression"
-msgstr "For tidlig slutt på regulært uttrykk"
-
-#: lib/regcomp.c:180
-msgid "Regular expression too big"
-msgstr "Regulært uttrykk er for stort"
-
-#: lib/regcomp.c:183
-msgid "Unmatched ) or \\)"
-msgstr "Ingen treff på «)» eller «\\)»"
-
-#: lib/regcomp.c:688
-msgid "No previous regular expression"
-msgstr "Intet tidligere regulært uttrykk"
-
-#: lib/spawn-pipe.c:141 lib/spawn-pipe.c:144 lib/spawn-pipe.c:265
-#: lib/spawn-pipe.c:268
-#, c-format
-msgid "cannot create pipe"
-msgstr "klarte ikke å lage datarør"
-
-#: lib/spawn-pipe.c:235 lib/spawn-pipe.c:349 lib/wait-process.c:282
-#: lib/wait-process.c:356
-#, c-format
-msgid "%s subprocess failed"
-msgstr "underprosess av %s mislyktes"
-
-#: lib/w32spawn.h:49
-#, c-format
-msgid "_open_osfhandle failed"
-msgstr "_open_osfhandle mislyktes"
-
-#: lib/w32spawn.h:90
-#, c-format
-msgid "cannot restore fd %d: dup2 failed"
-msgstr "klarte ikke å gjenopprette fd %d. dup2 mislyktes"
-
-#: lib/wait-process.c:223 lib/wait-process.c:255 lib/wait-process.c:317
-#, c-format
-msgid "%s subprocess"
-msgstr "underprosess av %s"
-
-#: lib/wait-process.c:274 lib/wait-process.c:346
-#, c-format
-msgid "%s subprocess got fatal signal %d"
-msgstr "underprosess av %s fikk kritisk feilsignal %d"
-
-#: lib/xalloc-die.c:34
-msgid "memory exhausted"
-msgstr "minnet er oppbrukt"
-
-#: src/connect.c:200
+#: src/connect.c:201
 #, c-format
 msgid "%s: unable to resolve bind address %s; disabling bind.\n"
 msgstr "%s: klarte ikke å slå opp tildelt adresse %s. Slår av tildeling.\n"
 
-#: src/connect.c:281
+#: src/connect.c:282
 #, c-format
 msgid "Connecting to %s|%s|:%d... "
 msgstr "Kobler til %s|%s|:%d …"
 
-#: src/connect.c:289
+#: src/connect.c:290
 #, c-format
 msgid "Connecting to %s:%d... "
 msgstr "Kobler til %s:%d …"
 
-#: src/connect.c:292
+#: src/connect.c:293
 #, c-format
 msgid "Connecting to [%s]:%d... "
 msgstr "Kobler til [%s]:%d …"
 
-#: src/connect.c:328
+#: src/connect.c:329
 #, c-format
 msgid "setsockopt SO_RCVBUF failed: %s\n"
 msgstr "setsockopt SO_RCVBUF mislyktes: %s\n"
 
-#: src/connect.c:356
+#: src/connect.c:357
 msgid "connected.\n"
 msgstr "tilkoblet.\n"
 
-#: src/connect.c:375 src/host.c:914 src/host.c:952
+#: src/connect.c:376 src/host.c:915 src/host.c:953
 #, c-format
 msgid "failed: %s.\n"
 msgstr "mislyktes: %s.\n"
 
-#: src/connect.c:399 src/http.c:2108
+#: src/connect.c:400 src/http.c:2111
 #, c-format
 msgid "%s: unable to resolve host address %s\n"
 msgstr "%s: klarte ikke å slå opp vertsnavn %s\n"
 
-#: src/connect.c:469
+#: src/connect.c:470
 #, c-format
 msgid "setsockopt SO_REUSEADDR failed: %s\n"
 msgstr "setsockopt SO_REUSEADDR mislyktes: %s\n"
 
-#: src/connect.c:690 src/connect.c:737
+#: src/connect.c:694 src/connect.c:756
 #, c-format
 msgid "Too many fds open.  Cannot use select on a fd >= %d\n"
 msgstr ""
 "For mange åpne fds-er. Du kan ikke bruke «select» på fd som er  større enn "
 "%d\n"
 
-#: src/convert.c:198
+#: src/convert.c:201
 #, c-format
 msgid "Converted links in %d files in %s seconds.\n"
 msgstr "Konverterte lenker i %d filer på %s sekund(er).\n"
 
-#: src/convert.c:227
+#: src/convert.c:230
 #, c-format
 msgid "Converting links in %s... "
 msgstr "Konverterer lenker i %s …"
 
-#: src/convert.c:240
+#: src/convert.c:243
 msgid "nothing to do.\n"
 msgstr "intet å gjøre.\n"
 
-#: src/convert.c:248 src/convert.c:272
+#: src/convert.c:246
+#, c-format
+msgid "%d.\n"
+msgstr ""
+
+#: src/convert.c:252 src/convert.c:276
 #, c-format
 msgid "Cannot convert links in %s: %s\n"
 msgstr "Klarte ikke å konvertere lenker i %s. %s\n"
 
-#: src/convert.c:263
+#: src/convert.c:267
 #, c-format
 msgid "Unable to delete %s: %s\n"
 msgstr "Klarte ikke å slette %s. %s\n"
 
-#: src/convert.c:578
+#: src/convert.c:586
 #, c-format
 msgid "Cannot back up %s as %s: %s\n"
 msgstr "Klarte ikke å sikkerhetskopiere %s som %s. %s\n"
 
-#: src/cookies.c:310
+#: src/cookies.c:311
 #, c-format
 msgid "Unable to get cookie for %s\n"
 msgstr "Klarte ikke å hente informasjonskapsel for %s\n"
 
-#: src/cookies.c:457
+#: src/cookies.c:464
 #, c-format
 msgid "Syntax error in Set-Cookie: %s at position %d.\n"
 msgstr "Syntaksfeil i Set-Cookie: %s ved posisjon %d.\n"
 
-#: src/cookies.c:771
+#: src/cookies.c:777
 #, c-format
 msgid "Cookie coming from %s attempted to set domain to "
 msgstr "En informasjonskapsel fra %s prøvde å sette domene til"
 
-#: src/cookies.c:774 src/spider.c:92
+#: src/cookies.c:780 src/spider.c:94
 #, c-format
 msgid "%s\n"
 msgstr "%s\n"
 
-#: src/cookies.c:1225 src/cookies.c:1346
+#: src/cookies.c:1259 src/cookies.c:1380
 #, c-format
 msgid "Cannot open cookies file %s: %s\n"
 msgstr "Klarte ikke å åpne informasjonskapsel-fila %s. %s\n"
 
-#: src/cookies.c:1383
+#: src/cookies.c:1417
 #, c-format
 msgid "Error writing to %s: %s\n"
 msgstr "Feil ved skriving til %s: %s\n"
 
-#: src/cookies.c:1386
+#: src/cookies.c:1420
 #, c-format
 msgid "Error closing %s: %s\n"
 msgstr "Feil ved lukking av %s: %s\n"
@@ -431,12 +184,12 @@ msgstr " (%s byte)"
 msgid "Length: %s"
 msgstr "Lengde: %s"
 
-#: src/ftp.c:231 src/http.c:4030
+#: src/ftp.c:231 src/http.c:4092
 #, c-format
 msgid ", %s (%s) remaining"
 msgstr ", %s (%s) gjenstår"
 
-#: src/ftp.c:235 src/http.c:4034
+#: src/ftp.c:235 src/http.c:4096
 #, c-format
 msgid ", %s remaining"
 msgstr ", %s gjenstår"
@@ -446,7 +199,8 @@ msgid " (unauthoritative)\n"
 msgstr " (ikke-autorativ)\n"
 
 #: src/ftp.c:403
-msgid "Could not initialize SSL. It will be disabled."
+#, fuzzy
+msgid "Could not initialize SSL. It will be disabled.\n"
 msgstr "Klarte ikke å starte SSL. SSL blir derfor slått av."
 
 #: src/ftp.c:485
@@ -454,9 +208,9 @@ msgstr "Klarte ikke å starte SSL. SSL blir derfor slått av."
 msgid "Logging in as %s ... "
 msgstr "Logger inn som %s … "
 
-#: src/ftp.c:504 src/ftp.c:590 src/ftp.c:657 src/ftp.c:722 src/ftp.c:956
-#: src/ftp.c:1009 src/ftp.c:1056 src/ftp.c:1119 src/ftp.c:1180 src/ftp.c:1278
-#: src/ftp.c:1328
+#: src/ftp.c:504 src/ftp.c:590 src/ftp.c:657 src/ftp.c:722 src/ftp.c:963
+#: src/ftp.c:1019 src/ftp.c:1066 src/ftp.c:1129 src/ftp.c:1190 src/ftp.c:1288
+#: src/ftp.c:1338
 msgid "Error in server response, closing control connection.\n"
 msgstr "Feil i tjenerresponsen. Lukker kontrolltilkobling.\n"
 
@@ -464,8 +218,8 @@ msgstr "Feil i tjenerresponsen. Lukker kontrolltilkobling.\n"
 msgid "Error in server greeting.\n"
 msgstr "Feil i hilsemelding fra tjener.\n"
 
-#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:964 src/ftp.c:1064 src/ftp.c:1129
-#: src/ftp.c:1190 src/ftp.c:1288 src/ftp.c:1338
+#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:971 src/ftp.c:1074 src/ftp.c:1139
+#: src/ftp.c:1200 src/ftp.c:1298 src/ftp.c:1348
 msgid "Write failed, closing control connection.\n"
 msgstr "Skriving mislyktes. Lukker kontrolltilkobling.\n"
 
@@ -494,11 +248,11 @@ msgstr "Tjeneren godtok ikke kommandoen «PROT %c».\n"
 msgid "Server error, can't determine system type.\n"
 msgstr "Tjenerfeil. Klarte ikke å finne systemtype.\n"
 
-#: src/ftp.c:607 src/ftp.c:1099 src/ftp.c:1163 src/ftp.c:1206
+#: src/ftp.c:607 src/ftp.c:1109 src/ftp.c:1173 src/ftp.c:1216
 msgid "done.    "
 msgstr "ferdig.    "
 
-#: src/ftp.c:710 src/ftp.c:982 src/ftp.c:1026 src/ftp.c:1308 src/ftp.c:1357
+#: src/ftp.c:710 src/ftp.c:989 src/ftp.c:1036 src/ftp.c:1318 src/ftp.c:1367
 msgid "done.\n"
 msgstr "ferdig.\n"
 
@@ -515,11 +269,11 @@ msgstr "ferdig.  "
 msgid "==> CWD not needed.\n"
 msgstr "==> CWD er unødvendig.\n"
 
-#: src/ftp.c:939
+#: src/ftp.c:946
 msgid "Logically impossible section reached in getftp()"
 msgstr "Logisk ugyldig seksjon er nådd i getftp()"
 
-#: src/ftp.c:940
+#: src/ftp.c:947
 #, c-format
 msgid ""
 "cwd_count: %d\n"
@@ -530,7 +284,7 @@ msgstr ""
 "cwd_start: %d\n"
 "cwd_end: %d\n"
 
-#: src/ftp.c:970
+#: src/ftp.c:977
 #, c-format
 msgid ""
 "No such directory %s.\n"
@@ -539,37 +293,37 @@ msgstr ""
 "Mappa %s finnes ikke.\n"
 "\n"
 
-#: src/ftp.c:991
+#: src/ftp.c:1001
 msgid "==> CWD not required.\n"
 msgstr "==> CWD kreves ikke.\n"
 
-#: src/ftp.c:1034
+#: src/ftp.c:1044
 msgid "File has already been retrieved.\n"
 msgstr "Fila er allerede hentet.\n"
 
-#: src/ftp.c:1070
+#: src/ftp.c:1080
 msgid "Cannot initiate PASV transfer.\n"
 msgstr "Klarte ikke å starte PASV-overføring.\n"
 
-#: src/ftp.c:1074
+#: src/ftp.c:1084
 msgid "Cannot parse PASV response.\n"
 msgstr "Klarte ikke å tolke PASV-respons.\n"
 
-#: src/ftp.c:1091
+#: src/ftp.c:1101
 #, c-format
 msgid "couldn't connect to %s port %d: %s\n"
 msgstr "klarte ikke å koble til %s, port %d. %s\n"
 
-#: src/ftp.c:1145
+#: src/ftp.c:1155
 #, c-format
 msgid "Bind error (%s).\n"
 msgstr "Blindfeil (%s).\n"
 
-#: src/ftp.c:1151
+#: src/ftp.c:1161
 msgid "Invalid PORT.\n"
 msgstr "Ugyldig PORT.\n"
 
-#: src/ftp.c:1197
+#: src/ftp.c:1207
 msgid ""
 "\n"
 "REST failed, starting from scratch.\n"
@@ -577,17 +331,17 @@ msgstr ""
 "\n"
 "REST mislyktes. Begynner på nytt.\n"
 
-#: src/ftp.c:1240
+#: src/ftp.c:1250
 #, c-format
 msgid "File %s exists.\n"
 msgstr "Fila %s finnes.\n"
 
-#: src/ftp.c:1246
+#: src/ftp.c:1256
 #, c-format
 msgid "No such file %s.\n"
 msgstr "Fila %s finnes ikke.\n"
 
-#: src/ftp.c:1296
+#: src/ftp.c:1306
 #, c-format
 msgid ""
 "No such file %s.\n"
@@ -596,7 +350,7 @@ msgstr ""
 "Fila %s finnes ikke.\n"
 "\n"
 
-#: src/ftp.c:1346
+#: src/ftp.c:1356
 #, c-format
 msgid ""
 "No such file or directory %s.\n"
@@ -605,40 +359,40 @@ msgstr ""
 "Fila eller mappa %s finnes ikke.\n"
 "\n"
 
-#: src/ftp.c:1505 src/http.c:2563
+#: src/ftp.c:1515 src/http.c:2597
 #, c-format
 msgid "%s has sprung into existence.\n"
 msgstr "%s har begynt å eksistere.\n"
 
-#: src/ftp.c:1594
+#: src/ftp.c:1604
 #, c-format
 msgid "%s: %s, closing control connection.\n"
 msgstr "%s: %s. Lukker kontrolltilkobling.\n"
 
-#: src/ftp.c:1606
+#: src/ftp.c:1616
 #, c-format
 msgid "%s (%s) - Data connection: %s; "
 msgstr "%s (%s) - datatilkobling: %s; "
 
-#: src/ftp.c:1621
+#: src/ftp.c:1631
 msgid "Control connection closed.\n"
 msgstr "Kontrolltilkobling er lukket.\n"
 
-#: src/ftp.c:1639
+#: src/ftp.c:1649
 msgid "Data transfer aborted.\n"
 msgstr "Dataoverføring avbrutt.\n"
 
-#: src/ftp.c:1863 src/main.c:1682
+#: src/ftp.c:1873 src/main.c:1690
 #, c-format
 msgid "File %s already there; not retrieving.\n"
 msgstr "Fila %s ligger allerede der, og blir ikke hentet på nytt.\n"
 
-#: src/ftp.c:1948 src/http.c:4300
+#: src/ftp.c:1958 src/http.c:4362
 #, c-format
 msgid "(try:%2d)"
 msgstr "(prøv:%2d)"
 
-#: src/ftp.c:2039 src/http.c:4731
+#: src/ftp.c:2050 src/http.c:4792
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
@@ -647,7 +401,7 @@ msgstr ""
 "%s (%s) - skrevet til standard utkanal %s[%s]\n"
 "\n"
 
-#: src/ftp.c:2040 src/http.c:4732
+#: src/ftp.c:2051 src/http.c:4793
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
@@ -656,42 +410,42 @@ msgstr ""
 "%s (%s) - %s lagret [%s]\n"
 "\n"
 
-#: src/ftp.c:2100 src/main.c:2172 src/metalink.c:1135 src/recur.c:511
-#: src/recur.c:749 src/retr.c:1309
+#: src/ftp.c:2111 src/main.c:2174 src/metalink.c:1135 src/recur.c:512
+#: src/recur.c:750 src/retr.c:1317
 #, c-format
 msgid "Removing %s.\n"
 msgstr "Fjerner %s.\n"
 
-#: src/ftp.c:2157
+#: src/ftp.c:2168
 #, c-format
 msgid "Using %s as listing tmp file.\n"
 msgstr "Bruker %s som midlertidig listefil.\n"
 
-#: src/ftp.c:2174
+#: src/ftp.c:2185
 #, c-format
 msgid "Removed %s.\n"
 msgstr "Fjernet %s.\n"
 
-#: src/ftp.c:2213
+#: src/ftp.c:2224
 #, c-format
 msgid "Recursion depth %d exceeded max. depth %d.\n"
 msgstr "Hierarkidybde %d overskredet maksimumsdybden %d.\n"
 
-#: src/ftp.c:2283
+#: src/ftp.c:2294
 #, c-format
 msgid "Remote file no newer than local file %s -- not retrieving.\n"
 msgstr ""
 "Ekstern fil er ikke nyere enn den lokale fila %s, og blir derfor lastet "
 "ned.\n"
 
-#: src/ftp.c:2291
+#: src/ftp.c:2302
 #, c-format
 msgid ""
 "Remote file is newer than local file %s -- retrieving.\n"
 "\n"
 msgstr "Ekstern fil er nyere enn den lokale fila %s, og blir lastet ned.\n"
 
-#: src/ftp.c:2298
+#: src/ftp.c:2309
 #, c-format
 msgid ""
 "The sizes do not match (local %s) -- retrieving.\n"
@@ -700,11 +454,11 @@ msgstr ""
 "Filene har ulik størrelse (%s lokalt), og den eksterne kopien lastes ned.\n"
 "\n"
 
-#: src/ftp.c:2316
+#: src/ftp.c:2327
 msgid "Invalid name of the symlink, skipping.\n"
 msgstr "Ugyldig navn på symbolsk lenke. Hopper over.\n"
 
-#: src/ftp.c:2333
+#: src/ftp.c:2356
 #, c-format
 msgid ""
 "Already have correct symlink %s -> %s\n"
@@ -713,263 +467,277 @@ msgstr ""
 "Korrekt symbolsk lenke %s -> %s finnes allerede\n"
 "\n"
 
-#: src/ftp.c:2342
+#: src/ftp.c:2365
 #, c-format
 msgid "Creating symlink %s -> %s\n"
 msgstr "Lager symbolsk lenke %s -> %s\n"
 
-#: src/ftp.c:2352
+#: src/ftp.c:2375
 #, c-format
 msgid "Symlinks not supported, skipping symlink %s.\n"
 msgstr "Symbolske lenker støttes ikke. Hopper over %s.\n"
 
-#: src/ftp.c:2367
+#: src/ftp.c:2390
 #, c-format
 msgid "Skipping directory %s.\n"
 msgstr "Hopper over mappa %s.\n"
 
-#: src/ftp.c:2380
+#: src/ftp.c:2403
 #, c-format
 msgid "%s: unknown/unsupported file type.\n"
 msgstr "%s: filtypen er ukjent eller støttes ikke.\n"
 
-#: src/ftp.c:2404
+#: src/ftp.c:2427
 #, c-format
 msgid "Failed to set permissions for %s.\n"
 msgstr "Klarte ikke å endre tillatelser til %s.\n"
 
-#: src/ftp.c:2425
+#: src/ftp.c:2448
 #, c-format
 msgid "%s: corrupt time-stamp.\n"
 msgstr "%s: ødelagt tidsstempel.\n"
 
-#: src/ftp.c:2449
+#: src/ftp.c:2472
 #, c-format
 msgid "Will not retrieve dirs since depth is %d (max %d).\n"
 msgstr ""
 "Mapper blir ikke lastet ned, fordi hierarkidybden er %d (maksgrense er %d).\n"
 
-#: src/ftp.c:2500
+#: src/ftp.c:2531
 #, c-format
 msgid "Not descending to %s as it is excluded/not-included.\n"
 msgstr "Tar ikke med innholdet i %s, fordi den er valgt utelukket.\n"
 
-#: src/ftp.c:2613
+#: src/ftp.c:2647
 #, c-format
 msgid "Rejecting %s.\n"
 msgstr "Avviser %s.\n"
 
-#: src/ftp.c:2623
+#: src/ftp.c:2657
 #, c-format
 msgid "Rejecting %s (Invalid Entry).\n"
 msgstr "Avviser %s (ugyldig oppføring).\n"
 
-#: src/ftp.c:2631
+#: src/ftp.c:2678
 #, c-format
 msgid "%s is excluded/not-included through regex.\n"
 msgstr "%s er utelatt/ekskludert med reg.uttrykk.\n"
 
-#: src/ftp.c:2645
+#: src/ftp.c:2698
 #, c-format
 msgid "Error matching %s against %s: %s\n"
 msgstr "Feil ved utlikning av %s mot %s: %s\n"
 
-#: src/ftp.c:2685
+#: src/ftp.c:2738
 #, c-format
 msgid "No matches on pattern %s.\n"
 msgstr "Ingen treff på mønsteret %s.\n"
 
-#: src/ftp.c:2757
+#: src/ftp.c:2810
 #, c-format
 msgid "Wrote HTML-ized index to %s [%s].\n"
 msgstr "Lagret indeks i HTML-format til %s [%s].\n"
 
-#: src/ftp.c:2762
+#: src/ftp.c:2815
 #, c-format
 msgid "Wrote HTML-ized index to %s.\n"
 msgstr "Lagret indeks i HTML-format til %s.\n"
 
-#: src/gnutls.c:119
+#: src/gnutls.c:132
 #, c-format
 msgid "ERROR: Cannot open directory %s.\n"
 msgstr "Feil: Klarte ikke å åpne mappa %s.\n"
 
-#: src/gnutls.c:169
+#: src/gnutls.c:178
 #, c-format
 msgid "ERROR: Failed to open cert %s: (%d).\n"
 msgstr "FEIL: Klarte ikke å åpne sertifikatet s%s: (%d).\n"
 
-#: src/gnutls.c:174
+#: src/gnutls.c:183
 #, c-format
 msgid "Loaded CA certificate '%s'\n"
 msgstr "Lastet inn CA-sertifikat «%s»\n"
 
-#: src/gnutls.c:184
+#: src/gnutls.c:191
 #, c-format
 msgid "ERROR: Failed to load CRL file '%s': (%d)\n"
 msgstr "FEIL: Klarte ikke å laste inn CRL-fil «%s»: (%d)\n"
 
-#: src/gnutls.c:188
+#: src/gnutls.c:195
 #, c-format
 msgid "Loaded CRL file '%s'\n"
 msgstr "Latet inn CRL-fil «%s»\n"
 
-#: src/gnutls.c:212
+#: src/gnutls.c:219
 msgid "ERROR: GnuTLS requires the key and the cert to be of the same type.\n"
 msgstr ""
 "FEIL: GnuTLS krever at nøkler og sertifikater skal være av samme type.\n"
 
-#: src/gnutls.c:664 src/gnutls.c:728
+#: src/gnutls.c:771 src/gnutls.c:835
 msgid "Your GnuTLS version is too old to support TLS 1.3\n"
 msgstr "Installert GnuTLS-versjon er for gammel til å støtte TLSv1.3\n"
 
-#: src/gnutls.c:676
+#: src/gnutls.c:783
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %u\n"
 msgstr "GnuTLS: verdi %u er ikke implementert for valget «secure-protocol»\n"
 
-#: src/gnutls.c:678 src/gnutls.c:734 src/host.c:157 src/openssl.c:284
+#: src/gnutls.c:785 src/gnutls.c:841 src/host.c:158 src/openssl.c:288
 msgid "Please report this issue to bug-wget@gnu.org\n"
 msgstr "Du bør rapportere dette problemet til bug-wget@gnu.org\n"
 
-#: src/gnutls.c:733
+#: src/gnutls.c:840
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %d\n"
 msgstr "GnuTLS: verdi %d er ikke implementert for valget «secure-protocol»\n"
 
-#: src/gnutls.c:786
+#: src/gnutls.c:893
 msgid ""
 "GnuTLS: Cannot set prio string directly. Falling back to default priority.\n"
 msgstr ""
 "GnuTLS: Klarte ikke å endre prioritetsstreng skikkelig. Faller tilbake på "
 "forvalgt prioritet.\n"
 
-#: src/gnutls.c:914 src/openssl.c:825
+#: src/gnutls.c:1021 src/openssl.c:1029
 msgid "ERROR"
 msgstr "FEIL"
 
-#: src/gnutls.c:914 src/openssl.c:825
+#: src/gnutls.c:1021 src/openssl.c:1029
 msgid "WARNING"
 msgstr "ADVARSEL"
 
-#: src/gnutls.c:925 src/openssl.c:838
+#: src/gnutls.c:1032 src/openssl.c:1042
 #, c-format
 msgid "%s: No certificate presented by %s.\n"
 msgstr "%s: %s la ikke frem et sertifikat.\n"
 
-#: src/gnutls.c:931
+#: src/gnutls.c:1038
 #, c-format
 msgid "%s: The certificate of %s is not trusted.\n"
 msgstr "%s: Sertifikatet på %s regnes ikke som pålitelig.\n"
 
-#: src/gnutls.c:932
+#: src/gnutls.c:1039
 #, c-format
 msgid "%s: The certificate of %s doesn't have a known issuer.\n"
 msgstr "%s: Sertifikatet på %s kommer ikke fra en kjent utgiver.\n"
 
-#: src/gnutls.c:933
+#: src/gnutls.c:1040
 #, c-format
 msgid "%s: The certificate of %s has been revoked.\n"
 msgstr "%s: Sertifikatet på %s er tilbakekalt.\n"
 
-#: src/gnutls.c:934
+#: src/gnutls.c:1041
 #, c-format
 msgid "%s: The certificate signer of %s was not a CA.\n"
 msgstr ""
 "%s: Attestanten for sertifikatet %s er ikke en CA "
 "(sertifiseringsmyndighet).\n"
 
-#: src/gnutls.c:935
+#: src/gnutls.c:1042
 #, c-format
 msgid "%s: The certificate of %s was signed using an insecure algorithm.\n"
 msgstr "%s: Sertifikatet på %s er signert med en usikker algoritme.\n"
 
-#: src/gnutls.c:936
+#: src/gnutls.c:1043
 #, c-format
 msgid "%s: The certificate of %s is not yet activated.\n"
 msgstr "%s: Sertifikatet på %s er ikke aktivt ennå.\n"
 
-#: src/gnutls.c:937
+#: src/gnutls.c:1044
 #, c-format
 msgid "%s: The certificate of %s has expired.\n"
 msgstr "%s: Sertifikatet på %s er utgått.\n"
 
-#: src/gnutls.c:949
+#: src/gnutls.c:1056
 #, c-format
 msgid "Error initializing X509 certificate: %s\n"
 msgstr "Feil ved innlasting av X509-sertifikat: %s\n"
 
-#: src/gnutls.c:958
+#: src/gnutls.c:1065
 msgid "No certificate found\n"
 msgstr "Fant ingen sertifikat\n"
 
-#: src/gnutls.c:965
+#: src/gnutls.c:1072
 #, c-format
 msgid "Error parsing certificate: %s\n"
 msgstr "Feil ved lesing av sertifikat: %s\n"
 
-#: src/gnutls.c:972
+#: src/gnutls.c:1079
 msgid "The certificate has not yet been activated\n"
 msgstr "Sertifikatet er ikke aktivt ennå\n"
 
-#: src/gnutls.c:977
+#: src/gnutls.c:1084
 msgid "The certificate has expired\n"
 msgstr "Sertifikatet er utgått\n"
 
-#: src/gnutls.c:984
+#: src/gnutls.c:1091
 #, c-format
 msgid "The certificate's owner does not match hostname %s\n"
 msgstr "Sertifikatets eier samsvarer ikke med vertsnavnet %s\n"
 
-#: src/gnutls.c:993 src/openssl.c:1034
+#: src/gnutls.c:1100 src/openssl.c:1238
 msgid "The public key does not match pinned public key!\n"
 msgstr "Offentlig nøkkel samsvarer ikke med tilknyttet offentlig nøkkel.\n"
 
-#: src/gnutls.c:1002
+#: src/gnutls.c:1109
 msgid "Certificate must be X.509\n"
 msgstr "Sertifikatet må være av typen X.509\n"
 
-#: src/host.c:156
+#: src/host.c:157
 msgid "Error in handling the address list.\n"
 msgstr "Feil ved behandling av adresseliste.\n"
 
-#: src/host.c:367
+#: src/host.c:368
 msgid "Unknown host"
 msgstr "Ukjent vert"
 
-#: src/host.c:849
+#: src/host.c:372
+msgid "Temporary failure in name resolution"
+msgstr "Midlertidig feil i navnoppbygging"
+
+#: src/host.c:374
+msgid "Unknown error"
+msgstr "Ukjent feil"
+
+#: src/host.c:850
 #, c-format
 msgid "Resolving %s... "
 msgstr "Slår opp vertsnavn %s … "
 
-#: src/host.c:925
+#: src/host.c:926
 msgid "failed: No IPv4/IPv6 addresses for host.\n"
 msgstr "mislyktes: Ingen IPv4-/IPv6-adresser for vertsnavnet.\n"
 
-#: src/host.c:955
+#: src/host.c:956
 msgid "failed: timed out.\n"
 msgstr "mislyktes: tidsavbrudd.\n"
 
-#: src/html-url.c:305
+#: src/html-url.c:306
 #, c-format
 msgid "%s: Cannot resolve incomplete link %s.\n"
 msgstr "%s: Klarte ikke å gjøre oppslag på ufullstendig lenke %s.\n"
 
-#: src/html-url.c:939
+#: src/html-url.c:841
+#, c-format
+msgid ""
+"no-follow attribute found in %s. Will not follow any links on this page\n"
+msgstr ""
+
+#: src/html-url.c:944
 #, c-format
 msgid "%s: Invalid URL %s: %s\n"
 msgstr "%s: %s er en ugyldig nettadresse. %s\n"
 
-#: src/http.c:377
+#: src/http.c:380
 #, c-format
 msgid "Failed writing HTTP request: %s.\n"
 msgstr "Feil ved skriving av HTTP-forespørsel: %s.\n"
 
-#: src/http.c:793
+#: src/http.c:795
 msgid "No headers, assuming HTTP/0.9"
 msgstr "Ingen linjer. Antar at HTTP/0.9 er gjeldende"
 
-#: src/http.c:1623
+#: src/http.c:1637
 #, c-format
 msgid ""
 "File %s already there; not retrieving.\n"
@@ -978,11 +746,11 @@ msgstr ""
 "Fila %s ligger allerede der, og blir ikke lastet ned på nytt.\n"
 "\n"
 
-#: src/http.c:1833
+#: src/http.c:1836
 msgid "gmtime failed. This is probably a bug.\n"
 msgstr "gmtime mislyktes. Dette er sannsynligvis en programfeil.\n"
 
-#: src/http.c:1894
+#: src/http.c:1897
 msgid ""
 "Cannot convert timestamp to http format. Falling back to time 0 as last "
 "modification time.\n"
@@ -990,55 +758,55 @@ msgstr ""
 "Klarte ikke å konvertere tidsstempel til http-format. Bruker «time 0» som "
 "tidspunkt for endring.\n"
 
-#: src/http.c:1998
+#: src/http.c:2001
 #, c-format
 msgid "BODY data file %s missing: %s\n"
 msgstr "BODY-datafila %s mangler: %s\n"
 
-#: src/http.c:2090
+#: src/http.c:2093
 #, c-format
 msgid "Reusing existing connection to [%s]:%d.\n"
 msgstr "Bruker etablert tilkobling til [%s]:%d på nytt.\n"
 
-#: src/http.c:2095
+#: src/http.c:2098
 #, c-format
 msgid "Reusing existing connection to %s:%d.\n"
 msgstr "Bruker etablert tilkobling til %s:%d på nytt.\n"
 
-#: src/http.c:2161
+#: src/http.c:2164
 #, c-format
 msgid "Failed reading proxy response: %s\n"
 msgstr "Lesing av respons fra mellomtjener mislyktes: %s\n"
 
-#: src/http.c:2180 src/http.c:3419 src/http.c:4525
+#: src/http.c:2183 src/http.c:3465 src/http.c:4588
 #, c-format
 msgid "%s ERROR %d: %s.\n"
 msgstr "%s PROGRAMFEIL %d: %s.\n"
 
-#: src/http.c:2182 src/http.c:3421 src/http.c:3609
+#: src/http.c:2185 src/http.c:3467 src/http.c:3668
 msgid "Malformed status line"
 msgstr "Feilutformet statuslinje"
 
-#: src/http.c:2193
+#: src/http.c:2196
 #, c-format
 msgid "Proxy tunneling failed: %s"
 msgstr "Tunnelsending via mellomtjener mislyktes: %s"
 
-#: src/http.c:2429
+#: src/http.c:2460
 msgid "Unknown authentication scheme.\n"
 msgstr "Ukjent autentiseringsmetode.\n"
 
-#: src/http.c:2447
+#: src/http.c:2478
 #, c-format
 msgid "Authentication selected: %s\n"
 msgstr "Autentisering valgt: %s\n"
 
-#: src/http.c:2578
+#: src/http.c:2612
 #, c-format
 msgid "Saving to: %s\n"
 msgstr "Lagrer til: %s\n"
 
-#: src/http.c:2797
+#: src/http.c:2831
 #, c-format
 msgid ""
 "When downloading signature:\n"
@@ -1047,21 +815,21 @@ msgstr ""
 "Ved nedlasting av signatur:\n"
 "%s: %s.\n"
 
-#: src/http.c:2833
+#: src/http.c:2867
 msgid "Unable to read signature content from temporary file. Skipping.\n"
 msgstr "Klarte ikke å lese signaturinnhold i midlertidig fil. Hopper over.\n"
 
-#: src/http.c:2856
+#: src/http.c:2890
 msgid "Could not create temporary file. Skipping signature download.\n"
 msgstr ""
 "Klarte ikke å lage midlertidig fil. Hopper over nedlasting av signatur.\n"
 
-#: src/http.c:2890 src/http.c:2972
+#: src/http.c:2924 src/http.c:3006
 #, c-format
 msgid "Invalid pri value. Assuming %d.\n"
 msgstr "Ugyldig pri-verdi. Bruker %d.\n"
 
-#: src/http.c:3076
+#: src/http.c:3120
 msgid ""
 "Could not find acceptable digest for Metalink resources.\n"
 "Ignoring them.\n"
@@ -1069,42 +837,42 @@ msgstr ""
 "Fant ingen akseptabel behandlingsmetode for Metalink-ressurser.\n"
 "De blir derfor ignorert.\n"
 
-#: src/http.c:3213
+#: src/http.c:3257
 msgid "Disabling SSL due to encountered errors.\n"
 msgstr "Slår av SSL på grunn av oppståtte programfeil.\n"
 
-#: src/http.c:3355
+#: src/http.c:3401
 #, c-format
 msgid "%s request sent, awaiting response... "
 msgstr "%s-forespørsel sendt. Venter på svar … "
 
-#: src/http.c:3395
+#: src/http.c:3441
 msgid "No data received.\n"
 msgstr "Ingen data mottatt.\n"
 
-#: src/http.c:3401
+#: src/http.c:3447
 #, c-format
 msgid "Read error (%s) in headers.\n"
 msgstr "Lesefeil (%s) i hodelinjer.\n"
 
-#: src/http.c:3611
+#: src/http.c:3670
 msgid "(no description)"
 msgstr "(ingen beskrivelse)"
 
-#: src/http.c:3799
+#: src/http.c:3861
 #, c-format
 msgid "Location: %s%s\n"
 msgstr "Plassering: %s%s\n"
 
-#: src/http.c:3800 src/http.c:4040
+#: src/http.c:3862 src/http.c:4102
 msgid "unspecified"
 msgstr "ikke angitt"
 
-#: src/http.c:3801
+#: src/http.c:3863
 msgid " [following]"
 msgstr " [følgende]"
 
-#: src/http.c:3883
+#: src/http.c:3945
 #, c-format
 msgid ""
 "File %s not modified on server. Omitting download.\n"
@@ -1113,7 +881,7 @@ msgstr ""
 "Fila %s er ikke endret på tjener. Lar være å laste ned.\n"
 "\n"
 
-#: src/http.c:3956
+#: src/http.c:4018
 #, c-format
 msgid ""
 "Server ignored If-Modified-Since header for file %s.\n"
@@ -1124,7 +892,7 @@ msgstr ""
 "Du bør vurdere å bruke valget «--no-if-modified-since».\n"
 "\n"
 
-#: src/http.c:3976
+#: src/http.c:4038
 msgid ""
 "\n"
 "    The file is already fully retrieved; nothing to do.\n"
@@ -1134,81 +902,81 @@ msgstr ""
 "    Fila er allerede lastet ned i sin helhet.\n"
 "\n"
 
-#: src/http.c:4020
+#: src/http.c:4082
 msgid "Length: "
 msgstr "Lengde: "
 
-#: src/http.c:4040
+#: src/http.c:4102
 msgid "ignored"
 msgstr "ignorert"
 
-#: src/http.c:4208
+#: src/http.c:4270
 msgid "Warning: wildcards not supported in HTTP.\n"
 msgstr "Advarsel: jokertegn støttes ikke i HTTP.\n"
 
-#: src/http.c:4290
+#: src/http.c:4352
 msgid "Spider mode enabled. Check if remote file exists.\n"
 msgstr "Edderkoppmodus er slått på. Kontroller om ekstern fil finnes.\n"
 
-#: src/http.c:4380
+#: src/http.c:4445
 #, c-format
 msgid "Cannot write to %s (%s).\n"
 msgstr "Klarte ikke å skrive til %s (%s).\n"
 
-#: src/http.c:4404
+#: src/http.c:4467
 msgid "Required attribute missing from Header received.\n"
 msgstr "Obligatorisk attributt mangler på mottatt linje.\n"
 
-#: src/http.c:4409
+#: src/http.c:4472
 msgid "Username/Password Authentication Failed.\n"
 msgstr "Autentisering med brukernavn og passord mislyktes.\n"
 
-#: src/http.c:4415
+#: src/http.c:4478
 msgid "Cannot write to WARC file.\n"
 msgstr "Klarte ikke å skrive til WARC-fil.\n"
 
-#: src/http.c:4421
+#: src/http.c:4484
 msgid "Cannot write to temporary WARC file.\n"
 msgstr "Klarte ikke å skrive til midlertidig WARC-fil.\n"
 
-#: src/http.c:4426
+#: src/http.c:4489
 msgid "Unable to establish SSL connection.\n"
 msgstr "Klarte ikke å sette opp SSL-tilkobling.\n"
 
-#: src/http.c:4432
+#: src/http.c:4495
 #, c-format
 msgid "Cannot unlink %s (%s).\n"
 msgstr "Klarte ikke å fjerne lenke til %s (%s).\n"
 
-#: src/http.c:4442
+#: src/http.c:4505
 #, c-format
 msgid "ERROR: Redirection (%d) without location.\n"
 msgstr "PROGRAMFEIL: Videresending (%d) uten plassering.\n"
 
-#: src/http.c:4464
+#: src/http.c:4527
 msgid ""
 "Could not find Metalink data in HTTP response. Downloading file using HTTP "
 "GET.\n"
 msgstr ""
 "Fant ingen Metalink-data i HTTP-svar. Bruker HTTP GET til å laste ned.\n"
 
-#: src/http.c:4473
+#: src/http.c:4536
 msgid "Metalink headers found. Switching to Metalink mode.\n"
 msgstr "Fant Metalink-hoder. Går i Metalink-modus.\n"
 
-#: src/http.c:4514
+#: src/http.c:4577
 msgid "Remote file does not exist -- broken link!!!\n"
 msgstr "Ekstern fil finnes ikke. Død lenke!\n"
 
-#: src/http.c:4542
+#: src/http.c:4605
 msgid "Last-modified header missing -- time-stamps turned off.\n"
 msgstr "Linja «Last-modified» mangler. Tidsstempler er slått av.\n"
 
-#: src/http.c:4550
+#: src/http.c:4613
 msgid "Last-modified header invalid -- time-stamp ignored.\n"
 msgstr "Linja «Last-modified» er ugyldig. Tidsstempler ignoreres.\n"
 
-#: src/http.c:4580
+#: src/http.c:4643
 #, c-format
 msgid ""
 "Server file no newer than local file %s -- not retrieving.\n"
@@ -1218,16 +986,16 @@ msgstr ""
 "lastet ned.\n"
 "\n"
 
-#: src/http.c:4588
+#: src/http.c:4651
 #, c-format
 msgid "The sizes do not match (local %s) -- retrieving.\n"
 msgstr "Filene er av ulik størrelse (lokal: %s). Laster ned.\n"
 
-#: src/http.c:4597
+#: src/http.c:4660
 msgid "Remote file is newer, retrieving.\n"
 msgstr "Ekstern versjon av fila er nyest, og blir lastet ned.\n"
 
-#: src/http.c:4615
+#: src/http.c:4678
 msgid ""
 "Remote file exists and could contain links to other resources -- "
 "retrieving.\n"
@@ -1237,7 +1005,7 @@ msgstr ""
 "ned.\n"
 "\n"
 
-#: src/http.c:4621
+#: src/http.c:4684
 msgid ""
 "Remote file exists but does not contain any link -- not retrieving.\n"
 "\n"
@@ -1245,7 +1013,7 @@ msgstr ""
 "Ekstern fil finnes, men inneholder ingen lenke. Laster ikke ned.\n"
 "\n"
 
-#: src/http.c:4630
+#: src/http.c:4693
 msgid ""
 "Remote file exists and could contain further links,\n"
 "but recursion is disabled -- not retrieving.\n"
@@ -1255,7 +1023,7 @@ msgstr ""
 "men jobbing i undermapper er slått av. Laster ikke ned.\n"
 "\n"
 
-#: src/http.c:4636
+#: src/http.c:4699
 msgid ""
 "Remote file exists.\n"
 "\n"
@@ -1263,12 +1031,12 @@ msgstr ""
 "Ekstern fil finnes.\n"
 "\n"
 
-#: src/http.c:4645
+#: src/http.c:4708
 #, c-format
 msgid "%s URL: %s %2d %s\n"
 msgstr "%s nettadresse: %s %2d %s\n"
 
-#: src/http.c:4695
+#: src/http.c:4756
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s/%s]\n"
@@ -1277,7 +1045,7 @@ msgstr ""
 "%s (%s) - skrevet til standard utkanal %s[%s/%s]\n"
 "\n"
 
-#: src/http.c:4696
+#: src/http.c:4757
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s/%s]\n"
@@ -1286,27 +1054,27 @@ msgstr ""
 "%s (%s) - %s lagret [%s/%s]\n"
 "\n"
 
-#: src/http.c:4757
+#: src/http.c:4818
 #, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) - Tilkobling lukket ved byte %s. "
 
-#: src/http.c:4780
+#: src/http.c:4841
 #, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
 msgstr "%s (%s) - Lesefeil ved byte %s (%s)."
 
-#: src/http.c:4789
+#: src/http.c:4850
 #, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
 msgstr "%s (%s) - Lesefeil ved byte %s/%s (%s). "
 
-#: src/http.c:5027
+#: src/http.c:5107
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
 msgstr "Beskyttelseskvalitet «%s» støttes ikke.\n"
 
-#: src/http.c:5032
+#: src/http.c:5112
 #, c-format
 msgid "Unsupported algorithm '%s'.\n"
 msgstr "Algoritmen «%s» støttes ikke.\n"
@@ -1317,27 +1085,27 @@ msgid ""
 "%s: WGETRC points to %s, which couldn't be accessed because of error: %s.\n"
 msgstr "%s: WGETRC peker på %s, som ble avvist på grunn av feil: %s.\n"
 
-#: src/init.c:682 src/netrc.c:452
+#: src/init.c:695 src/netrc.c:454
 #, c-format
 msgid "%s: Cannot read %s (%s).\n"
 msgstr "%s: Klarte ikke å lese %s (%s).\n"
 
-#: src/init.c:699
+#: src/init.c:712
 #, c-format
 msgid "%s: Error in %s at line %d.\n"
 msgstr "%s: Feil i %s på linje %d.\n"
 
-#: src/init.c:705
+#: src/init.c:718
 #, c-format
 msgid "%s: Syntax error in %s at line %d.\n"
 msgstr "%s: Syntaksfeil i %s på linje %d.\n"
 
-#: src/init.c:710
+#: src/init.c:723
 #, c-format
 msgid "%s: Unknown command %s in %s at line %d.\n"
 msgstr "%s: %s er en ukjent kommando i %s på linje %d.\n"
 
-#: src/init.c:749
+#: src/init.c:762
 #, c-format
 msgid ""
 "Parsing system wgetrc file (env SYSTEM_WGETRC) failed.  Please check\n"
@@ -1349,7 +1117,7 @@ msgstr ""
 "«%s»,\n"
 "eller velg en annen fil med «--config».\n"
 
-#: src/init.c:764
+#: src/init.c:777
 #, c-format
 msgid ""
 "Parsing system wgetrc file failed.  Please check\n"
@@ -1360,49 +1128,54 @@ msgstr ""
 "«%s»,\n"
 "eller velg en annen fil med «--config».\n"
 
-#: src/init.c:780
+#: src/init.c:793
 #, c-format
 msgid "%s: Warning: Both system and user wgetrc point to %s.\n"
 msgstr "%s: Advarsel: Både systemet og wgetrc peker på %s.\n"
 
-#: src/init.c:981
+#: src/init.c:1006
 #, c-format
 msgid "%s: Invalid --execute command %s\n"
 msgstr "%s: %s er en ugyldig «--execute»-kommando\n"
 
-#: src/init.c:1041
+#: src/init.c:1066
 #, c-format
 msgid "%s: %s: Invalid boolean %s; use `on' or `off'.\n"
 msgstr ""
 "%s: %s: %s er en ugyldig boolsk verdi. Bruk «on» (på) eller «off» (av).\n"
 
-#: src/init.c:1074
+#: src/init.c:1099
 #, c-format
 msgid "%s: %s: Invalid %s; use `on', `off' or `quiet'.\n"
 msgstr ""
 "%s: %s: Ugyldig %s. Bruk «on» (på), «off» (av) eller «quiet» (stille).\n"
 
-#: src/init.c:1094
+#: src/init.c:1119
 #, c-format
 msgid "%s: %s: Invalid number %s.\n"
 msgstr "%s: %s: %s er et ugyldig tall.\n"
 
-#: src/init.c:1176
+#: src/init.c:1201
 #, c-format
 msgid "%s: %s must only be used once\n"
 msgstr "%s: %s kan bare brukes én gang\n"
 
-#: src/init.c:1331 src/init.c:1352
+#: src/init.c:1356 src/init.c:1377
 #, c-format
 msgid "%s: %s: Invalid byte value %s\n"
 msgstr "%s: %s: %s er en ugyldig byte-verdi\n"
 
-#: src/init.c:1377
+#: src/init.c:1402
 #, c-format
 msgid "%s: %s: Invalid time period %s\n"
 msgstr "%s: %s: %s er en ugyldig tidsperiode\n"
 
-#: src/init.c:1439 src/main.c:1912
+#: src/init.c:1443
+#, fuzzy, c-format
+msgid "%s: %s: Negative time period %s\n"
+msgstr "%s: %s: %s er en ugyldig tidsperiode\n"
+
+#: src/init.c:1471 src/main.c:1926
 #, c-format
 msgid ""
 "use-askpass requires a string or either environment variable WGET_ASKPASS or "
@@ -1411,28 +1184,28 @@ msgstr ""
 "use-askpass krever at miljøvariabel WGET_ASKPASS eller SSH_ASKPASS har en "
 "verdi.\n"
 
-#: src/init.c:1457 src/init.c:1479 src/init.c:1587 src/init.c:1643
-#: src/init.c:1709 src/init.c:1729 src/init.c:1754
+#: src/init.c:1489 src/init.c:1511 src/init.c:1619 src/init.c:1675
+#: src/init.c:1741 src/init.c:1761 src/init.c:1786
 #, c-format
 msgid "%s: %s: Invalid value %s.\n"
 msgstr "%s: %s: %s er en ugyldig verdi.\n"
 
-#: src/init.c:1513
+#: src/init.c:1545
 #, c-format
 msgid "%s: %s: Invalid header %s.\n"
 msgstr "%s: %s: %s er en ugyldig linje.\n"
 
-#: src/init.c:1534
+#: src/init.c:1566
 #, c-format
 msgid "%s: %s: Invalid WARC header %s.\n"
 msgstr "%s: %s: %s er en ugyldig WARC-linje.\n"
 
-#: src/init.c:1600
+#: src/init.c:1632
 #, c-format
 msgid "%s: %s: Invalid progress type %s.\n"
 msgstr "%s: %s: %s er en ugyldig framdriftstype.\n"
 
-#: src/init.c:1682
+#: src/init.c:1714
 #, c-format
 msgid ""
 "%s: %s: Invalid restriction %s,\n"
@@ -1441,40 +1214,40 @@ msgstr ""
 "%s: %s: %s er en ugyldig restriksjon.\n"
 "    Bruk [unix|vms|windows],[lowercase|uppercase],[nocontrol],[ascii].\n"
 
-#: src/iri.c:113
+#: src/iri.c:114
 #, c-format
 msgid "Encoding %s isn't valid\n"
 msgstr "Kodinga %s er ugyldig\n"
 
-#: src/iri.c:139 src/url.c:1570
+#: src/iri.c:140 src/url.c:1587
 #, c-format
 msgid "Conversion from %s to %s isn't supported\n"
 msgstr "Konvertering fra %s til %s støttes ikke\n"
 
-#: src/iri.c:179 src/url.c:1600
+#: src/iri.c:180 src/url.c:1617
 msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgstr "Fant ufullstendig eller ugyldig multibyte-sekvens\n"
 
-#: src/iri.c:198 src/url.c:1617
+#: src/iri.c:200 src/url.c:1634
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr "Uhåndtert feilnummer %d\n"
 
-#: src/iri.c:235
+#: src/iri.c:237
 msgid "locale_to_utf8: locale is unset\n"
 msgstr "locale_to_utf8: region er ikke valgt\n"
 
-#: src/iri.c:281 src/iri.c:296
+#: src/iri.c:283 src/iri.c:298
 #, c-format
 msgid "idn_encode failed (%d): %s\n"
 msgstr "idn_encode mislyktes (%d). %s\n"
 
-#: src/iri.c:288
+#: src/iri.c:290
 #, c-format
 msgid "Failed to convert to lower: %d: %s\n"
 msgstr "Klarte ikke å konvertere til små bokstaver: %d: %s\n"
 
-#: src/log.c:931 src/log.c:950
+#: src/log.c:937 src/log.c:956
 #, c-format
 msgid ""
 "\n"
@@ -1483,17 +1256,17 @@ msgstr ""
 "\n"
 "Videresender utdata til %s.\n"
 
-#: src/log.c:943
+#: src/log.c:949
 #, c-format
 msgid "%s: %s; disabling logging.\n"
 msgstr "%s: %s. Slår av loggføring.\n"
 
-#: src/main.c:577
+#: src/main.c:574
 #, c-format
 msgid "Usage: %s [OPTION]... [URL]...\n"
 msgstr "Bruk: %s [VALG] … [NETTADRESSE] …\n"
 
-#: src/main.c:593
+#: src/main.c:590
 msgid ""
 "Mandatory arguments to long options are mandatory for short options too.\n"
 "\n"
@@ -1502,62 +1275,62 @@ msgstr ""
 "korte valg.\n"
 "\n"
 
-#: src/main.c:595
+#: src/main.c:592
 msgid "Startup:\n"
 msgstr "Oppstart:\n"
 
-#: src/main.c:597
+#: src/main.c:594
 msgid ""
 "  -V,  --version                   display the version of Wget and exit\n"
 msgstr "  -V,  --version           vis versjonsinformasjon og avslutt.\n"
 
-#: src/main.c:599
+#: src/main.c:596
 msgid "  -h,  --help                      print this help\n"
 msgstr "  -h,  --help                      vis denne hjelpeteksten\n"
 
-#: src/main.c:601
+#: src/main.c:598
 msgid "  -b,  --background                go to background after startup\n"
 msgstr "  -b,  --background                kjør i bakgrunnen etter oppstart\n"
 
-#: src/main.c:603
+#: src/main.c:600
 msgid "  -e,  --execute=COMMAND           execute a `.wgetrc'-style command\n"
 msgstr "  -e,  --execute=KOMMANDO          kjør en kommando i «.wgetrc»-stil\n"
 
-#: src/main.c:607
+#: src/main.c:604
 msgid "Logging and input file:\n"
 msgstr "Loggføring og inndatafil:\n"
 
-#: src/main.c:609
+#: src/main.c:606
 msgid "  -o,  --output-file=FILE          log messages to FILE\n"
 msgstr "  -o,  --output-file=FIL           loggfør meldinger i valgt FIL\n"
 
-#: src/main.c:611
+#: src/main.c:608
 msgid "  -a,  --append-output=FILE        append messages to FILE\n"
 msgstr "  -a,  --append-output=FIL         legg til meldinger i valgt FIL\n"
 
-#: src/main.c:614
+#: src/main.c:611
 msgid ""
 "  -d,  --debug                     print lots of debugging information\n"
 msgstr ""
 "  -d,  --debug                     skriv ut en haug av "
 "feilsøkingsinformasjon\n"
 
-#: src/main.c:618
+#: src/main.c:615
 msgid "       --wdebug                    print Watt-32 debug output\n"
 msgstr ""
 "       --wdebug                    skriv ut Watt-32-feilsøkingsinformasjon\n"
 
-#: src/main.c:621
+#: src/main.c:618
 msgid "  -q,  --quiet                     quiet (no output)\n"
 msgstr "  -q,  --quiet                     stillemodus (ingen utdata)\n"
 
-#: src/main.c:623
+#: src/main.c:620
 msgid "  -v,  --verbose                   be verbose (this is the default)\n"
 msgstr ""
 "  -v,  --verbose                   skriv ut detaljert info (dette er "
 "standard)\n"
 
-#: src/main.c:625
+#: src/main.c:622
 msgid ""
 "  -nv, --no-verbose                turn off verboseness, without being "
 "quiet\n"
@@ -1565,13 +1338,13 @@ msgstr ""
 "  -nv, --no-verbose                ikke skriv ut detaljer, men ikke vær helt "
 "stille\n"
 
-#: src/main.c:627
+#: src/main.c:624
 msgid ""
 "       --report-speed=TYPE         output bandwidth as TYPE.  TYPE can be "
 "bits\n"
 msgstr "       --report-speed=TYPE         vis båndbredde som valgt TYPE bit\n"
 
-#: src/main.c:629
+#: src/main.c:626
 msgid ""
 "  -i,  --input-file=FILE           download URLs found in local or external "
 "FILE\n"
@@ -1579,7 +1352,7 @@ msgstr ""
 "  -i,  --input-file=FIL            last ned nettadresser som finnes i valgt "
 "FIL\n"
 
-#: src/main.c:632
+#: src/main.c:629
 msgid ""
 "       --input-metalink=FILE       download files covered in local Metalink "
 "FILE\n"
@@ -1587,11 +1360,11 @@ msgstr ""
 "       --input-metalink=FIL        last ned filer som står oppført i lokal "
 "Metalink-FIL\n"
 
-#: src/main.c:635
+#: src/main.c:632
 msgid "  -F,  --force-html                treat input file as HTML\n"
 msgstr "  -F,  --force-html                behandle inndatafil som HTML\n"
 
-#: src/main.c:637
+#: src/main.c:634
 msgid ""
 "  -B,  --base=URL                  resolves HTML input-file links (-i -F)\n"
 "                                     relative to URL\n"
@@ -1600,38 +1373,38 @@ msgstr ""
 "F»)\n"
 "                                     relativt til valgt nettADResse\n"
 
-#: src/main.c:640
+#: src/main.c:637
 msgid "       --config=FILE               specify config file to use\n"
 msgstr "       --config=FIL                velg oppsettsfil som skal brukes\n"
 
-#: src/main.c:642
+#: src/main.c:639
 msgid "       --no-config                 do not read any config file\n"
 msgstr "       --no-config                 ikke les oppsettsfil(er)\n"
 
-#: src/main.c:644
+#: src/main.c:641
 msgid ""
 "       --rejected-log=FILE         log reasons for URL rejection to FILE\n"
 msgstr ""
 "       --rejected-log=FIL          loggfør URL-avvisninger i valgt FIL\n"
 
-#: src/main.c:648
+#: src/main.c:645
 msgid "Download:\n"
 msgstr "Last ned:\n"
 
-#: src/main.c:650
+#: src/main.c:647
 msgid ""
 "  -t,  --tries=NUMBER              set number of retries to NUMBER (0 "
 "unlimits)\n"
 msgstr ""
 "  -t,  --tries=ANT              velg ANTall nye forsøk (0 betyr ubegrenset)\n"
 
-#: src/main.c:652
+#: src/main.c:649
 msgid ""
 "       --retry-connrefused         retry even if connection is refused\n"
 msgstr ""
 "       --retry-connrefused         prøv på nytt selv om tilkobling nektes\n"
 
-#: src/main.c:654
+#: src/main.c:651
 msgid ""
 "       --retry-on-http-error=ERRORS    comma-separated list of HTTP errors "
 "to retry\n"
@@ -1639,11 +1412,11 @@ msgstr ""
 "       --retry-on-http-error=FEIL      kommaseparert liste over HTML-tagger "
 "som skal prøves på nytt\n"
 
-#: src/main.c:656
+#: src/main.c:653
 msgid "  -O,  --output-document=FILE      write documents to FILE\n"
 msgstr "  -O,  --output-document=FIL      lagre dokumenter i valgt FIL\n"
 
-#: src/main.c:658
+#: src/main.c:655
 msgid ""
 "  -nc, --no-clobber                skip downloads that would download to\n"
 "                                     existing files (overwriting them)\n"
@@ -1651,7 +1424,7 @@ msgstr ""
 "  -nc, --no-clobber                hopp over nedlastinger som ville ha\n"
 "                                     overskrevet eksisterende filer\n"
 
-#: src/main.c:661
+#: src/main.c:658
 msgid ""
 "       --no-netrc                  don't try to obtain credentials from ."
 "netrc\n"
@@ -1659,7 +1432,7 @@ msgstr ""
 "       --no-netrc                  ikke prøv å hente akkreditiver fra ."
 "netrc\n"
 
-#: src/main.c:663
+#: src/main.c:660
 msgid ""
 "  -c,  --continue                  resume getting a partially-downloaded "
 "file\n"
@@ -1667,7 +1440,7 @@ msgstr ""
 "  -c,  --continue                  fortsett nedlasting av en delvis "
 "nedlastet fil\n"
 
-#: src/main.c:665
+#: src/main.c:662
 msgid ""
 "       --start-pos=OFFSET          start downloading from zero-based "
 "position OFFSET\n"
@@ -1675,11 +1448,11 @@ msgstr ""
 "       --start-pos=POS         start nedlasting fra valgt POSisjon, talt fra "
 "null\n"
 
-#: src/main.c:667
+#: src/main.c:664
 msgid "       --progress=TYPE             select progress gauge type\n"
 msgstr "       --progress=TYPE             velg en TYPE framdriftsviser\n"
 
-#: src/main.c:669
+#: src/main.c:666
 msgid ""
 "       --show-progress             display the progress bar in any verbosity "
 "mode\n"
@@ -1687,7 +1460,7 @@ msgstr ""
 "       --show-progress             vis framdriftsviser uansett grad av "
 "detaljer som skrives ut\n"
 
-#: src/main.c:671
+#: src/main.c:668
 msgid ""
 "  -N,  --timestamping              don't re-retrieve files unless newer "
 "than\n"
@@ -1696,7 +1469,7 @@ msgstr ""
 "  -N,  --timestamping              ikke hent filer på nytt med mindre de er\n"
 "                                     nyere enn de lokale\n"
 
-#: src/main.c:674
+#: src/main.c:671
 msgid ""
 "       --no-if-modified-since      don't use conditional if-modified-since "
 "get\n"
@@ -1705,7 +1478,7 @@ msgstr ""
 "       --no-if-modified-since      ikke bruk betinget «if-modified-since»\n"
 "                                     forespørsler i tidsstempel-modus\n"
 
-#: src/main.c:677
+#: src/main.c:674
 msgid ""
 "       --no-use-server-timestamps  don't set the local file's timestamp by\n"
 "                                     the one on the server\n"
@@ -1713,21 +1486,21 @@ msgstr ""
 "       --no-use-server-timestamps  ikke gi lokale filer samme tidsstempel\n"
 "                                     som tjenerens filer\n"
 
-#: src/main.c:680
+#: src/main.c:677
 msgid "  -S,  --server-response           print server response\n"
 msgstr "  -S,  --server-response           skriv ut svarmelding fra tjener\n"
 
-#: src/main.c:682
+#: src/main.c:679
 msgid "       --spider                    don't download anything\n"
 msgstr "       --spider                    ikke last ned noe\n"
 
-#: src/main.c:684
+#: src/main.c:681
 msgid "  -T,  --timeout=SECONDS           set all timeout values to SECONDS\n"
 msgstr ""
 "  -T,  --timeout=SEKUNDER          bruk valgt antall SEKUNDER som generelt "
 "tidsavbrudd\n"
 
-#: src/main.c:687
+#: src/main.c:684
 msgid ""
 "       --dns-servers=ADDRESSES     list of DNS servers to query (comma "
 "separated)\n"
@@ -1735,7 +1508,7 @@ msgstr ""
 "       --dns-servers=ADRESSER      liste over DNS-tjenere som skal spørres "
 "(adskilt med komma)\n"
 
-#: src/main.c:689
+#: src/main.c:686
 msgid ""
 "       --bind-dns-address=ADDRESS  bind DNS resolver to ADDRESS (hostname or "
 "IP) on local host\n"
@@ -1743,42 +1516,52 @@ msgstr ""
 "       --bind-dns-address=ADRESSE  knytt DNS-oppslagsverktøy til valgt "
 "ADRESSE (vertsnavn eller IP) på lokal vert\n"
 
-#: src/main.c:692
+#: src/main.c:689
 msgid "       --dns-timeout=SECS          set the DNS lookup timeout to SECS\n"
 msgstr ""
 "       --dns-timeout=SEK           bruk valgt antall SEKunder som DNS-"
 "tidsavbrudd\n"
 
-#: src/main.c:694
+#: src/main.c:691
 msgid "       --connect-timeout=SECS      set the connect timeout to SECS\n"
 msgstr ""
 "       --connect-timeout=SEK       bruk valgt antall SEKunder som "
 "tidsavbrudd for tilkobling\n"
 
-#: src/main.c:696
+#: src/main.c:693
 msgid "       --read-timeout=SECS         set the read timeout to SECS\n"
 msgstr ""
 "       --read-timeout=SEK          bruk valgt antall SEKunder som "
 "tidsavbrudd for lesing\n"
 
-#: src/main.c:698
-msgid "  -w,  --wait=SECONDS              wait SECONDS between retrievals\n"
+#: src/main.c:695
+#, fuzzy
+msgid ""
+"  -w,  --wait=SECONDS              wait SECONDS between retrievals\n"
+"                                     (applies if more then 1 URL is to be "
+"retrieved)\n"
 msgstr ""
 "  -w,  --wait=SEK                  ta en pause i valgt antall SEKunder før "
 "neste fil hentes\n"
 
-#: src/main.c:700
+#: src/main.c:698
+#, fuzzy
 msgid ""
 "       --waitretry=SECONDS         wait 1..SECONDS between retries of a "
 "retrieval\n"
+"                                     (applies if more then 1 URL is to be "
+"retrieved)\n"
 msgstr ""
 "       --waitretry=SEKUNDER        vent 1…SEKunder mellom gjentatte forsøk "
 "på nedlasting\n"
 
-#: src/main.c:702
+#: src/main.c:701
+#, fuzzy
 msgid ""
 "       --random-wait               wait from 0.5*WAIT...1.5*WAIT secs "
 "between retrievals\n"
+"                                     (applies if more then 1 URL is to be "
+"retrieved)\n"
 msgstr ""
 "       --random-wait               vent fra 0.5*WAIT … 1.5*WAIT sekunder "
 "mellom nedlastinger\n"
@@ -1861,7 +1644,7 @@ msgstr ""
 msgid "       --ask-password              prompt for passwords\n"
 msgstr "       --ask-password              be om passord\n"
 
-#: src/main.c:733
+#: src/main.c:734
 msgid ""
 "       --use-askpass=COMMAND       specify credential handler for "
 "requesting \n"
@@ -1879,27 +1662,27 @@ msgstr ""
 "WGET_ASKPASS eller\n"
 "                                     SSH_ASKPASS.\n"
 
-#: src/main.c:738
+#: src/main.c:740
 msgid "       --no-iri                    turn off IRI support\n"
 msgstr "       --no-iri                  slå av IRI-støtte\n"
 
-#: src/main.c:740
+#: src/main.c:742
 msgid ""
 "       --local-encoding=ENC        use ENC as the local encoding for IRIs\n"
 msgstr "       --local-encoding=KOD      bruk valgt lokal KODing av IRI-er\n"
 
-#: src/main.c:742
+#: src/main.c:744
 msgid ""
 "       --remote-encoding=ENC       use ENC as the default remote encoding\n"
 msgstr ""
 "       --remote-encoding=KOD       bruk valgt KODing som standard ekstern "
 "koding\n"
 
-#: src/main.c:744
+#: src/main.c:746
 msgid "       --unlink                    remove file before clobber\n"
 msgstr "       --unlink                    fjern fil før ting blir rotete\n"
 
-#: src/main.c:747
+#: src/main.c:749
 msgid ""
 "       --keep-badhash              keep files with checksum mismatch "
 "(append .badhash)\n"
@@ -1907,7 +1690,7 @@ msgstr ""
 "       --keep-badhash              behold filer som ikke samsvarer med "
 "kontrollsum (legg til «.badhash»)\n"
 
-#: src/main.c:749
+#: src/main.c:751
 msgid ""
 "       --metalink-index=NUMBER     Metalink application/metalink4+xml "
 "metaurl ordinal NUMBER\n"
@@ -1915,7 +1698,7 @@ msgstr ""
 "       --metalink-index=TALL       Metalenke application/metalink4+xml meta-"
 "adresse ordinær TALL\n"
 
-#: src/main.c:751
+#: src/main.c:753
 msgid ""
 "       --metalink-over-http        use Metalink metadata from HTTP response "
 "headers\n"
@@ -1923,7 +1706,7 @@ msgstr ""
 "       --metalink-over-http        bruk Metalink-metadata fra HTTP-"
 "svarhoder\n"
 
-#: src/main.c:753
+#: src/main.c:755
 msgid ""
 "       --preferred-location        preferred location for Metalink "
 "resources\n"
@@ -1931,39 +1714,40 @@ msgstr ""
 "       --preferred-location        foretrukket plassering av Metalink-"
 "ressurser\n"
 
-#: src/main.c:757
+#: src/main.c:759
+#, fuzzy
 msgid ""
-"       --no-xattr                  turn off storage of metadata in extended "
+"       --xattr                     turn on storage of metadata in extended "
 "file attributes\n"
 msgstr ""
 "       --no-xattr                  slå av lagring av metadata i utvidede "
 "filattributter\n"
 
-#: src/main.c:762
+#: src/main.c:764
 msgid "Directories:\n"
 msgstr "Mapper:\n"
 
-#: src/main.c:764
+#: src/main.c:766
 msgid "  -nd, --no-directories            don't create directories\n"
 msgstr "  -nd, --no-directories            ikke lag nye mapper\n"
 
-#: src/main.c:766
+#: src/main.c:768
 msgid "  -x,  --force-directories         force creation of directories\n"
 msgstr "  -x,  --force-directories         tving opprettelse av mapper\n"
 
-#: src/main.c:768
+#: src/main.c:770
 msgid "  -nH, --no-host-directories       don't create host directories\n"
 msgstr "  -nH, --no-host-directories       ikke lag vertsmapper\n"
 
-#: src/main.c:770
+#: src/main.c:772
 msgid "       --protocol-directories      use protocol name in directories\n"
 msgstr "       --protocol-directories      bruk protokollnavn på mapper\n"
 
-#: src/main.c:772
+#: src/main.c:774
 msgid "  -P,  --directory-prefix=PREFIX   save files to PREFIX/..\n"
 msgstr "  -P,  --directory-prefix=PREFIKS  lagre filer i PREFIKS/…\n"
 
-#: src/main.c:774
+#: src/main.c:776
 msgid ""
 "       --cut-dirs=NUMBER           ignore NUMBER remote directory "
 "components\n"
@@ -1971,26 +1755,26 @@ msgstr ""
 "       --cut-dirs=ANTALL           ignorer valgt ANTALL eksterne "
 "mappekomponenter\n"
 
-#: src/main.c:778
+#: src/main.c:780
 msgid "HTTP options:\n"
 msgstr "HTTP-valg:\n"
 
-#: src/main.c:780
+#: src/main.c:782
 msgid "       --http-user=USER            set http user to USER\n"
 msgstr "       --http-user=BRUKER          bruk valgt BRUKER som http-bruker\n"
 
-#: src/main.c:782
+#: src/main.c:784
 msgid "       --http-password=PASS        set http password to PASS\n"
 msgstr ""
 "       --http-password=PASS        bruk valgt PASSord som http-passord\n"
 
-#: src/main.c:784
+#: src/main.c:786
 msgid "       --no-cache                  disallow server-cached data\n"
 msgstr ""
 "       --no-cache                  ikke tillat mellomlagring av data på "
 "tjener\n"
 
-#: src/main.c:786
+#: src/main.c:788
 msgid ""
 "       --default-page=NAME         change the default page name (normally\n"
 "                                     this is 'index.html'.)\n"
@@ -1998,7 +1782,7 @@ msgstr ""
 "       --default-page=NAVN         Endre standard sidenavn (vanligvis «index."
 "html»)\n"
 
-#: src/main.c:789
+#: src/main.c:791
 msgid ""
 "  -E,  --adjust-extension          save HTML/CSS documents with proper "
 "extensions\n"
@@ -2006,16 +1790,16 @@ msgstr ""
 "  -E,  --adjust-extension          lagre HTML-/CSS-dokumenter med korrekt "
 "filetternavn\n"
 
-#: src/main.c:791
+#: src/main.c:793
 msgid ""
 "       --ignore-length             ignore 'Content-Length' header field\n"
 msgstr "       --ignore-length         ignorer «Content-Length»-linja\n"
 
-#: src/main.c:793
+#: src/main.c:795
 msgid "       --header=STRING             insert STRING among the headers\n"
 msgstr "       --header=STRENG             sett inn STRENG blant hodelinjene\n"
 
-#: src/main.c:796
+#: src/main.c:798
 msgid ""
 "       --compression=TYPE          choose compression, one of auto, gzip and "
 "none. (default: none)\n"
@@ -2023,36 +1807,36 @@ msgstr ""
 "       --compression=TYPE          velg komprimering («auto», «gzip» eller "
 "«none»). (forvalgt: none)\n"
 
-#: src/main.c:799
+#: src/main.c:801
 msgid ""
 "       --max-redirect              maximum redirections allowed per page\n"
 msgstr ""
 "       --max-redirect          maksimalt antall videresendinger per side\n"
 
-#: src/main.c:801
+#: src/main.c:803
 msgid "       --proxy-user=USER           set USER as proxy username\n"
 msgstr ""
 "       --proxy-user=BRUKER         bruk valgt BRUKER som mellomtjener-"
 "brukernavn\n"
 
-#: src/main.c:803
+#: src/main.c:805
 msgid "       --proxy-password=PASS       set PASS as proxy password\n"
 msgstr ""
 "       --proxy-password=PASS       bruk valgt PASSord som mellomtjener-"
 "passord\n"
 
-#: src/main.c:805
+#: src/main.c:807
 msgid ""
 "       --referer=URL               include 'Referer: URL' header in HTTP "
 "request\n"
 msgstr ""
 "       --referer=ADR               ta med «Referer: ADR» i HTTP-forespørsel\n"
 
-#: src/main.c:807
+#: src/main.c:809
 msgid "       --save-headers              save the HTTP headers to file\n"
 msgstr "       --save-headers          lagre HTTP-hodelinjer i en fil\n"
 
-#: src/main.c:809
+#: src/main.c:811
 msgid ""
 "  -U,  --user-agent=AGENT          identify as AGENT instead of Wget/"
 "VERSION\n"
@@ -2060,7 +1844,7 @@ msgstr ""
 "  -U,  --user-agent=AGENT          oppgi valgt AGENTnavn, i stedet for «Wget/"
 "VERSJON»\n"
 
-#: src/main.c:811
+#: src/main.c:813
 msgid ""
 "       --no-http-keep-alive        disable HTTP keep-alive (persistent "
 "connections)\n"
@@ -2068,24 +1852,24 @@ msgstr ""
 "       --no-http-keep-alive        slå av «HTTP keep-alive» (bevaring av "
 "forbindelser)\n"
 
-#: src/main.c:813
+#: src/main.c:815
 msgid "       --no-cookies                don't use cookies\n"
 msgstr "       --no-cookies                ikke bruk informasjonskapsler\n"
 
-#: src/main.c:815
+#: src/main.c:817
 msgid ""
 "       --load-cookies=FILE         load cookies from FILE before session\n"
 msgstr ""
 "       --load-cookies=FIL          last inn infokapsler fra valgt FIL før en "
 "økt startes\n"
 
-#: src/main.c:817
+#: src/main.c:819
 msgid "       --save-cookies=FILE         save cookies to FILE after session\n"
 msgstr ""
 "       --save-cookies=FIL          lagre infokapsler i valgt FIL når økta er "
 "ferdig\n"
 
-#: src/main.c:819
+#: src/main.c:821
 msgid ""
 "       --keep-session-cookies      load and save session (non-permanent) "
 "cookies\n"
@@ -2093,14 +1877,14 @@ msgstr ""
 "       --keep-session-cookies      last inn og lagre (ikke-permanente) "
 "infokapsler for økter\n"
 
-#: src/main.c:821
+#: src/main.c:823
 msgid ""
 "       --post-data=STRING          use the POST method; send STRING as the "
 "data\n"
 msgstr ""
 "       --post-data=STRENG          bruk POST-metoden og send valgt STRENG\n"
 
-#: src/main.c:823
+#: src/main.c:825
 msgid ""
 "       --post-file=FILE            use the POST method; send contents of "
 "FILE\n"
@@ -2108,13 +1892,13 @@ msgstr ""
 "       --post-file=FIL             bruk POST-metoden og send innholdet i "
 "valgt FIL\n"
 
-#: src/main.c:825
+#: src/main.c:827
 msgid ""
 "       --method=HTTPMethod         use method \"HTTPMethod\" in the request\n"
 msgstr ""
 "       --method=HTTP-metode        bruk metoden «HTTP-metode» i HTTP-hodet\n"
 
-#: src/main.c:827
+#: src/main.c:829
 msgid ""
 "       --body-data=STRING          send STRING as data. --method MUST be "
 "set\n"
@@ -2122,7 +1906,7 @@ msgstr ""
 "       --body-data=STRENG          send valgt STRENG som data (NB: «--"
 "method» MÅ være valgt)\n"
 
-#: src/main.c:829
+#: src/main.c:831
 msgid ""
 "       --body-file=FILE            send contents of FILE. --method MUST be "
 "set\n"
@@ -2130,7 +1914,7 @@ msgstr ""
 "       --body-file=FIL            send innhold i valgt FIL (NB: «--method» "
 "MÅ være valgt)\n"
 
-#: src/main.c:831
+#: src/main.c:833
 msgid ""
 "       --content-disposition       honor the Content-Disposition header "
 "when\n"
@@ -2141,7 +1925,7 @@ msgstr ""
 "ved\n"
 "                                     valg av filnavn (USTABILT)\n"
 
-#: src/main.c:834
+#: src/main.c:836
 msgid ""
 "       --content-on-error          output the received content on server "
 "errors\n"
@@ -2149,7 +1933,7 @@ msgstr ""
 "       --content-on-error          skriv ut mottatt innhold i feilmeldinger "
 "fra tjener\n"
 
-#: src/main.c:836
+#: src/main.c:838
 msgid ""
 "       --auth-no-challenge         send Basic HTTP authentication "
 "information\n"
@@ -2160,11 +1944,11 @@ msgstr ""
 "                                       uten å vente på etterspørsel fra\n"
 "                                       tjeneren.\n"
 
-#: src/main.c:843
+#: src/main.c:845
 msgid "HTTPS (SSL/TLS) options:\n"
 msgstr "HTTPS(SSL-/TLS-)-valg :\n"
 
-#: src/main.c:845
+#: src/main.c:847
 msgid ""
 "       --secure-protocol=PR        choose secure protocol, one of auto, "
 "SSLv2,\n"
@@ -2175,43 +1959,43 @@ msgstr ""
 "                                     «SSLv3», «TLSv1», «TLSv1_1, «TLSv1_2» "
 "eller «PFS».\n"
 
-#: src/main.c:848
+#: src/main.c:850
 msgid "       --https-only                only follow secure HTTPS links\n"
 msgstr "       --https-only                bare følg HTTPS-lenker\n"
 
-#: src/main.c:850
+#: src/main.c:852
 msgid ""
 "       --no-check-certificate      don't validate the server's certificate\n"
 msgstr ""
 "       --no-check-certificate      ikke kontroller tjenerens sertifikat\n"
 
-#: src/main.c:852
+#: src/main.c:854
 msgid "       --certificate=FILE          client certificate file\n"
 msgstr "       --certificate=FIL           klientens sertifikatFIL\n"
 
-#: src/main.c:854
+#: src/main.c:856
 msgid ""
 "       --certificate-type=TYPE     client certificate type, PEM or DER\n"
 msgstr ""
 "       --certificate-type=TYPE     klientens sertifikatTYPE («PEM» eller "
 "«DER»)\n"
 
-#: src/main.c:856
+#: src/main.c:858
 msgid "       --private-key=FILE          private key file\n"
 msgstr "       --private-key=FIL           privatnøkkel-FIL\n"
 
-#: src/main.c:858
+#: src/main.c:860
 msgid "       --private-key-type=TYPE     private key type, PEM or DER\n"
 msgstr ""
 "       --private-key-type=TYPE     type privatnøkkel («PEM» eller «DER»)\n"
 
-#: src/main.c:860
+#: src/main.c:862
 msgid "       --ca-certificate=FILE       file with the bundle of CAs\n"
 msgstr ""
 "       --ca-certificate=FIL       fil med liste over CA-er "
 "(sertifikatutstedere)\n"
 
-#: src/main.c:862
+#: src/main.c:864
 msgid ""
 "       --ca-directory=DIR          directory where hash list of CAs is "
 "stored\n"
@@ -2219,11 +2003,11 @@ msgstr ""
 "       --ca-directory=MAPPE       hvilken MAPPE nøkkellista over CA-er "
 "ligger i\n"
 
-#: src/main.c:864
+#: src/main.c:866
 msgid "       --crl-file=FILE             file with bundle of CRLs\n"
 msgstr "       --crl-file=FIL              fil med liste over CRL-er\n"
 
-#: src/main.c:866
+#: src/main.c:868
 msgid ""
 "       --pinnedpubkey=FILE/HASHES  Public key (PEM/DER) file, or any number\n"
 "                                   of base64 encoded sha256 hashes preceded "
@@ -2238,14 +2022,14 @@ msgstr ""
 "                                    sha256-kontrollsummer adskilt med «;»,\n"
 "                                    til bekreftelse av motpart\n"
 
-#: src/main.c:872
+#: src/main.c:874
 msgid ""
 "       --random-file=FILE          file with random data for seeding the SSL "
 "PRNG\n"
 msgstr ""
 "       --random-file=FIL           fil med vilkårlighetsdata for SSL PRNG\n"
 
-#: src/main.c:876
+#: src/main.c:878
 msgid ""
 "       --egd-file=FILE             file naming the EGD socket with random "
 "data\n"
@@ -2253,7 +2037,7 @@ msgstr ""
 "       --egd-file=FIL              fil med vilkårlighetsdata for navngivning "
 "av EGD-sokkel\n"
 
-#: src/main.c:880
+#: src/main.c:882
 msgid ""
 "       --ciphers=STR           Set the priority string (GnuTLS) or cipher "
 "list string (OpenSSL) directly.\n"
@@ -2269,15 +2053,15 @@ msgstr ""
 "                                   Format og syntaks for denne strengen "
 "avhenger av hvilken SSL-/TLS-motor som i er i bruk.\n"
 
-#: src/main.c:887
+#: src/main.c:889
 msgid "HSTS options:\n"
 msgstr "HSTS-valg:\n"
 
-#: src/main.c:889
+#: src/main.c:891
 msgid "       --no-hsts                   disable HSTS\n"
 msgstr "       --no-hsts                   slå av HSTS\n"
 
-#: src/main.c:891
+#: src/main.c:893
 msgid ""
 "       --hsts-file                 path of HSTS database (will override "
 "default)\n"
@@ -2285,11 +2069,11 @@ msgstr ""
 "       --hsts-file                 sti til HSTS-database (overstyrer "
 "standardsti)\n"
 
-#: src/main.c:896
+#: src/main.c:898
 msgid "FTP options:\n"
 msgstr "FTP-valg:\n"
 
-#: src/main.c:899
+#: src/main.c:901
 msgid ""
 "       --ftp-stmlf                 use Stream_LF format for all binary FTP "
 "files\n"
@@ -2297,36 +2081,36 @@ msgstr ""
 "       --ftp-stmlf                 bruk formatet Stream_LF på alle binære "
 "FTP-filer\n"
 
-#: src/main.c:902
+#: src/main.c:904
 msgid "       --ftp-user=USER             set ftp user to USER\n"
 msgstr "       --ftp-user=BRUKER           bruk valgt BRUKER som ftp-bruker\n"
 
-#: src/main.c:904
+#: src/main.c:906
 msgid "       --ftp-password=PASS         set ftp password to PASS\n"
 msgstr ""
 "       --ftp-password=PASS         bruk valgt PASSord som ftp-passord\n"
 
-#: src/main.c:906
+#: src/main.c:908
 msgid "       --no-remove-listing         don't remove '.listing' files\n"
 msgstr "       --no-remove-listing         ikke fjern «.listing»-filer\n"
 
-#: src/main.c:908
+#: src/main.c:910
 msgid "       --no-glob                   turn off FTP file name globbing\n"
 msgstr ""
 "       --no-glob                   skru av bruk av jokertegn i FTP-filnavn\n"
 
-#: src/main.c:910
+#: src/main.c:912
 msgid ""
 "       --no-passive-ftp            disable the \"passive\" transfer mode\n"
 msgstr "       --no-passive-ftp            slå av «passiv» overføringsmodus\n"
 
-#: src/main.c:912
+#: src/main.c:914
 msgid "       --preserve-permissions      preserve remote file permissions\n"
 msgstr ""
 "       --preserve-permissions      behold tjenerens oppsett av "
 "filtillatelser\n"
 
-#: src/main.c:914
+#: src/main.c:916
 msgid ""
 "       --retr-symlinks             when recursing, get linked-to files (not "
 "dir)\n"
@@ -2334,11 +2118,11 @@ msgstr ""
 "       --retr-symlinks             hent lenkemål (unntatt mapper) ved arbeid "
 "i mappehierarkier\n"
 
-#: src/main.c:919
+#: src/main.c:921
 msgid "FTPS options:\n"
 msgstr "FTPS-valg:\n"
 
-#: src/main.c:921
+#: src/main.c:923
 msgid ""
 "       --ftps-implicit                 use implicit FTPS (default port is "
 "990)\n"
@@ -2346,7 +2130,7 @@ msgstr ""
 "       --ftps-implicit                 bruk implisitt FTPS (standardport er "
 "990)\n"
 
-#: src/main.c:923
+#: src/main.c:925
 msgid ""
 "       --ftps-resume-ssl               resume the SSL/TLS session started in "
 "the control connection when\n"
@@ -2356,7 +2140,7 @@ msgstr ""
 "kontrolltilkobling ved åpning av\n"
 "                                         datatilkobling\n"
 
-#: src/main.c:926
+#: src/main.c:928
 msgid ""
 "       --ftps-clear-data-connection    cipher the control channel only; all "
 "the data will be in plaintext\n"
@@ -2364,7 +2148,7 @@ msgstr ""
 "       --ftps-clear-data-connection    bare krypter kontroll-kanalen (alle "
 "data sendes i form av ren tekst)\n"
 
-#: src/main.c:928
+#: src/main.c:930
 msgid ""
 "       --ftps-fallback-to-ftp          fall back to FTP if FTPS is not "
 "supported in the target server\n"
@@ -2372,11 +2156,11 @@ msgstr ""
 "       --ftps-fallback-to-ftp          bruk FTP hvis FTPS ikke støttes av "
 "tjeneren\n"
 
-#: src/main.c:932
+#: src/main.c:934
 msgid "WARC options:\n"
 msgstr "WARC-valg:\n"
 
-#: src/main.c:934
+#: src/main.c:936
 msgid ""
 "       --warc-file=FILENAME        save request/response data to a .warc.gz "
 "file\n"
@@ -2384,25 +2168,25 @@ msgstr ""
 "       --warc-file=FILNAVN         lagre foresp.-/svardata i en «.warc.gz»-"
 "fil\n"
 
-#: src/main.c:936
+#: src/main.c:938
 msgid ""
 "       --warc-header=STRING        insert STRING into the warcinfo record\n"
 msgstr ""
 "       --warc-header=STRENG        sett inn valgt STRENG i warcinfo-"
 "oppføringa\n"
 
-#: src/main.c:938
+#: src/main.c:940
 msgid ""
 "       --warc-max-size=NUMBER      set maximum size of WARC files to NUMBER\n"
 msgstr ""
 "       --warc-max-size=TALL        bruk valgt TALL som maksimal størrelse på "
 "WARC-filer\n"
 
-#: src/main.c:940
+#: src/main.c:942
 msgid "       --warc-cdx                  write CDX index files\n"
 msgstr "       --warc-cdx                  skriv CDX-indeksfiler\n"
 
-#: src/main.c:942
+#: src/main.c:944
 msgid ""
 "       --warc-dedup=FILENAME       do not store records listed in this CDX "
 "file\n"
@@ -2410,24 +2194,24 @@ msgstr ""
 "       --warc-dedup=FILNAVN        ikke lagre oppføringer som er oppført i "
 "denne CDX-fila\n"
 
-#: src/main.c:945
+#: src/main.c:947
 msgid ""
 "       --no-warc-compression       do not compress WARC files with GZIP\n"
 msgstr ""
 "       --no-warc-compression       ikke komprimer WARC-filer med GZIP\n"
 
-#: src/main.c:948
+#: src/main.c:950
 msgid "       --no-warc-digests           do not calculate SHA1 digests\n"
 msgstr "       --no-warc-digests           ikke beregn SHA1-kontrollsummer\n"
 
-#: src/main.c:950
+#: src/main.c:952
 msgid ""
 "       --no-warc-keep-log          do not store the log file in a WARC "
 "record\n"
 msgstr ""
 "       --no-warc-keep-log          ikke lagre loggfil i en WARC-oppføring\n"
 
-#: src/main.c:952
+#: src/main.c:954
 msgid ""
 "       --warc-tempdir=DIRECTORY    location for temporary files created by "
 "the\n"
@@ -2435,17 +2219,17 @@ msgid ""
 msgstr ""
 "       --warc-tempdir=MAPPE         plassering av midlertidige WARC-filer\n"
 
-#: src/main.c:957
+#: src/main.c:959
 msgid "Recursive download:\n"
 msgstr "Nedlasting av underliggende hierarki:\n"
 
-#: src/main.c:959
+#: src/main.c:961
 msgid "  -r,  --recursive                 specify recursive download\n"
 msgstr ""
 "  -r,  --recursive                 last ned underliggende filer og/eller "
 "mapper\n"
 
-#: src/main.c:961
+#: src/main.c:963
 msgid ""
 "  -l,  --level=NUMBER              maximum recursion depth (inf or 0 for "
 "infinite)\n"
@@ -2453,7 +2237,7 @@ msgstr ""
 "  -l,  --level=TALL              maksimal hierarkidybde (bruk «inf» eller 0 "
 "for ubegrenset)\n"
 
-#: src/main.c:963
+#: src/main.c:965
 msgid ""
 "       --delete-after              delete files locally after downloading "
 "them\n"
@@ -2461,7 +2245,7 @@ msgstr ""
 "       --delete-after              slett filer lokalt nå de er ferdig lastet "
 "ned\n"
 
-#: src/main.c:965
+#: src/main.c:967
 msgid ""
 "  -k,  --convert-links             make links in downloaded HTML or CSS "
 "point to\n"
@@ -2471,7 +2255,7 @@ msgstr ""
 "eller CSS-filer,\n"
 "                                     slik at de peker på lokale filer\n"
 
-#: src/main.c:968
+#: src/main.c:970
 msgid ""
 "       --convert-file-only         convert the file part of the URLs only "
 "(usually known as the basename)\n"
@@ -2479,7 +2263,7 @@ msgstr ""
 "       --convert-file-only         bare konverter fil-del av adresser "
 "(vanligvis kjent som basenavn eller «basename»)\n"
 
-#: src/main.c:970
+#: src/main.c:972
 msgid ""
 "       --backups=N                 before writing file X, rotate up to N "
 "backup files\n"
@@ -2487,7 +2271,7 @@ msgstr ""
 "       --backups=N                 rullér på N antall sikkerhetskopier før "
 "fil X lagres\n"
 
-#: src/main.c:974
+#: src/main.c:976
 msgid ""
 "  -K,  --backup-converted          before converting file X, back up as "
 "X_orig\n"
@@ -2495,7 +2279,7 @@ msgstr ""
 "  -K,  --backup-converted          sikkerhetskopier fil X som X_orig før den "
 "konverteres\n"
 
-#: src/main.c:977
+#: src/main.c:979
 msgid ""
 "  -K,  --backup-converted          before converting file X, back up as X."
 "orig\n"
@@ -2503,7 +2287,7 @@ msgstr ""
 "  -K,  --backup-converted          sikkerhetskopier fil X som X_orig før den "
 "konverteres\n"
 
-#: src/main.c:980
+#: src/main.c:982
 msgid ""
 "  -m,  --mirror                    shortcut for -N -r -l inf --no-remove-"
 "listing\n"
@@ -2511,7 +2295,7 @@ msgstr ""
 "  -m,  --mirror                    tilsvarer «-N -r -l inf --no-remove-"
 "listing»\n"
 
-#: src/main.c:982
+#: src/main.c:984
 msgid ""
 "  -p,  --page-requisites           get all images, etc. needed to display "
 "HTML page\n"
@@ -2519,7 +2303,7 @@ msgstr ""
 "  -p,  --page-requisites           hent alle bilder osv. som behøves for å "
 "vise aktuelle HTML-sider\n"
 
-#: src/main.c:984
+#: src/main.c:986
 msgid ""
 "       --strict-comments           turn on strict (SGML) handling of HTML "
 "comments\n"
@@ -2527,11 +2311,11 @@ msgstr ""
 "       --strict-comments           slå på streng håndtering av HTML-"
 "kommentarer (SGML)\n"
 
-#: src/main.c:988
+#: src/main.c:990
 msgid "Recursive accept/reject:\n"
 msgstr "Godkjenning/avvisning i hierarkier:\n"
 
-#: src/main.c:990
+#: src/main.c:992
 msgid ""
 "  -A,  --accept=LIST               comma-separated list of accepted "
 "extensions\n"
@@ -2539,7 +2323,7 @@ msgstr ""
 "  -A,  --accept=LISTE              kommaseparert liste over filetternavn som "
 "skal godtas\n"
 
-#: src/main.c:992
+#: src/main.c:994
 msgid ""
 "  -R,  --reject=LIST               comma-separated list of rejected "
 "extensions\n"
@@ -2547,45 +2331,45 @@ msgstr ""
 "  -R,  --reject=LISTE              kommaseparert liste over filetternavn som "
 "skal avvises\n"
 
-#: src/main.c:994
+#: src/main.c:996
 msgid "       --accept-regex=REGEX        regex matching accepted URLs\n"
 msgstr ""
 "       --accept-regex=REG.UTTR.   uttrykk for nettadresser som skal godtas\n"
 
-#: src/main.c:996
+#: src/main.c:998
 msgid "       --reject-regex=REGEX        regex matching rejected URLs\n"
 msgstr ""
 "       --reject-regex=REG.UTTR.    uttrykk for nettadresser som skal "
 "avvises\n"
 
-#: src/main.c:999
+#: src/main.c:1001
 msgid "       --regex-type=TYPE           regex type (posix|pcre)\n"
 msgstr "       --regex-type=TYPE           uttrykkstype (posix|pcre)\n"
 
-#: src/main.c:1002
+#: src/main.c:1004
 msgid "       --regex-type=TYPE           regex type (posix)\n"
 msgstr "       --regex-type=TYPE           uttrykkstype (posix)\n"
 
-#: src/main.c:1005
+#: src/main.c:1007
 msgid ""
 "  -D,  --domains=LIST              comma-separated list of accepted domains\n"
 msgstr ""
 "  -D,  --domains=LISTE             kommaseparert liste over domener som skal "
 "godtas\n"
 
-#: src/main.c:1007
+#: src/main.c:1009
 msgid ""
 "       --exclude-domains=LIST      comma-separated list of rejected domains\n"
 msgstr ""
 "       --exclude-domains=LISTE     kommaseparert liste over domener som skal "
 "avvises\n"
 
-#: src/main.c:1009
+#: src/main.c:1011
 msgid ""
 "       --follow-ftp                follow FTP links from HTML documents\n"
 msgstr "       --follow-ftp                følg FTP-lenker i HTML-dokumenter\n"
 
-#: src/main.c:1011
+#: src/main.c:1013
 msgid ""
 "       --follow-tags=LIST          comma-separated list of followed HTML "
 "tags\n"
@@ -2593,7 +2377,7 @@ msgstr ""
 "       --follow-tags=LISTE         kommaseparert liste over HTML-tagger som "
 "skal følges\n"
 
-#: src/main.c:1013
+#: src/main.c:1015
 msgid ""
 "       --ignore-tags=LIST          comma-separated list of ignored HTML "
 "tags\n"
@@ -2601,21 +2385,21 @@ msgstr ""
 "       --ignore-tags=LISTE         kommaseparert liste over HTML-tagger som "
 "skal ignoreres\n"
 
-#: src/main.c:1015
+#: src/main.c:1017
 msgid "  -H,  --span-hosts                go to foreign hosts when recursive\n"
 msgstr ""
 "  -H,  --span-hosts                følg hierarkiske stier som leder til "
 "tredjepartsvert\n"
 
-#: src/main.c:1017
+#: src/main.c:1019
 msgid "  -L,  --relative                  follow relative links only\n"
 msgstr "  -L,  --relative                  bare følg relative lenker\n"
 
-#: src/main.c:1019
+#: src/main.c:1021
 msgid "  -I,  --include-directories=LIST  list of allowed directories\n"
 msgstr "  -I,  --include-directories=LISTE liste over mapper som skal godtas\n"
 
-#: src/main.c:1021
+#: src/main.c:1023
 msgid ""
 "       --trust-server-names        use the name specified by the "
 "redirection\n"
@@ -2624,90 +2408,88 @@ msgstr ""
 "       --trust-server-names        bruk navn fra siste del av "
 "videresendingsadressen\n"
 
-#: src/main.c:1024
+#: src/main.c:1026
 msgid "  -X,  --exclude-directories=LIST  list of excluded directories\n"
 msgstr ""
 "  -X,  --exclude-directories=LISTE liste over mapper som skal utelukkes\n"
 
-#: src/main.c:1026
+#: src/main.c:1028
 msgid ""
 "  -np, --no-parent                 don't ascend to the parent directory\n"
 msgstr "  -np, --no-parent                 ikke gå opp til foreldermappa\n"
 
-#: src/main.c:1029
-msgid "Email bug reports, questions, discussions to <bug-wget@gnu.org>\n"
-msgstr "Send feilrapporter, spørsmål og diskusjoner til <bug-wget@gnu.org>\n"
-
-#: src/main.c:1030
+#: src/main.c:1031
+#, fuzzy
 msgid ""
+"Email bug reports, questions, discussions to <bug-wget@gnu.org>\n"
 "and/or open issues at https://savannah.gnu.org/bugs/?"
 "func=additem&group=wget.\n"
 msgstr ""
 "og/eller send inn problemrapporter på https://savannah.gnu.org/bugs/?"
 "func=additem&group=wget.\n"
 
-#: src/main.c:1035
+#: src/main.c:1037
 #, c-format
 msgid "GNU Wget %s, a non-interactive network retriever.\n"
 msgstr "GNU Wget %s, et ikke-interaktivt nedlastingsverktøy.\n"
 
-#: src/main.c:1078
+#: src/main.c:1080
 #, c-format
 msgid "Password for user %s: "
 msgstr "Passord for %s: "
 
-#: src/main.c:1080
+#: src/main.c:1082
 #, c-format
 msgid "Password: "
 msgstr "Passord: "
 
-#: src/main.c:1104
+#: src/main.c:1106
 #, c-format
 msgid "Cannot create pipe\n"
 msgstr "Klarte ikke å lage datarør\n"
 
-#: src/main.c:1112
+#: src/main.c:1114
 #, c-format
 msgid "Error initializing spawn file actions for use-askpass: %d\n"
 msgstr "Feil under oppstart av filhandlinger for use-askpass: %d\n"
 
-#: src/main.c:1121
+#: src/main.c:1123
 #, c-format
 msgid "Error setting spawn file actions for use-askpass: %d\n"
 msgstr "Feil under oppsett av filhandlinger for use-askpass: %d\n"
 
-#: src/main.c:1145
+#: src/main.c:1147
 #, c-format
 msgid "Error reading response from command \"%s %s\": %s\n"
 msgstr "Feil under lesing av kommandosvar «%s %s»: %s\n"
 
-#: src/main.c:1168
+#: src/main.c:1170
 #, c-format
 msgid "Username for '%s%s': "
 msgstr "Brukernavn for «%s%s»: "
 
-#: src/main.c:1178
+#: src/main.c:1180
 #, c-format
 msgid "Password for '%s%s@%s': "
 msgstr "Passord «%s%s@%s»: "
 
-#: src/main.c:1250
+#: src/main.c:1252
 msgid "Wgetrc: "
 msgstr "Wgetrc: "
 
-#: src/main.c:1251
+#: src/main.c:1253
 msgid "Locale: "
 msgstr "Region: "
 
-#: src/main.c:1252
+#: src/main.c:1254
 msgid "Compile: "
 msgstr "Kompilering: "
 
-#: src/main.c:1253
+#: src/main.c:1255
 msgid "Link: "
 msgstr "Lenke: "
 
-#: src/main.c:1257
+#: src/main.c:1259
 #, c-format
 msgid ""
 "GNU Wget %s built on %s.\n"
@@ -2716,29 +2498,29 @@ msgstr ""
 "GNU Wget %s bygget %s.\n"
 "\n"
 
-#: src/main.c:1284
+#: src/main.c:1292
 #, c-format
 msgid "    %s (env)\n"
 msgstr "    %s (miljø)\n"
 
-#: src/main.c:1291
+#: src/main.c:1299
 #, c-format
 msgid "    %s (user)\n"
 msgstr "    %s (bruker)\n"
 
-#: src/main.c:1296
+#: src/main.c:1304
 #, c-format
 msgid "    %s (system)\n"
 msgstr "    %s (system)\n"
 
 #. TRANSLATORS: When available, an actual copyright character
 #. (circle-c) should be used in preference to "(C)".
-#: src/main.c:1324
+#: src/main.c:1332
 #, c-format
 msgid "Copyright (C) %s Free Software Foundation, Inc.\n"
 msgstr "Opphavsrett (C) %s Free Software Foundation, Inc.\n"
 
-#: src/main.c:1327
+#: src/main.c:1335
 msgid ""
 "License GPLv3+: GNU GPL version 3 or later\n"
 "<http://www.gnu.org/licenses/gpl.html>.\n"
@@ -2753,7 +2535,7 @@ msgstr ""
 
 #. TRANSLATORS: When available, please use the proper diacritics for
 #. names such as this one. See en_US.po for reference.
-#: src/main.c:1335
+#: src/main.c:1343
 msgid ""
 "\n"
 "Originally written by Hrvoje Niksic <hniksic@xemacs.org>.\n"
@@ -2761,36 +2543,36 @@ msgstr ""
 "\n"
 "Opprinnelig skrevet av Hrvoje Niksic <hniksic@xemacs.org>.\n"
 
-#: src/main.c:1338
+#: src/main.c:1346
 msgid "Please send bug reports and questions to <bug-wget@gnu.org>.\n"
 msgstr "Send feilrapporter og spørsmål til<bug-wget@gnu.org>.\n"
 
-#: src/main.c:1391 src/main.c:1940
+#: src/main.c:1399
 #, c-format
 msgid "Memory allocation problem\n"
 msgstr "Minnetidelingsfeil\n"
 
-#: src/main.c:1442
+#: src/main.c:1450
 #, c-format
 msgid "Exiting due to error in %s\n"
 msgstr "Avslutter på grunn av problemer med %s\n"
 
-#: src/main.c:1472 src/main.c:1543 src/main.c:1779
+#: src/main.c:1480 src/main.c:1551 src/main.c:1793
 #, c-format
 msgid "Try `%s --help' for more options.\n"
 msgstr "Prøv «%s --help» for flere valg.\n"
 
-#: src/main.c:1539
+#: src/main.c:1547
 #, c-format
 msgid "%s: illegal option -- `-n%c'\n"
 msgstr "%s: «-n%c» er et ugyldig valg\n"
 
-#: src/main.c:1585
+#: src/main.c:1593
 #, c-format
 msgid "Debugging support not compiled in. Ignoring --debug flag.\n"
 msgstr "Feilsøkingsstøtte er ikke innebygd. Valget «--debug» ignoreres.\n"
 
-#: src/main.c:1598
+#: src/main.c:1606
 #, c-format
 msgid ""
 "Both --no-clobber and --convert-links were specified, only --convert-links "
@@ -2799,7 +2581,7 @@ msgstr ""
 "Du har valgt både «--no-clobber» og «--convert-links». Det er bare «--"
 "convert-links» som blir brukt.\n"
 
-#: src/main.c:1600
+#: src/main.c:1608
 #, c-format
 msgid ""
 "Both --no-clobber and --convert-file-only were specified, only --convert-"
@@ -2808,23 +2590,23 @@ msgstr ""
 "Du har valgt både «--no-clobber» og «--convert-file-only». Kun sistnevnt "
 "blir brukt.\n"
 
-#: src/main.c:1633
+#: src/main.c:1641
 #, c-format
 msgid "Can't be verbose and quiet at the same time.\n"
 msgstr "Du kan ikke velge både stille- og detaljert modus samtidig.\n"
 
-#: src/main.c:1639
+#: src/main.c:1647
 #, c-format
 msgid "Can't timestamp and not clobber old files at the same time.\n"
 msgstr ""
 "Du kan ikke velge både tidsstempling og ryddighold av gamle filer samtidig.\n"
 
-#: src/main.c:1648
+#: src/main.c:1656
 #, c-format
 msgid "Cannot specify both --inet4-only and --inet6-only.\n"
 msgstr "Du kan ikke velge både «--inet4-only» og «--inet6-only» samtidig.\n"
 
-#: src/main.c:1658
+#: src/main.c:1666
 msgid ""
 "Cannot specify both -k or --convert-file-only and -O if multiple URLs are "
 "given, or in combination\n"
@@ -2836,7 +2618,7 @@ msgstr ""
 "«-p» eller «-r» er valgt. Se bruksanvisning for mer info.\n"
 "\n"
 
-#: src/main.c:1667
+#: src/main.c:1675
 msgid ""
 "WARNING: combining -O with -r or -p will mean that all downloaded content\n"
 "will be placed in the single file you specified.\n"
@@ -2847,7 +2629,7 @@ msgstr ""
 "legges i den ene fila du valgte.\n"
 "\n"
 
-#: src/main.c:1673
+#: src/main.c:1681
 msgid ""
 "WARNING: timestamping does nothing in combination with -O. See the manual\n"
 "for details.\n"
@@ -2857,7 +2639,7 @@ msgstr ""
 "Les bruksanvisninga for ytterligere info.\n"
 "\n"
 
-#: src/main.c:1693
+#: src/main.c:1701
 #, c-format
 msgid ""
 "WARC output does not work with --no-clobber, --no-clobber will be disabled.\n"
@@ -2865,7 +2647,7 @@ msgstr ""
 "WARC-utdata fungerer ikke i kombinasjon med «--no-clobber». «--no-clobber» "
 "blir derfor slått av.\n"
 
-#: src/main.c:1700
+#: src/main.c:1708
 #, c-format
 msgid ""
 "WARC output does not work with timestamping, timestamping will be disabled.\n"
@@ -2873,12 +2655,12 @@ msgstr ""
 "WARC-utdata fungerer ikke i kombinasjon med tidsstempling. Tidsstempling "
 "blir derfor slått av.\n"
 
-#: src/main.c:1707
+#: src/main.c:1715
 #, c-format
 msgid "WARC output does not work with --spider.\n"
 msgstr "WARC-utdata fungerer ikke i kombinasjon med «--spider».\n"
 
-#: src/main.c:1713
+#: src/main.c:1721
 #, c-format
 msgid ""
 "WARC output does not work with --continue or --start-pos, they will be "
@@ -2887,7 +2669,7 @@ msgstr ""
 "WARC-utdata fungerer ikke i kombinasjon med «--continue». Begge deler blir "
 "derfor slått av.\n"
 
-#: src/main.c:1721
+#: src/main.c:1729
 #, c-format
 msgid ""
 "Digests are disabled; WARC deduplication will not find duplicate records.\n"
@@ -2895,7 +2677,7 @@ msgstr ""
 "Kontrollsummering er slått av. WARCs anti-duplikatverktøy er ute av stand "
 "til å finne duplikater.\n"
 
-#: src/main.c:1742
+#: src/main.c:1750
 #, c-format
 msgid ""
 "Compression does not work with --continue or --start-pos, they will be "
@@ -2904,12 +2686,19 @@ msgstr ""
 "Komprimering fungerer ikke med «--continue» eller «--start-pos». Begge deler "
 "blir derfor slått av.\n"
 
-#: src/main.c:1753
+#: src/main.c:1761
 #, c-format
 msgid "Cannot specify both --ask-password and --password.\n"
 msgstr "Du kan ikke bruke både «--ask-password» og «--password» samtidig.\n"
 
-#: src/main.c:1761
+#: src/main.c:1769
+#, c-format
+msgid ""
+"WARNING: No username set with --ask-password. This is usually not what you "
+"want.\n"
+msgstr ""
+
+#: src/main.c:1775
 #, c-format
 msgid ""
 "Specifying both --start-pos and --continue is not recommended; --continue "
@@ -2918,17 +2707,17 @@ msgstr ""
 "Bruk av «--start-pos» og «--continue» samtidig anbefales ikke. «--continue» "
 "blir derofr slått av.\n"
 
-#: src/main.c:1774
+#: src/main.c:1788
 #, c-format
 msgid "%s: missing URL\n"
 msgstr "%s: nettadresse mangler\n"
 
-#: src/main.c:1822
+#: src/main.c:1836
 #, c-format
 msgid "You cannot specify both --post-data and --post-file.\n"
 msgstr "Du kan ikke bruke både «--post-data» og «--post-file» samtidig.\n"
 
-#: src/main.c:1827
+#: src/main.c:1841
 #, c-format
 msgid ""
 "You cannot use --post-data or --post-file along with --method. --method "
@@ -2937,7 +2726,7 @@ msgstr ""
 "«--post-data» og «--post-file» kan ikke brukes i kombinasjon med «--method». "
 "Sistnevnte forventer data via valgene «--body-data» og «--body-file»\n"
 
-#: src/main.c:1836
+#: src/main.c:1850
 #, c-format
 msgid ""
 "You must specify a method through --method=HTTPMethod to use with --body-"
@@ -2946,17 +2735,17 @@ msgstr ""
 "Valgene «--body-data» eller «--body-file» krever at du velger «--method=HTTP-"
 "METODE» .\n"
 
-#: src/main.c:1842
+#: src/main.c:1856
 #, c-format
 msgid "You cannot specify both --body-data and --body-file.\n"
 msgstr "Du kan ikke bruke både «--body-data» og «--body-file».\n"
 
-#: src/main.c:1894
+#: src/main.c:1908
 #, c-format
 msgid "This version does not have support for IRIs\n"
 msgstr "Denne versjonen støtter ikke IRI-er\n"
 
-#: src/main.c:2006
+#: src/main.c:2003
 #, c-format
 msgid ""
 "-k or -r can be used together with -O only if outputting to a regular file.\n"
@@ -2964,7 +2753,7 @@ msgstr ""
 "Valgene «-k» og «-r» kan bare brukes samtidig med «-O» hvis utdata er en "
 "vanlig fil.\n"
 
-#: src/main.c:2012
+#: src/main.c:2009
 #, c-format
 msgid ""
 "--convert-links or --convert-file-only can be used together only if "
@@ -2973,42 +2762,42 @@ msgstr ""
 "valgene «--convert-links» og «--convert-file-only» kan bare brukes samtidig "
 "hvis utdata er en vanlig fil.\n"
 
-#: src/main.c:2023
+#: src/main.c:2020
 #, c-format
 msgid "Failed to init libcares\n"
 msgstr "Klarte ikke å starte libcares\n"
 
-#: src/main.c:2029
+#: src/main.c:2026
 #, c-format
 msgid "Failed to init c-ares channel\n"
 msgstr "Klarte ikke å starte «c-ares»-kanal\n"
 
-#: src/main.c:2052
+#: src/main.c:2049
 #, c-format
 msgid "Failed to parse IP address '%s'\n"
 msgstr "Klarte ikke å tolke IP-adresse «%s»\n"
 
-#: src/main.c:2063
+#: src/main.c:2060
 #, c-format
 msgid "Failed to set DNS server(s) '%s' (%d)\n"
 msgstr "Klarte ikke å endre DNS-tjener(e) «%s» (%d)\n"
 
-#: src/main.c:2191
+#: src/main.c:2197
 #, c-format
 msgid "No URLs found in %s.\n"
 msgstr "Fant ingen nettadresser i %s.\n"
 
-#: src/main.c:2207
+#: src/main.c:2213
 #, c-format
 msgid "Unable to parse metalink file %s.\n"
 msgstr "Klarte ikke å lese metalink-fila %s.\n"
 
-#: src/main.c:2237 src/metalink.c:337
+#: src/main.c:2243 src/metalink.c:337
 #, c-format
 msgid "Could not download all resources from %s.\n"
 msgstr "Klarte ikke å laste ned alle ressurser fra %s.\n"
 
-#: src/main.c:2264
+#: src/main.c:2270
 #, c-format
 msgid ""
 "FINISHED --%s--\n"
@@ -3019,7 +2808,7 @@ msgstr ""
 "Totalt medgått tid: %s\n"
 "Lastet ned: %d filer, %s på %s (%s)\n"
 
-#: src/main.c:2278
+#: src/main.c:2284
 #, c-format
 msgid "Download quota of %s EXCEEDED!\n"
 msgstr "Nedlastingsgrense på %s OVERSKREDET!\n"
@@ -3185,7 +2974,7 @@ msgstr "Fortsetter i bakgrunnen.\n"
 msgid "Continuing in background, pid %lu.\n"
 msgstr "Fortsetter i bakgrunnen med PID %lu.\n"
 
-#: src/mswindows.c:291 src/utils.c:508
+#: src/mswindows.c:291 src/utils.c:509
 #, c-format
 msgid "Output will be written to %s.\n"
 msgstr "Utdata blir skrevet til %s.\n"
@@ -3210,86 +2999,94 @@ msgstr "%s: Fant ingen brukbar sokkeldriver.\n"
 msgid "ioctl() failed.  The socket could not be set as blocking.\n"
 msgstr "ioctl() mislyktes. Klarte ikke å sette opp sokkelen som blokkering.\n"
 
-#: src/netrc.c:371
+#: src/netrc.c:373
 #, c-format
 msgid "%s: %s:%d: warning: %s token appears before any machine name\n"
 msgstr "%s: %s:%d: advarsel: symbolet %s dukker opp før maskinnavn\n"
 
-#: src/netrc.c:412
+#: src/netrc.c:414
 #, c-format
 msgid "%s: %s:%d: unknown token \"%s\"\n"
 msgstr "%s: %s:%d: «%s» er et ukjent symbol\n"
 
-#: src/netrc.c:496
+#: src/netrc.c:500
 #, c-format
 msgid "Usage: %s NETRC [HOSTNAME]\n"
 msgstr "Bruk: %s NETRC [VERTSNAVN]\n"
 
-#: src/netrc.c:514
+#: src/netrc.c:518
 #, c-format
 msgid "%s: cannot stat %s: %s\n"
 msgstr "%s: klarte ikke å lage statistikk av %s: %s\n"
 
-#: src/openssl.c:114
+#: src/openssl.c:128
 msgid "WARNING: using a weak random seed.\n"
 msgstr "ADVARSEL: du bruker en svak kilde for vilkårlighetsdata.\n"
 
-#: src/openssl.c:192
+#: src/openssl.c:208
 msgid "Could not seed PRNG; consider using --random-file.\n"
 msgstr ""
 "Klarte ikke å bruke tilfeldighetsdata med PRNG. Du bør vurdere å bruke "
 "valget «--random-file».\n"
 
-#: src/openssl.c:267
+#: src/openssl.c:271
 msgid "Your OpenSSL version is too old to support TLS 1.3\n"
 msgstr "Installert OpenSSL-versjon er for gammel til å støtte TLSv1.3\n"
 
-#: src/openssl.c:273
+#: src/openssl.c:277
 msgid "Your OpenSSL version is too old to support TLSv1.1\n"
 msgstr "Installert OpenSSL-versjon er for gammel til å støtte TLSv1.1\n"
 
-#: src/openssl.c:277
+#: src/openssl.c:281
 msgid "Your OpenSSL version is too old to support TLSv1.2\n"
 msgstr "Installert OpenSSL-versjon er for gammel til å støtte TLSv1.2\n"
 
-#: src/openssl.c:283
+#: src/openssl.c:287
 #, c-format
 msgid "OpenSSL: unimplemented 'secure-protocol' option value %d\n"
 msgstr "OpenSSL: verdi %d er ikke implementert for valget «secure-protocol»\n"
 
-#: src/openssl.c:323
+#: src/openssl.c:333
 #, c-format
 msgid "OpenSSL: Invalid cipher list: %s\n"
 msgstr "OpenSSL: Ugyldig algoritmeliste: %s\n"
 
-#: src/openssl.c:640
+#: src/openssl.c:360
+msgid "OpenSSL: Failed set trust to partial chain\n"
+msgstr ""
+
+#: src/openssl.c:366
+msgid "OpenSSL: Failed to allocate verification param\n"
+msgstr ""
+
+#: src/openssl.c:844
 msgid "WARNING: Could not seed PRNG. Consider using --random-file.\n"
 msgstr ""
 "Klarte ikke å bruke hente data fra PRNG. Du bør vurdere å bruke valget «--"
 "random-file».\n"
 
-#: src/openssl.c:860
+#: src/openssl.c:1064
 #, c-format
 msgid "%s: cannot verify %s's certificate, issued by %s:\n"
 msgstr "%s: sertifikat for %s (utgitt av %s) kunne ikke bekreftes.\n"
 
-#: src/openssl.c:871
+#: src/openssl.c:1075
 msgid "  Unable to locally verify the issuer's authority.\n"
 msgstr "  Klarte ikke å bekrefte utgiverens autoritet lokalt.\n"
 
-#: src/openssl.c:876
+#: src/openssl.c:1080
 msgid "  Self-signed certificate encountered.\n"
 msgstr "  Mottok selvgenerert sertifikat.\n"
 
-#: src/openssl.c:879
+#: src/openssl.c:1083
 msgid "  Issued certificate not yet valid.\n"
 msgstr "  Mottatt sertifikat er ikke gyldig ennå.\n"
 
-#: src/openssl.c:882
+#: src/openssl.c:1086
 msgid "  Issued certificate has expired.\n"
 msgstr "  Mottatt sertifikat er utgått.\n"
 
-#: src/openssl.c:970
+#: src/openssl.c:1174
 #, c-format
 msgid ""
 "%s: no certificate subject alternative name matches\n"
@@ -3298,14 +3095,14 @@ msgstr ""
 "%s: ingen alternative navn på sertifikatsubjektet\n"
 "\tsamsvarer med vertsnavn %s.\n"
 
-#: src/openssl.c:989
+#: src/openssl.c:1193
 #, c-format
 msgid ""
 "    %s: certificate common name %s doesn't match requested host name %s.\n"
 msgstr ""
 "    %s: sertifikatnavnet %s samsvarer ikke med forespurt vertsnavn %s.\n"
 
-#: src/openssl.c:1021
+#: src/openssl.c:1225
 #, c-format
 msgid ""
 "    %s: certificate common name is invalid (contains a NUL character).\n"
@@ -3316,12 +3113,12 @@ msgstr ""
 "    Dette kan bety at verten ikke er den den utgir seg for å være\n"
 "    (tjeneren er altså ikke den egentlige %s).\n"
 
-#: src/openssl.c:1046
+#: src/openssl.c:1250
 #, c-format
 msgid "To connect to %s insecurely, use `--no-check-certificate'.\n"
 msgstr "Bruk «--no-check-certificate» for å koble til %s uten sikkerhet.\n"
 
-#: src/progress.c:244
+#: src/progress.c:260
 #, c-format
 msgid ""
 "\n"
@@ -3330,57 +3127,61 @@ msgstr ""
 "\n"
 "%*s[ hopper over %sK ]"
 
-#: src/progress.c:465
+#: src/progress.c:545
 #, c-format
 msgid "Invalid dot style specification %s; leaving unchanged.\n"
 msgstr "%s er en ugyldig punktstil-spesifikasjon. Lar den stå uendret.\n"
 
 #. TRANSLATORS: "ETA" is English-centric, but this must
 #. be short, ideally 3 chars.  Abbreviate if necessary.
-#: src/progress.c:857
+#: src/progress.c:1006
 #, c-format
 msgid "    eta %s"
 msgstr "    eta %s"
 
-#: src/progress.c:1147
+#. TRANSLATORS: The meaning is "elapsed time", and it is shown
+#. * next to the progress bar once the download is done.
+#. * This should not take up more room than
+#. * available here (6 columns).  Abbreviate if necessary.
+#: src/progress.c:1312
 msgid "    in "
 msgstr "    på "
 
-#: src/ptimer.c:157
+#: src/ptimer.c:158
 #, c-format
 msgid "Cannot get REALTIME clock frequency: %s\n"
 msgstr "Klarte ikke å hente klokkefrekvensen for REALTIME. %s\n"
 
-#: src/recur.c:512
+#: src/recur.c:513
 #, c-format
 msgid "Removing %s since it should be rejected.\n"
 msgstr "Fjerner %s, fordi den skal avvises.\n"
 
 #: src/res.c:394
-#, c-format
-msgid "Cannot open %s: %s"
+#, fuzzy, c-format
+msgid "Cannot open %s: %s\n"
 msgstr "Klarte ikke å åpne %s. %s"
 
-#: src/res.c:553
+#: src/res.c:556
 msgid "Loading robots.txt; please ignore errors.\n"
 msgstr "Laster inn «robots.txt». Ignorer feilmeldinger.\n"
 
-#: src/retr.c:928
+#: src/retr.c:934
 #, c-format
 msgid "Error parsing proxy URL %s: %s.\n"
 msgstr "Feil ved tolkning av nettadressen %s: %s.\n"
 
-#: src/retr.c:940
+#: src/retr.c:948
 #, c-format
 msgid "Error in proxy URL %s: Must be HTTP.\n"
 msgstr "Feil i mellomtjeneradressen %s. Denne må være HTTP.\n"
 
-#: src/retr.c:1069
+#: src/retr.c:1079
 #, c-format
 msgid "%d redirections exceeded.\n"
 msgstr "%d videresendinger overskredet.\n"
 
-#: src/retr.c:1333
+#: src/retr.c:1341
 msgid ""
 "Giving up.\n"
 "\n"
@@ -3388,7 +3189,7 @@ msgstr ""
 "Gir opp.\n"
 "\n"
 
-#: src/retr.c:1333
+#: src/retr.c:1341
 msgid ""
 "Retrying.\n"
 "\n"
@@ -3396,7 +3197,7 @@ msgstr ""
 "Prøver på nytt.\n"
 "\n"
 
-#: src/spider.c:75
+#: src/spider.c:77
 msgid ""
 "Found no broken links.\n"
 "\n"
@@ -3404,7 +3205,7 @@ msgstr ""
 "Fant ingen ødelagte lenker.\n"
 "\n"
 
-#: src/spider.c:82
+#: src/spider.c:84
 #, c-format
 msgid ""
 "Found %d broken link.\n"
@@ -3419,149 +3220,159 @@ msgstr[1] ""
 "Fant %d ødelagte lenker.\n"
 "\n"
 
-#: src/url.c:674
+#: src/url.c:675
 msgid "No error"
 msgstr "Ingen feilmelding"
 
-#: src/url.c:676
+#: src/url.c:677
 #, c-format
 msgid "Unsupported scheme %s"
 msgstr "Skjemaet %s støttes ikke"
 
-#: src/url.c:678
+#: src/url.c:679
 msgid "Scheme missing"
 msgstr "Skjema mangler"
 
-#: src/url.c:680
+#: src/url.c:681
 msgid "Invalid host name"
 msgstr "Ugyldig vertsnavn"
 
-#: src/url.c:682
+#: src/url.c:683
 msgid "Bad port number"
 msgstr "Ugyldig portnummer"
 
-#: src/url.c:684
+#: src/url.c:685
 msgid "Invalid user name"
 msgstr "Ugyldig brukernavn"
 
-#: src/url.c:686
+#: src/url.c:687
 msgid "Unterminated IPv6 numeric address"
 msgstr "Ufullstendig IPv6-adresse"
 
-#: src/url.c:688
+#: src/url.c:689
 msgid "IPv6 addresses not supported"
 msgstr "IPv6-adresser støttes ikke"
 
-#: src/url.c:690
+#: src/url.c:691
 msgid "Invalid IPv6 numeric address"
 msgstr "Ugyldig IPv6-adresse"
 
-#: src/url.c:1006
+#: src/url.c:1007
 msgid "HTTPS support not compiled in"
 msgstr "HTTPS-støtte er ikke innebygget i denne versjonen"
 
-#: src/url.c:1603
+#: src/url.c:1620
 msgid "Unconvertable multibyte sequence encountered\n"
 msgstr "Fant multibyte-sekvens som ikke lar seg konvertere\n"
 
-#: src/utils.c:128
+#: src/utils.c:129
 #, c-format
 msgid "%s: %s: Failed to allocate enough memory; memory exhausted.\n"
 msgstr "%s: %s: Klarte ikke å tildele nok minne. Minnet er fullt.\n"
 
-#: src/utils.c:134
+#: src/utils.c:135
 #, c-format
 msgid "%s: %s: Failed to allocate %ld bytes; memory exhausted.\n"
 msgstr "%s: %s: Klarte ikke å tildele %ld byte. Minnet er fullt.\n"
 
-#: src/utils.c:354
+#: src/utils.c:355
 #, c-format
 msgid "%s: aprintf: text buffer is too big (%d bytes), aborting.\n"
 msgstr "%s: aprintf: mellomlager for tekst er for stort (%d byte). Avbryter.\n"
 
-#: src/utils.c:506
+#: src/utils.c:507
 #, c-format
 msgid "Continuing in background, pid %d.\n"
 msgstr "Fortsetter i bakgrunnen med PID %d.\n"
 
-#: src/utils.c:557
+#: src/utils.c:558
 #, c-format
 msgid "Failed to unlink symlink %s: %s\n"
 msgstr "Klarte ikke å fjerne lenke fra den symbolsk lenka %s. %s\n"
 
-#: src/utils.c:865
+#: src/utils.c:879
 #, c-format
 msgid "Failed to Fopen file %s\n"
 msgstr "Klarte ikke å utføre Fopen på fil %s\n"
 
-#: src/utils.c:871
+#: src/utils.c:885
 #, c-format
 msgid "Failed to get FD for file %s\n"
 msgstr "Klarte ikke å hente FD for fil %s\n"
 
-#: src/utils.c:878
+#: src/utils.c:892
 #, c-format
 msgid "Failed to stat file %s, (check permissions)\n"
 msgstr "Klarte ikke å hente info om fil %s, (kontroller tillatelser)\n"
 
-#: src/utils.c:888
-#, c-format
-msgid "File %s changed since the last check. Security check failed."
+#: src/utils.c:902
+#, fuzzy, c-format
+msgid "File %s changed since the last check. Security check failed.\n"
 msgstr ""
 "Fila %s er blitt changed siden forrige sjekk. Sikkerhetskontroll mislyktes."
 
-#: src/utils.c:923
+#: src/utils.c:937
 #, c-format
 msgid "Failed to open file %s, reason :%s\n"
 msgstr "Klarte ikke å åpne fil %s. Årsak :%s\n"
 
-#: src/utils.c:929
+#: src/utils.c:943
 #, c-format
 msgid "Failed to stat file %s, error: %s\n"
 msgstr "Klarte ikke å hente info om fil %s. Feil: %s\n"
 
-#: src/utils.c:939
-#, c-format
+#: src/utils.c:953
+#, fuzzy, c-format
 msgid ""
 "Trying to open file %s but it changed since last check. Security check "
-"failed."
+"failed.\n"
 msgstr ""
 "Prøver å åpne fila %s, men den er blitt endret siden forrige sjekk. "
 "Sikkerhetskontroll mislyktes."
 
-#: src/utils.c:2445
+#: src/utils.c:2442
 #, c-format
 msgid "Invalid regular expression %s, PCRE2 error %d\n"
 msgstr "Regulært uttrykk %s er ugyldig. PCRE2-feil %d\n"
 
-#: src/utils.c:2462 src/utils.c:2485
+#: src/utils.c:2459 src/utils.c:2482
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
 msgstr "%s er et ugyldig regulært uttrykk. %s\n"
 
-#: src/utils.c:2515 src/utils.c:2537 src/utils.c:2561
+#: src/utils.c:2512 src/utils.c:2534 src/utils.c:2558
 #, c-format
 msgid "Error while matching %s: %d\n"
 msgstr "Feil ved bruk av %s: %d\n"
 
-#: src/utils.c:2854
+#: src/utils.c:2851
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
 msgstr "Hopper over nøkkel med feil størrelse (%d/%d): %s\n"
 
-#: src/warc.c:222
+#: src/warc.c:217
+#, fuzzy
+msgid "Error setting WARC file position.\n"
+msgstr "Feil ved åpning av WARC-fil %s.\n"
+
+#: src/warc.c:224
+#, fuzzy
+msgid "Error flushing WARC file to disk.\n"
+msgstr "Feil ved åpning av WARC-fil %s.\n"
+
+#: src/warc.c:234
 msgid "Error duplicating WARC file file descriptor.\n"
 msgstr "Klarte ikke å duplisere fildeskriptor for WARC-fil.\n"
 
-#: src/warc.c:233
+#: src/warc.c:245
 msgid "Error opening GZIP stream to WARC file.\n"
 msgstr "Feil ved åpning av GZIP-strøm til WARC-fil.\n"
 
-#: src/warc.c:809
+#: src/warc.c:830
 msgid "Error writing warcinfo record to WARC file.\n"
 msgstr "Feil ved skriving av warcinfo-oppføring til WARC-file.\n"
 
-#: src/warc.c:872
+#: src/warc.c:893
 #, c-format
 msgid ""
 "Opening WARC file %s.\n"
@@ -3570,26 +3381,26 @@ msgstr ""
 "Åpner WARC-fil %s.\n"
 "\n"
 
-#: src/warc.c:878
+#: src/warc.c:899
 #, c-format
 msgid "Error opening WARC file %s.\n"
 msgstr "Feil ved åpning av WARC-fil %s.\n"
 
-#: src/warc.c:1075
+#: src/warc.c:1095
 msgid "CDX file does not list original urls. (Missing column 'a'.)\n"
 msgstr ""
 "CDX-fil inneholder ikke originale nettadresser (kolonne «a» mangler).\n"
 
-#: src/warc.c:1078
+#: src/warc.c:1098
 msgid "CDX file does not list checksums. (Missing column 'k'.)\n"
 msgstr "CDX-fil inneholder ikke kontrollsummer (kolonne «k» mangler).\n"
 
-#: src/warc.c:1081
+#: src/warc.c:1101
 msgid "CDX file does not list record ids. (Missing column 'u'.)\n"
 msgstr ""
 "CDX-fil- inneholder ikke ID-er for oppføringer (kolonne «u» mangler).\n"
 
-#: src/warc.c:1105
+#: src/warc.c:1125
 #, c-format
 msgid ""
 "Loaded %d record from CDX.\n"
@@ -3604,36 +3415,209 @@ msgstr[1] ""
 "Lastet inn %d oppføringer fra CDX.\n"
 "\n"
 
-#: src/warc.c:1151
+#: src/warc.c:1171
 #, c-format
 msgid "Could not read CDX file %s for deduplication.\n"
 msgstr "Klarte ikke å lese CDX-fila %s for å se etter duplikater.\n"
 
-#: src/warc.c:1161
+#: src/warc.c:1181
 msgid "Could not open temporary WARC manifest file.\n"
 msgstr "Klarte ikke å åpne midlertidig WARC-manifestfil.\n"
 
-#: src/warc.c:1171
+#: src/warc.c:1191
 msgid "Could not open temporary WARC log file.\n"
 msgstr "Klarte ikke å åpne midlertidig WARC-loggfil.\n"
 
-#: src/warc.c:1180
+#: src/warc.c:1200
 msgid "Could not open WARC file.\n"
 msgstr "Klarte ikke å åpne WARC-fil.\n"
 
-#: src/warc.c:1189
+#: src/warc.c:1209
 msgid "Could not open CDX file for output.\n"
 msgstr "Klarte ikke å åpne CDX-fil for skriving av utdata.\n"
 
-#: src/warc.c:1219
+#: src/warc.c:1239
 msgid "Could not open temporary WARC file.\n"
 msgstr "Klarte ikke å åpne midlertidig WARC-fil.\n"
 
-#: src/warc.c:1495
+#: src/warc.c:1515
 msgid "Found exact match in CDX file. Saving revisit record to WARC.\n"
 msgstr ""
 "Fant identisk oppføring i CDX-fil. Lagrer oppføring for tilbakesporing i "
 "WARC.\n"
+
+#~ msgid "Unknown system error"
+#~ msgstr "Ukjent systemfeil"
+
+#~ msgid "Address family for hostname not supported"
+#~ msgstr "Adressefamilie for vertsnavn støttes ikke"
+
+#~ msgid "Bad value for ai_flags"
+#~ msgstr "ai_flags har ugyldig verdi"
+
+#~ msgid "Non-recoverable failure in name resolution"
+#~ msgstr "Ikke-gjenopprettbar feil i navnoppbygging"
+
+#~ msgid "ai_family not supported"
+#~ msgstr "ai_family støttes ikke"
+
+#~ msgid "Memory allocation failure"
+#~ msgstr "Feil ved minnetildeling"
+
+#~ msgid "No address associated with hostname"
+#~ msgstr "Ingen adresse forbindes med vertsnavnet"
+
+#~ msgid "Name or service not known"
+#~ msgstr "Navnet eller tjenesten er ukjent"
+
+#~ msgid "Servname not supported for ai_socktype"
+#~ msgstr "Tjenernavnet støttes ikke for ai_socktype"
+
+#~ msgid "ai_socktype not supported"
+#~ msgstr "ai_socktype støttes ikke"
+
+#~ msgid "System error"
+#~ msgstr "Systemfeil"
+
+#~ msgid "Argument buffer too small"
+#~ msgstr "Argument-mellomlageret er for lite"
+
+#~ msgid "Processing request in progress"
+#~ msgstr "Behandler forespørsel"
+
+#~ msgid "Request canceled"
+#~ msgstr "Forespørselen ble avbrutt"
+
+#~ msgid "Request not canceled"
+#~ msgstr "Forespørselen er ikke avbrutt"
+
+#~ msgid "All requests done"
+#~ msgstr "Alle forespørsler er utført"
+
+#~ msgid "Interrupted by a signal"
+#~ msgstr "Brutt av et signal"
+
+#~ msgid "Parameter string not correctly encoded"
+#~ msgstr "Parameter-strengen er ikke kodet korrekt"
+
+#, c-format
+#~ msgid "%s: option '%s%s' is ambiguous\n"
+#~ msgstr "%s: valget «%s%s» er flertydig\n"
+
+#, c-format
+#~ msgid "%s: option '%s%s' is ambiguous; possibilities:"
+#~ msgstr "%s: valget «%s%s» er flertydig, og kan bety følgende:"
+
+#, c-format
+#~ msgid "%s: unrecognized option '%s%s'\n"
+#~ msgstr "%s: «%s%s» er et ukjent valg\n"
+
+#, c-format
+#~ msgid "%s: option '%s%s' doesn't allow an argument\n"
+#~ msgstr "%s: valget «%s%s» tillater ikke bruk av argumenter\n"
+
+#, c-format
+#~ msgid "%s: option '%s%s' requires an argument\n"
+#~ msgstr "%s: valget «%s%s» krever et argument\n"
+
+#, c-format
+#~ msgid "%s: invalid option -- '%c'\n"
+#~ msgstr "%s: «%c» er et ugyldig valg\n"
+
+#, c-format
+#~ msgid "%s: option requires an argument -- '%c'\n"
+#~ msgstr "%s: «%c» krever et argument\n"
+
+#~ msgid "`"
+#~ msgstr "«"
+
+#~ msgid "'"
+#~ msgstr "»"
+
+#~ msgid "Success"
+#~ msgstr "Vellykket"
+
+#~ msgid "No match"
+#~ msgstr "Ingen treff"
+
+#~ msgid "Invalid regular expression"
+#~ msgstr "Ugyldig regulært uttrykk"
+
+#~ msgid "Invalid collation character"
+#~ msgstr "Ugyldig sorteringstegn"
+
+#~ msgid "Invalid character class name"
+#~ msgstr "Ugyldig tegnklassenavn"
+
+#~ msgid "Trailing backslash"
+#~ msgstr "Etterfølgende omvendt skråstrek"
+
+#~ msgid "Invalid back reference"
+#~ msgstr "Ugyldig tilbakereferanse"
+
+#~ msgid "Unmatched [, [^, [:, [., or [="
+#~ msgstr "Ingen treff på  «[», «[^», «[:», «[.» eller «[=»"
+
+#~ msgid "Unmatched ( or \\("
+#~ msgstr "Ingen treff på «(» eller «\\(»"
+
+#~ msgid "Unmatched \\{"
+#~ msgstr "Ingen treff på «\\{»"
+
+#~ msgid "Invalid content of \\{\\}"
+#~ msgstr "Ugyldig innhold i «\\{\\}»"
+
+#~ msgid "Invalid range end"
+#~ msgstr "Ugyldig ende på rekkevidde"
+
+#~ msgid "Memory exhausted"
+#~ msgstr "Minnet er oppbrukt"
+
+#~ msgid "Invalid preceding regular expression"
+#~ msgstr "Ugyldig foregående regulært uttrykk"
+
+#~ msgid "Premature end of regular expression"
+#~ msgstr "For tidlig slutt på regulært uttrykk"
+
+#~ msgid "Regular expression too big"
+#~ msgstr "Regulært uttrykk er for stort"
+
+#~ msgid "Unmatched ) or \\)"
+#~ msgstr "Ingen treff på «)» eller «\\)»"
+
+#~ msgid "No previous regular expression"
+#~ msgstr "Intet tidligere regulært uttrykk"
+
+#, c-format
+#~ msgid "cannot create pipe"
+#~ msgstr "klarte ikke å lage datarør"
+
+#, c-format
+#~ msgid "%s subprocess failed"
+#~ msgstr "underprosess av %s mislyktes"
+
+#, c-format
+#~ msgid "_open_osfhandle failed"
+#~ msgstr "_open_osfhandle mislyktes"
+
+#, c-format
+#~ msgid "cannot restore fd %d: dup2 failed"
+#~ msgstr "klarte ikke å gjenopprette fd %d. dup2 mislyktes"
+
+#, c-format
+#~ msgid "%s subprocess"
+#~ msgstr "underprosess av %s"
+
+#, c-format
+#~ msgid "%s subprocess got fatal signal %d"
+#~ msgstr "underprosess av %s fikk kritisk feilsignal %d"
+
+#~ msgid "memory exhausted"
+#~ msgstr "minnet er oppbrukt"
+
+#~ msgid "Email bug reports, questions, discussions to <bug-wget@gnu.org>\n"
+#~ msgstr ""
+#~ "Send feilrapporter, spørsmål og diskusjoner til <bug-wget@gnu.org>\n"
 
 #~ msgid "%s: option '--%s' doesn't allow an argument\n"
 #~ msgstr "%s: valget «--%s» tillater ikke bruk av argumenter\n"

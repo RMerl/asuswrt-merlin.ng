@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from sys import exit
 from test.http_test import HTTPTest
-from test.base_test import HTTP, HTTPS
+from test.base_test import HTTPS, SKIP_TEST
 from misc.wget_file import WgetFile
 import os
 
@@ -9,7 +9,7 @@ import os
     This test ensures that Wget can download files from HTTPS Servers
 """
 if os.getenv('SSL_TESTS') is None:
-    exit (77)
+    exit (SKIP_TEST)
 
 ############# File Definitions ###############################################
 File1 = "Would you like some Tea?"

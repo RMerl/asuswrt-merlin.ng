@@ -1,5 +1,5 @@
 # Makefile for `wget' utility
-# Copyright (C) 1995-1997, 2007-2011, 2015, 2018 Free Software
+# Copyright (C) 1995-1997, 2007-2011, 2015, 2018-2021 Free Software
 # Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify

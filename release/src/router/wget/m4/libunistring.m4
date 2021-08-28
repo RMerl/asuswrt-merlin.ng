@@ -1,8 +1,10 @@
-# libunistring.m4 serial 11
-dnl Copyright (C) 2009-2018 Free Software Foundation, Inc.
+# libunistring.m4 serial 12
+dnl Copyright (C) 2009-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+
+AC_PREREQ([2.64])
 
 dnl gl_LIBUNISTRING
 dnl Searches for an installed libunistring.
@@ -12,8 +14,8 @@ dnl augments the CPPFLAGS variable, and #defines HAVE_LIBUNISTRING to 1.
 dnl Otherwise, it sets and AC_SUBSTs HAVE_LIBUNISTRING=no and LIBUNISTRING and
 dnl LTLIBUNISTRING to empty.
 
-dnl Define gl_LIBUNISTRING using AC_DEFUN_ONCE for Autoconf >= 2.64, in order
-dnl to avoid warnings like
+dnl Define gl_LIBUNISTRING using AC_DEFUN_ONCE, in order dnl to avoid warnings
+dnl like
 dnl "warning: AC_REQUIRE: `gl_LIBUNISTRING' was expanded before it was required".
 dnl This is tricky because of the way 'aclocal' is implemented:
 dnl - It requires defining an auxiliary macro whose name ends in AC_DEFUN.
@@ -21,16 +23,7 @@ dnl   Otherwise aclocal's initial scan pass would miss the macro definition.
 dnl - It requires a line break inside the AC_DEFUN_ONCE and AC_DEFUN expansions.
 dnl   Otherwise aclocal would emit many "Use of uninitialized value $1"
 dnl   warnings.
-m4_define([gl_libunistring_AC_DEFUN],
-  m4_version_prereq([2.64],
-    [[AC_DEFUN_ONCE(
-        [$1], [$2])]],
-    [m4_ifdef([gl_00GNULIB],
-       [[AC_DEFUN_ONCE(
-           [$1], [$2])]],
-       [[AC_DEFUN(
-           [$1], [$2])]])]))
-gl_libunistring_AC_DEFUN([gl_LIBUNISTRING],
+AC_DEFUN_ONCE([gl_LIBUNISTRING],
 [
   AC_BEFORE([$0], [gl_LIBUNISTRING_MODULE])
   AC_BEFORE([$0], [gl_LIBUNISTRING_LIBHEADER])

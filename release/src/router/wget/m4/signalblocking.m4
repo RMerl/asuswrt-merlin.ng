@@ -1,5 +1,5 @@
-# signalblocking.m4 serial 14
-dnl Copyright (C) 2001-2002, 2006-2018 Free Software Foundation, Inc.
+# signalblocking.m4 serial 17
+dnl Copyright (C) 2001-2002, 2006-2021 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -13,11 +13,9 @@ AC_DEFUN([gl_SIGNALBLOCKING],
 [
   AC_REQUIRE([gl_SIGNAL_H_DEFAULTS])
   AC_REQUIRE([gl_CHECK_TYPE_SIGSET_T])
-  if test $gl_cv_type_sigset_t = yes; then
-    AC_CHECK_FUNC([sigprocmask], [gl_cv_func_sigprocmask=1])
-  fi
-  if test -z "$gl_cv_func_sigprocmask"; then
-    HAVE_POSIX_SIGNALBLOCKING=0
+  HAVE_POSIX_SIGNALBLOCKING=0
+  if test "$gl_cv_type_sigset_t" = yes; then
+    AC_CHECK_FUNC([sigprocmask], [HAVE_POSIX_SIGNALBLOCKING=1])
   fi
 ])
 

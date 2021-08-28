@@ -1,5 +1,5 @@
 /* Case mapping for UTF-8 strings (locale dependent).
-   Copyright (C) 2009-2018 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2009.
 
    This program is free software: you can redistribute it and/or modify it
@@ -27,7 +27,7 @@
 #include "unistr.h"
 #include "unictype.h"
 #include "uninorm.h"
-#include "caseprop.h"
+#include "unicase/caseprop.h"
 #include "context.h"
 #include "unicase/special-casing.h"
 

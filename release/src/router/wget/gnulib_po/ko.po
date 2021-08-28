@@ -1,0 +1,535 @@
+# Korean messages for GNU textutils
+# Copyright (C) 1996, 2001, 2002 Free Software Foundation, Inc.
+# Bang Jun-Young <bangjy@nownuri.nowcom.co.kr>, 1996-1997.
+# Changwoo Ryu <cwryu@debian.org>, 2001-2002.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: GNU textutils 2.0.22\n"
+"Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
+"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"PO-Revision-Date: 2002-07-22 20:02+0900\n"
+"Last-Translator: Changwoo Ryu <cwryu@debian.org>\n"
+"Language-Team: Korean <translation-team-ko@lists.sourceforge.net>\n"
+"Language: ko\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=EUC-KR\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+
+#: lib/error.c:195
+msgid "Unknown system error"
+msgstr "알 수 없는 시스템 오류"
+
+#: lib/gai_strerror.c:57
+#, fuzzy
+msgid "Address family for hostname not supported"
+msgstr "fifo파일은 지원하지 않습니다"
+
+#: lib/gai_strerror.c:58
+msgid "Temporary failure in name resolution"
+msgstr ""
+
+#: lib/gai_strerror.c:59
+msgid "Bad value for ai_flags"
+msgstr ""
+
+#: lib/gai_strerror.c:60
+msgid "Non-recoverable failure in name resolution"
+msgstr ""
+
+#: lib/gai_strerror.c:61
+#, fuzzy
+msgid "ai_family not supported"
+msgstr "fifo파일은 지원하지 않습니다"
+
+#: lib/gai_strerror.c:62
+msgid "Memory allocation failure"
+msgstr ""
+
+#: lib/gai_strerror.c:63
+msgid "No address associated with hostname"
+msgstr ""
+
+#: lib/gai_strerror.c:64
+msgid "Name or service not known"
+msgstr ""
+
+#: lib/gai_strerror.c:65
+msgid "Servname not supported for ai_socktype"
+msgstr ""
+
+#: lib/gai_strerror.c:66
+#, fuzzy
+msgid "ai_socktype not supported"
+msgstr "fifo파일은 지원하지 않습니다"
+
+#: lib/gai_strerror.c:67
+#, fuzzy
+msgid "System error"
+msgstr "쓰기 오류"
+
+#: lib/gai_strerror.c:68
+msgid "Argument buffer too small"
+msgstr ""
+
+#: lib/gai_strerror.c:70
+msgid "Processing request in progress"
+msgstr ""
+
+#: lib/gai_strerror.c:71
+msgid "Request canceled"
+msgstr ""
+
+#: lib/gai_strerror.c:72
+msgid "Request not canceled"
+msgstr ""
+
+#: lib/gai_strerror.c:73
+msgid "All requests done"
+msgstr ""
+
+#: lib/gai_strerror.c:74
+msgid "Interrupted by a signal"
+msgstr ""
+
+#: lib/gai_strerror.c:75
+msgid "Parameter string not correctly encoded"
+msgstr ""
+
+#: lib/gai_strerror.c:87
+#, fuzzy
+msgid "Unknown error"
+msgstr "알 수 없는 시스템 오류"
+
+#: lib/getopt.c:278
+#, fuzzy, c-format
+msgid "%s: option '%s%s' is ambiguous\n"
+msgstr "%s: `%s'은(는) 모호한 옵션입니다\n"
+
+#: lib/getopt.c:284
+#, fuzzy, c-format
+msgid "%s: option '%s%s' is ambiguous; possibilities:"
+msgstr "%s: `%s'은(는) 모호한 옵션입니다\n"
+
+#: lib/getopt.c:319
+#, fuzzy, c-format
+msgid "%s: unrecognized option '%s%s'\n"
+msgstr "%s: 인식할 수 없는 옵션 `%c%s'\n"
+
+#: lib/getopt.c:345
+#, fuzzy, c-format
+msgid "%s: option '%s%s' doesn't allow an argument\n"
+msgstr "%s: `%c%s' 옵션은 인수를 허용하지 않습니다\n"
+
+#: lib/getopt.c:360
+#, fuzzy, c-format
+msgid "%s: option '%s%s' requires an argument\n"
+msgstr "%s: `%s' 옵션은 인수가 필요합니다\n"
+
+#: lib/getopt.c:621
+#, fuzzy, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr "%s: 부적절한 옵션 -- %c\n"
+
+#: lib/getopt.c:636 lib/getopt.c:682
+#, fuzzy, c-format
+msgid "%s: option requires an argument -- '%c'\n"
+msgstr "%s: 이 옵션은 인수가 필요합니다 -- %c\n"
+
+#: lib/openat-die.c:38
+#, fuzzy, c-format
+msgid "unable to record current working directory"
+msgstr "%s 디렉토리를 만들 수 없습니다"
+
+#: lib/openat-die.c:57
+#, fuzzy, c-format
+msgid "failed to return to initial working directory"
+msgstr "%s 디렉토리를 만들 수 없습니다"
+
+#: lib/os2-spawn.c:46
+#, c-format
+msgid "_open_osfhandle failed"
+msgstr ""
+
+#: lib/os2-spawn.c:83
+#, c-format
+msgid "cannot restore fd %d: dup2 failed"
+msgstr ""
+
+#. TRANSLATORS:
+#. Get translations for open and closing quotation marks.
+#. The message catalog should translate "`" to a left
+#. quotation mark suitable for the locale, and similarly for
+#. "'".  For example, a French Unicode local should translate
+#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), respectively.
+#.
+#. If the catalog has no translation, we will try to
+#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
+#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
+#. current locale is not Unicode, locale_quoting_style
+#. will quote 'like this', and clocale_quoting_style will
+#. quote "like this".  You should always include translations
+#. for "`" and "'" even if U+2018 and U+2019 are appropriate
+#. for your locale.
+#.
+#. If you don't know what to put here, please see
+#. <https://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
+#. and use glyphs suitable for your language.
+#: lib/quotearg.c:355
+msgid "`"
+msgstr "`"
+
+#: lib/quotearg.c:356
+msgid "'"
+msgstr "'"
+
+#: lib/regcomp.c:135
+msgid "Success"
+msgstr ""
+
+#: lib/regcomp.c:138
+msgid "No match"
+msgstr ""
+
+#: lib/regcomp.c:141
+#, fuzzy
+msgid "Invalid regular expression"
+msgstr "%s: 부적절한 정규식: %s"
+
+#: lib/regcomp.c:144
+#, fuzzy
+msgid "Invalid collation character"
+msgstr "부적절한 문자 클래스 `%s'"
+
+#: lib/regcomp.c:147
+#, fuzzy
+msgid "Invalid character class name"
+msgstr "부적절한 문자 클래스 `%s'"
+
+#: lib/regcomp.c:150
+msgid "Trailing backslash"
+msgstr ""
+
+#: lib/regcomp.c:153
+msgid "Invalid back reference"
+msgstr ""
+
+#: lib/regcomp.c:156
+msgid "Unmatched [, [^, [:, [., or [="
+msgstr ""
+
+#: lib/regcomp.c:159
+msgid "Unmatched ( or \\("
+msgstr ""
+
+#: lib/regcomp.c:162
+msgid "Unmatched \\{"
+msgstr ""
+
+#: lib/regcomp.c:165
+msgid "Invalid content of \\{\\}"
+msgstr ""
+
+#: lib/regcomp.c:168
+#, fuzzy
+msgid "Invalid range end"
+msgstr "%s: 부적절한 정규식: %s"
+
+#: lib/regcomp.c:171
+#, fuzzy
+msgid "Memory exhausted"
+msgstr "메모리가 바닥남"
+
+#: lib/regcomp.c:174
+#, fuzzy
+msgid "Invalid preceding regular expression"
+msgstr "%s: 부적절한 정규식: %s"
+
+#: lib/regcomp.c:177
+#, fuzzy
+msgid "Premature end of regular expression"
+msgstr "정규식 탐색에 오류 발생"
+
+#: lib/regcomp.c:180
+#, fuzzy
+msgid "Regular expression too big"
+msgstr "%s: 부적절한 정규식: %s"
+
+#: lib/regcomp.c:183
+msgid "Unmatched ) or \\)"
+msgstr ""
+
+#: lib/regcomp.c:676
+#, fuzzy
+msgid "No previous regular expression"
+msgstr "정규식 탐색에 오류 발생"
+
+#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
+#: lib/spawn-pipe.c:463
+#, fuzzy, c-format
+msgid "cannot create pipe"
+msgstr "%s 디렉토리를 만들 수 없습니다"
+
+#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#, fuzzy, c-format
+msgid "%s subprocess failed"
+msgstr "%s: 부적절한 패턴"
+
+#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#, fuzzy, c-format
+msgid "%s subprocess"
+msgstr "%s: 부적절한 패턴"
+
+#: lib/wait-process.c:282 lib/wait-process.c:354
+#, fuzzy, c-format
+msgid "%s subprocess got fatal signal %d"
+msgstr "%s: 부적절한 패턴"
+
+#: lib/xalloc-die.c:34
+msgid "memory exhausted"
+msgstr "메모리가 바닥남"
+
+#, c-format
+#~ msgid "invalid argument %s for %s"
+#~ msgstr "%2$s에 대해 부적절한 인자 %1$s"
+
+#, c-format
+#~ msgid "ambiguous argument %s for %s"
+#~ msgstr "%2$s에 대해 애매한 인자 %1$s"
+
+#, c-format
+#~ msgid "Valid arguments are:"
+#~ msgstr "올바른 인자는:"
+
+#, fuzzy
+#~ msgid ""
+#~ "Mandatory or optional arguments to long options are also mandatory or "
+#~ "optional for any corresponding short options."
+#~ msgstr "긴 옵션에서 꼭 필요한 인수는 짧은 옵션에도 꼭 필요합니다.\n"
+
+#, fuzzy
+#~ msgid " [OPTION...]"
+#~ msgstr "사용법: %s [<옵션>] [<파일>]...\n"
+
+#, fuzzy, c-format
+#~ msgid "Try `%s --help' or `%s --usage' for more information.\n"
+#~ msgstr "더 많은 정보를 보려면 `%s --help' 하십시오.\n"
+
+#, fuzzy, c-format
+#~ msgid "Report bugs to %s.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "<%s>(으)로 버그를 알려 주십시오.\n"
+
+#, fuzzy
+#~ msgid "Print program version"
+#~ msgstr "프로그램 오류"
+
+#, fuzzy, c-format
+#~ msgid "%s: Too many arguments\n"
+#~ msgstr "인수가 너무 많음"
+
+#~ msgid "program error"
+#~ msgstr "프로그램 오류"
+
+#~ msgid "stack overflow"
+#~ msgstr "스택 오버플로우"
+
+#~ msgid "write error"
+#~ msgstr "쓰기 오류"
+
+#, fuzzy, c-format
+#~ msgid "error while opening \"%s\" for reading"
+#~ msgstr "`%s'를 `%s'로 이동할 수 없습니다"
+
+#, fuzzy, c-format
+#~ msgid "cannot open backup file \"%s\" for writing"
+#~ msgstr "`%s'를 `%s'로 이동할 수 없습니다"
+
+#, fuzzy, c-format
+#~ msgid "error reading \"%s\""
+#~ msgstr "%s을(를) 읽는 도중 오류 발생"
+
+#, fuzzy, c-format
+#~ msgid "error writing \"%s\""
+#~ msgstr "%s에 쓰는 도중 오류 발생"
+
+#, fuzzy, c-format
+#~ msgid "error after reading \"%s\""
+#~ msgstr "%s을(를) 읽는 도중 오류 발생"
+
+#, fuzzy
+#~ msgid "fdopen() failed"
+#~ msgstr "파일 열기 실패"
+
+#~ msgid "regular empty file"
+#~ msgstr "일반 빈 파일"
+
+#~ msgid "regular file"
+#~ msgstr "일반 파일"
+
+#~ msgid "directory"
+#~ msgstr "디렉토리"
+
+#~ msgid "block special file"
+#~ msgstr "블록 특수 파일"
+
+#~ msgid "character special file"
+#~ msgstr "문자 특수 파일"
+
+#~ msgid "fifo"
+#~ msgstr "FIFO"
+
+#~ msgid "symbolic link"
+#~ msgstr "심볼릭 링크"
+
+#~ msgid "socket"
+#~ msgstr "소켓"
+
+#~ msgid "message queue"
+#~ msgstr "메세지 큐"
+
+#~ msgid "semaphore"
+#~ msgstr "세마포어"
+
+#~ msgid "shared memory object"
+#~ msgstr "공유 메모리 오브젝트"
+
+#, fuzzy
+#~ msgid "typed memory object"
+#~ msgstr "공유 메모리 오브젝트"
+
+#~ msgid "weird file"
+#~ msgstr "괴상한 파일"
+
+#, c-format
+#~ msgid "%s: option `--%s' doesn't allow an argument\n"
+#~ msgstr "%s: `--%s' 옵션은 인수를 허용하지 않습니다\n"
+
+#, c-format
+#~ msgid "%s: unrecognized option `--%s'\n"
+#~ msgstr "%s: 인식할 수 없는 옵션 `--%s'\n"
+
+#, c-format
+#~ msgid "%s: illegal option -- %c\n"
+#~ msgstr "%s: 잘못된 옵션 -- %c\n"
+
+#, c-format
+#~ msgid "%s: option `-W %s' is ambiguous\n"
+#~ msgstr "%s: `-W %s'은(는) 모호한 옵션입니다\n"
+
+#, c-format
+#~ msgid "%s: option `-W %s' doesn't allow an argument\n"
+#~ msgstr "%s: `-W %s' 옵션은 인수를 허용하지 않습니다\n"
+
+#~ msgid "block size"
+#~ msgstr "블록 크기"
+
+#, c-format
+#~ msgid "%s exists but is not a directory"
+#~ msgstr "%s이(가) 존재하지만 디렉토리가 아닙니다"
+
+#, c-format
+#~ msgid "cannot change owner and/or group of %s"
+#~ msgstr "%s의 소유자 그리고/혹은 그룹을 바꿀 수 없습니다"
+
+#, c-format
+#~ msgid "cannot create directory %s"
+#~ msgstr "%s 디렉토리를 만들 수 없습니다"
+
+#, c-format
+#~ msgid "cannot chdir to directory %s"
+#~ msgstr "%s 디렉토리로 chdir할 수 없습니다"
+
+#, c-format
+#~ msgid "cannot change permissions of %s"
+#~ msgstr "%s의 허가를 바꿀 수 없습니다"
+
+#, fuzzy
+#~ msgid "Failed to open /dev/zero for read"
+#~ msgstr "%s의 허가를 바꿀 수 없습니다"
+
+#~ msgid "^[yY]"
+#~ msgstr "^[yY]"
+
+#~ msgid "^[nN]"
+#~ msgstr "^[nN]"
+
+#~ msgid "iconv function not usable"
+#~ msgstr "iconv 함수를 사용할 수 없습니다"
+
+# not usable과 not available의 차이는?
+#~ msgid "iconv function not available"
+#~ msgstr "iconv 함수를 사용할 수 없습니다"
+
+#~ msgid "character out of range"
+#~ msgstr "범위를 벗어난 문자"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set"
+#~ msgstr "U+%04X을(를) 로칼 문자셋으로 변환할 수 없습니다"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set: %s"
+#~ msgstr "U+%04X을(를) 로칼 문자셋으로 변환할 수 없습니다: %s"
+
+#~ msgid "invalid user"
+#~ msgstr "잘못된 사용자"
+
+#~ msgid "invalid group"
+#~ msgstr "잘못된 그룹"
+
+#~ msgid "cannot get the login group of a numeric UID"
+#~ msgstr "UID의 로그인 그룹을 알아 낼 수 없습니다"
+
+#, fuzzy
+#~ msgid ""
+#~ "\n"
+#~ "This is free software.  You may redistribute copies of it under the terms "
+#~ "of\n"
+#~ "the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\n"
+#~ "There is NO WARRANTY, to the extent permitted by law.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "이 프로그램은 자유 소프트웨어입니다. 소프트웨어의 피양도자는 자유 \n"
+#~ "소프트웨어 재단이 공표한 GNU General Public License 2판 (또는 그 이후 \n"
+#~ "판을 임의로 선택해서), 그 규정에 따라 프로그램을 개작하거나 재배포할 \n"
+#~ "수 있습니다.\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Written by %s.\n"
+#~ msgstr "%s이(가) 만들었습니다.\n"
+
+#, fuzzy, c-format
+#~ msgid "Written by %s and %s.\n"
+#~ msgstr "%s이(가) 만들었습니다.\n"
+
+#, fuzzy, c-format
+#~ msgid "Written by %s, %s, and %s.\n"
+#~ msgstr "%s이(가) 만들었습니다.\n"
+
+#, fuzzy, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr "%s이(가) 만들었습니다.\n"
+
+#, fuzzy, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr "%s이(가) 만들었습니다.\n"
+
+#~ msgid "string comparison failed"
+#~ msgstr "문자열 비교가 실패했습니다"
+
+#~ msgid "Set LC_ALL='C' to work around the problem."
+#~ msgstr "이 문제를 피해 가려면 LC_ALL='C'하십시오."
+
+#, c-format
+#~ msgid "The strings compared were %s and %s."
+#~ msgstr "비교한 문자열은 %s과(와) %s입니다."

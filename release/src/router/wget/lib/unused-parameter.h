@@ -1,5 +1,5 @@
 /* A C macro for declaring that specific function parameters are not used.
-   Copyright (C) 2008-2018 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published
@@ -28,9 +28,5 @@
        _GL_UNUSED_PARAMETER int *(*param)(void)
  */
 #ifndef _GL_UNUSED_PARAMETER
-# if __GNUC__ >= 3 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
-#  define _GL_UNUSED_PARAMETER __attribute__ ((__unused__))
-# else
-#  define _GL_UNUSED_PARAMETER
-# endif
+# define _GL_UNUSED_PARAMETER _GL_ATTRIBUTE_MAYBE_UNUSED
 #endif

@@ -1,5 +1,5 @@
 # Makefile for `wget' utility
-# Copyright (C) 2013, 2015, 2018 Free Software Foundation, Inc.
+# Copyright (C) 2013, 2015, 2018-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -116,6 +116,7 @@ if HAVE_PYTHON3
     Test--rejected-log.py                           \
     Test-reserved-chars.py                          \
     Test--spider-r.py                               \
+    Test-no_proxy-env.py                            \
     $(METALINK_TESTS)
 
 endif

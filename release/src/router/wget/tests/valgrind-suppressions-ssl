@@ -164,3 +164,24 @@
    fun:retrieve_url
    fun:main
 }
+
+{
+   gnutls-false-positive
+   Memcheck:Cond
+   fun:decode_complex_string.isra.0
+   fun:_gnutls_x509_dn_to_string
+   ...
+}
+
+{
+   gnutls-false-positive
+   Memcheck:Cond
+   ...
+   fun:gnutls_x509_ext_import_subject_alt_names
+   fun:gnutls_x509_crt_import
+   fun:gnutls_x509_crt_list_import
+   fun:gnutls_x509_crt_list_import2
+   fun:gnutls_x509_trust_list_add_trust_mem
+   fun:gnutls_x509_trust_list_add_trust_file
+   fun:gnutls_x509_trust_list_add_system_trust
+}
